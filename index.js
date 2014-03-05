@@ -29,10 +29,10 @@ internals.encodeLength = function(len, offset) {
     if (len < 56) {
         return new Buffer([len + offset]);
     } else {
-        var hL = internals.intToHex(len);
-        var LL = Math.ceil((hL.length / 2));
-        var firstByte = internals.intToHex(offset + 55 + LL);
-        return new Buffer(firstByte + hL, 'hex');
+        var hexLength = internals.intToHex(len);
+        var lLength = hexLength.length / 2;
+        var firstByte = internals.intToHex(offset + 55 + lLength);
+        return new Buffer(firstByte + hexLength, 'hex');
     }
 };
 
