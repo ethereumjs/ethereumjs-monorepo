@@ -1,0 +1,35 @@
+{
+    "name": "rlp",
+    "version": "0.0.0",
+    "description": "Recursive Length Prefix Encoding Module",
+    "main": "index.js",
+    "directories": {
+        "test": "test"
+    },
+    "scripts": {
+        "test": "./node_modules/mocha/bin/mocha --timeout 5000 --reporter spec ./test/"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/wanderer/rlp.git"
+    },
+    "keywords": [
+            "rlp",
+            "ethereum"
+    ],
+    "contributors": [{
+            "name": "josephyzhou"
+        }
+    ],
+    "author": {
+        "name": "null_radix",
+        "email": "null_radix@riseup.net"
+    },
+    "license": "GPL",
+    "bugs": {
+        "url": "https://github.com/wanderer/rlp/issues"
+    },
+    "devDependencies": {
+        "mocha": "~1.17.1"
+    }
+}
