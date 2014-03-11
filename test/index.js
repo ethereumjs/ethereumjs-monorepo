@@ -140,5 +140,13 @@ describe('nested lists:', function() {
         var decoded = RLP.decode(encoded);
         assert.deepEqual(nestedList, decoded);
     });
+});
 
+describe('null values', function() {
+    var nestedList = [new Buffer(0)];
+    var encoded;
+    it('encode a null array', function() {
+        encoded = RLP.encode(nestedList);
+        assert.deepEqual(encoded, new Buffer([ 0xc1, 0x80 ]));
+    });
 });

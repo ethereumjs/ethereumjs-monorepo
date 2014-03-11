@@ -50,17 +50,19 @@ exports.decode = function(input) {
 internals._decode = function(input) {
     var firstByte = input[0];
     if (firstByte <= 0x7f) {
+        //a single byte whose value is in the [0x00, 0x7f] range, that byte is its own RLP encoding.
         return {
             data: input.slice(0, 1),
             remainder: input.slice(1)
         };
     } else if (firstByte <= 0xb7) {
+        //string is 0-55 bytes long. A single byte with value 0x80 plus the length of the string followed by the string
+        //The range of the first byte is [0x80, 0xb7]
         var length = firstByte - 0x7f;
         return {
             data: input.slice(1, length),
             remainder: input.slice(length)
         };
-
     } else if (firstByte <= 0xbf) {
         var llength = firstByte - 0xb6;
         var length = parseInt(input.slice(1, llength).toString('hex'), 16);
@@ -68,7 +70,6 @@ internals._decode = function(input) {
             data: input.slice(llength, length + llength),
             remainder: input.slice(length + llength)
         };
-
     } else if (firstByte <= 0xf7) {
         //a list between  0-55 bytes long
         var length = firstByte - 0xbf;
@@ -114,11 +115,14 @@ internals.intToHex = function(i) {
 };
 
 internals.toBuffer = function(input) {
-    if (!isNaN(input)) {
+    if (Buffer.isBuffer(input)) {
+        return input;
+    } else if (input === null) {
+        return new Buffer(0);
+    } else if (!isNaN(input)) {
         var hex = internals.intToHex(input);
-        input = new Buffer(hex, 'hex');
+        return new Buffer(hex, 'hex');
     } else if (!Buffer.isBuffer(input)) {
-        input = new Buffer(input.toString());
+        return new Buffer(input.toString());
     }
-    return input;
 };
