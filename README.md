@@ -12,7 +12,7 @@ Usage
 
 `encode` - RLP encodes an array, buffer or string and returns a buffer
 
-`decode` - Decodes and RLP encoded buffer, array or string and returns a buffer or and array of buffers
+`decode` - Decodes a RLP encoded buffer, array or string and returns a buffer or an array of buffers
 
 Example
 =======
