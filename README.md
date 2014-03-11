@@ -23,7 +23,7 @@ var RLP = require('rlp');
 var nestedList = [ [], [[]], [ [], [[]] ] ];
 var encoded = RLP.encode(nestedList);
 var decoded = RLP.decode(encoded);
-assert.deepEqual(nestedList, decoded);
+  assert.deepEqual(nestedList, decoded);
 });
 ```
 
