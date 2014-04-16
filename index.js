@@ -116,8 +116,12 @@ internals.intToHex = function(i) {
 
 internals.toBuffer = function(input) {
     if (Buffer.isBuffer(input)) {
-        return input;
-    } else if (input === null) {
+        if(input.length === 1 && input[0] === 0){
+            return this.toBuffer(null);
+        }else{
+            return input;
+        }
+    } else if (input === null || input === 0) {
         return new Buffer(0);
     } else if (!isNaN(input)) {
         var hex = internals.intToHex(input);
