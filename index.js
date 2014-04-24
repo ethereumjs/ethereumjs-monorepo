@@ -58,9 +58,17 @@ internals._decode = function(input) {
     } else if (firstByte <= 0xb7) {
         //string is 0-55 bytes long. A single byte with value 0x80 plus the length of the string followed by the string
         //The range of the first byte is [0x80, 0xb7]
-        var length = firstByte - 0x7f;
+        var length = firstByte - 0x7f,
+            data;
+        
+        //set 0x80 null to 0
+        if(firstByte === 0x80){
+            data = new Buffer([0]);
+        }else{
+            data = input.slice(1, length);
+        }
         return {
-            data: input.slice(1, length),
+            data: data,
             remainder: input.slice(length)
         };
     } else if (firstByte <= 0xbf) {
