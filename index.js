@@ -129,7 +129,7 @@ internals.toBuffer = function(input) {
         }else{
             return input;
         }
-    } else if (input === null || input === 0) {
+    } else if (input === null || input === 0 || input === undefined) {
         return new Buffer(0);
     } else if (!isNaN(input)) {
         var hex = internals.intToHex(input);
