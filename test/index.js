@@ -56,10 +56,6 @@ describe('RLP encoding (integer):', function() {
         assert.equal(encodedNumber[1], 4);
         assert.equal(encodedNumber[2], 0);
     });
-
-    it('length of int >55, similar to string', function() {
-        //need a test case here!
-    });
 });
 
 describe('RLP decoding (string):', function() {
