@@ -8,16 +8,13 @@ describe('simple save and retrive', function() {
 
   var db1 = levelup('./testdb');
   var trie = new Trie(db1);
-
   it("save a value", function(done) {
-
     trie.put('test', 'one', function() {
       done();
     });
   });
 
   it("should get a value", function(done) {
-
     trie.get('test', function(err, value) {
       assert.equal(value.toString(), 'one');
       done();
@@ -32,17 +29,15 @@ describe('simple save and retrive', function() {
 
   it("should get updated a value", function(done) {
     trie.get('test', function(err, value) {
-      done();
       assert.equal(value.toString(), 'one');
+      done();
     });
   });
 
   it("should create a branch here", function(done) {
-
     trie.put('doge', 'coin', function() {
       assert.equal('de8a34a8c1d558682eae1528b47523a483dd8685d6db14b291451a66066bf0fc', trie.root);
       done();
-
     });
   });
 
@@ -52,7 +47,6 @@ describe('simple save and retrive', function() {
       done();
     });
   });
-
 });
 
 describe("storing longer values", function() {
