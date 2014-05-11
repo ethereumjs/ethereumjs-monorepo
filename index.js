@@ -10,24 +10,170 @@ exports = module.exports = internals.Trie = function (db, root) {
   this.db = db;
 };
 
+/*
+ * Gets a value given a key
+ * @method get
+ * @param {String} key - the key to search for
+ */
+internals.Trie.prototype.get = function (key, cb) {
+  this._findNode(key, this.root, [], function (err, node, remainder, stack) {
+    var value = null;
+    if (remainder.length === 0) {
+      var nodeType = internals.getNodeType(node);
+      if (nodeType === 'branch') {
+        value = node[16];
+      } else {
+        value = node[1];
+      }
+    }
+    cb(err, value);
+  });
+};
+
+/* Stores a key value
+ * @method put
+ * @param {Buffer|String} key
+ * @param {Buffer|String} Value
+ */
 internals.Trie.prototype.put = function (key, value, cb) {
   var self = this;
+
   if (this.root) {
+    //first try to find the give key or its nearst node
     this._findNode(key, this.root, [], function (err, foundValue, keyRemainder, stack) {
       if (err) {
         cb(err);
       } else {
+        //then update
         self._updateNode(key, value, keyRemainder, stack, cb);
       }
     });
   } else {
+    //if no root initialize this trie
     this._createNewNode(key, value, cb);
   }
 };
 
+//todo
+internals.Trie.prototype.del = function (key, cb) {
+  var self = this;
+
+  this._findNode(key, this.root, [], function (err, foundValue, keyRemainder, stack) {
+    if (err) {
+      cb(err);
+    } else if (foundValue) {
+      self._updateNode(key, value, keyRemainder, stack, true, cb);
+    } else {
+      cb();
+    }
+  });
+};
+
+/*
+ * Trys to find a node, given a key it will find the closest node to that key
+ * and return to the callback a `stack` of nodes to the closet node
+ * @method _findNode
+ * @param {String|Buffer} - key - the search key
+ * @param {String|Buffer} - root - the root node
+ * @param {Function} - cb - the callback function. Its is given the following 
+ * arguments
+ *  - err - any errors encontered
+ *  - value - the value of the last node found
+ *  - remainder - the remaining key nibbles not accounted for
+ *  - stack - an array of nodes that forms the path to node we are searching for
+ */
+internals.Trie.prototype._findNode = function (key, root, stack, cb) {
+
+  function processNode(node) {
+    stack.push(node);
+    var nodeType = internals.getNodeType(node);
+    if (nodeType == 'branch') {
+      //branch
+      if (key.length === 0) {
+        cb(null, node, [], stack, cb);
+      } else {
+
+        var firstNib = key[0],
+          branchNode = node[firstNib];
+        if (branchNode.toString('hex') == '00') {
+          //there is no more nodes to find
+          cb(null, node, key, stack);
+        } else {
+          key.shift();
+          self._findNode(key, branchNode, stack, cb);
+        }
+      }
+    } else {
+      var rawNodeKey = internals.stringToNibbles(node[0]);
+      var nodeKey = internals.removeHexPrefix(rawNodeKey);
+      var matchingLen = internals.matchingNibbleLength(nodeKey, key);
+      var keyRemainder = key.slice(matchingLen);
+
+      if (nodeType == 'leaf') {
+        if (keyRemainder.length !== 0 || key.length != nodeKey.length) {
+          //we did not find the key
+          cb(null, node, key, stack);
+        } else {
+          //we did find a key
+          cb(null, node, [], stack);
+        }
+
+      } else if (nodeType == 'extention') {
+        //ext
+        if (matchingLen != nodeKey.length) {
+          //we did not find the key
+          cb(null, node, key, stack);
+        } else {
+          self._findNode(keyRemainder, node[1], stack, cb);
+        }
+      }
+    }
+  }
+
+  var self = this;
+
+  if (!Array.isArray(key)) {
+    //convert key to nibbles
+    key = internals.stringToNibbles(key);
+  }
+
+  if (!Array.isArray(stack)) {
+    stack = [];
+  }
+
+  if (!Array.isArray(root) && !Buffer.isBuffer(root)) {
+    root = new Buffer(root, 'hex');
+  }
+
+  if (root.length == 32) {
+    //resovle hash to node
+    this.db.get(root, {
+      encoding: 'binary'
+    }, function (err, foundNode) {
+      if (err) {
+        cb(err, foundNode, key, stack);
+      } else {
+        processNode(rlp.decode(foundNode));
+      }
+    });
+  } else {
+    processNode(root);
+  }
+};
+
+/* Updates a node
+ * @method _updateNode
+ * @param {Buffer} key
+ * @param {Buffer| String} value
+ * @param {Array} keyRemainder
+ * @param {Array} stack
+ * @param {Function}
+ */
 internals.Trie.prototype._updateNode = function (key, value, keyRemainder, stack, cb) {
+
   function formatNode(node, topLevel, toSaveStack) {
     var rlpNode = rlp.encode(node);
+
     if (rlpNode.length >= 32 || topLevel) {
       //create a hash of the node
       var hash = new Sha3.SHA3Hash(256);
@@ -39,7 +185,6 @@ internals.Trie.prototype._updateNode = function (key, value, keyRemainder, stack
         key: hashRoot,
         value: rlpNode
       });
-
       return hashRoot;
     }
     return node;
@@ -136,118 +281,7 @@ internals.Trie.prototype._updateNode = function (key, value, keyRemainder, stack
   }, cb);
 };
 
-/*
- * Gets a value given a key
- * @method get
- * @param {String} key - the key to search for
- */
-internals.Trie.prototype.get = function (key, cb) {
-  this._findNode(key, this.root, [], function (err, node, remainder, stack) {
-    var value = null;
-    if (remainder.length === 0) {
-      var nodeType = internals.getNodeType(node);
-      if (nodeType === 'branch') {
-        value = node[16];
-      } else {
-        value = node[1];
-      }
-    }
-    cb(err, value);
-  });
-};
-
-/*
- * Trys to find a node, given a key it will find the closest node to that key
- * and return to the callback a `stack` of nodes to the closet node
- * @method _findNode
- * @param {String|Buffer} - key - the search key
- * @param {String|Buffer} - root - the root node
- * @param {Function} - cb - the callback function. Its is given the following 
- * arguments
- *  - err - any errors encontered
- *  - value - the value of the last node found
- *  - remainder - the remaining key nibbles not accounted for
- *  - stack - an array of nodes that forms the path to node we are searching for
- */
-internals.Trie.prototype._findNode = function (key, root, stack, cb) {
-
-  function processNode(node) {
-    stack.push(node);
-    var nodeType = internals.getNodeType(node);
-    if (nodeType == 'branch') {
-      //branch
-      if (key.length === 0) {
-        cb(null, node, [], stack, cb);
-      } else {
-
-        var firstNib = key[0],
-          branchNode = node[firstNib];
-        if (branchNode.toString('hex') == '00') {
-          //there is no more nodes to find
-          cb(null, node, key, stack);
-        } else {
-          key.shift();
-          self._findNode(key, branchNode, stack, cb);
-        }
-      }
-    } else {
-      var rawNodeKey = internals.stringToNibbles(node[0]);
-      var nodeKey = internals.removeHexPrefix(rawNodeKey);
-      var matchingLen = internals.matchingNibbleLength(nodeKey, key);
-      var keyRemainder = key.slice(matchingLen);
-
-      if (nodeType == 'leaf') {
-        if (keyRemainder.length !== 0 || key.length != nodeKey.length) {
-          //we did not find the key
-          cb(null, node, key, stack);
-        } else {
-          //we did find a key
-          cb(null, node, [], stack);
-        }
-
-      } else if (nodeType == 'extention') {
-        //ext
-        if (matchingLen != nodeKey.length) {
-          //we did not find the key
-          cb(null, node, key, stack);
-        } else {
-          self._findNode(keyRemainder, node[1], stack, cb);
-        }
-      }
-    }
-  }
-
-  var self = this;
-
-  if (!Array.isArray(key)) {
-    //convert key to nibbles
-    key = internals.stringToNibbles(key);
-  }
-
-  if (!Array.isArray(stack)) {
-    stack = [];
-  }
-
-  if (!Array.isArray(root) && !Buffer.isBuffer(root)) {
-    root = new Buffer(root, 'hex');
-  }
-
-  if (root.length == 32) {
-    //resovle hash to node
-    this.db.get(root, {
-      encoding: 'binary'
-    }, function (err, foundNode) {
-      if (err) {
-        cb(err, foundNode, key, stack);
-      } else {
-        processNode(rlp.decode(foundNode));
-      }
-    });
-  } else {
-    processNode(root);
-  }
-};
-
+//Creates the initail node
 internals.Trie.prototype._createNewNode = function (key, value, cb) {
   //convert to nibbles
   var nibbleKey = internals.stringToNibbles(key);
@@ -268,20 +302,6 @@ internals.Trie.prototype._createNewNode = function (key, value, cb) {
   this.db.put(key, rlpNode, {
     encoding: 'binary'
   }, cb);
-};
-
-//todo
-internals.Trie.prototype.del = function (key, cb) {
-  var self = this;
-  this._findNode(key, this.root, [], function (err, foundValue, keyRemainder, stack) {
-    if (err) {
-      cb(err);
-    } else if (foundValue) {
-      self._updateNode(key, value, keyRemainder, stack, true, cb);
-    } else {
-      cb();
-    }
-  });
 };
 
 /**
@@ -324,6 +344,11 @@ internals.isTerminator = function (key) {
   return key[0] > 1;
 };
 
+/*
+ * Converts a string OR a buffer to a nibble array
+ * @method stringToNibbles
+ * @param {Buffer| String} key
+ */
 internals.stringToNibbles = function (key) {
   var bkey = new Buffer(key);
   var nibbles = [];
@@ -337,6 +362,11 @@ internals.stringToNibbles = function (key) {
   return nibbles;
 };
 
+/*
+ * Converts a  nibble array into a buffer
+ * @method nibblesToBuffer
+ * @param arr
+ */
 internals.nibblesToBuffer = function (arr) {
   var buf = new Buffer(arr.length / 2);
   for (var i = 0; i < buf.length; i++) {
@@ -346,6 +376,12 @@ internals.nibblesToBuffer = function (arr) {
   return buf;
 };
 
+/*
+ * Returns the number of in order matching nibbles of two give nibble arrayes
+ * @method matchingNibbleLength
+ * @param {Array} nib1
+ * @param {Array} nib2
+ */
 internals.matchingNibbleLength = function (nib1, nib2) {
   var i = 0;
   while (nib1[i] === nib2[i] && nib1.length > i) {

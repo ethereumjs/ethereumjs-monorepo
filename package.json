@@ -28,7 +28,7 @@
   ],
   "license": "GPL",
   "dependencies": {
-    "rlp": "0.0.3",
+    "rlp": "0.0.4",
     "sha3": "~1.0.0",
     "async": "~0.8.0"
   },
