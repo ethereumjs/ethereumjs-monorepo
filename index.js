@@ -29,8 +29,6 @@ internals.Trie.prototype._updateNode = function (key, value, keyRemainder, stack
   function formatNode(node, topLevel, toSaveStack) {
     var rlpNode = rlp.encode(node);
     if (rlpNode.length >= 32 || topLevel) {
-      console.log('xxxxxxxxxxxxx');
-      console.log(node);
       //create a hash of the node
       var hash = new Sha3.SHA3Hash(256);
       hash.update(rlpNode);

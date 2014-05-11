@@ -1,13 +1,32 @@
 {
   "name": "trie",
-  "version": "0.0.0",
-  "description": "",
+  "version": "0.0.1",
+  "description": "This is an implementation of the modified merkle patricia tree as speficed in the Ethereum's yellow paper.",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "./node_modules/mocha/bin/mocha --reporter spec ./test/"
   },
-  "author": "",
-  "license": "BSD-2-Clause",
+  "author": {
+    "name": "mjbecze",
+    "email": "mjbecze@gmail.com"
+  },
+  "scripts": {
+    "test": "./node_modules/mocha/bin/mocha --timeout 5000 --reporter spec ./test/"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/wanderer/merkle-patricia-tree.git"
+  },
+  "bugs": {
+    "url": "https://github.com/wanderer/merkle-patricia-tree/issues"
+  },
+  "keywords": [
+    "merkel",
+    "radix",
+    "trie",
+    "ethereum"
+  ],
+  "license": "GPL",
   "dependencies": {
     "rlp": "0.0.3",
     "sha3": "~1.0.0",
@@ -15,6 +34,7 @@
   },
   "devDependencies": {
     "levelup": "~0.18.3",
-    "leveldown": "~0.10.2"
+    "leveldown": "~0.10.2",
+    "mocha": "~1.18.2"
   }
 }
