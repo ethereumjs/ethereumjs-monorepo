@@ -164,23 +164,6 @@ internals.Trie.prototype._findNode = function(key, root, stack, cb) {
  */
 internals.Trie.prototype._updateNode = function(key, value, keyRemainder, stack, cb) {
 
-  function formatNode(node, topLevel, toSaveStack) {
-    var rlpNode = rlp.encode(node.raw);
-    if (rlpNode.length >= 32 || topLevel) {
-      //create a hash of the node
-      var hash = new Sha3.SHA3Hash(256);
-      hash.update(rlpNode);
-      //no way to get a buffer directly from the hash :(
-      var hashRoot = new Buffer(hash.digest('hex'), 'hex');
-      toSaveStack.push({
-        type: 'put',
-        key: hashRoot,
-        value: rlpNode
-      });
-      return hashRoot;
-    }
-    return node.raw;
-  }
 
   var self = this,
     toSave = [],
@@ -194,7 +177,7 @@ internals.Trie.prototype._updateNode = function(key, value, keyRemainder, stack,
       //add an extention to a branch node
       keyRemainder.shift();
       //create a new leaf
-      var newLeaf = new TrieNode('leaf', keyRemainder, value );
+      var newLeaf = new TrieNode('leaf', keyRemainder, value);
       stack.push(newLeaf);
     } else {
       lastNode.setValue(value);
@@ -206,7 +189,7 @@ internals.Trie.prototype._updateNode = function(key, value, keyRemainder, stack,
   } else {
     //if extension; create a branch node
     var lastKey = lastNode.getKey(),
-      matchingLength = internals.matchingNibbleLength(lastNode.getKey(), keyRemainder),
+      matchingLength = internals.matchingNibbleLength(lastKey, keyRemainder),
       newBranchNode = new TrieNode('branch');
 
     //create a new extention node
@@ -218,27 +201,37 @@ internals.Trie.prototype._updateNode = function(key, value, keyRemainder, stack,
       keyRemainder.splice(0, matchingLength);
     }
 
+    stack.push(newBranchNode);
+
     if (lastKey.length !== 0) {
       var branchKey = lastKey.shift();
       lastNode.setKey(lastKey);
-      var formatedNode = formatNode(lastNode, false, toSave);
+      var formatedNode = internals.formatNode(lastNode, false, toSave);
       newBranchNode.setValue(branchKey, formatedNode);
     } else {
       newBranchNode.setValue(lastNode.getValue());
     }
 
-    stack.push(newBranchNode);
-
     if (keyRemainder.length !== 0) {
       keyRemainder.shift();
       //add a leaf node to the new branch node
-      var leafNode = [internals.nibblesToBuffer(internals.addHexPrefix(keyRemainder, true)), value];
-      stack.push(new TrieNode(leafNode));
+      var newLeafNode = new TrieNode('leaf', keyRemainder, value);
+      stack.push(newLeafNode);
     } else {
       newBranchNode.setValue(value);
     }
   }
 
+  this._saveStack(key, stack, toSave, cb);
+};
+
+//saves a stack
+//@method _saveStack
+//@param {Array} key - the key. Should follow the stack
+//@param {Array} stack - a stack of nodes to the value given by the key
+//@param {Array} opStack - a stack of levelup operations to commit at the end of this funciton
+//@param {Function} cb
+internals.Trie.prototype._saveStack = function(key, stack, opStack, cb) {
   var lastRoot;
   //update nodes
   while (stack.length) {
@@ -246,8 +239,7 @@ internals.Trie.prototype._updateNode = function(key, value, keyRemainder, stack,
     if (node.type == 'leaf') {
       key.splice(key.length - node.getKey().length);
     } else if (node.type == 'extention') {
-      key.splice(key.length - node.getKey.length);
-      //TODO check it there is a lastRoot; for delete
+      key.splice(key.length - node.getKey().length);
       node.setValue(lastRoot);
     } else if (node.type == 'branch') {
       if (lastRoot) {
@@ -255,33 +247,25 @@ internals.Trie.prototype._updateNode = function(key, value, keyRemainder, stack,
         node.setValue(branchKey, lastRoot);
       }
     }
-    var lastRoot = formatNode(node, stack.length === 0, toSave);
+    var lastRoot = internals.formatNode(node, stack.length === 0, opStack);
   }
 
+  assert(key.length === 0, "key length should be 0 after we are done processing the stack");
   this.root = lastRoot.toString('hex');
-  this.db.batch(toSave, {
+  this.db.batch(opStack, {
     encoding: 'binary'
   }, cb);
 };
 
 internals.Trie.prototype._deleteNode = function(key, stack, cb) {
   var lastNode = stack.pop(),
-    lastNodeType = internals.getNodeType(lastNode),
-    parentNode = stack.pop(),
-    parentNodeType = null;
-
-  if (parentNode) {
-    parentNodeType = internals.getNodeType(parentNode);
-  }
+    parentNode = stack.pop();
 
   function processBranchNode(key, branchKey, branchNode, parentNode, stack) {
     //branchNode is the node ON the branch node not THE branch node
-    var branchNodeType = internals.getNodeType(branchNode);
-    var parentNodeType = internals.getNodeType(parentNode);
-    if (parentNodeType === "branch") {
-
+    if (parentNode.type === "branch") {
       stack.push(parentNode);
-      if (branchNodeType === "branch") {
+      if (branchNode.type === "branch") {
         //create an extention node
         var extentionKey = internals.addHexPrefix([branchKey], false);
         var extentionNode = [internals.nibblesToBuffer(extentionKey), null];
@@ -303,7 +287,7 @@ internals.Trie.prototype._deleteNode = function(key, stack, cb) {
       }
     } else {
       //parent is a extention
-      if (branchNodeType === "branch") {
+      if (branchNode.type === "branch") {
         var rawParentKey = TrieNode.stringToNibbles(parentKey[1]);
         var parentKey = internals.removeHexPrefix(rawParentKey);
         parentKey.push(branchKey);
@@ -339,13 +323,12 @@ internals.Trie.prototype._deleteNode = function(key, stack, cb) {
     }
   }
 
-  //deleting
   if (!parentNode) {
     this.db.del(this.root, cb);
     this.root = null;
 
-  } else if (lastNodeType == "branch" || (lastNodeType == "leaf" && parentNodeType == "branch")) {
-    if (lastNodeType == "branch") {
+  } else if (lastNode.type == "branch" || (lastNode.type == "leaf" && parentNode.type == "branch")) {
+    if (lastNode.type == "branch") {
       lastNode[16] = null;
     } else {
       var rawLastNodeKey = internals.removeHexPrefix(lastNode);
@@ -393,14 +376,9 @@ internals.Trie.prototype._deleteNode = function(key, stack, cb) {
 
 //Creates the initail node
 internals.Trie.prototype._createNewNode = function(key, value, cb) {
-  //convert to nibbles
-  var nibbleKey = TrieNode.stringToNibbles(key);
-  //add  hex prefix
-  internals.addHexPrefix(nibbleKey, true);
-  //convert to buffer for storage
-  nibbleKey = internals.nibblesToBuffer(nibbleKey);
+  var newNode = new TrieNode('leaf', key, value);
   //rlp encode 
-  var rlpNode = rlp.encode([nibbleKey, value]);
+  var rlpNode = rlp.encode(newNode.raw);
   //create the hash key
   var hash = new Sha3.SHA3Hash(256);
   hash.update(rlpNode);
@@ -453,7 +431,6 @@ internals.isTerminator = function(key) {
   return key[0] > 1;
 };
 
-
 /*
  * Converts a  nibble array into a buffer
  * @method nibblesToBuffer
@@ -482,24 +459,23 @@ internals.matchingNibbleLength = function(nib1, nib2) {
   return i;
 };
 
-/*
- * Determines the node type
- * Returns the following
- * - leaf - if teh node is a leaf
- * - branch - if the node is a branch
- * - extention - if the node is an extention
- * - unkown - if somehting fucked up
- */
-internals.getNodeType = function(node) {
-  if (Buffer.isBuffer(node) || typeof node == 'string' || node instanceof String) {
-    return 'unkown';
-  } else if (node.length == 17) {
-    return 'branch';
-  } else if (node.length == 2) {
-    var key = TrieNode.stringToNibbles(node[0]);
-    if (internals.isTerminator(key)) {
-      return 'leaf';
-    }
-    return 'extention';
+
+//formats node to be saved by levelup.batch.
+//returns either the hash that will be used key or the rawNode
+internals.formatNode = function(node, topLevel, toSaveStack) {
+  var rlpNode = rlp.encode(node.raw);
+  if (rlpNode.length >= 32 || topLevel) {
+    //create a hash of the node
+    var hash = new Sha3.SHA3Hash(256);
+    hash.update(rlpNode);
+    //no way to get a buffer directly from the hash :(
+    var hashRoot = new Buffer(hash.digest('hex'), 'hex');
+    toSaveStack.push({
+      type: 'put',
+      key: hashRoot,
+      value: rlpNode
+    });
+    return hashRoot;
   }
+  return node.raw;
 };

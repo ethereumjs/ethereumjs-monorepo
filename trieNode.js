@@ -61,7 +61,7 @@ internals.TrieNode.prototype.getValue = function(key) {
 
 internals.TrieNode.prototype.setKey = function(key) {
   if (this.type != 'branch') {
-    if (Buffer.isBuffer(key)) {
+    if (Buffer.isBuffer(key) || typeof key == "string" ) {
       key = internals.stringToNibbles(key);
     } else {
       key = key.slice(0); //copy the key
@@ -149,20 +149,6 @@ internals.nibblesToBuffer = internals.TrieNode.nibblesToBuffer = function(arr) {
     buf[i] = (arr[q] << 4) + arr[++q];
   }
   return buf;
-};
-
-/*
- * Returns the number of in order matching nibbles of two give nibble arrayes
- * @method matchingNibbleLength
- * @param {Array} nib1
- * @param {Array} nib2
- */
-internals.matchingNibbleLength = internals.TrieNode.matchingNibbleLength = function(nib1, nib2) {
-  var i = 0;
-  while (nib1[i] === nib2[i] && nib1.length > i) {
-    i++;
-  }
-  return i;
 };
 
 /*
