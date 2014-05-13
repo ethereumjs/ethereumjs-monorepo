@@ -127,7 +127,7 @@ internals.Trie.prototype._findNode = function(key, root, stack, cb) {
 
   if (!Array.isArray(key)) {
     //convert key to nibbles
-    key = internals.stringToNibbles(key);
+    key = TrieNode.stringToNibbles(key);
   }
 
   if (!Array.isArray(stack)) {
@@ -187,7 +187,7 @@ internals.Trie.prototype._updateNode = function(key, value, keyRemainder, stack,
     lastNode = stack.pop();
 
   //add the new nodes
-  key = internals.stringToNibbles(key);
+  key = TrieNode.stringToNibbles(key);
   if (lastNode.type == "branch") {
     stack.push(lastNode);
     if (keyRemainder !== 0) {
@@ -290,7 +290,7 @@ internals.Trie.prototype._deleteNode = function(key, stack, cb) {
         key.push(branchKey);
       } else {
         //branch key is an extention or a leaf
-        var rawBranchNodeKey = internals.stringToNibbles(branchNode[1]);
+        var rawBranchNodeKey = TrieNode.stringToNibbles(branchNode[1]);
         var terminator = internals.isTerminator(rawBranchNodeKey);
         var branchNodeKey = internals.removeHexPrefix(rawBranchNodeKey);
         branchNodeKey.unshift(branchKey);
@@ -304,7 +304,7 @@ internals.Trie.prototype._deleteNode = function(key, stack, cb) {
     } else {
       //parent is a extention
       if (branchNodeType === "branch") {
-        var rawParentKey = internals.stringToNibbles(parentKey[1]);
+        var rawParentKey = TrieNode.stringToNibbles(parentKey[1]);
         var parentKey = internals.removeHexPrefix(rawParentKey);
         parentKey.push(branchKey);
         var encodedKey = internals.addHexPrefix(parentKey, false);
@@ -320,10 +320,10 @@ internals.Trie.prototype._deleteNode = function(key, stack, cb) {
         //branch node is an leaf or extention and parent node is an exstention
         //add two keys together
         //dont push the parent node
-        var rawParentKey = internals.stringToNibbles(parentKey[1]);
+        var rawParentKey = TrieNode.stringToNibbles(parentKey[1]);
         var parentKey = internals.removeHexPrefix(rawParentKey);
 
-        var rawBranchNodeKey = internals.stringToNibbles(branchNode[1]);
+        var rawBranchNodeKey = TrieNode.stringToNibbles(branchNode[1]);
         var terminator = internals.isTerminator(rawBranchNodeKey);
         var branchNodeKey = internals.removeHexPrefix(rawBranchNodeKey);
 
@@ -394,7 +394,7 @@ internals.Trie.prototype._deleteNode = function(key, stack, cb) {
 //Creates the initail node
 internals.Trie.prototype._createNewNode = function(key, value, cb) {
   //convert to nibbles
-  var nibbleKey = internals.stringToNibbles(key);
+  var nibbleKey = TrieNode.stringToNibbles(key);
   //add  hex prefix
   internals.addHexPrefix(nibbleKey, true);
   //convert to buffer for storage
@@ -435,25 +435,6 @@ internals.addHexPrefix = function(key, terminator) {
   return key;
 };
 
-/*
- * get a key give a leaf or a extention node
- * returns and Array [terminator, nibbleKey]
- */
-internals.parseKey = function(node) {
-  var nodeType = internals.getNodeType(node);
-  if (nodeType == 'extention' || nodeType == 'leaf') {
-    var rawNodeKey = internals.stringToNibbles(node[0]);
-    var terminator = internals.isTerminator(rawNodeKey);
-    var nodeKey = internals.removeHexPrefix(rawNodeKey);
-    return ({
-      terminator: terminator,
-      key: nodeKey
-    });
-  }
-  return false;
-
-};
-
 internals.removeHexPrefix = function(val) {
   if (val[0] % 2) {
     val = val.slice(1);
@@ -472,23 +453,6 @@ internals.isTerminator = function(key) {
   return key[0] > 1;
 };
 
-/*
- * Converts a string OR a buffer to a nibble array
- * @method stringToNibbles
- * @param {Buffer| String} key
- */
-internals.stringToNibbles = function(key) {
-  var bkey = new Buffer(key);
-  var nibbles = [];
-
-  for (var i = 0; i < bkey.length; i++) {
-    q = i * 2;
-    nibbles[q] = bkey[i] >> 4;
-    ++q;
-    nibbles[q] = bkey[i] % 16;
-  }
-  return nibbles;
-};
 
 /*
  * Converts a  nibble array into a buffer
@@ -532,7 +496,7 @@ internals.getNodeType = function(node) {
   } else if (node.length == 17) {
     return 'branch';
   } else if (node.length == 2) {
-    var key = internals.stringToNibbles(node[0]);
+    var key = TrieNode.stringToNibbles(node[0]);
     if (internals.isTerminator(key)) {
       return 'leaf';
     }
