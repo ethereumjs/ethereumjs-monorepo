@@ -32,7 +32,7 @@ describe('simple save and retrive', function() {
   });
 
 
-  it("should delete a value", function(done) {
+  it.skip("should delete a value", function(done) {
     trie.del('test', function(stack) {
       console.log(stack);
       done();

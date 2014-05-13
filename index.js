@@ -85,7 +85,7 @@ internals.Trie.prototype._findNode = function(key, root, stack, cb) {
   //parse the node and gets the next node if any to parse
   function processNode(rawNode) {
     var node = new TrieNode(rawNode);
-    stack.push(rawNode);
+    stack.push(node);
     if (node.type == 'branch') {
       //branch
       if (key.length === 0) {
@@ -185,37 +185,36 @@ internals.Trie.prototype._updateNode = function(key, value, keyRemainder, stack,
 
   var self = this,
     toSave = [],
-    rawNode = stack.pop(),
-    lastNode = new TrieNode(rawNode);
+    lastNode = stack.pop();
 
   //add the new nodes
   key = internals.stringToNibbles(key);
   if (lastNode.type == "branch") {
-    stack.push(lastNode.raw);
+    stack.push(lastNode);
     if (keyRemainder !== 0) {
       //add an extention to a branch node
       keyRemainder.shift();
       //create a new leaf
       var newLeaf = new TrieNode('leaf', keyRemainder, value );
-      stack.push(newLeaf.raw);
+      stack.push(newLeaf);
     } else {
       lastNode.setValue(value);
     }
   } else if (lastNode.type === 'leaf' && keyRemainder.length === 0) {
     //just updating a found value
     lastNode.setValue(value);
-    stack.push(lastNode.raw);
+    stack.push(lastNode);
   } else {
     //if extension; create a branch node
     var lastKey = lastNode.getKey(),
       matchingLength = internals.matchingNibbleLength(lastNode.getKey(), keyRemainder),
-      newNode = Array.apply(null, Array(17));
+      newBranchNode = new TrieNode('branch');
 
     //create a new extention node
     if (matchingLength !== 0) {
       var newKey = lastNode.getKey().slice(0, matchingLength),
         newExtNode = new TrieNode('extention', newKey, value);
-      stack.push(newExtNode.raw);
+      stack.push(newExtNode);
       lastKey.splice(0, matchingLength);
       keyRemainder.splice(0, matchingLength);
     }
@@ -224,42 +223,40 @@ internals.Trie.prototype._updateNode = function(key, value, keyRemainder, stack,
       var branchKey = lastKey.shift();
       lastNode.setKey(lastKey);
       var formatedNode = formatNode(lastNode.raw, false, toSave);
-      newNode[branchKey] = formatedNode;
+      newBranchNode.setValue(branchKey, formatedNode);
     } else {
-      newNode[16] = lastNode.getValue();
+      newBranchNode.setValue(lastNode.getValue());
     }
 
-    stack.push(newNode);
+    stack.push(newBranchNode);
 
     if (keyRemainder.length !== 0) {
       keyRemainder.shift();
       //add a leaf node to the new branch node
       var leafNode = [internals.nibblesToBuffer(internals.addHexPrefix(keyRemainder, true)), value];
-      stack.push(leafNode);
+      stack.push(new TrieNode(leafNode));
     } else {
-      newNode[16] = value;
+      newBranchNode.setValue(value);
     }
   }
 
   var lastRoot;
   //update nodes
   while (stack.length) {
-    var node = stack.pop(),
-      nodeKey = internals.parseKey(node),
-      nodeType = internals.getNodeType(node);
-    if (nodeType == 'leaf') {
-      key.splice(key.length - nodeKey.key.length);
-    } else if (nodeType == 'extention') {
-      key.splice(key.length - nodeKey.key.length);
-      //TODO check it there is a lastRoot
-      node[1] = lastRoot;
-    } else if (nodeType == 'branch') {
+    var node = stack.pop();
+    if (node.type == 'leaf') {
+      key.splice(key.length - node.getKey().length);
+    } else if (node.type == 'extention') {
+      key.splice(key.length - node.getKey.length);
+      //TODO check it there is a lastRoot; for delete
+      node.setValue(lastRoot);
+    } else if (node.type == 'branch') {
       if (lastRoot) {
         var branchKey = key.pop();
-        node[branchKey] = lastRoot;
+        node.setValue(branchKey, lastRoot);
       }
     }
-    var lastRoot = formatNode(node, stack.length === 0, toSave);
+    var lastRoot = formatNode(node.raw, stack.length === 0, toSave);
   }
 
   this.root = lastRoot.toString('hex');

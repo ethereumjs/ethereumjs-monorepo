@@ -1,7 +1,7 @@
 var internals = {};
 
 exports = module.exports = internals.TrieNode = function(type, key, value) {
-  if (arguments.length === 1) {
+  if (Array.isArray(type)) {
     //parse raw node
     this.parseNode(type);
   } else {
@@ -9,9 +9,11 @@ exports = module.exports = internals.TrieNode = function(type, key, value) {
     if (type == "branch") {
       var values = key;
       this.raw = Array.apply(null, Array(17));
-      values.forEach(function(keyVal) {
-        this.set.apply(this, keyVal);
-      });
+      if (values) {
+        values.forEach(function(keyVal) {
+          this.set.apply(this, keyVal);
+        });
+      }
     } else {
       this.raw = Array(2);
       this.setValue(value);
@@ -31,24 +33,28 @@ internals.TrieNode.prototype.setValue = function(key, value) {
   if (this.type !== "branch") {
     this.raw[1] = key;
   } else {
+    if (arguments.length === 1) {
+      value = key;
+      key = 16;
+    }
     this.raw[key] = value;
   }
 };
 
-internals.TrieNode.prototype.getTerminator = function(){
+internals.TrieNode.prototype.getTerminator = function() {
   return this.type == "leaf";
 };
 
-internals.TrieNode.prototype.getValue = function(key){
-  if(this.type === 'branch'){
-    if(arguments.length === 0){
+internals.TrieNode.prototype.getValue = function(key) {
+  if (this.type === 'branch') {
+    if (arguments.length === 0) {
       key = 16;
     }
     var val = this.raw[key];
     if (val !== null && val !== undefined && !(val.length === 1 && val[0] === 0)) {
       return val;
     }
-  }else{
+  } else {
     return this.raw[1];
   }
 };
@@ -57,7 +63,7 @@ internals.TrieNode.prototype.setKey = function(key) {
   if (this.type != 'branch') {
     if (Buffer.isBuffer(key)) {
       key = internals.stringToNibbles(key);
-    }else{
+    } else {
       key = key.slice(0); //copy the key
     }
     key = internals.addHexPrefix(key, this.type == "leaf");
@@ -66,11 +72,11 @@ internals.TrieNode.prototype.setKey = function(key) {
 };
 
 //returns the key as a nibble
-internals.TrieNode.prototype.getKey = function(){
-  if (this.type != 'branch'){
+internals.TrieNode.prototype.getKey = function() {
+  if (this.type != 'branch') {
     var key = this.raw[0];
     key = internals.removeHexPrefix(internals.stringToNibbles(key));
-    return(key);
+    return (key);
   }
 };
 
