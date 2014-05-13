@@ -165,8 +165,7 @@ internals.Trie.prototype._findNode = function(key, root, stack, cb) {
 internals.Trie.prototype._updateNode = function(key, value, keyRemainder, stack, cb) {
 
   function formatNode(node, topLevel, toSaveStack) {
-    var rlpNode = rlp.encode(node);
-
+    var rlpNode = rlp.encode(node.raw);
     if (rlpNode.length >= 32 || topLevel) {
       //create a hash of the node
       var hash = new Sha3.SHA3Hash(256);
@@ -180,7 +179,7 @@ internals.Trie.prototype._updateNode = function(key, value, keyRemainder, stack,
       });
       return hashRoot;
     }
-    return node;
+    return node.raw;
   }
 
   var self = this,
@@ -222,7 +221,7 @@ internals.Trie.prototype._updateNode = function(key, value, keyRemainder, stack,
     if (lastKey.length !== 0) {
       var branchKey = lastKey.shift();
       lastNode.setKey(lastKey);
-      var formatedNode = formatNode(lastNode.raw, false, toSave);
+      var formatedNode = formatNode(lastNode, false, toSave);
       newBranchNode.setValue(branchKey, formatedNode);
     } else {
       newBranchNode.setValue(lastNode.getValue());
@@ -256,7 +255,7 @@ internals.Trie.prototype._updateNode = function(key, value, keyRemainder, stack,
         node.setValue(branchKey, lastRoot);
       }
     }
-    var lastRoot = formatNode(node.raw, stack.length === 0, toSave);
+    var lastRoot = formatNode(node, stack.length === 0, toSave);
   }
 
   this.root = lastRoot.toString('hex');
