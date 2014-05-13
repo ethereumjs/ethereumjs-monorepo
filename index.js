@@ -4,7 +4,7 @@ var assert = require('assert'),
   rlp = require('rlp'),
   internals = {};
 
-exports = module.exports = internals.Trie = function (db, root) {
+exports = module.exports = internals.Trie = function(db, root) {
   assert(this.constructor === internals.Trie, 'Trie must be instantiated using new');
   this.root = root;
   this.db = db;
@@ -15,14 +15,14 @@ exports = module.exports = internals.Trie = function (db, root) {
  * @method get
  * @param {String} key - the key to search for
  */
-internals.Trie.prototype.get = function (key, cb) {
-  this._findNode(key, this.root, [], function (err, node, remainder, stack) {
+internals.Trie.prototype.get = function(key, cb) {
+  this._findNode(key, this.root, [], function(err, node, remainder, stack) {
     var value = null;
     if (remainder.length === 0) {
       var nodeType = internals.getNodeType(node);
       if (nodeType === 'branch') {
         value = node[16];
-      } else {
+      } else if (nodeType === 'leaf') {
         value = node[1];
       }
     }
@@ -30,17 +30,18 @@ internals.Trie.prototype.get = function (key, cb) {
   });
 };
 
-/* Stores a key value
+/*
+ * Stores a key value
  * @method put
  * @param {Buffer|String} key
  * @param {Buffer|String} Value
  */
-internals.Trie.prototype.put = function (key, value, cb) {
+internals.Trie.prototype.put = function(key, value, cb) {
   var self = this;
 
   if (this.root) {
     //first try to find the give key or its nearst node
-    this._findNode(key, this.root, [], function (err, foundValue, keyRemainder, stack) {
+    this._findNode(key, this.root, [], function(err, foundValue, keyRemainder, stack) {
       if (err) {
         cb(err);
       } else {
@@ -55,14 +56,14 @@ internals.Trie.prototype.put = function (key, value, cb) {
 };
 
 //todo
-internals.Trie.prototype.del = function (key, cb) {
+internals.Trie.prototype.del = function(key, cb) {
   var self = this;
 
-  this._findNode(key, this.root, [], function (err, foundValue, keyRemainder, stack) {
+  this._findNode(key, this.root, [], function(err, foundValue, keyRemainder, stack) {
     if (err) {
       cb(err);
     } else if (foundValue) {
-      self._updateNode(key, value, keyRemainder, stack, true, cb);
+      self._deleteNode(key, stack, cb);
     } else {
       cb();
     }
@@ -75,14 +76,14 @@ internals.Trie.prototype.del = function (key, cb) {
  * @method _findNode
  * @param {String|Buffer} - key - the search key
  * @param {String|Buffer} - root - the root node
- * @param {Function} - cb - the callback function. Its is given the following 
+ * @param {Function} - cb - the callback function. Its is given the following
  * arguments
  *  - err - any errors encontered
  *  - value - the value of the last node found
  *  - remainder - the remaining key nibbles not accounted for
  *  - stack - an array of nodes that forms the path to node we are searching for
  */
-internals.Trie.prototype._findNode = function (key, root, stack, cb) {
+internals.Trie.prototype._findNode = function(key, root, stack, cb) {
 
   function processNode(node) {
     stack.push(node);
@@ -92,9 +93,8 @@ internals.Trie.prototype._findNode = function (key, root, stack, cb) {
       if (key.length === 0) {
         cb(null, node, [], stack, cb);
       } else {
+        var branchNode = node[key[0]];
 
-        var firstNib = key[0],
-          branchNode = node[firstNib];
         if (branchNode.toString('hex') == '00') {
           //there is no more nodes to find
           cb(null, node, key, stack);
@@ -104,19 +104,19 @@ internals.Trie.prototype._findNode = function (key, root, stack, cb) {
         }
       }
     } else {
-      var rawNodeKey = internals.stringToNibbles(node[0]);
-      var nodeKey = internals.removeHexPrefix(rawNodeKey);
-      var matchingLen = internals.matchingNibbleLength(nodeKey, key);
-      var keyRemainder = key.slice(matchingLen);
+      var nodeKey = (internals.getKey(node))[1],
+        matchingLen = internals.matchingNibbleLength(nodeKey, key),
+        keyRemainder = key.slice(matchingLen);
 
       if (nodeType == 'leaf') {
         if (keyRemainder.length !== 0 || key.length != nodeKey.length) {
           //we did not find the key
-          cb(null, node, key, stack);
+          node = null;
         } else {
           //we did find a key
-          cb(null, node, [], stack);
+          key = [];
         }
+        cb(null, node, key, stack);
 
       } else if (nodeType == 'extention') {
         //ext
@@ -149,7 +149,7 @@ internals.Trie.prototype._findNode = function (key, root, stack, cb) {
     //resovle hash to node
     this.db.get(root, {
       encoding: 'binary'
-    }, function (err, foundNode) {
+    }, function(err, foundNode) {
       if (err) {
         cb(err, foundNode, key, stack);
       } else {
@@ -166,10 +166,10 @@ internals.Trie.prototype._findNode = function (key, root, stack, cb) {
  * @param {Buffer} key
  * @param {Buffer| String} value
  * @param {Array} keyRemainder
- * @param {Array} stack
- * @param {Function}
+ * @param {Array} stack -
+ * @param {Function} cb - the callback
  */
-internals.Trie.prototype._updateNode = function (key, value, keyRemainder, stack, cb) {
+internals.Trie.prototype._updateNode = function(key, value, keyRemainder, stack, cb) {
 
   function formatNode(node, topLevel, toSaveStack) {
     var rlpNode = rlp.encode(node);
@@ -195,8 +195,8 @@ internals.Trie.prototype._updateNode = function (key, value, keyRemainder, stack
     lastNode = stack.pop(),
     lastNodeType = internals.getNodeType(lastNode);
 
+  //add the new nodes
   key = internals.stringToNibbles(key);
-  //node found! update that node.
   if (lastNodeType == "branch") {
     if (keyRemainder !== 0) {
       //add an extention to a branch node
@@ -209,11 +209,11 @@ internals.Trie.prototype._updateNode = function (key, value, keyRemainder, stack
       lastNode[16] = value;
       stack.push(lastNode);
     }
-  } else if(lastNodeType === 'leaf' &&  keyRemainder.length === 0 ){
+  } else if (lastNodeType === 'leaf' && keyRemainder.length === 0) {
     //just updating a found value
-    lastNode[1] = value; 
+    lastNode[1] = value;
     stack.push(lastNode);
-  }else {
+  } else {
     //extension
     //if terminator
     var rawLastKey = internals.stringToNibbles(lastNode[0]);
@@ -235,7 +235,7 @@ internals.Trie.prototype._updateNode = function (key, value, keyRemainder, stack
     if (lastKey.length !== 0) {
       var branchKey = lastKey.shift();
       lastNode[0] = internals.nibblesToBuffer(internals.addHexPrefix(lastKey, terminator));
-      var formatedNode = formatNode(lastNode,false, toSave);
+      var formatedNode = formatNode(lastNode, false, toSave);
       newNode[branchKey] = formatedNode;
     } else {
       newNode[16] = lastNode[1];
@@ -265,6 +265,7 @@ internals.Trie.prototype._updateNode = function (key, value, keyRemainder, stack
       //remove the used key nibbles
       var extKey = internals.removeHexPrefix(internals.stringToNibbles(node[0]));
       key.splice(key.length - extKey.length);
+      //TODO check it there is a lastRoot
       node[1] = lastRoot;
     } else if (nodeType == 'branch') {
       if (lastRoot) {
@@ -281,8 +282,135 @@ internals.Trie.prototype._updateNode = function (key, value, keyRemainder, stack
   }, cb);
 };
 
+internals.Trie.prototype._deleteNode = function(key, stack, cb) {
+  var lastNode = stack.pop(),
+    lastNodeType = internals.getNodeType(lastNode),
+    parentNode = stack.pop(),
+    parentNodeType = null;
+
+  if (parentNode) {
+    parentNodeType = internals.getNodeType(parentNode);
+  }
+
+  function processBranchNode(key, branchKey, branchNode, parentNode, stack) {
+    //branchNode is the node ON the branch node not THE branch node
+    var branchNodeType = internals.getNodeType(branchNode);
+    var parentNodeType = internals.getNodeType(parentNode);
+    if (parentNodeType === "branch") {
+
+      stack.push(parentNode);
+      if (branchNodeType === "branch") {
+        //create an extention node
+        var extentionKey = internals.addHexPrefix([branchKey], false);
+        var extentionNode = [internals.nibblesToBuffer(extentionKey), null];
+        stack.push(extentionNode);
+        stack.push(branchNode);
+        key.push(branchKey);
+      } else {
+        //branch key is an extention or a leaf
+        var rawBranchNodeKey = internals.stringToNibbles(branchNode[1]);
+        var terminator = internals.isTerminator(rawBranchNodeKey);
+        var branchNodeKey = internals.removeHexPrefix(rawBranchNodeKey);
+        branchNodeKey.unshift(branchKey);
+        key = key.concat(branchNodeKey);
+        //re-encode the branch node key
+        var encodedKey = internals.addHexPrefix(branchNodeKey, terminator);
+        encodedKey = internals.nibblesToBuffer(encodedKey);
+        branchNode[1] = encodedKey;
+        stack.push(branchNode);
+      }
+    } else {
+      //parent is a extention
+      if (branchNodeType === "branch") {
+        var rawParentKey = internals.stringToNibbles(parentKey[1]);
+        var parentKey = internals.removeHexPrefix(rawParentKey);
+        parentKey.push(branchKey);
+        var encodedKey = internals.addHexPrefix(parentKey, false);
+        encodedKey = internals.nibbleToBuffer(encodedKey);
+
+        parentNode[1] = encodedKey;
+        key.push(branchKey);
+        stack.push(parentNode);
+        stack.push(branchNode);
+
+
+      } else {
+        //branch node is an leaf or extention and parent node is an exstention
+        //add two keys together
+        //dont push the parent node
+        var rawParentKey = internals.stringToNibbles(parentKey[1]);
+        var parentKey = internals.removeHexPrefix(rawParentKey);
+
+        var rawBranchNodeKey = internals.stringToNibbles(branchNode[1]);
+        var terminator = internals.isTerminator(rawBranchNodeKey);
+        var branchNodeKey = internals.removeHexPrefix(rawBranchNodeKey);
+
+        branchNodeKey.unshift(branchKey);
+        parentKey = parentKey.concat(branchNodeKey);
+
+        var encodedKey = internals.addHexPrefix(parentKey, terminator);
+        encodedKey = internals.nibbleToBuffer(encodedKey);
+
+        branchNode[0] = encodedKey;
+        stack.push(branchNode);
+      }
+    }
+  }
+
+  //deleting
+  if (!parentNode) {
+    this.db.del(this.root, cb);
+    this.root = null;
+
+  } else if (lastNodeType == "branch" || (lastNodeType == "leaf" && parentNodeType == "branch")) {
+    if (lastNodeType == "branch") {
+      lastNode[16] = null;
+    } else {
+      var rawLastNodeKey = internals.removeHexPrefix(lastNode);
+      key.splice(rawLastNodeKey.length);
+      parentNode[key.pop()] = null;
+      lastNode = parentNode;
+      parentNode = stack.pop();
+    }
+
+    //nodes on the branch
+    var branchNodes = [];
+    //count the number of nodes on the branch
+    lastNode.forEach(function(node, i) {
+      if (node !== null && node !== undefined && !(node.length === 0 && node[0] === 0)) {
+        branchNodes.push([i, node]);
+      }
+    });
+
+    //if there is only one branch node left, collapse the branch node
+    if (branchNodes.length == 1) {
+      //add the one remaing branch node to node above it
+      var branchNode = branchNodes[0][1];
+      var branchNodeKey = branchNodeKey[0][0];
+      //check to see if we need to resolve the following
+      if (Buffer.isBuffer(branchNode) && branchNode.length === 32) {
+        this.db.get(branchNode, {
+          encoding: 'binary'
+        }, function(err, foundNode) {
+          if (err) {
+            cb(err);
+          } else {
+            processBranchNode(key, branchNodeKey, rlp.decode(foundNode), parentNode, stack);
+            cb(stack);
+          }
+        });
+      } else {
+        processBranchNode(key, branchNodeKey, branchNode, parentNode, stack);
+        cb(stack);
+      }
+    } else {
+      stack.push(lastNode);
+    }
+  }
+};
+
 //Creates the initail node
-internals.Trie.prototype._createNewNode = function (key, value, cb) {
+internals.Trie.prototype._createNewNode = function(key, value, cb) {
   //convert to nibbles
   var nibbleKey = internals.stringToNibbles(key);
   //add  hex prefix
@@ -305,12 +433,11 @@ internals.Trie.prototype._createNewNode = function (key, value, cb) {
 };
 
 /**
- *
  * @param {Array} dataArr
  * @returns {Buffer} - returns buffer of encoded data
  * hexPrefix
  **/
-internals.addHexPrefix = function (key, terminator) {
+internals.addHexPrefix = function(key, terminator) {
   //odd
   if (key.length % 2) {
     key.unshift(1);
@@ -326,7 +453,18 @@ internals.addHexPrefix = function (key, terminator) {
   return key;
 };
 
-internals.removeHexPrefix = function (val) {
+/*
+ * get a key give a leaf or a extention node
+ * returns and Array [terminator, nibbleKey]
+ */
+internals.getKey = function(node) {
+  var rawNodeKey = internals.stringToNibbles(node[0]);
+  var terminator = internals.isTerminator(rawNodeKey);
+  var nodeKey = internals.removeHexPrefix(rawNodeKey);
+  return ([terminator, nodeKey]);
+};
+
+internals.removeHexPrefix = function(val) {
   if (val[0] % 2) {
     val = val.slice(1);
   } else {
@@ -340,7 +478,7 @@ internals.removeHexPrefix = function (val) {
  * @method isTerminator
  * @param {Array} key - an hexprefixed array of nibbles
  */
-internals.isTerminator = function (key) {
+internals.isTerminator = function(key) {
   return key[0] > 1;
 };
 
@@ -349,7 +487,7 @@ internals.isTerminator = function (key) {
  * @method stringToNibbles
  * @param {Buffer| String} key
  */
-internals.stringToNibbles = function (key) {
+internals.stringToNibbles = function(key) {
   var bkey = new Buffer(key);
   var nibbles = [];
 
@@ -367,7 +505,7 @@ internals.stringToNibbles = function (key) {
  * @method nibblesToBuffer
  * @param arr
  */
-internals.nibblesToBuffer = function (arr) {
+internals.nibblesToBuffer = function(arr) {
   var buf = new Buffer(arr.length / 2);
   for (var i = 0; i < buf.length; i++) {
     var q = i * 2;
@@ -382,7 +520,7 @@ internals.nibblesToBuffer = function (arr) {
  * @param {Array} nib1
  * @param {Array} nib2
  */
-internals.matchingNibbleLength = function (nib1, nib2) {
+internals.matchingNibbleLength = function(nib1, nib2) {
   var i = 0;
   while (nib1[i] === nib2[i] && nib1.length > i) {
     i++;
@@ -398,7 +536,7 @@ internals.matchingNibbleLength = function (nib1, nib2) {
  * - extention - if the node is an extention
  * - unkown - if somehting fucked up
  */
-internals.getNodeType = function (node) {
+internals.getNodeType = function(node) {
   if (Buffer.isBuffer(node) || typeof node == 'string' || node instanceof String) {
     return 'unkown';
   } else if (node.length == 17) {

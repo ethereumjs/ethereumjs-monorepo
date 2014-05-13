@@ -4,6 +4,7 @@ var Trie = require('../index.js'),
   Sha3 = require('sha3'),
   assert = require('assert');
 
+
 describe('simple save and retrive', function() {
 
   var db1 = levelup('./testdb');
@@ -17,6 +18,14 @@ describe('simple save and retrive', function() {
   it("should get a value", function(done) {
     trie.get('test', function(err, value) {
       assert.equal(value.toString(), 'one');
+      done();
+    });
+  });
+
+
+  it("should delete a value", function(done){
+    trie.del('test', function(stack){
+      console.log(stack);
       done();
     });
   });
