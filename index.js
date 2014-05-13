@@ -2,6 +2,7 @@ var assert = require('assert'),
   Sha3 = require('sha3'),
   async = require('async'),
   rlp = require('rlp'),
+  TrieNode = require('./trieNode'),
   internals = {};
 
 exports = module.exports = internals.Trie = function(db, root) {
@@ -84,18 +85,19 @@ internals.Trie.prototype.del = function(key, cb) {
  *  - stack - an array of nodes that forms the path to node we are searching for
  */
 internals.Trie.prototype._findNode = function(key, root, stack, cb) {
+  var self = this;
 
+  //parse the node and gets the next node if any to parse
   function processNode(node) {
     stack.push(node);
-    var nodeType = internals.getNodeType(node);
-    if (nodeType == 'branch') {
+    var parsedNode = new TrieNode(node);
+    if (parsedNode.type == 'branch') {
       //branch
       if (key.length === 0) {
         cb(null, node, [], stack, cb);
       } else {
-        var branchNode = node[key[0]];
-
-        if (branchNode.toString('hex') == '00') {
+        var branchNode = parsedNode.getValue(key[0]);
+        if (!branchNode) {
           //there is no more nodes to find
           cb(null, node, key, stack);
         } else {
@@ -104,22 +106,20 @@ internals.Trie.prototype._findNode = function(key, root, stack, cb) {
         }
       }
     } else {
-      var nodeKey = (internals.getKey(node))[1],
+      var nodeKey = parsedNode.getKey(),
         matchingLen = internals.matchingNibbleLength(nodeKey, key),
         keyRemainder = key.slice(matchingLen);
 
-      if (nodeType == 'leaf') {
+      if (parsedNode.type == 'leaf') {
         if (keyRemainder.length !== 0 || key.length != nodeKey.length) {
           //we did not find the key
           node = null;
         } else {
-          //we did find a key
           key = [];
         }
         cb(null, node, key, stack);
 
-      } else if (nodeType == 'extention') {
-        //ext
+      } else if (parsedNode.type == 'extention') {
         if (matchingLen != nodeKey.length) {
           //we did not find the key
           cb(null, node, key, stack);
@@ -129,8 +129,6 @@ internals.Trie.prototype._findNode = function(key, root, stack, cb) {
       }
     }
   }
-
-  var self = this;
 
   if (!Array.isArray(key)) {
     //convert key to nibbles
@@ -198,43 +196,39 @@ internals.Trie.prototype._updateNode = function(key, value, keyRemainder, stack,
   //add the new nodes
   key = internals.stringToNibbles(key);
   if (lastNodeType == "branch") {
+    stack.push(lastNode);
     if (keyRemainder !== 0) {
       //add an extention to a branch node
       keyRemainder.shift();
       var perfixedKey = internals.nibblesToBuffer(internals.addHexPrefix(keyRemainder, true));
-      stack.push(lastNode);
       //create a new leaf
       stack.push([perfixedKey, value]);
     } else {
       lastNode[16] = value;
-      stack.push(lastNode);
     }
   } else if (lastNodeType === 'leaf' && keyRemainder.length === 0) {
     //just updating a found value
     lastNode[1] = value;
     stack.push(lastNode);
   } else {
-    //extension
-    //if terminator
-    var rawLastKey = internals.stringToNibbles(lastNode[0]);
-    var lastKey = internals.removeHexPrefix(rawLastKey);
-    var matchingLength = internals.matchingNibbleLength(lastKey, keyRemainder);
-    var terminator = internals.isTerminator(lastKey);
-    var newNode = Array.apply(null, Array(17));
+    //if extension
+    var lastKey = internals.parseKey(lastNode),
+      matchingLength = internals.matchingNibbleLength(lastKey.key, keyRemainder),
+      newNode = Array.apply(null, Array(17));
 
     //trim the current extension node
     if (matchingLength !== 0) {
-      var newKey = lastKey.slice(0, matchingLength),
+      var newKey = lastKey.key.slice(0, matchingLength),
         newExtNode = [internals.nibblesToBuffer(internals.addHexPrefix(newKey, false)), value];
 
       stack.push(newExtNode);
-      lastKey.splice(0, matchingLength);
+      lastKey.key.splice(0, matchingLength);
       keyRemainder.splice(0, matchingLength);
     }
 
-    if (lastKey.length !== 0) {
-      var branchKey = lastKey.shift();
-      lastNode[0] = internals.nibblesToBuffer(internals.addHexPrefix(lastKey, terminator));
+    if (lastKey.key.length !== 0) {
+      var branchKey = lastKey.key.shift();
+      lastNode[0] = internals.nibblesToBuffer(internals.addHexPrefix(lastKey.key, lastKey.terminator));
       var formatedNode = formatNode(lastNode, false, toSave);
       newNode[branchKey] = formatedNode;
     } else {
@@ -256,15 +250,13 @@ internals.Trie.prototype._updateNode = function(key, value, keyRemainder, stack,
   var lastRoot;
   //update nodes
   while (stack.length) {
-    var node = stack.pop();
-    var nodeType = internals.getNodeType(node);
+    var node = stack.pop(),
+      nodeKey = internals.parseKey(node),
+      nodeType = internals.getNodeType(node);
     if (nodeType == 'leaf') {
-      var nodeKey = internals.removeHexPrefix(internals.stringToNibbles(node[0]));
-      key.splice(key.length - nodeKey.length);
+      key.splice(key.length - nodeKey.key.length);
     } else if (nodeType == 'extention') {
-      //remove the used key nibbles
-      var extKey = internals.removeHexPrefix(internals.stringToNibbles(node[0]));
-      key.splice(key.length - extKey.length);
+      key.splice(key.length - nodeKey.key.length);
       //TODO check it there is a lastRoot
       node[1] = lastRoot;
     } else if (nodeType == 'branch') {
@@ -457,11 +449,19 @@ internals.addHexPrefix = function(key, terminator) {
  * get a key give a leaf or a extention node
  * returns and Array [terminator, nibbleKey]
  */
-internals.getKey = function(node) {
-  var rawNodeKey = internals.stringToNibbles(node[0]);
-  var terminator = internals.isTerminator(rawNodeKey);
-  var nodeKey = internals.removeHexPrefix(rawNodeKey);
-  return ([terminator, nodeKey]);
+internals.parseKey = function(node) {
+  var nodeType = internals.getNodeType(node);
+  if (nodeType == 'extention' || nodeType == 'leaf') {
+    var rawNodeKey = internals.stringToNibbles(node[0]);
+    var terminator = internals.isTerminator(rawNodeKey);
+    var nodeKey = internals.removeHexPrefix(rawNodeKey);
+    return ({
+      terminator: terminator,
+      key: nodeKey
+    });
+  }
+  return false;
+
 };
 
 internals.removeHexPrefix = function(val) {

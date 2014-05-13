@@ -1,6 +1,9 @@
+var internals = {};
+
 exports = module.exports = internals.TrieNode = function(type, key, value) {
   if (arguments.length === 1) {
-    this.parseNode(rawNode);
+    //parse raw node
+    this.parseNode(type);
   } else {
     this.type = type;
     if (type == "branch") {
@@ -19,26 +22,27 @@ exports = module.exports = internals.TrieNode = function(type, key, value) {
 
 //parses a raw node
 internals.TrieNode.prototype.parseNode = function(rawNode) {
-  var nodeKey = internals.parseKey(rawNode);
   this.raw = rawNode;
-  this.key = nodeKey.key;
-  this.terminator = nodeKey.terminator;
   this.type = internals.getNodeType(rawNode);
 };
 
 //sets the value of the node
 internals.TrieNode.prototype.setValue = function(key, value) {
-  if (this.nodeType !== "branch") {
+  if (this.type !== "branch") {
     this.raw[1] = key;
   } else {
     this.raw[key] = value;
   }
 };
 
+internals.TrieNode.prototype.getTerminator = function(){
+  return this.type == "leaf";
+};
+
 internals.TrieNode.prototype.getValue = function(key, value){
-  if(this.nodeType === 'branch'){
+  if(this.type === 'branch'){
     var val = this.raw[key];
-    if (val !== null && val !== undefined && !(val.length === 0 && val[0] === 0)) {
+    if (val !== null && val !== undefined && !(val.length === 1 && val[0] === 0)) {
       return val;
     }
   }else{
@@ -51,7 +55,7 @@ internals.TrieNode.prototype.setKey = function(key) {
     if (Buffer.isBuffer(key)) {
       key = internals.stringToNibbles(key);
     }
-    key = internals.addHexPrefix(key, this.nodeType == "leaf");
+    key = internals.addHexPrefix(key, this.type == "leaf");
     this.raw[0] = internals.nibbleToBuffer(nkey);
   }
 };
