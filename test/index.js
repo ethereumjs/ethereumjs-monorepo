@@ -22,15 +22,24 @@ describe('simple save and retrive', function() {
     });
   });
 
+  it("should update a value", function(done) {
+    trie.put('test', 'two', function() {
+      trie.get('test', function(err, value) {
+        assert.equal(value.toString(), 'two');
+        done();
+      });
+    });
+  });
 
-  it("should delete a value", function(done){
-    trie.del('test', function(stack){
+
+  it("should delete a value", function(done) {
+    trie.del('test', function(stack) {
       console.log(stack);
       done();
     });
   });
 
-  it("should update a value", function(done) {
+  it("should recreate a value", function(done) {
     trie.put('test', 'one', function() {
       done();
     });
@@ -78,7 +87,7 @@ describe("storing longer values", function() {
 
 });
 
-describe("testing Extentions", function() {
+describe("testing Extentions and branches", function() {
   var db3 = levelup('./testdb3');
   var trie3 = new Trie(db3);
 
@@ -94,6 +103,32 @@ describe("testing Extentions", function() {
       done();
     });
   });
+
+  it('should store this value under the extention ', function(done) {
+    trie3.put('done', 'finished', function() {
+      assert.equal('409cff4d820b394ed3fb1cd4497bdd19ffa68d30ae34157337a7043c94a3e8cb', trie3.root);
+      done();
+    });
+  });
+
+});
+
+describe("testing Extentions and branches - reverse", function() {
+  var db5 = levelup('./testdb5');
+  var trie3 = new Trie(db5);
+
+  it("should create extention to store this value", function(done) {
+    trie3.put('do', 'verb', function() {
+      done();
+    });
+  });
+
+  it("should store a value", function(done) {
+    trie3.put('doge', 'coin', function() {
+      done();
+    });
+  });
+
 
   it('should store this value under the extention ', function(done) {
     trie3.put('done', 'finished', function() {

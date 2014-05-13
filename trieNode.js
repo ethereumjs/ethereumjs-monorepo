@@ -14,7 +14,7 @@ exports = module.exports = internals.TrieNode = function(type, key, value) {
       });
     } else {
       this.raw = Array(2);
-      this.setValue(vale);
+      this.setValue(value);
       this.setKey(key);
     }
   }
@@ -39,8 +39,11 @@ internals.TrieNode.prototype.getTerminator = function(){
   return this.type == "leaf";
 };
 
-internals.TrieNode.prototype.getValue = function(key, value){
+internals.TrieNode.prototype.getValue = function(key){
   if(this.type === 'branch'){
+    if(arguments.length === 0){
+      key = 16;
+    }
     var val = this.raw[key];
     if (val !== null && val !== undefined && !(val.length === 1 && val[0] === 0)) {
       return val;
@@ -54,9 +57,11 @@ internals.TrieNode.prototype.setKey = function(key) {
   if (this.type != 'branch') {
     if (Buffer.isBuffer(key)) {
       key = internals.stringToNibbles(key);
+    }else{
+      key = key.slice(0); //copy the key
     }
     key = internals.addHexPrefix(key, this.type == "leaf");
-    this.raw[0] = internals.nibbleToBuffer(nkey);
+    this.raw[0] = internals.nibblesToBuffer(key);
   }
 };
 

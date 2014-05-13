@@ -19,13 +19,8 @@ exports = module.exports = internals.Trie = function(db, root) {
 internals.Trie.prototype.get = function(key, cb) {
   this._findNode(key, this.root, [], function(err, node, remainder, stack) {
     var value = null;
-    if (remainder.length === 0) {
-      var nodeType = internals.getNodeType(node);
-      if (nodeType === 'branch') {
-        value = node[16];
-      } else if (nodeType === 'leaf') {
-        value = node[1];
-      }
+    if (node) {
+      value = node.getValue();
     }
     cb(err, value);
   });
@@ -88,15 +83,15 @@ internals.Trie.prototype._findNode = function(key, root, stack, cb) {
   var self = this;
 
   //parse the node and gets the next node if any to parse
-  function processNode(node) {
-    stack.push(node);
-    var parsedNode = new TrieNode(node);
-    if (parsedNode.type == 'branch') {
+  function processNode(rawNode) {
+    var node = new TrieNode(rawNode);
+    stack.push(rawNode);
+    if (node.type == 'branch') {
       //branch
       if (key.length === 0) {
         cb(null, node, [], stack, cb);
       } else {
-        var branchNode = parsedNode.getValue(key[0]);
+        var branchNode = node.getValue(key[0]);
         if (!branchNode) {
           //there is no more nodes to find
           cb(null, node, key, stack);
@@ -106,11 +101,11 @@ internals.Trie.prototype._findNode = function(key, root, stack, cb) {
         }
       }
     } else {
-      var nodeKey = parsedNode.getKey(),
+      var nodeKey = node.getKey(),
         matchingLen = internals.matchingNibbleLength(nodeKey, key),
         keyRemainder = key.slice(matchingLen);
 
-      if (parsedNode.type == 'leaf') {
+      if (node.type == 'leaf') {
         if (keyRemainder.length !== 0 || key.length != nodeKey.length) {
           //we did not find the key
           node = null;
@@ -119,12 +114,12 @@ internals.Trie.prototype._findNode = function(key, root, stack, cb) {
         }
         cb(null, node, key, stack);
 
-      } else if (parsedNode.type == 'extention') {
+      } else if (node.type == 'extention') {
         if (matchingLen != nodeKey.length) {
           //we did not find the key
           cb(null, node, key, stack);
         } else {
-          self._findNode(keyRemainder, node[1], stack, cb);
+          self._findNode(keyRemainder, node.getValue(), stack, cb);
         }
       }
     }
@@ -190,49 +185,48 @@ internals.Trie.prototype._updateNode = function(key, value, keyRemainder, stack,
 
   var self = this,
     toSave = [],
-    lastNode = stack.pop(),
-    lastNodeType = internals.getNodeType(lastNode);
+    rawNode = stack.pop(),
+    lastNode = new TrieNode(rawNode);
 
   //add the new nodes
   key = internals.stringToNibbles(key);
-  if (lastNodeType == "branch") {
-    stack.push(lastNode);
+  if (lastNode.type == "branch") {
+    stack.push(lastNode.raw);
     if (keyRemainder !== 0) {
       //add an extention to a branch node
       keyRemainder.shift();
-      var perfixedKey = internals.nibblesToBuffer(internals.addHexPrefix(keyRemainder, true));
       //create a new leaf
-      stack.push([perfixedKey, value]);
+      var newLeaf = new TrieNode('leaf', keyRemainder, value );
+      stack.push(newLeaf.raw);
     } else {
-      lastNode[16] = value;
+      lastNode.setValue(value);
     }
-  } else if (lastNodeType === 'leaf' && keyRemainder.length === 0) {
+  } else if (lastNode.type === 'leaf' && keyRemainder.length === 0) {
     //just updating a found value
-    lastNode[1] = value;
-    stack.push(lastNode);
+    lastNode.setValue(value);
+    stack.push(lastNode.raw);
   } else {
-    //if extension
-    var lastKey = internals.parseKey(lastNode),
-      matchingLength = internals.matchingNibbleLength(lastKey.key, keyRemainder),
+    //if extension; create a branch node
+    var lastKey = lastNode.getKey(),
+      matchingLength = internals.matchingNibbleLength(lastNode.getKey(), keyRemainder),
       newNode = Array.apply(null, Array(17));
 
-    //trim the current extension node
+    //create a new extention node
     if (matchingLength !== 0) {
-      var newKey = lastKey.key.slice(0, matchingLength),
-        newExtNode = [internals.nibblesToBuffer(internals.addHexPrefix(newKey, false)), value];
-
-      stack.push(newExtNode);
-      lastKey.key.splice(0, matchingLength);
+      var newKey = lastNode.getKey().slice(0, matchingLength),
+        newExtNode = new TrieNode('extention', newKey, value);
+      stack.push(newExtNode.raw);
+      lastKey.splice(0, matchingLength);
       keyRemainder.splice(0, matchingLength);
     }
 
-    if (lastKey.key.length !== 0) {
-      var branchKey = lastKey.key.shift();
-      lastNode[0] = internals.nibblesToBuffer(internals.addHexPrefix(lastKey.key, lastKey.terminator));
-      var formatedNode = formatNode(lastNode, false, toSave);
+    if (lastKey.length !== 0) {
+      var branchKey = lastKey.shift();
+      lastNode.setKey(lastKey);
+      var formatedNode = formatNode(lastNode.raw, false, toSave);
       newNode[branchKey] = formatedNode;
     } else {
-      newNode[16] = lastNode[1];
+      newNode[16] = lastNode.getValue();
     }
 
     stack.push(newNode);
