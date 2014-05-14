@@ -5,6 +5,8 @@ This is an implementation of the modified merkle patricia tree as speficed in th
 > The modified Merkle Patricia tree (trie) provides a persistent data structure to map between arbitrary-length binary data (byte arrays). It is defined in terms of a mutable data structure to map between 256-bit binary fragments and arbitrary-length binary data. The core of the trie, and its sole requirement in terms of the protocol specification is to provide a single 32-byte value that identifies a given set of key-value pairs.   
   \- Ethereum's yellow paper  
 
+## Installation
+## Usage
 ## API
 ### `new new Trie(db, root)`
 Creates a new Trie object
@@ -30,3 +32,5 @@ Retrieves a value stored at a key
 Removes a value
 - `key` - the key as a `Buffer` or `String`
 - `cb` - a callback `Function` which is given the argumnet `err` - for an errors that may have occured
+
+## Testing
