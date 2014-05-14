@@ -13,8 +13,12 @@ Creates a new Trie object
 - `db` -  A instance of [levelup](https://github.com/rvagg/node-levelup/) or compatiable API.
 - `root` - A hex `String` or `Buffer` for the root of a prevously stored trie.
 
+--------------------------------------------------------
+
 ### `Trie` Properties
 - `root` - The root of the `trie` as a `Buffer` 
+
+--------------------------------------------------------
 
 ### `Trie` Methods
 #### `trie.put(key, value, cb)`
@@ -23,14 +27,20 @@ Stores a give value at the give key
 - `value` - the value to be stored
 - `cb` - a callback `Function` which is given the argumnet `err` - for an errors that may have occured
 
+--------------------------------------------------------
+
 #### `trie.get(key, cb)`
 Retrieves a value stored at a key
 - `key` - the key as a `Buffer` or `String`
 - `cb` - a callback `Function` which is given the argumnets `err` - for an errors that may have occured and `vlue` - The found value in a `Buffer` or if no value was found `null`.
 
+--------------------------------------------------------
+
 #### `trie.delete(key, cb)`
 Removes a value
 - `key` - the key as a `Buffer` or `String`
 - `cb` - a callback `Function` which is given the argumnet `err` - for an errors that may have occured
+
+--------------------------------------------------------
 
 ## Testing
