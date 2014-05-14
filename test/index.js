@@ -6,7 +6,6 @@ var Trie = require('../index.js'),
 
 
 describe('simple save and retrive', function() {
-
   var db1 = levelup('./testdb');
   var trie = new Trie(db1);
   it("save a value", function(done) {
@@ -166,7 +165,7 @@ describe('testing deletions cases', function() {
   var db6 = levelup('./testdb6');
   var trie3 = new Trie(db6);
 
-  it.skip("should delete from a branch->branch-branch", function(done) {
+  it("should delete from a branch->branch-branch", function(done) {
     trie3.put(new Buffer([11, 11, 11]), 'first', function() {
       //create the top branch
       trie3.put(new Buffer([12, 22, 22]), 'create the first branch', function() {
