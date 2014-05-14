@@ -32,10 +32,12 @@ describe('simple save and retrive', function() {
   });
 
 
-  it.skip("should delete a value", function(done) {
+  it("should delete a value", function(done) {
     trie.del('test', function(stack) {
-      console.log(stack);
-      done();
+      trie.get('test', function(err, value) {
+        console.log(value);
+        done();
+      });
     });
   });
 
@@ -65,26 +67,47 @@ describe('simple save and retrive', function() {
       done();
     });
   });
+
+  it("should delete from a branch", function(done) {
+    trie.del('doge', function(err, stack) {
+      trie.get('doge', function(err, value) {
+        assert.equal(value, null);
+        done();
+      });
+    });
+
+  });
+
 });
 
 describe("storing longer values", function() {
   var db2 = levelup('./testdb2');
   var trie2 = new Trie(db2);
 
+  var longString = 'this will be a really really really long value';
+  var longStringRoot = "b173e2db29e79c78963cff5196f8a983fbe0171388972106b114ef7f5c24dfa3";
+
   it("should store a longer string", function(done) {
-    trie2.put('doge', 'coin coin coin coin coin', function(err, value) {
-      assert.equal('8914f02a8ddbd1302def848cf1064f13cafa9bf7c223ec4f7ba3d62824977293', trie2.root.toString('hex'));
-      done();
+    trie2.put('done', longString, function(err, value) {
+      trie2.put('doge', 'coin', function(err, value) {
+        assert.equal(longStringRoot, trie2.root);
+        done();
+      });
     });
   });
 
   it("should retreive a longer value", function(done) {
-    trie2.get('doge', function(err, value) {
-      assert.equal(value, 'coin coin coin coin coin');
+    trie2.get('done', function(err, value) {
+      assert.equal(value.toString(), longString);
       done();
     });
   });
 
+  it('should when being modiefied delete the old value', function(done) {
+    trie2.put('done', "test", function() {
+      done();
+    });
+  });
 });
 
 describe("testing Extentions and branches", function() {
@@ -134,6 +157,52 @@ describe("testing Extentions and branches - reverse", function() {
     trie3.put('done', 'finished', function() {
       assert.equal('409cff4d820b394ed3fb1cd4497bdd19ffa68d30ae34157337a7043c94a3e8cb', trie3.root);
       done();
+    });
+  });
+});
+
+describe('testing deletions cases', function() {
+
+  var db6 = levelup('./testdb6');
+  var trie3 = new Trie(db6);
+
+  it.skip("should delete from a branch->branch-branch", function(done) {
+    trie3.put(new Buffer([11, 11, 11]), 'first', function() {
+      //create the top branch
+      trie3.put(new Buffer([12, 22, 22]), 'create the first branch', function() {
+        //crete the middle branch
+        trie3.put(new Buffer([12, 33, 33]), 'create the middle branch', function() {
+          trie3.put(new Buffer([12, 34, 44]), 'create the last branch', function() {
+            //delete the middle branch
+            trie3.del(new Buffer([12, 22, 22]), function() {
+              trie3.get(new Buffer([12, 22, 22]), function(err, val) {
+                assert.equal(null, val);
+                done();
+              });
+            });
+          });
+        });
+      });
+    });
+  });
+
+  it("should delete from a branch->branch-extention", function(done) {
+    trie3.put(new Buffer([11, 11, 11]), 'first', function() {
+      //create the top branch
+      trie3.put(new Buffer([12, 22, 22]), 'create the first branch', function() {
+        //crete the middle branch
+        trie3.put(new Buffer([12, 33, 33]), 'create the middle branch', function() {
+          trie3.put(new Buffer([12, 33, 44]), 'create the last branch', function() {
+            //delete the middle branch
+            trie3.del(new Buffer([12, 22, 22]), function() {
+              trie3.get(new Buffer([12, 22, 22]), function(err, val) {
+                assert.equal(null, val);
+                done();
+              });
+            });
+          });
+        });
+      });
     });
   });
 

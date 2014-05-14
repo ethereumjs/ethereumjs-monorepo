@@ -19,7 +19,7 @@ exports = module.exports = internals.Trie = function(db, root) {
 internals.Trie.prototype.get = function(key, cb) {
   this._findNode(key, this.root, [], function(err, node, remainder, stack) {
     var value = null;
-    if (node) {
+    if (node && remainder.length === 0) {
       value = node.getValue();
     }
     cb(err, value);
@@ -125,6 +125,11 @@ internals.Trie.prototype._findNode = function(key, root, stack, cb) {
     }
   }
 
+  if (!root) {
+    cb(null, null, key, []);
+    return;
+  }
+
   if (!Array.isArray(key)) {
     //convert key to nibbles
     key = TrieNode.stringToNibbles(key);
@@ -164,7 +169,6 @@ internals.Trie.prototype._findNode = function(key, root, stack, cb) {
  */
 internals.Trie.prototype._updateNode = function(key, value, keyRemainder, stack, cb) {
 
-
   var self = this,
     toSave = [],
     lastNode = stack.pop();
@@ -184,6 +188,8 @@ internals.Trie.prototype._updateNode = function(key, value, keyRemainder, stack,
     }
   } else if (lastNode.type === 'leaf' && keyRemainder.length === 0) {
     //just updating a found value
+    //remove the old value from the db
+    internals.formatNode(lastNode, false, true, toSave);
     lastNode.setValue(value);
     stack.push(lastNode);
   } else {
@@ -240,27 +246,28 @@ internals.Trie.prototype._saveStack = function(key, stack, opStack, cb) {
       key.splice(key.length - node.getKey().length);
     } else if (node.type == 'extention') {
       key.splice(key.length - node.getKey().length);
-      node.setValue(lastRoot);
+      if(lastRoot){
+        node.setValue(lastRoot);
+      }
     } else if (node.type == 'branch') {
       if (lastRoot) {
         var branchKey = key.pop();
         node.setValue(branchKey, lastRoot);
       }
     }
-    var lastRoot = internals.formatNode(node, stack.length === 0, opStack);
+    lastRoot = internals.formatNode(node, stack.length === 0, opStack);
   }
 
   assert(key.length === 0, "key length should be 0 after we are done processing the stack");
-  this.root = lastRoot.toString('hex');
+  if(lastRoot){
+    this.root = lastRoot.toString('hex');
+  }
   this.db.batch(opStack, {
     encoding: 'binary'
   }, cb);
 };
 
 internals.Trie.prototype._deleteNode = function(key, stack, cb) {
-  var lastNode = stack.pop(),
-    parentNode = stack.pop(),
-    opStack = [];
 
   function processBranchNode(key, branchKey, branchNode, parentNode, stack) {
     //branchNode is the node ON the branch node not THE branch node
@@ -270,7 +277,7 @@ internals.Trie.prototype._deleteNode = function(key, stack, cb) {
       if (branchNode.type === "branch") {
         //create an extention node
         //branch->extention->branch
-        var extentionNode = new TrieNode('extention', branchKey, null);
+        var extentionNode = new TrieNode('extention', [branchKey], null);
         stack.push(extentionNode);
         key.push(branchKey);
       } else {
@@ -278,8 +285,14 @@ internals.Trie.prototype._deleteNode = function(key, stack, cb) {
         //branch->(leaf or extention)
         var branchNodeKey = branchNode.getKey();
         branchNodeKey.unshift(branchKey);
-        key = key.concat(branchNodeKey);
         branchNode.setKey(branchNodeKey);
+
+        //hackery. This is equilant to array.concat; except we need keep the 
+        //rerfance to the `key` that was passed in. 
+        branchNodeKey.unshift(0);
+        branchNodeKey.unshift(key.length);
+        key.splice.apply(key, branchNodeKey);
+
       }
       stack.push(branchNode);
     } else {
@@ -307,6 +320,16 @@ internals.Trie.prototype._deleteNode = function(key, stack, cb) {
     }
   }
 
+  var lastNode = stack.pop(),
+    parentNode = stack.pop(),
+    opStack = [],
+    self = this;
+
+  if (!Array.isArray(key)) {
+    //convert key to nibbles
+    key = TrieNode.stringToNibbles(key);
+  }
+
   if (!parentNode) {
     //the root here has to be a leaf.
     this.db.del(this.root, cb);
@@ -331,16 +354,18 @@ internals.Trie.prototype._deleteNode = function(key, stack, cb) {
     //count the number of nodes on the branch
     lastNode.raw.forEach(function(node, i) {
       var val = lastNode.getValue(i);
-      branchNodes.push([i, val]);
+      if (val) branchNodes.push([i, val]);
     });
 
     //if there is only one branch node left, collapse the branch node
     if (branchNodes.length == 1) {
       //add the one remaing branch node to node above it
       var branchNode = branchNodes[0][1];
-      var branchNodeKey = branchNodeKey[0][0];
+      var branchNodeKey = branchNodes[0][0];
+
       if (!parentNode) {
-        this.root = internals.formatNode(branchNode, true, opStack);
+        this.root = internals.formatNode({raw:branchNode}, true, opStack);
+        this._saveStack([], [], opStack, cb);
       } else if (Buffer.isBuffer(branchNode) && branchNode.length === 32) {
         //check to see if we need to resolve the following
         //look up node
@@ -352,17 +377,22 @@ internals.Trie.prototype._deleteNode = function(key, stack, cb) {
           } else {
             var decodedNode = new TrieNode(rlp.decode(foundNode));
             processBranchNode(key, branchNodeKey, decodedNode, parentNode, stack, opStack);
+            //process key, stack, opstack
+            console.log(stack);
+            console.log(key);
+            self._saveStack(key, stack, opStack, cb);
           }
         });
       } else {
         processBranchNode(key, branchNodeKey, branchNode, parentNode, stack, opStack);
+        //process key, stack, opstack
+        console.log(stack);
+        console.log(opStack);
+        this._saveStack(key, stack, opStack, cb);
       }
     } else {
       stack.push(lastNode);
     }
-    //process key, stack, opstack
-    console.log(stack);
-    console.log(opstack);
   }
 };
 
@@ -401,7 +431,11 @@ internals.matchingNibbleLength = function(nib1, nib2) {
 
 //formats node to be saved by levelup.batch.
 //returns either the hash that will be used key or the rawNode
-internals.formatNode = function(node, topLevel, toSaveStack) {
+internals.formatNode = function(node, topLevel, remove, opStack) {
+  if (arguments.length === 3) {
+    opStack = remove;
+    remove = false;
+  }
   var rlpNode = rlp.encode(node.raw);
   if (rlpNode.length >= 32 || topLevel) {
     //create a hash of the node
@@ -409,11 +443,18 @@ internals.formatNode = function(node, topLevel, toSaveStack) {
     hash.update(rlpNode);
     //no way to get a buffer directly from the hash :(
     var hashRoot = new Buffer(hash.digest('hex'), 'hex');
-    toSaveStack.push({
-      type: 'put',
-      key: hashRoot,
-      value: rlpNode
-    });
+    if (remove) {
+      opStack.push({
+        type: 'del',
+        key: hashRoot
+      });
+    } else {
+      opStack.push({
+        type: 'put',
+        key: hashRoot,
+        value: rlpNode
+      });
+    }
     return hashRoot;
   }
   return node.raw;
