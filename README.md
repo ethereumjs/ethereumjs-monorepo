@@ -7,14 +7,8 @@ Install
 ======
 `npm install rlp`
 
+
 Usage
-=====
-
-`encode` - RLP encodes an array, buffer or string and returns a buffer
-
-`decode` - Decodes a RLP encoded buffer, array or string and returns a buffer or an array of buffers
-
-Example
 =======
 
 ```javascript
@@ -26,6 +20,11 @@ var decoded = RLP.decode(encoded);
   assert.deepEqual(nestedList, decoded);
 });
 ```
+API
+=====
+`rlp.encode(plain)` - RLP encodes an `Array`, `Buffer` or `String` and returns a `Buffer`
+
+`rlp.decode(encoded)` - Decodes a RLP encoded `Buffer`, `Array` or `String` and returns a `Buffer` or an `Array` of `Buffers`
 
 Tests
 =====
