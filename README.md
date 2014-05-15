@@ -1,5 +1,5 @@
-#modified merkle patricia tree
-
+#modified merkle patricia tree [![Build Status](https://travis-ci.org/wanderer/merkle-patricia-tree.svg?branch=master)](https://travis-ci.org/wanderer/merkle-patricia-tree)
+ 
 This is an implementation of the modified merkle patricia tree as speficed in the [Ethereum's yellow paper](http://gavwood.com/Paper.pdf).
 
 > The modified Merkle Patricia tree (trie) provides a persistent data structure to map between arbitrary-length binary data (byte arrays). It is defined in terms of a mutable data structure to map between 256-bit binary fragments and arbitrary-length binary data. The core of the trie, and its sole requirement in terms of the protocol specification is to provide a single 32-byte value that identifies a given set of key-value pairs.   
