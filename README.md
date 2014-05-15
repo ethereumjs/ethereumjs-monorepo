@@ -6,7 +6,22 @@ This is an implementation of the modified merkle patricia tree as speficed in th
   \- Ethereum's yellow paper  
 
 ## Installation
+- `npm install merkle-patricia-tree`
+
 ## Usage
+```javascript
+var Trie = require('merkle-patricia-tree'),
+levelup = require('levelup'),
+db = levelup('./testdb'),
+trie = new Trie(db); 
+
+trie.put('test', 'one', function () {
+  trie.get('test', function (err, value) {
+    if(value) console.log(value.toString())
+  });
+});
+```
+
 ## API
 ### `new new Trie(db, root)`
 Creates a new Trie object
@@ -44,3 +59,5 @@ Removes a value
 --------------------------------------------------------
 
 ## Testing
+`npm test`  
+Test use mocha
