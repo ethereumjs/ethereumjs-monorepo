@@ -1,6 +1,6 @@
 var internals = {};
 
-exports = module.exports = internals.TrieNode = function(type, key, value) {
+exports = module.exports = internals.TrieNode = function (type, key, value) {
   if (Array.isArray(type)) {
     //parse raw node
     this.parseNode(type);
@@ -10,7 +10,7 @@ exports = module.exports = internals.TrieNode = function(type, key, value) {
       var values = key;
       this.raw = Array.apply(null, Array(17));
       if (values) {
-        values.forEach(function(keyVal) {
+        values.forEach(function (keyVal) {
           this.set.apply(this, keyVal);
         });
       }
@@ -22,14 +22,32 @@ exports = module.exports = internals.TrieNode = function(type, key, value) {
   }
 };
 
+Object.defineProperty(internals.TrieNode.prototype, "value", {
+  get: function () {
+    return this.getValue();
+  },
+  set: function (v) {
+    this.setValue(v);
+  }
+});
+
+Object.defineProperty(internals.TrieNode.prototype, "key", {
+  get: function () {
+    return this.getKey();
+  },
+  set: function (k) {
+    this.setKey(k);
+  }
+});
+
 //parses a raw node
-internals.TrieNode.prototype.parseNode = function(rawNode) {
+internals.TrieNode.prototype.parseNode = function (rawNode) {
   this.raw = rawNode;
   this.type = internals.getNodeType(rawNode);
 };
 
 //sets the value of the node
-internals.TrieNode.prototype.setValue = function(key, value) {
+internals.TrieNode.prototype.setValue = function (key, value) {
   if (this.type !== "branch") {
     this.raw[1] = key;
   } else {
@@ -41,7 +59,7 @@ internals.TrieNode.prototype.setValue = function(key, value) {
   }
 };
 
-internals.TrieNode.prototype.getValue = function(key) {
+internals.TrieNode.prototype.getValue = function (key) {
   if (this.type === 'branch') {
     if (arguments.length === 0) {
       key = 16;
@@ -55,9 +73,9 @@ internals.TrieNode.prototype.getValue = function(key) {
   }
 };
 
-internals.TrieNode.prototype.setKey = function(key) {
+internals.TrieNode.prototype.setKey = function (key) {
   if (this.type != 'branch') {
-    if (Buffer.isBuffer(key) || typeof key == "string" ) {
+    if (Buffer.isBuffer(key) || typeof key == "string") {
       key = internals.stringToNibbles(key);
     } else {
       key = key.slice(0); //copy the key
@@ -68,7 +86,7 @@ internals.TrieNode.prototype.setKey = function(key) {
 };
 
 //returns the key as a nibble
-internals.TrieNode.prototype.getKey = function() {
+internals.TrieNode.prototype.getKey = function () {
   if (this.type != 'branch') {
     var key = this.raw[0];
     key = internals.removeHexPrefix(internals.stringToNibbles(key));
@@ -81,7 +99,7 @@ internals.TrieNode.prototype.getKey = function() {
  * @returns {Buffer} - returns buffer of encoded data
  * hexPrefix
  **/
-internals.addHexPrefix = internals.TrieNode.addHexPrefix = function(key, terminator) {
+internals.addHexPrefix = internals.TrieNode.addHexPrefix = function (key, terminator) {
   //odd
   if (key.length % 2) {
     key.unshift(1);
@@ -97,7 +115,7 @@ internals.addHexPrefix = internals.TrieNode.addHexPrefix = function(key, termina
   return key;
 };
 
-internals.removeHexPrefix = internals.TrieNode.removeHexPrefix = function(val) {
+internals.removeHexPrefix = internals.TrieNode.removeHexPrefix = function (val) {
   if (val[0] % 2) {
     val = val.slice(1);
   } else {
@@ -111,7 +129,7 @@ internals.removeHexPrefix = internals.TrieNode.removeHexPrefix = function(val) {
  * @method isTerminator
  * @param {Array} key - an hexprefixed array of nibbles
  */
-internals.isTerminator = internals.TrieNode.isTerminator = function(key) {
+internals.isTerminator = internals.TrieNode.isTerminator = function (key) {
   return key[0] > 1;
 };
 
@@ -120,7 +138,7 @@ internals.isTerminator = internals.TrieNode.isTerminator = function(key) {
  * @method stringToNibbles
  * @param {Buffer| String} key
  */
-internals.stringToNibbles = internals.TrieNode.stringToNibbles = function(key) {
+internals.stringToNibbles = internals.TrieNode.stringToNibbles = function (key) {
   var bkey = new Buffer(key);
   var nibbles = [];
 
@@ -138,7 +156,7 @@ internals.stringToNibbles = internals.TrieNode.stringToNibbles = function(key) {
  * @method nibblesToBuffer
  * @param arr
  */
-internals.nibblesToBuffer = internals.TrieNode.nibblesToBuffer = function(arr) {
+internals.nibblesToBuffer = internals.TrieNode.nibblesToBuffer = function (arr) {
   var buf = new Buffer(arr.length / 2);
   for (var i = 0; i < buf.length; i++) {
     var q = i * 2;
@@ -155,7 +173,7 @@ internals.nibblesToBuffer = internals.TrieNode.nibblesToBuffer = function(arr) {
  * - extention - if the node is an extention
  * - unkown - if somehting fucked up
  */
-internals.getNodeType = internals.TrieNode.getNodeType = function(node) {
+internals.getNodeType = internals.TrieNode.getNodeType = function (node) {
   if (Buffer.isBuffer(node) || typeof node == 'string' || node instanceof String) {
     return 'unkown';
   } else if (node.length == 17) {

@@ -20,7 +20,7 @@ internals.Trie.prototype.get = function (key, cb) {
   this._findNode(key, this.root, [], function (err, node, remainder, stack) {
     var value = null;
     if (node && remainder.length === 0) {
-      value = node.getValue();
+      value = node.value;
     }
     cb(err, value);
   });
@@ -101,7 +101,7 @@ internals.Trie.prototype._findNode = function (key, root, stack, cb) {
         }
       }
     } else {
-      var nodeKey = node.getKey(),
+      var nodeKey = node.key;
         matchingLen = internals.matchingNibbleLength(nodeKey, key),
         keyRemainder = key.slice(matchingLen);
 
@@ -119,7 +119,7 @@ internals.Trie.prototype._findNode = function (key, root, stack, cb) {
           //we did not find the key
           cb(null, node, key, stack);
         } else {
-          self._findNode(keyRemainder, node.getValue(), stack, cb);
+          self._findNode(keyRemainder, node.value, stack, cb);
         }
       }
     }
@@ -184,23 +184,23 @@ internals.Trie.prototype._updateNode = function (key, value, keyRemainder, stack
       var newLeaf = new TrieNode('leaf', keyRemainder, value);
       stack.push(newLeaf);
     } else {
-      lastNode.setValue(value);
+      lastNode.value = value;
     }
   } else if (lastNode.type === 'leaf' && keyRemainder.length === 0) {
     //just updating a found value
     //remove the old value from the db
     internals.formatNode(lastNode, false, true, toSave);
-    lastNode.setValue(value);
+    lastNode.value = value;
     stack.push(lastNode);
   } else {
     //if extension; create a branch node
-    var lastKey = lastNode.getKey(),
+    var lastKey = lastNode.key;
       matchingLength = internals.matchingNibbleLength(lastKey, keyRemainder),
       newBranchNode = new TrieNode('branch');
 
     //create a new extention node
     if (matchingLength !== 0) {
-      var newKey = lastNode.getKey().slice(0, matchingLength),
+      var newKey = lastNode.key.slice(0, matchingLength),
         newExtNode = new TrieNode('extention', newKey, value);
       stack.push(newExtNode);
       lastKey.splice(0, matchingLength);
@@ -211,11 +211,11 @@ internals.Trie.prototype._updateNode = function (key, value, keyRemainder, stack
 
     if (lastKey.length !== 0) {
       var branchKey = lastKey.shift();
-      lastNode.setKey(lastKey);
+      lastNode.key = lastKey;
       var formatedNode = internals.formatNode(lastNode, false, toSave);
       newBranchNode.setValue(branchKey, formatedNode);
     } else {
-      newBranchNode.setValue(lastNode.getValue());
+      newBranchNode.value = lastNode.value;
     }
 
     if (keyRemainder.length !== 0) {
@@ -224,7 +224,7 @@ internals.Trie.prototype._updateNode = function (key, value, keyRemainder, stack
       var newLeafNode = new TrieNode('leaf', keyRemainder, value);
       stack.push(newLeafNode);
     } else {
-      newBranchNode.setValue(value);
+      newBranchNode.value = value;
     }
   }
 
@@ -243,11 +243,11 @@ internals.Trie.prototype._saveStack = function (key, stack, opStack, cb) {
   while (stack.length) {
     var node = stack.pop();
     if (node.type == 'leaf') {
-      key.splice(key.length - node.getKey().length);
+      key.splice(key.length - node.key.length);
     } else if (node.type == 'extention') {
-      key.splice(key.length - node.getKey().length);
+      key.splice(key.length - node.key.length);
       if (lastRoot) {
-        node.setValue(lastRoot);
+        node.value = lastRoot;
       }
     } else if (node.type == 'branch') {
       if (lastRoot) {
@@ -283,9 +283,9 @@ internals.Trie.prototype._deleteNode = function (key, stack, cb) {
       } else {
         //branch key is an extention or a leaf
         //branch->(leaf or extention)
-        var branchNodeKey = branchNode.getKey();
+        var branchNodeKey = branchNode.key;
         branchNodeKey.unshift(branchKey);
-        branchNode.setKey(branchNodeKey);
+        branchNode.key  = branchNodeKey;
 
         //hackery. This is equilant to array.concat; except we need keep the 
         //rerfance to the `key` that was passed in. 
@@ -299,22 +299,22 @@ internals.Trie.prototype._deleteNode = function (key, stack, cb) {
       //parent is a extention
       if (branchNode.type === "branch") {
         //ext->branch
-        var parentKey = parentNode.getKey();
+        var parentKey = parentNode.key;
         parentKey.push(branchKey);
         key.push(branchKey);
 
-        parentNode.setKey(parentKey);
+        parentNode.key = parentKey;
         stack.push(parentNode);
       } else {
         //branch node is an leaf or extention and parent node is an exstention
         //add two keys together
         //dont push the parent node
-        var parentKey = parentNode.getKey();
-        var branchNodeKey = branchNode.getKey();
+        var parentKey = parentNode.key;
+        var branchNodeKey = branchNode.key;
 
         branchNodeKey.unshift(branchKey);
         parentKey = parentKey.concat(branchNodeKey);
-        branchNode.setKey(parentKey);
+        branchNode.key = parentKey;
       }
       stack.push(branchNode);
     }
@@ -336,11 +336,11 @@ internals.Trie.prototype._deleteNode = function (key, stack, cb) {
     this.root = null;
   } else {
     if (lastNode.type == "branch") {
-      lastNode.setValue(null);
+      lastNode.value = null;
     } else {
       //the lastNode has to be a leaf if its not a branch. And a leaf's parent
       //if it has one must be a branch.
-      var lastNodeKey = lastNode.getKey();
+      var lastNodeKey = lastNode.key;
       key.splice(key.length - lastNodeKey.length);
       //delete the value
       internals.formatNode(lastNode, false, true, opStack);
