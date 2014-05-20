@@ -41,10 +41,6 @@ internals.TrieNode.prototype.setValue = function(key, value) {
   }
 };
 
-internals.TrieNode.prototype.getTerminator = function() {
-  return this.type == "leaf";
-};
-
 internals.TrieNode.prototype.getValue = function(key) {
   if (this.type === 'branch') {
     if (arguments.length === 0) {
