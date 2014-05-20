@@ -5,25 +5,25 @@ var Trie = require('../index.js'),
   assert = require('assert');
 
 
-describe('simple save and retrive', function() {
+describe('simple save and retrive', function () {
   var db1 = levelup('./testdb');
   var trie = new Trie(db1);
-  it("save a value", function(done) {
-    trie.put('test', 'one', function() {
+  it("save a value", function (done) {
+    trie.put('test', 'one', function () {
       done();
     });
   });
 
-  it("should get a value", function(done) {
-    trie.get('test', function(err, value) {
+  it("should get a value", function (done) {
+    trie.get('test', function (err, value) {
       assert.equal(value.toString(), 'one');
       done();
     });
   });
 
-  it("should update a value", function(done) {
-    trie.put('test', 'two', function() {
-      trie.get('test', function(err, value) {
+  it("should update a value", function (done) {
+    trie.put('test', 'two', function () {
+      trie.get('test', function (err, value) {
         assert.equal(value.toString(), 'two');
         done();
       });
@@ -31,45 +31,45 @@ describe('simple save and retrive', function() {
   });
 
 
-  it("should delete a value", function(done) {
-    trie.del('test', function(stack) {
-      trie.get('test', function(err, value) {
+  it("should delete a value", function (done) {
+    trie.del('test', function (stack) {
+      trie.get('test', function (err, value) {
         console.log(value);
         done();
       });
     });
   });
 
-  it("should recreate a value", function(done) {
-    trie.put('test', 'one', function() {
+  it("should recreate a value", function (done) {
+    trie.put('test', 'one', function () {
       done();
     });
   });
 
-  it("should get updated a value", function(done) {
-    trie.get('test', function(err, value) {
+  it("should get updated a value", function (done) {
+    trie.get('test', function (err, value) {
       assert.equal(value.toString(), 'one');
       done();
     });
   });
 
-  it("should create a branch here", function(done) {
-    trie.put('doge', 'coin', function() {
+  it("should create a branch here", function (done) {
+    trie.put('doge', 'coin', function () {
       assert.equal('de8a34a8c1d558682eae1528b47523a483dd8685d6db14b291451a66066bf0fc', trie.root);
       done();
     });
   });
 
-  it("should get a value that is in a branch", function(done) {
-    trie.get('doge', function(err, value) {
+  it("should get a value that is in a branch", function (done) {
+    trie.get('doge', function (err, value) {
       assert.equal(value.toString(), 'coin');
       done();
     });
   });
 
-  it("should delete from a branch", function(done) {
-    trie.del('doge', function(err, stack) {
-      trie.get('doge', function(err, value) {
+  it("should delete from a branch", function (done) {
+    trie.del('doge', function (err, stack) {
+      trie.get('doge', function (err, value) {
         assert.equal(value, null);
         done();
       });
@@ -79,55 +79,55 @@ describe('simple save and retrive', function() {
 
 });
 
-describe("storing longer values", function() {
+describe("storing longer values", function () {
   var db2 = levelup('./testdb2');
   var trie2 = new Trie(db2);
 
   var longString = 'this will be a really really really long value';
   var longStringRoot = "b173e2db29e79c78963cff5196f8a983fbe0171388972106b114ef7f5c24dfa3";
 
-  it("should store a longer string", function(done) {
-    trie2.put('done', longString, function(err, value) {
-      trie2.put('doge', 'coin', function(err, value) {
+  it("should store a longer string", function (done) {
+    trie2.put('done', longString, function (err, value) {
+      trie2.put('doge', 'coin', function (err, value) {
         assert.equal(longStringRoot, trie2.root);
         done();
       });
     });
   });
 
-  it("should retreive a longer value", function(done) {
-    trie2.get('done', function(err, value) {
+  it("should retreive a longer value", function (done) {
+    trie2.get('done', function (err, value) {
       assert.equal(value.toString(), longString);
       done();
     });
   });
 
-  it('should when being modiefied delete the old value', function(done) {
-    trie2.put('done', "test", function() {
+  it('should when being modiefied delete the old value', function (done) {
+    trie2.put('done', "test", function () {
       done();
     });
   });
 });
 
-describe("testing Extentions and branches", function() {
+describe("testing Extentions and branches", function () {
   var db3 = levelup('./testdb3');
   var trie3 = new Trie(db3);
 
-  it("should store a value", function(done) {
-    trie3.put('doge', 'coin', function() {
+  it("should store a value", function (done) {
+    trie3.put('doge', 'coin', function () {
       done();
     });
   });
 
-  it("should create extention to store this value", function(done) {
-    trie3.put('do', 'verb', function() {
+  it("should create extention to store this value", function (done) {
+    trie3.put('do', 'verb', function () {
       assert.equal('f803dfcb7e8f1afd45e88eedb4699a7138d6c07b71243d9ae9bff720c99925f9', trie3.root);
       done();
     });
   });
 
-  it('should store this value under the extention ', function(done) {
-    trie3.put('done', 'finished', function() {
+  it('should store this value under the extention ', function (done) {
+    trie3.put('done', 'finished', function () {
       assert.equal('409cff4d820b394ed3fb1cd4497bdd19ffa68d30ae34157337a7043c94a3e8cb', trie3.root);
       done();
     });
@@ -135,46 +135,69 @@ describe("testing Extentions and branches", function() {
 
 });
 
-describe("testing Extentions and branches - reverse", function() {
+describe("testing Extentions and branches - reverse", function () {
   var db5 = levelup('./testdb5');
   var trie3 = new Trie(db5);
 
-  it("should create extention to store this value", function(done) {
-    trie3.put('do', 'verb', function() {
+  it("should create extention to store this value", function (done) {
+    trie3.put('do', 'verb', function () {
       done();
     });
   });
 
-  it("should store a value", function(done) {
-    trie3.put('doge', 'coin', function() {
+  it("should store a value", function (done) {
+    trie3.put('doge', 'coin', function () {
       done();
     });
   });
 
 
-  it('should store this value under the extention ', function(done) {
-    trie3.put('done', 'finished', function() {
+  it('should store this value under the extention ', function (done) {
+    trie3.put('done', 'finished', function () {
       assert.equal('409cff4d820b394ed3fb1cd4497bdd19ffa68d30ae34157337a7043c94a3e8cb', trie3.root);
       done();
     });
   });
 });
 
-describe('testing deletions cases', function() {
+describe('testing deletions cases', function () {
 
   var db6 = levelup('./testdb6');
   var trie3 = new Trie(db6);
 
-  it("should delete from a branch->branch-branch", function(done) {
-    trie3.put(new Buffer([11, 11, 11]), 'first', function() {
+  it("should delete from a branch->branch-branch", function (done) {
+    trie3.put(new Buffer([11, 11, 11]), 'first', function () {
       //create the top branch
-      trie3.put(new Buffer([12, 22, 22]), 'create the first branch', function() {
+      trie3.put(new Buffer([12, 22, 22]), 'create the first branch', function () {
         //crete the middle branch
-        trie3.put(new Buffer([12, 33, 33]), 'create the middle branch', function() {
-          trie3.put(new Buffer([12, 34, 44]), 'create the last branch', function() {
+        trie3.put(new Buffer([12, 33, 33]), 'create the middle branch', function () {
+          trie3.put(new Buffer([12, 34, 44]), 'create the last branch', function () {
             //delete the middle branch
-            trie3.del(new Buffer([12, 22, 22]), function() {
-              trie3.get(new Buffer([12, 22, 22]), function(err, val) {
+            trie3.del(new Buffer([12, 22, 22]), function () {
+              trie3.get(new Buffer([12, 22, 22]), function (err, val) {
+                assert.equal(null, val);
+
+                db6 = levelup('./testdb6.1');
+                trie3 = new Trie(db6);
+                done();
+              });
+            });
+          });
+        });
+      });
+    });
+  });
+
+  it("should delete from a branch->branch-extention", function (done) {
+    trie3.put(new Buffer([11, 11, 11]), 'first', function () {
+      //create the top branch
+      trie3.put(new Buffer([12, 22, 22]), 'create the first branch', function () {
+        //crete the middle branch
+        trie3.put(new Buffer([12, 33, 33]), 'create the middle branch', function () {
+          trie3.put(new Buffer([12, 33, 44]), 'create the last branch', function () {
+            //delete the middle branch
+            trie3.del(new Buffer([12, 22, 22]), function () {
+              trie3.get(new Buffer([12, 22, 22]), function (err, val) {
                 assert.equal(null, val);
                 done();
               });
@@ -185,16 +208,36 @@ describe('testing deletions cases', function() {
     });
   });
 
-  it("should delete from a branch->branch-extention", function(done) {
-    trie3.put(new Buffer([11, 11, 11]), 'first', function() {
+  it("should delete from a extention->branch-extention", function (done) {
+    trie3.put(new Buffer([11, 11, 11]), 'first', function () {
       //create the top branch
-      trie3.put(new Buffer([12, 22, 22]), 'create the first branch', function() {
+      trie3.put(new Buffer([12, 22, 22]), 'create the first branch', function () {
         //crete the middle branch
-        trie3.put(new Buffer([12, 33, 33]), 'create the middle branch', function() {
-          trie3.put(new Buffer([12, 33, 44]), 'create the last branch', function() {
+        trie3.put(new Buffer([12, 33, 33]), 'create the middle branch', function () {
+          trie3.put(new Buffer([12, 33, 44]), 'create the last branch', function () {
             //delete the middle branch
-            trie3.del(new Buffer([12, 22, 22]), function() {
-              trie3.get(new Buffer([12, 22, 22]), function(err, val) {
+            trie3.del(new Buffer([11, 11, 11]), function () {
+              trie3.get(new Buffer([11, 11, 11]), function (err, val) {
+                assert.equal(null, val);
+                done();
+              });
+            });
+          });
+        });
+      });
+    });
+  });
+
+  it("should delete from a extention->branch-branch", function (done) {
+    trie3.put(new Buffer([11, 11, 11]), 'first', function () {
+      //create the top branch
+      trie3.put(new Buffer([12, 22, 22]), 'create the first branch', function () {
+        //crete the middle branch
+        trie3.put(new Buffer([12, 33, 33]), 'create the middle branch', function () {
+          trie3.put(new Buffer([12, 34, 44]), 'create the last branch', function () {
+            //delete the middle branch
+            trie3.del(new Buffer([11, 11, 11]), function () {
+              trie3.get(new Buffer([11, 11, 11]), function (err, val) {
                 assert.equal(null, val);
                 done();
               });
@@ -207,7 +250,7 @@ describe('testing deletions cases', function() {
 
 });
 
-describe("it should create the genesis state root from ethereum", function() {
+describe("it should create the genesis state root from ethereum", function () {
 
   var db4 = levelup('./testdb4'),
     trie4 = new Trie(db4),
@@ -230,11 +273,11 @@ describe("it should create the genesis state root from ethereum", function() {
   assert.equal(cppRlp, rlpAccount.toString('hex'));
   //console.log(rlpAccount.toString('hex'));
 
-  it("shall match the root given unto us by the Master Coder Gav", function(done) {
-    trie4.put(g, rlpAccount, function() {
-      trie4.put(j, rlpAccount, function() {
-        trie4.put(v, rlpAccount, function() {
-          trie4.put(a, rlpAccount, function() {
+  it("shall match the root given unto us by the Master Coder Gav", function (done) {
+    trie4.put(g, rlpAccount, function () {
+      trie4.put(j, rlpAccount, function () {
+        trie4.put(v, rlpAccount, function () {
+          trie4.put(a, rlpAccount, function () {
             assert.equal(trie4.root, genesisStateRoot);
             done();
           });

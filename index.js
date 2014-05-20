@@ -5,7 +5,7 @@ var assert = require('assert'),
   TrieNode = require('./trieNode'),
   internals = {};
 
-exports = module.exports = internals.Trie = function(db, root) {
+exports = module.exports = internals.Trie = function (db, root) {
   assert(this.constructor === internals.Trie, 'Trie must be instantiated using new');
   this.root = root;
   this.db = db;
@@ -16,8 +16,8 @@ exports = module.exports = internals.Trie = function(db, root) {
  * @method get
  * @param {String} key - the key to search for
  */
-internals.Trie.prototype.get = function(key, cb) {
-  this._findNode(key, this.root, [], function(err, node, remainder, stack) {
+internals.Trie.prototype.get = function (key, cb) {
+  this._findNode(key, this.root, [], function (err, node, remainder, stack) {
     var value = null;
     if (node && remainder.length === 0) {
       value = node.getValue();
@@ -32,12 +32,12 @@ internals.Trie.prototype.get = function(key, cb) {
  * @param {Buffer|String} key
  * @param {Buffer|String} Value
  */
-internals.Trie.prototype.put = function(key, value, cb) {
+internals.Trie.prototype.put = function (key, value, cb) {
   var self = this;
 
   if (this.root) {
     //first try to find the give key or its nearst node
-    this._findNode(key, this.root, [], function(err, foundValue, keyRemainder, stack) {
+    this._findNode(key, this.root, [], function (err, foundValue, keyRemainder, stack) {
       if (err) {
         cb(err);
       } else {
@@ -52,10 +52,10 @@ internals.Trie.prototype.put = function(key, value, cb) {
 };
 
 //todo
-internals.Trie.prototype.del = function(key, cb) {
+internals.Trie.prototype.del = function (key, cb) {
   var self = this;
 
-  this._findNode(key, this.root, [], function(err, foundValue, keyRemainder, stack) {
+  this._findNode(key, this.root, [], function (err, foundValue, keyRemainder, stack) {
     if (err) {
       cb(err);
     } else if (foundValue) {
@@ -79,7 +79,7 @@ internals.Trie.prototype.del = function(key, cb) {
  *  - remainder - the remaining key nibbles not accounted for
  *  - stack - an array of nodes that forms the path to node we are searching for
  */
-internals.Trie.prototype._findNode = function(key, root, stack, cb) {
+internals.Trie.prototype._findNode = function (key, root, stack, cb) {
   var self = this;
 
   //parse the node and gets the next node if any to parse
@@ -147,7 +147,7 @@ internals.Trie.prototype._findNode = function(key, root, stack, cb) {
     //resovle hash to node
     this.db.get(root, {
       encoding: 'binary'
-    }, function(err, foundNode) {
+    }, function (err, foundNode) {
       if (err) {
         cb(err, foundNode, key, stack);
       } else {
@@ -167,7 +167,7 @@ internals.Trie.prototype._findNode = function(key, root, stack, cb) {
  * @param {Array} stack -
  * @param {Function} cb - the callback
  */
-internals.Trie.prototype._updateNode = function(key, value, keyRemainder, stack, cb) {
+internals.Trie.prototype._updateNode = function (key, value, keyRemainder, stack, cb) {
 
   var self = this,
     toSave = [],
@@ -237,7 +237,7 @@ internals.Trie.prototype._updateNode = function(key, value, keyRemainder, stack,
 //@param {Array} stack - a stack of nodes to the value given by the key
 //@param {Array} opStack - a stack of levelup operations to commit at the end of this funciton
 //@param {Function} cb
-internals.Trie.prototype._saveStack = function(key, stack, opStack, cb) {
+internals.Trie.prototype._saveStack = function (key, stack, opStack, cb) {
   var lastRoot;
   //update nodes
   while (stack.length) {
@@ -246,7 +246,7 @@ internals.Trie.prototype._saveStack = function(key, stack, opStack, cb) {
       key.splice(key.length - node.getKey().length);
     } else if (node.type == 'extention') {
       key.splice(key.length - node.getKey().length);
-      if(lastRoot){
+      if (lastRoot) {
         node.setValue(lastRoot);
       }
     } else if (node.type == 'branch') {
@@ -259,7 +259,7 @@ internals.Trie.prototype._saveStack = function(key, stack, opStack, cb) {
   }
 
   assert(key.length === 0, "key length should be 0 after we are done processing the stack");
-  if(lastRoot){
+  if (lastRoot) {
     this.root = lastRoot.toString('hex');
   }
   this.db.batch(opStack, {
@@ -267,7 +267,7 @@ internals.Trie.prototype._saveStack = function(key, stack, opStack, cb) {
   }, cb);
 };
 
-internals.Trie.prototype._deleteNode = function(key, stack, cb) {
+internals.Trie.prototype._deleteNode = function (key, stack, cb) {
 
   function processBranchNode(key, branchKey, branchNode, parentNode, stack) {
     //branchNode is the node ON the branch node not THE branch node
@@ -310,7 +310,7 @@ internals.Trie.prototype._deleteNode = function(key, stack, cb) {
         //add two keys together
         //dont push the parent node
         var parentKey = parentNode.getKey();
-        var branchNodeKey = branchNodet.getKey();
+        var branchNodeKey = branchNode.getKey();
 
         branchNodeKey.unshift(branchKey);
         parentKey = parentKey.concat(branchNodeKey);
@@ -341,7 +341,7 @@ internals.Trie.prototype._deleteNode = function(key, stack, cb) {
       //the lastNode has to be a leaf if its not a branch. And a leaf's parent
       //if it has one must be a branch.
       var lastNodeKey = lastNode.getKey();
-      key.splice(lastNodeKey.length);
+      key.splice(key.length - lastNodeKey.length);
       //delete the value
       internals.formatNode(lastNode, false, true, opStack);
       parentNode.setValue(key.pop(), null);
@@ -352,7 +352,7 @@ internals.Trie.prototype._deleteNode = function(key, stack, cb) {
     //nodes on the branch
     var branchNodes = [];
     //count the number of nodes on the branch
-    lastNode.raw.forEach(function(node, i) {
+    lastNode.raw.forEach(function (node, i) {
       var val = lastNode.getValue(i);
       if (val) branchNodes.push([i, val]);
     });
@@ -364,40 +364,40 @@ internals.Trie.prototype._deleteNode = function(key, stack, cb) {
       var branchNodeKey = branchNodes[0][0];
 
       if (!parentNode) {
-        this.root = internals.formatNode({raw:branchNode}, true, opStack);
+        this.root = internals.formatNode({
+          raw: branchNode
+        }, true, opStack);
         this._saveStack([], [], opStack, cb);
       } else if (Buffer.isBuffer(branchNode) && branchNode.length === 32) {
         //check to see if we need to resolve the following
         //look up node
         this.db.get(branchNode, {
           encoding: 'binary'
-        }, function(err, foundNode) {
+        }, function (err, foundNode) {
           if (err) {
             cb(err);
           } else {
             var decodedNode = new TrieNode(rlp.decode(foundNode));
             processBranchNode(key, branchNodeKey, decodedNode, parentNode, stack, opStack);
             //process key, stack, opstack
-            console.log(stack);
-            console.log(key);
             self._saveStack(key, stack, opStack, cb);
           }
         });
       } else {
         processBranchNode(key, branchNodeKey, branchNode, parentNode, stack, opStack);
         //process key, stack, opstack
-        console.log(stack);
-        console.log(opStack);
         this._saveStack(key, stack, opStack, cb);
       }
     } else {
+      //simple removing a leaf and recaluclation the stack
       stack.push(lastNode);
+      self._saveStack(key, stack, opStack, cb);
     }
   }
 };
 
 //Creates the initail node
-internals.Trie.prototype._createNewNode = function(key, value, cb) {
+internals.Trie.prototype._createNewNode = function (key, value, cb) {
   var newNode = new TrieNode('leaf', key, value);
   //rlp encode 
   var rlpNode = rlp.encode(newNode.raw);
@@ -420,7 +420,7 @@ internals.Trie.prototype._createNewNode = function(key, value, cb) {
  * @param {Array} nib1
  * @param {Array} nib2
  */
-internals.matchingNibbleLength = function(nib1, nib2) {
+internals.matchingNibbleLength = function (nib1, nib2) {
   var i = 0;
   while (nib1[i] === nib2[i] && nib1.length > i) {
     i++;
@@ -431,7 +431,7 @@ internals.matchingNibbleLength = function(nib1, nib2) {
 
 //formats node to be saved by levelup.batch.
 //returns either the hash that will be used key or the rawNode
-internals.formatNode = function(node, topLevel, remove, opStack) {
+internals.formatNode = function (node, topLevel, remove, opStack) {
   if (arguments.length === 3) {
     opStack = remove;
     remove = false;
