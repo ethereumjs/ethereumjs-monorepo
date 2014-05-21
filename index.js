@@ -3,13 +3,19 @@ var assert = require('assert'),
   async = require('async'),
   rlp = require('rlp'),
   TrieNode = require('./trieNode'),
+  ReadStream = require('./readStream'),
   internals = {};
+
 
 exports = module.exports = internals.Trie = function (db, root) {
   assert(this.constructor === internals.Trie, 'Trie must be instantiated using new');
+  if(typeof root == 'string'){
+    root = new Buffer(root, 'hex');
+  }
   this.root = root;
   this.db = db;
 };
+
 
 /*
  * Gets a value given a key
@@ -51,7 +57,7 @@ internals.Trie.prototype.put = function (key, value, cb) {
   }
 };
 
-//todo
+//deletes a value
 internals.Trie.prototype.del = function (key, cb) {
   var self = this;
 
@@ -102,8 +108,8 @@ internals.Trie.prototype._findNode = function (key, root, stack, cb) {
       }
     } else {
       var nodeKey = node.key;
-        matchingLen = internals.matchingNibbleLength(nodeKey, key),
-        keyRemainder = key.slice(matchingLen);
+      matchingLen = internals.matchingNibbleLength(nodeKey, key),
+      keyRemainder = key.slice(matchingLen);
 
       if (node.type == 'leaf') {
         if (keyRemainder.length !== 0 || key.length != nodeKey.length) {
@@ -159,6 +165,65 @@ internals.Trie.prototype._findNode = function (key, root, stack, cb) {
   }
 };
 
+internals.Trie.prototype._findAll = function (root, onFound, onDone) {
+  var self = this;
+
+  function processNode(rawNode) {
+    var node = new TrieNode(rawNode);
+    console.log(node.type);
+    if (node.type == 'leaf') {
+      onFound(node, onDone); 
+    } else if (node.type == 'extention') {
+      self._findAll(node.value, onFound, onDone);
+    } else {
+      var count = 0;
+      async.whilst(
+        function () {
+          return count < 15;
+        },
+        function (callback) {
+          var val = node.getValue(count)
+          count++;
+          if (val) {
+            self._findAll(val, onFound, callback);
+          } else {
+            callback();
+          }
+        },
+        function (err) {
+          var lastVal = node.value;
+          if (lastVal){
+            onFound(lastVal, onDone)
+          }else{
+            onDone();
+          }
+        }
+      );
+    }
+  }
+
+  if(!root){
+    onFound(null, done);
+    return;
+  }
+
+  if (root.length == 32) {
+    //resovle hash to node
+    this.db.get(root, {
+      encoding: 'binary'
+    }, function (err, foundNode) {
+      if (err || !foundNode) {
+        onDone(err);
+      } else {
+        processNode(rlp.decode(foundNode));
+      }
+    });
+  } else {
+    processNode(root);
+  }
+
+}
+
 /* Updates a node
  * @method _updateNode
  * @param {Buffer} key
@@ -195,8 +260,8 @@ internals.Trie.prototype._updateNode = function (key, value, keyRemainder, stack
   } else {
     //if extension; create a branch node
     var lastKey = lastNode.key;
-      matchingLength = internals.matchingNibbleLength(lastKey, keyRemainder),
-      newBranchNode = new TrieNode('branch');
+    matchingLength = internals.matchingNibbleLength(lastKey, keyRemainder),
+    newBranchNode = new TrieNode('branch');
 
     //create a new extention node
     if (matchingLength !== 0) {
@@ -285,9 +350,9 @@ internals.Trie.prototype._deleteNode = function (key, stack, cb) {
         //branch->(leaf or extention)
         var branchNodeKey = branchNode.key;
         branchNodeKey.unshift(branchKey);
-        branchNode.key  = branchNodeKey;
+        branchNode.key = branchNodeKey;
 
-        //hackery. This is equilant to array.concat; except we need keep the 
+        //hackery. This is equvilant to array.concat; except we need keep the 
         //rerfance to the `key` that was passed in. 
         branchNodeKey.unshift(0);
         branchNodeKey.unshift(key.length);
@@ -379,7 +444,6 @@ internals.Trie.prototype._deleteNode = function (key, stack, cb) {
           } else {
             var decodedNode = new TrieNode(rlp.decode(foundNode));
             processBranchNode(key, branchNodeKey, decodedNode, parentNode, stack, opStack);
-            //process key, stack, opstack
             self._saveStack(key, stack, opStack, cb);
           }
         });
@@ -459,3 +523,8 @@ internals.formatNode = function (node, topLevel, remove, opStack) {
   }
   return node.raw;
 };
+
+internals.Trie.prototype.createReadStream = function(){
+ return new ReadStream(this); 
+}
+

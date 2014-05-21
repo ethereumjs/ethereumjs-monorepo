@@ -161,7 +161,6 @@ describe("testing Extentions and branches - reverse", function () {
 });
 
 describe('testing deletions cases', function () {
-
   var db6 = levelup('./testdb6');
   var trie3 = new Trie(db6);
 
