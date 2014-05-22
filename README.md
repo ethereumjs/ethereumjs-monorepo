@@ -58,6 +58,12 @@ Removes a value
 
 --------------------------------------------------------
 
+#### `trie.createReadStream()`
+returns a read stream. The `data` event is given an `Object` hat has two propeties; the `key` and the `value`. Both should be Buffers.
+
+## examples
+see [this blog post](https://wanderer.github.io/ethereum/nodejs/code/2014/05/21/using-ethereums-tries-with-node/)
+
 ## Testing
 `npm test`  
 Test use mocha
