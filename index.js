@@ -165,16 +165,20 @@ internals.Trie.prototype._findNode = function (key, root, stack, cb) {
   }
 };
 
-internals.Trie.prototype._findAll = function (root, onFound, onDone) {
+/*
+ * Finds all leafs
+ */
+internals.Trie.prototype._findAll = function (root, key, onFound, onDone) {
   var self = this;
 
   function processNode(rawNode) {
     var node = new TrieNode(rawNode);
-    console.log(node.type);
     if (node.type == 'leaf') {
-      onFound(node, onDone); 
+      key = key.concat(node.key);
+      onFound(node, key, onDone); 
     } else if (node.type == 'extention') {
-      self._findAll(node.value, onFound, onDone);
+      key = key.concat(node.key);
+      self._findAll(node.value, key, onFound, onDone);
     } else {
       var count = 0;
       async.whilst(
@@ -183,9 +187,11 @@ internals.Trie.prototype._findAll = function (root, onFound, onDone) {
         },
         function (callback) {
           var val = node.getValue(count)
+          var tempKey = key.slice(0);
+          tempKey.push(count)
           count++;
           if (val) {
-            self._findAll(val, onFound, callback);
+            self._findAll(val, tempKey, onFound, callback);
           } else {
             callback();
           }
@@ -193,7 +199,7 @@ internals.Trie.prototype._findAll = function (root, onFound, onDone) {
         function (err) {
           var lastVal = node.value;
           if (lastVal){
-            onFound(lastVal, onDone)
+            onFound(lastVal, key, onDone)
           }else{
             onDone();
           }
