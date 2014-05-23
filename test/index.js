@@ -153,7 +153,7 @@ describe('null values', function() {
 describe('offical tests', function () {
     var jsonTests;
     before(function () {
-        var data = fs.readFileSync('./jsonTests/rlptest.json')
+        var data = fs.readFileSync('./test/jsonTests/rlptest.json')
         jsonTests = JSON.parse(data);
     });
 
