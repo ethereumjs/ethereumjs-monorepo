@@ -6,7 +6,6 @@ var Trie = require('../index.js'),
   Sha3 = require('sha3'),
   assert = require('assert');
 
-
 describe('simple save and retrive', function () {
   var db1 = levelup('./test/testdb');
   var trie = new Trie(db1);
