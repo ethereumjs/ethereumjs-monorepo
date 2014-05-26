@@ -8,7 +8,7 @@ var Trie = require('../index.js'),
 
 
 describe('simple save and retrive', function () {
-  var db1 = levelup('./testdb');
+  var db1 = levelup('./test/testdb');
   var trie = new Trie(db1);
   it("save a value", function (done) {
     trie.put('test', 'one', function () {
@@ -82,7 +82,7 @@ describe('simple save and retrive', function () {
 });
 
 describe("storing longer values", function () {
-  var db2 = levelup('./testdb2');
+  var db2 = levelup('./test/testdb2');
   var trie2 = new Trie(db2);
 
   var longString = 'this will be a really really really long value';
@@ -112,7 +112,7 @@ describe("storing longer values", function () {
 });
 
 describe("testing Extentions and branches", function () {
-  var db3 = levelup('./testdb3');
+  var db3 = levelup('./test/testdb3');
   var trie3 = new Trie(db3);
 
   it("should store a value", function (done) {
@@ -138,7 +138,7 @@ describe("testing Extentions and branches", function () {
 });
 
 describe("testing Extentions and branches - reverse", function () {
-  var db5 = levelup('./testdb5');
+  var db5 = levelup('./test/testdb5');
   var trie3 = new Trie(db5);
 
   it("should create extention to store this value", function (done) {
@@ -163,7 +163,7 @@ describe("testing Extentions and branches - reverse", function () {
 });
 
 describe('testing deletions cases', function () {
-  var db6 = levelup('./testdb6');
+  var db6 = levelup('./test/testdb6');
   var trie3 = new Trie(db6);
 
   it("should delete from a branch->branch-branch", function (done) {
@@ -178,7 +178,7 @@ describe('testing deletions cases', function () {
               trie3.get(new Buffer([12, 22, 22]), function (err, val) {
                 assert.equal(null, val);
 
-                db6 = levelup('./testdb6.1');
+                db6 = levelup('./test/testdb6.1');
                 trie3 = new Trie(db6);
                 done();
               });
@@ -253,7 +253,7 @@ describe('testing deletions cases', function () {
 
 describe("it should create the genesis state root from ethereum", function () {
 
-  var db4 = levelup('./testdb4'),
+  var db4 = levelup('./test/testdb4'),
     trie4 = new Trie(db4),
     g = new Buffer('8a40bfaa73256b60764c1bf40675a99083efb075', 'hex'),
     j = new Buffer('e6716f9544a56c530d868e4bfbacb172315bdead', 'hex'),
@@ -288,10 +288,6 @@ describe("it should create the genesis state root from ethereum", function () {
   });
 });
 
-describe('offical hexprefix tests', function(){
-    
-});
-
 describe('offical tests', function () {
   var jsonTests;
   var testNames;
@@ -301,7 +297,7 @@ describe('offical tests', function () {
     var data = fs.readFileSync('./test/jsonTests/trietest.json');
     jsonTests = JSON.parse(data),
     testNames = Object.keys(jsonTests),
-    db7 = levelup('./testdb9'),
+    db7 = levelup('./test/testdb9'),
     trie = new Trie(db7);
   });
 
@@ -312,9 +308,7 @@ describe('offical tests', function () {
       var expect = jsonTests[i].expectation;
 
       async.eachSeries(inputs, function (input, done) {
-        console.log(input);
         trie.put(input[0], input[1], function(){
-            console.log(trie.root.toString('hex'));
             done();
         });
       }, function () {
