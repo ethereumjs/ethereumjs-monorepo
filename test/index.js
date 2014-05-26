@@ -1,4 +1,6 @@
 var Trie = require('../index.js'),
+  async = require('async'),
+  fs = require('fs'),
   rlp = require('rlp'),
   levelup = require('levelup'),
   Sha3 = require('sha3'),
@@ -55,7 +57,7 @@ describe('simple save and retrive', function () {
 
   it("should create a branch here", function (done) {
     trie.put('doge', 'coin', function () {
-      assert.equal('de8a34a8c1d558682eae1528b47523a483dd8685d6db14b291451a66066bf0fc', trie.root);
+      assert.equal('de8a34a8c1d558682eae1528b47523a483dd8685d6db14b291451a66066bf0fc', trie.root.toString('hex'));
       done();
     });
   });
@@ -89,7 +91,7 @@ describe("storing longer values", function () {
   it("should store a longer string", function (done) {
     trie2.put('done', longString, function (err, value) {
       trie2.put('doge', 'coin', function (err, value) {
-        assert.equal(longStringRoot, trie2.root);
+        assert.equal(longStringRoot, trie2.root.toString('hex'));
         done();
       });
     });
@@ -121,14 +123,14 @@ describe("testing Extentions and branches", function () {
 
   it("should create extention to store this value", function (done) {
     trie3.put('do', 'verb', function () {
-      assert.equal('f803dfcb7e8f1afd45e88eedb4699a7138d6c07b71243d9ae9bff720c99925f9', trie3.root);
+      assert.equal('f803dfcb7e8f1afd45e88eedb4699a7138d6c07b71243d9ae9bff720c99925f9', trie3.root.toString('hex'));
       done();
     });
   });
 
   it('should store this value under the extention ', function (done) {
     trie3.put('done', 'finished', function () {
-      assert.equal('409cff4d820b394ed3fb1cd4497bdd19ffa68d30ae34157337a7043c94a3e8cb', trie3.root);
+      assert.equal('409cff4d820b394ed3fb1cd4497bdd19ffa68d30ae34157337a7043c94a3e8cb', trie3.root.toString('hex'));
       done();
     });
   });
@@ -154,7 +156,7 @@ describe("testing Extentions and branches - reverse", function () {
 
   it('should store this value under the extention ', function (done) {
     trie3.put('done', 'finished', function () {
-      assert.equal('409cff4d820b394ed3fb1cd4497bdd19ffa68d30ae34157337a7043c94a3e8cb', trie3.root);
+      assert.equal('409cff4d820b394ed3fb1cd4497bdd19ffa68d30ae34157337a7043c94a3e8cb', trie3.root.toString('hex'));
       done();
     });
   });
@@ -277,11 +279,53 @@ describe("it should create the genesis state root from ethereum", function () {
       trie4.put(j, rlpAccount, function () {
         trie4.put(v, rlpAccount, function () {
           trie4.put(a, rlpAccount, function () {
-            assert.equal(trie4.root, genesisStateRoot);
+            assert.equal(trie4.root.toString('hex'), genesisStateRoot);
             done();
           });
         });
       });
+    });
+  });
+});
+
+describe('offical hexprefix tests', function(){
+    
+});
+
+describe('offical tests', function () {
+  var jsonTests;
+  var testNames;
+  var trie;
+
+  before(function () {
+    var data = fs.readFileSync('./test/jsonTests/trietest.json');
+    jsonTests = JSON.parse(data),
+    testNames = Object.keys(jsonTests),
+    db7 = levelup('./testdb9'),
+    trie = new Trie(db7);
+  });
+
+  it('pass all tests', function (done) {
+    async.eachSeries(testNames, function (i, done) {
+      console.log(i);
+      var inputs = jsonTests[i].inputs;
+      var expect = jsonTests[i].expectation;
+
+      async.eachSeries(inputs, function (input, done) {
+        console.log(input);
+        trie.put(input[0], input[1], function(){
+            console.log(trie.root.toString('hex'));
+            done();
+        });
+      }, function () {
+
+        assert.equal(trie.root.toString('hex'), expect);
+        trie = new Trie(db7);
+        done();
+      });
+
+    }, function () {
+      done();
     });
   });
 });
