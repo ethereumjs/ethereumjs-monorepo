@@ -23,9 +23,9 @@ trie.put('test', 'one', function () {
 ```
 
 ## API
-### `new new Trie(db, root)`
+### `new new Trie([db], [root])`
 Creates a new Trie object
-- `db` -  A instance of [levelup](https://github.com/rvagg/node-levelup/) or compatiable API.
+- `db` -  A instance of [levelup](https://github.com/rvagg/node-levelup/) or compatiable API. If no db is `null` or left undefined then the the trie will be stored in memory vai [memdown](https://github.com/rvagg/memdown)
 - `root` - A hex `String` or `Buffer` for the root of a prevously stored trie.
 
 --------------------------------------------------------
