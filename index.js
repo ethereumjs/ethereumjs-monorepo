@@ -13,6 +13,26 @@ exports = module.exports = internals.Trie = function (db, root) {
     if (typeof root === "string") {
         root = new Buffer(root, "hex");
     }
+
+    Object.defineProperty(this, "root", {
+        set: function (v) {
+            if(v){
+                if (!Buffer.isBuffer(v)) {
+                    if (typeof v === "string") {
+                        v = new Buffer(v, "hex");
+                    }
+                }
+                assert(v.length === 32, "Invalid root length. Roots are 32 bytes");
+            }else{
+                v = null;
+            }
+            this._root = v;
+        },
+        get: function(){
+            return this._root;
+        }
+    });
+
     this.root = root;
 
     if (!db) {
@@ -98,6 +118,11 @@ internals.Trie.prototype._findNode = function (key, root, stack, cb) {
 
     //parse the node and gets the next node if any to parse
     function processNode(node) {
+        if(!node) { 
+            cb(null, null, key, stack);
+            return;
+        }
+
         stack.push(node);
         if (node.type == "branch") {
             //branch
@@ -500,7 +525,7 @@ internals.Trie.prototype._lookupNode = function (node, cb) {
             encoding: "binary"
         }, function (err, foundNode) {
             if (err || !foundNode) {
-                cb(err);
+                cb(null);
             } else {
                 foundNode = rlp.decode(foundNode);
                 cb(new TrieNode(foundNode));

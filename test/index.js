@@ -7,8 +7,19 @@ var Trie = require("../index.js"),
     assert = require("assert");
 
 describe("simple save and retrive", function () {
-    //var db1 = levelup("./test/testdb");
+    var db1 = levelup("./test/testdb");
     var trie = new Trie();
+
+    it("should not crash if given a none existant root", function(done){
+        var root = new Buffer("3f4399b08efe68945c1cf90ffe85bbe3ce978959da753f9e649f034015b8817d", "hex");
+        var trie11 = new Trie(db1, root);
+    
+        trie11.get("test", function (err, value) {
+            assert.equal(value, null);
+            done();
+        });
+    });
+
     it("save a value", function (done) {
         trie.put("test", "one", function () {
             done();
