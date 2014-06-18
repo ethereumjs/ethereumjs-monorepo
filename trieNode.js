@@ -109,6 +109,23 @@ internals.TrieNode.prototype.hash = function () {
     return new Buffer(key, "hex");
 };
 
+internals.TrieNode.prototype.toString = function () {
+    var out = this.type;
+    out += ": [";
+    this.raw.forEach(function(el){
+        if(Buffer.isBuffer(el)){
+            out += el.toString("hex") + ", ";
+        }else if(el){
+            out += "object, ";
+        }else{
+            out += "empty, ";
+        }
+    });
+    out = out.slice(0, -2);
+    out += "]";
+    return out;
+};
+
 /**
  * @param {Array} dataArr
  * @returns {Buffer} - returns buffer of encoded data

@@ -291,9 +291,16 @@ internals.Trie.prototype._updateNode = function (key, value, keyRemainder, stack
 
         if (lastKey.length !== 0) {
             var branchKey = lastKey.shift();
-            lastNode.key = lastKey;
-            var formatedNode = this._formatNode(lastNode, false, toSave);
-            newBranchNode.setValue(branchKey, formatedNode);
+            if (lastKey.length !== 0 || lastNode.type === "leaf") {
+                //shriking extention or leaf
+                lastNode.key = lastKey;
+                var formatedNode = this._formatNode(lastNode, false, toSave);
+                newBranchNode.setValue(branchKey, formatedNode);
+            } else {
+                //remove extention or attaching 
+                this._formatNode(lastNode, false, true, toSave);
+                newBranchNode.setValue(branchKey, lastNode.value);
+            }
         } else {
             newBranchNode.value = lastNode.value;
         }
@@ -525,6 +532,7 @@ internals.Trie.prototype._formatNode = function (node, topLevel, remove, opStack
 
 internals.Trie.prototype._lookupNode = function (node, cb) {
     var self = this;
+
     function dbLookup() {
         self.db.get(node, {
             encoding: "binary"
