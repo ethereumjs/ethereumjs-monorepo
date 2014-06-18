@@ -24,14 +24,20 @@ trie.put('test', 'one', function () {
 
 ## API
 ### `new new Trie([db], [root])`
+### `new new Trie([options], [root])`
 Creates a new Trie object
 - `db` -  A instance of [levelup](https://github.com/rvagg/node-levelup/) or compatiable API. If no db is `null` or left undefined then the the trie will be stored in memory vai [memdown](https://github.com/rvagg/memdown)
 - `root` - A hex `String` or `Buffer` for the root of a prevously stored trie.
+- `options` - hash with the following 
+ - `immutable`  - A `Boolean` determing if the Trie will be immutable or not. This property can be changed later.
+ - `db` - the db
 
 --------------------------------------------------------
 
 ### `Trie` Properties
 - `root` - The root of the `trie` as a `Buffer` 
+- `checkpoint` -  A `Boolean` determining if you are saving to a checkpoint or directly to the db 
+- `immutable` - A `Boolean` flag determing if the Trie is immutable or not
 
 --------------------------------------------------------
 
