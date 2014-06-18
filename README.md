@@ -58,6 +58,22 @@ Removes a value
 
 --------------------------------------------------------
 
+####  `trie.createCheckpoint()`
+Creates a checkpoint that can later be reverted to or commited. After this is called, no changes to the trie will be permanently saved until `commitCheckpoint` is called. 
+
+--------------------------------------------------------
+
+####  `trie.commitCheckpoint(cb)`
+Commits a checkpoint to the trie
+- `cb` - a callback `Function` 
+
+--------------------------------------------------------
+
+####  `trie.revertCheckpoint()`
+revets the trie to the state it was at when `createCheckpoint` was first called
+
+--------------------------------------------------------
+
 #### `trie.createReadStream()`
 returns a read stream. The `data` event is given an `Object` hat has two propeties; the `key` and the `value`. Both should be Buffers.
 
