@@ -6,14 +6,16 @@ var Trie = require("../index.js"),
     Sha3 = require("sha3"),
     assert = require("assert");
 
+var dbLoc = "./test/testdb";
+
+
 describe("simple save and retrive", function () {
-    var db1 = levelup("./test/testdb");
     var trie = new Trie();
 
-    it("should not crash if given a none existant root", function(done){
+    it("should not crash if given a none existant root", function (done) {
         var root = new Buffer("3f4399b08efe68945c1cf90ffe85bbe3ce978959da753f9e649f034015b8817d", "hex");
-        var trie11 = new Trie(db1, root);
-    
+        var trie11 = new Trie(null, root);
+
         trie11.get("test", function (err, value) {
             assert.equal(value, null);
             done();
@@ -93,7 +95,7 @@ describe("simple save and retrive", function () {
 
 describe("storing longer values", function () {
     var db2 = levelup("./test/testdb2");
-    var trie2 = new Trie(db2);
+    var trie2 = new Trie();
 
     var longString = "this will be a really really really long value";
     var longStringRoot = "b173e2db29e79c78963cff5196f8a983fbe0171388972106b114ef7f5c24dfa3";
@@ -122,8 +124,7 @@ describe("storing longer values", function () {
 });
 
 describe("testing Extentions and branches", function () {
-    var db3 = levelup("./test/testdb3");
-    var trie3 = new Trie(db3);
+    var trie3 = new Trie();
 
     it("should store a value", function (done) {
         trie3.put("doge", "coin", function () {
@@ -148,8 +149,7 @@ describe("testing Extentions and branches", function () {
 });
 
 describe("testing Extentions and branches - reverse", function () {
-    var db5 = levelup("./test/testdb5");
-    var trie3 = new Trie(db5);
+    var trie3 = new Trie();
 
     it("should create extention to store this value", function (done) {
         trie3.put("do", "verb", function () {
@@ -174,7 +174,7 @@ describe("testing Extentions and branches - reverse", function () {
 
 describe("testing deletions cases", function () {
     var db6 = levelup("./test/testdb6");
-    var trie3 = new Trie(db6);
+    var trie3 = new Trie();
 
     it("should delete from a branch->branch-branch", function (done) {
         trie3.put(new Buffer([11, 11, 11]), "first", function () {
@@ -258,13 +258,63 @@ describe("testing deletions cases", function () {
             });
         });
     });
+});
 
+describe("testing checkpoints", function () {
+
+    var trie,
+        preRoot,
+        postRoot;
+
+    before(function (done) {
+        trie = new Trie();
+        trie.put("do", "verb", function () {
+            trie.put("doge", "coin", function () {
+                preRoot = trie.root.toString("hex");
+                done();
+            });
+        });
+    });
+
+    it("should create a checkpoint", function (done) {
+        trie.createCheckpoint();
+        done();
+    });
+
+    it("should save to the cache", function (done) {
+        trie.put("test", "something", function () {
+            trie.put("love", "emotion", function () {
+                postRoot = trie.root.toString("hex");
+                done();
+            });
+        });
+    });
+
+    it("should revert to the orginal root", function (done) {
+        assert(trie.checkpoint === true);
+        trie.revertCheckpoint();
+        assert(trie.root.toString("hex") === preRoot);
+        assert(trie.checkpoint === false);
+        done();
+    });
+
+    it("should commit a checkpoint", function (done) {
+        trie.createCheckpoint();
+        trie.put("test", "something", function () {
+            trie.put("love", "emotion", function () {
+                trie.commitCheckpoint(function () {
+                    assert(trie.checkpoint === false);
+                    assert(trie.root.toString("hex") === postRoot);
+                    done();
+                });
+            });
+        });
+    });
 });
 
 describe("it should create the genesis state root from ethereum", function () {
 
-    var db4 = levelup("./test/testdb4"),
-        trie4 = new Trie(db4),
+    var trie4 = new Trie(),
         g = new Buffer("8a40bfaa73256b60764c1bf40675a99083efb075", "hex"),
         j = new Buffer("e6716f9544a56c530d868e4bfbacb172315bdead", "hex"),
         v = new Buffer("1e12515ce3e0f817a4ddef9ca55788a1d66bd2df", "hex"),
@@ -277,7 +327,7 @@ describe("it should create the genesis state root from ethereum", function () {
     startAmount.fill(0);
     startAmount[0] = 1;
     var account = [startAmount, 0, stateRoot, new Buffer(hash.digest("hex"), "hex")];
-    rlpAccount = rlp.encode(account);
+    var rlpAccount = rlp.encode(account);
     cppRlp = "f85e9a010000000000000000000000000000000000000000000000000080a00000000000000000000000000000000000000000000000000000000000000000a0c5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470";
 
     var genesisStateRoot = "2f4399b08efe68945c1cf90ffe85bbe3ce978959da753f9e649f034015b8817d";
@@ -308,7 +358,7 @@ describe("offical tests", function () {
         jsonTests = JSON.parse(data),
         testNames = Object.keys(jsonTests),
         db7 = levelup("./test/testdb9"),
-        trie = new Trie(db7);
+        trie = new Trie();
     });
 
     it("pass all tests", function (done) {
@@ -324,7 +374,7 @@ describe("offical tests", function () {
             }, function () {
 
                 assert.equal(trie.root.toString("hex"), expect);
-                trie = new Trie(db7);
+                trie = new Trie();
                 done();
             });
 

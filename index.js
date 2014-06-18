@@ -9,31 +9,12 @@ var assert = require("assert"),
 var internals = {};
 
 exports = module.exports = internals.Trie = function (db, root) {
-    assert(this.constructor === internals.Trie, "Trie must be instantiated using new");
-    if (typeof root === "string") {
-        root = new Buffer(root, "hex");
+    if (db && db.immutable !== undefined) {
+        this.immutable = db.immutable;
+        db = db.db;
+    } else {
+        this.immutable = true;
     }
-
-    Object.defineProperty(this, "root", {
-        set: function (v) {
-            if(v){
-                if (!Buffer.isBuffer(v)) {
-                    if (typeof v === "string") {
-                        v = new Buffer(v, "hex");
-                    }
-                }
-                assert(v.length === 32, "Invalid root length. Roots are 32 bytes");
-            }else{
-                v = null;
-            }
-            this._root = v;
-        },
-        get: function(){
-            return this._root;
-        }
-    });
-
-    this.root = root;
 
     if (!db) {
         db = levelup("", {
@@ -41,6 +22,33 @@ exports = module.exports = internals.Trie = function (db, root) {
         });
     }
     this.db = db;
+    this.checkpoint = false;
+
+    assert(this.constructor === internals.Trie, "Trie must be instantiated using new");
+    if (typeof root === "string") {
+        root = new Buffer(root, "hex");
+    }
+
+    Object.defineProperty(this, "root", {
+        set: function (v) {
+            if (v) {
+                if (!Buffer.isBuffer(v)) {
+                    if (typeof v === "string") {
+                        v = new Buffer(v, "hex");
+                    }
+                }
+                assert(v.length === 32, "Invalid root length. Roots are 32 bytes");
+            } else {
+                v = null;
+            }
+            this._root = v;
+        },
+        get: function () {
+            return this._root;
+        }
+    });
+
+    this.root = root;
 };
 
 /*
@@ -118,13 +126,13 @@ internals.Trie.prototype._findNode = function (key, root, stack, cb) {
 
     //parse the node and gets the next node if any to parse
     function processNode(node) {
-        if(!node) { 
+        if (!node) {
             cb(null, null, key, stack);
             return;
         }
 
         stack.push(node);
-        if (node.type == "branch") {
+        if (node.type === "branch") {
             //branch
             if (key.length === 0) {
                 cb(null, node, [], stack, cb);
@@ -139,12 +147,12 @@ internals.Trie.prototype._findNode = function (key, root, stack, cb) {
                 }
             }
         } else {
-            var nodeKey = node.key;
-            matchingLen = internals.matchingNibbleLength(nodeKey, key),
-            keyRemainder = key.slice(matchingLen);
+            var nodeKey = node.key,
+                matchingLen = internals.matchingNibbleLength(nodeKey, key),
+                keyRemainder = key.slice(matchingLen);
 
-            if (node.type == "leaf") {
-                if (keyRemainder.length !== 0 || key.length != nodeKey.length) {
+            if (node.type === "leaf") {
+                if (keyRemainder.length !== 0 || key.length !== nodeKey.length) {
                     //we did not find the key
                     node = null;
                 } else {
@@ -152,8 +160,8 @@ internals.Trie.prototype._findNode = function (key, root, stack, cb) {
                 }
                 cb(null, node, key, stack);
 
-            } else if (node.type == "extention") {
-                if (matchingLen != nodeKey.length) {
+            } else if (node.type === "extention") {
+                if (matchingLen !== nodeKey.length) {
                     //we did not find the key
                     cb(null, null, key, stack);
                 } else {
@@ -227,7 +235,7 @@ internals.Trie.prototype._findAll = function (root, key, onFound, onDone) {
     }
 
     if (!root) {
-        onFound(null, done);
+        onFound(null, onDone);
         return;
     }
 
@@ -244,8 +252,7 @@ internals.Trie.prototype._findAll = function (root, key, onFound, onDone) {
  */
 internals.Trie.prototype._updateNode = function (key, value, keyRemainder, stack, cb) {
 
-    var self = this,
-        toSave = [],
+    var toSave = [],
         lastNode = stack.pop();
 
     //add the new nodes
@@ -263,8 +270,6 @@ internals.Trie.prototype._updateNode = function (key, value, keyRemainder, stack
         }
     } else if (lastNode.type === "leaf" && keyRemainder.length === 0) {
         //just updating a found value
-        //remove the old value from the db
-        internals.formatNode(lastNode, false, true, toSave);
         lastNode.value = value;
         stack.push(lastNode);
     } else {
@@ -287,7 +292,7 @@ internals.Trie.prototype._updateNode = function (key, value, keyRemainder, stack
         if (lastKey.length !== 0) {
             var branchKey = lastKey.shift();
             lastNode.key = lastKey;
-            var formatedNode = internals.formatNode(lastNode, false, toSave);
+            var formatedNode = this._formatNode(lastNode, false, toSave);
             newBranchNode.setValue(branchKey, formatedNode);
         } else {
             newBranchNode.value = lastNode.value;
@@ -317,37 +322,46 @@ internals.Trie.prototype._saveStack = function (key, stack, opStack, cb) {
     //update nodes
     while (stack.length) {
         var node = stack.pop();
-        if (node.type == "leaf") {
+        //remove old values
+        this._formatNode(node, stack.length === 0, true, opStack);
+        if (node.type === "leaf") {
             key.splice(key.length - node.key.length);
-        } else if (node.type == "extention") {
+        } else if (node.type === "extention") {
             key.splice(key.length - node.key.length);
             if (lastRoot) {
                 node.value = lastRoot;
             }
-        } else if (node.type == "branch") {
+        } else if (node.type === "branch") {
             if (lastRoot) {
                 var branchKey = key.pop();
                 node.setValue(branchKey, lastRoot);
             }
         }
-        lastRoot = internals.formatNode(node, stack.length === 0, opStack);
+        lastRoot = this._formatNode(node, stack.length === 0, opStack);
     }
-
     assert(key.length === 0, "key length should be 0 after we are done processing the stack");
     if (lastRoot) {
         this.root = lastRoot;
     }
-    this.db.batch(opStack, {
-        encoding: "binary"
-    }, cb);
+    if (this.checkpoint) {
+        this._cache.db.batch(opStack, {
+            encoding: "binary"
+        }, cb);
+    } else {
+        this.db.batch(opStack, {
+            encoding: "binary"
+        }, cb);
+    }
 };
 
 internals.Trie.prototype._deleteNode = function (key, stack, cb) {
 
     function processBranchNode(key, branchKey, branchNode, parentNode, stack) {
         //branchNode is the node ON the branch node not THE branch node
+        var branchNodeKey = branchNode.key;
         if (!parentNode || parentNode.type === "branch") {
             //branch->?
+            //
             if (parentNode) stack.push(parentNode);
 
             if (branchNode.type === "branch") {
@@ -359,7 +373,6 @@ internals.Trie.prototype._deleteNode = function (key, stack, cb) {
             } else {
                 //branch key is an extention or a leaf
                 //branch->(leaf or extention)
-                var branchNodeKey = branchNode.key;
                 branchNodeKey.unshift(branchKey);
                 branchNode.key = branchNodeKey;
 
@@ -373,21 +386,17 @@ internals.Trie.prototype._deleteNode = function (key, stack, cb) {
             stack.push(branchNode);
         } else {
             //parent is a extention
+            var parentKey = parentNode.key;
             if (branchNode.type === "branch") {
                 //ext->branch
-                var parentKey = parentNode.key;
                 parentKey.push(branchKey);
                 key.push(branchKey);
-
                 parentNode.key = parentKey;
                 stack.push(parentNode);
             } else {
                 //branch node is an leaf or extention and parent node is an exstention
                 //add two keys together
                 //dont push the parent node
-                var parentKey = parentNode.key,
-                    branchNodeKey = branchNode.key;
-
                 branchNodeKey.unshift(branchKey);
                 parentKey = parentKey.concat(branchNodeKey);
                 branchNode.key = parentKey;
@@ -408,7 +417,7 @@ internals.Trie.prototype._deleteNode = function (key, stack, cb) {
 
     if (!parentNode) {
         //the root here has to be a leaf.
-        this.db.del(this.root, cb);
+        if (!this.checkpoint) this.db.del(this.root, cb);
         this.root = null;
     } else {
         if (lastNode.type === "branch") {
@@ -419,7 +428,7 @@ internals.Trie.prototype._deleteNode = function (key, stack, cb) {
             var lastNodeKey = lastNode.key;
             key.splice(key.length - lastNodeKey.length);
             //delete the value
-            internals.formatNode(lastNode, false, true, opStack);
+            this._formatNode(lastNode, false, true, opStack);
             parentNode.setValue(key.pop(), null);
             lastNode = parentNode;
             parentNode = stack.pop();
@@ -436,8 +445,8 @@ internals.Trie.prototype._deleteNode = function (key, stack, cb) {
         //if there is only one branch node left, collapse the branch node
         if (branchNodes.length === 1) {
             //add the one remaing branch node to node above it
-            var branchNode = branchNodes[0][1];
-            var branchNodeKey = branchNodes[0][0];
+            var branchNode = branchNodes[0][1],
+                branchNodeKey = branchNodes[0][0];
 
             //look up node
             this._lookupNode(branchNode, function (foundNode) {
@@ -457,19 +466,17 @@ internals.Trie.prototype._deleteNode = function (key, stack, cb) {
 //Creates the initial node
 internals.Trie.prototype._createNewNode = function (key, value, cb) {
     var newNode = new TrieNode("leaf", key, value);
-    //rlp encode 
-    var rlpNode = rlp.encode(newNode.raw);
-    //create the hash key
-    var hash = new Sha3.SHA3Hash(256);
-    hash.update(rlpNode);
-    //no way to get a buffer directly from the hash :(
-    var key = hash.digest("hex");
-    key = new Buffer(key, "hex");
-    this.root = key;
+    this.root = newNode.hash();
     //save
-    this.db.put(key, rlpNode, {
-        encoding: "binary"
-    }, cb);
+    if (this.checkpoint) {
+        this._cache.put(this.root, newNode.serialize(), {
+            encoding: "binary"
+        }, cb);
+    } else {
+        this.db.put(this.root, newNode.serialize(), {
+            encoding: "binary"
+        }, cb);
+    }
 };
 
 /*
@@ -489,23 +496,21 @@ internals.matchingNibbleLength = function (nib1, nib2) {
 
 //formats node to be saved by levelup.batch.
 //returns either the hash that will be used key or the rawNode
-internals.formatNode = function (node, topLevel, remove, opStack) {
+internals.Trie.prototype._formatNode = function (node, topLevel, remove, opStack) {
     if (arguments.length === 3) {
         opStack = remove;
         remove = false;
     }
-    var rlpNode = rlp.encode(node.raw);
+    var rlpNode = node.serialize();
     if (rlpNode.length >= 32 || topLevel) {
-        //create a hash of the node
-        var hash = new Sha3.SHA3Hash(256);
-        hash.update(rlpNode);
-        //no way to get a buffer directly from the hash :(
-        var hashRoot = new Buffer(hash.digest("hex"), "hex");
+        var hashRoot = node.hash();
         if (remove) {
-            opStack.push({
-                type: "del",
-                key: hashRoot
-            });
+            if (!this.immutable) {
+                opStack.push({
+                    type: "del",
+                    key: hashRoot
+                });
+            }
         } else {
             opStack.push({
                 type: "put",
@@ -519,9 +524,9 @@ internals.formatNode = function (node, topLevel, remove, opStack) {
 };
 
 internals.Trie.prototype._lookupNode = function (node, cb) {
-    if (Buffer.isBuffer(node) && node.length == 32) {
-        //resovle hash to node
-        this.db.get(node, {
+    var self = this;
+    function dbLookup() {
+        self.db.get(node, {
             encoding: "binary"
         }, function (err, foundNode) {
             if (err || !foundNode) {
@@ -531,6 +536,24 @@ internals.Trie.prototype._lookupNode = function (node, cb) {
                 cb(new TrieNode(foundNode));
             }
         });
+    }
+
+    if (Buffer.isBuffer(node) && node.length === 32) {
+        //resovle hash to node
+        if (this.checkpoint) {
+            this._cache.db.get(node, {
+                encoding: "binary"
+            }, function (err, foundNode) {
+                if (err || !foundNode) {
+                    dbLookup();
+                } else {
+                    foundNode = rlp.decode(foundNode);
+                    cb(new TrieNode(foundNode));
+                }
+            });
+        } else {
+            dbLookup();
+        }
     } else {
         cb(new TrieNode(node));
     }
@@ -538,4 +561,34 @@ internals.Trie.prototype._lookupNode = function (node, cb) {
 
 internals.Trie.prototype.createReadStream = function () {
     return new ReadStream(this);
+};
+
+//creates a checkout 
+internals.Trie.prototype.createCheckpoint = function () {
+    //only create checkpoint if we have a root
+    if (this.root) {
+        this._cache = new internals.Trie({
+            immutable: false
+        });
+
+        if (!this.checkpoint) {
+            this._checkpointRoot = this.root;
+        }
+        this.checkpoint = true;
+    }
+};
+
+internals.Trie.prototype.commitCheckpoint = function (callback) {
+    if (this.checkpoint) {
+        this.checkpoint = false;
+        this.db.createReadStream().pipe(this.db.createWriteStream()).on("close", callback);
+    } else if (callback === "function") {
+        callback();
+    }
+};
+
+internals.Trie.prototype.revertCheckpoint = function () {
+    delete this._cache;
+    this.root = this._checkpointRoot;
+    this.checkpoint = false;
 };
