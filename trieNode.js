@@ -175,7 +175,7 @@ internals.stringToNibbles = internals.TrieNode.stringToNibbles = function (key) 
     var nibbles = [];
 
     for (var i = 0; i < bkey.length; i++) {
-        q = i * 2;
+        var q = i * 2;
         nibbles[q] = bkey[i] >> 4;
         ++q;
         nibbles[q] = bkey[i] % 16;

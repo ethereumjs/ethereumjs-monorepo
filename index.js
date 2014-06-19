@@ -1,5 +1,4 @@
 var assert = require("assert"),
-    Sha3 = require("sha3"),
     async = require("async"),
     rlp = require("rlp"),
     levelup = require("levelup"),
