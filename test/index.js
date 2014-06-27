@@ -277,7 +277,7 @@ describe("testing checkpoints", function () {
     });
 
     it("should create a checkpoint", function (done) {
-        trie.createCheckpoint();
+        trie.checkpoint();
         done();
     });
 
@@ -291,19 +291,19 @@ describe("testing checkpoints", function () {
     });
 
     it("should revert to the orginal root", function (done) {
-        assert(trie.checkpoint === true);
-        trie.revertCheckpoint();
+        assert(trie.isCheckpoint === true);
+        trie.revert();
         assert(trie.root.toString("hex") === preRoot);
-        assert(trie.checkpoint === false);
+        assert(trie.isCheckpoint === false);
         done();
     });
 
     it("should commit a checkpoint", function (done) {
-        trie.createCheckpoint();
+        trie.checkpoint();
         trie.put("test", "something", function () {
             trie.put("love", "emotion", function () {
-                trie.commitCheckpoint(function () {
-                    assert(trie.checkpoint === false);
+                trie.commit(function () {
+                    assert(trie.isCheckpoint === false);
                     assert(trie.root.toString("hex") === postRoot);
                     done();
                 });

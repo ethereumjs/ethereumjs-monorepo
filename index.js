@@ -21,7 +21,7 @@ exports = module.exports = internals.Trie = function (db, root) {
         });
     }
     this.db = db;
-    this.checkpoint = false;
+    this.isCheckpoint = false;
 
     assert(this.constructor === internals.Trie, "Trie must be instantiated using new");
     if (typeof root === "string") {
@@ -349,7 +349,7 @@ internals.Trie.prototype._saveStack = function (key, stack, opStack, cb) {
     if (lastRoot) {
         this.root = lastRoot;
     }
-    if (this.checkpoint) {
+    if (this.isCheckpoint) {
         this._cache.db.batch(opStack, {
             encoding: "binary"
         }, cb);
@@ -423,7 +423,7 @@ internals.Trie.prototype._deleteNode = function (key, stack, cb) {
 
     if (!parentNode) {
         //the root here has to be a leaf.
-        if (!this.checkpoint) this.db.del(this.root, cb);
+        if (!this.isCheckpoint) this.db.del(this.root, cb);
         this.root = null;
     } else {
         if (lastNode.type === "branch") {
@@ -474,7 +474,7 @@ internals.Trie.prototype._createNewNode = function (key, value, cb) {
     var newNode = new TrieNode("leaf", key, value);
     this.root = newNode.hash();
     //save
-    if (this.checkpoint) {
+    if (this.isCheckpoint) {
         this._cache.put(this.root, newNode.serialize(), {
             encoding: "binary"
         }, cb);
@@ -547,7 +547,7 @@ internals.Trie.prototype._lookupNode = function (node, cb) {
 
     if (Buffer.isBuffer(node) && node.length === 32) {
         //resovle hash to node
-        if (this.checkpoint) {
+        if (this.isCheckpoint) {
             this._cache.db.get(node, {
                 encoding: "binary"
             }, function (err, foundNode) {
@@ -571,31 +571,31 @@ internals.Trie.prototype.createReadStream = function () {
 };
 
 //creates a checkout 
-internals.Trie.prototype.createCheckpoint = function () {
+internals.Trie.prototype.checkpoint = function () {
     //only create checkpoint if we have a root
     if (this.root) {
         this._cache = new internals.Trie({
             immutable: false
         });
 
-        if (!this.checkpoint) {
+        if (!this.isCheckpoint) {
             this._checkpointRoot = this.root;
         }
-        this.checkpoint = true;
+        this.isCheckpoint = true;
     }
 };
 
-internals.Trie.prototype.commitCheckpoint = function (callback) {
-    if (this.checkpoint) {
-        this.checkpoint = false;
+internals.Trie.prototype.commit = function (callback) {
+    if (this.isCheckpoint) {
+        this.isCheckpoint = false;
         this.db.createReadStream().pipe(this.db.createWriteStream()).on("close", callback);
     } else if (callback === "function") {
         callback();
     }
 };
 
-internals.Trie.prototype.revertCheckpoint = function () {
+internals.Trie.prototype.revert = function () {
     delete this._cache;
     this.root = this._checkpointRoot;
-    this.checkpoint = false;
+    this.isCheckpoint = false;
 };
