@@ -648,7 +648,7 @@ internals.Trie.prototype.commit = function (callback) {
     if (this.isCheckpoint) {
         this.isCheckpoint = false;
         this.db.createReadStream().pipe(this.db.createWriteStream()).on('close', callback);
-    } else if (callback === 'function') {
+    } else {
         callback();
     }
 };
