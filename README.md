@@ -29,7 +29,7 @@ Creates a new Trie object
 - `db` -  A instance of [levelup](https://github.com/rvagg/node-levelup/) or compatiable API. If no db is `null` or left undefined then the the trie will be stored in memory vai [memdown](https://github.com/rvagg/memdown)
 - `root` - A hex `String` or `Buffer` for the root of a prevously stored trie.
 - `options` - hash with the following 
- - `immutable`  - A `Boolean` determing if the Trie will be immutable or not. This property can be changed later.
+ - `isImmutable`  - A `Boolean` determing if the Trie will be immutable or not. This property can be changed later.
  - `db` - the db
 
 --------------------------------------------------------
@@ -77,6 +77,12 @@ Commits a checkpoint to the trie
 
 ####  `trie.revert()`
 revets the trie to the state it was at when `createCheckpoint` was first called
+
+--------------------------------------------------------
+
+####  `trie.deleteState([stateRoot], cb)`
+Deletes a the nodes of a given stateroot. If no stateroot is given then it will delete the current state.
+- `cb` - a callback `Function` 
 
 --------------------------------------------------------
 
