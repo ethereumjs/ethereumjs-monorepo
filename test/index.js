@@ -6,13 +6,14 @@ var Trie = require('../index.js'),
     Sha3 = require('sha3'),
     assert = require('assert');
 
-var dbLoc = './test/testdb';
+var dbLoc = './test/testdb',
+    internals = {};
 
 
 describe('simple save and retrive', function () {
     var trie = new Trie();
 
-    it('should not crash if given a none existant root', function (done) {
+    it('should not crash if given a non-existant root', function (done) {
         var root = new Buffer('3f4399b08efe68945c1cf90ffe85bbe3ce978959da753f9e649f034015b8817d', 'hex');
         var trie11 = new Trie(null, root);
 
@@ -88,7 +89,10 @@ describe('simple save and retrive', function () {
                 done();
             });
         });
+    });
 
+    it('it should totally delete a state', function (done) {
+        trie.deleteState(done);
     });
 
 });
@@ -118,6 +122,25 @@ describe('storing longer values', function () {
 
     it('should when being modiefied delete the old value', function (done) {
         trie2.put('done', 'test', function () {
+            done();
+        });
+    });
+
+    it('it should totally delete a state', function (done) {
+        trie2.deleteState(done);
+    });
+
+    it('it should totally delete a state', function (done) {
+        trie2.deleteState(done);
+    });
+
+    it('should be an empty trie now', function (done) {
+        var stream = trie2.createReadStream();
+        stream.on('data', function (val) {
+            assert(false);
+        });
+
+        stream.on('end', function (val) {
             done();
         });
     });
@@ -170,6 +193,7 @@ describe('testing Extentions and branches - reverse', function () {
             done();
         });
     });
+
 });
 
 describe('testing deletions cases', function () {

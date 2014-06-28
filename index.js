@@ -234,12 +234,71 @@ internals.Trie.prototype._findAll = function (root, key, onFound, onDone) {
     }
 
     if (!root) {
-        onFound(null, onDone);
+        onDone();
         return;
     }
 
     this._lookupNode(root, processNode);
 };
+
+//Delates a state given a state root. the  most anarchist function yet!
+internals.Trie.prototype.deleteState = function (root, cb) {
+    var self = this;
+
+    if (arguments.length === 1) {
+        this.revert();
+        cb = root;
+        root = this.root;
+    }
+
+    if (root) {
+        this._deleteState(root, [], function (err, opStack) {
+            self.db.batch(opStack, {
+                encoding: 'binary'
+            }, cb);
+        });
+    } else {
+        cb();
+    }
+};
+
+/*
+ * Finds and deletes state
+ */
+internals.Trie.prototype._deleteState = function (root, delNodes, cb) {
+    var self = this;
+
+    function processNode(node) {
+        self._formatNode(node, false, true, delNodes);
+        if (node.type === 'leaf') {
+            cb();
+        } else if (node.type === 'extention') {
+            self._deleteState(node.value, delNodes, cb);
+        } else {
+            var count = 0;
+            async.whilst(
+                function () {
+                    return count < 15;
+                },
+                function (callback) {
+                    count++;
+                    var val = node.getValue(count);
+                    if (val) {
+                        self._deleteState(val, callback);
+                    } else {
+                        callback();
+                    }
+                },
+                function (err) {
+                    cb(err);
+                }
+            );
+        }
+    }
+
+    this._lookupNode(root, processNode);
+};
+
 
 /* Updates a node
  * @method _updateNode
