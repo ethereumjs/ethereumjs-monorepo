@@ -420,7 +420,6 @@ internals.Trie.prototype._saveStack = function (key, stack, opStack, cb) {
 };
 
 internals.Trie.prototype._deleteNode = function (key, stack, cb) {
-
     function processBranchNode(key, branchKey, branchNode, parentNode, stack) {
         //branchNode is the node ON the branch node not THE branch node
         var branchNodeKey = branchNode.key;
@@ -534,9 +533,7 @@ internals.Trie.prototype._createNewNode = function (key, value, cb) {
     this.root = newNode.hash();
     //save
     if (this.isCheckpoint) {
-        this._cache.put(this.root, newNode.serialize(), {
-            encoding: 'binary'
-        }, cb);
+        this._cache.put(key, value, cb);
     } else {
         this.db.put(this.root, newNode.serialize(), {
             encoding: 'binary'
