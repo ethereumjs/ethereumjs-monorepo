@@ -631,17 +631,14 @@ internals.Trie.prototype.createReadStream = function () {
 
 //creates a checkout 
 internals.Trie.prototype.checkpoint = function () {
-    //only create checkpoint if we have a root
-    if (this.root) {
-        this._cache = new internals.Trie({
-            isImmutable: false
-        });
+    this._cache = new internals.Trie({
+        isImmutable: false
+    });
 
-        if (!this.isCheckpoint) {
-            this._checkpointRoot = this.root;
-        }
-        this.isCheckpoint = true;
+    if (!this.isCheckpoint) {
+        this._checkpointRoot = this.root;
     }
+    this.isCheckpoint = true;
 };
 
 internals.Trie.prototype.commit = function (callback) {
