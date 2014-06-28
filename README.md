@@ -36,7 +36,7 @@ Creates a new Trie object
 
 ### `Trie` Properties
 - `root` - The root of the `trie` as a `Buffer` 
-- `checkpoint` -  A `Boolean` determining if you are saving to a checkpoint or directly to the db 
+- `isCheckpoint` -  A `Boolean` determining if you are saving to a checkpoint or directly to the db 
 - `immutable` - A `Boolean` flag determing if the Trie is immutable or not
 
 --------------------------------------------------------
@@ -64,18 +64,18 @@ Removes a value
 
 --------------------------------------------------------
 
-####  `trie.createCheckpoint()`
+####  `trie.checkpoint()`
 Creates a checkpoint that can later be reverted to or commited. After this is called, no changes to the trie will be permanently saved until `commitCheckpoint` is called. 
 
 --------------------------------------------------------
 
-####  `trie.commitCheckpoint(cb)`
+####  `trie.commit(cb)`
 Commits a checkpoint to the trie
 - `cb` - a callback `Function` 
 
 --------------------------------------------------------
 
-####  `trie.revertCheckpoint()`
+####  `trie.revert()`
 revets the trie to the state it was at when `createCheckpoint` was first called
 
 --------------------------------------------------------
