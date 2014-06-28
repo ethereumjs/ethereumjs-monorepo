@@ -1,5 +1,5 @@
-var rlp = require("rlp"),
-    Sha3 = require("sha3");
+var rlp = require('rlp'),
+    Sha3 = require('sha3');
 
 var internals = {};
 
@@ -9,7 +9,7 @@ exports = module.exports = internals.TrieNode = function (type, key, value) {
         this.parseNode(type);
     } else {
         this.type = type;
-        if (type === "branch") {
+        if (type === 'branch') {
             var values = key;
             this.raw = Array.apply(null, Array(17));
             if (values) {
@@ -25,7 +25,7 @@ exports = module.exports = internals.TrieNode = function (type, key, value) {
     }
 };
 
-Object.defineProperty(internals.TrieNode.prototype, "value", {
+Object.defineProperty(internals.TrieNode.prototype, 'value', {
     get: function () {
         return this.getValue();
     },
@@ -34,7 +34,7 @@ Object.defineProperty(internals.TrieNode.prototype, "value", {
     }
 });
 
-Object.defineProperty(internals.TrieNode.prototype, "key", {
+Object.defineProperty(internals.TrieNode.prototype, 'key', {
     get: function () {
         return this.getKey();
     },
@@ -51,7 +51,7 @@ internals.TrieNode.prototype.parseNode = function (rawNode) {
 
 //sets the value of the node
 internals.TrieNode.prototype.setValue = function (key, value) {
-    if (this.type !== "branch") {
+    if (this.type !== 'branch') {
         this.raw[1] = key;
     } else {
         if (arguments.length === 1) {
@@ -63,7 +63,7 @@ internals.TrieNode.prototype.setValue = function (key, value) {
 };
 
 internals.TrieNode.prototype.getValue = function (key) {
-    if (this.type === "branch") {
+    if (this.type === 'branch') {
         if (arguments.length === 0) {
             key = 16;
         }
@@ -77,20 +77,20 @@ internals.TrieNode.prototype.getValue = function (key) {
 };
 
 internals.TrieNode.prototype.setKey = function (key) {
-    if (this.type !== "branch") {
-        if (Buffer.isBuffer(key) || typeof key === "string") {
+    if (this.type !== 'branch') {
+        if (Buffer.isBuffer(key) || typeof key === 'string') {
             key = internals.stringToNibbles(key);
         } else {
             key = key.slice(0); //copy the key
         }
-        key = internals.addHexPrefix(key, this.type === "leaf");
+        key = internals.addHexPrefix(key, this.type === 'leaf');
         this.raw[0] = internals.nibblesToBuffer(key);
     }
 };
 
 //returns the key as a nibble
 internals.TrieNode.prototype.getKey = function () {
-    if (this.type != "branch") {
+    if (this.type != 'branch') {
         var key = this.raw[0];
         key = internals.removeHexPrefix(internals.stringToNibbles(key));
         return (key);
@@ -105,24 +105,24 @@ internals.TrieNode.prototype.hash = function () {
     var hash = new Sha3.SHA3Hash(256);
     hash.update(this.serialize());
     //no way to get a buffer directly from the hash :(
-    var key = hash.digest("hex");
-    return new Buffer(key, "hex");
+    var key = hash.digest('hex');
+    return new Buffer(key, 'hex');
 };
 
 internals.TrieNode.prototype.toString = function () {
     var out = this.type;
-    out += ": [";
+    out += ': [';
     this.raw.forEach(function(el){
         if(Buffer.isBuffer(el)){
-            out += el.toString("hex") + ", ";
+            out += el.toString('hex') + ', ';
         }else if(el){
-            out += "object, ";
+            out += 'object, ';
         }else{
-            out += "empty, ";
+            out += 'empty, ';
         }
     });
     out = out.slice(0, -2);
-    out += "]";
+    out += ']';
     return out;
 };
 
@@ -206,15 +206,15 @@ internals.nibblesToBuffer = internals.TrieNode.nibblesToBuffer = function (arr) 
  * - unkown - if somehting fucked up
  */
 internals.getNodeType = internals.TrieNode.getNodeType = function (node) {
-    if (Buffer.isBuffer(node) || typeof node === "string" || node instanceof String) {
-        return "unkown";
+    if (Buffer.isBuffer(node) || typeof node === 'string' || node instanceof String) {
+        return 'unkown';
     } else if (node.length === 17) {
-        return "branch";
+        return 'branch';
     } else if (node.length === 2) {
         var key = internals.stringToNibbles(node[0]);
         if (internals.isTerminator(key)) {
-            return "leaf";
+            return 'leaf';
         }
-        return "extention";
+        return 'extention';
     }
 };
