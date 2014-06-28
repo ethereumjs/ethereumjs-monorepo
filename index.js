@@ -8,11 +8,11 @@ var assert = require('assert'),
 var internals = {};
 
 exports = module.exports = internals.Trie = function (db, root) {
-    if (db && db.immutable !== undefined) {
-        this.immutable = db.immutable;
+    if (db && db.isImmutable !== undefined) {
+        this.isImmutable = db.isImmutable;
         db = db.db;
     } else {
-        this.immutable = true;
+        this.isImmutable = true;
     }
 
     if (!db) {
@@ -570,7 +570,7 @@ internals.Trie.prototype._formatNode = function (node, topLevel, remove, opStack
     if (rlpNode.length >= 32 || topLevel) {
         var hashRoot = node.hash();
         if (remove) {
-            if (!this.immutable) {
+            if (!this.isImmutable) {
                 opStack.push({
                     type: 'del',
                     key: hashRoot
@@ -634,7 +634,7 @@ internals.Trie.prototype.checkpoint = function () {
     //only create checkpoint if we have a root
     if (this.root) {
         this._cache = new internals.Trie({
-            immutable: false
+            isImmutable: false
         });
 
         if (!this.isCheckpoint) {
