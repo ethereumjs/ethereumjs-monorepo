@@ -691,6 +691,10 @@ internals.matchingNibbleLength = function (nib1, nib2) {
     return i;
 };
 
+/**
+ * Take two or more functions and returns a function  that will execute all of 
+ * the given functions
+ */
 internals.together = function () {
     var funcs = arguments,
         length = funcs.length,
