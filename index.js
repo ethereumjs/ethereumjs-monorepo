@@ -5,9 +5,13 @@ var assert = require('assert'),
     TrieNode = require('./trieNode'),
     ReadStream = require('./readStream');
 
-var internals = {};
+var sem = require('semaphore')(1),
+    internals = {};
 
 exports = module.exports = internals.Trie = function (db, root) {
+
+    assert(this.constructor === internals.Trie, 'Trie must be instantiated using new');
+
     if (db && db.isImmutable !== undefined) {
         this.isImmutable = db.isImmutable;
         db = db.db;
@@ -23,7 +27,6 @@ exports = module.exports = internals.Trie = function (db, root) {
     this.db = db;
     this.isCheckpoint = false;
 
-    assert(this.constructor === internals.Trie, 'Trie must be instantiated using new');
     if (typeof root === 'string') {
         root = new Buffer(root, 'hex');
     }
@@ -56,16 +59,21 @@ exports = module.exports = internals.Trie = function (db, root) {
  * @param {String} key - the key to search for
  */
 internals.Trie.prototype.get = function (key, cb) {
-    this._findNode(key, this.root, [], function (err, node, remainder, stack) {
-        var value = null;
-        if (node && remainder.length === 0) {
-            value = node.value;
-        }
-        cb(err, value);
+    var self = this;
+
+    sem.take(function () {
+        self._findNode(key, self.root, [], function (err, node, remainder, stack) {
+            var value = null;
+            if (node && remainder.length === 0) {
+                value = node.value;
+            }
+            sem.leave();
+            cb(err, value);
+        });
     });
 };
 
-/*
+/**
  * Stores a key value
  * @method put
  * @param {Buffer|String} key
@@ -75,20 +83,26 @@ internals.Trie.prototype.put = function (key, value, cb) {
     var self = this;
 
     if (value === '') {
-        this.del(key, cb);
-    } else if (this.root) {
-        //first try to find the give key or its nearst node
-        this._findNode(key, this.root, [], function (err, foundValue, keyRemainder, stack) {
-            if (err) {
-                cb(err);
+        self.del(key, cb);
+    } else {
+        sem.take(function () {
+            cb = internals.together(cb, sem.leave);
+
+            if (self.root) {
+                //first try to find the give key or its nearst node
+                self._findNode(key, self.root, [], function (err, foundValue, keyRemainder, stack) {
+                    if (err) {
+                        cb(err);
+                    } else {
+                        //then update
+                        self._updateNode(key, value, keyRemainder, stack, cb);
+                    }
+                });
             } else {
-                //then update
-                self._updateNode(key, value, keyRemainder, stack, cb);
+                //if no root initialize this trie
+                self._createNewNode(key, value, cb);
             }
         });
-    } else {
-        //if no root initialize this trie
-        this._createNewNode(key, value, cb);
     }
 };
 
@@ -96,14 +110,17 @@ internals.Trie.prototype.put = function (key, value, cb) {
 internals.Trie.prototype.del = function (key, cb) {
     var self = this;
 
-    this._findNode(key, this.root, [], function (err, foundValue, keyRemainder, stack) {
-        if (err) {
-            cb(err);
-        } else if (foundValue) {
-            self._deleteNode(key, stack, cb);
-        } else {
-            cb();
-        }
+    sem.take(function () {
+        cb = internals.together(cb, sem.leave);
+        self._findNode(key, self.root, [], function (err, foundValue, keyRemainder, stack) {
+            if (err) {
+                cb(err);
+            } else if (foundValue) {
+                self._deleteNode(key, stack, cb);
+            } else {
+                cb();
+            }
+        });
     });
 };
 
@@ -252,10 +269,13 @@ internals.Trie.prototype.deleteState = function (root, cb) {
     }
 
     if (root) {
-        this._deleteState(root, [], function (err, opStack) {
-            self.db.batch(opStack, {
-                encoding: 'binary'
-            }, cb);
+        sem.take(function () {
+            cb = internals.together(cb, sem.leave);
+            self._deleteState(root, [], function (err, opStack) {
+                self.db.batch(opStack, {
+                    encoding: 'binary'
+                }, cb);
+            });
         });
     } else {
         cb();
@@ -300,7 +320,8 @@ internals.Trie.prototype._deleteState = function (root, delNodes, cb) {
 };
 
 
-/* Updates a node
+/** 
+ * Updates a node
  * @method _updateNode
  * @param {Buffer} key
  * @param {Buffer| String} value
@@ -376,12 +397,14 @@ internals.Trie.prototype._updateNode = function (key, value, keyRemainder, stack
     this._saveStack(key, stack, toSave, cb);
 };
 
-//saves a stack
-//@method _saveStack
-//@param {Array} key - the key. Should follow the stack
-//@param {Array} stack - a stack of nodes to the value given by the key
-//@param {Array} opStack - a stack of levelup operations to commit at the end of this funciton
-//@param {Function} cb
+/**
+ * saves a stack
+ * @method _saveStack
+ * @param {Array} key - the key. Should follow the stack
+ * @param {Array} stack - a stack of nodes to the value given by the key
+ * @param {Array} opStack - a stack of levelup operations to commit at the end of this funciton
+ * @param {Function} cb
+ */
 internals.Trie.prototype._saveStack = function (key, stack, opStack, cb) {
     var lastRoot;
     //update nodes
@@ -404,7 +427,9 @@ internals.Trie.prototype._saveStack = function (key, stack, opStack, cb) {
         }
         lastRoot = this._formatNode(node, stack.length === 0, opStack);
     }
+
     assert(key.length === 0, 'key length should be 0 after we are done processing the stack');
+
     if (lastRoot) {
         this.root = lastRoot;
     }
@@ -425,7 +450,6 @@ internals.Trie.prototype._deleteNode = function (key, stack, cb) {
         var branchNodeKey = branchNode.key;
         if (!parentNode || parentNode.type === 'branch') {
             //branch->?
-            //
             if (parentNode) stack.push(parentNode);
 
             if (branchNode.type === 'branch') {
@@ -541,20 +565,6 @@ internals.Trie.prototype._createNewNode = function (key, value, cb) {
     }
 };
 
-/*
- * Returns the number of in order matching nibbles of two give nibble arrayes
- * @method matchingNibbleLength
- * @param {Array} nib1
- * @param {Array} nib2
- */
-internals.matchingNibbleLength = function (nib1, nib2) {
-    var i = 0;
-    while (nib1[i] === nib2[i] && nib1.length > i) {
-        i++;
-    }
-    return i;
-};
-
 
 //formats node to be saved by levelup.batch.
 //returns either the hash that will be used key or the rawNode
@@ -628,27 +638,74 @@ internals.Trie.prototype.createReadStream = function () {
 
 //creates a checkout 
 internals.Trie.prototype.checkpoint = function () {
-    this._cache = new internals.Trie({
-        isImmutable: false
-    });
+    var self = this;
+    sem.take(function () {
+        self._cache = new internals.Trie({
+            isImmutable: false
+        });
 
-    if (!this.isCheckpoint) {
-        this._checkpointRoot = this.root;
-    }
-    this.isCheckpoint = true;
+        if (!self.isCheckpoint) {
+            self._checkpointRoot = self.root;
+        }
+        self.isCheckpoint = true;
+        sem.leave();
+    });
 };
 
-internals.Trie.prototype.commit = function (callback) {
-    if (this.isCheckpoint) {
-        this.isCheckpoint = false;
-        this.db.createReadStream().pipe(this.db.createWriteStream()).on('close', callback);
-    } else {
-        callback();
-    }
+internals.Trie.prototype.commit = function (cb) {
+    var self = this;
+
+    sem.take(function () {
+        cb = internals.together(cb, sem.leave);
+        if (self.isCheckpoint) {
+            self.isCheckpoint = false;
+            self._cache.db.createReadStream().pipe(self.db.createWriteStream()).on('close', cb);
+        } else {
+            cb();
+        }
+    });
 };
 
 internals.Trie.prototype.revert = function () {
-    delete this._cache;
-    this.root = this._checkpointRoot;
-    this.isCheckpoint = false;
+    var self = this;
+
+    sem.take(function () {
+        delete self._cache;
+        self.root = self._checkpointRoot;
+        self.isCheckpoint = false;
+        sem.leave();
+    });
+};
+
+/**
+ * Returns the number of in order matching nibbles of two give nibble arrayes
+ * @method matchingNibbleLength
+ * @param {Array} nib1
+ * @param {Array} nib2
+ */
+internals.matchingNibbleLength = function (nib1, nib2) {
+    var i = 0;
+    while (nib1[i] === nib2[i] && nib1.length > i) {
+        i++;
+    }
+    return i;
+};
+
+internals.together = function () {
+    var funcs = arguments,
+        length = funcs.length,
+        index = length;
+
+    if (!length) {
+        return function () {};
+    }
+
+    return function () {
+        length = index;
+
+        while (length--) {
+            var result = funcs[length].apply(this, arguments);
+        }
+        return result;
+    };
 };
