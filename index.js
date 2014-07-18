@@ -61,6 +61,7 @@ exports = module.exports = internals.Trie = function (db, root) {
  */
 internals.Trie.prototype.get = function (key, cb) {
     var self = this;
+    cb = internals.together(cb, self.sem.leave);
 
     self.sem.take(function () {
         self._findNode(key, self.root, [], function (err, node, remainder, stack) {
@@ -68,7 +69,6 @@ internals.Trie.prototype.get = function (key, cb) {
             if (node && remainder.length === 0) {
                 value = node.value;
             }
-            self.sem.leave();
             cb(err, value);
         });
     });
@@ -86,9 +86,9 @@ internals.Trie.prototype.put = function (key, value, cb) {
     if (value === '') {
         self.del(key, cb);
     } else {
-        self.sem.take(function () {
-            cb = internals.together(cb, self.sem.leave);
+        cb = internals.together(cb, self.sem.leave);
 
+        self.sem.take(function () {
             if (self.root) {
                 //first try to find the give key or its nearst node
                 self._findNode(key, self.root, [], function (err, foundValue, keyRemainder, stack) {
@@ -110,9 +110,9 @@ internals.Trie.prototype.put = function (key, value, cb) {
 //deletes a value
 internals.Trie.prototype.del = function (key, cb) {
     var self = this;
+    cb = internals.together(cb, self.sem.leave);
 
     self.sem.take(function () {
-        cb = internals.together(cb, self.sem.leave);
         self._findNode(key, self.root, [], function (err, foundValue, keyRemainder, stack) {
             if (err) {
                 cb(err);
@@ -270,8 +270,8 @@ internals.Trie.prototype.deleteState = function (root, cb) {
     }
 
     if (root) {
+        cb = internals.together(cb, self.sem.leave);
         self.sem.take(function () {
-            cb = internals.together(cb, self.sem.leave);
             self._deleteState(root, [], function (err, opStack) {
                 self.db.batch(opStack, {
                     encoding: 'binary'
@@ -638,8 +638,10 @@ internals.Trie.prototype.createReadStream = function () {
 };
 
 //creates a checkout 
-internals.Trie.prototype.checkpoint = function () {
+internals.Trie.prototype.checkpoint = function (cb) {
     var self = this;
+    cb = internals.together(cb, self.sem.leave);
+
     self.sem.take(function () {
         self._cache = new internals.Trie({
             isImmutable: false
@@ -649,15 +651,15 @@ internals.Trie.prototype.checkpoint = function () {
             self._checkpointRoot = self.root;
         }
         self.isCheckpoint = true;
-        self.sem.leave();
+        cb();
     });
 };
 
 internals.Trie.prototype.commit = function (cb) {
     var self = this;
+    cb = internals.together(cb, self.sem.leave);
 
     self.sem.take(function () {
-        cb = internals.together(cb, self.sem.leave);
         if (self.isCheckpoint) {
             self.isCheckpoint = false;
             self._cache.db.createReadStream().pipe(self.db.createWriteStream()).on('close', cb);
@@ -667,14 +669,15 @@ internals.Trie.prototype.commit = function (cb) {
     });
 };
 
-internals.Trie.prototype.revert = function () {
+internals.Trie.prototype.revert = function (cb) {
     var self = this;
+    cb = internals.together(cb, self.sem.leave);
 
     self.sem.take(function () {
         delete self._cache;
         self.root = self._checkpointRoot;
         self.isCheckpoint = false;
-        self.sem.leave();
+        cb();
     });
 };
 
@@ -709,7 +712,10 @@ internals.together = function () {
         length = index;
 
         while (length--) {
-            var result = funcs[length].apply(this, arguments);
+            var fn = funcs[length];
+            if (typeof fn === 'function') {
+                var result = funcs[length].apply(this, arguments);
+            }
         }
         return result;
     };
