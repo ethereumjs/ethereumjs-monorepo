@@ -81,7 +81,7 @@ revets the trie to the state it was at when `createCheckpoint` was first called
 --------------------------------------------------------
 
 ####  `trie.deleteState([stateRoot], cb)`
-Deletes a the nodes of a given stateroot. If no stateroot is given then it will delete the current state.
+Deletes all the nodes of a given stateroot. If no stateroot is given then it will delete the current state.
 - `cb` - a callback `Function` 
 
 --------------------------------------------------------
