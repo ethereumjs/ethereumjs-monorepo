@@ -121,7 +121,7 @@ internals.Trie.prototype.del = function (key, cb) {
     });
 };
 
-/*
+/**
  * Trys to find a node, given a key it will find the closest node to that key
  * and return to the callback a `stack` of nodes to the closet node
  * @method _findNode
@@ -638,15 +638,17 @@ internals.Trie.prototype.checkpoint = function (cb) {
     var self = this;
     cb = internals.together(cb, self.sem.leave);
 
+
     self.sem.take(function () {
-        self._cache = new internals.Trie({
+        var trie = self._getCheckpointTrie();
+        trie._cache = new internals.Trie({
             isImmutable: false
         });
 
-        if (!self.isCheckpoint) {
-            self._checkpointRoot = self.root;
+        if (!trie.isCheckpoint) {
+            trie._checkpointRoot = self.root;
         }
-        self.isCheckpoint = true;
+        trie.isCheckpoint = true;
         cb();
     });
 };
@@ -656,9 +658,10 @@ internals.Trie.prototype.commit = function (cb) {
     cb = internals.together(cb, self.sem.leave);
 
     self.sem.take(function () {
-        if (self.isCheckpoint) {
-            self.isCheckpoint = false;
-            self._cache.db.createReadStream().pipe(self.db.createWriteStream()).on('close', cb);
+        var trie = self._getCheckpointTrieParent();
+        if (trie.isCheckpoint) {
+            trie.isCheckpoint = false;
+            trie._cache.db.createReadStream().pipe(self.db.createWriteStream()).on('close', cb);
         } else {
             cb();
         }
@@ -670,11 +673,28 @@ internals.Trie.prototype.revert = function (cb) {
     cb = internals.together(cb, self.sem.leave);
 
     self.sem.take(function () {
-        delete self._cache;
-        self.root = self._checkpointRoot;
-        self.isCheckpoint = false;
+        var trie = self._getCheckpointTrieParent();
+        delete trie._cache;
+        self.root = trie._checkpointRoot;
+        trie.isCheckpoint = false;
         cb();
     });
+};
+
+internals.Trie.prototype._getCheckpointTrie = function () {
+    if (this.isCheckpoint) {
+        return this._cache._getCheckpointTrie();
+    }else{
+        return this;
+    }
+};
+
+internals.Trie.prototype._getCheckpointTrieParent = function () {
+    if (this._cache && this._cache.isCheckpoint) {
+        return this._cache._getCheckpointTrieParent();
+    }else{
+        return this;
+    }
 };
 
 /**

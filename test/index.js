@@ -197,7 +197,6 @@ describe('testing Extentions and branches - reverse', function () {
 });
 
 describe('testing deletions cases', function () {
-    var db6 = levelup('./test/testdb6');
     var trie3 = new Trie();
 
     it('should delete from a branch->branch-branch', function (done) {
@@ -210,8 +209,7 @@ describe('testing deletions cases', function () {
                 trie3.get(new Buffer([12, 22, 22]), function (err, val) {
                     assert.equal(null, val);
 
-                    db6 = levelup('./test/testdb6.1');
-                    trie3 = new Trie(db6);
+                    trie3 = new Trie();
                     done();
                 });
             });
@@ -219,20 +217,16 @@ describe('testing deletions cases', function () {
     });
 
     it('should delete from a branch->branch-extention', function (done) {
-        trie3.put(new Buffer([11, 11, 11]), 'first', function () {
-            //create the top branch
-            trie3.put(new Buffer([12, 22, 22]), 'create the first branch', function () {
-                //crete the middle branch
-                trie3.put(new Buffer([12, 33, 33]), 'create the middle branch', function () {
-                    trie3.put(new Buffer([12, 33, 44]), 'create the last branch', function () {
-                        //delete the middle branch
-                        trie3.del(new Buffer([12, 22, 22]), function () {
-                            trie3.get(new Buffer([12, 22, 22]), function (err, val) {
-                                assert.equal(null, val);
-                                done();
-                            });
-                        });
-                    });
+        async.parallel([
+            async.apply(trie3.put.bind(trie3), new Buffer([11, 11, 11]), 'first'),
+            async.apply(trie3.put.bind(trie3), new Buffer([12, 22, 22]), 'create the first branch'),
+            async.apply(trie3.put.bind(trie3), new Buffer([12, 33, 33]), 'create the middle branch'),
+            async.apply(trie3.put.bind(trie3), new Buffer([12, 33, 44]), 'create the last branch')
+        ], function () {
+            trie3.del(new Buffer([12, 22, 22]), function () {
+                trie3.get(new Buffer([12, 22, 22]), function (err, val) {
+                    assert.equal(null, val);
+                    done();
                 });
             });
         });
@@ -329,6 +323,25 @@ describe('testing checkpoints', function () {
             });
         });
     });
+
+    it('should commit a nested checkpoint', function (done) {
+        trie.checkpoint();
+        var root;
+        trie.put('test', 'something else', function () {
+            root = trie.root;
+            trie.checkpoint();
+            trie.put('the feels', 'emotion', function () {
+                trie.revert();
+                trie.commit(function () {
+                    assert(trie.isCheckpoint === false);
+                    assert(trie.root.toString('hex') === root.toString('hex'));
+                    done();
+                });
+            });
+        });
+    });
+
+
 });
 
 describe('it should create the genesis state root from ethereum', function () {
