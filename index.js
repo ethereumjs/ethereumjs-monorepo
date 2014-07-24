@@ -54,23 +54,19 @@ exports = module.exports = internals.Trie = function (db, root) {
     this.root = root;
 };
 
-/*
+/**
  * Gets a value given a key
  * @method get
  * @param {String} key - the key to search for
  */
 internals.Trie.prototype.get = function (key, cb) {
     var self = this;
-    cb = internals.together(cb, self.sem.leave);
-
-    self.sem.take(function () {
-        self._findNode(key, self.root, [], function (err, node, remainder, stack) {
-            var value = null;
-            if (node && remainder.length === 0) {
-                value = node.value;
-            }
-            cb(err, value);
-        });
+    self._findNode(key, self.root, [], function (err, node, remainder, stack) {
+        var value = null;
+        if (node && remainder.length === 0) {
+            value = node.value;
+        }
+        cb(err, value);
     });
 };
 
