@@ -686,7 +686,7 @@ internals.Trie.prototype.revert = function (cb) {
 
 //creates a new trie with a shared cache
 internals.Trie.prototype.copy = function (){
-    var trie = new internals.Trie({db:this.db});
+    var trie = new internals.Trie(this.db);
     trie.isCheckpoint = this.isCheckpoint;
     trie.isImmutable = this.isImmutable;
     trie._cache = this._cache;
