@@ -684,6 +684,15 @@ internals.Trie.prototype.revert = function (cb) {
     });
 };
 
+//creates a new trie with a shared cache
+internals.Trie.prototype.copy = function (){
+    var trie = new internals.Trie({db:this.db});
+    trie.isCheckpoint = this.isCheckpoint;
+    trie.isImmutable = this.isImmutable;
+    trie._cache = this._cache;
+    return trie;
+};
+
 internals.Trie.prototype._getCheckpointTrie = function () {
     if (this.isCheckpoint) {
         return this._cache._getCheckpointTrie();
