@@ -61,6 +61,7 @@ exports = module.exports = internals.Trie = function (db, root) {
  */
 internals.Trie.prototype.get = function (key, cb) {
     var self = this;
+
     self._findNode(key, self.root, [], function (err, node, remainder, stack) {
         var value = null;
         if (node && remainder.length === 0) {
@@ -629,6 +630,7 @@ internals.Trie.prototype._lookupNode = function (node, cb) {
     }
 };
 
+//creates a readstream
 internals.Trie.prototype.createReadStream = function () {
     return new ReadStream(this);
 };
@@ -637,7 +639,6 @@ internals.Trie.prototype.createReadStream = function () {
 internals.Trie.prototype.checkpoint = function (cb) {
     var self = this;
     cb = internals.together(cb, self.sem.leave);
-
 
     self.sem.take(function () {
         var trie = self._getCheckpointTrie();
@@ -653,6 +654,7 @@ internals.Trie.prototype.checkpoint = function (cb) {
     });
 };
 
+//commits a checkpoint.
 internals.Trie.prototype.commit = function (cb) {
     var self = this;
     cb = internals.together(cb, self.sem.leave);
@@ -668,6 +670,7 @@ internals.Trie.prototype.commit = function (cb) {
     });
 };
 
+//reverts a checkpoint
 internals.Trie.prototype.revert = function (cb) {
     var self = this;
     cb = internals.together(cb, self.sem.leave);
