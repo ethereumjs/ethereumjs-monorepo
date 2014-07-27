@@ -555,7 +555,7 @@ internals.Trie.prototype._createNewNode = function (key, value, cb) {
     this.root = newNode.hash();
     //save
     if (this.isCheckpoint) {
-        this._cache.put(key, value, cb);
+        this._cache._createNewNode(key, value, cb);
     } else {
         this.db.put(this.root, newNode.serialize(), {
             encoding: 'binary'
@@ -612,14 +612,11 @@ internals.Trie.prototype._lookupNode = function (node, cb) {
     if (Buffer.isBuffer(node) && node.length === 32) {
         //resovle hash to node
         if (this.isCheckpoint) {
-            this._cache.db.get(node, {
-                encoding: 'binary'
-            }, function (err, foundNode) {
-                if (err || !foundNode) {
+            this._cache._lookupNode(node, function ( foundNode) {
+                if (!foundNode) {
                     dbLookup();
                 } else {
-                    foundNode = rlp.decode(foundNode);
-                    cb(new TrieNode(foundNode));
+                    cb(foundNode);
                 }
             });
         } else {
@@ -685,7 +682,7 @@ internals.Trie.prototype.revert = function (cb) {
 };
 
 //creates a new trie with a shared cache
-internals.Trie.prototype.copy = function (){
+internals.Trie.prototype.copy = function () {
     var trie = new internals.Trie(this.db);
     trie.isCheckpoint = this.isCheckpoint;
     trie.isImmutable = this.isImmutable;
@@ -696,7 +693,7 @@ internals.Trie.prototype.copy = function (){
 internals.Trie.prototype._getCheckpointTrie = function () {
     if (this.isCheckpoint) {
         return this._cache._getCheckpointTrie();
-    }else{
+    } else {
         return this;
     }
 };
@@ -704,7 +701,7 @@ internals.Trie.prototype._getCheckpointTrie = function () {
 internals.Trie.prototype._getCheckpointTrieParent = function () {
     if (this._cache && this._cache.isCheckpoint) {
         return this._cache._getCheckpointTrieParent();
-    }else{
+    } else {
         return this;
     }
 };
