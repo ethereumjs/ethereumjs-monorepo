@@ -152,8 +152,6 @@ describe('null values', function() {
 
 
 describe('offical tests', function () {
-    var jsonTests;
-
     it('pass all tests', function (done) {
         for (var test in officalTests) {
 
