@@ -1,7 +1,8 @@
 var assert = require('assert');
 var fs = require('fs');
-var Bignum = require('bignum');
+var Bignum = require('bn.js');
 var RLP = require('../index.js');
+var officalTests = require('./jsonTests/rlptest.json');
 
 describe('RLP encoding (string):', function() {
     it('should return itself if single byte and less than 0x7f:', function() {
@@ -152,24 +153,19 @@ describe('null values', function() {
 
 describe('offical tests', function () {
     var jsonTests;
-    before(function () {
-        var data = fs.readFileSync('./test/jsonTests/rlptest.json')
-        jsonTests = JSON.parse(data);
-    });
 
     it('pass all tests', function (done) {
-        for (test in jsonTests) {
-            console.log(test);
+        for (var test in officalTests) {
 
-            var incoming  = jsonTests[test].in 
+            var incoming  = officalTests[test].in ;
             //if we are testing a big number
-            if(incoming[0] == '#'){
+            if(incoming[0] === '#'){
                 var bn = new Bignum(incoming.slice(1));
-                incoming = bn.toBuffer()
+                incoming = new Buffer(bn.toArray());
             }
 
             var encoded = RLP.encode(incoming);
-            assert.equal(encoded.toString('hex'), jsonTests[test].out.toLowerCase());
+            assert.equal(encoded.toString('hex'), officalTests[test].out.toLowerCase());
         }
         done();
     });

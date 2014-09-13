@@ -1,13 +1,14 @@
 {
   "name": "rlp",
-  "version": "0.0.5",
+  "version": "0.0.7",
   "description": "Recursive Length Prefix Encoding Module",
   "main": "index.js",
   "directories": {
     "test": "test"
   },
   "scripts": {
-    "test": "./node_modules/mocha/bin/mocha --timeout 5000 --reporter spec ./test/"
+    "test": "./node_modules/mocha/bin/mocha --timeout 5000 --reporter spec ./test/",
+    "webtest": "browserify test/max.js | testling -u"
   },
   "repository": {
     "type": "git",
@@ -23,8 +24,8 @@
     }
   ],
   "author": {
-    "name": "null_radix",
-    "email": "null_radix@riseup.net"
+    "name": "martin becze",
+    "email": "mjbecze@gmail.com"
   },
   "license": "GPL",
   "bugs": {
@@ -32,6 +33,19 @@
   },
   "devDependencies": {
     "mocha": "~1.17.1",
-    "bignum": "^0.7.0"
+    "bg.js": "*"
+  },
+  "testling": {
+    "files": "test/*.js",
+    "harness" : "mocha-bdd",
+    "browsers": [
+      "chrome/22..latest",
+      "firefox/16..latest",
+      "safari/latest",
+      "opera/11.0..latest",
+      "iphone/6",
+      "ipad/6",
+      "android-browser/latest"
+    ]
   }
 }
