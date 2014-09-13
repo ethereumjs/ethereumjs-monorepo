@@ -33,7 +33,7 @@
   },
   "devDependencies": {
     "mocha": "~1.17.1",
-    "bg.js": "*"
+    "bn.js": "*"
   },
   "testling": {
     "files": "test/*.js",
