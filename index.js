@@ -123,7 +123,7 @@ function intToHex (i) {
 function toBuffer (input) {
   if (Buffer.isBuffer(input)) {
     if (input.length === 1 && input[0] === 0) {
-      return this.toBuffer(null);
+      return toBuffer(null);
     } else {
       return input;
     }
