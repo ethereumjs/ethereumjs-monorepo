@@ -225,7 +225,7 @@ internals.Trie.prototype._findAll = function (root, key, onFound, onDone) {
       var count = 0;
       async.whilst(
         function () {
-          return count < 15;
+          return count < 16;
         },
         function (callback) {
           var val = node.getValue(count);
@@ -298,7 +298,7 @@ internals.Trie.prototype._deleteState = function (root, delNodes, cb) {
       var count = 0;
       async.whilst(
         function () {
-          return count < 15;
+          return count < 16;
         },
         function (callback) {
           count++;
