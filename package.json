@@ -33,7 +33,8 @@
   },
   "devDependencies": {
     "mocha": "~1.17.1",
-    "bn.js": "*"
+    "bn.js": "*",
+    "ethrereum-tests": "git+https://github.com/ethereum/tests.git#develop"
   },
   "testling": {
     "files": "test/*.js",

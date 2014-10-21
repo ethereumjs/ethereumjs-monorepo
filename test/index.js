@@ -2,7 +2,7 @@ var assert = require('assert');
 var fs = require('fs');
 var Bignum = require('bn.js');
 var RLP = require('../index.js');
-var officalTests = require('./jsonTests/rlptest.json');
+var officalTests = require('ethereum-tests').rlptest;
 
 describe('RLP encoding (string):', function() {
     it('should return itself if single byte and less than 0x7f:', function() {
