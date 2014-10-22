@@ -544,7 +544,9 @@ internals.Trie.prototype._deleteNode = function (key, stack, cb) {
 
     } else {
       //simple removing a leaf and recaluclation the stack
-      stack.push(parentNode);
+      if(parentNode){
+        stack.push(parentNode);
+      }
       stack.push(lastNode);
       self._saveStack(key, stack, opStack, cb);
     }
