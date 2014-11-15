@@ -1,6 +1,6 @@
 {
   "name": "merkle-patricia-tree",
-  "version": "0.1.9",
+  "version": "0.1.10",
   "description": "This is an implementation of the modified merkle patricia tree as speficed in the Ethereum's yellow paper.",
   "main": "index.js",
   "scripts": {
@@ -34,7 +34,8 @@
     "sha3": "~1.0.0"
   },
   "devDependencies": {
-    "mocha": "~1.18.2"
+    "mocha": "~1.18.2",
+    "ethrereum-tests": "git+https://github.com/ethereum/tests.git#develop"
   },
   "browser": {
     "sha3": "./sha3.js" 

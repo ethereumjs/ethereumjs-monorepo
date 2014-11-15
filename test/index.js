@@ -3,7 +3,7 @@ var Trie = require('../index.js'),
   rlp = require('rlp'),
   Sha3 = require('sha3'),
   assert = require('assert'),
-  jsonTests = require('./jsonTests/trietest.json');
+  jsonTests = require('ethereum-tests').trietest;
 
 describe('simple save and retrive', function () {
   var trie = new Trie();
@@ -379,23 +379,30 @@ describe('offical tests', function () {
     trie;
 
   before(function () {
-    testNames = Object.keys(jsonTests),
+    testNames = Object.keys(jsonTests);
     trie = new Trie();
   });
 
   it('pass all tests', function (done) {
     async.eachSeries(testNames, function (i, done) {
       console.log(i);
-      var inputs = jsonTests[i].inputs;
-      var expect = jsonTests[i].expectation;
+      var inputs = jsonTests[i].in;
+      var expect = jsonTests[i].root;
 
       async.eachSeries(inputs, function (input, done) {
+      
+        for(i = 0; i < 2; i++){
+          if(input[i].slice(0,2) === '0x'){
+            input[i] = new Buffer(input[i].slice(2), 'hex');
+          }
+        }
+
         trie.put(input[0], input[1], function () {
           done();
         });
       }, function () {
 
-        assert.equal(trie.root.toString('hex'), expect);
+        assert.equal('0x' + trie.root.toString('hex'), expect);
         trie = new Trie();
         done();
       });

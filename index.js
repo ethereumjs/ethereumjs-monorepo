@@ -428,7 +428,7 @@ internals.Trie.prototype._saveStack = function (key, stack, opStack, cb) {
     lastRoot = this._formatNode(node, stack.length === 0, opStack);
   }
 
-  assert(key.length === 0, 'key length should be 0 after we are done processing the stack');
+  //assert(key.length === 0, 'key length should be 0 after we are done processing the stack');
 
   if (lastRoot) {
     this.root = lastRoot;
