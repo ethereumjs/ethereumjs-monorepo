@@ -334,8 +334,6 @@ describe('testing checkpoints', function () {
       });
     });
   });
-
-
 });
 
 describe('it should create the genesis state root from ethereum', function () {

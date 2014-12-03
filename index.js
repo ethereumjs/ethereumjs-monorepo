@@ -567,7 +567,6 @@ internals.Trie.prototype._createNewNode = function (key, value, cb) {
   }
 };
 
-
 //formats node to be saved by levelup.batch.
 //returns either the hash that will be used key or the rawNode
 internals.Trie.prototype._formatNode = function (node, topLevel, remove, opStack) {
@@ -636,16 +635,14 @@ internals.Trie.prototype.createReadStream = function () {
   return new ReadStream(this);
 };
 
-//creates a checkout 
+//creates a checkpoint
 internals.Trie.prototype.checkpoint = function (cb) {
   var self = this;
   cb = internals.together(cb, self.sem.leave);
 
   self.sem.take(function () {
     var trie = self._getCheckpointTrie();
-    trie._cache = new internals.Trie({
-      isImmutable: false
-    });
+    trie._cache = new internals.Trie();
 
     if (!trie.isCheckpoint) {
       trie._checkpointRoot = self.root;
