@@ -28,7 +28,9 @@ exports = module.exports = internals.Trie = function (db, root) {
     });
   }
   this.db = db;
+
   this.isCheckpoint = false;
+  this._checkpoints =  [];
 
   if (typeof root === 'string') {
     root = new Buffer(root, 'hex');
@@ -261,17 +263,25 @@ internals.Trie.prototype._findAll = function (root, key, onFound, onDone) {
 //Delates a state given a state root. the  most anarchist function yet!
 internals.Trie.prototype.deleteState = function (root, cb) {
   var self = this;
+  var thisRoot = false;
 
   if (arguments.length === 1) {
-    this.revert();
     cb = root;
     root = this.root;
+    thisRoot = true;
   }
+
+
 
   if (root) {
     cb = internals.together(cb, self.sem.leave);
-    self.sem.take(function () {
-      self._deleteState(root, [], function (err, opStack) {
+    self.sem.take(function() {
+      var opStack = [];
+      self._deleteState(root, opStack, function() {
+        if (thisRoot) {
+          self.root = null;
+        }
+
         self.db.batch(opStack, {
           encoding: 'binary'
         }, cb);
@@ -297,19 +307,19 @@ internals.Trie.prototype._deleteState = function (root, delNodes, cb) {
     } else {
       var count = 0;
       async.whilst(
-        function () {
+        function() {
           return count < 16;
         },
-        function (callback) {
+        function(callback) {
           count++;
           var val = node.getValue(count);
           if (val) {
-            self._deleteState(val, callback);
+            self._deleteState(val, delNodes, callback);
           } else {
             callback();
           }
         },
-        function (err) {
+        function(err) {
           cb(err);
         }
       );
@@ -640,14 +650,13 @@ internals.Trie.prototype.checkpoint = function (cb) {
   var self = this;
   cb = internals.together(cb, self.sem.leave);
 
-  self.sem.take(function () {
-    var trie = self._getCheckpointTrie();
-    trie._cache = new internals.Trie();
+  if(!this._cache){
+    this._cache = new internals.Trie();
+  }
 
-    if (!trie.isCheckpoint) {
-      trie._checkpointRoot = self.root;
-    }
-    trie.isCheckpoint = true;
+  self.sem.take(function () {
+    self._checkpoints.push(self.root);
+    self.isCheckpoint = true;
     cb();
   });
 };
@@ -658,10 +667,11 @@ internals.Trie.prototype.commit = function (cb) {
   cb = internals.together(cb, self.sem.leave);
 
   self.sem.take(function () {
-    var trie = self._getCheckpointTrieParent();
-    if (trie.isCheckpoint) {
-      trie.isCheckpoint = false;
-      trie._cache.db.createReadStream().pipe(self.db.createWriteStream()).on('close', cb);
+    self._checkpoints.pop();
+
+    if (!self._checkpoints.length && self.isCheckpoint) {
+      self.isCheckpoint = false;
+      self._cache.db.createReadStream().pipe(self.db.createWriteStream()).on('close', cb);
     } else {
       cb();
     }
@@ -674,10 +684,14 @@ internals.Trie.prototype.revert = function (cb) {
   cb = internals.together(cb, self.sem.leave);
 
   self.sem.take(function () {
-    var trie = self._getCheckpointTrieParent();
-    delete trie._cache;
-    self.root = trie._checkpointRoot;
-    trie.isCheckpoint = false;
+    if(self._checkpoints.length){ 
+      self.root = self._checkpoints.pop();
+    }
+
+    if(!self._checkpoints.length){ 
+      self.isCheckpoint = false;
+    }
+    
     cb();
   });
 };
@@ -689,22 +703,6 @@ internals.Trie.prototype.copy = function () {
   trie.isImmutable = this.isImmutable;
   trie._cache = this._cache;
   return trie;
-};
-
-internals.Trie.prototype._getCheckpointTrie = function () {
-  if (this.isCheckpoint) {
-    return this._cache._getCheckpointTrie();
-  } else {
-    return this;
-  }
-};
-
-internals.Trie.prototype._getCheckpointTrieParent = function () {
-  if (this._cache && this._cache.isCheckpoint) {
-    return this._cache._getCheckpointTrieParent();
-  } else {
-    return this;
-  }
 };
 
 /**

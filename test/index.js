@@ -299,10 +299,11 @@ describe('testing checkpoints', function () {
 
   it('should revert to the orginal root', function (done) {
     assert(trie.isCheckpoint === true);
-    trie.revert();
-    assert(trie.root.toString('hex') === preRoot);
-    assert(trie.isCheckpoint === false);
-    done();
+    trie.revert(function(){
+      assert(trie.root.toString('hex') === preRoot);
+      assert(trie.isCheckpoint === false);
+      done();
+    });
   });
 
   it('should commit a checkpoint', function (done) {
