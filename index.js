@@ -1,4 +1,6 @@
 var assert = require('assert'),
+  levelup = require('levelup'),
+  memdown = require('memdown'),
   async = require('async'),
   rlp = require('rlp'),
   TrieNode = require('./trieNode'),
@@ -12,6 +14,7 @@ exports = module.exports = internals.Trie = function (db, root) {
 
   this.sem = require('semaphore')(1);
 
+
   if (db && db.isImmutable !== undefined) {
     this.isImmutable = db.isImmutable;
     db = db.db;
@@ -20,14 +23,15 @@ exports = module.exports = internals.Trie = function (db, root) {
   }
 
   if (!db) {
-    var levelup = require('levelup'),
-    memdown = require('memdown');
-
     db = levelup('', {
       db: memdown
     });
   }
+
   this.db = db;
+  this._cache = levelup('', {
+    db: memdown
+  });
 
   this.isCheckpoint = false;
   this._checkpoints =  [];
@@ -444,7 +448,7 @@ internals.Trie.prototype._saveStack = function (key, stack, opStack, cb) {
     this.root = lastRoot;
   }
   if (this.isCheckpoint) {
-    this._cache.db.batch(opStack, {
+    this._cache.batch(opStack, {
       encoding: 'binary'
     }, cb);
   } else {
@@ -568,13 +572,16 @@ internals.Trie.prototype._createNewNode = function (key, value, cb) {
   var newNode = new TrieNode('leaf', key, value);
   this.root = newNode.hash();
   //save
+  var db;
   if (this.isCheckpoint) {
-    this._cache._createNewNode(key, value, cb);
+    db = this._cache;
   } else {
-    this.db.put(this.root, newNode.serialize(), {
-      encoding: 'binary'
-    }, cb);
+    db = this.db;
   }
+
+  db.put(this.root, newNode.serialize(), {
+    encoding: 'binary'
+  }, cb);
 };
 
 //formats node to be saved by levelup.batch.
@@ -607,17 +614,18 @@ internals.Trie.prototype._formatNode = function (node, topLevel, remove, opStack
 };
 
 internals.Trie.prototype._lookupNode = function (node, cb) {
+
   var self = this;
 
-  function dbLookup() {
-    self.db.get(node, {
+  function dbLookup(db, cb2) {
+    db.get(node, {
       encoding: 'binary'
     }, function (err, foundNode) {
       if (err || !foundNode) {
-        cb(null);
+        cb2(null);
       } else {
         foundNode = rlp.decode(foundNode);
-        cb(new TrieNode(foundNode));
+        cb2(new TrieNode(foundNode));
       }
     });
   }
@@ -625,15 +633,15 @@ internals.Trie.prototype._lookupNode = function (node, cb) {
   if (Buffer.isBuffer(node) && node.length === 32) {
     //resovle hash to node
     if (this.isCheckpoint) {
-      this._cache._lookupNode(node, function (foundNode) {
+      dbLookup(this._cache, function(foundNode){
         if (!foundNode) {
-          dbLookup();
+          dbLookup(self.db, cb);
         } else {
           cb(foundNode);
         }
       });
     } else {
-      dbLookup();
+      dbLookup(this.db, cb);
     }
   } else {
     cb(new TrieNode(node));
@@ -649,10 +657,6 @@ internals.Trie.prototype.createReadStream = function () {
 internals.Trie.prototype.checkpoint = function (cb) {
   var self = this;
   cb = internals.together(cb, self.sem.leave);
-
-  if(!this._cache){
-    this._cache = new internals.Trie();
-  }
 
   self.sem.take(function () {
     self._checkpoints.push(self.root);
@@ -671,7 +675,7 @@ internals.Trie.prototype.commit = function (cb) {
 
     if (!self._checkpoints.length && self.isCheckpoint) {
       self.isCheckpoint = false;
-      self._cache.db.createReadStream().pipe(self.db.createWriteStream()).on('close', cb);
+      self._cache.createReadStream().pipe(self.db.createWriteStream()).on('close', cb);
     } else {
       cb();
     }
