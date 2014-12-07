@@ -13,6 +13,8 @@ var internals = {};
 
 exports = module.exports = internals.Trie = function (db, root) {
 
+  this.EMPTY_TRIE_ROOT = EMPTY_RLP_HASH;
+
   assert(this.constructor === internals.Trie, 'Trie must be instantiated using new');
 
   this.sem = require('semaphore')(1);
