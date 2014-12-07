@@ -1,10 +1,13 @@
-var assert = require('assert'),
+const assert = require('assert'),
   levelup = require('levelup'),
   memdown = require('memdown'),
   async = require('async'),
   rlp = require('rlp'),
   TrieNode = require('./trieNode'),
   ReadStream = require('./readStream');
+
+const EMPTY_RLP_HASH_ST = '56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421';
+const EMPTY_RLP_HASH = new Buffer(EMPTY_RLP_HASH_ST, 'hex');
 
 var internals = {};
 
@@ -46,7 +49,7 @@ exports = module.exports = internals.Trie = function (db, root) {
         }
         assert(v.length === 32, 'Invalid root length. Roots are 32 bytes');
       } else {
-        v = null;
+        v = EMPTY_RLP_HASH;
       }
       this._root = v;
     },
@@ -90,7 +93,7 @@ internals.Trie.prototype.put = function (key, value, cb) {
     cb = internals.together(cb, self.sem.leave);
 
     self.sem.take(function () {
-      if (self.root) {
+      if (self.root.toString('hex') !== EMPTY_RLP_HASH_ST) {
         //first try to find the give key or its nearst node
         self._findNode(key, self.root, [], function (err, foundValue, keyRemainder, stack) {
           if (err) {
@@ -252,7 +255,7 @@ internals.Trie.prototype._findAll = function (root, key, onFound, onDone) {
     }
   }
 
-  if (!root) {
+  if (!root || root.toString('hex') === EMPTY_RLP_HASH_ST) {
     onDone();
     return;
   }
@@ -271,15 +274,13 @@ internals.Trie.prototype.deleteState = function (root, cb) {
     thisRoot = true;
   }
 
-
-
-  if (root) {
+  if (root.toString('hex') !== EMPTY_RLP_HASH_ST) {
     cb = internals.together(cb, self.sem.leave);
     self.sem.take(function() {
       var opStack = [];
       self._deleteState(root, opStack, function() {
         if (thisRoot) {
-          self.root = null;
+          self.root = EMPTY_RLP_HASH;
         }
 
         self.db.batch(opStack, {
@@ -516,7 +517,7 @@ internals.Trie.prototype._deleteNode = function (key, stack, cb) {
   if (!parentNode) {
     //the root here has to be a leaf.
     if (!this.isCheckpoint) this.db.del(this.root, cb);
-    this.root = null;
+    this.root = EMPTY_RLP_HASH;
   } else {
     if (lastNode.type === 'branch') {
       lastNode.value = null;

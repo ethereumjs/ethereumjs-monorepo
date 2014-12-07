@@ -131,7 +131,7 @@ describe('storing longer values', function () {
   it('should be an empty trie now', function (done) {
     var stream = trie2.createReadStream();
     stream.on('data', function (val) {
-      assert(false);
+      assert(false, 'got data');
     });
 
     stream.on('end', function (val) {
