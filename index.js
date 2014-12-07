@@ -703,6 +703,22 @@ internals.Trie.prototype.copy = function () {
 };
 
 /**
+ * runs a `hash` of command
+ * @method batch
+ * @param {Object} ops
+ * @param {Function} cb 
+ */
+internals.Trie.prototype.batch = function(ops, cb){
+  var self = this;
+  var keys = Object.keys(ops);
+
+  async.eachSeries(keys, function(key, cb2){
+    var op = ops[key];
+    self.put(op[0], op[1], cb2); 
+  }, cb);
+};
+
+/**
  * Returns the number of in order matching nibbles of two give nibble arrayes
  * @method matchingNibbleLength
  * @param {Array} nib1
