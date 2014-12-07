@@ -24,20 +24,17 @@ trie.put('test', 'one', function () {
 
 ## API
 ### `new new Trie([db], [root])`
-### `new new Trie([options], [root])`
+### `new Trie([root])`
 Creates a new Trie object
 - `db` -  A instance of [levelup](https://github.com/rvagg/node-levelup/) or compatiable API. If no db is `null` or left undefined then the the trie will be stored in memory vai [memdown](https://github.com/rvagg/memdown)
 - `root` - A hex `String` or `Buffer` for the root of a prevously stored trie.
-- `options` - hash with the following 
- - `immutable`  - A `Boolean` determing if the Trie will be immutable or not. This property can be changed later.
- - `db` - the db
 
 --------------------------------------------------------
 
 ### `Trie` Properties
 - `root` - The root of the `trie` as a `Buffer` 
-- `isCheckpoint` -  A `Boolean` determining if you are saving to a checkpoint or directly to the db 
-- `isImmutable` - A `Boolean` flag determing if the Trie is immutable or not
+- `isCheckpoint` -  A `Boolean` determining if you are saving to a checkpoint or directly to the db
+- `EMPTY_TRIE_ROOT`  - A `buffer` that is a the Root for an empty trie.
 
 --------------------------------------------------------
 
@@ -65,7 +62,7 @@ Removes a value
 --------------------------------------------------------
 
 ####  `trie.checkpoint()`
-Creates a checkpoint that can later be reverted to or commited. After this is called, no changes to the trie will be permanently saved until `commitCheckpoint` is called. 
+Creates a checkpoint that can later be reverted to or commited. After this is called, no changes to the trie will be permanently saved until `commit` is called. 
 
 --------------------------------------------------------
 
@@ -76,8 +73,21 @@ Commits a checkpoint to the trie
 --------------------------------------------------------
 
 ####  `trie.revert()`
-revets the trie to the state it was at when `createCheckpoint` was first called
+revets the trie to the state it was at when `checkpoint` was first called
 
+--------------------------------------------------------
+
+####  `trie.batch(operations)`
+Give an hash of operation adds them to the DB
+- `operations` a hash of `key`/`values` to add to the trie.
+example  
+```javascript
+var ops = {
+ 'dog': 'dogecoin', 
+ 'cat': 'meow',
+ 'bird': ''    //delete bird
+}
+```
 --------------------------------------------------------
 
 ####  `trie.deleteState([stateRoot], cb)`
