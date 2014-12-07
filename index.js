@@ -14,12 +14,8 @@ exports = module.exports = internals.Trie = function (db, root) {
 
   this.sem = require('semaphore')(1);
 
-
-  if (db && db.isImmutable !== undefined) {
-    this.isImmutable = db.isImmutable;
+  if (db instanceof internals.Trie) {
     db = db.db;
-  } else {
-    this.isImmutable = true;
   }
 
   if (!db) {
@@ -595,12 +591,10 @@ internals.Trie.prototype._formatNode = function (node, topLevel, remove, opStack
   if (rlpNode.length >= 32 || topLevel) {
     var hashRoot = node.hash();
     if (remove) {
-      if (!this.isImmutable) {
-        opStack.push({
-          type: 'del',
-          key: hashRoot
-        });
-      }
+      opStack.push({
+        type: 'del',
+        key: hashRoot
+      });
     } else {
       opStack.push({
         type: 'put',
@@ -704,7 +698,6 @@ internals.Trie.prototype.revert = function (cb) {
 internals.Trie.prototype.copy = function () {
   var trie = new internals.Trie(this.db);
   trie.isCheckpoint = this.isCheckpoint;
-  trie.isImmutable = this.isImmutable;
   trie._cache = this._cache;
   return trie;
 };
