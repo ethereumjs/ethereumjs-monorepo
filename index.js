@@ -87,6 +87,7 @@ internals.Trie.prototype.get = function (key, cb) {
  * @param {Buffer|String} Value
  */
 internals.Trie.prototype.put = function (key, value, cb) {
+
   var self = this;
 
   if (value === '') {
@@ -593,7 +594,7 @@ internals.Trie.prototype._formatNode = function (node, topLevel, remove, opStack
   var rlpNode = node.serialize();
   if (rlpNode.length >= 32 || topLevel) {
     var hashRoot = node.hash();
-    if (remove) {
+    if (remove && !this.isCheckpoint) {
       opStack.push({
         type: 'del',
         key: hashRoot
@@ -651,15 +652,10 @@ internals.Trie.prototype.createReadStream = function () {
 };
 
 //creates a checkpoint
-internals.Trie.prototype.checkpoint = function (cb) {
+internals.Trie.prototype.checkpoint = function() {
   var self = this;
-  cb = internals.together(cb, self.sem.leave);
-
-  self.sem.take(function () {
-    self._checkpoints.push(self.root);
-    self.isCheckpoint = true;
-    cb();
-  });
+  self._checkpoints.push(self.root);
+  self.isCheckpoint = true;
 };
 
 //commits a checkpoint.
