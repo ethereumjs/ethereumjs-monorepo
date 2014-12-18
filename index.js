@@ -519,8 +519,12 @@ internals.Trie.prototype._deleteNode = function (key, stack, cb) {
 
   if (!parentNode) {
     //the root here has to be a leaf.
-    if (!this.isCheckpoint) this.db.del(this.root, cb);
     this.root = EMPTY_RLP_HASH;
+    if (!this.isCheckpoint){
+      this.db.del(this.root, cb);
+    } else{
+      cb();
+    }
   } else {
     if (lastNode.type === 'branch') {
       lastNode.value = null;

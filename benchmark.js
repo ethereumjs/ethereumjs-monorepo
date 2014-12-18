@@ -5,7 +5,6 @@ var async = require('async');
 var crypto = require('crypto');
 var Trie = require('./index.js');
 
-
 function iterTest(numOfIter, cb) {
 
   var vals = [];
