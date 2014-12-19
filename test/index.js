@@ -3,7 +3,7 @@ var Trie = require('../index.js'),
   rlp = require('rlp'),
   Sha3 = require('sha3'),
   assert = require('assert'),
-  jsonTests = require('ethereum-tests').trietest;
+  jsonTests = require('ethereum-tests').trieTests;
 
 describe('simple save and retrive', function () {
   var trie = new Trie();
@@ -378,20 +378,20 @@ describe('offical tests', function () {
     trie;
 
   before(function () {
-    testNames = Object.keys(jsonTests);
+    testNames = Object.keys(jsonTests.trietest);
     trie = new Trie();
   });
 
   it('pass all tests', function (done) {
     async.eachSeries(testNames, function (i, done) {
       console.log(i);
-      var inputs = jsonTests[i].in;
-      var expect = jsonTests[i].root;
+      var inputs = jsonTests.trietest[i].in;
+      var expect = jsonTests.trietest[i].root;
 
       async.eachSeries(inputs, function (input, done) {
       
         for(i = 0; i < 2; i++){
-          if(input[i].slice(0,2) === '0x'){
+          if(input[i] && input[i].slice(0,2) === '0x'){
             input[i] = new Buffer(input[i].slice(2), 'hex');
           }
         }
@@ -402,6 +402,48 @@ describe('offical tests', function () {
       }, function () {
 
         assert.equal('0x' + trie.root.toString('hex'), expect);
+        trie = new Trie();
+        done();
+      });
+
+    }, function () {
+      done();
+    });
+  });
+});
+
+describe('offical tests any order', function () {
+  var testNames,
+    trie;
+
+  before(function () {
+    testNames = Object.keys(jsonTests.trieanyorder);
+    trie = new Trie();
+  });
+
+  it('pass all tests', function (done) {
+    async.eachSeries(testNames, function (i, done) {
+      console.log(i);
+      var test = jsonTests.trieanyorder[i];
+      var keys = Object.keys(test.in);
+
+      async.eachSeries(keys, function (key, done) {
+        
+        var val = test.in[key];     
+
+        if(key.slice(0,2) === '0x'){
+          key = new Buffer(key.slice(2), 'hex');
+        }
+
+        if(val && val.slice(0,2) === '0x'){
+          val = new Buffer(val.slice(2), 'hex');
+        }
+
+        trie.put(key, val, function () {
+          done();
+        });
+      }, function () {
+        assert.equal('0x' + trie.root.toString('hex'), test.root);
         trie = new Trie();
         done();
       });

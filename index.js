@@ -90,7 +90,7 @@ internals.Trie.prototype.put = function (key, value, cb) {
 
   var self = this;
 
-  if (value === '') {
+  if (!value || value === '') {
     self.del(key, cb);
   } else {
     cb = internals.together(cb, self.sem.leave);
