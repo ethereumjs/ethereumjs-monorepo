@@ -68,7 +68,7 @@ internals.TrieNode.prototype.getValue = function (key) {
       key = 16;
     }
     var val = this.raw[key];
-    if (val !== null && val !== undefined && !(val.length === 1 && val[0] === 0)) {
+    if (val !== null && val !== undefined && !(val.length === 0)) {
       return val;
     }
   } else {
