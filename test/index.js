@@ -159,6 +159,10 @@ describe('null values', function() {
     encoded = RLP.encode(nestedList);
     assert.deepEqual(encoded, new Buffer([0xc1, 0x80]));
   });
+
+  it('should decode a null value', function(){
+    assert.deepEqual(new Buffer([]), RLP.decode(new Buffer('80', 'hex')));
+  });
 });
 
 describe('zero values', function() {

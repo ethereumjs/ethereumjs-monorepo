@@ -61,7 +61,7 @@ function _decode (input) {
 
     //set 0x80 null to 0
     if (firstByte === 0x80) {
-      data = new Buffer([0]);
+      data = new Buffer([]);
     } else {
       data = input.slice(1, length);
     }
