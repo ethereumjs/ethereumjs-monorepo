@@ -8,7 +8,7 @@
 var encode = exports.encode = function (input) {
   if (input instanceof Array) {
     var output = [];
-    for (var i in input) {
+    for (var i=0; i < input.length; i++) {
       output.push(encode(input[i]));
     }
     var buf = Buffer.concat(output);
