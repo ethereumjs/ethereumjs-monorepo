@@ -90,12 +90,6 @@ var ops = {
 ```
 --------------------------------------------------------
 
-####  `trie.deleteState([stateRoot], cb)`
-Deletes all the nodes of a given stateroot. If no stateroot is given then it will delete the current state.
-- `cb` - a callback `Function` 
-
---------------------------------------------------------
-
 #### `trie.createReadStream()`
 returns a read stream. The `data` event is given an `Object` hat has two propeties; the `key` and the `value`. Both should be Buffers.
 
