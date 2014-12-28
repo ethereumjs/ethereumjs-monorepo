@@ -27,7 +27,7 @@
   "dependencies": {
     "async": ">=0.8.0",
     "crypto-js": "^3.1.2-5",
-    "levelup": "*",
+    "levelup": "^0.19.0",
     "memdown": "^1.0.0",
     "rlp": "0.0.12",
     "semaphore": ">=1.0.1",
