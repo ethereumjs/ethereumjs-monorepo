@@ -1,5 +1,5 @@
 # SYNOPSIS
-A collection of utily function for ethereum
+A collection of utility functions for ethereum
 
 # API
 ## properties
