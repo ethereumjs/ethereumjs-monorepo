@@ -1,0 +1,23 @@
+{
+  "name": "ethereumjs-utils",
+  "version": "1.0.0",
+  "description": "a collection of utility function for Ethereum",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ethereum/ethereumjs-utils.git"
+  },
+  "keywords": [
+    "ethereum",
+    "utilties"
+  ],
+  "author": "mjbecze",
+  "license": "GPL",
+  "bugs": {
+    "url": "https://github.com/ethereum/ethereumjs-utils/issues"
+  },
+  "homepage": "https://github.com/ethereum/ethereumjs-utils"
+}
