@@ -8,7 +8,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/ethereum/ethereumjs-utils.git"
+    "url": "https://github.com/ethereum/ethereumjs-util.git"
   },
   "keywords": [
     "ethereum",
@@ -17,9 +17,9 @@
   "author": "mjbecze",
   "license": "GPL",
   "bugs": {
-    "url": "https://github.com/ethereum/ethereumjs-utils/issues"
+    "url": "https://github.com/ethereum/ethereumjs-util/issues"
   },
-  "homepage": "https://github.com/ethereum/ethereumjs-utils",
+  "homepage": "https://github.com/ethereum/ethereumjs-util",
   "dependencies": {
     "bignum": "^0.9.1",
     "rlp": "0.0.12",
