@@ -1,4 +1,4 @@
-# ethereumjs-utils
+# SYNOPSIS
 A collection of utily function for ethereum
 
 # API
@@ -70,3 +70,6 @@ Print a Buffer Array
 ### `BAToJSON(ba)`
 converts a buffer array to JSON
 - `ba` - an `Array` of `Buffers`
+
+# LICENSE
+GPL
