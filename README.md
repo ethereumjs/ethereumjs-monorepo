@@ -2,7 +2,7 @@
 A collection of utily function for ethereum
 
 # API
-### properties
+## properties
  - `MAX_INTEGER`  - The max interger that the VM can handle
 
 ## methods 
