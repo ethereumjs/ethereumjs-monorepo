@@ -21,7 +21,7 @@ Trims leading zeros from a `Buffer` or an `Array`
 Pads an `Array` or `Buffers` with leading zeros till it has 256 bits
 - `toPad`
 
-### `unpad(val)
+### `unpad(val)`
 unpads an `Array` or `Buffers` with removing leading zeros
 - `val`
 
