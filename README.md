@@ -4,26 +4,25 @@ A collection of utility functions for ethereum. It can be used in node.js or can
 # API
 ## properties
  - `MAX_INTEGER`  - The max interger that the VM can handle
+ -  `TWO_POW256` - 2^256
+ -  `SHA3_NULL` - SHA3-256 hash of `null`
+ -  `SHA3_RLP_ARRAY` - SHA3-256 of an rlp of an empty array
+ -  `SHA3_RLP` - SHA3-256 hash of the rlp of `null`
+ -  `ETH_UNITS` - an array of ethereum units
 
 ## methods 
 ### `zeros(number)`
-Returns 256 bit `Buffer` filled with 0s
+Returns buffer filled with 0's
 - `number` - the number bytes to to return
 
-### `SHA3_RLP_ARRAY`
-Return an SHA3-256 hash of the rlp of `null`
-
-### `trimZeros(toTrim)`
-Trims leading zeros from a `Buffer` or an `Array`
-- `toTrim`
-
-### `pad256(toPad)`
-Pads an `Array` or `Buffers` with leading zeros till it has 256 bits
-- `toPad`
+### `pad(val, length)`
+pads an `array` or `buffer` with leading zeros till it has `length` bytes
+- `val`  - the value to pad
+- `length` - the of the resulting value
 
 ### `unpad(val)`
-unpads an `Array` or `Buffers` with removing leading zeros
-- `val`
+Trims leading zeros from a buffer or an array
+- `val` - a `buffer` to unpad
 
 ### `intToHex(int)`
 Converts an `Integer` into a hex `String`
@@ -41,13 +40,9 @@ converts a `Buffer` to an `Interger`
 interpets a `Buffer` as a signed `Integer` and returns a `Bignum`
 - `buf`
 
-### `toUnsigne(num)`
+### `toUnsigned(num)`
 Converts a `bignum` to an unsigned interger and returns it as a `buffer`
 - `num` - a `bignum`
-
-### `privToAddress(privateKey)`
-Returns the ethereum address of a given private key
-- `privateKey`
 
 ### `pubToAddress(pubKey)`
 Returns the ethereum address of a given public key
@@ -67,7 +62,7 @@ Validate defined fields
 Print a Buffer Array
 - `ba` - an `Array` of `Buffers`
 
-### `BAToJSON(ba)`
+### `baToJSON(ba)`
 converts a buffer array to JSON
 - `ba` - an `Array` of `Buffers`
 
