@@ -1,4 +1,4 @@
-# SYNOPSIS
+# SYNOPSIS [![Build Status](https://travis-ci.org/ethereum/ethereumjs-util.svg)](https://travis-ci.org/ethereum/ethereumjs-util)
 A collection of utility functions for ethereum
 
 # API
