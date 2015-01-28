@@ -1,7 +1,7 @@
 {
-  "name": "ethereumjs-util",
-  "version": "1.0.0",
-  "description": "a collection of utility function for Ethereum",
+  "name": "ethereumjs-utils",
+  "version": "0.0.1",
+  "description": "a collection of utility functions for Ethereum",
   "main": "index.js",
   "scripts": {
     "test": "mocha ./test/index.js",
@@ -9,18 +9,18 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/ethereum/ethereumjs-util.git"
+    "url": "https://github.com/ethereum/ethereumjs-utils.git"
   },
   "keywords": [
     "ethereum",
     "utilties"
   ],
-  "author": "mjbecze",
+  "author": "mjbecze <mjbecze@gmail.com>",
   "license": "GPL",
   "bugs": {
-    "url": "https://github.com/ethereum/ethereumjs-util/issues"
+    "url": "https://github.com/ethereum/ethereumjs-utils/issues"
   },
-  "homepage": "https://github.com/ethereum/ethereumjs-util",
+  "homepage": "https://github.com/ethereum/ethereumjs-utils",
   "dependencies": {
     "bignum": "^0.9.1",
     "rlp": "0.0.12",
@@ -40,8 +40,5 @@
     "files": [
       "test/index.js"
     ]
-  },
-  "devDependencies": {
-    "mocha": "^2.1.0"
   }
 }
