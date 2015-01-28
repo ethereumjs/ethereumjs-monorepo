@@ -40,5 +40,8 @@
     "files": [
       "test/index.js"
     ]
+  },
+  "devDependencies": {
+    "mocha": "^2.1.0"
   }
 }

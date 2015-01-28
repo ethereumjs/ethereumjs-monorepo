@@ -6,10 +6,11 @@ const SHA3 = require('sha3'),
 //the max interger that this VM can handle
 exports.MAX_INTEGER = bignum('ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff', 16);
 
+var TWO_POW256 = exports.TWO_POW256 = bignum('115792089237316195423570985008687907853269984665640564039457584007913129639936');
+
 //hex string of SHA3-256 hash of `null`
 exports.SHA3_NULL = 'c5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470';
 
-var TWO_POW256 = exports.TWO_POW256 = bignum('115792089237316195423570985008687907853269984665640564039457584007913129639936');
 
 //SHA3-256 hash of the rlp of []
 exports.SHA3_RLP_ARRAY = '1dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d49347';
@@ -51,29 +52,6 @@ exports.zeros = function(bytes) {
   return buf;
 };
 
-exports.sha3 = function(a) {
-  var h = new SHA3.SHA3Hash(256);
-  if (a) {
-    h.update(a);
-  }
-  return new Buffer(h.digest('hex'), 'hex');
-};
-
-/**
- * Trims leading zeros from a buffer or an array
- * @method unpad
- * @param {Buffer|Array|String}
- * @return {Buffer|Array|String}
- */
-exports.unpad = function(a) {
-  var first = a[0];
-  while (a.length > 0 && first.toString() === '0') {
-    a = a.slice(1);
-    first = a[0];
-  }
-  return a;
-};
-
 /**
  * pads an array of buffer with leading zeros till it has `length` bytes
  * @method pad
@@ -91,6 +69,21 @@ exports.pad = function(msg, length) {
   } else {
     return msg;
   }
+};
+
+/**
+ * Trims leading zeros from a buffer or an array
+ * @method unpad
+ * @param {Buffer|Array|String}
+ * @return {Buffer|Array|String}
+ */
+exports.unpad = function(a) {
+  var first = a[0];
+  while (a.length > 0 && first.toString() === '0') {
+    a = a.slice(1);
+    first = a[0];
+  }
+  return a;
 };
 
 /**
@@ -159,6 +152,14 @@ exports.toUnsigned = function(num) {
   } else {
     return num.toBuffer();
   }
+};
+
+exports.sha3 = function(a) {
+  var h = new SHA3.SHA3Hash(256);
+  if (a) {
+    h.update(a);
+  }
+  return new Buffer(h.digest('hex'), 'hex');
 };
 
 /**
