@@ -1,5 +1,5 @@
 # SYNOPSIS [![Build Status](https://travis-ci.org/ethereum/ethereumjs-util.svg)](https://travis-ci.org/ethereum/ethereumjs-util)
-A collection of utility functions for ethereum
+A collection of utility functions for ethereum. It can be used in node.js or can be in the browser with browserify.
 
 # API
 ## properties
@@ -70,6 +70,9 @@ Print a Buffer Array
 ### `BAToJSON(ba)`
 converts a buffer array to JSON
 - `ba` - an `Array` of `Buffers`
+
+# TESTING
+Node.js Tests use Mocha. Test in the browser use Testling.
 
 # LICENSE
 GPL
