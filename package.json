@@ -4,7 +4,8 @@
   "description": "a collection of utility function for Ethereum",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "mocha ./test/index.js",
+    "compile": "browserify index.js -s ethUtils > ethUtils.js"
   },
   "repository": {
     "type": "git",
@@ -24,5 +25,23 @@
     "bignum": "^0.9.1",
     "rlp": "0.0.12",
     "sha3": "^1.1.0"
+  },
+  "browser": {
+    "sha3": "./browser/sha3.js",
+    "bignum": "bignum-browserify"
+  },
+  "testling": {
+    "browsers": [
+      "ie/9..latest",
+      "firefox/15..latest",
+      "chrome/22..latest"
+    ],
+    "harness": "mocha-bdd",
+    "files": [
+      "test/index.js"
+    ]
+  },
+  "devDependencies": {
+    "mocha": "^2.1.0"
   }
 }

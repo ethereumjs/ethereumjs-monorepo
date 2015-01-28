@@ -17,6 +17,28 @@ exports.SHA3_RLP_ARRAY = '1dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142
 //SHA3-256 hash of the rlp of `null`
 exports.SHA3_RLP = '56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421';
 
+var ETH_UNITS = exports.ETH_UNITS = [
+  'wei',
+  'Kwei',
+  'Mwei',
+  'Gwei',
+  'szabo',
+  'finney',
+  'ether',
+  'grand',
+  'Mether',
+  'Gether',
+  'Tether',
+  'Pether',
+  'Eether',
+  'Zether',
+  'Yether',
+  'Nether',
+  'Dether',
+  'Vether',
+  'Uether'
+];
+
 /**
  * Returns a buffer filled with 0s
  * @method zeros
@@ -28,7 +50,6 @@ exports.zeros = function(bytes) {
   buf.fill(0);
   return buf;
 };
-
 
 exports.sha3 = function(a) {
   var h = new SHA3.SHA3Hash(256);
@@ -46,7 +67,7 @@ exports.sha3 = function(a) {
  */
 exports.unpad = function(a) {
   var first = a[0];
-  while (!first && a.length > 0) {
+  while (a.length > 0 && first.toString() === '0') {
     a = a.slice(1);
     first = a[0];
   }
@@ -60,19 +81,16 @@ exports.unpad = function(a) {
  * @param {Integer}  length the number of bytes the output should be
  * @return {Buffer|Array}
  */
-exports.pad = function(array, length){
-  var buf = new Buffer(length);
-
-  if (array.length !== length) {
+exports.pad = function(msg, length) {
+  var buf;
+  if (msg.length < length) {
+    buf = new Buffer(length);
     buf.fill(0);
-    for (var i = 0; i < array.length; i++) {
-      buf[length - array.length + i] = array[i];
-    }
+    msg.copy(buf, length - msg.length);
+    return buf;
   } else {
-    buf = array;
+    return msg;
   }
-
-  return buf;
 };
 
 /**
@@ -109,7 +127,7 @@ exports.intToBuffer = function(i) {
  * @return {Number}
  */
 exports.bufferToInt = function(buf) {
-  if(buf.length === 0){
+  if (buf.length === 0) {
     return 0;
   }
   return parseInt(buf.toString('hex'), 16);
@@ -123,7 +141,7 @@ exports.bufferToInt = function(buf) {
  */
 exports.fromSigned = function(num) {
   if (num.length === 32 && num[0] >= 128) {
-    return  bignum.fromBuffer(num).sub(TWO_POW256);
+    return bignum.fromBuffer(num).sub(TWO_POW256);
   } else {
     return bignum.fromBuffer(num);
   }
@@ -166,13 +184,13 @@ exports.pubToAddress = function(pubKey) {
 exports.generateAddress = function(from, nonce) {
 
   nonce = bignum.fromBuffer(nonce).sub(1).toBuffer();
-  if(nonce.toString('hex') === '00'){
+  if (nonce.toString('hex') === '00') {
     nonce = 0;
   }
   var hash = new SHA3.SHA3Hash(256);
   hash.update(rlp.encode([new Buffer(from, 'hex'), nonce]));
 
-  return  new Buffer(hash.digest('hex').slice(24), 'hex');
+  return new Buffer(hash.digest('hex').slice(24), 'hex');
 };
 
 /**
@@ -270,4 +288,84 @@ exports.baToJSON = function(ba) {
     }
     return array;
   }
+};
+
+
+
+/// @returns ascii string representation of hex value prefixed with 0x
+exports.toAscii = function(hex) {
+  // Find termination
+  var str = '';
+  var i = 0,
+    l = hex.length;
+
+  if (hex.substring(0, 2) === '0x')
+    i = 2;
+
+  for (; i < l; i += 2) {
+    var code = parseInt(hex.substr(i, 2), 16);
+    if (code === 0) {
+      break;
+    }
+
+    str += String.fromCharCode(code);
+  }
+
+  return str;
+};
+
+/// @returns hex representation (prefixed by 0x) of ascii string
+exports.fromAscii = function(str, pad) {
+  pad = pad === undefined ? 0 : pad;
+  var hex = this.toHex(str);
+  while (hex.length < pad * 2){
+    hex += '00';
+  }
+  return '0x' + hex;
+};
+
+/// @returns decimal representaton of hex value prefixed by 0x
+exports.toDecimal = function(val) {
+  // remove 0x and place 0, if it's required
+  val = val.length > 2 ? val.substring(2) : '0';
+  return  bignum(val, 16).toString(10);
+};
+
+// @returns hex representation (prefixed by 0x) of decimal value
+exports.fromDecimal = function(val) {
+  return '0x' + bignum(val).toString(16);
+};
+
+exports.toHex = function(str) {
+  var hex = '';
+  for (var i = 0; i < str.length; i++) {
+    var n = str.charCodeAt(i).toString(16);
+    hex += n.length < 2 ? '0' + n : n;
+  }
+
+  return hex;
+};
+
+/// used to transform value/string to eth string
+/// TODO: use BigNumber.js to parse int
+exports.toEth = function(str) {
+  var val = typeof str === 'string' ? str.indexOf('0x') === 0 ? parseInt(str.substr(2), 16) : parseInt(str) : str;
+  var unit = 0;
+  var units = ETH_UNITS;
+  while (val > 3000 && unit < units.length - 1) {
+    val /= 1000;
+    unit++;
+  }
+  var s = val.toString().length < val.toFixed(2).length ? val.toString() : val.toFixed(2);
+  var replaceFunction = function($0, $1, $2) {
+    return $1 + ',' + $2;
+  };
+
+  while (true) {
+    var o = s;
+    s = s.replace(/(\d)(\d\d\d[\.\,])/, replaceFunction);
+    if (o === s)
+      break;
+  }
+  return s + ' ' + units[unit];
 };
