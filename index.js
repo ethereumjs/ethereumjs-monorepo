@@ -656,6 +656,18 @@ internals.Trie.prototype.batch = function(ops, cb) {
 };
 
 /**
+ * Checks if a given root exists
+ * @method checkRoot
+ * @param {Buffer} root
+ * @param {Function} cb
+ */
+internals.Trie.prototype.checkRoot = function(root, cb){
+  this._lookupNode(root, function(val){
+    var ret = val ? true : false;
+  });
+};
+
+/**
  * Returns the number of in order matching nibbles of two give nibble arrayes
  * @method matchingNibbleLength
  * @param {Array} nib1
