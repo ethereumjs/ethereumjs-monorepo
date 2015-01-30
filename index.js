@@ -378,11 +378,13 @@ internals.Trie.prototype._saveStack = function(key, stack, opStack, cb) {
 
   if (this.isCheckpoint) {
     this._cache.batch(opStack, {
-      encoding: 'binary'
+      keyEncoding: 'binary',
+      valueEncoding: 'binary'
     }, cb);
   } else {
     this.db.batch(opStack, {
-      encoding: 'binary'
+      keyEncoding: 'binary',
+      valueEncoding: 'binary'
     }, cb);
   }
 };
@@ -516,7 +518,8 @@ internals.Trie.prototype._createNewNode = function(key, value, cb) {
   }
 
   db.put(this.root, newNode.serialize(), {
-    encoding: 'binary'
+    keyEncoding: 'binary',
+    valueEncoding: 'binary'
   }, cb);
 };
 
@@ -555,7 +558,8 @@ internals.Trie.prototype._lookupNode = function(node, cb) {
 
   function dbLookup(db, cb2) {
     db.get(node, {
-      encoding: 'binary'
+      keyEncoding: 'binary',
+      valueEncoding: 'binary'
     }, function(err, foundNode) {
       if (err || !foundNode) {
         cb2(null);
@@ -661,8 +665,8 @@ internals.Trie.prototype.batch = function(ops, cb) {
  * @param {Buffer} root
  * @param {Function} cb
  */
-internals.Trie.prototype.checkRoot = function(root, cb){
-  this._lookupNode(root, function(val){
+internals.Trie.prototype.checkRoot = function(root, cb) {
+  this._lookupNode(root, function(val) {
     var ret = val ? true : false;
   });
 };
