@@ -67,7 +67,7 @@ exports.pad = function(msg, length) {
     msg.copy(buf, length - msg.length);
     return buf;
   } else {
-    return msg;
+    return msg.slice(-length);
   }
 };
 
