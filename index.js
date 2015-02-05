@@ -200,15 +200,13 @@ exports.generateAddress = function(from, nonce) {
  * @param {Object} self the `Object` to define properties on
  * @param {Array} fields an array fields to define
  */
-exports.defineProperties = function(self, fields) {
+exports.defineProperties = function(self, fields, data) {
+
+  self.raw = [];
+  self._fields = [];
 
   fields.forEach(function(field, i) {
-    if (!field.name) {
-      field = {
-        name: field
-      };
-    }
-
+    self._fields.push(field.name);
     Object.defineProperty(self, field.name, {
       enumerable: true,
       configurable: true,
@@ -219,35 +217,49 @@ exports.defineProperties = function(self, fields) {
         if (!Buffer.isBuffer(v)) {
           if (typeof v === 'string') {
             v = new Buffer(v, 'hex');
-          } else if (v !== null) {
+          } else if (typeof v === 'number') {
             v = exports.intToBuffer(v);
+          } else if (v === null) {
+            v = new Buffer([]);
+          } else if (v.toBuffer) {
+            v = v.toBuffer();
+          } else {
+            throw new Error('invalid type');
           }
         }
 
-        if (field.length) {
+        if (!(field.empty && v.length === 0) && field.length) {
           assert(field.length === v.length, 'The field ' + field.name + 'must have byte length of ' + field.length);
         }
 
         this.raw[i] = v;
       }
     });
-  });
-};
 
-/**
- * Validate defined fields
- * @method validate
- * @param {Array} fields
- * @param {Object} data
- */
-exports.validate = function(fields, data) {
-  var i = 0;
-  fields.forEach(function(f) {
-    if (f.name && f.length) {
-      assert(data[i].length === f.length, 'invalid data for field: ' + f.name + ' needs length:' + f.length + 'got length: ' + data[i].length);
+    if(field.default){
+      self[field.name] = field.default;
     }
-    i++;
+
   });
+
+  if (data) {
+    if (Buffer.isBuffer(data)) {
+      data = rlp.decode(data);
+    }
+
+    if (Array.isArray(data)) {
+      //make sure all the items are buffers
+      data.forEach(function(d, i) {
+         self[self._fields[i]] = typeof d === 'string' ? new Buffer(d, 'hex') : d;
+      });
+    } else {
+      for (var prop in data) {
+        if (self._fields.indexOf(prop) !== -1) {
+          self[prop] = data[prop];
+        }
+      }
+    }
+  }
 };
 
 /**
@@ -319,7 +331,7 @@ exports.toAscii = function(hex) {
 exports.fromAscii = function(str, pad) {
   pad = pad === undefined ? 0 : pad;
   var hex = this.toHex(str);
-  while (hex.length < pad * 2){
+  while (hex.length < pad * 2) {
     hex += '00';
   }
   return '0x' + hex;
@@ -329,7 +341,7 @@ exports.fromAscii = function(str, pad) {
 exports.toDecimal = function(val) {
   // remove 0x and place 0, if it's required
   val = val.length > 2 ? val.substring(2) : '0';
-  return  bignum(val, 16).toString(10);
+  return bignum(val, 16).toString(10);
 };
 
 // @returns hex representation (prefixed by 0x) of decimal value
