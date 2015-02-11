@@ -252,7 +252,7 @@ exports.defineProperties = function(self, fields, data) {
     }
 
     if (Array.isArray(data)) {
-      if(data.length !== self._fields.length) throw('wrong number of fields in data')
+      if(data.length > self._fields.length) throw('wrong number of fields in data')
       //make sure all the items are buffers
       data.forEach(function(d, i) {
          self[self._fields[i]] = typeof d === 'string' ? new Buffer(d, 'hex') : d;
@@ -307,8 +307,6 @@ exports.baToJSON = function(ba) {
     return array;
   }
 };
-
-
 
 /// @returns ascii string representation of hex value prefixed with 0x
 exports.toAscii = function(hex) {
