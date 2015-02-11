@@ -4,7 +4,7 @@ const SHA3 = require('sha3'),
   bignum = require('bignum');
 
 //the max interger that this VM can handle
-exports.MAX_INTEGER = bignum('ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff', 16);
+var MAX_INTEGER = exports.MAX_INTEGER = bignum('ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff', 16);
 
 var TWO_POW256 = exports.TWO_POW256 = bignum('115792089237316195423570985008687907853269984665640564039457584007913129639936');
 
@@ -116,7 +116,7 @@ exports.intToBuffer = function(i) {
 /**
  * Converts a buffer to an Interger
  * @method bufferToInt
- * @param {Buffer}
+ * @param {B[M`Êuffer}
  * @return {Number}
  */
 exports.bufferToInt = function(buf) {
@@ -197,7 +197,7 @@ exports.generateAddress = function(from, nonce) {
 /**
  * defines properties on a `Object`
  * @method defineProperties
- * @param {Object} self the `Object` to define properties on
+ * @para[M`Êm {Object} self the `Object` to define properties on
  * @param {Array} fields an array fields to define
  */
 exports.defineProperties = function(self, fields, data) {
@@ -228,6 +228,10 @@ exports.defineProperties = function(self, fields, data) {
           }
         }
 
+        if(field.word && bignum.fromBuffer(v).gt(MAX_INTEGER)){
+          throw('to large of value');
+        }
+
         if (!(field.empty && v.length === 0) && field.length) {
           assert(field.length === v.length, 'The field ' + field.name + 'must have byte length of ' + field.length);
         }
@@ -248,6 +252,7 @@ exports.defineProperties = function(self, fields, data) {
     }
 
     if (Array.isArray(data)) {
+      if(data.length !== self._fields.length) throw('wrong number of fields in data')
       //make sure all the items are buffers
       data.forEach(function(d, i) {
          self[self._fields[i]] = typeof d === 'string' ? new Buffer(d, 'hex') : d;
