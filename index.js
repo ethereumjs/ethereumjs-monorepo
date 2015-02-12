@@ -205,6 +205,21 @@ exports.defineProperties = function(self, fields, data) {
   self.raw = [];
   self._fields = [];
 
+  self.toJSON = function(label){
+    if (label) {
+      var obj = {};
+
+      for (var prop in this) {
+        if (typeof this[prop] !== 'function' && prop !== 'raw' && prop !== '_fields')
+          obj[prop] = this[prop].toString('hex');
+      }
+
+      return obj;
+    } else {
+      return baToJSON(this.raw);
+    }
+  };
+
   fields.forEach(function(field, i) {
     self._fields.push(field.name);
     Object.defineProperty(self, field.name, {
@@ -296,7 +311,7 @@ exports.printBA = function(ba) {
  * @method BAToJSON
  * @param {Buffer|Array}
  */
-exports.baToJSON = function(ba) {
+const baToJSON = exports.baToJSON = function(ba) {
   if (Buffer.isBuffer(ba)) {
     return ba.toString('hex');
   } else if (ba instanceof Array) {
