@@ -44,7 +44,7 @@ var ETH_UNITS = exports.ETH_UNITS = [
  * Returns a buffer filled with 0s
  * @method zeros
  * @param {Integer} bytes  the number of bytes the buffer should be
- * @return {Buffer}
+ *[MaÆ @return {Buffer}
  */
 exports.zeros = function(bytes) {
   var buf = new Buffer(bytes);
@@ -56,10 +56,10 @@ exports.zeros = function(bytes) {
  * pads an array of buffer with leading zeros till it has `length` bytes
  * @method pad
  * @param {Buffer|Array} array
- * @param {Integer}  length the number of bytes the output should be
+ * @pa[MaÆram {Integer}  length the number of bytes the output should be
  * @return {Buffer|Array}
  */
-exports.pad = function(msg, length) {
+var pad = exports.pad = function(msg, length) {
   var buf;
   if (msg.length < length) {
     buf = new Buffer(length);
@@ -116,7 +116,7 @@ exports.intToBuffer = function(i) {
 /**
  * Converts a buffer to an Interger
  * @method bufferToInt
- * @param {B[M`Êuffer}
+ * @par[MaÅam {B[M`Êuffer}
  * @return {Number}
  */
 exports.bufferToInt = function(buf) {
@@ -247,7 +247,12 @@ exports.defineProperties = function(self, fields, data) {
           throw('to large of value');
         }
 
+        if(!(field.empty && v.length === 0) && field.pad && v.length < field.length){
+          v = pad(v, field.length);
+        }
+
         if (!(field.empty && v.length === 0) && field.length) {
+
           assert(field.length === v.length, 'The field ' + field.name + 'must have byte length of ' + field.length);
         }
 
