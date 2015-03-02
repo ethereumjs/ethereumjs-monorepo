@@ -147,7 +147,7 @@ exports.fromSigned = function(num) {
  * @return {Buffer}
  */
 exports.toUnsigned = function(num) {
-  if (num.lt(0)) {
+  if (num.lt(bignum(0))) {
     return num.add(TWO_POW256).toBuffer();
   } else {
     return num.toBuffer();
@@ -184,7 +184,7 @@ exports.pubToAddress = function(pubKey) {
  */
 exports.generateAddress = function(from, nonce) {
 
-  nonce = bignum.fromBuffer(nonce).sub(1).toBuffer();
+  nonce = bignum.fromBuffer(nonce).sub(bignum(1)).toBuffer();
   if (nonce.toString('hex') === '00') {
     nonce = 0;
   }
