@@ -40,6 +40,8 @@ var ETH_UNITS = exports.ETH_UNITS = [
   'Uether'
 ];
 
+exports.BN = BN;
+
 /**
  * Returns a buffer filled with 0s
  * @method zeros
