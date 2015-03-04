@@ -1,6 +1,6 @@
 var assert = require('assert');
 var ethUtils = require('../index.js');
-var bignum = require('bignum');
+var BN = require('bn.js');
 
 describe('zeros function', function(){
   it('should produce lots of 0s', function(){
@@ -74,7 +74,7 @@ describe('toUnsigned', function () {
   it('should convert a signed number to unsigned', function(){
     var neg = '-452312848583266388373324160190187140051835877600158453279131187530910662656';
     var hex = 'ff00000000000000000000000000000000000000000000000000000000000000';
-    var num = bignum(neg);
+    var num = new BN(neg);
 
     assert.equal(ethUtils.toUnsigned(num).toString('hex'), hex);
   });

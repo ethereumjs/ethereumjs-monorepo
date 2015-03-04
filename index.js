@@ -1,12 +1,12 @@
 const SHA3 = require('sha3'),
   assert = require('assert'),
   rlp = require('rlp'),
-  bignum = require('bignum');
+  BN = require('bn.js');
 
 //the max interger that this VM can handle
-var MAX_INTEGER = exports.MAX_INTEGER = bignum('ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff', 16);
+var MAX_INTEGER = exports.MAX_INTEGER = new BN('ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff', 16);
 
-var TWO_POW256 = exports.TWO_POW256 = bignum('115792089237316195423570985008687907853269984665640564039457584007913129639936');
+var TWO_POW256 = exports.TWO_POW256 = new BN('115792089237316195423570985008687907853269984665640564039457584007913129639936');
 
 //hex string of SHA3-256 hash of `null`
 exports.SHA3_NULL = 'c5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470';
@@ -130,13 +130,13 @@ exports.bufferToInt = function(buf) {
  * interpets a buffer as a signed integer and returns a bignum
  * @method fromSigned
  * @param {Buffer} num
- * @return {Bignum}
+ * @return {BN}
  */
 exports.fromSigned = function(num) {
   if (num.length === 32 && num[0] >= 128) {
-    return bignum.fromBuffer(num).sub(TWO_POW256);
+    return new BN(num).sub(TWO_POW256);
   } else {
-    return bignum.fromBuffer(num);
+    return new BN(num);
   }
 };
 
@@ -147,10 +147,10 @@ exports.fromSigned = function(num) {
  * @return {Buffer}
  */
 exports.toUnsigned = function(num) {
-  if (num.lt(bignum(0))) {
-    return num.add(TWO_POW256).toBuffer();
+  if (num.cmp(new BN(0)) === -1) {
+    return new Buffer(num.add(TWO_POW256).toArray());
   } else {
-    return num.toBuffer();
+    return new Buffer(num.toArray());
   }
 };
 
@@ -184,7 +184,7 @@ exports.pubToAddress = function(pubKey) {
  */
 exports.generateAddress = function(from, nonce) {
 
-  nonce = bignum.fromBuffer(nonce).sub(bignum(1)).toBuffer();
+  nonce = new Buffer(new BN(nonce).sub(new BN(1)).toArray());
   if (nonce.toString('hex') === '00') {
     nonce = 0;
   }
@@ -236,14 +236,14 @@ exports.defineProperties = function(self, fields, data) {
             v = exports.intToBuffer(v);
           } else if (v === null) {
             v = new Buffer([]);
-          } else if (v.toBuffer) {
-            v = v.toBuffer();
+          } else if (v.toArray) {
+            v = new Buffer(v.toArray());
           } else {
             throw new Error('invalid type');
           }
         }
 
-        if(field.word && bignum.fromBuffer(v).gt(MAX_INTEGER)){
+        if(field.word && new BN(v).cmp(MAX_INTEGER)  === 1){
           throw('to large of value');
         }
 
@@ -364,12 +364,12 @@ exports.fromAscii = function(str, pad) {
 exports.toDecimal = function(val) {
   // remove 0x and place 0, if it's required
   val = val.length > 2 ? val.substring(2) : '0';
-  return bignum(val, 16).toString(10);
+  return new BN(val, 16).toString(10);
 };
 
 // @returns hex representation (prefixed by 0x) of decimal value
 exports.fromDecimal = function(val) {
-  return '0x' + bignum(val).toString(16);
+  return '0x' + new BN(val).toString(16);
 };
 
 exports.toHex = function(str) {

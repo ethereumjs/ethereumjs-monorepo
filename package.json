@@ -22,15 +22,13 @@
   },
   "homepage": "https://github.com/ethereum/ethereumjs-utils",
   "dependencies": {
-    "bignum": "^0.9.1",
-    "bignum-browserify": "0.0.1",
+    "bn.js": "^2.0.1",
     "crypto-js": "^3.1.2-5",
     "rlp": "0.0.12",
     "sha3": "^1.1.0"
   },
   "browser": {
-    "sha3": "./browser/sha3.js",
-    "bignum": "bignum-browserify"
+    "sha3": "./browser/sha3.js"
   },
   "testling": {
     "browsers": [
