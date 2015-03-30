@@ -1,6 +1,6 @@
 {
   "name": "rlp",
-  "version": "0.0.12",
+  "version": "0.0.13",
   "description": "Recursive Length Prefix Encoding Module",
   "main": "index.js",
   "directories": {
@@ -35,6 +35,9 @@
     "mocha": "~1.17.1",
     "bn.js": "*",
     "ethrereum-tests": "git+https://github.com/ethereum/tests.git#develop"
+  },
+  "bin": {
+    "rlp": "./bin/rlp"
   },
   "testling": {
     "files": "test/*.js",
