@@ -72,8 +72,12 @@ function _decode (input) {
   } else if (firstByte <= 0xbf) {
     var llength = firstByte - 0xb6;
     var length = parseInt(input.slice(1, llength).toString('hex'), 16);
+    var data = input.slice(llength, length + llength);
+    if(data.length < length) 
+      throw(new Error('invalid RLP'));
+
     return {
-      data: input.slice(llength, length + llength),
+      data: data,
       remainder: input.slice(length + llength)
     };
   } else if (firstByte <= 0xf7) {

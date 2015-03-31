@@ -1,6 +1,6 @@
 {
   "name": "rlp",
-  "version": "0.0.13",
+  "version": "0.0.14",
   "description": "Recursive Length Prefix Encoding Module",
   "main": "index.js",
   "directories": {
