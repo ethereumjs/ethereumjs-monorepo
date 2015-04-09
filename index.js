@@ -524,6 +524,7 @@ internals.Trie.prototype._createNewNode = function(key, value, cb) {
 //formats node to be saved by levelup.batch.
 //returns either the hash that will be used key or the rawNode
 internals.Trie.prototype._formatNode = function(node, topLevel, remove, opStack) {
+
   if (arguments.length === 3) {
     opStack = remove;
     remove = false;

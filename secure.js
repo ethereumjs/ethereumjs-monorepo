@@ -2,7 +2,6 @@ const Trie = require('./index.js');
 const ethUtil = require('ethereumjs-util');
 const inherits = require('util').inherits
 
-
 const Secure = module.exports = function(){
   Trie.call(this);
 };
