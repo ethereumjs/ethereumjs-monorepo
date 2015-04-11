@@ -17,10 +17,6 @@ exports = module.exports = internals.Trie = function(db, root) {
 
   this.sem = require('semaphore')(1);
 
-  if (db instanceof internals.Trie) {
-    db = db.db;
-  }
-
   if (!db) {
     db = levelup('', {
       db: memdown
