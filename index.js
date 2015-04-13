@@ -236,7 +236,7 @@ exports.defineProperties = function(self, fields, data) {
             v = new Buffer(v, 'hex');
           } else if (typeof v === 'number') {
             v = exports.intToBuffer(v);
-          } else if (v === null) {
+          } else if (v === null || v === undefined) {
             v = new Buffer([]);
           } else if (v.toArray) {
             v = new Buffer(v.toArray());
