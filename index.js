@@ -233,6 +233,9 @@ exports.defineProperties = function(self, fields, data) {
       set: function(v) {
         if (!Buffer.isBuffer(v)) {
           if (typeof v === 'string') {
+            if (v.slice(0, 2) === '0x') {
+              v = v.slice(2);
+            }
             v = new Buffer(v, 'hex');
           } else if (typeof v === 'number') {
             v = exports.intToBuffer(v);
