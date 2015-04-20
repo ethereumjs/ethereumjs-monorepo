@@ -243,7 +243,7 @@ internals.Trie.prototype._findAll = function(root, key, onFound, onDone) {
         function(err) {
           var lastVal = node.value;
           if (lastVal) {
-            onFound(lastVal, key, onDone);
+            onFound(node, key, onDone);
           } else {
             onDone();
           }
