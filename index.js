@@ -646,11 +646,15 @@ internals.Trie.prototype.copy = function() {
  */
 internals.Trie.prototype.batch = function(ops, cb) {
   var self = this;
-  var keys = Object.keys(ops);
 
-  async.eachSeries(keys, function(key, cb2) {
-    var op = ops[key];
-    self.put(op[0], op[1], cb2);
+  async.eachSeries(ops, function(op, cb2) {
+    if(op.type === 'put'){
+      self.put(op.key, op.value, cb2);
+    }else if(op.type === 'del'){
+      self.del(op.key, cb2);
+    }else{
+      cb2();
+    }
   }, cb);
 };
 
