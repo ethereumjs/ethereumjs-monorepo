@@ -156,8 +156,10 @@ exports.toUnsigned = function(num) {
   }
 };
 
-exports.sha3 = function(a) {
-  var h = new SHA3.SHA3Hash(256);
+exports.sha3 = function(a, bytes) {
+  if(!bytes) bytes = 256
+
+  var h = new SHA3.SHA3Hash(bytes);
   if (a) {
     h.update(a);
   }
@@ -388,7 +390,6 @@ exports.toHex = function(str) {
 };
 
 /// used to transform value/string to eth string
-/// TODO: use BigNumber.js to parse int
 exports.toEth = function(str) {
   var val = typeof str === 'string' ? str.indexOf('0x') === 0 ? parseInt(str.substr(2), 16) : parseInt(str) : str;
   var unit = 0;
