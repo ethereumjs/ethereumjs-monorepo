@@ -23,6 +23,13 @@ var encode = exports.encode = function (input) {
   }
 };
 
+function safeParseInt(v, base){
+  if(v.slice(0, 2) === '00'){
+    throw('invalid RLP: extra zeros');
+  }
+  return parseInt(v, base);
+}
+
 function encodeLength(len, offset) {
   if (len < 56) {
     return new Buffer([len + offset]);
@@ -71,7 +78,7 @@ function _decode (input) {
     };
   } else if (firstByte <= 0xbf) {
     var llength = firstByte - 0xb6;
-    var length = parseInt(input.slice(1, llength).toString('hex'), 16);
+    var length = safeParseInt(input.slice(1, llength).toString('hex'), 16);
     var data = input.slice(llength, length + llength);
     if(data.length < length) 
       throw(new Error('invalid RLP'));
@@ -100,7 +107,7 @@ function _decode (input) {
   } else {
     //a list  over 55 bytes long
     var llength = firstByte - 0xf6;
-    var length = parseInt(input.slice(1, llength).toString('hex'), 16);
+    var length = safeParseInt(input.slice(1, llength).toString('hex'), 16);
     var remainder = input.slice(llength);
     var innerRemainder = input.slice(llength, llength + length);
     var decoded = [];
