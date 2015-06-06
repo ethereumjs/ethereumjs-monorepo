@@ -3,6 +3,7 @@ const assert = require('assert'),
   memdown = require('memdown'),
   async = require('async'),
   rlp = require('rlp'),
+  semaphore = require('semaphore'),
   TrieNode = require('./trieNode'),
   ReadStream = require('./readStream');
 
@@ -15,7 +16,7 @@ exports = module.exports = internals.Trie = function(db, root) {
 
   this.EMPTY_TRIE_ROOT = EMPTY_RLP_HASH;
 
-  this.sem = require('semaphore')(1);
+  this.sem = semaphore(1);
 
   if (!db) {
     db = levelup('', {
