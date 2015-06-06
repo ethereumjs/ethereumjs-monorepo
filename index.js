@@ -72,6 +72,11 @@ function _decode (input) {
     } else {
       data = input.slice(1, length);
     }
+
+    if(length === 2 && data[0] < 0x80){
+      throw 'invalid rlp encoding: byte must be less 0x80'
+    }
+
     return {
       data: data,
       remainder: input.slice(length)

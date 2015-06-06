@@ -192,6 +192,28 @@ describe('zero values', function() {
   });
 });
 
+describe('bad values', function() {
+  it('wrong encoded a zero', function() {
+    var val  = new Buffer("f9005f030182520894b94f5374fce5edbc8e2a8697c15331677e6ebf0b0a801ca098ff921201554726367d2be8c804a7ff89ccf285ebc57dff8ae4c44b9c19ac4aa08887321be575c8095f789dd4c743dfe42c1820f9231f98a962b210e3ac2452a3", 'hex');
+    var result;
+    try{
+      result = RLP.decode(val);
+    }catch(e){
+    }
+    assert.equal(result, undefined);
+  });
+
+  it('invalid length', function(){
+    var a = new Buffer('f86081000182520894b94f5374fce5edbc8e2a8697c15331677e6ebf0b0a801ca098ff921201554726367d2be8c804a7ff89ccf285ebc57dff8ae4c44b9c19ac4aa08887321be575c8095f789dd4c743dfe42c1820f9231f98a962b210e3ac2452a3', 'hex');
+  
+    var result;
+    try{
+      result = RLP.decode(val);
+    }catch(e){
+    }
+    assert.equal(result, undefined);
+  });
+});
 
 describe('offical tests', function() {
   it('pass all tests', function(done) {
