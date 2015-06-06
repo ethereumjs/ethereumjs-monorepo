@@ -18,37 +18,23 @@ function Trie(db, root) {
 
   this.sem = semaphore(1);
 
-  if (!db) {
-    db = levelup('', {
-      db: memdown
-    });
-  }
-
-  this.db = db;
-  this._cache = levelup('', {
-    db: memdown
-  });
+  this.db = db || levelup('', { db: memdown });
+  this._cache = levelup('', { db: memdown });
 
   this.isCheckpoint = false;
   this._checkpoints = [];
 
-  if (typeof root === 'string') {
-    root = new Buffer(root, 'hex');
-  }
-
   Object.defineProperty(this, 'root', {
-    set: function(v) {
-      if (v) {
-        if (!Buffer.isBuffer(v)) {
-          if (typeof v === 'string') {
-            v = new Buffer(v, 'hex');
-          }
+    set: function(value) {
+      if (value) {
+        if (!Buffer.isBuffer(value) && typeof value === 'string') {
+          value = new Buffer(value, 'hex');
         }
-        assert(v.length === 32, 'Invalid root length. Roots are 32 bytes');
+        assert(value.length === 32, 'Invalid root length. Roots are 32 bytes');
       } else {
-        v = EMPTY_RLP_HASH;
+        value = EMPTY_RLP_HASH;
       }
-      this._root = v;
+      this._root = value;
     },
     get: function() {
       return this._root;
@@ -82,10 +68,9 @@ Trie.prototype.get = function(key, cb) {
  * @param {Buffer|String} Value
  */
 Trie.prototype.put = function(key, value, cb) {
-
   var self = this;
 
-  if (!value || value === '') {
+  if (!value) {
     self.del(key, cb);
   } else {
     cb = together(cb, self.sem.leave);
@@ -271,7 +256,6 @@ Trie.prototype._findAll = function(root, key, onFound, onDone) {
  * @param {Function} cb - the callback
  */
 Trie.prototype._updateNode = function(key, value, keyRemainder, stack, cb) {
-
   var toSave = [],
     lastNode = stack.pop();
 
@@ -348,6 +332,7 @@ Trie.prototype._updateNode = function(key, value, keyRemainder, stack, cb) {
  */
 Trie.prototype._saveStack = function(key, stack, opStack, cb) {
   var lastRoot;
+
   //update nodes
   while (stack.length) {
     var node = stack.pop();
@@ -385,6 +370,7 @@ Trie.prototype._saveStack = function(key, stack, opStack, cb) {
 };
 
 Trie.prototype._deleteNode = function(key, stack, cb) {
+  
   function processBranchNode(key, branchKey, branchNode, parentNode, stack) {
     //branchNode is the node ON the branch node not THE branch node
     var branchNodeKey = branchNode.key;
@@ -504,6 +490,7 @@ Trie.prototype._deleteNode = function(key, stack, cb) {
 Trie.prototype._createNewNode = function(key, value, cb) {
   var newNode = new TrieNode('leaf', key, value);
   this.root = newNode.hash();
+
   //save
   var db;
   if (this.isCheckpoint) {
@@ -549,7 +536,6 @@ Trie.prototype._formatNode = function(node, topLevel, remove, opStack) {
 };
 
 Trie.prototype._lookupNode = function(node, cb) {
-
   var self = this;
 
   function dbLookup(db, cb2) {
