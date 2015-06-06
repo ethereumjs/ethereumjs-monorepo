@@ -77,33 +77,29 @@ Trie.prototype.put = function(key, value, cb) {
 
     self.sem.take(function() {
       if (self.root.toString('hex') !== EMPTY_RLP_HASH_ST) {
-        //first try to find the give key or its nearst node
+        // first try to find the give key or its nearst node
         self._findNode(key, self.root, [], function(err, foundValue, keyRemainder, stack) {
-          if (err) {
-            cb(err);
-          } else {
-            //then update
-            self._updateNode(key, value, keyRemainder, stack, cb);
-          }
+          if (err) return cb(err);
+          // then update
+          self._updateNode(key, value, keyRemainder, stack, cb);
         });
       } else {
-        //if no root initialize this trie
+        // if no root initialize this trie
         self._createNewNode(key, value, cb);
       }
     });
   }
 };
 
-//deletes a value
+// deletes a value
 Trie.prototype.del = function(key, cb) {
   var self = this;
   cb = together(cb, self.sem.leave);
 
   self.sem.take(function() {
     self._findNode(key, self.root, [], function(err, foundValue, keyRemainder, stack) {
-      if (err) {
-        cb(err);
-      } else if (foundValue) {
+      if (err) return cb(err);
+      if (foundValue) {
         self._deleteNode(key, stack, cb);
       } else {
         cb();
@@ -128,7 +124,7 @@ Trie.prototype.del = function(key, cb) {
 Trie.prototype._findNode = function(key, root, stack, cb) {
   var self = this;
 
-  //parse the node and gets the next node if any to parse
+  // parse the node and gets the next node if any to parse
   function processNode(node) {
     if (!node) {
       cb(null, null, key, stack);
@@ -137,13 +133,13 @@ Trie.prototype._findNode = function(key, root, stack, cb) {
 
     stack.push(node);
     if (node.type === 'branch') {
-      //branch
+      // branch
       if (key.length === 0) {
         cb(null, node, [], stack, cb);
       } else {
         var branchNode = node.getValue(key[0]);
         if (!branchNode) {
-          //there is no more nodes to find and we didn't find the key
+          // there are no more nodes to find and we didn't find the key
           cb(null, null, key, stack);
         } else {
           key.shift();
@@ -157,7 +153,7 @@ Trie.prototype._findNode = function(key, root, stack, cb) {
 
       if (node.type === 'leaf') {
         if (keyRemainder.length !== 0 || key.length !== nodeKey.length) {
-          //we did not find the key
+          // we did not find the key
           node = null;
         } else {
           key = [];
@@ -166,7 +162,7 @@ Trie.prototype._findNode = function(key, root, stack, cb) {
 
       } else if (node.type === 'extention') {
         if (matchingLen !== nodeKey.length) {
-          //we did not find the key
+          // we did not find the key
           cb(null, null, key, stack);
         } else {
           self._findNode(keyRemainder, node.value, stack, cb);
@@ -181,7 +177,7 @@ Trie.prototype._findNode = function(key, root, stack, cb) {
   }
 
   if (!Array.isArray(key)) {
-    //convert key to nibbles
+    // convert key to nibbles
     key = TrieNode.stringToNibbles(key);
   }
 
@@ -259,30 +255,30 @@ Trie.prototype._updateNode = function(key, value, keyRemainder, stack, cb) {
   var toSave = [],
     lastNode = stack.pop();
 
-  //add the new nodes
+  // add the new nodes
   key = TrieNode.stringToNibbles(key);
   if (lastNode.type === 'branch') {
     stack.push(lastNode);
     if (keyRemainder !== 0) {
-      //add an extention to a branch node
+      // add an extention to a branch node
       keyRemainder.shift();
-      //create a new leaf
+      // create a new leaf
       var newLeaf = new TrieNode('leaf', keyRemainder, value);
       stack.push(newLeaf);
     } else {
       lastNode.value = value;
     }
   } else if (lastNode.type === 'leaf' && keyRemainder.length === 0) {
-    //just updating a found value
+    // just updating a found value
     lastNode.value = value;
     stack.push(lastNode);
   } else {
-    //if extension; create a branch node
+    // if extension; create a branch node
     var lastKey = lastNode.key,
       matchingLength = matchingNibbleLength(lastKey, keyRemainder),
       newBranchNode = new TrieNode('branch');
 
-    //create a new extention node
+    // create a new extention node
     if (matchingLength !== 0) {
       var newKey = lastNode.key.slice(0, matchingLength),
         newExtNode = new TrieNode('extention', newKey, value);
@@ -296,12 +292,12 @@ Trie.prototype._updateNode = function(key, value, keyRemainder, stack, cb) {
     if (lastKey.length !== 0) {
       var branchKey = lastKey.shift();
       if (lastKey.length !== 0 || lastNode.type === 'leaf') {
-        //shriking extention or leaf
+        // shriking extention or leaf
         lastNode.key = lastKey;
         var formatedNode = this._formatNode(lastNode, false, toSave);
         newBranchNode.setValue(branchKey, formatedNode);
       } else {
-        //remove extention or attaching 
+        // remove extention or attaching 
         this._formatNode(lastNode, false, true, toSave);
         newBranchNode.setValue(branchKey, lastNode.value);
       }
@@ -311,7 +307,7 @@ Trie.prototype._updateNode = function(key, value, keyRemainder, stack, cb) {
 
     if (keyRemainder.length !== 0) {
       keyRemainder.shift();
-      //add a leaf node to the new branch node
+      // add a leaf node to the new branch node
       var newLeafNode = new TrieNode('leaf', keyRemainder, value);
       stack.push(newLeafNode);
     } else {
@@ -333,7 +329,7 @@ Trie.prototype._updateNode = function(key, value, keyRemainder, stack, cb) {
 Trie.prototype._saveStack = function(key, stack, opStack, cb) {
   var lastRoot;
 
-  //update nodes
+  // update nodes
   while (stack.length) {
     var node = stack.pop();
     if (node.type === 'leaf') {
@@ -372,26 +368,26 @@ Trie.prototype._saveStack = function(key, stack, opStack, cb) {
 Trie.prototype._deleteNode = function(key, stack, cb) {
   
   function processBranchNode(key, branchKey, branchNode, parentNode, stack) {
-    //branchNode is the node ON the branch node not THE branch node
+    // branchNode is the node ON the branch node not THE branch node
     var branchNodeKey = branchNode.key;
     if (!parentNode || parentNode.type === 'branch') {
-      //branch->?
+      // branch->?
       if (parentNode) stack.push(parentNode);
 
       if (branchNode.type === 'branch') {
-        //create an extention node
-        //branch->extention->branch
+        // create an extention node
+        // branch->extention->branch
         var extentionNode = new TrieNode('extention', [branchKey], null);
         stack.push(extentionNode);
         key.push(branchKey);
       } else {
-        //branch key is an extention or a leaf
-        //branch->(leaf or extention)
+        // branch key is an extention or a leaf
+        // branch->(leaf or extention)
         branchNodeKey.unshift(branchKey);
         branchNode.key = branchNodeKey;
 
-        //hackery. This is equvilant to array.concat; except we need keep the 
-        //rerfance to the `key` that was passed in. 
+        // hackery. This is equvilant to array.concat; except we need keep the 
+        // rerfance to the `key` that was passed in. 
         branchNodeKey.unshift(0);
         branchNodeKey.unshift(key.length);
         key.splice.apply(key, branchNodeKey);
@@ -399,18 +395,18 @@ Trie.prototype._deleteNode = function(key, stack, cb) {
       }
       stack.push(branchNode);
     } else {
-      //parent is a extention
+      // parent is a extention
       var parentKey = parentNode.key;
       if (branchNode.type === 'branch') {
-        //ext->branch
+        // ext->branch
         parentKey.push(branchKey);
         key.push(branchKey);
         parentNode.key = parentKey;
         stack.push(parentNode);
       } else {
-        //branch node is an leaf or extention and parent node is an exstention
-        //add two keys together
-        //dont push the parent node
+        // branch node is an leaf or extention and parent node is an exstention
+        // add two keys together
+        // dont push the parent node
         branchNodeKey.unshift(branchKey);
         key = key.concat(branchNodeKey);
         parentKey = parentKey.concat(branchNodeKey);
@@ -428,12 +424,12 @@ Trie.prototype._deleteNode = function(key, stack, cb) {
     self = this;
 
   if (!Array.isArray(key)) {
-    //convert key to nibbles
+    // convert key to nibbles
     key = TrieNode.stringToNibbles(key);
   }
 
   if (!parentNode) {
-    //the root here has to be a leaf.
+    // the root here has to be a leaf.
     this.root = EMPTY_RLP_HASH;
     if (this.isCheckpoint) {
       this.db.del(this.root, cb);
@@ -444,39 +440,39 @@ Trie.prototype._deleteNode = function(key, stack, cb) {
     if (lastNode.type === 'branch') {
       lastNode.value = null;
     } else {
-      //the lastNode has to be a leaf if its not a branch. And a leaf's parent
-      //if it has one must be a branch.
+      // the lastNode has to be a leaf if its not a branch. And a leaf's parent
+      // if it has one must be a branch.
       var lastNodeKey = lastNode.key;
       key.splice(key.length - lastNodeKey.length);
-      //delete the value
+      // delete the value
       this._formatNode(lastNode, false, true, opStack);
       parentNode.setValue(key.pop(), null);
       lastNode = parentNode;
       parentNode = stack.pop();
     }
 
-    //nodes on the branch
+    // nodes on the branch
     var branchNodes = [];
-    //count the number of nodes on the branch
+    // count the number of nodes on the branch
     lastNode.raw.forEach(function(node, i) {
       var val = lastNode.getValue(i);
       if (val) branchNodes.push([i, val]);
     });
 
-    //if there is only one branch node left, collapse the branch node
+    // if there is only one branch node left, collapse the branch node
     if (branchNodes.length === 1) {
-      //add the one remaing branch node to node above it
+      // add the one remaing branch node to node above it
       var branchNode = branchNodes[0][1],
         branchNodeKey = branchNodes[0][0];
 
-      //look up node
+      // look up node
       this._lookupNode(branchNode, function(foundNode) {
         key = processBranchNode(key, branchNodeKey, foundNode, parentNode, stack, opStack);
         self._saveStack(key, stack, opStack, cb);
       });
 
     } else {
-      //simple removing a leaf and recaluclation the stack
+      // simple removing a leaf and recaluclation the stack
       if (parentNode) {
         stack.push(parentNode);
       }
@@ -486,12 +482,12 @@ Trie.prototype._deleteNode = function(key, stack, cb) {
   }
 };
 
-//Creates the initial node
+// Creates the initial node
 Trie.prototype._createNewNode = function(key, value, cb) {
   var newNode = new TrieNode('leaf', key, value);
   this.root = newNode.hash();
 
-  //save
+  // save
   var db;
   if (this.isCheckpoint) {
     db = this._cache;
@@ -505,8 +501,8 @@ Trie.prototype._createNewNode = function(key, value, cb) {
   }, cb);
 };
 
-//formats node to be saved by levelup.batch.
-//returns either the hash that will be used key or the rawNode
+// formats node to be saved by levelup.batch.
+// returns either the hash that will be used key or the rawNode
 Trie.prototype._formatNode = function(node, topLevel, remove, opStack) {
 
   if (arguments.length === 3) {
@@ -553,7 +549,7 @@ Trie.prototype._lookupNode = function(node, cb) {
   }
 
   if (Buffer.isBuffer(node) && node.length === 32) {
-    //resovle hash to node
+    // resovle hash to node
     if (this.isCheckpoint) {
       dbLookup(this._cache, function(foundNode) {
         if (!foundNode) {
@@ -570,19 +566,19 @@ Trie.prototype._lookupNode = function(node, cb) {
   }
 };
 
-//creates a readstream
+// creates a readstream
 Trie.prototype.createReadStream = function() {
   return new ReadStream(this);
 };
 
-//creates a checkpoint
+// creates a checkpoint
 Trie.prototype.checkpoint = function() {
   var self = this;
   self._checkpoints.push(self.root);
   self.isCheckpoint = true;
 };
 
-//commits a checkpoint.
+// commits a checkpoint.
 Trie.prototype.commit = function(cb) {
   var self = this;
   cb = together(cb, self.sem.leave);
@@ -599,7 +595,7 @@ Trie.prototype.commit = function(cb) {
   });
 };
 
-//reverts a checkpoint
+// reverts a checkpoint
 Trie.prototype.revert = function(cb) {
   var self = this;
   cb = together(cb, self.sem.leave);
@@ -617,7 +613,7 @@ Trie.prototype.revert = function(cb) {
   });
 };
 
-//creates a new trie with a shared cache
+// creates a new trie with a shared cache
 Trie.prototype.copy = function() {
   var trie = new Trie(this.db);
   trie.isCheckpoint = this.isCheckpoint;
