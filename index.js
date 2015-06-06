@@ -21,8 +21,13 @@ function Trie(db, root) {
   this.db = db || levelup('', { db: memdown });
   this._cache = levelup('', { db: memdown });
 
-  this.isCheckpoint = false;
   this._checkpoints = [];
+
+  Object.defineProperty(this, 'isCheckpoint', {
+    get: function(){
+      return !!this._checkpoints.length
+    }
+  })
 
   Object.defineProperty(this, 'root', {
     set: function(value) {
@@ -575,7 +580,6 @@ Trie.prototype.createReadStream = function() {
 Trie.prototype.checkpoint = function() {
   var self = this;
   self._checkpoints.push(self.root);
-  self.isCheckpoint = true;
 };
 
 // commits a checkpoint.
@@ -584,10 +588,8 @@ Trie.prototype.commit = function(cb) {
   cb = together(cb, self.sem.leave);
 
   self.sem.take(function() {
-    self._checkpoints.pop();
-
-    if (!self._checkpoints.length && self.isCheckpoint) {
-      self.isCheckpoint = false;
+    if (self.isCheckpoint) {
+      self._checkpoints.pop();
       self._cache.createReadStream().pipe(self.db.createWriteStream()).on('close', cb);
     } else {
       cb();
@@ -601,12 +603,8 @@ Trie.prototype.revert = function(cb) {
   cb = together(cb, self.sem.leave);
 
   self.sem.take(function() {
-    if (self._checkpoints.length) {
+    if (self.isCheckpoint) {
       self.root = self._checkpoints.pop();
-    }
-
-    if (!self._checkpoints.length) {
-      self.isCheckpoint = false;
     }
 
     cb();
@@ -616,7 +614,7 @@ Trie.prototype.revert = function(cb) {
 // creates a new trie with a shared cache
 Trie.prototype.copy = function() {
   var trie = new Trie(this.db);
-  trie.isCheckpoint = this.isCheckpoint;
+  trie._checkpoints = this._checkpoints.slice();
   trie._cache = this._cache;
   return trie;
 };
