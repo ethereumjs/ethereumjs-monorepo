@@ -10,9 +10,9 @@ const assert = require('assert'),
 const EMPTY_RLP_HASH_ST = '56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421';
 const EMPTY_RLP_HASH = new Buffer(EMPTY_RLP_HASH_ST, 'hex');
 
-var internals = {};
+module.exports = Trie;
 
-exports = module.exports = internals.Trie = function(db, root) {
+function Trie(db, root) {
 
   this.EMPTY_TRIE_ROOT = EMPTY_RLP_HASH;
 
@@ -63,7 +63,7 @@ exports = module.exports = internals.Trie = function(db, root) {
  * @method get
  * @param {String} key - the key to search for
  */
-internals.Trie.prototype.get = function(key, cb) {
+Trie.prototype.get = function(key, cb) {
   var self = this;
 
   self._findNode(key, self.root, [], function(err, node, remainder, stack) {
@@ -81,14 +81,14 @@ internals.Trie.prototype.get = function(key, cb) {
  * @param {Buffer|String} key
  * @param {Buffer|String} Value
  */
-internals.Trie.prototype.put = function(key, value, cb) {
+Trie.prototype.put = function(key, value, cb) {
 
   var self = this;
 
   if (!value || value === '') {
     self.del(key, cb);
   } else {
-    cb = internals.together(cb, self.sem.leave);
+    cb = together(cb, self.sem.leave);
 
     self.sem.take(function() {
       if (self.root.toString('hex') !== EMPTY_RLP_HASH_ST) {
@@ -110,9 +110,9 @@ internals.Trie.prototype.put = function(key, value, cb) {
 };
 
 //deletes a value
-internals.Trie.prototype.del = function(key, cb) {
+Trie.prototype.del = function(key, cb) {
   var self = this;
-  cb = internals.together(cb, self.sem.leave);
+  cb = together(cb, self.sem.leave);
 
   self.sem.take(function() {
     self._findNode(key, self.root, [], function(err, foundValue, keyRemainder, stack) {
@@ -140,7 +140,7 @@ internals.Trie.prototype.del = function(key, cb) {
  *  - remainder - the remaining key nibbles not accounted for
  *  - stack - an array of nodes that forms the path to node we are searching for
  */
-internals.Trie.prototype._findNode = function(key, root, stack, cb) {
+Trie.prototype._findNode = function(key, root, stack, cb) {
   var self = this;
 
   //parse the node and gets the next node if any to parse
@@ -167,7 +167,7 @@ internals.Trie.prototype._findNode = function(key, root, stack, cb) {
       }
     } else {
       var nodeKey = node.key,
-        matchingLen = internals.matchingNibbleLength(nodeKey, key),
+        matchingLen = matchingNibbleLength(nodeKey, key),
         keyRemainder = key.slice(matchingLen);
 
       if (node.type === 'leaf') {
@@ -214,7 +214,7 @@ internals.Trie.prototype._findNode = function(key, root, stack, cb) {
 /*
  * Finds all leafs
  */
-internals.Trie.prototype._findAll = function(root, key, onFound, onDone) {
+Trie.prototype._findAll = function(root, key, onFound, onDone) {
   var self = this;
 
   function processNode(node) {
@@ -270,7 +270,7 @@ internals.Trie.prototype._findAll = function(root, key, onFound, onDone) {
  * @param {Array} stack -
  * @param {Function} cb - the callback
  */
-internals.Trie.prototype._updateNode = function(key, value, keyRemainder, stack, cb) {
+Trie.prototype._updateNode = function(key, value, keyRemainder, stack, cb) {
 
   var toSave = [],
     lastNode = stack.pop();
@@ -295,7 +295,7 @@ internals.Trie.prototype._updateNode = function(key, value, keyRemainder, stack,
   } else {
     //if extension; create a branch node
     var lastKey = lastNode.key,
-      matchingLength = internals.matchingNibbleLength(lastKey, keyRemainder),
+      matchingLength = matchingNibbleLength(lastKey, keyRemainder),
       newBranchNode = new TrieNode('branch');
 
     //create a new extention node
@@ -346,7 +346,7 @@ internals.Trie.prototype._updateNode = function(key, value, keyRemainder, stack,
  * @param {Array} opStack - a stack of levelup operations to commit at the end of this funciton
  * @param {Function} cb
  */
-internals.Trie.prototype._saveStack = function(key, stack, opStack, cb) {
+Trie.prototype._saveStack = function(key, stack, opStack, cb) {
   var lastRoot;
   //update nodes
   while (stack.length) {
@@ -384,7 +384,7 @@ internals.Trie.prototype._saveStack = function(key, stack, opStack, cb) {
   }
 };
 
-internals.Trie.prototype._deleteNode = function(key, stack, cb) {
+Trie.prototype._deleteNode = function(key, stack, cb) {
   function processBranchNode(key, branchKey, branchNode, parentNode, stack) {
     //branchNode is the node ON the branch node not THE branch node
     var branchNodeKey = branchNode.key;
@@ -501,7 +501,7 @@ internals.Trie.prototype._deleteNode = function(key, stack, cb) {
 };
 
 //Creates the initial node
-internals.Trie.prototype._createNewNode = function(key, value, cb) {
+Trie.prototype._createNewNode = function(key, value, cb) {
   var newNode = new TrieNode('leaf', key, value);
   this.root = newNode.hash();
   //save
@@ -520,7 +520,7 @@ internals.Trie.prototype._createNewNode = function(key, value, cb) {
 
 //formats node to be saved by levelup.batch.
 //returns either the hash that will be used key or the rawNode
-internals.Trie.prototype._formatNode = function(node, topLevel, remove, opStack) {
+Trie.prototype._formatNode = function(node, topLevel, remove, opStack) {
 
   if (arguments.length === 3) {
     opStack = remove;
@@ -548,7 +548,7 @@ internals.Trie.prototype._formatNode = function(node, topLevel, remove, opStack)
   return node.raw;
 };
 
-internals.Trie.prototype._lookupNode = function(node, cb) {
+Trie.prototype._lookupNode = function(node, cb) {
 
   var self = this;
 
@@ -585,21 +585,21 @@ internals.Trie.prototype._lookupNode = function(node, cb) {
 };
 
 //creates a readstream
-internals.Trie.prototype.createReadStream = function() {
+Trie.prototype.createReadStream = function() {
   return new ReadStream(this);
 };
 
 //creates a checkpoint
-internals.Trie.prototype.checkpoint = function() {
+Trie.prototype.checkpoint = function() {
   var self = this;
   self._checkpoints.push(self.root);
   self.isCheckpoint = true;
 };
 
 //commits a checkpoint.
-internals.Trie.prototype.commit = function(cb) {
+Trie.prototype.commit = function(cb) {
   var self = this;
-  cb = internals.together(cb, self.sem.leave);
+  cb = together(cb, self.sem.leave);
 
   self.sem.take(function() {
     self._checkpoints.pop();
@@ -614,9 +614,9 @@ internals.Trie.prototype.commit = function(cb) {
 };
 
 //reverts a checkpoint
-internals.Trie.prototype.revert = function(cb) {
+Trie.prototype.revert = function(cb) {
   var self = this;
-  cb = internals.together(cb, self.sem.leave);
+  cb = together(cb, self.sem.leave);
 
   self.sem.take(function() {
     if (self._checkpoints.length) {
@@ -632,8 +632,8 @@ internals.Trie.prototype.revert = function(cb) {
 };
 
 //creates a new trie with a shared cache
-internals.Trie.prototype.copy = function() {
-  var trie = new internals.Trie(this.db);
+Trie.prototype.copy = function() {
+  var trie = new Trie(this.db);
   trie.isCheckpoint = this.isCheckpoint;
   trie._cache = this._cache;
   return trie;
@@ -645,7 +645,7 @@ internals.Trie.prototype.copy = function() {
  * @param {Object} ops
  * @param {Function} cb
  */
-internals.Trie.prototype.batch = function(ops, cb) {
+Trie.prototype.batch = function(ops, cb) {
   var self = this;
 
   async.eachSeries(ops, function(op, cb2) {
@@ -665,7 +665,7 @@ internals.Trie.prototype.batch = function(ops, cb) {
  * @param {Buffer} root
  * @param {Function} cb
  */
-internals.Trie.prototype.checkRoot = function(root, cb) {
+Trie.prototype.checkRoot = function(root, cb) {
   this._lookupNode(root, function(val) {
     var ret = val ? true : false;
   });
@@ -677,7 +677,7 @@ internals.Trie.prototype.checkRoot = function(root, cb) {
  * @param {Array} nib1
  * @param {Array} nib2
  */
-internals.matchingNibbleLength = function(nib1, nib2) {
+function matchingNibbleLength(nib1, nib2) {
   var i = 0;
   while (nib1[i] === nib2[i] && nib1.length > i) {
     i++;
@@ -689,7 +689,7 @@ internals.matchingNibbleLength = function(nib1, nib2) {
  * Take two or more functions and returns a function  that will execute all of
  * the given functions
  */
-internals.together = function() {
+function together() {
   var funcs = arguments,
     length = funcs.length,
     index = length;
