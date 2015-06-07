@@ -26,6 +26,7 @@ function TrieNode(type, key, value) {
   }
 };
 
+TrieNode.isRawNode = isRawNode
 TrieNode.addHexPrefix = addHexPrefix
 TrieNode.removeHexPrefix = removeHexPrefix
 TrieNode.isTerminator = isTerminator
@@ -212,11 +213,11 @@ function nibblesToBuffer(arr) {
  * - leaf - if teh node is a leaf
  * - branch - if the node is a branch
  * - extention - if the node is an extention
- * - unkown - if somehting fucked up
+ * - unknown - if somehting fucked up
  */
 function getNodeType(node) {
   if (Buffer.isBuffer(node) || typeof node === 'string' || node instanceof String) {
-    return 'unkown';
+    return 'unknown';
   } else if (node.length === 17) {
     return 'branch';
   } else if (node.length === 2) {
@@ -227,3 +228,7 @@ function getNodeType(node) {
     return 'extention';
   }
 };
+
+function isRawNode(node) {
+  return !Buffer.isBuffer(node)
+}

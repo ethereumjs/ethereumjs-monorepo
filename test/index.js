@@ -44,7 +44,6 @@ describe('simple save and retrive', function () {
   it('should delete a value', function (done) {
     trie.del('test', function (stack) {
       trie.get('test', function (err, value) {
-        console.log(value);
         done();
       });
     });
