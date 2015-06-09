@@ -1,9 +1,11 @@
 # ETHEREUMJS-TX
-An simple module for creating, manipulating and signing ethereum transactions
+An simple module for creating, manipulating and signing ethereum transactions. 
 
 # STATUS
- - Build [![Build Status](https://travis-ci.org/ethereum/ethereumjs-tx.svg)](https://travis-ci.org/ethereum/ethereumjs-tx)
- - [Chat](https://scrollback.io/ethereumjs/all/all-messages) Or #ethereumjs on freenode
+ [![Build Status](https://travis-ci.org/ethereum/ethereumjs-tx.svg)](https://travis-ci.org/ethereum/ethereumjs-tx)
+
+# CONTACT
+ [Scrollback](https://scrollback.io/ethereumjs/all/all-messages) or #ethereumjs on freenode
 
 # INSTALL
 `npm install ethereumjs-tx`
