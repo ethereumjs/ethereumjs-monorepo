@@ -1,5 +1,5 @@
 # ETHEREUMJS-TX
-An simple module for creating, manipulating and signing Ethereum transactions. 
+A simple module for creating, manipulating and signing Ethereum transactions. 
 
 # STATUS
  [![Build Status](https://travis-ci.org/ethereum/ethereumjs-tx.svg)](https://travis-ci.org/ethereum/ethereumjs-tx)
@@ -55,8 +55,7 @@ Implements schema and functions relating to Ethereum transactions
 
 ### `new Transaction([data])`
 Creates a new transaction object
-- `data` - a transaction can be initiailized with either a `buffer` containing the RLP serialized transaction. 
- Or an `array` of buffers relating to each of the tx Properties, listed in order below.  For example.
+- `data` - a transaction can be initiailized with either a `buffer` containing the RLP serialized transaction or an `array` of buffers relating to each of the tx Properties, listed in order below.  For example.
 ```javascript
 var rawTx = {
   nonce: '00',
@@ -106,7 +105,7 @@ Returns the SHA3-256 hash of the rlp transaction
 --------------------------------------------------------
 
 #### `transaction.sign(privateKey)`
-Signs the transaction with the given privateKey.
+Signs the transaction with the given privateKey.  
 **Parameters**  
 - `privateKey` - a 32 Byte `Buffer`
 
@@ -125,7 +124,7 @@ returns the public key of the  sender
 --------------------------------------------------------
 
 #### `transaction.validate()`
-Determines if the transaction is schematiclly valid by checking it's signature and gasCost.  
+Determines if the transaction is schematicly valid by checking its signature and gasCost.  
 **Return:** `Boolean` 
 
 --------------------------------------------------------
