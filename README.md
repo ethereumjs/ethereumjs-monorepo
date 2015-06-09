@@ -76,12 +76,12 @@ For `Object` and `Arrays` each of the elements can either be a `Buffer`, hex `St
 
 #### `transaction.serialize()`
 Returns the RLP serialization of the transaction  
-**Return: ** 32 Byte `Buffer`
+**Return:** 32 Byte `Buffer`
 
 #### `transaction.hash([signature])`
 Returns the SHA3-256 hash of the rlp transaction  
 **Parameters**  
-- `signature` - a `Boolean` determining if to include the signature components of the transaction. Defaults to true.
+- `signature` - a `Boolean` determining if to include the signature components of the transaction. Defaults to true.   
 **Return:** 32 Byte `Buffer`
 
 #### `transaction.sign(privateKey)`
@@ -98,8 +98,8 @@ returns the public key of the  sender
 **Return:** `Buffer`
 
 #### `transaction.validate()`
-Determines if the transaction is schematiclly valid by checking it's signature and gasCost.
-**Return: ** `Boolean` 
+Determines if the transaction is schematiclly valid by checking it's signature and gasCost.  
+**Return:** `Boolean` 
 
 #### `transaction.validateSignature()`
 Determines if the signature is valid  
@@ -120,5 +120,6 @@ The total amount needed in the account of the sender for the transaction to be v
 #### `transaction.toJSON([object])`
 returns transaction as JSON  
 **Parameters**  
-- `object` - a `Boolean` that defaults to false. If `object` is true then this will return an object else it will return an `array`   
+- `object` - a `Boolean` that defaults to false. If `object` is true then this will return an object else it will return an `array`  
+
 **Return:** `Object` or `Array`
