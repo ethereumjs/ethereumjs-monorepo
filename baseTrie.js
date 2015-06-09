@@ -197,7 +197,9 @@ Trie.prototype._findPath = function(targetKey, cb) {
   var stack = [];
   targetKey = TrieNode.stringToNibbles(targetKey);
 
-  this._walkTrie(root, function (root, node, keyProgress, walkController) {
+  this._walkTrie(root, processNode);
+
+  function processNode(root, node, keyProgress, walkController) {
 
     var matchingLen = matchingNibbleLength(keyProgress, targetKey);
     var keyRemainder = targetKey.slice(matchingLen);
@@ -206,20 +208,19 @@ Trie.prototype._findPath = function(targetKey, cb) {
 
     if (node.type === 'branch') {
       
-      // branch
       if (keyRemainder.length === 0) {
         // we exhausted the key without finding a node
-        walkController.abort();
+        walkController.return();
         cb(null, node, [], stack, cb);
       } else {
         var branchIndex = keyRemainder[0]
         var branchNode = node.getValue(branchIndex);
         if (!branchNode) {
           // there are no more nodes to find and we didn't find the key
-          walkController.abort();
+          walkController.return();
           cb(null, null, keyRemainder, stack);
         } else {
-          // node found, continuing searching
+          // node found, continuing search
           var childKey = keyRemainder.shift();
           walkController.only(branchIndex);
         }
@@ -227,7 +228,7 @@ Trie.prototype._findPath = function(targetKey, cb) {
 
     } else if (node.type === 'leaf') {
 
-      walkController.abort();
+      walkController.return();
       
       if (doKeysMatch(keyRemainder, node.key)) {
         // keys match, return node with empty key
@@ -248,10 +249,11 @@ Trie.prototype._findPath = function(targetKey, cb) {
       }
 
     }
-  });
+  }
 
 };
 
+// Trie.prototype._findNode = Trie.prototype._findPath
 Trie.prototype._findNode = function(key, root, stack, cb) {
   var self = this;
 
@@ -493,11 +495,11 @@ Trie.prototype._walkTrie = function(root, onNode, onDone) {
   var self = this;
   onDone = onDone || function(){};
   var aborted = false;
-  root = root || this.root;
+  root = root || self.root;
 
   if (root === EMPTY_RLP_HASH_ST) return onDone()
 
-  this._lookupNode(root, function(node){
+  self._lookupNode(root, function(node){
     processNode(root, node, null, onDone)
   });
 
@@ -514,9 +516,10 @@ Trie.prototype._walkTrie = function(root, onNode, onDone) {
         stopped = true;
         cb();
       },
-      abort: function(){
+      // end all traversal and return values to the onDone cb
+      return: function(){
         aborted = true;
-        cb();
+        cb.apply(null, arguments);
       },
       next: function(){
         if (aborted) return cb();

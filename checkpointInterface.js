@@ -83,17 +83,17 @@ function revert(cb) {
 
 // enter into checkpoint mode
 function _enterCpMode() {
-  console.log('ENTER CP MODE --------->')
+  // console.log('ENTER CP MODE --------->')
   this._scratch = levelup('', { db: memdown });
   this._getDBs.unshift(this._scratch);
   this.__putDBs = this._putDBs;
-  console.log('SET PUT TO SCRATCH')
+  // console.log('SET PUT TO SCRATCH')
   this._putDBs = [this._scratch];
 }
 
 // exit from checkpoint mode
 function _exitCpMode(commitState, cb) {
-  console.log('EXIT CP MODE <---------')
+  // console.log('EXIT CP MODE <---------')
   var self = this;
   var scratch = this._scratch;
   this._scratch = null;
