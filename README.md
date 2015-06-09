@@ -79,10 +79,10 @@ Returns the RLP serialization of the transaction
 **Return: ** 32 Byte `Buffer`
 
 #### `transaction.hash([signature])`
-Returns the SHA3-256 hash of the rlp transaction
+Returns the SHA3-256 hash of the rlp transaction  
 **Parameters**  
 - `signature` - a `Boolean` determining if to include the signature components of the transaction. Defaults to true.
-**Return: ** 32 Byte `Buffer`
+**Return:** 32 Byte `Buffer`
 
 #### `transaction.sign(privateKey)`
 Signs the transaction with the given privateKey.
@@ -94,31 +94,31 @@ Returns the senders address
 **Return: ** 20 Byte `Buffer`
 
 #### `transaction.getSenderPublicKey()`
-returns the public key of the  sender
-**Return: ** `Buffer`
+returns the public key of the  sender  
+**Return:** `Buffer`
 
 #### `transaction.validate()`
 Determines if the transaction is schematiclly valid by checking it's signature and gasCost.
 **Return: ** `Boolean` 
 
 #### `transaction.validateSignature()`
-Determines if the signature is valid
-**Return: ** `Boolean` 
+Determines if the signature is valid  
+**Return:** `Boolean` 
 
 #### `transaction.getDataFee()`
-Returns the amount of gas to be paid for the data in this transaction
-**Return: ** `bn.js` 
+Returns the amount of gas to be paid for the data in this transaction  
+**Return:** `bn.js` 
 
 #### `transaction.getBaseFee()`
-Returns the minimum amount of gas the tx must have (DataFee + TxFee)
-**Return: ** `bn.js` 
+Returns the minimum amount of gas the tx must have (DataFee + TxFee)  
+**Return:** `bn.js` 
 
 #### `transaction.getUpfrontCost()`
-The total amount needed in the account of the sender for the transaction to be valid
-**Return: ** `bn.js` 
+The total amount needed in the account of the sender for the transaction to be valid  
+**Return:** `bn.js` 
 
 #### `transaction.toJSON([object])`
-returns transaction as JSON
+returns transaction as JSON  
 **Parameters**  
 - `object` - a `Boolean` that defaults to false. If `object` is true then this will return an object else it will return an `array`   
-**Return: ** `Object` or `Array`
+**Return:** `Object` or `Array`
