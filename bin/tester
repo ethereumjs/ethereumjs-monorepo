@@ -1,5 +1,4 @@
 #!/usr/bin/env node
-
 require('../test/transactions.js')
 
 const argv = require('minimist')(process.argv.slice(2));
