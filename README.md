@@ -5,9 +5,9 @@ An simple module for creating, manipulating and signing ethereum transactions
     - [`new Transaction([data])`](#new-blockdata)
     - [`Transaction` Properties](#transaction-properties)
     - [`Transaction` Methods](#transaction-methods)
-        - [`transaction.parse(data)`](#transactionparsedata)
         - [`transaction.serialize()`](#transactionserialize) 
         - [`transaction.hash([signature])`](#transactionhashsignature)
+        - [`transaction.sign(privateKey)`](#transactionsignprivatekey)
         - [`transaction.getSenderAddress()`](#transactiongetsenderaddress)
         - [`transaction.getSenderPublicKey()`](#transactiongetsenderpublickey)
         - [`transaction.validate()`](#transactionvalidate)
@@ -19,7 +19,7 @@ An simple module for creating, manipulating and signing ethereum transactions
 
 ## `Transaction`
 Implements schema and functions relating to Ethereum transactions
-- file - [lib/transaction.js](../lib/transaction.js)
+- file - [lib/transaction.js](../lib/transaction.js) 
 - [example](https://wanderer.github.io/ethereum/2014/06/14/creating-and-verifying-transaction-with-node/)
 
 ### `new Transaction([data])`
@@ -67,42 +67,60 @@ For `Object` and `Arrays` each of the elements can either be a `Buffer`, hex `St
 - `to` - the to address
 - `value` - the amount of ether sent
 - `data` - this will contain the `data` of the message or the `init` of a contract.
-- `v` 
-- `r`
-- `s`
+- `v` - EC signature parameter
+- `r` - EC signature parameter
+- `s` - EC recovery ID
 
 --------------------------------------------------------
 
 ### `Transaction` Methods
 
 #### `transaction.serialize()`
-Returns the RLP serialization of the transaction
+Returns the RLP serialization of the transaction  
+**Return: ** 32 Byte `Buffer`
 
 #### `transaction.hash([signature])`
 Returns the SHA3-256 hash of the rlp transaction
+**Parameters**  
 - `signature` - a `Boolean` determining if to include the signature components of the transaction. Defaults to true.
+**Return: ** 32 Byte `Buffer`
+
+#### `transaction.sign(privateKey)`
+Signs the transaction with the given privateKey.
+**Parameters**  
+- `privateKey` - a 32 Byte `Buffer`
 
 #### `transaction.getSenderAddress()`
-returns the senders address
+Returns the senders address  
+**Return: ** 20 Byte `Buffer`
 
 #### `transaction.getSenderPublicKey()`
 returns the public key of the  sender
+**Return: ** `Buffer`
 
 #### `transaction.validate()`
-returns a `Boolean` determinging if the transaction is schematiclly valid
+Determines if the transaction is schematiclly valid by checking it's signature and gasCost.
+**Return: ** `Boolean` 
 
 #### `transaction.validateSignature()`
-returns a `Boolean` determining if the signature is valid
+Determines if the signature is valid
+**Return: ** `Boolean` 
 
 #### `transaction.getDataFee()`
-returns the amount of gas to be paid for the data in this transaction
+Returns the amount of gas to be paid for the data in this transaction
+**Return: ** `bn.js` 
 
 #### `transaction.getBaseFee()`
-returns the upfront fee (DataFee + TxFee)
+Returns the minimum amount of gas the tx must have (DataFee + TxFee)
+**Return: ** `bn.js` 
 
 #### `transaction.getUpfrontCost()`
-returns the total amount needed in the account of the sender for the transaction to be valid
+The total amount needed in the account of the sender for the transaction to be valid
+**Return: ** `bn.js` 
 
 #### `transaction.toJSON([object])`
 returns transaction as JSON
-- `object` - a `Boolean` that defaults to false. If `object` is true then this will return an object else it will return an `array`.
+**Parameters**  
+- `object` - a `Boolean` that defaults to false. If `object` is true then this will return an object else it will return an `array`   
+**Return: ** `Object` or `Array`
+
