@@ -1,0 +1,42 @@
+{
+  "name": "ethereumjs-tx",
+  "version": "0.2.0",
+  "description": "An simple module for creating, manipulating and signing ethereum transactions",
+  "main": "index.js",
+  "scripts": {
+    "test": "./bin/tester -t"
+  },
+  "keywords": [
+    "ethereum",
+    "transactions"
+  ],
+  "author": "mjbecze <mb@ethdev.com>",
+  "license": "GPL",
+  "dependencies": {
+    "bn.js": "^2.0.5",
+    "elliptic": "git+https://github.com/wanderer/elliptic",
+    "ethereum-common": "0.0.3",
+    "ethereumjs-util": "^1.0.0",
+    "rlp": "^1.0.0",
+    "secp256k1": "0.0.15"
+  },
+  "devDependencies": {
+    "async": "^1.2.1",
+    "ethereum-tests": "git+https://github.com/ethereum/tests#develop",
+    "minimist": "^1.1.1",
+    "tape": "^4.0.0"
+  },
+  "browser": {
+    "./ecdsaOps.js": "./ecdsaOpsBrowser.js"
+  },
+  "testling": {
+    "browsers": [
+      "ie/9..latest",
+      "firefox/15..latest",
+      "chrome/22..latest"
+    ],
+    "files": [
+      "test/transactions.js"
+    ]
+  }
+}
