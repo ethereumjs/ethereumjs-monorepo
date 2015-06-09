@@ -1,5 +1,35 @@
-# ethereumjs-tx [![Build Status](https://travis-ci.org/ethereum/ethereumjs-tx.svg)](https://travis-ci.org/ethereum/ethereumjs-tx)
+# ETHEREUMJS-TX
 An simple module for creating, manipulating and signing ethereum transactions
+
+# STATUS
+ - Build [![Build Status](https://travis-ci.org/ethereum/ethereumjs-tx.svg)](https://travis-ci.org/ethereum/ethereumjs-tx)
+ - [Chat](https://scrollback.io/ethereumjs/all/all-messages) Or #ethereumjs on freenode
+
+# INSTALL
+`npm install ethereumjs-tx`
+
+# USAGE
+```javascript
+var Tx = require('ethereumjs-tx');
+var privateKey = new Buffer('e331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109', 'hex');
+
+var rawTx = {
+  nonce: '00',
+  gasPrice: '09184e72a000', 
+  gasLimit: '2710',
+  to: '0000000000000000000000000000000000000000', 
+  value: '00', 
+  data: '7f7465737432000000000000000000000000000000000000000000000000000000600057'
+};
+
+var tx = new Tx(rawTx);
+tx.sign(privateKey);
+
+var serializedTx = tx.serialize();
+
+```
+
+# API
 
 - [`Transaction`](#transaction)
     - [`new Transaction([data])`](#new-transactiondata)
@@ -26,24 +56,6 @@ Creates a new transaction object
 - `data` - a transaction can be initiailized with either a `buffer` containing the RLP serialized transaction. 
  Or an `array` of buffers relating to each of the tx Properties, listed in order below.  For example.
 ```javascript
-var rawTx = [
-  '00', //nonce
-  '09184e72a000', //gasPrice
-  '2710', //gasLimit
-  '0000000000000000000000000000000000000000', //to
-  '00',  //value
-  '7f7465737432000000000000000000000000000000000000000000000000000000600057', //data
-  '1c', //v
-  '5e1d3a76fbf824220eafc8c79ad578ad2b67d01b0c2425eb1f1347e8f50882ab', //r
-  '5bd428537f05f9830e93792f90ea6a3e2d1ee84952dd96edbae9f658f831ab13' //s
-];
-
-var tx = new Transaction(rawTx);
-```
-
-Or lastly an `Object` containing the Properties of the transaction
-
-```javascript
 var rawTx = {
   nonce: '00',
   gasPrice: '09184e72a000', 
@@ -58,6 +70,8 @@ var rawTx = {
 
 var tx = new Transaction(rawTx);
 ```
+Or lastly an `Object` containing the Properties of the transaction like in the [Usage](#usage) example
+
 For `Object` and `Arrays` each of the elements can either be a `Buffer`, hex `String` , `Number`, or an object with a `toBuffer` method such as `Bignum`
 
 ### `transaction` Properties
@@ -124,3 +138,7 @@ returns transaction as JSON
 - `object` - a `Boolean` that defaults to false. If `object` is true then this will return an object else it will return an `array`  
 
 **Return:** `Object` or `Array`
+
+# TESTS
+test uses mocha. To run  
+`npm test`
