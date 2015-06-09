@@ -250,6 +250,8 @@ exports.defineProperties = function(self, fields, data) {
           }
         }
 
+        if(v.toString('hex') === '00' &&  field.noZero) v = new Buffer([]);
+
         if(field.word && new BN(v).cmp(MAX_INTEGER)  === 1){
           throw('to large of value');
         }
@@ -258,8 +260,8 @@ exports.defineProperties = function(self, fields, data) {
           v = pad(v, field.length);
         }
 
-        if (!(field.empty && v.length === 0) && field.length) {
 
+        if (!(field.empty && v.length === 0) && field.length) {
           assert(field.length === v.length, 'The field ' + field.name + 'must have byte length of ' + field.length);
         }
 
