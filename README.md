@@ -1,4 +1,4 @@
-# ethereumjs-tx
+# ethereumjs-tx [![Build Status](https://travis-ci.org/ethereum/ethereumjs-tx.svg)](https://travis-ci.org/ethereum/ethereumjs-tx)
 An simple module for creating, manipulating and signing ethereum transactions
 
 - [`Transaction`](#transaction)
