@@ -155,7 +155,7 @@ The total amount needed in the account of the sender for the transaction to be v
 --------------------------------------------------------
 
 #### `transaction.toJSON([object])`
-returns transaction as JSON  
+Returns transaction as JSON  
 **Parameters**  
 - `object` - a `Boolean` that defaults to false. If `object` is true then this will return an object else it will return an `array`  
 
