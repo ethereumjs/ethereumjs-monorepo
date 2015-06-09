@@ -15,6 +15,7 @@ var Transaction = module.exports = function(data) {
   var fields = [{
     name: 'nonce',
     word: true,
+    noZero: true,
     default: new Buffer([])
   }, {
     name: 'gasPrice',
