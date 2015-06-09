@@ -1,5 +1,5 @@
 # ETHEREUMJS-TX
-An simple module for creating, manipulating and signing ethereum transactions. 
+An simple module for creating, manipulating and signing Ethereum transactions. 
 
 # STATUS
  [![Build Status](https://travis-ci.org/ethereum/ethereumjs-tx.svg)](https://travis-ci.org/ethereum/ethereumjs-tx)
