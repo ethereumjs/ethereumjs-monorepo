@@ -92,7 +92,7 @@ Signs the transaction with the given privateKey.
 
 #### `transaction.getSenderAddress()`
 Returns the senders address  
-**Return: ** 20 Byte `Buffer`
+**Return:** 20 Byte `Buffer`
 
 #### `transaction.getSenderPublicKey()`
 returns the public key of the  sender  
