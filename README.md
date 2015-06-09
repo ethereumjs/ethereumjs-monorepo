@@ -81,7 +81,8 @@ Returns the RLP serialization of the transaction
 #### `transaction.hash([signature])`
 Returns the SHA3-256 hash of the rlp transaction  
 **Parameters**  
-- `signature` - a `Boolean` determining if to include the signature components of the transaction. Defaults to true.   
+- `signature` - a `Boolean` determining if to include the signature components of the transaction. Defaults to true. 
+
 **Return:** 32 Byte `Buffer`
 
 #### `transaction.sign(privateKey)`
