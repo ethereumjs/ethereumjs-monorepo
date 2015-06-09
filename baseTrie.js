@@ -7,6 +7,7 @@ const assert = require('assert'),
   TrieNode = require('./trieNode'),
   ReadStream = require('./readStream'),
   matchingNibbleLength = require('./util').matchingNibbleLength,
+  doKeysMatch = require('./util').doKeysMatch,
   callTogether = require('./util').callTogether,
   asyncFirstSeries = require('./util').asyncFirstSeries;
 
@@ -15,7 +16,8 @@ const EMPTY_RLP_HASH = new Buffer(EMPTY_RLP_HASH_ST, 'hex');
 
 module.exports = Trie;
 
-function Trie(db, root, cache) {
+
+function Trie(db, root) {
 
   this.EMPTY_TRIE_ROOT = EMPTY_RLP_HASH;
 
@@ -23,9 +25,8 @@ function Trie(db, root, cache) {
 
   // setup dbs
   this._db = db || levelup('', { db: memdown });
-  this._cache = cache || levelup('', { db: memdown });
-  this._getDBs = [this._cache, this._db];
-  this._putDBs = [this._cache, this._db];
+  this._getDBs = [this._db];
+  this._putDBs = [this._db];
 
   Object.defineProperty(this, 'root', {
     set: function(value) {
@@ -120,6 +121,7 @@ Trie.prototype._lookupNode = function(node, cb) {
       keyEncoding: 'binary',
       valueEncoding: 'binary'
     }, function(err, foundNode) {
+      // console.log('GET DB#'+(db === self._db ? 'DB':'SCRATCH'), 'node:', node.toString('hex'), foundNode ? 'HIT' : 'MISS')
       if (err || !foundNode) {
         cb(null, null);
       } else {
@@ -133,6 +135,7 @@ Trie.prototype._lookupNode = function(node, cb) {
     cb(new TrieNode(node));
   } else {
     asyncFirstSeries(this._getDBs, dbGet, function(err, result){
+      if (!result) console.log('READ FAILED:', node.toString('hex'))
       cb(result);
     });
   }
@@ -140,13 +143,16 @@ Trie.prototype._lookupNode = function(node, cb) {
 
 // writes a single node to dbs
 Trie.prototype._putNode = function(node, cb) {
-  var hash = node.hash()
-  var serialized = node.serialize()
+  var self = this;
+  var hash = node.hash();
+  var serialized = node.serialize();
 
   function dbPut(db, cb) {
+    // console.log('PUT DB#'+(db === self._db ? 'DB':'SCRATCH'), 'node:', hash.toString('hex'))
+
     db.put(hash, serialized, {
       keyEncoding: 'binary',
-      valueEncoding: 'binary'
+      valueEncoding: 'binary',
     }, cb);  
   }
   
@@ -155,8 +161,13 @@ Trie.prototype._putNode = function(node, cb) {
 
 // writes many nodes to db
 Trie.prototype._batchNodes = function(opStack, cb) {
+  var self = this;
 
   function dbBatch(db, cb) {
+    // console.log('BATCH-'+opStack.length, 'DB#'+(db === self._db ? 'DB':'SCRATCH'))
+    // opStack.forEach(function(op){
+    //   console.log('  -'+op.type.toUpperCase(), 'key:', op.key.toString('hex'))
+    // })
     db.batch(opStack, {
       keyEncoding: 'binary',
       valueEncoding: 'binary'
@@ -179,6 +190,68 @@ Trie.prototype._batchNodes = function(opStack, cb) {
  *  - remainder - the remaining key nibbles not accounted for
  *  - stack - an array of nodes that forms the path to node we are searching for
  */
+
+Trie.prototype._findPath = function(targetKey, cb) {
+  var self = this;
+  var root = self.root;
+  var stack = [];
+  targetKey = TrieNode.stringToNibbles(targetKey);
+
+  this._walkTrie(root, function (root, node, keyProgress, walkController) {
+
+    var matchingLen = matchingNibbleLength(keyProgress, targetKey);
+    var keyRemainder = targetKey.slice(matchingLen);
+
+    stack.push(node);
+
+    if (node.type === 'branch') {
+      
+      // branch
+      if (keyRemainder.length === 0) {
+        // we exhausted the key without finding a node
+        walkController.abort();
+        cb(null, node, [], stack, cb);
+      } else {
+        var branchIndex = keyRemainder[0]
+        var branchNode = node.getValue(branchIndex);
+        if (!branchNode) {
+          // there are no more nodes to find and we didn't find the key
+          walkController.abort();
+          cb(null, null, keyRemainder, stack);
+        } else {
+          // node found, continuing searching
+          var childKey = keyRemainder.shift();
+          walkController.only(branchIndex);
+        }
+      }
+
+    } else if (node.type === 'leaf') {
+
+      walkController.abort();
+      
+      if (doKeysMatch(keyRemainder, node.key)) {
+        // keys match, return node with empty key
+        cb(null, node, [], stack);
+      } else {
+        // reached leaf but keys dont match
+        cb(null, null, keyRemainder, stack);
+      }
+
+    } else if (node.type === 'extention') {
+      
+      if (doKeysMatch(keyRemainder, node.key)) {
+        // keys dont match, fail
+        cb(null, null, keyRemainder, stack);
+      } else {
+        // keys match, continue search
+        walkController.next();
+      }
+
+    }
+  });
+
+};
+
 Trie.prototype._findNode = function(key, root, stack, cb) {
   var self = this;
 
@@ -191,9 +264,12 @@ Trie.prototype._findNode = function(key, root, stack, cb) {
     }
 
     stack.push(node);
+
     if (node.type === 'branch') {
+      
       // branch
       if (key.length === 0) {
+        // we exhausted the without finding a node
         cb(null, node, [], stack, cb);
       } else {
         var branchNode = node.getValue(key[0]);
@@ -201,32 +277,35 @@ Trie.prototype._findNode = function(key, root, stack, cb) {
           // there are no more nodes to find and we didn't find the key
           cb(null, null, key, stack);
         } else {
+          // node found, continuing searching
           key.shift();
           self._findNode(key, branchNode, stack, cb);
         }
       }
-    } else {
-      var nodeKey = node.key,
-        matchingLen = matchingNibbleLength(nodeKey, key),
-        keyRemainder = key.slice(matchingLen);
 
-      if (node.type === 'leaf') {
-        if (keyRemainder.length !== 0 || key.length !== nodeKey.length) {
-          // we did not find the key
-          node = null;
-        } else {
-          key = [];
-        }
-        cb(null, node, key, stack);
-
-      } else if (node.type === 'extention') {
-        if (matchingLen !== nodeKey.length) {
-          // we did not find the key
-          cb(null, null, key, stack);
-        } else {
-          self._findNode(keyRemainder, node.value, stack, cb);
-        }
+    } else if (node.type === 'leaf') {
+      
+      if (doKeysMatch(key, node.key)) {
+        // keys match, return node with empty key
+        cb(null, node, [], stack);
+      } else {
+        // reached leaf but keys dont match
+        cb(null, null, key, stack);
       }
+
+    } else if (node.type === 'extention') {
+      
+      var nodeKey = node.key,
+        matchingLen = matchingNibbleLength(nodeKey, key);
+      if (matchingLen !== nodeKey.length) {
+        // keys dont match, fail
+        cb(null, null, key, stack);
+      } else {
+        // keys match, continue search
+        var keyRemainder = key.slice(matchingLen);
+        self._findNode(keyRemainder, node.value, stack, cb);
+      }
+
     }
   }
 
@@ -254,52 +333,83 @@ Trie.prototype._findNode = function(key, root, stack, cb) {
 /*
  * Finds all leafs
  */
-Trie.prototype._findAll = function(root, key, onFound, onDone) {
-  var self = this;
-
-  function processNode(node) {
+Trie.prototype._findValueNodes = function(onFound, cb) {
+  this._walkTrie(this.root, function (root, node, key, walkController) {
     if (node.type === 'leaf') {
-      key = key.concat(node.key);
-      onFound(node, key, onDone);
-    } else if (node.type === 'extention') {
-      key = key.concat(node.key);
-      self._findAll(node.value, key, onFound, onDone);
+      // found leaf node!
+      onFound(root, node, key, walkController.next)
+    } else if (node.type === 'branch' && node.value) {
+      // found branch with value
+      onFound(root, node, key, walkController.next)
     } else {
-      var count = 0;
-      async.whilst(
-        function() {
-          return count < 16;
-        },
-        function(callback) {
-          var val = node.getValue(count);
-          var tempKey = key.slice(0);
-          tempKey.push(count);
-          count++;
-          if (val) {
-            self._findAll(val, tempKey, onFound, callback);
-          } else {
-            callback();
-          }
-        },
-        function(err) {
-          var lastVal = node.value;
-          if (lastVal) {
-            onFound(node, key, onDone);
-          } else {
-            onDone();
-          }
-        }
-      );
+      // keep looking for leaf nodes
+      walkController.next();
     }
-  }
-
-  if (!root || root.toString('hex') === EMPTY_RLP_HASH_ST) {
-    onDone();
-    return;
-  }
-
-  this._lookupNode(root, processNode);
+  }, cb)
 };
+
+Trie.prototype._findDbNodes = function(onFound, cb) {
+  this._walkTrie(this.root, function (root, node, key, walkController) {
+    if (Buffer.isBuffer(root)) {
+      onFound(root, node, key, walkController.next);
+    } else {
+      walkController.next();
+    }
+  }, cb);
+}
+//   var self = this;
+//   key = key || [];
+
+//   function processNode(node) {
+    
+//     if (node.type === 'leaf') {
+      
+//       key = key.concat(node.key);
+//       onFound(root, node, key, onDone);
+
+//     } else if (node.type === 'extention') {
+    
+//       key = key.concat(node.key);
+//       onFound(root, node, key, onDone);
+//       self._findAll(node.value, key, onFound, onDone);
+
+//     } else if (node.type === 'branch') {
+
+//       var count = 0;
+//       // async iterate over node values
+//       async.whilst(
+//         function() { return count < 16; },
+//         function(callback) {
+//           var val = node.getValue(count);
+//           var tempKey = key.slice();
+//           tempKey.push(count);
+//           count++;
+//           if (val) {
+//             self._findAll(val, tempKey, onFound, callback);
+//           } else {
+//             callback();
+//           }
+//         },
+//         function(err) {
+//           var lastVal = node.value;
+//           if (lastVal) {
+//             onFound(root, node, key, onDone);
+//           } else {
+//             onDone();
+//           }
+//         }
+//       );
+
+//     }
+//   }
+
+//   if (!root || root.toString('hex') === EMPTY_RLP_HASH_ST) {
+//     onDone();
+//     return;
+//   }
+
+//   this._lookupNode(root, processNode);
+// };
 
 /** 
  * Updates a node
@@ -332,7 +442,7 @@ Trie.prototype._updateNode = function(key, value, keyRemainder, stack, cb) {
     lastNode.value = value;
     stack.push(lastNode);
   } else {
-    // if extension; create a branch node
+    // create a branch node
     var lastKey = lastNode.key,
       matchingLength = matchingNibbleLength(lastKey, keyRemainder),
       newBranchNode = new TrieNode('branch');
@@ -375,6 +485,64 @@ Trie.prototype._updateNode = function(key, value, keyRemainder, stack, cb) {
   }
 
   this._saveStack(key, stack, toSave, cb);
+};
+
+// walk tree
+
+Trie.prototype._walkTrie = function(root, onNode, onDone) {
+  var self = this;
+  onDone = onDone || function(){};
+  var aborted = false;
+  root = root || this.root;
+
+  if (root === EMPTY_RLP_HASH_ST) return onDone()
+
+  this._lookupNode(root, function(node){
+    processNode(root, node, null, onDone)
+  });
+
+  function processNode(root, node, key, cb) {
+    if (!node) return cb();
+    if (aborted) return cb();
+    var stopped = false;
+    key = key || [];
+    var nodeKey = node.key;
+    if (nodeKey && node.type !== 'extention') key = key.concat(nodeKey);
+
+    var walkController = {
+      stop: function(){
+        stopped = true;
+        cb();
+      },
+      abort: function(){
+        aborted = true;
+        cb();
+      },
+      next: function(){
+        if (aborted) return cb();
+        if (stopped) return cb();
+        var children = node.getChildren();
+        async.forEachOf(children, function(data, index, cb){
+          var keyExtension = data[0];
+          var childRoot = data[1];
+          var childKey = key.concat(keyExtension);
+          self._lookupNode(childRoot, function(node){
+            processNode(childRoot, node, childKey, cb);
+          });
+        }, cb)
+      },
+      only: function(childIndex){
+        var childRoot = node.getValue(childIndex);
+        self._lookupNode(childRoot, function(node){
+          var childKey = key.push(childIndex);
+          processNode(childRoot, node, childKey, cb);
+        });
+      },
+    }
+
+    onNode(root, node, key, walkController);
+  }
+
 };
 
 /**
@@ -571,9 +739,7 @@ Trie.prototype.createReadStream = function() {
 
 // creates a new trie with a shared cache
 Trie.prototype.copy = function() {
-  var trie = new Trie(this._db);
-  trie._checkpoints = this._checkpoints.slice();
-  trie._cache = this._cache;
+  var trie = new Trie(this._db, this.root);
   return trie;
 };
 

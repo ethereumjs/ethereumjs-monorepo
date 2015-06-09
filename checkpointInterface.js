@@ -1,6 +1,11 @@
 const levelup = require('levelup'),
   memdown = require('memdown'),
-  callTogether = require('./util').callTogether;
+  async = require('async'),
+  inherits = require('util').inherits,
+  Readable = require('stream').Readable,
+  callTogether = require('./util').callTogether,
+  TrieNode = require('./trieNode'),
+  TrieReadStream = require('./readStream');
 
 module.exports = checkpointInterface
 
@@ -22,9 +27,10 @@ function checkpointInterface (trie) {
   trie.revert = revert
   trie._enterCpMode = _enterCpMode
   trie._exitCpMode = _exitCpMode
+  trie.createScratchReadStream = createScratchReadStream
   
   // overwrites
-  trie.copy = copy.bind(trie, trie.copy)
+  trie.copy = copy.bind(trie, trie.copy.bind(trie))
 
 }
 
@@ -47,7 +53,7 @@ function commit(cb) {
     if (self.isCheckpoint) {
       self._checkpoints.pop();
       if (!self.isCheckpoint) {
-        self._exitCpMode(cb)
+        self._exitCpMode(true, cb)
       } else {
         cb()
       }
@@ -66,7 +72,7 @@ function revert(cb) {
     if (self.isCheckpoint) {
       self.root = self._checkpoints.pop();
       if (!self.isCheckpoint) {
-        self._exitCpMode(cb)
+        self._exitCpMode(false, cb)
         return
       }
     }
@@ -77,30 +83,95 @@ function revert(cb) {
 
 // enter into checkpoint mode
 function _enterCpMode() {
+  console.log('ENTER CP MODE --------->')
   this._scratch = levelup('', { db: memdown });
   this._getDBs.unshift(this._scratch);
   this.__putDBs = this._putDBs;
+  console.log('SET PUT TO SCRATCH')
   this._putDBs = [this._scratch];
 }
 
 // exit from checkpoint mode
-function _exitCpMode(cb) {
+function _exitCpMode(commitState, cb) {
+  console.log('EXIT CP MODE <---------')
+  var self = this;
   var scratch = this._scratch;
   this._scratch = null;
   this._getDBs.shift();
+  console.log('SET PUT TO DB')
   this._putDBs = this.__putDBs;
 
-  console.log('TODO - walk scratch tree into db from root, skipping missing nodes')
-  console.log('TODO - also stream to cache')
-  scratch.createReadStream()
-  .pipe(this._db.createWriteStream())
-  .on('close', cb);
+  function flushScratch(db, cb) {
+    console.log('FLUSH START')
+    self.createScratchReadStream(scratch)
+    .on('data', function(data){
+      console.log('FLUSH:',data.key.toString('hex'))
+    })
+    .pipe(db.createWriteStream())
+    // .on('close', cb)
+    .on('close', function(){
+      console.log('FLUSH COMPLETE')
+      cb()
+    })
+  }
+
+  if (commitState) {
+    console.log('TODO - walk scratch tree into db from root, skipping missing nodes')
+    async.map(this._putDBs, flushScratch, cb)
+  } else {
+    cb()
+  }
 }
 
 // adds the interface when copying the trie
 function copy(_super) {
   var trie = _super();
   checkpointInterface(trie);
-  trie._checkpoints = this._checkpoints;
+  trie._scratch = this._scratch;
+  trie._checkpoints = this._checkpoints.slice();
+
+  console.log('TODO - sync the putDbs and getDbs')
+
   return trie;
 }
+
+function createScratchReadStream(scratch) {
+  var trie = this.copy();
+  // only read from the scratch
+  trie._getDBs = [scratch];
+  trie._scratch = scratch;
+  console.log('SCRATCH TRIE ROOT:',trie.root.toString('hex'))
+  return new ScratchReadStream(trie);
+  // return new TrieReadStream(trie);
+}
+
+// ScratchReadStream
+
+inherits(ScratchReadStream, Readable);
+
+function ScratchReadStream(trie) {
+  this.trie = trie;
+  this.next = null;
+  Readable.call(this, { objectMode: true });
+};
+
+// root is not in scratch -- why?
+
+ScratchReadStream.prototype._read = function () {
+  var self = this;
+  if (!self._started) {
+    self._started = true;
+    self.trie._findDbNodes(function (root, node, key, next) {
+      
+      self.push({
+        key: root,
+        value: node.serialize(),
+      })
+      next();
+
+    }, function () {
+      // close stream
+      self.push(null);
+    });
+  }
+};

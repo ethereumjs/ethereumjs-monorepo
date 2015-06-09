@@ -2,9 +2,10 @@ var Readable = require('stream').Readable,
   TrieNode = require('./trieNode'),
   util = require('util');
 
-var internals = {};
+module.exports = TrieReadStream
 
-exports = module.exports = internals.ReadStream = function (trie) {
+
+function TrieReadStream(trie) {
   this.trie = trie;
   this.next = null;
   Readable.call(this, {
@@ -12,25 +13,22 @@ exports = module.exports = internals.ReadStream = function (trie) {
   });
 };
 
-util.inherits(internals.ReadStream, Readable);
+util.inherits(TrieReadStream, Readable);
 
-internals.ReadStream.prototype._read = function () {
+TrieReadStream.prototype._read = function () {
   var self = this;
-  if (this.next && !this.started) {
-    //unpause stream
-    this.next();
-  } else if (!this.started) {
-    this.started = true;
-    this.trie._findAll(this.trie.root, [], function (val, key, onDone) {
-      key = TrieNode.nibblesToBuffer(key);
-      self.next = onDone;
-      self.started = self.push({
-        key: key,
-        value: val.value
-      });
+  if (!self._started) {
+    self._started = true;
+    self.trie._findValueNodes(function (root, node, key, next) {
+      
+      self.push({
+        key: TrieNode.nibblesToBuffer(key),
+        value: node.value
+      })
+      next();
 
-      if(self.started) onDone();
     }, function () {
+      // close stream
       self.push(null);
     });
   }

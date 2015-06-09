@@ -19,6 +19,11 @@ function TrieNode(type, key, value) {
         });
       }
     } else {
+      if (!key) {
+        console.log('TrieNode:', arguments)
+        console.log('FOUND!', type.toString())
+      }
+
       this.raw = Array(2);
       this.setValue(value);
       this.setKey(key);
@@ -77,7 +82,7 @@ TrieNode.prototype.getValue = function (key) {
       key = 16;
     }
     var val = this.raw[key];
-    if (val !== null && val !== undefined && !(val.length === 0)) {
+    if (val !== null && val !== undefined && val.length !== 0) {
       return val;
     }
   } else {
@@ -134,6 +139,28 @@ TrieNode.prototype.toString = function () {
   out = out.slice(0, -2);
   out += ']';
   return out;
+};
+
+TrieNode.prototype.getChildren = function () {
+  var children = []
+  switch(this.type) {
+    case 'leaf':
+      // no children
+      break;
+    case 'extention':
+      // one child
+      children.push([this.key, this.getValue()]);
+      break;
+    case 'branch':
+      for (var index=0, end=16; index<end; index++) {
+        var value = this.getValue(index);
+        if (value) {
+          children.push([[index], value]);
+        }
+      }
+      break;
+  }
+  return children;  
 };
 
 /**

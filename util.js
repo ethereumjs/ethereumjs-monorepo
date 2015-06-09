@@ -4,6 +4,7 @@ module.exports = {
   matchingNibbleLength: matchingNibbleLength,
   callTogether: callTogether,
   asyncFirstSeries: asyncFirstSeries,
+  doKeysMatch: doKeysMatch,
 }
 
 /**
@@ -19,6 +20,14 @@ function matchingNibbleLength(nib1, nib2) {
   }
   return i;
 };
+
+/**
+ * Compare two 'nibble array' keys 
+ */
+function doKeysMatch(keyA, keyB) {
+  var length = matchingNibbleLength(keyA, keyB)
+  return length === keyA.length && length === keyB.length
+}
 
 /**
  * Take two or more functions and returns a function  that will execute all of
