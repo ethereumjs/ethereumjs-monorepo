@@ -2,7 +2,7 @@
 An simple module for creating, manipulating and signing ethereum transactions
 
 - [`Transaction`](#transaction)
-    - [`new Transaction([data])`](#new-blockdata)
+    - [`new Transaction([data])`](#new-transactiondata)
     - [`Transaction` Properties](#transaction-properties)
     - [`Transaction` Methods](#transaction-methods)
         - [`transaction.serialize()`](#transactionserialize) 
@@ -15,12 +15,11 @@ An simple module for creating, manipulating and signing ethereum transactions
         - [`transaction.getDataFee()`](#transactiongetdatafee)
         - [`transaction.getBaseFee()`](#transactiongetbasefee)
         - [`transaction.getUpfrontCost()`](#transactiongetupfrontcost)
-        - [`transaction.toJSON()`](#transactiontojson)
+        - [`transaction.toJSON([object])`](#transactiontojsonobject)
 
 ## `Transaction`
 Implements schema and functions relating to Ethereum transactions
-- file - [lib/transaction.js](../lib/transaction.js) 
-- [example](https://wanderer.github.io/ethereum/2014/06/14/creating-and-verifying-transaction-with-node/)
+- [example](https://github.com/ethereum/ethereumjs-tx/blob/master/examples/transactions.js)
 
 ### `new Transaction([data])`
 Creates a new transaction object
@@ -123,4 +122,3 @@ returns transaction as JSON
 **Parameters**  
 - `object` - a `Boolean` that defaults to false. If `object` is true then this will return an object else it will return an `array`   
 **Return: ** `Object` or `Array`
-
