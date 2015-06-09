@@ -8,8 +8,6 @@ const tape = require('tape');
 const path = require('path');
 const cp = require('child_process');
 
-
-
 if (argv.r) {
   randomized(argv.r, argv.v);
 } else if (argv.s) {
