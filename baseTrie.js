@@ -350,10 +350,10 @@ Trie.prototype._findValueNodes = function(onFound, cb) {
 
 Trie.prototype._findDbNodes = function(onFound, cb) {
   this._walkTrie(this.root, function (root, node, key, walkController) {
-    if (Buffer.isBuffer(root)) {
-      onFound(root, node, key, walkController.next);
-    } else {
+    if (TrieNode.isRawNode(root)) {
       walkController.next();
+    } else {
+      onFound(root, node, key, walkController.next);
     }
   }, cb);
 }

@@ -257,5 +257,5 @@ function getNodeType(node) {
 };
 
 function isRawNode(node) {
-  return !Buffer.isBuffer(node)
+  return Array.isArray(node) && !Buffer.isBuffer(node);
 }
