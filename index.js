@@ -34,6 +34,7 @@ var Transaction = module.exports = function(data) {
     name: 'value',
     empty: true,
     word: true,
+    noZero: true,
     default: new Buffer([])
   }, {
     name: 'data',
