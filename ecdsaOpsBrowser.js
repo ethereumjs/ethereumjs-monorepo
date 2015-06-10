@@ -33,6 +33,7 @@ exports.txSign = function(privateKey) {
   this.r = new Buffer(sig.r.toArray());
   this.s = new Buffer(sig.s.toArray());
   this.v = ec.calcPubKeyRecoveryParam(new BN(msgHash), sig, key.getPublic()) + 27;
+  this._senderPubKey = false;
 };
 
 /**
@@ -42,16 +43,19 @@ exports.txSign = function(privateKey) {
  */
 exports.txGetSenderPublicKey = function() {
   var msgHash = this.hash(false);
-  var key = false;
-  try {
-    var r = ec.recoverPubKey(new BN(msgHash), {
-      r: new BN(this.r),
-      s: new BN(this.s)
-    }, utils.bufferToInt(this.v) - 27);
 
-    var rj = r.toJSON();
-    key = Buffer.concat([new Buffer([4]), new Buffer(rj[0].toArray()), new Buffer(rj[1].toArray())]);
-  } catch (e) {}
+  if(!this._senderPubKey){
+    this._senderPubKey = false;
+    try {
+      var r = ec.recoverPubKey(new BN(msgHash), {
+        r: new BN(this.r),
+        s: new BN(this.s)
+      }, utils.bufferToInt(this.v) - 27);
 
-  return key;
+      var rj = r.toJSON();
+      this._senderPubKey = Buffer.concat([new Buffer([4]), new Buffer(rj[0].toArray()), new Buffer(rj[1].toArray())]);
+    } catch (e) {}
+  }
+
+  return this._senderPubKey;
 };

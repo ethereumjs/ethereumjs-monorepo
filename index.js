@@ -2,7 +2,7 @@ const BN = require('bn.js');
 const rlp = require('rlp');
 const utils = require('ethereumjs-util');
 const fees = require('ethereum-common').fees;
-const ecdsaOps = require('./ecdsaOpsBrowser.js');
+const ecdsaOps = require('./ecdsaOps.js');
 
 /**
  * Represents a transaction
