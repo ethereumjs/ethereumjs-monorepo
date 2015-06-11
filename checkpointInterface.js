@@ -129,6 +129,7 @@ function createScratchReadStream(scratch) {
 }
 
 // ScratchReadStream
+// this is used to minimally dump the scratch into the db
 
 inherits(ScratchReadStream, Readable);
 
@@ -137,8 +138,6 @@ function ScratchReadStream(trie) {
   this.next = null;
   Readable.call(this, { objectMode: true });
 };
-
-// root is not in scratch -- why?
 
 ScratchReadStream.prototype._read = function () {
   var self = this;
