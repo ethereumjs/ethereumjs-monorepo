@@ -1,6 +1,5 @@
 StateTrie = require('./index')
 TrieNode = require('./trieNode')
-// hg = require('mercury')
 async = require('async')
 Springy = require('springy')
 global.jQuery = require('jquery')
@@ -25,50 +24,7 @@ var init = [
   { type: 'put', key: 'occupssation', value: 'Clown' },
 ];
 
-// var longString = 'this will be a really really really long value';
-
-// var init = [
-//   { type: 'put', key: 'do', value: 'verb' },
-//   { type: 'put', key: 'ether', value: 'wookiedoo' },
-//   { type: 'put', key: 'horse', value: 'stallion' },
-//   { type: 'put', key: 'shaman', value: 'horse' },
-//   { type: 'put', key: 'doge', value: 'coin' },
-//   { type: 'put', key: 'ether', value: 'null' },
-//   { type: 'put', key: 'dog', value: 'puppy' },
-//   { type: 'put', key: 'shaman', value: 'null' },
-// ];
 trie = new StateTrie()
-
-
-//   var longString = 'this will be a really really really long value';
-//   var longStringRoot = 'b173e2db29e79c78963cff5196f8a983fbe0171388972106b114ef7f5c24dfa3';
-
-// trie.put('done', longString, function (err, value) {
-// trie.put('doge', 'coin', function (err, value) {
-// trie.put('done', 'test', function () {
-
-// trie._findNodeTwo('doge', trie.root, [], function(err, foundValue, keyRemainder, stack) {
-//   debugger
-// });
-// trie._findNode('doge', trie.root, [], function(err, foundValue, keyRemainder, stack) {
-//   debugger
-// });
-
-// });
-// });
-// });
-
-// trie.put('done', longString, function (err, value) {
-//   // trie._findNodeTwo('doge', trie.root, [], function(err, foundValue, keyRemainder, stack) {
-//   //   debugger
-//   // });
-//   // trie._findNode('doge', trie.root, [], function(err, foundValue, keyRemainder, stack) {
-//   //   debugger
-//   // });
-//   trie.put('doge', 'coin', function (err, value) {
-    
-//   });
-// });
 
 trie.batch(init, function(){
   trieToJson(trie, function(err, data){
@@ -115,28 +71,6 @@ function renderGraph(data) {
 
   jQuery('body').html('<canvas id="my_canvas" width="1000" height="900"  />')
   jQuery('#my_canvas').springy({ graph: graph })
-
-//   var layout = new Springy.Layout.ForceDirected(
-//     graph,
-//     400.0, // Spring stiffness
-//     400.0, // Node repulsion
-//     0.5 // Damping
-// );
-
-//   var renderer = new Springy.Renderer(layout,
-//   function clear() {
-//     // code to clear screen
-//   },
-//   function drawEdge(edge, p1, p2) {
-//     // draw an edge
-//   },
-//   function drawNode(node, p) {
-//     // draw a node
-//   });
-
-//   renderer.start();
-
-//   debugger
 
 }
 
