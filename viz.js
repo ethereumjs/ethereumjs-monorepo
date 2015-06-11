@@ -25,7 +25,51 @@ var init = [
   { type: 'put', key: 'occupssation', value: 'Clown' },
 ];
 
+// var longString = 'this will be a really really really long value';
+
+// var init = [
+//   { type: 'put', key: 'do', value: 'verb' },
+//   { type: 'put', key: 'ether', value: 'wookiedoo' },
+//   { type: 'put', key: 'horse', value: 'stallion' },
+//   { type: 'put', key: 'shaman', value: 'horse' },
+//   { type: 'put', key: 'doge', value: 'coin' },
+//   { type: 'put', key: 'ether', value: 'null' },
+//   { type: 'put', key: 'dog', value: 'puppy' },
+//   { type: 'put', key: 'shaman', value: 'null' },
+// ];
 trie = new StateTrie()
+
+
+//   var longString = 'this will be a really really really long value';
+//   var longStringRoot = 'b173e2db29e79c78963cff5196f8a983fbe0171388972106b114ef7f5c24dfa3';
+
+// trie.put('done', longString, function (err, value) {
+// trie.put('doge', 'coin', function (err, value) {
+// trie.put('done', 'test', function () {
+
+// trie._findNodeTwo('doge', trie.root, [], function(err, foundValue, keyRemainder, stack) {
+//   debugger
+// });
+// trie._findNode('doge', trie.root, [], function(err, foundValue, keyRemainder, stack) {
+//   debugger
+// });
+
+// });
+// });
+// });
+
+// trie.put('done', longString, function (err, value) {
+//   // trie._findNodeTwo('doge', trie.root, [], function(err, foundValue, keyRemainder, stack) {
+//   //   debugger
+//   // });
+//   // trie._findNode('doge', trie.root, [], function(err, foundValue, keyRemainder, stack) {
+//   //   debugger
+//   // });
+//   trie.put('doge', 'coin', function (err, value) {
+    
+//   });
+// });
+
 trie.batch(init, function(){
   trieToJson(trie, function(err, data){
     console.log('root:', trie.root.toString('hex'))
@@ -40,19 +84,17 @@ function renderGraph(data) {
 
   var edges = []
   // create nodes
-  
-  // for missing nodes
-  var missingNode = new Springy.Node('missing', {label: 'missing'})
-  nodeMap['missing'] = missingNode
-  graph.addNode(missingNode)
 
   Object.keys(data).forEach(function(hash){
     var node = data[hash]
     var parentId = hash.slice(0, 12)
     
-    console.log('+', parentId)
-    var nodeLabel = node.key
+    // console.log('+', parentId)
+    var nodeLabel = ''
+    nodeLabel += parentId+'\n'
+    nodeLabel += node.key+'\n'
     nodeLabel += '('+node.type+')'
+    if (node.isRaw) nodeLabel += '(RAW)'
     if (node.value && (node.type === 'leaf' || node.type === 'branch')) {
       nodeLabel += ': '+node.value
     }
@@ -62,7 +104,7 @@ function renderGraph(data) {
 
     edges = edges.concat(node.children.map(function(childHash){
       var childId = childHash.slice(0, 12)
-      console.log(parentId, '->', childId)
+      // console.log(parentId, '->', childId)
       return [parentId, childId]
     }))
   })
@@ -108,7 +150,7 @@ function trieToJson(trie, cb) {
     var nodeData = {
       hash: hash,
       type: node.type,
-      key: TrieNode.nibblesToBuffer(key).toString(),
+      key: TrieNode.nibblesToBuffer(key.concat(node.key)).toString(),
       value: node.value && node.value.toString(),
       isRaw: TrieNode.isRawNode(node),
     }
