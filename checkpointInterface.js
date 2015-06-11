@@ -83,36 +83,24 @@ function revert(cb) {
 
 // enter into checkpoint mode
 function _enterCpMode() {
-  // console.log('ENTER CP MODE --------->')
   this._scratch = levelup('', { db: memdown });
   this._getDBs.unshift(this._scratch);
   this.__putDBs = this._putDBs;
-  // console.log('SET PUT TO SCRATCH')
   this._putDBs = [this._scratch];
 }
 
 // exit from checkpoint mode
 function _exitCpMode(commitState, cb) {
-  // console.log('EXIT CP MODE <---------')
   var self = this;
   var scratch = this._scratch;
   this._scratch = null;
   this._getDBs.shift();
-  console.log('SET PUT TO DB')
   this._putDBs = this.__putDBs;
 
   function flushScratch(db, cb) {
-    console.log('FLUSH START')
     self.createScratchReadStream(scratch)
-    .on('data', function(data){
-      console.log('FLUSH:',data.key.toString('hex'))
-    })
     .pipe(db.createWriteStream())
-    // .on('close', cb)
-    .on('close', function(){
-      console.log('FLUSH COMPLETE')
-      cb()
-    })
+    .on('close', cb)
   }
 
   if (commitState) {
