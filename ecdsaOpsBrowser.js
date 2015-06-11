@@ -32,7 +32,7 @@ exports.txSign = function(privateKey) {
   var key = ec.keyFromPrivate(new BN(privateKey));
   this.r = new Buffer(sig.r.toArray());
   this.s = new Buffer(sig.s.toArray());
-  this.v = ec.calcPubKeyRecoveryParam(new BN(msgHash), sig, key.getPublic()) + 27;
+  this.v = sig.recoveryParam + 27;
   this._senderPubKey = false;
 };
 
