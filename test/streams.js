@@ -74,9 +74,8 @@ describe('db stream test', function() {
   };
 
   it('should populate trie', function(done) {
-    trie.checkpoint(function(){
-      trie.batch(init, done)
-    });
+    trie.checkpoint();
+    trie.batch(init, done);
   });
 
   it('should only fetch nodes in the current trie', function(done) {
@@ -87,7 +86,7 @@ describe('db stream test', function() {
       delete expectedNodes[key]
     });
     stream.on('end', function(){
-      assert(Object.keys(expectedNodes).length === 0)
+      assert.equal(Object.keys(expectedNodes).length, 0)
       done()
     });
   });
