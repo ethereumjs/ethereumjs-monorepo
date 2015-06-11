@@ -6,30 +6,21 @@ global.jQuery = require('jquery')
 springui = require('springy/springyui')
 
 var init = [
-  { type: 'put', key: 'name', value: 'Yuri Irsenovich Kim' },
-  { type: 'put', key: 'dob', value: '16 February 1941' },
-  { type: 'put', key: 'spouse', value: 'Kim Young-sook' },
-  { type: 'put', key: 'occupation', value: 'Clown' },
-  { type: 'put', key: 'nameads', value: 'Yuri Irsenovich Kim' },
-  { type: 'put', key: 'namfde', value: 'Yuri Irsenovich Kim' },
-  { type: 'put', key: 'namsse', value: 'Yuri Irsenovich Kim' },
-  { type: 'put', key: 'dofab', value: '16 February 1941' },
-  { type: 'put', key: 'spoudse', value: 'Kim Young-sook' },
-  { type: 'put', key: 'occupdsation', value: 'Clown' },
-  { type: 'put', key: 'dozzzb', value: '16 February 1941' },
-  { type: 'put', key: 'spouszze', value: 'Kim Young-sook' },
-  { type: 'put', key: 'occupatdfion', value: 'Clown' },
-  { type: 'put', key: 'dssob', value: '16 February 1941' },
-  { type: 'put', key: 'spossuse', value: 'Kim Young-sook' },
-  { type: 'put', key: 'occupssation', value: 'Clown' },
+  { type: 'put', key: 'color', value: 'purple' },
+  { type: 'put', key: 'food', value: 'sushi' },
+  { type: 'put', key: 'fight', value: 'fire' },
+  { type: 'put', key: 'colo', value: 'trolo' },
+  { type: 'put', key: 'color', value: 'blue' },
+  { type: 'put', key: 'color', value: 'pink' },
 ];
 
 trie = new StateTrie()
-
+trie.checkpoint()
 trie.batch(init, function(){
   trieToJson(trie, function(err, data){
     console.log('root:', trie.root.toString('hex'))
     renderGraph(data)
+    trie.commit()
   })
 })
 
@@ -86,7 +77,7 @@ function trieToJson(trie, cb) {
       type: node.type,
       key: TrieNode.nibblesToBuffer(key.concat(node.key)).toString(),
       value: node.value && node.value.toString(),
-      isRaw: TrieNode.isRawNode(node),
+      isRaw: TrieNode.isRawNode(root),
     }
     // add children
     async.map(node.getChildren(), function(childData, cb){

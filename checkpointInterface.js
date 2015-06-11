@@ -116,7 +116,6 @@ function _exitCpMode(commitState, cb) {
   }
 
   if (commitState) {
-    console.log('TODO - walk scratch tree into db from root, skipping missing nodes')
     async.map(this._putDBs, flushScratch, cb)
   } else {
     cb()
@@ -129,20 +128,16 @@ function copy(_super) {
   checkpointInterface(trie);
   trie._scratch = this._scratch;
   trie._checkpoints = this._checkpoints.slice();
-
-  console.log('TODO - sync the putDbs and getDbs')
-
   return trie;
 }
 
 function createScratchReadStream(scratch) {
   var trie = this.copy();
+  scratch = scratch || this._scratch;
   // only read from the scratch
   trie._getDBs = [scratch];
   trie._scratch = scratch;
-  console.log('SCRATCH TRIE ROOT:',trie.root.toString('hex'))
   return new ScratchReadStream(trie);
-  // return new TrieReadStream(trie);
 }
 
 // ScratchReadStream

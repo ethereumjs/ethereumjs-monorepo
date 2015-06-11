@@ -135,7 +135,7 @@ Trie.prototype._lookupNode = function(node, cb) {
     cb(new TrieNode(node));
   } else {
     asyncFirstSeries(this._getDBs, dbGet, function(err, result){
-      if (!result) console.log('READ FAILED:', node.toString('hex'))
+      // if (!result) console.log('READ FAILED:', node.toString('hex'))
       cb(result);
     });
   }
@@ -622,7 +622,8 @@ Trie.prototype.createReadStream = function() {
   return new ReadStream(this);
 };
 
-// creates a new trie with a shared cache
+// creates a new trie backed by the same db
+// and starting at the same root
 Trie.prototype.copy = function() {
   var trie = new Trie(this._db, this.root);
   return trie;
@@ -655,7 +656,7 @@ Trie.prototype.batch = function(ops, cb) {
  * @param {Function} cb
  */
 Trie.prototype.checkRoot = function(root, cb) {
-  this._lookupNode(root, function(value) {
-    cb(!!value)
+  this._lookupNode(root, function(err, value) {
+    cb(err, !!value)
   });
 };
