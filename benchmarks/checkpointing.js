@@ -3,7 +3,7 @@ var samples = 20;
 
 var async = require('async');
 var crypto = require('crypto');
-var Trie = require('./index.js');
+var Trie = require('../index.js');
 
 function iterTest(numOfIter, cb) {
 
