@@ -5,7 +5,7 @@ const fees = require('ethereum-common').fees;
 const ecdsaOps = require('./ecdsaOps.js');
 
 //give browser access to Buffers
-// global.Buffer = Buffer;
+global.Buffer = Buffer;
 
 /**
  * Represents a transaction
