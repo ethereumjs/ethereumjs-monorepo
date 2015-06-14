@@ -4,6 +4,11 @@ const utils = require('ethereumjs-util');
 const fees = require('ethereum-common').fees;
 const ecdsaOps = require('./ecdsaOps.js');
 
+//give browser access to Buffers
+if(window){
+  window.Buffer = Buffer;
+}
+
 /**
  * Represents a transaction
  * @constructor
