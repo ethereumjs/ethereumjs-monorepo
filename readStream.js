@@ -1,4 +1,4 @@
-var Readable = require('stream').Readable,
+var Readable = require('readable-stream').Readable,
   TrieNode = require('./trieNode'),
   util = require('util');
 
