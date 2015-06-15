@@ -83,7 +83,7 @@ describe('toUnsigned', function () {
 describe('pubToAddress', function () {
   it('should produce an address given a public key', function(){
     var pubKey = 'f049a20000000000f0b08900000000000841b30200000000200000000d000000';
-    var address = '47f4f63d925e6b35f604a203a7ee365c147500db';
+    var address = 'ef6a1274aa67f83eadf383016d584cd6185477ae';
     pubKey = new Buffer(pubKey, 'hex');
     var r = ethUtils.pubToAddress(pubKey);
     assert.equal(r.toString('hex'), address);

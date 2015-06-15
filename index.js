@@ -1,12 +1,13 @@
 const SHA3 = require('sha3'),
+  ec = require('elliptic').ec('secp256k1');
   assert = require('assert'),
   rlp = require('rlp'),
   BN = require('bn.js');
 
 //the max interger that this VM can handle
-var MAX_INTEGER = exports.MAX_INTEGER = new BN('ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff', 16);
+const MAX_INTEGER = exports.MAX_INTEGER = new BN('ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff', 16);
 
-var TWO_POW256 = exports.TWO_POW256 = new BN('115792089237316195423570985008687907853269984665640564039457584007913129639936');
+const TWO_POW256 = exports.TWO_POW256 = new BN('115792089237316195423570985008687907853269984665640564039457584007913129639936');
 
 //hex string of SHA3-256 hash of `null`
 exports.SHA3_NULL = 'c5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470';
@@ -18,7 +19,7 @@ exports.SHA3_RLP_ARRAY = '1dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142
 //SHA3-256 hash of the rlp of `null`
 exports.SHA3_RLP = '56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421';
 
-var ETH_UNITS = exports.ETH_UNITS = [
+const ETH_UNITS = exports.ETH_UNITS = [
   'wei',
   'Kwei',
   'Mwei',
@@ -172,13 +173,18 @@ exports.sha3 = function(a, bytes) {
  * @param {Buffer}
  * @return {Buffer}
  */
-exports.pubToAddress = function(pubKey) {
-
+var pubToAddress = exports.pubToAddress = exports.publicToAddress = function(pubKey) {
   var hash = new SHA3.SHA3Hash(256);
-
-  hash.update(pubKey.slice(1));
+  hash.update(pubKey.slice(-64));
   return new Buffer(hash.digest('hex').slice(-40), 'hex');
 };
+
+exports.privateToAddress = function(privateKey){
+  privateKey = new BN(privateKey);
+  var key = ec.keyFromPrivate(privateKey).getPublic().toJSON();
+  key =  new Buffer(key[0].toArray().concat(key[1].toArray()));
+  return pubToAddress(key);
+}
 
 /**
  * Generates a new address
@@ -259,7 +265,6 @@ exports.defineProperties = function(self, fields, data) {
         if(!(field.empty && v.length === 0) && field.pad && v.length < field.length){
           v = pad(v, field.length);
         }
-
 
         if (!(field.empty && v.length === 0) && field.length) {
           assert(field.length === v.length, 'The field ' + field.name + 'must have byte length of ' + field.length);
