@@ -6,6 +6,7 @@ const ecdsaOps = require('./ecdsaOps.js');
 
 //give browser access to Buffers
 global.Buffer = Buffer;
+global.util = utils;
 
 /**
  * Represents a transaction
