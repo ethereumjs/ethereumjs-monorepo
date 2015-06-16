@@ -24,9 +24,9 @@ function Trie(db, root) {
   this.sem = semaphore(1);
 
   // setup dbs
-  this._db = db || levelup('', { db: memdown });
-  this._getDBs = [this._db];
-  this._putDBs = [this._db];
+  this.db = db || levelup('', { db: memdown });
+  this._getDBs = [this.db];
+  this._putDBs = [this.db];
 
   Object.defineProperty(this, 'root', {
     set: function(value) {
@@ -121,7 +121,7 @@ Trie.prototype._lookupNode = function(node, cb) {
       keyEncoding: 'binary',
       valueEncoding: 'binary'
     }, function(err, foundNode) {
-      // console.log('GET DB#'+(db === self._db ? 'DB':'SCRATCH'), 'node:', node.toString('hex'), foundNode ? 'HIT' : 'MISS')
+      // console.log('GET DB#'+(db === self.db ? 'DB':'SCRATCH'), 'node:', node.toString('hex'), foundNode ? 'HIT' : 'MISS')
       if (err || !foundNode) {
         cb(null, null);
       } else {
@@ -148,7 +148,7 @@ Trie.prototype._putNode = function(node, cb) {
   var serialized = node.serialize();
 
   function dbPut(db, cb) {
-    // console.log('PUT DB#'+(db === self._db ? 'DB':'SCRATCH'), 'node:', hash.toString('hex'))
+    // console.log('PUT DB#'+(db === self.db ? 'DB':'SCRATCH'), 'node:', hash.toString('hex'))
     db.put(hash, serialized, {
       keyEncoding: 'binary',
       valueEncoding: 'binary',
@@ -163,7 +163,7 @@ Trie.prototype._batchNodes = function(opStack, cb) {
   var self = this;
 
   function dbBatch(db, cb) {
-    // console.log('BATCH-'+opStack.length, 'DB#'+(db === self._db ? 'DB':'SCRATCH'))
+    // console.log('BATCH-'+opStack.length, 'DB#'+(db === self.db ? 'DB':'SCRATCH'))
     // opStack.forEach(function(op){
     //   console.log('  -'+op.type.toUpperCase(), 'key:', op.key.toString('hex'))
     // })
@@ -625,7 +625,7 @@ Trie.prototype.createReadStream = function() {
 // creates a new trie backed by the same db
 // and starting at the same root
 Trie.prototype.copy = function() {
-  var trie = new Trie(this._db, this.root);
+  var trie = new Trie(this.db, this.root);
   return trie;
 };
 
