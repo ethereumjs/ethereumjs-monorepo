@@ -1,13 +1,13 @@
 const BaseTrie = require('./baseTrie');
-const checkpointInterface = require('./checkpointInterface');
+const checkpointInterface = require('./checkpoint-interface');
 const inherits = require('util').inherits;
 
-module.exports = FancyTrie;
+module.exports = CheckpointTrie;
 
 
-inherits(FancyTrie, BaseTrie);
+inherits(CheckpointTrie, BaseTrie);
 
-function FancyTrie() {
+function CheckpointTrie() {
   BaseTrie.apply(this, arguments);
   checkpointInterface(this);
 }

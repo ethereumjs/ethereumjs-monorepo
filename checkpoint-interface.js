@@ -3,9 +3,7 @@ const levelup = require('levelup'),
   async = require('async'),
   inherits = require('util').inherits,
   Readable = require('readable-stream').Readable,
-  callTogether = require('./util').callTogether,
-  TrieNode = require('./trieNode'),
-  TrieReadStream = require('./readStream');
+  callTogether = require('./util').callTogether;
 
 module.exports = checkpointInterface
 
