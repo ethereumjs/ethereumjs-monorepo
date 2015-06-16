@@ -262,7 +262,9 @@ Trie.prototype._findNode = function(key, root, stack, cb){
 Trie.prototype._findValueNodes = function(onFound, cb) {
   this._walkTrie(this.root, function (root, node, key, walkController) {
     var nodeKey = node.key || [];
-    var fullKey = key.concat(node.key)
+    var fullKey = key
+    if (node.key) fullKey = key.concat(node.key)
+      
     if (node.type === 'leaf') {
       // found leaf node!
       onFound(root, node, fullKey, walkController.next)
