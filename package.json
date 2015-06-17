@@ -1,6 +1,6 @@
 {
   "name": "merkle-patricia-tree",
-  "version": "0.1.26",
+  "version": "1.0.0",
   "description": "This is an implementation of the modified merkle patricia tree as speficed in the Ethereum's yellow paper.",
   "main": "index.js",
   "scripts": {
@@ -42,6 +42,9 @@
   "browser": {
     "sha3": "./sha3.js"
   },
+  "contributors": [
+    "Aaron Kumavis <http://aaron.kumavis.me/> (https://github.com/kumavis)"
+  ],
   "testling": {
     "files": "test/*.js",
     "harness": "mocha-bdd",
