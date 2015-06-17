@@ -48,6 +48,14 @@ Converts a `bignum` to an unsigned interger and returns it as a `buffer`
 Returns the ethereum address of a given public key
 - `pubKey` - the public key as a `buffer`
 
+### `privateToPublic(privateKey)`
+Returns the ethereum public key of a given private key
+- `privateKey` - the private key as a `buffer`
+
+### `privateToAddress(privateKey)`
+Returns the ethereum address of a given private key
+- `privateKey` - the private key as a `buffer`
+
 ### `defineProperties(self, fields)`
 defines properties on a `Object`
 - `self` - the `Object` to define properties on

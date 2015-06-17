@@ -179,11 +179,27 @@ var pubToAddress = exports.pubToAddress = exports.publicToAddress = function(pub
   return new Buffer(hash.digest('hex').slice(-40), 'hex');
 };
 
-exports.privateToAddress = function(privateKey){
+/**
+ * Returns the ethereum public key of a given private key
+ * @method privateToPublic
+ * @param {Buffer} privateKey
+ * @return {Buffer}
+ */
+var privateToPublic = exports.privateToPublic = function(privateKey){
   privateKey = new BN(privateKey);
   var key = ec.keyFromPrivate(privateKey).getPublic().toJSON();
   key =  new Buffer(key[0].toArray().concat(key[1].toArray()));
-  return pubToAddress(key);
+  return key;
+}
+
+/**
+ * Returns the ethereum address of a given private key
+ * @method privateToAddress
+ * @param {Buffer} privateKey
+ * @return {Buffer}
+ */
+exports.privateToAddress = function(privateKey){
+  return pubToAddress(privateToPublic(privateKey));
 }
 
 /**
