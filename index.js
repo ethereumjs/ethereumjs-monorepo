@@ -257,9 +257,7 @@ exports.defineProperties = function(self, fields, data) {
       set: function(v) {
         if (!Buffer.isBuffer(v)) {
           if (typeof v === 'string') {
-            if (v.slice(0, 2) === '0x') {
-              v = v.slice(2);
-            }
+            v= stripHex(v);
             v = new Buffer(v, 'hex');
           } else if (typeof v === 'number') {
             v = exports.intToBuffer(v);
@@ -434,3 +432,21 @@ exports.toEth = function(str) {
   }
   return s + ' ' + units[unit];
 };
+
+const isHexPrefixed = exports.isHexPrefixed = function(str){
+  return str.slice(0, 2) === '0x';
+}
+
+const stripHex = exports.stripHex = function(str){
+  if (typeof str !== 'string')
+     return str
+
+  return isHexPrefixed ?  str.slice(2) : str
+}
+
+exports.addHex = function(str){
+  if (typeof str !== 'string')
+     return str
+  
+  return isHexPrefixed(str) ? '0x' + str : str
+}
