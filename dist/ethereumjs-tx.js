@@ -2675,7 +2675,7 @@ const ecdsaOps = require('./ecdsaOps.js');
 
 //give browser access to Buffers
 global.Buffer = Buffer;
-global.util = utils;
+global.ethUtil = utils;
 
 /**
  * Represents a transaction
