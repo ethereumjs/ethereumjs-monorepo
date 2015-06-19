@@ -1,8 +1,8 @@
-const SHA3 = require('sha3'),
-  ec = require('elliptic').ec('secp256k1');
-  assert = require('assert'),
-  rlp = require('rlp'),
-  BN = require('bn.js');
+const SHA3 = require('sha3')
+const ec = require('elliptic').ec('secp256k1')
+const assert = require('assert')
+const rlp = require('rlp')
+const BN = require('bn.js')
 
 //the max interger that this VM can handle
 const MAX_INTEGER = exports.MAX_INTEGER = new BN('ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff', 16);
@@ -19,27 +19,6 @@ exports.SHA3_RLP_ARRAY = '1dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142
 //SHA3-256 hash of the rlp of `null`
 exports.SHA3_RLP = '56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421';
 
-const ETH_UNITS = exports.ETH_UNITS = [
-  'wei',
-  'Kwei',
-  'Mwei',
-  'Gwei',
-  'szabo',
-  'finney',
-  'ether',
-  'grand',
-  'Mether',
-  'Gether',
-  'Tether',
-  'Pether',
-  'Eether',
-  'Zether',
-  'Yether',
-  'Nether',
-  'Dether',
-  'Vether',
-  'Uether'
-];
 
 exports.BN = BN;
 
@@ -354,83 +333,6 @@ const baToJSON = exports.baToJSON = function(ba) {
     }
     return array;
   }
-};
-
-/// @returns ascii string representation of hex value prefixed with 0x
-exports.toAscii = function(hex) {
-  // Find termination
-  var str = '';
-  var i = 0,
-    l = hex.length;
-
-  if (hex.substring(0, 2) === '0x')
-    i = 2;
-
-  for (; i < l; i += 2) {
-    var code = parseInt(hex.substr(i, 2), 16);
-    if (code === 0) {
-      break;
-    }
-
-    str += String.fromCharCode(code);
-  }
-
-  return str;
-};
-
-/// @returns hex representation (prefixed by 0x) of ascii string
-exports.fromAscii = function(str, pad) {
-  pad = pad === undefined ? 0 : pad;
-  var hex = this.toHex(str);
-  while (hex.length < pad * 2) {
-    hex += '00';
-  }
-  return '0x' + hex;
-};
-
-/// @returns decimal representaton of hex value prefixed by 0x
-exports.toDecimal = function(val) {
-  // remove 0x and place 0, if it's required
-  val = val.length > 2 ? val.substring(2) : '0';
-  return new BN(val, 16).toString(10);
-};
-
-// @returns hex representation (prefixed by 0x) of decimal value
-exports.fromDecimal = function(val) {
-  return '0x' + new BN(val).toString(16);
-};
-
-exports.toHex = function(str) {
-  var hex = '';
-  for (var i = 0; i < str.length; i++) {
-    var n = str.charCodeAt(i).toString(16);
-    hex += n.length < 2 ? '0' + n : n;
-  }
-
-  return hex;
-};
-
-/// used to transform value/string to eth string
-exports.toEth = function(str) {
-  var val = typeof str === 'string' ? str.indexOf('0x') === 0 ? parseInt(str.substr(2), 16) : parseInt(str) : str;
-  var unit = 0;
-  var units = ETH_UNITS;
-  while (val > 3000 && unit < units.length - 1) {
-    val /= 1000;
-    unit++;
-  }
-  var s = val.toString().length < val.toFixed(2).length ? val.toString() : val.toFixed(2);
-  var replaceFunction = function($0, $1, $2) {
-    return $1 + ',' + $2;
-  };
-
-  while (true) {
-    var o = s;
-    s = s.replace(/(\d)(\d\d\d[\.\,])/, replaceFunction);
-    if (o === s)
-      break;
-  }
-  return s + ' ' + units[unit];
 };
 
 const isHexPrefixed = exports.isHexPrefixed = function(str){
