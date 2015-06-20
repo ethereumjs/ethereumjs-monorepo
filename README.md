@@ -59,7 +59,7 @@ Returns the ethereum address of a given private key
 Returns the ethereum public key of a given private key
 - `privateKey` - the private key as a `buffer`
 
-### `generataeAddress(from, nonce)` 
+### `generateAddress(from, nonce)` 
 Generates an address of a newly created contract
 - `from` - the address creating contract
 - `nonce` - the creating accounts nonce
