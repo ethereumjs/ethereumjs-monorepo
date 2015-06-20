@@ -1,6 +1,9 @@
 # SYNOPSIS [![Build Status](https://travis-ci.org/ethereum/ethereumjs-util.svg)](https://travis-ci.org/ethereum/ethereumjs-util)
 A collection of utility functions for ethereum. It can be used in node.js or can be in the browser with browserify.
 
+# CONTACT
+ [Scrollback](https://scrollback.io/ethereumjs/all/all-messages) or #ethereumjs on freenode
+
 # API
 ## properties
  - `MAX_INTEGER`  - The max interger that the VM can handle
