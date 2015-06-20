@@ -158,8 +158,7 @@ exports.pubToAddress = exports.publicToAddress = function(pubKey) {
 var privateToPublic = exports.privateToPublic = function(privateKey){
   privateKey = new BN(privateKey)
   var key = ec.keyFromPrivate(privateKey).getPublic().toJSON()
-  key =  new Buffer(key[0].toArray().concat(key[1].toArray()))
-  return key
+  return new Buffer(key[0].toArray().concat(key[1].toArray()))
 }
 
 /**
