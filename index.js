@@ -223,7 +223,7 @@ exports.defineProperties = function(self, fields, data) {
       set: function(v) {
         if (!Buffer.isBuffer(v)) {
           if (typeof v === 'string')
-            v = new Buffer(exports.stripHex(v), 'hex')
+            v = new Buffer(exports.stripHexPrefix(v), 'hex')
           else if (typeof v === 'number')
             v = exports.intToBuffer(v)
           else if (v === null || v === undefined)
@@ -314,17 +314,20 @@ exports.baToJSON = function(ba) {
   }
 }
 
+//Returns a Boolean on whether or not the a sting starts with 0x
 exports.isHexPrefixed = function(str){
   return str.slice(0, 2) === '0x'
 }
 
-exports.stripHex = function(str){
+//Removes 0x from a given String
+exports.stripHexPrefix = function(str){
   if (typeof str !== 'string')
      return str
   return exports.isHexPrefixed(str) ?  str.slice(2) : str
 }
 
-exports.addHex = function(str){
+//Adds 0x to a given string if it does not already start with 0x
+exports.addHexPrefix = function(str){
   if (typeof str !== 'string')
      return str
   return exports.isHexPrefixed(str) ? '0x' + str : str
