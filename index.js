@@ -1,12 +1,12 @@
 const BN = require('bn.js')
 const rlp = require('rlp')
-const utils = require('ethereumjs-util')
+const ethUtil = require('ethereumjs-util')
 const fees = require('ethereum-common').fees
 const ecdsaOps = require('./ecdsaOps.js')
 
 //give browser access to Buffers
 global.Buffer = Buffer
-global.ethUtil = utils
+global.ethUtil = ethUtil
 
 /**
  * Represents a transaction
@@ -16,7 +16,7 @@ global.ethUtil = utils
 var Transaction = module.exports = function(data) {
   var self = this
   //Define Properties
-  var fields = [{
+  const fields = [{
     name: 'nonce',
     word: true,
     noZero: true,
@@ -52,12 +52,12 @@ var Transaction = module.exports = function(data) {
     name: 'r',
     pad: true,
     length: 32,
-    default: utils.zeros(32)
+    default: ethUtil.zeros(32)
   }, {
     name: 's',
     pad: true,
     length: 32,
-    default: utils.zeros(32)
+    default: ethUtil.zeros(32)
   }]
 
   Object.defineProperty(this, 'from', {
@@ -73,7 +73,7 @@ var Transaction = module.exports = function(data) {
     }
   })
 
-  utils.defineProperties(this, fields, data)
+  ethUtil.defineProperties(this, fields, data)
 }
 
 /**
@@ -103,7 +103,7 @@ Transaction.prototype.hash = function(signature) {
     toHash = this.raw.slice(0, 6)
 
   //create hash
-  return utils.sha3(rlp.encode(toHash))
+  return ethUtil.sha3(rlp.encode(toHash))
 }
 
 /**
@@ -112,8 +112,8 @@ Transaction.prototype.hash = function(signature) {
  * @return {Buffer}
  */
 Transaction.prototype.getSenderAddress = function() {
-  var pubKey = this.getSenderPublicKey()
-  return utils.pubToAddress(pubKey)
+  const pubKey = this.getSenderPublicKey()
+  return ethUtil.pubToAddress(pubKey)
 }
 
 /**
@@ -142,7 +142,7 @@ Transaction.prototype.sign = ecdsaOps.txSign
  * @return {bn.js}
  */
 Transaction.prototype.getDataFee = function() {
-  var data = this.raw[5]
+  const data = this.raw[5]
   var cost = new BN(0)
   for (var i = 0; i < data.length; i++) {
     if (data[i] === 0) 
@@ -179,5 +179,5 @@ Transaction.prototype.getUpfrontCost = function() {
  * @return {Boolean}
  */
 Transaction.prototype.validate = function() {
-  return this.verifySignature() && (Number(this.getBaseFee().toString()) <= utils.bufferToInt(this.gasLimit))
+  return this.verifySignature() && (Number(this.getBaseFee().toString()) <= ethUtil.bufferToInt(this.gasLimit))
 }

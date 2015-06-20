@@ -1,4 +1,4 @@
-(function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.ethereumjsTx = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+(function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.EthTx = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 // http://wiki.commonjs.org/wiki/Unit_Testing/1.0
 //
 // THIS IS NOT TESTED NOR LIKELY TO WORK OUTSIDE V8!
@@ -2805,13 +2805,13 @@ exports.txGetSenderPublicKey = function() {
 (function (global,Buffer){
 const BN = require('bn.js')
 const rlp = require('rlp')
-const utils = require('ethereumjs-util')
+const ethUtil = require('ethereumjs-util')
 const fees = require('ethereum-common').fees
 const ecdsaOps = require('./ecdsaOps.js')
 
 //give browser access to Buffers
 global.Buffer = Buffer
-global.ethUtil = utils
+global.ethUtil = ethUtil
 
 /**
  * Represents a transaction
@@ -2821,7 +2821,7 @@ global.ethUtil = utils
 var Transaction = module.exports = function(data) {
   var self = this
   //Define Properties
-  var fields = [{
+  const fields = [{
     name: 'nonce',
     word: true,
     noZero: true,
@@ -2857,12 +2857,12 @@ var Transaction = module.exports = function(data) {
     name: 'r',
     pad: true,
     length: 32,
-    default: utils.zeros(32)
+    default: ethUtil.zeros(32)
   }, {
     name: 's',
     pad: true,
     length: 32,
-    default: utils.zeros(32)
+    default: ethUtil.zeros(32)
   }]
 
   Object.defineProperty(this, 'from', {
@@ -2878,7 +2878,7 @@ var Transaction = module.exports = function(data) {
     }
   })
 
-  utils.defineProperties(this, fields, data)
+  ethUtil.defineProperties(this, fields, data)
 }
 
 /**
@@ -2908,7 +2908,7 @@ Transaction.prototype.hash = function(signature) {
     toHash = this.raw.slice(0, 6)
 
   //create hash
-  return utils.sha3(rlp.encode(toHash))
+  return ethUtil.sha3(rlp.encode(toHash))
 }
 
 /**
@@ -2917,8 +2917,8 @@ Transaction.prototype.hash = function(signature) {
  * @return {Buffer}
  */
 Transaction.prototype.getSenderAddress = function() {
-  var pubKey = this.getSenderPublicKey()
-  return utils.pubToAddress(pubKey)
+  const pubKey = this.getSenderPublicKey()
+  return ethUtil.pubToAddress(pubKey)
 }
 
 /**
@@ -2947,7 +2947,7 @@ Transaction.prototype.sign = ecdsaOps.txSign
  * @return {bn.js}
  */
 Transaction.prototype.getDataFee = function() {
-  var data = this.raw[5]
+  const data = this.raw[5]
   var cost = new BN(0)
   for (var i = 0; i < data.length; i++) {
     if (data[i] === 0) 
@@ -2984,7 +2984,7 @@ Transaction.prototype.getUpfrontCost = function() {
  * @return {Boolean}
  */
 Transaction.prototype.validate = function() {
-  return this.verifySignature() && (Number(this.getBaseFee().toString()) <= utils.bufferToInt(this.gasLimit))
+  return this.verifySignature() && (Number(this.getBaseFee().toString()) <= ethUtil.bufferToInt(this.gasLimit))
 }
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer)
