@@ -59,6 +59,16 @@ Returns the ethereum address of a given private key
 Returns the ethereum public key of a given private key
 - `privateKey` - the private key as a `buffer`
 
+### `generataeAddress(from, nonce)` 
+Generates an address of a newly created contract
+- `from` - the address creating contract
+- `nonce` - the creating accounts nonce
+
+### `sha3(a, bytes)`  
+Returns a sha3 of `a` of the length of `bytes`
+- `a` the value to hash
+- `bytes` how many bytes the hash should be
+
 ### `defineProperties(self, fields)`
 defines properties on a `Object`
 - `self` - the `Object` to define properties on
