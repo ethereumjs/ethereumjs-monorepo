@@ -77,6 +77,15 @@ Print a Buffer Array
 converts a buffer array to JSON
 - `ba` - an `Array` of `Buffers`
 
+### `isHexPrefixed(String)`
+Returns a Boolean on whether or not the a sting starts with `0x`
+
+### `stripHexPrefix(String)`
+Removes `0x` from a given String
+
+### `addHexPrefix(String)`
+Adds `0x` to a given string if it does not already start with `0x`
+
 # TESTING
 Node.js Tests use Mocha. Test in the browser use Testling.
 
