@@ -179,13 +179,13 @@ exports.privateToAddress = function(privateKey){
  * @param {Buffer} nonce the nonce of the from account
  */
 exports.generateAddress = function(from, nonce) {
-  var nonce = new Buffer(new BN(nonce).subn(1).toArray())
-    nonce = 0
+  nonce = new Buffer(new BN(nonce).subn(1).toArray())
 
-  var hash = new SHA3.SHA3Hash(256)
-  hash.update(rlp.encode([new Buffer(from, 'hex'), nonce]))
+  if (nonce.toString('hex') === '00') 
+    nonce = 0;
 
-  return new Buffer(hash.digest('hex').slice(24), 'hex')
+  var hash = exports.sha3(rlp.encode([new Buffer(from, 'hex'), nonce]))
+  return hash.slice(12)
 }
 
 /**
