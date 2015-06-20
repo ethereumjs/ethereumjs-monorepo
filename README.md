@@ -1,8 +1,5 @@
-# ETHEREUMJS-TX
+# SYNOPSIS [![Build Status](https://travis-ci.org/ethereum/ethereumjs-tx.svg)](https://travis-ci.org/ethereum/ethereumjs-tx)
 A simple module for creating, manipulating and signing Ethereum transactions. 
-
-# STATUS
- [![Build Status](https://travis-ci.org/ethereum/ethereumjs-tx.svg)](https://travis-ci.org/ethereum/ethereumjs-tx)
 
 # CONTACT
  [Scrollback](https://scrollback.io/ethereumjs/all/all-messages) or #ethereumjs on freenode
@@ -30,6 +27,11 @@ tx.sign(privateKey);
 var serializedTx = tx.serialize();
 
 ```
+
+# Bowser  
+For standalone use in the browser inculde [./dist/ethereumjs-tx.js](blob/master/dist/ethereumjs-tx.js)  
+This will give you a gobal varible `EthTx` to use. It will also create the globals `Buffer` and `ethUtil`  
+To build for standalone use in the browser install `browserify` and run `npm run build`.
 
 # API
 
