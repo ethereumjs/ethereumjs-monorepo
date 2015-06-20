@@ -47,16 +47,16 @@ interpets a `Buffer` as a signed `Integer` and returns a `Bignum`
 Converts a `bignum` to an unsigned interger and returns it as a `buffer`
 - `num` - a `bignum`
 
-### `pubToAddress(pubKey)`
+### `publicToAddress(pubKey)`
 Returns the ethereum address of a given public key
 - `pubKey` - the public key as a `buffer`
 
-### `privateToPublic(privateKey)`
-Returns the ethereum public key of a given private key
-- `privateKey` - the private key as a `buffer`
-
 ### `privateToAddress(privateKey)`
 Returns the ethereum address of a given private key
+- `privateKey` - the private key as a `buffer`
+
+### `privateToPublic(privateKey)`
+Returns the ethereum public key of a given private key
 - `privateKey` - the private key as a `buffer`
 
 ### `defineProperties(self, fields)`
