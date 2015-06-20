@@ -1,12 +1,12 @@
-const BN = require('bn.js');
-const rlp = require('rlp');
-const utils = require('ethereumjs-util');
-const fees = require('ethereum-common').fees;
-const ecdsaOps = require('./ecdsaOps.js');
+const BN = require('bn.js')
+const rlp = require('rlp')
+const utils = require('ethereumjs-util')
+const fees = require('ethereum-common').fees
+const ecdsaOps = require('./ecdsaOps.js')
 
 //give browser access to Buffers
-global.Buffer = Buffer;
-global.ethUtil = utils;
+global.Buffer = Buffer
+global.ethUtil = utils
 
 /**
  * Represents a transaction
@@ -14,7 +14,7 @@ global.ethUtil = utils;
  * @param {Buffer|Array} data raw data, deserialized
  */
 var Transaction = module.exports = function(data) {
-  var self = this;
+  var self = this
   //Define Properties
   var fields = [{
     name: 'nonce',
@@ -58,22 +58,23 @@ var Transaction = module.exports = function(data) {
     pad: true,
     length: 32,
     default: utils.zeros(32)
-  }];
+  }]
 
   Object.defineProperty(this, 'from', {
     enumerable: false,
     configurable: true,
     get: function() {
-      if(this._from) return this._from;
-      return this._from = this.getSenderAddress();
+      if(this._from) 
+        return this._from
+      return this._from = this.getSenderAddress()
     },
     set: function(v) {
-      this._from = v;
+      this._from = v
     }
-  });
+  })
 
-  utils.defineProperties(this, fields, data);
-};
+  utils.defineProperties(this, fields, data)
+}
 
 /**
  * Returns the rlp encoding of the transaction
@@ -81,8 +82,8 @@ var Transaction = module.exports = function(data) {
  * @return {Buffer}
  */
 Transaction.prototype.serialize = function() {
-  return rlp.encode(this.raw);
-};
+  return rlp.encode(this.raw)
+}
 
 /**
  * Computes a sha3-256 hash of the tx
@@ -91,21 +92,19 @@ Transaction.prototype.serialize = function() {
  * @return {Buffer}
  */
 Transaction.prototype.hash = function(signature) {
-  var toHash;
+  var toHash
 
-  if (typeof signature === 'undefined') {
-    signature = true;
-  }
+  if (typeof signature === 'undefined')
+    signature = true
 
-  if (signature) {
-    toHash = this.raw;
-  } else {
-    toHash = this.raw.slice(0, 6);
-  }
+  if (signature) 
+    toHash = this.raw
+  else 
+    toHash = this.raw.slice(0, 6)
 
   //create hash
-  return utils.sha3(rlp.encode(toHash));
-};
+  return utils.sha3(rlp.encode(toHash))
+}
 
 /**
  * gets the senders address
@@ -113,29 +112,29 @@ Transaction.prototype.hash = function(signature) {
  * @return {Buffer}
  */
 Transaction.prototype.getSenderAddress = function() {
-  var pubKey = this.getSenderPublicKey();
-  return utils.pubToAddress(pubKey);
-};
+  var pubKey = this.getSenderPublicKey()
+  return utils.pubToAddress(pubKey)
+}
 
 /**
  * gets the senders public key
  * @method getSenderPublicKey
  * @return {Buffer}
  */
-Transaction.prototype.getSenderPublicKey = ecdsaOps.txGetSenderPublicKey;
+Transaction.prototype.getSenderPublicKey = ecdsaOps.txGetSenderPublicKey
 
 /**
  * @method verifySignature
  * @return {Boolean}
  */
-Transaction.prototype.verifySignature = ecdsaOps.txVerifySignature;
+Transaction.prototype.verifySignature = ecdsaOps.txVerifySignature
 
 /**
  * sign a transaction with a given a private key
  * @method sign
  * @param {Buffer} privateKey
  */
-Transaction.prototype.sign = ecdsaOps.txSign;
+Transaction.prototype.sign = ecdsaOps.txSign
 
 /**
  * The amount of gas paid for the data in this tx
@@ -143,17 +142,16 @@ Transaction.prototype.sign = ecdsaOps.txSign;
  * @return {bn.js}
  */
 Transaction.prototype.getDataFee = function() {
-  var data = this.raw[5];
-  var cost = new BN(0);
+  var data = this.raw[5]
+  var cost = new BN(0)
   for (var i = 0; i < data.length; i++) {
-    if (data[i] === 0) {
-      cost = cost.add(new BN(fees.txDataZeroGas.v));
-    } else {
-      cost = cost.add(new BN(fees.txDataNonZeroGas.v));
-    }
+    if (data[i] === 0) 
+      cost.iaddn(fees.txDataZeroGas.v)
+    else
+      cost.iaddn(fees.txDataNonZeroGas.v)
   }
-  return cost;
-};
+  return cost
+}
 
 /**
  * the base amount of gas it takes to be a valid tx
@@ -161,8 +159,8 @@ Transaction.prototype.getDataFee = function() {
  * @return {bn.js}
  */
 Transaction.prototype.getBaseFee = function() {
-  return this.getDataFee().add(new BN(fees.txGas.v));
-};
+  return this.getDataFee().addn(fees.txGas.v)
+}
 
 /**
  * the up front amount that an account must have for this transaction to be valid
@@ -171,9 +169,9 @@ Transaction.prototype.getBaseFee = function() {
  */
 Transaction.prototype.getUpfrontCost = function() {
   return new BN(this.gasLimit)
-    .mul(new BN(this.gasPrice))
-    .add(new BN(this.value));
-};
+    .mul(new BN(this.gasPrice)) //there is no muln func yet
+    .addn(this.value)
+}
 
 /**
  * validates the signature and checks to see if it has enough gas
@@ -181,5 +179,5 @@ Transaction.prototype.getUpfrontCost = function() {
  * @return {Boolean}
  */
 Transaction.prototype.validate = function() {
-  return this.verifySignature() && (Number(this.getBaseFee().toString()) <= utils.bufferToInt(this.gasLimit));
-};
+  return this.verifySignature() && (Number(this.getBaseFee().toString()) <= utils.bufferToInt(this.gasLimit))
+}
