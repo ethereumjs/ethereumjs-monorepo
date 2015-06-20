@@ -29,7 +29,7 @@ var serializedTx = tx.serialize();
 ```
 
 # Bowser  
-For standalone use in the browser inculde [./dist/ethereumjs-tx.js](blob/master/dist/ethereumjs-tx.js)  
+For standalone use in the browser inculde [./dist/ethereumjs-tx.js](https://github.com/ethereum/ethereumjs-tx/blob/master/dist/ethereumjs-tx.js)  
 This will give you a gobal varible `EthTx` to use. It will also create the globals `Buffer` and `ethUtil`  
 To build for standalone use in the browser install `browserify` and run `npm run build`.
 
