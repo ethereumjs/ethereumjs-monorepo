@@ -24,7 +24,7 @@ exports.elliptic = ec
  * Returns a buffer filled with 0s
  * @method zeros
  * @param {Integer} bytes  the number of bytes the buffer should be
- *[MaÆ @return {Buffer}
+ * @return {Buffer}
  */
 exports.zeros = function(bytes) {
   return new Buffer(bytes).fill(0)
