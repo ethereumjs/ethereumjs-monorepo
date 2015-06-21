@@ -34,7 +34,7 @@ exports.zeros = function(bytes) {
  * pads an array of buffer with leading zeros till it has `length` bytes
  * @method pad
  * @param {Buffer|Array} array
- * @pa[MaÆram {Integer}  length the number of bytes the output should be
+ * @param {Integer}  length the number of bytes the output should be
  * @return {Buffer|Array}
  */
 exports.pad = function(msg, length) {
