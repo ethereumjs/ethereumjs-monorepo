@@ -50,12 +50,10 @@ var Transaction = module.exports = function(data) {
     default: new Buffer([0x1c])
   }, {
     name: 'r',
-    pad: true,
     length: 32,
     default: ethUtil.zeros(32)
   }, {
     name: 's',
-    pad: true,
     length: 32,
     default: ethUtil.zeros(32)
   }]

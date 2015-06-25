@@ -34,8 +34,8 @@ module.exports = function txRunner(testData, options, cb) {
     t.equal(ethUtil.bufferToInt(tx.gasLimit), Number(tTx.gasLimit), 'gasLimit');
     t.equal(ethUtil.bufferToInt(tx.gasPrice), Number(tTx.gasPrice), 'gasPrice');
     t.equal(ethUtil.bufferToInt(tx.nonce), Number(tTx.nonce), 'nonce');
-    t.equal(tx.r.toString('hex'), ethUtil.pad(new Buffer(addPad(tTx.r.slice(2)), 'hex'), 32).toString('hex'), 'r');
-    t.equal(tx.s.toString('hex'), ethUtil.pad(new Buffer(addPad(tTx.s.slice(2)), 'hex'), 32).toString('hex'), 's');
+    t.equal(tx.r.toString('hex'), addPad(tTx.r.slice(2)), 'r');
+    t.equal(tx.s.toString('hex'), addPad(tTx.s.slice(2)), 's');
     t.equal(ethUtil.bufferToInt(tx.v), Number(tTx.v), 'v');
     if(tTx.to[1] === 'x'){
       tTx.to = tTx.to.slice(2);
