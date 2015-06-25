@@ -2855,12 +2855,10 @@ var Transaction = module.exports = function(data) {
     default: new Buffer([0x1c])
   }, {
     name: 'r',
-    pad: true,
     length: 32,
     default: ethUtil.zeros(32)
   }, {
     name: 's',
-    pad: true,
     length: 32,
     default: ethUtil.zeros(32)
   }]
@@ -10445,6 +10443,7 @@ exports.defineProperties = function(self, fields, data) {
           else if (v === null || v === undefined)
             v = new Buffer([])
           else if (v.toArray) 
+            //converts a BN to a Buffer
             v = new Buffer(v.toArray())
           else
             throw new Error('invalid type')
