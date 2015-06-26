@@ -223,12 +223,13 @@ exports.defineProperties = function(self, fields, data) {
       set: function(v) {
         if (!Buffer.isBuffer(v)) {
           if (typeof v === 'string')
-            v = new Buffer(exports.stripHexPrefix(v), 'hex')
+            v = new Buffer(padToEven(exports.stripHexPrefix(v)), 'hex')
           else if (typeof v === 'number')
             v = exports.intToBuffer(v)
           else if (v === null || v === undefined)
             v = new Buffer([])
           else if (v.toArray) 
+            //converts a BN to a Buffer
             v = new Buffer(v.toArray())
           else
             throw new Error('invalid type')
@@ -243,7 +244,9 @@ exports.defineProperties = function(self, fields, data) {
         if(!(field.empty && v.length === 0) && field.pad && v.length < field.length)
           v = exports.pad(v, field.length)
 
-        if (!(field.empty && v.length === 0) && field.length)
+        if(field.allowLess && field.length){
+          assert(field.length >= v.length)
+        } else if (!(field.empty && v.length === 0) && field.length)
           assert(field.length === v.length, 'The field ' + field.name + 'must have byte length of ' + field.length)
 
         this.raw[i] = v
@@ -331,4 +334,9 @@ exports.addHexPrefix = function(str){
   if (typeof str !== 'string')
      return str
   return exports.isHexPrefixed(str) ? '0x' + str : str
+}
+
+function padToEven(a){
+  if (a.length % 2) a = '0' + a;
+  return a
 }
