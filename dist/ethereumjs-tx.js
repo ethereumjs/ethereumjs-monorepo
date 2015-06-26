@@ -2856,10 +2856,12 @@ var Transaction = module.exports = function(data) {
   }, {
     name: 'r',
     length: 32,
+    allowLess: true,
     default: ethUtil.zeros(32)
   }, {
     name: 's',
     length: 32,
+    allowLess: true,
     default: ethUtil.zeros(32)
   }]
 
@@ -2973,7 +2975,7 @@ Transaction.prototype.getBaseFee = function() {
 Transaction.prototype.getUpfrontCost = function() {
   return new BN(this.gasLimit)
     .mul(new BN(this.gasPrice)) //there is no muln func yet
-    .addn(this.value)
+    .add(new BN(this.value))
 }
 
 /**
@@ -10187,27 +10189,26 @@ module.exports={
 (function (Buffer){
 //This provides SHA3 alterntive for browsers
 //it will autmatically be used if this module is browserified
-
-var sha3 = require('crypto-js/sha3'),
-encHex = require('crypto-js/enc-hex');
+const sha3 = require('crypto-js/sha3')
+const encHex = require('crypto-js/enc-hex')
 
 var hash = function () {
-  this.content = '';
-};
+  this.content = ''
+}
 
 hash.prototype.update = function (i) {
-  this.content = Buffer.isBuffer(i) ? encHex.parse(i.toString('hex')) : i;
-};
+  this.content = Buffer.isBuffer(i) ? encHex.parse(i.toString('hex')) : i
+}
 
 hash.prototype.digest = function () {
   return sha3(this.content, {
     outputLength: 256
-  }).toString();
-};
+  }).toString()
+}
 
 module.exports = {
   SHA3Hash: hash
-};
+}
 
 }).call(this,require("buffer").Buffer)
 },{"buffer":2,"crypto-js/enc-hex":42,"crypto-js/sha3":43}],39:[function(require,module,exports){
@@ -10238,7 +10239,7 @@ exports.elliptic = ec
  * Returns a buffer filled with 0s
  * @method zeros
  * @param {Integer} bytes  the number of bytes the buffer should be
- *[MaÆ @return {Buffer}
+ * @return {Buffer}
  */
 exports.zeros = function(bytes) {
   return new Buffer(bytes).fill(0)
@@ -10248,7 +10249,7 @@ exports.zeros = function(bytes) {
  * pads an array of buffer with leading zeros till it has `length` bytes
  * @method pad
  * @param {Buffer|Array} array
- * @pa[MaÆram {Integer}  length the number of bytes the output should be
+ * @param {Integer}  length the number of bytes the output should be
  * @return {Buffer|Array}
  */
 exports.pad = function(msg, length) {
@@ -10437,7 +10438,7 @@ exports.defineProperties = function(self, fields, data) {
       set: function(v) {
         if (!Buffer.isBuffer(v)) {
           if (typeof v === 'string')
-            v = new Buffer(exports.stripHexPrefix(v), 'hex')
+            v = new Buffer(padToEven(exports.stripHexPrefix(v)), 'hex')
           else if (typeof v === 'number')
             v = exports.intToBuffer(v)
           else if (v === null || v === undefined)
@@ -10458,7 +10459,9 @@ exports.defineProperties = function(self, fields, data) {
         if(!(field.empty && v.length === 0) && field.pad && v.length < field.length)
           v = exports.pad(v, field.length)
 
-        if (!(field.empty && v.length === 0) && field.length)
+        if(field.allowLess && field.length){
+          assert(field.length >= v.length)
+        } else if (!(field.empty && v.length === 0) && field.length)
           assert(field.length === v.length, 'The field ' + field.name + 'must have byte length of ' + field.length)
 
         this.raw[i] = v
@@ -10546,6 +10549,11 @@ exports.addHexPrefix = function(str){
   if (typeof str !== 'string')
      return str
   return exports.isHexPrefixed(str) ? '0x' + str : str
+}
+
+function padToEven(a){
+  if (a.length % 2) a = '0' + a;
+  return a
 }
 
 }).call(this,require("buffer").Buffer)

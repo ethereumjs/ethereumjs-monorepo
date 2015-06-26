@@ -51,10 +51,12 @@ var Transaction = module.exports = function(data) {
   }, {
     name: 'r',
     length: 32,
+    allowLess: true,
     default: ethUtil.zeros(32)
   }, {
     name: 's',
     length: 32,
+    allowLess: true,
     default: ethUtil.zeros(32)
   }]
 
@@ -168,7 +170,7 @@ Transaction.prototype.getBaseFee = function() {
 Transaction.prototype.getUpfrontCost = function() {
   return new BN(this.gasLimit)
     .mul(new BN(this.gasPrice)) //there is no muln func yet
-    .addn(this.value)
+    .add(new BN(this.value))
 }
 
 /**
