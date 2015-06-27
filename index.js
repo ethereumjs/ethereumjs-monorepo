@@ -71,9 +71,9 @@ exports.intToHex = function(i) {
   assert(i % 1 === 0, 'number is not a interger')
   assert(i >= 0, 'number must be positive')
   var hex = i.toString(16)
-  if (hex.length % 2) {
+  if (hex.length % 2)
     hex = '0' + hex
-  }
+
   return hex
 }
 
