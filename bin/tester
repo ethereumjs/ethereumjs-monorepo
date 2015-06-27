@@ -1,178 +1,106 @@
 #!/usr/bin/env node
 require('../test/transactions.js')
 
-const argv = require('minimist')(process.argv.slice(2));
-const async = require('async');
-const tape = require('tape');
-const path = require('path');
-const cp = require('child_process');
+const argv = require('minimist')(process.argv.slice(2))
+const async = require('async')
+const tape = require('tape')
+const path = require('path')
+const cp = require('child_process')
 
-if (argv.r) {
-  randomized(argv.r, argv.v);
-} else if (argv.s) {
-  var hrstart = process.hrtime();
-  runTests('state', argv, function(){
-    var hrend = process.hrtime(hrstart);
-    console.log('# Execution time (hr): %ds %dms', hrend[0], hrend[1] / 1000000);
-  });
-} else if (argv.v) {
-  runTests('vm', argv);
-} else if(argv.t){
-  runTests('transaction', argv);
-} else if (argv.a) {
-  runAll();
-}
-
+runTests('transaction', argv)
 //randomized tests
 //returns 1 if the tests fails
 //returns 0 if the tests succeds
 function randomized(stateTest) {
-  const stateRunner = require('../test/stateRunner.js');
-  var errored = false;
+  const stateRunner = require('../test/stateRunner.js')
+  var errored = false
 
   tape.createStream({
     objectMode: true
   }).on('data', function(row) {
     if (row.ok === false && !errored) {
-      errored = true;
-      process.stdout.write('1');
-      process.exit();
+      errored = true
+      process.stdout.write('1')
+      process.exit()
     }
   }).on('end', function() {
-    process.stdout.write('0');
-  });
+    process.stdout.write('0')
+  })
 
   try {
-    stateTest = JSON.parse(stateTest);
+    stateTest = JSON.parse(stateTest)
   } catch (e) {
-    console.error('invalid json');
-    process.exit();
+    console.error('invalid json')
+    process.exit()
   }
 
-  var keys =  Object.keys(stateTest);
-  stateTest = stateTest[keys[0]];
+  var keys =  Object.keys(stateTest)
+  stateTest = stateTest[keys[0]]
 
   tape('', function(t) {
     stateRunner(stateTest, {
       t: t
     }, function() {
-      t.end();
-    });
-  });
+      t.end()
+    })
+  })
 }
 
 function getTests(type, argv) {
   
   if(argv.local){
-    var base = path.basename(argv.local);
+    var base = path.basename(argv.local)
     return {
       base : require(argv.local)
-    };
-  }
-
-  var tests = require('ethereum-tests')[type + 'Tests'];
-
-  //move the random tests
-  if (type === 'vm') {
-    for (var prop in tests.RandomTests) {
-      tests[prop] = tests.RandomTests[prop];
     }
-
-    delete tests.RandomTests;
-    delete tests.vmSystemOperationsTest;
   }
 
-  //move the random tests
-  if (type === 'state') {
-    for (var prop in tests.RandomTests) {
-      tests[prop] = tests.RandomTests[prop];
-    }
-
-    delete tests.RandomTests;
-  }
+  var tests = require('ethereum-tests')[type + 'Tests']
 
   //for running a single file
   if (argv.file) {
-    var i = {};
-    i[argv.file] = tests[argv.file];
+    var i = {}
+    i[argv.file] = tests[argv.file]
 
     //run a single test from a single file
     if (argv.test) {
-      i[argv.file] = {};
-      i[argv.file][argv.test] = tests[argv.file][argv.test];
+      i[argv.file] = {}
+      i[argv.file][argv.test] = tests[argv.file][argv.test]
     }
 
-    tests = i;
+    tests = i
   }
 
-  return tests;
+  return tests
 }
 
 function runTests(type, argv, cb) {
-  var tests = getTests(type, argv);
-  const runner = require('../test/' + type + 'Runner');
+  var tests = getTests(type, argv)
+  const runner = require('../test/' + type + 'Runner')
   const skip = [
-    'CreateHashCollision', //impossible hash collision on generating address
-    'TransactionMakeAccountBalanceOverflow', 
-    'RecursiveCreateContracts',
-    'sha3_bigSize',
-    'createJS_ExampleContract', //creates an account that already exsists
-    'mload32bitBound_return',
-    'mload32bitBound_return2',
-    'Call50000',
-    'Call50000_ecrec',
-    'Call50000_identity',
-    'Call50000_identity2',
-    'Call50000_rip160'];
+    'unpadedRValue'
+  ]
 
   //run all of the tests
   async.eachSeries(Object.keys(tests), function(fileName, done) {
-    var file = tests[fileName];
+    var file = tests[fileName]
     async.eachSeries(Object.keys(file), function(testName, done2) {
-      var test = file[testName];
+      var test = file[testName]
       tape('[' + fileName + '] ' + testName, function(t) {
         if(skip.indexOf(testName) === -1){
           runner(test, {
             t: t,
             vmtrace: argv.vmtrace
           }, function() {
-            t.end();
-            done2();
-          });
+            t.end()
+            done2()
+          })
         }else{
-          t.skip('testName');
-          t.end();
-          done2();
+          t.skip('testName')
+          t.end()
+          done2()
         }
-      });
-    }, done);
-  }, cb);
-}
-
-function runAll() {
-  async.series([
-    function(done) {
-      var f = cp.fork(__dirname + '/../test/tester.js');
-      f.on('close', done);
-    },
-    function(done) {
-      var f = cp.fork(__dirname + '/../test/browserfy.js');
-      f.on('close', done);
-    },
-    function(done) {
-      var f = cp.fork(__dirname + '/../test/transactions.js');
-      f.on('close', done);
-    },
-    function(done) {
-      var f = cp.fork(__dirname + '/../test/genesishashes.js');
-      f.on('close', done);
-    },
-    function(done) {
-      var f = cp.fork(__dirname + '/../test/ethash.js');
-      f.on('close', done);
-    },
-    // runTests.bind(this, 'transaction', {}),
-    runTests.bind(this, 'state', {}),
-    runTests.bind(this, 'vm', {})
-  ]);
+      })
+    }, done)
+  }, cb)
 }

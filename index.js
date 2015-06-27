@@ -169,7 +169,7 @@ Transaction.prototype.getBaseFee = function() {
  */
 Transaction.prototype.getUpfrontCost = function() {
   return new BN(this.gasLimit)
-    .mul(new BN(this.gasPrice)) //there is no muln func yet
+    .mul(new BN(this.gasPrice))
     .add(new BN(this.value))
 }
 
