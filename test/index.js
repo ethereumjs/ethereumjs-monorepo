@@ -1,9 +1,9 @@
-var Trie = require('../index.js'),
-  async = require('async'),
-  rlp = require('rlp'),
-  Sha3 = require('sha3'),
-  assert = require('assert'),
-  jsonTests = require('ethereum-tests').trieTests;
+var Trie = require('../index.js')
+var async = require('async')
+var rlp = require('rlp')
+var assert = require('assert')
+var jsonTests = require('ethereum-tests').trieTests
+var ethUtil = require('ethereumjs-util')
 
 describe('simple save and retrive', function () {
   var trie = new Trie();
@@ -316,19 +316,19 @@ describe('testing checkpoints', function () {
 
 describe('it should create the genesis state root from ethereum', function () {
 
-  var trie4 = new Trie(),
-    g = new Buffer('8a40bfaa73256b60764c1bf40675a99083efb075', 'hex'),
-    j = new Buffer('e6716f9544a56c530d868e4bfbacb172315bdead', 'hex'),
-    v = new Buffer('1e12515ce3e0f817a4ddef9ca55788a1d66bd2df', 'hex'),
-    a = new Buffer('1a26338f0d905e295fccb71fa9ea849ffa12aaf4', 'hex'),
-    hash = new Sha3.SHA3Hash(256),
+  var trie4 = new Trie()
+  var g = new Buffer('8a40bfaa73256b60764c1bf40675a99083efb075', 'hex')
+  var j = new Buffer('e6716f9544a56c530d868e4bfbacb172315bdead', 'hex')
+  var v = new Buffer('1e12515ce3e0f817a4ddef9ca55788a1d66bd2df', 'hex')
+  var a = new Buffer('1a26338f0d905e295fccb71fa9ea849ffa12aaf4', 'hex')
+
     stateRoot = new Buffer(32);
 
   stateRoot.fill(0);
   var startAmount = new Buffer(26);
   startAmount.fill(0);
   startAmount[0] = 1;
-  var account = [startAmount, 0, stateRoot, new Buffer(hash.digest('hex'), 'hex')];
+  var account = [startAmount, 0, stateRoot, ethUtil.sha3()];
   var rlpAccount = rlp.encode(account);
   cppRlp = 'f85e9a010000000000000000000000000000000000000000000000000080a00000000000000000000000000000000000000000000000000000000000000000a0c5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470';
 

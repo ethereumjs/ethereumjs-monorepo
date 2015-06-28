@@ -1,4 +1,4 @@
-const async = require('async');
+const async = require('async')
 
 module.exports = {
   matchingNibbleLength: matchingNibbleLength,
@@ -14,12 +14,12 @@ module.exports = {
  * @param {Array} nib2
  */
 function matchingNibbleLength(nib1, nib2) {
-  var i = 0;
+  var i = 0
   while (nib1[i] === nib2[i] && nib1.length > i) {
-    i++;
+    i++
   }
-  return i;
-};
+  return i
+}
 
 /**
  * Compare two 'nibble array' keys 
@@ -36,24 +36,22 @@ function doKeysMatch(keyA, keyB) {
 function callTogether() {
   var funcs = arguments,
     length = funcs.length,
-    index = length;
+    index = length
 
-  if (!length) {
-    return function() {};
-  }
+  if (!length)
+    return function() {}
 
   return function() {
-    length = index;
+    length = index
 
     while (length--) {
-      var fn = funcs[length];
-      if (typeof fn === 'function') {
-        var result = funcs[length].apply(this, arguments);
-      }
+      var fn = funcs[length]
+      if (typeof fn === 'function')
+        var result = funcs[length].apply(this, arguments)
     }
-    return result;
-  };
-};
+    return result
+  }
+}
 
 /**
  * Take a collection of async fns, call the cb on the first to return a truthy value.
@@ -62,15 +60,16 @@ function callTogether() {
 function asyncFirstSeries(array, iterator, cb) {
   var didComplete = false
   async.eachSeries(array, function(item, next){
-    if (didComplete) return next;
+    if (didComplete) return next
     iterator(item, function(err, result){
       if (result) {
-        didComplete = true;
-        process.nextTick(cb.bind(null, null, result));
+        didComplete = true
+        process.nextTick(cb.bind(null, null, result))
       }
-      next(err);
-    });
+      next(err)
+    })
   }, function(){
-    if (!didComplete) cb()
-  });
+    if (!didComplete)
+      cb()
+  })
 }
