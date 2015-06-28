@@ -1,6 +1,6 @@
 {
   "name": "ethereumjs-util",
-  "version": "1.3.1",
+  "version": "1.3.2",
   "description": "a collection of utility functions for Ethereum",
   "main": "index.js",
   "scripts": {
@@ -22,9 +22,9 @@
   },
   "homepage": "https://github.com/ethereum/ethereumjs-utils",
   "dependencies": {
-    "bn.js": "^2.0.5",
+    "bn.js": "^2.1.0",
     "crypto-js": "^3.1.5",
-    "elliptic": "^3.1.0",
+    "elliptic": "^4.0.0",
     "rlp": "^1.0.1",
     "sha3": "^1.1.0"
   },
