@@ -1,7 +1,7 @@
 RLP [![Build Status](https://travis-ci.org/wanderer/rlp.png?branch=master)](https://travis-ci.org/wanderer/rlp)
 ===
 
-[Recursive Length]( https://github.com/ethereum/wiki/wiki/%5BEnglish%5D-RLP) Prefix Encoding for node.js.
+[Recursive Length](https://github.com/ethereum/wiki/wiki/RLP) Prefix Encoding for node.js.
 INSTALL
 ======
 `npm install rlp`   
