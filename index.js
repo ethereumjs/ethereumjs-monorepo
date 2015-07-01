@@ -44,18 +44,44 @@ function encodeLength(len, offset) {
 
 /**
  * RLP Decoding based on: {@link https://github.com/ethereum/wiki/wiki/%5BEnglish%5D-RLP|RLP}
- *
  * @param {Buffer,String,Integer,Array} data - will be converted to buffer
  * @returns {Array} - returns decode Array of Buffers containg the original message
  **/
-var decode = exports.decode = function (input) {
+exports.decode = function (input, stream) {
   if(!input || input.length === 0)
     return new Buffer([])
 
   input = toBuffer(input)
   var decoded = _decode(input)
+
+  if(stream)
+    return decoded
+
   assert.equal(decoded.remainder.length, 0, 'invalid remainder')
   return decoded.data
+}
+
+exports.getLength = function(input){
+  if(!input || input.length === 0)
+    return new Buffer([])
+
+  input = toBuffer(input)
+  var firstByte = input[0]
+  if (firstByte <= 0x7f) {
+    return input.length
+  } else if (firstByte <= 0xb7) {
+    return firstByte - 0x7f
+  } else if (firstByte <= 0xbf) {
+    return firstByte - 0xb6
+  } else if (firstByte <= 0xf7) {
+    //a list between  0-55 bytes long
+    return firstByte - 0xbf
+  } else {
+    //a list  over 55 bytes long
+    var llength = firstByte - 0xf6
+    var length = safeParseInt(input.slice(1, llength).toString('hex'), 16)
+    return llength + length
+  }
 }
 
 function _decode (input) {
@@ -69,8 +95,8 @@ function _decode (input) {
   } else if (firstByte <= 0xb7) {
     //string is 0-55 bytes long. A single byte with value 0x80 plus the length of the string followed by the string
     //The range of the first byte is [0x80, 0xb7]
-    var length = firstByte - 0x7f,
-      data
+    var length = firstByte - 0x7f
+    var data
 
     //set 0x80 null to 0
     if (firstByte === 0x80) 
