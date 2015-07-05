@@ -107,12 +107,10 @@ Trie.prototype.del = function(key, cb) {
   })
 }
 
-// retrieves a node from dbs by hash
-Trie.prototype._lookupNode = function(node, cb) {
-  var self = this
+Trie.prototype.getRaw = function(key, cb){
 
   function dbGet(db, cb) {
-    db.get(node, {
+    db.get(key, {
       keyEncoding: 'binary',
       valueEncoding: 'binary'
     }, function(err, foundNode) {
@@ -125,12 +123,18 @@ Trie.prototype._lookupNode = function(node, cb) {
     })
   }
 
+  asyncFirstSeries(this._getDBs, dbGet, cb)
+}
+
+// retrieves a node from dbs by hash
+Trie.prototype._lookupNode = function(node, cb) {
+
+
   if (TrieNode.isRawNode(node))
     cb(new TrieNode(node))
   else {
-    asyncFirstSeries(this._getDBs, dbGet, function(err, result){
-      // if (!result) console.log('READ FAILED:', node.toString('hex'))
-      cb(result)
+    this.getRaw(node, function(err, value){
+      cb(value)  
     })
   }
 }
