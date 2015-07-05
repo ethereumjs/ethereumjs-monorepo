@@ -107,8 +107,12 @@ Trie.prototype.del = function(key, cb) {
   })
 }
 
+/**
+ * Writes a value directly to the underlining db
+ * @method getRaw
+ * @param {Buffer} key
+ */
 Trie.prototype.getRaw = function(key, cb){
-
   function dbGet(db, cb2) {
     db.get(key, {
       keyEncoding: 'binary',
@@ -130,37 +134,39 @@ Trie.prototype._lookupNode = function(node, cb) {
     cb(new TrieNode(node))
   else {
     this.getRaw(node, function(err, value){
-      if(value){
+      if(value)
         value = new TrieNode(rlp.decode(value))
-      }else{
-       value = null
-      }
+
       cb(value)  
     })
   }
 }
 
-// writes a single node to dbs
-Trie.prototype._putNode = function(node, cb) {
-  var self = this
-  var hash = node.hash()
-  var serialized = node.serialize()
-
-  function dbPut(db, cb) {
-    // console.log('PUT DB#'+(db === self.db ? 'DB':'SCRATCH'), 'node:', hash.toString('hex'))
-    db.put(hash, serialized, {
+/**
+ * Writes a value directly to the underlining db
+ * @method putRaw
+ * @param {Buffer} key
+ * @param {Buffer} key
+ */
+Trie.prototype.putRaw = function(key, val, cb){
+  function dbPut(db, cb2) {
+    db.put(key, val, {
       keyEncoding: 'binary',
       valueEncoding: 'binary',
-    }, cb)  
+    }, cb2)
   }
-  
   async.each(this._putDBs, dbPut, cb)
+}
+
+// writes a single node to dbs
+Trie.prototype._putNode = function(node, cb) {
+  var hash = node.hash()
+  var serialized = node.serialize()
+  this.putRaw(hash, serialized, cb)
 }
 
 // writes many nodes to db
 Trie.prototype._batchNodes = function(opStack, cb) {
-  var self = this
-
   function dbBatch(db, cb) {
     // console.log('BATCH-'+opStack.length, 'DB#'+(db === self.db ? 'DB':'SCRATCH'))
     // opStack.forEach(function(op){
