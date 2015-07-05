@@ -361,7 +361,6 @@ describe('offical tests', function () {
 
   it('pass all tests', function (done) {
     async.eachSeries(testNames, function (i, done) {
-      console.log(i);
       var inputs = jsonTests.trietest[i].in;
       var expect = jsonTests.trietest[i].root;
 
@@ -400,7 +399,6 @@ describe('offical tests any order', function () {
 
   it('pass all tests', function (done) {
     async.eachSeries(testNames, function (i, done) {
-      console.log(i);
       var test = jsonTests.trieanyorder[i];
       var keys = Object.keys(test.in);
 

@@ -109,31 +109,32 @@ Trie.prototype.del = function(key, cb) {
 
 Trie.prototype.getRaw = function(key, cb){
 
-  function dbGet(db, cb) {
+  function dbGet(db, cb2) {
     db.get(key, {
       keyEncoding: 'binary',
       valueEncoding: 'binary'
     }, function(err, foundNode) {
-      if (err || !foundNode)
-        cb(null, null)
-      else {
-        foundNode = rlp.decode(foundNode)
-        cb(null, new TrieNode(foundNode))
+      if (err || !foundNode){
+        cb2(null, null)
+      } else {
+        cb2(null, foundNode)
       }
     })
   }
-
   asyncFirstSeries(this._getDBs, dbGet, cb)
 }
 
 // retrieves a node from dbs by hash
 Trie.prototype._lookupNode = function(node, cb) {
-
-
   if (TrieNode.isRawNode(node))
     cb(new TrieNode(node))
   else {
     this.getRaw(node, function(err, value){
+      if(value){
+        value = new TrieNode(rlp.decode(value))
+      }else{
+       value = null
+      }
       cb(value)  
     })
   }
