@@ -29,7 +29,6 @@ function checkpointInterface (trie) {
   
   // overwrites
   trie.copy = copy.bind(trie, trie.copy.bind(trie))
-
 }
 
 // creates a checkpoint
