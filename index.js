@@ -27,7 +27,9 @@ exports.elliptic = ec
  * @return {Buffer}
  */
 exports.zeros = function(bytes) {
-  return new Buffer(bytes).fill(0)
+  var buf = new Buffer(bytes);
+  buf.fill(0);
+  return buf;
 }
 
 /**
