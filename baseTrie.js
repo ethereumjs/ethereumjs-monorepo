@@ -168,10 +168,6 @@ Trie.prototype._putNode = function(node, cb) {
 // writes many nodes to db
 Trie.prototype._batchNodes = function(opStack, cb) {
   function dbBatch(db, cb) {
-    // console.log('BATCH-'+opStack.length, 'DB#'+(db === self.db ? 'DB':'SCRATCH'))
-    // opStack.forEach(function(op){
-    //   console.log('  -'+op.type.toUpperCase(), 'key:', op.key.toString('hex'))
-    // })
     db.batch(opStack, {
       keyEncoding: 'binary',
       valueEncoding: 'binary'
