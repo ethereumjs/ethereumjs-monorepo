@@ -6,7 +6,6 @@ var ethUtil = require('ethereumjs-util')
 var crypto = require('crypto')
 
 describe('simple save and retrive', function () {
-
   it('should not crash if given a non-existant root', function (done) {
     var root = new Buffer('3f4399b08efe68945c1cf90ffe85bbe3ce978959da753f9e649f034015b8817d', 'hex')
     var trie = new Trie(null, root)
@@ -349,6 +348,17 @@ describe('put & get raw functions', function(){
 
   it('should not retiev after revert', function(done){
     trie.revert(done)
+  })
+
+  it('should delete raw', function(done){
+    trie.delRaw(val2, done)
+  })
+
+  it('should not get val after delete ', function(done){
+    trie.getRaw(val2, function(err, val){
+      assert(!val)
+      done()
+    })
   })
 })
 
