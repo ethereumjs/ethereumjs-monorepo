@@ -54,7 +54,7 @@ Retrieves a value stored at a key
 
 --------------------------------------------------------
 
-#### `trie.delete(key, cb)`
+#### `trie.del(key, cb)`
 Removes a value
 - `key` - the key as a `Buffer` or `String`
 - `cb` - a callback `Function` which is given the argumnet `err` - for an errors that may have occured
@@ -92,6 +92,27 @@ var ops = {
 
 #### `trie.createReadStream()`
 returns a read stream. The `data` event is given an `Object` hat has two propeties; the `key` and the `value`. Both should be Buffers.
+
+--------------------------------------------------------
+#### `trie.putRaw(key, value, cb)`
+Stores a raw value in the underlining db
+- `key` - the key as a `Buffer` or `String`
+- `value` - the value to be stored
+- `cb` - a callback `Function` which is given the argumnet `err` - for an errors that may have occured
+
+--------------------------------------------------------
+
+#### `trie.getRaw(key, cb)`
+Retrieves a raw value in the underlining db
+- `key` - the key as a `Buffer` or `String`
+- `cb` - a callback `Function` which is given the argumnets `err` - for an errors that may have occured and `value` - The found value in a `Buffer` or if no value was found `null`.
+
+--------------------------------------------------------
+
+#### `trie.delRaw(key, cb)`
+Removes a raw value in the underlining db
+- `key` - the key as a `Buffer` or `String`
+- `cb` - a callback `Function` which is given the argumnet `err` - for an errors that may have occured
 
 --------------------------------------------------------
 
