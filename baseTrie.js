@@ -107,16 +107,6 @@ Trie.prototype.del = function(key, cb) {
   })
 }
 
-Trie.prototype.delRaw = function(key, cb){
-  function del(db, cb2) {
-    db.del(key, {
-      keyEncoding: 'binary'
-    }, cb2)
-  }
-  async.each(this._putDBs, del, cb)
-}
-  
-
 /**
  * Writes a value directly to the underlining db
  * @method getRaw
