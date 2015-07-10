@@ -6,6 +6,7 @@ var ethUtil = require('ethereumjs-util')
 var crypto = require('crypto')
 
 describe('simple save and retrive', function () {
+
   it('should not crash if given a non-existant root', function (done) {
     var root = new Buffer('3f4399b08efe68945c1cf90ffe85bbe3ce978959da753f9e649f034015b8817d', 'hex')
     var trie = new Trie(null, root)
@@ -17,6 +18,7 @@ describe('simple save and retrive', function () {
   })
 
   var trie = new Trie()
+
   it('save a value', function (done) {
     trie.put('test', 'one', function () {
       done()
@@ -305,59 +307,6 @@ describe('testing checkpoints', function () {
           done()
         })
       })
-    })
-  })
-})
-
-describe('put & get raw functions', function(){
-  var trie = new Trie()
-  var key =  crypto.randomBytes(32)
-  var val =  crypto.randomBytes(32)
-
-  it('putRaw', function(done){
-    trie.putRaw(key, val, done)
-  })
-
-  it('getRaw', function(done){
-    trie.getRaw(key, function(err, rVal){
-      assert(val.toString('hex') === rVal.toString('hex'))
-      done()
-    })
-  })
-
-  it('should checkpoint and get the rawVal', function(done){
-    trie.checkpoint()
-    trie.getRaw(key, function(err, rVal){
-      assert(val.toString('hex') === rVal.toString('hex'))
-      done()
-    })
-  })
-
-  var key2 =  crypto.randomBytes(32)
-  var val2 =  crypto.randomBytes(32)
-  it('should store while in a checkpoint', function(done){
-    trie.putRaw(key2, val2, done)
-  })
-
-  it('should retrieve from a checkpoint', function(done){
-    trie.getRaw(key2, function(err, rVal){
-      assert(val2.toString('hex') === rVal.toString('hex'))
-      done()
-    })
-  })
-
-  it('should not retiev after revert', function(done){
-    trie.revert(done)
-  })
-
-  it('should delete raw', function(done){
-    trie.delRaw(val2, done)
-  })
-
-  it('should not get val after delete ', function(done){
-    trie.getRaw(val2, function(err, val){
-      assert(!val)
-      done()
     })
   })
 })
