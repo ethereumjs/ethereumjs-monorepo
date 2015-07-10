@@ -142,13 +142,8 @@ Trie.prototype._lookupNode = function(node, cb) {
   }
 }
 
-/**
- * Writes a value directly to the underlining db
- * @method putRaw
- * @param {Buffer} key
- * @param {Buffer} key
- */
-Trie.prototype.putRaw = function(key, val, cb){
+//TODO: remove the proxy method when changing the caching
+Trie.prototype._putRaw = function(key, val, cb){
   function dbPut(db, cb2) {
     db.put(key, val, {
       keyEncoding: 'binary',
@@ -158,11 +153,28 @@ Trie.prototype.putRaw = function(key, val, cb){
   async.each(this._putDBs, dbPut, cb)
 }
 
+/**
+ * Writes a value directly to the underlining db
+ * @method putRaw
+ * @param {Buffer} key
+ * @param {Buffer} key
+ */
+Trie.prototype.putRaw = Trie.prototype._putRaw
+
+Trie.prototype.delRaw = function(key, cb){
+  function del(db, cb2) {
+    db.del(key, {
+      keyEncoding: 'binary'
+    }, cb2)
+  }
+  async.each(this._putDBs, del, cb)
+}
+
 // writes a single node to dbs
 Trie.prototype._putNode = function(node, cb) {
   var hash = node.hash()
   var serialized = node.serialize()
-  this.putRaw(hash, serialized, cb)
+  this._putRaw(hash, serialized, cb)
 }
 
 // writes many nodes to db

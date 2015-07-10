@@ -81,15 +81,19 @@ function _enterCpMode() {
   this._getDBs.unshift(this._scratch)
   this.__putDBs = this._putDBs
   this._putDBs = [this._scratch]
+  this._putRaw = this.putRaw
+  this.putRaw = putRaw
 }
 
 // exit from checkpoint mode
 function _exitCpMode(commitState, cb) {
+
   var self = this
   var scratch = this._scratch
   this._scratch = null
   this._getDBs.shift()
   this._putDBs = this.__putDBs
+  this.putRaw = this._putRaw
 
   function flushScratch(db, cb) {
     if(!db.createWriteStream)
@@ -113,6 +117,16 @@ function copy(_super) {
   trie._scratch = this._scratch
   trie._checkpoints = this._checkpoints.slice()
   return trie
+}
+
+function putRaw(key, val, cb){
+  function dbPut(db, cb2) {
+    db.put(key, val, {
+      keyEncoding: 'binary',
+      valueEncoding: 'binary',
+    }, cb2)
+  }
+  async.each(this.__putDBs, dbPut, cb)
 }
 
 function createScratchReadStream(scratch) {
