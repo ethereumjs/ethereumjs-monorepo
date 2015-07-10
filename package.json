@@ -1,0 +1,23 @@
+{
+  "name": "ethereumjs-account",
+  "version": "0.0.0",
+  "description": "a help module for ethereum account schema",
+  "main": "account.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ethereum/ethereumjs-account.git"
+  },
+  "keywords": [
+    "ethereum",
+    "account"
+  ],
+  "author": "mjbecze (mjbecze@gmail.com)",
+  "license": "GPL-2.0",
+  "bugs": {
+    "url": "https://github.com/ethereum/ethereumjs-account/issues"
+  },
+  "homepage": "https://github.com/ethereum/ethereumjs-account#readme"
+}
