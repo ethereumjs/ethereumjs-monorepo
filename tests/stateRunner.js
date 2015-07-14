@@ -4,7 +4,6 @@ const VM = require('../index.js')
 const Account = require('ethereumjs-account')
 const Bloom = require('../lib/bloom.js')
 const testUtil = require('./util')
-const blockchain = require('./fakeBlockChain.js')
 const utils = require('ethereumjs-util')
 const Trie = require('merkle-patricia-tree/secure')
 
@@ -24,7 +23,7 @@ module.exports = function runStateTest(testData, options, cb) {
       testUtil.setupPreConditions(state, testData, done)
     },
     function(done) {
-      vm = new VM(state, blockchain)
+      vm = new VM(state)
       vm.loadAllPrecompiled(done)
     },
     function(done) {

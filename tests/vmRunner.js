@@ -3,7 +3,6 @@ const BN = require('bn.js')
 const VM = require('../')
 const Account = require('ethereumjs-account')
 const testUtil = require('./util')
-const blockchain = require('./fakeBlockChain.js')
 const Trie = require('merkle-patricia-tree/secure')
 const fs = require('fs')
 
@@ -32,7 +31,7 @@ module.exports = function runStateTest(testData, options, cb) {
     },
     function(done) {
       var block = testUtil.makeBlockFromEnv( testData.env);
-      var vm = new VM(state, blockchain);
+      var vm = new VM(state);
       var runCodeData = testUtil.makeRunCodeData(testData.exec, account, block);
 
       if (options.vmtrace)
