@@ -1,11 +1,11 @@
-var async = require('async'),
-  BN = require('bn.js'),
-  VM = require('../lib/vm'),
-  Account = require('../lib/account.js'),
-  testUtil = require('./util'),
-  blockchain = require('./fakeBlockChain.js'),
-  Trie = require('../index.js').Trie,
-  fs = require('fs');
+const async = require('async')
+const BN = require('bn.js')
+const VM = require('../')
+const Account = require('ethereumjs-account')
+const testUtil = require('./util')
+const blockchain = require('./fakeBlockChain.js')
+const Trie = require('merkle-patricia-tree/secure')
+const fs = require('fs')
 
 module.exports = function runStateTest(testData, options, cb) {
 
@@ -35,9 +35,8 @@ module.exports = function runStateTest(testData, options, cb) {
       var vm = new VM(state, blockchain);
       var runCodeData = testUtil.makeRunCodeData(testData.exec, account, block);
 
-      if (options.vmtrace) {
+      if (options.vmtrace)
         sstream = testUtil.enableVMtracing(vm, options.vmtrace);
-      }
 
       vm.runCode(runCodeData, function(err, r) {
         if (r) {

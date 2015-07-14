@@ -3,9 +3,6 @@
   "version": "0.0.0",
   "description": "ethereum VM",
   "main": "index.js",
-  "directories": {
-    "example": "example"
-  },
   "dependencies": {
     "JSONStream": "^1.0.4",
     "async": "^1.3.0",
@@ -25,7 +22,7 @@
     "tape": "^4.0.0"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "./bin/tester -a"
   },
   "repository": {
     "type": "git",
