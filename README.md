@@ -20,7 +20,6 @@ The ethereum VM implemented in JS
     - [`vm.runTx(opts, cb)`](#vmruntxopts-cb)
     - [`vm.runCode(opts, cb)`](#vmruncodeopts-cb)
     - [`vm.generateGenesis(cb)`](#vmgenerategenesiscb)
-  - [`VM` events]
   - [`VM` debugging hooks](#vm-debugging-hooks)
     - [`vm.onStep`](#vmonstep)
 
