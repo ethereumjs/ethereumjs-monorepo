@@ -45,7 +45,6 @@ module.exports = function runStateTest(testData, options, cb) {
         }, function(err, r) {
           result = r
           errored = true
-
           done()
         })
       } else {
@@ -55,7 +54,9 @@ module.exports = function runStateTest(testData, options, cb) {
     },
     function(done) {
       var hrend = process.hrtime(hrstart)
-      if (sstream) sstream.end()
+      if (sstream)
+        sstream.end()
+
       t.equal(state.root.toString('hex'), testData.postStateRoot, 'the state roots should match')
 
       if (testData.logs.length !== 0) {
