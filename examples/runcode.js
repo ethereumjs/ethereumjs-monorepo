@@ -10,5 +10,5 @@ vm.runCode({
   code: code,
   gasLimit: new Buffer('ffffffff', 'hex') 
 }, function(err, results){
-  console.log(results);
+  console.log('returned: ' + results.return.toString('hex'));
 })
