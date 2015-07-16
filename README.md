@@ -6,11 +6,11 @@ The ethereum VM implemented in JS
  [Scrollback](https://scrollback.io/ethereumjs/all/all-messages) or #ethereumjs on freenode
 
 # INSTALL
-`npm install ethereumjs-tx`
+`npm install ethereumjs-vm`
 
 # USAGE
 ```javascript
-var VM = require('../index.js')
+var VM = require('ethereumjs-vm')
 
 //create a new VM instance
 var vm = new VM()
@@ -26,6 +26,8 @@ vm.runCode({
 })
 ```
 # BOWSER  
+To build for standalone use in the browser install `browserify` and run `npm run build`. This will give you a gobal varible EthVM to use. The standalone file will be at `./dist/ethereumjs-vm.js`
+
 
 # API
 - [`VM`](#vm)
@@ -40,19 +42,18 @@ vm.runCode({
 
 ## `VM`
 Implements Ethereum's VM and handle execution of blocks, transaction and EVM code.
-- file - [lib/vm](../lib/vm)
-- [example usage](https://wanderer.github.io/ethereum/nodejs/code/2014/08/12/running-contracts-with-vm/)
+- [examples](../examples)
+- [old blog post](https://wanderer.github.io/ethereum/nodejs/code/2014/08/12/running-contracts-with-vm/)
 
-### `new VM([StateTrie])`
+### `new VM([StateTrie], [blockchain])`
 Creates a new VM object
-- `StateTrie` - The [Patricia Merkle Tree](https://github.com/wanderer/merkle-patricia-tree) that contains the state
+- `StateTrie` - The [Patricia Merkle Tree](https://github.com/wanderer/merkle-patricia-tree) that contains the state if no trie is given the `VM` will create an in memory trie
+- `blockchain` - an instance of the [`Blockchain`](https://github.com/ethereum/ethereumjs-lib/blob/master/docs/blockchain.md. If no blockchain is given a fake blockchain will be used.
 
 ### `VM` methods
 #### `vm.runBlock(opts, cb)`
 Processes the `block` running all of the transaction it contains and updating the miner's account.
 - `opts.block` - The [`Block`](./block.md) to process
-- `opts.blockchain` - The [blockchain](./blockchain.md)
-- `opts.root` - The state at which the trie should start with when running the block. If omited the current `trie.root` will be used
 - `cb` - The callback
 
 --------------------------------------------------------
@@ -60,13 +61,9 @@ Processes the `block` running all of the transaction it contains and updating th
 #### `vm.runTx(opts, cb)`
 Process a transaction.
 - `opts.tx` - A [`Transaction`](./transaction.md) to run.
-- `opts.block` - The block to which the `tx` belongs. If omited, any EVM code that accesses block properties will not run.
-- `opts.blockchain` - The [blockchain](./blockchain.md)
+- `opts.block` - The block to which the `tx` belongs. If omited a blank block will be used.
 - `cb` - The callback. It is given two arguments, an `error` string containing an error that may have happened or `null`, and a `results` object with the following propieties:
-  - `gasUsed` - the amount of gas used by this transaction as a `bignum`
-  - `callerAccount` - the resulting [`Account`](./account.md) that sent the transaction
-  - `toAccount` - the resulting [`Account`](./account.md) that recieved the transaction
-  - `createdAddress` - if the transaction created a new contract this is the resulting address as a `Buffer`
+  - `amountSpent` - the amount of ether used by this transaction as a `bignum`
   - `vm` - contains the results from running the code, if any, as described in [`vm.runCode(params, cb)`](#vmruncodeparams-cb)
 
 --------------------------------------------------------
@@ -75,22 +72,21 @@ Process a transaction.
 Runs EVM code
 - `opts.code` - The EVM code to run given as a `Buffer`
 - `opts.data` - The input data given as a `Buffer`
-- `opts.block` - The [`Block`](./block.md) the `tx` belongs to. If omited any EVM code that access block proporties will not run.
-- `opts.blockchain` - The [blockchain](./blockchain.md)
-- `opts.gasLimit` - The gas limit for the code given as an `Number` or a `bignum`.
-- `opts.account` - The [`Account`](./account.md) that the exucuting code belongs to.
-- `params.address` - The address of the account that is exucuting this code. The address should be a `Buffer` of 20bits.
-- `opts.origin` - The address where the call originated from. The address should be a `Buffer` of 20bits.
-- `opts.caller` - The address that ran this code. The address should be a `Buffer` of 20bits.
-- `opts.bloom` - A bloom filter.
+- `opts.value` - The value in ether that is being sent to `opt.address`. Defaults to `0`
+- `opts.block` - The [`Block`](./block.md) the `tx` belongs to. If omited a blank block will be used.
+- `opts.gasLimit` - The gas limit for the code given as an `Buffer`
+- `opts.account` - The [`Account`](./account.md) that the executing code belongs to. If omited an empty account will be used
+- `opts.address` - The address of the account that is executing this code. The address should be a `Buffer` of bytes. Defaults to `0`
+- `opts.origin` - The address where the call originated from. The address should be a `Buffer` of 20bits. Defaults to `0`
+- `opts.caller` - The address that ran this code. The address should be a `Buffer` of 20bits. Defaults to `0`
 - `cb` - The callback. It is given two arguments, a `error` string containing an error that may have happen or `null` and a `results` object with the following propieties
   - `gasUsed` - the amount of gas as a `bignum` the code used to run. 
   - `gasRefund` - a `Bignum` containting the amount of gas to refund from deleting storage values
   - `suicide` - a `boolean`, whether the contract commited suicide
   - `account` - account of the code that ran
   - `expcetion` - a `boolean`, whethere or not the contract encoutered an exception
-  - `exceptionErr` - a `String` describing the exception if there was one.
-  - `returnValue` - a `Buffer` containing the value that was returned by the contract
+  - `exceptionError` - a `String` describing the exception if there was one.
+  - `return` - a `Buffer` containing the value that was returned by the contract
 
 
 --------------------------------------------------------
