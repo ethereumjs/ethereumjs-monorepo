@@ -22,8 +22,8 @@ This module work with `browserify`
    - [`account.toJSON()`](#accounttojson)
    - [`account.getCode(trie, cb)`](#accountgetcodetrie-cb)
    - [`account.setCode(trie, code, cb)`](#accountsetcodetrie-code-cb)
-   - [`account.getStorage(trie, cb)`](#accountgetstoragetrie-cb)
-   - [`account.setStorage(trie, code, cb)`](#accountsetstoragetrie-code-cb)
+   - [`account.getStorage(trie, key, cb)`](#accountgetstoragetrie-key-cb)
+   - [`account.setStorage(trie, key, val, cb)`](#accountsetstoragetrie-key-val-cb)
 
 ### `new Account([data])`
 Creates an new account object
