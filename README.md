@@ -91,11 +91,6 @@ Stores the code in the trie
 
 #### `account.getStorage(trie, key, cb)`
 Fetches `key` from the account's storage
-- `trie` - the [trie](github.com/wanderer/merkle-patricia-tree) to storing the accounts
-- `cb` - the callback
 
 #### `account.setStorage(trie, key, val, cb)`
 Stores a `val` at the `key` in the contract's storage
-- `trie` - the [trie](github.com/wanderer/merkle-patricia-tree)
-- `code` - a `Buffer`
-- `cb` - the callback
