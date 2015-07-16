@@ -73,8 +73,7 @@ Account.prototype.getCode = function(state, address, cb) {
   })
 }
 
-//TODO: rename to  setCode
-Account.prototype.storeCode = function(trie, code, compiled, cb) {
+Account.prototype.setCode = function(trie, code, compiled, cb) {
 
   var self = this
 
