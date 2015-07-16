@@ -3,7 +3,7 @@ const BN = require('bn.js');
 const async = require('async');
 const SHA3 = require('sha3');
 const rlp = require('rlp');
-const JSONStream = require('JSONStream');
+const through2 = require('through2')
 const utils = require('ethereumjs-util');
 const Account = require('ethereumjs-account')
 const Transaction = require('ethereumjs-tx');
@@ -242,9 +242,11 @@ exports.verifyLogs = function(logs, testData, t) {
  * TODO: remove
  */
 exports.enableVMtracing = function(vm, file) {
-  var stream = vm.logReadStream();
-  stream.pipe(fs.createWriteStream(file));
-  return stream;
+  var stream = vm.createTraceReadStream();
+  stream.pipe(through2({objectMode: true}, function(chunk, enc, cb){
+    this.push(JSON.stringify(chunk))
+    cb()
+  })).pipe(fs.createWriteStream(file));
 };
 
 /**
@@ -367,7 +369,7 @@ exports.setupPreConditions = function(state, testData, done) {
         }, cb2);
       },
       function(cb2) {
-        account.storeCode(state, codeBuf, cb2);
+        account.setCode(state, codeBuf, cb2);
       },
       function(cb2) {
         account.stateRoot = storageTrie.root;

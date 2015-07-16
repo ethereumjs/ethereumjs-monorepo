@@ -22,7 +22,8 @@
     "merkle-patricia-tree": "^1.1.1",
     "minimist": "^1.1.1",
     "sha3": "^1.1.0",
-    "tape": "^4.0.0"
+    "tape": "^4.0.0",
+    "through2": "^2.0.0"
   },
   "scripts": {
     "build": "browserify --s EthVm index.js > ./dist/ethereumjs-vm.js",

@@ -45,7 +45,7 @@ module.exports = function runStateTest(testData, options, cb) {
       });
     },
     function(done) {
-      if (sstream) sstream.end();
+      // if (sstream) sstream.end();
 
       if (testData.out && testData.out.slice(2)) {
         t.equal(results.return.toString('hex'), testData.out.slice(2), 'valid return value');
@@ -55,7 +55,7 @@ module.exports = function runStateTest(testData, options, cb) {
         testUtil.verifyLogs(results.logs, testData, t);
       }
 
-      if(testData.gas && !results.exceptionErr){
+      if(testData.gas && !results.exceptionError){
         t.equal(results.gas.toString(), new BN(testUtil.format(testData.gas)).toString() , 'valid gas usage');
       }else{
         //OOG
