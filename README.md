@@ -114,7 +114,16 @@ When `onStep` is assigned a function the VM will run that function at the begini
 - `opcode` - the next opcode to be ran
 - `gasLeft` - a `bignum` standing for the amount of gasLeft
 - `stack` - an `Array` of `Buffers` containing the stack. 
-- `account` - the [`Account`](./account.md) which owns the code running.
+- `storageTrie` - the storage [trie](https://github.com/wanderer/merkle-patricia-tree) for the account
+- `account` - the [`Account`](https://github.com/ethereum/ethereumjs-account) which owns the code running.
 - `address` - the address of the `account`
+- `depth` - the current number of calls deep the contract is
+- `memory` - the memory of the VM as a `buffer`
 
 # TESTING
+`npm test`  
+if you want to just run the VM tests run
+`./bin/tester -v`
+if you want to just run the State tests run
+`./bin/tester -s`
+
