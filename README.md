@@ -1,5 +1,6 @@
 # SYNOPSIS
-Account helper functions and serialization module
+Implements schema and functions relating to accounts stored ethereum's state Trie
+NOTE: this is different from [ethereumjs-accounts](https://github.com/SilentCicero/ethereumjs-accounts) which should be used if you want to key management and web3 sugar.
 
 # CONTACT
  [Scrollback](https://scrollback.io/ethereumjs/all/all-messages) or #ethereumjs on freenode
@@ -7,27 +8,22 @@ Account helper functions and serialization module
 # INSTALL
 `npm install ethereumjs-account`
 
-# USAGE
-
 # BROWSER
 This module work with `browserify`
 
 # API
-
-
-- [`Account`](#account)
-  - [`new Account([data])`](#new-accountdata)
+ - [`new Account([data])`](#new-accountdata)
   - [`Account` Properties](#account-properties)
   - [`Account` Methods](#account-methods)
-    - [`account.serialize(data)`](#accountserializedata)
-    - [`account.isContract()`](#accountiscontract)
-    - [`account.toJSON()`](#accounttojson)
-    - [`account.getCode(trie, cb)`](#accountgetcodetrie-cb)
-    - [`account.storeCode(trie, code, cb)`](#accountstorecodetrie-code-cb)
-
-## `Account`
-Implements schema and functions relating to Accounts
-- file - [lib/account.js](../lib/account.js)
+   - [`account.isEmpty()`](#accountisempty)
+   - [`account.isContract()`](#accountiscontract)
+   - [`account.isPrecompiled`](#accountisprecompiled)
+   - [`account.serialize(data)`](#accountserializedata)
+   - [`account.toJSON()`](#accounttojson)
+   - [`account.getCode(trie, cb)`](#accountgetcodetrie-cb)
+   - [`account.setCode(trie, code, cb)`](#accountsetcodetrie-code-cb)
+   - [`account.getStorage(trie, cb)`](#accountgetstoragetrie-cb)
+   - [`account.setStorage(trie, code, cb)`](#accountsetstoragetrie-code-cb)
 
 ### `new Account([data])`
 Creates an new account object
@@ -66,24 +62,40 @@ For `Object` and `Arrays` each of the elements can either be a `Buffer`, hex `St
 
 ### `Account` Methods
 
+#### `Account.isEmpty()`
+Returns a `Boolean` determining if the account is empty
 
 #### `account.isContract()`
-Returns a `Boolean`.
+Returns a `Boolean` deteremining if the account is a contract
+
+#### `account.isPrecompiled`
+Returns a `Boolean` deteremining of the account is a preCompiled contract
+
+#### `account.serialize()`
+Returns the RLP serialization of the account as a `Buffer`
+
+#### `acount.toJSON([object])`
+Returns the account as JSON
+- `object` - a `Boolean` that defaults to false. If `object` is true then this will return an object else it will return an `array`.
 
 #### `account.getCode(trie, cb)`
 Fetches the code from the trie
 - `trie` - the [trie](github.com/wanderer/merkle-patricia-tree) to storing the accounts
 - `cb` - the callback
 
-#### `account.storeCode(trie, code, cb)`
+#### `account.setCode(trie, code, cb)`
 Stores the code in the trie
 - `trie` - the [trie](github.com/wanderer/merkle-patricia-tree)
 - `code` - a `Buffer`
 - `cb` - the callback
 
-#### `account.serialize()`
-Returns the RLP serialization of the account
+#### `account.getStorage(trie, key, cb)`
+Fetches `key` from the account's storage
+- `trie` - the [trie](github.com/wanderer/merkle-patricia-tree) to storing the accounts
+- `cb` - the callback
 
-#### `transaction.toJSON([object])`
-returns transaction as JSON
-- `object` - a `Boolean` that defaults to false. If `object` is true then this will return an object else it will return an `array`.
+#### `account.setStorage(trie, key, val, cb)`
+Stores a `val` at the `key` in the contract's storage
+- `trie` - the [trie](github.com/wanderer/merkle-patricia-tree)
+- `code` - a `Buffer`
+- `cb` - the callback
