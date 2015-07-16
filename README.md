@@ -1,23 +1,15 @@
-# SYNOPSIS [![Build Status](https://travis-ci.org/ethereum/ethereumjs-tx.svg)](https://travis-ci.org/ethereum/ethereumjs-tx)
-Implements schema  and functions related to Etheruem's block. 
-
-# CONTACT
- [Scrollback](https://scrollback.io/ethereumjs/all/all-messages) or #ethereumjs on freenode
+# SYNOPSIS  
+Implements schema and functions related to Etheruem's block. 
 
 # INSTALL
 `npm install ethereumjs-block`
 
-# USAGE
-```javascript
-
-
-```
-
 # BOWSER  
-
+This module work with `browserify`
+# CONTACT
+ [Scrollback](https://scrollback.io/ethereumjs/all/all-messages) or #ethereumjs on freenode
 
 # API
-
 - [`Block`](#block)
     - [`new Block([data])`](#new-blockdata)
     - [`Block` Properties](#block-properties)
@@ -132,7 +124,3 @@ Returns the canoncical difficulty of the block
 
 #### `blockheader.hash`
 Returns the sha3 hash of the blockheader
-
-# TESTS
-test uses mocha. To run  
-`npm test`
