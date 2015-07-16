@@ -24,6 +24,7 @@
     "tape": "^4.0.0"
   },
   "scripts": {
+    "build": "browserify --s EthVm index.js > ./dist/ethereumjs-vm.js",
     "test": "./bin/tester -a"
   },
   "repository": {
