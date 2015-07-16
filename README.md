@@ -1,5 +1,5 @@
 # SYNOPSIS
-Implements schema and functions relating to accounts stored ethereum's state Trie
+Implements schema and functions relating to accounts stored ethereum's state Trie   
 NOTE: this is different from [ethereumjs-accounts](https://github.com/SilentCicero/ethereumjs-accounts) which should be used if you want to key management and web3 sugar.
 
 # CONTACT
