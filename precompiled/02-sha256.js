@@ -15,7 +15,7 @@ results.gasUsed = new BN(results.gasUsed);
 
 if (opts.gasLimit.cmp(new BN(gasCost + dataGas)) === -1) {
   results.gasUsed = opts.gasLimit;
-  results.exceptionErr = error.OUT_OF_GAS;
+  results.exceptionError = error.OUT_OF_GAS;
   results.exception = 0; // 0 means VM fail (in this case because of OOG)
   return results;
 }
@@ -23,6 +23,6 @@ if (opts.gasLimit.cmp(new BN(gasCost + dataGas)) === -1) {
 hashStr = sha256.update(data).digest('hex');
 
 results.exception = 1;
-results.returnValue = new Buffer(hashStr, 'hex');
+results['return']= new Buffer(hashStr, 'hex');
 
 return results;
