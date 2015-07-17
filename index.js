@@ -74,7 +74,6 @@ Account.prototype.getCode = function(state, address, cb) {
 }
 
 Account.prototype.setCode = function(trie, code, compiled, cb) {
-
   var self = this
 
   if (arguments.length === 3) {
