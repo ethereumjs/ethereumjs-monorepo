@@ -26,7 +26,7 @@ vm.runCode({
 })
 ```
 Also more exmaples can be found here  
-- [examples](../examples)
+- [examples](./examples)
 - [old blog post](https://wanderer.github.io/ethereum/nodejs/code/2014/08/12/running-contracts-with-vm/)
 
 # BOWSER  
