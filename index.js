@@ -26,8 +26,7 @@ var Block = module.exports = function(data) {
     }
   })
 
-  var rawTransactions
-  var rawUncleHeaders
+  var rawTransactions, rawUncleHeaders
 
   //defaults
   if (!data)
