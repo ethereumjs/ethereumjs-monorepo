@@ -33,7 +33,7 @@ Also more exmaples can be found here
 To build for standalone use in the browser install `browserify` and run `npm run build`. This will give you a gobal varible `EthVM` to use. The standalone file will be at `./dist/ethereumjs-vm.js`
 
 # API
-  - [`new VM([StateTrie])`](#new-vmstatetrie)  
+  - [`new VM([StateTrie], [blockchain])`](#new-vmstatetrie-blockchain)  
   - [`VM` methods](#vm-methods)  
     - [`vm.runBlock(opts, cb)`](#vmrunblockopts-cb)
     - [`vm.runTx(opts, cb)`](#vmruntxopts-cb)
@@ -65,7 +65,7 @@ Process a transaction.
 - `opts.block` - The block to which the `tx` belongs. If omited a blank block will be used.
 - `cb` - The callback. It is given two arguments, an `error` string containing an error that may have happened or `null`, and a `results` object with the following propieties:
   - `amountSpent` - the amount of ether used by this transaction as a `bignum`
-  - `vm` - contains the results from running the code, if any, as described in [`vm.runCode(params, cb)`](#vmruncodeparams-cb)
+  - `vm` - contains the results from running the code, if any, as described in [`vm.runCode(params, cb)`](#vmruncodeopts-cb)
 
 --------------------------------------------------------
 
