@@ -3,6 +3,7 @@ const rlp = require('rlp')
 const ethUtil = require('ethereumjs-util')
 const fees = require('ethereum-common').fees
 const ecdsaOps = require('./ecdsaOps.js')
+// const ecdsaOps = require('./ecdsaOpsBrowser.js')
 
 //give browser access to Buffers
 global.Buffer = Buffer

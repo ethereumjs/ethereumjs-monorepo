@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-require('../test/transactions.js')
+// require('../test/transactions.js')
 
 const argv = require('minimist')(process.argv.slice(2))
 const async = require('async')
@@ -8,43 +8,7 @@ const path = require('path')
 const cp = require('child_process')
 
 runTests('transaction', argv)
-//randomized tests
-//returns 1 if the tests fails
-//returns 0 if the tests succeds
-function randomized(stateTest) {
-  const stateRunner = require('../test/stateRunner.js')
-  var errored = false
 
-  tape.createStream({
-    objectMode: true
-  }).on('data', function(row) {
-    if (row.ok === false && !errored) {
-      errored = true
-      process.stdout.write('1')
-      process.exit()
-    }
-  }).on('end', function() {
-    process.stdout.write('0')
-  })
-
-  try {
-    stateTest = JSON.parse(stateTest)
-  } catch (e) {
-    console.error('invalid json')
-    process.exit()
-  }
-
-  var keys =  Object.keys(stateTest)
-  stateTest = stateTest[keys[0]]
-
-  tape('', function(t) {
-    stateRunner(stateTest, {
-      t: t
-    }, function() {
-      t.end()
-    })
-  })
-}
 
 function getTests(type, argv) {
   

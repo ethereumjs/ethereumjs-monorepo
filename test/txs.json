@@ -46,18 +46,4 @@
     "5e9361ca27e14f3af0e6b28466406ad8be026d3b0f2ae56e3c064043fb73ec77",
     "29ae9893dac4f9afb1af743e25fbb6a63f7879a61437203cb48c997b0fcefc3a"
   ]
-}, {
-  "sendersAddress": "6c386a4b26f73c802f34673f7248bb118f97424a",
-  "type": "message",
-  "raw": [
-    "",
-    "e8d4a51000",
-    "2710",
-    "6c386a4b26f73c802f34673f7248bb118f97424a",
-    "03e8",
-    "",
-    "1b",
-    "e56918232c8b2317ad2bdca315120072fb6357dd8b94070696a9e560a8cdcb39",
-    "2357815d61e489dc475506c5b700f5582e6307cad95d9ada911c3db2a9401b29"
-  ]
 }]

@@ -15,7 +15,9 @@ exports.txVerifySignature = function() {
         r: new BN(this.r),
         s: new BN(this.s)
       }
-    return ec.verify(new BN(msgHash), sig, ec.keyFromPublic(pubKey))
+    var key = ec.keyFromPublic(pubKey)
+    console.log('key: '  + sig.r.toString(16));
+    return ec.verify(new BN(msgHash), sig, key)
   } else
     return false
 }
