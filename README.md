@@ -1,6 +1,6 @@
 SYNOPSIS [![Build Status](https://travis-ci.org/ethereum/ethereumjs-vm.svg?branch=master)](https://travis-ci.org/ethereum/ethereumjs-vm)
 ===========
-The ethereum VM implemented in JS
+Implements Ethereum's VM in JS
 
 # CONTACT
  [Scrollback](https://scrollback.io/ethereumjs/all/all-messages) or #ethereumjs on freenode
@@ -25,30 +25,31 @@ vm.runCode({
   console.log('returned: ' + results.return.toString('hex'));
 })
 ```
-# BOWSER  
-To build for standalone use in the browser install `browserify` and run `npm run build`. This will give you a gobal varible EthVM to use. The standalone file will be at `./dist/ethereumjs-vm.js`
+Also more exmaples can be found here  
+- [examples](../examples)
+- [old blog post](https://wanderer.github.io/ethereum/nodejs/code/2014/08/12/running-contracts-with-vm/)
 
+# BOWSER  
+To build for standalone use in the browser install `browserify` and run `npm run build`. This will give you a gobal varible `EthVM` to use. The standalone file will be at `./dist/ethereumjs-vm.js`
 
 # API
-- [`VM`](#vm)
   - [`new VM([StateTrie])`](#new-vmstatetrie)  
   - [`VM` methods](#vm-methods)  
     - [`vm.runBlock(opts, cb)`](#vmrunblockopts-cb)
     - [`vm.runTx(opts, cb)`](#vmruntxopts-cb)
     - [`vm.runCode(opts, cb)`](#vmruncodeopts-cb)
+    - [`vm.loadPrecompiled(address, src, cb)`](#vmloadprecompiledaddress-src-cb)
+    - [`vm.loadAllPrecompiled(cb)`](#vmloadallprecompiledcb)
+    - [`vm.generateCanonicalGenesis(cb)`](vmgeneratecanonicalgenesiscb)
     - [`vm.generateGenesis(cb)`](#vmgenerategenesiscb)
+    - [`vm.createTraceReadStream()`](#vmcreatetracereadstream)
   - [`VM` debugging hooks](#vm-debugging-hooks)
     - [`vm.onStep`](#vmonstep)
-
-## `VM`
-Implements Ethereum's VM and handle execution of blocks, transaction and EVM code.
-- [examples](../examples)
-- [old blog post](https://wanderer.github.io/ethereum/nodejs/code/2014/08/12/running-contracts-with-vm/)
 
 ### `new VM([StateTrie], [blockchain])`
 Creates a new VM object
 - `StateTrie` - The [Patricia Merkle Tree](https://github.com/wanderer/merkle-patricia-tree) that contains the state if no trie is given the `VM` will create an in memory trie
-- `blockchain` - an instance of the [`Blockchain`](https://github.com/ethereum/ethereumjs-lib/blob/master/docs/blockchain.md. If no blockchain is given a fake blockchain will be used.
+- `blockchain` - an instance of the [`Blockchain`](https://github.com/ethereum/ethereumjs-lib/blob/master/docs/blockchain.md) If no blockchain is given a fake blockchain will be used.
 
 ### `VM` methods
 #### `vm.runBlock(opts, cb)`
@@ -87,7 +88,23 @@ Runs EVM code
   - `expcetion` - a `boolean`, whethere or not the contract encoutered an exception
   - `exceptionError` - a `String` describing the exception if there was one.
   - `return` - a `Buffer` containing the value that was returned by the contract
+ 
+--------------------------------------------------------
 
+#### `vm.loadPrecompiled(address, src, cb)`
+Loads a contract defined as a stingified JS function
+- `address` - a `Buffer` containing the address of the contract
+- `src` - a `String` of a function to be run when the `address` is called
+
+--------------------------------------------------------
+
+#### `vm.loadAllPrecompiled(cb)`
+Loads all the precompile contracts are in the [precompiled dir](./precompiled) 
+
+--------------------------------------------------------
+
+#### `vm.generateCanonicalGenesis(cb)`
+Generates the Canonical genesis state.
 
 --------------------------------------------------------
 
@@ -105,6 +122,19 @@ vm.generateGenesis(genesisData, function(){
   conosle.log('generation done');
 })
 ```
+#### `vm.createTraceReadStream()`
+Creates a vm trace stream. The steam is an `Object` stream. The object contains
+- `step` - how many steps the current VM has taken
+- `pc` - a `Number` repersenting the program counter
+- `depth` - the current number of calls deep the contract is
+- `opcode` - the next opcode to be ran
+- `gas` - a `bignum` standing for the amount of gasLeft
+- `memory` - the memory of the VM as a `buffer`
+- `storage` - an map of key/values that are in storages 
+- `address` - the address of the `account`
+- `stack` - an `Array` of `Buffers` containing the stack
+
+NOTE: using this function defines the `onStep` hook. So you can't use both at the same time.
 
 ### `VM` debugging hook
 
@@ -112,7 +142,7 @@ vm.generateGenesis(genesisData, function(){
 When `onStep` is assigned a function the VM will run that function at the begining of each opcode. The `onStep` function is give an `Object` and `done`. `done` must be called before the VM contunies. The `Object` has the following propieties.
 - `pc` - a `Number` repersenting the program counter
 - `opcode` - the next opcode to be ran
-- `gasLeft` - a `bignum` standing for the amount of gasLeft
+- `gas` - a `bignum` standing for the amount of gasLeft
 - `stack` - an `Array` of `Buffers` containing the stack. 
 - `storageTrie` - the storage [trie](https://github.com/wanderer/merkle-patricia-tree) for the account
 - `account` - the [`Account`](https://github.com/ethereum/ethereumjs-account) which owns the code running.
