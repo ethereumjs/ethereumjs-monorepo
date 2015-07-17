@@ -40,7 +40,7 @@ To build for standalone use in the browser install `browserify` and run `npm run
     - [`vm.runCode(opts, cb)`](#vmruncodeopts-cb)
     - [`vm.loadPrecompiled(address, src, cb)`](#vmloadprecompiledaddress-src-cb)
     - [`vm.loadAllPrecompiled(cb)`](#vmloadallprecompiledcb)
-    - [`vm.generateCanonicalGenesis(cb)`](vmgeneratecanonicalgenesiscb)
+    - [`vm.generateCanonicalGenesis(cb)`](#vmgeneratecanonicalgenesiscb)
     - [`vm.generateGenesis(cb)`](#vmgenerategenesiscb)
     - [`vm.createTraceReadStream()`](#vmcreatetracereadstream)
   - [`VM` debugging hooks](#vm-debugging-hooks)
@@ -61,7 +61,7 @@ Processes the `block` running all of the transaction it contains and updating th
 
 #### `vm.runTx(opts, cb)`
 Process a transaction.
-- `opts.tx` - A [`Transaction`](./transaction.md) to run.
+- `opts.tx` - A [`Transaction`](https://github.com/ethereum/ethereumjs-tx) to run.
 - `opts.block` - The block to which the `tx` belongs. If omited a blank block will be used.
 - `cb` - The callback. It is given two arguments, an `error` string containing an error that may have happened or `null`, and a `results` object with the following propieties:
   - `amountSpent` - the amount of ether used by this transaction as a `bignum`
