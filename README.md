@@ -41,7 +41,7 @@ To build for standalone use in the browser install `browserify` and run `npm run
     - [`vm.generateCanonicalGenesis(cb)`](#vmgeneratecanonicalgenesiscb)
     - [`vm.generateGenesis(cb)`](#vmgenerategenesiscb)
     - [`vm.createTraceReadStream()`](#vmcreatetracereadstream)
-    - [`vm.loadCompiled(address, src, cb)`](#vmloadprecompiledaddress-src-cb)
+    - [`vm.loadCompiled(address, src, cb)`](#vmloadcompiledaddress-src-cb)
   - [`VM` debugging hooks](#vm-debugging-hooks)
     - [`vm.onStep`](#vmonstep)
 
