@@ -20,11 +20,8 @@ module.exports = function runStateTest(testData, options, cb) {
 
   async.series([
     function(done) {
-      testUtil.setupPreConditions(state, testData, done)
-    },
-    function(done) {
       vm = new VM(state)
-      vm.loadAllPrecompiled(done)
+      testUtil.setupPreConditions(state, testData, done)
     },
     function(done) {
 

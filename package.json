@@ -8,7 +8,7 @@
     "bn.js": "^3.0.1",
     "es6-shim": "^0.32.2",
     "ethereum-common": "0.0.3",
-    "ethereumjs-account": "0.0.2",
+    "ethereumjs-account": "0.0.3",
     "ethereumjs-block": "0.0.1",
     "ethereumjs-util": "^1.3.4",
     "functional-red-black-tree": "^1.0.1",
@@ -36,10 +36,14 @@
     "ethereum",
     "VM"
   ],
-  "author": "mjbecze@gmail.com",
+  "author": "mjbecze <mjbecze@gmail.com>",
   "license": "GPL-2.0",
   "bugs": {
     "url": "https://github.com/ethereum/ethereumjs-vm/issues"
   },
-  "homepage": "https://github.com/ethereum/ethereumjs-vm#readme"
+  "homepage": "https://github.com/ethereum/ethereumjs-vm#readme",
+  "browser": {
+    "secp256k1": false
+  }
+
 }
