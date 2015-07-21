@@ -17,7 +17,6 @@ This module work with `browserify`
   - [`Account` Methods](#account-methods)
     - [`account.isEmpty()`](#accountisempty)
     - [`account.isContract()`](#accountiscontract)
-    - [`account.isPrecompiled`](#accountisprecompiled)
     - [`account.serialize(data)`](#accountserializedata)
     - [`account.toJSON()`](#accounttojson)
     - [`account.getCode(trie, cb)`](#accountgetcodetrie-cb)
@@ -67,9 +66,6 @@ Returns a `Boolean` determining if the account is empty
 
 #### `account.isContract()`
 Returns a `Boolean` deteremining if the account is a contract
-
-#### `account.isPrecompiled`
-Returns a `Boolean` deteremining of the account is a preCompiled contract
 
 #### `account.serialize()`
 Returns the RLP serialization of the account as a `Buffer`
