@@ -56,10 +56,7 @@ Account.prototype.getCode = function(state, address, cb) {
     return
   }
 
-  state.db.get(this.codeHash, {
-    keyEncoding: 'binary',
-    valueEncoding: 'binary'
-  }, function(err, val) {
+  state.getRaw(this.codeHash, function(err, val) {
     var compiled = val[0] === 1
     val = val.slice(1)
     cb(err, val, compiled)
@@ -87,10 +84,7 @@ Account.prototype.setCode = function(trie, code, compiled, cb) {
     return
   }
 
-  trie.db.put(this.codeHash, code, {
-    keyEncoding: 'binary',
-    valueEncoding: 'binary'
-  }, function(err) {
+  trie.putRaw(this.codeHash, code, function(err) {
     cb(err, self.codeHash)
   })
 }
