@@ -51,13 +51,6 @@ Account.prototype.getCode = function(state, address, cb) {
     address = false
   }
 
-  if (address && Account.isPrecompiled(address)) {
-    state.db.get(address, function(err, val) {
-      cb(err, val, true)
-    })
-    return
-  }
-
   if (this.codeHash.toString('hex') === ethUtil.SHA3_NULL) {
     cb(null, new Buffer([]))
     return
