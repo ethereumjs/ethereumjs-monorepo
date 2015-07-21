@@ -44,12 +44,7 @@ Account.isPrecompiled = Account.prototype.isPrecompiled = function(address) {
   return a.length === 1 && a[0] > 0 && a[0] < 5
 }
 
-Account.prototype.getCode = function(state, address, cb) {
-
-  if (arguments.length === 2) {
-    cb = address
-    address = false
-  }
+Account.prototype.getCode = function(state, cb) {
 
   if (this.codeHash.toString('hex') === ethUtil.SHA3_NULL) {
     cb(null, new Buffer([]))
