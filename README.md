@@ -38,11 +38,10 @@ To build for standalone use in the browser install `browserify` and run `npm run
     - [`vm.runBlock(opts, cb)`](#vmrunblockopts-cb)
     - [`vm.runTx(opts, cb)`](#vmruntxopts-cb)
     - [`vm.runCode(opts, cb)`](#vmruncodeopts-cb)
-    - [`vm.loadPrecompiled(address, src, cb)`](#vmloadprecompiledaddress-src-cb)
-    - [`vm.loadAllPrecompiled(cb)`](#vmloadallprecompiledcb)
     - [`vm.generateCanonicalGenesis(cb)`](#vmgeneratecanonicalgenesiscb)
     - [`vm.generateGenesis(cb)`](#vmgenerategenesiscb)
     - [`vm.createTraceReadStream()`](#vmcreatetracereadstream)
+    - [`vm.loadCompiled(address, src, cb)`](#vmloadprecompiledaddress-src-cb)
   - [`VM` debugging hooks](#vm-debugging-hooks)
     - [`vm.onStep`](#vmonstep)
 
@@ -88,18 +87,7 @@ Runs EVM code
   - `expcetion` - a `boolean`, whethere or not the contract encoutered an exception
   - `exceptionError` - a `String` describing the exception if there was one.
   - `return` - a `Buffer` containing the value that was returned by the contract
- 
---------------------------------------------------------
 
-#### `vm.loadPrecompiled(address, src, cb)`
-Loads a contract defined as a stingified JS function
-- `address` - a `Buffer` containing the address of the contract
-- `src` - a `String` of a function to be run when the `address` is called
-
---------------------------------------------------------
-
-#### `vm.loadAllPrecompiled(cb)`
-Loads all the precompile contracts are in the [precompiled dir](./precompiled) 
 
 --------------------------------------------------------
 
@@ -135,6 +123,13 @@ Creates a vm trace stream. The steam is an `Object` stream. The object contains
 - `stack` - an `Array` of `Buffers` containing the stack
 
 NOTE: using this function defines the `onStep` hook. So you can't use both at the same time.
+ 
+--------------------------------------------------------
+
+#### `vm.loadCompiled(address, src, cb)`
+Loads a contract defined as a stingified JS function
+- `address` - a `Buffer` containing the address of the contract
+- `src` - a `String` of a function to be run when the `address` is called
 
 ### `VM` debugging hook
 
@@ -156,4 +151,3 @@ if you want to just run the VM tests run
 `./bin/tester -v`
 if you want to just run the State tests run
 `./bin/tester -s`
-
