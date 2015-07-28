@@ -7,6 +7,7 @@ const rlp = require('rlp')
 const async = require('async')
 
 var Ethash = module.exports = function(cacheDB) {
+  
   this.dbOpts = {
     keyEncoding: 'json',
     valueEncoding: 'json'
@@ -49,7 +50,7 @@ Ethash.prototype.calcDatasetItem = function(i) {
   return ethUtil.sha3(mix, 512)
 }
 
-Ethash.prototype.hash = function(header, nonce, fullSize) {
+Ethash.prototype.hashimoto = function(header, nonce, fullSize) {
   const n = Math.floor(fullSize / ethHashUtil.params.HASH_BYTES)
   const w = Math.floor(ethHashUtil.params.MIX_BYTES / ethHashUtil.params.WORD_BYTES)
   const s = ethUtil.sha3(Buffer.concat([header, ethHashUtil.bufReverse(nonce)]), 512)
@@ -80,7 +81,7 @@ Ethash.prototype.hash = function(header, nonce, fullSize) {
   }
 }
 
-Ethash.prototype.cacheHash = function() {
+Ethash.prototype.hash = function() {
   return ethUtil.sha3(Buffer.concat(this.cache))
 }
 

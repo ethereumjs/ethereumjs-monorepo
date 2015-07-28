@@ -31,10 +31,11 @@
     "es6-shim": "^0.32.2",
     "ethereum-tests": "git+ssh://git@github.com/ethereum/tests.git",
     "ethereumjs-util": "^1.3.4",
-    "miller-rabin": "^2.0.1",
+    "miller-rabin": "git+https://github.com/wanderer/miller-rabin.git",
     "rlp": "^1.0.1"
   },
   "devDependencies": {
-    "ethereumjs-block": "0.0.1"
+    "ethereumjs-block": "0.0.2",
+    "tape": "^4.0.1"
   }
 }
