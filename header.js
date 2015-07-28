@@ -1,7 +1,7 @@
 const rlp = require('rlp')
 const utils = require('ethereumjs-util')
-const BN = require('bn.js')
 const params = require('ethereum-common').fees 
+const BN = require('bn.js')
 
 /**
  * Represents a Block Header

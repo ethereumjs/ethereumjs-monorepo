@@ -1,6 +1,6 @@
 {
   "name": "ethereumjs-block",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Provides Block serialization and help functions",
   "main": "index.js",
   "scripts": {
@@ -21,9 +21,13 @@
   },
   "homepage": "https://github.com/ethereum/ethereumjs-block#readme",
   "dependencies": {
+    "async": "^1.4.0",
+    "bn.js": "^3.1.1",
+    "es6-shim": "^0.32.2",
     "ethereum-common": "0.0.3",
     "ethereumjs-tx": "^0.5.5",
     "ethereumjs-util": "^1.3.4",
+    "merkle-patricia-tree": "^1.1.1",
     "rlp": "^1.0.1"
   }
 }

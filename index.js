@@ -1,12 +1,11 @@
 require('es6-shim')
 const ethUtil = require('ethereumjs-util')
+const Tx = require('ethereumjs-tx')
+const Trie = require('merkle-patricia-tree')
 const BN = require('bn.js')
 const rlp = require('rlp')
-const Trie = require('merkle-patricia-tree')
 const async = require('async')
-const utils = require('ethereumjs-util')
 const BlockHeader = require('./header')
-const Tx = require('ethereumjs-tx')
 
 /**
  * Represents a block
@@ -122,7 +121,7 @@ Block.prototype.validateTransactionsTrie = function() {
   if (this.transactions.length)
     return txT === this.txTrie.root.toString('hex')
   else
-    return txT === utils.SHA3_RLP
+    return txT === ethUtil.SHA3_RLP
 }
 
 /**
@@ -241,6 +240,6 @@ Block.prototype.toJSON = function(labeled) {
     return obj
 
   } else {
-    return utils.baToJSON(this.raw)
+    return ethUtil.baToJSON(this.raw)
   }
 }
