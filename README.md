@@ -8,6 +8,9 @@ A simple module for creating, manipulating and signing Ethereum transactions.
 `npm install ethereumjs-tx`
 
 # USAGE
+
+  - [example](https://github.com/ethereum/ethereumjs-tx/blob/master/examples/transactions.js)
+
 ```javascript
 var Tx = require('ethereumjs-tx');
 var privateKey = new Buffer('e331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109', 'hex');
@@ -28,14 +31,13 @@ var serializedTx = tx.serialize();
 
 ```
 
+
 # BOWSER  
 For standalone use in the browser inculde [./dist/ethereumjs-tx.js](https://github.com/ethereum/ethereumjs-tx/blob/master/dist/ethereumjs-tx.js)  
 This will give you a gobal varible `EthTx` to use. It will also create the globals `Buffer` and `ethUtil`  
 To build for standalone use in the browser install `browserify` and run `npm run build`.
 
 # API
-
-- [`Transaction`](#transaction)
     - [`new Transaction([data])`](#new-transactiondata)
     - [`Transaction` Properties](#transaction-properties)
     - [`Transaction` Methods](#transaction-methods)
@@ -50,10 +52,6 @@ To build for standalone use in the browser install `browserify` and run `npm run
         - [`transaction.getBaseFee()`](#transactiongetbasefee)
         - [`transaction.getUpfrontCost()`](#transactiongetupfrontcost)
         - [`transaction.toJSON([object])`](#transactiontojsonobject)
-
-## `Transaction`
-Implements schema and functions relating to Ethereum transactions
-- [example](https://github.com/ethereum/ethereumjs-tx/blob/master/examples/transactions.js)
 
 ### `new Transaction([data])`
 Creates a new transaction object
