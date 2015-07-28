@@ -8,7 +8,6 @@ const async = require('async')
 
 var Ethash = module.exports = function(cacheDB) {
   this.dbOpts = {
-    keyEncoding: 'json',
     valueEncoding: 'json'
   }
 
@@ -17,9 +16,9 @@ var Ethash = module.exports = function(cacheDB) {
 }
 
 Ethash.prototype.mkcache = function(cacheSize, seed) {
-  console.log('generating cache')
-  console.log('size: ' + cacheSize)
-  console.log('seed: ' + seed.toString('hex'))
+  // console.log('generating cache')
+  // console.log('size: ' + cacheSize)
+  // console.log('seed: ' + seed.toString('hex'))
   const n = Math.floor(cacheSize / ethHashUtil.params.HASH_BYTES)
   var o = [ethUtil.sha3(seed, 512)]
 
@@ -80,7 +79,7 @@ Ethash.prototype.run = function(header, nonce, fullSize) {
   }
 }
 
-Ethash.prototype.hash = function() {
+Ethash.prototype.cacheHash = function() {
   return ethUtil.sha3(Buffer.concat(this.cache))
 }
 
@@ -178,12 +177,12 @@ Ethash.prototype.verifyPOW = function(block, cb) {
       self._verifyPOW(uheader, function(valid3){
         valid &= valid3
         if(!valid)
-          cb2(valid)
+          cb2(Boolean(valid))
         else
           cb2()
       })
     }, function(){
-      cb(valid)
+      cb(Boolean(valid))
     })
   })
 }
