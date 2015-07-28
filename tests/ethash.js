@@ -24,7 +24,7 @@ tape('POW tests', function(t) {
     ethash.mkcache(test.cache_size, new Buffer(test.seed, 'hex'))
     t.equal(ethash.hash().toString('hex'), test.cache_hash, 'generate cache')
 
-    var r = ethash.hashimoto(headerHash, new Buffer(test.nonce, 'hex'), test.full_size)
+    var r = ethash.run(headerHash, new Buffer(test.nonce, 'hex'), test.full_size)
     t.equal(r.result.toString('hex'), test.result, 'generate result')
     t.equal(r.mix.toString('hex'), test.mixhash, 'generate mix hash')
 

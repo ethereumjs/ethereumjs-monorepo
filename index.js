@@ -7,7 +7,6 @@ const rlp = require('rlp')
 const async = require('async')
 
 var Ethash = module.exports = function(cacheDB) {
-  
   this.dbOpts = {
     keyEncoding: 'json',
     valueEncoding: 'json'
@@ -50,7 +49,7 @@ Ethash.prototype.calcDatasetItem = function(i) {
   return ethUtil.sha3(mix, 512)
 }
 
-Ethash.prototype.hashimoto = function(header, nonce, fullSize) {
+Ethash.prototype.run = function(header, nonce, fullSize) {
   const n = Math.floor(fullSize / ethHashUtil.params.HASH_BYTES)
   const w = Math.floor(ethHashUtil.params.MIX_BYTES / ethHashUtil.params.WORD_BYTES)
   const s = ethUtil.sha3(Buffer.concat([header, ethHashUtil.bufReverse(nonce)]), 512)
@@ -158,7 +157,7 @@ Ethash.prototype._verifyPOW = function(header, cb) {
   var number = ethUtil.bufferToInt(header.number)
 
   this.loadEpoc(number, function(){
-    var a = self.hashimoto(headerHash, new Buffer(header.nonce, 'hex'), self.fullSize)
+    var a = self.run(headerHash, new Buffer(header.nonce, 'hex'), self.fullSize)
     var result = new BN(a.result)   
     cb(a.mix.toString('hex') === header.mixHash.toString('hex')
       && ( ethUtil.TWO_POW256.div(new BN(header.difficulty)).cmp(result) === 1 )) 
