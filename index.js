@@ -5,7 +5,7 @@ const rlp = require('rlp')
 const Trie = require('merkle-patricia-tree')
 const async = require('async')
 const utils = require('ethereumjs-util')
-const BlockHeader = require('./blockHeader')
+const BlockHeader = require('./header')
 const Tx = require('ethereumjs-tx')
 
 /**
