@@ -29,7 +29,7 @@ ethash.verifyPOW(validblock, function (result) {
 ```
 
 # BOWSER  
-Yep, You can browserify it.
+Yep, You can [browserify](http://browserify.org/) it.
 
 # API
 - [`new Ethash([cacheDB])`](#newethashcachedb)
