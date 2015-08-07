@@ -100,4 +100,4 @@ Adds `0x` to a given string if it does not already start with `0x`
 Node.js Tests use Mocha. Test in the browser use Testling.
 
 # LICENSE
-GPL
+MPL-2.0
