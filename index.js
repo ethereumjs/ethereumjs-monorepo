@@ -2,8 +2,7 @@ const BN = require('bn.js')
 const rlp = require('rlp')
 const ethUtil = require('ethereumjs-util')
 const fees = require('ethereum-common').fees
-const ecdsaOps = require('./ecdsaOps.js')
-// const ecdsaOps = require('./ecdsaOpsBrowser.js')
+const ecdsa = require('secp256k1')
 
 //give browser access to Buffers
 global.Buffer = Buffer
@@ -122,21 +121,48 @@ Transaction.prototype.getSenderAddress = function() {
  * @method getSenderPublicKey
  * @return {Buffer}
  */
-Transaction.prototype.getSenderPublicKey = ecdsaOps.txGetSenderPublicKey
+Transaction.prototype.getSenderPublicKey =  function() {
+  if (!this._senderPubKey || !this._senderPubKey.length)
+    this.verifySignature()
+
+  return this._senderPubKey
+}
 
 /**
  * @method verifySignature
  * @return {Boolean}
  */
-Transaction.prototype.verifySignature = ecdsaOps.txVerifySignature
+Transaction.prototype.verifySignature = function() {
+  var msgHash = this.hash(false)
+  var sig = {
+    signature: Buffer.concat([ethUtil.pad(this.r, 32), ethUtil.pad(this.s, 32)], 64),
+    recovery: ethUtil.bufferToInt(this.v) - 27
+  }
 
+  try{
+    this._senderPubKey = ecdsa.recover(msgHash, sig, false)
+  }catch(e){
+    return false 
+  }
+
+  if (this._senderPubKey && this._senderPubKey.toString('hex') !== '') 
+    return ecdsa.verify(msgHash, sig, this._senderPubKey)
+  else 
+    return false
+}
 /**
  * sign a transaction with a given a private key
  * @method sign
  * @param {Buffer} privateKey
  */
-Transaction.prototype.sign = ecdsaOps.txSign
+Transaction.prototype.sign = function(privateKey) {
+  var msgHash = this.hash(false)
+  var sig = ecdsa.sign(msgHash, privateKey)
 
+  this.r = sig.signature.slice(0, 32)
+  this.s = sig.signature.slice(32, 64)
+  this.v = sig.recovery + 27
+}
 /**
  * The amount of gas paid for the data in this tx
  * @method getDataFee
