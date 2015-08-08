@@ -181,7 +181,8 @@ exports.verifyAccountPostConditions = function(state, account, acctData, t, cb) 
 
     rs.on('end', function() {
       for (var key in hashedStorage) {
-        t.fail('key: ' + key + ' not found in storage');
+        if(hashedStorage[key] != '0x00')
+          t.fail('key: ' + key + ' not found in storage');
       }
 
       state.root = origRoot;
