@@ -151,3 +151,6 @@ if you want to just run the VM tests run
 `./bin/tester -v`
 if you want to just run the State tests run
 `./bin/tester -s`
+
+# LICENSE
+[MPL-2.0](https://www.mozilla.org/MPL/2.0/)
