@@ -145,10 +145,14 @@ Transaction.prototype.verifySignature = function() {
     return false 
   }
 
-  if (this._senderPubKey && this._senderPubKey.toString('hex') !== '') 
-    return ecdsa.verify(msgHash, sig, this._senderPubKey)
-  else 
+  if(!this._senderPubKey)
     return false
+
+  var result = ecdsa.verify(msgHash, sig, this._senderPubKey)
+  if(!result)
+    this._senderPubKey = null
+
+  return result
 }
 /**
  * sign a transaction with a given a private key
