@@ -8,7 +8,7 @@ const utils = require('ethereumjs-util');
 const Account = require('ethereumjs-account')
 const Transaction = require('ethereumjs-tx');
 const Block = require('ethereumjs-block');
-const Header = require('ethereumjs-block/blockHeader.js');
+const Header = require('ethereumjs-block/header.js');
 
 exports.dumpState = function(state, cb) {
   var rs = state.createReadStream();
