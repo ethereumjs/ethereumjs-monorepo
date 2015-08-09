@@ -1,10 +1,10 @@
 (function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.EthTx = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 (function (global,Buffer){
-const rlp = require('rlp')
 const ethUtil = require('ethereumjs-util')
-const fees = require('ethereum-common').fees
+const fees = require('ethereum-common')
 const ecdsa = require('secp256k1')
 const BN = ethUtil.BN
+const rlp = ethUtil.rlp
 
 //give browser access to Buffers
 global.Buffer = Buffer
@@ -212,7 +212,538 @@ Transaction.prototype.validate = function() {
 }
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer)
-},{"buffer":37,"ethereum-common":29,"ethereumjs-util":31,"rlp":34,"secp256k1":35}],2:[function(require,module,exports){
+},{"buffer":62,"ethereum-common":2,"ethereumjs-util":4,"secp256k1":34}],2:[function(require,module,exports){
+module.exports = require('./params.json')
+
+},{"./params.json":3}],3:[function(require,module,exports){
+module.exports={
+  "genesisGasLimit": {
+    "v": 5000,
+    "d": "Gas limit of the Genesis block."
+  },
+  "minGasLimit": {
+    "v": 5000,
+    "d": "Minimum the gas limit may ever be."
+  },
+  "gasLimitBoundDivisor": {
+    "v": 1024,
+    "d": "The bound divisor of the gas limit, used in update calculations."
+  },
+  "genesisDifficulty": {
+    "v": 131072,
+    "d": "Difficulty of the Genesis block."
+  },
+  "minimumDifficulty": {
+    "v": 131072,
+    "d": "The minimum that the difficulty may ever be."
+  },
+  "difficultyBoundDivisor": {
+    "v": 2048,
+    "d": "The bound divisor of the difficulty, used in the update calculations."
+  },
+  "durationLimit": {
+    "v": 13,
+    "d": "The decision boundary on the blocktime duration used to determine whether difficulty should go up or not."
+  },
+  "maximumExtraDataSize": {
+    "v": 32,
+    "d": "Maximum size extra data may be after Genesis."
+  },
+  "epochDuration": {
+    "v": 30000,
+    "d": "Duration between proof-of-work epochs."
+  },
+  "stackLimit": {
+    "v": 1024,
+    "d": "Maximum size of VM stack allowed."
+  },
+  "callCreateDepth": {
+    "v": 1024,
+    "d": "Maximum depth of call/create stack."
+  },
+  "sha3Gas": {
+    "v": 30,
+    "d": "Once per SHA3 operation."
+  },
+  "sha3WordGas": {
+    "v": 6,
+    "d": "Once per word of the SHA3 operation's data."
+  },
+  "sloadGas": {
+    "v": 50,
+    "d": "Once per SLOAD operation."
+  },
+  "sstoreSetGas": {
+    "v": 20000,
+    "d": "Once per SSTORE operation if the zeroness changes from zero."
+  },
+  "sstoreResetGas": {
+    "v": 5000,
+    "d": "Once per SSTORE operation if the zeroness does not change from zero."
+  },
+  "sstoreRefundGas": {
+    "v": 15000,
+    "d": "Once per SSTORE operation if the zeroness changes to zero."
+  },
+  "jumpdestGas": {
+    "v": 1,
+    "d": "Refunded gas, once per SSTORE operation if the zeroness changes to zero."
+  },
+  "logGas": {
+    "v": 375,
+    "d": "Per LOG* operation."
+  },
+  "logDataGas": {
+    "v": 8,
+    "d": "Per byte in a LOG* operation's data."
+  },
+  "logTopicGas": {
+    "v": 375,
+    "d": "Multiplied by the * of the LOG*, per LOG transaction. e.g. LOG0 incurs 0 * c_txLogTopicGas, LOG4 incurs 4 * c_txLogTopicGas."
+  },
+  "createGas": {
+    "v": 32000,
+    "d": "Once per CREATE operation & contract-creation transaction."
+  },
+  "callGas": {
+    "v": 40,
+    "d": "Once per CALL operation & message call transaction."
+  },
+  "callStipend": {
+    "v": 2300,
+    "d": "Free gas given at beginning of call."
+  },
+  "callValueTransferGas": {
+    "v": 9000,
+    "d": "Paid for CALL when the value transfor is non-zero."
+  },
+  "callNewAccountGas": {
+    "v": 25000,
+    "d": "Paid for CALL when the destination address didn't exist prior."
+  },
+  "suicideRefundGas": {
+    "v": 24000,
+    "d": "Refunded following a suicide operation."
+  },
+  "memoryGas": {
+    "v": 3,
+    "d": "Times the address of the (highest referenced byte in memory + 1). NOTE: referencing happens on read, write and in instructions such as RETURN and CALL."
+  },
+  "quadCoeffDiv": {
+    "v": 512,
+    "d": "Divisor for the quadratic particle of the memory cost equation."
+  },
+  "createDataGas": {
+    "v": 200,
+    "d": ""
+  },
+  "txGas": {
+    "v": 21000,
+    "d": "Per transaction. NOTE: Not payable on data of calls between transactions."
+  },
+  "txDataZeroGas": {
+    "v": 4,
+    "d": "Per byte of data attached to a transaction that equals zero. NOTE: Not payable on data of calls between transactions."
+  },
+  "txDataNonZeroGas": {
+    "v": 68,
+    "d": "Per byte of data attached to a transaction that is not equal to zero. NOTE: Not payable on data of calls between transactions."
+  },
+  "copyGas": {
+    "v": 3,
+    "d": "Multiplied by the number of 32-byte words that are copied (round up) for any *COPY operation and added."
+  },
+  "ecrecoverGas": {
+    "v": 3000,
+    "d": ""
+  },
+  "sha256Gas": {
+    "v": 60,
+    "d": ""
+  },
+  "sha256WordGas": {
+    "v": 12,
+    "d": ""
+  },
+  "ripemd160Gas": {
+    "v": 600,
+    "d": ""
+  },
+  "ripemd160WordGas": {
+    "v": 120,
+    "d": ""
+  },
+  "identityGas": {
+    "v": 15,
+    "d": ""
+  },
+  "identityWordGas": {
+    "v": 3,
+    "d": ""
+  },
+  "minerReward": {
+    "v": "1500000000000000000",
+    "d": "the amount a miner get rewarded for mining a block"
+  },
+  "uncleReward": {
+    "v": "1406250000000000000",
+    "d": "The amount of wei a miner of an uncle block gets for being inculded in the blockchain"
+  },
+  "nephewReward": {
+    "v": "46875000000000000",
+    "d": "the amount a miner gets for inculding a uncle"
+  }
+}
+
+},{}],4:[function(require,module,exports){
+(function (Buffer){
+const SHA3 = require('sha3')
+const ec = require('elliptic').ec('secp256k1')
+const assert = require('assert')
+const rlp = require('rlp')
+const BN = require('bn.js')
+
+//the max interger that this VM can handle
+exports.MAX_INTEGER = new BN('ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff', 16)
+exports.TWO_POW256 = new BN('115792089237316195423570985008687907853269984665640564039457584007913129639936')
+
+//hex string of SHA3-256 hash of `null`
+exports.SHA3_NULL = 'c5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470'
+
+//SHA3-256 hash of the rlp of []
+exports.SHA3_RLP_ARRAY = '1dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d49347'
+
+//SHA3-256 hash of the rlp of `null`
+exports.SHA3_RLP = '56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421'
+
+exports.BN = BN
+exports.rlp = rlp
+
+/**
+ * Returns a buffer filled with 0s
+ * @method zeros
+ * @param {Integer} bytes  the number of bytes the buffer should be
+ * @return {Buffer}
+ */
+exports.zeros = function(bytes) {
+  var buf = new Buffer(bytes);
+  buf.fill(0);
+  return buf;
+}
+
+/**
+ * pads an array of buffer with leading zeros till it has `length` bytes
+ * @method pad
+ * @param {Buffer|Array} array
+ * @param {Integer}  length the number of bytes the output should be
+ * @return {Buffer|Array}
+ */
+exports.pad = function(msg, length) {
+  if (msg.length < length) {
+    var buf = exports.zeros(length)
+    msg.copy(buf, length - msg.length)
+    return buf
+  } 
+  return msg.slice(-length)
+}
+
+/**
+ * Trims leading zeros from a buffer or an array
+ * @method unpad
+ * @param {Buffer|Array|String}
+ * @return {Buffer|Array|String}
+ */
+exports.unpad = function(a) {
+  var first = a[0]
+  while (a.length > 0 && first.toString() === '0') {
+    a = a.slice(1)
+    first = a[0]
+  }
+  return a
+}
+
+/**
+ * Converts an integer into a hex string
+ * @method intToHex
+ * @param {Number}
+ * @return {String}
+ */
+exports.intToHex = function(i) {
+  assert(i % 1 === 0, 'number is not a interger')
+  assert(i >= 0, 'number must be positive')
+  var hex = i.toString(16)
+  if (hex.length % 2)
+    hex = '0' + hex
+
+  return hex
+}
+
+/**
+ * Converts an integer to a buffer
+ * @method intToBuffer
+ * @param {Number}
+ * @return {Buffer}
+ */
+exports.intToBuffer = function(i) {
+  var hex = exports.intToHex(i)
+  return new Buffer(hex, 'hex')
+}
+
+/**
+ * Converts a buffer to an Interger
+ * @method bufferToInt
+ * @par[MaÅam {B[M`Êuffer}
+ * @return {Number}
+ */
+exports.bufferToInt = function(buf) {
+  if (buf.length === 0)
+    return 0
+  
+  return parseInt(buf.toString('hex'), 16)
+}
+
+/**
+ * interpets a buffer as a signed integer and returns a bignum
+ * @method fromSigned
+ * @param {Buffer} num
+ * @return {BN}
+ */
+exports.fromSigned = function(num) {
+  if (num.length === 32 && num[0] >= 128)
+    return new BN(num).sub(exports.TWO_POW256)
+
+  return new BN(num)
+}
+
+/**
+ * Converts a bignum to an unsigned interger and returns it as a buffer
+ * @method toUnsigned
+ * @param {Bignum} num
+ * @return {Buffer}
+ */
+exports.toUnsigned = function(num) {
+  if (num.cmpn(0) === -1) 
+    return new Buffer(num.add(exports.TWO_POW256).toArray())
+  
+  return new Buffer(num.toArray())
+}
+
+exports.sha3 = function(a, bytes) {
+  if(!bytes) bytes = 256
+
+  var h = new SHA3.SHA3Hash(bytes)
+  if (a)
+    h.update(a)
+
+  return new Buffer(h.digest('hex'), 'hex')
+}
+
+/**
+ * Returns the ethereum address of a given public key
+ * @method pubToAddress
+ * @param {Buffer}
+ * @return {Buffer}
+ */
+exports.pubToAddress = exports.publicToAddress = function(pubKey) {
+  var hash = new SHA3.SHA3Hash(256)
+  hash.update(pubKey.slice(-64))
+  return new Buffer(hash.digest('hex').slice(-40), 'hex')
+}
+
+/**
+ * Returns the ethereum public key of a given private key
+ * @method privateToPublic
+ * @param {Buffer} privateKey
+ * @return {Buffer}
+ */
+var privateToPublic = exports.privateToPublic = function(privateKey){
+  privateKey = new BN(privateKey)
+  var key = ec.keyFromPrivate(privateKey).getPublic().toJSON()
+  return new Buffer(key[0].toArray().concat(key[1].toArray()))
+}
+
+/**
+ * Returns the ethereum address of a given private key
+ * @method privateToAddress
+ * @param {Buffer} privateKey
+ * @return {Buffer}
+ */
+exports.privateToAddress = function(privateKey){
+  return exports.publicToAddress(privateToPublic(privateKey))
+}
+
+/**
+ * Generates a new address
+ * @method generateAddress
+ * @param {Buffer} from the address which is creating this new address
+ * @param {Buffer} nonce the nonce of the from account
+ */
+exports.generateAddress = function(from, nonce) {
+  nonce = new Buffer(new BN(nonce).subn(1).toArray())
+
+  if (nonce.toString('hex') === '00') 
+    nonce = 0;
+
+  var hash = exports.sha3(rlp.encode([new Buffer(from, 'hex'), nonce]))
+  return hash.slice(12)
+}
+
+/**
+ * defines properties on a `Object`
+ * @method defineProperties
+ * @para[M`Êm {Object} self the `Object` to define properties on
+ * @param {Array} fields an array fields to define
+ */
+exports.defineProperties = function(self, fields, data) {
+
+  self.raw = []
+  self._fields = []
+
+  self.toJSON = function(label){
+    if (label) {
+      var obj = {}
+
+      for (var prop in this) {
+        if (typeof this[prop] !== 'function' && prop !== 'raw' && prop !== '_fields')
+          obj[prop] = this[prop].toString('hex')
+      }
+      return obj
+    }
+
+    return exports.baToJSON(this.raw)
+  }
+
+  fields.forEach(function(field, i) {
+    self._fields.push(field.name)
+    Object.defineProperty(self, field.name, {
+      enumerable: true,
+      configurable: true,
+      get: function() {
+        return this.raw[i]
+      },
+      set: function(v) {
+        if (!Buffer.isBuffer(v)) {
+          if (typeof v === 'string')
+            v = new Buffer(padToEven(exports.stripHexPrefix(v)), 'hex')
+          else if (typeof v === 'number')
+            v = exports.intToBuffer(v)
+          else if (v === null || v === undefined)
+            v = new Buffer([])
+          else if (v.toArray) 
+            //converts a BN to a Buffer
+            v = new Buffer(v.toArray())
+          else
+            throw new Error('invalid type')
+        }
+
+        if(v.toString('hex') === '00' &&  field.noZero)
+          v = new Buffer([])
+
+        if(field.word && new BN(v).cmp(exports.MAX_INTEGER) === 1)
+          throw(new Error('to large of value'))
+
+        if(!(field.empty && v.length === 0) && field.pad && v.length < field.length)
+          v = exports.pad(v, field.length)
+
+        if(field.allowLess && field.length){
+          assert(field.length >= v.length)
+        } else if (!(field.empty && v.length === 0) && field.length)
+          assert(field.length === v.length, 'The field ' + field.name + 'must have byte length of ' + field.length)
+
+        this.raw[i] = v
+      }
+    })
+
+    if(field.default)
+      self[field.name] = field.default
+  })
+
+  if (data) {
+    if (Buffer.isBuffer(data))
+      data = rlp.decode(data)
+
+    if (Array.isArray(data)) {
+      if(data.length > self._fields.length) 
+        throw(new Error('wrong number of fields in data'))
+
+      //make sure all the items are buffers
+      data.forEach(function(d, i) {
+         self[self._fields[i]] = typeof d === 'string' ? new Buffer(d, 'hex') : d
+      })
+    } else {
+      for (var prop in data) {
+        if (self._fields.indexOf(prop) !== -1)
+          self[prop] = data[prop]
+      }
+    }
+  }
+}
+
+/**
+ * Print a Buffer Array
+ * @method printBA
+ * @param {Buffer|Array}
+ */
+exports.printBA = function(ba) {
+  if (Buffer.isBuffer(ba)) {
+    if (ba.length === 0) 
+      console.log('new Buffer(0)')
+    else 
+      console.log('new Buffer(\'' + ba.toString('hex') + '\', \'hex\')')
+  } else if (ba instanceof Array) {
+    console.log('[')
+    for (var i = 0; i < ba.length; i++) {
+      exports.printBA(ba[i])
+      console.log(',')
+    }
+    console.log(']')
+  } else 
+    console.log(ba)
+}
+
+/**
+ * converts a buffer array to JSON
+ * @method BAToJSON
+ * @param {Buffer|Array}
+ */
+exports.baToJSON = function(ba) {
+  if (Buffer.isBuffer(ba)) {
+    return ba.toString('hex')
+  } else if (ba instanceof Array) {
+    var array = []
+    for (var i = 0; i < ba.length; i++) {
+      array.push(exports.baToJSON(ba[i]))
+    }
+    return array
+  }
+}
+
+//Returns a Boolean on whether or not the a sting starts with 0x
+exports.isHexPrefixed = function(str){
+  return str.slice(0, 2) === '0x'
+}
+
+//Removes 0x from a given String
+exports.stripHexPrefix = function(str){
+  if (typeof str !== 'string')
+     return str
+  return exports.isHexPrefixed(str) ?  str.slice(2) : str
+}
+
+//Adds 0x to a given string if it does not already start with 0x
+exports.addHexPrefix = function(str){
+  if (typeof str !== 'string')
+     return str
+  return exports.isHexPrefixed(str) ? '0x' + str : str
+}
+
+function padToEven(a){
+  if (a.length % 2) a = '0' + a;
+  return a
+}
+
+}).call(this,require("buffer").Buffer)
+},{"assert":61,"bn.js":5,"buffer":62,"elliptic":8,"rlp":33,"sha3":6}],5:[function(require,module,exports){
 (function (module, exports) {
 
 'use strict';
@@ -2617,7 +3148,469 @@ Mont.prototype.invm = function invm(a) {
 
 })(typeof module === 'undefined' || module, this);
 
-},{}],3:[function(require,module,exports){
+},{}],6:[function(require,module,exports){
+(function (Buffer){
+const Sha3 = require('js-sha3')
+
+var hash = function (bitcount) {
+  this.content = ''
+  this.bitcount = bitcount ? 'keccak_' + bitcount : 'keccak_512'
+}
+
+hash.prototype.update = function (i) {
+  this.content = Buffer.isBuffer(i) ? i : new Buffer(i);
+}
+
+hash.prototype.digest = function (encoding) {
+  var result = Sha3[this.bitcount](this.content) 
+  if(encoding === 'hex')
+    return result
+  else
+    return new Buffer(result, 'hex').toString('binary')
+}
+
+module.exports = {
+  SHA3Hash: hash
+}
+
+}).call(this,require("buffer").Buffer)
+},{"buffer":62,"js-sha3":7}],7:[function(require,module,exports){
+(function (global){
+/*
+ * js-sha3 v0.3.1
+ * https://github.com/emn178/js-sha3
+ *
+ * Copyright 2015, emn178@gmail.com
+ *
+ * Licensed under the MIT license:
+ * http://www.opensource.org/licenses/MIT
+ */
+;(function(root, undefined) {
+  'use strict';
+
+  var NODE_JS = typeof(module) != 'undefined';
+  if(NODE_JS) {
+    root = global;
+    if(root.JS_SHA3_TEST) {
+      root.navigator = { userAgent: 'Chrome'};
+    }
+  }
+  var CHROME = (root.JS_SHA3_TEST || !NODE_JS) && navigator.userAgent.indexOf('Chrome') != -1;
+  var HEX_CHARS = '0123456789abcdef'.split('');
+  var KECCAK_PADDING = [1, 256, 65536, 16777216];
+  var PADDING = [6, 1536, 393216, 100663296];
+  var SHIFT = [0, 8, 16, 24];
+  var RC = [1, 0, 32898, 0, 32906, 2147483648, 2147516416, 2147483648, 32907, 0, 2147483649,
+            0, 2147516545, 2147483648, 32777, 2147483648, 138, 0, 136, 0, 2147516425, 0, 
+            2147483658, 0, 2147516555, 0, 139, 2147483648, 32905, 2147483648, 32771, 
+            2147483648, 32770, 2147483648, 128, 2147483648, 32778, 0, 2147483658, 2147483648,
+            2147516545, 2147483648, 32896, 2147483648, 2147483649, 0, 2147516424, 2147483648];
+
+  var blocks = [], s = [];
+
+  var keccak_224 = function(message) {
+    return keccak(message, 224, KECCAK_PADDING);
+  };
+
+  var keccak_256 = function(message) {
+    return keccak(message, 256, KECCAK_PADDING);
+  };
+
+  var keccak_384 = function(message) {
+    return keccak(message, 384, KECCAK_PADDING);
+  };
+
+  var sha3_224 = function(message) {
+    return keccak(message, 224, PADDING);
+  };
+
+  var sha3_256 = function(message) {
+    return keccak(message, 256, PADDING);
+  };
+
+  var sha3_384 = function(message) {
+    return keccak(message, 384, PADDING);
+  };
+
+  var sha3_512 = function(message) {
+    return keccak(message, 512, PADDING);
+  };
+
+  var keccak = function(message, bits, padding) {
+    var notString = typeof(message) != 'string';
+    if(notString && message.constructor == root.ArrayBuffer) {
+      message = new Uint8Array(message);
+    }
+
+    if(bits === undefined) {
+      bits = 512;
+      padding = KECCAK_PADDING;
+    }
+
+    var block, code, end = false, index = 0, start = 0, length = message.length,
+        n, i, h, l, c0, c1, c2, c3, c4, c5, c6, c7, c8, c9, 
+        b0, b1, b2, b3, b4, b5, b6, b7, b8, b9, b10, b11, b12, b13, b14, b15, b16, b17, 
+        b18, b19, b20, b21, b22, b23, b24, b25, b26, b27, b28, b29, b30, b31, b32, b33, 
+        b34, b35, b36, b37, b38, b39, b40, b41, b42, b43, b44, b45, b46, b47, b48, b49;
+    var blockCount = (1600 - bits * 2) / 32;
+    var byteCount = blockCount * 4;
+
+    for(i = 0;i < 50;++i) {
+      s[i] = 0;
+    }
+
+    block = 0;
+    do {
+      blocks[0] = block;
+      for(i = 1;i < blockCount + 1;++i) {
+        blocks[i] = 0;
+      }
+      if(notString) {
+        for (i = start;index < length && i < byteCount; ++index) {
+          blocks[i >> 2] |= message[index] << SHIFT[i++ & 3];
+        }
+      } else {
+        for (i = start;index < length && i < byteCount; ++index) {
+          code = message.charCodeAt(index);
+          if (code < 0x80) {
+            blocks[i >> 2] |= code << SHIFT[i++ & 3];
+          } else if (code < 0x800) {
+            blocks[i >> 2] |= (0xc0 | (code >> 6)) << SHIFT[i++ & 3];
+            blocks[i >> 2] |= (0x80 | (code & 0x3f)) << SHIFT[i++ & 3];
+          } else if (code < 0xd800 || code >= 0xe000) {
+            blocks[i >> 2] |= (0xe0 | (code >> 12)) << SHIFT[i++ & 3];
+            blocks[i >> 2] |= (0x80 | ((code >> 6) & 0x3f)) << SHIFT[i++ & 3];
+            blocks[i >> 2] |= (0x80 | (code & 0x3f)) << SHIFT[i++ & 3];
+          } else {
+            code = 0x10000 + (((code & 0x3ff) << 10) | (message.charCodeAt(++index) & 0x3ff));
+            blocks[i >> 2] |= (0xf0 | (code >> 18)) << SHIFT[i++ & 3];
+            blocks[i >> 2] |= (0x80 | ((code >> 12) & 0x3f)) << SHIFT[i++ & 3];
+            blocks[i >> 2] |= (0x80 | ((code >> 6) & 0x3f)) << SHIFT[i++ & 3];
+            blocks[i >> 2] |= (0x80 | (code & 0x3f)) << SHIFT[i++ & 3];
+          }
+        }
+      }
+      start = i - byteCount;
+      if(index == length) {
+        blocks[i >> 2] |= padding[i & 3];
+        ++index;
+      }
+      block = blocks[blockCount];
+      if(index > length && i < byteCount) {
+        blocks[blockCount - 1] |= 0x80000000;
+        end = true;
+      }
+
+      for(i = 0;i < blockCount;++i) {
+        s[i] ^= blocks[i];
+      }
+
+      for(n = 0; n < 48; n += 2) {
+        c0 = s[0] ^ s[10] ^ s[20] ^ s[30] ^ s[40];
+        c1 = s[1] ^ s[11] ^ s[21] ^ s[31] ^ s[41];
+        c2 = s[2] ^ s[12] ^ s[22] ^ s[32] ^ s[42];
+        c3 = s[3] ^ s[13] ^ s[23] ^ s[33] ^ s[43];
+        c4 = s[4] ^ s[14] ^ s[24] ^ s[34] ^ s[44];
+        c5 = s[5] ^ s[15] ^ s[25] ^ s[35] ^ s[45];
+        c6 = s[6] ^ s[16] ^ s[26] ^ s[36] ^ s[46];
+        c7 = s[7] ^ s[17] ^ s[27] ^ s[37] ^ s[47];
+        c8 = s[8] ^ s[18] ^ s[28] ^ s[38] ^ s[48];
+        c9 = s[9] ^ s[19] ^ s[29] ^ s[39] ^ s[49];
+
+        h = c8 ^ ((c2 << 1) | (c3 >>> 31));
+        l = c9 ^ ((c3 << 1) | (c2 >>> 31));
+        s[0] ^= h;
+        s[1] ^= l;
+        s[10] ^= h;
+        s[11] ^= l;
+        s[20] ^= h;
+        s[21] ^= l;
+        s[30] ^= h;
+        s[31] ^= l;
+        s[40] ^= h;
+        s[41] ^= l;
+        h = c0 ^ ((c4 << 1) | (c5 >>> 31));
+        l = c1 ^ ((c5 << 1) | (c4 >>> 31));
+        s[2] ^= h;
+        s[3] ^= l;
+        s[12] ^= h;
+        s[13] ^= l;
+        s[22] ^= h;
+        s[23] ^= l;
+        s[32] ^= h;
+        s[33] ^= l;
+        s[42] ^= h;
+        s[43] ^= l;
+        h = c2 ^ ((c6 << 1) | (c7 >>> 31));
+        l = c3 ^ ((c7 << 1) | (c6 >>> 31));
+        s[4] ^= h;
+        s[5] ^= l;
+        s[14] ^= h;
+        s[15] ^= l;
+        s[24] ^= h;
+        s[25] ^= l;
+        s[34] ^= h;
+        s[35] ^= l;
+        s[44] ^= h;
+        s[45] ^= l;
+        h = c4 ^ ((c8 << 1) | (c9 >>> 31));
+        l = c5 ^ ((c9 << 1) | (c8 >>> 31));
+        s[6] ^= h;
+        s[7] ^= l;
+        s[16] ^= h;
+        s[17] ^= l;
+        s[26] ^= h;
+        s[27] ^= l;
+        s[36] ^= h;
+        s[37] ^= l;
+        s[46] ^= h;
+        s[47] ^= l;
+        h = c6 ^ ((c0 << 1) | (c1 >>> 31));
+        l = c7 ^ ((c1 << 1) | (c0 >>> 31));
+        s[8] ^= h;
+        s[9] ^= l;
+        s[18] ^= h;
+        s[19] ^= l;
+        s[28] ^= h;
+        s[29] ^= l;
+        s[38] ^= h;
+        s[39] ^= l;
+        s[48] ^= h;
+        s[49] ^= l;
+
+        b0 = s[0];
+        b1 = s[1];
+        b32 = (s[11] << 4) | (s[10] >>> 28);
+        b33 = (s[10] << 4) | (s[11] >>> 28);
+        b14 = (s[20] << 3) | (s[21] >>> 29);
+        b15 = (s[21] << 3) | (s[20] >>> 29);
+        b46 = (s[31] << 9) | (s[30] >>> 23);
+        b47 = (s[30] << 9) | (s[31] >>> 23);
+        b28 = (s[40] << 18) | (s[41] >>> 14);
+        b29 = (s[41] << 18) | (s[40] >>> 14);
+        b20 = (s[2] << 1) | (s[3] >>> 31);
+        b21 = (s[3] << 1) | (s[2] >>> 31);
+        b2 = (s[13] << 12) | (s[12] >>> 20);
+        b3 = (s[12] << 12) | (s[13] >>> 20);
+        b34 = (s[22] << 10) | (s[23] >>> 22);
+        b35 = (s[23] << 10) | (s[22] >>> 22);
+        b16 = (s[33] << 13) | (s[32] >>> 19);
+        b17 = (s[32] << 13) | (s[33] >>> 19);
+        b48 = (s[42] << 2) | (s[43] >>> 30);
+        b49 = (s[43] << 2) | (s[42] >>> 30);
+        b40 = (s[5] << 30) | (s[4] >>> 2);
+        b41 = (s[4] << 30) | (s[5] >>> 2);
+        b22 = (s[14] << 6) | (s[15] >>> 26);
+        b23 = (s[15] << 6) | (s[14] >>> 26);
+        b4 = (s[25] << 11) | (s[24] >>> 21);
+        b5 = (s[24] << 11) | (s[25] >>> 21);
+        b36 = (s[34] << 15) | (s[35] >>> 17);
+        b37 = (s[35] << 15) | (s[34] >>> 17);
+        b18 = (s[45] << 29) | (s[44] >>> 3);
+        b19 = (s[44] << 29) | (s[45] >>> 3);
+        b10 = (s[6] << 28) | (s[7] >>> 4);
+        b11 = (s[7] << 28) | (s[6] >>> 4);
+        b42 = (s[17] << 23) | (s[16] >>> 9);
+        b43 = (s[16] << 23) | (s[17] >>> 9);
+        b24 = (s[26] << 25) | (s[27] >>> 7);
+        b25 = (s[27] << 25) | (s[26] >>> 7);
+        b6 = (s[36] << 21) | (s[37] >>> 11);
+        b7 = (s[37] << 21) | (s[36] >>> 11);
+        b38 = (s[47] << 24) | (s[46] >>> 8);
+        b39 = (s[46] << 24) | (s[47] >>> 8);
+        b30 = (s[8] << 27) | (s[9] >>> 5);
+        b31 = (s[9] << 27) | (s[8] >>> 5);
+        b12 = (s[18] << 20) | (s[19] >>> 12);
+        b13 = (s[19] << 20) | (s[18] >>> 12);
+        b44 = (s[29] << 7) | (s[28] >>> 25);
+        b45 = (s[28] << 7) | (s[29] >>> 25);
+        b26 = (s[38] << 8) | (s[39] >>> 24);
+        b27 = (s[39] << 8) | (s[38] >>> 24);
+        b8 = (s[48] << 14) | (s[49] >>> 18);
+        b9 = (s[49] << 14) | (s[48] >>> 18);
+
+        s[0] = b0 ^ (~b2 & b4);
+        s[1] = b1 ^ (~b3 & b5);
+        s[10] = b10 ^ (~b12 & b14);
+        s[11] = b11 ^ (~b13 & b15);
+        s[20] = b20 ^ (~b22 & b24);
+        s[21] = b21 ^ (~b23 & b25);
+        s[30] = b30 ^ (~b32 & b34);
+        s[31] = b31 ^ (~b33 & b35);
+        s[40] = b40 ^ (~b42 & b44);
+        s[41] = b41 ^ (~b43 & b45);
+        s[2] = b2 ^ (~b4 & b6);
+        s[3] = b3 ^ (~b5 & b7);
+        s[12] = b12 ^ (~b14 & b16);
+        s[13] = b13 ^ (~b15 & b17);
+        s[22] = b22 ^ (~b24 & b26);
+        s[23] = b23 ^ (~b25 & b27);
+        s[32] = b32 ^ (~b34 & b36);
+        s[33] = b33 ^ (~b35 & b37);
+        s[42] = b42 ^ (~b44 & b46);
+        s[43] = b43 ^ (~b45 & b47);
+        s[4] = b4 ^ (~b6 & b8);
+        s[5] = b5 ^ (~b7 & b9);
+        s[14] = b14 ^ (~b16 & b18);
+        s[15] = b15 ^ (~b17 & b19);
+        s[24] = b24 ^ (~b26 & b28);
+        s[25] = b25 ^ (~b27 & b29);
+        s[34] = b34 ^ (~b36 & b38);
+        s[35] = b35 ^ (~b37 & b39);
+        s[44] = b44 ^ (~b46 & b48);
+        s[45] = b45 ^ (~b47 & b49);
+        s[6] = b6 ^ (~b8 & b0);
+        s[7] = b7 ^ (~b9 & b1);
+        s[16] = b16 ^ (~b18 & b10);
+        s[17] = b17 ^ (~b19 & b11);
+        s[26] = b26 ^ (~b28 & b20);
+        s[27] = b27 ^ (~b29 & b21);
+        s[36] = b36 ^ (~b38 & b30);
+        s[37] = b37 ^ (~b39 & b31);
+        s[46] = b46 ^ (~b48 & b40);
+        s[47] = b47 ^ (~b49 & b41);
+        s[8] = b8 ^ (~b0 & b2);
+        s[9] = b9 ^ (~b1 & b3);
+        s[18] = b18 ^ (~b10 & b12);
+        s[19] = b19 ^ (~b11 & b13);
+        s[28] = b28 ^ (~b20 & b22);
+        s[29] = b29 ^ (~b21 & b23);
+        s[38] = b38 ^ (~b30 & b32);
+        s[39] = b39 ^ (~b31 & b33);
+        s[48] = b48 ^ (~b40 & b42);
+        s[49] = b49 ^ (~b41 & b43);
+
+        s[0] ^= RC[n];
+        s[1] ^= RC[n + 1];
+      }
+    } while(!end);
+
+    var hex = '';
+    if(CHROME) {
+      b0 = s[0];
+      b1 = s[1];
+      b2 = s[2];
+      b3 = s[3];
+      b4 = s[4];
+      b5 = s[5];
+      b6 = s[6];
+      b7 = s[7];
+      b8 = s[8];
+      b9 = s[9];
+      b10 = s[10];
+      b11 = s[11];
+      b12 = s[12];
+      b13 = s[13];
+      b14 = s[14];
+      b15 = s[15];
+      hex += HEX_CHARS[(b0 >> 4) & 0x0F] + HEX_CHARS[b0 & 0x0F] +
+             HEX_CHARS[(b0 >> 12) & 0x0F] + HEX_CHARS[(b0 >> 8) & 0x0F] +
+             HEX_CHARS[(b0 >> 20) & 0x0F] + HEX_CHARS[(b0 >> 16) & 0x0F] +
+             HEX_CHARS[(b0 >> 28) & 0x0F] + HEX_CHARS[(b0 >> 24) & 0x0F] +
+             HEX_CHARS[(b1 >> 4) & 0x0F] + HEX_CHARS[b1 & 0x0F] +
+             HEX_CHARS[(b1 >> 12) & 0x0F] + HEX_CHARS[(b1 >> 8) & 0x0F] +
+             HEX_CHARS[(b1 >> 20) & 0x0F] + HEX_CHARS[(b1 >> 16) & 0x0F] +
+             HEX_CHARS[(b1 >> 28) & 0x0F] + HEX_CHARS[(b1 >> 24) & 0x0F] +
+             HEX_CHARS[(b2 >> 4) & 0x0F] + HEX_CHARS[b2 & 0x0F] +
+             HEX_CHARS[(b2 >> 12) & 0x0F] + HEX_CHARS[(b2 >> 8) & 0x0F] +
+             HEX_CHARS[(b2 >> 20) & 0x0F] + HEX_CHARS[(b2 >> 16) & 0x0F] +
+             HEX_CHARS[(b2 >> 28) & 0x0F] + HEX_CHARS[(b2 >> 24) & 0x0F] +
+             HEX_CHARS[(b3 >> 4) & 0x0F] + HEX_CHARS[b3 & 0x0F] +
+             HEX_CHARS[(b3 >> 12) & 0x0F] + HEX_CHARS[(b3 >> 8) & 0x0F] +
+             HEX_CHARS[(b3 >> 20) & 0x0F] + HEX_CHARS[(b3 >> 16) & 0x0F] +
+             HEX_CHARS[(b3 >> 28) & 0x0F] + HEX_CHARS[(b3 >> 24) & 0x0F] +
+             HEX_CHARS[(b4 >> 4) & 0x0F] + HEX_CHARS[b4 & 0x0F] +
+             HEX_CHARS[(b4 >> 12) & 0x0F] + HEX_CHARS[(b4 >> 8) & 0x0F] +
+             HEX_CHARS[(b4 >> 20) & 0x0F] + HEX_CHARS[(b4 >> 16) & 0x0F] +
+             HEX_CHARS[(b4 >> 28) & 0x0F] + HEX_CHARS[(b4 >> 24) & 0x0F] +
+             HEX_CHARS[(b5 >> 4) & 0x0F] + HEX_CHARS[b5 & 0x0F] +
+             HEX_CHARS[(b5 >> 12) & 0x0F] + HEX_CHARS[(b5 >> 8) & 0x0F] +
+             HEX_CHARS[(b5 >> 20) & 0x0F] + HEX_CHARS[(b5 >> 16) & 0x0F] +
+             HEX_CHARS[(b5 >> 28) & 0x0F] + HEX_CHARS[(b5 >> 24) & 0x0F] +
+             HEX_CHARS[(b6 >> 4) & 0x0F] + HEX_CHARS[b6 & 0x0F] +
+             HEX_CHARS[(b6 >> 12) & 0x0F] + HEX_CHARS[(b6 >> 8) & 0x0F] +
+             HEX_CHARS[(b6 >> 20) & 0x0F] + HEX_CHARS[(b6 >> 16) & 0x0F] +
+             HEX_CHARS[(b6 >> 28) & 0x0F] + HEX_CHARS[(b6 >> 24) & 0x0F];
+
+      if(bits >= 256) {
+        hex += HEX_CHARS[(b7 >> 4) & 0x0F] + HEX_CHARS[b7 & 0x0F] +
+               HEX_CHARS[(b7 >> 12) & 0x0F] + HEX_CHARS[(b7 >> 8) & 0x0F] +
+               HEX_CHARS[(b7 >> 20) & 0x0F] + HEX_CHARS[(b7 >> 16) & 0x0F] +
+               HEX_CHARS[(b7 >> 28) & 0x0F] + HEX_CHARS[(b7 >> 24) & 0x0F];
+      }
+      if(bits >= 384) {
+        hex += HEX_CHARS[(b8 >> 4) & 0x0F] + HEX_CHARS[b8 & 0x0F] +
+               HEX_CHARS[(b8 >> 12) & 0x0F] + HEX_CHARS[(b8 >> 8) & 0x0F] +
+               HEX_CHARS[(b8 >> 20) & 0x0F] + HEX_CHARS[(b8 >> 16) & 0x0F] +
+               HEX_CHARS[(b8 >> 28) & 0x0F] + HEX_CHARS[(b8 >> 24) & 0x0F] +
+               HEX_CHARS[(b9 >> 4) & 0x0F] + HEX_CHARS[b9 & 0x0F] +
+               HEX_CHARS[(b9 >> 12) & 0x0F] + HEX_CHARS[(b9 >> 8) & 0x0F] +
+               HEX_CHARS[(b9 >> 20) & 0x0F] + HEX_CHARS[(b9 >> 16) & 0x0F] +
+               HEX_CHARS[(b9 >> 28) & 0x0F] + HEX_CHARS[(b9 >> 24) & 0x0F] +
+               HEX_CHARS[(b10 >> 4) & 0x0F] + HEX_CHARS[b10 & 0x0F] +
+               HEX_CHARS[(b10 >> 12) & 0x0F] + HEX_CHARS[(b10 >> 8) & 0x0F] +
+               HEX_CHARS[(b10 >> 20) & 0x0F] + HEX_CHARS[(b10 >> 16) & 0x0F] +
+               HEX_CHARS[(b10 >> 28) & 0x0F] + HEX_CHARS[(b10 >> 24) & 0x0F] +
+               HEX_CHARS[(b11 >> 4) & 0x0F] + HEX_CHARS[b11 & 0x0F] +
+               HEX_CHARS[(b11 >> 12) & 0x0F] + HEX_CHARS[(b11 >> 8) & 0x0F] +
+               HEX_CHARS[(b11 >> 20) & 0x0F] + HEX_CHARS[(b11 >> 16) & 0x0F] +
+               HEX_CHARS[(b11 >> 28) & 0x0F] + HEX_CHARS[(b11 >> 24) & 0x0F];
+      }
+      if(bits == 512) {
+        hex += HEX_CHARS[(b12 >> 4) & 0x0F] + HEX_CHARS[b12 & 0x0F] +
+               HEX_CHARS[(b12 >> 12) & 0x0F] + HEX_CHARS[(b12 >> 8) & 0x0F] +
+               HEX_CHARS[(b12 >> 20) & 0x0F] + HEX_CHARS[(b12 >> 16) & 0x0F] +
+               HEX_CHARS[(b12 >> 28) & 0x0F] + HEX_CHARS[(b12 >> 24) & 0x0F] +
+               HEX_CHARS[(b13 >> 4) & 0x0F] + HEX_CHARS[b13 & 0x0F] +
+               HEX_CHARS[(b13 >> 12) & 0x0F] + HEX_CHARS[(b13 >> 8) & 0x0F] +
+               HEX_CHARS[(b13 >> 20) & 0x0F] + HEX_CHARS[(b13 >> 16) & 0x0F] +
+               HEX_CHARS[(b13 >> 28) & 0x0F] + HEX_CHARS[(b13 >> 24) & 0x0F] +
+               HEX_CHARS[(b14 >> 4) & 0x0F] + HEX_CHARS[b14 & 0x0F] +
+               HEX_CHARS[(b14 >> 12) & 0x0F] + HEX_CHARS[(b14 >> 8) & 0x0F] +
+               HEX_CHARS[(b14 >> 20) & 0x0F] + HEX_CHARS[(b14 >> 16) & 0x0F] +
+               HEX_CHARS[(b14 >> 28) & 0x0F] + HEX_CHARS[(b14 >> 24) & 0x0F] +
+               HEX_CHARS[(b15 >> 4) & 0x0F] + HEX_CHARS[b15 & 0x0F] +
+               HEX_CHARS[(b15 >> 12) & 0x0F] + HEX_CHARS[(b15 >> 8) & 0x0F] +
+               HEX_CHARS[(b15 >> 20) & 0x0F] + HEX_CHARS[(b15 >> 16) & 0x0F] +
+               HEX_CHARS[(b15 >> 28) & 0x0F] + HEX_CHARS[(b15 >> 24) & 0x0F];
+      }
+    } else {
+      for(i = 0, n = bits / 32;i < n;++i) {
+        h = s[i];
+        hex += HEX_CHARS[(h >> 4) & 0x0F] + HEX_CHARS[h & 0x0F] +
+               HEX_CHARS[(h >> 12) & 0x0F] + HEX_CHARS[(h >> 8) & 0x0F] +
+               HEX_CHARS[(h >> 20) & 0x0F] + HEX_CHARS[(h >> 16) & 0x0F] +
+               HEX_CHARS[(h >> 28) & 0x0F] + HEX_CHARS[(h >> 24) & 0x0F];
+      }
+    }
+    return hex;
+  };
+  
+  if(!root.JS_SHA3_TEST && NODE_JS) {
+    module.exports = {
+      sha3_512: sha3_512,
+      sha3_384: sha3_384,
+      sha3_256: sha3_256,
+      sha3_224: sha3_224,
+      keccak_512: keccak,
+      keccak_384: keccak_384,
+      keccak_256: keccak_256,
+      keccak_224: keccak_224
+    };
+  } else if(root) {
+    root.sha3_512 = sha3_512;
+    root.sha3_384 = sha3_384;
+    root.sha3_256 = sha3_256;
+    root.sha3_224 = sha3_224;
+    root.keccak_512 = keccak;
+    root.keccak_384 = keccak_384;
+    root.keccak_256 = keccak_256;
+    root.keccak_224 = keccak_224;
+  }
+}(this));
+
+}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+},{}],8:[function(require,module,exports){
 'use strict';
 
 var elliptic = exports;
@@ -2633,7 +3626,7 @@ elliptic.curves = require('./elliptic/curves');
 elliptic.ec = require('./elliptic/ec');
 elliptic.eddsa = require('./elliptic/eddsa');
 
-},{"../package.json":27,"./elliptic/curve":6,"./elliptic/curves":9,"./elliptic/ec":10,"./elliptic/eddsa":13,"./elliptic/hmac-drbg":16,"./elliptic/utils":18,"brorand":19}],4:[function(require,module,exports){
+},{"../package.json":32,"./elliptic/curve":11,"./elliptic/curves":14,"./elliptic/ec":15,"./elliptic/eddsa":18,"./elliptic/hmac-drbg":21,"./elliptic/utils":23,"brorand":24}],9:[function(require,module,exports){
 'use strict';
 
 var bn = require('bn.js');
@@ -2986,7 +3979,7 @@ BasePoint.prototype.dblp = function dblp(k) {
   return r;
 };
 
-},{"../../elliptic":3,"bn.js":2}],5:[function(require,module,exports){
+},{"../../elliptic":8,"bn.js":5}],10:[function(require,module,exports){
 'use strict';
 
 var curve = require('../curve');
@@ -3394,7 +4387,7 @@ Point.prototype.eq = function eq(other) {
 Point.prototype.toP = Point.prototype.normalize;
 Point.prototype.mixedAdd = Point.prototype.add;
 
-},{"../../elliptic":3,"../curve":6,"bn.js":2,"inherits":26}],6:[function(require,module,exports){
+},{"../../elliptic":8,"../curve":11,"bn.js":5,"inherits":31}],11:[function(require,module,exports){
 'use strict';
 
 var curve = exports;
@@ -3404,7 +4397,7 @@ curve.short = require('./short');
 curve.mont = require('./mont');
 curve.edwards = require('./edwards');
 
-},{"./base":4,"./edwards":5,"./mont":7,"./short":8}],7:[function(require,module,exports){
+},{"./base":9,"./edwards":10,"./mont":12,"./short":13}],12:[function(require,module,exports){
 'use strict';
 
 var curve = require('../curve');
@@ -3582,7 +4575,7 @@ Point.prototype.getX = function getX() {
   return this.x.fromRed();
 };
 
-},{"../../elliptic":3,"../curve":6,"bn.js":2,"inherits":26}],8:[function(require,module,exports){
+},{"../../elliptic":8,"../curve":11,"bn.js":5,"inherits":31}],13:[function(require,module,exports){
 'use strict';
 
 var curve = require('../curve');
@@ -4491,7 +5484,7 @@ JPoint.prototype.isInfinity = function isInfinity() {
   return this.z.cmpn(0) === 0;
 };
 
-},{"../../elliptic":3,"../curve":6,"bn.js":2,"inherits":26}],9:[function(require,module,exports){
+},{"../../elliptic":8,"../curve":11,"bn.js":5,"inherits":31}],14:[function(require,module,exports){
 'use strict';
 
 var curves = exports;
@@ -4650,7 +5643,7 @@ defineCurve('secp256k1', {
   ]
 });
 
-},{"../elliptic":3,"./precomputed/secp256k1":17,"hash.js":20}],10:[function(require,module,exports){
+},{"../elliptic":8,"./precomputed/secp256k1":22,"hash.js":25}],15:[function(require,module,exports){
 'use strict';
 
 var bn = require('bn.js');
@@ -4862,7 +5855,7 @@ EC.prototype.getKeyRecoveryParam = function(e, signature, Q, enc) {
   throw new Error('Unable to find valid recovery factor');
 };
 
-},{"../../elliptic":3,"./key":11,"./signature":12,"bn.js":2}],11:[function(require,module,exports){
+},{"../../elliptic":8,"./key":16,"./signature":17,"bn.js":5}],16:[function(require,module,exports){
 'use strict';
 
 var bn = require('bn.js');
@@ -4971,7 +5964,7 @@ KeyPair.prototype.inspect = function inspect() {
          ' pub: ' + (this.pub && this.pub.inspect()) + ' >';
 };
 
-},{"bn.js":2}],12:[function(require,module,exports){
+},{"bn.js":5}],17:[function(require,module,exports){
 'use strict';
 
 var bn = require('bn.js');
@@ -5043,7 +6036,7 @@ Signature.prototype.toDER = function toDER(enc) {
   return utils.encode(res, enc);
 };
 
-},{"../../elliptic":3,"bn.js":2}],13:[function(require,module,exports){
+},{"../../elliptic":8,"bn.js":5}],18:[function(require,module,exports){
 'use strict';
 
 var hash = require('hash.js');
@@ -5163,7 +6156,7 @@ EDDSA.prototype.isPoint = function isPoint(val) {
   return val instanceof this.pointClass;
 };
 
-},{"../../elliptic":3,"./key":14,"./signature":15,"hash.js":20}],14:[function(require,module,exports){
+},{"../../elliptic":8,"./key":19,"./signature":20,"hash.js":25}],19:[function(require,module,exports){
 'use strict';
 
 var elliptic = require('../../elliptic');
@@ -5261,7 +6254,7 @@ KeyPair.prototype.getPublic = function getPublic(enc) {
 
 module.exports = KeyPair;
 
-},{"../../elliptic":3}],15:[function(require,module,exports){
+},{"../../elliptic":8}],20:[function(require,module,exports){
 'use strict';
 
 var bn = require('bn.js');
@@ -5329,7 +6322,7 @@ Signature.prototype.toHex = function toHex() {
 
 module.exports = Signature;
 
-},{"../../elliptic":3,"bn.js":2}],16:[function(require,module,exports){
+},{"../../elliptic":8,"bn.js":5}],21:[function(require,module,exports){
 'use strict';
 
 var hash = require('hash.js');
@@ -5445,7 +6438,7 @@ HmacDRBG.prototype.generate = function generate(len, enc, add, addEnc) {
   return utils.encode(res, enc);
 };
 
-},{"../elliptic":3,"hash.js":20}],17:[function(require,module,exports){
+},{"../elliptic":8,"hash.js":25}],22:[function(require,module,exports){
 module.exports = {
   doubles: {
     step: 4,
@@ -6227,7 +7220,7 @@ module.exports = {
   }
 };
 
-},{}],18:[function(require,module,exports){
+},{}],23:[function(require,module,exports){
 'use strict';
 
 var utils = exports;
@@ -6401,7 +7394,7 @@ function intFromLE(bytes) {
 utils.intFromLE = intFromLE;
 
 
-},{"bn.js":2}],19:[function(require,module,exports){
+},{"bn.js":5}],24:[function(require,module,exports){
 var r;
 
 module.exports = function rand(len) {
@@ -6460,7 +7453,7 @@ if (typeof window === 'object') {
   }
 }
 
-},{}],20:[function(require,module,exports){
+},{}],25:[function(require,module,exports){
 var hash = exports;
 
 hash.utils = require('./hash/utils');
@@ -6477,7 +7470,7 @@ hash.sha384 = hash.sha.sha384;
 hash.sha512 = hash.sha.sha512;
 hash.ripemd160 = hash.ripemd.ripemd160;
 
-},{"./hash/common":21,"./hash/hmac":22,"./hash/ripemd":23,"./hash/sha":24,"./hash/utils":25}],21:[function(require,module,exports){
+},{"./hash/common":26,"./hash/hmac":27,"./hash/ripemd":28,"./hash/sha":29,"./hash/utils":30}],26:[function(require,module,exports){
 var hash = require('../hash');
 var utils = hash.utils;
 var assert = utils.assert;
@@ -6570,7 +7563,7 @@ BlockHash.prototype._pad = function pad() {
   return res;
 };
 
-},{"../hash":20}],22:[function(require,module,exports){
+},{"../hash":25}],27:[function(require,module,exports){
 var hmac = exports;
 
 var hash = require('../hash');
@@ -6620,7 +7613,7 @@ Hmac.prototype.digest = function digest(enc) {
   return this.outer.digest(enc);
 };
 
-},{"../hash":20}],23:[function(require,module,exports){
+},{"../hash":25}],28:[function(require,module,exports){
 var hash = require('../hash');
 var utils = hash.utils;
 
@@ -6766,7 +7759,7 @@ var sh = [
   8, 5, 12, 9, 12, 5, 14, 6, 8, 13, 6, 5, 15, 13, 11, 11
 ];
 
-},{"../hash":20}],24:[function(require,module,exports){
+},{"../hash":25}],29:[function(require,module,exports){
 var hash = require('../hash');
 var utils = hash.utils;
 var assert = utils.assert;
@@ -7332,7 +8325,7 @@ function g1_512_lo(xh, xl) {
   return r;
 }
 
-},{"../hash":20}],25:[function(require,module,exports){
+},{"../hash":25}],30:[function(require,module,exports){
 var utils = exports;
 var inherits = require('inherits');
 
@@ -7591,7 +8584,7 @@ function shr64_lo(ah, al, num) {
 };
 exports.shr64_lo = shr64_lo;
 
-},{"inherits":26}],26:[function(require,module,exports){
+},{"inherits":31}],31:[function(require,module,exports){
 if (typeof Object.create === 'function') {
   // implementation from standard node.js 'util' module
   module.exports = function inherits(ctor, superCtor) {
@@ -7616,7 +8609,7 @@ if (typeof Object.create === 'function') {
   }
 }
 
-},{}],27:[function(require,module,exports){
+},{}],32:[function(require,module,exports){
 module.exports={
   "name": "elliptic",
   "version": "5.1.0",
@@ -7660,7 +8653,7 @@ module.exports={
   "gitHead": "4f12b8f6bcb16e38d4a038af2d963dc10d175bde",
   "_id": "elliptic@5.1.0",
   "_shasum": "5658dfa7625a6a8fc687a5b8f249376bb271e6e9",
-  "_from": "elliptic@>=5.0.0 <6.0.0",
+  "_from": "elliptic@>=5.1.0 <6.0.0",
   "_npmVersion": "2.12.1",
   "_nodeVersion": "2.3.4",
   "_npmUser": {
@@ -7682,1033 +8675,7 @@ module.exports={
   "readme": "ERROR: No README data found!"
 }
 
-},{}],28:[function(require,module,exports){
-module.exports={
-  "0000000000000000000000000000000000000001": "1",
-  "0000000000000000000000000000000000000002": "1",
-  "0000000000000000000000000000000000000003": "1",
-  "0000000000000000000000000000000000000004": "1",
-  "dbdbdb2cbd23b783741e8d7fcf51e459b497e4a6": "1606938044258990275541962092341162602522202993782792835301376",
-  "e6716f9544a56c530d868e4bfbacb172315bdead": "1606938044258990275541962092341162602522202993782792835301376",
-  "b9c015918bdaba24b4ff057a92a3873d6eb201be": "1606938044258990275541962092341162602522202993782792835301376",
-  "1a26338f0d905e295fccb71fa9ea849ffa12aaf4": "1606938044258990275541962092341162602522202993782792835301376",
-  "2ef47100e0787b915105fd5e3f4ff6752079d5cb": "1606938044258990275541962092341162602522202993782792835301376",
-  "cd2a3d9f938e13cd947ec05abc7fe734df8dd826": "1606938044258990275541962092341162602522202993782792835301376",
-  "6c386a4b26f73c802f34673f7248bb118f97424a": "1606938044258990275541962092341162602522202993782792835301376",
-  "e4157b34ea9615cfbde6b4fda419828124b70c78": "1606938044258990275541962092341162602522202993782792835301376"
-}
-
-},{}],29:[function(require,module,exports){
-module.exports = {
-  allotments: require('./genesis.json'),
-  fees: require('./params.json')
-};
-
-},{"./genesis.json":28,"./params.json":30}],30:[function(require,module,exports){
-module.exports={
-  "genesisGasLimit": {
-    "v": 3141592,
-    "d": "Gas limit of the Genesis block."
-  },
-  "minGasLimit": {
-    "v": 125000,
-    "d": "Minimum the gas limit may ever be."
-  },
-  "gasLimitBoundDivisor": {
-    "v": 1024,
-    "d": "The bound divisor of the gas limit, used in update calculations."
-  },
-  "genesisDifficulty": {
-    "v": 131072,
-    "d": "Difficulty of the Genesis block."
-  },
-  "minimumDifficulty": {
-    "v": 131072,
-    "d": "The minimum that the difficulty may ever be."
-  },
-  "difficultyBoundDivisor": {
-    "v": 2048,
-    "d": "The bound divisor of the difficulty, used in the update calculations."
-  },
-  "durationLimit": {
-    "v": 8,
-    "d": "The decision boundary on the blocktime duration used to determine whether difficulty should go up or not."
-  },
-  "maximumExtraDataSize": {
-    "v": 1024,
-    "d": "Maximum size extra data may be after Genesis."
-  },
-  "epochDuration": {
-    "v": 30000,
-    "d": "Duration between proof-of-work epochs."
-  },
-  "stackLimit": {
-    "v": 1024,
-    "d": "Maximum size of VM stack allowed."
-  },
-  "callCreateDepth": {
-    "v": 1024,
-    "d": "Maximum depth of call/create stack."
-  },
-  "tierStepGas": {
-    "v": [0, 2, 3, 5, 8, 10, 20],
-    "d": "Once per operation, for a selection of them."
-  },
-  "expGas": {
-    "v": 10,
-    "d": "Once per EXP instuction."
-  },
-  "expByteGas": {
-    "v": 10,
-    "d": "Times ceil(log256(exponent)) for the EXP instruction."
-  },
-  "sha3Gas": {
-    "v": 30,
-    "d": "Once per SHA3 operation."
-  },
-  "sha3WordGas": {
-    "v": 6,
-    "d": "Once per word of the SHA3 operation's data."
-  },
-  "sloadGas": {
-    "v": 50,
-    "d": "Once per SLOAD operation."
-  },
-  "sstoreSetGas": {
-    "v": 20000,
-    "d": "Once per SSTORE operation if the zeroness changes from zero."
-  },
-  "sstoreResetGas": {
-    "v": 5000,
-    "d": "Once per SSTORE operation if the zeroness does not change from zero."
-  },
-  "sstoreRefundGas": {
-    "v": 15000,
-    "d": "Once per SSTORE operation if the zeroness changes to zero."
-  },
-  "jumpdestGas": {
-    "v": 1,
-    "d": "Refunded gas, once per SSTORE operation if the zeroness changes to zero."
-  },
-  "logGas": {
-    "v": 375,
-    "d": "Per LOG* operation."
-  },
-  "logDataGas": {
-    "v": 8,
-    "d": "Per byte in a LOG* operation's data."
-  },
-  "logTopicGas": {
-    "v": 375,
-    "d": "Multiplied by the * of the LOG*, per LOG transaction. e.g. LOG0 incurs 0 * c_txLogTopicGas, LOG4 incurs 4 * c_txLogTopicGas."
-  },
-  "createGas": {
-    "v": 32000,
-    "d": "Once per CREATE operation & contract-creation transaction."
-  },
-  "callGas": {
-    "v": 40,
-    "d": "Once per CALL operation & message call transaction."
-  },
-  "callStipend": {
-    "v": 2300,
-    "d": "Free gas given at beginning of call."
-  },
-  "callValueTransferGas": {
-    "v": 9000,
-    "d": "Paid for CALL when the value transfor is non-zero."
-  },
-  "callNewAccountGas": {
-    "v": 25000,
-    "d": "Paid for CALL when the destination address didn't exist prior."
-  },
-  "suicideRefundGas": {
-    "v": 24000,
-    "d": "Refunded following a suicide operation."
-  },
-  "memoryGas": {
-    "v": 3,
-    "d": "Times the address of the (highest referenced byte in memory + 1). NOTE: referencing happens on read, write and in instructions such as RETURN and CALL."
-  },
-  "quadCoeffDiv": {
-    "v": 512,
-    "d": "Divisor for the quadratic particle of the memory cost equation."
-  },
-  "createDataGas": {
-    "v": 200,
-    "d": ""
-  },
-  "txGas": {
-    "v": 21000,
-    "d": "Per transaction. NOTE: Not payable on data of calls between transactions."
-  },
-  "txDataZeroGas": {
-    "v": 4,
-    "d": "Per byte of data attached to a transaction that equals zero. NOTE: Not payable on data of calls between transactions."
-  },
-  "txDataNonZeroGas": {
-    "v": 68,
-    "d": "Per byte of data attached to a transaction that is not equal to zero. NOTE: Not payable on data of calls between transactions."
-  },
-  "copyGas": {
-    "v": 3,
-    "d": "Multiplied by the number of 32-byte words that are copied (round up) for any *COPY operation and added."
-  },
-  "ecrecoverGas": {
-    "v": 3000,
-    "d": ""
-  },
-  "sha256Gas": {
-    "v": 60,
-    "d": ""
-  },
-  "sha256WordGas": {
-    "v": 12,
-    "d": ""
-  },
-  "ripemd160Gas": {
-    "v": 600,
-    "d": ""
-  },
-  "ripemd160WordGas": {
-    "v": 120,
-    "d": ""
-  },
-  "identityGas": {
-    "v": 15,
-    "d": ""
-  },
-  "identityWordGas": {
-    "v": 3,
-    "d": ""
-  },
-  "minerReward": {
-    "v": "1500000000000000000",
-    "d": "the amount a miner get rewarded for mining a block"
-
-  },
-  "uncleReward": {
-    "v": "1406250000000000000",
-    "d": "The amount of wei a miner of an uncle block gets for being inculded in the blockchain"
-
-  },
-  "nephewReward": {
-    "v": "46875000000000000",
-    "d": "the amount a miner gets for inculding a uncle"
-  }
-}
-
-},{}],31:[function(require,module,exports){
-(function (Buffer){
-const SHA3 = require('sha3')
-const ec = require('elliptic').ec('secp256k1')
-const assert = require('assert')
-const rlp = require('rlp')
-const BN = require('bn.js')
-
-//the max interger that this VM can handle
-exports.MAX_INTEGER = new BN('ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff', 16)
-exports.TWO_POW256 = new BN('115792089237316195423570985008687907853269984665640564039457584007913129639936')
-
-//hex string of SHA3-256 hash of `null`
-exports.SHA3_NULL = 'c5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470'
-
-//SHA3-256 hash of the rlp of []
-exports.SHA3_RLP_ARRAY = '1dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d49347'
-
-//SHA3-256 hash of the rlp of `null`
-exports.SHA3_RLP = '56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421'
-
-exports.BN = BN
-exports.elliptic = ec
-
-/**
- * Returns a buffer filled with 0s
- * @method zeros
- * @param {Integer} bytes  the number of bytes the buffer should be
- * @return {Buffer}
- */
-exports.zeros = function(bytes) {
-  var buf = new Buffer(bytes);
-  buf.fill(0);
-  return buf;
-}
-
-/**
- * pads an array of buffer with leading zeros till it has `length` bytes
- * @method pad
- * @param {Buffer|Array} array
- * @param {Integer}  length the number of bytes the output should be
- * @return {Buffer|Array}
- */
-exports.pad = function(msg, length) {
-  if (msg.length < length) {
-    var buf = exports.zeros(length)
-    msg.copy(buf, length - msg.length)
-    return buf
-  } 
-  return msg.slice(-length)
-}
-
-/**
- * Trims leading zeros from a buffer or an array
- * @method unpad
- * @param {Buffer|Array|String}
- * @return {Buffer|Array|String}
- */
-exports.unpad = function(a) {
-  var first = a[0]
-  while (a.length > 0 && first.toString() === '0') {
-    a = a.slice(1)
-    first = a[0]
-  }
-  return a
-}
-
-/**
- * Converts an integer into a hex string
- * @method intToHex
- * @param {Number}
- * @return {String}
- */
-exports.intToHex = function(i) {
-  assert(i % 1 === 0, 'number is not a interger')
-  assert(i >= 0, 'number must be positive')
-  var hex = i.toString(16)
-  if (hex.length % 2)
-    hex = '0' + hex
-
-  return hex
-}
-
-/**
- * Converts an integer to a buffer
- * @method intToBuffer
- * @param {Number}
- * @return {Buffer}
- */
-exports.intToBuffer = function(i) {
-  var hex = exports.intToHex(i)
-  return new Buffer(hex, 'hex')
-}
-
-/**
- * Converts a buffer to an Interger
- * @method bufferToInt
- * @par[MaÅam {B[M`Êuffer}
- * @return {Number}
- */
-exports.bufferToInt = function(buf) {
-  if (buf.length === 0)
-    return 0
-  
-  return parseInt(buf.toString('hex'), 16)
-}
-
-/**
- * interpets a buffer as a signed integer and returns a bignum
- * @method fromSigned
- * @param {Buffer} num
- * @return {BN}
- */
-exports.fromSigned = function(num) {
-  if (num.length === 32 && num[0] >= 128)
-    return new BN(num).sub(exports.TWO_POW256)
-
-  return new BN(num)
-}
-
-/**
- * Converts a bignum to an unsigned interger and returns it as a buffer
- * @method toUnsigned
- * @param {Bignum} num
- * @return {Buffer}
- */
-exports.toUnsigned = function(num) {
-  if (num.cmpn(0) === -1) 
-    return new Buffer(num.add(exports.TWO_POW256).toArray())
-  
-  return new Buffer(num.toArray())
-}
-
-exports.sha3 = function(a, bytes) {
-  if(!bytes) bytes = 256
-
-  var h = new SHA3.SHA3Hash(bytes)
-  if (a)
-    h.update(a)
-
-  return new Buffer(h.digest('hex'), 'hex')
-}
-
-/**
- * Returns the ethereum address of a given public key
- * @method pubToAddress
- * @param {Buffer}
- * @return {Buffer}
- */
-exports.pubToAddress = exports.publicToAddress = function(pubKey) {
-  var hash = new SHA3.SHA3Hash(256)
-  hash.update(pubKey.slice(-64))
-  return new Buffer(hash.digest('hex').slice(-40), 'hex')
-}
-
-/**
- * Returns the ethereum public key of a given private key
- * @method privateToPublic
- * @param {Buffer} privateKey
- * @return {Buffer}
- */
-var privateToPublic = exports.privateToPublic = function(privateKey){
-  privateKey = new BN(privateKey)
-  var key = ec.keyFromPrivate(privateKey).getPublic().toJSON()
-  return new Buffer(key[0].toArray().concat(key[1].toArray()))
-}
-
-/**
- * Returns the ethereum address of a given private key
- * @method privateToAddress
- * @param {Buffer} privateKey
- * @return {Buffer}
- */
-exports.privateToAddress = function(privateKey){
-  return exports.publicToAddress(privateToPublic(privateKey))
-}
-
-/**
- * Generates a new address
- * @method generateAddress
- * @param {Buffer} from the address which is creating this new address
- * @param {Buffer} nonce the nonce of the from account
- */
-exports.generateAddress = function(from, nonce) {
-  nonce = new Buffer(new BN(nonce).subn(1).toArray())
-
-  if (nonce.toString('hex') === '00') 
-    nonce = 0;
-
-  var hash = exports.sha3(rlp.encode([new Buffer(from, 'hex'), nonce]))
-  return hash.slice(12)
-}
-
-/**
- * defines properties on a `Object`
- * @method defineProperties
- * @para[M`Êm {Object} self the `Object` to define properties on
- * @param {Array} fields an array fields to define
- */
-exports.defineProperties = function(self, fields, data) {
-
-  self.raw = []
-  self._fields = []
-
-  self.toJSON = function(label){
-    if (label) {
-      var obj = {}
-
-      for (var prop in this) {
-        if (typeof this[prop] !== 'function' && prop !== 'raw' && prop !== '_fields')
-          obj[prop] = this[prop].toString('hex')
-      }
-      return obj
-    }
-
-    return exports.baToJSON(this.raw)
-  }
-
-  fields.forEach(function(field, i) {
-    self._fields.push(field.name)
-    Object.defineProperty(self, field.name, {
-      enumerable: true,
-      configurable: true,
-      get: function() {
-        return this.raw[i]
-      },
-      set: function(v) {
-        if (!Buffer.isBuffer(v)) {
-          if (typeof v === 'string')
-            v = new Buffer(padToEven(exports.stripHexPrefix(v)), 'hex')
-          else if (typeof v === 'number')
-            v = exports.intToBuffer(v)
-          else if (v === null || v === undefined)
-            v = new Buffer([])
-          else if (v.toArray) 
-            //converts a BN to a Buffer
-            v = new Buffer(v.toArray())
-          else
-            throw new Error('invalid type')
-        }
-
-        if(v.toString('hex') === '00' &&  field.noZero)
-          v = new Buffer([])
-
-        if(field.word && new BN(v).cmp(exports.MAX_INTEGER) === 1)
-          throw(new Error('to large of value'))
-
-        if(!(field.empty && v.length === 0) && field.pad && v.length < field.length)
-          v = exports.pad(v, field.length)
-
-        if(field.allowLess && field.length){
-          assert(field.length >= v.length)
-        } else if (!(field.empty && v.length === 0) && field.length)
-          assert(field.length === v.length, 'The field ' + field.name + 'must have byte length of ' + field.length)
-
-        this.raw[i] = v
-      }
-    })
-
-    if(field.default)
-      self[field.name] = field.default
-  })
-
-  if (data) {
-    if (Buffer.isBuffer(data))
-      data = rlp.decode(data)
-
-    if (Array.isArray(data)) {
-      if(data.length > self._fields.length) 
-        throw(new Error('wrong number of fields in data'))
-
-      //make sure all the items are buffers
-      data.forEach(function(d, i) {
-         self[self._fields[i]] = typeof d === 'string' ? new Buffer(d, 'hex') : d
-      })
-    } else {
-      for (var prop in data) {
-        if (self._fields.indexOf(prop) !== -1)
-          self[prop] = data[prop]
-      }
-    }
-  }
-}
-
-/**
- * Print a Buffer Array
- * @method printBA
- * @param {Buffer|Array}
- */
-exports.printBA = function(ba) {
-  if (Buffer.isBuffer(ba)) {
-    if (ba.length === 0) 
-      console.log('new Buffer(0)')
-    else 
-      console.log('new Buffer(\'' + ba.toString('hex') + '\', \'hex\')')
-  } else if (ba instanceof Array) {
-    console.log('[')
-    for (var i = 0; i < ba.length; i++) {
-      exports.printBA(ba[i])
-      console.log(',')
-    }
-    console.log(']')
-  } else 
-    console.log(ba)
-}
-
-/**
- * converts a buffer array to JSON
- * @method BAToJSON
- * @param {Buffer|Array}
- */
-exports.baToJSON = function(ba) {
-  if (Buffer.isBuffer(ba)) {
-    return ba.toString('hex')
-  } else if (ba instanceof Array) {
-    var array = []
-    for (var i = 0; i < ba.length; i++) {
-      array.push(exports.baToJSON(ba[i]))
-    }
-    return array
-  }
-}
-
-//Returns a Boolean on whether or not the a sting starts with 0x
-exports.isHexPrefixed = function(str){
-  return str.slice(0, 2) === '0x'
-}
-
-//Removes 0x from a given String
-exports.stripHexPrefix = function(str){
-  if (typeof str !== 'string')
-     return str
-  return exports.isHexPrefixed(str) ?  str.slice(2) : str
-}
-
-//Adds 0x to a given string if it does not already start with 0x
-exports.addHexPrefix = function(str){
-  if (typeof str !== 'string')
-     return str
-  return exports.isHexPrefixed(str) ? '0x' + str : str
-}
-
-function padToEven(a){
-  if (a.length % 2) a = '0' + a;
-  return a
-}
-
-}).call(this,require("buffer").Buffer)
-},{"assert":36,"bn.js":2,"buffer":37,"elliptic":3,"rlp":34,"sha3":32}],32:[function(require,module,exports){
-(function (Buffer){
-const Sha3 = require('js-sha3')
-
-var hash = function (bitcount) {
-  this.content = ''
-  this.bitcount = bitcount ? 'keccak_' + bitcount : 'keccak_512'
-}
-
-hash.prototype.update = function (i) {
-  this.content = Buffer.isBuffer(i) ? i : new Buffer(i);
-}
-
-hash.prototype.digest = function (encoding) {
-  var result = Sha3[this.bitcount](this.content) 
-  if(encoding === 'hex')
-    return result
-  else
-    return new Buffer(result, 'hex').toString('binary')
-}
-
-module.exports = {
-  SHA3Hash: hash
-}
-
-}).call(this,require("buffer").Buffer)
-},{"buffer":37,"js-sha3":33}],33:[function(require,module,exports){
-(function (global){
-/*
- * js-sha3 v0.3.1
- * https://github.com/emn178/js-sha3
- *
- * Copyright 2015, emn178@gmail.com
- *
- * Licensed under the MIT license:
- * http://www.opensource.org/licenses/MIT
- */
-;(function(root, undefined) {
-  'use strict';
-
-  var NODE_JS = typeof(module) != 'undefined';
-  if(NODE_JS) {
-    root = global;
-    if(root.JS_SHA3_TEST) {
-      root.navigator = { userAgent: 'Chrome'};
-    }
-  }
-  var CHROME = (root.JS_SHA3_TEST || !NODE_JS) && navigator.userAgent.indexOf('Chrome') != -1;
-  var HEX_CHARS = '0123456789abcdef'.split('');
-  var KECCAK_PADDING = [1, 256, 65536, 16777216];
-  var PADDING = [6, 1536, 393216, 100663296];
-  var SHIFT = [0, 8, 16, 24];
-  var RC = [1, 0, 32898, 0, 32906, 2147483648, 2147516416, 2147483648, 32907, 0, 2147483649,
-            0, 2147516545, 2147483648, 32777, 2147483648, 138, 0, 136, 0, 2147516425, 0, 
-            2147483658, 0, 2147516555, 0, 139, 2147483648, 32905, 2147483648, 32771, 
-            2147483648, 32770, 2147483648, 128, 2147483648, 32778, 0, 2147483658, 2147483648,
-            2147516545, 2147483648, 32896, 2147483648, 2147483649, 0, 2147516424, 2147483648];
-
-  var blocks = [], s = [];
-
-  var keccak_224 = function(message) {
-    return keccak(message, 224, KECCAK_PADDING);
-  };
-
-  var keccak_256 = function(message) {
-    return keccak(message, 256, KECCAK_PADDING);
-  };
-
-  var keccak_384 = function(message) {
-    return keccak(message, 384, KECCAK_PADDING);
-  };
-
-  var sha3_224 = function(message) {
-    return keccak(message, 224, PADDING);
-  };
-
-  var sha3_256 = function(message) {
-    return keccak(message, 256, PADDING);
-  };
-
-  var sha3_384 = function(message) {
-    return keccak(message, 384, PADDING);
-  };
-
-  var sha3_512 = function(message) {
-    return keccak(message, 512, PADDING);
-  };
-
-  var keccak = function(message, bits, padding) {
-    var notString = typeof(message) != 'string';
-    if(notString && message.constructor == root.ArrayBuffer) {
-      message = new Uint8Array(message);
-    }
-
-    if(bits === undefined) {
-      bits = 512;
-      padding = KECCAK_PADDING;
-    }
-
-    var block, code, end = false, index = 0, start = 0, length = message.length,
-        n, i, h, l, c0, c1, c2, c3, c4, c5, c6, c7, c8, c9, 
-        b0, b1, b2, b3, b4, b5, b6, b7, b8, b9, b10, b11, b12, b13, b14, b15, b16, b17, 
-        b18, b19, b20, b21, b22, b23, b24, b25, b26, b27, b28, b29, b30, b31, b32, b33, 
-        b34, b35, b36, b37, b38, b39, b40, b41, b42, b43, b44, b45, b46, b47, b48, b49;
-    var blockCount = (1600 - bits * 2) / 32;
-    var byteCount = blockCount * 4;
-
-    for(i = 0;i < 50;++i) {
-      s[i] = 0;
-    }
-
-    block = 0;
-    do {
-      blocks[0] = block;
-      for(i = 1;i < blockCount + 1;++i) {
-        blocks[i] = 0;
-      }
-      if(notString) {
-        for (i = start;index < length && i < byteCount; ++index) {
-          blocks[i >> 2] |= message[index] << SHIFT[i++ & 3];
-        }
-      } else {
-        for (i = start;index < length && i < byteCount; ++index) {
-          code = message.charCodeAt(index);
-          if (code < 0x80) {
-            blocks[i >> 2] |= code << SHIFT[i++ & 3];
-          } else if (code < 0x800) {
-            blocks[i >> 2] |= (0xc0 | (code >> 6)) << SHIFT[i++ & 3];
-            blocks[i >> 2] |= (0x80 | (code & 0x3f)) << SHIFT[i++ & 3];
-          } else if (code < 0xd800 || code >= 0xe000) {
-            blocks[i >> 2] |= (0xe0 | (code >> 12)) << SHIFT[i++ & 3];
-            blocks[i >> 2] |= (0x80 | ((code >> 6) & 0x3f)) << SHIFT[i++ & 3];
-            blocks[i >> 2] |= (0x80 | (code & 0x3f)) << SHIFT[i++ & 3];
-          } else {
-            code = 0x10000 + (((code & 0x3ff) << 10) | (message.charCodeAt(++index) & 0x3ff));
-            blocks[i >> 2] |= (0xf0 | (code >> 18)) << SHIFT[i++ & 3];
-            blocks[i >> 2] |= (0x80 | ((code >> 12) & 0x3f)) << SHIFT[i++ & 3];
-            blocks[i >> 2] |= (0x80 | ((code >> 6) & 0x3f)) << SHIFT[i++ & 3];
-            blocks[i >> 2] |= (0x80 | (code & 0x3f)) << SHIFT[i++ & 3];
-          }
-        }
-      }
-      start = i - byteCount;
-      if(index == length) {
-        blocks[i >> 2] |= padding[i & 3];
-        ++index;
-      }
-      block = blocks[blockCount];
-      if(index > length && i < byteCount) {
-        blocks[blockCount - 1] |= 0x80000000;
-        end = true;
-      }
-
-      for(i = 0;i < blockCount;++i) {
-        s[i] ^= blocks[i];
-      }
-
-      for(n = 0; n < 48; n += 2) {
-        c0 = s[0] ^ s[10] ^ s[20] ^ s[30] ^ s[40];
-        c1 = s[1] ^ s[11] ^ s[21] ^ s[31] ^ s[41];
-        c2 = s[2] ^ s[12] ^ s[22] ^ s[32] ^ s[42];
-        c3 = s[3] ^ s[13] ^ s[23] ^ s[33] ^ s[43];
-        c4 = s[4] ^ s[14] ^ s[24] ^ s[34] ^ s[44];
-        c5 = s[5] ^ s[15] ^ s[25] ^ s[35] ^ s[45];
-        c6 = s[6] ^ s[16] ^ s[26] ^ s[36] ^ s[46];
-        c7 = s[7] ^ s[17] ^ s[27] ^ s[37] ^ s[47];
-        c8 = s[8] ^ s[18] ^ s[28] ^ s[38] ^ s[48];
-        c9 = s[9] ^ s[19] ^ s[29] ^ s[39] ^ s[49];
-
-        h = c8 ^ ((c2 << 1) | (c3 >>> 31));
-        l = c9 ^ ((c3 << 1) | (c2 >>> 31));
-        s[0] ^= h;
-        s[1] ^= l;
-        s[10] ^= h;
-        s[11] ^= l;
-        s[20] ^= h;
-        s[21] ^= l;
-        s[30] ^= h;
-        s[31] ^= l;
-        s[40] ^= h;
-        s[41] ^= l;
-        h = c0 ^ ((c4 << 1) | (c5 >>> 31));
-        l = c1 ^ ((c5 << 1) | (c4 >>> 31));
-        s[2] ^= h;
-        s[3] ^= l;
-        s[12] ^= h;
-        s[13] ^= l;
-        s[22] ^= h;
-        s[23] ^= l;
-        s[32] ^= h;
-        s[33] ^= l;
-        s[42] ^= h;
-        s[43] ^= l;
-        h = c2 ^ ((c6 << 1) | (c7 >>> 31));
-        l = c3 ^ ((c7 << 1) | (c6 >>> 31));
-        s[4] ^= h;
-        s[5] ^= l;
-        s[14] ^= h;
-        s[15] ^= l;
-        s[24] ^= h;
-        s[25] ^= l;
-        s[34] ^= h;
-        s[35] ^= l;
-        s[44] ^= h;
-        s[45] ^= l;
-        h = c4 ^ ((c8 << 1) | (c9 >>> 31));
-        l = c5 ^ ((c9 << 1) | (c8 >>> 31));
-        s[6] ^= h;
-        s[7] ^= l;
-        s[16] ^= h;
-        s[17] ^= l;
-        s[26] ^= h;
-        s[27] ^= l;
-        s[36] ^= h;
-        s[37] ^= l;
-        s[46] ^= h;
-        s[47] ^= l;
-        h = c6 ^ ((c0 << 1) | (c1 >>> 31));
-        l = c7 ^ ((c1 << 1) | (c0 >>> 31));
-        s[8] ^= h;
-        s[9] ^= l;
-        s[18] ^= h;
-        s[19] ^= l;
-        s[28] ^= h;
-        s[29] ^= l;
-        s[38] ^= h;
-        s[39] ^= l;
-        s[48] ^= h;
-        s[49] ^= l;
-
-        b0 = s[0];
-        b1 = s[1];
-        b32 = (s[11] << 4) | (s[10] >>> 28);
-        b33 = (s[10] << 4) | (s[11] >>> 28);
-        b14 = (s[20] << 3) | (s[21] >>> 29);
-        b15 = (s[21] << 3) | (s[20] >>> 29);
-        b46 = (s[31] << 9) | (s[30] >>> 23);
-        b47 = (s[30] << 9) | (s[31] >>> 23);
-        b28 = (s[40] << 18) | (s[41] >>> 14);
-        b29 = (s[41] << 18) | (s[40] >>> 14);
-        b20 = (s[2] << 1) | (s[3] >>> 31);
-        b21 = (s[3] << 1) | (s[2] >>> 31);
-        b2 = (s[13] << 12) | (s[12] >>> 20);
-        b3 = (s[12] << 12) | (s[13] >>> 20);
-        b34 = (s[22] << 10) | (s[23] >>> 22);
-        b35 = (s[23] << 10) | (s[22] >>> 22);
-        b16 = (s[33] << 13) | (s[32] >>> 19);
-        b17 = (s[32] << 13) | (s[33] >>> 19);
-        b48 = (s[42] << 2) | (s[43] >>> 30);
-        b49 = (s[43] << 2) | (s[42] >>> 30);
-        b40 = (s[5] << 30) | (s[4] >>> 2);
-        b41 = (s[4] << 30) | (s[5] >>> 2);
-        b22 = (s[14] << 6) | (s[15] >>> 26);
-        b23 = (s[15] << 6) | (s[14] >>> 26);
-        b4 = (s[25] << 11) | (s[24] >>> 21);
-        b5 = (s[24] << 11) | (s[25] >>> 21);
-        b36 = (s[34] << 15) | (s[35] >>> 17);
-        b37 = (s[35] << 15) | (s[34] >>> 17);
-        b18 = (s[45] << 29) | (s[44] >>> 3);
-        b19 = (s[44] << 29) | (s[45] >>> 3);
-        b10 = (s[6] << 28) | (s[7] >>> 4);
-        b11 = (s[7] << 28) | (s[6] >>> 4);
-        b42 = (s[17] << 23) | (s[16] >>> 9);
-        b43 = (s[16] << 23) | (s[17] >>> 9);
-        b24 = (s[26] << 25) | (s[27] >>> 7);
-        b25 = (s[27] << 25) | (s[26] >>> 7);
-        b6 = (s[36] << 21) | (s[37] >>> 11);
-        b7 = (s[37] << 21) | (s[36] >>> 11);
-        b38 = (s[47] << 24) | (s[46] >>> 8);
-        b39 = (s[46] << 24) | (s[47] >>> 8);
-        b30 = (s[8] << 27) | (s[9] >>> 5);
-        b31 = (s[9] << 27) | (s[8] >>> 5);
-        b12 = (s[18] << 20) | (s[19] >>> 12);
-        b13 = (s[19] << 20) | (s[18] >>> 12);
-        b44 = (s[29] << 7) | (s[28] >>> 25);
-        b45 = (s[28] << 7) | (s[29] >>> 25);
-        b26 = (s[38] << 8) | (s[39] >>> 24);
-        b27 = (s[39] << 8) | (s[38] >>> 24);
-        b8 = (s[48] << 14) | (s[49] >>> 18);
-        b9 = (s[49] << 14) | (s[48] >>> 18);
-
-        s[0] = b0 ^ (~b2 & b4);
-        s[1] = b1 ^ (~b3 & b5);
-        s[10] = b10 ^ (~b12 & b14);
-        s[11] = b11 ^ (~b13 & b15);
-        s[20] = b20 ^ (~b22 & b24);
-        s[21] = b21 ^ (~b23 & b25);
-        s[30] = b30 ^ (~b32 & b34);
-        s[31] = b31 ^ (~b33 & b35);
-        s[40] = b40 ^ (~b42 & b44);
-        s[41] = b41 ^ (~b43 & b45);
-        s[2] = b2 ^ (~b4 & b6);
-        s[3] = b3 ^ (~b5 & b7);
-        s[12] = b12 ^ (~b14 & b16);
-        s[13] = b13 ^ (~b15 & b17);
-        s[22] = b22 ^ (~b24 & b26);
-        s[23] = b23 ^ (~b25 & b27);
-        s[32] = b32 ^ (~b34 & b36);
-        s[33] = b33 ^ (~b35 & b37);
-        s[42] = b42 ^ (~b44 & b46);
-        s[43] = b43 ^ (~b45 & b47);
-        s[4] = b4 ^ (~b6 & b8);
-        s[5] = b5 ^ (~b7 & b9);
-        s[14] = b14 ^ (~b16 & b18);
-        s[15] = b15 ^ (~b17 & b19);
-        s[24] = b24 ^ (~b26 & b28);
-        s[25] = b25 ^ (~b27 & b29);
-        s[34] = b34 ^ (~b36 & b38);
-        s[35] = b35 ^ (~b37 & b39);
-        s[44] = b44 ^ (~b46 & b48);
-        s[45] = b45 ^ (~b47 & b49);
-        s[6] = b6 ^ (~b8 & b0);
-        s[7] = b7 ^ (~b9 & b1);
-        s[16] = b16 ^ (~b18 & b10);
-        s[17] = b17 ^ (~b19 & b11);
-        s[26] = b26 ^ (~b28 & b20);
-        s[27] = b27 ^ (~b29 & b21);
-        s[36] = b36 ^ (~b38 & b30);
-        s[37] = b37 ^ (~b39 & b31);
-        s[46] = b46 ^ (~b48 & b40);
-        s[47] = b47 ^ (~b49 & b41);
-        s[8] = b8 ^ (~b0 & b2);
-        s[9] = b9 ^ (~b1 & b3);
-        s[18] = b18 ^ (~b10 & b12);
-        s[19] = b19 ^ (~b11 & b13);
-        s[28] = b28 ^ (~b20 & b22);
-        s[29] = b29 ^ (~b21 & b23);
-        s[38] = b38 ^ (~b30 & b32);
-        s[39] = b39 ^ (~b31 & b33);
-        s[48] = b48 ^ (~b40 & b42);
-        s[49] = b49 ^ (~b41 & b43);
-
-        s[0] ^= RC[n];
-        s[1] ^= RC[n + 1];
-      }
-    } while(!end);
-
-    var hex = '';
-    if(CHROME) {
-      b0 = s[0];
-      b1 = s[1];
-      b2 = s[2];
-      b3 = s[3];
-      b4 = s[4];
-      b5 = s[5];
-      b6 = s[6];
-      b7 = s[7];
-      b8 = s[8];
-      b9 = s[9];
-      b10 = s[10];
-      b11 = s[11];
-      b12 = s[12];
-      b13 = s[13];
-      b14 = s[14];
-      b15 = s[15];
-      hex += HEX_CHARS[(b0 >> 4) & 0x0F] + HEX_CHARS[b0 & 0x0F] +
-             HEX_CHARS[(b0 >> 12) & 0x0F] + HEX_CHARS[(b0 >> 8) & 0x0F] +
-             HEX_CHARS[(b0 >> 20) & 0x0F] + HEX_CHARS[(b0 >> 16) & 0x0F] +
-             HEX_CHARS[(b0 >> 28) & 0x0F] + HEX_CHARS[(b0 >> 24) & 0x0F] +
-             HEX_CHARS[(b1 >> 4) & 0x0F] + HEX_CHARS[b1 & 0x0F] +
-             HEX_CHARS[(b1 >> 12) & 0x0F] + HEX_CHARS[(b1 >> 8) & 0x0F] +
-             HEX_CHARS[(b1 >> 20) & 0x0F] + HEX_CHARS[(b1 >> 16) & 0x0F] +
-             HEX_CHARS[(b1 >> 28) & 0x0F] + HEX_CHARS[(b1 >> 24) & 0x0F] +
-             HEX_CHARS[(b2 >> 4) & 0x0F] + HEX_CHARS[b2 & 0x0F] +
-             HEX_CHARS[(b2 >> 12) & 0x0F] + HEX_CHARS[(b2 >> 8) & 0x0F] +
-             HEX_CHARS[(b2 >> 20) & 0x0F] + HEX_CHARS[(b2 >> 16) & 0x0F] +
-             HEX_CHARS[(b2 >> 28) & 0x0F] + HEX_CHARS[(b2 >> 24) & 0x0F] +
-             HEX_CHARS[(b3 >> 4) & 0x0F] + HEX_CHARS[b3 & 0x0F] +
-             HEX_CHARS[(b3 >> 12) & 0x0F] + HEX_CHARS[(b3 >> 8) & 0x0F] +
-             HEX_CHARS[(b3 >> 20) & 0x0F] + HEX_CHARS[(b3 >> 16) & 0x0F] +
-             HEX_CHARS[(b3 >> 28) & 0x0F] + HEX_CHARS[(b3 >> 24) & 0x0F] +
-             HEX_CHARS[(b4 >> 4) & 0x0F] + HEX_CHARS[b4 & 0x0F] +
-             HEX_CHARS[(b4 >> 12) & 0x0F] + HEX_CHARS[(b4 >> 8) & 0x0F] +
-             HEX_CHARS[(b4 >> 20) & 0x0F] + HEX_CHARS[(b4 >> 16) & 0x0F] +
-             HEX_CHARS[(b4 >> 28) & 0x0F] + HEX_CHARS[(b4 >> 24) & 0x0F] +
-             HEX_CHARS[(b5 >> 4) & 0x0F] + HEX_CHARS[b5 & 0x0F] +
-             HEX_CHARS[(b5 >> 12) & 0x0F] + HEX_CHARS[(b5 >> 8) & 0x0F] +
-             HEX_CHARS[(b5 >> 20) & 0x0F] + HEX_CHARS[(b5 >> 16) & 0x0F] +
-             HEX_CHARS[(b5 >> 28) & 0x0F] + HEX_CHARS[(b5 >> 24) & 0x0F] +
-             HEX_CHARS[(b6 >> 4) & 0x0F] + HEX_CHARS[b6 & 0x0F] +
-             HEX_CHARS[(b6 >> 12) & 0x0F] + HEX_CHARS[(b6 >> 8) & 0x0F] +
-             HEX_CHARS[(b6 >> 20) & 0x0F] + HEX_CHARS[(b6 >> 16) & 0x0F] +
-             HEX_CHARS[(b6 >> 28) & 0x0F] + HEX_CHARS[(b6 >> 24) & 0x0F];
-
-      if(bits >= 256) {
-        hex += HEX_CHARS[(b7 >> 4) & 0x0F] + HEX_CHARS[b7 & 0x0F] +
-               HEX_CHARS[(b7 >> 12) & 0x0F] + HEX_CHARS[(b7 >> 8) & 0x0F] +
-               HEX_CHARS[(b7 >> 20) & 0x0F] + HEX_CHARS[(b7 >> 16) & 0x0F] +
-               HEX_CHARS[(b7 >> 28) & 0x0F] + HEX_CHARS[(b7 >> 24) & 0x0F];
-      }
-      if(bits >= 384) {
-        hex += HEX_CHARS[(b8 >> 4) & 0x0F] + HEX_CHARS[b8 & 0x0F] +
-               HEX_CHARS[(b8 >> 12) & 0x0F] + HEX_CHARS[(b8 >> 8) & 0x0F] +
-               HEX_CHARS[(b8 >> 20) & 0x0F] + HEX_CHARS[(b8 >> 16) & 0x0F] +
-               HEX_CHARS[(b8 >> 28) & 0x0F] + HEX_CHARS[(b8 >> 24) & 0x0F] +
-               HEX_CHARS[(b9 >> 4) & 0x0F] + HEX_CHARS[b9 & 0x0F] +
-               HEX_CHARS[(b9 >> 12) & 0x0F] + HEX_CHARS[(b9 >> 8) & 0x0F] +
-               HEX_CHARS[(b9 >> 20) & 0x0F] + HEX_CHARS[(b9 >> 16) & 0x0F] +
-               HEX_CHARS[(b9 >> 28) & 0x0F] + HEX_CHARS[(b9 >> 24) & 0x0F] +
-               HEX_CHARS[(b10 >> 4) & 0x0F] + HEX_CHARS[b10 & 0x0F] +
-               HEX_CHARS[(b10 >> 12) & 0x0F] + HEX_CHARS[(b10 >> 8) & 0x0F] +
-               HEX_CHARS[(b10 >> 20) & 0x0F] + HEX_CHARS[(b10 >> 16) & 0x0F] +
-               HEX_CHARS[(b10 >> 28) & 0x0F] + HEX_CHARS[(b10 >> 24) & 0x0F] +
-               HEX_CHARS[(b11 >> 4) & 0x0F] + HEX_CHARS[b11 & 0x0F] +
-               HEX_CHARS[(b11 >> 12) & 0x0F] + HEX_CHARS[(b11 >> 8) & 0x0F] +
-               HEX_CHARS[(b11 >> 20) & 0x0F] + HEX_CHARS[(b11 >> 16) & 0x0F] +
-               HEX_CHARS[(b11 >> 28) & 0x0F] + HEX_CHARS[(b11 >> 24) & 0x0F];
-      }
-      if(bits == 512) {
-        hex += HEX_CHARS[(b12 >> 4) & 0x0F] + HEX_CHARS[b12 & 0x0F] +
-               HEX_CHARS[(b12 >> 12) & 0x0F] + HEX_CHARS[(b12 >> 8) & 0x0F] +
-               HEX_CHARS[(b12 >> 20) & 0x0F] + HEX_CHARS[(b12 >> 16) & 0x0F] +
-               HEX_CHARS[(b12 >> 28) & 0x0F] + HEX_CHARS[(b12 >> 24) & 0x0F] +
-               HEX_CHARS[(b13 >> 4) & 0x0F] + HEX_CHARS[b13 & 0x0F] +
-               HEX_CHARS[(b13 >> 12) & 0x0F] + HEX_CHARS[(b13 >> 8) & 0x0F] +
-               HEX_CHARS[(b13 >> 20) & 0x0F] + HEX_CHARS[(b13 >> 16) & 0x0F] +
-               HEX_CHARS[(b13 >> 28) & 0x0F] + HEX_CHARS[(b13 >> 24) & 0x0F] +
-               HEX_CHARS[(b14 >> 4) & 0x0F] + HEX_CHARS[b14 & 0x0F] +
-               HEX_CHARS[(b14 >> 12) & 0x0F] + HEX_CHARS[(b14 >> 8) & 0x0F] +
-               HEX_CHARS[(b14 >> 20) & 0x0F] + HEX_CHARS[(b14 >> 16) & 0x0F] +
-               HEX_CHARS[(b14 >> 28) & 0x0F] + HEX_CHARS[(b14 >> 24) & 0x0F] +
-               HEX_CHARS[(b15 >> 4) & 0x0F] + HEX_CHARS[b15 & 0x0F] +
-               HEX_CHARS[(b15 >> 12) & 0x0F] + HEX_CHARS[(b15 >> 8) & 0x0F] +
-               HEX_CHARS[(b15 >> 20) & 0x0F] + HEX_CHARS[(b15 >> 16) & 0x0F] +
-               HEX_CHARS[(b15 >> 28) & 0x0F] + HEX_CHARS[(b15 >> 24) & 0x0F];
-      }
-    } else {
-      for(i = 0, n = bits / 32;i < n;++i) {
-        h = s[i];
-        hex += HEX_CHARS[(h >> 4) & 0x0F] + HEX_CHARS[h & 0x0F] +
-               HEX_CHARS[(h >> 12) & 0x0F] + HEX_CHARS[(h >> 8) & 0x0F] +
-               HEX_CHARS[(h >> 20) & 0x0F] + HEX_CHARS[(h >> 16) & 0x0F] +
-               HEX_CHARS[(h >> 28) & 0x0F] + HEX_CHARS[(h >> 24) & 0x0F];
-      }
-    }
-    return hex;
-  };
-  
-  if(!root.JS_SHA3_TEST && NODE_JS) {
-    module.exports = {
-      sha3_512: sha3_512,
-      sha3_384: sha3_384,
-      sha3_256: sha3_256,
-      sha3_224: sha3_224,
-      keccak_512: keccak,
-      keccak_384: keccak_384,
-      keccak_256: keccak_256,
-      keccak_224: keccak_224
-    };
-  } else if(root) {
-    root.sha3_512 = sha3_512;
-    root.sha3_384 = sha3_384;
-    root.sha3_256 = sha3_256;
-    root.sha3_224 = sha3_224;
-    root.keccak_512 = keccak;
-    root.keccak_384 = keccak_384;
-    root.keccak_256 = keccak_256;
-    root.keccak_224 = keccak_224;
-  }
-}(this));
-
-}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],34:[function(require,module,exports){
+},{}],33:[function(require,module,exports){
 (function (Buffer){
 const assert = require('assert')
 
@@ -8875,7 +8842,7 @@ function toBuffer (input) {
 }
 
 }).call(this,require("buffer").Buffer)
-},{"assert":36,"buffer":37}],35:[function(require,module,exports){
+},{"assert":61,"buffer":62}],34:[function(require,module,exports){
 (function (Buffer){
 const EC = require('elliptic').ec
 const ec = new EC('secp256k1')
@@ -9031,7 +8998,59 @@ exports.createPublicKey = function (secKey, compressed) {
 }
 
 }).call(this,require("buffer").Buffer)
-},{"bn.js":2,"buffer":37,"elliptic":3}],36:[function(require,module,exports){
+},{"bn.js":35,"buffer":62,"elliptic":36}],35:[function(require,module,exports){
+arguments[4][5][0].apply(exports,arguments)
+},{"dup":5}],36:[function(require,module,exports){
+arguments[4][8][0].apply(exports,arguments)
+},{"../package.json":60,"./elliptic/curve":39,"./elliptic/curves":42,"./elliptic/ec":43,"./elliptic/eddsa":46,"./elliptic/hmac-drbg":49,"./elliptic/utils":51,"brorand":52,"dup":8}],37:[function(require,module,exports){
+arguments[4][9][0].apply(exports,arguments)
+},{"../../elliptic":36,"bn.js":35,"dup":9}],38:[function(require,module,exports){
+arguments[4][10][0].apply(exports,arguments)
+},{"../../elliptic":36,"../curve":39,"bn.js":35,"dup":10,"inherits":59}],39:[function(require,module,exports){
+arguments[4][11][0].apply(exports,arguments)
+},{"./base":37,"./edwards":38,"./mont":40,"./short":41,"dup":11}],40:[function(require,module,exports){
+arguments[4][12][0].apply(exports,arguments)
+},{"../../elliptic":36,"../curve":39,"bn.js":35,"dup":12,"inherits":59}],41:[function(require,module,exports){
+arguments[4][13][0].apply(exports,arguments)
+},{"../../elliptic":36,"../curve":39,"bn.js":35,"dup":13,"inherits":59}],42:[function(require,module,exports){
+arguments[4][14][0].apply(exports,arguments)
+},{"../elliptic":36,"./precomputed/secp256k1":50,"dup":14,"hash.js":53}],43:[function(require,module,exports){
+arguments[4][15][0].apply(exports,arguments)
+},{"../../elliptic":36,"./key":44,"./signature":45,"bn.js":35,"dup":15}],44:[function(require,module,exports){
+arguments[4][16][0].apply(exports,arguments)
+},{"bn.js":35,"dup":16}],45:[function(require,module,exports){
+arguments[4][17][0].apply(exports,arguments)
+},{"../../elliptic":36,"bn.js":35,"dup":17}],46:[function(require,module,exports){
+arguments[4][18][0].apply(exports,arguments)
+},{"../../elliptic":36,"./key":47,"./signature":48,"dup":18,"hash.js":53}],47:[function(require,module,exports){
+arguments[4][19][0].apply(exports,arguments)
+},{"../../elliptic":36,"dup":19}],48:[function(require,module,exports){
+arguments[4][20][0].apply(exports,arguments)
+},{"../../elliptic":36,"bn.js":35,"dup":20}],49:[function(require,module,exports){
+arguments[4][21][0].apply(exports,arguments)
+},{"../elliptic":36,"dup":21,"hash.js":53}],50:[function(require,module,exports){
+arguments[4][22][0].apply(exports,arguments)
+},{"dup":22}],51:[function(require,module,exports){
+arguments[4][23][0].apply(exports,arguments)
+},{"bn.js":35,"dup":23}],52:[function(require,module,exports){
+arguments[4][24][0].apply(exports,arguments)
+},{"dup":24}],53:[function(require,module,exports){
+arguments[4][25][0].apply(exports,arguments)
+},{"./hash/common":54,"./hash/hmac":55,"./hash/ripemd":56,"./hash/sha":57,"./hash/utils":58,"dup":25}],54:[function(require,module,exports){
+arguments[4][26][0].apply(exports,arguments)
+},{"../hash":53,"dup":26}],55:[function(require,module,exports){
+arguments[4][27][0].apply(exports,arguments)
+},{"../hash":53,"dup":27}],56:[function(require,module,exports){
+arguments[4][28][0].apply(exports,arguments)
+},{"../hash":53,"dup":28}],57:[function(require,module,exports){
+arguments[4][29][0].apply(exports,arguments)
+},{"../hash":53,"dup":29}],58:[function(require,module,exports){
+arguments[4][30][0].apply(exports,arguments)
+},{"dup":30,"inherits":59}],59:[function(require,module,exports){
+arguments[4][31][0].apply(exports,arguments)
+},{"dup":31}],60:[function(require,module,exports){
+arguments[4][32][0].apply(exports,arguments)
+},{"dup":32}],61:[function(require,module,exports){
 // http://wiki.commonjs.org/wiki/Unit_Testing/1.0
 //
 // THIS IS NOT TESTED NOR LIKELY TO WORK OUTSIDE V8!
@@ -9392,7 +9411,7 @@ var objectKeys = Object.keys || function (obj) {
   return keys;
 };
 
-},{"util/":44}],37:[function(require,module,exports){
+},{"util/":69}],62:[function(require,module,exports){
 /*!
  * The buffer module from node.js, for the browser.
  *
@@ -10831,7 +10850,7 @@ function decodeUtf8Char (str) {
   }
 }
 
-},{"base64-js":38,"ieee754":39,"is-array":40}],38:[function(require,module,exports){
+},{"base64-js":63,"ieee754":64,"is-array":65}],63:[function(require,module,exports){
 var lookup = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
 
 ;(function (exports) {
@@ -10957,7 +10976,7 @@ var lookup = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
 	exports.fromByteArray = uint8ToBase64
 }(typeof exports === 'undefined' ? (this.base64js = {}) : exports))
 
-},{}],39:[function(require,module,exports){
+},{}],64:[function(require,module,exports){
 exports.read = function (buffer, offset, isLE, mLen, nBytes) {
   var e, m
   var eLen = nBytes * 8 - mLen - 1
@@ -11043,7 +11062,7 @@ exports.write = function (buffer, value, offset, isLE, mLen, nBytes) {
   buffer[offset + i - d] |= s * 128
 }
 
-},{}],40:[function(require,module,exports){
+},{}],65:[function(require,module,exports){
 
 /**
  * isArray
@@ -11078,9 +11097,9 @@ module.exports = isArray || function (val) {
   return !! val && '[object Array]' == str.call(val);
 };
 
-},{}],41:[function(require,module,exports){
-arguments[4][26][0].apply(exports,arguments)
-},{"dup":26}],42:[function(require,module,exports){
+},{}],66:[function(require,module,exports){
+arguments[4][31][0].apply(exports,arguments)
+},{"dup":31}],67:[function(require,module,exports){
 // shim for using process in browser
 
 var process = module.exports = {};
@@ -11172,14 +11191,14 @@ process.chdir = function (dir) {
 };
 process.umask = function() { return 0; };
 
-},{}],43:[function(require,module,exports){
+},{}],68:[function(require,module,exports){
 module.exports = function isBuffer(arg) {
   return arg && typeof arg === 'object'
     && typeof arg.copy === 'function'
     && typeof arg.fill === 'function'
     && typeof arg.readUInt8 === 'function';
 }
-},{}],44:[function(require,module,exports){
+},{}],69:[function(require,module,exports){
 (function (process,global){
 // Copyright Joyent, Inc. and other Node contributors.
 //
@@ -11769,5 +11788,5 @@ function hasOwnProperty(obj, prop) {
 }
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./support/isBuffer":43,"_process":42,"inherits":41}]},{},[1])(1)
+},{"./support/isBuffer":68,"_process":67,"inherits":66}]},{},[1])(1)
 });

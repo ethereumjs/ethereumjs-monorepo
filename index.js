@@ -1,8 +1,8 @@
-const rlp = require('rlp')
 const ethUtil = require('ethereumjs-util')
-const fees = require('ethereum-common').fees
+const fees = require('ethereum-common')
 const ecdsa = require('secp256k1')
 const BN = ethUtil.BN
+const rlp = ethUtil.rlp
 
 //give browser access to Buffers
 global.Buffer = Buffer
