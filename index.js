@@ -2,8 +2,8 @@ require('es6-shim')
 const ethUtil = require('ethereumjs-util')
 const Tx = require('ethereumjs-tx')
 const Trie = require('merkle-patricia-tree')
-const BN = require('bn.js')
-const rlp = require('rlp')
+const BN = ethUtil.BN
+const rlp = ethUtil.rlp
 const async = require('async')
 const BlockHeader = require('./header')
 
