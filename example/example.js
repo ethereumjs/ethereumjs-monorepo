@@ -1,4 +1,4 @@
-const Ethash = require('./index.js')
+const Ethash = require('../index.js')
 
 var ethash = new Ethash()
 //make the 1000 cache items with a seed of 0 * 32
