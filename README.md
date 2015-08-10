@@ -55,6 +55,7 @@ Creates a cache. NOTE: this is automatically done for in  - [`ethash.verifyPOW(b
 - `cachSize` - the size of the cach
 - `seed` - the seed as a `Buffer`
 
+
 ### `ethash.run(val, nonce, fullsize)`
 Runs ethash on a give val/nonce pair. NOTE: you need to run [`ethash.mkcach(cacheSize, seed)`](#ethashverifypowcachesize-seed)  first before using this function.
 
@@ -62,6 +63,11 @@ Runs ethash on a give val/nonce pair. NOTE: you need to run [`ethash.mkcach(cach
 - `cachSize` - the size of the cach
 - `seed` - the seed as a `Buffer`
 - `fullsize` - the fullsize of the cache.
+
+**Return**
+and `Object` containing 
+- `hash`  - the hash of the value
+- `mix` - the mis result
 
 # TESTS
 `npm test`
