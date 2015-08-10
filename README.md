@@ -38,20 +38,20 @@ This will give you a gobal varible `EthTx` to use. It will also create the globa
 To build for standalone use in the browser install `browserify` and run `npm run build`.
 
 # API
-    - [`new Transaction([data])`](#new-transactiondata)
-    - [`Transaction` Properties](#transaction-properties)
-    - [`Transaction` Methods](#transaction-methods)
-        - [`transaction.serialize()`](#transactionserialize) 
-        - [`transaction.hash([signature])`](#transactionhashsignature)
-        - [`transaction.sign(privateKey)`](#transactionsignprivatekey)
-        - [`transaction.getSenderAddress()`](#transactiongetsenderaddress)
-        - [`transaction.getSenderPublicKey()`](#transactiongetsenderpublickey)
-        - [`transaction.validate()`](#transactionvalidate)
-        - [`transaction.validateSignature()`](#transactionvalidatesignature)
-        - [`transaction.getDataFee()`](#transactiongetdatafee)
-        - [`transaction.getBaseFee()`](#transactiongetbasefee)
-        - [`transaction.getUpfrontCost()`](#transactiongetupfrontcost)
-        - [`transaction.toJSON([object])`](#transactiontojsonobject)
+ - [`new Transaction([data])`](#new-transactiondata)
+ - [`Transaction` Properties](#transaction-properties)
+ - [`Transaction` Methods](#transaction-methods)
+  - [`transaction.serialize()`](#transactionserialize) 
+  - [`transaction.hash([signature])`](#transactionhashsignature)
+  - [`transaction.sign(privateKey)`](#transactionsignprivatekey)
+  - [`transaction.getSenderAddress()`](#transactiongetsenderaddress)
+  - [`transaction.getSenderPublicKey()`](#transactiongetsenderpublickey)
+  - [`transaction.validate()`](#transactionvalidate)
+  - [`transaction.validateSignature()`](#transactionvalidatesignature)
+  - [`transaction.getDataFee()`](#transactiongetdatafee)
+  - [`transaction.getBaseFee()`](#transactiongetbasefee)
+  - [`transaction.getUpfrontCost()`](#transactiongetupfrontcost)
+  - [`transaction.toJSON([object])`](#transactiontojsonobject)
 
 ### `new Transaction([data])`
 Creates a new transaction object
