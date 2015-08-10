@@ -38,7 +38,7 @@ Ethash.prototype.calcDatasetItem = function (i) {
   const n = this.cache.length
   const r = Math.floor(ethHashUtil.params.HASH_BYTES / ethHashUtil.params.WORD_BYTES)
   var mix = new Buffer(this.cache[i % n])
-  mix.writeInt32LE(mix.readUInt32LE(0) ^ i)
+  mix.writeInt32LE(mix.readUInt32LE(0) ^ i, 0)
   mix = ethUtil.sha3(mix, 512)
   for (var j = 0; j < ethHashUtil.params.DATASET_PARENTS; j++) {
     var cacheIndex = ethHashUtil.fnv(i ^ j, mix.readUInt32LE(j % r * 4))
