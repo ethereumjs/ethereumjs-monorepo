@@ -49,10 +49,7 @@ exports.getEpoc = function(blockNumber){
  * @param begin Number 
  * @param seed Buffer
  */
-exports.getSeed = function(end, begin, seed){
-  if(!begin)
-    seed = ethUtil.zeros(32)
-
+exports.getSeed = function(seed, begin, end){
   for(var i = begin; i < end; i++){
     seed = ethUtil.sha3(seed)
   }

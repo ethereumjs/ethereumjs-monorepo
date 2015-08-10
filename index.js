@@ -6,7 +6,7 @@ const BN = ethUtil.BN
 const rlp = ethUtil.rlp
 const async = require('async')
 
-var Ethash = module.exports = function(cacheDB) {
+var Ethash = module.exports = function (cacheDB) {
   this.dbOpts = {
     valueEncoding: 'json'
   }
@@ -14,7 +14,7 @@ var Ethash = module.exports = function(cacheDB) {
   this.cache = false
 }
 
-Ethash.prototype.mkcache = function(cacheSize, seed) {
+Ethash.prototype.mkcache = function (cacheSize, seed) {
   // console.log('generating cache')
   // console.log('size: ' + cacheSize)
   // console.log('seed: ' + seed.toString('hex'))
@@ -34,7 +34,7 @@ Ethash.prototype.mkcache = function(cacheSize, seed) {
   return this.cache = o
 }
 
-Ethash.prototype.calcDatasetItem = function(i) {
+Ethash.prototype.calcDatasetItem = function (i) {
   const n = this.cache.length
   const r = Math.floor(ethHashUtil.params.HASH_BYTES / ethHashUtil.params.WORD_BYTES)
   var mix = new Buffer(this.cache[i % n])
@@ -47,7 +47,8 @@ Ethash.prototype.calcDatasetItem = function(i) {
   return ethUtil.sha3(mix, 512)
 }
 
-Ethash.prototype.run = function(val, nonce, fullSize) {
+Ethash.prototype.run = function (val, nonce, fullSize) {
+  fullSize = fullSize || this.fullSize
   const n = Math.floor(fullSize / ethHashUtil.params.HASH_BYTES)
   const w = Math.floor(ethHashUtil.params.MIX_BYTES / ethHashUtil.params.WORD_BYTES)
   const s = ethUtil.sha3(Buffer.concat([val, ethHashUtil.bufReverse(nonce)]), 512)
@@ -78,11 +79,11 @@ Ethash.prototype.run = function(val, nonce, fullSize) {
   }
 }
 
-Ethash.prototype.cacheHash = function() {
+Ethash.prototype.cacheHash = function () {
   return ethUtil.sha3(Buffer.concat(this.cache))
 }
 
-Ethash.prototype.headerHash = function(header) {
+Ethash.prototype.headerHash = function (header) {
   return ethUtil.sha3(rlp.encode(header.slice(0, -2)))
 }
 
@@ -92,7 +93,7 @@ Ethash.prototype.headerHash = function(header) {
  * @param number Number
  * @param cm function
  */
-Ethash.prototype.loadEpoc = function(number, cb) {
+Ethash.prototype.loadEpoc = function (number, cb) {
   var self = this
   const epoc = ethHashUtil.getEpoc(number)
 
@@ -104,42 +105,38 @@ Ethash.prototype.loadEpoc = function(number, cb) {
   // gives the seed the first epoc found
   function findLastSeed(epoc, cb2) {
     if (epoc === 0)
-      return cb2()
+      return cb2(ethUtil.zeros(32),  0)
 
-    self.cacheDB.get(epoc, self.dbOpts, function(err, data) {
+    self.cacheDB.get(epoc, self.dbOpts, function (err, data) {
       if (!err)
-        cb2(data.seed)
+        cb2(data.seed, epoc)
       else
         findLastSeed(epoc - 1, cb2)
     })
   }
 
-  self.cacheDB.get(epoc, self.dbOpts, function(err, data) {
+  self.cacheDB.get(epoc, self.dbOpts, function (err, data) {
     if (!data) {
+      console.log('no data');
       self.cacheSize = ethHashUtil.getCacheSize(epoc)
       self.fullSize = ethHashUtil.getFullSize(epoc)
 
-      if (epoc === 0)
-        self.seed = ethUtil.zeros(32)
-      else {
-        findLastSeed(epoc, function(err, data) {
-          self.seed = ethHashUtil.getSeed(data.seed, data.epoc)
-        })
-      }
-
-      var cache = self.mkcache(self.cacheSize, self.seed)
-      //store
-      self.cacheDB.put(epoc, {
-        cacheSize: self.cacheSize,
-        fullSize: self.fullSize,
-        seed: self.seed,
-        cache: cache
-      }, self.dbOpts, cb)
+      findLastSeed(epoc, function (seed, foundEpoc) {
+        self.seed = ethHashUtil.getSeed(seed, foundEpoc, epoc)
+        var cache = self.mkcache(self.cacheSize, self.seed)
+          //store
+        self.cacheDB.put(epoc, {
+          cacheSize: self.cacheSize,
+          fullSize: self.fullSize,
+          seed: self.seed,
+          cache: cache
+        }, self.dbOpts, cb)
+      })
       return
     }
 
     // Object.assign(self, data)
-    self.cache = data.cache.map(function(a){
+    self.cache = data.cache.map(function (a) {
       return new Buffer(a)
     })
     self.cacheSize = data.cacheSize
@@ -149,38 +146,37 @@ Ethash.prototype.loadEpoc = function(number, cb) {
   })
 }
 
-Ethash.prototype._verifyPOW = function(header, cb) {
+Ethash.prototype._verifyPOW = function (header, cb) {
   var self = this
   var headerHash = this.headerHash(header.raw)
   var number = ethUtil.bufferToInt(header.number)
 
-  this.loadEpoc(number, function(){
-    var a = self.run(headerHash, new Buffer(header.nonce, 'hex'), self.fullSize)
-    var result = new BN(a.hash)   
-    cb(a.mix.toString('hex') === header.mixHash.toString('hex')
-      && ( ethUtil.TWO_POW256.div(new BN(header.difficulty)).cmp(result) === 1 )) 
+  this.loadEpoc(number, function () {
+    var a = self.run(headerHash, new Buffer(header.nonce, 'hex'))
+    var result = new BN(a.hash)
+    cb(a.mix.toString('hex') === header.mixHash.toString('hex') && (ethUtil.TWO_POW256.div(new BN(header.difficulty)).cmp(result) === 1))
   })
 }
 
-Ethash.prototype.verifyPOW = function(block, cb) {
+Ethash.prototype.verifyPOW = function (block, cb) {
   var self = this
   var valid = true
 
-  this._verifyPOW(block.header, function(valid2){
+  this._verifyPOW(block.header, function (valid2) {
     valid &= valid2
 
-    if(!valid)
+    if (!valid)
       return cb(valid)
 
-    async.eachSeries(block.uncleHeaders, function(uheader, cb2){
-      self._verifyPOW(uheader, function(valid3){
+    async.eachSeries(block.uncleHeaders, function (uheader, cb2) {
+      self._verifyPOW(uheader, function (valid3) {
         valid &= valid3
-        if(!valid)
+        if (!valid)
           cb2(Boolean(valid))
         else
           cb2()
       })
-    }, function(){
+    }, function () {
       cb(Boolean(valid))
     })
   })
