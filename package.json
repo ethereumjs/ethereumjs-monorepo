@@ -33,7 +33,7 @@
     "miller-rabin": "^2.1.0"
   },
   "devDependencies": {
-    "ethereumjs-block": "0.0.2",
+    "ethereumjs-block": "0.0.4",
     "levelup": "^1.2.1",
     "memdown": "^1.0.0",
     "tape": "^4.0.1"
