@@ -124,7 +124,7 @@ Ethash.prototype.loadEpoc = function (number, cb) {
       findLastSeed(epoc, function (seed, foundEpoc) {
         self.seed = ethHashUtil.getSeed(seed, foundEpoc, epoc)
         var cache = self.mkcache(self.cacheSize, self.seed)
-          //store
+        //store the generated cache
         self.cacheDB.put(epoc, {
           cacheSize: self.cacheSize,
           fullSize: self.fullSize,
