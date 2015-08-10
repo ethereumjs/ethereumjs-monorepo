@@ -34,8 +34,8 @@ Yep, You can [browserify](http://browserify.org/) it.
 # API
 - [`new Ethash([cacheDB])`](#newethashcachedb)
 - [`ethash.verifyPOW(block, cb)`](#ethashverifypowblock-cb) 
-- [`ethash.mkcach(cacheSize, seed)`](#ethashverifypowcachesize-seed) 
-- [`ethash.run(val, nonce, fullsize)`](#ethashverifypowval-nonce-fullsize) 
+- [`ethash.mkcach(cacheSize, seed)`](#ethashmkcachcachesize-seed) 
+- [`ethash.run(val, nonce, fullsize)`](#ethashrunval-nonce-fullsize) 
 
 ### `new Ethash([cacheDB])`
 Creates a new instance of `Ethash`.
