@@ -2,15 +2,14 @@ require('es6-shim')
 const ethUtil = require('ethereumjs-util')
 const ethHashUtil = require('./util.js')
 const xor = require('bitwise-xor')
-const BN = require('bn.js')
-const rlp = require('rlp')
+const BN = ethUtil.BN
+const rlp = ethUtil.rlp
 const async = require('async')
 
 var Ethash = module.exports = function(cacheDB) {
   this.dbOpts = {
     valueEncoding: 'json'
   }
-
   this.cacheDB = cacheDB
   this.cache = false
 }
@@ -48,10 +47,10 @@ Ethash.prototype.calcDatasetItem = function(i) {
   return ethUtil.sha3(mix, 512)
 }
 
-Ethash.prototype.run = function(header, nonce, fullSize) {
+Ethash.prototype.run = function(val, nonce, fullSize) {
   const n = Math.floor(fullSize / ethHashUtil.params.HASH_BYTES)
   const w = Math.floor(ethHashUtil.params.MIX_BYTES / ethHashUtil.params.WORD_BYTES)
-  const s = ethUtil.sha3(Buffer.concat([header, ethHashUtil.bufReverse(nonce)]), 512)
+  const s = ethUtil.sha3(Buffer.concat([val, ethHashUtil.bufReverse(nonce)]), 512)
   const mixhashes = Math.floor(ethHashUtil.params.MIX_BYTES / ethHashUtil.params.HASH_BYTES)
   var mix = Buffer.concat(Array(mixhashes).fill(s))
 
@@ -75,7 +74,7 @@ Ethash.prototype.run = function(header, nonce, fullSize) {
 
   return {
     mix: cmix,
-    result: ethUtil.sha3(Buffer.concat([s, cmix]))
+    hash: ethUtil.sha3(Buffer.concat([s, cmix]))
   }
 }
 
@@ -157,7 +156,7 @@ Ethash.prototype._verifyPOW = function(header, cb) {
 
   this.loadEpoc(number, function(){
     var a = self.run(headerHash, new Buffer(header.nonce, 'hex'), self.fullSize)
-    var result = new BN(a.result)   
+    var result = new BN(a.hash)   
     cb(a.mix.toString('hex') === header.mixHash.toString('hex')
       && ( ethUtil.TWO_POW256.div(new BN(header.difficulty)).cmp(result) === 1 )) 
   })

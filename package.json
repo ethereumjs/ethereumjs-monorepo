@@ -1,6 +1,6 @@
 {
   "name": "ethashjs",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "an ethash implementation in JS",
   "main": "index.js",
   "directories": {
@@ -19,23 +19,21 @@
     "POW"
   ],
   "author": "mjbecze <mjbecze@gmail.com>",
-  "license": "GPL-3.0",
+  "license": "MPL-2.0",
   "bugs": {
     "url": "https://github.com/ethereum/ethashjs/issues"
   },
   "homepage": "https://github.com/ethereum/ethashjs#readme",
   "dependencies": {
-    "async": "^1.4.0",
+    "async": "^1.4.2",
     "bitwise-xor": "0.0.0",
-    "bn.js": "^3.1.1",
-    "es6-shim": "^0.32.2",
+    "es6-shim": "^0.33.0",
     "ethereum-tests": "git+https://github.com/ethereum/tests",
-    "ethereumjs-util": "^1.3.4",
-    "miller-rabin": "^2.1.0",
-    "rlp": "^1.0.1"
+    "ethereumjs-util": "^1.3.6",
+    "miller-rabin": "^2.1.0"
   },
   "devDependencies": {
-    "ethereumjs-block": "0.0.3",
+    "ethereumjs-block": "0.0.4",
     "levelup": "^1.2.1",
     "memdown": "^1.0.0",
     "tape": "^4.0.1"

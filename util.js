@@ -1,6 +1,6 @@
 const ethUtil =  require('ethereumjs-util')
 const MR = require('miller-rabin')
-const BN = require('bn.js')
+const BN = ethUtil.BN
 
 exports.params = {
   DATASET_BYTES_INIT: 1073741824, //2^30  
