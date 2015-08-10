@@ -123,7 +123,7 @@ Ethash.prototype.loadEpoc = function(number, cb) {
         self.seed = ethUtil.zeros(32)
       else {
         findLastSeed(epoc, function(err, data) {
-          self.seed = utils.getSeed(data.seed, data.epoc)
+          self.seed = ethHashUtil.getSeed(data.seed, data.epoc)
         })
       }
 
