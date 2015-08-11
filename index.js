@@ -4,10 +4,10 @@
  * block details are stored to key  'detail'+<blockhash>
  */
 const async = require('async')
-const rlp = require('rlp')
-const Block = require('./block.js')
+const Block = require('ethereumjs-block')
 const utils = require('ethereumjs-util')
-const Ethash = require('./ethash')
+const rlp = utils.rlp
+const Ethash = require('ethashjs')
 
 var Blockchain = module.exports = function(db, validate) {
   this.db = db
