@@ -6,7 +6,7 @@ var code = '7f4e616d655265670000000000000000000000000000000000000000000000000030
 
 code = new Buffer(code, 'hex')
 
-var traceStream = vm.createTraceReadStream();
+var traceStream = vm.createTraceStream();
 traceStream.on('data', function(data){
   console.log(data)
 })
