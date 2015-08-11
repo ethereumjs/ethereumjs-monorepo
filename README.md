@@ -54,6 +54,7 @@ Creates a new VM object
 #### `vm.runBlock(opts, cb)`
 Processes the `block` running all of the transaction it contains and updating the miner's account.
 - `opts.block` - The [`Block`](./block.md) to process
+- `opts.generate` - a `Boolean`; whether to generate the stateRoot. If false  `runBlock` will check the stateRoot of the block against the Trie
 - `cb` - The callback
 
 --------------------------------------------------------
@@ -110,7 +111,7 @@ vm.generateGenesis(genesisData, function(){
   conosle.log('generation done');
 })
 ```
-#### `vm.createTraceReadStream()`
+#### `vm.createTraceStream()`
 Creates a vm trace stream. The steam is an `Object` stream. The object contains
 - `step` - how many steps the current VM has taken
 - `pc` - a `Number` repersenting the program counter
