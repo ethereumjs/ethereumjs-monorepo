@@ -62,24 +62,14 @@ Returns the ethereum public key of a given private key
 - `privateKey` - the private key as a `buffer`
 
 ### `generateAddress(from, nonce)` 
-Generates an address of a newly created contract
-- `from` - the address creating contract
+Generates an address of a newly created contract. 
+- `from` - the address of the account creating the contract
 - `nonce` - the creating accounts nonce
 
 ### `sha3(a, bytes)`  
 Returns a sha3 of `a` of the length of `bytes`
 - `a` the value to hash
 - `bytes` how many bytes the hash should be
-
-### `defineProperties(self, fields)`
-defines properties on a `Object`
-- `self` - the `Object` to define properties on
-- `fields` - an array fields to define
-
-### `validate(fields, data)`
-Validate defined fields
-- `fields`
-- `data`
 
 ### `printBA(ba)`
 Print a Buffer Array
@@ -97,6 +87,16 @@ Removes `0x` from a given String
 
 ### `addHexPrefix(String)`
 Adds `0x` to a given string if it does not already start with `0x`
+
+### `defineProperties(self, fields)`
+defines properties on a `Object`
+- `self` - the `Object` to define properties on
+- `fields` - an array fields to define
+
+### `validate(fields, data)`
+Validate defined fields
+- `fields`
+- `data`
 
 # TESTING
 Node.js Tests use Mocha. Test in the browser use Testling.
