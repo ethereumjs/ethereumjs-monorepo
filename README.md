@@ -1,4 +1,4 @@
-# SYNOPSIS [![Build Status](https://travis-ci.org/ethereum/ethereumjs-tx.svg)](https://travis-ci.org/ethereum/ethereumjs-tx)
+# SYNOPSIS
 A module to store and interact with blocks.
 
 # CONTACT
