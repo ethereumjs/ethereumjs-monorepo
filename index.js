@@ -107,7 +107,6 @@ Blockchain.prototype._addBlock = function (block, cb) {
         if (valid)
           cb2()
         else {
-          console.log('invalid POw');
           cb2('invalid POW')
         }
       })
@@ -120,8 +119,6 @@ Blockchain.prototype._addBlock = function (block, cb) {
 
       self.getDetails(block.header.parentHash, function (err, pd) {
         parentDetails = pd
-        console.log('pd');
-        console.log(pd);
         if (!err && pd)
           cb2(null, pd)
         else
@@ -155,7 +152,8 @@ Blockchain.prototype._addBlock = function (block, cb) {
           parent: block.header.parentHash.toString('hex'),
           td: td,
           number: utils.bufferToInt(block.header.number),
-          child: null
+          child: null,
+          genesis: block.isGenisis()
         }
       }
       dbOps.push(blockDetails)
@@ -185,10 +183,13 @@ Blockchain.prototype._addBlock = function (block, cb) {
             value: parentDetails
           })
 
-          self._rebuildBlockchain(block.header.parent, blockhash, dbOps, function (err, ops) {
-            console.log('done rebuilding!!');
-            cb2()
-          })
+          if(!parentDetails.genesis){
+            self._rebuildBlockchain(parentDetails.parent, block.header.parent, dbOps, function (err, ops) {
+              cb2()
+            })
+          }else{
+            cb()
+          }
         } else {
           cb2()
         }
@@ -308,8 +309,6 @@ Blockchain.prototype._rebuildBlockchain = function (hash, childHash, ops, cb) {
   var self = this
   var details, staleDetails, staleHash, last
 
-  console.log(hash.toString('hex'));
-  console.log(this.meta.genesis.toString('hex'));
   async.series([
     function getDetails(done) {
       self.getDetails(hash.toString('hex'), function (err, d) {
