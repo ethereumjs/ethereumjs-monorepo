@@ -105,7 +105,7 @@ Ethash.prototype.loadEpoc = function (number, cb) {
   // gives the seed the first epoc found
   function findLastSeed(epoc, cb2) {
     if (epoc === 0)
-      return cb2(ethUtil.zeros(32),  0)
+      return cb2(ethUtil.zeros(32), 0)
 
     self.cacheDB.get(epoc, self.dbOpts, function (err, data) {
       if (!err)
@@ -116,6 +116,8 @@ Ethash.prototype.loadEpoc = function (number, cb) {
   }
 
   self.cacheDB.get(epoc, self.dbOpts, function (err, data) {
+    console.log('err: ' + err);
+    console.log('data' + data);
     if (!data) {
       console.log('no data');
       self.cacheSize = ethHashUtil.getCacheSize(epoc)
@@ -124,7 +126,7 @@ Ethash.prototype.loadEpoc = function (number, cb) {
       findLastSeed(epoc, function (seed, foundEpoc) {
         self.seed = ethHashUtil.getSeed(seed, foundEpoc, epoc)
         var cache = self.mkcache(self.cacheSize, self.seed)
-        //store the generated cache
+          //store the generated cache
         self.cacheDB.put(epoc, {
           cacheSize: self.cacheSize,
           fullSize: self.fullSize,
@@ -132,17 +134,16 @@ Ethash.prototype.loadEpoc = function (number, cb) {
           cache: cache
         }, self.dbOpts, cb)
       })
-      return
+    } else {
+      // Object.assign(self, data)
+      self.cache = data.cache.map(function (a) {
+        return new Buffer(a)
+      })
+      self.cacheSize = data.cacheSize
+      self.fullSize = data.fullSize
+      self.seed = new Buffer(data.seed)
+      cb()
     }
-
-    // Object.assign(self, data)
-    self.cache = data.cache.map(function (a) {
-      return new Buffer(a)
-    })
-    self.cacheSize = data.cacheSize
-    self.fullSize = data.fullSize
-    self.seed = new Buffer(data.seed)
-    cb()
   })
 }
 
