@@ -66,7 +66,7 @@ Block.prototype.hash = function() {
  * @method isGenisis
  * @return Boolean
  */
-Block.prototype.isGenisis = function(){
+Block.prototype.isGenesis = function(){
   return this.header.number.toString('hex') === ''
 }
 

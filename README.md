@@ -21,13 +21,13 @@ This module work with `browserify`
         - [`block.validateUncles(blockchain, cb)`](#blockvalidateunclesblockchain-cb)
         - [`block.validateTransactions()`](#blockvalidatetransactions)
         - [`block.validateTransactionsTrie()`](#blockvalidatetransactionstrie)
+        - [`block.isGenesis()`](#blockisgenesis)
         - [`block.toJSON()`](#blocktojson)
 
 - [`Blockheader`](#blockheader)
     - [`Blockheader` Properties](#blockheader-properties)
     - [`Blockheader` Methods](#blockheader-methods)
         - [`blockheader.validate(blockchain, [height], cb)`](#blockheadervalidateblockchain-height-cb)
-        - [`blockheader.validatePOW()`](#blockheadervalidatepow)
         - [`blockheader.validateDifficulty()`](#blockheadervalidatedifficulty)
         - [`blockheader.validateGasLimit()`](#blockheadervalidategaslimit)
         - [`blockheader.canonicalGasLimit(parentBlock)`](#blockheadercanonicalgaslimitparentblock)
@@ -74,6 +74,9 @@ Validates all of the transactions in the block. Returns a `Boolean`
 #### `block.validateTransactionsTrie()`
 Validates the transaction trie. Returns a `Boolean`
 
+#### `block.isGenesis()`
+Returns a `Boolean` determining if the block is a genesis block
+
 #### `block.toJSON()`
 Returns the block as a JSON object.
 
@@ -104,9 +107,6 @@ Validates the entire block headers
 - `blockchain` - blockChain the blockchain that this block is validating against
 - `height` if this is an uncle header, this is the height of the block that is including it
 - `cb` the callback function
-
-#### `blockheader.validatePOW()`
-Validates the Proof of Work returning a `Boolean`
 
 #### `blockheader.validateDifficulty()`
 Validates the difficutly returning a `Boolean`
