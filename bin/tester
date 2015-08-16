@@ -91,6 +91,15 @@ function getTests(type, argv) {
     delete tests.RandomTests;
   }
 
+  if (type === 'blockchain') {
+    for (var prop in tests.RandomBlockTest) {
+      tests[prop] = tests.RandomBlockTest[prop];
+    }
+
+    delete tests.RandomTests;
+  }
+
+
   //for running a single file
   if (argv.file) {
     var i = {};

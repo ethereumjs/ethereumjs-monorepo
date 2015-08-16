@@ -98,11 +98,8 @@ exports.verifyPostConditions = function(state, testData, t, cb) {
   }
 
   var q = async.queue(function(task, cb2) {
-    exports.verifyAccountPostConditions(state, task.account, task.testData, t, function() {
-      cb2();
-    });
+    exports.verifyAccountPostConditions(state, task.account, task.testData, t, cb2)
   }, 1);
-
 
   var keysOfPost = Object.keys(testData);
   var stream = state.createReadStream();
@@ -243,7 +240,7 @@ exports.verifyLogs = function(logs, testData, t) {
  * TODO: remove
  */
 exports.enableVMtracing = function(vm, file) {
-  var stream = vm.createTraceReadStream();
+  var stream = vm.createTraceStream();
   stream.pipe(through2({objectMode: true}, function(chunk, enc, cb){
     this.push(JSON.stringify(chunk))
     cb()
