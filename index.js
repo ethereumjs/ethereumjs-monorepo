@@ -49,8 +49,9 @@ var Block = module.exports = function(data) {
     this.uncleHeaders.push(new BlockHeader(rawUncleHeaders[i]))
 
   //parse transactions
-  for (i = 0; i < rawTransactions.length; i++) 
+  for (i = 0; i < rawTransactions.length; i++) {
     this.transactions.push(new Tx(rawTransactions[i]))
+  }
 };
 
 /**
@@ -67,7 +68,7 @@ Block.prototype.hash = function() {
  * @return Boolean
  */
 Block.prototype.isGenesis = function(){
-  return this.header.number.toString('hex') === ''
+  return this.header.isGenesis()
 }
 
 /**
@@ -184,6 +185,9 @@ Block.prototype.validateUnclesHash = function(){
 }
 
 Block.prototype.validateUncles = function(blockChain, cb) {
+
+  if(this.isGenesis())
+    return cb()
 
   var self = this
 

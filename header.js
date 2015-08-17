@@ -113,6 +113,9 @@ BlockHeader.prototype.validate = function(blockchain, height, cb) {
     height = false
   }
 
+  if(this.isGenesis)
+    return cb()
+
   //find the blocks parent
   blockchain.getBlock(self.parentHash, function(err, parentBlock) {
 
@@ -141,4 +144,9 @@ BlockHeader.prototype.validate = function(blockchain, height, cb) {
 
 BlockHeader.prototype.hash = function() {
   return utils.sha3(rlp.encode(this.raw))
+}
+
+
+BlockHeader.prototype.isGenesis = function(){
+  return this.number.toString('hex') === ''
 }
