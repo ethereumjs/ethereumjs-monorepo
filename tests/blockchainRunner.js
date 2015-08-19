@@ -42,9 +42,6 @@ module.exports = function runBlockchainTest(testData, options, cb){
             cb()
           })
         }catch(err){
-          // console.log(err);
-          // rlp = require('rlp')
-          // console.log(rlp.decode(new Buffer(raw.rlp.slice(2), 'hex')));
           cb()
         }
 
