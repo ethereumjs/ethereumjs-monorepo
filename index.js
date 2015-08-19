@@ -271,11 +271,13 @@ exports.defineProperties = function(self, fields, data) {
       data.forEach(function(d, i) {
          self[self._fields[i]] = typeof d === 'string' ? new Buffer(d, 'hex') : d
       })
-    } else {
+    } else if(typeof data === 'object') {
       for (var prop in data) {
         if (self._fields.indexOf(prop) !== -1)
           self[prop] = data[prop]
       }
+    } else{
+      throw new Error('invalid data')
     }
   }
 }
