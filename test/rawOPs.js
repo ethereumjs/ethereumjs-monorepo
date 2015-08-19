@@ -62,7 +62,6 @@ describe('put & get raw functions', function(){
     trie.putRaw(key3, val3, function(){
       trie.commit(function(){
         trie.getRaw(key3, function(err, val){
-          console.log();
           assert(val.toString('hex') === val3.toString('hex'))
           done()
         })
