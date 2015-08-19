@@ -147,10 +147,14 @@ Transaction.prototype.verifySignature = function() {
     return false 
   }
 
-  if (this._senderPubKey && this._senderPubKey.toString('hex') !== '') 
-    return ecdsa.verify(msgHash, sig, this._senderPubKey)
-  else 
+  if(!this._senderPubKey)
     return false
+
+  var result = ecdsa.verify(msgHash, sig, this._senderPubKey)
+  if(!result)
+    this._senderPubKey = null
+
+  return result
 }
 /**
  * sign a transaction with a given a private key
@@ -261,6 +265,20 @@ module.exports={
     "v": 1024,
     "d": "Maximum depth of call/create stack."
   },
+
+  "tierStepGas": {
+    "v": [0, 2, 3, 5, 8, 10, 20],
+    "d": "Once per operation, for a selection of them."
+  },
+  "expGas": {
+    "v": 10,
+    "d": "Once per EXP instuction."
+  },
+  "expByteGas": {
+    "v": 10,
+    "d": "Times ceil(log256(exponent)) for the EXP instruction."
+  },
+
   "sha3Gas": {
     "v": 30,
     "d": "Once per SHA3 operation."
@@ -289,6 +307,7 @@ module.exports={
     "v": 1,
     "d": "Refunded gas, once per SSTORE operation if the zeroness changes to zero."
   },
+
   "logGas": {
     "v": 375,
     "d": "Per LOG* operation."
@@ -301,10 +320,12 @@ module.exports={
     "v": 375,
     "d": "Multiplied by the * of the LOG*, per LOG transaction. e.g. LOG0 incurs 0 * c_txLogTopicGas, LOG4 incurs 4 * c_txLogTopicGas."
   },
+
   "createGas": {
     "v": 32000,
     "d": "Once per CREATE operation & contract-creation transaction."
   },
+
   "callGas": {
     "v": 40,
     "d": "Once per CALL operation & message call transaction."
@@ -321,10 +342,12 @@ module.exports={
     "v": 25000,
     "d": "Paid for CALL when the destination address didn't exist prior."
   },
+
   "suicideRefundGas": {
     "v": 24000,
     "d": "Refunded following a suicide operation."
   },
+
   "memoryGas": {
     "v": 3,
     "d": "Times the address of the (highest referenced byte in memory + 1). NOTE: referencing happens on read, write and in instructions such as RETURN and CALL."
@@ -333,6 +356,7 @@ module.exports={
     "v": 512,
     "d": "Divisor for the quadratic particle of the memory cost equation."
   },
+
   "createDataGas": {
     "v": 200,
     "d": ""
@@ -349,10 +373,12 @@ module.exports={
     "v": 68,
     "d": "Per byte of data attached to a transaction that is not equal to zero. NOTE: Not payable on data of calls between transactions."
   },
+
   "copyGas": {
     "v": 3,
     "d": "Multiplied by the number of 32-byte words that are copied (round up) for any *COPY operation and added."
   },
+
   "ecrecoverGas": {
     "v": 3000,
     "d": ""
@@ -382,15 +408,15 @@ module.exports={
     "d": ""
   },
   "minerReward": {
-    "v": "1500000000000000000",
+    "v": "5000000000000000000",
     "d": "the amount a miner get rewarded for mining a block"
   },
-  "uncleReward": {
-    "v": "1406250000000000000",
+  "ommerReward": {
+    "v": "625000000000000000",
     "d": "The amount of wei a miner of an uncle block gets for being inculded in the blockchain"
   },
-  "nephewReward": {
-    "v": "46875000000000000",
+  "niblingReward": {
+    "v": "156250000000000000",
     "d": "the amount a miner gets for inculding a uncle"
   }
 }
@@ -670,11 +696,13 @@ exports.defineProperties = function(self, fields, data) {
       data.forEach(function(d, i) {
          self[self._fields[i]] = typeof d === 'string' ? new Buffer(d, 'hex') : d
       })
-    } else {
+    } else if(typeof data === 'object') {
       for (var prop in data) {
         if (self._fields.indexOf(prop) !== -1)
           self[prop] = data[prop]
       }
+    } else{
+      throw new Error('invalid data')
     }
   }
 }
