@@ -104,10 +104,13 @@ Blockchain.prototype._addBlock = function (block, cb) {
   if (block.constructor !== Block)
     block = new Block(block)
 
+  if(self.meta.genesis && block.isGenesis()){
+    return cb('already have a genesis block')
+  }
+
   async.series([
     function verify(cb2) {
       block.validate(self, function (err) {
-        console.log(err);
         cb2(err)
       })
     },
@@ -133,8 +136,9 @@ Blockchain.prototype._addBlock = function (block, cb) {
         parentDetails = pd
         if (!err && pd)
           cb2(null, pd)
-        else
+        else {
           cb2('parent hash not found')
+        }
       })
     },
     function rebuildInfo(cb2) {
@@ -142,8 +146,10 @@ Blockchain.prototype._addBlock = function (block, cb) {
       //calculate the total difficulty for this block
       var td = utils.bufferToInt(block.header.difficulty)
         //add this block as a child to the parent's block details
-      if (parentDetails)
+      if (!block.isGenesis()){
         td += parentDetails.td
+        parentDetails.staleChildren.push(blockHash)
+      }
 
       //store the block details
       var blockDetails = {
@@ -151,28 +157,40 @@ Blockchain.prototype._addBlock = function (block, cb) {
         td: td,
         number: utils.bufferToInt(block.header.number),
         child: null,
+        staleChildren: [],
         genesis: block.isGenesis()
       }
+
       dbOps.push({
-        type: 'put',
-        key: 'detail' + blockHash,
-        valueEncoding: 'json',
-        value: blockDetails
-      })
-      //store the block
+          type: 'put',
+          key: 'detail' + blockHash,
+          valueEncoding: 'json',
+          value: blockDetails
+        })
+        //store the block
       dbOps.push({
-        type: 'put',
-        key: blockHash,
-        valueEncoding: 'binary',
-        value: block.serialize()
-      })
-      //store the head block if this block has a bigger difficulty
-      //than the prevous block
-      if (td > self.meta.td || !self.meta.rawHead) {
+          type: 'put',
+          key: blockHash,
+          valueEncoding: 'binary',
+          value: block.serialize()
+        })
+
+        // if (block.hash().toString('hex') === 'a861daf9c8691fe5a3a975bcb34aa103214e9864818de25f0da09ab7b958c965')
+        //   debugger
+
+
+      if (td > self.meta.td || block.isGenesis()) {
         blockDetails.inChain = true
         self.meta.rawHead = blockHash
         self.meta.height = utils.bufferToInt(block.header.number)
         self.meta.td = td
+
+        //index by number
+        dbOps.push({
+          type: 'put',
+          key: parseInt(block.header.number.toString('hex'), 16).toString(),
+          value: blockHash,
+        })
 
         //save meta
         dbOps.push({
@@ -183,25 +201,18 @@ Blockchain.prototype._addBlock = function (block, cb) {
         })
 
         if (!block.isGenesis()) {
-          //save parent details
-          parentDetails.child = blockHash
-          dbOps.push({
-            type: 'put',
-            key: 'detail' + block.header.parentHash.toString('hex'),
-            valueEncoding: 'json',
-            value: parentDetails
-          })
-
-          if (!parentDetails.genesis) {
-            self._rebuildBlockchain(parentDetails.parent, block.header.parent, dbOps, cb2())
-          } else {
-            cb2()
-          }
+          self._rebuildBlockchain(blockHash, block.header.parentHash, parentDetails, dbOps, cb2)
         } else {
           self.meta.genesis = blockHash
           cb2()
         }
       } else {
+        dbOps.push({
+          type: 'put',
+          key: 'detail' + block.header.parentHash.toString('hex'),
+          valueEncoding: 'json',
+          value: parentDetails
+        })
         cb2()
       }
     },
@@ -236,6 +247,8 @@ Blockchain.prototype.getBlock = function (hash, cb) {
         cb(err, block)
       })
     } else {
+      // console.log('hash: ' + hash.toString('hex'));
+      // console.log(value.toString('hex'));
       block = new Block(rlp.decode(value))
       cb(err, block)
     }
@@ -297,11 +310,15 @@ Blockchain.prototype.iterator = function (func, name, cb) {
 
   function run(cb2) {
     var details, block
-    self.meta.heads[name] = blockhash
+
     async.series([
+
       function getDetails(cb3) {
         self.getDetails(blockhash, function (err, d) {
           details = d
+          if (d) {
+            self.meta.heads[name] = blockhash
+          }
           cb3(err)
         })
       },
@@ -312,7 +329,7 @@ Blockchain.prototype.iterator = function (func, name, cb) {
         })
       },
       function runFunc(cb3) {
-        var reorg = lastBlock ? lastBlock.hash().toString('hex') !== block.head.parentHash.toString('hex') : false
+        var reorg = lastBlock ? lastBlock.hash().toString('hex') !== block.header.parentHash.toString('hex') : false
         lastBlock = block
         func(block, reorg, cb3)
       },
@@ -371,75 +388,71 @@ Blockchain.prototype._saveMeta = function (cb) {
 
 // builds the chain double link list from the head to the tail.
 // TODO wrap in a semiphore
-Blockchain.prototype._rebuildBlockchain = function (hash, childHash, ops, cb) {
+Blockchain.prototype._rebuildBlockchain = function (hash, parentHash, parentDetails, ops, cb) {
   var self = this
-  var details, staleDetails, staleHash, last
+  var ppDetails, staleHash
+  
+  parentHash = parentHash.toString('hex')
+  parentDetails.child = hash
+
+  ops.push({
+    type: 'put',
+    key: 'detail' + parentHash,
+    valueEncoding: 'json',
+    value: parentDetails
+  })
+
+  var i = parentDetails.staleChildren.indexOf(hash)
+  if (i != -1) {
+    parentDetails.staleChildren.splice(i, 1);
+  }
+
+  if (parentDetails.child && parentDetails.child !== hash) {
+    parentDetails.staleChildren.push(details.child)
+  }
+
+  parentDetails.child = hash
+  if (parentDetails.inChain)
+    return cb()
+
+  parentDetails.inChain = true
 
   async.series([
-
-    function getDetails(done) {
-      self.getDetails(hash.toString('hex'), function (err, d) {
-        details = d
-
-        for (head in meta.heads) {
-          if (!details[head]) {
-            self.meta.heads[head] = detials.parent
-          }
-        }
-
-        if (details.child) {
-          details.staleChildren.push(details.child)
-        }
-
-        details.child = childHash
-        if (details.inChain)
-        //short circut async
-          return done('complete')
-
-        details.inChain = true
-
-        cb(err)
-      })
-    },
     function loadNumberIndex(done) {
-      self.db.get(details.number, {
-        valueEncoding: 'binary'
-      }, function (err, blockHash) {
-        staleHash = blockHash
-        cb(err)
+      self.db.get(parentDetails.number, function (err, s) {
+        staleHash = s.toString('hex')
+        done()
       })
     },
     function loadStaleDetails(done) {
-      self.getDetails(staleHash, function (err, d) {
-        staleDetails = d
+      if (!staleHash)
+        return done()
+
+      self.getDetails(staleHash, function (err, staleDetails) {
         staleDetails.inChain = false
+
+        ops.push({
+          type: 'put',
+          key:  staleDetails.number,
+          value: hash
+        })
+        ops.push({
+          type: 'put',
+          key: 'detail' + staleHash,
+          value: staleDetails,
+          valueEncoding: 'json'
+        })
+        done(err)
+      })
+    },
+    function getNextDetails(done) {
+      self.getDetails(parentDetails.parent, function (err, d) {
+        ppDetails = d
         done(err)
       })
     }
   ], function (err) {
-    ops.push({
-      type: 'put',
-      key: hash,
-      value: details,
-      valueEncoding: 'json'
-    })
-
-    if (err)
-      return cb(null, ops)
-    else {
-      ops.push({
-        type: 'put',
-        key: details.number,
-        value: hash
-      })
-      ops.push({
-        type: 'put',
-        key: hash,
-        value: staleDetails,
-        valueEncoding: 'json'
-      })
-      self._rebuildBlockchain(details.parentHash, hash, ops, cb)
-    }
+      self._rebuildBlockchain(parentHash, parentDetails.parent, ppDetails,  ops, cb)
   })
 }
 
@@ -449,20 +462,25 @@ Blockchain.prototype.delBlock = function (blockhash, cb) {
   var self = this
   var dbOps = []
   var resetHeads = []
+  var detials
 
   if (!Buffer.isBuffer(blockhash))
     blockhash = blockhash.hash()
 
   async.series([
+
     function buildDBops(cb2) {
-      self._delBlock(blockhash, dbOps, resetHeads, cb2)
+      self._delBlock(blockhash, dbOps, resetHeads, function (err, d) {
+        detials = d
+        cb2(err)
+      })
     },
     function getLastDeletesDetils(cb2) {
       self.getDetails(blockhash.toString('hex'), function (err, details) {
         if (details.inChain)
           self.meta.rawHead = details.parent
 
-        resetHeads.forEach(function(head){
+        resetHeads.forEach(function (head) {
           self.meta.heads[head] = details.parent
         })
         cb2()
@@ -478,7 +496,6 @@ Blockchain.prototype._delBlock = function (blockhash, dbOps, resetHeads, cb) {
   var self = this
   var details
 
-
   dbOps.push({
     type: 'del',
     key: 'detail' + blockhash.toString('hex')
@@ -491,6 +508,7 @@ Blockchain.prototype._delBlock = function (blockhash, dbOps, resetHeads, cb) {
   })
 
   async.series([
+
     function getDetails(cb2) {
       self.getDetails(blockhash, function (err, d) {
         for (head in self.meta.heads) {
@@ -504,17 +522,19 @@ Blockchain.prototype._delBlock = function (blockhash, dbOps, resetHeads, cb) {
     },
     function removeChild(cb2) {
       if (details.child)
-        self.removeBlock(details.child, cb2, resetHeads, dbOps)
+        self._delBlock(details.child, dbOps, resetHeads, cb2)
       else
         cb2()
     },
     function removeStaleChildern(cb2) {
       if (details.staleChildren) {
         async.each(details.staleChildern, function (child, cb3) {
-          self._removeBlock(child, dbOps, resetHeads, cb3)
-        }, cb2)
+          self._delBlock(child, dbOps, resetHeads, cb3)
+        }, function (err) {
+          cb2(err, details)
+        })
       } else {
-        cb2()
+        cb2(null, details)
       }
     },
   ], cb)
