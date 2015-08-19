@@ -113,7 +113,7 @@ BlockHeader.prototype.validate = function(blockchain, height, cb) {
     height = false
   }
 
-  if(this.isGenesis)
+  if(this.isGenesis())
     return cb()
 
   //find the blocks parent
@@ -123,6 +123,10 @@ BlockHeader.prototype.validate = function(blockchain, height, cb) {
       return cb('could not find parent block')
 
     self.parentBlock = parentBlock
+
+    var number = new BN(self.number)
+    if(number.cmp(new BN(parentBlock.header.number).addn(1)) !== 0)
+      return cb('invalid number')
 
     if (height) {
       var dif = height.sub(new BN(parentBlock.header.number))
@@ -134,8 +138,8 @@ BlockHeader.prototype.validate = function(blockchain, height, cb) {
       self.validateDifficulty(parentBlock) &&
       self.validateGasLimit(parentBlock) &&
       utils.bufferToInt(parentBlock.header.number) + 1 === utils.bufferToInt(self.number) &&
-      utils.bufferToInt(self.timestamp) >= utils.bufferToInt(parentBlock.header.timestamp) &&
-      self.extraData.length <= 1024)
+      utils.bufferToInt(self.timestamp) > utils.bufferToInt(parentBlock.header.timestamp) &&
+      self.extraData.length <= params.maximumExtraDataSize.v)
       cb()
     else 
       cb('invalid block blockheader')
