@@ -170,6 +170,7 @@ function runTests(type, argv, cb) {
 
 function runAll() {
   async.series([
+    runTests.bind(this, 'blockchain', {}),
     runTests.bind(this, 'state', {}),
     runTests.bind(this, 'vm', {})
   ]);

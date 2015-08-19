@@ -291,7 +291,8 @@ exports.makeBlockHeader = function(data){
   var header = new Header()
   header.timestamp = format(data.currentTimestamp)
   header.gasLimit = format(data.currentGasLimit)
-  header.parentHash = data.previousHash
+  if(data.previousHash)
+    header.parentHash = data.previousHash
   header.coinbase = utils.pad(format(data.currentCoinbase, false, true), 20)
   header.difficulty = format(data.currentDifficulty)
   header.number = format(data.currentNumber)
