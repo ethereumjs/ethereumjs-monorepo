@@ -124,3 +124,6 @@ Returns the canoncical difficulty of the block
 
 #### `blockheader.hash`
 Returns the sha3 hash of the blockheader
+
+# LICENSE
+[MPL-2.0](https://tldrlegal.com/license/mozilla-public-license-2.0-(mpl-2))
