@@ -9,60 +9,63 @@ const VM = require('../')
 const level = require('levelup')
 
 var cacheDB = new level('./.cachedb')
-module.exports = function runBlockchainTest(testData, options, cb){
-  var blockchainDB = new level('', { db: require('memdown') })
+module.exports = function runBlockchainTest(options, testData, t, cb) {
+  var blockchainDB = new level('', {
+    db: require('memdown')
+  })
   var state = new Trie()
   var blockchain = new Blockchain(blockchainDB)
   blockchain.ethash.cacheDB = cacheDB
-  var t = options.t
   var vm = new VM(state, blockchain)
 
   async.series([
     //set up pre-state
-    function(done) {
-      testUtil.setupPreConditions(state, testData, function() {
+    function (done) {
+      testUtil.setupPreConditions(state, testData, function () {
         done()
       })
     },
-    function(done) {
+    function (done) {
       //create and add genesis block
       var genesisBlock = new Block()
       genesisBlock.header = new BlockHeader(testData.genesisBlockHeader)
       t.equal(state.root.toString('hex'), genesisBlock.header.stateRoot.toString('hex'), 'correct pre stateRoot')
-      if(testData.genesisRLP)
+      if (testData.genesisRLP)
         t.equal(genesisBlock.serialize().toString('hex'), testData.genesisRLP.slice(2), 'correct genesis RLP')
 
       blockchain.addBlock(genesisBlock, done)
     },
-    function(done) {
-      async.eachSeries(testData.blocks, function(raw, cb){
-        try{
+    function (done) {
+      async.eachSeries(testData.blocks, function (raw, cb) {
+        try {
           var block = new Block(new Buffer(raw.rlp.slice(2), 'hex'))
-          blockchain.addBlock(block, function(){
+          blockchain.addBlock(block, function () {
             cb()
           })
-        }catch(err){
+        } catch (err) {
           cb()
         }
 
-      }, function(){done()})
+      }, function () {
+        done()
+      })
     },
-    function runBlockchain(done){
+    function runBlockchain(done) {
       vm.runBlockchain(done)
     },
-    function getHead(done){
-      vm.blockchain.getHead(function(err, block){
+    function getHead(done) {
+      vm.blockchain.getHead(function (err, block) {
         t.equal(block.hash().toString('hex'), testData.lastblockhash, 'last block hash')
-        //make sure the state is set beofore checking post conditions
+          //make sure the state is set beofore checking post conditions
         state.root = block.header.stateRoot
         done();
       })
     },
-    function(done){
+    function (done) {
       // state.root = blockchain.head.header.stateRoot
       testUtil.verifyPostConditions(state, testData.postState, t, done)
     }
-  ], function(){
+  ], function () {
     t.equal(blockchain.meta.rawHead.toString('hex'), testData.lastblockhash, 'correct header block')
     cb();
   })

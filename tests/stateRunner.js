@@ -7,9 +7,8 @@ const testUtil = require('./util')
 const utils = require('ethereumjs-util')
 const Trie = require('merkle-patricia-tree/secure')
 
-module.exports = function runStateTest(testData, options, cb) {
+module.exports = function runStateTest(options, testData, t, cb) {
 
-  var t = options.t
   var sstream = false
   var state = new Trie()
   var errored = false
