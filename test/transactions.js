@@ -1,6 +1,6 @@
 const tape = require('tape');
-const rlp = require('rlp');
 const utils = require('ethereumjs-util');
+const rlp = utils.rlp
 const Transaction = require('../index.js');
 const txFixtures = require('./txs.json');
 
