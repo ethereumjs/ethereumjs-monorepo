@@ -35,6 +35,7 @@ To build for standalone use in the browser install `browserify` and run `npm run
 # API
   - [`new VM([StateTrie], [blockchain])`](#new-vmstatetrie-blockchain)  
   - [`VM` methods](#vm-methods)  
+    - [`vm.runBlockchain([blockchain], [cb])`](#vmrunblockchainopts-cb)
     - [`vm.runBlock(opts, cb)`](#vmrunblockopts-cb)
     - [`vm.runTx(opts, cb)`](#vmruntxopts-cb)
     - [`vm.runCode(opts, cb)`](#vmruncodeopts-cb)
@@ -58,6 +59,11 @@ Processes the `block` running all of the transaction it contains and updating th
 - `cb` - The callback
 
 --------------------------------------------------------
+
+#### `vm.runBlockchain(blockchain, cb)`
+Process a transaction.
+- `blockchain` - A [blockchain](https://github.com/ethereum/ethereumjs-blockchain) that to process
+- `cb` - The callback. Its is given an err parameter if it fails
 
 #### `vm.runTx(opts, cb)`
 Process a transaction.
