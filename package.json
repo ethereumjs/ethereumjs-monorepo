@@ -27,8 +27,8 @@
   "dependencies": {
     "async": "^1.4.2",
     "bitwise-xor": "0.0.0",
-    "es6-shim": "^0.33.0",
-    "ethereumjs-util": "^1.3.6",
+    "es6-shim": "^0.33.1",
+    "ethereumjs-util": "^1.3.7",
     "miller-rabin": "^3.0.0"
   },
   "devDependencies": {
