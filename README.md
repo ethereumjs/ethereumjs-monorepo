@@ -58,6 +58,7 @@ Creates a new VM object
 Process a transaction.
 - `blockchain` - A [blockchain](https://github.com/ethereum/ethereumjs-blockchain) that to process
 - `cb` - The callback. Its is given an err parameter if it fails
+
 --------------------------------------------------------
 
 #### `vm.runBlock(opts, cb)`
