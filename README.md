@@ -35,7 +35,7 @@ To build for standalone use in the browser install `browserify` and run `npm run
 # API
   - [`new VM([StateTrie], [blockchain])`](#new-vmstatetrie-blockchain)  
   - [`VM` methods](#vm-methods)  
-    - [`vm.runBlockchain([blockchain], [cb])`](#vmrunblockchainopts-cb)
+    - [`vm.runBlockchain([blockchain], [cb])`](#vmrunblockchainblockchain-cb)
     - [`vm.runBlock(opts, cb)`](#vmrunblockopts-cb)
     - [`vm.runTx(opts, cb)`](#vmruntxopts-cb)
     - [`vm.runCode(opts, cb)`](#vmruncodeopts-cb)
@@ -52,6 +52,14 @@ Creates a new VM object
 - `blockchain` - an instance of the [`Blockchain`](https://github.com/ethereum/ethereumjs-lib/blob/master/docs/blockchain.md) If no blockchain is given a fake blockchain will be used.
 
 ### `VM` methods
+
+
+#### `vm.runBlockchain(blockchain, cb)`
+Process a transaction.
+- `blockchain` - A [blockchain](https://github.com/ethereum/ethereumjs-blockchain) that to process
+- `cb` - The callback. Its is given an err parameter if it fails
+--------------------------------------------------------
+
 #### `vm.runBlock(opts, cb)`
 Processes the `block` running all of the transaction it contains and updating the miner's account.
 - `opts.block` - The [`Block`](./block.md) to process
@@ -60,10 +68,6 @@ Processes the `block` running all of the transaction it contains and updating th
 
 --------------------------------------------------------
 
-#### `vm.runBlockchain(blockchain, cb)`
-Process a transaction.
-- `blockchain` - A [blockchain](https://github.com/ethereum/ethereumjs-blockchain) that to process
-- `cb` - The callback. Its is given an err parameter if it fails
 
 #### `vm.runTx(opts, cb)`
 Process a transaction.
