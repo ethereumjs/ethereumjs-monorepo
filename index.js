@@ -116,10 +116,7 @@ Ethash.prototype.loadEpoc = function (number, cb) {
   }
 
   self.cacheDB.get(epoc, self.dbOpts, function (err, data) {
-    console.log('err: ' + err);
-    console.log('data' + data);
     if (!data) {
-      console.log('no data');
       self.cacheSize = ethHashUtil.getCacheSize(epoc)
       self.fullSize = ethHashUtil.getFullSize(epoc)
 

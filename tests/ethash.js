@@ -3,7 +3,7 @@ const ethHashUtil = require('../util.js')
 const ethUtil = require('ethereumjs-util')
 const Header = require('ethereumjs-block/header.js')
 const tape = require('tape')
-const powTests = require('ethereum-tests').powTests.ethash_tests
+const powTests = require('ethereumjs-testing').tests.powTests.ethash_tests
 const async = require('async')
 
 var ethash = new Ethash()
