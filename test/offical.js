@@ -2,7 +2,7 @@ var Trie = require('../index.js')
 var async = require('async')
 var rlp = require('rlp')
 var assert = require('assert')
-var jsonTests = require('ethereum-testing').tests.trieTests
+var jsonTests = require('ethereumjs-testing').tests.trieTests
 var ethUtil = require('ethereumjs-util')
 
 describe('offical tests', function () {
