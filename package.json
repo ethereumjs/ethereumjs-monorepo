@@ -22,7 +22,7 @@
   "devDependencies": {
     "async": "^1.4.2",
     "ethereumjs-testing": "git+https://github.com/wanderer/ethereumjs-testing.git",
-    "minimist": "^1.1.1",
+    "minimist": "^1.2.0",
     "tape": "^4.0.3"
   },
   "repository": {
