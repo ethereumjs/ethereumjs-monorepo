@@ -36,8 +36,8 @@
     "semaphore": ">=1.0.1"
   },
   "devDependencies": {
-    "mocha": "~1.18.2",
-    "ethrereum-tests": "git+https://github.com/ethereum/tests.git#develop"
+    "ethereumjs-testing": "git+https://github.com/wanderer/ethereumjs-testing.git",
+    "mocha": "~1.18.2"
   },
   "browser": {
     "sha3": "browserify-sha3"
