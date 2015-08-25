@@ -1,8 +1,7 @@
 const assert = require('assert')
 const fs = require('fs')
-const Bignum = require('bn.js')
 const RLP = require('../index.js')
-const officalTests = require('ethereum-tests').rlptest
+const officalTests = require('ethereumjs-testing').tests.rlptest
 
 describe('invalid rlps', function(){
   it('should not crash on an invalid rlp', function(){

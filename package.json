@@ -32,16 +32,15 @@
     "url": "https://github.com/wanderer/rlp/issues"
   },
   "devDependencies": {
-    "mocha": "~1.17.1",
-    "bn.js": "*",
-    "ethrereum-tests": "git+https://github.com/ethereum/tests.git#develop"
+    "ethereumjs-testing": "git+https://github.com/wanderer/ethereumjs-testing.git",
+    "mocha": "~1.17.1"
   },
   "bin": {
     "rlp": "./bin/rlp"
   },
   "testling": {
     "files": "test/*.js",
-    "harness" : "mocha-bdd",
+    "harness": "mocha-bdd",
     "browsers": [
       "chrome/22..latest",
       "firefox/16..latest",
