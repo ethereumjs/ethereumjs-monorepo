@@ -2,7 +2,7 @@ const Trie = require('../secure.js')
 const async = require('async')
 const rlp = require('rlp')
 const assert = require('assert')
-const jsonTests = require('ethereumjs-testing').test.trieTests.trietest_secureTrie
+const jsonTests = require('ethereumjs-testing').tests.trieTests.trietest_secureTrie
 const ethUtil = require('ethereumjs-util')
 
 var trie = new Trie()
