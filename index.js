@@ -110,6 +110,9 @@ Blockchain.prototype._addBlock = function (block, cb) {
 
   async.series([
     function verify(cb2) {
+      if (!self.validate)
+        return cb2()
+
       block.validate(self, function (err) {
         cb2(err)
       })
