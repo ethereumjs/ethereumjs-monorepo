@@ -22,8 +22,8 @@ This module work with `browserify`
         - [`block.validateTransactions()`](#blockvalidatetransactions)
         - [`block.validateTransactionsTrie()`](#blockvalidatetransactionstrie)
         - [`block.isGenesis()`](#blockisgenesis)
-        - [`block.setGenesisParams()`](#setGenesisParams)
-        - [`block.toJSON([labal=false])`](#blocktojsonlablefalse)
+        - [`block.setGenesisParams()`](#blocksetgenesisparams)
+        - [`block.toJSON([label=false])`](#blocktojsonlabelfalse)
 
 - [`Blockheader`](#blockheader)
     - [`Blockheader` Properties](#blockheader-properties)
