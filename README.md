@@ -22,7 +22,8 @@ This module work with `browserify`
         - [`block.validateTransactions()`](#blockvalidatetransactions)
         - [`block.validateTransactionsTrie()`](#blockvalidatetransactionstrie)
         - [`block.isGenesis()`](#blockisgenesis)
-        - [`block.toJSON()`](#blocktojson)
+        - [`block.setGenesisParams()`](#setGenesisParams)
+        - [`block.toJSON([labal=false])`](#blocktojsonlablefalse)
 
 - [`Blockheader`](#blockheader)
     - [`Blockheader` Properties](#blockheader-properties)
@@ -32,7 +33,7 @@ This module work with `browserify`
         - [`blockheader.validateGasLimit()`](#blockheadervalidategaslimit)
         - [`blockheader.canonicalGasLimit(parentBlock)`](#blockheadercanonicalgaslimitparentblock)
         - [`blockheader.canonicalDifficulty(parentBlock)`](#blockheadercanonicaldifficultyparentblock)
-        - [`blockheader.hash`](#blockheaderhash)
+        - [`blockheader.hash()`](#blockheaderhash)
 
 ## `Block`
 
@@ -77,8 +78,12 @@ Validates the transaction trie. Returns a `Boolean`
 #### `block.isGenesis()`
 Returns a `Boolean` determining if the block is a genesis block
 
-#### `block.toJSON()`
+#### `block.setGenesisParams()`
+Sets the parameters of the block to the genesis block.
+
+#### `block.toJSON([label=false])`
 Returns the block as a JSON object.
+- `label` - A `Boolean`. If true returns an JSON object with properties corresponding to the block properties if false it just returns a JSON array.
 
 ## `Blockheader`
 A object that repersents the block header.
@@ -122,7 +127,7 @@ Returns the canonical gas limit of the block
 Returns the canoncical difficulty of the block
 - `parentBlock` - the parent `Block` of the header
 
-#### `blockheader.hash`
+#### `blockheader.hash()`
 Returns the sha3 hash of the blockheader
 
 # LICENSE
