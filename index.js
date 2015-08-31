@@ -6,6 +6,7 @@ const BN = ethUtil.BN
 const rlp = ethUtil.rlp
 const async = require('async')
 const BlockHeader = require('./header')
+const params = require('ethereum-common')
 
 /**
  * Represents a block
@@ -69,6 +70,14 @@ Block.prototype.hash = function() {
  */
 Block.prototype.isGenesis = function(){
   return this.header.isGenesis()
+}
+
+Block.prototype.setGenesisParams = function(){
+  this.header.gasLimit =  params.genesisGasLimit.v
+  this.header.difficulty = params.genesisDifficulty.v
+  this.header.extraData = params.genesisExtraData.v
+  this.header.nonce = params.genesisNonce.v
+  this.header.stateRoot = 'd7f8974fb5ac78d9ac099b9ad5018bedc2ce0a72dad1827a1709da30580f0544'
 }
 
 /**

@@ -8,7 +8,6 @@ const rlp = utils.rlp
  * @param {Array} data raw data, deserialized
  */
 var BlockHeader = module.exports = function(data) {
-
   var fields = [{
     name: 'parentHash',
     length: 32,
@@ -37,14 +36,14 @@ var BlockHeader = module.exports = function(data) {
     default: utils.zeros(256)
   }, {
     name: 'difficulty',
-    default: new Buffer('020000', 'hex')
+    default: new Buffer([])
   }, {
     name: 'number',
     noZero: true,
     default: new Buffer([])
   }, {
     name: 'gasLimit',
-    default: new Buffer('2fefd8', 'hex')
+    default: new Buffer([])
   }, {
     name: 'gasUsed',
     noZero: true,
@@ -63,7 +62,7 @@ var BlockHeader = module.exports = function(data) {
       //length: 32
   }, {
     name: 'nonce',
-    default: new Buffer('000000000000002a', 'hex') //sha3(42)
+    default: new Buffer([]) //sha3(42)
   }]
   utils.defineProperties(this, fields, data)
 }
