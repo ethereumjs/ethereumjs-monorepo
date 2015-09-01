@@ -1,5 +1,6 @@
 const async = require('async')
 const testUtil = require('./util.js')
+const ethUtil = require('ethereumjs-util')
 const Trie = require('merkle-patricia-tree/secure')
 const assert = require('assert')
 const Block = require('ethereumjs-block')
@@ -17,6 +18,7 @@ module.exports = function runBlockchainTest(options, testData, t, cb) {
   var blockchain = new Blockchain(blockchainDB)
   blockchain.ethash.cacheDB = cacheDB
   var vm = new VM(state, blockchain)
+  var genesisBlock = new Block()
 
   async.series([
     //set up pre-state
@@ -27,7 +29,6 @@ module.exports = function runBlockchainTest(options, testData, t, cb) {
     },
     function (done) {
       //create and add genesis block
-      var genesisBlock = new Block()
       genesisBlock.header = new BlockHeader(testData.genesisBlockHeader)
       t.equal(state.root.toString('hex'), genesisBlock.header.stateRoot.toString('hex'), 'correct pre stateRoot')
       if (testData.genesisRLP)
@@ -39,7 +40,9 @@ module.exports = function runBlockchainTest(options, testData, t, cb) {
       async.eachSeries(testData.blocks, function (raw, cb) {
         try {
           var block = new Block(new Buffer(raw.rlp.slice(2), 'hex'))
-          blockchain.addBlock(block, function () {
+          console.log(block.hash().toString('hex'));
+          // block.header._genesisDifficulty = 0x20000 //ethUtil.bufferToInt(genesisBlock.header.difficulty) 
+          blockchain.addBlock(block, function (err) {
             cb()
           })
         } catch (err) {
