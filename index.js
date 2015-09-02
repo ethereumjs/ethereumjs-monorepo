@@ -114,6 +114,7 @@ Blockchain.prototype._addBlock = function (block, cb) {
         return cb2()
 
       block.validate(self, function (err) {
+        console.log(err);
         cb2(err)
       })
     },
@@ -250,8 +251,6 @@ Blockchain.prototype.getBlock = function (hash, cb) {
         cb(err, block)
       })
     } else {
-      // console.log('hash: ' + hash.toString('hex'));
-      // console.log(value.toString('hex'));
       block = new Block(rlp.decode(value))
       cb(err, block)
     }
