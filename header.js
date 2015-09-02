@@ -2,12 +2,12 @@ const utils = require('ethereumjs-util')
 const params = require('ethereum-common')
 const BN = utils.BN
 const rlp = utils.rlp
-/**
- * Represents a Block Header
- * @constructor
- * @param {Array} data raw data, deserialized
- */
-var BlockHeader = module.exports = function(data) {
+  /**
+   * Represents a Block Header
+   * @constructor
+   * @param {Array} data raw data, deserialized
+   */
+var BlockHeader = module.exports = function (data) {
   var fields = [{
     name: 'parentHash',
     length: 32,
@@ -65,29 +65,30 @@ var BlockHeader = module.exports = function(data) {
     default: new Buffer([]) //sha3(42)
   }]
   utils.defineProperties(this, fields, data)
+
 }
 
-BlockHeader.prototype.canonicalDifficulty = function(parentBlock) {
+BlockHeader.prototype.canonicalDifficulty = function (parentBlock) {
   const blockTs = utils.bufferToInt(this.timestamp)
   const parentTs = utils.bufferToInt(parentBlock.header.timestamp)
   const parentDif = utils.bufferToInt(parentBlock.header.difficulty)
-  
+
   var dif = Math.floor(parentDif / params.difficultyBoundDivisor.v)
   if (blockTs < parentTs + params.durationLimit.v)
-    dif += parentDif   
-  else 
-    dif = Math.max(params.genesisDifficulty.v, parentDif - dif)
+    dif += parentDif
+  else
+    dif = Math.max(params.minimumDifficulty.v, parentDif - dif)
 
   return dif
 }
 
 //check the block for the canical difficulty
-BlockHeader.prototype.validateDifficulty = function(parentBlock) {
+BlockHeader.prototype.validateDifficulty = function (parentBlock) {
   const dif = this.canonicalDifficulty(parentBlock)
   return dif === utils.bufferToInt(this.difficulty)
 }
 
-BlockHeader.prototype.validateGasLimit = function(parentBlock) {
+BlockHeader.prototype.validateGasLimit = function (parentBlock) {
   const pGasLimit = utils.bufferToInt(parentBlock.header.gasLimit)
   const gasLimit = utils.bufferToInt(this.gasLimit)
   const a = Math.floor(pGasLimit / params.gasLimitBoundDivisor.v)
@@ -104,7 +105,7 @@ BlockHeader.prototype.validateGasLimit = function(parentBlock) {
  * @param {Bignum} [height] if this is an uncle header, this is the height of the block that is including it
  * @param {Function} cb the callback function
  */
-BlockHeader.prototype.validate = function(blockchain, height, cb) {
+BlockHeader.prototype.validate = function (blockchain, height, cb) {
 
   var self = this
   if (arguments.length === 2) {
@@ -112,19 +113,19 @@ BlockHeader.prototype.validate = function(blockchain, height, cb) {
     height = false
   }
 
-  if(this.isGenesis())
+  if (this.isGenesis())
     return cb()
 
   //find the blocks parent
-  blockchain.getBlock(self.parentHash, function(err, parentBlock) {
+  blockchain.getBlock(self.parentHash, function (err, parentBlock) {
 
-    if(err)
+    if (err)
       return cb('could not find parent block')
 
     self.parentBlock = parentBlock
 
     var number = new BN(self.number)
-    if(number.cmp(new BN(parentBlock.header.number).addn(1)) !== 0)
+    if (number.cmp(new BN(parentBlock.header.number).addn(1)) !== 0)
       return cb('invalid number')
 
     if (height) {
@@ -133,23 +134,30 @@ BlockHeader.prototype.validate = function(blockchain, height, cb) {
         return cb('uncle block has a parent that is too old or to young')
     }
 
-    if (
-      self.validateDifficulty(parentBlock) &&
-      self.validateGasLimit(parentBlock) &&
-      utils.bufferToInt(parentBlock.header.number) + 1 === utils.bufferToInt(self.number) &&
-      utils.bufferToInt(self.timestamp) > utils.bufferToInt(parentBlock.header.timestamp) &&
-      self.extraData.length <= params.maximumExtraDataSize.v)
-      cb()
-    else 
-      cb('invalid block blockheader')
+    if (!self.validateDifficulty(parentBlock))
+      return cb('invalid Difficulty')
+
+    if (!self.validateGasLimit(parentBlock))
+      return cb('invalid gas limit')
+
+    if (utils.bufferToInt(parentBlock.header.number) + 1 !== utils.bufferToInt(self.number))
+      return cb('invalid heigth')
+
+    if (utils.bufferToInt(self.timestamp) <= utils.bufferToInt(parentBlock.header.timestamp))
+      return cb('invalid timestamp')
+
+    if (self.extraData.length > params.maximumExtraDataSize.v)
+      return cb('invalid amount of extra data')
+
+    cb()
   })
 }
 
-BlockHeader.prototype.hash = function() {
+BlockHeader.prototype.hash = function () {
   return utils.sha3(rlp.encode(this.raw))
 }
 
 
-BlockHeader.prototype.isGenesis = function(){
+BlockHeader.prototype.isGenesis = function () {
   return this.number.toString('hex') === ''
 }
