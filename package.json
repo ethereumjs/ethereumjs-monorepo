@@ -1,6 +1,6 @@
 {
   "name": "ethereumjs-blockchain",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "A module to store and interact with blocks",
   "main": "index.js",
   "scripts": {
