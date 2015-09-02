@@ -40,7 +40,6 @@ module.exports = function runBlockchainTest(options, testData, t, cb) {
       async.eachSeries(testData.blocks, function (raw, cb) {
         try {
           var block = new Block(new Buffer(raw.rlp.slice(2), 'hex'))
-          console.log(block.hash().toString('hex'));
           // block.header._genesisDifficulty = 0x20000 //ethUtil.bufferToInt(genesisBlock.header.difficulty) 
           blockchain.addBlock(block, function (err) {
             cb()
@@ -65,7 +64,6 @@ module.exports = function runBlockchainTest(options, testData, t, cb) {
       })
     },
     function (done) {
-      // state.root = blockchain.head.header.stateRoot
       testUtil.verifyPostConditions(state, testData.postState, t, done)
     }
   ], function () {

@@ -18,11 +18,12 @@ module.exports = function runStateTest(options, testData, t, cb) {
   var result
 
   async.series([
-    function(done) {
+
+    function (done) {
       vm = new VM(state)
       testUtil.setupPreConditions(state, testData, done)
     },
-    function(done) {
+    function (done) {
 
       var tx = testUtil.makeTx(testData.transaction)
       block = testUtil.makeBlockFromEnv(testData.env)
@@ -38,7 +39,7 @@ module.exports = function runStateTest(options, testData, t, cb) {
         vm.runTx({
           tx: tx,
           block: block,
-        }, function(err, r) {
+        }, function (err, r) {
           result = r
           errored = true
           done()
@@ -48,7 +49,7 @@ module.exports = function runStateTest(options, testData, t, cb) {
         done()
       }
     },
-    function(done) {
+    function (done) {
       var hrend = process.hrtime(hrstart)
       if (sstream)
         sstream.end()
@@ -57,13 +58,11 @@ module.exports = function runStateTest(options, testData, t, cb) {
 
       if (testData.logs.length !== 0) {
         var bloom = new Bloom()
-        testData.logs.forEach(function(l) {
+        testData.logs.forEach(function (l) {
           bloom.or(new Bloom(new Buffer(l.bloom, 'hex')))
         })
         t.equal(bloom.bitvector.toString('hex'), result.bloom.bitvector.toString('hex'), 'the bloom should be correct')
       }
-
-      console.log(testData.post);
 
       testUtil.verifyPostConditions(state, testData.post, t, done)
     }
