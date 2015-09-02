@@ -113,10 +113,7 @@ Blockchain.prototype._addBlock = function (block, cb) {
       if (!self.validate)
         return cb2()
 
-      block.validate(self, function (err) {
-        console.log(err);
-        cb2(err)
-      })
+      block.validate(self, cb2)
     },
     function verifyPOW(cb2) {
       if (!self.validate)
@@ -181,7 +178,6 @@ Blockchain.prototype._addBlock = function (block, cb) {
 
         // if (block.hash().toString('hex') === 'a861daf9c8691fe5a3a975bcb34aa103214e9864818de25f0da09ab7b958c965')
         //   debugger
-
 
       if (td > self.meta.td || block.isGenesis()) {
         blockDetails.inChain = true
