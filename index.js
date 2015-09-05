@@ -30,20 +30,23 @@ Blockchain.prototype._init = function () {
   var self = this
 
   function onHeadFound() {
-    self._initDone = true
-      //run the pending save operations
-    async.eachSeries(self._pendingSaves, function (ops, cb) {
-      self._addBlock(ops[0], function () {
-        ops[1]()
+    //run the pending save operations
+    async.whilst(function(){
+      return self._pendingSaves.length
+    },function (cb) {
+      var op = self._pendingSaves.pop()
+      self._addBlock(op[0], function () {
+        op[1]()
         cb()
       })
     }, function () {
       delete self._pendingSaves
-    })
+      self._initDone = true
 
-    //run the pending getHead
-    self._pendingGets.forEach(function (cb) {
-      self.getHead(cb)
+      //run the pending getHead
+      self._pendingGets.forEach(function (cb) {
+        self.getHead(cb)
+      })
     })
   }
 
@@ -57,9 +60,16 @@ Blockchain.prototype._init = function () {
         self.meta = {
           heads: {}
         }
+        self._generateGenesis()
       }
       onHeadFound()
     })
+}
+
+Blockchain.prototype._generateGenesis = function () {
+  var genesisBlock = new Block()
+  genesisBlock.setGenesisParams()
+  this.addBlock(genesisBlock, function () {})
 }
 
 /**
@@ -104,11 +114,12 @@ Blockchain.prototype._addBlock = function (block, cb) {
   if (block.constructor !== Block)
     block = new Block(block)
 
-  if(self.meta.genesis && block.isGenesis()){
+  if (self.meta.genesis && block.isGenesis()) {
     return cb('already have a genesis block')
   }
 
   async.series([
+
     function verify(cb2) {
       if (!self.validate)
         return cb2()
@@ -147,7 +158,7 @@ Blockchain.prototype._addBlock = function (block, cb) {
       //calculate the total difficulty for this block
       var td = utils.bufferToInt(block.header.difficulty)
         //add this block as a child to the parent's block details
-      if (!block.isGenesis()){
+      if (!block.isGenesis()) {
         td += parentDetails.td
         parentDetails.staleChildren.push(blockHash)
       }
@@ -170,14 +181,14 @@ Blockchain.prototype._addBlock = function (block, cb) {
         })
         //store the block
       dbOps.push({
-          type: 'put',
-          key: blockHash,
-          valueEncoding: 'binary',
-          value: block.serialize()
-        })
+        type: 'put',
+        key: blockHash,
+        valueEncoding: 'binary',
+        value: block.serialize()
+      })
 
-        // if (block.hash().toString('hex') === 'a861daf9c8691fe5a3a975bcb34aa103214e9864818de25f0da09ab7b958c965')
-        //   debugger
+      // if (block.hash().toString('hex') === 'a861daf9c8691fe5a3a975bcb34aa103214e9864818de25f0da09ab7b958c965')
+      //   debugger
 
       if (td > self.meta.td || block.isGenesis()) {
         blockDetails.inChain = true
@@ -389,7 +400,7 @@ Blockchain.prototype._saveMeta = function (cb) {
 Blockchain.prototype._rebuildBlockchain = function (hash, parentHash, parentDetails, ops, cb) {
   var self = this
   var ppDetails, staleHash
-  
+
   parentHash = parentHash.toString('hex')
   parentDetails.child = hash
 
@@ -416,6 +427,7 @@ Blockchain.prototype._rebuildBlockchain = function (hash, parentHash, parentDeta
   parentDetails.inChain = true
 
   async.series([
+
     function loadNumberIndex(done) {
       self.db.get(parentDetails.number, function (err, s) {
         staleHash = s.toString('hex')
@@ -431,7 +443,7 @@ Blockchain.prototype._rebuildBlockchain = function (hash, parentHash, parentDeta
 
         ops.push({
           type: 'put',
-          key:  staleDetails.number,
+          key: staleDetails.number,
           value: hash
         })
         ops.push({
@@ -450,7 +462,7 @@ Blockchain.prototype._rebuildBlockchain = function (hash, parentHash, parentDeta
       })
     }
   ], function (err) {
-      self._rebuildBlockchain(parentHash, parentDetails.parent, ppDetails,  ops, cb)
+    self._rebuildBlockchain(parentHash, parentDetails.parent, ppDetails, ops, cb)
   })
 }
 
