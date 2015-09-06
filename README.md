@@ -1,4 +1,4 @@
-# SYNOPSIS  
+# SYNOPSIS  [![Build Status](https://travis-ci.org/ethereum/ethereumjs-block.svg?branch=master)](https://travis-ci.org/ethereum/ethereumjs-block)
 Implements schema and functions related to Etheruem's block. 
 
 # INSTALL
