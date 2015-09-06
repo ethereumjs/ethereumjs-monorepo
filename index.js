@@ -77,7 +77,7 @@ Block.prototype.setGenesisParams = function(){
   this.header.difficulty = params.genesisDifficulty.v
   this.header.extraData = params.genesisExtraData.v
   this.header.nonce = params.genesisNonce.v
-  this.header.stateRoot = 'd7f8974fb5ac78d9ac099b9ad5018bedc2ce0a72dad1827a1709da30580f0544'
+  this.header.stateRoot = params.genesisStateRoot.v
 }
 
 /**
