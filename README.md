@@ -32,7 +32,6 @@ A module to store and interact with blocks
 
 ## `Blockchain`
 Implements functions for retrieving, manipulating and storing Ethereum's blockchain
-- file [lib/blockchain.js](../../master/lib/blockchain.js)
 
 ### `new Blockchain(blockDB, detailsDB)`
 Creates new Blockchain object 
