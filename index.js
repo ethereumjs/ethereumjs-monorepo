@@ -260,6 +260,9 @@ exports.defineProperties = function(self, fields, data) {
   })
 
   if (data) {
+    if(typeof data === 'string')
+      data = new Buffer(exports.stripHexPrefix(data), 'hex')
+
     if (Buffer.isBuffer(data))
       data = rlp.decode(data)
 
