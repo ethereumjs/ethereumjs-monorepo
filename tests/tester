@@ -26,7 +26,8 @@ const skip = [
   'Callcode50000', //slow
   'Return50000', //slow
   'Return50000_2', //slow
-  'uncleBlockAtBlock3AfterBlock3'
+  'uncleBlockAtBlock3AfterBlock3',
+  'ForkUncle', // correct behaviour unspecified (?)
 ];
 
 if (argv.r) {
