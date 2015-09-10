@@ -43,7 +43,7 @@ var Transaction = module.exports = function(data) {
   }, {
     name: 'data',
     empty: true,
-    default: new Buffer([0])
+    default: new Buffer([])
   }, {
     name: 'v',
     length: 1,
