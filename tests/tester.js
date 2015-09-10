@@ -2,7 +2,7 @@ var ethTests = require('ethereumjs-testing').tests
 var test = require('tape')
 var cp = require('child_process')
 
-test('executble test', function(t) {
+test('executable test', function(t) {
   var stateTest = {'randomTest': ethTests.stateTests.stRefundTest.refund50_1 }
   var ejt = cp.spawn(__dirname + '/tester', ['-r', JSON.stringify(stateTest)])
   ejt.stderr.on('data', function(d){
