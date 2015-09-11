@@ -164,5 +164,35 @@ if you want to just run the VM tests run
 if you want to just run the State tests run
 `./bin/tester -s`
 
+# Internal Structure
+The VM processes state changes at many levels.
+
+* runBlockchain
+  * for every block, runBlock
+* runBlock
+  * for every tx, runTx
+  * pay miner and uncles
+* runTx
+  * checkpoint state
+  * runCall
+  * revert or commit checkpoint
+* runCall
+  * transfer value
+  * load code
+  * runCode
+  * materialize created contracts
+* runCode
+  * iterrate over code
+  * run op codes
+  * track gas usage
+* OpFns
+  * run individual op code
+  * modify stack
+  * modify memory
+  * calculate fee
+
+The opFns for `CREATE`, `CALL`, and `CALLCODE` call back up to `runCall`.
+
+
 # LICENSE
 [MPL-2.0](https://www.mozilla.org/MPL/2.0/)
