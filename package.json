@@ -7,7 +7,7 @@
     "test": "test"
   },
   "scripts": {
-    "test": "./node_modules/mocha/bin/mocha --timeout 5000 --reporter spec ./test/",
+    "test": "standard ./index.js &&  ./node_modules/mocha/bin/mocha --reporter spec ./test/",
     "webtest": "browserify test/max.js | testling -u"
   },
   "repository": {
@@ -18,22 +18,18 @@
     "rlp",
     "ethereum"
   ],
-  "contributors": [
-    {
-      "name": "josephyzhou"
-    }
-  ],
   "author": {
     "name": "martin becze",
     "email": "mjbecze@gmail.com"
   },
-  "license": "GPL",
+  "license": "MPL-2.0",
   "bugs": {
     "url": "https://github.com/wanderer/rlp/issues"
   },
   "devDependencies": {
     "ethereumjs-testing": "git+https://github.com/wanderer/ethereumjs-testing.git",
-    "mocha": "~1.17.1"
+    "mocha": "~1.17.1",
+    "standard": "^5.2.2"
   },
   "bin": {
     "rlp": "./bin/rlp"
