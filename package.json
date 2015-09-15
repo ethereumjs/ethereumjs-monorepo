@@ -4,7 +4,7 @@
   "description": "a collection of utility functions for Ethereum",
   "main": "index.js",
   "scripts": {
-    "test": "mocha ./test/index.js",
+    "test": "standard ./index.js && mocha ./test/index.js",
     "compile": "browserify index.js -s ethUtils > ethUtils.js"
   },
   "repository": {
@@ -43,6 +43,7 @@
     ]
   },
   "devDependencies": {
-    "mocha": "^2.1.0"
+    "mocha": "^2.1.0",
+    "standard": "^5.2.2"
   }
 }
