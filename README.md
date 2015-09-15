@@ -1,5 +1,5 @@
 # SYNOPSIS 
-[![Build Status](https://travis-ci.org/ethereum/ethereumjs-tx.svg)](https://travis-ci.org/ethereum/ethereumjs-tx) [![js-standard-style](https://cdn.rawgit.com/feross/standard/master/badge.svg)](https://github.com/feross/standard)   
+ [![js-standard-style](https://cdn.rawgit.com/feross/standard/master/badge.svg)](https://github.com/feross/standard) [![Build Status](https://travis-ci.org/ethereum/ethereumjs-tx.svg)](https://travis-ci.org/ethereum/ethereumjs-tx)
 A simple module for creating, manipulating and signing Ethereum transactions. 
 
 # CONTACT
@@ -31,7 +31,6 @@ tx.sign(privateKey);
 var serializedTx = tx.serialize();
 
 ```
-
 
 # BOWSER  
 For standalone use in the browser inculde [./dist/ethereumjs-tx.js](https://github.com/ethereum/ethereumjs-tx/blob/master/dist/ethereumjs-tx.js)  
