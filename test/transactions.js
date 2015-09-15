@@ -74,12 +74,13 @@ tape('[Transaction]: Basic functions', function (t) {
     st.end()
   })
 
-// t.test('should decode a ', function(st) {
-//   transactions.forEach(function(tx, i) {
-//     if (txFixtures[i].privateKey) {
-//       st.equals(tx.verifySignature(), true)
-//     }
-//   })
-//   st.end()
-// })
+  t.test('should round trip decode a tx', function (st) {
+    var tx = new Transaction()
+    tx.value = 5000
+    var s1 = tx.serialize().toString('hex')
+    var tx2 = new Transaction(s1)
+    var s2 = tx2.serialize().toString('hex')
+    st.equals(s1, s2)
+    st.end()
+  })
 })
