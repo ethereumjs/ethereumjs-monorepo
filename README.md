@@ -1,4 +1,6 @@
-# SYNOPSIS [![Build Status](https://travis-ci.org/ethereum/ethereumjs-util.svg)](https://travis-ci.org/ethereum/ethereumjs-util)
+# SYNOPSIS
+[![js-standard-style](https://cdn.rawgit.com/feross/standard/master/badge.svg)](https://github.com/feross/standard)
+ [![Build Status](https://travis-ci.org/ethereum/ethereumjs-util.svg)](https://travis-ci.org/ethereum/ethereumjs-util)  
 A collection of utility functions for ethereum. It can be used in node.js or can be in the browser with browserify.
 
 # CONTACT
