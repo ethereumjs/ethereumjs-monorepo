@@ -1,21 +1,19 @@
 const argv = require('minimist')(process.argv.slice(2))
-const async = require('async')
-const tape = require('tape')
 const testing = require('ethereumjs-testing')
 const runner = require('./transactionRunner.js')
 
-if(argv.a){
+if (argv.a) {
   runAll()
-}else{
+} else {
   runOffical()
 }
 
-function runOffical(cb){
+function runOffical (cb) {
   var tests = testing.getTests('transaction', argv)
   testing.runTests(runner, tests, cb)
 }
 
-function runAll(){
+function runAll () {
   runOffical()
   require('./transactions.js')
 }

@@ -4,11 +4,11 @@ const rlp = utils.rlp
 const Transaction = require('../index.js')
 const txFixtures = require('./txs.json')
 
-tape('[Transaction]: Basic functions', function(t) {
+tape('[Transaction]: Basic functions', function (t) {
   var transactions = []
 
-  t.test('should decode transactions', function(st) {
-    txFixtures.forEach(function(tx) {
+  t.test('should decode transactions', function (st) {
+    txFixtures.forEach(function (tx) {
       var pt = new Transaction(tx.raw)
       st.equal(pt.nonce.toString('hex'), tx.raw[0])
       st.equal(pt.gasPrice.toString('hex'), tx.raw[1])
@@ -24,30 +24,30 @@ tape('[Transaction]: Basic functions', function(t) {
     st.end()
   })
 
-  t.test('should serialize', function(st) {
-    transactions.forEach(function(tx) {
+  t.test('should serialize', function (st) {
+    transactions.forEach(function (tx) {
       st.deepEqual(tx.serialize(), rlp.encode(tx.raw))
     })
     st.end()
   })
 
-  t.test('should verify Signatures', function(st) {
-    transactions.forEach(function(tx) {
+  t.test('should verify Signatures', function (st) {
+    transactions.forEach(function (tx) {
       st.equals(tx.verifySignature(), true)
     })
     st.end()
   })
 
-  t.test('should  not verify Signatures', function(st) {
-    transactions.forEach(function(tx) {
+  t.test('should  not verify Signatures', function (st) {
+    transactions.forEach(function (tx) {
       tx.s = utils.zeros(32)
       st.equals(tx.verifySignature(), false)
     })
     st.end()
   })
 
-  t.test('should sign tx', function(st) {
-    transactions.forEach(function(tx, i) {
+  t.test('should sign tx', function (st) {
+    transactions.forEach(function (tx, i) {
       if (txFixtures[i].privateKey) {
         var privKey = new Buffer(txFixtures[i].privateKey, 'hex')
         tx.sign(privKey)
@@ -56,8 +56,8 @@ tape('[Transaction]: Basic functions', function(t) {
     st.end()
   })
 
-  t.test('should get sender\'s address after signing it', function(st) {
-    transactions.forEach(function(tx, i) {
+  t.test("should get sender's address after signing it", function (st) {
+    transactions.forEach(function (tx, i) {
       if (txFixtures[i].privateKey) {
         st.equals(tx.getSenderAddress().toString('hex'), txFixtures[i].sendersAddress)
       }
@@ -65,8 +65,8 @@ tape('[Transaction]: Basic functions', function(t) {
     st.end()
   })
 
-  t.test('should verify signing it', function(st) {
-    transactions.forEach(function(tx, i) {
+  t.test('should verify signing it', function (st) {
+    transactions.forEach(function (tx, i) {
       if (txFixtures[i].privateKey) {
         st.equals(tx.verifySignature(), true)
       }
@@ -74,12 +74,12 @@ tape('[Transaction]: Basic functions', function(t) {
     st.end()
   })
 
-  // t.test('should decode a ', function(st) {
-  //   transactions.forEach(function(tx, i) {
-  //     if (txFixtures[i].privateKey) {
-  //       st.equals(tx.verifySignature(), true)
-  //     }
-  //   })
-  //   st.end()
-  // })
+// t.test('should decode a ', function(st) {
+//   transactions.forEach(function(tx, i) {
+//     if (txFixtures[i].privateKey) {
+//       st.equals(tx.verifySignature(), true)
+//     }
+//   })
+//   st.end()
+// })
 })

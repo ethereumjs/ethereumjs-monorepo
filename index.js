@@ -4,7 +4,7 @@ const ecdsa = require('secp256k1')
 const BN = ethUtil.BN
 const rlp = ethUtil.rlp
 
-//give browser access to Buffers
+// give browser access to Buffers
 global.Buffer = Buffer
 global.ethUtil = ethUtil
 
@@ -13,9 +13,8 @@ global.ethUtil = ethUtil
  * @constructor
  * @param {Buffer|Array} data raw data, deserialized
  */
-var Transaction = module.exports = function(data) {
-  var self = this
-  //Define Properties
+var Transaction = module.exports = function (data) {
+  // Define Properties
   const fields = [{
     name: 'nonce',
     word: true,
@@ -63,12 +62,14 @@ var Transaction = module.exports = function(data) {
   Object.defineProperty(this, 'from', {
     enumerable: false,
     configurable: true,
-    get: function() {
-      if(this._from) 
+    get: function () {
+      if (this._from) {
         return this._from
-      return this._from = this.getSenderAddress()
+      }
+      this._from = this.getSenderAddress()
+      return this._from
     },
-    set: function(v) {
+    set: function (v) {
       this._from = v
     }
   })
@@ -81,7 +82,7 @@ var Transaction = module.exports = function(data) {
  * @method serialize
  * @return {Buffer}
  */
-Transaction.prototype.serialize = function() {
+Transaction.prototype.serialize = function () {
   return rlp.encode(this.raw)
 }
 
@@ -91,18 +92,20 @@ Transaction.prototype.serialize = function() {
  * @param {Boolean} [true] signature - whether or not to inculde the signature
  * @return {Buffer}
  */
-Transaction.prototype.hash = function(signature) {
+Transaction.prototype.hash = function (signature) {
   var toHash
 
-  if (typeof signature === 'undefined')
+  if (typeof signature === 'undefined') {
     signature = true
+  }
 
-  if (signature) 
+  if (signature) {
     toHash = this.raw
-  else 
+  } else {
     toHash = this.raw.slice(0, 6)
+  }
 
-  //create hash
+  // create hash
   return ethUtil.sha3(rlp.encode(toHash))
 }
 
@@ -111,7 +114,7 @@ Transaction.prototype.hash = function(signature) {
  * @method getSenderAddress
  * @return {Buffer}
  */
-Transaction.prototype.getSenderAddress = function() {
+Transaction.prototype.getSenderAddress = function () {
   const pubKey = this.getSenderPublicKey()
   return ethUtil.pubToAddress(pubKey)
 }
@@ -121,9 +124,10 @@ Transaction.prototype.getSenderAddress = function() {
  * @method getSenderPublicKey
  * @return {Buffer}
  */
-Transaction.prototype.getSenderPublicKey =  function() {
-  if (!this._senderPubKey || !this._senderPubKey.length)
+Transaction.prototype.getSenderPublicKey = function () {
+  if (!this._senderPubKey || !this._senderPubKey.length) {
     this.verifySignature()
+  }
 
   return this._senderPubKey
 }
@@ -132,25 +136,27 @@ Transaction.prototype.getSenderPublicKey =  function() {
  * @method verifySignature
  * @return {Boolean}
  */
-Transaction.prototype.verifySignature = function() {
+Transaction.prototype.verifySignature = function () {
   var msgHash = this.hash(false)
   var sig = {
     signature: Buffer.concat([ethUtil.pad(this.r, 32), ethUtil.pad(this.s, 32)], 64),
     recovery: ethUtil.bufferToInt(this.v) - 27
   }
 
-  try{
+  try {
     this._senderPubKey = ecdsa.recover(msgHash, sig, false)
-  }catch(e){
-    return false 
+  } catch (e) {
+    return false
   }
 
-  if(!this._senderPubKey)
+  if (!this._senderPubKey) {
     return false
+  }
 
   var result = ecdsa.verify(msgHash, sig, this._senderPubKey)
-  if(!result)
+  if (!result) {
     this._senderPubKey = null
+  }
 
   return result
 }
@@ -159,7 +165,7 @@ Transaction.prototype.verifySignature = function() {
  * @method sign
  * @param {Buffer} privateKey
  */
-Transaction.prototype.sign = function(privateKey) {
+Transaction.prototype.sign = function (privateKey) {
   var msgHash = this.hash(false)
   var sig = ecdsa.sign(msgHash, privateKey)
 
@@ -172,14 +178,15 @@ Transaction.prototype.sign = function(privateKey) {
  * @method getDataFee
  * @return {bn.js}
  */
-Transaction.prototype.getDataFee = function() {
+Transaction.prototype.getDataFee = function () {
   const data = this.raw[5]
   var cost = new BN(0)
   for (var i = 0; i < data.length; i++) {
-    if (data[i] === 0) 
+    if (data[i] === 0) {
       cost.iaddn(fees.txDataZeroGas.v)
-    else
+    } else {
       cost.iaddn(fees.txDataNonZeroGas.v)
+    }
   }
   return cost
 }
@@ -189,7 +196,7 @@ Transaction.prototype.getDataFee = function() {
  * @method getBaseFee
  * @return {bn.js}
  */
-Transaction.prototype.getBaseFee = function() {
+Transaction.prototype.getBaseFee = function () {
   return this.getDataFee().addn(fees.txGas.v)
 }
 
@@ -198,7 +205,7 @@ Transaction.prototype.getBaseFee = function() {
  * @method getUpfrontCost
  * @return {BN}
  */
-Transaction.prototype.getUpfrontCost = function() {
+Transaction.prototype.getUpfrontCost = function () {
   return new BN(this.gasLimit)
     .mul(new BN(this.gasPrice))
     .add(new BN(this.value))
@@ -209,6 +216,6 @@ Transaction.prototype.getUpfrontCost = function() {
  * @method validate
  * @return {Boolean}
  */
-Transaction.prototype.validate = function() {
+Transaction.prototype.validate = function () {
   return this.verifySignature() && (Number(this.getBaseFee().toString()) <= ethUtil.bufferToInt(this.gasLimit))
 }

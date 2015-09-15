@@ -1,14 +1,14 @@
 var Tx = require('../index.js')
 var ethUtil = require('ethereumjs-util')
 
-function addPad(v) {
+function addPad (v) {
   if (v.length % 2 === 1) {
     v = '0' + v
   }
   return v
 }
 
-function ifZero(v) {
+function ifZero (v) {
   if (v === '') {
     return '00'
   } else {
@@ -16,7 +16,7 @@ function ifZero(v) {
   }
 }
 
-module.exports = function txRunner(testData, t, cb) {
+module.exports = function txRunner (testData, t, cb) {
   try {
     var tx = new Tx(new Buffer(testData.rlp.slice(2), 'hex'))
   } catch (e) {
@@ -46,7 +46,7 @@ module.exports = function txRunner(testData, t, cb) {
       } else {
         t.equal(ifZero(tx.value.toString('hex')), tTx.value.slice(2), 'value')
       }
-      t.equal(tx.getSenderAddress().toString('hex'), testData.sender, 'sender\'s address')
+      t.equal(tx.getSenderAddress().toString('hex'), testData.sender, "sender's address")
     } catch (e) {
       t.fail(e)
     }
@@ -54,6 +54,7 @@ module.exports = function txRunner(testData, t, cb) {
     t.equal(tTx, undefined, 'should not have any fields ')
   }
 
-  if (cb)
+  if (cb) {
     cb()
+  }
 }

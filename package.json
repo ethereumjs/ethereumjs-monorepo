@@ -4,7 +4,7 @@
   "description": "An simple module for creating, manipulating and signing ethereum transactions",
   "main": "index.js",
   "scripts": {
-    "test": "node ./test/tester -a",
+    "test": "standard ./index.js ./test/*.js && node ./test/tester -a",
     "build": "browserify --s EthTx index.js > ./dist/ethereumjs-tx.js"
   },
   "keywords": [
@@ -23,6 +23,7 @@
     "async": "^1.4.2",
     "ethereumjs-testing": "git+https://github.com/wanderer/ethereumjs-testing.git",
     "minimist": "^1.2.0",
+    "standard": "^5.2.2",
     "tape": "^4.0.3"
   },
   "repository": {
