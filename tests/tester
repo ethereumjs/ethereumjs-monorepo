@@ -6,16 +6,16 @@ const tape = require('tape')
 const path = require('path')
 const testing = require('ethereumjs-testing')
 const skip = [
-  'CreateHashCollision', //impossible hash collision on generating address
-  'SuicidesMixingCoinbase', //sucides to the coinbase, since we run a blockLevel we create coinbase account.
+  'CreateHashCollision', // impossible hash collision on generating address
+  'SuicidesMixingCoinbase', // sucides to the coinbase, since we run a blockLevel we create coinbase account.
   'TransactionMakeAccountBalanceOverflow',
   'RecursiveCreateContracts',
   'sha3_bigSize',
-  'createJS_ExampleContract', //creates an account that already exsists
+  'createJS_ExampleContract', // creates an account that already exsists
   'mload32bitBound_return',
   'mload32bitBound_return2',
-  'QuadraticComplexitySolidity_CallDataCopy', //tests hash collisoin, sending from a contract
-  'Call50000', //slow
+  'QuadraticComplexitySolidity_CallDataCopy', // tests hash collisoin, sending from a contract
+  'Call50000', // slow
   'Call50000_ecrec', //slow
   'Call50000_identity', //slow
   'Call50000_identity2', //slow
@@ -38,6 +38,10 @@ if (argv.r) {
   runTests('vm', argv)
 } else if (argv.b) {
   runTests('blockchain', argv)
+} else if (argv.j) {
+  var runner = require('./jitVMTestRunner.js').bind(this, argv)
+  var tests = testing.getTests('vm', argv)
+  testing.runTests(runner, tests, skip)
 } else if (argv.a) {
   runAll()
 }

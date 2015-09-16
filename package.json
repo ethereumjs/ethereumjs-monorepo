@@ -27,12 +27,13 @@
     "memdown": "^1.0.0",
     "minimist": "^1.1.1",
     "sha3": "^1.2.0",
+    "standard": "^5.2.2",
     "tape": "^4.2.0",
     "through2": "^2.0.0"
   },
   "scripts": {
     "build": "browserify --s EthVm index.js > ./dist/ethereumjs-vm.js",
-    "test": "./tests/tester -a"
+    "test": "standard ./lib/bloom.js && ./tests/tester -a"
   },
   "repository": {
     "type": "git",
