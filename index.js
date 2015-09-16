@@ -8,6 +8,7 @@
 const async = require('async')
 const Block = require('ethereumjs-block')
 const utils = require('ethereumjs-util')
+const BN = utils.BN
 const Ethash = require('ethashjs')
 const rlp = utils.rlp
 
@@ -44,8 +45,8 @@ Blockchain.prototype._init = function () {
       self._initDone = true
 
       //run the pending getHead
-      self._pendingGets.forEach(function (cb) {
-        self.getHead(cb)
+      self._pendingGets.forEach(function (args) {
+        self.getHead.apply(self, args)
       })
     })
   }
@@ -56,9 +57,11 @@ Blockchain.prototype._init = function () {
     function (err, meta) {
       if (!err && meta) {
         self.meta = meta
+        self.meta.td = new BN(self.meta.td)
       } else {
         self.meta = {
-          heads: {}
+          heads: {},
+          td: new BN()
         }
         self._generateGenesis()
       }
@@ -69,7 +72,7 @@ Blockchain.prototype._init = function () {
 Blockchain.prototype._generateGenesis = function () {
   var genesisBlock = new Block()
   genesisBlock.setGenesisParams()
-  this.addBlock(genesisBlock, function () {})
+  this.putBlock(genesisBlock, function () {})
 }
 
 /**
@@ -98,11 +101,20 @@ Blockchain.prototype.getHead = function (name, cb) {
  * @param {object} block -the block to be added to the block chain
  * @param {function} cb - a callback function
  */
-Blockchain.prototype.addBlock = function (block, cb) {
+Blockchain.prototype.putBlock = function (block, cb) {
   if (!this._initDone)
     this._pendingSaves.push([block, cb])
   else
     this._addBlock(block, cb)
+}
+
+Blockchain.prototype.putBlocks = function(blocks, cb){
+  self = this
+  async.eachSeries(blocks, function(block, done){
+    self.putBlock(block, function(err){
+      done()
+    }) 
+  }, cb)
 }
 
 Blockchain.prototype._addBlock = function (block, cb) {
@@ -113,10 +125,6 @@ Blockchain.prototype._addBlock = function (block, cb) {
 
   if (block.constructor !== Block)
     block = new Block(block)
-
-  if (self.meta.genesis && block.isGenesis()) {
-    return cb('already have a genesis block')
-  }
 
   async.series([
 
@@ -156,17 +164,17 @@ Blockchain.prototype._addBlock = function (block, cb) {
     function rebuildInfo(cb2) {
 
       //calculate the total difficulty for this block
-      var td = utils.bufferToInt(block.header.difficulty)
+      var td = new BN(utils.bufferToInt(block.header.difficulty))
         //add this block as a child to the parent's block details
       if (!block.isGenesis()) {
-        td += parentDetails.td
+        td.iadd(new BN(parentDetails.td))
         parentDetails.staleChildren.push(blockHash)
       }
 
       //store the block details
       var blockDetails = {
         parent: block.header.parentHash.toString('hex'),
-        td: td,
+        td: td.toString(),
         number: utils.bufferToInt(block.header.number),
         child: null,
         staleChildren: [],
@@ -187,10 +195,7 @@ Blockchain.prototype._addBlock = function (block, cb) {
         value: block.serialize()
       })
 
-      // if (block.hash().toString('hex') === 'a861daf9c8691fe5a3a975bcb34aa103214e9864818de25f0da09ab7b958c965')
-      //   debugger
-
-      if (td > self.meta.td || block.isGenesis()) {
+      if (td.cmp(self.meta.td) === 1 || block.isGenesis()) {
         blockDetails.inChain = true
         self.meta.rawHead = blockHash
         self.meta.height = utils.bufferToInt(block.header.number)
@@ -262,20 +267,6 @@ Blockchain.prototype.getBlock = function (hash, cb) {
       cb(err, block)
     }
   })
-}
-
-/**
- * fetches blocks from the db
- * @method getBlocks
- * @param {Array.<Buffer>} hashes
- * @param {Function} cb
- * @return {Array.<Block>}
- */
-Blockchain.prototype.getBlocks = function (hashes, cb) {
-  var self = this
-  async.mapSeries(hashes, function (hash, done) {
-    self.getBlock(hash, done)
-  }, cb)
 }
 
 /**
@@ -424,10 +415,10 @@ Blockchain.prototype._rebuildBlockchain = function (hash, parentHash, parentDeta
   if (parentDetails.inChain)
     return cb()
 
+  console.log('paraent not in chain');
   parentDetails.inChain = true
 
   async.series([
-
     function loadNumberIndex(done) {
       self.db.get(parentDetails.number, function (err, s) {
         staleHash = s.toString('hex')
@@ -518,7 +509,6 @@ Blockchain.prototype._delBlock = function (blockhash, dbOps, resetHeads, cb) {
   })
 
   async.series([
-
     function getDetails(cb2) {
       self.getDetails(blockhash, function (err, d) {
         for (head in self.meta.heads) {
