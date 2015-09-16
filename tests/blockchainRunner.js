@@ -33,14 +33,14 @@ module.exports = function runBlockchainTest (options, testData, t, cb) {
         t.equal(genesisBlock.serialize().toString('hex'), testData.genesisRLP.slice(2), 'correct genesis RLP')
       }
 
-      blockchain.addBlock(genesisBlock, done)
+      blockchain.putBlock(genesisBlock, done)
     },
     function (done) {
       async.eachSeries(testData.blocks, function (raw, cb) {
         try {
           var block = new Block(new Buffer(raw.rlp.slice(2), 'hex'))
           // block.header._genesisDifficulty = 0x20000 //ethUtil.bufferToInt(genesisBlock.header.difficulty)
-          blockchain.addBlock(block, function (err) {
+          blockchain.putBlock(block, function (err) {
             cb(err)
           })
         } catch (err) {
