@@ -1,58 +1,50 @@
 const async = require('async')
 const BN = require('bn.js')
 const VM = require('../index.js')
-const Account = require('ethereumjs-account')
 const Bloom = require('../lib/bloom.js')
 const testUtil = require('./util')
-const utils = require('ethereumjs-util')
 const Trie = require('merkle-patricia-tree/secure')
 
-module.exports = function runStateTest(options, testData, t, cb) {
-
+module.exports = function runStateTest (options, testData, t, cb) {
   var sstream = false
   var state = new Trie()
-  var errored = false
-  var block
-  var hrstart
-  var vm
-  var result
+  var block, vm, result // ,hrstart
 
   async.series([
-
     function (done) {
       vm = new VM(state)
       testUtil.setupPreConditions(state, testData, done)
     },
     function (done) {
-
       var tx = testUtil.makeTx(testData.transaction)
       block = testUtil.makeBlockFromEnv(testData.env)
-      if (options.vmtrace)
+      if (options.vmtrace) {
         sstream = testUtil.enableVMtracing(vm, options.vmtrace)
+      }
 
-      hrstart = process.hrtime()
+      // hrstart = process.hrtime()
 
-      if (new BN(block.header.gasLimit).cmp(new BN(tx.gasLimit)) === -1)
+      if (new BN(block.header.gasLimit).cmp(new BN(tx.gasLimit)) === -1) {
         return done('tx has a higher gas limit than the block')
+      }
 
       if (tx.validate()) {
         vm.runTx({
           tx: tx,
-          block: block,
+          block: block
         }, function (err, r) {
           result = r
-          errored = true
-          done()
+          done(err)
         })
       } else {
-        errored = true
         done()
       }
     },
     function (done) {
-      var hrend = process.hrtime(hrstart)
-      if (sstream)
-        sstream.end()
+      // var hrend = process.hrtime(hrstart)
+      if (sstream) {
+        sstream.push(null)
+      }
 
       t.equal(state.root.toString('hex'), testData.postStateRoot, 'the state roots should match')
 

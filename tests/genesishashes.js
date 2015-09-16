@@ -5,15 +5,15 @@ const VM = require('../')
 
 var vm = new VM()
 
-tape('[Common]: genesis hashes tests', function(t) {
-  t.test('should generate the genesis state correctly', function(st) {
-    vm.generateCanonicalGenesis(function() {
+tape('[Common]: genesis hashes tests', function (t) {
+  t.test('should generate the genesis state correctly', function (st) {
+    vm.generateCanonicalGenesis(function () {
       st.equal(vm.trie.root.toString('hex'), genesisData.genesis_state_root)
       st.end()
     })
   })
 
-  t.test('should generete the genesis correctly', function(st) {
+  t.test('should generete the genesis correctly', function (st) {
     var blockGenesis = new Block()
     blockGenesis.setGenesisParams()
     var rlpGenesis = blockGenesis.serialize()
