@@ -1,10 +1,10 @@
 {
   "name": "ethereumjs-blockchain",
-  "version": "0.0.3",
+  "version": "1.0.0",
   "description": "A module to store and interact with blocks",
   "main": "index.js",
   "scripts": {
-    "test": "standard"
+    "test": "standard ./index.js"
   },
   "repository": {
     "type": "git",
