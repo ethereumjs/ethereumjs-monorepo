@@ -54,13 +54,31 @@ exports.pad = function (msg, length) {
  * @param {Buffer|Array|String}
  * @return {Buffer|Array|String}
  */
-exports.unpad = function (a) {
+exports.unpad = exports.stripZeros = function (a) {
   var first = a[0]
   while (a.length > 0 && first.toString() === '0') {
     a = a.slice(1)
     first = a[0]
   }
   return a
+}
+
+exports.toBuffer = function (v) {
+  if (!Buffer.isBuffer(v)) {
+    if (typeof v === 'string') {
+      v = new Buffer(padToEven(exports.stripHexPrefix(v)), 'hex')
+    } else if (typeof v === 'number') {
+      v = exports.intToBuffer(v)
+    } else if (v === null || v === undefined) {
+      v = new Buffer([])
+    } else if (v.toArray) {
+      // converts a BN to a Buffer
+      v = new Buffer(v.toArray())
+    } else {
+      throw new Error('invalid type')
+    }
+  }
+  return v
 }
 
 /**
@@ -194,6 +212,27 @@ exports.generateAddress = function (from, nonce) {
   return hash.slice(12)
 }
 
+// Returns a Boolean on whether or not the a sting starts with 0x
+exports.isHexPrefixed = function (str) {
+  return str.slice(0, 2) === '0x'
+}
+
+// Removes 0x from a given String
+exports.stripHexPrefix = function (str) {
+  if (typeof str !== 'string') {
+    return str
+  }
+  return exports.isHexPrefixed(str) ? str.slice(2) : str
+}
+
+// Adds 0x to a given string if it does not already start with 0x
+exports.addHexPrefix = function (str) {
+  if (typeof str !== 'string') {
+    return str
+  }
+  return exports.isHexPrefixed(str) ? '0x' + str : str
+}
+
 /**
  * defines properties on a `Object`
  * @method defineProperties
@@ -228,34 +267,14 @@ exports.defineProperties = function (self, fields, data) {
         return this.raw[i]
       },
       set: function (v) {
-        if (!Buffer.isBuffer(v)) {
-          if (typeof v === 'string') {
-            v = new Buffer(padToEven(exports.stripHexPrefix(v)), 'hex')
-          } else if (typeof v === 'number') {
-            v = exports.intToBuffer(v)
-          } else if (v === null || v === undefined) {
-            v = new Buffer([])
-          } else if (v.toArray) {
-            // converts a BN to a Buffer
-            v = new Buffer(v.toArray())
-          } else {
-            throw new Error('invalid type')
-          }
-        }
+        v = exports.toBuffer(v)
 
-        if (v.toString('hex') === '00' && field.noZero) {
+        if (v.toString('hex') === '00' && !field.allowZero) {
           v = new Buffer([])
         }
 
-        if (field.word && new BN(v).cmp(exports.MAX_INTEGER) === 1) {
-          throw new Error('to large of value')
-        }
-
-        if (!(field.empty && v.length === 0) && field.pad && v.length < field.length) {
-          v = exports.pad(v, field.length)
-        }
-
         if (field.allowLess && field.length) {
+          v = exports.stripZeros(v)
           assert(field.length >= v.length)
         } else if (!(field.empty && v.length === 0) && field.length) {
           assert(field.length === v.length, 'The field ' + field.name + 'must have byte length of ' + field.length)
@@ -339,27 +358,6 @@ exports.baToJSON = function (ba) {
     }
     return array
   }
-}
-
-// Returns a Boolean on whether or not the a sting starts with 0x
-exports.isHexPrefixed = function (str) {
-  return str.slice(0, 2) === '0x'
-}
-
-// Removes 0x from a given String
-exports.stripHexPrefix = function (str) {
-  if (typeof str !== 'string') {
-    return str
-  }
-  return exports.isHexPrefixed(str) ? str.slice(2) : str
-}
-
-// Adds 0x to a given string if it does not already start with 0x
-exports.addHexPrefix = function (str) {
-  if (typeof str !== 'string') {
-    return str
-  }
-  return exports.isHexPrefixed(str) ? '0x' + str : str
 }
 
 function padToEven (a) {
