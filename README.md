@@ -90,7 +90,6 @@ Returns the block as a JSON object.
 
 ## `Blockheader`
 A object that repersents the block header.
-- file - [lib/blockheader.js](../lib/blockHeader.js)
 
 ### `Blockheader` Properties
 - `parentHash` - the blocks' parnet's hash
