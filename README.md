@@ -19,7 +19,7 @@ A collection of utility functions for ethereum. It can be used in node.js or can
 
 ## methods 
 ### `zeros(number)`
-Returns buffer filled with 0's
+Returns buffer filled with 0's  
 **Parameters** 
 - `number` - the number bytes to to return  
 
@@ -39,7 +39,7 @@ Trims leading zeros from a buffer or an array
 **Return:** `buffer` or and `Array`
 
 ### `toBufer(val)`
-Attemps to turn a value into a Buffer
+Attemps to turn a value into a Buffer  
 **Parameters** 
 - `val` the 
 **Return:** `Buffer`
