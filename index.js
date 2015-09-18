@@ -63,13 +63,12 @@ Blockchain.prototype._init = function () {
           heads: {},
           td: new BN()
         }
-        self._generateGenesis()
       }
       onHeadFound()
     })
 }
 
-Blockchain.prototype._generateGenesis = function () {
+Blockchain.prototype.setCanicalGenesisBlock = function (cb) {
   var genesisBlock = new Block()
   genesisBlock.setGenesisParams()
   this.putBlock(genesisBlock, function () {})
@@ -131,6 +130,10 @@ Blockchain.prototype._addBlock = function (block, cb) {
     function verify (cb2) {
       if (!self.validate) {
         return cb2()
+      }
+
+      if (self.meta.genesis && block.isGenesis()) {
+        return cb2('already have genesis set')
       }
 
       block.validate(self, cb2)
