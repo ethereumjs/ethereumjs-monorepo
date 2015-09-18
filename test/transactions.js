@@ -83,4 +83,11 @@ tape('[Transaction]: Basic functions', function (t) {
     st.equals(s1, s2)
     st.end()
   })
+
+  t.test('should accept lesser r values', function (st) {
+    var tx = new Transaction()
+    tx.r = '0x0005'
+    st.equals(tx.r.toString('hex'), '05')
+    st.end()
+  })
 })

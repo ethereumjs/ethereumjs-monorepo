@@ -17,16 +17,18 @@ var Transaction = module.exports = function (data) {
   // Define Properties
   const fields = [{
     name: 'nonce',
-    word: true,
-    noZero: true,
+    length: 32,
+    allowLess: true,
     default: new Buffer([])
   }, {
     name: 'gasPrice',
-    word: true,
+    length: 32,
+    allowLess: true,
     default: new Buffer([])
   }, {
     name: 'gasLimit',
-    word: true,
+    length: 32,
+    allowLess: true,
     default: new Buffer([])
   }, {
     name: 'to',
@@ -35,13 +37,12 @@ var Transaction = module.exports = function (data) {
     default: new Buffer([])
   }, {
     name: 'value',
-    empty: true,
-    word: true,
-    noZero: true,
+    length: 32,
+    allowLess: true,
     default: new Buffer([])
   }, {
     name: 'data',
-    empty: true,
+    allowZero: true,
     default: new Buffer([])
   }, {
     name: 'v',

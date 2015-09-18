@@ -6,7 +6,7 @@ const ecdsa = require('secp256k1')
 const BN = ethUtil.BN
 const rlp = ethUtil.rlp
 
-//give browser access to Buffers
+// give browser access to Buffers
 global.Buffer = Buffer
 global.ethUtil = ethUtil
 
@@ -15,21 +15,22 @@ global.ethUtil = ethUtil
  * @constructor
  * @param {Buffer|Array} data raw data, deserialized
  */
-var Transaction = module.exports = function(data) {
-  var self = this
-  //Define Properties
+var Transaction = module.exports = function (data) {
+  // Define Properties
   const fields = [{
     name: 'nonce',
-    word: true,
-    noZero: true,
+    length: 32,
+    allowLess: true,
     default: new Buffer([])
   }, {
     name: 'gasPrice',
-    word: true,
+    length: 32,
+    allowLess: true,
     default: new Buffer([])
   }, {
     name: 'gasLimit',
-    word: true,
+    length: 32,
+    allowLess: true,
     default: new Buffer([])
   }, {
     name: 'to',
@@ -38,14 +39,13 @@ var Transaction = module.exports = function(data) {
     default: new Buffer([])
   }, {
     name: 'value',
-    empty: true,
-    word: true,
-    noZero: true,
+    length: 32,
+    allowLess: true,
     default: new Buffer([])
   }, {
     name: 'data',
-    empty: true,
-    default: new Buffer([0])
+    allowZero: true,
+    default: new Buffer([])
   }, {
     name: 'v',
     length: 1,
@@ -65,12 +65,14 @@ var Transaction = module.exports = function(data) {
   Object.defineProperty(this, 'from', {
     enumerable: false,
     configurable: true,
-    get: function() {
-      if(this._from) 
+    get: function () {
+      if (this._from) {
         return this._from
-      return this._from = this.getSenderAddress()
+      }
+      this._from = this.getSenderAddress()
+      return this._from
     },
-    set: function(v) {
+    set: function (v) {
       this._from = v
     }
   })
@@ -83,7 +85,7 @@ var Transaction = module.exports = function(data) {
  * @method serialize
  * @return {Buffer}
  */
-Transaction.prototype.serialize = function() {
+Transaction.prototype.serialize = function () {
   return rlp.encode(this.raw)
 }
 
@@ -93,18 +95,20 @@ Transaction.prototype.serialize = function() {
  * @param {Boolean} [true] signature - whether or not to inculde the signature
  * @return {Buffer}
  */
-Transaction.prototype.hash = function(signature) {
+Transaction.prototype.hash = function (signature) {
   var toHash
 
-  if (typeof signature === 'undefined')
+  if (typeof signature === 'undefined') {
     signature = true
+  }
 
-  if (signature) 
+  if (signature) {
     toHash = this.raw
-  else 
+  } else {
     toHash = this.raw.slice(0, 6)
+  }
 
-  //create hash
+  // create hash
   return ethUtil.sha3(rlp.encode(toHash))
 }
 
@@ -113,7 +117,7 @@ Transaction.prototype.hash = function(signature) {
  * @method getSenderAddress
  * @return {Buffer}
  */
-Transaction.prototype.getSenderAddress = function() {
+Transaction.prototype.getSenderAddress = function () {
   const pubKey = this.getSenderPublicKey()
   return ethUtil.pubToAddress(pubKey)
 }
@@ -123,9 +127,10 @@ Transaction.prototype.getSenderAddress = function() {
  * @method getSenderPublicKey
  * @return {Buffer}
  */
-Transaction.prototype.getSenderPublicKey =  function() {
-  if (!this._senderPubKey || !this._senderPubKey.length)
+Transaction.prototype.getSenderPublicKey = function () {
+  if (!this._senderPubKey || !this._senderPubKey.length) {
     this.verifySignature()
+  }
 
   return this._senderPubKey
 }
@@ -134,25 +139,27 @@ Transaction.prototype.getSenderPublicKey =  function() {
  * @method verifySignature
  * @return {Boolean}
  */
-Transaction.prototype.verifySignature = function() {
+Transaction.prototype.verifySignature = function () {
   var msgHash = this.hash(false)
   var sig = {
     signature: Buffer.concat([ethUtil.pad(this.r, 32), ethUtil.pad(this.s, 32)], 64),
     recovery: ethUtil.bufferToInt(this.v) - 27
   }
 
-  try{
+  try {
     this._senderPubKey = ecdsa.recover(msgHash, sig, false)
-  }catch(e){
-    return false 
+  } catch (e) {
+    return false
   }
 
-  if(!this._senderPubKey)
+  if (!this._senderPubKey) {
     return false
+  }
 
   var result = ecdsa.verify(msgHash, sig, this._senderPubKey)
-  if(!result)
+  if (!result) {
     this._senderPubKey = null
+  }
 
   return result
 }
@@ -161,7 +168,7 @@ Transaction.prototype.verifySignature = function() {
  * @method sign
  * @param {Buffer} privateKey
  */
-Transaction.prototype.sign = function(privateKey) {
+Transaction.prototype.sign = function (privateKey) {
   var msgHash = this.hash(false)
   var sig = ecdsa.sign(msgHash, privateKey)
 
@@ -174,14 +181,15 @@ Transaction.prototype.sign = function(privateKey) {
  * @method getDataFee
  * @return {bn.js}
  */
-Transaction.prototype.getDataFee = function() {
+Transaction.prototype.getDataFee = function () {
   const data = this.raw[5]
   var cost = new BN(0)
   for (var i = 0; i < data.length; i++) {
-    if (data[i] === 0) 
+    if (data[i] === 0) {
       cost.iaddn(fees.txDataZeroGas.v)
-    else
+    } else {
       cost.iaddn(fees.txDataNonZeroGas.v)
+    }
   }
   return cost
 }
@@ -191,7 +199,7 @@ Transaction.prototype.getDataFee = function() {
  * @method getBaseFee
  * @return {bn.js}
  */
-Transaction.prototype.getBaseFee = function() {
+Transaction.prototype.getBaseFee = function () {
   return this.getDataFee().addn(fees.txGas.v)
 }
 
@@ -200,7 +208,7 @@ Transaction.prototype.getBaseFee = function() {
  * @method getUpfrontCost
  * @return {BN}
  */
-Transaction.prototype.getUpfrontCost = function() {
+Transaction.prototype.getUpfrontCost = function () {
   return new BN(this.gasLimit)
     .mul(new BN(this.gasPrice))
     .add(new BN(this.value))
@@ -211,19 +219,46 @@ Transaction.prototype.getUpfrontCost = function() {
  * @method validate
  * @return {Boolean}
  */
-Transaction.prototype.validate = function() {
+Transaction.prototype.validate = function () {
   return this.verifySignature() && (Number(this.getBaseFee().toString()) <= ethUtil.bufferToInt(this.gasLimit))
 }
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer)
-},{"buffer":62,"ethereum-common":2,"ethereumjs-util":4,"secp256k1":34}],2:[function(require,module,exports){
-module.exports = require('./params.json')
+},{"buffer":62,"ethereum-common":2,"ethereumjs-util":31,"secp256k1":4}],2:[function(require,module,exports){
+var params = module.exports = require('./params.json')
+
+//load it dynamical because it's slow
+Object.defineProperties(params, {
+  genesisState: {
+    get: require.bind(this, './genesisState.json')
+  }
+})
 
 },{"./params.json":3}],3:[function(require,module,exports){
 module.exports={
   "genesisGasLimit": {
     "v": 5000,
     "d": "Gas limit of the Genesis block."
+  },
+  "genesisDifficulty": {
+    "v": 17179869184,
+    "d": "Difficulty of the Genesis block."
+  },
+  "genesisNonce": {
+    "v": "0x0000000000000042",
+    "d": "the geneis nonce"
+  },
+  "genesisExtraData": {
+    "v": "0x11bbe8db4e347b4e8c937c1c8370e4b5ed33adb3db69cbdb7a38e1e50b1b82fa",
+    "d": "extra data "
+  },
+  "genesisHash": {
+    "v": "0xd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3",
+    "d": "genesis hash"
+  },
+  "genesisStateRoot": {
+    "v": "0xd7f8974fb5ac78d9ac099b9ad5018bedc2ce0a72dad1827a1709da30580f0544",
+    "d": "the genesis state root"
   },
   "minGasLimit": {
     "v": 5000,
@@ -232,10 +267,6 @@ module.exports={
   "gasLimitBoundDivisor": {
     "v": 1024,
     "d": "The bound divisor of the gas limit, used in update calculations."
-  },
-  "genesisDifficulty": {
-    "v": 131072,
-    "d": "Difficulty of the Genesis block."
   },
   "minimumDifficulty": {
     "v": 131072,
@@ -423,355 +454,161 @@ module.exports={
 
 },{}],4:[function(require,module,exports){
 (function (Buffer){
-const SHA3 = require('sha3')
-const ec = require('elliptic').ec('secp256k1')
-const assert = require('assert')
-const rlp = require('rlp')
+const EC = require('elliptic').ec
+const ec = new EC('secp256k1')
 const BN = require('bn.js')
 
-//the max interger that this VM can handle
-exports.MAX_INTEGER = new BN('ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff', 16)
-exports.TWO_POW256 = new BN('115792089237316195423570985008687907853269984665640564039457584007913129639936')
-
-//hex string of SHA3-256 hash of `null`
-exports.SHA3_NULL = 'c5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470'
-
-//SHA3-256 hash of the rlp of []
-exports.SHA3_RLP_ARRAY = '1dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d49347'
-
-//SHA3-256 hash of the rlp of `null`
-exports.SHA3_RLP = '56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421'
-
-exports.BN = BN
-exports.rlp = rlp
-
-/**
- * Returns a buffer filled with 0s
- * @method zeros
- * @param {Integer} bytes  the number of bytes the buffer should be
- * @return {Buffer}
- */
-exports.zeros = function(bytes) {
-  var buf = new Buffer(bytes);
-  buf.fill(0);
-  return buf;
-}
-
-/**
- * pads an array of buffer with leading zeros till it has `length` bytes
- * @method pad
- * @param {Buffer|Array} array
- * @param {Integer}  length the number of bytes the output should be
- * @return {Buffer|Array}
- */
-exports.pad = function(msg, length) {
-  if (msg.length < length) {
-    var buf = exports.zeros(length)
-    msg.copy(buf, length - msg.length)
+function pad32(msg) {
+  var buf
+  if (msg.length < 32) {
+    buf = new Buffer(32)
+    buf.fill(0)
+    msg.copy(buf, 32 - msg.length)
     return buf
-  } 
-  return msg.slice(-length)
+  } else
+    return msg
 }
 
-/**
- * Trims leading zeros from a buffer or an array
- * @method unpad
- * @param {Buffer|Array|String}
- * @return {Buffer|Array|String}
- */
-exports.unpad = function(a) {
-  var first = a[0]
-  while (a.length > 0 && first.toString() === '0') {
-    a = a.slice(1)
-    first = a[0]
-  }
-  return a
-}
-
-/**
- * Converts an integer into a hex string
- * @method intToHex
- * @param {Number}
- * @return {String}
- */
-exports.intToHex = function(i) {
-  assert(i % 1 === 0, 'number is not a interger')
-  assert(i >= 0, 'number must be positive')
-  var hex = i.toString(16)
-  if (hex.length % 2)
-    hex = '0' + hex
-
-  return hex
-}
-
-/**
- * Converts an integer to a buffer
- * @method intToBuffer
- * @param {Number}
- * @return {Buffer}
- */
-exports.intToBuffer = function(i) {
-  var hex = exports.intToHex(i)
-  return new Buffer(hex, 'hex')
-}
-
-/**
- * Converts a buffer to an Interger
- * @method bufferToInt
- * @par[MaÅam {B[M`Êuffer}
- * @return {Number}
- */
-exports.bufferToInt = function(buf) {
-  if (buf.length === 0)
-    return 0
-  
-  return parseInt(buf.toString('hex'), 16)
-}
-
-/**
- * interpets a buffer as a signed integer and returns a bignum
- * @method fromSigned
- * @param {Buffer} num
- * @return {BN}
- */
-exports.fromSigned = function(num) {
-  if (num.length === 32 && num[0] >= 128)
-    return new BN(num).sub(exports.TWO_POW256)
-
-  return new BN(num)
-}
-
-/**
- * Converts a bignum to an unsigned interger and returns it as a buffer
- * @method toUnsigned
- * @param {Bignum} num
- * @return {Buffer}
- */
-exports.toUnsigned = function(num) {
-  if (num.cmpn(0) === -1) 
-    return new Buffer(num.add(exports.TWO_POW256).toArray())
-  
-  return new Buffer(num.toArray())
-}
-
-exports.sha3 = function(a, bytes) {
-  if(!bytes) bytes = 256
-
-  var h = new SHA3.SHA3Hash(bytes)
-  if (a)
-    h.update(a)
-
-  return new Buffer(h.digest('hex'), 'hex')
-}
-
-/**
- * Returns the ethereum address of a given public key
- * @method pubToAddress
- * @param {Buffer}
- * @return {Buffer}
- */
-exports.pubToAddress = exports.publicToAddress = function(pubKey) {
-  var hash = new SHA3.SHA3Hash(256)
-  hash.update(pubKey.slice(-64))
-  return new Buffer(hash.digest('hex').slice(-40), 'hex')
-}
-
-/**
- * Returns the ethereum public key of a given private key
- * @method privateToPublic
- * @param {Buffer} privateKey
- * @return {Buffer}
- */
-var privateToPublic = exports.privateToPublic = function(privateKey){
-  privateKey = new BN(privateKey)
-  var key = ec.keyFromPrivate(privateKey).getPublic().toJSON()
-  return new Buffer(key[0].toArray().concat(key[1].toArray()))
-}
-
-/**
- * Returns the ethereum address of a given private key
- * @method privateToAddress
- * @param {Buffer} privateKey
- * @return {Buffer}
- */
-exports.privateToAddress = function(privateKey){
-  return exports.publicToAddress(privateToPublic(privateKey))
-}
-
-/**
- * Generates a new address
- * @method generateAddress
- * @param {Buffer} from the address which is creating this new address
- * @param {Buffer} nonce the nonce of the from account
- */
-exports.generateAddress = function(from, nonce) {
-  nonce = new Buffer(new BN(nonce).subn(1).toArray())
-
-  if (nonce.toString('hex') === '00') 
-    nonce = 0;
-
-  var hash = exports.sha3(rlp.encode([new Buffer(from, 'hex'), nonce]))
-  return hash.slice(12)
-}
-
-/**
- * defines properties on a `Object`
- * @method defineProperties
- * @para[M`Êm {Object} self the `Object` to define properties on
- * @param {Array} fields an array fields to define
- */
-exports.defineProperties = function(self, fields, data) {
-
-  self.raw = []
-  self._fields = []
-
-  self.toJSON = function(label){
-    if (label) {
-      var obj = {}
-
-      for (var prop in this) {
-        if (typeof this[prop] !== 'function' && prop !== 'raw' && prop !== '_fields')
-          obj[prop] = this[prop].toString('hex')
-      }
-      return obj
-    }
-
-    return exports.baToJSON(this.raw)
+function parseSig(sig) {
+  var recid;
+  if (sig.signature) {
+    recid = sig.recovery
+    sig = sig.signature
   }
 
-  fields.forEach(function(field, i) {
-    self._fields.push(field.name)
-    Object.defineProperty(self, field.name, {
-      enumerable: true,
-      configurable: true,
-      get: function() {
-        return this.raw[i]
-      },
-      set: function(v) {
-        if (!Buffer.isBuffer(v)) {
-          if (typeof v === 'string')
-            v = new Buffer(padToEven(exports.stripHexPrefix(v)), 'hex')
-          else if (typeof v === 'number')
-            v = exports.intToBuffer(v)
-          else if (v === null || v === undefined)
-            v = new Buffer([])
-          else if (v.toArray) 
-            //converts a BN to a Buffer
-            v = new Buffer(v.toArray())
-          else
-            throw new Error('invalid type')
-        }
-
-        if(v.toString('hex') === '00' &&  field.noZero)
-          v = new Buffer([])
-
-        if(field.word && new BN(v).cmp(exports.MAX_INTEGER) === 1)
-          throw(new Error('to large of value'))
-
-        if(!(field.empty && v.length === 0) && field.pad && v.length < field.length)
-          v = exports.pad(v, field.length)
-
-        if(field.allowLess && field.length){
-          assert(field.length >= v.length)
-        } else if (!(field.empty && v.length === 0) && field.length)
-          assert(field.length === v.length, 'The field ' + field.name + 'must have byte length of ' + field.length)
-
-        this.raw[i] = v
-      }
-    })
-
-    if(field.default)
-      self[field.name] = field.default
-  })
-
-  if (data) {
-    if (Buffer.isBuffer(data))
-      data = rlp.decode(data)
-
-    if (Array.isArray(data)) {
-      if(data.length > self._fields.length) 
-        throw(new Error('wrong number of fields in data'))
-
-      //make sure all the items are buffers
-      data.forEach(function(d, i) {
-         self[self._fields[i]] = typeof d === 'string' ? new Buffer(d, 'hex') : d
-      })
-    } else if(typeof data === 'object') {
-      for (var prop in data) {
-        if (self._fields.indexOf(prop) !== -1)
-          self[prop] = data[prop]
-      }
-    } else{
-      throw new Error('invalid data')
+  if (sig.length === 64)
+    sig = {
+      r: sig.slice(0, 32),
+      s: sig.slice(32, 64)
     }
+
+  return {
+    sig: sig,
+    recid: recid
   }
 }
 
 /**
- * Print a Buffer Array
- * @method printBA
- * @param {Buffer|Array}
+ * Create an ECDSA signature.
+ * @method sign
+ * @param  {Buffer} secretkey a 32-byte secret key (assumed to be valid)
+ * @param {Buffer} msg he message being signed
  */
-exports.printBA = function(ba) {
-  if (Buffer.isBuffer(ba)) {
-    if (ba.length === 0) 
-      console.log('new Buffer(0)')
-    else 
-      console.log('new Buffer(\'' + ba.toString('hex') + '\', \'hex\')')
-  } else if (ba instanceof Array) {
-    console.log('[')
-    for (var i = 0; i < ba.length; i++) {
-      exports.printBA(ba[i])
-      console.log(',')
+exports.sign = function (msg, secretKey, DER, cb) {
+
+  if (typeof DER === 'function') {
+    cb = DER
+    DER = false
+  }
+
+  var result = ec.sign(new BN(msg), new BN(secretKey))
+
+  if (DER)
+    result = new Buffer(result.toDER())
+  else {
+    result = {
+      signature: new Buffer(result.r.toArray().concat(result.s.toArray())),
+      recovery: result.recoveryParam
     }
-    console.log(']')
-  } else 
-    console.log(ba)
+  }
+
+  if (cb)
+    cb(null, result)
+  else
+    return result
 }
 
 /**
- * converts a buffer array to JSON
- * @method BAToJSON
- * @param {Buffer|Array}
+ * Verify an ECDSA signature.
+ * @method verify
+ * @param {Buffer} mgs the message
+ * @param {Buffer|Object} sig the signature
+ * @param {Buffer} pubKey the public key
+ * @return {Integer}
+ *
+ *    - 1: correct signature
+ *    - 0: incorrect signature
  */
-exports.baToJSON = function(ba) {
-  if (Buffer.isBuffer(ba)) {
-    return ba.toString('hex')
-  } else if (ba instanceof Array) {
-    var array = []
-    for (var i = 0; i < ba.length; i++) {
-      array.push(exports.baToJSON(ba[i]))
-    }
-    return array
+exports.verify = function (msg, sig, pubKey, cb) {
+
+  sig = parseSig(sig)
+  var key = ec.keyFromPublic(pubKey)
+  var result
+
+  try {
+    result = ec.verify(new BN(msg), sig.sig, key)
+  } catch (e) {
+    result = false
   }
+  if (cb)
+    cb(result)
+  else
+    return result
 }
 
-//Returns a Boolean on whether or not the a sting starts with 0x
-exports.isHexPrefixed = function(str){
-  return str.slice(0, 2) === '0x'
+/**
+ * Recover an ECDSA public key from a compact signature. In the process also verifing it.
+ * @method recoverCompact
+ * @param {Buffer} msg the message assumed to be signed
+ * @param {Buffer} sig the signature as 64 byte buffer
+ * @param {Integer} recid the recovery id (as returned by ecdsa_sign_compact)
+ * @param {Boolean} compressed whether to recover a compressed or uncompressed pubkey
+ * @param {Function} [cb]
+ * @return {Buffer} the pubkey, a 33 or 65 byte buffer
+ */
+exports.recover = function (msg, sig, compressed, cb) {
+
+  if (typeof compressed === 'function') {
+    cb = compressed
+    compressed = true
+  }
+
+  if (compressed === undefined) {
+    compressed = true
+  }
+
+  sig = parseSig(sig)
+  var r = ec.recoverPubKey(new BN(msg), sig.sig, sig.recid, 'hex')
+
+  if (compressed)
+    r = r.encodeCompressed()
+  else
+    r = r.encode()
+
+  r = new Buffer(r)
+
+  if (cb)
+    cb(null, r)
+  else
+    return r
 }
 
-//Removes 0x from a given String
-exports.stripHexPrefix = function(str){
-  if (typeof str !== 'string')
-     return str
-  return exports.isHexPrefixed(str) ?  str.slice(2) : str
-}
+/**
+ * Compute the public key from a secret key.
+ * @method createPubKey
+ * @param {Buffer} secKey a 32-byte private key.
+ * @param {Boolean} [compressed=0] whether the computed public key should be compressed
+ * @return {Buffer} a 33-byte (if compressed) or 65-byte (if uncompressed) area to store the public key.
+ */
+exports.createPublicKey = function (secKey, compressed) {
+  if (!secKey)
+    throw new Error('invalid private key')
 
-//Adds 0x to a given string if it does not already start with 0x
-exports.addHexPrefix = function(str){
-  if (typeof str !== 'string')
-     return str
-  return exports.isHexPrefixed(str) ? '0x' + str : str
-}
+  const key = ec.keyFromPrivate(secKey)
+  const pub = key.getPublic()
 
-function padToEven(a){
-  if (a.length % 2) a = '0' + a;
-  return a
+  if (compressed === undefined) {
+    compressed = true
+  }
+
+  if (compressed)
+    return new Buffer(pub.encodeCompressed())
+  else
+    return new Buffer(pub.encode())
 }
 
 }).call(this,require("buffer").Buffer)
-},{"assert":61,"bn.js":5,"buffer":62,"elliptic":8,"rlp":33,"sha3":6}],5:[function(require,module,exports){
+},{"bn.js":5,"buffer":62,"elliptic":6}],5:[function(require,module,exports){
 (function (module, exports) {
 
 'use strict';
@@ -1154,10 +991,10 @@ var groupBases = [
 
 BN.prototype.toString = function toString(base, padding) {
   base = base || 10;
+  var padding = padding | 0 || 1;
   if (base === 16 || base === 'hex') {
     var out = '';
     var off = 0;
-    var padding = padding | 0 || 1;
     var carry = 0;
     for (var i = 0; i < this.length; i++) {
       var w = this.words[i];
@@ -1198,6 +1035,8 @@ BN.prototype.toString = function toString(base, padding) {
         out = r + out;
     }
     if (this.cmpn(0) === 0)
+      out = '0' + out;
+    while (out.length % padding !== 0)
       out = '0' + out;
     if (this.sign)
       out = '-' + out;
@@ -3177,468 +3016,6 @@ Mont.prototype.invm = function invm(a) {
 })(typeof module === 'undefined' || module, this);
 
 },{}],6:[function(require,module,exports){
-(function (Buffer){
-const Sha3 = require('js-sha3')
-
-var hash = function (bitcount) {
-  this.content = ''
-  this.bitcount = bitcount ? 'keccak_' + bitcount : 'keccak_512'
-}
-
-hash.prototype.update = function (i) {
-  this.content = Buffer.isBuffer(i) ? i : new Buffer(i);
-}
-
-hash.prototype.digest = function (encoding) {
-  var result = Sha3[this.bitcount](this.content) 
-  if(encoding === 'hex')
-    return result
-  else
-    return new Buffer(result, 'hex').toString('binary')
-}
-
-module.exports = {
-  SHA3Hash: hash
-}
-
-}).call(this,require("buffer").Buffer)
-},{"buffer":62,"js-sha3":7}],7:[function(require,module,exports){
-(function (global){
-/*
- * js-sha3 v0.3.1
- * https://github.com/emn178/js-sha3
- *
- * Copyright 2015, emn178@gmail.com
- *
- * Licensed under the MIT license:
- * http://www.opensource.org/licenses/MIT
- */
-;(function(root, undefined) {
-  'use strict';
-
-  var NODE_JS = typeof(module) != 'undefined';
-  if(NODE_JS) {
-    root = global;
-    if(root.JS_SHA3_TEST) {
-      root.navigator = { userAgent: 'Chrome'};
-    }
-  }
-  var CHROME = (root.JS_SHA3_TEST || !NODE_JS) && navigator.userAgent.indexOf('Chrome') != -1;
-  var HEX_CHARS = '0123456789abcdef'.split('');
-  var KECCAK_PADDING = [1, 256, 65536, 16777216];
-  var PADDING = [6, 1536, 393216, 100663296];
-  var SHIFT = [0, 8, 16, 24];
-  var RC = [1, 0, 32898, 0, 32906, 2147483648, 2147516416, 2147483648, 32907, 0, 2147483649,
-            0, 2147516545, 2147483648, 32777, 2147483648, 138, 0, 136, 0, 2147516425, 0, 
-            2147483658, 0, 2147516555, 0, 139, 2147483648, 32905, 2147483648, 32771, 
-            2147483648, 32770, 2147483648, 128, 2147483648, 32778, 0, 2147483658, 2147483648,
-            2147516545, 2147483648, 32896, 2147483648, 2147483649, 0, 2147516424, 2147483648];
-
-  var blocks = [], s = [];
-
-  var keccak_224 = function(message) {
-    return keccak(message, 224, KECCAK_PADDING);
-  };
-
-  var keccak_256 = function(message) {
-    return keccak(message, 256, KECCAK_PADDING);
-  };
-
-  var keccak_384 = function(message) {
-    return keccak(message, 384, KECCAK_PADDING);
-  };
-
-  var sha3_224 = function(message) {
-    return keccak(message, 224, PADDING);
-  };
-
-  var sha3_256 = function(message) {
-    return keccak(message, 256, PADDING);
-  };
-
-  var sha3_384 = function(message) {
-    return keccak(message, 384, PADDING);
-  };
-
-  var sha3_512 = function(message) {
-    return keccak(message, 512, PADDING);
-  };
-
-  var keccak = function(message, bits, padding) {
-    var notString = typeof(message) != 'string';
-    if(notString && message.constructor == root.ArrayBuffer) {
-      message = new Uint8Array(message);
-    }
-
-    if(bits === undefined) {
-      bits = 512;
-      padding = KECCAK_PADDING;
-    }
-
-    var block, code, end = false, index = 0, start = 0, length = message.length,
-        n, i, h, l, c0, c1, c2, c3, c4, c5, c6, c7, c8, c9, 
-        b0, b1, b2, b3, b4, b5, b6, b7, b8, b9, b10, b11, b12, b13, b14, b15, b16, b17, 
-        b18, b19, b20, b21, b22, b23, b24, b25, b26, b27, b28, b29, b30, b31, b32, b33, 
-        b34, b35, b36, b37, b38, b39, b40, b41, b42, b43, b44, b45, b46, b47, b48, b49;
-    var blockCount = (1600 - bits * 2) / 32;
-    var byteCount = blockCount * 4;
-
-    for(i = 0;i < 50;++i) {
-      s[i] = 0;
-    }
-
-    block = 0;
-    do {
-      blocks[0] = block;
-      for(i = 1;i < blockCount + 1;++i) {
-        blocks[i] = 0;
-      }
-      if(notString) {
-        for (i = start;index < length && i < byteCount; ++index) {
-          blocks[i >> 2] |= message[index] << SHIFT[i++ & 3];
-        }
-      } else {
-        for (i = start;index < length && i < byteCount; ++index) {
-          code = message.charCodeAt(index);
-          if (code < 0x80) {
-            blocks[i >> 2] |= code << SHIFT[i++ & 3];
-          } else if (code < 0x800) {
-            blocks[i >> 2] |= (0xc0 | (code >> 6)) << SHIFT[i++ & 3];
-            blocks[i >> 2] |= (0x80 | (code & 0x3f)) << SHIFT[i++ & 3];
-          } else if (code < 0xd800 || code >= 0xe000) {
-            blocks[i >> 2] |= (0xe0 | (code >> 12)) << SHIFT[i++ & 3];
-            blocks[i >> 2] |= (0x80 | ((code >> 6) & 0x3f)) << SHIFT[i++ & 3];
-            blocks[i >> 2] |= (0x80 | (code & 0x3f)) << SHIFT[i++ & 3];
-          } else {
-            code = 0x10000 + (((code & 0x3ff) << 10) | (message.charCodeAt(++index) & 0x3ff));
-            blocks[i >> 2] |= (0xf0 | (code >> 18)) << SHIFT[i++ & 3];
-            blocks[i >> 2] |= (0x80 | ((code >> 12) & 0x3f)) << SHIFT[i++ & 3];
-            blocks[i >> 2] |= (0x80 | ((code >> 6) & 0x3f)) << SHIFT[i++ & 3];
-            blocks[i >> 2] |= (0x80 | (code & 0x3f)) << SHIFT[i++ & 3];
-          }
-        }
-      }
-      start = i - byteCount;
-      if(index == length) {
-        blocks[i >> 2] |= padding[i & 3];
-        ++index;
-      }
-      block = blocks[blockCount];
-      if(index > length && i < byteCount) {
-        blocks[blockCount - 1] |= 0x80000000;
-        end = true;
-      }
-
-      for(i = 0;i < blockCount;++i) {
-        s[i] ^= blocks[i];
-      }
-
-      for(n = 0; n < 48; n += 2) {
-        c0 = s[0] ^ s[10] ^ s[20] ^ s[30] ^ s[40];
-        c1 = s[1] ^ s[11] ^ s[21] ^ s[31] ^ s[41];
-        c2 = s[2] ^ s[12] ^ s[22] ^ s[32] ^ s[42];
-        c3 = s[3] ^ s[13] ^ s[23] ^ s[33] ^ s[43];
-        c4 = s[4] ^ s[14] ^ s[24] ^ s[34] ^ s[44];
-        c5 = s[5] ^ s[15] ^ s[25] ^ s[35] ^ s[45];
-        c6 = s[6] ^ s[16] ^ s[26] ^ s[36] ^ s[46];
-        c7 = s[7] ^ s[17] ^ s[27] ^ s[37] ^ s[47];
-        c8 = s[8] ^ s[18] ^ s[28] ^ s[38] ^ s[48];
-        c9 = s[9] ^ s[19] ^ s[29] ^ s[39] ^ s[49];
-
-        h = c8 ^ ((c2 << 1) | (c3 >>> 31));
-        l = c9 ^ ((c3 << 1) | (c2 >>> 31));
-        s[0] ^= h;
-        s[1] ^= l;
-        s[10] ^= h;
-        s[11] ^= l;
-        s[20] ^= h;
-        s[21] ^= l;
-        s[30] ^= h;
-        s[31] ^= l;
-        s[40] ^= h;
-        s[41] ^= l;
-        h = c0 ^ ((c4 << 1) | (c5 >>> 31));
-        l = c1 ^ ((c5 << 1) | (c4 >>> 31));
-        s[2] ^= h;
-        s[3] ^= l;
-        s[12] ^= h;
-        s[13] ^= l;
-        s[22] ^= h;
-        s[23] ^= l;
-        s[32] ^= h;
-        s[33] ^= l;
-        s[42] ^= h;
-        s[43] ^= l;
-        h = c2 ^ ((c6 << 1) | (c7 >>> 31));
-        l = c3 ^ ((c7 << 1) | (c6 >>> 31));
-        s[4] ^= h;
-        s[5] ^= l;
-        s[14] ^= h;
-        s[15] ^= l;
-        s[24] ^= h;
-        s[25] ^= l;
-        s[34] ^= h;
-        s[35] ^= l;
-        s[44] ^= h;
-        s[45] ^= l;
-        h = c4 ^ ((c8 << 1) | (c9 >>> 31));
-        l = c5 ^ ((c9 << 1) | (c8 >>> 31));
-        s[6] ^= h;
-        s[7] ^= l;
-        s[16] ^= h;
-        s[17] ^= l;
-        s[26] ^= h;
-        s[27] ^= l;
-        s[36] ^= h;
-        s[37] ^= l;
-        s[46] ^= h;
-        s[47] ^= l;
-        h = c6 ^ ((c0 << 1) | (c1 >>> 31));
-        l = c7 ^ ((c1 << 1) | (c0 >>> 31));
-        s[8] ^= h;
-        s[9] ^= l;
-        s[18] ^= h;
-        s[19] ^= l;
-        s[28] ^= h;
-        s[29] ^= l;
-        s[38] ^= h;
-        s[39] ^= l;
-        s[48] ^= h;
-        s[49] ^= l;
-
-        b0 = s[0];
-        b1 = s[1];
-        b32 = (s[11] << 4) | (s[10] >>> 28);
-        b33 = (s[10] << 4) | (s[11] >>> 28);
-        b14 = (s[20] << 3) | (s[21] >>> 29);
-        b15 = (s[21] << 3) | (s[20] >>> 29);
-        b46 = (s[31] << 9) | (s[30] >>> 23);
-        b47 = (s[30] << 9) | (s[31] >>> 23);
-        b28 = (s[40] << 18) | (s[41] >>> 14);
-        b29 = (s[41] << 18) | (s[40] >>> 14);
-        b20 = (s[2] << 1) | (s[3] >>> 31);
-        b21 = (s[3] << 1) | (s[2] >>> 31);
-        b2 = (s[13] << 12) | (s[12] >>> 20);
-        b3 = (s[12] << 12) | (s[13] >>> 20);
-        b34 = (s[22] << 10) | (s[23] >>> 22);
-        b35 = (s[23] << 10) | (s[22] >>> 22);
-        b16 = (s[33] << 13) | (s[32] >>> 19);
-        b17 = (s[32] << 13) | (s[33] >>> 19);
-        b48 = (s[42] << 2) | (s[43] >>> 30);
-        b49 = (s[43] << 2) | (s[42] >>> 30);
-        b40 = (s[5] << 30) | (s[4] >>> 2);
-        b41 = (s[4] << 30) | (s[5] >>> 2);
-        b22 = (s[14] << 6) | (s[15] >>> 26);
-        b23 = (s[15] << 6) | (s[14] >>> 26);
-        b4 = (s[25] << 11) | (s[24] >>> 21);
-        b5 = (s[24] << 11) | (s[25] >>> 21);
-        b36 = (s[34] << 15) | (s[35] >>> 17);
-        b37 = (s[35] << 15) | (s[34] >>> 17);
-        b18 = (s[45] << 29) | (s[44] >>> 3);
-        b19 = (s[44] << 29) | (s[45] >>> 3);
-        b10 = (s[6] << 28) | (s[7] >>> 4);
-        b11 = (s[7] << 28) | (s[6] >>> 4);
-        b42 = (s[17] << 23) | (s[16] >>> 9);
-        b43 = (s[16] << 23) | (s[17] >>> 9);
-        b24 = (s[26] << 25) | (s[27] >>> 7);
-        b25 = (s[27] << 25) | (s[26] >>> 7);
-        b6 = (s[36] << 21) | (s[37] >>> 11);
-        b7 = (s[37] << 21) | (s[36] >>> 11);
-        b38 = (s[47] << 24) | (s[46] >>> 8);
-        b39 = (s[46] << 24) | (s[47] >>> 8);
-        b30 = (s[8] << 27) | (s[9] >>> 5);
-        b31 = (s[9] << 27) | (s[8] >>> 5);
-        b12 = (s[18] << 20) | (s[19] >>> 12);
-        b13 = (s[19] << 20) | (s[18] >>> 12);
-        b44 = (s[29] << 7) | (s[28] >>> 25);
-        b45 = (s[28] << 7) | (s[29] >>> 25);
-        b26 = (s[38] << 8) | (s[39] >>> 24);
-        b27 = (s[39] << 8) | (s[38] >>> 24);
-        b8 = (s[48] << 14) | (s[49] >>> 18);
-        b9 = (s[49] << 14) | (s[48] >>> 18);
-
-        s[0] = b0 ^ (~b2 & b4);
-        s[1] = b1 ^ (~b3 & b5);
-        s[10] = b10 ^ (~b12 & b14);
-        s[11] = b11 ^ (~b13 & b15);
-        s[20] = b20 ^ (~b22 & b24);
-        s[21] = b21 ^ (~b23 & b25);
-        s[30] = b30 ^ (~b32 & b34);
-        s[31] = b31 ^ (~b33 & b35);
-        s[40] = b40 ^ (~b42 & b44);
-        s[41] = b41 ^ (~b43 & b45);
-        s[2] = b2 ^ (~b4 & b6);
-        s[3] = b3 ^ (~b5 & b7);
-        s[12] = b12 ^ (~b14 & b16);
-        s[13] = b13 ^ (~b15 & b17);
-        s[22] = b22 ^ (~b24 & b26);
-        s[23] = b23 ^ (~b25 & b27);
-        s[32] = b32 ^ (~b34 & b36);
-        s[33] = b33 ^ (~b35 & b37);
-        s[42] = b42 ^ (~b44 & b46);
-        s[43] = b43 ^ (~b45 & b47);
-        s[4] = b4 ^ (~b6 & b8);
-        s[5] = b5 ^ (~b7 & b9);
-        s[14] = b14 ^ (~b16 & b18);
-        s[15] = b15 ^ (~b17 & b19);
-        s[24] = b24 ^ (~b26 & b28);
-        s[25] = b25 ^ (~b27 & b29);
-        s[34] = b34 ^ (~b36 & b38);
-        s[35] = b35 ^ (~b37 & b39);
-        s[44] = b44 ^ (~b46 & b48);
-        s[45] = b45 ^ (~b47 & b49);
-        s[6] = b6 ^ (~b8 & b0);
-        s[7] = b7 ^ (~b9 & b1);
-        s[16] = b16 ^ (~b18 & b10);
-        s[17] = b17 ^ (~b19 & b11);
-        s[26] = b26 ^ (~b28 & b20);
-        s[27] = b27 ^ (~b29 & b21);
-        s[36] = b36 ^ (~b38 & b30);
-        s[37] = b37 ^ (~b39 & b31);
-        s[46] = b46 ^ (~b48 & b40);
-        s[47] = b47 ^ (~b49 & b41);
-        s[8] = b8 ^ (~b0 & b2);
-        s[9] = b9 ^ (~b1 & b3);
-        s[18] = b18 ^ (~b10 & b12);
-        s[19] = b19 ^ (~b11 & b13);
-        s[28] = b28 ^ (~b20 & b22);
-        s[29] = b29 ^ (~b21 & b23);
-        s[38] = b38 ^ (~b30 & b32);
-        s[39] = b39 ^ (~b31 & b33);
-        s[48] = b48 ^ (~b40 & b42);
-        s[49] = b49 ^ (~b41 & b43);
-
-        s[0] ^= RC[n];
-        s[1] ^= RC[n + 1];
-      }
-    } while(!end);
-
-    var hex = '';
-    if(CHROME) {
-      b0 = s[0];
-      b1 = s[1];
-      b2 = s[2];
-      b3 = s[3];
-      b4 = s[4];
-      b5 = s[5];
-      b6 = s[6];
-      b7 = s[7];
-      b8 = s[8];
-      b9 = s[9];
-      b10 = s[10];
-      b11 = s[11];
-      b12 = s[12];
-      b13 = s[13];
-      b14 = s[14];
-      b15 = s[15];
-      hex += HEX_CHARS[(b0 >> 4) & 0x0F] + HEX_CHARS[b0 & 0x0F] +
-             HEX_CHARS[(b0 >> 12) & 0x0F] + HEX_CHARS[(b0 >> 8) & 0x0F] +
-             HEX_CHARS[(b0 >> 20) & 0x0F] + HEX_CHARS[(b0 >> 16) & 0x0F] +
-             HEX_CHARS[(b0 >> 28) & 0x0F] + HEX_CHARS[(b0 >> 24) & 0x0F] +
-             HEX_CHARS[(b1 >> 4) & 0x0F] + HEX_CHARS[b1 & 0x0F] +
-             HEX_CHARS[(b1 >> 12) & 0x0F] + HEX_CHARS[(b1 >> 8) & 0x0F] +
-             HEX_CHARS[(b1 >> 20) & 0x0F] + HEX_CHARS[(b1 >> 16) & 0x0F] +
-             HEX_CHARS[(b1 >> 28) & 0x0F] + HEX_CHARS[(b1 >> 24) & 0x0F] +
-             HEX_CHARS[(b2 >> 4) & 0x0F] + HEX_CHARS[b2 & 0x0F] +
-             HEX_CHARS[(b2 >> 12) & 0x0F] + HEX_CHARS[(b2 >> 8) & 0x0F] +
-             HEX_CHARS[(b2 >> 20) & 0x0F] + HEX_CHARS[(b2 >> 16) & 0x0F] +
-             HEX_CHARS[(b2 >> 28) & 0x0F] + HEX_CHARS[(b2 >> 24) & 0x0F] +
-             HEX_CHARS[(b3 >> 4) & 0x0F] + HEX_CHARS[b3 & 0x0F] +
-             HEX_CHARS[(b3 >> 12) & 0x0F] + HEX_CHARS[(b3 >> 8) & 0x0F] +
-             HEX_CHARS[(b3 >> 20) & 0x0F] + HEX_CHARS[(b3 >> 16) & 0x0F] +
-             HEX_CHARS[(b3 >> 28) & 0x0F] + HEX_CHARS[(b3 >> 24) & 0x0F] +
-             HEX_CHARS[(b4 >> 4) & 0x0F] + HEX_CHARS[b4 & 0x0F] +
-             HEX_CHARS[(b4 >> 12) & 0x0F] + HEX_CHARS[(b4 >> 8) & 0x0F] +
-             HEX_CHARS[(b4 >> 20) & 0x0F] + HEX_CHARS[(b4 >> 16) & 0x0F] +
-             HEX_CHARS[(b4 >> 28) & 0x0F] + HEX_CHARS[(b4 >> 24) & 0x0F] +
-             HEX_CHARS[(b5 >> 4) & 0x0F] + HEX_CHARS[b5 & 0x0F] +
-             HEX_CHARS[(b5 >> 12) & 0x0F] + HEX_CHARS[(b5 >> 8) & 0x0F] +
-             HEX_CHARS[(b5 >> 20) & 0x0F] + HEX_CHARS[(b5 >> 16) & 0x0F] +
-             HEX_CHARS[(b5 >> 28) & 0x0F] + HEX_CHARS[(b5 >> 24) & 0x0F] +
-             HEX_CHARS[(b6 >> 4) & 0x0F] + HEX_CHARS[b6 & 0x0F] +
-             HEX_CHARS[(b6 >> 12) & 0x0F] + HEX_CHARS[(b6 >> 8) & 0x0F] +
-             HEX_CHARS[(b6 >> 20) & 0x0F] + HEX_CHARS[(b6 >> 16) & 0x0F] +
-             HEX_CHARS[(b6 >> 28) & 0x0F] + HEX_CHARS[(b6 >> 24) & 0x0F];
-
-      if(bits >= 256) {
-        hex += HEX_CHARS[(b7 >> 4) & 0x0F] + HEX_CHARS[b7 & 0x0F] +
-               HEX_CHARS[(b7 >> 12) & 0x0F] + HEX_CHARS[(b7 >> 8) & 0x0F] +
-               HEX_CHARS[(b7 >> 20) & 0x0F] + HEX_CHARS[(b7 >> 16) & 0x0F] +
-               HEX_CHARS[(b7 >> 28) & 0x0F] + HEX_CHARS[(b7 >> 24) & 0x0F];
-      }
-      if(bits >= 384) {
-        hex += HEX_CHARS[(b8 >> 4) & 0x0F] + HEX_CHARS[b8 & 0x0F] +
-               HEX_CHARS[(b8 >> 12) & 0x0F] + HEX_CHARS[(b8 >> 8) & 0x0F] +
-               HEX_CHARS[(b8 >> 20) & 0x0F] + HEX_CHARS[(b8 >> 16) & 0x0F] +
-               HEX_CHARS[(b8 >> 28) & 0x0F] + HEX_CHARS[(b8 >> 24) & 0x0F] +
-               HEX_CHARS[(b9 >> 4) & 0x0F] + HEX_CHARS[b9 & 0x0F] +
-               HEX_CHARS[(b9 >> 12) & 0x0F] + HEX_CHARS[(b9 >> 8) & 0x0F] +
-               HEX_CHARS[(b9 >> 20) & 0x0F] + HEX_CHARS[(b9 >> 16) & 0x0F] +
-               HEX_CHARS[(b9 >> 28) & 0x0F] + HEX_CHARS[(b9 >> 24) & 0x0F] +
-               HEX_CHARS[(b10 >> 4) & 0x0F] + HEX_CHARS[b10 & 0x0F] +
-               HEX_CHARS[(b10 >> 12) & 0x0F] + HEX_CHARS[(b10 >> 8) & 0x0F] +
-               HEX_CHARS[(b10 >> 20) & 0x0F] + HEX_CHARS[(b10 >> 16) & 0x0F] +
-               HEX_CHARS[(b10 >> 28) & 0x0F] + HEX_CHARS[(b10 >> 24) & 0x0F] +
-               HEX_CHARS[(b11 >> 4) & 0x0F] + HEX_CHARS[b11 & 0x0F] +
-               HEX_CHARS[(b11 >> 12) & 0x0F] + HEX_CHARS[(b11 >> 8) & 0x0F] +
-               HEX_CHARS[(b11 >> 20) & 0x0F] + HEX_CHARS[(b11 >> 16) & 0x0F] +
-               HEX_CHARS[(b11 >> 28) & 0x0F] + HEX_CHARS[(b11 >> 24) & 0x0F];
-      }
-      if(bits == 512) {
-        hex += HEX_CHARS[(b12 >> 4) & 0x0F] + HEX_CHARS[b12 & 0x0F] +
-               HEX_CHARS[(b12 >> 12) & 0x0F] + HEX_CHARS[(b12 >> 8) & 0x0F] +
-               HEX_CHARS[(b12 >> 20) & 0x0F] + HEX_CHARS[(b12 >> 16) & 0x0F] +
-               HEX_CHARS[(b12 >> 28) & 0x0F] + HEX_CHARS[(b12 >> 24) & 0x0F] +
-               HEX_CHARS[(b13 >> 4) & 0x0F] + HEX_CHARS[b13 & 0x0F] +
-               HEX_CHARS[(b13 >> 12) & 0x0F] + HEX_CHARS[(b13 >> 8) & 0x0F] +
-               HEX_CHARS[(b13 >> 20) & 0x0F] + HEX_CHARS[(b13 >> 16) & 0x0F] +
-               HEX_CHARS[(b13 >> 28) & 0x0F] + HEX_CHARS[(b13 >> 24) & 0x0F] +
-               HEX_CHARS[(b14 >> 4) & 0x0F] + HEX_CHARS[b14 & 0x0F] +
-               HEX_CHARS[(b14 >> 12) & 0x0F] + HEX_CHARS[(b14 >> 8) & 0x0F] +
-               HEX_CHARS[(b14 >> 20) & 0x0F] + HEX_CHARS[(b14 >> 16) & 0x0F] +
-               HEX_CHARS[(b14 >> 28) & 0x0F] + HEX_CHARS[(b14 >> 24) & 0x0F] +
-               HEX_CHARS[(b15 >> 4) & 0x0F] + HEX_CHARS[b15 & 0x0F] +
-               HEX_CHARS[(b15 >> 12) & 0x0F] + HEX_CHARS[(b15 >> 8) & 0x0F] +
-               HEX_CHARS[(b15 >> 20) & 0x0F] + HEX_CHARS[(b15 >> 16) & 0x0F] +
-               HEX_CHARS[(b15 >> 28) & 0x0F] + HEX_CHARS[(b15 >> 24) & 0x0F];
-      }
-    } else {
-      for(i = 0, n = bits / 32;i < n;++i) {
-        h = s[i];
-        hex += HEX_CHARS[(h >> 4) & 0x0F] + HEX_CHARS[h & 0x0F] +
-               HEX_CHARS[(h >> 12) & 0x0F] + HEX_CHARS[(h >> 8) & 0x0F] +
-               HEX_CHARS[(h >> 20) & 0x0F] + HEX_CHARS[(h >> 16) & 0x0F] +
-               HEX_CHARS[(h >> 28) & 0x0F] + HEX_CHARS[(h >> 24) & 0x0F];
-      }
-    }
-    return hex;
-  };
-  
-  if(!root.JS_SHA3_TEST && NODE_JS) {
-    module.exports = {
-      sha3_512: sha3_512,
-      sha3_384: sha3_384,
-      sha3_256: sha3_256,
-      sha3_224: sha3_224,
-      keccak_512: keccak,
-      keccak_384: keccak_384,
-      keccak_256: keccak_256,
-      keccak_224: keccak_224
-    };
-  } else if(root) {
-    root.sha3_512 = sha3_512;
-    root.sha3_384 = sha3_384;
-    root.sha3_256 = sha3_256;
-    root.sha3_224 = sha3_224;
-    root.keccak_512 = keccak;
-    root.keccak_384 = keccak_384;
-    root.keccak_256 = keccak_256;
-    root.keccak_224 = keccak_224;
-  }
-}(this));
-
-}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],8:[function(require,module,exports){
 'use strict';
 
 var elliptic = exports;
@@ -3654,7 +3031,7 @@ elliptic.curves = require('./elliptic/curves');
 elliptic.ec = require('./elliptic/ec');
 elliptic.eddsa = require('./elliptic/eddsa');
 
-},{"../package.json":32,"./elliptic/curve":11,"./elliptic/curves":14,"./elliptic/ec":15,"./elliptic/eddsa":18,"./elliptic/hmac-drbg":21,"./elliptic/utils":23,"brorand":24}],9:[function(require,module,exports){
+},{"../package.json":30,"./elliptic/curve":9,"./elliptic/curves":12,"./elliptic/ec":13,"./elliptic/eddsa":16,"./elliptic/hmac-drbg":19,"./elliptic/utils":21,"brorand":22}],7:[function(require,module,exports){
 'use strict';
 
 var bn = require('bn.js');
@@ -4007,7 +3384,7 @@ BasePoint.prototype.dblp = function dblp(k) {
   return r;
 };
 
-},{"../../elliptic":8,"bn.js":5}],10:[function(require,module,exports){
+},{"../../elliptic":6,"bn.js":5}],8:[function(require,module,exports){
 'use strict';
 
 var curve = require('../curve');
@@ -4415,7 +3792,7 @@ Point.prototype.eq = function eq(other) {
 Point.prototype.toP = Point.prototype.normalize;
 Point.prototype.mixedAdd = Point.prototype.add;
 
-},{"../../elliptic":8,"../curve":11,"bn.js":5,"inherits":31}],11:[function(require,module,exports){
+},{"../../elliptic":6,"../curve":9,"bn.js":5,"inherits":29}],9:[function(require,module,exports){
 'use strict';
 
 var curve = exports;
@@ -4425,7 +3802,7 @@ curve.short = require('./short');
 curve.mont = require('./mont');
 curve.edwards = require('./edwards');
 
-},{"./base":9,"./edwards":10,"./mont":12,"./short":13}],12:[function(require,module,exports){
+},{"./base":7,"./edwards":8,"./mont":10,"./short":11}],10:[function(require,module,exports){
 'use strict';
 
 var curve = require('../curve');
@@ -4603,7 +3980,7 @@ Point.prototype.getX = function getX() {
   return this.x.fromRed();
 };
 
-},{"../../elliptic":8,"../curve":11,"bn.js":5,"inherits":31}],13:[function(require,module,exports){
+},{"../../elliptic":6,"../curve":9,"bn.js":5,"inherits":29}],11:[function(require,module,exports){
 'use strict';
 
 var curve = require('../curve');
@@ -5512,7 +4889,7 @@ JPoint.prototype.isInfinity = function isInfinity() {
   return this.z.cmpn(0) === 0;
 };
 
-},{"../../elliptic":8,"../curve":11,"bn.js":5,"inherits":31}],14:[function(require,module,exports){
+},{"../../elliptic":6,"../curve":9,"bn.js":5,"inherits":29}],12:[function(require,module,exports){
 'use strict';
 
 var curves = exports;
@@ -5671,7 +5048,7 @@ defineCurve('secp256k1', {
   ]
 });
 
-},{"../elliptic":8,"./precomputed/secp256k1":22,"hash.js":25}],15:[function(require,module,exports){
+},{"../elliptic":6,"./precomputed/secp256k1":20,"hash.js":23}],13:[function(require,module,exports){
 'use strict';
 
 var bn = require('bn.js');
@@ -5883,7 +5260,7 @@ EC.prototype.getKeyRecoveryParam = function(e, signature, Q, enc) {
   throw new Error('Unable to find valid recovery factor');
 };
 
-},{"../../elliptic":8,"./key":16,"./signature":17,"bn.js":5}],16:[function(require,module,exports){
+},{"../../elliptic":6,"./key":14,"./signature":15,"bn.js":5}],14:[function(require,module,exports){
 'use strict';
 
 var bn = require('bn.js');
@@ -5992,7 +5369,7 @@ KeyPair.prototype.inspect = function inspect() {
          ' pub: ' + (this.pub && this.pub.inspect()) + ' >';
 };
 
-},{"bn.js":5}],17:[function(require,module,exports){
+},{"bn.js":5}],15:[function(require,module,exports){
 'use strict';
 
 var bn = require('bn.js');
@@ -6064,7 +5441,7 @@ Signature.prototype.toDER = function toDER(enc) {
   return utils.encode(res, enc);
 };
 
-},{"../../elliptic":8,"bn.js":5}],18:[function(require,module,exports){
+},{"../../elliptic":6,"bn.js":5}],16:[function(require,module,exports){
 'use strict';
 
 var hash = require('hash.js');
@@ -6184,7 +5561,7 @@ EDDSA.prototype.isPoint = function isPoint(val) {
   return val instanceof this.pointClass;
 };
 
-},{"../../elliptic":8,"./key":19,"./signature":20,"hash.js":25}],19:[function(require,module,exports){
+},{"../../elliptic":6,"./key":17,"./signature":18,"hash.js":23}],17:[function(require,module,exports){
 'use strict';
 
 var elliptic = require('../../elliptic');
@@ -6282,7 +5659,7 @@ KeyPair.prototype.getPublic = function getPublic(enc) {
 
 module.exports = KeyPair;
 
-},{"../../elliptic":8}],20:[function(require,module,exports){
+},{"../../elliptic":6}],18:[function(require,module,exports){
 'use strict';
 
 var bn = require('bn.js');
@@ -6350,7 +5727,7 @@ Signature.prototype.toHex = function toHex() {
 
 module.exports = Signature;
 
-},{"../../elliptic":8,"bn.js":5}],21:[function(require,module,exports){
+},{"../../elliptic":6,"bn.js":5}],19:[function(require,module,exports){
 'use strict';
 
 var hash = require('hash.js');
@@ -6466,7 +5843,7 @@ HmacDRBG.prototype.generate = function generate(len, enc, add, addEnc) {
   return utils.encode(res, enc);
 };
 
-},{"../elliptic":8,"hash.js":25}],22:[function(require,module,exports){
+},{"../elliptic":6,"hash.js":23}],20:[function(require,module,exports){
 module.exports = {
   doubles: {
     step: 4,
@@ -7248,7 +6625,7 @@ module.exports = {
   }
 };
 
-},{}],23:[function(require,module,exports){
+},{}],21:[function(require,module,exports){
 'use strict';
 
 var utils = exports;
@@ -7422,7 +6799,7 @@ function intFromLE(bytes) {
 utils.intFromLE = intFromLE;
 
 
-},{"bn.js":5}],24:[function(require,module,exports){
+},{"bn.js":5}],22:[function(require,module,exports){
 var r;
 
 module.exports = function rand(len) {
@@ -7481,7 +6858,7 @@ if (typeof window === 'object') {
   }
 }
 
-},{}],25:[function(require,module,exports){
+},{}],23:[function(require,module,exports){
 var hash = exports;
 
 hash.utils = require('./hash/utils');
@@ -7498,7 +6875,7 @@ hash.sha384 = hash.sha.sha384;
 hash.sha512 = hash.sha.sha512;
 hash.ripemd160 = hash.ripemd.ripemd160;
 
-},{"./hash/common":26,"./hash/hmac":27,"./hash/ripemd":28,"./hash/sha":29,"./hash/utils":30}],26:[function(require,module,exports){
+},{"./hash/common":24,"./hash/hmac":25,"./hash/ripemd":26,"./hash/sha":27,"./hash/utils":28}],24:[function(require,module,exports){
 var hash = require('../hash');
 var utils = hash.utils;
 var assert = utils.assert;
@@ -7591,7 +6968,7 @@ BlockHash.prototype._pad = function pad() {
   return res;
 };
 
-},{"../hash":25}],27:[function(require,module,exports){
+},{"../hash":23}],25:[function(require,module,exports){
 var hmac = exports;
 
 var hash = require('../hash');
@@ -7641,7 +7018,7 @@ Hmac.prototype.digest = function digest(enc) {
   return this.outer.digest(enc);
 };
 
-},{"../hash":25}],28:[function(require,module,exports){
+},{"../hash":23}],26:[function(require,module,exports){
 var hash = require('../hash');
 var utils = hash.utils;
 
@@ -7787,7 +7164,7 @@ var sh = [
   8, 5, 12, 9, 12, 5, 14, 6, 8, 13, 6, 5, 15, 13, 11, 11
 ];
 
-},{"../hash":25}],29:[function(require,module,exports){
+},{"../hash":23}],27:[function(require,module,exports){
 var hash = require('../hash');
 var utils = hash.utils;
 var assert = utils.assert;
@@ -8353,7 +7730,7 @@ function g1_512_lo(xh, xl) {
   return r;
 }
 
-},{"../hash":25}],30:[function(require,module,exports){
+},{"../hash":23}],28:[function(require,module,exports){
 var utils = exports;
 var inherits = require('inherits');
 
@@ -8612,7 +7989,7 @@ function shr64_lo(ah, al, num) {
 };
 exports.shr64_lo = shr64_lo;
 
-},{"inherits":31}],31:[function(require,module,exports){
+},{"inherits":29}],29:[function(require,module,exports){
 if (typeof Object.create === 'function') {
   // implementation from standard node.js 'util' module
   module.exports = function inherits(ctor, superCtor) {
@@ -8637,7 +8014,7 @@ if (typeof Object.create === 'function') {
   }
 }
 
-},{}],32:[function(require,module,exports){
+},{}],30:[function(require,module,exports){
 module.exports={
   "name": "elliptic",
   "version": "5.1.0",
@@ -8681,7 +8058,7 @@ module.exports={
   "gitHead": "4f12b8f6bcb16e38d4a038af2d963dc10d175bde",
   "_id": "elliptic@5.1.0",
   "_shasum": "5658dfa7625a6a8fc687a5b8f249376bb271e6e9",
-  "_from": "elliptic@>=5.1.0 <6.0.0",
+  "_from": "elliptic@>=5.0.0 <6.0.0",
   "_npmVersion": "2.12.1",
   "_nodeVersion": "2.3.4",
   "_npmUser": {
@@ -8703,7 +8080,891 @@ module.exports={
   "readme": "ERROR: No README data found!"
 }
 
-},{}],33:[function(require,module,exports){
+},{}],31:[function(require,module,exports){
+(function (Buffer){
+const SHA3 = require('sha3')
+const ec = require('elliptic').ec('secp256k1')
+const assert = require('assert')
+const rlp = require('rlp')
+const BN = require('bn.js')
+
+// the max interger that this VM can handle
+exports.MAX_INTEGER = new BN('ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff', 16)
+exports.TWO_POW256 = new BN('115792089237316195423570985008687907853269984665640564039457584007913129639936')
+
+// hex string of SHA3-256 hash of `null`
+exports.SHA3_NULL = 'c5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470'
+
+// SHA3-256 hash of the rlp of []
+exports.SHA3_RLP_ARRAY = '1dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d49347'
+
+// SHA3-256 hash of the rlp of `null`
+exports.SHA3_RLP = '56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421'
+
+exports.BN = BN
+exports.rlp = rlp
+
+/**
+ * Returns a buffer filled with 0s
+ * @method zeros
+ * @param {Integer} bytes  the number of bytes the buffer should be
+ * @return {Buffer}
+ */
+exports.zeros = function (bytes) {
+  var buf = new Buffer(bytes)
+  buf.fill(0)
+  return buf
+}
+
+/**
+ * pads an array of buffer with leading zeros till it has `length` bytes
+ * @method pad
+ * @param {Buffer|Array} array
+ * @param {Integer}  length the number of bytes the output should be
+ * @return {Buffer|Array}
+ */
+exports.pad = function (msg, length) {
+  if (msg.length < length) {
+    var buf = exports.zeros(length)
+    msg.copy(buf, length - msg.length)
+    return buf
+  }
+  return msg.slice(-length)
+}
+
+/**
+ * Trims leading zeros from a buffer or an array
+ * @method unpad
+ * @param {Buffer|Array|String}
+ * @return {Buffer|Array|String}
+ */
+exports.unpad = exports.stripZeros = function (a) {
+  var first = a[0]
+  while (a.length > 0 && first.toString() === '0') {
+    a = a.slice(1)
+    first = a[0]
+  }
+  return a
+}
+
+exports.toBuffer = function (v) {
+  if (!Buffer.isBuffer(v)) {
+    if (typeof v === 'string') {
+      v = new Buffer(padToEven(exports.stripHexPrefix(v)), 'hex')
+    } else if (typeof v === 'number') {
+      v = exports.intToBuffer(v)
+    } else if (v === null || v === undefined) {
+      v = new Buffer([])
+    } else if (v.toArray) {
+      // converts a BN to a Buffer
+      v = new Buffer(v.toArray())
+    } else {
+      throw new Error('invalid type')
+    }
+  }
+  return v
+}
+
+/**
+ * Converts an integer into a hex string
+ * @method intToHex
+ * @param {Number}
+ * @return {String}
+ */
+exports.intToHex = function (i) {
+  assert(i % 1 === 0, 'number is not a interger')
+  assert(i >= 0, 'number must be positive')
+  var hex = i.toString(16)
+  if (hex.length % 2) {
+    hex = '0' + hex
+  }
+
+  return hex
+}
+
+/**
+ * Converts an integer to a buffer
+ * @method intToBuffer
+ * @param {Number}
+ * @return {Buffer}
+ */
+exports.intToBuffer = function (i) {
+  var hex = exports.intToHex(i)
+  return new Buffer(hex, 'hex')
+}
+
+/**
+ * Converts a buffer to an Interger
+ * @method bufferToInt
+ * @par[MaÅam {B[M`Êuffer}
+ * @return {Number}
+ */
+exports.bufferToInt = function (buf) {
+  if (buf.length === 0) {
+    return 0
+  }
+
+  return parseInt(buf.toString('hex'), 16)
+}
+
+/**
+ * interpets a buffer as a signed integer and returns a bignum
+ * @method fromSigned
+ * @param {Buffer} num
+ * @return {BN}
+ */
+exports.fromSigned = function (num) {
+  if (num.length === 32 && num[0] >= 128) {
+    return new BN(num).sub(exports.TWO_POW256)
+  }
+
+  return new BN(num)
+}
+
+/**
+ * Converts a bignum to an unsigned interger and returns it as a buffer
+ * @method toUnsigned
+ * @param {Bignum} num
+ * @return {Buffer}
+ */
+exports.toUnsigned = function (num) {
+  if (num.cmpn(0) === -1) {
+    return new Buffer(num.add(exports.TWO_POW256).toArray())
+  }
+
+  return new Buffer(num.toArray())
+}
+
+exports.sha3 = function (a, bytes) {
+  if (!bytes) bytes = 256
+
+  var h = new SHA3.SHA3Hash(bytes)
+  if (a) {
+    h.update(a)
+  }
+  return new Buffer(h.digest('hex'), 'hex')
+}
+
+/**
+ * Returns the ethereum address of a given public key
+ * @method pubToAddress
+ * @param {Buffer}
+ * @return {Buffer}
+ */
+exports.pubToAddress = exports.publicToAddress = function (pubKey) {
+  var hash = new SHA3.SHA3Hash(256)
+  hash.update(pubKey.slice(-64))
+  return new Buffer(hash.digest('hex').slice(-40), 'hex')
+}
+
+/**
+ * Returns the ethereum public key of a given private key
+ * @method privateToPublic
+ * @param {Buffer} privateKey
+ * @return {Buffer}
+ */
+var privateToPublic = exports.privateToPublic = function (privateKey) {
+  privateKey = new BN(privateKey)
+  var key = ec.keyFromPrivate(privateKey).getPublic().toJSON()
+  return new Buffer(key[0].toArray().concat(key[1].toArray()))
+}
+
+/**
+ * Returns the ethereum address of a given private key
+ * @method privateToAddress
+ * @param {Buffer} privateKey
+ * @return {Buffer}
+ */
+exports.privateToAddress = function (privateKey) {
+  return exports.publicToAddress(privateToPublic(privateKey))
+}
+
+/**
+ * Generates a new address
+ * @method generateAddress
+ * @param {Buffer} from the address which is creating this new address
+ * @param {Buffer} nonce the nonce of the from account
+ */
+exports.generateAddress = function (from, nonce) {
+  nonce = new Buffer(new BN(nonce).subn(1).toArray())
+
+  if (nonce.toString('hex') === '00') {
+    nonce = 0
+  }
+
+  var hash = exports.sha3(rlp.encode([new Buffer(from, 'hex'), nonce]))
+  return hash.slice(12)
+}
+
+// Returns a Boolean on whether or not the a sting starts with 0x
+exports.isHexPrefixed = function (str) {
+  return str.slice(0, 2) === '0x'
+}
+
+// Removes 0x from a given String
+exports.stripHexPrefix = function (str) {
+  if (typeof str !== 'string') {
+    return str
+  }
+  return exports.isHexPrefixed(str) ? str.slice(2) : str
+}
+
+// Adds 0x to a given string if it does not already start with 0x
+exports.addHexPrefix = function (str) {
+  if (typeof str !== 'string') {
+    return str
+  }
+  return exports.isHexPrefixed(str) ? '0x' + str : str
+}
+
+/**
+ * defines properties on a `Object`
+ * @method defineProperties
+ * @para[M`Êm {Object} self the `Object` to define properties on
+ * @param {Array} fields an array fields to define
+ */
+exports.defineProperties = function (self, fields, data) {
+  self.raw = []
+  self._fields = []
+
+  self.toJSON = function (label) {
+    if (label) {
+      var obj = {}
+
+      for (var prop in this) {
+        if (typeof this[prop] !== 'function' && prop !== 'raw' && prop !== '_fields') {
+          obj[prop] = this[prop].toString('hex')
+        }
+      }
+      return obj
+    }
+
+    return exports.baToJSON(this.raw)
+  }
+
+  fields.forEach(function (field, i) {
+    self._fields.push(field.name)
+    Object.defineProperty(self, field.name, {
+      enumerable: true,
+      configurable: true,
+      get: function () {
+        return this.raw[i]
+      },
+      set: function (v) {
+        v = exports.toBuffer(v)
+
+        if (v.toString('hex') === '00' && !field.allowZero) {
+          v = new Buffer([])
+        }
+
+        if (field.allowLess && field.length) {
+          v = exports.stripZeros(v)
+          assert(field.length >= v.length)
+        } else if (!(field.empty && v.length === 0) && field.length) {
+          assert(field.length === v.length, 'The field ' + field.name + 'must have byte length of ' + field.length)
+        }
+
+        this.raw[i] = v
+      }
+    })
+
+    if (field.default) {
+      self[field.name] = field.default
+    }
+  })
+
+  if (data) {
+    if (typeof data === 'string') {
+      data = new Buffer(exports.stripHexPrefix(data), 'hex')
+    }
+
+    if (Buffer.isBuffer(data)) {
+      data = rlp.decode(data)
+    }
+
+    if (Array.isArray(data)) {
+      if (data.length > self._fields.length) {
+        throw (new Error('wrong number of fields in data'))
+      }
+
+      // make sure all the items are buffers
+      data.forEach(function (d, i) {
+        self[self._fields[i]] = typeof d === 'string' ? new Buffer(d, 'hex') : d
+      })
+    } else if (typeof data === 'object') {
+      for (var prop in data) {
+        if (self._fields.indexOf(prop) !== -1) {
+          self[prop] = data[prop]
+        }
+      }
+    } else {
+      throw new Error('invalid data')
+    }
+  }
+}
+
+/**
+ * Print a Buffer Array
+ * @method printBA
+ * @param {Buffer|Array}
+ */
+exports.printBA = function (ba) {
+  if (Buffer.isBuffer(ba)) {
+    if (ba.length === 0) {
+      console.log('new Buffer(0)')
+    } else {
+      console.log("new Buffer('" + ba.toString('hex') + "', 'hex')")
+    }
+  } else if (ba instanceof Array) {
+    console.log('[')
+    for (var i = 0; i < ba.length; i++) {
+      exports.printBA(ba[i])
+      console.log(',')
+    }
+    console.log(']')
+  } else {
+    console.log(ba)
+  }
+}
+
+/**
+ * converts a buffer array to JSON
+ * @method BAToJSON
+ * @param {Buffer|Array}
+ */
+exports.baToJSON = function (ba) {
+  if (Buffer.isBuffer(ba)) {
+    return ba.toString('hex')
+  } else if (ba instanceof Array) {
+    var array = []
+    for (var i = 0; i < ba.length; i++) {
+      array.push(exports.baToJSON(ba[i]))
+    }
+    return array
+  }
+}
+
+function padToEven (a) {
+  if (a.length % 2) a = '0' + a
+  return a
+}
+
+}).call(this,require("buffer").Buffer)
+},{"assert":61,"bn.js":32,"buffer":62,"elliptic":35,"rlp":60,"sha3":33}],32:[function(require,module,exports){
+arguments[4][5][0].apply(exports,arguments)
+},{"dup":5}],33:[function(require,module,exports){
+(function (Buffer){
+const Sha3 = require('js-sha3')
+
+var hash = function (bitcount) {
+  this.content = ''
+  this.bitcount = bitcount ? 'keccak_' + bitcount : 'keccak_512'
+}
+
+hash.prototype.update = function (i) {
+  this.content = Buffer.isBuffer(i) ? i : new Buffer(i);
+}
+
+hash.prototype.digest = function (encoding) {
+  var result = Sha3[this.bitcount](this.content) 
+  if(encoding === 'hex')
+    return result
+  else
+    return new Buffer(result, 'hex').toString('binary')
+}
+
+module.exports = {
+  SHA3Hash: hash
+}
+
+}).call(this,require("buffer").Buffer)
+},{"buffer":62,"js-sha3":34}],34:[function(require,module,exports){
+(function (global){
+/*
+ * js-sha3 v0.3.1
+ * https://github.com/emn178/js-sha3
+ *
+ * Copyright 2015, emn178@gmail.com
+ *
+ * Licensed under the MIT license:
+ * http://www.opensource.org/licenses/MIT
+ */
+;(function(root, undefined) {
+  'use strict';
+
+  var NODE_JS = typeof(module) != 'undefined';
+  if(NODE_JS) {
+    root = global;
+    if(root.JS_SHA3_TEST) {
+      root.navigator = { userAgent: 'Chrome'};
+    }
+  }
+  var CHROME = (root.JS_SHA3_TEST || !NODE_JS) && navigator.userAgent.indexOf('Chrome') != -1;
+  var HEX_CHARS = '0123456789abcdef'.split('');
+  var KECCAK_PADDING = [1, 256, 65536, 16777216];
+  var PADDING = [6, 1536, 393216, 100663296];
+  var SHIFT = [0, 8, 16, 24];
+  var RC = [1, 0, 32898, 0, 32906, 2147483648, 2147516416, 2147483648, 32907, 0, 2147483649,
+            0, 2147516545, 2147483648, 32777, 2147483648, 138, 0, 136, 0, 2147516425, 0, 
+            2147483658, 0, 2147516555, 0, 139, 2147483648, 32905, 2147483648, 32771, 
+            2147483648, 32770, 2147483648, 128, 2147483648, 32778, 0, 2147483658, 2147483648,
+            2147516545, 2147483648, 32896, 2147483648, 2147483649, 0, 2147516424, 2147483648];
+
+  var blocks = [], s = [];
+
+  var keccak_224 = function(message) {
+    return keccak(message, 224, KECCAK_PADDING);
+  };
+
+  var keccak_256 = function(message) {
+    return keccak(message, 256, KECCAK_PADDING);
+  };
+
+  var keccak_384 = function(message) {
+    return keccak(message, 384, KECCAK_PADDING);
+  };
+
+  var sha3_224 = function(message) {
+    return keccak(message, 224, PADDING);
+  };
+
+  var sha3_256 = function(message) {
+    return keccak(message, 256, PADDING);
+  };
+
+  var sha3_384 = function(message) {
+    return keccak(message, 384, PADDING);
+  };
+
+  var sha3_512 = function(message) {
+    return keccak(message, 512, PADDING);
+  };
+
+  var keccak = function(message, bits, padding) {
+    var notString = typeof(message) != 'string';
+    if(notString && message.constructor == root.ArrayBuffer) {
+      message = new Uint8Array(message);
+    }
+
+    if(bits === undefined) {
+      bits = 512;
+      padding = KECCAK_PADDING;
+    }
+
+    var block, code, end = false, index = 0, start = 0, length = message.length,
+        n, i, h, l, c0, c1, c2, c3, c4, c5, c6, c7, c8, c9, 
+        b0, b1, b2, b3, b4, b5, b6, b7, b8, b9, b10, b11, b12, b13, b14, b15, b16, b17, 
+        b18, b19, b20, b21, b22, b23, b24, b25, b26, b27, b28, b29, b30, b31, b32, b33, 
+        b34, b35, b36, b37, b38, b39, b40, b41, b42, b43, b44, b45, b46, b47, b48, b49;
+    var blockCount = (1600 - bits * 2) / 32;
+    var byteCount = blockCount * 4;
+
+    for(i = 0;i < 50;++i) {
+      s[i] = 0;
+    }
+
+    block = 0;
+    do {
+      blocks[0] = block;
+      for(i = 1;i < blockCount + 1;++i) {
+        blocks[i] = 0;
+      }
+      if(notString) {
+        for (i = start;index < length && i < byteCount; ++index) {
+          blocks[i >> 2] |= message[index] << SHIFT[i++ & 3];
+        }
+      } else {
+        for (i = start;index < length && i < byteCount; ++index) {
+          code = message.charCodeAt(index);
+          if (code < 0x80) {
+            blocks[i >> 2] |= code << SHIFT[i++ & 3];
+          } else if (code < 0x800) {
+            blocks[i >> 2] |= (0xc0 | (code >> 6)) << SHIFT[i++ & 3];
+            blocks[i >> 2] |= (0x80 | (code & 0x3f)) << SHIFT[i++ & 3];
+          } else if (code < 0xd800 || code >= 0xe000) {
+            blocks[i >> 2] |= (0xe0 | (code >> 12)) << SHIFT[i++ & 3];
+            blocks[i >> 2] |= (0x80 | ((code >> 6) & 0x3f)) << SHIFT[i++ & 3];
+            blocks[i >> 2] |= (0x80 | (code & 0x3f)) << SHIFT[i++ & 3];
+          } else {
+            code = 0x10000 + (((code & 0x3ff) << 10) | (message.charCodeAt(++index) & 0x3ff));
+            blocks[i >> 2] |= (0xf0 | (code >> 18)) << SHIFT[i++ & 3];
+            blocks[i >> 2] |= (0x80 | ((code >> 12) & 0x3f)) << SHIFT[i++ & 3];
+            blocks[i >> 2] |= (0x80 | ((code >> 6) & 0x3f)) << SHIFT[i++ & 3];
+            blocks[i >> 2] |= (0x80 | (code & 0x3f)) << SHIFT[i++ & 3];
+          }
+        }
+      }
+      start = i - byteCount;
+      if(index == length) {
+        blocks[i >> 2] |= padding[i & 3];
+        ++index;
+      }
+      block = blocks[blockCount];
+      if(index > length && i < byteCount) {
+        blocks[blockCount - 1] |= 0x80000000;
+        end = true;
+      }
+
+      for(i = 0;i < blockCount;++i) {
+        s[i] ^= blocks[i];
+      }
+
+      for(n = 0; n < 48; n += 2) {
+        c0 = s[0] ^ s[10] ^ s[20] ^ s[30] ^ s[40];
+        c1 = s[1] ^ s[11] ^ s[21] ^ s[31] ^ s[41];
+        c2 = s[2] ^ s[12] ^ s[22] ^ s[32] ^ s[42];
+        c3 = s[3] ^ s[13] ^ s[23] ^ s[33] ^ s[43];
+        c4 = s[4] ^ s[14] ^ s[24] ^ s[34] ^ s[44];
+        c5 = s[5] ^ s[15] ^ s[25] ^ s[35] ^ s[45];
+        c6 = s[6] ^ s[16] ^ s[26] ^ s[36] ^ s[46];
+        c7 = s[7] ^ s[17] ^ s[27] ^ s[37] ^ s[47];
+        c8 = s[8] ^ s[18] ^ s[28] ^ s[38] ^ s[48];
+        c9 = s[9] ^ s[19] ^ s[29] ^ s[39] ^ s[49];
+
+        h = c8 ^ ((c2 << 1) | (c3 >>> 31));
+        l = c9 ^ ((c3 << 1) | (c2 >>> 31));
+        s[0] ^= h;
+        s[1] ^= l;
+        s[10] ^= h;
+        s[11] ^= l;
+        s[20] ^= h;
+        s[21] ^= l;
+        s[30] ^= h;
+        s[31] ^= l;
+        s[40] ^= h;
+        s[41] ^= l;
+        h = c0 ^ ((c4 << 1) | (c5 >>> 31));
+        l = c1 ^ ((c5 << 1) | (c4 >>> 31));
+        s[2] ^= h;
+        s[3] ^= l;
+        s[12] ^= h;
+        s[13] ^= l;
+        s[22] ^= h;
+        s[23] ^= l;
+        s[32] ^= h;
+        s[33] ^= l;
+        s[42] ^= h;
+        s[43] ^= l;
+        h = c2 ^ ((c6 << 1) | (c7 >>> 31));
+        l = c3 ^ ((c7 << 1) | (c6 >>> 31));
+        s[4] ^= h;
+        s[5] ^= l;
+        s[14] ^= h;
+        s[15] ^= l;
+        s[24] ^= h;
+        s[25] ^= l;
+        s[34] ^= h;
+        s[35] ^= l;
+        s[44] ^= h;
+        s[45] ^= l;
+        h = c4 ^ ((c8 << 1) | (c9 >>> 31));
+        l = c5 ^ ((c9 << 1) | (c8 >>> 31));
+        s[6] ^= h;
+        s[7] ^= l;
+        s[16] ^= h;
+        s[17] ^= l;
+        s[26] ^= h;
+        s[27] ^= l;
+        s[36] ^= h;
+        s[37] ^= l;
+        s[46] ^= h;
+        s[47] ^= l;
+        h = c6 ^ ((c0 << 1) | (c1 >>> 31));
+        l = c7 ^ ((c1 << 1) | (c0 >>> 31));
+        s[8] ^= h;
+        s[9] ^= l;
+        s[18] ^= h;
+        s[19] ^= l;
+        s[28] ^= h;
+        s[29] ^= l;
+        s[38] ^= h;
+        s[39] ^= l;
+        s[48] ^= h;
+        s[49] ^= l;
+
+        b0 = s[0];
+        b1 = s[1];
+        b32 = (s[11] << 4) | (s[10] >>> 28);
+        b33 = (s[10] << 4) | (s[11] >>> 28);
+        b14 = (s[20] << 3) | (s[21] >>> 29);
+        b15 = (s[21] << 3) | (s[20] >>> 29);
+        b46 = (s[31] << 9) | (s[30] >>> 23);
+        b47 = (s[30] << 9) | (s[31] >>> 23);
+        b28 = (s[40] << 18) | (s[41] >>> 14);
+        b29 = (s[41] << 18) | (s[40] >>> 14);
+        b20 = (s[2] << 1) | (s[3] >>> 31);
+        b21 = (s[3] << 1) | (s[2] >>> 31);
+        b2 = (s[13] << 12) | (s[12] >>> 20);
+        b3 = (s[12] << 12) | (s[13] >>> 20);
+        b34 = (s[22] << 10) | (s[23] >>> 22);
+        b35 = (s[23] << 10) | (s[22] >>> 22);
+        b16 = (s[33] << 13) | (s[32] >>> 19);
+        b17 = (s[32] << 13) | (s[33] >>> 19);
+        b48 = (s[42] << 2) | (s[43] >>> 30);
+        b49 = (s[43] << 2) | (s[42] >>> 30);
+        b40 = (s[5] << 30) | (s[4] >>> 2);
+        b41 = (s[4] << 30) | (s[5] >>> 2);
+        b22 = (s[14] << 6) | (s[15] >>> 26);
+        b23 = (s[15] << 6) | (s[14] >>> 26);
+        b4 = (s[25] << 11) | (s[24] >>> 21);
+        b5 = (s[24] << 11) | (s[25] >>> 21);
+        b36 = (s[34] << 15) | (s[35] >>> 17);
+        b37 = (s[35] << 15) | (s[34] >>> 17);
+        b18 = (s[45] << 29) | (s[44] >>> 3);
+        b19 = (s[44] << 29) | (s[45] >>> 3);
+        b10 = (s[6] << 28) | (s[7] >>> 4);
+        b11 = (s[7] << 28) | (s[6] >>> 4);
+        b42 = (s[17] << 23) | (s[16] >>> 9);
+        b43 = (s[16] << 23) | (s[17] >>> 9);
+        b24 = (s[26] << 25) | (s[27] >>> 7);
+        b25 = (s[27] << 25) | (s[26] >>> 7);
+        b6 = (s[36] << 21) | (s[37] >>> 11);
+        b7 = (s[37] << 21) | (s[36] >>> 11);
+        b38 = (s[47] << 24) | (s[46] >>> 8);
+        b39 = (s[46] << 24) | (s[47] >>> 8);
+        b30 = (s[8] << 27) | (s[9] >>> 5);
+        b31 = (s[9] << 27) | (s[8] >>> 5);
+        b12 = (s[18] << 20) | (s[19] >>> 12);
+        b13 = (s[19] << 20) | (s[18] >>> 12);
+        b44 = (s[29] << 7) | (s[28] >>> 25);
+        b45 = (s[28] << 7) | (s[29] >>> 25);
+        b26 = (s[38] << 8) | (s[39] >>> 24);
+        b27 = (s[39] << 8) | (s[38] >>> 24);
+        b8 = (s[48] << 14) | (s[49] >>> 18);
+        b9 = (s[49] << 14) | (s[48] >>> 18);
+
+        s[0] = b0 ^ (~b2 & b4);
+        s[1] = b1 ^ (~b3 & b5);
+        s[10] = b10 ^ (~b12 & b14);
+        s[11] = b11 ^ (~b13 & b15);
+        s[20] = b20 ^ (~b22 & b24);
+        s[21] = b21 ^ (~b23 & b25);
+        s[30] = b30 ^ (~b32 & b34);
+        s[31] = b31 ^ (~b33 & b35);
+        s[40] = b40 ^ (~b42 & b44);
+        s[41] = b41 ^ (~b43 & b45);
+        s[2] = b2 ^ (~b4 & b6);
+        s[3] = b3 ^ (~b5 & b7);
+        s[12] = b12 ^ (~b14 & b16);
+        s[13] = b13 ^ (~b15 & b17);
+        s[22] = b22 ^ (~b24 & b26);
+        s[23] = b23 ^ (~b25 & b27);
+        s[32] = b32 ^ (~b34 & b36);
+        s[33] = b33 ^ (~b35 & b37);
+        s[42] = b42 ^ (~b44 & b46);
+        s[43] = b43 ^ (~b45 & b47);
+        s[4] = b4 ^ (~b6 & b8);
+        s[5] = b5 ^ (~b7 & b9);
+        s[14] = b14 ^ (~b16 & b18);
+        s[15] = b15 ^ (~b17 & b19);
+        s[24] = b24 ^ (~b26 & b28);
+        s[25] = b25 ^ (~b27 & b29);
+        s[34] = b34 ^ (~b36 & b38);
+        s[35] = b35 ^ (~b37 & b39);
+        s[44] = b44 ^ (~b46 & b48);
+        s[45] = b45 ^ (~b47 & b49);
+        s[6] = b6 ^ (~b8 & b0);
+        s[7] = b7 ^ (~b9 & b1);
+        s[16] = b16 ^ (~b18 & b10);
+        s[17] = b17 ^ (~b19 & b11);
+        s[26] = b26 ^ (~b28 & b20);
+        s[27] = b27 ^ (~b29 & b21);
+        s[36] = b36 ^ (~b38 & b30);
+        s[37] = b37 ^ (~b39 & b31);
+        s[46] = b46 ^ (~b48 & b40);
+        s[47] = b47 ^ (~b49 & b41);
+        s[8] = b8 ^ (~b0 & b2);
+        s[9] = b9 ^ (~b1 & b3);
+        s[18] = b18 ^ (~b10 & b12);
+        s[19] = b19 ^ (~b11 & b13);
+        s[28] = b28 ^ (~b20 & b22);
+        s[29] = b29 ^ (~b21 & b23);
+        s[38] = b38 ^ (~b30 & b32);
+        s[39] = b39 ^ (~b31 & b33);
+        s[48] = b48 ^ (~b40 & b42);
+        s[49] = b49 ^ (~b41 & b43);
+
+        s[0] ^= RC[n];
+        s[1] ^= RC[n + 1];
+      }
+    } while(!end);
+
+    var hex = '';
+    if(CHROME) {
+      b0 = s[0];
+      b1 = s[1];
+      b2 = s[2];
+      b3 = s[3];
+      b4 = s[4];
+      b5 = s[5];
+      b6 = s[6];
+      b7 = s[7];
+      b8 = s[8];
+      b9 = s[9];
+      b10 = s[10];
+      b11 = s[11];
+      b12 = s[12];
+      b13 = s[13];
+      b14 = s[14];
+      b15 = s[15];
+      hex += HEX_CHARS[(b0 >> 4) & 0x0F] + HEX_CHARS[b0 & 0x0F] +
+             HEX_CHARS[(b0 >> 12) & 0x0F] + HEX_CHARS[(b0 >> 8) & 0x0F] +
+             HEX_CHARS[(b0 >> 20) & 0x0F] + HEX_CHARS[(b0 >> 16) & 0x0F] +
+             HEX_CHARS[(b0 >> 28) & 0x0F] + HEX_CHARS[(b0 >> 24) & 0x0F] +
+             HEX_CHARS[(b1 >> 4) & 0x0F] + HEX_CHARS[b1 & 0x0F] +
+             HEX_CHARS[(b1 >> 12) & 0x0F] + HEX_CHARS[(b1 >> 8) & 0x0F] +
+             HEX_CHARS[(b1 >> 20) & 0x0F] + HEX_CHARS[(b1 >> 16) & 0x0F] +
+             HEX_CHARS[(b1 >> 28) & 0x0F] + HEX_CHARS[(b1 >> 24) & 0x0F] +
+             HEX_CHARS[(b2 >> 4) & 0x0F] + HEX_CHARS[b2 & 0x0F] +
+             HEX_CHARS[(b2 >> 12) & 0x0F] + HEX_CHARS[(b2 >> 8) & 0x0F] +
+             HEX_CHARS[(b2 >> 20) & 0x0F] + HEX_CHARS[(b2 >> 16) & 0x0F] +
+             HEX_CHARS[(b2 >> 28) & 0x0F] + HEX_CHARS[(b2 >> 24) & 0x0F] +
+             HEX_CHARS[(b3 >> 4) & 0x0F] + HEX_CHARS[b3 & 0x0F] +
+             HEX_CHARS[(b3 >> 12) & 0x0F] + HEX_CHARS[(b3 >> 8) & 0x0F] +
+             HEX_CHARS[(b3 >> 20) & 0x0F] + HEX_CHARS[(b3 >> 16) & 0x0F] +
+             HEX_CHARS[(b3 >> 28) & 0x0F] + HEX_CHARS[(b3 >> 24) & 0x0F] +
+             HEX_CHARS[(b4 >> 4) & 0x0F] + HEX_CHARS[b4 & 0x0F] +
+             HEX_CHARS[(b4 >> 12) & 0x0F] + HEX_CHARS[(b4 >> 8) & 0x0F] +
+             HEX_CHARS[(b4 >> 20) & 0x0F] + HEX_CHARS[(b4 >> 16) & 0x0F] +
+             HEX_CHARS[(b4 >> 28) & 0x0F] + HEX_CHARS[(b4 >> 24) & 0x0F] +
+             HEX_CHARS[(b5 >> 4) & 0x0F] + HEX_CHARS[b5 & 0x0F] +
+             HEX_CHARS[(b5 >> 12) & 0x0F] + HEX_CHARS[(b5 >> 8) & 0x0F] +
+             HEX_CHARS[(b5 >> 20) & 0x0F] + HEX_CHARS[(b5 >> 16) & 0x0F] +
+             HEX_CHARS[(b5 >> 28) & 0x0F] + HEX_CHARS[(b5 >> 24) & 0x0F] +
+             HEX_CHARS[(b6 >> 4) & 0x0F] + HEX_CHARS[b6 & 0x0F] +
+             HEX_CHARS[(b6 >> 12) & 0x0F] + HEX_CHARS[(b6 >> 8) & 0x0F] +
+             HEX_CHARS[(b6 >> 20) & 0x0F] + HEX_CHARS[(b6 >> 16) & 0x0F] +
+             HEX_CHARS[(b6 >> 28) & 0x0F] + HEX_CHARS[(b6 >> 24) & 0x0F];
+
+      if(bits >= 256) {
+        hex += HEX_CHARS[(b7 >> 4) & 0x0F] + HEX_CHARS[b7 & 0x0F] +
+               HEX_CHARS[(b7 >> 12) & 0x0F] + HEX_CHARS[(b7 >> 8) & 0x0F] +
+               HEX_CHARS[(b7 >> 20) & 0x0F] + HEX_CHARS[(b7 >> 16) & 0x0F] +
+               HEX_CHARS[(b7 >> 28) & 0x0F] + HEX_CHARS[(b7 >> 24) & 0x0F];
+      }
+      if(bits >= 384) {
+        hex += HEX_CHARS[(b8 >> 4) & 0x0F] + HEX_CHARS[b8 & 0x0F] +
+               HEX_CHARS[(b8 >> 12) & 0x0F] + HEX_CHARS[(b8 >> 8) & 0x0F] +
+               HEX_CHARS[(b8 >> 20) & 0x0F] + HEX_CHARS[(b8 >> 16) & 0x0F] +
+               HEX_CHARS[(b8 >> 28) & 0x0F] + HEX_CHARS[(b8 >> 24) & 0x0F] +
+               HEX_CHARS[(b9 >> 4) & 0x0F] + HEX_CHARS[b9 & 0x0F] +
+               HEX_CHARS[(b9 >> 12) & 0x0F] + HEX_CHARS[(b9 >> 8) & 0x0F] +
+               HEX_CHARS[(b9 >> 20) & 0x0F] + HEX_CHARS[(b9 >> 16) & 0x0F] +
+               HEX_CHARS[(b9 >> 28) & 0x0F] + HEX_CHARS[(b9 >> 24) & 0x0F] +
+               HEX_CHARS[(b10 >> 4) & 0x0F] + HEX_CHARS[b10 & 0x0F] +
+               HEX_CHARS[(b10 >> 12) & 0x0F] + HEX_CHARS[(b10 >> 8) & 0x0F] +
+               HEX_CHARS[(b10 >> 20) & 0x0F] + HEX_CHARS[(b10 >> 16) & 0x0F] +
+               HEX_CHARS[(b10 >> 28) & 0x0F] + HEX_CHARS[(b10 >> 24) & 0x0F] +
+               HEX_CHARS[(b11 >> 4) & 0x0F] + HEX_CHARS[b11 & 0x0F] +
+               HEX_CHARS[(b11 >> 12) & 0x0F] + HEX_CHARS[(b11 >> 8) & 0x0F] +
+               HEX_CHARS[(b11 >> 20) & 0x0F] + HEX_CHARS[(b11 >> 16) & 0x0F] +
+               HEX_CHARS[(b11 >> 28) & 0x0F] + HEX_CHARS[(b11 >> 24) & 0x0F];
+      }
+      if(bits == 512) {
+        hex += HEX_CHARS[(b12 >> 4) & 0x0F] + HEX_CHARS[b12 & 0x0F] +
+               HEX_CHARS[(b12 >> 12) & 0x0F] + HEX_CHARS[(b12 >> 8) & 0x0F] +
+               HEX_CHARS[(b12 >> 20) & 0x0F] + HEX_CHARS[(b12 >> 16) & 0x0F] +
+               HEX_CHARS[(b12 >> 28) & 0x0F] + HEX_CHARS[(b12 >> 24) & 0x0F] +
+               HEX_CHARS[(b13 >> 4) & 0x0F] + HEX_CHARS[b13 & 0x0F] +
+               HEX_CHARS[(b13 >> 12) & 0x0F] + HEX_CHARS[(b13 >> 8) & 0x0F] +
+               HEX_CHARS[(b13 >> 20) & 0x0F] + HEX_CHARS[(b13 >> 16) & 0x0F] +
+               HEX_CHARS[(b13 >> 28) & 0x0F] + HEX_CHARS[(b13 >> 24) & 0x0F] +
+               HEX_CHARS[(b14 >> 4) & 0x0F] + HEX_CHARS[b14 & 0x0F] +
+               HEX_CHARS[(b14 >> 12) & 0x0F] + HEX_CHARS[(b14 >> 8) & 0x0F] +
+               HEX_CHARS[(b14 >> 20) & 0x0F] + HEX_CHARS[(b14 >> 16) & 0x0F] +
+               HEX_CHARS[(b14 >> 28) & 0x0F] + HEX_CHARS[(b14 >> 24) & 0x0F] +
+               HEX_CHARS[(b15 >> 4) & 0x0F] + HEX_CHARS[b15 & 0x0F] +
+               HEX_CHARS[(b15 >> 12) & 0x0F] + HEX_CHARS[(b15 >> 8) & 0x0F] +
+               HEX_CHARS[(b15 >> 20) & 0x0F] + HEX_CHARS[(b15 >> 16) & 0x0F] +
+               HEX_CHARS[(b15 >> 28) & 0x0F] + HEX_CHARS[(b15 >> 24) & 0x0F];
+      }
+    } else {
+      for(i = 0, n = bits / 32;i < n;++i) {
+        h = s[i];
+        hex += HEX_CHARS[(h >> 4) & 0x0F] + HEX_CHARS[h & 0x0F] +
+               HEX_CHARS[(h >> 12) & 0x0F] + HEX_CHARS[(h >> 8) & 0x0F] +
+               HEX_CHARS[(h >> 20) & 0x0F] + HEX_CHARS[(h >> 16) & 0x0F] +
+               HEX_CHARS[(h >> 28) & 0x0F] + HEX_CHARS[(h >> 24) & 0x0F];
+      }
+    }
+    return hex;
+  };
+  
+  if(!root.JS_SHA3_TEST && NODE_JS) {
+    module.exports = {
+      sha3_512: sha3_512,
+      sha3_384: sha3_384,
+      sha3_256: sha3_256,
+      sha3_224: sha3_224,
+      keccak_512: keccak,
+      keccak_384: keccak_384,
+      keccak_256: keccak_256,
+      keccak_224: keccak_224
+    };
+  } else if(root) {
+    root.sha3_512 = sha3_512;
+    root.sha3_384 = sha3_384;
+    root.sha3_256 = sha3_256;
+    root.sha3_224 = sha3_224;
+    root.keccak_512 = keccak;
+    root.keccak_384 = keccak_384;
+    root.keccak_256 = keccak_256;
+    root.keccak_224 = keccak_224;
+  }
+}(this));
+
+}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+},{}],35:[function(require,module,exports){
+arguments[4][6][0].apply(exports,arguments)
+},{"../package.json":59,"./elliptic/curve":38,"./elliptic/curves":41,"./elliptic/ec":42,"./elliptic/eddsa":45,"./elliptic/hmac-drbg":48,"./elliptic/utils":50,"brorand":51,"dup":6}],36:[function(require,module,exports){
+arguments[4][7][0].apply(exports,arguments)
+},{"../../elliptic":35,"bn.js":32,"dup":7}],37:[function(require,module,exports){
+arguments[4][8][0].apply(exports,arguments)
+},{"../../elliptic":35,"../curve":38,"bn.js":32,"dup":8,"inherits":58}],38:[function(require,module,exports){
+arguments[4][9][0].apply(exports,arguments)
+},{"./base":36,"./edwards":37,"./mont":39,"./short":40,"dup":9}],39:[function(require,module,exports){
+arguments[4][10][0].apply(exports,arguments)
+},{"../../elliptic":35,"../curve":38,"bn.js":32,"dup":10,"inherits":58}],40:[function(require,module,exports){
+arguments[4][11][0].apply(exports,arguments)
+},{"../../elliptic":35,"../curve":38,"bn.js":32,"dup":11,"inherits":58}],41:[function(require,module,exports){
+arguments[4][12][0].apply(exports,arguments)
+},{"../elliptic":35,"./precomputed/secp256k1":49,"dup":12,"hash.js":52}],42:[function(require,module,exports){
+arguments[4][13][0].apply(exports,arguments)
+},{"../../elliptic":35,"./key":43,"./signature":44,"bn.js":32,"dup":13}],43:[function(require,module,exports){
+arguments[4][14][0].apply(exports,arguments)
+},{"bn.js":32,"dup":14}],44:[function(require,module,exports){
+arguments[4][15][0].apply(exports,arguments)
+},{"../../elliptic":35,"bn.js":32,"dup":15}],45:[function(require,module,exports){
+arguments[4][16][0].apply(exports,arguments)
+},{"../../elliptic":35,"./key":46,"./signature":47,"dup":16,"hash.js":52}],46:[function(require,module,exports){
+arguments[4][17][0].apply(exports,arguments)
+},{"../../elliptic":35,"dup":17}],47:[function(require,module,exports){
+arguments[4][18][0].apply(exports,arguments)
+},{"../../elliptic":35,"bn.js":32,"dup":18}],48:[function(require,module,exports){
+arguments[4][19][0].apply(exports,arguments)
+},{"../elliptic":35,"dup":19,"hash.js":52}],49:[function(require,module,exports){
+arguments[4][20][0].apply(exports,arguments)
+},{"dup":20}],50:[function(require,module,exports){
+arguments[4][21][0].apply(exports,arguments)
+},{"bn.js":32,"dup":21}],51:[function(require,module,exports){
+arguments[4][22][0].apply(exports,arguments)
+},{"dup":22}],52:[function(require,module,exports){
+arguments[4][23][0].apply(exports,arguments)
+},{"./hash/common":53,"./hash/hmac":54,"./hash/ripemd":55,"./hash/sha":56,"./hash/utils":57,"dup":23}],53:[function(require,module,exports){
+arguments[4][24][0].apply(exports,arguments)
+},{"../hash":52,"dup":24}],54:[function(require,module,exports){
+arguments[4][25][0].apply(exports,arguments)
+},{"../hash":52,"dup":25}],55:[function(require,module,exports){
+arguments[4][26][0].apply(exports,arguments)
+},{"../hash":52,"dup":26}],56:[function(require,module,exports){
+arguments[4][27][0].apply(exports,arguments)
+},{"../hash":52,"dup":27}],57:[function(require,module,exports){
+arguments[4][28][0].apply(exports,arguments)
+},{"dup":28,"inherits":58}],58:[function(require,module,exports){
+arguments[4][29][0].apply(exports,arguments)
+},{"dup":29}],59:[function(require,module,exports){
+arguments[4][30][0].apply(exports,arguments)
+},{"dup":30}],60:[function(require,module,exports){
 (function (Buffer){
 const assert = require('assert')
 
@@ -8870,215 +9131,7 @@ function toBuffer (input) {
 }
 
 }).call(this,require("buffer").Buffer)
-},{"assert":61,"buffer":62}],34:[function(require,module,exports){
-(function (Buffer){
-const EC = require('elliptic').ec
-const ec = new EC('secp256k1')
-const BN = require('bn.js')
-
-function pad32(msg) {
-  var buf
-  if (msg.length < 32) {
-    buf = new Buffer(32)
-    buf.fill(0)
-    msg.copy(buf, 32 - msg.length)
-    return buf
-  } else
-    return msg
-}
-
-function parseSig(sig) {
-  var recid;
-  if (sig.signature) {
-    recid = sig.recovery
-    sig = sig.signature
-  }
-
-  if (sig.length === 64)
-    sig = {
-      r: sig.slice(0, 32),
-      s: sig.slice(32, 64)
-    }
-
-  return {
-    sig: sig,
-    recid: recid
-  }
-}
-
-/**
- * Create an ECDSA signature.
- * @method sign
- * @param  {Buffer} secretkey a 32-byte secret key (assumed to be valid)
- * @param {Buffer} msg he message being signed
- */
-exports.sign = function (msg, secretKey, DER, cb) {
-
-  if (typeof DER === 'function') {
-    cb = DER
-    DER = false
-  }
-
-  var result = ec.sign(new BN(msg), new BN(secretKey))
-
-  if (DER)
-    result = new Buffer(result.toDER())
-  else {
-    result = {
-      signature: new Buffer(result.r.toArray().concat(result.s.toArray())),
-      recovery: result.recoveryParam
-    }
-  }
-
-  if (cb)
-    cb(null, result)
-  else
-    return result
-}
-
-/**
- * Verify an ECDSA signature.
- * @method verify
- * @param {Buffer} mgs the message
- * @param {Buffer|Object} sig the signature
- * @param {Buffer} pubKey the public key
- * @return {Integer}
- *
- *    - 1: correct signature
- *    - 0: incorrect signature
- */
-exports.verify = function (msg, sig, pubKey, cb) {
-
-  sig = parseSig(sig)
-  var key = ec.keyFromPublic(pubKey)
-  var result
-
-  try {
-    result = ec.verify(new BN(msg), sig.sig, key)
-  } catch (e) {
-    result = false
-  }
-  if (cb)
-    cb(result)
-  else
-    return result
-}
-
-/**
- * Recover an ECDSA public key from a compact signature. In the process also verifing it.
- * @method recoverCompact
- * @param {Buffer} msg the message assumed to be signed
- * @param {Buffer} sig the signature as 64 byte buffer
- * @param {Integer} recid the recovery id (as returned by ecdsa_sign_compact)
- * @param {Boolean} compressed whether to recover a compressed or uncompressed pubkey
- * @param {Function} [cb]
- * @return {Buffer} the pubkey, a 33 or 65 byte buffer
- */
-exports.recover = function (msg, sig, compressed, cb) {
-
-  if (typeof compressed === 'function') {
-    cb = compressed
-    compressed = true
-  }
-
-  if (compressed === undefined) {
-    compressed = true
-  }
-
-  sig = parseSig(sig)
-  var r = ec.recoverPubKey(new BN(msg), sig.sig, sig.recid, 'hex')
-
-  if (compressed)
-    r = r.encodeCompressed()
-  else
-    r = r.encode()
-
-  r = new Buffer(r)
-
-  if (cb)
-    cb(null, r)
-  else
-    return r
-}
-
-/**
- * Compute the public key from a secret key.
- * @method createPubKey
- * @param {Buffer} secKey a 32-byte private key.
- * @param {Boolean} [compressed=0] whether the computed public key should be compressed
- * @return {Buffer} a 33-byte (if compressed) or 65-byte (if uncompressed) area to store the public key.
- */
-exports.createPublicKey = function (secKey, compressed) {
-  if (!secKey)
-    throw new Error('invalid private key')
-
-  const key = ec.keyFromPrivate(secKey)
-  const pub = key.getPublic()
-
-  if (compressed === undefined) {
-    compressed = true
-  }
-
-  if (compressed)
-    return new Buffer(pub.encodeCompressed())
-  else
-    return new Buffer(pub.encode())
-}
-
-}).call(this,require("buffer").Buffer)
-},{"bn.js":35,"buffer":62,"elliptic":36}],35:[function(require,module,exports){
-arguments[4][5][0].apply(exports,arguments)
-},{"dup":5}],36:[function(require,module,exports){
-arguments[4][8][0].apply(exports,arguments)
-},{"../package.json":60,"./elliptic/curve":39,"./elliptic/curves":42,"./elliptic/ec":43,"./elliptic/eddsa":46,"./elliptic/hmac-drbg":49,"./elliptic/utils":51,"brorand":52,"dup":8}],37:[function(require,module,exports){
-arguments[4][9][0].apply(exports,arguments)
-},{"../../elliptic":36,"bn.js":35,"dup":9}],38:[function(require,module,exports){
-arguments[4][10][0].apply(exports,arguments)
-},{"../../elliptic":36,"../curve":39,"bn.js":35,"dup":10,"inherits":59}],39:[function(require,module,exports){
-arguments[4][11][0].apply(exports,arguments)
-},{"./base":37,"./edwards":38,"./mont":40,"./short":41,"dup":11}],40:[function(require,module,exports){
-arguments[4][12][0].apply(exports,arguments)
-},{"../../elliptic":36,"../curve":39,"bn.js":35,"dup":12,"inherits":59}],41:[function(require,module,exports){
-arguments[4][13][0].apply(exports,arguments)
-},{"../../elliptic":36,"../curve":39,"bn.js":35,"dup":13,"inherits":59}],42:[function(require,module,exports){
-arguments[4][14][0].apply(exports,arguments)
-},{"../elliptic":36,"./precomputed/secp256k1":50,"dup":14,"hash.js":53}],43:[function(require,module,exports){
-arguments[4][15][0].apply(exports,arguments)
-},{"../../elliptic":36,"./key":44,"./signature":45,"bn.js":35,"dup":15}],44:[function(require,module,exports){
-arguments[4][16][0].apply(exports,arguments)
-},{"bn.js":35,"dup":16}],45:[function(require,module,exports){
-arguments[4][17][0].apply(exports,arguments)
-},{"../../elliptic":36,"bn.js":35,"dup":17}],46:[function(require,module,exports){
-arguments[4][18][0].apply(exports,arguments)
-},{"../../elliptic":36,"./key":47,"./signature":48,"dup":18,"hash.js":53}],47:[function(require,module,exports){
-arguments[4][19][0].apply(exports,arguments)
-},{"../../elliptic":36,"dup":19}],48:[function(require,module,exports){
-arguments[4][20][0].apply(exports,arguments)
-},{"../../elliptic":36,"bn.js":35,"dup":20}],49:[function(require,module,exports){
-arguments[4][21][0].apply(exports,arguments)
-},{"../elliptic":36,"dup":21,"hash.js":53}],50:[function(require,module,exports){
-arguments[4][22][0].apply(exports,arguments)
-},{"dup":22}],51:[function(require,module,exports){
-arguments[4][23][0].apply(exports,arguments)
-},{"bn.js":35,"dup":23}],52:[function(require,module,exports){
-arguments[4][24][0].apply(exports,arguments)
-},{"dup":24}],53:[function(require,module,exports){
-arguments[4][25][0].apply(exports,arguments)
-},{"./hash/common":54,"./hash/hmac":55,"./hash/ripemd":56,"./hash/sha":57,"./hash/utils":58,"dup":25}],54:[function(require,module,exports){
-arguments[4][26][0].apply(exports,arguments)
-},{"../hash":53,"dup":26}],55:[function(require,module,exports){
-arguments[4][27][0].apply(exports,arguments)
-},{"../hash":53,"dup":27}],56:[function(require,module,exports){
-arguments[4][28][0].apply(exports,arguments)
-},{"../hash":53,"dup":28}],57:[function(require,module,exports){
-arguments[4][29][0].apply(exports,arguments)
-},{"../hash":53,"dup":29}],58:[function(require,module,exports){
-arguments[4][30][0].apply(exports,arguments)
-},{"dup":30,"inherits":59}],59:[function(require,module,exports){
-arguments[4][31][0].apply(exports,arguments)
-},{"dup":31}],60:[function(require,module,exports){
-arguments[4][32][0].apply(exports,arguments)
-},{"dup":32}],61:[function(require,module,exports){
+},{"assert":61,"buffer":62}],61:[function(require,module,exports){
 // http://wiki.commonjs.org/wiki/Unit_Testing/1.0
 //
 // THIS IS NOT TESTED NOR LIKELY TO WORK OUTSIDE V8!
@@ -11126,8 +11179,8 @@ module.exports = isArray || function (val) {
 };
 
 },{}],66:[function(require,module,exports){
-arguments[4][31][0].apply(exports,arguments)
-},{"dup":31}],67:[function(require,module,exports){
+arguments[4][29][0].apply(exports,arguments)
+},{"dup":29}],67:[function(require,module,exports){
 // shim for using process in browser
 
 var process = module.exports = {};
