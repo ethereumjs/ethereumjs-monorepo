@@ -91,9 +91,12 @@ Account.prototype.getStorage = function(trie, key, cb) {
 }
 
 Account.prototype.setStorage = function(trie, key, val, cb) {
+  var self = this
   var t = trie.copy()
-  t.root = this.stateroot
-  t.set(key, val, cb)
+  t.root = self.stateroot
+  t.put(key, val, function() {
+    self.stateroot = t.root
+  })
 }
 
 Account.prototype.isEmpty = function() {
