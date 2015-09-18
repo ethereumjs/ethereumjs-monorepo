@@ -1,4 +1,7 @@
-# SYNOPSIS  [![Build Status](https://travis-ci.org/ethereum/ethereumjs-block.svg?branch=master)](https://travis-ci.org/ethereum/ethereumjs-block)
+# SYNOPSIS  
+
+[![js-standard-style](https://cdn.rawgit.com/feross/standard/master/badge.svg)](https://github.com/feross/standard) [![Build Status](https://travis-ci.org/ethereum/ethereumjs-block.svg?branch=master)](https://travis-ci.org/ethereum/ethereumjs-block)
+
 Implements schema and functions related to Etheruem's block. 
 
 # INSTALL
