@@ -62,7 +62,11 @@ module.exports = function runBlockchainTest (options, testData, t, cb) {
       })
     },
     function (done) {
-      testUtil.verifyPostConditions(state, testData.postState, t, done)
+      if (options.debugging) {
+        testUtil.verifyPostConditions(state, testData.postState, t, done)
+      } else {
+        done()
+      }
     }
   ], function () {
     t.equal(blockchain.meta.rawHead.toString('hex'), testData.lastblockhash, 'correct header block')
