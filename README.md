@@ -76,7 +76,7 @@ interpets a `Buffer` as a signed `Integer`
 **Return:** [`BN.js`](https://github.com/indutny/bn.js)
 
 ### `toUnsigned(num)`
-Converts a [`BN.js`](https://github.com/indutny/bn.js) to an unsigned interger 
+Converts a [`BN.js`](https://github.com/indutny/bn.js) to an unsigned interger   
 **Parameters**   
 - `num` - a [`BN.js`](https://github.com/indutny/bn.js)  
 
