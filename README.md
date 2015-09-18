@@ -10,7 +10,7 @@ Implements schema and functions related to Etheruem's block.
 # BOWSER  
 This module work with `browserify`
 # CONTACT
- [Scrollback](https://scrollback.io/ethereumjs/all/all-messages) or #ethereumjs on freenode
+ [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/ethereum/ethereumjs-lib?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge) or #ethereumjs on freenode
 
 # API
 - [`Block`](#block)
