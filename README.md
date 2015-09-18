@@ -25,16 +25,16 @@ Returns buffer filled with 0's
 **Return:** `buffer`
 
 ### `pad(val, length)`
-pads an `array` or `buffer` with leading zeros till it has `length` bytes
+pads an `array` or `buffer` with leading zeros till it has `length` bytes  
 **Parameters** 
 - `val`  - the value to pad
 - `length` - the of the resulting value
 **Return:** `array` or `buffer`
 
 ### `unpad(val)`
-Trims leading zeros from a buffer or an array
+Trims leading zeros from a buffer or an array  
 **Parameters** 
-- `val` - a `buffer` or and `Array` to unpad
+- `val` - a `buffer` or and `Array` to unpad  
 **Return:** `buffer` or and `Array`
 
 ### `toBufer(val)`
@@ -44,106 +44,108 @@ Attemps to turn a value into a Buffer
 **Return:** `Buffer`
 
 ### `intToHex(int)`
-Converts an `Integer` into a hex `String`
+Converts an `Integer` into a hex `String`  
 **Parameters** 
-- `int`
+- `int`  
 **Return:** `String`
 
 ### `intToBuffer(int)`
-Converts an `Integer` to a `Buffer`
+Converts an `Integer` to a `Buffer`  
 **Parameters** 
-- `int`
+- `int`  
 **Return:** `Buffer`
 
 ### `bufferToInt(buf)`
-converts a `Buffer` to an `Interger`
+converts a `Buffer` to an `Interger`  
 **Parameters** 
-- `buf`
+- `buf`  
 **Return:** `Interger`
 
 ### `fromSigned(buf)`
-interpets a `Buffer` as a signed `Integer`
+interpets a `Buffer` as a signed `Integer`  
 **Parameters** 
-- `buf`
+- `buf`  
 **Return:** [`BN.js`](https://github.com/indutny/bn.js)
 
 ### `toUnsigned(num)`
 Converts a [`BN.js`](https://github.com/indutny/bn.js) to an unsigned interger 
-**Parameters** 
-- `num` - a [`BN.js`](https://github.com/indutny/bn.js)
+**Parameters**   
+- `num` - a [`BN.js`](https://github.com/indutny/bn.js)  
 **Return:** `buffer`
 
 ### `publicToAddress(pubKey)`
 Returns the ethereum address of a given public key
-**Parameters** 
-- `pubKey` - the public key as a `buffer`
+**Parameters**  
+- `pubKey` - the public key as a `buffer`  
 **Return:** : `buffer`
 
 ### `privateToAddress(privateKey)`
-Returns the ethereum address of a given private key
-- `privateKey` - the private key as a `buffer`
+Returns the ethereum address of a given private key  
+**Parameters**  
+- `privateKey` - the private key as a `buffer`  
 **Return:** `Buffer`
 
 ### `privateToPublic(privateKey)`
-Returns the ethereum public key of a given private key
-**Parameters** 
+Returns the ethereum public key of a given private key  
+**Parameters**  
 - `privateKey` - the private key as a `buffer`
 **Return:** `Buffer`
 
 ### `generateAddress(from, nonce)` 
 Generates an address of a newly created contract. Don't forget to incerment the nonce to get the correct address.
-**Parameters** 
+**Parameters**  
 - `from` - the address of the account creating the contract
-- `nonce` - the creating accounts nonce
-
-
-### `sha3(a, bytes)`  
-Returns a sha3 of `a` of the length of `bytes`
-**Parameters** 
-- `a` the value to hash
-- `bytes` how many bytes the hash should be
+- `nonce` - the creating accounts nonce  
 **Return:** `Buffer`
 
-### `printBA(ba)`
-Print a Buffer Array
+### `sha3(a, bytes)`  
+Returns a sha3 of `a` of the length of `bytes`  
 **Parameters** 
-- `ba` - an `Array` of `Buffers`
+- `a` the value to hash
+- `bytes` how many bytes the hash should be  
+**Return:** `Buffer`  
+
+### `printBA(ba)`
+Print a Buffer Array  
+**Parameters**   
+- `ba` - an `Array` of `Buffers`  
 **Return:** a Buffer Array
 
 ### `baToJSON(ba)`
-converts a buffer array to JSON
+converts a buffer array to JSON  
 **Parameters** 
-- `ba` - an `Array` of `Buffers`
+- `ba` - an `Array` of `Buffers`  
 **Return:** a JSON Object
 
 ### `isHexPrefixed(String)`
-Returns a Boolean on whether or not the a sting starts with `0x`
+Returns a Boolean on whether or not the a sting starts with `0x`  
 **Parameters** 
-- String - a `String` 
+- String - a `String`   
 **Return:** `String` 
 
 ### `stripHexPrefix(String)`
-Removes `0x` from a given String
+Removes `0x` from a given String  
 **Parameters** 
-- String - a `String` 
+- String - a `String`   
 **Return:** `String`
 
 ### `addHexPrefix(String)`
-Adds `0x` to a given string if it does not already start with `0x`
-**Parameters** 
-**Return:** 
+Adds `0x` to a given string if it does not already start with `0x`  
+**Parameters**   
+- `string`  
+**Return:** `string`
 
 ### `defineProperties(self, fields)`
 defines properties on a `Object`
-**Parameters** 
+**Parameters**   
 - `self` - the `Object` to define properties on
 - `fields` - an array fields to define
 
 ### `validate(fields, data)`
 Validate defined fields
-**Parameters** 
+**Parameters**   
 - `fields`
-- `data`
+- `data`  
 **Return:** `Boolean`
 
 # TESTING
