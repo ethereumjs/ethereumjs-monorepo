@@ -2,7 +2,7 @@
 A module to store and interact with blocks.
 
 # CONTACT
- [Scrollback](https://scrollback.io/ethereumjs/all/all-messages) or #ethereumjs on freenode
+ [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/ethereum/ethereumjs-lib?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge) or #ethereumjs on freenode
 
 # INSTALL
 `npm install ethereumjs-blockchain`
