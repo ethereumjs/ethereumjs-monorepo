@@ -4,7 +4,7 @@
 A collection of utility functions for ethereum. It can be used in node.js or can be in the browser with browserify.
 
 # CONTACT
- [Scrollback](https://scrollback.io/ethereumjs/all/all-messages) or #ethereumjs on freenode
+ [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/ethereum/ethereumjs-lib?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge) or #ethereumjs on freenode
 
 # API
 ## properties
