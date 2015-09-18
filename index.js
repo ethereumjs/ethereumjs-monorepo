@@ -13,27 +13,28 @@ const params = require('ethereum-common')
  * @constructor
  * @param {Array} data raw data, deserialized
  */
-var Block = module.exports = function(data) {
-
+var Block = module.exports = function (data) {
   this.transactions = []
   this.uncleHeaders = []
   this._inBlockChain = false
   this.txTrie = new Trie()
 
   Object.defineProperty(this, 'raw', {
-    get: function() {
+    get: function () {
       return this.serialize(false)
     }
   })
 
   var rawTransactions, rawUncleHeaders
 
-  //defaults
-  if (!data)
+  // defaults
+  if (!data) {
     data = [[], [], []]
+  }
 
-  if (Buffer.isBuffer(data))
+  if (Buffer.isBuffer(data)) {
     data = rlp.decode(data)
+  }
 
   if (Array.isArray(data)) {
     this.header = new BlockHeader(data[0])
@@ -45,21 +46,22 @@ var Block = module.exports = function(data) {
     rawUncleHeaders = data.uncleHeaders
   }
 
-  //parse uncle headers
-  for (var i = 0; i < rawUncleHeaders.length; i++) 
+  // parse uncle headers
+  for (var i = 0; i < rawUncleHeaders.length; i++) {
     this.uncleHeaders.push(new BlockHeader(rawUncleHeaders[i]))
+  }
 
-  //parse transactions
+  // parse transactions
   for (i = 0; i < rawTransactions.length; i++) {
     this.transactions.push(new Tx(rawTransactions[i]))
   }
-};
+}
 
 /**
  * Produces a hash the RLP of the block
  * @method hash
  */
-Block.prototype.hash = function() {
+Block.prototype.hash = function () {
   return this.header.hash()
 }
 
@@ -68,12 +70,12 @@ Block.prototype.hash = function() {
  * @method isGenisis
  * @return Boolean
  */
-Block.prototype.isGenesis = function(){
+Block.prototype.isGenesis = function () {
   return this.header.isGenesis()
 }
 
-Block.prototype.setGenesisParams = function(){
-  this.header.gasLimit =  params.genesisGasLimit.v
+Block.prototype.setGenesisParams = function () {
+  this.header.gasLimit = params.genesisGasLimit.v
   this.header.difficulty = params.genesisDifficulty.v
   this.header.extraData = params.genesisExtraData.v
   this.header.nonce = params.genesisNonce.v
@@ -85,20 +87,21 @@ Block.prototype.setGenesisParams = function(){
  * @method serialize
  * @param {Boolean} rlpEncode whether to rlp encode the block or not
  */
-Block.prototype.serialize = function(rlpEncode) {
+Block.prototype.serialize = function (rlpEncode) {
   var raw = [this.header.raw, [],
     []
   ]
 
-  //rlpEnode defaults to true
-  if (typeof rlpEncode === 'undefined')
+  // rlpEnode defaults to true
+  if (typeof rlpEncode === 'undefined') {
     rlpEncode = true
+  }
 
-  this.transactions.forEach(function(tx) {
+  this.transactions.forEach(function (tx) {
     raw[1].push(tx.raw)
   })
 
-  this.uncleHeaders.forEach(function(uncle) {
+  this.uncleHeaders.forEach(function (uncle) {
     raw[2].push(uncle.raw)
   })
 
@@ -111,11 +114,11 @@ Block.prototype.serialize = function(rlpEncode) {
  * @method genTxTrie
  * @param {Function} cb
  */
-Block.prototype.genTxTrie = function(cb) {
-  var i = 0,
-    self = this
+Block.prototype.genTxTrie = function (cb) {
+  var i = 0
+  var self = this
 
-  async.eachSeries(this.transactions, function(tx, done) {
+  async.eachSeries(this.transactions, function (tx, done) {
     self.txTrie.put(rlp.encode(i), tx.serialize(), done)
     i++
   }, cb)
@@ -126,12 +129,13 @@ Block.prototype.genTxTrie = function(cb) {
  * @method validateTransactionTrie
  * @return {Boolean}
  */
-Block.prototype.validateTransactionsTrie = function() {
+Block.prototype.validateTransactionsTrie = function () {
   var txT = this.header.transactionsTrie.toString('hex')
-  if (this.transactions.length)
+  if (this.transactions.length) {
     return txT === this.txTrie.root.toString('hex')
-  else
+  } else {
     return txT === ethUtil.SHA3_RLP
+  }
 }
 
 /**
@@ -139,9 +143,9 @@ Block.prototype.validateTransactionsTrie = function() {
  * @method validateTransactions
  * @return {Boolean}
  */
-Block.prototype.validateTransactions = function() {
+Block.prototype.validateTransactions = function () {
   var validTxs = true
-  this.transactions.forEach(function(tx) {
+  this.transactions.forEach(function (tx) {
     validTxs &= tx.validate()
   })
   return validTxs
@@ -153,71 +157,76 @@ Block.prototype.validateTransactions = function() {
  * @param {BlockChain} blockChain the blockchain that this block wants to be part of
  * @param {Function} cb the callback which is given a `String` if the block is not valid
  */
-Block.prototype.validate = function(blockChain, cb) {
+Block.prototype.validate = function (blockChain, cb) {
   var self = this
 
   async.parallel([
-    //validate uncles
+    // validate uncles
     self.validateUncles.bind(self, blockChain),
-    //validate block
+    // validate block
     self.header.validate.bind(self.header, blockChain),
-    //generate the transaction trie
+    // generate the transaction trie
     self.genTxTrie.bind(self)
-  ], function(err) {
+  ], function (err) {
+    if (!err) {
+      if (!self.validateTransactionsTrie()) {
+        err = 'invalid transaction true'
+      }
 
-    if(!err){
-      if(!self.validateTransactionsTrie())
-        err  = 'invalid transaction true'
-
-      if(!self.validateTransactions())
+      if (!self.validateTransactions()) {
         err = 'invalid transaction'
+      }
 
-      if(!self.validateUnclesHash())
+      if (!self.validateUnclesHash()) {
         err = 'invild uncle hash'
-    } 
+      }
+    }
 
-    if(!err)
+    if (!err) {
       self.parentBlock = self.header.parentBlock
+    }
 
     cb(err)
   })
 }
 
-Block.prototype.validateUnclesHash = function(){
+Block.prototype.validateUnclesHash = function () {
   var raw = []
-  this.uncleHeaders.forEach(function(uncle) {
-     raw.push(uncle.raw)
+  this.uncleHeaders.forEach(function (uncle) {
+    raw.push(uncle.raw)
   })
 
   raw = rlp.encode(raw)
   return ethUtil.sha3(raw).toString('hex') === this.header.uncleHash.toString('hex')
 }
 
-Block.prototype.validateUncles = function(blockChain, cb) {
-
-  if(this.isGenesis())
+Block.prototype.validateUncles = function (blockChain, cb) {
+  if (this.isGenesis()) {
     return cb()
+  }
 
   var self = this
 
-  if(self.uncleHeaders.length > 2)
+  if (self.uncleHeaders.length > 2) {
     return cb('too many uncle headers')
+  }
 
-  var uncleHashes = self.uncleHeaders.map(function(header){
+  var uncleHashes = self.uncleHeaders.map(function (header) {
     return header.hash().toString('hex')
   })
 
-  if(!((new Set(uncleHashes)).size === uncleHashes.length))
+  if (!((new Set(uncleHashes)).size === uncleHashes.length)) {
     return cb('dublicate unlces')
+  }
 
-  async.each(self.uncleHeaders, function(uncle, cb2) {
+  async.each(self.uncleHeaders, function (uncle, cb2) {
     var height = new BN(self.header.number)
     async.parallel([
       uncle.validate.bind(uncle, blockChain, height),
-      //check to make sure the uncle is not already in the blockchain
-      function(cb3) {
-        blockChain.getDetails(uncle.hash(), function(err, blockInfo) {
-          //TODO: remove uncles from BC
+      // check to make sure the uncle is not already in the blockchain
+      function (cb3) {
+        blockChain.getDetails(uncle.hash(), function (err, blockInfo) {
+          // TODO: remove uncles from BC
           if (blockInfo && blockInfo.isUncle) {
             cb3(err || 'uncle already included')
           } else {
@@ -234,7 +243,7 @@ Block.prototype.validateUncles = function(blockChain, cb) {
  * @method toJSON
  * @param {Bool} array whether to create a object or an array
  */
-Block.prototype.toJSON = function(labeled) {
+Block.prototype.toJSON = function (labeled) {
   if (labeled) {
     var obj = {
       header: this.header.toJSON(true),
@@ -242,16 +251,14 @@ Block.prototype.toJSON = function(labeled) {
       uncleHeaders: []
     }
 
-    this.transactions.forEach(function(tx) {
+    this.transactions.forEach(function (tx) {
       obj.transactions.push(tx.toJSON(labeled))
     })
 
-    this.uncleHeaders.forEach(function(uh) {
+    this.uncleHeaders.forEach(function (uh) {
       obj.uncleHeaders.push(uh.toJSON())
     })
-
     return obj
-
   } else {
     return ethUtil.baToJSON(this.raw)
   }

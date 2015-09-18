@@ -1,12 +1,9 @@
 const genesisData = require('ethereumjs-testing').tests.basicTests.genesishashestest
 const tape = require('tape')
 const Block = require('../')
-const VM = require('../')
 
-var vm = new VM()
-
-tape('[Common]: genesis hashes tests', function(t) {
-  t.test('should generete the genesis correctly', function(st) {
+tape('[Common]: genesis hashes tests', function (t) {
+  t.test('should generete the genesis correctly', function (st) {
     var blockGenesis = new Block()
     blockGenesis.setGenesisParams()
     var rlpGenesis = blockGenesis.serialize()
