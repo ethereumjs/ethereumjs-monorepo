@@ -83,7 +83,7 @@ Converts a [`BN.js`](https://github.com/indutny/bn.js) to an unsigned interger
 **Return:** `buffer`
 
 ### `publicToAddress(pubKey)`
-Returns the ethereum address of a given public key
+Returns the ethereum address of a given public key   
 **Parameters**  
 - `pubKey` - the public key as a `buffer`  
 
