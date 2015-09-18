@@ -22,6 +22,7 @@ A collection of utility functions for ethereum. It can be used in node.js or can
 Returns buffer filled with 0's
 **Parameters** 
 - `number` - the number bytes to to return  
+
 **Return:** `buffer`
 
 ### `pad(val, length)`
