@@ -1,9 +1,9 @@
 # SYNOPSIS
+
+ [![js-standard-style](https://img.shields.io/badge/code%20style-standard-brightgreen.svg?style=flat)](https://github.com/feross/standard) [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/ethereum/ethereumjs-lib?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge) or #ethereumjs on freenode
+
 Implements schema and functions relating to accounts stored ethereum's state Trie   
 NOTE: this is different from [ethereumjs-accounts](https://github.com/SilentCicero/ethereumjs-accounts) which should be used if you want to key management and web3 sugar.
-
-# CONTACT
- [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/ethereum/ethereumjs-lib?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge) or #ethereumjs on freenode
 
 # INSTALL
 `npm install ethereumjs-account`
