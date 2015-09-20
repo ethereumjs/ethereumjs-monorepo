@@ -25,6 +25,8 @@ trie.put('test', 'one', function () {
 });
 ```
 
+also see [this blog post](https://wanderer.github.io/ethereum/nodejs/code/2014/05/21/using-ethereums-tries-with-node/)
+
 ## API
 ### `new Trie([db], [root])`
 ### `new Trie([root])`
@@ -122,9 +124,6 @@ Removes a raw value in the underlining db
 ## Secure Trie Overlay
 You can create a secure Trie where the keys are automatically hashed using sha3 by usin `require('merkle-patricia-tree/secure')`
 
-## examples
-see [this blog post](https://wanderer.github.io/ethereum/nodejs/code/2014/05/21/using-ethereums-tries-with-node/)
-
-## Testing
+## TESTING
 `npm test`  
 Test use mocha
