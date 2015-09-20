@@ -102,7 +102,7 @@ Returns the ethereum public key of a given private key
 **Return:** `Buffer`
 
 ### `generateAddress(from, nonce)` 
-Generates an address of a newly created contract. Don't forget to incerment the nonce to get the correct address.
+Generates an address of a newly created contract. Don't forget to incerment the nonce to get the correct address.  
 **Parameters**  
 - `from` - the address of the account creating the contract
 - `nonce` - the creating accounts nonce  
