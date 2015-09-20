@@ -1,4 +1,7 @@
-#modified merkle patricia tree [![Build Status](https://travis-ci.org/wanderer/merkle-patricia-tree.svg?branch=master)](https://travis-ci.org/wanderer/merkle-patricia-tree)
+#modified merkle patricia tree 
+ 
+ [![js-standard-style](https://img.shields.io/badge/code%20style-standard-brightgreen.svg?style=flat)](https://github.com/feross/standard) [![Build Status](https://travis-ci.org/wanderer/merkle-patricia-tree.svg?branch=master)](https://travis-ci.org/wanderer/merkle-patricia-tree) [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/ethereum/ethereumjs-lib?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge) or #ethereumjs on freenode
+
  
 This is an implementation of the modified merkle patricia tree as specified in the [Ethereum's yellow paper](http://gavwood.com/Paper.pdf).
 
