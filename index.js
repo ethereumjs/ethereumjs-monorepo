@@ -202,7 +202,7 @@ exports.privateToAddress = function (privateKey) {
  * @param {Buffer} nonce the nonce of the from account
  */
 exports.generateAddress = function (from, nonce) {
-  nonce = new Buffer(new BN(nonce).subn(1).toArray())
+  nonce = new Buffer(new BN(nonce).toArray())
 
   if (nonce.toString('hex') === '00') {
     nonce = 0
