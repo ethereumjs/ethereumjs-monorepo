@@ -21,7 +21,7 @@
   },
   "homepage": "https://github.com/ethereum/ethereumjs-account#readme",
   "dependencies": {
-    "ethereumjs-util": "^1.3.4",
+    "ethereumjs-util": "^1.5.0",
     "rlp": "^1.0.1"
   },
   "devDependencies": {
