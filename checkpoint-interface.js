@@ -120,7 +120,7 @@ function copy (_super) {
   var trie = _super()
   checkpointInterface(trie)
   trie._scratch = this._scratch
-  trie._checkpoints = this._checkpoints.slice()
+  // trie._checkpoints = this._checkpoints.slice()
   return trie
 }
 

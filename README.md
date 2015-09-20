@@ -28,6 +28,9 @@ trie.put('test', 'one', function () {
 also see [this blog post](https://wanderer.github.io/ethereum/nodejs/code/2014/05/21/using-ethereums-tries-with-node/)
 
 # API
+## Secure Trie Overlay
+You can create a secure Trie where the keys are automatically hashed using sha3 by usin `require('merkle-patricia-tree/secure')` and using the same API. The secure trie hash all the keys before storing them. 
+
 ### `new Trie([db], [root])`
 ### `new Trie([root])`
 Creates a new Trie object
@@ -82,6 +85,11 @@ revets the trie to the state it was at when `checkpoint` was first called
 
 --------------------------------------------------------
 
+####  `trie.copy()`
+Create an new Trie which share the underlining db and cache with the orginal trie.
+
+--------------------------------------------------------
+
 ####  `trie.batch(operations)`
 Give an hash of operation adds them to the DB
 - `operations` a hash of `key`/`values` to add to the trie.
@@ -121,8 +129,6 @@ Removes a raw value in the underlining db
 
 --------------------------------------------------------
 
-## Secure Trie Overlay
-You can create a secure Trie where the keys are automatically hashed using sha3 by usin `require('merkle-patricia-tree/secure')`
 
 # TESTING
 `npm test`  
