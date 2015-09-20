@@ -52,12 +52,12 @@ var Transaction = module.exports = function (data) {
     name: 'r',
     length: 32,
     allowLess: true,
-    default: ethUtil.zeros(32)
+    default: new Buffer([])
   }, {
     name: 's',
     length: 32,
     allowLess: true,
-    default: ethUtil.zeros(32)
+    default: new Buffer([])
   }]
 
   Object.defineProperty(this, 'from', {
