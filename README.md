@@ -29,7 +29,7 @@ also see [this blog post](https://wanderer.github.io/ethereum/nodejs/code/2014/0
 
 # API
 ## Secure Trie Overlay
-You can create a secure Trie where the keys are automatically hashed using sha3 by usin `require('merkle-patricia-tree/secure')` and using the same API. The secure trie hash all the keys before storing them. 
+You can create a secure Trie where the keys are automatically hashed using sha3 by `require('merkle-patricia-tree/secure')` and using the same API. The secure trie hash all the keys before storing them. 
 
 ### `new Trie([db], [root])`
 ### `new Trie([root])`
