@@ -41,11 +41,7 @@ module.exports = function txRunner (testData, t, cb) {
       }
 
       t.equal(tx.to.toString('hex'), tTx.to, 'to')
-      if (tTx.value === '') {
-        t.equal(tx.value.toString('hex'), '')
-      } else {
-        t.equal(ifZero(tx.value.toString('hex')), tTx.value.slice(2), 'value')
-      }
+      t.equal(ifZero(tx.value.toString('hex')), tTx.value.slice(2), 'value')
       t.equal(tx.getSenderAddress().toString('hex'), testData.sender, "sender's address")
     } catch (e) {
       t.fail(e)
