@@ -9,7 +9,7 @@ This is an implementation of the modified merkle patricia tree as specified in t
   \- Ethereum's yellow paper  
 
 # INSTALL
-- `npm install merkle-patricia-tree`
+ `npm install merkle-patricia-tree`
 
 # USAGE
 ```javascript
