@@ -1,4 +1,4 @@
-#modified merkle patricia tree 
+# SYNOPSIS
  
  [![js-standard-style](https://img.shields.io/badge/code%20style-standard-brightgreen.svg?style=flat)](https://github.com/feross/standard) [![Build Status](https://travis-ci.org/wanderer/merkle-patricia-tree.svg?branch=master)](https://travis-ci.org/wanderer/merkle-patricia-tree) [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/ethereum/ethereumjs-lib?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge) or #ethereumjs on freenode
 
@@ -8,10 +8,10 @@ This is an implementation of the modified merkle patricia tree as specified in t
 > The modified Merkle Patricia tree (trie) provides a persistent data structure to map between arbitrary-length binary data (byte arrays). It is defined in terms of a mutable data structure to map between 256-bit binary fragments and arbitrary-length binary data. The core of the trie, and its sole requirement in terms of the protocol specification is to provide a single 32-byte value that identifies a given set of key-value pairs.   
   \- Ethereum's yellow paper  
 
-## Installation
+# INSTALL
 - `npm install merkle-patricia-tree`
 
-## Usage
+# USAGE
 ```javascript
 var Trie = require('merkle-patricia-tree'),
 levelup = require('levelup'),
