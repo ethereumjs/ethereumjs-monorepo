@@ -4,7 +4,7 @@
   "description": "This is an implementation of the modified merkle patricia tree as speficed in the Ethereum's yellow paper.",
   "main": "index.js",
   "scripts": {
-    "test": "./node_modules/mocha/bin/mocha --timeout 5000 --reporter spec ./test/"
+    "test": "standard ./*.js  && ./node_modules/mocha/bin/mocha --timeout 5000 --reporter spec ./test/"
   },
   "author": {
     "name": "mjbecze",
@@ -37,7 +37,8 @@
   },
   "devDependencies": {
     "ethereumjs-testing": "git+https://github.com/wanderer/ethereumjs-testing.git",
-    "mocha": "~1.18.2"
+    "mocha": "~1.18.2",
+    "standard": "^5.3.1"
   },
   "browser": {
     "sha3": "browserify-sha3"

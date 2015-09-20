@@ -9,12 +9,11 @@ const callTogether = require('./util').callTogether
 module.exports = checkpointInterface
 
 function checkpointInterface (trie) {
-
   this._scratch = null
   trie._checkpoints = []
-  
+
   Object.defineProperty(trie, 'isCheckpoint', {
-    get: function(){
+    get: function () {
       return !!trie._checkpoints.length
     }
   })
@@ -26,43 +25,46 @@ function checkpointInterface (trie) {
   trie._enterCpMode = _enterCpMode
   trie._exitCpMode = _exitCpMode
   trie.createScratchReadStream = createScratchReadStream
-  
+
   // overwrites
   trie.copy = copy.bind(trie, trie.copy.bind(trie))
 }
 
 // creates a checkpoint
-function checkpoint() {
+function checkpoint () {
   var self = this
   var wasCheckpoint = self.isCheckpoint
   self._checkpoints.push(self.root)
-  if (!wasCheckpoint && self.isCheckpoint)
+  if (!wasCheckpoint && self.isCheckpoint) {
     self._enterCpMode()
+  }
 }
 
 // commits a checkpoint.
-function commit(cb) {
+function commit (cb) {
   var self = this
   cb = callTogether(cb, self.sem.leave)
 
-  self.sem.take(function() {
+  self.sem.take(function () {
     if (self.isCheckpoint) {
       self._checkpoints.pop()
-      if (!self.isCheckpoint)
+      if (!self.isCheckpoint) {
         self._exitCpMode(true, cb)
-      else
+      } else {
         cb()
-    } else 
-      cb()
+      }
+    } else {
+      throw new Error('trying to commit when not checkpointed')
+    }
   })
 }
 
 // reverts a checkpoint
-function revert(cb) {
+function revert (cb) {
   var self = this
   cb = callTogether(cb, self.sem.leave)
 
-  self.sem.take(function() {
+  self.sem.take(function () {
     if (self.isCheckpoint) {
       self.root = self._checkpoints.pop()
       if (!self.isCheckpoint) {
@@ -76,8 +78,10 @@ function revert(cb) {
 }
 
 // enter into checkpoint mode
-function _enterCpMode() {
-  this._scratch = levelup('', { db: memdown })
+function _enterCpMode () {
+  this._scratch = levelup('', {
+    db: memdown
+  })
   this._getDBs.unshift(this._scratch)
   this.__putDBs = this._putDBs
   this._putDBs = [this._scratch]
@@ -86,8 +90,7 @@ function _enterCpMode() {
 }
 
 // exit from checkpoint mode
-function _exitCpMode(commitState, cb) {
-
+function _exitCpMode (commitState, cb) {
   var self = this
   var scratch = this._scratch
   this._scratch = null
@@ -95,23 +98,25 @@ function _exitCpMode(commitState, cb) {
   this._putDBs = this.__putDBs
   this.putRaw = this._putRaw
 
-  function flushScratch(db, cb) {
-    if(!db.createWriteStream)
+  function flushScratch (db, cb) {
+    if (!db.createWriteStream) {
       db = levelws(db)
+    }
 
     self.createScratchReadStream(scratch)
-    .pipe(db.createWriteStream())
-    .on('close', cb)
+      .pipe(db.createWriteStream())
+      .on('close', cb)
   }
 
-  if (commitState)
+  if (commitState) {
     async.map(this._putDBs, flushScratch, cb)
-  else
+  } else {
     cb()
+  }
 }
 
 // adds the interface when copying the trie
-function copy(_super) {
+function copy (_super) {
   var trie = _super()
   checkpointInterface(trie)
   trie._scratch = this._scratch
@@ -119,17 +124,17 @@ function copy(_super) {
   return trie
 }
 
-function putRaw(key, val, cb){
-  function dbPut(db, cb2) {
+function putRaw (key, val, cb) {
+  function dbPut (db, cb2) {
     db.put(key, val, {
       keyEncoding: 'binary',
-      valueEncoding: 'binary',
+      valueEncoding: 'binary'
     }, cb2)
   }
   async.each(this.__putDBs, dbPut, cb)
 }
 
-function createScratchReadStream(scratch) {
+function createScratchReadStream (scratch) {
   var trie = this.copy()
   scratch = scratch || this._scratch
   // only read from the scratch
@@ -143,10 +148,12 @@ function createScratchReadStream(scratch) {
 
 inherits(ScratchReadStream, Readable)
 
-function ScratchReadStream(trie) {
+function ScratchReadStream (trie) {
   this.trie = trie
   this.next = null
-  Readable.call(this, { objectMode: true })
+  Readable.call(this, {
+    objectMode: true
+  })
 }
 
 ScratchReadStream.prototype._read = function () {
@@ -154,13 +161,11 @@ ScratchReadStream.prototype._read = function () {
   if (!self._started) {
     self._started = true
     self.trie._findDbNodes(function (root, node, key, next) {
-      
       self.push({
         key: root,
-        value: node.serialize(),
+        value: node.serialize()
       })
       next()
-
     }, function () {
       // close stream
       self.push(null)

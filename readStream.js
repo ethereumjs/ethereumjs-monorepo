@@ -4,8 +4,7 @@ const util = require('util')
 
 module.exports = TrieReadStream
 
-
-function TrieReadStream(trie) {
+function TrieReadStream (trie) {
   this.trie = trie
   this.next = null
   Readable.call(this, {
@@ -20,13 +19,11 @@ TrieReadStream.prototype._read = function () {
   if (!self._started) {
     self._started = true
     self.trie._findValueNodes(function (root, node, key, next) {
-      
       self.push({
         key: TrieNode.nibblesToBuffer(key),
         value: node.value
       })
       next()
-
     }, function () {
       // close stream
       self.push(null)

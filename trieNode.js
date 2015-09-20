@@ -3,9 +3,9 @@ const ethUtil = require('ethereumjs-util')
 
 module.exports = TrieNode
 
-function TrieNode(type, key, value) {
+function TrieNode (type, key, value) {
   if (Array.isArray(type)) {
-    //parse raw node
+    // parse raw node
     this.parseNode(type)
   } else {
     this.type = type
@@ -51,17 +51,17 @@ Object.defineProperty(TrieNode.prototype, 'key', {
   }
 })
 
-//parses a raw node
+// parses a raw node
 TrieNode.prototype.parseNode = function (rawNode) {
   this.raw = rawNode
   this.type = getNodeType(rawNode)
 }
 
-//sets the value of the node
+// sets the value of the node
 TrieNode.prototype.setValue = function (key, value) {
-  if (this.type !== 'branch')
+  if (this.type !== 'branch') {
     this.raw[1] = key
-  else {
+  } else {
     if (arguments.length === 1) {
       value = key
       key = 16
@@ -72,32 +72,35 @@ TrieNode.prototype.setValue = function (key, value) {
 
 TrieNode.prototype.getValue = function (key) {
   if (this.type === 'branch') {
-    if (arguments.length === 0)
+    if (arguments.length === 0) {
       key = 16
+    }
 
     var val = this.raw[key]
-    if (val !== null && val !== undefined && val.length !== 0)
+    if (val !== null && val !== undefined && val.length !== 0) {
       return val
-
-  } else 
+    }
+  } else {
     return this.raw[1]
+  }
 }
 
 TrieNode.prototype.setKey = function (key) {
   if (this.type !== 'branch') {
-    if (Buffer.isBuffer(key) || typeof key === 'string')
+    if (Buffer.isBuffer(key) || typeof key === 'string') {
       key = stringToNibbles(key)
-    else
-      key = key.slice(0) //copy the key
+    } else {
+      key = key.slice(0) // copy the key
+    }
 
     key = addHexPrefix(key, this.type === 'leaf')
     this.raw[0] = nibblesToBuffer(key)
   }
 }
 
-//returns the key as a nibble
+// returns the key as a nibble
 TrieNode.prototype.getKey = function () {
-  if (this.type != 'branch') {
+  if (this.type !== 'branch') {
     var key = this.raw[0]
     key = removeHexPrefix(stringToNibbles(key))
     return (key)
@@ -116,12 +119,13 @@ TrieNode.prototype.toString = function () {
   var out = this.type
   out += ': ['
   this.raw.forEach(function (el) {
-    if (Buffer.isBuffer(el))
+    if (Buffer.isBuffer(el)) {
       out += el.toString('hex') + ', '
-    else if (el)
+    } else if (el) {
       out += 'object, '
-    else
+    } else {
       out += 'empty, '
+    }
   })
   out = out.slice(0, -2)
   out += ']'
@@ -130,7 +134,7 @@ TrieNode.prototype.toString = function () {
 
 TrieNode.prototype.getChildren = function () {
   var children = []
-  switch(this.type) {
+  switch (this.type) {
     case 'leaf':
       // no children
       break
@@ -139,14 +143,17 @@ TrieNode.prototype.getChildren = function () {
       children.push([this.key, this.getValue()])
       break
     case 'branch':
-      for (var index=0, end=16; index<end; index++) {
+      for (var index = 0, end = 16; index < end; index++) {
         var value = this.getValue(index)
-        if (value)
-          children.push([[index], value])
+        if (value) {
+          children.push([
+            [index], value
+          ])
+        }
       }
       break
   }
-  return children  
+  return children
 }
 
 /**
@@ -154,27 +161,29 @@ TrieNode.prototype.getChildren = function () {
  * @returns {Buffer} - returns buffer of encoded data
  * hexPrefix
  **/
-function addHexPrefix(key, terminator) {
-  //odd
-  if (key.length % 2)
+function addHexPrefix (key, terminator) {
+  // odd
+  if (key.length % 2) {
     key.unshift(1)
-  else {
-    //even
+  } else {
+    // even
     key.unshift(0)
     key.unshift(0)
   }
 
-  if (terminator)
+  if (terminator) {
     key[0] += 2
+  }
 
   return key
 }
 
-function removeHexPrefix(val) {
-  if (val[0] % 2)
+function removeHexPrefix (val) {
+  if (val[0] % 2) {
     val = val.slice(1)
-  else
+  } else {
     val = val.slice(2)
+  }
 
   return val
 }
@@ -184,7 +193,7 @@ function removeHexPrefix(val) {
  * @method isTerminator
  * @param {Array} key - an hexprefixed array of nibbles
  */
-function isTerminator(key) {
+function isTerminator (key) {
   return key[0] > 1
 }
 
@@ -193,7 +202,7 @@ function isTerminator(key) {
  * @method stringToNibbles
  * @param {Buffer| String} key
  */
-function stringToNibbles(key) {
+function stringToNibbles (key) {
   var bkey = new Buffer(key)
   var nibbles = []
 
@@ -211,7 +220,7 @@ function stringToNibbles(key) {
  * @method nibblesToBuffer
  * @param arr
  */
-function nibblesToBuffer(arr) {
+function nibblesToBuffer (arr) {
   var buf = new Buffer(arr.length / 2)
   for (var i = 0; i < buf.length; i++) {
     var q = i * 2
@@ -228,20 +237,21 @@ function nibblesToBuffer(arr) {
  * - extention - if the node is an extention
  * - unknown - if somehting fucked up
  */
-function getNodeType(node) {
-  if (Buffer.isBuffer(node) || typeof node === 'string' || node instanceof String)
+function getNodeType (node) {
+  if (Buffer.isBuffer(node) || typeof node === 'string' || node instanceof String) {
     return 'unknown'
-  else if (node.length === 17)
+  } else if (node.length === 17) {
     return 'branch'
-  else if (node.length === 2) {
+  } else if (node.length === 2) {
     var key = stringToNibbles(node[0])
-    if (isTerminator(key))
+    if (isTerminator(key)) {
       return 'leaf'
+    }
 
     return 'extention'
   }
 }
 
-function isRawNode(node) {
+function isRawNode (node) {
   return Array.isArray(node) && !Buffer.isBuffer(node)
 }

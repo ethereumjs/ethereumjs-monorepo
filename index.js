@@ -6,7 +6,7 @@ module.exports = CheckpointTrie
 
 inherits(CheckpointTrie, BaseTrie)
 
-function CheckpointTrie() {
+function CheckpointTrie () {
   BaseTrie.apply(this, arguments)
   checkpointInterface(this)
 }
