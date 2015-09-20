@@ -7,6 +7,9 @@
     "type": "git",
     "url": "git+https://github.com/ethereum/ethereumjs-account.git"
   },
+  "scripts": {
+    "test": "standard"
+  },
   "keywords": [
     "ethereum",
     "account"
@@ -20,5 +23,8 @@
   "dependencies": {
     "ethereumjs-util": "^1.3.4",
     "rlp": "^1.0.1"
+  },
+  "devDependencies": {
+    "standard": "^5.3.1"
   }
 }
