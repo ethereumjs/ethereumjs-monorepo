@@ -153,13 +153,17 @@ Adds `0x` to a given string if it does not already start with `0x`
 **Return:** `string`
 
 ### `defineProperties(self, fields)`
-defines properties on a `Object`
+defines properties on a `Object`. It make the assumtion that underlying data is binary.
 **Parameters**   
 - `self` - the `Object` to define properties on
-- `fields` - an array fields to define
+- `fields` - an array fields to define. Fields can contain
+ - `name` the name of the properties
+ - `length` the number of bytes the field can have
+ - `allowLess` if the field can be less than the `length` 
+ - `allowEmpty`
 
 ### `validate(fields, data)`
-Validate defined fields
+Validate defined fields  
 **Parameters**   
 - `fields`
 - `data` 
