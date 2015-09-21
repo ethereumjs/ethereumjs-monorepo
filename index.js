@@ -171,6 +171,18 @@ function _decode (input) {
   }
 }
 
+function isHexPrefixed (str) {
+  return str.slice(0, 2) === '0x'
+}
+
+// Removes 0x from a given String
+function stripHexPrefix (str) {
+  if (typeof str !== 'string') {
+    return str
+  }
+  return isHexPrefixed(str) ? str.slice(2) : str
+}
+
 function intToHex (i) {
   var hex = i.toString(16)
   if (hex.length % 2) {
@@ -180,19 +192,30 @@ function intToHex (i) {
   return hex
 }
 
-function toBuffer (input) {
-  if (Buffer.isBuffer(input)) {
-    if (input.length === 0) {
-      return toBuffer(null)
+function padToEven (a) {
+  if (a.length % 2) a = '0' + a
+  return a
+}
+
+function intToBuffer (i) {
+  var hex = intToHex(i)
+  return new Buffer(hex, 'hex')
+}
+
+function toBuffer (v) {
+  if (!Buffer.isBuffer(v)) {
+    if (typeof v === 'string') {
+      v = new Buffer(padToEven(stripHexPrefix(v)), 'hex')
+    } else if (typeof v === 'number') {
+      v = intToBuffer(v)
+    } else if (v === null || v === undefined) {
+      v = new Buffer([])
+    } else if (v.toArray) {
+      // converts a BN to a Buffer
+      v = new Buffer(v.toArray())
     } else {
-      return input
+      throw new Error('invalid type')
     }
-  } else if (input === null || input === 0 || input === undefined) {
-    return new Buffer(0)
-  } else if (!isNaN(input)) {
-    var hex = intToHex(input)
-    return new Buffer(hex, 'hex')
-  } else if (!Buffer.isBuffer(input)) {
-    return new Buffer(input.toString())
   }
+  return v
 }

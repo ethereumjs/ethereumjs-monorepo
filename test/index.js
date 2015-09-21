@@ -15,12 +15,12 @@ describe('invalid rlps', function () {
 
 describe('RLP encoding (string):', function () {
   it('should return itself if single byte and less than 0x7f:', function () {
-    var encodedSelf = RLP.encode('a')
+    var encodedSelf = RLP.encode(new Buffer('a'))
     assert.equal(encodedSelf.toString(), 'a')
   })
 
   it('length of string 0-55 should return (0x80+len(data)) plus data', function () {
-    var encodedDog = RLP.encode('dog')
+    var encodedDog = RLP.encode(new Buffer('dog'))
     assert.equal(4, encodedDog.length)
     assert.equal(encodedDog[0], 131)
     assert.equal(encodedDog[1], 100)
@@ -29,7 +29,7 @@ describe('RLP encoding (string):', function () {
   })
 
   it('length of string >55 should return 0xb7+len(len(data)) plus len(data) plus data', function () {
-    var encodedLongString = RLP.encode('zoo255zoo255zzzzzzzzzzzzssssssssssssssssssssssssssssssssssssssssssssss')
+    var encodedLongString = RLP.encode(new Buffer('zoo255zoo255zzzzzzzzzzzzssssssssssssssssssssssssssssssssssssssssssssss'))
     assert.equal(72, encodedLongString.length)
     assert.equal(encodedLongString[0], 184)
     assert.equal(encodedLongString[1], 70)
@@ -41,7 +41,7 @@ describe('RLP encoding (string):', function () {
 
 describe('RLP encoding (list):', function () {
   it('length of list 0-55 should return (0xc0+len(data)) plus data', function () {
-    var encodedArrayOfStrings = RLP.encode(['dog', 'god', 'cat'])
+    var encodedArrayOfStrings = RLP.encode([new Buffer('dog'), new Buffer('god'), new Buffer('cat')])
     assert.equal(13, encodedArrayOfStrings.length)
     assert.equal(encodedArrayOfStrings[0], 204)
     assert.equal(encodedArrayOfStrings[1], 131)
@@ -49,9 +49,9 @@ describe('RLP encoding (list):', function () {
     assert.equal(encodedArrayOfStrings[12], 116)
   })
 
-  it('length of list >55 should return 0xf7+len(len(data)) plus len(data) plus data', function () {
-    // need a test case here!
-  })
+// it('length of list >55 should return 0xf7+len(len(data)) plus len(data) plus data', function () {
+//   // need a test case here!
+// })
 })
 
 describe('RLP encoding (integer):', function () {
@@ -105,6 +105,7 @@ describe('RLP decoding (int):', function () {
 
 describe('strings over 55 bytes long', function () {
   var testString = 'This function takes in a data, convert it to buffer if not, and a length for recursion'
+  testString = new Buffer(testString)
   var encoded = null
   it('should encode it', function () {
     encoded = RLP.encode(testString)
@@ -122,8 +123,13 @@ describe('strings over 55 bytes long', function () {
 describe('list over 55 bytes long', function () {
   var testString = ['This', 'function', 'takes', 'in', 'a', 'data', 'convert', 'it', 'to', 'buffer', 'if', 'not', 'and', 'a', 'length', 'for', 'recursion', 'a1', 'a2', 'a3', 'ia4', 'a5', 'a6', 'a7', 'a8', 'ba9']
   var encoded = null
+
+  var bufString = testString.map(function (i) {
+    return new Buffer(i)
+  })
+
   it('should encode it', function () {
-    encoded = RLP.encode(testString)
+    encoded = RLP.encode(bufString)
   })
 
   it('should decode', function () {
@@ -242,6 +248,14 @@ describe('bad values', function () {
       result = RLP.decode(a)
     } catch (e) {}
     assert.equal(result, undefined)
+  })
+})
+
+describe('hex prefix', function () {
+  it('should have the same value', function () {
+    var a = RLP.encode('0x88f')
+    var b = RLP.encode('88f')
+    assert.equal(a.toString('hex'), b.toString('hex'))
   })
 })
 
