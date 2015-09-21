@@ -40,6 +40,7 @@ exports.zeros = function (bytes) {
  * @return {Buffer|Array}
  */
 exports.pad = function (msg, length) {
+  msg = exports.toBuffer(msg)
   if (msg.length < length) {
     var buf = exports.zeros(length)
     msg.copy(buf, length - msg.length)
@@ -55,6 +56,7 @@ exports.pad = function (msg, length) {
  * @return {Buffer|Array|String}
  */
 exports.unpad = exports.stripZeros = function (a) {
+  a = exports.stripHexPrefix(a)
   var first = a[0]
   while (a.length > 0 && first.toString() === '0') {
     a = a.slice(1)
@@ -116,6 +118,7 @@ exports.intToBuffer = function (i) {
  * @return {Number}
  */
 exports.bufferToInt = function (buf) {
+  buf = exports.toBuffer(buf)
   if (buf.length === 0) {
     return 0
   }
@@ -152,6 +155,7 @@ exports.toUnsigned = function (num) {
 }
 
 exports.sha3 = function (a, bytes) {
+  a = exports.stripHexPrefix(a)
   if (!bytes) bytes = 256
 
   var h = new SHA3.SHA3Hash(bytes)
@@ -168,6 +172,7 @@ exports.sha3 = function (a, bytes) {
  * @return {Buffer}
  */
 exports.pubToAddress = exports.publicToAddress = function (pubKey) {
+  pubKey = exports.toBuffer(pubKey)
   var hash = new SHA3.SHA3Hash(256)
   hash.update(pubKey.slice(-64))
   return new Buffer(hash.digest('hex').slice(-40), 'hex')
@@ -180,6 +185,7 @@ exports.pubToAddress = exports.publicToAddress = function (pubKey) {
  * @return {Buffer}
  */
 var privateToPublic = exports.privateToPublic = function (privateKey) {
+  privateKey = exports.toBuffer(privateKey)
   privateKey = new BN(privateKey)
   var key = ec.keyFromPrivate(privateKey).getPublic().toJSON()
   return new Buffer(key[0].toArray().concat(key[1].toArray()))
@@ -202,6 +208,7 @@ exports.privateToAddress = function (privateKey) {
  * @param {Buffer} nonce the nonce of the from account
  */
 exports.generateAddress = function (from, nonce) {
+  from = exports.toBuffer(from)
   nonce = new Buffer(new BN(nonce).toArray())
 
   if (nonce.toString('hex') === '00') {
