@@ -85,7 +85,7 @@ Account.prototype.setCode = function (trie, code, compiled, cb) {
 
 Account.prototype.getStorage = function (trie, key, cb) {
   var t = trie.copy()
-  t.root = this.stateroot
+  t.root = this.stateRoot
   t.get(key, cb)
 }
 
