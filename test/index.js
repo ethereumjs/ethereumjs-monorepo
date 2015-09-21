@@ -12,8 +12,17 @@ describe('zeros function', function () {
 
 describe('sha3', function () {
   it('should produce a sha3', function () {
-    var msg = 'There is no thing as uncoded messages'
-    var r = '363e8cfe97b1ccb4a29f327fed56197c3afe391f928381d6df2e84f9683154b3'
+    var msg = '0x3c9229289a6125f7fdf1885a77bb12c37a8d3b4962d936f7e3084dece32a3ca1'
+    var r = '82ff40c0a986c6a5cfad4ddf4c3aa6996f1a7837f9c398e17e5de5cbd5a12b28'
+    var hash = ethUtils.sha3(msg)
+    assert.equal(hash.toString('hex'), r)
+  })
+})
+
+describe('sha3 without hexprefix', function () {
+  it('should produce a sha3', function () {
+    var msg = '3c9229289a6125f7fdf1885a77bb12c37a8d3b4962d936f7e3084dece32a3ca1'
+    var r = '82ff40c0a986c6a5cfad4ddf4c3aa6996f1a7837f9c398e17e5de5cbd5a12b28'
     var hash = ethUtils.sha3(msg)
     assert.equal(hash.toString('hex'), r)
   })
@@ -22,6 +31,14 @@ describe('sha3', function () {
 describe('unpad', function () {
   it('should unpad a string', function () {
     var str = '0000000006600'
+    var r = ethUtils.unpad(str)
+    assert.equal(r, '6600')
+  })
+})
+
+describe('unpad a hex string', function () {
+  it('should unpad a string', function () {
+    var str = '0x0000000006600'
     var r = ethUtils.unpad(str)
     assert.equal(r, '6600')
   })
@@ -90,9 +107,25 @@ describe('pubToAddress', function () {
   })
 })
 
+describe('pubToAddress 0x', function () {
+  it('should produce an address given a public key', function () {
+    var pubKey = '0xf049a20000000000f0b08900000000000841b30200000000200000000d000000'
+    var address = 'ef6a1274aa67f83eadf383016d584cd6185477ae'
+    var r = ethUtils.pubToAddress(pubKey)
+    assert.equal(r.toString('hex'), address)
+  })
+})
+
 describe('generateAddress', function () {
   it('should produce an address given a public key', function () {
     var add = ethUtils.generateAddress('990ccf8a0de58091c028d6ff76bb235ee67c1c39', 14).toString('hex')
+    assert.equal(add.toString('hex'), 'd658a4b8247c14868f3c512fa5cbb6e458e4a989')
+  })
+})
+
+describe('generateAddress with hex prefix', function () {
+  it('should produce an address given a public key', function () {
+    var add = ethUtils.generateAddress('0x990ccf8a0de58091c028d6ff76bb235ee67c1c39', 14).toString('hex')
     assert.equal(add.toString('hex'), 'd658a4b8247c14868f3c512fa5cbb6e458e4a989')
   })
 })

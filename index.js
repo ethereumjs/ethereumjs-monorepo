@@ -155,7 +155,7 @@ exports.toUnsigned = function (num) {
 }
 
 exports.sha3 = function (a, bytes) {
-  a = exports.stripHexPrefix(a)
+  a = exports.toBuffer(a)
   if (!bytes) bytes = 256
 
   var h = new SHA3.SHA3Hash(bytes)
