@@ -92,10 +92,10 @@ Account.prototype.getStorage = function (trie, key, cb) {
 Account.prototype.setStorage = function (trie, key, val, cb) {
   var self = this
   var t = trie.copy()
-  t.root = self.stateroot
+  t.root = self.stateRoot
   t.put(key, val, function (err) {
     if (err) return cb()
-    self.stateroot = t.root
+    self.stateRoot = t.root
     cb()
   })
 }
