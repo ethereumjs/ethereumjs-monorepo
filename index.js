@@ -207,7 +207,11 @@ function toBuffer (v) {
     if (typeof v === 'string') {
       v = new Buffer(padToEven(stripHexPrefix(v)), 'hex')
     } else if (typeof v === 'number') {
-      v = intToBuffer(v)
+      if (!v) {
+        v = new Buffer([])
+      } else {
+        v = intToBuffer(v)
+      }
     } else if (v === null || v === undefined) {
       v = new Buffer([])
     } else if (v.toArray) {

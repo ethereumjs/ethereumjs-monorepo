@@ -68,6 +68,10 @@ describe('RLP encoding (integer):', function () {
     assert.equal(encodedNumber[1], 4)
     assert.equal(encodedNumber[2], 0)
   })
+
+  it('it should handle zero', function () {
+    assert.equal(RLP.encode(0).toString('hex'), '80')
+  })
 })
 
 describe('RLP decoding (string):', function () {
