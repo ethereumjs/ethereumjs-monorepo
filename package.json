@@ -25,7 +25,7 @@
     "bn.js": "^3.1.2",
     "browserify-sha3": "0.0.0",
     "elliptic": "^5.0.0",
-    "rlp": "^1.1.0",
+    "rlp": "^1.1.2",
     "sha3": "^1.1.0"
   },
   "browser": {
@@ -44,6 +44,6 @@
   },
   "devDependencies": {
     "mocha": "^2.1.0",
-    "standard": "^5.2.2"
+    "standard": "^5.3.1"
   }
 }
