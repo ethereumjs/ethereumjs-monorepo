@@ -76,7 +76,7 @@ Trie.prototype.get = function (key, cb) {
 Trie.prototype.put = function (key, value, cb) {
   var self = this
 
-  if (!value) {
+  if (!value || value.toString() === '') {
     self.del(key, cb)
   } else {
     cb = callTogether(cb, self.sem.leave)

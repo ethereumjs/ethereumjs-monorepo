@@ -7,7 +7,7 @@ var ethUtil = require('ethereumjs-util')
 
 describe('offical tests', function () {
   var testNames
-  var  trie
+  var trie
 
   before(function () {
     testNames = Object.keys(jsonTests.trietest)
@@ -20,18 +20,20 @@ describe('offical tests', function () {
       var expect = jsonTests.trietest[i].root
 
       async.eachSeries(inputs, function (input, done) {
-      
-        for(i = 0; i < 2; i++){
-          if(input[i] && input[i].slice(0,2) === '0x'){
+        for (i = 0; i < 2; i++) {
+          if (input[i] && input[i].slice(0, 2) === '0x') {
             input[i] = new Buffer(input[i].slice(2), 'hex')
           }
         }
 
-        trie.put(input[0], input[1], function () {
+        if (input[1] === null) {
+          input[1] = ''
+        }
+
+        trie.put(new Buffer(input[0]), new Buffer(input[1]), function () {
           done()
         })
       }, function () {
-
         assert.equal('0x' + trie.root.toString('hex'), expect)
         trie = new Trie()
         done()
@@ -58,18 +60,17 @@ describe('offical tests any order', function () {
       var keys = Object.keys(test.in)
 
       async.eachSeries(keys, function (key, done) {
-        
-        var val = test.in[key]     
+        var val = test.in[key]
 
-        if(key.slice(0,2) === '0x'){
+        if (key.slice(0, 2) === '0x') {
           key = new Buffer(key.slice(2), 'hex')
         }
 
-        if(val && val.slice(0,2) === '0x'){
+        if (val && val.slice(0, 2) === '0x') {
           val = new Buffer(val.slice(2), 'hex')
         }
 
-        trie.put(key, val, function () {
+        trie.put(new Buffer(key), new Buffer(val), function () {
           done()
         })
       }, function () {
