@@ -205,7 +205,11 @@ function intToBuffer (i) {
 function toBuffer (v) {
   if (!Buffer.isBuffer(v)) {
     if (typeof v === 'string') {
-      v = new Buffer(padToEven(stripHexPrefix(v)), 'hex')
+      if (isHexPrefixed(v)) {
+        v = new Buffer(padToEven(stripHexPrefix(v)), 'hex')
+      } else {
+        v = new Buffer(v)
+      }
     } else if (typeof v === 'number') {
       if (!v) {
         v = new Buffer([])
