@@ -27,12 +27,12 @@
   "dependencies": {
     "async": "^1.4.2",
     "browserify-sha3": "0.0.0",
-    "ethereumjs-util": "^1.4.0",
+    "ethereumjs-util": "^2.0.0",
     "level-ws": "0.0.0",
     "levelup": "^1.2.1",
     "memdown": "^1.0.0",
     "readable-stream": "^2.0.0",
-    "rlp": "^1.0.1",
+    "rlp": "^2.0.0",
     "semaphore": ">=1.0.1"
   },
   "devDependencies": {
