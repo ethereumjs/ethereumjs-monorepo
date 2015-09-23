@@ -13,7 +13,7 @@
     "ethereumjs-util": "^1.5.1",
     "functional-red-black-tree": "^1.0.1",
     "history-tree": "^2.0.0",
-    "merkle-patricia-tree": "^1.1.0",
+    "merkle-patricia-tree": "^2.0.2",
     "rlp": "^1.1.2",
     "secp256k1": "1.1.4",
     "secp256k1-browserify": "0.0.0"
