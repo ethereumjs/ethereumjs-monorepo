@@ -87,7 +87,7 @@ TrieNode.prototype.getValue = function (key) {
 
 TrieNode.prototype.setKey = function (key) {
   if (this.type !== 'branch') {
-    if (Buffer.isBuffer(key) || typeof key === 'string') {
+    if (Buffer.isBuffer(key)) {
       key = stringToNibbles(key)
     } else {
       key = key.slice(0) // copy the key
@@ -238,9 +238,7 @@ function nibblesToBuffer (arr) {
  * - unknown - if somehting fucked up
  */
 function getNodeType (node) {
-  if (Buffer.isBuffer(node) || typeof node === 'string' || node instanceof String) {
-    return 'unknown'
-  } else if (node.length === 17) {
+  if (node.length === 17) {
     return 'branch'
   } else if (node.length === 2) {
     var key = stringToNibbles(node[0])

@@ -31,9 +31,7 @@ function Trie (db, root) {
   Object.defineProperty(this, 'root', {
     set: function (value) {
       if (value) {
-        if (!Buffer.isBuffer(value) && typeof value === 'string') {
-          value = new Buffer(value, 'hex')
-        }
+        value = ethUtil.toBuffer(value)
         assert(value.length === 32, 'Invalid root length. Roots are 32 bytes')
       } else {
         value = self.EMPTY_TRIE_ROOT
@@ -57,6 +55,8 @@ function Trie (db, root) {
 Trie.prototype.get = function (key, cb) {
   var self = this
 
+  key = ethUtil.toBuffer(key)
+
   self._findPath(key, function (err, node, remainder, stack) {
     var value = null
     if (node && remainder.length === 0) {
@@ -75,6 +75,9 @@ Trie.prototype.get = function (key, cb) {
  */
 Trie.prototype.put = function (key, value, cb) {
   var self = this
+
+  key = ethUtil.toBuffer(key)
+  value = ethUtil.toBuffer(value)
 
   if (!value || value.toString() === '') {
     self.del(key, cb)
@@ -101,6 +104,8 @@ Trie.prototype.put = function (key, value, cb) {
 // deletes a value
 Trie.prototype.del = function (key, cb) {
   var self = this
+
+  key = ethUtil.toBuffer(key)
   cb = callTogether(cb, self.sem.leave)
 
   self.sem.take(function () {
@@ -123,6 +128,8 @@ Trie.prototype.del = function (key, cb) {
  * @param {Buffer} key
  */
 Trie.prototype.getRaw = function (key, cb) {
+  key = ethUtil.toBuffer(key)
+
   function dbGet (db, cb2) {
     db.get(key, {
       keyEncoding: 'binary',
@@ -683,6 +690,7 @@ Trie.prototype.batch = function (ops, cb) {
  * @param {Function} cb
  */
 Trie.prototype.checkRoot = function (root, cb) {
+  root = ethUtil.toBuffer(root)
   this._lookupNode(root, function (err, value) {
     cb(err, !!value)
   })
