@@ -26,11 +26,7 @@ describe('offical tests', function () {
           }
         }
 
-        if (input[1] === null) {
-          input[1] = ''
-        }
-
-        trie.put(new Buffer(input[0]), new Buffer(input[1]), function () {
+        trie.put(new Buffer(input[0]), input[1], function () {
           done()
         })
       }, function () {

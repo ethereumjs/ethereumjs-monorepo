@@ -19,21 +19,21 @@ describe('simple save and retrive', function () {
   var trie = new Trie()
 
   it('save a value', function (done) {
-    trie.put(new Buffer('test'), new Buffer('one'), function () {
+    trie.put('test', 'one', function () {
       done()
     })
   })
 
   it('should get a value', function (done) {
-    trie.get(new Buffer('test'), function (err, value) {
+    trie.get('test', function (err, value) {
       assert.equal(value.toString(), 'one')
       done()
     })
   })
 
   it('should update a value', function (done) {
-    trie.put(new Buffer('test'), new Buffer('two'), function () {
-      trie.get(new Buffer('test'), function (err, value) {
+    trie.put('test', new Buffer('two'), function () {
+      trie.get('test', function (err, value) {
         assert.equal(value.toString(), 'two')
         done()
       })
@@ -41,8 +41,8 @@ describe('simple save and retrive', function () {
   })
 
   it('should delete a value', function (done) {
-    trie.del(new Buffer('test'), function (stack) {
-      trie.get(new Buffer('test'), function (err, value) {
+    trie.del('test', function (stack) {
+      trie.get('test', function (err, value) {
         done()
       })
     })
@@ -327,7 +327,6 @@ describe('it should create the genesis state root from ethereum', function () {
 
   var genesisStateRoot = '2f4399b08efe68945c1cf90ffe85bbe3ce978959da753f9e649f034015b8817d'
   assert.equal(cppRlp, rlpAccount.toString('hex'))
-  // console.log(rlpAccount.toString('hex'))
 
   it('shall match the root given unto us by the Master Coder Gav', function (done) {
     trie4.put(g, rlpAccount, function () {
