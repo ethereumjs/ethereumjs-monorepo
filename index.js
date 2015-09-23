@@ -51,6 +51,7 @@ exports.pad = function (msg, length) {
 
 /**
  * Trims leading zeros from a buffer or an array
+ *
  * @method unpad
  * @param {Buffer|Array|String}
  * @return {Buffer|Array|String}
@@ -68,7 +69,11 @@ exports.unpad = exports.stripZeros = function (a) {
 exports.toBuffer = function (v) {
   if (!Buffer.isBuffer(v)) {
     if (typeof v === 'string') {
-      v = new Buffer(padToEven(exports.stripHexPrefix(v)), 'hex')
+      if (exports.isHexPrefixed(v)) {
+        v = new Buffer(padToEven(exports.stripHexPrefix(v)), 'hex')
+      } else {
+        v = new Buffer(v)
+      }
     } else if (typeof v === 'number') {
       v = exports.intToBuffer(v)
     } else if (v === null || v === undefined) {

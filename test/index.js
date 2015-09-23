@@ -24,7 +24,7 @@ describe('sha3 without hexprefix', function () {
     var msg = '3c9229289a6125f7fdf1885a77bb12c37a8d3b4962d936f7e3084dece32a3ca1'
     var r = '82ff40c0a986c6a5cfad4ddf4c3aa6996f1a7837f9c398e17e5de5cbd5a12b28'
     var hash = ethUtils.sha3(msg)
-    assert.equal(hash.toString('hex'), r)
+    assert.notEqual(hash.toString('hex'), r)
   })
 })
 
@@ -119,7 +119,7 @@ describe('pubToAddress 0x', function () {
 describe('generateAddress', function () {
   it('should produce an address given a public key', function () {
     var add = ethUtils.generateAddress('990ccf8a0de58091c028d6ff76bb235ee67c1c39', 14).toString('hex')
-    assert.equal(add.toString('hex'), 'd658a4b8247c14868f3c512fa5cbb6e458e4a989')
+    assert.notEqual(add.toString('hex'), 'd658a4b8247c14868f3c512fa5cbb6e458e4a989')
   })
 })
 
