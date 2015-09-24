@@ -5,7 +5,6 @@ var Account = module.exports = function (data) {
   // Define Properties
   var fields = [{
     name: 'nonce',
-    noZero: true,
     default: new Buffer([])
   }, {
     name: 'balance',
@@ -24,9 +23,6 @@ var Account = module.exports = function (data) {
 }
 
 Account.prototype.serialize = function () {
-  if (this.balance.toString('hex') === '00') {
-    this.balance = null
-  }
   return rlp.encode(this.raw)
 }
 
@@ -103,6 +99,6 @@ Account.prototype.setStorage = function (trie, key, val, cb) {
 Account.prototype.isEmpty = function () {
   return this.balance.toString('hex') === '' &&
   this.nonce.toString('hex') === '' &&
-  this.stateRoot.toString('hex') === ethUtil.SHA3_RLP &&
-  this.codeHash.toString('hex') === ethUtil.SHA3_NULL
+  this.stateRoot.toString('hex') === ethUtil.SHA3_RLP.toString('hex') &&
+  this.codeHash.toString('hex') === ethUtil.SHA3_NULL.toString('hex')
 }
