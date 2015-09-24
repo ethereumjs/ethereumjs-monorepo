@@ -62,7 +62,7 @@ exports.makeTx = function (txData) {
   tx.nonce = format(txData.nonce)
   tx.gasPrice = format(txData.gasPrice)
   tx.gasLimit = format(txData.gasLimit)
-  tx.to = txData.to
+  tx.to = format(txData.to, true, true)
   tx.value = format(txData.value)
   tx.data = format(txData.data, false, true) // slice off 0x
   if (txData.secretKey) {
