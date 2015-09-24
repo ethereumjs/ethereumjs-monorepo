@@ -8,7 +8,7 @@
     "bn.js": "^3.1.2",
     "es6-shim": "^0.33.3",
     "ethereum-common": "0.0.10",
-    "ethereumjs-account": "1.0.2",
+    "ethereumjs-account": "1.0.3",
     "ethereumjs-block": "0.0.10",
     "ethereumjs-util": "^2.0.1",
     "functional-red-black-tree": "^1.0.1",
