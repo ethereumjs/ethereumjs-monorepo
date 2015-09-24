@@ -10,10 +10,10 @@
     "ethereum-common": "0.0.10",
     "ethereumjs-account": "^1.0.0",
     "ethereumjs-block": "0.0.10",
-    "ethereumjs-util": "^2.0.0",
+    "ethereumjs-util": "^2.0.1",
     "functional-red-black-tree": "^1.0.1",
     "history-tree": "^2.0.0",
-    "merkle-patricia-tree": "^2.0.2",
+    "merkle-patricia-tree": "^2.0.3",
     "rlp": "^2.0.0",
     "secp256k1": "1.1.4",
     "secp256k1-browserify": "0.0.0"
@@ -21,7 +21,7 @@
   "devDependencies": {
     "ethereumjs-blockchain": "1.1.1",
     "ethereumjs-testing": "git+https://github.com/wanderer/ethereumjs-testing.git",
-    "ethereumjs-tx": "^0.6.6",
+    "ethereumjs-tx": "^0.6.7",
     "level": "^1.3.0",
     "leveldown": "^1.4.1",
     "levelup": "^1.2.1",
