@@ -16,7 +16,7 @@ module.exports = Trie
 
 function Trie (db, root) {
   var self = this
-  this.EMPTY_TRIE_ROOT = new Buffer(ethUtil.SHA3_RLP, 'hex')
+  this.EMPTY_TRIE_ROOT = ethUtil.SHA3_RLP
   this.sem = semaphore(1)
 
   // setup dbs
@@ -85,7 +85,7 @@ Trie.prototype.put = function (key, value, cb) {
     cb = callTogether(cb, self.sem.leave)
 
     self.sem.take(function () {
-      if (self.root.toString('hex') !== ethUtil.SHA3_RLP) {
+      if (self.root.toString('hex') !== ethUtil.SHA3_RLP.toString('hex')) {
         // first try to find the give key or its nearst node
         self._findPath(key, function (err, foundValue, keyRemainder, stack) {
           if (err) {
@@ -406,7 +406,7 @@ Trie.prototype._walkTrie = function (root, onNode, onDone) {
   var aborted = false
   var returnValues = []
 
-  if (root === ethUtil.SHA3_RLP) {
+  if (root.toString('hex') === ethUtil.SHA3_RLP.toString('hex')) {
     return onDone()
   }
 
