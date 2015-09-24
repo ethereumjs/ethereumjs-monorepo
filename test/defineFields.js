@@ -8,14 +8,11 @@ describe('define', function () {
     default: new Buffer([])
   }, {
     name: 'empty',
-    empty: true,
+    allowZero: true,
     length: 20,
     default: new Buffer([])
   }, {
     name: 'value',
-    empty: true,
-    word: true,
-    noZero: true,
     default: new Buffer([])
   }, {
     name: 'r',
