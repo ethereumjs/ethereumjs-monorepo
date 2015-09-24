@@ -56,7 +56,11 @@ module.exports = function runStateTest (options, testData, t, cb) {
         t.equal(bloom.bitvector.toString('hex'), result.bloom.bitvector.toString('hex'), 'the bloom should be correct')
       }
 
-      testUtil.verifyPostConditions(state, testData.post, t, done)
+      if (state.root.toString('hex') !== testData.postStateRoot.toString('hex')) {
+        testUtil.verifyPostConditions(state, testData.post, t, done)
+      } else {
+        done()
+      }
     }
   ], cb)
 }
