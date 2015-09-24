@@ -27,7 +27,7 @@ Account.prototype.serialize = function () {
 }
 
 Account.prototype.isContract = function (address) {
-  var result = this.codeHash.toString('hex') !== ethUtil.SHA3_NULL
+  var result = this.codeHash.toString('hex') !== ethUtil.SHA3_NULL.toString('hex')
   if (address) {
     result |= this.isPrecompiled(address)
   }
@@ -41,7 +41,7 @@ Account.isPrecompiled = Account.prototype.isPrecompiled = function (address) {
 }
 
 Account.prototype.getCode = function (state, cb) {
-  if (this.codeHash.toString('hex') === ethUtil.SHA3_NULL) {
+  if (this.codeHash.toString('hex') === ethUtil.SHA3_NULL.toString('hex')) {
     cb(null, new Buffer([]))
     return
   }
