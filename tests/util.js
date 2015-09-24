@@ -59,11 +59,10 @@ var format = exports.format = function (a, toZero, isHex) {
  */
 exports.makeTx = function (txData) {
   var tx = new Transaction()
-
   tx.nonce = format(txData.nonce)
   tx.gasPrice = format(txData.gasPrice)
   tx.gasLimit = format(txData.gasLimit)
-  tx.to = txData.to
+  tx.to = format(txData.to, true, true)
   tx.value = format(txData.value)
   tx.data = format(txData.data, false, true) // slice off 0x
   if (txData.secretKey) {
@@ -146,7 +145,7 @@ exports.verifyAccountPostConditions = function (state, account, acctData, t, cb)
   }
 
   if (storageKeys.length > 0) {
-    state.root = account.stateRoot.toString('hex')
+    state.root = account.stateRoot
     var rs = state.createReadStream()
     rs.on('data', function (data) {
       var key = data.key.toString('hex')
@@ -297,7 +296,7 @@ exports.makeBlockHeader = function (data) {
   header.timestamp = format(data.currentTimestamp)
   header.gasLimit = format(data.currentGasLimit)
   if (data.previousHash) {
-    header.parentHash = data.previousHash
+    header.parentHash = new Buffer(data.previousHash, 'hex')
   }
   header.coinbase = utils.pad(format(data.currentCoinbase, false, true), 20)
   header.difficulty = format(data.currentDifficulty)
