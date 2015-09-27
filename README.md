@@ -28,7 +28,7 @@ ethash.verifyPOW(validblock, function (result) {
 })
 ```
 
-# BOWSER  
+# BROWSER  
 Yep, You can [browserify](http://browserify.org/) it.
 
 # API
