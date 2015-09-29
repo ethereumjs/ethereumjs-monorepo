@@ -24,6 +24,12 @@
     "async": "^1.4.2",
     "ethashjs": "0.0.3",
     "ethereumjs-block": "0.0.10",
-    "ethereumjs-util": "^1.4.0"
+    "ethereumjs-util": "^1.4.0",
+    "levelup": "^1.2.1",
+    "memdown": "^1.0.0",
+    "semaphore": "^1.0.3"
+  },
+  "devDependencies": {
+    "tape": "^4.2.0"
   }
 }

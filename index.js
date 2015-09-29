@@ -6,19 +6,27 @@
  * meta.head is the head of the chain that has had its state root verifed
  */
 const async = require('async')
+const semaphore = require('semaphore')
+const levelup = require('levelup')
+const memdown = require('memdown')
 const Block = require('ethereumjs-block')
-const utils = require('ethereumjs-util')
-const BN = utils.BN
+const ethUtil = require('ethereumjs-util')
 const Ethash = require('ethashjs')
-const rlp = utils.rlp
+const BN = ethUtil.BN
+const rlp = ethUtil.rlp
 
 var Blockchain = module.exports = function (db, validate) {
+  if (!db) {
+    db = levelup('', {
+      db: memdown
+    })
+  }
   this.db = db
   this.ethash = new Ethash(db)
   this.validate = validate === undefined ? true : validate
   this._initDone = false
-  this._pendingSaves = []
-  this._pendingGets = []
+  this._pendingOps = []
+  this._putSemaphore = semaphore(1)
   this._init()
 }
 
@@ -30,42 +38,25 @@ var Blockchain = module.exports = function (db, validate) {
 Blockchain.prototype._init = function () {
   var self = this
 
-  function onHeadFound () {
-    // run the pending save operations
-    async.whilst(function () {
-      return self._pendingSaves.length
-    }, function (cb) {
-      var op = self._pendingSaves.pop()
-      self._addBlock(op[0], function () {
-        op[1]()
-        cb()
-      })
-    }, function () {
-      delete self._pendingSaves
-      self._initDone = true
-
-      // run the pending getHead
-      self._pendingGets.forEach(function (args) {
-        self.getHead.apply(self, args)
-      })
+  function onHeadFound (err, meta) {
+    self._initDone = true
+    if (!err && meta) {
+      self.meta = meta
+      self.meta.td = new BN(self.meta.td)
+    } else {
+      self.meta = {
+        heads: {},
+        td: new BN()
+      }
+    }
+    self._pendingOps.forEach(function (fn) {
+      fn()
     })
   }
 
   this.db.get('meta', {
     valueEncoding: 'json'
-  },
-    function (err, meta) {
-      if (!err && meta) {
-        self.meta = meta
-        self.meta.td = new BN(self.meta.td)
-      } else {
-        self.meta = {
-          heads: {},
-          td: new BN()
-        }
-      }
-      onHeadFound()
-    })
+  }, onHeadFound)
 }
 
 Blockchain.prototype.setCanicalGenesisBlock = function (cb) {
@@ -80,32 +71,49 @@ Blockchain.prototype.setCanicalGenesisBlock = function (cb) {
  * @param cb Function the callback
  */
 Blockchain.prototype.getHead = function (name, cb) {
+  var self = this
   if (typeof name === 'function') {
     cb = name
     name = 'vm'
   }
 
   if (!this._initDone) {
-    this._pendingGets.push(arguments)
+    this._pendingOps.push(runGetHead)
   } else {
+    runGetHead()
+  }
+
+  function runGetHead () {
     // if the head is not found return the rawHead
-    var hash = this.meta.heads[name] || this.meta.rawHead
-    this.getBlock(hash, cb)
+    var hash = self.meta.heads[name] || self.meta.rawHead
+    if (!hash) {
+      return cb('no header')
+    }
+    self.getBlock(hash, cb)
   }
 }
 
 /**
  * Adds a block to the blockchain
- * @method addBlock
+ * @method putBlock
  * @param {object} block -the block to be added to the block chain
  * @param {function} cb - a callback function
  */
 Blockchain.prototype.putBlock = function (block, cb) {
-  if (!this._initDone) {
-    this._pendingSaves.push([block, cb])
-  } else {
-    this._addBlock(block, cb)
-  }
+  var self = this
+
+  var fn = this._putBlock.bind(this, block, function () {
+    self._putSemaphore.leave()
+    cb()
+  })
+
+  this._putSemaphore.take(function () {
+    if (!self._initDone) {
+      self._pendingOps.push(fn)
+    } else {
+      fn()
+    }
+  })
 }
 
 Blockchain.prototype.putBlocks = function (blocks, cb) {
@@ -115,7 +123,7 @@ Blockchain.prototype.putBlocks = function (blocks, cb) {
   }, cb)
 }
 
-Blockchain.prototype._addBlock = function (block, cb) {
+Blockchain.prototype._putBlock = function (block, cb) {
   var self = this
   var blockHash = block.hash().toString('hex')
   var parentDetails
@@ -169,7 +177,7 @@ Blockchain.prototype._addBlock = function (block, cb) {
     },
     function rebuildInfo (cb2) {
       // calculate the total difficulty for this block
-      var td = new BN(utils.bufferToInt(block.header.difficulty))
+      var td = new BN(ethUtil.bufferToInt(block.header.difficulty))
       // add this block as a child to the parent's block details
       if (!block.isGenesis()) {
         td.iadd(new BN(parentDetails.td))
@@ -180,7 +188,7 @@ Blockchain.prototype._addBlock = function (block, cb) {
       var blockDetails = {
         parent: block.header.parentHash.toString('hex'),
         td: td.toString(),
-        number: utils.bufferToInt(block.header.number),
+        number: ethUtil.bufferToInt(block.header.number),
         child: null,
         staleChildren: [],
         genesis: block.isGenesis()
@@ -203,7 +211,7 @@ Blockchain.prototype._addBlock = function (block, cb) {
       if (td.cmp(self.meta.td) === 1 || block.isGenesis()) {
         blockDetails.inChain = true
         self.meta.rawHead = blockHash
-        self.meta.height = utils.bufferToInt(block.header.number)
+        self.meta.height = ethUtil.bufferToInt(block.header.number)
         self.meta.td = td
 
         // index by number
@@ -252,6 +260,7 @@ Blockchain.prototype._addBlock = function (block, cb) {
 Blockchain.prototype.getBlock = function (hash, cb) {
   var self = this
   var block
+  hash = ethUtil.toBuffer(hash)
 
   this.db.get(hash.toString('hex'), {
     valueEncoding: 'binary'
@@ -519,35 +528,40 @@ Blockchain.prototype._delBlock = function (blockhash, dbOps, resetHeads, cb) {
   })
 
   async.series([
-
-    function getDetails (cb2) {
-      self.getDetails(blockhash, function (err, d) {
-        for (var head in self.meta.heads) {
-          if (blockhash.toString('hex') === self.meta.heads[head]) {
-            resetHeads.push(head)
-          }
-        }
-        details = d
-        cb2(err)
-      })
-    },
-    function removeChild (cb2) {
-      if (details.child) {
-        self._delBlock(details.child, dbOps, resetHeads, cb2)
-      } else {
-        cb2()
-      }
-    },
-    function removeStaleChildern (cb2) {
-      if (details.staleChildren) {
-        async.each(details.staleChildern, function (child, cb3) {
-          self._delBlock(child, dbOps, resetHeads, cb3)
-        }, function (err) {
-          cb2(err, details)
-        })
-      } else {
-        cb2(null, details)
-      }
-    }
+    getDetails,
+    removeChild,
+    removeStaleChildern
   ], cb)
+
+  function getDetails (cb2) {
+    self.getDetails(blockhash, function (err, d) {
+      for (var head in self.meta.heads) {
+        if (blockhash.toString('hex') === self.meta.heads[head]) {
+          resetHeads.push(head)
+        }
+      }
+      details = d
+      cb2(err)
+    })
+  }
+
+  function removeChild (cb2) {
+    if (details.child) {
+      self._delBlock(details.child, dbOps, resetHeads, cb2)
+    } else {
+      cb2()
+    }
+  }
+
+  function removeStaleChildern (cb2) {
+    if (details.staleChildren) {
+      async.each(details.staleChildern, function (child, cb3) {
+        self._delBlock(child, dbOps, resetHeads, cb3)
+      }, function (err) {
+        cb2(err, details)
+      })
+    } else {
+      cb2(null, details)
+    }
+  }
 }
