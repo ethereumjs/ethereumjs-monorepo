@@ -22,12 +22,6 @@ module.exports = function runStateTest (options, testData, t, cb) {
         sstream = testUtil.enableVMtracing(vm, options.vmtrace)
       }
 
-      // hrstart = process.hrtime()
-
-      if (new BN(block.header.gasLimit).cmp(new BN(tx.gasLimit)) === -1) {
-        return done('tx has a higher gas limit than the block')
-      }
-
       if (tx.validate()) {
         vm.runTx({
           tx: tx,
