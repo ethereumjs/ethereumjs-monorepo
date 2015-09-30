@@ -134,7 +134,7 @@ Block.prototype.validateTransactionsTrie = function () {
   if (this.transactions.length) {
     return txT === this.txTrie.root.toString('hex')
   } else {
-    return txT === ethUtil.SHA3_RLP
+    return txT === ethUtil.SHA3_RLP.toString('hex')
   }
 }
 
