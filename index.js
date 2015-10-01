@@ -242,7 +242,7 @@ exports.addHexPrefix = function (str) {
   if (typeof str !== 'string') {
     return str
   }
-  return exports.isHexPrefixed(str) ? '0x' + str : str
+  return exports.isHexPrefixed(str) ? str : '0x' + str
 }
 
 /**

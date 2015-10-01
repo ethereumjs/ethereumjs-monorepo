@@ -129,3 +129,10 @@ describe('generateAddress with hex prefix', function () {
     assert.equal(add.toString('hex'), 'd658a4b8247c14868f3c512fa5cbb6e458e4a989')
   })
 })
+
+describe('hex prefix', function () {
+  var string = 'd658a4b8247c14868f3c512fa5cbb6e458e4a989'
+  it(' should add', function () {
+    assert.equal(ethUtils.addHexPrefix(string), '0x' + string)
+  })
+})
