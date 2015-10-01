@@ -1,5 +1,4 @@
 const async = require('async')
-const BN = require('bn.js')
 const VM = require('../index.js')
 const Bloom = require('../lib/bloom.js')
 const testUtil = require('./util')
