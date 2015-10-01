@@ -1,10 +1,10 @@
 {
   "name": "ethereumjs-blockchain",
-  "version": "1.1.1",
+  "version": "1.2.0",
   "description": "A module to store and interact with blocks",
   "main": "index.js",
   "scripts": {
-    "test": "standard ./index.js"
+    "test": "standard ./index.js & node ./test/index.js"
   },
   "repository": {
     "type": "git",
@@ -22,11 +22,11 @@
   "homepage": "https://github.com/ethereum/ethereumjs-blockchain#readme",
   "dependencies": {
     "async": "^1.4.2",
-    "ethashjs": "0.0.3",
-    "ethereumjs-block": "0.0.10",
-    "ethereumjs-util": "^1.4.0",
+    "ethashjs": "0.0.4",
+    "ethereumjs-block": "1.0.0",
+    "ethereumjs-util": "^2.0.2",
     "levelup": "^1.2.1",
-    "memdown": "^1.0.0",
+    "memdown": "^1.1.0",
     "semaphore": "^1.0.3"
   },
   "devDependencies": {

@@ -89,7 +89,7 @@ Blockchain.prototype.getHead = function (name, cb) {
     if (!hash) {
       return cb('no header')
     }
-    self.getBlock(hash, cb)
+    self.getBlock(new Buffer(hash, 'hex'), cb)
   }
 }
 
@@ -101,10 +101,9 @@ Blockchain.prototype.getHead = function (name, cb) {
  */
 Blockchain.prototype.putBlock = function (block, cb) {
   var self = this
-
-  var fn = this._putBlock.bind(this, block, function () {
+  var fn = this._putBlock.bind(this, block, function (err) {
     self._putSemaphore.leave()
-    cb()
+    cb(err)
   })
 
   this._putSemaphore.take(function () {
@@ -308,62 +307,6 @@ Blockchain.prototype.putDetails = function (hash, val, cb) {
   }, cb)
 }
 
-Blockchain.prototype.iterator = function (func, name, cb) {
-  var self = this
-  var blockhash = this.meta['head' + name] || this.meta.genesis
-  var lastBlock
-
-  this.getDetails(blockhash, function (err, d) {
-    if (err) cb(err)
-
-    blockhash = d.child
-    async.whilst(function () {
-      return blockhash
-    }, run, function () {
-      self._saveMeta(cb)
-    })
-  })
-
-  function run (cb2) {
-    var details, block
-
-    async.series([
-
-      function getDetails (cb3) {
-        self.getDetails(blockhash, function (err, d) {
-          details = d
-          if (d) {
-            self.meta.heads[name] = blockhash
-          }
-          cb3(err)
-        })
-      },
-      function getBlock (cb3) {
-        self.getBlock(blockhash, function (err, b) {
-          block = b
-          cb3(err)
-        })
-      },
-      function runFunc (cb3) {
-        var reorg = lastBlock ? lastBlock.hash().toString('hex') !== block.header.parentHash.toString('hex') : false
-        lastBlock = block
-        func(block, reorg, cb3)
-      },
-      function saveDetails (cb3) {
-        details[name] = true
-        self.putDetails(blockhash, details, cb3)
-      }
-    ], function (err) {
-      if (!err) {
-        blockhash = details.child
-      } else {
-        blockhash = false
-      }
-      cb2(err)
-    })
-  }
-}
-
 /**
  * Given an ordered array, returns to the callback an array of hashes that are
  * not in the blockchain yet
@@ -405,13 +348,13 @@ Blockchain.prototype._saveMeta = function (cb) {
 }
 
 // builds the chain double link list from the head to the tail.
-// TODO wrap in a semiphore
 Blockchain.prototype._rebuildBlockchain = function (hash, parentHash, parentDetails, ops, cb) {
   var self = this
   var ppDetails, staleHash
 
   parentHash = parentHash.toString('hex')
   parentDetails.child = hash
+  // if(hash === 'dbcb0e37a03846feb77fc862eedcc541819f8429d2b9100d567db79e380d47f3') debugger
 
   ops.push({
     type: 'put',
@@ -430,47 +373,56 @@ Blockchain.prototype._rebuildBlockchain = function (hash, parentHash, parentDeta
   }
 
   parentDetails.child = hash
-  if (parentDetails.inChain) return cb()
+
+  // 结束
+  if (parentDetails.inChain) {
+    return cb()
+  }
 
   parentDetails.inChain = true
 
   async.series([
-
-    function loadNumberIndex (done) {
-      self.db.get(parentDetails.number, function (err, s) {
-        staleHash = s.toString('hex')
-        done(err)
-      })
-    },
-    function loadStaleDetails (done) {
-      if (!staleHash) return done()
-
-      self.getDetails(staleHash, function (err, staleDetails) {
-        staleDetails.inChain = false
-
-        ops.push({
-          type: 'put',
-          key: staleDetails.number,
-          value: hash
-        })
-        ops.push({
-          type: 'put',
-          key: 'detail' + staleHash,
-          value: staleDetails,
-          valueEncoding: 'json'
-        })
-        done(err)
-      })
-    },
-    function getNextDetails (done) {
-      self.getDetails(parentDetails.parent, function (err, d) {
-        ppDetails = d
-        done(err)
-      })
-    }
+    loadNumberIndex,
+    loadStaleDetails,
+    getNextDetails
   ], function () {
     self._rebuildBlockchain(parentHash, parentDetails.parent, ppDetails, ops, cb)
   })
+
+  function loadNumberIndex (done) {
+    self.db.get(parentDetails.number, function (err, s) {
+      staleHash = s.toString('hex')
+      done(err)
+    })
+  }
+
+  function loadStaleDetails (done) {
+    if (!staleHash) return done()
+
+    self.getDetails(staleHash, function (err, staleDetails) {
+      staleDetails.inChain = false
+
+      ops.push({
+        type: 'put',
+        key: staleDetails.number,
+        value: hash
+      })
+      ops.push({
+        type: 'put',
+        key: 'detail' + staleHash,
+        value: staleDetails,
+        valueEncoding: 'json'
+      })
+      done(err)
+    })
+  }
+
+  function getNextDetails (done) {
+    self.getDetails(parentDetails.parent, function (err, d) {
+      ppDetails = d
+      done(err)
+    })
+  }
 }
 
 // todo add SEMIPHORE; the semiphore
@@ -562,6 +514,82 @@ Blockchain.prototype._delBlock = function (blockhash, dbOps, resetHeads, cb) {
       })
     } else {
       cb2(null, details)
+    }
+  }
+}
+
+Blockchain.prototype.iterator = function (name, onBlock, cb) {
+  var func = this._iterator.bind(this, name, onBlock, cb)
+  if (this._initDone) {
+    func()
+  } else {
+    this._pendingOps.push(func)
+  }
+}
+
+Blockchain.prototype._iterator = function (name, func, cb) {
+  var self = this
+  var blockhash = this.meta.heads[name] || this.meta.genesis
+  var lastBlock
+
+  if (!blockhash) {
+    return cb()
+  }
+
+  this.getDetails(blockhash, function (err, d) {
+    if (err) cb(err)
+
+    blockhash = d.child
+    async.whilst(function () {
+      return blockhash
+    }, run, function () {
+      self._saveMeta(cb)
+    })
+  })
+
+  function run (cb2) {
+    var details, block
+
+    async.series([
+      getDetails,
+      getBlock,
+      runFunc,
+      saveDetails
+    ], function (err) {
+      if (!err) {
+        blockhash = details.child
+      } else {
+        blockhash = false
+      }
+      cb2(err)
+    })
+
+    function getDetails (cb3) {
+      self.getDetails(blockhash, function (err, d) {
+        details = d
+        if (d) {
+          self.meta.heads[name] = blockhash
+        }
+        cb3(err)
+      })
+    }
+
+    function getBlock (cb3) {
+      self.getBlock(new Buffer(blockhash, 'hex'), function (err, b) {
+        block = b
+        cb3(err)
+      })
+    }
+
+    function runFunc (cb3) {
+      var reorg = lastBlock ? lastBlock.hash().toString('hex') !== block.header.parentHash.toString('hex') : false
+      lastBlock = block
+      func(block, reorg, cb3)
+    }
+
+    function saveDetails (cb3) {
+      details[name] = true
+      self.putDetails(blockhash, details, cb3)
     }
   }
 }

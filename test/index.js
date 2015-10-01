@@ -8,6 +8,7 @@ test('blockchain test', function (t) {
   var blockchain = new Blockchain()
   blockchain.validate = false
   async.series([
+
     function (done) {
       blockchain.getHead(function (err, head) {
         t.ok(true, 'should not crash on getting head of a blockchain without a genesis')
@@ -18,10 +19,22 @@ test('blockchain test', function (t) {
       var block = new Block()
       block.setGenesisParams()
       blockchain.putBlock(block, function () {
-        t.ok(true)
+        t.equal(block.hash().toString('hex'), blockchain.meta.genesis)
       })
     }
   ])
+})
+
+test('iterator test', function (t) {
+  t.plan(1)
+  var blockchain = new Blockchain()
+  blockchain.validate = false
+  blockchain.iterator('test', function (block, done) {
+    t.ok(false)
+    done()
+  }, function () {
+    t.ok(true)
+  })
 })
 
 // var assert = require('assert'),
