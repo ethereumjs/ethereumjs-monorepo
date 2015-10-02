@@ -48,7 +48,7 @@ module.exports = function runStateTest (options, testData, t, cb) {
         sstream.push(null)
       }
 
-      if (testData.out && testData.out.slice(2)) {
+      if (testData.out.slice(2)) {
         t.equal(results.return.toString('hex'), testData.out.slice(2), 'valid return value')
       }
 
