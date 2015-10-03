@@ -1,5 +1,4 @@
 const async = require('async')
-const BN = require('bn.js')
 const VM = require('../index.js')
 const Bloom = require('../lib/bloom.js')
 const testUtil = require('./util')
@@ -20,12 +19,6 @@ module.exports = function runStateTest (options, testData, t, cb) {
       block = testUtil.makeBlockFromEnv(testData.env)
       if (options.vmtrace) {
         sstream = testUtil.enableVMtracing(vm, options.vmtrace)
-      }
-
-      // hrstart = process.hrtime()
-
-      if (new BN(block.header.gasLimit).cmp(new BN(tx.gasLimit)) === -1) {
-        return done('tx has a higher gas limit than the block')
       }
 
       if (tx.validate()) {

@@ -1,5 +1,6 @@
 const async = require('async')
 const testUtil = require('./util.js')
+const ethUtil = require('ethereumjs-util')
 const Trie = require('merkle-patricia-tree/secure')
 const Block = require('ethereumjs-block')
 const Blockchain = require('ethereumjs-blockchain')
@@ -27,13 +28,15 @@ module.exports = function runBlockchainTest (options, testData, t, cb) {
     },
     function (done) {
       // create and add genesis block
-      genesisBlock.header = new BlockHeader(testData.genesisBlockHeader)
+      genesisBlock.header = new BlockHeader(formatBlockHeader(testData.genesisBlockHeader))
       t.equal(state.root.toString('hex'), genesisBlock.header.stateRoot.toString('hex'), 'correct pre stateRoot')
       if (testData.genesisRLP) {
         t.equal(genesisBlock.serialize().toString('hex'), testData.genesisRLP.slice(2), 'correct genesis RLP')
       }
 
-      blockchain.putBlock(genesisBlock, done)
+      blockchain.putBlock(genesisBlock, function (err) {
+        done(err)
+      })
     },
     function (done) {
       async.eachSeries(testData.blocks, function (raw, cb) {
@@ -72,4 +75,13 @@ module.exports = function runBlockchainTest (options, testData, t, cb) {
     t.equal(blockchain.meta.rawHead.toString('hex'), testData.lastblockhash, 'correct header block')
     cb()
   })
+}
+
+function formatBlockHeader (data) {
+  var r = {}
+  var keys = Object.keys(data)
+  keys.forEach(function (key) {
+    r[key] = ethUtil.addHexPrefix(data[key])
+  })
+  return r
 }
