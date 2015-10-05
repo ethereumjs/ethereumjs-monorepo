@@ -34,7 +34,7 @@
   },
   "scripts": {
     "build": "browserify --s EthVm index.js > ./dist/ethereumjs-vm.js",
-    "test": "standard ./lib/bloom.js ./tests/*js && ./tests/tester -a"
+    "test": "standard *js && ./tests/tester -a"
   },
   "repository": {
     "type": "git",
