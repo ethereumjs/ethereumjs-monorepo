@@ -242,6 +242,7 @@ exports.addHexPrefix = function (str) {
   if (typeof str !== 'string') {
     return str
   }
+
   return exports.isHexPrefixed(str) ? str : '0x' + str
 }
 
@@ -261,7 +262,7 @@ exports.defineProperties = function (self, fields, data) {
 
       for (var prop in this) {
         if (typeof this[prop] !== 'function' && prop !== 'raw' && prop !== '_fields') {
-          obj[prop] = this[prop].toString('hex')
+          obj[prop] = '0x' + this[prop].toString('hex')
         }
       }
       return obj
