@@ -26,8 +26,9 @@ module.exports = function runStateTest (options, testData, t, cb) {
           tx: tx,
           block: block
         }, function (err, r) {
+          err = null
           result = r
-          done(err)
+          done()
         })
       } else {
         done()
