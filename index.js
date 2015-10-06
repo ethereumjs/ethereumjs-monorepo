@@ -62,7 +62,7 @@ Blockchain.prototype._init = function () {
 Blockchain.prototype.setCanicalGenesisBlock = function (cb) {
   var genesisBlock = new Block()
   genesisBlock.setGenesisParams()
-  this.putBlock(genesisBlock, function () {})
+  this.putBlock(genesisBlock, cb)
 }
 
 /**
