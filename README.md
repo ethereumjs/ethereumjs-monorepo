@@ -90,7 +90,7 @@ Create an new Trie which share the underlining db and cache with the orginal tri
 
 --------------------------------------------------------
 
-####  `trie.batch(operations)`
+####  `trie.batch(operations, cb)`
 Give an hash of operation adds them to the DB
 - `operations` a hash of `key`/`values` to add to the trie.
 example  
