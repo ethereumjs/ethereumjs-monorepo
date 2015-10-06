@@ -143,10 +143,10 @@ Loads a contract defined as a stingified JS function
 - `address` - a `Buffer` containing the address of the contract
 - `src` - a `String` of a function to be run when the `address` is called
 
-### `VM` debugging hook
+### `events`
 
-#### `vm.onStep` 
-When `onStep` is assigned a function the VM will run that function at the begining of each opcode. The `onStep` function is give an `Object` and `done`. `done` must be called before the VM contunies. The `Object` has the following propieties.
+#### `step` 
+The `step` event is give an `Object` and `done`. ` The `Object` has the following propieties.
 - `pc` - a `Number` repersenting the program counter
 - `opcode` - the next opcode to be ran
 - `gas` - a `bignum` standing for the amount of gasLeft
@@ -157,8 +157,15 @@ When `onStep` is assigned a function the VM will run that function at the begini
 - `depth` - the current number of calls deep the contract is
 - `memory` - the memory of the VM as a `buffer`
 
+#### `beforeBlock`
+#### `afterBlock`
+#### `beforeTx`
+#### `afterTx`
+
 # TESTING
 `npm test`  
+if you want to just run the Blockchain tests run
+`./bin/tester -b`
 if you want to just run the VM tests run
 `./bin/tester -v`
 if you want to just run the State tests run
