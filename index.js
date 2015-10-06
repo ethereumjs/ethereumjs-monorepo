@@ -589,7 +589,19 @@ Blockchain.prototype._iterator = function (name, func, cb) {
 
     function saveDetails (cb3) {
       details[name] = true
-      self.putDetails(blockhash, details, cb3)
+      // self.putDetails(blockhash, details, cb3)
+      var dbops = [{
+        key: 'detail' + blockhash.toString('hex'),
+        value: details,
+        valueEncoding: 'json'
+      }, {
+        type: 'put',
+        key: 'meta',
+        valueEncoding: 'json',
+        value: self.meta
+      }]
+
+      self.db.batch(dbops, cb3)
     }
   }
 }
