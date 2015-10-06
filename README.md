@@ -1,11 +1,8 @@
 SYNOPSIS 
 ===========
- [![js-standard-style](https://img.shields.io/badge/code%20style-standard-brightgreen.svg?style=flat)](https://github.com/feross/standard) [![Build Status](https://travis-ci.org/ethereum/ethereumjs-vm.svg?branch=master)](https://travis-ci.org/ethereum/ethereumjs-vm)
+ [![js-standard-style](https://img.shields.io/badge/code%20style-standard-brightgreen.svg?style=flat)](https://github.com/feross/standard) [![Build Status](https://travis-ci.org/ethereum/ethereumjs-vm.svg?branch=master)](https://travis-ci.org/ethereum/ethereumjs-vm) [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/ethereum/ethereumjs-lib?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge) or #ethereumjs on freenode
 
 Implements Ethereum's VM in JS
-
-# CONTACT
-[![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/ethereum/ethereumjs-lib?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge) or #ethereumjs on freenode
 
 # INSTALL
 `npm install ethereumjs-vm`
