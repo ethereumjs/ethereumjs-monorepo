@@ -59,7 +59,7 @@ Blockchain.prototype._init = function () {
   }, onHeadFound)
 }
 
-Blockchain.prototype.setCanicalGenesisBlock = function (cb) {
+Blockchain.prototype.setCanonicalGenesisBlock = function (cb) {
   var genesisBlock = new Block()
   genesisBlock.setGenesisParams()
   this.putBlock(genesisBlock, function(err){
