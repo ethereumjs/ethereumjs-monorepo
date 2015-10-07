@@ -217,7 +217,8 @@ Blockchain.prototype._putBlock = function (block, cb) {
         dbOps.push({
           type: 'put',
           key: parseInt(block.header.number.toString('hex'), 16).toString(),
-          value: blockHash
+          valueEncoding: 'binary',
+          value: new Buffer(blockHash, 'hex')
         })
 
         // save meta
@@ -259,9 +260,12 @@ Blockchain.prototype._putBlock = function (block, cb) {
 Blockchain.prototype.getBlock = function (hash, cb) {
   var self = this
   var block
-  hash = ethUtil.toBuffer(hash)
 
-  this.db.get(hash.toString('hex'), {
+  if (!Number.isInteger(hash)) {
+    hash = ethUtil.toBuffer(hash).toString('hex')
+  }
+
+  this.db.get(hash, {
     valueEncoding: 'binary'
   }, function (err, value) {
     if (err) {
@@ -270,11 +274,9 @@ Blockchain.prototype.getBlock = function (hash, cb) {
 
     // if blockhash
     if (value.length === 32) {
-      self.db.get(hash, function (err, block) {
+      self.db.get(hash, function (err, blockHash) {
         if (err) return cb(err)
-
-        block = new Block(rlp.decode(value))
-        cb(err, block)
+        self.getBlock(blockHash, cb)
       })
     } else {
       block = new Block(rlp.decode(value))

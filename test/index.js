@@ -4,23 +4,44 @@ const Block = require('ethereumjs-block')
 const async = require('async')
 
 test('blockchain test', function (t) {
-  t.plan(2)
+  t.plan(4)
   var blockchain = new Blockchain()
+  var genesisBlock
+  var firstBlock
   blockchain.validate = false
   async.series([
 
     function (done) {
       blockchain.getHead(function (err, head) {
+        err = null
         t.ok(true, 'should not crash on getting head of a blockchain without a genesis')
         done()
       })
     },
-    function (done) {
-      var block = new Block()
-      block.setGenesisParams()
-      blockchain.putBlock(block, function () {
-        t.equal(block.hash().toString('hex'), blockchain.meta.genesis)
+    function addgenesis (done) {
+      genesisBlock = new Block()
+      genesisBlock.setGenesisParams()
+      blockchain.putBlock(genesisBlock, function () {
+        t.equal(genesisBlock.hash().toString('hex'), blockchain.meta.genesis)
+        done()
       })
+    },
+    function addblock (done) {
+      firstBlock = new Block()
+      firstBlock.header.number = 1
+      firstBlock.header.difficulty = '0xfffffff'
+      firstBlock.header.parentHash = genesisBlock.hash()
+      blockchain.putBlock(firstBlock, function (err) {
+        t.ok(true, 'should add a block')
+        done()
+      })
+    },
+    function getBlockByNumber (done) {
+      blockchain.getBlock(1, function (err, block) {
+        err = null
+        t.equals(block.hash().toString('hex'), firstBlock.hash().toString('hex'))
+      })
+      done()
     }
   ])
 })
