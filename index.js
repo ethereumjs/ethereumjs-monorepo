@@ -277,7 +277,9 @@ Blockchain.prototype.getBlock = function (hash, cb) {
 
     // if blockhash
     if (value.length === 32) {
-      self.db.get(hash, function (err, blockHash) {
+      self.db.get(hash, {
+        valueEncoding: 'binary'
+      }, function (err, blockHash) {
         if (err) return cb(err)
         self.getBlock(blockHash, cb)
       })
@@ -487,7 +489,7 @@ Blockchain.prototype._delBlock = function (blockhash, dbOps, resetHeads, cb) {
   async.series([
     getDetails,
     removeChild,
-    removeStaleChildern
+    removeStaleChildren
   ], cb)
 
   function getDetails (cb2) {
@@ -510,7 +512,7 @@ Blockchain.prototype._delBlock = function (blockhash, dbOps, resetHeads, cb) {
     }
   }
 
-  function removeStaleChildern (cb2) {
+  function removeStaleChildren (cb2) {
     if (details.staleChildren) {
       async.each(details.staleChildern, function (child, cb3) {
         self._delBlock(child, dbOps, resetHeads, cb3)
