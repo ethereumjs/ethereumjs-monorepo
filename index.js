@@ -39,7 +39,6 @@ Blockchain.prototype._init = function () {
   var self = this
 
   function onHeadFound (err, meta) {
-    self._initDone = true
     if (!err && meta) {
       self.meta = meta
       self.meta.td = new BN(self.meta.td)
@@ -48,7 +47,12 @@ Blockchain.prototype._init = function () {
         heads: {},
         td: new BN()
       }
+      self._setCanonicalGenesisBlock(function () {
+        onHeadFound(null, self.meta)
+      })
+      return
     }
+    self._initDone = true
     self._pendingOps.forEach(function (fn) {
       fn()
     })
@@ -59,13 +63,14 @@ Blockchain.prototype._init = function () {
   }, onHeadFound)
 }
 
-Blockchain.prototype.setCanonicalGenesisBlock = function (cb) {
+Blockchain.prototype._setCanonicalGenesisBlock = function (cb) {
   var genesisBlock = new Block()
   genesisBlock.setGenesisParams()
-  this.putBlock(genesisBlock, function(err){
-    if (err) return cb(err)
-    cb(null, genesisBlock)
-  })
+  this._putBlock(genesisBlock, cb, true)
+}
+
+Blockchain.prototype.putGenesis = function (genesis, cb) {
+  this.putBlock(genesis, cb, true)
 }
 
 /**
@@ -102,12 +107,12 @@ Blockchain.prototype.getHead = function (name, cb) {
  * @param {object} block -the block to be added to the block chain
  * @param {function} cb - a callback function
  */
-Blockchain.prototype.putBlock = function (block, cb) {
+Blockchain.prototype.putBlock = function (block, cb, _genesis) {
   var self = this
   var fn = this._putBlock.bind(this, block, function (err) {
     self._putSemaphore.leave()
     cb(err)
-  })
+  }, _genesis)
 
   this._putSemaphore.take(function () {
     if (!self._initDone) {
@@ -125,7 +130,7 @@ Blockchain.prototype.putBlocks = function (blocks, cb) {
   }, cb)
 }
 
-Blockchain.prototype._putBlock = function (block, cb) {
+Blockchain.prototype._putBlock = function (block, cb, _genesis) {
   var self = this
   var blockHash = block.hash().toString('hex')
   var parentDetails
@@ -142,7 +147,7 @@ Blockchain.prototype._putBlock = function (block, cb) {
         return cb2()
       }
 
-      if (self.meta.genesis && block.isGenesis()) {
+      if (!_genesis && block.isGenesis()) {
         return cb2('already have genesis set')
       }
 
