@@ -1,6 +1,6 @@
 {
   "name": "ethereumjs-tx",
-  "version": "0.6.7",
+  "version": "0.6.8",
   "description": "An simple module for creating, manipulating and signing ethereum transactions",
   "main": "index.js",
   "scripts": {
@@ -16,7 +16,7 @@
   "dependencies": {
     "ethereum-common": "0.0.10",
     "ethereumjs-util": "^1.4.0",
-    "secp256k1": "1.1.4",
+    "secp256k1": "^1.1.5",
     "secp256k1-browserify": "0.0.0"
   },
   "devDependencies": {

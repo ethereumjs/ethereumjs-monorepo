@@ -32,7 +32,7 @@ var Transaction = module.exports = function (data) {
     default: new Buffer([])
   }, {
     name: 'to',
-    empty: true,
+    allowZero: true,
     length: 20,
     default: new Buffer([])
   }, {
