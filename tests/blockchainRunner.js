@@ -33,7 +33,7 @@ module.exports = function runBlockchainTest (options, testData, t, cb) {
       if (testData.genesisRLP) {
         t.equal(genesisBlock.serialize().toString('hex'), testData.genesisRLP.slice(2), 'correct genesis RLP')
       }
-      blockchain.putBlock(genesisBlock, function (err) {
+      blockchain.putGenesis(genesisBlock, function (err) {
         done(err)
       })
     },
