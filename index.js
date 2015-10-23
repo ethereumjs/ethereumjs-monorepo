@@ -221,10 +221,11 @@ Blockchain.prototype._putBlock = function (block, cb, _genesis) {
         self.meta.height = ethUtil.bufferToInt(block.header.number)
         self.meta.td = td
 
+        const key = parseInt(block.header.number.toString('hex'), 16).toString()
         // index by number
         dbOps.push({
           type: 'put',
-          key: parseInt(block.header.number.toString('hex'), 16).toString(),
+          key: key,
           valueEncoding: 'binary',
           value: new Buffer(blockHash, 'hex')
         })
@@ -365,15 +366,6 @@ Blockchain.prototype._rebuildBlockchain = function (hash, parentHash, parentDeta
   var ppDetails, staleHash
 
   parentHash = parentHash.toString('hex')
-  parentDetails.child = hash
-  // if(hash === 'dbcb0e37a03846feb77fc862eedcc541819f8429d2b9100d567db79e380d47f3') debugger
-
-  ops.push({
-    type: 'put',
-    key: 'detail' + parentHash,
-    valueEncoding: 'json',
-    value: parentDetails
-  })
 
   var i = parentDetails.staleChildren.indexOf(hash)
   if (i !== -1) {
@@ -386,9 +378,17 @@ Blockchain.prototype._rebuildBlockchain = function (hash, parentHash, parentDeta
 
   parentDetails.child = hash
 
+  ops.push({
+    type: 'put',
+    key: 'detail' + parentHash,
+    valueEncoding: 'json',
+    value: parentDetails
+  })
+
   // 结束
   if (parentDetails.inChain) {
-    return cb()
+    cb()
+    return
   }
 
   parentDetails.inChain = true
@@ -409,15 +409,20 @@ Blockchain.prototype._rebuildBlockchain = function (hash, parentHash, parentDeta
   }
 
   function loadStaleDetails (done) {
-    if (!staleHash) return done()
+    if (!staleHash) {
+      done()
+      return
+    }
 
     self.getDetails(staleHash, function (err, staleDetails) {
       staleDetails.inChain = false
 
+      // reindex the block number
       ops.push({
         type: 'put',
+        valueEncoding: 'binary',
         key: staleDetails.number,
-        value: hash
+        value: new Buffer(parentHash, 'hex')
       })
       ops.push({
         type: 'put',
