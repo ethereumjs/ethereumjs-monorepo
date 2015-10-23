@@ -177,7 +177,7 @@ Trie.prototype._putRaw = function (key, val, cb) {
 
 /**
  * Writes a value directly to the underlining db
- * @method putRaw
+ * @mremoveListenethod putRaw
  * @param {Buffer} key
  * @param {Buffer} key
  */
@@ -691,7 +691,7 @@ Trie.prototype.batch = function (ops, cb) {
  */
 Trie.prototype.checkRoot = function (root, cb) {
   root = ethUtil.toBuffer(root)
-  this._lookupNode(root, function (err, value) {
-    cb(err, !!value)
+  this._lookupNode(root, function (value) {
+    cb(null, !!value)
   })
 }
