@@ -4,37 +4,37 @@ var opcodes = require('../lib/opcodes.js')
 
 nameOpCodes(new Buffer(data, 'hex'))
 
-function nameOpCodes(raw) {
-  var pushData;
+function nameOpCodes (raw) {
+  var pushData
 
   for (var i = 0; i < raw.length; i++) {
-    var pc = i;
-    var curOpCode = opcodes(raw[pc], true).opcode;
-    
-    //no destinations into the middle of PUSH
+    var pc = i
+    var curOpCode = opcodes(raw[pc], true).opcode
+
+    // no destinations into the middle of PUSH
     if (curOpCode.slice(0, 4) === 'PUSH') {
-      var jumpNum = raw[pc] - 0x5f;
-      pushData = raw.slice(pc + 1,  pc + jumpNum + 1);
-      i += jumpNum;
+      var jumpNum = raw[pc] - 0x5f
+      pushData = raw.slice(pc + 1, pc + jumpNum + 1)
+      i += jumpNum
     }
 
-    console.log(pad(pc, roundLog(raw.length, 10)) + '  ' + curOpCode + ' ' + pushData.toString('hex'));
+    console.log(pad(pc, roundLog(raw.length, 10)) + '  ' + curOpCode + ' ' + pushData.toString('hex'))
 
-    pushData = '';
+    pushData = ''
   }
 
 }
 
-function pad(num, size) {
-  var s = num+"";
-  while (s.length < size) s = "0" + s
+function pad (num, size) {
+  var s = num + ''
+  while (s.length < size) s = '0' + s
   return s
 }
 
-function log(num, base){
-  return Math.log(num)/Math.log(base)
+function log (num, base) {
+  return Math.log(num) / Math.log(base)
 }
 
-function roundLog(num, base){
+function roundLog (num, base) {
   return Math.ceil(log(num, base))
 }
