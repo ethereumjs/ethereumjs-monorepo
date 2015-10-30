@@ -47,7 +47,7 @@ To build for standalone use in the browser install `browserify` and run `npm run
 
 ### `new VM([StateTrie], [blockchain])`
 Creates a new VM object
-- `StateTrie` - The [Patricia Merkle Tree](https://github.com/wanderer/merkle-patricia-tree) that contains the state if no trie is given the `VM` will create an in memory trie
+- `StateTrie` - The [Patricia Merkle Tree](https://github.com/wanderer/merkle-patricia-tree) that contains the state. If no trie is given the `VM` will create an in memory trie.
 - `blockchain` - an instance of the [`Blockchain`](https://github.com/ethereum/ethereumjs-lib/blob/master/docs/blockchain.md) If no blockchain is given a fake blockchain will be used.
 
 ### `VM` methods
@@ -64,8 +64,9 @@ Process a transaction.
 Processes the `block` running all of the transactions it contains and updating the miner's account.
 - `opts.block` - The [`Block`](./block.md) to process
 - `opts.generate` - a `Boolean`; whether to generate the stateRoot. If false  `runBlock` will check the stateRoot of the block against the Trie
-- `cb` - The callback
-
+- `cb` - The callback. It is given two arguments, an `error` string containing an error that may have happened or `null`, and a `results` object with the following properties:
+  - `reciepts` - the reciepts from the transactions in the block.
+  - `results` - an Array for results from the trinasctions in the block.
 --------------------------------------------------------
 
 
@@ -75,6 +76,7 @@ Process a transaction.
 - `opts.block` - The block to which the `tx` belongs. If omitted a blank block will be used.
 - `cb` - The callback. It is given two arguments, an `error` string containing an error that may have happened or `null`, and a `results` object with the following properties:
   - `amountSpent` - the amount of ether used by this transaction as a `bignum`
+  - `gasUsed` - the amount of gas used by the transaction
   - `vm` - contains the results from running the code, if any, as described in [`vm.runCode(params, cb)`](#vmruncodeopts-cb)
 
 --------------------------------------------------------
@@ -91,10 +93,12 @@ Runs EVM code
 - `opts.origin` - The address where the call originated from. The address should be a `Buffer` of 20bits. Defaults to `0`
 - `opts.caller` - The address that ran this code. The address should be a `Buffer` of 20bits. Defaults to `0`
 - `cb` - The callback. It is given two arguments, an `error` string containing an error that may have happened or `null` and a `results` object with the following properties
+  - `gas` - the amount of gas left as a `bignum`
   - `gasUsed` - the amount of gas as a `bignum` the code used to run. 
   - `gasRefund` - a `Bignum` containing the amount of gas to refund from deleting storage values
-  - `suicide` - a `boolean`, whether the contract commited suicide
-  - `account` - account of the code that ran
+  - `suicides` - an `Array` of accounts that have suicided.
+  - `suicideTo` - the account that the suicide refund should go to.
+  - `logs` - an `Array` of logs that the contract emited.
   - `exception` - a `boolean`, whether or not the contract encountered an exception
   - `exceptionError` - a `String` describing the exception if there was one.
   - `return` - a `Buffer` containing the value that was returned by the contract
@@ -102,12 +106,12 @@ Runs EVM code
 
 --------------------------------------------------------
 
-#### `vm.generateCanonicalGenesis(cb)`
+#### `vm.stateManager.generateCanonicalGenesis(cb)`
 Generates the Canonical genesis state.
 
 --------------------------------------------------------
 
-#### `vm.generateGenesis(genesisData, cb)`
+#### `vm.stateManager.generateGenesis(genesisData, cb)`
 Generate the genesis state.
 - `genesisData` - an `Object` whose keys are addresses and values are `string`s representing initial allocation of ether.
 - `cb` - The callback
@@ -121,31 +125,12 @@ vm.generateGenesis(genesisData, function(){
   conosle.log('generation done');
 })
 ```
-#### `vm.createTraceStream()`
-Creates a vm trace stream. The steam is an `Object` stream. The object contains
-- `step` - how many steps the current VM has taken
-- `pc` - a `Number` representing the program counter
-- `depth` - the current number of calls deep the contract is
-- `opcode` - the next opcode to be ran
-- `gas` - a `bignum` standing for the amount of gasLeft
-- `memory` - the memory of the VM as a `buffer`
-- `storage` - a map of key/values that are in storages 
-- `address` - the address of the `account`
-- `stack` - an `Array` of `Buffers` containing the stack
-
-NOTE: using this function defines the `onStep` hook. So you can't use both at the same time.
- 
---------------------------------------------------------
-
-#### `vm.loadCompiled(address, src, cb)`
-Loads a contract defined as a stingified JS function
-- `address` - a `Buffer` containing the address of the contract
-- `src` - a `String` of a function to be run when the `address` is called
 
 ### `events`
+All events are instances of [async-eventemmiter](https://www.npmjs.com/package/async-eventemitter). If an event handler has an arity of 2 the VM will pause until the callback is called
 
 #### `step` 
-The `step` event is given an `Object` and `done`. The `Object` has the following properties.
+The `step` event is given an `Object` and callback. The `Object` has the following properties.
 - `pc` - a `Number` representing the program counter
 - `opcode` - the next opcode to be ran
 - `gas` - a `bignum` standing for the amount of gasLeft
@@ -155,11 +140,19 @@ The `step` event is given an `Object` and `done`. The `Object` has the following
 - `address` - the address of the `account`
 - `depth` - the current number of calls deep the contract is
 - `memory` - the memory of the VM as a `buffer`
+- `cache` - The account cache. Contains all the accounts loaded from the trie. It is an instance of [functional red black tree](https://www.npmjs.com/package/functional-red-black-tree) 
 
 #### `beforeBlock`
+Emmits the block that is about to be processed.
+
 #### `afterBlock`
+Emmits the results of the processing a block.
+
 #### `beforeTx`
+Emmits the Transaction that I about to be processed.
+
 #### `afterTx`
+Emmits the result of the transaction.
 
 # TESTING
 `npm test`  
