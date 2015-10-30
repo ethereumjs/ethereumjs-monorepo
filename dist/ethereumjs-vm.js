@@ -183,7 +183,6 @@ Cache.prototype.flush = function (cb) {
       done()
     }
   }, function () {
-    // self._cache = Tree()
     async.eachSeries(self._deletes, function (address, done) {
       self._trie.del(address, done)
     }, function () {
@@ -203,6 +202,11 @@ Cache.prototype.revert = function () {
 
 Cache.prototype.commit = function () {
   this._checkpoints.pop()
+}
+
+Cache.prototype.clear = function () {
+  this._deletes = []
+  this._cache = Tree()
 }
 
 Cache.prototype.del = function (key) {
@@ -240,7 +244,6 @@ module.exports = {
 
 }).call(this,require("buffer").Buffer)
 },{"buffer":129,"ethereumjs-util":64}],6:[function(require,module,exports){
-(function (Buffer){
 require('es6-shim')
 const util = require('util')
 const async = require('async')
@@ -300,23 +303,6 @@ VM.prototype.runBlockchain = require('./runBlockchain.js')
 VM.prototype.copy = function () {
   var trie = this.trie.copy()
   return new VM(trie, this.blockchain)
-}
-
-VM.prototype.generateCanonicalGenesis = function (cb) {
-  this.generateGenesis(common.genesisState, cb)
-}
-
-VM.prototype.generateGenesis = function (initState, cb) {
-  var self = this
-  var addresses = Object.keys(initState)
-  async.eachSeries(addresses, function (address, done) {
-    // address = new Buffer(address, 'hex')
-    // console.log(address)
-    var balance = new Buffer((new BN(initState[address])).toArray())
-    self.stateManager.putAccountBalance(address, balance, done)
-  }, function () {
-    self.stateManager.cache.flush(cb)
-  })
 }
 
 /**
@@ -381,8 +367,7 @@ VM.prototype.populateCache = function (addresses, cb) {
 //   return rs
 // }
 
-}).call(this,require("buffer").Buffer)
-},{"./precompiled/01-ecrecover.js":10,"./precompiled/02-sha256.js":11,"./precompiled/03-repemd160.js":12,"./precompiled/04-identity.js":13,"./runBlock.js":14,"./runBlockchain.js":15,"./runCall.js":16,"./runCode.js":17,"./runJit.js":18,"./runTx.js":19,"./stateManager.js":20,"async":28,"async-eventemitter":25,"bn.js":29,"buffer":129,"es6-shim":54,"ethereum-common":55,"ethereumjs-account":57,"ethereumjs-util":64,"merkle-patricia-tree":102,"rlp":120,"util":295}],7:[function(require,module,exports){
+},{"./precompiled/01-ecrecover.js":10,"./precompiled/02-sha256.js":11,"./precompiled/03-repemd160.js":12,"./precompiled/04-identity.js":13,"./runBlock.js":14,"./runBlockchain.js":15,"./runCall.js":16,"./runCode.js":17,"./runJit.js":18,"./runTx.js":19,"./stateManager.js":20,"async":28,"async-eventemitter":25,"bn.js":29,"es6-shim":54,"ethereum-common":55,"ethereumjs-account":57,"ethereumjs-util":64,"merkle-patricia-tree":102,"rlp":120,"util":295}],7:[function(require,module,exports){
 const BN = require('bn.js')
 const pow32 = new BN('010000000000000000000000000000000000000000000000000000000000000000', 16)
 const pow31 = new BN('0100000000000000000000000000000000000000000000000000000000000000', 16)
@@ -496,7 +481,6 @@ const BN = utils.BN
 const rlp = utils.rlp
 const constants = require('./constants.js')
 const logTable = require('./logTable.js')
-
 const ERROR = constants.ERROR
 const MAX_INT = 9007199254740991
 
@@ -505,45 +489,40 @@ module.exports = {
   STOP: function (runState) {
     runState.stopped = true
   },
-  ADD: function (runState) {
-    runState.stack.push(
-      new Buffer(
-        new BN(runState.stack.pop())
-          .add(new BN(runState.stack.pop()))
-          .mod(utils.TWO_POW256)
-          .toArray())
+  ADD: function (a, b, runState) {
+    return new Buffer(
+      new BN(a)
+        .add(new BN(b))
+        .mod(utils.TWO_POW256)
+        .toArray())
+  },
+  MUL: function (a, b, runState) {
+    return new Buffer(
+      new BN(a)
+        .mul(new BN(b)).mod(utils.TWO_POW256)
+        .toArray()
     )
   },
-  MUL: function (runState) {
-    runState.stack.push(
-      new Buffer(
-        new BN(runState.stack.pop())
-          .mul(new BN(runState.stack.pop())).mod(utils.TWO_POW256)
-          .toArray()
-      ))
-  },
-  SUB: function (runState) {
-    runState.stack.push(
-      utils.toUnsigned(
-        new BN(runState.stack.pop())
-          .sub(new BN(runState.stack.pop()))
-      )
+  SUB: function (a, b, runState) {
+    return utils.toUnsigned(
+      new BN(a)
+        .sub(new BN(b))
     )
   },
-  DIV: function (runState) {
-    const a = new BN(runState.stack.pop())
-    const b = new BN(runState.stack.pop())
+  DIV: function (a, b, runState) {
+    a = new BN(a)
+    b = new BN(b)
     var r
     if (b.toString() === '0') {
       r = [0]
     } else {
       r = a.div(b).toArray()
     }
-    runState.stack.push(new Buffer(r))
+    return new Buffer(r)
   },
-  SDIV: function (runState) {
-    const a = utils.fromSigned(runState.stack.pop())
-    const b = utils.fromSigned(runState.stack.pop())
+  SDIV: function (a, b, runState) {
+    a = utils.fromSigned(a)
+    b = utils.fromSigned(b)
 
     var r
     if (b.toString() === '0') {
@@ -552,11 +531,11 @@ module.exports = {
       r = utils.toUnsigned(a.div(b))
     }
 
-    runState.stack.push(r)
+    return r
   },
-  MOD: function (runState) {
-    const a = new BN(runState.stack.pop())
-    const b = new BN(runState.stack.pop())
+  MOD: function (a, b, runState) {
+    a = new BN(a)
+    b = new BN(b)
     var r
 
     if (b.toString() === '0') {
@@ -565,11 +544,11 @@ module.exports = {
       r = a.mod(b).toArray()
     }
 
-    runState.stack.push(new Buffer(r))
+    return new Buffer(r)
   },
-  SMOD: function (runState) {
-    const a = utils.fromSigned(runState.stack.pop())
-    const b = utils.fromSigned(runState.stack.pop())
+  SMOD: function (a, b, runState) {
+    a = utils.fromSigned(a)
+    b = utils.fromSigned(b)
     var r
 
     if (b.toString() === '0') {
@@ -582,59 +561,57 @@ module.exports = {
 
       r = utils.toUnsigned(r)
     }
-    runState.stack.push(r)
+    return r
   },
-  ADDMOD: function (runState) {
-    const a = new BN(runState.stack.pop()).add(new BN(runState.stack.pop()))
-    const b = new BN(runState.stack.pop())
+  ADDMOD: function (a, b, c, runState) {
+    a = new BN(a).add(new BN(b))
+    c = new BN(c)
     var r
 
-    if (b.toString() === '0') {
+    if (c.toString() === '0') {
       r = [0]
     } else {
-      r = a.mod(b).toArray()
+      r = a.mod(c).toArray()
     }
 
-    runState.stack.push(
-      new Buffer(r)
-    )
+    return new Buffer(r)
   },
-  MULMOD: function (runState) {
-    const a = new BN(runState.stack.pop()).mul(new BN(runState.stack.pop()))
-    const b = new BN(runState.stack.pop())
+  MULMOD: function (a, b, c, runState) {
+    a = new BN(a).mul(new BN(b))
+    c = new BN(c)
     var r
 
-    if (b.toString() === '0') {
+    if (c.toString() === '0') {
       r = [0]
     } else {
-      r = a.mod(b).toArray()
+      r = a.mod(c).toArray()
     }
 
-    runState.stack.push(new Buffer(r))
+    return new Buffer(r)
   },
-  EXP: function (runState) {
-    var base = new BN(runState.stack.pop())
-    var exponent = new BN(runState.stack.pop())
+  EXP: function (base, exponent, runState) {
+    base = new BN(base)
+    exponent = new BN(exponent)
     var m = BN.red(utils.TWO_POW256)
     var result
 
     base = base.toRed(m)
 
-    if (exponent.cmp(new BN(0)) !== 0) {
+    if (exponent.cmpn(0) !== 0) {
       var bytes = 1 + logTable(exponent)
-      runState.gasLeft.isub(new BN(bytes).mul(new BN(fees.expByteGas.v)))
+      subGas(runState, new BN(bytes).muln(fees.expByteGas.v))
       result = new Buffer(base.redPow(exponent).toArray())
     } else {
       result = new Buffer([1])
     }
 
-    runState.stack.push(result)
+    return result
   },
-  SIGNEXTEND: function (runState) {
-    var k = new BN(runState.stack.pop())
+  SIGNEXTEND: function (k, runState) {
+    k = new BN(k)
     var extendOnes = false
 
-    if (k.cmp(new BN(31)) <= 0) {
+    if (k.cmpn(31) <= 0) {
       var val = new Buffer(32)
       utils.pad(runState.stack.pop(), 32).copy(val)
 
@@ -647,93 +624,79 @@ module.exports = {
         val[i] = extendOnes ? 0xff : 0
       }
 
-      runState.stack.push(val)
+      return val
     }
   },
   // 0x10 range - bit ops
-  LT: function (runState) {
+  LT: function (a, b, runState) {
+    return new Buffer([
+      new BN(a)
+        .cmp(new BN(b)) === -1
+    ])
+  },
+  GT: function (a, b, runState) {
+    return new Buffer([
+      new BN(a)
+        .cmp(new BN(b)) === 1
+    ])
+  },
+  SLT: function (a, b, runState) {
     runState.stack.push(
       new Buffer([
-        new BN(runState.stack.pop())
-          .cmp(new BN(runState.stack.pop())) === -1
+        utils.fromSigned(a)
+          .cmp(utils.fromSigned(b)) === -1
       ])
     )
   },
-  GT: function (runState) {
-    runState.stack.push(
-      new Buffer([
-        new BN(runState.stack.pop())
-          .cmp(new BN(runState.stack.pop())) === 1
-      ])
+  SGT: function (a, b, runState) {
+    return new Buffer([
+      utils.fromSigned(a)
+        .cmp(utils.fromSigned(b)) === 1
+    ])
+  },
+  EQ: function (a, b, runState) {
+    a = utils.unpad(a)
+    b = utils.unpad(b)
+    return new Buffer([a.toString('hex') === b.toString('hex')])
+  },
+  ISZERO: function (a, runState) {
+    a = utils.bufferToInt(a)
+    return new Buffer([!a])
+  },
+  AND: function (a, b, runState) {
+    return new Buffer((
+    new BN(a)
+      .and(
+        new BN(b)
     )
-  },
-  SLT: function (runState) {
-    runState.stack.push(
-      new Buffer([
-        utils.fromSigned(runState.stack.pop())
-          .cmp(utils.fromSigned(runState.stack.pop())) === -1
-      ])
-    )
-  },
-  SGT: function (runState) {
-    runState.stack.push(
-      new Buffer([
-        utils.fromSigned(runState.stack.pop())
-          .cmp(utils.fromSigned(runState.stack.pop())) === 1
-      ])
-    )
-  },
-  EQ: function (runState) {
-    const a = utils.unpad(runState.stack.pop())
-    const b = utils.unpad(runState.stack.pop())
-    runState.stack.push(new Buffer([a.toString('hex') === b.toString('hex')]))
-  },
-  ISZERO: function (runState) {
-    const i = utils.bufferToInt(runState.stack.pop())
-    runState.stack.push(new Buffer([!i]))
-  },
-  AND: function (runState) {
-    runState.stack.push(
-      new Buffer((
-      new BN(runState.stack.pop())
-        .and(
-          new BN(runState.stack.pop())
       )
-        )
-        .toArray())
-    )
+      .toArray())
   },
-  OR: function (runState) {
-    runState.stack.push(
-      new Buffer((
-      new BN(runState.stack.pop())
-        .or(
-          new BN(runState.stack.pop())
+  OR: function (a, b, runState) {
+    return new Buffer((
+    new BN(a)
+      .or(
+        new BN(b)
+    )
       )
-        )
-        .toArray())
-    )
+      .toArray())
   },
-  XOR: function (runState) {
-    runState.stack.push(
-      new Buffer((
-      new BN(runState.stack.pop())
-        .xor(
-          new BN(runState.stack.pop())
+  XOR: function (a, b, runState) {
+    return new Buffer((
+    new BN(a)
+      .xor(
+        new BN(b)
+    )
       )
-        )
-        .toArray())
-    )
+      .toArray())
   },
-  NOT: function (runState) {
-    runState.stack.push(
-      new Buffer(utils.TWO_POW256.subn(1).sub(new BN(runState.stack.pop()))
-        .toArray())
-    )
+  NOT: function (a, runState) {
+    return new Buffer(utils.TWO_POW256.subn(1).sub(new BN(a))
+      .toArray())
   },
-  BYTE: function (runState) {
-    var pos = utils.bufferToInt(runState.stack.pop())
-    var word = utils.pad(runState.stack.pop(), 32)
+  BYTE: function (pos, word, runState) {
+    pos = utils.bufferToInt(pos)
+    word = utils.pad(word, 32)
     var byte
 
     if (pos < 32) {
@@ -742,53 +705,45 @@ module.exports = {
       byte = new Buffer([0])
     }
 
-    runState.stack.push(byte)
+    return byte
   },
   // 0x20 range - crypto
-  SHA3: function (runState) {
-    var offset = utils.bufferToInt(runState.stack.pop())
-    var length = utils.bufferToInt(runState.stack.pop())
+  SHA3: function (offset, length, runState) {
+    offset = utils.bufferToInt(offset)
+    length = utils.bufferToInt(length)
     var data = memLoad(runState, offset, length)
-    if (data === ERROR.OUT_OF_GAS) return data
-
-    // TODO: copy fee
-    runState.gasLeft.isubn(fees.sha3WordGas.v * Math.ceil(length / 32))
-    if (runState.gasLeft.cmpn(0) === -1) return ERROR.OUT_OF_GAS
-    runState.stack.push(utils.sha3(data))
+    // copy fee
+    subGas(runState, new BN(fees.sha3WordGas.v * Math.ceil(length / 32)))
+    return utils.sha3(data)
   },
   // 0x30 range - closure state
   ADDRESS: function (runState) {
-    runState.stack.push(runState.address)
+    return runState.address
   },
-  BALANCE: function (runState, cb) {
+  BALANCE: function (address, runState, cb) {
     var stateManager = runState.stateManager
-    var address = runState.stack.pop().slice(-20)
+    address = address.slice(-20)
 
     // shortcut if current account
     if (address.toString('hex') === runState.address.toString('hex')) {
-      runState.stack.push(runState.contract.balance)
-      cb()
+      cb(null, runState.contract.balance)
       return
     }
 
     // otherwise load account then return balance
-    stateManager.getAccountBalance(address, function (err, balance) {
-      if (err) return cb(err)
-      runState.stack.push(balance)
-      cb()
-    })
+    stateManager.getAccountBalance(address, cb)
   },
   ORIGIN: function (runState) {
-    runState.stack.push(runState.origin)
+    return runState.origin
   },
   CALLER: function (runState) {
-    runState.stack.push(runState.caller)
+    return runState.caller
   },
   CALLVALUE: function (runState) {
-    runState.stack.push(new Buffer(runState.callValue.toArray()))
+    return new Buffer(runState.callValue.toArray())
   },
-  CALLDATALOAD: function (runState) {
-    var pos = utils.bufferToInt(runState.stack.pop())
+  CALLDATALOAD: function (pos, runState) {
+    pos = utils.bufferToInt(pos)
     var loaded = runState.callData.slice(pos, pos + 32)
 
     loaded = loaded.length ? loaded : new Buffer([0])
@@ -801,146 +756,133 @@ module.exports = {
       loaded = Buffer.concat([loaded, pad], 32)
     }
 
-    runState.stack.push(loaded)
+    return loaded
   },
   CALLDATASIZE: function (runState) {
     if (runState.callData.length === 1 && runState.callData[0] === 0) {
-      runState.stack.push(new Buffer([0]))
+      return new Buffer([0])
     } else {
-      runState.stack.push(utils.intToBuffer(runState.callData.length))
+      return utils.intToBuffer(runState.callData.length)
     }
   },
-  CALLDATACOPY: function (runState) {
-    var memOffset = utils.bufferToInt(runState.stack.pop())
-    var dataOffsetBuf = runState.stack.pop()
-    var dataLength = utils.bufferToInt(runState.stack.pop())
+  CALLDATACOPY: function (memOffset, dataOffsetBuf, dataLength, runState) {
+    memOffset = utils.bufferToInt(memOffset)
+    dataLength = utils.bufferToInt(dataLength)
     var dataOffset = utils.bufferToInt(dataOffsetBuf)
 
-    var err = memStore(runState, memOffset, runState.callData, dataOffset, dataLength)
-    if (err) return err
+    memStore(runState, memOffset, runState.callData, dataOffset, dataLength)
     // sub the COPY fee
-    runState.gasLeft.isub(new BN(Number(fees.copyGas.v) * Math.ceil(dataLength / 32)))
+    subGas(runState, new BN(Number(fees.copyGas.v) * Math.ceil(dataLength / 32)))
   },
   CODESIZE: function (runState) {
-    runState.stack.push(utils.intToBuffer(runState.code.length))
+    return utils.intToBuffer(runState.code.length)
   },
-  CODECOPY: function (runState) {
-    const memOffset = utils.bufferToInt(runState.stack.pop())
-    const codeOffset = utils.bufferToInt(runState.stack.pop())
-    const length = utils.bufferToInt(runState.stack.pop())
+  CODECOPY: function (memOffset, codeOffset, length, runState) {
+    memOffset = utils.bufferToInt(memOffset)
+    codeOffset = utils.bufferToInt(codeOffset)
+    length = utils.bufferToInt(length)
 
-    var err = memStore(runState, memOffset, runState.code, codeOffset, length)
-    if (err) return err
+    memStore(runState, memOffset, runState.code, codeOffset, length)
     // sub the COPY fee
-    runState.gasLeft.isubn(fees.copyGas.v * Math.ceil(length / 32))
+    subGas(runState, new BN(fees.copyGas.v * Math.ceil(length / 32)))
   },
-  EXTCODESIZE: function (runState, cb) {
+  EXTCODESIZE: function (address, runState, cb) {
     var stateManager = runState.stateManager
-    var address = runState.stack.pop().slice(-20)
+    address = address.slice(-20)
     stateManager.getContractCode(address, function (err, code) {
-      if (err) return cb(err)
-      runState.stack.push(utils.intToBuffer(code.length))
-      cb()
+      cb(err, utils.intToBuffer(code.length))
     })
   },
-  EXTCODECOPY: function (runState, cb) {
+  EXTCODECOPY: function (address, memOffset, codeOffset, length, runState, cb) {
     var stateManager = runState.stateManager
-    var address = runState.stack.pop().slice(-20)
-    var memOffset = utils.bufferToInt(runState.stack.pop())
-    var codeOffset = utils.bufferToInt(runState.stack.pop())
-    var length = utils.bufferToInt(runState.stack.pop())
+    address = address.slice(-20)
+    memOffset = utils.bufferToInt(memOffset)
+    codeOffset = utils.bufferToInt(codeOffset)
+    length = utils.bufferToInt(length)
+    subMemUsage(runState, memOffset, length)
+
+    // copy fee
+    var fee = new BN(Number(fees.copyGas.v) * Math.ceil(length / 32))
+    subGas(runState, fee)
 
     stateManager.getContractCode(address, function (err, code) {
       code = err ? new Buffer([0]) : code
-      err = memStore(runState, memOffset, code, codeOffset, length)
-      if (err) return cb(err)
-
-      // sub the COPY fee
-      var fee = new BN(Number(fees.copyGas.v) * Math.ceil(length / 32))
-      runState.gasLeft.isub(fee)
-      cb()
+      memStore(runState, memOffset, code, codeOffset, length, false)
+      cb(err)
     })
   },
   GASPRICE: function (runState) {
     runState.stack.push(runState.gasPrice)
   },
   // '0x40' range - block operations
-  BLOCKHASH: function (runState, cb) {
+  BLOCKHASH: function (number, runState, cb) {
     var stateManager = runState.stateManager
-    var number = utils.bufferToInt(runState.stack.pop())
+    number = utils.bufferToInt(number)
     var diff = utils.bufferToInt(runState.block.header.number) - utils.bufferToInt(number)
 
     // block lookups must be within the past 256 blocks
     if (diff > 256 || diff <= 0) {
-      runState.stack.push(new Buffer([0]))
-      cb()
+      cb(null, new Buffer([0]))
       return
     }
 
     stateManager.getBlockHash(number, function (err, blockHash) {
-      if (err) return cb(err)
-      runState.stack.push(blockHash)
-      cb()
+      if (err) {
+        // if we are at a low block height and request a blockhash before the genesis block
+        cb(null, new Buffer([0]))
+      } else {
+        cb(null, blockHash)
+      }
     })
   },
   COINBASE: function (runState) {
-    runState.stack.push(runState.block.header.coinbase)
+    return runState.block.header.coinbase
   },
   TIMESTAMP: function (runState) {
-    runState.stack.push(runState.block.header.timestamp)
+    return runState.block.header.timestamp
   },
   NUMBER: function (runState) {
-    runState.stack.push(runState.block.header.number)
+    return runState.block.header.number
   },
   DIFFICULTY: function (runState) {
-    runState.stack.push(runState.block.header.difficulty)
+    return runState.block.header.difficulty
   },
   GASLIMIT: function (runState) {
-    runState.stack.push(runState.block.header.gasLimit)
+    return runState.block.header.gasLimit
   },
   // 0x50 range - 'storage' and execution
-  POP: function (runState) {
-    runState.stack.pop()
-  },
-  MLOAD: function (runState) {
-    var pos = utils.bufferToInt(runState.stack.pop())
+  POP: function () {},
+  MLOAD: function (pos, runState) {
+    pos = utils.bufferToInt(pos)
     var loaded = utils.unpad(memLoad(runState, pos, 32))
-
-    if (loaded === ERROR.OUT_OF_GAS) {
-      return loaded
-    }
-
-    runState.stack.push(loaded)
+    return loaded
   },
-  MSTORE: function (runState) {
-    var offset = utils.bufferToInt(runState.stack.pop())
-    var word = utils.pad(runState.stack.pop(), 32)
-    return memStore(runState, offset, word, 0, 32)
+  MSTORE: function (offset, word, runState) {
+    offset = utils.bufferToInt(offset)
+    word = utils.pad(word, 32)
+    memStore(runState, offset, word, 0, 32)
   },
-  MSTORE8: function (runState) {
-    var offset = utils.bufferToInt(runState.stack.pop())
-    var byte = runState.stack.pop()
+  MSTORE8: function (offset, byte, runState) {
+    offset = utils.bufferToInt(offset)
     // grab the last byte
     byte = byte.slice(byte.length - 1)
-    return memStore(runState, offset, byte, 0, 1)
+    memStore(runState, offset, byte, 0, 1)
   },
-  SLOAD: function (runState, cb) {
+  SLOAD: function (key, runState, cb) {
     var stateManager = runState.stateManager
-    var key = utils.pad(runState.stack.pop(), 32)
+    key = utils.pad(key, 32)
 
     stateManager.getContractStorage(runState.address, key, function (err, value) {
-      if (err) return cb(err)
       var loaded = rlp.decode(value)
       loaded = loaded.length ? loaded : new Buffer([0])
-      runState.stack.push(loaded)
-      cb()
+      cb(err, loaded)
     })
   },
-  SSTORE: function (runState, cb) {
+  SSTORE: function (key, val, runState, cb) {
     var stateManager = runState.stateManager
     var address = runState.address
-    var key = utils.pad(runState.stack.pop(), 32)
-    var value = utils.unpad(runState.stack.pop())
+    key = utils.pad(key, 32)
+    var value = utils.unpad(val)
 
     // format input
     if (value.length === 0) {
@@ -952,75 +894,74 @@ module.exports = {
     }
 
     stateManager.getContractStorage(runState.address, key, function (err, found) {
-      if (err) return cb(err)
-
-      // calculate gas cost
-      if (value === '' && !found) {
-        runState.gasLeft = runState.gasLeft.sub(new BN(fees.sstoreResetGas.v))
-      } else if (value === '' && found) {
-        runState.gasLeft = runState.gasLeft.sub(new BN(fees.sstoreResetGas.v))
-        runState.gasRefund = runState.gasRefund.add(new BN(fees.sstoreRefundGas.v))
-      } else if (value !== '' && !found) {
-        runState.gasLeft = runState.gasLeft.sub(new BN(fees.sstoreSetGas.v))
-      } else if (value !== '' && found) {
-        runState.gasLeft = runState.gasLeft.sub(new BN(fees.sstoreResetGas.v))
+      try {
+        if (value === '' && !found) {
+          subGas(runState, new BN(fees.sstoreResetGas.v))
+        } else if (value === '' && found) {
+          subGas(runState, new BN(fees.sstoreResetGas.v))
+          runState.gasRefund.iadd(new BN(fees.sstoreRefundGas.v))
+        } else if (value !== '' && !found) {
+          subGas(runState, new BN(fees.sstoreSetGas.v))
+        } else if (value !== '' && found) {
+          subGas(runState, new BN(fees.sstoreResetGas.v))
+        }
+      } catch (e) {
+        cb(e.error)
+        return
       }
 
       stateManager.putContractStorage(address, key, value, function () {
         runState.contract = stateManager.cache.get(address)
-        cb()
+        cb(err)
       })
     })
   },
-  JUMP: function (runState) {
-    var dest = utils.bufferToInt(runState.stack.pop())
+  JUMP: function (dest, runState) {
+    dest = utils.bufferToInt(dest)
 
     if (!jumpIsValid(runState, dest)) {
-      var err = ERROR.INVALID_JUMP
+      trap(ERROR.INVALID_JUMP)
     }
 
     runState.programCounter = dest
-    return err
   },
-  JUMPI: function (runState) {
-    var c = utils.bufferToInt(runState.stack.pop())
-    var i = utils.bufferToInt(runState.stack.pop())
+  JUMPI: function (c, i, runState) {
+    c = utils.bufferToInt(c)
+    i = utils.bufferToInt(i)
 
     var dest = i ? c : runState.programCounter
 
     if (i && !jumpIsValid(runState, dest)) {
-      var err = ERROR.INVALID_JUMP
+      trap(ERROR.INVALID_JUMP)
     }
 
     runState.programCounter = dest
-    return err
   },
   PC: function (runState) {
-    runState.stack.push(utils.intToBuffer(runState.programCounter - 1))
+    return utils.intToBuffer(runState.programCounter - 1)
   },
   MSIZE: function (runState) {
-    runState.stack.push(utils.intToBuffer(runState.memoryWordCount * 32))
+    return utils.intToBuffer(runState.memoryWordCount * 32)
   },
   GAS: function (runState) {
-    runState.stack.push(new Buffer(runState.gasLeft.toArray()))
+    return new Buffer(runState.gasLeft.toArray())
   },
   JUMPDEST: function (runState) {},
   PUSH: function (runState) {
     var numToPush = runState.opCode - 0x5f
     var loaded = utils.unpad(runState.code.slice(runState.programCounter, runState.programCounter + numToPush))
-
-    runState.stack.push(loaded)
     runState.programCounter += numToPush
+    return loaded
   },
   DUP: function (runState) {
     const stackPos = runState.opCode - 0x7f
 
     if (stackPos > runState.stack.length) {
-      return ERROR.STACK_UNDERFLOW
+      trap(ERROR.STACK_UNDERFLOW)
     }
 
     // dupilcated stack items point to the same Buffer
-    runState.stack.push(runState.stack[runState.stack.length - stackPos])
+    return runState.stack[runState.stack.length - stackPos]
   },
   SWAP: function (runState) {
     var stackPos = runState.opCode - 0x8f
@@ -1028,39 +969,31 @@ module.exports = {
     // check the stack to make sure we have enough items on teh stack
     var swapIndex = runState.stack.length - stackPos - 1
     if (swapIndex < 0) {
-      return ERROR.STACK_UNDERFLOW
+      trap(ERROR.STACK_UNDERFLOW)
     }
 
     // preform the swap
     var newTop = runState.stack[swapIndex]
     runState.stack[swapIndex] = runState.stack.pop()
-    runState.stack.push(newTop)
+    return newTop
   },
-  LOG: function (runState) {
-    const memOffset = utils.bufferToInt(runState.stack.pop())
-    const memLength = utils.bufferToInt(runState.stack.pop())
+  LOG: function (memOffset, memLength) {
+    var args = Array.prototype.slice.call(arguments, 0)
+    args.pop() // pop off callback
+    var runState = args.pop()
+    var topics = args.slice(2)
+    topics = topics.map(function (a) {
+      return utils.pad(a, 32)
+    })
+
+    memOffset = utils.bufferToInt(memOffset)
+    memLength = utils.bufferToInt(memLength)
     const numOfTopics = runState.opCode - 0xa0
     const mem = memLoad(runState, memOffset, memLength)
-
-    if (mem === ERROR.OUT_OF_GAS) {
-      return mem
-    }
-
-    if (runState.stack.length < numOfTopics) {
-      return ERROR.STACK_UNDERFLOW
-    }
-
-    runState.gasLeft.isubn(numOfTopics * fees.logTopicGas.v + memLength * fees.logDataGas.v)
+    subGas(runState, new BN(numOfTopics * fees.logTopicGas.v + memLength * fees.logDataGas.v))
 
     // add address
     var log = [runState.address]
-
-    // add topics
-    var topics = []
-    for (var i = 0; i < numOfTopics; i++) {
-      topics.push(utils.pad(runState.stack.pop(), 32))
-    }
-
     log.push(topics)
 
     // add data
@@ -1069,10 +1002,10 @@ module.exports = {
   },
 
   // '0xf0' range - closures
-  CREATE: function (runState, done) {
-    var value = new BN(runState.stack.pop())
-    var offset = utils.bufferToInt(runState.stack.pop())
-    var length = utils.bufferToInt(runState.stack.pop())
+  CREATE: function (value, offset, length, runState, done) {
+    value = new BN(value)
+    offset = utils.bufferToInt(offset)
+    length = utils.bufferToInt(length)
     // set up config
     var options = {
       value: value
@@ -1082,17 +1015,18 @@ module.exports = {
       inLength: length
     }
 
+    checkCallMemCost(runState, options, localOpts)
     makeCall(runState, options, localOpts, done)
   },
-  CALL: function (runState, done) {
+  CALL: function (gasLimit, toAddress, value, inOffset, inLength, outOffset, outLength, runState, done) {
     var stateManager = runState.stateManager
-    var gasLimit = new BN(runState.stack.pop())
-    var toAddress = utils.pad(runState.stack.pop(), 20)
-    var value = new BN(runState.stack.pop())
-    var inOffset = utils.bufferToInt(runState.stack.pop())
-    var inLength = utils.bufferToInt(runState.stack.pop())
-    var outOffset = utils.bufferToInt(runState.stack.pop())
-    var outLength = utils.bufferToInt(runState.stack.pop())
+    gasLimit = new BN(gasLimit)
+    toAddress = utils.pad(toAddress, 20)
+    value = new BN(value)
+    inOffset = utils.bufferToInt(inOffset)
+    inLength = utils.bufferToInt(inLength)
+    outOffset = utils.bufferToInt(outOffset)
+    outLength = utils.bufferToInt(outLength)
     var data = memLoad(runState, inOffset, inLength)
     var options = {
       gasLimit: gasLimit,
@@ -1109,9 +1043,12 @@ module.exports = {
 
     // add stipend
     if (value.cmpn(0) !== 0) {
-      runState.gasLeft.isub(new BN(fees.callValueTransferGas.v)).iadd(new BN(fees.callStipend.v))
+      runState.gasLeft.iadd(new BN(fees.callStipend.v))
+      subGas(runState, new BN(fees.callValueTransferGas.v))
       options.gasLimit.iadd(new BN(fees.callStipend.v))
     }
+
+    checkCallMemCost(runState, options, localOpts)
 
     stateManager.getAccount(toAddress, function (err, account, exists) {
       if (err) {
@@ -1119,20 +1056,21 @@ module.exports = {
         return
       }
       if (!exists) {
+        // can't wrap because we are in a callback
         runState.gasLeft.isub(new BN(fees.callNewAccountGas.v))
       }
       makeCall(runState, options, localOpts, done)
     })
   },
-  CALLCODE: function (runState, done) {
+  CALLCODE: function (gas, toAddress, value, inOffset, inLength, outOffset, outLength, runState, done) {
     var stateManager = runState.stateManager
-    const gas = new BN(runState.stack.pop())
-    const toAddress = utils.pad(runState.stack.pop(), 20)
-    const value = new BN(runState.stack.pop())
-    const inOffset = utils.bufferToInt(runState.stack.pop())
-    const inLength = utils.bufferToInt(runState.stack.pop())
-    const outOffset = utils.bufferToInt(runState.stack.pop())
-    const outLength = utils.bufferToInt(runState.stack.pop())
+    gas = new BN(gas)
+    toAddress = utils.pad(toAddress, 20)
+    value = new BN(value)
+    inOffset = utils.bufferToInt(inOffset)
+    inLength = utils.bufferToInt(inLength)
+    outOffset = utils.bufferToInt(outOffset)
+    outLength = utils.bufferToInt(outLength)
 
     const options = {
       gasLimit: gas,
@@ -1153,6 +1091,8 @@ module.exports = {
       options.gasLimit.iadd(new BN(fees.callStipend.v))
     }
 
+    checkCallMemCost(runState, options, localOpts)
+
     // load the code
     stateManager.getAccount(toAddress, function (err, account) {
       if (err) return done(err)
@@ -1170,23 +1110,17 @@ module.exports = {
       }
     })
   },
-  RETURN: function (runState) {
-    var offset = utils.bufferToInt(runState.stack.pop())
-    var length = utils.bufferToInt(runState.stack.pop())
-
+  RETURN: function (offset, length, runState) {
+    offset = utils.bufferToInt(offset)
+    length = utils.bufferToInt(length)
     runState.returnValue = memLoad(runState, offset, length)
-    if (runState.returnValue === ERROR.OUT_OF_GAS) {
-      return runState.returnValue
-    }
-
-    runState.stopped = true
   },
   // '0x70', range - other
-  SUICIDE: function (runState, cb) {
+  SUICIDE: function (suicideToAddress, runState, cb) {
     var stateManager = runState.stateManager
     var contract = runState.contract
     var contractAddress = runState.address
-    var suicideToAddress = utils.pad(runState.stack.pop(), 20)
+    suicideToAddress = utils.pad(suicideToAddress, 20)
 
     // only add to refund if this is the first suicide for the address
     if (!runState.suicides[contractAddress.toString('hex')]) {
@@ -1212,6 +1146,20 @@ module.exports = {
   }
 }
 
+function subGas (runState, amount) {
+  runState.gasLeft.isub(amount)
+  if (runState.gasLeft.cmpn(0) === -1) {
+    trap(ERROR.OUT_OF_GAS)
+  }
+}
+
+function trap (err) {
+  function VmError (error) {
+    this.error = error
+  }
+  throw new VmError(err)
+}
+
 /**
  * Subtracts the amount needed for memory usage from `runState.gasLeft`
  * @method subMemUsage
@@ -1227,7 +1175,7 @@ function subMemUsage (runState, offset, length) {
   // load 0's because if tx.data did have that amount of data then the fee
   // would be high than the maxGasLimit in the block
   if (offset > MAX_INT || length > MAX_INT) {
-    return ERROR.OUT_OF_GAS
+    trap(ERROR.OUT_OF_GAS)
   }
 
   var newMemoryWordCount = Math.ceil((offset + length) / 32)
@@ -1238,12 +1186,8 @@ function subMemUsage (runState, offset, length) {
   var cost = words.mul(fee).add(words.mul(words).div(quadCoeff))
 
   if (cost.cmp(runState.highestMemCost) === 1) {
-    runState.gasLeft.isub(cost.sub(runState.highestMemCost))
+    subGas(runState, cost.sub(runState.highestMemCost))
     runState.highestMemCost = cost
-  }
-
-  if (runState.gasLeft.cmpn(0) === -1) {
-    return ERROR.OUT_OF_GAS
   }
 }
 
@@ -1258,17 +1202,12 @@ function subMemUsage (runState, offset, length) {
  */
 function memLoad (runState, offset, length) {
   // check to see if we have enougth gas for the mem read
-  var err = subMemUsage(runState, offset, length)
-
-  if (err) return err
-
+  subMemUsage(runState, offset, length)
   var loaded = runState.memory.slice(offset, offset + length)
-
   // fill the remaining lenth with zeros
   for (var i = loaded.length; i < length; i++) {
     loaded.push(0)
   }
-
   return new Buffer(loaded)
 }
 
@@ -1280,9 +1219,11 @@ function memLoad (runState, offset, length) {
  * @param {Number} length how far to read
  * @return {Buffer|String}
  */
-function memStore (runState, offset, val, valOffset, length) {
-  var err = subMemUsage(runState, offset, length)
-  if (err) return err
+function memStore (runState, offset, val, valOffset, length, skipSubMem) {
+  if (skipSubMem !== false) {
+    subMemUsage(runState, offset, length)
+  }
+
   for (var i = 0; i < length; i++) {
     runState.memory[offset + i] = val[valOffset + i]
   }
@@ -1301,15 +1242,15 @@ function checkCallMemCost (runState, callOptions, localOpts) {
 
   // calculates the gas need for saving the output in memory
   if (localOpts.outLength) {
-    var err = subMemUsage(runState, localOpts.outOffset, localOpts.outLength)
+    subMemUsage(runState, localOpts.outOffset, localOpts.outLength)
   }
 
   if (!callOptions.gasLimit) {
     callOptions.gasLimit = runState.gasLeft
   }
 
-  if (runState.gasLeft.cmp(callOptions.gasLimit) === -1 || err === ERROR.OUT_OF_GAS || callOptions.data === ERROR.OUT_OF_GAS) {
-    return ERROR.OUT_OF_GAS
+  if (runState.gasLeft.cmp(callOptions.gasLimit) === -1) {
+    trap(ERROR.OUT_OF_GAS)
   }
 }
 
@@ -1324,9 +1265,6 @@ function makeCall (runState, callOptions, localOpts, cb) {
 
   // increment the runState.depth
   callOptions.depth = runState.depth + 1
-
-  var memErr = checkCallMemCost(runState, callOptions, localOpts)
-  if (memErr) return cb(memErr)
 
   // check if account has enough ether
   if (runState.depth >= fees.stackLimit.v || new BN(runState.contract.balance).cmp(callOptions.value) === -1) {
@@ -1353,6 +1291,7 @@ function makeCall (runState, callOptions, localOpts, cb) {
       runState.gasRefund = runState.gasRefund.add(results.vm.gasRefund)
     }
 
+    // this should always be safe
     runState.gasLeft.isub(results.gasUsed)
 
     if (!results.vm.exceptionError) {
@@ -1363,28 +1302,23 @@ function makeCall (runState, callOptions, localOpts, cb) {
         }
       }
 
-      // push the created address to the stack
-      if (results.createdAddress) {
-        runState.stack.push(results.createdAddress)
-      } else {
-        runState.stack.push(new Buffer([results.vm.exception]))
-      }
-
       // update stateRoot on current contract
       runState.stateManager.getAccount(runState.address, function (err, account) {
-        if (err) return cb(err)
         runState.contract = account
-        cb()
+        // push the created address to the stack
+        if (results.createdAddress) {
+          cb(err, results.createdAddress)
+        } else {
+          cb(err, new Buffer([results.vm.exception]))
+        }
       })
     } else {
-      runState.stack.push(new Buffer([results.vm.exception]))
-
       // creation failed so don't increament the nonce
       if (results.vm.createdAddress) {
         runState.contract.nonce = new BN(runState.contract.nonce).sub(new BN(1))
       }
 
-      cb(err)
+      cb(err, new Buffer([results.vm.exception]))
     }
   }
 }
@@ -1405,7 +1339,7 @@ const codes = {
   0x08: ['ADDMOD', 8, 3, 1, false],
   0x09: ['MULMOD', 8, 3, 1, false],
   0x0a: ['EXP', 10, 2, 1, false],
-  0x0b: ['SIGNEXTEND', 5, 2, 1, false],
+  0x0b: ['SIGNEXTEND', 5, 1, 1, false],
 
   // 0x10 range - bit ops
   0x10: ['LT', 3, 2, 1, false],
@@ -1566,7 +1500,7 @@ module.exports = function (op, full) {
     }
   }
 
-  return {opcode: opcode, fee: code[1], in: code[2], out: code[3], dynamic: code[4], async: code[5]}
+  return {name: opcode, fee: code[1], in: code[2], out: code[3], dynamic: code[4], async: code[5]}
 }
 
 },{}],10:[function(require,module,exports){
@@ -1910,6 +1844,8 @@ module.exports = function (opts, cb) {
           }
         }
 
+        self.stateManager.cache.clear()
+
         result = {
           receipts: receipts,
           results: txResults,
@@ -1970,6 +1906,7 @@ module.exports = function (blockchain, cb) {
 
   // setup blockchain iterator
   this.stateManager.blockchain.iterator('vm', processBlock, cb)
+
   function processBlock (block, reorg, cb) {
     async.series([
       getStartingState,
@@ -1982,6 +1919,15 @@ module.exports = function (blockchain, cb) {
       if (!headBlock || reorg) {
         self.stateManager.blockchain.getBlock(block.header.parentHash, function (err, parentBlock) {
           parentState = parentBlock.header.stateRoot
+          // generate genesis state if we are at the genesis block
+          // we don't have the genesis state
+          if (!headBlock) {
+            self.stateManager.trie.checkRoot(parentState, function (err, root) {
+              if (!root || err) {
+                return self.stateManager.generateCanonicalGenesis(cb)
+              }
+            })
+          }
           cb(err)
         })
       } else {
@@ -2236,7 +2182,7 @@ module.exports = function (opts, cb) {
   // VM internal state
   var runState = {
     stateManager: stateManager,
-    returnValue: new Buffer([]),
+    returnValue: false,
     stopped: false,
     vmError: false,
     suicideTo: undefined,
@@ -2289,12 +2235,8 @@ module.exports = function (opts, cb) {
   }
 
   function vmIsActive () {
-    if (runState.gasLeft.cmpn(0) === -1) {
-      runState.vmError = ERROR.OUT_OF_GAS
-      return false
-    }
     var notAtEnd = runState.programCounter < runState.code.length
-    return !runState.stopped && notAtEnd
+    return !runState.stopped && notAtEnd && !runState.vmError && !runState.returnValue
   }
 
   function iterateVm (done) {
@@ -2304,7 +2246,7 @@ module.exports = function (opts, cb) {
 
     var opCode = runState.code[runState.programCounter]
     var opInfo = lookupOpInfo(opCode)
-    var opName = opInfo.opcode
+    var opName = opInfo.name
     var opFn = opFns[opName]
 
     runState.opName = opName
@@ -2336,6 +2278,7 @@ module.exports = function (opts, cb) {
         depth: runState.depth,
         address: runState.address,
         account: runState.contract,
+        cache: runState.stateManager.cache,
         memory: runState.memory
       }
       self.emit('step', eventObj, cb)
@@ -2344,16 +2287,44 @@ module.exports = function (opts, cb) {
     function runOp (cb) {
       // calculate gas
       var fee = new BN(opInfo.fee)
+      // TODO: move to a shared funtion; subGas in opFuns
       runState.gasLeft = runState.gasLeft.sub(fee)
+      if (runState.gasLeft.cmpn(0) === -1) {
+        runState.vmError = ERROR.OUT_OF_GAS
+        cb()
+        return
+      }
       // advance program counter
       runState.programCounter++
-
-      // call opFn - sync or async
-      if (opFn.length === 2) {
-        opFn(runState, cb)
-      } else {
-        var err = opFn(runState)
+      var argsNum = opInfo.in
+      // pop the stack
+      var args = argsNum ? runState.stack.splice(-opInfo.in) : []
+      args.reverse()
+      args.push(runState)
+      // create a callback for async opFunc
+      args.push(function (err, val) {
+        // save result to the stack
+        if (val) {
+          runState.stack.push(val)
+        }
         cb(err)
+      })
+      try {
+        // run the opcode
+        var result = opFn.apply(null, args)
+      } catch (e) {
+        runState.vmError = e.error
+        cb()
+        return
+      }
+
+      // save result to the stack
+      if (result) {
+        runState.stack.push(result)
+      }
+      // call the callback if opFn was sync
+      if (opFn.length - argsNum !== 2) {
+        cb()
       }
     }
   }
@@ -2375,7 +2346,7 @@ module.exports = function (opts, cb) {
       exceptionError: err,
       logs: runState.logs,
       gas: runState.gasLeft,
-      'return': runState.returnValue
+      'return': runState.returnValue ? runState.returnValue : new Buffer([])
     }
 
     if (results.exceptionError) {
@@ -2389,7 +2360,10 @@ module.exports = function (opts, cb) {
     }
 
     if (runState.populateCache) {
-      self.stateManager.cache.flush(cb.bind(this, err, results))
+      self.stateManager.cache.flush(function () {
+        self.stateManager.cache.clear()
+        cb(err, results)
+      })
     } else {
       cb(err, results)
     }
@@ -2399,7 +2373,7 @@ module.exports = function (opts, cb) {
 // find all the valid jumps and puts them in the `validJumps` array
 function preprocessValidJumps (runState) {
   for (var i = 0; i < runState.code.length; i++) {
-    var curOpCode = lookupOpInfo(runState.code[i]).opcode
+    var curOpCode = lookupOpInfo(runState.code[i]).name
 
     // no destinations into the middle of PUSH
     if (curOpCode === 'PUSH') {
@@ -2468,6 +2442,10 @@ module.exports = function (opts, cb) {
     return
   }
 
+  if (opts.populateCache === undefined) {
+    opts.populateCache = true
+  }
+
   // run everything
   async.series([
     populateCache,
@@ -2476,7 +2454,12 @@ module.exports = function (opts, cb) {
     saveTries,
     runAfterTxHook,
     function (cb) {
-      self.stateManager.cache.flush(cb)
+      self.stateManager.cache.flush(function () {
+        if (opts.populateCache) {
+          self.stateManager.cache.clear()
+        }
+        cb()
+      })
     }
   ], function (err) {
     cb(err, results)
@@ -2630,10 +2613,12 @@ function txLogsBloom (logs) {
 },{"./bloom.js":2,"async":28,"bn.js":29,"buffer":129,"ethereumjs-block":60}],20:[function(require,module,exports){
 (function (Buffer){
 const Trie = require('merkle-patricia-tree/secure.js')
+const common = require('ethereum-common')
 const async = require('async')
 const Account = require('ethereumjs-account')
 const fakeBlockchain = require('./fakeBlockChain.js')
 const Cache = require('./cache.js')
+const BN = require('bn.js')
 
 module.exports = StateManager
 
@@ -2650,12 +2635,10 @@ function StateManager (opts) {
     blockchain = fakeBlockchain
   }
 
-  var cache = new Cache(trie)
-
   self.blockchain = blockchain
   self.trie = trie
   self._storageTries = {}
-  self.cache = cache
+  self.cache = new Cache(trie)
 }
 
 var proto = StateManager.prototype
@@ -2896,8 +2879,39 @@ proto.warmCache = function (addresses, cb) {
   }, cb)
 }
 
+proto.hasGenesisState = function (cb) {
+  const root = common.genesisStateRoot.v
+  this.trie.checkRoot(root, cb)
+}
+
+proto.generateCanonicalGenesis = function (cb) {
+  var self = this
+
+  this.hasGenesisState(function (err, genesis) {
+    if (!genesis & !err) {
+      self.generateGenesis(common.genesisState, cb)
+    } else {
+      console.log('skipping genesis')
+      cb(err)
+    }
+  })
+}
+
+proto.generateGenesis = function (initState, cb) {
+  var self = this
+  var addresses = Object.keys(initState)
+  async.eachSeries(addresses, function (address, done) {
+    // address = new Buffer(address, 'hex')
+    // console.log(address)
+    var balance = new Buffer((new BN(initState[address])).toArray())
+    self.putAccountBalance(address, balance, done)
+  }, function () {
+    self.cache.flush(cb)
+  })
+}
+
 }).call(this,require("buffer").Buffer)
-},{"./cache.js":3,"./fakeBlockChain.js":5,"async":28,"buffer":129,"ethereumjs-account":57,"merkle-patricia-tree/secure.js":105}],21:[function(require,module,exports){
+},{"./cache.js":3,"./fakeBlockChain.js":5,"async":28,"bn.js":29,"buffer":129,"ethereum-common":55,"ethereumjs-account":57,"merkle-patricia-tree/secure.js":105}],21:[function(require,module,exports){
 (function (process){
 /* Copyright (c) 2013 Rod Vagg, MIT License */
 
@@ -12193,7 +12207,6 @@ module.exports={
   "_requiredBy": [
     "/ethashjs/ethereumjs-util",
     "/ethereumjs-account/ethereumjs-util",
-    "/ethereumjs-tx/ethereumjs-util",
     "/ethereumjs-util",
     "/secp256k1-browserify"
   ],
@@ -26064,7 +26077,7 @@ Trie.prototype._putRaw = function (key, val, cb) {
 
 /**
  * Writes a value directly to the underlining db
- * @method putRaw
+ * @mremoveListenethod putRaw
  * @param {Buffer} key
  * @param {Buffer} key
  */
@@ -26578,8 +26591,8 @@ Trie.prototype.batch = function (ops, cb) {
  */
 Trie.prototype.checkRoot = function (root, cb) {
   root = ethUtil.toBuffer(root)
-  this._lookupNode(root, function (err, value) {
-    cb(err, !!value)
+  this._lookupNode(root, function (value) {
+    cb(null, !!value)
   })
 }
 
@@ -27484,10 +27497,10 @@ var Buffer = require('buffer').Buffer;
 
 Readable.ReadableState = ReadableState;
 
-var EE = require('events').EventEmitter;
+var EE = require('events');
 
 /*<replacement>*/
-if (!EE.listenerCount) EE.listenerCount = function(emitter, type) {
+var EElistenerCount = function(emitter, type) {
   return emitter.listeners(type).length;
 };
 /*</replacement>*/
@@ -27514,9 +27527,10 @@ util.inherits = require('inherits');
 
 
 /*<replacement>*/
-var debug = require('util');
-if (debug && debug.debuglog) {
-  debug = debug.debuglog('stream');
+var debugUtil = require('util');
+var debug;
+if (debugUtil && debugUtil.debuglog) {
+  debug = debugUtil.debuglog('stream');
 } else {
   debug = function () {};
 }
@@ -27685,7 +27699,6 @@ function readableAddChunk(stream, state, chunk, encoding, addToFront) {
 }
 
 
-
 // if it's past the high water mark, we can push in some more.
 // Also, if we have no data yet, we can stand some
 // more bytes.  This is to work around cases where hwm=0,
@@ -27709,15 +27722,19 @@ Readable.prototype.setEncoding = function(enc) {
   return this;
 };
 
-// Don't raise the hwm > 128MB
+// Don't raise the hwm > 8MB
 var MAX_HWM = 0x800000;
-function roundUpToNextPowerOf2(n) {
+function computeNewHighWaterMark(n) {
   if (n >= MAX_HWM) {
     n = MAX_HWM;
   } else {
     // Get the next highest power of 2
     n--;
-    for (var p = 1; p < 32; p <<= 1) n |= n >> p;
+    n |= n >>> 1;
+    n |= n >>> 2;
+    n |= n >>> 4;
+    n |= n >>> 8;
+    n |= n >>> 16;
     n++;
   }
   return n;
@@ -27746,7 +27763,7 @@ function howMuchToRead(n, state) {
   // power of 2, to prevent increasing it excessively in tiny
   // amounts.
   if (n > state.highWaterMark)
-    state.highWaterMark = roundUpToNextPowerOf2(n);
+    state.highWaterMark = computeNewHighWaterMark(n);
 
   // don't have that much.  return null, unless we've ended.
   if (n > state.length) {
@@ -28052,7 +28069,7 @@ Readable.prototype.pipe = function(dest, pipeOpts) {
     debug('onerror', er);
     unpipe();
     dest.removeListener('error', onerror);
-    if (EE.listenerCount(dest, 'error') === 0)
+    if (EElistenerCount(dest, 'error') === 0)
       dest.emit('error', er);
   }
   // This is a brutally ugly hack to make sure that our error handler
@@ -28063,7 +28080,6 @@ Readable.prototype.pipe = function(dest, pipeOpts) {
     dest._events.error.unshift(onerror);
   else
     dest._events.error = [onerror, dest._events.error];
-
 
 
   // Both close and finish should trigger unpipe, but only once.
@@ -28102,7 +28118,7 @@ function pipeOnDrain(src) {
     debug('pipeOnDrain', state.awaitDrain);
     if (state.awaitDrain)
       state.awaitDrain--;
-    if (state.awaitDrain === 0 && EE.listenerCount(src, 'data')) {
+    if (state.awaitDrain === 0 && EElistenerCount(src, 'data')) {
       state.flowing = true;
       flow(src);
     }
@@ -28316,7 +28332,6 @@ Readable.prototype.wrap = function(stream) {
 
   return self;
 };
-
 
 
 // exposed for testing purposes only.
@@ -28651,6 +28666,13 @@ util.inherits = require('inherits');
 /*</replacement>*/
 
 
+/*<replacement>*/
+var internalUtil = {
+  deprecate: require('util-deprecate')
+};
+/*</replacement>*/
+
+
 
 /*<replacement>*/
 var Stream;
@@ -28776,10 +28798,10 @@ WritableState.prototype.getBuffer = function writableStateGetBuffer() {
 
 (function (){try {
 Object.defineProperty(WritableState.prototype, 'buffer', {
-  get: require('util-deprecate')(function() {
+  get: internalUtil.deprecate(function() {
     return this.getBuffer();
-  }, '_writableState.buffer is deprecated. Use ' +
-      '_writableState.getBuffer() instead.')
+  }, '_writableState.buffer is deprecated. Use _writableState.getBuffer ' +
+     'instead.')
 });
 }catch(_){}}());
 
@@ -43310,12 +43332,1493 @@ arguments[4][114][0].apply(exports,arguments)
 },{"./_stream_readable":281,"./_stream_writable":283,"core-util-is":284,"dup":114,"inherits":275,"process-nextick-args":285}],280:[function(require,module,exports){
 arguments[4][115][0].apply(exports,arguments)
 },{"./_stream_transform":282,"core-util-is":284,"dup":115,"inherits":275}],281:[function(require,module,exports){
-arguments[4][116][0].apply(exports,arguments)
-},{"./_stream_duplex":279,"_process":277,"buffer":129,"core-util-is":284,"dup":116,"events":274,"inherits":275,"isarray":276,"process-nextick-args":285,"string_decoder/":292,"util":128}],282:[function(require,module,exports){
+(function (process){
+'use strict';
+
+module.exports = Readable;
+
+/*<replacement>*/
+var processNextTick = require('process-nextick-args');
+/*</replacement>*/
+
+
+/*<replacement>*/
+var isArray = require('isarray');
+/*</replacement>*/
+
+
+/*<replacement>*/
+var Buffer = require('buffer').Buffer;
+/*</replacement>*/
+
+Readable.ReadableState = ReadableState;
+
+var EE = require('events').EventEmitter;
+
+/*<replacement>*/
+if (!EE.listenerCount) EE.listenerCount = function(emitter, type) {
+  return emitter.listeners(type).length;
+};
+/*</replacement>*/
+
+
+
+/*<replacement>*/
+var Stream;
+(function (){try{
+  Stream = require('st' + 'ream');
+}catch(_){}finally{
+  if (!Stream)
+    Stream = require('events').EventEmitter;
+}}())
+/*</replacement>*/
+
+var Buffer = require('buffer').Buffer;
+
+/*<replacement>*/
+var util = require('core-util-is');
+util.inherits = require('inherits');
+/*</replacement>*/
+
+
+
+/*<replacement>*/
+var debug = require('util');
+if (debug && debug.debuglog) {
+  debug = debug.debuglog('stream');
+} else {
+  debug = function () {};
+}
+/*</replacement>*/
+
+var StringDecoder;
+
+util.inherits(Readable, Stream);
+
+function ReadableState(options, stream) {
+  var Duplex = require('./_stream_duplex');
+
+  options = options || {};
+
+  // object stream flag. Used to make read(n) ignore n and to
+  // make all the buffer merging and length checks go away
+  this.objectMode = !!options.objectMode;
+
+  if (stream instanceof Duplex)
+    this.objectMode = this.objectMode || !!options.readableObjectMode;
+
+  // the point at which it stops calling _read() to fill the buffer
+  // Note: 0 is a valid value, means "don't call _read preemptively ever"
+  var hwm = options.highWaterMark;
+  var defaultHwm = this.objectMode ? 16 : 16 * 1024;
+  this.highWaterMark = (hwm || hwm === 0) ? hwm : defaultHwm;
+
+  // cast to ints.
+  this.highWaterMark = ~~this.highWaterMark;
+
+  this.buffer = [];
+  this.length = 0;
+  this.pipes = null;
+  this.pipesCount = 0;
+  this.flowing = null;
+  this.ended = false;
+  this.endEmitted = false;
+  this.reading = false;
+
+  // a flag to be able to tell if the onwrite cb is called immediately,
+  // or on a later tick.  We set this to true at first, because any
+  // actions that shouldn't happen until "later" should generally also
+  // not happen before the first write call.
+  this.sync = true;
+
+  // whenever we return null, then we set a flag to say
+  // that we're awaiting a 'readable' event emission.
+  this.needReadable = false;
+  this.emittedReadable = false;
+  this.readableListening = false;
+
+  // Crypto is kind of old and crusty.  Historically, its default string
+  // encoding is 'binary' so we have to make this configurable.
+  // Everything else in the universe uses 'utf8', though.
+  this.defaultEncoding = options.defaultEncoding || 'utf8';
+
+  // when piping, we only care about 'readable' events that happen
+  // after read()ing all the bytes and not getting any pushback.
+  this.ranOut = false;
+
+  // the number of writers that are awaiting a drain event in .pipe()s
+  this.awaitDrain = 0;
+
+  // if true, a maybeReadMore has been scheduled
+  this.readingMore = false;
+
+  this.decoder = null;
+  this.encoding = null;
+  if (options.encoding) {
+    if (!StringDecoder)
+      StringDecoder = require('string_decoder/').StringDecoder;
+    this.decoder = new StringDecoder(options.encoding);
+    this.encoding = options.encoding;
+  }
+}
+
+function Readable(options) {
+  var Duplex = require('./_stream_duplex');
+
+  if (!(this instanceof Readable))
+    return new Readable(options);
+
+  this._readableState = new ReadableState(options, this);
+
+  // legacy
+  this.readable = true;
+
+  if (options && typeof options.read === 'function')
+    this._read = options.read;
+
+  Stream.call(this);
+}
+
+// Manually shove something into the read() buffer.
+// This returns true if the highWaterMark has not been hit yet,
+// similar to how Writable.write() returns true if you should
+// write() some more.
+Readable.prototype.push = function(chunk, encoding) {
+  var state = this._readableState;
+
+  if (!state.objectMode && typeof chunk === 'string') {
+    encoding = encoding || state.defaultEncoding;
+    if (encoding !== state.encoding) {
+      chunk = new Buffer(chunk, encoding);
+      encoding = '';
+    }
+  }
+
+  return readableAddChunk(this, state, chunk, encoding, false);
+};
+
+// Unshift should *always* be something directly out of read()
+Readable.prototype.unshift = function(chunk) {
+  var state = this._readableState;
+  return readableAddChunk(this, state, chunk, '', true);
+};
+
+Readable.prototype.isPaused = function() {
+  return this._readableState.flowing === false;
+};
+
+function readableAddChunk(stream, state, chunk, encoding, addToFront) {
+  var er = chunkInvalid(state, chunk);
+  if (er) {
+    stream.emit('error', er);
+  } else if (chunk === null) {
+    state.reading = false;
+    onEofChunk(stream, state);
+  } else if (state.objectMode || chunk && chunk.length > 0) {
+    if (state.ended && !addToFront) {
+      var e = new Error('stream.push() after EOF');
+      stream.emit('error', e);
+    } else if (state.endEmitted && addToFront) {
+      var e = new Error('stream.unshift() after end event');
+      stream.emit('error', e);
+    } else {
+      if (state.decoder && !addToFront && !encoding)
+        chunk = state.decoder.write(chunk);
+
+      if (!addToFront)
+        state.reading = false;
+
+      // if we want the data now, just emit it.
+      if (state.flowing && state.length === 0 && !state.sync) {
+        stream.emit('data', chunk);
+        stream.read(0);
+      } else {
+        // update the buffer info.
+        state.length += state.objectMode ? 1 : chunk.length;
+        if (addToFront)
+          state.buffer.unshift(chunk);
+        else
+          state.buffer.push(chunk);
+
+        if (state.needReadable)
+          emitReadable(stream);
+      }
+
+      maybeReadMore(stream, state);
+    }
+  } else if (!addToFront) {
+    state.reading = false;
+  }
+
+  return needMoreData(state);
+}
+
+
+
+// if it's past the high water mark, we can push in some more.
+// Also, if we have no data yet, we can stand some
+// more bytes.  This is to work around cases where hwm=0,
+// such as the repl.  Also, if the push() triggered a
+// readable event, and the user called read(largeNumber) such that
+// needReadable was set, then we ought to push more, so that another
+// 'readable' event will be triggered.
+function needMoreData(state) {
+  return !state.ended &&
+         (state.needReadable ||
+          state.length < state.highWaterMark ||
+          state.length === 0);
+}
+
+// backwards compatibility.
+Readable.prototype.setEncoding = function(enc) {
+  if (!StringDecoder)
+    StringDecoder = require('string_decoder/').StringDecoder;
+  this._readableState.decoder = new StringDecoder(enc);
+  this._readableState.encoding = enc;
+  return this;
+};
+
+// Don't raise the hwm > 128MB
+var MAX_HWM = 0x800000;
+function roundUpToNextPowerOf2(n) {
+  if (n >= MAX_HWM) {
+    n = MAX_HWM;
+  } else {
+    // Get the next highest power of 2
+    n--;
+    for (var p = 1; p < 32; p <<= 1) n |= n >> p;
+    n++;
+  }
+  return n;
+}
+
+function howMuchToRead(n, state) {
+  if (state.length === 0 && state.ended)
+    return 0;
+
+  if (state.objectMode)
+    return n === 0 ? 0 : 1;
+
+  if (n === null || isNaN(n)) {
+    // only flow one buffer at a time
+    if (state.flowing && state.buffer.length)
+      return state.buffer[0].length;
+    else
+      return state.length;
+  }
+
+  if (n <= 0)
+    return 0;
+
+  // If we're asking for more than the target buffer level,
+  // then raise the water mark.  Bump up to the next highest
+  // power of 2, to prevent increasing it excessively in tiny
+  // amounts.
+  if (n > state.highWaterMark)
+    state.highWaterMark = roundUpToNextPowerOf2(n);
+
+  // don't have that much.  return null, unless we've ended.
+  if (n > state.length) {
+    if (!state.ended) {
+      state.needReadable = true;
+      return 0;
+    } else {
+      return state.length;
+    }
+  }
+
+  return n;
+}
+
+// you can override either this method, or the async _read(n) below.
+Readable.prototype.read = function(n) {
+  debug('read', n);
+  var state = this._readableState;
+  var nOrig = n;
+
+  if (typeof n !== 'number' || n > 0)
+    state.emittedReadable = false;
+
+  // if we're doing read(0) to trigger a readable event, but we
+  // already have a bunch of data in the buffer, then just trigger
+  // the 'readable' event and move on.
+  if (n === 0 &&
+      state.needReadable &&
+      (state.length >= state.highWaterMark || state.ended)) {
+    debug('read: emitReadable', state.length, state.ended);
+    if (state.length === 0 && state.ended)
+      endReadable(this);
+    else
+      emitReadable(this);
+    return null;
+  }
+
+  n = howMuchToRead(n, state);
+
+  // if we've ended, and we're now clear, then finish it up.
+  if (n === 0 && state.ended) {
+    if (state.length === 0)
+      endReadable(this);
+    return null;
+  }
+
+  // All the actual chunk generation logic needs to be
+  // *below* the call to _read.  The reason is that in certain
+  // synthetic stream cases, such as passthrough streams, _read
+  // may be a completely synchronous operation which may change
+  // the state of the read buffer, providing enough data when
+  // before there was *not* enough.
+  //
+  // So, the steps are:
+  // 1. Figure out what the state of things will be after we do
+  // a read from the buffer.
+  //
+  // 2. If that resulting state will trigger a _read, then call _read.
+  // Note that this may be asynchronous, or synchronous.  Yes, it is
+  // deeply ugly to write APIs this way, but that still doesn't mean
+  // that the Readable class should behave improperly, as streams are
+  // designed to be sync/async agnostic.
+  // Take note if the _read call is sync or async (ie, if the read call
+  // has returned yet), so that we know whether or not it's safe to emit
+  // 'readable' etc.
+  //
+  // 3. Actually pull the requested chunks out of the buffer and return.
+
+  // if we need a readable event, then we need to do some reading.
+  var doRead = state.needReadable;
+  debug('need readable', doRead);
+
+  // if we currently have less than the highWaterMark, then also read some
+  if (state.length === 0 || state.length - n < state.highWaterMark) {
+    doRead = true;
+    debug('length less than watermark', doRead);
+  }
+
+  // however, if we've ended, then there's no point, and if we're already
+  // reading, then it's unnecessary.
+  if (state.ended || state.reading) {
+    doRead = false;
+    debug('reading or ended', doRead);
+  }
+
+  if (doRead) {
+    debug('do read');
+    state.reading = true;
+    state.sync = true;
+    // if the length is currently zero, then we *need* a readable event.
+    if (state.length === 0)
+      state.needReadable = true;
+    // call internal read method
+    this._read(state.highWaterMark);
+    state.sync = false;
+  }
+
+  // If _read pushed data synchronously, then `reading` will be false,
+  // and we need to re-evaluate how much data we can return to the user.
+  if (doRead && !state.reading)
+    n = howMuchToRead(nOrig, state);
+
+  var ret;
+  if (n > 0)
+    ret = fromList(n, state);
+  else
+    ret = null;
+
+  if (ret === null) {
+    state.needReadable = true;
+    n = 0;
+  }
+
+  state.length -= n;
+
+  // If we have nothing in the buffer, then we want to know
+  // as soon as we *do* get something into the buffer.
+  if (state.length === 0 && !state.ended)
+    state.needReadable = true;
+
+  // If we tried to read() past the EOF, then emit end on the next tick.
+  if (nOrig !== n && state.ended && state.length === 0)
+    endReadable(this);
+
+  if (ret !== null)
+    this.emit('data', ret);
+
+  return ret;
+};
+
+function chunkInvalid(state, chunk) {
+  var er = null;
+  if (!(Buffer.isBuffer(chunk)) &&
+      typeof chunk !== 'string' &&
+      chunk !== null &&
+      chunk !== undefined &&
+      !state.objectMode) {
+    er = new TypeError('Invalid non-string/buffer chunk');
+  }
+  return er;
+}
+
+
+function onEofChunk(stream, state) {
+  if (state.ended) return;
+  if (state.decoder) {
+    var chunk = state.decoder.end();
+    if (chunk && chunk.length) {
+      state.buffer.push(chunk);
+      state.length += state.objectMode ? 1 : chunk.length;
+    }
+  }
+  state.ended = true;
+
+  // emit 'readable' now to make sure it gets picked up.
+  emitReadable(stream);
+}
+
+// Don't emit readable right away in sync mode, because this can trigger
+// another read() call => stack overflow.  This way, it might trigger
+// a nextTick recursion warning, but that's not so bad.
+function emitReadable(stream) {
+  var state = stream._readableState;
+  state.needReadable = false;
+  if (!state.emittedReadable) {
+    debug('emitReadable', state.flowing);
+    state.emittedReadable = true;
+    if (state.sync)
+      processNextTick(emitReadable_, stream);
+    else
+      emitReadable_(stream);
+  }
+}
+
+function emitReadable_(stream) {
+  debug('emit readable');
+  stream.emit('readable');
+  flow(stream);
+}
+
+
+// at this point, the user has presumably seen the 'readable' event,
+// and called read() to consume some data.  that may have triggered
+// in turn another _read(n) call, in which case reading = true if
+// it's in progress.
+// However, if we're not ended, or reading, and the length < hwm,
+// then go ahead and try to read some more preemptively.
+function maybeReadMore(stream, state) {
+  if (!state.readingMore) {
+    state.readingMore = true;
+    processNextTick(maybeReadMore_, stream, state);
+  }
+}
+
+function maybeReadMore_(stream, state) {
+  var len = state.length;
+  while (!state.reading && !state.flowing && !state.ended &&
+         state.length < state.highWaterMark) {
+    debug('maybeReadMore read 0');
+    stream.read(0);
+    if (len === state.length)
+      // didn't get any data, stop spinning.
+      break;
+    else
+      len = state.length;
+  }
+  state.readingMore = false;
+}
+
+// abstract method.  to be overridden in specific implementation classes.
+// call cb(er, data) where data is <= n in length.
+// for virtual (non-string, non-buffer) streams, "length" is somewhat
+// arbitrary, and perhaps not very meaningful.
+Readable.prototype._read = function(n) {
+  this.emit('error', new Error('not implemented'));
+};
+
+Readable.prototype.pipe = function(dest, pipeOpts) {
+  var src = this;
+  var state = this._readableState;
+
+  switch (state.pipesCount) {
+    case 0:
+      state.pipes = dest;
+      break;
+    case 1:
+      state.pipes = [state.pipes, dest];
+      break;
+    default:
+      state.pipes.push(dest);
+      break;
+  }
+  state.pipesCount += 1;
+  debug('pipe count=%d opts=%j', state.pipesCount, pipeOpts);
+
+  var doEnd = (!pipeOpts || pipeOpts.end !== false) &&
+              dest !== process.stdout &&
+              dest !== process.stderr;
+
+  var endFn = doEnd ? onend : cleanup;
+  if (state.endEmitted)
+    processNextTick(endFn);
+  else
+    src.once('end', endFn);
+
+  dest.on('unpipe', onunpipe);
+  function onunpipe(readable) {
+    debug('onunpipe');
+    if (readable === src) {
+      cleanup();
+    }
+  }
+
+  function onend() {
+    debug('onend');
+    dest.end();
+  }
+
+  // when the dest drains, it reduces the awaitDrain counter
+  // on the source.  This would be more elegant with a .once()
+  // handler in flow(), but adding and removing repeatedly is
+  // too slow.
+  var ondrain = pipeOnDrain(src);
+  dest.on('drain', ondrain);
+
+  function cleanup() {
+    debug('cleanup');
+    // cleanup event handlers once the pipe is broken
+    dest.removeListener('close', onclose);
+    dest.removeListener('finish', onfinish);
+    dest.removeListener('drain', ondrain);
+    dest.removeListener('error', onerror);
+    dest.removeListener('unpipe', onunpipe);
+    src.removeListener('end', onend);
+    src.removeListener('end', cleanup);
+    src.removeListener('data', ondata);
+
+    // if the reader is waiting for a drain event from this
+    // specific writer, then it would cause it to never start
+    // flowing again.
+    // So, if this is awaiting a drain, then we just call it now.
+    // If we don't know, then assume that we are waiting for one.
+    if (state.awaitDrain &&
+        (!dest._writableState || dest._writableState.needDrain))
+      ondrain();
+  }
+
+  src.on('data', ondata);
+  function ondata(chunk) {
+    debug('ondata');
+    var ret = dest.write(chunk);
+    if (false === ret) {
+      debug('false write response, pause',
+            src._readableState.awaitDrain);
+      src._readableState.awaitDrain++;
+      src.pause();
+    }
+  }
+
+  // if the dest has an error, then stop piping into it.
+  // however, don't suppress the throwing behavior for this.
+  function onerror(er) {
+    debug('onerror', er);
+    unpipe();
+    dest.removeListener('error', onerror);
+    if (EE.listenerCount(dest, 'error') === 0)
+      dest.emit('error', er);
+  }
+  // This is a brutally ugly hack to make sure that our error handler
+  // is attached before any userland ones.  NEVER DO THIS.
+  if (!dest._events || !dest._events.error)
+    dest.on('error', onerror);
+  else if (isArray(dest._events.error))
+    dest._events.error.unshift(onerror);
+  else
+    dest._events.error = [onerror, dest._events.error];
+
+
+
+  // Both close and finish should trigger unpipe, but only once.
+  function onclose() {
+    dest.removeListener('finish', onfinish);
+    unpipe();
+  }
+  dest.once('close', onclose);
+  function onfinish() {
+    debug('onfinish');
+    dest.removeListener('close', onclose);
+    unpipe();
+  }
+  dest.once('finish', onfinish);
+
+  function unpipe() {
+    debug('unpipe');
+    src.unpipe(dest);
+  }
+
+  // tell the dest that it's being piped to
+  dest.emit('pipe', src);
+
+  // start the flow if it hasn't been started already.
+  if (!state.flowing) {
+    debug('pipe resume');
+    src.resume();
+  }
+
+  return dest;
+};
+
+function pipeOnDrain(src) {
+  return function() {
+    var state = src._readableState;
+    debug('pipeOnDrain', state.awaitDrain);
+    if (state.awaitDrain)
+      state.awaitDrain--;
+    if (state.awaitDrain === 0 && EE.listenerCount(src, 'data')) {
+      state.flowing = true;
+      flow(src);
+    }
+  };
+}
+
+
+Readable.prototype.unpipe = function(dest) {
+  var state = this._readableState;
+
+  // if we're not piping anywhere, then do nothing.
+  if (state.pipesCount === 0)
+    return this;
+
+  // just one destination.  most common case.
+  if (state.pipesCount === 1) {
+    // passed in one, but it's not the right one.
+    if (dest && dest !== state.pipes)
+      return this;
+
+    if (!dest)
+      dest = state.pipes;
+
+    // got a match.
+    state.pipes = null;
+    state.pipesCount = 0;
+    state.flowing = false;
+    if (dest)
+      dest.emit('unpipe', this);
+    return this;
+  }
+
+  // slow case. multiple pipe destinations.
+
+  if (!dest) {
+    // remove all.
+    var dests = state.pipes;
+    var len = state.pipesCount;
+    state.pipes = null;
+    state.pipesCount = 0;
+    state.flowing = false;
+
+    for (var i = 0; i < len; i++)
+      dests[i].emit('unpipe', this);
+    return this;
+  }
+
+  // try to find the right one.
+  var i = indexOf(state.pipes, dest);
+  if (i === -1)
+    return this;
+
+  state.pipes.splice(i, 1);
+  state.pipesCount -= 1;
+  if (state.pipesCount === 1)
+    state.pipes = state.pipes[0];
+
+  dest.emit('unpipe', this);
+
+  return this;
+};
+
+// set up data events if they are asked for
+// Ensure readable listeners eventually get something
+Readable.prototype.on = function(ev, fn) {
+  var res = Stream.prototype.on.call(this, ev, fn);
+
+  // If listening to data, and it has not explicitly been paused,
+  // then call resume to start the flow of data on the next tick.
+  if (ev === 'data' && false !== this._readableState.flowing) {
+    this.resume();
+  }
+
+  if (ev === 'readable' && this.readable) {
+    var state = this._readableState;
+    if (!state.readableListening) {
+      state.readableListening = true;
+      state.emittedReadable = false;
+      state.needReadable = true;
+      if (!state.reading) {
+        processNextTick(nReadingNextTick, this);
+      } else if (state.length) {
+        emitReadable(this, state);
+      }
+    }
+  }
+
+  return res;
+};
+Readable.prototype.addListener = Readable.prototype.on;
+
+function nReadingNextTick(self) {
+  debug('readable nexttick read 0');
+  self.read(0);
+}
+
+// pause() and resume() are remnants of the legacy readable stream API
+// If the user uses them, then switch into old mode.
+Readable.prototype.resume = function() {
+  var state = this._readableState;
+  if (!state.flowing) {
+    debug('resume');
+    state.flowing = true;
+    resume(this, state);
+  }
+  return this;
+};
+
+function resume(stream, state) {
+  if (!state.resumeScheduled) {
+    state.resumeScheduled = true;
+    processNextTick(resume_, stream, state);
+  }
+}
+
+function resume_(stream, state) {
+  if (!state.reading) {
+    debug('resume read 0');
+    stream.read(0);
+  }
+
+  state.resumeScheduled = false;
+  stream.emit('resume');
+  flow(stream);
+  if (state.flowing && !state.reading)
+    stream.read(0);
+}
+
+Readable.prototype.pause = function() {
+  debug('call pause flowing=%j', this._readableState.flowing);
+  if (false !== this._readableState.flowing) {
+    debug('pause');
+    this._readableState.flowing = false;
+    this.emit('pause');
+  }
+  return this;
+};
+
+function flow(stream) {
+  var state = stream._readableState;
+  debug('flow', state.flowing);
+  if (state.flowing) {
+    do {
+      var chunk = stream.read();
+    } while (null !== chunk && state.flowing);
+  }
+}
+
+// wrap an old-style stream as the async data source.
+// This is *not* part of the readable stream interface.
+// It is an ugly unfortunate mess of history.
+Readable.prototype.wrap = function(stream) {
+  var state = this._readableState;
+  var paused = false;
+
+  var self = this;
+  stream.on('end', function() {
+    debug('wrapped end');
+    if (state.decoder && !state.ended) {
+      var chunk = state.decoder.end();
+      if (chunk && chunk.length)
+        self.push(chunk);
+    }
+
+    self.push(null);
+  });
+
+  stream.on('data', function(chunk) {
+    debug('wrapped data');
+    if (state.decoder)
+      chunk = state.decoder.write(chunk);
+
+    // don't skip over falsy values in objectMode
+    if (state.objectMode && (chunk === null || chunk === undefined))
+      return;
+    else if (!state.objectMode && (!chunk || !chunk.length))
+      return;
+
+    var ret = self.push(chunk);
+    if (!ret) {
+      paused = true;
+      stream.pause();
+    }
+  });
+
+  // proxy all the other methods.
+  // important when wrapping filters and duplexes.
+  for (var i in stream) {
+    if (this[i] === undefined && typeof stream[i] === 'function') {
+      this[i] = function(method) { return function() {
+        return stream[method].apply(stream, arguments);
+      }; }(i);
+    }
+  }
+
+  // proxy certain important events.
+  var events = ['error', 'close', 'destroy', 'pause', 'resume'];
+  forEach(events, function(ev) {
+    stream.on(ev, self.emit.bind(self, ev));
+  });
+
+  // when we try to consume some more bytes, simply unpause the
+  // underlying stream.
+  self._read = function(n) {
+    debug('wrapped _read', n);
+    if (paused) {
+      paused = false;
+      stream.resume();
+    }
+  };
+
+  return self;
+};
+
+
+
+// exposed for testing purposes only.
+Readable._fromList = fromList;
+
+// Pluck off n bytes from an array of buffers.
+// Length is the combined lengths of all the buffers in the list.
+function fromList(n, state) {
+  var list = state.buffer;
+  var length = state.length;
+  var stringMode = !!state.decoder;
+  var objectMode = !!state.objectMode;
+  var ret;
+
+  // nothing in the list, definitely empty.
+  if (list.length === 0)
+    return null;
+
+  if (length === 0)
+    ret = null;
+  else if (objectMode)
+    ret = list.shift();
+  else if (!n || n >= length) {
+    // read it all, truncate the array.
+    if (stringMode)
+      ret = list.join('');
+    else
+      ret = Buffer.concat(list, length);
+    list.length = 0;
+  } else {
+    // read just some of it.
+    if (n < list[0].length) {
+      // just take a part of the first list item.
+      // slice is the same for buffers and strings.
+      var buf = list[0];
+      ret = buf.slice(0, n);
+      list[0] = buf.slice(n);
+    } else if (n === list[0].length) {
+      // first list is a perfect match
+      ret = list.shift();
+    } else {
+      // complex case.
+      // we have enough to cover it, but it spans past the first buffer.
+      if (stringMode)
+        ret = '';
+      else
+        ret = new Buffer(n);
+
+      var c = 0;
+      for (var i = 0, l = list.length; i < l && c < n; i++) {
+        var buf = list[0];
+        var cpy = Math.min(n - c, buf.length);
+
+        if (stringMode)
+          ret += buf.slice(0, cpy);
+        else
+          buf.copy(ret, c, 0, cpy);
+
+        if (cpy < buf.length)
+          list[0] = buf.slice(cpy);
+        else
+          list.shift();
+
+        c += cpy;
+      }
+    }
+  }
+
+  return ret;
+}
+
+function endReadable(stream) {
+  var state = stream._readableState;
+
+  // If we get here before consuming all the bytes, then that is a
+  // bug in node.  Should never happen.
+  if (state.length > 0)
+    throw new Error('endReadable called on non-empty stream');
+
+  if (!state.endEmitted) {
+    state.ended = true;
+    processNextTick(endReadableNT, state, stream);
+  }
+}
+
+function endReadableNT(state, stream) {
+  // Check that we didn't get one last unshift.
+  if (!state.endEmitted && state.length === 0) {
+    state.endEmitted = true;
+    stream.readable = false;
+    stream.emit('end');
+  }
+}
+
+function forEach (xs, f) {
+  for (var i = 0, l = xs.length; i < l; i++) {
+    f(xs[i], i);
+  }
+}
+
+function indexOf (xs, x) {
+  for (var i = 0, l = xs.length; i < l; i++) {
+    if (xs[i] === x) return i;
+  }
+  return -1;
+}
+
+}).call(this,require('_process'))
+},{"./_stream_duplex":279,"_process":277,"buffer":129,"core-util-is":284,"events":274,"inherits":275,"isarray":276,"process-nextick-args":285,"string_decoder/":292,"util":128}],282:[function(require,module,exports){
 arguments[4][117][0].apply(exports,arguments)
 },{"./_stream_duplex":279,"core-util-is":284,"dup":117,"inherits":275}],283:[function(require,module,exports){
-arguments[4][118][0].apply(exports,arguments)
-},{"./_stream_duplex":279,"buffer":129,"core-util-is":284,"dup":118,"events":274,"inherits":275,"process-nextick-args":285,"util-deprecate":286}],284:[function(require,module,exports){
+// A bit simpler than readable streams.
+// Implement an async ._write(chunk, cb), and it'll handle all
+// the drain event emission and buffering.
+
+'use strict';
+
+module.exports = Writable;
+
+/*<replacement>*/
+var processNextTick = require('process-nextick-args');
+/*</replacement>*/
+
+
+/*<replacement>*/
+var Buffer = require('buffer').Buffer;
+/*</replacement>*/
+
+Writable.WritableState = WritableState;
+
+
+/*<replacement>*/
+var util = require('core-util-is');
+util.inherits = require('inherits');
+/*</replacement>*/
+
+
+
+/*<replacement>*/
+var Stream;
+(function (){try{
+  Stream = require('st' + 'ream');
+}catch(_){}finally{
+  if (!Stream)
+    Stream = require('events').EventEmitter;
+}}())
+/*</replacement>*/
+
+var Buffer = require('buffer').Buffer;
+
+util.inherits(Writable, Stream);
+
+function nop() {}
+
+function WriteReq(chunk, encoding, cb) {
+  this.chunk = chunk;
+  this.encoding = encoding;
+  this.callback = cb;
+  this.next = null;
+}
+
+function WritableState(options, stream) {
+  var Duplex = require('./_stream_duplex');
+
+  options = options || {};
+
+  // object stream flag to indicate whether or not this stream
+  // contains buffers or objects.
+  this.objectMode = !!options.objectMode;
+
+  if (stream instanceof Duplex)
+    this.objectMode = this.objectMode || !!options.writableObjectMode;
+
+  // the point at which write() starts returning false
+  // Note: 0 is a valid value, means that we always return false if
+  // the entire buffer is not flushed immediately on write()
+  var hwm = options.highWaterMark;
+  var defaultHwm = this.objectMode ? 16 : 16 * 1024;
+  this.highWaterMark = (hwm || hwm === 0) ? hwm : defaultHwm;
+
+  // cast to ints.
+  this.highWaterMark = ~~this.highWaterMark;
+
+  this.needDrain = false;
+  // at the start of calling end()
+  this.ending = false;
+  // when end() has been called, and returned
+  this.ended = false;
+  // when 'finish' is emitted
+  this.finished = false;
+
+  // should we decode strings into buffers before passing to _write?
+  // this is here so that some node-core streams can optimize string
+  // handling at a lower level.
+  var noDecode = options.decodeStrings === false;
+  this.decodeStrings = !noDecode;
+
+  // Crypto is kind of old and crusty.  Historically, its default string
+  // encoding is 'binary' so we have to make this configurable.
+  // Everything else in the universe uses 'utf8', though.
+  this.defaultEncoding = options.defaultEncoding || 'utf8';
+
+  // not an actual buffer we keep track of, but a measurement
+  // of how much we're waiting to get pushed to some underlying
+  // socket or file.
+  this.length = 0;
+
+  // a flag to see when we're in the middle of a write.
+  this.writing = false;
+
+  // when true all writes will be buffered until .uncork() call
+  this.corked = 0;
+
+  // a flag to be able to tell if the onwrite cb is called immediately,
+  // or on a later tick.  We set this to true at first, because any
+  // actions that shouldn't happen until "later" should generally also
+  // not happen before the first write call.
+  this.sync = true;
+
+  // a flag to know if we're processing previously buffered items, which
+  // may call the _write() callback in the same tick, so that we don't
+  // end up in an overlapped onwrite situation.
+  this.bufferProcessing = false;
+
+  // the callback that's passed to _write(chunk,cb)
+  this.onwrite = function(er) {
+    onwrite(stream, er);
+  };
+
+  // the callback that the user supplies to write(chunk,encoding,cb)
+  this.writecb = null;
+
+  // the amount that is being written when _write is called.
+  this.writelen = 0;
+
+  this.bufferedRequest = null;
+  this.lastBufferedRequest = null;
+
+  // number of pending user-supplied write callbacks
+  // this must be 0 before 'finish' can be emitted
+  this.pendingcb = 0;
+
+  // emit prefinish if the only thing we're waiting for is _write cbs
+  // This is relevant for synchronous Transform streams
+  this.prefinished = false;
+
+  // True if the error was already emitted and should not be thrown again
+  this.errorEmitted = false;
+}
+
+WritableState.prototype.getBuffer = function writableStateGetBuffer() {
+  var current = this.bufferedRequest;
+  var out = [];
+  while (current) {
+    out.push(current);
+    current = current.next;
+  }
+  return out;
+};
+
+(function (){try {
+Object.defineProperty(WritableState.prototype, 'buffer', {
+  get: require('util-deprecate')(function() {
+    return this.getBuffer();
+  }, '_writableState.buffer is deprecated. Use ' +
+      '_writableState.getBuffer() instead.')
+});
+}catch(_){}}());
+
+
+function Writable(options) {
+  var Duplex = require('./_stream_duplex');
+
+  // Writable ctor is applied to Duplexes, though they're not
+  // instanceof Writable, they're instanceof Readable.
+  if (!(this instanceof Writable) && !(this instanceof Duplex))
+    return new Writable(options);
+
+  this._writableState = new WritableState(options, this);
+
+  // legacy.
+  this.writable = true;
+
+  if (options) {
+    if (typeof options.write === 'function')
+      this._write = options.write;
+
+    if (typeof options.writev === 'function')
+      this._writev = options.writev;
+  }
+
+  Stream.call(this);
+}
+
+// Otherwise people can pipe Writable streams, which is just wrong.
+Writable.prototype.pipe = function() {
+  this.emit('error', new Error('Cannot pipe. Not readable.'));
+};
+
+
+function writeAfterEnd(stream, cb) {
+  var er = new Error('write after end');
+  // TODO: defer error events consistently everywhere, not just the cb
+  stream.emit('error', er);
+  processNextTick(cb, er);
+}
+
+// If we get something that is not a buffer, string, null, or undefined,
+// and we're not in objectMode, then that's an error.
+// Otherwise stream chunks are all considered to be of length=1, and the
+// watermarks determine how many objects to keep in the buffer, rather than
+// how many bytes or characters.
+function validChunk(stream, state, chunk, cb) {
+  var valid = true;
+
+  if (!(Buffer.isBuffer(chunk)) &&
+      typeof chunk !== 'string' &&
+      chunk !== null &&
+      chunk !== undefined &&
+      !state.objectMode) {
+    var er = new TypeError('Invalid non-string/buffer chunk');
+    stream.emit('error', er);
+    processNextTick(cb, er);
+    valid = false;
+  }
+  return valid;
+}
+
+Writable.prototype.write = function(chunk, encoding, cb) {
+  var state = this._writableState;
+  var ret = false;
+
+  if (typeof encoding === 'function') {
+    cb = encoding;
+    encoding = null;
+  }
+
+  if (Buffer.isBuffer(chunk))
+    encoding = 'buffer';
+  else if (!encoding)
+    encoding = state.defaultEncoding;
+
+  if (typeof cb !== 'function')
+    cb = nop;
+
+  if (state.ended)
+    writeAfterEnd(this, cb);
+  else if (validChunk(this, state, chunk, cb)) {
+    state.pendingcb++;
+    ret = writeOrBuffer(this, state, chunk, encoding, cb);
+  }
+
+  return ret;
+};
+
+Writable.prototype.cork = function() {
+  var state = this._writableState;
+
+  state.corked++;
+};
+
+Writable.prototype.uncork = function() {
+  var state = this._writableState;
+
+  if (state.corked) {
+    state.corked--;
+
+    if (!state.writing &&
+        !state.corked &&
+        !state.finished &&
+        !state.bufferProcessing &&
+        state.bufferedRequest)
+      clearBuffer(this, state);
+  }
+};
+
+Writable.prototype.setDefaultEncoding = function setDefaultEncoding(encoding) {
+  // node::ParseEncoding() requires lower case.
+  if (typeof encoding === 'string')
+    encoding = encoding.toLowerCase();
+  if (!(['hex', 'utf8', 'utf-8', 'ascii', 'binary', 'base64',
+'ucs2', 'ucs-2','utf16le', 'utf-16le', 'raw']
+.indexOf((encoding + '').toLowerCase()) > -1))
+    throw new TypeError('Unknown encoding: ' + encoding);
+  this._writableState.defaultEncoding = encoding;
+};
+
+function decodeChunk(state, chunk, encoding) {
+  if (!state.objectMode &&
+      state.decodeStrings !== false &&
+      typeof chunk === 'string') {
+    chunk = new Buffer(chunk, encoding);
+  }
+  return chunk;
+}
+
+// if we're already writing something, then just put this
+// in the queue, and wait our turn.  Otherwise, call _write
+// If we return false, then we need a drain event, so set that flag.
+function writeOrBuffer(stream, state, chunk, encoding, cb) {
+  chunk = decodeChunk(state, chunk, encoding);
+
+  if (Buffer.isBuffer(chunk))
+    encoding = 'buffer';
+  var len = state.objectMode ? 1 : chunk.length;
+
+  state.length += len;
+
+  var ret = state.length < state.highWaterMark;
+  // we must ensure that previous needDrain will not be reset to false.
+  if (!ret)
+    state.needDrain = true;
+
+  if (state.writing || state.corked) {
+    var last = state.lastBufferedRequest;
+    state.lastBufferedRequest = new WriteReq(chunk, encoding, cb);
+    if (last) {
+      last.next = state.lastBufferedRequest;
+    } else {
+      state.bufferedRequest = state.lastBufferedRequest;
+    }
+  } else {
+    doWrite(stream, state, false, len, chunk, encoding, cb);
+  }
+
+  return ret;
+}
+
+function doWrite(stream, state, writev, len, chunk, encoding, cb) {
+  state.writelen = len;
+  state.writecb = cb;
+  state.writing = true;
+  state.sync = true;
+  if (writev)
+    stream._writev(chunk, state.onwrite);
+  else
+    stream._write(chunk, encoding, state.onwrite);
+  state.sync = false;
+}
+
+function onwriteError(stream, state, sync, er, cb) {
+  --state.pendingcb;
+  if (sync)
+    processNextTick(cb, er);
+  else
+    cb(er);
+
+  stream._writableState.errorEmitted = true;
+  stream.emit('error', er);
+}
+
+function onwriteStateUpdate(state) {
+  state.writing = false;
+  state.writecb = null;
+  state.length -= state.writelen;
+  state.writelen = 0;
+}
+
+function onwrite(stream, er) {
+  var state = stream._writableState;
+  var sync = state.sync;
+  var cb = state.writecb;
+
+  onwriteStateUpdate(state);
+
+  if (er)
+    onwriteError(stream, state, sync, er, cb);
+  else {
+    // Check if we're actually ready to finish, but don't emit yet
+    var finished = needFinish(state);
+
+    if (!finished &&
+        !state.corked &&
+        !state.bufferProcessing &&
+        state.bufferedRequest) {
+      clearBuffer(stream, state);
+    }
+
+    if (sync) {
+      processNextTick(afterWrite, stream, state, finished, cb);
+    } else {
+      afterWrite(stream, state, finished, cb);
+    }
+  }
+}
+
+function afterWrite(stream, state, finished, cb) {
+  if (!finished)
+    onwriteDrain(stream, state);
+  state.pendingcb--;
+  cb();
+  finishMaybe(stream, state);
+}
+
+// Must force callback to be called on nextTick, so that we don't
+// emit 'drain' before the write() consumer gets the 'false' return
+// value, and has a chance to attach a 'drain' listener.
+function onwriteDrain(stream, state) {
+  if (state.length === 0 && state.needDrain) {
+    state.needDrain = false;
+    stream.emit('drain');
+  }
+}
+
+
+// if there's something in the buffer waiting, then process it
+function clearBuffer(stream, state) {
+  state.bufferProcessing = true;
+  var entry = state.bufferedRequest;
+
+  if (stream._writev && entry && entry.next) {
+    // Fast case, write everything using _writev()
+    var buffer = [];
+    var cbs = [];
+    while (entry) {
+      cbs.push(entry.callback);
+      buffer.push(entry);
+      entry = entry.next;
+    }
+
+    // count the one we are adding, as well.
+    // TODO(isaacs) clean this up
+    state.pendingcb++;
+    state.lastBufferedRequest = null;
+    doWrite(stream, state, true, state.length, buffer, '', function(err) {
+      for (var i = 0; i < cbs.length; i++) {
+        state.pendingcb--;
+        cbs[i](err);
+      }
+    });
+
+    // Clear buffer
+  } else {
+    // Slow case, write chunks one-by-one
+    while (entry) {
+      var chunk = entry.chunk;
+      var encoding = entry.encoding;
+      var cb = entry.callback;
+      var len = state.objectMode ? 1 : chunk.length;
+
+      doWrite(stream, state, false, len, chunk, encoding, cb);
+      entry = entry.next;
+      // if we didn't call the onwrite immediately, then
+      // it means that we need to wait until it does.
+      // also, that means that the chunk and cb are currently
+      // being processed, so move the buffer counter past them.
+      if (state.writing) {
+        break;
+      }
+    }
+
+    if (entry === null)
+      state.lastBufferedRequest = null;
+  }
+  state.bufferedRequest = entry;
+  state.bufferProcessing = false;
+}
+
+Writable.prototype._write = function(chunk, encoding, cb) {
+  cb(new Error('not implemented'));
+};
+
+Writable.prototype._writev = null;
+
+Writable.prototype.end = function(chunk, encoding, cb) {
+  var state = this._writableState;
+
+  if (typeof chunk === 'function') {
+    cb = chunk;
+    chunk = null;
+    encoding = null;
+  } else if (typeof encoding === 'function') {
+    cb = encoding;
+    encoding = null;
+  }
+
+  if (chunk !== null && chunk !== undefined)
+    this.write(chunk, encoding);
+
+  // .end() fully uncorks
+  if (state.corked) {
+    state.corked = 1;
+    this.uncork();
+  }
+
+  // ignore unnecessary end() calls.
+  if (!state.ending && !state.finished)
+    endWritable(this, state, cb);
+};
+
+
+function needFinish(state) {
+  return (state.ending &&
+          state.length === 0 &&
+          state.bufferedRequest === null &&
+          !state.finished &&
+          !state.writing);
+}
+
+function prefinish(stream, state) {
+  if (!state.prefinished) {
+    state.prefinished = true;
+    stream.emit('prefinish');
+  }
+}
+
+function finishMaybe(stream, state) {
+  var need = needFinish(state);
+  if (need) {
+    if (state.pendingcb === 0) {
+      prefinish(stream, state);
+      state.finished = true;
+      stream.emit('finish');
+    } else {
+      prefinish(stream, state);
+    }
+  }
+  return need;
+}
+
+function endWritable(stream, state, cb) {
+  state.ending = true;
+  finishMaybe(stream, state);
+  if (cb) {
+    if (state.finished)
+      processNextTick(cb);
+    else
+      stream.once('finish', cb);
+  }
+  state.ended = true;
+}
+
+},{"./_stream_duplex":279,"buffer":129,"core-util-is":284,"events":274,"inherits":275,"process-nextick-args":285,"util-deprecate":286}],284:[function(require,module,exports){
 arguments[4][32][0].apply(exports,arguments)
 },{"buffer":129,"dup":32}],285:[function(require,module,exports){
 (function (process){
