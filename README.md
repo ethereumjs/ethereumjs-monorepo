@@ -73,7 +73,7 @@ var tx = new Transaction(rawTx);
 ```
 Or lastly an `Object` containing the Properties of the transaction like in the [Usage](#usage) example
 
-For `Object` and `Arrays` each of the elements can either be a `Buffer`, hex `String` , `Number`, or an object with a `toBuffer` method such as `Bignum`
+For `Object` and `Arrays` each of the elements can either be a `Buffer`, a hex-prefixed (0x) `String` , `Number`, or an object with a `toBuffer` method such as `Bignum`
 
 ### `transaction` Properties
 - `raw` - The raw rlp decoded transaction.
