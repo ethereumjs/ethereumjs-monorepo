@@ -1,6 +1,6 @@
 {
   "name": "ethereumjs-account",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "a help module for ethereum account schema",
   "main": "index.js",
   "repository": {
@@ -21,7 +21,7 @@
   },
   "homepage": "https://github.com/ethereum/ethereumjs-account#readme",
   "dependencies": {
-    "ethereumjs-util": "2.0.1",
+    "ethereumjs-util": "2.0.4",
     "rlp": "2.0.0"
   },
   "devDependencies": {

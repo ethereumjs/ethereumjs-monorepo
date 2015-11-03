@@ -26,7 +26,7 @@ Account.prototype.serialize = function () {
   return rlp.encode(this.raw)
 }
 
-Account.prototype.isContract = function (address) {
+Account.isContract = Account.prototype.isContract = function (address) {
   var result = this.codeHash.toString('hex') !== ethUtil.SHA3_NULL.toString('hex')
   if (address) {
     result |= this.isPrecompiled(address)
