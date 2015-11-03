@@ -318,7 +318,7 @@ exports.defineProperties = function (self, fields, data) {
 
       // make sure all the items are buffers
       data.forEach(function (d, i) {
-        self[self._fields[i]] = typeof d === 'string' ? new Buffer(d, 'hex') : d
+        self[self._fields[i]] = exports.toBuffer(d)
       })
     } else if (typeof data === 'object') {
       for (var prop in data) {
