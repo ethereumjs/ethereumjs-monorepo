@@ -14,7 +14,7 @@ var stateTrie = new Trie()
 // create a new VM instance
 var vm = new VM(stateTrie)
 
-// the private/public key pare. used to sign the transactions and generate the addresses
+// the private/public key pair. used to sign the transactions and generate the addresses
 var secretKey = '3cd7232cd6f3fc66a57a6bedc1a8ed6c228fff0a327e169c2bcc5e869ed49511'
 var publicKey = '0406cc661590d48ee972944b35ad13ff03c7876eae3fd191e8a2f77311b0a3c6613407b5005e63d7d8d76b89d5f900cde691497688bb281e07a5052ff61edebdc0'
 
