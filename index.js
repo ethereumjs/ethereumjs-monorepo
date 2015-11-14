@@ -70,7 +70,7 @@ exports.toBuffer = function (v) {
   if (!Buffer.isBuffer(v)) {
     if (typeof v === 'string') {
       if (exports.isHexPrefixed(v)) {
-        v = new Buffer(padToEven(exports.stripHexPrefix(v)), 'hex')
+        v = new Buffer(exports.padToEven(exports.stripHexPrefix(v)), 'hex')
       } else {
         v = new Buffer(v)
       }
@@ -373,7 +373,7 @@ exports.baToJSON = function (ba) {
   }
 }
 
-function padToEven (a) {
+exports.padToEven = function (a) {
   if (a.length % 2) a = '0' + a
   return a
 }
