@@ -31,6 +31,14 @@ pads an `array` or `buffer` with leading zeros till it has `length` bytes
 
 **Return:** `array` or `buffer`
 
+### `rpad(val, length)`
+pads an `array` or `buffer` with trailing zeros till it has `length` bytes  
+**Parameters**
+- `val`  - the value to pad
+- `length` - the of the resulting value
+
+**Return:** `array` or `buffer`
+
 ### `unpad(val)`
 Trims leading zeros from a buffer or an array  
 **Parameters** 

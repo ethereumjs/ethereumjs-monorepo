@@ -52,6 +52,14 @@ describe('pad', function () {
   })
 })
 
+describe('rpad', function () {
+  it('should right pad a Buffer', function () {
+    var buf = new Buffer([9, 9])
+    var padded = ethUtils.rpad(buf, 3)
+    assert.equal(padded.toString('hex'), '090900')
+  })
+})
+
 describe('intToHex', function () {
   it('should convert a int to hex', function () {
     var i = 6003400
