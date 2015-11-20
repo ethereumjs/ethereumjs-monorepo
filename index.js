@@ -50,6 +50,23 @@ exports.pad = function (msg, length) {
 }
 
 /**
+ * pads an array of buffer with trailing zeros till it has `length` bytes
+ * @method rpad
+ * @param {Buffer|Array} array
+ * @param {Integer}  length the number of bytes the output should be
+ * @return {Buffer|Array}
+ */
+exports.rpad = function (msg, length) {
+  msg = exports.toBuffer(msg)
+  if (msg.length < length) {
+    var buf = exports.zeros(length)
+    msg.copy(buf)
+    return buf
+  }
+  return msg.slice(-length)
+}
+
+/**
  * Trims leading zeros from a buffer or an array
  *
  * @method unpad
