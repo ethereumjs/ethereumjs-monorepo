@@ -46,10 +46,11 @@ Trims leading zeros from a buffer or an array
 
 **Return:** `buffer` or and `Array`
 
-### `toBufer(val)`
-Attemps to turn a value into a Buffer  
+### `toBuffer(val)`
+Attemps to turn a value into a Buffer. Attemps to turn a value into a Buffer. Supports Buffer, string, number, null/undefined, BN.js or other objects with a toArray() method.
+
 **Parameters** 
-- `val` the 
+- `val` the object to be converted
 
 **Return:** `Buffer`
 
