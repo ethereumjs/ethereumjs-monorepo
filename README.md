@@ -137,6 +137,7 @@ Returns a sha256 of `a`
 Returns a ripemd160 of `a`
 **Parameters**
 - `a` - the value to hash
+- `padded` - pad the hash to 256 bits with zeroes
 
 **Return:** `Buffer`
 

@@ -210,11 +210,17 @@ exports.sha256 = function (a) {
  * Creates RIPEMD160 hash of the input
  * @method ripemd160
  * @param {Buffer|Array|String|Number} a the input data
+ * @param {Boolean} padded whether it should be padded to 256 bits or not
  * @return {Buffer}
  */
-exports.ripemd160 = function (a) {
+exports.ripemd160 = function (a, padded) {
   a = exports.toBuffer(a)
-  return crypto.createHash('RSA-RIPEMD160').update(a).digest()
+  var hash = crypto.createHash('RSA-RIPEMD160').update(a).digest()
+  if (padded === true) {
+    return exports.pad(hash, 32)
+  } else {
+    return hash
+  }
 }
 
 /**
