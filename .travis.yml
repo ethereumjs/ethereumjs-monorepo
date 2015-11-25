@@ -18,14 +18,14 @@ env:
   global:
     - DISPLAY=:99.0
   matrix:
-    - CXX=g++-4.8
+    - CXX=g++-4.8 TEST_SUITE=test
 matrix:
   fast_finish: true
   include:
     - os: linux
       node_js: "4"
-      env: TEST_SUITE=coveralls
+      env: CXX=g++-4.8 TEST_SUITE=coveralls
     - os: linux
       node_js: "4"
-      env: TEST_SUITE=lint
+      env: CXX=g++-4.8 TEST_SUITE=lint
 script: npm run $TEST_SUITE
