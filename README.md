@@ -118,13 +118,28 @@ Generates an address of a newly created contract. Don't forget to increment the 
 
 **Return:** `Buffer`
 
-### `sha3(a, bytes)`  
+### `sha3(a, bytes)`
 Returns a sha3 of `a` of the length of `bytes`  
 **Parameters**
 - `a` - the value to hash
 - `bytes` - how many bytes the hash should be
 
 **Return:** `Buffer`  
+
+### `sha256(a, bytes)`
+Returns a sha256 of `a`
+**Parameters**
+- `a` - the value to hash
+
+**Return:** `Buffer`
+
+### `ripemd160(a, bytes)`
+Returns a ripemd160 of `a`
+**Parameters**
+- `a` - the value to hash
+- `padded` - pad the hash to 256 bits with zeroes
+
+**Return:** `Buffer`
 
 ### `printBA(ba)`
 Print a Buffer Array  

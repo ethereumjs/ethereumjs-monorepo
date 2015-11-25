@@ -28,6 +28,31 @@ describe('sha3 without hexprefix', function () {
   })
 })
 
+describe('sha256', function () {
+  it('should produce a sha256', function () {
+    var msg = '0x3c9229289a6125f7fdf1885a77bb12c37a8d3b4962d936f7e3084dece32a3ca1'
+    var r = '58bbda5e10bc11a32d808e40f9da2161a64f00b5557762a161626afe19137445'
+    var hash = ethUtils.sha256(msg)
+    assert.equal(hash.toString('hex'), r)
+  })
+})
+
+describe('ripemd160', function () {
+  it('should produce a ripemd160', function () {
+    var msg = '0x3c9229289a6125f7fdf1885a77bb12c37a8d3b4962d936f7e3084dece32a3ca1'
+    var r = '4bb0246cbfdfddbe605a374f1187204c896fabfd'
+    var hash = ethUtils.ripemd160(msg)
+    assert.equal(hash.toString('hex'), r)
+  })
+
+  it('should produce a padded ripemd160', function () {
+    var msg = '0x3c9229289a6125f7fdf1885a77bb12c37a8d3b4962d936f7e3084dece32a3ca1'
+    var r = '0000000000000000000000004bb0246cbfdfddbe605a374f1187204c896fabfd'
+    var hash = ethUtils.ripemd160(msg, true)
+    assert.equal(hash.toString('hex'), r)
+  })
+})
+
 describe('unpad', function () {
   it('should unpad a string', function () {
     var str = '0000000006600'

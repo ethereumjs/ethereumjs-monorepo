@@ -3,6 +3,7 @@ const ec = require('elliptic').ec('secp256k1')
 const assert = require('assert')
 const rlp = require('rlp')
 const BN = require('bn.js')
+const crypto = require('crypto')
 
 // the max interger that this VM can handle
 exports.MAX_INTEGER = new BN('ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff', 16)
@@ -176,6 +177,13 @@ exports.toUnsigned = function (num) {
   return new Buffer(num.toArray())
 }
 
+/**
+ * Creates SHA-3 hash of the input
+ * @method sha3
+ * @param {Buffer|Array|String|Number} a the input data
+ * @param {Number} bytes the SHA width
+ * @return {Buffer}
+ */
 exports.sha3 = function (a, bytes) {
   a = exports.toBuffer(a)
   if (!bytes) bytes = 256
@@ -185,6 +193,34 @@ exports.sha3 = function (a, bytes) {
     h.update(a)
   }
   return new Buffer(h.digest('hex'), 'hex')
+}
+
+/**
+ * Creates SHA256 hash of the input
+ * @method sha256
+ * @param {Buffer|Array|String|Number} a the input data
+ * @return {Buffer}
+ */
+exports.sha256 = function (a) {
+  a = exports.toBuffer(a)
+  return crypto.createHash('SHA256').update(a).digest()
+}
+
+/**
+ * Creates RIPEMD160 hash of the input
+ * @method ripemd160
+ * @param {Buffer|Array|String|Number} a the input data
+ * @param {Boolean} padded whether it should be padded to 256 bits or not
+ * @return {Buffer}
+ */
+exports.ripemd160 = function (a, padded) {
+  a = exports.toBuffer(a)
+  var hash = crypto.createHash('RSA-RIPEMD160').update(a).digest()
+  if (padded === true) {
+    return exports.pad(hash, 32)
+  } else {
+    return hash
+  }
 }
 
 /**
