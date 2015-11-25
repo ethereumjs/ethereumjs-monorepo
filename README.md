@@ -199,8 +199,5 @@ Validate defined fields
 
 **Return:** `Boolean`
 
-# TESTING
-Node.js Tests use Mocha. Test in the browser use Testling.
-
 # LICENSE
 MPL-2.0
