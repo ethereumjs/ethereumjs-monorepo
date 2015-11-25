@@ -1,7 +1,7 @@
 # SYNOPSIS
-[![NPM Package](https://img.shields.io/npm/v/ethereumjs-util.svg?style=flat-square)](https://www.npmjs.org/package/secp256k1)
-[![Build Status](https://img.shields.io/travis/ethereum/ethereumjs-util.svg?branch=master&style=flat-square)](https://travis-ci.org/cryptocoinjs/secp256k1-node)
-[![Coverage Status](https://img.shields.io/coveralls/ethereum/ethereumjs-util.svg?style=flat-square)](https://coveralls.io/r/cryptocoinjs/secp256k1-node)
+[![NPM Package](https://img.shields.io/npm/v/ethereumjs-util.svg?style=flat-square)](https://www.npmjs.org/package/ethereumjs-util)
+[![Build Status](https://img.shields.io/travis/ethereum/ethereumjs-util.svg?branch=master&style=flat-square)](https://travis-ci.org/ethereum/ethereumjs-util)
+[![Coverage Status](https://img.shields.io/coveralls/ethereum/ethereumjs-util.svg?style=flat-square)](https://coveralls.io/r/ethereum/ethereumjs-util)
 
 [![js-standard-style](https://cdn.rawgit.com/feross/standard/master/badge.svg)](https://github.com/feross/standard)  
 
