@@ -1,6 +1,11 @@
 # SYNOPSIS
-[![js-standard-style](https://img.shields.io/badge/code%20style-standard-brightgreen.svg?style=flat)](https://github.com/feross/standard)
- [![Build Status](https://travis-ci.org/ethereum/ethereumjs-util.svg)](https://travis-ci.org/ethereum/ethereumjs-util)  [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/ethereum/ethereumjs-lib?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge) or #ethereumjs on freenode  
+[![NPM Package](https://img.shields.io/npm/v/ethereumjs-util.svg?style=flat-square)](https://www.npmjs.org/package/secp256k1)
+[![Build Status](https://img.shields.io/travis/ethereum/ethereumjs-util.svg?branch=master&style=flat-square)](https://travis-ci.org/cryptocoinjs/secp256k1-node)
+[![Coverage Status](https://img.shields.io/coveralls/ethereum/ethereumjs-util.svg?style=flat-square)](https://coveralls.io/r/cryptocoinjs/secp256k1-node)
+
+[![js-standard-style](https://cdn.rawgit.com/feross/standard/master/badge.svg)](https://github.com/feross/standard)  
+
+[![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/ethereum/ethereumjs-lib?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge) or #ethereumjs on freenode  
 
 A collection of utility functions for ethereum. It can be used in node.js or can be in the browser with browserify.
 
