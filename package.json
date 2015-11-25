@@ -4,8 +4,13 @@
   "description": "a collection of utility functions for Ethereum",
   "main": "index.js",
   "scripts": {
-    "test": "standard ./index.js && mocha ./test/",
-    "compile": "browserify index.js -s ethUtils > ethUtils.js"
+    "coverage": "istanbul cover _mocha",
+    "coveralls": "npm run coverage && coveralls <coverage/lcov.info",
+    "lint": "standard",
+    "prepublish": "npm run lint && npm run test",
+    "test": "npm run test:node && npm run test:browser",
+    "test:browser": "karma start karma.conf.js",
+    "test:node": "istanbul test _mocha -- --reporter spec"
   },
   "repository": {
     "type": "git",
@@ -22,9 +27,9 @@
   },
   "homepage": "https://github.com/ethereum/ethereumjs-utils",
   "dependencies": {
-    "bn.js": "^3.1.2",
+    "bn.js": "^4.3.0",
     "browserify-sha3": "0.0.0",
-    "elliptic": "^5.0.0",
+    "elliptic": "^6.0.2",
     "rlp": "^2.0.0",
     "sha3": "^1.1.0"
   },
@@ -43,7 +48,21 @@
     ]
   },
   "devDependencies": {
-    "mocha": "^2.1.0",
-    "standard": "^5.3.1"
+    "istanbul": "^0.4.1",
+    "karma": "^0.13.15",
+    "karma-browserify": "^4.4.0",
+    "karma-chrome-launcher": "^0.2.1",
+    "karma-detect-browsers": "^2.0.2",
+    "karma-env-preprocessor": "^0.1.1",
+    "karma-firefox-launcher": "^0.1.7",
+    "karma-mocha": "^0.2.1",
+    "mocha": "^2.3.4",
+    "standard": "^5.4.1"
+  },
+  "standard": {
+    "globals": [
+      "describe",
+      "it"
+    ]
   }
 }

@@ -215,7 +215,7 @@ exports.sha256 = function (a) {
  */
 exports.ripemd160 = function (a, padded) {
   a = exports.toBuffer(a)
-  var hash = crypto.createHash('RSA-RIPEMD160').update(a).digest()
+  var hash = crypto.createHash('rmd160').update(a).digest()
   if (padded === true) {
     return exports.pad(hash, 32)
   } else {

@@ -1,6 +1,5 @@
 var assert = require('assert')
 var ethUtil = require('../index.js')
-var BN = require('bn.js')
 
 describe('define', function () {
   const fields = [{
@@ -31,13 +30,4 @@ describe('define', function () {
     someOb.r = new Buffer([0, 0, 0, 0, 4])
     assert.equal(someOb.r.toString('hex'), '04')
   })
-
-  // it('should allow empties', function(){
-  //   someOb.r = '0x00004'
-  //   assert.equal(someOb.r.toString('hex'), '04')
-
-  //   someOb.r = new Buffer([0,0,0,0, 4])
-  //   assert.equal(someOb.r.toString('hex'), '04')
-
-// })
 })
