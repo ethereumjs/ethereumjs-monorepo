@@ -17,6 +17,7 @@ var vm = new VM(stateTrie)
 // the private/public key pare. used to sign the transactions and generate the addresses
 var secretKey = '3cd7232cd6f3fc66a57a6bedc1a8ed6c228fff0a327e169c2bcc5e869ed49511'
 var publicKey = '0406cc661590d48ee972944b35ad13ff03c7876eae3fd191e8a2f77311b0a3c6613407b5005e63d7d8d76b89d5f900cde691497688bb281e07a5052ff61edebdc0'
+var createdAddress
 
 // This transaction contains the initializtion code for the name register
 // NOTE: all strings are interpeted as hex
@@ -70,7 +71,7 @@ function runTx (raw, cb) {
   vm.runTx({
     tx: tx
   }, function (err, results) {
-    var createdAddress = results.createdAddress
+    createdAddress = results.createdAddress
     // log some results
     console.log('gas used: ' + results.gasUsed.toString())
     console.log('returen: ' + results.vm.return.toString('hex'))
@@ -88,8 +89,6 @@ var storageRoot
 // for the contranct in the trie.Lets test to see
 // if it did.
 function checkResults (cb) {
-  var createdAddress = new Buffer('692a70d2e424a56d2c6c27aa97d1a86395877b3a', 'hex')
-
   // fetch the new account from the trie.
   stateTrie.get(createdAddress, function (err, val) {
     var account = new Account(val)
