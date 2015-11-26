@@ -1,9 +1,10 @@
 # SYNOPSIS 
- [![js-standard-style](https://cdn.rawgit.com/feross/standard/master/badge.svg)](https://github.com/feross/standard) [![Build Status](https://travis-ci.org/ethereum/ethereumjs-tx.svg)](https://travis-ci.org/ethereum/ethereumjs-tx)   
-A simple module for creating, manipulating and signing Ethereum transactions. 
+[![NPM Package](https://img.shields.io/npm/v/ethereumjs-tx.svg?style=flat-square)](https://www.npmjs.org/package/ethereumjs-tx)
+[![Build Status](https://img.shields.io/travis/ethereum/ethereumjs-tx.svg?branch=master&style=flat-square)](https://travis-ci.org/ethereum/ethereumjs-tx)
+[![Coverage Status](https://img.shields.io/coveralls/ethereum/ethereumjs-tx.svg?style=flat-square)](https://coveralls.io/r/ethereum/ethereumjs-tx)
+[![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/ethereum/ethereumjs-lib?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge) or #ethereumjs on freenode  
 
-# CONTACT
- [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/ethereum/ethereumjs-lib?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge) or #ethereumjs on freenode
+[![js-standard-style](https://cdn.rawgit.com/feross/standard/master/badge.svg)](https://github.com/feross/standard)  
 
 # INSTALL
 `npm install ethereumjs-tx`
