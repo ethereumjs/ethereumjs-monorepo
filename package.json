@@ -4,7 +4,13 @@
   "description": "An simple module for creating, manipulating and signing ethereum transactions",
   "main": "index.js",
   "scripts": {
-    "test": "standard ./index.js ./test/*.js && node ./test/tester -a",
+    "coverage": "istanbul cover ./test/tester.js",
+    "coveralls": "npm run coverage && coveralls <coverage/lcov.info",
+    "lint": "standard ",
+    "prepublish": "npm run lint && npm run test && npm run build",
+    "test": "npm run test:node && npm run test:browser",
+    "test:browser": "karma start karma.conf.js",
+    "test:node": "node ./test/tester -a",
     "build": "browserify --s EthTx index.js > ./dist/ethereumjs-tx.js"
   },
   "keywords": [
@@ -21,6 +27,14 @@
   "devDependencies": {
     "async": "^1.4.2",
     "ethereumjs-testing": "git+https://github.com/wanderer/ethereumjs-testing.git",
+    "istanbul": "^0.4.1",
+    "karma": "^0.13.15",
+    "karma-browserify": "^4.4.0",
+    "karma-chrome-launcher": "^0.2.1",
+    "karma-detect-browsers": "^2.0.2",
+    "karma-env-preprocessor": "^0.1.1",
+    "karma-firefox-launcher": "^0.1.7",
+    "karma-tap": "^1.0.3",
     "minimist": "^1.2.0",
     "standard": "^5.2.2",
     "tape": "^4.0.3"
@@ -32,17 +46,11 @@
   "bugs": {
     "url": "https://github.com/ethereum/ethereumjs-tx/issues"
   },
-  "browser": {
-    "secp256k1": "secp256k1-browserify"
-  },
-  "testling": {
-    "browsers": [
-      "ie/9..latest",
-      "firefox/15..latest",
-      "chrome/22..latest"
-    ],
-    "files": [
-      "test/transactions.js"
+  "standard": {
+    "ignore": [
+      "dist/**",
+      "package-init.js",
+      "package.js"
     ]
   }
 }

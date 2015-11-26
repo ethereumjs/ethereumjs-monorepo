@@ -155,7 +155,15 @@ Transaction.prototype.verifySignature = function () {
     return false
   }
 
-  var result = !!this._senderPubKey
+  // hack to force elliptic to verify
+  if (process.browser) {
+    var result = ecdsa.verifySync(msgHash, sig.signature, this._senderPubKey)
+    if (!result) {
+      this._senderPubKey = null
+    }
+  } else {
+    result = !!this._senderPubKey
+  }
 
   return result
 }
