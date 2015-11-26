@@ -17,15 +17,14 @@ function ifZero (v) {
 }
 
 module.exports = function txRunner (testData, t, cb) {
+  var tTx = testData.transaction
   try {
     var tx = new Tx(new Buffer(testData.rlp.slice(2), 'hex'))
   } catch (e) {
-    t.equal(tTx, undefined, 'should not have any fields ')
+    t.equal(undefined, tTx, 'should not have any fields ')
     if (cb) cb()
     return
   }
-
-  var tTx = testData.transaction
 
   if (tx.validate()) {
     try {
@@ -47,7 +46,7 @@ module.exports = function txRunner (testData, t, cb) {
       t.fail(e)
     }
   } else {
-    t.equal(tTx, undefined, 'should not have any fields ')
+    t.equal(undefined, tTx, 'should have fields ')
   }
 
   if (cb) {

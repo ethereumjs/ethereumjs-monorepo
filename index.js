@@ -116,7 +116,8 @@ Transaction.prototype.hash = function (signature) {
  * @return {Buffer}
  */
 Transaction.prototype.getSenderAddress = function () {
-  const pubKey = this.getSenderPublicKey()
+  var pubKey = this.getSenderPublicKey()
+  pubKey = ecdsa.publicKeyConvert(pubKey, false)
   return ethUtil.pubToAddress(pubKey)
 }
 
@@ -145,7 +146,7 @@ Transaction.prototype.verifySignature = function () {
   }
 
   try {
-    this._senderPubKey = ecdsa.recover(msgHash, sig, false)
+    this._senderPubKey = ecdsa.recoverSync(msgHash, sig.signature, sig.recovery)
   } catch (e) {
     return false
   }
@@ -154,10 +155,7 @@ Transaction.prototype.verifySignature = function () {
     return false
   }
 
-  var result = ecdsa.verify(msgHash, sig, this._senderPubKey)
-  if (!result) {
-    this._senderPubKey = null
-  }
+  var result = !!this._senderPubKey
 
   return result
 }
@@ -168,7 +166,7 @@ Transaction.prototype.verifySignature = function () {
  */
 Transaction.prototype.sign = function (privateKey) {
   var msgHash = this.hash(false)
-  var sig = ecdsa.sign(msgHash, privateKey)
+  var sig = ecdsa.signSync(msgHash, privateKey)
 
   this.r = sig.signature.slice(0, 32)
   this.s = sig.signature.slice(32, 64)
