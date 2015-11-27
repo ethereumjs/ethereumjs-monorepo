@@ -30,6 +30,7 @@
     "semaphore": "^1.0.3"
   },
   "devDependencies": {
+    "standard": "^5.4.1",
     "tape": "^4.2.1"
   }
 }
