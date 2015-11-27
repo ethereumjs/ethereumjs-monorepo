@@ -1,9 +1,7 @@
-const fs = require('fs')
 const BN = require('bn.js')
 const async = require('async')
 const SHA3 = require('sha3')
 const rlp = require('rlp')
-const through2 = require('through2')
 const utils = require('ethereumjs-util')
 const Account = require('ethereumjs-account')
 const Transaction = require('ethereumjs-tx')
@@ -217,39 +215,39 @@ exports.verifyLogs = function (logs, testData, t) {
   }
 }
 
-/**
- * enableVMtracing - set up handler to output VM trace on console
- * @param {[type]} vm - the VM object
- * @param file
- * TODO: remove
- */
-exports.enableVMtracing = function (vm, file) {
-  var firstChunk = true
-  var stream = vm.createTraceStream()
-  var fstream = fs.createWriteStream(file)
-  fstream.write('[')
+// /**
+//  * enableVMtracing - set up handler to output VM trace on console
+//  * @param {[type]} vm - the VM object
+//  * @param file
+//  * TODO: remove
+//  */
+// exports.enableVMtracing = function (vm, file) {
+//   var firstChunk = true
+//   var stream = vm.createTraceStream()
+//   var fstream = fs.createWriteStream(file)
+//   fstream.write('[')
 
-  stream.on('end', function () {
-    fstream.write(']')
-  })
+//   stream.on('end', function () {
+//     fstream.write(']')
+//   })
 
-  stream.pipe(through2({
-    objectMode: true
-  }, function (chunk, enc, cb) {
-    if (firstChunk) {
-      firstChunk = false
-    } else {
-      this.push(',')
-    }
-    this.push(JSON.stringify(chunk))
-    cb()
-  })).pipe(fstream)
+//   stream.pipe(through2({
+//     objectMode: true
+//   }, function (chunk, enc, cb) {
+//     if (firstChunk) {
+//       firstChunk = false
+//     } else {
+//       this.push(',')
+//     }
+//     this.push(JSON.stringify(chunk))
+//     cb()
+//   })).pipe(fstream)
 
-  return stream
-// stream.on('end', function(){
-//   this.push('')
-// })
-}
+//   return stream
+// // stream.on('end', function(){
+// //   this.push('')
+// // })
+// }
 
 /**
  * toDecimal - converts buffer to decimal string, no leading zeroes
@@ -329,7 +327,7 @@ exports.makeRunCodeData = function (exec, account, block) {
     account: account,
     origin: format(exec.origin, false, true),
     code: format(exec.code), // slice off 0x
-    value: new BN(format(exec.value)),
+    value: format(exec.value),
     address: format(exec.address, false, true),
     caller: format(exec.caller, false, true),
     data: format(exec.data), // slice off 0x

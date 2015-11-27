@@ -9,28 +9,24 @@
     "bn.js": "^4.3.0",
     "es6-shim": "^0.33.6",
     "ethereum-common": "0.0.10",
-    "ethereumjs-account": "1.0.4",
-    "ethereumjs-block": "1.0.2",
+    "ethereumjs-account": "^1.0.5",
+    "ethereumjs-block": "^1.0.3",
     "ethereumjs-util": "^2.3.1",
     "functional-red-black-tree": "^1.0.1",
     "merkle-patricia-tree": "^2.1.0",
     "rlp": "^2.0.0",
-    "secp256k1": "1.1.6",
-    "secp256k1-browserify": "0.0.0"
+    "secp256k1": "^2.0.7"
   },
   "devDependencies": {
-    "ethereumjs-blockchain": "1.3.1",
+    "ethereumjs-blockchain": "^1.3.3",
     "ethereumjs-testing": "git+https://github.com/wanderer/ethereumjs-testing.git",
     "ethereumjs-tx": "^0.6.9",
-    "level": "^1.3.0",
-    "leveldown": "^1.4.1",
-    "levelup": "^1.2.1",
-    "memdown": "^1.0.0",
+    "level": "^1.4.0",
+    "memdown": "^1.1.0",
     "minimist": "^1.1.1",
     "sha3": "^1.2.0",
     "standard": "^5.2.2",
-    "tape": "^4.2.0",
-    "through2": "^2.0.0"
+    "tape": "^4.2.0"
   },
   "scripts": {
     "build": "browserify --s EthVm index.js > ./dist/ethereumjs-vm.js",
