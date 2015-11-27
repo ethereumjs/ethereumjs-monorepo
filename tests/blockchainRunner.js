@@ -8,7 +8,7 @@ const BlockHeader = require('ethereumjs-block/header.js')
 const VM = require('../')
 const Level = require('levelup')
 
-var cacheDB = Level('./.cachedb')
+var cacheDB = new Level('./.cachedb')
 module.exports = function runBlockchainTest (options, testData, t, cb) {
   var blockchainDB = new Level('', {
     db: require('memdown')
