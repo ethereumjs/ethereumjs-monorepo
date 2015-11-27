@@ -1,6 +1,6 @@
 {
   "name": "ethereumjs-block",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Provides Block serialization and help functions",
   "main": "index.js",
   "scripts": {
