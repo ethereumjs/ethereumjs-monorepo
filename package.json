@@ -1,6 +1,6 @@
 {
   "name": "ethereumjs-account",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "a help module for ethereum account schema",
   "main": "index.js",
   "repository": {
