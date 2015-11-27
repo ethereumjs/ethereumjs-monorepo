@@ -33,12 +33,14 @@ test('blockchain test', function (t) {
       firstBlock.header.parentHash = genesisBlock.hash()
       blockchain.putBlock(firstBlock, function (err) {
         t.ok(true, 'should add a block')
-        done()
+        done(err)
       })
     },
     function getBlockByNumber (done) {
       blockchain.getBlock(1, function (err, block) {
-        err = null
+        if (err) {
+          console.log(err)
+        }
         t.equals(block.hash().toString('hex'), firstBlock.hash().toString('hex'))
       })
       done()
