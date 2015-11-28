@@ -16,4 +16,5 @@ vm.runCode({
 }, function (err, results) {
   console.log('returned: ' + results.return.toString('hex'))
   console.log('gasUsed: ' + results.gasUsed.toString())
+  console.log(err)
 })

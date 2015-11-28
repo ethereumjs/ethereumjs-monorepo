@@ -9,7 +9,7 @@ function nameOpCodes (raw) {
 
   for (var i = 0; i < raw.length; i++) {
     var pc = i
-    var curOpCode = opcodes(raw[pc], true).opcode
+    var curOpCode = opcodes(raw[pc], true).name
 
     // no destinations into the middle of PUSH
     if (curOpCode.slice(0, 4) === 'PUSH') {
@@ -22,7 +22,6 @@ function nameOpCodes (raw) {
 
     pushData = ''
   }
-
 }
 
 function pad (num, size) {

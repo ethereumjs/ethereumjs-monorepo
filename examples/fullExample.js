@@ -75,8 +75,9 @@ function runTx (raw, cb) {
     // log some results
     console.log('gas used: ' + results.gasUsed.toString())
     console.log('returen: ' + results.vm.return.toString('hex'))
-    if (createdAddress)
+    if (createdAddress) {
       console.log('address created: ' + createdAddress.toString('hex'))
+    }
 
     cb(err)
   })

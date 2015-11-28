@@ -32,7 +32,11 @@
   },
   "scripts": {
     "build": "browserify --s EthVm index.js > ./dist/ethereumjs-vm.js",
-    "test": "standard *js && ./tests/tester -a"
+    "testVM": "./tests/tester -v",
+    "testState": "./tests/tester -s",
+    "testBlockchain": "./test/tester -b",
+    "lint": "standard",
+    "test": "./tests/tester -a"
   },
   "repository": {
     "type": "git",
@@ -48,7 +52,10 @@
     "url": "https://github.com/ethereum/ethereumjs-vm/issues"
   },
   "homepage": "https://github.com/ethereum/ethereumjs-vm",
-  "browser": {
-    "secp256k1": "secp256k1-browserify"
+  "standard": {
+    "ignore": [
+      "dist/**",
+      "examples/runcode-browserify.js"
+    ]
   }
 }
