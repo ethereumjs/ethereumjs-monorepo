@@ -14,7 +14,9 @@ addons:
     - ubuntu-toolchain-r-test
     packages:
     - g++-4.8
+
 env:
+  - CXX=g++-4.8
   global:
     - DISPLAY=:99.0
   matrix:
