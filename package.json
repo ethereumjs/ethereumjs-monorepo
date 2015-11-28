@@ -34,7 +34,7 @@
     "build": "browserify --s EthVm index.js > ./dist/ethereumjs-vm.js",
     "testVM": "./tests/tester -v",
     "testState": "./tests/tester -s",
-    "testBlockchain": "./test/tester -b",
+    "testBlockchain": "./tests/tester -b",
     "lint": "standard",
     "test": "./tests/tester -a"
   },
