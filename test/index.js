@@ -149,6 +149,16 @@ describe('pubToAddress 0x', function () {
   })
 })
 
+describe('privateToAddress', function () {
+  it('should produce an address given a public key', function () {
+    var address = '2f015c60e0be116b1f0cd534704db9c92118fb6a'
+    // Our private key
+    var privateKey = new Buffer([234, 84, 189, 197, 45, 22, 63, 136, 201, 58, 176, 97, 87, 130, 207, 113, 138, 46, 251, 158, 81, 167, 152, 154, 171, 27, 8, 6, 126, 156, 28, 95])
+    var r = ethUtils.privateToAddress(privateKey).toString('hex')
+    assert.equal(r.toString('hex'), address)
+  })
+})
+
 describe('generateAddress', function () {
   it('should produce an address given a public key', function () {
     var add = ethUtils.generateAddress('990ccf8a0de58091c028d6ff76bb235ee67c1c39', 14).toString('hex')

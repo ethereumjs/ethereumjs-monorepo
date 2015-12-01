@@ -86,7 +86,9 @@ exports.unpad = exports.stripZeros = function (a) {
 
 exports.toBuffer = function (v) {
   if (!Buffer.isBuffer(v)) {
-    if (typeof v === 'string') {
+    if (Array.isArray(v)) {
+      v = new Buffer(v)
+    } else if (typeof v === 'string') {
       if (exports.isHexPrefixed(v)) {
         v = new Buffer(exports.padToEven(exports.stripHexPrefix(v)), 'hex')
       } else {
@@ -246,7 +248,7 @@ var privateToPublic = exports.privateToPublic = function (privateKey) {
   privateKey = exports.toBuffer(privateKey)
   privateKey = new BN(privateKey)
   var key = ec.keyFromPrivate(privateKey).getPublic().toJSON()
-  return new Buffer(key[0].toArray().concat(key[1].toArray()))
+  return Buffer.concat([exports.pad(key[0], 32), exports.pad(key[1], 32)])
 }
 
 /**
