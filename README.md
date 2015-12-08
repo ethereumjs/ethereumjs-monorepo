@@ -27,7 +27,7 @@ This module work with `browserify`
 ### `new Account([data])`
 Creates an new account object
 - `data` - an account can be initiailized with either a `buffer` containing the RLP serialized account. 
- Or an `array` of buffers relating to each of the tx Properties, listed in order below.  For example.
+ Or an `array` of buffers relating to each of the account Properties, listed in order below.  For example.
 ```javascript
 var raw = [ 
   '0x02', //nonce
@@ -36,7 +36,7 @@ var raw = [
   '0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470'  //codeHash
   ];
 
-var tx = new Account(raw);
+var account = new Account(raw);
 ```
 
 Or lastly an `Object` containing the Properties of the account
@@ -49,7 +49,7 @@ var raw = {
   codeHash: '0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470'
 };
 
-var tx = new Account(raw);
+var account = new Account(raw);
 ```
 For `Object` and `Arrays` each of the elements can either be a `Buffer`, hex `String` , `Number`, or an object with a `toBuffer` method such as `Bignum`.
 
