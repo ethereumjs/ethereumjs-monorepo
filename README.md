@@ -39,7 +39,7 @@ var raw = [
 var tx = new Account(raw);
 ```
 
-Or lastly an `Object` containing the Properties of the transaction
+Or lastly an `Object` containing the Properties of the account
 
 ```javascript
 var raw = {
