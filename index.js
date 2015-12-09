@@ -345,7 +345,7 @@ exports.defineProperties = function (self, fields, data) {
           v = exports.stripZeros(v)
           assert(field.length >= v.length)
         } else if (!(field.allowZero && v.length === 0) && field.length) {
-          assert(field.length === v.length, 'The field ' + field.name + 'must have byte length of ' + field.length)
+          assert(field.length === v.length, 'The field ' + field.name + ' must have byte length of ' + field.length)
         }
 
         this.raw[i] = v
