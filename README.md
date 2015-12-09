@@ -17,7 +17,7 @@ This module work with `browserify`
   - [`Account` Methods](#account-methods)
     - [`account.isEmpty()`](#accountisempty)
     - [`account.isContract()`](#accountiscontract)
-    - [`account.serialize(data)`](#accountserializedata)
+    - [`account.serialize()`](#accountserialize)
     - [`account.toJSON()`](#accounttojson)
     - [`account.getCode(trie, cb)`](#accountgetcodetrie-cb)
     - [`account.setCode(trie, code, cb)`](#accountsetcodetrie-code-cb)
