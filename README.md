@@ -17,7 +17,6 @@ A collection of utility functions for ethereum. It can be used in node.js or can
  -  `SHA3_NULL` - SHA3-256 hash of `null`
  -  `SHA3_RLP_ARRAY` - SHA3-256 of an RLP of an empty array
  -  `SHA3_RLP` - SHA3-256 hash of the RLP of `null`
- -  `ETH_UNITS` - an array of ethereum units
  -  [`BN`](https://github.com/indutny/bn.js)
  -  [`rlp`](https://github.com/wanderer/rlp)
 
