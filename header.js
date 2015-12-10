@@ -2,11 +2,11 @@ const utils = require('ethereumjs-util')
 const params = require('ethereum-common')
 const BN = utils.BN
 const rlp = utils.rlp
-/**
- * Represents a Block Header
- * @constructor
- * @param {Array} data raw data, deserialized
- */
+  /**
+   * Represents a Block Header
+   * @constructor
+   * @param {Array} data raw data, deserialized
+   */
 var BlockHeader = module.exports = function (data) {
   var fields = [{
     name: 'parentHash',
@@ -58,7 +58,7 @@ var BlockHeader = module.exports = function (data) {
   }, {
     name: 'mixHash',
     default: utils.zeros(32)
-  // length: 32
+      // length: 32
   }, {
     name: 'nonce',
     default: new Buffer([]) // sha3(42)
@@ -69,22 +69,37 @@ var BlockHeader = module.exports = function (data) {
 BlockHeader.prototype.canonicalDifficulty = function (parentBlock) {
   const blockTs = utils.bufferToInt(this.timestamp)
   const parentTs = utils.bufferToInt(parentBlock.header.timestamp)
-  const parentDif = utils.bufferToInt(parentBlock.header.difficulty)
+  const parentDif = new BN(parentBlock.header.difficulty)
 
-  var dif = Math.floor(parentDif / params.difficultyBoundDivisor.v)
+  var offset = parentDif.div(new BN(params.difficultyBoundDivisor.v))
+  var dif
   if (blockTs < parentTs + params.durationLimit.v) {
-    dif += parentDif
+    dif = offset.add(parentDif)
   } else {
-    dif = Math.max(params.minimumDifficulty.v, parentDif - dif)
+    const minimumDifficulty = new BN(params.minimumDifficulty.v)
+    if (new BN(this.difficulty).cmp(minimumDifficulty) === -1) {
+      dif = minimumDifficulty
+    } else {
+      dif = parentDif.sub(offset)
+    }
   }
 
+  var exp = new BN(this.number).divn(100000).sub(new BN(2))
+  if (!exp.isNeg()) {
+    dif.iadd(new BN(2).pow(exp))
+  }
+  //+ int(2**((block.number // 100000) - 2))
+  // if(new BN(this.number).cmpn(params.homeSteadForkNumber) === 1){
+  //   var periodCount = (parentBlock.header.number + 1)
+  // }
+  // }
   return dif
 }
 
 // check the block for the canical difficulty
 BlockHeader.prototype.validateDifficulty = function (parentBlock) {
   const dif = this.canonicalDifficulty(parentBlock)
-  return dif === utils.bufferToInt(this.difficulty)
+  return !Boolean(dif.cmp(new BN(this.difficulty)))
 }
 
 BlockHeader.prototype.validateGasLimit = function (parentBlock) {
@@ -165,4 +180,16 @@ BlockHeader.prototype.hash = function () {
 
 BlockHeader.prototype.isGenesis = function () {
   return this.number.toString('hex') === ''
+}
+
+function divRoundUp(dividend, num) {
+  var dm = dividend.divmod(num)
+
+  // Fast case - exact division
+  if (dm.mod.cmpn(0) === 0) {
+    return dm.div
+  }
+
+  // Round up
+  return dm.div.negative !== 0 ? dm.div.isubn(1) : dm.div.iaddn(1)
 }

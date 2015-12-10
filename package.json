@@ -4,7 +4,7 @@
   "description": "Provides Block serialization and help functions",
   "main": "index.js",
   "scripts": {
-    "test": "standard && node ./tests/"
+    "test": "standard && tape ./tests/*.js"
   },
   "repository": {
     "type": "git",
@@ -25,7 +25,7 @@
     "es6-shim": "^0.33.13",
     "ethereum-common": "0.0.10",
     "ethereumjs-tx": "0.6.11",
-    "ethereumjs-util": "^2.3.1",
+    "ethereumjs-util": "^2.3.2",
     "merkle-patricia-tree": "^2.0.3"
   },
   "devDependencies": {
