@@ -110,7 +110,7 @@ describe('bufferToInt', function () {
 })
 
 describe('fromSigned', function () {
-  it('should converts an unsigned buffer to a singed number', function () {
+  it('should convert an unsigned (negative) buffer to a singed number', function () {
     var neg = '-452312848583266388373324160190187140051835877600158453279131187530910662656'
     var buf = new Buffer(32)
     buf.fill(0)
@@ -118,12 +118,28 @@ describe('fromSigned', function () {
 
     assert.equal(ethUtils.fromSigned(buf), neg)
   })
+  it('should convert an unsigned (positive) buffer to a singed number', function () {
+    var neg = '452312848583266388373324160190187140051835877600158453279131187530910662656'
+    var buf = new Buffer(32)
+    buf.fill(0)
+    buf[0] = 1
+
+    assert.equal(ethUtils.fromSigned(buf), neg)
+  })
 })
 
 describe('toUnsigned', function () {
-  it('should convert a signed number to unsigned', function () {
+  it('should convert a signed (negative) number to unsigned', function () {
     var neg = '-452312848583266388373324160190187140051835877600158453279131187530910662656'
     var hex = 'ff00000000000000000000000000000000000000000000000000000000000000'
+    var num = new BN(neg)
+
+    assert.equal(ethUtils.toUnsigned(num).toString('hex'), hex)
+  })
+
+  it('should convert a signed (positive) number to unsigned', function () {
+    var neg = '452312848583266388373324160190187140051835877600158453279131187530910662656'
+    var hex = '0100000000000000000000000000000000000000000000000000000000000000'
     var num = new BN(neg)
 
     assert.equal(ethUtils.toUnsigned(num).toString('hex'), hex)
