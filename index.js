@@ -172,7 +172,7 @@ exports.fromSigned = function (num) {
  * @return {Buffer}
  */
 exports.toUnsigned = function (num) {
-  if (num.cmpn(0) === -1) {
+  if (num.isNeg()) {
     return new Buffer(num.add(exports.TWO_POW256).toArray())
   }
 
