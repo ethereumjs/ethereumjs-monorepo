@@ -10,7 +10,7 @@
     "prepublish": "npm run lint && npm run test && npm run build",
     "test": "npm run test:node && npm run test:browser",
     "test:browser": "karma start karma.conf.js",
-    "test:node": "node ./test/tester -a",
+    "test:node": "tape ./test/*.js",
     "build": "browserify --s EthTx index.js > ./dist/ethereumjs-tx.js"
   },
   "keywords": [

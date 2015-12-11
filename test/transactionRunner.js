@@ -1,14 +1,19 @@
-var Tx = require('../index.js')
-var ethUtil = require('ethereumjs-util')
+const Tx = require('../index.js')
+const tape = require('tape')
+const ethUtil = require('ethereumjs-util')
+const argv = require('minimist')(process.argv.slice(2))
+const testing = require('ethereumjs-testing')
 
-function addPad (v) {
+var txTests = testing.getTests('transaction', argv)
+
+function addPad(v) {
   if (v.length % 2 === 1) {
     v = '0' + v
   }
   return v
 }
 
-function ifZero (v) {
+function ifZero(v) {
   if (v === '') {
     return '00'
   } else {
@@ -16,40 +21,48 @@ function ifZero (v) {
   }
 }
 
-module.exports = function txRunner (testData, t, cb) {
-  var tTx = testData.transaction
-  try {
-    var tx = new Tx(new Buffer(testData.rlp.slice(2), 'hex'))
-  } catch (e) {
-    t.equal(undefined, tTx, 'should not have any fields ')
-    if (cb) cb()
-    return
-  }
+tape('[transactions]', function (t) {
+  var tests = Object.keys(txTests)
+  tests.forEach(function (fileName) {
+    var fileData = txTests[fileName]
+    var testNames = Object.keys(fileData)
+    testNames.forEach(function (testName) {
+      t.test('[' + fileName + '] ' + testName, function (sst) {
+        var testData = fileData[testName]
+        var tTx = testData.transaction
 
-  if (tx.validate()) {
-    try {
-      t.equal(tx.data.toString('hex'), addPad(tTx.data.slice(2)), 'data')
-      t.equal(ethUtil.bufferToInt(tx.gasLimit), Number(tTx.gasLimit), 'gasLimit')
-      t.equal(ethUtil.bufferToInt(tx.gasPrice), Number(tTx.gasPrice), 'gasPrice')
-      t.equal(ethUtil.bufferToInt(tx.nonce), Number(tTx.nonce), 'nonce')
-      t.equal(tx.r.toString('hex'), addPad(tTx.r.slice(2)), 'r')
-      t.equal(tx.s.toString('hex'), addPad(tTx.s.slice(2)), 's')
-      t.equal(ethUtil.bufferToInt(tx.v), Number(tTx.v), 'v')
-      if (tTx.to[1] === 'x') {
-        tTx.to = tTx.to.slice(2)
-      }
+        try {
+          var tx = new Tx(new Buffer(testData.rlp.slice(2), 'hex'))
+        } catch (e) {
+          sst.equal(undefined, tTx, 'should not have any fields ')
+          sst.end()
+          return
+        }
 
-      t.equal(tx.to.toString('hex'), tTx.to, 'to')
-      t.equal(ifZero(tx.value.toString('hex')), tTx.value.slice(2), 'value')
-      t.equal(tx.getSenderAddress().toString('hex'), testData.sender, "sender's address")
-    } catch (e) {
-      t.fail(e)
-    }
-  } else {
-    t.equal(undefined, tTx, 'should have fields ')
-  }
+        if (tx.validate()) {
+          try {
+            sst.equal(tx.data.toString('hex'), addPad(tTx.data.slice(2)), 'data')
+            sst.equal(ethUtil.bufferToInt(tx.gasLimit), Number(tTx.gasLimit), 'gasLimit')
+            sst.equal(ethUtil.bufferToInt(tx.gasPrice), Number(tTx.gasPrice), 'gasPrice')
+            sst.equal(ethUtil.bufferToInt(tx.nonce), Number(tTx.nonce), 'nonce')
+            sst.equal(ethUtil.pad(tx.r, 32).toString('hex'), ethUtil.pad(tTx.r, 32).toString('hex'), 'r')
+            sst.equal(tx.s.toString('hex'), addPad(tTx.s.slice(2)), 's')
+            sst.equal(ethUtil.bufferToInt(tx.v), Number(tTx.v), 'v')
+            if (tTx.to[1] === 'x') {
+              tTx.to = tTx.to.slice(2)
+            }
 
-  if (cb) {
-    cb()
-  }
-}
+            sst.equal(tx.to.toString('hex'), tTx.to, 'to')
+            sst.equal(ifZero(tx.value.toString('hex')), tTx.value.slice(2), 'value')
+            sst.equal(tx.getSenderAddress().toString('hex'), testData.sender, "sender's address")
+          } catch (e) {
+            sst.fail(e)
+          }
+        } else {
+          sst.equal(undefined, tTx, 'should have fields ')
+        }
+        process.nextTick(sst.end)
+      })
+    })
+  })
+})

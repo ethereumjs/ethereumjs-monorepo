@@ -1,8 +1,11 @@
+process.env.ethTest = 'TransactionTests'
+
 module.exports = function (config) {
   config.set({
     frameworks: ['browserify', 'detectBrowsers', 'tap'],
     files: [
-      './test/transactions.js'
+      './test/transactionRunner.js',
+      './test/api.js'
     ],
     preprocessors: {
       'test/*.js': ['browserify', 'env']
@@ -16,9 +19,6 @@ module.exports = function (config) {
       'karma-firefox-launcher',
       'karma-detect-browsers'
     ],
-    browserify: {
-      debug: true
-    },
     detectBrowsers: {
       enabled: true,
       usePhantomJS: false,
