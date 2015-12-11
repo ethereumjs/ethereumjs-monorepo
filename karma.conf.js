@@ -4,10 +4,11 @@ module.exports = function (config) {
   config.set({
     frameworks: ['browserify', 'detectBrowsers', 'tap'],
     files: [
-      './tests/index.js'
+      './tests/genesis.js',
+      './tests/difficulty.js'
     ],
     preprocessors: {
-      'test/*.js': ['browserify', 'env']
+      'tests/*.js': ['browserify', 'env']
     },
     singleRun: true,
     plugins: [
@@ -18,6 +19,7 @@ module.exports = function (config) {
       'karma-firefox-launcher',
       'karma-detect-browsers'
     ],
+    reporters: ['progress'],
     detectBrowsers: {
       enabled: true,
       usePhantomJS: false,

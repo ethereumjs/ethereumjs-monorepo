@@ -29,7 +29,7 @@
     "async": "^1.5.0",
     "es6-shim": "^0.33.13",
     "ethereum-common": "0.0.10",
-    "ethereumjs-tx": "0.6.11",
+    "ethereumjs-tx": "^0.6.12",
     "ethereumjs-util": "^2.3.2",
     "merkle-patricia-tree": "^2.0.3"
   },
