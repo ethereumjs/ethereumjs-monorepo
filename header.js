@@ -88,11 +88,6 @@ BlockHeader.prototype.canonicalDifficulty = function (parentBlock) {
   if (!exp.isNeg()) {
     dif.iadd(new BN(2).pow(exp))
   }
-  //+ int(2**((block.number // 100000) - 2))
-  // if(new BN(this.number).cmpn(params.homeSteadForkNumber) === 1){
-  //   var periodCount = (parentBlock.header.number + 1)
-  // }
-  // }
   return dif
 }
 
@@ -180,16 +175,4 @@ BlockHeader.prototype.hash = function () {
 
 BlockHeader.prototype.isGenesis = function () {
   return this.number.toString('hex') === ''
-}
-
-function divRoundUp(dividend, num) {
-  var dm = dividend.divmod(num)
-
-  // Fast case - exact division
-  if (dm.mod.cmpn(0) === 0) {
-    return dm.div
-  }
-
-  // Round up
-  return dm.div.negative !== 0 ? dm.div.isubn(1) : dm.div.iaddn(1)
 }
