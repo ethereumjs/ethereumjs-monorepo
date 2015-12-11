@@ -4,13 +4,13 @@
   "description": "An simple module for creating, manipulating and signing ethereum transactions",
   "main": "index.js",
   "scripts": {
-    "coverage": "istanbul cover ./test/tester.js",
+    "coverage": "istanbul cover ./test/",
     "coveralls": "npm run coverage && coveralls <coverage/lcov.info",
     "lint": "standard",
     "prepublish": "npm run build",
     "test": "npm run test:node && npm run test:browser",
     "test:browser": "karma start karma.conf.js",
-    "test:node": "tape ./test/*.js",
+    "test:node": "tape ./test/",
     "build": "browserify --s EthTx index.js > ./dist/ethereumjs-tx.js"
   },
   "keywords": [
