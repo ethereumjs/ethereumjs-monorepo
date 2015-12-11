@@ -62,7 +62,7 @@ tape('[transactions]', function (t) {
           } else {
             sst.equal(undefined, tTx, 'should have fields ')
           }
-          process.nextTick(sst.end)
+          setTimeout(sst.end, 0)
         })
       })
     }, 0)
