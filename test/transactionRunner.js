@@ -6,14 +6,14 @@ const testing = require('ethereumjs-testing')
 
 var txTests = testing.getTests('transaction', argv)
 
-function addPad(v) {
+function addPad (v) {
   if (v.length % 2 === 1) {
     v = '0' + v
   }
   return v
 }
 
-function ifZero(v) {
+function ifZero (v) {
   if (v === '') {
     return '00'
   } else {
