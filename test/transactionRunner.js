@@ -26,45 +26,43 @@ tape('[transactions]', function (t) {
   tests.forEach(function (fileName) {
     var fileData = txTests[fileName]
     var testNames = Object.keys(fileData)
-    setTimeout(function () {
-      testNames.forEach(function (testName) {
-        t.test('[' + fileName + '] ' + testName, function (sst) {
-          var testData = fileData[testName]
-          var tTx = testData.transaction
+    testNames.forEach(function (testName) {
+      t.test('[' + fileName + '] ' + testName, function (sst) {
+        var testData = fileData[testName]
+        var tTx = testData.transaction
 
+        try {
+          var tx = new Tx(new Buffer(testData.rlp.slice(2), 'hex'))
+        } catch (e) {
+          sst.equal(undefined, tTx, 'should not have any fields ')
+          sst.end()
+          return
+        }
+
+        if (tx.validate()) {
           try {
-            var tx = new Tx(new Buffer(testData.rlp.slice(2), 'hex'))
-          } catch (e) {
-            sst.equal(undefined, tTx, 'should not have any fields ')
-            sst.end()
-            return
-          }
-
-          if (tx.validate()) {
-            try {
-              sst.equal(tx.data.toString('hex'), addPad(tTx.data.slice(2)), 'data')
-              sst.equal(ethUtil.bufferToInt(tx.gasLimit), Number(tTx.gasLimit), 'gasLimit')
-              sst.equal(ethUtil.bufferToInt(tx.gasPrice), Number(tTx.gasPrice), 'gasPrice')
-              sst.equal(ethUtil.bufferToInt(tx.nonce), Number(tTx.nonce), 'nonce')
-              sst.equal(ethUtil.pad(tx.r, 32).toString('hex'), ethUtil.pad(tTx.r, 32).toString('hex'), 'r')
-              sst.equal(tx.s.toString('hex'), addPad(tTx.s.slice(2)), 's')
-              sst.equal(ethUtil.bufferToInt(tx.v), Number(tTx.v), 'v')
-              if (tTx.to[1] === 'x') {
-                tTx.to = tTx.to.slice(2)
-              }
-
-              sst.equal(tx.to.toString('hex'), tTx.to, 'to')
-              sst.equal(ifZero(tx.value.toString('hex')), tTx.value.slice(2), 'value')
-              sst.equal(tx.getSenderAddress().toString('hex'), testData.sender, "sender's address")
-            } catch (e) {
-              sst.fail(e)
+            sst.equal(tx.data.toString('hex'), addPad(tTx.data.slice(2)), 'data')
+            sst.equal(ethUtil.bufferToInt(tx.gasLimit), Number(tTx.gasLimit), 'gasLimit')
+            sst.equal(ethUtil.bufferToInt(tx.gasPrice), Number(tTx.gasPrice), 'gasPrice')
+            sst.equal(ethUtil.bufferToInt(tx.nonce), Number(tTx.nonce), 'nonce')
+            sst.equal(ethUtil.pad(tx.r, 32).toString('hex'), ethUtil.pad(tTx.r, 32).toString('hex'), 'r')
+            sst.equal(tx.s.toString('hex'), addPad(tTx.s.slice(2)), 's')
+            sst.equal(ethUtil.bufferToInt(tx.v), Number(tTx.v), 'v')
+            if (tTx.to[1] === 'x') {
+              tTx.to = tTx.to.slice(2)
             }
-          } else {
-            sst.equal(undefined, tTx, 'should have fields ')
+
+            sst.equal(tx.to.toString('hex'), tTx.to, 'to')
+            sst.equal(ifZero(tx.value.toString('hex')), tTx.value.slice(2), 'value')
+            sst.equal(tx.getSenderAddress().toString('hex'), testData.sender, "sender's address")
+          } catch (e) {
+            sst.fail(e)
           }
-          setTimeout(sst.end, 0)
-        })
+        } else {
+          sst.equal(undefined, tTx, 'should have fields ')
+        }
+        process.nextTick(sst.end)
       })
-    }, 0)
+    })
   })
 })

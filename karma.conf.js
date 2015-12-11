@@ -5,6 +5,7 @@ module.exports = function (config) {
     browserNoActivityTimeout: 60000,
     frameworks: ['browserify', 'detectBrowsers', 'tap'],
     files: [
+      './test/api.js',
       './test/transactionRunner.js'
     ],
     preprocessors: {
