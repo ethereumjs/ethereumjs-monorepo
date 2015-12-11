@@ -1,6 +1,11 @@
 # SYNOPSIS  
+[![NPM Package](https://img.shields.io/npm/v/ethereumjs-block.svg?style=flat-square)](https://www.npmjs.org/package/ethereumjs-block)
+[![Build Status](https://img.shields.io/travis/ethereum/ethereumjs-block.svg?branch=master&style=flat-square)](https://travis-ci.org/ethereum/ethereumjs-block)
+[![Coverage Status](https://img.shields.io/coveralls/ethereum/ethereumjs-block.svg?style=flat-square)](https://coveralls.io/r/ethereum/ethereumjs-block)
+[![Gitter](https://img.shields.io/gitter/room/ethereum/ethereumjs-lib.svg?style=flat-square)]() or #ethereumjs on freenode  
 
-[![js-standard-style](https://cdn.rawgit.com/feross/standard/master/badge.svg)](https://github.com/feross/standard) [![Build Status](https://travis-ci.org/ethereum/ethereumjs-block.svg?branch=master)](https://travis-ci.org/ethereum/ethereumjs-block)
+[![js-standard-style](https://cdn.rawgit.com/feross/standard/master/badge.svg)](https://github.com/feross/standard)  
+
 
 Implements schema and functions related to Etheruem's block. 
 
