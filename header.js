@@ -76,7 +76,7 @@ BlockHeader.prototype.canonicalDifficulty = function (parentBlock) {
     dif = offset.add(parentDif)
   } else {
     const minimumDifficulty = new BN(params.minimumDifficulty.v)
-    if (new BN(this.difficulty).cmp(minimumDifficulty) === -1) {
+    if (new BN(this.difficulty).cmp(minimumDifficulty) <= 0) {
       dif = minimumDifficulty
     } else {
       dif = parentDif.sub(offset)
