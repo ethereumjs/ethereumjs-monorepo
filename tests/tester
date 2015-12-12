@@ -1,5 +1,4 @@
 #!/usr/bin/env node
-
 const argv = require('minimist')(process.argv.slice(2))
 const async = require('async')
 const tape = require('tape')
@@ -86,7 +85,7 @@ function runMiscTests() {}
 function runTests(name, args, cb) {
   var runner = require('./' + name + 'Runner.js').bind(this, args)
   var tests = testing.getTests(name, args)
-  testing.runTests(runner, tests, skip, cb)
+  testing.runTests(runner, tests, tape, skip, cb)
 }
 
 function runAll() {
