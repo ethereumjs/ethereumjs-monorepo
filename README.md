@@ -146,6 +146,13 @@ Returns a ripemd160 of `a`
 
 **Return:** `Buffer`
 
+### `rlphash(a)`
+Returns a sha3 of the RLP encoded version of `a`
+**Parameters**
+- `a` - the value to encode and hash
+
+**Return:** `Buffer`
+
 ### `printBA(ba)`
 Print a Buffer Array  
 **Parameters**   

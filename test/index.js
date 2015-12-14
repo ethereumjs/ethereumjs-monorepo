@@ -53,6 +53,15 @@ describe('ripemd160', function () {
   })
 })
 
+describe('rlphash', function () {
+  it('should produce a sha3 of the rlp data', function () {
+    var msg = '0x3c9229289a6125f7fdf1885a77bb12c37a8d3b4962d936f7e3084dece32a3ca1'
+    var r = '33f491f24abdbdbf175e812b94e7ede338d1c7f01efb68574acd279a15a39cbe'
+    var hash = ethUtils.rlphash(msg)
+    assert.equal(hash.toString('hex'), r)
+  })
+})
+
 describe('unpad', function () {
   it('should unpad a string', function () {
     var str = '0000000006600'
