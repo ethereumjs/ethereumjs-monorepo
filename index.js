@@ -226,6 +226,16 @@ exports.ripemd160 = function (a, padded) {
 }
 
 /**
+ * Creates SHA-3 hash of the RLP encoded version of the input
+ * @method rlphash
+ * @param {Buffer|Array|String|Number} a the input data
+ * @return {Buffer}
+ */
+exports.rlphash = function (a) {
+  return exports.sha3(rlp.encode(a))
+}
+
+/**
  * Returns the ethereum address of a given public key
  * @method pubToAddress
  * @param {Buffer}
