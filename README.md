@@ -1,8 +1,8 @@
 # SYNOPSIS
 [![NPM Package](https://img.shields.io/npm/v/ethereumjs-util.svg?style=flat-square)](https://www.npmjs.org/package/ethereumjs-util)
-[![Build Status](https://img.shields.io/travis/ethereum/ethereumjs-util.svg?branch=master&style=flat-square)](https://travis-ci.org/ethereum/ethereumjs-util)
-[![Coverage Status](https://img.shields.io/coveralls/ethereum/ethereumjs-util.svg?style=flat-square)](https://coveralls.io/r/ethereum/ethereumjs-util)
-[![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/ethereum/ethereumjs-lib?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge) or #ethereumjs on freenode  
+[![Build Status](https://img.shields.io/travis/ethereumjs/ethereumjs-util.svg?branch=master&style=flat-square)](https://travis-ci.org/ethereumjs/ethereumjs-util)
+[![Coverage Status](https://img.shields.io/coveralls/ethereumjs/ethereumjs-util.svg?style=flat-square)](https://coveralls.io/r/ethereumjs/ethereumjs-util)
+[![Gitter](https://img.shields.io/gitter/room/ethereum/ethereumjs-lib.svg?style=flat-square)](https://gitter.im/ethereum/ethereumjs-lib) or #ethereumjs on freenode  
 
 [![js-standard-style](https://cdn.rawgit.com/feross/standard/master/badge.svg)](https://github.com/feross/standard)  
 
