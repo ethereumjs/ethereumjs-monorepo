@@ -28,7 +28,7 @@
     "async": "^1.4.2",
     "browserify": "^12.0.1",
     "coveralls": "^2.11.4",
-    "ethereumjs-testing": "git+https://github.com/wanderer/ethereumjs-testing.git",
+    "ethereumjs-testing": "git+https://github.com/ethereumjs/ethereumjs-testing.git",
     "istanbul": "^0.4.1",
     "karma": "^0.13.15",
     "karma-browserify": "^4.4.0",
@@ -43,10 +43,10 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/ethereum/ethereumjs-tx.git"
+    "url": "https://github.com/ethereumjs/ethereumjs-tx.git"
   },
   "bugs": {
-    "url": "https://github.com/ethereum/ethereumjs-tx/issues"
+    "url": "https://github.com/ethereumjs/ethereumjs-tx/issues"
   },
   "standard": {
     "ignore": [
