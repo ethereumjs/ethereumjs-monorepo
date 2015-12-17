@@ -23,9 +23,9 @@
   "author": "mjbecze <mjbecze@gmail.com>",
   "license": "MPL-2.0",
   "bugs": {
-    "url": "https://github.com/ethereum/ethereumjs-utils/issues"
+    "url": "https://github.com/ethereumjs/ethereumjs-utils/issues"
   },
-  "homepage": "https://github.com/ethereum/ethereumjs-utils",
+  "homepage": "https://github.com/ethereumjs/ethereumjs-utils",
   "dependencies": {
     "bn.js": "^4.4.0",
     "browserify-sha3": "^0.0.1",
