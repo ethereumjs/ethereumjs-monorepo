@@ -1,6 +1,6 @@
 {
   "name": "ethereumjs-vm",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "an ethereum VM implementation",
   "main": "index.js",
   "dependencies": {
