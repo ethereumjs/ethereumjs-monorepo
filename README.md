@@ -66,8 +66,8 @@ Processes the `block` running all of the transactions it contains and updating t
 - `opts.block` - The [`Block`](./block.md) to process
 - `opts.generate` - a `Boolean`; whether to generate the stateRoot. If false  `runBlock` will check the stateRoot of the block against the Trie
 - `cb` - The callback. It is given two arguments, an `error` string containing an error that may have happened or `null`, and a `results` object with the following properties:
-  - `reciepts` - the reciepts from the transactions in the block.
-  - `results` - an Array for results from the trinasctions in the block.
+  - `receipts` - the receipts from the transactions in the block
+  - `results` - an Array for results from the transactions in the block
 --------------------------------------------------------
 
 
@@ -99,7 +99,7 @@ Runs EVM code
   - `gasRefund` - a `Bignum` containing the amount of gas to refund from deleting storage values
   - `suicides` - an `Array` of accounts that have suicided.
   - `suicideTo` - the account that the suicide refund should go to.
-  - `logs` - an `Array` of logs that the contract emited.
+  - `logs` - an `Array` of logs that the contract emitted.
   - `exception` - a `boolean`, whether or not the contract encountered an exception
   - `exceptionError` - a `String` describing the exception if there was one.
   - `return` - a `Buffer` containing the value that was returned by the contract
@@ -116,6 +116,7 @@ Generates the Canonical genesis state.
 Generate the genesis state.
 - `genesisData` - an `Object` whose keys are addresses and values are `string`s representing initial allocation of ether.
 - `cb` - The callback
+
 ```javascript
 var genesisData = {
   "51ba59315b3a95761d0863b05ccc7a7f54703d99": "1606938044258990275541962092341162602522202993782792835301376",
@@ -123,7 +124,7 @@ var genesisData = {
 }
 
 vm.generateGenesis(genesisData, function(){
-  conosle.log('generation done');
+  console.log('generation done');
 })
 ```
 
@@ -144,16 +145,16 @@ The `step` event is given an `Object` and callback. The `Object` has the followi
 - `cache` - The account cache. Contains all the accounts loaded from the trie. It is an instance of [functional red black tree](https://www.npmjs.com/package/functional-red-black-tree) 
 
 #### `beforeBlock`
-Emmits the block that is about to be processed.
+Emits the block that is about to be processed.
 
 #### `afterBlock`
-Emmits the results of the processing a block.
+Emits the results of the processing a block.
 
 #### `beforeTx`
-Emmits the Transaction that I about to be processed.
+Emits the Transaction that I about to be processed.
 
 #### `afterTx`
-Emmits the result of the transaction.
+Emits the result of the transaction.
 
 # TESTING
 `npm test`  
