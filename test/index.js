@@ -174,6 +174,25 @@ describe('pubToAddress 0x', function () {
   })
 })
 
+describe('privateToPublic', function () {
+  it('should produce a public key given a private key', function () {
+    var public = '3a443d8381a6798a70c6ff9304bdc8cb0163c23211d11628fae52ef9e0dca11a001cf066d56a8156fc201cd5df8a36ef694eecd258903fca7086c1fae7441e1d'
+    var privateKey = new Buffer([234, 84, 189, 197, 45, 22, 63, 136, 201, 58, 176, 97, 87, 130, 207, 113, 138, 46, 251, 158, 81, 167, 152, 154, 171, 27, 8, 6, 126, 156, 28, 95])
+    var r = ethUtils.privateToPublic(privateKey).toString('hex')
+    assert.equal(r.toString('hex'), public)
+  })
+  it('shouldn\'t produce a public key given an invalid private key', function () {
+    var privateKey1 = new Buffer([234, 84, 189, 197, 45, 22, 63, 136, 201, 58, 176, 97, 87, 130, 207, 113, 138, 46, 251, 158, 81, 167, 152, 154, 171, 27, 8, 6, 126, 156, 28, 95, 42])
+    var privateKey2 = new Buffer([234, 84, 189, 197, 45, 22, 63, 136, 201, 58, 176, 97, 87, 130, 207, 113, 138, 46, 251, 158, 81, 167, 152, 154, 171, 27, 8, 6, 126, 156, 28])
+    assert.throws(function () {
+      ethUtils.privateToPublic(privateKey1)
+    })
+    assert.throws(function () {
+      ethUtils.privateToPublic(privateKey2)
+    })
+  })
+})
+
 describe('privateToAddress', function () {
   it('should produce an address given a private key', function () {
     var address = '2f015c60e0be116b1f0cd534704db9c92118fb6a'
