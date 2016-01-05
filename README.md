@@ -30,8 +30,11 @@ trie.put('test', 'one', function () {
 Also see [this blog post](https://wanderer.github.io/ethereum/nodejs/code/2014/05/21/using-ethereums-tries-with-node/).
 
 # API
+## Trie
+Find below how to create, load and modify a tree. As seen above, use `require('merkel-patricia-tree')` for the raw interface. In Ethereum applications stick with the *Secure Trie Overlay*. The API for the raw and the secure interface is the same.
+
 ## Secure Trie Overlay
-You can create a secure Trie where the keys are automatically hashed using sha3 by `require('merkle-patricia-tree/secure')` and using the same API. The secure trie hashes all the keys before storing them.
+You can create a secure Trie where the keys are automatically hashed using **SHA3** by `require('merkle-patricia-tree/secure')`.
 
 ### `new Trie([db], [root])`
 ### `new Trie([root])`
