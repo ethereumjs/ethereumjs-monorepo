@@ -73,8 +73,7 @@ deletes a value given a `key`
 **Parameters**
 
 -   `key` **Buffer or String** 
--   `callback` **Function** the callback `Function`
--   `cb`  
+-   `cb` **Function** the callback `Function`
 
 ## delRaw
 
@@ -85,8 +84,7 @@ Removes a raw value in the underlying db
 **Parameters**
 
 -   `key` **Buffer or String** 
--   `callback` **Function** A callback `Function`, which is given the argument `err` - for errors that may have occured
--   `cb`  
+-   `cb` **Function** A callback `Function`, which is given the argument `err` - for errors that may have occured
 
 ## get
 
@@ -98,7 +96,7 @@ Gets a value given a `key`
 
 -   `key` **Buffer or String** the key to search for
 -   `callback` **Function** A callback `Function` which is given the arguments `err` - for errors that may have occured and `value` - the found value in a `Buffer` or if no value was found `null`
--   `cb`  
+
 
 ## getRaw
 
@@ -109,8 +107,8 @@ Retrieves a raw value in the underlying db
 **Parameters**
 
 -   `key` **Buffer** 
--   `callback` **Function** A callback `Function`, which is given the arguments `err` - for errors that may have occured and `value` - the found value in a `Buffer` or if no value was found `null`.
--   `cb`  
+-   `cb` **Function** A callback `Function`, which is given the arguments `err` - for errors that may have occured and `value` - the found value in a `Buffer` or if no value was found `null`.
+ 
 
 ## put
 
@@ -123,8 +121,6 @@ Stores a given `value` at the given `key`
 -   `key` **Buffer or String** 
 -   `Value` **Buffer or String** 
 -   `callback` **Function** A callback `Function` which is given the argument `err` - for errors that may have occured
--   `value`  
--   `cb`  
 
 ## putRaw
 
