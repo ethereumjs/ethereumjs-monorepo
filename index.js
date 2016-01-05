@@ -1,5 +1,5 @@
 const SHA3 = require('sha3')
-const ec = require('elliptic').ec('secp256k1')
+const secp256k1 = require('secp256k1')
 const assert = require('assert')
 const rlp = require('rlp')
 const BN = require('bn.js')
@@ -259,11 +259,8 @@ exports.pubToAddress = exports.publicToAddress = function (pubKey) {
  */
 var privateToPublic = exports.privateToPublic = function (privateKey) {
   privateKey = exports.toBuffer(privateKey)
-  if (privateKey.length !== 32)
-      throw new Error('invalid private key length')
-  privateKey = new BN(privateKey)
-  var key = ec.keyFromPrivate(privateKey).getPublic().toJSON()
-  return Buffer.concat([exports.pad(key[0], 32), exports.pad(key[1], 32)])
+  // skip the type flag and use the X, Y points
+  return secp256k1.publicKeyConvert(secp256k1.publicKeyCreate(privateKey), false).slice(1)
 }
 
 /**
