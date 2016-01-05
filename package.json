@@ -12,10 +12,10 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/wanderer/merkle-patricia-tree.git"
+    "url": "https://github.com/ethereumjs/merkle-patricia-tree.git"
   },
   "bugs": {
-    "url": "https://github.com/wanderer/merkle-patricia-tree/issues"
+    "url": "https://github.com/ethereumjs/merkle-patricia-tree/issues"
   },
   "keywords": [
     "merkle",
@@ -36,7 +36,7 @@
     "semaphore": ">=1.0.1"
   },
   "devDependencies": {
-    "ethereumjs-testing": "git+https://github.com/wanderer/ethereumjs-testing.git",
+    "ethereumjs-testing": "git+https://github.com/ethereumjs/ethereumjs-testing.git",
     "mocha": "~1.18.2",
     "standard": "^5.3.1"
   },
