@@ -204,3 +204,17 @@ describe('hex prefix', function () {
     assert.equal(ethUtils.addHexPrefix(string), '0x' + string)
   })
 })
+
+describe('isPrecompiled', function() {
+  it('should return true', function () {
+    assert.equal(ethUtils.isPrecompiled('0000000000000000000000000000000000000001'), true)
+    assert.equal(ethUtils.isPrecompiled('0000000000000000000000000000000000000002'), true)
+    assert.equal(ethUtils.isPrecompiled('0000000000000000000000000000000000000003'), true)
+    assert.equal(ethUtils.isPrecompiled('0000000000000000000000000000000000000004'), true)
+  })
+  it('should return false', function () {
+    assert.equal(ethUtils.isPrecompiled('0000000000000000000000000000000000000000'), false)
+    assert.equal(ethUtils.isPrecompiled('0000000000000000000000000000000000000005'), false)
+    assert.equal(ethUtils.isPrecompiled('1000000000000000000000000000000000000000'), false)
+  })
+})

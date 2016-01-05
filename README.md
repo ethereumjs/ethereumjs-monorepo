@@ -126,6 +126,13 @@ Generates an address of a newly created contract. Don't forget to increment the 
 
 **Return:** `Buffer`
 
+### `isPrecompiled(address)`
+**Parameters**
+- `address` - the address to check (`Buffer` or `String`)
+Return true if the supplied address belongs to a precompiled account
+
+**Return:** `Boolean`
+
 ### `sha3(a, bytes)`
 Returns a sha3 of `a` of the length of `bytes`  
 **Parameters**

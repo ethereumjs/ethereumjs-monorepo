@@ -292,6 +292,16 @@ exports.generateAddress = function (from, nonce) {
   return hash.slice(12)
 }
 
+/**
+ * Returns true if the supplied address belongs to a precompiled account
+ * @method isPrecompiled
+ * @param {Buffer|String}
+ */
+exports.isPrecompiled = function (address) {
+  var a = exports.unpad(address)
+  return a.length === 1 && a[0] > 0 && a[0] < 5
+}
+
 // Returns a Boolean on whether or not the a sting starts with 0x
 exports.isHexPrefixed = function (str) {
   return str.slice(0, 2) === '0x'
@@ -317,7 +327,7 @@ exports.addHexPrefix = function (str) {
 /**
  * defines properties on a `Object`
  * @method defineProperties
- * @para[M`Êm {Object} self the `Object` to define properties on
+ * @param {Object} self the `Object` to define properties on
  * @param {Array} fields an array fields to define
  */
 exports.defineProperties = function (self, fields, data) {
