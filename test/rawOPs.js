@@ -1,72 +1,71 @@
-var Trie = require('../index.js')
-var assert = require('assert')
-var crypto = require('crypto')
+const Trie = require('../index.js')
+const tape = require('tape')
+const crypto = require('crypto')
 
-describe('put & get raw functions', function(){
+tape('put & get raw functions', function (it) {
   var trie = new Trie()
-  var key =  crypto.randomBytes(32)
-  var val =  crypto.randomBytes(32)
+  var key = crypto.randomBytes(32)
+  var val = crypto.randomBytes(32)
 
-  it('putRaw', function(done){
-    trie.putRaw(key, val, done)
+  it.test('putRaw', function (t) {
+    trie.putRaw(key, val, t.end)
   })
 
-  it('getRaw', function(done){
-    trie.getRaw(key, function(err, rVal){
-      assert(val.toString('hex') === rVal.toString('hex'))
-      done()
+  it.test('getRaw', function (t) {
+    trie.getRaw(key, function (err, rVal) {
+      t.equal(val.toString('hex'), rVal.toString('hex'))
+      t.end(err)
     })
   })
 
-  it('should checkpoint and get the rawVal', function(done){
+  it.test('should checkpoint and get the rawVal', function (t) {
     trie.checkpoint()
-    trie.getRaw(key, function(err, rVal){
-      assert(val.toString('hex') === rVal.toString('hex'))
-      done()
+    trie.getRaw(key, function (err, rVal) {
+      t.equal(val.toString('hex'), rVal.toString('hex'))
+      t.end(err)
     })
   })
 
-  var key2 =  crypto.randomBytes(32)
-  var val2 =  crypto.randomBytes(32)
-  it('should store while in a checkpoint', function(done){
-    trie.putRaw(key2, val2, done)
+  var key2 = crypto.randomBytes(32)
+  var val2 = crypto.randomBytes(32)
+  it.test('should store while in a checkpoint', function (t) {
+    trie.putRaw(key2, val2, t.end)
   })
 
-  it('should retrieve from a checkpoint', function(done){
-    trie.getRaw(key2, function(err, rVal){
-      assert(val2.toString('hex') === rVal.toString('hex'))
-      done()
+  it.test('should retrieve from a checkpoint', function (t) {
+    trie.getRaw(key2, function (err, rVal) {
+      t.equal(val2.toString('hex'), rVal.toString('hex'))
+      t.end(err)
     })
   })
 
-  it('should not retiev after revert', function(done){
-    trie.revert(done)
+  it.test('should not retiev after revert', function (t) {
+    trie.revert(t.end)
   })
 
-  it('should delete raw', function(done){
-    trie.delRaw(val2, done)
+  it.test('should delete raw', function (t) {
+    trie.delRaw(val2, t.end)
   })
 
-  it('should not get val after delete ', function(done){
-    trie.getRaw(val2, function(err, val){
-      assert(!val)
-      done()
+  it.test('should not get val after delete ', function (t) {
+    trie.getRaw(val2, function (err, val) {
+      t.notok(val)
+      t.end(err)
     })
   })
 
-  var key3 =  crypto.randomBytes(32)
-  var val3 =  crypto.randomBytes(32)
+  var key3 = crypto.randomBytes(32)
+  var val3 = crypto.randomBytes(32)
 
-  it('test commit behavoir', function(done){
+  it.test('test commit behavoir', function (t) {
     trie.checkpoint()
-    trie.putRaw(key3, val3, function(){
-      trie.commit(function(){
-        trie.getRaw(key3, function(err, val){
-          assert(val.toString('hex') === val3.toString('hex'))
-          done()
+    trie.putRaw(key3, val3, function () {
+      trie.commit(function () {
+        trie.getRaw(key3, function (err, val) {
+          t.equal(val.toString('hex'), val3.toString('hex'))
+          t.end(err)
         })
       })
     })
   })
 })
-
