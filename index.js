@@ -1,7 +1,7 @@
 require('es6-shim')
 const ethUtil = require('ethereumjs-util')
 const ethHashUtil = require('./util.js')
-const xor = require('bitwise-xor')
+const xor = require('buffer-xor')
 const BN = ethUtil.BN
 const rlp = ethUtil.rlp
 const async = require('async')
