@@ -8,6 +8,8 @@ This is an implementation of the modified merkle patricia tree as specified in t
 > The modified Merkle Patricia tree (trie) provides a persistent data structure to map between arbitrary-length binary data (byte arrays). It is defined in terms of a mutable data structure to map between 256-bit binary fragments and arbitrary-length binary data. The core of the trie, and its sole requirement in terms of the protocol specification is to provide a single 32-byte value that identifies a given set of key-value pairs.   
   \- Ethereum's yellow paper  
 
+The only backing store supported is LevelDB through the ```levelup``` module.
+
 # INSTALL
  `npm install merkle-patricia-tree`
 
@@ -25,7 +27,7 @@ trie.put('test', 'one', function () {
 });
 ```
 
-also see [this blog post](https://wanderer.github.io/ethereum/nodejs/code/2014/05/21/using-ethereums-tries-with-node/)
+Also see [this blog post](https://wanderer.github.io/ethereum/nodejs/code/2014/05/21/using-ethereums-tries-with-node/).
 
 # API
 ## Secure Trie Overlay
