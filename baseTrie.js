@@ -60,7 +60,7 @@ function Trie (db, root) {
  * Gets a value given a `key`
  * @method get
  * @param {Buffer|String} key - the key to search for
- * @param {Function} callback A callback `Function` which is given the arguments `err` - for errors that may have occured and `value` - the found value in a `Buffer` or if no value was found `null`
+ * @param {Function} cb A callback `Function` which is given the arguments `err` - for errors that may have occured and `value` - the found value in a `Buffer` or if no value was found `null`
  */
 Trie.prototype.get = function (key, cb) {
   var self = this
@@ -82,7 +82,7 @@ Trie.prototype.get = function (key, cb) {
  * @method put
  * @param {Buffer|String} key
  * @param {Buffer|String} Value
- * @param {Function} callback A callback `Function` which is given the argument `err` - for errors that may have occured
+ * @param {Function} cb A callback `Function` which is given the argument `err` - for errors that may have occured
  */
 Trie.prototype.put = function (key, value, cb) {
   var self = this
@@ -201,7 +201,6 @@ Trie.prototype._putRaw = function (key, val, cb) {
  */
 Trie.prototype.putRaw = Trie.prototype._putRaw
 
-
 /**
  * Removes a raw value in the underlying db
  * @method delRaw
@@ -237,8 +236,8 @@ Trie.prototype._batchNodes = function (opStack, cb) {
 }
 
 /**
- * Trys to find a path to the node for the given key.
- * It returns a `stack` of nodes to the closet node.
+ * Trys to find a path to the node for the given key
+ * It returns a `stack` of nodes to the closet node
  * @method _findPath
  * @param {String|Buffer} - key - the search key
  * @param {Function} - cb - the callback function. Its is given the following
