@@ -76,12 +76,12 @@ Returns the account as JSON.
 
 #### `account.getCode(trie, cb)`
 Fetches the code from the trie.
-- `trie` - The [trie](github.com/wanderer/merkle-patricia-tree) storing the accounts.
+- `trie` - The [trie](https://github.com/ethereumjs/merkle-patricia-tree) storing the accounts.
 - `cb` - The callback.
 
 #### `account.setCode(trie, code, cb)`
 Stores the code in the trie.
-- `trie` - The [trie](github.com/wanderer/merkle-patricia-tree) storing the accounts.
+- `trie` - The [trie](https://github.com/ethereumjs/merkle-patricia-tree) storing the accounts.
 - `code` - A `Buffer`.
 - `cb` - The callback.
 
