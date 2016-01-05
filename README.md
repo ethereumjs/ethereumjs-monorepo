@@ -33,9 +33,9 @@ Yep, You can [browserify](http://browserify.org/) it.
 
 # API
 - [`new Ethash([cacheDB])`](#newethashcachedb)
-- [`ethash.verifyPOW(block, cb)`](#ethashverifypowblock-cb) 
-- [`ethash.mkcach(cacheSize, seed)`](#ethashmkcachcachesize-seed) 
-- [`ethash.run(val, nonce, fullsize)`](#ethashrunval-nonce-fullsize) 
+- [`ethash.verifyPOW(block, cb)`](#ethashverifypowblock-cb)
+- [`ethash.mkcache(cacheSize, seed)`](#ethashmkcachecachesize-seed)
+- [`ethash.run(val, nonce, fullsize)`](#ethashrunval-nonce-fullsize)
 
 ### `new Ethash([cacheDB])`
 Creates a new instance of `Ethash`.
@@ -48,7 +48,7 @@ Verifies the POW on a block and its uncles
 - `block` - the [block](https://github.com/ethereum/ethereumjs-block) to verify
 - `cb` - the callback which is given a `Boolean` determining the validaty of the block 
 
-### `ethash.mkcach(cacheSize, seed)`
+### `ethash.mkcache(cacheSize, seed)`
 Creates a cache. NOTE: this is automatically done for in  - [`ethash.verifyPOW(block, cb)`](#ethashverifypowblock-cb) so you do not need to use this function if you are just validating blocks
 
 **Parameters** 
@@ -57,7 +57,7 @@ Creates a cache. NOTE: this is automatically done for in  - [`ethash.verifyPOW(b
 
 
 ### `ethash.run(val, nonce, fullsize)`
-Runs ethash on a give val/nonce pair. NOTE: you need to run [`ethash.mkcach(cacheSize, seed)`](#ethashverifypowcachesize-seed)  first before using this function.
+Runs ethash on a give val/nonce pair. NOTE: you need to run [`ethash.mkcache(cacheSize, seed)`](#ethashverifypowcachesize-seed) first before using this function.
 
 **Parameters** 
 - `cachSize` - the size of the cach
