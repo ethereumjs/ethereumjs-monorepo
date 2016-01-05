@@ -36,8 +36,7 @@ Also see [this blog post](https://wanderer.github.io/ethereum/nodejs/code/2014/0
 [./docs/](./docs/index.md)
 
 # TESTING
-`npm test`  
-Test use mocha
+`npm test`
 
 # LICENSE
 MPL-2.0
