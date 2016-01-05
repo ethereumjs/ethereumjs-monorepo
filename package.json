@@ -12,7 +12,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/wanderer/rlp.git"
+    "url": "https://github.com/ethereumjs/rlp.git"
   },
   "keywords": [
     "rlp",
@@ -24,10 +24,10 @@
   },
   "license": "MPL-2.0",
   "bugs": {
-    "url": "https://github.com/wanderer/rlp/issues"
+    "url": "https://github.com/ethereumjs/rlp/issues"
   },
   "devDependencies": {
-    "ethereumjs-testing": "git+https://github.com/wanderer/ethereumjs-testing.git",
+    "ethereumjs-testing": "git+https://github.com/ethereumjs/ethereumjs-testing.git",
     "mocha": "~1.17.1",
     "standard": "^5.3.1"
   },
