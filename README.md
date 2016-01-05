@@ -31,69 +31,70 @@ Also see [this blog post](https://wanderer.github.io/ethereum/nodejs/code/2014/0
 
 # API
 ## Secure Trie Overlay
-You can create a secure Trie where the keys are automatically hashed using sha3 by `require('merkle-patricia-tree/secure')` and using the same API. The secure trie hash all the keys before storing them. 
+You can create a secure Trie where the keys are automatically hashed using sha3 by `require('merkle-patricia-tree/secure')` and using the same API. The secure trie hashes all the keys before storing them.
 
 ### `new Trie([db], [root])`
 ### `new Trie([root])`
-Creates a new Trie object
-- `db` -  A instance of [levelup](https://github.com/rvagg/node-levelup/) or compatiable API. If no db is `null` or left undefined then the the trie will be stored in memory via [memdown](https://github.com/rvagg/memdown)
-- `root` - A hex `String` or `Buffer` for the root of a prevously stored trie.
+Creates a new Trie object.
+- `db` -  An instance of [levelup](https://github.com/rvagg/node-levelup/) or a compatible API. If the db is `null` or left undefined, then the trie will be stored in memory via [memdown](https://github.com/rvagg/memdown).
+- `root` - A hex `String` or `Buffer` for the root of a previously stored trie.
 
 --------------------------------------------------------
 
 ### `Trie` Properties
-- `root` - The root of the `trie` as a `Buffer` 
-- `isCheckpoint` -  A `Boolean` determining if you are saving to a checkpoint or directly to the db
+- `root` - The root of the `trie` as a `Buffer`.
+- `isCheckpoint` -  A `Boolean` determining if you are saving to a checkpoint or directly to the db.
 - `EMPTY_TRIE_ROOT`  - A `buffer` that is a the Root for an empty trie.
 
 --------------------------------------------------------
 
 ### `Trie` Methods
 #### `trie.put(key, value, cb)`
-Stores a give value at the give key
-- `key` - the key as a `Buffer` or `String`
-- `value` - the value to be stored
-- `cb` - a callback `Function` which is given the argumnet `err` - for an errors that may have occured
+Stores a given value at the given key.
+- `key` - The key as a `Buffer` or `String`.
+- `value` - The value to be stored.
+- `cb` - A callback `Function`, which is given the argument `err` - for errors that may have occured.
 
 --------------------------------------------------------
 
 #### `trie.get(key, cb)`
-Retrieves a value stored at a key
-- `key` - the key as a `Buffer` or `String`
-- `cb` - a callback `Function` which is given the argumnets `err` - for an errors that may have occured and `vlue` - The found value in a `Buffer` or if no value was found `null`.
+Retrieves a value stored at a key.
+- `key` - The key as a `Buffer` or `String`.
+- `cb` - A callback `Function`, which is given the arguments `err` - for errors that may have occured and `value` - the found value in a `Buffer` or if no value was found `null`.
 
 --------------------------------------------------------
 
 #### `trie.del(key, cb)`
-Removes a value
-- `key` - the key as a `Buffer` or `String`
-- `cb` - a callback `Function` which is given the argumnet `err` - for an errors that may have occured
+Removes a value.
+- `key` - The key as a `Buffer` or `String`.
+- `cb` - A callback `Function`, which is given the argument `err` - for errors that may have occured.
 
 --------------------------------------------------------
 
 ####  `trie.checkpoint()`
-Creates a checkpoint that can later be reverted to or commited. After this is called, no changes to the trie will be permanently saved until `commit` is called. 
+Creates a checkpoint that can later be reverted to or committed. After this is called, no changes to the trie will be permanently saved until `commit` is called.
 
 --------------------------------------------------------
 
 ####  `trie.commit(cb)`
-Commits a checkpoint to the trie
-- `cb` - a callback `Function` 
+Commits a checkpoint to the trie.
+- `cb` - A callback `Function`.
 
 --------------------------------------------------------
 
 ####  `trie.revert()`
-revets the trie to the state it was at when `checkpoint` was first called
+Reverts the trie to the state it was at when `checkpoint` was first called.
+- `cb` - A callback `Function`.
 
 --------------------------------------------------------
 
 ####  `trie.copy()`
-Create an new Trie which share the underlining db and cache with the orginal trie.
+Create an new Trie, which shares the underlying db and cache with the orginal trie.
 
 --------------------------------------------------------
 
 ####  `trie.batch(operations, cb)`
-Give an hash of operation adds them to the DB
+The given hash of operations (key additions or deletions) are executed on the DB.
 - `operations` a hash of `key`/`values` to add to the trie.
 example  
 ```javascript
@@ -106,28 +107,28 @@ var ops = {
 --------------------------------------------------------
 
 #### `trie.createReadStream()`
-returns a read stream. The `data` event is given an `Object` hat has two propeties; the `key` and the `value`. Both should be Buffers.
+Returns a read stream. The `data` event is given an `Object` hat has two properties; the `key` and the `value`. Both should be Buffers.
 
 --------------------------------------------------------
 #### `trie.putRaw(key, value, cb)`
-Stores a raw value in the underlining db
-- `key` - the key as a `Buffer` or `String`
-- `value` - the value to be stored
-- `cb` - a callback `Function` which is given the argumnet `err` - for an errors that may have occured
+Stores a raw value in the underlying db.
+- `key` - The key as a `Buffer` or `String`.
+- `value` - The value to be stored.
+- `cb` - A callback `Function`, which is given the argument `err` - for errors that may have occured.
 
 --------------------------------------------------------
 
 #### `trie.getRaw(key, cb)`
-Retrieves a raw value in the underlining db
-- `key` - the key as a `Buffer` or `String`
-- `cb` - a callback `Function` which is given the argumnets `err` - for an errors that may have occured and `value` - The found value in a `Buffer` or if no value was found `null`.
+Retrieves a raw value in the underlying db.
+- `key` - the key as a `Buffer` or `String`.
+- `cb` - A callback `Function`, which is given the arguments `err` - for errors that may have occured and `value` - the found value in a `Buffer` or if no value was found `null`.
 
 --------------------------------------------------------
 
 #### `trie.delRaw(key, cb)`
-Removes a raw value in the underlining db
-- `key` - the key as a `Buffer` or `String`
-- `cb` - a callback `Function` which is given the argumnet `err` - for an errors that may have occured
+Removes a raw value in the underlying db.
+- `key` - The key as a `Buffer` or `String`.
+- `cb` - A callback `Function`, which is given the argument `err` - for errors that may have occured.
 
 --------------------------------------------------------
 
