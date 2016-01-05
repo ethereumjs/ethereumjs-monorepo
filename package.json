@@ -11,7 +11,8 @@
     "prepublish": "npm run build",
     "test:browser": "karma start karma.conf.js",
     "test:node": "tape ./test/*.js",
-    "build": "browserify --s Trie index.js > ./dist/trie.js"
+    "build": "browserify --s Trie index.js > ./dist/trie.js",
+    "build:docs": "documentation --github  -f md ./index.js > ./docs/index.md"
   },
   "author": {
     "name": "mjbecze",
@@ -44,6 +45,7 @@
   "devDependencies": {
     "browserify": "^12.0.1",
     "coveralls": "^2.11.6",
+    "documentation": "^3.0.4",
     "ethereumjs-testing": "git+https://github.com/ethereumjs/ethereumjs-testing.git",
     "istanbul": "^0.4.1",
     "karma": "^0.13.18",
