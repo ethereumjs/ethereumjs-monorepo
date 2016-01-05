@@ -259,8 +259,9 @@ exports.pubToAddress = exports.publicToAddress = function (pubKey) {
  */
 var privateToPublic = exports.privateToPublic = function (privateKey) {
   privateKey = exports.toBuffer(privateKey)
-  if (privateKey.length !== 32)
-      throw new Error('invalid private key length')
+  if (privateKey.length !== 32) {
+    throw new Error('invalid private key length')
+  }
   privateKey = new BN(privateKey)
   var key = ec.keyFromPrivate(privateKey).getPublic().toJSON()
   return Buffer.concat([exports.pad(key[0], 32), exports.pad(key[1], 32)])
