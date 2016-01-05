@@ -7,7 +7,7 @@ const crypto = require('crypto')
 
 // the max interger that this VM can handle
 exports.MAX_INTEGER = new BN('ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff', 16)
-exports.TWO_POW256 = new BN('115792089237316195423570985008687907853269984665640564039457584007913129639936')
+exports.TWO_POW256 = new BN('10000000000000000000000000000000000000000000000000000000000000000', 16)
 
 // hex string of SHA3-256 hash of `null`
 exports.SHA3_NULL_S = 'c5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470'
