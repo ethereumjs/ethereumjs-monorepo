@@ -23,6 +23,7 @@ exports.SHA3_RLP = new Buffer(exports.SHA3_RLP_S, 'hex')
 
 exports.BN = BN
 exports.rlp = rlp
+exports.secp256k1 = secp256k1
 
 /**
  * Returns a buffer filled with 0s
