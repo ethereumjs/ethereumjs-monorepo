@@ -30,7 +30,10 @@ function checkpointInterface (trie) {
   trie.copy = copy.bind(trie, trie.copy.bind(trie))
 }
 
-// creates a checkpoint
+/**
+ * Creates a checkpoint that can later be reverted to or committed. After this is called, no changes to the trie will be permanently saved until `commit` is called
+ * @method checkpoint
+ */
 function checkpoint () {
   var self = this
   var wasCheckpoint = self.isCheckpoint
@@ -40,7 +43,11 @@ function checkpoint () {
   }
 }
 
-// commits a checkpoint.
+/**
+ * commits a checkpoint to disk
+ * @method commit
+ * @param {Function} cb the callback
+ */
 function commit (cb) {
   var self = this
   cb = callTogether(cb, self.sem.leave)
@@ -59,7 +66,11 @@ function commit (cb) {
   })
 }
 
-// reverts a checkpoint
+/**
+ * Reverts the trie to the state it was at when `checkpoint` was first called.
+ * @method revert
+ * @param {Function} cb the callback
+ */
 function revert (cb) {
   var self = this
   cb = callTogether(cb, self.sem.leave)

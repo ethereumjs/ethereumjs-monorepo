@@ -14,6 +14,15 @@ const asyncFirstSeries = require('./util').asyncFirstSeries
 
 module.exports = Trie
 
+/**
+ * Use `require('merkel-patricia-tree')` for the base interface. In Ethereum applications stick with the Secure Trie Overlay `require('merkel-patricia-tree/secure')`. The API for the raw and the secure interface are about the same
+ * @class Trie
+ * @param {Object} [db] An instance of [levelup](https://github.com/rvagg/node-levelup/) or a compatible API. If the db is `null` or left undefined, then the trie will be stored in memory via [memdown](https://github.com/rvagg/memdown)
+ * @param {Buffer|String} [root]` A hex `String` or `Buffer` for the root of a previously stored trie
+ * @prop {Buffer} root The current root of the `trie`
+ * @prop {Boolean} isCheckpoint  determines if you are saving to a checkpoint or directly to the db
+ * @prop {Buffer} EMPTY_TRIE_ROOT the Root for an empty trie
+ */
 function Trie (db, root) {
   var self = this
   this.EMPTY_TRIE_ROOT = ethUtil.SHA3_RLP
@@ -48,9 +57,10 @@ function Trie (db, root) {
 }
 
 /**
- * Gets a value given a key
+ * Gets a value given a `key`
  * @method get
- * @param {String} key - the key to search for
+ * @param {Buffer|String} key - the key to search for
+ * @param {Function} callback A callback `Function` which is given the arguments `err` - for errors that may have occured and `value` - the found value in a `Buffer` or if no value was found `null`
  */
 Trie.prototype.get = function (key, cb) {
   var self = this
@@ -68,10 +78,11 @@ Trie.prototype.get = function (key, cb) {
 }
 
 /**
- * Stores a key value
+ * Stores a given `value` at the given `key`
  * @method put
  * @param {Buffer|String} key
  * @param {Buffer|String} Value
+ * @param {Function} callback A callback `Function` which is given the argument `err` - for errors that may have occured
  */
 Trie.prototype.put = function (key, value, cb) {
   var self = this
@@ -101,7 +112,12 @@ Trie.prototype.put = function (key, value, cb) {
   }
 }
 
-// deletes a value
+/**
+ * deletes a value given a `key`
+ * @method del
+ * @param {Buffer|String} key
+ * @param {Function} callback the callback `Function`
+ */
 Trie.prototype.del = function (key, cb) {
   var self = this
 
@@ -123,9 +139,10 @@ Trie.prototype.del = function (key, cb) {
 }
 
 /**
- * Writes a value directly to the underlining db
+ * Retrieves a raw value in the underlying db
  * @method getRaw
  * @param {Buffer} key
+ * @param {Function} callback A callback `Function`, which is given the arguments `err` - for errors that may have occured and `value` - the found value in a `Buffer` or if no value was found `null`.
  */
 Trie.prototype.getRaw = function (key, cb) {
   key = ethUtil.toBuffer(key)
@@ -177,12 +194,20 @@ Trie.prototype._putRaw = function (key, val, cb) {
 
 /**
  * Writes a value directly to the underlining db
- * @mremoveListenethod putRaw
- * @param {Buffer} key
- * @param {Buffer} key
+ * @method putRaw
+ * @param {Buffer|String} key The key as a `Buffer` or `String`
+ * @param {Buffer} value The value to be stored
+ * @param {Function} callback A callback `Function`, which is given the argument `err` - for errors that may have occured
  */
 Trie.prototype.putRaw = Trie.prototype._putRaw
 
+
+/**
+ * Removes a raw value in the underlying db
+ * @method delRaw
+ * @param {Buffer|String} key
+ * @param {Function} callback A callback `Function`, which is given the argument `err` - for errors that may have occured
+ */
 Trie.prototype.delRaw = function (key, cb) {
   function del (db, cb2) {
     db.del(key, {
@@ -652,7 +677,11 @@ Trie.prototype._formatNode = function (node, topLevel, remove, opStack) {
   return node.raw
 }
 
-// creates a readstream
+/**
+ * The `data` event is given an `Object` hat has two properties; the `key` and the `value`. Both should be Buffers.
+ * @method createReadStream
+ * @return {stream.Readable} Returns a [stream](https://nodejs.org/dist/latest-v5.x/docs/api/stream.html#stream_class_stream_readable) of the contents of the `trie`
+ */
 Trie.prototype.createReadStream = function () {
   return new ReadStream(this)
 }
@@ -664,9 +693,18 @@ Trie.prototype.copy = function () {
 }
 
 /**
- * runs a `hash` of command
+ * The given hash of operations (key additions or deletions) are executed on the DB
  * @method batch
- * @param {Object} ops
+ * @example
+ * var ops = [
+ *    { type: 'del', key: 'father' }
+ *  , { type: 'put', key: 'name', value: 'Yuri Irsenovich Kim' }
+ *  , { type: 'put', key: 'dob', value: '16 February 1941' }
+ *  , { type: 'put', key: 'spouse', value: 'Kim Young-sook' }
+ *  , { type: 'put', key: 'occupation', value: 'Clown' }
+ * ]
+ * trie.batch(ops)
+ * @param {Array} ops
  * @param {Function} cb
  */
 Trie.prototype.batch = function (ops, cb) {
