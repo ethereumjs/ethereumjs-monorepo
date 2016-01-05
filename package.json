@@ -5,7 +5,7 @@
   "main": "index.js",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ethereum/ethereumjs-account.git"
+    "url": "git+https://github.com/ethereumjs/ethereumjs-account.git"
   },
   "scripts": {
     "test": "standard"
@@ -17,9 +17,9 @@
   "author": "mjbecze (mjbecze@gmail.com)",
   "license": "MPL-2.0",
   "bugs": {
-    "url": "https://github.com/ethereum/ethereumjs-account/issues"
+    "url": "https://github.com/ethereumjs/ethereumjs-account/issues"
   },
-  "homepage": "https://github.com/ethereum/ethereumjs-account#readme",
+  "homepage": "https://github.com/ethereumjs/ethereumjs-account#readme",
   "dependencies": {
     "ethereumjs-util": "2.3.1",
     "rlp": "2.0.0"
