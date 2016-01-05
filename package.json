@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "coverage": "istanbul cover ./tests/index.js",
-    "coveralls": "npm run coverage && coveralls <coverage/lcov.info",
+    "coveralls": "npm run coverage && coveralls < coverage/lcov.info",
     "lint": "standard",
     "test": "npm run test:node && npm run test:browser",
     "test:browser": "karma start karma.conf.js",
@@ -13,7 +13,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ethereum/ethereumjs-block.git"
+    "url": "git+https://github.com/ethereumjs/ethereumjs-block.git"
   },
   "keywords": [
     "ethereum",
@@ -22,9 +22,9 @@
   "author": "mjbecze (mb@ethdev.com)",
   "license": "MPL-2.0",
   "bugs": {
-    "url": "https://github.com/ethereum/ethereumjs-block/issues"
+    "url": "https://github.com/ethereumjs/ethereumjs-block/issues"
   },
-  "homepage": "https://github.com/ethereum/ethereumjs-block#readme",
+  "homepage": "https://github.com/ethereumjs/ethereumjs-block#readme",
   "dependencies": {
     "async": "^1.5.0",
     "es6-shim": "^0.33.13",
@@ -36,7 +36,7 @@
   "devDependencies": {
     "browserify": "^12.0.1",
     "coveralls": "^2.11.6",
-    "ethereumjs-testing": "git+https://github.com/wanderer/ethereumjs-testing.git",
+    "ethereumjs-testing": "git+https://github.com/ethereumjs/ethereumjs-testing.git",
     "istanbul": "^0.4.1",
     "karma": "^0.13.15",
     "karma-browserify": "^4.4.2",
