@@ -21,50 +21,6 @@ Use `require('merkel-patricia-tree')` for the base interface. In Ethereum applic
 -   `isCheckpoint` **Boolean** determines if you are saving to a checkpoint or directly to the db
 -   `EMPTY_TRIE_ROOT` **Buffer** the Root for an empty trie
 
-## _findPath
-
-[baseTrie.js:252-300](https://github.com/wanderer/merkle-patricia-tree/blob/dc436426d717fed408f4d46fed23f6d26d03d39d/baseTrie.js#L252-L300 "Source code on GitHub")
-
-Trys to find a path to the node for the given key.
-It returns a `stack` of nodes to the closet node.
-
-**Parameters**
-
--   `Function`  cb - the callback function. Its is given the following
-    arguments-   err - any errors encontered
-    -   node - the last node found
-    -   keyRemainder - the remaining key nibbles not accounted for
-    -   stack - an array of nodes that forms the path to node we are searching for
--   `targetKey`  
--   `cb`  
-
-## _saveStack
-
-[baseTrie.js:502-529](https://github.com/wanderer/merkle-patricia-tree/blob/dc436426d717fed408f4d46fed23f6d26d03d39d/baseTrie.js#L502-L529 "Source code on GitHub")
-
-saves a stack
-
-**Parameters**
-
--   `key` **Array** the key. Should follow the stack
--   `stack` **Array** a stack of nodes to the value given by the key
--   `opStack` **Array** a stack of levelup operations to commit at the end of this funciton
--   `cb` **Function** 
-
-## _updateNode
-
-[baseTrie.js:358-423](https://github.com/wanderer/merkle-patricia-tree/blob/dc436426d717fed408f4d46fed23f6d26d03d39d/baseTrie.js#L358-L423 "Source code on GitHub")
-
-Updates a node
-
-**Parameters**
-
--   `key` **Buffer** 
--   `value` **Buffer or String** 
--   `keyRemainder` **Array** 
--   `stack` **Array** -
--   `cb` **Function** the callback
-
 ## batch
 
 [baseTrie.js:710-722](https://github.com/wanderer/merkle-patricia-tree/blob/dc436426d717fed408f4d46fed23f6d26d03d39d/baseTrie.js#L710-L722 "Source code on GitHub")
@@ -182,7 +138,33 @@ Writes a value directly to the underlining db
 -   `value` **Buffer** The value to be stored
 -   `callback` **Function** A callback `Function`, which is given the argument `err` - for errors that may have occured
 
-# addHexPrefix
+## checkpoint
+
+[checkpoint-interface.js:37-44](https://github.com/wanderer/merkle-patricia-tree/blob/dc436426d717fed408f4d46fed23f6d26d03d39d/checkpoint-interface.js#L37-L44 "Source code on GitHub")
+
+Creates a checkpoint that can later be reverted to or committed. After this is called, no changes to the trie will be permanently saved until `commit` is called
+
+## commit
+
+[checkpoint-interface.js:51-67](https://github.com/wanderer/merkle-patricia-tree/blob/dc436426d717fed408f4d46fed23f6d26d03d39d/checkpoint-interface.js#L51-L67 "Source code on GitHub")
+
+commits a checkpoint to disk
+
+## revert
+
+[checkpoint-interface.js:74-89](https://github.com/wanderer/merkle-patricia-tree/blob/dc436426d717fed408f4d46fed23f6d26d03d39d/checkpoint-interface.js#L74-L89 "Source code on GitHub")
+
+Reverts the trie to the state it was at when `checkpoint` was first called.
+
+**Parameters**
+
+-   `cb` **Function** the callback
+
+
+# Internal Util Functions
+These are not exposed. 
+
+## addHexPrefix
 
 [trieNode.js:164-179](https://github.com/wanderer/merkle-patricia-tree/blob/dc436426d717fed408f4d46fed23f6d26d03d39d/trieNode.js#L164-L179 "Source code on GitHub")
 
@@ -195,7 +177,7 @@ Writes a value directly to the underlining db
 Returns **Buffer** returns buffer of encoded data
 hexPrefix
 
-# asyncFirstSeries
+## asyncFirstSeries
 
 [util.js:62-78](https://github.com/wanderer/merkle-patricia-tree/blob/dc436426d717fed408f4d46fed23f6d26d03d39d/util.js#L62-L78 "Source code on GitHub")
 
@@ -208,30 +190,19 @@ If all run without a truthy result, return undefined
 -   `iterator`  
 -   `cb`  
 
-# callTogether
+## callTogether
 
 [util.js:36-56](https://github.com/wanderer/merkle-patricia-tree/blob/dc436426d717fed408f4d46fed23f6d26d03d39d/util.js#L36-L56 "Source code on GitHub")
 
 Take two or more functions and returns a function  that will execute all of
 the given functions
 
-# checkpoint
-
-[checkpoint-interface.js:37-44](https://github.com/wanderer/merkle-patricia-tree/blob/dc436426d717fed408f4d46fed23f6d26d03d39d/checkpoint-interface.js#L37-L44 "Source code on GitHub")
-
-Creates a checkpoint that can later be reverted to or committed. After this is called, no changes to the trie will be permanently saved until `commit` is called
-
-# commit
-
-[checkpoint-interface.js:51-67](https://github.com/wanderer/merkle-patricia-tree/blob/dc436426d717fed408f4d46fed23f6d26d03d39d/checkpoint-interface.js#L51-L67 "Source code on GitHub")
-
-commits a checkpoint to disk
 
 **Parameters**
 
 -   `cb` **Function** the callback
 
-# doKeysMatch
+## doKeysMatch
 
 [util.js:27-30](https://github.com/wanderer/merkle-patricia-tree/blob/dc436426d717fed408f4d46fed23f6d26d03d39d/util.js#L27-L30 "Source code on GitHub")
 
@@ -242,7 +213,7 @@ Compare two 'nibble array' keys
 -   `keyA`  
 -   `keyB`  
 
-# matchingNibbleLength
+## matchingNibbleLength
 
 [util.js:16-22](https://github.com/wanderer/merkle-patricia-tree/blob/dc436426d717fed408f4d46fed23f6d26d03d39d/util.js#L16-L22 "Source code on GitHub")
 
@@ -253,12 +224,46 @@ Returns the number of in order matching nibbles of two give nibble arrayes
 -   `nib1` **Array** 
 -   `nib2` **Array** 
 
-# revert
+## _findPath
 
-[checkpoint-interface.js:74-89](https://github.com/wanderer/merkle-patricia-tree/blob/dc436426d717fed408f4d46fed23f6d26d03d39d/checkpoint-interface.js#L74-L89 "Source code on GitHub")
+[baseTrie.js:252-300](https://github.com/wanderer/merkle-patricia-tree/blob/dc436426d717fed408f4d46fed23f6d26d03d39d/baseTrie.js#L252-L300 "Source code on GitHub")
 
-Reverts the trie to the state it was at when `checkpoint` was first called.
+Trys to find a path to the node for the given key.
+It returns a `stack` of nodes to the closet node.
 
 **Parameters**
 
+-   `Function`  cb - the callback function. Its is given the following
+    arguments-   err - any errors encontered
+    -   node - the last node found
+    -   keyRemainder - the remaining key nibbles not accounted for
+    -   stack - an array of nodes that forms the path to node we are searching for
+-   `targetKey`  
+-   `cb`  
+
+## _saveStack
+
+[baseTrie.js:502-529](https://github.com/wanderer/merkle-patricia-tree/blob/dc436426d717fed408f4d46fed23f6d26d03d39d/baseTrie.js#L502-L529 "Source code on GitHub")
+
+saves a stack
+
+**Parameters**
+
+-   `key` **Array** the key. Should follow the stack
+-   `stack` **Array** a stack of nodes to the value given by the key
+-   `opStack` **Array** a stack of levelup operations to commit at the end of this funciton
+-   `cb` **Function** 
+
+## _updateNode
+
+[baseTrie.js:358-423](https://github.com/wanderer/merkle-patricia-tree/blob/dc436426d717fed408f4d46fed23f6d26d03d39d/baseTrie.js#L358-L423 "Source code on GitHub")
+
+Updates a node
+
+**Parameters**
+
+-   `key` **Buffer** 
+-   `value` **Buffer or String** 
+-   `keyRemainder` **Array** 
+-   `stack` **Array** -
 -   `cb` **Function** the callback
