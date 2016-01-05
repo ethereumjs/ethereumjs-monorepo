@@ -317,7 +317,7 @@ tape('it should create the genesis state root from ethereum', function (tester) 
   var genesisStateRoot = '2f4399b08efe68945c1cf90ffe85bbe3ce978959da753f9e649f034015b8817d'
   tester.equal(cppRlp, rlpAccount.toString('hex'))
 
-  it('shall match the root given unto us by the Master Coder Gav', function (t) {
+  it('shall match the root', function (t) {
     trie4.put(g, rlpAccount, function () {
       trie4.put(j, rlpAccount, function () {
         trie4.put(v, rlpAccount, function () {
