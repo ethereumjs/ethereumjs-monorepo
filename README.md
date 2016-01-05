@@ -39,11 +39,13 @@ Yep, You can [browserify](http://browserify.org/) it.
 
 ### `new Ethash([cacheDB])`
 Creates a new instance of `Ethash`.
+
 **Parameters**
 - `cacheDB` - an instance of a levelup db which is used to store the cache(s)
 
 ### `ethash.verifyPOW(block, cb)`
 Verifies the POW on a block and its uncles
+
 **Parameters**  
 - `block` - the [block](https://github.com/ethereum/ethereumjs-block) to verify
 - `cb` - the callback which is given a `Boolean` determining the validaty of the block 
