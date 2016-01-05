@@ -12,13 +12,16 @@ A collection of utility functions for ethereum. It can be used in node.js or can
 
 # API
 ## properties
- - `MAX_INTEGER`  - The max integer that the VM can handle
- -  `TWO_POW256` - 2^256
- -  `SHA3_NULL` - SHA3-256 hash of `null`
- -  `SHA3_RLP_ARRAY` - SHA3-256 of an RLP of an empty array
- -  `SHA3_RLP` - SHA3-256 hash of the RLP of `null`
- -  [`BN`](https://github.com/indutny/bn.js)
- -  [`rlp`](https://github.com/wanderer/rlp)
+ - `MAX_INTEGER` - The max integer that the VM can handle (a ```BN```)
+ - `TWO_POW256` - 2^256 (a ```BN```)
+ - `SHA3_NULL_S` - SHA3-256 hash of `null` (a ```String```)
+ - `SHA3_NULL` - the same as `SHA3_NULL_S` but in a ```Buffer```
+ - `SHA3_RLP_ARRAY_S` - SHA3-256 of an RLP of an empty array (a ```String```)
+ - `SHA3_RLP_ARRAY` - the same as `SHA3_RLP_ARRAY_S` but in a ```Buffer```
+ - `SHA3_RLP_S` - SHA3-256 hash of the RLP of `null` (a ```String```)
+ - `SHA3_RLP` - the same as `SHA3_RLP_S` but in a ```Buffer```
+ - [`BN`](https://github.com/indutny/bn.js)
+ - [`rlp`](https://github.com/wanderer/rlp)
 
 ## methods
 ### `zeros(number)`
