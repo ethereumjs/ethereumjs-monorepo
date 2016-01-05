@@ -8,7 +8,8 @@
     "url": "git+https://github.com/ethereumjs/ethereumjs-account.git"
   },
   "scripts": {
-    "test": "standard"
+    "lint": "standard",
+    "test": "tape ./test/index.js"
   },
   "keywords": [
     "ethereum",
@@ -25,6 +26,7 @@
     "rlp": "^2.0.0"
   },
   "devDependencies": {
-    "standard": "^5.4.1"
+    "standard": "^5.4.1",
+    "tape": "^4.0.3"
   }
 }
