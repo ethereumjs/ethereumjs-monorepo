@@ -25,9 +25,9 @@ This module work with `browserify`
     - [`account.setStorage(trie, key, val, cb)`](#accountsetstoragetrie-key-val-cb)
 
 ### `new Account([data])`
-Creates an new account object
-- `data` - an account can be initiailized with either a `buffer` containing the RLP serialized account. 
- Or an `array` of buffers relating to each of the account Properties, listed in order below.  For example.
+Creates a new account object
+- `data` - an account can be initialized with either a `buffer` containing the RLP serialized account.
+ Or an `Array` of buffers relating to each of the account Properties, listed in order below.  For example:
 ```javascript
 var raw = [ 
   '0x02', //nonce
@@ -39,7 +39,7 @@ var raw = [
 var account = new Account(raw);
 ```
 
-Or lastly an `Object` containing the Properties of the account
+Or lastly an `Object` containing the Properties of the account:
 
 ```javascript
 var raw = {
@@ -51,42 +51,42 @@ var raw = {
 
 var account = new Account(raw);
 ```
-For `Object` and `Arrays` each of the elements can either be a `Buffer`, hex `String` , `Number`, or an object with a `toBuffer` method such as `Bignum`.
+For `Object` and `Array` each of the elements can either be a `Buffer`, hex `String`, `Number`, or an object with a `toBuffer` method such as `Bignum`.
 
 ### `Account` Properties
 - `nonce` - The account's nonce.
-- `balance`  - The account's balance in wie
-- `stateRoot` - the stateRoot for the storage of the contract
-- `codeHash` - the hash of the code of the contract
+- `balance`  - The account's balance in wei.
+- `stateRoot` - The stateRoot for the storage of the contract.
+- `codeHash` - The hash of the code of the contract.
 
 ### `Account` Methods
 
-#### `Account.isEmpty()`
-Returns a `Boolean` determining if the account is empty
+#### `account.isEmpty()`
+Returns a `Boolean` determining if the account is empty.
 
 #### `account.isContract()`
-Returns a `Boolean` deteremining if the account is a contract
+Returns a `Boolean` deteremining if the account is a contract.
 
 #### `account.serialize()`
-Returns the RLP serialization of the account as a `Buffer`
+Returns the RLP serialization of the account as a `Buffer`.
 
-#### `acount.toJSON([object])`
-Returns the account as JSON
-- `object` - a `Boolean` that defaults to false. If `object` is true then this will return an object else it will return an `array`.
+#### `account.toJSON([object])`
+Returns the account as JSON.
+- `object` - A `Boolean` that defaults to false. If `object` is true then this will return an `Object`, else it will return an `Array`.
 
 #### `account.getCode(trie, cb)`
-Fetches the code from the trie
-- `trie` - the [trie](github.com/wanderer/merkle-patricia-tree) to storing the accounts
-- `cb` - the callback
+Fetches the code from the trie.
+- `trie` - The [trie](github.com/wanderer/merkle-patricia-tree) storing the accounts.
+- `cb` - The callback.
 
 #### `account.setCode(trie, code, cb)`
-Stores the code in the trie
-- `trie` - the [trie](github.com/wanderer/merkle-patricia-tree)
-- `code` - a `Buffer`
-- `cb` - the callback
+Stores the code in the trie.
+- `trie` - The [trie](github.com/wanderer/merkle-patricia-tree) storing the accounts.
+- `code` - A `Buffer`.
+- `cb` - The callback.
 
 #### `account.getStorage(trie, key, cb)`
-Fetches `key` from the account's storage
+Fetches `key` from the account's storage.
 
 #### `account.setStorage(trie, key, val, cb)`
-Stores a `val` at the `key` in the contract's storage
+Stores a `val` at the `key` in the contract's storage.
