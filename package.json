@@ -21,6 +21,9 @@
     "utilties"
   ],
   "author": "mjbecze <mjbecze@gmail.com>",
+  "contributors": [
+    "Alex Beregszaszi <alex@rtfs.hu>"
+  ],
   "license": "MPL-2.0",
   "bugs": {
     "url": "https://github.com/ethereumjs/ethereumjs-util/issues"
