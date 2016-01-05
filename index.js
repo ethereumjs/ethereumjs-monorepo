@@ -161,8 +161,9 @@ exports.bufferToInt = function (buf) {
  * @return {BN}
  */
 exports.fromSigned = function (num) {
+  // Could use num.testn(255), but this is faster:
   if (num.length === 32 && num[0] >= 128) {
-    return new BN(num).sub(exports.TWO_POW256)
+    return new BN(num).inotn(256).iaddn(1).ineg()
   }
 
   return new BN(num)
@@ -176,7 +177,7 @@ exports.fromSigned = function (num) {
  */
 exports.toUnsigned = function (num) {
   if (num.isNeg()) {
-    return new Buffer(num.add(exports.TWO_POW256).toArray())
+    return new Buffer(num.abs().inotn(256).iaddn(1).toArray())
   }
 
   return new Buffer(num.toArray())

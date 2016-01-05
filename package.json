@@ -30,7 +30,7 @@
   },
   "homepage": "https://github.com/ethereumjs/ethereumjs-util",
   "dependencies": {
-    "bn.js": "^4.4.0",
+    "bn.js": "^4.6.0",
     "browserify-sha3": "^0.0.1",
     "elliptic": "^6.0.2",
     "rlp": "^2.0.0",
