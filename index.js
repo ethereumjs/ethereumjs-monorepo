@@ -36,7 +36,7 @@ Account.isContract = Account.prototype.isContract = function (address) {
 }
 
 Account.isPrecompiled = Account.prototype.isPrecompiled = function (address) {
-  var a = ethUtil.unpad(ethUtil.unpad(address))
+  var a = ethUtil.unpad(address)
   return a.length === 1 && a[0] > 0 && a[0] < 5
 }
 
