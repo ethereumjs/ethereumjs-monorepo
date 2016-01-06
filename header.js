@@ -84,7 +84,7 @@ BlockHeader.prototype.canonicalDifficulty = function (parentBlock) {
     }
   }
 
-  var exp = new BN(this.number).divn(100000).sub(new BN(2))
+  var exp = new BN(this.number).divn(100000).subn(2)
   if (!exp.isNeg()) {
     dif.iadd(new BN(2).pow(exp))
   }
