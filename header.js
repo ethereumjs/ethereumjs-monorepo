@@ -170,7 +170,7 @@ BlockHeader.prototype.validate = function (blockchain, height, cb) {
 }
 
 BlockHeader.prototype.hash = function () {
-  return utils.sha3(rlp.encode(this.raw))
+  return utils.rlphash(this.raw)
 }
 
 BlockHeader.prototype.isGenesis = function () {
