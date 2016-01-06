@@ -35,10 +35,7 @@ Account.isContract = Account.prototype.isContract = function (address) {
   return result
 }
 
-Account.isPrecompiled = Account.prototype.isPrecompiled = function (address) {
-  var a = ethUtil.unpad(address)
-  return a.length === 1 && a[0] > 0 && a[0] < 5
-}
+Account.isPrecompiled = Account.prototype.isPrecompiled = ethUtil.isPrecompiled
 
 Account.prototype.getCode = function (state, cb) {
   if (this.codeHash.toString('hex') === ethUtil.SHA3_NULL.toString('hex')) {
