@@ -84,7 +84,8 @@ exports.zeros = function (bytes) {
 }
 
 /**
- * Pads an `Array` or `Buffer` with leading zeros till it has `length` bytes
+ * Pads an `Array` or `Buffer` with leading zeros till it has `length` bytes.
+ * Or it truncates the beginning if it exceeds.
  * @method pad
  * @param {Buffer|Array} msg the value to pad
  * @param {Number} length the number of bytes the output should be
@@ -102,6 +103,7 @@ exports.pad = function (msg, length) {
 
 /**
  * Pads an `Array` or `Buffer` with trailing zeros till it has `length` bytes
+ * Or it truncates the end if it exceeds.
  * @method rpad
  * @param {Buffer|Array} msg the value to pad
  * @param {Number} length the number of bytes the output should be
