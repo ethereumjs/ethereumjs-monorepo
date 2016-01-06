@@ -107,7 +107,7 @@ Transaction.prototype.hash = function (signature) {
   }
 
   // create hash
-  return ethUtil.sha3(rlp.encode(toHash))
+  return ethUtil.rlphash(toHash)
 }
 
 /**
