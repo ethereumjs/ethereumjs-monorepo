@@ -224,5 +224,5 @@ Transaction.prototype.getUpfrontCost = function () {
  * @return {Boolean}
  */
 Transaction.prototype.validate = function () {
-  return this.verifySignature() && (Number(this.getBaseFee().toString()) <= ethUtil.bufferToInt(this.gasLimit))
+  return this.verifySignature() && (this.getBaseFee().cmp(new BN(this.gasLimit)) === -1)
 }
