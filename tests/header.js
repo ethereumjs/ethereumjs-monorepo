@@ -1,7 +1,5 @@
 const tape = require('tape')
 const utils = require('ethereumjs-util')
-const BN = utils.BN
-const rlp = utils.rlp
 const BlockHeader = require('../header.js')
 
 tape('[Block]: Header functions', function (t) {

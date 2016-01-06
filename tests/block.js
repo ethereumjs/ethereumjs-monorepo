@@ -1,14 +1,11 @@
 const tape = require('tape')
 const utils = require('ethereumjs-util')
-const BN = utils.BN
-const rlp = utils.rlp
 const Block = require('../index.js')
-const params = require('ethereum-common')
 
 tape('[Block]: Block functions', function (t) {
   t.test('should create with default constructor', function (st) {
     var block = new Block()
-    
+
     var header = block.header
     st.deepEqual(header.parentHash, utils.zeros(32))
     st.equal(header.uncleHash.toString('hex'), utils.SHA3_RLP_ARRAY_S)
@@ -43,7 +40,7 @@ tape('[Block]: Block functions', function (t) {
     st.equal(block.isGenesis(), true)
     st.end()
   })
-  
+
   t.test('should serialize', function (st) {
     var block = new Block()
     var r = 'f901eaf901e5a00000000000000000000000000000000000000000000000000000000000000000a0' +
