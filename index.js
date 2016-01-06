@@ -26,16 +26,9 @@ Account.prototype.serialize = function () {
   return rlp.encode(this.raw)
 }
 
-Account.isContract = Account.prototype.isContract = function (address) {
-  var result = this.codeHash.toString('hex') !== ethUtil.SHA3_NULL.toString('hex')
-  if (address) {
-    result |= this.isPrecompiled(address)
-  }
-
-  return result
+Account.prototype.isContract = function () {
+  return this.codeHash.toString('hex') !== ethUtil.SHA3_NULL.toString('hex')
 }
-
-Account.isPrecompiled = Account.prototype.isPrecompiled = ethUtil.isPrecompiled
 
 Account.prototype.getCode = function (state, cb) {
   if (this.codeHash.toString('hex') === ethUtil.SHA3_NULL.toString('hex')) {
