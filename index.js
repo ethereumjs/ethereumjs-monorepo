@@ -114,7 +114,7 @@ exports.rpad = function (msg, length) {
     msg.copy(buf)
     return buf
   }
-  return msg.slice(-length)
+  return msg.slice(0, length)
 }
 
 /**
