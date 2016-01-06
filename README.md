@@ -39,7 +39,7 @@ This will give you a gobal varible `EthTx` to use. It will also create the globa
 To build for standalone use in the browser install `browserify` and run `npm run build`.
 
 # API
-[./docs/](./docs)
+[./docs/](./docs/index.md)
 
 # LICENSE
 [MPL-2.0](https://tldrlegal.com/license/mozilla-public-license-2.0-(mpl-2))
