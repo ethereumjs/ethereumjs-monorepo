@@ -5,24 +5,70 @@ const rlp = require('rlp')
 const BN = require('bn.js')
 const crypto = require('crypto')
 
-// the max interger that this VM can handle
+/**
+ * the max interger that this VM can handle (a ```BN```)
+ * @var {BN} MAX_INTEGER
+ */
 exports.MAX_INTEGER = new BN('ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff', 16)
+
+/**
+ * 2^256 (a ```BN```)
+ * @var {BN} TWO_POW256
+ */
 exports.TWO_POW256 = new BN('10000000000000000000000000000000000000000000000000000000000000000', 16)
 
-// hex string of SHA3-256 hash of `null`
+/**
+ * SHA3-256 hash of null (a ```String```)
+ * @var {String} SHA3_NULL_S
+ */
 exports.SHA3_NULL_S = 'c5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470'
+
+/**
+ * SHA3-256 hash of null (a ```Buffer```)
+ * @var {Buffer} SHA3_NULL
+ */
 exports.SHA3_NULL = new Buffer(exports.SHA3_NULL_S, 'hex')
 
-// SHA3-256 hash of the rlp of []
+/**
+ * SHA3-256 of an RLP of an empty array (a ```String```)
+ * @var {String} SHA3_RLP_ARRAY_S
+ */
 exports.SHA3_RLP_ARRAY_S = '1dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d49347'
+
+/**
+ * SHA3-256 of an RLP of an empty array (a ```Buffer```)
+ * @var {Buffer} SHA3_RLP_ARRAY
+ */
 exports.SHA3_RLP_ARRAY = new Buffer(exports.SHA3_RLP_ARRAY_S, 'hex')
 
-// SHA3-256 hash of the rlp of `null`
+/**
+ * SHA3-256 hash of the RLP of null  (a ```String```)
+ * @var {String} SHA3_RLP_S
+ */
 exports.SHA3_RLP_S = '56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421'
+
+/**
+ * SHA3-256 hash of the RLP of null (a ```Buffer```)
+ * @var {Buffer} SHA3_RLP
+ */
 exports.SHA3_RLP = new Buffer(exports.SHA3_RLP_S, 'hex')
 
+/**
+ * [`BN`](https://github.com/indutny/bn.js)
+ * @var {Function}
+ */
 exports.BN = BN
+
+/**
+ * [`rlp`](https://github.com/wanderer/rlp)
+ * @var {Function}
+ */
 exports.rlp = rlp
+
+/**
+ * [`secp256k1`](https://github.com/cryptocoinjs/secp256k1-node/)
+ * @var {Object}
+ */
 exports.secp256k1 = secp256k1
 
 /**
@@ -40,8 +86,8 @@ exports.zeros = function (bytes) {
 /**
  * pads an array of buffer with leading zeros till it has `length` bytes
  * @method pad
- * @param {Buffer|Array} array
- * @param {Integer}  length the number of bytes the output should be
+ * @param {Buffer|Array} msg the value to pad
+ * @param {Integer} length the number of bytes the output should be
  * @return {Buffer|Array}
  */
 exports.pad = function (msg, length) {
@@ -57,8 +103,8 @@ exports.pad = function (msg, length) {
 /**
  * pads an array of buffer with trailing zeros till it has `length` bytes
  * @method rpad
- * @param {Buffer|Array} array
- * @param {Integer}  length the number of bytes the output should be
+ * @param {Buffer|Array} msg the value to pad
+ * @param {Integer} length the number of bytes the output should be
  * @return {Buffer|Array}
  */
 exports.rpad = function (msg, length) {
@@ -73,7 +119,6 @@ exports.rpad = function (msg, length) {
 
 /**
  * Trims leading zeros from a buffer or an array
- *
  * @method unpad
  * @param {Buffer|Array|String}
  * @return {Buffer|Array|String}
@@ -87,7 +132,11 @@ exports.unpad = exports.stripZeros = function (a) {
   }
   return a
 }
-
+/**
+ * Attempts to turn a value into a Buffer. Attempts to turn a value into a Buffer. Supports Buffer, string, number, null/undefined, BN.js or other objects with a toArray() method.
+ * @method toBuffer
+ * @param {*} v the value
+ */
 exports.toBuffer = function (v) {
   if (!Buffer.isBuffer(v)) {
     if (Array.isArray(v)) {
@@ -130,9 +179,9 @@ exports.intToHex = function (i) {
 }
 
 /**
- * Converts an integer to a buffer
+ * Converts an `Integer` to a `Buffer`
  * @method intToBuffer
- * @param {Number}
+ * @param {Integer}
  * @return {Buffer}
  */
 exports.intToBuffer = function (i) {
@@ -141,9 +190,9 @@ exports.intToBuffer = function (i) {
 }
 
 /**
- * Converts a buffer to an Interger
+ * Converts a `Buffer` to an `Interger`
  * @method bufferToInt
- * @par[MaÅam {B[M`Êuffer}
+ * @param {Buffer}
  * @return {Number}
  */
 exports.bufferToInt = function (buf) {
@@ -156,7 +205,7 @@ exports.bufferToInt = function (buf) {
 }
 
 /**
- * interpets a buffer as a signed integer and returns a bignum
+ * interpets a `Buffer` as a signed integer and returns a `bignum`
  * @method fromSigned
  * @param {Buffer} num
  * @return {BN}
@@ -171,7 +220,7 @@ exports.fromSigned = function (num) {
 }
 
 /**
- * Converts a bignum to an unsigned interger and returns it as a buffer
+ * Converts a `Bignum` to an unsigned interger and returns it as a `Buffer`
  * @method toUnsigned
  * @param {Bignum} num
  * @return {Buffer}
@@ -188,7 +237,7 @@ exports.toUnsigned = function (num) {
  * Creates SHA-3 hash of the input
  * @method sha3
  * @param {Buffer|Array|String|Number} a the input data
- * @param {Number} bytes the SHA width
+ * @param {Number} [bytes=256] the SHA width
  * @return {Buffer}
  */
 exports.sha3 = function (a, bytes) {
@@ -276,10 +325,11 @@ exports.privateToAddress = function (privateKey) {
 }
 
 /**
- * Generates a new address
+ * Generates an address of a newly created contract
  * @method generateAddress
  * @param {Buffer} from the address which is creating this new address
  * @param {Buffer} nonce the nonce of the from account
+ * @return {Buffer}
  */
 exports.generateAddress = function (from, nonce) {
   from = exports.toBuffer(from)
@@ -297,18 +347,29 @@ exports.generateAddress = function (from, nonce) {
  * Returns true if the supplied address belongs to a precompiled account
  * @method isPrecompiled
  * @param {Buffer|String}
+ * @return {Boolean}
  */
 exports.isPrecompiled = function (address) {
   var a = exports.unpad(address)
   return a.length === 1 && a[0] > 0 && a[0] < 5
 }
 
-// Returns a Boolean on whether or not the a sting starts with 0x
+/**
+ * Returns a `Boolean` on whether or not the a `Sting` starts with "0x"
+ * @method isHexPrefixed
+ * @param {String} str
+ * @return {Boolean}
+ */
 exports.isHexPrefixed = function (str) {
   return str.slice(0, 2) === '0x'
 }
 
-// Removes 0x from a given String
+/**
+ * Removes "0x" from a given `String`
+ * @method stripHexPrefix
+ * @param {String} str
+ * @return {String}
+ */
 exports.stripHexPrefix = function (str) {
   if (typeof str !== 'string') {
     return str
@@ -316,7 +377,12 @@ exports.stripHexPrefix = function (str) {
   return exports.isHexPrefixed(str) ? str.slice(2) : str
 }
 
-// Adds 0x to a given string if it does not already start with 0x
+/**
+ * Adds "0x" to a given string if it does not already start with "0x"
+ * @method addHexPrefix
+ * @param {String}
+ * @return {String}
+ */
 exports.addHexPrefix = function (str) {
   if (typeof str !== 'string') {
     return str
@@ -326,10 +392,15 @@ exports.addHexPrefix = function (str) {
 }
 
 /**
- * defines properties on a `Object`
+ * Defines properties on a Object. It make the assumption that underlying data is binary
  * @method defineProperties
  * @param {Object} self the `Object` to define properties on
- * @param {Array} fields an array fields to define
+ * @param {Array} fields an array fields to define. Fields can contain:
+ * * `name` - the name of the properties
+ * * `length` - the number of bytes the field can have
+ * * `allowLess` - if the field can be less than the length
+ * * `allowEmpty`
+ * @param {*} Data data to be validated against the definitions
  */
 exports.defineProperties = function (self, fields, data) {
   self.raw = []
@@ -452,6 +523,11 @@ exports.baToJSON = function (ba) {
   }
 }
 
+/**
+ * Pads a String to have an even length
+ * @method padToEven
+ * @param {String}
+ */
 exports.padToEven = function (a) {
   if (a.length % 2) a = '0' + a
   return a
