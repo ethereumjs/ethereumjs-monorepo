@@ -145,7 +145,7 @@ Transaction.prototype.verifySignature = function () {
   var msgHash = this.hash(false)
 
   // All transaction signatures whose s-value is greater than secp256k1n/2 are considered invalid.
-  if (new BN(this.s).cmp(N_DIV_2) === 1) {
+  if (!this._skipSValueCheck && new BN(this.s).cmp(N_DIV_2) === 1) {
     return false
   }
 

@@ -26,6 +26,9 @@ testing.runTests(function (testData, sst, cb) {
 
   try {
     var tx = new Tx(new Buffer(testData.rlp.slice(2), 'hex'))
+    if (testData.blocknumber !== '900000') {
+      tx._skipSValueCheck = true
+    }
   } catch (e) {
     sst.equal(undefined, tTx, 'should not have any fields ')
     cb()
