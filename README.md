@@ -1,6 +1,7 @@
 # SYNOPSIS
-[![Build Status](https://travis-ci.org/ethereum/ethereumjs-blockchain.svg)](https://travis-ci.org/ethereum/ethereumjs-blockchain)
+[![Build Status](https://travis-ci.org/ethereumjs/ethereumjs-blockchain.svg)](https://travis-ci.org/ethereumjs/ethereumjs-blockchain)
 [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/ethereum/ethereumjs-lib?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge) or #ethereumjs on freenode
+
 A module to store and interact with blocks.
 
 # INSTALL
