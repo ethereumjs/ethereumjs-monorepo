@@ -1,4 +1,5 @@
 # SYNOPSIS
+[![NPM Package](https://img.shields.io/npm/v/ethashjs.svg?style=flat-square)](https://www.npmjs.org/package/ethashjs)
 [![Build Status](https://travis-ci.org/ethereumjs/ethashjs.svg)](https://travis-ci.org/ethereumjs/ethashjs)
 
 Implements [Ethash](https://github.com/ethereum/wiki/wiki/Ethash)
