@@ -164,7 +164,7 @@ exports.toBuffer = function (v) {
 /**
  * Converts an integer into a hex string
  * @method intToHex
- * @param {Number}
+ * @param {Number} i
  * @return {String}
  */
 exports.intToHex = function (i) {
