@@ -127,11 +127,7 @@ Transaction.prototype.hash = function (signature) {
     signature = true
   }
 
-  if (signature) {
-    toHash = this.raw
-  } else {
-    toHash = this.raw.slice(0, 6)
-  }
+  toHash = signature ? this.raw : this.raw.slice(0, 6)
 
   // create hash
   return ethUtil.rlphash(toHash)
@@ -168,19 +164,16 @@ Transaction.prototype.getSenderPublicKey = function () {
  */
 Transaction.prototype.verifySignature = function () {
   var msgHash = this.hash(false)
+  var signature = Buffer.concat([ethUtil.pad(this.r, 32), ethUtil.pad(this.s, 32)], 64)
+  var recovery = ethUtil.bufferToInt(this.v) - 27
 
   // All transaction signatures whose s-value is greater than secp256k1n/2 are considered invalid.
   if (!this._skipSValueCheck && new BN(this.s).cmp(N_DIV_2) === 1) {
     return false
   }
 
-  var sig = {
-    signature: Buffer.concat([ethUtil.pad(this.r, 32), ethUtil.pad(this.s, 32)], 64),
-    recovery: ethUtil.bufferToInt(this.v) - 27
-  }
-
   try {
-    this._senderPubKey = ecdsa.recoverSync(msgHash, sig.signature, sig.recovery)
+    this._senderPubKey = ecdsa.recoverSync(msgHash, signature, recovery)
   } catch (e) {
     return false
   }
@@ -192,7 +185,7 @@ Transaction.prototype.verifySignature = function () {
   // hack to force elliptic to verify
   // TODO: fix elliptic?
   if (process.browser) {
-    var result = ecdsa.verifySync(msgHash, sig.signature, this._senderPubKey)
+    var result = ecdsa.verifySync(msgHash, signature, this._senderPubKey)
     if (!result) {
       this._senderPubKey = null
     }
@@ -224,11 +217,7 @@ Transaction.prototype.getDataFee = function () {
   const data = this.raw[5]
   var cost = new BN(0)
   for (var i = 0; i < data.length; i++) {
-    if (data[i] === 0) {
-      cost.iaddn(fees.txDataZeroGas.v)
-    } else {
-      cost.iaddn(fees.txDataNonZeroGas.v)
-    }
+    data[i] === 0 ? cost.iaddn(fees.txDataZeroGas.v) : cost.iaddn(fees.txDataNonZeroGas.v)
   }
   return cost
 }
