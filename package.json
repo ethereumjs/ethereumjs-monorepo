@@ -8,7 +8,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ethereum/ethereumjs-blockchain.git"
+    "url": "git+https://github.com/ethereumjs/ethereumjs-blockchain.git"
   },
   "keywords": [
     "ethereum",
@@ -17,9 +17,9 @@
   "author": "mjbecze <mjbecze@gmail.com>",
   "license": "MPL-2.0",
   "bugs": {
-    "url": "https://github.com/ethereum/ethereumjs-blockchain/issues"
+    "url": "https://github.com/ethereumjs/ethereumjs-blockchain/issues"
   },
-  "homepage": "https://github.com/ethereum/ethereumjs-blockchain#readme",
+  "homepage": "https://github.com/ethereumjs/ethereumjs-blockchain#readme",
   "dependencies": {
     "async": "^1.5.0",
     "ethashjs": "^0.0.5",
