@@ -31,6 +31,14 @@ tape('[Transaction]: Basic functions', function (t) {
     st.end()
   })
 
+  t.test('should hash', function (st) {
+    var tx = new Transaction(txFixtures[2].raw)
+    st.deepEqual(tx.hash(), new Buffer('375a8983c9fc56d7cfd118254a80a8d7403d590a6c9e105532b67aca1efb97aa', 'hex'))
+    st.deepEqual(tx.hash(false), new Buffer('61e1ec33764304dddb55348e7883d4437426f44ab3ef65e6da1e025734c03ff0', 'hex'))
+    st.deepEqual(tx.hash(true), new Buffer('375a8983c9fc56d7cfd118254a80a8d7403d590a6c9e105532b67aca1efb97aa', 'hex'))
+    st.end()
+  })
+
   t.test('should verify Signatures', function (st) {
     transactions.forEach(function (tx) {
       st.equals(tx.verifySignature(), true)
