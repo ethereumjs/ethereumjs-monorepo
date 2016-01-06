@@ -31,7 +31,7 @@ Account.prototype.isContract = function () {
 }
 
 Account.prototype.getCode = function (state, cb) {
-  if (this.codeHash.toString('hex') === ethUtil.SHA3_NULL.toString('hex')) {
+  if (!this.isContract()) {
     cb(null, new Buffer([]))
     return
   }
