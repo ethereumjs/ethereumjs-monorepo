@@ -4,6 +4,9 @@ const ecdsa = require('secp256k1')
 const BN = ethUtil.BN
 const rlp = ethUtil.rlp
 
+// secp256k1n/2
+const N_DIV_2 = new BN('7fffffffffffffffffffffffffffffff5d576e7357a4501ddfe92f46681b20a0', 16)
+
 // give browser access to Buffers
 global.Buffer = Buffer
 global.ethUtil = ethUtil
@@ -140,6 +143,12 @@ Transaction.prototype.getSenderPublicKey = function () {
  */
 Transaction.prototype.verifySignature = function () {
   var msgHash = this.hash(false)
+
+  // All transaction signatures whose s-value is greater than secp256k1n/2 are considered invalid.
+  if (new BN(this.s).cmp(N_DIV_2) === 1) {
+    return false
+  }
+
   var sig = {
     signature: Buffer.concat([ethUtil.pad(this.r, 32), ethUtil.pad(this.s, 32)], 64),
     recovery: ethUtil.bufferToInt(this.v) - 27
@@ -224,5 +233,5 @@ Transaction.prototype.getUpfrontCost = function () {
  * @return {Boolean}
  */
 Transaction.prototype.validate = function () {
-  return this.verifySignature() && (this.getBaseFee().cmp(new BN(this.gasLimit)) === -1)
+  return this.verifySignature() && (this.getBaseFee().cmp(new BN(this.gasLimit)) <= 0)
 }
