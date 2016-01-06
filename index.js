@@ -204,7 +204,7 @@ Transaction.prototype.getDataFee = function () {
  * @return {bn.js}
  */
 Transaction.prototype.getBaseFee = function () {
-  return this.getDataFee().addn(fees.txGas.v)
+  return this.getDataFee().iaddn(fees.txGas.v)
 }
 
 /**
@@ -214,8 +214,8 @@ Transaction.prototype.getBaseFee = function () {
  */
 Transaction.prototype.getUpfrontCost = function () {
   return new BN(this.gasLimit)
-    .mul(new BN(this.gasPrice))
-    .add(new BN(this.value))
+    .imul(new BN(this.gasPrice))
+    .iadd(new BN(this.value))
 }
 
 /**
