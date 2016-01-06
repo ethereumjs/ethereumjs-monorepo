@@ -22,9 +22,9 @@ describe('sha3', function () {
 describe('sha3 without hexprefix', function () {
   it('should produce a sha3', function () {
     var msg = '3c9229289a6125f7fdf1885a77bb12c37a8d3b4962d936f7e3084dece32a3ca1'
-    var r = '82ff40c0a986c6a5cfad4ddf4c3aa6996f1a7837f9c398e17e5de5cbd5a12b28'
+    var r = '22ae1937ff93ec72c4d46ff3e854661e3363440acd6f6e4adf8f1a8978382251'
     var hash = ethUtils.sha3(msg)
-    assert.notEqual(hash.toString('hex'), r)
+    assert.equal(hash.toString('hex'), r)
   })
 })
 
@@ -264,6 +264,8 @@ describe('toBuffer', function () {
     // String
     assert.deepEqual(ethUtils.toBuffer('11'), new Buffer([49, 49]))
     assert.deepEqual(ethUtils.toBuffer('0x11'), new Buffer([17]))
+    assert.deepEqual(ethUtils.toBuffer('1234').toString('hex'), '31323334')
+    assert.deepEqual(ethUtils.toBuffer('0x1234').toString('hex'), '1234')
     // Number
     assert.deepEqual(ethUtils.toBuffer(1), new Buffer([1]))
     // null
