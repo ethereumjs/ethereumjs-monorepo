@@ -79,10 +79,15 @@ describe('unpad a hex string', function () {
 })
 
 describe('pad', function () {
-  it('should pad a Buffer', function () {
+  it('should left pad a Buffer', function () {
     var buf = new Buffer([9, 9])
     var padded = ethUtils.pad(buf, 3)
     assert.equal(padded.toString('hex'), '000909')
+  })
+  it('should left truncate a Buffer', function () {
+    var buf = new Buffer([9, 0, 9])
+    var padded = ethUtils.pad(buf, 2)
+    assert.equal(padded.toString('hex'), '0009')
   })
 })
 
@@ -91,6 +96,11 @@ describe('rpad', function () {
     var buf = new Buffer([9, 9])
     var padded = ethUtils.rpad(buf, 3)
     assert.equal(padded.toString('hex'), '090900')
+  })
+  it('should right truncate a Buffer', function () {
+    var buf = new Buffer([9, 0, 9])
+    var padded = ethUtils.rpad(buf, 2)
+    assert.equal(padded.toString('hex'), '0900')
   })
 })
 
