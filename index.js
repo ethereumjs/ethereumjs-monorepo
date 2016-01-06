@@ -181,7 +181,7 @@ exports.intToHex = function (i) {
 /**
  * Converts an `Integer` to a `Buffer`
  * @method intToBuffer
- * @param {Integer}
+ * @param {Integer} i
  * @return {Buffer}
  */
 exports.intToBuffer = function (i) {
@@ -192,7 +192,7 @@ exports.intToBuffer = function (i) {
 /**
  * Converts a `Buffer` to an `Interger`
  * @method bufferToInt
- * @param {Buffer}
+ * @param {Buffer} buf
  * @return {Number}
  */
 exports.bufferToInt = function (buf) {
