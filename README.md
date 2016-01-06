@@ -1,6 +1,7 @@
 # SYNOPSIS
 [![NPM Package](https://img.shields.io/npm/v/ethashjs.svg?style=flat-square)](https://www.npmjs.org/package/ethashjs)
-[![Build Status](https://travis-ci.org/ethereumjs/ethashjs.svg)](https://travis-ci.org/ethereumjs/ethashjs)
+[![Build Status](https://travis-ci.org/ethereumjs/ethashjs.svg?branch=master&style=flat-square)](https://travis-ci.org/ethereumjs/ethashjs)
+[![Gitter](https://img.shields.io/gitter/room/ethereum/ethereumjs-lib.svg?style=flat-square)](https://gitter.im/ethereum/ethereumjs-lib) or #ethereumjs on freenode
 
 Implements [Ethash](https://github.com/ethereum/wiki/wiki/Ethash)
 
