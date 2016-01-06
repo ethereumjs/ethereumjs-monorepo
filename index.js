@@ -182,7 +182,13 @@ Transaction.prototype.verifySignature = function () {
     return false
   }
 
-  // hack to force elliptic to verify
+  //
+  // In node-secp256k1, `recover` will fail on invalid inputs, but in
+  // elliptic this is not enforced.
+  //
+  // Here we enable a pubkey based verification only in the case
+  // of browserified output, where elliptic will be used, to workaround the issue.
+  //
   // TODO: fix elliptic?
   if (process.browser) {
     var result = ecdsa.verifySync(msgHash, signature, this._senderPubKey)
