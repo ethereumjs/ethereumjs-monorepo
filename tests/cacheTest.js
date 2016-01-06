@@ -4,13 +4,13 @@ var async = require('async')
 var Account = require('ethereumjs-account')
 var Transaction = require('ethereumjs-tx')
 var Trie = require('merkle-patricia-tree')
-var SHA3Hash = require('sha3').SHA3Hash
+var ethUtil = require('ethereumjs-util')
 
 tape('[Common]: genesis hashes tests', function (t) {
   t.test('should generate the genesis state correctly', function (st) {
     var account1 = {
       address: new Buffer('cd2a3d9f938e13cd947ec05abc7fe734df8dd826', 'hex'),
-      key: new Buffer(sha3('cow'), 'hex')
+      key: ethUtil.sha3('cow')
     }
 
     /*
@@ -94,12 +94,6 @@ tape('[Common]: genesis hashes tests', function (t) {
       vm.runTx({
         tx: tx
       }, cb)
-    }
-
-    function sha3 (str) {
-      var sha = new SHA3Hash(256)
-      sha.update(str)
-      return sha.digest('hex')
     }
   })
 })

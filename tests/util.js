@@ -1,5 +1,4 @@
 const async = require('async')
-const SHA3 = require('sha3')
 const rlp = require('rlp')
 const utils = require('ethereumjs-util')
 const BN = utils.BN
@@ -283,10 +282,7 @@ exports.fromAddress = function (hexString) {
  * @return {Buffer}
  */
 exports.toCodeHash = function (hexCode) {
-  hexCode = hexCode.substring(2)
-  var hash = new SHA3.SHA3Hash(256)
-  hash.update(hexCode, 'hex')
-  return new Buffer(hash.digest('hex'), 'hex')
+  return utils.sha3(new Buffer(hexCode.substring(2), 'hex'))
 }
 
 exports.makeBlockHeader = function (data) {
