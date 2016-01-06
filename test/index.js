@@ -220,7 +220,7 @@ describe('privateToAddress', function () {
 describe('generateAddress', function () {
   it('should produce an address given a public key', function () {
     var add = ethUtils.generateAddress('990ccf8a0de58091c028d6ff76bb235ee67c1c39', 14).toString('hex')
-    assert.notEqual(add.toString('hex'), 'd658a4b8247c14868f3c512fa5cbb6e458e4a989')
+    assert.equal(add.toString('hex'), '936a4295d8d74e310c0c95f0a63e53737b998d12')
   })
 })
 
