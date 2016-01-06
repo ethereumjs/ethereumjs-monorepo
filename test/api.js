@@ -90,4 +90,30 @@ tape('[Transaction]: Basic functions', function (t) {
     st.equals(tx.r.toString('hex'), '05')
     st.end()
   })
+
+  t.test('should return data fee', function (st) {
+    var tx = new Transaction()
+    st.equals(tx.getDataFee().toNumber(), 0)
+
+    var tx = new Transaction(txFixtures[2].raw)
+    st.equals(tx.getDataFee().toNumber(), 2496)
+
+    st.end()
+  })
+
+  t.test('should return base fee', function (st) {
+    var tx = new Transaction()
+    st.equals(tx.getBaseFee().toNumber(), 21000)
+    st.end()
+  })
+
+  t.test('should return upfront cost', function (st) {
+    var tx = new Transaction({
+      gasPrice: 1000,
+      gasLimit: 10000000,
+      value: 42
+    })
+    st.equals(tx.getUpfrontCost().toNumber(), 10000000042)
+    st.end()
+  })
 })
