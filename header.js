@@ -94,7 +94,7 @@ BlockHeader.prototype.canonicalDifficulty = function (parentBlock) {
 // check the block for the canical difficulty
 BlockHeader.prototype.validateDifficulty = function (parentBlock) {
   const dif = this.canonicalDifficulty(parentBlock)
-  return !Boolean(dif.cmp(new BN(this.difficulty)))
+  return dif.cmp(new BN(this.difficulty)) === 0
 }
 
 BlockHeader.prototype.validateGasLimit = function (parentBlock) {
