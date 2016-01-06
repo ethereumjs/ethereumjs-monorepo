@@ -57,7 +57,7 @@ tape('[Transaction]: Basic functions', function (t) {
 
   t.test('should validate', function (st) {
     transactions.forEach(function (tx) {
-      st.equals(tx.validate(), tx.verifySignature() && tx.getBaseFee().cmpn(new BN(tx.gasLimit)) === -1)
+      st.equals(tx.validate(), tx.verifySignature() && tx.getBaseFee().cmp(new BN(tx.gasLimit)) === -1)
     })
     st.end()
   })
