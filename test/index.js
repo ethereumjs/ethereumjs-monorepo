@@ -254,3 +254,28 @@ describe('isPrecompiled', function () {
     assert.equal(ethUtils.isPrecompiled('1000000000000000000000000000000000000000'), false)
   })
 })
+
+describe('toBuffer', function () {
+  it('should work', function () {
+    // Buffer
+    assert.deepEqual(ethUtils.toBuffer(new Buffer([])), new Buffer([]))
+    // Array
+    assert.deepEqual(ethUtils.toBuffer([]), new Buffer([]))
+    // String
+    assert.deepEqual(ethUtils.toBuffer('11'), new Buffer([49, 49]))
+    assert.deepEqual(ethUtils.toBuffer('0x11'), new Buffer([17]))
+    // Number
+    assert.deepEqual(ethUtils.toBuffer(1), new Buffer([1]))
+    // null
+    assert.deepEqual(ethUtils.toBuffer(null), new Buffer([]))
+    // undefined
+    assert.deepEqual(ethUtils.toBuffer(), new Buffer([]))
+    // 'toArray'
+    assert.deepEqual(ethUtils.toBuffer(new BN(1)), new Buffer([1]))
+  })
+  it('should fail', function () {
+    assert.throws(function () {
+      ethUtils.toBuffer({ test: 1 })
+    })
+  })
+})
