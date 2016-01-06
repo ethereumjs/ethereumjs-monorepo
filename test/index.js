@@ -125,6 +125,10 @@ describe('bufferToInt', function () {
     var buf = new Buffer('5b9ac8', 'hex')
     var i = ethUtils.bufferToInt(buf)
     assert.equal(i, 6003400)
+    assert.equal(ethUtils.bufferToInt(new Buffer([])), 0)
+  })
+  it('should convert empty input to 0', function () {
+    assert.equal(ethUtils.bufferToInt(new Buffer([])), 0)
   })
 })
 
@@ -229,8 +233,11 @@ describe('generateAddress with hex prefix', function () {
 
 describe('hex prefix', function () {
   var string = 'd658a4b8247c14868f3c512fa5cbb6e458e4a989'
-  it(' should add', function () {
+  it('should add', function () {
     assert.equal(ethUtils.addHexPrefix(string), '0x' + string)
+  })
+  it('should return on non-string input', function () {
+    assert.equal(ethUtils.addHexPrefix(1), 1)
   })
 })
 
