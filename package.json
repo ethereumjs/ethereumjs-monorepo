@@ -1,0 +1,50 @@
+{
+  "name": "rlp",
+  "version": "2.0.0",
+  "description": "Recursive Length Prefix Encoding Module",
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "standard ./index.js ./bin/rlp &&  ./node_modules/mocha/bin/mocha --reporter spec ./test/",
+    "webtest": "browserify test/max.js | testling -u"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ethereumjs/rlp.git"
+  },
+  "keywords": [
+    "rlp",
+    "ethereum"
+  ],
+  "author": {
+    "name": "martin becze",
+    "email": "mjbecze@gmail.com"
+  },
+  "license": "MPL-2.0",
+  "bugs": {
+    "url": "https://github.com/ethereumjs/rlp/issues"
+  },
+  "devDependencies": {
+    "ethereumjs-testing": "git+https://github.com/ethereumjs/ethereumjs-testing.git",
+    "mocha": "~1.17.1",
+    "standard": "^5.3.1"
+  },
+  "bin": {
+    "rlp": "./bin/rlp"
+  },
+  "testling": {
+    "files": "test/*.js",
+    "harness": "mocha-bdd",
+    "browsers": [
+      "chrome/22..latest",
+      "firefox/16..latest",
+      "safari/latest",
+      "opera/11.0..latest",
+      "iphone/6",
+      "ipad/6",
+      "android-browser/latest"
+    ]
+  }
+}
