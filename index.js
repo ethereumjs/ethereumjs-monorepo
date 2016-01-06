@@ -120,7 +120,7 @@ exports.rpad = function (msg, length) {
 /**
  * Trims leading zeros from a buffer or an array
  * @method unpad
- * @param {Buffer|Array|String}
+ * @param {Buffer|Array|String} a
  * @return {Buffer|Array|String}
  */
 exports.unpad = exports.stripZeros = function (a) {
@@ -292,7 +292,7 @@ exports.rlphash = function (a) {
 /**
  * Returns the ethereum address of a given public key
  * @method pubToAddress
- * @param {Buffer}
+ * @param {Buffer} pubKey
  * @return {Buffer}
  */
 exports.pubToAddress = exports.publicToAddress = function (pubKey) {
@@ -346,7 +346,7 @@ exports.generateAddress = function (from, nonce) {
 /**
  * Returns true if the supplied address belongs to a precompiled account
  * @method isPrecompiled
- * @param {Buffer|String}
+ * @param {Buffer|String} address
  * @return {Boolean}
  */
 exports.isPrecompiled = function (address) {
@@ -485,7 +485,7 @@ exports.defineProperties = function (self, fields, data) {
 /**
  * Print a Buffer Array
  * @method printBA
- * @param {Buffer|Array}
+ * @param {Buffer|Array} ba
  */
 exports.printBA = function (ba) {
   if (Buffer.isBuffer(ba)) {
@@ -509,7 +509,8 @@ exports.printBA = function (ba) {
 /**
  * converts a buffer array to JSON
  * @method BAToJSON
- * @param {Buffer|Array}
+ * @param {Buffer|Array} ba
+ * @return {Array}
  */
 exports.baToJSON = function (ba) {
   if (Buffer.isBuffer(ba)) {
@@ -526,7 +527,8 @@ exports.baToJSON = function (ba) {
 /**
  * Pads a String to have an even length
  * @method padToEven
- * @param {String}
+ * @param {String} a
+ * @return {String}
  */
 exports.padToEven = function (a) {
   if (a.length % 2) a = '0' + a
