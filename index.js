@@ -12,9 +12,33 @@ global.Buffer = Buffer
 global.ethUtil = ethUtil
 
 /**
- * Represents a transaction
+ * Creates a new transaction object
  * @constructor
- * @param {Buffer|Array} data raw data, deserialized
+ * @class {Buffer|Array} data a transaction can be initiailized with either a buffer containing the RLP serialized transaction or an array of buffers relating to each of the tx Properties, listed in order below in the exmple. Or lastly an Object containing the Properties of the transaction like in the Usage example
+ *
+ * For Object and Arrays each of the elements can either be a Buffer, a hex-prefixed (0x) String , Number, or an object with a toBuffer method such as Bignum
+ * @example
+ * var rawTx = {
+ *   nonce: '00',
+ *   gasPrice: '09184e72a000',
+ *   gasLimit: '2710',
+ *   to: '0000000000000000000000000000000000000000',
+ *   value: '00',
+ *   data: '7f7465737432000000000000000000000000000000000000000000000000000000600057',
+ *   v: '1c',
+ *   r: '5e1d3a76fbf824220eafc8c79ad578ad2b67d01b0c2425eb1f1347e8f50882ab',
+ *   s '5bd428537f05f9830e93792f90ea6a3e2d1ee84952dd96edbae9f658f831ab13'
+ * };
+ * var tx = new Transaction(rawTx);
+ * @prop {Buffer} raw The raw rlp decoded transaction
+ * @prop {Buffer} nonce
+ * @prop {Buffer} to the to address
+ * @prop {Buffer} value the amount of ether sent
+ * @prop {Buffer} data this will contain the data of the message or the init of a contract
+ * @prop {Buffer} v EC signature parameter
+ * @prop {Buffer} r EC signature parameter
+ * @prop {Buffer} s EC recovery ID
+ * @prop {Buffer} from If you are not planing on signing the tx you can set the from property. If you do sign it will be over written
  */
 var Transaction = module.exports = function (data) {
   // Define Properties
@@ -91,9 +115,9 @@ Transaction.prototype.serialize = function () {
 }
 
 /**
- * Computes a sha3-256 hash of the tx
+ * Computes a sha3-256 hash of the serialized tx
  * @method hash
- * @param {Boolean} [true] signature - whether or not to inculde the signature
+ * @param {Boolean} [signature=true] whether or not to inculde the signature
  * @return {Buffer}
  */
 Transaction.prototype.hash = function (signature) {
@@ -114,7 +138,7 @@ Transaction.prototype.hash = function (signature) {
 }
 
 /**
- * gets the senders address
+ * returns the sender`s address
  * @method getSenderAddress
  * @return {Buffer}
  */
@@ -125,7 +149,7 @@ Transaction.prototype.getSenderAddress = function () {
 }
 
 /**
- * gets the senders public key
+ * returns the public key of the sender
  * @method getSenderPublicKey
  * @return {Buffer}
  */
@@ -138,6 +162,7 @@ Transaction.prototype.getSenderPublicKey = function () {
 }
 
 /**
+ * Determines if the signature is valid
  * @method verifySignature
  * @return {Boolean}
  */
@@ -165,6 +190,7 @@ Transaction.prototype.verifySignature = function () {
   }
 
   // hack to force elliptic to verify
+  // TODO: fix elliptic?
   if (process.browser) {
     var result = ecdsa.verifySync(msgHash, sig.signature, this._senderPubKey)
     if (!result) {
@@ -192,7 +218,7 @@ Transaction.prototype.sign = function (privateKey) {
 /**
  * The amount of gas paid for the data in this tx
  * @method getDataFee
- * @return {bn.js}
+ * @return {BN}
  */
 Transaction.prototype.getDataFee = function () {
   const data = this.raw[5]
@@ -208,9 +234,9 @@ Transaction.prototype.getDataFee = function () {
 }
 
 /**
- * the base amount of gas it takes to be a valid tx
+ * the minimum amount of gas the tx must have (DataFee + TxFee)
  * @method getBaseFee
- * @return {bn.js}
+ * @return {BN}
  */
 Transaction.prototype.getBaseFee = function () {
   return this.getDataFee().iaddn(fees.txGas.v)

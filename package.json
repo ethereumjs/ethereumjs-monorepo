@@ -10,7 +10,8 @@
     "test": "npm run test:node && npm run test:browser",
     "test:browser": "karma start karma.conf.js",
     "test:node": "tape ./test/index.js",
-    "build": "browserify --s EthTx index.js > ./dist/ethereumjs-tx.js"
+    "build": "browserify --s EthTx index.js > ./dist/ethereumjs-tx.js",
+    "build:docs": "documentation --github  -f md ./index.js > ./docs/index.md"
   },
   "keywords": [
     "ethereum",
@@ -27,6 +28,7 @@
     "async": "^1.4.2",
     "browserify": "^12.0.1",
     "coveralls": "^2.11.4",
+    "documentation": "^3.0.4",
     "ethereumjs-testing": "git+https://github.com/ethereumjs/ethereumjs-testing.git",
     "istanbul": "^0.4.1",
     "karma": "^0.13.15",
