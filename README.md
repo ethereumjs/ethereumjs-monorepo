@@ -1,4 +1,6 @@
-# SYNOPSIS [![Build Status](https://travis-ci.org/ethereum/ethashjs.svg)](https://travis-ci.org/ethereum/ethashjs)
+# SYNOPSIS
+[![Build Status](https://travis-ci.org/ethereumjs/ethashjs.svg)](https://travis-ci.org/ethereumjs/ethashjs)
+
 Implements [Ethash](https://github.com/ethereum/wiki/wiki/Ethash)
 
 # CONTACT
