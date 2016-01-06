@@ -1,5 +1,6 @@
 const tape = require('tape')
 const utils = require('ethereumjs-util')
+const BN = utils.BN
 const rlp = utils.rlp
 const Transaction = require('../index.js')
 const txFixtures = require('./txs.json')
@@ -46,10 +47,17 @@ tape('[Transaction]: Basic functions', function (t) {
     st.end()
   })
 
-  t.test('should  not verify Signatures', function (st) {
+  t.test('should not verify Signatures', function (st) {
     transactions.forEach(function (tx) {
       tx.s = utils.zeros(32)
       st.equals(tx.verifySignature(), false)
+    })
+    st.end()
+  })
+
+  t.test('should validate', function (st) {
+    transactions.forEach(function (tx) {
+      st.equals(tx.validate(), tx.verifySignature() && tx.getBaseFee().cmpn(new BN(tx.gasLimit)) === -1)
     })
     st.end()
   })
@@ -103,7 +111,7 @@ tape('[Transaction]: Basic functions', function (t) {
     var tx = new Transaction()
     st.equals(tx.getDataFee().toNumber(), 0)
 
-    var tx = new Transaction(txFixtures[2].raw)
+    tx = new Transaction(txFixtures[2].raw)
     st.equals(tx.getDataFee().toNumber(), 2496)
 
     st.end()
