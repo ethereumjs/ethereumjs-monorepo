@@ -6,7 +6,7 @@ const BN = require('bn.js')
 const crypto = require('crypto')
 
 /**
- * the max interger that this VM can handle (a ```BN```)
+ * the max integer that this VM can handle (a ```BN```)
  * @var {BN} MAX_INTEGER
  */
 exports.MAX_INTEGER = new BN('ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff', 16)
@@ -74,7 +74,7 @@ exports.secp256k1 = secp256k1
 /**
  * Returns a buffer filled with 0s
  * @method zeros
- * @param {Integer} bytes  the number of bytes the buffer should be
+ * @param {Number} bytes  the number of bytes the buffer should be
  * @return {Buffer}
  */
 exports.zeros = function (bytes) {
@@ -84,10 +84,10 @@ exports.zeros = function (bytes) {
 }
 
 /**
- * pads an array of buffer with leading zeros till it has `length` bytes
+ * Pads an `Array` or `Buffer` with leading zeros till it has `length` bytes
  * @method pad
  * @param {Buffer|Array} msg the value to pad
- * @param {Integer} length the number of bytes the output should be
+ * @param {Number} length the number of bytes the output should be
  * @return {Buffer|Array}
  */
 exports.pad = function (msg, length) {
@@ -101,10 +101,10 @@ exports.pad = function (msg, length) {
 }
 
 /**
- * pads an array of buffer with trailing zeros till it has `length` bytes
+ * Pads an `Array` or `Buffer` with trailing zeros till it has `length` bytes
  * @method rpad
  * @param {Buffer|Array} msg the value to pad
- * @param {Integer} length the number of bytes the output should be
+ * @param {Number} length the number of bytes the output should be
  * @return {Buffer|Array}
  */
 exports.rpad = function (msg, length) {
@@ -118,7 +118,7 @@ exports.rpad = function (msg, length) {
 }
 
 /**
- * Trims leading zeros from a buffer or an array
+ * Trims leading zeros from a `Buffer` or an `Array`
  * @method unpad
  * @param {Buffer|Array|String} a
  * @return {Buffer|Array|String}
@@ -133,7 +133,7 @@ exports.unpad = exports.stripZeros = function (a) {
   return a
 }
 /**
- * Attempts to turn a value into a Buffer. Attempts to turn a value into a Buffer. Supports Buffer, string, number, null/undefined, BN.js or other objects with a toArray() method.
+ * Attempts to turn a value into a `Buffer`. As input it supports `Buffer`, `String`, `Number`, null/undefined, `BN` and other objects with a `toArray()` method.
  * @method toBuffer
  * @param {*} v the value
  */
@@ -162,13 +162,13 @@ exports.toBuffer = function (v) {
 }
 
 /**
- * Converts an integer into a hex string
+ * Converts a `Number` into a hex `String`
  * @method intToHex
  * @param {Number} i
  * @return {String}
  */
 exports.intToHex = function (i) {
-  assert(i % 1 === 0, 'number is not a interger')
+  assert(i % 1 === 0, 'number is not a integer')
   assert(i >= 0, 'number must be positive')
   var hex = i.toString(16)
   if (hex.length % 2) {
@@ -179,9 +179,9 @@ exports.intToHex = function (i) {
 }
 
 /**
- * Converts an `Integer` to a `Buffer`
+ * Converts an `Number` to a `Buffer`
  * @method intToBuffer
- * @param {Integer} i
+ * @param {Number} i
  * @return {Buffer}
  */
 exports.intToBuffer = function (i) {
@@ -190,7 +190,7 @@ exports.intToBuffer = function (i) {
 }
 
 /**
- * Converts a `Buffer` to an `Interger`
+ * Converts a `Buffer` to a `Number`
  * @method bufferToInt
  * @param {Buffer} buf
  * @return {Number}
@@ -205,7 +205,7 @@ exports.bufferToInt = function (buf) {
 }
 
 /**
- * interpets a `Buffer` as a signed integer and returns a `bignum`
+ * Interprets a `Buffer` as a signed integer and returns a `BN`
  * @method fromSigned
  * @param {Buffer} num
  * @return {BN}
@@ -220,9 +220,9 @@ exports.fromSigned = function (num) {
 }
 
 /**
- * Converts a `Bignum` to an unsigned interger and returns it as a `Buffer`
+ * Converts a `BN` to an unsigned integer and returns it as a `Buffer`
  * @method toUnsigned
- * @param {Bignum} num
+ * @param {BN} num
  * @return {Buffer}
  */
 exports.toUnsigned = function (num) {
@@ -355,7 +355,7 @@ exports.isPrecompiled = function (address) {
 }
 
 /**
- * Returns a `Boolean` on whether or not the a `Sting` starts with "0x"
+ * Returns a `Boolean` on whether or not the a `String` starts with "0x"
  * @method isHexPrefixed
  * @param {String} str
  * @return {Boolean}
@@ -378,9 +378,9 @@ exports.stripHexPrefix = function (str) {
 }
 
 /**
- * Adds "0x" to a given string if it does not already start with "0x"
+ * Adds "0x" to a given `String` if it does not already start with "0x"
  * @method addHexPrefix
- * @param {String}
+ * @param {String} str
  * @return {String}
  */
 exports.addHexPrefix = function (str) {
@@ -392,7 +392,7 @@ exports.addHexPrefix = function (str) {
 }
 
 /**
- * Defines properties on a Object. It make the assumption that underlying data is binary
+ * Defines properties on a `Object`. It make the assumption that underlying data is binary.
  * @method defineProperties
  * @param {Object} self the `Object` to define properties on
  * @param {Array} fields an array fields to define. Fields can contain:
@@ -400,7 +400,7 @@ exports.addHexPrefix = function (str) {
  * * `length` - the number of bytes the field can have
  * * `allowLess` - if the field can be less than the length
  * * `allowEmpty`
- * @param {*} Data data to be validated against the definitions
+ * @param {*} data data to be validated against the definitions
  */
 exports.defineProperties = function (self, fields, data) {
   self.raw = []
@@ -483,7 +483,7 @@ exports.defineProperties = function (self, fields, data) {
 }
 
 /**
- * Print a Buffer Array
+ * Print a `Buffer` or `Array`
  * @method printBA
  * @param {Buffer|Array} ba
  */
@@ -507,7 +507,7 @@ exports.printBA = function (ba) {
 }
 
 /**
- * converts a buffer array to JSON
+ * Converts a `Buffer` or `Array` to JSON
  * @method BAToJSON
  * @param {Buffer|Array} ba
  * @return {Array}
@@ -525,7 +525,7 @@ exports.baToJSON = function (ba) {
 }
 
 /**
- * Pads a String to have an even length
+ * Pads a `String` to have an even length
  * @method padToEven
  * @param {String} a
  * @return {String}
