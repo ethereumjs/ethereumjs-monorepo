@@ -48,6 +48,7 @@
   "bugs": {
     "url": "https://github.com/ethereumjs/ethereumjs-tx/issues"
   },
+  "homepage": "https://github.com/ethereumjs/ethereumjs-tx",
   "standard": {
     "ignore": [
       "dist/**",
