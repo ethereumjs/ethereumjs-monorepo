@@ -28,7 +28,7 @@
   "dependencies": {
     "async": "^1.5.0",
     "es6-shim": "^0.33.13",
-    "ethereum-common": "0.0.10",
+    "ethereum-common": "0.0.13",
     "ethereumjs-tx": "^0.6.14",
     "ethereumjs-util": "^2.5.0",
     "merkle-patricia-tree": "^2.1.1"

@@ -66,21 +66,33 @@ var BlockHeader = module.exports = function (data) {
 }
 
 BlockHeader.prototype.canonicalDifficulty = function (parentBlock) {
-  const blockTs = utils.bufferToInt(this.timestamp)
-  const parentTs = utils.bufferToInt(parentBlock.header.timestamp)
+  const blockTs = new BN(this.timestamp)
+  const parentTs = new BN(parentBlock.header.timestamp)
   const parentDif = new BN(parentBlock.header.difficulty)
 
   var offset = parentDif.div(new BN(params.difficultyBoundDivisor.v))
   var dif
-  if (blockTs < parentTs + params.durationLimit.v) {
-    dif = offset.add(parentDif)
-  } else {
-    const minimumDifficulty = new BN(params.minimumDifficulty.v)
-    if (new BN(this.difficulty).cmp(minimumDifficulty) <= 0) {
-      dif = minimumDifficulty
+
+  if (params.homeSteadForkNumber.v > utils.bufferToInt(this.number)) {
+    if (parentTs.addn(params.durationLimit.v).cmp(blockTs) === 1) {
+      dif = offset.add(parentDif)
     } else {
-      dif = parentDif.sub(offset)
+      const minimumDifficulty = new BN(params.minimumDifficulty.v)
+      if (new BN(this.difficulty).cmp(minimumDifficulty) <= 0) {
+        dif = minimumDifficulty
+      } else {
+        dif = parentDif.sub(offset)
+      }
     }
+  } else {
+    // 1 - (block_timestamp - parent_timestamp) // 10
+    var a = blockTs.sub(parentTs).divn(10).neg().addn(1)
+    var cutoff = new BN(-99)
+    // MAX(cutoff, a)
+    if (cutoff.cmp(a) === 1) {
+      a = cutoff
+    }
+    dif = parentDif.add(offset.mul(a))
   }
 
   var exp = new BN(this.number).divn(100000).subn(2)

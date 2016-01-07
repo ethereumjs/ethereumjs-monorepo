@@ -9,9 +9,9 @@ const BlockHeader = require('./header')
 const params = require('ethereum-common')
 
 /**
- * Represents a block
- * @constructor
- * @param {Array} data raw data, deserialized
+ * Creates a new block object
+ * @constructor the raw serialized or the deserialized block.
+ * @param {Array|Buffer|Object} data
  */
 var Block = module.exports = function (data) {
   this.transactions = []
