@@ -12,6 +12,9 @@ const params = require('ethereum-common')
  * Creates a new block object
  * @constructor the raw serialized or the deserialized block.
  * @param {Array|Buffer|Object} data
+ * @prop {Header} header the block's header
+ * @prop {Array.<Header>} uncleList an array of uncle headers
+ * @prop {Array.<Buffer>} raw an array of buffers containing the raw blocks.
  */
 var Block = module.exports = function (data) {
   this.transactions = []
@@ -109,10 +112,10 @@ Block.prototype.serialize = function (rlpEncode) {
 }
 
 /**
- * Generate transaction trie. The tx trie must be generated before the block can
- * be validated
+ * Generate transaction trie. The tx trie must be generated before the transaction trie can
+ * be validated with `validateTransactionTrie`
  * @method genTxTrie
- * @param {Function} cb
+ * @param {Function} cb the callback
  */
 Block.prototype.genTxTrie = function (cb) {
   var i = 0
@@ -152,7 +155,7 @@ Block.prototype.validateTransactions = function () {
 }
 
 /**
- * Validates the block
+ * Validates the entire block. Returns a string to the callback if block is invalid
  * @method validate
  * @param {BlockChain} blockChain the blockchain that this block wants to be part of
  * @param {Function} cb the callback which is given a `String` if the block is not valid
@@ -190,6 +193,11 @@ Block.prototype.validate = function (blockChain, cb) {
   })
 }
 
+/**
+ * Validates the uncle's hash
+ * @method validateUncleHash
+ * @return {Boolean}
+ */
 Block.prototype.validateUnclesHash = function () {
   var raw = []
   this.uncleHeaders.forEach(function (uncle) {
@@ -200,6 +208,12 @@ Block.prototype.validateUnclesHash = function () {
   return ethUtil.sha3(raw).toString('hex') === this.header.uncleHash.toString('hex')
 }
 
+/**
+ * Validates the uncles that are in the block if any. Returns a string to the callback if uncles are invalid
+ * @method validateUncles
+ * @param {Blockchain} blockChaina an instance of the Blockchain
+ * @param {Function} cb the callback
+ */
 Block.prototype.validateUncles = function (blockChain, cb) {
   if (this.isGenesis()) {
     return cb()
@@ -241,7 +255,8 @@ Block.prototype.validateUncles = function (blockChain, cb) {
 /**
  * Converts the block toJSON
  * @method toJSON
- * @param {Bool} array whether to create a object or an array
+ * @param {Bool} labaled whether to create an labeled object or an array
+ * @return {Object}
  */
 Block.prototype.toJSON = function (labeled) {
   if (labeled) {

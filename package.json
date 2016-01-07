@@ -9,7 +9,8 @@
     "lint": "standard",
     "test": "npm run test:node && npm run test:browser",
     "test:browser": "karma start karma.conf.js",
-    "test:node": "tape ./tests/index.js"
+    "test:node": "tape ./tests/index.js",
+    "build:docs": "documentation --github  -f md ./index.js > ./docs/index.md"
   },
   "repository": {
     "type": "git",
@@ -36,6 +37,7 @@
   "devDependencies": {
     "browserify": "^12.0.1",
     "coveralls": "^2.11.6",
+    "documentation": "^3.0.4",
     "ethereumjs-testing": "git+https://github.com/ethereumjs/ethereumjs-testing.git",
     "istanbul": "^0.4.1",
     "karma": "^0.13.15",

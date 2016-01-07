@@ -2,9 +2,23 @@ const utils = require('ethereumjs-util')
 const params = require('ethereum-common')
 const BN = utils.BN
   /**
-   * Represents a Block Header
+   * An object that repersents the block header
    * @constructor
    * @param {Array} data raw data, deserialized
+   * @prop {Buffer} parentHash the blocks' parent's hash
+   * @prop {Buffer} uncleHash sha3(rlp_encode(uncle_list))
+   * @prop {Buffer} coinbase the miner address
+   * @prop {Buffer} stateRoot The root of a Merkle Patricia tree
+   * @prop {Buffer} transactionTrie the root of a Trie containing the transactions
+   * @prop {Buffer} receiptTrie the root of a Trie containing the transaction Reciept
+   * @prop {Buffer} bloom
+   * @prop {Buffer} difficulty
+   * @prop {Buffer} number the block's height
+   * @prop {Buffer} gasLimit
+   * @prop {Buffer} gasUsed
+   * @prop {Buffer} timestamp
+   * @prop {Buffer} extraData
+   * @prop {Array.<Buffer>} raw an array of buffers containing the raw blocks.
    */
 var BlockHeader = module.exports = function (data) {
   var fields = [{
@@ -65,6 +79,12 @@ var BlockHeader = module.exports = function (data) {
   utils.defineProperties(this, fields, data)
 }
 
+/**
+ * Returns the canoncical difficulty of the block
+ * @method canonicalDifficulty
+ * @param {Block} parentBlock the parent `Block` of the this header
+ * @return {BN}
+ */
 BlockHeader.prototype.canonicalDifficulty = function (parentBlock) {
   const blockTs = new BN(this.timestamp)
   const parentTs = new BN(parentBlock.header.timestamp)
@@ -74,6 +94,7 @@ BlockHeader.prototype.canonicalDifficulty = function (parentBlock) {
   var dif
 
   if (params.homeSteadForkNumber.v > utils.bufferToInt(this.number)) {
+    // prehomestead
     if (parentTs.addn(params.durationLimit.v).cmp(blockTs) === 1) {
       dif = offset.add(parentDif)
     } else {
@@ -85,6 +106,7 @@ BlockHeader.prototype.canonicalDifficulty = function (parentBlock) {
       }
     }
   } else {
+    // homestead
     // 1 - (block_timestamp - parent_timestamp) // 10
     var a = blockTs.sub(parentTs).divn(10).neg().addn(1)
     var cutoff = new BN(-99)
@@ -102,12 +124,23 @@ BlockHeader.prototype.canonicalDifficulty = function (parentBlock) {
   return dif
 }
 
-// check the block for the canical difficulty
+/**
+ * checks that the block's `difficuly` matches the canonical difficulty
+ * @method validateDifficulty
+ * @param {Block} parentBlock this block's parent
+ * @return {Boolean}
+ */
 BlockHeader.prototype.validateDifficulty = function (parentBlock) {
   const dif = this.canonicalDifficulty(parentBlock)
   return dif.cmp(new BN(this.difficulty)) === 0
 }
 
+/**
+ * Validates the gasLimit
+ * @method validateGasLimit
+ * @param {Block} parentBlock this block's parent
+ * @returns {Boolean}
+ */
 BlockHeader.prototype.validateGasLimit = function (parentBlock) {
   const pGasLimit = utils.bufferToInt(parentBlock.header.gasLimit)
   const gasLimit = utils.bufferToInt(this.gasLimit)
@@ -119,11 +152,11 @@ BlockHeader.prototype.validateGasLimit = function (parentBlock) {
 }
 
 /**
- * Validates the entire block headers
+ * Validates the entire block header
  * @method validate
  * @param {Blockchain} blockChain the blockchain that this block is validating against
  * @param {Bignum} [height] if this is an uncle header, this is the height of the block that is including it
- * @param {Function} cb the callback function
+ * @param {Function} cb the callback function. The callback is given an `error` if the block is invalid
  */
 BlockHeader.prototype.validate = function (blockchain, height, cb) {
   var self = this
@@ -180,10 +213,20 @@ BlockHeader.prototype.validate = function (blockchain, height, cb) {
   })
 }
 
+/**
+ * Returns the sha3 hash of the blockheader
+ * @method hash
+ * @return {Buffer}
+ */
 BlockHeader.prototype.hash = function () {
   return utils.rlphash(this.raw)
 }
 
+/**
+ * checks if the blockheader is a genesis header
+ * @method isGenesis
+ * @return {Boolean}
+ */
 BlockHeader.prototype.isGenesis = function () {
   return this.number.toString('hex') === ''
 }
