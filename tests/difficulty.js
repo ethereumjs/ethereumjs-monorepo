@@ -7,7 +7,7 @@ const Block = require('../')
 const BN = ethUtil.BN
 
 // unfuck the tests
-function deleteInvalidTests(data) {
+function deleteInvalidTests (data) {
   Object.keys(data).map(function (i) {
     if (i === 'difficultyHomestead') {
       Object.keys(data[i]).map(function (q) {
@@ -15,7 +15,7 @@ function deleteInvalidTests(data) {
           delete data[i][q]
         }
       })
-    }else {
+    } else {
       Object.keys(data[i]).map(function (q) {
         if (new BN(data[i][q].currentBlockNumber).cmpn(common.homeSteadForkNumber.v) > 0) {
           delete data[i][q]
