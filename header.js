@@ -1,7 +1,6 @@
 const utils = require('ethereumjs-util')
 const params = require('ethereum-common')
 const BN = utils.BN
-const rlp = utils.rlp
   /**
    * Represents a Block Header
    * @constructor
