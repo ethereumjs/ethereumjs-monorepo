@@ -1,3 +1,58 @@
+# MAX_INTEGER
+
+[index.js:12-12](https://github.com/ethereumjs/ethereumjs-util/blob/54a1bfae7ae53634a4af3e7e907eef394e72860c/index.js#L12-L12 "Source code on GitHub")
+
+the max integer that this VM can handle (a `BN`)
+
+# SHA3_NULL
+
+[index.js:30-30](https://github.com/ethereumjs/ethereumjs-util/blob/54a1bfae7ae53634a4af3e7e907eef394e72860c/index.js#L30-L30 "Source code on GitHub")
+
+SHA3-256 hash of null (a `Buffer`)
+
+# SHA3_NULL_S
+
+[index.js:24-24](https://github.com/ethereumjs/ethereumjs-util/blob/54a1bfae7ae53634a4af3e7e907eef394e72860c/index.js#L24-L24 "Source code on GitHub")
+
+SHA3-256 hash of null (a `String`)
+
+# SHA3_RLP
+
+[index.js:54-54](https://github.com/ethereumjs/ethereumjs-util/blob/54a1bfae7ae53634a4af3e7e907eef394e72860c/index.js#L54-L54 "Source code on GitHub")
+
+SHA3-256 hash of the RLP of null (a `Buffer`)
+
+# SHA3_RLP_ARRAY
+
+[index.js:42-42](https://github.com/ethereumjs/ethereumjs-util/blob/54a1bfae7ae53634a4af3e7e907eef394e72860c/index.js#L42-L42 "Source code on GitHub")
+
+SHA3-256 of an RLP of an empty array (a `Buffer`)
+
+# SHA3_RLP_ARRAY_S
+
+[index.js:36-36](https://github.com/ethereumjs/ethereumjs-util/blob/54a1bfae7ae53634a4af3e7e907eef394e72860c/index.js#L36-L36 "Source code on GitHub")
+
+SHA3-256 of an RLP of an empty array (a `String`)
+
+# SHA3_RLP_S
+
+[index.js:48-48](https://github.com/ethereumjs/ethereumjs-util/blob/54a1bfae7ae53634a4af3e7e907eef394e72860c/index.js#L48-L48 "Source code on GitHub")
+
+SHA3-256 hash of the RLP of null  (a `String`)
+
+# BN
+
+[index.js:60-60](https://github.com/ethereumjs/ethereumjs-util/blob/54a1bfae7ae53634a4af3e7e907eef394e72860c/index.js#L60-L60 "Source code on GitHub")
+
+[`BN`](https://github.com/indutny/bn.js)
+
+
+# rlp
+
+[index.js:66-66](https://github.com/ethereumjs/ethereumjs-util/blob/54a1bfae7ae53634a4af3e7e907eef394e72860c/index.js#L66-L66 "Source code on GitHub")
+
+[`rlp`](https://github.com/ethereumjs/rlp)
+
 # addHexPrefix
 
 [index.js:388-394](https://github.com/ethereumjs/ethereumjs-util/blob/54a1bfae7ae53634a4af3e7e907eef394e72860c/index.js#L388-L394 "Source code on GitHub")
@@ -21,12 +76,6 @@ Converts a `Buffer` or `Array` to JSON
 -   `ba` **Buffer or Array** 
 
 Returns **Array** 
-
-# BN
-
-[index.js:60-60](https://github.com/ethereumjs/ethereumjs-util/blob/54a1bfae7ae53634a4af3e7e907eef394e72860c/index.js#L60-L60 "Source code on GitHub")
-
-[`BN`](https://github.com/indutny/bn.js)
 
 # bufferToInt
 
@@ -128,12 +177,6 @@ Returns true if the supplied address belongs to a precompiled account
 
 Returns **Boolean** 
 
-# MAX_INTEGER
-
-[index.js:12-12](https://github.com/ethereumjs/ethereumjs-util/blob/54a1bfae7ae53634a4af3e7e907eef394e72860c/index.js#L12-L12 "Source code on GitHub")
-
-the max integer that this VM can handle (a `BN`)
-
 # pad
 
 [index.js:94-102](https://github.com/ethereumjs/ethereumjs-util/blob/54a1bfae7ae53634a4af3e7e907eef394e72860c/index.js#L94-L102 "Source code on GitHub")
@@ -207,12 +250,6 @@ Creates RIPEMD160 hash of the input
 
 Returns **Buffer** 
 
-# rlp
-
-[index.js:66-66](https://github.com/ethereumjs/ethereumjs-util/blob/54a1bfae7ae53634a4af3e7e907eef394e72860c/index.js#L66-L66 "Source code on GitHub")
-
-[`rlp`](https://github.com/ethereumjs/rlp)
-
 # rlphash
 
 [index.js:290-292](https://github.com/ethereumjs/ethereumjs-util/blob/54a1bfae7ae53634a4af3e7e907eef394e72860c/index.js#L290-L292 "Source code on GitHub")
@@ -269,42 +306,6 @@ Creates SHA-3 hash of the input
 -   `bytes` **[Number]** the SHA width (optional, default `256`)
 
 Returns **Buffer** 
-
-# SHA3_NULL
-
-[index.js:30-30](https://github.com/ethereumjs/ethereumjs-util/blob/54a1bfae7ae53634a4af3e7e907eef394e72860c/index.js#L30-L30 "Source code on GitHub")
-
-SHA3-256 hash of null (a `Buffer`)
-
-# SHA3_NULL_S
-
-[index.js:24-24](https://github.com/ethereumjs/ethereumjs-util/blob/54a1bfae7ae53634a4af3e7e907eef394e72860c/index.js#L24-L24 "Source code on GitHub")
-
-SHA3-256 hash of null (a `String`)
-
-# SHA3_RLP
-
-[index.js:54-54](https://github.com/ethereumjs/ethereumjs-util/blob/54a1bfae7ae53634a4af3e7e907eef394e72860c/index.js#L54-L54 "Source code on GitHub")
-
-SHA3-256 hash of the RLP of null (a `Buffer`)
-
-# SHA3_RLP_ARRAY
-
-[index.js:42-42](https://github.com/ethereumjs/ethereumjs-util/blob/54a1bfae7ae53634a4af3e7e907eef394e72860c/index.js#L42-L42 "Source code on GitHub")
-
-SHA3-256 of an RLP of an empty array (a `Buffer`)
-
-# SHA3_RLP_ARRAY_S
-
-[index.js:36-36](https://github.com/ethereumjs/ethereumjs-util/blob/54a1bfae7ae53634a4af3e7e907eef394e72860c/index.js#L36-L36 "Source code on GitHub")
-
-SHA3-256 of an RLP of an empty array (a `String`)
-
-# SHA3_RLP_S
-
-[index.js:48-48](https://github.com/ethereumjs/ethereumjs-util/blob/54a1bfae7ae53634a4af3e7e907eef394e72860c/index.js#L48-L48 "Source code on GitHub")
-
-SHA3-256 hash of the RLP of null  (a `String`)
 
 # stripHexPrefix
 
