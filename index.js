@@ -3,7 +3,6 @@ const ethUtil = require('ethereumjs-util')
 const ethHashUtil = require('./util.js')
 const xor = require('buffer-xor')
 const BN = ethUtil.BN
-const rlp = ethUtil.rlp
 const async = require('async')
 
 var Ethash = module.exports = function (cacheDB) {
@@ -84,7 +83,7 @@ Ethash.prototype.cacheHash = function () {
 }
 
 Ethash.prototype.headerHash = function (header) {
-  return ethUtil.sha3(rlp.encode(header.slice(0, -2)))
+  return ethUtil.rlphash(header.slice(0, -2))
 }
 
 /**
