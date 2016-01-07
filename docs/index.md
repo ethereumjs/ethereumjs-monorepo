@@ -4,6 +4,12 @@
 
 the max integer that this VM can handle (a `BN`)
 
+# TWO_POW256
+
+[index.js:18-18](https://github.com/ethereumjs/ethereumjs-util/blob/54a1bfae7ae53634a4af3e7e907eef394e72860c/index.js#L18-L18 "Source code on GitHub")
+
+2^256 (a `BN`)
+
 # SHA3_NULL
 
 [index.js:30-30](https://github.com/ethereumjs/ethereumjs-util/blob/54a1bfae7ae53634a4af3e7e907eef394e72860c/index.js#L30-L30 "Source code on GitHub")
@@ -52,6 +58,12 @@ SHA3-256 hash of the RLP of null  (a `String`)
 [index.js:66-66](https://github.com/ethereumjs/ethereumjs-util/blob/54a1bfae7ae53634a4af3e7e907eef394e72860c/index.js#L66-L66 "Source code on GitHub")
 
 [`rlp`](https://github.com/ethereumjs/rlp)
+
+# secp256k1
+
+[index.js:72-72](https://github.com/ethereumjs/ethereumjs-util/blob/54a1bfae7ae53634a4af3e7e907eef394e72860c/index.js#L72-L72 "Source code on GitHub")
+
+[`secp256k1`](https://github.com/cryptocoinjs/secp256k1-node/)
 
 # addHexPrefix
 
@@ -276,12 +288,6 @@ Or it truncates the end if it exceeds.
 
 Returns **Buffer or Array** 
 
-# secp256k1
-
-[index.js:72-72](https://github.com/ethereumjs/ethereumjs-util/blob/54a1bfae7ae53634a4af3e7e907eef394e72860c/index.js#L72-L72 "Source code on GitHub")
-
-[`secp256k1`](https://github.com/cryptocoinjs/secp256k1-node/)
-
 # sha256
 
 [index.js:262-265](https://github.com/ethereumjs/ethereumjs-util/blob/54a1bfae7ae53634a4af3e7e907eef394e72860c/index.js#L262-L265 "Source code on GitHub")
@@ -340,12 +346,6 @@ Converts a `BN` to an unsigned integer and returns it as a `Buffer`
 -   `num` **BN** 
 
 Returns **Buffer** 
-
-# TWO_POW256
-
-[index.js:18-18](https://github.com/ethereumjs/ethereumjs-util/blob/54a1bfae7ae53634a4af3e7e907eef394e72860c/index.js#L18-L18 "Source code on GitHub")
-
-2^256 (a `BN`)
 
 # unpad
 
