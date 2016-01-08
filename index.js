@@ -159,6 +159,12 @@ Ethash.prototype.verifyPOW = function (block, cb) {
   var self = this
   var valid = true
 
+  // don't validate genesis blocks
+  if (block.header.isGenesis()) {
+    cb(true)
+    return
+  }
+
   this._verifyPOW(block.header, function (valid2) {
     valid &= valid2
 
