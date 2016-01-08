@@ -101,7 +101,7 @@ tape('[Transaction]: Basic functions', function (t) {
   t.test('should validate with string option', function (st) {
     transactions.forEach(function (tx) {
       tx.gasLimit = 30000
-      st.equals(tx.validate(true), true)
+      st.equals(tx.validate(true), '')
     })
     st.end()
   })

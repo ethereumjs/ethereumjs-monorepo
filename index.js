@@ -275,7 +275,7 @@ Transaction.prototype.validate = function (stringError) {
         return str + err
       })
     } catch (e) {
-      return true
+      return ''
     }
   }
 }
