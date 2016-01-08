@@ -228,5 +228,6 @@ BlockHeader.prototype.hash = function () {
  * @return {Boolean}
  */
 BlockHeader.prototype.isGenesis = function () {
+  console.log(this.number.toString('hex'));
   return this.number.toString('hex') === ''
 }

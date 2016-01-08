@@ -255,7 +255,7 @@ Block.prototype.validateUncles = function (blockChain, cb) {
 /**
  * Converts the block toJSON
  * @method toJSON
- * @param {Bool} labaled whether to create an labeled object or an array
+ * @param {Bool} labeled whether to create an labeled object or an array
  * @return {Object}
  */
 Block.prototype.toJSON = function (labeled) {

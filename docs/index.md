@@ -1,6 +1,6 @@
 # Block
 
-[index.js:19-61](https://github.com/ethereum/ethereumjs-block/blob/348de1cd320fb47b2bf4c3f2deb965eeb40effec/index.js#L19-L61 "Source code on GitHub")
+[index.js:19-61](https://github.com/ethereum/ethereumjs-block/blob/e8b525761f49a6a2bab4614ddedc202390135fc7/index.js#L19-L61 "Source code on GitHub")
 
 Creates a new block object
 
@@ -16,7 +16,7 @@ Creates a new block object
 
 ## genTxTrie
 
-[index.js:120-128](https://github.com/ethereum/ethereumjs-block/blob/348de1cd320fb47b2bf4c3f2deb965eeb40effec/index.js#L120-L128 "Source code on GitHub")
+[index.js:120-128](https://github.com/ethereum/ethereumjs-block/blob/e8b525761f49a6a2bab4614ddedc202390135fc7/index.js#L120-L128 "Source code on GitHub")
 
 Generate transaction trie. The tx trie must be generated before the transaction trie can
 be validated with `validateTransactionTrie`
@@ -27,13 +27,13 @@ be validated with `validateTransactionTrie`
 
 ## hash
 
-[index.js:67-69](https://github.com/ethereum/ethereumjs-block/blob/348de1cd320fb47b2bf4c3f2deb965eeb40effec/index.js#L67-L69 "Source code on GitHub")
+[index.js:67-69](https://github.com/ethereum/ethereumjs-block/blob/e8b525761f49a6a2bab4614ddedc202390135fc7/index.js#L67-L69 "Source code on GitHub")
 
 Produces a hash the RLP of the block
 
 ## isGenesis
 
-[index.js:76-78](https://github.com/ethereum/ethereumjs-block/blob/348de1cd320fb47b2bf4c3f2deb965eeb40effec/index.js#L76-L78 "Source code on GitHub")
+[index.js:76-78](https://github.com/ethereum/ethereumjs-block/blob/e8b525761f49a6a2bab4614ddedc202390135fc7/index.js#L76-L78 "Source code on GitHub")
 
 Determines if a given block is the genesis block
 
@@ -41,7 +41,7 @@ Returns **** Boolean
 
 ## serialize
 
-[index.js:93-112](https://github.com/ethereum/ethereumjs-block/blob/348de1cd320fb47b2bf4c3f2deb965eeb40effec/index.js#L93-L112 "Source code on GitHub")
+[index.js:93-112](https://github.com/ethereum/ethereumjs-block/blob/e8b525761f49a6a2bab4614ddedc202390135fc7/index.js#L93-L112 "Source code on GitHub")
 
 Produces a serialization of the block.
 
@@ -51,20 +51,19 @@ Produces a serialization of the block.
 
 ## toJSON
 
-[index.js:261-280](https://github.com/ethereum/ethereumjs-block/blob/348de1cd320fb47b2bf4c3f2deb965eeb40effec/index.js#L261-L280 "Source code on GitHub")
+[index.js:261-280](https://github.com/ethereum/ethereumjs-block/blob/e8b525761f49a6a2bab4614ddedc202390135fc7/index.js#L261-L280 "Source code on GitHub")
 
 Converts the block toJSON
 
 **Parameters**
 
--   `labaled` **Bool** whether to create an labeled object or an array
--   `labeled`  
+-   `labeled` **Bool** whether to create an labeled object or an array
 
 Returns **Object** 
 
 ## validate
 
-[index.js:163-194](https://github.com/ethereum/ethereumjs-block/blob/348de1cd320fb47b2bf4c3f2deb965eeb40effec/index.js#L163-L194 "Source code on GitHub")
+[index.js:163-194](https://github.com/ethereum/ethereumjs-block/blob/e8b525761f49a6a2bab4614ddedc202390135fc7/index.js#L163-L194 "Source code on GitHub")
 
 Validates the entire block. Returns a string to the callback if block is invalid
 
@@ -75,7 +74,7 @@ Validates the entire block. Returns a string to the callback if block is invalid
 
 ## validateTransactions
 
-[index.js:149-155](https://github.com/ethereum/ethereumjs-block/blob/348de1cd320fb47b2bf4c3f2deb965eeb40effec/index.js#L149-L155 "Source code on GitHub")
+[index.js:149-155](https://github.com/ethereum/ethereumjs-block/blob/e8b525761f49a6a2bab4614ddedc202390135fc7/index.js#L149-L155 "Source code on GitHub")
 
 Validates the transactions
 
@@ -83,7 +82,7 @@ Returns **Boolean**
 
 ## validateTransactionsTrie
 
-[index.js:135-142](https://github.com/ethereum/ethereumjs-block/blob/348de1cd320fb47b2bf4c3f2deb965eeb40effec/index.js#L135-L142 "Source code on GitHub")
+[index.js:135-142](https://github.com/ethereum/ethereumjs-block/blob/e8b525761f49a6a2bab4614ddedc202390135fc7/index.js#L135-L142 "Source code on GitHub")
 
 Validates the transaction trie
 
@@ -91,7 +90,7 @@ Returns **Boolean**
 
 ## validateUncles
 
-[index.js:217-253](https://github.com/ethereum/ethereumjs-block/blob/348de1cd320fb47b2bf4c3f2deb965eeb40effec/index.js#L217-L253 "Source code on GitHub")
+[index.js:217-253](https://github.com/ethereum/ethereumjs-block/blob/e8b525761f49a6a2bab4614ddedc202390135fc7/index.js#L217-L253 "Source code on GitHub")
 
 Validates the uncles that are in the block if any. Returns a string to the callback if uncles are invalid
 
@@ -103,7 +102,7 @@ Validates the uncles that are in the block if any. Returns a string to the callb
 
 ## validateUnclesHash
 
-[index.js:201-209](https://github.com/ethereum/ethereumjs-block/blob/348de1cd320fb47b2bf4c3f2deb965eeb40effec/index.js#L201-L209 "Source code on GitHub")
+[index.js:201-209](https://github.com/ethereum/ethereumjs-block/blob/e8b525761f49a6a2bab4614ddedc202390135fc7/index.js#L201-L209 "Source code on GitHub")
 
 Validates the uncle's hash
 
@@ -111,7 +110,7 @@ Returns **Boolean**
 
 # BlockHeader
 
-[header.js:23-80](https://github.com/ethereum/ethereumjs-block/blob/348de1cd320fb47b2bf4c3f2deb965eeb40effec/header.js#L23-L80 "Source code on GitHub")
+[header.js:23-80](https://github.com/ethereum/ethereumjs-block/blob/e8b525761f49a6a2bab4614ddedc202390135fc7/header.js#L23-L80 "Source code on GitHub")
 
 An object that repersents the block header
 
@@ -138,7 +137,7 @@ An object that repersents the block header
 
 ## canonicalDifficulty
 
-[header.js:88-125](https://github.com/ethereum/ethereumjs-block/blob/348de1cd320fb47b2bf4c3f2deb965eeb40effec/header.js#L88-L125 "Source code on GitHub")
+[header.js:88-125](https://github.com/ethereum/ethereumjs-block/blob/e8b525761f49a6a2bab4614ddedc202390135fc7/header.js#L88-L125 "Source code on GitHub")
 
 Returns the canoncical difficulty of the block
 
@@ -150,7 +149,7 @@ Returns **BN**
 
 ## hash
 
-[header.js:221-223](https://github.com/ethereum/ethereumjs-block/blob/348de1cd320fb47b2bf4c3f2deb965eeb40effec/header.js#L221-L223 "Source code on GitHub")
+[header.js:221-223](https://github.com/ethereum/ethereumjs-block/blob/e8b525761f49a6a2bab4614ddedc202390135fc7/header.js#L221-L223 "Source code on GitHub")
 
 Returns the sha3 hash of the blockheader
 
@@ -158,7 +157,7 @@ Returns **Buffer**
 
 ## isGenesis
 
-[header.js:230-232](https://github.com/ethereum/ethereumjs-block/blob/348de1cd320fb47b2bf4c3f2deb965eeb40effec/header.js#L230-L232 "Source code on GitHub")
+[header.js:230-233](https://github.com/ethereum/ethereumjs-block/blob/e8b525761f49a6a2bab4614ddedc202390135fc7/header.js#L230-L233 "Source code on GitHub")
 
 checks if the blockheader is a genesis header
 
@@ -166,7 +165,7 @@ Returns **Boolean**
 
 ## validate
 
-[header.js:161-214](https://github.com/ethereum/ethereumjs-block/blob/348de1cd320fb47b2bf4c3f2deb965eeb40effec/header.js#L161-L214 "Source code on GitHub")
+[header.js:161-214](https://github.com/ethereum/ethereumjs-block/blob/e8b525761f49a6a2bab4614ddedc202390135fc7/header.js#L161-L214 "Source code on GitHub")
 
 Validates the entire block header
 
@@ -179,7 +178,7 @@ Validates the entire block header
 
 ## validateDifficulty
 
-[header.js:133-136](https://github.com/ethereum/ethereumjs-block/blob/348de1cd320fb47b2bf4c3f2deb965eeb40effec/header.js#L133-L136 "Source code on GitHub")
+[header.js:133-136](https://github.com/ethereum/ethereumjs-block/blob/e8b525761f49a6a2bab4614ddedc202390135fc7/header.js#L133-L136 "Source code on GitHub")
 
 checks that the block's `difficuly` matches the canonical difficulty
 
@@ -191,7 +190,7 @@ Returns **Boolean**
 
 ## validateGasLimit
 
-[header.js:144-152](https://github.com/ethereum/ethereumjs-block/blob/348de1cd320fb47b2bf4c3f2deb965eeb40effec/header.js#L144-L152 "Source code on GitHub")
+[header.js:144-152](https://github.com/ethereum/ethereumjs-block/blob/e8b525761f49a6a2bab4614ddedc202390135fc7/header.js#L144-L152 "Source code on GitHub")
 
 Validates the gasLimit
 
