@@ -55,12 +55,20 @@ tape('[Transaction]: Basic functions', function (t) {
     st.end()
   })
 
-  t.test('should validate', function (st) {
+  t.test('should give a string about not verifing Signatures', function (st) {
     transactions.forEach(function (tx) {
-      st.equals(tx.validate(), tx.verifySignature() && tx.getBaseFee().cmp(new BN(tx.gasLimit)) === -1)
+      st.equals(tx.validate(true).slice(0, 53), 'Invalid Signature gas limit is to low. Need at least ')
     })
     st.end()
   })
+
+  t.test('should validate', function (st) {
+    transactions.forEach(function (tx) {
+      st.equals(tx.validate(), false)
+    })
+    st.end()
+  })
+
 
   t.test('should sign tx', function (st) {
     transactions.forEach(function (tx, i) {
@@ -86,6 +94,14 @@ tape('[Transaction]: Basic functions', function (t) {
       if (txFixtures[i].privateKey) {
         st.equals(tx.verifySignature(), true)
       }
+    })
+    st.end()
+  })
+
+  t.test('should validate with string option', function (st) {
+    transactions.forEach(function (tx) {
+      tx.gasLimit = 30000
+      st.equals(tx.validate(true), true)
     })
     st.end()
   })

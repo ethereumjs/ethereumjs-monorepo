@@ -251,8 +251,31 @@ Transaction.prototype.getUpfrontCost = function () {
 /**
  * validates the signature and checks to see if it has enough gas
  * @method validate
- * @return {Boolean}
+ * @param {Boolean} [stringError=false] whether to return a string with a dscription of why the validation failed or return a Bloolean
+ * @return {Boolean|String}
  */
-Transaction.prototype.validate = function () {
-  return this.verifySignature() && (this.getBaseFee().cmp(new BN(this.gasLimit)) <= 0)
+Transaction.prototype.validate = function (stringError) {
+  var errors = []
+  if (!this.verifySignature()) {
+    errors.push('Invalid Signature')
+  }
+
+  if (this.getBaseFee().cmp(new BN(this.gasLimit)) > 0) {
+    errors.push(['gas limit is to low. Need at least ' + this.getBaseFee()])
+  }
+
+  if (stringError === undefined || stringError === false) {
+    return errors.length === 0
+  } else {
+    try {
+      return errors.reduce(function (str, err) {
+        if (str) {
+          str += ' '
+        }
+        return str + err
+      })
+    } catch (e) {
+      return true
+    }
+  }
 }

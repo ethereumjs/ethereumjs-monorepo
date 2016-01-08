@@ -1,6 +1,6 @@
 # Transaction
 
-[index.js:43-106](https://github.com/ethereum/ethereumjs-tx/blob/d78f974d6339b5ab5985cd421c1a0dca458cc466/index.js#L43-L106 "Source code on GitHub")
+[index.js:43-106](https://github.com/ethereum/ethereumjs-tx/blob/fc1341fc7fb75eaba4bd8052fb3d500edf759aff/index.js#L43-L106 "Source code on GitHub")
 
 Creates a new transaction object
 
@@ -39,7 +39,7 @@ var tx = new Transaction(rawTx);
 
 ## getBaseFee
 
-[index.js:241-243](https://github.com/ethereum/ethereumjs-tx/blob/d78f974d6339b5ab5985cd421c1a0dca458cc466/index.js#L241-L243 "Source code on GitHub")
+[index.js:236-238](https://github.com/ethereum/ethereumjs-tx/blob/fc1341fc7fb75eaba4bd8052fb3d500edf759aff/index.js#L236-L238 "Source code on GitHub")
 
 the minimum amount of gas the tx must have (DataFee + TxFee)
 
@@ -47,7 +47,7 @@ Returns **BN**
 
 ## getDataFee
 
-[index.js:223-234](https://github.com/ethereum/ethereumjs-tx/blob/d78f974d6339b5ab5985cd421c1a0dca458cc466/index.js#L223-L234 "Source code on GitHub")
+[index.js:222-229](https://github.com/ethereum/ethereumjs-tx/blob/fc1341fc7fb75eaba4bd8052fb3d500edf759aff/index.js#L222-L229 "Source code on GitHub")
 
 The amount of gas paid for the data in this tx
 
@@ -55,7 +55,7 @@ Returns **BN**
 
 ## getSenderAddress
 
-[index.js:145-149](https://github.com/ethereum/ethereumjs-tx/blob/d78f974d6339b5ab5985cd421c1a0dca458cc466/index.js#L145-L149 "Source code on GitHub")
+[index.js:141-145](https://github.com/ethereum/ethereumjs-tx/blob/fc1341fc7fb75eaba4bd8052fb3d500edf759aff/index.js#L141-L145 "Source code on GitHub")
 
 returns the sender`s address
 
@@ -63,7 +63,7 @@ Returns **Buffer**
 
 ## getSenderPublicKey
 
-[index.js:156-162](https://github.com/ethereum/ethereumjs-tx/blob/d78f974d6339b5ab5985cd421c1a0dca458cc466/index.js#L156-L162 "Source code on GitHub")
+[index.js:152-158](https://github.com/ethereum/ethereumjs-tx/blob/fc1341fc7fb75eaba4bd8052fb3d500edf759aff/index.js#L152-L158 "Source code on GitHub")
 
 returns the public key of the sender
 
@@ -71,7 +71,7 @@ Returns **Buffer**
 
 ## getUpfrontCost
 
-[index.js:250-254](https://github.com/ethereum/ethereumjs-tx/blob/d78f974d6339b5ab5985cd421c1a0dca458cc466/index.js#L250-L254 "Source code on GitHub")
+[index.js:245-249](https://github.com/ethereum/ethereumjs-tx/blob/fc1341fc7fb75eaba4bd8052fb3d500edf759aff/index.js#L245-L249 "Source code on GitHub")
 
 the up front amount that an account must have for this transaction to be valid
 
@@ -79,7 +79,7 @@ Returns **BN**
 
 ## hash
 
-[index.js:123-138](https://github.com/ethereum/ethereumjs-tx/blob/d78f974d6339b5ab5985cd421c1a0dca458cc466/index.js#L123-L138 "Source code on GitHub")
+[index.js:123-134](https://github.com/ethereum/ethereumjs-tx/blob/fc1341fc7fb75eaba4bd8052fb3d500edf759aff/index.js#L123-L134 "Source code on GitHub")
 
 Computes a sha3-256 hash of the serialized tx
 
@@ -91,7 +91,7 @@ Returns **Buffer**
 
 ## serialize
 
-[index.js:113-115](https://github.com/ethereum/ethereumjs-tx/blob/d78f974d6339b5ab5985cd421c1a0dca458cc466/index.js#L113-L115 "Source code on GitHub")
+[index.js:113-115](https://github.com/ethereum/ethereumjs-tx/blob/fc1341fc7fb75eaba4bd8052fb3d500edf759aff/index.js#L113-L115 "Source code on GitHub")
 
 Returns the rlp encoding of the transaction
 
@@ -99,7 +99,7 @@ Returns **Buffer**
 
 ## sign
 
-[index.js:210-217](https://github.com/ethereum/ethereumjs-tx/blob/d78f974d6339b5ab5985cd421c1a0dca458cc466/index.js#L210-L217 "Source code on GitHub")
+[index.js:209-216](https://github.com/ethereum/ethereumjs-tx/blob/fc1341fc7fb75eaba4bd8052fb3d500edf759aff/index.js#L209-L216 "Source code on GitHub")
 
 sign a transaction with a given a private key
 
@@ -109,15 +109,19 @@ sign a transaction with a given a private key
 
 ## validate
 
-[index.js:261-263](https://github.com/ethereum/ethereumjs-tx/blob/d78f974d6339b5ab5985cd421c1a0dca458cc466/index.js#L261-L263 "Source code on GitHub")
+[index.js:257-281](https://github.com/ethereum/ethereumjs-tx/blob/fc1341fc7fb75eaba4bd8052fb3d500edf759aff/index.js#L257-L281 "Source code on GitHub")
 
 validates the signature and checks to see if it has enough gas
 
-Returns **Boolean** 
+**Parameters**
+
+-   `stringError` **[Boolean]** whether to return a string with a dscription of why the validation failed or return a Bloolean (optional, default `false`)
+
+Returns **Boolean or String** 
 
 ## verifySignature
 
-[index.js:169-204](https://github.com/ethereum/ethereumjs-tx/blob/d78f974d6339b5ab5985cd421c1a0dca458cc466/index.js#L169-L204 "Source code on GitHub")
+[index.js:165-203](https://github.com/ethereum/ethereumjs-tx/blob/fc1341fc7fb75eaba4bd8052fb3d500edf759aff/index.js#L165-L203 "Source code on GitHub")
 
 Determines if the signature is valid
 
