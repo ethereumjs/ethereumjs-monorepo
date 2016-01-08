@@ -1,6 +1,5 @@
 const tape = require('tape')
 const utils = require('ethereumjs-util')
-const BN = utils.BN
 const rlp = utils.rlp
 const Transaction = require('../index.js')
 const txFixtures = require('./txs.json')
@@ -68,7 +67,6 @@ tape('[Transaction]: Basic functions', function (t) {
     })
     st.end()
   })
-
 
   t.test('should sign tx', function (st) {
     transactions.forEach(function (tx, i) {
