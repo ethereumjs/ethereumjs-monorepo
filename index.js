@@ -150,7 +150,11 @@ Block.prototype.validateTransactionsTrie = function () {
 Block.prototype.validateTransactions = function (stringError) {
   var errors = []
   this.transactions.forEach(function (tx, i) {
-    errors.push(tx.validate(true))
+    var error = tx.validate(true)
+    if (error) {
+      error += ' at tx ' + i
+    }
+    errors.push(error)
   })
 
   if (stringError === undefined || stringError === false) {
