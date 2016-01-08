@@ -54,9 +54,15 @@ var Block = module.exports = function (data) {
     this.uncleHeaders.push(new BlockHeader(rawUncleHeaders[i]))
   }
 
+  var skipSValueCheck = false
+  if (ethUtil.bufferToInt(this.header.number) < params.homeSteadForkNumber.v) {
+    skipSValueCheck = true
+  }
   // parse transactions
   for (i = 0; i < rawTransactions.length; i++) {
-    this.transactions.push(new Tx(rawTransactions[i]))
+    var tx = new Tx(rawTransactions[i])
+    tx._skipSValueCheck = skipSValueCheck
+    this.transactions.push(tx)
   }
 }
 
@@ -149,6 +155,7 @@ Block.prototype.validateTransactionsTrie = function () {
  */
 Block.prototype.validateTransactions = function (stringError) {
   var errors = []
+
   this.transactions.forEach(function (tx, i) {
     var error = tx.validate(true)
     if (error) {
