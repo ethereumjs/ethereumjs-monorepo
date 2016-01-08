@@ -144,14 +144,20 @@ Block.prototype.validateTransactionsTrie = function () {
 /**
  * Validates the transactions
  * @method validateTransactions
+ * @param {Boolean} [stringError=false] whether to return a string with a dscription of why the validation failed or return a Bloolean
  * @return {Boolean}
  */
-Block.prototype.validateTransactions = function () {
-  var validTxs = true
-  this.transactions.forEach(function (tx) {
-    validTxs &= tx.validate()
+Block.prototype.validateTransactions = function (stringError) {
+  var errors = []
+  this.transactions.forEach(function (tx, i) {
+    errors.push(tx.validate(true))
   })
-  return validTxs
+
+  if (stringError === undefined || stringError === false) {
+    return errors.length === 0
+  } else {
+    return arrayToString(errors)
+  }
 }
 
 /**
@@ -162,6 +168,7 @@ Block.prototype.validateTransactions = function () {
  */
 Block.prototype.validate = function (blockChain, cb) {
   var self = this
+  var errors = []
 
   async.parallel([
     // validate uncles
@@ -171,25 +178,27 @@ Block.prototype.validate = function (blockChain, cb) {
     // generate the transaction trie
     self.genTxTrie.bind(self)
   ], function (err) {
-    if (!err) {
-      if (!self.validateTransactionsTrie()) {
-        err = 'invalid transaction true'
-      }
-
-      if (!self.validateTransactions()) {
-        err = 'invalid transaction'
-      }
-
-      if (!self.validateUnclesHash()) {
-        err = 'invild uncle hash'
-      }
+    if (err) {
+      errors.push(err)
     }
 
-    if (!err) {
-      self.parentBlock = self.header.parentBlock
+    if (!self.validateTransactionsTrie()) {
+      errors.push('invalid transaction true')
     }
 
-    cb(err)
+    var txErrors = self.validateTransactions(true)
+    if (txErrors !== '') {
+      errors.push(txErrors)
+    }
+
+    if (!self.validateUnclesHash()) {
+      errors.push('invild uncle hash')
+    }
+
+    // TODO: remove
+    self.parentBlock = self.header.parentBlock
+
+    cb(arrayToString(errors))
   })
 }
 
@@ -276,5 +285,18 @@ Block.prototype.toJSON = function (labeled) {
     return obj
   } else {
     return ethUtil.baToJSON(this.raw)
+  }
+}
+
+function arrayToString (array) {
+  try {
+    return array.reduce(function (str, err) {
+      if (str) {
+        str += ' '
+      }
+      return str + err
+    })
+  } catch (e) {
+    return ''
   }
 }
