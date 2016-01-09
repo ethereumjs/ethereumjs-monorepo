@@ -115,6 +115,15 @@ Transaction.prototype.serialize = function () {
 }
 
 /**
+ * If the tx's `to` is to the creation address
+ * @method toCreationAddress
+ * @return {Boolean}
+ */
+Transaction.prototype.toCreationAddress = function () {
+  return this.to.toString('hex') === ''
+}
+
+/**
  * Computes a sha3-256 hash of the serialized tx
  * @method hash
  * @param {Boolean} [signature=true] whether or not to inculde the signature
@@ -168,7 +177,7 @@ Transaction.prototype.verifySignature = function () {
   var recovery = ethUtil.bufferToInt(this.v) - 27
 
   // All transaction signatures whose s-value is greater than secp256k1n/2 are considered invalid.
-  if (!this._skipSValueCheck && new BN(this.s).cmp(N_DIV_2) === 1) {
+  if (!this._homestead && new BN(this.s).cmp(N_DIV_2) === 1) {
     return false
   }
 
@@ -229,12 +238,16 @@ Transaction.prototype.getDataFee = function () {
 }
 
 /**
- * the minimum amount of gas the tx must have (DataFee + TxFee)
+ * the minimum amount of gas the tx must have (DataFee + TxFee + Creation Fee)
  * @method getBaseFee
  * @return {BN}
  */
 Transaction.prototype.getBaseFee = function () {
-  return this.getDataFee().iaddn(fees.txGas.v)
+  var fee = this.getDataFee().iaddn(fees.txGas.v)
+  if (this._homestead && this.toCreationAddress()) {
+    fee.iaddn(fees.txCreation.v)
+  }
+  return fee
 }
 
 /**
