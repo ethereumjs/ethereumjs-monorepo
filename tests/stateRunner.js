@@ -3,11 +3,12 @@ const VM = require('../index.js')
 const Bloom = require('../lib/bloom.js')
 const testUtil = require('./util')
 const Trie = require('merkle-patricia-tree/secure')
+const ethUtil = require('ethereumjs-util')
+const common = require('ethereum-common')
 
 module.exports = function runStateTest (options, testData, t, cb) {
-  var sstream = false
   var state = new Trie()
-  var block, vm, result 
+  var block, vm, result
 
   async.series([
     function (done) {
@@ -17,6 +18,10 @@ module.exports = function runStateTest (options, testData, t, cb) {
     function (done) {
       var tx = testUtil.makeTx(testData.transaction)
       block = testUtil.makeBlockFromEnv(testData.env)
+
+      if (ethUtil.bufferToInt(block.header.number) > common.homeSteadForkNumber.v) {
+        tx._homestead = true
+      }
 
       if (tx.validate()) {
         vm.runTx({
