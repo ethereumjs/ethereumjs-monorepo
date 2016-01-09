@@ -7,6 +7,7 @@ const Blockchain = require('ethereumjs-blockchain')
 const BlockHeader = require('ethereumjs-block/header.js')
 const VM = require('../')
 const Level = require('levelup')
+const BN = require('bn.js')
 
 var cacheDB = new Level('./.cachedb')
 module.exports = function runBlockchainTest (options, testData, t, cb) {
@@ -28,6 +29,7 @@ module.exports = function runBlockchainTest (options, testData, t, cb) {
     },
     function (done) {
       // create and add genesis block
+      // console.log(testData.blocks[0]);
       genesisBlock.header = new BlockHeader(formatBlockHeader(testData.genesisBlockHeader))
       t.equal(state.root.toString('hex'), genesisBlock.header.stateRoot.toString('hex'), 'correct pre stateRoot')
       if (testData.genesisRLP) {
