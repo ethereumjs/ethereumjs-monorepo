@@ -54,14 +54,11 @@ var Block = module.exports = function (data) {
     this.uncleHeaders.push(new BlockHeader(rawUncleHeaders[i]))
   }
 
-  var skipSValueCheck = false
-  if (ethUtil.bufferToInt(this.header.number) < params.homeSteadForkNumber.v) {
-    skipSValueCheck = true
-  }
+  var homestead = this.isHomestead()
   // parse transactions
   for (i = 0; i < rawTransactions.length; i++) {
     var tx = new Tx(rawTransactions[i])
-    tx._skipSValueCheck = skipSValueCheck
+    tx._homestead = homestead
     this.transactions.push(tx)
   }
 }
@@ -83,6 +80,19 @@ Block.prototype.isGenesis = function () {
   return this.header.isGenesis()
 }
 
+/**
+ * Determines if a given block part of homestead or not
+ * @method isHomestead
+ * @return Boolean
+ */
+Block.prototype.isHomestead = function () {
+  return ethUtil.bufferToInt(this.header.number) > params.homeSteadForkNumber.v
+}
+
+/**
+ * turns the block in to the canonical genesis block
+ * @method setGenesisParams
+ */
 Block.prototype.setGenesisParams = function () {
   this.header.gasLimit = params.genesisGasLimit.v
   this.header.difficulty = params.genesisDifficulty.v
