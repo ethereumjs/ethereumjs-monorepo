@@ -133,7 +133,7 @@ tape('[Transaction]: Basic functions', function (t) {
 
   t.test('should return base fee', function (st) {
     var tx = new Transaction()
-    st.equals(tx.getBaseFee().toNumber(), 21000)
+    st.equals(tx.getBaseFee().toNumber(), 53000)
     st.end()
   })
 

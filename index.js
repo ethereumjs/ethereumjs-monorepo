@@ -103,6 +103,7 @@ var Transaction = module.exports = function (data) {
   })
 
   ethUtil.defineProperties(this, fields, data)
+  this._homestead = true
 }
 
 /**
@@ -177,7 +178,7 @@ Transaction.prototype.verifySignature = function () {
   var recovery = ethUtil.bufferToInt(this.v) - 27
 
   // All transaction signatures whose s-value is greater than secp256k1n/2 are considered invalid.
-  if (!this._homestead && new BN(this.s).cmp(N_DIV_2) === 1) {
+  if (this._homestead && new BN(this.s).cmp(N_DIV_2) === 1) {
     return false
   }
 
