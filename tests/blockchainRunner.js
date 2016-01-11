@@ -48,11 +48,9 @@ module.exports = function runBlockchainTest (options, testData, t, cb) {
         try {
           var block = new Block(new Buffer(raw.rlp.slice(2), 'hex'))
           blockchain.putBlock(block, function (err) {
-          console.log(err);
             cb(err)
           })
         } catch (err) {
-          console.log(err);
           cb()
         }
       }, function () {
@@ -60,7 +58,7 @@ module.exports = function runBlockchainTest (options, testData, t, cb) {
       })
     },
     function runBlockchain (done) {
-      vm.runBlockchain(function(err){
+      vm.runBlockchain(function (err) {
         done()
       })
     },
