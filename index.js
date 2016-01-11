@@ -86,7 +86,7 @@ Block.prototype.isGenesis = function () {
  * @return Boolean
  */
 Block.prototype.isHomestead = function () {
-  return ethUtil.bufferToInt(this.header.number) > params.homeSteadForkNumber.v
+  return this.header.isHomestead()
 }
 
 /**

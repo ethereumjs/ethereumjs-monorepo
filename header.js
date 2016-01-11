@@ -93,7 +93,17 @@ BlockHeader.prototype.canonicalDifficulty = function (parentBlock) {
   var offset = parentDif.div(new BN(params.difficultyBoundDivisor.v))
   var dif
 
-  if (params.homeSteadForkNumber.v > utils.bufferToInt(this.number)) {
+  if (this.isHomestead()) {
+    // homestead
+    // 1 - (block_timestamp - parent_timestamp) // 10
+    var a = blockTs.sub(parentTs).divn(10).neg().addn(1)
+    var cutoff = new BN(-99)
+    // MAX(cutoff, a)
+    if (cutoff.cmp(a) === 1) {
+      a = cutoff
+    }
+    dif = parentDif.add(offset.mul(a))
+  } else {
     // prehomestead
     if (parentTs.addn(params.durationLimit.v).cmp(blockTs) === 1) {
       dif = offset.add(parentDif)
@@ -105,16 +115,6 @@ BlockHeader.prototype.canonicalDifficulty = function (parentBlock) {
         dif = parentDif.sub(offset)
       }
     }
-  } else {
-    // homestead
-    // 1 - (block_timestamp - parent_timestamp) // 10
-    var a = blockTs.sub(parentTs).divn(10).neg().addn(1)
-    var cutoff = new BN(-99)
-    // MAX(cutoff, a)
-    if (cutoff.cmp(a) === 1) {
-      a = cutoff
-    }
-    dif = parentDif.add(offset.mul(a))
   }
 
   var exp = new BN(this.number).divn(100000).subn(2)
@@ -229,4 +229,13 @@ BlockHeader.prototype.hash = function () {
  */
 BlockHeader.prototype.isGenesis = function () {
   return this.number.toString('hex') === ''
+}
+
+/**
+ * Determines if a given block part of homestead or not
+ * @method isHomestead
+ * @return Boolean
+ */
+BlockHeader.prototype.isHomestead = function () {
+  return utils.bufferToInt(this.number) > params.homeSteadForkNumber.v
 }
