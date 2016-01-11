@@ -216,9 +216,6 @@ Block.prototype.validate = function (blockChain, cb) {
       errors.push('invild uncle hash')
     }
 
-    // TODO: remove
-    self.parentBlock = self.header.parentBlock
-
     cb(arrayToString(errors))
   })
 }

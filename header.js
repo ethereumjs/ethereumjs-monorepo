@@ -89,7 +89,7 @@ BlockHeader.prototype.canonicalDifficulty = function (parentBlock) {
   const blockTs = new BN(this.timestamp)
   const parentTs = new BN(parentBlock.header.timestamp)
   const parentDif = new BN(parentBlock.header.difficulty)
-
+  const minimumDifficulty = new BN(params.minimumDifficulty.v)
   var offset = parentDif.div(new BN(params.difficultyBoundDivisor.v))
   var dif
 
@@ -108,12 +108,7 @@ BlockHeader.prototype.canonicalDifficulty = function (parentBlock) {
     if (parentTs.addn(params.durationLimit.v).cmp(blockTs) === 1) {
       dif = offset.add(parentDif)
     } else {
-      const minimumDifficulty = new BN(params.minimumDifficulty.v)
-      if (new BN(this.difficulty).cmp(minimumDifficulty) <= 0) {
-        dif = minimumDifficulty
-      } else {
-        dif = parentDif.sub(offset)
-      }
+      dif = parentDif.sub(offset)
     }
   }
 
@@ -121,6 +116,11 @@ BlockHeader.prototype.canonicalDifficulty = function (parentBlock) {
   if (!exp.isNeg()) {
     dif.iadd(new BN(2).pow(exp))
   }
+
+  if (dif.cmp(minimumDifficulty) === -1) {
+    dif = minimumDifficulty
+  }
+
   return dif
 }
 
