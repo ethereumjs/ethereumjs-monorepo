@@ -25,12 +25,6 @@ tape('[Block]: Header functions', function (t) {
     st.end()
   })
 
-  t.test('should hash', function (st) {
-    var header = new Header()
-    st.deepEqual(header.hash(), new Buffer('5ae985be5f37396e1f786573a743144d8b9c770223a775c8f6051b9fcea035f9', 'hex'))
-    st.end()
-  })
-
   t.test('should be true for isGenesis', function (st) {
     var header = new Header()
     st.equal(header.isGenesis(), false)
