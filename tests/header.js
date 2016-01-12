@@ -1,10 +1,11 @@
 const tape = require('tape')
+const params = require('ethereum-common')
 const utils = require('ethereumjs-util')
-const BlockHeader = require('../header.js')
+const Header = require('../header.js')
 
 tape('[Block]: Header functions', function (t) {
   t.test('should create with default constructor', function (st) {
-    var header = new BlockHeader()
+    var header = new Header()
     st.deepEqual(header.parentHash, utils.zeros(32))
     st.equal(header.uncleHash.toString('hex'), utils.SHA3_RLP_ARRAY_S)
     st.deepEqual(header.coinbase, utils.zeros(20))
@@ -13,31 +14,28 @@ tape('[Block]: Header functions', function (t) {
     st.equal(header.receiptTrie.toString('hex'), utils.SHA3_RLP_S)
     st.deepEqual(header.bloom, utils.zeros(256))
     st.deepEqual(header.difficulty, new Buffer([]))
-    st.deepEqual(header.number, new Buffer([]))
-    st.deepEqual(header.gasLimit, new Buffer([]))
+    st.deepEqual(header.number, utils.intToBuffer(params.homeSteadForkNumber.v))
+    st.deepEqual(header.gasLimit, new Buffer('ffffffffffffff', 'hex'))
     st.deepEqual(header.gasUsed, new Buffer([]))
     st.deepEqual(header.timestamp, new Buffer([]))
     st.deepEqual(header.extraData, new Buffer([]))
     st.deepEqual(header.mixHash, utils.zeros(32))
     st.deepEqual(header.nonce, new Buffer([]))
+
     st.end()
   })
 
   t.test('should hash', function (st) {
-    var header = new BlockHeader()
-    st.deepEqual(header.hash(), new Buffer('651e4cd502f3843ef75e0ea0b459246ad6cfe2718abd0d177b921430e79c72f9', 'hex'))
+    var header = new Header()
+    st.deepEqual(header.hash(), new Buffer('5ae985be5f37396e1f786573a743144d8b9c770223a775c8f6051b9fcea035f9', 'hex'))
     st.end()
   })
 
   t.test('should be true for isGenesis', function (st) {
-    var header = new BlockHeader()
-    st.equal(header.isGenesis(), true)
-    st.end()
-  })
-
-  t.test('should be false for isGenesis', function (st) {
-    var header = new BlockHeader({ number: 1 })
+    var header = new Header()
     st.equal(header.isGenesis(), false)
+    header.number = new Buffer([])
+    st.equal(header.isGenesis(), true)
     st.end()
   })
 })

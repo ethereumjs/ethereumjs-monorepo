@@ -52,10 +52,10 @@ var BlockHeader = module.exports = function (data) {
     default: new Buffer([])
   }, {
     name: 'number',
-    default: new Buffer([])
+    default: utils.intToBuffer(params.homeSteadForkNumber.v)
   }, {
     name: 'gasLimit',
-    default: new Buffer([])
+    default: new Buffer('ffffffffffffff', 'hex')
   }, {
     name: 'gasUsed',
     empty: true,

@@ -99,6 +99,7 @@ Block.prototype.setGenesisParams = function () {
   this.header.extraData = params.genesisExtraData.v
   this.header.nonce = params.genesisNonce.v
   this.header.stateRoot = params.genesisStateRoot.v
+  this.header.number = new Buffer([])
 }
 
 /**
