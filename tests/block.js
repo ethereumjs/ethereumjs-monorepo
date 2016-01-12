@@ -32,7 +32,6 @@ tape('[Block]: Block functions', function (t) {
 
   t.test('should hash', function (st) {
     var block = new Block()
-    console.log(block.hash().toString('hex'));
     st.deepEqual(block.hash(), new Buffer('95ea7bba6279a182fa644f75ba546421d175d99b0866e28e478e99585dde9b2d', 'hex'))
     st.end()
   })
