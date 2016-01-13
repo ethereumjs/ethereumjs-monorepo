@@ -150,8 +150,9 @@ Transaction.prototype.hash = function (signature) {
  */
 Transaction.prototype.getSenderAddress = function () {
   var pubKey = this.getSenderPublicKey()
+  // ensure we have an uncompressed key
   pubKey = ecdsa.publicKeyConvert(pubKey, false)
-  return ethUtil.pubToAddress(pubKey)
+  return ethUtil.publicToAddress(pubKey)
 }
 
 /**
