@@ -171,8 +171,18 @@ describe('toUnsigned', function () {
 
 describe('pubToAddress', function () {
   it('should produce an address given a public key', function () {
-    var pubKey = 'f049a20000000000f0b08900000000000841b30200000000200000000d000000'
-    var address = 'ef6a1274aa67f83eadf383016d584cd6185477ae'
+    var pubKey = '3a443d8381a6798a70c6ff9304bdc8cb0163c23211d11628fae52ef9e0dca11a001cf066d56a8156fc201cd5df8a36ef694eecd258903fca7086c1fae7441e1d'
+    var address = '2f015c60e0be116b1f0cd534704db9c92118fb6a'
+    pubKey = new Buffer(pubKey, 'hex')
+    var r = ethUtils.pubToAddress(pubKey)
+    assert.equal(r.toString('hex'), address)
+  })
+})
+
+describe('pubToAddress', function () {
+  it('should produce an address given a public key', function () {
+    var pubKey = '3a443d8381a6798a70c6ff9304bdc8cb0163c23211d11628fae52ef9e0dca11a001cf066d56a8156fc201cd5df8a36ef694eecd258903fca7086c1fae7441e1d'
+    var address = '2f015c60e0be116b1f0cd534704db9c92118fb6a'
     pubKey = new Buffer(pubKey, 'hex')
     var r = ethUtils.pubToAddress(pubKey)
     assert.equal(r.toString('hex'), address)
@@ -181,8 +191,8 @@ describe('pubToAddress', function () {
 
 describe('pubToAddress 0x', function () {
   it('should produce an address given a public key', function () {
-    var pubKey = '0xf049a20000000000f0b08900000000000841b30200000000200000000d000000'
-    var address = 'ef6a1274aa67f83eadf383016d584cd6185477ae'
+    var pubKey = '0x3a443d8381a6798a70c6ff9304bdc8cb0163c23211d11628fae52ef9e0dca11a001cf066d56a8156fc201cd5df8a36ef694eecd258903fca7086c1fae7441e1d'
+    var address = '2f015c60e0be116b1f0cd534704db9c92118fb6a'
     var r = ethUtils.pubToAddress(pubKey)
     assert.equal(r.toString('hex'), address)
   })
