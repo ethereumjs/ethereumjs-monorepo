@@ -341,10 +341,14 @@ exports.privateToAddress = function (privateKey) {
  */
 exports.generateAddress = function (from, nonce) {
   from = exports.toBuffer(from)
-  nonce = new Buffer(new BN(nonce).toArray())
+  nonce = new BN(nonce)
 
-  if (nonce.toString('hex') === '00') {
-    nonce = 0
+  if (nonce.isZero()) {
+    // in RLP we want to encode null in the case of zero nonce
+    // read the RLP documentation for an answer if you dare
+    nonce = null
+  } else {
+    nonce = new Buffer(nonce.toArray())
   }
 
   var hash = exports.sha3(rlp.encode([new Buffer(from, 'hex'), nonce]))

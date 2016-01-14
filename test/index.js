@@ -252,6 +252,13 @@ describe('generateAddress with hex prefix', function () {
   })
 })
 
+describe('generateAddress with nonce 0 (special case)', function () {
+  it('should produce an address given a public key', function () {
+    var add = ethUtils.generateAddress('0x990ccf8a0de58091c028d6ff76bb235ee67c1c39', 0).toString('hex')
+    assert.equal(add.toString('hex'), 'bfa69ba91385206bfdd2d8b9c1a5d6c10097a85b')
+  })
+})
+
 describe('hex prefix', function () {
   var string = 'd658a4b8247c14868f3c512fa5cbb6e458e4a989'
   it('should add', function () {
