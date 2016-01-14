@@ -302,13 +302,12 @@ exports.pubToAddress = exports.publicToAddress = function (pubKey) {
   pubKey = exports.toBuffer(pubKey)
   // Handle uncompressed DER keys
   // FIXME: should we do this here?
-  if (pubKey.length === 65 && pubKey[0] == 4) {
+  if (pubKey.length === 65 && pubKey[0] === 4) {
     pubKey = pubKey.slice(1)
   }
   assert(pubKey.length === 64)
-  var hash = new SHA3.SHA3Hash(256)
-  hash.update(pubKey)
-  return new Buffer(hash.digest('hex').slice(-40), 'hex')
+  // Only take the lower 160bits of the hash
+  return exports.sha3(pubKey).slice(-20)
 }
 
 /**
