@@ -292,15 +292,22 @@ exports.rlphash = function (a) {
 }
 
 /**
- * Returns the ethereum address of a given public key
- * @method pubToAddress
+ * Returns the ethereum address of a given public key.
+ * Accepts "Ethereum public keys" and DER encoded keys.
+ * @method publicToAddress
  * @param {Buffer} pubKey
  * @return {Buffer}
  */
 exports.pubToAddress = exports.publicToAddress = function (pubKey) {
   pubKey = exports.toBuffer(pubKey)
+  // Handle uncompressed DER keys
+  // FIXME: should we do this here?
+  if (pubKey.length === 65 && pubKey[0] == 4) {
+    pubKey = pubKey.slice(1)
+  }
+  assert(pubKey.length === 64)
   var hash = new SHA3.SHA3Hash(256)
-  hash.update(pubKey.slice(-64))
+  hash.update(pubKey)
   return new Buffer(hash.digest('hex').slice(-40), 'hex')
 }
 

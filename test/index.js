@@ -184,6 +184,20 @@ describe('pubToAddress', function () {
     var r = ethUtils.pubToAddress(pubKey)
     assert.equal(r.toString('hex'), address)
   })
+  it('shouldn\'t produce an address given an invalid DER public key', function () {
+    var pubKey = '023a443d8381a6798a70c6ff9304bdc8cb0163c23211d11628fae52ef9e0dca11a001cf066d56a8156fc201cd5df8a36ef694eecd258903fca7086c1fae7441e1d'
+    pubKey = new Buffer(pubKey, 'hex')
+    assert.throws(function () {
+      ethUtils.pubToAddress(pubKey)
+    })
+  })
+  it('shouldn\'t produce an address given an invalid public key', function () {
+    var pubKey = '3a443d8381a6798a70c6ff9304bdc8cb0163c23211d11628fae52ef9e0dca11a001cf066d56a8156fc201cd5df8a36ef694eecd258903fca7086c1fae744'
+    pubKey = new Buffer(pubKey, 'hex')
+    assert.throws(function () {
+      ethUtils.pubToAddress(pubKey)
+    })
+  })
 })
 
 describe('pubToAddress 0x', function () {
