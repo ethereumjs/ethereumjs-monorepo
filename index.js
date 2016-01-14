@@ -351,8 +351,7 @@ exports.generateAddress = function (from, nonce) {
     nonce = new Buffer(nonce.toArray())
   }
 
-  var hash = exports.sha3(rlp.encode([new Buffer(from, 'hex'), nonce]))
-  return hash.slice(12)
+  return exports.sha3(rlp.encode([from, nonce])).slice(12)
 }
 
 /**
