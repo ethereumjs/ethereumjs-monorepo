@@ -27,7 +27,7 @@ Account.prototype.serialize = function () {
 }
 
 Account.prototype.isContract = function () {
-  return this.codeHash.toString('hex') !== ethUtil.SHA3_NULL.toString('hex')
+  return this.codeHash.toString('hex') !== ethUtil.SHA3_NULL_S
 }
 
 Account.prototype.getCode = function (state, cb) {
@@ -59,7 +59,7 @@ Account.prototype.setCode = function (trie, code, compiled, cb) {
   // set the compile flag
   code = Buffer.concat([new Buffer([compiled]), code])
 
-  if (this.codeHash.toString('hex') === ethUtil.SHA3_NULL) {
+  if (this.codeHash.toString('hex') === ethUtil.SHA3_NULL_S) {
     cb(null, new Buffer([]))
     return
   }
@@ -89,6 +89,6 @@ Account.prototype.setStorage = function (trie, key, val, cb) {
 Account.prototype.isEmpty = function () {
   return this.balance.toString('hex') === '' &&
   this.nonce.toString('hex') === '' &&
-  this.stateRoot.toString('hex') === ethUtil.SHA3_RLP.toString('hex') &&
-  this.codeHash.toString('hex') === ethUtil.SHA3_NULL.toString('hex')
+  this.stateRoot.toString('hex') === ethUtil.SHA3_RLP_S &&
+  this.codeHash.toString('hex') === ethUtil.SHA3_NULL_S
 }
