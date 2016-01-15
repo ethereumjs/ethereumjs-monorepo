@@ -237,5 +237,5 @@ BlockHeader.prototype.isGenesis = function () {
  * @return Boolean
  */
 BlockHeader.prototype.isHomestead = function () {
-  return utils.bufferToInt(this.number) > params.homeSteadForkNumber.v
+  return utils.bufferToInt(this.number) >= params.homeSteadForkNumber.v
 }
