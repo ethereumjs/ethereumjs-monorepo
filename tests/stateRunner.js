@@ -3,8 +3,6 @@ const VM = require('../index.js')
 const Bloom = require('../lib/bloom.js')
 const testUtil = require('./util')
 const Trie = require('merkle-patricia-tree/secure')
-const ethUtil = require('ethereumjs-util')
-const common = require('ethereum-common')
 
 module.exports = function runStateTest (options, testData, t, cb) {
   var state = new Trie()
@@ -18,9 +16,12 @@ module.exports = function runStateTest (options, testData, t, cb) {
     function (done) {
       var tx = testUtil.makeTx(testData.transaction)
       block = testUtil.makeBlockFromEnv(testData.env)
-
-      if (ethUtil.bufferToInt(block.header.number) > common.homeSteadForkNumber.v) {
-        tx._homestead = true
+      if (!block.isHomestead() && !testData.homestead) {
+        tx._homestead = false
+      } else {
+       block.isHomestead = function(){
+         return true
+       }
       }
 
       if (tx.validate()) {
@@ -30,7 +31,6 @@ module.exports = function runStateTest (options, testData, t, cb) {
         }, function (err, r) {
           err = null
           result = r
-          // console.log(r);
           done()
         })
       } else {
@@ -48,11 +48,11 @@ module.exports = function runStateTest (options, testData, t, cb) {
         t.equal(bloom.bitvector.toString('hex'), result.bloom.bitvector.toString('hex'), 'the bloom should be correct')
       }
 
-      if (state.root.toString('hex') !== testData.postStateRoot.toString('hex')) {
+      // if (state.root.toString('hex') !== testData.postStateRoot.toString('hex')) {
         testUtil.verifyPostConditions(state, testData.post, t, done)
-      } else {
-        done()
-      }
+      // } else {
+      //   done()
+      // }
     }
   ], cb)
 }
