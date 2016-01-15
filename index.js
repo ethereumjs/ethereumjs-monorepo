@@ -494,30 +494,6 @@ exports.defineProperties = function (self, fields, data) {
 }
 
 /**
- * Print a `Buffer` or `Array`
- * @method printBA
- * @param {Buffer|Array} ba
- */
-exports.printBA = function (ba) {
-  if (Buffer.isBuffer(ba)) {
-    if (ba.length === 0) {
-      console.log('new Buffer(0)')
-    } else {
-      console.log("new Buffer('" + ba.toString('hex') + "', 'hex')")
-    }
-  } else if (ba instanceof Array) {
-    console.log('[')
-    for (var i = 0; i < ba.length; i++) {
-      exports.printBA(ba[i])
-      console.log(',')
-    }
-    console.log(']')
-  } else {
-    console.log(ba)
-  }
-}
-
-/**
  * Converts a `Buffer` or `Array` to JSON
  * @method BAToJSON
  * @param {Buffer|Array} ba
