@@ -5,9 +5,8 @@ const testUtil = require('./util')
 const Trie = require('merkle-patricia-tree/secure')
 
 module.exports = function runStateTest (options, testData, t, cb) {
-  var sstream = false
   var state = new Trie()
-  var block, vm, result // ,hrstart
+  var block, vm, result
 
   async.series([
     function (done) {
@@ -17,8 +16,12 @@ module.exports = function runStateTest (options, testData, t, cb) {
     function (done) {
       var tx = testUtil.makeTx(testData.transaction)
       block = testUtil.makeBlockFromEnv(testData.env)
-      if (options.vmtrace) {
-        sstream = testUtil.enableVMtracing(vm, options.vmtrace)
+      if (!block.isHomestead() && !testData.homestead) {
+        tx._homestead = false
+      } else {
+       block.isHomestead = function(){
+         return true
+       }
       }
 
       if (tx.validate()) {
@@ -35,11 +38,6 @@ module.exports = function runStateTest (options, testData, t, cb) {
       }
     },
     function (done) {
-      // var hrend = process.hrtime(hrstart)
-      if (sstream) {
-        sstream.push(null)
-      }
-
       t.equal(state.root.toString('hex'), testData.postStateRoot, 'the state roots should match')
 
       if (testData.logs.length !== 0) {

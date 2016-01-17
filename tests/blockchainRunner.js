@@ -19,6 +19,16 @@ module.exports = function runBlockchainTest (options, testData, t, cb) {
   var vm = new VM(state, blockchain)
   var genesisBlock = new Block()
 
+  if (testData.homestead) {
+    vm.on('beforeTx', function (tx) {
+      tx._homestead = true
+    })
+    vm.on('beforeBlock', function (block) {
+      block.header.isHomestead = function () {
+        return true
+      }
+    })
+  }
   async.series([
     // set up pre-state
     function (done) {
@@ -41,7 +51,17 @@ module.exports = function runBlockchainTest (options, testData, t, cb) {
       async.eachSeries(testData.blocks, function (raw, cb) {
         try {
           var block = new Block(new Buffer(raw.rlp.slice(2), 'hex'))
-          // block.header._genesisDifficulty = 0x20000 //ethUtil.bufferToInt(genesisBlock.header.difficulty)
+          //forces the block into thinking they are homestead
+          if (testData.homestead) {
+            block.header.isHomestead = function () {
+              return true
+            }
+            block.uncleHeaders.forEach(function (uncle) {
+              uncle.isHomestead = function () {
+                return true
+              }
+            })
+          }
           blockchain.putBlock(block, function (err) {
             cb(err)
           })
@@ -53,7 +73,9 @@ module.exports = function runBlockchainTest (options, testData, t, cb) {
       })
     },
     function runBlockchain (done) {
-      vm.runBlockchain(done)
+      vm.runBlockchain(function (err) {
+        done()
+      })
     },
     function getHead (done) {
       vm.blockchain.getHead(function (err, block) {

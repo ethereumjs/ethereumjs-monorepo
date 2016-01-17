@@ -214,40 +214,6 @@ exports.verifyLogs = function (logs, testData, t) {
   }
 }
 
-// /**
-//  * enableVMtracing - set up handler to output VM trace on console
-//  * @param {[type]} vm - the VM object
-//  * @param file
-//  * TODO: remove
-//  */
-// exports.enableVMtracing = function (vm, file) {
-//   var firstChunk = true
-//   var stream = vm.createTraceStream()
-//   var fstream = fs.createWriteStream(file)
-//   fstream.write('[')
-
-//   stream.on('end', function () {
-//     fstream.write(']')
-//   })
-
-//   stream.pipe(through2({
-//     objectMode: true
-//   }, function (chunk, enc, cb) {
-//     if (firstChunk) {
-//       firstChunk = false
-//     } else {
-//       this.push(',')
-//     }
-//     this.push(JSON.stringify(chunk))
-//     cb()
-//   })).pipe(fstream)
-
-//   return stream
-// // stream.on('end', function(){
-// //   this.push('')
-// // })
-// }
-
 /**
  * toDecimal - converts buffer to decimal string, no leading zeroes
  * @param  {Buffer}

@@ -6,8 +6,8 @@ var Transaction = require('ethereumjs-tx')
 var Trie = require('merkle-patricia-tree')
 var ethUtil = require('ethereumjs-util')
 
-tape('[Common]: genesis hashes tests', function (t) {
-  t.test('should generate the genesis state correctly', function (st) {
+tape('test the cache api', function (t) {
+  t.test('should have the correct value in the cache ', function (st) {
     var account1 = {
       address: new Buffer('cd2a3d9f938e13cd947ec05abc7fe734df8dd826', 'hex'),
       key: ethUtil.sha3('cow')
