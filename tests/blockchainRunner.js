@@ -51,7 +51,7 @@ module.exports = function runBlockchainTest (options, testData, t, cb) {
       async.eachSeries(testData.blocks, function (raw, cb) {
         try {
           var block = new Block(new Buffer(raw.rlp.slice(2), 'hex'))
-          //forces the block into thinking they are homestead
+          // forces the block into thinking they are homestead
           if (testData.homestead) {
             block.header.isHomestead = function () {
               return true
@@ -73,7 +73,7 @@ module.exports = function runBlockchainTest (options, testData, t, cb) {
       })
     },
     function runBlockchain (done) {
-      vm.runBlockchain(function (err) {
+      vm.runBlockchain(function () {
         done()
       })
     },

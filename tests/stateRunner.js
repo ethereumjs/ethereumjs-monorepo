@@ -9,6 +9,7 @@ module.exports = function runStateTest (options, testData, t, cb) {
   var block, vm, result
 
   async.series([
+
     function (done) {
       vm = new VM(state)
       testUtil.setupPreConditions(state, testData, done)
@@ -19,9 +20,9 @@ module.exports = function runStateTest (options, testData, t, cb) {
       if (!block.isHomestead() && !testData.homestead) {
         tx._homestead = false
       } else {
-       block.isHomestead = function(){
-         return true
-       }
+        block.isHomestead = function () {
+          return true
+        }
       }
 
       if (tx.validate()) {
