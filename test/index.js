@@ -325,3 +325,38 @@ describe('baToJSON', function () {
     assert.deepEqual(ethUtils.baToJSON(ba), ['00', '01', ['02']])
   })
 })
+
+var echash = new Buffer('82ff40c0a986c6a5cfad4ddf4c3aa6996f1a7837f9c398e17e5de5cbd5a12b28', 'hex')
+var ecprivkey = new Buffer('3c9229289a6125f7fdf1885a77bb12c37a8d3b4962d936f7e3084dece32a3ca1', 'hex')
+
+describe('ecsign', function () {
+  it('should produce a signature', function () {
+    var sig = ethUtils.ecsign(echash, ecprivkey)
+    assert.deepEqual(sig.r, new Buffer('99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9', 'hex'))
+    assert.deepEqual(sig.s, new Buffer('129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66', 'hex'))
+    assert.equal(sig.v, 27)
+  })
+})
+
+describe('ecrecover', function () {
+  it('should recover a public key', function () {
+    var r = new Buffer('99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9', 'hex')
+    var s = new Buffer('129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66', 'hex')
+    var pubkey = ethUtils.ecrecover(echash, 27, r, s)
+    assert.deepEqual(pubkey, ethUtils.privateToPublic(ecprivkey))
+  })
+  it('should fail on an invalid signature (v)', function () {
+    var r = new Buffer('99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9', 'hex')
+    var s = new Buffer('129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66', 'hex')
+    assert.throws(function () {
+      ethUtils.ecrecover(echash, 21, r, s)
+    })
+  })
+  it('should fail on an invalid signature (swapped points)', function () {
+    var r = new Buffer('99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9', 'hex')
+    var s = new Buffer('129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66', 'hex')
+    assert.throws(function () {
+      ethUtils.ecrecover(echash, 27, s, r)
+    })
+  })
+})
