@@ -498,7 +498,7 @@ exports.defineProperties = function (self, fields, data) {
  * Converts a `Buffer` or `Array` to JSON
  * @method BAToJSON
  * @param {Buffer|Array} ba
- * @return {Array}
+ * @return {Array|String|null}
  */
 exports.baToJSON = function (ba) {
   if (Buffer.isBuffer(ba)) {
