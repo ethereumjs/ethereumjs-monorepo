@@ -96,7 +96,7 @@ BlockHeader.prototype.canonicalDifficulty = function (parentBlock) {
   if (this.isHomestead()) {
     // homestead
     // 1 - (block_timestamp - parent_timestamp) // 10
-    var a = blockTs.sub(parentTs).divn(10).neg().addn(1)
+    var a = blockTs.sub(parentTs).idivn(10).ineg().iaddn(1)
     var cutoff = new BN(-99)
     // MAX(cutoff, a)
     if (cutoff.cmp(a) === 1) {
@@ -112,7 +112,7 @@ BlockHeader.prototype.canonicalDifficulty = function (parentBlock) {
     }
   }
 
-  var exp = new BN(this.number).divn(100000).subn(2)
+  var exp = new BN(this.number).idivn(100000).isubn(2)
   if (!exp.isNeg()) {
     dif.iadd(new BN(2).pow(exp))
   }
@@ -178,7 +178,7 @@ BlockHeader.prototype.validate = function (blockchain, height, cb) {
     self.parentBlock = parentBlock
 
     var number = new BN(self.number)
-    if (number.cmp(new BN(parentBlock.header.number).addn(1)) !== 0) {
+    if (number.cmp(new BN(parentBlock.header.number).iaddn(1)) !== 0) {
       return cb('invalid number')
     }
 
