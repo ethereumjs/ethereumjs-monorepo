@@ -28,6 +28,15 @@ describe('sha3 without hexprefix', function () {
   })
 })
 
+describe('sha3-512', function () {
+  it('should produce a sha3', function () {
+    var msg = '0x3c9229289a6125f7fdf1885a77bb12c37a8d3b4962d936f7e3084dece32a3ca1'
+    var r = '36fdacd0339307068e9ed191773a6f11f6f9f99016bd50f87fd529ab7c87e1385f2b7ef1ac257cc78a12dcb3e5804254c6a7b404a6484966b831eadc721c3d24'
+    var hash = ethUtils.sha3(msg, 512)
+    assert.equal(hash.toString('hex'), r)
+  })
+})
+
 describe('sha256', function () {
   it('should produce a sha256', function () {
     var msg = '0x3c9229289a6125f7fdf1885a77bb12c37a8d3b4962d936f7e3084dece32a3ca1'
