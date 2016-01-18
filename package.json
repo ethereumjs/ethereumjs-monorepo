@@ -13,7 +13,6 @@
     "ethereumjs-util": "^2.5.0",
     "functional-red-black-tree": "^1.0.1",
     "merkle-patricia-tree": "^2.1.1",
-    "rlp": "^2.0.0",
     "secp256k1": "^2.0.7"
   },
   "devDependencies": {
