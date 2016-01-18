@@ -351,7 +351,8 @@ exports.generateAddress = function (from, nonce) {
     nonce = new Buffer(nonce.toArray())
   }
 
-  return exports.sha3(rlp.encode([from, nonce])).slice(12)
+  // Only take the lower 160bits of the hash
+  return exports.rlphash([from, nonce]).slice(-20)
 }
 
 /**
