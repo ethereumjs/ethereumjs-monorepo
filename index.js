@@ -293,14 +293,14 @@ exports.rlphash = function (a) {
 
 /**
  * Returns the ethereum address of a given public key.
- * Accepts "Ethereum public keys" and DER encoded keys.
+ * Accepts "Ethereum public keys" and SEC1 encoded keys.
  * @method publicToAddress
  * @param {Buffer} pubKey
  * @return {Buffer}
  */
 exports.pubToAddress = exports.publicToAddress = function (pubKey) {
   pubKey = exports.toBuffer(pubKey)
-  // Handle uncompressed DER keys
+  // Handle uncompressed SEC1 keys
   // FIXME: should we do this here?
   if (pubKey.length === 65 && pubKey[0] === 4) {
     pubKey = pubKey.slice(1)
@@ -313,7 +313,7 @@ exports.pubToAddress = exports.publicToAddress = function (pubKey) {
 /**
  * Returns the ethereum public key of a given private key
  * @method privateToPublic
- * @param {Buffer} privateKey
+ * @param {Buffer} privateKey A private key must be 256 bits wide
  * @return {Buffer}
  */
 var privateToPublic = exports.privateToPublic = function (privateKey) {
@@ -325,7 +325,7 @@ var privateToPublic = exports.privateToPublic = function (privateKey) {
 /**
  * Returns the ethereum address of a given private key
  * @method privateToAddress
- * @param {Buffer} privateKey
+ * @param {Buffer} privateKey A private key must be 256 bits wide
  * @return {Buffer}
  */
 exports.privateToAddress = function (privateKey) {
