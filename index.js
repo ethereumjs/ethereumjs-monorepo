@@ -552,8 +552,6 @@ exports.ecsign = function (msgHash, privateKey) {
 exports.ecrecover = function (msgHash, v, r, s) {
   var signature = Buffer.concat([exports.pad(r, 32), exports.pad(s, 32)], 64)
   var recovery = exports.bufferToInt(v) - 27
-  var senderPubKey
-
-  senderPubKey = secp256k1.recoverSync(msgHash, signature, recovery)
+  var senderPubKey = secp256k1.recoverSync(msgHash, signature, recovery)
   return secp256k1.publicKeyConvert(senderPubKey, false).slice(1)
 }
