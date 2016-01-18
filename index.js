@@ -1,4 +1,4 @@
-const SHA3 = require('sha3')
+const SHA3 = require('keccakjs')
 const secp256k1 = require('secp256k1')
 const assert = require('assert')
 const rlp = require('rlp')
@@ -246,7 +246,7 @@ exports.sha3 = function (a, bytes) {
   a = exports.toBuffer(a)
   if (!bytes) bytes = 256
 
-  var h = new SHA3.SHA3Hash(bytes)
+  var h = new SHA3(bytes)
   if (a) {
     h.update(a)
   }
