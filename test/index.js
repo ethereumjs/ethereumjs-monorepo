@@ -324,6 +324,9 @@ describe('baToJSON', function () {
     var ba = [new Buffer([0]), new Buffer([1]), [new Buffer([2])]]
     assert.deepEqual(ethUtils.baToJSON(ba), ['00', '01', ['02']])
   })
+  it('should turn a buffers into string', function () {
+    assert.deepEqual(ethUtils.baToJSON(new Buffer([0])), '00')
+  })
 })
 
 var echash = new Buffer('82ff40c0a986c6a5cfad4ddf4c3aa6996f1a7837f9c398e17e5de5cbd5a12b28', 'hex')
