@@ -295,15 +295,14 @@ exports.rlphash = function (a) {
  * Returns the ethereum address of a given public key.
  * Accepts "Ethereum public keys" and SEC1 encoded keys.
  * @method publicToAddress
- * @param {Buffer} pubKey
+ * @param {Buffer} pubKey The two points of an uncompressed key, unless sanitize is enabled
+ * @param {Boolean} sanitize Accept public keys in other formats
  * @return {Buffer}
  */
-exports.pubToAddress = exports.publicToAddress = function (pubKey) {
+exports.pubToAddress = exports.publicToAddress = function (pubKey, sanitize) {
   pubKey = exports.toBuffer(pubKey)
-  // Handle uncompressed SEC1 keys
-  // FIXME: should we do this here?
-  if (pubKey.length === 65 && pubKey[0] === 4) {
-    pubKey = pubKey.slice(1)
+  if (sanitize && (pubKey.length !== 64)) {
+    pubKey = secp256k1.publicKeyConvert(pubKey, false).slice(1)
   }
   assert(pubKey.length === 64)
   // Only take the lower 160bits of the hash

@@ -190,14 +190,14 @@ describe('publicToAddress', function () {
     var pubKey = '043a443d8381a6798a70c6ff9304bdc8cb0163c23211d11628fae52ef9e0dca11a001cf066d56a8156fc201cd5df8a36ef694eecd258903fca7086c1fae7441e1d'
     var address = '2f015c60e0be116b1f0cd534704db9c92118fb6a'
     pubKey = new Buffer(pubKey, 'hex')
-    var r = ethUtils.publicToAddress(pubKey)
+    var r = ethUtils.publicToAddress(pubKey, true)
     assert.equal(r.toString('hex'), address)
   })
   it('shouldn\'t produce an address given an invalid SEC1 public key', function () {
     var pubKey = '023a443d8381a6798a70c6ff9304bdc8cb0163c23211d11628fae52ef9e0dca11a001cf066d56a8156fc201cd5df8a36ef694eecd258903fca7086c1fae7441e1d'
     pubKey = new Buffer(pubKey, 'hex')
     assert.throws(function () {
-      ethUtils.publicToAddress(pubKey)
+      ethUtils.publicToAddress(pubKey, true)
     })
   })
   it('shouldn\'t produce an address given an invalid public key', function () {
