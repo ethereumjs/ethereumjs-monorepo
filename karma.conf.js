@@ -2,6 +2,7 @@ process.env.ethTest = 'BasicTests'
 
 module.exports = function (config) {
   config.set({
+    browserNoActivityTimeout: 60000,
     frameworks: ['browserify', 'detectBrowsers', 'tap'],
     files: [
       './tests/genesis.js',
