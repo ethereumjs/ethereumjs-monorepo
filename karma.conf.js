@@ -19,7 +19,6 @@ module.exports = function (config) {
       'karma-firefox-launcher',
       'karma-detect-browsers'
     ],
-    reporters: ['progress'],
     detectBrowsers: {
       enabled: true,
       usePhantomJS: false,
