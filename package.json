@@ -10,10 +10,9 @@
     "ethereum-common": "0.0.16",
     "ethereumjs-account": "^2.0.1",
     "ethereumjs-block": "^1.2.0",
-    "ethereumjs-util": "^2.5.0",
+    "ethereumjs-util": "^3.0.0",
     "functional-red-black-tree": "^1.0.1",
-    "merkle-patricia-tree": "^2.1.1",
-    "secp256k1": "^2.0.7"
+    "merkle-patricia-tree": "^2.1.1"
   },
   "devDependencies": {
     "ethereumjs-blockchain": "^1.3.4",
