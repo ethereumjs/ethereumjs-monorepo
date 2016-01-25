@@ -21,7 +21,8 @@
   "license": "MPL-2.0",
   "dependencies": {
     "ethereum-common": "0.0.16",
-    "ethereumjs-util": "^3.0.0"
+    "ethereumjs-util": "^3.0.0",
+    "object.assign": "^4.0.3"
   },
   "devDependencies": {
     "async": "^1.4.2",

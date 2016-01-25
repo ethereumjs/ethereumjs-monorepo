@@ -1,3 +1,4 @@
+require('object.assign/polyfill')()
 const ethUtil = require('ethereumjs-util')
 const fees = require('ethereum-common')
 const BN = ethUtil.BN
