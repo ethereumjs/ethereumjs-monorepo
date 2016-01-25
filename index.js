@@ -144,15 +144,12 @@ Transaction.prototype.hash = function (signature) {
 }
 
 /**
- * returns the sender`s address
+ * returns the sender's address
  * @method getSenderAddress
  * @return {Buffer}
  */
 Transaction.prototype.getSenderAddress = function () {
-  var pubKey = this.getSenderPublicKey()
-  // ensure we have an uncompressed key and remove the type field
-  pubKey = ecdsa.publicKeyConvert(pubKey, false).slice(1)
-  return ethUtil.publicToAddress(pubKey)
+  return ethUtil.publicToAddress(this.getSenderPublicKey())
 }
 
 /**
@@ -165,7 +162,8 @@ Transaction.prototype.getSenderPublicKey = function () {
     this.verifySignature()
   }
 
-  return this._senderPubKey
+  // ensure we have an uncompressed, ethereum type key
+  return ecdsa.publicKeyConvert(this._senderPubKey, false).slice(1)
 }
 
 /**
