@@ -91,32 +91,22 @@ exports.zeros = function (bytes) {
  * @param {Number} length the number of bytes the output should be
  * @return {Buffer|Array}
  */
-exports.pad = function (msg, length) {
+exports.setLength = function (msg, length, right) {
+  var buf = exports.zeros(length)
   msg = exports.toBuffer(msg)
-  if (msg.length < length) {
-    var buf = exports.zeros(length)
-    msg.copy(buf, length - msg.length)
-    return buf
+  if (right) {
+    if (msg.length < length) {
+      msg.copy(buf)
+      return buf
+    }
+    return msg.slice(0, length)
+  } else {
+    if (msg.length < length) {
+      msg.copy(buf, length - msg.length)
+      return buf
+    }
+    return msg.slice(-length)
   }
-  return msg.slice(-length)
-}
-
-/**
- * Pads an `Array` or `Buffer` with trailing zeros till it has `length` bytes
- * Or it truncates the end if it exceeds.
- * @method rpad
- * @param {Buffer|Array} msg the value to pad
- * @param {Number} length the number of bytes the output should be
- * @return {Buffer|Array}
- */
-exports.rpad = function (msg, length) {
-  msg = exports.toBuffer(msg)
-  if (msg.length < length) {
-    var buf = exports.zeros(length)
-    msg.copy(buf)
-    return buf
-  }
-  return msg.slice(0, length)
 }
 
 /**
@@ -275,7 +265,7 @@ exports.ripemd160 = function (a, padded) {
   a = exports.toBuffer(a)
   var hash = crypto.createHash('rmd160').update(a).digest()
   if (padded === true) {
-    return exports.pad(hash, 32)
+    return exports.setLength(hash, 32)
   } else {
     return hash
   }
@@ -440,7 +430,7 @@ exports.ecsign = function (msgHash, privateKey) {
  * @return {Buffer} publicKey
  */
 exports.ecrecover = function (msgHash, v, r, s) {
-  var signature = Buffer.concat([exports.pad(r, 32), exports.pad(s, 32)], 64)
+  var signature = Buffer.concat([exports.setLength(r, 32), exports.setLength(s, 32)], 64)
   var recovery = exports.bufferToInt(v) - 27
   var senderPubKey = secp256k1.recoverSync(msgHash, signature, recovery)
   return secp256k1.publicKeyConvert(senderPubKey, false).slice(1)
