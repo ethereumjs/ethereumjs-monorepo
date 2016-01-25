@@ -481,6 +481,10 @@ exports.defineProperties = function (self, fields, data) {
     return exports.baToJSON(this.raw)
   }
 
+  self.serialize = function serialize () {
+    return rlp.encode(self.raw)
+  }
+
   fields.forEach(function (field, i) {
     self._fields.push(field.name)
     Object.defineProperty(self, field.name, {
@@ -516,6 +520,9 @@ exports.defineProperties = function (self, fields, data) {
   if (data) {
     if (typeof data === 'string') {
       data = new Buffer(exports.stripHexPrefix(data), 'hex')
+    }
+
+    if (Buffer.isBuffer(data)) {
       data = rlp.decode(data)
     }
 

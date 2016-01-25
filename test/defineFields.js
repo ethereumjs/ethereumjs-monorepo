@@ -69,6 +69,10 @@ describe('define', function () {
     }
 
     ethUtil.defineProperties(someOb, fields, data)
-    assert.deepEqual(someOb.toJSON(true), expected)
+    assert.deepEqual(someOb.toJSON(true), expected, 'should produce the correctly labeled object')
+    var someOb2 = {}
+    var rlpEncoded = someOb.serialize().toString('hex')
+    ethUtil.defineProperties(someOb2, fields, rlpEncoded)
+    assert.equal(someOb2.serialize().toString('hex'), rlpEncoded, 'the constuctor should accept rlp encoded buffers')
   })
 })
