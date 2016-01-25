@@ -86,9 +86,10 @@ exports.zeros = function (bytes) {
 /**
  * Pads an `Array` or `Buffer` with leading zeros till it has `length` bytes.
  * Or it truncates the beginning if it exceeds.
- * @method pad
+ * @method setLength
  * @param {Buffer|Array} msg the value to pad
  * @param {Number} length the number of bytes the output should be
+ * @param {Boolean} [right=false] whether to start padding form the left or right
  * @return {Buffer|Array}
  */
 exports.setLength = function (msg, length, right) {
