@@ -322,10 +322,10 @@ describe('toBuffer', function () {
 describe('baToJSON', function () {
   it('should turn a array of buffers into a pure json object', function () {
     var ba = [new Buffer([0]), new Buffer([1]), [new Buffer([2])]]
-    assert.deepEqual(ethUtils.baToJSON(ba), ['00', '01', ['02']])
+    assert.deepEqual(ethUtils.baToJSON(ba), ['0x00', '0x01', ['0x02']])
   })
   it('should turn a buffers into string', function () {
-    assert.deepEqual(ethUtils.baToJSON(new Buffer([0])), '00')
+    assert.deepEqual(ethUtils.baToJSON(new Buffer([0])), '0x00')
   })
 })
 
