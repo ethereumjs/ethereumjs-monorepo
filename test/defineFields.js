@@ -68,11 +68,31 @@ describe('define', function () {
       r: '0x727272'
     }
 
+    var expectedArray = [
+      '0x74657374', '0x', '0x6e6f74207a65726f', '0x612076616c7565', '0x727272'
+    ]
+
     ethUtil.defineProperties(someOb, fields, data)
     assert.deepEqual(someOb.toJSON(true), expected, 'should produce the correctly labeled object')
+
     var someOb2 = {}
     var rlpEncoded = someOb.serialize().toString('hex')
     ethUtil.defineProperties(someOb2, fields, rlpEncoded)
     assert.equal(someOb2.serialize().toString('hex'), rlpEncoded, 'the constuctor should accept rlp encoded buffers')
+
+    var someOb3 = {}
+    ethUtil.defineProperties(someOb3, fields, expectedArray)
+    assert.deepEqual(someOb.toJSON(), expectedArray, 'should produce the correctly object')
+  })
+
+  it('it should not accept invalid values in the constuctor', function () {
+    var someOb = {}
+    assert.throws(function () {
+      ethUtil.defineProperties(someOb, fields, 5)
+    }, 'should throw on nonsensical data')
+
+    assert.throws(function () {
+      ethUtil.defineProperties(someOb, fields, Array(6))
+    }, 'should throw on invalid arrays')
   })
 })
