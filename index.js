@@ -1,6 +1,5 @@
 const ethUtil = require('ethereumjs-util')
 const fees = require('ethereum-common')
-const ecdsa = require('secp256k1')
 const BN = ethUtil.BN
 const rlp = ethUtil.rlp
 
@@ -162,8 +161,7 @@ Transaction.prototype.getSenderPublicKey = function () {
     this.verifySignature()
   }
 
-  // ensure we have an uncompressed, ethereum type key
-  return ecdsa.publicKeyConvert(this._senderPubKey, false).slice(1)
+  return this._senderPubKey
 }
 
 /**
@@ -173,8 +171,6 @@ Transaction.prototype.getSenderPublicKey = function () {
  */
 Transaction.prototype.verifySignature = function () {
   var msgHash = this.hash(false)
-  var signature = Buffer.concat([ethUtil.pad(this.r, 32), ethUtil.pad(this.s, 32)], 64)
-  var recovery = ethUtil.bufferToInt(this.v) - 27
 
   // All transaction signatures whose s-value is greater than secp256k1n/2 are considered invalid.
   if (this._homestead && new BN(this.s).cmp(N_DIV_2) === 1) {
@@ -182,34 +178,14 @@ Transaction.prototype.verifySignature = function () {
   }
 
   try {
-    this._senderPubKey = ecdsa.recoverSync(msgHash, signature, recovery)
+    this._senderPubKey = ethUtil.ecrecover(msgHash, this.v, this.r, this.s)
   } catch (e) {
     return false
   }
 
-  if (!this._senderPubKey) {
-    return false
-  }
-
-  //
-  // In node-secp256k1, `recover` will fail on invalid inputs, but in
-  // elliptic this is not enforced.
-  //
-  // Here we enable a pubkey based verification only in the case
-  // of browserified output, where elliptic will be used, to workaround the issue.
-  //
-  // TODO: fix elliptic?
-  if (process.browser) {
-    var result = ecdsa.verifySync(msgHash, signature, this._senderPubKey)
-    if (!result) {
-      this._senderPubKey = null
-    }
-  } else {
-    result = !!this._senderPubKey
-  }
-
-  return result
+  return !!this._senderPubKey
 }
+
 /**
  * sign a transaction with a given a private key
  * @method sign
@@ -217,12 +193,12 @@ Transaction.prototype.verifySignature = function () {
  */
 Transaction.prototype.sign = function (privateKey) {
   var msgHash = this.hash(false)
-  var sig = ecdsa.signSync(msgHash, privateKey)
-
-  this.r = sig.signature.slice(0, 32)
-  this.s = sig.signature.slice(32, 64)
-  this.v = sig.recovery + 27
+  var sig = ethUtil.ecsign(msgHash, privateKey)
+  this.r = sig.r
+  this.s = sig.s
+  this.v = sig.v
 }
+
 /**
  * The amount of gas paid for the data in this tx
  * @method getDataFee
