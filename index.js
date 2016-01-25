@@ -403,115 +403,6 @@ exports.addHexPrefix = function (str) {
 }
 
 /**
- * Defines properties on a `Object`. It make the assumption that underlying data is binary.
- * @method defineProperties
- * @param {Object} self the `Object` to define properties on
- * @param {Array} fields an array fields to define. Fields can contain:
- * * `name` - the name of the properties
- * * `length` - the number of bytes the field can have
- * * `allowLess` - if the field can be less than the length
- * * `allowEmpty`
- * @param {*} data data to be validated against the definitions
- */
-exports.defineProperties = function (self, fields, data) {
-  self.raw = []
-  self._fields = []
-
-  self.toJSON = function (label) {
-    if (label) {
-      var obj = {}
-
-      for (var prop in this) {
-        if (typeof this[prop] !== 'function' && prop !== 'raw' && prop !== '_fields') {
-          obj[prop] = '0x' + this[prop].toString('hex')
-        }
-      }
-      return obj
-    }
-
-    return exports.baToJSON(this.raw)
-  }
-
-  fields.forEach(function (field, i) {
-    self._fields.push(field.name)
-    Object.defineProperty(self, field.name, {
-      enumerable: true,
-      configurable: true,
-      get: function () {
-        return this.raw[i]
-      },
-      set: function (v) {
-        v = exports.toBuffer(v)
-
-        if (v.toString('hex') === '00' && !field.allowZero) {
-          v = new Buffer([])
-        }
-
-        if (field.allowLess && field.length) {
-          v = exports.stripZeros(v)
-          assert(field.length >= v.length)
-        } else if (!(field.allowZero && v.length === 0) && field.length) {
-          assert(field.length === v.length, 'The field ' + field.name + ' must have byte length of ' + field.length)
-        }
-
-        this.raw[i] = v
-      }
-    })
-
-    if (field.default) {
-      self[field.name] = field.default
-    }
-  })
-
-  if (data) {
-    if (typeof data === 'string') {
-      data = new Buffer(exports.stripHexPrefix(data), 'hex')
-    }
-
-    if (Buffer.isBuffer(data)) {
-      data = rlp.decode(data)
-    }
-
-    if (Array.isArray(data)) {
-      if (data.length > self._fields.length) {
-        throw (new Error('wrong number of fields in data'))
-      }
-
-      // make sure all the items are buffers
-      data.forEach(function (d, i) {
-        self[self._fields[i]] = exports.toBuffer(d)
-      })
-    } else if (typeof data === 'object') {
-      for (var prop in data) {
-        if (self._fields.indexOf(prop) !== -1) {
-          self[prop] = data[prop]
-        }
-      }
-    } else {
-      throw new Error('invalid data')
-    }
-  }
-}
-
-/**
- * Converts a `Buffer` or `Array` to JSON
- * @method BAToJSON
- * @param {Buffer|Array} ba
- * @return {Array|String|null}
- */
-exports.baToJSON = function (ba) {
-  if (Buffer.isBuffer(ba)) {
-    return ba.toString('hex')
-  } else if (ba instanceof Array) {
-    var array = []
-    for (var i = 0; i < ba.length; i++) {
-      array.push(exports.baToJSON(ba[i]))
-    }
-    return array
-  }
-}
-
-/**
  * Pads a `String` to have an even length
  * @method padToEven
  * @param {String} a
@@ -553,4 +444,108 @@ exports.ecrecover = function (msgHash, v, r, s) {
   var recovery = exports.bufferToInt(v) - 27
   var senderPubKey = secp256k1.recoverSync(msgHash, signature, recovery)
   return secp256k1.publicKeyConvert(senderPubKey, false).slice(1)
+}
+
+/**
+ * Converts a `Buffer` or `Array` to JSON
+ * @method BAToJSON
+ * @param {Buffer|Array} ba
+ * @return {Array|String|null}
+ */
+exports.baToJSON = function (ba) {
+  if (Buffer.isBuffer(ba)) {
+    return '0x' + ba.toString('hex')
+  } else if (ba instanceof Array) {
+    var array = []
+    for (var i = 0; i < ba.length; i++) {
+      array.push(exports.baToJSON(ba[i]))
+    }
+    return array
+  }
+}
+
+/**
+ * Defines properties on a `Object`. It make the assumption that underlying data is binary.
+ * @method defineProperties
+ * @param {Object} self the `Object` to define properties on
+ * @param {Array} fields an array fields to define. Fields can contain:
+ * * `name` - the name of the properties
+ * * `length` - the number of bytes the field can have
+ * * `allowLess` - if the field can be less than the length
+ * * `allowEmpty`
+ * @param {*} data data to be validated against the definitions
+ */
+exports.defineProperties = function (self, fields, data) {
+  self.raw = []
+  self._fields = []
+
+  // attach the `toJSON`
+  self.toJSON = function (label) {
+    if (label) {
+      var obj = {}
+      self._fields.forEach(function (field) {
+        obj[field] = '0x' + self[field].toString('hex')
+      })
+      return obj
+    }
+    return exports.baToJSON(this.raw)
+  }
+
+  fields.forEach(function (field, i) {
+    self._fields.push(field.name)
+    Object.defineProperty(self, field.name, {
+      enumerable: true,
+      configurable: true,
+      get: function () {
+        return this.raw[i]
+      },
+      set: function (v) {
+        v = exports.toBuffer(v)
+
+        if (v.toString('hex') === '00' && !field.allowZero) {
+          v = new Buffer([])
+        }
+
+        if (field.allowLess && field.length) {
+          v = exports.stripZeros(v)
+          assert(field.length >= v.length)
+        } else if (!(field.allowZero && v.length === 0) && field.length) {
+          assert(field.length === v.length, 'The field ' + field.name + ' must have byte length of ' + field.length)
+        }
+
+        this.raw[i] = v
+      }
+    })
+
+    if (field.default) {
+      self[field.name] = field.default
+    }
+  })
+
+  // if the constuctor is passed data
+  if (data) {
+    if (typeof data === 'string') {
+      data = new Buffer(exports.stripHexPrefix(data), 'hex')
+      data = rlp.decode(data)
+    }
+
+    if (Array.isArray(data)) {
+      if (data.length > self._fields.length) {
+        throw (new Error('wrong number of fields in data'))
+      }
+
+      // make sure all the items are buffers
+      data.forEach(function (d, i) {
+        self[self._fields[i]] = exports.toBuffer(d)
+      })
+    } else if (typeof data === 'object') {
+      for (var prop in data) {
+        if (self._fields.indexOf(prop) !== -1) {
+          self[prop] = data[prop]
+        }
+      }
+    } else {
+      throw new Error('invalid data')
+    }
+  }
 }

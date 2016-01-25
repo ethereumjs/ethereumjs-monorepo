@@ -3,6 +3,7 @@ var ethUtil = require('../index.js')
 
 describe('define', function () {
   const fields = [{
+    name: 'aword',
     word: true,
     default: new Buffer([])
   }, {
@@ -13,7 +14,7 @@ describe('define', function () {
   }, {
     name: 'cannotBeZero',
     allowZero: false,
-    default: new Buffer([ 0 ])
+    default: new Buffer([0])
   }, {
     name: 'value',
     default: new Buffer([])
@@ -24,17 +25,21 @@ describe('define', function () {
     default: ethUtil.zeros(32)
   }]
 
-  var someOb = {}
-  ethUtil.defineProperties(someOb, fields)
   it('should trim zeros', function () {
-    // Define Properties
+    var someOb = {}
+    ethUtil.defineProperties(someOb, fields)
+      // Define Properties
     someOb.r = '0x00004'
     assert.equal(someOb.r.toString('hex'), '04')
 
     someOb.r = new Buffer([0, 0, 0, 0, 4])
     assert.equal(someOb.r.toString('hex'), '04')
   })
+
   it('shouldn\'t allow wrong size for exact size requirements', function () {
+    var someOb = {}
+    ethUtil.defineProperties(someOb, fields)
+
     assert.throws(function () {
       const tmp = [{
         name: 'mustBeExactSize',
@@ -44,5 +49,26 @@ describe('define', function () {
       }]
       ethUtil.defineProperties(someOb, tmp)
     })
+  })
+
+  it('it should accept rlp encoded intial data', function () {
+    var someOb = {}
+    var data = {
+      aword: 'test',
+      cannotBeZero: 'not zero',
+      value: 'a value',
+      r: 'rrr'
+    }
+
+    var expected = {
+      aword: '0x74657374',
+      empty: '0x',
+      cannotBeZero: '0x6e6f74207a65726f',
+      value: '0x612076616c7565',
+      r: '0x727272'
+    }
+
+    ethUtil.defineProperties(someOb, fields, data)
+    assert.deepEqual(someOb.toJSON(true), expected)
   })
 })
