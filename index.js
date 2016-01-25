@@ -189,28 +189,7 @@ Transaction.prototype.verifySignature = function () {
     return false
   }
 
-  if (!this._senderPubKey) {
-    return false
-  }
-
-  //
-  // In node-secp256k1, `recover` will fail on invalid inputs, but in
-  // elliptic this is not enforced.
-  //
-  // Here we enable a pubkey based verification only in the case
-  // of browserified output, where elliptic will be used, to workaround the issue.
-  //
-  // TODO: fix elliptic?
-  if (process.browser) {
-    var result = ecdsa.verifySync(msgHash, signature, this._senderPubKey)
-    if (!result) {
-      this._senderPubKey = null
-    }
-  } else {
-    result = !!this._senderPubKey
-  }
-
-  return result
+  return !!this._senderPubKey
 }
 /**
  * sign a transaction with a given a private key
@@ -282,15 +261,6 @@ Transaction.prototype.validate = function (stringError) {
   if (stringError === undefined || stringError === false) {
     return errors.length === 0
   } else {
-    try {
-      return errors.reduce(function (str, err) {
-        if (str) {
-          str += ' '
-        }
-        return str + err
-      })
-    } catch (e) {
-      return ''
-    }
+    return errors.join(' ')
   }
 }
