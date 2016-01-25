@@ -194,9 +194,7 @@ Transaction.prototype.verifySignature = function () {
 Transaction.prototype.sign = function (privateKey) {
   var msgHash = this.hash(false)
   var sig = ethUtil.ecsign(msgHash, privateKey)
-  this.r = sig.r
-  this.s = sig.s
-  this.v = sig.v
+  Object.assign(this, sig)
 }
 
 /**

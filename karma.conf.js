@@ -14,7 +14,6 @@ module.exports = function (config) {
     singleRun: true,
     plugins: [
       'karma-browserify',
-      'karma-chrome-launcher',
       'karma-env-preprocessor',
       'karma-tap',
       'karma-firefox-launcher',
@@ -22,17 +21,7 @@ module.exports = function (config) {
     ],
     detectBrowsers: {
       enabled: true,
-      usePhantomJS: false,
-      postDetection: function (availableBrowser) {
-        if (process.env.TRAVIS) {
-          return ['Firefox']
-        }
-
-        var browsers = ['Chrome', 'Firefox']
-        return browsers.filter(function (browser) {
-          return availableBrowser.indexOf(browser) !== -1
-        })
-      }
+      usePhantomJS: false
     }
   })
 }
