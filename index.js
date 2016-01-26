@@ -84,15 +84,15 @@ exports.zeros = function (bytes) {
 }
 
 /**
- * Pads an `Array` or `Buffer` with leading zeros till it has `length` bytes.
+ * Left Pads an `Array` or `Buffer` with leading zeros till it has `length` bytes.
  * Or it truncates the beginning if it exceeds.
- * @method setLength
+ * @method lsetLength
  * @param {Buffer|Array} msg the value to pad
  * @param {Number} length the number of bytes the output should be
  * @param {Boolean} [right=false] whether to start padding form the left or right
  * @return {Buffer|Array}
  */
-exports.setLength = function (msg, length, right) {
+exports.lsetLength = exports.setLength = function (msg, length, right) {
   var buf = exports.zeros(length)
   msg = exports.toBuffer(msg)
   if (right) {
@@ -108,6 +108,18 @@ exports.setLength = function (msg, length, right) {
     }
     return msg.slice(-length)
   }
+}
+
+/**
+ * Right Pads an `Array` or `Buffer` with leading zeros till it has `length` bytes.
+ * Or it truncates the beginning if it exceeds.
+ * @method lsetLength
+ * @param {Buffer|Array} msg the value to pad
+ * @param {Number} length the number of bytes the output should be
+ * @return {Buffer|Array}
+ */
+exports.rsetLength = function (msg, length) {
+  return exports.lsetLength(msg, length, true)
 }
 
 /**
