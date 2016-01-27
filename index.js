@@ -92,7 +92,7 @@ exports.zeros = function (bytes) {
  * @param {Boolean} [right=false] whether to start padding form the left or right
  * @return {Buffer|Array}
  */
-exports.lsetLength = exports.setLength = function (msg, length, right) {
+exports.setLengthL = exports.setLength = function (msg, length, right) {
   var buf = exports.zeros(length)
   msg = exports.toBuffer(msg)
   if (right) {
@@ -118,8 +118,8 @@ exports.lsetLength = exports.setLength = function (msg, length, right) {
  * @param {Number} length the number of bytes the output should be
  * @return {Buffer|Array}
  */
-exports.rsetLength = function (msg, length) {
-  return exports.lsetLength(msg, length, true)
+exports.setLengthR = function (msg, length) {
+  return exports.setLength(msg, length, true)
 }
 
 /**

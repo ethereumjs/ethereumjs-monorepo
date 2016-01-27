@@ -100,7 +100,7 @@ describe('pad', function () {
   })
   it('should left pad a Buffer - alias', function () {
     var buf = new Buffer([9, 9])
-    var padded = ethUtils.lsetLength(buf, 3)
+    var padded = ethUtils.setLengthL(buf, 3)
     assert.equal(padded.toString('hex'), '000909')
   })
 })
@@ -118,7 +118,7 @@ describe('rpad', function () {
   })
   it('should right pad a Buffer - alias', function () {
     var buf = new Buffer([9, 9])
-    var padded = ethUtils.rsetLength(buf, 3, true)
+    var padded = ethUtils.setLengthR(buf, 3)
     assert.equal(padded.toString('hex'), '090900')
   })
 })
