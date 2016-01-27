@@ -535,6 +535,7 @@ exports.defineProperties = function (self, fields, data) {
     if (field.alais) {
       Object.defineProperty(self, field.alais, {
         enumerable: false,
+        configurable: true,
         set: setter,
         get: getter
       })
