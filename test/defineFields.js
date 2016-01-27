@@ -4,6 +4,7 @@ var ethUtil = require('../index.js')
 describe('define', function () {
   const fields = [{
     name: 'aword',
+    alais: 'blah',
     word: true,
     default: new Buffer([])
   }, {
@@ -94,5 +95,21 @@ describe('define', function () {
     assert.throws(function () {
       ethUtil.defineProperties(someOb, fields, Array(6))
     }, 'should throw on invalid arrays')
+  })
+
+  it('alias should work ', function () {
+    var someOb = {}
+    var data = {
+      aword: 'test',
+      cannotBeZero: 'not zero',
+      value: 'a value',
+      r: 'rrr'
+    }
+
+    ethUtil.defineProperties(someOb, fields, data)
+    assert.equal(someOb.blah.toString(), 'test')
+    someOb.blah = 'lol'
+    assert.equal(someOb.blah.toString(), 'lol')
+    assert.equal(someOb.aword.toString(), 'lol')
   })
 })

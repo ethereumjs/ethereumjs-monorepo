@@ -500,32 +500,44 @@ exports.defineProperties = function (self, fields, data) {
 
   fields.forEach(function (field, i) {
     self._fields.push(field.name)
+    function getter () {
+      return self.raw[i]
+    }
+    function setter (v) {
+      v = exports.toBuffer(v)
+
+      if (v.toString('hex') === '00' && !field.allowZero) {
+        v = new Buffer([])
+      }
+
+      if (field.allowLess && field.length) {
+        v = exports.stripZeros(v)
+        assert(field.length >= v.length, 'The field ' + field.name + ' must not have more ' + field.length + ' bytes')
+      } else if (!(field.allowZero && v.length === 0) && field.length) {
+        assert(field.length === v.length, 'The field ' + field.name + ' must have byte length of ' + field.length)
+      }
+
+      self.raw[i] = v
+    }
+
     Object.defineProperty(self, field.name, {
       enumerable: true,
       configurable: true,
-      get: function () {
-        return this.raw[i]
-      },
-      set: function (v) {
-        v = exports.toBuffer(v)
-
-        if (v.toString('hex') === '00' && !field.allowZero) {
-          v = new Buffer([])
-        }
-
-        if (field.allowLess && field.length) {
-          v = exports.stripZeros(v)
-          assert(field.length >= v.length)
-        } else if (!(field.allowZero && v.length === 0) && field.length) {
-          assert(field.length === v.length, 'The field ' + field.name + ' must have byte length of ' + field.length)
-        }
-
-        this.raw[i] = v
-      }
+      get: getter,
+      set: setter
     })
 
     if (field.default) {
       self[field.name] = field.default
+    }
+
+    // attach alias
+    if (field.alais) {
+      Object.defineProperty(self, field.alais, {
+        enumerable: false,
+        set: setter,
+        get: getter
+      })
     }
   })
 
