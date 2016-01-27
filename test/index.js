@@ -127,7 +127,7 @@ describe('intToHex', function () {
   it('should convert a int to hex', function () {
     var i = 6003400
     var hex = ethUtils.intToHex(i)
-    assert.equal(hex, '5b9ac8')
+    assert.equal(hex, '0x5b9ac8')
   })
 })
 

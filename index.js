@@ -180,7 +180,7 @@ exports.intToHex = function (i) {
     hex = '0' + hex
   }
 
-  return hex
+  return '0x' + hex
 }
 
 /**
@@ -191,7 +191,7 @@ exports.intToHex = function (i) {
  */
 exports.intToBuffer = function (i) {
   var hex = exports.intToHex(i)
-  return new Buffer(hex, 'hex')
+  return new Buffer(hex.slice(2), 'hex')
 }
 
 /**
@@ -424,7 +424,7 @@ exports.padToEven = function (a) {
  * @return {Object}
  */
 exports.ecsign = function (msgHash, privateKey) {
-  var sig = secp256k1.signSync(msgHash, privateKey)
+  var sig = secp256k1.sign(msgHash, privateKey)
 
   var ret = {}
   ret.r = sig.signature.slice(0, 32)
@@ -445,7 +445,7 @@ exports.ecsign = function (msgHash, privateKey) {
 exports.ecrecover = function (msgHash, v, r, s) {
   var signature = Buffer.concat([exports.setLength(r, 32), exports.setLength(s, 32)], 64)
   var recovery = exports.bufferToInt(v) - 27
-  var senderPubKey = secp256k1.recoverSync(msgHash, signature, recovery)
+  var senderPubKey = secp256k1.recover(msgHash, signature, recovery)
   return secp256k1.publicKeyConvert(senderPubKey, false).slice(1)
 }
 
