@@ -210,32 +210,23 @@ exports.bufferToInt = function (buf) {
 }
 
 /**
- * Interprets a `Buffer` as a signed integer and returns a `BN`
+ * Interprets a `Buffer` as a signed integer and returns a `BN`. Assumes 256-bit numbers.
  * @method fromSigned
  * @param {Buffer} num
  * @return {BN}
  */
 exports.fromSigned = function (num) {
-  // Could use num.testn(255), but this is faster:
-  if (num.length === 32 && num[0] >= 128) {
-    return new BN(num).inotn(256).iaddn(1).ineg()
-  }
-
-  return new BN(num)
+  return new BN(num).fromTwos(256);
 }
 
 /**
- * Converts a `BN` to an unsigned integer and returns it as a `Buffer`
+ * Converts a `BN` to an unsigned integer and returns it as a `Buffer`. Assumes 256-bit numbers.
  * @method toUnsigned
  * @param {BN} num
  * @return {Buffer}
  */
 exports.toUnsigned = function (num) {
-  if (num.isNeg()) {
-    return new Buffer(num.abs().inotn(256).iaddn(1).toArray())
-  }
-
-  return new Buffer(num.toArray())
+  return new Buffer(num.toTwos(256).toArray())
 }
 
 /**
