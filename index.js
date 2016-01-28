@@ -523,7 +523,7 @@ exports.defineProperties = function (self, fields, data) {
     }
 
     // attach alias
-    if (field.alais) {
+    if (field.alias) {
       Object.defineProperty(self, field.alais, {
         enumerable: false,
         configurable: true,

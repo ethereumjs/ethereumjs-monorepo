@@ -4,7 +4,7 @@ var ethUtil = require('../index.js')
 describe('define', function () {
   const fields = [{
     name: 'aword',
-    alais: 'blah',
+    alias: 'blah',
     word: true,
     default: new Buffer([])
   }, {
