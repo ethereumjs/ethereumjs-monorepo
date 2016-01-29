@@ -23,8 +23,9 @@ tape('testing good block', function (t) {
 
   function genesisBlock(cb){
     var genesis = new Block()
+    genesis.setGenesisParams()
     e.verifyPOW(genesis, function (result) {
-      t.assert(result, 'should be valid')
+      t.assert(result, 'genesis block should be valid')
       cb()
     })
   }
