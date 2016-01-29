@@ -28,7 +28,6 @@
   "homepage": "https://github.com/ethereumjs/ethereumjs-block#readme",
   "dependencies": {
     "async": "^1.5.2",
-    "es6-shim": "^0.34.1",
     "ethereum-common": "0.0.16",
     "ethereumjs-tx": "^0.7.1",
     "ethereumjs-util": "^2.6.0",
