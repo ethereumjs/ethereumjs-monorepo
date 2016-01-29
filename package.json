@@ -6,7 +6,6 @@
   "dependencies": {
     "async": "^1.4.2",
     "async-eventemitter": "^0.2.2",
-    "es6-shim": "^0.34.1",
     "ethereum-common": "0.0.16",
     "ethereumjs-account": "^2.0.1",
     "ethereumjs-block": "^1.2.0",
