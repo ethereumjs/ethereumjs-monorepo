@@ -1,4 +1,3 @@
-require('es6-shim')
 const ethUtil = require('ethereumjs-util')
 const ethHashUtil = require('./util.js')
 const xor = require('buffer-xor')
