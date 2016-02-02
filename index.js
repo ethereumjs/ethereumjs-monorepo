@@ -53,6 +53,7 @@ var Transaction = module.exports = function (data) {
     default: new Buffer([])
   }, {
     name: 'gasLimit',
+    alias: 'gas',
     length: 32,
     allowLess: true,
     default: new Buffer([])
