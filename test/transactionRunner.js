@@ -42,7 +42,7 @@ testing.runTests(function (testData, sst, cb) {
       sst.equal(ethUtil.bufferToInt(tx.gasLimit), Number(tTx.gasLimit), 'gasLimit')
       sst.equal(ethUtil.bufferToInt(tx.gasPrice), Number(tTx.gasPrice), 'gasPrice')
       sst.equal(ethUtil.bufferToInt(tx.nonce), Number(tTx.nonce), 'nonce')
-      sst.equal(ethUtil.pad(tx.r, 32).toString('hex'), ethUtil.pad(tTx.r, 32).toString('hex'), 'r')
+      sst.equal(ethUtil.setLength(tx.r, 32).toString('hex'), ethUtil.setLength(tTx.r, 32).toString('hex'), 'r')
       sst.equal(tx.s.toString('hex'), addPad(tTx.s.slice(2)), 's')
       sst.equal(ethUtil.bufferToInt(tx.v), Number(tTx.v), 'v')
       if (tTx.to[1] === 'x') {

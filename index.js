@@ -1,4 +1,3 @@
-Object.assign = require('object.assign/polyfill')()
 const ethUtil = require('ethereumjs-util')
 const fees = require('ethereum-common')
 const BN = ethUtil.BN
@@ -69,6 +68,7 @@ var Transaction = module.exports = function (data) {
     default: new Buffer([])
   }, {
     name: 'data',
+    alias: 'input',
     allowZero: true,
     default: new Buffer([])
   }, {
@@ -149,7 +149,8 @@ Transaction.prototype.hash = function (signature) {
  * @return {Buffer}
  */
 Transaction.prototype.getSenderAddress = function () {
-  return ethUtil.publicToAddress(this.getSenderPublicKey())
+  var pubkey = this.getSenderPublicKey()
+  return ethUtil.publicToAddress(pubkey)
 }
 
 /**
