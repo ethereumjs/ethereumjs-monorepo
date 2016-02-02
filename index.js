@@ -92,7 +92,7 @@ exports.zeros = function (bytes) {
  * @param {Boolean} [right=false] whether to start padding form the left or right
  * @return {Buffer|Array}
  */
-exports.setLengthL = exports.setLength = function (msg, length, right) {
+exports.setLengthLeft = exports.setLength = function (msg, length, right) {
   var buf = exports.zeros(length)
   msg = exports.toBuffer(msg)
   if (right) {
@@ -118,7 +118,7 @@ exports.setLengthL = exports.setLength = function (msg, length, right) {
  * @param {Number} length the number of bytes the output should be
  * @return {Buffer|Array}
  */
-exports.setLengthR = function (msg, length) {
+exports.setLengthRight = function (msg, length) {
   return exports.setLength(msg, length, true)
 }
 
@@ -524,7 +524,7 @@ exports.defineProperties = function (self, fields, data) {
 
     // attach alias
     if (field.alias) {
-      Object.defineProperty(self, field.alais, {
+      Object.defineProperty(self, field.alias, {
         enumerable: false,
         configurable: true,
         set: setter,

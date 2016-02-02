@@ -34,25 +34,15 @@
     "bn.js": "^4.8.0",
     "keccakjs": "^0.1.0",
     "rlp": "^2.0.0",
-    "secp256k1": "^2.0.10"
-  },
-  "testling": {
-    "browsers": [
-      "ie/9..latest",
-      "firefox/15..latest",
-      "chrome/22..latest"
-    ],
-    "harness": "mocha-bdd",
-    "files": [
-      "test/index.js"
-    ]
+    "secp256k1": "^3.0.0"
   },
   "devDependencies": {
+    "browserify": "^13.0.0",
     "coveralls": "^2.11.4",
     "documentation": "^3.0.4",
     "istanbul": "^0.4.1",
     "karma": "^0.13.15",
-    "karma-browserify": "^4.4.0",
+    "karma-browserify": "^5.0.0",
     "karma-chrome-launcher": "^0.2.2",
     "karma-detect-browsers": "^2.0.2",
     "karma-env-preprocessor": "^0.1.1",
