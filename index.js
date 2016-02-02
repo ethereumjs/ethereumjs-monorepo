@@ -216,7 +216,7 @@ exports.bufferToInt = function (buf) {
  * @return {BN}
  */
 exports.fromSigned = function (num) {
-  return new BN(num).fromTwos(256);
+  return new BN(num).fromTwos(256)
 }
 
 /**
