@@ -103,17 +103,14 @@ var Transaction = module.exports = function (data) {
     }
   })
 
+  /**
+   * Returns the rlp encoding of the transaction
+   * @method serialize
+   * @return {Buffer}
+   */
+  // attached serialize
   ethUtil.defineProperties(this, fields, data)
   this._homestead = true
-}
-
-/**
- * Returns the rlp encoding of the transaction
- * @method serialize
- * @return {Buffer}
- */
-Transaction.prototype.serialize = function () {
-  return rlp.encode(this.raw)
 }
 
 /**
