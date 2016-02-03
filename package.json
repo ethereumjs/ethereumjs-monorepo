@@ -34,7 +34,7 @@
   "license": "MPL-2.0",
   "dependencies": {
     "async": "^1.4.2",
-    "ethereumjs-util": "^2.5.0",
+    "ethereumjs-util": "^4.0.0",
     "level-ws": "0.0.0",
     "levelup": "^1.2.1",
     "memdown": "^1.0.0",
@@ -43,13 +43,13 @@
     "semaphore": ">=1.0.1"
   },
   "devDependencies": {
-    "browserify": "^12.0.1",
+    "browserify": "^13.0.0",
     "coveralls": "^2.11.6",
     "documentation": "^3.0.4",
     "ethereumjs-testing": "git+https://github.com/ethereumjs/ethereumjs-testing.git",
     "istanbul": "^0.4.1",
     "karma": "^0.13.18",
-    "karma-browserify": "^4.4.2",
+    "karma-browserify": "^5.0.0",
     "karma-chrome-launcher": "^0.2.2",
     "karma-detect-browsers": "^2.0.2",
     "karma-env-preprocessor": "^0.1.1",
