@@ -5,8 +5,8 @@ const ethUtil = require('ethereumjs-util')
 const async = require('async')
 
 const ROUNDS = 1000
-const SYMMETRIC = false
-const ERA_SIZE = 4
+const SYMMETRIC = true
+const ERA_SIZE = 1000
 
 let trie = new Trie()
 let seed = new Buffer(32).fill(0)
@@ -19,7 +19,6 @@ run(() => {
 
 function run (cb) {
   let i = 0
-  trie.checkpoint()
   async.whilst(
      () => {
       i++
@@ -35,12 +34,7 @@ function run (cb) {
       }
       function genRoot () {
         if (i % ERA_SIZE === 0) {
-          trie.commit(() => {
-            seed = trie.root
-            trie.checkpoint()
-            done()
-          })
-          return
+          seed = trie.root
         }
         done()
       }
