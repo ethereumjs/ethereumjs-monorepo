@@ -46,7 +46,7 @@
     "browserify": "^13.0.0",
     "coveralls": "^2.11.6",
     "documentation": "^3.0.4",
-    "ethereumjs-testing": "git+https://github.com/ethereumjs/ethereumjs-testing.git",
+    "ethereumjs-testing": "0.0.1",
     "istanbul": "^0.4.1",
     "karma": "^0.13.18",
     "karma-browserify": "^5.0.0",
