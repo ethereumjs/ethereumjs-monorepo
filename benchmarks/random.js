@@ -1,4 +1,4 @@
-//https://github.com/ethereum/wiki/wiki/Benchmarks
+// https://github.com/ethereum/wiki/wiki/Benchmarks
 'use strict'
 const Trie = require('../')
 const ethUtil = require('ethereumjs-util')
@@ -20,7 +20,7 @@ run(() => {
 function run (cb) {
   let i = 0
   async.whilst(
-     () => {
+    () => {
       i++
       return i <= ROUNDS
     },
@@ -32,6 +32,7 @@ function run (cb) {
         let val = ethUtil.sha3(seed)
         trie.put(seed, val, genRoot)
       }
+
       function genRoot () {
         if (i % ERA_SIZE === 0) {
           seed = trie.root
