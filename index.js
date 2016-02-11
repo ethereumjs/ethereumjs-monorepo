@@ -92,11 +92,7 @@ var Transaction = module.exports = function (data) {
     enumerable: false,
     configurable: true,
     get: function () {
-      if (this._from) {
-        return this._from
-      }
-      this._from = this.getSenderAddress()
-      return this._from
+      return this.getSenderAddress()
     },
     set: function (v) {
       this._from = v
@@ -147,8 +143,12 @@ Transaction.prototype.hash = function (signature) {
  * @return {Buffer}
  */
 Transaction.prototype.getSenderAddress = function () {
+  if (this._from) {
+    return this._from
+  }
   var pubkey = this.getSenderPublicKey()
-  return ethUtil.publicToAddress(pubkey)
+  this._from = ethUtil.publicToAddress(pubkey)
+  return this._from
 }
 
 /**
