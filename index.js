@@ -87,17 +87,6 @@ var Transaction = module.exports = function (data) {
     default: new Buffer([])
   }]
 
-  Object.defineProperty(this, 'from', {
-    enumerable: false,
-    configurable: true,
-    get: function () {
-      return this.getSenderAddress()
-    },
-    set: function (v) {
-      this._from = v
-    }
-  })
-
   /**
    * Returns the rlp encoding of the transaction
    * @method serialize
