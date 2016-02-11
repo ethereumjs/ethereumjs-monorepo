@@ -37,7 +37,7 @@
     "karma-firefox-launcher": "^0.1.7",
     "karma-tap": "^1.0.3",
     "minimist": "^1.2.0",
-    "standard": "^5.2.2",
+    "standard": "^6.0.4",
     "tape": "^4.0.3"
   },
   "repository": {
