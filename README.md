@@ -174,14 +174,17 @@ The VM processes state changes at many levels.
   * for every tx, runTx
   * pay miner and uncles
 * runTx
-  * checkpoint state
+  * check sender balance
+  * check sender nonce
   * runCall
-  * revert or commit checkpoint
+  * transfer gas charges
 * runCall
+  * checkpoint state
   * transfer value
   * load code
   * runCode
   * materialize created contracts
+  * revert or commit checkpoint
 * runCode
   * iterate over code
   * run op codes
