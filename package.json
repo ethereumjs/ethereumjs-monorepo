@@ -1,0 +1,38 @@
+{
+  "name": "ethereumjs-wallet",
+  "version": "0.1.0",
+  "description": "Utilities for handling Ethereum keys",
+  "main": "index.js",
+  "scripts": {
+    "lint": "standard",
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/axic/ethereumjs-wallet.git"
+  },
+  "keywords": [
+    "ethereum",
+    "wallets",
+    "keys"
+  ],
+  "author": "Alex Beregszaszi <alex@rtfs.hu>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/axic/ethereumjs-wallet/issues"
+  },
+  "homepage": "https://github.com/axic/ethereumjs-wallet",
+  "dependencies": {
+    "ethereumjs-util": "^4.0.0",
+    "scryptsy": "^1.2.1",
+    "uuid": "^2.0.1"
+  },
+  "devDependencies": {
+    "standard": "^5.4.1"
+  },
+  "standard": {
+    "globals": [
+      "describe",
+      "it"
+    ]
+  }
+}
