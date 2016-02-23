@@ -26,7 +26,8 @@
   "dependencies": {
     "ethereumjs-util": "^4.1.0",
     "scrypt.js": "^0.1.0",
-    "uuid": "^2.0.1"
+    "uuid": "^2.0.1",
+    "utf8": "^2.1.1"
   },
   "devDependencies": {
     "mocha": "^2.3.4",

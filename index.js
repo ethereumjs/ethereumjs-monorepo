@@ -2,6 +2,7 @@ var ethUtil = require('ethereumjs-util')
 var crypto = require('crypto')
 var scryptsy = require('scrypt.js')
 var uuid = require('uuid')
+var utf8 = require('utf8')
 
 function assert (val, msg) {
   if (!val) {
@@ -216,6 +217,139 @@ Wallet.fromEthSale = function (input, password) {
     throw new Error('Decoded key mismatch - possibly wrong passphrase')
   }
   return wallet
+}
+
+/*
+ * opts:
+ * - digest - digest algorithm, defaults to md5
+ * - count - hash iterations
+ * - keysize - desired key size
+ * - ivsize - desired IV size
+ *
+ * Algorithm form https://www.openssl.org/docs/manmaster/crypto/EVP_BytesToKey.html
+ *
+ * FIXME: not optimised at all
+ */
+function evp_kdf (data, salt, opts) {
+  // A single EVP iteration, returns `D_i`, where block equlas to `D_(i-1)`
+  function iter (block) {
+    var hash = crypto.createHash(opts.digest || 'md5')
+    hash.update(block)
+    hash.update(data)
+    hash.update(salt)
+    block = hash.digest()
+
+    for (var i = 1; i < (opts.count || 1); i++) {
+      hash = crypto.createHash(opts.digest || 'md5')
+      hash.update(block)
+      block = hash.digest()
+    }
+
+    return block
+  }
+
+  var keysize = opts.keysize || 16
+  var ivsize = opts.ivsize || 16
+
+  var ret = []
+
+  var i = 0
+  while (Buffer.concat(ret).length < (keysize + ivsize)) {
+    ret[i] = iter((i === 0) ? new Buffer(0) : ret[i - 1])
+    i++
+  }
+
+  var tmp = Buffer.concat(ret)
+
+  return {
+    key: tmp.slice(0, keysize),
+    iv: tmp.slice(keysize, keysize + ivsize)
+  }
+}
+
+// http://stackoverflow.com/questions/25288311/cryptojs-aes-pattern-always-ends-with
+function decodeCryptojsSalt (input) {
+  var ciphertext = new Buffer(input, 'base64')
+  if (ciphertext.slice(0, 8).toString() === 'Salted__') {
+    return {
+      salt: ciphertext.slice(8, 16),
+      ciphertext: ciphertext.slice(16)
+    }
+  } else {
+    return {
+      ciphertext: ciphertext
+    }
+  }
+}
+
+/*
+ * This wallet format is created by https://github.com/SilentCicero/ethereumjs-accounts
+ * and used on https://www.myetherwallet.com/
+ */
+Wallet.fromEtherWallet = function (input, password) {
+  var json = (typeof input === 'object') ? input : JSON.parse(input)
+
+  var privKey
+  if (!json.locked) {
+    if (json.private.length !== 64) {
+      throw new Error('Invalid private key length')
+    }
+
+    privKey = new Buffer(json.private, 'hex')
+  } else {
+    if (typeof password !== 'string') {
+      throw new Error('Password required')
+    }
+    if (password.length < 7) {
+      throw new Error('Password must be at least 7 characters')
+    }
+
+    // the "encrypted" version has the low 4 bytes
+    // of the hash of the address appended
+    var cipher = json.encrypted ? json.private.slice(0, 128) : json.private
+
+    // decode openssl ciphertext + salt encoding
+    cipher = decodeCryptojsSalt(cipher)
+
+    // derive key/iv using OpenSSL EVP as implemented in CryptoJS
+    var evp = evp_kdf(new Buffer(password), cipher.salt, { keysize: 32, ivsize: 16 })
+
+    var decipher = crypto.createDecipheriv('aes-256-cbc', evp.key, evp.iv)
+    privKey = decipherBuffer(decipher, new Buffer(cipher.ciphertext))
+
+    // NOTE: yes, they've run it through UTF8
+    privKey = new Buffer(utf8.decode(privKey.toString()), 'hex')
+  }
+
+  var wallet = new Wallet(privKey)
+
+  if (wallet.getAddressString() !== json.address) {
+    throw new Error('Invalid private key or address')
+  }
+
+  return wallet
+}
+
+Wallet.fromEtherCamp = function (passphrase) {
+  return new Wallet(ethUtil.sha3(new Buffer(passphrase)))
+}
+
+Wallet.fromKryptoKit = function (entropy) {
+  if (entropy[0] === '#') {
+    entropy = entropy.slice(1)
+  }
+
+  var type = entropy[0]
+  entropy = entropy.slice(1)
+
+  var privKey
+  if (type === 'd') {
+    privKey = ethUtil.sha256(entropy)
+  } else {
+    throw new Error('Unsupported or invalid entropy type')
+  }
+
+  return new Wallet(privKey)
 }
 
 module.exports = Wallet
