@@ -5,6 +5,8 @@
   "main": "index.js",
   "scripts": {
     "lint": "standard",
+    "prepublish": "npm run lint && npm run test",
+    "test": "mocha ./test/index.js"
   },
   "repository": {
     "type": "git",
@@ -27,6 +29,7 @@
     "uuid": "^2.0.1"
   },
   "devDependencies": {
+    "mocha": "^2.3.4",
     "standard": "^5.4.1"
   },
   "standard": {
