@@ -103,30 +103,35 @@ Wallet.fromPrivateKey = function (priv) {
 }
 
 // https://github.com/ethereum/go-ethereum/wiki/Passphrase-protected-key-store-spec
-// Let's just transform it to be compatible with V3
-// FIXME: this might not be fully correct in all cases
 Wallet.fromV1 = function (input, password) {
   var json = (typeof input === 'object') ? input : JSON.parse(input)
-  return Wallet.fromV3({
-    Crypto: {
-      ciphertext: json.Crypto.CipherText,
-      cipherparams: {
-        iv: json.Crypto.IV
-      },
-      cipher: 'aes-128-cbc',
-      kdf: json.Crypto.KeyHeader.Kdf,
-      kdfparams: {
-        dklen: json.Crypto.KeyHeader.KdfParams.DkLen,
-        n: json.Crypto.KeyHeader.KdfParams.N,
-        p: json.Crypto.KeyHeader.KdfParams.P,
-        r: json.Crypto.KeyHeader.KdfParams.R,
-        salt: json.Crypto.Salt
-      },
-      mac: json.Crypto.MAC
-    },
-    id: json.Id,
-    version: 3
-  }, password)
+
+  if (json.Version !== '1') {
+    throw new Error('Not a V1 wallet')
+  }
+
+  if (json.Crypto.KeyHeader.Kdf !== 'scrypt') {
+    throw new Error('Unsupported key derivation scheme')
+  }
+
+  var kdfparams = json.Crypto.KeyHeader.KdfParams
+  var derivedKey = scryptsy(new Buffer(password), new Buffer(json.Crypto.Salt, 'hex'), kdfparams.N, kdfparams.R, kdfparams.P, kdfparams.DkLen)
+
+  var ciphertext = new Buffer(json.Crypto.CipherText, 'hex')
+
+  var mac = ethUtil.sha3(Buffer.concat([ derivedKey.slice(16, 32), ciphertext ]))
+  console.log(mac, json.Crypto.MAC)
+
+  if (mac.toString('hex') !== json.Crypto.MAC) {
+    throw new Error('Key derivation failed - possibly wrong passphrase')
+  }
+
+  var decipher = crypto.createDecipheriv('aes-128-cbc', ethUtil.sha3(derivedKey.slice(0, 16)).slice(0, 16), new Buffer(json.Crypto.IV, 'hex'))
+  var seed = decipherBuffer(decipher, ciphertext)
+
+  // FIXME: Remove PKCS#7 padding here?
+
+  return new Wallet(seed)
 }
 
 Wallet.fromV3 = function (input, password) {
