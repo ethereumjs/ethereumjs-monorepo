@@ -155,13 +155,15 @@ Wallet.fromV3 = function (input, password) {
     throw new Error('Unsupported key derivation scheme')
   }
 
-  var mac = ethUtil.sha3(Buffer.concat([ derivedKey.slice(16, 32), new Buffer(json.Crypto.ciphertext, 'hex') ]))
+  var ciphertext = new Buffer(json.Crypto.ciphertext, 'hex')
+
+  var mac = ethUtil.sha3(Buffer.concat([ derivedKey.slice(16, 32), ciphertext ]))
   if (mac.toString('hex') !== json.Crypto.mac) {
     throw new Error('Key derivation failed - possibly wrong passphrase')
   }
 
   var decipher = crypto.createDecipheriv(json.Crypto.cipher, derivedKey.slice(0, 16), new Buffer(json.Crypto.cipherparams.iv, 'hex'))
-  var seed = decipherBuffer(decipher, new Buffer(json.Crypto.ciphertext, 'hex'))
+  var seed = decipherBuffer(decipher, ciphertext, 'hex')
 
   // FIXME: Remove PKCS#7 padding here?
 
