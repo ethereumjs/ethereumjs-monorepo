@@ -132,6 +132,10 @@ Wallet.fromV1 = function (input, password) {
 Wallet.fromV3 = function (input, password) {
   var json = (typeof input === 'object') ? input : JSON.parse(input)
 
+  if (json.version !== 3) {
+    throw new Error('Not a V3 wallet')
+  }
+
   var derivedKey
   var kdfparams
   if (json.Crypto.kdf === 'scrypt') {
