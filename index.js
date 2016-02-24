@@ -1,6 +1,6 @@
 var ethUtil = require('ethereumjs-util')
 var crypto = require('crypto')
-var scryptsy = require('scryptsy')
+var scryptsy = require('scrypt.js')
 var uuid = require('uuid')
 
 function assert (val, msg) {
