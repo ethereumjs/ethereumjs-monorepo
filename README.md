@@ -21,6 +21,7 @@ Features not supported:
 
 Constructors:
 
+* `generate([icap])` - create an instance based on a new random key (setting `icap` to true will generate an address suitable for the `ICAP Direct mode`)
 * `fromPrivateKey(input)` - create an instance based on a raw key
 * `fromV1(input, password)` - import a wallet (Version 1 of the Ethereum wallet format)
 * `fromV3(input, password)` - import a wallet (Version 3 of the Ethereum wallet format)

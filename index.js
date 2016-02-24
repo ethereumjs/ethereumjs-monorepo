@@ -17,6 +17,19 @@ var Wallet = function (priv) {
   this.privKey = priv
 }
 
+Wallet.generate = function (icapDirect) {
+  if (icapDirect) {
+    while (true) {
+      var privKey = crypto.randomBytes(32)
+      if (ethUtil.privateToAddress(privKey)[0] === 0) {
+        return new Wallet(privKey)
+      }
+    }
+  } else {
+    return new Wallet(crypto.randomBytes(32))
+  }
+}
+
 Wallet.prototype.getPrivateKey = function () {
   return this.privKey
 }
