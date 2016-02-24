@@ -48,7 +48,7 @@ Wallet.prototype.toV3 = function (password, opts) {
   var iv = opts.iv || crypto.randomBytes(16)
 
   var derivedKey
-  var kdf = opts.kdf || 'pbkdf2'
+  var kdf = opts.kdf || 'scrypt'
   var kdfparams = {
     dklen: opts.dklen || 32,
     salt: salt.toString('hex')
