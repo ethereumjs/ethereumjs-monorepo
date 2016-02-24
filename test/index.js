@@ -16,7 +16,7 @@ describe('.toV3()', function () {
   it('should work with Scrypt', function () {
     var key = new Buffer('efca4cdd31923b50f4214af5d2ae10e7ac45a5019e9431cc195482d707485378', 'hex')
     var wallet = Wallet.fromPrivateKey(key)
-    var w = '{"version":3,"id":"7e59dc02-8d42-409d-b29a-a8a0f862cc81","address":"b14ab53e38da1c172f877dbc6d65e4a1b0474c3c","Crypto":{"ciphertext":"ecff07eca8c0ab9bfb2022c42e38a9592cf9ab77396ef4a46bee0a530e7f6a4a","cipherparams":{"iv":"cecacd85e9cb89788b5aab2f93361233"},"cipher":"aes-128-ctr","kdf":"scrypt","kdfparams":{"dklen":32,"salt":"dc9e4a98886738bd8aae134a1f89aaa5a502c3fbd10e336136d4d5fe47448ad6","n":262144,"r":1,"p":8},"mac":"e201037b8b701300d473b3124789572c9f939b732f6d122483dda2e03f72a28d"}}'
+    var w = '{"version":3,"id":"7e59dc02-8d42-409d-b29a-a8a0f862cc81","address":"b14ab53e38da1c172f877dbc6d65e4a1b0474c3c","Crypto":{"ciphertext":"c52682025b1e5d5c06b816791921dbf439afe7a053abb9fac19f38a57499652c","cipherparams":{"iv":"cecacd85e9cb89788b5aab2f93361233"},"cipher":"aes-128-ctr","kdf":"scrypt","kdfparams":{"dklen":32,"salt":"dc9e4a98886738bd8aae134a1f89aaa5a502c3fbd10e336136d4d5fe47448ad6","n":262144,"r":8,"p":1},"mac":"27b98c8676dc6619d077453b38db645a4c7c17a3e686ee5adaf53c11ac1b890e"}}'
     this.timeout(180000) // 3minutes
     // FIXME: just test for ciphertext and mac?
     assert.equal(wallet.toV3String('testtest', { kdf: 'scrypt', uuid: uuid, salt: salt, iv: iv }), w)

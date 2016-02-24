@@ -61,8 +61,8 @@ Wallet.prototype.toV3 = function (password, opts) {
   } else if (kdf === 'scrypt') {
     // FIXME: support progress reporting callback
     kdfparams.n = opts.n || 262144
-    kdfparams.r = opts.r || 1
-    kdfparams.p = opts.p || 8
+    kdfparams.r = opts.r || 8
+    kdfparams.p = opts.p || 1
     derivedKey = scryptsy(new Buffer(password), salt, kdfparams.n, kdfparams.r, kdfparams.p, kdfparams.dklen)
   } else {
     throw new Error('Unsupported kdf')
