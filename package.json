@@ -27,11 +27,11 @@
   "dependencies": {
     "async": "^1.4.2",
     "buffer-xor": "^1.0.3",
-    "ethereumjs-util": "^2.5.0",
+    "ethereumjs-util": "^4.0.1",
     "miller-rabin": "^4.0.0"
   },
   "devDependencies": {
-    "ethereumjs-block": "^1.0.6",
+    "ethereumjs-block": "^1.2.2",
     "ethereumjs-testing": "0.0.1",
     "levelup": "^1.3.0",
     "memdown": "^1.1.0",
