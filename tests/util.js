@@ -70,6 +70,8 @@ exports.makeTx = function (txData) {
     tx.r = new Buffer(txData.r.slice(2), 'hex')
     tx.s = new Buffer(txData.s.slice(2), 'hex')
   }
+  tx.from = tx.getSenderAddress()
+
   return tx
 }
 
@@ -258,7 +260,7 @@ exports.makeBlockHeader = function (data) {
   if (data.previousHash) {
     header.parentHash = new Buffer(data.previousHash, 'hex')
   }
-  header.coinbase = utils.pad(format(data.currentCoinbase, false, true), 20)
+  header.coinbase = utils.padToEven(format(data.currentCoinbase, false, true), 20)
   header.difficulty = format(data.currentDifficulty)
   header.number = format(data.currentNumber)
   return header
@@ -327,7 +329,7 @@ exports.setupPreConditions = function (state, testData, done) {
         async.forEachSeries(keys, function (key, cb3) {
           var val = acctData.storage[key]
           val = rlp.encode(new Buffer(val.slice(2), 'hex'))
-          key = utils.pad(new Buffer(key.slice(2), 'hex'), 32)
+          key = utils.padToEven(new Buffer(key.slice(2), 'hex'), 32)
 
           storageTrie.put(key, val, cb3)
         }, cb2)
