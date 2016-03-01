@@ -29,9 +29,9 @@
   "dependencies": {
     "async": "^1.5.2",
     "ethereum-common": "0.0.16",
-    "ethereumjs-tx": "^0.7.1",
-    "ethereumjs-util": "^2.6.0",
-    "merkle-patricia-tree": "^2.1.1"
+    "ethereumjs-tx": "^1.0.0",
+    "ethereumjs-util": "^4.0.1",
+    "merkle-patricia-tree": "^2.1.2"
   },
   "devDependencies": {
     "browserify": "^13.0.0",
