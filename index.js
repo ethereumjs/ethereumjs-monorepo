@@ -94,6 +94,13 @@ var Transaction = module.exports = function (data) {
    */
   // attached serialize
   ethUtil.defineProperties(this, fields, data)
+
+  Object.defineProperty(this, "from", {
+    enumerable: true,
+    configurable: true,
+    get: this.getSenderAddress.bind(this)
+  })
+
   this._homestead = true
 }
 
