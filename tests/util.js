@@ -138,7 +138,7 @@ exports.verifyAccountPostConditions = function (state, account, acctData, t, cb)
 
   var hashedStorage = {}
   for (var key in acctData.storage) {
-    hashedStorage[utils.sha3(utils.pad(new Buffer(key.slice(2), 'hex'), 32)).toString('hex')] = acctData.storage[key]
+    hashedStorage[utils.sha3(utils.setLength(new Buffer(key.slice(2), 'hex'), 32)).toString('hex')] = acctData.storage[key]
   }
 
   if (storageKeys.length > 0) {
@@ -239,7 +239,7 @@ exports.fromDecimal = function (string) {
  */
 exports.fromAddress = function (hexString) {
   hexString = hexString.substring(2)
-  return utils.pad(new Buffer(new BN(hexString, 16).toArray()), 32)
+  return utils.setLength(new Buffer(new BN(hexString, 16).toArray()), 32)
 }
 
 /**
@@ -258,7 +258,7 @@ exports.makeBlockHeader = function (data) {
   if (data.previousHash) {
     header.parentHash = new Buffer(data.previousHash, 'hex')
   }
-  header.coinbase = utils.pad(format(data.currentCoinbase, false, true), 20)
+  header.coinbase = utils.setLength(format(data.currentCoinbase, false, true), 20)
   header.difficulty = format(data.currentDifficulty)
   header.number = format(data.currentNumber)
   return header
@@ -327,7 +327,7 @@ exports.setupPreConditions = function (state, testData, done) {
         async.forEachSeries(keys, function (key, cb3) {
           var val = acctData.storage[key]
           val = rlp.encode(new Buffer(val.slice(2), 'hex'))
-          key = utils.pad(new Buffer(key.slice(2), 'hex'), 32)
+          key = utils.setLength(new Buffer(key.slice(2), 'hex'), 32)
 
           storageTrie.put(key, val, cb3)
         }, cb2)
