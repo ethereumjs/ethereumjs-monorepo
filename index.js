@@ -97,7 +97,7 @@ var Transaction = module.exports = function (data) {
   /**
    * @prop {Buffer} from (read only) sender address of this transaction, mathematically derived from other parameters.
    */
-  Object.defineProperty(this, "from", {
+  Object.defineProperty(this, 'from', {
     enumerable: true,
     configurable: true,
     get: this.getSenderAddress.bind(this)

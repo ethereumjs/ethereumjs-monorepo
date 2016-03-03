@@ -1,6 +1,6 @@
 const inherits = require('util').inherits
-const Transaction = require("./index.js");
-const ethUtil = require("ethereumjs-util");
+const Transaction = require('./index.js')
+const ethUtil = require('ethereumjs-util')
 
 module.exports = FakeTransaction
 
@@ -34,24 +34,24 @@ inherits(FakeTransaction, Transaction)
  * @prop {Buffer} r EC signature parameter
  * @prop {Buffer} s EC recovery ID
  */
-function FakeTransaction(data) {
-  var self = this;
+function FakeTransaction (data) {
+  var self = this
 
-  FakeTransaction.super_.call(this, data);
+  FakeTransaction.super_.call(this, data)
 
   /**
    * @prop {Buffer} from (read/write) Set from address to bypass transaction signing.
    */
-  Object.defineProperty(this, "from", {
+  Object.defineProperty(this, 'from', {
     enumerable: true,
     configurable: true,
     get: this.getSenderAddress.bind(self),
-    set: function(val) {
-      self._from = ethUtil.toBuffer(val);
+    set: function (val) {
+      self._from = ethUtil.toBuffer(val)
     }
-  });
+  })
 
   if (data.from) {
-    this.from = data.from;
+    this.from = data.from
   }
 }
