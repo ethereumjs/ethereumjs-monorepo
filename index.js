@@ -36,7 +36,6 @@ global.ethUtil = ethUtil
  * @prop {Buffer} v EC signature parameter
  * @prop {Buffer} r EC signature parameter
  * @prop {Buffer} s EC recovery ID
- * @prop {Buffer} from If you are not planing on signing the tx you can set the from property. If you do sign it will be over written
  */
 var Transaction = module.exports = function (data) {
   // Define Properties
@@ -94,6 +93,16 @@ var Transaction = module.exports = function (data) {
    */
   // attached serialize
   ethUtil.defineProperties(this, fields, data)
+
+  /**
+   * @prop {Buffer} from (read only) sender address of this transaction, mathematically derived from other parameters.
+   */
+  Object.defineProperty(this, 'from', {
+    enumerable: true,
+    configurable: true,
+    get: this.getSenderAddress.bind(this)
+  })
+
   this._homestead = true
 }
 
