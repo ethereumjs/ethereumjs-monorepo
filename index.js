@@ -1,5 +1,5 @@
 const ethUtil = require('ethereumjs-util')
-const fees = require('ethereum-common')
+const fees = require('ethereum-common/params')
 const BN = ethUtil.BN
 
 // secp256k1n/2
