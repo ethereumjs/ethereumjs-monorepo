@@ -2,7 +2,7 @@ var assert = require('assert')
 var Wallet = require('../')
 
 var fixturekey = new Buffer('efca4cdd31923b50f4214af5d2ae10e7ac45a5019e9431cc195482d707485378', 'hex')
-var fixturewallet = new Wallet.fromPrivateKey(fixturekey)
+var fixturewallet = Wallet.fromPrivateKey(fixturekey)
 
 describe('.getPrivateKey()', function () {
   it('should work', function () {
