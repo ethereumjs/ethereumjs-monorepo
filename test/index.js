@@ -358,11 +358,18 @@ describe('ecrecover', function () {
     var pubkey = ethUtils.ecrecover(echash, 27, r, s)
     assert.deepEqual(pubkey, ethUtils.privateToPublic(ecprivkey))
   })
-  it('should fail on an invalid signature (v)', function () {
+  it('should fail on an invalid signature (v = 21)', function () {
     var r = new Buffer('99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9', 'hex')
     var s = new Buffer('129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66', 'hex')
     assert.throws(function () {
       ethUtils.ecrecover(echash, 21, r, s)
+    })
+  })
+  it('should fail on an invalid signature (v = 29)', function () {
+    var r = new Buffer('99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9', 'hex')
+    var s = new Buffer('129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66', 'hex')
+    assert.throws(function () {
+      ethUtils.ecrecover(echash, 29, r, s)
     })
   })
   it('should fail on an invalid signature (swapped points)', function () {
