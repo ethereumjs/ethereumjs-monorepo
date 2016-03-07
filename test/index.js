@@ -1,6 +1,45 @@
 var assert = require('assert')
 var Wallet = require('../')
 
+var fixturekey = new Buffer('efca4cdd31923b50f4214af5d2ae10e7ac45a5019e9431cc195482d707485378', 'hex')
+var fixturewallet = new Wallet.fromPrivateKey(fixturekey)
+
+describe('.getPrivateKey()', function () {
+  it('should work', function () {
+    assert.equal(fixturewallet.getPrivateKey().toString('hex'), 'efca4cdd31923b50f4214af5d2ae10e7ac45a5019e9431cc195482d707485378')
+  })
+})
+
+describe('.getPrivateKeyString()', function () {
+  it('should work', function () {
+    assert.equal(fixturewallet.getPrivateKeyString(), '0xefca4cdd31923b50f4214af5d2ae10e7ac45a5019e9431cc195482d707485378')
+  })
+})
+
+describe('.getPublicKey()', function () {
+  it('should work', function () {
+    assert.equal(fixturewallet.getPublicKey().toString('hex'), '5d4392f450262b276652c1fc037606abac500f3160830ce9df53aa70d95ce7cfb8b06010b2f3691c78c65c21eb4cf3dfdbfc0745d89b664ee10435bb3a0f906c')
+  })
+})
+
+describe('.getPublicKeyString()', function () {
+  it('should work', function () {
+    assert.equal(fixturewallet.getPublicKeyString(), '0x5d4392f450262b276652c1fc037606abac500f3160830ce9df53aa70d95ce7cfb8b06010b2f3691c78c65c21eb4cf3dfdbfc0745d89b664ee10435bb3a0f906c')
+  })
+})
+
+describe('.getAddress()', function () {
+  it('should work', function () {
+    assert.equal(fixturewallet.getAddress().toString('hex'), 'b14ab53e38da1c172f877dbc6d65e4a1b0474c3c')
+  })
+})
+
+describe('.getAddressString()', function () {
+  it('should work', function () {
+    assert.equal(fixturewallet.getAddressString(), '0xb14ab53e38da1c172f877dbc6d65e4a1b0474c3c')
+  })
+})
+
 describe('.toV3()', function () {
   var salt = new Buffer('dc9e4a98886738bd8aae134a1f89aaa5a502c3fbd10e336136d4d5fe47448ad6', 'hex')
   var iv = new Buffer('cecacd85e9cb89788b5aab2f93361233', 'hex')
