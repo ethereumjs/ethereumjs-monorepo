@@ -22,7 +22,7 @@ Wallet.prototype.getPrivateKey = function () {
 }
 
 Wallet.prototype.getPrivateKeyString = function () {
-  return this.getPrivateKey.toString('hex')
+  return '0x' + this.getPrivateKey().toString('hex')
 }
 
 Wallet.prototype.getPublicKey = function () {
@@ -30,7 +30,7 @@ Wallet.prototype.getPublicKey = function () {
 }
 
 Wallet.prototype.getPublicKeyString = function () {
-  return this.getPublicKey.toString('hex')
+  return '0x' + this.getPublicKey().toString('hex')
 }
 
 Wallet.prototype.getAddress = function () {
