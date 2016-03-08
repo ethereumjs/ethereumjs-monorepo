@@ -40,6 +40,12 @@ describe('.getAddressString()', function () {
   })
 })
 
+describe('.getChecksumAddressString()', function () {
+  it('should work', function () {
+    assert.equal(fixturewallet.getChecksumAddressString(), '0xB14Ab53E38DA1C172f877DBC6d65e4a1B0474C3c')
+  })
+})
+
 describe('.toV3()', function () {
   var salt = new Buffer('dc9e4a98886738bd8aae134a1f89aaa5a502c3fbd10e336136d4d5fe47448ad6', 'hex')
   var iv = new Buffer('cecacd85e9cb89788b5aab2f93361233', 'hex')
