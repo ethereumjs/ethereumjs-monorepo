@@ -41,6 +41,22 @@ Wallet.prototype.getAddressString = function () {
   return '0x' + this.getAddress().toString('hex')
 }
 
+Wallet.prototype.getChecksumAddressString = function () {
+  var address = this.getAddress().toString('hex')
+  var hash = ethUtil.sha3(address).toString('hex')
+  var ret = '0x'
+
+  for (var i = 0; i < address.length; i++) {
+    if (parseInt(hash[i], 16) >= 8) {
+      ret += address[i].toUpperCase()
+    } else {
+      ret += address[i]
+    }
+  }
+
+  return ret
+}
+
 // https://github.com/ethereum/wiki/wiki/Web3-Secret-Storage-Definition
 Wallet.prototype.toV3 = function (password, opts) {
   opts = opts || {}
