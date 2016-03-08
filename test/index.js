@@ -46,6 +46,17 @@ describe('.getChecksumAddressString()', function () {
   })
 })
 
+describe('.generate()', function () {
+  it('should generate an account', function () {
+    assert.equal(Wallet.generate().getPrivateKey().length, 32)
+  })
+  it('should generate an account compatible with ICAP Direct', function () {
+    var wallet = Wallet.generate(true)
+    assert.equal(wallet.getPrivateKey().length, 32)
+    assert.equal(wallet.getAddress()[0], 0)
+  })
+})
+
 describe('.toV3()', function () {
   var salt = new Buffer('dc9e4a98886738bd8aae134a1f89aaa5a502c3fbd10e336136d4d5fe47448ad6', 'hex')
   var iv = new Buffer('cecacd85e9cb89788b5aab2f93361233', 'hex')
