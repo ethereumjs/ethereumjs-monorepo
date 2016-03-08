@@ -332,7 +332,7 @@ exports.privateToAddress = function (privateKey) {
  * @return {String}
  */
 exports.toChecksumAddress = function (address) {
-  address = exports.stripHexPrefix(address)
+  address = exports.stripHexPrefix(address).toLowerCase()
   var hash = exports.sha3(address).toString('hex')
   var ret = '0x'
 
@@ -354,7 +354,7 @@ exports.toChecksumAddress = function (address) {
  * @return {Boolean}
  */
 exports.isValidChecksumAddress = function (address) {
-  return exports.toChecksumAddress(address.toLowerCase()) === address
+  return exports.toChecksumAddress(address) === address
 }
 
 /**
