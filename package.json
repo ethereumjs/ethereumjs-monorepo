@@ -1,6 +1,6 @@
 {
   "name": "ethereumjs-wallet",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "description": "Utilities for handling Ethereum keys",
   "main": "index.js",
   "scripts": {
