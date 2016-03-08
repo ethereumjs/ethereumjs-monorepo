@@ -418,4 +418,14 @@ Wallet.fromKryptoKit = function (entropy, password) {
   return new Wallet(privKey)
 }
 
+Wallet.fromQuorumWallet = function (passphrase, userid) {
+  assert(passphrase.length >= 10)
+  assert(userid.length >= 10)
+
+  var seed = passphrase + userid
+  seed = crypto.pbkdf2Sync(seed, seed, 2000, 32, 'sha256');
+
+  return new Wallet(seed)
+}
+
 module.exports = Wallet

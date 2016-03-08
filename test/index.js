@@ -148,3 +148,10 @@ describe('.fromKryptoKit()', function () {
     assert.equal(wallet.getAddressString(), '0x3c753e27834db67329d1ec1fab67970ec1e27112')
   })
 })
+
+describe('.fromQuorumWallet()', function () {
+  it('should work', function () {
+    var wallet = Wallet.fromQuorumWallet('testtesttest', 'ethereumjs-wallet')
+    assert.equal(wallet.getAddressString(), '0x1b86ccc22e8f137f204a41a23033541242a48815')
+  })
+})
