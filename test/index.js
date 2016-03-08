@@ -143,4 +143,8 @@ describe('.fromKryptoKit()', function () {
     var wallet = Wallet.fromKryptoKit('dBWfH8QZSGbg1sAYHLBhqE5R8VGAoM7')
     assert.equal(wallet.getAddressString(), '0x3611981ad2d6fc1d7579d6ce4c6bc37e272c369c')
   })
+  it('should work with encrypted input (q-type)', function () {
+    var wallet = Wallet.fromKryptoKit('qhah1VeT0RgTvff1UKrUrxtFViiQuki16dd353d59888c25', 'testtest')
+    assert.equal(wallet.getAddressString(), '0x3c753e27834db67329d1ec1fab67970ec1e27112')
+  })
 })

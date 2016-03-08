@@ -24,6 +24,7 @@
   },
   "homepage": "https://github.com/axic/ethereumjs-wallet",
   "dependencies": {
+    "aes-js": "^0.2.3",
     "ethereumjs-util": "^4.1.0",
     "scrypt.js": "^0.1.0",
     "uuid": "^2.0.1",

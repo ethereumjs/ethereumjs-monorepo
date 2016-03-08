@@ -3,6 +3,7 @@ var crypto = require('crypto')
 var scryptsy = require('scrypt.js')
 var uuid = require('uuid')
 var utf8 = require('utf8')
+var aesjs = require('aes-js')
 
 function assert (val, msg) {
   if (!val) {
@@ -334,7 +335,36 @@ Wallet.fromEtherCamp = function (passphrase) {
   return new Wallet(ethUtil.sha3(new Buffer(passphrase)))
 }
 
-Wallet.fromKryptoKit = function (entropy) {
+Wallet.fromKryptoKit = function (entropy, password) {
+  function kryptoKitBrokenScryptSeed (buf) {
+    // js-scrypt calls `new Buffer(String(salt), 'utf8')` on the seed even though it is a buffer
+    //
+    // The `buffer`` implementation used does the below transformation (doesn't matches the current version):
+    // https://github.com/feross/buffer/blob/67c61181b938b17d10dbfc0a545f713b8bd59de8/index.js
+
+    function decodeUtf8Char (str) {
+      try {
+        return decodeURIComponent(str)
+      } catch (err) {
+        return String.fromCharCode(0xFFFD) // UTF 8 invalid char
+      }
+    }
+
+    var res = ''
+    var tmp = ''
+
+    for (var i = 0; i < buf.length; i++) {
+      if (buf[i] <= 0x7F) {
+        res += decodeUtf8Char(tmp) + String.fromCharCode(buf[i])
+        tmp = ''
+      } else {
+        tmp += '%' + buf[i].toString(16)
+      }
+    }
+
+    return new Buffer(res + decodeUtf8Char(tmp))
+  }
+
   if (entropy[0] === '#') {
     entropy = entropy.slice(1)
   }
@@ -345,6 +375,42 @@ Wallet.fromKryptoKit = function (entropy) {
   var privKey
   if (type === 'd') {
     privKey = ethUtil.sha256(entropy)
+  } else if (type === 'q') {
+    if (typeof password !== 'string') {
+      throw new Error('Password required')
+    }
+
+    var encryptedSeed = ethUtil.sha256(new Buffer(entropy.slice(0, 30)))
+    var checksum = entropy.slice(30, 46)
+
+    var salt = kryptoKitBrokenScryptSeed(encryptedSeed)
+    var aesKey = scryptsy(new Buffer(password, 'utf8'), salt, 16384, 8, 1, 32)
+
+    /* FIXME: try to use `crypto` instead of `aesjs`
+
+    // NOTE: ECB doesn't use the IV, so it can be anything
+    var decipher = crypto.createDecipheriv("aes-256-ecb", aesKey, new Buffer(0))
+
+    // FIXME: this is a clear abuse, but seems to match how ECB in aesjs works
+    privKey = Buffer.concat([
+      decipher.update(encryptedSeed).slice(0, 16),
+      decipher.update(encryptedSeed).slice(0, 16),
+    ])
+    */
+
+    /* eslint-disable new-cap */
+    var decipher = new aesjs.ModeOfOperation.ecb(aesKey)
+    /* eslint-enable new-cap */
+    privKey = Buffer.concat([
+      decipher.decrypt(encryptedSeed.slice(0, 16)),
+      decipher.decrypt(encryptedSeed.slice(16, 32))
+    ])
+
+    if (checksum.length > 0) {
+      if (checksum !== ethUtil.sha256(ethUtil.sha256(privKey)).slice(0, 8).toString('hex')) {
+        throw new Error('Failed to decrypt input - possibly invalid passphrase')
+      }
+    }
   } else {
     throw new Error('Unsupported or invalid entropy type')
   }
