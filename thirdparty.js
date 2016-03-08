@@ -220,7 +220,7 @@ Thirdparty.fromQuorumWallet = function (passphrase, userid) {
   assert(userid.length >= 10)
 
   var seed = passphrase + userid
-  seed = crypto.pbkdf2Sync(seed, seed, 2000, 32, 'sha256');
+  seed = crypto.pbkdf2Sync(seed, seed, 2000, 32, 'sha256')
 
   return new Wallet(seed)
 }
