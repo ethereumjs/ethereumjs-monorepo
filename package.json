@@ -8,7 +8,8 @@
   },
   "scripts": {
     "test": "standard ./index.js ./bin/rlp &&  ./node_modules/mocha/bin/mocha --reporter spec ./test/",
-    "webtest": "browserify test/max.js | testling -u"
+    "webtest": "browserify test/max.js | testling -u",
+    "codecoverage": "istanbul cover node_modules/mocha/bin/_mocha ./test/"
   },
   "repository": {
     "type": "git",
