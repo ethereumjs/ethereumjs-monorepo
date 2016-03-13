@@ -8,7 +8,8 @@
   },
   "scripts": {
     "test": "standard ./index.js ./bin/rlp &&  ./node_modules/mocha/bin/mocha --reporter spec ./test/",
-    "webtest": "browserify test/max.js | testling -u"
+    "webtest": "browserify test/max.js | testling -u",
+    "codecoverage": "istanbul cover node_modules/mocha/bin/_mocha ./test/"
   },
   "repository": {
     "type": "git",
@@ -28,6 +29,7 @@
   },
   "devDependencies": {
     "ethereumjs-testing": "git+https://github.com/ethereumjs/ethereumjs-testing.git",
+    "istanbul": "^0.4.2",
     "mocha": "~1.17.1",
     "standard": "^5.3.1"
   },

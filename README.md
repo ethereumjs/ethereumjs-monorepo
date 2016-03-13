@@ -43,3 +43,12 @@ TESTS
 =====
 test uses mocha. To run  
 `npm test`
+
+CODE COVERAGE
+=============
+Install dev dependencies
+`npm install`
+Run
+`npm run codecoverage`
+The results are at
+`coverage/lcov-report/index.html`
