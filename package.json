@@ -28,6 +28,7 @@
   },
   "devDependencies": {
     "ethereumjs-testing": "git+https://github.com/ethereumjs/ethereumjs-testing.git",
+    "istanbul": "^0.4.2",
     "mocha": "~1.17.1",
     "standard": "^5.3.1"
   },
