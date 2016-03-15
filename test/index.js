@@ -123,6 +123,14 @@ describe('rpad', function () {
   })
 })
 
+describe('bufferToHex', function () {
+  it('should convert a buffer to hex', function () {
+    var buf = new Buffer('5b9ac8', 'hex')
+    var hex = ethUtils.bufferToHex(buf)
+    assert.equal(hex, '0x5b9ac8')
+  })
+})
+
 describe('intToHex', function () {
   it('should convert a int to hex', function () {
     var i = 6003400
