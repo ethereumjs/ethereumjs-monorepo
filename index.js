@@ -143,6 +143,7 @@ Wallet.fromPrivateKey = function (priv) {
 
 // https://github.com/ethereum/go-ethereum/wiki/Passphrase-protected-key-store-spec
 Wallet.fromV1 = function (input, password) {
+  assert(typeof password === 'string')
   var json = (typeof input === 'object') ? input : JSON.parse(input)
 
   if (json.Version !== '1') {
@@ -173,6 +174,7 @@ Wallet.fromV1 = function (input, password) {
 }
 
 Wallet.fromV3 = function (input, password, nonStrict) {
+  assert(typeof password === 'string')
   var json = (typeof input === 'object') ? input : JSON.parse(nonStrict ? input.toLowerCase() : input)
 
   if (json.version !== 3) {
