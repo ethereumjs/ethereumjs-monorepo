@@ -150,8 +150,8 @@ Wallet.fromV1 = function (input, password) {
   return new Wallet(seed)
 }
 
-Wallet.fromV3 = function (input, password) {
-  var json = (typeof input === 'object') ? input : JSON.parse(input)
+Wallet.fromV3 = function (input, password, nonStrict) {
+  var json = (typeof input === 'object') ? input : JSON.parse(nonStrict ? input.toLowerCase() : input)
 
   if (json.version !== 3) {
     throw new Error('Not a V3 wallet')
