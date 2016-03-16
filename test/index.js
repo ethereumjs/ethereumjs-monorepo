@@ -58,6 +58,12 @@ describe('.generate()', function () {
   })
 })
 
+describe('.getV3Filename()', function () {
+  it('should work', function () {
+    assert.equal(fixturewallet.getV3Filename(1457917509265), 'UTC--2016-03-14T01-05-09.265Z--b14ab53e38da1c172f877dbc6d65e4a1b0474c3c')
+  })
+})
+
 describe('.toV3()', function () {
   var salt = new Buffer('dc9e4a98886738bd8aae134a1f89aaa5a502c3fbd10e336136d4d5fe47448ad6', 'hex')
   var iv = new Buffer('cecacd85e9cb89788b5aab2f93361233', 'hex')

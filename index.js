@@ -111,6 +111,28 @@ Wallet.prototype.toV3 = function (password, opts) {
   }
 }
 
+Wallet.prototype.getV3Filename = function (timestamp) {
+  /*
+   * We want a timestamp like 2016-03-15T17-11-33.007598288Z. Date formatting
+   * is a pain in Javascript, everbody knows that. We could use moment.js,
+   * but decide to do it manually in order to save space.
+   *
+   * toJSON() returns a pretty close version, so let's use it. It is not UTC though,
+   * but does it really matter?
+   *
+   * Alternative manual way with padding and Date fields: http://stackoverflow.com/a/7244288/4964819
+   *
+   */
+  var ts = timestamp ? new Date(timestamp) : new Date()
+
+  return [
+    'UTC--',
+    ts.toJSON().replace(/:/g, '-'),
+    '--',
+    this.getAddress().toString('hex')
+  ].join('')
+}
+
 Wallet.prototype.toV3String = function (password, opts) {
   return JSON.stringify(this.toV3(password, opts))
 }
