@@ -109,6 +109,10 @@ Thirdparty.fromEtherWallet = function (input, password) {
     // decode openssl ciphertext + salt encoding
     cipher = decodeCryptojsSalt(cipher)
 
+    if (!cipher.salt) {
+      throw new Error('Unsupported EtherWallet key format')
+    }
+
     // derive key/iv using OpenSSL EVP as implemented in CryptoJS
     var evp = evp_kdf(new Buffer(password), cipher.salt, { keysize: 32, ivsize: 16 })
 
