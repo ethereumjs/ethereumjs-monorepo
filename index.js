@@ -137,7 +137,6 @@ Wallet.fromV1 = function (input, password) {
   var ciphertext = new Buffer(json.Crypto.CipherText, 'hex')
 
   var mac = ethUtil.sha3(Buffer.concat([ derivedKey.slice(16, 32), ciphertext ]))
-  console.log(mac, json.Crypto.MAC)
 
   if (mac.toString('hex') !== json.Crypto.MAC) {
     throw new Error('Key derivation failed - possibly wrong passphrase')
@@ -160,13 +159,13 @@ Wallet.fromV3 = function (input, password) {
 
   var derivedKey
   var kdfparams
-  if (json.Crypto.kdf === 'scrypt') {
-    kdfparams = json.Crypto.kdfparams
+  if (json.crypto.kdf === 'scrypt') {
+    kdfparams = json.crypto.kdfparams
 
     // FIXME: support progress reporting callback
     derivedKey = scryptsy(new Buffer(password), new Buffer(kdfparams.salt, 'hex'), kdfparams.n, kdfparams.r, kdfparams.p, kdfparams.dklen)
-  } else if (json.Crypto.kdf === 'pbkdf2') {
-    kdfparams = json.Crypto.kdfparams
+  } else if (json.crypto.kdf === 'pbkdf2') {
+    kdfparams = json.crypto.kdfparams
 
     if (kdfparams.prf !== 'hmac-sha256') {
       throw new Error('Unsupported parameters to PBKDF2')
@@ -177,14 +176,14 @@ Wallet.fromV3 = function (input, password) {
     throw new Error('Unsupported key derivation scheme')
   }
 
-  var ciphertext = new Buffer(json.Crypto.ciphertext, 'hex')
+  var ciphertext = new Buffer(json.crypto.ciphertext, 'hex')
 
   var mac = ethUtil.sha3(Buffer.concat([ derivedKey.slice(16, 32), ciphertext ]))
-  if (mac.toString('hex') !== json.Crypto.mac) {
+  if (mac.toString('hex') !== json.crypto.mac) {
     throw new Error('Key derivation failed - possibly wrong passphrase')
   }
 
-  var decipher = crypto.createDecipheriv(json.Crypto.cipher, derivedKey.slice(0, 16), new Buffer(json.Crypto.cipherparams.iv, 'hex'))
+  var decipher = crypto.createDecipheriv(json.crypto.cipher, derivedKey.slice(0, 16), new Buffer(json.crypto.cipherparams.iv, 'hex'))
   var seed = decipherBuffer(decipher, ciphertext, 'hex')
 
   // FIXME: Remove PKCS#7 padding here?
