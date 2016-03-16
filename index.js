@@ -98,7 +98,7 @@ Wallet.prototype.toV3 = function (password, opts) {
     version: 3,
     id: uuid.v4({ random: opts.uuid || crypto.randomBytes(16) }),
     address: this.getAddress().toString('hex'),
-    Crypto: {
+    crypto: {
       ciphertext: ciphertext.toString('hex'),
       cipherparams: {
         iv: iv.toString('hex')
