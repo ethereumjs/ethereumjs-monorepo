@@ -5,10 +5,6 @@ const BN = ethUtil.BN
 // secp256k1n/2
 const N_DIV_2 = new BN('7fffffffffffffffffffffffffffffff5d576e7357a4501ddfe92f46681b20a0', 16)
 
-// give browser access to Buffers
-global.Buffer = Buffer
-global.ethUtil = ethUtil
-
 /**
  * Creates a new transaction object
  * @constructor
@@ -37,7 +33,7 @@ global.ethUtil = ethUtil
  * @prop {Buffer} r EC signature parameter
  * @prop {Buffer} s EC recovery ID
  */
-var Transaction = module.exports = function (data) {
+const Transaction = module.exports = function (data) {
   // Define Properties
   const fields = [{
     name: 'nonce',
@@ -122,7 +118,7 @@ Transaction.prototype.toCreationAddress = function () {
  * @return {Buffer}
  */
 Transaction.prototype.hash = function (signature) {
-  var toHash
+  let toHash
 
   if (typeof signature === 'undefined') {
     signature = true
@@ -143,7 +139,7 @@ Transaction.prototype.getSenderAddress = function () {
   if (this._from) {
     return this._from
   }
-  var pubkey = this.getSenderPublicKey()
+  const pubkey = this.getSenderPublicKey()
   this._from = ethUtil.publicToAddress(pubkey)
   return this._from
 }
@@ -167,7 +163,7 @@ Transaction.prototype.getSenderPublicKey = function () {
  * @return {Boolean}
  */
 Transaction.prototype.verifySignature = function () {
-  var msgHash = this.hash(false)
+  const msgHash = this.hash(false)
 
   // All transaction signatures whose s-value is greater than secp256k1n/2 are considered invalid.
   if (this._homestead && new BN(this.s).cmp(N_DIV_2) === 1) {
@@ -189,8 +185,8 @@ Transaction.prototype.verifySignature = function () {
  * @param {Buffer} privateKey
  */
 Transaction.prototype.sign = function (privateKey) {
-  var msgHash = this.hash(false)
-  var sig = ethUtil.ecsign(msgHash, privateKey)
+  const msgHash = this.hash(false)
+  const sig = ethUtil.ecsign(msgHash, privateKey)
   Object.assign(this, sig)
 }
 
@@ -201,7 +197,7 @@ Transaction.prototype.sign = function (privateKey) {
  */
 Transaction.prototype.getDataFee = function () {
   const data = this.raw[5]
-  var cost = new BN(0)
+  const cost = new BN(0)
   for (var i = 0; i < data.length; i++) {
     data[i] === 0 ? cost.iaddn(fees.txDataZeroGas.v) : cost.iaddn(fees.txDataNonZeroGas.v)
   }
@@ -214,7 +210,7 @@ Transaction.prototype.getDataFee = function () {
  * @return {BN}
  */
 Transaction.prototype.getBaseFee = function () {
-  var fee = this.getDataFee().iaddn(fees.txGas.v)
+  const fee = this.getDataFee().iaddn(fees.txGas.v)
   if (this._homestead && this.toCreationAddress()) {
     fee.iaddn(fees.txCreation.v)
   }
@@ -239,13 +235,13 @@ Transaction.prototype.getUpfrontCost = function () {
  * @return {Boolean|String}
  */
 Transaction.prototype.validate = function (stringError) {
-  var errors = []
+  const errors = []
   if (!this.verifySignature()) {
     errors.push('Invalid Signature')
   }
 
   if (this.getBaseFee().cmp(new BN(this.gasLimit)) > 0) {
-    errors.push(['gas limit is to low. Need at least ' + this.getBaseFee()])
+    errors.push([`gas limit is to low. Need at least ${this.getBaseFee()}`])
   }
 
   if (stringError === undefined || stringError === false) {
