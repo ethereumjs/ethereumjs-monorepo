@@ -196,6 +196,34 @@ describe('toUnsigned', function () {
   })
 })
 
+describe('isValidPrivate', function () {
+  var SECP256K1_N = new ethUtils.BN('fffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141', 16)
+  it('should fail on short input', function () {
+    var tmp = '0011223344'
+    assert.equal(ethUtils.isValidPrivate(new Buffer(tmp, 'hex')), false)
+  })
+  it('should fail on too big input', function () {
+    var tmp = '3a443d8381a6798a70c6ff9304bdc8cb0163c23211d11628fae52ef9e0dca11a001cf066d56a8156fc201cd5df8a36ef694eecd258903fca7086c1fae7441e1d'
+    assert.equal(ethUtils.isValidPrivate(new Buffer(tmp, 'hex')), false)
+  })
+  it('should fail on invalid curve (zero)', function () {
+    var tmp = '0000000000000000000000000000000000000000000000000000000000000000'
+    assert.equal(ethUtils.isValidPrivate(new Buffer(tmp, 'hex')), false)
+  })
+  it('should fail on invalid curve (== N)', function () {
+    var tmp = SECP256K1_N.toString(16)
+    assert.equal(ethUtils.isValidPrivate(new Buffer(tmp, 'hex')), false)
+  })
+  it('should fail on invalid curve (>= N)', function () {
+    var tmp = SECP256K1_N.addn(1).toString(16)
+    assert.equal(ethUtils.isValidPrivate(new Buffer(tmp, 'hex')), false)
+  })
+  it('should work otherwise (< N)', function () {
+    var tmp = SECP256K1_N.subn(1).toString(16)
+    assert.equal(ethUtils.isValidPrivate(new Buffer(tmp, 'hex')), true)
+  })
+})
+
 describe('publicToAddress', function () {
   it('should produce an address given a public key', function () {
     var pubKey = '3a443d8381a6798a70c6ff9304bdc8cb0163c23211d11628fae52ef9e0dca11a001cf066d56a8156fc201cd5df8a36ef694eecd258903fca7086c1fae7441e1d'
