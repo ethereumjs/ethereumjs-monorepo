@@ -422,3 +422,16 @@ describe('.isValidChecksumAddress()', function () {
     assert.equal(ethUtils.isValidChecksumAddress('0x2f015c60e0be116b1f0cd534704db9c92118fb6a'), false)
   })
 })
+
+describe('.isValidAddress()', function () {
+  it('should return true', function () {
+    assert.equal(ethUtils.isValidAddress('0x2f015c60e0be116b1f0cd534704db9c92118fb6a'), true)
+    assert.equal(ethUtils.isValidAddress('0x52908400098527886E0F7030069857D2E4169EE7'), true)
+  })
+  it('should return false', function () {
+    assert.equal(ethUtils.isValidAddress('2f015c60e0be116b1f0cd534704db9c92118fb6a'), false)
+    assert.equal(ethUtils.isValidAddress('0x2f015c60e0be116b1f0cd534704db9c92118fb6'), false)
+    assert.equal(ethUtils.isValidAddress('0x2f015c60e0be116b1f0cd534704db9c92118fb6aa'), false)
+    assert.equal(ethUtils.isValidAddress('x2f015c60e0be116b1f0cd534704db9c92118fb6a'), false)
+  })
+})
