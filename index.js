@@ -336,6 +336,16 @@ exports.privateToAddress = function (privateKey) {
 }
 
 /**
+ * Checks if the address is a valid. Accepts checksummed addresses too
+ * @method isValidAddress
+ * @param {String} address
+ * @return {Boolean}
+ */
+exports.isValidAddress = function (address) {
+  return /^0x[0-9a-fA-F]{40}$/i.test(address)
+}
+
+/**
  * Returns a checksummed address
  * @method toChecksumAddress
  * @param {String} address
