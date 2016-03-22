@@ -35,7 +35,7 @@ Wallet.prototype.getPrivateKey = function () {
 }
 
 Wallet.prototype.getPrivateKeyString = function () {
-  return '0x' + this.getPrivateKey().toString('hex')
+  return ethUtil.bufferToHex(this.getPrivateKey())
 }
 
 Wallet.prototype.getPublicKey = function () {
@@ -43,7 +43,7 @@ Wallet.prototype.getPublicKey = function () {
 }
 
 Wallet.prototype.getPublicKeyString = function () {
-  return '0x' + this.getPublicKey().toString('hex')
+  return ethUtil.bufferToHex(this.getPublicKey())
 }
 
 Wallet.prototype.getAddress = function () {
@@ -51,7 +51,7 @@ Wallet.prototype.getAddress = function () {
 }
 
 Wallet.prototype.getAddressString = function () {
-  return '0x' + this.getAddress().toString('hex')
+  return ethUtil.bufferToHex(this.getAddress())
 }
 
 Wallet.prototype.getChecksumAddressString = function () {
