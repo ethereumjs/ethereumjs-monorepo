@@ -374,7 +374,7 @@ exports.toChecksumAddress = function (address) {
  * @return {Boolean}
  */
 exports.isValidChecksumAddress = function (address) {
-  return exports.toChecksumAddress(address) === address
+  return exports.isValidAddress(address) && (exports.toChecksumAddress(address) === address)
 }
 
 /**
