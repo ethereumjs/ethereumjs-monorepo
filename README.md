@@ -17,7 +17,7 @@ Features not supported:
 - signing transactions
 - managing storage (neither in node.js or the browser)
 
-## API
+## Wallet API
 
 Constructors:
 
@@ -54,6 +54,27 @@ Instance methods:
 
 All of the above instance methods return a Buffer or JSON. Use the `String` suffixed versions for a string output, such as `getPrivateKeyString()`.
 
+## HD Wallet API
+
+To use BIP32 HD wallets, first include the `hdkey` submodule:
+
+`var hdkey = require('ethereumjs-wallet/hdkey')`
+
+Constructors:
+
+* `fromMasterSeed(seed)` - create an instance based on a seed
+* `formExtendedKey(key)` - create an instance based on a BIP32 extended private or public key
+
+For the seed  we suggest to use [bip39](https://npmjs.org/packages/bip39) to create one from a BIP39 mnemonic.
+
+Instance methods:
+
+* `privateExtendedKey()` - return a BIP32 extended private key
+* `publicExtendedKey()` - return a BIP32 extended private key
+* `derivePath(path)` - derive a node based on a path (e.g.  m/44'/0'/0/1)
+* `deriveChild(index)` - derive a node based on a child index
+* `getWallet()` - return a `Wallet` instance as seen above
+
 ### Remarks about `toV3`
 
 The `options` is an optional object hash, where all the serialization parameters can be fine tuned:
@@ -82,3 +103,9 @@ The following settings are favoured by the Go Ethereum implementation and we def
 - `r`: `8`
 - `p`: `1`
 - `cipher`: `aes-128-ctr`
+
+## License
+
+MIT License
+
+Copyright (C) 2016 Alex Beregszaszi
