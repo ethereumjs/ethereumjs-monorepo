@@ -224,8 +224,6 @@ Wallet.fromV1 = function (input, password) {
   var decipher = crypto.createDecipheriv('aes-128-cbc', ethUtil.sha3(derivedKey.slice(0, 16)).slice(0, 16), new Buffer(json.Crypto.IV, 'hex'))
   var seed = decipherBuffer(decipher, ciphertext)
 
-  // FIXME: Remove PKCS#7 padding here?
-
   return new Wallet(seed)
 }
 
@@ -266,8 +264,6 @@ Wallet.fromV3 = function (input, password, nonStrict) {
   var decipher = crypto.createDecipheriv(json.crypto.cipher, derivedKey.slice(0, 16), new Buffer(json.crypto.cipherparams.iv, 'hex'))
   var seed = decipherBuffer(decipher, ciphertext, 'hex')
 
-  // FIXME: Remove PKCS#7 padding here?
-
   return new Wallet(seed)
 }
 
@@ -285,10 +281,10 @@ Wallet.fromEthSale = function (input, password) {
   var derivedKey = crypto.pbkdf2Sync(password, password, 2000, 32, 'sha256').slice(0, 16)
 
   // seed decoding (IV is first 16 bytes)
+  // NOTE: crypto (derived from openssl) when used with aes-*-cbc will handle PKCS#7 padding internally
+  //       see also http://stackoverflow.com/a/31614770/4964819
   var decipher = crypto.createDecipheriv('aes-128-cbc', derivedKey, encseed.slice(0, 16))
   var seed = decipherBuffer(decipher, encseed.slice(16))
-
-  // FIXME: Remove PKCS#7 padding here?
 
   var wallet = new Wallet(ethUtil.sha3(seed))
   if (wallet.getAddress().toString('hex') !== json.ethaddr) {
