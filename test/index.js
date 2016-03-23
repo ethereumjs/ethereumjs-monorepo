@@ -87,7 +87,6 @@ describe('.fromExtendedPublicKey()', function () {
   })
 })
 
-
 describe('.generate()', function () {
   it('should generate an account', function () {
     assert.equal(Wallet.generate().getPrivateKey().length, 32)

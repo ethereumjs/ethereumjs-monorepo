@@ -6,7 +6,7 @@
   "scripts": {
     "lint": "standard",
     "prepublish": "npm run lint && npm run test",
-    "test": "mocha ./test/index.js"
+    "test": "mocha ./test/index.js && mocha ./test/hdkey.js"
   },
   "repository": {
     "type": "git",
@@ -27,6 +27,7 @@
     "aes-js": "^0.2.3",
     "bs58check": "^1.0.8",
     "ethereumjs-util": "^4.3.0",
+    "hdkey": "git+https://github.com/axic/hdkey#feature/secp256k1",
     "scrypt.js": "^0.1.0",
     "secp256k1": "^3.0.1",
     "uuid": "^2.0.1",
