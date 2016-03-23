@@ -69,6 +69,6 @@ describe('.getWallet()', function () {
     assert.throws(function () {
       hdnode.getWallet().getPrivateKeyString()
     })
-    assert.equal(hdnode.getWallet().getPublicKeyString(), '0x030639797f6cc72aea0f3d309730844a9e67d9f1866e55845c5f7e0ab48402973d')
+    assert.equal(hdnode.getWallet().getPublicKeyString(), '0x0639797f6cc72aea0f3d309730844a9e67d9f1866e55845c5f7e0ab48402973defa5cb69df462bcc6d73c31e1c663c225650e80ef14a507b203f2a12aea55bc1')
   })
 })

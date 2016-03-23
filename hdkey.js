@@ -41,7 +41,7 @@ EthereumHDKey.prototype.getWallet = function () {
   if (this._hdkey._privateKey) {
     return Wallet.fromPrivateKey(this._hdkey._privateKey)
   } else {
-    return Wallet.fromPublicKey(this._hdkey._publicKey)
+    return Wallet.fromPublicKey(this._hdkey._publicKey, true)
   }
 }
 

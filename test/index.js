@@ -58,6 +58,16 @@ describe('public key only wallet', function () {
     assert.equal(Wallet.fromPublicKey(pubKey).getPublicKey().toString('hex'),
       '5d4392f450262b276652c1fc037606abac500f3160830ce9df53aa70d95ce7cfb8b06010b2f3691c78c65c21eb4cf3dfdbfc0745d89b664ee10435bb3a0f906c')
   })
+  it('.fromPublicKey() should not accept compressed keys in strict mode', function () {
+    assert.throws(function () {
+      Wallet.fromPublicKey(new Buffer('030639797f6cc72aea0f3d309730844a9e67d9f1866e55845c5f7e0ab48402973d', 'hex'))
+    })
+  })
+  it('.fromPublicKey() should accept compressed keys in non-strict mode', function () {
+    var tmp = new Buffer('030639797f6cc72aea0f3d309730844a9e67d9f1866e55845c5f7e0ab48402973d', 'hex')
+    assert.equal(Wallet.fromPublicKey(tmp, true).getPublicKey().toString('hex'),
+      '0639797f6cc72aea0f3d309730844a9e67d9f1866e55845c5f7e0ab48402973defa5cb69df462bcc6d73c31e1c663c225650e80ef14a507b203f2a12aea55bc1')
+  })
   it('.getAddress() should work', function () {
     assert.equal(Wallet.fromPublicKey(pubKey).getAddress().toString('hex'), 'b14ab53e38da1c172f877dbc6d65e4a1b0474c3c')
   })

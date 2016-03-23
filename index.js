@@ -161,7 +161,12 @@ Wallet.prototype.toV3String = function (password, opts) {
   return JSON.stringify(this.toV3(password, opts))
 }
 
-Wallet.fromPublicKey = function (pub) {
+Wallet.fromPublicKey = function (pub, nonStrict) {
+  // FIXME: duplicate from ethUtil.publicToAddress(), maybe it could be factored out?
+  if ((pub.length !== 64) && nonStrict) {
+    pub = secp256k1.publicKeyConvert(pub, false).slice(1)
+  }
+  assert(pub.length === 64, 'Invalid public key')
   return new Wallet(null, pub)
 }
 
@@ -169,8 +174,7 @@ Wallet.fromExtendedPublicKey = function (pub) {
   assert(pub.slice(0, 4) === 'xpub', 'Not an extended public key')
   pub = bs58check.decode(pub).slice(45)
   // Convert to an Ethereum public key
-  pub = secp256k1.publicKeyConvert(pub, false).slice(1)
-  return Wallet.fromPublicKey(pub)
+  return Wallet.fromPublicKey(pub, true)
 }
 
 Wallet.fromPrivateKey = function (priv) {
