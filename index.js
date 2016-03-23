@@ -2,6 +2,8 @@ var ethUtil = require('ethereumjs-util')
 var crypto = require('crypto')
 var scryptsy = require('scrypt.js')
 var uuid = require('uuid')
+var secp256k1 = require('secp256k1')
+var bs58check = require('bs58check')
 
 function assert (val, msg) {
   if (!val) {
@@ -163,8 +165,23 @@ Wallet.fromPublicKey = function (pub) {
   return new Wallet(null, pub)
 }
 
+Wallet.fromExtendedPublicKey = function (pub) {
+  assert(pub.slice(0, 4) === 'xpub', 'Not an extended public key')
+  pub = bs58check.decode(pub).slice(45)
+  // Convert to an Ethereum public key
+  pub = secp256k1.publicKeyConvert(pub, false).slice(1)
+  return Wallet.fromPublicKey(pub)
+}
+
 Wallet.fromPrivateKey = function (priv) {
   return new Wallet(priv)
+}
+
+Wallet.fromExtendedPrivateKey = function (priv) {
+  assert(priv.slice(0, 4) === 'xprv', 'Not an extended private key')
+  var tmp = bs58check.decode(priv)
+  assert(tmp[45] === 0, 'Invalid extended private key')
+  return Wallet.fromPrivateKey(tmp.slice(46))
 }
 
 // https://github.com/ethereum/go-ethereum/wiki/Passphrase-protected-key-store-spec

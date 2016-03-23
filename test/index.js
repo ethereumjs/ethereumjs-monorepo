@@ -73,6 +73,21 @@ describe('public key only wallet', function () {
   })
 })
 
+describe('.fromExtendedPrivateKey()', function () {
+  it('should work', function () {
+    var xprv = 'xprv9s21ZrQH143K4KqQx9Zrf1eN8EaPQVFxM2Ast8mdHn7GKiDWzNEyNdduJhWXToy8MpkGcKjxeFWd8oBSvsz4PCYamxR7TX49pSpp3bmHVAY'
+    assert.equal(Wallet.fromExtendedPrivateKey(xprv).getAddressString(), '0xb800bf5435f67c7ee7d83c3a863269969a57c57c')
+  })
+})
+
+describe('.fromExtendedPublicKey()', function () {
+  it('should work', function () {
+    var xpub = 'xpub661MyMwAqRbcGout4B6s29b6gGQsowyoiF6UgXBEr7eFCWYfXuZDvRxP9zEh1Kwq3TLqDQMbkbaRpSnoC28oWvjLeshoQz1StZ9YHM1EpcJ'
+    assert.equal(Wallet.fromExtendedPublicKey(xpub).getAddressString(), '0xb800bf5435f67c7ee7d83c3a863269969a57c57c')
+  })
+})
+
+
 describe('.generate()', function () {
   it('should generate an account', function () {
     assert.equal(Wallet.generate().getPrivateKey().length, 32)

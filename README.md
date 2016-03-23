@@ -23,7 +23,9 @@ Constructors:
 
 * `generate([icap])` - create an instance based on a new random key (setting `icap` to true will generate an address suitable for the `ICAP Direct mode`)
 * `fromPrivateKey(input)` - create an instance based on a raw private key
+* `fromExtendedPrivateKey(input)` - create an instance based on a BIP32 xprv
 * `fromPublicKey(input)` - create an instance based on a public key (certain methods will not be available)
+* `fromExtendedPublicKey(input)` - create an instance based on a BIP32 xpub
 * `fromV1(input, password)` - import a wallet (Version 1 of the Ethereum wallet format)
 * `fromV3(input, password, [nonStrict])` - import a wallet (Version 3 of the Ethereum wallet format). Set `nonStrict` true to accept files with mixed-caps.
 * `fromEthSale(input, password)` - import an Ethereum Pre Sale wallet
