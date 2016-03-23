@@ -12,6 +12,7 @@ Motivations are:
 - work in a browser
 - use a single, maintained version of crypto library
 - support import/export between various wallet formats
+- support BIP32 HD keys
 
 Features not supported:
 - signing transactions
@@ -65,7 +66,7 @@ To use BIP32 HD wallets, first include the `hdkey` submodule:
 Constructors:
 
 * `fromMasterSeed(seed)` - create an instance based on a seed
-* `formExtendedKey(key)` - create an instance based on a BIP32 extended private or public key
+* `fromExtendedKey(key)` - create an instance based on a BIP32 extended private or public key
 
 For the seed  we suggest to use [bip39](https://npmjs.org/packages/bip39) to create one from a BIP39 mnemonic.
 
