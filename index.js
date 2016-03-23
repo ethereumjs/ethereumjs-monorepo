@@ -16,9 +16,18 @@ function decipherBuffer (decipher, data) {
 }
 
 var Wallet = function (priv, pub) {
+  if (priv && pub) {
+    throw new Error('Cannot supply both a private and a public key to the constructor')
+  }
+
   if (priv && !ethUtil.isValidPrivate(priv)) {
     throw new Error('Private key does not satisfy the curve requirements (ie. it is invalid)')
   }
+
+  if (pub && pub.length !== 64) {
+    throw new Error('Invalid public key')
+  }
+
   this._privKey = priv
   this._pubKey = pub
 }
