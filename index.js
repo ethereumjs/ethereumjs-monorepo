@@ -14,6 +14,9 @@ function decipherBuffer (decipher, data) {
 }
 
 var Wallet = function (priv) {
+  if (!ethUtil.isValidPrivate(priv)) {
+    throw new Error('Private key does not satisfy the curve requirements (ie. it is invalid)')
+  }
   this.privKey = priv
 }
 

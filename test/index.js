@@ -9,6 +9,11 @@ describe('.getPrivateKey()', function () {
   it('should work', function () {
     assert.equal(fixturewallet.getPrivateKey().toString('hex'), 'efca4cdd31923b50f4214af5d2ae10e7ac45a5019e9431cc195482d707485378')
   })
+  it('should fail', function () {
+    assert.throws(function () {
+      Wallet.fromPrivateKey(new Buffer('001122', 'hex'))
+    })
+  })
 })
 
 describe('.getPrivateKeyString()', function () {
