@@ -13,12 +13,29 @@ function decipherBuffer (decipher, data) {
   return Buffer.concat([ decipher.update(data), decipher.final() ])
 }
 
-var Wallet = function (priv) {
-  if (!ethUtil.isValidPrivate(priv)) {
+var Wallet = function (priv, pub) {
+  if (priv && !ethUtil.isValidPrivate(priv)) {
     throw new Error('Private key does not satisfy the curve requirements (ie. it is invalid)')
   }
-  this.privKey = priv
+  this._privKey = priv
+  this._pubKey = pub
 }
+
+Object.defineProperty(Wallet.prototype, 'privKey', {
+  get: function () {
+    assert(this._privKey, 'This is a public key only wallet')
+    return this._privKey
+  }
+})
+
+Object.defineProperty(Wallet.prototype, 'pubKey', {
+  get: function () {
+    if (!this._pubKey) {
+      this._pubKey = ethUtil.privateToPublic(this.privKey)
+    }
+    return this._pubKey
+  }
+})
 
 Wallet.generate = function (icapDirect) {
   if (icapDirect) {
@@ -42,7 +59,7 @@ Wallet.prototype.getPrivateKeyString = function () {
 }
 
 Wallet.prototype.getPublicKey = function () {
-  return ethUtil.privateToPublic(this.privKey)
+  return this.pubKey
 }
 
 Wallet.prototype.getPublicKeyString = function () {
@@ -50,7 +67,7 @@ Wallet.prototype.getPublicKeyString = function () {
 }
 
 Wallet.prototype.getAddress = function () {
-  return ethUtil.privateToAddress(this.privKey)
+  return ethUtil.publicToAddress(this.pubKey)
 }
 
 Wallet.prototype.getAddressString = function () {
@@ -63,6 +80,8 @@ Wallet.prototype.getChecksumAddressString = function () {
 
 // https://github.com/ethereum/wiki/wiki/Web3-Secret-Storage-Definition
 Wallet.prototype.toV3 = function (password, opts) {
+  assert(this._privKey, 'This is a public key only wallet')
+
   opts = opts || {}
   var salt = opts.salt || crypto.randomBytes(32)
   var iv = opts.iv || crypto.randomBytes(16)
@@ -138,6 +157,10 @@ Wallet.prototype.getV3Filename = function (timestamp) {
 
 Wallet.prototype.toV3String = function (password, opts) {
   return JSON.stringify(this.toV3(password, opts))
+}
+
+Wallet.fromPublicKey = function (pub) {
+  return new Wallet(null, pub)
 }
 
 Wallet.fromPrivateKey = function (priv) {

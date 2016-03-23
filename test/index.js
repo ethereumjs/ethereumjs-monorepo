@@ -52,6 +52,27 @@ describe('.getChecksumAddressString()', function () {
   })
 })
 
+describe('public key only wallet', function () {
+  var pubKey = new Buffer('5d4392f450262b276652c1fc037606abac500f3160830ce9df53aa70d95ce7cfb8b06010b2f3691c78c65c21eb4cf3dfdbfc0745d89b664ee10435bb3a0f906c', 'hex')
+  it('.fromPublicKey() should work', function () {
+    assert.equal(Wallet.fromPublicKey(pubKey).getPublicKey().toString('hex'),
+      '5d4392f450262b276652c1fc037606abac500f3160830ce9df53aa70d95ce7cfb8b06010b2f3691c78c65c21eb4cf3dfdbfc0745d89b664ee10435bb3a0f906c')
+  })
+  it('.getAddress() should work', function () {
+    assert.equal(Wallet.fromPublicKey(pubKey).getAddress().toString('hex'), 'b14ab53e38da1c172f877dbc6d65e4a1b0474c3c')
+  })
+  it('.getPrivateKey() should fail', function () {
+    assert.throws(function () {
+      Wallet.fromPublicKey(pubKey).getPrivateKey()
+    })
+  })
+  it('.toV3() should fail', function () {
+    assert.throws(function () {
+      Wallet.fromPublicKey(pubKey).toV3()
+    })
+  })
+})
+
 describe('.generate()', function () {
   it('should generate an account', function () {
     assert.equal(Wallet.generate().getPrivateKey().length, 32)
