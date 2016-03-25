@@ -10,7 +10,7 @@ It is complemented by the following packages:
 Motivations are:
 - be lightweight
 - work in a browser
-- use a single, maintained version of crypto library
+- use a single, maintained version of crypto library (and that should be in line with `ethereumjs-util` and `ethereumjs-tx`)
 - support import/export between various wallet formats
 - support BIP32 HD keys
 
