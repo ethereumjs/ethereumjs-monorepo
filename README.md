@@ -24,9 +24,9 @@ Constructors:
 
 * `generate([icap])` - create an instance based on a new random key (setting `icap` to true will generate an address suitable for the `ICAP Direct mode`)
 * `fromPrivateKey(input)` - create an instance based on a raw private key
-* `fromExtendedPrivateKey(input)` - create an instance based on a BIP32 xprv
+* `fromExtendedPrivateKey(input)` - create an instance based on a BIP32 extended private key (xprv)
 * `fromPublicKey(input, [nonStrict])` - create an instance based on a public key (certain methods will not be available)
-* `fromExtendedPublicKey(input)` - create an instance based on a BIP32 xpub
+* `fromExtendedPublicKey(input)` - create an instance based on a BIP32 extended public key (xpub)
 * `fromV1(input, password)` - import a wallet (Version 1 of the Ethereum wallet format)
 * `fromV3(input, password, [nonStrict])` - import a wallet (Version 3 of the Ethereum wallet format). Set `nonStrict` true to accept files with mixed-caps.
 * `fromEthSale(input, password)` - import an Ethereum Pre Sale wallet
@@ -45,6 +45,8 @@ Instance methods:
 * `toV3(password, [options])` - return the wallet as a JSON string (Version 3 of the Ethereum wallet format)
 
 All of the above instance methods return a Buffer or JSON. Use the `String` suffixed versions for a string output, such as `getPrivateKeyString()`.
+
+Note: `getPublicKey()` only returns uncompressed Ethereum-style public keys.
 
 ## Thirdparty API
 
@@ -74,8 +76,8 @@ For the seed  we suggest to use [bip39](https://npmjs.org/packages/bip39) to cre
 
 Instance methods:
 
-* `privateExtendedKey()` - return a BIP32 extended private key
-* `publicExtendedKey()` - return a BIP32 extended private key
+* `privateExtendedKey()` - return a BIP32 extended private key (xprv)
+* `publicExtendedKey()` - return a BIP32 extended public key (xpub)
 * `derivePath(path)` - derive a node based on a path (e.g.  m/44'/0'/0/1)
 * `deriveChild(index)` - derive a node based on a child index
 * `getWallet()` - return a `Wallet` instance as seen above
