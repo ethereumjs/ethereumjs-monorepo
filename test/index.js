@@ -121,7 +121,6 @@ describe('strings over 55 bytes long', function () {
     var decoded = RLP.decode(encoded)
     assert.equal(decoded.toString(), testString)
   })
-
 })
 
 describe('list over 55 bytes long', function () {
@@ -139,7 +138,6 @@ describe('list over 55 bytes long', function () {
     }
     assert.deepEqual(decoded, testString)
   })
-
 })
 
 describe('nested lists:', function () {
@@ -181,7 +179,6 @@ describe('null values', function () {
 })
 
 describe('zero values', function () {
-  var nestedList = [null]
   var encoded
   it('encode a zero', function () {
     encoded = RLP.encode(new Buffer([0]))

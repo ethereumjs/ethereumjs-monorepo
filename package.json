@@ -9,7 +9,7 @@
   "scripts": {
     "coverage": "istanbul cover node_modules/mocha/bin/_mocha ./test/",
     "coveralls": "npm run coverage && coveralls <coverage/lcov.info",
-    "lint": "standard ./index.js ./bin/rlp",
+    "lint": "standard",
     "test": "istanbul test node_modules/mocha/bin/_mocha -- --reporter spec",
     "webtest": "browserify test/max.js | testling -u"
   },
@@ -34,7 +34,7 @@
     "ethereumjs-testing": "git+https://github.com/ethereumjs/ethereumjs-testing.git",
     "istanbul": "^0.4.2",
     "mocha": "^2.3.4",
-    "standard": "^5.3.1"
+    "standard": "^6.0.8"
   },
   "bin": {
     "rlp": "./bin/rlp"
@@ -50,6 +50,12 @@
       "iphone/6",
       "ipad/6",
       "android-browser/latest"
+    ]
+  },
+  "standard": {
+    "globals": [
+      "describe",
+      "it"
     ]
   }
 }
