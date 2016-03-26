@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "coverage": "istanbul cover ./test/index.js",
+    "coveralls": "npm run coverage && coveralls <coverage/lcov.info",
     "lint": "standard",
     "test": "tape ./test/index.js"
   },
@@ -32,6 +33,7 @@
     "semaphore": "^1.0.3"
   },
   "devDependencies": {
+    "coveralls": "^2.11.4",
     "istanbul": "^0.4.2",
     "standard": "^5.4.1",
     "tape": "^4.2.1"
