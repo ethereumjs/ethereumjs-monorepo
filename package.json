@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "coverage": "istanbul cover _mocha",
+    "coveralls": "npm run coverage && coveralls <coverage/lcov.info",
     "lint": "standard",
     "prepublish": "npm run lint && npm run test",
     "test": "mocha ./test/**/*.js"
@@ -35,6 +36,7 @@
     "utf8": "^2.1.1"
   },
   "devDependencies": {
+    "coveralls": "^2.11.4",
     "istanbul": "^0.4.1",
     "mocha": "^2.3.4",
     "standard": "^5.4.1"
