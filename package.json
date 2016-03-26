@@ -7,6 +7,7 @@
     "test": "tests"
   },
   "scripts": {
+    "lint": "standard",
     "test": "node ./tests/"
   },
   "repository": {
@@ -35,6 +36,13 @@
     "ethereumjs-testing": "0.0.1",
     "levelup": "^1.3.0",
     "memdown": "^1.1.0",
+    "standard": "^6.0.8",
     "tape": "^4.2.2"
+  },
+  "standard": {
+    "globals": [
+      "describe",
+      "it"
+    ]
   }
 }

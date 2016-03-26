@@ -19,17 +19,20 @@ Ethash.prototype.mkcache = function (cacheSize, seed) {
   const n = Math.floor(cacheSize / ethHashUtil.params.HASH_BYTES)
   var o = [ethUtil.sha3(seed, 512)]
 
-  for (var i = 1; i < n; i++)
+  var i
+  for (i = 1; i < n; i++) {
     o.push(ethUtil.sha3(o[o.length - 1], 512))
+  }
 
   for (var _ = 0; _ < ethHashUtil.params.CACHE_ROUNDS; _++) {
-    for (var i = 0; i < n; i++) {
+    for (i = 0; i < n; i++) {
       var v = o[i].readUInt32LE(0) % n
       o[i] = ethUtil.sha3(xor(o[(i - 1 + n) % n], o[v]), 512)
     }
   }
 
-  return this.cache = o
+  this.cache = o
+  return this.cache
 }
 
 Ethash.prototype.calcDatasetItem = function (i) {
@@ -53,18 +56,20 @@ Ethash.prototype.run = function (val, nonce, fullSize) {
   const mixhashes = Math.floor(ethHashUtil.params.MIX_BYTES / ethHashUtil.params.HASH_BYTES)
   var mix = Buffer.concat(Array(mixhashes).fill(s))
 
-  for (var i = 0; i < ethHashUtil.params.ACCESSES; i++) {
+  var i
+  for (i = 0; i < ethHashUtil.params.ACCESSES; i++) {
     var p = ethHashUtil.fnv(i ^ s.readUInt32LE(0), mix.readUInt32LE(i % w * 4)) % Math.floor(n / mixhashes) * mixhashes
     var newdata = []
-    for (var j = 0; j < mixhashes; j++)
+    for (var j = 0; j < mixhashes; j++) {
       newdata.push(this.calcDatasetItem(p + j))
+    }
 
     newdata = Buffer.concat(newdata)
     mix = ethHashUtil.fnvBuffer(mix, newdata)
   }
 
   var cmix = new Buffer(mix.length / 4)
-  for (var i = 0; i < mix.length / 4; i = i + 4) {
+  for (i = 0; i < mix.length / 4; i = i + 4) {
     var a = ethHashUtil.fnv(mix.readUInt32LE(i * 4), mix.readUInt32LE((i + 1) * 4))
     var b = ethHashUtil.fnv(a, mix.readUInt32LE((i + 2) * 4))
     var c = ethHashUtil.fnv(b, mix.readUInt32LE((i + 3) * 4))
@@ -95,24 +100,28 @@ Ethash.prototype.loadEpoc = function (number, cb) {
   var self = this
   const epoc = ethHashUtil.getEpoc(number)
 
-  if (this.epoc === epoc)
+  if (this.epoc === epoc) {
     return cb()
+  }
 
   this.epoc = epoc
 
   // gives the seed the first epoc found
-  function findLastSeed(epoc, cb2) {
-    if (epoc === 0)
+  function findLastSeed (epoc, cb2) {
+    if (epoc === 0) {
       return cb2(ethUtil.zeros(32), 0)
+    }
 
     self.cacheDB.get(epoc, self.dbOpts, function (err, data) {
-      if (!err)
+      if (!err) {
         cb2(data.seed, epoc)
-      else
+      } else {
         findLastSeed(epoc - 1, cb2)
+      }
     })
   }
 
+  /* eslint-disable handle-callback-err */
   self.cacheDB.get(epoc, self.dbOpts, function (err, data) {
     if (!data) {
       self.cacheSize = ethHashUtil.getCacheSize(epoc)
@@ -121,7 +130,7 @@ Ethash.prototype.loadEpoc = function (number, cb) {
       findLastSeed(epoc, function (seed, foundEpoc) {
         self.seed = ethHashUtil.getSeed(seed, foundEpoc, epoc)
         var cache = self.mkcache(self.cacheSize, self.seed)
-          //store the generated cache
+        // store the generated cache
         self.cacheDB.put(epoc, {
           cacheSize: self.cacheSize,
           fullSize: self.fullSize,
@@ -140,6 +149,7 @@ Ethash.prototype.loadEpoc = function (number, cb) {
       cb()
     }
   })
+  /* eslint-enable handle-callback-err */
 }
 
 Ethash.prototype._verifyPOW = function (header, cb) {
@@ -167,16 +177,18 @@ Ethash.prototype.verifyPOW = function (block, cb) {
   this._verifyPOW(block.header, function (valid2) {
     valid &= valid2
 
-    if (!valid)
+    if (!valid) {
       return cb(valid)
+    }
 
     async.eachSeries(block.uncleHeaders, function (uheader, cb2) {
       self._verifyPOW(uheader, function (valid3) {
         valid &= valid3
-        if (!valid)
+        if (!valid) {
           cb2(Boolean(valid))
-        else
+        } else {
           cb2()
+        }
       })
     }, function () {
       cb(Boolean(valid))

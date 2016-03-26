@@ -4,13 +4,12 @@ const ethUtil = require('ethereumjs-util')
 const Header = require('ethereumjs-block/header.js')
 const tape = require('tape')
 const powTests = require('ethereumjs-testing').tests.powTests.ethash_tests
-const async = require('async')
 
 var ethash = new Ethash()
 var tests = Object.keys(powTests)
 
-tape('POW tests', function(t) {
-  tests.forEach(function(key) {
+tape('POW tests', function (t) {
+  tests.forEach(function (key) {
     var test = powTests[key]
     var header = new Header(new Buffer(test.header, 'hex'))
 
