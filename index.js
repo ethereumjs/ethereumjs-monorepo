@@ -61,6 +61,21 @@ Wallet.generate = function (icapDirect) {
   }
 }
 
+Wallet.generateVanityAddress = function (pattern) {
+  if (typeof pattern !== 'object') {
+    pattern = new RegExp(pattern)
+  }
+
+  while (true) {
+    var privKey = crypto.randomBytes(32)
+    var address = ethUtil.privateToAddress(privKey)
+
+    if (pattern.test(address.toString('hex'))) {
+      return new Wallet(privKey)
+    }
+  }
+}
+
 Wallet.prototype.getPrivateKey = function () {
   return this.privKey
 }

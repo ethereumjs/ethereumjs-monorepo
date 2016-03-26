@@ -28,6 +28,7 @@ Features not supported:
 Constructors:
 
 * `generate([icap])` - create an instance based on a new random key (setting `icap` to true will generate an address suitable for the `ICAP Direct mode`)
+* `generateVanityAddress(pattern)` - create an instance where the address is valid against the supplied pattern (**this will be very slow**)
 * `fromPrivateKey(input)` - create an instance based on a raw private key
 * `fromExtendedPrivateKey(input)` - create an instance based on a BIP32 extended private key (xprv)
 * `fromPublicKey(input, [nonStrict])` - create an instance based on a public key (certain methods will not be available)

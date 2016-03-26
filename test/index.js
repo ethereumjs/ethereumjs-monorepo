@@ -108,6 +108,15 @@ describe('.generate()', function () {
   })
 })
 
+describe('.generateVanityAddress()', function () {
+  it('should generate an account with 000 prefix', function () {
+    var wallet = Wallet.generateVanityAddress(/^000/)
+    assert.equal(wallet.getPrivateKey().length, 32)
+    assert.equal(wallet.getAddress()[0], 0)
+    assert.equal(wallet.getAddress()[1] >>> 4, 0)
+  })
+})
+
 describe('.getV3Filename()', function () {
   it('should work', function () {
     assert.equal(fixturewallet.getV3Filename(1457917509265), 'UTC--2016-03-14T01-05-09.265Z--b14ab53e38da1c172f877dbc6d65e4a1b0474c3c')
