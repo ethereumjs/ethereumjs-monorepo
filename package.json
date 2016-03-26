@@ -8,6 +8,7 @@
   },
   "scripts": {
     "coverage": "istanbul cover ./tests/",
+    "coveralls": "npm run coverage && coveralls <coverage/lcov.info",
     "lint": "standard",
     "test": "node ./tests/"
   },
@@ -33,6 +34,7 @@
     "miller-rabin": "^4.0.0"
   },
   "devDependencies": {
+    "coveralls": "^2.11.4",
     "ethereumjs-block": "^1.2.2",
     "ethereumjs-testing": "0.0.1",
     "istanbul": "^0.4.1",
