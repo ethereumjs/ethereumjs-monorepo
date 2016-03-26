@@ -22,6 +22,10 @@ EthereumHDKey.fromExtendedKey = function (base58key) {
 }
 
 EthereumHDKey.prototype.privateExtendedKey = function () {
+  // FIXME: change this according to the outcome of https://github.com/cryptocoinjs/hdkey/issues/7
+  if (!this._hdkey._privateKey) {
+    throw new Error('Private key is not available')
+  }
   return this._hdkey.privateExtendedKey
 }
 

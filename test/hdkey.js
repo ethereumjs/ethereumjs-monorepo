@@ -31,7 +31,7 @@ describe('.fromExtendedKey()', function () {
     assert.equal(hdnode.publicExtendedKey(), 'xpub661MyMwAqRbcGout4B6s29b6gGQsowyoiF6UgXBEr7eFCWYfXuZDvRxP9zEh1Kwq3TLqDQMbkbaRpSnoC28oWvjLeshoQz1StZ9YHM1EpcJ')
     assert.throws(function () {
       hdnode.privateExtendedKey()
-    }) // FIXME: check for assert message(s)
+    }, /^Error: Private key is not available$/)
   })
   it('should work with private', function () {
     var hdnode = HDKey.fromExtendedKey('xprv9s21ZrQH143K4KqQx9Zrf1eN8EaPQVFxM2Ast8mdHn7GKiDWzNEyNdduJhWXToy8MpkGcKjxeFWd8oBSvsz4PCYamxR7TX49pSpp3bmHVAY')
