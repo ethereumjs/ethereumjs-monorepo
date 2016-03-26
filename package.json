@@ -7,6 +7,7 @@
     "test": "tests"
   },
   "scripts": {
+    "coverage": "istanbul cover ./tests/",
     "lint": "standard",
     "test": "node ./tests/"
   },
@@ -34,6 +35,7 @@
   "devDependencies": {
     "ethereumjs-block": "^1.2.2",
     "ethereumjs-testing": "0.0.1",
+    "istanbul": "^0.4.1",
     "levelup": "^1.3.0",
     "memdown": "^1.1.0",
     "standard": "^6.0.8",
