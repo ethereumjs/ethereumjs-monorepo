@@ -1,7 +1,5 @@
 const Account = require('../index.js')
-const rlp = require('rlp')
 const tape = require('tape')
-const ethUtil = require('ethereumjs-util')
 
 tape('empty constructor', function (tester) {
   var it = tester.test
@@ -19,10 +17,10 @@ tape('constructor with Array', function (tester) {
   var it = tester.test
   it('should work', function (t) {
     var raw = [
-      '0x02', //nonce
-      '0x0384', //balance
-      '0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421', //stateRoot
-      '0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470'  //codeHash
+      '0x02', // nonce
+      '0x0384', // balance
+      '0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421', // stateRoot
+      '0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470'  // codeHash
     ]
     var account = new Account(raw)
     t.equal(account.nonce.toString('hex'), '02')
@@ -85,7 +83,7 @@ tape('isContract', function (tester) {
       balance: '0x0042',
       stateRoot: '0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421',
       codeHash: '0xc5d2461236f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470'
-    };
+    }
     var account = new Account(raw)
     t.equal(account.isContract(), true)
     t.end()
