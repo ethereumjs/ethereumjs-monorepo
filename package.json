@@ -7,7 +7,7 @@
     "test": "test"
   },
   "scripts": {
-    "coverage": "istanbul cover node_modules/mocha/bin/_mocha ./test/",
+    "coverage": "istanbul cover _mocha",
     "coveralls": "npm run coverage && coveralls <coverage/lcov.info",
     "lint": "standard",
     "test": "istanbul test mocha -- --reporter spec",
