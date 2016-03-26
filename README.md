@@ -12,6 +12,7 @@ SYNOPSIS
 INSTALL
 ======
 `npm install rlp`   
+
 install with `-g` if you want to use the cli.
 
 USAGE
@@ -41,14 +42,15 @@ CLI
 
 TESTS
 =====
-test uses mocha. To run  
-`npm test`
+Test uses mocha. To run `npm test`
 
 CODE COVERAGE
 =============
 Install dev dependencies
 `npm install`
+
 Run
-`npm run codecoverage`
+`npm run coverage`
+
 The results are at
 `coverage/lcov-report/index.html`

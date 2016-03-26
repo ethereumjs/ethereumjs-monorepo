@@ -7,9 +7,9 @@
     "test": "test"
   },
   "scripts": {
+    "coverage": "istanbul cover node_modules/mocha/bin/_mocha ./test/",
     "test": "standard ./index.js ./bin/rlp &&  ./node_modules/mocha/bin/mocha --reporter spec ./test/",
-    "webtest": "browserify test/max.js | testling -u",
-    "codecoverage": "istanbul cover node_modules/mocha/bin/_mocha ./test/"
+    "webtest": "browserify test/max.js | testling -u"
   },
   "repository": {
     "type": "git",
