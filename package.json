@@ -30,6 +30,7 @@
     "url": "https://github.com/ethereumjs/rlp/issues"
   },
   "devDependencies": {
+    "bn.js": "^4.11.1",
     "coveralls": "^2.11.4",
     "ethereumjs-testing": "git+https://github.com/ethereumjs/ethereumjs-testing.git",
     "istanbul": "^0.4.2",

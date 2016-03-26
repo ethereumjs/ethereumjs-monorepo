@@ -1,5 +1,6 @@
 const assert = require('assert')
 const RLP = require('../index.js')
+const BN = require('bn.js')
 const officalTests = require('ethereumjs-testing').tests.rlptest
 
 describe('invalid rlps', function () {
@@ -263,7 +264,7 @@ describe('offical tests', function () {
       var incoming = officalTests[test].in
       // if we are testing a big number
       if (incoming[0] === '#') {
-        var bn = new Bignum(incoming.slice(1))
+        var bn = new BN(incoming.slice(1))
         incoming = new Buffer(bn.toArray())
       }
 
