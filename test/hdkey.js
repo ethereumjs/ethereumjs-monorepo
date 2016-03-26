@@ -31,7 +31,7 @@ describe('.fromExtendedKey()', function () {
     assert.equal(hdnode.publicExtendedKey(), 'xpub661MyMwAqRbcGout4B6s29b6gGQsowyoiF6UgXBEr7eFCWYfXuZDvRxP9zEh1Kwq3TLqDQMbkbaRpSnoC28oWvjLeshoQz1StZ9YHM1EpcJ')
     assert.throws(function () {
       hdnode.privateExtendedKey()
-    })
+    }) // FIXME: check for assert message(s)
   })
   it('should work with private', function () {
     var hdnode = HDKey.fromExtendedKey('xprv9s21ZrQH143K4KqQx9Zrf1eN8EaPQVFxM2Ast8mdHn7GKiDWzNEyNdduJhWXToy8MpkGcKjxeFWd8oBSvsz4PCYamxR7TX49pSpp3bmHVAY')
@@ -68,7 +68,7 @@ describe('.getWallet()', function () {
     var hdnode = HDKey.fromExtendedKey('xpub661MyMwAqRbcGout4B6s29b6gGQsowyoiF6UgXBEr7eFCWYfXuZDvRxP9zEh1Kwq3TLqDQMbkbaRpSnoC28oWvjLeshoQz1StZ9YHM1EpcJ')
     assert.throws(function () {
       hdnode.getWallet().getPrivateKeyString()
-    })
+    }, /^Error: This is a public key only wallet$/)
     assert.equal(hdnode.getWallet().getPublicKeyString(), '0x0639797f6cc72aea0f3d309730844a9e67d9f1866e55845c5f7e0ab48402973defa5cb69df462bcc6d73c31e1c663c225650e80ef14a507b203f2a12aea55bc1')
   })
 })

@@ -12,7 +12,7 @@ describe('.getPrivateKey()', function () {
   it('should fail', function () {
     assert.throws(function () {
       Wallet.fromPrivateKey(new Buffer('001122', 'hex'))
-    })
+    }, /^Error: Private key does not satisfy the curve requirements \(ie. it is invalid\)$/)
   })
 })
 
@@ -61,7 +61,7 @@ describe('public key only wallet', function () {
   it('.fromPublicKey() should not accept compressed keys in strict mode', function () {
     assert.throws(function () {
       Wallet.fromPublicKey(new Buffer('030639797f6cc72aea0f3d309730844a9e67d9f1866e55845c5f7e0ab48402973d', 'hex'))
-    })
+    }, /^Error: Invalid public key$/)
   })
   it('.fromPublicKey() should accept compressed keys in non-strict mode', function () {
     var tmp = new Buffer('030639797f6cc72aea0f3d309730844a9e67d9f1866e55845c5f7e0ab48402973d', 'hex')
@@ -74,12 +74,12 @@ describe('public key only wallet', function () {
   it('.getPrivateKey() should fail', function () {
     assert.throws(function () {
       Wallet.fromPublicKey(pubKey).getPrivateKey()
-    })
+    }, /^Error: This is a public key only wallet$/)
   })
   it('.toV3() should fail', function () {
     assert.throws(function () {
       Wallet.fromPublicKey(pubKey).toV3()
-    })
+    }, /^Error: This is a public key only wallet$/)
   })
 })
 
@@ -173,7 +173,7 @@ describe('.fromV3()', function () {
     var w = '{"Crypto":{"cipher":"aes-128-ctr","cipherparams":{"iv":"6087dab2f9fdbbfaddc31a909735c1e6"},"ciphertext":"5318b4d5bcd28de64ee5559e671353e16f075ecae9f99c7a79a38af5f869aa46","kdf":"pbkdf2","kdfparams":{"c":262144,"dklen":32,"prf":"hmac-sha256","salt":"ae3cd4e7013836a3df6bd7241b12db061dbe2c6785853cce422d148a624ce0bd"},"mac":"517ead924a9d0dc3124507e3393d175ce3ff7c1e96529c6c555ce9e51205e9b2"},"id":"3198bc9c-6672-5ab3-d995-4942343ae5b6","version":3}'
     assert.throws(function () {
       Wallet.fromV3(w, 'testpassword')
-    })
+    }) // FIXME: check for assert message(s)
   })
 })
 
