@@ -8,6 +8,8 @@
     "url": "git+https://github.com/ethereumjs/ethereumjs-account.git"
   },
   "scripts": {
+    "coverage": "istanbul cover ./test/index.js",
+    "coveralls": "npm run coverage && coveralls <coverage/lcov.info",
     "lint": "standard",
     "test": "tape ./test/index.js"
   },
@@ -26,6 +28,8 @@
     "rlp": "^2.0.0"
   },
   "devDependencies": {
+    "coveralls": "^2.11.4",
+    "istanbul": "^0.4.1",
     "standard": "^5.4.1",
     "tape": "^4.0.3"
   }
