@@ -25,12 +25,12 @@ matrix:
   fast_finish: true
   include:
     - os: linux
-      node_js: "4"
+      node_js: "5"
       env: CXX=g++-4.8 TEST_SUITE=testVM
     - os: linux
-      node_js: "4"
+      node_js: "5"
       env: CXX=g++-4.8 TEST_SUITE=testBlockchain
     - os: linux
-      node_js: "4"
+      node_js: "5"
       env: CXX=g++-4.8 TEST_SUITE=lint
 script: npm run $TEST_SUITE
