@@ -35,7 +35,7 @@ Also more examples can be found here
 To build for standalone use in the browser install `browserify` and run `npm run build`. This will give you a global variable `EthVM` to use. The standalone file will be at `./dist/ethereumjs-vm.js`
 
 # API
-  - [`new VM([StateTrie], [blockchain])`](#new-vmstatetrie-blockchain)  
+  - [`new VM([StateTrie], [blockchain], [opts])`](#new-vmstatetrie-blockchain)  
   - [`VM` methods](#vm-methods)  
     - [`vm.runBlockchain([blockchain], [cb])`](#vmrunblockchainblockchain-cb)
     - [`vm.runBlock(opts, cb)`](#vmrunblockopts-cb)
@@ -50,6 +50,8 @@ To build for standalone use in the browser install `browserify` and run `npm run
 Creates a new VM object
 - `StateTrie` - The [Patricia Merkle Tree](https://github.com/wanderer/merkle-patricia-tree) that contains the state. If no trie is given the `VM` will create an in memory trie.
 - `blockchain` - an instance of the [`Blockchain`](https://github.com/ethereum/ethereumjs-lib/blob/master/docs/blockchain.md) If no blockchain is given a fake blockchain will be used.
+- `opts`
+  - `enableHomestead` - a boolean that overrides the homestead settings based on blocknumber
 
 ### `VM` methods
 
