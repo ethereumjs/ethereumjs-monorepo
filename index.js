@@ -579,6 +579,34 @@ exports.padToEven = function (a) {
 }
 
 /**
+ * Validate ECDSA signature
+ * @method isValidSignature
+ * @param {Buffer} v
+ * @param {Buffer} r
+ * @param {Buffer} s
+ * @param {Boolean} [homestead=false]
+ * @return {Boolean}
+ */
+
+const N_DIV_2 = new BN('7fffffffffffffffffffffffffffffff5d576e7357a4501ddfe92f46681b20a0', 16)
+
+exports.isValidSignature = function (v, r, s, homestead) {
+  if (r.length !== 32 || s.length !== 32) {
+    return false
+  }
+
+  if (v !== 27 && v !== 28) {
+    return false
+  }
+
+  if (homestead && (new BN(s).cmp(N_DIV_2) === 1)) {
+    return false
+  }
+
+  return true
+}
+
+/**
  * Converts a `Buffer` or `Array` to JSON
  * @method BAToJSON
  * @param {Buffer|Array} ba
