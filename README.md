@@ -19,7 +19,7 @@ A module to store and interact with blocks
     - [`BlockChain` Properties](#blockchain-properties)
     - [`BlockChain` methods](#blockchain-methods)
         - [`blockchain.init(cb)`](#blockchaininitcb)
-        - [`blockchain.addBlock(block, [callback])`](#blockchainaddblockblock-callback)
+        - [`blockchain.putBlock(block, [callback])`](#blockchainputblockblock-callback)
         - [`blockchain.getBlock(hash, [callback])`](#blockchaingetblockhash-callback)
         - [`blockchain.getBlockInfo(hash, cb)`](#blockchaingetblockinfohash-cb)
         - [`blockchain.getBlockHashes(parentHash, count, cb)`](#blockchaingetblockhashesparenthash-count-cb)
@@ -49,7 +49,7 @@ Initializes the blockchain. This must be done before you can use the `blockchain
 
 --------------------------------------------------------
 
-#### `blockchain.addBlock(block, [callback])`
+#### `blockchain.putBlock(block, [callback])`
 Adds a block to the blockchain.
 - `block` - the block to be added to the blockchain
 - `callback` - the callback. It is given two parameters `err` and the saved `block`
