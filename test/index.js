@@ -224,6 +224,49 @@ describe('isValidPrivate', function () {
   })
 })
 
+describe('isValidPublic', function () {
+  it('should fail on too short input', function () {
+    var pubKey = '3a443d8381a6798a70c6ff9304bdc8cb0163c23211d11628fae52ef9e0dca11a001cf066d56a8156fc201cd5df8a36ef694eecd258903fca7086c1fae744'
+    pubKey = new Buffer(pubKey, 'hex')
+    assert.equal(ethUtils.isValidPublic(pubKey), false)
+  })
+  it('should fail on too big input', function () {
+    var pubKey = '3a443d8381a6798a70c6ff9304bdc8cb0163c23211d11628fae52ef9e0dca11a001cf066d56a8156fc201cd5df8a36ef694eecd258903fca7086c1fae7441e1d00'
+    pubKey = new Buffer(pubKey, 'hex')
+    assert.equal(ethUtils.isValidPublic(pubKey), false)
+  })
+  it('should fail on SEC1 key', function () {
+    var pubKey = '043a443d8381a6798a70c6ff9304bdc8cb0163c23211d11628fae52ef9e0dca11a001cf066d56a8156fc201cd5df8a36ef694eecd258903fca7086c1fae7441e1d'
+    pubKey = new Buffer(pubKey, 'hex')
+    assert.equal(ethUtils.isValidPublic(pubKey), false)
+  })
+  it('shouldn\'t fail on SEC1 key with sanitize enabled', function () {
+    var pubKey = '043a443d8381a6798a70c6ff9304bdc8cb0163c23211d11628fae52ef9e0dca11a001cf066d56a8156fc201cd5df8a36ef694eecd258903fca7086c1fae7441e1d'
+    pubKey = new Buffer(pubKey, 'hex')
+    assert.equal(ethUtils.isValidPublic(pubKey, true), true)
+  })
+  it('should fail with an invalid SEC1 public key', function () {
+    var pubKey = '023a443d8381a6798a70c6ff9304bdc8cb0163c23211d11628fae52ef9e0dca11a001cf066d56a8156fc201cd5df8a36ef694eecd258903fca7086c1fae7441e1d'
+    pubKey = new Buffer(pubKey, 'hex')
+    assert.equal(ethUtils.isValidPublic(pubKey, true), false)
+  })
+  it('should work with compressed keys with sanitize enabled', function () {
+    var pubKey = '033a443d8381a6798a70c6ff9304bdc8cb0163c23211d11628fae52ef9e0dca11a'
+    pubKey = new Buffer(pubKey, 'hex')
+    assert.equal(ethUtils.isValidPublic(pubKey, true), true)
+  })
+  it('should work with sanitize enabled', function () {
+    var pubKey = '043a443d8381a6798a70c6ff9304bdc8cb0163c23211d11628fae52ef9e0dca11a001cf066d56a8156fc201cd5df8a36ef694eecd258903fca7086c1fae7441e1d'
+    pubKey = new Buffer(pubKey, 'hex')
+    assert.equal(ethUtils.isValidPublic(pubKey, true), true)
+  })
+  it('should work otherwise', function () {
+    var pubKey = '3a443d8381a6798a70c6ff9304bdc8cb0163c23211d11628fae52ef9e0dca11a001cf066d56a8156fc201cd5df8a36ef694eecd258903fca7086c1fae7441e1d'
+    pubKey = new Buffer(pubKey, 'hex')
+    assert.equal(ethUtils.isValidPublic(pubKey), true)
+  })
+})
+
 describe('publicToAddress', function () {
   it('should produce an address given a public key', function () {
     var pubKey = '3a443d8381a6798a70c6ff9304bdc8cb0163c23211d11628fae52ef9e0dca11a001cf066d56a8156fc201cd5df8a36ef694eecd258903fca7086c1fae7441e1d'
