@@ -2,7 +2,6 @@ var ethUtil = require('ethereumjs-util')
 var crypto = require('crypto')
 var scryptsy = require('scrypt.js')
 var uuid = require('uuid')
-var secp256k1 = require('secp256k1')
 var bs58check = require('bs58check')
 
 function assert (val, msg) {
@@ -24,7 +23,7 @@ var Wallet = function (priv, pub) {
     throw new Error('Private key does not satisfy the curve requirements (ie. it is invalid)')
   }
 
-  if (pub && pub.length !== 64) {
+  if (pub && !ethUtil.isValidPublic(pub)) {
     throw new Error('Invalid public key')
   }
 
@@ -171,11 +170,9 @@ Wallet.prototype.toV3String = function (password, opts) {
 }
 
 Wallet.fromPublicKey = function (pub, nonStrict) {
-  // FIXME: duplicate from ethUtil.publicToAddress(), maybe it could be factored out?
-  if ((pub.length !== 64) && nonStrict) {
-    pub = secp256k1.publicKeyConvert(pub, false).slice(1)
+  if (nonStrict) {
+    pub = ethUtil.importPublic(pub)
   }
-  assert(pub.length === 64, 'Invalid public key')
   return new Wallet(null, pub)
 }
 
