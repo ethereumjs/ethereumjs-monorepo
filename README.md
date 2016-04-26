@@ -87,6 +87,18 @@ Instance methods:
 * `deriveChild(index)` - derive a node based on a child index
 * `getWallet()` - return a `Wallet` instance as seen above
 
+## Provider Engine
+
+The Wallet can be easily plugged into [provider-engine](https://github.com/metamask/provider-engine) to provide signing:
+
+```js
+const WalletSubprovider = require('ethereumjs-wallet/provider-engine')
+
+<engine>.addProvider(new WalletSubprovider(<wallet instance>))
+```
+
+Note it only supports the basic wallet. With a HD Wallet, call `getWallet()` first.
+
 ### Remarks about `toV3`
 
 The `options` is an optional object hash, where all the serialization parameters can be fine tuned:
