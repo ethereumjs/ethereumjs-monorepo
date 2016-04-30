@@ -148,7 +148,7 @@ BlockHeader.prototype.validateGasLimit = function (parentBlock) {
   const maxGasLimit = pGasLimit + a
   const minGasLimit = pGasLimit - a
 
-  return maxGasLimit > gasLimit && minGasLimit < gasLimit && params.minGasLimit.v < gasLimit
+  return maxGasLimit > gasLimit && minGasLimit < gasLimit && params.minGasLimit.v <= gasLimit
 }
 
 /**
