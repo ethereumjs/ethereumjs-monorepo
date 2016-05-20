@@ -52,6 +52,7 @@ Creates a new VM object
 - `blockchain` - an instance of the [`Blockchain`](https://github.com/ethereum/ethereumjs-lib/blob/master/docs/blockchain.md) If no blockchain is given a fake blockchain will be used.
 - `opts`
   - `enableHomestead` - a boolean that overrides the homestead settings based on blocknumber
+  - `activatePrecompiles` - create entries in the state tree for the precompiled contracts
 
 ### `VM` methods
 
