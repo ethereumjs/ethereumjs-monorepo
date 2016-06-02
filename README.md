@@ -103,7 +103,7 @@ Runs EVM code
   - `suicides` - an `Array` of accounts that have suicided.
   - `suicideTo` - the account that the suicide refund should go to.
   - `logs` - an `Array` of logs that the contract emitted.
-  - `exception` - a `boolean`, whether or not the contract encountered an exception
+  - `exception` - `0` if the contract encountered an exception, `1` otherwise.
   - `exceptionError` - a `String` describing the exception if there was one.
   - `return` - a `Buffer` containing the value that was returned by the contract
 
