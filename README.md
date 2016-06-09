@@ -32,6 +32,9 @@ tx.sign(privateKey)
 var serializedTx = tx.serialize()
 ```
 
+**Note:** this package expects ECMAScript 6 (ES6) as a minimum environment. From browsers lacking ES6 support, please use a shim (like [es6-shim](https://github.com/paulmillr/es6-shim)) before including any of the builds from this repo.
+
+
 # BROWSER  
 To build for standalone use in the browser install `browserify` and run `npm run build`. For standalone use in the browser inculde ./dist/ethereumjs-tx.js This will give you a gobal varible `EthTx` to use. 
 
