@@ -584,7 +584,7 @@ exports.padToEven = function (a) {
  * @param {Buffer} v
  * @param {Buffer} r
  * @param {Buffer} s
- * @param {Boolean} [homestead=false]
+ * @param {Boolean} [homestead=true]
  * @return {Boolean}
  */
 
@@ -607,7 +607,7 @@ exports.isValidSignature = function (v, r, s, homestead) {
     return false
   }
 
-  if (homestead && (new BN(s).cmp(SECP256K1_N_DIV_2) === 1)) {
+  if ((homestead === false) && (new BN(s).cmp(SECP256K1_N_DIV_2) === 1)) {
     return false
   }
 
