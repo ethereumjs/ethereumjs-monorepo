@@ -87,6 +87,16 @@ tape('[Transaction]: Basic functions', function (t) {
     st.end()
   })
 
+  t.test("should get sender's address after signing it (second call should be cached)", function (st) {
+    transactions.forEach(function (tx, i) {
+      if (txFixtures[i].privateKey) {
+        st.equals(tx.getSenderAddress().toString('hex'), txFixtures[i].sendersAddress)
+        st.equals(tx.getSenderAddress().toString('hex'), txFixtures[i].sendersAddress)
+      }
+    })
+    st.end()
+  })
+
   t.test('should verify signing it', function (st) {
     transactions.forEach(function (tx, i) {
       if (txFixtures[i].privateKey) {
