@@ -33,8 +33,7 @@ var serializedTx = tx.serialize()
 ```
 
 # BROWSER  
-To build for standalone use in the browser install `browserify` and run `npm run build`. For standalone use in the browser inculde ./dist/ethereumjs-tx.js This will give you a gobal varible `EthTx` to use. 
-
+For a browser build please see https://github.com/ethereumjs/browser-builds.
 
 # API
 [./docs/](./docs/index.md)
