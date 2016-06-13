@@ -10,7 +10,6 @@
     "test": "npm run test:node && npm run test:browser",
     "test:browser": "karma start karma.conf.js",
     "test:node": "tape ./test/index.js",
-    "build": "browserify --s EthTx index.js > ./dist/ethereumjs-tx.js",
     "build:docs": "documentation --github  -f md ./index.js > ./docs/index.md"
   },
   "keywords": [
