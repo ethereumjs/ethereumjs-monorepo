@@ -36,9 +36,7 @@ Account.prototype.getCode = function (state, cb) {
     return
   }
 
-  state.getRaw(this.codeHash, function (err, val) {
-    cb(err, val)
-  })
+  state.getRaw(this.codeHash, cb)
 }
 
 Account.prototype.setCode = function (trie, code, cb) {
