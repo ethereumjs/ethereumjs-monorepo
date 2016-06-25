@@ -51,7 +51,7 @@ function FakeTransaction (data) {
     }
   })
 
-  if (data.from) {
+  if (data && data.from) {
     this.from = data.from
   }
 }
