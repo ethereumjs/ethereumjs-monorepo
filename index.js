@@ -36,28 +36,13 @@ Account.prototype.getCode = function (state, cb) {
     return
   }
 
-  state.getRaw(this.codeHash, function (err, val) {
-    var compiled = val[0] === 1
-    val = val.slice(1)
-    cb(err, val, compiled)
-  })
+  state.getRaw(this.codeHash, cb)
 }
 
-Account.prototype.setCode = function (trie, code, compiled, cb) {
+Account.prototype.setCode = function (trie, code, cb) {
   var self = this
 
-  if (arguments.length === 3) {
-    cb = compiled
-    compiled = false
-  }
-
-  // store code for a new contract
-  if (!compiled) {
-    this.codeHash = ethUtil.sha3(code)
-  }
-
-  // set the compile flag
-  code = Buffer.concat([new Buffer([compiled]), code])
+  this.codeHash = ethUtil.sha3(code)
 
   if (this.codeHash.toString('hex') === ethUtil.SHA3_NULL_S) {
     cb(null, new Buffer([]))
