@@ -2,7 +2,6 @@
 const argv = require('minimist')(process.argv.slice(2))
 const async = require('async')
 const tape = require('tape')
-const path = require('path')
 const testing = require('ethereumjs-testing')
 const skip = [
   'CreateHashCollision', // impossible hash collision on generating address
@@ -15,19 +14,19 @@ const skip = [
   'mload32bitBound_return2',
   'QuadraticComplexitySolidity_CallDataCopy', // tests hash collisoin, sending from a contract
   'Call50000', // slow
-  'Call50000_ecrec', //slow
-  'Call50000_identity', //slow
-  'Call50000_identity2', //slow
-  'Call50000_sha256', //slow
-  'Call50000_rip160', //slow
-  'Call50000bytesContract50_1', //slow
+  'Call50000_ecrec', // slow
+  'Call50000_identity', // slow
+  'Call50000_identity2', // slow
+  'Call50000_sha256', // slow
+  'Call50000_rip160', // slow
+  'Call50000bytesContract50_1', // slow
   'Call50000bytesContract50_2',
-  'Callcode50000', //slow
-  'Return50000', //slow
-  'Return50000_2', //slow
+  'Callcode50000', // slow
+  'Return50000', // slow
+  'Return50000_2', // slow
   'uncleBlockAtBlock3AfterBlock3',
   'ForkUncle', // correct behaviour unspecified (?)
-  'UncleFromSideChain' //same as ForkUncle, the TD is the same for two diffent branches so its not clear which one should be the finally chain
+  'UncleFromSideChain' // same as ForkUncle, the TD is the same for two diffent branches so its not clear which one should be the finally chain
 ]
 
 if (argv.r) {
@@ -38,18 +37,14 @@ if (argv.r) {
   runTests('vm', argv)
 } else if (argv.b) {
   runTests('blockchain', argv)
-} else if (argv.j) {
-  var runner = require('./jitVMTestRunner.js').bind(this, argv)
-  var tests = testing.getTests('vm', argv)
-  testing.runTests(runner, tests, skip)
 } else if (argv.a) {
   runAll()
 }
 
-//randomized tests
-//returns 1 if the tests fails
-//returns 0 if the tests succeds
-function randomized(stateTest) {
+// randomized tests
+// returns 1 if the tests fails
+// returns 0 if the tests succeds
+function randomized (stateTest) {
   const stateRunner = require('./stateRunner.js')
   var errored = false
 
@@ -80,15 +75,13 @@ function randomized(stateTest) {
   })
 }
 
-function runMiscTests() {}
-
-function runTests(name, args, cb) {
+function runTests (name, args, cb) {
   var runner = require('./' + name + 'Runner.js').bind(this, args)
   var tests = testing.getTests(name, args)
   testing.runTests(runner, tests, tape, skip, cb)
 }
 
-function runAll() {
+function runAll () {
   require('./tester.js')
   require('./cacheTest.js')
   require('./genesishashes.js')
