@@ -422,6 +422,7 @@ exports.toRpcSig = function (v, r, s) {
 
 /**
  * Convert signature format of the `eth_sign` RPC method to signature parameters
+ * NOTE: all because of a bug in geth: https://github.com/ethereum/go-ethereum/issues/2053
  * @method fromRpcSig
  * @param {String} sig
  * @return {Object}
