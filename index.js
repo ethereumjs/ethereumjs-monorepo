@@ -408,13 +408,13 @@ exports.ecrecover = function (msgHash, v, r, s) {
 
 /**
  * Convert signature parameters into the format of `eth_sign` RPC method
- * @method toMessageSig
+ * @method toRpcSig
  * @param {Number} v
  * @param {Buffer} r
  * @param {Buffer} s
  * @return {String} sig
  */
-exports.toMessageSig = function (v, r, s) {
+exports.toRpcSig = function (v, r, s) {
   // geth (and the RPC eth_sign method) uses the 65 byte format used by Bitcoin
   // FIXME: this might change in the future - https://github.com/ethereum/go-ethereum/issues/2053
   return exports.bufferToHex(Buffer.concat([ r, s, exports.toBuffer(v - 27) ]))
@@ -422,11 +422,11 @@ exports.toMessageSig = function (v, r, s) {
 
 /**
  * Convert signature format of the `eth_sign` RPC method to signature parameters
- * @method fromMessageSig
+ * @method fromRpcSig
  * @param {String} sig
  * @return {Object}
  */
-exports.fromMessageSig = function (sig) {
+exports.fromRpcSig = function (sig) {
   sig = exports.toBuffer(sig)
 
   var v = sig[64]
