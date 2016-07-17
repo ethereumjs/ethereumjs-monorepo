@@ -34,7 +34,7 @@ const N_DIV_2 = new BN('7fffffffffffffffffffffffffffffff5d576e7357a4501ddfe92f46
  * @prop {Buffer} s EC recovery ID
  */
 module.exports = class Transaction {
-  constructor(data) {
+  constructor (data) {
     // Define Properties
     const fields = [{
       name: 'nonce',
