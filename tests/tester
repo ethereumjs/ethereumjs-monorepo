@@ -26,7 +26,8 @@ const skip = [
   'Return50000_2', // slow
   'uncleBlockAtBlock3AfterBlock3',
   'ForkUncle', // correct behaviour unspecified (?)
-  'UncleFromSideChain' // same as ForkUncle, the TD is the same for two diffent branches so its not clear which one should be the finally chain
+  'UncleFromSideChain', // same as ForkUncle, the TD is the same for two diffent branches so its not clear which one should be the finally chain
+  'bcSimpleTransitionTest' // HF stuff
 ]
 
 if (argv.r) {
