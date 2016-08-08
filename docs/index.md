@@ -373,7 +373,7 @@ Creates SHA-3 hash of the input
 **Parameters**
 
 -   `a` **Buffer or Array or String or Number** the input data
--   `bytes` **[Number]** the SHA width (optional, default `256`)
+-   `bits` **[Number]** the SHA width (optional, default `256`)
 
 Returns **Buffer** 
 

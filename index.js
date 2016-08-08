@@ -243,14 +243,14 @@ exports.toUnsigned = function (num) {
  * Creates SHA-3 hash of the input
  * @method sha3
  * @param {Buffer|Array|String|Number} a the input data
- * @param {Number} [bytes=256] the SHA width
+ * @param {Number} [bits=256] the SHA width
  * @return {Buffer}
  */
-exports.sha3 = function (a, bytes) {
+exports.sha3 = function (a, bits) {
   a = exports.toBuffer(a)
-  if (!bytes) bytes = 256
+  if (!bits) bits = 256
 
-  var h = new SHA3(bytes)
+  var h = new SHA3(bits)
   if (a) {
     h.update(a)
   }
