@@ -1,15 +1,16 @@
 {
   "name": "ethereumjs-vm",
-  "version": "1.4.0",
+  "version": "1.4.1",
   "description": "an ethereum VM implementation",
   "main": "index.js",
   "dependencies": {
     "async": "^1.4.2",
     "async-eventemitter": "^0.2.2",
     "ethereum-common": "0.0.16",
-    "ethereumjs-account": "^2.0.2",
+    "ethereumjs-account": "^2.0.3",
     "ethereumjs-block": "^1.2.2",
     "ethereumjs-util": "^4.0.1",
+    "fake-merkle-patricia-tree": "^1.0.1",
     "functional-red-black-tree": "^1.0.1",
     "merkle-patricia-tree": "^2.1.2"
   },

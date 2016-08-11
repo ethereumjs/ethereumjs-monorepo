@@ -7,14 +7,13 @@ const ethUtil = require('ethereumjs-util')
 const BN = ethUtil.BN
 
 module.exports = function runStateTest (options, testData, t, cb) {
-  var sstream = false
-  var state = new Trie()
-  var results
-  var account
+  let state = new Trie()
+  let results
+  let account
 
   async.series([
     function (done) {
-      var acctData = testData.pre[testData.exec.address]
+      let acctData = testData.pre[testData.exec.address]
       account = new Account()
       account.nonce = testUtil.format(acctData.nonce)
       account.balance = testUtil.format(acctData.balance)
@@ -22,19 +21,24 @@ module.exports = function runStateTest (options, testData, t, cb) {
     },
     function (done) {
       state.get(new Buffer(testData.exec.address, 'hex'), function (err, data) {
-        var a = new Account(data)
+        let a = new Account(data)
         account.stateRoot = a.stateRoot
         // console.log(account.toJSON(true))
         done(err)
       })
     },
     function (done) {
-      var block = testUtil.makeBlockFromEnv(testData.env)
-      var vm = new VM(state)
-      var runCodeData = testUtil.makeRunCodeData(testData.exec, account, block)
-
+      let block = testUtil.makeBlockFromEnv(testData.env)
+      let vm = new VM(state)
+      let runCodeData = testUtil.makeRunCodeData(testData.exec, account, block)
       if (options.vmtrace) {
-        sstream = testUtil.enableVMtracing(vm, options.vmtrace)
+        vm.on('step', (op) => {
+          const string = `${op.opcode.name} ${op.gasLeft.toString()}`
+          console.log(string)
+          op.stack.forEach((item) => {
+            console.log(item.toString('hex'))
+          })
+        })
       }
 
       vm.runCode(runCodeData, function (err, r) {
@@ -45,8 +49,8 @@ module.exports = function runStateTest (options, testData, t, cb) {
       })
     },
     function (done) {
-      if (sstream) {
-        sstream.push(null)
+      if (options.vmtrace) {
+        console.log(results.runState.gasLeft.toString())
       }
 
       if (testData.out.slice(2)) {

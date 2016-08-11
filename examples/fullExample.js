@@ -1,6 +1,6 @@
 // This will demonstrate running code contained within a transaction.
 // First import the necessary libraries and initailize some varibles.
-var async = require('async')
+const async = require('async')
 var VM = require('../index.js')
 var Account = require('ethereumjs-account')
 var Transaction = require('ethereumjs-tx')
@@ -45,7 +45,7 @@ var rawTx2 = {
 // sets up the initial state and runs the callback when complete
 function setup (cb) {
   // the address we are sending from
-  var address = utils.pubToAddress(new Buffer(publicKey, 'hex'))
+  var address = utils.pubToAddress(new Buffer(publicKey, 'hex'), true)
 
   // create a new account
   var account = new Account()
