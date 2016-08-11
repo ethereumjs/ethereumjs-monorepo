@@ -5,13 +5,12 @@ const testUtil = require('./util')
 const Trie = require('merkle-patricia-tree/secure')
 
 module.exports = function runStateTest (options, testData, t, cb) {
-  var state = new Trie()
-  var block, vm, result
+  const state = new Trie()
+  let block, vm, result
 
   async.series([
-
     function (done) {
-      vm = new VM(state)
+      vm = new VM({state: state})
       testUtil.setupPreConditions(state, testData, done)
     },
     function (done) {

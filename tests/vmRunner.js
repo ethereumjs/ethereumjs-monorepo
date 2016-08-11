@@ -29,7 +29,7 @@ module.exports = function runStateTest (options, testData, t, cb) {
     },
     function (done) {
       let block = testUtil.makeBlockFromEnv(testData.env)
-      let vm = new VM(state)
+      let vm = new VM({state: state})
       let runCodeData = testUtil.makeRunCodeData(testData.exec, account, block)
       if (options.vmtrace) {
         vm.on('step', (op) => {
