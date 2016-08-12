@@ -16,7 +16,10 @@ module.exports = function runBlockchainTest (options, testData, t, cb) {
   var state = new Trie()
   var blockchain = new Blockchain(blockchainDB)
   blockchain.ethash.cacheDB = cacheDB
-  var vm = new VM(state, blockchain)
+  var vm = new VM({
+    state: state,
+    blockchain: blockchain
+  })
   var genesisBlock = new Block()
 
   if (testData.homestead) {

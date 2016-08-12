@@ -12,7 +12,7 @@ var utils = require('ethereumjs-util')
 var stateTrie = new Trie()
 
 // create a new VM instance
-var vm = new VM(stateTrie)
+var vm = new VM({state: stateTrie})
 
 // the private/public key pair. used to sign the transactions and generate the addresses
 var secretKey = '3cd7232cd6f3fc66a57a6bedc1a8ed6c228fff0a327e169c2bcc5e869ed49511'
