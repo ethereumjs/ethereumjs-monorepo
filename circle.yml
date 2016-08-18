@@ -4,8 +4,8 @@ machine:
 test:
   override:
     - node ./tests/tester:
-      parallel: true
-      files:
-        - "-s"
-        - "-v"
-        - "-b"
+        parallel: true
+        files:
+          - "-s"
+          - "-v"
+          - "-b"
