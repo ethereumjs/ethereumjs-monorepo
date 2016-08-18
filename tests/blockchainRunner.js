@@ -9,10 +9,10 @@ const VM = require('../')
 const Level = require('levelup')
 
 var cacheDB = new Level('./.cachedb')
+
 module.exports = function runBlockchainTest (options, testData, t, cb) {
-  var blockchainDB = new Level('', {
-    db: require('memdown')
-  })
+
+  var blockchainDB = new Level('', { db: require('memdown') })
   var state = new Trie()
   var blockchain = new Blockchain(blockchainDB)
   blockchain.ethash.cacheDB = cacheDB
@@ -32,6 +32,7 @@ module.exports = function runBlockchainTest (options, testData, t, cb) {
       }
     })
   }
+  
   async.series([
     // set up pre-state
     function (done) {

@@ -3,7 +3,7 @@ const argv = require('minimist')(process.argv.slice(2))
 const async = require('async')
 const tape = require('tape')
 const testing = require('ethereumjs-testing')
-const skip = [
+const skipList = [
   'CreateHashCollision', // impossible hash collision on generating address
   'SuicidesMixingCoinbase', // sucides to the coinbase, since we run a blockLevel we create coinbase account.
   'TransactionMakeAccountBalanceOverflow',
@@ -30,14 +30,22 @@ const skip = [
   'bcSimpleTransitionTest' // HF stuff
 ]
 
+function isOnSkipList(index, testName, testData){
+  return skipList.indexOf(testName) !== -1
+}
+
 if (argv.r) {
   randomized(argv.r, argv.v)
 } else if (argv.s) {
-  runTests('state', argv)
+  runTests('state', argv, isOnSkipList)
 } else if (argv.v) {
-  runTests('vm', argv)
+  runTests('vm', argv, isOnSkipList)
 } else if (argv.b) {
-  runTests('blockchain', argv)
+  runTests('blockchain', argv, isOnSkipList)
+} else if (argv.p) {
+  var args = JSON.parse(argv.p)
+  console.log(args[0],'/',args[1])
+  runParallel(args[0],args[1])
 } else if (argv.a) {
   runAll()
 }
@@ -76,10 +84,10 @@ function randomized (stateTest) {
   })
 }
 
-function runTests (name, args, cb) {
+function runTests (name, args, skipFn, cb) {
   var runner = require('./' + name + 'Runner.js').bind(this, args)
   var tests = testing.getTests(name, args)
-  testing.runTests(runner, tests, tape, skip, cb)
+  testing.runTests(runner, tests, tape, skipFn, cb)
 }
 
 function runAll () {
@@ -87,8 +95,25 @@ function runAll () {
   require('./cacheTest.js')
   require('./genesishashes.js')
   async.series([
-    runTests.bind(this, 'blockchain', {}),
-    runTests.bind(this, 'state', {}),
-    runTests.bind(this, 'vm', {})
+    runTests.bind(null, 'blockchain', {}, isOnSkipList),
+    runTests.bind(null, 'state', {}, isOnSkipList),
+    runTests.bind(null, 'vm', {}, isOnSkipList),
   ])
+}
+
+function runParallel (nodeIndex, nodeCount) {
+  // checkParallelism(0) && require('./tester.js')
+  // checkParallelism(1) && require('./cacheTest.js')
+  // checkParallelism(2) && require('./genesishashes.js')
+  async.series([
+    runTests.bind(null, 'blockchain', {}, checkParallelism),
+    runTests.bind(null, 'state', {}, checkParallelism),
+    runTests.bind(null, 'vm', {}, checkParallelism),
+  ])
+
+  function checkParallelism(index, testName){
+    var skipOnThisParallelNode = ((index % nodeCount) !== nodeIndex)
+    // console.log(`var skipOnThisParallelNode = ${skipOnThisParallelNode} = ((${index} % ${nodeCount}) !== ${nodeIndex})`)
+    return skipOnThisParallelNode || isOnSkipList.apply(null, arguments)
+  }
 }

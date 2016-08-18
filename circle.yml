@@ -6,5 +6,5 @@ dependencies:
     - "npm rebuild"
 test:
   override:
-    - case $CIRCLE_NODE_INDEX in 0) npm run testState ;; 1) npm run testVM ;; 2) npm run testBlockchain ;; 3) npm run lint ;; esac:
+    - "node tests/tester -p [$CIRCLE_NODE_INDEX,$CIRCLE_NODE_INDEX]"
         parallel: true
