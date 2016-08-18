@@ -1,0 +1,10 @@
+machine:
+  node:
+    version: 6.3.1
+dependencies:
+  pre:
+    - "npm rebuild"
+test:
+  override:
+    - case $CIRCLE_NODE_INDEX in 0) npm run testState ;; 1) npm run testVM ;; 2) npm run testBlockchain ;; 3) npm run lint ;; esac:
+        parallel: true
