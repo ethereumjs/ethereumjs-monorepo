@@ -1,0 +1,11 @@
+machine:
+  node:
+    version: 6.0.0
+test:
+  override:
+    - node ./tests/tester:
+      parallel: true
+      files:
+        - "-s"
+        - "-v"
+        - "-b"
