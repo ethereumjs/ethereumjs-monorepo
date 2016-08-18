@@ -1,7 +1,7 @@
 machine:
   node:
-    version: 6.0.0
+    version: 6.3.1
 test:
   override:
-    - case $CIRCLE_NODE_INDEX in 0) node ./tests/tester -s ;; 1) node ./tests/tester -v 2) node ./tests/tester -b ;; esac:
+    - case $CIRCLE_NODE_INDEX in 0) node ./tests/tester -s ;; 1) node ./tests/tester -v ;; 2) node ./tests/tester -b ;; esac:
         parallel: true
