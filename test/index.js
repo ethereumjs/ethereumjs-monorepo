@@ -4,16 +4,16 @@ const Block = require('ethereumjs-block')
 const async = require('async')
 
 test('blockchain test', function (t) {
-  t.plan(4)
+  //t.plan(5)
   var blockchain = new Blockchain()
   var genesisBlock
-  var firstBlock
+  var blocks = []
   blockchain.validate = false
   async.series([
 
     function (done) {
       blockchain.getHead(function (err, head) {
-        err = null
+        if(err) return done(err)
         t.ok(true, 'should not crash on getting head of a blockchain without a genesis')
         done()
       })
@@ -21,29 +21,53 @@ test('blockchain test', function (t) {
     function addgenesis (done) {
       genesisBlock = new Block()
       genesisBlock.setGenesisParams()
-      blockchain.putBlock(genesisBlock, function () {
-        t.equal(genesisBlock.hash().toString('hex'), blockchain.meta.genesis)
+      blockchain.putBlock(genesisBlock, function (err) {
+        if(err) return done(err)
+        t.equal(genesisBlock.hash().toString('hex'), blockchain.meta.genesis, 'genesis block hash should be correct')
+        blocks.push(genesisBlock)
         done()
       })
     },
-    function addblock (done) {
-      firstBlock = new Block()
-      firstBlock.header.number = 1
-      firstBlock.header.difficulty = '0xfffffff'
-      firstBlock.header.parentHash = genesisBlock.hash()
-      blockchain.putBlock(firstBlock, function (err) {
-        t.ok(true, 'should add a block')
-        done(err)
-      })
+    function addBlocks (done) {
+      function addNextBlock(blockNumber){
+        var block = new Block()
+        block.header.number = blockNumber
+        block.header.difficulty = '0xfffffff'
+        block.header.parentHash = blocks[blockNumber - 1].hash()
+        blockchain.putBlock(block, function (err) {
+          
+          if(err) return done(err)
+
+          blocks.push(block)
+
+          if (blocks.length === 10) {
+            t.ok(true, 'added 10 blocks')
+            done()
+          } else {
+            addNextBlock(blockNumber + 1)
+          }
+
+        })
+      }
+      addNextBlock(1)
     },
     function getBlockByNumber (done) {
       blockchain.getBlock(1, function (err, block) {
-        if (err) {
-          console.log(err)
-        }
-        t.equals(block.hash().toString('hex'), firstBlock.hash().toString('hex'))
+        if (err) return done(err)
+        t.equals(block.hash().toString('hex'), blocks[1].hash().toString('hex'), 'should get block by number')
+        done()
       })
-      done()
+    },
+    function getBlockByHash (done){
+      blockchain.getBlock(genesisBlock.hash(), function (err, block) {
+        if(err) return done(err)
+        t.equals(block.hash().toString('hex'), genesisBlock.hash().toString('hex'), 'should get block by hash')
+        done()
+      })
+    }, function getBlocksByNumber1 (done){
+      blockchain.getBlocks(0, 10, 0, function(err, blocks){
+        t.equals(blocks.length, 10, 'got 10 blocks')
+      })
     }
   ])
 })
