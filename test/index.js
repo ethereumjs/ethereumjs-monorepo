@@ -2,9 +2,10 @@ const test = require('tape')
 const Blockchain = require('..')
 const Block = require('ethereumjs-block')
 const async = require('async')
+const ethUtil = require('ethereumjs-util')
 
 test('blockchain test', function (t) {
-  t.plan(5)
+  t.plan(24)
   var blockchain = new Blockchain()
   var genesisBlock
   var blocks = []
@@ -31,7 +32,7 @@ test('blockchain test', function (t) {
     function addBlocks (done) {
       function addNextBlock(blockNumber){
         var block = new Block()
-        block.header.number = blockNumber
+        block.header.number = ethUtil.toBuffer(blockNumber)
         block.header.difficulty = '0xfffffff'
         block.header.parentHash = blocks[blockNumber - 1].hash()
         blockchain.putBlock(block, function (err) {
@@ -64,8 +65,94 @@ test('blockchain test', function (t) {
         t.equals(block.hash().toString('hex'), genesisBlock.hash().toString('hex'), 'should get block by hash')
         done()
       })
+    },
+    function getBlocks1 (done){
+      //start: genesisHash, max: 5, skip: 0
+      blockchain.getBlocks(genesisBlock.hash(), 5, 0, function (err, blocks) {
+        if(err) return done(err)
+        t.equals(blocks.length, 5, 'should get 5 blocks')
+        t.ok(isConsecutive(blocks), 'blocks should be consecutive')
+        done()
+      })
+    },
+    function getBlocks2 (done){
+      //start: genesisHash, max: 5, skip: 1
+      blockchain.getBlocks(genesisBlock.hash(), 5, 1, function (err, blocks) {
+        if(err) return done(err)
+        t.equals(blocks.length, 5, 'should get 5 blocks')
+        t.ok(!isConsecutive(blocks), 'blocks should not be consecutive')
+        done()
+      })
+    },
+    function getBlocks3 (done){
+      //start: genesisHash, max: 5, skip: 2
+      blockchain.getBlocks(genesisBlock.hash(), 5, 2, function (err, blocks) {
+        if(err) return done(err)
+        t.equals(blocks.length, 4, 'should get 4 blocks')
+        t.ok(!isConsecutive(blocks), 'blocks should not be consecutive')
+        done()
+      })
+    },
+    function getBlocks4 (done){
+      //start: genesisHash, max: 12, skip: 0
+      blockchain.getBlocks(genesisBlock.hash(), 12, 0, function (err, blocks) {
+        if(err) return done(err)
+        t.equals(blocks.length, 10, 'should get 10 blocks')
+        t.ok(isConsecutive(blocks), 'blocks should be consecutive')
+        done()
+      })
+    },
+    function getBlocks5 (done){
+      //start: 0, max: 5, skip: 0
+      blockchain.getBlocks(0, 5, 0, function (err, blocks) {
+        if(err) return done(err)
+        t.equals(blocks.length, 5, 'should get 5 blocks')
+        t.ok(isConsecutive(blocks), 'blocks should be consecutive')
+        done()
+      })
+    },
+    function getBlocks6 (done){
+      //start: 0, max: 5, skip: 1
+      blockchain.getBlocks(1, 5, 1, function (err, blocks) {
+        if(err) return done(err)
+        t.equals(blocks.length, 5, 'should get 5 blocks')
+        t.ok(!isConsecutive(blocks), 'blocks should not be consecutive')
+        done()
+      })
+    },
+    function getBlocks7 (done){
+      //start: 0, max: 5, skip: 2
+      blockchain.getBlocks(0, 5, 2, function (err, blocks) {
+        if(err) return done(err)
+        t.equals(blocks.length, 4, 'should get 4 blocks')
+        t.ok(!isConsecutive(blocks), 'blocks should not be consecutive')
+        done()
+      })
+    },
+    function getBlocks8 (done){
+      //start: 0, max: 12, skip: 0
+      blockchain.getBlocks(0, 12, 0, function (err, blocks) {
+        if(err) return done(err)
+        t.equals(blocks.length, 10, 'should get 10 blocks')
+        t.ok(isConsecutive(blocks), 'blocks should be consecutive')
+        done()
+      })
+    },
+    function getBlocks9 (done){
+      //start: 1, max: 5, skip: 0
+      blockchain.getBlocks(1, 5, 0, function (err, blocks) {
+        if(err) return done(err)
+        t.equals(blocks.length, 5, 'should get 5 blocks')
+        t.ok(isConsecutive(blocks), 'blocks should be consecutive')
+        done()
+      })
     }
-  ])
+  ], function(err){
+    if(err)
+      t.ok(false, err)
+    else
+      t.ok(true, 'no errors')
+  })
 })
 
 test('iterator test', function (t) {
@@ -79,3 +166,15 @@ test('iterator test', function (t) {
     t.ok(true)
   })
 })
+
+function isConsecutive(blocks){
+  var isConsecutive = true
+  blocks.some(function(block, index){
+    if(index === 0) return false
+    if(Buffer.compare(block.header.parentHash, blocks[index-1].hash()) !== 0){
+      isConsecutive = false
+      return true
+    }
+  })
+  return isConsecutive
+}

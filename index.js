@@ -221,7 +221,8 @@ Blockchain.prototype._putBlock = function (block, cb, _genesis) {
         self.meta.height = ethUtil.bufferToInt(block.header.number)
         self.meta.td = td
 
-        const key = parseInt(block.header.number.toString('hex'), 16).toString()
+        const key = parseInt(block.header.number.toString('hex') || '00', 16).toString()
+
         // index by number
         dbOps.push({
           type: 'put',
@@ -294,6 +295,48 @@ Blockchain.prototype.getBlock = function (hash, cb) {
       cb(err, block)
     }
   })
+}
+
+/**
+ *Gets a block by its hash
+ * @method getBlocks
+ * @param blockId - the block's hash or number
+ * @param {Function} cb - the callback function
+ */
+Blockchain.prototype.getBlocks = function (blockId, maxBlocks, skip, cb) {
+  
+  var self = this
+  var blocks = []
+  var i = -1
+
+  function nextBlock(blockId){
+
+    self.getBlock(blockId, function(err, block){
+
+      i++
+
+      if(err){
+        return cb(null, blocks)
+      }
+
+      var blockNumber = ethUtil.bufferToInt(block.header.number)
+      
+      if(i !== 0 && skip && i % (skip + 1) !== 0)
+        return nextBlock(blockNumber + 1)
+    
+      blocks.push(block)
+
+      if(blocks.length === maxBlocks)
+        return cb(null, blocks)
+
+      nextBlock(blockNumber + 1)
+
+    })
+
+  }
+
+  nextBlock(blockId)
+
 }
 
 /**
