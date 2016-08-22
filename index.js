@@ -303,7 +303,7 @@ Blockchain.prototype.getBlock = function (hash, cb) {
  * @param blockId - the block's hash or number
  * @param {Function} cb - the callback function
  */
-Blockchain.prototype.getBlocks = function (blockId, maxBlocks, skip, cb) {
+Blockchain.prototype.getBlocks = function (blockId, maxBlocks, skip, reverse, cb) {
   
   var self = this
   var blocks = []
@@ -319,17 +319,17 @@ Blockchain.prototype.getBlocks = function (blockId, maxBlocks, skip, cb) {
         return cb(null, blocks)
       }
 
-      var blockNumber = ethUtil.bufferToInt(block.header.number)
+      var nextBlockNumber = ethUtil.bufferToInt(block.header.number) + (reverse ? -1 : 1)
       
       if(i !== 0 && skip && i % (skip + 1) !== 0)
-        return nextBlock(blockNumber + 1)
+        return nextBlock(nextBlockNumber)
     
       blocks.push(block)
 
       if(blocks.length === maxBlocks)
         return cb(null, blocks)
 
-      nextBlock(blockNumber + 1)
+      nextBlock(nextBlockNumber)
 
     })
 
