@@ -199,9 +199,10 @@ exports.intToBuffer = function (i) {
  * @method bufferToInt
  * @param {Buffer} buf
  * @return {Number}
+ * @throws If the input number exceeds 53 bits.
  */
 exports.bufferToInt = function (buf) {
-  return parseInt(exports.bufferToHex(buf), 16)
+  return new BN(exports.toBuffer(buf)).toNumber()
 }
 
 /**
