@@ -300,7 +300,9 @@ Blockchain.prototype.getBlock = function (hash, cb) {
 /**
  *Gets a block by its hash
  * @method getBlocks
- * @param blockId - the block's hash or number
+ * @param {Buffer|Number} blockId - the block's hash or number
+ * @param {Number} skip - number of blocks to skip
+ * @param {Bool} reverse - fetch blocks in reverse
  * @param {Function} cb - the callback function
  */
 Blockchain.prototype.getBlocks = function (blockId, maxBlocks, skip, reverse, cb) {
