@@ -1,5 +1,4 @@
 const async = require('async')
-const ethUtil = require('ethereumjs-util')
 const Trie = require('merkle-patricia-tree/secure')
 const Block = require('ethereumjs-block')
 const Blockchain = require('ethereumjs-blockchain')
@@ -44,9 +43,7 @@ async.series([
   // create and add genesis block
   function (next) {
     genesisBlock.header = new BlockHeader(
-                            formatBlockHeader(
-                              testData.genesisBlockHeader
-                            )
+                            testData.genesisBlockHeader
                           )
     blockchain.putGenesis(genesisBlock, next)
   },
@@ -77,7 +74,8 @@ async.series([
     }
   },
 
-  // runBlockchain aka verify all the blocks till date
+  // make sure the blocks check
+  // if a block is missing, vm.runBlockchain will fail
   function runBlockchain (next) {
     vm.runBlockchain(next)
   },
@@ -92,18 +90,9 @@ async.series([
   }
 ], function () {
   console.log('--- Finished processing the BlockChain ---')
-  console.log('New head:', blockchain.meta.rawHead.toString('hex'))
+  console.log('New head:', '0x' + blockchain.meta.rawHead.toString('hex'))
   console.log('Expected:', testData.lastblockhash)
 })
-
-function formatBlockHeader (data) {
-  var r = {}
-  Object.keys(data)
-        .forEach(function (key) {
-          r[key] = ethUtil.addHexPrefix(data[key])
-        })
-  return r
-}
 
 function setupPreConditions (state, testData, done) {
   var keysOfPre = Object.keys(testData.pre)
