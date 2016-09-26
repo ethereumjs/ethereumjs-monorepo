@@ -1,8 +1,0 @@
-{
-  "name": "examples",
-  "version": "0.0.0",
-  "dependencies": {
-    "ethereumjs-block": "0.0.4",
-    "ethereumjs-tx": "^0.5.3"
-  }
-}
