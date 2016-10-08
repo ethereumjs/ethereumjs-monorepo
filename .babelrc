@@ -1,0 +1,21 @@
+{
+  "plugins": [
+    "transform-async-to-generator",
+    "transform-class-properties",
+    "transform-export-extensions",
+    "transform-es2015-modules-commonjs"
+  ],
+  "env": {
+    "build": {
+      "presets": [
+        "es2015"
+      ],
+      "plugins": [
+        "transform-async-to-generator",
+        "transform-class-properties",
+        "transform-export-extensions",
+        ["transform-runtime", { "polyfill": false }]
+      ]
+    }
+  }
+}
