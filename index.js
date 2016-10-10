@@ -62,6 +62,8 @@ var Block = module.exports = function (data) {
   }
 }
 
+Block.Header = BlockHeader
+
 /**
  * Produces a hash the RLP of the block
  * @method hash
