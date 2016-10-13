@@ -171,9 +171,8 @@ Block.prototype.validateTransactions = function (stringError) {
   this.transactions.forEach(function (tx, i) {
     var error = tx.validate(true)
     if (error) {
-      error += ' at tx ' + i
+      errors.push(error + ' at tx ' + i)
     }
-    errors.push(error)
   })
 
   if (stringError === undefined || stringError === false) {
