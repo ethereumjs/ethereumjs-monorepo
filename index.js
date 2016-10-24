@@ -91,6 +91,15 @@ Block.prototype.isHomestead = function () {
 }
 
 /**
+ * Determines if a given block part of homestead reprice or not
+ * @method isHomesteadReprice
+ * @return Boolean
+ */
+Block.prototype.isHomesteadReprice = function () {
+  return this.header.isHomesteadReprice()
+}
+
+/**
  * turns the block in to the canonical genesis block
  * @method setGenesisParams
  */

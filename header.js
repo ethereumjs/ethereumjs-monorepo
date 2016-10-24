@@ -239,3 +239,12 @@ BlockHeader.prototype.isGenesis = function () {
 BlockHeader.prototype.isHomestead = function () {
   return utils.bufferToInt(this.number) >= params.homeSteadForkNumber.v
 }
+
+/**
+ * Determines if a given block part of Homestead Reprice (EIP150) or not
+ * @method isHomesteadReprice
+ * @return Boolean
+ */
+BlockHeader.prototype.isHomesteadReprice = function () {
+  return utils.bufferToInt(this.number) >= params.homesteadRepriceForkNumber.v
+}
