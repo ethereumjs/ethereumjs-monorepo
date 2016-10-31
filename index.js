@@ -431,6 +431,10 @@ exports.toRpcSig = function (v, r, s) {
 exports.fromRpcSig = function (sig) {
   sig = exports.toBuffer(sig)
 
+  if (sig.length !== 65) {
+    throw new Error('Invalid signature length')
+  }
+
   var v = sig[64]
   // support both versions of `eth_sign` responses
   if (v < 27) {
