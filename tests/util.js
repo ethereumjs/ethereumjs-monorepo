@@ -341,7 +341,7 @@ exports.setupPreConditions = function (state, testData, done) {
         if (testData.exec && key === testData.exec.address) {
           testData.root = storageTrie.root
         }
-        state.put(new Buffer(key, 'hex'), account.serialize(), function () {
+        state.put(new Buffer(utils.stripHexPrefix(key), 'hex'), account.serialize(), function () {
           cb2()
         })
       }
