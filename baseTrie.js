@@ -358,26 +358,23 @@ Trie.prototype._updateNode = function (key, value, keyRemainder, stack, cb) {
   var toSave = []
   var lastNode = stack.pop()
 
-
-
   // add the new nodes
   key = TrieNode.stringToNibbles(key)
 
-
   // Check if the last node is a leaf and the key matches to this
-  var matchLeaf = false;
+  var matchLeaf = false
   if (lastNode.type === 'leaf') {
-    var l = 0;
-    for (var i=0; i< stack.length; i++) {
-      var n=stack[i];
+    var l = 0
+    for (var i = 0; i < stack.length; i++) {
+      var n = stack[i]
       if (n.type === 'branch') {
-        l++;
+        l++
       } else {
-        l += n.key.length;
+        l += n.key.length
       }
     }
-    if (( matchingNibbleLength(lastNode.key, key.slice(l)) === lastNode.key.length)&&(keyRemainder.length === 0)) {
-      matchLeaf = true;
+    if ((matchingNibbleLength(lastNode.key, key.slice(l)) === lastNode.key.length) && (keyRemainder.length === 0)) {
+      matchLeaf = true
     }
   }
 
