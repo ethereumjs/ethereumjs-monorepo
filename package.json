@@ -23,7 +23,8 @@
   ],
   "author": "mjbecze <mjbecze@gmail.com>",
   "contributors": [
-    "Alex Beregszaszi <alex@rtfs.hu>"
+    "Alex Beregszaszi <alex@rtfs.hu>",
+    "Kirill Fomichev <https://github.com/fanatid>"
   ],
   "license": "MPL-2.0",
   "bugs": {
