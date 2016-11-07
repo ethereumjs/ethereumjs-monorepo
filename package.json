@@ -7,7 +7,7 @@
     "coverage": "istanbul cover _mocha",
     "coveralls": "npm run coverage && coveralls <coverage/lcov.info",
     "lint": "standard",
-    "prepublish": "npm run lint && npm run test,
+    "prepublish": "npm run lint && npm run test",
     "test": "npm run test:node && npm run test:browser",
     "test:browser": "karma start karma.conf.js",
     "test:node": "istanbul test mocha -- --reporter spec",
