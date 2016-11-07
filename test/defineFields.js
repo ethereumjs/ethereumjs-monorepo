@@ -112,4 +112,13 @@ describe('define', function () {
     assert.equal(someOb.blah.toString(), 'lol')
     assert.equal(someOb.aword.toString(), 'lol')
   })
+
+  it('alias should work #2', function () {
+    var someOb = {}
+    var data = { blah: '42' }
+
+    ethUtil.defineProperties(someOb, fields, data)
+    assert.equal(someOb.blah, '42')
+    assert.equal(someOb.aword, '42')
+  })
 })
