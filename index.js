@@ -695,11 +695,11 @@ exports.defineProperties = function (self, fields, data) {
         self[self._fields[i]] = exports.toBuffer(d)
       })
     } else if (typeof data === 'object') {
-      for (var prop in data) {
-        if (self._fields.indexOf(prop) !== -1) {
-          self[prop] = data[prop]
-        }
-      }
+      const keys = Object.keys(data)
+      fields.forEach(function (field) {
+        if (keys.indexOf(field.name) !== -1) self[field.name] = data[field.name]
+        if (keys.indexOf(field.alias) !== -1) self[field.alias] = data[field.alias]
+      })
     } else {
       throw new Error('invalid data')
     }
