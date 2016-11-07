@@ -7,7 +7,7 @@
     "coverage": "istanbul cover _mocha",
     "coveralls": "npm run coverage && coveralls <coverage/lcov.info",
     "lint": "standard",
-    "prepublish": "npm run lint && npm run test",
+    "prepublish": "npm run lint && npm run test && contributor",
     "test": "npm run test:node && npm run test:browser",
     "test:browser": "karma start karma.conf.js",
     "test:node": "istanbul test mocha -- --reporter spec",
@@ -23,8 +23,74 @@
   ],
   "author": "mjbecze <mjbecze@gmail.com>",
   "contributors": [
-    "Alex Beregszaszi <alex@rtfs.hu>",
-    "Kirill Fomichev <https://github.com/fanatid>"
+    {
+      "name": "Tim Coulter",
+      "email": "tim@timothyjcoulter.com",
+      "url": "https://github.com/tcoulter",
+      "contributions": 1,
+      "additions": 2,
+      "deletions": 2
+    },
+    {
+      "name": "Nick Dodson",
+      "url": "https://github.com/SilentCicero",
+      "contributions": 2,
+      "additions": 26,
+      "deletions": 2
+    },
+    {
+      "url": "https://github.com/MrChico",
+      "contributions": 1,
+      "additions": 11,
+      "deletions": 1
+    },
+    {
+      "name": "Dũng Trần",
+      "email": "tad88.dev@gmail.com",
+      "url": "https://github.com/tad88dev",
+      "contributions": 2,
+      "additions": 5,
+      "deletions": 5
+    },
+    {
+      "name": "Alex Beregszaszi",
+      "email": "alex@rtfs.hu",
+      "url": "https://github.com/axic",
+      "contributions": 77,
+      "additions": 1796,
+      "deletions": 642
+    },
+    {
+      "name": "Taylor Gerring",
+      "url": "https://github.com/tgerring",
+      "contributions": 1,
+      "additions": 1,
+      "deletions": 1,
+    },
+    {
+      "name": "Kirill Fomichev",
+      "email": "fanatid@ya.ru",
+      "url": "https://github.com/fanatid",
+      "contributions": 8,
+      "additions": 32,
+      "deletions": 16
+    },
+    {
+      "name": "kumavis",
+      "email": "aaron@kumavis.me",
+      "url": "https://github.com/kumavis",
+      "contributions": 2,
+      "additions": 2,
+      "deletions": 2
+    },
+    {
+      "name": "Alexander Sinyagin",
+      "email": "sinyagin.alexander@gmail.com",
+      "url": "https://github.com/asinyagin",
+      "contributions": 1,
+      "additions": 3,
+      "deletions": 1
+    }
   ],
   "license": "MPL-2.0",
   "bugs": {
@@ -40,6 +106,7 @@
   },
   "devDependencies": {
     "browserify": "^13.0.0",
+    "contributor": "^0.1.25",
     "coveralls": "^2.11.4",
     "documentation": "^3.0.4",
     "istanbul": "^0.4.1",
