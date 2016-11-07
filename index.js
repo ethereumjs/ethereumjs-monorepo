@@ -551,6 +551,42 @@ exports.padToEven = function (a) {
 }
 
 /**
+ * Validate ECDSA signature
+ * @method isValidSignature
+ * @param {Buffer} v
+ * @param {Buffer} r
+ * @param {Buffer} s
+ * @param {Boolean} [homestead=true]
+ * @return {Boolean}
+ */
+
+const SECP256K1_N_DIV_2 = new BN('7fffffffffffffffffffffffffffffff5d576e7357a4501ddfe92f46681b20a0', 16)
+const SECP256K1_N = new BN('fffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141', 16)
+
+exports.isValidSignature = function (v, r, s, homestead) {
+  if (r.length !== 32 || s.length !== 32) {
+    return false
+  }
+
+  if (v !== 27 && v !== 28) {
+    return false
+  }
+
+  r = new BN(r)
+  s = new BN(s)
+
+  if (r.isZero() || r.gt(SECP256K1_N) || s.isZero() || s.gt(SECP256K1_N)) {
+    return false
+  }
+
+  if ((homestead === false) && (new BN(s).cmp(SECP256K1_N_DIV_2) === 1)) {
+    return false
+  }
+
+  return true
+}
+
+/**
  * Converts a `Buffer` or `Array` to JSON
  * @param {Buffer|Array} ba
  * @return {Array|String|null}

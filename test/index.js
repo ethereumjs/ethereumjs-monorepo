@@ -476,6 +476,35 @@ describe('ecrecover', function () {
   })
 })
 
+describe('isValidSignature', function () {
+  it('should fail on an invalid signature (shorter r))', function () {
+    var r = new Buffer('99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1ab', 'hex')
+    var s = new Buffer('129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66', 'hex')
+    assert.equal(ethUtils.isValidSignature(27, r, s), false)
+  })
+  it('should fail on an invalid signature (shorter s))', function () {
+    var r = new Buffer('99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9', 'hex')
+    var s = new Buffer('129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca', 'hex')
+    assert.equal(ethUtils.isValidSignature(27, r, s), false)
+  })
+  it('should fail on an invalid signature (v = 21)', function () {
+    var r = new Buffer('99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9', 'hex')
+    var s = new Buffer('129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66', 'hex')
+    assert.equal(ethUtils.isValidSignature(21, r, s), false)
+  })
+  it('should fail on an invalid signature (v = 29)', function () {
+    var r = new Buffer('99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9', 'hex')
+    var s = new Buffer('129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66', 'hex')
+    assert.equal(ethUtils.isValidSignature(29, r, s), false)
+  })
+  it('should work otherwise', function () {
+    var r = new Buffer('99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9', 'hex')
+    var s = new Buffer('129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66', 'hex')
+    assert.equal(ethUtils.isValidSignature(27, r, s), true)
+  })
+  // FIXME: add homestead test
+})
+
 var checksumAddresses = [
   // All caps
   '0x52908400098527886E0F7030069857D2E4169EE7',
