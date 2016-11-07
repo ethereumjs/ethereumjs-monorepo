@@ -113,7 +113,6 @@ exports.setLengthLeft = exports.setLength = function (msg, length, right) {
 /**
  * Right Pads an `Array` or `Buffer` with leading zeros till it has `length` bytes.
  * Or it truncates the beginning if it exceeds.
- * @method lsetLength
  * @param {Buffer|Array} msg the value to pad
  * @param {Number} length the number of bytes the output should be
  * @return {Buffer|Array}
@@ -124,7 +123,6 @@ exports.setLengthRight = function (msg, length) {
 
 /**
  * Trims leading zeros from a `Buffer` or an `Array`
- * @method unpad
  * @param {Buffer|Array|String} a
  * @return {Buffer|Array|String}
  */
@@ -139,7 +137,6 @@ exports.unpad = exports.stripZeros = function (a) {
 }
 /**
  * Attempts to turn a value into a `Buffer`. As input it supports `Buffer`, `String`, `Number`, null/undefined, `BN` and other objects with a `toArray()` method.
- * @method toBuffer
  * @param {*} v the value
  */
 exports.toBuffer = function (v) {
@@ -168,7 +165,6 @@ exports.toBuffer = function (v) {
 
 /**
  * Converts a `Number` into a hex `String`
- * @method intToHex
  * @param {Number} i
  * @return {String}
  */
@@ -185,7 +181,6 @@ exports.intToHex = function (i) {
 
 /**
  * Converts an `Number` to a `Buffer`
- * @method intToBuffer
  * @param {Number} i
  * @return {Buffer}
  */
@@ -196,7 +191,6 @@ exports.intToBuffer = function (i) {
 
 /**
  * Converts a `Buffer` to a `Number`
- * @method bufferToInt
  * @param {Buffer} buf
  * @return {Number}
  * @throws If the input number exceeds 53 bits.
@@ -207,7 +201,6 @@ exports.bufferToInt = function (buf) {
 
 /**
  * Converts a `Buffer` into a hex `String`
- * @method bufferToHex
  * @param {Buffer} buf
  * @return {String}
  */
@@ -222,7 +215,6 @@ exports.bufferToHex = function (buf) {
 
 /**
  * Interprets a `Buffer` as a signed integer and returns a `BN`. Assumes 256-bit numbers.
- * @method fromSigned
  * @param {Buffer} num
  * @return {BN}
  */
@@ -232,7 +224,6 @@ exports.fromSigned = function (num) {
 
 /**
  * Converts a `BN` to an unsigned integer and returns it as a `Buffer`. Assumes 256-bit numbers.
- * @method toUnsigned
  * @param {BN} num
  * @return {Buffer}
  */
@@ -242,7 +233,6 @@ exports.toUnsigned = function (num) {
 
 /**
  * Creates SHA-3 hash of the input
- * @method sha3
  * @param {Buffer|Array|String|Number} a the input data
  * @param {Number} [bits=256] the SHA width
  * @return {Buffer}
@@ -260,7 +250,6 @@ exports.sha3 = function (a, bits) {
 
 /**
  * Creates SHA256 hash of the input
- * @method sha256
  * @param {Buffer|Array|String|Number} a the input data
  * @return {Buffer}
  */
@@ -271,7 +260,6 @@ exports.sha256 = function (a) {
 
 /**
  * Creates RIPEMD160 hash of the input
- * @method ripemd160
  * @param {Buffer|Array|String|Number} a the input data
  * @param {Boolean} padded whether it should be padded to 256 bits or not
  * @return {Buffer}
@@ -288,7 +276,6 @@ exports.ripemd160 = function (a, padded) {
 
 /**
  * Creates SHA-3 hash of the RLP encoded version of the input
- * @method rlphash
  * @param {Buffer|Array|String|Number} a the input data
  * @return {Buffer}
  */
@@ -298,7 +285,6 @@ exports.rlphash = function (a) {
 
 /**
  * Checks if the private key satisfies the rules of the curve secp256k1.
- * @method isValidPrivate
  * @param {Buffer} privateKey
  * @return {Boolean}
  */
@@ -309,7 +295,6 @@ exports.isValidPrivate = function (privateKey) {
 /**
  * Checks if the public key satisfies the rules of the curve secp256k1
  * and the requirements of Ethereum.
- * @method isValidPublic
  * @param {Buffer} publicKey The two points of an uncompressed key, unless sanitize is enabled
  * @param {Boolean} [sanitize=false] Accept public keys in other formats
  * @return {Boolean}
@@ -330,7 +315,6 @@ exports.isValidPublic = function (publicKey, sanitize) {
 /**
  * Returns the ethereum address of a given public key.
  * Accepts "Ethereum public keys" and SEC1 encoded keys.
- * @method publicToAddress
  * @param {Buffer} pubKey The two points of an uncompressed key, unless sanitize is enabled
  * @param {Boolean} [sanitize=false] Accept public keys in other formats
  * @return {Buffer}
@@ -347,7 +331,6 @@ exports.pubToAddress = exports.publicToAddress = function (pubKey, sanitize) {
 
 /**
  * Returns the ethereum public key of a given private key
- * @method privateToPublic
  * @param {Buffer} privateKey A private key must be 256 bits wide
  * @return {Buffer}
  */
@@ -359,7 +342,6 @@ var privateToPublic = exports.privateToPublic = function (privateKey) {
 
 /**
  * Converts a public key to the Ethereum format.
- * @method importPublic
  * @param {Buffer} publicKey
  * @return {Buffer}
  */
@@ -373,7 +355,6 @@ exports.importPublic = function (publicKey) {
 
 /**
  * ECDSA sign
- * @method ecsign
  * @param {Buffer} msgHash
  * @param {Buffer} privateKey
  * @return {Object}
@@ -390,7 +371,6 @@ exports.ecsign = function (msgHash, privateKey) {
 
 /**
  * ECDSA public key recovery from signature
- * @method ecrecover
  * @param {Buffer} msgHash
  * @param {Buffer} v
  * @param {Buffer} r
@@ -409,7 +389,6 @@ exports.ecrecover = function (msgHash, v, r, s) {
 
 /**
  * Convert signature parameters into the format of `eth_sign` RPC method
- * @method toRpcSig
  * @param {Number} v
  * @param {Buffer} r
  * @param {Buffer} s
@@ -424,7 +403,6 @@ exports.toRpcSig = function (v, r, s) {
 /**
  * Convert signature format of the `eth_sign` RPC method to signature parameters
  * NOTE: all because of a bug in geth: https://github.com/ethereum/go-ethereum/issues/2053
- * @method fromRpcSig
  * @param {String} sig
  * @return {Object}
  */
@@ -450,7 +428,6 @@ exports.fromRpcSig = function (sig) {
 
 /**
  * Returns the ethereum address of a given private key
- * @method privateToAddress
  * @param {Buffer} privateKey A private key must be 256 bits wide
  * @return {Buffer}
  */
@@ -460,7 +437,6 @@ exports.privateToAddress = function (privateKey) {
 
 /**
  * Checks if the address is a valid. Accepts checksummed addresses too
- * @method isValidAddress
  * @param {String} address
  * @return {Boolean}
  */
@@ -470,7 +446,6 @@ exports.isValidAddress = function (address) {
 
 /**
  * Returns a checksummed address
- * @method toChecksumAddress
  * @param {String} address
  * @return {String}
  */
@@ -492,7 +467,6 @@ exports.toChecksumAddress = function (address) {
 
 /**
  * Checks if the address is a valid checksummed address
- * @method isValidChecksumAddress
  * @param {Buffer} address
  * @return {Boolean}
  */
@@ -502,7 +476,6 @@ exports.isValidChecksumAddress = function (address) {
 
 /**
  * Generates an address of a newly created contract
- * @method generateAddress
  * @param {Buffer} from the address which is creating this new address
  * @param {Buffer} nonce the nonce of the from account
  * @return {Buffer}
@@ -525,7 +498,6 @@ exports.generateAddress = function (from, nonce) {
 
 /**
  * Returns true if the supplied address belongs to a precompiled account
- * @method isPrecompiled
  * @param {Buffer|String} address
  * @return {Boolean}
  */
@@ -536,7 +508,6 @@ exports.isPrecompiled = function (address) {
 
 /**
  * Returns a `Boolean` on whether or not the a `String` starts with "0x"
- * @method isHexPrefixed
  * @param {String} str
  * @return {Boolean}
  */
@@ -546,7 +517,6 @@ exports.isHexPrefixed = function (str) {
 
 /**
  * Removes "0x" from a given `String`
- * @method stripHexPrefix
  * @param {String} str
  * @return {String}
  */
@@ -559,7 +529,6 @@ exports.stripHexPrefix = function (str) {
 
 /**
  * Adds "0x" to a given `String` if it does not already start with "0x"
- * @method addHexPrefix
  * @param {String} str
  * @return {String}
  */
@@ -573,7 +542,6 @@ exports.addHexPrefix = function (str) {
 
 /**
  * Pads a `String` to have an even length
- * @method padToEven
  * @param {String} a
  * @return {String}
  */
@@ -584,7 +552,6 @@ exports.padToEven = function (a) {
 
 /**
  * Converts a `Buffer` or `Array` to JSON
- * @method BAToJSON
  * @param {Buffer|Array} ba
  * @return {Array|String|null}
  */
@@ -602,7 +569,6 @@ exports.baToJSON = function (ba) {
 
 /**
  * Defines properties on a `Object`. It make the assumption that underlying data is binary.
- * @method defineProperties
  * @param {Object} self the `Object` to define properties on
  * @param {Array} fields an array fields to define. Fields can contain:
  * * `name` - the name of the properties
