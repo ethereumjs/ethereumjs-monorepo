@@ -18,7 +18,7 @@ env:
   global:
     - DISPLAY=:99.0
   matrix:
-    - CXX=g++-4.8 TEST_SUITE=test
+    - CXX=g++-4.8 TEST_SUITE=test:node
 matrix:
   fast_finish: true
   include:
@@ -28,4 +28,7 @@ matrix:
     - os: linux
       node_js: "6"
       env: CXX=g++-4.8 TEST_SUITE=lint
+    - os: linux
+      node_js: "6"
+      env: CXX=g++-4.8 TEST_SUITE=test:browser
 script: npm run $TEST_SUITE
