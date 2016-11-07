@@ -50,7 +50,7 @@
     "karma-firefox-launcher": "^0.1.7",
     "karma-mocha": "^0.2.1",
     "mocha": "^2.3.4",
-    "standard": "^5.4.1"
+    "standard": "*"
   },
   "standard": {
     "globals": [
