@@ -372,14 +372,14 @@ exports.ecsign = function (msgHash, privateKey) {
 /**
  * ECDSA public key recovery from signature
  * @param {Buffer} msgHash
- * @param {Buffer} v
+ * @param {Number} v
  * @param {Buffer} r
  * @param {Buffer} s
  * @return {Buffer} publicKey
  */
 exports.ecrecover = function (msgHash, v, r, s) {
   var signature = Buffer.concat([exports.setLength(r, 32), exports.setLength(s, 32)], 64)
-  var recovery = exports.bufferToInt(v) - 27
+  var recovery = v - 27
   if (recovery !== 0 && recovery !== 1) {
     throw new Error('Invalid signature v value')
   }
