@@ -30,7 +30,7 @@
     "async": "^2.0.1",
     "ethereum-common": "0.0.18",
     "ethereumjs-tx": "^1.0.0",
-    "ethereumjs-util": "^4.0.1",
+    "ethereumjs-util": "^5.0.0",
     "merkle-patricia-tree": "^2.1.2"
   },
   "devDependencies": {
