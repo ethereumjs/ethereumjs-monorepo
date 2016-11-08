@@ -206,10 +206,6 @@ exports.bufferToInt = function (buf) {
  */
 exports.bufferToHex = function (buf) {
   buf = exports.toBuffer(buf)
-  if (buf.length === 0) {
-    return 0
-  }
-
   return '0x' + buf.toString('hex')
 }
 

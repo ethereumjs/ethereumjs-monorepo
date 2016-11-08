@@ -129,6 +129,11 @@ describe('bufferToHex', function () {
     var hex = ethUtils.bufferToHex(buf)
     assert.equal(hex, '0x5b9ac8')
   })
+  it('empty buffer', function () {
+    var buf = Buffer.alloc(0)
+    var hex = ethUtils.bufferToHex(buf)
+    assert.strictEqual(hex, '0x')
+  })
 })
 
 describe('intToHex', function () {
