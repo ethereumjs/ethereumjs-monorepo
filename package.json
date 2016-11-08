@@ -28,7 +28,7 @@
   },
   "homepage": "https://github.com/ethereumjs/ethashjs#readme",
   "dependencies": {
-    "async": "^2.1.1",
+    "async": "^2.1.2",
     "buffer-xor": "^2.0.1",
     "ethereumjs-util": "^5.0.1",
     "miller-rabin": "^4.0.0"
