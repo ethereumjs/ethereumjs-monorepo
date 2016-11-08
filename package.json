@@ -20,7 +20,7 @@
   "license": "MPL-2.0",
   "dependencies": {
     "ethereum-common": "^0.0.17",
-    "ethereumjs-util": "^4.5.0"
+    "ethereumjs-util": "^5.0.0"
   },
   "devDependencies": {
     "async": "^2.0.0",

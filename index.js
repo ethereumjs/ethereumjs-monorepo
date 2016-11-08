@@ -166,7 +166,8 @@ module.exports = class Transaction {
     }
 
     try {
-      this._senderPubKey = ethUtil.ecrecover(msgHash, this.v, this.r, this.s)
+      const v = ethUtil.bufferToInt(this.v)
+      this._senderPubKey = ethUtil.ecrecover(msgHash, v, this.r, this.s)
     } catch (e) {
       return false
     }
