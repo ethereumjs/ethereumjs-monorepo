@@ -19,7 +19,7 @@ function addPad (v) {
   return v
 }
 
-function noramlizeZero (v) {
+function normalizeZero (v) {
   if (!v || v === '0x') {
     return '0x00'
   } else {
@@ -44,15 +44,15 @@ testing.runTests(function (testData, sst, cb) {
   if (tx.validate()) {
     try {
       sst.equal(bufferToHex(tx.data), addHexPrefix(addPad(stripHexPrefix(tTx.data))), 'data')
-      sst.equal(noramlizeZero(bufferToHex(tx.gasLimit)), tTx.gasLimit, 'gasLimit')
-      sst.equal(noramlizeZero(bufferToHex(tx.gasPrice)), tTx.gasPrice, 'gasPrice')
-      sst.equal(noramlizeZero(bufferToHex(tx.nonce)), tTx.nonce, 'nonce')
-      sst.equal(noramlizeZero(bufferToHex(setLength(tx.r, 32))), noramlizeZero(bufferToHex(setLength(tTx.r, 32))), 'r')
-      sst.equal(noramlizeZero(bufferToHex(tx.s)), noramlizeZero(bufferToHex(tTx.s)), 's')
-      sst.equal(noramlizeZero(bufferToHex(tx.v)), noramlizeZero(bufferToHex(tTx.v)), 'v')
+      sst.equal(normalizeZero(bufferToHex(tx.gasLimit)), tTx.gasLimit, 'gasLimit')
+      sst.equal(normalizeZero(bufferToHex(tx.gasPrice)), tTx.gasPrice, 'gasPrice')
+      sst.equal(normalizeZero(bufferToHex(tx.nonce)), tTx.nonce, 'nonce')
+      sst.equal(normalizeZero(bufferToHex(setLength(tx.r, 32))), normalizeZero(bufferToHex(setLength(tTx.r, 32))), 'r')
+      sst.equal(normalizeZero(bufferToHex(tx.s)), normalizeZero(bufferToHex(tTx.s)), 's')
+      sst.equal(normalizeZero(bufferToHex(tx.v)), normalizeZero(bufferToHex(tTx.v)), 'v')
       sst.equal(bufferToHex(tx.to), addHexPrefix(tTx.to), 'to')
-      sst.equal(noramlizeZero(bufferToHex(tx.value)), tTx.value, 'value')
-      sst.equal(noramlizeZero(bufferToHex(tx.getSenderAddress())), addHexPrefix(testData.sender), "sender's address")
+      sst.equal(normalizeZero(bufferToHex(tx.value)), tTx.value, 'value')
+      sst.equal(normalizeZero(bufferToHex(tx.getSenderAddress())), addHexPrefix(testData.sender), "sender's address")
     } catch (e) {
       sst.fail(e)
     }
