@@ -26,7 +26,8 @@ const skip = [
   'uncleBlockAtBlock3AfterBlock3',
   'ForkUncle', // correct behaviour unspecified (?)
   'UncleFromSideChain', // same as ForkUncle, the TD is the same for two diffent branches so its not clear which one should be the finally chain
-  'bcSimpleTransitionTest' // HF stuff
+  'bcSimpleTransitionTest', // HF stuff
+  'loop_mul' // ain't nobody need loops
 ]
 
 if (argv.r) {
