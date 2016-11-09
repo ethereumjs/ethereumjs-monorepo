@@ -78,7 +78,7 @@ exports.verifyPostConditions = function (state, testData, t, cb) {
   var keyMap = {}
 
   for (var key in testData) {
-    var hash = utils.sha3(new Buffer(key, 'hex')).toString('hex')
+    var hash = utils.sha3(new Buffer(utils.stripHexPrefix(key), 'hex')).toString('hex')
     hashedAccounts[hash] = testData[key]
     keyMap[hash] = key
   }
@@ -238,8 +238,7 @@ exports.fromDecimal = function (string) {
  * @return {Buffer}
  */
 exports.fromAddress = function (hexString) {
-  hexString = hexString.substring(2)
-  return utils.setLength(new Buffer(new BN(hexString, 16).toArray()), 32)
+  return utils.setLength(new Buffer(new BN(hexString.slice(2), 16).toArray()), 32)
 }
 
 /**
@@ -248,7 +247,7 @@ exports.fromAddress = function (hexString) {
  * @return {Buffer}
  */
 exports.toCodeHash = function (hexCode) {
-  return utils.sha3(new Buffer(hexCode.substring(2), 'hex'))
+  return utils.sha3(new Buffer(hexCode.slice(2), 'hex'))
 }
 
 exports.makeBlockHeader = function (data) {
