@@ -1,6 +1,74 @@
-# Transaction
+# defineProperties
 
-[index.js:43-106](https://github.com/ethereum/ethereumjs-tx/blob/f9c943f21509f03d0834ffd4204e17da9211cd80/index.js#L43-L106 "Source code on GitHub")
+[index.js:92-92](https://github.com/wanderer/ethereumjs-tx/blob/0bc7ad7c37e2d27f585e4fff76822a7647f214ee/index.js#L92-L92 "Source code on GitHub")
+
+Returns the rlp encoding of the transaction
+
+Returns **Buffer** 
+
+# defineProperty
+
+[index.js:97-101](https://github.com/wanderer/ethereumjs-tx/blob/0bc7ad7c37e2d27f585e4fff76822a7647f214ee/index.js#L97-L101 "Source code on GitHub")
+
+**Properties**
+
+-   `from` **Buffer** (read only) sender address of this transaction, mathematically derived from other parameters.
+
+# getBaseFee
+
+[index.js:205-211](https://github.com/wanderer/ethereumjs-tx/blob/0bc7ad7c37e2d27f585e4fff76822a7647f214ee/index.js#L205-L211 "Source code on GitHub")
+
+the minimum amount of gas the tx must have (DataFee + TxFee + Creation Fee)
+
+Returns **BN** 
+
+# getDataFee
+
+[index.js:192-199](https://github.com/wanderer/ethereumjs-tx/blob/0bc7ad7c37e2d27f585e4fff76822a7647f214ee/index.js#L192-L199 "Source code on GitHub")
+
+The amount of gas paid for the data in this tx
+
+Returns **BN** 
+
+# getSenderAddress
+
+[index.js:136-143](https://github.com/wanderer/ethereumjs-tx/blob/0bc7ad7c37e2d27f585e4fff76822a7647f214ee/index.js#L136-L143 "Source code on GitHub")
+
+returns the sender's address
+
+Returns **Buffer** 
+
+# getSenderPublicKey
+
+[index.js:149-154](https://github.com/wanderer/ethereumjs-tx/blob/0bc7ad7c37e2d27f585e4fff76822a7647f214ee/index.js#L149-L154 "Source code on GitHub")
+
+returns the public key of the sender
+
+Returns **Buffer** 
+
+# getUpfrontCost
+
+[index.js:217-221](https://github.com/wanderer/ethereumjs-tx/blob/0bc7ad7c37e2d27f585e4fff76822a7647f214ee/index.js#L217-L221 "Source code on GitHub")
+
+the up front amount that an account must have for this transaction to be valid
+
+Returns **BN** 
+
+# hash
+
+[index.js:119-130](https://github.com/wanderer/ethereumjs-tx/blob/0bc7ad7c37e2d27f585e4fff76822a7647f214ee/index.js#L119-L130 "Source code on GitHub")
+
+Computes a sha3-256 hash of the serialized tx
+
+**Parameters**
+
+-   `signature` **[Boolean]** whether or not to inculde the signature (optional, default `true`)
+
+Returns **Buffer** 
+
+# index
+
+[index.js:36-244](https://github.com/wanderer/ethereumjs-tx/blob/0bc7ad7c37e2d27f585e4fff76822a7647f214ee/index.js#L36-L244 "Source code on GitHub")
 
 Creates a new transaction object
 
@@ -18,7 +86,6 @@ Creates a new transaction object
 -   `v` **Buffer** EC signature parameter
 -   `r` **Buffer** EC signature parameter
 -   `s` **Buffer** EC recovery ID
--   `from` **Buffer** If you are not planing on signing the tx you can set the from property. If you do sign it will be over written
 
 **Examples**
 
@@ -37,69 +104,9 @@ var rawTx = {
 var tx = new Transaction(rawTx);
 ```
 
-## getBaseFee
+# sign
 
-[index.js:236-238](https://github.com/ethereum/ethereumjs-tx/blob/f9c943f21509f03d0834ffd4204e17da9211cd80/index.js#L236-L238 "Source code on GitHub")
-
-the minimum amount of gas the tx must have (DataFee + TxFee)
-
-Returns **BN** 
-
-## getDataFee
-
-[index.js:222-229](https://github.com/ethereum/ethereumjs-tx/blob/f9c943f21509f03d0834ffd4204e17da9211cd80/index.js#L222-L229 "Source code on GitHub")
-
-The amount of gas paid for the data in this tx
-
-Returns **BN** 
-
-## getSenderAddress
-
-[index.js:141-145](https://github.com/ethereum/ethereumjs-tx/blob/f9c943f21509f03d0834ffd4204e17da9211cd80/index.js#L141-L145 "Source code on GitHub")
-
-returns the sender`s address
-
-Returns **Buffer** 
-
-## getSenderPublicKey
-
-[index.js:152-158](https://github.com/ethereum/ethereumjs-tx/blob/f9c943f21509f03d0834ffd4204e17da9211cd80/index.js#L152-L158 "Source code on GitHub")
-
-returns the public key of the sender
-
-Returns **Buffer** 
-
-## getUpfrontCost
-
-[index.js:245-249](https://github.com/ethereum/ethereumjs-tx/blob/f9c943f21509f03d0834ffd4204e17da9211cd80/index.js#L245-L249 "Source code on GitHub")
-
-the up front amount that an account must have for this transaction to be valid
-
-Returns **BN** 
-
-## hash
-
-[index.js:123-134](https://github.com/ethereum/ethereumjs-tx/blob/f9c943f21509f03d0834ffd4204e17da9211cd80/index.js#L123-L134 "Source code on GitHub")
-
-Computes a sha3-256 hash of the serialized tx
-
-**Parameters**
-
--   `signature` **[Boolean]** whether or not to inculde the signature (optional, default `true`)
-
-Returns **Buffer** 
-
-## serialize
-
-[index.js:113-115](https://github.com/ethereum/ethereumjs-tx/blob/f9c943f21509f03d0834ffd4204e17da9211cd80/index.js#L113-L115 "Source code on GitHub")
-
-Returns the rlp encoding of the transaction
-
-Returns **Buffer** 
-
-## sign
-
-[index.js:209-216](https://github.com/ethereum/ethereumjs-tx/blob/f9c943f21509f03d0834ffd4204e17da9211cd80/index.js#L209-L216 "Source code on GitHub")
+[index.js:182-186](https://github.com/wanderer/ethereumjs-tx/blob/0bc7ad7c37e2d27f585e4fff76822a7647f214ee/index.js#L182-L186 "Source code on GitHub")
 
 sign a transaction with a given a private key
 
@@ -107,9 +114,17 @@ sign a transaction with a given a private key
 
 -   `privateKey` **Buffer** 
 
-## validate
+# toCreationAddress
 
-[index.js:257-281](https://github.com/ethereum/ethereumjs-tx/blob/f9c943f21509f03d0834ffd4204e17da9211cd80/index.js#L257-L281 "Source code on GitHub")
+[index.js:110-112](https://github.com/wanderer/ethereumjs-tx/blob/0bc7ad7c37e2d27f585e4fff76822a7647f214ee/index.js#L110-L112 "Source code on GitHub")
+
+If the tx's `to` is to the creation address
+
+Returns **Boolean** 
+
+# validate
+
+[index.js:228-243](https://github.com/wanderer/ethereumjs-tx/blob/0bc7ad7c37e2d27f585e4fff76822a7647f214ee/index.js#L228-L243 "Source code on GitHub")
 
 validates the signature and checks to see if it has enough gas
 
@@ -119,9 +134,9 @@ validates the signature and checks to see if it has enough gas
 
 Returns **Boolean or String** 
 
-## verifySignature
+# verifySignature
 
-[index.js:165-203](https://github.com/ethereum/ethereumjs-tx/blob/f9c943f21509f03d0834ffd4204e17da9211cd80/index.js#L165-L203 "Source code on GitHub")
+[index.js:160-176](https://github.com/wanderer/ethereumjs-tx/blob/0bc7ad7c37e2d27f585e4fff76822a7647f214ee/index.js#L160-L176 "Source code on GitHub")
 
 Determines if the signature is valid
 
