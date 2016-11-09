@@ -79,11 +79,13 @@ function randomized (stateTest) {
 function runTests (name, args, cb) {
   tape(name, t => {
     const runner = require(`./${name}Runner.js`)
-    testing.getTests(name, (fileName, testName, test) => {
+    testing.getTestsFromArgs(name, (fileName, testName, test) => {
       return new Promise((resolve, reject) => {
         t.comment(`file: ${fileName} test: ${testName}`)
         runner(args, test, t, resolve)
       }).catch(err => console.log(err))
+    }, argv).then(() => {
+      t.end()
     })
   })
 }
