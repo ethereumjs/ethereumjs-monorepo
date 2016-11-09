@@ -391,9 +391,18 @@ exports.ecrecover = function (msgHash, v, r, s) {
  * @return {String} sig
  */
 exports.toRpcSig = function (v, r, s) {
+  // NOTE: with potential introduction of chainId this might need to be updated
+  if (v !== 27 && v !== 28) {
+    throw new Error('Invalid recovery id')
+  }
+
   // geth (and the RPC eth_sign method) uses the 65 byte format used by Bitcoin
   // FIXME: this might change in the future - https://github.com/ethereum/go-ethereum/issues/2053
-  return exports.bufferToHex(Buffer.concat([ r, s, exports.toBuffer(v - 27) ]))
+  return exports.bufferToHex(Buffer.concat([
+    exports.setLengthLeft(r, 32),
+    exports.setLengthLeft(s, 32),
+    exports.toBuffer(v - 27)
+  ]))
 }
 
 /**
@@ -405,6 +414,7 @@ exports.toRpcSig = function (v, r, s) {
 exports.fromRpcSig = function (sig) {
   sig = exports.toBuffer(sig)
 
+  // NOTE: with potential introduction of chainId this might need to be updated
   if (sig.length !== 65) {
     throw new Error('Invalid signature length')
   }
