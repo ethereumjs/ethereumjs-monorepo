@@ -7,6 +7,11 @@ const common = require('ethereum-common')
 
 var txTests = testing.getTests('transaction', argv)
 
+const bufferToHex = ethUtil.bufferToHex
+const addHexPrefix = ethUtil.addHexPrefix
+const stripHexPrefix = ethUtil.stripHexPrefix
+const setLength = ethUtil.setLength
+
 function addPad (v) {
   if (v.length % 2 === 1) {
     v = '0' + v
@@ -14,9 +19,9 @@ function addPad (v) {
   return v
 }
 
-function ifZero (v) {
-  if (v === '') {
-    return '00'
+function noramlizeZero (v) {
+  if (!v || v === '0x') {
+    return '0x00'
   } else {
     return v
   }
@@ -38,20 +43,16 @@ testing.runTests(function (testData, sst, cb) {
 
   if (tx.validate()) {
     try {
-      sst.equal(tx.data.toString('hex'), addPad(tTx.data.slice(2)), 'data')
-      sst.equal(ethUtil.bufferToInt(tx.gasLimit), Number(tTx.gasLimit), 'gasLimit')
-      sst.equal(ethUtil.bufferToInt(tx.gasPrice), Number(tTx.gasPrice), 'gasPrice')
-      sst.equal(ethUtil.bufferToInt(tx.nonce), Number(tTx.nonce), 'nonce')
-      sst.equal(ethUtil.setLength(tx.r, 32).toString('hex'), ethUtil.setLength(tTx.r, 32).toString('hex'), 'r')
-      sst.equal(tx.s.toString('hex'), addPad(tTx.s.slice(2)), 's')
-      sst.equal(ethUtil.bufferToInt(tx.v), Number(tTx.v), 'v')
-      if (tTx.to[1] === 'x') {
-        tTx.to = tTx.to.slice(2)
-      }
-
-      sst.equal(tx.to.toString('hex'), tTx.to, 'to')
-      sst.equal(ifZero(tx.value.toString('hex')), tTx.value.slice(2), 'value')
-      sst.equal(tx.getSenderAddress().toString('hex'), testData.sender, "sender's address")
+      sst.equal(bufferToHex(tx.data), addHexPrefix(addPad(stripHexPrefix(tTx.data))), 'data')
+      sst.equal(noramlizeZero(bufferToHex(tx.gasLimit)), tTx.gasLimit, 'gasLimit')
+      sst.equal(noramlizeZero(bufferToHex(tx.gasPrice)), tTx.gasPrice, 'gasPrice')
+      sst.equal(noramlizeZero(bufferToHex(tx.nonce)), tTx.nonce, 'nonce')
+      sst.equal(noramlizeZero(bufferToHex(setLength(tx.r, 32))), noramlizeZero(bufferToHex(setLength(tTx.r, 32))), 'r')
+      sst.equal(noramlizeZero(bufferToHex(tx.s)), noramlizeZero(bufferToHex(tTx.s)), 's')
+      sst.equal(noramlizeZero(bufferToHex(tx.v)), noramlizeZero(bufferToHex(tTx.v)), 'v')
+      sst.equal(bufferToHex(tx.to), addHexPrefix(tTx.to), 'to')
+      sst.equal(noramlizeZero(bufferToHex(tx.value)), tTx.value, 'value')
+      sst.equal(noramlizeZero(bufferToHex(tx.getSenderAddress())), addHexPrefix(testData.sender), "sender's address")
     } catch (e) {
       sst.fail(e)
     }
