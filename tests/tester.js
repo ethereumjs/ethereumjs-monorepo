@@ -1,21 +1,99 @@
-var ethTests = require('ethereumjs-testing').tests
-var test = require('tape')
-var cp = require('child_process')
+const argv = require('minimist')(process.argv.slice(2))
+const async = require('async')
+const tape = require('tape')
+const testing = require('ethereumjs-testing')
+const skip = [
+  'CreateHashCollision', // impossible hash collision on generating address
+  'SuicidesMixingCoinbase', // sucides to the coinbase, since we run a blockLevel we create coinbase account.
+  'TransactionMakeAccountBalanceOverflow',
+  'RecursiveCreateContracts',
+  'sha3_bigSize',
+  'createJS_ExampleContract', // creates an account that already exsists
+  'mload32bitBound_return',
+  'mload32bitBound_return2',
+  'QuadraticComplexitySolidity_CallDataCopy', // tests hash collisoin, sending from a contract
+  'Call50000', // slow
+  'Call50000_ecrec', // slow
+  'Call50000_identity', // slow
+  'Call50000_identity2', // slow
+  'Call50000_sha256', // slow
+  'Call50000_rip160', // slow
+  'Call50000bytesContract50_1', // slow
+  'Call50000bytesContract50_2',
+  'Callcode50000', // slow
+  'Return50000', // slow
+  'Return50000_2', // slow
+  'uncleBlockAtBlock3AfterBlock3',
+  'ForkUncle', // correct behaviour unspecified (?)
+  'UncleFromSideChain', // same as ForkUncle, the TD is the same for two diffent branches so its not clear which one should be the finally chain
+  'bcSimpleTransitionTest' // HF stuff
+]
 
-test('executable test', function (t) {
-  var stateTest = {
-    'randomTest': ethTests.stateTests.stRefundTest.refund50_1
+if (argv.r) {
+  randomized(argv.r, argv.v)
+} else if (argv.s) {
+  runTests('StateTests', argv)
+} else if (argv.v) {
+  runTests('VMTests', argv)
+} else if (argv.b) {
+  runTests('BlockchainTests', argv)
+} else if (argv.a) {
+  runAll()
+}
+
+// randomized tests
+// returns 1 if the tests fails
+// returns 0 if the tests succeds
+function randomized (stateTest) {
+  const stateRunner = require('./stateRunner.js')
+  let errored = false
+
+  tape.createStream({
+    objectMode: true
+  }).on('data', function (row) {
+    if (row.ok === false && !errored) {
+      errored = true
+      process.stdout.write('1')
+      process.exit()
+    }
+  }).on('end', function () {
+    process.stdout.write('0')
+  })
+
+  try {
+    stateTest = JSON.parse(stateTest)
+  } catch (e) {
+    console.error('invalid json')
+    process.exit()
   }
-  var ejt = cp.spawn(__dirname + '/tester', ['-r', JSON.stringify(stateTest)])
-  ejt.stderr.on('data', function (d) {
-    t.fail(d.toString())
-  })
 
-  ejt.stdout.on('data', function (data) {
-    t.equal(data.toString(), '0', 'should not error')
-  })
+  var keys = Object.keys(stateTest)
+  stateTest = stateTest[keys[0]]
 
-  ejt.on('close', function () {
-    t.end()
+  tape('', t => {
+    stateRunner({}, stateTest, t, t.end)
   })
-})
+}
+
+function runTests (name, args, cb) {
+  tape(name, t => {
+    const runner = require(`./${name}Runner.js`)
+    testing.getTests(name, (fileName, testName, test) => {
+      return new Promise((resolve, reject) => {
+        t.comment(`file: ${fileName} test: ${testName}`)
+        runner(args, test, t, resolve)
+      }).catch(err => console.log(err))
+    })
+  })
+}
+
+function runAll () {
+  require('./tester.js')
+  require('./cacheTest.js')
+  require('./genesishashes.js')
+  async.series([
+    runTests.bind(this, 'BlockchainTests', {}),
+    runTests.bind(this, 'StateTests', {}),
+    runTests.bind(this, 'VMTests', {})
+  ])
+}
