@@ -27,7 +27,7 @@ const skip = [
   'ForkUncle', // correct behaviour unspecified (?)
   'UncleFromSideChain', // same as ForkUncle, the TD is the same for two diffent branches so its not clear which one should be the finally chain
   'bcSimpleTransitionTest', // HF stuff
-  'loop_mul' // ain't nobody need loops
+  'loop-mul' // ain't nobody need loops
 ]
 
 if (argv.r) {
@@ -77,6 +77,11 @@ function randomized (stateTest) {
 }
 
 function runTests (name, args, cb) {
+  // setup skipe function
+  args.testFn = (name) => {
+    return skip.includes(name)
+  }
+
   tape(name, t => {
     const runner = require(`./${name}Runner.js`)
     testing.getTestsFromArgs(name, (fileName, testName, test) => {
