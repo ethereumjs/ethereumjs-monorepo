@@ -5,7 +5,6 @@ const rlp = utils.rlp
 const Account = require('ethereumjs-account')
 const Transaction = require('ethereumjs-tx')
 const Block = require('ethereumjs-block')
-const Header = require('ethereumjs-block/header.js')
 
 exports.dumpState = function (state, cb) {
   var rs = state.createReadStream()
@@ -251,7 +250,7 @@ exports.toCodeHash = function (hexCode) {
 }
 
 exports.makeBlockHeader = function (data) {
-  var header = new Header()
+  var header = {}
   header.timestamp = format(data.currentTimestamp)
   header.gasLimit = format(data.currentGasLimit)
   if (data.previousHash) {
@@ -266,13 +265,15 @@ exports.makeBlockHeader = function (data) {
 /**
  * makeBlockFromEnv - helper to create a block from the env object in tests repo
  * @param {Object} env object from tests repo
+ * @param {Object} transactions transactions for the block
  * @return {Object}  the block
  */
-exports.makeBlockFromEnv = function (env) {
-  var block = new Block()
-  block.header = exports.makeBlockHeader(env)
-
-  return block
+exports.makeBlockFromEnv = function (env, transactions) {
+  return new Block({
+    header: exports.makeBlockHeader(env),
+    transactions: transactions || {},
+    uncleHeaders: []
+  })
 }
 
 /**
