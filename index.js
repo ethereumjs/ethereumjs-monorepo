@@ -27,7 +27,7 @@ exports.SHA3_NULL_S = 'c5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045
  * SHA3-256 hash of null (a ```Buffer```)
  * @var {Buffer} SHA3_NULL
  */
-exports.SHA3_NULL = new Buffer(exports.SHA3_NULL_S, 'hex')
+exports.SHA3_NULL = Buffer.from(exports.SHA3_NULL_S, 'hex')
 
 /**
  * SHA3-256 of an RLP of an empty array (a ```String```)
@@ -39,7 +39,7 @@ exports.SHA3_RLP_ARRAY_S = '1dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a1
  * SHA3-256 of an RLP of an empty array (a ```Buffer```)
  * @var {Buffer} SHA3_RLP_ARRAY
  */
-exports.SHA3_RLP_ARRAY = new Buffer(exports.SHA3_RLP_ARRAY_S, 'hex')
+exports.SHA3_RLP_ARRAY = Buffer.from(exports.SHA3_RLP_ARRAY_S, 'hex')
 
 /**
  * SHA3-256 hash of the RLP of null  (a ```String```)
@@ -51,7 +51,7 @@ exports.SHA3_RLP_S = '56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e3
  * SHA3-256 hash of the RLP of null (a ```Buffer```)
  * @var {Buffer} SHA3_RLP
  */
-exports.SHA3_RLP = new Buffer(exports.SHA3_RLP_S, 'hex')
+exports.SHA3_RLP = Buffer.from(exports.SHA3_RLP_S, 'hex')
 
 /**
  * [`BN`](https://github.com/indutny/bn.js)
@@ -78,9 +78,7 @@ exports.secp256k1 = secp256k1
  * @return {Buffer}
  */
 exports.zeros = function (bytes) {
-  var buf = new Buffer(bytes)
-  buf.fill(0)
-  return buf
+  return Buffer.allocUnsafe(bytes).fill(0)
 }
 
 /**
@@ -142,20 +140,20 @@ exports.unpad = exports.stripZeros = function (a) {
 exports.toBuffer = function (v) {
   if (!Buffer.isBuffer(v)) {
     if (Array.isArray(v)) {
-      v = new Buffer(v)
+      v = Buffer.from(v)
     } else if (typeof v === 'string') {
       if (exports.isHexPrefixed(v)) {
-        v = new Buffer(exports.padToEven(exports.stripHexPrefix(v)), 'hex')
+        v = Buffer.from(exports.padToEven(exports.stripHexPrefix(v)), 'hex')
       } else {
-        v = new Buffer(v)
+        v = Buffer.from(v)
       }
     } else if (typeof v === 'number') {
       v = exports.intToBuffer(v)
     } else if (v === null || v === undefined) {
-      v = new Buffer([])
+      v = Buffer.allocUnsafe(0)
     } else if (v.toArray) {
       // converts a BN to a Buffer
-      v = new Buffer(v.toArray())
+      v = Buffer.from(v.toArray())
     } else {
       throw new Error('invalid type')
     }
@@ -186,7 +184,7 @@ exports.intToHex = function (i) {
  */
 exports.intToBuffer = function (i) {
   var hex = exports.intToHex(i)
-  return new Buffer(hex.slice(2), 'hex')
+  return Buffer.from(hex.slice(2), 'hex')
 }
 
 /**
@@ -224,7 +222,7 @@ exports.fromSigned = function (num) {
  * @return {Buffer}
  */
 exports.toUnsigned = function (num) {
-  return new Buffer(num.toTwos(256).toArray())
+  return Buffer.from(num.toTwos(256).toArray())
 }
 
 /**
@@ -241,7 +239,7 @@ exports.sha3 = function (a, bits) {
   if (a) {
     h.update(a)
   }
-  return new Buffer(h.digest('hex'), 'hex')
+  return Buffer.from(h.digest('hex'), 'hex')
 }
 
 /**
@@ -298,7 +296,7 @@ exports.isValidPrivate = function (privateKey) {
 exports.isValidPublic = function (publicKey, sanitize) {
   if (publicKey.length === 64) {
     // Convert to SEC1 for secp256k1
-    return secp256k1.publicKeyVerify(Buffer.concat([ new Buffer([4]), publicKey ]))
+    return secp256k1.publicKeyVerify(Buffer.concat([ Buffer.from([4]), publicKey ]))
   }
 
   if (!sanitize) {
@@ -495,7 +493,7 @@ exports.generateAddress = function (from, nonce) {
     // read the RLP documentation for an answer if you dare
     nonce = null
   } else {
-    nonce = new Buffer(nonce.toArray())
+    nonce = Buffer.from(nonce.toArray())
   }
 
   // Only take the lower 160bits of the hash
@@ -648,7 +646,7 @@ exports.defineProperties = function (self, fields, data) {
       v = exports.toBuffer(v)
 
       if (v.toString('hex') === '00' && !field.allowZero) {
-        v = new Buffer([])
+        v = Buffer.allocUnsafe(0)
       }
 
       if (field.allowLess && field.length) {
@@ -686,7 +684,7 @@ exports.defineProperties = function (self, fields, data) {
   // if the constuctor is passed data
   if (data) {
     if (typeof data === 'string') {
-      data = new Buffer(exports.stripHexPrefix(data), 'hex')
+      data = Buffer.from(exports.stripHexPrefix(data), 'hex')
     }
 
     if (Buffer.isBuffer(data)) {

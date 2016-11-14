@@ -6,19 +6,19 @@ describe('define', function () {
     name: 'aword',
     alias: 'blah',
     word: true,
-    default: new Buffer([])
+    default: Buffer.allocUnsafe(0)
   }, {
     name: 'empty',
     allowZero: true,
     length: 20,
-    default: new Buffer([])
+    default: Buffer.allocUnsafe(0)
   }, {
     name: 'cannotBeZero',
     allowZero: false,
-    default: new Buffer([0])
+    default: Buffer.from([0])
   }, {
     name: 'value',
-    default: new Buffer([])
+    default: Buffer.allocUnsafe(0)
   }, {
     name: 'r',
     length: 32,
@@ -33,7 +33,7 @@ describe('define', function () {
     someOb.r = '0x00004'
     assert.equal(someOb.r.toString('hex'), '04')
 
-    someOb.r = new Buffer([0, 0, 0, 0, 4])
+    someOb.r = Buffer.from([0, 0, 0, 0, 4])
     assert.equal(someOb.r.toString('hex'), '04')
   })
 
@@ -46,7 +46,7 @@ describe('define', function () {
         name: 'mustBeExactSize',
         allowZero: false,
         length: 20,
-        default: new Buffer([1, 2, 3, 4])
+        default: Buffer.from([1, 2, 3, 4])
       }]
       ethUtil.defineProperties(someOb, tmp)
     })
