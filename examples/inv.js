@@ -1,12 +1,12 @@
-import * as devp2p from '../'
-import EthereumTx from 'ethereumjs-tx'
-import EthereumBlock from 'ethereumjs-block'
-import LRUCache from 'lru-cache'
-import ms from 'ms'
-import chalk from 'chalk'
-import assert from 'assert'
-import { randomBytes } from 'crypto'
-import * as rlp from 'rlp-encoding'
+const devp2p = require('../es')
+const EthereumTx = require('ethereumjs-tx')
+const EthereumBlock = require('ethereumjs-block')
+const LRUCache = require('lru-cache')
+const ms = require('ms')
+const chalk = require('chalk')
+const assert = require('assert')
+const { randomBytes } = require('crypto')
+const rlp = require('rlp-encoding')
 
 const PRIVATE_KEY = randomBytes(32)
 const DAO_FORK_SUPPORT = true

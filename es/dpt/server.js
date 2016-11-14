@@ -1,16 +1,16 @@
-import { EventEmitter } from 'events'
-import dgram from 'dgram'
-import ms from 'ms'
-import createDebugLogger from 'debug'
-import LRUCache from 'lru-cache'
-import * as message from './message'
-import { pk2id, createDeferred } from '../util'
+const { EventEmitter } = require('events')
+const dgram = require('dgram')
+const ms = require('ms')
+const createDebugLogger = require('debug')
+const LRUCache = require('lru-cache')
+const message = require('./message')
+const { pk2id, createDeferred } = require('../util')
 
 const debug = createDebugLogger('devp2p:dpt:server')
 const VERSION = 0x04
 const createSocketUDP4 = dgram.createSocket.bind(null, 'udp4')
 
-export default class Server extends EventEmitter {
+class Server extends EventEmitter {
   constructor (dpt, privateKey, options) {
     super()
 
@@ -147,3 +147,5 @@ export default class Server extends EventEmitter {
     }
   }
 }
+
+module.exports = Server

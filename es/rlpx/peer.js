@@ -1,10 +1,10 @@
-import { EventEmitter } from 'events'
-import * as rlp from 'rlp-encoding'
-import BufferList from 'bl'
-import ms from 'ms'
-import createDebugLogger from 'debug'
-import { int2buffer, buffer2int } from '../util'
-import ECIES from './ecies'
+const { EventEmitter } = require('events')
+const rlp = require('rlp-encoding')
+const BufferList = require('bl')
+const ms = require('ms')
+const createDebugLogger = require('debug')
+const { int2buffer, buffer2int } = require('../util')
+const ECIES = require('./ecies')
 
 const debug = createDebugLogger('devp2p:rlpx:peer')
 
@@ -20,7 +20,7 @@ const PREFIXES = {
   PONG: 0x03
 }
 
-export default class Peer extends EventEmitter {
+class Peer extends EventEmitter {
   constructor (options) {
     super()
 
@@ -304,3 +304,5 @@ export default class Peer extends EventEmitter {
     this._sendDisconnect(reason)
   }
 }
+
+module.exports = Peer

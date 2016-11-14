@@ -1,16 +1,16 @@
-import net from 'net'
-import secp256k1 from 'secp256k1'
-import { EventEmitter } from 'events'
-import ms from 'ms'
-import createDebugLogger from 'debug'
-import LRUCache from 'lru-cache'
-import { version as pVersion } from '../../package.json'
-import { pk2id, createDeferred } from '../util'
-import Peer from './peer'
+const net = require('net')
+const secp256k1 = require('secp256k1')
+const { EventEmitter } = require('events')
+const ms = require('ms')
+const createDebugLogger = require('debug')
+const LRUCache = require('lru-cache')
+const pVersion = require('../../package.json').version
+const { pk2id, createDeferred } = require('../util')
+const Peer = require('./peer')
 
 const debug = createDebugLogger('devp2p:rlpx')
 
-export default class RLPx extends EventEmitter {
+class RLPx extends EventEmitter {
   constructor (privateKey, options) {
     super()
 
@@ -208,3 +208,5 @@ export default class RLPx extends EventEmitter {
     })
   }
 }
+
+module.exports = RLPx

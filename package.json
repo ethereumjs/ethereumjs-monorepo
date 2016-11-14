@@ -24,21 +24,20 @@
   ],
   "files": [
     "es",
-    "es5",
-    "index.es",
-    "index.js"
+    "lib"
   ],
+  "main": "./lib/index.js",
   "repository": {
     "type": "git",
     "url": "https://github.com/fanatid/ethereumjs-devp2p.git"
   },
   "scripts": {
-    "build": "BABEL_ENV=build babel es -d es5",
-    "integration": "tape -r ./_require.js test/integration/*.js",
+    "build": "babel es -d lib",
+    "integration": "tape -r babel-register test/integration/*.js",
     "lint": "standard",
     "prepublish": "npm run build",
     "test": "npm run lint && npm run unit",
-    "unit": "tape -r ./_require.js test/*.js"
+    "unit": "tape -r babel-register test/*.js"
   },
   "dependencies": {
     "babel-runtime": "^6.11.6",
@@ -50,7 +49,7 @@
     "keccakjs": "^0.2.0",
     "lru-cache": "^4.0.1",
     "ms": "^0.7.1",
-    "rlp-encoding": "^2.0.0",
+    "rlp-encoding": "^3.0.0",
     "secp256k1": "^3.1.0"
   },
   "devDependencies": {
@@ -58,15 +57,13 @@
     "babel-eslint": "^7.0.0",
     "babel-plugin-transform-async-to-generator": "^6.16.0",
     "babel-plugin-transform-class-properties": "^6.16.0",
-    "babel-plugin-transform-export-extensions": "^6.8.0",
+    "babel-plugin-transform-es2015-modules-commonjs": "^6.18.0",
     "babel-plugin-transform-runtime": "^6.15.0",
-    "babel-preset-es2015": "^6.16.0",
     "babel-register": "^6.14.0",
     "chalk": "^1.1.3",
     "ethereumjs-block": "^1.3.0",
     "ethereumjs-tx": "^1.1.1",
     "nyc": "^8.3.0",
-    "require-extensions-order": "^1.0.1",
     "standard": "*",
     "tape": "^4.5.1"
   },

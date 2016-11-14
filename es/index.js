@@ -1,5 +1,5 @@
-export DPT from './dpt'
-export ETH from './eth'
-export RLPx from './rlpx'
+exports.DPT = require('./dpt')
+exports.ETH = require('./eth')
+exports.RLPx = require('./rlpx')
 
-export * as _util from './util'
+exports._util = require('./util')

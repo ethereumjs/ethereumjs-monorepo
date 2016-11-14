@@ -1,7 +1,7 @@
-import ip from 'ip'
-import * as rlp from 'rlp-encoding'
-import secp256k1 from 'secp256k1'
-import { keccak256, int2buffer, buffer2int, assertEq } from '../util'
+const ip = require('ip')
+const rlp = require('rlp-encoding')
+const secp256k1 = require('secp256k1')
+const { keccak256, int2buffer, buffer2int, assertEq } = require('../util')
 
 function getTimestamp () {
   return (Date.now() / 1000) | 0
@@ -158,7 +158,7 @@ const types = {
 // 97 type
 // [98, length) data
 
-export function encode (typename, data, privateKey) {
+function encode (typename, data, privateKey) {
   const type = types.byName[typename]
   if (type === undefined) throw new Error(`Invalid typename: ${typename}`)
   const encodedMsg = messages[typename].encode(data)
@@ -171,7 +171,7 @@ export function encode (typename, data, privateKey) {
   return Buffer.concat([ hash, hashdata ])
 }
 
-export function decode (buffer) {
+function decode (buffer) {
   const hash = keccak256(buffer.slice(32))
   assertEq(buffer.slice(0, 32), hash, 'Hash verification failed')
 
@@ -188,3 +188,5 @@ export function decode (buffer) {
 
   return { typename, data, publicKey }
 }
+
+module.exports = { encode, decode }

@@ -1,16 +1,16 @@
-import { EventEmitter } from 'events'
-import secp256k1 from 'secp256k1'
-import { randomBytes } from 'crypto'
-import createDebugLogger from 'debug'
-import ms from 'ms'
-import { pk2id } from '../util'
-import KBucket from './kbucket'
-import BanList from './ban-list'
-import DPTServer from './server'
+const { EventEmitter } = require('events')
+const secp256k1 = require('secp256k1')
+const { randomBytes } = require('crypto')
+const createDebugLogger = require('debug')
+const ms = require('ms')
+const { pk2id } = require('../util')
+const KBucket = require('./kbucket')
+const BanList = require('./ban-list')
+const DPTServer = require('./server')
 
 const debug = createDebugLogger('devp2p:dpt')
 
-export default class DPT extends EventEmitter {
+class DPT extends EventEmitter {
   constructor (privateKey, options) {
     super()
 
@@ -127,3 +127,5 @@ export default class DPT extends EventEmitter {
     for (let peer of peers) this._server.findneighbours(peer, randomBytes(64))
   }
 }
+
+module.exports = DPT

@@ -1,10 +1,10 @@
-import { createCipheriv } from 'crypto'
-import SHA3 from 'keccakjs'
-import { xor } from '../util'
+const { createCipheriv } = require('crypto')
+const Keccak = require('keccakjs')
+const { xor } = require('../util')
 
-export default class MAC {
+class MAC {
   constructor (secret) {
-    this._hash = new SHA3(256)
+    this._hash = new Keccak(256)
     this._secret = secret
   }
 
@@ -30,3 +30,5 @@ export default class MAC {
     return Buffer.from(this._hash.digest('hex'), 'hex').slice(0, 16)
   }
 }
+
+module.exports = MAC

@@ -1,8 +1,8 @@
-import crypto from 'crypto'
-import secp256k1 from 'secp256k1'
-import * as rlp from 'rlp-encoding'
-import * as util from '../util'
-import MAC from './mac'
+const crypto = require('crypto')
+const secp256k1 = require('secp256k1')
+const rlp = require('rlp-encoding')
+const util = require('../util')
+const MAC = require('./mac')
 
 function ecdhX (publicKey, privateKey) {
   // return (publicKey * privateKey).x
@@ -30,7 +30,7 @@ function concatKDF (keyMaterial, keyLength) {
   return Buffer.concat(buffers).slice(0, keyLength)
 }
 
-export default class ECIES {
+class ECIES {
   constructor (privateKey, id, remoteId) {
     this._privateKey = privateKey
     this._publicKey = util.id2pk(id)
@@ -228,3 +228,5 @@ export default class ECIES {
     return this._ingressAes.update(body).slice(0, size)
   }
 }
+
+module.exports = ECIES

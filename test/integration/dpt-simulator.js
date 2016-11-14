@@ -1,5 +1,5 @@
-import test from 'tape'
-import * as devp2p from '../../'
+const test = require('tape')
+const devp2p = require('../../es')
 
 async function delay (ms) {
   await new Promise((resolve) => setTimeout(resolve, ms))
@@ -12,7 +12,7 @@ test('running simulator', async (t) => {
   const nodes = []
 
   for (let i = 0; i < numOfNode; ++i) {
-    let dpt = new devp2p.DPT(devp2p._util.genPrivateKey(), {
+    const dpt = new devp2p.DPT(devp2p._util.genPrivateKey(), {
       endpoint: {
         address: localhost,
         udpPort: port + i,
@@ -33,7 +33,7 @@ test('running simulator', async (t) => {
 
   for (let node of nodes) {
     node.refresh()
-    await delay(25)
+    await delay(50)
   }
 
   await delay(250)

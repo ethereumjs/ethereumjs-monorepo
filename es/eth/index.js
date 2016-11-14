@@ -1,8 +1,8 @@
-import { EventEmitter } from 'events'
-import * as rlp from 'rlp-encoding'
-import ms from 'ms'
-import { int2buffer, assertEq } from '../util'
-import Peer from '../rlpx/peer'
+const { EventEmitter } = require('events')
+const rlp = require('rlp-encoding')
+const ms = require('ms')
+const { int2buffer, assertEq } = require('../util')
+const Peer = require('../rlpx/peer')
 
 const MESSAGE_CODES = {
   // eth62
@@ -22,7 +22,7 @@ const MESSAGE_CODES = {
   RECEIPTS: 0x10
 }
 
-export default class ETH extends EventEmitter {
+class ETH extends EventEmitter {
   constructor (version, peer, send) {
     super()
 
@@ -138,3 +138,5 @@ export default class ETH extends EventEmitter {
     this._send(code, rlp.encode(payload))
   }
 }
+
+module.exports = ETH

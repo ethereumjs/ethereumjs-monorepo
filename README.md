@@ -17,7 +17,7 @@ Based on [ethereumjs/node-devp2p](https://github.com/ethereumjs/node-devp2p).
   - [bootstrap](examples/bootstrap.js) Run DPT node
   - [inv](examples/inv.js) Print all new Tx and Block hashes
 
-for example: `node -r ./_require.js ./examples/inv.js`
+for example: `node -r babel-register ./examples/inv.js`
 
 # Reference
 
