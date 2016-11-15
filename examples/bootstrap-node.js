@@ -2,15 +2,13 @@ const chalk = require('chalk')
 const { DPT } = require('../es')
 
 const PRIVATE_KEY = 'd772e3d6a001a38064dd23964dd2836239fa0e6cec8b28972a87460a17210fe9'
-const BOOTNODES = [
-  // ETH/DEV Go Bootnodes
-  { address: '52.16.188.185', udpPort: 30303, tcpPort: 30303 },
-  { address: '54.94.239.50', udpPort: 30303, tcpPort: 30303 },
-  { address: '52.74.57.123', udpPort: 30303, tcpPort: 30303 },
-
-  // ETH/DEV Cpp Bootnodes
-  { address: '5.1.83.226', udpPort: 30303, tcpPort: 30303 }
-]
+const BOOTNODES = require('ethereum-common').bootstrapNodes.map((node) => {
+  return {
+    address: node.ip,
+    udpPort: node.port,
+    tcpPort: node.port
+  }
+})
 
 const dpt = new DPT(Buffer.from(PRIVATE_KEY, 'hex'), {
   endpoint: {
