@@ -17,7 +17,7 @@
   "devDependencies": {
     "ethereumjs-blockchain": "^1.4.1",
     "ethereumjs-testing": "0.0.1",
-    "ethereumjs-tx": "1.1.0",
+    "ethereumjs-tx": "1.1.4",
     "level": "^1.4.0",
     "leveldown": "^1.4.6",
     "levelup": "^1.3.2",
