@@ -1,3 +1,5 @@
+'use strict'
+
 const Transaction = require('./index.js')
 const ethUtil = require('ethereumjs-util')
 
@@ -29,7 +31,7 @@ const ethUtil = require('ethereumjs-util')
  * @prop {Buffer} r EC signature parameter
  * @prop {Buffer} s EC recovery ID
  */
-module.exports = class FakeTransactiosn extends Transaction {
+module.exports = class FakeTransaction extends Transaction {
   constructor (data) {
     super(data)
 
