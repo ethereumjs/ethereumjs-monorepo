@@ -9,21 +9,21 @@
     "ethereum-common": "0.0.18",
     "ethereumjs-account": "^2.0.3",
     "ethereumjs-block": "^1.2.2",
-    "ethereumjs-util": "^4.0.1",
+    "ethereumjs-util": "^5.0.1",
     "fake-merkle-patricia-tree": "^1.0.1",
     "functional-red-black-tree": "^1.0.1",
     "merkle-patricia-tree": "^2.1.2"
   },
   "devDependencies": {
     "ethereumjs-blockchain": "^1.4.1",
-    "ethereumjs-testing": "0.0.1",
-    "ethereumjs-tx": "1.1.0",
+    "ethereumjs-testing": "1.0.4",
+    "ethereumjs-tx": "1.1.4",
     "level": "^1.4.0",
     "leveldown": "^1.4.6",
     "levelup": "^1.3.2",
     "memdown": "^1.1.0",
     "minimist": "^1.1.1",
-    "standard": "^5.2.2",
+    "standard": "^8.5.0",
     "tape": "^4.2.0"
   },
   "scripts": {
