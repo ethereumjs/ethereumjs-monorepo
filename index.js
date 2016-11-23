@@ -34,7 +34,7 @@ const N_DIV_2 = new BN('7fffffffffffffffffffffffffffffff5d576e7357a4501ddfe92f46
  * @prop {Buffer} s EC recovery ID
  */
 module.exports = class Transaction {
-  constructor (data) {
+  constructor (data, chainId) {
     // Define Properties
     const fields = [{
       name: 'nonce',
@@ -99,7 +99,7 @@ module.exports = class Transaction {
       configurable: true,
       get: this.getSenderAddress.bind(this)
     })
-
+    this._chainId = chainId ? chainId : false
     this._homestead = true
   }
 
@@ -117,15 +117,21 @@ module.exports = class Transaction {
    * @return {Buffer}
    */
   hash (signature) {
+    const cpyRaw = this.raw.slice(0)
+    if(this._chainId){
+        this.v = this._chainId
+        this.r = this.s = 0
+    }
     let toHash
 
-    if (typeof signature === 'undefined') {
+    if (this._chainId || typeof signature === 'undefined') {
       signature = true
     }
 
     toHash = signature ? this.raw : this.raw.slice(0, 6)
 
     // create hash
+    this.raw = cpyRaw.slice(0);
     return ethUtil.rlphash(toHash)
   }
 
@@ -148,7 +154,7 @@ module.exports = class Transaction {
    */
   getSenderPublicKey () {
     if (!this._senderPubKey || !this._senderPubKey.length) {
-      this.verifySignature()
+      if(!this.verifySignature()) throw 'Invalid Signature'
     }
     return this._senderPubKey
   }
@@ -158,15 +164,14 @@ module.exports = class Transaction {
    * @return {Boolean}
    */
   verifySignature () {
-    const msgHash = this.hash(false)
-
+    var msgHash = this.hash(false)
     // All transaction signatures whose s-value is greater than secp256k1n/2 are considered invalid.
     if (this._homestead && new BN(this.s).cmp(N_DIV_2) === 1) {
       return false
     }
 
     try {
-      const v = ethUtil.bufferToInt(this.v)
+      const v = this._chainId ? (ethUtil.bufferToInt(this.v)-this._chainId*2)-8 : ethUtil.bufferToInt(this.v)
       this._senderPubKey = ethUtil.ecrecover(msgHash, v, this.r, this.s)
     } catch (e) {
       return false
@@ -181,7 +186,8 @@ module.exports = class Transaction {
    */
   sign (privateKey) {
     const msgHash = this.hash(false)
-    const sig = ethUtil.ecsign(msgHash, privateKey)
+    var sig = ethUtil.ecsign(msgHash, privateKey)
+    sig.v += this._chainId ? this._chainId*2+8 : 0;
     Object.assign(this, sig)
   }
 

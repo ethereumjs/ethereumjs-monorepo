@@ -3,7 +3,7 @@
 var Transaction = require('../index.js')
 
 // create a blank transaction
-var tx = new Transaction()
+var tx = new Transaction(null,1) //mainnet Tx EIP155
 
 // So now we have created a blank transaction but Its not quiet valid yet. We
 // need to add some things to it. Lets start with
@@ -16,7 +16,6 @@ tx.data = '0x7f4e616d65526567000000000000000000000000000000000000000000000000003
 
 var privateKey = new Buffer('e331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109', 'hex')
 tx.sign(privateKey)
-
 // We have a signed transaction, Now for it to be total the account that we signed
 // it with needs to have a certain amount of wei in to. To see how much that this
 // account needs we can use the getTotalFee
