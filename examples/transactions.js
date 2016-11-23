@@ -3,7 +3,7 @@
 var Transaction = require('../index.js')
 
 // create a blank transaction
-var tx = new Transaction(null,1) //mainnet Tx EIP155
+var tx = new Transaction(null, 1) // mainnet Tx EIP155
 
 // So now we have created a blank transaction but Its not quiet valid yet. We
 // need to add some things to it. Lets start with

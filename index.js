@@ -99,7 +99,7 @@ module.exports = class Transaction {
       configurable: true,
       get: this.getSenderAddress.bind(this)
     })
-    this._chainId = chainId ? chainId : false
+    this._chainId = chainId
     this._homestead = true
   }
 
@@ -118,9 +118,9 @@ module.exports = class Transaction {
    */
   hash (signature) {
     const cpyRaw = this.raw.slice(0)
-    if(this._chainId){
-        this.v = this._chainId
-        this.r = this.s = 0
+    if (this._chainId) {
+      this.v = this._chainId
+      this.r = this.s = 0
     }
     let toHash
 
@@ -131,7 +131,7 @@ module.exports = class Transaction {
     toHash = signature ? this.raw : this.raw.slice(0, 6)
 
     // create hash
-    this.raw = cpyRaw.slice(0);
+    this.raw = cpyRaw.slice(0)
     return ethUtil.rlphash(toHash)
   }
 
@@ -154,7 +154,7 @@ module.exports = class Transaction {
    */
   getSenderPublicKey () {
     if (!this._senderPubKey || !this._senderPubKey.length) {
-      if(!this.verifySignature()) throw 'Invalid Signature'
+      if (!this.verifySignature()) throw new Error('Invalid Signature')
     }
     return this._senderPubKey
   }
@@ -171,7 +171,7 @@ module.exports = class Transaction {
     }
 
     try {
-      const v = this._chainId ? (ethUtil.bufferToInt(this.v)-this._chainId*2)-8 : ethUtil.bufferToInt(this.v)
+      const v = this._chainId ? (ethUtil.bufferToInt(this.v) - this._chainId * 2) - 8 : ethUtil.bufferToInt(this.v)
       this._senderPubKey = ethUtil.ecrecover(msgHash, v, this.r, this.s)
     } catch (e) {
       return false
@@ -187,7 +187,7 @@ module.exports = class Transaction {
   sign (privateKey) {
     const msgHash = this.hash(false)
     var sig = ethUtil.ecsign(msgHash, privateKey)
-    sig.v += this._chainId ? this._chainId*2+8 : 0;
+    sig.v += this._chainId ? this._chainId * 2 + 8 : 0
     Object.assign(this, sig)
   }
 
