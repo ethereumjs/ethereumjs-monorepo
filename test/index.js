@@ -1,3 +1,5 @@
+'use strict'
+
 const test = require('tape')
 const Blockchain = require('..')
 const Block = require('ethereumjs-block')

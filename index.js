@@ -1,3 +1,5 @@
+'use strict'
+
 /**
  * NOTES
  * block details are child block hash, parent block hash, isUncle, isProcessed, and total difficulty
