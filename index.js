@@ -222,7 +222,8 @@ Blockchain.prototype._putBlock = function (block, cb, _genesis) {
         self.meta.height = ethUtil.bufferToInt(block.header.number)
         self.meta.td = td
 
-        const key = parseInt(block.header.number.toString('hex'), 16).toString()
+        const key = parseInt(block.header.number.toString('hex') || '00', 16).toString()
+
         // index by number
         dbOps.push({
           type: 'put',
@@ -295,6 +296,46 @@ Blockchain.prototype.getBlock = function (hash, cb) {
       cb(err, block)
     }
   })
+}
+
+/**
+ *Gets a block by its hash
+ * @method getBlocks
+ * @param {Buffer|Number} blockId - the block's hash or number
+ * @param {Number} skip - number of blocks to skip
+ * @param {Bool} reverse - fetch blocks in reverse
+ * @param {Function} cb - the callback function
+ */
+Blockchain.prototype.getBlocks = function (blockId, maxBlocks, skip, reverse, cb) {
+  var self = this
+  var blocks = []
+  var i = -1
+
+  function nextBlock (blockId) {
+    self.getBlock(blockId, function (err, block) {
+      i++
+
+      if (err) {
+        return cb(null, blocks)
+      }
+
+      var nextBlockNumber = ethUtil.bufferToInt(block.header.number) + (reverse ? -1 : 1)
+
+      if (i !== 0 && skip && i % (skip + 1) !== 0) {
+        return nextBlock(nextBlockNumber)
+      }
+
+      blocks.push(block)
+
+      if (blocks.length === maxBlocks) {
+        return cb(null, blocks)
+      }
+
+      nextBlock(nextBlockNumber)
+    })
+  }
+
+  nextBlock(blockId)
 }
 
 /**
