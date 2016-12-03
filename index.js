@@ -299,7 +299,7 @@ Blockchain.prototype.getBlock = function (hash, cb) {
 }
 
 /**
- *Gets a block by its hash
+ * Looks up many blocks relative to blockId
  * @method getBlocks
  * @param {Buffer|Number} blockId - the block's hash or number
  * @param {Number} skip - number of blocks to skip
