@@ -29,10 +29,10 @@ A module to store and interact with blocks
 ## `Blockchain`
 Implements functions for retrieving, manipulating and storing Ethereum's blockchain
 
-### `new Blockchain(blockDB, detailsDB)`
+### `new Blockchain(blockDB, validate)`
 Creates new Blockchain object 
 - `blockDB` - the database that backs the Blockchain. the `db` object is tested with [levelup](https://github.com/rvagg/node-levelup) but should with any store that implements [put](https://github.com/rvagg/node-levelup#dbputkey-value-options-callback), [get](https://github.com/rvagg/node-levelup#dbgetkey-options-callback) and [del](https://github.com/rvagg/node-levelup#dbdelkey-options-callback).
-- `detailsDB` - this is the same as `blockDB` except this db houses the meta infomation about the blockchain.
+- `validate` - this the flag to validate blocks (e.g. Proof-of-Work).
 
 ### `BlockChain` Properties
 - `head` - The Head, the block that has the most weight
@@ -42,12 +42,6 @@ Creates new Blockchain object
 - `totallDifficulty` - The totall difficulty which is the some of a the difficulty of all the prevous blocks
 
 ### `BlockChain` methods
-
-#### `blockchain.init(cb)`
-Initializes the blockchain. This must be done before you can use the `blockchain`
-- `cb` - the callback
-
---------------------------------------------------------
 
 #### `blockchain.putBlock(block, [callback])`
 Adds a block to the blockchain.
