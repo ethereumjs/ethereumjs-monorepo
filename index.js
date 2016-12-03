@@ -148,7 +148,7 @@ Blockchain.prototype._putBlock = function (block, cb, _genesis) {
       }
 
       if (!_genesis && block.isGenesis()) {
-        return cb2('already have genesis set')
+        return cb2(new Error('already have genesis set'))
       }
 
       block.validate(self, cb2)
@@ -162,7 +162,7 @@ Blockchain.prototype._putBlock = function (block, cb, _genesis) {
         if (valid) {
           cb2()
         } else {
-          cb2('invalid POW')
+          cb2(new Error('invalid POW'))
         }
       })
     },
@@ -178,7 +178,8 @@ Blockchain.prototype._putBlock = function (block, cb, _genesis) {
         if (!err && pd) {
           cb2(null, pd)
         } else {
-          cb2('parent hash not found')
+          let parentHash = ethUtil.bufferToHex(block.header.parentHash.toString('hex'))
+          cb2(new Error(`parent hash not found: ${parentHash}`))
         }
       })
     },
