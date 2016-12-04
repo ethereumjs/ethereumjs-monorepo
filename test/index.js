@@ -24,7 +24,7 @@ test('blockchain test', function (t) {
     function addgenesis (done) {
       genesisBlock = new Block()
       genesisBlock.setGenesisParams()
-      blockchain.putBlock(genesisBlock, function (err) {
+      blockchain.putGenesis(genesisBlock, function (err) {
         if (err) return done(err)
         t.equal(genesisBlock.hash().toString('hex'), blockchain.meta.genesis, 'genesis block hash should be correct')
         blocks.push(genesisBlock)
