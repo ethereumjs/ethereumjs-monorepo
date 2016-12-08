@@ -34,7 +34,7 @@ const N_DIV_2 = new BN('7fffffffffffffffffffffffffffffff5d576e7357a4501ddfe92f46
  * @prop {Buffer} s EC recovery ID
  */
 module.exports = class Transaction {
-  constructor (data, chainId) {
+  constructor (data, opts = {}) {
     // Define Properties
     const fields = [{
       name: 'nonce',
@@ -99,7 +99,7 @@ module.exports = class Transaction {
       configurable: true,
       get: this.getSenderAddress.bind(this)
     })
-    this._chainId = chainId
+    this._chainId = opts.chain_id
     this._homestead = true
   }
 
@@ -117,7 +117,7 @@ module.exports = class Transaction {
    * @return {Buffer}
    */
   hash (signature) {
-    const cpyRaw = this.raw.slice(0)
+    const rawCopy = this.raw.slice(0)
     if (this._chainId) {
       this.v = this._chainId
       this.r = this.s = 0
@@ -131,7 +131,7 @@ module.exports = class Transaction {
     toHash = signature ? this.raw : this.raw.slice(0, 6)
 
     // create hash
-    this.raw = cpyRaw.slice(0)
+    this.raw = rawCopy.slice(0)
     return ethUtil.rlphash(toHash)
   }
 
@@ -171,7 +171,11 @@ module.exports = class Transaction {
     }
 
     try {
-      const v = this._chainId ? (ethUtil.bufferToInt(this.v) - this._chainId * 2) - 8 : ethUtil.bufferToInt(this.v)
+      let v = ethUtil.bufferToInt(this.v)
+      if (this._chainId) {
+            v -= this._chainId * 2
+            v -= 8
+      }
       this._senderPubKey = ethUtil.ecrecover(msgHash, v, this.r, this.s)
     } catch (e) {
       return false
