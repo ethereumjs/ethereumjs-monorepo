@@ -173,8 +173,8 @@ module.exports = class Transaction {
     try {
       let v = ethUtil.bufferToInt(this.v)
       if (this._chainId) {
-            v -= this._chainId * 2
-            v -= 8
+        v -= this._chainId * 2
+        v -= 8
       }
       this._senderPubKey = ethUtil.ecrecover(msgHash, v, this.r, this.s)
     } catch (e) {
