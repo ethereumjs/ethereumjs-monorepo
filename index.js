@@ -34,7 +34,7 @@ const N_DIV_2 = new BN('7fffffffffffffffffffffffffffffff5d576e7357a4501ddfe92f46
  * @prop {Buffer} s EC recovery ID
  */
 module.exports = class Transaction {
-  constructor (data, opts = {}) {
+  constructor (data, opts) {
     // Define Properties
     const fields = [{
       name: 'nonce',
@@ -99,6 +99,7 @@ module.exports = class Transaction {
       configurable: true,
       get: this.getSenderAddress.bind(this)
     })
+    opts = !opts ? {chain_id: 0} : opts
     this._chainId = opts.chain_id
     this._homestead = true
   }
