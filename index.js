@@ -164,7 +164,7 @@ module.exports = class Transaction {
    * @return {Boolean}
    */
   verifySignature () {
-    var msgHash = this.hash(false)
+    const msgHash = this.hash(false)
     // All transaction signatures whose s-value is greater than secp256k1n/2 are considered invalid.
     if (this._homestead && new BN(this.s).cmp(N_DIV_2) === 1) {
       return false
@@ -186,7 +186,7 @@ module.exports = class Transaction {
    */
   sign (privateKey) {
     const msgHash = this.hash(false)
-    var sig = ethUtil.ecsign(msgHash, privateKey)
+    const sig = ethUtil.ecsign(msgHash, privateKey)
     sig.v += this._chainId ? this._chainId * 2 + 8 : 0
     Object.assign(this, sig)
   }
@@ -198,7 +198,7 @@ module.exports = class Transaction {
   getDataFee () {
     const data = this.raw[5]
     const cost = new BN(0)
-    for (var i = 0; i < data.length; i++) {
+    for (let i = 0; i < data.length; i++) {
       data[i] === 0 ? cost.iaddn(fees.txDataZeroGas.v) : cost.iaddn(fees.txDataNonZeroGas.v)
     }
     return cost
