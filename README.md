@@ -32,7 +32,7 @@ tx.sign(privateKey)
 var serializedTx = tx.serialize()
 
 
-var eip155tx = new Tx(rawTx,1) //mainnet chain_id = 1
+var eip155tx = new Tx(rawTx,{chainId: 1}) //mainnet chain_id = 1
 eip155tx.sign(privateKey)
 
 var serializedEip155Tx = eip155tx.serialize()

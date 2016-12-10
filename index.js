@@ -99,8 +99,8 @@ module.exports = class Transaction {
       configurable: true,
       get: this.getSenderAddress.bind(this)
     })
-    opts = !opts ? {chain_id: 0} : opts
-    this._chainId = opts.chain_id
+    opts = !opts ? {chainId: 0} : opts
+    this._chainId = opts.chainId
     this._homestead = true
   }
 
