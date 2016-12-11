@@ -1,4 +1,4 @@
-const SHA3 = require('keccakjs')
+const createKeccakHash = require('keccak')
 const secp256k1 = require('secp256k1')
 const assert = require('assert')
 const rlp = require('rlp')
@@ -235,11 +235,7 @@ exports.sha3 = function (a, bits) {
   a = exports.toBuffer(a)
   if (!bits) bits = 256
 
-  var h = new SHA3(bits)
-  if (a) {
-    h.update(a)
-  }
-  return Buffer.from(h.digest('hex'), 'hex')
+  return createKeccakHash('keccak' + bits).update(a).digest()
 }
 
 /**
