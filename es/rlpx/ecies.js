@@ -105,13 +105,13 @@ class ECIES {
     const hNonce = util.keccak256(nonceMaterial)
 
     const IV = Buffer.allocUnsafe(16).fill(0x00)
-    const sharedSecret = util.keccak256(Buffer.concat([ this._ephemeralSharedSecret, hNonce ]))
+    const sharedSecret = util.keccak256(this._ephemeralSharedSecret, hNonce)
 
-    const aesSecret = util.keccak256(Buffer.concat([ this._ephemeralSharedSecret, sharedSecret ]))
+    const aesSecret = util.keccak256(this._ephemeralSharedSecret, sharedSecret)
     this._ingressAes = crypto.createDecipheriv('aes-256-ctr', aesSecret, IV)
     this._egressAes = crypto.createDecipheriv('aes-256-ctr', aesSecret, IV)
 
-    const macSecret = util.keccak256(Buffer.concat([ this._ephemeralSharedSecret, aesSecret ]))
+    const macSecret = util.keccak256(this._ephemeralSharedSecret, aesSecret)
     this._ingressMac = new MAC(macSecret)
     this._ingressMac.update(Buffer.concat([ util.xor(macSecret, this._nonce), remoteData ]))
     this._egressMac = new MAC(macSecret)

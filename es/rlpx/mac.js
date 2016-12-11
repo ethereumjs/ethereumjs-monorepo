@@ -1,10 +1,10 @@
 const { createCipheriv } = require('crypto')
-const Keccak = require('keccakjs')
+const createKeccakHash = require('keccak')
 const { xor } = require('../util')
 
 class MAC {
   constructor (secret) {
-    this._hash = new Keccak(256)
+    this._hash = createKeccakHash('keccak256')
     this._secret = secret
   }
 
@@ -27,7 +27,7 @@ class MAC {
   }
 
   digest () {
-    return Buffer.from(this._hash.digest('hex'), 'hex').slice(0, 16)
+    return this._hash._clone().digest().slice(0, 16)
   }
 }
 

@@ -1,11 +1,11 @@
 const { randomBytes } = require('crypto')
 const secp256k1 = require('secp256k1')
-const Keccak = require('keccakjs')
+const createKeccakHash = require('keccak')
 const assert = require('assert')
 
-function keccak256 (buffer) {
-  const resultHex = new Keccak(256).update(buffer).digest('hex')
-  return Buffer.from(resultHex, 'hex')
+function keccak256 (...buffers) {
+  const buffer = Buffer.concat(buffers)
+  return createKeccakHash('keccak256').update(buffer).digest()
 }
 
 function genPrivateKey () {
