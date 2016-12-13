@@ -3,7 +3,7 @@ const utils = require('ethereumjs-util')
 const rlp = utils.rlp
 const Transaction = require('../index.js')
 const txFixtures = require('./txs.json')
-
+const txFixturesEip155 = require('./ttTransactionTestEip155VitaliksTests.json')
 tape('[Transaction]: Basic functions', function (t) {
   var transactions = []
 
@@ -164,6 +164,16 @@ tape('[Transaction]: Basic functions', function (t) {
       value: 42
     })
     st.equals(tx.getUpfrontCost().toNumber(), 10000000042)
+    st.end()
+  })
+
+  t.test('Verify EIP155 Signature based on Vitalik\'s tests', function (st) {
+    txFixturesEip155.forEach(function (tx) {
+      var pt = new Transaction(tx.rlp, { chainId: 1 })
+      st.equal(pt.hash(false).toString('hex'), tx.hash)
+      st.equal('0x' + pt.serialize().toString('hex'), tx.rlp)
+      st.equal(pt.getSenderAddress().toString('hex'), tx.sender)
+    })
     st.end()
   })
 })

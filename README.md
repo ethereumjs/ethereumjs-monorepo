@@ -30,6 +30,12 @@ var tx = new Tx(rawTx)
 tx.sign(privateKey)
 
 var serializedTx = tx.serialize()
+
+
+var eip155tx = new Tx(rawTx,{chainId: 1}) //mainnet chain_id = 1
+eip155tx.sign(privateKey)
+
+var serializedEip155Tx = eip155tx.serialize()
 ```
 
 **Note:** this package expects ECMAScript 6 (ES6) as a minimum environment. From browsers lacking ES6 support, please use a shim (like [es6-shim](https://github.com/paulmillr/es6-shim)) before including any of the builds from this repo.
