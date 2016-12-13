@@ -57,22 +57,13 @@
   },
   "contributors": [
     {
-      "name": "kumavis",
-      "email": "aaron@kumavis.me",
-      "url": "https://github.com/kumavis",
+      "name": "<-c-g-> ",
+      "email": "christophergewecke@gmail.com",
+      "url": "https://github.com/cgewecke",
       "contributions": 1,
-      "additions": 6,
-      "deletions": 6,
-      "hireable": true
-    },
-    {
-      "name": "Tim Coulter",
-      "email": "tim@timothyjcoulter.com",
-      "url": "https://github.com/tcoulter",
-      "contributions": 1,
-      "additions": 1,
+      "additions": 3,
       "deletions": 1,
-      "hireable": null
+      "hireable": true
     },
     {
       "name": "Kirill Fomichev",
@@ -84,13 +75,31 @@
       "hireable": true
     },
     {
-      "name": null,
+      "name": "Rick Behl",
       "email": null,
-      "url": "https://github.com/wanderer",
-      "contributions": 169,
-      "additions": 112547,
-      "deletions": 96295,
+      "url": "https://github.com/Nexus7",
+      "contributions": 1,
+      "additions": 1,
+      "deletions": 1,
       "hireable": null
+    },
+    {
+      "name": "Tim Coulter",
+      "email": "tim@timothyjcoulter.com",
+      "url": "https://github.com/tcoulter",
+      "contributions": 1,
+      "additions": 1,
+      "deletions": 1,
+      "hireable": null
+    },
+    {
+      "name": "kumavis",
+      "email": "aaron@kumavis.me",
+      "url": "https://github.com/kumavis",
+      "contributions": 1,
+      "additions": 6,
+      "deletions": 6,
+      "hireable": true
     },
     {
       "name": "Jack Peterson",
@@ -102,13 +111,13 @@
       "hireable": null
     },
     {
-      "name": "Rick Behl",
+      "name": "Nick Dodson",
       "email": null,
-      "url": "https://github.com/Nexus7",
-      "contributions": 1,
-      "additions": 1,
-      "deletions": 1,
-      "hireable": null
+      "url": "https://github.com/SilentCicero",
+      "contributions": 2,
+      "additions": 29,
+      "deletions": 0,
+      "hireable": true
     },
     {
       "name": null,
@@ -123,19 +132,28 @@
       "name": "Alex Beregszaszi",
       "email": "alex@rtfs.hu",
       "url": "https://github.com/axic",
-      "contributions": 21,
-      "additions": 27544,
-      "deletions": 42592,
+      "contributions": 22,
+      "additions": 27562,
+      "deletions": 42613,
       "hireable": true
     },
     {
-      "name": "Nick Dodson",
+      "name": null,
       "email": null,
-      "url": "https://github.com/SilentCicero",
-      "contributions": 2,
-      "additions": 29,
-      "deletions": 0,
-      "hireable": true
+      "url": "https://github.com/wanderer",
+      "contributions": 171,
+      "additions": 112706,
+      "deletions": 96355,
+      "hireable": null
+    },
+    {
+      "name": null,
+      "email": null,
+      "url": "https://github.com/kvhnuke",
+      "contributions": 7,
+      "additions": 268,
+      "deletions": 53,
+      "hireable": null
     }
   ]
 }
