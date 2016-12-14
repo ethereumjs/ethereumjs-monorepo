@@ -34,7 +34,8 @@ const N_DIV_2 = new BN('7fffffffffffffffffffffffffffffff5d576e7357a4501ddfe92f46
  * @prop {Buffer} s EC recovery ID
  */
 module.exports = class Transaction {
-  constructor (data={}) {
+  constructor (data) {
+    data = data || {}
     // Define Properties
     const fields = [{
       name: 'nonce',
@@ -123,7 +124,8 @@ module.exports = class Transaction {
    * @param {Boolean} [includeSignature=true] whether or not to inculde the signature
    * @return {Buffer}
    */
-  hash (includeSignature=true) {
+  hash (includeSignature) {
+    if (includeSignature === undefined) includeSignature = true
     // backup original signature
     const rawCopy = this.raw.slice(0)
 
