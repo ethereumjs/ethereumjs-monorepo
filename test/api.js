@@ -169,11 +169,17 @@ tape('[Transaction]: Basic functions', function (t) {
 
   t.test('Verify EIP155 Signature based on Vitalik\'s tests', function (st) {
     txFixturesEip155.forEach(function (tx) {
-      var pt = new Transaction(tx.rlp, { chainId: 1 })
+      var pt = new Transaction(tx.rlp)
       st.equal(pt.hash(false).toString('hex'), tx.hash)
       st.equal('0x' + pt.serialize().toString('hex'), tx.rlp)
       st.equal(pt.getSenderAddress().toString('hex'), tx.sender)
     })
+    st.end()
+  })
+
+  t.test('include chaindId in params', function (st) {
+    var tx = new Transaction({ chainId: 42 })
+    st.equal(tx.getChainId(), 42)
     st.end()
   })
 })
