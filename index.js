@@ -136,7 +136,7 @@ module.exports = class Transaction {
       this.r = 0
       this.s = 0
     }
-    
+
     // generate rlp params for hash
     let txRawForHash = includeSignature ? this.raw : this.raw.slice(0, 6)
 
