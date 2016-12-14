@@ -2,11 +2,15 @@ const Block = require('./')
 const Transaction = require('ethereumjs-tx')
 const ethUtil = require('ethereumjs-util')
 
-module.exports = rpcToBlock
+module.exports = blockFromRpc
 
-
-function rpcToBlock(blockParams, uncles){
-  // console.log(blockParams)
+/**
+ * Creates a new block object from Ethereum JSON RPC.
+ * @param {Object} blockParams - Ethereum JSON RPC of block (eth_getBlockByNumber)
+ * @param {Array.<Object>} Optional list of Ethereum JSON RPC of uncles (eth_getUncleByBlockHashAndIndex)
+ */
+function blockFromRpc(blockParams, uncles){
+  uncles = uncles || []
   var block = new Block({
     transactions: [],
     uncleHeaders: [],
@@ -50,8 +54,8 @@ function rpcToBlock(blockParams, uncles){
     tx.hash = function(){ return ethUtil.toBuffer(txParams.hash) }
     return tx
   })
-  block.uncleHeaders = (uncles || []).map(function(uncleParams){
-    return rpcToBlock(uncleParams).header
+  block.uncleHeaders = uncles.map(function(uncleParams){
+    return blockFromRpc(uncleParams).header
   })
 
   return block
