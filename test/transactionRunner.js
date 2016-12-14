@@ -31,7 +31,8 @@ testing.runTests(function (testData, sst, cb) {
   var tTx = testData.transaction
 
   try {
-    var tx = new Tx(new Buffer(testData.rlp.slice(2), 'hex'))
+    var rawTx = ethUtil.toBuffer(testData.rlp)
+    var tx = new Tx(rawTx)
     if (testData.blocknumber !== String(common.homeSteadForkNumber.v)) {
       tx._homestead = false
     }
@@ -41,7 +42,7 @@ testing.runTests(function (testData, sst, cb) {
     return
   }
 
-  if (tx.validate()) {
+  if (tTx && tx.validate()) {
     try {
       sst.equal(bufferToHex(tx.data), addHexPrefix(addPad(stripHexPrefix(tTx.data))), 'data')
       sst.equal(normalizeZero(bufferToHex(tx.gasLimit)), tTx.gasLimit, 'gasLimit')
@@ -57,7 +58,7 @@ testing.runTests(function (testData, sst, cb) {
       sst.fail(e)
     }
   } else {
-    sst.equal(undefined, tTx, 'should have fields ')
+    sst.equal(undefined, tTx, 'no tx params in test')
   }
   cb()
 }, txTests, tape)

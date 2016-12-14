@@ -17,25 +17,20 @@
 var Tx = require('ethereumjs-tx')
 var privateKey = new Buffer('e331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109', 'hex')
 
-var rawTx = {
+var txParams = {
   nonce: '0x00',
   gasPrice: '0x09184e72a000', 
   gasLimit: '0x2710',
   to: '0x0000000000000000000000000000000000000000', 
   value: '0x00', 
   data: '0x7f7465737432000000000000000000000000000000000000000000000000000000600057'
+  // EIP 155 chainId - mainnet: 1, ropsten: 3
+  chainId: 3
 }
 
-var tx = new Tx(rawTx)
+var tx = new Tx(txParams)
 tx.sign(privateKey)
-
 var serializedTx = tx.serialize()
-
-
-var eip155tx = new Tx(rawTx,{chainId: 1}) //mainnet chain_id = 1
-eip155tx.sign(privateKey)
-
-var serializedEip155Tx = eip155tx.serialize()
 ```
 
 **Note:** this package expects ECMAScript 6 (ES6) as a minimum environment. From browsers lacking ES6 support, please use a shim (like [es6-shim](https://github.com/paulmillr/es6-shim)) before including any of the builds from this repo.

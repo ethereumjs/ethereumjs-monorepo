@@ -34,7 +34,8 @@ const N_DIV_2 = new BN('7fffffffffffffffffffffffffffffff5d576e7357a4501ddfe92f46
  * @prop {Buffer} s EC recovery ID
  */
 module.exports = class Transaction {
-  constructor (data, opts) {
+  constructor (data) {
+    data = data || {}
     // Define Properties
     const fields = [{
       name: 'nonce',
@@ -99,8 +100,14 @@ module.exports = class Transaction {
       configurable: true,
       get: this.getSenderAddress.bind(this)
     })
-    opts = !opts ? {chainId: 0} : opts
-    this._chainId = opts.chainId
+
+    // calculate chainId from signature
+    let sigV = ethUtil.bufferToInt(this.v)
+    let chainId = Math.floor((sigV - 35) / 2)
+    if (chainId < 0) chainId = 0
+
+    // set chainId
+    this._chainId = chainId || data.chainId || 0
     this._homestead = true
   }
 
@@ -114,26 +121,38 @@ module.exports = class Transaction {
 
   /**
    * Computes a sha3-256 hash of the serialized tx
-   * @param {Boolean} [signature=true] whether or not to inculde the signature
+   * @param {Boolean} [includeSignature=true] whether or not to inculde the signature
    * @return {Buffer}
    */
-  hash (signature) {
+  hash (includeSignature) {
+    if (includeSignature === undefined) includeSignature = true
+    // backup original signature
     const rawCopy = this.raw.slice(0)
-    if (this._chainId) {
+
+    // modify raw for signature generation only
+    if (this._chainId > 0) {
+      includeSignature = true
       this.v = this._chainId
-      this.r = this.s = 0
-    }
-    let toHash
-
-    if (this._chainId || typeof signature === 'undefined') {
-      signature = true
+      this.r = 0
+      this.s = 0
     }
 
-    toHash = signature ? this.raw : this.raw.slice(0, 6)
+    // generate rlp params for hash
+    let txRawForHash = includeSignature ? this.raw : this.raw.slice(0, 6)
+
+    // restore original signature
+    this.raw = rawCopy.slice()
 
     // create hash
-    this.raw = rawCopy.slice(0)
-    return ethUtil.rlphash(toHash)
+    return ethUtil.rlphash(txRawForHash)
+  }
+
+  /**
+   * returns the public key of the sender
+   * @return {Buffer}
+   */
+  getChainId () {
+    return this._chainId
   }
 
   /**
@@ -173,9 +192,8 @@ module.exports = class Transaction {
 
     try {
       let v = ethUtil.bufferToInt(this.v)
-      if (this._chainId) {
-        v -= this._chainId * 2
-        v -= 8
+      if (this._chainId > 0) {
+        v -= this._chainId * 2 + 8
       }
       this._senderPubKey = ethUtil.ecrecover(msgHash, v, this.r, this.s)
     } catch (e) {
@@ -192,7 +210,9 @@ module.exports = class Transaction {
   sign (privateKey) {
     const msgHash = this.hash(false)
     const sig = ethUtil.ecsign(msgHash, privateKey)
-    sig.v += this._chainId ? this._chainId * 2 + 8 : 0
+    if (this._chainId > 0) {
+      sig.v += this._chainId * 2 + 8
+    }
     Object.assign(this, sig)
   }
 
