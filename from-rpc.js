@@ -9,11 +9,11 @@ module.exports = blockFromRpc
  * @param {Object} blockParams - Ethereum JSON RPC of block (eth_getBlockByNumber)
  * @param {Array.<Object>} Optional list of Ethereum JSON RPC of uncles (eth_getUncleByBlockHashAndIndex)
  */
-function blockFromRpc(blockParams, uncles){
+function blockFromRpc (blockParams, uncles) {
   uncles = uncles || []
   var block = new Block({
     transactions: [],
-    uncleHeaders: [],
+    uncleHeaders: []
   })
   var blockHeader = block.header
   blockHeader.parentHash = blockParams.parentHash
@@ -37,7 +37,7 @@ function blockFromRpc(blockParams, uncles){
     return ethUtil.toBuffer(blockParams.hash)
   }
 
-  block.transactions = (blockParams.transactions || []).map(function(_txParams){
+  block.transactions = (blockParams.transactions || []).map(function (_txParams) {
     var txParams = Object.assign({}, _txParams)
     normalizeTxParams(txParams)
     // override from address
@@ -49,22 +49,22 @@ function blockFromRpc(blockParams, uncles){
     delete txParams.s
     delete txParams.v
     var tx = new Transaction(txParams)
-    tx.getSenderAddress = function(){ return fromAddress }
+    tx.getSenderAddress = function () { return fromAddress }
     // override hash
-    tx.hash = function(){ return ethUtil.toBuffer(txParams.hash) }
+    tx.hash = function () { return ethUtil.toBuffer(txParams.hash) }
     return tx
   })
-  block.uncleHeaders = uncles.map(function(uncleParams){
+  block.uncleHeaders = uncles.map(function (uncleParams) {
     return blockFromRpc(uncleParams).header
   })
 
   return block
 }
 
-function normalizeTxParams(txParams){
+function normalizeTxParams (txParams) {
   // hot fix for https://github.com/ethereumjs/ethereumjs-util/issues/40
   txParams.gasLimit = (txParams.gasLimit === undefined) ? txParams.gas : txParams.gasLimit
-  txParams.data = (txParams.data === undefined)? txParams.input : txParams.data
+  txParams.data = (txParams.data === undefined) ? txParams.input : txParams.data
   // strict byte length checking
   txParams.to = txParams.to ? ethUtil.setLengthLeft(ethUtil.toBuffer(txParams.to), 20) : null
 }
