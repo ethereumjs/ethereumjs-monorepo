@@ -177,9 +177,15 @@ tape('[Transaction]: Basic functions', function (t) {
     st.end()
   })
 
-  t.test('include chaindId in params', function (st) {
+  t.test('sign tx with chainId specified in params', function (st) {
     var tx = new Transaction({ chainId: 42 })
     st.equal(tx.getChainId(), 42)
+    var privKey = new Buffer(txFixtures[0].privateKey, 'hex')
+    tx.sign(privKey)
+    var serialized = tx.serialize()
+    var reTx = new Transaction(serialized)
+    st.equal(reTx.verifySignature(), true)
+    st.equal(reTx.getChainId(), 42)
     st.end()
   })
 })
