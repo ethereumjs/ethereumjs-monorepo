@@ -134,6 +134,18 @@ Validates the uncle's hash
 
 Returns **Boolean** 
 
+# blockFromRpc
+
+[from-rpc.js:12-62](https://github.com/ethereumjs/ethereumjs-block/blob/34d3eefb6e073a0bc209c5fba8e81376ff86fb91/from-rpc.js#L12-L62 "Source code on GitHub")
+
+Creates a new block object from Ethereum JSON RPC.
+
+**Parameters**
+
+-   `blockParams` **Object** Ethereum JSON RPC of block (eth_getBlockByNumber)
+-   `Optional` **Array&lt;Object&gt;** list of Ethereum JSON RPC of uncles (eth_getUncleByBlockHashAndIndex)
+-   `uncles`  
+
 # BlockHeader
 
 [header.js:23-80](https://github.com/ethereumjs/ethereumjs-block/blob/34d3eefb6e073a0bc209c5fba8e81376ff86fb91/header.js#L23-L80 "Source code on GitHub")

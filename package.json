@@ -10,7 +10,7 @@
     "test": "npm run test:node && npm run test:browser",
     "test:browser": "karma start karma.conf.js",
     "test:node": "tape ./tests/index.js",
-    "build:docs": "documentation --github  -f md ./index.js > ./docs/index.md"
+    "build:docs": "documentation --github  -f md ./index.js > ./docs/index.md && documentation --github -f md ./from-rpc.js > ./docs/rpc.md"
   },
   "repository": {
     "type": "git",
