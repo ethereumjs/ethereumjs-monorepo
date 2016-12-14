@@ -103,7 +103,7 @@ module.exports = class Transaction {
 
     // calculate chainId from signature
     let sigV = ethUtil.bufferToInt(this.v)
-    let chainId = (sigV - 35) / 2
+    let chainId = Math.floor((sigV - 35) / 2)
     if (chainId < 0) chainId = 0
 
     // set chainId
