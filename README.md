@@ -15,10 +15,9 @@ A module to store and interact with blocks.
 A module to store and interact with blocks
 
 - [`Blockchain`](#blockchain)
-    - [`new Blockchain(blockDB, detailsDB)`](#new-blockchainblockdb-detailsdb)
+    - [`new Blockchain(opts)`](#new-blockchainblockdb-detailsdb)
     - [`BlockChain` Properties](#blockchain-properties)
     - [`BlockChain` methods](#blockchain-methods)
-        - [`blockchain.init(cb)`](#blockchaininitcb)
         - [`blockchain.putBlock(block, [callback])`](#blockchainputblockblock-callback)
         - [`blockchain.getBlock(hash, [callback])`](#blockchaingetblockhash-callback)
         - [`blockchain.getBlockInfo(hash, cb)`](#blockchaingetblockinfohash-cb)
@@ -29,10 +28,11 @@ A module to store and interact with blocks
 ## `Blockchain`
 Implements functions for retrieving, manipulating and storing Ethereum's blockchain
 
-### `new Blockchain(blockDB, validate)`
+### `new Blockchain(opts)`
 Creates new Blockchain object 
-- `blockDB` - the database that backs the Blockchain. the `db` object is tested with [levelup](https://github.com/rvagg/node-levelup) but should with any store that implements [put](https://github.com/rvagg/node-levelup#dbputkey-value-options-callback), [get](https://github.com/rvagg/node-levelup#dbgetkey-options-callback) and [del](https://github.com/rvagg/node-levelup#dbdelkey-options-callback).
-- `validate` - this the flag to validate blocks (e.g. Proof-of-Work).
+- `opts.blockDB` - the database where Blocks are stored and retreived by hash. Should be a [levelup](https://github.com/rvagg/node-levelup) instance.
+- `opts.detailsDB` - the database where Block number resolutions and other metadata is stored. Should be a [levelup](https://github.com/rvagg/node-levelup) instance.
+- `opts.validate` - this the flag to validate blocks (e.g. Proof-of-Work).
 
 ### `BlockChain` Properties
 - `head` - The Head, the block that has the most weight
@@ -50,9 +50,9 @@ Adds a block to the blockchain.
 
 --------------------------------------------------------
 
-#### `blockchain.getBlock(hash, [callback])`
-Gets a block by it hash.
-- `hash`  - the block's hash
+#### `blockchain.getBlock(blockTag, [callback])`
+Gets a block by its blockTag.
+- `blockTag`  - the block's hash or number
 - `callback` - the callback. It is given two parameters `err` and the found `block` if any. 
 
 --------------------------------------------------------
