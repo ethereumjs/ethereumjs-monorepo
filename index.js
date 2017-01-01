@@ -20,7 +20,7 @@ const rlp = ethUtil.rlp
 
 module.exports = Blockchain
 
-function Blockchain(opts) {
+function Blockchain (opts) {
   opts = opts || {}
   const self = this
   // TODO: SET LOCK
@@ -33,7 +33,7 @@ function Blockchain(opts) {
   self._initDone = false
   self._putSemaphore = semaphore(1)
   self._initLock = new Stoplight()
-  self._init(function(err){
+  self._init(function (err) {
     if (err) throw err
     self._initLock.go()
   })
@@ -57,7 +57,7 @@ Blockchain.prototype._init = function (cb) {
       // generate default meta + genesis
       self.meta = {
         heads: {},
-        td: new BN(),
+        td: new BN()
       }
       self._setCanonicalGenesisBlock(cb)
       return
@@ -96,7 +96,7 @@ Blockchain.prototype.putGenesis = function (genesis, cb) {
  */
 Blockchain.prototype.getHead = function (name, cb) {
   const self = this
-  
+
   // handle optional args
   if (typeof name === 'function') {
     cb = name
@@ -104,7 +104,7 @@ Blockchain.prototype.getHead = function (name, cb) {
   }
 
   // ensure init completed
-  self._initLock.await(function runGetHead(){
+  self._initLock.await(function runGetHead () {
     // if the head is not found return the rawHead
     var hash = self.meta.heads[name] || self.meta.rawHead
     if (!hash) {
@@ -112,7 +112,6 @@ Blockchain.prototype.getHead = function (name, cb) {
     }
     self.getBlock(new Buffer(hash, 'hex'), cb)
   })
-  
 }
 
 /**
@@ -138,14 +137,14 @@ Blockchain.prototype.putBlocks = function (blocks, cb) {
  */
 Blockchain.prototype.putBlock = function (block, cb, isGenesis) {
   const self = this
-  
+
   // perform put with mutex dance
-  lockUnlock(function(done){
+  lockUnlock(function (done) {
     self._putBlock(block, done, isGenesis)
   }, cb)
 
   // lock, call fn, unlock
-  function lockUnlock(fn, cb){
+  function lockUnlock (fn, cb) {
     // take lock
     self._putSemaphore.take(function () {
       // call fn
@@ -155,9 +154,8 @@ Blockchain.prototype.putBlock = function (block, cb, isGenesis) {
         // exit
         cb.apply(null, arguments)
       })
-    })  
+    })
   }
-  
 }
 
 Blockchain.prototype._putBlock = function (block, cb, isGenesis) {
@@ -176,7 +174,7 @@ Blockchain.prototype._putBlock = function (block, cb, isGenesis) {
     verifyPOW,
     lookupParentBlock,
     rebuildInfo,
-    (cb) => self._batchDbOps(dbOps, cb),
+    (cb) => self._batchDbOps(dbOps, cb)
   ], cb)
 
   function verify (next) {
@@ -237,7 +235,7 @@ Blockchain.prototype._putBlock = function (block, cb, isGenesis) {
       type: 'put',
       key: 'detail:' + blockHashHexString,
       valueEncoding: 'json',
-      value: blockDetails,
+      value: blockDetails
     })
     // store the block
     if (!Buffer.isBuffer(blockHash)) console.trace()
@@ -248,7 +246,7 @@ Blockchain.prototype._putBlock = function (block, cb, isGenesis) {
       key: blockHash,
       keyEncoding: 'binary',
       valueEncoding: 'binary',
-      value: block.serialize(),
+      value: block.serialize()
     })
 
     // need to update totalDifficulty
@@ -267,7 +265,7 @@ Blockchain.prototype._putBlock = function (block, cb, isGenesis) {
         type: 'put',
         key: blockNumber,
         valueEncoding: 'binary',
-        value: blockHash,
+        value: blockHash
       })
 
       // save meta
@@ -276,14 +274,14 @@ Blockchain.prototype._putBlock = function (block, cb, isGenesis) {
         type: 'put',
         key: 'meta',
         valueEncoding: 'json',
-        value: self.meta,
+        value: self.meta
       })
 
       if (block.isGenesis()) {
         self.meta.genesis = blockHashHexString
         next()
       } else {
-        self._rebuildBlockchain(blockHashHexString, block.header.parentHash, parentDetails, dbOps, next)        
+        self._rebuildBlockchain(blockHashHexString, block.header.parentHash, parentDetails, dbOps, next)
       }
     } else {
       dbOps.push({
@@ -291,7 +289,7 @@ Blockchain.prototype._putBlock = function (block, cb, isGenesis) {
         type: 'put',
         key: 'detail:' + block.header.parentHash.toString('hex'),
         valueEncoding: 'json',
-        value: parentDetails,
+        value: parentDetails
       })
       next()
     }
@@ -306,7 +304,7 @@ Blockchain.prototype._putBlock = function (block, cb, isGenesis) {
  */
 Blockchain.prototype.getBlock = function (blockTag, cb) {
   const self = this
-  
+
   // determine BlockTag type
   if (Buffer.isBuffer(blockTag)) {
     lookupByHash(blockTag, cb)
@@ -314,14 +312,14 @@ Blockchain.prototype.getBlock = function (blockTag, cb) {
   } else if (Number.isInteger(blockTag)) {
     async.waterfall([
       (cb) => lookupNumberToHash(blockTag, cb),
-      (blockHash, cb) => lookupByHash(blockHash, cb),
+      (blockHash, cb) => lookupByHash(blockHash, cb)
     ], cb)
     return
   } else {
     return cb(new Error('Unknown blockTag type'))
   }
 
-  function lookupByHash(hash, cb){
+  function lookupByHash (hash, cb) {
     self.blockDb.get(hash, {
       keyEncoding: 'binary',
       valueEncoding: 'binary'
@@ -332,7 +330,7 @@ Blockchain.prototype.getBlock = function (blockTag, cb) {
     })
   }
 
-  function lookupNumberToHash(hexString, cb){
+  function lookupNumberToHash (hexString, cb) {
     self.detailsDb.get(hexString, {
       valueEncoding: 'binary'
     }, cb)
@@ -420,10 +418,10 @@ Blockchain.prototype.selectNeededHashes = function (hashes, cb) {
   max = hashes.length - 1
   mid = min = 0
 
-  async.whilst(function test() {
+  async.whilst(function test () {
     return max >= min
   },
-  function iterate(cb2) {
+  function iterate (cb2) {
     self.getBlockInfo(hashes[mid], function (err, hash) {
       if (!err && hash) {
         min = mid + 1
@@ -435,7 +433,7 @@ Blockchain.prototype.selectNeededHashes = function (hashes, cb) {
       cb2()
     })
   },
-  function onDone(err) {
+  function onDone (err) {
     if (err) return cb(err)
     cb(null, hashes.slice(min))
   })
@@ -554,7 +552,7 @@ Blockchain.prototype.delBlock = function (blockhash, cb) {
   async.series([
     buildDBops,
     getLastDeletesDetils,
-    (cb) => self._batchDbOps(dbOps, cb),
+    (cb) => self._batchDbOps(dbOps, cb)
   ], cb)
 
   function buildDBops (cb2) {
@@ -634,7 +632,7 @@ Blockchain.prototype._delBlock = function (blockhash, dbOps, resetHeads, cb) {
 Blockchain.prototype.iterator = function (name, onBlock, cb) {
   const self = this
   // ensure init completed
-  self._initLock.await(function(){
+  self._initLock.await(function () {
     self._iterator(name, onBlock, cb)
   })
 }
@@ -701,8 +699,7 @@ Blockchain.prototype._iterator = function (name, func, cb) {
 
     function saveDetails (cb3) {
       details[name] = true
-      // self.putDetails(blockhash, details, cb3)
-      var dbops = [{
+      var dbOps = [{
         db: 'details',
         type: 'put',
         key: 'detail:' + blockhash.toString('hex'),
@@ -721,12 +718,12 @@ Blockchain.prototype._iterator = function (name, func, cb) {
   }
 }
 
-Blockchain.prototype._batchDbOps = function(dbOps, cb){
+Blockchain.prototype._batchDbOps = function (dbOps, cb) {
   const self = this
   let blockDbOps = []
   let detailsDbOps = []
   dbOps.forEach((op) => {
-    switch(op.db) {
+    switch (op.db) {
       case 'block':
         blockDbOps.push(op)
         break
@@ -739,6 +736,6 @@ Blockchain.prototype._batchDbOps = function(dbOps, cb){
   })
   async.parallel([
     (cb) => self.blockDb.batch(blockDbOps, cb),
-    (cb) => self.detailsDb.batch(detailsDbOps, cb),
+    (cb) => self.detailsDb.batch(detailsDbOps, cb)
   ], cb)
 }
