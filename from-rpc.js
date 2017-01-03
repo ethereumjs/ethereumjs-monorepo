@@ -43,11 +43,6 @@ function blockFromRpc (blockParams, uncles) {
     // override from address
     var fromAddress = ethUtil.toBuffer(txParams.from)
     delete txParams.from
-    // issue is that v is provided as a number,
-    // complains about byte length
-    delete txParams.r
-    delete txParams.s
-    delete txParams.v
     var tx = new Transaction(txParams)
     tx.getSenderAddress = function () { return fromAddress }
     // override hash
@@ -67,4 +62,6 @@ function normalizeTxParams (txParams) {
   txParams.data = (txParams.data === undefined) ? txParams.input : txParams.data
   // strict byte length checking
   txParams.to = txParams.to ? ethUtil.setLengthLeft(ethUtil.toBuffer(txParams.to), 20) : null
+  // v as raw signature value {0,1}
+  txParams.v = txParams.v < 27 ? txParams.v + 27 : txParams.v
 }
