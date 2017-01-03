@@ -165,11 +165,11 @@ Emits the result of the transaction.
 # TESTING
 `npm test`  
 if you want to just run the Blockchain tests run
-`./bin/tester -b`
+`./test/tester -b`
 if you want to just run the VM tests run
-`./bin/tester -v`
+`./test/tester -v`
 if you want to just run the State tests run
-`./bin/tester -s`
+`./test/tester -s`
 
 # Internal Structure
 The VM processes state changes at many levels.
