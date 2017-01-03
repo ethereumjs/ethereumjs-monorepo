@@ -1,3 +1,4 @@
+'use strict'
 const Block = require('./')
 const Transaction = require('ethereumjs-tx')
 const ethUtil = require('ethereumjs-util')
@@ -11,11 +12,11 @@ module.exports = blockFromRpc
  */
 function blockFromRpc (blockParams, uncles) {
   uncles = uncles || []
-  var block = new Block({
+  let block = new Block({
     transactions: [],
     uncleHeaders: []
   })
-  var blockHeader = block.header
+  let blockHeader = block.header
   blockHeader.parentHash = blockParams.parentHash
   blockHeader.uncleHash = blockParams.sha3Uncles
   blockHeader.coinbase = blockParams.miner
@@ -38,17 +39,12 @@ function blockFromRpc (blockParams, uncles) {
   }
 
   block.transactions = (blockParams.transactions || []).map(function (_txParams) {
-    var txParams = Object.assign({}, _txParams)
+    let txParams = Object.assign({}, _txParams)
     normalizeTxParams(txParams)
     // override from address
-    var fromAddress = ethUtil.toBuffer(txParams.from)
+    let fromAddress = ethUtil.toBuffer(txParams.from)
     delete txParams.from
-    // issue is that v is provided as a number,
-    // complains about byte length
-    delete txParams.r
-    delete txParams.s
-    delete txParams.v
-    var tx = new Transaction(txParams)
+    let tx = new Transaction(txParams)
     tx.getSenderAddress = function () { return fromAddress }
     // override hash
     tx.hash = function () { return ethUtil.toBuffer(txParams.hash) }
@@ -67,4 +63,6 @@ function normalizeTxParams (txParams) {
   txParams.data = (txParams.data === undefined) ? txParams.input : txParams.data
   // strict byte length checking
   txParams.to = txParams.to ? ethUtil.setLengthLeft(ethUtil.toBuffer(txParams.to), 20) : null
+  // v as raw signature value {0,1}
+  txParams.v = txParams.v < 27 ? txParams.v + 27 : txParams.v
 }
