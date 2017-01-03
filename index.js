@@ -44,8 +44,8 @@ var Block = module.exports = function (data) {
     rawUncleHeaders = data[2]
   } else {
     this.header = new BlockHeader(data.header)
-    rawTransactions = data.transactions
-    rawUncleHeaders = data.uncleHeaders
+    rawTransactions = data.transactions || []
+    rawUncleHeaders = data.uncleHeaders || []
   }
 
   // parse uncle headers
