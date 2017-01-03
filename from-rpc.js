@@ -1,3 +1,4 @@
+'use strict'
 const Block = require('./')
 const Transaction = require('ethereumjs-tx')
 const ethUtil = require('ethereumjs-util')
@@ -11,11 +12,11 @@ module.exports = blockFromRpc
  */
 function blockFromRpc (blockParams, uncles) {
   uncles = uncles || []
-  var block = new Block({
+  let block = new Block({
     transactions: [],
     uncleHeaders: []
   })
-  var blockHeader = block.header
+  let blockHeader = block.header
   blockHeader.parentHash = blockParams.parentHash
   blockHeader.uncleHash = blockParams.sha3Uncles
   blockHeader.coinbase = blockParams.miner
@@ -38,12 +39,12 @@ function blockFromRpc (blockParams, uncles) {
   }
 
   block.transactions = (blockParams.transactions || []).map(function (_txParams) {
-    var txParams = Object.assign({}, _txParams)
+    let txParams = Object.assign({}, _txParams)
     normalizeTxParams(txParams)
     // override from address
-    var fromAddress = ethUtil.toBuffer(txParams.from)
+    let fromAddress = ethUtil.toBuffer(txParams.from)
     delete txParams.from
-    var tx = new Transaction(txParams)
+    let tx = new Transaction(txParams)
     tx.getSenderAddress = function () { return fromAddress }
     // override hash
     tx.hash = function () { return ethUtil.toBuffer(txParams.hash) }
