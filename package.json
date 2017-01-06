@@ -101,7 +101,7 @@
   "dependencies": {
     "bn.js": "^4.8.0",
     "create-hash": "^1.1.2",
-    "keccakjs": "^0.2.0",
+    "keccak": "^1.0.2",
     "rlp": "^2.0.0",
     "secp256k1": "^3.0.1"
   },
