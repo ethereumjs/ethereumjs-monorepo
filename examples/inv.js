@@ -89,7 +89,7 @@ rlpx.on('peer:added', (peer) => {
           setTimeout(() => {
             eth.sendMessage(devp2p.ETH.MESSAGE_CODES.GET_BLOCK_HEADERS, [ blockHash, 1, 0, 0 ])
             requests.headers.push(blockHash)
-          }, ms('0.25s'))
+          }, ms('0.1s'))
         }
         break
 
@@ -133,13 +133,22 @@ rlpx.on('peer:added', (peer) => {
             break
           }
 
-          const blockHash = requests.headers.shift()
+          let isValidPayload = false
           const header = new EthereumBlock.Header(payload[0])
-          if (header.hash().equals(blockHash)) {
-            eth.sendMessage(devp2p.ETH.MESSAGE_CODES.GET_BLOCK_BODIES, [ blockHash ])
-            requests.bodies.push(header)
-          } else {
-            console.log(`${addr} received wrong block header ${header.hash().toString('hex')} / ${blockHash.toString('hex')}`)
+          while (requests.headers.length > 0) {
+            const blockHash = requests.headers.shift()
+            if (header.hash().equals(blockHash)) {
+              isValidPayload = true
+              setTimeout(() => {
+                eth.sendMessage(devp2p.ETH.MESSAGE_CODES.GET_BLOCK_BODIES, [ blockHash ])
+                requests.bodies.push(header)
+              }, ms('0.1s'))
+              break
+            }
+          }
+
+          if (!isValidPayload) {
+            console.log(`${addr} received wrong block header ${header.hash().toString('hex')}`)
           }
         }
 
@@ -157,14 +166,20 @@ rlpx.on('peer:added', (peer) => {
           break
         }
 
-        const header = requests.bodies.shift()
-        const block = new EthereumBlock([ header.raw, payload[0][0], payload[0][1] ])
+        let isValidPayload = false
+        while (requests.bodies.length > 0) {
+          const header = requests.bodies.shift()
+          const block = new EthereumBlock([header.raw, payload[0][0], payload[0][1]])
+          const isValid = await isValidBlock(block)
+          if (isValid) {
+            isValidPayload = true
+            onNewBlock(block, peer)
+            break
+          }
+        }
 
-        const isValid = await isValidBlock(block)
-        if (isValid) {
-          onNewBlock(block, peer)
-        } else {
-          console.log(`${addr} received wrong block body for ${header.hash().toString('hex')}`)
+        if (!isValidPayload) {
+          console.log(`${addr} received wrong block body`)
         }
 
         break
