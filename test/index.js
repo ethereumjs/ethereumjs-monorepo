@@ -479,6 +479,13 @@ describe('ecrecover', function () {
   })
 })
 
+describe('hashPersonalMessage', function () {
+  it('should produce a deterministic hash', function () {
+    var h = ethUtils.hashPersonalMessage(Buffer.from('Hello world'))
+    assert.deepEqual(h, Buffer.from('8144a6fa26be252b86456491fbcd43c1de7e022241845ffea1c3df066f7cfede', 'hex'))
+  })
+})
+
 describe('isValidSignature', function () {
   it('should fail on an invalid signature (shorter r))', function () {
     var r = Buffer.from('99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1ab', 'hex')
