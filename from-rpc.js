@@ -45,9 +45,11 @@ function blockFromRpc (blockParams, uncles) {
     let fromAddress = ethUtil.toBuffer(txParams.from)
     delete txParams.from
     let tx = new Transaction(txParams)
+    tx._from = fromAddress
     tx.getSenderAddress = function () { return fromAddress }
     // override hash
-    tx.hash = function () { return ethUtil.toBuffer(txParams.hash) }
+    let txHash = ethUtil.toBuffer(txParams.hash)
+    tx.hash = function () { return txHash }
     return tx
   })
   block.uncleHeaders = uncles.map(function (uncleParams) {
