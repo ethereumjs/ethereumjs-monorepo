@@ -8,7 +8,7 @@ tape('[Transaction]: Basic functions', function (t) {
   var transactions = []
 
   t.test('should decode transactions', function (st) {
-    txFixtures.forEach(function (tx) {
+    txFixtures.slice(0, 3).forEach(function (tx) {
       var pt = new Transaction(tx.raw)
       st.equal('0x' + pt.nonce.toString('hex'), tx.raw[0])
       st.equal('0x' + pt.gasPrice.toString('hex'), tx.raw[1])
@@ -36,6 +36,14 @@ tape('[Transaction]: Basic functions', function (t) {
     st.deepEqual(tx.hash(), new Buffer('375a8983c9fc56d7cfd118254a80a8d7403d590a6c9e105532b67aca1efb97aa', 'hex'))
     st.deepEqual(tx.hash(false), new Buffer('61e1ec33764304dddb55348e7883d4437426f44ab3ef65e6da1e025734c03ff0', 'hex'))
     st.deepEqual(tx.hash(true), new Buffer('375a8983c9fc56d7cfd118254a80a8d7403d590a6c9e105532b67aca1efb97aa', 'hex'))
+    st.end()
+  })
+
+  t.test('should hash with defined chainId', function (st) {
+    var tx = new Transaction(txFixtures[3].raw)
+    st.equal(tx.hash().toString('hex'), '0f09dc98ea85b7872f4409131a790b91e7540953992886fc268b7ba5c96820e4')
+    st.equal(tx.hash(true).toString('hex'), '0f09dc98ea85b7872f4409131a790b91e7540953992886fc268b7ba5c96820e4')
+    st.equal(tx.hash(false).toString('hex'), 'f97c73fdca079da7652dbc61a46cd5aeef804008e057be3e712c43eac389aaf0')
     st.end()
   })
 

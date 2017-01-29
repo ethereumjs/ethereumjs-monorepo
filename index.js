@@ -126,25 +126,30 @@ module.exports = class Transaction {
    */
   hash (includeSignature) {
     if (includeSignature === undefined) includeSignature = true
-    // backup original signature
-    const rawCopy = this.raw.slice(0)
 
-    // modify raw for signature generation only
-    if (this._chainId > 0) {
-      includeSignature = true
-      this.v = this._chainId
-      this.r = 0
-      this.s = 0
+    // EIP155 spec:
+    // when computing the hash of a transaction for purposes of signing or recovering,
+    // instead of hashing only the first six elements (ie. nonce, gasprice, startgas, to, value, data),
+    // hash nine elements, with v replaced by CHAIN_ID, r = 0 and s = 0
+
+    let items
+    if (includeSignature) {
+      items = this.raw
+    } else {
+      if (this._chainId > 0) {
+        const raw = this.raw.slice()
+        this.v = this._chainId
+        this.r = 0
+        this.s = 0
+        items = this.raw
+        this.raw = raw
+      } else {
+        items = this.raw.slice(0, 6)
+      }
     }
 
-    // generate rlp params for hash
-    let txRawForHash = includeSignature ? this.raw : this.raw.slice(0, 6)
-
-    // restore original signature
-    this.raw = rawCopy.slice()
-
     // create hash
-    return ethUtil.rlphash(txRawForHash)
+    return ethUtil.rlphash(items)
   }
 
   /**
