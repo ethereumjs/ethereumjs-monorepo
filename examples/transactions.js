@@ -20,7 +20,7 @@ tx.sign(privateKey)
 // it with needs to have a certain amount of wei in to. To see how much this
 // account needs we can use the getUpfrontCost() method. 
 var feeCost = tx.getUpfrontCost()
-tx.value = feeCost
+tx.gas = feeCost
 console.log('Total Amount of wei needed:' + feeCost.toString())
 
 // if your wondering how that is caculated it is
