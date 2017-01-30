@@ -6,8 +6,8 @@ var Transaction = require('../index.js')
 var tx = new Transaction(null, 1) // mainnet Tx EIP155
 
 // So now we have created a blank transaction but Its not quiet valid yet. We
-// need to add some things to it. Lets start with
-// notice we don't set the `to` field since we are creating a new contract
+// need to add some things to it. Lets start:
+// notice we don't set the `to` field because we are creating a new contract. 
 tx.nonce = 0
 tx.gasPrice = 100
 tx.gasLimit = 1000
@@ -16,18 +16,19 @@ tx.data = '0x7f4e616d65526567000000000000000000000000000000000000000000000000003
 
 var privateKey = new Buffer('e331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109', 'hex')
 tx.sign(privateKey)
-// We have a signed transaction, Now for it to be total the account that we signed
-// it with needs to have a certain amount of wei in to. To see how much that this
-// account needs we can use the getTotalFee
-
-console.log('Total Amount of wei needed:' + tx.getUpfrontCost().toString())
+// We have a signed transaction, Now for it to be fully fundable the account that we signed
+// it with needs to have a certain amount of wei in to. To see how much this
+// account needs we can use the getUpfrontCost() method. 
+var feeCost = tx.getUpfrontCost()
+tx.gas = feeCost
+console.log('Total Amount of wei needed:' + feeCost.toString())
 
 // if your wondering how that is caculated it is
-// data lenght in bytes * 5
+// bytes(data length) * 5
 // + 500 Default transaction fee
 // + gasAmount * gasPrice
 
-// lets seriliaze the transaction
+// lets serialize the transaction
 
 console.log('---Serialized TX----')
 console.log(tx.serialize().toString('hex'))
@@ -56,19 +57,19 @@ var rawTx = [
 var tx2 = new Transaction(rawTx)
 
 // Note rlp.decode will actully produce an array of buffers `new Transaction` will
-// take either and array of buffers or and array of hex strings.
+// take either an array of buffers or an array of hex strings.
 // So assuming that you were able to parse the tranaction, we will now get the sender's
 // address
 
 console.log('Senders Address: ' + tx2.getSenderAddress().toString('hex'))
 
-// Cool now we know who sent the tx! Lets verfy the signuate to make sure it not
+// Cool now we know who sent the tx! Lets verfy the signature to make sure it was not
 // some poser.
 
 if (tx2.verifySignature()) {
   console.log('Signature Checks out!')
 }
 
-// And hopefull its verified. For the transaction to be tottal valid we would
+// And hopefully its verified. For the transaction to be totally valid we would
 // also need to check the account of the sender and see if they have at least
 // `TotalFee`.
