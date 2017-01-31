@@ -1,6 +1,6 @@
 {
   "name": "ethereumjs-tx",
-  "version": "1.2.4",
+  "version": "1.2.5",
   "description": "An simple module for creating, manipulating and signing ethereum transactions",
   "main": "index.js",
   "scripts": {
