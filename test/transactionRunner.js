@@ -3,7 +3,7 @@ const tape = require('tape')
 const ethUtil = require('ethereumjs-util')
 const argv = require('minimist')(process.argv.slice(2))
 const testing = require('ethereumjs-testing')
-const common = require('ethereum-common')
+const params = require('ethereum-common/params.json')
 
 var txTests = testing.getTests('transaction', argv)
 
