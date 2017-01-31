@@ -5,7 +5,7 @@ const BN = ethUtil.BN
 const rlp = ethUtil.rlp
 const async = require('async')
 const BlockHeader = require('./header')
-const params = require('ethereum-common')
+const params = require('ethereum-common/params.json')
 
 /**
  * Creates a new block object
