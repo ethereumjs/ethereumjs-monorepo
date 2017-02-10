@@ -517,10 +517,10 @@ exports.addHexPrefix = function (str) {
  * @return {Boolean}
  */
 
-const SECP256K1_N_DIV_2 = new BN('7fffffffffffffffffffffffffffffff5d576e7357a4501ddfe92f46681b20a0', 16)
-const SECP256K1_N = new BN('fffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141', 16)
-
 exports.isValidSignature = function (v, r, s, homestead) {
+  const SECP256K1_N_DIV_2 = new BN('7fffffffffffffffffffffffffffffff5d576e7357a4501ddfe92f46681b20a0', 16)
+  const SECP256K1_N = new BN('fffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141', 16)
+
   if (r.length !== 32 || s.length !== 32) {
     return false
   }
