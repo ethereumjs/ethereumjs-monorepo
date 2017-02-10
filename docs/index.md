@@ -1,6 +1,6 @@
 # addHexPrefix
 
-[index.js:502-508](https://github.com/ethereumjs/ethereumjs-util/blob/3753b25f5ccc1ced319a39ac24d838b0fa15540a/index.js#L502-L508 "Source code on GitHub")
+[index.js:502-508](https://github.com/ethereumjs/ethereumjs-util/blob/d03528e7da885539cad141c99ea5b88829f73e72/index.js#L502-L508 "Source code on GitHub")
 
 Adds "0x" to a given `String` if it does not already start with "0x"
 
@@ -12,7 +12,7 @@ Returns **String**
 
 # baToJSON
 
-[index.js:551-561](https://github.com/ethereumjs/ethereumjs-util/blob/3753b25f5ccc1ced319a39ac24d838b0fa15540a/index.js#L551-L561 "Source code on GitHub")
+[index.js:551-561](https://github.com/ethereumjs/ethereumjs-util/blob/d03528e7da885539cad141c99ea5b88829f73e72/index.js#L551-L561 "Source code on GitHub")
 
 Converts a `Buffer` or `Array` to JSON
 
@@ -24,13 +24,13 @@ Returns **Array or String or **
 
 # BN
 
-[index.js:61-61](https://github.com/ethereumjs/ethereumjs-util/blob/3753b25f5ccc1ced319a39ac24d838b0fa15540a/index.js#L61-L61 "Source code on GitHub")
+[index.js:61-61](https://github.com/ethereumjs/ethereumjs-util/blob/d03528e7da885539cad141c99ea5b88829f73e72/index.js#L61-L61 "Source code on GitHub")
 
 [`BN`](https://github.com/indutny/bn.js)
 
 # bufferToHex
 
-[index.js:180-183](https://github.com/ethereumjs/ethereumjs-util/blob/3753b25f5ccc1ced319a39ac24d838b0fa15540a/index.js#L180-L183 "Source code on GitHub")
+[index.js:180-183](https://github.com/ethereumjs/ethereumjs-util/blob/d03528e7da885539cad141c99ea5b88829f73e72/index.js#L180-L183 "Source code on GitHub")
 
 Converts a `Buffer` into a hex `String`
 
@@ -42,7 +42,7 @@ Returns **String**
 
 # bufferToInt
 
-[index.js:171-173](https://github.com/ethereumjs/ethereumjs-util/blob/3753b25f5ccc1ced319a39ac24d838b0fa15540a/index.js#L171-L173 "Source code on GitHub")
+[index.js:171-173](https://github.com/ethereumjs/ethereumjs-util/blob/d03528e7da885539cad141c99ea5b88829f73e72/index.js#L171-L173 "Source code on GitHub")
 
 Converts a `Buffer` to a `Number`
 
@@ -54,7 +54,7 @@ Returns **Number**
 
 # defineProperties
 
-[index.js:573-666](https://github.com/ethereumjs/ethereumjs-util/blob/3753b25f5ccc1ced319a39ac24d838b0fa15540a/index.js#L573-L666 "Source code on GitHub")
+[index.js:573-666](https://github.com/ethereumjs/ethereumjs-util/blob/d03528e7da885539cad141c99ea5b88829f73e72/index.js#L573-L666 "Source code on GitHub")
 
 Defines properties on a `Object`. It make the assumption that underlying data is binary.
 
@@ -69,7 +69,7 @@ Defines properties on a `Object`. It make the assumption that underlying data is
 
 # ecrecover
 
-[index.js:358-366](https://github.com/ethereumjs/ethereumjs-util/blob/3753b25f5ccc1ced319a39ac24d838b0fa15540a/index.js#L358-L366 "Source code on GitHub")
+[index.js:358-366](https://github.com/ethereumjs/ethereumjs-util/blob/d03528e7da885539cad141c99ea5b88829f73e72/index.js#L358-L366 "Source code on GitHub")
 
 ECDSA public key recovery from signature
 
@@ -84,7 +84,7 @@ Returns **Buffer** publicKey
 
 # ecsign
 
-[index.js:327-335](https://github.com/ethereumjs/ethereumjs-util/blob/3753b25f5ccc1ced319a39ac24d838b0fa15540a/index.js#L327-L335 "Source code on GitHub")
+[index.js:327-335](https://github.com/ethereumjs/ethereumjs-util/blob/d03528e7da885539cad141c99ea5b88829f73e72/index.js#L327-L335 "Source code on GitHub")
 
 ECDSA sign
 
@@ -97,7 +97,7 @@ Returns **Object**
 
 # fromRpcSig
 
-[index.js:396-415](https://github.com/ethereumjs/ethereumjs-util/blob/3753b25f5ccc1ced319a39ac24d838b0fa15540a/index.js#L396-L415 "Source code on GitHub")
+[index.js:396-415](https://github.com/ethereumjs/ethereumjs-util/blob/d03528e7da885539cad141c99ea5b88829f73e72/index.js#L396-L415 "Source code on GitHub")
 
 Convert signature format of the `eth_sign` RPC method to signature parameters
 NOTE: all because of a bug in geth: <https://github.com/ethereum/go-ethereum/issues/2053>
@@ -110,7 +110,7 @@ Returns **Object**
 
 # fromSigned
 
-[index.js:190-192](https://github.com/ethereumjs/ethereumjs-util/blob/3753b25f5ccc1ced319a39ac24d838b0fa15540a/index.js#L190-L192 "Source code on GitHub")
+[index.js:190-192](https://github.com/ethereumjs/ethereumjs-util/blob/d03528e7da885539cad141c99ea5b88829f73e72/index.js#L190-L192 "Source code on GitHub")
 
 Interprets a `Buffer` as a signed integer and returns a `BN`. Assumes 256-bit numbers.
 
@@ -122,7 +122,7 @@ Returns **BN**
 
 # generateAddress
 
-[index.js:471-485](https://github.com/ethereumjs/ethereumjs-util/blob/3753b25f5ccc1ced319a39ac24d838b0fa15540a/index.js#L471-L485 "Source code on GitHub")
+[index.js:471-485](https://github.com/ethereumjs/ethereumjs-util/blob/d03528e7da885539cad141c99ea5b88829f73e72/index.js#L471-L485 "Source code on GitHub")
 
 Generates an address of a newly created contract
 
@@ -135,7 +135,7 @@ Returns **Buffer**
 
 # hashPersonalMessage
 
-[index.js:345-348](https://github.com/ethereumjs/ethereumjs-util/blob/3753b25f5ccc1ced319a39ac24d838b0fa15540a/index.js#L345-L348 "Source code on GitHub")
+[index.js:345-348](https://github.com/ethereumjs/ethereumjs-util/blob/d03528e7da885539cad141c99ea5b88829f73e72/index.js#L345-L348 "Source code on GitHub")
 
 Returns the keccak-256 hash of `message`, prefixed with the header used by the `eth_sign` RPC call.
 The output of this function can be fed into `ecsign` to produce the same signature as the `eth_sign`
@@ -150,7 +150,7 @@ Returns **Buffer** hash
 
 # importPublic
 
-[index.js:313-319](https://github.com/ethereumjs/ethereumjs-util/blob/3753b25f5ccc1ced319a39ac24d838b0fa15540a/index.js#L313-L319 "Source code on GitHub")
+[index.js:313-319](https://github.com/ethereumjs/ethereumjs-util/blob/d03528e7da885539cad141c99ea5b88829f73e72/index.js#L313-L319 "Source code on GitHub")
 
 Converts a public key to the Ethereum format.
 
@@ -162,7 +162,7 @@ Returns **Buffer**
 
 # isPrecompiled
 
-[index.js:492-495](https://github.com/ethereumjs/ethereumjs-util/blob/3753b25f5ccc1ced319a39ac24d838b0fa15540a/index.js#L492-L495 "Source code on GitHub")
+[index.js:492-495](https://github.com/ethereumjs/ethereumjs-util/blob/d03528e7da885539cad141c99ea5b88829f73e72/index.js#L492-L495 "Source code on GitHub")
 
 Returns true if the supplied address belongs to a precompiled account
 
@@ -174,7 +174,7 @@ Returns **Boolean**
 
 # isValidAddress
 
-[index.js:431-433](https://github.com/ethereumjs/ethereumjs-util/blob/3753b25f5ccc1ced319a39ac24d838b0fa15540a/index.js#L431-L433 "Source code on GitHub")
+[index.js:431-433](https://github.com/ethereumjs/ethereumjs-util/blob/d03528e7da885539cad141c99ea5b88829f73e72/index.js#L431-L433 "Source code on GitHub")
 
 Checks if the address is a valid. Accepts checksummed addresses too
 
@@ -186,7 +186,7 @@ Returns **Boolean**
 
 # isValidChecksumAddress
 
-[index.js:461-463](https://github.com/ethereumjs/ethereumjs-util/blob/3753b25f5ccc1ced319a39ac24d838b0fa15540a/index.js#L461-L463 "Source code on GitHub")
+[index.js:461-463](https://github.com/ethereumjs/ethereumjs-util/blob/d03528e7da885539cad141c99ea5b88829f73e72/index.js#L461-L463 "Source code on GitHub")
 
 Checks if the address is a valid checksummed address
 
@@ -198,7 +198,7 @@ Returns **Boolean**
 
 # isValidPrivate
 
-[index.js:256-258](https://github.com/ethereumjs/ethereumjs-util/blob/3753b25f5ccc1ced319a39ac24d838b0fa15540a/index.js#L256-L258 "Source code on GitHub")
+[index.js:256-258](https://github.com/ethereumjs/ethereumjs-util/blob/d03528e7da885539cad141c99ea5b88829f73e72/index.js#L256-L258 "Source code on GitHub")
 
 Checks if the private key satisfies the rules of the curve secp256k1.
 
@@ -210,7 +210,7 @@ Returns **Boolean**
 
 # isValidPublic
 
-[index.js:267-278](https://github.com/ethereumjs/ethereumjs-util/blob/3753b25f5ccc1ced319a39ac24d838b0fa15540a/index.js#L267-L278 "Source code on GitHub")
+[index.js:267-278](https://github.com/ethereumjs/ethereumjs-util/blob/d03528e7da885539cad141c99ea5b88829f73e72/index.js#L267-L278 "Source code on GitHub")
 
 Checks if the public key satisfies the rules of the curve secp256k1
 and the requirements of Ethereum.
@@ -222,15 +222,30 @@ and the requirements of Ethereum.
 
 Returns **Boolean** 
 
+# isValidSignature
+
+[index.js:520-544](https://github.com/ethereumjs/ethereumjs-util/blob/d03528e7da885539cad141c99ea5b88829f73e72/index.js#L520-L544 "Source code on GitHub")
+
+Validate ECDSA signature
+
+**Parameters**
+
+-   `v` **Buffer** 
+-   `r` **Buffer** 
+-   `s` **Buffer** 
+-   `homestead` **[Boolean]**  (optional, default `true`)
+
+Returns **Boolean** 
+
 # MAX_INTEGER
 
-[index.js:13-13](https://github.com/ethereumjs/ethereumjs-util/blob/3753b25f5ccc1ced319a39ac24d838b0fa15540a/index.js#L13-L13 "Source code on GitHub")
+[index.js:13-13](https://github.com/ethereumjs/ethereumjs-util/blob/d03528e7da885539cad141c99ea5b88829f73e72/index.js#L13-L13 "Source code on GitHub")
 
 the max integer that this VM can handle (a `BN`)
 
 # privateToAddress
 
-[index.js:422-424](https://github.com/ethereumjs/ethereumjs-util/blob/3753b25f5ccc1ced319a39ac24d838b0fa15540a/index.js#L422-L424 "Source code on GitHub")
+[index.js:422-424](https://github.com/ethereumjs/ethereumjs-util/blob/d03528e7da885539cad141c99ea5b88829f73e72/index.js#L422-L424 "Source code on GitHub")
 
 Returns the ethereum address of a given private key
 
@@ -242,7 +257,7 @@ Returns **Buffer**
 
 # pubToAddress
 
-[index.js:287-295](https://github.com/ethereumjs/ethereumjs-util/blob/3753b25f5ccc1ced319a39ac24d838b0fa15540a/index.js#L287-L295 "Source code on GitHub")
+[index.js:287-295](https://github.com/ethereumjs/ethereumjs-util/blob/d03528e7da885539cad141c99ea5b88829f73e72/index.js#L287-L295 "Source code on GitHub")
 
 Returns the ethereum address of a given public key.
 Accepts "Ethereum public keys" and SEC1 encoded keys.
@@ -256,7 +271,7 @@ Returns **Buffer**
 
 # ripemd160
 
-[index.js:232-240](https://github.com/ethereumjs/ethereumjs-util/blob/3753b25f5ccc1ced319a39ac24d838b0fa15540a/index.js#L232-L240 "Source code on GitHub")
+[index.js:232-240](https://github.com/ethereumjs/ethereumjs-util/blob/d03528e7da885539cad141c99ea5b88829f73e72/index.js#L232-L240 "Source code on GitHub")
 
 Creates RIPEMD160 hash of the input
 
@@ -269,13 +284,13 @@ Returns **Buffer**
 
 # rlp
 
-[index.js:67-67](https://github.com/ethereumjs/ethereumjs-util/blob/3753b25f5ccc1ced319a39ac24d838b0fa15540a/index.js#L67-L67 "Source code on GitHub")
+[index.js:67-67](https://github.com/ethereumjs/ethereumjs-util/blob/d03528e7da885539cad141c99ea5b88829f73e72/index.js#L67-L67 "Source code on GitHub")
 
 [`rlp`](https://github.com/ethereumjs/rlp)
 
 # rlphash
 
-[index.js:247-249](https://github.com/ethereumjs/ethereumjs-util/blob/3753b25f5ccc1ced319a39ac24d838b0fa15540a/index.js#L247-L249 "Source code on GitHub")
+[index.js:247-249](https://github.com/ethereumjs/ethereumjs-util/blob/d03528e7da885539cad141c99ea5b88829f73e72/index.js#L247-L249 "Source code on GitHub")
 
 Creates SHA-3 hash of the RLP encoded version of the input
 
@@ -287,13 +302,13 @@ Returns **Buffer**
 
 # secp256k1
 
-[index.js:73-73](https://github.com/ethereumjs/ethereumjs-util/blob/3753b25f5ccc1ced319a39ac24d838b0fa15540a/index.js#L73-L73 "Source code on GitHub")
+[index.js:73-73](https://github.com/ethereumjs/ethereumjs-util/blob/d03528e7da885539cad141c99ea5b88829f73e72/index.js#L73-L73 "Source code on GitHub")
 
 [`secp256k1`](https://github.com/cryptocoinjs/secp256k1-node/)
 
 # setLengthLeft
 
-[index.js:94-110](https://github.com/ethereumjs/ethereumjs-util/blob/3753b25f5ccc1ced319a39ac24d838b0fa15540a/index.js#L94-L110 "Source code on GitHub")
+[index.js:94-110](https://github.com/ethereumjs/ethereumjs-util/blob/d03528e7da885539cad141c99ea5b88829f73e72/index.js#L94-L110 "Source code on GitHub")
 
 Left Pads an `Array` or `Buffer` with leading zeros till it has `length` bytes.
 Or it truncates the beginning if it exceeds.
@@ -308,7 +323,7 @@ Returns **Buffer or Array**
 
 # setLengthRight
 
-[index.js:119-121](https://github.com/ethereumjs/ethereumjs-util/blob/3753b25f5ccc1ced319a39ac24d838b0fa15540a/index.js#L119-L121 "Source code on GitHub")
+[index.js:119-121](https://github.com/ethereumjs/ethereumjs-util/blob/d03528e7da885539cad141c99ea5b88829f73e72/index.js#L119-L121 "Source code on GitHub")
 
 Right Pads an `Array` or `Buffer` with leading zeros till it has `length` bytes.
 Or it truncates the beginning if it exceeds.
@@ -322,7 +337,7 @@ Returns **Buffer or Array**
 
 # sha256
 
-[index.js:221-224](https://github.com/ethereumjs/ethereumjs-util/blob/3753b25f5ccc1ced319a39ac24d838b0fa15540a/index.js#L221-L224 "Source code on GitHub")
+[index.js:221-224](https://github.com/ethereumjs/ethereumjs-util/blob/d03528e7da885539cad141c99ea5b88829f73e72/index.js#L221-L224 "Source code on GitHub")
 
 Creates SHA256 hash of the input
 
@@ -334,7 +349,7 @@ Returns **Buffer**
 
 # sha3
 
-[index.js:209-214](https://github.com/ethereumjs/ethereumjs-util/blob/3753b25f5ccc1ced319a39ac24d838b0fa15540a/index.js#L209-L214 "Source code on GitHub")
+[index.js:209-214](https://github.com/ethereumjs/ethereumjs-util/blob/d03528e7da885539cad141c99ea5b88829f73e72/index.js#L209-L214 "Source code on GitHub")
 
 Creates SHA-3 hash of the input
 
@@ -347,43 +362,43 @@ Returns **Buffer**
 
 # SHA3_NULL
 
-[index.js:31-31](https://github.com/ethereumjs/ethereumjs-util/blob/3753b25f5ccc1ced319a39ac24d838b0fa15540a/index.js#L31-L31 "Source code on GitHub")
+[index.js:31-31](https://github.com/ethereumjs/ethereumjs-util/blob/d03528e7da885539cad141c99ea5b88829f73e72/index.js#L31-L31 "Source code on GitHub")
 
 SHA3-256 hash of null (a `Buffer`)
 
 # SHA3_NULL_S
 
-[index.js:25-25](https://github.com/ethereumjs/ethereumjs-util/blob/3753b25f5ccc1ced319a39ac24d838b0fa15540a/index.js#L25-L25 "Source code on GitHub")
+[index.js:25-25](https://github.com/ethereumjs/ethereumjs-util/blob/d03528e7da885539cad141c99ea5b88829f73e72/index.js#L25-L25 "Source code on GitHub")
 
 SHA3-256 hash of null (a `String`)
 
 # SHA3_RLP
 
-[index.js:55-55](https://github.com/ethereumjs/ethereumjs-util/blob/3753b25f5ccc1ced319a39ac24d838b0fa15540a/index.js#L55-L55 "Source code on GitHub")
+[index.js:55-55](https://github.com/ethereumjs/ethereumjs-util/blob/d03528e7da885539cad141c99ea5b88829f73e72/index.js#L55-L55 "Source code on GitHub")
 
 SHA3-256 hash of the RLP of null (a `Buffer`)
 
 # SHA3_RLP_ARRAY
 
-[index.js:43-43](https://github.com/ethereumjs/ethereumjs-util/blob/3753b25f5ccc1ced319a39ac24d838b0fa15540a/index.js#L43-L43 "Source code on GitHub")
+[index.js:43-43](https://github.com/ethereumjs/ethereumjs-util/blob/d03528e7da885539cad141c99ea5b88829f73e72/index.js#L43-L43 "Source code on GitHub")
 
 SHA3-256 of an RLP of an empty array (a `Buffer`)
 
 # SHA3_RLP_ARRAY_S
 
-[index.js:37-37](https://github.com/ethereumjs/ethereumjs-util/blob/3753b25f5ccc1ced319a39ac24d838b0fa15540a/index.js#L37-L37 "Source code on GitHub")
+[index.js:37-37](https://github.com/ethereumjs/ethereumjs-util/blob/d03528e7da885539cad141c99ea5b88829f73e72/index.js#L37-L37 "Source code on GitHub")
 
 SHA3-256 of an RLP of an empty array (a `String`)
 
 # SHA3_RLP_S
 
-[index.js:49-49](https://github.com/ethereumjs/ethereumjs-util/blob/3753b25f5ccc1ced319a39ac24d838b0fa15540a/index.js#L49-L49 "Source code on GitHub")
+[index.js:49-49](https://github.com/ethereumjs/ethereumjs-util/blob/d03528e7da885539cad141c99ea5b88829f73e72/index.js#L49-L49 "Source code on GitHub")
 
 SHA3-256 hash of the RLP of null  (a `String`)
 
 # toBuffer
 
-[index.js:141-163](https://github.com/ethereumjs/ethereumjs-util/blob/3753b25f5ccc1ced319a39ac24d838b0fa15540a/index.js#L141-L163 "Source code on GitHub")
+[index.js:141-163](https://github.com/ethereumjs/ethereumjs-util/blob/d03528e7da885539cad141c99ea5b88829f73e72/index.js#L141-L163 "Source code on GitHub")
 
 Attempts to turn a value into a `Buffer`. As input it supports `Buffer`, `String`, `Number`, null/undefined, `BN` and other objects with a `toArray()` method.
 
@@ -393,7 +408,7 @@ Attempts to turn a value into a `Buffer`. As input it supports `Buffer`, `String
 
 # toChecksumAddress
 
-[index.js:440-454](https://github.com/ethereumjs/ethereumjs-util/blob/3753b25f5ccc1ced319a39ac24d838b0fa15540a/index.js#L440-L454 "Source code on GitHub")
+[index.js:440-454](https://github.com/ethereumjs/ethereumjs-util/blob/d03528e7da885539cad141c99ea5b88829f73e72/index.js#L440-L454 "Source code on GitHub")
 
 Returns a checksummed address
 
@@ -405,7 +420,7 @@ Returns **String**
 
 # toRpcSig
 
-[index.js:375-388](https://github.com/ethereumjs/ethereumjs-util/blob/3753b25f5ccc1ced319a39ac24d838b0fa15540a/index.js#L375-L388 "Source code on GitHub")
+[index.js:375-388](https://github.com/ethereumjs/ethereumjs-util/blob/d03528e7da885539cad141c99ea5b88829f73e72/index.js#L375-L388 "Source code on GitHub")
 
 Convert signature parameters into the format of `eth_sign` RPC method
 
@@ -419,7 +434,7 @@ Returns **String** sig
 
 # toUnsigned
 
-[index.js:199-201](https://github.com/ethereumjs/ethereumjs-util/blob/3753b25f5ccc1ced319a39ac24d838b0fa15540a/index.js#L199-L201 "Source code on GitHub")
+[index.js:199-201](https://github.com/ethereumjs/ethereumjs-util/blob/d03528e7da885539cad141c99ea5b88829f73e72/index.js#L199-L201 "Source code on GitHub")
 
 Converts a `BN` to an unsigned integer and returns it as a `Buffer`. Assumes 256-bit numbers.
 
@@ -431,13 +446,13 @@ Returns **Buffer**
 
 # TWO_POW256
 
-[index.js:19-19](https://github.com/ethereumjs/ethereumjs-util/blob/3753b25f5ccc1ced319a39ac24d838b0fa15540a/index.js#L19-L19 "Source code on GitHub")
+[index.js:19-19](https://github.com/ethereumjs/ethereumjs-util/blob/d03528e7da885539cad141c99ea5b88829f73e72/index.js#L19-L19 "Source code on GitHub")
 
 2^256 (a `BN`)
 
 # unpad
 
-[index.js:128-136](https://github.com/ethereumjs/ethereumjs-util/blob/3753b25f5ccc1ced319a39ac24d838b0fa15540a/index.js#L128-L136 "Source code on GitHub")
+[index.js:128-136](https://github.com/ethereumjs/ethereumjs-util/blob/d03528e7da885539cad141c99ea5b88829f73e72/index.js#L128-L136 "Source code on GitHub")
 
 Trims leading zeros from a `Buffer` or an `Array`
 
@@ -449,7 +464,7 @@ Returns **Buffer or Array or String**
 
 # zeros
 
-[index.js:81-83](https://github.com/ethereumjs/ethereumjs-util/blob/3753b25f5ccc1ced319a39ac24d838b0fa15540a/index.js#L81-L83 "Source code on GitHub")
+[index.js:81-83](https://github.com/ethereumjs/ethereumjs-util/blob/d03528e7da885539cad141c99ea5b88829f73e72/index.js#L81-L83 "Source code on GitHub")
 
 Returns a buffer filled with 0s
 
@@ -461,7 +476,7 @@ Returns **Buffer**
 
 # privateToPublic
 
-[index.js:302-306](https://github.com/ethereumjs/ethereumjs-util/blob/3753b25f5ccc1ced319a39ac24d838b0fa15540a/index.js#L302-L306 "Source code on GitHub")
+[index.js:302-306](https://github.com/ethereumjs/ethereumjs-util/blob/d03528e7da885539cad141c99ea5b88829f73e72/index.js#L302-L306 "Source code on GitHub")
 
 Returns the ethereum public key of a given private key
 
@@ -470,18 +485,3 @@ Returns the ethereum public key of a given private key
 -   `privateKey` **Buffer** A private key must be 256 bits wide
 
 Returns **Buffer** 
-
-# SECP256K1_N_DIV_2
-
-[index.js:520-520](https://github.com/ethereumjs/ethereumjs-util/blob/3753b25f5ccc1ced319a39ac24d838b0fa15540a/index.js#L520-L520 "Source code on GitHub")
-
-Validate ECDSA signature
-
-**Parameters**
-
--   `v` **Buffer** 
--   `r` **Buffer** 
--   `s` **Buffer** 
--   `homestead` **[Boolean]**  (optional, default `true`)
-
-Returns **Boolean** 
