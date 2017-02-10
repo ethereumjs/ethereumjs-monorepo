@@ -4,6 +4,7 @@ const assert = require('assert')
 const rlp = require('rlp')
 const BN = require('bn.js')
 const createHash = require('create-hash')
+Object.assign(exports, require('ethjs-util'))
 
 /**
  * the max integer that this VM can handle (a ```BN```)
@@ -159,32 +160,6 @@ exports.toBuffer = function (v) {
     }
   }
   return v
-}
-
-/**
- * Converts a `Number` into a hex `String`
- * @param {Number} i
- * @return {String}
- */
-exports.intToHex = function (i) {
-  assert(i % 1 === 0, 'number is not a integer')
-  assert(i >= 0, 'number must be positive')
-  var hex = i.toString(16)
-  if (hex.length % 2) {
-    hex = '0' + hex
-  }
-
-  return '0x' + hex
-}
-
-/**
- * Converts an `Number` to a `Buffer`
- * @param {Number} i
- * @return {Buffer}
- */
-exports.intToBuffer = function (i) {
-  var hex = exports.intToHex(i)
-  return Buffer.from(hex.slice(2), 'hex')
 }
 
 /**
@@ -520,27 +495,6 @@ exports.isPrecompiled = function (address) {
 }
 
 /**
- * Returns a `Boolean` on whether or not the a `String` starts with "0x"
- * @param {String} str
- * @return {Boolean}
- */
-exports.isHexPrefixed = function (str) {
-  return str.slice(0, 2) === '0x'
-}
-
-/**
- * Removes "0x" from a given `String`
- * @param {String} str
- * @return {String}
- */
-exports.stripHexPrefix = function (str) {
-  if (typeof str !== 'string') {
-    return str
-  }
-  return exports.isHexPrefixed(str) ? str.slice(2) : str
-}
-
-/**
  * Adds "0x" to a given `String` if it does not already start with "0x"
  * @param {String} str
  * @return {String}
@@ -551,16 +505,6 @@ exports.addHexPrefix = function (str) {
   }
 
   return exports.isHexPrefixed(str) ? str : '0x' + str
-}
-
-/**
- * Pads a `String` to have an even length
- * @param {String} a
- * @return {String}
- */
-exports.padToEven = function (a) {
-  if (a.length % 2) a = '0' + a
-  return a
 }
 
 /**
