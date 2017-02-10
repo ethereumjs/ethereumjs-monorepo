@@ -106,7 +106,7 @@
     "secp256k1": "^3.0.1"
   },
   "devDependencies": {
-    "browserify": "^13.0.0",
+    "browserify": "^14.0.0",
     "contributor": "^0.1.25",
     "coveralls": "^2.11.4",
     "documentation": "^3.0.4",
