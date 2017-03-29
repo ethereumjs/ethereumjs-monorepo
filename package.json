@@ -12,6 +12,11 @@
     "test:node": "tape ./tests/index.js",
     "build:docs": "documentation build ./index.js --format md --shallow > ./docs/index.md && documentation build ./from-rpc.js --format md --shallow  > ./docs/fromRpc.md"
   },
+  "browserify": {
+    "transform": [
+      ["babelify", { "presets": ["es2015"] }]
+    ]
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/ethereumjs/ethereumjs-block.git"
@@ -34,6 +39,8 @@
     "merkle-patricia-tree": "^2.1.2"
   },
   "devDependencies": {
+    "babel-preset-es2015": "^6.24.0",
+    "babelify": "^7.3.0",
     "browserify": "^13.0.0",
     "coveralls": "^2.11.6",
     "documentation": "4.0.0-beta16",
