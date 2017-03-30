@@ -13,6 +13,11 @@
     "test:node": "istanbul test mocha -- --reporter spec",
     "build:docs": "documentation --github  -f md ./index.js > ./docs/index.md && contributor"
   },
+  "browserify": {
+    "transform": [
+      ["babelify", { "presets": ["es2015"] }]
+    ]
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/ethereumjs/ethereumjs-util.git"
@@ -99,6 +104,8 @@
   },
   "homepage": "https://github.com/ethereumjs/ethereumjs-util",
   "dependencies": {
+    "babel-preset-es2015": "^6.24.0",
+    "babelify": "^7.3.0",
     "bn.js": "^4.8.0",
     "create-hash": "^1.1.2",
     "ethjs-util": "^0.1.3",
