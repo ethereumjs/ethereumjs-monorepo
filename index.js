@@ -70,7 +70,6 @@ module.exports = class Transaction {
       default: new Buffer([])
     }, {
       name: 'v',
-      length: 1,
       default: new Buffer([0x1c])
     }, {
       name: 'r',
