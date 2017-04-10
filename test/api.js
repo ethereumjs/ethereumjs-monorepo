@@ -196,4 +196,10 @@ tape('[Transaction]: Basic functions', function (t) {
     st.equal(reTx.getChainId(), 42)
     st.end()
   })
+
+  t.test('allow chainId more than 1 byte', function (st) {
+    var tx = new Transaction({ chainId: 0x16b2 })
+    st.equal(tx.getChainId(), 0x16b2)
+    st.end()
+  })
 })
