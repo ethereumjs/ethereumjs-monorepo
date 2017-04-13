@@ -64,7 +64,7 @@ tape('[Transaction]: Basic functions', function (t) {
 
   t.test('should give a string about not verifing Signatures', function (st) {
     transactions.forEach(function (tx) {
-      st.equals(tx.validate(true).slice(0, 53), 'Invalid Signature gas limit is to low. Need at least ')
+      st.equals(tx.validate(true).slice(0, 54), 'Invalid Signature gas limit is too low. Need at least ')
     })
     st.end()
   })
