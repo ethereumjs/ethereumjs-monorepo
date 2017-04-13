@@ -1,99 +1,26 @@
-# defineProperties
+# Transaction
 
-[index.js:93-93](https://github.com/ethereumjs/ethereumjs-tx/blob/7c0ef4cd0811897c6fa1685408d4ae48efbff857/index.js#L93-L93 "Source code on GitHub")
+[index.js:48-297](https://github.com/ethereumjs/ethereumjs-tx/blob/782b0ccfcb4dfdba0291aa02a1063e28f9034ae9/index.js#L48-L297 "Source code on GitHub")
 
-Returns the rlp encoding of the transaction
-
-Returns **Buffer** 
-
-# defineProperty
-
-[index.js:98-102](https://github.com/ethereumjs/ethereumjs-tx/blob/7c0ef4cd0811897c6fa1685408d4ae48efbff857/index.js#L98-L102 "Source code on GitHub")
-
-**Properties**
-
--   `from` **Buffer** (read only) sender address of this transaction, mathematically derived from other parameters.
-
-# getBaseFee
-
-[index.js:241-247](https://github.com/ethereumjs/ethereumjs-tx/blob/7c0ef4cd0811897c6fa1685408d4ae48efbff857/index.js#L241-L247 "Source code on GitHub")
-
-the minimum amount of gas the tx must have (DataFee + TxFee + Creation Fee)
-
-Returns **BN** 
-
-# getChainId
-
-[index.js:159-161](https://github.com/ethereumjs/ethereumjs-tx/blob/7c0ef4cd0811897c6fa1685408d4ae48efbff857/index.js#L159-L161 "Source code on GitHub")
-
-returns the public key of the sender
-
-Returns **Buffer** 
-
-# getDataFee
-
-[index.js:228-235](https://github.com/ethereumjs/ethereumjs-tx/blob/7c0ef4cd0811897c6fa1685408d4ae48efbff857/index.js#L228-L235 "Source code on GitHub")
-
-The amount of gas paid for the data in this tx
-
-Returns **BN** 
-
-# getSenderAddress
-
-[index.js:167-174](https://github.com/ethereumjs/ethereumjs-tx/blob/7c0ef4cd0811897c6fa1685408d4ae48efbff857/index.js#L167-L174 "Source code on GitHub")
-
-returns the sender's address
-
-Returns **Buffer** 
-
-# getSenderPublicKey
-
-[index.js:180-185](https://github.com/ethereumjs/ethereumjs-tx/blob/7c0ef4cd0811897c6fa1685408d4ae48efbff857/index.js#L180-L185 "Source code on GitHub")
-
-returns the public key of the sender
-
-Returns **Buffer** 
-
-# getUpfrontCost
-
-[index.js:253-257](https://github.com/ethereumjs/ethereumjs-tx/blob/7c0ef4cd0811897c6fa1685408d4ae48efbff857/index.js#L253-L257 "Source code on GitHub")
-
-the up front amount that an account must have for this transaction to be valid
-
-Returns **BN** 
-
-# hash
-
-[index.js:127-153](https://github.com/ethereumjs/ethereumjs-tx/blob/7c0ef4cd0811897c6fa1685408d4ae48efbff857/index.js#L127-L153 "Source code on GitHub")
-
-Computes a sha3-256 hash of the serialized tx
+Creates a new transaction object.
 
 **Parameters**
 
--   `includeSignature` **[Boolean]** whether or not to inculde the signature (optional, default `true`)
-
-Returns **Buffer** 
-
-# index
-
-[index.js:36-280](https://github.com/ethereumjs/ethereumjs-tx/blob/7c0ef4cd0811897c6fa1685408d4ae48efbff857/index.js#L36-L280 "Source code on GitHub")
-
-Creates a new transaction object
-
-**Parameters**
-
--   `data`  
+-   `data` **Buffer or Array or Object** a transaction can be initiailized with either a buffer containing the RLP serialized transaction or an array of buffers relating to each of the tx Properties, listed in order below in the exmple.Or lastly an Object containing the Properties of the transaction like in the Usage example.For Object and Arrays each of the elements can either be a Buffer, a hex-prefixed (0x) String , Number, or an object with a toBuffer method such as Bignum
+    -   `data.chainId` **Number** EIP 155 chainId - mainnet: 1, ropsten: 3
+    -   `data.gasLimit` **Buffer** transaction gas limit
+    -   `data.gasPrice` **Buffer** transaction gas price
+    -   `data.to` **Buffer** to the to address
+    -   `data.nonce` **Buffer** nonce number
+    -   `data.data` **Buffer** this will contain the data of the message or the init of a contract
+    -   `data.v` **Buffer** EC signature parameter
+    -   `data.r` **Buffer** EC signature parameter
+    -   `data.s` **Buffer** EC recovery ID
+    -   `data.value` **Buffer** the amount of ether sent
 
 **Properties**
 
--   `raw` **Buffer** The raw rlp decoded transaction
--   `nonce` **Buffer** 
--   `to` **Buffer** the to address
--   `value` **Buffer** the amount of ether sent
--   `data` **Buffer** this will contain the data of the message or the init of a contract
--   `v` **Buffer** EC signature parameter
--   `r` **Buffer** EC signature parameter
--   `s` **Buffer** EC recovery ID
+-   `raw` **Buffer** The raw rlp encoded transaction
 
 **Examples**
 
@@ -112,9 +39,69 @@ var rawTx = {
 var tx = new Transaction(rawTx);
 ```
 
-# sign
+## getBaseFee
 
-[index.js:215-222](https://github.com/ethereumjs/ethereumjs-tx/blob/7c0ef4cd0811897c6fa1685408d4ae48efbff857/index.js#L215-L222 "Source code on GitHub")
+[index.js:258-264](https://github.com/ethereumjs/ethereumjs-tx/blob/782b0ccfcb4dfdba0291aa02a1063e28f9034ae9/index.js#L258-L264 "Source code on GitHub")
+
+the minimum amount of gas the tx must have (DataFee + TxFee + Creation Fee)
+
+Returns **BN** 
+
+## getChainId
+
+[index.js:176-178](https://github.com/ethereumjs/ethereumjs-tx/blob/782b0ccfcb4dfdba0291aa02a1063e28f9034ae9/index.js#L176-L178 "Source code on GitHub")
+
+returns the public key of the sender
+
+Returns **Buffer** 
+
+## getDataFee
+
+[index.js:245-252](https://github.com/ethereumjs/ethereumjs-tx/blob/782b0ccfcb4dfdba0291aa02a1063e28f9034ae9/index.js#L245-L252 "Source code on GitHub")
+
+The amount of gas paid for the data in this tx
+
+Returns **BN** 
+
+## getSenderAddress
+
+[index.js:184-191](https://github.com/ethereumjs/ethereumjs-tx/blob/782b0ccfcb4dfdba0291aa02a1063e28f9034ae9/index.js#L184-L191 "Source code on GitHub")
+
+returns the sender's address
+
+Returns **Buffer** 
+
+## getSenderPublicKey
+
+[index.js:197-202](https://github.com/ethereumjs/ethereumjs-tx/blob/782b0ccfcb4dfdba0291aa02a1063e28f9034ae9/index.js#L197-L202 "Source code on GitHub")
+
+returns the public key of the sender
+
+Returns **Buffer** 
+
+## getUpfrontCost
+
+[index.js:270-274](https://github.com/ethereumjs/ethereumjs-tx/blob/782b0ccfcb4dfdba0291aa02a1063e28f9034ae9/index.js#L270-L274 "Source code on GitHub")
+
+the up front amount that an account must have for this transaction to be valid
+
+Returns **BN** 
+
+## hash
+
+[index.js:144-170](https://github.com/ethereumjs/ethereumjs-tx/blob/782b0ccfcb4dfdba0291aa02a1063e28f9034ae9/index.js#L144-L170 "Source code on GitHub")
+
+Computes a sha3-256 hash of the serialized tx
+
+**Parameters**
+
+-   `includeSignature` **[Boolean]** whether or not to inculde the signature (optional, default `true`)
+
+Returns **Buffer** 
+
+## sign
+
+[index.js:232-239](https://github.com/ethereumjs/ethereumjs-tx/blob/782b0ccfcb4dfdba0291aa02a1063e28f9034ae9/index.js#L232-L239 "Source code on GitHub")
 
 sign a transaction with a given a private key
 
@@ -122,17 +109,17 @@ sign a transaction with a given a private key
 
 -   `privateKey` **Buffer** 
 
-# toCreationAddress
+## toCreationAddress
 
-[index.js:118-120](https://github.com/ethereumjs/ethereumjs-tx/blob/7c0ef4cd0811897c6fa1685408d4ae48efbff857/index.js#L118-L120 "Source code on GitHub")
+[index.js:135-137](https://github.com/ethereumjs/ethereumjs-tx/blob/782b0ccfcb4dfdba0291aa02a1063e28f9034ae9/index.js#L135-L137 "Source code on GitHub")
 
 If the tx's `to` is to the creation address
 
 Returns **Boolean** 
 
-# validate
+## validate
 
-[index.js:264-279](https://github.com/ethereumjs/ethereumjs-tx/blob/7c0ef4cd0811897c6fa1685408d4ae48efbff857/index.js#L264-L279 "Source code on GitHub")
+[index.js:281-296](https://github.com/ethereumjs/ethereumjs-tx/blob/782b0ccfcb4dfdba0291aa02a1063e28f9034ae9/index.js#L281-L296 "Source code on GitHub")
 
 validates the signature and checks to see if it has enough gas
 
@@ -142,10 +129,26 @@ validates the signature and checks to see if it has enough gas
 
 Returns **Boolean or String** 
 
-# verifySignature
+## verifySignature
 
-[index.js:191-209](https://github.com/ethereumjs/ethereumjs-tx/blob/7c0ef4cd0811897c6fa1685408d4ae48efbff857/index.js#L191-L209 "Source code on GitHub")
+[index.js:208-226](https://github.com/ethereumjs/ethereumjs-tx/blob/782b0ccfcb4dfdba0291aa02a1063e28f9034ae9/index.js#L208-L226 "Source code on GitHub")
 
 Determines if the signature is valid
 
 Returns **Boolean** 
+
+## from
+
+[index.js:115-119](https://github.com/ethereumjs/ethereumjs-tx/blob/782b0ccfcb4dfdba0291aa02a1063e28f9034ae9/index.js#L115-L119 "Source code on GitHub")
+
+**Properties**
+
+-   `from` **Buffer** (read only) sender address of this transaction, mathematically derived from other parameters.
+
+## serialize
+
+[index.js:108-108](https://github.com/ethereumjs/ethereumjs-tx/blob/782b0ccfcb4dfdba0291aa02a1063e28f9034ae9/index.js#L108-L108 "Source code on GitHub")
+
+Returns the rlp encoding of the transaction
+
+Returns **Buffer** 
