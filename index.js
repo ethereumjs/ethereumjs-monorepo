@@ -6,7 +6,6 @@ const BN = ethUtil.BN
 // secp256k1n/2
 const N_DIV_2 = new BN('7fffffffffffffffffffffffffffffff5d576e7357a4501ddfe92f46681b20a0', 16)
 
-
 /**
  * Creates a new transaction object.
  *
@@ -44,10 +43,7 @@ const N_DIV_2 = new BN('7fffffffffffffffffffffffffffffff5d576e7357a4501ddfe92f46
  * @param {Number} data.chainId EIP 155 chainId - mainnet: 1, ropsten: 3
  * */
 
-
 class Transaction {
-
-
   constructor (data) {
     data = data || {}
     // Define Properties
@@ -296,4 +292,4 @@ class Transaction {
   }
 }
 
-module.exports = Transaction;
+module.exports = Transaction
