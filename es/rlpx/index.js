@@ -45,7 +45,7 @@ class RLPx extends EventEmitter {
     this._server.once('listening', () => this.emit('listening'))
     this._server.once('close', () => this.emit('close'))
     this._server.on('error', (err) => this.emit('error', err))
-    this._server.on('connection', (socket) => this._onConnect(socket))
+    this._server.on('connection', (socket) => this._onConnect(socket, null))
 
     this._peers = new Map()
     this._peersQueue = []
