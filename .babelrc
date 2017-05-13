@@ -1,0 +1,4 @@
+{
+  "presets": [["es2015", { "loose": true, "modules": false }], "stage-0"],
+  "compact": false
+}
