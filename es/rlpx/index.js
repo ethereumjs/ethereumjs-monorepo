@@ -190,7 +190,8 @@ class RLPx extends EventEmitter {
           ts: Date.now() + ms('5m')
         })
       }
-
+      let peerKey = peer.getId().toString('hex')
+      this._peers.delete(peerKey)
       this.emit('peer:removed', peer, reason, disconnectWe)
     })
   }
