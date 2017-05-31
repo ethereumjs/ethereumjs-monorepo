@@ -143,7 +143,7 @@ exports.toBuffer = function (v) {
     if (Array.isArray(v)) {
       v = Buffer.from(v)
     } else if (typeof v === 'string') {
-      if (exports.isHexPrefixed(v)) {
+      if (exports.isHexString(v)) {
         v = Buffer.from(exports.padToEven(exports.stripHexPrefix(v)), 'hex')
       } else {
         v = Buffer.from(v)
