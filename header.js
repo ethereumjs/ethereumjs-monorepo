@@ -142,13 +142,13 @@ BlockHeader.prototype.validateDifficulty = function (parentBlock) {
  * @returns {Boolean}
  */
 BlockHeader.prototype.validateGasLimit = function (parentBlock) {
-  const pGasLimit = utils.bufferToInt(parentBlock.header.gasLimit)
-  const gasLimit = utils.bufferToInt(this.gasLimit)
-  const a = Math.floor(pGasLimit / params.gasLimitBoundDivisor.v)
-  const maxGasLimit = pGasLimit + a
-  const minGasLimit = pGasLimit - a
+  const pGasLimit = new BN(parentBlock.header.gasLimit)
+  const gasLimit = new BN(this.gasLimit)
+  const a = pGasLimit.div(new BN(params.gasLimitBoundDivisor.v))
+  const maxGasLimit = pGasLimit.add(a)
+  const minGasLimit = pGasLimit.sub(a)
 
-  return maxGasLimit > gasLimit && minGasLimit < gasLimit && params.minGasLimit.v <= gasLimit
+  return gasLimit.lt(maxGasLimit) && gasLimit.gt(minGasLimit) && gasLimit.gte(params.minGasLimit.v)
 }
 
 /**
