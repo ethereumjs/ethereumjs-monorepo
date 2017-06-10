@@ -16,7 +16,7 @@
   },
   "devDependencies": {
     "ethereumjs-blockchain": "^1.4.1",
-    "ethereumjs-testing": "^1.0.4",
+    "ethereumjs-testing": "ethereumjs/ethereumjs-testing#homestead-testing-update",
     "ethereumjs-tx": "1.1.0",
     "level": "^1.4.0",
     "leveldown": "^1.4.6",

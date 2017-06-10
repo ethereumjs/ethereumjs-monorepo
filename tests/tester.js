@@ -2,6 +2,7 @@ const argv = require('minimist')(process.argv.slice(2))
 const async = require('async')
 const tape = require('tape')
 const testing = require('ethereumjs-testing')
+const FORK_CONFIG = 'Homestead'
 const skip = [
   'CreateHashCollision', // impossible hash collision on generating address
   'SuicidesMixingCoinbase', // sucides to the coinbase, since we run a blockLevel we create coinbase account.
@@ -29,6 +30,7 @@ const skip = [
   'bcSimpleTransitionTest', // HF stuff
   'loop-mul' // ain't nobody need loops
 ]
+// TODO: skip BlockchainTests/GeneralStateTests/stMemoryStressTest/*
 
 if (argv.r) {
   randomized(argv.r, argv.v)
@@ -76,20 +78,34 @@ function randomized (stateTest) {
   })
 }
 
-function runTests (name, args, cb) {
-  // setup skipe function
-  args.testFn = (name) => {
-    return skip.includes(name)
+function runTests (name, runnerArgs, cb) {
+  let testGetterArgs = argv
+
+  // setup skip function
+  if (name === 'BlockchainTests') {
+    const forkFilter = new RegExp(`${FORK_CONFIG}$`)
+    testGetterArgs.skipFn = (name) => {
+      return ((forkFilter.test(name) === false) || skip.includes(name))
+    }
+  } else {
+    testGetterArgs.skipFn = (name) => {
+      return skip.includes(name)
+    }
   }
+
+
+  runnerArgs.forkConfig = FORK_CONFIG
+  //runnerArgs.debugging = true; // for BlockchainTests
+  //runnerArgs.vmtrace = true; // for VMTests
 
   tape(name, t => {
     const runner = require(`./${name}Runner.js`)
     testing.getTestsFromArgs(name, (fileName, testName, test) => {
       return new Promise((resolve, reject) => {
         t.comment(`file: ${fileName} test: ${testName}`)
-        runner(args, test, t, resolve)
+        runner(runnerArgs, test, t, resolve)
       }).catch(err => console.log(err))
-    }, argv).then(() => {
+    }, testGetterArgs).then(() => {
       t.end()
     })
   })
@@ -100,8 +116,8 @@ function runAll () {
   require('./cacheTest.js')
   require('./genesishashes.js')
   async.series([
-    runTests.bind(this, 'BlockchainTests', {}),
-    runTests.bind(this, 'StateTests', {}),
-    runTests.bind(this, 'VMTests', {})
+    runTests.bind(this, 'VMTests', {}),
+    //runTests.bind(this, 'StateTests', {}), // TODO: update StateTestsRunnner for GeneralStateTests
+    runTests.bind(this, 'BlockchainTests', {})
   ])
 }
