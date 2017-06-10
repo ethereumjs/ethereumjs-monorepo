@@ -18,10 +18,12 @@ module.exports = function runBlockchainTest (options, testData, t, cb) {
   blockchain.ethash.cacheDB = cacheDB
   var vm = new VM({
     state: state,
-    blockchain: blockchain
+    blockchain: blockchain,
+    enableHomestead: true
   })
   var genesisBlock = new Block()
 
+  testData.homestead = true
   if (testData.homestead) {
     vm.on('beforeTx', function (tx) {
       tx._homestead = true
@@ -83,8 +85,15 @@ module.exports = function runBlockchainTest (options, testData, t, cb) {
     function getHead (done) {
       vm.blockchain.getHead(function (err, block) {
         t.equal(block.hash().toString('hex'), testData.lastblockhash, 'last block hash')
-        // make sure the state is set beofore checking post conditions
-        state.root = block.header.stateRoot
+        // if the test fails, then block.header is the preState because
+        // vm.runBlock has a check that prevents the actual postState from being
+        // imported if it is not equal to the expected postState. it is useful
+        // for debugging to skip this, so that verifyPostConditions will compare
+        // testData.postState to the actual postState, rather than to the preState.
+        if (!options.debugging) {
+          // make sure the state is set before checking post conditions
+          state.root = block.header.stateRoot
+        }
         done(err)
       })
     },
