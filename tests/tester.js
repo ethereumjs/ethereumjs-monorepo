@@ -28,9 +28,12 @@ const skip = [
   'ForkUncle', // correct behaviour unspecified (?)
   'UncleFromSideChain', // same as ForkUncle, the TD is the same for two diffent branches so its not clear which one should be the finally chain
   'bcSimpleTransitionTest', // HF stuff
-  'loop-mul' // ain't nobody need loops
+  'loop-mul', // ain't nobody need loops
+  'CALL_Bounds', // nodejs crash
+  'CALLCODE_Bounds', // nodejs crash
+  'CREATE_Bounds', // nodejs crash
+  'DELEGATECALL_Bounds', // nodejs crash
 ]
-// TODO: skip BlockchainTests/GeneralStateTests/stMemoryStressTest/*
 
 if (argv.r) {
   randomized(argv.r, argv.v)
@@ -42,6 +45,10 @@ if (argv.r) {
   runTests('BlockchainTests', argv)
 } else if (argv.a) {
   runAll()
+}
+
+function skipTest (testName) {
+  return skip.map((skipName) => (new RegExp(`^${skipName}`)).test(testName)).some(isMatch => isMatch)
 }
 
 // randomized tests
@@ -85,11 +92,11 @@ function runTests (name, runnerArgs, cb) {
   if (name === 'BlockchainTests') {
     const forkFilter = new RegExp(`${FORK_CONFIG}$`)
     testGetterArgs.skipFn = (name) => {
-      return ((forkFilter.test(name) === false) || skip.includes(name))
+      return ((forkFilter.test(name) === false) || skipTest(name))
     }
   } else {
     testGetterArgs.skipFn = (name) => {
-      return skip.includes(name)
+      return skipTest(name)
     }
   }
 
