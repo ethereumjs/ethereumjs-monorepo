@@ -84,6 +84,10 @@ module.exports = function runBlockchainTest (options, testData, t, cb) {
     },
     function getHead (done) {
       vm.blockchain.getHead(function (err, block) {
+        if (testData.lastblockhash.substr(0,2) === '0x') {
+          // fix for BlockchainTests/GeneralStateTests/stRandom/*
+          testData.lastblockhash = testData.lastblockhash.substr(2)
+        }
         t.equal(block.hash().toString('hex'), testData.lastblockhash, 'last block hash')
         // if the test fails, then block.header is the preState because
         // vm.runBlock has a check that prevents the actual postState from being
