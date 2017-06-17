@@ -111,8 +111,6 @@
   },
   "homepage": "https://github.com/ethereumjs/ethereumjs-util",
   "dependencies": {
-    "babel-preset-es2015": "^6.24.0",
-    "babelify": "^7.3.0",
     "bn.js": "^4.8.0",
     "create-hash": "^1.1.2",
     "ethjs-util": "^0.1.3",
@@ -121,6 +119,8 @@
     "secp256k1": "^3.0.1"
   },
   "devDependencies": {
+    "babel-preset-es2015": "^6.24.0",
+    "babelify": "^7.3.0",
     "browserify": "^14.0.0",
     "contributor": "^0.1.25",
     "coveralls": "^2.11.4",
