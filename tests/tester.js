@@ -33,6 +33,7 @@ const skip = [
   'CALLCODE_Bounds', // nodejs crash
   'CREATE_Bounds', // nodejs crash
   'DELEGATECALL_Bounds', // nodejs crash
+  'RevertDepthCreateAddressCollision' // test case is wrong
 ]
 
 if (argv.r) {
