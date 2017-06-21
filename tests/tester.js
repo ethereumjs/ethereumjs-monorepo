@@ -48,10 +48,6 @@ if (argv.r) {
   runAll()
 }
 
-function skipTest (testName) {
-  return skip.map((skipName) => (new RegExp(`^${skipName}`)).test(testName)).some(isMatch => isMatch)
-}
-
 // randomized tests
 // returns 1 if the tests fails
 // returns 0 if the tests succeds
@@ -87,20 +83,11 @@ function randomized (stateTest) {
 }
 
 function runTests (name, runnerArgs, cb) {
-  let testGetterArgs = argv
-
-  // setup skip function
-  if (name === 'BlockchainTests') {
-    const forkFilter = new RegExp(`${FORK_CONFIG}$`)
-    testGetterArgs.skipFn = (name) => {
-      return ((forkFilter.test(name) === false) || skipTest(name))
-    }
-  } else {
-    testGetterArgs.skipFn = (name) => {
-      return skipTest(name)
-    }
-  }
-
+  let testGetterArgs = {}
+  testGetterArgs.skipFiles = skip
+  testGetterArgs.forkConfig = FORK_CONFIG
+  testGetterArgs.file = argv.file
+  testGetterArgs.test = argv.test
 
   runnerArgs.forkConfig = FORK_CONFIG
   //runnerArgs.debugging = true; // for BlockchainTests
