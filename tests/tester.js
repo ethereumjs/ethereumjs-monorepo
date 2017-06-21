@@ -28,12 +28,55 @@ const skip = [
   'ForkUncle', // correct behaviour unspecified (?)
   'UncleFromSideChain', // same as ForkUncle, the TD is the same for two diffent branches so its not clear which one should be the finally chain
   'bcSimpleTransitionTest', // HF stuff
-  'loop-mul', // ain't nobody need loops
   'CALL_Bounds', // nodejs crash
   'CALLCODE_Bounds', // nodejs crash
   'CREATE_Bounds', // nodejs crash
   'DELEGATECALL_Bounds', // nodejs crash
   'RevertDepthCreateAddressCollision' // test case is wrong
+]
+
+/*
+TODO: some VM tests do not appear to be executing (don't print an "ok" statement):
+...
+# file: vmLogTest test: log0_emptyMem
+ok 38984 valid gas usage
+# file: vmLogTest test: log0_logMemStartTooHigh
+# file: vmLogTest test: log0_logMemsizeTooHigh
+# file: vmLogTest test: log0_logMemsizeZero
+ok 38985 valid gas usage
+# file: vmLogTest test: log0_nonEmptyMem
+*/
+
+const skipVM = [
+  // slow performance tests
+  'loop-mul',
+  'loop-add-10M',
+  'loop-divadd-10M',
+  'loop-divadd-unr100-10M',
+  'loop-exp-16b-100k',
+  'loop-exp-1b-1M',
+  'loop-exp-2b-100k',
+  'loop-exp-32b-100k',
+  'loop-exp-4b-100k',
+  'loop-exp-8b-100k',
+  'loop-exp-nop-1M',
+  'loop-mulmod-2M',
+  // some VM tests fail because the js runner executes CALLs
+  // see https://github.com/ethereum/tests/wiki/VM-Tests  > Since these tests are meant only as a basic test of VM operation, the CALL and CREATE instructions are not actually executed.
+  'ABAcalls0',
+  'ABAcallsSuicide0',
+  'ABAcallsSuicide1',
+  'CallRecursiveBomb0',
+  'CallToNameRegistrator0',
+  'CallToPrecompiledContract',
+  'CallToReturn1',
+  'PostToNameRegistrator0',
+  'PostToReturn1',
+  'callcodeToNameRegistrator0',
+  'callcodeToReturn1',
+  'callstatelessToNameRegistrator0',
+  'callstatelessToReturn1',
+  'createNameRegistrator'
 ]
 
 if (argv.r) {
@@ -84,7 +127,8 @@ function randomized (stateTest) {
 
 function runTests (name, runnerArgs, cb) {
   let testGetterArgs = {}
-  testGetterArgs.skipFiles = skip
+  testGetterArgs.skipTests = skip
+  testGetterArgs.skipVM = skipVM
   testGetterArgs.forkConfig = FORK_CONFIG
   testGetterArgs.file = argv.file
   testGetterArgs.test = argv.test
