@@ -18,7 +18,7 @@
     "babel-preset-es2015": "^6.24.0",
     "babelify": "^7.3.0",
     "ethereumjs-blockchain": "^1.4.1",
-    "ethereumjs-testing": "ethereumjs/ethereumjs-testing#homestead-testing-update",
+    "ethereumjs-testing": "https://github.com/ethereumjs/ethereumjs-testing",
     "ethereumjs-tx": "1.1.0",
     "level": "^1.4.0",
     "leveldown": "^1.4.6",
