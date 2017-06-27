@@ -80,6 +80,7 @@ function randomized (stateTest) {
 function runTests (name, args, cb) {
   var runner = require('./' + name + 'Runner.js').bind(this, args)
   var tests = testing.getTests(name, args)
+  delete tests.RandomTests;
   testing.runTests(runner, tests, tape, skip, cb)
 }
 
