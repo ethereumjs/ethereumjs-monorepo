@@ -34,11 +34,11 @@
     ]
   },
   "scripts": {
-    "testVM": "./tests/tester -v",
-    "testState": "./tests/tester -s",
-    "testBlockchain": "./tests/tester -b",
+    "testVM": "node --harmony ./tests/tester -v",
+    "testState": "node --harmony ./tests/tester -s",
+    "testBlockchain": "node --harmony ./tests/tester -b",
     "lint": "standard",
-    "test": "./tests/tester -a"
+    "test": "node --harmony ./tests/tester -a"
   },
   "repository": {
     "type": "git",
