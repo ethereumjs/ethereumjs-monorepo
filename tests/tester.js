@@ -82,7 +82,7 @@ const skipVM = [
 if (argv.r) {
   randomized(argv.r, argv.v)
 } else if (argv.s) {
-  runTests('StateTests', argv)
+  runTests('GeneralStateTests', argv)
 } else if (argv.v) {
   runTests('VMTests', argv)
 } else if (argv.b) {
@@ -156,7 +156,7 @@ function runAll () {
   require('./genesishashes.js')
   async.series([
     runTests.bind(this, 'VMTests', {}),
-    //runTests.bind(this, 'StateTests', {}), // TODO: update StateTestsRunnner for GeneralStateTests
+    runTests.bind(this, 'GeneralStateTests', {}),
     runTests.bind(this, 'BlockchainTests', {})
   ])
 }
