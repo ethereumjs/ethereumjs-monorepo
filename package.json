@@ -1,6 +1,6 @@
 {
   "name": "ethereumjs-vm",
-  "version": "2.0.2",
+  "version": "2.1.0",
   "description": "an ethereum VM implementation",
   "main": "index.js",
   "dependencies": {
@@ -30,7 +30,14 @@
   },
   "browserify": {
     "transform": [
-      ["babelify", { "presets": ["es2015"] }]
+      [
+        "babelify",
+        {
+          "presets": [
+            "es2015"
+          ]
+        }
+      ]
     ]
   },
   "scripts": {
