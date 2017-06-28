@@ -62,7 +62,7 @@ exports.makeTx = function (txData) {
   tx.value = format(txData.value)
   tx.data = format(txData.data, false, true) // slice off 0x
   if (txData.secretKey) {
-    var privKey = new Buffer(txData.secretKey, 'hex')
+    var privKey = format(txData.secretKey, false, true)
     tx.sign(privKey)
   } else {
     tx.v = new Buffer(txData.v.slice(2), 'hex')
@@ -254,7 +254,7 @@ exports.makeBlockHeader = function (data) {
   header.timestamp = format(data.currentTimestamp)
   header.gasLimit = format(data.currentGasLimit)
   if (data.previousHash) {
-    header.parentHash = new Buffer(data.previousHash, 'hex')
+    header.parentHash = format(data.previousHash, false, true)
   }
   header.coinbase = utils.setLength(format(data.currentCoinbase, false, true), 20)
   header.difficulty = format(data.currentDifficulty)
