@@ -33,11 +33,12 @@ module.exports = function runStateTest (options, testData, t, cb) {
       let runCodeData = testUtil.makeRunCodeData(testData.exec, account, block)
       if (options.vmtrace) {
         vm.on('step', (op) => {
-          const string = `${op.opcode.name} ${op.gasLeft.toString()}`
-          console.log(string)
-          op.stack.forEach((item) => {
-            console.log(item.toString('hex'))
+          console.log(`(stack before: ${op.stack.length} items)`)
+          op.stack.forEach((item, i) => {
+            console.log(`${i}: ${item.toString('hex')}`)
           })
+          const string = `${op.opcode.name} (gas left: ${op.gasLeft.toString()})`
+          console.log(string)
         })
       }
 
