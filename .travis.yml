@@ -27,7 +27,8 @@ matrix:
     - os: linux
       node_js: "7"
       env: CXX=g++-4.8 TEST_SUITE=testVM
-    - os: linux
-      node_js: "7"
-      env: CXX=g++-4.8 TEST_SUITE=testBlockchain
+# temporarily disable testBlockchain
+#    - os: linux
+#      node_js: "7"
+#      env: CXX=g++-4.8 TEST_SUITE=testBlockchain
 script: npm run $TEST_SUITE
