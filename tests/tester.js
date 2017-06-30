@@ -134,8 +134,8 @@ function runTests (name, runnerArgs, cb) {
   testGetterArgs.test = argv.test
 
   runnerArgs.forkConfig = FORK_CONFIG
-  //runnerArgs.debugging = true; // for BlockchainTests
-  //runnerArgs.vmtrace = true; // for VMTests
+  // runnerArgs.debugging = true; // for BlockchainTests
+  // runnerArgs.vmtrace = true; // for VMTests
 
   tape(name, t => {
     const runner = require(`./${name}Runner.js`)
