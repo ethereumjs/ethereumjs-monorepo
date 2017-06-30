@@ -32,7 +32,8 @@ const skip = [
   'CALLCODE_Bounds', // nodejs crash
   'CREATE_Bounds', // nodejs crash
   'DELEGATECALL_Bounds', // nodejs crash
-  'RevertDepthCreateAddressCollision' // test case is wrong
+  'RevertDepthCreateAddressCollision', // test case is wrong
+  'zeroSigTransactionInvChainID' // metropolis test
 ]
 
 /*
@@ -82,7 +83,7 @@ const skipVM = [
 if (argv.r) {
   randomized(argv.r, argv.v)
 } else if (argv.s) {
-  runTests('StateTests', argv)
+  runTests('GeneralStateTests', argv)
 } else if (argv.v) {
   runTests('VMTests', argv)
 } else if (argv.b) {
@@ -134,15 +135,23 @@ function runTests (name, runnerArgs, cb) {
   testGetterArgs.test = argv.test
 
   runnerArgs.forkConfig = FORK_CONFIG
-  //runnerArgs.debugging = true; // for BlockchainTests
-  //runnerArgs.vmtrace = true; // for VMTests
+  // runnerArgs.debugging = true; // for BlockchainTests
+  // runnerArgs.vmtrace = true; // for VMTests
 
   tape(name, t => {
     const runner = require(`./${name}Runner.js`)
     testing.getTestsFromArgs(name, (fileName, testName, test) => {
       return new Promise((resolve, reject) => {
-        t.comment(`file: ${fileName} test: ${testName}`)
-        runner(runnerArgs, test, t, resolve)
+        if (name === 'VMTests') {
+          // suppress some output of VMTests
+          // t.comment(`file: ${fileName} test: ${testName}`)
+          test.fileName = fileName
+          test.testName = testName
+          runner(runnerArgs, test, t, resolve)
+        } else {
+          t.comment(`file: ${fileName} test: ${testName}`)
+          runner(runnerArgs, test, t, resolve)
+        }
       }).catch(err => console.log(err))
     }, testGetterArgs).then(() => {
       t.end()
@@ -156,7 +165,7 @@ function runAll () {
   require('./genesishashes.js')
   async.series([
     runTests.bind(this, 'VMTests', {}),
-    //runTests.bind(this, 'StateTests', {}), // TODO: update StateTestsRunnner for GeneralStateTests
+    runTests.bind(this, 'GeneralStateTests', {}),
     runTests.bind(this, 'BlockchainTests', {})
   ])
 }
