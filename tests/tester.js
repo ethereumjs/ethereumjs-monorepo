@@ -141,8 +141,16 @@ function runTests (name, runnerArgs, cb) {
     const runner = require(`./${name}Runner.js`)
     testing.getTestsFromArgs(name, (fileName, testName, test) => {
       return new Promise((resolve, reject) => {
-        t.comment(`file: ${fileName} test: ${testName}`)
-        runner(runnerArgs, test, t, resolve)
+        if (name === 'VMTests') {
+          // suppress some output of VMTests
+          // t.comment(`file: ${fileName} test: ${testName}`)
+          test.fileName = fileName
+          test.testName = testName
+          runner(runnerArgs, test, t, resolve)
+        } else {
+          t.comment(`file: ${fileName} test: ${testName}`)
+          runner(runnerArgs, test, t, resolve)
+        }
       }).catch(err => console.log(err))
     }, testGetterArgs).then(() => {
       t.end()

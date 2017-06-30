@@ -6,7 +6,7 @@ const Trie = require('merkle-patricia-tree/secure')
 const ethUtil = require('ethereumjs-util')
 const BN = ethUtil.BN
 
-module.exports = function runStateTest (options, testData, t, cb) {
+module.exports = function runVMTest (options, testData, t, cb) {
   let state = new Trie()
   let results
   let account
@@ -62,11 +62,25 @@ module.exports = function runStateTest (options, testData, t, cb) {
         testUtil.verifyLogs(results.logs, testData, t)
       }
 
-      if (testData.gas && !results.exceptionError) {
-        t.equal(results.gas.toString(), new BN(testUtil.format(testData.gas)).toString(), 'valid gas usage')
-      } else {
-        // OOG
-        t.equal(results.gasUsed.toString(), new BN(testUtil.format(testData.exec.gas)).toString(), 'valid gas usage')
+      if (testData.gas) {
+        let actualGas, expectedGas
+        if (!results.exceptionError) {
+          actualGas = results.gas.toString()
+          expectedGas = new BN(testUtil.format(testData.gas)).toString()
+        } else {
+          // OOG
+          actualGas = results.gasUsed.toString()
+          expectedGas = new BN(testUtil.format(testData.exec.gas)).toString()
+        }
+
+        // compress output message for passing test cases
+        const successMsg = `valid gas usage [file: ${testData.fileName}]`
+        const failMsg = `valid gas usage [file: ${testData.fileName}, test: ${testData.testName}]`
+        if (actualGas === expectedGas) {
+          t.equal(actualGas, expectedGas, successMsg)
+        } else {
+          t.equal(actualGas, expectedGas, failMsg)
+        }
       }
 
       done()
