@@ -36,12 +36,10 @@ function runTestCase (testData, t, cb) {
     function (done) {
       var tx = testUtil.makeTx(testData.transaction)
       block = testUtil.makeBlockFromEnv(testData.env)
-      if (!block.isHomestead() && !testData.homestead) {
-        tx._homestead = false
-      } else {
-        block.isHomestead = function () {
-          return true
-        }
+      tx._homestead = true
+      tx.enableHomestead = true
+      block.isHomestead = function () {
+        return true
       }
 
       if (tx.validate()) {
