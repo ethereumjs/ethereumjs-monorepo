@@ -2,7 +2,7 @@
 
 [![NPM Package](https://img.shields.io/npm/v/ethereumjs-vm.svg?style=flat-square)](https://www.npmjs.org/package/ethereumjs-vm)
 [![Build Status](https://img.shields.io/travis/ethereumjs/ethereumjs-vm.svg?branch=master&style=flat-square)](https://travis-ci.org/ethereumjs/ethereumjs-vm)
-[![Gitter](https://img.shields.io/gitter/room/ethereum/ethereumjs-lib.svg?style=flat-square)](https://gitter.im/ethereum/ethereumjs-lib) or #ethereumjs on freenode
+[![Gitter](https://img.shields.io/gitter/room/ethereum/ethereumjs-lib.svg?style=flat-square)](https://gitter.im/ethereum/ethereumjs-lib) or #ethereumjs on freenode  
 
 [![js-standard-style](https://cdn.rawgit.com/feross/standard/master/badge.svg)](https://github.com/feross/standard)
 
@@ -28,16 +28,16 @@ vm.runCode({
   console.log('returned: ' + results.return.toString('hex'));
 })
 ```
-Also more examples can be found here
+Also more examples can be found here  
 - [examples](./examples)
 - [old blog post](https://wanderer.github.io/ethereum/nodejs/code/2014/08/12/running-contracts-with-vm/)
 
-# BROWSER
+# BROWSER  
 To build for standalone use in the browser install `browserify` and run `npm run build`. This will give you a global variable `EthVM` to use. The standalone file will be at `./dist/ethereumjs-vm.js`
 
 # API
-  - [`new VM([opts])`](#new-vmstatetrie-blockchain)
-  - [`VM` methods](#vm-methods)
+  - [`new VM([opts])`](#new-vmstatetrie-blockchain)  
+  - [`VM` methods](#vm-methods)  
     - [`vm.runBlockchain([blockchain], [cb])`](#vmrunblockchainblockchain-cb)
     - [`vm.runBlock(opts, cb)`](#vmrunblockopts-cb)
     - [`vm.runTx(opts, cb)`](#vmruntxopts-cb)
@@ -165,7 +165,7 @@ Emits the result of the transaction.
 
 _Note: Requires at least Node.js `8.0.0` installed to run the tests, this is because `ethereumjs-testing` uses `async/await` and other ES2015 language features_
 
-`npm test`
+`npm test`  
 if you want to just run the Blockchain tests run
 `node ./tests/tester -b`
 if you want to just run the VM tests run
