@@ -1139,7 +1139,7 @@ module.exports = {
     runState.returnValue = memLoad(runState, offset, length)
   },
   // '0x70', range - other
-  SUICIDE: function (suicideToAddress, runState, cb) {
+  SELFDESTRUCT: function (suicideToAddress, runState, cb) {
     var stateManager = runState.stateManager
     var contract = runState.contract
     var contractAddress = runState.address
@@ -1498,7 +1498,7 @@ const codes = {
   0xf3: ['RETURN', 0, 2, 0, false],
 
   // '0x70', range - other
-  0xff: ['SUICIDE', 0, 1, 0, false]
+  0xff: ['SELFDESTRUCT', 0, 1, 0, false]
 }
 
 module.exports = function (op, full) {
