@@ -256,7 +256,7 @@ Trie.prototype._findPath = function (targetKey, cb) {
 
   this._walkTrie(root, processNode, cb)
 
-  function processNode (root, node, keyProgress, walkController) {
+  function processNode (nodeRef, node, keyProgress, walkController) {
     var nodeKey = node.key || []
     var keyRemainder = targetKey.slice(matchingNibbleLength(keyProgress, targetKey))
     var matchingLen = matchingNibbleLength(keyRemainder, nodeKey)
@@ -311,7 +311,7 @@ Trie.prototype._findNode = function (key, root, stack, cb) {
  * Finds all nodes that store k,v values
  */
 Trie.prototype._findValueNodes = function (onFound, cb) {
-  this._walkTrie(this.root, function (root, node, key, walkController) {
+  this._walkTrie(this.root, function (nodeRef, node, key, walkController) {
     var fullKey = key
 
     if (node.key) {
@@ -320,10 +320,10 @@ Trie.prototype._findValueNodes = function (onFound, cb) {
 
     if (node.type === 'leaf') {
       // found leaf node!
-      onFound(root, node, fullKey, walkController.next)
+      onFound(nodeRef, node, fullKey, walkController.next)
     } else if (node.type === 'branch' && node.value) {
       // found branch with value
-      onFound(root, node, fullKey, walkController.next)
+      onFound(nodeRef, node, fullKey, walkController.next)
     } else {
       // keep looking for value nodes
       walkController.next()
@@ -336,11 +336,11 @@ Trie.prototype._findValueNodes = function (onFound, cb) {
  * (some nodes are stored raw inside other nodes)
  */
 Trie.prototype._findDbNodes = function (onFound, cb) {
-  this._walkTrie(this.root, function (root, node, key, walkController) {
-    if (TrieNode.isRawNode(root)) {
+  this._walkTrie(this.root, function (nodeRef, node, key, walkController) {
+    if (TrieNode.isRawNode(nodeRef)) {
       walkController.next()
     } else {
-      onFound(root, node, key, walkController.next)
+      onFound(nodeRef, node, key, walkController.next)
     }
   }, cb)
 }
@@ -443,7 +443,7 @@ Trie.prototype._walkTrie = function (root, onNode, onDone) {
     })
   })
 
-  function processNode (root, node, key, cb) {
+  function processNode (nodeRef, node, key, cb) {
     if (!node) return cb()
     if (aborted) return cb()
     var stopped = false
@@ -468,25 +468,25 @@ Trie.prototype._walkTrie = function (root, onNode, onDone) {
           return cb()
         }
         var children = node.getChildren()
-        async.forEachOf(children, function (data, index, cb) {
-          var keyExtension = data[0]
-          var childRoot = data[1]
+        async.forEachOf(children, function (childData, index, cb) {
+          var keyExtension = childData[0]
+          var childRef = childData[1]
           var childKey = key.concat(keyExtension)
-          self._lookupNode(childRoot, function (node) {
-            processNode(childRoot, node, childKey, cb)
+          self._lookupNode(childRef, function (childNode) {
+            processNode(childRef, childNode, childKey, cb)
           })
         }, cb)
       },
       only: function (childIndex) {
-        var childRoot = node.getValue(childIndex)
-        self._lookupNode(childRoot, function (node) {
+        var childRef = node.getValue(childIndex)
+        self._lookupNode(childRef, function (childNode) {
           var childKey = key.slice()
           childKey.push(childIndex)
-          processNode(childRoot, node, childKey, cb)
+          processNode(childRef, childNode, childKey, cb)
         })
       }
     }
-    onNode(root, node, key, walkController)
+    onNode(nodeRef, node, key, walkController)
   }
 }
 
