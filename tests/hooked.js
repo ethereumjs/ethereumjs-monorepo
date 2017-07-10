@@ -33,7 +33,7 @@ tape('hooked-vm', function (test) {
 
   var vm = createHookedVm({
     enableHomestead: true,
-    enableHomsteadReprice: true,
+    enableHomsteadReprice: true
   }, hooksForBlockchainState(blockchainState))
 
   // vm.on('step', function(stepData){
