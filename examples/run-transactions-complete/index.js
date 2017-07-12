@@ -5,6 +5,7 @@
  * Execute it with `node index.js`
  */
 
+var Buffer = require('safe-buffer').Buffer // use for Node.js <4.5.0
 var async = require('async')
 var VM = require('./../../index.js')
 var Account = require('ethereumjs-account')
@@ -43,7 +44,7 @@ var rawTx2 = require('./raw-tx2')
 // sets up the initial state and runs the callback when complete
 function setup (cb) {
   // the address we are sending from
-  var publicKeyBuf = new Buffer(keyPair.publicKey, 'hex')
+  var publicKeyBuf = Buffer.from(keyPair.publicKey, 'hex')
   var address = utils.pubToAddress(publicKeyBuf, true)
 
   // create a new account
@@ -64,7 +65,7 @@ function runTx (raw, cb) {
   var tx = new Transaction(raw)
 
   // tx.from
-  tx.sign(new Buffer(keyPair.secretKey, 'hex'))
+  tx.sign(Buffer.from(keyPair.secretKey, 'hex'))
 
   console.log('----running tx-------')
   // run the tx \o/

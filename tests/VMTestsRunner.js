@@ -20,7 +20,7 @@ module.exports = function runVMTest (options, testData, t, cb) {
       testUtil.setupPreConditions(state, testData, done)
     },
     function (done) {
-      state.get(new Buffer(testData.exec.address, 'hex'), function (err, data) {
+      state.get(Buffer.from(testData.exec.address, 'hex'), function (err, data) {
         let a = new Account(data)
         account.stateRoot = a.stateRoot
         // console.log(account.toJSON(true))
