@@ -18,8 +18,7 @@ module.exports = function runBlockchainTest (options, testData, t, cb) {
   blockchain.ethash.cacheDB = cacheDB
   var vm = new VM({
     state: state,
-    blockchain: blockchain,
-    enableHomestead: true
+    blockchain: blockchain
   })
   var genesisBlock = new Block()
 
