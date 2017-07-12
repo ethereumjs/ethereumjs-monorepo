@@ -13,18 +13,6 @@
     "build:es5": "babel index.js --source-root ./ -d ./es5",
     "build:docs": "documentation --github  -f md ./index.js > ./docs/index.md && contributor"
   },
-  "browserify": {
-    "transform": [
-      [
-        "babelify",
-        {
-          "presets": [
-            "es2015"
-          ]
-        }
-      ]
-    ]
-  },
   "keywords": [
     "ethereum",
     "transactions"
