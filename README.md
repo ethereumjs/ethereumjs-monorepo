@@ -54,7 +54,6 @@ Creates a new VM object
 - `opts`
   - `state` - the state trie
   - `blockchain` - an instance of ethereumjs-blockchain
-  - `enableHomestead` - a boolean that overrides the homestead settings based on blocknumber
   - `activatePrecompiles` - create entries in the state tree for the precompiled contracts
 
 ### `VM` methods
