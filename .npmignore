@@ -4,3 +4,4 @@ test/
 es5/.gitkeep
 .gitignore
 .travis.yml
+.babelrc
