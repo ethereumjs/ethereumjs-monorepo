@@ -1,7 +1,8 @@
 'use strict'
-const Block = require('./')
 const Transaction = require('ethereumjs-tx')
 const ethUtil = require('ethereumjs-util')
+const Block = require('./')
+const blockHeaderFromRpc = require('./header-from-rpc')
 
 module.exports = blockFromRpc
 
@@ -12,54 +13,34 @@ module.exports = blockFromRpc
  */
 function blockFromRpc (blockParams, uncles) {
   uncles = uncles || []
-  let block = new Block({
+  const block = new Block({
     transactions: [],
     uncleHeaders: []
   })
-  let blockHeader = block.header
-  blockHeader.parentHash = blockParams.parentHash
-  blockHeader.uncleHash = blockParams.sha3Uncles
-  blockHeader.coinbase = blockParams.miner
-  blockHeader.stateRoot = blockParams.stateRoot
-  blockHeader.transactionsTrie = blockParams.transactionsRoot
-  blockHeader.receiptTrie = blockParams.receiptRoot || blockParams.receiptsRoot || ethUtil.SHA3_NULL
-  blockHeader.bloom = blockParams.logsBloom
-  blockHeader.difficulty = blockParams.difficulty
-  blockHeader.number = blockParams.number
-  blockHeader.gasLimit = blockParams.gasLimit
-  blockHeader.gasUsed = blockParams.gasUsed
-  blockHeader.timestamp = blockParams.timestamp
-  blockHeader.extraData = blockParams.extraData
-  blockHeader.mixHash = blockParams.mixHash
-  blockHeader.nonce = blockParams.nonce
-
-  // override hash incase something was missing
-  blockHeader.hash = function () {
-    return ethUtil.toBuffer(blockParams.hash)
-  }
+  block.header = blockHeaderFromRpc(blockParams)
 
   block.transactions = (blockParams.transactions || []).map(function (_txParams) {
-    let txParams = Object.assign({}, _txParams)
-    normalizeTxParams(txParams)
+    const txParams = normalizeTxParams(_txParams)
     // override from address
-    let fromAddress = ethUtil.toBuffer(txParams.from)
+    const fromAddress = ethUtil.toBuffer(txParams.from)
     delete txParams.from
-    let tx = new Transaction(txParams)
+    const tx = new Transaction(txParams)
     tx._from = fromAddress
     tx.getSenderAddress = function () { return fromAddress }
     // override hash
-    let txHash = ethUtil.toBuffer(txParams.hash)
+    const txHash = ethUtil.toBuffer(txParams.hash)
     tx.hash = function () { return txHash }
     return tx
   })
   block.uncleHeaders = uncles.map(function (uncleParams) {
-    return blockFromRpc(uncleParams).header
+    return blockHeaderFromRpc(uncleParams)
   })
 
   return block
 }
 
-function normalizeTxParams (txParams) {
+function normalizeTxParams (_txParams) {
+  const txParams = Object.assign({}, _txParams)
   // hot fix for https://github.com/ethereumjs/ethereumjs-util/issues/40
   txParams.gasLimit = (txParams.gasLimit === undefined) ? txParams.gas : txParams.gasLimit
   txParams.data = (txParams.data === undefined) ? txParams.input : txParams.data
@@ -67,4 +48,5 @@ function normalizeTxParams (txParams) {
   txParams.to = txParams.to ? ethUtil.setLengthLeft(ethUtil.toBuffer(txParams.to), 20) : null
   // v as raw signature value {0,1}
   txParams.v = txParams.v < 27 ? txParams.v + 27 : txParams.v
+  return txParams
 }
