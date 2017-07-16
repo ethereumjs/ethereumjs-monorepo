@@ -162,6 +162,9 @@ Emits the Transaction that is about to be processed.
 Emits the result of the transaction.
 
 # TESTING
+
+_Note: Requires at least Node.js `8.0.0` installed to run the tests, this is because `ethereumjs-testing` uses `async/await` and other ES2015 language features_
+
 `npm test`  
 if you want to just run the Blockchain tests run
 `node ./tests/tester -b`

@@ -2,7 +2,7 @@ const argv = require('minimist')(process.argv.slice(2))
 const async = require('async')
 const tape = require('tape')
 const testing = require('ethereumjs-testing')
-const FORK_CONFIG = 'EIP150'
+const FORK_CONFIG = argv.fork || 'EIP150'
 const skip = [
   'CreateHashCollision', // impossible hash collision on generating address
   'SuicidesMixingCoinbase', // sucides to the coinbase, since we run a blockLevel we create coinbase account.
