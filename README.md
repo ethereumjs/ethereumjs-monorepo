@@ -1,10 +1,10 @@
-# SYNOPSIS 
+# SYNOPSIS
 
 [![NPM Package](https://img.shields.io/npm/v/ethereumjs-vm.svg?style=flat-square)](https://www.npmjs.org/package/ethereumjs-vm)
 [![Build Status](https://img.shields.io/travis/ethereumjs/ethereumjs-vm.svg?branch=master&style=flat-square)](https://travis-ci.org/ethereumjs/ethereumjs-vm)
 [![Gitter](https://img.shields.io/gitter/room/ethereum/ethereumjs-lib.svg?style=flat-square)](https://gitter.im/ethereum/ethereumjs-lib) or #ethereumjs on freenode  
 
-[![js-standard-style](https://cdn.rawgit.com/feross/standard/master/badge.svg)](https://github.com/feross/standard) 
+[![js-standard-style](https://cdn.rawgit.com/feross/standard/master/badge.svg)](https://github.com/feross/standard)
 
 Implements Ethereum's VM in JS
 
@@ -23,7 +23,7 @@ code = new Buffer(code, 'hex')
 
 vm.runCode({
   code: code,
-  gasLimit: new Buffer('ffffffff', 'hex') 
+  gasLimit: new Buffer('ffffffff', 'hex')
 }, function(err, results){
   console.log('returned: ' + results.return.toString('hex'));
 })
@@ -101,10 +101,9 @@ Runs EVM code
 - `opts.caller` - The address that ran this code. The address should be a `Buffer` of 20bits. Defaults to `0`
 - `cb` - The callback. It is given two arguments, an `error` string containing an error that may have happened or `null` and a `results` object with the following properties
   - `gas` - the amount of gas left as a `bignum`
-  - `gasUsed` - the amount of gas as a `bignum` the code used to run. 
+  - `gasUsed` - the amount of gas as a `bignum` the code used to run.
   - `gasRefund` - a `Bignum` containing the amount of gas to refund from deleting storage values
-  - `suicides` - an `Array` of accounts that have suicided.
-  - `suicideTo` - the account that the suicide refund should go to.
+  - `suicides` - an `Object` with keys for accounts that have suicided and values for balance transfer recipient accounts.
   - `logs` - an `Array` of logs that the contract emitted.
   - `exception` - `0` if the contract encountered an exception, `1` otherwise.
   - `exceptionError` - a `String` describing the exception if there was one.
@@ -137,18 +136,18 @@ vm.generateGenesis(genesisData, function(){
 ### `events`
 All events are instances of [async-eventemmiter](https://www.npmjs.com/package/async-eventemitter). If an event handler has an arity of 2 the VM will pause until the callback is called
 
-#### `step` 
+#### `step`
 The `step` event is given an `Object` and callback. The `Object` has the following properties.
 - `pc` - a `Number` representing the program counter
 - `opcode` - the next opcode to be ran
 - `gas` - a `bignum` standing for the amount of gasLeft
-- `stack` - an `Array` of `Buffers` containing the stack. 
+- `stack` - an `Array` of `Buffers` containing the stack.
 - `storageTrie` - the storage [trie](https://github.com/wanderer/merkle-patricia-tree) for the account
 - `account` - the [`Account`](https://github.com/ethereum/ethereumjs-account) which owns the code running.
 - `address` - the address of the `account`
 - `depth` - the current number of calls deep the contract is
 - `memory` - the memory of the VM as a `buffer`
-- `cache` - The account cache. Contains all the accounts loaded from the trie. It is an instance of [functional red black tree](https://www.npmjs.com/package/functional-red-black-tree) 
+- `cache` - The account cache. Contains all the accounts loaded from the trie. It is an instance of [functional red black tree](https://www.npmjs.com/package/functional-red-black-tree)
 
 #### `beforeBlock`
 Emits the block that is about to be processed.
@@ -157,19 +156,28 @@ Emits the block that is about to be processed.
 Emits the results of the processing a block.
 
 #### `beforeTx`
-Emits the Transaction that I about to be processed.
+Emits the Transaction that is about to be processed.
 
 #### `afterTx`
 Emits the result of the transaction.
 
 # TESTING
+
+_Note: Requires at least Node.js `8.0.0` installed to run the tests, this is because `ethereumjs-testing` uses `async/await` and other ES2015 language features_
+
 `npm test`  
 if you want to just run the Blockchain tests run
-`./bin/tester -b`
+`node ./tests/tester -b`
 if you want to just run the VM tests run
-`./bin/tester -v`
+`node ./tests/tester -v`
 if you want to just run the State tests run
-`./bin/tester -s`
+`node ./tests/tester -s`
+
+To run the all the tests in a file:
+`node ./tests/tester -b --file='randomStatetest303'`
+
+or to run a specific test case:
+`node ./tests/tester -v --test='log0_nonEmptyMem_logMemSize1_logMemStart31'``
 
 # Internal Structure
 The VM processes state changes at many levels.

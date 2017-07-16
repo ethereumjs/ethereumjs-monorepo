@@ -1,6 +1,6 @@
 {
   "name": "ethereumjs-vm",
-  "version": "2.0.2",
+  "version": "2.1.0",
   "description": "an ethereum VM implementation",
   "main": "index.js",
   "dependencies": {
@@ -15,8 +15,10 @@
     "merkle-patricia-tree": "^2.1.2"
   },
   "devDependencies": {
+    "babel-preset-es2015": "^6.24.0",
+    "babelify": "^7.3.0",
     "ethereumjs-blockchain": "^1.4.1",
-    "ethereumjs-testing": "0.0.1",
+    "ethereumjs-testing": "https://github.com/ethereumjs/ethereumjs-testing",
     "ethereumjs-tx": "1.1.4",
     "level": "^1.4.0",
     "leveldown": "^1.4.6",
@@ -26,12 +28,24 @@
     "standard": "^5.2.2",
     "tape": "^4.2.0"
   },
+  "browserify": {
+    "transform": [
+      [
+        "babelify",
+        {
+          "presets": [
+            "es2015"
+          ]
+        }
+      ]
+    ]
+  },
   "scripts": {
-    "testVM": "./tests/tester -v",
-    "testState": "./tests/tester -s",
-    "testBlockchain": "./tests/tester -b",
+    "testVM": "node ./tests/tester -v",
+    "testState": "node ./tests/tester -s",
+    "testBlockchain": "node --stack-size=1500 ./tests/tester -b",
     "lint": "standard",
-    "test": "./tests/tester -a"
+    "test": "node ./tests/tester -a"
   },
   "repository": {
     "type": "git",

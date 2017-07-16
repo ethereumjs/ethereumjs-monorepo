@@ -5,7 +5,6 @@ const rlp = utils.rlp
 const Account = require('ethereumjs-account')
 const Transaction = require('ethereumjs-tx')
 const Block = require('ethereumjs-block')
-const Header = require('ethereumjs-block/header.js')
 
 exports.dumpState = function (state, cb) {
   var rs = state.createReadStream()
@@ -63,7 +62,7 @@ exports.makeTx = function (txData) {
   tx.value = format(txData.value)
   tx.data = format(txData.data, false, true) // slice off 0x
   if (txData.secretKey) {
-    var privKey = new Buffer(txData.secretKey, 'hex')
+    var privKey = format(txData.secretKey, false, true)
     tx.sign(privKey)
   } else {
     tx.v = new Buffer(txData.v.slice(2), 'hex')
@@ -78,7 +77,7 @@ exports.verifyPostConditions = function (state, testData, t, cb) {
   var keyMap = {}
 
   for (var key in testData) {
-    var hash = utils.sha3(new Buffer(key, 'hex')).toString('hex')
+    var hash = utils.sha3(new Buffer(utils.stripHexPrefix(key), 'hex')).toString('hex')
     hashedAccounts[hash] = testData[key]
     keyMap[hash] = key
   }
@@ -238,8 +237,7 @@ exports.fromDecimal = function (string) {
  * @return {Buffer}
  */
 exports.fromAddress = function (hexString) {
-  hexString = hexString.substring(2)
-  return utils.setLength(new Buffer(new BN(hexString, 16).toArray()), 32)
+  return utils.setLength(new Buffer(new BN(hexString.slice(2), 16).toArray()), 32)
 }
 
 /**
@@ -248,15 +246,15 @@ exports.fromAddress = function (hexString) {
  * @return {Buffer}
  */
 exports.toCodeHash = function (hexCode) {
-  return utils.sha3(new Buffer(hexCode.substring(2), 'hex'))
+  return utils.sha3(new Buffer(hexCode.slice(2), 'hex'))
 }
 
 exports.makeBlockHeader = function (data) {
-  var header = new Header()
+  var header = {}
   header.timestamp = format(data.currentTimestamp)
   header.gasLimit = format(data.currentGasLimit)
   if (data.previousHash) {
-    header.parentHash = new Buffer(data.previousHash, 'hex')
+    header.parentHash = format(data.previousHash, false, true)
   }
   header.coinbase = utils.setLength(format(data.currentCoinbase, false, true), 20)
   header.difficulty = format(data.currentDifficulty)
@@ -267,13 +265,15 @@ exports.makeBlockHeader = function (data) {
 /**
  * makeBlockFromEnv - helper to create a block from the env object in tests repo
  * @param {Object} env object from tests repo
+ * @param {Object} transactions transactions for the block
  * @return {Object}  the block
  */
-exports.makeBlockFromEnv = function (env) {
-  var block = new Block()
-  block.header = exports.makeBlockHeader(env)
-
-  return block
+exports.makeBlockFromEnv = function (env, transactions) {
+  return new Block({
+    header: exports.makeBlockHeader(env),
+    transactions: transactions || {},
+    uncleHeaders: []
+  })
 }
 
 /**
@@ -341,7 +341,7 @@ exports.setupPreConditions = function (state, testData, done) {
         if (testData.exec && key === testData.exec.address) {
           testData.root = storageTrie.root
         }
-        state.put(new Buffer(key, 'hex'), account.serialize(), function () {
+        state.put(new Buffer(utils.stripHexPrefix(key), 'hex'), account.serialize(), function () {
           cb2()
         })
       }
