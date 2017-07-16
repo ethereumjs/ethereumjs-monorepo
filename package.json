@@ -43,7 +43,7 @@
   "scripts": {
     "testVM": "node ./tests/tester -v",
     "testState": "node ./tests/tester -s",
-    "testBlockchain": "node ./tests/tester -b",
+    "testBlockchain": "node --stack-size=1500 ./tests/tester -b",
     "lint": "standard",
     "test": "node ./tests/tester -a"
   },
