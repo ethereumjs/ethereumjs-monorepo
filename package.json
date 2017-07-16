@@ -43,7 +43,7 @@
   "scripts": {
     "testVM": "node --harmony ./tests/tester -v",
     "testState": "node --harmony ./tests/tester -s",
-    "testBlockchain": "node --harmony ./tests/tester -b",
+    "testBlockchain": "node --stack-size=1500 --harmony ./tests/tester -b",
     "lint": "standard",
     "test": "node --harmony ./tests/tester -a"
   },
