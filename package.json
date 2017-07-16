@@ -41,11 +41,11 @@
     ]
   },
   "scripts": {
-    "testVM": "node --harmony ./tests/tester -v",
-    "testState": "node --harmony ./tests/tester -s",
-    "testBlockchain": "node --stack-size=1500 --harmony ./tests/tester -b",
+    "testVM": "node ./tests/tester -v",
+    "testState": "node ./tests/tester -s",
+    "testBlockchain": "node --stack-size=1500 ./tests/tester -b",
     "lint": "standard",
-    "test": "node --harmony ./tests/tester -a"
+    "test": "node ./tests/tester -a"
   },
   "repository": {
     "type": "git",
