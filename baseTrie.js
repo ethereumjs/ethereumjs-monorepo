@@ -67,7 +67,7 @@ Trie.prototype.get = function (key, cb) {
 
   key = ethUtil.toBuffer(key)
 
-  self._findPath(key, function (err, node, remainder, stack) {
+  self.findPath(key, function (err, node, remainder, stack) {
     var value = null
     if (node && remainder.length === 0) {
       value = node.value
@@ -98,7 +98,7 @@ Trie.prototype.put = function (key, value, cb) {
     self.sem.take(function () {
       if (self.root.toString('hex') !== ethUtil.SHA3_RLP.toString('hex')) {
         // first try to find the give key or its nearst node
-        self._findPath(key, function (err, foundValue, keyRemainder, stack) {
+        self.findPath(key, function (err, foundValue, keyRemainder, stack) {
           if (err) {
             return cb(err)
           }
@@ -125,7 +125,7 @@ Trie.prototype.del = function (key, cb) {
   cb = callTogether(cb, self.sem.leave)
 
   self.sem.take(function () {
-    self._findPath(key, function (err, foundValue, keyRemainder, stack) {
+    self.findPath(key, function (err, foundValue, keyRemainder, stack) {
       if (err) {
         return cb(err)
       }
@@ -238,7 +238,7 @@ Trie.prototype._batchNodes = function (opStack, cb) {
 /**
  * Trys to find a path to the node for the given key
  * It returns a `stack` of nodes to the closet node
- * @method _findPath
+ * @method findPath
  * @param {String|Buffer} - key - the search key
  * @param {Function} - cb - the callback function. Its is given the following
  * arguments
@@ -248,7 +248,7 @@ Trie.prototype._batchNodes = function (opStack, cb) {
  *  - stack - an array of nodes that forms the path to node we are searching for
  */
 
-Trie.prototype._findPath = function (targetKey, cb) {
+Trie.prototype.findPath = function (targetKey, cb) {
   var self = this
   var root = self.root
   var stack = []
@@ -302,7 +302,7 @@ Trie.prototype._findPath = function (targetKey, cb) {
  * Finds all nodes that store k,v values
  */
 Trie.prototype._findNode = function (key, root, stack, cb) {
-  this._findPath(key, function () {
+  this.findPath(key, function () {
     cb.apply(null, arguments)
   })
 }
