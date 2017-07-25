@@ -135,9 +135,11 @@ function runTests (name, runnerArgs, cb) {
   testGetterArgs.test = argv.test
 
   runnerArgs.forkConfig = FORK_CONFIG
-  // runnerArgs.debugging = true; // for BlockchainTests
+  runnerArgs.debugging = true; // for BlockchainTests
   // runnerArgs.vmtrace = true; // for VMTests
 
+  testsStatus = {}
+ 
   tape(name, t => {
     const runner = require(`./${name}Runner.js`)
     testing.getTestsFromArgs(name, (fileName, testName, test) => {
@@ -150,10 +152,18 @@ function runTests (name, runnerArgs, cb) {
           runner(runnerArgs, test, t, resolve)
         } else {
           t.comment(`file: ${fileName} test: ${testName}`)
-          runner(runnerArgs, test, t, resolve)
+          runner(fileName, testsStatus, runnerArgs, test, t, resolve)
         }
-      }).catch(err => console.log(err))
+      }).catch(function(err) {
+        console.log(err)
+      })
     }, testGetterArgs).then(() => {
+      if (Object.keys(testsStatus).length > 0) {
+        console.log("Failed tests:")
+        for (k in testsStatus) {
+          console.log(k)
+        }
+      }
       t.end()
     })
   })
