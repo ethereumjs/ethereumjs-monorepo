@@ -33,7 +33,7 @@ Also more examples can be found here
 - [old blog post](https://wanderer.github.io/ethereum/nodejs/code/2014/08/12/running-contracts-with-vm/)
 
 # BROWSER  
-To build for standalone use in the browser install `browserify` and run `npm run build`. This will give you a global variable `EthVM` to use. The standalone file will be at `./dist/ethereumjs-vm.js`
+To build for standalone use in the browser, install `browserify` and check [run-transactions-simple exsample](https://github.com/ethereumjs/ethereumjs-vm/tree/master/examples/run-transactions-simple). This will give you a global variable `EthVM` to use. The generated file will be at `./examples/run-transactions-simple/build.js`.
 
 # API
   - [`new VM([opts])`](#new-vmstatetrie-blockchain)  
@@ -50,7 +50,7 @@ To build for standalone use in the browser install `browserify` and run `npm run
 ### `new VM([StateTrie], [blockchain])`
 Creates a new VM object
 - `StateTrie` - The [Patricia Merkle Tree](https://github.com/wanderer/merkle-patricia-tree) that contains the state. If no trie is given the `VM` will create an in memory trie.
-- `blockchain` - an instance of the [`Blockchain`](https://github.com/ethereum/ethereumjs-lib/blob/master/docs/blockchain.md) If no blockchain is given a fake blockchain will be used.
+- `blockchain` - an instance of the [`Blockchain`](https://github.com/ethereum/ethereumjs-lib/blob/master/docs/blockchain.md). If no blockchain is given a fake blockchain will be used.
 - `opts`
   - `state` - the state trie
   - `blockchain` - an instance of ethereumjs-blockchain
@@ -60,7 +60,7 @@ Creates a new VM object
 
 
 #### `vm.runBlockchain(blockchain, cb)`
-Process a transaction.
+Process blocks and adds them to the blockchain.
 - `blockchain` - A [blockchain](https://github.com/ethereum/ethereumjs-blockchain) that to process
 - `cb` - The callback. It is given an err parameter if it fails
 
