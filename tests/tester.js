@@ -37,6 +37,8 @@ const skip = [
 ]
 
 /*
+NOTE: VM tests have been disabled since they are generated using Frontier gas costs, and ethereumjs-vm doesn't support historical fork rules
+
 TODO: some VM tests do not appear to be executing (don't print an "ok" statement):
 ...
 # file: vmLogTest test: log0_emptyMem
@@ -135,7 +137,7 @@ function runTests (name, runnerArgs, cb) {
   testGetterArgs.test = argv.test
 
   runnerArgs.forkConfig = FORK_CONFIG
-  // runnerArgs.debugging = true; // for BlockchainTests
+  runnerArgs.debug = argv.debug // for BlockchainTests
   // runnerArgs.vmtrace = true; // for VMTests
 
   tape(name, t => {
@@ -164,7 +166,7 @@ function runAll () {
   require('./cacheTest.js')
   require('./genesishashes.js')
   async.series([
-    runTests.bind(this, 'VMTests', {}),
+    // runTests.bind(this, 'VMTests', {}), // VM tests disabled since we don't support Frontier gas costs
     runTests.bind(this, 'GeneralStateTests', {}),
     runTests.bind(this, 'BlockchainTests', {})
   ])
