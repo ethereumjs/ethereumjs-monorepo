@@ -18,8 +18,7 @@ module.exports = function runBlockchainTest (options, testData, t, cb) {
   blockchain.ethash.cacheDB = cacheDB
   var vm = new VM({
     state: state,
-    blockchain: blockchain,
-    enableHomestead: true
+    blockchain: blockchain
   })
   var genesisBlock = new Block()
 
@@ -94,7 +93,7 @@ module.exports = function runBlockchainTest (options, testData, t, cb) {
         // imported if it is not equal to the expected postState. it is useful
         // for debugging to skip this, so that verifyPostConditions will compare
         // testData.postState to the actual postState, rather than to the preState.
-        if (!options.debugging) {
+        if (!options.debug) {
           // make sure the state is set before checking post conditions
           state.root = block.header.stateRoot
         }
@@ -102,7 +101,7 @@ module.exports = function runBlockchainTest (options, testData, t, cb) {
       })
     },
     function (done) {
-      if (options.debugging) {
+      if (options.debug) {
         testUtil.verifyPostConditions(state, testData.postState, t, done)
       } else {
         done()

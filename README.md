@@ -54,7 +54,6 @@ Creates a new VM object
 - `opts`
   - `state` - the state trie
   - `blockchain` - an instance of ethereumjs-blockchain
-  - `enableHomestead` - a boolean that overrides the homestead settings based on blocknumber
   - `activatePrecompiles` - create entries in the state tree for the precompiled contracts
 
 ### `VM` methods
@@ -165,19 +164,20 @@ Emits the result of the transaction.
 
 _Note: Requires at least Node.js `8.0.0` installed to run the tests, this is because `ethereumjs-testing` uses `async/await` and other ES2015 language features_
 
-`npm test`  
-if you want to just run the Blockchain tests run
-`node ./tests/tester -b`
-if you want to just run the VM tests run
-`node ./tests/tester -v`
+`npm test`
 if you want to just run the State tests run
 `node ./tests/tester -s`
+if you want to just run the Blockchain tests run
+`node ./tests/tester -b`
 
-To run the all the tests in a file:
+To run the all the blockchain tests in a file:
 `node ./tests/tester -b --file='randomStatetest303'`
 
-or to run a specific test case:
-`node ./tests/tester -v --test='log0_nonEmptyMem_logMemSize1_logMemStart31'``
+To run a specific state test case:
+`node ./tests/tester -s --test='stackOverflow'`
+
+Blockchain tests support `--debug` to verify the postState:
+`node ./tests/tester -b  --debug --test='ZeroValue_SELFDESTRUCT_ToOneStorageKey_OOGRevert_d0g0v0_EIP158'`
 
 # Internal Structure
 The VM processes state changes at many levels.

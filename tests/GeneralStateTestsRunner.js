@@ -28,8 +28,7 @@ function runTestCase (testData, t, cb) {
   async.series([
     function (done) {
       vm = new VM({
-        state: state,
-        enableHomestead: true
+        state: state
       })
       testUtil.setupPreConditions(state, testData, done)
     },
