@@ -1,4 +1,4 @@
-// see full article here https://wanderer.github.io/2014/06/14/creating-and-verifying-transaction-with-node/
+// see full article here https://wanderer.github.io/ethereum/2014/06/14/creating-and-verifying-transaction-with-node/
 
 var Transaction = require('../index.js')
 
