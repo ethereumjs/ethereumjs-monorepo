@@ -68,7 +68,7 @@ Process a transaction.
 
 #### `vm.runBlock(opts, cb)`
 Processes the `block` running all of the transactions it contains and updating the miner's account.
-- `opts.block` - The [`Block`](./block.md) to process
+- `opts.block` - The [`Block`](https://github.com/ethereumjs/ethereumjs-block) to process
 - `opts.generate` - a `Boolean`; whether to generate the stateRoot. If false  `runBlock` will check the stateRoot of the block against the Trie
 - `cb` - The callback. It is given two arguments, an `error` string containing an error that may have happened or `null`, and a `results` object with the following properties:
   - `receipts` - the receipts from the transactions in the block
@@ -92,9 +92,9 @@ Runs EVM code
 - `opts.code` - The EVM code to run given as a `Buffer`
 - `opts.data` - The input data given as a `Buffer`
 - `opts.value` - The value in ether that is being sent to `opt.address`. Defaults to `0`
-- `opts.block` - The [`Block`](./block.md) the `tx` belongs to. If omitted a blank block will be used.
+- `opts.block` - The [`Block`](https://github.com/ethereumjs/ethereumjs-block) the `tx` belongs to. If omitted a blank block will be used.
 - `opts.gasLimit` - The gas limit for the code given as a `Buffer`
-- `opts.account` - The [`Account`](./account.md) that the executing code belongs to. If omitted an empty account will be used
+- `opts.account` - The [`Account`](https://github.com/ethereumjs/ethereumjs-account) that the executing code belongs to. If omitted an empty account will be used
 - `opts.address` - The address of the account that is executing this code. The address should be a `Buffer` of bytes. Defaults to `0`
 - `opts.origin` - The address where the call originated from. The address should be a `Buffer` of 20bits. Defaults to `0`
 - `opts.caller` - The address that ran this code. The address should be a `Buffer` of 20bits. Defaults to `0`
