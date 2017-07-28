@@ -9,14 +9,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [2.3.0] - Unreleased
 ### Changed
-- Spurious Dragon compatible
+
 - Detailed list of changes in pull request [#147](https://github.com/ethereumjs/ethereumjs-vm/pull/147)
 
 [2.3.0]: https://github.com/ethereumjs/ethereumjs-vm/compare/v2.2.0...v2.3.0
 
-## [2.2.0] - Unreleased
+## [2.2.0] - 2017-07-28
 ### Changed
-- EIP 150 compatible
+- Spurious Dragon & EIP 150 compatible
 - Detailed list of changes in pull request [#143](https://github.com/ethereumjs/ethereumjs-vm/pull/143)
 
 ### Removed
