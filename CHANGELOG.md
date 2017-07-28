@@ -5,19 +5,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 
-
-
-## [2.3.0] - Unreleased
-### Changed
-
-- Detailed list of changes in pull request [#147](https://github.com/ethereumjs/ethereumjs-vm/pull/147)
-
-[2.3.0]: https://github.com/ethereumjs/ethereumjs-vm/compare/v2.2.0...v2.3.0
-
 ## [2.2.0] - 2017-07-28
 ### Changed
 - Spurious Dragon & EIP 150 compatible
-- Detailed list of changes in pull request [#143](https://github.com/ethereumjs/ethereumjs-vm/pull/143)
+- Detailed list of changes in pull requests [#147](https://github.com/ethereumjs/ethereumjs-vm/pull/147) and  [#143](https://github.com/ethereumjs/ethereumjs-vm/pull/143)
 
 ### Removed
 - Removed ``enableHomestead`` option when creating a [ new VM object](https://github.com/ethereumjs/ethereumjs-vm#new-vmstatetrie-blockchain) (pre-Homestead fork rules not supported any more)
