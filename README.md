@@ -68,7 +68,7 @@ Process a transaction.
 
 #### `vm.runBlock(opts, cb)`
 Processes the `block` running all of the transactions it contains and updating the miner's account.
-- `opts.block` - The [`Block`](./block.md) to process
+- `opts.block` - The [`Block`](https://github.com/ethereumjs/ethereumjs-block) to process
 - `opts.generate` - a `Boolean`; whether to generate the stateRoot. If false  `runBlock` will check the stateRoot of the block against the Trie
 - `cb` - The callback. It is given two arguments, an `error` string containing an error that may have happened or `null`, and a `results` object with the following properties:
   - `receipts` - the receipts from the transactions in the block
@@ -92,9 +92,9 @@ Runs EVM code
 - `opts.code` - The EVM code to run given as a `Buffer`
 - `opts.data` - The input data given as a `Buffer`
 - `opts.value` - The value in ether that is being sent to `opt.address`. Defaults to `0`
-- `opts.block` - The [`Block`](./block.md) the `tx` belongs to. If omitted a blank block will be used.
+- `opts.block` - The [`Block`](https://github.com/ethereumjs/ethereumjs-block) the `tx` belongs to. If omitted a blank block will be used.
 - `opts.gasLimit` - The gas limit for the code given as a `Buffer`
-- `opts.account` - The [`Account`](./account.md) that the executing code belongs to. If omitted an empty account will be used
+- `opts.account` - The [`Account`](https://github.com/ethereumjs/ethereumjs-account) that the executing code belongs to. If omitted an empty account will be used
 - `opts.address` - The address of the account that is executing this code. The address should be a `Buffer` of bytes. Defaults to `0`
 - `opts.origin` - The address where the call originated from. The address should be a `Buffer` of 20bits. Defaults to `0`
 - `opts.caller` - The address that ran this code. The address should be a `Buffer` of 20bits. Defaults to `0`
@@ -102,7 +102,7 @@ Runs EVM code
   - `gas` - the amount of gas left as a `bignum`
   - `gasUsed` - the amount of gas as a `bignum` the code used to run.
   - `gasRefund` - a `Bignum` containing the amount of gas to refund from deleting storage values
-  - `suicides` - an `Object` with keys for accounts that have suicided and values for balance transfer recipient accounts.
+  - `selfdestruct` - an `Object` with keys for accounts that have selfdestructed and values for balance transfer recipient accounts.
   - `logs` - an `Array` of logs that the contract emitted.
   - `exception` - `0` if the contract encountered an exception, `1` otherwise.
   - `exceptionError` - a `String` describing the exception if there was one.
@@ -162,22 +162,47 @@ Emits the result of the transaction.
 
 # TESTING
 
+### Running Tests
+
 _Note: Requires at least Node.js `8.0.0` installed to run the tests, this is because `ethereumjs-testing` uses `async/await` and other ES2015 language features_
 
+Tests can be found in the ``tests`` directory, with ``FORK_CONFIG`` set in ``tests/tester.js``.
+
+There are test runners for [State tests](http://www.ethdocs.org/en/latest/contracts-and-transactions/ethereum-tests/state_tests/index.html) and [Blockchain tests](http://www.ethdocs.org/en/latest/contracts-and-transactions/ethereum-tests/blockchain_tests/index.html). VM tests are disabled since Frontier gas costs are not supported any more.
+
+Tests are then executed by the [ethereumjs-testing](https://github.com/ethereumjs/ethereumjs-testing) utility library using the official client-independent [Ethereum tests](https://github.com/ethereum/tests).
+
+Running all the tests:
+
 `npm test`
-if you want to just run the State tests run
+
+Running the State tests:
+
 `node ./tests/tester -s`
-if you want to just run the Blockchain tests run
+
+Running the Blockchain tests:
+
 `node ./tests/tester -b`
 
-To run the all the blockchain tests in a file:
+State tests run significantly faster than Blockchain tests, so it is often a good choice to start fixing State tests.
+
+Running all the blockchain tests in a file:
+
 `node ./tests/tester -b --file='randomStatetest303'`
 
-To run a specific state test case:
+Running a specific state test case:
+
 `node ./tests/tester -s --test='stackOverflow'`
 
+### Debugging
+
 Blockchain tests support `--debug` to verify the postState:
+
 `node ./tests/tester -b  --debug --test='ZeroValue_SELFDESTRUCT_ToOneStorageKey_OOGRevert_d0g0v0_EIP158'`
+
+All/most State tests are replicated as Blockchain tests in a ``GeneralStateTests`` [sub directory](https://github.com/ethereum/tests/tree/develop/BlockchainTests/GeneralStateTests) in the Ethereum tests repo, so for debugging single test cases the Blockchain test version of the State test can be used.
+
+For comparing ``EVM`` traces [here](https://gist.github.com/cdetrio/41172f374ae32047a6c9e97fa9d09ad0) are some instructions for setting up ``pyethereum`` to generate corresponding traces for state tests.
 
 # Internal Structure
 The VM processes state changes at many levels.
