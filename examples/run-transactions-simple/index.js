@@ -8,7 +8,7 @@
  * this folder onto a HTTP WebServer (such as node-static)
  */
 
-var VM = require('./../../index.js')
+var VM = require('../../index.js')
 
 // create a new VM instance
 var vm = new VM()
