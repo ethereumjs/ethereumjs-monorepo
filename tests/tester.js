@@ -21,7 +21,7 @@ const skip = [
   'Call50000_rip160', // slow
   'Call50000bytesContract50_1', // slow
   'Call50000bytesContract50_2',
-  'Call1MB1024Calldepth', // slow, Holger Drewes
+  'Call1MB1024Calldepth', // slow
   'Callcode50000', // slow
   'Return50000', // slow
   'Return50000_2', // slow
