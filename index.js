@@ -4,6 +4,7 @@ const assert = require('assert')
 const rlp = require('rlp')
 const BN = require('bn.js')
 const createHash = require('create-hash')
+const Buffer = require('safe-buffer').Buffer
 Object.assign(exports, require('ethjs-util'))
 
 /**
