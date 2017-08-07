@@ -68,7 +68,7 @@ function runTestCase (options, testData, t, cb) {
             })
 
             var opTrace = {
-              'pc': e.pc,
+              'pc': e.pc, 
               'op': e.opcode.opcode,
               'gas': '0x' + e.gasLeft.toString('hex'),
               'gasCost': '0x' + e.opcode.fee.toString(16),
