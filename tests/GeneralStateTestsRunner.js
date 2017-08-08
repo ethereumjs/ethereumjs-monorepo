@@ -3,7 +3,6 @@ const VM = require('../index.js')
 const testUtil = require('./util')
 const ethUtil = require('ethereumjs-util')
 const Trie = require('merkle-patricia-tree/secure')
-const ethUtil = require('ethereumjs-util')
 const BN = ethUtil.BN
 
 function parseTestCases (forkConfig, testData, data, gasLimit, value) {
