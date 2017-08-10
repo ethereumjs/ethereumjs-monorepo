@@ -5,12 +5,19 @@ os:
 language: node_js
 node_js:
   - "8"
+
 addons:
   apt:
     sources:
     - ubuntu-toolchain-r-test
     packages:
     - g++-4.8
+
+branches:
+  # We need to whitelist the branches which we want to have "push" automation.
+  # Pull request automation is not constrained to this set of branches.
+  only:
+  - master
 
 env:
   global:
