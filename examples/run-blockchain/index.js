@@ -1,3 +1,4 @@
+const Buffer = require('safe-buffer').Buffer // use for Node.js <4.5.0
 const async = require('async')
 const Trie = require('merkle-patricia-tree/secure')
 const Block = require('ethereumjs-block')
@@ -55,7 +56,7 @@ async.series([
     function eachBlock (raw, cb) {
       try {
         var block = new Block(
-            new Buffer(raw.rlp.slice(2), 'hex'))
+            Buffer.from(raw.rlp.slice(2), 'hex'))
 
         // forces the block into thinking they are homestead
         block.header.isHomestead = function () {
@@ -104,7 +105,7 @@ function setupPreConditions (state, testData, done) {
     account.nonce = format(acctData.nonce)
     account.balance = format(acctData.balance)
 
-    var codeBuf = new Buffer(acctData.code.slice(2), 'hex')
+    var codeBuf = Buffer.from(acctData.code.slice(2), 'hex')
     var storageTrie = state.copy()
     storageTrie.root = null
 
@@ -114,8 +115,8 @@ function setupPreConditions (state, testData, done) {
 
         async.forEachSeries(keys, function (key, cb3) {
           var val = acctData.storage[key]
-          val = rlp.encode(new Buffer(val.slice(2), 'hex'))
-          key = utils.setLength(new Buffer(key.slice(2), 'hex'), 32)
+          val = rlp.encode(Buffer.from(val.slice(2), 'hex'))
+          key = utils.setLength(Buffer.from(key.slice(2), 'hex'), 32)
 
           storageTrie.put(key, val, cb3)
         }, cb2)
@@ -129,7 +130,7 @@ function setupPreConditions (state, testData, done) {
         if (testData.exec && key === testData.exec.address) {
           testData.root = storageTrie.root
         }
-        state.put(new Buffer(key, 'hex'), account.serialize(), function () {
+        state.put(Buffer.from(key, 'hex'), account.serialize(), function () {
           cb2()
         })
       }
@@ -139,22 +140,22 @@ function setupPreConditions (state, testData, done) {
 
 function format (a, toZero, isHex) {
   if (a === '') {
-    return new Buffer([])
+    return Buffer.alloc(0)
   }
 
   if (a.slice && a.slice(0, 2) === '0x') {
     a = a.slice(2)
     if (a.length % 2) a = '0' + a
-    a = new Buffer(a, 'hex')
+    a = Buffer.from(a, 'hex')
   } else if (!isHex) {
-    a = new Buffer(new BN(a).toArray())
+    a = Buffer.from(new BN(a).toArray())
   } else {
     if (a.length % 2) a = '0' + a
-    a = new Buffer(a, 'hex')
+    a = Buffer.from(a, 'hex')
   }
 
   if (toZero && a.toString('hex') === '') {
-    a = new Buffer([0])
+    a = Buffer.from([0])
   }
 
   return a

@@ -9,7 +9,7 @@ var ethUtil = require('ethereumjs-util')
 tape('test the cache api', function (t) {
   t.test('should have the correct value in the cache ', function (st) {
     var account1 = {
-      address: new Buffer('cd2a3d9f938e13cd947ec05abc7fe734df8dd826', 'hex'),
+      address: Buffer.from('cd2a3d9f938e13cd947ec05abc7fe734df8dd826', 'hex'),
       key: ethUtil.sha3('cow')
     }
 
@@ -22,8 +22,8 @@ tape('test the cache api', function (t) {
     }
     */
     var account2 = {
-      address: new Buffer('985509582b2c38010bfaa3c8d2be60022d3d00da', 'hex'),
-      code: new Buffer('60606040525b60016000600050819055505b600a80601e6000396000f30060606040526008565b00', 'hex')
+      address: Buffer.from('985509582b2c38010bfaa3c8d2be60022d3d00da', 'hex'),
+      code: Buffer.from('60606040525b60016000600050819055505b600a80601e6000396000f30060606040526008565b00', 'hex')
     }
 
     /*
@@ -34,7 +34,7 @@ tape('test the cache api', function (t) {
     }
     */
     var account3 = {
-      code: new Buffer('6060604052606a8060116000396000f30060606040526000357c01000000000000000000000000000000000000000000000000000000009004806329e99f07146037576035565b005b6046600480359060200150605c565b6040518082815260200191505060405180910390f35b60008190506065565b91905056', 'hex')
+      code: Buffer.from('6060604052606a8060116000396000f30060606040526000357c01000000000000000000000000000000000000000000000000000000009004806329e99f07146037576035565b005b6046600480359060200150605c565b6040518082815260200191505060405180910390f35b60008190506065565b91905056', 'hex')
     }
 
     var vm = new VM(new Trie())
@@ -62,7 +62,7 @@ tape('test the cache api', function (t) {
     function createAccount (cb) {
       var account = new Account()
       account.balance = '0xf00000000000000001'
-      vm.trie.put(new Buffer(account1.address, 'hex'), account.serialize(), cb)
+      vm.trie.put(Buffer.from(account1.address, 'hex'), account.serialize(), cb)
     }
 
     function runCode (cb) {
