@@ -2,6 +2,7 @@ const async = require('async')
 const VM = require('../index.js')
 const testUtil = require('./util')
 const Trie = require('merkle-patricia-tree/secure')
+const ethUtil = require('ethereumjs-util')
 
 function parseTestCases (forkConfig, testData) {
   const testCases = testData['post'][forkConfig].map(testCase => {
@@ -21,7 +22,7 @@ function parseTestCases (forkConfig, testData) {
   return testCases
 }
 
-function runTestCase (testData, t, cb) {
+function runTestCase (options, testData, t, cb) {
   const state = new Trie()
   let block, vm
 
@@ -42,6 +43,30 @@ function runTestCase (testData, t, cb) {
       }
 
       if (tx.validate()) {
+        if (options.JSONTrace) {
+          vm.on('step', function (e) {
+            hexStack = []
+            for (var i = 0; i < e.stack.length; i++) {
+              var hexVal = ethUtil.stripZeros(e.stack[i]).toString('hex')
+              if (hexVal == '') {
+                hexVal = '0'
+              }
+
+              hexStack.push('0x'+hexVal)
+            }
+
+            var opTrace =  {
+              'pc': e.pc,
+              'op': e.opcode.rawOp,
+              'gas': '0x'+e.gasLeft.toString('hex'),
+              'gasCost': '0x'+e.opcode.fee.toString(16),
+              'stack': hexStack,
+              'depth': e.depth,
+              'opName': e.opcode.name,
+            }
+            console.log(opTrace)
+          })
+        }
         vm.runTx({
           tx: tx,
           block: block
@@ -74,6 +99,6 @@ function runTestCase (testData, t, cb) {
 module.exports = function runStateTest (options, testData, t, cb) {
   const testCases = parseTestCases(options.forkConfig, testData)
   async.eachSeries(testCases,
-                  (testCase, done) => runTestCase(testCase, t, done),
+                  (testCase, done) => runTestCase(options, testCase, t, done),
                   cb)
 }
