@@ -1,32 +1,41 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
-The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
-and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
-
-
-
+The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) 
+(modification: no type change headlines) and this project adheres to 
+[Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [2.3.0] - Unreleased
-### Changed
-- Spurious Dragon compatible
-- Detailed list of changes in pull request [#147](https://github.com/ethereumjs/ethereumjs-vm/pull/147)
+- TODO
 
-[2.3.0]: https://github.com/ethereumjs/ethereumjs-vm/compare/v2.2.0...v2.3.0
+## [2.2.1] - 2017-08-04
+- Fixed bug prevent the library to be used in the browser
 
-## [2.2.0] - Unreleased
-### Changed
-- EIP 150 compatible
-- Detailed list of changes in pull request [#143](https://github.com/ethereumjs/ethereumjs-vm/pull/143)
+[2.2.1]: https://github.com/ethereumjs/ethereumjs-vm/compare/v2.2.0...v2.2.1
 
-### Removed
+## [2.2.0] - 2017-07-28
+- Spurious Dragon & EIP 150 compatible
+- Detailed list of changes in pull requests [#147](https://github.com/ethereumjs/ethereumjs-vm/pull/147) and  [#143](https://github.com/ethereumjs/ethereumjs-vm/pull/143)
 - Removed ``enableHomestead`` option when creating a [ new VM object](https://github.com/ethereumjs/ethereumjs-vm#new-vmstatetrie-blockchain) (pre-Homestead fork rules not supported any more)
 
 [2.2.0]: https://github.com/ethereumjs/ethereumjs-vm/compare/v2.1.0...v2.2.0
 
 ## [2.1.0] - 2017-06-28
-### Changed
 - Homestead compatible
 - update state test runner for General State Tests
 
 [2.1.0]: https://github.com/ethereumjs/ethereumjs-vm/compare/v2.0.1...v2.1.0
+
+## Older releases:
+
+- [2.0.1](https://github.com/ethereumjs/ethereumjs-vm/compare/v2.0.0...v2.0.1) - 2016-10-31
+- [2.0.0](https://github.com/ethereumjs/ethereumjs-vm/compare/v1.4.0...v2.0.0) - 2016-09-26
+- [1.4.0](https://github.com/ethereumjs/ethereumjs-vm/compare/v1.3.0...v1.4.0) - 2016-05-20
+- [1.3.0](https://github.com/ethereumjs/ethereumjs-vm/compare/v1.2.2...v1.3.0) - 2016-04-02
+- [1.2.2](https://github.com/ethereumjs/ethereumjs-vm/compare/v1.2.1...v1.2.2) - 2016-03-31
+- [1.2.1](https://github.com/ethereumjs/ethereumjs-vm/compare/v1.2.0...v1.2.1) - 2016-03-03
+- [1.2.0](https://github.com/ethereumjs/ethereumjs-vm/compare/v1.1.0...v1.2.0) - 2016-02-27
+- [1.1.0](https://github.com/ethereumjs/ethereumjs-vm/compare/v1.0.4...v1.1.0) - 2016-01-09
+- [1.0.4](https://github.com/ethereumjs/ethereumjs-vm/compare/v1.0.3...v1.0.4) - 2015-12-18
+- [1.0.3](https://github.com/ethereumjs/ethereumjs-vm/compare/v1.0.0...v1.0.3) - 2015-11-27
+- 1.0.0 - 2015-10-06
