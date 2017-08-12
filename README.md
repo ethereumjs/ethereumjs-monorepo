@@ -12,11 +12,18 @@ Implements schema and functions related to Etheruem's block.
 # INSTALL
 `npm install ethereumjs-block`
 
-# BOWSER  
-This module work with `browserify`
+# BROWSER  
+This module work with `browserify`.
 
 # API
 [./docs](./docs/index.md)
+
+# TESTING
+Tests in the ``tests`` directory are partly outdated and testing is primarily done by running the ``BlockchainTests`` from within the [ethereumjs-vm](https://github.com/ethereumjs/ethereumjs-vm) repository.
+
+Relevant test folders:
+- ``bcTotalDifficultyTest``
+- TODO
 
 # LICENSE
 [MPL-2.0](https://tldrlegal.com/license/mozilla-public-license-2.0-(mpl-2))

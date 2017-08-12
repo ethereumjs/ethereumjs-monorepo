@@ -24,7 +24,7 @@ function blockHeaderFromRpc (blockParams) {
     timestamp: blockParams.timestamp,
     extraData: blockParams.extraData,
     mixHash: blockParams.mixHash,
-    nonce: blockParams.nonce,
+    nonce: blockParams.nonce
   })
 
   // override hash incase something was missing
