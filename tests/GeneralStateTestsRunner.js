@@ -25,6 +25,7 @@ function parseTestCases (forkConfig, testData) {
 function runTestCase (options, testData, t, cb) {
   const state = new Trie()
   let block, vm
+  let steps = []
 
   async.series([
     function (done) {
@@ -64,7 +65,8 @@ function runTestCase (options, testData, t, cb) {
               'depth': e.depth,
               'opName': e.opcode.name,
             }
-            console.log(opTrace)
+
+            steps.push(JSON.stringify(opTrace))
           })
         }
         vm.runTx({
@@ -79,6 +81,7 @@ function runTestCase (options, testData, t, cb) {
       }
     },
     function (done) {
+      console.log('{ "steps": ['+steps+']}')
       if (testData.postStateRoot.substr(0, 2) === '0x') {
         testData.postStateRoot = testData.postStateRoot.substr(2)
       }
