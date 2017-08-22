@@ -9,7 +9,7 @@
     "lint": "standard",
     "test": "npm run test:node && npm run test:browser",
     "test:browser": "karma start karma.conf.js",
-    "test:node": "tape ./tests/index.js",
+    "test:node": "node tests/index.js",
     "build:docs": "documentation build ./index.js --format md --shallow > ./docs/index.md && documentation build ./from-rpc.js --format md --shallow  > ./docs/fromRpc.md"
   },
   "browserify": {
