@@ -33,7 +33,8 @@ tape('Difficulty tests', t => {
       block.header.number = test.currentBlockNumber
 
       var dif = block.header.canonicalDifficulty(parentBlock)
-      t.equal(dif.toString(), test.currentDifficulty.toString())
+      t.equal(dif.toString(), test.currentDifficulty.toString(), 'test canonicalDifficulty()')
+      t.assert(block.header.validateDifficulty(parentBlock), 'test validateDifficulty()')
 
       resolve()
     }).catch(err => console.log(err))
