@@ -7,7 +7,7 @@ const Block = require('../index.js')
 
 tape('[Block]: Header functions', function (t) {
   t.test('should create with default constructor', function (st) {
-    function compareDefaultHeader(st, header) {
+    function compareDefaultHeader (st, header) {
       st.deepEqual(header.parentHash, utils.zeros(32))
       st.equal(header.uncleHash.toString('hex'), utils.SHA3_RLP_ARRAY_S)
       st.deepEqual(header.coinbase, utils.zeros(20))
@@ -24,20 +24,20 @@ tape('[Block]: Header functions', function (t) {
       st.deepEqual(header.mixHash, utils.zeros(32))
       st.deepEqual(header.nonce, new Buffer([]))
     }
-    
+
     var header = new Header()
     compareDefaultHeader(st, header)
-    
+
     var block = new Block()
     header = block.header
     compareDefaultHeader(st, header)
 
     st.end()
   })
-  
-  t.test('should test validateGasLimit', function(st) {
+
+  t.test('should test validateGasLimit', function (st) {
     const testData = testing.getSingleFile('BlockchainTests/bcBlockGasLimitTest.json')
-    
+
     var parentBlock = new Block(Buffer.from(testData['BlockGasLimit2p63m1'].genesisRLP.slice(2), 'hex'))
     var block = new Block(Buffer.from(testData['BlockGasLimit2p63m1'].blocks[0].rlp.slice(2), 'hex'))
     st.equal(block.header.validateGasLimit(parentBlock), true)
