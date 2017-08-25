@@ -3,13 +3,11 @@ const tape = require('tape')
 const Block = require('../')
 
 tape('[Common]: genesis hashes tests', t => {
-  let args = {}
-  args.file = /genesishashestest/
-  const genesisData = testing.getSingleFile('BasicTests/genesishashestest.json')
-  var blockGenesis = new Block()
-  blockGenesis.setGenesisParams()
-  var rlpGenesis = blockGenesis.serialize()
-  t.strictEqual(rlpGenesis.toString('hex'), genesisData.genesis_rlp_hex, 'rlp hex mismatch')
-  t.strictEqual(blockGenesis.hash().toString('hex'), genesisData.genesis_hash)
+  const testData = testing.getSingleFile('BasicTests/genesishashestest.json')
+  var genesisBlock = new Block()
+  genesisBlock.setGenesisParams()
+  var rlp = genesisBlock.serialize()
+  t.strictEqual(rlp.toString('hex'), testData.genesis_rlp_hex, 'rlp hex match')
+  t.strictEqual(genesisBlock.hash().toString('hex'), testData.genesis_hash, 'genesis hash match')
   t.end()
 })
