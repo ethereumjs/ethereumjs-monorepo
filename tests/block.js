@@ -27,6 +27,13 @@ tape('[Block]: block functions', function (t) {
     testTransactionValidation(st, block)
   })
   
+  const testData2 = require('./testdata2.json')
+  t.test('should test uncles hash validation', function(st) {
+    var block = new Block(Buffer.from(testData2.blocks[2].rlp.slice(2), 'hex'))
+    st.equal(block.validateUnclesHash(), true)
+    st.end()
+  })
+  
   t.test('should test isGenesis', function (st) {
     var block = new Block()
     st.notEqual(block.isGenesis(), true)
@@ -46,8 +53,9 @@ tape('[Block]: block functions', function (t) {
   })
   
   t.test('should test toJSON', function (st) {
-    var block = new Block()
+    var block = new Block(Buffer.from(testData2.blocks[2].rlp.slice(2), 'hex'))
     st.equal(typeof(block.toJSON()), 'object')
+    st.equal(typeof(block.toJSON(true)), 'object')
     st.end()
   })
 })
