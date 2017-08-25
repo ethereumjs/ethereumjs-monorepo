@@ -15,6 +15,7 @@ const memdown = require('memdown')
 const Block = require('ethereumjs-block')
 const ethUtil = require('ethereumjs-util')
 const Ethash = require('ethashjs')
+const Buffer = require('safe-buffer').Buffer
 const BN = ethUtil.BN
 const rlp = ethUtil.rlp
 
@@ -314,7 +315,7 @@ Blockchain.prototype.getBlock = function (blockTag, cb) {
       (blockHash, cb) => lookupByHash(blockHash, cb)
     ], cb)
   } else {
-    return cb(new Error('Unknown blockTag type'))
+    cb(new Error('Unknown blockTag type'))
   }
 
   function lookupByHash (hash, cb) {
