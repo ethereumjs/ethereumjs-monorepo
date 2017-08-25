@@ -1,6 +1,7 @@
 const tape = require('tape')
 const params = require('ethereum-common')
 const utils = require('ethereumjs-util')
+const testing = require('ethereumjs-testing')
 const Header = require('../header.js')
 const Block = require('../index.js')
 
@@ -33,8 +34,17 @@ tape('[Block]: Header functions', function (t) {
 
     st.end()
   })
+  
+  t.test('should test validateGasLimit', function(st) {
+    const testData = testing.getSingleFile('BlockchainTests/bcBlockGasLimitTest.json')
+    
+    var parentBlock = new Block(Buffer.from(testData['BlockGasLimit2p63m1'].genesisRLP.slice(2), 'hex'))
+    var block = new Block(Buffer.from(testData['BlockGasLimit2p63m1'].blocks[0].rlp.slice(2), 'hex'))
+    st.equal(block.header.validateGasLimit(parentBlock), true)
+    st.end()
+  })
 
-  t.test('should be true for isGenesis', function (st) {
+  t.test('should test isGenesis', function (st) {
     var header = new Header()
     st.equal(header.isGenesis(), false)
     header.number = new Buffer([])
@@ -42,3 +52,4 @@ tape('[Block]: Header functions', function (t) {
     st.end()
   })
 })
+

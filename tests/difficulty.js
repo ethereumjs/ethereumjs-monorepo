@@ -1,18 +1,18 @@
 const testing = require('ethereumjs-testing')
-const ethUtil = require('ethereumjs-util')
+const utils = require('ethereumjs-util')
 const tape = require('tape')
 const Block = require('../')
-const BN = ethUtil.BN
+const BN = utils.BN
 
 function normalize (data) {
   Object.keys(data).map(function (i) {
     if (i !== 'homestead' && typeof (data[i]) === 'string') {
-      data[i] = ethUtil.isHexPrefixed(data[i]) ? new BN(ethUtil.toBuffer(data[i])) : new BN(data[i])
+      data[i] = utils.isHexPrefixed(data[i]) ? new BN(utils.toBuffer(data[i])) : new BN(data[i])
     }
   })
 }
 
-tape('Difficulty tests', t => {
+tape('[Header]: difficulty tests', t => {
   let args = {}
   args.file = /^difficultyHomestead/
   testing.getTestsFromArgs('BasicTests', (fileName, testName, test) => {
@@ -33,8 +33,8 @@ tape('Difficulty tests', t => {
       block.header.number = test.currentBlockNumber
 
       var dif = block.header.canonicalDifficulty(parentBlock)
-      t.equal(dif.toString(), test.currentDifficulty.toString(), 'test canonicalDifficulty()')
-      t.assert(block.header.validateDifficulty(parentBlock), 'test validateDifficulty()')
+      t.equal(dif.toString(), test.currentDifficulty.toString(), 'test canonicalDifficulty')
+      t.assert(block.header.validateDifficulty(parentBlock), 'test validateDifficulty')
 
       resolve()
     }).catch(err => console.log(err))
