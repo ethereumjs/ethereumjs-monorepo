@@ -8,6 +8,14 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 ## [2.3.0] - Unreleased
 - TODO
 
+## [2.2.2] - Unreleased
+- Fixed issues with [handling large numbers](https://github.com/ethereumjs/ethereumjs-vm/issues/167)
+  and [certain edge cases](https://github.com/ethereumjs/ethereumjs-vm/pull/188)
+- Fixed various smaller bugs and improved code consistency
+- Some VM speedups
+- Narrowed down ``ethereumjs-block`` dependency for ``2.2.x`` install still work
+  after Byzantium release
+
 ## [2.2.1] - 2017-08-04
 - Fixed bug prevent the library to be used in the browser
 
