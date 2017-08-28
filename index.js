@@ -15,6 +15,7 @@ const memdown = require('memdown')
 const Block = require('ethereumjs-block')
 const ethUtil = require('ethereumjs-util')
 const Ethash = require('ethashjs')
+const Buffer = require('safe-buffer').Buffer
 const BN = ethUtil.BN
 const rlp = ethUtil.rlp
 
@@ -110,7 +111,7 @@ Blockchain.prototype.getHead = function (name, cb) {
     if (!hash) {
       return cb(new Error('No head found.'))
     }
-    self.getBlock(new Buffer(hash, 'hex'), cb)
+    self.getBlock(Buffer.from(hash, 'hex'), cb)
   })
 }
 
@@ -308,15 +309,13 @@ Blockchain.prototype.getBlock = function (blockTag, cb) {
   // determine BlockTag type
   if (Buffer.isBuffer(blockTag)) {
     lookupByHash(blockTag, cb)
-    return
   } else if (Number.isInteger(blockTag)) {
     async.waterfall([
       (cb) => lookupNumberToHash(blockTag, cb),
       (blockHash, cb) => lookupByHash(blockHash, cb)
     ], cb)
-    return
   } else {
-    return cb(new Error('Unknown blockTag type'))
+    cb(new Error('Unknown blockTag type'))
   }
 
   function lookupByHash (hash, cb) {
@@ -516,7 +515,7 @@ Blockchain.prototype._rebuildBlockchain = function (hash, parentHash, parentDeta
         type: 'put',
         valueEncoding: 'binary',
         key: staleDetails.number,
-        value: new Buffer(parentHash, 'hex')
+        value: Buffer.from(parentHash, 'hex')
       })
       ops.push({
         db: 'details',
@@ -685,7 +684,7 @@ Blockchain.prototype._iterator = function (name, func, cb) {
     }
 
     function getBlock (cb3) {
-      self.getBlock(new Buffer(blockhash, 'hex'), function (err, b) {
+      self.getBlock(Buffer.from(blockhash, 'hex'), function (err, b) {
         block = b
         cb3(err)
       })

@@ -31,6 +31,7 @@
     "flow-stoplight": "^1.0.0",
     "levelup": "^1.3.0",
     "memdown": "^1.1.0",
+    "safe-buffer": "^5.1.1",
     "semaphore": "^1.0.3"
   },
   "devDependencies": {
