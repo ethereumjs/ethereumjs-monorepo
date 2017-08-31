@@ -1,5 +1,6 @@
 const tape = require('tape')
 const testing = require('ethereumjs-testing')
+const rlp = require('ethereumjs-util').rlp
 const Block = require('../index.js')
 
 tape('[Block]: block functions', function (t) {
@@ -15,7 +16,7 @@ tape('[Block]: block functions', function (t) {
   }
 
   t.test('should test transaction validation', function (st) {
-    var block = new Block(Buffer.from(testData.blocks[0].rlp.slice(2), 'hex'))
+    var block = new Block(rlp.decode(testData.blocks[0].rlp))
     testTransactionValidation(st, block)
   })
 
@@ -26,7 +27,7 @@ tape('[Block]: block functions', function (t) {
 
   const testData2 = require('./testdata2.json')
   t.test('should test uncles hash validation', function (st) {
-    var block = new Block(Buffer.from(testData2.blocks[2].rlp.slice(2), 'hex'))
+    var block = new Block(rlp.decode(testData2.blocks[2].rlp))
     st.equal(block.validateUnclesHash(), true)
     st.end()
   })
@@ -50,7 +51,7 @@ tape('[Block]: block functions', function (t) {
   })
 
   t.test('should test toJSON', function (st) {
-    var block = new Block(Buffer.from(testData2.blocks[2].rlp.slice(2), 'hex'))
+    var block = new Block(rlp.decode(testData2.blocks[2].rlp))
     st.equal(typeof (block.toJSON()), 'object')
     st.equal(typeof (block.toJSON(true)), 'object')
     st.end()
