@@ -1,49 +1,44 @@
 const testing = require('ethereumjs-testing')
-const ethUtil = require('ethereumjs-util')
-const basicTests = testing.tests.basicTests
+const utils = require('ethereumjs-util')
 const tape = require('tape')
 const Block = require('../')
-const BN = ethUtil.BN
+const BN = utils.BN
 
-function addHomesteadFlag (tests) {
-  Object.keys(tests).map(function (q) {
-    tests[q].homestead = true
-  })
-  return tests
-}
-
-function normilize (data) {
+function normalize (data) {
   Object.keys(data).map(function (i) {
-    if (i !== 'homestead') {
-      data[i] = ethUtil.isHexPrefixed(data[i]) ? new BN(ethUtil.toBuffer(data[i])) : new BN(data[i])
+    if (i !== 'homestead' && typeof (data[i]) === 'string') {
+      data[i] = utils.isHexPrefixed(data[i]) ? new BN(utils.toBuffer(data[i])) : new BN(data[i])
     }
   })
 }
 
-testing.runTests(function (data, st, cb) {
-  normilize(data)
-  var parentBlock = new Block()
-  parentBlock.header.timestamp = data.parentTimestamp
-  parentBlock.header.difficulty = data.parentDifficulty
+tape('[Header]: difficulty tests', t => {
+  let args = {}
+  args.file = /^difficultyHomestead/
+  testing.getTestsFromArgs('BasicTests', (fileName, testName, test) => {
+    return new Promise((resolve, reject) => {
+      normalize(test)
 
-  var block = new Block()
-  if (data.homestead) {
-    block.header.isHomestead = function () {
-      return true
-    }
-  } else {
-    block.header.isHomestead = function () {
-      return false
-    }
-  }
-  block.header.timestamp = data.currentTimestamp
-  block.header.difficulty = data.currentDifficulty
-  block.header.number = data.currentBlockNumber
+      var parentBlock = new Block()
+      parentBlock.header.timestamp = test.parentTimestamp
+      parentBlock.header.difficulty = test.parentDifficulty
 
-  var dif = block.header.canonicalDifficulty(parentBlock)
-  st.equal(dif.toString(), data.currentDifficulty.toString())
-  cb()
-}, {
-  difficulty: basicTests.difficulty,
-  difficultyHomestead: addHomesteadFlag(basicTests.difficultyHomestead)
-}, tape)
+      var block = new Block()
+      block.header.isHomestead = function () {
+        return true
+      }
+
+      block.header.timestamp = test.currentTimestamp
+      block.header.difficulty = test.currentDifficulty
+      block.header.number = test.currentBlockNumber
+
+      var dif = block.header.canonicalDifficulty(parentBlock)
+      t.equal(dif.toString(), test.currentDifficulty.toString(), 'test canonicalDifficulty')
+      t.assert(block.header.validateDifficulty(parentBlock), 'test validateDifficulty')
+
+      resolve()
+    }).catch(err => console.log(err))
+  }, args).then(() => {
+    t.end()
+  })
+})
