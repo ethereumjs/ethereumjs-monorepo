@@ -24,18 +24,6 @@ Determines if a given block is the genesis block
 
 Returns **any** Boolean
 
-## isHomestead
-
-Determines if a given block part of homestead or not
-
-Returns **any** Boolean
-
-## isHomesteadReprice
-
-Determines if a given block part of homestead reprice or not
-
-Returns **any** Boolean
-
 ## setGenesisParams
 
 turns the block in to the canonical genesis block

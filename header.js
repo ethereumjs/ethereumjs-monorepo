@@ -93,24 +93,15 @@ BlockHeader.prototype.canonicalDifficulty = function (parentBlock) {
   var offset = parentDif.div(new BN(params.difficultyBoundDivisor.v))
   var dif
 
-  if (this.isHomestead()) {
-    // homestead
-    // 1 - (block_timestamp - parent_timestamp) // 10
-    var a = blockTs.sub(parentTs).idivn(10).ineg().iaddn(1)
-    var cutoff = new BN(-99)
-    // MAX(cutoff, a)
-    if (cutoff.cmp(a) === 1) {
-      a = cutoff
-    }
-    dif = parentDif.add(offset.mul(a))
-  } else {
-    // prehomestead
-    if (parentTs.addn(params.durationLimit.v).cmp(blockTs) === 1) {
-      dif = offset.add(parentDif)
-    } else {
-      dif = parentDif.sub(offset)
-    }
+  // homestead
+  // 1 - (block_timestamp - parent_timestamp) // 10
+  var a = blockTs.sub(parentTs).idivn(10).ineg().iaddn(1)
+  var cutoff = new BN(-99)
+  // MAX(cutoff, a)
+  if (cutoff.cmp(a) === 1) {
+    a = cutoff
   }
+  dif = parentDif.add(offset.mul(a))
 
   var exp = new BN(this.number).idivn(100000).isubn(2)
   if (!exp.isNeg()) {
@@ -231,20 +222,3 @@ BlockHeader.prototype.isGenesis = function () {
   return this.number.toString('hex') === ''
 }
 
-/**
- * Determines if a given block part of homestead or not
- * @method isHomestead
- * @return Boolean
- */
-BlockHeader.prototype.isHomestead = function () {
-  return utils.bufferToInt(this.number) >= params.homeSteadForkNumber.v
-}
-
-/**
- * Determines if a given block part of Homestead Reprice (EIP150) or not
- * @method isHomesteadReprice
- * @return Boolean
- */
-BlockHeader.prototype.isHomesteadReprice = function () {
-  return utils.bufferToInt(this.number) >= params.homesteadRepriceForkNumber.v
-}
