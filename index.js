@@ -52,7 +52,7 @@ var Block = module.exports = function (data) {
   for (var i = 0; i < rawUncleHeaders.length; i++) {
     this.uncleHeaders.push(new BlockHeader(rawUncleHeaders[i]))
   }
-  
+
   // parse transactions
   for (i = 0; i < rawTransactions.length; i++) {
     var tx = new Tx(rawTransactions[i])

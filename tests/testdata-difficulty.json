@@ -1,0 +1,50 @@
+{
+  "LocalDifficultyTest1_Byzantium" : {
+ 		"parentTimestamp" : "0x18d89135f8ebcb78",
+ 		"parentDifficulty" : "0x1ef5f85ed5a0067a",
+ 		"currentTimestamp" : "0x18d89135f8ebcb78",
+ 		"currentBlockNumber" : "0x61a9",
+ 		"currentDifficulty" : "0x1ef9d71de17aba7a",
+    "parentUncleHash": "0x1dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d49347"
+ 	},
+  "bcTotalDifficultyTest_uncleBlockAtBlock3AfterBlock3_Byzantium_GB_B1" : {
+    "parentTimestamp" : "0x54c98c81",
+ 		"parentDifficulty" : "0x020000",
+ 		"currentTimestamp" : "0x59976a0f",
+ 		"currentBlockNumber" : "0x01",
+ 		"currentDifficulty" : "0x020000",
+    "parentUncleHash": "0x1dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d49347"
+  },
+  "bcTotalDifficultyTest_uncleBlockAtBlock3AfterBlock3_Byzantium_B1_B2" : {
+    "parentTimestamp" : "0x59976a0f",
+ 		"parentDifficulty" : "0x020000",
+ 		"currentTimestamp" : "0x59976a11",
+ 		"currentBlockNumber" : "0x02",
+ 		"currentDifficulty" : "0x020040",
+    "parentUncleHash": "0x1dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d49347"
+  },
+  "bcTotalDifficultyTest_uncleBlockAtBlock3AfterBlock3_Byzantium_B2_B3_1" : {
+    "parentTimestamp" : "0x59976a11",
+ 		"parentDifficulty" : "0x020040",
+ 		"currentTimestamp" : "0x59976a13",
+ 		"currentBlockNumber" : "0x03",
+ 		"currentDifficulty" : "0x020080",
+    "parentUncleHash": "0x1dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d49347"
+  },
+  "bcTotalDifficultyTest_uncleBlockAtBlock3AfterBlock3_Byzantium_B2_B3_2" : {
+    "parentTimestamp" : "0x59976a11",
+ 		"parentDifficulty" : "0x020040",
+ 		"currentTimestamp" : "0x59976a19",
+ 		"currentBlockNumber" : "0x03",
+ 		"currentDifficulty" : "0x020080",
+    "parentUncleHash": "0x1dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d49347"
+  },
+  "bcTotalDifficultyTest_uncleBlockAtBlock3AfterBlock3_Byzantium_B3_2_B4" : {
+    "parentTimestamp" : "0x59976a19",
+ 		"parentDifficulty" : "0x020080",
+ 		"currentTimestamp" : "0x59976a1e",
+ 		"currentBlockNumber" : "0x04",
+ 		"currentDifficulty" : "0x020100",
+    "parentUncleHash": "0xca3e970cbb36b672f8707491c3aaf1dd0971c35f4bd23b26f668fa90eecb12b8"
+  }
+}

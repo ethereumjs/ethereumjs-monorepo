@@ -1,4 +1,4 @@
-const testing = require('ethereumjs-testing')
+// const testing = require('ethereumjs-testing')
 const utils = require('ethereumjs-util')
 const tape = require('tape')
 const Block = require('../')
@@ -13,32 +13,43 @@ function normalize (data) {
 }
 
 tape('[Header]: difficulty tests', t => {
+  function runDifficultyTests (test) {
+    normalize(test)
+
+    var parentBlock = new Block()
+    parentBlock.header.timestamp = test.parentTimestamp
+    parentBlock.header.difficulty = test.parentDifficulty
+    parentBlock.header.uncleHash = test.parentUncleHash
+
+    var block = new Block()
+    block.header.timestamp = test.currentTimestamp
+    block.header.difficulty = test.currentDifficulty
+    block.header.number = test.currentBlockNumber
+
+    var dif = block.header.canonicalDifficulty(parentBlock)
+    t.equal(dif.toString(), test.currentDifficulty.toString(), 'test canonicalDifficulty')
+    t.assert(block.header.validateDifficulty(parentBlock), 'test validateDifficulty')
+  }
+
+  const testData = require('./testdata-difficulty.json')
+  for (let testName in testData) {
+    runDifficultyTests(testData[testName])
+  }
+  t.end()
+
+  // Temporarily run local test selection
+  // also: implicit testing through ethereumjs-vm tests
+  // (no Byzantium difficulty tests available yet)
+  /*
   let args = {}
   args.file = /^difficultyHomestead/
   testing.getTestsFromArgs('BasicTests', (fileName, testName, test) => {
     return new Promise((resolve, reject) => {
-      normalize(test)
-
-      var parentBlock = new Block()
-      parentBlock.header.timestamp = test.parentTimestamp
-      parentBlock.header.difficulty = test.parentDifficulty
-
-      var block = new Block()
-      block.header.isHomestead = function () {
-        return true
-      }
-
-      block.header.timestamp = test.currentTimestamp
-      block.header.difficulty = test.currentDifficulty
-      block.header.number = test.currentBlockNumber
-
-      var dif = block.header.canonicalDifficulty(parentBlock)
-      t.equal(dif.toString(), test.currentDifficulty.toString(), 'test canonicalDifficulty')
-      t.assert(block.header.validateDifficulty(parentBlock), 'test validateDifficulty')
-
+      runDifficultyTests(test)
       resolve()
     }).catch(err => console.log(err))
   }, args).then(() => {
     t.end()
   })
+  */
 })
