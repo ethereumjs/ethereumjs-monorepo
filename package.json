@@ -8,7 +8,7 @@
     "async-eventemitter": "^0.2.2",
     "ethereum-common": "0.1.0",
     "ethereumjs-account": "^2.0.3",
-    "ethereumjs-block": "~1.6.0",
+    "ethereumjs-block": "git+https://github.com/holgerd77/ethereumjs-block.git#byzantium-changes",
     "ethereumjs-util": "4.5.0",
     "fake-merkle-patricia-tree": "^1.0.1",
     "functional-red-black-tree": "^1.0.1",
