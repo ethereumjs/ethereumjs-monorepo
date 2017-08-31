@@ -17,11 +17,13 @@ tape('[Block]: block functions', function (t) {
 
   t.test('should test transaction validation', function (st) {
     var block = new Block(rlp.decode(testData.blocks[0].rlp))
+    st.plan(2)
     testTransactionValidation(st, block)
   })
 
   t.test('should test transaction validation with empty transaction list', function (st) {
     var block = new Block()
+    st.plan(2)
     testTransactionValidation(st, block)
   })
 
