@@ -3,6 +3,7 @@ const VM = require('../index.js')
 const testUtil = require('./util')
 const Trie = require('merkle-patricia-tree/secure')
 const ethUtil = require('ethereumjs-util')
+const BN = ethUtil.BN
 
 function parseTestCases (forkConfig, testData) {
   const testCases = testData['post'][forkConfig].map(testCase => {
@@ -46,15 +47,10 @@ function runTestCase (options, testData, t, cb) {
       if (tx.validate()) {
         if (options.JSONTrace) {
           vm.on('step', function (e) {
-            hexStack = []
-            for (var i = 0; i < e.stack.length; i++) {
-              var hexVal = ethUtil.stripZeros(e.stack[i]).toString('hex')
-              if (hexVal == '') {
-                hexVal = '0'
-              }
-
-              hexStack.push('0x'+hexVal)
-            }
+            let hexStack = []
+            hexStack = e.stack.map(item => {
+              return '0x' + new BN(item).toString(16, 0)
+            })
 
             var opTrace =  {
               'pc': e.pc,
