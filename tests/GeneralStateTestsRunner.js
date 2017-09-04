@@ -45,7 +45,7 @@ function runTestCase (options, testData, t, cb) {
       }
 
       if (tx.validate()) {
-        if (options.JSONTrace) {
+        if (options.jsontrace) {
           vm.on('step', function (e) {
             let hexStack = []
             hexStack = e.stack.map(item => {
