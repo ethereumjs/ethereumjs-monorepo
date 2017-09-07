@@ -26,7 +26,6 @@ function parseTestCases (forkConfig, testData) {
 function runTestCase (options, testData, t, cb) {
   const state = new Trie()
   let block, vm
-  let steps = []
 
   async.series([
     function (done) {
@@ -54,7 +53,7 @@ function runTestCase (options, testData, t, cb) {
 
             var opTrace = {
               'pc': e.pc,
-              'op': e.opcode.rawOp,
+              'op': e.opcode.opcode,
               'gas': '0x' + e.gasLeft.toString('hex'),
               'gasCost': '0x' + e.opcode.fee.toString(16),
               'stack': hexStack,
@@ -62,7 +61,7 @@ function runTestCase (options, testData, t, cb) {
               'opName': e.opcode.name
             }
 
-            steps.push(JSON.stringify(opTrace))
+            console.log(JSON.stringify(opTrace))
           })
         }
         vm.runTx({
@@ -77,9 +76,6 @@ function runTestCase (options, testData, t, cb) {
       }
     },
     function (done) {
-      if (options.jsontrace) {
-        console.log('{ "steps": [' + steps + ']}')
-      }
       if (testData.postStateRoot.substr(0, 2) === '0x') {
         testData.postStateRoot = testData.postStateRoot.substr(2)
       }
