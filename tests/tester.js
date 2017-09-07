@@ -33,7 +33,8 @@ const skip = [
   'CREATE_Bounds', // nodejs crash
   'DELEGATECALL_Bounds', // nodejs crash
   'RevertDepthCreateAddressCollision', // test case is wrong
-  'zeroSigTransactionInvChainID' // metropolis test
+  'zeroSigTransactionInvChainID', // metropolis test
+  'randomStatetest643'
 ]
 
 /*
