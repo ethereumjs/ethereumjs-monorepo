@@ -52,14 +52,14 @@ function runTestCase (options, testData, t, cb) {
               return '0x' + new BN(item).toString(16, 0)
             })
 
-            var opTrace =  {
+            var opTrace = {
               'pc': e.pc,
               'op': e.opcode.rawOp,
-              'gas': '0x'+e.gasLeft.toString('hex'),
-              'gasCost': '0x'+e.opcode.fee.toString(16),
+              'gas': '0x' + e.gasLeft.toString('hex'),
+              'gasCost': '0x' + e.opcode.fee.toString(16),
               'stack': hexStack,
               'depth': e.depth,
-              'opName': e.opcode.name,
+              'opName': e.opcode.name
             }
 
             steps.push(JSON.stringify(opTrace))
@@ -77,7 +77,7 @@ function runTestCase (options, testData, t, cb) {
       }
     },
     function (done) {
-      console.log('{ "steps": ['+steps+']}')
+      console.log('{ "steps": [' + steps + ']}')
       if (testData.postStateRoot.substr(0, 2) === '0x') {
         testData.postStateRoot = testData.postStateRoot.substr(2)
       }
