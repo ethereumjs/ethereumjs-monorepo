@@ -77,7 +77,9 @@ function runTestCase (options, testData, t, cb) {
       }
     },
     function (done) {
-      console.log('{ "steps": [' + steps + ']}')
+      if (options.jsontrace) {
+        console.log('{ "steps": [' + steps + ']}')
+      }
       if (testData.postStateRoot.substr(0, 2) === '0x') {
         testData.postStateRoot = testData.postStateRoot.substr(2)
       }
