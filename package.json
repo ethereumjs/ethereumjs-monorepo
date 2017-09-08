@@ -13,6 +13,7 @@
     "fake-merkle-patricia-tree": "^1.0.1",
     "functional-red-black-tree": "^1.0.1",
     "merkle-patricia-tree": "^2.1.2",
+    "rustbn.js": "git+https://github.com/cdetrio/rustbn.js.git#initial-release",
     "safe-buffer": "^5.1.1"
   },
   "devDependencies": {
