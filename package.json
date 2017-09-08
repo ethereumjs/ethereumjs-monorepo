@@ -45,6 +45,7 @@
     "testVM": "node ./tests/tester -v",
     "testState": "node ./tests/tester -s",
     "testBlockchain": "node --stack-size=1500 ./tests/tester -b",
+    "testBlockchainGeneralStateTests": "node --stack-size=1500 ./tests/tester -b --dir='GeneralStateTests'",
     "testBlockchainBlockGasLimit": "node --stack-size=1500 ./tests/tester -b --dir='bcBlockGasLimitTest'",
     "testBlockchainValid": "node --stack-size=1500 ./tests/tester -b --dir='bcValidBlockTest'",
     "testBlockchainTotalDifficulty": "node --stack-size=1500 ./tests/tester -b --dir='bcTotalDifficultyTest'",
