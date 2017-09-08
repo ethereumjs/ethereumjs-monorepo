@@ -138,6 +138,7 @@ function runTests (name, runnerArgs, cb) {
   testGetterArgs.test = argv.test
   testGetterArgs.dir = argv.dir
   testGetterArgs.excludeDir = argv.excludeDir
+  testGetterArgs.testsDir = argv.testsDir
 
   runnerArgs.forkConfig = FORK_CONFIG
   runnerArgs.debug = argv.debug // for BlockchainTests
