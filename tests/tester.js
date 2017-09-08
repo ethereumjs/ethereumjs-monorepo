@@ -22,6 +22,13 @@ const skip = [
   'Call50000bytesContract50_1', // slow
   'Call50000bytesContract50_2',
   'Call1MB1024Calldepth', // slow
+  'static_Call1MB1024Calldepth', // slow
+  'static_Call50000', // slow
+  'static_Call50000_ecrec',
+  'static_Call50000_identity',
+  'static_Call50000_identity2',
+  'static_Call50000_rip160',
+  'static_Return50000_2',
   'Callcode50000', // slow
   'Return50000', // slow
   'Return50000_2', // slow
@@ -69,7 +76,8 @@ const skip = [
   'static_CREATE_Bounds', // nodejs crash
   'static_DELEGATECALL_Bounds', // nodejs crash
   'static_RevertDepthCreateAddressCollision', // test case is wrong
-  'static_zeroSigTransactionInvChainID' // metropolis test
+  'static_zeroSigTransactionInvChainID', // metropolis test
+  'zeroSigTransactionInvChainID' // metropolis test
 ]
 
 /*
