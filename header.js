@@ -104,7 +104,13 @@ BlockHeader.prototype.canonicalDifficulty = function (parentBlock) {
   }
   dif = parentDif.add(offset.mul(a))
 
-  var exp = new BN(this.number).idivn(100000).isubn(2)
+  // Byzantium difficulty bomb delay
+  var num = new BN(this.number).isubn(3000000)
+  if (num.ltn(0)) {
+    num = new BN(0)
+  }
+
+  var exp = num.idivn(100000).isubn(2)
   if (!exp.isNeg()) {
     dif.iadd(new BN(2).pow(exp))
   }
