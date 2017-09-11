@@ -139,10 +139,13 @@ Blockchain.prototype.putBlocks = function (blocks, cb) {
 Blockchain.prototype.putBlock = function (block, cb, isGenesis) {
   const self = this
 
-  // perform put with mutex dance
-  lockUnlock(function (done) {
-    self._putBlock(block, done, isGenesis)
-  }, cb)
+  // make sure init has completed
+  self._initLock.await(() => {
+    // perform put with mutex dance
+    lockUnlock(function (done) {
+      self._putBlock(block, done, isGenesis)
+    }, cb)
+  })
 
   // lock, call fn, unlock
   function lockUnlock (fn, cb) {
