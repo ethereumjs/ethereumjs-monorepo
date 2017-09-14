@@ -53,14 +53,21 @@ Adds a block to the blockchain.
 #### `blockchain.getBlock(blockTag, callback)`
 Gets a block by its blockTag.
 - `blockTag`  - the block's hash or number
-- `callback` - the callback. It is given two parameters `err` and the found `block` if any. 
+- `callback` - the callback. It is given two parameters `err` and the found `block` (an instance of https://github.com/ethereumjs/ethereumjs-block) if any. 
 
 --------------------------------------------------------
 
 #### `blockchain.getDetails(hash, callback)`
 Retrieves meta infromation about the block and passed it to the `callback`
 - `hash` - the hash of the block as a `Buffer` or a hex `String`
-- `callback` - the callback which is passed an `Object` containing two properties `parent`, the hash of the this block's parents and `children` an `Array` of hashes of children blocks.
+- `callback` - the callback which is passed an `Object` containing the following properties:
+- * `parent` - the hash of the parent block
+- * `td` - the total difficulty of the block
+- * `number` - the block number
+- * `child` - the block's children
+- * `genesis` - boolean (true if genesis block, false if not)
+- * `inChain` - TODO
+- * `staleChildren` - TODO
 
 --------------------------------------------------------
 
