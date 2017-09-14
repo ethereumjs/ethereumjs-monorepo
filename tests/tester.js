@@ -144,6 +144,12 @@ function runTests (name, runnerArgs, cb) {
   runnerArgs.forkConfig = FORK_CONFIG
   runnerArgs.jsontrace = argv.jsontrace
   runnerArgs.debug = argv.debug // for BlockchainTests
+
+  // for GeneralStateTests
+  runnerArgs.data = argv.data
+  runnerArgs.gasLimit = argv.gas
+  runnerArgs.value = argv.value
+
   // runnerArgs.vmtrace = true; // for VMTests
 
   tape(name, t => {
