@@ -33,7 +33,8 @@ const skip = [
   'CREATE_Bounds', // nodejs crash
   'DELEGATECALL_Bounds', // nodejs crash
   'RevertDepthCreateAddressCollision', // test case is wrong
-  'zeroSigTransactionInvChainID' // metropolis test
+  'zeroSigTransactionInvChainID', // metropolis test
+  'randomStatetest643'
 ]
 
 /*
@@ -136,6 +137,9 @@ function runTests (name, runnerArgs, cb) {
   testGetterArgs.forkConfig = FORK_CONFIG
   testGetterArgs.file = argv.file
   testGetterArgs.test = argv.test
+  testGetterArgs.dir = argv.dir
+  testGetterArgs.excludeDir = argv.excludeDir
+  testGetterArgs.testsPath = argv.testsPath
 
   runnerArgs.forkConfig = FORK_CONFIG
   runnerArgs.jsontrace = argv.jsontrace

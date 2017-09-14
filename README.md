@@ -20,7 +20,7 @@ var vm = new VM()
 var code = '7f4e616d65526567000000000000000000000000000000000000000000000000003055307f4e616d6552656700000000000000000000000000000000000000000000000000557f436f6e666967000000000000000000000000000000000000000000000000000073661005d2720d855f1d9976f88bb10c1a3398c77f5573661005d2720d855f1d9976f88bb10c1a3398c77f7f436f6e6669670000000000000000000000000000000000000000000000000000553360455560df806100c56000396000f3007f726567697374657200000000000000000000000000000000000000000000000060003514156053576020355415603257005b335415603e5760003354555b6020353360006000a233602035556020353355005b60007f756e72656769737465720000000000000000000000000000000000000000000060003514156082575033545b1560995733335460006000a2600033545560003355005b60007f6b696c6c00000000000000000000000000000000000000000000000000000000600035141560cb575060455433145b1560d25733ff5b6000355460005260206000f3'
 
 vm.runCode({
-  code: Buffer.from(code, 'hex') // code needs to be a Buffer,
+  code: Buffer.from(code, 'hex'), // code needs to be a Buffer
   gasLimit: Buffer.from('ffffffff', 'hex')
 }, function(err, results){
   console.log('returned: ' + results.return.toString('hex'));
@@ -158,48 +158,6 @@ Emits the Transaction that is about to be processed.
 #### `afterTx`
 Emits the result of the transaction.
 
-# TESTING
-
-### Running Tests
-
-_Note: Requires at least Node.js `8.0.0` installed to run the tests, this is because `ethereumjs-testing` uses `async/await` and other ES2015 language features_
-
-Tests can be found in the ``tests`` directory, with ``FORK_CONFIG`` set in ``tests/tester.js``. There are test runners for [State tests](http://www.ethdocs.org/en/latest/contracts-and-transactions/ethereum-tests/state_tests/index.html) and [Blockchain tests](http://www.ethdocs.org/en/latest/contracts-and-transactions/ethereum-tests/blockchain_tests/index.html). VM tests are disabled since Frontier gas costs are not supported any more. Tests are then executed by the [ethereumjs-testing](https://github.com/ethereumjs/ethereumjs-testing) utility library using the official client-independent [Ethereum tests](https://github.com/ethereum/tests).
-
-Running all the tests:
-
-`npm test`
-
-Running the State tests:
-
-`node ./tests/tester -s`
-
-Running the Blockchain tests:
-
-`node ./tests/tester -b`
-
-State tests run significantly faster than Blockchain tests, so it is often a good choice to start fixing State tests.
-
-Running all the blockchain tests in a file:
-
-`node ./tests/tester -b --file='randomStatetest303'`
-
-Running a specific state test case:
-
-`node ./tests/tester -s --test='stackOverflow'`
-
-For a wider picture about how to use tests to implement EIPs you can have a look at this [reddit post](https://www.reddit.com/r/ethereum/comments/6kc5g3/ethereumjs_team_is_seeking_contributors/)
-or the associated YouTube video introduction to [core development with Ethereumjs-vm](https://www.youtube.com/watch?v=L0BVDl6HZzk&feature=youtu.be).
-
-### Debugging
-
-Blockchain tests support `--debug` to verify the postState:
-
-`node ./tests/tester -b  --debug --test='ZeroValue_SELFDESTRUCT_ToOneStorageKey_OOGRevert_d0g0v0_EIP158'`
-
-All/most State tests are replicated as Blockchain tests in a ``GeneralStateTests`` [sub directory](https://github.com/ethereum/tests/tree/develop/BlockchainTests/GeneralStateTests) in the Ethereum tests repo, so for debugging single test cases the Blockchain test version of the State test can be used.
-
-For comparing ``EVM`` traces [here](https://gist.github.com/cdetrio/41172f374ae32047a6c9e97fa9d09ad0) are some instructions for setting up ``pyethereum`` to generate corresponding traces for state tests.
 
 # Internal Structure
 The VM processes state changes at many levels.
@@ -232,6 +190,54 @@ The VM processes state changes at many levels.
   * calculate fee
 
 The opFns for `CREATE`, `CALL`, and `CALLCODE` call back up to `runCall`.
+
+
+# TESTING
+
+### Running Tests
+
+_Note: Requires at least Node.js `8.0.0` installed to run the tests, this is because `ethereumjs-testing` uses `async/await` and other ES2015 language features_
+
+Tests can be found in the ``tests`` directory, with ``FORK_CONFIG`` set in ``tests/tester.js``. There are test runners for [State tests](http://www.ethdocs.org/en/latest/contracts-and-transactions/ethereum-tests/state_tests/index.html) and [Blockchain tests](http://www.ethdocs.org/en/latest/contracts-and-transactions/ethereum-tests/blockchain_tests/index.html). VM tests are disabled since Frontier gas costs are not supported any more. Tests are then executed by the [ethereumjs-testing](https://github.com/ethereumjs/ethereumjs-testing) utility library using the official client-independent [Ethereum tests](https://github.com/ethereum/tests).
+
+Running all the tests:
+
+`npm test`
+
+Running the State tests:
+
+`node ./tests/tester -s`
+
+Running the Blockchain tests:
+
+`node ./tests/tester -b`
+
+State tests run significantly faster than Blockchain tests, so it is often a good choice to start fixing State tests.
+
+Running all the blockchain tests in a file:
+
+`node ./tests/tester -b --file='randomStatetest303'`
+
+Running tests from a specific directory:
+
+`node ./tests/tester -b --dir='bcBlockGasLimitTest'`
+
+Running a specific state test case:
+
+`node ./tests/tester -s --test='stackOverflow'`
+
+For a wider picture about how to use tests to implement EIPs you can have a look at this [reddit post](https://www.reddit.com/r/ethereum/comments/6kc5g3/ethereumjs_team_is_seeking_contributors/)
+or the associated YouTube video introduction to [core development with Ethereumjs-vm](https://www.youtube.com/watch?v=L0BVDl6HZzk&feature=youtu.be).
+
+### Debugging
+
+Blockchain tests support `--debug` to verify the postState:
+
+`node ./tests/tester -b  --debug --test='ZeroValue_SELFDESTRUCT_ToOneStorageKey_OOGRevert_d0g0v0_EIP158'`
+
+All/most State tests are replicated as Blockchain tests in a ``GeneralStateTests`` [sub directory](https://github.com/ethereum/tests/tree/develop/BlockchainTests/GeneralStateTests) in the Ethereum tests repo, so for debugging single test cases the Blockchain test version of the State test can be used.
+
+For comparing ``EVM`` traces [here](https://gist.github.com/cdetrio/41172f374ae32047a6c9e97fa9d09ad0) are some instructions for setting up ``pyethereum`` to generate corresponding traces for state tests.
 
 
 # LICENSE

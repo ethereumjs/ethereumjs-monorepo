@@ -34,8 +34,10 @@ matrix:
     - os: linux
       node_js: "8"
       env: CXX=g++-4.8 TEST_SUITE=testState
-# temporarily disable testBlockchain
-#    - os: linux
-#      node_js: "8"
-#      env: CXX=g++-4.8 TEST_SUITE=testBlockchain
+    - os: linux
+      node_js: "8"
+      env: CXX=g++-4.8 TEST_SUITE=testBlockchainBlockGasLimit
+    - os: linux
+      node_js: "8"
+      env: CXX=g++-4.8 TEST_SUITE=testBlockchainTotalDifficulty
 script: npm run $TEST_SUITE
