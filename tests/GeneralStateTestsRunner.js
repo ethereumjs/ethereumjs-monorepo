@@ -1,7 +1,6 @@
 const async = require('async')
 const VM = require('../index.js')
 const testUtil = require('./util')
-const ethUtil = require('ethereumjs-util')
 const Trie = require('merkle-patricia-tree/secure')
 const BN = ethUtil.BN
 
