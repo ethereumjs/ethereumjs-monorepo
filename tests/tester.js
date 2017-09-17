@@ -185,6 +185,8 @@ function runTests (name, runnerArgs, cb) {
   testGetterArgs.excludeDir = argv.excludeDir
   testGetterArgs.testsPath = argv.testsPath
 
+  testGetterArgs.stateTestSource = argv.stateTestSource
+
   runnerArgs.forkConfig = FORK_CONFIG
   runnerArgs.jsontrace = argv.jsontrace
   runnerArgs.debug = argv.debug // for BlockchainTests
@@ -196,25 +198,42 @@ function runTests (name, runnerArgs, cb) {
 
   // runnerArgs.vmtrace = true; // for VMTests
 
-  tape(name, t => {
-    const runner = require(`./${name}Runner.js`)
-    testing.getTestsFromArgs(name, (fileName, testName, test) => {
-      return new Promise((resolve, reject) => {
-        if (name === 'VMTests') {
-          // suppress some output of VMTests
-          // t.comment(`file: ${fileName} test: ${testName}`)
-          test.fileName = fileName
-          test.testName = testName
-          runner(runnerArgs, test, t, resolve)
-        } else {
-          t.comment(`file: ${fileName} test: ${testName}`)
-          runner(runnerArgs, test, t, resolve)
+  if (argv.stateTestSource) {
+    const stateTestRunner = require('./GeneralStateTestsRunner.js')
+    let fileName = argv.stateTestSource
+    tape(name, t => {
+      testing.getTestFromSource(fileName, (err, test) => {
+        if (err) {
+          return t.fail(err)
         }
-      }).catch(err => console.log(err))
-    }, testGetterArgs).then(() => {
-      t.end()
+
+        t.comment(`file: ${fileName} test: ${test.testName}`)
+        stateTestRunner(runnerArgs, test, t, () => {
+          t.end()
+        })
+      })
     })
-  })
+  } else {
+    tape(name, t => {
+      const runner = require(`./${name}Runner.js`)
+      testing.getTestsFromArgs(name, (fileName, testName, test) => {
+        return new Promise((resolve, reject) => {
+          if (name === 'VMTests') {
+            // suppress some output of VMTests
+            // t.comment(`file: ${fileName} test: ${testName}`)
+            test.fileName = fileName
+            test.testName = testName
+            runner(runnerArgs, test, t, resolve)
+          } else {
+            t.comment(`file: ${fileName} test: ${testName}`)
+            runner(runnerArgs, test, t, resolve)
+          }
+        }).catch(err => console.log(err))
+      }, testGetterArgs).then(() => {
+        t.end()
+      })
+    })
+  }
 }
 
 function runAll () {
