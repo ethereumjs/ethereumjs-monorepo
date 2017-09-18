@@ -9,7 +9,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 - TODO
 
 ## [2.2.2] - 2017-09-19
-- Fixed issues with [handling large numbers](https://github.com/ethereumjs/ethereumjs-vm/issues/167)
+- Fixed [JS number issues](https://github.com/ethereumjs/ethereumjs-vm/pull/168)
   and [certain edge cases](https://github.com/ethereumjs/ethereumjs-vm/pull/188)
 - Fixed various smaller bugs and improved code consistency
 - Some VM speedups
