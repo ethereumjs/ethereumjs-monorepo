@@ -7,7 +7,7 @@
 [![js-standard-style](https://cdn.rawgit.com/feross/standard/master/badge.svg)](https://github.com/feross/standard)  
 
 
-Implements schema and functions related to Etheruem's block. 
+Implements schema and functions related to Ethereum's block. 
 
 # INSTALL
 `npm install ethereumjs-block`
