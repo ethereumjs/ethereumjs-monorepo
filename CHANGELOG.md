@@ -6,8 +6,16 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 
+## [2.0.2] - 2017-09-19
+- Tightened dependencies to prevent the ``2.0.x`` version of the library to break
+  after ``ethereumjs`` Byzantium library updates
+
+[2.0.2]: https://github.com/ethereumjs/ethereumjs-blockchain/compare/v2.0.1...v2.0.2
+
 ## [2.0.1] - 2017-09-14
 - Fixed severe bug adding blocks before blockchain init is complete
+
+[2.0.1]: https://github.com/ethereumjs/ethereumjs-blockchain/compare/v2.0.0...v2.0.1
 
 ## [2.0.0] - 2017-01-01
 - Split ``db`` into ``blockDB`` and ``detailsDB`` (breaking)
