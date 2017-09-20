@@ -232,6 +232,14 @@ test docs), provided by the index of the array element in the test ``transaction
 
 `node tests/tester -s --test='CreateCollisionToEmpty' --data=0 --gas=1 --value=0`
 
+Compare TAP output from blockchain/state tests and produces concise diff of the differences between them (example):
+
+```
+curl https://gist.githubusercontent.com/jwasinger/6cef66711b5e0787667ceb3db6bea0dc/raw/0740f03b4ce90d0955d5aba1e0c30ce698c7145a/gistfile1.txt > output-wip-byzantium.txt
+curl https://gist.githubusercontent.com/jwasinger/e7004e82426ff0a7137a88d273f11819/raw/66fbd58722747ebe4f7006cee59bbe22461df8eb/gistfile1.txt > output-master.txt
+python utils/diffTestOutput.py output-wip-byzantium.txt output-master.txt
+```
+
 For a wider picture about how to use tests to implement EIPs you can have a look at this [reddit post](https://www.reddit.com/r/ethereum/comments/6kc5g3/ethereumjs_team_is_seeking_contributors/)
 or the associated YouTube video introduction to [core development with Ethereumjs-vm](https://www.youtube.com/watch?v=L0BVDl6HZzk&feature=youtu.be).
 
