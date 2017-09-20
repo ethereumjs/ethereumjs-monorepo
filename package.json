@@ -44,7 +44,7 @@
   "scripts": {
     "testVM": "node ./tests/tester -v",
     "testState": "node ./tests/tester -s",
-    "testBlockchain": "node --stack-size=1500 ./tests/tester -b",
+    "testBlockchain": "node --stack-size=1500 ./tests/tester -b --excludeDir='GeneralStateTests'",
     "testBlockchainGeneralStateTests": "node --stack-size=1500 ./tests/tester -b --dir='GeneralStateTests'",
     "testBlockchainBlockGasLimit": "node --stack-size=1500 ./tests/tester -b --dir='bcBlockGasLimitTest'",
     "testBlockchainValid": "node --stack-size=1500 ./tests/tester -b --dir='bcValidBlockTest'",
