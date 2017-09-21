@@ -83,7 +83,7 @@ exports.verifyPostConditions = function (state, testData, t, cb) {
   }
 
   var q = async.queue(function (task, cb2) {
-    exports.verifyAccountPostConditions(state, task.account, task.testData, t, cb2)
+    exports.verifyAccountPostConditions(state, task.address, task.account, task.testData, t, cb2)
   }, 1)
 
   var stream = state.createReadStream()
@@ -92,10 +92,12 @@ exports.verifyPostConditions = function (state, testData, t, cb) {
     var acnt = new Account(rlp.decode(data.value))
     var key = data.key.toString('hex')
     var testData = hashedAccounts[key]
+    var address = keyMap[key]
     delete keyMap[key]
 
     if (testData) {
       q.push({
+        address: address,
         account: acnt,
         testData: testData
       })
@@ -123,11 +125,13 @@ exports.verifyPostConditions = function (state, testData, t, cb) {
 /**
  * verifyAccountPostConditions using JSON from tests repo
  * @param {[type]}   state    DB/trie
+ * @param {[type]}   string   Account Address
  * @param {[type]}   account  to verify
  * @param {[type]}   acctData postconditions JSON from tests repo
  * @param {Function} cb       completion callback
  */
-exports.verifyAccountPostConditions = function (state, account, acctData, t, cb) {
+exports.verifyAccountPostConditions = function (state, address, account, acctData, t, cb) {
+  t.comment('Account: ' + address)
   t.equal(format(account.balance, true).toString('hex'), format(acctData.balance, true).toString('hex'), 'correct balance')
   t.equal(format(account.nonce, true).toString('hex'), format(acctData.nonce, true).toString('hex'), 'correct nonce')
 
