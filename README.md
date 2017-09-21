@@ -226,6 +226,12 @@ Running a specific state test case:
 
 `node ./tests/tester -s --test='stackOverflow'`
 
+Only run test cases with selected ``data``, ``gas`` and/or ``value`` values (see 
+[attribute description](http://ethereum-tests.readthedocs.io/en/latest/test_types/state_tests.html) in 
+test docs), provided by the index of the array element in the test ``transaction`` section:
+
+`node tests/tester -s --test='CreateCollisionToEmpty' --data=0 --gas=1 --value=0`
+
 For a wider picture about how to use tests to implement EIPs you can have a look at this [reddit post](https://www.reddit.com/r/ethereum/comments/6kc5g3/ethereumjs_team_is_seeking_contributors/)
 or the associated YouTube video introduction to [core development with Ethereumjs-vm](https://www.youtube.com/watch?v=L0BVDl6HZzk&feature=youtu.be).
 

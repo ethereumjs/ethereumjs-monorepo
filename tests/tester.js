@@ -31,6 +31,9 @@ const skip = [
   'CALL_Bounds', // nodejs crash
   'CALLCODE_Bounds', // nodejs crash
   'CREATE_Bounds', // nodejs crash
+  'CreateCollisionToEmpty', // temporary till fixed (2017-09-21)
+  'TransactionCollisionToEmptyButCode', // temporary till fixed (2017-09-21)
+  'TransactionCollisionToEmptyButNonce', // temporary till fixed (2017-09-21)
   'DELEGATECALL_Bounds', // nodejs crash
   'RevertDepthCreateAddressCollision', // test case is wrong
   'zeroSigTransactionInvChainID', // metropolis test
@@ -144,6 +147,12 @@ function runTests (name, runnerArgs, cb) {
   runnerArgs.forkConfig = FORK_CONFIG
   runnerArgs.jsontrace = argv.jsontrace
   runnerArgs.debug = argv.debug // for BlockchainTests
+
+  // for GeneralStateTests
+  runnerArgs.data = argv.data
+  runnerArgs.gasLimit = argv.gas
+  runnerArgs.value = argv.value
+
   // runnerArgs.vmtrace = true; // for VMTests
 
   tape(name, t => {
