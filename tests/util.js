@@ -131,7 +131,7 @@ exports.verifyPostConditions = function (state, testData, t, cb) {
  * @param {Function} cb       completion callback
  */
 exports.verifyAccountPostConditions = function (state, address, account, acctData, t, cb) {
-  t.comment("Account: " + address)
+  t.comment('Account: ' + address)
   t.equal(format(account.balance, true).toString('hex'), format(acctData.balance, true).toString('hex'), 'correct balance')
   t.equal(format(account.nonce, true).toString('hex'), format(acctData.nonce, true).toString('hex'), 'correct nonce')
 
