@@ -8,6 +8,16 @@
 
 Implements Ethereum's VM in JS
 
+#### Note on Byzantium Support:
+
+The ``master`` branch of this repository has now been updated with the latest 
+[Byzantium changes](https://github.com/ethereumjs/ethereumjs-vm/pull/161) please install
+directly from GitHub if you want to try out the latest ``VM`` version and report
+issues on our [Gitter channel](https://gitter.im/ethereum/ethereumjs-lib).
+
+For a ``Spurious Dragon``/``EIP 150`` compatible version of this library install the
+latest of the ``2.2.x`` series (see [Changelog](./CHANGELOG.md)).
+
 # INSTALL
 `npm install ethereumjs-vm`
 
