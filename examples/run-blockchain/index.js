@@ -110,6 +110,7 @@ function setupPreConditions (state, testData, done) {
     storageTrie.root = null
 
     async.series([
+
       function (cb2) {
         var keys = Object.keys(acctData.storage)
 
@@ -130,7 +131,7 @@ function setupPreConditions (state, testData, done) {
         if (testData.exec && key === testData.exec.address) {
           testData.root = storageTrie.root
         }
-        state.put(Buffer.from(key, 'hex'), account.serialize(), function () {
+        state.put(Buffer.from(utils.stripHexPrefix(key), 'hex'), account.serialize(), function () {
           cb2()
         })
       }
