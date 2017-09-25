@@ -53,11 +53,10 @@ var Block = module.exports = function (data) {
     this.uncleHeaders.push(new BlockHeader(rawUncleHeaders[i]))
   }
 
-  var homestead = this.isHomestead()
   // parse transactions
   for (i = 0; i < rawTransactions.length; i++) {
     var tx = new Tx(rawTransactions[i])
-    tx._homestead = homestead
+    tx._homestead = true
     this.transactions.push(tx)
   }
 }
@@ -79,24 +78,6 @@ Block.prototype.hash = function () {
  */
 Block.prototype.isGenesis = function () {
   return this.header.isGenesis()
-}
-
-/**
- * Determines if a given block part of homestead or not
- * @method isHomestead
- * @return Boolean
- */
-Block.prototype.isHomestead = function () {
-  return this.header.isHomestead()
-}
-
-/**
- * Determines if a given block part of homestead reprice or not
- * @method isHomesteadReprice
- * @return Boolean
- */
-Block.prototype.isHomesteadReprice = function () {
-  return this.header.isHomesteadReprice()
 }
 
 /**
