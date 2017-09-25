@@ -6,19 +6,20 @@
   "dependencies": {
     "async": "^2.1.2",
     "async-eventemitter": "^0.2.2",
-    "ethereum-common": "0.1.0",
+    "ethereum-common": "https://github.com/ethereumjs/common",
     "ethereumjs-account": "^2.0.3",
-    "ethereumjs-block": "~1.6.0",
+    "ethereumjs-block": "https://github.com/ethereumjs/ethereumjs-block",
     "ethereumjs-util": "4.5.0",
     "fake-merkle-patricia-tree": "^1.0.1",
     "functional-red-black-tree": "^1.0.1",
     "merkle-patricia-tree": "^2.1.2",
+    "rustbn.js": "https://github.com/ethereumjs/rustbn.js",
     "safe-buffer": "^5.1.1"
   },
   "devDependencies": {
     "babel-preset-es2015": "^6.24.0",
     "babelify": "^7.3.0",
-    "ethereumjs-blockchain": "~2.0.0",
+    "ethereumjs-blockchain": "https://github.com/ethereumjs/ethereumjs-blockchain",
     "ethereumjs-testing": "https://github.com/ethereumjs/ethereumjs-testing",
     "ethereumjs-tx": "1.3.3",
     "level": "^1.4.0",

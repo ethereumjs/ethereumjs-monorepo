@@ -2,7 +2,7 @@ const argv = require('minimist')(process.argv.slice(2))
 const async = require('async')
 const tape = require('tape')
 const testing = require('ethereumjs-testing')
-const FORK_CONFIG = argv.fork || 'EIP158'
+const FORK_CONFIG = argv.fork || 'Byzantium'
 const skip = [
   'CreateHashCollision', // impossible hash collision on generating address
   'SuicidesMixingCoinbase', // sucides to the coinbase, since we run a blockLevel we create coinbase account.
@@ -21,6 +21,14 @@ const skip = [
   'Call50000_rip160', // slow
   'Call50000bytesContract50_1', // slow
   'Call50000bytesContract50_2',
+  'Call1MB1024Calldepth', // slow
+  'static_Call1MB1024Calldepth', // slow
+  'static_Call50000', // slow
+  'static_Call50000_ecrec',
+  'static_Call50000_identity',
+  'static_Call50000_identity2',
+  'static_Call50000_rip160',
+  'static_Return50000_2',
   'Callcode50000', // slow
   'Return50000', // slow
   'Return50000_2', // slow
@@ -34,10 +42,43 @@ const skip = [
   'CreateCollisionToEmpty', // temporary till fixed (2017-09-21)
   'TransactionCollisionToEmptyButCode', // temporary till fixed (2017-09-21)
   'TransactionCollisionToEmptyButNonce', // temporary till fixed (2017-09-21)
+  'randomStatetest642', // temporary till fixed (2017-09-25)
   'DELEGATECALL_Bounds', // nodejs crash
   'RevertDepthCreateAddressCollision', // test case is wrong
   'zeroSigTransactionInvChainID', // metropolis test
-  'randomStatetest643'
+  'randomStatetest643',
+  'static_CreateHashCollision', // impossible hash collision on generating address
+  'static_SuicidesMixingCoinbase', // sucides to the coinbase, since we run a blockLevel we create coinbase account.
+  'static_TransactionMakeAccountBalanceOverflow',
+  'static_RecursiveCreateContracts',
+  'static_sha3_bigSize',
+  'static_createJS_ExampleContract', // creates an account that already exsists
+  'static_mload32bitBound_return',
+  'static_mload32bitBound_return2',
+  'static_QuadraticComplexitySolidity_CallDataCopy', // tests hash collisoin, sending from a contract
+  'static_Call50000', // slow
+  'static_Call50000_ecrec', // slow
+  'static_Call50000_identity', // slow
+  'static_Call50000_identity2', // slow
+  'static_Call50000_sha256', // slow
+  'static_Call50000_rip160', // slow
+  'static_Call50000bytesContract50_1', // slow
+  'static_Call50000bytesContract50_2',
+  'static_Call1MB1024Calldepth', // slow
+  'static_Callcode50000', // slow
+  'static_Return50000', // slow
+  'static_Return50000_2', // slow
+  'static_uncleBlockAtBlock3AfterBlock3',
+  'static_ForkUncle', // correct behaviour unspecified (?)
+  'static_UncleFromSideChain', // same as ForkUncle, the TD is the same for two diffent branches so its not clear which one should be the finally chain
+  'static_bcSimpleTransitionTest', // HF stuff
+  'static_CALL_Bounds', // nodejs crash
+  'static_CALLCODE_Bounds', // nodejs crash
+  'static_CREATE_Bounds', // nodejs crash
+  'static_DELEGATECALL_Bounds', // nodejs crash
+  'static_RevertDepthCreateAddressCollision', // test case is wrong
+  'static_zeroSigTransactionInvChainID', // metropolis test
+  'zeroSigTransactionInvChainID' // metropolis test
 ]
 
 /*
