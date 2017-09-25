@@ -19,7 +19,7 @@ tape('[Header]: difficulty tests', t => {
     var parentBlock = new Block()
     parentBlock.header.timestamp = test.parentTimestamp
     parentBlock.header.difficulty = test.parentDifficulty
-    parentBlock.header.uncleHash = test.parentUncleHash
+    parentBlock.header.uncleHash = test.parentUncles
 
     var block = new Block()
     block.header.timestamp = test.currentTimestamp
