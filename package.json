@@ -26,7 +26,7 @@
   "dependencies": {
     "async": "^2.1.2",
     "ethashjs": "~0.0.7",
-    "ethereumjs-block": "~1.6.0",
+    "ethereumjs-block": "git+https://github.com/ethereumjs/ethereumjs-block.git#master",
     "ethereumjs-util": "~5.1.0",
     "flow-stoplight": "^1.0.0",
     "levelup": "^1.3.0",
