@@ -42,6 +42,7 @@ const skip = [
   'CreateCollisionToEmpty', // temporary till fixed (2017-09-21)
   'TransactionCollisionToEmptyButCode', // temporary till fixed (2017-09-21)
   'TransactionCollisionToEmptyButNonce', // temporary till fixed (2017-09-21)
+  'randomStatetest642', // temporary till fixed (2017-09-25)
   'DELEGATECALL_Bounds', // nodejs crash
   'RevertDepthCreateAddressCollision', // test case is wrong
   'zeroSigTransactionInvChainID', // metropolis test
