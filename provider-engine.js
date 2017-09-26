@@ -9,7 +9,7 @@ inherits(WalletSubprovider, HookedWalletEthTxSubprovider)
 
 function WalletSubprovider (wallet, opts) {
   opts.getAccounts = function (cb) {
-    cb(null, [ wallet.getAddressesString() ])
+    cb(null, [ wallet.getAddressString() ])
   }
 
   opts.getPrivateKey = function (address, cb) {
