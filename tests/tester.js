@@ -185,7 +185,7 @@ function runTests (name, runnerArgs, cb) {
   testGetterArgs.excludeDir = argv.excludeDir
   testGetterArgs.testsPath = argv.testsPath
 
-  testGetterArgs.stateTestSource = argv.stateTestSource
+  testGetterArgs.customStateTest = argv.customStateTest
 
   runnerArgs.forkConfig = FORK_CONFIG
   runnerArgs.jsontrace = argv.jsontrace
