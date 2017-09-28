@@ -1,14 +1,15 @@
 const ethUtil = require('ethereumjs-util')
 const rlp = require('rlp')
+const Buffer = require('safe-buffer').Buffer
 
 var Account = module.exports = function (data) {
   // Define Properties
   var fields = [{
     name: 'nonce',
-    default: new Buffer([])
+    default: Buffer.alloc(0)
   }, {
     name: 'balance',
-    default: new Buffer([])
+    default: Buffer.alloc(0)
   }, {
     name: 'stateRoot',
     length: 32,
@@ -32,7 +33,7 @@ Account.prototype.isContract = function () {
 
 Account.prototype.getCode = function (state, cb) {
   if (!this.isContract()) {
-    cb(null, new Buffer([]))
+    cb(null, Buffer.alloc(0))
     return
   }
 
@@ -45,7 +46,7 @@ Account.prototype.setCode = function (trie, code, cb) {
   this.codeHash = ethUtil.sha3(code)
 
   if (this.codeHash.toString('hex') === ethUtil.SHA3_NULL_S) {
-    cb(null, new Buffer([]))
+    cb(null, Buffer.alloc(0))
     return
   }
 
