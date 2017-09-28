@@ -200,7 +200,7 @@ function runTests (name, runnerArgs, cb) {
 
   if (argv.customStateTest) {
     const stateTestRunner = require('./GeneralStateTestsRunner.js')
-    let fileName = argv.stateTestSource
+    let fileName = argv.customStateTest
     tape(name, t => {
       testing.getTestFromSource(fileName, (err, test) => {
         if (err) {
