@@ -4,6 +4,7 @@ var crypto = require('crypto')
 var scryptsy = require('scrypt.js')
 var utf8 = require('utf8')
 var aesjs = require('aes-js')
+var Buffer = require('safe-buffer').Buffer
 
 function assert (val, msg) {
   if (!val) {
@@ -28,7 +29,7 @@ var Thirdparty = {}
  *
  * FIXME: not optimised at all
  */
-function evp_kdf (data, salt, opts) {
+function evp_kdf (data, salt, opts) { // eslint-disable-line
   // A single EVP iteration, returns `D_i`, where block equlas to `D_(i-1)`
   function iter (block) {
     var hash = crypto.createHash(opts.digest || 'md5')
@@ -53,7 +54,7 @@ function evp_kdf (data, salt, opts) {
 
   var i = 0
   while (Buffer.concat(ret).length < (keysize + ivsize)) {
-    ret[i] = iter((i === 0) ? new Buffer(0) : ret[i - 1])
+    ret[i] = iter((i === 0) ? Buffer.alloc(0) : ret[i - 1])
     i++
   }
 
@@ -67,7 +68,7 @@ function evp_kdf (data, salt, opts) {
 
 // http://stackoverflow.com/questions/25288311/cryptojs-aes-pattern-always-ends-with
 function decodeCryptojsSalt (input) {
-  var ciphertext = new Buffer(input, 'base64')
+  var ciphertext = Buffer.from(input, 'base64')
   if (ciphertext.slice(0, 8).toString() === 'Salted__') {
     return {
       salt: ciphertext.slice(8, 16),
@@ -93,7 +94,7 @@ Thirdparty.fromEtherWallet = function (input, password) {
       throw new Error('Invalid private key length')
     }
 
-    privKey = new Buffer(json.private, 'hex')
+    privKey = Buffer.from(json.private, 'hex')
   } else {
     if (typeof password !== 'string') {
       throw new Error('Password required')
@@ -114,13 +115,13 @@ Thirdparty.fromEtherWallet = function (input, password) {
     }
 
     // derive key/iv using OpenSSL EVP as implemented in CryptoJS
-    var evp = evp_kdf(new Buffer(password), cipher.salt, { keysize: 32, ivsize: 16 })
+    var evp = evp_kdf(Buffer.from(password), cipher.salt, { keysize: 32, ivsize: 16 })
 
     var decipher = crypto.createDecipheriv('aes-256-cbc', evp.key, evp.iv)
-    privKey = decipherBuffer(decipher, new Buffer(cipher.ciphertext))
+    privKey = decipherBuffer(decipher, Buffer.from(cipher.ciphertext))
 
     // NOTE: yes, they've run it through UTF8
-    privKey = new Buffer(utf8.decode(privKey.toString()), 'hex')
+    privKey = Buffer.from(utf8.decode(privKey.toString()), 'hex')
   }
 
   var wallet = new Wallet(privKey)
@@ -133,12 +134,12 @@ Thirdparty.fromEtherWallet = function (input, password) {
 }
 
 Thirdparty.fromEtherCamp = function (passphrase) {
-  return new Wallet(ethUtil.sha3(new Buffer(passphrase)))
+  return new Wallet(ethUtil.sha3(Buffer.from(passphrase)))
 }
 
 Thirdparty.fromKryptoKit = function (entropy, password) {
   function kryptoKitBrokenScryptSeed (buf) {
-    // js-scrypt calls `new Buffer(String(salt), 'utf8')` on the seed even though it is a buffer
+    // js-scrypt calls `Buffer.from(String(salt), 'utf8')` on the seed even though it is a buffer
     //
     // The `buffer`` implementation used does the below transformation (doesn't matches the current version):
     // https://github.com/feross/buffer/blob/67c61181b938b17d10dbfc0a545f713b8bd59de8/index.js
@@ -163,7 +164,7 @@ Thirdparty.fromKryptoKit = function (entropy, password) {
       }
     }
 
-    return new Buffer(res + decodeUtf8Char(tmp))
+    return Buffer.from(res + decodeUtf8Char(tmp))
   }
 
   if (entropy[0] === '#') {
@@ -181,16 +182,16 @@ Thirdparty.fromKryptoKit = function (entropy, password) {
       throw new Error('Password required')
     }
 
-    var encryptedSeed = ethUtil.sha256(new Buffer(entropy.slice(0, 30)))
+    var encryptedSeed = ethUtil.sha256(Buffer.from(entropy.slice(0, 30)))
     var checksum = entropy.slice(30, 46)
 
     var salt = kryptoKitBrokenScryptSeed(encryptedSeed)
-    var aesKey = scryptsy(new Buffer(password, 'utf8'), salt, 16384, 8, 1, 32)
+    var aesKey = scryptsy(Buffer.from(password, 'utf8'), salt, 16384, 8, 1, 32)
 
     /* FIXME: try to use `crypto` instead of `aesjs`
 
     // NOTE: ECB doesn't use the IV, so it can be anything
-    var decipher = crypto.createDecipheriv("aes-256-ecb", aesKey, new Buffer(0))
+    var decipher = crypto.createDecipheriv("aes-256-ecb", aesKey, Buffer.from(0))
 
     // FIXME: this is a clear abuse, but seems to match how ECB in aesjs works
     privKey = Buffer.concat([

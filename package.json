@@ -30,15 +30,16 @@
     "bs58check": "^1.0.8",
     "ethereumjs-util": "^4.4.0",
     "hdkey": "^0.7.0",
+    "safe-buffer": "^5.1.1",
     "scrypt.js": "^0.2.0",
-    "uuid": "^2.0.1",
-    "utf8": "^2.1.1"
+    "utf8": "^2.1.1",
+    "uuid": "^2.0.1"
   },
   "devDependencies": {
     "coveralls": "^2.11.4",
     "istanbul": "^0.4.1",
     "mocha": "^2.3.4",
-    "standard": "^5.4.1"
+    "standard": "^10.0.0"
   },
   "standard": {
     "globals": [

@@ -14,10 +14,10 @@ function WalletSubprovider (wallet, opts) {
 
   opts.getPrivateKey = function (address, cb) {
     if (address !== wallet.getAddressString()) {
-      return cb('Account not found')
+      cb(new Error('Account not found'))
+    } else {
+      cb(null, wallet.getPrivateKey())
     }
-
-    cb(null, wallet.getPrivateKey())
   }
 
   WalletSubprovider.super_.call(this, opts)
