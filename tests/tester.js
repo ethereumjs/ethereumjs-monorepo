@@ -198,7 +198,7 @@ function runTests (name, runnerArgs, cb) {
 
   // runnerArgs.vmtrace = true; // for VMTests
 
-  if (argv.stateTestSource) {
+  if (argv.customStateTest) {
     const stateTestRunner = require('./GeneralStateTestsRunner.js')
     let fileName = argv.stateTestSource
     tape(name, t => {
