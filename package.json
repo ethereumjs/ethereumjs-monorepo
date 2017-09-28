@@ -25,7 +25,8 @@
   "homepage": "https://github.com/ethereumjs/ethereumjs-account#readme",
   "dependencies": {
     "ethereumjs-util": "^5.0.0",
-    "rlp": "^2.0.0"
+    "rlp": "^2.0.0",
+    "safe-buffer": "^5.1.1"
   },
   "devDependencies": {
     "coveralls": "^2.11.4",
