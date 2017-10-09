@@ -251,7 +251,7 @@ python utils/diffTestOutput.py output-wip-byzantium.txt output-master.txt
 ```
 
 Run a state test from a specified source file not under the ``tests`` directory:
-`node ./tests/tester -s --stateTestSource='{path_to_file}'`
+`node ./tests/tester -s --customStateTest='{path_to_file}'`
 
 For a wider picture about how to use tests to implement EIPs you can have a look at this [reddit post](https://www.reddit.com/r/ethereum/comments/6kc5g3/ethereumjs_team_is_seeking_contributors/)
 or the associated YouTube video introduction to [core development with Ethereumjs-vm](https://www.youtube.com/watch?v=L0BVDl6HZzk&feature=youtu.be).
