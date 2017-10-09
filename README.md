@@ -20,13 +20,14 @@ USAGE
 =======
 
 ```javascript
-var RLP = require('rlp'); 
+var RLP = require('rlp');
+var assert = require('assert');
 
 var nestedList = [ [], [[]], [ [], [[]] ] ];
 var encoded = RLP.encode(nestedList);
 var decoded = RLP.decode(encoded);
-  assert.deepEqual(nestedList, decoded);
-});
+assert.deepEqual(nestedList, decoded);
+
 
 ```
 
