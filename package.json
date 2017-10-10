@@ -40,7 +40,7 @@
   "homepage": "https://github.com/ethereumjs/ethereumjs-block#readme",
   "dependencies": {
     "async": "^2.0.1",
-    "ethereum-common": "git+https://github.com/ethereumjs/common.git#v0.2.0",
+    "ethereum-common": "0.2.0",
     "ethereumjs-tx": "^1.2.2",
     "ethereumjs-util": "^5.0.0",
     "merkle-patricia-tree": "^2.1.2"
