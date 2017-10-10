@@ -6,7 +6,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 
-## [1.7.0] - Unreleased (``master`` branch)
+## [1.7.0] - 2017-10-11
 - ``Metro-Byzantium`` compatible
 - New difficulty formula (EIP 100)
 - Difficulty bomb delay (EIP 649)
