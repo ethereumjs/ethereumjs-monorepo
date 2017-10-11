@@ -1,6 +1,6 @@
 {
   "name": "ethereumjs-blockchain",
-  "version": "2.0.2",
+  "version": "2.1.0",
   "description": "A module to store and interact with blocks",
   "main": "index.js",
   "scripts": {
@@ -26,7 +26,7 @@
   "dependencies": {
     "async": "^2.1.2",
     "ethashjs": "~0.0.7",
-    "ethereumjs-block": "git+https://github.com/ethereumjs/ethereumjs-block.git#master",
+    "ethereumjs-block": "~1.7.0",
     "ethereumjs-util": "~5.1.0",
     "flow-stoplight": "^1.0.0",
     "levelup": "^1.3.0",
