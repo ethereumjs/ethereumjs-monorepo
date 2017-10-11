@@ -5,7 +5,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to 
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## [2.3.0] - 2017-10-11
+## [2.3.1] - 2017-10-11
 - ``Byzantium`` compatible
 - New opcodes ``REVERT``, ``RETURNDATA`` and ``STATICCALL``
 - Precompiles for curve operations and bigint mod exp
@@ -13,7 +13,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 - For detailed list of changes see PR [#161](https://github.com/ethereumjs/ethereumjs-vm/pull/161) 
 - For a ``Spurious Dragon``/``EIP 150`` compatible version of this library install latest version of ``2.2.x``
 
-[2.3.0]: https://github.com/ethereumjs/ethereumjs-vm/compare/v2.2.2...v2.3.0
+[2.3.1]: https://github.com/ethereumjs/ethereumjs-vm/compare/v2.2.2...v2.3.1
+
+## [2.3.0] - Version Skipped due to faulty npm release
 
 ## [2.2.2] - 2017-09-19
 - Fixed [JS number issues](https://github.com/ethereumjs/ethereumjs-vm/pull/168)
