@@ -15,6 +15,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 [2.3.1]: https://github.com/ethereumjs/ethereumjs-vm/compare/v2.2.2...v2.3.1
 
+## [2.3.0] - Version Skipped due to faulty npm release
+
 ## [2.2.2] - 2017-09-19
 - Fixed [JS number issues](https://github.com/ethereumjs/ethereumjs-vm/pull/168)
   and [certain edge cases](https://github.com/ethereumjs/ethereumjs-vm/pull/188)
