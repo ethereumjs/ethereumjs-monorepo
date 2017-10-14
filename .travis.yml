@@ -4,7 +4,7 @@ os:
 
 language: node_js
 node_js:
-  - "8"
+  - "8.6"
 
 addons:
   apt:

@@ -1,12 +1,12 @@
-machine:
-  node:
-    version: 8.0.0
-dependencies:
-  pre:
-    - "npm rebuild"
-test:
-  override:
-# testVM disabled.
-#   - case $CIRCLE_NODE_INDEX in 0) npm run lint ;; 1) npm run testVM ;; 2) npm run testState ;; 3) npm run testBlockchain ;; esac:
-    - case $CIRCLE_NODE_INDEX in 0) npm run testState ;; esac:
-        parallel: true
+version: 2
+jobs:
+  build:
+    working_directory: /home/circleci/project/ethereumjs-vm
+    docker:
+      - image: circleci/node:8.6
+    steps:
+      - checkout
+      - run: npm install 
+      #- run: npm run testState
+      - run: ls /home/circleci/project/ethereumjs-vm/node_modules/ethereumjs-testing
+      - run: npm run testState
