@@ -83,6 +83,11 @@ exports.zeros = function (bytes) {
   return Buffer.allocUnsafe(bytes).fill(0)
 }
 
+exports.zeroAddress = function () {
+  const addressLength = 20
+  const zeroAddressBuf = exports.zeros(addressLength)
+  return exports.bufferToHex(zeroAddressBuf)
+}
 /**
  * Left Pads an `Array` or `Buffer` with leading zeros till it has `length` bytes.
  * Or it truncates the beginning if it exceeds.
