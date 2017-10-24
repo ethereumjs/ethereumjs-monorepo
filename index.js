@@ -84,6 +84,17 @@ exports.zeros = function (bytes) {
 }
 
 /**
+  * Returns a zero address
+  * @method zeroAddress
+  * @return {String}
+  */
+exports.zeroAddress = function () {
+  const addressLength = 20
+  const zeroAddress = exports.zeros(addressLength)
+  return exports.bufferToHex(zeroAddress)
+}
+
+/**
  * Left Pads an `Array` or `Buffer` with leading zeros till it has `length` bytes.
  * Or it truncates the beginning if it exceeds.
  * @method lsetLength
@@ -431,6 +442,17 @@ exports.privateToAddress = function (privateKey) {
  */
 exports.isValidAddress = function (address) {
   return /^0x[0-9a-fA-F]{40}$/.test(address)
+}
+
+/**
+  * Checks if a given address is a zero address
+  * @method isZeroAddress
+  * @param {String} address
+  * @return {Boolean}
+  */
+exports.isZeroAddress = function (address) {
+  const zeroAddress = exports.zeroAddress()
+  return zeroAddress === exports.addHexPrefix(address)
 }
 
 /**
