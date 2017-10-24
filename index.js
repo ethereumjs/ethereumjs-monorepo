@@ -90,8 +90,13 @@ exports.zeros = function (bytes) {
   */
 exports.zeroAddress = function () {
   const addressLength = 20
-  const zeroAddressBuf = exports.zeros(addressLength)
-  return exports.bufferToHex(zeroAddressBuf)
+  const zeroAddress = exports.zeros(addressLength)
+  return exports.bufferToHex(zeroAddress)
+}
+
+exports.isZeroAddress = function (address) {
+  const zeroAddress = exports.zeroAddress()
+  return zeroAddress === exports.addHexPrefix(address)
 }
 
 /**
