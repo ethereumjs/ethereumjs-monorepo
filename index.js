@@ -94,6 +94,11 @@ exports.zeroAddress = function () {
   return exports.bufferToHex(zeroAddress)
 }
 
+/**
+  * Checks if a given address is a zero address
+  * @method isZeroAddress
+  * @return {Boolean}
+  */
 exports.isZeroAddress = function (address) {
   const zeroAddress = exports.zeroAddress()
   return zeroAddress === exports.addHexPrefix(address)
