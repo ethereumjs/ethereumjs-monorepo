@@ -181,10 +181,32 @@ function randomized (stateTest) {
   })
 }
 
+function getSkipTests (choices, defaultChoice) {
+  let skipTests = []
+  if (!choices) {
+    choices = defaultChoice
+  }
+  choices = choices.toLowerCase()
+  if (choices !== 'none') {
+    let choicesList = choices.split(',')
+    let all = choicesList.includes('all')
+    if (all || choicesList.includes('broken')) {
+      skipTests = skipTests.concat(skipBroken)
+    }
+    if (all || choicesList.includes('permanent')) {
+      skipTests = skipTests.concat(skipPermanent)
+    }
+    if (all || choicesList.includes('slow')) {
+      skipTests = skipTests.concat(skipSlow)
+    }
+  }
+  return skipTests
+}
+
 function runTests (name, runnerArgs, cb) {
   let testGetterArgs = {}
-  let skipTests = skipBroken.concat(skipPermanent).concat(skipSlow)
-  testGetterArgs.skipTests = skipTests
+
+  testGetterArgs.skipTests = getSkipTests(argv.skip, 'ALL')
   testGetterArgs.skipVM = skipVM
   testGetterArgs.forkConfig = FORK_CONFIG
   testGetterArgs.file = argv.file
