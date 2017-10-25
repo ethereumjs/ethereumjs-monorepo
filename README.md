@@ -264,6 +264,10 @@ You can change this behaviour with:
 to skip only the ``BROKEN`` and ``PERMANENT`` tests and include the ``SLOW`` tests.
 There are also the keywords ``NONE`` or ``ALL`` for convenience.
 
+It is also possible to only run the tests from the skip lists:
+
+`node tests/tester -s runSkipped=SLOW`
+
 ### Debugging
 
 Blockchain tests support `--debug` to verify the postState:

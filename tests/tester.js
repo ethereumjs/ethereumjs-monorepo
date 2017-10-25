@@ -206,7 +206,8 @@ function getSkipTests (choices, defaultChoice) {
 function runTests (name, runnerArgs, cb) {
   let testGetterArgs = {}
 
-  testGetterArgs.skipTests = getSkipTests(argv.skip, 'ALL')
+  testGetterArgs.skipTests = getSkipTests(argv.skip, argv.runSkipped ? 'NONE' : 'ALL')
+  testGetterArgs.runSkipped = getSkipTests(argv.runSkipped, 'NONE')
   testGetterArgs.skipVM = skipVM
   testGetterArgs.forkConfig = FORK_CONFIG
   testGetterArgs.file = argv.file
@@ -255,8 +256,14 @@ function runTests (name, runnerArgs, cb) {
             test.testName = testName
             runner(runnerArgs, test, t, resolve)
           } else {
-            t.comment(`file: ${fileName} test: ${testName}`)
-            runner(runnerArgs, test, t, resolve)
+            let runSkipped = testGetterArgs.runSkipped
+            let inRunSkipped = runSkipped.includes(fileName)
+            if (runSkipped.length === 0 || inRunSkipped) {
+              t.comment(`file: ${fileName} test: ${testName}`)
+              runner(runnerArgs, test, t, resolve)
+            } else {
+              resolve()
+            }
           }
         }).catch(err => console.log(err))
       }, testGetterArgs).then(() => {
