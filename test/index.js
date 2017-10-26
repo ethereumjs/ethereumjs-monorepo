@@ -1,7 +1,7 @@
 const assert = require('assert')
 const RLP = require('../index.js')
 const BN = require('bn.js')
-const officalTests = require('ethereumjs-testing').tests.rlptest
+const testing = require('ethereumjs-testing')
 
 describe('invalid rlps', function () {
   it('should not crash on an invalid rlp', function () {
@@ -260,6 +260,8 @@ describe('hex prefix', function () {
 
 describe('offical tests', function () {
   it('pass all tests', function (done) {
+    const officalTests = testing.getSingleFile('RLPTests/rlptest.json')
+
     for (var test in officalTests) {
       var incoming = officalTests[test].in
       // if we are testing a big number
