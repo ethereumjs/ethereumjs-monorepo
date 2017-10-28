@@ -5,6 +5,14 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to 
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [2.3.2] - 2017-10-29
+- Better handling of ``rustbn.js`` exceptions
+- Fake (default if non-provided) blockchain fixes
+- Testing improvements (separate skip lists)
+- Minor optimizations and bug fixes
+
+[2.3.2]: https://github.com/ethereumjs/ethereumjs-vm/compare/v2.3.1...v2.3.2
+
 ## [2.3.1] - 2017-10-11
 - ``Byzantium`` compatible
 - New opcodes ``REVERT``, ``RETURNDATA`` and ``STATICCALL``
