@@ -3,9 +3,9 @@ const async = require('async')
 const tape = require('tape')
 const testing = require('ethereumjs-testing')
 const FORK_CONFIG = argv.fork || 'Byzantium'
-const skip = [
+// tests which should be fixed
+const skipBroken = [
   'CreateHashCollision', // impossible hash collision on generating address
-  'SuicidesMixingCoinbase', // sucides to the coinbase, since we run a blockLevel we create coinbase account.
   'TransactionMakeAccountBalanceOverflow',
   'RecursiveCreateContracts',
   'sha3_bigSize',
@@ -13,6 +13,48 @@ const skip = [
   'mload32bitBound_return',
   'mload32bitBound_return2',
   'QuadraticComplexitySolidity_CallDataCopy', // tests hash collisoin, sending from a contract
+  'uncleBlockAtBlock3AfterBlock3',
+  'ForkUncle', // correct behaviour unspecified (?)
+  'UncleFromSideChain', // same as ForkUncle, the TD is the same for two diffent branches so its not clear which one should be the finally chain
+  'bcSimpleTransitionTest', // HF stuff
+  'CALL_Bounds', // nodejs crash
+  'CALLCODE_Bounds', // nodejs crash
+  'CREATE_Bounds', // nodejs crash
+  'CreateCollisionToEmpty', // temporary till fixed (2017-09-21)
+  'TransactionCollisionToEmptyButCode', // temporary till fixed (2017-09-21)
+  'TransactionCollisionToEmptyButNonce', // temporary till fixed (2017-09-21)
+  'randomStatetest642', // temporary till fixed (2017-09-25)
+  'DELEGATECALL_Bounds', // nodejs crash
+  'RevertDepthCreateAddressCollision', // test case is wrong
+  'zeroSigTransactionInvChainID', // metropolis test
+  'randomStatetest643',
+  'static_CreateHashCollision', // impossible hash collision on generating address
+  'static_TransactionMakeAccountBalanceOverflow',
+  'static_RecursiveCreateContracts',
+  'static_sha3_bigSize',
+  'static_createJS_ExampleContract', // creates an account that already exsists
+  'static_mload32bitBound_return',
+  'static_mload32bitBound_return2',
+  'static_QuadraticComplexitySolidity_CallDataCopy', // tests hash collisoin, sending from a contract
+  'static_uncleBlockAtBlock3AfterBlock3',
+  'static_ForkUncle', // correct behaviour unspecified (?)
+  'static_UncleFromSideChain', // same as ForkUncle, the TD is the same for two diffent branches so its not clear which one should be the finally chain
+  'static_bcSimpleTransitionTest', // HF stuff
+  'static_CALL_Bounds', // nodejs crash
+  'static_CALLCODE_Bounds', // nodejs crash
+  'static_CREATE_Bounds', // nodejs crash
+  'static_DELEGATECALL_Bounds', // nodejs crash
+  'static_RevertDepthCreateAddressCollision', // test case is wrong
+  'static_zeroSigTransactionInvChainID', // metropolis test
+  'zeroSigTransactionInvChainID' // metropolis test
+]
+// tests skipped due to system specifics / design considerations
+const skipPermanent = [
+  'SuicidesMixingCoinbase', // sucides to the coinbase, since we run a blockLevel we create coinbase account.
+  'static_SuicidesMixingCoinbase' // sucides to the coinbase, since we run a blockLevel we create coinbase account.
+]
+// tests running slow (run from time to time)
+const skipSlow = [
   'Call50000', // slow
   'Call50000_ecrec', // slow
   'Call50000_identity', // slow
@@ -32,30 +74,6 @@ const skip = [
   'Callcode50000', // slow
   'Return50000', // slow
   'Return50000_2', // slow
-  'uncleBlockAtBlock3AfterBlock3',
-  'ForkUncle', // correct behaviour unspecified (?)
-  'UncleFromSideChain', // same as ForkUncle, the TD is the same for two diffent branches so its not clear which one should be the finally chain
-  'bcSimpleTransitionTest', // HF stuff
-  'CALL_Bounds', // nodejs crash
-  'CALLCODE_Bounds', // nodejs crash
-  'CREATE_Bounds', // nodejs crash
-  'CreateCollisionToEmpty', // temporary till fixed (2017-09-21)
-  'TransactionCollisionToEmptyButCode', // temporary till fixed (2017-09-21)
-  'TransactionCollisionToEmptyButNonce', // temporary till fixed (2017-09-21)
-  'randomStatetest642', // temporary till fixed (2017-09-25)
-  'DELEGATECALL_Bounds', // nodejs crash
-  'RevertDepthCreateAddressCollision', // test case is wrong
-  'zeroSigTransactionInvChainID', // metropolis test
-  'randomStatetest643',
-  'static_CreateHashCollision', // impossible hash collision on generating address
-  'static_SuicidesMixingCoinbase', // sucides to the coinbase, since we run a blockLevel we create coinbase account.
-  'static_TransactionMakeAccountBalanceOverflow',
-  'static_RecursiveCreateContracts',
-  'static_sha3_bigSize',
-  'static_createJS_ExampleContract', // creates an account that already exsists
-  'static_mload32bitBound_return',
-  'static_mload32bitBound_return2',
-  'static_QuadraticComplexitySolidity_CallDataCopy', // tests hash collisoin, sending from a contract
   'static_Call50000', // slow
   'static_Call50000_ecrec', // slow
   'static_Call50000_identity', // slow
@@ -67,18 +85,7 @@ const skip = [
   'static_Call1MB1024Calldepth', // slow
   'static_Callcode50000', // slow
   'static_Return50000', // slow
-  'static_Return50000_2', // slow
-  'static_uncleBlockAtBlock3AfterBlock3',
-  'static_ForkUncle', // correct behaviour unspecified (?)
-  'static_UncleFromSideChain', // same as ForkUncle, the TD is the same for two diffent branches so its not clear which one should be the finally chain
-  'static_bcSimpleTransitionTest', // HF stuff
-  'static_CALL_Bounds', // nodejs crash
-  'static_CALLCODE_Bounds', // nodejs crash
-  'static_CREATE_Bounds', // nodejs crash
-  'static_DELEGATECALL_Bounds', // nodejs crash
-  'static_RevertDepthCreateAddressCollision', // test case is wrong
-  'static_zeroSigTransactionInvChainID', // metropolis test
-  'zeroSigTransactionInvChainID' // metropolis test
+  'static_Return50000_2' // slow
 ]
 
 /*
@@ -174,9 +181,33 @@ function randomized (stateTest) {
   })
 }
 
+function getSkipTests (choices, defaultChoice) {
+  let skipTests = []
+  if (!choices) {
+    choices = defaultChoice
+  }
+  choices = choices.toLowerCase()
+  if (choices !== 'none') {
+    let choicesList = choices.split(',')
+    let all = choicesList.includes('all')
+    if (all || choicesList.includes('broken')) {
+      skipTests = skipTests.concat(skipBroken)
+    }
+    if (all || choicesList.includes('permanent')) {
+      skipTests = skipTests.concat(skipPermanent)
+    }
+    if (all || choicesList.includes('slow')) {
+      skipTests = skipTests.concat(skipSlow)
+    }
+  }
+  return skipTests
+}
+
 function runTests (name, runnerArgs, cb) {
   let testGetterArgs = {}
-  testGetterArgs.skipTests = skip
+
+  testGetterArgs.skipTests = getSkipTests(argv.skip, argv.runSkipped ? 'NONE' : 'ALL')
+  testGetterArgs.runSkipped = getSkipTests(argv.runSkipped, 'NONE')
   testGetterArgs.skipVM = skipVM
   testGetterArgs.forkConfig = FORK_CONFIG
   testGetterArgs.file = argv.file
@@ -225,8 +256,14 @@ function runTests (name, runnerArgs, cb) {
             test.testName = testName
             runner(runnerArgs, test, t, resolve)
           } else {
-            t.comment(`file: ${fileName} test: ${testName}`)
-            runner(runnerArgs, test, t, resolve)
+            let runSkipped = testGetterArgs.runSkipped
+            let inRunSkipped = runSkipped.includes(fileName)
+            if (runSkipped.length === 0 || inRunSkipped) {
+              t.comment(`file: ${fileName} test: ${testName}`)
+              runner(runnerArgs, test, t, resolve)
+            } else {
+              resolve()
+            }
           }
         }).catch(err => console.log(err))
       }, testGetterArgs).then(() => {
