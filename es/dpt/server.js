@@ -56,7 +56,7 @@ class Server extends EventEmitter {
 
     const rckey = `${peer.address}:${peer.udpPort}`
     const promise = this._requestsCache.get(rckey)
-    if (promise !== undefined) return await promise
+    if (promise !== undefined) return promise
 
     const hash = this._send(peer, 'ping', {
       version: VERSION,
@@ -76,7 +76,7 @@ class Server extends EventEmitter {
       }, this._timeout)
     })
     this._requestsCache.set(rckey, deferred.promise)
-    return await deferred.promise
+    return deferred.promise
   }
 
   findneighbours (peer, id) {
