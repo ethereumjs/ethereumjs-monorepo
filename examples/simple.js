@@ -1,5 +1,6 @@
 const chalk = require('chalk')
-const { DPT } = require('../es')
+const { DPT } = require('../src')
+const Buffer = require('safe-buffer').Buffer
 
 const PRIVATE_KEY = 'd772e3d6a001a38064dd23964dd2836239fa0e6cec8b28972a87460a17210fe9'
 const BOOTNODES = require('ethereum-common').bootstrapNodes.map((node) => {

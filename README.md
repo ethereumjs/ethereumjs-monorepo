@@ -4,22 +4,92 @@
 
 [![js-standard-style](https://cdn.rawgit.com/feross/standard/master/badge.svg)](https://github.com/feross/standard)
 
-An node.js implementation of
+**devp2p Distributed Peer Table**
 
-- devp2p's Distrubuted Peer Table
-- RLPx transport protocol
-- Ethereum wire protocol
+- Maintain/manage a list of peers, see [./src/dpt/](./src/dpt/)
 
-Based on [ethereumjs/node-devp2p](https://github.com/ethereumjs/node-devp2p).
+**RLPx transport protocol**
 
-# Example
+- Connect to a peer, see [./src/rlpx/](./src/rlpx/)
 
-  - [bootstrap](examples/bootstrap.js) Run DPT node
-  - [inv](examples/inv.js) Print all new Tx and Block hashes
+**Ethereum wire protocol**
 
-for example: `node -r babel-register ./examples/inv.js`
+- Talk to peers and send/receive messages, see [./src/eth/](./src/eth/)
 
-# Reference
+Library is based on [ethereumjs/node-devp2p](https://github.com/ethereumjs/node-devp2p) (outdated).
+
+## Usage
+
+Create your peer table:
+
+```
+const dpt = new DPT(Buffer.from(PRIVATE_KEY, 'hex'), {
+  endpoint: {
+    address: '0.0.0.0',
+    udpPort: null,
+    tcpPort: null
+  }
+})
+```
+
+Add some bootstrap nodes (or some custom nodes with ``dpt.addPeer``):
+
+```
+dpt.bootstrap(bootnode).catch((err) => console.error('Something went wrong!'))
+```
+
+Then you can react on different events triggered by the ``DPT`` which acs as an
+``EventEmitter``, e.g.:
+
+```
+dpt.on('peer:added', (peer) => {
+  // Do something...
+})
+dpt.on('peer:removed', (peer) => {
+  // Do something...
+})
+```
+
+## Run/Build
+
+This library has to be compiled with babel to a ``Node 6`` friendly source format.
+For triggering a (first) build to create the ``lib/`` directory run:
+
+```
+npm run build
+```
+
+You can also use babel just-in-time compilation to run a script:
+
+```
+node -r babel-register [YOUR_SCRIPT_TO_RUN.js]
+```
+
+## Examples
+
+Basic example to connect to some bootstrap nodes and get basic peer info:
+
+  - [simple](examples/simple.js)
+
+Communicate with peers to read new transaction and block information:
+
+  - [peer-communication](examples/peer-communication.js)
+
+Run an example with:
+
+```
+node -r babel-register ./examples/peer-communication.js
+```
+
+## Tests
+
+There are unit tests in the ``test/`` directory which can be run with:
+
+```
+npm run test
+```
+
+## Reference
 
 - [RLPx Node Discovery Protocol](https://github.com/ethereum/go-ethereum/wiki/RLPx-----Node-Discovery-Protocol) (outdated)
 - [Node discovery protocol](https://github.com/ethereum/wiki/wiki/Node-discovery-protocol)
@@ -27,6 +97,6 @@ for example: `node -r babel-register ./examples/inv.js`
 - [devp2p wire protocol](https://github.com/ethereum/wiki/wiki/%C3%90%CE%9EVp2p-Wire-Protocol)
 - [Ethereum wire protocol](https://github.com/ethereum/wiki/wiki/Ethereum-Wire-Protocol)
 
-# License
+## License
 
 MIT

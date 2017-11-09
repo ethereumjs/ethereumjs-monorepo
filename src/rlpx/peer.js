@@ -2,6 +2,7 @@ const { EventEmitter } = require('events')
 const rlp = require('rlp-encoding')
 const BufferList = require('bl')
 const ms = require('ms')
+const Buffer = require('safe-buffer').Buffer
 const createDebugLogger = require('debug')
 const { int2buffer, buffer2int } = require('../util')
 const ECIES = require('./ecies')

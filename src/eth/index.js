@@ -1,6 +1,7 @@
 const { EventEmitter } = require('events')
 const rlp = require('rlp-encoding')
 const ms = require('ms')
+const Buffer = require('safe-buffer').Buffer
 const { int2buffer, assertEq } = require('../util')
 const Peer = require('../rlpx/peer')
 

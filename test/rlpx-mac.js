@@ -1,5 +1,5 @@
 const test = require('tape')
-const MAC = require('../es/rlpx/mac')
+const MAC = require('../src/rlpx/mac')
 
 const secret = Buffer.from('4caf4671e713d083128973de159d02688dc86f51535a80178264631e193ed2ea', 'hex')
 
