@@ -1,5 +1,6 @@
 const { randomBytes } = require('crypto')
 const secp256k1 = require('secp256k1')
+const Buffer = require('safe-buffer').Buffer
 const createKeccakHash = require('keccak')
 const assert = require('assert')
 

@@ -1,6 +1,7 @@
 const { EventEmitter } = require('events')
 const dgram = require('dgram')
 const ms = require('ms')
+const Buffer = require('safe-buffer').Buffer
 const createDebugLogger = require('debug')
 const LRUCache = require('lru-cache')
 const message = require('./message')

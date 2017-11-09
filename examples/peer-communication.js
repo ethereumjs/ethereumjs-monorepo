@@ -7,6 +7,7 @@ const chalk = require('chalk')
 const assert = require('assert')
 const { randomBytes } = require('crypto')
 const rlp = require('rlp-encoding')
+const Buffer = require('safe-buffer').Buffer
 
 const PRIVATE_KEY = randomBytes(32)
 const DAO_FORK_SUPPORT = true

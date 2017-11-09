@@ -1,6 +1,7 @@
 const ip = require('ip')
 const rlp = require('rlp-encoding')
 const secp256k1 = require('secp256k1')
+const Buffer = require('safe-buffer').Buffer
 const { keccak256, int2buffer, buffer2int, assertEq } = require('../util')
 
 function getTimestamp () {

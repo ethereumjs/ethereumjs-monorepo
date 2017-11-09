@@ -2,6 +2,7 @@ const net = require('net')
 const secp256k1 = require('secp256k1')
 const { EventEmitter } = require('events')
 const ms = require('ms')
+const Buffer = require('safe-buffer').Buffer
 const createDebugLogger = require('debug')
 const LRUCache = require('lru-cache')
 const pVersion = require('../../package.json').version

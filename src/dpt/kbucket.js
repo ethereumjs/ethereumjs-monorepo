@@ -1,4 +1,5 @@
 const { EventEmitter } = require('events')
+const Buffer = require('safe-buffer').Buffer
 const _KBucket = require('k-bucket')
 
 const KBUCKET_SIZE = 16
