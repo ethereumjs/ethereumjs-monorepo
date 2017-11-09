@@ -6,15 +6,15 @@
 
 **devp2p Distributed Peer Table**
 
-- Maintain/manage a list of peers, see [./lib/dpt/](./lib/dpt/)
+- Maintain/manage a list of peers, see [./src/dpt/](./src/dpt/)
 
 **RLPx transport protocol**
 
-- Connect to a peer, see [./lib/rlpx/](./lib/rlpx/)
+- Connect to a peer, see [./src/rlpx/](./src/rlpx/)
 
 **Ethereum wire protocol**
 
-- Talk to peers and send/receive messages, see [./lib/eth/](./lib/eth/)
+- Talk to peers and send/receive messages, see [./src/eth/](./src/eth/)
 
 Library is based on [ethereumjs/node-devp2p](https://github.com/ethereumjs/node-devp2p) (outdated).
 
@@ -50,18 +50,19 @@ dpt.on('peer:removed', (peer) => {
 })
 ```
 
-## Run as a Script
+## Run/Build
 
-For the moment this library can only be used with just-in-time babel compilation:
-
-```
-node -r babel-register [YOUR_SCRIPT_TO_RUN.js]
-```
-
-You can also manually trigger a build to create the ``build/`` directory with:
+This library has to be compiled with babel to a ``Node 6`` friendly source format.
+For triggering a (first) build to create the ``lib/`` directory run:
 
 ```
 npm run build
+```
+
+You can also use babel just-in-time compilation to run a script:
+
+```
+node -r babel-register [YOUR_SCRIPT_TO_RUN.js]
 ```
 
 ## Examples

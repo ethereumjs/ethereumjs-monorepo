@@ -1,4 +1,4 @@
-const devp2p = require('../es')
+const devp2p = require('../src')
 const EthereumTx = require('ethereumjs-tx')
 const EthereumBlock = require('ethereumjs-block')
 const LRUCache = require('lru-cache')

@@ -23,7 +23,7 @@
     "Martin Becze <mb@ethdev.com>"
   ],
   "files": [
-    "es",
+    "src",
     "lib"
   ],
   "main": "./lib/index.js",
@@ -32,7 +32,7 @@
     "url": "https://github.com/fanatid/ethereumjs-devp2p.git"
   },
   "scripts": {
-    "build": "babel es -d lib",
+    "build": "babel src -d lib",
     "integration": "tape -r babel-register test/integration/*.js",
     "lint": "standard",
     "prepublish": "npm run build",

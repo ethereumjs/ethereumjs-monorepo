@@ -1,6 +1,6 @@
 const test = require('tape')
 const secp256k1 = require('secp256k1')
-const message = require('../es/dpt/message')
+const message = require('../src/dpt/message')
 
 const privateKey = Buffer.from('b71c71a67e1177ad4e901695e1b4b9ee17ae16c6668d313eac2f96dbcda3f291', 'hex')
 const publicKey = secp256k1.publicKeyCreate(privateKey, false)

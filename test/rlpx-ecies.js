@@ -1,8 +1,8 @@
 const { randomBytes } = require('crypto')
 const secp256k1 = require('secp256k1')
 const test = require('tape')
-const util = require('../es/util')
-const ECIES = require('../es/rlpx/ecies')
+const util = require('../src/util')
+const ECIES = require('../src/rlpx/ecies')
 
 function beforeEach (fn) {
   return (t) => {
