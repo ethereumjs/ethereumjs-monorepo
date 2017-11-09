@@ -31,6 +31,9 @@
     "type": "git",
     "url": "https://github.com/fanatid/ethereumjs-devp2p.git"
   },
+  "engines": {
+    "node": ">=6.0"
+  },
   "scripts": {
     "build": "babel src -d lib",
     "integration": "tape -r babel-register test/integration/*.js",
