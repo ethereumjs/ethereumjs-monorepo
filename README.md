@@ -10,10 +10,9 @@ Implements Ethereum's VM in JS
 
 #### Note on Byzantium Support:
 
-The ``master`` branch of this repository has now been updated with the latest 
-[Byzantium changes](https://github.com/ethereumjs/ethereumjs-vm/pull/161) please install
-directly from GitHub if you want to try out the latest ``VM`` version and report
-issues on our [Gitter channel](https://gitter.im/ethereum/ethereumjs-lib).
+This repository has now been updated with the latest 
+[Byzantium changes](https://github.com/ethereumjs/ethereumjs-vm/pull/161)
+(``2.3.x`` [releases](https://github.com/ethereumjs/ethereumjs-vm/releases)).
 
 For a ``Spurious Dragon``/``EIP 150`` compatible version of this library install the
 latest of the ``2.2.x`` series (see [Changelog](./CHANGELOG.md)).
@@ -41,7 +40,8 @@ Also more examples can be found here
 - [old blog post](https://wanderer.github.io/ethereum/nodejs/code/2014/08/12/running-contracts-with-vm/)
 
 # BROWSER
-To build for standalone use in the browser, install `browserify` and check [run-transactions-simple exsample](https://github.com/ethereumjs/ethereumjs-vm/tree/master/examples/run-transactions-simple). This will give you a global variable `EthVM` to use. The generated file will be at `./examples/run-transactions-simple/build.js`.
+
+To build for standalone use in the browser, install `browserify` and check [run-transactions-simple example](https://github.com/ethereumjs/ethereumjs-vm/tree/master/examples/run-transactions-simple). This will give you a global variable `EthVM` to use. The generated file will be at `./examples/run-transactions-simple/build.js`.
 
 # API
   - [`new VM([opts])`](#new-vmstatetrie-blockchain)
@@ -206,8 +206,6 @@ The opFns for `CREATE`, `CALL`, and `CALLCODE` call back up to `runCall`.
 
 ### Running Tests
 
-_Note: Requires at least Node.js `8.0.0` installed to run the tests, this is because `ethereumjs-testing` uses `async/await` and other ES2015 language features_
-
 Tests can be found in the ``tests`` directory, with ``FORK_CONFIG`` set in ``tests/tester.js``. There are test runners for [State tests](http://www.ethdocs.org/en/latest/contracts-and-transactions/ethereum-tests/state_tests/index.html) and [Blockchain tests](http://www.ethdocs.org/en/latest/contracts-and-transactions/ethereum-tests/blockchain_tests/index.html). VM tests are disabled since Frontier gas costs are not supported any more. Tests are then executed by the [ethereumjs-testing](https://github.com/ethereumjs/ethereumjs-testing) utility library using the official client-independent [Ethereum tests](https://github.com/ethereum/tests).
 
 For a wider picture about how to use tests to implement EIPs you can have a look at this [reddit post](https://www.reddit.com/r/ethereum/comments/6kc5g3/ethereumjs_team_is_seeking_contributors/)
@@ -259,22 +257,26 @@ can be found in ``tests/tester.js``. By default tests from all skip lists are om
 
 You can change this behaviour with:
 
-`node tests/tester -s --skip=BROKEN,PERMANENT`˘
+`node tests/tester -s --skip=BROKEN,PERMANENT`
 
 to skip only the ``BROKEN`` and ``PERMANENT`` tests and include the ``SLOW`` tests.
 There are also the keywords ``NONE`` or ``ALL`` for convenience.
 
 It is also possible to only run the tests from the skip lists:
 
-`node tests/tester -s runSkipped=SLOW`
+`node tests/tester -s --runSkipped=SLOW`
 
 ### Debugging
+
+#### Local Debugging
 
 Blockchain tests support `--debug` to verify the postState:
 
 `node ./tests/tester -b  --debug --test='ZeroValue_SELFDESTRUCT_ToOneStorageKey_OOGRevert_d0g0v0_EIP158'`
 
 All/most State tests are replicated as Blockchain tests in a ``GeneralStateTests`` [sub directory](https://github.com/ethereum/tests/tree/develop/BlockchainTests/GeneralStateTests) in the Ethereum tests repo, so for debugging single test cases the Blockchain test version of the State test can be used.
+
+#### Debugging Tools
 
 For comparing ``EVM`` traces [here](https://gist.github.com/cdetrio/41172f374ae32047a6c9e97fa9d09ad0) are some instructions for setting up ``pyethereum`` to generate corresponding traces for state tests.
 
@@ -285,6 +287,8 @@ curl https://gist.githubusercontent.com/jwasinger/6cef66711b5e0787667ceb3db6bea0
 curl https://gist.githubusercontent.com/jwasinger/e7004e82426ff0a7137a88d273f11819/raw/66fbd58722747ebe4f7006cee59bbe22461df8eb/gistfile1.txt > output-master.txt
 python utils/diffTestOutput.py output-wip-byzantium.txt output-master.txt
 ```
+
+An extremely rich and powerful toolbox is the [evmlab](https://github.com/holiman/evmlab) from ``holiman``, both for debugging and creating new test cases or example data.
 
 
 # LICENSE
