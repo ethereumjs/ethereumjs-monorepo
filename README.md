@@ -4,21 +4,62 @@
 
 [![js-standard-style](https://cdn.rawgit.com/feross/standard/master/badge.svg)](https://github.com/feross/standard)
 
-**devp2p Distributed Peer Table**
+This library bundles different components for lower-level peer-to-peer connection and message exchange:
 
-- Maintain/manage a list of peers, see [./src/dpt/](./src/dpt/)
+- Distributed Peer Table (DPT)
+- RLPx Transport Protocol
+- Ethereum Wire Protocol (ETH)
 
-**RLPx transport protocol**
+The library is based on [ethereumjs/node-devp2p](https://github.com/ethereumjs/node-devp2p) as well
+as other sub-libraries (``node-*`` named) (all outdated).
 
-- Connect to a peer, see [./src/rlpx/](./src/rlpx/)
+## Run/Build
 
-**Ethereum wire protocol**
+This library has to be compiled with babel to a ``Node 6`` friendly source format.
+For triggering a (first) build to create the ``lib/`` directory run:
 
-- Talk to peers and send/receive messages, see [./src/eth/](./src/eth/)
+```
+npm run build
+```
 
-Library is based on [ethereumjs/node-devp2p](https://github.com/ethereumjs/node-devp2p) (outdated).
+You can also use babel just-in-time compilation to run a script:
 
-## Usage
+```
+node -r babel-register [YOUR_SCRIPT_TO_RUN.js]
+```
+
+## Usage/Examples
+
+All components of this library are implemented as Node ``EventEmitter`` objects
+and make heavy use of the Node.js network stack.
+
+You can react on events from the network like this:
+
+```
+dpt.on('peer:added', (peer) => {
+  // Do something...
+})
+```
+
+Basic example to connect to some bootstrap nodes and get basic peer info:
+
+  - [simple](examples/simple.js)
+
+Communicate with peers to read new transaction and block information:
+
+  - [peer-communication](examples/peer-communication.js)
+
+Run an example with:
+
+```
+node -r babel-register ./examples/peer-communication.js
+```
+
+## Distributed Peer Table (DPT)
+
+Maintain/manage a list of peers, see [./src/dpt/](./src/dpt/)
+
+### Usage
 
 Create your peer table:
 
@@ -38,48 +79,78 @@ Add some bootstrap nodes (or some custom nodes with ``dpt.addPeer``):
 dpt.bootstrap(bootnode).catch((err) => console.error('Something went wrong!'))
 ```
 
-Then you can react on different events triggered by the ``DPT`` which acs as an
-``EventEmitter``, e.g.:
+Events emitted:
+
+| Event         | Description                              |
+| ------------- |:----------------------------------------:|
+| peer:added    | Peer added to DHT bucket                 |
+| peer:removed  | Peer removed from DHT bucket             |
+| peer:new      | New peer added                           |
+| listening     | Forwarded from server                    |
+| close         | Forwarded from server                    |
+| error         | Forwarded from server                    |
+
+### Reference
+
+- [RLPx Node Discovery Protocol](https://github.com/ethereum/go-ethereum/wiki/RLPx-----Node-Discovery-Protocol) (outdated)
+- [Node discovery protocol](https://github.com/ethereum/wiki/wiki/Node-discovery-protocol)
+
+## RLPx Transport Protocol
+
+Connect to a peer, see [./src/rlpx/](./src/rlpx/)
+
+### Usage
+
+Create your ``RLPx`` object, e.g.:
 
 ```
-dpt.on('peer:added', (peer) => {
-  // Do something...
+const rlpx = new devp2p.RLPx(PRIVATE_KEY, {
+  dpt: dpt,
+  maxPeers: 25,
+  capabilities: [
+    devp2p.ETH.eth63,
+    devp2p.ETH.eth62
+  ],
+  listenPort: null
 })
-dpt.on('peer:removed', (peer) => {
-  // Do something...
-})
 ```
 
-## Run/Build
+Events emitted:
 
-This library has to be compiled with babel to a ``Node 6`` friendly source format.
-For triggering a (first) build to create the ``lib/`` directory run:
+| Event         | Description                              |
+| ------------- |:----------------------------------------:|
+| peer:added    | Handshake with peer succesful            |
+| peer:removed  | Disconnected from peer                   |
+| peer:error    | Error connecting to peer                 |
+| listening     | Forwarded from server                    |
+| close         | Forwarded from server                    |
+| error         | Forwarded from server                    |
 
-```
-npm run build
-```
 
-You can also use babel just-in-time compilation to run a script:
+### Reference
 
-```
-node -r babel-register [YOUR_SCRIPT_TO_RUN.js]
-```
+- [RLPx: Cryptographic Network & Transport Protocol](https://github.com/ethereum/devp2p/blob/master/rlpx.md)
+- [devp2p wire protocol](https://github.com/ethereum/wiki/wiki/%C3%90%CE%9EVp2p-Wire-Protocol)
 
-## Examples
+## Ethereum Wire Protocol (ETH)
 
-Basic example to connect to some bootstrap nodes and get basic peer info:
+Talk to peers and send/receive messages, see [./src/eth/](./src/eth/)
 
-  - [simple](examples/simple.js)
+### Usage
 
-Communicate with peers to read new transaction and block information:
+Send messages with ``sendMessage()``, send status info with ``sendStatus()``.
 
-  - [peer-communication](examples/peer-communication.js)
+Events emitted:
 
-Run an example with:
+| Event         | Description                              |
+| ------------- |:----------------------------------------:|
+| message       | Message received                         |
+| status        | Status info received                     |
 
-```
-node -r babel-register ./examples/peer-communication.js
-```
+### Reference
+
+- [Ethereum wire protocol](https://github.com/ethereum/wiki/wiki/Ethereum-Wire-Protocol)
+
 
 ## Tests
 
@@ -106,14 +177,6 @@ Add peer: 52.3.158.184:30303 Geth/v1.7.3-unstable-479aa61f/linux-amd64/go1.9 (et
   devp2p:rlpx 52.169.42.101:30303 disconnect, reason: 16 +1ms
 Remove peer: 52.169.42.101:30303 (peer disconnect, reason code: 16) (total: 1)
 ```
-
-## Reference
-
-- [RLPx Node Discovery Protocol](https://github.com/ethereum/go-ethereum/wiki/RLPx-----Node-Discovery-Protocol) (outdated)
-- [Node discovery protocol](https://github.com/ethereum/wiki/wiki/Node-discovery-protocol)
-- [RLPx: Cryptographic Network & Transport Protocol](https://github.com/ethereum/devp2p/blob/master/rlpx.md)
-- [devp2p wire protocol](https://github.com/ethereum/wiki/wiki/%C3%90%CE%9EVp2p-Wire-Protocol)
-- [Ethereum wire protocol](https://github.com/ethereum/wiki/wiki/Ethereum-Wire-Protocol)
 
 ## License
 
