@@ -57,7 +57,8 @@ node -r babel-register ./examples/peer-communication.js
 
 ## Distributed Peer Table (DPT)
 
-Maintain/manage a list of peers, see [./src/dpt/](./src/dpt/)
+Maintain/manage a list of peers, see [./src/dpt/](./src/dpt/), also 
+includes node discovery ([./src/dpt/server.js](./src/dpt/server.js))
 
 ### Usage
 
@@ -73,7 +74,7 @@ const dpt = new DPT(Buffer.from(PRIVATE_KEY, 'hex'), {
 })
 ```
 
-Add some bootstrap nodes (or some custom nodes with ``dpt.addPeer``):
+Add some bootstrap nodes (or some custom nodes with ``dpt.addPeer()``):
 
 ```
 dpt.bootstrap(bootnode).catch((err) => console.error('Something went wrong!'))
@@ -92,12 +93,13 @@ Events emitted:
 
 ### Reference
 
-- [RLPx Node Discovery Protocol](https://github.com/ethereum/go-ethereum/wiki/RLPx-----Node-Discovery-Protocol) (outdated)
 - [Node discovery protocol](https://github.com/ethereum/wiki/wiki/Node-discovery-protocol)
+- [RLPx - Node Discovery Protocol](https://github.com/ethereum/devp2p/blob/master/rlpx.md#node-discovery)
+- [Kademlia Peer Selection](https://github.com/ethereum/wiki/wiki/Kademlia-Peer-Selection)
 
 ## RLPx Transport Protocol
 
-Connect to a peer, see [./src/rlpx/](./src/rlpx/)
+Connect to a peer, organize the communication, see [./src/rlpx/](./src/rlpx/)
 
 ### Usage
 
@@ -119,7 +121,7 @@ Events emitted:
 
 | Event         | Description                              |
 | ------------- |:----------------------------------------:|
-| peer:added    | Handshake with peer succesful            |
+| peer:added    | Handshake with peer successful           |
 | peer:removed  | Disconnected from peer                   |
 | peer:error    | Error connecting to peer                 |
 | listening     | Forwarded from server                    |
