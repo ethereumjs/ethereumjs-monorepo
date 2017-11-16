@@ -137,16 +137,16 @@ class ECIES {
 
   parseAuth (data) {
     this._remoteInitMsg = data
-    const decypted = this._decryptMessage(data)
-    util.assertEq(decypted.length, 194, 'invalid packet length')
+    const decrypted = this._decryptMessage(data)
+    util.assertEq(decrypted.length, 194, 'invalid packet length')
 
     // parse packet
-    const signature = decypted.slice(0, 64)
-    const recoveryId = decypted[64]
-    const heid = decypted.slice(65, 97) // 32 bytes
-    this._remotePublicKey = util.id2pk(decypted.slice(97, 161))  // 64 bytes
-    this._remoteNonce = decypted.slice(161, 193) // 32 bytes
-    util.assertEq(decypted[193], 0, 'invalid postfix')
+    const signature = decrypted.slice(0, 64)
+    const recoveryId = decrypted[64]
+    const heid = decrypted.slice(65, 97) // 32 bytes
+    this._remotePublicKey = util.id2pk(decrypted.slice(97, 161))  // 64 bytes
+    this._remoteNonce = decrypted.slice(161, 193) // 32 bytes
+    util.assertEq(decrypted[193], 0, 'invalid postfix')
 
     const x = ecdhX(this._remotePublicKey, this._privateKey)
     this._remoteEphemeralPublicKey = secp256k1.recover(util.xor(x, this._remoteNonce), signature, recoveryId, false)
@@ -169,13 +169,13 @@ class ECIES {
   }
 
   parseAck (data) {
-    const decypted = this._decryptMessage(data)
-    util.assertEq(decypted.length, 97, 'invalid packet length')
+    const decrypted = this._decryptMessage(data)
+    util.assertEq(decrypted.length, 97, 'invalid packet length')
 
     // parse packet
-    this._remoteEphemeralPublicKey = util.id2pk(decypted.slice(0, 64))
-    this._remoteNonce = decypted.slice(64, 96)
-    util.assertEq(decypted[96], 0, 'invalid postfix')
+    this._remoteEphemeralPublicKey = util.id2pk(decrypted.slice(0, 64))
+    this._remoteNonce = decrypted.slice(64, 96)
+    util.assertEq(decrypted[96], 0, 'invalid postfix')
 
     this._ephemeralSharedSecret = ecdhX(this._remoteEphemeralPublicKey, this._ephemeralPrivateKey)
     this._setupFrame(data, false)
