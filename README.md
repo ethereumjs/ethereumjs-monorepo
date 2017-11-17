@@ -180,6 +180,20 @@ Add peer: 52.3.158.184:30303 Geth/v1.7.3-unstable-479aa61f/linux-amd64/go1.9 (et
 Remove peer: 52.169.42.101:30303 (peer disconnect, reason code: 16) (total: 1)
 ```
 
+## General References
+
+### Other Implementations
+
+The following is a list of major implementations of the ``devp2p`` stack in other languages:
+
+- [pydevp2p](https://github.com/ethereum/pydevp2p) (Python)
+- [Go Ethereum](https://github.com/ethereum/go-ethereum/tree/master/p2p) (Go)
+- [Exthereum](https://github.com/exthereum/exth_crypto) (Elixir)
+
+### Links
+
+- [Blog article series](https://ocalog.com/post/10/)  on implementing Ethereum protocol stack
+
 ## License
 
 MIT
