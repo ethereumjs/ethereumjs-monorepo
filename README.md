@@ -57,7 +57,8 @@ node -r babel-register ./examples/peer-communication.js
 
 ## Distributed Peer Table (DPT)
 
-Maintain/manage a list of peers, see [./src/dpt/](./src/dpt/)
+Maintain/manage a list of peers, see [./src/dpt/](./src/dpt/), also 
+includes node discovery ([./src/dpt/server.js](./src/dpt/server.js))
 
 ### Usage
 
@@ -73,7 +74,7 @@ const dpt = new DPT(Buffer.from(PRIVATE_KEY, 'hex'), {
 })
 ```
 
-Add some bootstrap nodes (or some custom nodes with ``dpt.addPeer``):
+Add some bootstrap nodes (or some custom nodes with ``dpt.addPeer()``):
 
 ```
 dpt.bootstrap(bootnode).catch((err) => console.error('Something went wrong!'))
@@ -92,12 +93,13 @@ Events emitted:
 
 ### Reference
 
-- [RLPx Node Discovery Protocol](https://github.com/ethereum/go-ethereum/wiki/RLPx-----Node-Discovery-Protocol) (outdated)
 - [Node discovery protocol](https://github.com/ethereum/wiki/wiki/Node-discovery-protocol)
+- [RLPx - Node Discovery Protocol](https://github.com/ethereum/devp2p/blob/master/rlpx.md#node-discovery)
+- [Kademlia Peer Selection](https://github.com/ethereum/wiki/wiki/Kademlia-Peer-Selection)
 
 ## RLPx Transport Protocol
 
-Connect to a peer, see [./src/rlpx/](./src/rlpx/)
+Connect to a peer, organize the communication, see [./src/rlpx/](./src/rlpx/)
 
 ### Usage
 
@@ -119,7 +121,7 @@ Events emitted:
 
 | Event         | Description                              |
 | ------------- |:----------------------------------------:|
-| peer:added    | Handshake with peer succesful            |
+| peer:added    | Handshake with peer successful           |
 | peer:removed  | Disconnected from peer                   |
 | peer:error    | Error connecting to peer                 |
 | listening     | Forwarded from server                    |
@@ -177,6 +179,20 @@ Add peer: 52.3.158.184:30303 Geth/v1.7.3-unstable-479aa61f/linux-amd64/go1.9 (et
   devp2p:rlpx 52.169.42.101:30303 disconnect, reason: 16 +1ms
 Remove peer: 52.169.42.101:30303 (peer disconnect, reason code: 16) (total: 1)
 ```
+
+## General References
+
+### Other Implementations
+
+The following is a list of major implementations of the ``devp2p`` stack in other languages:
+
+- [pydevp2p](https://github.com/ethereum/pydevp2p) (Python)
+- [Go Ethereum](https://github.com/ethereum/go-ethereum/tree/master/p2p) (Go)
+- [Exthereum](https://github.com/exthereum/exth_crypto) (Elixir)
+
+### Links
+
+- [Blog article series](https://ocalog.com/post/10/)  on implementing Ethereum protocol stack
 
 ## License
 
