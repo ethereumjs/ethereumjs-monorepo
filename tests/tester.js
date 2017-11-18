@@ -6,52 +6,21 @@ const FORK_CONFIG = argv.fork || 'Byzantium'
 // tests which should be fixed
 const skipBroken = [
   'CreateHashCollision', // impossible hash collision on generating address
-  'TransactionMakeAccountBalanceOverflow',
   'RecursiveCreateContracts',
-  'sha3_bigSize',
   'createJS_ExampleContract', // creates an account that already exsists
-  'mload32bitBound_return',
-  'mload32bitBound_return2',
-  'QuadraticComplexitySolidity_CallDataCopy', // tests hash collisoin, sending from a contract
-  'uncleBlockAtBlock3AfterBlock3',
-  'ForkUncle', // correct behaviour unspecified (?)
-  'UncleFromSideChain', // same as ForkUncle, the TD is the same for two diffent branches so its not clear which one should be the finally chain
-  'bcSimpleTransitionTest', // HF stuff
-  'CALL_Bounds', // nodejs crash
-  'CALLCODE_Bounds', // nodejs crash
-  'CREATE_Bounds', // nodejs crash
   'CreateCollisionToEmpty', // temporary till fixed (2017-09-21)
   'TransactionCollisionToEmptyButCode', // temporary till fixed (2017-09-21)
   'TransactionCollisionToEmptyButNonce', // temporary till fixed (2017-09-21)
-  'randomStatetest642', // temporary till fixed (2017-09-25)
-  'DELEGATECALL_Bounds', // nodejs crash
   'RevertDepthCreateAddressCollision', // test case is wrong
-  'zeroSigTransactionInvChainID', // metropolis test
-  'randomStatetest643',
-  'static_CreateHashCollision', // impossible hash collision on generating address
-  'static_TransactionMakeAccountBalanceOverflow',
-  'static_RecursiveCreateContracts',
-  'static_sha3_bigSize',
-  'static_createJS_ExampleContract', // creates an account that already exsists
-  'static_mload32bitBound_return',
-  'static_mload32bitBound_return2',
-  'static_QuadraticComplexitySolidity_CallDataCopy', // tests hash collisoin, sending from a contract
-  'static_uncleBlockAtBlock3AfterBlock3',
-  'static_ForkUncle', // correct behaviour unspecified (?)
-  'static_UncleFromSideChain', // same as ForkUncle, the TD is the same for two diffent branches so its not clear which one should be the finally chain
-  'static_bcSimpleTransitionTest', // HF stuff
-  'static_CALL_Bounds', // nodejs crash
-  'static_CALLCODE_Bounds', // nodejs crash
-  'static_CREATE_Bounds', // nodejs crash
-  'static_DELEGATECALL_Bounds', // nodejs crash
-  'static_RevertDepthCreateAddressCollision', // test case is wrong
-  'static_zeroSigTransactionInvChainID', // metropolis test
-  'zeroSigTransactionInvChainID' // metropolis test
+  'randomStatetest642', // BROKEN, rustbn.js error
+  'randomStatetest643' // BROKEN, breaks tests run (leave at the end), rustbn.js error
 ]
 // tests skipped due to system specifics / design considerations
 const skipPermanent = [
   'SuicidesMixingCoinbase', // sucides to the coinbase, since we run a blockLevel we create coinbase account.
-  'static_SuicidesMixingCoinbase' // sucides to the coinbase, since we run a blockLevel we create coinbase account.
+  'static_SuicidesMixingCoinbase', // sucides to the coinbase, since we run a blockLevel we create coinbase account.
+  'ForkUncle', // Only BlockchainTest, correct behaviour unspecified (?)
+  'UncleFromSideChain' // Only BlockchainTest, same as ForkUncle, the TD is the same for two diffent branches so its not clear which one should be the finally chain
 ]
 // tests running slow (run from time to time)
 const skipSlow = [
@@ -121,6 +90,7 @@ const skipVM = [
   'ABAcalls0',
   'ABAcallsSuicide0',
   'ABAcallsSuicide1',
+  'sha3_bigSize',
   'CallRecursiveBomb0',
   'CallToNameRegistrator0',
   'CallToPrecompiledContract',
