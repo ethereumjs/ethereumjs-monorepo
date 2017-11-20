@@ -147,7 +147,7 @@ All events are instances of [async-eventemmiter](https://www.npmjs.com/package/a
 The `step` event is given an `Object` and callback. The `Object` has the following properties.
 - `pc` - a `Number` representing the program counter
 - `opcode` - the next opcode to be ran
-- `gas` - a `bignum` standing for the amount of gasLeft
+- `gasLeft` - a `bignum` standing for the amount of gasLeft
 - `stack` - an `Array` of `Buffers` containing the stack.
 - `storageTrie` - the storage [trie](https://github.com/wanderer/merkle-patricia-tree) for the account
 - `account` - the [`Account`](https://github.com/ethereum/ethereumjs-account) which owns the code running.
