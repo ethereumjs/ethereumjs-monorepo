@@ -5,7 +5,7 @@ const matchingNibbleLength = require('./util').matchingNibbleLength
 exports.prove = function (trie, key, cb) {
   var nodes
 
-  trie._findPath(key, function (err, node, remaining, stack) {
+  trie.findPath(key, function (err, node, remaining, stack) {
     if (err) return cb(err)
     if (remaining.length > 0) return cb(new Error('Node does not contain the key'))
     nodes = stack
