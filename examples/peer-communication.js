@@ -10,9 +10,12 @@ const rlp = require('rlp-encoding')
 const Buffer = require('safe-buffer').Buffer
 
 const PRIVATE_KEY = randomBytes(32)
+const CHAIN_ID = 1
 const DAO_FORK_SUPPORT = true
 
-const BOOTNODES = require('ethereum-common').bootstrapNodes.map((node) => {
+const BOOTNODES = require('ethereum-common').bootstrapNodes.filter((node) => {
+  return node.chainId === CHAIN_ID
+}).map((node) => {
   return {
     address: node.ip,
     udpPort: node.port,
@@ -60,7 +63,7 @@ rlpx.on('peer:added', (peer) => {
   console.log(chalk.green(`Add peer: ${addr} ${clientId} (eth${eth.getVersion()}) (total: ${rlpx.getPeers().length})`))
 
   eth.sendStatus({
-    networkId: 1,
+    networkId: CHAIN_ID,
     td: devp2p._util.int2buffer(17179869184), // total difficulty in genesis block
     bestHash: Buffer.from('d4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3', 'hex'),
     genesisHash: Buffer.from('d4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3', 'hex')
