@@ -18,7 +18,7 @@ TrieReadStream.prototype._read = function () {
   var self = this
   if (!self._started) {
     self._started = true
-    self.trie._findValueNodes(function (root, node, key, next) {
+    self.trie._findValueNodes(function (nodeRef, node, key, next) {
       self.push({
         key: TrieNode.nibblesToBuffer(key),
         value: node.value

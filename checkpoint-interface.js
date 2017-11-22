@@ -171,9 +171,9 @@ ScratchReadStream.prototype._read = function () {
   var self = this
   if (!self._started) {
     self._started = true
-    self.trie._findDbNodes(function (root, node, key, next) {
+    self.trie._findDbNodes(function (nodeRef, node, key, next) {
       self.push({
-        key: root,
+        key: nodeRef,
         value: node.serialize()
       })
       next()

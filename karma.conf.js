@@ -2,7 +2,7 @@ process.env.ethTest = 'TrieTests'
 
 module.exports = function (config) {
   config.set({
-    browserNoActivityTimeout: 60000,
+    browserNoActivityTimeout: 120000,
     frameworks: ['browserify', 'detectBrowsers', 'tap'],
     files: [
       './test/*.js'
