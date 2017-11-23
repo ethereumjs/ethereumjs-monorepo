@@ -46,23 +46,34 @@ function testdataBefore (fn) {
   }
 }
 
-test('Random: #_encryptMessage/#_encryptMessage', randomBefore((t) => {
+test('Random: message encryption', randomBefore((t) => {
   const message = Buffer.from('The Magic Words are Squeamish Ossifrage')
-  const encypted = t.context.a._encryptMessage(message)
-  const decrypted = t.context.b._decryptMessage(encypted)
-  t.same(message, decrypted)
+  const encrypted = t.context.a._encryptMessage(message)
+  const decrypted = t.context.b._decryptMessage(encrypted)
+  t.same(message, decrypted, 'encryptMessage -> decryptMessage should lead to same')
   t.end()
 }))
 
-test('Random: auth -> ack -> header -> body', randomBefore((t) => {
+test('Random: auth -> ack -> header -> body (old format/no EIP8)', randomBefore((t) => {
   t.doesNotThrow(() => {
-    t.context.b.parseAuth(t.context.a.createAuth())
-    t.context.a.parseAck(t.context.b.createAck())
-  })
-  t.same(t.context.b._gotEIP8Auth, false)
+    const auth = t.context.a.createAuth()
+    t.context.b.parseAuth(auth)
+  }, 'should not throw on auth creation/parsing')
+
+  t.doesNotThrow(() => {
+    const ack = t.context.b.createAck()
+    t.context.a.parseAck(ack)
+  }, 'should not throw on ack creation/parsing')
+
+  t.same(t.context.b._gotEIP8Auth, false, 'should set _gotEIP8Auth to false')
+
   const body = randomBytes(600)
-  t.same(t.context.b.parseHeader(t.context.a.createHeader(body.length)), body.length)
-  t.same(t.context.b.parseBody(t.context.a.createBody(body)), body)
+  const header = t.context.b.parseHeader(t.context.a.createHeader(body.length))
+  t.same(header, body.length, 'createHeader -> parseHeader should lead to same')
+
+  const parsedBody = t.context.b.parseBody(t.context.a.createBody(body))
+  t.same(parsedBody, body, 'createBody -> parseBody should lead to same')
+
   t.end()
 }))
 
@@ -70,16 +81,23 @@ test('Testdata: auth -> ack (old format/no EIP8)', testdataBefore((t) => {
   t.doesNotThrow(() => {
     t.context.b.parseAuth(t.context.h0.auth)
     t.context.a._initMsg = t.context.h0.auth
+  }, 'should not throw on auth parsing')
+
+  t.doesNotThrow(() => {
     t.context.a.parseAck(t.context.h0.ack)
-  })
-  t.same(t.context.b._gotEIP8Auth, false)
+  }, 'should not throw on ack parsing')
+
+  t.same(t.context.b._gotEIP8Auth, false, 'should set _gotEIP8Auth to false')
+
   t.end()
 }))
 
 test('Testdata: auth -> ack (EIP8)', testdataBefore((t) => {
   t.doesNotThrow(() => {
     t.context.b.parseAuth(t.context.h1.auth)
-  })
-  t.same(t.context.b._gotEIP8Auth, true)
+  }, 'should not throw on auth parsing')
+
+  t.same(t.context.b._gotEIP8Auth, true, 'should set _gotEIP8Auth to true')
+
   t.end()
 }))
