@@ -36,6 +36,10 @@ function testdataBefore (fn) {
       h0: {
         'auth': Buffer.from(h[0].auth.join(''), 'hex'),
         'ack': Buffer.from(h[0].ack.join(''), 'hex')
+      },
+      h1: {
+        'auth': Buffer.from(h[1].auth.join(''), 'hex'),
+        'ack': Buffer.from(h[1].ack.join(''), 'hex')
       }
     }
     fn(t)
@@ -55,6 +59,7 @@ test('Random: auth -> ack -> header -> body', randomBefore((t) => {
     t.context.b.parseAuth(t.context.a.createAuth())
     t.context.a.parseAck(t.context.b.createAck())
   })
+  t.same(t.context.b._gotEIP8Auth, false)
   const body = randomBytes(600)
   t.same(t.context.b.parseHeader(t.context.a.createHeader(body.length)), body.length)
   t.same(t.context.b.parseBody(t.context.a.createBody(body)), body)
@@ -67,5 +72,14 @@ test('Testdata: auth -> ack (old format/no EIP8)', testdataBefore((t) => {
     t.context.a._initMsg = t.context.h0.auth
     t.context.a.parseAck(t.context.h0.ack)
   })
+  t.same(t.context.b._gotEIP8Auth, false)
+  t.end()
+}))
+
+test('Testdata: auth -> ack (EIP8)', testdataBefore((t) => {
+  t.doesNotThrow(() => {
+    t.context.b.parseAuth(t.context.h1.auth)
+  })
+  t.same(t.context.b._gotEIP8Auth, true)
   t.end()
 }))
