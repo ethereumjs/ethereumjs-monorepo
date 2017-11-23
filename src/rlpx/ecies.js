@@ -212,17 +212,46 @@ class ECIES {
     return this._initMsg
   }
 
-  parseAck (data) {
-    const decrypted = this._decryptMessage(data)
-    util.assertEq(decrypted.length, 97, 'invalid packet length')
+  _parseAckPlain (data, sharedMacData = null) {
+    const decrypted = this._decryptMessage(data, sharedMacData)
+
+    var remoteEphemeralPublicKey = null
+    var remoteNonce = null
+
+    if (!this._gotEIP8Ack) {
+      util.assertEq(decrypted.length, 97, 'invalid packet length')
+      util.assertEq(decrypted[96], 0, 'invalid postfix')
+
+      remoteEphemeralPublicKey = util.id2pk(decrypted.slice(0, 64))
+      remoteNonce = decrypted.slice(64, 96)
+    } else {
+      const decoded = rlp.decode(decrypted)
+
+      remoteEphemeralPublicKey = util.id2pk(decoded[0])
+      remoteNonce = decoded[1]
+    }
 
     // parse packet
-    this._remoteEphemeralPublicKey = util.id2pk(decrypted.slice(0, 64))
-    this._remoteNonce = decrypted.slice(64, 96)
-    util.assertEq(decrypted[96], 0, 'invalid postfix')
+    this._remoteEphemeralPublicKey = remoteEphemeralPublicKey
+    this._remoteNonce = remoteNonce
 
     this._ephemeralSharedSecret = ecdhX(this._remoteEphemeralPublicKey, this._ephemeralPrivateKey)
     this._setupFrame(data, false)
+  }
+
+  _parseAckEIP8 (data) { // eslint-disable-line (strange linting error)
+    const size = util.buffer2int(data.slice(0, 2)) + 2
+    util.assertEq(data.length, size, 'message length different from specified size (EIP8)')
+    this._parseAckPlain(data.slice(2), data.slice(0, 2))
+  }
+
+  parseAck (data) {
+    try {
+      this._parseAckPlain(data)
+    } catch (err) {
+      this._gotEIP8Ack = true
+      this._parseAckEIP8(data)
+    }
   }
 
   createHeader (size) {

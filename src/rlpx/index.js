@@ -157,8 +157,14 @@ class RLPx extends EventEmitter {
     }
 
     peer.once('connect', () => {
-      debug(`handshake with ${socket.remoteAddress}:${socket.remotePort} was successful`)
-
+      var msg = `handshake with ${socket.remoteAddress}:${socket.remotePort} was successful`
+      if (peer._eciesSession._gotEIP8Auth === true) {
+        msg += ` (peer eip8 auth)`
+      }
+      if (peer._eciesSession._gotEIP8Ack === true) {
+        msg += ` (peer eip8 ack)`
+      }
+      debug(msg)
       if (peer.getId().equals(this._id)) {
         return peer.disconnect(Peer.DISCONNECT_REASONS.SAME_IDENTITY)
       }

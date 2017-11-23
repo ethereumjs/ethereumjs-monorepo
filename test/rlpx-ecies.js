@@ -66,6 +66,7 @@ test('Random: auth -> ack -> header -> body (old format/no EIP8)', randomBefore(
   }, 'should not throw on ack creation/parsing')
 
   t.same(t.context.b._gotEIP8Auth, false, 'should set _gotEIP8Auth to false')
+  t.same(t.context.b._gotEIP8Ack, false, 'should set _gotEIP8Ack to false')
 
   const body = randomBytes(600)
   const header = t.context.b.parseHeader(t.context.a.createHeader(body.length))
@@ -88,6 +89,7 @@ test('Testdata: auth -> ack (old format/no EIP8)', testdataBefore((t) => {
   }, 'should not throw on ack parsing')
 
   t.same(t.context.b._gotEIP8Auth, false, 'should set _gotEIP8Auth to false')
+  t.same(t.context.a._gotEIP8Ack, false, 'should set _gotEIP8Ack to false')
 
   t.end()
 }))
@@ -95,9 +97,14 @@ test('Testdata: auth -> ack (old format/no EIP8)', testdataBefore((t) => {
 test('Testdata: auth -> ack (EIP8)', testdataBefore((t) => {
   t.doesNotThrow(() => {
     t.context.b.parseAuth(t.context.h1.auth)
+    t.context.a._initMsg = t.context.h1.auth
   }, 'should not throw on auth parsing')
+  t.doesNotThrow(() => {
+    t.context.a.parseAck(t.context.h1.ack)
+  }, 'should not throw on ack parsing')
 
   t.same(t.context.b._gotEIP8Auth, true, 'should set _gotEIP8Auth to true')
+  t.same(t.context.a._gotEIP8Ack, true, 'should set _gotEIP8Ack to true')
 
   t.end()
 }))
