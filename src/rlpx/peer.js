@@ -57,8 +57,43 @@ class Peer extends EventEmitter {
       bl.append(data)
       while (bl.length >= this._nextPacketSize) {
         const bytesCount = this._nextPacketSize
+        const parseData = bl.slice(0, bytesCount)
         try {
-          this._parsePacket(bl.slice(0, bytesCount))
+          if (this._state === 'Auth') {
+            if (!this._eciesSession._gotEIP8Auth) {
+              try {
+                this._eciesSession.parseAuthPlain(parseData)
+              } catch (err) {
+                this._eciesSession._gotEIP8Auth = true
+                this._nextPacketSize = util.buffer2int(data.slice(0, 2)) + 2
+                break
+              }
+            } else {
+              this._eciesSession.parseAuthEIP8(parseData)
+            }
+            this._state = 'Header'
+            this._nextPacketSize = 32
+            process.nextTick(() => this._sendAck())
+          }
+          else if (this._state === 'Ack') {
+            if (!this._eciesSession._gotEIP8Ack) {
+              try {
+                this._eciesSession.parseAckPlain(parseData)
+              } catch (err) {
+                this._eciesSession._gotEIP8Ack = true
+                this._nextPacketSize = util.buffer2int(data.slice(0, 2)) + 2
+                break
+              }
+            } else {
+              this._eciesSession.parseAckEIP8(parseData)
+            }
+            this._state = 'Header'
+            this._nextPacketSize = 32
+            process.nextTick(() => this._sendHello())
+          }
+          else {
+            this._parsePacketContent(parseData)
+          }
         } catch (err) {
           this.emit('error', err)
         }
@@ -96,23 +131,13 @@ class Peer extends EventEmitter {
     TIMEOUT: 0x0b,
     SUBPROTOCOL_ERROR: 0x10
   }
+  
+  _parseSocketData (data) {
+    
+  }
 
-  _parsePacket (data) {
+  _parsePacketContent (data) {
     switch (this._state) {
-      case 'Auth':
-        this._eciesSession.parseAuth(data)
-        this._state = 'Header'
-        this._nextPacketSize = 32
-        process.nextTick(() => this._sendAck())
-        break
-
-      case 'Ack':
-        this._eciesSession.parseAck(data)
-        this._state = 'Header'
-        this._nextPacketSize = 32
-        process.nextTick(() => this._sendHello())
-        break
-
       case 'Header':
         const size = this._eciesSession.parseHeader(data)
         this._state = 'Body'

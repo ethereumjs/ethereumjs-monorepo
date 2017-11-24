@@ -143,7 +143,7 @@ class ECIES {
     return this._initMsg
   }
 
-  _parseAuthPlain (data, sharedMacData = null) {
+  parseAuthPlain (data, sharedMacData = null) {
     this._remoteInitMsg = data
     const decrypted = this._decryptMessage(data, sharedMacData)
 
@@ -185,19 +185,10 @@ class ECIES {
     }
   }
 
-  _parseAuthEIP8 (data) {
+  parseAuthEIP8 (data) {
     const size = util.buffer2int(data.slice(0, 2)) + 2
     util.assertEq(data.length, size, 'message length different from specified size (EIP8)')
-    this._parseAuthPlain(data.slice(2), data.slice(0, 2))
-  }
-
-  parseAuth (data) {
-    try {
-      this._parseAuthPlain(data)
-    } catch (err) {
-      this._gotEIP8Auth = true
-      this._parseAuthEIP8(data)
-    }
+    this.parseAuthPlain(data.slice(2), data.slice(0, 2))
   }
 
   createAck () {
@@ -212,7 +203,7 @@ class ECIES {
     return this._initMsg
   }
 
-  _parseAckPlain (data, sharedMacData = null) {
+  parseAckPlain (data, sharedMacData = null) {
     const decrypted = this._decryptMessage(data, sharedMacData)
 
     var remoteEphemeralPublicKey = null
@@ -239,19 +230,10 @@ class ECIES {
     this._setupFrame(data, false)
   }
 
-  _parseAckEIP8 (data) { // eslint-disable-line (strange linting error)
+  parseAckEIP8 (data) { // eslint-disable-line (strange linting error)
     const size = util.buffer2int(data.slice(0, 2)) + 2
     util.assertEq(data.length, size, 'message length different from specified size (EIP8)')
-    this._parseAckPlain(data.slice(2), data.slice(0, 2))
-  }
-
-  parseAck (data) {
-    try {
-      this._parseAckPlain(data)
-    } catch (err) {
-      this._gotEIP8Ack = true
-      this._parseAckEIP8(data)
-    }
+    this.parseAckPlain(data.slice(2), data.slice(0, 2))
   }
 
   createHeader (size) {
