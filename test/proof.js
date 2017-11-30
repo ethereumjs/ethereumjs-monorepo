@@ -36,6 +36,34 @@ tape('simple merkle proofs generation and verification', function (tester) {
             cb()
           })
         })
+      },
+      function (cb) {
+        Trie.prove(trie, 'key2bb', function (err, prove) {
+          if (err) return cb(err)
+          Trie.verifyProof(trie.root, 'randomkey', prove, function (err, val) {
+            t.notEqual(err, null, 'Expected error: ' + err.message)
+            cb()
+          })
+        })
+      },
+      function (cb) {
+        Trie.prove(trie, 'key2bb', function (err, prove) {
+          if (err) return cb(err)
+          Trie.verifyProof(trie.root, 'key2b', prove, function (err, val) {
+            t.notEqual(err, null, 'Expected error: ' + err.message)
+            cb()
+          })
+        })
+      },
+      function (cb) {
+        Trie.prove(trie, 'key2bb', function (err, prove) {
+          if (err) return cb(err)
+          prove.push(Buffer.from('123456'))
+          Trie.verifyProof(trie.root, 'key2b', prove, function (err, val) {
+            t.notEqual(err, null, 'Expected error: ' + err.message)
+            cb()
+          })
+        })
       }
     ], function (err) {
       t.end(err)
