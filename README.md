@@ -17,6 +17,9 @@ The only backing store supported is LevelDB through the ```levelup``` module.
  `npm install merkle-patricia-tree`
 
 # USAGE
+
+## Initialization and Basic Usage
+
 ```javascript
 var Trie = require('merkle-patricia-tree'),
 levelup = require('levelup'),
@@ -28,6 +31,19 @@ trie.put('test', 'one', function () {
     if(value) console.log(value.toString())
   });
 });
+```
+
+## Merkle Proofs
+
+```javascript
+Trie.prove(trie, 'test', function (err, prove) {
+  if (err) return cb(err)
+  Trie.verifyProof(trie.root, 'test', prove, function (err, value) {
+    if (err) return cb(err)
+    console.log(value.toString())
+    cb()
+  })
+})
 ```
 
 # API
