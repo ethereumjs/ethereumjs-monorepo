@@ -1,6 +1,6 @@
 {
   "name": "merkle-patricia-tree",
-  "version": "2.2.0",
+  "version": "2.3.0",
   "description": "This is an implementation of the modified merkle patricia tree as speficed in the Ethereum's yellow paper.",
   "main": "index.js",
   "scripts": {
@@ -12,7 +12,7 @@
     "test:browser": "karma start karma.conf.js",
     "test:node": "tape ./test/*.js",
     "build": "browserify --s Trie index.js > ./dist/trie.js",
-    "build:docs": "documentation --github  -f md ./index.js ./secure.js > ./docs/index.md"
+    "build:docs": "documentation --github  -f md ./index.js ./secure.js ./proof.js > ./docs/index-template.md"
   },
   "author": {
     "name": "mjbecze",

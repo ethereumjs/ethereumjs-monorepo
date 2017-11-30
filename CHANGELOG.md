@@ -5,6 +5,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to 
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [2.3.0] - 2017-11-30
+- Methods for merkle proof generation ``Trie.prove()`` and verification ``Trie.verifyProof()`` (see [./proof.js](./proof.js))
+
+[2.3.0]: https://github.com/ethereumjs/merkle-patricia-tree/compare/v2.2.0...v2.3.0
 
 ## [2.2.0] - 2017-08-03
 - Renamed ``root`` functions argument to ``nodeRef`` for passing a node reference
