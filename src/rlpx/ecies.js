@@ -146,8 +146,8 @@ class ECIES {
     const authMsg = Buffer.concat([dataRLP, pad])
     const overheadLength = 113
     const sharedMacData = util.int2buffer(authMsg.length + overheadLength)
-    this._initMsg = this._encryptMessage(authMsg, sharedMacData)
-    return Buffer.concat([util.int2buffer(authMsg.length + overheadLength), this._initMsg])
+    this._initMsg = Buffer.concat([sharedMacData, this._encryptMessage(authMsg, sharedMacData)])
+    return this._initMsg
   }
 
   createAuth () {
@@ -250,7 +250,10 @@ class ECIES {
     this._remoteNonce = remoteNonce
 
     this._ephemeralSharedSecret = ecdhX(this._remoteEphemeralPublicKey, this._ephemeralPrivateKey)
-    this._setupFrame(data, false)
+    if (!sharedMacData) {
+      sharedMacData = Buffer.from([])
+    }
+    this._setupFrame(Buffer.concat([sharedMacData, data]), false)
   }
 
   parseAckEIP8 (data) { // eslint-disable-line (strange linting error)
