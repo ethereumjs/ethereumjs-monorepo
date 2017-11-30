@@ -156,6 +156,51 @@ Reverts the trie to the state it was at when `checkpoint` was first called.
 
 -   `cb` **Function** the callback
 
+## findPath
+
+[baseTrie.js:252-300](https://github.com/wanderer/merkle-patricia-tree/blob/dc436426d717fed408f4d46fed23f6d26d03d39d/baseTrie.js#L252-L300 "Source code on GitHub")
+
+Trys to find a path to the node for the given key.
+It returns a `stack` of nodes to the closet node.
+
+**Parameters**
+
+-   `Function`  cb - the callback function. Its is given the following
+    arguments-   err - any errors encontered
+    -   node - the last node found
+    -   keyRemainder - the remaining key nibbles not accounted for
+    -   stack - an array of nodes that forms the path to node we are searching for
+-   `targetKey`  
+-   `cb`  
+
+# Merkle Proof
+Static functions for creating/verifying a merkle proof.
+
+## prove
+
+[proof.js:12-29](https://github.com/ethereumjs/merkle-patricia-tree/blob/df14ad1fbf861160abdb5954973cf4a570473ce9/proof.js#L12-L29 "Source code on GitHub")
+
+Returns a merkle proof for a given key
+
+**Parameters**
+
+-   `trie` **Trie** 
+-   `key` **String** 
+-   `cb` **Function** A callback `Function` (arguments {Error} `err`, {Array.<TrieNode>} `proof`)
+
+## verifyProof
+
+[proof.js:39-95](https://github.com/ethereumjs/merkle-patricia-tree/blob/df14ad1fbf861160abdb5954973cf4a570473ce9/proof.js#L39-L95 "Source code on GitHub")
+
+Verifies a merkle proof for a given key
+
+**Parameters**
+
+-   `rootHash` **Buffer** 
+-   `key` **String** 
+-   `proof` **Array&lt;TrieNode&gt;** 
+-   `cb` **Function** A callback `Function` (arguments {Error} `err`, {String} `val`)
+
 
 # Internal Util Functions
 These are not exposed. 
@@ -219,23 +264,6 @@ Returns the number of in order matching nibbles of two give nibble arrayes
 
 -   `nib1` **Array** 
 -   `nib2` **Array** 
-
-## _findPath
-
-[baseTrie.js:252-300](https://github.com/wanderer/merkle-patricia-tree/blob/dc436426d717fed408f4d46fed23f6d26d03d39d/baseTrie.js#L252-L300 "Source code on GitHub")
-
-Trys to find a path to the node for the given key.
-It returns a `stack` of nodes to the closet node.
-
-**Parameters**
-
--   `Function`  cb - the callback function. Its is given the following
-    arguments-   err - any errors encontered
-    -   node - the last node found
-    -   keyRemainder - the remaining key nibbles not accounted for
-    -   stack - an array of nodes that forms the path to node we are searching for
--   `targetKey`  
--   `cb`  
 
 ## _saveStack
 

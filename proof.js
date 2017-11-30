@@ -2,6 +2,13 @@ const TrieNode = require('./trieNode')
 const ethUtil = require('ethereumjs-util')
 const matchingNibbleLength = require('./util').matchingNibbleLength
 
+/**
+ * Returns a merkle proof for a given key
+ * @method Trie.prove
+ * @param {Trie} trie
+ * @param {String} key
+ * @param {Function} cb A callback `Function` (arguments {Error} `err`, {Array.<TrieNode>} `proof`) 
+ */
 exports.prove = function (trie, key, cb) {
   var nodes
 
@@ -21,6 +28,14 @@ exports.prove = function (trie, key, cb) {
   })
 }
 
+/**
+ * Verifies a merkle proof for a given key
+ * @method Trie.verifyProof
+ * @param {Buffer} rootHash
+ * @param {String} key
+ * @param {Array.<TrieNode>} proof
+ * @param {Function} cb A callback `Function` (arguments {Error} `err`, {String} `val`) 
+ */
 exports.verifyProof = function (rootHash, key, proof, cb) {
   key = TrieNode.stringToNibbles(key)
   var wantHash = ethUtil.toBuffer(rootHash)

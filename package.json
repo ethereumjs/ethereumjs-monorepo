@@ -12,7 +12,7 @@
     "test:browser": "karma start karma.conf.js",
     "test:node": "tape ./test/*.js",
     "build": "browserify --s Trie index.js > ./dist/trie.js",
-    "build:docs": "documentation --github  -f md ./index.js ./secure.js > ./docs/index.md"
+    "build:docs": "documentation --github  -f md ./index.js ./secure.js ./proof.js > ./docs/index-template.md"
   },
   "author": {
     "name": "mjbecze",
