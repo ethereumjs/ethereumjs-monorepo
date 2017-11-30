@@ -84,11 +84,11 @@ test('Random: auth -> ack (EIP8)', randomBefore((t) => {
     t.context.b.parseAuthEIP8(auth)
   }, 'should not throw on auth creation/parsing')
 
-  /*t.doesNotThrow(() => {
+  /* t.doesNotThrow(() => {
     t.context.b._gotEIP8Ack = true
     const ack = t.context.b.createAck()
     t.context.a.parseAckPlain(ack)
-  }, 'should not throw on ack creation/parsing')*/
+  }, 'should not throw on ack creation/parsing') */
 
   t.end()
 }))

@@ -135,7 +135,7 @@ class ECIES {
     const sig = secp256k1.sign(util.xor(x, this._nonce), this._ephemeralPrivateKey)
     const data = [
       Buffer.concat([sig.signature, Buffer.from([ sig.recovery ])]),
-      //util.keccak256(util.pk2id(this._ephemeralPublicKey)),
+      // util.keccak256(util.pk2id(this._ephemeralPublicKey)),
       util.pk2id(this._publicKey),
       this._nonce,
       Buffer.from([ 0x04 ])
@@ -196,7 +196,7 @@ class ECIES {
     // parse packet
     this._remotePublicKey = remotePublicKey  // 64 bytes
     this._remoteNonce = nonce // 32 bytes
-    //util.assertEq(decrypted[193], 0, 'invalid postfix')
+    // util.assertEq(decrypted[193], 0, 'invalid postfix')
 
     const x = ecdhX(this._remotePublicKey, this._privateKey)
     this._remoteEphemeralPublicKey = secp256k1.recover(util.xor(x, this._remoteNonce), signature, recoveryId, false)
@@ -256,7 +256,7 @@ class ECIES {
     this._setupFrame(Buffer.concat([sharedMacData, data]), false)
   }
 
-  parseAckEIP8 (data) { // eslint-disable-line (strange linting error)
+  parseAckEIP8 (data) { // eslint-disable-line
     const size = util.buffer2int(data.slice(0, 2)) + 2
     util.assertEq(data.length, size, 'message length different from specified size (EIP8)')
     this.parseAckPlain(data.slice(2), data.slice(0, 2))

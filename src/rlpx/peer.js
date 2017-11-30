@@ -75,8 +75,7 @@ class Peer extends EventEmitter {
             this._state = 'Header'
             this._nextPacketSize = 32
             process.nextTick(() => this._sendAck())
-          }
-          else if (this._state === 'Ack') {
+          } else if (this._state === 'Ack') {
             if (!this._eciesSession._gotEIP8Ack) {
               try {
                 this._eciesSession.parseAckPlain(parseData)
@@ -93,8 +92,7 @@ class Peer extends EventEmitter {
             this._state = 'Header'
             this._nextPacketSize = 32
             process.nextTick(() => this._sendHello())
-          }
-          else {
+          } else {
             this._parsePacketContent(parseData)
           }
         } catch (err) {
@@ -134,9 +132,9 @@ class Peer extends EventEmitter {
     TIMEOUT: 0x0b,
     SUBPROTOCOL_ERROR: 0x10
   }
-  
+
   _parseSocketData (data) {
-    
+
   }
 
   _parsePacketContent (data) {
