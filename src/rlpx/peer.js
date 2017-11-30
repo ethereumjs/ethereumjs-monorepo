@@ -1,5 +1,6 @@
 const { EventEmitter } = require('events')
 const rlp = require('rlp-encoding')
+const util = require('../util')
 const BufferList = require('bl')
 const ms = require('ms')
 const Buffer = require('safe-buffer').Buffer
@@ -79,6 +80,7 @@ class Peer extends EventEmitter {
             if (!this._eciesSession._gotEIP8Ack) {
               try {
                 this._eciesSession.parseAckPlain(parseData)
+                debug(`Received ack (old format) from ${this._socket.remoteAddress}:${this._socket.remotePort}`)
               } catch (err) {
                 this._eciesSession._gotEIP8Ack = true
                 this._nextPacketSize = util.buffer2int(data.slice(0, 2)) + 2
@@ -86,6 +88,7 @@ class Peer extends EventEmitter {
               }
             } else {
               this._eciesSession.parseAckEIP8(parseData)
+              debug(`Received ack (EIP8) from ${this._socket.remoteAddress}:${this._socket.remotePort}`)
             }
             this._state = 'Header'
             this._nextPacketSize = 32
@@ -255,7 +258,8 @@ class Peer extends EventEmitter {
 
   _sendAuth () {
     if (this._closed) return
-    this._socket.write(this._eciesSession.createAuth())
+    debug(`Send EIP8 auth to ${this._socket.remoteAddress}:${this._socket.remotePort}`)
+    this._socket.write(this._eciesSession.createAuthEIP8())
     this._state = 'Ack'
     this._nextPacketSize = 210
   }

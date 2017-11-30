@@ -60,7 +60,7 @@ class ECIES {
     this._bodySize = null
   }
 
-  _encryptMessage (data) {
+  _encryptMessage (data, sharedMacData = null) {
     const privateKey = util.genPrivateKey()
     const x = ecdhX(this._remotePublicKey, privateKey)
     const key = concatKDF(x, 32)
@@ -74,7 +74,10 @@ class ECIES {
     const dataIV = Buffer.concat([ IV, encryptedData ])
 
     // create tag
-    const tag = crypto.createHmac('sha256', mkey).update(dataIV).digest()
+    if (!sharedMacData) {
+      sharedMacData = Buffer.from([])
+    }
+    const tag = crypto.createHmac('sha256', mkey).update(Buffer.concat([dataIV, sharedMacData])).digest()
 
     const publicKey = secp256k1.publicKeyCreate(privateKey, false)
     return Buffer.concat([ publicKey, dataIV, tag ])
@@ -127,6 +130,26 @@ class ECIES {
     this._egressMac.update(Buffer.concat([ util.xor(macSecret, this._remoteNonce), this._initMsg ]))
   }
 
+  createAuthEIP8 () {
+    const x = ecdhX(this._remotePublicKey, this._privateKey)
+    const sig = secp256k1.sign(util.xor(x, this._nonce), this._ephemeralPrivateKey)
+    const data = [
+      Buffer.concat([sig.signature, Buffer.from([ sig.recovery ])]),
+      //util.keccak256(util.pk2id(this._ephemeralPublicKey)),
+      util.pk2id(this._publicKey),
+      this._nonce,
+      Buffer.from([ 0x04 ])
+    ]
+
+    const dataRLP = rlp.encode(data)
+    const pad = crypto.randomBytes(100 + Math.floor(Math.random() * 151)) // Random padding between 100, 250
+    const authMsg = Buffer.concat([dataRLP, pad])
+    const overheadLength = 113
+    const sharedMacData = util.int2buffer(authMsg.length + overheadLength)
+    this._initMsg = this._encryptMessage(authMsg, sharedMacData)
+    return Buffer.concat([util.int2buffer(authMsg.length + overheadLength), this._initMsg])
+  }
+
   createAuth () {
     const x = ecdhX(this._remotePublicKey, this._privateKey)
     const sig = secp256k1.sign(util.xor(x, this._nonce), this._ephemeralPrivateKey)
@@ -173,7 +196,7 @@ class ECIES {
     // parse packet
     this._remotePublicKey = remotePublicKey  // 64 bytes
     this._remoteNonce = nonce // 32 bytes
-    util.assertEq(decrypted[193], 0, 'invalid postfix')
+    //util.assertEq(decrypted[193], 0, 'invalid postfix')
 
     const x = ecdhX(this._remotePublicKey, this._privateKey)
     this._remoteEphemeralPublicKey = secp256k1.recover(util.xor(x, this._remoteNonce), signature, recoveryId, false)

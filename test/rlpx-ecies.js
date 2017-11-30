@@ -77,6 +77,22 @@ test('Random: auth -> ack -> header -> body (old format/no EIP8)', randomBefore(
   t.end()
 }))
 
+test('Random: auth -> ack (EIP8)', randomBefore((t) => {
+  t.doesNotThrow(() => {
+    const auth = t.context.a.createAuthEIP8()
+    t.context.b._gotEIP8Auth = true
+    t.context.b.parseAuthEIP8(auth)
+  }, 'should not throw on auth creation/parsing')
+
+  /*t.doesNotThrow(() => {
+    t.context.b._gotEIP8Ack = true
+    const ack = t.context.b.createAck()
+    t.context.a.parseAckPlain(ack)
+  }, 'should not throw on ack creation/parsing')*/
+
+  t.end()
+}))
+
 test('Testdata: auth -> ack (old format/no EIP8)', testdataBefore((t) => {
   t.doesNotThrow(() => {
     t.context.b._gotEIP8Auth = false
