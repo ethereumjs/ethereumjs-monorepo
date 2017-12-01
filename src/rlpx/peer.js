@@ -270,7 +270,11 @@ class Peer extends EventEmitter {
 
   _sendAck () {
     if (this._closed) return
-    this._socket.write(this._eciesSession.createAck())
+    if (this._eciesSession._gotEIP8Auth) {
+      this._socket.write(this._eciesSession.createAckEIP8())
+    } else {
+      this._socket.write(this._eciesSession.createAckOld())
+    }
     this._state = 'Header'
     this._nextPacketSize = 32
     this._sendHello()

@@ -214,7 +214,24 @@ class ECIES {
     this.parseAuthPlain(data.slice(2), data.slice(0, 2))
   }
 
-  createAck () {
+  createAckEIP8 () {
+    const data = [
+      util.pk2id(this._ephemeralPublicKey),
+      this._nonce,
+      Buffer.from([ 0x04 ])
+    ]
+
+    const dataRLP = rlp.encode(data)
+    const pad = crypto.randomBytes(100 + Math.floor(Math.random() * 151)) // Random padding between 100, 250
+    const ackMsg = Buffer.concat([dataRLP, pad])
+    const overheadLength = 113
+    const sharedMacData = util.int2buffer(ackMsg.length + overheadLength)
+    this._initMsg = Buffer.concat([sharedMacData, this._encryptMessage(ackMsg, sharedMacData)])
+    this._setupFrame(this._remoteInitMsg, true)
+    return this._initMsg
+  }
+
+  createAckOld () {
     const data = Buffer.concat([
       util.pk2id(this._ephemeralPublicKey),
       this._nonce,
