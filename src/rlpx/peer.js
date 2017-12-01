@@ -34,6 +34,7 @@ class Peer extends EventEmitter {
 
     // ECIES session
     this._remoteId = options.remoteId
+    this._EIP8 = options.EIP8 !== undefined ? options.EIP8 : true
     this._eciesSession = new ECIES(options.privateKey, this._id, this._remoteId)
 
     // Auth, Ack, Header, Body
@@ -258,7 +259,11 @@ class Peer extends EventEmitter {
   _sendAuth () {
     if (this._closed) return
     debug(`Send EIP8 auth to ${this._socket.remoteAddress}:${this._socket.remotePort}`)
-    this._socket.write(this._eciesSession.createAuthEIP8())
+    if (this.EIP8) {
+      this._socket.write(this._eciesSession.createAuthEIP8())
+    } else {
+      this._socket.write(this._eciesSession.createAuthNonEIP8())
+    }
     this._state = 'Ack'
     this._nextPacketSize = 210
   }

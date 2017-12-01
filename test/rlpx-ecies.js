@@ -56,7 +56,7 @@ test('Random: message encryption', randomBefore((t) => {
 
 test('Random: auth -> ack -> header -> body (old format/no EIP8)', randomBefore((t) => {
   t.doesNotThrow(() => {
-    const auth = t.context.a.createAuth()
+    const auth = t.context.a.createAuthNonEIP8()
     t.context.b._gotEIP8Auth = false
     t.context.b.parseAuthPlain(auth)
   }, 'should not throw on auth creation/parsing')

@@ -150,7 +150,7 @@ class ECIES {
     return this._initMsg
   }
 
-  createAuth () {
+  createAuthNonEIP8 () {
     const x = ecdhX(this._remotePublicKey, this._privateKey)
     const sig = secp256k1.sign(util.xor(x, this._nonce), this._ephemeralPrivateKey)
     const data = Buffer.concat([
