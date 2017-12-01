@@ -258,8 +258,8 @@ class Peer extends EventEmitter {
 
   _sendAuth () {
     if (this._closed) return
-    debug(`Send EIP8 auth to ${this._socket.remoteAddress}:${this._socket.remotePort}`)
-    if (this.EIP8) {
+    debug(`Send auth (EIP8: ${this._EIP8}) to ${this._socket.remoteAddress}:${this._socket.remotePort}`)
+    if (this._EIP8) {
       this._socket.write(this._eciesSession.createAuthEIP8())
     } else {
       this._socket.write(this._eciesSession.createAuthNonEIP8())
