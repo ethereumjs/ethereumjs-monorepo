@@ -164,11 +164,13 @@ class Peer extends EventEmitter {
         }
 
         const obj = this._getProtocol(code)
-        debug(`Message code: ${code} - ${obj.offset} = ${code - obj.offset}`)
+        const msgCode = code - obj.offset
+        const prefix = Object.keys(PREFIXES).find(key => PREFIXES[key] === msgCode)
+        debug(`Received ${prefix} (message code: ${code} - ${obj.offset} = ${msgCode}) ${this._socket.remoteAddress}:${this._socket.remotePort}`)
         if (obj === undefined) return this.disconnect(Peer.DISCONNECT_REASONS.PROTOCOL_ERROR)
 
         try {
-          obj.protocol._handleMessage(code - obj.offset, body.slice(1))
+          obj.protocol._handleMessage(msgCode, body.slice(1))
         } catch (err) {
           this.disconnect(Peer.DISCONNECT_REASONS.SUBPROTOCOL_ERROR)
           this.emit('error', err)
@@ -270,6 +272,7 @@ class Peer extends EventEmitter {
 
   _sendAck () {
     if (this._closed) return
+    debug(`Send ack (EIP8: ${this._eciesSession._gotEIP8Auth}) to ${this._socket.remoteAddress}:${this._socket.remotePort}`)
     if (this._eciesSession._gotEIP8Auth) {
       this._socket.write(this._eciesSession.createAckEIP8())
     } else {
@@ -289,6 +292,7 @@ class Peer extends EventEmitter {
   }
 
   _sendHello () {
+    debug(`Send HELLO to ${this._socket.remoteAddress}:${this._socket.remotePort}`)
     const payload = [
       int2buffer(BASE_PROTOCOL_VERSION),
       this._clientId,
@@ -301,6 +305,7 @@ class Peer extends EventEmitter {
   }
 
   _sendPing () {
+    debug(`Send PING to ${this._socket.remoteAddress}:${this._socket.remotePort}`)
     const data = rlp.encode([])
     if (!this._sendMessage(PREFIXES.PING, data)) return
 
@@ -311,11 +316,13 @@ class Peer extends EventEmitter {
   }
 
   _sendPong () {
+    debug(`Send PONG to ${this._socket.remoteAddress}:${this._socket.remotePort}`)
     const data = rlp.encode([])
     this._sendMessage(PREFIXES.PONG, data)
   }
 
   _sendDisconnect (reason) {
+    debug(`Send DISCONNECT to ${this._socket.remoteAddress}:${this._socket.remotePort}`)
     const data = rlp.encode(reason)
     if (!this._sendMessage(PREFIXES.DISCONNECT, data)) return
 

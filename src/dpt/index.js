@@ -45,6 +45,7 @@ class DPT extends EventEmitter {
 
   destroy (...args) {
     clearInterval(this._refreshIntervalId)
+    console.log("Oh my, here was something destroyed...")
     this._server.destroy(...args)
   }
 
