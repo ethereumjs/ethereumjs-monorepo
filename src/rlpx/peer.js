@@ -166,7 +166,7 @@ class Peer extends EventEmitter {
 
         const obj = this._getProtocol(code)
         const msgCode = code - obj.offset
-        const prefix = Object.keys(PREFIXES).find(key => PREFIXES[key] === msgCode)
+        const prefix = this.getMsgPrefix(msgCode)
         debug(`Received ${prefix} (message code: ${code} - ${obj.offset} = ${msgCode}) ${this._socket.remoteAddress}:${this._socket.remotePort}`)
         if (obj === undefined) return this.disconnect(Peer.DISCONNECT_REASONS.PROTOCOL_ERROR)
 
@@ -351,6 +351,14 @@ class Peer extends EventEmitter {
 
   getProtocols () {
     return this._protocols.map((obj) => obj.protocol)
+  }
+
+  getMsgPrefix (code) {
+    return Object.keys(PREFIXES).find(key => PREFIXES[key] === code)
+  }
+
+  getDisconnectPrefix (code) {
+    return Object.keys(Peer.DISCONNECT_REASONS).find(key => Peer.DISCONNECT_REASONS[key] === code)
   }
 
   disconnect (reason = Peer.DISCONNECT_REASONS.DISCONNECT_REQUESTED) {

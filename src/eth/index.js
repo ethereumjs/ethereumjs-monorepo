@@ -116,6 +116,7 @@ class ETH extends EventEmitter {
   }
 
   sendMessage (code, payload) {
+    debug(`Send ${this.getMsgPrefix(code)} (${code}) message to ${this._peer._socket.remoteAddress}:${this._peer._socket.remotePort}: ${rlp.encode(payload).toString('hex')}`)
     switch (code) {
       case MESSAGE_CODES.STATUS:
         throw new Error('Please send status message through .sendStatus')
@@ -142,6 +143,10 @@ class ETH extends EventEmitter {
     }
 
     this._send(code, rlp.encode(payload))
+  }
+
+  getMsgPrefix (msgCode) {
+    return Object.keys(MESSAGE_CODES).find(key => MESSAGE_CODES[key] === msgCode)
   }
 }
 

@@ -82,7 +82,7 @@ rlpx.on('peer:added', (peer) => {
   })
 
   eth.on('message', async (code, payload) => {
-    // console.log(`new message (${addr}) ${code} ${rlp.encode(payload).toString('hex')}`)
+    // console.log(`Received ${eth.getMsgPrefix(code)} (${code}) message from ${addr}: ${rlp.encode(payload).toString('hex')}`)
     switch (code) {
       case devp2p.ETH.MESSAGE_CODES.NEW_BLOCK_HASHES:
         if (DAO_FORK_SUPPORT !== null && !forkVerified) break
@@ -214,10 +214,10 @@ rlpx.on('peer:added', (peer) => {
   })
 })
 
-rlpx.on('peer:removed', (peer, reason, disconnectWe) => {
+rlpx.on('peer:removed', (peer, reasonCode, disconnectWe) => {
   const who = disconnectWe ? 'we disconnect' : 'peer disconnect'
   const total = rlpx.getPeers().length
-  console.log(chalk.yellow(`Remove peer: ${getPeerAddr(peer)} (${who}, reason code: ${String(reason)}) (total: ${total})`))
+  console.log(chalk.yellow(`Remove peer: ${getPeerAddr(peer)} - ${who}, reason: ${peer.getDisconnectPrefix(reasonCode)} (${String(reasonCode)}) (total: ${total})`))
 })
 
 rlpx.on('peer:error', (peer, err) => {
@@ -269,10 +269,11 @@ function onNewTx (tx, peer) {
 const blocksCache = new LRUCache({ max: 100 })
 function onNewBlock (block, peer) {
   const blockHashHex = block.hash().toString('hex')
+  const blockNumber = block.header.number.toString('hex')
   if (blocksCache.has(blockHashHex)) return
 
   blocksCache.set(blockHashHex, true)
-  console.log(`new block: ${blockHashHex} (from ${getPeerAddr(peer)})`)
+  console.log(`new block ${blockNumber}: ${blockHashHex} (from ${getPeerAddr(peer)})`)
   for (let tx of block.transactions) onNewTx(tx, peer)
 }
 
