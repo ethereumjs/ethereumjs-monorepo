@@ -2,8 +2,11 @@ const { EventEmitter } = require('events')
 const rlp = require('rlp-encoding')
 const ms = require('ms')
 const Buffer = require('safe-buffer').Buffer
+const createDebugLogger = require('debug')
 const { int2buffer, assertEq } = require('../util')
 const Peer = require('../rlpx/peer')
+
+const debug = createDebugLogger('devp2p:eth')
 
 const MESSAGE_CODES = {
   // eth62
@@ -84,6 +87,7 @@ class ETH extends EventEmitter {
     assertEq(this._status[1], this._peerStatus[1], 'NetworkId mismatch')
     assertEq(this._status[4], this._peerStatus[4], 'Genesis block mismatch')
 
+    debug(`Received STATUS msg from ${this._peer._socket.remoteAddress}:${this._peer._socket.remotePort} (eth${this._version})`)
     this.emit('status', {
       networkId: this._peerStatus[1],
       td: Buffer.from(this._peerStatus[2]),
@@ -106,6 +110,7 @@ class ETH extends EventEmitter {
       status.genesisHash
     ]
 
+    debug(`Send STATUS msg to ${this._peer._socket.remoteAddress}:${this._peer._socket.remotePort} (eth${this._version})`)
     this._send(MESSAGE_CODES.STATUS, rlp.encode(this._status))
     this._handleStatus()
   }
