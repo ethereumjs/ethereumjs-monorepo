@@ -39,6 +39,7 @@ class Peer extends EventEmitter {
 
     // Auth, Ack, Header, Body
     this._state = 'Auth'
+    this._weHello = null
     this._hello = null
     this._nextPacketSize = 307
 
@@ -238,7 +239,9 @@ class Peer extends EventEmitter {
 
         this._connected = true
         this._pingIntervalId = setInterval(() => this._sendPing(), PING_INTERVAL)
-        this.emit('connect')
+        if (this._weHello) {
+          this.emit('connect')
+        }
         break
 
       case PREFIXES.DISCONNECT:
@@ -301,7 +304,12 @@ class Peer extends EventEmitter {
       this._id
     ]
 
-    this._sendMessage(PREFIXES.HELLO, rlp.encode(payload))
+    if (!this._closed) {
+      this._sendMessage(PREFIXES.HELLO, rlp.encode(payload))
+      if (this._hello) {
+        this.emit('connect')
+      }
+    }
   }
 
   _sendPing () {
