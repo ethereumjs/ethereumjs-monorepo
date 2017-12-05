@@ -11,7 +11,6 @@ const Buffer = require('safe-buffer').Buffer
 
 const PRIVATE_KEY = randomBytes(32)
 const CHAIN_ID = 1
-const DAO_FORK_SUPPORT = true
 
 const BOOTNODES = require('ethereum-common').bootstrapNodes.filter((node) => {
   return node.chainId === CHAIN_ID
@@ -23,9 +22,10 @@ const BOOTNODES = require('ethereum-common').bootstrapNodes.filter((node) => {
   }
 })
 
-const ETH_1920000 = '4985f5ca3d2afbec36529aa96f74de3cc10a2a4a6c44f2157a57d2c6059a11bb'
-const ETH_1920000_HEADER = rlp.decode(Buffer.from('f9020da0a218e2c611f21232d857e3c8cecdcdf1f65f25a4477f98f6f47e4063807f2308a01dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d4934794bcdfc35b86bedf72f0cda046a3c16829a2ef41d1a0c5e389416116e3696cce82ec4533cce33efccb24ce245ae9546a4b8f0d5e9a75a07701df8e07169452554d14aadd7bfa256d4a1d0355c1d174ab373e3e2d0a3743a026cf9d9422e9dd95aedc7914db690b92bab6902f5221d62694a2fa5d065f534bb90100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000008638c3bf2616aa831d4c008347e7c08301482084578f7aa88d64616f2d686172642d666f726ba05b5acbf4bf305f948bd7be176047b20623e1417f75597341a059729165b9239788bede87201de42426', 'hex'))
-const ETC_1920000 = '94365e3a8c0b35089c1d1195081fe7489b528a84b22199c916180db8b28ade7f'
+const CHECK_BLOCK_TITLE = 'Byzantium Fork' // Only for debugging/console output
+const CHECK_BLOCK_NR = 4370000
+const CHECK_BLOCK = 'b1fcff633029ee18ab6482b58ff8b6e95dd7c82a954c852157152a7a6d32785e'
+const CHECK_BLOCK_HEADER = rlp.decode(Buffer.from('f9020aa0a0890da724dd95c90a72614c3a906e402134d3859865f715f5dfb398ac00f955a01dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d49347942a65aca4d5fc5b5c859090a6c34d164135398226a074cccff74c5490fbffc0e6883ea15c0e1139e2652e671f31f25f2a36970d2f87a00e750bf284c2b3ed1785b178b6f49ff3690a3a91779d400de3b9a3333f699a80a0c68e3e82035e027ade5d966c36a1d49abaeec04b83d64976621c355e58724b8bb90100040019000040000000010000000000021000004020100688001a05000020816800000010a0000100201400000000080100020000000400080000800004c0200000201040000000018110400c000000200001000000280000000100000010010080000120010000050041004000018000204002200804000081000011800022002020020140000000020005080001800000000008102008140008600000000100000500000010080082002000102080000002040120008820400020100004a40801000002a0040c000010000114000000800000050008300020100000000008010000000100120000000040000000808448200000080a00000624013000000080870552416761fabf83475b02836652b383661a72845a25c530894477617266506f6f6ca0dc425fdb323c469c91efac1d2672dfdd3ebfde8fa25d68c1b3261582503c433788c35ca7100349f430', 'hex'))
 
 const getPeerAddr = (peer) => `${peer._socket.remoteAddress}:${peer._socket.remotePort}`
 
@@ -69,12 +69,11 @@ rlpx.on('peer:added', (peer) => {
     genesisHash: Buffer.from('d4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3', 'hex')
   })
 
-  // check DAO
+  // check CHECK_BLOCK
   let forkDrop = null
   let forkVerified = false
   eth.once('status', () => {
-    if (DAO_FORK_SUPPORT === null) return
-    eth.sendMessage(devp2p.ETH.MESSAGE_CODES.GET_BLOCK_HEADERS, [ 1920000, 1, 0, 0 ])
+    eth.sendMessage(devp2p.ETH.MESSAGE_CODES.GET_BLOCK_HEADERS, [ CHECK_BLOCK_NR, 1, 0, 0 ])
     forkDrop = setTimeout(() => {
       peer.disconnect(devp2p.RLPx.DISCONNECT_REASONS.USELESS_PEER)
     }, ms('15s'))
@@ -82,10 +81,9 @@ rlpx.on('peer:added', (peer) => {
   })
 
   eth.on('message', async (code, payload) => {
-    // console.log(`Received ${eth.getMsgPrefix(code)} (${code}) message from ${addr}: ${rlp.encode(payload).toString('hex')}`)
     switch (code) {
       case devp2p.ETH.MESSAGE_CODES.NEW_BLOCK_HASHES:
-        if (DAO_FORK_SUPPORT !== null && !forkVerified) break
+        if (!forkVerified) break
 
         for (let item of payload) {
           const blockHash = item[0]
@@ -98,7 +96,7 @@ rlpx.on('peer:added', (peer) => {
         break
 
       case devp2p.ETH.MESSAGE_CODES.TX:
-        if (DAO_FORK_SUPPORT !== null && !forkVerified) break
+        if (!forkVerified) break
 
         for (let item of payload) {
           const tx = new EthereumTx(item)
@@ -110,24 +108,24 @@ rlpx.on('peer:added', (peer) => {
       case devp2p.ETH.MESSAGE_CODES.GET_BLOCK_HEADERS:
         const headers = []
         // hack
-        if (DAO_FORK_SUPPORT && devp2p._util.buffer2int(payload[0]) === 1920000) {
-          headers.push(ETH_1920000_HEADER)
+        if (devp2p._util.buffer2int(payload[0]) === CHECK_BLOCK_NR) {
+          headers.push(CHECK_BLOCK_HEADER)
         }
 
         eth.sendMessage(devp2p.ETH.MESSAGE_CODES.BLOCK_HEADERS, headers)
         break
 
       case devp2p.ETH.MESSAGE_CODES.BLOCK_HEADERS:
-        if (DAO_FORK_SUPPORT !== null && !forkVerified) {
+        if (!forkVerified) {
           if (payload.length !== 1) {
-            console.log(`${addr} expected one header for DAO fork verify (received: ${payload.length})`)
+            console.log(`${addr} expected one header for ${CHECK_BLOCK_TITLE} verify (received: ${payload.length})`)
             break
           }
 
-          const expectedHash = DAO_FORK_SUPPORT ? ETH_1920000 : ETC_1920000
+          const expectedHash = CHECK_BLOCK
           const header = new EthereumBlock.Header(payload[0])
           if (header.hash().toString('hex') === expectedHash) {
-            console.log(`${addr} verified to be on the same side of the DAO fork`)
+            console.log(`${addr} verified to be on the same side of the ${CHECK_BLOCK_TITLE}`)
             clearTimeout(forkDrop)
             forkVerified = true
           }
@@ -163,7 +161,7 @@ rlpx.on('peer:added', (peer) => {
         break
 
       case devp2p.ETH.MESSAGE_CODES.BLOCK_BODIES:
-        if (DAO_FORK_SUPPORT !== null && !forkVerified) break
+        if (!forkVerified) break
 
         if (payload.length !== 1) {
           console.log(`${addr} not more than one block body expected (received: ${payload.length})`)
@@ -189,7 +187,7 @@ rlpx.on('peer:added', (peer) => {
         break
 
       case devp2p.ETH.MESSAGE_CODES.NEW_BLOCK:
-        if (DAO_FORK_SUPPORT !== null && !forkVerified) break
+        if (!forkVerified) break
 
         const newBlock = new EthereumBlock(payload[0])
         const isValidNewBlock = await isValidBlock(newBlock)
