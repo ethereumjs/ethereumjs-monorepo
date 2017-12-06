@@ -31,6 +31,7 @@ class Peer extends EventEmitter {
     this._capabilities = options.capabilities
     this._port = options.port
     this._id = options.id
+    this._remoteClientIdFilter = options.remoteClientIdFilter
 
     // ECIES session
     this._remoteId = options.remoteId
@@ -165,10 +166,11 @@ class Peer extends EventEmitter {
         }
 
         const obj = this._getProtocol(code)
+        if (obj === undefined) return this.disconnect(Peer.DISCONNECT_REASONS.PROTOCOL_ERROR)
+
         const msgCode = code - obj.offset
         const prefix = this.getMsgPrefix(msgCode)
         debug(`Received ${prefix} (message code: ${code} - ${obj.offset} = ${msgCode}) ${this._socket.remoteAddress}:${this._socket.remotePort}`)
-        if (obj === undefined) return this.disconnect(Peer.DISCONNECT_REASONS.PROTOCOL_ERROR)
 
         try {
           obj.protocol._handleMessage(msgCode, body.slice(1))
@@ -206,6 +208,14 @@ class Peer extends EventEmitter {
           this._remoteId = Buffer.from(this._hello.id)
         } else if (!this._remoteId.equals(this._hello.id)) {
           return this.disconnect(Peer.DISCONNECT_REASONS.INVALID_IDENTITY)
+        }
+
+        if (this._remoteClientIdFilter) {
+          for (let filterStr of this._remoteClientIdFilter) {
+            if (this._hello.clientId.toLowerCase().includes(filterStr.toLowerCase())) {
+              return this.disconnect(Peer.DISCONNECT_REASONS.USELESS_PEER)
+            }
+          }
         }
 
         const shared = {}

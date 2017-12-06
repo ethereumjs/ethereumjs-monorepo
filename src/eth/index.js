@@ -102,13 +102,13 @@ class ETH extends EventEmitter {
   getVersion () {
     return this._version
   }
-  
+
   _getStatusString (status) {
     var sStr = `[V:${buffer2int(status[0])}, NID:${buffer2int(status[1])}, TD:${buffer2int(status[2])}`
     sStr += `, BestH:${status[3].toString('hex')}, GenH:${status[4].toString('hex')}]`
     return sStr
   }
-  
+
   sendStatus (status) {
     if (this._status !== null) return
     this._status = [

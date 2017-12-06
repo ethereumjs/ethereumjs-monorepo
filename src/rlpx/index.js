@@ -22,6 +22,7 @@ class RLPx extends EventEmitter {
     this._timeout = options.timeout || ms('10s')
     this._maxPeers = options.maxPeers || 10
     this._clientId = Buffer.from(options.clientId || `Ethereum Node.js/${pVersion}`)
+    this._remoteClientIdFilter = options.remoteClientIdFilter
     this._capabilities = options.capabilities
     this._listenPort = options.listenPort
 
@@ -144,6 +145,7 @@ class RLPx extends EventEmitter {
 
       timeout: this._timeout,
       clientId: this._clientId,
+      remoteClientIdFilter: this._remoteClientIdFilter,
       capabilities: this._capabilities,
       port: this._listenPort
     })

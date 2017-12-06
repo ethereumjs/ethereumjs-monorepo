@@ -21,6 +21,7 @@ const BOOTNODES = require('ethereum-common').bootstrapNodes.filter((node) => {
     tcpPort: node.port
   }
 })
+const REMOTE_CLIENTID_FILTER = ['go1.5', 'go1.6', 'go1.7', 'quorum', 'pirl', 'ubiq', 'gmc', 'gwhale', 'prichain']
 
 const CHECK_BLOCK_TITLE = 'Byzantium Fork' // Only for debugging/console output
 const CHECK_BLOCK_NR = 4370000
@@ -49,6 +50,7 @@ const rlpx = new devp2p.RLPx(PRIVATE_KEY, {
     devp2p.ETH.eth63,
     devp2p.ETH.eth62
   ],
+  remoteClientIdFilter: REMOTE_CLIENTID_FILTER,
   listenPort: null
 })
 
@@ -118,7 +120,7 @@ rlpx.on('peer:added', (peer) => {
           headers.push(CHECK_BLOCK_HEADER)
         }
 
-        if (requests.headers.length === 0 && requests.msgTypes[code] >= 5) {
+        if (requests.headers.length === 0 && requests.msgTypes[code] >= 8) {
           peer.disconnect(devp2p.RLPx.DISCONNECT_REASONS.USELESS_PEER)
         } else {
           eth.sendMessage(devp2p.ETH.MESSAGE_CODES.BLOCK_HEADERS, headers)
@@ -168,7 +170,7 @@ rlpx.on('peer:added', (peer) => {
         break
 
       case devp2p.ETH.MESSAGE_CODES.GET_BLOCK_BODIES:
-        if (requests.headers.length === 0 && requests.msgTypes[code] >= 5) {
+        if (requests.headers.length === 0 && requests.msgTypes[code] >= 8) {
           peer.disconnect(devp2p.RLPx.DISCONNECT_REASONS.USELESS_PEER)
         } else {
           eth.sendMessage(devp2p.ETH.MESSAGE_CODES.BLOCK_BODIES, [])
@@ -211,7 +213,7 @@ rlpx.on('peer:added', (peer) => {
         break
 
       case devp2p.ETH.MESSAGE_CODES.GET_NODE_DATA:
-        if (requests.headers.length === 0 && requests.msgTypes[code] >= 5) {
+        if (requests.headers.length === 0 && requests.msgTypes[code] >= 8) {
           peer.disconnect(devp2p.RLPx.DISCONNECT_REASONS.USELESS_PEER)
         } else {
           eth.sendMessage(devp2p.ETH.MESSAGE_CODES.NODE_DATA, [])
@@ -222,7 +224,7 @@ rlpx.on('peer:added', (peer) => {
         break
 
       case devp2p.ETH.MESSAGE_CODES.GET_RECEIPTS:
-        if (requests.headers.length === 0 && requests.msgTypes[code] >= 5) {
+        if (requests.headers.length === 0 && requests.msgTypes[code] >= 8) {
           peer.disconnect(devp2p.RLPx.DISCONNECT_REASONS.USELESS_PEER)
         } else {
           eth.sendMessage(devp2p.ETH.MESSAGE_CODES.RECEIPTS, [])
