@@ -57,7 +57,7 @@ rlpx.on('error', (err) => console.error(chalk.red(`RLPx error: ${err.stack || er
 rlpx.on('peer:added', (peer) => {
   const addr = getPeerAddr(peer)
   const eth = peer.getProtocols()[0]
-  const requests = { headers: [], bodies: [] }
+  const requests = { headers: [], bodies: [], msgTypes: {} }
 
   const clientId = peer.getHelloMessage().clientId
   console.log(chalk.green(`Add peer: ${addr} ${clientId} (eth${eth.getVersion()}) (total: ${rlpx.getPeers().length})`))
@@ -81,6 +81,12 @@ rlpx.on('peer:added', (peer) => {
   })
 
   eth.on('message', async (code, payload) => {
+    if (code in requests.msgTypes) {
+      requests.msgTypes[code] += 1
+    } else {
+      requests.msgTypes[code] = 1
+    }
+
     switch (code) {
       case devp2p.ETH.MESSAGE_CODES.NEW_BLOCK_HASHES:
         if (!forkVerified) break
@@ -112,13 +118,18 @@ rlpx.on('peer:added', (peer) => {
           headers.push(CHECK_BLOCK_HEADER)
         }
 
-        eth.sendMessage(devp2p.ETH.MESSAGE_CODES.BLOCK_HEADERS, headers)
+        if (requests.headers.length === 0 && requests.msgTypes[code] >= 5) {
+          peer.disconnect(devp2p.RLPx.DISCONNECT_REASONS.USELESS_PEER)
+        } else {
+          eth.sendMessage(devp2p.ETH.MESSAGE_CODES.BLOCK_HEADERS, headers)
+        }
         break
 
       case devp2p.ETH.MESSAGE_CODES.BLOCK_HEADERS:
         if (!forkVerified) {
           if (payload.length !== 1) {
             console.log(`${addr} expected one header for ${CHECK_BLOCK_TITLE} verify (received: ${payload.length})`)
+            peer.disconnect(devp2p.RLPx.DISCONNECT_REASONS.USELESS_PEER)
             break
           }
 
@@ -157,7 +168,11 @@ rlpx.on('peer:added', (peer) => {
         break
 
       case devp2p.ETH.MESSAGE_CODES.GET_BLOCK_BODIES:
-        eth.sendMessage(devp2p.ETH.MESSAGE_CODES.BLOCK_BODIES, [])
+        if (requests.headers.length === 0 && requests.msgTypes[code] >= 5) {
+          peer.disconnect(devp2p.RLPx.DISCONNECT_REASONS.USELESS_PEER)
+        } else {
+          eth.sendMessage(devp2p.ETH.MESSAGE_CODES.BLOCK_BODIES, [])
+        }
         break
 
       case devp2p.ETH.MESSAGE_CODES.BLOCK_BODIES:
@@ -196,14 +211,22 @@ rlpx.on('peer:added', (peer) => {
         break
 
       case devp2p.ETH.MESSAGE_CODES.GET_NODE_DATA:
-        eth.sendMessage(devp2p.ETH.MESSAGE_CODES.NODE_DATA, [])
+        if (requests.headers.length === 0 && requests.msgTypes[code] >= 5) {
+          peer.disconnect(devp2p.RLPx.DISCONNECT_REASONS.USELESS_PEER)
+        } else {
+          eth.sendMessage(devp2p.ETH.MESSAGE_CODES.NODE_DATA, [])
+        }
         break
 
       case devp2p.ETH.MESSAGE_CODES.NODE_DATA:
         break
 
       case devp2p.ETH.MESSAGE_CODES.GET_RECEIPTS:
-        eth.sendMessage(devp2p.ETH.MESSAGE_CODES.RECEIPTS, [])
+        if (requests.headers.length === 0 && requests.msgTypes[code] >= 5) {
+          peer.disconnect(devp2p.RLPx.DISCONNECT_REASONS.USELESS_PEER)
+        } else {
+          eth.sendMessage(devp2p.ETH.MESSAGE_CODES.RECEIPTS, [])
+        }
         break
 
       case devp2p.ETH.MESSAGE_CODES.RECEIPTS:
@@ -261,17 +284,19 @@ function onNewTx (tx, peer) {
   if (txCache.has(txHashHex)) return
 
   txCache.set(txHashHex, true)
-  console.log(`new tx: ${txHashHex} (from ${getPeerAddr(peer)})`)
+  console.log(`New tx: ${txHashHex} (from ${getPeerAddr(peer)})`)
 }
 
 const blocksCache = new LRUCache({ max: 100 })
 function onNewBlock (block, peer) {
   const blockHashHex = block.hash().toString('hex')
-  const blockNumber = block.header.number.toString('hex')
+  const blockNumber = devp2p._util.buffer2int(block.header.number)
   if (blocksCache.has(blockHashHex)) return
 
   blocksCache.set(blockHashHex, true)
-  console.log(`new block ${blockNumber}: ${blockHashHex} (from ${getPeerAddr(peer)})`)
+  console.log(`----------------------------------------------------------------------------------------------------------`)
+  console.log(`New block ${blockNumber}: ${blockHashHex} (from ${getPeerAddr(peer)})`)
+  console.log(`----------------------------------------------------------------------------------------------------------`)
   for (let tx of block.transactions) onNewTx(tx, peer)
 }
 
