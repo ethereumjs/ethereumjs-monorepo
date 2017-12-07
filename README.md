@@ -189,11 +189,54 @@ Events emitted:
 
 ## Ethereum Wire Protocol (ETH)
 
-Talk to peers and send/receive messages, see [./src/eth/](./src/eth/)
+Upper layer protocol for exchanging Ethereum network data like block headers or transactions with a node, see [./src/eth/](./src/eth/)
 
 ### Usage
 
-Send messages with ``sendMessage()``, send status info with ``sendStatus()``.
+Send the initial status message with ``sendStatus()``, then wait for the corresponding `status` message
+to arrive to start the communication.
+
+```
+eth.once('status', () => {
+  // Send an initial message
+  eth.sendMessage()
+})
+```
+
+Wait for follow-up messages to arrive, send your responses. 
+
+```
+eth.on('message', async (code, payload) => {
+  if (code === devp2p.ETH.MESSAGE_CODES.NEW_BLOCK_HASHES) {
+    // Do something with your new block hashes :-)
+  }
+})
+```
+
+See the ``peer-communication.js`` example for a more detailed use case.
+
+### API
+
+#### `ETH` (extends `EventEmitter`)
+Handles the different message types like `NEW_BLOCK_HASHES` or `GET_NODE_DATA` (see `MESSAGE_CODES`) for
+a complete list. Currently protocol versions `PV62` and `PV63` are supported.
+
+##### `new ETH(privateKey, options)`
+Normally not instantiated directly but created as a ``SubProtocol`` in the ``Peer`` object.
+- `version` - The protocol version for communicating, e.g. `63`.
+- `peer` - `Peer` object to communicate with.
+- `send` - Wrapped ``peer.sendMessage()`` function where the communication is routed to.
+
+#### `eth.sendStatus(status)`
+Send initial status message.
+- `status` - Status message to send, format ``{ networkId: CHAIN_ID, td: TOTAL_DIFFICULTY_BUFFER, bestHash: BEST_HASH_BUFFER, genesisHash: GENESIS_HASH_BUFFER }``.
+
+#### `eth.sendMessage(code, payload)`
+Send initial status message.
+- `code` - The message code, see `MESSAGE_CODES` for available message types.
+- `payload` - Payload as a list, will be rlp-encoded.
+
+### Events
 
 Events emitted:
 
