@@ -43,6 +43,9 @@ class ECIES {
     this._initMsg = null
     this._remoteInitMsg = null
 
+    this._gotEIP8Auth = false
+    this._gotEIP8Ack = false
+
     this._ingressAes = null
     this._egressAes = null
 
@@ -57,7 +60,7 @@ class ECIES {
     this._bodySize = null
   }
 
-  _encryptMessage (data) {
+  _encryptMessage (data, sharedMacData = null) {
     const privateKey = util.genPrivateKey()
     const x = ecdhX(this._remotePublicKey, privateKey)
     const key = concatKDF(x, 32)
@@ -71,13 +74,18 @@ class ECIES {
     const dataIV = Buffer.concat([ IV, encryptedData ])
 
     // create tag
-    const tag = crypto.createHmac('sha256', mkey).update(dataIV).digest()
+    if (!sharedMacData) {
+      sharedMacData = Buffer.from([])
+    }
+    const tag = crypto.createHmac('sha256', mkey).update(Buffer.concat([dataIV, sharedMacData])).digest()
 
     const publicKey = secp256k1.publicKeyCreate(privateKey, false)
     return Buffer.concat([ publicKey, dataIV, tag ])
   }
 
-  _decryptMessage (data) {
+  _decryptMessage (data, sharedMacData = null) {
+    util.assertEq(data.slice(0, 1), Buffer.from('04', 'hex'), 'wrong ecies header')
+
     const publicKey = data.slice(0, 65)
     const dataIV = data.slice(65, -32)
     const tag = data.slice(-32)
@@ -89,7 +97,10 @@ class ECIES {
     const mkey = crypto.createHash('sha256').update(key.slice(16, 32)).digest() // MAC key
 
     // check the tag
-    const _tag = crypto.createHmac('sha256', mkey).update(dataIV).digest()
+    if (!sharedMacData) {
+      sharedMacData = Buffer.from([])
+    }
+    const _tag = crypto.createHmac('sha256', mkey).update(Buffer.concat([dataIV, sharedMacData])).digest()
     util.assertEq(_tag, tag, 'should have valid tag')
 
     // decrypt data
@@ -119,7 +130,27 @@ class ECIES {
     this._egressMac.update(Buffer.concat([ util.xor(macSecret, this._remoteNonce), this._initMsg ]))
   }
 
-  createAuth () {
+  createAuthEIP8 () {
+    const x = ecdhX(this._remotePublicKey, this._privateKey)
+    const sig = secp256k1.sign(util.xor(x, this._nonce), this._ephemeralPrivateKey)
+    const data = [
+      Buffer.concat([sig.signature, Buffer.from([ sig.recovery ])]),
+      // util.keccak256(util.pk2id(this._ephemeralPublicKey)),
+      util.pk2id(this._publicKey),
+      this._nonce,
+      Buffer.from([ 0x04 ])
+    ]
+
+    const dataRLP = rlp.encode(data)
+    const pad = crypto.randomBytes(100 + Math.floor(Math.random() * 151)) // Random padding between 100, 250
+    const authMsg = Buffer.concat([dataRLP, pad])
+    const overheadLength = 113
+    const sharedMacData = util.int2buffer(authMsg.length + overheadLength)
+    this._initMsg = Buffer.concat([sharedMacData, this._encryptMessage(authMsg, sharedMacData)])
+    return this._initMsg
+  }
+
+  createAuthNonEIP8 () {
     const x = ecdhX(this._remotePublicKey, this._privateKey)
     const sig = secp256k1.sign(util.xor(x, this._nonce), this._ephemeralPrivateKey)
     const data = Buffer.concat([
@@ -135,28 +166,72 @@ class ECIES {
     return this._initMsg
   }
 
-  parseAuth (data) {
+  parseAuthPlain (data, sharedMacData = null) {
     this._remoteInitMsg = data
-    const decrypted = this._decryptMessage(data)
-    util.assertEq(decrypted.length, 194, 'invalid packet length')
+    const decrypted = this._decryptMessage(data, sharedMacData)
+
+    var signature = null
+    var recoveryId = null
+    var heid = null
+    var remotePublicKey = null
+    var nonce = null
+
+    if (!this._gotEIP8Auth) {
+      util.assertEq(decrypted.length, 194, 'invalid packet length')
+
+      signature = decrypted.slice(0, 64)
+      recoveryId = decrypted[64]
+      heid = decrypted.slice(65, 97) // 32 bytes
+      remotePublicKey = util.id2pk(decrypted.slice(97, 161))
+      nonce = decrypted.slice(161, 193)
+    } else {
+      const decoded = rlp.decode(decrypted)
+
+      signature = decoded[0].slice(0, 64)
+      recoveryId = decoded[0][64]
+      remotePublicKey = util.id2pk(decoded[1])
+      nonce = decoded[2]
+    }
 
     // parse packet
-    const signature = decrypted.slice(0, 64)
-    const recoveryId = decrypted[64]
-    const heid = decrypted.slice(65, 97) // 32 bytes
-    this._remotePublicKey = util.id2pk(decrypted.slice(97, 161))  // 64 bytes
-    this._remoteNonce = decrypted.slice(161, 193) // 32 bytes
-    util.assertEq(decrypted[193], 0, 'invalid postfix')
+    this._remotePublicKey = remotePublicKey  // 64 bytes
+    this._remoteNonce = nonce // 32 bytes
+    // util.assertEq(decrypted[193], 0, 'invalid postfix')
 
     const x = ecdhX(this._remotePublicKey, this._privateKey)
     this._remoteEphemeralPublicKey = secp256k1.recover(util.xor(x, this._remoteNonce), signature, recoveryId, false)
     this._ephemeralSharedSecret = ecdhX(this._remoteEphemeralPublicKey, this._ephemeralPrivateKey)
 
-    const _heid = util.keccak256(util.pk2id(this._remoteEphemeralPublicKey))
-    util.assertEq(_heid, heid, 'the hash of the ephemeral key should match')
+    if (heid !== null) {
+      var _heid = util.keccak256(util.pk2id(this._remoteEphemeralPublicKey))
+      util.assertEq(_heid, heid, 'the hash of the ephemeral key should match')
+    }
   }
 
-  createAck () {
+  parseAuthEIP8 (data) {
+    const size = util.buffer2int(data.slice(0, 2)) + 2
+    util.assertEq(data.length, size, 'message length different from specified size (EIP8)')
+    this.parseAuthPlain(data.slice(2), data.slice(0, 2))
+  }
+
+  createAckEIP8 () {
+    const data = [
+      util.pk2id(this._ephemeralPublicKey),
+      this._nonce,
+      Buffer.from([ 0x04 ])
+    ]
+
+    const dataRLP = rlp.encode(data)
+    const pad = crypto.randomBytes(100 + Math.floor(Math.random() * 151)) // Random padding between 100, 250
+    const ackMsg = Buffer.concat([dataRLP, pad])
+    const overheadLength = 113
+    const sharedMacData = util.int2buffer(ackMsg.length + overheadLength)
+    this._initMsg = Buffer.concat([sharedMacData, this._encryptMessage(ackMsg, sharedMacData)])
+    this._setupFrame(this._remoteInitMsg, true)
+    return this._initMsg
+  }
+
+  createAckOld () {
     const data = Buffer.concat([
       util.pk2id(this._ephemeralPublicKey),
       this._nonce,
@@ -168,17 +243,40 @@ class ECIES {
     return this._initMsg
   }
 
-  parseAck (data) {
-    const decrypted = this._decryptMessage(data)
-    util.assertEq(decrypted.length, 97, 'invalid packet length')
+  parseAckPlain (data, sharedMacData = null) {
+    const decrypted = this._decryptMessage(data, sharedMacData)
+
+    var remoteEphemeralPublicKey = null
+    var remoteNonce = null
+
+    if (!this._gotEIP8Ack) {
+      util.assertEq(decrypted.length, 97, 'invalid packet length')
+      util.assertEq(decrypted[96], 0, 'invalid postfix')
+
+      remoteEphemeralPublicKey = util.id2pk(decrypted.slice(0, 64))
+      remoteNonce = decrypted.slice(64, 96)
+    } else {
+      const decoded = rlp.decode(decrypted)
+
+      remoteEphemeralPublicKey = util.id2pk(decoded[0])
+      remoteNonce = decoded[1]
+    }
 
     // parse packet
-    this._remoteEphemeralPublicKey = util.id2pk(decrypted.slice(0, 64))
-    this._remoteNonce = decrypted.slice(64, 96)
-    util.assertEq(decrypted[96], 0, 'invalid postfix')
+    this._remoteEphemeralPublicKey = remoteEphemeralPublicKey
+    this._remoteNonce = remoteNonce
 
     this._ephemeralSharedSecret = ecdhX(this._remoteEphemeralPublicKey, this._ephemeralPrivateKey)
-    this._setupFrame(data, false)
+    if (!sharedMacData) {
+      sharedMacData = Buffer.from([])
+    }
+    this._setupFrame(Buffer.concat([sharedMacData, data]), false)
+  }
+
+  parseAckEIP8 (data) { // eslint-disable-line
+    const size = util.buffer2int(data.slice(0, 2)) + 2
+    util.assertEq(data.length, size, 'message length different from specified size (EIP8)')
+    this.parseAckPlain(data.slice(2), data.slice(0, 2))
   }
 
   createHeader (size) {

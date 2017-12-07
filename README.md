@@ -1,12 +1,13 @@
 # ethereumjs-devp2p
 
 [![NPM Package](https://img.shields.io/npm/v/ethereumjs-devp2p.svg?style=flat-square)](https://www.npmjs.org/package/ethereumjs-devp2p)
+[![Build Status](https://travis-ci.org/ethereumjs/ethereumjs-devp2p.svg?branch=master)](https://travis-ci.org/ethereumjs/ethereumjs-devp2p)
 
 [![js-standard-style](https://cdn.rawgit.com/feross/standard/master/badge.svg)](https://github.com/feross/standard)
 
 This library bundles different components for lower-level peer-to-peer connection and message exchange:
 
-- Distributed Peer Table (DPT)
+- Distributed Peer Table (DPT) / Node Discovery
 - RLPx Transport Protocol
 - Ethereum Wire Protocol (ETH)
 
@@ -55,7 +56,7 @@ Run an example with:
 node -r babel-register ./examples/peer-communication.js
 ```
 
-## Distributed Peer Table (DPT)
+## Distributed Peer Table (DPT) / Node Discovery
 
 Maintain/manage a list of peers, see [./src/dpt/](./src/dpt/), also 
 includes node discovery ([./src/dpt/server.js](./src/dpt/server.js))
@@ -79,6 +80,34 @@ Add some bootstrap nodes (or some custom nodes with ``dpt.addPeer()``):
 ```
 dpt.bootstrap(bootnode).catch((err) => console.error('Something went wrong!'))
 ```
+
+### API
+
+
+#### `DPT` (extends `EventEmitter`)
+Distributed Peer Table. Manages a Kademlia DHT K-bucket (``Kbucket``) for storing peer information 
+and a ``BanList`` for keeping a list of bad peers. ``Server`` implements the node discovery (``ping``,
+``pong``, ``findNeighbours``).
+
+##### `new DPT(privateKey, options)`
+Creates new DPT object
+- `privateKey` - Key for message encoding/signing.
+- `options.refreshInterval` - Interval in ms for refreshing (calling ``findNeighbours``) the peer list (default: ``60s``).
+- `options.createSocket` - A datagram (dgram) ``createSocket`` function, passed to ``Server`` (default: ``dgram.createSocket.bind(null, 'udp4')``).
+- `options.timeout` - Timeout in ms for server ``ping``, passed to ``Server`` (default: ``10s``).
+- `options.endpoint` - Endpoint information to send with the server ``ping``, passed to ``Server`` (default: ``{ address: '0.0.0.0', udpPort: null, tcpPort: null }``).
+
+#### `dpt.bootstrap(peer)` (``async``)
+Uses a peer as new bootstrap peer and calls ``findNeighbouts``.
+- `peer` - Peer to be added, format ``{ address: [ADDRESS], udpPort: [UDPPORT], tcpPort: [TCPPORT] }``.
+
+#### `dpt.addPeer(object)` (``async``)
+Adds a new peer.
+- `object` - Peer to be added, format ``{ address: [ADDRESS], udpPort: [UDPPORT], tcpPort: [TCPPORT] }``.
+
+For other utility functions like ``getPeer``, ``getPeers`` see [./src/dpt/index.js](./src/dpt/index.js).
+
+### Events
 
 Events emitted:
 
@@ -117,6 +146,30 @@ const rlpx = new devp2p.RLPx(PRIVATE_KEY, {
 })
 ```
 
+### API
+
+#### `RLPx` (extends `EventEmitter`)
+Manages the handshake (`ECIES`) and the handling of the peer communication (``Peer``).
+
+##### `new RLPx(privateKey, options)`
+Creates new RLPx object
+- `privateKey` - Key for message encoding/signing.
+- `options.timeout` - Peer `ping` timeout in ms (default: ``10s``).
+- `options.maxPeers` - Max number of peer connections (default: ``10``).
+- `options.clientId` - Client ID string (default example: ``ethereumjs-devp2p/v2.1.3/darwin-x64/nodejs``).
+- `options.remoteClientIdFilter` - Optional list of client ID filter strings (e.g. `['go1.5', 'quorum']`).
+- `options.capabilities` - Upper layer protocol capabilities, e.g. `[devp2p.ETH.eth63, devp2p.ETH.eth62]`.
+- `options.listenPort` - The listening port for the server or ``null`` for default.
+- `options.dpt` - `DPT` object for the peers to connect to (default: ``null``, no `DPT` peer management).
+
+#### `rlpx.connect(peer)` (``async``)
+Manually connect to peer without `DPT`.
+- `peer` - Peer to connect to, format ``{ id: PEER_ID, address: PEER_ADDRESS, port: PEER_PORT }``.
+
+For other connection/utility functions like ``listen``, ``getPeers`` see [./src/rlpx/index.js](./src/rlpx/index.js).
+
+### Events
+
 Events emitted:
 
 | Event         | Description                              |
@@ -136,11 +189,54 @@ Events emitted:
 
 ## Ethereum Wire Protocol (ETH)
 
-Talk to peers and send/receive messages, see [./src/eth/](./src/eth/)
+Upper layer protocol for exchanging Ethereum network data like block headers or transactions with a node, see [./src/eth/](./src/eth/)
 
 ### Usage
 
-Send messages with ``sendMessage()``, send status info with ``sendStatus()``.
+Send the initial status message with ``sendStatus()``, then wait for the corresponding `status` message
+to arrive to start the communication.
+
+```
+eth.once('status', () => {
+  // Send an initial message
+  eth.sendMessage()
+})
+```
+
+Wait for follow-up messages to arrive, send your responses. 
+
+```
+eth.on('message', async (code, payload) => {
+  if (code === devp2p.ETH.MESSAGE_CODES.NEW_BLOCK_HASHES) {
+    // Do something with your new block hashes :-)
+  }
+})
+```
+
+See the ``peer-communication.js`` example for a more detailed use case.
+
+### API
+
+#### `ETH` (extends `EventEmitter`)
+Handles the different message types like `NEW_BLOCK_HASHES` or `GET_NODE_DATA` (see `MESSAGE_CODES`) for
+a complete list. Currently protocol versions `PV62` and `PV63` are supported.
+
+##### `new ETH(privateKey, options)`
+Normally not instantiated directly but created as a ``SubProtocol`` in the ``Peer`` object.
+- `version` - The protocol version for communicating, e.g. `63`.
+- `peer` - `Peer` object to communicate with.
+- `send` - Wrapped ``peer.sendMessage()`` function where the communication is routed to.
+
+#### `eth.sendStatus(status)`
+Send initial status message.
+- `status` - Status message to send, format ``{ networkId: CHAIN_ID, td: TOTAL_DIFFICULTY_BUFFER, bestHash: BEST_HASH_BUFFER, genesisHash: GENESIS_HASH_BUFFER }``.
+
+#### `eth.sendMessage(code, payload)`
+Send initial status message.
+- `code` - The message code, see `MESSAGE_CODES` for available message types.
+- `payload` - Payload as a list, will be rlp-encoded.
+
+### Events
 
 Events emitted:
 

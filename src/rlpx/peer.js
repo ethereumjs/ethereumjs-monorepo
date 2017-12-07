@@ -1,5 +1,6 @@
 const { EventEmitter } = require('events')
 const rlp = require('rlp-encoding')
+const util = require('../util')
 const BufferList = require('bl')
 const ms = require('ms')
 const Buffer = require('safe-buffer').Buffer
@@ -30,13 +31,16 @@ class Peer extends EventEmitter {
     this._capabilities = options.capabilities
     this._port = options.port
     this._id = options.id
+    this._remoteClientIdFilter = options.remoteClientIdFilter
 
     // ECIES session
     this._remoteId = options.remoteId
+    this._EIP8 = options.EIP8 !== undefined ? options.EIP8 : true
     this._eciesSession = new ECIES(options.privateKey, this._id, this._remoteId)
 
     // Auth, Ack, Header, Body
     this._state = 'Auth'
+    this._weHello = null
     this._hello = null
     this._nextPacketSize = 307
 
@@ -57,8 +61,43 @@ class Peer extends EventEmitter {
       bl.append(data)
       while (bl.length >= this._nextPacketSize) {
         const bytesCount = this._nextPacketSize
+        const parseData = bl.slice(0, bytesCount)
         try {
-          this._parsePacket(bl.slice(0, bytesCount))
+          if (this._state === 'Auth') {
+            if (!this._eciesSession._gotEIP8Auth) {
+              try {
+                this._eciesSession.parseAuthPlain(parseData)
+              } catch (err) {
+                this._eciesSession._gotEIP8Auth = true
+                this._nextPacketSize = util.buffer2int(data.slice(0, 2)) + 2
+                break
+              }
+            } else {
+              this._eciesSession.parseAuthEIP8(parseData)
+            }
+            this._state = 'Header'
+            this._nextPacketSize = 32
+            process.nextTick(() => this._sendAck())
+          } else if (this._state === 'Ack') {
+            if (!this._eciesSession._gotEIP8Ack) {
+              try {
+                this._eciesSession.parseAckPlain(parseData)
+                debug(`Received ack (old format) from ${this._socket.remoteAddress}:${this._socket.remotePort}`)
+              } catch (err) {
+                this._eciesSession._gotEIP8Ack = true
+                this._nextPacketSize = util.buffer2int(data.slice(0, 2)) + 2
+                break
+              }
+            } else {
+              this._eciesSession.parseAckEIP8(parseData)
+              debug(`Received ack (EIP8) from ${this._socket.remoteAddress}:${this._socket.remotePort}`)
+            }
+            this._state = 'Header'
+            this._nextPacketSize = 32
+            process.nextTick(() => this._sendHello())
+          } else {
+            this._parsePacketContent(parseData)
+          }
         } catch (err) {
           this.emit('error', err)
         }
@@ -97,23 +136,14 @@ class Peer extends EventEmitter {
     SUBPROTOCOL_ERROR: 0x10
   }
 
-  _parsePacket (data) {
+  _parseSocketData (data) {
+
+  }
+
+  _parsePacketContent (data) {
     switch (this._state) {
-      case 'Auth':
-        this._eciesSession.parseAuth(data)
-        this._state = 'Header'
-        this._nextPacketSize = 32
-        process.nextTick(() => this._sendAck())
-        break
-
-      case 'Ack':
-        this._eciesSession.parseAck(data)
-        this._state = 'Header'
-        this._nextPacketSize = 32
-        process.nextTick(() => this._sendHello())
-        break
-
       case 'Header':
+        debug(`Received header ${this._socket.remoteAddress}:${this._socket.remotePort}`)
         const size = this._eciesSession.parseHeader(data)
         this._state = 'Body'
         this._nextPacketSize = size + 16
@@ -136,11 +166,14 @@ class Peer extends EventEmitter {
         }
 
         const obj = this._getProtocol(code)
-        debug(`Message code: ${code} - ${obj.offset} = ${code - obj.offset}`)
         if (obj === undefined) return this.disconnect(Peer.DISCONNECT_REASONS.PROTOCOL_ERROR)
 
+        const msgCode = code - obj.offset
+        const prefix = this.getMsgPrefix(msgCode)
+        debug(`Received ${prefix} (message code: ${code} - ${obj.offset} = ${msgCode}) ${this._socket.remoteAddress}:${this._socket.remotePort}`)
+
         try {
-          obj.protocol._handleMessage(code - obj.offset, body.slice(1))
+          obj.protocol._handleMessage(msgCode, body.slice(1))
         } catch (err) {
           this.disconnect(Peer.DISCONNECT_REASONS.SUBPROTOCOL_ERROR)
           this.emit('error', err)
@@ -177,6 +210,14 @@ class Peer extends EventEmitter {
           return this.disconnect(Peer.DISCONNECT_REASONS.INVALID_IDENTITY)
         }
 
+        if (this._remoteClientIdFilter) {
+          for (let filterStr of this._remoteClientIdFilter) {
+            if (this._hello.clientId.toLowerCase().includes(filterStr.toLowerCase())) {
+              return this.disconnect(Peer.DISCONNECT_REASONS.USELESS_PEER)
+            }
+          }
+        }
+
         const shared = {}
         for (let item of this._hello.capabilities) {
           for (let obj of this._capabilities) {
@@ -208,7 +249,9 @@ class Peer extends EventEmitter {
 
         this._connected = true
         this._pingIntervalId = setInterval(() => this._sendPing(), PING_INTERVAL)
-        this.emit('connect')
+        if (this._weHello) {
+          this.emit('connect')
+        }
         break
 
       case PREFIXES.DISCONNECT:
@@ -230,14 +273,24 @@ class Peer extends EventEmitter {
 
   _sendAuth () {
     if (this._closed) return
-    this._socket.write(this._eciesSession.createAuth())
+    debug(`Send auth (EIP8: ${this._EIP8}) to ${this._socket.remoteAddress}:${this._socket.remotePort}`)
+    if (this._EIP8) {
+      this._socket.write(this._eciesSession.createAuthEIP8())
+    } else {
+      this._socket.write(this._eciesSession.createAuthNonEIP8())
+    }
     this._state = 'Ack'
     this._nextPacketSize = 210
   }
 
   _sendAck () {
     if (this._closed) return
-    this._socket.write(this._eciesSession.createAck())
+    debug(`Send ack (EIP8: ${this._eciesSession._gotEIP8Auth}) to ${this._socket.remoteAddress}:${this._socket.remotePort}`)
+    if (this._eciesSession._gotEIP8Auth) {
+      this._socket.write(this._eciesSession.createAckEIP8())
+    } else {
+      this._socket.write(this._eciesSession.createAckOld())
+    }
     this._state = 'Header'
     this._nextPacketSize = 32
     this._sendHello()
@@ -252,6 +305,7 @@ class Peer extends EventEmitter {
   }
 
   _sendHello () {
+    debug(`Send HELLO to ${this._socket.remoteAddress}:${this._socket.remotePort}`)
     const payload = [
       int2buffer(BASE_PROTOCOL_VERSION),
       this._clientId,
@@ -260,10 +314,16 @@ class Peer extends EventEmitter {
       this._id
     ]
 
-    this._sendMessage(PREFIXES.HELLO, rlp.encode(payload))
+    if (!this._closed) {
+      this._sendMessage(PREFIXES.HELLO, rlp.encode(payload))
+      if (this._hello) {
+        this.emit('connect')
+      }
+    }
   }
 
   _sendPing () {
+    debug(`Send PING to ${this._socket.remoteAddress}:${this._socket.remotePort}`)
     const data = rlp.encode([])
     if (!this._sendMessage(PREFIXES.PING, data)) return
 
@@ -274,11 +334,13 @@ class Peer extends EventEmitter {
   }
 
   _sendPong () {
+    debug(`Send PONG to ${this._socket.remoteAddress}:${this._socket.remotePort}`)
     const data = rlp.encode([])
     this._sendMessage(PREFIXES.PONG, data)
   }
 
   _sendDisconnect (reason) {
+    debug(`Send DISCONNECT to ${this._socket.remoteAddress}:${this._socket.remotePort}`)
     const data = rlp.encode(reason)
     if (!this._sendMessage(PREFIXES.DISCONNECT, data)) return
 
@@ -299,6 +361,14 @@ class Peer extends EventEmitter {
 
   getProtocols () {
     return this._protocols.map((obj) => obj.protocol)
+  }
+
+  getMsgPrefix (code) {
+    return Object.keys(PREFIXES).find(key => PREFIXES[key] === code)
+  }
+
+  getDisconnectPrefix (code) {
+    return Object.keys(Peer.DISCONNECT_REASONS).find(key => Peer.DISCONNECT_REASONS[key] === code)
   }
 
   disconnect (reason = Peer.DISCONNECT_REASONS.DISCONNECT_REQUESTED) {

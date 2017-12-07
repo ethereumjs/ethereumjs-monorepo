@@ -1,4 +1,5 @@
 const net = require('net')
+const os = require('os')
 const secp256k1 = require('secp256k1')
 const { EventEmitter } = require('events')
 const ms = require('ms')
@@ -21,7 +22,8 @@ class RLPx extends EventEmitter {
     // options
     this._timeout = options.timeout || ms('10s')
     this._maxPeers = options.maxPeers || 10
-    this._clientId = Buffer.from(options.clientId || `Ethereum Node.js/${pVersion}`)
+    this._clientId = Buffer.from(options.clientId || `ethereumjs-devp2p/v${pVersion}/${os.platform()}-${os.arch()}/nodejs`)
+    this._remoteClientIdFilter = options.remoteClientIdFilter
     this._capabilities = options.capabilities
     this._listenPort = options.listenPort
 
@@ -144,6 +146,7 @@ class RLPx extends EventEmitter {
 
       timeout: this._timeout,
       clientId: this._clientId,
+      remoteClientIdFilter: this._remoteClientIdFilter,
       capabilities: this._capabilities,
       port: this._listenPort
     })
@@ -157,8 +160,14 @@ class RLPx extends EventEmitter {
     }
 
     peer.once('connect', () => {
-      debug(`handshake with ${socket.remoteAddress}:${socket.remotePort} was successful`)
-
+      var msg = `handshake with ${socket.remoteAddress}:${socket.remotePort} was successful`
+      if (peer._eciesSession._gotEIP8Auth === true) {
+        msg += ` (peer eip8 auth)`
+      }
+      if (peer._eciesSession._gotEIP8Ack === true) {
+        msg += ` (peer eip8 ack)`
+      }
+      debug(msg)
       if (peer.getId().equals(this._id)) {
         return peer.disconnect(Peer.DISCONNECT_REASONS.SAME_IDENTITY)
       }

@@ -70,9 +70,13 @@ class Server extends EventEmitter {
       peer,
       deferred,
       timeoutId: setTimeout(() => {
-        debug(`ping timeout: ${peer.address}:${peer.udpPort} ${peer.id && peer.id.toString('hex')}`)
-        this._requests.delete(rkey)
-        deferred.reject(new Error(`Timeout error: ping ${peer.address}:${peer.udpPort}`))
+        if (this._requests.get(rkey) !== undefined) {
+          debug(`ping timeout: ${peer.address}:${peer.udpPort} ${peer.id && peer.id.toString('hex')}`)
+          this._requests.delete(rkey)
+          deferred.reject(new Error(`Timeout error: ping ${peer.address}:${peer.udpPort}`))
+        } else {
+          return deferred.promise
+        }
       }, this._timeout)
     })
     this._requestsCache.set(rckey, deferred.promise)
