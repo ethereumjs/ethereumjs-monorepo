@@ -1,4 +1,5 @@
 const net = require('net')
+const os = require('os')
 const secp256k1 = require('secp256k1')
 const { EventEmitter } = require('events')
 const ms = require('ms')
@@ -21,7 +22,7 @@ class RLPx extends EventEmitter {
     // options
     this._timeout = options.timeout || ms('10s')
     this._maxPeers = options.maxPeers || 10
-    this._clientId = Buffer.from(options.clientId || `Ethereum Node.js/${pVersion}`)
+    this._clientId = Buffer.from(options.clientId || `ethereumjs-devp2p/v${pVersion}/${os.platform()}-${os.arch()}/nodejs`)
     this._remoteClientIdFilter = options.remoteClientIdFilter
     this._capabilities = options.capabilities
     this._listenPort = options.listenPort
