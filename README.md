@@ -84,7 +84,7 @@ dpt.bootstrap(bootnode).catch((err) => console.error('Something went wrong!'))
 ### API
 
 
-#### `DPT`
+#### `DPT` (extends `EventEmitter`)
 Distributed Peer Table. Manages a Kademlia DHT K-bucket (``Kbucket``) for storing peer information 
 and a ``BanList`` for keeping a list of bad peers. ``Server`` implements the node discovery (``ping``,
 ``pong``, ``findNeighbours``).
@@ -145,6 +145,30 @@ const rlpx = new devp2p.RLPx(PRIVATE_KEY, {
   listenPort: null
 })
 ```
+
+### API
+
+#### `RLPx` (extends `EventEmitter`)
+Manages the handshake (`ECIES`) and the handling of the peer communication (``Peer``).
+
+##### `new RLPx(privateKey, options)`
+Creates new RLPx object
+- `privateKey` - Key for message encoding/signing.
+- `options.timeout` - Peer `ping` timeout in ms (default: ``10s``).
+- `options.maxPeers` - Max number of peer connections (default: ``10``).
+- `options.clientId` - Client ID string (default example: ``ethereumjs-devp2p/v2.1.3/darwin-x64/nodejs``).
+- `options.remoteClientIdFilter` - Optional list of client ID filter strings (e.g. `['go1.5', 'quorum']`).
+- `options.capabilities` - Upper layer protocol capabilities, e.g. `[devp2p.ETH.eth63, devp2p.ETH.eth62]`.
+- `options.listenPort` - The listening port for the server or ``null`` for default.
+- `options.dpt` - `DPT` object for the peers to connect to (default: ``null``, no `DPT` peer management).
+
+#### `rlpx.connect(peer)` (``async``)
+Manually connect to peer without `DPT`.
+- `peer` - Peer to connect to, format ``{ id: PEER_ID, address: PEER_ADDRESS, port: PEER_PORT }``.
+
+For other connection/utility functions like ``listen``, ``getPeers`` see [./src/rlpx/index.js](./src/rlpx/index.js).
+
+### Events
 
 Events emitted:
 
