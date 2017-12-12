@@ -43,43 +43,50 @@ Creates new Blockchain object
 
 ### `BlockChain` methods
 
-#### `blockchain.putBlock(block, [callback])`
+#### `blockchain.putBlock(block, callback)`
 Adds a block to the blockchain.
 - `block` - the block to be added to the blockchain
 - `callback` - the callback. It is given two parameters `err` and the saved `block`
 
 --------------------------------------------------------
 
-#### `blockchain.getBlock(blockTag, [callback])`
+#### `blockchain.getBlock(blockTag, callback)`
 Gets a block by its blockTag.
 - `blockTag`  - the block's hash or number
-- `callback` - the callback. It is given two parameters `err` and the found `block` if any. 
+- `callback` - the callback. It is given two parameters `err` and the found `block` (an instance of https://github.com/ethereumjs/ethereumjs-block) if any. 
 
 --------------------------------------------------------
 
-#### `blockchain.getBlockInfo(hash, cb)`
+#### `blockchain.getDetails(hash, callback)`
 Retrieves meta infromation about the block and passed it to the `callback`
 - `hash` - the hash of the block as a `Buffer` or a hex `String`
-- `cb` - the callback which is passed an `Object` containing two propties `parent`, the hash of the this block's parents and `children` an `Array` of hashes of children blocks.
+- `callback` - the callback which is passed an `Object` containing the following properties:
+- * `parent` - the hash of the parent block
+- * `td` - the total difficulty of the block
+- * `number` - the block number
+- * `child` - the block's children
+- * `genesis` - boolean (true if genesis block, false if not)
+- * `inChain` - TODO
+- * `staleChildren` - TODO
 
 --------------------------------------------------------
 
-#### `blockchain.getBlockHashes(parentHash, count, cb)`
+#### `blockchain.getBlockHashes(parentHash, count, callback)`
 Gets a segment of the blockchain starting at the parent hash and contuning for `count ` blocks returning an array of block hashes orders from oldest to youngest.
 - `parentHash` - the block to start from. Given as a `Buffer` or a hex `String`
 - `count` - a `Number` specifing how many block hashes to return
-- `cb` - the callback which is give an array of block hashes
+- `callback` - the callback which is give an array of block hashes
 
 --------------------------------------------------------
 
 
-#### `blockchain.getBlockChain(startingHashes, count, cb)`
+#### `blockchain.getBlockChain(startingHashes, count, callback)`
 gets a section of the blockchain in a form of an array starting at the parent hash, up `count` blocks
 - `startingHashes` - an array of hashes or a single hash to start returning the chain from. The first hash in the array that is found in the blockchain will be used. 
 - `count` - the max number of blocks to return
 - `callback` - the callback. It is given two parameters `err` and `blockchain`. `err` is any errors. If none of the starting hashes were found `err` will be `notFound`. `blockchain` is an array of blocks.
 
-#### `blockchain.selectNeededHashes(hashes, cb)`
+#### `blockchain.selectNeededHashes(hashes, callback)`
 Given an ordered array, returns to the callback an array of hashes that are not in the blockchain yet.
 - `hashes` - an `Array` hashes
-- `cb` - the callback
+- `callback` - the callback
