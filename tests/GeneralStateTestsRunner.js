@@ -79,6 +79,12 @@ function runTestCase (options, testData, t, cb) {
 
             console.log(JSON.stringify(opTrace))
           })
+          vm.on('afterTx', function (results) {
+            let stateRoot = {
+              'stateRoot': results.vm.runState.stateManager.trie.root.toString('hex')
+            }
+            console.log(JSON.stringify(stateRoot))
+          })
         }
         vm.runTx({
           tx: tx,
