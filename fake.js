@@ -53,4 +53,20 @@ module.exports = class FakeTransaction extends Transaction {
       this.from = data.from
     }
   }
+
+  /**
+   * Computes a sha3-256 hash of the serialized tx, using the sender address to generate a fake signature.
+   * @param {Boolean} [includeSignature=true] whether or not to inculde the signature
+   * @return {Buffer}
+   */
+  hash (includeSignature) {
+    if (includeSignature && this._from) {
+      // include a fake signature using the from address as a private key
+      let fakeKey = Buffer.concat([this._from, this._from.slice(0, 12)])
+      this.sign(fakeKey)
+    }
+
+    return super.hash(includeSignature)
+  }
 }
+
