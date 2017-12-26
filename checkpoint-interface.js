@@ -93,7 +93,7 @@ function _enterCpMode () {
   this._scratch = levelup('', {
     db: memdown
   })
-  this._getDBs.unshift(this._scratch)
+  this._getDBs = [this._scratch].concat(this._getDBs)
   this.__putDBs = this._putDBs
   this._putDBs = [this._scratch]
   this._putRaw = this.putRaw
@@ -105,7 +105,7 @@ function _exitCpMode (commitState, cb) {
   var self = this
   var scratch = this._scratch
   this._scratch = null
-  this._getDBs.shift()
+  this._getDBs = this._getDBs.slice(1)
   this._putDBs = this.__putDBs
   this.putRaw = this._putRaw
 
