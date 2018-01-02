@@ -10,7 +10,9 @@
     "rlpx",
     "eth",
     "eth62",
-    "eth63"
+    "eth63",
+    "les",
+    "les2"
   ],
   "homepage": "https://github.com/fanatid/ethereumjs-devp2p",
   "bugs": {

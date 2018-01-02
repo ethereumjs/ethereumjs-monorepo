@@ -2,10 +2,10 @@ const { EventEmitter } = require('events')
 const rlp = require('rlp-encoding')
 const ms = require('ms')
 const Buffer = require('safe-buffer').Buffer
-const createDebugLogger = require('debug')
 const { int2buffer, buffer2int, assertEq } = require('../util')
 const Peer = require('../rlpx/peer')
 
+const createDebugLogger = require('debug')
 const debug = createDebugLogger('devp2p:eth')
 
 const MESSAGE_CODES = {

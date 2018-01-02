@@ -10,6 +10,7 @@ This library bundles different components for lower-level peer-to-peer connectio
 - Distributed Peer Table (DPT) / Node Discovery
 - RLPx Transport Protocol
 - Ethereum Wire Protocol (ETH)
+- Light Ethereum Subprotocol (LES/2)
 
 The library is based on [ethereumjs/node-devp2p](https://github.com/ethereumjs/node-devp2p) as well
 as other sub-libraries (``node-*`` named) (all outdated).
@@ -189,7 +190,7 @@ Events emitted:
 
 ## Ethereum Wire Protocol (ETH)
 
-Upper layer protocol for exchanging Ethereum network data like block headers or transactions with a node, see [./src/eth/](./src/eth/)
+Upper layer protocol for exchanging Ethereum network data like block headers or transactions with a node, see [./src/eth/](./src/eth/).
 
 ### Usage
 
@@ -249,6 +250,25 @@ Events emitted:
 
 - [Ethereum wire protocol](https://github.com/ethereum/wiki/wiki/Ethereum-Wire-Protocol)
 
+## Light Ethereum Subprotocol (LES)
+
+Upper layer protocol used by light clients, see [./src/les/](./src/les/).
+
+### Usage
+
+TODO
+
+### API
+
+TODO
+
+### Events
+
+TODO
+
+### Reference
+
+- [Light client protocol](https://github.com/ethereum/wiki/wiki/Light-client-protocol)
 
 ## Tests
 
