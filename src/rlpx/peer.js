@@ -342,7 +342,7 @@ class Peer extends EventEmitter {
   }
 
   _sendDisconnect (reason) {
-    debug(`Send DISCONNECT to ${this._socket.remoteAddress}:${this._socket.remotePort}`)
+    debug(`Send DISCONNECT to ${this._socket.remoteAddress}:${this._socket.remotePort} (reason: ${this.getDisconnectPrefix(reason)})`)
     const data = rlp.encode(reason)
     if (!this._sendMessage(PREFIXES.DISCONNECT, data)) return
 

@@ -256,15 +256,58 @@ Upper layer protocol used by light clients, see [./src/les/](./src/les/).
 
 ### Usage
 
-TODO
+Send the initial status message with ``sendStatus()``, then wait for the corresponding `status` message
+to arrive to start the communication.
+
+```
+les.once('status', () => {
+  // Send an initial message
+  les.sendMessage()
+})
+```
+
+Wait for follow-up messages to arrive, send your responses. 
+
+```
+les.on('message', async (code, payload) => {
+  if (code === devp2p.LES.MESSAGE_CODES.BLOCK_HEADERS) {
+    // Do something with your new block headers :-)
+  }
+})
+```
+
+See the ``peer-communication-les.js`` example for a more detailed use case.
 
 ### API
 
-TODO
+#### `LES` (extends `EventEmitter`)
+Handles the different message types like `BLOCK_HEADERS` or `GET_PROOFS_V2` (see `MESSAGE_CODES`) for
+a complete list. Currently protocol version ``LES/2`` running in client-mode is supported.
+
+##### `new LES(privateKey, options)`
+Normally not instantiated directly but created as a ``SubProtocol`` in the ``Peer`` object.
+- `version` - The protocol version for communicating, e.g. `2`.
+- `peer` - `Peer` object to communicate with.
+- `send` - Wrapped ``peer.sendMessage()`` function where the communication is routed to.
+
+#### `les.sendStatus(status)`
+Send initial status message.
+- `status` - Status message to send, format ``{ networkId: CHAIN_ID, headTd: TOTAL_DIFFICULTY_BUFFER, headHash: HEAD_HASH_BUFFER, headNum: HEAD_NUM_BUFFER, genesisHash: GENESIS_HASH_BUFFER }``.
+
+#### `les.sendMessage(code, reqId, payload)`
+Send initial status message.
+- `code` - The message code, see `MESSAGE_CODES` for available message types.
+- `reqId` - Request ID, will be echoed back on response.
+- `payload` - Payload as a list, will be rlp-encoded.
 
 ### Events
 
-TODO
+Events emitted:
+
+| Event         | Description                              |
+| ------------- |:----------------------------------------:|
+| message       | Message received                         |
+| status        | Status info received                     |
 
 ### Reference
 

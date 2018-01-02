@@ -84,7 +84,7 @@ class ECIES {
   }
 
   _decryptMessage (data, sharedMacData = null) {
-    util.assertEq(data.slice(0, 1), Buffer.from('04', 'hex'), 'wrong ecies header')
+    util.assertEq(data.slice(0, 1), Buffer.from('04', 'hex'), 'wrong ecies header (possible cause: EIP8 upgrade)')
 
     const publicKey = data.slice(0, 65)
     const dataIV = data.slice(65, -32)
