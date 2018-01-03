@@ -10,6 +10,25 @@ describe('zeros function', function () {
   })
 })
 
+describe('zero address', function () {
+  it('should generate a zero address', function () {
+    var zeroAddress = ethUtils.zeroAddress()
+    assert.equal(zeroAddress, '0x0000000000000000000000000000000000000000')
+  })
+})
+
+describe('is zero address', function () {
+  it('should return true when a zero address is passed', function () {
+    var isZeroAddress = ethUtils.isZeroAddress('0x0000000000000000000000000000000000000000')
+    assert.equal(isZeroAddress, true)
+  })
+
+  it('should return false when the address is not equal to zero', function () {
+    var nonZeroAddress = '0x2f015c60e0be116b1f0cd534704db9c92118fb6a'
+    assert.equal(ethUtils.isZeroAddress(nonZeroAddress), false)
+  })
+})
+
 describe('sha3', function () {
   it('should produce a sha3', function () {
     var msg = '0x3c9229289a6125f7fdf1885a77bb12c37a8d3b4962d936f7e3084dece32a3ca1'
