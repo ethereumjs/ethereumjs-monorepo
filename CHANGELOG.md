@@ -6,6 +6,17 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 
+## [5.1.3] - 2018-01-03
+- ``ES6`` syntax updates
+- Dropped Node ``5`` support
+- Moved babel to dev dependencies, switched to ``env`` preset
+- Usage of ``safe-buffer`` instead of Node ``Buffer``
+- Do not allow capital ``0X`` as valid address in ``isValidAddress()``
+- New methods ``zeroAddress()`` and ``isZeroAddress()``
+- Updated dependencies
+
+[5.1.3]: https://github.com/ethereumjs/ethereumjs-util/compare/v5.1.2...v5.1.3
+
 ## [5.1.2] - 2017-05-31
 - Add browserify for ``ES2015`` compatibility
 - Fix hex validation
