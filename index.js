@@ -84,6 +84,17 @@ exports.zeros = function (bytes) {
 }
 
 /**
+  * Returns a zero address
+  * @method zeroAddress
+  * @return {String}
+  */
+exports.zeroAddress = function () {
+  const addressLength = 20
+  const zeroAddress = exports.zeros(addressLength)
+  return exports.bufferToHex(zeroAddress)
+}
+
+/**
  * Left Pads an `Array` or `Buffer` with leading zeros till it has `length` bytes.
  * Or it truncates the beginning if it exceeds.
  * @method lsetLength
@@ -93,7 +104,7 @@ exports.zeros = function (bytes) {
  * @return {Buffer|Array}
  */
 exports.setLengthLeft = exports.setLength = function (msg, length, right) {
-  var buf = exports.zeros(length)
+  const buf = exports.zeros(length)
   msg = exports.toBuffer(msg)
   if (right) {
     if (msg.length < length) {
@@ -128,7 +139,7 @@ exports.setLengthRight = function (msg, length) {
  */
 exports.unpad = exports.stripZeros = function (a) {
   a = exports.stripHexPrefix(a)
-  var first = a[0]
+  let first = a[0]
   while (a.length > 0 && first.toString() === '0') {
     a = a.slice(1)
     first = a[0]
@@ -232,7 +243,7 @@ exports.sha256 = function (a) {
  */
 exports.ripemd160 = function (a, padded) {
   a = exports.toBuffer(a)
-  var hash = createHash('rmd160').update(a).digest()
+  const hash = createHash('rmd160').update(a).digest()
   if (padded === true) {
     return exports.setLength(hash, 32)
   } else {
@@ -300,7 +311,7 @@ exports.pubToAddress = exports.publicToAddress = function (pubKey, sanitize) {
  * @param {Buffer} privateKey A private key must be 256 bits wide
  * @return {Buffer}
  */
-var privateToPublic = exports.privateToPublic = function (privateKey) {
+const privateToPublic = exports.privateToPublic = function (privateKey) {
   privateKey = exports.toBuffer(privateKey)
   // skip the type flag and use the X, Y points
   return secp256k1.publicKeyCreate(privateKey, false).slice(1)
@@ -326,9 +337,9 @@ exports.importPublic = function (publicKey) {
  * @return {Object}
  */
 exports.ecsign = function (msgHash, privateKey) {
-  var sig = secp256k1.sign(msgHash, privateKey)
+  const sig = secp256k1.sign(msgHash, privateKey)
 
-  var ret = {}
+  const ret = {}
   ret.r = sig.signature.slice(0, 32)
   ret.s = sig.signature.slice(32, 64)
   ret.v = sig.recovery + 27
@@ -344,7 +355,7 @@ exports.ecsign = function (msgHash, privateKey) {
  * @returns {Buffer} hash
  */
 exports.hashPersonalMessage = function (message) {
-  var prefix = exports.toBuffer('\u0019Ethereum Signed Message:\n' + message.length.toString())
+  const prefix = exports.toBuffer('\u0019Ethereum Signed Message:\n' + message.length.toString())
   return exports.sha3(Buffer.concat([prefix, message]))
 }
 
@@ -357,12 +368,12 @@ exports.hashPersonalMessage = function (message) {
  * @return {Buffer} publicKey
  */
 exports.ecrecover = function (msgHash, v, r, s) {
-  var signature = Buffer.concat([exports.setLength(r, 32), exports.setLength(s, 32)], 64)
-  var recovery = v - 27
+  const signature = Buffer.concat([exports.setLength(r, 32), exports.setLength(s, 32)], 64)
+  const recovery = v - 27
   if (recovery !== 0 && recovery !== 1) {
     throw new Error('Invalid signature v value')
   }
-  var senderPubKey = secp256k1.recover(msgHash, signature, recovery)
+  const senderPubKey = secp256k1.recover(msgHash, signature, recovery)
   return secp256k1.publicKeyConvert(senderPubKey, false).slice(1)
 }
 
@@ -402,7 +413,7 @@ exports.fromRpcSig = function (sig) {
     throw new Error('Invalid signature length')
   }
 
-  var v = sig[64]
+  let v = sig[64]
   // support both versions of `eth_sign` responses
   if (v < 27) {
     v += 27
@@ -430,7 +441,18 @@ exports.privateToAddress = function (privateKey) {
  * @return {Boolean}
  */
 exports.isValidAddress = function (address) {
-  return /^0x[0-9a-fA-F]{40}$/i.test(address)
+  return /^0x[0-9a-fA-F]{40}$/.test(address)
+}
+
+/**
+  * Checks if a given address is a zero address
+  * @method isZeroAddress
+  * @param {String} address
+  * @return {Boolean}
+  */
+exports.isZeroAddress = function (address) {
+  const zeroAddress = exports.zeroAddress()
+  return zeroAddress === exports.addHexPrefix(address)
 }
 
 /**
@@ -440,10 +462,10 @@ exports.isValidAddress = function (address) {
  */
 exports.toChecksumAddress = function (address) {
   address = exports.stripHexPrefix(address).toLowerCase()
-  var hash = exports.sha3(address).toString('hex')
-  var ret = '0x'
+  const hash = exports.sha3(address).toString('hex')
+  let ret = '0x'
 
-  for (var i = 0; i < address.length; i++) {
+  for (let i = 0; i < address.length; i++) {
     if (parseInt(hash[i], 16) >= 8) {
       ret += address[i].toUpperCase()
     } else {
@@ -491,7 +513,7 @@ exports.generateAddress = function (from, nonce) {
  * @return {Boolean}
  */
 exports.isPrecompiled = function (address) {
-  var a = exports.unpad(address)
+  const a = exports.unpad(address)
   return a.length === 1 && a[0] > 0 && a[0] < 5
 }
 
@@ -553,8 +575,8 @@ exports.baToJSON = function (ba) {
   if (Buffer.isBuffer(ba)) {
     return '0x' + ba.toString('hex')
   } else if (ba instanceof Array) {
-    var array = []
-    for (var i = 0; i < ba.length; i++) {
+    const array = []
+    for (let i = 0; i < ba.length; i++) {
       array.push(exports.baToJSON(ba[i]))
     }
     return array
@@ -578,8 +600,8 @@ exports.defineProperties = function (self, fields, data) {
   // attach the `toJSON`
   self.toJSON = function (label) {
     if (label) {
-      var obj = {}
-      self._fields.forEach(function (field) {
+      const obj = {}
+      self._fields.forEach((field) => {
         obj[field] = '0x' + self[field].toString('hex')
       })
       return obj
@@ -591,7 +613,7 @@ exports.defineProperties = function (self, fields, data) {
     return rlp.encode(self.raw)
   }
 
-  fields.forEach(function (field, i) {
+  fields.forEach((field, i) => {
     self._fields.push(field.name)
     function getter () {
       return self.raw[i]
@@ -651,12 +673,12 @@ exports.defineProperties = function (self, fields, data) {
       }
 
       // make sure all the items are buffers
-      data.forEach(function (d, i) {
+      data.forEach((d, i) => {
         self[self._fields[i]] = exports.toBuffer(d)
       })
     } else if (typeof data === 'object') {
       const keys = Object.keys(data)
-      fields.forEach(function (field) {
+      fields.forEach((field) => {
         if (keys.indexOf(field.name) !== -1) self[field.name] = data[field.name]
         if (keys.indexOf(field.alias) !== -1) self[field.alias] = data[field.alias]
       })
