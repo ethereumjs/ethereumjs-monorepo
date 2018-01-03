@@ -11,7 +11,7 @@
     "test": "npm run test:node && npm run test:browser",
     "test:browser": "karma start karma.conf.js",
     "test:node": "istanbul test mocha -- --reporter spec",
-    "build:docs": "documentation --github  -f md ./index.js > ./docs/index.md && contributor"
+    "build:docs": "documentation build ./index.js --github --sort-order='alpha' -f md > ./docs/index.md"
   },
   "browserify": {
     "transform": [
