@@ -7,21 +7,62 @@ const Transaction = require('ethereumjs-tx')
 const Block = require('ethereumjs-block')
 
 exports.dumpState = function (state, cb) {
-  var rs = state.createReadStream()
-  var statedump = {}
+  function readAccounts (state) {
+    return new Promise((resolve, reject) => {
+      let accounts = []
+      var rs = state.createReadStream()
+      rs.on('data', function (data) {
+        let account = new Account(data.value)
+        account.address = data.key
+        accounts.push(account)
+      })
 
-  rs.on('data', function (data) {
-    var account = new Account(data.value)
-    statedump[data.key.toString('hex')] = {
-      balance: new BN(account.balance).toString(),
-      nonce: new BN(account.nonce).toString(),
-      stateRoot: account.stateRoot.toString('hex')
-    }
-  })
+      rs.on('end', function () {
+        resolve(accounts)
+      })
+    })
+  }
 
-  rs.on('end', function () {
-    console.log(statedump)
-    cb()
+  function readStorage (state, account) {
+    return new Promise((resolve, reject) => {
+      let storage = {}
+      let storageTrie = state.copy()
+      storageTrie.root = account.stateRoot
+      let storageRS = storageTrie.createReadStream()
+
+      storageRS.on('data', function (data) {
+        storage[data.key.toString('hex')] = data.value.toString('hex')
+      })
+
+      storageRS.on('end', function () {
+        resolve(storage)
+      })
+    })
+  }
+
+  readAccounts(state).then(function (accounts) {
+    async.mapSeries(accounts, function (account, cb) {
+      readStorage(state, account).then((storage) => {
+        account.storage = storage
+        cb(null, account)
+      })
+    },
+    function (err, results) {
+      if (err) {
+        cb(err, null)
+      }
+      for (let i = 0; i < results.length; i++) {
+        console.log('SHA3\'d address: ' + results[i].address.toString('hex'))
+        console.log('\tstate root: ' + results[i].stateRoot.toString('hex'))
+        console.log('\tstorage: ')
+        for (let storageKey in results[i].storage) {
+          console.log('\t\t' + storageKey + ': ' + results[i].storage[storageKey])
+        }
+        console.log('\tnonce: ' + (new BN(results[i].nonce)).toString())
+        console.log('\tbalance: ' + (new BN(results[i].balance)).toString())
+      }
+      return cb()
+    })
   })
 }
 
