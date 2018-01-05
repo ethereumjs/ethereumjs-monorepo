@@ -436,8 +436,10 @@ describe('toBuffer', function () {
     assert.deepEqual(ethUtils.toBuffer(null), Buffer.allocUnsafe(0))
     // undefined
     assert.deepEqual(ethUtils.toBuffer(), Buffer.allocUnsafe(0))
-    // 'toArray'
+    // 'toBN'
     assert.deepEqual(ethUtils.toBuffer(new BN(1)), Buffer.from([1]))
+    // 'toArray'
+    assert.deepEqual(ethUtils.toBuffer({ toArray: function () { return [ 1 ] } }), Buffer.from([1]))
   })
   it('should fail', function () {
     assert.throws(function () {

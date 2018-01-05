@@ -164,6 +164,8 @@ exports.toBuffer = function (v) {
       v = exports.intToBuffer(v)
     } else if (v === null || v === undefined) {
       v = Buffer.allocUnsafe(0)
+    } else if (BN.isBN(v)) {
+      v = v.toArrayLike(Buffer)
     } else if (v.toArray) {
       // converts a BN to a Buffer
       v = Buffer.from(v.toArray())
