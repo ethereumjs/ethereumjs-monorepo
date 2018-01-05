@@ -35,7 +35,7 @@
     "semaphore": "^1.0.3"
   },
   "devDependencies": {
-    "coveralls": "^2.11.4",
+    "coveralls": "^3.0.0",
     "istanbul": "^0.4.2",
     "standard": "^10.0.0-beta.0",
     "tape": "^4.2.1"
