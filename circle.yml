@@ -6,7 +6,5 @@ dependencies:
     - "npm rebuild"
 test:
   override:
-# testVM disabled.
-#   - case $CIRCLE_NODE_INDEX in 0) npm run lint ;; 1) npm run testVM ;; 2) npm run testState ;; 3) npm run testBlockchain ;; esac:
-    - case $CIRCLE_NODE_INDEX in 0) npm run testState ;; esac:
+    - case $CIRCLE_NODE_INDEX in 0) npm run lint ;; 1) npm run testState ;; 2) npm run testBlockchainBlockGasLimit ;; 3) npm run testBlockchainTotalDifficulty ;; esac:
         parallel: true
