@@ -1,6 +1,6 @@
 # SYNOPSIS 
 [![NPM Package](https://img.shields.io/npm/v/ethereumjs-tx.svg?style=flat-square)](https://www.npmjs.org/package/ethereumjs-tx)
-[![Build Status](https://img.shields.io/travis/ethereumjs/ethereumjs-tx.svg?branch=master&style=flat-square)](https://travis-ci.org/ethereumjs/ethereumjs-tx)
+[![Build Status](https://travis-ci.org/ethereumjs/ethereumjs-tx.svg?branch=master)](https://travis-ci.org/ethereumjs/ethereumjs-tx)
 [![Coverage Status](https://img.shields.io/coveralls/ethereumjs/ethereumjs-tx.svg?style=flat-square)](https://coveralls.io/r/ethereumjs/ethereumjs-tx)
 [![Gitter](https://img.shields.io/gitter/room/ethereum/ethereumjs-lib.svg?style=flat-square)](https://gitter.im/ethereum/ethereumjs-lib) or #ethereumjs on freenode  
 
