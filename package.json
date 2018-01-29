@@ -2,15 +2,19 @@
   "name": "ethereumjs-util",
   "version": "5.1.3",
   "description": "a collection of utility functions for Ethereum",
-  "main": "index.js",
+  "main": "dist/index.js",
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "coverage": "istanbul cover _mocha",
     "coveralls": "npm run coverage && coveralls <coverage/lcov.info",
     "lint": "standard",
-    "prepublish": "npm run lint && npm run test",
+    "prepublishOnly": "npm run lint && npm run test && npm run build:dist",
     "test": "npm run test:node && npm run test:browser",
     "test:browser": "karma start karma.conf.js",
     "test:node": "istanbul test mocha -- --reporter spec",
+    "build:dist": "babel index.js --source-root ./ -d ./dist",
     "build:docs": "documentation build ./index.js --github --sort-order='alpha' -f md > ./docs/index.md"
   },
   "browserify": {
@@ -120,6 +124,7 @@
     "secp256k1": "^3.0.1"
   },
   "devDependencies": {
+    "babel-cli": "^6.26.0",
     "babel-preset-env": "^1.6.1",
     "babelify": "^8.0.0",
     "browserify": "^14.0.0",
@@ -141,6 +146,9 @@
     "globals": [
       "describe",
       "it"
+    ],
+    "ignore": [
+      "dist/**"
     ]
   }
 }
