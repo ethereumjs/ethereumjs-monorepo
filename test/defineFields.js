@@ -1,5 +1,5 @@
 var assert = require('assert')
-var ethUtil = require('../index.js')
+var ethUtil = require('../dist/index.js')
 
 describe('define', function () {
   const fields = [{

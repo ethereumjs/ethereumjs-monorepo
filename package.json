@@ -7,13 +7,13 @@
     "dist"
   ],
   "scripts": {
-    "coverage": "istanbul cover _mocha",
+    "coverage": "npm run build:dist && istanbul cover _mocha",
     "coveralls": "npm run coverage && coveralls <coverage/lcov.info",
     "lint": "standard",
-    "prepublishOnly": "npm run lint && npm run test && npm run build:dist",
+    "prepublishOnly": "npm run lint && npm run build:dist && npm run test",
     "test": "npm run test:node && npm run test:browser",
-    "test:browser": "karma start karma.conf.js",
-    "test:node": "istanbul test mocha -- --reporter spec",
+    "test:browser": "npm run build:dist && karma start karma.conf.js",
+    "test:node": "npm run build:dist && istanbul test mocha -- --reporter spec",
     "build:dist": "babel index.js --source-root ./ -d ./dist",
     "build:docs": "documentation build ./index.js --github --sort-order='alpha' -f md > ./docs/index.md"
   },
