@@ -34,19 +34,20 @@
     "merkle-patricia-tree": "^2.1.2"
   },
   "devDependencies": {
-    "babelify": "^7.3.0",
-    "browserify": "^13.0.0",
+    "babelify": "^8.0.0",
+    "babel-preset-env": "^1.6.1",
+    "browserify": "^15.0.0",
     "coveralls": "^2.11.6",
     "documentation": "4.0.0-beta16",
     "ethereumjs-testing": "~1.0.0",
     "istanbul": "^0.4.2",
-    "karma": "^1.3.0",
+    "karma": "^2.0.0",
     "karma-browserify": "^5.1.0",
-    "karma-chrome-launcher": "^2.0.0",
-    "karma-detect-browsers": "^2.2.1",
+    "karma-chrome-launcher": "^2.2.0",
+    "karma-detect-browsers": "^2.2.5",
     "karma-env-preprocessor": "^0.1.1",
-    "karma-firefox-launcher": "^1.0.0",
-    "karma-tap": "^3.1.0",
+    "karma-firefox-launcher": "^1.1.0",
+    "karma-tap": "^4.0.0",
     "standard": "^8.4.0",
     "tape": "^4.2.0"
   }

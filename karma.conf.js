@@ -20,12 +20,12 @@ module.exports = function (config) {
       'karma-detect-browsers'
     ],
     browserify: {
-      "transform": [
+      'transform': [
         [
-          "babelify",
+          'babelify',
           {
-            "presets": [
-              "env"
+            'presets': [
+              'env'
             ]
           }
         ]
