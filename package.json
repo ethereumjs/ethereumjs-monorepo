@@ -49,7 +49,7 @@
         "testBlockchainBlockGasLimit": "node --stack-size=1500 ./tests/tester -b --dir='bcBlockGasLimitTest'",
         "testBlockchainValid": "node --stack-size=1500 ./tests/tester -b --dir='bcValidBlockTest'",
         "testBlockchainTotalDifficulty": "node --stack-size=1500 ./tests/tester -b --dir='bcTotalDifficultyTest'",
-        "lint": "standard",
+        "lint": "standard --fix",
         "test": "node ./tests/tester -a"
     },
     "repository": {
