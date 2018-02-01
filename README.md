@@ -6,16 +6,13 @@
 
 [![js-standard-style](https://cdn.rawgit.com/feross/standard/master/badge.svg)](https://github.com/feross/standard)
 
-Implements Ethereum's VM in JS
+Implements Ethereum's VM in Javascript.
 
-#### Note on Byzantium Support:
+#### Fork Support
 
-This repository has now been updated with the latest 
-[Byzantium changes](https://github.com/ethereumjs/ethereumjs-vm/pull/161)
-(``2.3.x`` [releases](https://github.com/ethereumjs/ethereumjs-vm/releases)).
+This library always only supports the currently active Ethereum mainnet fork rules with its latest release, old fork rules are dropped with new releases once a HF occured.
 
-For a ``Spurious Dragon``/``EIP 150`` compatible version of this library install the
-latest of the ``2.2.x`` series (see [Changelog](./CHANGELOG.md)).
+The current major [2.3.x](https://github.com/ethereumjs/ethereumjs-vm/releases) release series supports the  [Byzantium](https://github.com/ethereum/EIPs/blob/master/EIPS/eip-609.md) fork changes. For a [Spurious Dragon](https://github.com/ethereum/EIPs/blob/master/EIPS/eip-607.md) compatible version of this library install the latest of the ``2.2.x`` series (see [Changelog](./CHANGELOG.md)).
 
 # INSTALL
 `npm install ethereumjs-vm`
