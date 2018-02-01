@@ -267,6 +267,8 @@ It is also possible to only run the tests from the skip lists:
 
 #### Local Debugging
 
+For state tests you can use the ``--jsontrace`` flag to output opcode trace information.
+
 Blockchain tests support `--debug` to verify the postState:
 
 `node ./tests/tester -b  --debug --test='ZeroValue_SELFDESTRUCT_ToOneStorageKey_OOGRevert_d0g0v0_EIP158'`
