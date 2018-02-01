@@ -1,5 +1,5 @@
 var assert = require('assert')
-var ethUtils = require('../index.js')
+var ethUtils = require('../dist/index.js')
 var BN = require('bn.js')
 
 describe('zeros function', function () {
