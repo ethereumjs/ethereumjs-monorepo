@@ -5,6 +5,21 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to 
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [2.3.3] - 2018-02-02
+
+- Reworked memory expansion/access for opcodes, PR [#174](https://github.com/ethereumjs/ethereumjs-vm/pull/174) (fixes consensus bugs on
+  large numbers >= 53 bit for opcodes using memory location)
+- Keep stack items as bn.js instances (arithmetic performance increases), PRs [#159](https://github.com/ethereumjs/ethereumjs-vm/pull/159), [#254](https://github.com/ethereumjs/ethereumjs-vm/pull/254) and [#256](https://github.com/ethereumjs/ethereumjs-vm/pull/256)
+- More consistent VM error handling, PR [#219](https://github.com/ethereumjs/ethereumjs-vm/pull/219)
+- Validate stack items after operations, PR [#222](https://github.com/ethereumjs/ethereumjs-vm/pull/222)
+- Updated ``ethereumjs-util`` dependency from ``4.5.0`` to ``5.1.x``, PR [#241](https://github.com/ethereumjs/ethereumjs-vm/pull/241)
+- Fixed child contract deletion bug, PR [#246](https://github.com/ethereumjs/ethereumjs-vm/pull/246)
+- Fixed a bug associated with direct stack usage, PR [#240](https://github.com/ethereumjs/ethereumjs-vm/pull/240)
+- Fix error on large return fees, PR [#235](https://github.com/ethereumjs/ethereumjs-vm/pull/235)
+- Various bug fixes
+
+[2.3.3]: https://github.com/ethereumjs/ethereumjs-vm/compare/v2.3.2...v2.3.3
+
 ## [2.3.2] - 2017-10-29
 - Better handling of ``rustbn.js`` exceptions
 - Fake (default if non-provided) blockchain fixes
