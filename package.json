@@ -19,9 +19,11 @@
   "devDependencies": {
     "babel-preset-es2015": "^6.24.0",
     "babelify": "^7.3.0",
+    "coveralls": "^3.0.0",
     "ethereumjs-blockchain": "~2.1.0",
     "ethereumjs-testing": "https://github.com/ethereumjs/ethereumjs-testing",
     "ethereumjs-tx": "1.3.3",
+    "istanbul": "^0.4.5",
     "level": "^1.4.0",
     "leveldown": "^1.4.6",
     "levelup": "^1.3.2",
@@ -51,7 +53,9 @@
     "testBlockchainValid": "node --stack-size=1500 ./tests/tester -b --dir='bcValidBlockTest'",
     "testBlockchainTotalDifficulty": "node --stack-size=1500 ./tests/tester -b --dir='bcTotalDifficultyTest'",
     "lint": "standard",
-    "test": "node ./tests/tester -a"
+    "test": "node ./tests/tester -a",
+    "coverage": "istanbul cover npm run testState",
+    "coveralls": "npm run coverage && coveralls <coverage/lcov.info"
   },
   "repository": {
     "type": "git",
