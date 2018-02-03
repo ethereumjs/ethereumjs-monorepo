@@ -27,18 +27,18 @@
   "homepage": "https://github.com/ethereumjs/ethereumjs-wallet",
   "dependencies": {
     "aes-js": "^0.2.3",
-    "bs58check": "^1.0.8",
+    "bs58check": "^2.1.1",
     "ethereumjs-util": "^4.4.0",
     "hdkey": "^0.7.0",
     "safe-buffer": "^5.1.1",
     "scrypt.js": "^0.2.0",
-    "utf8": "^2.1.1",
+    "utf8": "^3.0.0",
     "uuid": "^2.0.1"
   },
   "devDependencies": {
-    "coveralls": "^2.11.4",
-    "istanbul": "^0.4.1",
-    "mocha": "^2.3.4",
+    "coveralls": "^3.0.0",
+    "istanbul": "^0.4.5",
+    "mocha": "^5.0.0",
     "standard": "^10.0.0"
   },
   "standard": {
