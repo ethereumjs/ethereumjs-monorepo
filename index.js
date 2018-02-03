@@ -510,13 +510,13 @@ exports.generateAddress = function (from, nonce) {
 }
 
 /**
- * Returns true if the supplied address belongs to a precompiled account
+ * Returns true if the supplied address belongs to a precompiled account (Byzantium)
  * @param {Buffer|String} address
  * @return {Boolean}
  */
 exports.isPrecompiled = function (address) {
   const a = exports.unpad(address)
-  return a.length === 1 && a[0] > 0 && a[0] < 5
+  return a.length === 1 && a[0] >= 1 && a[0] <= 8
 }
 
 /**

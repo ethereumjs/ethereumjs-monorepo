@@ -411,11 +411,17 @@ describe('isPrecompiled', function () {
     assert.equal(ethUtils.isPrecompiled('0000000000000000000000000000000000000002'), true)
     assert.equal(ethUtils.isPrecompiled('0000000000000000000000000000000000000003'), true)
     assert.equal(ethUtils.isPrecompiled('0000000000000000000000000000000000000004'), true)
+    assert.equal(ethUtils.isPrecompiled('0000000000000000000000000000000000000005'), true)
+    assert.equal(ethUtils.isPrecompiled('0000000000000000000000000000000000000006'), true)
+    assert.equal(ethUtils.isPrecompiled('0000000000000000000000000000000000000007'), true)
+    assert.equal(ethUtils.isPrecompiled('0000000000000000000000000000000000000008'), true)
+    assert.equal(ethUtils.isPrecompiled(Buffer.from('0000000000000000000000000000000000000001', 'hex')), true)
   })
   it('should return false', function () {
     assert.equal(ethUtils.isPrecompiled('0000000000000000000000000000000000000000'), false)
-    assert.equal(ethUtils.isPrecompiled('0000000000000000000000000000000000000005'), false)
+    assert.equal(ethUtils.isPrecompiled('0000000000000000000000000000000000000009'), false)
     assert.equal(ethUtils.isPrecompiled('1000000000000000000000000000000000000000'), false)
+    assert.equal(ethUtils.isPrecompiled(Buffer.from('0000000000000000000000000000000000000000', 'hex')), false)
   })
 })
 
