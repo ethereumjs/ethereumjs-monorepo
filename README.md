@@ -33,9 +33,9 @@ assert.deepEqual(nestedList, decoded);
 
 API
 =====
-`rlp.encode(plain)` - RLP encodes an `Array`, `Buffer` or `String` and returns a `Buffer`. 
+`rlp.encode(plain)` - RLP encodes an `Array`, `Buffer` or `String` and returns a `Buffer`.
 
-`rlp.decode(encoded, [skipRemainderCheck=false])` - Decodes a RLP encoded `Buffer`, `Array` or `String` and returns a `Buffer` or an `Array` of `Buffers`. If `skipRemainderCheck` is enabled `rlp` will just decode the first rlp sequence in the buffer. By default it would through an error if there is more bytes in Buffer than used by rlp sequence.
+`rlp.decode(encoded, [skipRemainderCheck=false])` - Decodes an RLP encoded `Buffer`, `Array` or `String` and returns a `Buffer` or an `Array` of `Buffers`. If `skipRemainderCheck` is enabled, `rlp` will just decode the first rlp sequence in the buffer. By default, it would throw an error if there are more bytes in Buffer than used by rlp sequence.
 
 CLI
 ===
