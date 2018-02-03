@@ -52,14 +52,13 @@ To build for standalone use in the browser, install `browserify` and check [run-
   - [`VM` debugging hooks](#vm-debugging-hooks)
     - [`vm.onStep`](#vmonstep)
 
-### `new VM([StateTrie], [blockchain])`
+### `new VM([opts])`
 Creates a new VM object
-- `StateTrie` - The [Patricia Merkle Tree](https://github.com/wanderer/merkle-patricia-tree) that contains the state. If no trie is given the `VM` will create an in memory trie.
-- `blockchain` - an instance of the [`Blockchain`](https://github.com/ethereum/ethereumjs-lib/blob/master/docs/blockchain.md). If no blockchain is given a fake blockchain will be used.
 - `opts`
-  - `state` - the state trie
-  - `blockchain` - an instance of ethereumjs-blockchain
-  - `activatePrecompiles` - create entries in the state tree for the precompiled contracts
+  - `stateManager` - A state manager instance (**EXPERIMENTAL** - unstable API)
+  - `state` - A merkle-patricia-tree instance for the state tree (ignored if `stateManager` is passed)
+  - `blockchain` - A blockchain object for storing/retrieving blocks (ignored if `stateManager` is passed)
+  - `activatePrecompiles` - Create entries in the state tree for the precompiled contracts
 
 ### `VM` methods
 
