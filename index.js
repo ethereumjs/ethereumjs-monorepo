@@ -49,9 +49,10 @@ Object.defineProperty(Wallet.prototype, 'pubKey', {
 
 Wallet.generate = function (icapDirect) {
   if (icapDirect) {
+    var max = new ethUtil.BN('088f924eeceeda7fe92e1f5b0fffffffffffffff', 16)
     while (true) {
       var privKey = crypto.randomBytes(32)
-      if (ethUtil.privateToAddress(privKey)[0] === 0) {
+      if (new ethUtil.BN(ethUtil.privateToAddress(privKey)).lte(max)) {
         return new Wallet(privKey)
       }
     }
