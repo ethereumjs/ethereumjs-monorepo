@@ -1,9 +1,8 @@
 language: node_js
 node_js:
-  - "0.11"
-  - "0.12"
   - "4"
-  - "5"
+  - "6"
+  - "8"
 env:
   - CXX=g++-4.8
 addons:
@@ -12,6 +11,11 @@ addons:
     - ubuntu-toolchain-r-test
     packages:
     - g++-4.8
+branches:
+  # We need to whitelist the branches which we want to have "push" automation.
+  # Pull request automation is not constrained to this set of branches.
+  only:
+  - master
 env:
   matrix:
     - CXX=g++-4.8 TEST_SUITE=test
@@ -19,9 +23,9 @@ matrix:
   fast_finish: true
   include:
     - os: linux
-      node_js: "4"
+      node_js: "8"
       env: CXX=g++-4.8 TEST_SUITE=coveralls
     - os: linux
-      node_js: "4"
+      node_js: "8"
       env: CXX=g++-4.8 TEST_SUITE=lint
 script: npm run $TEST_SUITE
