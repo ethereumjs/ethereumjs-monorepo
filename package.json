@@ -33,7 +33,7 @@
     "safe-buffer": "^5.1.1",
     "scrypt.js": "^0.2.0",
     "utf8": "^3.0.0",
-    "uuid": "^2.0.1"
+    "uuid": "^3.2.1"
   },
   "devDependencies": {
     "coveralls": "^3.0.0",

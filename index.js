@@ -2,7 +2,7 @@ var Buffer = require('safe-buffer').Buffer
 var ethUtil = require('ethereumjs-util')
 var crypto = require('crypto')
 var scryptsy = require('scrypt.js')
-var uuid = require('uuid')
+var uuidv4 = require('uuid/v4')
 var bs58check = require('bs58check')
 
 function assert (val, msg) {
@@ -145,7 +145,7 @@ Wallet.prototype.toV3 = function (password, opts) {
 
   return {
     version: 3,
-    id: uuid.v4({ random: opts.uuid || crypto.randomBytes(16) }),
+    id: uuidv4({ random: opts.uuid || crypto.randomBytes(16) }),
     address: this.getAddress().toString('hex'),
     crypto: {
       ciphertext: ciphertext.toString('hex'),
