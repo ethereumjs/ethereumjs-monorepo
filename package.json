@@ -54,7 +54,7 @@
     "testBlockchainTotalDifficulty": "node --stack-size=1500 ./tests/tester -b --dir='bcTotalDifficultyTest'",
     "lint": "standard",
     "test": "node ./tests/tester -a",
-    "coverage": "istanbul cover npm run testState",
+    "coverage": "istanbul cover ./tests/tester.js -- -s",
     "coveralls": "npm run coverage && coveralls <coverage/lcov.info"
   },
   "repository": {
