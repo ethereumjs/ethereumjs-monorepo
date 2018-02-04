@@ -2,7 +2,7 @@
   "name": "ethereumjs-vm",
   "version": "2.3.3",
   "description": "an ethereum VM implementation",
-  "main": "index.js",
+  "main": "dist/ethereumjs-vm.js",
   "dependencies": {
     "async": "^2.1.2",
     "async-eventemitter": "^0.2.2",
@@ -17,45 +17,51 @@
     "safe-buffer": "^5.1.1"
   },
   "devDependencies": {
-    "babel-preset-es2015": "^6.24.0",
+    "babel-plugin-istanbul": "^4.1.5",
+    "babel-preset-env": "^1.6.1",
+    "babel-preset-es2015-rollup": "^3.0.0",
+    "babel-register": "^6.26.0",
     "babelify": "^7.3.0",
     "coveralls": "^3.0.0",
     "ethereumjs-blockchain": "~2.1.0",
     "ethereumjs-testing": "https://github.com/ethereumjs/ethereumjs-testing",
     "ethereumjs-tx": "1.3.3",
-    "istanbul": "^0.4.5",
     "level": "^1.4.0",
     "leveldown": "^1.4.6",
     "levelup": "^1.3.2",
     "memdown": "^1.1.0",
     "minimist": "^1.1.1",
+    "nyc": "^11.4.1",
+    "rollup": "^0.54.0",
+    "rollup-plugin-babel": "^3.0.3",
+    "rollup-plugin-commonjs": "^8.2.6",
+    "rollup-plugin-json": "^2.3.0",
+    "rollup-plugin-node-builtins": "^2.1.2",
     "standard": "^10.0.0",
     "tape": "4.6.3"
   },
-  "browserify": {
-    "transform": [
-      [
-        "babelify",
-        {
-          "presets": [
-            "es2015"
-          ]
-        }
-      ]
+  "nyc": {
+    "require": [
+      "babel-register"
+    ],
+    "reporter": [
+      "lcov"
     ]
   },
   "scripts": {
-    "testVM": "node ./tests/tester -v",
-    "testState": "node ./tests/tester -s",
-    "testBlockchain": "node --stack-size=1500 ./tests/tester -b --excludeDir='GeneralStateTests'",
-    "testBlockchainGeneralStateTests": "node --stack-size=1500 ./tests/tester -b --dir='GeneralStateTests'",
-    "testBlockchainBlockGasLimit": "node --stack-size=1500 ./tests/tester -b --dir='bcBlockGasLimitTest'",
-    "testBlockchainValid": "node --stack-size=1500 ./tests/tester -b --dir='bcValidBlockTest'",
-    "testBlockchainTotalDifficulty": "node --stack-size=1500 ./tests/tester -b --dir='bcTotalDifficultyTest'",
+    "bundle": "rollup -c",
+    "coverage": "nyc --exclude ['tests/**'] node ./tests/tester -s",
+    "coveralls": "npm run coverage && coveralls <coverage/lcov.info",
     "lint": "standard",
-    "test": "node ./tests/tester -a",
-    "coverage": "istanbul cover ./tests/tester.js -- -s",
-    "coveralls": "npm run coverage && coveralls <coverage/lcov.info"
+    "prepublishOnly": "npm run lint && npm run test",
+    "test": "node -r babel-register ./tests/tester -a",
+    "testBlockchain": "node -r babel-register --stack-size=1500 ./tests/tester -b --excludeDir='GeneralStateTests'",
+    "testBlockchainGeneralStateTests": "node -r babel-register --stack-size=1500 ./tests/tester -b --dir='GeneralStateTests'",
+    "testBlockchainBlockGasLimit": "node -r babel-register --stack-size=1500 ./tests/tester -b --dir='bcBlockGasLimitTest'",
+    "testBlockchainValid": "node -r babel-register --stack-size=1500 ./tests/tester -b --dir='bcValidBlockTest'",
+    "testBlockchainTotalDifficulty": "node -r babel-register --stack-size=1500 ./tests/tester -b --dir='bcTotalDifficultyTest'",
+    "testState": "node -r babel-register ./tests/tester -s",
+    "testVM": "node -r babel-register ./tests/tester -v"
   },
   "repository": {
     "type": "git",
