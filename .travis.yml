@@ -33,6 +33,9 @@ matrix:
       env: CXX=g++-4.8 TEST_SUITE=lint
     - os: linux
       node_js: "6"
+      env: CXX=g++-4.8 TEST_SUITE=coveralls
+    - os: linux
+      node_js: "6"
       env: CXX=g++-4.8 TEST_SUITE=testState
     - os: linux
       node_js: "6"
