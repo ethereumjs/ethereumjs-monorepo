@@ -1,5 +1,5 @@
 const test = require('tape')
-const devp2p = require('../../lib')
+const devp2p = require('../../src')
 
 async function delay (ms) {
   await new Promise((resolve) => setTimeout(resolve, ms))
