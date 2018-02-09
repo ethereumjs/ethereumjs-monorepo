@@ -203,9 +203,10 @@ Thirdparty.fromKryptoKit = function (entropy, password) {
     /* eslint-disable new-cap */
     var decipher = new aesjs.ModeOfOperation.ecb(aesKey)
     /* eslint-enable new-cap */
+    /* decrypt returns an Uint8Array, perhaps there is a better way to concatenate */
     privKey = Buffer.concat([
-      decipher.decrypt(encryptedSeed.slice(0, 16)),
-      decipher.decrypt(encryptedSeed.slice(16, 32))
+      Buffer.from(decipher.decrypt(encryptedSeed.slice(0, 16))),
+      Buffer.from(decipher.decrypt(encryptedSeed.slice(16, 32)))
     ])
 
     if (checksum.length > 0) {
