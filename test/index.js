@@ -119,8 +119,14 @@ describe('.generate()', function () {
 })
 
 describe('.generateVanityAddress()', function () {
-  it('should generate an account with 000 prefix', function () {
+  it('should generate an account with 000 prefix (object)', function () {
     var wallet = Wallet.generateVanityAddress(/^000/)
+    assert.equal(wallet.getPrivateKey().length, 32)
+    assert.equal(wallet.getAddress()[0], 0)
+    assert.equal(wallet.getAddress()[1] >>> 4, 0)
+  })
+  it('should generate an account with 000 prefix (string)', function () {
+    var wallet = Wallet.generateVanityAddress('^000')
     assert.equal(wallet.getPrivateKey().length, 32)
     assert.equal(wallet.getAddress()[0], 0)
     assert.equal(wallet.getAddress()[1] >>> 4, 0)
