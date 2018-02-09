@@ -242,3 +242,11 @@ describe('.fromQuorumWallet()', function () {
     assert.equal(wallet.getAddressString(), '0x1b86ccc22e8f137f204a41a23033541242a48815')
   })
 })
+
+describe('raw new Wallet() init', function () {
+  it('should fail when both priv and pub key provided', function () {
+    assert.throws(function () {
+      new Wallet(fixturePrivateKeyBuffer, fixturePublicKeyBuffer) // eslint-disable-line
+    }, /^Error: Cannot supply both a private and a public key to the constructor$/)
+  })
+})
