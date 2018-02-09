@@ -14,6 +14,7 @@ addons:
       - g++-4.8
 env:
   matrix:
+    - CXX=g++-4.8 TEST_SUITE=integration
     - CXX=g++-4.8 TEST_SUITE=unit
 matrix:
   fast_finish: true
@@ -21,4 +22,7 @@ matrix:
     - os: linux
       node_js: "6"
       env: CXX=g++-4.8 TEST_SUITE=lint
+    - os: linux
+      node_js: "6"
+      env: CXX=g++-4.8 TEST_SUITE=coveralls
 script: npm run $TEST_SUITE
