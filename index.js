@@ -37,9 +37,9 @@ const N_DIV_2 = new BN('7fffffffffffffffffffffffffffffff5d576e7357a4501ddfe92f46
  * @param {Buffer} data.to to the to address
  * @param {Buffer} data.value the amount of ether sent
  * @param {Buffer} data.data this will contain the data of the message or the init of a contract
- * @param {Buffer} data.v EC signature parameter
+ * @param {Buffer} data.v EC recovery ID
  * @param {Buffer} data.r EC signature parameter
- * @param {Buffer} data.s EC recovery ID
+ * @param {Buffer} data.s EC signature parameter
  * @param {Number} data.chainId EIP 155 chainId - mainnet: 1, ropsten: 3
  * */
 

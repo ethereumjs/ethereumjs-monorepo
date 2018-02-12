@@ -27,9 +27,9 @@ const ethUtil = require('ethereumjs-util')
  * @prop {Buffer} to the to address
  * @prop {Buffer} value the amount of ether sent
  * @prop {Buffer} data this will contain the data of the message or the init of a contract
- * @prop {Buffer} v EC signature parameter
+ * @prop {Buffer} v EC recovery ID
  * @prop {Buffer} r EC signature parameter
- * @prop {Buffer} s EC recovery ID
+ * @prop {Buffer} s EC signature parameter
  */
 module.exports = class FakeTransaction extends Transaction {
   constructor (data) {
