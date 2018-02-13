@@ -13,9 +13,9 @@ Creates a new transaction object.
     -   `data.to` **Buffer** to the to address
     -   `data.nonce` **Buffer** nonce number
     -   `data.data` **Buffer** this will contain the data of the message or the init of a contract
-    -   `data.v` **Buffer** EC signature parameter
+    -   `data.v` **Buffer** EC recovery ID
     -   `data.r` **Buffer** EC signature parameter
-    -   `data.s` **Buffer** EC recovery ID
+    -   `data.s` **Buffer** EC signature parameter
     -   `data.value` **Buffer** the amount of ether sent
 
 **Properties**
