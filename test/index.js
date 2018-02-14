@@ -120,12 +120,14 @@ describe('.generate()', function () {
 
 describe('.generateVanityAddress()', function () {
   it('should generate an account with 000 prefix (object)', function () {
+    this.timeout(180000) // 3minutes
     var wallet = Wallet.generateVanityAddress(/^000/)
     assert.equal(wallet.getPrivateKey().length, 32)
     assert.equal(wallet.getAddress()[0], 0)
     assert.equal(wallet.getAddress()[1] >>> 4, 0)
   })
   it('should generate an account with 000 prefix (string)', function () {
+    this.timeout(180000) // 3minutes
     var wallet = Wallet.generateVanityAddress('^000')
     assert.equal(wallet.getPrivateKey().length, 32)
     assert.equal(wallet.getAddress()[0], 0)
@@ -155,10 +157,12 @@ describe('.toV3()', function () {
     // FIXME: just test for ciphertext and mac?
     assert.equal(fixtureWallet.toV3String('testtest', { kdf: 'scrypt', uuid: uuid, salt: salt, iv: iv }), w)
   })
-  it('should work without providing options', function() {
+  it('should work without providing options', function () {
+    this.timeout(180000) // 3minutes
     assert.equal(fixtureWallet.toV3('testtest')['version'], 3)
   })
   it('should fail for unsupported kdf', function () {
+    this.timeout(180000) // 3minutes
     assert.throws(function () {
       fixtureWallet.toV3('testtest', { kdf: 'superkey' })
     }, /^Error: Unsupported kdf$/)
@@ -203,6 +207,18 @@ describe('.fromV3()', function () {
     assert.throws(function () {
       Wallet.fromV3(w, 'testpassword')
     }) // FIXME: check for assert message(s)
+  })
+  it('should fail for wrong version', function () {
+    var w = '{"version":2}'
+    assert.throws(function () {
+      Wallet.fromV3(w, 'testpassword')
+    }, /^Error: Not a V3 wallet$/)
+  })
+  it('should fail for wrong kdf', function () {
+    var w = '{"Crypto":{"kdf":"superkey"},"version":3}'
+    assert.throws(function () {
+      Wallet.fromV3(w, 'testpassword', true)
+    }, /^Error: Unsupported key derivation scheme$/)
   })
 })
 
