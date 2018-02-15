@@ -1,4 +1,5 @@
 const assert = require('assert')
+const Buffer = require('safe-buffer').Buffer
 /**
  * RLP Encoding based on: https://github.com/ethereum/wiki/wiki/%5BEnglish%5D-RLP
  * This function takes in a data, convert it to buffer if not, and a length for recursion
@@ -34,12 +35,12 @@ function safeParseInt (v, base) {
 
 function encodeLength (len, offset) {
   if (len < 56) {
-    return new Buffer([len + offset])
+    return Buffer.from([len + offset])
   } else {
     var hexLength = intToHex(len)
     var lLength = hexLength.length / 2
     var firstByte = intToHex(offset + 55 + lLength)
-    return new Buffer(firstByte + hexLength, 'hex')
+    return Buffer.from(firstByte + hexLength, 'hex')
   }
 }
 
@@ -50,7 +51,7 @@ function encodeLength (len, offset) {
  **/
 exports.decode = function (input, stream) {
   if (!input || input.length === 0) {
-    return new Buffer([])
+    return Buffer.from([])
   }
 
   input = toBuffer(input)
@@ -66,7 +67,7 @@ exports.decode = function (input, stream) {
 
 exports.getLength = function (input) {
   if (!input || input.length === 0) {
-    return new Buffer([])
+    return Buffer.from([])
   }
 
   input = toBuffer(input)
@@ -106,7 +107,7 @@ function _decode (input) {
 
     // set 0x80 null to 0
     if (firstByte === 0x80) {
-      data = new Buffer([])
+      data = Buffer.from([])
     } else {
       data = input.slice(1, length)
     }
@@ -199,28 +200,28 @@ function padToEven (a) {
 
 function intToBuffer (i) {
   var hex = intToHex(i)
-  return new Buffer(hex, 'hex')
+  return Buffer.from(hex, 'hex')
 }
 
 function toBuffer (v) {
   if (!Buffer.isBuffer(v)) {
     if (typeof v === 'string') {
       if (isHexPrefixed(v)) {
-        v = new Buffer(padToEven(stripHexPrefix(v)), 'hex')
+        v = Buffer.from(padToEven(stripHexPrefix(v)), 'hex')
       } else {
-        v = new Buffer(v)
+        v = Buffer.from(v)
       }
     } else if (typeof v === 'number') {
       if (!v) {
-        v = new Buffer([])
+        v = Buffer.from([])
       } else {
         v = intToBuffer(v)
       }
     } else if (v === null || v === undefined) {
-      v = new Buffer([])
+      v = Buffer.from([])
     } else if (v.toArray) {
       // converts a BN to a Buffer
-      v = new Buffer(v.toArray())
+      v = Buffer.from(v.toArray())
     } else {
       throw new Error('invalid type')
     }
