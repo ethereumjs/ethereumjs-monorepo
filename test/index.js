@@ -19,11 +19,13 @@ describe('RLP encoding (string):', function () {
   it('should return itself if single byte and less than 0x7f:', function () {
     var encodedSelf = RLP.encode('a')
     assert.equal(encodedSelf.toString(), 'a')
+    assert.equal(RLP.getLength(encodedSelf), 1)
   })
 
   it('length of string 0-55 should return (0x80+len(data)) plus data', function () {
     var encodedDog = RLP.encode('dog')
     assert.equal(4, encodedDog.length)
+    assert.equal(RLP.getLength(encodedDog), 4)
     assert.equal(encodedDog[0], 131)
     assert.equal(encodedDog[1], 100)
     assert.equal(encodedDog[2], 111)
@@ -33,6 +35,7 @@ describe('RLP encoding (string):', function () {
   it('length of string >55 should return 0xb7+len(len(data)) plus len(data) plus data', function () {
     var encodedLongString = RLP.encode('zoo255zoo255zzzzzzzzzzzzssssssssssssssssssssssssssssssssssssssssssssss')
     assert.equal(72, encodedLongString.length)
+    assert.equal(RLP.getLength(encodedLongString), 2)
     assert.equal(encodedLongString[0], 184)
     assert.equal(encodedLongString[1], 70)
     assert.equal(encodedLongString[2], 122)
