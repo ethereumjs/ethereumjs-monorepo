@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 
+## [1.7.1] - 2018-02-15
+- Fix ``browserify`` issue blocking updates for packages depending on ``ethereumjs-block``
+  library, PR [#40](https://github.com/ethereumjs/ethereumjs-block/pull/40)
+- Updated ``ethereumjs/common`` dependency, PR [#38](https://github.com/ethereumjs/ethereumjs-block/pull/38)
+
+[1.7.1]: https://github.com/ethereumjs/ethereumjs-vm/compare/v1.7.0...v1.7.1
+
 ## [1.7.0] - 2017-10-11
 - ``Metro-Byzantium`` compatible
 - New difficulty formula (EIP 100)
