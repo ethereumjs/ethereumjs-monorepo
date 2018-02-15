@@ -19,6 +19,18 @@ module.exports = function (config) {
       'karma-firefox-launcher',
       'karma-detect-browsers'
     ],
+    browserify: {
+      'transform': [
+        [
+          'babelify',
+          {
+            'presets': [
+              'env'
+            ]
+          }
+        ]
+      ]
+    },
     detectBrowsers: {
       enabled: true,
       usePhantomJS: false,
