@@ -17,18 +17,6 @@
     "build:dist": "babel index.js --source-root ./ -d ./dist",
     "build:docs": "documentation build ./index.js --github --sort-order='alpha' -f md > ./docs/index.md"
   },
-  "browserify": {
-    "transform": [
-      [
-        "babelify",
-        {
-          "presets": [
-            "env"
-          ]
-        }
-      ]
-    ]
-  },
   "repository": {
     "type": "git",
     "url": "https://github.com/ethereumjs/ethereumjs-util.git"
