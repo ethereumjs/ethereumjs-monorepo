@@ -194,7 +194,7 @@ class ECIES {
     }
 
     // parse packet
-    this._remotePublicKey = remotePublicKey  // 64 bytes
+    this._remotePublicKey = remotePublicKey // 64 bytes
     this._remoteNonce = nonce // 32 bytes
     // util.assertEq(decrypted[193], 0, 'invalid postfix')
 

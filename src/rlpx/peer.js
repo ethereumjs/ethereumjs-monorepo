@@ -70,7 +70,7 @@ class Peer extends EventEmitter {
               } catch (err) {
                 this._eciesSession._gotEIP8Auth = true
                 this._nextPacketSize = util.buffer2int(data.slice(0, 2)) + 2
-                break
+                continue
               }
             } else {
               this._eciesSession.parseAuthEIP8(parseData)
@@ -86,7 +86,7 @@ class Peer extends EventEmitter {
               } catch (err) {
                 this._eciesSession._gotEIP8Ack = true
                 this._nextPacketSize = util.buffer2int(data.slice(0, 2)) + 2
-                break
+                continue
               }
             } else {
               this._eciesSession.parseAckEIP8(parseData)
