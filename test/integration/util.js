@@ -21,18 +21,21 @@ exports.getTestDPTs = function (numDPTs) {
   return dpts
 }
 
-exports.getTestRLPXs = function (numRLPXs, capabilities) {
+exports.getTestRLPXs = function (numRLPXs, maxPeers, capabilities) {
   const rlpxs = []
+  if (!capabilities) {
+    capabilities = [
+      devp2p.ETH.eth63,
+      devp2p.ETH.eth62
+    ]
+  }
   const dpts = exports.getTestDPTs(numRLPXs)
 
   for (let i = 0; i < numRLPXs; ++i) {
     const rlpx = new devp2p.RLPx(dpts[i]._privateKey, {
       dpt: dpts[i],
-      maxPeers: 25,
-      capabilities: [
-        devp2p.ETH.eth63,
-        devp2p.ETH.eth62
-      ],
+      maxPeers: maxPeers,
+      capabilities: capabilities,
       listenPort: basePort + i
     })
     rlpx.listen(basePort + i)
