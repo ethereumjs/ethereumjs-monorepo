@@ -1,3 +1,4 @@
+const async = require('async')
 const test = require('tape')
 const util = require('./util.js')
 
@@ -5,17 +6,111 @@ async function delay (ms) {
   await new Promise((resolve) => setTimeout(resolve, ms))
 }
 
+function initTwoPeerSetup () {
+  const dpts = util.getTestDPTs(2)
+  const peer = { address: util.localhost, udpPort: util.basePort + 1 }
+  dpts[0].addPeer(peer)
+  return dpts
+}
+
 function destroy (dpts) {
   for (let dpt of dpts) dpt.destroy()
 }
 
-test('DPT: add working node', async (t) => {
-  const dpts = util.getTestDPTs(2)
-  const peer = { address: util.localhost, udpPort: util.basePort + 1 }
-  dpts[0].addPeer(peer)
+test('DPT: new working node', async (t) => {
+  const dpts = initTwoPeerSetup()
 
   dpts[0].on('peer:new', function (peer) {
     t.equal(peer.address, '127.0.0.1', 'should have added peer on peer:new')
+    destroy(dpts)
+    t.end()
+  })
+})
+
+test('DPT: working node added', async (t) => {
+  const dpts = initTwoPeerSetup()
+
+  dpts[0].on('peer:added', function (peer) {
+    t.equal(dpts[0].getPeers().length, 1, 'should have added peer to k-bucket on peer:added')
+    destroy(dpts)
+    t.end()
+  })
+})
+
+test('DPT: remove node', async (t) => {
+  const dpts = initTwoPeerSetup()
+
+  async.series([
+    function (cb) {
+      dpts[0].on('peer:added', function (peer) {
+        dpts[0].removePeer(peer)
+        cb(null)
+      })
+    },
+    function (cb) {
+      dpts[0].on('peer:removed', function (peer) {
+        t.equal(dpts[0].getPeers().length, 0, 'should have removed peer from k-bucket on peer:removed')
+        cb(null)
+      })
+    }
+  ],
+  function (err, results) {
+    if (err) {
+      t.fail('An unexpected error occured.')
+    }
+    destroy(dpts)
+    t.end()
+  })
+})
+
+test('DPT: ban node', async (t) => {
+  const dpts = initTwoPeerSetup()
+
+  async.series([
+    function (cb) {
+      dpts[0].on('peer:added', function (peer) {
+        dpts[0].banPeer(peer)
+        cb(null)
+      })
+    },
+    function (cb) {
+      dpts[0].on('peer:removed', function (peer) {
+        t.equal(dpts[0]._banlist.has(peer), true, 'ban-list should contain peer')
+        t.equal(dpts[0].getPeers().length, 0, 'should have removed peer from k-bucket on peer:removed')
+        cb(null)
+      })
+    }
+  ],
+  function (err, results) {
+    if (err) {
+      t.fail('An unexpected error occured.')
+    }
+    destroy(dpts)
+    t.end()
+  })
+})
+
+test('DPT: k-bucket ping', async (t) => {
+  const dpts = initTwoPeerSetup()
+
+  async.series([
+    function (cb) {
+      dpts[0].on('peer:added', function (peer) {
+        dpts[0]._onKBucketPing([peer], peer)
+        setTimeout(function () {
+          cb(null)
+        }, 400)
+      })
+    },
+    function (cb) {
+      t.equal(dpts[0].getPeers().length, 1, 'should still have one peer in k-bucket')
+      cb(null)
+    }
+  ],
+  function (err, results) {
+    if (err) {
+      t.fail('An unexpected error occured.')
+    }
     destroy(dpts)
     t.end()
   })
