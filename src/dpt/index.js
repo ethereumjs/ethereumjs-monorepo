@@ -22,7 +22,7 @@ class DPT extends EventEmitter {
 
     this._kbucket = new KBucket(this._id)
     this._kbucket.on('added', (peer) => this.emit('peer:added', peer))
-    this._kbucket.on('remove', (peer) => this.emit('peer:removed', peer))
+    this._kbucket.on('removed', (peer) => this.emit('peer:removed', peer))
     this._kbucket.on('ping', (...args) => this._onKBucketPing(...args))
 
     this._server = new DPTServer(this, this._privateKey, {
