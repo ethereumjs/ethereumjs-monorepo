@@ -167,7 +167,8 @@ class ECIES {
   }
 
   parseAuthPlain (data, sharedMacData = null) {
-    this._remoteInitMsg = data
+    const prefix = sharedMacData !== null ? sharedMacData : Buffer.from([])
+    this._remoteInitMsg = Buffer.concat([prefix, data])
     const decrypted = this._decryptMessage(data, sharedMacData)
 
     var signature = null
