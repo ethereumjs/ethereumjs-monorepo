@@ -21,6 +21,17 @@ exports.getTestDPTs = function (numDPTs) {
   return dpts
 }
 
+exports.initTwoPeerDPTSetup = function () {
+  const dpts = exports.getTestDPTs(2)
+  const peer = { address: localhost, udpPort: basePort + 1 }
+  dpts[0].addPeer(peer)
+  return dpts
+}
+
+exports.destroyDPTs = function (dpts) {
+  for (let dpt of dpts) dpt.destroy()
+}
+
 exports.getTestRLPXs = function (numRLPXs, maxPeers, capabilities) {
   const rlpxs = []
   if (!capabilities) {
@@ -42,6 +53,21 @@ exports.getTestRLPXs = function (numRLPXs, maxPeers, capabilities) {
     rlpxs.push(rlpx)
   }
   return rlpxs
+}
+
+exports.initTwoPeerRLPXSetup = function (maxPeers, capabilities) {
+  const rlpxs = exports.getTestRLPXs(2, maxPeers, capabilities)
+  const peer = { address: localhost, udpPort: basePort + 1, tcpPort: basePort + 1 }
+  rlpxs[0]._dpt.addPeer(peer)
+  return rlpxs
+}
+
+exports.destroyRLPXs = function (rlpxs) {
+  for (let rlpx of rlpxs) {
+    // FIXME: Call destroy() on dpt instance from the rlpx.destroy() method
+    rlpx._dpt.destroy()
+    rlpx.destroy()
+  }
 }
 
 exports.localhost = localhost

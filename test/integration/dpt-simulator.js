@@ -6,39 +6,28 @@ async function delay (ms) {
   await new Promise((resolve) => setTimeout(resolve, ms))
 }
 
-function initTwoPeerSetup () {
-  const dpts = util.getTestDPTs(2)
-  const peer = { address: util.localhost, udpPort: util.basePort + 1 }
-  dpts[0].addPeer(peer)
-  return dpts
-}
-
-function destroy (dpts) {
-  for (let dpt of dpts) dpt.destroy()
-}
-
 test('DPT: new working node', async (t) => {
-  const dpts = initTwoPeerSetup()
+  const dpts = util.initTwoPeerDPTSetup()
 
   dpts[0].on('peer:new', function (peer) {
     t.equal(peer.address, '127.0.0.1', 'should have added peer on peer:new')
-    destroy(dpts)
+    util.destroyDPTs(dpts)
     t.end()
   })
 })
 
 test('DPT: working node added', async (t) => {
-  const dpts = initTwoPeerSetup()
+  const dpts = util.initTwoPeerDPTSetup()
 
   dpts[0].on('peer:added', function (peer) {
     t.equal(dpts[0].getPeers().length, 1, 'should have added peer to k-bucket on peer:added')
-    destroy(dpts)
+    util.destroyDPTs(dpts)
     t.end()
   })
 })
 
 test('DPT: remove node', async (t) => {
-  const dpts = initTwoPeerSetup()
+  const dpts = util.initTwoPeerDPTSetup()
 
   async.series([
     function (cb) {
@@ -58,13 +47,13 @@ test('DPT: remove node', async (t) => {
     if (err) {
       t.fail('An unexpected error occured.')
     }
-    destroy(dpts)
+    util.destroyDPTs(dpts)
     t.end()
   })
 })
 
 test('DPT: ban node', async (t) => {
-  const dpts = initTwoPeerSetup()
+  const dpts = util.initTwoPeerDPTSetup()
 
   async.series([
     function (cb) {
@@ -85,13 +74,13 @@ test('DPT: ban node', async (t) => {
     if (err) {
       t.fail('An unexpected error occured.')
     }
-    destroy(dpts)
+    util.destroyDPTs(dpts)
     t.end()
   })
 })
 
 test('DPT: k-bucket ping', async (t) => {
-  const dpts = initTwoPeerSetup()
+  const dpts = util.initTwoPeerDPTSetup()
 
   async.series([
     function (cb) {
@@ -111,7 +100,7 @@ test('DPT: k-bucket ping', async (t) => {
     if (err) {
       t.fail('An unexpected error occured.')
     }
-    destroy(dpts)
+    util.destroyDPTs(dpts)
     t.end()
   })
 })
@@ -122,7 +111,7 @@ test('DPT: add non-available node', async (t) => {
 
   await dpts[0].addPeer(peer).catch((e) => {
     t.equal(e.message, 'Timeout error: ping 127.0.0.1:30307', 'should throw Timeout error')
-    destroy(dpts)
+    util.destroyDPTs(dpts)
     t.end()
   })
 })
@@ -145,7 +134,7 @@ test('DPT: simulate bootstrap', async (t) => {
   }
 
   await delay(250)
-  destroy(dpts)
+  util.destroyDPTs(dpts)
 
   // dpts.forEach((dpt, i) => console.log(`${i}:${dpt.getPeers().length}`))
   for (let dpt of dpts) t.equal(dpt.getPeers().length, numDPTs, 'Peers should be distributed to all DPTs')

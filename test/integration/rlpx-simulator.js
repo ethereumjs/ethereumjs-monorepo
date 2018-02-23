@@ -3,35 +3,20 @@ const test = require('tape')
 const util = require('./util.js')
 const Peer = require('../../src/rlpx/peer.js')
 
-function initTwoPeerSetup () {
-  const rlpxs = util.getTestRLPXs(2, null, null)
-  const peer = { address: util.localhost, udpPort: util.basePort + 1, tcpPort: util.basePort + 1 }
-  rlpxs[0]._dpt.addPeer(peer)
-  return rlpxs
-}
-
-function destroy (rlpxs) {
-  for (let rlpx of rlpxs) {
-    // FIXME: Call destroy() on dpt instance from the rlpx.destroy() method
-    rlpx._dpt.destroy()
-    rlpx.destroy()
-  }
-}
-
 test('RLPX: add working node', async (t) => {
-  const rlpxs = initTwoPeerSetup()
+  const rlpxs = util.initTwoPeerRLPXSetup(null, null)
 
   rlpxs[0].on('peer:added', function (peer) {
     t.equal(peer._port, 30306, 'should have added peer on peer:added after successful handshake')
     t.equal(rlpxs[0].getPeers().length, 1, 'peer list length should be 1')
     t.equal(rlpxs[0]._getOpenSlots(), 9, 'should have maxPeers - 1 open slots left')
-    destroy(rlpxs)
+    util.destroyRLPXs(rlpxs)
     t.end()
   })
 })
 
 test('RLPX: remove node', async (t) => {
-  const rlpxs = initTwoPeerSetup()
+  const rlpxs = util.initTwoPeerRLPXSetup(null, null)
 
   async.series([
     function (cb) {
@@ -52,7 +37,7 @@ test('RLPX: remove node', async (t) => {
     if (err) {
       t.fail('An unexpected error occured.')
     }
-    destroy(rlpxs)
+    util.destroyRLPXs(rlpxs)
     t.end()
   })
 })
@@ -84,7 +69,7 @@ test('RLPX: test peer queue / refill connections', async (t) => {
     if (err) {
       t.fail('An unexpected error occured.')
     }
-    destroy(rlpxs)
+    util.destroyRLPXs(rlpxs)
     t.end()
   })
 })
