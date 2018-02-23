@@ -57,7 +57,7 @@ class ETH extends EventEmitter {
         this._peerStatus = payload
         debug(`Received ${this.getMsgPrefix(code)} message from ${this._peer._socket.remoteAddress}:${this._peer._socket.remotePort}: : ${this._getStatusString(this._peerStatus)}`)
         this._handleStatus()
-        return
+        break
 
       case MESSAGE_CODES.NEW_BLOCK_HASHES:
       case MESSAGE_CODES.TX:
