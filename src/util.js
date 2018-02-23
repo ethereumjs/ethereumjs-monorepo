@@ -1,8 +1,11 @@
 const { randomBytes } = require('crypto')
 const secp256k1 = require('secp256k1')
 const Buffer = require('safe-buffer').Buffer
+const createDebugLogger = require('debug')
 const createKeccakHash = require('keccak')
 const assert = require('assert')
+
+const debug = createDebugLogger('devp2p:util')
 
 function keccak256 (...buffers) {
   const buffer = Buffer.concat(buffers)
@@ -54,16 +57,21 @@ function xor (a, b) {
 }
 
 function assertEq (expected, actual, msg) {
+  var message
   if (Buffer.isBuffer(expected) && Buffer.isBuffer(actual)) {
     if (expected.equals(actual)) return
+    message = `${msg}: ${expected.toString('hex')} / ${actual.toString('hex')}`
+    debug(message)
     throw new assert.AssertionError({
-      message: `${msg}: ${expected.toString('hex')} / ${actual.toString('hex')}`
+      message: message
     })
   }
 
   if (expected === actual) return
+  message = `${msg}: ${expected} / ${actual}`
+  debug(message)
   throw new assert.AssertionError({
-    message: `${msg}: ${expected} / ${actual}`
+    message: message
   })
 }
 
