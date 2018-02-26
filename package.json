@@ -1,6 +1,6 @@
 {
   "name": "ethereumjs-devp2p",
-  "version": "2.2.0",
+  "version": "2.3.0",
   "description": "A JavaScript implementation of ÐΞVp2p",
   "keywords": [
     "ethereum",
@@ -20,7 +20,8 @@
   "contributors": [
     "Alex Beregszaszi <alex@rtfs.hu>",
     "Kirill Fomichev <fanatid@ya.ru> (https://github.com/fanatid)",
-    "Martin Becze <mb@ethdev.com>"
+    "Martin Becze <mb@ethdev.com>",
+    "Holger Drewes <holger.drewes@gmail.com>"
   ],
   "files": [
     "src",

@@ -6,6 +6,17 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 
+## [2.3.0] - 2018-02-28
+- Fix critical ``RLPX`` bug leading to not processing incoming ``EIP-8`` ``Auth`` or ``Ack`` messages, PR [#26](https://github.com/ethereumjs/ethereumjs-devp2p/pull/26)
+- Fix bug not forwarding ``k-bucket`` remove event through ``DPT`` (so ``peer:removed`` from
+  ``DPT`` was not working), PR [#27](https://github.com/ethereumjs/ethereumjs-devp2p/pull/27)
+- Fix updating ``ingressMac`` with wrong ``Auth`` msg leading to diverging ``Mac`` hashes, PR [#29](https://github.com/ethereumjs/ethereumjs-devp2p/pull/29)
+- Fix bug not let first ``ETH`` ``status`` message emit a ``message`` event, PR [#30](https://github.com/ethereumjs/ethereumjs-devp2p/pull/30)
+- Large rework of the test setup, additional ``DPT``, ``RLPX`` and ``ETH`` simulator tests,
+  improving test coverage from 48% to 84%, PR [#25](https://github.com/ethereumjs/ethereumjs-devp2p/pull/25)
+
+[2.3.0]: https://github.com/ethereumjs/ethereumjs-devp2p/compare/v2.2.0...v2.3.0
+
 ## [2.2.0] - 2017-12-07
 - ``EIP-8`` compatibility
 - Improved debug messages
