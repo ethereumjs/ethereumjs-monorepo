@@ -17,6 +17,16 @@ module.exports = function (config) {
       'karma-mocha'
     ],
     browserify: {
+      'transform': [
+        [
+          'babelify',
+          {
+            'presets': [
+              'env'
+            ]
+          }
+        ]
+      ],
       debug: true
     },
     envPreprocessor: [
