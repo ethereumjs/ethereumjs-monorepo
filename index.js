@@ -215,17 +215,25 @@ exports.toUnsigned = function (num) {
 }
 
 /**
- * Creates SHA-3 hash of the input
+ * Creates Keccak hash of the input
  * @param {Buffer|Array|String|Number} a the input data
- * @param {Number} [bits=256] the SHA width
+ * @param {Number} [bits=256] the Keccak width
  * @return {Buffer}
  */
-exports.sha3 = function (a, bits) {
+exports.keccak = function (a, bits) {
   a = exports.toBuffer(a)
   if (!bits) bits = 256
 
   return createKeccakHash('keccak' + bits).update(a).digest()
 }
+
+/**
+ * Creates SHA-3 (Keccak) hash of the input [OBSOLETE]
+ * @param {Buffer|Array|String|Number} a the input data
+ * @param {Number} [bits=256] the SHA-3 width
+ * @return {Buffer}
+ */
+exports.sha3 = exports.keccak
 
 /**
  * Creates SHA256 hash of the input
@@ -259,7 +267,7 @@ exports.ripemd160 = function (a, padded) {
  * @return {Buffer}
  */
 exports.rlphash = function (a) {
-  return exports.sha3(rlp.encode(a))
+  return exports.keccak(rlp.encode(a))
 }
 
 /**
@@ -305,7 +313,7 @@ exports.pubToAddress = exports.publicToAddress = function (pubKey, sanitize) {
   }
   assert(pubKey.length === 64)
   // Only take the lower 160bits of the hash
-  return exports.sha3(pubKey).slice(-20)
+  return exports.keccak(pubKey).slice(-20)
 }
 
 /**
@@ -358,7 +366,7 @@ exports.ecsign = function (msgHash, privateKey) {
  */
 exports.hashPersonalMessage = function (message) {
   const prefix = exports.toBuffer('\u0019Ethereum Signed Message:\n' + message.length.toString())
-  return exports.sha3(Buffer.concat([prefix, message]))
+  return exports.keccak(Buffer.concat([prefix, message]))
 }
 
 /**
@@ -464,7 +472,7 @@ exports.isZeroAddress = function (address) {
  */
 exports.toChecksumAddress = function (address) {
   address = exports.stripHexPrefix(address).toLowerCase()
-  const hash = exports.sha3(address).toString('hex')
+  const hash = exports.keccak(address).toString('hex')
   let ret = '0x'
 
   for (let i = 0; i < address.length; i++) {
