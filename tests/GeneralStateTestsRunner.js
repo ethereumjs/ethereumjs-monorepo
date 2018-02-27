@@ -1,5 +1,5 @@
+import VM from '../lib'
 const async = require('async')
-const VM = require('../index.js')
 const testUtil = require('./util')
 const Trie = require('merkle-patricia-tree/secure')
 const ethUtil = require('ethereumjs-util')

@@ -1,3 +1,4 @@
+import VM from '../lib'
 const async = require('async')
 const testUtil = require('./util.js')
 const ethUtil = require('ethereumjs-util')
@@ -5,7 +6,6 @@ const Trie = require('merkle-patricia-tree/secure')
 const Block = require('ethereumjs-block')
 const Blockchain = require('ethereumjs-blockchain')
 const BlockHeader = require('ethereumjs-block/header.js')
-const VM = require('../')
 const Level = require('levelup')
 
 var cacheDB = new Level('./.cachedb')

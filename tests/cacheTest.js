@@ -1,5 +1,5 @@
+import VM from '../lib'
 const tape = require('tape')
-const VM = require('../')
 var async = require('async')
 var Account = require('ethereumjs-account')
 var Transaction = require('ethereumjs-tx')
