@@ -6,7 +6,15 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 
-## [2.3.0] - 2018-02-28
+## [2.4.0] - 2018-02-28
+- First release providing a reliable ``ETH`` connection
+- Fix Parity ``DPT`` ping echo hash bug preventing the library to connect
+  to Parity clients, PR [#32](https://github.com/ethereumjs/ethereumjs-devp2p/pull/32)
+- Fixed a bug not setting weHello in peer after sent ``HELLO`` msg
+
+[2.4.0]: https://github.com/ethereumjs/ethereumjs-devp2p/compare/v2.3.0...v2.4.0
+
+## [2.3.0] - 2018-02-27
 - Fix critical ``RLPX`` bug leading to not processing incoming ``EIP-8`` ``Auth`` or ``Ack`` messages, PR [#26](https://github.com/ethereumjs/ethereumjs-devp2p/pull/26)
 - Fix bug not forwarding ``k-bucket`` remove event through ``DPT`` (so ``peer:removed`` from
   ``DPT`` was not working), PR [#27](https://github.com/ethereumjs/ethereumjs-devp2p/pull/27)
