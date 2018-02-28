@@ -4,7 +4,7 @@ const ms = require('ms')
 const createDebugLogger = require('debug')
 const LRUCache = require('lru-cache')
 const message = require('./message')
-const { pk2id, createDeferred } = require('../util')
+const { keccak256, pk2id, createDeferred } = require('../util')
 
 const debug = createDebugLogger('devp2p:dpt:server')
 const VERSION = 0x04
@@ -20,6 +20,7 @@ class Server extends EventEmitter {
     this._timeout = options.timeout || ms('10s')
     this._endpoint = options.endpoint || { address: '0.0.0.0', udpPort: null, tcpPort: null }
     this._requests = new Map()
+    this._parityRequestMap = new Map()
     this._requestsCache = new LRUCache({ max: 1000, maxAge: ms('1s'), stale: false })
 
     const createSocket = options.createSocket || createSocketUDP4
@@ -96,6 +97,20 @@ class Server extends EventEmitter {
     debug(`send ${typename} to ${peer.address}:${peer.udpPort} (peerId: ${peer.id && peer.id.toString('hex')})`)
 
     const msg = message.encode(typename, data, this._privateKey)
+    // Parity hack
+    // There is a bug in Parity up to at lease 1.8.10 not echoing the hash from
+    // discovery spec (hash: sha3(signature || packet-type || packet-data))
+    // but just hashing the RLP-encoded packet data (see discovery.rs, on_ping())
+    // 2018-02-28
+    if (typename === 'ping') {
+      const rkeyParity = keccak256(msg.slice(98)).toString('hex')
+      this._parityRequestMap.set(rkeyParity, msg.slice(0, 32).toString('hex'))
+      setTimeout(() => {
+        if (this._parityRequestMap.get(rkeyParity) !== undefined) {
+          this._parityRequestMap.delete(rkeyParity)
+        }
+      }, this._timeout)
+    }
     this._socket.send(msg, 0, msg.length, peer.udpPort, peer.address)
     return msg.slice(0, 32) // message id
   }
@@ -125,7 +140,12 @@ class Server extends EventEmitter {
         break
 
       case 'pong':
-        const rkey = info.data.hash.toString('hex')
+        var rkey = info.data.hash.toString('hex')
+        const rkeyParity = this._parityRequestMap.get(rkey)
+        if (rkeyParity) {
+          rkey = rkeyParity
+          this._parityRequestMap.delete(rkeyParity)
+        }
         const request = this._requests.get(rkey)
         if (request) {
           this._requests.delete(rkey)

@@ -315,7 +315,9 @@ class Peer extends EventEmitter {
     ]
 
     if (!this._closed) {
-      this._sendMessage(PREFIXES.HELLO, rlp.encode(payload))
+      if (this._sendMessage(PREFIXES.HELLO, rlp.encode(payload))) {
+        this._weHello = payload
+      }
       if (this._hello) {
         this.emit('connect')
       }
