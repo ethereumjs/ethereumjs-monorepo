@@ -222,6 +222,10 @@ Running the Blockchain tests:
 
 `node ./tests/tester -b`
 
+State tests and Blockchain tests can also be run against the ``dist`` folder (default: ``lib``):
+  
+`node ./tests/tester -b --dist`
+
 State tests run significantly faster than Blockchain tests, so it is often a good choice to start fixing State tests.
 
 #### Running Specific Tests

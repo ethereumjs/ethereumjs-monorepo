@@ -7,17 +7,19 @@
     "dist"
   ],
   "scripts": {
-    "coverage": "istanbul cover ./tests/tester.js -- -s",
+    "coverage": "npm run build:dist && istanbul cover ./tests/tester.js -- -s --dist",
     "coveralls": "npm run coverage && coveralls <coverage/lcov.info",
     "testVM": "node ./tests/tester -v",
-    "testState": "node ./tests/tester -s",
-    "testBlockchain": "node --stack-size=1500 ./tests/tester -b --excludeDir='GeneralStateTests'",
-    "testBlockchainGeneralStateTests": "node --stack-size=1500 ./tests/tester -b --dir='GeneralStateTests'",
-    "testBlockchainBlockGasLimit": "node --stack-size=1500 ./tests/tester -b --dir='bcBlockGasLimitTest'",
-    "testBlockchainValid": "node --stack-size=1500 ./tests/tester -b --dir='bcValidBlockTest'",
-    "testBlockchainTotalDifficulty": "node --stack-size=1500 ./tests/tester -b --dir='bcTotalDifficultyTest'",
+    "testState": "npm run build:dist && node ./tests/tester -s --dist",
+    "testBuildIntegrity": "node ./tests/tester -s --dist --test='stackOverflow'",
+    "testBlockchain": "npm run build:dist && node --stack-size=1500 ./tests/tester -b --dist --excludeDir='GeneralStateTests'",
+    "testBlockchainGeneralStateTests": "npm run build:dist && node --stack-size=1500 ./tests/tester -b --dist --dir='GeneralStateTests'",
+    "testBlockchainBlockGasLimit": "npm run build:dist && node --stack-size=1500 ./tests/tester -b --dist --dir='bcBlockGasLimitTest'",
+    "testBlockchainValid": "npm run build:dist && node --stack-size=1500 ./tests/tester -b --dist --dir='bcValidBlockTest'",
+    "testBlockchainTotalDifficulty": "npm run build:dist && node --stack-size=1500 ./tests/tester -b --dist --dir='bcTotalDifficultyTest'",
     "test": "node ./tests/tester -a",
     "lint": "standard",
+    "prepublishOnly": "npm run lint && npm run build:dist && npm run testBuildIntegrity",
     "build:dist": "babel lib/ -d dist/"
   },
   "repository": {
