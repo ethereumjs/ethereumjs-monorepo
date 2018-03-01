@@ -2,8 +2,13 @@
   "name": "ethereumjs-vm",
   "version": "2.3.3",
   "description": "An Ethereum VM implementation",
-  "main": "index.js",
+  "main": "dist/index.js",
+  "files": [
+    "dist"
+  ],
   "scripts": {
+    "coverage": "istanbul cover ./tests/tester.js -- -s",
+    "coveralls": "npm run coverage && coveralls <coverage/lcov.info",
     "testVM": "node ./tests/tester -v",
     "testState": "node ./tests/tester -s",
     "testBlockchain": "node --stack-size=1500 ./tests/tester -b --excludeDir='GeneralStateTests'",
@@ -11,10 +16,9 @@
     "testBlockchainBlockGasLimit": "node --stack-size=1500 ./tests/tester -b --dir='bcBlockGasLimitTest'",
     "testBlockchainValid": "node --stack-size=1500 ./tests/tester -b --dir='bcValidBlockTest'",
     "testBlockchainTotalDifficulty": "node --stack-size=1500 ./tests/tester -b --dir='bcTotalDifficultyTest'",
-    "lint": "standard",
     "test": "node ./tests/tester -a",
-    "coverage": "istanbul cover ./tests/tester.js -- -s",
-    "coveralls": "npm run coverage && coveralls <coverage/lcov.info"
+    "lint": "standard",
+    "build:dist": "babel lib/ -d dist/"
   },
   "repository": {
     "type": "git",
@@ -38,8 +42,8 @@
     "safe-buffer": "^5.1.1"
   },
   "devDependencies": {
-    "babel-preset-es2015": "^6.24.0",
-    "babelify": "^7.3.0",
+    "babel-cli": "^6.26.0",
+    "babel-preset-env": "^1.6.1",
     "coveralls": "^3.0.0",
     "ethereumjs-blockchain": "~2.1.0",
     "ethereumjs-testing": "https://github.com/ethereumjs/ethereumjs-testing",
