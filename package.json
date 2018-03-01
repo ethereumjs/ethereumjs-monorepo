@@ -1,8 +1,41 @@
 {
   "name": "ethereumjs-vm",
   "version": "2.3.3",
-  "description": "an ethereum VM implementation",
+  "description": "An Ethereum VM implementation",
   "main": "index.js",
+  "scripts": {
+    "testVM": "node ./tests/tester -v",
+    "testState": "node ./tests/tester -s",
+    "testBlockchain": "node --stack-size=1500 ./tests/tester -b --excludeDir='GeneralStateTests'",
+    "testBlockchainGeneralStateTests": "node --stack-size=1500 ./tests/tester -b --dir='GeneralStateTests'",
+    "testBlockchainBlockGasLimit": "node --stack-size=1500 ./tests/tester -b --dir='bcBlockGasLimitTest'",
+    "testBlockchainValid": "node --stack-size=1500 ./tests/tester -b --dir='bcValidBlockTest'",
+    "testBlockchainTotalDifficulty": "node --stack-size=1500 ./tests/tester -b --dir='bcTotalDifficultyTest'",
+    "lint": "standard",
+    "test": "node ./tests/tester -a",
+    "coverage": "istanbul cover ./tests/tester.js -- -s",
+    "coveralls": "npm run coverage && coveralls <coverage/lcov.info"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ethereumjs/ethereumjs-vm.git"
+  },
+  "keywords": [
+    "ethereum",
+    "VM"
+  ],
+  "browserify": {
+    "transform": [
+      [
+        "babelify",
+        {
+          "presets": [
+            "es2015"
+          ]
+        }
+      ]
+    ]
+  },
   "dependencies": {
     "async": "^2.1.2",
     "async-eventemitter": "^0.2.2",
@@ -32,39 +65,6 @@
     "standard": "^10.0.0",
     "tape": "4.6.3"
   },
-  "browserify": {
-    "transform": [
-      [
-        "babelify",
-        {
-          "presets": [
-            "es2015"
-          ]
-        }
-      ]
-    ]
-  },
-  "scripts": {
-    "testVM": "node ./tests/tester -v",
-    "testState": "node ./tests/tester -s",
-    "testBlockchain": "node --stack-size=1500 ./tests/tester -b --excludeDir='GeneralStateTests'",
-    "testBlockchainGeneralStateTests": "node --stack-size=1500 ./tests/tester -b --dir='GeneralStateTests'",
-    "testBlockchainBlockGasLimit": "node --stack-size=1500 ./tests/tester -b --dir='bcBlockGasLimitTest'",
-    "testBlockchainValid": "node --stack-size=1500 ./tests/tester -b --dir='bcValidBlockTest'",
-    "testBlockchainTotalDifficulty": "node --stack-size=1500 ./tests/tester -b --dir='bcTotalDifficultyTest'",
-    "lint": "standard",
-    "test": "node ./tests/tester -a",
-    "coverage": "istanbul cover ./tests/tester.js -- -s",
-    "coveralls": "npm run coverage && coveralls <coverage/lcov.info"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/ethereumjs/ethereumjs-vm.git"
-  },
-  "keywords": [
-    "ethereum",
-    "VM"
-  ],
   "author": "mjbecze <mjbecze@gmail.com>",
   "contributors": [
     "Alex Beregszaszi <alex@rtfs.hu>"
