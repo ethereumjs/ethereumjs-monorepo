@@ -24,18 +24,6 @@
     "ethereum",
     "VM"
   ],
-  "browserify": {
-    "transform": [
-      [
-        "babelify",
-        {
-          "presets": [
-            "es2015"
-          ]
-        }
-      ]
-    ]
-  },
   "dependencies": {
     "async": "^2.1.2",
     "async-eventemitter": "^0.2.2",
