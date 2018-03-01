@@ -7,11 +7,11 @@
     "dist"
   ],
   "scripts": {
-    "coverage": "npm run build:dist && istanbul cover ./tests/tester.js -- -s --dist",
+    "coverage": "istanbul cover ./tests/tester.js -- -s",
     "coveralls": "npm run coverage && coveralls <coverage/lcov.info",
     "testVM": "node ./tests/tester -v",
     "testState": "npm run build:dist && node ./tests/tester -s --dist",
-    "testBuildIntegrity": "node ./tests/tester -s --dist --test='stackOverflow'",
+    "testBuildIntegrity": "npm run build:dist && node ./tests/tester -s --dist --test='stackOverflow'",
     "testBlockchain": "npm run build:dist && node --stack-size=1500 ./tests/tester -b --dist --excludeDir='GeneralStateTests'",
     "testBlockchainGeneralStateTests": "npm run build:dist && node --stack-size=1500 ./tests/tester -b --dist --dir='GeneralStateTests'",
     "testBlockchainBlockGasLimit": "npm run build:dist && node --stack-size=1500 ./tests/tester -b --dist --dir='bcBlockGasLimitTest'",
