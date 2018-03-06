@@ -1,5 +1,4 @@
 const async = require('async')
-const VM = require('../index.js')
 const testUtil = require('./util')
 const Trie = require('merkle-patricia-tree/secure')
 const ethUtil = require('ethereumjs-util')
@@ -45,6 +44,12 @@ function runTestCase (options, testData, t, cb) {
 
   async.series([
     function (done) {
+      var VM
+      if (options.dist) {
+        VM = require('../dist/index.js')
+      } else {
+        VM = require('../lib/index.js')
+      }
       vm = new VM({
         state: state
       })

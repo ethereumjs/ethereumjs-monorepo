@@ -4,7 +4,8 @@ os:
 
 language: node_js
 node_js:
-  - "6"
+  - "8"
+  - "9"
 
 addons:
   apt:
@@ -23,7 +24,7 @@ env:
   global:
     - DISPLAY=:99.0
   matrix:
-    - CXX=g++-4.8 TEST_SUITE=testState
+    - CXX=g++-4.8 TEST_SUITE=testBuildIntegrity
 
 matrix:
   fast_finish: true

@@ -5,7 +5,6 @@ const Trie = require('merkle-patricia-tree/secure')
 const Block = require('ethereumjs-block')
 const Blockchain = require('ethereumjs-blockchain')
 const BlockHeader = require('ethereumjs-block/header.js')
-const VM = require('../')
 const Level = require('levelup')
 
 var cacheDB = new Level('./.cachedb')
@@ -16,6 +15,12 @@ module.exports = function runBlockchainTest (options, testData, t, cb) {
   var state = new Trie()
   var blockchain = new Blockchain(blockchainDB)
   blockchain.ethash.cacheDB = cacheDB
+  var VM
+  if (options.dist) {
+    VM = require('../dist/index.js')
+  } else {
+    VM = require('../lib/index.js')
+  }
   var vm = new VM({
     state: state,
     blockchain: blockchain

@@ -64,4 +64,6 @@ build/Release
 node_modules
 package-lock.json
 
+# Build folder
+dist
 
