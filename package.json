@@ -2,13 +2,18 @@
   "name": "ethereumjs-wallet",
   "version": "0.6.0",
   "description": "Utilities for handling Ethereum keys",
-  "main": "index.js",
+  "main": "dist/index.js",
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "coverage": "istanbul cover _mocha",
     "coveralls": "npm run coverage && coveralls <coverage/lcov.info",
     "lint": "standard",
-    "prepublish": "npm run lint && npm run test",
-    "test": "mocha ./test/**/*.js"
+    "prepublishOnly": "npm run lint && npm run test:build",
+    "test": "mocha ./test/*.js",
+    "test:build": "npm run build:dist && mocha ./dist/test/*.js",
+    "build:dist": "babel *.js test/*.js -d dist/"
   },
   "repository": {
     "type": "git",
@@ -36,6 +41,8 @@
     "uuid": "^3.2.1"
   },
   "devDependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-preset-env": "^1.6.1",
     "coveralls": "^3.0.0",
     "istanbul": "^0.4.5",
     "mocha": "^5.0.0",
@@ -45,6 +52,9 @@
     "globals": [
       "describe",
       "it"
+    ],
+    "ignore": [
+      "dist/**"
     ]
   }
 }
