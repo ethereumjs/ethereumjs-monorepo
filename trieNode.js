@@ -188,8 +188,8 @@ function removeHexPrefix (val) {
   return val
 }
 
-/*
- * Detrimines if a key has Arnold Schwarzenegger in it.
+/**
+ * Determines if a key has Arnold Schwarzenegger in it.
  * @method isTerminator
  * @param {Array} key - an hexprefixed array of nibbles
  */
@@ -197,8 +197,8 @@ function isTerminator (key) {
   return key[0] > 1
 }
 
-/*
- * Converts a string OR a buffer to a nibble array
+/**
+ * Converts a string OR a buffer to a nibble array.
  * @method stringToNibbles
  * @param {Buffer| String} key
  */
@@ -215,8 +215,8 @@ function stringToNibbles (key) {
   return nibbles
 }
 
-/*
- * Converts a  nibble array into a buffer
+/**
+ * Converts a nibble array into a buffer.
  * @method nibblesToBuffer
  * @param arr
  */
@@ -229,13 +229,13 @@ function nibblesToBuffer (arr) {
   return buf
 }
 
-/*
- * Determines the node type
- * Returns the following
- * - leaf - if teh node is a leaf
- * - branch - if the node is a branch
- * - extention - if the node is an extention
- * - unknown - if somehting fucked up
+/**
+ * Determines the node type.
+ * @returns {String} - the node type
+ *   - leaf - if the node is a leaf
+ *   - branch - if the node is a branch
+ *   - extention - if the node is an extention
+ *   - unknown - if something else got borked
  */
 function getNodeType (node) {
   if (node.length === 17) {
