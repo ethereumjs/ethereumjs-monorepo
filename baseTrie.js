@@ -7,6 +7,7 @@ const ethUtil = require('ethereumjs-util')
 const semaphore = require('semaphore')
 const TrieNode = require('./trieNode')
 const ReadStream = require('./readStream')
+const PrioritizedTaskExecutor = require('./prioritizedTaskExecutor')
 const matchingNibbleLength = require('./util').matchingNibbleLength
 const doKeysMatch = require('./util').doKeysMatch
 const callTogether = require('./util').callTogether
@@ -461,6 +462,11 @@ Trie.prototype._walkTrie = function (root, onNode, onDone) {
     })
   })
 
+  // the maximum pool size should be high enough to utilise the parallelizability of reading nodes from disk and
+  // low enough to utilize the prioritisation of node lookup.
+  var maxPoolSize = 500
+  var taskExecutor = new PrioritizedTaskExecutor(maxPoolSize)
+
   function processNode (nodeRef, node, key, cb) {
     if (!node) return cb()
     if (aborted) return cb()
@@ -490,17 +496,25 @@ Trie.prototype._walkTrie = function (root, onNode, onDone) {
           var keyExtension = childData[0]
           var childRef = childData[1]
           var childKey = key.concat(keyExtension)
-          self._lookupNode(childRef, function (childNode) {
-            processNode(childRef, childNode, childKey, cb)
+          var priority = childKey.length
+          taskExecutor.execute(priority, function (taskCallback) {
+            self._lookupNode(childRef, function (childNode) {
+              taskCallback()
+              processNode(childRef, childNode, childKey, cb)
+            })
           })
         }, cb)
       },
       only: function (childIndex) {
         var childRef = node.getValue(childIndex)
-        self._lookupNode(childRef, function (childNode) {
-          var childKey = key.slice()
-          childKey.push(childIndex)
-          processNode(childRef, childNode, childKey, cb)
+        var childKey = key.slice()
+        childKey.push(childIndex)
+        var priority = childKey.length
+        taskExecutor.execute(priority, function (taskCallback) {
+          self._lookupNode(childRef, function (childNode) {
+            taskCallback()
+            processNode(childRef, childNode, childKey, cb)
+          })
         })
       }
     }
