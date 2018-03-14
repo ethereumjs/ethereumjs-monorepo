@@ -5,6 +5,13 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to 
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [2.3.1] - 2018-03-14
+- Fix OutOfMemory bug when trying to create a read stream on large trie structures 
+  (e.g. a current state DB from a Geth node), PR [#38](https://github.com/ethereumjs/merkle-patricia-tree/pull/38)
+- Fix race condition due to mutated ``_getDBs``/``_putDBs``, PR [#28](https://github.com/ethereumjs/merkle-patricia-tree/pull/28)
+
+[2.3.1]: https://github.com/ethereumjs/merkle-patricia-tree/compare/v2.3.0...v2.3.1
+
 ## [2.3.0] - 2017-11-30
 - Methods for merkle proof generation ``Trie.prove()`` and verification ``Trie.verifyProof()`` (see [./proof.js](./proof.js))
 
