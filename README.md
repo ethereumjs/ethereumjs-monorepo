@@ -10,6 +10,7 @@ This library bundles different components for lower-level peer-to-peer connectio
 - Distributed Peer Table (DPT) / Node Discovery
 - RLPx Transport Protocol
 - Ethereum Wire Protocol (ETH)
+- Light Ethereum Subprotocol (LES/2)
 
 The library is based on [ethereumjs/node-devp2p](https://github.com/ethereumjs/node-devp2p) as well
 as other sub-libraries (``node-*`` named) (all outdated).
@@ -189,7 +190,7 @@ Events emitted:
 
 ## Ethereum Wire Protocol (ETH)
 
-Upper layer protocol for exchanging Ethereum network data like block headers or transactions with a node, see [./src/eth/](./src/eth/)
+Upper layer protocol for exchanging Ethereum network data like block headers or transactions with a node, see [./src/eth/](./src/eth/).
 
 ### Usage
 
@@ -249,6 +250,68 @@ Events emitted:
 
 - [Ethereum wire protocol](https://github.com/ethereum/wiki/wiki/Ethereum-Wire-Protocol)
 
+## Light Ethereum Subprotocol (LES)
+
+Upper layer protocol used by light clients, see [./src/les/](./src/les/).
+
+### Usage
+
+Send the initial status message with ``sendStatus()``, then wait for the corresponding `status` message
+to arrive to start the communication.
+
+```
+les.once('status', () => {
+  // Send an initial message
+  les.sendMessage()
+})
+```
+
+Wait for follow-up messages to arrive, send your responses. 
+
+```
+les.on('message', async (code, payload) => {
+  if (code === devp2p.LES.MESSAGE_CODES.BLOCK_HEADERS) {
+    // Do something with your new block headers :-)
+  }
+})
+```
+
+See the ``peer-communication-les.js`` example for a more detailed use case.
+
+### API
+
+#### `LES` (extends `EventEmitter`)
+Handles the different message types like `BLOCK_HEADERS` or `GET_PROOFS_V2` (see `MESSAGE_CODES`) for
+a complete list. Currently protocol version ``LES/2`` running in client-mode is supported.
+
+##### `new LES(privateKey, options)`
+Normally not instantiated directly but created as a ``SubProtocol`` in the ``Peer`` object.
+- `version` - The protocol version for communicating, e.g. `2`.
+- `peer` - `Peer` object to communicate with.
+- `send` - Wrapped ``peer.sendMessage()`` function where the communication is routed to.
+
+#### `les.sendStatus(status)`
+Send initial status message.
+- `status` - Status message to send, format ``{ networkId: CHAIN_ID, headTd: TOTAL_DIFFICULTY_BUFFER, headHash: HEAD_HASH_BUFFER, headNum: HEAD_NUM_BUFFER, genesisHash: GENESIS_HASH_BUFFER }``.
+
+#### `les.sendMessage(code, reqId, payload)`
+Send initial status message.
+- `code` - The message code, see `MESSAGE_CODES` for available message types.
+- `reqId` - Request ID, will be echoed back on response.
+- `payload` - Payload as a list, will be rlp-encoded.
+
+### Events
+
+Events emitted:
+
+| Event         | Description                              |
+| ------------- |:----------------------------------------:|
+| message       | Message received                         |
+| status        | Status info received                     |
+
+### Reference
+
+- [Light client protocol](https://github.com/ethereum/wiki/wiki/Light-client-protocol)
 
 ## Tests
 
