@@ -60,6 +60,7 @@ Creates a new VM object
   - `state` - A merkle-patricia-tree instance for the state tree (ignored if `stateManager` is passed)
   - `blockchain` - A blockchain object for storing/retrieving blocks (ignored if `stateManager` is passed)
   - `activatePrecompiles` - Create entries in the state tree for the precompiled contracts
+  - `allowUnlimitedContractSize` - Allows unlimited contract sizes while debugging. By setting this to `true`, the check for contract size limit of 2KB (see [EIP-170](https://git.io/vxZkK)) is bypassed. (default: `false`; **ONLY** set to `true` during debugging).
 
 ### `VM` methods
 
