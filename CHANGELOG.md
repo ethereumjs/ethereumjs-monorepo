@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 
+## [2.5.0] - 2018-03-22
+- Light client protocol (``LES/2``) implementation, PR [#21](https://github.com/ethereumjs/ethereumjs-devp2p/pull/21)
+- ``LES/2`` usage example, see: ``examples/peer-communication-les.js`` 
+- Better test coverage for upper-layer protocols (``ETH``, ``LES/2``), PR [#34](https://github.com/ethereumjs/ethereumjs-devp2p/pull/34)
+
+[2.5.0]: https://github.com/ethereumjs/ethereumjs-devp2p/compare/v2.4.0...v2.5.0
+
 ## [2.4.0] - 2018-02-28
 - First release providing a reliable ``ETH`` connection
 - Fix Parity ``DPT`` ping echo hash bug preventing the library to connect
