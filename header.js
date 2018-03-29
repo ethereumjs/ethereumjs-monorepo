@@ -74,7 +74,7 @@ var BlockHeader = module.exports = function (data) {
       // length: 32
   }, {
     name: 'nonce',
-    default: new Buffer([]) // sha3(42)
+    default: utils.zeros(8) // sha3(42)
   }]
   utils.defineProperties(this, fields, data)
 }
@@ -228,4 +228,3 @@ BlockHeader.prototype.hash = function () {
 BlockHeader.prototype.isGenesis = function () {
   return this.number.toString('hex') === ''
 }
-
