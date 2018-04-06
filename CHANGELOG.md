@@ -5,6 +5,18 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to 
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [2.3.4] - 2018-04-06
+
+- Support of external statemanager in VM constructor (experimental), PR [#264](https://github.com/ethereumjs/ethereumjs-vm/pull/264)
+- ``ES5`` distribution on npm for better toolchain compatibility, PR [#281](https://github.com/ethereumjs/ethereumjs-vm/pull/281)
+- ``allowUnlimitedContractSize`` VM option for debugging purposes, PR [#282](https://github.com/ethereumjs/ethereumjs-vm/pull/282)
+- Added ``gasRefund`` to transaction results, PR [#284](https://github.com/ethereumjs/ethereumjs-vm/pull/284)
+- Test coverage / coveralls support for the library, PR [#270](https://github.com/ethereumjs/ethereumjs-vm/pull/270)
+- Properly calculate totalgas for large return values, PR [#275](https://github.com/ethereumjs/ethereumjs-vm/pull/275)
+- Improve iterateVm check output after step hook, PR [#279](https://github.com/ethereumjs/ethereumjs-vm/pull/279)
+
+[2.3.4]: https://github.com/ethereumjs/ethereumjs-vm/compare/v2.3.3...v2.3.4
+
 ## [2.3.3] - 2018-02-02
 
 - Reworked memory expansion/access for opcodes, PR [#174](https://github.com/ethereumjs/ethereumjs-vm/pull/174) (fixes consensus bugs on
