@@ -1,0 +1,34 @@
+{
+  "name": "ethereumjs-client",
+  "version": "0.0.0",
+  "description": "EthereumJS client implementation",
+  "main": "index.js",
+  "scripts": {
+    "coverage": "nyc npm run test && nyc report --reporter=text-lcov > .nyc_output/lcov.info",
+    "coveralls": "npm run coverage && coveralls <.nyc_output/lcov.info",
+    "lint": "standard",
+    "test": "npm run lint && node tests/"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ethereumjs/ethereumjs-client.git"
+  },
+  "keywords": [
+    "ethereum",
+    "ethereumjs",
+    "client",
+    "light",
+    "fast"
+  ],
+  "author": "Holger Drewes (Holger.Drewes@gmail.com)",
+  "license": "MPL-2.0",
+  "bugs": {
+    "url": "https://github.com/ethereumjs/ethereumjs-client/issues"
+  },
+  "homepage": "https://github.com/ethereumjs/ethereumjs-client#readme",
+  "devDependencies": {
+    "nyc": "~11.6.0",
+    "standard": "~11.0.1",
+    "tape": "~4.9.0"
+  }
+}
