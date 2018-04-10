@@ -27,8 +27,12 @@
   },
   "homepage": "https://github.com/ethereumjs/ethereumjs-client#readme",
   "devDependencies": {
+    "coveralls": "^3.0.0",
     "nyc": "~11.6.0",
     "standard": "~11.0.1",
     "tape": "~4.9.0"
+  },
+  "dependencies": {
+    "yargs": "^11.0.0"
   }
 }
