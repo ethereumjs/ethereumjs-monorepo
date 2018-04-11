@@ -33,6 +33,10 @@
     "tape": "~4.9.0"
   },
   "dependencies": {
+    "ethereum-common": "^0.2.1",
+    "ethereumjs-block": "^1.7.1",
+    "ethereumjs-devp2p": "^2.5.0",
+    "rlp": "^2.0.0",
     "yargs": "^11.0.0"
   }
 }
