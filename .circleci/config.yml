@@ -1,0 +1,84 @@
+version: 2
+
+defaults: &defaults
+  working_directory: ~/project/ethreumjs-vm
+  docker:
+    - image: circleci/node:8
+restore_node_modules: &restore_node_modules
+  restore_cache:
+    name: Restore node_modules cache
+    keys:
+      - v1-node-{{ .Branch }}-{{ checksum "package.json" }}
+      - v1-node-{{ .Branch }}-
+      - v1-node-
+jobs:
+  install:
+    <<: *defaults
+    steps:
+      - checkout
+      - *restore_node_modules
+      - run:
+          name: npm install
+          command: npm install
+      - save_cache:
+          name: Save node_modules cache
+          key: v1-node-{{ .Branch }}-{{ checksum "package.json" }}
+          paths:
+            - node_modules/
+      - persist_to_workspace:
+          root: ~/project
+          paths:
+            - ethreumjs-vm/
+  lint:
+    <<: *defaults
+    steps:
+      - attach_workspace:
+          at: ~/project
+      - *restore_node_modules
+      - run:
+          name: Lint
+          command: npm run lint
+  test_gas_limit:
+    <<: *defaults
+    steps:
+      - attach_workspace:
+          at: ~/project
+      - *restore_node_modules
+      - run:
+          name: testBlockchainBlockGasLimit
+          command: npm run testBlockchainBlockGasLimit
+  test_total_difficulty:
+    <<: *defaults
+    steps:
+      - attach_workspace:
+          at: ~/project
+      - *restore_node_modules
+      - run:
+          name: testBlockchainTotalDifficulty
+          command: npm run testBlockchainTotalDifficulty
+  test_state:
+    <<: *defaults
+    steps:
+      - attach_workspace:
+          at: ~/project
+      - *restore_node_modules
+      - run:
+          name: testState
+          command: npm run testState
+workflows:
+  version: 2
+  install-lint-test:
+    jobs:
+      - install
+      - lint:
+          requires:
+            - install
+      - test_gas_limit:
+          requires:
+            - install
+      - test_total_difficulty:
+          requires:
+            - install
+      - test_state:
+          requires:
+            - install
