@@ -129,7 +129,7 @@ function _exitCpMode (commitState, cb) {
 // adds the interface when copying the trie
 function copy (_super) {
   var trie = _super()
-  checkpointInterface(trie)
+  checkpointInterface.call(trie, trie)
   trie._scratch = this._scratch
   // trie._checkpoints = this._checkpoints.slice()
   return trie

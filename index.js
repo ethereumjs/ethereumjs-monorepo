@@ -9,9 +9,8 @@ inherits(CheckpointTrie, BaseTrie)
 
 function CheckpointTrie () {
   BaseTrie.apply(this, arguments)
-  checkpointInterface(this)
+  checkpointInterface.call(this, this)
 }
 
 CheckpointTrie.prove = proof.prove
 CheckpointTrie.verifyProof = proof.verifyProof
-
