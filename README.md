@@ -161,6 +161,35 @@ to the project for some reasonable amount of time (2+ months).
 
 # TECHNICAL GUIDELINES
 
+**Running the Client**
+
+Some building blocks for the client have already been implemented or outlined to further build upon.
+
+You can run the current state of the client with:
+
+```shell
+node lib/index.js --networkid=4 --loglevel=debug
+```
+
+Or show the help with
+```shell
+node lib/index.js help
+```
+
+If you want to have verbose logging output for the p2p communication you can use...
+
+```shell
+DEBUG=*,-babel [CLIENT_START_COMMAND]
+```
+
+for all output or something more targeted by listing the loggers like
+
+```shell
+DEBUG=devp2p:rlpx,devp2p:eth,-babel [CLIENT_START_COMMAND]
+```
+
+**EthereumJS Ecosystem**
+
 This project will be embedded in the EthereumJS ecosystem and many submodules already exist and
 can be used within the project, have a look e.g. at [ethereumjs-block](https://github.com/ethereumjs/ethereumjs-block), [ethereumjs-vm](https://github.com/ethereumjs/ethereumjs-vm), the 
 [merkle-patricia-tree](https://github.com/ethereumjs/merkle-patricia-tree) or the 
