@@ -67,6 +67,9 @@ build/Release
 node_modules
 package-lock.json
 
+# ChainDB folder
+chaindb
+
 # Build folder
 dist
 
