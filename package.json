@@ -32,7 +32,8 @@
     "levelup": "^1.3.0",
     "memdown": "^1.1.0",
     "safe-buffer": "^5.1.1",
-    "semaphore": "^1.0.3"
+    "semaphore": "^1.0.3",
+    "lru-cache": "^4.1.2"
   },
   "devDependencies": {
     "coveralls": "^3.0.0",

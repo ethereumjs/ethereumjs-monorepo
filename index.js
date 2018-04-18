@@ -2,8 +2,6 @@
 
 /**
  * NOTES
- * block details are child block hash, parent block hash, isUncle, isProcessed, and total difficulty
- * block details are stored to key  'detail:'+<blockhash>
  * meta.rawHead is the the head of the chain with the most POW
  * meta.head is the head of the chain that has had its state root verifed
  */
@@ -16,21 +14,54 @@ const Block = require('ethereumjs-block')
 const ethUtil = require('ethereumjs-util')
 const Ethash = require('ethashjs')
 const Buffer = require('safe-buffer').Buffer
+const LRU = require('lru-cache')
 const BN = ethUtil.BN
 const rlp = ethUtil.rlp
+
+// geth compatible db keys
+const headHeaderKey = 'LastHeader'      // current canonical head for light sync
+const headBlockKey = 'LastBlock'        // current canonical head for full sync
+const headerPrefix = new Buffer('h')    // headerPrefix + number + hash -> header
+const tdSuffix = new Buffer('t')        // headerPrefix + number + hash + tdSuffix -> td
+const numSuffix = new Buffer('n')       // headerPrefix + number + numSuffix -> hash
+const blockHashPrefix = new Buffer('H') // blockHashPrefix + hash -> number
+const bodyPrefix = new Buffer('b')      // bodyPrefix + number + hash -> block body
+
+// utility functions
+const bufBE8 = n => n.toBuffer('be', 8) // convert BN to big endian Buffer
+const tdKey = (n, hash) => Buffer.concat([headerPrefix, bufBE8(n), hash, tdSuffix])
+const headerKey = (n, hash) => Buffer.concat([headerPrefix, bufBE8(n), hash])
+const bodyKey = (n, hash) => Buffer.concat([bodyPrefix, bufBE8(n), hash])
+const numberToHashKey = n => Buffer.concat([headerPrefix, bufBE8(n), numSuffix])
+const hashToNumberKey = hash => Buffer.concat([blockHashPrefix, hash])
 
 module.exports = Blockchain
 
 function Blockchain (opts) {
   opts = opts || {}
   const self = this
-  // TODO: SET LOCK
+
+  // backwards compatibilty with older constructor interfaces
+  if (opts.constructor.name === 'LevelUP') {
+    opts = { db: opts }
+  }
+  self.db = opts.db || opts.blockDb
+
   // defaults
-  self.blockDb = opts.blockDb ? opts.blockDb : levelup('', { db: memdown })
-  self.detailsDb = opts.detailsDb ? opts.detailsDb : levelup('', { db: memdown })
+  self.db = self.db ? self.db : levelup('', { db: memdown })
   self.validate = (opts.validate === undefined ? true : opts.validate)
-  self.ethash = self.validate ? new Ethash(self.detailsDb) : null
-  self.meta = null
+  self.ethash = self.validate ? new Ethash(self.db) : null
+  self._heads = {}
+  self._genesis = null
+  self._headHeader = null
+  self._headBlock = null
+  self._cache = {
+    td: new Cache({ max: 1024 }),
+    header: new Cache({ max: 512 }),
+    body: new Cache({ max: 256 }),
+    numberToHash: new Cache({ max: 2048 }),
+    hashToNumber: new Cache({ max: 2048 })
+  }
   self._initDone = false
   self._putSemaphore = semaphore(1)
   self._initLock = new Stoplight()
@@ -41,32 +72,71 @@ function Blockchain (opts) {
 }
 
 /**
+ * Define meta getter for backwards compatibilty
+ */
+Blockchain.prototype = {
+  get meta () {
+    return {
+      rawHead: this._headHeader,
+      heads: this._heads,
+      genesis: this._genesis
+    }
+  }
+}
+
+/**
  * Fetches the meta info about the blockchain from the db. Meta info contains
- * the hash of the head block and the hash of the genisis block
+ * hashes of the headerchain head, blockchain head, genesis block and verified
+ * state root heads.
  * @method _init
  */
 Blockchain.prototype._init = function (cb) {
   const self = this
 
-  self.detailsDb.get('meta', {
-    valueEncoding: 'json'
-  }, onHeadFound)
-
-  function onHeadFound (err, meta) {
-    // look up failure
-    if (err || !meta) {
-      // generate default meta + genesis
-      self.meta = {
-        heads: {},
-        td: new BN()
-      }
-      self._setCanonicalGenesisBlock(cb)
-      return
+  async.waterfall([
+    (cb) => self._numberToHash(new BN(0), cb),
+    getHeads
+  ], (err) => {
+    if (err) {
+      // if genesis block doesn't exist, create one
+      return self._setCanonicalGenesisBlock((err) => {
+        if (err) return cb(err)
+        self._heads = {}
+        self._headHeader = self._genesis
+        self._headBlock = self._genesis
+        cb()
+      })
     }
-    // look up success
-    self.meta = meta
-    self.meta.td = new BN(meta.td)
     cb()
+  })
+
+  function getHeads (genesisHash, cb) {
+    self._genesis = genesisHash
+    async.series([
+      // load verified state root heads
+      (cb) => self.db.get('heads', {
+        valueEncoding: 'json'
+      }, (err, heads) => {
+        if (err) heads = {}
+        Object.keys(heads).map(key => { heads[key] = Buffer.from(heads[key]) })
+        self._heads = heads
+        cb()
+      }),
+      // load headerchain head
+      (cb) => self.db.get(headHeaderKey, {
+        valueEncoding: 'binary'
+      }, (err, hash) => {
+        self._headHeader = err ? genesisHash : hash
+        cb()
+      }),
+      // load blockchain head
+      (cb) => self.db.get(headBlockKey, {
+        valueEncoding: 'binary'
+      }, (err, hash) => {
+        self._headBlock = err ? genesisHash : hash
+        cb()
+      })
+    ], cb)
   }
 }
 
@@ -106,12 +176,12 @@ Blockchain.prototype.getHead = function (name, cb) {
 
   // ensure init completed
   self._initLock.await(function runGetHead () {
-    // if the head is not found return the rawHead
-    var hash = self.meta.heads[name] || self.meta.rawHead
+    // if the head is not found return the headHeader
+    var hash = self._heads[name] || self._headBlock
     if (!hash) {
       return cb(new Error('No head found.'))
     }
-    self.getBlock(Buffer.from(hash, 'hex'), cb)
+    self.getBlock(hash, cb)
   })
 }
 
@@ -164,9 +234,11 @@ Blockchain.prototype.putBlock = function (block, cb, isGenesis) {
 
 Blockchain.prototype._putBlock = function (block, cb, isGenesis) {
   const self = this
-  var blockHash = block.hash()
-  var blockHashHexString = blockHash.toString('hex')
-  var parentDetails
+  var header = block.header
+  var hash = block.hash()
+  var number = new BN(header.number)
+  var td = new BN(header.difficulty)
+  var currentTd = null
   var dbOps = []
 
   if (block.constructor !== Block) {
@@ -176,8 +248,10 @@ Blockchain.prototype._putBlock = function (block, cb, isGenesis) {
   async.series([
     verify,
     verifyPOW,
-    lookupParentBlock,
+    getCurrentTd,
+    getBlockTd,
     rebuildInfo,
+    (cb) => self._saveHeads(cb),
     (cb) => self._batchDbOps(dbOps, cb)
   ], cb)
 
@@ -199,102 +273,94 @@ Blockchain.prototype._putBlock = function (block, cb, isGenesis) {
     })
   }
 
-  // look up the parent meta info
-  function lookupParentBlock (next) {
-    // if genesis block
-    if (isGenesis) return next()
+  function getCurrentTd (next) {
+    if (isGenesis) {
+      currentTd = 0
+      return next()
+    }
+    self._getTd(self._headHeader, (err, td) => {
+      if (err) return next(err)
+      currentTd = td
+      next()
+    })
+  }
 
-    self.getDetails(block.header.parentHash, function (err, _parentDetails) {
-      parentDetails = _parentDetails
-      if (!err && parentDetails) {
-        next()
-      } else {
-        let parentHash = ethUtil.bufferToHex(block.header.parentHash.toString('hex'))
-        next(new Error(`parent hash not found: ${parentHash}`))
-      }
+  function getBlockTd (next) {
+    // calculate the total difficulty of the new block
+    if (isGenesis) {
+      return next()
+    }
+
+    self._getTd(header.parentHash, number.subn(1), (err, parentTd) => {
+      if (err) return next(err)
+      td.iadd(parentTd)
+      next()
     })
   }
 
   function rebuildInfo (next) {
-    // calculate the total difficulty for this block
-    var totalDifficulty = new BN(ethUtil.bufferToInt(block.header.difficulty))
-    // add this block as a child to the parent's block details
-    if (!isGenesis) {
-      totalDifficulty.iadd(new BN(parentDetails.td))
-      parentDetails.staleChildren.push(blockHashHexString)
-    }
-
-    // store the block details
-    var blockDetails = {
-      parent: block.header.parentHash.toString('hex'),
-      td: totalDifficulty.toString(),
-      number: ethUtil.bufferToInt(block.header.number),
-      child: null,
-      staleChildren: [],
-      genesis: block.isGenesis()
-    }
-
+    // save block and total difficulty to the database
+    var key = tdKey(number, hash)
     dbOps.push({
-      db: 'details',
       type: 'put',
-      key: 'detail:' + blockHashHexString,
-      valueEncoding: 'json',
-      value: blockDetails
-    })
-    // store the block
-    if (!Buffer.isBuffer(blockHash)) console.trace()
-
-    dbOps.push({
-      db: 'block',
-      type: 'put',
-      key: blockHash,
+      key: key,
       keyEncoding: 'binary',
       valueEncoding: 'binary',
-      value: block.serialize()
+      value: rlp.encode(td)
     })
+    self._cache.td.set(key, td)
 
-    // need to update totalDifficulty
-    if (block.isGenesis() || totalDifficulty.cmp(self.meta.td) === 1) {
-      blockDetails.inChain = true
-      self.meta.rawHead = blockHashHexString
-      self.meta.height = ethUtil.bufferToInt(block.header.number)
-      self.meta.td = totalDifficulty
+    // save header
+    key = headerKey(number, hash)
+    dbOps.push({
+      type: 'put',
+      key: key,
+      keyEncoding: 'binary',
+      valueEncoding: 'binary',
+      value: rlp.encode(header.raw)
+    })
+    self._cache.header.set(key, header)
 
-      // blockNumber as decimal string
-      const blockNumber = parseInt(block.header.number.toString('hex') || '00', 16).toString()
-
-      // index by number
+    // store body if not empty
+    if (block.transactions.length || block.uncleHeaders.length) {
+      var body = block.serialize(false).slice(1)
+      key = bodyKey(number, hash)
       dbOps.push({
-        db: 'details',
         type: 'put',
-        key: blockNumber,
+        key: key,
+        keyEncoding: 'binary',
         valueEncoding: 'binary',
-        value: blockHash
+        value: rlp.encode(body)
       })
+      self._cache.body.set(key, body)
+    }
 
-      // save meta
-      dbOps.push({
-        db: 'details',
-        type: 'put',
-        key: 'meta',
-        valueEncoding: 'json',
-        value: self.meta
-      })
-
+    // if total difficulty is higher than current, add it to canonical chain
+    // second if clause is to reduce selfish mining vulnerability
+    if (block.isGenesis() || td.cmp(currentTd) > 0 ||
+      (td.cmp(currentTd) === 0 && Math.random() < 0.5)) {
+      self._headHeader = hash
+      self._headBlock = hash
       if (block.isGenesis()) {
-        self.meta.genesis = blockHashHexString
-        next()
-      } else {
-        self._rebuildBlockchain(blockHashHexString, block.header.parentHash, parentDetails, dbOps, next)
+        self._genesis = hash
       }
+
+      // delete higher number assignments and overwrite stale canonical chain
+      async.parallel([
+        (cb) => self._deleteStaleAssignments(number.addn(1), hash, dbOps, cb),
+        (cb) => self._rebuildCanonical(header, dbOps, cb)
+      ], next)
     } else {
+      // save hash to number lookup info even if rebuild not needed
+      key = hashToNumberKey(hash)
       dbOps.push({
-        db: 'details',
         type: 'put',
-        key: 'detail:' + block.header.parentHash.toString('hex'),
-        valueEncoding: 'json',
-        value: parentDetails
+        key: key,
+        keyEncoding: 'binary',
+        valueEncoding: 'binary',
+        value: bufBE8(number)
       })
+      self._cache.hashToNumber.set(key, number)
       next()
     }
   }
@@ -303,39 +369,62 @@ Blockchain.prototype._putBlock = function (block, cb, isGenesis) {
 /**
  *Gets a block by its hash
  * @method getBlock
- * @param {String|Buffer|Number} hash - the sha256 hash of the rlp encoding of the block
+ * @param {Buffer|Number|BN} hash - the sha256 hash of the rlp encoding of the block
  * @param {Function} cb - the callback function
  */
 Blockchain.prototype.getBlock = function (blockTag, cb) {
   const self = this
 
+  // ensure init completed
+  self._initLock.await(function runGetBlock () {
+    self._getBlock(blockTag, cb)
+  })
+}
+
+Blockchain.prototype._getBlock = function (blockTag, cb) {
+  const self = this
+
   // determine BlockTag type
-  if (Buffer.isBuffer(blockTag)) {
-    lookupByHash(blockTag, cb)
-  } else if (Number.isInteger(blockTag)) {
-    async.waterfall([
-      (cb) => lookupNumberToHash(blockTag, cb),
-      (blockHash, cb) => lookupByHash(blockHash, cb)
-    ], cb)
-  } else {
-    cb(new Error('Unknown blockTag type'))
+  if (Number.isInteger(blockTag)) {
+    blockTag = new BN(blockTag)
   }
+  async.waterfall([
+    (cb) => {
+      if (Buffer.isBuffer(blockTag)) {
+        self._hashToNumber(blockTag, (err, number) => {
+          if (err) return cb(err)
+          cb(null, blockTag, number)
+        })
+      } else if (BN.isBN(blockTag)) {
+        self._numberToHash(blockTag, (err, hash) => {
+          if (err) return cb(err)
+          cb(null, hash, blockTag)
+        })
+      } else {
+        cb(new Error('Unknown blockTag type'))
+      }
+    },
+    lookupByHashAndNumber
+  ], cb)
 
-  function lookupByHash (hash, cb) {
-    self.blockDb.get(hash, {
-      keyEncoding: 'binary',
-      valueEncoding: 'binary'
-    }, (err, encodedBlock) => {
+  function lookupByHashAndNumber (hash, number, cb) {
+    async.parallel({
+      header: (cb) => {
+        self._getHeader(hash, number, (err, header) => {
+          if (err) return cb(err)
+          cb(null, header.raw)
+        })
+      },
+      body: (cb) => {
+        self._getBody(hash, number, (err, body) => {
+          if (err) return cb(null, [[], []])
+          cb(null, body)
+        })
+      }
+    }, (err, parts) => {
       if (err) return cb(err)
-      let block = new Block(rlp.decode(encodedBlock))
-      cb(null, block)
+      cb(null, new Block([parts.header].concat(parts.body)))
     })
-  }
-
-  function lookupNumberToHash (hexString, cb) {
-    self.detailsDb.get(hexString, {
-      valueEncoding: 'binary'
-    }, cb)
   }
 }
 
@@ -356,12 +445,15 @@ Blockchain.prototype.getBlocks = function (blockId, maxBlocks, skip, reverse, cb
     self.getBlock(blockId, function (err, block) {
       i++
 
-      // TODO: only abort happily if the error is a "block not found" error
       if (err) {
-        return cb(null, blocks)
+        if (err.notFound) {
+          return cb(null, blocks)
+        } else {
+          return cb(err)
+        }
       }
 
-      var nextBlockNumber = ethUtil.bufferToInt(block.header.number) + (reverse ? -1 : 1)
+      var nextBlockNumber = new BN(block.header.number).addn(reverse ? -1 : 1)
 
       if (i !== 0 && skip && i % (skip + 1) !== 0) {
         return nextBlock(nextBlockNumber)
@@ -381,29 +473,13 @@ Blockchain.prototype.getBlocks = function (blockId, maxBlocks, skip, reverse, cb
 }
 
 /**
- * Gets a block by its hash
- * @method getBlockInfo
+ * Gets block details by its hash (This is DEPRECATED and returns an empty object)
+ * @method getDetails
  * @param {String} hash - the sha256 hash of the rlp encoding of the block
  * @param {Function} cb - the callback function
  */
 Blockchain.prototype.getDetails = function (hash, cb) {
-  const self = this
-  self.detailsDb.get('detail:' + hash.toString('hex'), {
-    valueEncoding: 'json'
-  }, cb)
-}
-
-/**
- * Gets a block by its hash
- * @method getBlockInfo
- * @param {String} hash - the sha256 hash of the rlp encoding of the block
- * @param {Function} cb - the callback function
- */
-Blockchain.prototype.putDetails = function (hash, val, cb) {
-  const self = this
-  self.detailsDb.put('detail:' + hash.toString('hex'), val, {
-    valueEncoding: 'json'
-  }, cb)
+  cb(null, {})
 }
 
 /**
@@ -424,8 +500,8 @@ Blockchain.prototype.selectNeededHashes = function (hashes, cb) {
     return max >= min
   },
   function iterate (cb2) {
-    self.getBlockInfo(hashes[mid], function (err, hash) {
-      if (!err && hash) {
+    self._hashToNumber(hashes[mid], (err, number) => {
+      if (!err && number) {
         min = mid + 1
       } else {
         max = mid - 1
@@ -441,196 +517,247 @@ Blockchain.prototype.selectNeededHashes = function (hashes, cb) {
   })
 }
 
-Blockchain.prototype._saveMeta = function (cb) {
-  const self = this
-  self.detailsDb.put('meta', self.meta, {
+Blockchain.prototype._saveHeads = function (cb) {
+  this.db.put('heads', this._heads, {
     keyEncoding: 'json'
   }, cb)
 }
 
-// builds the chain double link list from the head to the tail.
-Blockchain.prototype._rebuildBlockchain = function (hash, parentHash, parentDetails, ops, cb) {
+// delete canonical number assignments for specified number and above
+Blockchain.prototype._deleteStaleAssignments = function (number, headHash, ops, cb) {
   const self = this
-  var ppDetails, staleHash
+  var key = numberToHashKey(number)
 
-  parentHash = parentHash.toString('hex')
-
-  var i = parentDetails.staleChildren.indexOf(hash)
-  if (i !== -1) {
-    parentDetails.staleChildren.splice(i, 1)
-  }
-
-  if (parentDetails.child && parentDetails.child !== hash) {
-    parentDetails.staleChildren.push(parentDetails.child)
-  }
-
-  parentDetails.child = hash
-
-  ops.push({
-    db: 'details',
-    type: 'put',
-    key: 'detail:' + parentHash.toString('hex'),
-    valueEncoding: 'json',
-    value: parentDetails
-  })
-
-  // exit early if parent is in chain
-  if (parentDetails.inChain) {
-    cb()
-    return
-  }
-
-  parentDetails.inChain = true
-
-  async.series([
-    loadNumberIndex,
-    loadStaleDetails,
-    getNextDetails
-  ], function (err) {
-    if (err) return cb(err)
-    self._rebuildBlockchain(parentHash, parentDetails.parent, ppDetails, ops, cb)
-  })
-
-  function loadNumberIndex (done) {
-    self.detailsDb.get(parentDetails.number, {
-      valueEncoding: 'binary'
-    }, function (err, _staleHash) {
-      if (err) return done(err)
-      staleHash = _staleHash
-      done()
+  self._numberToHash(number, (err, hash) => {
+    if (err) return cb()
+    ops.push({
+      type: 'del',
+      key: key,
+      keyEncoding: 'binary'
     })
+    self._cache.numberToHash.del(key)
+
+    // reset stale verified state root heads to current canonical head
+    Object.keys(self._heads).forEach(function (name) {
+      if (self._heads[name].equals(hash)) {
+        self._heads[name] = headHash
+      }
+    })
+
+    self._deleteStaleAssignments(number.addn(1), headHash, ops, cb)
+  })
+}
+
+// overwrite stale canonical number assignments
+Blockchain.prototype._rebuildCanonical = function (header, ops, cb) {
+  const self = this
+  const hash = header.hash()
+  const number = new BN(header.number)
+
+  function saveLookups (hash, number) {
+    var key = numberToHashKey(number)
+    ops.push({
+      type: 'put',
+      key: key,
+      keyEncoding: 'binary',
+      valueEncoding: 'binary',
+      value: hash
+    })
+    self._cache.numberToHash.set(key, hash)
+
+    key = hashToNumberKey(hash)
+    ops.push({
+      type: 'put',
+      key: key,
+      keyEncoding: 'binary',
+      valueEncoding: 'binary',
+      value: bufBE8(number)
+    })
+    self._cache.hashToNumber.set(key, number)
   }
 
-  function loadStaleDetails (done) {
-    if (!staleHash) {
-      done()
-      return
+  // handle genesis block
+  if (number.cmpn(0) === 0) {
+    saveLookups(hash, number)
+    return cb()
+  }
+
+  self._numberToHash(number, (err, staleHash) => {
+    if (err) staleHash = null
+    if (!staleHash || !hash.equals(staleHash)) {
+      saveLookups(hash, number)
+
+      // flag stale head for reset
+      Object.keys(self._heads).forEach(function (name) {
+        if (staleHash && self._heads[name].equals(staleHash)) {
+          self._staleHeads = self._staleHeads || []
+          self._staleHeads.push(name)
+        }
+      })
+
+      self._getHeader(header.parentHash, number.subn(1), (err, header) => {
+        if (err) {
+          delete self._staleHeads
+          return cb(err)
+        }
+        self._rebuildCanonical(header, ops, cb)
+      })
+    } else {
+      // set stale heads to last previously valid canonical block
+      (self._staleHeads || []).forEach(function (name) {
+        self._heads[name] = hash
+      })
+      delete self._staleHeads
+      cb()
     }
+  })
+}
 
-    self.getDetails(staleHash, function (err, staleDetails) {
-      if (err) return done(err)
+/**
+ * Deletes a block from the blockchain. All child blocks in the chain are deleted
+ * and any encountered heads are set to the parent block
+ * @method delBlock
+ * @param {Buffer} blockHash -the hash of the block to be deleted
+ * @param {function} cb - a callback function
+ */
+Blockchain.prototype.delBlock = function (blockHash, cb) {
+  const self = this
 
-      staleDetails.inChain = false
+  // make sure init has completed
+  self._initLock.await(() => {
+    // perform put with mutex dance
+    lockUnlock(function (done) {
+      self._delBlock(blockHash, done)
+    }, cb)
+  })
 
-      // reindex the block number
-      ops.push({
-        db: 'details',
-        type: 'put',
-        valueEncoding: 'binary',
-        key: staleDetails.number,
-        value: Buffer.from(parentHash, 'hex')
+  // lock, call fn, unlock
+  function lockUnlock (fn, cb) {
+    // take lock
+    self._putSemaphore.take(function () {
+      // call fn
+      fn(function () {
+        // leave lock
+        self._putSemaphore.leave()
+        // exit
+        cb.apply(null, arguments)
       })
-      ops.push({
-        db: 'details',
-        type: 'put',
-        key: 'detail:' + staleHash.toString('hex'),
-        value: staleDetails,
-        valueEncoding: 'json'
-      })
-      done()
-    })
-  }
-
-  function getNextDetails (done) {
-    self.getDetails(parentDetails.parent, function (err, d) {
-      if (err) return done(err)
-      ppDetails = d
-      done()
     })
   }
 }
 
-// todo add SEMIPHORE; the semiphore
-// also this doesn't reset the heads
-Blockchain.prototype.delBlock = function (blockhash, cb) {
+Blockchain.prototype._delBlock = function (blockHash, cb) {
   const self = this
   var dbOps = []
-  var resetHeads = []
+  var blockHeader = null
+  var blockNumber = null
+  var parentHash = null
+  var inCanonical = null
 
-  if (!Buffer.isBuffer(blockhash)) {
-    blockhash = blockhash.hash()
+  if (!Buffer.isBuffer(blockHash)) {
+    blockHash = blockHash.hash()
   }
 
   async.series([
+    getHeader,
+    checkCanonical,
     buildDBops,
-    getLastDeletesDetils,
+    deleteStaleAssignments,
     (cb) => self._batchDbOps(dbOps, cb)
   ], cb)
 
+  function getHeader (cb2) {
+    self._getHeader(blockHash, (err, header) => {
+      if (err) return cb2(err)
+      blockHeader = header
+      blockNumber = new BN(blockHeader.number)
+      parentHash = blockHeader.parentHash
+      cb2()
+    })
+  }
+
+  // check if block is in the canonical chain
+  function checkCanonical (cb2) {
+    self._numberToHash(blockNumber, (err, hash) => {
+      inCanonical = !err && hash.equals(blockHash)
+      cb2()
+    })
+  }
+
+  // delete the block, and if block is in the canonical chain, delete all
+  // children as well
   function buildDBops (cb2) {
-    self._delBlock(blockhash, dbOps, resetHeads, cb2)
+    self._delChild(blockHash, blockNumber, inCanonical ? parentHash : null, dbOps, cb2)
   }
 
-  function getLastDeletesDetils (cb2) {
-    self.getDetails(blockhash.toString('hex'), function (err, details) {
-      if (details.inChain) {
-        self.meta.rawHead = details.parent
-      }
-
-      resetHeads.forEach(function (head) {
-        self.meta.heads[head] = details.parent
-      })
-      cb2(err)
-    })
-  }
-}
-
-Blockchain.prototype._delBlock = function (blockhash, dbOps, resetHeads, cb) {
-  const self = this
-  var details
-
-  dbOps.push({
-    db: 'details',
-    type: 'del',
-    key: 'detail:' + blockhash.toString('hex')
-  })
-
-  // delete the block
-  dbOps.push({
-    db: 'block',
-    type: 'del',
-    key: blockhash.toString('hex')
-  })
-
-  async.series([
-    getDetails,
-    removeChild,
-    removeStaleChildren
-  ], cb)
-
-  function getDetails (cb2) {
-    self.getDetails(blockhash, function (err, d) {
-      for (var head in self.meta.heads) {
-        if (blockhash.toString('hex') === self.meta.heads[head]) {
-          resetHeads.push(head)
-        }
-      }
-      details = d
-      cb2(err)
-    })
-  }
-
-  function removeChild (cb2) {
-    if (details.child) {
-      self._delBlock(details.child, dbOps, resetHeads, cb2)
+  // delete all number to hash mappings for deleted block number and above
+  function deleteStaleAssignments (cb2) {
+    if (inCanonical) {
+      self._deleteStaleAssignments(blockNumber, parentHash, dbOps, cb2)
     } else {
       cb2()
     }
   }
-
-  function removeStaleChildren (cb2) {
-    if (details.staleChildren) {
-      async.each(details.staleChildern, function (child, cb3) {
-        self._delBlock(child, dbOps, resetHeads, cb3)
-      }, function (err) {
-        cb2(err, details)
-      })
-    } else {
-      cb2(null, details)
-    }
-  }
 }
 
+Blockchain.prototype._delChild = function (hash, number, headHash, ops, cb) {
+  const self = this
+
+  // delete header, body, hash to number mapping and td
+  ops.push({
+    type: 'del',
+    key: headerKey(number, hash),
+    keyEncoding: 'binary'
+  })
+  self._cache.header.del(headerKey(number, hash))
+
+  ops.push({
+    type: 'del',
+    key: bodyKey(number, hash),
+    keyEncoding: 'binary'
+  })
+  self._cache.body.del(bodyKey(number, hash))
+
+  ops.push({
+    type: 'del',
+    key: hashToNumberKey(hash),
+    keyEncoding: 'binary'
+  })
+  self._cache.hashToNumber.del(hashToNumberKey(hash))
+
+  ops.push({
+    type: 'del',
+    key: tdKey(number, hash),
+    keyEncoding: 'binary'
+  })
+  self._cache.td.del(tdKey(number, hash))
+
+  if (!headHash) {
+    return cb()
+  }
+
+  if (hash.equals(self._headHeader)) {
+    self._headHeader = headHash
+  }
+
+  if (hash.equals(self._headBlock)) {
+    self._headBlock = headHash
+  }
+
+  self._getCanonicalHeader(number.addn(1), (err, childHeader) => {
+    if (err) return cb()
+    self._delChild(childHeader.hash(), new BN(childHeader.number), headHash, ops, cb)
+  })
+}
+
+/**
+ * Iterates through blocks starting at the specified verified state root head
+ * and calls the onBlock function on each block
+ * @method iterator
+ * @param {String} name - the name of the verified state root head
+ * @param {function} onBlock - function called on each block with params (block, reorg, cb)
+ * @param {function} cb - a callback function
+ */
 Blockchain.prototype.iterator = function (name, onBlock, cb) {
   const self = this
   // ensure init completed
@@ -641,103 +768,241 @@ Blockchain.prototype.iterator = function (name, onBlock, cb) {
 
 Blockchain.prototype._iterator = function (name, func, cb) {
   const self = this
-  var blockhash = self.meta.heads[name] || self.meta.genesis
+  var blockHash = self._heads[name] || self._genesis
+  var blockNumber
   var lastBlock
 
-  if (!blockhash) {
+  if (!blockHash) {
     return cb()
   }
 
-  self.getDetails(blockhash, function (err, d) {
-    if (err) cb(err)
-
-    blockhash = d.child
-    async.whilst(function () {
-      return blockhash
-    }, run, function () {
-      self._saveMeta(cb)
-    })
+  self._hashToNumber(blockHash, (err, number) => {
+    if (err) return cb(err)
+    blockNumber = number.addn(1)
+    async.whilst(
+      () => blockNumber,
+      run,
+      () => self._saveHeads(cb)
+    )
   })
 
   function run (cb2) {
-    var details, block
+    var block
 
     async.series([
-      getDetails,
       getBlock,
-      runFunc,
-      saveDetails
+      runFunc
     ], function (err) {
       if (!err) {
-        blockhash = details.child
+        blockNumber.iaddn(1)
       } else {
-        blockhash = false
+        blockNumber = false
       }
       cb2(err)
     })
 
-    function getDetails (cb3) {
-      self.getDetails(blockhash, function (err, d) {
-        details = d
-        if (d) {
-          self.meta.heads[name] = blockhash
+    function getBlock (cb3) {
+      self.getBlock(blockNumber, function (err, b) {
+        block = b
+        if (block) {
+          self._heads[name] = block.hash()
         }
         cb3(err)
       })
     }
 
-    function getBlock (cb3) {
-      self.getBlock(Buffer.from(blockhash, 'hex'), function (err, b) {
-        block = b
-        cb3(err)
-      })
-    }
-
     function runFunc (cb3) {
-      var reorg = lastBlock ? lastBlock.hash().toString('hex') !== block.header.parentHash.toString('hex') : false
+      var reorg = lastBlock ? lastBlock.hash().equals(block.header.parentHash) : false
       lastBlock = block
       func(block, reorg, cb3)
-    }
-
-    function saveDetails (cb3) {
-      details[name] = true
-      var dbOps = [{
-        db: 'details',
-        type: 'put',
-        key: 'detail:' + blockhash.toString('hex'),
-        value: details,
-        valueEncoding: 'json'
-      }, {
-        db: 'details',
-        type: 'put',
-        key: 'meta',
-        valueEncoding: 'json',
-        value: self.meta
-      }]
-
-      self._batchDbOps(dbOps, cb3)
     }
   }
 }
 
+/**
+ * Executes multiple db operations in a single batch call
+ * @method _batchDbOps
+ */
 Blockchain.prototype._batchDbOps = function (dbOps, cb) {
+  this.db.batch(dbOps, cb)
+}
+
+/**
+ * Performs a block hash to block number lookup
+ * @method _hashToNumber
+ */
+Blockchain.prototype._hashToNumber = function (hash, cb) {
   const self = this
-  let blockDbOps = []
-  let detailsDbOps = []
-  dbOps.forEach((op) => {
-    switch (op.db) {
-      case 'block':
-        blockDbOps.push(op)
-        break
-      case 'details':
-        detailsDbOps.push(op)
-        break
-      default:
-        return cb(new Error('DB op did not specify known db:', op))
-    }
+
+  var key = hashToNumberKey(hash)
+  var number = self._cache.hashToNumber.get(key)
+  if (number) {
+    return cb(null, number)
+  }
+  self.db.get(key, {
+    keyEncoding: 'binary',
+    valueEncoding: 'binary'
+  }, (err, number) => {
+    if (err) return cb(err)
+    number = new BN(number)
+    self._cache.hashToNumber.set(key, number)
+    cb(null, number)
   })
-  async.parallel([
-    (cb) => self.blockDb.batch(blockDbOps, cb),
-    (cb) => self.detailsDb.batch(detailsDbOps, cb)
-  ], cb)
+}
+
+/**
+ * Performs a block number to block hash lookup
+ * @method _numberToHash
+ */
+Blockchain.prototype._numberToHash = function (number, cb) {
+  const self = this
+
+  if (number.ltn(0)) {
+    return cb(new levelup.errors.NotFoundError())
+  }
+  var key = numberToHashKey(number)
+  var hash = self._cache.numberToHash.get(key)
+  if (hash) {
+    return cb(null, hash)
+  }
+  self.db.get(key, {
+    keyEncoding: 'binary',
+    valueEncoding: 'binary'
+  }, (err, hash) => {
+    if (err) return cb(err)
+    self._cache.numberToHash.set(key, hash)
+    cb(null, hash)
+  })
+}
+
+/**
+ * Helper function to lookup a block by either hash only or a hash and number pair
+ * @method _lookupByHashNumber
+ */
+Blockchain.prototype._lookupByHashNumber = function (hash, number, cb, next) {
+  if (typeof number === 'function') {
+    cb = number
+    return this._hashToNumber(hash, (err, number) => {
+      if (err) return next(err)
+      next(null, hash, number, cb)
+    })
+  }
+  next(null, hash, number, cb)
+}
+
+/**
+ * Gets a header by hash and number. Header can exist outside the canonical chain
+ * @method _getHeader
+ */
+Blockchain.prototype._getHeader = function (hash, number, cb) {
+  const self = this
+
+  self._lookupByHashNumber(hash, number, cb, (err, hash, number, cb) => {
+    if (err) return cb(err)
+    var key = headerKey(number, hash)
+    var header = self._cache.header.get(key)
+    if (header) {
+      return cb(null, header)
+    }
+    self.db.get(headerKey(number, hash), {
+      keyEncoding: 'binary',
+      valueEncoding: 'binary'
+    }, (err, encodedHeader) => {
+      if (err) return cb(err)
+      header = new Block.Header(rlp.decode(encodedHeader))
+      self._cache.header.set(key, header)
+      cb(null, header)
+    })
+  })
+}
+
+/**
+ * Gets a header by number. Header must be in the canonical chain
+ * @method _getCanonicalHeader
+ */
+Blockchain.prototype._getCanonicalHeader = function (number, cb) {
+  const self = this
+
+  self._numberToHash(number, (err, hash) => {
+    if (err) return cb(err)
+    self._getHeader(hash, number, cb)
+  })
+}
+
+/**
+ * Gets a block body by hash and number
+ * @method _getBody
+ */
+Blockchain.prototype._getBody = function (hash, number, cb) {
+  const self = this
+
+  self._lookupByHashNumber(hash, number, cb, (err, hash, number, cb) => {
+    if (err) return cb(err)
+    var key = bodyKey(number, hash)
+    var body = self._cache.body.get(key)
+    if (body) {
+      return cb(null, body)
+    }
+    self.db.get(key, {
+      keyEncoding: 'binary',
+      valueEncoding: 'binary'
+    }, (err, encodedBody) => {
+      if (err) return cb(err)
+      body = rlp.decode(encodedBody)
+      self._cache.body.set(key, body)
+      cb(null, body)
+    })
+  })
+}
+
+/**
+ * Gets total difficulty for a block specified by hash and number
+ * @method _getTd
+ */
+Blockchain.prototype._getTd = function (hash, number, cb) {
+  const self = this
+
+  self._lookupByHashNumber(hash, number, cb, (err, hash, number, cb) => {
+    if (err) return cb(err)
+    var key = tdKey(number, hash)
+    var td = self._cache.td.get(key)
+    if (td) {
+      return cb(null, td)
+    }
+    self.db.get(key, {
+      keyEncoding: 'binary',
+      valueEncoding: 'binary'
+    }, (err, td) => {
+      if (err) return cb(err)
+      td = new BN(rlp.decode(td))
+      self._cache.td.set(key, td)
+      cb(null, td)
+    })
+  })
+}
+
+// Simple LRU Cache that allows for keys of type Buffer
+function Cache (opts) {
+  this._cache = LRU(opts)
+}
+
+Cache.prototype.set = function (key, value) {
+  if (key instanceof Buffer) {
+    key = key.toString('hex')
+  }
+  this._cache.set(key, value)
+}
+
+Cache.prototype.get = function (key) {
+  if (key instanceof Buffer) {
+    key = key.toString('hex')
+  }
+  return this._cache.get(key)
+}
+
+Cache.prototype.del = function (key) {
+  if (key instanceof Buffer) {
+    key = key.toString('hex')
+  }
+  this._cache.del(key)
 }
