@@ -5,31 +5,34 @@ const ethUtil = require('ethereumjs-util')
 const BN = ethUtil.BN
 
 function parseTestCases (forkConfig, testData, data, gasLimit, value) {
-  let testCases = testData['post'][forkConfig].map(testCase => {
-    let testIndexes = testCase['indexes']
-    let tx = Object.assign({}, testData.transaction)
-    if (data !== undefined && testIndexes['data'] !== data) {
-      return null
-    }
+  let testCases = []
+  if (testData['post'][forkConfig]) {
+    testCases = testData['post'][forkConfig].map(testCase => {
+      let testIndexes = testCase['indexes']
+      let tx = Object.assign({}, testData.transaction)
+      if (data !== undefined && testIndexes['data'] !== data) {
+        return null
+      }
 
-    if (value !== undefined && testIndexes['value'] !== value) {
-      return null
-    }
+      if (value !== undefined && testIndexes['value'] !== value) {
+        return null
+      }
 
-    if (gasLimit !== undefined && testIndexes['gas'] !== gasLimit) {
-      return null
-    }
+      if (gasLimit !== undefined && testIndexes['gas'] !== gasLimit) {
+        return null
+      }
 
-    tx.data = testData.transaction.data[testIndexes['data']]
-    tx.gasLimit = testData.transaction.gasLimit[testIndexes['gas']]
-    tx.value = testData.transaction.value[testIndexes['value']]
-    return {
-      'transaction': tx,
-      'postStateRoot': testCase['hash'],
-      'env': testData['env'],
-      'pre': testData['pre']
-    }
-  })
+      tx.data = testData.transaction.data[testIndexes['data']]
+      tx.gasLimit = testData.transaction.gasLimit[testIndexes['gas']]
+      tx.value = testData.transaction.value[testIndexes['value']]
+      return {
+        'transaction': tx,
+        'postStateRoot': testCase['hash'],
+        'env': testData['env'],
+        'pre': testData['pre']
+      }
+    })
+  }
 
   testCases = testCases.filter(testCase => {
     return testCase != null
@@ -123,9 +126,14 @@ function runTestCase (options, testData, t, cb) {
 module.exports = function runStateTest (options, testData, t, cb) {
   try {
     const testCases = parseTestCases(options.forkConfig, testData, options.data, options.gasLimit, options.value)
-    async.eachSeries(testCases,
-                    (testCase, done) => runTestCase(options, testCase, t, done),
-                    cb)
+    if (testCases.length > 0) {
+      async.eachSeries(testCases,
+                      (testCase, done) => runTestCase(options, testCase, t, done),
+                      cb)
+    } else {
+      t.comment(`No ${options.forkConfig} post state defined, skip test`)
+      cb()
+    }
   } catch (e) {
     t.fail('error running test case for fork: ' + options.forkConfig)
     console.log('error:', e)
