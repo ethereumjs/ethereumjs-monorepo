@@ -1,0 +1,39 @@
+{
+  "networkId": "3",
+  "comment": "PoW test network",
+  "genesis": {
+    "hash": "0x41941023680923e0fe4d74a34bdac8141f2540e3ae90623718e47d66d1ca4a2d",
+    "gasLimit": 16777216,
+    "difficulty": 1048576,
+    "nonce": "0x0000000000000042",
+    "extraData": "0x3535353535353535353535353535353535353535353535353535353535353535",
+    "stateRoot": "0x217b0bbcfb72e2d57e28f33cb361b9983513177755dc3f33ce3e7022ed62b77b"
+  },
+  "hardforks": {
+    "comment": "",
+    "blocks": {
+      "chainstart": 0,
+      "homestead": 0,
+      "dao": null,
+      "tangerineWhistle": 0,
+      "spuriousDragon": 10,
+      "byzantium": 1700000
+    }
+  },
+  "bootstrapNodes": [
+    {
+      "ip": "13.84.180.240",
+      "port": "30303",
+      "id": "6ce05930c72abc632c58e2e4324f7c7ea478cec0ed4fa2528982cf34483094e9cbc9216e7aa349691242576d552a2a56aaeae426c5303ded677ce455ba1acd9d",
+      "location": "US-TX",
+      "comment": ""
+    },
+    {
+      "ip": "52.169.14.227",
+      "port": "30303",
+      "id": "20c9ad97c081d63397d7b685a412227a40e23c8bdc6688c6f37e97cfbc22d2b4d1db1510d8f61e6a8866ad7f0e17c02b14182d37ea7c3c8b9c2683aeb6b733a1",
+      "location": "IE",
+      "comment": ""
+    }
+  ]
+}

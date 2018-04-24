@@ -1,0 +1,19 @@
+{
+  "isActive": true,
+  "gasConfig": {},
+  "gasPrices": {
+    "expByte": {
+      "v": 50,
+      "d": "Times ceil(log256(exponent)) for the EXP instruction"
+    }
+  },
+  "vm": {
+    "maxCodeSize": {
+      "v": 24576,
+      "d": "Maximum length of contract code"
+    }
+  },
+  "pow": {},
+  "casper": {},
+  "sharding": {}
+}

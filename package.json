@@ -1,0 +1,40 @@
+{
+  "name": "ethereumjs-common",
+  "version": "0.0.0",
+  "description": "Resources common to all Ethereum implementations",
+  "main": "index.js",
+  "scripts": {
+    "lint": "standard",
+    "test": "npm run lint && node tests/"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ethereumjs/ethereumjs-common.git"
+  },
+  "keywords": [
+    "ethereum",
+    "ethereumjs",
+    "constants",
+    "parameters",
+    "genesis",
+    "networks",
+    "bootstrap"
+  ],
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/ethereumjs/ethereumjs-common/issues"
+  },
+  "homepage": "https://github.com/ethereumjs-ethereumjs/common",
+  "devDependencies": {
+    "standard": "^11.0.1",
+    "tape": "^4.2.0"
+  },
+  "maintainers": [
+    {
+      "name": "Holger Drewes",
+      "email": "Holger.Drewes@gmail.com"
+    }
+  ],
+  "dependencies": {}
+}
