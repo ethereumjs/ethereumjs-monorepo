@@ -1,0 +1,19 @@
+{
+  "isActive": false,
+  "gasConfig": {},
+  "gasPrices": {},
+  "vm": {},
+  "pow": {
+    "minerReward": {
+      "v": "600000000000000000",
+      "d": "the amount a miner get rewarded for mining a block"
+    }
+  },
+  "casper": {
+    "casperBalance": {
+      "v": "1000000000000000000000000",
+      "d": "Balance of the Casper contract"
+    }
+  },
+  "sharding": {}
+}

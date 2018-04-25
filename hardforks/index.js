@@ -4,7 +4,9 @@ const hardforkChanges = {
   'dao': require('./dao.json'),
   'tangerineWhistle': require('./tangerineWhistle.json'),
   'spuriousDragon': require('./spuriousDragon.json'),
-  'byzantium': require('./byzantium.json')
+  'byzantium': require('./byzantium.json'),
+  'constantinople': require('./constantinople.json'),
+  'casper': require('./casper.json')
 }
 
 function _getLatestHardfork () {

@@ -1,0 +1,9 @@
+{
+  "isActive": false,
+  "gasConfig": {},
+  "gasPrices": {},
+  "vm": {},
+  "pow": {},
+  "casper": {},
+  "sharding": {}
+}

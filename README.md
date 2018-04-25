@@ -1,6 +1,6 @@
 # SYNOPSIS
 
-[![Build Status](https://img.shields.io/travis/ethereumjs/ethereumjs-common.svg?branch=master&style=flat-square)](https://travis-ci.org/ethereumjs/ethereumjs-common)
+[![Build Status](https://travis-ci.org/ethereumjs/ethereumjs-common.svg?branch=master)](https://travis-ci.org/ethereumjs/ethereumjs-common)
 [![Gitter](https://img.shields.io/gitter/room/ethereum/ethereumjs.svg?style=flat-square)]()
 [![JavaScript Style Guide](https://img.shields.io/badge/code_style-standard-brightgreen.svg)](https://standardjs.com) 
 

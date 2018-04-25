@@ -9,6 +9,8 @@ tape('JSON validity / Access', function (t) {
       './../hardforks/tangerineWhistle.json',
       './../hardforks/spuriousDragon.json',
       './../hardforks/byzantium.json',
+      './../hardforks/constantinople.json',
+      './../hardforks/casper.json',
       './../networks/mainnet.json',
       './../networks/ropsten.json',
       './../networks/rinkeby.json',

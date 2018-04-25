@@ -6,6 +6,7 @@ tape('Hardfork parameter access', function (t) {
     st.equal(hfParams.gasConfig('minGasLimit', 'chainstart'), 5000, 'Fork-specifc access, topic: gasConfig')
     st.equal(hfParams.latestGasConfig('minGasLimit'), 5000, 'Latest fork access, topic: gasConfig')
 
+    // TODO: Figure out why this doesn't work directly with e.g. st.throws usage
     let error = null
     try {
       hfParams.gasPrices('ecAddGas', 'chainstart')
@@ -17,6 +18,7 @@ tape('Hardfork parameter access', function (t) {
 
     st.equal(hfParams.gasPrices('sload', 'homestead'), 50, 'Fork-specifc access, before value changed')
     st.equal(hfParams.gasPrices('sload', 'tangerineWhistle'), 200, 'Fork-specifc access, after value changed')
+    st.equal(hfParams.pow('minerReward', 'byzantium'), '3000000000000000000', 'Fork-specifc access, after/before value changed')
 
     st.end()
   })
