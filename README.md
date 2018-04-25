@@ -1,6 +1,8 @@
 # SYNOPSIS
 
 [![Build Status](https://img.shields.io/travis/ethereumjs/ethereumjs-common.svg?branch=master&style=flat-square)](https://travis-ci.org/ethereumjs/ethereumjs-common)
+[![Gitter](https://img.shields.io/gitter/room/ethereum/ethereumjs.svg?style=flat-square)]()
+[![JavaScript Style Guide](https://img.shields.io/badge/code_style-standard-brightgreen.svg)](https://standardjs.com) 
 
 # ETHEREUMJS-COMMON
 Resources common to all Ethereum implementations
@@ -56,14 +58,13 @@ data on the following ``topics``:
 - ``sharding``
 
 For consistency, the chain start (``chainstart``) is considered an own hardfork.
-Currently only ``chainstart`` and ``byzantium`` specific params are supported
-(PRs welcome!).
 
 The hardfork-specific json files only contain the deltas from ``chainstart`` and
 shouldn't be accessed directly until you have a specific reason for it.
 
-Instead params can be accessed through a topic-named utility function. Two utility
-functions for every topic mentioned above are provided, e.g.:
+Instead params can be accessed through the corresponding topic-named utility 
+function. Two utility functions for every topic mentioned above are provided, e.g.
+for the ``gasPrices`` topic:
 
 #### `common.hardforks.gasPrices(name, hardfork)`
 Get the gas prize for the specific fork.
@@ -84,13 +85,13 @@ gas price values missing (PRs welcome!).
 
 ## Bootstrap Nodes
 
-There is no separate config files for bootstrap files like in the old ``ethereum-common`` lib
-but network-specific bootstrap nodes can now be found within the network param json files.
+There is no separate config files for bootstrap files like in the old ``ethereum-common`` library.
+Instead network-specific bootstrap nodes can now be found under the ``bootstrapNodes`` key 
+within the network parameter json files, e.g. ``mainnet`` bootstrap nodes in ``./networks/mainnet.json``.
 
 ## Genesis States
 
-Network-specific genesis files (currently only ``mainnet``) can be found in the ``genesisStates``
-folder.
+Network-specific genesis files are located in the ``genesisStates`` folder.
 
 Due to the large file sizes genesis states are not directly included in the ``index.js`` file
 but have to be accessed directly, e.g.:
