@@ -5,6 +5,15 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to 
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [2.3.5] - 2018-04-25
+
+- Fixed ``BYTE`` opcode return value bug, PR [#293](https://github.com/ethereumjs/ethereumjs-vm/pull/293)
+- Clean up touched-accounts management in ``StateManager``, PR [#287](https://github.com/ethereumjs/ethereumjs-vm/pull/287)
+- New ``stateManager.copy()`` function, PR [#276](https://github.com/ethereumjs/ethereumjs-vm/pull/276)
+- Updated Circle CI configuration to 2.0 format, PR [#292](https://github.com/ethereumjs/ethereumjs-vm/pull/292)
+
+[2.3.5]: https://github.com/ethereumjs/ethereumjs-vm/compare/v2.3.4...v2.3.5
+
 ## [2.3.4] - 2018-04-06
 
 - Support of external statemanager in VM constructor (experimental), PR [#264](https://github.com/ethereumjs/ethereumjs-vm/pull/264)
