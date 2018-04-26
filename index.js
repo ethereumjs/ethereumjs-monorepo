@@ -234,6 +234,15 @@ exports.keccak = function (a, bits) {
 }
 
 /**
+ * Creates Keccak-256 hash of the input, alias for keccak(a, 256)
+ * @param {Buffer|Array|String|Number} a the input data
+ * @return {Buffer}
+ */
+exports.keccak256 = function (a) {
+  return exports.keccak(a)
+}
+
+/**
  * Creates SHA-3 (Keccak) hash of the input [OBSOLETE]
  * @param {Buffer|Array|String|Number} a the input data
  * @param {Number} [bits=256] the SHA-3 width
