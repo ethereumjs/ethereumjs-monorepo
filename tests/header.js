@@ -23,7 +23,7 @@ tape('[Block]: Header functions', function (t) {
       st.deepEqual(header.timestamp, new Buffer([]))
       st.deepEqual(header.extraData, new Buffer([]))
       st.deepEqual(header.mixHash, utils.zeros(32))
-      st.deepEqual(header.nonce, new Buffer([]))
+      st.deepEqual(header.nonce, utils.zeros(8))
     }
 
     var header = new Header()
@@ -53,4 +53,3 @@ tape('[Block]: Header functions', function (t) {
     st.end()
   })
 })
-
