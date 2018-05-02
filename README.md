@@ -14,41 +14,54 @@ Succeeds the old [ethereum/common](https://github.com/ethereumjs/common/) librar
 
 # USAGE
 
-Include all parameters for usage in a project:
+All parameters can be accessed through the ``Common`` class which ca be required through the
+main package and instantiated either with just the ``network`` (e.g. 'mainnet') or the ``network``
+together with a specific ``hardfork`` provided.
+
+Here is a simple usage example:
 
 ```
-const common = require('ethereumjs-common')
+const Common = require('ethereumjs-common')
+// Instantiate with only the network
+let c = new Common('ropsten')
+c.param('gasPrices', 'ecAddGas', 'byzantium') // 500
+
+// Network and hardfork provided
+c = new Common('ropsten', 'byzantium')
+c.param('pow', 'minerReward') // 3000000000000000000
+
+// Access genesis data for Ropsten network
+c.genesis().hash // 0x41941023680923e0fe4d74a34bdac8141f2540e3ae90623718e47d66d1ca4a2d
+
+// Get bootstrap nodes for network
+c.bootstrapNodes() // Array with current nodes
 ```
 
-## Network Params
+# API
 
-Network specific genesis data and params can be found in the ``networks`` directory,
-which contains separate files for the different supported networks, e.g. ``mainnet.json``
-or ``ropsten.json``.
+See the API documentation for a full list of functions for accessing specific network and
+depending hardfork parameters as well as additional logic to ease e.g. ``blockNumber`` based
+access to parameters.
 
-These contain:
+- [API Docs](./docs/index.md)
 
-- The ``networkID``
-- ``genesis`` block header values
-- Block numbers of ``hardforks``
-- A list of current ``bootstrapNodes``
 
-It is possible to just use the params for all the networks:
+# Hardfork Params
 
-```
-const networkParams = require('ethereumjs-common/networks')
-```
+There are currently parameter changes by the following past and future hardfork by the
+library supported:
 
-Or just a specific network:
+- ``chainstart``
+- ``homestead``
+- ``dao``
+- ``tangerineWhistle``
+- ``spuriousDragon``
+- ``byzantium``
+- ``constantinople`` (incomplete)
+- ``casper`` (incomplete)
 
-```
-const mainnetParams = require('ethereumjs-common/networks/mainnet')
-```
 
-## Hardfork Params
-
-Hardfork-specific config files can be found in the ``hardforks`` directory and contain
-data on the following ``topics``:
+There are hardfork-specific parameters for the following ``topics``:
 
 - ``gasConfig``
 - ``gasPrices``
@@ -57,39 +70,41 @@ data on the following ``topics``:
 - ``casper``
 - ``sharding``
 
-For consistency, the chain start (``chainstart``) is considered an own hardfork.
+See one of the hardfork files like ``byzantium.json`` in the ``hardforks`` directory
+for an overview. For consistency, the chain start (``chainstart``) is considered an own 
+hardfork.
 
 The hardfork-specific json files only contain the deltas from ``chainstart`` and
 shouldn't be accessed directly until you have a specific reason for it.
 
-Instead params can be accessed through the corresponding topic-named utility 
-function. Two utility functions for every topic mentioned above are provided, e.g.
-for the ``gasPrices`` topic:
-
-#### `common.hardforks.gasPrices(name, hardfork)`
-Get the gas prize for the specific fork.
-- `name` - The name of the gas prize, e.g. ``expByte``
-- `hardfork` - The hardfork you want to have the gas prize for
-
-#### `common.hardforks.latestGasPrices(name)`
-Get the gas prize for the latest fork.
-- `name` - The name of the gas prize, e.g. ``expByte``
-
-The latest hard fork can be accessed with:
-
-#### `common.hardforks.latestHardfork`
-Name of the latest hardfork, e.g. ``byzantium``.
-
 Note: The list of ``gasPrices`` is consistent but not complete, so there are currently
 gas price values missing (PRs welcome!).
 
-## Bootstrap Nodes
+# Network Params
+
+Supported networks:
+
+- ``mainnet``
+- ``ropsten``
+- ``rinkeby``
+- ``kovan``
+
+The following network-specific parameters are provided:
+
+- ``networkID``
+- ``genesis`` block header values
+- ``hardforks`` block numbers
+- ``bootstrapNodes`` list
+
+To get an overview of the parameters provided have a look at one of the network-specifc
+files like ``mainnet.json`` in the ``networks`` directory.
+
+# Bootstrap Nodes
 
 There is no separate config files for bootstrap files like in the old ``ethereum-common`` library.
-Instead network-specific bootstrap nodes can now be found under the ``bootstrapNodes`` key 
-within the network parameter json files, e.g. ``mainnet`` bootstrap nodes in ``./networks/mainnet.json``.
+Instead use the ``common.bootstrapNodes()`` function to get nodes for a specific network.
 
-## Genesis States
+# Genesis States
 
 Network-specific genesis files are located in the ``genesisStates`` folder.
 

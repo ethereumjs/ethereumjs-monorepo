@@ -1,24 +1,47 @@
 const tape = require('tape')
-const hfParams = require('./../hardforks/index.js')
+const Common = require('../index.js')
 
-tape('Hardfork parameter access', function (t) {
-  t.test('Accessor/utility functions should work', function (st) {
-    st.equal(hfParams.gasConfig('minGasLimit', 'chainstart'), 5000, 'Fork-specifc access, topic: gasConfig')
-    st.equal(hfParams.latestGasConfig('minGasLimit'), 5000, 'Latest fork access, topic: gasConfig')
+tape('[Common]: Hardfork logic', function (t) {
+  t.test('isHardforkBlock()', function (st) {
+    let c = new Common('ropsten')
+    st.equal(c.isHardforkBlock('byzantium', 1700000), true, 'should return true for HF change block')
+    st.equal(c.isHardforkBlock('byzantium', 1700001), false, 'should return false for another block')
 
-    // TODO: Figure out why this doesn't work directly with e.g. st.throws usage
-    let error = null
-    try {
-      hfParams.gasPrices('ecAddGas', 'chainstart')
-    } catch (err) {
-      error = err
-    }
-    st.notEqual(error, null, 'Fork-specifc access, not available, topic: gasPrices')
-    st.equal(hfParams.gasPrices('ecAddGas', 'byzantium'), 500, 'Fork-specifc access, available, topic: gasPrices')
+    st.end()
+  })
 
-    st.equal(hfParams.gasPrices('sload', 'homestead'), 50, 'Fork-specifc access, before value changed')
-    st.equal(hfParams.gasPrices('sload', 'tangerineWhistle'), 200, 'Fork-specifc access, after value changed')
-    st.equal(hfParams.pow('minerReward', 'byzantium'), '3000000000000000000', 'Fork-specifc access, after/before value changed')
+  t.test('hardforkBlock()', function (st) {
+    let c = new Common('ropsten')
+    st.equal(c.hardforkBlock('byzantium'), 1700000, 'should return the correct HF change block')
+
+    st.end()
+  })
+
+  t.test('activeHardforks()', function (st) {
+    let c = new Common('ropsten')
+    st.equal(c.activeHardforks().length, 5, 'should return 5 active hardforks for Ropsten')
+    st.equal(c.activeHardforks()[3][0], 'spuriousDragon', 'should return the correct HF data for Ropsten')
+    st.equal(c.activeHardforks(9).length, 3, 'should return 3 active hardforks for Ropsten up to block 9')
+    st.equal(c.activeHardforks(10).length, 4, 'should return 4 active hardforks for Ropsten up to block 10')
+
+    st.end()
+  })
+
+  t.test('hardforkIsActiveOnChain()', function (st) {
+    let c = new Common('ropsten')
+    st.equal(c.hardforkIsActiveOnChain('byzantium'), true, 'should return true for byzantium on Ropsten')
+    st.equal(c.hardforkIsActiveOnChain('dao'), false, 'should return false for dao on Ropsten')
+    st.equal(c.hardforkIsActiveOnChain('casper'), false, 'should return false for casper on Ropsten')
+    st.equal(c.hardforkIsActiveOnChain('notexistinghardfork'), false, 'should return false for a non-existing HF on Ropsten')
+
+    st.end()
+  })
+
+  t.test('hardforkIsActiveOnBlock()', function (st) {
+    let c = new Common('ropsten')
+    st.equal(c.hardforkIsActiveOnBlock('byzantium', 1700000), true, 'Ropsten, byzantium, 1700000 -> true')
+    st.equal(c.hardforkIsActiveOnBlock('byzantium', 1700005), true, 'Ropsten, byzantium, 1700005 -> true')
+    st.equal(c.hardforkIsActiveOnBlock('byzantium', 1699999), false, 'Ropsten, byzantium, 1699999 -> false')
 
     st.end()
   })
