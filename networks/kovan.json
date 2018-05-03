@@ -1,6 +1,8 @@
 {
+  "name": "kovan",
   "networkId": 42,
   "comment": "Parity PoA test network",
+  "url": "https://kovan-testnet.github.io/website/",
   "genesis": {
     "hash": "0xa3c565fc15c7478862d50ccd6561e3c06b24cc509bf388941c25ea985ce32cb9",
     "gasLimit": 6000000,

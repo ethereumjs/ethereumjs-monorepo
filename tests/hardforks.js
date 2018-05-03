@@ -2,6 +2,27 @@ const tape = require('tape')
 const Common = require('../index.js')
 
 tape('[Common]: Hardfork logic', function (t) {
+  t.test('Hardfork access', function (st) {
+    let supportedHardforks = [
+      'chainstart',
+      'homestead',
+      'dao',
+      'tangerineWhistle',
+      'spuriousDragon',
+      'byzantium',
+      'constantinople',
+      'casper'
+    ]
+    let c
+
+    for (let hardfork of supportedHardforks) {
+      c = new Common('mainnet', hardfork)
+      st.equal(c.hardfork(), hardfork, hardfork)
+    }
+
+    st.end()
+  })
+
   t.test('isHardforkBlock()', function (st) {
     let c = new Common('ropsten')
     st.equal(c.isHardforkBlock('byzantium', 1700000), true, 'should return true for HF change block')

@@ -1,4 +1,10 @@
 {
+  "name": "tangerineWhistle",
+  "comment": "Hardfork with gas cost changes for IO-heavy operations",
+  "eip": {
+    "url": "https://eips.ethereum.org/EIPS/eip-608",
+    "status": "Final"
+  },
   "gasConfig": {},
   "gasPrices": {
     "sload": {
