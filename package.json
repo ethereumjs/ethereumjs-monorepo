@@ -4,6 +4,8 @@
   "description": "Resources common to all Ethereum implementations",
   "main": "index.js",
   "scripts": {
+    "coverage": "nyc npm run test && nyc report --reporter=text-lcov > .nyc_output/lcov.info",
+    "coveralls": "npm run coverage && coveralls <.nyc_output/lcov.info",
     "lint": "standard",
     "test": "npm run lint && node tests/",
     "build:docs": "documentation build ./index.js --format md --shallow > ./docs/index.md"
@@ -21,6 +23,9 @@
     "networks",
     "bootstrap"
   ],
+  "nyc": {
+    "exclude": "tests/*.js" 
+  },
   "author": "",
   "license": "MIT",
   "bugs": {
@@ -28,7 +33,9 @@
   },
   "homepage": "https://github.com/ethereumjs-ethereumjs/common",
   "devDependencies": {
+    "coveralls": "^3.0.1",
     "documentation": "^6.3.2",
+    "nyc": "^11.7.1",
     "standard": "^11.0.1",
     "tape": "^4.2.0"
   },

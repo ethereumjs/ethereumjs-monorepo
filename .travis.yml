@@ -21,4 +21,7 @@ matrix:
     - os: linux
       node_js: "8"
       env: CXX=g++-4.8 TEST_SUITE=test
+    - os: linux
+      node_js: "8"
+      env: CXX=g++-4.8 TEST_SUITE=coveralls
 script: npm run $TEST_SUITE
