@@ -1,4 +1,10 @@
 {
+  "name": "constantinople",
+  "comment": "Future hardfork with new instructions and protocol changes",
+  "eip": {
+    "url": "https://eips.ethereum.org/EIPS/eip-1013",
+    "status": "Draft"
+  },
   "gasConfig": {},
   "gasPrices": {},
   "vm": {},

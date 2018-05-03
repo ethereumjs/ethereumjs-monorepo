@@ -1,4 +1,10 @@
 {
+  "name": "casper",
+  "comment": "Future hardfork to move to hybrid proof-of-stake",
+  "eip": {
+    "url": "https://eips.ethereum.org/EIPS/eip-1011",
+    "status": "Draft"
+  },
   "gasConfig": {},
   "gasPrices": {},
   "vm": {},

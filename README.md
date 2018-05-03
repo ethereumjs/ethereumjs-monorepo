@@ -14,14 +14,15 @@ Succeeds the old [ethereum/common](https://github.com/ethereumjs/common/) librar
 
 # USAGE
 
-All parameters can be accessed through the ``Common`` class which ca be required through the
+All parameters can be accessed through the ``Common`` class which can be required through the
 main package and instantiated either with just the ``network`` (e.g. 'mainnet') or the ``network``
 together with a specific ``hardfork`` provided.
 
-Here is a simple usage example:
+Here are some simple usage examples:
 
-```
+```javascript
 const Common = require('ethereumjs-common')
+
 // Instantiate with only the network
 let c = new Common('ropsten')
 c.param('gasPrices', 'ecAddGas', 'byzantium') // 500
@@ -40,8 +41,9 @@ c.bootstrapNodes() // Array with current nodes
 # API
 
 See the API documentation for a full list of functions for accessing specific network and
-depending hardfork parameters as well as additional logic to ease e.g. ``blockNumber`` based
-access to parameters.
+depending hardfork parameters. There are also additional helper functions like 
+``paramByBlock (topic, name, blockNumber)`` or ``hardforkIsActiveOnBlock (hardfork, blockNumber)``
+to ease ``blockNumber`` based access to parameters.
 
 - [API Docs](./docs/index.md)
 
@@ -57,11 +59,12 @@ library supported:
 - ``tangerineWhistle``
 - ``spuriousDragon``
 - ``byzantium``
-- ``constantinople`` (incomplete)
-- ``casper`` (incomplete)
+- ``constantinople`` (Draft)
+- ``casper`` (Draft)
 
 
-There are hardfork-specific parameters for the following ``topics``:
+For hardfork-specific parameter access with the ``param()`` and ``paramByBlock()`` functions
+you can use the following ``topics``:
 
 - ``gasConfig``
 - ``gasPrices``
@@ -77,8 +80,8 @@ hardfork.
 The hardfork-specific json files only contain the deltas from ``chainstart`` and
 shouldn't be accessed directly until you have a specific reason for it.
 
-Note: The list of ``gasPrices`` is consistent but not complete, so there are currently
-gas price values missing (PRs welcome!).
+Note: The list of ``gasPrices`` and gas price changes on hardforks is consistent 
+but not complete, so there are currently gas price values missing (PRs welcome!).
 
 # Network Params
 
@@ -91,17 +94,18 @@ Supported networks:
 
 The following network-specific parameters are provided:
 
+- ``name``
 - ``networkID``
 - ``genesis`` block header values
 - ``hardforks`` block numbers
 - ``bootstrapNodes`` list
 
-To get an overview of the parameters provided have a look at one of the network-specifc
+To get an overview of the different parameters have a look at one of the network-specifc
 files like ``mainnet.json`` in the ``networks`` directory.
 
 # Bootstrap Nodes
 
-There is no separate config files for bootstrap files like in the old ``ethereum-common`` library.
+There is no separate config file for bootstrap nodes like in the old ``ethereum-common`` library.
 Instead use the ``common.bootstrapNodes()`` function to get nodes for a specific network.
 
 # Genesis States
