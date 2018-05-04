@@ -6,7 +6,7 @@ const hardforkChanges = [
   [ 'spuriousDragon', require('./spuriousDragon.json') ],
   [ 'byzantium', require('./byzantium.json') ],
   [ 'constantinople', require('./constantinople.json') ],
-  [ 'casper', require('./casper.json') ]
+  [ 'hybridCasper', require('./hybridCasper.json') ]
 ]
 
 module.exports = hardforkChanges

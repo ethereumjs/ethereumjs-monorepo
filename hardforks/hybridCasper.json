@@ -1,0 +1,48 @@
+{
+  "name": "hybridCasper",
+  "comment": "Future hardfork to move to hybrid proof-of-stake",
+  "eip": {
+    "url": "https://eips.ethereum.org/EIPS/eip-1011",
+    "status": "Draft"
+  },
+  "gasConfig": {},
+  "gasPrices": {},
+  "vm": {},
+  "pow": {
+    "minerReward": {
+      "v": "600000000000000000",
+      "d": "the amount a miner get rewarded for mining a block"
+    }
+  },
+  "casper": {
+    "casperBalance": {
+      "v": "1000000000000000000000000",
+      "d": "Balance of the Casper contract, 1e24 wei"
+    },
+    "epochLength": {
+      "v": 50,
+      "d": "Number of blocks between epochs"
+    },
+    "withdrawalDelay": {
+      "v": 15000,
+      "d": "Number of epochs a withdrawal of deposited funds is delayed"
+    },
+    "dynastyLogoutDelay": {
+      "v": 700,
+      "d": "Number of dynasties a logout is delayed"
+    },
+    "baseInterestFactor": {
+      "v": 0.007,
+      "d": "Base interest factor for validator earnings, 7e-3"
+    },
+    "basePenaltyFactor": {
+      "v": 0.0000002,
+      "d": "Base penalty factor for validators getting offline, 2e-7"
+    },
+    "minDepositSize": {
+      "v": "1500000000000000000000",
+      "d": "Minimum size of a deposit, 1.5e21 wei"
+    }
+  },
+  "sharding": {}
+}

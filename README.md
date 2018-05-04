@@ -61,7 +61,7 @@ library supported:
 - ``spuriousDragon``
 - ``byzantium``
 - ``constantinople`` (Draft)
-- ``casper`` (Draft)
+- ``hybridCasper`` (Draft)
 
 
 For hardfork-specific parameter access with the ``param()`` and ``paramByBlock()`` functions

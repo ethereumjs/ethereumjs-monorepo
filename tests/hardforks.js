@@ -11,7 +11,7 @@ tape('[Common]: Hardfork logic', function (t) {
       'spuriousDragon',
       'byzantium',
       'constantinople',
-      'casper'
+      'hybridCasper'
     ]
     let c
 
@@ -52,7 +52,7 @@ tape('[Common]: Hardfork logic', function (t) {
     let c = new Common('ropsten')
     st.equal(c.hardforkIsActiveOnChain('byzantium'), true, 'should return true for byzantium on Ropsten')
     st.equal(c.hardforkIsActiveOnChain('dao'), false, 'should return false for dao on Ropsten')
-    st.equal(c.hardforkIsActiveOnChain('casper'), false, 'should return false for casper on Ropsten')
+    st.equal(c.hardforkIsActiveOnChain('hybridCasper'), false, 'should return false for hybridCasper on Ropsten')
     st.equal(c.hardforkIsActiveOnChain('notexistinghardfork'), false, 'should return false for a non-existing HF on Ropsten')
 
     st.end()
