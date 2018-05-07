@@ -1,6 +1,6 @@
 {
   "name": "ethereumjs-account",
-  "version": "2.0.3",
+  "version": "2.0.5",
   "description": "Encoding, decoding and validation of Ethereum's Account schema",
   "main": "index.js",
   "repository": {
