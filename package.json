@@ -33,7 +33,7 @@
     "tape": "~4.9.0"
   },
   "dependencies": {
-    "ethereum-common": "^0.2.1",
+    "ethereumjs-common": "git+https://github.com/ethereumjs/ethereumjs-common.git",
     "ethereumjs-block": "^1.7.1",
     "ethereumjs-blockchain": "^2.1.0",
     "ethereumjs-devp2p": "^2.5.0",
