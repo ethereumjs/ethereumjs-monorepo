@@ -66,4 +66,14 @@ tape('[Common]: Hardfork logic', function (t) {
 
     st.end()
   })
+
+  t.test('consensus()/finality()', function (st) {
+    let c = new Common('mainnet')
+    st.equal(c.consensus('byzantium'), 'pow', 'should return pow for byzantium consensus')
+    st.equal(c.consensus('hybridCasper'), 'pow', 'should return pow for hybridCasper consensus')
+    st.equal(c.finality('byzantium'), null, 'should return null for byzantium finality')
+    st.equal(c.finality('hybridCasper'), 'pos', 'should return pos for hybridCasper finality')
+
+    st.end()
+  })
 })

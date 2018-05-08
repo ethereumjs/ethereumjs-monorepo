@@ -58,12 +58,11 @@ class Common {
   }
 
   /**
-   * Returns the parameter corresponding to a hardfork
-   * @param {String} topic Parameter topic ('gasConfig', 'gasPrices', 'vm', 'pow', 'casper', 'sharding')
-   * @param {String} name Parameter name (e.g. 'minGasLimit' for 'gasConfig' topic)
-   * @param {hardfork} hardfork Hardfork name, optional if hardfork set
+   * Internal helper function to choose between hardfork set and hardfork provided as param
+   * @param {String} hardfork Hardfork given to function as a parameter
+   * @returns {String} Hardfork chosen to be used
    */
-  param (topic, name, hardfork) {
+  _chooseHardfork (hardfork) {
     if (!hardfork) {
       if (!this._hardfork) {
         throw new Error('param() called with neither a hardfork set nor provided by param')
@@ -71,6 +70,30 @@ class Common {
         hardfork = this._hardfork
       }
     }
+    return hardfork
+  }
+
+  /**
+   * Internal helper function, returns the params for the given hardfork for the network set
+   * @param {String} hardfork Hardfork name
+   * @returns {Dictionary}
+   */
+  _getHardfork (hardfork) {
+    let hfs = this.hardforks()
+    for (let hf of hfs) {
+      if (hf['name'] === hardfork) return hf
+    }
+    throw new Error(`Hardfork ${hardfork} not defined for network ${this.networkName()}`)
+  }
+
+  /**
+   * Returns the parameter corresponding to a hardfork
+   * @param {String} topic Parameter topic ('gasConfig', 'gasPrices', 'vm', 'pow', 'casper', 'sharding')
+   * @param {String} name Parameter name (e.g. 'minGasLimit' for 'gasConfig' topic)
+   * @param {String} hardfork Hardfork name, optional if hardfork set
+   */
+  param (topic, name, hardfork) {
+    hardfork = this._chooseHardfork(hardfork)
 
     let value
     for (let hfChanges of hardforkChanges) {
@@ -147,11 +170,7 @@ class Common {
    * @returns {Number} Block number
    */
   hardforkBlock (hardfork) {
-    let hfs = this.hardforks()
-    for (let hf of hfs) {
-      if (hf['name'] === hardfork) return hf['block']
-    }
-    throw new Error(`Hardfork ${hardfork} not defined for network ${this.networkName()}`)
+    return this._getHardfork(hardfork)['block']
   }
 
   /**
@@ -166,6 +185,26 @@ class Common {
     } else {
       return false
     }
+  }
+
+  /**
+   * Provide the consensus type for the hardfork set or provided as param
+   * @param {String} hardfork Hardfork name, optional if hardfork set
+   * @returns {String} Consensus type (e.g. 'pow', 'poa')
+   */
+  consensus (hardfork) {
+    hardfork = this._chooseHardfork(hardfork)
+    return this._getHardfork(hardfork)['consensus']
+  }
+
+  /**
+   * Provide the finality type for the hardfork set or provided as param
+   * @param {String} hardfork Hardfork name, optional if hardfork set
+   * @returns {String} Finality type (e.g. 'pos', null of no finality)
+   */
+  finality (hardfork) {
+    hardfork = this._chooseHardfork(hardfork)
+    return this._getHardfork(hardfork)['finality']
   }
 
   /**
