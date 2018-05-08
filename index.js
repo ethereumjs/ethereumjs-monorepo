@@ -96,7 +96,7 @@ class Common {
    */
   paramByBlock (topic, name, blockNumber) {
     let activeHfs = this.activeHardforks(blockNumber)
-    let hardfork = activeHfs[activeHfs.length - 1][0]
+    let hardfork = activeHfs[activeHfs.length - 1]['name']
     return this.param(topic, name, hardfork)
   }
 
@@ -119,7 +119,7 @@ class Common {
    */
   hardforkIsActiveOnChain (hardfork) {
     for (let hf of this.hardforks()) {
-      if (hf[0] === hardfork && hf[1] !== null) return true
+      if (hf['name'] === hardfork && hf['block'] !== null) return true
     }
     return false
   }
@@ -133,8 +133,8 @@ class Common {
     let activeHardforks = []
     let hfs = this.hardforks()
     for (let hf of hfs) {
-      if (hf[1] === null) continue
-      if (blockNumber !== undefined && blockNumber < hf[1]) break
+      if (hf['block'] === null) continue
+      if (blockNumber !== undefined && blockNumber < hf['block']) break
 
       activeHardforks.push(hf)
     }
@@ -149,7 +149,7 @@ class Common {
   hardforkBlock (hardfork) {
     let hfs = this.hardforks()
     for (let hf of hfs) {
-      if (hf[0] === hardfork) return hf[1]
+      if (hf['name'] === hardfork) return hf['block']
     }
     throw new Error(`Hardfork ${hardfork} not defined for network ${this.networkName()}`)
   }

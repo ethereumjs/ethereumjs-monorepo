@@ -41,7 +41,7 @@ tape('[Common]: Hardfork logic', function (t) {
   t.test('activeHardforks()', function (st) {
     let c = new Common('ropsten')
     st.equal(c.activeHardforks().length, 5, 'should return 5 active hardforks for Ropsten')
-    st.equal(c.activeHardforks()[3][0], 'spuriousDragon', 'should return the correct HF data for Ropsten')
+    st.equal(c.activeHardforks()[3]['name'], 'spuriousDragon', 'should return the correct HF data for Ropsten')
     st.equal(c.activeHardforks(9).length, 3, 'should return 3 active hardforks for Ropsten up to block 9')
     st.equal(c.activeHardforks(10).length, 4, 'should return 4 active hardforks for Ropsten up to block 10')
 
