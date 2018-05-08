@@ -12,12 +12,54 @@
     "stateRoot": "0x217b0bbcfb72e2d57e28f33cb361b9983513177755dc3f33ce3e7022ed62b77b"
   },
   "hardforks": [
-    [ "chainstart", 0 ],
-    [ "homestead", 0 ],
-    [ "dao", null ],
-    [ "tangerineWhistle", 0 ],
-    [ "spuriousDragon", 10 ],
-    [ "byzantium", 1700000 ]
+    {
+      "name": "chainstart",
+      "block": 0,
+      "consensus": "pow",
+      "finality": null
+    },
+    {
+      "name": "homestead",
+      "block": 0,
+      "consensus": "pow",
+      "finality": null
+    },
+    {
+      "name": "dao",
+      "block": null,
+      "consensus": "pow",
+      "finality": null
+    },
+    {
+      "name": "tangerineWhistle",
+      "block": 0,
+      "consensus": "pow",
+      "finality": null
+    },
+    {
+      "name": "spuriousDragon",
+      "block": 10,
+      "consensus": "pow",
+      "finality": null
+    },
+    {
+      "name": "byzantium",
+      "block": 1700000,
+      "consensus": "pow",
+      "finality": null
+    },
+    {
+      "name": "constantinople",
+      "block": null,
+      "consensus": "pow",
+      "finality": null
+    },
+    {
+      "name": "hybridCasper",
+      "block": null,
+      "consensus": "pow",
+      "finality": "pos"
+    }
   ],
   "bootstrapNodes": [
     {

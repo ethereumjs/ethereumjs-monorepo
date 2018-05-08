@@ -41,7 +41,7 @@ tape('[Common]: Hardfork logic', function (t) {
   t.test('activeHardforks()', function (st) {
     let c = new Common('ropsten')
     st.equal(c.activeHardforks().length, 5, 'should return 5 active hardforks for Ropsten')
-    st.equal(c.activeHardforks()[3][0], 'spuriousDragon', 'should return the correct HF data for Ropsten')
+    st.equal(c.activeHardforks()[3]['name'], 'spuriousDragon', 'should return the correct HF data for Ropsten')
     st.equal(c.activeHardforks(9).length, 3, 'should return 3 active hardforks for Ropsten up to block 9')
     st.equal(c.activeHardforks(10).length, 4, 'should return 4 active hardforks for Ropsten up to block 10')
 
@@ -63,6 +63,16 @@ tape('[Common]: Hardfork logic', function (t) {
     st.equal(c.hardforkIsActiveOnBlock('byzantium', 1700000), true, 'Ropsten, byzantium, 1700000 -> true')
     st.equal(c.hardforkIsActiveOnBlock('byzantium', 1700005), true, 'Ropsten, byzantium, 1700005 -> true')
     st.equal(c.hardforkIsActiveOnBlock('byzantium', 1699999), false, 'Ropsten, byzantium, 1699999 -> false')
+
+    st.end()
+  })
+
+  t.test('consensus()/finality()', function (st) {
+    let c = new Common('mainnet')
+    st.equal(c.consensus('byzantium'), 'pow', 'should return pow for byzantium consensus')
+    st.equal(c.consensus('hybridCasper'), 'pow', 'should return pow for hybridCasper consensus')
+    st.equal(c.finality('byzantium'), null, 'should return null for byzantium finality')
+    st.equal(c.finality('hybridCasper'), 'pos', 'should return pos for hybridCasper finality')
 
     st.end()
   })
