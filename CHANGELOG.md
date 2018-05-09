@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 
+## [0.1.1] - 2018-05-09
+- Remove dynamic require to prevent browserify issue, PR [#8](https://github.com/ethereumjs/ethereumjs-common/pull/8)
+
+[0.1.1]: https://github.com/ethereumjs/ethereumjs-common/compare/v0.1.0...v0.1.1
+
 ## [0.1.0] - 2018-05-09
 - Initial version, this library succeeds the [ethereum/common](https://github.com/ethereumjs/common/issues/12)
   library, being more future-proof through a better structured design
