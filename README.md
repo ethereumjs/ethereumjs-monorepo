@@ -16,7 +16,7 @@ Succeeds the old [ethereum/common](https://github.com/ethereumjs/common/) librar
 # USAGE
 
 All parameters can be accessed through the ``Common`` class which can be required through the
-main package and instantiated either with just the ``network`` (e.g. 'mainnet') or the ``network``
+main package and instantiated either with just the ``chain`` (e.g. 'mainnet') or the ``chain``
 together with a specific ``hardfork`` provided.
 
 Here are some simple usage examples:
@@ -24,24 +24,24 @@ Here are some simple usage examples:
 ```javascript
 const Common = require('ethereumjs-common')
 
-// Instantiate with only the network
+// Instantiate with only the chain
 let c = new Common('ropsten')
 c.param('gasPrices', 'ecAddGas', 'byzantium') // 500
 
-// Network and hardfork provided
+// Chain and hardfork provided
 c = new Common('ropsten', 'byzantium')
 c.param('pow', 'minerReward') // 3000000000000000000
 
 // Access genesis data for Ropsten network
 c.genesis().hash // 0x41941023680923e0fe4d74a34bdac8141f2540e3ae90623718e47d66d1ca4a2d
 
-// Get bootstrap nodes for network
+// Get bootstrap nodes for chain/network
 c.bootstrapNodes() // Array with current nodes
 ```
 
 # API
 
-See the API documentation for a full list of functions for accessing specific network and
+See the API documentation for a full list of functions for accessing specific chain and
 depending hardfork parameters. There are also additional helper functions like 
 ``paramByBlock (topic, name, blockNumber)`` or ``hardforkIsActiveOnBlock (hardfork, blockNumber)``
 to ease ``blockNumber`` based access to parameters.
@@ -84,30 +84,31 @@ shouldn't be accessed directly until you have a specific reason for it.
 Note: The list of ``gasPrices`` and gas price changes on hardforks is consistent 
 but not complete, so there are currently gas price values missing (PRs welcome!).
 
-# Network Params
+# Chain Params
 
-Supported networks:
+Supported chains:
 
 - ``mainnet``
 - ``ropsten``
 - ``rinkeby``
 - ``kovan``
 
-The following network-specific parameters are provided:
+The following chain-specific parameters are provided:
 
 - ``name``
-- ``networkID``
+- ``chainId``
+- ``networkId``
 - ``genesis`` block header values
 - ``hardforks`` block numbers
 - ``bootstrapNodes`` list
 
-To get an overview of the different parameters have a look at one of the network-specifc
-files like ``mainnet.json`` in the ``networks`` directory.
+To get an overview of the different parameters have a look at one of the chain-specifc
+files like ``mainnet.json`` in the ``chains`` directory.
 
 # Bootstrap Nodes
 
 There is no separate config file for bootstrap nodes like in the old ``ethereum-common`` library.
-Instead use the ``common.bootstrapNodes()`` function to get nodes for a specific network.
+Instead use the ``common.bootstrapNodes()`` function to get nodes for a specific chain/network.
 
 # Genesis States
 
