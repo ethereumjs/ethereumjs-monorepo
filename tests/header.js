@@ -1,5 +1,4 @@
 const tape = require('tape')
-const params = require('ethereum-common')
 const utils = require('ethereumjs-util')
 const rlp = utils.rlp
 const testing = require('ethereumjs-testing')
@@ -17,7 +16,7 @@ tape('[Block]: Header functions', function (t) {
       st.equal(header.receiptTrie.toString('hex'), utils.SHA3_RLP_S)
       st.deepEqual(header.bloom, utils.zeros(256))
       st.deepEqual(header.difficulty, new Buffer([]))
-      st.deepEqual(header.number, utils.intToBuffer(params.homeSteadForkNumber.v))
+      st.deepEqual(header.number, utils.intToBuffer(1150000))
       st.deepEqual(header.gasLimit, new Buffer('ffffffffffffff', 'hex'))
       st.deepEqual(header.gasUsed, new Buffer([]))
       st.deepEqual(header.timestamp, new Buffer([]))
