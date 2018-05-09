@@ -1,10 +1,12 @@
+const Common = require('ethereumjs-common')
 const utils = require('ethereumjs-util')
-const params = require('ethereum-common/params.json')
 const BN = utils.BN
   /**
    * An object that repersents the block header
    * @constructor
    * @param {Array} data raw data, deserialized
+   * @param {Array} opts Options
+   * @param {String|Number} opts.chain The chain for the block header ['mainnet']
    * @prop {Buffer} parentHash the blocks' parent's hash
    * @prop {Buffer} uncleHash sha3(rlp_encode(uncle_list))
    * @prop {Buffer} coinbase the miner address
@@ -20,7 +22,12 @@ const BN = utils.BN
    * @prop {Buffer} extraData
    * @prop {Array.<Buffer>} raw an array of buffers containing the raw blocks.
    */
-var BlockHeader = module.exports = function (data) {
+var BlockHeader = module.exports = function (data, opts) {
+  opts = opts || {}
+  this._chain = opts.chain ? opts.chain : 'mainnet'
+  this._hardfork = 'byzantium'
+  this._common = new Common(this._chain, this._hardfork)
+
   var fields = [{
     name: 'parentHash',
     length: 32,
@@ -52,7 +59,8 @@ var BlockHeader = module.exports = function (data) {
     default: new Buffer([])
   }, {
     name: 'number',
-    default: utils.intToBuffer(params.homeSteadForkNumber.v)
+    // TODO: params.homeSteadForkNumber.v left for legacy reasons, replace on future release
+    default: utils.intToBuffer(1150000)
   }, {
     name: 'gasLimit',
     default: new Buffer('ffffffffffffff', 'hex')
@@ -89,8 +97,8 @@ BlockHeader.prototype.canonicalDifficulty = function (parentBlock) {
   const blockTs = new BN(this.timestamp)
   const parentTs = new BN(parentBlock.header.timestamp)
   const parentDif = new BN(parentBlock.header.difficulty)
-  const minimumDifficulty = new BN(params.minimumDifficulty.v)
-  var offset = parentDif.div(new BN(params.difficultyBoundDivisor.v))
+  const minimumDifficulty = new BN(this._common.param('pow', 'minimumDifficulty'))
+  var offset = parentDif.div(new BN(this._common.param('pow', 'difficultyBoundDivisor')))
   var dif
 
   // Byzantium
@@ -142,11 +150,11 @@ BlockHeader.prototype.validateDifficulty = function (parentBlock) {
 BlockHeader.prototype.validateGasLimit = function (parentBlock) {
   const pGasLimit = new BN(parentBlock.header.gasLimit)
   const gasLimit = new BN(this.gasLimit)
-  const a = pGasLimit.div(new BN(params.gasLimitBoundDivisor.v))
+  const a = pGasLimit.div(new BN(this._common.param('gasConfig', 'gasLimitBoundDivisor')))
   const maxGasLimit = pGasLimit.add(a)
   const minGasLimit = pGasLimit.sub(a)
 
-  return gasLimit.lt(maxGasLimit) && gasLimit.gt(minGasLimit) && gasLimit.gte(params.minGasLimit.v)
+  return gasLimit.lt(maxGasLimit) && gasLimit.gt(minGasLimit) && gasLimit.gte(this._common.param('gasConfig', 'minGasLimit'))
 }
 
 /**
@@ -203,7 +211,7 @@ BlockHeader.prototype.validate = function (blockchain, height, cb) {
       return cb('invalid timestamp')
     }
 
-    if (self.extraData.length > params.maximumExtraDataSize.v) {
+    if (self.extraData.length > this._common.param('vm', 'maxExtraDataSize')) {
       return cb('invalid amount of extra data')
     }
 

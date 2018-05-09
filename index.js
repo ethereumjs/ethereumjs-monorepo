@@ -1,3 +1,4 @@
+const Common = require('ethereumjs-common')
 const ethUtil = require('ethereumjs-util')
 const Tx = require('ethereumjs-tx')
 const Trie = require('merkle-patricia-tree')
@@ -5,17 +6,23 @@ const BN = ethUtil.BN
 const rlp = ethUtil.rlp
 const async = require('async')
 const BlockHeader = require('./header')
-const params = require('ethereum-common/params.json')
 
 /**
  * Creates a new block object
  * @constructor the raw serialized or the deserialized block.
  * @param {Array|Buffer|Object} data
+ * @param {Array} opts Options
+ * @param {String|Number} opts.chain The chain for the block ['mainnet']
  * @prop {Header} header the block's header
  * @prop {Array.<Header>} uncleList an array of uncle headers
  * @prop {Array.<Buffer>} raw an array of buffers containing the raw blocks.
  */
-var Block = module.exports = function (data) {
+var Block = module.exports = function (data, opts) {
+  opts = opts || {}
+  this._chain = opts.chain ? opts.chain : 'mainnet'
+  this._hardfork = 'byzantium'
+  this._common = new Common(this._chain, this._hardfork)
+
   this.transactions = []
   this.uncleHeaders = []
   this._inBlockChain = false
@@ -39,18 +46,18 @@ var Block = module.exports = function (data) {
   }
 
   if (Array.isArray(data)) {
-    this.header = new BlockHeader(data[0])
+    this.header = new BlockHeader(data[0], { 'chain': this._chain })
     rawTransactions = data[1]
     rawUncleHeaders = data[2]
   } else {
-    this.header = new BlockHeader(data.header)
+    this.header = new BlockHeader(data.header, { 'chain': this._chain })
     rawTransactions = data.transactions || []
     rawUncleHeaders = data.uncleHeaders || []
   }
 
   // parse uncle headers
   for (var i = 0; i < rawUncleHeaders.length; i++) {
-    this.uncleHeaders.push(new BlockHeader(rawUncleHeaders[i]))
+    this.uncleHeaders.push(new BlockHeader(rawUncleHeaders[i], { 'chain': this._chain }))
   }
 
   // parse transactions
@@ -85,11 +92,11 @@ Block.prototype.isGenesis = function () {
  * @method setGenesisParams
  */
 Block.prototype.setGenesisParams = function () {
-  this.header.gasLimit = params.genesisGasLimit.v
-  this.header.difficulty = params.genesisDifficulty.v
-  this.header.extraData = params.genesisExtraData.v
-  this.header.nonce = params.genesisNonce.v
-  this.header.stateRoot = params.genesisStateRoot.v
+  this.header.gasLimit = this._common.genesis().gasLimit
+  this.header.difficulty = this._common.genesis().difficulty
+  this.header.extraData = this._common.genesis().extraData
+  this.header.nonce = this._common.genesis().nonce
+  this.header.stateRoot = this._common.genesis().stateRoot
   this.header.number = new Buffer([])
 }
 
