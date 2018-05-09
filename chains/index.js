@@ -1,20 +1,14 @@
 var chains = {}
 chains['names'] = {}
 
-let availableChains = {
-  1: 'mainnet',
-  3: 'ropsten',
-  4: 'rinkeby',
-  42: 'kovan'
-}
+chains['names'][1] = 'mainnet'
+chains['names'][3] = 'ropsten'
+chains['names'][4] = 'rinkeby'
+chains['names'][42] = 'kovan'
 
-function addChainParams (id, name) {
-  chains['names'][id] = name
-  chains[name] = require(`./${name}.json`)
-}
-
-for (let key in availableChains) {
-  addChainParams(key, availableChains[key])
-}
+chains['mainnet'] = require('./mainnet.json')
+chains['ropsten'] = require('./ropsten.json')
+chains['rinkeby'] = require('./rinkeby.json')
+chains['kovan'] = require('./kovan.json')
 
 module.exports = chains
