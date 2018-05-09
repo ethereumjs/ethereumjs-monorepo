@@ -1,17 +1,17 @@
-const networkParams = require('./networks')
+const chainParams = require('./chains')
 const hardforkChanges = require('./hardforks')
 
 /**
- * Common class to access network and hardfork parameters
+ * Common class to access chain and hardfork parameters
  */
 class Common {
   /**
    * @constructor
-   * @param {String|Number} network String ('mainnet') or Number (1) network representation
+   * @param {String|Number} chain String ('mainnet') or Number (1) chain representation
    * @param {String} hardfork String identifier ('byzantium') for hardfork (optional)
    */
-  constructor (network, hardfork) {
-    this.setNetwork(network)
+  constructor (chain, hardfork) {
+    this.setChain(chain)
     this._hardfork = null
     if (hardfork !== undefined) {
       this.setHardfork(hardfork)
@@ -19,21 +19,21 @@ class Common {
   }
 
   /**
-   * Sets the network
-   * @param {String|Number} network String ('mainnet') or Number (1) network representation
+   * Sets the chain
+   * @param {String|Number} chain String ('mainnet') or Number (1) chain representation
    */
-  setNetwork (network) {
-    if (typeof (network) === 'number') {
-      if (networkParams['names'][network]) {
-        this._networkParams = networkParams[networkParams['names'][network]]
+  setChain (chain) {
+    if (typeof (chain) === 'number') {
+      if (chainParams['names'][chain]) {
+        this._chainParams = chainParams[chainParams['names'][chain]]
       } else {
-        throw new Error(`Network with ID ${network} not supported`)
+        throw new Error(`Chain with ID ${chain} not supported`)
       }
-    } else if (typeof (network) === 'string') {
-      if (networkParams[network]) {
-        this._networkParams = networkParams[network]
+    } else if (typeof (chain) === 'string') {
+      if (chainParams[chain]) {
+        this._chainParams = chainParams[chain]
       } else {
-        throw new Error(`Network with name ${network} not supported`)
+        throw new Error(`Chain with name ${chain} not supported`)
       }
     } else {
       throw new Error('Wrong input format')
@@ -74,7 +74,7 @@ class Common {
   }
 
   /**
-   * Internal helper function, returns the params for the given hardfork for the network set
+   * Internal helper function, returns the params for the given hardfork for the chain set
    * @param {String} hardfork Hardfork name
    * @returns {Dictionary}
    */
@@ -83,7 +83,7 @@ class Common {
     for (let hf of hfs) {
       if (hf['name'] === hardfork) return hf
     }
-    throw new Error(`Hardfork ${hardfork} not defined for network ${this.networkName()}`)
+    throw new Error(`Hardfork ${hardfork} not defined for chain ${this.chainName()}`)
   }
 
   /**
@@ -148,7 +148,7 @@ class Common {
   }
 
   /**
-   * Returns the active hardfork switches for the current network
+   * Returns the active hardfork switches for the current chain
    * @param {Number} blockNumber up to block if provided, otherwise for the whole chain
    * @return {Array} Array with hardfork arrays
    */
@@ -174,7 +174,7 @@ class Common {
   }
 
   /**
-   * True if block number provided is the hardfork change block of the current network
+   * True if block number provided is the hardfork change block of the current chain
    * @param {String} hardfork Hardfork name
    * @param {Number} blockNumber Number of the block to check
    * @returns {Boolean}
@@ -208,27 +208,27 @@ class Common {
   }
 
   /**
-   * Returns the Genesis parameters of current network
+   * Returns the Genesis parameters of current chain
    * @returns {Dictionary} Genesis dict
   */
   genesis () {
-    return this._networkParams['genesis']
+    return this._chainParams['genesis']
   }
 
   /**
-   * Returns the hardforks for current network
+   * Returns the hardforks for current chain
    * @returns {Array} Array with arrays of hardforks
    */
   hardforks () {
-    return this._networkParams['hardforks']
+    return this._chainParams['hardforks']
   }
 
   /**
-   * Returns bootstrap nodes for the current network
+   * Returns bootstrap nodes for the current chain
    * @returns {Dictionary} Dict with bootstrap nodes
    */
   bootstrapNodes () {
-    return this._networkParams['bootstrapNodes']
+    return this._chainParams['bootstrapNodes']
   }
 
   /**
@@ -240,19 +240,27 @@ class Common {
   }
 
   /**
+   * Returns the Id of current chain
+   * @returns {Number} chain Id
+   */
+  chainId () {
+    return this._chainParams['chainId']
+  }
+
+  /**
+   * Returns the name of current chain
+   * @returns {String} chain name (lower case)
+   */
+  chainName () {
+    return chainParams['names'][this.chainId()]
+  }
+
+  /**
    * Returns the Id of current network
    * @returns {Number} network Id
    */
   networkId () {
-    return this._networkParams['networkId']
-  }
-
-  /**
-   * Returns the name of current network
-   * @returns {String} network name (lower case)
-   */
-  networkName () {
-    return networkParams['names'][this.networkId()]
+    return this._chainParams['networkId']
   }
 }
 

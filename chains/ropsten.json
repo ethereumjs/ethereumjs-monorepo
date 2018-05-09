@@ -1,5 +1,6 @@
 {
   "name": "ropsten",
+  "chainId": 3,
   "networkId": 3,
   "comment": "PoW test network",
   "url": "https://github.com/ethereum/ropsten",
