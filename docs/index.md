@@ -7,6 +7,8 @@ Creates a new block object
 **Parameters**
 
 -   `data` **([Array](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array) \| [Buffer](https://nodejs.org/api/buffer.html) \| [Object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object))** 
+-   `opts` **[Array](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array)** Options
+    -   `opts.chain` **([String](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String) \| [Number](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number))** The chain for the block ['mainnet']
 
 **Properties**
 
@@ -95,3 +97,83 @@ Converts the block toJSON
 -   `labeled` **Bool** whether to create an labeled object or an array
 
 Returns **[Object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)** 
+
+# BlockHeader
+
+An object that repersents the block header
+
+**Parameters**
+
+-   `data` **[Array](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array)** raw data, deserialized
+-   `opts` **[Array](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array)** Options
+    -   `opts.chain` **([String](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String) \| [Number](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number))** The chain for the block header ['mainnet']
+
+**Properties**
+
+-   `parentHash` **[Buffer](https://nodejs.org/api/buffer.html)** the blocks' parent's hash
+-   `uncleHash` **[Buffer](https://nodejs.org/api/buffer.html)** sha3(rlp_encode(uncle_list))
+-   `coinbase` **[Buffer](https://nodejs.org/api/buffer.html)** the miner address
+-   `stateRoot` **[Buffer](https://nodejs.org/api/buffer.html)** The root of a Merkle Patricia tree
+-   `transactionTrie` **[Buffer](https://nodejs.org/api/buffer.html)** the root of a Trie containing the transactions
+-   `receiptTrie` **[Buffer](https://nodejs.org/api/buffer.html)** the root of a Trie containing the transaction Reciept
+-   `bloom` **[Buffer](https://nodejs.org/api/buffer.html)** 
+-   `difficulty` **[Buffer](https://nodejs.org/api/buffer.html)** 
+-   `number` **[Buffer](https://nodejs.org/api/buffer.html)** the block's height
+-   `gasLimit` **[Buffer](https://nodejs.org/api/buffer.html)** 
+-   `gasUsed` **[Buffer](https://nodejs.org/api/buffer.html)** 
+-   `timestamp` **[Buffer](https://nodejs.org/api/buffer.html)** 
+-   `extraData` **[Buffer](https://nodejs.org/api/buffer.html)** 
+-   `raw` **[Array](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array)&lt;[Buffer](https://nodejs.org/api/buffer.html)>** an array of buffers containing the raw blocks.
+
+## canonicalDifficulty
+
+Returns the canoncical difficulty of the block
+
+**Parameters**
+
+-   `parentBlock` **[Block](#block)** the parent `Block` of the this header
+
+Returns **BN** 
+
+## validateDifficulty
+
+checks that the block's `difficuly` matches the canonical difficulty
+
+**Parameters**
+
+-   `parentBlock` **[Block](#block)** this block's parent
+
+Returns **[Boolean](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean)** 
+
+## validateGasLimit
+
+Validates the gasLimit
+
+**Parameters**
+
+-   `parentBlock` **[Block](#block)** this block's parent
+
+Returns **[Boolean](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean)** 
+
+## validate
+
+Validates the entire block header
+
+**Parameters**
+
+-   `blockChain` **Blockchain** the blockchain that this block is validating against
+-   `height` **Bignum?** if this is an uncle header, this is the height of the block that is including it
+-   `cb` **[Function](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function)** the callback function. The callback is given an `error` if the block is invalid
+-   `blockchain`  
+
+## hash
+
+Returns the sha3 hash of the blockheader
+
+Returns **[Buffer](https://nodejs.org/api/buffer.html)** 
+
+## isGenesis
+
+checks if the blockheader is a genesis header
+
+Returns **[Boolean](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean)** 
