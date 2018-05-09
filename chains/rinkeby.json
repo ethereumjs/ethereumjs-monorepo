@@ -1,5 +1,6 @@
 {
   "name": "rinkeby",
+  "chainId": 4,
   "networkId": 4,
   "comment": "PoA test network",
   "url": "https://www.rinkeby.io",

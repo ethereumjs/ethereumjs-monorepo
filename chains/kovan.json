@@ -1,5 +1,6 @@
 {
   "name": "kovan",
+  "chainId": 42,
   "networkId": 42,
   "comment": "Parity PoA test network",
   "url": "https://kovan-testnet.github.io/website/",
