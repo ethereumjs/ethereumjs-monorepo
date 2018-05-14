@@ -51,6 +51,17 @@ tape('[Common]: Hardfork logic', function (t) {
     st.end()
   })
 
+  t.test('activeHardfork()', function (st) {
+    let c = new Common('ropsten')
+    st.equal(c.activeHardfork(), 'byzantium', 'should return byzantium as latest active HF for Ropsten')
+    st.equal(c.activeHardfork(10), 'spuriousDragon', 'should return spuriousDragon as latest active HF for Ropsten for block 10')
+
+    c = new Common('ropsten', null, ['tangerineWhistle', 'spuriousDragon'])
+    st.equal(c.activeHardfork(null, { onlySupported: true }), 'spuriousDragon', 'should return spuriousDragon as latest active HF for Ropsten with limited supported hardforks')
+
+    st.end()
+  })
+
   t.test('hardforkIsActiveOnChain()', function (st) {
     let c = new Common('ropsten')
     st.equal(c.hardforkIsActiveOnChain('byzantium'), true, 'should return true for byzantium on Ropsten')

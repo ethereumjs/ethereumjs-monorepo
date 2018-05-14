@@ -204,6 +204,22 @@ class Common {
   }
 
   /**
+   * Returns the latest active hardfork name for chain or block or throws if unavailable
+   * @param {Number} blockNumber up to block if provided, otherwise for the whole chain
+   * @param {Array} opts
+   * @param {Array.Boolean} opts.onlySupported optional, limit results to supported HFs (default: false)
+   * @return {String} Hardfork name
+   */
+  activeHardfork (blockNumber, opts) {
+    let activeHardforks = this.activeHardforks(blockNumber, opts)
+    if (activeHardforks.length > 0) {
+      return activeHardforks[activeHardforks.length - 1]['name']
+    } else {
+      throw new Error(`No (supported) active hardfork found`)
+    }
+  }
+
+  /**
    * Returns the hardfork change block for the given hardfork
    * @param {String} hardfork Hardfork name
    * @returns {Number} Block number
