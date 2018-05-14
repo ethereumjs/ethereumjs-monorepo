@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 
+## [0.2.0] - 2018-05-14
+- New optional initialization parameter ``allowedHardforks``,  this allows for cleaner client
+library implementations by preventing undefined behaviour, PR [#10](https://github.com/ethereumjs/ethereumjs-common/pull/10)
+- Added ``activeHardfork()`` function to get latest active HF for chain or block, PR [#11](https://github.com/ethereumjs/ethereumjs-common/pull/11)
+
+[0.2.0]: https://github.com/ethereumjs/ethereumjs-common/compare/v0.1.1...v0.2.0
+
 ## [0.1.1] - 2018-05-09
 - Remove dynamic require to prevent browserify issue, PR [#8](https://github.com/ethereumjs/ethereumjs-common/pull/8)
 
