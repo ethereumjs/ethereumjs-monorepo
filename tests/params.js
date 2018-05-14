@@ -21,6 +21,10 @@ tape('[Common]: Parameter access', function (t) {
     c.setHardfork('byzantium')
     st.equal(c.param('gasPrices', 'ecAddGas'), 500, 'Should return correct value for HF set in class')
 
+    c = new Common('mainnet', 'byzantium', ['byzantium', 'constantinople'])
+    st.throws(function () { c.param('gasPrices', 'expByte', 'spuriousDragon') }, /supportedHardforks$/, 'Should throw when calling param() with an unsupported hardfork')
+    st.throws(function () { c.paramByBlock('gasPrices', 'expByte', 0) }, /supportedHardforks$/, 'Should throw when calling paramByBlock() with an unsupported hardfork')
+
     st.end()
   })
 

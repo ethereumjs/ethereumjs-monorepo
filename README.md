@@ -39,6 +39,16 @@ c.genesis().hash // 0x41941023680923e0fe4d74a34bdac8141f2540e3ae90623718e47d66d1
 c.bootstrapNodes() // Array with current nodes
 ```
 
+It is encouraged to also explicitly set the ``supportedHardforks`` if the initializing library
+only supports a certain range of ``hardforks``:
+
+```javascript
+let c = new Common('ropsten', null, ['byzantium', 'constantinople'])
+```
+
+This will e.g. throw an error when a param is requested for an unsupported hardfork and
+like this prevents unpredicted behaviour.
+
 # API
 
 See the API documentation for a full list of functions for accessing specific chain and

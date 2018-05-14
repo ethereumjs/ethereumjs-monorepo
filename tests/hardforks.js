@@ -45,6 +45,9 @@ tape('[Common]: Hardfork logic', function (t) {
     st.equal(c.activeHardforks(9).length, 3, 'should return 3 active hardforks for Ropsten up to block 9')
     st.equal(c.activeHardforks(10).length, 4, 'should return 4 active hardforks for Ropsten up to block 10')
 
+    c = new Common('ropsten', null, ['spuriousDragon', 'byzantium', 'constantinople'])
+    st.equal(c.activeHardforks(null, { onlySupported: true }).length, 2, 'should return 2 active HFs when restricted to supported HFs')
+
     st.end()
   })
 
@@ -54,6 +57,10 @@ tape('[Common]: Hardfork logic', function (t) {
     st.equal(c.hardforkIsActiveOnChain('dao'), false, 'should return false for dao on Ropsten')
     st.equal(c.hardforkIsActiveOnChain('hybridCasper'), false, 'should return false for hybridCasper on Ropsten')
     st.equal(c.hardforkIsActiveOnChain('notexistinghardfork'), false, 'should return false for a non-existing HF on Ropsten')
+    st.doesNotThrow(function () { c.hardforkIsActiveOnChain('spuriousDragon', { onlySupported: true }) }, /unsupported hardfork$/, 'should not throw with unsupported Hf and onlySupported set to false') // eslint-disable-line no-new
+
+    c = new Common('ropsten', null, ['byzantium', 'constantinople'])
+    st.throws(function () { c.hardforkIsActiveOnChain('spuriousDragon', { onlySupported: true }) }, /unsupported hardfork$/, 'should throw with unsupported Hf and onlySupported set to true') // eslint-disable-line no-new
 
     st.end()
   })
