@@ -7,22 +7,23 @@
     -   [setHardfork][3]
     -   [\_chooseHardfork][4]
     -   [\_getHardfork][5]
-    -   [param][6]
-    -   [paramByBlock][7]
-    -   [hardforkIsActiveOnBlock][8]
-    -   [hardforkIsActiveOnChain][9]
-    -   [activeHardforks][10]
-    -   [hardforkBlock][11]
-    -   [isHardforkBlock][12]
-    -   [consensus][13]
-    -   [finality][14]
-    -   [genesis][15]
-    -   [hardforks][16]
-    -   [bootstrapNodes][17]
-    -   [hardfork][18]
-    -   [chainId][19]
-    -   [chainName][20]
-    -   [networkId][21]
+    -   [\_isSupportedHardfork][6]
+    -   [param][7]
+    -   [paramByBlock][8]
+    -   [hardforkIsActiveOnBlock][9]
+    -   [hardforkIsActiveOnChain][10]
+    -   [activeHardforks][11]
+    -   [hardforkBlock][12]
+    -   [isHardforkBlock][13]
+    -   [consensus][14]
+    -   [finality][15]
+    -   [genesis][16]
+    -   [hardforks][17]
+    -   [bootstrapNodes][18]
+    -   [hardfork][19]
+    -   [chainId][20]
+    -   [chainName][21]
+    -   [networkId][22]
 
 ## Common
 
@@ -30,8 +31,9 @@ Common class to access chain and hardfork parameters
 
 **Parameters**
 
--   `chain` **([String][22] \| [Number][23])** String ('mainnet') or Number (1) chain representation
--   `hardfork` **[String][22]** String identifier ('byzantium') for hardfork (optional)
+-   `chain` **([String][23] \| [Number][24])** String ('mainnet') or Number (1) chain representation
+-   `hardfork` **[String][23]** String identifier ('byzantium') for hardfork (optional)
+-   `supportedHardforks` **[Array][25]** Limit parameter returns to the given hardforks (optional)
 
 ### setChain
 
@@ -39,7 +41,7 @@ Sets the chain
 
 **Parameters**
 
--   `chain` **([String][22] \| [Number][23])** String ('mainnet') or Number (1) chain representation
+-   `chain` **([String][23] \| [Number][24])** String ('mainnet') or Number (1) chain representation
 
 ### setHardfork
 
@@ -47,7 +49,7 @@ Sets the hardfork to get params for
 
 **Parameters**
 
--   `hardfork` **[String][22]** String identifier ('byzantium')
+-   `hardfork` **[String][23]** String identifier ('byzantium')
 
 ### \_chooseHardfork
 
@@ -55,9 +57,9 @@ Internal helper function to choose between hardfork set and hardfork provided as
 
 **Parameters**
 
--   `hardfork` **[String][22]** Hardfork given to function as a parameter
+-   `hardfork` **[String][23]** Hardfork given to function as a parameter
 
-Returns **[String][22]** Hardfork chosen to be used
+Returns **[String][23]** Hardfork chosen to be used
 
 ### \_getHardfork
 
@@ -65,9 +67,19 @@ Internal helper function, returns the params for the given hardfork for the chai
 
 **Parameters**
 
--   `hardfork` **[String][22]** Hardfork name
+-   `hardfork` **[String][23]** Hardfork name
 
 Returns **Dictionary** 
+
+### \_isSupportedHardfork
+
+Internal helper function to check if a hardfork is set to be supported by the library
+
+**Parameters**
+
+-   `hardfork` **[String][23]** Hardfork name
+
+Returns **[Boolean][26]** True if hardfork is supported
 
 ### param
 
@@ -75,9 +87,9 @@ Returns the parameter corresponding to a hardfork
 
 **Parameters**
 
--   `topic` **[String][22]** Parameter topic ('gasConfig', 'gasPrices', 'vm', 'pow', 'casper', 'sharding')
--   `name` **[String][22]** Parameter name (e.g. 'minGasLimit' for 'gasConfig' topic)
--   `hardfork` **[String][22]** Hardfork name, optional if hardfork set
+-   `topic` **[String][23]** Parameter topic ('gasConfig', 'gasPrices', 'vm', 'pow', 'casper', 'sharding')
+-   `name` **[String][23]** Parameter name (e.g. 'minGasLimit' for 'gasConfig' topic)
+-   `hardfork` **[String][23]** Hardfork name, optional if hardfork set
 
 ### paramByBlock
 
@@ -85,9 +97,9 @@ Returns a parameter for the hardfork active on block number
 
 **Parameters**
 
--   `topic` **[String][22]** Parameter topic
--   `name` **[String][22]** Parameter name
--   `blockNumber` **[Number][23]** Block number
+-   `topic` **[String][23]** Parameter topic
+-   `name` **[String][23]** Parameter name
+-   `blockNumber` **[Number][24]** Block number
 
 ### hardforkIsActiveOnBlock
 
@@ -95,10 +107,12 @@ Checks if a hardfork is active for a given block number
 
 **Parameters**
 
--   `hardfork` **[String][22]** Hardfork name
--   `blockNumber` **[Number][23]** 
+-   `hardfork` **[String][23]** Hardfork name
+-   `blockNumber` **[Number][24]** 
+-   `opts` **[Array][25]** 
+    -   `opts.onlySupported` **Array.Boolean** optional, only allow supported HFs (default: false)
 
-Returns **[Boolean][24]** 
+Returns **[Boolean][26]** 
 
 ### hardforkIsActiveOnChain
 
@@ -106,9 +120,11 @@ Checks if the hardfork provided is active on the chain
 
 **Parameters**
 
--   `hardfork` **[String][22]** 
+-   `hardfork` **[String][23]** 
+-   `opts` **[Array][25]** 
+    -   `opts.onlySupported` **Array.Boolean** optional, only allow supported HFs (default: false)
 
-Returns **[Boolean][24]** 
+Returns **[Boolean][26]** 
 
 ### activeHardforks
 
@@ -116,7 +132,9 @@ Returns the active hardfork switches for the current chain
 
 **Parameters**
 
--   `blockNumber` **[Number][23]** up to block if provided, otherwise for the whole chain
+-   `blockNumber` **[Number][24]** up to block if provided, otherwise for the whole chain
+-   `opts` **[Array][25]** 
+    -   `opts.onlySupported` **Array.Boolean** optional, limit results to supported HFs (default: false)
 
 Returns **[Array][25]** Array with hardfork arrays
 
@@ -126,9 +144,9 @@ Returns the hardfork change block for the given hardfork
 
 **Parameters**
 
--   `hardfork` **[String][22]** Hardfork name
+-   `hardfork` **[String][23]** Hardfork name
 
-Returns **[Number][23]** Block number
+Returns **[Number][24]** Block number
 
 ### isHardforkBlock
 
@@ -136,10 +154,10 @@ True if block number provided is the hardfork change block of the current chain
 
 **Parameters**
 
--   `hardfork` **[String][22]** Hardfork name
--   `blockNumber` **[Number][23]** Number of the block to check
+-   `hardfork` **[String][23]** Hardfork name
+-   `blockNumber` **[Number][24]** Number of the block to check
 
-Returns **[Boolean][24]** 
+Returns **[Boolean][26]** 
 
 ### consensus
 
@@ -147,9 +165,9 @@ Provide the consensus type for the hardfork set or provided as param
 
 **Parameters**
 
--   `hardfork` **[String][22]** Hardfork name, optional if hardfork set
+-   `hardfork` **[String][23]** Hardfork name, optional if hardfork set
 
-Returns **[String][22]** Consensus type (e.g. 'pow', 'poa')
+Returns **[String][23]** Consensus type (e.g. 'pow', 'poa')
 
 ### finality
 
@@ -157,9 +175,9 @@ Provide the finality type for the hardfork set or provided as param
 
 **Parameters**
 
--   `hardfork` **[String][22]** Hardfork name, optional if hardfork set
+-   `hardfork` **[String][23]** Hardfork name, optional if hardfork set
 
-Returns **[String][22]** Finality type (e.g. 'pos', null of no finality)
+Returns **[String][23]** Finality type (e.g. 'pos', null of no finality)
 
 ### genesis
 
@@ -183,25 +201,25 @@ Returns **Dictionary** Dict with bootstrap nodes
 
 Returns the hardfork set
 
-Returns **[String][22]** Hardfork name
+Returns **[String][23]** Hardfork name
 
 ### chainId
 
 Returns the Id of current chain
 
-Returns **[Number][23]** chain Id
+Returns **[Number][24]** chain Id
 
 ### chainName
 
 Returns the name of current chain
 
-Returns **[String][22]** chain name (lower case)
+Returns **[String][23]** chain name (lower case)
 
 ### networkId
 
 Returns the Id of current network
 
-Returns **[Number][23]** network Id
+Returns **[Number][24]** network Id
 
 [1]: #common
 
@@ -213,42 +231,44 @@ Returns **[Number][23]** network Id
 
 [5]: #_gethardfork
 
-[6]: #param
+[6]: #_issupportedhardfork
 
-[7]: #parambyblock
+[7]: #param
 
-[8]: #hardforkisactiveonblock
+[8]: #parambyblock
 
-[9]: #hardforkisactiveonchain
+[9]: #hardforkisactiveonblock
 
-[10]: #activehardforks
+[10]: #hardforkisactiveonchain
 
-[11]: #hardforkblock
+[11]: #activehardforks
 
-[12]: #ishardforkblock
+[12]: #hardforkblock
 
-[13]: #consensus
+[13]: #ishardforkblock
 
-[14]: #finality
+[14]: #consensus
 
-[15]: #genesis
+[15]: #finality
 
-[16]: #hardforks
+[16]: #genesis
 
-[17]: #bootstrapnodes
+[17]: #hardforks
 
-[18]: #hardfork
+[18]: #bootstrapnodes
 
-[19]: #chainid
+[19]: #hardfork
 
-[20]: #chainname
+[20]: #chainid
 
-[21]: #networkid
+[21]: #chainname
 
-[22]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String
+[22]: #networkid
 
-[23]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number
+[23]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String
 
-[24]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean
+[24]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number
 
 [25]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array
+
+[26]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean

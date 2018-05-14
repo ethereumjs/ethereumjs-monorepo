@@ -9,11 +9,13 @@ class Common {
    * @constructor
    * @param {String|Number} chain String ('mainnet') or Number (1) chain representation
    * @param {String} hardfork String identifier ('byzantium') for hardfork (optional)
+   * @param {Array} supportedHardforks Limit parameter returns to the given hardforks (optional)
    */
-  constructor (chain, hardfork) {
+  constructor (chain, hardfork, supportedHardforks) {
     this.setChain(chain)
     this._hardfork = null
-    if (hardfork !== undefined) {
+    this._supportedHardforks = supportedHardforks === undefined ? [] : supportedHardforks
+    if (hardfork) {
       this.setHardfork(hardfork)
     }
   }
@@ -45,6 +47,9 @@ class Common {
    * @param {String} hardfork String identifier ('byzantium')
    */
   setHardfork (hardfork) {
+    if (!this._isSupportedHardfork(hardfork)) {
+      throw new Error(`Hardfork ${hardfork} not set as supported in supportedHardforks`)
+    }
     let changed = false
     for (let hfChanges of hardforkChanges) {
       if (hfChanges[0] === hardfork) {
@@ -69,6 +74,8 @@ class Common {
       } else {
         hardfork = this._hardfork
       }
+    } else if (!this._isSupportedHardfork(hardfork)) {
+      throw new Error(`Hardfork ${hardfork} not set as supported in supportedHardforks`)
     }
     return hardfork
   }
@@ -84,6 +91,22 @@ class Common {
       if (hf['name'] === hardfork) return hf
     }
     throw new Error(`Hardfork ${hardfork} not defined for chain ${this.chainName()}`)
+  }
+
+  /**
+   * Internal helper function to check if a hardfork is set to be supported by the library
+   * @param {String} hardfork Hardfork name
+   * @returns {Boolean} True if hardfork is supported
+   */
+  _isSupportedHardfork (hardfork) {
+    if (this._supportedHardforks.length > 0) {
+      for (let supportedHf of this._supportedHardforks) {
+        if (hardfork === supportedHf) return true
+      }
+    } else {
+      return true
+    }
+    return false
   }
 
   /**
@@ -127,9 +150,15 @@ class Common {
    * Checks if a hardfork is active for a given block number
    * @param {String} hardfork Hardfork name
    * @param {Number} blockNumber
+   * @param {Array} opts
+   * @param {Array.Boolean} opts.onlySupported optional, only allow supported HFs (default: false)
    * @returns {Boolean}
    */
-  hardforkIsActiveOnBlock (hardfork, blockNumber) {
+  hardforkIsActiveOnBlock (hardfork, blockNumber, opts) {
+    opts = opts !== undefined ? opts : []
+    if (opts.onlySupported && !this._isSupportedHardfork(hardfork)) {
+      throw new Error(`Not allowed to be called with an unsupported hardfork`)
+    }
     let hfBlock = this.hardforkBlock(hardfork)
     if (hfBlock !== null && blockNumber >= hfBlock) return true
     return false
@@ -138,9 +167,15 @@ class Common {
   /**
    * Checks if the hardfork provided is active on the chain
    * @param {String} hardfork
+   * @param {Array} opts
+   * @param {Array.Boolean} opts.onlySupported optional, only allow supported HFs (default: false)
    * @returns {Boolean}
    */
-  hardforkIsActiveOnChain (hardfork) {
+  hardforkIsActiveOnChain (hardfork, opts) {
+    opts = opts !== undefined ? opts : []
+    if (opts.onlySupported && !this._isSupportedHardfork(hardfork)) {
+      throw new Error(`Not allowed to be called with an unsupported hardfork`)
+    }
     for (let hf of this.hardforks()) {
       if (hf['name'] === hardfork && hf['block'] !== null) return true
     }
@@ -150,14 +185,18 @@ class Common {
   /**
    * Returns the active hardfork switches for the current chain
    * @param {Number} blockNumber up to block if provided, otherwise for the whole chain
+   * @param {Array} opts
+   * @param {Array.Boolean} opts.onlySupported optional, limit results to supported HFs (default: false)
    * @return {Array} Array with hardfork arrays
    */
-  activeHardforks (blockNumber) {
+  activeHardforks (blockNumber, opts) {
+    opts = opts !== undefined ? opts : []
     let activeHardforks = []
     let hfs = this.hardforks()
     for (let hf of hfs) {
       if (hf['block'] === null) continue
-      if (blockNumber !== undefined && blockNumber < hf['block']) break
+      if ((blockNumber !== undefined && blockNumber !== null) && blockNumber < hf['block']) break
+      if (opts.onlySupported && !this._isSupportedHardfork(hf['name'])) continue
 
       activeHardforks.push(hf)
     }

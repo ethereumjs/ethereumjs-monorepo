@@ -8,6 +8,7 @@ tape('[Common]: Initialization / Chain params', function (t) {
     st.equal(c.chainId(), 1, 'should return correct chain Id')
     st.equal(c.networkId(), 1, 'should return correct network Id')
     st.equal(c.hardfork(), null, 'should set hardfork to null')
+    st.equal(c._isSupportedHardfork('constantinople'), true, 'should not restrict supported HFs')
 
     c = new Common(1)
     st.equal(c.chainName(), 'mainnet', 'should initialize with chain Id')
@@ -22,9 +23,18 @@ tape('[Common]: Initialization / Chain params', function (t) {
     st.end()
   })
 
+  t.test('Should initialize with supportedHardforks provided', function (st) {
+    let c = new Common('mainnet', 'byzantium', ['byzantium', 'constantinople'])
+    st.equal(c._isSupportedHardfork('byzantium'), true, 'should return true for supported HF')
+    st.equal(c._isSupportedHardfork('spuriousDragon'), false, 'should return false for unsupported HF')
+
+    st.end()
+  })
+
   t.test('Should handle initialization errors', function (st) {
     st.throws(function () { new Common('chainnotexisting') }, /not supported$/, 'should throw an exception on non-existing chain') // eslint-disable-line no-new
     st.throws(function () { new Common('mainnet', 'hardforknotexisting') }, /not supported$/, 'should throw an exception on non-existing hardfork') // eslint-disable-line no-new
+    st.throws(function () { new Common('mainnet', 'spuriousDragon', ['byzantium', 'constantinople']) }, /supportedHardforks$/, 'should throw an exception on conflicting active/supported HF params') // eslint-disable-line no-new
 
     st.end()
   })
