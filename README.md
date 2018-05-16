@@ -9,84 +9,130 @@ A module to store and interact with blocks.
 # INSTALL
 `npm install ethereumjs-blockchain`
 
-# API
+# EXAMPLE
 
-# ethereumjs-blockchain
-A module to store and interact with blocks
+The following is an example to iterate through an existing Geth DB (needs ``leveldown`` to be
+installed separately):
+
+```javascript
+const levelup = require('levelup')
+const leveldown = require('leveldown')
+const Blockchain = require('./index.js')
+const utils = require('ethereumjs-util')
+
+const gethDbPath = './chaindata' // Add your own path here
+const db = levelup(gethDbPath, { db: leveldown })
+
+new Blockchain({db: db}).iterator('i', (block, reorg, cb) => {
+  const blockNumber = utils.bufferToInt(block.header.number)
+  const blockHash = block.hash().toString('hex')
+  console.log(`BLOCK ${blockNumber}: ${blockHash}`)
+  cb()
+}, (err) => console.log(err || 'Done.'))
+```
+
+# API
 
 - [`Blockchain`](#blockchain)
     - [`new Blockchain(opts)`](#new-blockchainblockdb-detailsdb)
-    - [`BlockChain` Properties](#blockchain-properties)
     - [`BlockChain` methods](#blockchain-methods)
-        - [`blockchain.putBlock(block, [callback])`](#blockchainputblockblock-callback)
-        - [`blockchain.getBlock(hash, [callback])`](#blockchaingetblockhash-callback)
-        - [`blockchain.getBlockInfo(hash, cb)`](#blockchaingetblockinfohash-cb)
-        - [`blockchain.getBlockHashes(parentHash, count, cb)`](#blockchaingetblockhashesparenthash-count-cb)
-        - [`blockchain.getBlockChain(startingHashes, count, cb)`](#blockchaingetblockhashesparenthash-count-cb)
-        - [`blockchain.selectNeededHashes(hashes, cb)`](#blockchainselectneededhasheshashes-cb)
+        - [`blockchain.putGenesis(genesis, [cb])`](#blockchainputgenesisgenesis-cb)
+        - [`blockchain.getHead(name, [cb])`](#blockchaingetheadname-cb)
+        - [`blockchain.putBlocks(blocks, [cb])`](#blockchainputblocksblocks-cb)
+        - [`blockchain.putBlock(block, [cb])`](#blockchainputblockblock-cb)
+        - [`blockchain.getBlock(hash, [cb])`](#blockchaingetblockhash-cb)
+        - [`blockchain.getBlocks(blockId, maxBlocks, skip, reverse, [cb])`](#blockchaingetblocksblockid-maxblocks-skip-reverse-cb)
+        - [`blockchain.selectNeededHashes(hashes, [cb])`](#blockchainselectneededhasheshashes-cb)
+        - [`blockchain.delBlock(blockHash, [cb])`](#blockchaindelblockblockhash-cb)
+        - [`blockchain.iterator(name, onBlock, [cb])`](#blockchainiteratorname-onblock-cb)        
 
 ## `Blockchain`
 Implements functions for retrieving, manipulating and storing Ethereum's blockchain
 
 ### `new Blockchain(opts)`
 Creates new Blockchain object 
-- `opts.blockDB` - the database where Blocks are stored and retreived by hash. Should be a [levelup](https://github.com/rvagg/node-levelup) instance.
-- `opts.detailsDB` - the database where Block number resolutions and other metadata is stored. Should be a [levelup](https://github.com/rvagg/node-levelup) instance.
+- `opts.db` - Database to store blocks and metadata. Should be a [levelup](https://github.com/rvagg/node-levelup) instance.
 - `opts.validate` - this the flag to validate blocks (e.g. Proof-of-Work).
 
-### `BlockChain` Properties
-- `head` - The Head, the block that has the most weight
-- `parentHead`- The parent of the head block
-- `genesisHash` - The hash of the genesis block
-- `height` - The height of the blockchain
-- `totallDifficulty` - The totall difficulty which is the some of a the difficulty of all the prevous blocks
+[DEPRECATION NOTE]
+The old separated DB constructor parameters `opts.blockDB` and `opts.detailsDB` from before the Geth DB-compatible ``v3.0.0`` release are deprecated and continued usage is discouraged. When provided `opts.blockDB` will be used
+as `opts.db` and `opts.detailsDB` is ignored. On the storage level the DB formats are not compatible and it is not
+possible to load an old-format DB state into a post-``v3.0.0`` ``Blockchain`` object.
 
 ### `BlockChain` methods
 
-#### `blockchain.putBlock(block, callback)`
+#### `blockchain.putGenesis(genesis, cb)`
+Puts the genesis block in the database.
+- `genesis` - the genesis block to be added
+- `cb` - the callback. It is given two parameters `err` and the saved `block`
+
+--------------------------------------------------------
+
+#### `blockchain.getHead(name, cb)`
+Returns that head block.
+- `name` - Optional name of the state root head (default: 'vm')
+- `cb` - the callback. It is given two parameters `err` and the returned `block`
+
+--------------------------------------------------------
+
+#### `blockchain.putBlocks(blocks, cb)`
+Adds many blocks to the blockchain.
+- `blocks` - the blocks to be added to the blockchain
+- `cb` - the callback. It is given two parameters `err` and the last of the saved `blocks`
+--------------------------------------------------------
+
+#### `blockchain.putBlock(block, cb)`
 Adds a block to the blockchain.
 - `block` - the block to be added to the blockchain
-- `callback` - the callback. It is given two parameters `err` and the saved `block`
+- `cb` - the callback. It is given two parameters `err` and the saved `block`
 
 --------------------------------------------------------
 
-#### `blockchain.getBlock(blockTag, callback)`
+#### `blockchain.getBlock(blockTag, cb)`
 Gets a block by its blockTag.
 - `blockTag`  - the block's hash or number
-- `callback` - the callback. It is given two parameters `err` and the found `block` (an instance of https://github.com/ethereumjs/ethereumjs-block) if any. 
+- `cb` - the callback. It is given two parameters `err` and the found `block` (an instance of https://github.com/ethereumjs/ethereumjs-block) if any. 
 
 --------------------------------------------------------
 
-#### `blockchain.getDetails(hash, callback)`
-Retrieves meta infromation about the block and passed it to the `callback`
-- `hash` - the hash of the block as a `Buffer` or a hex `String`
-- `callback` - the callback which is passed an `Object` containing the following properties:
-- * `parent` - the hash of the parent block
-- * `td` - the total difficulty of the block
-- * `number` - the block number
-- * `child` - the block's children
-- * `genesis` - boolean (true if genesis block, false if not)
-- * `inChain` - TODO
-- * `staleChildren` - TODO
+#### `blockchain.getBlocks(blockId, maxBlocks, skip, reverse, cb)`
+Looks up many blocks relative to blockId.
+- `blockId` - the block's hash or number
+- `maxBlocks` - max number of blocks to return
+- `skip` - number of blocks to skip
+- `reverse` - fetch blocks in reverse
+- `cb` - the callback. It is given two parameters `err` and the found `blocks` if any.
 
 --------------------------------------------------------
 
-#### `blockchain.getBlockHashes(parentHash, count, callback)`
-Gets a segment of the blockchain starting at the parent hash and contuning for `count ` blocks returning an array of block hashes orders from oldest to youngest.
-- `parentHash` - the block to start from. Given as a `Buffer` or a hex `String`
-- `count` - a `Number` specifing how many block hashes to return
-- `callback` - the callback which is give an array of block hashes
+#### `blockchain.getDetails(hash, cb)`
+[DEPRECATED] Returns an empty object
 
 --------------------------------------------------------
 
-
-#### `blockchain.getBlockChain(startingHashes, count, callback)`
-gets a section of the blockchain in a form of an array starting at the parent hash, up `count` blocks
-- `startingHashes` - an array of hashes or a single hash to start returning the chain from. The first hash in the array that is found in the blockchain will be used. 
-- `count` - the max number of blocks to return
-- `callback` - the callback. It is given two parameters `err` and `blockchain`. `err` is any errors. If none of the starting hashes were found `err` will be `notFound`. `blockchain` is an array of blocks.
-
-#### `blockchain.selectNeededHashes(hashes, callback)`
+#### `blockchain.selectNeededHashes(hashes, cb)`
 Given an ordered array, returns to the callback an array of hashes that are not in the blockchain yet.
-- `hashes` - an `Array` hashes
-- `callback` - the callback
+- `hashes`  - Ordered array of hashes
+- `cb` - the callback. It is given two parameters `err` and hashes found. 
+
+--------------------------------------------------------
+
+#### `blockchain.delBlock(blockHash, cb)`
+Deletes a block from the blockchain. All child blocks in the chain are deleted and any encountered heads are set to the parent block
+- `blockHash`  - the hash of the block to be deleted
+- `cb` - A callback.
+
+--------------------------------------------------------
+
+#### `blockchain.iterator(name, onBlock, cb)`
+Iterates through blocks starting at the specified verified state root head and calls the onBlock function on each block
+- `name` - name of the state root head
+- `onBlock` - function called on each block with params (block, reorg, cb)
+- `cb` - A callback function
+
+# TESTS
+
+Tests can be found in the ``test`` directory and run with ``npm run test``.
+
+These can also be valuable as examples/inspiration on how to run the library and invoke different parts of the API.
+
