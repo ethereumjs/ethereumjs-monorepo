@@ -19,13 +19,13 @@ const BN = ethUtil.BN
 const rlp = ethUtil.rlp
 
 // geth compatible db keys
-const headHeaderKey = 'LastHeader'      // current canonical head for light sync
-const headBlockKey = 'LastBlock'        // current canonical head for full sync
-const headerPrefix = new Buffer('h')    // headerPrefix + number + hash -> header
-const tdSuffix = new Buffer('t')        // headerPrefix + number + hash + tdSuffix -> td
-const numSuffix = new Buffer('n')       // headerPrefix + number + numSuffix -> hash
+const headHeaderKey = 'LastHeader' // current canonical head for light sync
+const headBlockKey = 'LastBlock' // current canonical head for full sync
+const headerPrefix = new Buffer('h') // headerPrefix + number + hash -> header
+const tdSuffix = new Buffer('t') // headerPrefix + number + hash + tdSuffix -> td
+const numSuffix = new Buffer('n') // headerPrefix + number + numSuffix -> hash
 const blockHashPrefix = new Buffer('H') // blockHashPrefix + hash -> number
-const bodyPrefix = new Buffer('b')      // bodyPrefix + number + hash -> block body
+const bodyPrefix = new Buffer('b') // bodyPrefix + number + hash -> block body
 
 // utility functions
 const bufBE8 = n => n.toBuffer('be', 8) // convert BN to big endian Buffer
