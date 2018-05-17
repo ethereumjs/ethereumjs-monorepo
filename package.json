@@ -4,8 +4,8 @@
   "description": "A module to store and interact with blocks",
   "main": "index.js",
   "scripts": {
-    "coverage": "istanbul cover ./test/index.js",
-    "coveralls": "npm run coverage && coveralls <coverage/lcov.info",
+    "coverage": "nyc npm run test && nyc report --reporter=text-lcov > .nyc_output/lcov.info",
+    "coveralls": "npm run coverage && coveralls <.nyc_output/lcov.info",
     "lint": "standard",
     "test": "tape ./test/index.js"
   },
@@ -37,7 +37,7 @@
   },
   "devDependencies": {
     "coveralls": "^3.0.0",
-    "istanbul": "^0.4.2",
+    "nyc": "^11.8.0",
     "standard": "^11.0.1",
     "tape": "^4.2.1"
   }
