@@ -27,7 +27,7 @@
     "async": "^2.1.2",
     "ethashjs": "~0.0.7",
     "ethereumjs-block": "~1.7.0",
-    "ethereumjs-util": "~5.1.0",
+    "ethereumjs-util": "~5.2.0",
     "flow-stoplight": "^1.0.0",
     "levelup": "^1.3.0",
     "memdown": "^1.1.0",
