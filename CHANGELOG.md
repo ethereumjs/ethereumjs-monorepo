@@ -6,6 +6,34 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 
+## [3.0.0] - 2018-05-18
+This release comes with heavy internal changes bringing Geth DB compatibility to the
+``ethereumjs-blockchain`` library. For a full list of changes and associated discussion
+see PR [#47](https://github.com/ethereumjs/ethereumjs-blockchain/pull/47)
+(thanks to @vpulim for this amazing work!). To test iterating through your local Geth
+chaindata DB you can run the [example](https://github.com/ethereumjs/ethereumjs-blockchain#example)
+in the README file.
+
+This allows for various new use cases of the library in the areas of testing, simulation or
+running actual blockchain data from a Geth node through the VM. The Geth data model used is
+not compatible with the old format where chaindata and metadata have been stored separately on two leveldb
+instances, so it is not possible to load an old DB with the new library version (if this causes
+problems for you get in touch on GitHub or Gitter!).
+
+Summary of the changes:
+- New unified constructor where ``detailsDB`` and ``blockDB`` are replaced by a single ``db`` reference
+- Deprecation of the ``getDetails()`` method now returning an empty object
+- ``td`` and ``height`` are not stored in the db as meta info but computed as needed
+- Block headers and body are stored under two separate keys
+- Changes have been made to properly rebuild the chain and number/hash mappings as a result of forks and deletions
+- A write-through cache has been added to reduce database reads
+- Similar to geth, we now defend against selfish mining vulnerability 
+- Added many more tests to increase coverage to over 90%
+- Updated docs to reflect the API changes
+- Updated library dependencies
+
+[3.0.0]: https://github.com/ethereumjs/ethereumjs-blockchain/compare/v2.1.0...v3.0.0
+
 ## [2.1.0] - 2017-10-11
 - ``Metro-Byzantium`` compatible
 - Updated ``ethereumjs-block`` dependency (new difficulty formula / difficulty bomb delay)
