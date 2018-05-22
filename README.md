@@ -67,8 +67,8 @@ Creates a cache. NOTE: this is automatically done for in  - [`ethash.verifyPOW(b
 Runs ethash on a give val/nonce pair. NOTE: you need to run [`ethash.mkcache(cacheSize, seed)`](#ethashverifypowcachesize-seed) first before using this function.
 
 **Parameters** 
-- `cachSize` - the size of the cach
-- `seed` - the seed as a `Buffer`
+- `val` - value to run ethash on e.g. the header hash
+- `nonce` - the nonce used for this hash attempt
 - `fullsize` - the fullsize of the cache.
 
 **Return**
