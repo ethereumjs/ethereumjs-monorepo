@@ -1,10 +1,5 @@
 'use strict'
 
-/**
- * NOTES
- * meta.rawHead is the the head of the chain with the most POW
- * meta.head is the head of the chain that has had its state root verifed
- */
 const async = require('async')
 const Stoplight = require('flow-stoplight')
 const semaphore = require('semaphore')
@@ -86,8 +81,8 @@ Blockchain.prototype = {
 
 /**
  * Fetches the meta info about the blockchain from the db. Meta info contains
- * hashes of the headerchain head, blockchain head, genesis block and verified
- * state root heads.
+ * hashes of the headerchain head, blockchain head, genesis block and iterator
+ * heads.
  * @method _init
  */
 Blockchain.prototype._init = function (cb) {
@@ -113,8 +108,9 @@ Blockchain.prototype._init = function (cb) {
   function getHeads (genesisHash, cb) {
     self._genesis = genesisHash
     async.series([
-      // load verified state root heads
+      // load verified iterator heads
       (cb) => self.db.get('heads', {
+        keyEncoding: 'binary',
         valueEncoding: 'json'
       }, (err, heads) => {
         if (err) heads = {}
@@ -124,6 +120,7 @@ Blockchain.prototype._init = function (cb) {
       }),
       // load headerchain head
       (cb) => self.db.get(headHeaderKey, {
+        keyEncoding: 'binary',
         valueEncoding: 'binary'
       }, (err, hash) => {
         self._headHeader = err ? genesisHash : hash
@@ -131,6 +128,7 @@ Blockchain.prototype._init = function (cb) {
       }),
       // load blockchain head
       (cb) => self.db.get(headBlockKey, {
+        keyEncoding: 'binary',
         valueEncoding: 'binary'
       }, (err, hash) => {
         self._headBlock = err ? genesisHash : hash
@@ -161,8 +159,9 @@ Blockchain.prototype.putGenesis = function (genesis, cb) {
 }
 
 /**
- * Returns that head block
+ * Returns the specified iterator head.
  * @method getHead
+ * @param name name of the head (default: 'vm')
  * @param cb Function the callback
  */
 Blockchain.prototype.getHead = function (name, cb) {
@@ -182,6 +181,37 @@ Blockchain.prototype.getHead = function (name, cb) {
       return cb(new Error('No head found.'))
     }
     self.getBlock(hash, cb)
+  })
+}
+
+/**
+ * Returns the latest header in the canonical chain.
+ * @method getLatestHeader
+ * @param cb Function the callback
+ */
+Blockchain.prototype.getLatestHeader = function (cb) {
+  const self = this
+
+  // ensure init completed
+  self._initLock.await(function runGetLatestHeader () {
+    self.getBlock(self._headHeader, (err, block) => {
+      if (err) return cb(err)
+      cb(null, block.header)
+    })
+  })
+}
+
+/**
+ * Returns the latest full block in the canonical chain.
+ * @method getLatestBlock
+ * @param cb Function the callback
+ */
+Blockchain.prototype.getLatestBlock = function (cb) {
+  const self = this
+
+  // ensure init completed
+  self._initLock.await(function runGetLatestBlock () {
+    self.getBlock(self._headBlock, cb)
   })
 }
 
@@ -518,9 +548,26 @@ Blockchain.prototype.selectNeededHashes = function (hashes, cb) {
 }
 
 Blockchain.prototype._saveHeads = function (cb) {
-  this.db.put('heads', this._heads, {
-    keyEncoding: 'json'
-  }, cb)
+  var dbOps = [{
+    type: 'put',
+    key: 'heads',
+    keyEncoding: 'binary',
+    valueEncoding: 'json',
+    value: this._heads
+  }, {
+    type: 'put',
+    key: headHeaderKey,
+    keyEncoding: 'binary',
+    valueEncoding: 'binary',
+    value: this._headHeader
+  }, {
+    type: 'put',
+    key: headBlockKey,
+    keyEncoding: 'binary',
+    valueEncoding: 'binary',
+    value: this._headBlock
+  }]
+  this._batchDbOps(dbOps, cb)
 }
 
 // delete canonical number assignments for specified number and above
@@ -537,7 +584,7 @@ Blockchain.prototype._deleteStaleAssignments = function (number, headHash, ops, 
     })
     self._cache.numberToHash.del(key)
 
-    // reset stale verified state root heads to current canonical head
+    // reset stale iterator heads to current canonical head
     Object.keys(self._heads).forEach(function (name) {
       if (self._heads[name].equals(hash)) {
         self._heads[name] = headHash
@@ -751,10 +798,11 @@ Blockchain.prototype._delChild = function (hash, number, headHash, ops, cb) {
 }
 
 /**
- * Iterates through blocks starting at the specified verified state root head
- * and calls the onBlock function on each block
+ * Iterates through blocks starting at the specified iterator head and calls
+ * the onBlock function on each block. The current location of an iterator head
+ * can be retrieved using the `getHead()`` method
  * @method iterator
- * @param {String} name - the name of the verified state root head
+ * @param {String} name - the name of the iterator head
  * @param {function} onBlock - function called on each block with params (block, reorg, cb)
  * @param {function} cb - a callback function
  */

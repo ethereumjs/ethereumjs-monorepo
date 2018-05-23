@@ -38,6 +38,8 @@ new Blockchain({db: db}).iterator('i', (block, reorg, cb) => {
     - [`BlockChain` methods](#blockchain-methods)
         - [`blockchain.putGenesis(genesis, [cb])`](#blockchainputgenesisgenesis-cb)
         - [`blockchain.getHead(name, [cb])`](#blockchaingetheadname-cb)
+        - [`blockchain.getLatestHeader([cb])`](#blockchaingetlatestheadercb)
+        - [`blockchain.getLatestBlock([cb])`](#blockchaingetlatestblockcb)
         - [`blockchain.putBlocks(blocks, [cb])`](#blockchainputblocksblocks-cb)
         - [`blockchain.putBlock(block, [cb])`](#blockchainputblockblock-cb)
         - [`blockchain.getBlock(hash, [cb])`](#blockchaingetblockhash-cb)
@@ -50,7 +52,7 @@ new Blockchain({db: db}).iterator('i', (block, reorg, cb) => {
 Implements functions for retrieving, manipulating and storing Ethereum's blockchain
 
 ### `new Blockchain(opts)`
-Creates new Blockchain object 
+Creates new Blockchain object
 - `opts.db` - Database to store blocks and metadata. Should be a [levelup](https://github.com/rvagg/node-levelup) instance.
 - `opts.validate` - this the flag to validate blocks (e.g. Proof-of-Work).
 
@@ -69,8 +71,20 @@ Puts the genesis block in the database.
 --------------------------------------------------------
 
 #### `blockchain.getHead(name, cb)`
-Returns that head block.
+Returns the specified iterator head.
 - `name` - Optional name of the state root head (default: 'vm')
+- `cb` - the callback. It is given two parameters `err` and the returned `block`
+
+--------------------------------------------------------
+
+#### `blockchain.getLatestHeader(cb)`
+Returns the latest header in the canonical chain.
+- `cb` - the callback. It is given two parameters `err` and the returned `header`
+
+--------------------------------------------------------
+
+#### `blockchain.getLatestBlock(cb)`
+Returns the latest full block in the canonical chain.
 - `cb` - the callback. It is given two parameters `err` and the returned `block`
 
 --------------------------------------------------------
@@ -91,7 +105,7 @@ Adds a block to the blockchain.
 #### `blockchain.getBlock(blockTag, cb)`
 Gets a block by its blockTag.
 - `blockTag`  - the block's hash or number
-- `cb` - the callback. It is given two parameters `err` and the found `block` (an instance of https://github.com/ethereumjs/ethereumjs-block) if any. 
+- `cb` - the callback. It is given two parameters `err` and the found `block` (an instance of https://github.com/ethereumjs/ethereumjs-block) if any.
 
 --------------------------------------------------------
 
@@ -113,7 +127,7 @@ Looks up many blocks relative to blockId.
 #### `blockchain.selectNeededHashes(hashes, cb)`
 Given an ordered array, returns to the callback an array of hashes that are not in the blockchain yet.
 - `hashes`  - Ordered array of hashes
-- `cb` - the callback. It is given two parameters `err` and hashes found. 
+- `cb` - the callback. It is given two parameters `err` and hashes found.
 
 --------------------------------------------------------
 
@@ -135,4 +149,3 @@ Iterates through blocks starting at the specified verified state root head and c
 Tests can be found in the ``test`` directory and run with ``npm run test``.
 
 These can also be valuable as examples/inspiration on how to run the library and invoke different parts of the API.
-
