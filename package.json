@@ -26,16 +26,10 @@
     "url": "https://github.com/ethereumjs/ethereumjs-client/issues"
   },
   "homepage": "https://github.com/ethereumjs/ethereumjs-client#readme",
-  "devDependencies": {
-    "coveralls": "^3.0.0",
-    "nyc": "~11.6.0",
-    "standard": "~11.0.1",
-    "tape": "~4.9.0"
-  },
   "dependencies": {
-    "ethereumjs-common": "git+https://github.com/ethereumjs/ethereumjs-common.git",
     "ethereumjs-block": "^1.7.1",
     "ethereumjs-blockchain": "^2.1.0",
+    "ethereumjs-common": "~0.2.0",
     "ethereumjs-devp2p": "^2.5.0",
     "leveldown": "^1.9.0",
     "levelup": "^1.3.9",
@@ -43,5 +37,11 @@
     "rlp": "^2.0.0",
     "winston": "^3.0.0-rc4",
     "yargs": "^11.0.0"
+  },
+  "devDependencies": {
+    "coveralls": "^3.0.0",
+    "nyc": "~11.6.0",
+    "standard": "~11.0.1",
+    "tape": "~4.9.0"
   }
 }
