@@ -168,7 +168,7 @@ Some building blocks for the client have already been implemented or outlined to
 You can run the current state of the client with:
 
 ```shell
-node lib/index.js --networkid=4 --loglevel=debug
+node lib/index.js --networkid=1 [--loglevel=debug]
 ```
 
 Or show the help with
