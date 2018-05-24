@@ -11,7 +11,7 @@ const testData = require('./testdata.json')
 const BN = require('bn.js')
 
 test('blockchain test', function (t) {
-  t.plan(57)
+  t.plan(59)
   var blockchain = new Blockchain()
   var genesisBlock
   var blocks = []
@@ -340,6 +340,27 @@ test('blockchain test', function (t) {
           cb => blockchain._getTd(genesisBlock.hash(), new BN(0), (err, td) => {
             t.equals(td.toBuffer().toString('hex'), genesis.header.difficulty.toString('hex'), 'should perform _getTd correctly')
             cb(err)
+          })
+        ], done)
+      })
+    },
+    function saveHeads (done) {
+      var db = levelup('', { db: memdown })
+      var blockchain = new Blockchain({db: db, validate: false})
+
+      blockchain.putBlock(blocks[1], (err) => {
+        if (err) return done(err)
+        blockchain = new Blockchain({db: db, validate: false})
+        async.series([
+          (cb) => blockchain.getLatestHeader((err, header) => {
+            if (err) return done(err)
+            t.equals(header.hash().toString('hex'), blocks[1].hash().toString('hex'), 'should get latest header')
+            cb()
+          }),
+          (cb) => blockchain.getLatestBlock((err, headBlock) => {
+            if (err) return done(err)
+            t.equals(headBlock.hash().toString('hex'), blocks[1].hash().toString('hex'), 'should get latest block')
+            cb()
           })
         ], done)
       })
