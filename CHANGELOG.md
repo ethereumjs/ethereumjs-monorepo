@@ -6,6 +6,15 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 
+## [3.1.0] - 2018-05-24
+- New ``getLatestHeader()`` and ``getLatestBlock()`` methods for retrieving the latest header
+  respectively full block in the canonical chain, PR [#52](https://github.com/ethereumjs/ethereumjs-blockchain/pull/52)
+- Fixed ``saveHeads()`` bug not storing the internal ``headHeader``/``headBlock`` header cursors
+  to the DB, PR [#52](https://github.com/ethereumjs/ethereumjs-blockchain/pull/52)
+- Updated API docs
+
+[3.1.0]: https://github.com/ethereumjs/ethereumjs-blockchain/compare/v3.0.0...v3.1.0
+
 ## [3.0.0] - 2018-05-18
 This release comes with heavy internal changes bringing Geth DB compatibility to the
 ``ethereumjs-blockchain`` library. For a full list of changes and associated discussion
