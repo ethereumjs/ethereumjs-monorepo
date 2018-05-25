@@ -148,20 +148,51 @@ class Common {
   }
 
   /**
-   * Checks if given or set hardfork is active for a given block number
+   * Checks if set or provided hardfork is active on block number
+   * @param {String} hardfork Hardfork name or null (for HF set)
    * @param {Number} blockNumber
-   * @param {String} hardfork Hardfork name, optional if HF set
    * @param {Array} opts
    * @param {Array.Boolean} opts.onlySupported optional, only allow supported HFs (default: false)
    * @returns {Boolean}
    */
-  hardforkIsActiveOnBlock (blockNumber, hardfork, opts) {
+  hardforkIsActiveOnBlock (hardfork, blockNumber, opts) {
     opts = opts !== undefined ? opts : []
     let onlySupported = opts.onlySupported === undefined ? false : opts.onlySupported
     hardfork = this._chooseHardfork(hardfork, onlySupported)
     let hfBlock = this.hardforkBlock(hardfork)
     if (hfBlock !== null && blockNumber >= hfBlock) return true
     return false
+  }
+
+  /**
+   * Sequence based check if given or set HF1 is greater than or equal HF2
+   * @param {Number} hardfork1 Hardfork name or null (if set)
+   * @param {String} hardfork2 Hardfork name
+   * @param {Array} opts
+   * @param {Array.Boolean} opts.onlyActive optional, only active HFs (default: false)
+   * @param {Array.Boolean} opts.onlySupported optional, only allow supported HFs (default: false)
+   * @returns {Boolean}
+   */
+  hardforkGteHardfork (hardfork1, hardfork2, opts) {
+    opts = opts !== undefined ? opts : []
+    let onlyActive = opts.onlyActive === undefined ? false : opts.onlyActive
+    hardfork1 = this._chooseHardfork(hardfork1, opts.onlySupported)
+
+    let hardforks
+    if (onlyActive) {
+      hardforks = this.activeHardforks(null, opts)
+    } else {
+      hardforks = this.hardforks()
+    }
+
+    let posHf1, posHf2
+    let index = 0
+    for (let hf of hardforks) {
+      if (hf['name'] === hardfork1) posHf1 = index
+      if (hf['name'] === hardfork2) posHf2 = index
+      index += 1
+    }
+    return posHf1 >= posHf2
   }
 
   /**
