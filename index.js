@@ -67,10 +67,11 @@ class Common {
    * @param {String} hardfork Hardfork given to function as a parameter
    * @returns {String} Hardfork chosen to be used
    */
-  _chooseHardfork (hardfork) {
+  _chooseHardfork (hardfork, onlySupported) {
+    onlySupported = onlySupported === undefined ? true : onlySupported
     if (!hardfork) {
       if (!this._hardfork) {
-        throw new Error('param() called with neither a hardfork set nor provided by param')
+        throw new Error('Method called with neither a hardfork set nor provided by param')
       } else {
         hardfork = this._hardfork
       }
@@ -147,35 +148,33 @@ class Common {
   }
 
   /**
-   * Checks if a hardfork is active for a given block number
-   * @param {String} hardfork Hardfork name
+   * Checks if given or set hardfork is active for a given block number
    * @param {Number} blockNumber
+   * @param {String} hardfork Hardfork name, optional if HF set
    * @param {Array} opts
    * @param {Array.Boolean} opts.onlySupported optional, only allow supported HFs (default: false)
    * @returns {Boolean}
    */
-  hardforkIsActiveOnBlock (hardfork, blockNumber, opts) {
+  hardforkIsActiveOnBlock (blockNumber, hardfork, opts) {
     opts = opts !== undefined ? opts : []
-    if (opts.onlySupported && !this._isSupportedHardfork(hardfork)) {
-      throw new Error(`Not allowed to be called with an unsupported hardfork`)
-    }
+    let onlySupported = opts.onlySupported === undefined ? false : opts.onlySupported
+    hardfork = this._chooseHardfork(hardfork, onlySupported)
     let hfBlock = this.hardforkBlock(hardfork)
     if (hfBlock !== null && blockNumber >= hfBlock) return true
     return false
   }
 
   /**
-   * Checks if the hardfork provided is active on the chain
-   * @param {String} hardfork
+   * Checks if given or set hardfork is active on the chain
+   * @param {String} hardfork Hardfork name, optional if HF set
    * @param {Array} opts
    * @param {Array.Boolean} opts.onlySupported optional, only allow supported HFs (default: false)
    * @returns {Boolean}
    */
   hardforkIsActiveOnChain (hardfork, opts) {
     opts = opts !== undefined ? opts : []
-    if (opts.onlySupported && !this._isSupportedHardfork(hardfork)) {
-      throw new Error(`Not allowed to be called with an unsupported hardfork`)
-    }
+    let onlySupported = opts.onlySupported === undefined ? false : opts.onlySupported
+    hardfork = this._chooseHardfork(hardfork, onlySupported)
     for (let hf of this.hardforks()) {
       if (hf['name'] === hardfork && hf['block'] !== null) return true
     }
@@ -220,21 +219,23 @@ class Common {
   }
 
   /**
-   * Returns the hardfork change block for the given hardfork
-   * @param {String} hardfork Hardfork name
+   * Returns the hardfork change block for hardfork provided or set
+   * @param {String} hardfork Hardfork name, optional if HF set
    * @returns {Number} Block number
    */
   hardforkBlock (hardfork) {
+    hardfork = this._chooseHardfork(hardfork, false)
     return this._getHardfork(hardfork)['block']
   }
 
   /**
-   * True if block number provided is the hardfork change block of the current chain
-   * @param {String} hardfork Hardfork name
+   * True if block number provided is the hardfork (given or set) change block of the current chain
    * @param {Number} blockNumber Number of the block to check
+   * @param {String} hardfork Hardfork name, optional if HF set
    * @returns {Boolean}
    */
-  isHardforkBlock (hardfork, blockNumber) {
+  isHardforkBlock (blockNumber, hardfork) {
+    hardfork = this._chooseHardfork(hardfork, false)
     if (this.hardforkBlock(hardfork) === blockNumber) {
       return true
     } else {

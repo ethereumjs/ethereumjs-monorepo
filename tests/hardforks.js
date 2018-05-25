@@ -23,17 +23,24 @@ tape('[Common]: Hardfork logic', function (t) {
     st.end()
   })
 
-  t.test('isHardforkBlock()', function (st) {
+  t.test('hardforkBlock()', function (st) {
     let c = new Common('ropsten')
-    st.equal(c.isHardforkBlock('byzantium', 1700000), true, 'should return true for HF change block')
-    st.equal(c.isHardforkBlock('byzantium', 1700001), false, 'should return false for another block')
+    st.equal(c.hardforkBlock('byzantium'), 1700000, 'should return the correct HF change block for byzantium (provided)')
+
+    c = new Common('ropsten', 'byzantium')
+    st.equal(c.hardforkBlock(), 1700000, 'should return the correct HF change block for byzantium (set)')
 
     st.end()
   })
 
-  t.test('hardforkBlock()', function (st) {
+  t.test('isHardforkBlock()', function (st) {
     let c = new Common('ropsten')
-    st.equal(c.hardforkBlock('byzantium'), 1700000, 'should return the correct HF change block')
+    st.equal(c.isHardforkBlock(1700000, 'byzantium'), true, 'should return true for HF change block for byzantium (provided)')
+    st.equal(c.isHardforkBlock(1700001, 'byzantium'), false, 'should return false for another block for byzantium (provided)')
+
+    c = new Common('ropsten', 'byzantium')
+    st.equal(c.isHardforkBlock(1700000), true, 'should return true for HF change block for byzantium (set)')
+    st.equal(c.isHardforkBlock(1700001), false, 'should return false for another block for byzantium (set)')
 
     st.end()
   })
@@ -62,25 +69,33 @@ tape('[Common]: Hardfork logic', function (t) {
     st.end()
   })
 
-  t.test('hardforkIsActiveOnChain()', function (st) {
+  t.test('hardforkIsActiveOnBlock()', function (st) {
     let c = new Common('ropsten')
-    st.equal(c.hardforkIsActiveOnChain('byzantium'), true, 'should return true for byzantium on Ropsten')
-    st.equal(c.hardforkIsActiveOnChain('dao'), false, 'should return false for dao on Ropsten')
-    st.equal(c.hardforkIsActiveOnChain('hybridCasper'), false, 'should return false for hybridCasper on Ropsten')
-    st.equal(c.hardforkIsActiveOnChain('notexistinghardfork'), false, 'should return false for a non-existing HF on Ropsten')
-    st.doesNotThrow(function () { c.hardforkIsActiveOnChain('spuriousDragon', { onlySupported: true }) }, /unsupported hardfork$/, 'should not throw with unsupported Hf and onlySupported set to false') // eslint-disable-line no-new
+    st.equal(c.hardforkIsActiveOnBlock(1700000, 'byzantium'), true, 'Ropsten, byzantium (provided), 1700000 -> true')
+    st.equal(c.hardforkIsActiveOnBlock(1700005, 'byzantium'), true, 'Ropsten, byzantium (provided), 1700005 -> true')
+    st.equal(c.hardforkIsActiveOnBlock(1699999, 'byzantium'), false, 'Ropsten, byzantium (provided), 1699999 -> false')
 
-    c = new Common('ropsten', null, ['byzantium', 'constantinople'])
-    st.throws(function () { c.hardforkIsActiveOnChain('spuriousDragon', { onlySupported: true }) }, /unsupported hardfork$/, 'should throw with unsupported Hf and onlySupported set to true') // eslint-disable-line no-new
+    c = new Common('ropsten', 'byzantium')
+    st.equal(c.hardforkIsActiveOnBlock(1700000), true, 'Ropsten, byzantium (set), 1700000 -> true')
+    st.equal(c.hardforkIsActiveOnBlock(1700005), true, 'Ropsten, byzantium (set), 1700005 -> true')
+    st.equal(c.hardforkIsActiveOnBlock(1699999), false, 'Ropsten, byzantium (set), 1699999 -> false')
 
     st.end()
   })
 
-  t.test('hardforkIsActiveOnBlock()', function (st) {
+  t.test('hardforkIsActiveOnChain()', function (st) {
     let c = new Common('ropsten')
-    st.equal(c.hardforkIsActiveOnBlock('byzantium', 1700000), true, 'Ropsten, byzantium, 1700000 -> true')
-    st.equal(c.hardforkIsActiveOnBlock('byzantium', 1700005), true, 'Ropsten, byzantium, 1700005 -> true')
-    st.equal(c.hardforkIsActiveOnBlock('byzantium', 1699999), false, 'Ropsten, byzantium, 1699999 -> false')
+    st.equal(c.hardforkIsActiveOnChain('byzantium'), true, 'should return true for byzantium (provided) on Ropsten')
+    st.equal(c.hardforkIsActiveOnChain('dao'), false, 'should return false for dao (provided) on Ropsten')
+    st.equal(c.hardforkIsActiveOnChain('hybridCasper'), false, 'should return false for hybridCasper (provided) on Ropsten')
+    st.equal(c.hardforkIsActiveOnChain('notexistinghardfork'), false, 'should return false for a non-existing HF (provided) on Ropsten')
+    st.doesNotThrow(function () { c.hardforkIsActiveOnChain('spuriousDragon', { onlySupported: true }) }, /unsupported hardfork$/, 'should not throw with unsupported Hf (provided) and onlySupported set to false') // eslint-disable-line no-new
+
+    c = new Common('ropsten', 'byzantium')
+    st.equal(c.hardforkIsActiveOnChain(), true, 'should return true for byzantium (set) on Ropsten')
+
+    c = new Common('ropsten', null, ['byzantium', 'constantinople'])
+    st.throws(function () { c.hardforkIsActiveOnChain('spuriousDragon', { onlySupported: true }) }, /not set as supported in supportedHardforks$/, 'should throw with unsupported Hf and onlySupported set to true') // eslint-disable-line no-new
 
     st.end()
   })
