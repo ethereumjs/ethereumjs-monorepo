@@ -16,12 +16,12 @@ tape('[Header]: difficulty tests', t => {
   function runDifficultyTests (test) {
     normalize(test)
 
-    var parentBlock = new Block()
+    var parentBlock = new Block(null, { 'chain': 'mainnet', 'hardfork': 'byzantium' })
     parentBlock.header.timestamp = test.parentTimestamp
     parentBlock.header.difficulty = test.parentDifficulty
     parentBlock.header.uncleHash = test.parentUncles
 
-    var block = new Block()
+    var block = new Block(null, { 'chain': 'mainnet', 'hardfork': 'byzantium' })
     block.header.timestamp = test.currentTimestamp
     block.header.difficulty = test.currentDifficulty
     block.header.number = test.currentBlockNumber

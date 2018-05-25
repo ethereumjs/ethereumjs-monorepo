@@ -12,16 +12,26 @@ const BlockHeader = require('./header')
  * @constructor the raw serialized or the deserialized block.
  * @param {Array|Buffer|Object} data
  * @param {Array} opts Options
- * @param {String|Number} opts.chain The chain for the block ['mainnet']
+ * @param {String|Number} opts.chain The chain for the block [default: 'mainnet']
+ * @param {String} opts.hardfork Hardfork for the block [default: null, block number-based behaviour]
+ * @param {Object} opts.common Alternatively pass a Common instance (ethereumjs-common) instead of setting chain/hardfork directly
  * @prop {Header} header the block's header
  * @prop {Array.<Header>} uncleList an array of uncle headers
  * @prop {Array.<Buffer>} raw an array of buffers containing the raw blocks.
  */
 var Block = module.exports = function (data, opts) {
   opts = opts || {}
-  this._chain = opts.chain ? opts.chain : 'mainnet'
-  this._hardfork = 'byzantium'
-  this._common = new Common(this._chain, this._hardfork)
+
+  if (opts.common) {
+    if (opts.chain) {
+      throw new Error('Instantiation with both opts.common and opts.chain parameter not allowed!')
+    }
+    this._common = opts.common
+  } else {
+    let chain = opts.chain ? opts.chain : 'mainnet'
+    let hardfork = opts.hardfork ? opts.hardfork : null
+    this._common = new Common(chain, hardfork)
+  }
 
   this.transactions = []
   this.uncleHeaders = []
@@ -46,18 +56,18 @@ var Block = module.exports = function (data, opts) {
   }
 
   if (Array.isArray(data)) {
-    this.header = new BlockHeader(data[0], { 'chain': this._chain })
+    this.header = new BlockHeader(data[0], opts)
     rawTransactions = data[1]
     rawUncleHeaders = data[2]
   } else {
-    this.header = new BlockHeader(data.header, { 'chain': this._chain })
+    this.header = new BlockHeader(data.header, opts)
     rawTransactions = data.transactions || []
     rawUncleHeaders = data.uncleHeaders || []
   }
 
   // parse uncle headers
   for (var i = 0; i < rawUncleHeaders.length; i++) {
-    this.uncleHeaders.push(new BlockHeader(rawUncleHeaders[i], { 'chain': this._chain }))
+    this.uncleHeaders.push(new BlockHeader(rawUncleHeaders[i], opts))
   }
 
   // parse transactions
@@ -97,7 +107,7 @@ Block.prototype.setGenesisParams = function () {
   this.header.extraData = this._common.genesis().extraData
   this.header.nonce = this._common.genesis().nonce
   this.header.stateRoot = this._common.genesis().stateRoot
-  this.header.number = new Buffer([])
+  this.header.number = Buffer.from([0])
 }
 
 /**

@@ -6,7 +6,9 @@ const BN = utils.BN
    * @constructor
    * @param {Array} data raw data, deserialized
    * @param {Array} opts Options
-   * @param {String|Number} opts.chain The chain for the block header ['mainnet']
+   * @param {String|Number} opts.chain The chain for the block header [default: 'mainnet']
+   * @param {String} opts.hardfork Hardfork for the block header [default: null, block number-based behaviour]
+   * @param {Object} opts.common Alternatively pass a Common instance instead of setting chain/hardfork directly
    * @prop {Buffer} parentHash the blocks' parent's hash
    * @prop {Buffer} uncleHash sha3(rlp_encode(uncle_list))
    * @prop {Buffer} coinbase the miner address
@@ -24,9 +26,17 @@ const BN = utils.BN
    */
 var BlockHeader = module.exports = function (data, opts) {
   opts = opts || {}
-  this._chain = opts.chain ? opts.chain : 'mainnet'
-  this._hardfork = 'byzantium'
-  this._common = new Common(this._chain, this._hardfork)
+
+  if (opts.common) {
+    if (opts.chain) {
+      throw new Error('Instantiation with both opts.common and opts.chain parameter not allowed!')
+    }
+    this._common = opts.common
+  } else {
+    let chain = opts.chain ? opts.chain : 'mainnet'
+    let hardfork = opts.hardfork ? opts.hardfork : null
+    this._common = new Common(chain, hardfork)
+  }
 
   var fields = [{
     name: 'parentHash',
@@ -94,11 +104,17 @@ var BlockHeader = module.exports = function (data, opts) {
  * @return {BN}
  */
 BlockHeader.prototype.canonicalDifficulty = function (parentBlock) {
+  const hardfork = this._common.hardfork() || this._common.activeHardfork(utils.bufferToInt(this.number))
+
+  if (!this._common.hardforkGteHardfork(hardfork, 'byzantium')) {
+    throw new Error('Difficulty validation only supported on blocks >= byzantium')
+  }
+
   const blockTs = new BN(this.timestamp)
   const parentTs = new BN(parentBlock.header.timestamp)
   const parentDif = new BN(parentBlock.header.difficulty)
-  const minimumDifficulty = new BN(this._common.param('pow', 'minimumDifficulty'))
-  var offset = parentDif.div(new BN(this._common.param('pow', 'difficultyBoundDivisor')))
+  const minimumDifficulty = new BN(this._common.param('pow', 'minimumDifficulty', hardfork))
+  var offset = parentDif.div(new BN(this._common.param('pow', 'difficultyBoundDivisor', hardfork)))
   var dif
 
   // Byzantium
@@ -150,11 +166,12 @@ BlockHeader.prototype.validateDifficulty = function (parentBlock) {
 BlockHeader.prototype.validateGasLimit = function (parentBlock) {
   const pGasLimit = new BN(parentBlock.header.gasLimit)
   const gasLimit = new BN(this.gasLimit)
-  const a = pGasLimit.div(new BN(this._common.param('gasConfig', 'gasLimitBoundDivisor')))
+  const hardfork = this._common.hardfork() ? this._common.hardfork() : this._common.activeHardfork(this.number)
+  const a = pGasLimit.div(new BN(this._common.param('gasConfig', 'gasLimitBoundDivisor', hardfork)))
   const maxGasLimit = pGasLimit.add(a)
   const minGasLimit = pGasLimit.sub(a)
 
-  return gasLimit.lt(maxGasLimit) && gasLimit.gt(minGasLimit) && gasLimit.gte(this._common.param('gasConfig', 'minGasLimit'))
+  return gasLimit.lt(maxGasLimit) && gasLimit.gt(minGasLimit) && gasLimit.gte(this._common.param('gasConfig', 'minGasLimit', hardfork))
 }
 
 /**
@@ -211,7 +228,8 @@ BlockHeader.prototype.validate = function (blockchain, height, cb) {
       return cb('invalid timestamp')
     }
 
-    if (self.extraData.length > this._common.param('vm', 'maxExtraDataSize')) {
+    const hardfork = this._common.hardfork() ? this._common.hardfork() : this._common.activeHardfork(height)
+    if (self.extraData.length > this._common.param('vm', 'maxExtraDataSize', hardfork)) {
       return cb('invalid amount of extra data')
     }
 
