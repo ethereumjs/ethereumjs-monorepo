@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 
+## [0.3.0] - 2018-05-25
+- Allow functions like ``hardforkIsActiveOnBlock()`` - where hardfork is provided as param - also to be run on hardfork set for greater flexibility/comfort, PR [#13](https://github.com/ethereumjs/ethereumjs-common/pull/13)
+- New ``hardforkGteHardfork()`` method for HF order comparisons, PR [#13](https://github.com/ethereumjs/ethereumjs-common/pull/13)
+
+[0.3.0]: https://github.com/ethereumjs/ethereumjs-common/compare/v0.2.0...v0.3.0
+
 ## [0.2.0] - 2018-05-14
 - New optional initialization parameter ``allowedHardforks``,  this allows for cleaner client
 library implementations by preventing undefined behaviour, PR [#10](https://github.com/ethereumjs/ethereumjs-common/pull/10)
