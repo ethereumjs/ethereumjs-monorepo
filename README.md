@@ -11,7 +11,10 @@ about the current project status, [issues](https://github.com/ethereumjs/ethereu
 for open issues and a project layout and read through [Community Project](https://github.com/ethereumjs/ethereumjs-client#community-project)
 if you want to join.
 
-Current development stage: ``CONCEPTION``
+See [Technical Guidelines](https://github.com/ethereumjs/ethereumjs-client#technical-guidelines) if
+you directly want to dive into development info.
+
+Current development stage: ``CONCEPT ANALYSIS / EARLY DEVELOPMENT``
 
 # MAIN FOKUS
 
@@ -65,18 +68,18 @@ This is the project start and will mainly be done by the initiator of the projec
 worked out in the form of issues down to a granularity-level where they are implementable
 by various independent contributors. A project plan will be layed out grouping the tasks
 and showing work dependencies and giving an overall impression what has to be done to 
-successfully finish the project. There will be also an information description (this document :-))
+successfully finish the project. There will be also an informal description (this document :-))
 of the organizational parts of the project.
 
 **Goals**: A task list and project plan for discussion
 
-**Duration**: 1-2 weeks
+**Duration**: 3-4 weeks
 
 **How to contribute**: This is not yet the time for contributing. Please be patient for another
 week or two until we have something to discuss.
 
 
-``CONCEPTION ANALYSIS``
+``CONCEPT ANALYSIS / EARLY DEVELOPMENT``
 
 This is the time to discuss the way the project is conceptualized and the way the project plan
 is layed out. Feel free to join! It will be especially valuable if you deep-dive into the various
@@ -88,24 +91,26 @@ issues and have a look at questions like:
 - Is there already some library which does this work, are the external libs/devs proposed adequate?
 - ...
 
-*Note*: Please don't do the discussion on a work issue in the issue itself (so that we can keep a 
-  relatively clean issue boilerplate which we can be used when the actual work starts), but open a **new
-  issue for conception analysis**, label it appropriately and reference the work issue.
-
 At the end we will hopefully have a work plan everyone is happy with and which serves as a solid
 basis for implementation.
 
-**Goals**: A task list and project plan for implementation
+You can also carefully start development on some commonly agreed stuff. Put some extra emphasis
+on communication though and announce and eventually discuss your work, so that we don't pre-early
+lay path we later may have to revert.
 
-**Duration**: 1-2 weeks
+**Goals**: A task list and project plan for implementation / some first development progress
 
-**How to contribute**: YEAH, YEAH, contribute now!! :-) Feel free to join the discussion.
+**Duration**: 4-5 weeks
+
+**How to contribute**: YEAH, YEAH, contribute now!! :-) Feel free to join the discussion or do
+some early development.
  
 
 ``IN DEVELOPMENT``
 
-Oh my, now there really is some work to be done. Feel free to grab an issue you want to work on.
-Many issues will be in a dependency-order-line, so start with issues which doesn't depend on other
+Oh my, now there really is some work to be done. The main scope of work tasks and the directions
+where to head should be worked out now. Feel free to grab an issue you want to work on.
+Many issues will be (hopefully :-)) in a dependency-order-line, so start with issues which doesn't depend on other
 unfinished issues.
 
 If you have chosen your issue please drop a note on the issue page that you will start working
@@ -114,9 +119,10 @@ please present your idea there first so there won't be any conflicts/unnecessary
 later on merging.
 
 **Goals:**: All aspects/components of both the light and the full client implementation should be
-in a workable state.
+in a workable state. A ``MVP`` (Minimum Viable Product) containing all the functionality in a
+working state should be released.
 
-**Duration**: 4+ months
+**Duration**: 4-6+ months
 
 **How to contribute**: Grab yourself an issue and start hacking (after reading the above :-))
 
@@ -124,6 +130,8 @@ in a workable state.
 
 Oh my oh my. This is still a bit far away. But we should finally come to a point where we can
 actually release some stuff.
+
+**Duration**: 2-3+ months
 
 Further release stages to be determined.
 
