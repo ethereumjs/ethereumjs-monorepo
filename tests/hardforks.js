@@ -69,7 +69,7 @@ tape('[Common]: Hardfork logic', function (t) {
     st.end()
   })
 
-  t.test('hardforkIsActiveOnBlock()', function (st) {
+  t.test('hardforkIsActiveOnBlock() / activeOnBlock()', function (st) {
     let c = new Common('ropsten')
     st.equal(c.hardforkIsActiveOnBlock('byzantium', 1700000), true, 'Ropsten, byzantium (provided), 1700000 -> true')
     st.equal(c.hardforkIsActiveOnBlock('byzantium', 1700005), true, 'Ropsten, byzantium (provided), 1700005 -> true')
@@ -77,6 +77,7 @@ tape('[Common]: Hardfork logic', function (t) {
 
     c = new Common('ropsten', 'byzantium')
     st.equal(c.hardforkIsActiveOnBlock(null, 1700000), true, 'Ropsten, byzantium (set), 1700000 -> true')
+    st.equal(c.activeOnBlock(1700000), true, 'Ropsten, byzantium (set), 1700000 -> true (alias function)')
     st.equal(c.hardforkIsActiveOnBlock(null, 1700005), true, 'Ropsten, byzantium (set), 1700005 -> true')
     st.equal(c.hardforkIsActiveOnBlock(null, 1699999), false, 'Ropsten, byzantium (set), 1699999 -> false')
 
@@ -92,6 +93,7 @@ tape('[Common]: Hardfork logic', function (t) {
 
     c = new Common('ropsten', 'byzantium')
     st.equal(c.hardforkGteHardfork(null, 'spuriousDragon'), true, 'Ropsten, byzantium (set) >= spuriousDragon -> true')
+    st.equal(c.gteHardfork('spuriousDragon'), true, 'Ropsten, byzantium (set) >= spuriousDragon -> true (alias function)')
     st.equal(c.hardforkGteHardfork(null, 'spuriousDragon', { onlyActive: true }), true, 'Ropsten, byzantium (set) >= spuriousDragon, onlyActive -> true')
     st.equal(c.hardforkGteHardfork(null, 'byzantium'), true, 'Ropsten, byzantium (set) >= byzantium -> true')
     st.equal(c.hardforkGteHardfork(null, 'hybridCasper'), false, 'Ropsten, byzantium (set) >= hybridCasper -> false')

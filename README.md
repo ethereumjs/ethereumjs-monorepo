@@ -127,8 +127,16 @@ Network-specific genesis files are located in the ``genesisStates`` folder.
 Due to the large file sizes genesis states are not directly included in the ``index.js`` file
 but have to be accessed directly, e.g.:
 
-```
+```javascript
 const mainnetGenesisState = require('ethereumjs-common/genesisStates/mainnet')
+```
+
+Or by choosing dynamically:
+
+```javascript
+const genesisStates = require('ethereumjs-common/genesisStates')
+const mainnetGenesisState = genesisStates['mainnet']
+const mainnetGenesisState = genesisStates[genesisStates['names'][1]] // alternative via chain Id
 ```
 
 # LICENSE
