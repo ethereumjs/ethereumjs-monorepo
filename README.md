@@ -29,11 +29,17 @@ context.
 
 There are some uncertainties around the intended development stage of the **full client**
 regarding performance and questions how to deal with the lack of 
-(historical) fork-rule suppport of the underlying [VM](https://github.com/ethereumjs/ethereumjs-vm)
+(historical) fork-rule support of the underlying [VM](https://github.com/ethereumjs/ethereumjs-vm)
 implementation. Full client support shall therefor be brought to an *EXPERIMENTAL* stage
 where it is possible to sync the main chain up to a post-Byzantium state and then process
 transactions and store the results. This will already be valuable for experimentation and
 testing purposes. Where and if to proceed from there will be decided in a later stage.
+
+It is very probable that the **Constantinople** hardfork ([EIP](https://eips.ethereum.org/EIPS/eip-1013)) will happen alongside 
+the development of this library. Also **Casper**, the (hybrid) PoS switch ([EIP](https://eips.ethereum.org/EIPS/eip-1011)) of the Ethereum
+network is more-or-less specified out and will come as a separete hardfork. Compatibility with
+these two HFs should be though along library development to be future-ready, parts of this will take place
+independently in other libraries (e.g. the VM) though.
 
 ## SIDE FOKUS
 
@@ -41,7 +47,7 @@ testing purposes. Where and if to proceed from there will be decided in a later 
 for additional experimentation or further-going feature requests at least during the first development 
 period.
 
-There are three noteworthy exceptions from this base line:
+There are two noteworthy exceptions from this base line:
 
 **libp2p**: There has been a lot of expressed interest in ``libp2p`` support for client
 communications in the past by various parts of the community. If there is enough capacity this can
@@ -55,8 +61,6 @@ ways not hindering the main net client development. This is also limited to the 
 parts of sharding, so e.g. developing a stateless client will be another separate project
 (where there is definitely a need for, so if you want to go more into research, pick up on
 this one! :-)).
-
-**casper**: Same for Casper PoS implementation additions.
 
 # DEVELOPMENT STAGES
 
