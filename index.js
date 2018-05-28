@@ -165,8 +165,19 @@ class Common {
   }
 
   /**
+   * Alias to hardforkIsActiveOnBlock when hardfork is set
+   * @param {Number} blockNumber
+   * @param {Array} opts
+   * @param {Array.Boolean} opts.onlySupported optional, only allow supported HFs (default: false)
+   * @returns {Boolean}
+   */
+  activeOnBlock (blockNumber, opts) {
+    return this.hardforkIsActiveOnBlock(null, blockNumber, opts)
+  }
+
+  /**
    * Sequence based check if given or set HF1 is greater than or equal HF2
-   * @param {Number} hardfork1 Hardfork name or null (if set)
+   * @param {String} hardfork1 Hardfork name or null (if set)
    * @param {String} hardfork2 Hardfork name
    * @param {Array} opts
    * @param {Array.Boolean} opts.onlyActive optional, only active HFs (default: false)
@@ -193,6 +204,18 @@ class Common {
       index += 1
     }
     return posHf1 >= posHf2
+  }
+
+  /**
+   * Alias to hardforkGteHardfork when hardfork is set
+   * @param {String} hardfork Hardfork name
+   * @param {Array} opts
+   * @param {Array.Boolean} opts.onlyActive optional, only active HFs (default: false)
+   * @param {Array.Boolean} opts.onlySupported optional, only allow supported HFs (default: false)
+   * @returns {Boolean}
+   */
+  gteHardfork (hardfork, opts) {
+    return this.hardforkGteHardfork(null, hardfork, opts)
   }
 
   /**
