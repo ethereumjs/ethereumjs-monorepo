@@ -137,11 +137,9 @@ Further release stages to be determined.
 
 # COMMUNITY PROJECT
 
-Many of the JS developers currently hired by the foundation are working on other projects, so this
-has to be a project strongly driven forward by the community. This necessarily doesn't has to be a
-bad thing though, since there is strong demand for a Javascript client by the community and it
-will be easier to grab and integrate the different needs if various parts of the community are
-involved. This will generally a really exciting project to work on. There will be an ongoing 
+Since capacity of current EthereumJS developers is limited and we cannot understand all the
+needs from the community this project will generally be conceptualized as a community project
+and we hope from contributions from various sides and heterogenuous backgrounds. This will generally a really exciting project to work on. There will be an ongoing 
 project management and coordination provided by [HolgerD77](https://github.com/holgerd77) who
 is working for the foundation as a Javascript developer and has been deep insights of the JS
 implementations of the VM, the networking communication layer and most of the other parts.
@@ -168,6 +166,8 @@ members on when/how the team is expanded. It is expected from team members that 
 to the project for some reasonable amount of time (2+ months).
 
 # TECHNICAL GUIDELINES
+
+## Client Setup
 
 **Running the Client**
 
@@ -196,6 +196,8 @@ for all output or something more targeted by listing the loggers like
 DEBUG=devp2p:rlpx,devp2p:eth,-babel [CLIENT_START_COMMAND]
 ```
 
+## Environment / Ecosystem
+
 **EthereumJS Ecosystem**
 
 This project will be embedded in the EthereumJS ecosystem and many submodules already exist and
@@ -210,6 +212,11 @@ p2p implementation being necessary for a proper working light client sync. Due t
 nature of EthereumJS there will be internal (to be done in this repo) and external issues 
 (to be done in other EthereumJS repos) to be worked on.
 
+All (hopefully :-)) issues referring to the client implementation will be provided with a
+``ethereumjs-client`` label which should be discoverable with a label search on GitHub:
+
+- [Show external issues](https://github.com/search?utf8=%E2%9C%93&q=org%3Aethereumjs+label%3Aethereumjs-client&type=Issues&ref=advsearch&l=&l=)
+
 **Basic Environment**
 
 For library development the following basic environment is targeted. Some base requirements
@@ -222,6 +229,12 @@ tooling.
 - [Tape](https://github.com/substack/tape) for testing
 - [Istanbul/nyc](https://istanbul.js.org/) for test coverage
 - [standard.js](https://standardjs.com/) for linting/code formatting
+
+## Contribution Guidelines
+**Communication** This is distributed team effort. If you plan to take on larger issues
+always pre-announce your work intention on the issue page and drop a short note on what
+you are planning to do. If there is no issue for the stuff you want to work on create one
+and describe the problem and outline the intended implementation before start working.
 
 **Branch Structure**
 
@@ -236,5 +249,4 @@ a case-by-case basis). Test coverage should not increase (significantly) by a ne
 You might also want to consider writing your tests first and then directly push them,
 since this would be a good starting point for discussing the scope/implementation of a feature.
 
-THERE IS PROBABLY SOME STUFF MISSING HERE.
 
