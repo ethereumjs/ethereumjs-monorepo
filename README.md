@@ -11,7 +11,10 @@ about the current project status, [issues](https://github.com/ethereumjs/ethereu
 for open issues and a project layout and read through [Community Project](https://github.com/ethereumjs/ethereumjs-client#community-project)
 if you want to join.
 
-Current development stage: ``CONCEPTION``
+See [Technical Guidelines](https://github.com/ethereumjs/ethereumjs-client#technical-guidelines) if
+you directly want to dive into development info.
+
+Current development stage: ``CONCEPT ANALYSIS / EARLY DEVELOPMENT``
 
 # MAIN FOKUS
 
@@ -65,18 +68,18 @@ This is the project start and will mainly be done by the initiator of the projec
 worked out in the form of issues down to a granularity-level where they are implementable
 by various independent contributors. A project plan will be layed out grouping the tasks
 and showing work dependencies and giving an overall impression what has to be done to 
-successfully finish the project. There will be also an information description (this document :-))
+successfully finish the project. There will be also an informal description (this document :-))
 of the organizational parts of the project.
 
 **Goals**: A task list and project plan for discussion
 
-**Duration**: 1-2 weeks
+**Duration**: 3-4 weeks
 
 **How to contribute**: This is not yet the time for contributing. Please be patient for another
 week or two until we have something to discuss.
 
 
-``CONCEPTION ANALYSIS``
+``CONCEPT ANALYSIS / EARLY DEVELOPMENT``
 
 This is the time to discuss the way the project is conceptualized and the way the project plan
 is layed out. Feel free to join! It will be especially valuable if you deep-dive into the various
@@ -88,24 +91,26 @@ issues and have a look at questions like:
 - Is there already some library which does this work, are the external libs/devs proposed adequate?
 - ...
 
-*Note*: Please don't do the discussion on a work issue in the issue itself (so that we can keep a 
-  relatively clean issue boilerplate which we can be used when the actual work starts), but open a **new
-  issue for conception analysis**, label it appropriately and reference the work issue.
-
 At the end we will hopefully have a work plan everyone is happy with and which serves as a solid
 basis for implementation.
 
-**Goals**: A task list and project plan for implementation
+You can also carefully start development on some commonly agreed stuff. Put some extra emphasis
+on communication though and announce and eventually discuss your work, so that we don't pre-early
+lay path we later may have to revert.
 
-**Duration**: 1-2 weeks
+**Goals**: A task list and project plan for implementation / some first development progress
 
-**How to contribute**: YEAH, YEAH, contribute now!! :-) Feel free to join the discussion.
+**Duration**: 4-5 weeks
+
+**How to contribute**: YEAH, YEAH, contribute now!! :-) Feel free to join the discussion or do
+some early development.
  
 
 ``IN DEVELOPMENT``
 
-Oh my, now there really is some work to be done. Feel free to grab an issue you want to work on.
-Many issues will be in a dependency-order-line, so start with issues which doesn't depend on other
+Oh my, now there really is some work to be done. The main scope of work tasks and the directions
+where to head should be worked out now. Feel free to grab an issue you want to work on.
+Many issues will be (hopefully :-)) in a dependency-order-line, so start with issues which doesn't depend on other
 unfinished issues.
 
 If you have chosen your issue please drop a note on the issue page that you will start working
@@ -114,9 +119,10 @@ please present your idea there first so there won't be any conflicts/unnecessary
 later on merging.
 
 **Goals:**: All aspects/components of both the light and the full client implementation should be
-in a workable state.
+in a workable state. A ``MVP`` (Minimum Viable Product) containing all the functionality in a
+working state should be released.
 
-**Duration**: 4+ months
+**Duration**: 4-6+ months
 
 **How to contribute**: Grab yourself an issue and start hacking (after reading the above :-))
 
@@ -125,15 +131,15 @@ in a workable state.
 Oh my oh my. This is still a bit far away. But we should finally come to a point where we can
 actually release some stuff.
 
+**Duration**: 2-3+ months
+
 Further release stages to be determined.
 
 # COMMUNITY PROJECT
 
-Many of the JS developers currently hired by the foundation are working on other projects, so this
-has to be a project strongly driven forward by the community. This necessarily doesn't has to be a
-bad thing though, since there is strong demand for a Javascript client by the community and it
-will be easier to grab and integrate the different needs if various parts of the community are
-involved. This will generally a really exciting project to work on. There will be an ongoing 
+Since capacity of current EthereumJS developers is limited and we cannot understand all the
+needs from the community this project will generally be conceptualized as a community project
+and we hope from contributions from various sides and heterogenuous backgrounds. This will generally a really exciting project to work on. There will be an ongoing 
 project management and coordination provided by [HolgerD77](https://github.com/holgerd77) who
 is working for the foundation as a Javascript developer and has been deep insights of the JS
 implementations of the VM, the networking communication layer and most of the other parts.
@@ -160,6 +166,8 @@ members on when/how the team is expanded. It is expected from team members that 
 to the project for some reasonable amount of time (2+ months).
 
 # TECHNICAL GUIDELINES
+
+## Client Setup
 
 **Running the Client**
 
@@ -188,6 +196,8 @@ for all output or something more targeted by listing the loggers like
 DEBUG=devp2p:rlpx,devp2p:eth,-babel [CLIENT_START_COMMAND]
 ```
 
+## Environment / Ecosystem
+
 **EthereumJS Ecosystem**
 
 This project will be embedded in the EthereumJS ecosystem and many submodules already exist and
@@ -202,6 +212,11 @@ p2p implementation being necessary for a proper working light client sync. Due t
 nature of EthereumJS there will be internal (to be done in this repo) and external issues 
 (to be done in other EthereumJS repos) to be worked on.
 
+All (hopefully :-)) issues referring to the client implementation will be provided with a
+``ethereumjs-client`` label which should be discoverable with a label search on GitHub:
+
+- [Show external issues](https://github.com/search?utf8=%E2%9C%93&q=org%3Aethereumjs+label%3Aethereumjs-client&type=Issues&ref=advsearch&l=&l=)
+
 **Basic Environment**
 
 For library development the following basic environment is targeted. Some base requirements
@@ -214,6 +229,12 @@ tooling.
 - [Tape](https://github.com/substack/tape) for testing
 - [Istanbul/nyc](https://istanbul.js.org/) for test coverage
 - [standard.js](https://standardjs.com/) for linting/code formatting
+
+## Contribution Guidelines
+**Communication** This is distributed team effort. If you plan to take on larger issues
+always pre-announce your work intention on the issue page and drop a short note on what
+you are planning to do. If there is no issue for the stuff you want to work on create one
+and describe the problem and outline the intended implementation before start working.
 
 **Branch Structure**
 
@@ -228,5 +249,4 @@ a case-by-case basis). Test coverage should not increase (significantly) by a ne
 You might also want to consider writing your tests first and then directly push them,
 since this would be a good starting point for discussing the scope/implementation of a feature.
 
-THERE IS PROBABLY SOME STUFF MISSING HERE.
 
