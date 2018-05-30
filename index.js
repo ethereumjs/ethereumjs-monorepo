@@ -98,16 +98,11 @@ Block.prototype.isGenesis = function () {
 }
 
 /**
- * turns the block in to the canonical genesis block
+ * turns the block into the canonical genesis block
  * @method setGenesisParams
  */
 Block.prototype.setGenesisParams = function () {
-  this.header.gasLimit = this._common.genesis().gasLimit
-  this.header.difficulty = this._common.genesis().difficulty
-  this.header.extraData = this._common.genesis().extraData
-  this.header.nonce = this._common.genesis().nonce
-  this.header.stateRoot = this._common.genesis().stateRoot
-  this.header.number = Buffer.from([0])
+  this.header.setGenesisParams()
 }
 
 /**

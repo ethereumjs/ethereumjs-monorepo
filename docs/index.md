@@ -30,7 +30,7 @@ Returns **any** Boolean
 
 ## setGenesisParams
 
-turns the block in to the canonical genesis block
+turns the block into the canonical genesis block
 
 ## serialize
 
@@ -181,3 +181,7 @@ Returns **[Buffer](https://nodejs.org/api/buffer.html)**
 checks if the blockheader is a genesis header
 
 Returns **[Boolean](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean)** 
+
+## setGenesisParams
+
+turns the header into the canonical genesis block header

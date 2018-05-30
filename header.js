@@ -254,3 +254,16 @@ BlockHeader.prototype.hash = function () {
 BlockHeader.prototype.isGenesis = function () {
   return this.number.toString('hex') === ''
 }
+
+/**
+ * turns the header into the canonical genesis block header
+ * @method setGenesisParams
+ */
+BlockHeader.prototype.setGenesisParams = function () {
+  this.gasLimit = this._common.genesis().gasLimit
+  this.difficulty = this._common.genesis().difficulty
+  this.extraData = this._common.genesis().extraData
+  this.nonce = this._common.genesis().nonce
+  this.stateRoot = this._common.genesis().stateRoot
+  this.number = new Buffer([])
+}
