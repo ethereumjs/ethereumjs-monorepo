@@ -1,9 +1,22 @@
 const tape = require('tape')
+const Common = require('ethereumjs-common')
 const testing = require('ethereumjs-testing')
 const rlp = require('ethereumjs-util').rlp
 const Block = require('../index.js')
 
 tape('[Block]: block functions', function (t) {
+  t.test('should test block initialization', function (st) {
+    const block1 = new Block(null, { 'chain': 'ropsten' })
+    const common = new Common('ropsten')
+    const block2 = new Block(null, { 'common': common })
+    block1.setGenesisParams()
+    block2.setGenesisParams()
+    st.strictEqual(block1.hash().toString('hex'), block2.hash().toString('hex'), 'block hashes match')
+
+    st.throws(function () { new Block(null, { 'chain': 'ropsten', 'common': common }) }, /not allowed!$/, 'should throw on initialization with chain and common parameter') // eslint-disable-line
+    st.end()
+  })
+
   const testData = require('./testdata.json')
 
   function testTransactionValidation (st, block) {
