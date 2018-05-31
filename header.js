@@ -105,33 +105,48 @@ var BlockHeader = module.exports = function (data, opts) {
  */
 BlockHeader.prototype.canonicalDifficulty = function (parentBlock) {
   const hardfork = this._common.hardfork() || this._common.activeHardfork(utils.bufferToInt(this.number))
-
-  if (!this._common.hardforkGteHardfork(hardfork, 'byzantium')) {
-    throw new Error('Difficulty validation only supported on blocks >= byzantium')
-  }
-
   const blockTs = new BN(this.timestamp)
   const parentTs = new BN(parentBlock.header.timestamp)
   const parentDif = new BN(parentBlock.header.difficulty)
   const minimumDifficulty = new BN(this._common.param('pow', 'minimumDifficulty', hardfork))
   var offset = parentDif.div(new BN(this._common.param('pow', 'difficultyBoundDivisor', hardfork)))
+  var num = new BN(this.number)
+  var a
+  var cutoff
   var dif
 
-  // Byzantium
-  // max((2 if len(parent.uncles) else 1) - ((timestamp - parent.timestamp) // 9), -99)
-  var uncleAddend = parentBlock.header.uncleHash.equals(utils.SHA3_RLP_ARRAY) ? 1 : 2
-  var a = blockTs.sub(parentTs).idivn(9).ineg().iaddn(uncleAddend)
-  var cutoff = new BN(-99)
-  // MAX(cutoff, a)
-  if (cutoff.cmp(a) === 1) {
-    a = cutoff
-  }
-  dif = parentDif.add(offset.mul(a))
+  if (this._common.hardforkGteHardfork(hardfork, 'byzantium')) {
+    // max((2 if len(parent.uncles) else 1) - ((timestamp - parent.timestamp) // 9), -99)
+    var uncleAddend = parentBlock.header.uncleHash.equals(utils.SHA3_RLP_ARRAY) ? 1 : 2
+    a = blockTs.sub(parentTs).idivn(9).ineg().iaddn(uncleAddend)
+    cutoff = new BN(-99)
+    // MAX(cutoff, a)
+    if (cutoff.cmp(a) === 1) {
+      a = cutoff
+    }
+    dif = parentDif.add(offset.mul(a))
 
-  // Byzantium difficulty bomb delay
-  var num = new BN(this.number).isubn(3000000)
-  if (num.ltn(0)) {
-    num = new BN(0)
+    // Byzantium difficulty bomb delay
+    num.isubn(3000000)
+    if (num.ltn(0)) {
+      num = new BN(0)
+    }
+  } else if (this._common.hardforkGteHardfork(hardfork, 'homestead')) {
+    // 1 - (block_timestamp - parent_timestamp) // 10
+    a = blockTs.sub(parentTs).idivn(10).ineg().iaddn(1)
+    cutoff = new BN(-99)
+    // MAX(cutoff, a)
+    if (cutoff.cmp(a) === 1) {
+      a = cutoff
+    }
+    dif = parentDif.add(offset.mul(a))
+  } else {
+    // pre-homestead
+    if (parentTs.addn(this._common.param('pow', 'durationLimit', hardfork)).cmp(blockTs) === 1) {
+      dif = offset.add(parentDif)
+    } else {
+      dif = parentDif.sub(offset)
+    }
   }
 
   var exp = num.idivn(100000).isubn(2)
