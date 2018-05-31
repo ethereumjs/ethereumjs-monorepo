@@ -1,10 +1,14 @@
+const Common = require('ethereumjs-common')
 const utils = require('ethereumjs-util')
-const params = require('ethereum-common/params.json')
 const BN = utils.BN
   /**
    * An object that repersents the block header
    * @constructor
    * @param {Array} data raw data, deserialized
+   * @param {Array} opts Options
+   * @param {String|Number} opts.chain The chain for the block header [default: 'mainnet']
+   * @param {String} opts.hardfork Hardfork for the block header [default: null, block number-based behaviour]
+   * @param {Object} opts.common Alternatively pass a Common instance instead of setting chain/hardfork directly
    * @prop {Buffer} parentHash the blocks' parent's hash
    * @prop {Buffer} uncleHash sha3(rlp_encode(uncle_list))
    * @prop {Buffer} coinbase the miner address
@@ -20,7 +24,20 @@ const BN = utils.BN
    * @prop {Buffer} extraData
    * @prop {Array.<Buffer>} raw an array of buffers containing the raw blocks.
    */
-var BlockHeader = module.exports = function (data) {
+var BlockHeader = module.exports = function (data, opts) {
+  opts = opts || {}
+
+  if (opts.common) {
+    if (opts.chain) {
+      throw new Error('Instantiation with both opts.common and opts.chain parameter not allowed!')
+    }
+    this._common = opts.common
+  } else {
+    let chain = opts.chain ? opts.chain : 'mainnet'
+    let hardfork = opts.hardfork ? opts.hardfork : null
+    this._common = new Common(chain, hardfork)
+  }
+
   var fields = [{
     name: 'parentHash',
     length: 32,
@@ -52,7 +69,8 @@ var BlockHeader = module.exports = function (data) {
     default: new Buffer([])
   }, {
     name: 'number',
-    default: utils.intToBuffer(params.homeSteadForkNumber.v)
+    // TODO: params.homeSteadForkNumber.v left for legacy reasons, replace on future release
+    default: utils.intToBuffer(1150000)
   }, {
     name: 'gasLimit',
     default: new Buffer('ffffffffffffff', 'hex')
@@ -86,11 +104,17 @@ var BlockHeader = module.exports = function (data) {
  * @return {BN}
  */
 BlockHeader.prototype.canonicalDifficulty = function (parentBlock) {
+  const hardfork = this._common.hardfork() || this._common.activeHardfork(utils.bufferToInt(this.number))
+
+  if (!this._common.hardforkGteHardfork(hardfork, 'byzantium')) {
+    throw new Error('Difficulty validation only supported on blocks >= byzantium')
+  }
+
   const blockTs = new BN(this.timestamp)
   const parentTs = new BN(parentBlock.header.timestamp)
   const parentDif = new BN(parentBlock.header.difficulty)
-  const minimumDifficulty = new BN(params.minimumDifficulty.v)
-  var offset = parentDif.div(new BN(params.difficultyBoundDivisor.v))
+  const minimumDifficulty = new BN(this._common.param('pow', 'minimumDifficulty', hardfork))
+  var offset = parentDif.div(new BN(this._common.param('pow', 'difficultyBoundDivisor', hardfork)))
   var dif
 
   // Byzantium
@@ -142,11 +166,12 @@ BlockHeader.prototype.validateDifficulty = function (parentBlock) {
 BlockHeader.prototype.validateGasLimit = function (parentBlock) {
   const pGasLimit = new BN(parentBlock.header.gasLimit)
   const gasLimit = new BN(this.gasLimit)
-  const a = pGasLimit.div(new BN(params.gasLimitBoundDivisor.v))
+  const hardfork = this._common.hardfork() ? this._common.hardfork() : this._common.activeHardfork(this.number)
+  const a = pGasLimit.div(new BN(this._common.param('gasConfig', 'gasLimitBoundDivisor', hardfork)))
   const maxGasLimit = pGasLimit.add(a)
   const minGasLimit = pGasLimit.sub(a)
 
-  return gasLimit.lt(maxGasLimit) && gasLimit.gt(minGasLimit) && gasLimit.gte(params.minGasLimit.v)
+  return gasLimit.lt(maxGasLimit) && gasLimit.gt(minGasLimit) && gasLimit.gte(this._common.param('gasConfig', 'minGasLimit', hardfork))
 }
 
 /**
@@ -203,7 +228,8 @@ BlockHeader.prototype.validate = function (blockchain, height, cb) {
       return cb('invalid timestamp')
     }
 
-    if (self.extraData.length > params.maximumExtraDataSize.v) {
+    const hardfork = this._common.hardfork() ? this._common.hardfork() : this._common.activeHardfork(height)
+    if (self.extraData.length > this._common.param('vm', 'maxExtraDataSize', hardfork)) {
       return cb('invalid amount of extra data')
     }
 
@@ -227,4 +253,17 @@ BlockHeader.prototype.hash = function () {
  */
 BlockHeader.prototype.isGenesis = function () {
   return this.number.toString('hex') === ''
+}
+
+/**
+ * turns the header into the canonical genesis block header
+ * @method setGenesisParams
+ */
+BlockHeader.prototype.setGenesisParams = function () {
+  this.gasLimit = this._common.genesis().gasLimit
+  this.difficulty = this._common.genesis().difficulty
+  this.extraData = this._common.genesis().extraData
+  this.nonce = this._common.genesis().nonce
+  this.stateRoot = this._common.genesis().stateRoot
+  this.number = new Buffer([])
 }

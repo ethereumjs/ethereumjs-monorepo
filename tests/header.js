@@ -1,5 +1,5 @@
 const tape = require('tape')
-const params = require('ethereum-common')
+const Common = require('ethereumjs-common')
 const utils = require('ethereumjs-util')
 const rlp = utils.rlp
 const testing = require('ethereumjs-testing')
@@ -17,7 +17,7 @@ tape('[Block]: Header functions', function (t) {
       st.equal(header.receiptTrie.toString('hex'), utils.SHA3_RLP_S)
       st.deepEqual(header.bloom, utils.zeros(256))
       st.deepEqual(header.difficulty, new Buffer([]))
-      st.deepEqual(header.number, utils.intToBuffer(params.homeSteadForkNumber.v))
+      st.deepEqual(header.number, utils.intToBuffer(1150000))
       st.deepEqual(header.gasLimit, new Buffer('ffffffffffffff', 'hex'))
       st.deepEqual(header.gasUsed, new Buffer([]))
       st.deepEqual(header.timestamp, new Buffer([]))
@@ -36,6 +36,18 @@ tape('[Block]: Header functions', function (t) {
     st.end()
   })
 
+  t.test('should test header initialization', function (st) {
+    const header1 = new Header(null, { 'chain': 'ropsten' })
+    const common = new Common('ropsten')
+    const header2 = new Header(null, { 'common': common })
+    header1.setGenesisParams()
+    header2.setGenesisParams()
+    st.strictEqual(header1.hash().toString('hex'), header2.hash().toString('hex'), 'header hashes match')
+
+    st.throws(function () { new Header(null, { 'chain': 'ropsten', 'common': common }) }, /not allowed!$/, 'should throw on initialization with chain and common parameter') // eslint-disable-line
+    st.end()
+  })
+
   t.test('should test validateGasLimit', function (st) {
     const testData = testing.getSingleFile('BlockchainTests/bcBlockGasLimitTest.json')
 
@@ -50,6 +62,22 @@ tape('[Block]: Header functions', function (t) {
     st.equal(header.isGenesis(), false)
     header.number = new Buffer([])
     st.equal(header.isGenesis(), true)
+    st.end()
+  })
+
+  const testDataGenesis = testing.getSingleFile('BasicTests/genesishashestest.json')
+  t.test('should test genesis hashes (mainnet default)', function (st) {
+    var header = new Header()
+    header.setGenesisParams()
+    st.strictEqual(header.hash().toString('hex'), testDataGenesis.genesis_hash, 'genesis hash match')
+    st.end()
+  })
+
+  t.test('should test genesis parameters (ropsten)', function (st) {
+    var genesisHeader = new Header(null, { 'chain': 'ropsten' })
+    genesisHeader.setGenesisParams()
+    let ropstenStateRoot = '217b0bbcfb72e2d57e28f33cb361b9983513177755dc3f33ce3e7022ed62b77b'
+    st.strictEqual(genesisHeader.stateRoot.toString('hex'), ropstenStateRoot, 'genesis stateRoot match')
     st.end()
   })
 })

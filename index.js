@@ -1,3 +1,4 @@
+const Common = require('ethereumjs-common')
 const ethUtil = require('ethereumjs-util')
 const Tx = require('ethereumjs-tx')
 const Trie = require('merkle-patricia-tree')
@@ -5,17 +6,33 @@ const BN = ethUtil.BN
 const rlp = ethUtil.rlp
 const async = require('async')
 const BlockHeader = require('./header')
-const params = require('ethereum-common/params.json')
 
 /**
  * Creates a new block object
  * @constructor the raw serialized or the deserialized block.
  * @param {Array|Buffer|Object} data
+ * @param {Array} opts Options
+ * @param {String|Number} opts.chain The chain for the block [default: 'mainnet']
+ * @param {String} opts.hardfork Hardfork for the block [default: null, block number-based behaviour]
+ * @param {Object} opts.common Alternatively pass a Common instance (ethereumjs-common) instead of setting chain/hardfork directly
  * @prop {Header} header the block's header
  * @prop {Array.<Header>} uncleList an array of uncle headers
  * @prop {Array.<Buffer>} raw an array of buffers containing the raw blocks.
  */
-var Block = module.exports = function (data) {
+var Block = module.exports = function (data, opts) {
+  opts = opts || {}
+
+  if (opts.common) {
+    if (opts.chain) {
+      throw new Error('Instantiation with both opts.common and opts.chain parameter not allowed!')
+    }
+    this._common = opts.common
+  } else {
+    let chain = opts.chain ? opts.chain : 'mainnet'
+    let hardfork = opts.hardfork ? opts.hardfork : null
+    this._common = new Common(chain, hardfork)
+  }
+
   this.transactions = []
   this.uncleHeaders = []
   this._inBlockChain = false
@@ -39,18 +56,18 @@ var Block = module.exports = function (data) {
   }
 
   if (Array.isArray(data)) {
-    this.header = new BlockHeader(data[0])
+    this.header = new BlockHeader(data[0], opts)
     rawTransactions = data[1]
     rawUncleHeaders = data[2]
   } else {
-    this.header = new BlockHeader(data.header)
+    this.header = new BlockHeader(data.header, opts)
     rawTransactions = data.transactions || []
     rawUncleHeaders = data.uncleHeaders || []
   }
 
   // parse uncle headers
   for (var i = 0; i < rawUncleHeaders.length; i++) {
-    this.uncleHeaders.push(new BlockHeader(rawUncleHeaders[i]))
+    this.uncleHeaders.push(new BlockHeader(rawUncleHeaders[i], opts))
   }
 
   // parse transactions
@@ -81,16 +98,11 @@ Block.prototype.isGenesis = function () {
 }
 
 /**
- * turns the block in to the canonical genesis block
+ * turns the block into the canonical genesis block
  * @method setGenesisParams
  */
 Block.prototype.setGenesisParams = function () {
-  this.header.gasLimit = params.genesisGasLimit.v
-  this.header.difficulty = params.genesisDifficulty.v
-  this.header.extraData = params.genesisExtraData.v
-  this.header.nonce = params.genesisNonce.v
-  this.header.stateRoot = params.genesisStateRoot.v
-  this.header.number = new Buffer([])
+  this.header.setGenesisParams()
 }
 
 /**
