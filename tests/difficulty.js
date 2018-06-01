@@ -13,14 +13,6 @@ function normalize (data) {
 }
 
 tape('[Header]: difficulty tests', t => {
-  t.test('should test error cases', function (st) {
-    var parentBlock = new Block(null, { 'chain': 'mainnet', 'hardfork': 'spuriousDragon' })
-    var block = new Block(null, { 'chain': 'mainnet', 'hardfork': 'spuriousDragon' })
-
-    t.throws(function () { block.header.canonicalDifficulty(parentBlock) }, /Difficulty validation only supported on blocks >= byzantium$/, 'should throw on block with spuriousDragon HF initialization')
-    st.end()
-  })
-
   function runDifficultyTests (test, parentBlock, block, msg) {
     normalize(test)
 
@@ -29,42 +21,51 @@ tape('[Header]: difficulty tests', t => {
     t.assert(block.header.validateDifficulty(parentBlock), `test validateDifficulty (${msg})`)
   }
 
-  const testData = require('./testdata-difficulty.json')
-  for (let testName in testData) {
-    let test = testData[testName]
-    let parentBlock = new Block(null, { 'chain': 'mainnet', 'hardfork': 'byzantium' })
-    parentBlock.header.timestamp = test.parentTimestamp
-    parentBlock.header.difficulty = test.parentDifficulty
-    parentBlock.header.uncleHash = test.parentUncles
-
-    let block = new Block(null, { 'chain': 'mainnet', 'hardfork': 'byzantium' })
-    block.header.timestamp = test.currentTimestamp
-    block.header.difficulty = test.currentDifficulty
-    block.header.number = test.currentBlockNumber
-
-    runDifficultyTests(test, parentBlock, block, 'fork determination by hardfork param')
+  const hardforkTestData = {
+    'chainstart': require('./difficultyFrontier.json'),
+    'homestead': require('./difficultyHomestead.json'),
+    'byzantium': require('./difficultyByzantium.json')
   }
+  for (let hardfork in hardforkTestData) {
+    const testData = hardforkTestData[hardfork]
+    for (let testName in testData) {
+      let test = testData[testName]
+      let parentBlock = new Block(null, { 'chain': 'mainnet', 'hardfork': hardfork })
+      parentBlock.header.timestamp = test.parentTimestamp
+      parentBlock.header.difficulty = test.parentDifficulty
+      parentBlock.header.uncleHash = test.parentUncles
 
-  for (let testName in testData) {
-    let test = testData[testName]
-    const BYZANTIUM_BLOCK = 4370000
-    let parentBlock = new Block()
-    parentBlock.header.timestamp = test.parentTimestamp
-    parentBlock.header.difficulty = test.parentDifficulty
-    parentBlock.header.uncleHash = test.parentUncles
-    parentBlock.header.number = utils.intToBuffer(BYZANTIUM_BLOCK - 1)
+      let block = new Block(null, { 'chain': 'mainnet', 'hardfork': hardfork })
+      block.header.timestamp = test.currentTimestamp
+      block.header.difficulty = test.currentDifficulty
+      block.header.number = test.currentBlockNumber
 
-    let block = new Block()
-    block.header.timestamp = test.currentTimestamp
-    block.header.difficulty = test.currentDifficulty
-    block.header.number = test.currentBlockNumber
-
-    if (utils.bufferToInt(block.header.number) >= BYZANTIUM_BLOCK) {
-      runDifficultyTests(test, parentBlock, block, 'fork determination by block number')
-    } else {
-      t.throws(function () { block.header.canonicalDifficulty(parentBlock) }, /Difficulty validation only supported on blocks >= byzantium$/, 'should throw on block < byzantium')
+      runDifficultyTests(test, parentBlock, block, 'fork determination by hardfork param')
     }
   }
+
+  const chainTestData = {
+    'mainnet': require('./difficultyMainNetwork.json'),
+    'ropsten': require('./difficultyRopsten.json')
+  }
+  for (let chain in chainTestData) {
+    const testData = chainTestData[chain]
+    for (let testName in testData) {
+      let test = testData[testName]
+      let parentBlock = new Block(null, { 'chain': chain })
+      parentBlock.header.timestamp = test.parentTimestamp
+      parentBlock.header.difficulty = test.parentDifficulty
+      parentBlock.header.uncleHash = test.parentUncles
+
+      let block = new Block(null, { 'chain': chain })
+      block.header.timestamp = test.currentTimestamp
+      block.header.difficulty = test.currentDifficulty
+      block.header.number = test.currentBlockNumber
+
+      runDifficultyTests(test, parentBlock, block, 'fork determination by block number')
+    }
+  }
+
   t.end()
 
   // Temporarily run local test selection
