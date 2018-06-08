@@ -17,7 +17,7 @@ installed separately):
 ```javascript
 const levelup = require('levelup')
 const leveldown = require('leveldown')
-const Blockchain = require('./index.js')
+const Blockchain = require('ethereumjs-blockchain')
 const utils = require('ethereumjs-util')
 
 const gethDbPath = './chaindata' // Add your own path here
