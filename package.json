@@ -7,7 +7,7 @@
     "coverage": "nyc npm run test && nyc report --reporter=text-lcov > .nyc_output/lcov.info",
     "coveralls": "npm run coverage && coveralls <.nyc_output/lcov.info",
     "lint": "standard",
-    "test": "npm run lint && node tests/"
+    "test": "npm run lint && tape tests/*.js"
   },
   "repository": {
     "type": "git",
@@ -42,6 +42,7 @@
   "devDependencies": {
     "coveralls": "^3.0.0",
     "nyc": "~11.6.0",
+    "sinon": "^6.0.0",
     "standard": "~11.0.1",
     "tape": "~4.9.0",
     "tmp": "~0.0.33"
