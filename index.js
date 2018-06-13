@@ -169,7 +169,7 @@ class Transaction {
   }
 
   /**
-   * returns the public key of the sender
+   * returns chain ID
    * @return {Buffer}
    */
   getChainId () {
