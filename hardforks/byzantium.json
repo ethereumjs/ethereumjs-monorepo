@@ -11,19 +11,19 @@
       "v": 20,
       "d": "Gquaddivisor from modexp precompile for gas calculation"
     },
-    "ecAddGas": {
+    "ecAdd": {
       "v": 500,
       "d": "Gas costs for curve addition precompile"
     },
-    "ecMulGas": {
+    "ecMul": {
       "v": 40000,
       "d": "Gas costs for curve multiplication precompile"
     },
-    "ecPairingGas": {
+    "ecPairing": {
       "v": 100000,
       "d": "Base gas costs for curve pairing precompile"
     },
-    "ecPairingWordGas": {
+    "ecPairingWord": {
       "v": 80000,
       "d": "Gas costs regarding curve pairing precompile input length"
     }

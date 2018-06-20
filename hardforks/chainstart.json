@@ -133,31 +133,31 @@
       "v": 3,
       "d": "Multiplied by the number of 32-byte words that are copied (round up) for any *COPY operation and added"
     },
-    "ecrecoverGas": {
+    "ecRecover": {
       "v": 3000,
       "d": ""
     },
-    "sha256Gas": {
+    "sha256": {
       "v": 60,
       "d": ""
     },
-    "sha256WordGas": {
+    "sha256Word": {
       "v": 12,
       "d": ""
     },
-    "ripemd160Gas": {
+    "ripemd160": {
       "v": 600,
       "d": ""
     },
-    "ripemd160WordGas": {
+    "ripemd160Word": {
       "v": 120,
       "d": ""
     },
-    "identityGas": {
+    "identity": {
       "v": 15,
       "d": ""
     },
-    "identityWordGas": {
+    "identityWord": {
       "v": 3,
       "d": ""
     }
