@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 
+## [0.4.0] - 2018-06-20
+- Remove leftover ...Gas postfix for some gas prices (e.g. ``ecAddGas`` -> ``ecAdd``) to
+  be consistent with overall gas price naming
+
+[0.4.0]: https://github.com/ethereumjs/ethereumjs-common/compare/v0.3.1...v0.4.0
+
 ## [0.3.1] - 2018-05-28
 - Added two alias functions ``activeOnBlock()`` and ``gteHardfork()`` when hardfork is set for convenience, PR [#15](https://github.com/ethereumjs/ethereumjs-common/pull/15)
 - Added option to dynamically choose genesis state (see ``README``), PR [#15](https://github.com/ethereumjs/ethereumjs-common/pull/15)
