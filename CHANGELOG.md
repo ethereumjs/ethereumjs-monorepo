@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 
+## [1.3.5] - 2018-06-22
+- Include signature by default in ``FakeTransaction.hash``, PR [#97](https://github.com/ethereumjs/ethereumjs-tx/pull/97)
+- Fix ``FakeTransaction`` signature failure bug, PR [#94](https://github.com/ethereumjs/ethereumjs-tx/pull/94)
+
+[1.3.5]: https://github.com/ethereumjs/ethereumjs-tx/compare/v1.3.4...v1.3.5
+
 ## [1.3.4] - 2018-03-06
 - Fix a bug producing hash collisions on ``FakeTransaction`` for different senders, PR [#81](https://github.com/ethereumjs/ethereumjs-tx/pull/81)
 - Switched from deprecated ``es2015`` to ``env`` babel preset, PR [#86](https://github.com/ethereumjs/ethereumjs-tx/pull/86)
