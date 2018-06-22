@@ -23,7 +23,8 @@ module.exports = function runBlockchainTest (options, testData, t, cb) {
   }
   var vm = new VM({
     state: state,
-    blockchain: blockchain
+    blockchain: blockchain,
+    hardfork: options.forkConfig.toLowerCase()
   })
   var genesisBlock = new Block()
 
