@@ -58,7 +58,7 @@ module.exports = class FakeTransaction extends Transaction {
    * @param {Boolean} [includeSignature=true] whether or not to inculde the signature
    * @return {Buffer}
    */
-  hash (includeSignature) {
+  hash (includeSignature = true) {
     if (includeSignature) {
       // include a fake signature using the from address as a private key
       let fakeKey = Buffer.concat([this._from, this._from.slice(0, 12)])
