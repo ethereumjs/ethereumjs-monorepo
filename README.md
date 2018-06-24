@@ -61,6 +61,12 @@ Creates a new VM object
   - `blockchain` - A blockchain object for storing/retrieving blocks (ignored if `stateManager` is passed)
   - `activatePrecompiles` - Create entries in the state tree for the precompiled contracts
   - `allowUnlimitedContractSize` - Allows unlimited contract sizes while debugging. By setting this to `true`, the check for contract size limit of 2KB (see [EIP-170](https://git.io/vxZkK)) is bypassed. (default: `false`; **ONLY** set to `true` during debugging).
+  - `emitNewContractEvents` - Emits a `newContract` event after a new contract address is created, but before the contract deployment code (and constructor) is executed. This allows for libraries to handle the new address prior to the code being executed. (default: `false`).
+    - The `newContract` event will have the following parameters:
+      - `object`
+        - `address`: The created address for the new contract (type `Buffer | Uint8Array`)
+        - `code`: The deployment bytecode for reference (type `Buffer | Uint8Array`)
+      - `Function`: A callback function to notify the VM that it may continue on with executing the deployment code. The VM **will wait** for this callback to be called, so be sure to call it if you set `emitNewContractEvents` to true
 
 ### `VM` methods
 
