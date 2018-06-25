@@ -6,6 +6,26 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 
+## [2.0.0] - 2018-06-25
+This release introduces both support for different ``chains`` (``mainnet``, ``ropsten``, ...)
+and ``hardforks`` up to the latest applied HF (``byzantium``). Parameters and genesis values
+are provided by the new [ethereumjs-common](https://github.com/ethereumjs/ethereumjs-common)
+library which also defines the set of supported chains and forks.
+
+Changes in detail:
+- New initialization parameters ``opts.chain`` (default: ``mainnet``) and ``opts.hardfork`` 
+  (default: ``null``, block number-based behaviour), PR [#44](https://github.com/ethereumjs/ethereumjs-block/pull/44)
+- Alternatively a ``Common`` class object can be provided directly with the ``opts.common`` parameter,
+  see [API](https://github.com/ethereumjs/ethereumjs-block/blob/master/docs/index.md) docs
+- Correct block validation for all know hardforks, PR 
+  [#47](https://github.com/ethereumjs/ethereumjs-block/pull/47), if no hardfork is set validation logic
+  is determined by block number in combination with the ``chain`` set
+- Genesis block initialization depending on the ``chain`` set (see ``ethereumjs-common`` for supported chains)
+- Extensive test additions to cover the newly introduced capabilities and changes
+- Fix default value for ``nonce`` (empty buffer -> ``<Buffer 00 00 00 00 00 00 00 00>``), PR [#42](https://github.com/ethereumjs/ethereumjs-block/pull/42)
+
+[2.0.0]: https://github.com/ethereumjs/ethereumjs-vm/compare/v1.7.1...v2.0.0
+
 ## [1.7.1] - 2018-02-15
 - Fix ``browserify`` issue blocking updates for packages depending on ``ethereumjs-block``
   library, PR [#40](https://github.com/ethereumjs/ethereumjs-block/pull/40)
