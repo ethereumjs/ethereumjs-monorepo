@@ -46,6 +46,26 @@ Trie.prove(trie, 'test', function (err, prove) {
 })
 ```
 
+## Read stream on Geth DB
+
+```javascript
+var levelup = require('levelup')
+var Trie = require('./secure')
+
+var stateRoot = "0xd7f8974fb5ac78d9ac099b9ad5018bedc2ce0a72dad1827a1709da30580f0544" // Block #222
+
+var db = levelup('YOUR_PATH_TO_THE_GETH_CHAIN_DB')
+var trie = new Trie(db, stateRoot)
+
+trie.createReadStream()
+  .on('data', function (data) {
+    console.log(data)
+  })
+  .on('end', function() { 
+    console.log('End.')
+  })
+```
+
 # API
 [./docs/](./docs/index.md)
 
