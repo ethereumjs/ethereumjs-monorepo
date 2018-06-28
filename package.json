@@ -1,6 +1,6 @@
 {
   "name": "rlp",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "Recursive Length Prefix Encoding Module",
   "main": "index.js",
   "directories": {
@@ -25,6 +25,9 @@
     "name": "martin becze",
     "email": "mjbecze@gmail.com"
   },
+  "contributors": [
+    "Holger Drewes <Holger.Drewes@gmail.com>"
+  ],
   "license": "MPL-2.0",
   "bugs": {
     "url": "https://github.com/ethereumjs/rlp/issues"
