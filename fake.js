@@ -49,8 +49,7 @@ module.exports = class FakeTransaction extends Transaction {
       }
     })
 
-    // set from address or default to null address
-    this.from = (data && data.from) ? data.from : '0x0000000000000000000000000000000000000000'
+    this.from = data.from
   }
 
   /**
@@ -59,7 +58,7 @@ module.exports = class FakeTransaction extends Transaction {
    * @return {Buffer}
    */
   hash (includeSignature = true) {
-    if (includeSignature) {
+    if (includeSignature && this._from && this._from.toString('hex') !== '') {
       // include a fake signature using the from address as a private key
       let fakeKey = Buffer.concat([this._from, this._from.slice(0, 12)])
       this.sign(fakeKey)
