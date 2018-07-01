@@ -78,7 +78,7 @@ Constructors:
 * `fromMasterSeed(seed)` - create an instance based on a seed
 * `fromExtendedKey(key)` - create an instance based on a BIP32 extended private or public key
 
-For the seed  we suggest to use [bip39](https://npmjs.org/packages/bip39) to create one from a BIP39 mnemonic.
+For the seed  we suggest to use [bip39](https://npmjs.org/package/bip39) to create one from a BIP39 mnemonic.
 
 Instance methods:
 
