@@ -50,9 +50,13 @@ To build for standalone use in the browser, install `browserify` and check [run-
     - [`vm.runCode(opts, cb)`](#vmruncodeopts-cb)
     - [`vm.generateCanonicalGenesis(cb)`](#vmgeneratecanonicalgenesiscb)
     - [`vm.generateGenesis(cb)`](#vmgenerategenesiscb)
-  - [`VM` debugging hooks](#vm-debugging-hooks)
-    - [`vm.onStep`](#vmonstep)
-    - [`newContract` event](#newcontract)
+  - [`VM` Events](#events)
+    - [`step`](#step)
+    - [`newContract`](#newcontract)
+    - [`beforeBlock`](#beforeblock)
+    - [`afterBlock`](#afterblock)
+    - [`beforeTx`](#beforetx)
+    - [`afterTx`](#aftertx)
 
 ### `new VM([opts])`
 Creates a new VM object
@@ -141,7 +145,7 @@ vm.generateGenesis(genesisData, function(){
 ```
 
 ### `events`
-All events are instances of [async-eventemmiter](https://www.npmjs.com/package/async-eventemitter). If an event handler has an arity of 2 the VM will pause until the callback is called
+All events are instances of [async-eventemmiter](https://www.npmjs.com/package/async-eventemitter). If an event handler has an arity of 2 the VM will pause until the callback is called, otherwise the VM will treat the event handler as a synchronous function.
 
 #### `step`
 The `step` event is given an `Object` and callback. The `Object` has the following properties.
@@ -160,7 +164,6 @@ The `step` event is given an `Object` and callback. The `Object` has the followi
 The `newContract` event is given an `Object` and callback. The `Object` has the following properties.
 - `address`: The created address for the new contract (type `Buffer | Uint8Array`)
 - `code`: The deployment bytecode for reference (type `Buffer | Uint8Array`)
-If a listener is added for the `newContract` event with the callback function (e.g. `evm.on('newContract', function(data, callback))`), `ethereumjs-vm` will not continue until the callback function is called. If the callback function is omitted (e.g. `evm.on('newContract', function(data))`), `ethereumjs-vm` will treat the function as a synchronous one and continue after it finishes.
 
 #### `beforeBlock`
 Emits the block that is about to be processed.
