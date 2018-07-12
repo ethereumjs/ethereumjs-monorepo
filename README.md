@@ -19,7 +19,7 @@ Current development stage: ``CONCEPT ANALYSIS / EARLY DEVELOPMENT``
 # PROJECT SUMMARY
 
 For a summary of the project focus, some outline of a roadmap and information on the
-team and how to contribute/join see [this document](./README.md).
+team and how to contribute/join see [this document](./PROJECT.md).
 
 # TECHNICAL GUIDELINES
 
