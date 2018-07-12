@@ -225,7 +225,7 @@ class Transaction {
   }
 
   /**
-   * sign a transaction with a given a private key
+   * sign a transaction with a given private key
    * @param {Buffer} privateKey
    */
   sign (privateKey) {
@@ -274,7 +274,7 @@ class Transaction {
 
   /**
    * validates the signature and checks to see if it has enough gas
-   * @param {Boolean} [stringError=false] whether to return a string with a dscription of why the validation failed or return a Bloolean
+   * @param {Boolean} [stringError=false] whether to return a string with a description of why the validation failed or return a Boolean
    * @return {Boolean|String}
    */
   validate (stringError) {
