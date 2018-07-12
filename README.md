@@ -50,13 +50,15 @@ To build for standalone use in the browser, install `browserify` and check [run-
     - [`vm.runCode(opts, cb)`](#vmruncodeopts-cb)
     - [`vm.generateCanonicalGenesis(cb)`](#vmgeneratecanonicalgenesiscb)
     - [`vm.generateGenesis(cb)`](#vmgenerategenesiscb)
-  - [`VM` Events](#events)
+  - [Outbound Events](#outbound-events)
     - [`step`](#step)
     - [`newContract`](#newcontract)
     - [`beforeBlock`](#beforeblock)
     - [`afterBlock`](#afterblock)
     - [`beforeTx`](#beforetx)
     - [`afterTx`](#aftertx)
+  - [Inbound Commands](#inbound-commands)
+    - [`injectNewCode`](#injectnewcode)
 
 ### `new VM([opts])`
 Creates a new VM object
@@ -144,10 +146,13 @@ vm.generateGenesis(genesisData, function(){
 })
 ```
 
-### `events`
-All events are instances of [async-eventemmiter](https://www.npmjs.com/package/async-eventemitter). If an event handler has an arity of 2 the VM will pause until the callback is called, otherwise the VM will treat the event handler as a synchronous function.
+### API
+A simple API is provided for other modules to interact with with the VM. The API is built using an instance of [async-eventemmiter](https://www.npmjs.com/package/async-eventemitter).
 
-#### `step`
+#### Outbound Events
+All outbound events are instances of [async-eventemmiter](https://www.npmjs.com/package/async-eventemitter). If an event handler has an arity of 2 the VM will pause until the callback is called, otherwise the VM will treat the event handler as a synchronous function.
+
+##### `step`
 The `step` event is given an `Object` and callback. The `Object` has the following properties.
 - `pc` - a `Number` representing the program counter
 - `opcode` - the next opcode to be ran
@@ -160,23 +165,34 @@ The `step` event is given an `Object` and callback. The `Object` has the followi
 - `memory` - the memory of the VM as a `buffer`
 - `cache` - The account cache. Contains all the accounts loaded from the trie. It is an instance of [functional red black tree](https://www.npmjs.com/package/functional-red-black-tree)
 
-#### `newContract`
+##### `newContract`
 The `newContract` event is given an `Object` and callback. The `Object` has the following properties.
 - `address`: The created address for the new contract (type `Buffer | Uint8Array`)
 - `code`: The deployment bytecode for reference (type `Buffer | Uint8Array`)
 
-#### `beforeBlock`
+##### `beforeBlock`
 Emits the block that is about to be processed.
 
-#### `afterBlock`
+##### `afterBlock`
 Emits the results of the processing a block.
 
-#### `beforeTx`
+##### `beforeTx`
 Emits the Transaction that is about to be processed.
 
-#### `afterTx`
+##### `afterTx`
 Emits the result of the transaction.
 
+### Inbound Commands
+All inbound commands are event emissions; the events are instances of [async-eventemmiter](https://www.npmjs.com/package/async-eventemitter). To emit an event, a callback function **must** be provided.
+
+#### `injectNewCode`
+The `injectNewCode` event is a command which alters the current executing code (in `runCode.js`). It does not modify the bytecode in storage. It is provided strictly for debuggers to adjust the executing code. An `Object` is provided (e.g. `vm.emit('injectNewCode', data, callback)`) containing the following properties.
+- `code`: The new executing runtime bytecode as a hexadecimal string (type `string`)
+- `pc`: The new program count to execute at (type `number`)
+- `state`: An `optional` object containing other adjustments. If provided, it's properties below are required. (type `Object`)
+  - `stack`: The new `runState` stack (type `Array(BN)`)
+  - `memory`: The new `runState` memory (type `Array(number)`)
+  - `gasLeft`: The new `runState` gasLeft (type `BN`)
 
 # Internal Structure
 The VM processes state changes at many levels.
