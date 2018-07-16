@@ -475,6 +475,7 @@ describe('baToJSON', function () {
 
 var echash = Buffer.from('82ff40c0a986c6a5cfad4ddf4c3aa6996f1a7837f9c398e17e5de5cbd5a12b28', 'hex')
 var ecprivkey = Buffer.from('3c9229289a6125f7fdf1885a77bb12c37a8d3b4962d936f7e3084dece32a3ca1', 'hex')
+var chainId = 3 // ropsten
 
 describe('ecsign', function () {
   it('should produce a signature', function () {
@@ -483,13 +484,28 @@ describe('ecsign', function () {
     assert.deepEqual(sig.s, Buffer.from('129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66', 'hex'))
     assert.equal(sig.v, 27)
   })
+
+  it('should produce a signature for Ropsten testnet', function () {
+    var sig = ethUtils.ecsign(echash, ecprivkey, chainId)
+    assert.deepEqual(sig.r, Buffer.from('99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9', 'hex'))
+    assert.deepEqual(sig.s, Buffer.from('129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66', 'hex'))
+    assert.equal(sig.v, 41)
+  })
 })
 
 describe('ecrecover', function () {
   it('should recover a public key', function () {
     var r = Buffer.from('99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9', 'hex')
     var s = Buffer.from('129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66', 'hex')
-    var pubkey = ethUtils.ecrecover(echash, 27, r, s)
+    var v = 27
+    var pubkey = ethUtils.ecrecover(echash, v, r, s)
+    assert.deepEqual(pubkey, ethUtils.privateToPublic(ecprivkey))
+  })
+  it('should recover a public key (chainId = 3)', function () {
+    var r = Buffer.from('99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9', 'hex')
+    var s = Buffer.from('129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66', 'hex')
+    var v = 41
+    var pubkey = ethUtils.ecrecover(echash, v, r, s, chainId)
     assert.deepEqual(pubkey, ethUtils.privateToPublic(ecprivkey))
   })
   it('should fail on an invalid signature (v = 21)', function () {
@@ -546,7 +562,14 @@ describe('isValidSignature', function () {
   it('should work otherwise', function () {
     var r = Buffer.from('99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9', 'hex')
     var s = Buffer.from('129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66', 'hex')
-    assert.equal(ethUtils.isValidSignature(27, r, s), true)
+    var v = 27
+    assert.equal(ethUtils.isValidSignature(v, r, s), true)
+  })
+  it('should work otherwise(chainId=3)', function () {
+    var r = Buffer.from('99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9', 'hex')
+    var s = Buffer.from('129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66', 'hex')
+    var v = 41
+    assert.equal(ethUtils.isValidSignature(v, r, s, false, chainId), true)
   })
   // FIXME: add homestead test
 })

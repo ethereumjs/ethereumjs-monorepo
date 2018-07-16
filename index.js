@@ -359,15 +359,16 @@ exports.importPublic = function (publicKey) {
  * ECDSA sign
  * @param {Buffer} msgHash
  * @param {Buffer} privateKey
+ * @param {Number} [chainId]
  * @return {Object}
  */
-exports.ecsign = function (msgHash, privateKey) {
+exports.ecsign = function (msgHash, privateKey, chainId) {
   const sig = secp256k1.sign(msgHash, privateKey)
 
   const ret = {}
   ret.r = sig.signature.slice(0, 32)
   ret.s = sig.signature.slice(32, 64)
-  ret.v = sig.recovery + 27
+  ret.v = chainId ? sig.recovery + (chainId * 2 + 35) : sig.recovery + 27
   return ret
 }
 
@@ -390,12 +391,13 @@ exports.hashPersonalMessage = function (message) {
  * @param {Number} v
  * @param {Buffer} r
  * @param {Buffer} s
+ * @param {Number} [chainId]
  * @return {Buffer} publicKey
  */
-exports.ecrecover = function (msgHash, v, r, s) {
+exports.ecrecover = function (msgHash, v, r, s, chainId) {
   const signature = Buffer.concat([exports.setLength(r, 32), exports.setLength(s, 32)], 64)
-  const recovery = v - 27
-  if (recovery !== 0 && recovery !== 1) {
+  const recovery = calculateSigRecovery(v, chainId)
+  if (!isValidSigRecovery(recovery)) {
     throw new Error('Invalid signature v value')
   }
   const senderPubKey = secp256k1.recover(msgHash, signature, recovery)
@@ -407,12 +409,13 @@ exports.ecrecover = function (msgHash, v, r, s) {
  * @param {Number} v
  * @param {Buffer} r
  * @param {Buffer} s
+ * @param {Number} [chainId]
  * @return {String} sig
  */
-exports.toRpcSig = function (v, r, s) {
-  // NOTE: with potential introduction of chainId this might need to be updated
-  if (v !== 27 && v !== 28) {
-    throw new Error('Invalid recovery id')
+exports.toRpcSig = function (v, r, s, chainId) {
+  let recovery = calculateSigRecovery(v, chainId)
+  if (!isValidSigRecovery(recovery)) {
+    throw new Error('Invalid signature v value')
   }
 
   // geth (and the RPC eth_sign method) uses the 65 byte format used by Bitcoin
@@ -561,10 +564,11 @@ exports.addHexPrefix = function (str) {
  * @param {Buffer} r
  * @param {Buffer} s
  * @param {Boolean} [homestead=true]
+ * @param {Number} [chainId]
  * @return {Boolean}
  */
 
-exports.isValidSignature = function (v, r, s, homestead) {
+exports.isValidSignature = function (v, r, s, homestead, chainId) {
   const SECP256K1_N_DIV_2 = new BN('7fffffffffffffffffffffffffffffff5d576e7357a4501ddfe92f46681b20a0', 16)
   const SECP256K1_N = new BN('fffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141', 16)
 
@@ -572,7 +576,7 @@ exports.isValidSignature = function (v, r, s, homestead) {
     return false
   }
 
-  if (v !== 27 && v !== 28) {
+  if (!isValidSigRecovery(calculateSigRecovery(v, chainId))) {
     return false
   }
 
@@ -710,4 +714,12 @@ exports.defineProperties = function (self, fields, data) {
       throw new Error('invalid data')
     }
   }
+}
+
+function calculateSigRecovery (v, chainId) {
+  return chainId ? v - (2 * chainId + 35) : v - 27
+}
+
+function isValidSigRecovery (recovery) {
+  return recovery === 0 || recovery === 1
 }
