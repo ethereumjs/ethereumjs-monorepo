@@ -1,13 +1,16 @@
 {
   "name": "ethereumjs-client",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "EthereumJS client implementation",
-  "main": "index.js",
+  "bin": {
+    "ethereumjs": "bin/cli.js"
+  },
   "scripts": {
     "coverage": "nyc npm run test && nyc report --reporter=text-lcov > .nyc_output/lcov.info",
     "coveralls": "npm run coverage && coveralls <.nyc_output/lcov.info",
+    "docs": "jsdoc2md --no-cache -c .jsdoc.json lib/*.js > docs/API.md",
     "lint": "standard",
-    "test": "npm run lint && tape 'tests/**/*.js'"
+    "test": "npm run lint && tape 'test/**/*.js'"
   },
   "repository": {
     "type": "git",
@@ -20,7 +23,7 @@
     "light",
     "fast"
   ],
-  "author": "Holger Drewes (Holger.Drewes@gmail.com)",
+  "author": "Vinay Pulim (v@pulim.com)",
   "license": "MPL-2.0",
   "bugs": {
     "url": "https://github.com/ethereumjs/ethereumjs-client/issues"
@@ -29,19 +32,22 @@
   "dependencies": {
     "ethereumjs-block": "^1.7.1",
     "ethereumjs-blockchain": "^3.1.0",
-    "ethereumjs-common": "~0.2.0",
+    "ethereumjs-common": "^0.4.0",
     "ethereumjs-devp2p": "^2.5.0",
-    "ethereumjs-util": "~5.2.0",
+    "ethereumjs-util": "^5.2.0",
+    "fs-extra": "^6.0.1",
     "jayson": "^2.0.6",
     "leveldown": "^1.9.0",
     "levelup": "^1.3.9",
     "ms": "^2.1.1",
+    "qheap": "^1.4.0",
     "rlp": "^2.0.0",
     "winston": "^3.0.0-rc4",
     "yargs": "^11.0.0"
   },
   "devDependencies": {
     "coveralls": "^3.0.0",
+    "json-to-markdown": "^1.0.4",
     "nyc": "~11.6.0",
     "sinon": "^6.0.0",
     "standard": "~11.0.1",
