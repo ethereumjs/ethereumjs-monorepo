@@ -64,6 +64,8 @@ Creates a new VM object
   - `stateManager` - A state manager instance (**EXPERIMENTAL** - unstable API)
   - `state` - A merkle-patricia-tree instance for the state tree (ignored if `stateManager` is passed)
   - `blockchain` - A blockchain object for storing/retrieving blocks (ignored if `stateManager` is passed)
+  - `chain` - The chain the VM operates on [default: 'mainnet']
+  - `hardfork` - Hardfork rules to be used [default: 'byzantium', supported: 'byzantium' (will throw on unsupported)]
   - `activatePrecompiles` - Create entries in the state tree for the precompiled contracts
   - `allowUnlimitedContractSize` - Allows unlimited contract sizes while debugging. By setting this to `true`, the check for contract size limit of 2KB (see [EIP-170](https://git.io/vxZkK)) is bypassed. (default: `false`; **ONLY** set to `true` during debugging).
 
