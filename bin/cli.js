@@ -3,7 +3,7 @@
 
 const chains = require('ethereumjs-common/chains')
 const { getLogger } = require('../lib/logging')
-const { FastSyncNode } = require('../lib/node')
+const Node = require('../lib/node')
 const jayson = require('jayson')
 const RPCManager = require('../lib/rpc')
 const os = require('os')
@@ -56,16 +56,13 @@ const args = require('yargs')
 const logger = getLogger({loglevel: args.loglevel})
 
 async function runNode (options) {
-  let node
-  if (options.syncmode === 'fast') {
-    node = new FastSyncNode(options)
-    logger.info('Ethereumjs fast sync client initialized')
-  }
+  logger.info('Initializing Ethereumjs client...')
+  const node = new Node(options)
   node.on('error', err => logger.error(err))
   logger.info(`Connecting to the ${options.network} network`)
   await node.open()
   logger.info('Synchronizing blockchain...')
-  await node.sync()
+  await node.start()
   logger.info('Synchronized')
 
   return node

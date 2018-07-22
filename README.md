@@ -129,7 +129,7 @@ to help contributors better understand how the project is organized.
 - ``/lib/blockchain`` Contains the ``Chain`` and ``BlockPool`` classes.
 - ``/lib/net`` Contains all of the network layer classes including ``Peer``, ``Protocol`` and its subclasses,
   ``Server`` and its subclasses, and ``PeerPool``.
-- ``/lib/node`` Contains the various node types. Currently, only ``FastSyncNode`` is implemented.
+- ``/lib/service`` Contains the various services. Currently, only ``EthService`` is implemented.
 - ``/lib/rpc`` Contains the RPC server (optionally) embedded in the client.
 - ``/lib/sync`` Contains the various chain synchronizers. Currently, only ``FastSynchronizer`` is implemented.
 - ``/tests`` Contains test cases, testing helper functions, mocks and test data
@@ -156,21 +156,21 @@ whenever a new message is received using any of the supported protocols.
     - ``RlpxPeer`` [**In Progress**] Subclass of ``Peer`` that implements the ``devp2p/rlpx`` transport.
     - ``Libp2pPeer`` [**Not Started**] Subclass of ``Peer`` that implements the ``libp2p`` transport.
 - ``Protocol`` [**In Progress**] This class and subclasses provide a user-friendly wrapper around the
-low level ethereum protocols such as ``eth/62``, ``eth/62`` and ``les/2``. Subclasses must implement a handshake method and methods for each supported protocol operation.
+low level ethereum protocols such as ``eth/62``, ``eth/62`` and ``les/2``. Subclasses must define the messages provided by the protocol.
     - ``EthProtocol`` [**In Progress**] Implements the ``eth/62`` and ``eth/63`` protocols.
     - ``LesProtocol`` [**Not Started**] Implements the ``les/2`` protocol.
+    - ``ShhProtocol`` [**Not Started**] Implements the whisper protocol.
 - ``PeerPool`` [**In Progress**] Represents a pool of network peers. ``PeerPool`` instances emit ``added``
-and ``removed`` events when new peers are added and removed and also emit the ``messsage`` event whenever
-any of the peers in the pool emit a message. ``PeerPool``s are used primarily by ``Synchronizer``s to help
-with blockchain synchronization.
+and ``removed`` events when new peers are added and removed and also emit the ``message`` event whenever
+any of the peers in the pool emit a message. Each ``Service`` has an associated ``PeerPool`` and they are used primarily by ``Synchronizer``s to help with blockchain synchronization.
 - ``Synchronizer`` Subclasses of this class implements a specific blockchain synchronization strategy. They
 also make use of subclasses of the ``Fetcher`` class that help fetch headers and bodies from pool peers.
     - ``FastSynchronizer`` [**In Progress**] Implements fast syncing of the blockchain
     - ``LightSynchronizer`` [**Not Started**] Implements light syncing of the blockchain
-- ``Node`` Subclass of this class will combine a specific set of subclasses to implement a certain ethereum
-node type. For example, a ``FastSyncNode`` will utilize ``EthProtocol`` and ``FastSynchronizer``.
-    - ``FastSyncNode`` [**In Progress**] Full implementation of an ethereum fast sync node.
-    - ``LightSyncNode`` [**Not Started**] Full implementation of an ethereum light sync node.    
+- ``Service`` Subclasses of ``Service`` will implement specific functionality of a ``Node``. For example, the ``EthService`` will synchronize the blockchain using the fast or light sync protocols. Each service must specify which protocols it needs and define a ``start()`` and ``stop()`` function.
+    - ``EthService`` [**In Progress**] Implementation of an ethereum fast sync and light sync node.
+    - ``ShhService`` [**Not Started**] Implementation of an ethereum whisper node.    
+- ``Node`` [**In Progress**] Represents the top-level ethereum node, and is responsible for managing the lifecycle of included services.
 - ``RPCManager`` [**In Progress**] Implements an embedded JSON-RPC server to handle incoming RPC requests.
 
 ## Contribution Guidelines
