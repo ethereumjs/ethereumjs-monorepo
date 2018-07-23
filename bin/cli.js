@@ -34,7 +34,7 @@ const args = require('yargs')
     'rpc': {
       describe: 'Enable the JSON-RPC server',
       boolean: true,
-      default: false
+      default: true
     },
     'rpcport': {
       describe: 'HTTP-RPC server listening port',
@@ -62,8 +62,7 @@ async function runNode (options) {
   logger.info(`Connecting to the ${options.network} network`)
   await node.open()
   logger.info('Synchronizing blockchain...')
-  await node.start()
-  logger.info('Synchronized')
+  node.start().then(() => logger.info('Synchronized'))
 
   return node
 }

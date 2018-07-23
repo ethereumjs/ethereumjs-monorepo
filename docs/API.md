@@ -23,7 +23,7 @@
 
 <dl>
 <dt><a href="#BoundProtocol">BoundProtocol</a> ⇐ <code>EventEmitter</code></dt>
-<dd><p>Binds a protocl implementation to the specified peer</p>
+<dd><p>Binds a protocol implementation to the specified peer</p>
 </dd>
 </dl>
 
@@ -1410,7 +1410,7 @@ Base class for blockchain synchronizers
 <a name="BoundProtocol"></a>
 
 ## BoundProtocol ⇐ <code>EventEmitter</code>
-Binds a protocl implementation to the specified peer
+Binds a protocol implementation to the specified peer
 
 **Kind**: global class  
 **Extends**: <code>EventEmitter</code>  
