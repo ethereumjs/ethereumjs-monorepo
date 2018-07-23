@@ -56,15 +56,24 @@ jobs:
       - run:
           name: testBlockchainTotalDifficulty
           command: npm run testBlockchainTotalDifficulty
-  test_state:
+  test_state_byzantium:
     <<: *defaults
     steps:
       - attach_workspace:
           at: ~/project
       - *restore_node_modules
       - run:
-          name: testState
-          command: npm run testState
+          name: testStateByzantium
+          command: npm run testStateByzantium
+  test_state_constantinople:
+    <<: *defaults
+    steps:
+      - attach_workspace:
+          at: ~/project
+      - *restore_node_modules
+      - run:
+          name: testStateConstantinople
+          command: npm run testStateConstantinople
   coveralls:
     <<: *defaults
     steps:
@@ -88,7 +97,10 @@ workflows:
       - test_total_difficulty:
           requires:
             - install
-      - test_state:
+      - test_state_byzantium:
+          requires:
+            - install
+      - test_state_constantinople:
           requires:
             - install
       - coveralls:
