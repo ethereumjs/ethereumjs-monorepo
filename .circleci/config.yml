@@ -1,7 +1,7 @@
 version: 2
 
 defaults: &defaults
-  working_directory: ~/project/ethreumjs-vm
+  working_directory: ~/project/ethereumjs-vm
   docker:
     - image: circleci/node:8
 restore_node_modules: &restore_node_modules
@@ -28,7 +28,7 @@ jobs:
       - persist_to_workspace:
           root: ~/project
           paths:
-            - ethreumjs-vm/
+            - ethereumjs-vm/
   lint:
     <<: *defaults
     steps:
@@ -65,6 +65,15 @@ jobs:
       - run:
           name: testState
           command: npm run testState
+  coveralls:
+    <<: *defaults
+    steps:
+      - attach_workspace:
+          at: ~/project
+      - *restore_node_modules
+      - run:
+          name: coveralls
+          command: npm run coveralls
 workflows:
   version: 2
   install-lint-test:
@@ -80,5 +89,8 @@ workflows:
           requires:
             - install
       - test_state:
+          requires:
+            - install
+      - coveralls:
           requires:
             - install
