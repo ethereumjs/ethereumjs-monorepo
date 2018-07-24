@@ -45,7 +45,9 @@ module.exports = class FakeTransaction extends Transaction {
       configurable: true,
       get: this.getSenderAddress.bind(self),
       set: function (val) {
-        self._from = ethUtil.toBuffer(val)
+        if (val) {
+          self._from = ethUtil.toBuffer(val)
+        }
       }
     })
 
