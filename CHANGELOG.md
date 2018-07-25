@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 
+## [1.3.7] - 2018-07-25
+- Fix bug causing ``FakeTransaction.from`` to not retrieve sender address from tx signature, see PR [#118](https://github.com/ethereumjs/ethereumjs-tx/pull/118)
+
+[1.3.7]: https://github.com/ethereumjs/ethereumjs-tx/compare/v1.3.6...v1.3.7
+
 ## [1.3.6] - 2018-07-02
 - Fixes issue [#108](https://github.com/ethereumjs/ethereumjs-tx/issues/108) with the ``FakeTransaction.hash()`` function by reverting the introduced signature handling changes in Fake transaction hash creation from PR [#94](https://github.com/ethereumjs/ethereumjs-tx/pull/94) introduced in ``v1.3.5``. The signature is now again only created and added to the hash when ``from`` address is set and ``from`` is not defaulting to the zero adress any more, see PR [#110](https://github.com/ethereumjs/ethereumjs-tx/pull/110)
 - Added additional tests to cover issue described above
