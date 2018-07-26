@@ -5,6 +5,53 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to 
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [2.4.0] - 2018-07-27
+
+With the ``2.4.x`` release series we now start to gradually add ``Constantinople`` features with the
+bitwise shifting instructions from [EIP 145](https://github.com/ethereum/EIPs/blob/master/EIPS/eip-145.md)
+making the start being introduced in the ``v2.4.0`` release.
+
+Since both the scope of the ``Constantinople`` hardfork as well as the state of at least some of the EIPs
+to be included are not yet finalized, this is only meant for ``EXPERIMENTAL`` purposes, e.g. for developer
+tools to give users early access and make themself familiar with dedicated features.
+
+Once scope and EIPs from ``Constantinople`` are final we will target a ``v2.5.0`` release which will officially
+introduce ``Constantinople`` support with all the changes bundled together.
+
+Note that from this release on we also introduce new ``chain`` (default: ``mainnet``) and ``hardfork`` 
+(default: ``byzantium``) initialization parameters, which make use of our new [ethereumjs-common](https://github.com/ethereumjs/ethereumjs-common) library and in the future will allow
+for parallel hardfork support from ``Byzantium`` onwards.
+
+Since ``hardfork`` default might be changed or dropped in future releases, you might want to explicitly
+set this to ``byzantium`` on your next update to avoid future unexpected behavior.
+
+All the changes from this release:
+
+**FEATURES/FUNCTIONALITY**
+
+- Improved chain and fork support, see PR [#304](https://github.com/ethereumjs/ethereumjs-vm/pull/304)
+- Support for the ``Constantinople`` bitwise shifiting instructions ``SHL``, ``SHR`` and ``SAR``, see PR [#251](https://github.com/ethereumjs/ethereumjs-vm/pull/251)
+- New ``newContract`` event which can be used to do interrupting tasks on contract/address creation, see PR [#306](https://github.com/ethereumjs/ethereumjs-vm/pull/306)
+- Alignment of behavior of bloom filter hashing to go along with mainnet compatible clients *BREAKING*, see PR [#295](https://github.com/ethereumjs/ethereumjs-vm/pull/295) 
+
+**UPDATES/TESTING**
+
+- Usage of the latest ``rustbn.js`` API, see PR [#312](https://github.com/ethereumjs/ethereumjs-vm/pull/312)
+- Some cleanup in precompile error handling, see PR [#318](https://github.com/ethereumjs/ethereumjs-vm/pull/318)
+- Some cleanup for ``StateManager``, see PR [#266](https://github.com/ethereumjs/ethereumjs-vm/pull/266)
+- Renaming of ``util.sha3`` usages to ``util.keccak256`` and bump ``ethereumjs-util`` to ``v5.2.0`` (you should do to if you use ``ethereumjs-util``)
+- Parallel testing of the``Byzantium`` and ``Constantinople`` state tests, see PR [#317](https://github.com/ethereumjs/ethereumjs-vm/pull/317)
+- For lower build times our CI configuration now runs solely on ``CircleCI`` and support for ``Travis`` have been dropped, see PR [#316](https://github.com/ethereumjs/ethereumjs-vm/pull/316)
+
+**BUG FIXES**
+
+- Programmatic runtime errors in the VM execution context (within an opcode) are no longer absorbed and displayed as a VMError but explicitly thrown, allowing for easier discovery of implementation bugs, see PR [#307](https://github.com/ethereumjs/ethereumjs-vm/pull/307)
+- Fix of the ``Bloom.check()`` method not working properly, see PR [#311](https://github.com/ethereumjs/ethereumjs-vm/pull/311)
+- Fix a bug when ``REVERT`` is used within a ``CREATE`` context, see PR [#297](https://github.com/ethereumjs/ethereumjs-vm/pull/297)
+- Fix a bug in ``FakeBlockChain`` error handing, see PR [#320](https://github.com/ethereumjs/ethereumjs-vm/pull/320)
+
+[2.4.0]: https://github.com/ethereumjs/ethereumjs-vm/compare/v2.3.5...v2.4.0
+
 ## [2.3.5] - 2018-04-25
 
 - Fixed ``BYTE`` opcode return value bug, PR [#293](https://github.com/ethereumjs/ethereumjs-vm/pull/293)
