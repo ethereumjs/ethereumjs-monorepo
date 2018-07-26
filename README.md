@@ -11,9 +11,25 @@ Implements Ethereum's VM in Javascript.
 
 #### Fork Support
 
-This library always only supports the currently active Ethereum mainnet fork rules with its latest release, old fork rules are dropped with new releases once a HF occured.
+With the ``2.4.x`` release series we now start to gradually add ``Constantinople`` features with the
+bitwise shifting instructions from [EIP 145](https://github.com/ethereum/EIPs/blob/master/EIPS/eip-145.md)
+making the start being introduced in the ``v2.4.0`` release.
 
-The current major [2.3.x](https://github.com/ethereumjs/ethereumjs-vm/releases) release series supports the  [Byzantium](https://github.com/ethereum/EIPs/blob/master/EIPS/eip-609.md) fork changes. For a [Spurious Dragon](https://github.com/ethereum/EIPs/blob/master/EIPS/eip-607.md) compatible version of this library install the latest of the ``2.2.x`` series (see [Changelog](./CHANGELOG.md)).
+Since both the scope of the ``Constantinople`` hardfork as well as the state of at least some of the EIPs
+to be included are not yet finalized, this is only meant for ``EXPERIMENTAL`` purposes, e.g. for developer
+tools to give users early access and make themself familiar with dedicated features.
+
+Once scope and EIPs from ``Constantinople`` are final we will target a ``v2.5.0`` release which will officially
+introduce ``Constantinople`` support with all the changes bundled together.
+
+Note that from this release on we also introduce new ``chain`` (default: ``mainnet``) and ``hardfork`` 
+(default: ``byzantium``) parameters, which make use of our new [ethereumjs-common](https://github.com/ethereumjs/ethereumjs-common) library and in the future will allow
+for parallel hardfork support from ``Byzantium`` onwards.
+
+Since ``hardfork`` default might be changed or dropped in future releases, you might want to explicitly
+set this to ``byzantium`` on your next update to avoid future unexpected behavior.
+
+If you are still looking for a [Spurious Dragon](https://github.com/ethereum/EIPs/blob/master/EIPS/eip-607.md) compatible version of this library install the latest of the ``2.2.x`` series (see [Changelog](./CHANGELOG.md)).
 
 # INSTALL
 `npm install ethereumjs-vm`
