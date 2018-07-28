@@ -11,7 +11,7 @@ const testData = require('./testdata.json')
 const BN = require('bn.js')
 
 test('blockchain test', function (t) {
-  t.plan(61)
+  t.plan(62)
   var blockchain = new Blockchain()
   var genesisBlock
   var blocks = []
@@ -373,6 +373,25 @@ test('blockchain test', function (t) {
           })
         ], done)
       })
+    },
+    function immutableCachedObjects (done) {
+      var blockchain = new Blockchain({validate: false})
+      var cachedHash
+      async.series([
+        (cb) => blockchain.putBlock(blocks[1], (err) => {
+          if (err) return done(err)
+          cachedHash = blocks[1].hash()
+          cb()
+        }),
+        (cb) => {
+          blocks[1].header.extraData = Buffer.from([1])
+          blockchain.getBlock(1, (err, block) => {
+            if (err) return done(err)
+            t.equals(cachedHash.toString('hex'), block.hash().toString('hex'), 'should not modify cached objects')
+            cb()
+          })
+        }
+      ], done)
     }
   ], function (err) {
     if (err) {

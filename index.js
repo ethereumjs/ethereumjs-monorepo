@@ -331,38 +331,41 @@ Blockchain.prototype._putBlock = function (block, cb, isGenesis) {
   function rebuildInfo (next) {
     // save block and total difficulty to the database
     var key = tdKey(number, hash)
+    var value = rlp.encode(td)
     dbOps.push({
       type: 'put',
       key: key,
       keyEncoding: 'binary',
       valueEncoding: 'binary',
-      value: rlp.encode(td)
+      value: value
     })
-    self._cache.td.set(key, td)
+    self._cache.td.set(key, value)
 
     // save header
     key = headerKey(number, hash)
+    value = rlp.encode(header.raw)
     dbOps.push({
       type: 'put',
       key: key,
       keyEncoding: 'binary',
       valueEncoding: 'binary',
-      value: rlp.encode(header.raw)
+      value: value
     })
-    self._cache.header.set(key, header)
+    self._cache.header.set(key, value)
 
     // store body if not empty
     if (block.transactions.length || block.uncleHeaders.length) {
       var body = block.serialize(false).slice(1)
       key = bodyKey(number, hash)
+      value = rlp.encode(body)
       dbOps.push({
         type: 'put',
         key: key,
         keyEncoding: 'binary',
         valueEncoding: 'binary',
-        value: rlp.encode(body)
+        value: value
       })
-      self._cache.body.set(key, body)
+      self._cache.body.set(key, value)
     }
 
     // if total difficulty is higher than current, add it to canonical chain
@@ -383,14 +386,15 @@ Blockchain.prototype._putBlock = function (block, cb, isGenesis) {
     } else {
       // save hash to number lookup info even if rebuild not needed
       key = hashToNumberKey(hash)
+      value = bufBE8(number)
       dbOps.push({
         type: 'put',
         key: key,
         keyEncoding: 'binary',
         valueEncoding: 'binary',
-        value: bufBE8(number)
+        value: value
       })
-      self._cache.hashToNumber.set(key, number)
+      self._cache.hashToNumber.set(key, value)
       next()
     }
   }
@@ -603,6 +607,7 @@ Blockchain.prototype._rebuildCanonical = function (header, ops, cb) {
 
   function saveLookups (hash, number) {
     var key = numberToHashKey(number)
+    var value
     ops.push({
       type: 'put',
       key: key,
@@ -613,14 +618,15 @@ Blockchain.prototype._rebuildCanonical = function (header, ops, cb) {
     self._cache.numberToHash.set(key, hash)
 
     key = hashToNumberKey(hash)
+    value = bufBE8(number)
     ops.push({
       type: 'put',
       key: key,
       keyEncoding: 'binary',
       valueEncoding: 'binary',
-      value: bufBE8(number)
+      value: value
     })
-    self._cache.hashToNumber.set(key, number)
+    self._cache.hashToNumber.set(key, value)
   }
 
   // handle genesis block
@@ -885,16 +891,15 @@ Blockchain.prototype._hashToNumber = function (hash, cb) {
   var key = hashToNumberKey(hash)
   var number = self._cache.hashToNumber.get(key)
   if (number) {
-    return cb(null, number)
+    return cb(null, new BN(number))
   }
   self.db.get(key, {
     keyEncoding: 'binary',
     valueEncoding: 'binary'
   }, (err, number) => {
     if (err) return cb(err)
-    number = new BN(number)
     self._cache.hashToNumber.set(key, number)
-    cb(null, number)
+    cb(null, new BN(number))
   })
 }
 
@@ -931,7 +936,7 @@ Blockchain.prototype._lookupByHashNumber = function (hash, number, cb, next) {
   if (typeof number === 'function') {
     cb = number
     return this._hashToNumber(hash, (err, number) => {
-      if (err) return next(err)
+      if (err) return next(err, hash, null, cb)
       next(null, hash, number, cb)
     })
   }
@@ -948,18 +953,17 @@ Blockchain.prototype._getHeader = function (hash, number, cb) {
   self._lookupByHashNumber(hash, number, cb, (err, hash, number, cb) => {
     if (err) return cb(err)
     var key = headerKey(number, hash)
-    var header = self._cache.header.get(key)
-    if (header) {
-      return cb(null, header)
+    var encodedHeader = self._cache.header.get(key)
+    if (encodedHeader) {
+      return cb(null, new Block.Header(rlp.decode(encodedHeader)))
     }
-    self.db.get(headerKey(number, hash), {
+    self.db.get(key, {
       keyEncoding: 'binary',
       valueEncoding: 'binary'
     }, (err, encodedHeader) => {
       if (err) return cb(err)
-      header = new Block.Header(rlp.decode(encodedHeader))
-      self._cache.header.set(key, header)
-      cb(null, header)
+      self._cache.header.set(key, encodedHeader)
+      cb(null, new Block.Header(rlp.decode(encodedHeader)))
     })
   })
 }
@@ -987,18 +991,17 @@ Blockchain.prototype._getBody = function (hash, number, cb) {
   self._lookupByHashNumber(hash, number, cb, (err, hash, number, cb) => {
     if (err) return cb(err)
     var key = bodyKey(number, hash)
-    var body = self._cache.body.get(key)
-    if (body) {
-      return cb(null, body)
+    var encodedBody = self._cache.body.get(key)
+    if (encodedBody) {
+      return cb(null, rlp.decode(encodedBody))
     }
     self.db.get(key, {
       keyEncoding: 'binary',
       valueEncoding: 'binary'
     }, (err, encodedBody) => {
       if (err) return cb(err)
-      body = rlp.decode(encodedBody)
-      self._cache.body.set(key, body)
-      cb(null, body)
+      self._cache.body.set(key, encodedBody)
+      cb(null, rlp.decode(encodedBody))
     })
   })
 }
@@ -1015,16 +1018,15 @@ Blockchain.prototype._getTd = function (hash, number, cb) {
     var key = tdKey(number, hash)
     var td = self._cache.td.get(key)
     if (td) {
-      return cb(null, td)
+      return cb(null, new BN(rlp.decode(td)))
     }
     self.db.get(key, {
       keyEncoding: 'binary',
       valueEncoding: 'binary'
     }, (err, td) => {
       if (err) return cb(err)
-      td = new BN(rlp.decode(td))
       self._cache.td.set(key, td)
-      cb(null, td)
+      cb(null, new BN(rlp.decode(td)))
     })
   })
 }
