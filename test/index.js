@@ -158,6 +158,17 @@ describe('nested lists:', function () {
       ]
     ]
   ]
+  var valueList = [
+    [1, 2, 3],
+    [
+      Buffer.from([4, 5, 6]),
+      Buffer.from([7, 8, 9]),
+      [
+        Buffer.from([0]),
+        Buffer.from('abcd', 'hex')
+      ]
+    ]
+  ]
   var encoded
   it('encode a nested list', function () {
     encoded = RLP.encode(nestedList)
@@ -167,6 +178,31 @@ describe('nested lists:', function () {
   it('should decode a nested list', function () {
     var decoded = RLP.decode(encoded)
     assert.deepEqual(nestedList, decoded)
+  })
+
+  it('should encode a list with values', function () {
+    var valueEncoded = RLP.encode(valueList)
+    assert.deepEqual(valueEncoded, Buffer.from([0xd2, 0xc3, 0x01, 0x02, 0x03, 0xcd, 0x83, 0x04, 0x05, 0x06, 0x83, 0x07, 0x08, 0x09, 0xc4, 0x00, 0x82, 0xab, 0xcd]))
+  })
+})
+
+describe('typed lists:', function () {
+  var valueList = [
+    [1, 2, 3],
+    [
+      new Uint8Array([4, 5, 6]),
+      new Uint8Array([7, 8, 9]),
+      [
+        new Uint8Array([0]),
+        Buffer.from('abcd', 'hex')
+      ]
+    ]
+  ]
+
+  // equivalent to list of values above
+  it('encode a nested list', function () {
+    var valueEncoded = RLP.encode(valueList)
+    assert.deepEqual(valueEncoded, new Buffer([0xd2, 0xc3, 0x01, 0x02, 0x03, 0xcd, 0x83, 0x04, 0x05, 0x06, 0x83, 0x07, 0x08, 0x09, 0xc4, 0x00, 0x82, 0xab, 0xcd]))
   })
 })
 

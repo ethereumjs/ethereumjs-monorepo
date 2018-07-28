@@ -4,7 +4,7 @@ const Buffer = require('safe-buffer').Buffer
  * RLP Encoding based on: https://github.com/ethereum/wiki/wiki/%5BEnglish%5D-RLP
  * This function takes in a data, convert it to buffer if not, and a length for recursion
  *
- * @param {Buffer,String,Integer,Array} data - will be converted to buffer
+ * @param {Buffer,String,Integer,Array,Uint8Array} data - will be converted to buffer
  * @returns {Buffer} - returns buffer of encoded data
  **/
 exports.encode = function (input) {
@@ -222,6 +222,8 @@ function toBuffer (v) {
     } else if (v.toArray) {
       // converts a BN to a Buffer
       v = Buffer.from(v.toArray())
+    } else if (v instanceof Uint8Array) {
+      v = Buffer.from(v)
     } else {
       throw new Error('invalid type')
     }
