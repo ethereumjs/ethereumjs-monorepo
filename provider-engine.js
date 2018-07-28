@@ -8,6 +8,8 @@ module.exports = WalletSubprovider
 inherits(WalletSubprovider, HookedWalletEthTxSubprovider)
 
 function WalletSubprovider (wallet, opts) {
+  opts = opts || {}
+
   opts.getAccounts = function (cb) {
     cb(null, [ wallet.getAddressString() ])
   }
