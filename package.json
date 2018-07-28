@@ -31,22 +31,22 @@
   },
   "homepage": "https://github.com/ethereumjs/ethereumjs-wallet",
   "dependencies": {
-    "aes-js": "^3.1.0",
-    "bs58check": "^2.1.1",
-    "ethereumjs-util": "^5.1.4",
-    "hdkey": "^0.8.0",
-    "safe-buffer": "^5.1.1",
+    "aes-js": "^3.1.1",
+    "bs58check": "^2.1.2",
+    "ethereumjs-util": "^5.2.0",
+    "hdkey": "^1.0.0",
+    "safe-buffer": "^5.1.2",
     "scrypt.js": "^0.2.0",
     "utf8": "^3.0.0",
-    "uuid": "^3.2.1"
+    "uuid": "^3.3.2"
   },
   "devDependencies": {
     "babel-cli": "^6.26.0",
-    "babel-preset-env": "^1.6.1",
+    "babel-preset-env": "^1.7.0",
     "coveralls": "^3.0.0",
     "istanbul": "^0.4.5",
-    "mocha": "^5.0.0",
-    "standard": "^10.0.0"
+    "mocha": "^5.2.0",
+    "standard": "^11.0.0"
   },
   "standard": {
     "globals": [
