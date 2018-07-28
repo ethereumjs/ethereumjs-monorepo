@@ -6,6 +6,7 @@ const semaphore = require('semaphore')
 const levelup = require('levelup')
 const memdown = require('memdown')
 const Block = require('ethereumjs-block')
+const Common = require('ethereumjs-common')
 const ethUtil = require('ethereumjs-util')
 const Ethash = require('ethashjs')
 const Buffer = require('safe-buffer').Buffer
@@ -35,6 +36,17 @@ module.exports = Blockchain
 function Blockchain (opts) {
   opts = opts || {}
   const self = this
+
+  if (opts.common) {
+    if (opts.chain) {
+      throw new Error('Instantiation with both opts.common and opts.chain parameter not allowed!')
+    }
+    this._common = opts.common
+  } else {
+    let chain = opts.chain ? opts.chain : 'mainnet'
+    let hardfork = opts.hardfork ? opts.hardfork : null
+    this._common = new Common(chain, hardfork)
+  }
 
   // backwards compatibilty with older constructor interfaces
   if (opts.constructor.name === 'LevelUP') {
@@ -144,7 +156,7 @@ Blockchain.prototype._init = function (cb) {
  */
 Blockchain.prototype._setCanonicalGenesisBlock = function (cb) {
   const self = this
-  var genesisBlock = new Block()
+  var genesisBlock = new Block(null, {common: self._common})
   genesisBlock.setGenesisParams()
   self._putBlockOrHeader(genesisBlock, cb, true)
 }
@@ -311,7 +323,7 @@ Blockchain.prototype.putHeader = function (header, cb) {
 Blockchain.prototype._putBlockOrHeader = function (item, cb, isGenesis) {
   const self = this
   var isHeader = item instanceof Block.Header
-  var block = isHeader ? new Block([item.raw, [], []]) : item
+  var block = isHeader ? new Block([item.raw, [], []], {common: item._common}) : item
   var header = block.header
   var hash = block.hash()
   var number = new BN(header.number)
@@ -320,7 +332,11 @@ Blockchain.prototype._putBlockOrHeader = function (item, cb, isGenesis) {
   var dbOps = []
 
   if (block.constructor !== Block) {
-    block = new Block(block)
+    block = new Block(block, {common: self._common})
+  }
+
+  if (block._common.chainId() !== self._common.chainId()) {
+    return cb(new Error('Chain mismatch while trying to put block or header'))
   }
 
   async.series([
@@ -514,7 +530,7 @@ Blockchain.prototype._getBlock = function (blockTag, cb) {
       }
     }, (err, parts) => {
       if (err) return cb(err)
-      cb(null, new Block([parts.header].concat(parts.body)))
+      cb(null, new Block([parts.header].concat(parts.body), {common: self._common}))
     })
   }
 }
@@ -1025,7 +1041,7 @@ Blockchain.prototype._getHeader = function (hash, number, cb) {
     var key = headerKey(number, hash)
     var encodedHeader = self._cache.header.get(key)
     if (encodedHeader) {
-      return cb(null, new Block.Header(rlp.decode(encodedHeader)))
+      return cb(null, new Block.Header(rlp.decode(encodedHeader), {common: self._common}))
     }
     self.db.get(key, {
       keyEncoding: 'binary',
@@ -1033,7 +1049,7 @@ Blockchain.prototype._getHeader = function (hash, number, cb) {
     }, (err, encodedHeader) => {
       if (err) return cb(err)
       self._cache.header.set(key, encodedHeader)
-      cb(null, new Block.Header(rlp.decode(encodedHeader)))
+      cb(null, new Block.Header(rlp.decode(encodedHeader), {common: self._common}))
     })
   })
 }

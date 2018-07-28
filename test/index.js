@@ -3,6 +3,7 @@
 const test = require('tape')
 const Blockchain = require('..')
 const Block = require('ethereumjs-block')
+const Common = require('ethereumjs-common')
 const async = require('async')
 const ethUtil = require('ethereumjs-util')
 const levelup = require('levelup')
@@ -12,7 +13,7 @@ const BN = require('bn.js')
 const rlp = ethUtil.rlp
 
 test('blockchain test', function (t) {
-  t.plan(68)
+  t.plan(72)
   var blockchain = new Blockchain()
   var genesisBlock
   var blocks = []
@@ -24,6 +25,22 @@ test('blockchain test', function (t) {
       blockchain.getHead(function (err, head) {
         if (err) return done(err)
         t.ok(true, 'should not crash on getting head of a blockchain without a genesis')
+        done()
+      })
+    },
+    function initialization (done) {
+      const common = new Common('ropsten')
+      t.throws(function () { new Blockchain({ chain: 'ropsten', common: common }) }, /not allowed!$/, 'should throw on initialization with chain and common parameter') // eslint-disable-line
+
+      const bc0 = new Blockchain({ chain: 'ropsten' })
+      const bc1 = new Blockchain({ common: common })
+      async.parallel([
+        (cb) => bc0.getHead(cb),
+        (cb) => bc1.getHead(cb)
+      ], (err, heads) => {
+        if (err) return done(err)
+        t.equals(heads[0].hash().toString('hex'), common.genesis().hash.slice(2), 'correct genesis hash')
+        t.equals(heads[0].hash().toString('hex'), heads[1].hash().toString('hex'), 'genesis blocks match')
         done()
       })
     },
@@ -448,6 +465,38 @@ test('blockchain test', function (t) {
           ], cb)
         })
       ], done)
+    },
+    function mismatchedChains (done) {
+      var common = new Common('rinkeby')
+      var blockchain = new Blockchain({common: common, validate: false})
+      var blocks = [
+        new Block(null, {common: common}),
+        new Block(null, {chain: 'rinkeby'}),
+        new Block(null, {chain: 'ropsten'})
+      ]
+
+      blocks[0].setGenesisParams()
+
+      blocks[1].header.number = 1
+      blocks[1].header.parentHash = blocks[0].hash()
+
+      blocks[2].header.number = 2
+      blocks[2].header.parentHash = blocks[1].hash()
+
+      async.eachOfSeries(blocks, (block, i, cb) => {
+        if (i === 0) {
+          blockchain.putGenesis(block, cb)
+        } else {
+          blockchain.putBlock(block, (err) => {
+            if (i === 2) {
+              t.ok(err.message.match('Chain mismatch'), 'should return chain mismatch error')
+            } else {
+              t.error(err, 'should not return mismatch error')
+            }
+            cb()
+          })
+        }
+      })
     }
   ], function (err) {
     if (err) {
