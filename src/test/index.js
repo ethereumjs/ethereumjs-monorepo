@@ -197,6 +197,12 @@ describe('.fromV3()', function () {
     this.timeout(180000) // 3minutes
     assert.equal(wallet.getAddressString(), '0xa9886ac7489ecbcbd79268a79ef00d940e5fe1f2')
   })
+  it('should fail with invalid password', function () {
+    var w = '{"crypto":{"cipher":"aes-128-ctr","cipherparams":{"iv":"6087dab2f9fdbbfaddc31a909735c1e6"},"ciphertext":"5318b4d5bcd28de64ee5559e671353e16f075ecae9f99c7a79a38af5f869aa46","kdf":"pbkdf2","kdfparams":{"c":262144,"dklen":32,"prf":"hmac-sha256","salt":"ae3cd4e7013836a3df6bd7241b12db061dbe2c6785853cce422d148a624ce0bd"},"mac":"517ead924a9d0dc3124507e3393d175ce3ff7c1e96529c6c555ce9e51205e9b2"},"id":"3198bc9c-6672-5ab3-d995-4942343ae5b6","version":3}'
+    assert.throws(function () {
+      Wallet.fromV3(w, 'wrongtestpassword')
+    }, /^Error: Key derivation failed - possibly wrong passphrase$/)
+  })
   it('should work with (broken) mixed-case input files', function () {
     var w = '{"Crypto":{"cipher":"aes-128-ctr","cipherparams":{"iv":"6087dab2f9fdbbfaddc31a909735c1e6"},"ciphertext":"5318b4d5bcd28de64ee5559e671353e16f075ecae9f99c7a79a38af5f869aa46","kdf":"pbkdf2","kdfparams":{"c":262144,"dklen":32,"prf":"hmac-sha256","salt":"ae3cd4e7013836a3df6bd7241b12db061dbe2c6785853cce422d148a624ce0bd"},"mac":"517ead924a9d0dc3124507e3393d175ce3ff7c1e96529c6c555ce9e51205e9b2"},"id":"3198bc9c-6672-5ab3-d995-4942343ae5b6","version":3}'
     var wallet = Wallet.fromV3(w, 'testpassword', true)
@@ -215,10 +221,16 @@ describe('.fromV3()', function () {
     }, /^Error: Not a V3 wallet$/)
   })
   it('should fail for wrong kdf', function () {
-    var w = '{"Crypto":{"kdf":"superkey"},"version":3}'
+    var w = '{"crypto":{"kdf":"superkey"},"version":3}'
     assert.throws(function () {
-      Wallet.fromV3(w, 'testpassword', true)
+      Wallet.fromV3(w, 'testpassword')
     }, /^Error: Unsupported key derivation scheme$/)
+  })
+  it('should fail for wrong prf in pbkdf2', function () {
+    var w = '{"crypto":{"kdf":"pbkdf2","kdfparams":{"prf":"invalid"}},"version":3}'
+    assert.throws(function () {
+      Wallet.fromV3(w, 'testpassword')
+    }, /^Error: Unsupported parameters to PBKDF2$/)
   })
 })
 
