@@ -1,6 +1,7 @@
 var Buffer = require('safe-buffer').Buffer
 var ethUtil = require('ethereumjs-util')
 var crypto = require('crypto')
+var randomBytes = require('randombytes')
 var scryptsy = require('scrypt.js')
 var uuidv4 = require('uuid/v4')
 var bs58check = require('bs58check')
@@ -52,13 +53,13 @@ Wallet.generate = function (icapDirect) {
   if (icapDirect) {
     var max = new ethUtil.BN('088f924eeceeda7fe92e1f5b0fffffffffffffff', 16)
     while (true) {
-      var privKey = crypto.randomBytes(32)
+      var privKey = randomBytes(32)
       if (new ethUtil.BN(ethUtil.privateToAddress(privKey)).lte(max)) {
         return new Wallet(privKey)
       }
     }
   } else {
-    return new Wallet(crypto.randomBytes(32))
+    return new Wallet(randomBytes(32))
   }
 }
 
@@ -68,7 +69,7 @@ Wallet.generateVanityAddress = function (pattern) {
   }
 
   while (true) {
-    var privKey = crypto.randomBytes(32)
+    var privKey = randomBytes(32)
     var address = ethUtil.privateToAddress(privKey)
 
     if (pattern.test(address.toString('hex'))) {
@@ -110,8 +111,8 @@ Wallet.prototype.toV3 = function (password, opts) {
   assert(this._privKey, 'This is a public key only wallet')
 
   opts = opts || {}
-  var salt = opts.salt || crypto.randomBytes(32)
-  var iv = opts.iv || crypto.randomBytes(16)
+  var salt = opts.salt || randomBytes(32)
+  var iv = opts.iv || randomBytes(16)
 
   var derivedKey
   var kdf = opts.kdf || 'scrypt'
@@ -145,7 +146,7 @@ Wallet.prototype.toV3 = function (password, opts) {
 
   return {
     version: 3,
-    id: uuidv4({ random: opts.uuid || crypto.randomBytes(16) }),
+    id: uuidv4({ random: opts.uuid || randomBytes(16) }),
     address: this.getAddress().toString('hex'),
     crypto: {
       ciphertext: ciphertext.toString('hex'),
