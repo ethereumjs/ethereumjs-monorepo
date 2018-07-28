@@ -146,7 +146,7 @@ Blockchain.prototype._setCanonicalGenesisBlock = function (cb) {
   const self = this
   var genesisBlock = new Block()
   genesisBlock.setGenesisParams()
-  self._putBlock(genesisBlock, cb, true)
+  self._putBlockOrHeader(genesisBlock, cb, true)
 }
 
 /**
@@ -243,7 +243,7 @@ Blockchain.prototype.putBlock = function (block, cb, isGenesis) {
   self._initLock.await(() => {
     // perform put with mutex dance
     lockUnlock(function (done) {
-      self._putBlock(block, done, isGenesis)
+      self._putBlockOrHeader(block, done, isGenesis)
     }, cb)
   })
 
@@ -262,13 +262,61 @@ Blockchain.prototype.putBlock = function (block, cb, isGenesis) {
   }
 }
 
-Blockchain.prototype._putBlock = function (block, cb, isGenesis) {
+/**
+ * Adds many headers to the blockchain
+ * @method putHeaders
+ * @param {array} headers - the headers to be added to the blockchain
+ * @param {function} cb - a callback function
+ */
+
+Blockchain.prototype.putHeaders = function (headers, cb) {
   const self = this
+  async.eachSeries(headers, function (header, done) {
+    self.putHeader(header, done)
+  }, cb)
+}
+
+/**
+ * Adds a header to the blockchain
+ * @method putHeader
+ * @param {object} header -the header to be added to the block chain
+ * @param {function} cb - a callback function
+ */
+Blockchain.prototype.putHeader = function (header, cb) {
+  const self = this
+
+  // make sure init has completed
+  self._initLock.await(() => {
+    // perform put with mutex dance
+    lockUnlock(function (done) {
+      self._putBlockOrHeader(header, done)
+    }, cb)
+  })
+
+  // lock, call fn, unlock
+  function lockUnlock (fn, cb) {
+    // take lock
+    self._putSemaphore.take(function () {
+      // call fn
+      fn(function () {
+        // leave lock
+        self._putSemaphore.leave()
+        // exit
+        cb.apply(null, arguments)
+      })
+    })
+  }
+}
+
+Blockchain.prototype._putBlockOrHeader = function (item, cb, isGenesis) {
+  const self = this
+  var isHeader = item instanceof Block.Header
+  var block = isHeader ? new Block([item.raw, [], []]) : item
   var header = block.header
   var hash = block.hash()
   var number = new BN(header.number)
   var td = new BN(header.difficulty)
-  var currentTd = null
+  var currentTd = { header: null, block: null }
   var dbOps = []
 
   if (block.constructor !== Block) {
@@ -305,14 +353,20 @@ Blockchain.prototype._putBlock = function (block, cb, isGenesis) {
 
   function getCurrentTd (next) {
     if (isGenesis) {
-      currentTd = 0
+      currentTd.header = new BN(0)
+      currentTd.block = new BN(0)
       return next()
     }
-    self._getTd(self._headHeader, (err, td) => {
-      if (err) return next(err)
-      currentTd = td
-      next()
-    })
+    async.parallel([
+      (cb) => self._getTd(self._headHeader, (err, td) => {
+        currentTd.header = td
+        cb(err)
+      }),
+      (cb) => self._getTd(self._headBlock, (err, td) => {
+        currentTd.block = td
+        cb(err)
+      })
+    ], next)
   }
 
   function getBlockTd (next) {
@@ -353,8 +407,8 @@ Blockchain.prototype._putBlock = function (block, cb, isGenesis) {
     })
     self._cache.header.set(key, value)
 
-    // store body if not empty
-    if (block.transactions.length || block.uncleHeaders.length) {
+    // store body if it exists
+    if (isGenesis || block.transactions.length || block.uncleHeaders.length) {
       var body = block.serialize(false).slice(1)
       key = bodyKey(number, hash)
       value = rlp.encode(body)
@@ -369,11 +423,11 @@ Blockchain.prototype._putBlock = function (block, cb, isGenesis) {
     }
 
     // if total difficulty is higher than current, add it to canonical chain
-    // second if clause is to reduce selfish mining vulnerability
-    if (block.isGenesis() || td.cmp(currentTd) > 0 ||
-      (td.cmp(currentTd) === 0 && Math.random() < 0.5)) {
+    if (block.isGenesis() || td.gt(currentTd.header)) {
       self._headHeader = hash
-      self._headBlock = hash
+      if (!isHeader) {
+        self._headBlock = hash
+      }
       if (block.isGenesis()) {
         self._genesis = hash
       }
@@ -384,6 +438,9 @@ Blockchain.prototype._putBlock = function (block, cb, isGenesis) {
         (cb) => self._rebuildCanonical(header, dbOps, cb)
       ], next)
     } else {
+      if (td.gt(currentTd.block) && !isHeader) {
+        self._headBlock = hash
+      }
       // save hash to number lookup info even if rebuild not needed
       key = hashToNumberKey(hash)
       value = bufBE8(number)
@@ -594,6 +651,10 @@ Blockchain.prototype._deleteStaleAssignments = function (number, headHash, ops, 
         self._heads[name] = headHash
       }
     })
+    // reset stale headBlock to current canonical
+    if (self._headBlock.equals(hash)) {
+      self._headBlock = headHash
+    }
 
     self._deleteStaleAssignments(number.addn(1), headHash, ops, cb)
   })
@@ -647,6 +708,10 @@ Blockchain.prototype._rebuildCanonical = function (header, ops, cb) {
           self._staleHeads.push(name)
         }
       })
+      // flag stale headBlock for reset
+      if (staleHash && self._headBlock.equals(staleHash)) {
+        self._staleHeadBlock = true
+      }
 
       self._getHeader(header.parentHash, number.subn(1), (err, header) => {
         if (err) {
@@ -661,6 +726,11 @@ Blockchain.prototype._rebuildCanonical = function (header, ops, cb) {
         self._heads[name] = hash
       })
       delete self._staleHeads
+      // set stale headBlock to last previously valid canonical block
+      if (self._staleHeadBlock) {
+        self._headBlock = hash
+        delete self._staleHeadBlock
+      }
       cb()
     }
   })
