@@ -4,7 +4,7 @@ const argv = require('minimist')(process.argv.slice(2))
 const async = require('async')
 const tape = require('tape')
 const testing = require('ethereumjs-testing')
-const FORK_CONFIG = argv.fork || 'Byzantium'
+const FORK_CONFIG = argv.fork || 'Constantinople'
 // tests which should be fixed
 const skipBroken = [
   'CreateHashCollision', // impossible hash collision on generating address
