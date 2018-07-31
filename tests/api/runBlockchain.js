@@ -89,6 +89,8 @@ tape('runBlockchain with fake blockchain', (t) => {
 function createGenesis () {
   const genesis = new Block()
   genesis.setGenesisParams()
+
+  return genesis
 }
 
 function createBlock (parent = null, n = 0) {
