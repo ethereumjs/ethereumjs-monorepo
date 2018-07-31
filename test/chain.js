@@ -74,14 +74,14 @@ tape('[Chain]: Database functions', t => {
     const chain = new Chain(config) // eslint-disable-line no-new
     await chain.open()
     st.equal(chain.networkId, 1, 'get chain.networkId')
-    st.equal(chain.td.toString(10), '17179869184', 'get chain.td')
-    st.equal(chain.height.toString(10), '0', 'get chain.height')
+    st.equal(chain.blocks.td.toString(10), '17179869184', 'get chain.blocks.td')
+    st.equal(chain.blocks.height.toString(10), '0', 'get chain.blocks.height')
     st.equal(chain.genesis.hash.toString('hex'),
       'd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3',
       'get chain.genesis')
     st.equal(chain.genesis.hash.toString('hex'),
-      chain.latest.hash().toString('hex'),
-      'get chain.latest')
+      chain.blocks.latest.hash().toString('hex'),
+      'get chain.block.latest')
     chain.close()
     st.end()
   })
@@ -98,13 +98,14 @@ tape('[Chain]: Database functions', t => {
 
     st.equal(await chain.update(), false, 'skip update if not opened')
     st.equal(await chain.close(), false, 'skip close if not opened')
-    await chain.add(block)
-    st.notOk(chain.height, 'chain should be empty if not opened')
+    st.equal(await chain.add(block), false, 'skip add if not opened')
+    st.equal(await chain.addHeaders([block.header]), false, 'skip addHeaders if not opened')
+    st.notOk(chain.blocks.height.toNumber(), 'chain should be empty if not opened')
 
     await chain.open()
     st.equal(await chain.open(), false, 'skip open if already opened')
     await chain.add(block)
-    st.equal(chain.height.toString(10), '1', 'block should be added if chain opened')
+    st.equal(chain.blocks.height.toString(10), '1', 'block should be added if chain opened')
     st.end()
   })
 
@@ -132,8 +133,8 @@ tape('[Chain]: Database functions', t => {
     block.header.difficulty = '0xabcdffff'
     block.header.parentHash = chain.genesis.hash
     await chain.add(block)
-    st.equal(chain.td.toString(16), '4abcdffff', 'get chain.td')
-    st.equal(chain.height.toString(10), '1', 'get chain.height')
+    st.equal(chain.blocks.td.toString(16), '4abcdffff', 'get chain.td')
+    st.equal(chain.blocks.height.toString(10), '1', 'get chain.height')
     chain.close()
     st.end()
   })

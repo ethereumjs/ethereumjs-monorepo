@@ -40,19 +40,21 @@
         * [new Chain(options)](#new_module_blockchain.Chain_new)
         * [.networkId](#module_blockchain.Chain+networkId) : <code>number</code>
         * [.genesis](#module_blockchain.Chain+genesis) : <code>Object</code>
-        * [.td](#module_blockchain.Chain+td) : <code>BN</code>
-        * [.latest](#module_blockchain.Chain+latest) : <code>Block</code>
-        * [.height](#module_blockchain.Chain+height) : <code>BN</code>
+        * [.headers](#module_blockchain.Chain+headers) : <code>Object</code>
+        * [.blocks](#module_blockchain.Chain+blocks) : <code>Object</code>
         * [.db](#module_blockchain.Chain+db) : <code>Object</code>
         * [.open()](#module_blockchain.Chain+open) ⇒ <code>Promise</code>
         * [.close()](#module_blockchain.Chain+close) ⇒ <code>Promise</code>
         * [.update()](#module_blockchain.Chain+update) ⇒ <code>Promise</code>
-        * [.add()](#module_blockchain.Chain+add) ⇒ <code>Promise</code>
+        * [.add(blocks)](#module_blockchain.Chain+add) ⇒ <code>Promise</code>
+        * [.addHeaders(headers)](#module_blockchain.Chain+addHeaders) ⇒ <code>Promise</code>
+    * [.HeaderPool](#module_blockchain.HeaderPool)
+        * [.add(headers)](#module_blockchain.HeaderPool+add) ⇒ <code>Promise</code>
 
 <a name="module_blockchain.BlockPool"></a>
 
 ### blockchain.BlockPool
-Pool of blockchain segment
+Pool of blockchain segments
 
 **Kind**: static class of [<code>blockchain</code>](#module_blockchain)  
 
@@ -103,14 +105,14 @@ Blockchain
     * [new Chain(options)](#new_module_blockchain.Chain_new)
     * [.networkId](#module_blockchain.Chain+networkId) : <code>number</code>
     * [.genesis](#module_blockchain.Chain+genesis) : <code>Object</code>
-    * [.td](#module_blockchain.Chain+td) : <code>BN</code>
-    * [.latest](#module_blockchain.Chain+latest) : <code>Block</code>
-    * [.height](#module_blockchain.Chain+height) : <code>BN</code>
+    * [.headers](#module_blockchain.Chain+headers) : <code>Object</code>
+    * [.blocks](#module_blockchain.Chain+blocks) : <code>Object</code>
     * [.db](#module_blockchain.Chain+db) : <code>Object</code>
     * [.open()](#module_blockchain.Chain+open) ⇒ <code>Promise</code>
     * [.close()](#module_blockchain.Chain+close) ⇒ <code>Promise</code>
     * [.update()](#module_blockchain.Chain+update) ⇒ <code>Promise</code>
-    * [.add()](#module_blockchain.Chain+add) ⇒ <code>Promise</code>
+    * [.add(blocks)](#module_blockchain.Chain+add) ⇒ <code>Promise</code>
+    * [.addHeaders(headers)](#module_blockchain.Chain+addHeaders) ⇒ <code>Promise</code>
 
 <a name="new_module_blockchain.Chain_new"></a>
 
@@ -137,22 +139,20 @@ Network ID
 Genesis block parameters
 
 **Kind**: instance property of [<code>Chain</code>](#module_blockchain.Chain)  
-<a name="module_blockchain.Chain+td"></a>
+<a name="module_blockchain.Chain+headers"></a>
 
-#### chain.td : <code>BN</code>
-Total difficulty of canonical chain
-
-**Kind**: instance property of [<code>Chain</code>](#module_blockchain.Chain)  
-<a name="module_blockchain.Chain+latest"></a>
-
-#### chain.latest : <code>Block</code>
-Latest block in canonical chain
+#### chain.headers : <code>Object</code>
+Returns properties of the canonical headerchain. The ``latest`` property is
+the latest header in the chain, the ``td`` property is the total difficulty of
+headerchain, and the ``height`` is the height of the headerchain.
 
 **Kind**: instance property of [<code>Chain</code>](#module_blockchain.Chain)  
-<a name="module_blockchain.Chain+height"></a>
+<a name="module_blockchain.Chain+blocks"></a>
 
-#### chain.height : <code>BN</code>
-Blockchain height
+#### chain.blocks : <code>Object</code>
+Returns properties of the canonical blockchain. The ``latest`` property is
+the latest block in the chain, the ``td`` property is the total difficulty of
+blockchain, and the ``height`` is the height of the blockchain.
 
 **Kind**: instance property of [<code>Chain</code>](#module_blockchain.Chain)  
 <a name="module_blockchain.Chain+db"></a>
@@ -181,10 +181,45 @@ Update blockchain properties (latest block, td, height, etc...)
 **Kind**: instance method of [<code>Chain</code>](#module_blockchain.Chain)  
 <a name="module_blockchain.Chain+add"></a>
 
-#### chain.add() ⇒ <code>Promise</code>
+#### chain.add(blocks) ⇒ <code>Promise</code>
 Insert new blocks into blockchain
 
 **Kind**: instance method of [<code>Chain</code>](#module_blockchain.Chain)  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| blocks | <code>Array.&lt;Block&gt;</code> \| <code>Block</code> | list of blocks or single block to add |
+
+<a name="module_blockchain.Chain+addHeaders"></a>
+
+#### chain.addHeaders(headers) ⇒ <code>Promise</code>
+Insert new headers into blockchain
+
+**Kind**: instance method of [<code>Chain</code>](#module_blockchain.Chain)  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| headers | <code>Array.&lt;Header&gt;</code> | list of headers to add |
+
+<a name="module_blockchain.HeaderPool"></a>
+
+### blockchain.HeaderPool
+Pool of headerchain segments
+
+**Kind**: static class of [<code>blockchain</code>](#module_blockchain)  
+<a name="module_blockchain.HeaderPool+add"></a>
+
+#### headerPool.add(headers) ⇒ <code>Promise</code>
+Add a headerchain segment to the pool. Returns a promise that resolves once
+the segment has been added to the pool. Segments are automatically inserted
+into the blockchain once prior gaps are filled.
+
+**Kind**: instance method of [<code>HeaderPool</code>](#module_blockchain.HeaderPool)  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| headers | <code>Array.&lt;Header&gt;</code> | list of sequential headers |
+
 <a name="module_net/peer"></a>
 
 ## net/peer
@@ -200,12 +235,12 @@ Insert new blocks into blockchain
         * [.server](#module_net/peer.Peer+server)
         * [.idle](#module_net/peer.Peer+idle) : <code>boolean</code>
         * [.idle](#module_net/peer.Peer+idle) : <code>boolean</code>
+        * [.bindProtocol(protocol, sender)](#module_net/peer.Peer+bindProtocol) ⇒ <code>Promise</code>
         * [.understands(protocolName)](#module_net/peer.Peer+understands)
     * [.RlpxPeer](#module_net/peer.RlpxPeer)
         * [new RlpxPeer(options)](#new_module_net/peer.RlpxPeer_new)
         * _instance_
             * [.connect()](#module_net/peer.RlpxPeer+connect) ⇒ <code>Promise</code>
-            * [.bindProtocols(rlpxPeer)](#module_net/peer.RlpxPeer+bindProtocols) ⇒ <code>Promise</code>
         * _static_
             * [.capabilities(protocols)](#module_net/peer.RlpxPeer.capabilities) ⇒ <code>Array.&lt;Object&gt;</code>
 
@@ -226,6 +261,7 @@ Network peer
     * [.server](#module_net/peer.Peer+server)
     * [.idle](#module_net/peer.Peer+idle) : <code>boolean</code>
     * [.idle](#module_net/peer.Peer+idle) : <code>boolean</code>
+    * [.bindProtocol(protocol, sender)](#module_net/peer.Peer+bindProtocol) ⇒ <code>Promise</code>
     * [.understands(protocolName)](#module_net/peer.Peer+understands)
 
 <a name="new_module_net/peer.Peer_new"></a>
@@ -316,6 +352,37 @@ Get idle state of peer
 Set idle state of peer
 
 **Kind**: instance property of [<code>Peer</code>](#module_net/peer.Peer)  
+<a name="module_net/peer.Peer+bindProtocol"></a>
+
+#### peer.bindProtocol(protocol, sender) ⇒ <code>Promise</code>
+Adds a protocol to this peer given a sender instance. Protocol methods
+will be accessible via a field with the same name as protocol. New methods
+will be added corresponding to each message defined by the protocol, in
+addition to send() and request() methods that takes a message name and message
+arguments. send() only sends a message without waiting for a response, whereas
+request() also sends the message but will return a promise that resolves with
+the response payload.
+
+**Kind**: instance method of [<code>Peer</code>](#module_net/peer.Peer)  
+**Access**: protected  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| protocol | <code>Protocol</code> | protocol instance |
+| sender | <code>Sender</code> | Sender instance provided by subclass |
+
+**Example**  
+```js
+await peer.bindProtocol(ethProtocol, sender)
+// Example: Directly call message name as a method on the bound protocol
+const headers1 = await peer.eth.getBlockHeaders(1, 100, 0, 0)
+// Example: Call request() method with message name as first parameter
+const headers2 = await peer.eth.request('getBlockHeaders', 1, 100, 0, 0)
+// Example: Call send() method with message name as first parameter and
+// wait for response message as an event
+peer.eth.send('getBlockHeaders', 1, 100, 0, 0)
+peer.eth.on('message', ({ data }) => console.log(`Received ${data.length} headers`))
+```
 <a name="module_net/peer.Peer+understands"></a>
 
 #### peer.understands(protocolName)
@@ -338,7 +405,6 @@ Devp2p/RLPx peer
     * [new RlpxPeer(options)](#new_module_net/peer.RlpxPeer_new)
     * _instance_
         * [.connect()](#module_net/peer.RlpxPeer+connect) ⇒ <code>Promise</code>
-        * [.bindProtocols(rlpxPeer)](#module_net/peer.RlpxPeer+bindProtocols) ⇒ <code>Promise</code>
     * _static_
         * [.capabilities(protocols)](#module_net/peer.RlpxPeer.capabilities) ⇒ <code>Array.&lt;Object&gt;</code>
 
@@ -382,21 +448,6 @@ new RlpxPeer({ id, host, port, protocols })
 Initiate peer connection
 
 **Kind**: instance method of [<code>RlpxPeer</code>](#module_net/peer.RlpxPeer)  
-<a name="module_net/peer.RlpxPeer+bindProtocols"></a>
-
-#### rlpxPeer.bindProtocols(rlpxPeer) ⇒ <code>Promise</code>
-Adds protocols to this peer given an rlpx native peer instance. Protocols
-will be accessible via a field with the same name as protocol. For each
-protocol, new methods will be added corresponding to each message defined
-by the protocol, in addition to a common send() method that takes a message
-name and message arguments.
-
-**Kind**: instance method of [<code>RlpxPeer</code>](#module_net/peer.RlpxPeer)  
-
-| Param | Type | Description |
-| --- | --- | --- |
-| rlpxPeer | <code>Object</code> | rlpx native peer |
-
 <a name="module_net/peer.RlpxPeer.capabilities"></a>
 
 #### RlpxPeer.capabilities(protocols) ⇒ <code>Array.&lt;Object&gt;</code>

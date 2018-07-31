@@ -34,7 +34,7 @@ const args = require('yargs')
     'rpc': {
       describe: 'Enable the JSON-RPC server',
       boolean: true,
-      default: true
+      default: false
     },
     'rpcport': {
       describe: 'HTTP-RPC server listening port',
