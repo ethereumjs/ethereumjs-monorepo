@@ -249,6 +249,7 @@ function runAll () {
   require('./tester.js')
   require('./cacheTest.js')
   require('./genesishashes.js')
+  require('./api/runner.js')
   async.series([
     // runTests.bind(this, 'VMTests', {}), // VM tests disabled since we don't support Frontier gas costs
     runTests.bind(this, 'GeneralStateTests', {}),

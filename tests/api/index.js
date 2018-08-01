@@ -89,9 +89,10 @@ tape('VM with blockchain', (t) => {
     vm.runBlock = (block, cb) => cb(new Error('test'))
     runBlockchain(vm)
       .then(() => st.fail('it hasn\'t returned any errors'))
-      .catch((e) => { st.equal(e.message, 'test', 'it has correctly propagated runBlock\'s error') })
-
-    st.end()
+      .catch((e) => {
+        st.equal(e.message, 'test', 'it has correctly propagated runBlock\'s error')
+        st.end()
+      })
   })
 })
 

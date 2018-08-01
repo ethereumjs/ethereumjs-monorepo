@@ -66,12 +66,17 @@ tape('runBlockchain', (t) => {
     let head = await getHeadP()
     st.deepEqual(head.hash(), b3.hash(), 'block3 should be the current head')
 
-    await runBlockchainP(blockchain)
+    try {
+      await runBlockchainP(blockchain)
+      st.fail('should have returned error')
+    } catch (e) {
+      st.equal(e.message, 'test')
 
-    head = await getHeadP()
-    st.deepEqual(head.hash(), b2.hash(), 'should have removed invalid block from head')
+      head = await getHeadP()
+      st.deepEqual(head.hash(), b2.hash(), 'should have removed invalid block from head')
 
-    st.end()
+      st.end()
+    }
   })
 })
 
