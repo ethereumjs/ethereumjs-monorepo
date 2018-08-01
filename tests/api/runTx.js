@@ -1,25 +1,37 @@
 const { promisify } = require('util')
 const tape = require('tape')
 const Transaction = require('ethereumjs-tx')
-const Account = require('ethereumjs-account')
 const runTx = require('../../lib/runTx')
 const StateManager = require('../../lib/stateManager')
+const { createAccount } = require('./utils')
+
+function setup () {
+  const vm = {
+    stateManager: new StateManager({ }),
+    emit: (e, val, cb) => { cb() },
+    runCall: (opts, cb) => cb(new Error('test'))
+  }
+
+  return {
+    vm,
+    runTx: promisify(runTx.bind(vm)),
+    putAccount: promisify(vm.stateManager.putAccount.bind(vm.stateManager)),
+    cacheFlush: promisify(vm.stateManager.cache.flush.bind(vm.stateManager.cache))
+  }
+}
 
 tape('runTx', (t) => {
-  const vm = { stateManager: new StateManager({ }), emit: (e, val, cb) => { cb() }, runCall: (opts, cb) => cb(new Error('test')) }
-  const runTxP = promisify(runTx.bind(vm))
-  const putAccountP = promisify(vm.stateManager.putAccount.bind(vm.stateManager))
-  const cacheFlushP = promisify(vm.stateManager.cache.flush.bind(vm.stateManager.cache))
+  const suite = setup()
 
   t.test('should fail to run without opts', async (st) => {
-    shouldFail(st, runTxP(),
+    shouldFail(st, suite.runTx(),
       (e) => st.ok(e.message.includes('invalid input'), 'should fail with appropriate error')
     )
     st.end()
   })
 
   t.test('should fail to run without tx', async (st) => {
-    shouldFail(st, runTxP({}),
+    shouldFail(st, suite.runTx({}),
       (e) => st.ok(e.message.includes('invalid input'), 'should fail with appropriate error')
     )
     st.end()
@@ -27,7 +39,7 @@ tape('runTx', (t) => {
 
   t.test('should fail to run without signature', async (st) => {
     const tx = getTransaction()
-    shouldFail(st, runTxP({ tx }),
+    shouldFail(st, suite.runTx({ tx }),
       (e) => st.ok(e.message.toLowerCase().includes('signature'), 'should fail with appropriate error')
     )
     st.end()
@@ -35,40 +47,44 @@ tape('runTx', (t) => {
 
   t.test('should fail without sufficient funds', async (st) => {
     const tx = getTransaction(true, true)
-    shouldFail(st, runTxP({ tx }),
+    shouldFail(st, suite.runTx({ tx }),
       (e) => st.ok(e.message.toLowerCase().includes('enough funds'), 'error should include "enough funds"')
     )
     st.end()
   })
+})
 
-  t.test('should fail when runCall fails', async (st) => {
-    const tx = getTransaction(true, true)
-    const acc = getAccount()
-    await putAccountP(tx.from.toString('hex'), acc)
-    await cacheFlushP()
+tape('should fail when runCall fails', async (t) => {
+  const suite = setup()
 
-    shouldFail(st,
-      runTxP({ tx, populateCache: true }),
-      (e) => st.equal(e.message, 'test', 'error should be equal to what the mock runCall returns')
-    )
+  const tx = getTransaction(true, true)
+  const acc = createAccount()
+  await suite.putAccount(tx.from.toString('hex'), acc)
+  await suite.cacheFlush()
 
-    st.end()
-  })
+  shouldFail(t,
+    suite.runTx({ tx, populateCache: true }),
+    (e) => t.equal(e.message, 'test', 'error should be equal to what the mock runCall returns')
+  )
 
-  t.test('should behave the same when not using cache', async (st) => {
-    const tx = getTransaction(true, true)
-    const acc = getAccount()
-    await putAccountP(tx.from.toString('hex'), acc)
-    await cacheFlushP()
-    vm.stateManager.cache.clear()
+  t.end()
+})
 
-    shouldFail(st,
-      runTxP({ tx, populateCache: false }),
-      (e) => st.equal(e.message, 'test', 'error should be equal to what the mock runCall returns')
-    )
+tape('should behave the same when not using cache', async (t) => {
+  const suite = setup()
 
-    st.end()
-  })
+  const tx = getTransaction(true, true)
+  const acc = createAccount()
+  await suite.putAccount(tx.from.toString('hex'), acc)
+  await suite.cacheFlush()
+  suite.vm.stateManager.cache.clear()
+
+  shouldFail(t,
+    suite.runTx({ tx, populateCache: false }),
+    (e) => t.equal(e.message, 'test', 'error should be equal to what the mock runCall returns')
+  )
+
+  t.end()
 })
 
 function shouldFail (st, p, onErr) {
@@ -97,13 +113,4 @@ function getTransaction (sign = false, calculageGas = false) {
   }
 
   return tx
-}
-
-function getAccount () {
-  const raw = {
-    nonce: '0x00',
-    balance: '0xfff384'
-  }
-  const acc = new Account(raw)
-  return acc
 }
