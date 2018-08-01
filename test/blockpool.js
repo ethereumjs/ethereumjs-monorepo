@@ -30,9 +30,21 @@ tape('[BlockPool]: functions', t => {
     // add blocks out of order to make sure they are inserted in order
     await pool.add(block2)
     await pool.add(block1)
-    st.equal(chain.td.toString(16), '433333333', 'get chain.td')
-    st.equal(chain.height.toString(10), '2', 'get chain.height')
+    st.equal(chain.blocks.td.toString(16), '433333333', 'get chain.blocks.td')
+    st.equal(chain.blocks.height.toString(10), '2', 'get chain.blocks.height')
     chain.close()
+    st.end()
+  })
+
+  t.test('should check opened state', async (st) => {
+    const tmpdir = tmp.dirSync()
+    config.dataDir = `${tmpdir.name}/chaindb`
+
+    const chain = new Chain(config) // eslint-disable-line no-new
+    const pool = new BlockPool({ chain })
+    st.equal(await pool.add([]), false, 'not opened')
+    await pool.open()
+    st.equal(await pool.open(), false, 'already opened')
     st.end()
   })
 })

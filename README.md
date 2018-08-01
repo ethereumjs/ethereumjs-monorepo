@@ -126,7 +126,7 @@ to help contributors better understand how the project is organized.
 
 - ``/bin`` Contains the CLI script for the ``ethereumjs`` command
 - ``/docs`` Contains auto-generated API docs as well as other supporting documentation
-- ``/lib/blockchain`` Contains the ``Chain`` and ``BlockPool`` classes.
+- ``/lib/blockchain`` Contains the ``Chain``, ``BlockPool`` and ``HeaderPool`` classes.
 - ``/lib/net`` Contains all of the network layer classes including ``Peer``, ``Protocol`` and its subclasses,
   ``Server`` and its subclasses, and ``PeerPool``.
 - ``/lib/service`` Contains the various services. Currently, only ``EthService`` is implemented.
@@ -143,6 +143,8 @@ latest block.
 - ``BlockPool`` [**In Progress**] This class holds segments of the blockchain that have been downloaded
 from other peers. Once valid, sequential segments are available, they are automatically added to the
 blockchain
+    - ``HeaderPool`` [**In Progress**] This is a subclass of ``BlockPool`` that holds header segments instead of
+    block segments. It is useful for light syncs when downloading sequential headers in parallel.
 - ``Server`` This class represents a server that discovers new peers and handles incoming and dropped
 connections. When a new peer connects, the ``Server`` class will negotiate protocols and emit a ``connected``
 event with a new ``Peer``instance. The peer will have properties corresponding to each protocol. For example,
