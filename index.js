@@ -830,7 +830,7 @@ Blockchain.prototype._iterator = function (name, func, cb) {
     async.whilst(
       () => blockNumber,
       run,
-      (err) => self._saveHeads(() => cb(err))
+      (err) => err ? cb(err) : self._saveHeads(cb)
     )
   })
 
