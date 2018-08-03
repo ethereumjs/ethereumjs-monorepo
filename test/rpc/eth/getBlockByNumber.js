@@ -12,7 +12,13 @@ function createBlockchain () {
     toJSON: sinon.stub().returns({ number: 1, transactions })
   }
   return {
-    getBlock: sinon.stub().yields(null, block)
+    getBlock: sinon.stub().returns(block)
+  }
+}
+
+function createNode () {
+  return {
+    services: [{name: 'eth', chain: createBlockchain()}]
   }
 }
 
@@ -31,7 +37,7 @@ function checkError (expectedCode, expectedMessage) {
 }
 
 test('call eth_getBlockByNumber with valid arguments', t => {
-  const manager = createManager(createBlockchain())
+  const manager = createManager(createNode())
   const server = startRPC(manager.getMethods())
 
   const req = {
@@ -58,7 +64,7 @@ test('call eth_getBlockByNumber with valid arguments', t => {
 })
 
 test('call eth_getBlockByNumber with false for second argument', t => {
-  const manager = createManager(createBlockchain())
+  const manager = createManager(createNode())
   const server = startRPC(manager.getMethods())
 
   const req = {
@@ -88,7 +94,7 @@ test('call eth_getBlockByNumber with false for second argument', t => {
 })
 
 test('call eth_getBlockByNumber with invalid block number', t => {
-  const manager = createManager(createBlockchain())
+  const manager = createManager(createNode())
   const server = startRPC(manager.getMethods())
 
   const req = {
@@ -113,7 +119,7 @@ test('call eth_getBlockByNumber with invalid block number', t => {
 })
 
 test('call eth_getBlockByNumber without second parameter', t => {
-  const manager = createManager(createBlockchain())
+  const manager = createManager(createNode())
   const server = startRPC(manager.getMethods())
 
   const req = {
@@ -139,7 +145,7 @@ test('call eth_getBlockByNumber without second parameter', t => {
 })
 
 test('call eth_getBlockByNumber with invalid second parameter', t => {
-  const manager = createManager(createBlockchain())
+  const manager = createManager(createNode())
   const server = startRPC(manager.getMethods())
 
   const req = {

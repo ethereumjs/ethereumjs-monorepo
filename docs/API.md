@@ -27,6 +27,17 @@
 </dd>
 </dl>
 
+## Functions
+
+<dl>
+<dt><a href="#putBlocks">putBlocks(blocks)</a> ⇒ <code>Promise</code></dt>
+<dd><p>Insert new blocks into blockchain</p>
+</dd>
+<dt><a href="#putHeaders">putHeaders(headers)</a> ⇒ <code>Promise</code></dt>
+<dd><p>Insert new headers into blockchain</p>
+</dd>
+</dl>
+
 <a name="module_blockchain"></a>
 
 ## blockchain
@@ -46,8 +57,11 @@
         * [.open()](#module_blockchain.Chain+open) ⇒ <code>Promise</code>
         * [.close()](#module_blockchain.Chain+close) ⇒ <code>Promise</code>
         * [.update()](#module_blockchain.Chain+update) ⇒ <code>Promise</code>
-        * [.add(blocks)](#module_blockchain.Chain+add) ⇒ <code>Promise</code>
-        * [.addHeaders(headers)](#module_blockchain.Chain+addHeaders) ⇒ <code>Promise</code>
+        * [.getBlocks(block, max, skip, reverse)](#module_blockchain.Chain+getBlocks) ⇒ <code>Promise</code>
+        * [.getBlock(blocks)](#module_blockchain.Chain+getBlock) ⇒ <code>Promise</code>
+        * [.getLatestHeader()](#module_blockchain.Chain+getLatestHeader) ⇒ <code>Promise</code>
+        * [.getLatestBlock()](#module_blockchain.Chain+getLatestBlock) ⇒ <code>Promise</code>
+        * [.getTd(hash)](#module_blockchain.Chain+getTd) ⇒ <code>Promise</code>
     * [.HeaderPool](#module_blockchain.HeaderPool)
         * [.add(headers)](#module_blockchain.HeaderPool+add) ⇒ <code>Promise</code>
 
@@ -111,8 +125,11 @@ Blockchain
     * [.open()](#module_blockchain.Chain+open) ⇒ <code>Promise</code>
     * [.close()](#module_blockchain.Chain+close) ⇒ <code>Promise</code>
     * [.update()](#module_blockchain.Chain+update) ⇒ <code>Promise</code>
-    * [.add(blocks)](#module_blockchain.Chain+add) ⇒ <code>Promise</code>
-    * [.addHeaders(headers)](#module_blockchain.Chain+addHeaders) ⇒ <code>Promise</code>
+    * [.getBlocks(block, max, skip, reverse)](#module_blockchain.Chain+getBlocks) ⇒ <code>Promise</code>
+    * [.getBlock(blocks)](#module_blockchain.Chain+getBlock) ⇒ <code>Promise</code>
+    * [.getLatestHeader()](#module_blockchain.Chain+getLatestHeader) ⇒ <code>Promise</code>
+    * [.getLatestBlock()](#module_blockchain.Chain+getLatestBlock) ⇒ <code>Promise</code>
+    * [.getTd(hash)](#module_blockchain.Chain+getTd) ⇒ <code>Promise</code>
 
 <a name="new_module_blockchain.Chain_new"></a>
 
@@ -179,27 +196,53 @@ Close blockchain and database
 Update blockchain properties (latest block, td, height, etc...)
 
 **Kind**: instance method of [<code>Chain</code>](#module_blockchain.Chain)  
-<a name="module_blockchain.Chain+add"></a>
+<a name="module_blockchain.Chain+getBlocks"></a>
 
-#### chain.add(blocks) ⇒ <code>Promise</code>
-Insert new blocks into blockchain
-
-**Kind**: instance method of [<code>Chain</code>](#module_blockchain.Chain)  
-
-| Param | Type | Description |
-| --- | --- | --- |
-| blocks | <code>Array.&lt;Block&gt;</code> \| <code>Block</code> | list of blocks or single block to add |
-
-<a name="module_blockchain.Chain+addHeaders"></a>
-
-#### chain.addHeaders(headers) ⇒ <code>Promise</code>
-Insert new headers into blockchain
+#### chain.getBlocks(block, max, skip, reverse) ⇒ <code>Promise</code>
+Get blocks from blockchain
 
 **Kind**: instance method of [<code>Chain</code>](#module_blockchain.Chain)  
 
 | Param | Type | Description |
 | --- | --- | --- |
-| headers | <code>Array.&lt;Header&gt;</code> | list of headers to add |
+| block | <code>Buffer</code> \| <code>BN</code> | block hash or number to start from |
+| max | <code>number</code> | maximum number of blocks to get |
+| skip | <code>number</code> | number of blocks to skip |
+| reverse | <code>boolean</code> | get blocks in reverse |
+
+<a name="module_blockchain.Chain+getBlock"></a>
+
+#### chain.getBlock(blocks) ⇒ <code>Promise</code>
+Gets a block by its hash or number
+
+**Kind**: instance method of [<code>Chain</code>](#module_blockchain.Chain)  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| blocks | <code>Buffer</code> \| <code>BN</code> | block hash or number |
+
+<a name="module_blockchain.Chain+getLatestHeader"></a>
+
+#### chain.getLatestHeader() ⇒ <code>Promise</code>
+Gets the latest header in the canonical chain
+
+**Kind**: instance method of [<code>Chain</code>](#module_blockchain.Chain)  
+<a name="module_blockchain.Chain+getLatestBlock"></a>
+
+#### chain.getLatestBlock() ⇒ <code>Promise</code>
+Gets the latest block in the canonical chain
+
+**Kind**: instance method of [<code>Chain</code>](#module_blockchain.Chain)  
+<a name="module_blockchain.Chain+getTd"></a>
+
+#### chain.getTd(hash) ⇒ <code>Promise</code>
+Gets total difficulty for a block
+
+**Kind**: instance method of [<code>Chain</code>](#module_blockchain.Chain)  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| hash | <code>Buffer</code> | block hash |
 
 <a name="module_blockchain.HeaderPool"></a>
 
@@ -1053,11 +1096,13 @@ middleware for parameters validation
 * [net/service](#module_net/service)
     * [.EthService](#module_net/service.EthService)
         * [new EthService(options)](#new_module_net/service.EthService_new)
+        * [.name](#module_net/service.EthService+name) : <code>string</code>
         * [.protocols()](#module_net/service.EthService+protocols) : <code>Array.&lt;Protocol&gt;</code>
         * [.start()](#module_net/service.EthService+start) ⇒ <code>Promise</code>
         * [.stop()](#module_net/service.EthService+stop) ⇒ <code>Promise</code>
     * [.Service](#module_net/service.Service)
         * [new Service(options)](#new_module_net/service.Service_new)
+        * [.name](#module_net/service.Service+name) : <code>string</code>
         * [.protocols()](#module_net/service.Service+protocols) : <code>Array.&lt;Protocol&gt;</code>
         * [.open()](#module_net/service.Service+open) ⇒ <code>Promise</code>
         * [.start()](#module_net/service.Service+start) ⇒ <code>Promise</code>
@@ -1072,6 +1117,7 @@ Ethereum service
 
 * [.EthService](#module_net/service.EthService)
     * [new EthService(options)](#new_module_net/service.EthService_new)
+    * [.name](#module_net/service.EthService+name) : <code>string</code>
     * [.protocols()](#module_net/service.EthService+protocols) : <code>Array.&lt;Protocol&gt;</code>
     * [.start()](#module_net/service.EthService+start) ⇒ <code>Promise</code>
     * [.stop()](#module_net/service.EthService+stop) ⇒ <code>Promise</code>
@@ -1091,6 +1137,13 @@ Create new ETH service
 | [options.dataDir] | <code>string</code> | <code>&quot;./chaindata&quot;</code> | data directory path |
 | [options.logger] | <code>Logger</code> |  | logger instance |
 
+<a name="module_net/service.EthService+name"></a>
+
+#### ethService.name : <code>string</code>
+Service name
+
+**Kind**: instance property of [<code>EthService</code>](#module_net/service.EthService)  
+**Access**: protected  
 <a name="module_net/service.EthService+protocols"></a>
 
 #### ethService.protocols() : <code>Array.&lt;Protocol&gt;</code>
@@ -1119,6 +1172,7 @@ Base class for all services
 
 * [.Service](#module_net/service.Service)
     * [new Service(options)](#new_module_net/service.Service_new)
+    * [.name](#module_net/service.Service+name) : <code>string</code>
     * [.protocols()](#module_net/service.Service+protocols) : <code>Array.&lt;Protocol&gt;</code>
     * [.open()](#module_net/service.Service+open) ⇒ <code>Promise</code>
     * [.start()](#module_net/service.Service+start) ⇒ <code>Promise</code>
@@ -1136,6 +1190,13 @@ Create new service and associated peer pool
 | [options.servers] | <code>Array.&lt;Server&gt;</code> | <code>[]</code> | servers to run service on |
 | [options.logger] | <code>Logger</code> |  | logger instance |
 
+<a name="module_net/service.Service+name"></a>
+
+#### service.name : <code>string</code>
+Service name
+
+**Kind**: instance property of [<code>Service</code>](#module_net/service.Service)  
+**Access**: protected  
 <a name="module_net/service.Service+protocols"></a>
 
 #### service.protocols() : <code>Array.&lt;Protocol&gt;</code>
@@ -1517,3 +1578,25 @@ Add a methods to the bound protocol for each protocol message that has a
 corresponding response message
 
 **Kind**: instance method of [<code>BoundProtocol</code>](#BoundProtocol)  
+<a name="putBlocks"></a>
+
+## putBlocks(blocks) ⇒ <code>Promise</code>
+Insert new blocks into blockchain
+
+**Kind**: global function  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| blocks | <code>Array.&lt;Blocks&gt;</code> | list of blocks to add |
+
+<a name="putHeaders"></a>
+
+## putHeaders(headers) ⇒ <code>Promise</code>
+Insert new headers into blockchain
+
+**Kind**: global function  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| headers | <code>Array.&lt;BlockHeader&gt;</code> | list of headers to add |
+
