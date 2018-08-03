@@ -88,7 +88,7 @@ module.exports = function runBlockchainTest (options, testData, t, cb) {
       })
     },
     function getHead (done) {
-      vm.stateManager.blockchain.getHead(function (err, block) {
+      vm.blockchain.getHead(function (err, block) {
         if (testData.lastblockhash.substr(0, 2) === '0x') {
           // fix for BlockchainTests/GeneralStateTests/stRandom/*
           testData.lastblockhash = testData.lastblockhash.substr(2)
