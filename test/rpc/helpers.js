@@ -15,9 +15,9 @@ module.exports = {
     server.close()
   },
 
-  createManager (blockchain) {
+  createManager (node) {
     const config = { loglevel: 'error' }
     config.logger = Logger.getLogger(config)
-    return new Manager(blockchain, config)
+    return new Manager(node, config)
   }
 }

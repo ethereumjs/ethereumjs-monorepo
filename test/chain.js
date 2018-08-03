@@ -98,14 +98,27 @@ tape('[Chain]: Database functions', t => {
 
     st.equal(await chain.update(), false, 'skip update if not opened')
     st.equal(await chain.close(), false, 'skip close if not opened')
-    st.equal(await chain.add(block), false, 'skip add if not opened')
-    st.equal(await chain.addHeaders([block.header]), false, 'skip addHeaders if not opened')
+    st.notOk(chain.opened, 'chain shoud be closed')
     st.notOk(chain.blocks.height.toNumber(), 'chain should be empty if not opened')
-
-    await chain.open()
+    await chain.putBlocks([block])
+    st.equal(chain.blocks.height.toString(10), '1', 'block should be added even if chain closed')
+    await chain.close()
+    st.notOk(chain.opened, 'chain should close')
+    await chain.getBlocks(block.hash())
+    st.ok(chain.opened, 'chain should open if getBlocks() called')
+    await chain.close()
+    await chain.getBlock(block.hash())
+    st.ok(chain.opened, 'chain should open if getBlock() called')
+    await chain.close()
+    await chain.getLatestHeader()
+    st.ok(chain.opened, 'chain should open if getLatestHeader() called')
+    await chain.close()
+    await chain.getLatestBlock()
+    st.ok(chain.opened, 'chain should open if getLatestBlock() called')
+    await chain.close()
+    await chain.getTd(block.hash())
+    st.ok(chain.opened, 'chain should open if getTd() called')
     st.equal(await chain.open(), false, 'skip open if already opened')
-    await chain.add(block)
-    st.equal(chain.blocks.height.toString(10), '1', 'block should be added if chain opened')
     st.end()
   })
 
@@ -115,9 +128,9 @@ tape('[Chain]: Database functions', t => {
 
     const chain = new Chain(config) // eslint-disable-line no-new
     await chain.open()
-    st.notOk(await chain.add(), 'add undefined block')
-    st.notOk(await chain.add(null), 'add null block')
-    st.notOk(await chain.add([]), 'add empty block list')
+    st.notOk(await chain.putBlocks(), 'add undefined block')
+    st.notOk(await chain.putBlocks(null), 'add null block')
+    st.notOk(await chain.putBlocks([]), 'add empty block list')
     st.end()
   })
 
@@ -132,7 +145,7 @@ tape('[Chain]: Database functions', t => {
     block.header.number = util.toBuffer(1)
     block.header.difficulty = '0xabcdffff'
     block.header.parentHash = chain.genesis.hash
-    await chain.add(block)
+    await chain.putBlocks([block])
     st.equal(chain.blocks.td.toString(16), '4abcdffff', 'get chain.td')
     st.equal(chain.blocks.height.toString(10), '1', 'get chain.height')
     chain.close()

@@ -67,9 +67,9 @@ async function runNode (options) {
   return node
 }
 
-function runRpcServer (chain, options) {
+function runRpcServer (node, options) {
   const { rpcport, rpcaddr } = options
-  const manager = new RPCManager(chain, options)
+  const manager = new RPCManager(node, options)
   const server = jayson.server(manager.getMethods())
   logger.info(`RPC HTTP endpoint opened: http://${rpcaddr}:${rpcport}`)
   server.http().listen(rpcport)
@@ -90,7 +90,7 @@ async function run () {
   const node = await runNode(options)
 
   if (args.rpc) {
-    runRpcServer(node.chain, options)
+    runRpcServer(node, options)
   }
 }
 
