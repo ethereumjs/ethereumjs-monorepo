@@ -535,6 +535,31 @@ exports.generateAddress = function (from, nonce) {
 }
 
 /**
+ * Generates an address for a contract created using CREATE2
+ * @param {Buffer} from the address which is creating this new address
+ * @param {Buffer} salt a salt
+ * @param {Buffer} initCode the init code of the contract being created
+ * @return {Buffer}
+ */
+exports.generateAddress2 = function (from, salt, initCode) {
+  from = exports.toBuffer(from)
+  salt = exports.toBuffer(salt)
+  initCode = exports.toBuffer(initCode)
+
+  assert(from.length === 20)
+  assert(salt.length === 32)
+
+  let address = exports.keccak256(Buffer.concat([
+    Buffer.from('ff', 'hex'),
+    from,
+    salt,
+    exports.keccak256(initCode)
+  ]))
+
+  return address.slice(-20)
+}
+
+/**
  * Returns true if the supplied address belongs to a precompiled account (Byzantium)
  * @param {Buffer|String} address
  * @return {Boolean}

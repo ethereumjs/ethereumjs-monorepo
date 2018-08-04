@@ -128,7 +128,7 @@
     "karma-firefox-launcher": "^1.0.0",
     "karma-mocha": "^1.3.0",
     "mocha": "^4.0.0",
-    "standard": "*"
+    "standard": "^10.0.0"
   },
   "standard": {
     "globals": [
