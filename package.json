@@ -30,8 +30,8 @@
   },
   "homepage": "https://github.com/ethereumjs/ethereumjs-client#readme",
   "dependencies": {
-    "ethereumjs-block": "^1.7.1",
-    "ethereumjs-blockchain": "^3.1.0",
+    "ethereumjs-block": "ethereumjs/ethereumjs-block#validate-fix",
+    "ethereumjs-blockchain": "file:../ethereumjs-blockchain",
     "ethereumjs-common": "^0.4.0",
     "ethereumjs-devp2p": "^2.5.0",
     "ethereumjs-util": "^5.2.0",
