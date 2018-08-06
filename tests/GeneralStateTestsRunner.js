@@ -54,7 +54,8 @@ function runTestCase (options, testData, t, cb) {
         VM = require('../lib/index.js')
       }
       vm = new VM({
-        state: state
+        state: state,
+        hardfork: options.forkConfig.toLowerCase()
       })
       testUtil.setupPreConditions(state, testData, done)
     },

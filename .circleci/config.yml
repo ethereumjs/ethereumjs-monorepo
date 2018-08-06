@@ -1,7 +1,7 @@
 version: 2
 
 defaults: &defaults
-  working_directory: ~/project/ethreumjs-vm
+  working_directory: ~/project/ethereumjs-vm
   docker:
     - image: circleci/node:8
 restore_node_modules: &restore_node_modules
@@ -28,7 +28,7 @@ jobs:
       - persist_to_workspace:
           root: ~/project
           paths:
-            - ethreumjs-vm/
+            - ethereumjs-vm/
   lint:
     <<: *defaults
     steps:
@@ -56,15 +56,33 @@ jobs:
       - run:
           name: testBlockchainTotalDifficulty
           command: npm run testBlockchainTotalDifficulty
-  test_state:
+  test_state_byzantium:
     <<: *defaults
     steps:
       - attach_workspace:
           at: ~/project
       - *restore_node_modules
       - run:
-          name: testState
-          command: npm run testState
+          name: testStateByzantium
+          command: npm run testStateByzantium
+  test_state_constantinople:
+    <<: *defaults
+    steps:
+      - attach_workspace:
+          at: ~/project
+      - *restore_node_modules
+      - run:
+          name: testStateConstantinople
+          command: npm run testStateConstantinople
+  coveralls:
+    <<: *defaults
+    steps:
+      - attach_workspace:
+          at: ~/project
+      - *restore_node_modules
+      - run:
+          name: coveralls
+          command: npm run coveralls
 workflows:
   version: 2
   install-lint-test:
@@ -79,6 +97,12 @@ workflows:
       - test_total_difficulty:
           requires:
             - install
-      - test_state:
+      - test_state_byzantium:
+          requires:
+            - install
+      - test_state_constantinople:
+          requires:
+            - install
+      - coveralls:
           requires:
             - install
