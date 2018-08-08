@@ -6,7 +6,13 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 
-## [0.6.1] - 2018-07-28
+## [0.6.2] - 2018-08-08
+- [PLEASE UPDATE!] Fixes a critical import bug introduced in ``v0.6.1`` accidentally
+  changing the import path for the different submodules, see PR [#65](https://github.com/ethereumjs/ethereumjs-wallet/pull/65)
+
+[0.6.2]: https://github.com/ethereumjs/ethereumjs-wallet/compare/v0.6.1...v0.6.2
+
+## [0.6.1] - 2018-07-28 [DEPRECATED]
 - Added support for vanity address generation, PR [#5](https://github.com/ethereumjs/ethereumjs-wallet/pull/5)
 - Fixed typo in provider-engine, PR [#16](https://github.com/ethereumjs/ethereumjs-wallet/pull/16)
 - Accept the true range of addresses for ICAP direct, PR [#6](https://github.com/ethereumjs/ethereumjs-wallet/pull/6)
