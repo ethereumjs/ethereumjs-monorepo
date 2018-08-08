@@ -243,8 +243,8 @@ BlockHeader.prototype.validate = function (blockchain, height, cb) {
       return cb('invalid timestamp')
     }
 
-    const hardfork = this._common.hardfork() ? this._common.hardfork() : this._common.activeHardfork(height)
-    if (self.extraData.length > this._common.param('vm', 'maxExtraDataSize', hardfork)) {
+    const hardfork = self._common.hardfork() ? self._common.hardfork() : self._common.activeHardfork(height)
+    if (self.extraData.length > self._common.param('vm', 'maxExtraDataSize', hardfork)) {
       return cb('invalid amount of extra data')
     }
 
