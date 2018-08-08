@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 
+## [2.0.1] - 2018-08-08
+- Fixes ``BlockHeader.prototype.validate()`` bug, see PR [#49](https://github.com/ethereumjs/ethereumjs-block/pull/49)
+
+[2.0.1]: https://github.com/ethereumjs/ethereumjs-vm/compare/v2.0.0...v2.0.1
+
 ## [2.0.0] - 2018-06-25
 This release introduces both support for different ``chains`` (``mainnet``, ``ropsten``, ...)
 and ``hardforks`` up to the latest applied HF (``byzantium``). Parameters and genesis values
