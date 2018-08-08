@@ -11,7 +11,7 @@ const testData = require('./testdata.json')
 const BN = require('bn.js')
 
 test('blockchain test', function (t) {
-  t.plan(59)
+  t.plan(61)
   var blockchain = new Blockchain()
   var genesisBlock
   var blocks = []
@@ -217,6 +217,15 @@ test('blockchain test', function (t) {
         cb()
       }, function () {
         t.equals(i, 9, 'should iterate through 9 blocks')
+        done()
+      })
+    },
+    function iterateError (done) {
+      blockchain.iterator('error', function (block, reorg, cb) {
+        cb(new Error('iterator func error'))
+      }, function (err) {
+        t.ok(err, 'should catch iterator func error')
+        t.equal(err.message, 'iterator func error', 'should return correct error')
         done()
       })
     },
