@@ -22,14 +22,14 @@ tape('bloom', (t) => {
     const vector = Buffer.from(hex, 'hex')
 
     const b = new Bloom(vector)
-    st.true(b.check('value 1'), 'should contain value 1')
-    st.true(b.check('value 2'), 'should contain value 2')
+    st.true(b.check('value 1'), 'should contain string "value 1"')
+    st.true(b.check('value 2'), 'should contain string "value 2"')
     st.end()
   })
 
   t.test('check shouldnt be tautology', (st) => {
     const b = new Bloom()
-    st.false(b.check('random value'), 'should not contain random value')
+    st.false(b.check('random value'), 'should not contain string "random value"')
     st.end()
   })
 
@@ -57,11 +57,11 @@ tape('bloom', (t) => {
     b2.add('value 2')
 
     b1.or(b2)
-    st.true(b1.check('value 2'), 'should contain value 2 after or')
+    st.true(b1.check('value 2'), 'should contain "value 2" after or')
     st.end()
   })
 
-  t.test('should generate the correct bloom filter value ', (st) => {
+  t.test('should generate the correct bloom filter value', (st) => {
     let bloom = new Bloom()
     bloom.add(Buffer.from('1d7022f5b17d2f8b695918fb48fa1089c9f85401', 'hex'))
     bloom.add(Buffer.from('8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b925', 'hex'))
