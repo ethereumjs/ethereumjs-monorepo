@@ -44,6 +44,8 @@ new Blockchain({db: db}).iterator('i', (block, reorg, cb) => {
         - [`blockchain.putBlock(block, [cb])`](#blockchainputblockblock-cb)
         - [`blockchain.getBlock(hash, [cb])`](#blockchaingetblockhash-cb)
         - [`blockchain.getBlocks(blockId, maxBlocks, skip, reverse, [cb])`](#blockchaingetblocksblockid-maxblocks-skip-reverse-cb)
+        - [`blockchain.putHeaders(headers, [cb])`](#blockchainputheadersheaders-cb)
+        - [`blockchain.putHeader(header, [cb])`](#blockchainputheaderheader-cb)
         - [`blockchain.selectNeededHashes(hashes, [cb])`](#blockchainselectneededhasheshashes-cb)
         - [`blockchain.delBlock(blockHash, [cb])`](#blockchaindelblockblockhash-cb)
         - [`blockchain.iterator(name, onBlock, [cb])`](#blockchainiteratorname-onblock-cb)        
@@ -116,6 +118,19 @@ Looks up many blocks relative to blockId.
 - `skip` - number of blocks to skip
 - `reverse` - fetch blocks in reverse
 - `cb` - the callback. It is given two parameters `err` and the found `blocks` if any.
+
+--------------------------------------------------------
+
+#### `blockchain.putHeaders(headers, cb)`
+Adds many headers to the blockchain.
+- `headers` - the headers to be added to the blockchain
+- `cb` - the callback. It is given two parameters `err` and the last of the saved `headers`
+--------------------------------------------------------
+
+#### `blockchain.putHeader(header, cb)`
+Adds a header to the blockchain.
+- `header` - the header to be added to the blockchain
+- `cb` - the callback. It is given two parameters `err` and the saved `header`
 
 --------------------------------------------------------
 

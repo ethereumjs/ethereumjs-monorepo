@@ -3,19 +3,21 @@
 const test = require('tape')
 const Blockchain = require('..')
 const Block = require('ethereumjs-block')
+const Common = require('ethereumjs-common')
 const async = require('async')
 const ethUtil = require('ethereumjs-util')
 const levelup = require('levelup')
 const memdown = require('memdown')
 const testData = require('./testdata.json')
 const BN = require('bn.js')
+const rlp = ethUtil.rlp
 
 test('blockchain test', function (t) {
-  t.plan(61)
+  t.plan(72)
   var blockchain = new Blockchain()
   var genesisBlock
   var blocks = []
-  var forkBlock
+  var forkHeader
   blockchain.validate = false
   async.series([
 
@@ -23,6 +25,22 @@ test('blockchain test', function (t) {
       blockchain.getHead(function (err, head) {
         if (err) return done(err)
         t.ok(true, 'should not crash on getting head of a blockchain without a genesis')
+        done()
+      })
+    },
+    function initialization (done) {
+      const common = new Common('ropsten')
+      t.throws(function () { new Blockchain({ chain: 'ropsten', common: common }) }, /not allowed!$/, 'should throw on initialization with chain and common parameter') // eslint-disable-line
+
+      const bc0 = new Blockchain({ chain: 'ropsten' })
+      const bc1 = new Blockchain({ common: common })
+      async.parallel([
+        (cb) => bc0.getHead(cb),
+        (cb) => bc1.getHead(cb)
+      ], (err, heads) => {
+        if (err) return done(err)
+        t.equals(heads[0].hash().toString('hex'), common.genesis().hash.slice(2), 'correct genesis hash')
+        t.equals(heads[0].hash().toString('hex'), heads[1].hash().toString('hex'), 'genesis blocks match')
         done()
       })
     },
@@ -246,22 +264,24 @@ test('blockchain test', function (t) {
       t.ok(blockchain.meta.heads['test'], 'should get meta.heads')
       done()
     },
-    function addForkBlockAndResetStaleHeads (done) {
-      forkBlock = new Block()
-      forkBlock.header.number = ethUtil.toBuffer(9)
-      forkBlock.header.difficulty = '0xffffffff'
-      forkBlock.header.parentHash = blocks[8].hash()
+    function addForkHeaderAndResetStaleHeads (done) {
+      forkHeader = new Block.Header()
+      forkHeader.number = ethUtil.toBuffer(9)
+      forkHeader.difficulty = '0xffffffff'
+      forkHeader.parentHash = blocks[8].hash()
       blockchain._heads['staletest'] = blockchain._headHeader
-      blockchain.putBlock(forkBlock, function (err) {
+      blockchain.putHeader(forkHeader, function (err) {
         t.equals(blockchain._heads['staletest'].toString('hex'), blocks[8].hash().toString('hex'), 'should update stale head')
+        t.equals(blockchain._headBlock.toString('hex'), blocks[8].hash().toString('hex'), 'should update stale headBlock')
         t.notOk(err, 'should add new block in fork')
         done()
       })
     },
-    function delForkBlock (done) {
-      blockchain.delBlock(forkBlock.hash(), (err) => {
+    function delForkHeader (done) {
+      blockchain.delBlock(forkHeader.hash(), (err) => {
         t.ok(!err, 'should delete fork block')
-        t.equals(blockchain._headHeader.toString('hex'), blocks[8].hash().toString('hex'), 'should not change head')
+        t.equals(blockchain._headHeader.toString('hex'), blocks[8].hash().toString('hex'), 'should reset headHeader')
+        t.equals(blockchain._headBlock.toString('hex'), blocks[8].hash().toString('hex'), 'should not change headBlock')
         done()
       })
     },
@@ -356,22 +376,126 @@ test('blockchain test', function (t) {
     function saveHeads (done) {
       var db = levelup('', { db: memdown })
       var blockchain = new Blockchain({db: db, validate: false})
-
-      blockchain.putBlock(blocks[1], (err) => {
+      var header = new Block.Header()
+      header.number = ethUtil.toBuffer(1)
+      header.difficulty = '0xfffffff'
+      header.parentHash = blocks[0].hash()
+      blockchain.putHeader(header, (err) => {
         if (err) return done(err)
         blockchain = new Blockchain({db: db, validate: false})
         async.series([
-          (cb) => blockchain.getLatestHeader((err, header) => {
+          (cb) => blockchain.getLatestHeader((err, latest) => {
             if (err) return done(err)
-            t.equals(header.hash().toString('hex'), blocks[1].hash().toString('hex'), 'should get latest header')
+            t.equals(latest.hash().toString('hex'), header.hash().toString('hex'), 'should save headHeader')
             cb()
           }),
-          (cb) => blockchain.getLatestBlock((err, headBlock) => {
+          (cb) => blockchain.getLatestBlock((err, latest) => {
             if (err) return done(err)
-            t.equals(headBlock.hash().toString('hex'), blocks[1].hash().toString('hex'), 'should get latest block')
+            t.equals(latest.hash().toString('hex'), blocks[0].hash().toString('hex'), 'should save headBlock')
             cb()
           })
         ], done)
+      })
+    },
+    function immutableCachedObjects (done) {
+      var blockchain = new Blockchain({validate: false})
+      // clone blocks[1]
+      var testBlock = new Block(rlp.decode(rlp.encode(blocks[1].raw)))
+      var cachedHash
+      async.series([
+        (cb) => blockchain.putBlock(testBlock, (err) => {
+          if (err) return done(err)
+          cachedHash = testBlock.hash()
+          cb()
+        }),
+        (cb) => {
+          // change testBlock's extraData in order to modify its hash
+          testBlock.header.extraData = Buffer.from([1])
+          blockchain.getBlock(1, (err, block) => {
+            if (err) return done(err)
+            t.equals(cachedHash.toString('hex'), block.hash().toString('hex'), 'should not modify cached objects')
+            cb()
+          })
+        }
+      ], done)
+    },
+    function getLatest (done) {
+      var blockchain = new Blockchain({validate: false})
+      var headers = [new Block.Header(), new Block.Header()]
+
+      headers[0].number = ethUtil.toBuffer(1)
+      headers[0].difficulty = '0xfffffff'
+      headers[0].parentHash = blocks[0].hash()
+
+      headers[1].number = ethUtil.toBuffer(2)
+      headers[1].difficulty = '0xfffffff'
+      headers[1].parentHash = headers[0].hash()
+
+      async.series([
+        // first, add some headers and make sure the latest block remains the same
+        (cb) => blockchain.putHeaders(headers, (err) => {
+          if (err) return cb(err)
+          async.series([
+            (cb) => blockchain.getLatestHeader((err, header) => {
+              if (err) return done(err)
+              t.equals(header.hash().toString('hex'), headers[1].hash().toString('hex'), 'should update latest header')
+              cb()
+            }),
+            (cb) => blockchain.getLatestBlock((err, block) => {
+              if (err) return done(err)
+              t.equals(block.hash().toString('hex'), blocks[0].hash().toString('hex'), 'should not change latest block')
+              cb()
+            })
+          ], cb)
+        }),
+        // then, add a full block and make sure the latest header remains the same
+        (cb) => blockchain.putBlock(blocks[1], (err) => {
+          if (err) return cb(err)
+          async.series([
+            (cb) => blockchain.getLatestHeader((err, header) => {
+              if (err) return done(err)
+              t.equals(header.hash().toString('hex'), headers[1].hash().toString('hex'), 'should not change latest header')
+              cb()
+            }),
+            (cb) => blockchain.getLatestBlock((err, block) => {
+              if (err) return done(err)
+              t.equals(block.hash().toString('hex'), blocks[1].hash().toString('hex'), 'should update latest block')
+              cb()
+            })
+          ], cb)
+        })
+      ], done)
+    },
+    function mismatchedChains (done) {
+      var common = new Common('rinkeby')
+      var blockchain = new Blockchain({common: common, validate: false})
+      var blocks = [
+        new Block(null, {common: common}),
+        new Block(null, {chain: 'rinkeby'}),
+        new Block(null, {chain: 'ropsten'})
+      ]
+
+      blocks[0].setGenesisParams()
+
+      blocks[1].header.number = 1
+      blocks[1].header.parentHash = blocks[0].hash()
+
+      blocks[2].header.number = 2
+      blocks[2].header.parentHash = blocks[1].hash()
+
+      async.eachOfSeries(blocks, (block, i, cb) => {
+        if (i === 0) {
+          blockchain.putGenesis(block, cb)
+        } else {
+          blockchain.putBlock(block, (err) => {
+            if (i === 2) {
+              t.ok(err.message.match('Chain mismatch'), 'should return chain mismatch error')
+            } else {
+              t.error(err, 'should not return mismatch error')
+            }
+            cb()
+          })
+        }
       })
     }
   ], function (err) {
