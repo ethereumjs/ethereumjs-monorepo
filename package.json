@@ -7,8 +7,9 @@
     "dist"
   ],
   "scripts": {
-    "coverage": "istanbul cover ./tests/tester.js -- -s",
-    "coveralls": "npm run coverage && coveralls <coverage/lcov.info",
+    "coverage": "nyc npm run coverageTests && nyc report --reporter=text-lcov > .nyc_output/lcov.info",
+    "coverageTests": "node ./tests/tester -s",
+    "coveralls": "npm run coverage && coveralls <.nyc_output/lcov.info",
     "testVM": "node ./tests/tester -v",
     "testStateByzantium": "npm run build:dist && node ./tests/tester -s --fork='Byzantium' --dist",
     "testStateConstantinople": "npm run build:dist && node ./tests/tester -s --fork='Constantinople' --dist",
@@ -51,12 +52,12 @@
     "ethereumjs-blockchain": "~2.1.0",
     "ethereumjs-testing": "git+https://github.com/ethereumjs/ethereumjs-testing.git#v1.1.1",
     "ethereumjs-tx": "1.3.3",
-    "istanbul": "^0.4.5",
     "level": "^1.4.0",
     "leveldown": "^1.4.6",
     "levelup": "^1.3.2",
     "memdown": "^1.1.0",
     "minimist": "^1.1.1",
+    "nyc": "^12.0.2",
     "standard": "^10.0.0",
     "tape": "4.6.3"
   },
