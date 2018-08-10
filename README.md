@@ -231,6 +231,8 @@ The opFns for `CREATE`, `CALL`, and `CALLCODE` call back up to `runCall`.
 
 # TESTING
 
+## Executing Tests
+
 ### Running Tests
 
 Tests can be found in the ``tests`` directory, with ``FORK_CONFIG`` set in ``tests/tester.js``. There are test runners for [State tests](http://www.ethdocs.org/en/latest/contracts-and-transactions/ethereum-tests/state_tests/index.html) and [Blockchain tests](http://www.ethdocs.org/en/latest/contracts-and-transactions/ethereum-tests/blockchain_tests/index.html). VM tests are disabled since Frontier gas costs are not supported any more. Tests are then executed by the [ethereumjs-testing](https://github.com/ethereumjs/ethereumjs-testing) utility library using the official client-independent [Ethereum tests](https://github.com/ethereum/tests).
@@ -296,6 +298,17 @@ There are also the keywords ``NONE`` or ``ALL`` for convenience.
 It is also possible to only run the tests from the skip lists:
 
 `node tests/tester -s --runSkipped=SLOW`
+
+## CI Test Integration
+
+Tests are run on ``CircleCI`` on every PR, configuration can be found in ``.circleci/config.yml``.
+
+Since ``BlockchainTests`` take too much time to run on every PR, only a selected set
+of blockchain tests is triggered on a normal PR test run.
+
+For a complete test run, create a PR named ``run-blockchain-tests`` (see Circle config for details)
+and submit a PR with an additional ``[DO-NOT-MERGE]`` note. This will trigger a blockchain
+test run.
 
 ### Debugging
 
