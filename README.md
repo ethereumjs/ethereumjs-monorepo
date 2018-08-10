@@ -297,6 +297,17 @@ It is also possible to only run the tests from the skip lists:
 
 `node tests/tester -s --runSkipped=SLOW`
 
+### CI Test Integration
+
+Tests are run on ``CircleCI`` on every PR, configuration can be found in ``.circleci/config.yml``.
+
+Since ``BlockchainTests`` take too much time to run on every PR, only a selected set
+of blockchain tests is triggered on a normal PR test run.
+
+For a complete test run, create a new branch named ``run-blockchain-tests``, rename
+``.circleci/config.yml`` -> ``.circleci/config-save.yml`` and ``.circleci/config-blockchain-tests.yml``
+-> ``.circleci/config.yml`` and submit a PR with an additional ``[DO-NOT-MERGE]`` note. This will trigger a blockchain test run.
+
 ### Debugging
 
 #### Local Debugging
