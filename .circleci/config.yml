@@ -74,6 +74,16 @@ jobs:
       - run:
           name: testStateConstantinople
           command: npm run testStateConstantinople
+  # Blockchain tests are only run on a branch named run-blockchain-tests
+  run_blockchain_tests:
+    <<: *defaults
+    steps:
+      - attach_workspace:
+          at: ~/project
+      - *restore_node_modules
+      - run:
+          name: testBlockchain
+          command: npm run testBlockchain
   coveralls:
     <<: *defaults
     steps:
@@ -86,6 +96,10 @@ jobs:
 workflows:
   version: 2
   install-lint-test:
+    filters:
+      branches:
+        ignore:
+          - run-blockchain-tests
     jobs:
       - install
       - lint:
@@ -104,5 +118,18 @@ workflows:
           requires:
             - install
       - coveralls:
+          requires:
+            - install
+  install-lint-test-blockchain:
+    filters:
+      branches:
+        only:
+          - run-blockchain-tests
+    jobs:
+      - install
+      - lint:
+          requires:
+            - install
+      - run_blockchain_tests:
           requires:
             - install
