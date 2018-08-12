@@ -73,6 +73,22 @@ tape('[Block]: block functions', function (t) {
     st.end()
   })
 
+  t.test('should test genesis hashes (ropsten)', function (st) {
+    var common = new Common('ropsten')
+    var genesisBlock = new Block(null, { common: common })
+    genesisBlock.setGenesisParams()
+    st.strictEqual(genesisBlock.hash().toString('hex'), common.genesis().hash.slice(2), 'genesis hash match')
+    st.end()
+  })
+
+  t.test('should test genesis hashes (rinkeby)', function (st) {
+    var common = new Common('rinkeby')
+    var genesisBlock = new Block(null, { common: common })
+    genesisBlock.setGenesisParams()
+    st.strictEqual(genesisBlock.hash().toString('hex'), common.genesis().hash.slice(2), 'genesis hash match')
+    st.end()
+  })
+
   t.test('should test genesis parameters (ropsten)', function (st) {
     var genesisBlock = new Block(null, { 'chain': 'ropsten' })
     genesisBlock.setGenesisParams()
@@ -88,4 +104,3 @@ tape('[Block]: block functions', function (t) {
     st.end()
   })
 })
-
