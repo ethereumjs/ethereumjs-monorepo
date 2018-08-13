@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 
+## [0.4.1] - 2018-08-13
+- Added ``timestamp`` field to genesis definitions in chain files, set for ``Rinkeby`` and ``null`` for other chains, PR [#21](https://github.com/ethereumjs/ethereumjs-common/pull/21)
+- Updated ``Ropsten`` bootstrap nodes, PR [#20](https://github.com/ethereumjs/ethereumjs-common/pull/20)
+
+[0.4.1]: https://github.com/ethereumjs/ethereumjs-common/compare/v0.4.0...v0.4.1
+
 ## [0.4.0] - 2018-06-20
 - Remove leftover ...Gas postfix for some gas prices (e.g. ``ecAddGas`` -> ``ecAdd``) to
   be consistent with overall gas price naming
