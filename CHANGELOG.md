@@ -6,6 +6,14 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 
+## [3.2.0] - 2018-08-13
+- Added support for setting network and performing hardfork-specific validation by integrating with [ethereumjs-common](https://github.com/ethereumjs/ethereumjs-common), PR [#59](https://github.com/ethereumjs/ethereumjs-blockchain/pull/59)
+- Added ``Blockchain.putHeader()`` and ``Blockchain.putHeaders()`` functions to provide header-chain functionality (needed by ethereumjs-client), PR [#59](https://github.com/ethereumjs/ethereumjs-blockchain/pull/59)
+- Fixed a bug with caching, PR [#59](https://github.com/ethereumjs/ethereumjs-blockchain/pull/59)
+- Fixed error propagation in ``Blockchain.iterator()``, PR [#60](https://github.com/ethereumjs/ethereumjs-blockchain/pull/60)
+
+[3.2.0]: https://github.com/ethereumjs/ethereumjs-blockchain/compare/v3.1.0...v3.2.0
+
 ## [3.1.0] - 2018-05-24
 - New ``getLatestHeader()`` and ``getLatestBlock()`` methods for retrieving the latest header
   respectively full block in the canonical chain, PR [#52](https://github.com/ethereumjs/ethereumjs-blockchain/pull/52)
