@@ -4,7 +4,7 @@
   "description": "Utilities for handling Ethereum keys",
   "main": "index.js",
   "files": [
-    "/*.js",
+    "*.js",
     "test/"
   ],
   "scripts": {
