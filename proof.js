@@ -79,7 +79,12 @@ exports.verifyProof = function (rootHash, key, proof, cb) {
       }
       cld = node.value
       key = key.slice(node.key.length)
-      if (key.length === 0) {
+      if (key.length === 0 || (cld.length === 17 && key.length === 1)) {
+        // The value is in an embedded branch. Extract it.
+        if (cld.length === 17) {
+          cld = cld[key[0]][1]
+          key = key.slice(1)
+        }
         if (i !== proof.length - 1) {
           return cb(new Error('Additional nodes at end of proof (extention|leaf)'))
         }
