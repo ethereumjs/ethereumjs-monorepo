@@ -160,15 +160,15 @@ whenever a new message is received using any of the supported protocols.
 - ``Protocol`` [**In Progress**] This class and subclasses provide a user-friendly wrapper around the
 low level ethereum protocols such as ``eth/62``, ``eth/62`` and ``les/2``. Subclasses must define the messages provided by the protocol.
     - ``EthProtocol`` [**In Progress**] Implements the ``eth/62`` and ``eth/63`` protocols.
-    - ``LesProtocol`` [**Not Started**] Implements the ``les/2`` protocol.
+    - ``LesProtocol`` [**In Progress**] Implements the ``les/2`` protocol.
     - ``ShhProtocol`` [**Not Started**] Implements the whisper protocol.
 - ``PeerPool`` [**In Progress**] Represents a pool of network peers. ``PeerPool`` instances emit ``added``
 and ``removed`` events when new peers are added and removed and also emit the ``message`` event whenever
 any of the peers in the pool emit a message. Each ``Service`` has an associated ``PeerPool`` and they are used primarily by ``Synchronizer``s to help with blockchain synchronization.
 - ``Synchronizer`` Subclasses of this class implements a specific blockchain synchronization strategy. They
 also make use of subclasses of the ``Fetcher`` class that help fetch headers and bodies from pool peers.
-    - ``FastSynchronizer`` [**In Progress**] Implements fast syncing of the blockchain
-    - ``LightSynchronizer`` [**Not Started**] Implements light syncing of the blockchain
+    - ``FastSynchronizer`` [**Not Started**] Implements fast syncing of the blockchain
+    - ``LightSynchronizer`` [**In Progress**] Implements light syncing of the blockchain
 - ``Service`` Subclasses of ``Service`` will implement specific functionality of a ``Node``. For example, the ``EthService`` will synchronize the blockchain using the fast or light sync protocols. Each service must specify which protocols it needs and define a ``start()`` and ``stop()`` function.
     - ``EthService`` [**In Progress**] Implementation of an ethereum fast sync and light sync node.
     - ``ShhService`` [**Not Started**] Implementation of an ethereum whisper node.    

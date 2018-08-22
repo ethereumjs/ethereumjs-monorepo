@@ -17,6 +17,8 @@
 <dd></dd>
 <dt><a href="#module_sync">sync</a></dt>
 <dd></dd>
+<dt><a href="#module_util">util</a></dt>
+<dd></dd>
 </dl>
 
 ## Classes
@@ -45,6 +47,7 @@
 * [blockchain](#module_blockchain)
     * [.BlockPool](#module_blockchain.BlockPool)
         * [new BlockPool(options)](#new_module_blockchain.BlockPool_new)
+        * [.size](#module_blockchain.BlockPool+size) : <code>number</code>
         * [.open()](#module_blockchain.BlockPool+open) ⇒ <code>Promise</code>
         * [.add(blocks)](#module_blockchain.BlockPool+add) ⇒ <code>Promise</code>
     * [.Chain](#module_blockchain.Chain)
@@ -74,6 +77,7 @@ Pool of blockchain segments
 
 * [.BlockPool](#module_blockchain.BlockPool)
     * [new BlockPool(options)](#new_module_blockchain.BlockPool_new)
+    * [.size](#module_blockchain.BlockPool+size) : <code>number</code>
     * [.open()](#module_blockchain.BlockPool+open) ⇒ <code>Promise</code>
     * [.add(blocks)](#module_blockchain.BlockPool+add) ⇒ <code>Promise</code>
 
@@ -89,6 +93,12 @@ Create new block pool
 | options.chain | <code>Chain</code> | blockchain |
 | [options.logger] | <code>Logger</code> | Logger instance |
 
+<a name="module_blockchain.BlockPool+size"></a>
+
+#### blockPool.size : <code>number</code>
+Size of pool
+
+**Kind**: instance property of [<code>BlockPool</code>](#module_blockchain.BlockPool)  
 <a name="module_blockchain.BlockPool+open"></a>
 
 #### blockPool.open() ⇒ <code>Promise</code>
@@ -141,7 +151,7 @@ Create new chain
 | --- | --- | --- | --- |
 | options | <code>Object</code> |  | constructor parameters |
 | [options.dataDir] | <code>string</code> | <code>&quot;./chaindata&quot;</code> | data directory path |
-| [options.network] | <code>string</code> | <code>&quot;mainnet&quot;</code> | ethereum network name |
+| [options.common] | <code>Common</code> |  | common parameters |
 | [options.logger] | <code>Logger</code> |  | Logger instance |
 
 <a name="module_blockchain.Chain+networkId"></a>
@@ -276,6 +286,7 @@ into the blockchain once prior gaps are filled.
         * [.protocols](#module_net/peer.Peer+protocols)
         * [.bound](#module_net/peer.Peer+bound)
         * [.server](#module_net/peer.Peer+server)
+        * [.inbound](#module_net/peer.Peer+inbound)
         * [.idle](#module_net/peer.Peer+idle) : <code>boolean</code>
         * [.idle](#module_net/peer.Peer+idle) : <code>boolean</code>
         * [.bindProtocol(protocol, sender)](#module_net/peer.Peer+bindProtocol) ⇒ <code>Promise</code>
@@ -302,6 +313,7 @@ Network peer
     * [.protocols](#module_net/peer.Peer+protocols)
     * [.bound](#module_net/peer.Peer+bound)
     * [.server](#module_net/peer.Peer+server)
+    * [.inbound](#module_net/peer.Peer+inbound)
     * [.idle](#module_net/peer.Peer+idle) : <code>boolean</code>
     * [.idle](#module_net/peer.Peer+idle) : <code>boolean</code>
     * [.bindProtocol(protocol, sender)](#module_net/peer.Peer+bindProtocol) ⇒ <code>Promise</code>
@@ -382,6 +394,16 @@ Create new peer
 | Name | Type |
 | --- | --- |
 | server | <code>Server</code> | 
+
+<a name="module_net/peer.Peer+inbound"></a>
+
+#### peer.inbound
+**Kind**: instance property of [<code>Peer</code>](#module_net/peer.Peer)  
+**Properties**
+
+| Name | Type | Description |
+| --- | --- | --- |
+| inbound | <code>boolean</code> | true if peer initiated connection |
 
 <a name="module_net/peer.Peer+idle"></a>
 
@@ -649,11 +671,26 @@ Specify which protocols the peer pool must support
         * [.open()](#module_net/protocol.EthProtocol+open) ⇒ <code>Promise</code>
         * [.encodeStatus()](#module_net/protocol.EthProtocol+encodeStatus) ⇒ <code>Object</code>
         * [.decodeStatus(status)](#module_net/protocol.EthProtocol+decodeStatus) ⇒ <code>Object</code>
+    * [.LesProtocol](#module_net/protocol.LesProtocol)
+        * [new LesProtocol(options)](#new_module_net/protocol.LesProtocol_new)
+        * [.name](#module_net/protocol.LesProtocol+name) : <code>string</code>
+        * [.versions](#module_net/protocol.LesProtocol+versions) : <code>Array.&lt;number&gt;</code>
+        * [.messages](#module_net/protocol.LesProtocol+messages) : [<code>Array.&lt;Message&gt;</code>](#Protocol..Message)
+        * [.open()](#module_net/protocol.LesProtocol+open) ⇒ <code>Promise</code>
+        * [.encodeStatus()](#module_net/protocol.LesProtocol+encodeStatus) ⇒ <code>Object</code>
+        * [.decodeStatus(status)](#module_net/protocol.LesProtocol+decodeStatus) ⇒ <code>Object</code>
+        * [.encode(message, ...args)](#module_net/protocol.LesProtocol+encode) ⇒ <code>\*</code>
+        * [.decode(message, payload, bound)](#module_net/protocol.LesProtocol+decode) ⇒ <code>\*</code>
     * [.Protocol](#module_net/protocol.Protocol)
         * [new Protocol(options)](#new_module_net/protocol.Protocol_new)
+        * [.name](#module_net/protocol.Protocol+name) : <code>string</code>
+        * [.versions](#module_net/protocol.Protocol+versions) : <code>Array.&lt;number&gt;</code>
+        * [.messages](#module_net/protocol.Protocol+messages) : [<code>Array.&lt;Message&gt;</code>](#Protocol..Message)
         * [.open()](#module_net/protocol.Protocol+open) ⇒ <code>Promise</code>
         * [.encodeStatus()](#module_net/protocol.Protocol+encodeStatus) ⇒ <code>Object</code>
         * [.decodeStatus(status)](#module_net/protocol.Protocol+decodeStatus) ⇒ <code>Object</code>
+        * [.encode(message, ...args)](#module_net/protocol.Protocol+encode) ⇒ <code>\*</code>
+        * [.decode(message, payload, bound)](#module_net/protocol.Protocol+decode) ⇒ <code>\*</code>
         * [.bind(peer, sender)](#module_net/protocol.Protocol+bind) ⇒ <code>Promise</code>
     * [.RlpxSender](#module_net/protocol.RlpxSender)
         * [new RlpxSender(rlpxProtocol)](#new_module_net/protocol.RlpxSender_new)
@@ -733,6 +770,105 @@ Decodes ETH status message payload into a status object
 | --- | --- | --- |
 | status | <code>Object</code> | status message payload |
 
+<a name="module_net/protocol.LesProtocol"></a>
+
+### net/protocol.LesProtocol
+Implements les/1 and les/2 protocols
+
+**Kind**: static class of [<code>net/protocol</code>](#module_net/protocol)  
+
+* [.LesProtocol](#module_net/protocol.LesProtocol)
+    * [new LesProtocol(options)](#new_module_net/protocol.LesProtocol_new)
+    * [.name](#module_net/protocol.LesProtocol+name) : <code>string</code>
+    * [.versions](#module_net/protocol.LesProtocol+versions) : <code>Array.&lt;number&gt;</code>
+    * [.messages](#module_net/protocol.LesProtocol+messages) : [<code>Array.&lt;Message&gt;</code>](#Protocol..Message)
+    * [.open()](#module_net/protocol.LesProtocol+open) ⇒ <code>Promise</code>
+    * [.encodeStatus()](#module_net/protocol.LesProtocol+encodeStatus) ⇒ <code>Object</code>
+    * [.decodeStatus(status)](#module_net/protocol.LesProtocol+decodeStatus) ⇒ <code>Object</code>
+    * [.encode(message, ...args)](#module_net/protocol.LesProtocol+encode) ⇒ <code>\*</code>
+    * [.decode(message, payload, bound)](#module_net/protocol.LesProtocol+decode) ⇒ <code>\*</code>
+
+<a name="new_module_net/protocol.LesProtocol_new"></a>
+
+#### new LesProtocol(options)
+Create les protocol
+
+
+| Param | Type | Default | Description |
+| --- | --- | --- | --- |
+| options | <code>Object</code> |  | constructor parameters |
+| options.chain | <code>Chain</code> |  | blockchain |
+| [options.timeout] | <code>number</code> | <code>5000</code> | handshake timeout in ms |
+| [options.logger] | <code>Logger</code> |  | logger instance |
+
+<a name="module_net/protocol.LesProtocol+name"></a>
+
+#### lesProtocol.name : <code>string</code>
+Name of protocol
+
+**Kind**: instance property of [<code>LesProtocol</code>](#module_net/protocol.LesProtocol)  
+<a name="module_net/protocol.LesProtocol+versions"></a>
+
+#### lesProtocol.versions : <code>Array.&lt;number&gt;</code>
+Protocol versions supported
+
+**Kind**: instance property of [<code>LesProtocol</code>](#module_net/protocol.LesProtocol)  
+<a name="module_net/protocol.LesProtocol+messages"></a>
+
+#### lesProtocol.messages : [<code>Array.&lt;Message&gt;</code>](#Protocol..Message)
+Messages defined by this protocol
+
+**Kind**: instance property of [<code>LesProtocol</code>](#module_net/protocol.LesProtocol)  
+<a name="module_net/protocol.LesProtocol+open"></a>
+
+#### lesProtocol.open() ⇒ <code>Promise</code>
+Opens protocol and any associated dependencies
+
+**Kind**: instance method of [<code>LesProtocol</code>](#module_net/protocol.LesProtocol)  
+<a name="module_net/protocol.LesProtocol+encodeStatus"></a>
+
+#### lesProtocol.encodeStatus() ⇒ <code>Object</code>
+Encodes status into ETH status message payload
+
+**Kind**: instance method of [<code>LesProtocol</code>](#module_net/protocol.LesProtocol)  
+<a name="module_net/protocol.LesProtocol+decodeStatus"></a>
+
+#### lesProtocol.decodeStatus(status) ⇒ <code>Object</code>
+Decodes ETH status message payload into a status object
+
+**Kind**: instance method of [<code>LesProtocol</code>](#module_net/protocol.LesProtocol)  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| status | <code>Object</code> | status message payload |
+
+<a name="module_net/protocol.LesProtocol+encode"></a>
+
+#### lesProtocol.encode(message, ...args) ⇒ <code>\*</code>
+Encodes message into proper format before sending
+
+**Kind**: instance method of [<code>LesProtocol</code>](#module_net/protocol.LesProtocol)  
+**Access**: protected  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| message | [<code>Message</code>](#Protocol..Message) | message definition |
+| ...args | <code>\*</code> | message arguments |
+
+<a name="module_net/protocol.LesProtocol+decode"></a>
+
+#### lesProtocol.decode(message, payload, bound) ⇒ <code>\*</code>
+Decodes message payload
+
+**Kind**: instance method of [<code>LesProtocol</code>](#module_net/protocol.LesProtocol)  
+**Access**: protected  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| message | [<code>Message</code>](#Protocol..Message) | message definition |
+| payload | <code>\*</code> | message payload |
+| bound | [<code>BoundProtocol</code>](#BoundProtocol) | reference to bound protocol |
+
 <a name="module_net/protocol.Protocol"></a>
 
 ### net/protocol.Protocol
@@ -742,9 +878,14 @@ Base class for all wire protocols
 
 * [.Protocol](#module_net/protocol.Protocol)
     * [new Protocol(options)](#new_module_net/protocol.Protocol_new)
+    * [.name](#module_net/protocol.Protocol+name) : <code>string</code>
+    * [.versions](#module_net/protocol.Protocol+versions) : <code>Array.&lt;number&gt;</code>
+    * [.messages](#module_net/protocol.Protocol+messages) : [<code>Array.&lt;Message&gt;</code>](#Protocol..Message)
     * [.open()](#module_net/protocol.Protocol+open) ⇒ <code>Promise</code>
     * [.encodeStatus()](#module_net/protocol.Protocol+encodeStatus) ⇒ <code>Object</code>
     * [.decodeStatus(status)](#module_net/protocol.Protocol+decodeStatus) ⇒ <code>Object</code>
+    * [.encode(message, ...args)](#module_net/protocol.Protocol+encode) ⇒ <code>\*</code>
+    * [.decode(message, payload, bound)](#module_net/protocol.Protocol+decode) ⇒ <code>\*</code>
     * [.bind(peer, sender)](#module_net/protocol.Protocol+bind) ⇒ <code>Promise</code>
 
 <a name="new_module_net/protocol.Protocol_new"></a>
@@ -759,6 +900,24 @@ Create new protocol
 | [options.timeout] | <code>number</code> | <code>5000</code> | handshake timeout in ms |
 | [options.logger] | <code>Logger</code> |  | logger instance |
 
+<a name="module_net/protocol.Protocol+name"></a>
+
+#### protocol.name : <code>string</code>
+Name of protocol
+
+**Kind**: instance property of [<code>Protocol</code>](#module_net/protocol.Protocol)  
+<a name="module_net/protocol.Protocol+versions"></a>
+
+#### protocol.versions : <code>Array.&lt;number&gt;</code>
+Protocol versions supported
+
+**Kind**: instance property of [<code>Protocol</code>](#module_net/protocol.Protocol)  
+<a name="module_net/protocol.Protocol+messages"></a>
+
+#### protocol.messages : [<code>Array.&lt;Message&gt;</code>](#Protocol..Message)
+Messages defined by this protocol
+
+**Kind**: instance property of [<code>Protocol</code>](#module_net/protocol.Protocol)  
 <a name="module_net/protocol.Protocol+open"></a>
 
 #### protocol.open() ⇒ <code>Promise</code>
@@ -782,6 +941,33 @@ by subclass.
 | Param | Type | Description |
 | --- | --- | --- |
 | status | <code>Object</code> | status message payload |
+
+<a name="module_net/protocol.Protocol+encode"></a>
+
+#### protocol.encode(message, ...args) ⇒ <code>\*</code>
+Encodes message into proper format before sending
+
+**Kind**: instance method of [<code>Protocol</code>](#module_net/protocol.Protocol)  
+**Access**: protected  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| message | [<code>Message</code>](#Protocol..Message) | message definition |
+| ...args | <code>\*</code> | message arguments |
+
+<a name="module_net/protocol.Protocol+decode"></a>
+
+#### protocol.decode(message, payload, bound) ⇒ <code>\*</code>
+Decodes message payload
+
+**Kind**: instance method of [<code>Protocol</code>](#module_net/protocol.Protocol)  
+**Access**: protected  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| message | [<code>Message</code>](#Protocol..Message) | message definition |
+| payload | <code>\*</code> | message payload |
+| bound | [<code>BoundProtocol</code>](#BoundProtocol) | reference to bound protocol |
 
 <a name="module_net/protocol.Protocol+bind"></a>
 
@@ -1026,6 +1212,7 @@ Ban peer for a specified time
         * [.getMethods()](#module_rpc.RPCManager+getMethods) ⇒ <code>Object</code>
     * [.validators](#module_rpc.validators)
         * [.hex(params, index)](#module_rpc.validators.hex)
+        * [.blockHash(params, index)](#module_rpc.validators.blockHash)
         * [.bool(params, index)](#module_rpc.validators.bool)
     * [.middleware(method, requiredParamsCount, validators)](#module_rpc.middleware)
 
@@ -1050,12 +1237,25 @@ e.g. convert getBlockByNumber() in eth module to { eth_getBlockByNumber }
 
 * [.validators](#module_rpc.validators)
     * [.hex(params, index)](#module_rpc.validators.hex)
+    * [.blockHash(params, index)](#module_rpc.validators.blockHash)
     * [.bool(params, index)](#module_rpc.validators.bool)
 
 <a name="module_rpc.validators.hex"></a>
 
 #### validators.hex(params, index)
 hex validator to ensure has "0x" prefix
+
+**Kind**: static method of [<code>validators</code>](#module_rpc.validators)  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| params | <code>Array.&lt;any&gt;</code> | parameters of method |
+| index | <code>number</code> | index of parameter |
+
+<a name="module_rpc.validators.blockHash"></a>
+
+#### validators.blockHash(params, index)
+hex validator to validate block hash
 
 **Kind**: static method of [<code>validators</code>](#module_rpc.validators)  
 
@@ -1098,6 +1298,7 @@ middleware for parameters validation
         * [new EthService(options)](#new_module_net/service.EthService_new)
         * [.name](#module_net/service.EthService+name) : <code>string</code>
         * [.protocols()](#module_net/service.EthService+protocols) : <code>Array.&lt;Protocol&gt;</code>
+        * [.open()](#module_net/service.EthService+open) ⇒ <code>Promise</code>
         * [.start()](#module_net/service.EthService+start) ⇒ <code>Promise</code>
         * [.stop()](#module_net/service.EthService+stop) ⇒ <code>Promise</code>
     * [.Service](#module_net/service.Service)
@@ -1119,6 +1320,7 @@ Ethereum service
     * [new EthService(options)](#new_module_net/service.EthService_new)
     * [.name](#module_net/service.EthService+name) : <code>string</code>
     * [.protocols()](#module_net/service.EthService+protocols) : <code>Array.&lt;Protocol&gt;</code>
+    * [.open()](#module_net/service.EthService+open) ⇒ <code>Promise</code>
     * [.start()](#module_net/service.EthService+start) ⇒ <code>Promise</code>
     * [.stop()](#module_net/service.EthService+stop) ⇒ <code>Promise</code>
 
@@ -1132,8 +1334,8 @@ Create new ETH service
 | --- | --- | --- | --- |
 | options | <code>Object</code> |  | constructor parameters |
 | options.servers | <code>Array.&lt;Server&gt;</code> |  | servers to run service on |
-| [options.syncmode] | <code>string</code> | <code>&quot;fast&quot;</code> | synchronization mode ('fast' or 'light') |
-| [options.network] | <code>string</code> | <code>&quot;mainnet&quot;</code> | ethereum network name |
+| [options.syncmode] | <code>string</code> | <code>&quot;light&quot;</code> | synchronization mode ('fast' or 'light') |
+| [options.common] | <code>Common</code> |  | ethereum network name |
 | [options.dataDir] | <code>string</code> | <code>&quot;./chaindata&quot;</code> | data directory path |
 | [options.logger] | <code>Logger</code> |  | logger instance |
 
@@ -1148,6 +1350,12 @@ Service name
 
 #### ethService.protocols() : <code>Array.&lt;Protocol&gt;</code>
 Returns all protocols required by this service
+
+**Kind**: instance method of [<code>EthService</code>](#module_net/service.EthService)  
+<a name="module_net/service.EthService+open"></a>
+
+#### ethService.open() ⇒ <code>Promise</code>
+Open eth service. Must be called before service is started
 
 **Kind**: instance method of [<code>EthService</code>](#module_net/service.EthService)  
 <a name="module_net/service.EthService+start"></a>
@@ -1237,6 +1445,9 @@ Start service
         * [.before(taskOne, taskTwo)](#module_sync.HeaderFetcher+before) ⇒ <code>boolean</code>
         * [.fetch(task, peer)](#module_sync.HeaderFetcher+fetch) ⇒ <code>Promise</code>
         * [.process(task, payload)](#module_sync.HeaderFetcher+process)
+        * [.before(taskOne, taskTwo)](#module_sync.HeaderFetcher+before) ⇒ <code>boolean</code>
+        * [.fetch(task, peer)](#module_sync.HeaderFetcher+fetch) ⇒ <code>Promise</code>
+        * [.process(task, payload)](#module_sync.HeaderFetcher+process)
     * [.Fetcher](#module_sync.Fetcher)
         * [new Fetcher(options)](#new_module_sync.Fetcher_new)
         * [.add(task)](#module_sync.Fetcher+add)
@@ -1249,6 +1460,19 @@ Start service
         * [.before(taskOne, taskTwo)](#module_sync.Fetcher+before) ⇒ <code>boolean</code>
         * [.fetch(task, peer)](#module_sync.Fetcher+fetch) ⇒ <code>Promise</code>
         * [.process(task, data)](#module_sync.Fetcher+process)
+    * [.LightSynchronizer](#module_sync.LightSynchronizer)
+        * [new LightSynchronizer(options)](#new_module_sync.LightSynchronizer_new)
+        * [.origin()](#module_sync.LightSynchronizer+origin) ⇒ <code>Promise</code>
+        * [.fetch(first, last)](#module_sync.LightSynchronizer+fetch) ⇒ <code>Promise</code>
+        * [.start()](#module_sync.LightSynchronizer+start) ⇒ <code>Promise</code>
+        * [.stop()](#module_sync.LightSynchronizer+stop) ⇒ <code>Promise</code>
+    * [.HeaderFetcher](#module_sync.HeaderFetcher)
+        * [.before(taskOne, taskTwo)](#module_sync.HeaderFetcher+before) ⇒ <code>boolean</code>
+        * [.fetch(task, peer)](#module_sync.HeaderFetcher+fetch) ⇒ <code>Promise</code>
+        * [.process(task, payload)](#module_sync.HeaderFetcher+process)
+        * [.before(taskOne, taskTwo)](#module_sync.HeaderFetcher+before) ⇒ <code>boolean</code>
+        * [.fetch(task, peer)](#module_sync.HeaderFetcher+fetch) ⇒ <code>Promise</code>
+        * [.process(task, payload)](#module_sync.HeaderFetcher+process)
     * [.Synchronizer](#module_sync.Synchronizer)
 
 <a name="module_sync.FastSynchronizer"></a>
@@ -1304,8 +1528,7 @@ an origin peer is found.
 
 #### fastSynchronizer.fetch(first, last) ⇒ <code>Promise</code>
 Fetch all headers with block numbers ranings from first to last. Returns a
-promise that resolves once all headers are downloaded. TO DO: Actually insert
-headers into the blockchain.
+promise that resolves once all headers are downloaded.
 
 **Kind**: instance method of [<code>FastSynchronizer</code>](#module_sync.FastSynchronizer)  
 
@@ -1338,6 +1561,48 @@ Implements an eth/62 based header fetcher
     * [.before(taskOne, taskTwo)](#module_sync.HeaderFetcher+before) ⇒ <code>boolean</code>
     * [.fetch(task, peer)](#module_sync.HeaderFetcher+fetch) ⇒ <code>Promise</code>
     * [.process(task, payload)](#module_sync.HeaderFetcher+process)
+    * [.before(taskOne, taskTwo)](#module_sync.HeaderFetcher+before) ⇒ <code>boolean</code>
+    * [.fetch(task, peer)](#module_sync.HeaderFetcher+fetch) ⇒ <code>Promise</code>
+    * [.process(task, payload)](#module_sync.HeaderFetcher+process)
+
+<a name="module_sync.HeaderFetcher+before"></a>
+
+#### headerFetcher.before(taskOne, taskTwo) ⇒ <code>boolean</code>
+Prioritizes tasks based on first block number
+
+**Kind**: instance method of [<code>HeaderFetcher</code>](#module_sync.HeaderFetcher)  
+**Returns**: <code>boolean</code> - true if taskOne has a lower first number than taskTwo  
+
+| Param | Type |
+| --- | --- |
+| taskOne | <code>Object</code> | 
+| taskTwo | <code>Object</code> | 
+
+<a name="module_sync.HeaderFetcher+fetch"></a>
+
+#### headerFetcher.fetch(task, peer) ⇒ <code>Promise</code>
+Fetches block headers for the given task
+
+**Kind**: instance method of [<code>HeaderFetcher</code>](#module_sync.HeaderFetcher)  
+**Returns**: <code>Promise</code> - method must return  
+
+| Param | Type |
+| --- | --- |
+| task | <code>Object</code> | 
+| peer | <code>Peer</code> | 
+
+<a name="module_sync.HeaderFetcher+process"></a>
+
+#### headerFetcher.process(task, payload)
+Process the message payload for the getBlockHeaders response
+
+**Kind**: instance method of [<code>HeaderFetcher</code>](#module_sync.HeaderFetcher)  
+**Emits**: <code>event:headers</code>  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| task | <code>Object</code> |  |
+| payload | <code>Array</code> | rlp encoded payload |
 
 <a name="module_sync.HeaderFetcher+before"></a>
 
@@ -1513,12 +1778,170 @@ Process the decoded message payload for the given task
 | task | <code>Object</code> |  |
 | data | <code>Array</code> | decoded message data |
 
+<a name="module_sync.LightSynchronizer"></a>
+
+### sync.LightSynchronizer
+Implements an ethereum light sync synchronizer
+
+**Kind**: static class of [<code>sync</code>](#module_sync)  
+
+* [.LightSynchronizer](#module_sync.LightSynchronizer)
+    * [new LightSynchronizer(options)](#new_module_sync.LightSynchronizer_new)
+    * [.origin()](#module_sync.LightSynchronizer+origin) ⇒ <code>Promise</code>
+    * [.fetch(first, last)](#module_sync.LightSynchronizer+fetch) ⇒ <code>Promise</code>
+    * [.start()](#module_sync.LightSynchronizer+start) ⇒ <code>Promise</code>
+    * [.stop()](#module_sync.LightSynchronizer+stop) ⇒ <code>Promise</code>
+
+<a name="new_module_sync.LightSynchronizer_new"></a>
+
+#### new LightSynchronizer(options)
+Create new node
+
+
+| Param | Type | Description |
+| --- | --- | --- |
+| options | <code>Object</code> | constructor parameters |
+| options.pool | <code>PeerPool</code> | peer pool |
+| options.chain | <code>Chain</code> | blockchain |
+| [options.logger] | <code>Logger</code> | Logger instance |
+
+<a name="module_sync.LightSynchronizer+origin"></a>
+
+#### lightSynchronizer.origin() ⇒ <code>Promise</code>
+Find an origin peer that contains the highest total difficulty. We will
+synchronize to this peer's blockchain. Returns a promise that resolves once
+an origin peer is found.
+
+**Kind**: instance method of [<code>LightSynchronizer</code>](#module_sync.LightSynchronizer)  
+**Returns**: <code>Promise</code> - [description]  
+<a name="module_sync.LightSynchronizer+fetch"></a>
+
+#### lightSynchronizer.fetch(first, last) ⇒ <code>Promise</code>
+Fetch all headers with block numbers ranings from first to last. Returns a
+promise that resolves once all headers are downloaded.
+
+**Kind**: instance method of [<code>LightSynchronizer</code>](#module_sync.LightSynchronizer)  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| first | <code>BN</code> | number of first block header |
+| last | <code>BN</code> | number of last block header |
+
+<a name="module_sync.LightSynchronizer+start"></a>
+
+#### lightSynchronizer.start() ⇒ <code>Promise</code>
+Synchronize blockchain. Returns a promise that resolves once chain is
+synchronized
+
+**Kind**: instance method of [<code>LightSynchronizer</code>](#module_sync.LightSynchronizer)  
+<a name="module_sync.LightSynchronizer+stop"></a>
+
+#### lightSynchronizer.stop() ⇒ <code>Promise</code>
+Stop synchronization. Returns a promise that resolves once its stopped.
+
+**Kind**: instance method of [<code>LightSynchronizer</code>](#module_sync.LightSynchronizer)  
+<a name="module_sync.HeaderFetcher"></a>
+
+### sync.HeaderFetcher
+Implements an les/1 based header fetcher
+
+**Kind**: static class of [<code>sync</code>](#module_sync)  
+
+* [.HeaderFetcher](#module_sync.HeaderFetcher)
+    * [.before(taskOne, taskTwo)](#module_sync.HeaderFetcher+before) ⇒ <code>boolean</code>
+    * [.fetch(task, peer)](#module_sync.HeaderFetcher+fetch) ⇒ <code>Promise</code>
+    * [.process(task, payload)](#module_sync.HeaderFetcher+process)
+    * [.before(taskOne, taskTwo)](#module_sync.HeaderFetcher+before) ⇒ <code>boolean</code>
+    * [.fetch(task, peer)](#module_sync.HeaderFetcher+fetch) ⇒ <code>Promise</code>
+    * [.process(task, payload)](#module_sync.HeaderFetcher+process)
+
+<a name="module_sync.HeaderFetcher+before"></a>
+
+#### headerFetcher.before(taskOne, taskTwo) ⇒ <code>boolean</code>
+Prioritizes tasks based on first block number
+
+**Kind**: instance method of [<code>HeaderFetcher</code>](#module_sync.HeaderFetcher)  
+**Returns**: <code>boolean</code> - true if taskOne has a lower first number than taskTwo  
+
+| Param | Type |
+| --- | --- |
+| taskOne | <code>Object</code> | 
+| taskTwo | <code>Object</code> | 
+
+<a name="module_sync.HeaderFetcher+fetch"></a>
+
+#### headerFetcher.fetch(task, peer) ⇒ <code>Promise</code>
+Fetches block headers for the given task
+
+**Kind**: instance method of [<code>HeaderFetcher</code>](#module_sync.HeaderFetcher)  
+**Returns**: <code>Promise</code> - method must return  
+
+| Param | Type |
+| --- | --- |
+| task | <code>Object</code> | 
+| peer | <code>Peer</code> | 
+
+<a name="module_sync.HeaderFetcher+process"></a>
+
+#### headerFetcher.process(task, payload)
+Process the message payload for the getBlockHeaders response
+
+**Kind**: instance method of [<code>HeaderFetcher</code>](#module_sync.HeaderFetcher)  
+**Emits**: <code>event:headers</code>  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| task | <code>Object</code> |  |
+| payload | <code>Array</code> | rlp encoded payload |
+
+<a name="module_sync.HeaderFetcher+before"></a>
+
+#### headerFetcher.before(taskOne, taskTwo) ⇒ <code>boolean</code>
+Prioritizes tasks based on first block number
+
+**Kind**: instance method of [<code>HeaderFetcher</code>](#module_sync.HeaderFetcher)  
+**Returns**: <code>boolean</code> - true if taskOne has a lower first number than taskTwo  
+
+| Param | Type |
+| --- | --- |
+| taskOne | <code>Object</code> | 
+| taskTwo | <code>Object</code> | 
+
+<a name="module_sync.HeaderFetcher+fetch"></a>
+
+#### headerFetcher.fetch(task, peer) ⇒ <code>Promise</code>
+Fetches block headers for the given task
+
+**Kind**: instance method of [<code>HeaderFetcher</code>](#module_sync.HeaderFetcher)  
+**Returns**: <code>Promise</code> - method must return  
+
+| Param | Type |
+| --- | --- |
+| task | <code>Object</code> | 
+| peer | <code>Peer</code> | 
+
+<a name="module_sync.HeaderFetcher+process"></a>
+
+#### headerFetcher.process(task, payload)
+Process the message payload for the getBlockHeaders response
+
+**Kind**: instance method of [<code>HeaderFetcher</code>](#module_sync.HeaderFetcher)  
+**Emits**: <code>event:headers</code>  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| task | <code>Object</code> |  |
+| payload | <code>Array</code> | rlp encoded payload |
+
 <a name="module_sync.Synchronizer"></a>
 
 ### sync.Synchronizer
 Base class for blockchain synchronizers
 
 **Kind**: static class of [<code>sync</code>](#module_sync)  
+<a name="module_util"></a>
+
+## util
 <a name="BoundProtocol"></a>
 
 ## BoundProtocol ⇐ <code>EventEmitter</code>
@@ -1587,7 +2010,7 @@ Insert new blocks into blockchain
 
 | Param | Type | Description |
 | --- | --- | --- |
-| blocks | <code>Array.&lt;Blocks&gt;</code> | list of blocks to add |
+| blocks | <code>Array.&lt;Block&gt;</code> | list of blocks to add |
 
 <a name="putHeaders"></a>
 
@@ -1598,5 +2021,5 @@ Insert new headers into blockchain
 
 | Param | Type | Description |
 | --- | --- | --- |
-| headers | <code>Array.&lt;BlockHeader&gt;</code> | list of headers to add |
+| headers | <code>Array.&lt;Block.Header&gt;</code> | list of headers to add |
 
