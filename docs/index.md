@@ -45,7 +45,8 @@ Sets the chain
 
 **Parameters**
 
--   `chain` **([String][27] \| [Number][28])** String ('mainnet') or Number (1) chain representation
+-   `chain` **([String][27] \| [Number][28] | Dictionary)** String ('mainnet') or Number (1) chain
+        representation. Or, a Dictionary of chain parameters for a private network.
 
 ### setHardfork
 

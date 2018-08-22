@@ -22,7 +22,8 @@ class Common {
 
   /**
    * Sets the chain
-   * @param {String|Number} chain String ('mainnet') or Number (1) chain representation
+   * @param {String|Number|Dictionary} chain String ('mainnet') or Number (1) chain
+   *     representation. Or, a Dictionary of chain parameters for a private network.
    */
   setChain (chain) {
     if (typeof (chain) === 'number') {
@@ -37,6 +38,14 @@ class Common {
       } else {
         throw new Error(`Chain with name ${chain} not supported`)
       }
+    } else if (typeof (chain) === 'object') {
+      const required = ['networkId', 'genesis', 'hardforks', 'bootstrapNodes']
+      for (let param of required) {
+        if (chain[param] === undefined) {
+          throw new Error(`Missing required chain parameter: ${param}`)
+        }
+      }
+      this._chainParams = chain
     } else {
       throw new Error('Wrong input format')
     }
@@ -362,7 +371,7 @@ class Common {
    * @returns {String} chain name (lower case)
    */
   chainName () {
-    return chainParams['names'][this.chainId()]
+    return chainParams['names'][this.chainId()] || this._chainParams['name']
   }
 
   /**
