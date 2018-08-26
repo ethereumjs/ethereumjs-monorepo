@@ -130,6 +130,7 @@ Runs EVM code
 - `opts.address` - The address of the account that is executing this code. The address should be a `Buffer` of bytes. Defaults to `0`
 - `opts.origin` - The address where the call originated from. The address should be a `Buffer` of 20bits. Defaults to `0`
 - `opts.caller` - The address that ran this code. The address should be a `Buffer` of 20bits. Defaults to `0`
+- `opts.txHash` - The hash of the transaction. The hash should be a `Buffer` of 32bits.
 - `cb` - The callback. It is given two arguments, an `error` string containing an error that may have happened or `null` and a `results` object with the following properties
   - `gas` - the amount of gas left as a `bignum`
   - `gasUsed` - the amount of gas as a `bignum` the code used to run.
@@ -179,6 +180,7 @@ The `step` event is given an `Object` and callback. The `Object` has the followi
 - `depth` - the current number of calls deep the contract is
 - `memory` - the memory of the VM as a `buffer`
 - `cache` - The account cache. Contains all the accounts loaded from the trie. It is an instance of [functional red black tree](https://www.npmjs.com/package/functional-red-black-tree)
+- `txHash` - the 32bit hash of current processing transaction as `buffer`.
 
 #### `newContract`
 The `newContract` event is given an `Object` and callback. The `Object` has the following properties.
