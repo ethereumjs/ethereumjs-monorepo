@@ -8,7 +8,7 @@
   ],
   "scripts": {
     "coverage": "nyc npm run coverageTests && nyc report --reporter=text-lcov > .nyc_output/lcov.info",
-    "coverageTests": "node ./tests/tester -s",
+    "coverageTests": "tape ./tests/api/*.js ./tests/tester.js -s",
     "coveralls": "npm run coverage && coveralls <.nyc_output/lcov.info",
     "testVM": "node ./tests/tester -v",
     "testStateByzantium": "npm run build:dist && node ./tests/tester -s --fork='Byzantium' --dist",
@@ -19,6 +19,7 @@
     "testBlockchainBlockGasLimit": "npm run build:dist && node --stack-size=1500 ./tests/tester -b --dist --dir='bcBlockGasLimitTest'",
     "testBlockchainValid": "npm run build:dist && node --stack-size=1500 ./tests/tester -b --dist --dir='bcValidBlockTest'",
     "testBlockchainTotalDifficulty": "npm run build:dist && node --stack-size=1500 ./tests/tester -b --dist --dir='bcTotalDifficultyTest'",
+    "testAPI": "tape ./tests/api/*.js",
     "test": "node ./tests/tester -a",
     "lint": "standard",
     "prepublishOnly": "npm run lint && npm run build:dist && npm run testBuildIntegrity",
