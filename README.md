@@ -102,6 +102,7 @@ Supported chains:
 - ``ropsten``
 - ``rinkeby``
 - ``kovan``
+- Private/custom chain parameters
 
 The following chain-specific parameters are provided:
 
@@ -114,6 +115,10 @@ The following chain-specific parameters are provided:
 
 To get an overview of the different parameters have a look at one of the chain-specifc
 files like ``mainnet.json`` in the ``chains`` directory.
+
+If you want to set up a common instance with parameters for a **private/custom chain** you can pass a
+dictionary - conforming to the parameter format described above - with your custom values in
+the constructor or the ``setChain()`` method for the ``chain`` parameter.
 
 # Bootstrap Nodes
 
