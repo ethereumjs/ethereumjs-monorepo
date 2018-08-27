@@ -170,4 +170,46 @@ tape('simple merkle proofs generation and verification', function (tester) {
       t.end(err)
     })
   })
+
+  it('should succeed with a simple embedded extension-branch', function (t) {
+    var trie = new Trie()
+
+    async.series([
+      (cb) => {
+        trie.put('a', 'a', cb)
+      }, (cb) => {
+        trie.put('b', 'b', cb)
+      }, (cb) => {
+        trie.put('c', 'c', cb)
+      }, (cb) => {
+        Trie.prove(trie, 'a', function (err, prove) {
+          if (err) return cb(err)
+          Trie.verifyProof(trie.root, 'a', prove, function (err, val) {
+            if (err) return cb(err)
+            t.equal(val.toString('utf8'), 'a')
+            cb()
+          })
+        })
+      }, (cb) => {
+        Trie.prove(trie, 'b', function (err, prove) {
+          if (err) return cb(err)
+          Trie.verifyProof(trie.root, 'b', prove, function (err, val) {
+            if (err) return cb(err)
+            t.equal(val.toString('utf8'), 'b')
+            cb()
+          })
+        })
+      }, (cb) => {
+        Trie.prove(trie, 'c', function (err, prove) {
+          if (err) return cb(err)
+          Trie.verifyProof(trie.root, 'c', prove, function (err, val) {
+            if (err) return cb(err)
+            t.equal(val.toString('utf8'), 'c')
+            cb()
+          })
+        })
+      }], function (err) {
+      t.end(err)
+    })
+  })
 })
