@@ -7,7 +7,7 @@ const hardforkChanges = require('./hardforks')
 class Common {
   /**
    * @constructor
-   * @param {String|Number} chain String ('mainnet') or Number (1) chain representation
+   * @param {String|Number|Dictionary} chain String ('mainnet') or Number (1) chain
    * @param {String} hardfork String identifier ('byzantium') for hardfork (optional)
    * @param {Array} supportedHardforks Limit parameter returns to the given hardforks (optional)
    */

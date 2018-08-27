@@ -6,6 +6,14 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 
+## [0.5.0] - 2018-08-27
+- Introduces **support for private chains** by allowing to pass a custom dictionary as the ``chain`` parameter
+  in the constructor or the ``setChain()`` method as an alternative to just passing one of the predefined
+  ``chain`` ``String`` names (e.g. ``mainnet``, ``ropsten``), PR [#24](https://github.com/ethereumjs/ethereumjs-common/pull/24)
+  
+
+[0.5.0]: https://github.com/ethereumjs/ethereumjs-common/compare/v0.4.1...v0.5.0
+
 ## [0.4.1] - 2018-08-13
 - Added ``timestamp`` field to genesis definitions in chain files, set for ``Rinkeby`` and ``null`` for other chains, PR [#21](https://github.com/ethereumjs/ethereumjs-common/pull/21)
 - Updated ``Ropsten`` bootstrap nodes, PR [#20](https://github.com/ethereumjs/ethereumjs-common/pull/20)
