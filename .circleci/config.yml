@@ -38,6 +38,15 @@ jobs:
       - run:
           name: Lint
           command: npm run lint
+  test_api:
+    <<: *defaults
+    steps:
+      - attach_workspace:
+          at: ~/project
+      - *restore_node_modules
+      - run:
+          name: testAPI
+          command: npm run testAPI
   test_gas_limit:
     <<: *defaults
     steps:
@@ -89,6 +98,9 @@ workflows:
     jobs:
       - install
       - lint:
+          requires:
+            - install
+      - test_api:
           requires:
             - install
       - test_gas_limit:
