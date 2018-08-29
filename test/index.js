@@ -13,7 +13,7 @@ const BN = require('bn.js')
 const rlp = ethUtil.rlp
 
 test('blockchain test', function (t) {
-  t.plan(72)
+  t.plan(73)
   var blockchain = new Blockchain()
   var genesisBlock
   var blocks = []
@@ -253,7 +253,8 @@ test('blockchain test', function (t) {
       blockchain.iterator('test', function () {
         t.ok(false, 'should not call iterator function')
         done()
-      }, function () {
+      }, function (err) {
+        t.error(err, 'should not return error')
         t.ok(true, 'should finish iterating')
         done()
       })

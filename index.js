@@ -937,6 +937,10 @@ Blockchain.prototype._iterator = function (name, func, cb) {
         blockNumber.iaddn(1)
       } else {
         blockNumber = false
+        // No more blocks, return
+        if (err instanceof levelup.errors.NotFoundError) {
+          return cb2()
+        }
       }
       cb2(err)
     })
