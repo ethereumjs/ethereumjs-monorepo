@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 
+## [3.2.1] - 2018-08-29
+- Fixed an issue with the ``iterator()`` function returning an error on end of block iteration instead of finish gracefully, PR [#64](https://github.com/ethereumjs/ethereumjs-blockchain/pull/64)
+- Updated ``ethereumjs-common`` dependency to ``v0.5.0`` (custom chain support), PR [#63](https://github.com/ethereumjs/ethereumjs-blockchain/pull/63)
+
+[3.2.1]: https://github.com/ethereumjs/ethereumjs-blockchain/compare/v3.2.0...v3.2.1
+
 ## [3.2.0] - 2018-08-13
 - Added support for setting network and performing hardfork-specific validation by integrating with [ethereumjs-common](https://github.com/ethereumjs/ethereumjs-common), PR [#59](https://github.com/ethereumjs/ethereumjs-blockchain/pull/59)
 - Added ``Blockchain.putHeader()`` and ``Blockchain.putHeaders()`` functions to provide header-chain functionality (needed by ethereumjs-client), PR [#59](https://github.com/ethereumjs/ethereumjs-blockchain/pull/59)
