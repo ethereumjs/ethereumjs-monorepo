@@ -13,7 +13,10 @@ module.exports = function runBlockchainTest (options, testData, t, cb) {
     db: require('memdown')
   })
   var state = new Trie()
-  var blockchain = new Blockchain(blockchainDB)
+  var blockchain = new Blockchain({
+    db: blockchainDB,
+    hardfork: options.forkConfig.toLowerCase()
+  })
   blockchain.ethash.cacheDB = cacheDB
   var VM
   if (options.dist) {
@@ -26,7 +29,7 @@ module.exports = function runBlockchainTest (options, testData, t, cb) {
     blockchain: blockchain,
     hardfork: options.forkConfig.toLowerCase()
   })
-  var genesisBlock = new Block()
+  var genesisBlock = new Block({ hardfork: options.forkConfig.toLowerCase() })
 
   testData.homestead = true
   if (testData.homestead) {
@@ -48,7 +51,9 @@ module.exports = function runBlockchainTest (options, testData, t, cb) {
     },
     function (done) {
       // create and add genesis block
-      genesisBlock.header = new BlockHeader(formatBlockHeader(testData.genesisBlockHeader))
+      genesisBlock.header = new BlockHeader(formatBlockHeader(testData.genesisBlockHeader), {
+        hardfork: options.forkConfig.toLowerCase()
+      })
       t.equal(state.root.toString('hex'), genesisBlock.header.stateRoot.toString('hex'), 'correct pre stateRoot')
       if (testData.genesisRLP) {
         t.equal(genesisBlock.serialize().toString('hex'), testData.genesisRLP.slice(2), 'correct genesis RLP')
@@ -60,7 +65,9 @@ module.exports = function runBlockchainTest (options, testData, t, cb) {
     function (done) {
       async.eachSeries(testData.blocks, function (raw, cb) {
         try {
-          var block = new Block(Buffer.from(raw.rlp.slice(2), 'hex'))
+          var block = new Block(Buffer.from(raw.rlp.slice(2), 'hex'), {
+            hardfork: options.forkConfig.toLowerCase()
+          })
           // forces the block into thinking they are homestead
           if (testData.homestead) {
             block.header.isHomestead = function () {
