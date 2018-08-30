@@ -9,8 +9,7 @@ restore_node_modules: &restore_node_modules
     name: Restore node_modules cache
     keys:
       - v1-node-{{ .Branch }}-{{ checksum "package.json" }}
-      - v1-node-{{ .Branch }}-
-      - v1-node-
+      - v1-node-{{ checksum "package.json" }}
 jobs:
   install:
     <<: *defaults
