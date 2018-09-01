@@ -100,6 +100,9 @@ tape('[Chain]: Database functions', t => {
     st.equal(await chain.close(), false, 'skip close if not opened')
     st.notOk(chain.opened, 'chain shoud be closed')
     st.notOk(chain.blocks.height.toNumber(), 'chain should be empty if not opened')
+    await chain.putHeaders([block.header])
+    st.equal(chain.headers.height.toString(10), '1', 'header should be added even if chain closed')
+    await chain.close()
     await chain.putBlocks([block])
     st.equal(chain.blocks.height.toString(10), '1', 'block should be added even if chain closed')
     await chain.close()
@@ -122,7 +125,7 @@ tape('[Chain]: Database functions', t => {
     st.end()
   })
 
-  t.test('should handle bad arguments to add()', async (st) => {
+  t.test('should handle bad arguments to putBlocks()', async (st) => {
     const tmpdir = tmp.dirSync()
     config.dataDir = `${tmpdir.name}/chaindb`
 
@@ -131,6 +134,18 @@ tape('[Chain]: Database functions', t => {
     st.notOk(await chain.putBlocks(), 'add undefined block')
     st.notOk(await chain.putBlocks(null), 'add null block')
     st.notOk(await chain.putBlocks([]), 'add empty block list')
+    st.end()
+  })
+
+  t.test('should handle bad arguments to putHeaders()', async (st) => {
+    const tmpdir = tmp.dirSync()
+    config.dataDir = `${tmpdir.name}/chaindb`
+
+    const chain = new Chain(config) // eslint-disable-line no-new
+    await chain.open()
+    st.notOk(await chain.putHeaders(), 'add undefined header')
+    st.notOk(await chain.putHeaders(null), 'add null header')
+    st.notOk(await chain.putHeaders([]), 'add empty header list')
     st.end()
   })
 

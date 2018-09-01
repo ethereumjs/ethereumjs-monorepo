@@ -1,12 +1,15 @@
 #!/usr/bin/env node
 'use strict'
 
+const Common = require('ethereumjs-common')
 const chains = require('ethereumjs-common/chains')
 const { getLogger } = require('../lib/logging')
+const { parse } = require('../lib/util')
 const Node = require('../lib/node')
 const jayson = require('jayson')
 const RPCManager = require('../lib/rpc')
 const os = require('os')
+const path = require('path')
 
 const networks = Object.entries(chains.names)
 const args = require('yargs')
@@ -18,8 +21,8 @@ const args = require('yargs')
     },
     'syncmode': {
       describe: 'Blockchain sync mode',
-      choices: [ 'fast' ],
-      default: 'fast'
+      choices: [ 'light' ],
+      default: 'light'
     },
     'datadir': {
       describe: 'Data directory for the blockchain',
@@ -30,6 +33,9 @@ const args = require('yargs')
       choices: [ 'rlpx', 'libp2p' ],
       default: 'rlpx',
       array: true
+    },
+    'bootnodes': {
+      describe: 'Comma separated RLPx bootstrap enode URLs'
     },
     'rpc': {
       describe: 'Enable the JSON-RPC server',
@@ -49,6 +55,10 @@ const args = require('yargs')
       describe: 'Logging verbosity',
       choices: [ 'error', 'warn', 'info', 'debug' ],
       default: 'info'
+    },
+    'params': {
+      describe: 'Path to chain parameters json file',
+      coerce: path.resolve
     }
   })
   .locale('en_EN')
@@ -59,7 +69,7 @@ async function runNode (options) {
   logger.info('Initializing Ethereumjs client...')
   const node = new Node(options)
   node.on('error', err => logger.error(err))
-  logger.info(`Connecting to the ${options.network} network`)
+  logger.info(`Connecting to network: ${options.common.chainName()}`)
   await node.open()
   logger.info('Synchronizing blockchain...')
   node.start().then(() => logger.info('Synchronized'))
@@ -78,14 +88,17 @@ function runRpcServer (node, options) {
 async function run () {
   const syncDirName = args.syncmode === 'light' ? 'lightchaindata' : 'chaindata'
   const networkDirName = args.network === 'mainnet' ? '' : `${args.network}/`
+  const chainParams = args.params ? await parse.params(args.params) : args.network
+  const common = new Common(chainParams)
   const options = {
-    network: args.network,
+    common: common,
     logger: logger,
     transports: args.transports,
     syncmode: args.syncmode,
     dataDir: `${args.datadir}/${networkDirName}ethereumjs/${syncDirName}`,
     rpcport: args.rpcport,
-    rpcaddr: args.rpcaddr
+    rpcaddr: args.rpcaddr,
+    bootnodes: parse.bootnodes(args.bootnodes)
   }
   const node = await runNode(options)
 
