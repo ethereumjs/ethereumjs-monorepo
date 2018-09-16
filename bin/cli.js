@@ -8,6 +8,7 @@ const { parse } = require('../lib/util')
 const Node = require('../lib/node')
 const jayson = require('jayson')
 const RPCManager = require('../lib/rpc')
+const { randomBytes } = require('crypto')
 const os = require('os')
 const path = require('path')
 
@@ -37,6 +38,10 @@ const args = require('yargs')
     'bootnodes': {
       describe: 'Comma separated RLPx bootstrap enode URLs'
     },
+    'port': {
+      describe: 'Network listening port',
+      default: 30303
+    },
     'rpc': {
       describe: 'Enable the JSON-RPC server',
       boolean: true,
@@ -59,6 +64,11 @@ const args = require('yargs')
     'params': {
       describe: 'Path to chain parameters json file',
       coerce: path.resolve
+    },
+    'key': {
+      describe: '32-byte hex string to generate key pair from',
+      default: 'random',
+      coerce: key => key.length === 64 ? Buffer.from(key, 'hex') : randomBytes(32)
     }
   })
   .locale('en_EN')
@@ -69,6 +79,7 @@ async function runNode (options) {
   logger.info('Initializing Ethereumjs client...')
   const node = new Node(options)
   node.on('error', err => logger.error(err))
+  node.on('listening', details => logger.info(`Listener up url=${details.url}`))
   logger.info(`Connecting to network: ${options.common.chainName()}`)
   await node.open()
   logger.info('Synchronizing blockchain...')
@@ -96,9 +107,11 @@ async function run () {
     transports: args.transports,
     syncmode: args.syncmode,
     dataDir: `${args.datadir}/${networkDirName}ethereumjs/${syncDirName}`,
+    localPort: args.port,
     rpcport: args.rpcport,
     rpcaddr: args.rpcaddr,
-    bootnodes: parse.bootnodes(args.bootnodes)
+    bootnodes: parse.bootnodes(args.bootnodes),
+    privateKey: args.key
   }
   const node = await runNode(options)
 
