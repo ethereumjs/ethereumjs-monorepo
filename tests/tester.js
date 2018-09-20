@@ -14,7 +14,8 @@ const skipBroken = [
   'TransactionCollisionToEmptyButCode', // temporary till fixed (2017-09-21)
   'TransactionCollisionToEmptyButNonce', // temporary till fixed (2017-09-21)
   'RevertDepthCreateAddressCollision', // test case is wrong
-  'randomStatetest642' // BROKEN, rustbn.js error
+  'randomStatetest642', // BROKEN, rustbn.js error
+  'ecmul_0-3_5616_28000_96' // temporary till fixed (2018-09-20)
 ]
 // tests skipped due to system specifics / design considerations
 const skipPermanent = [
