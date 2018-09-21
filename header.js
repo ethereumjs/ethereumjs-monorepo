@@ -275,6 +275,7 @@ BlockHeader.prototype.isGenesis = function () {
  * @method setGenesisParams
  */
 BlockHeader.prototype.setGenesisParams = function () {
+  this.timestamp = this._common.genesis().timestamp
   this.gasLimit = this._common.genesis().gasLimit
   this.difficulty = this._common.genesis().difficulty
   this.extraData = this._common.genesis().extraData
