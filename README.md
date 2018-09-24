@@ -85,7 +85,7 @@ Creates a new VM object
   - `chain` - The chain the VM operates on [default: 'mainnet']
   - `hardfork` - Hardfork rules to be used [default: 'byzantium', supported: 'byzantium' (will throw on unsupported)]
   - `activatePrecompiles` - Create entries in the state tree for the precompiled contracts
-  - `allowUnlimitedContractSize` - Allows unlimited contract sizes while debugging. By setting this to `true`, the check for contract size limit of 2KB (see [EIP-170](https://git.io/vxZkK)) is bypassed. (default: `false`; **ONLY** set to `true` during debugging).
+  - `allowUnlimitedContractSize` - Allows unlimited contract sizes while debugging. By setting this to `true`, the check for contract size limit of 24KB (see [EIP-170](https://git.io/vxZkK)) is bypassed. (default: `false`; **ONLY** set to `true` during debugging).
 
 ### `VM` methods
 
