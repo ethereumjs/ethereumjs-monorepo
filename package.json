@@ -1,6 +1,6 @@
 {
   "name": "merkle-patricia-tree",
-  "version": "2.3.1",
+  "version": "2.3.2",
   "description": "This is an implementation of the modified merkle patricia tree as speficed in the Ethereum's yellow paper.",
   "main": "index.js",
   "scripts": {
