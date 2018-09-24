@@ -31,7 +31,7 @@
   "homepage": "https://github.com/ethereumjs/ethereumjs-client#readme",
   "dependencies": {
     "ethereumjs-account": "^2.0.5",
-    "ethereumjs-block": "ethereumjs/ethereumjs-block#genesis-timestamp",
+    "ethereumjs-block": "ethereumjs/ethereumjs-block#master",
     "ethereumjs-blockchain": "vpulim/ethereumjs-blockchain#updated-deps",
     "ethereumjs-common": "^0.5.0",
     "ethereumjs-devp2p": "^2.5.0",
