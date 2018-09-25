@@ -7,6 +7,7 @@ const Block = require('ethereumjs-block')
 const util = require('ethereumjs-util')
 const runBlockchain = require('../../lib/runBlockchain')
 const StateManager = require('../../lib/stateManager')
+const { createGenesis } = require('./utils')
 
 tape('runBlockchain', (t) => {
   const blockchainDB = new Levelup('', { db: Memdown })
@@ -78,12 +79,6 @@ tape('runBlockchain', (t) => {
     }
   })
 })
-
-function createGenesis () {
-  const genesis = new Block()
-  genesis.setGenesisParams()
-  return genesis
-}
 
 function createBlock (parent = null, n = 0) {
   if (parent === null) {
