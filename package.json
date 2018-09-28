@@ -24,18 +24,7 @@
     "lint": "standard",
     "prepublishOnly": "npm run lint && npm run build:dist && npm run testBuildIntegrity",
     "build:dist": "babel lib/ -d dist/",
-    "coverageTests:tap-spec": "tape ./tests/api/*.js ./tests/tester.js -s | tap-spec",
-    "test:tap-spec": "node ./tests/tester -a | tap-spec",
-    "testAPI:tap-spec": "tape ./tests/api/*.js | tap-spec",
-    "testBlockchain:tap-spec": "npm run build:dist && node --stack-size=1500 ./tests/tester -b --dist --excludeDir='GeneralStateTests' | tap-spec",
-    "testBlockchainBlockGasLimit:tap-spec": "npm run build:dist && node --stack-size=1500 ./tests/tester -b --dist --dir='bcBlockGasLimitTest' | tap-spec",
-    "testBlockchainGeneralStateTests:tap-spec": "npm run build:dist && node --stack-size=1500 ./tests/tester -b --dist --dir='GeneralStateTests' | tap-spec",
-    "testBlockchainTotalDifficulty:tap-spec": "npm run build:dist && node --stack-size=1500 ./tests/tester -b --dist --dir='bcTotalDifficultyTest' | tap-spec",
-    "testBlockchainValid:tap-spec": "npm run build:dist && node --stack-size=1500 ./tests/tester -b --dist --dir='bcValidBlockTest' | tap-spec",
-    "testBuildIntegrity:tap-spec": "npm run build:dist && node ./tests/tester -s --dist --test='stackOverflow' | tap-spec",
-    "testStateByzantium:tap-spec": "npm run build:dist && node ./tests/tester -s --fork='Byzantium' --dist | tap-spec",
-    "testStateConstantinople:tap-spec": "npm run build:dist && node ./tests/tester -s --fork='Constantinople' --dist | tap-spec",
-    "testVM:tap-spec": "node ./tests/tester -v | tap-spec"
+    "formatTest": "node ./scripts/formatTest"
   },
   "repository": {
     "type": "git",
