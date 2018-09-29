@@ -8,7 +8,12 @@
   "gasConfig": {},
   "gasPrices": {},
   "vm": {},
-  "pow": {},
+  "pow": {
+    "minerReward": {
+      "v": "2000000000000000000",
+      "d": "The amount a miner gets rewarded for mining a block"
+    }
+  },
   "casper": {},
   "sharding": {}
 }
