@@ -80,10 +80,11 @@ async function runNode (options) {
   const node = new Node(options)
   node.on('error', err => logger.error(err))
   node.on('listening', details => logger.info(`Listener up url=${details.url}`))
+  node.on('synchronized', () => logger.info('Synchronized'))
   logger.info(`Connecting to network: ${options.common.chainName()}`)
   await node.open()
   logger.info('Synchronizing blockchain...')
-  node.start().then(() => logger.info('Synchronized'))
+  node.start()
 
   return node
 }
