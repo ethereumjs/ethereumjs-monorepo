@@ -24,7 +24,7 @@
     "bootstrap"
   ],
   "nyc": {
-    "exclude": "tests/*.js" 
+    "exclude": "tests/*.js"
   },
   "author": "",
   "license": "MIT",
