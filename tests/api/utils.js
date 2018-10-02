@@ -24,13 +24,8 @@ function setupVM () {
   const db = new Level('', {
     db: require('memdown')
   })
-  const cacheDB = new Level('./.cachedb')
   const blockchain = new Blockchain(db)
-  blockchain.ethash.cachedb = cacheDB
-
-  const vm = new VM({
-    blockchain
-  })
+  const vm = new VM({ blockchain })
 
   return vm
 }
