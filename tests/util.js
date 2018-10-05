@@ -92,7 +92,7 @@ var format = exports.format = function (a, toZero, isHex) {
 /**
  * makeTx using JSON from tests repo
  * @param {[type]} txData the transaction object from tests repo
- * @return {Object}        object that will be passed to VM.runTx function
+ * @returns {Object}        object that will be passed to VM.runTx function
  */
 exports.makeTx = function (txData) {
   var tx = new Transaction()
@@ -261,7 +261,7 @@ exports.verifyLogs = function (logs, testData, t) {
 /**
  * toDecimal - converts buffer to decimal string, no leading zeroes
  * @param  {Buffer}
- * @return {String}
+ * @returns {String}
  */
 exports.toDecimal = function (buffer) {
   return new BN(buffer).toString()
@@ -270,7 +270,7 @@ exports.toDecimal = function (buffer) {
 /**
  * fromDecimal - converts decimal string to buffer
  * @param {String}
- *  @return {Buffer}
+ *  @returns {Buffer}
  */
 exports.fromDecimal = function (string) {
   return Buffer.from(new BN(string).toArray())
@@ -279,7 +279,7 @@ exports.fromDecimal = function (string) {
 /**
  * fromAddress - converts hexString address to 256-bit buffer
  * @param  {String} hexString address for example '0x03'
- * @return {Buffer}
+ * @returns {Buffer}
  */
 exports.fromAddress = function (hexString) {
   return utils.setLength(Buffer.from(new BN(hexString.slice(2), 16).toArray()), 32)
@@ -288,7 +288,7 @@ exports.fromAddress = function (hexString) {
 /**
  * toCodeHash - applies sha3 to hexCode
  * @param {String} hexCode string from tests repo
- * @return {Buffer}
+ * @returns {Buffer}
  */
 exports.toCodeHash = function (hexCode) {
   return utils.sha3(Buffer.from(hexCode.slice(2), 'hex'))
@@ -311,7 +311,7 @@ exports.makeBlockHeader = function (data) {
  * makeBlockFromEnv - helper to create a block from the env object in tests repo
  * @param {Object} env object from tests repo
  * @param {Object} transactions transactions for the block
- * @return {Object}  the block
+ * @returns {Object} the block
  */
 exports.makeBlockFromEnv = function (env, transactions) {
   return new Block({
@@ -327,7 +327,7 @@ exports.makeBlockFromEnv = function (env, transactions) {
  * @param {Object} exec    object from the tests repo
  * @param {Object} account that the executing code belongs to
  * @param {Object} block   that the transaction belongs to
- * @return {Object}        object that will be passed to VM.runCode function
+ * @returns {Object}       object that will be passed to VM.runCode function
  */
 exports.makeRunCodeData = function (exec, account, block) {
   return {
