@@ -24,42 +24,36 @@ exports.TWO_POW256 = new BN('100000000000000000000000000000000000000000000000000
  * @var {String} KECCAK256_NULL_S
  */
 exports.KECCAK256_NULL_S = 'c5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470'
-exports.SHA3_NULL_S = exports.KECCAK256_NULL_S
 
 /**
  * Keccak-256 hash of null (a ```Buffer```)
  * @var {Buffer} KECCAK256_NULL
  */
 exports.KECCAK256_NULL = Buffer.from(exports.KECCAK256_NULL_S, 'hex')
-exports.SHA3_NULL = exports.KECCAK256_NULL
 
 /**
  * Keccak-256 of an RLP of an empty array (a ```String```)
  * @var {String} KECCAK256_RLP_ARRAY_S
  */
 exports.KECCAK256_RLP_ARRAY_S = '1dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d49347'
-exports.SHA3_RLP_ARRAY_S = exports.KECCAK256_RLP_ARRAY_S
 
 /**
  * Keccak-256 of an RLP of an empty array (a ```Buffer```)
  * @var {Buffer} KECCAK256_RLP_ARRAY
  */
 exports.KECCAK256_RLP_ARRAY = Buffer.from(exports.KECCAK256_RLP_ARRAY_S, 'hex')
-exports.SHA3_RLP_ARRAY = exports.KECCAK256_RLP_ARRAY
 
 /**
  * Keccak-256 hash of the RLP of null  (a ```String```)
  * @var {String} KECCAK256_RLP_S
  */
 exports.KECCAK256_RLP_S = '56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421'
-exports.SHA3_RLP_S = exports.KECCAK256_RLP_S
 
 /**
  * Keccak-256 hash of the RLP of null (a ```Buffer```)
  * @var {Buffer} KECCAK256_RLP
  */
 exports.KECCAK256_RLP = Buffer.from(exports.KECCAK256_RLP_S, 'hex')
-exports.SHA3_RLP = exports.KECCAK256_RLP
 
 /**
  * [`BN`](https://github.com/indutny/bn.js)
@@ -241,14 +235,6 @@ exports.keccak = function (a, bits) {
 exports.keccak256 = function (a) {
   return exports.keccak(a)
 }
-
-/**
- * Creates SHA-3 (Keccak) hash of the input [OBSOLETE]
- * @param {Buffer|Array|String|Number} a the input data
- * @param {Number} [bits=256] the SHA-3 width
- * @return {Buffer}
- */
-exports.sha3 = exports.keccak
 
 /**
  * Creates SHA256 hash of the input
