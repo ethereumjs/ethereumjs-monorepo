@@ -1,6 +1,6 @@
 {
   "name": "ethereumjs-util",
-  "version": "5.2.0",
+  "version": "6.0.0",
   "description": "a collection of utility functions for Ethereum",
   "main": "dist/index.js",
   "files": [

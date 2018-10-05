@@ -6,6 +6,19 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 
+## [6.0.0] - 2018-10-08
+- Support for ``EIP-155`` replay protection by adding an optional ``chainId`` parameter
+  to ``ecsign()``, ``ecrecover()``, ``toRpcSig()`` and ``isValidSignature()``, if present the  
+  new signature format relying on the ``chainId`` is used, see PR [#143](https://github.com/ethereumjs/ethereumjs-util/pull/143)
+- New ``generateAddress2()`` for ``CREATE2`` opcode (``EIP-1014``) address creation
+  (Constantinople HF), see PR [#146](https://github.com/ethereumjs/ethereumjs-util/pull/146)
+- [BREAKING] Fixed signature to comply with Geth and Parity in ``toRpcSig()`` changing 
+  ``v`` from 0/1 to 27/28, this changes the resulting signature buffer, see PR [#139](https://github.com/ethereumjs/ethereumjs-util/pull/139)
+- [BREAKING] Remove deprecated ``sha3``-named constants and methods (see ``v5.2.0`` release),
+  see PR [#154](https://github.com/ethereumjs/ethereumjs-util/pull/154)
+
+[6.0.0]: https://github.com/ethereumjs/ethereumjs-util/compare/v5.2.0...v6.0.0
+
 ## [5.2.0] - 2018-04-27
 - Rename all ``sha3`` hash related constants and functions to ``keccak``, see
   [this](https://github.com/ethereum/EIPs/issues/59) EIP discussion for context
