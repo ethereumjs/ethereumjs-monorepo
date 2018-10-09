@@ -22,7 +22,7 @@ const args = require('yargs')
     },
     'syncmode': {
       describe: 'Blockchain sync mode',
-      choices: [ 'light' ],
+      choices: [ 'light', 'fast' ],
       default: 'light'
     },
     'datadir': {
