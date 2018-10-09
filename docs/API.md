@@ -62,6 +62,7 @@
         * [.update()](#module_blockchain.Chain+update) ⇒ <code>Promise</code>
         * [.getBlocks(block, max, skip, reverse)](#module_blockchain.Chain+getBlocks) ⇒ <code>Promise</code>
         * [.getBlock(blocks)](#module_blockchain.Chain+getBlock) ⇒ <code>Promise</code>
+        * [.getHeaders(block, max, skip, reverse)](#module_blockchain.Chain+getHeaders) ⇒ <code>Promise</code>
         * [.getLatestHeader()](#module_blockchain.Chain+getLatestHeader) ⇒ <code>Promise</code>
         * [.getLatestBlock()](#module_blockchain.Chain+getLatestBlock) ⇒ <code>Promise</code>
         * [.getTd(hash)](#module_blockchain.Chain+getTd) ⇒ <code>Promise</code>
@@ -137,6 +138,7 @@ Blockchain
     * [.update()](#module_blockchain.Chain+update) ⇒ <code>Promise</code>
     * [.getBlocks(block, max, skip, reverse)](#module_blockchain.Chain+getBlocks) ⇒ <code>Promise</code>
     * [.getBlock(blocks)](#module_blockchain.Chain+getBlock) ⇒ <code>Promise</code>
+    * [.getHeaders(block, max, skip, reverse)](#module_blockchain.Chain+getHeaders) ⇒ <code>Promise</code>
     * [.getLatestHeader()](#module_blockchain.Chain+getLatestHeader) ⇒ <code>Promise</code>
     * [.getLatestBlock()](#module_blockchain.Chain+getLatestBlock) ⇒ <code>Promise</code>
     * [.getTd(hash)](#module_blockchain.Chain+getTd) ⇒ <code>Promise</code>
@@ -231,6 +233,20 @@ Gets a block by its hash or number
 | --- | --- | --- |
 | blocks | <code>Buffer</code> \| <code>BN</code> | block hash or number |
 
+<a name="module_blockchain.Chain+getHeaders"></a>
+
+#### chain.getHeaders(block, max, skip, reverse) ⇒ <code>Promise</code>
+Get headers from blockchain
+
+**Kind**: instance method of [<code>Chain</code>](#module_blockchain.Chain)  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| block | <code>Buffer</code> \| <code>BN</code> | block hash or number to start from |
+| max | <code>number</code> | maximum number of headers to get |
+| skip | <code>number</code> | number of headers to skip |
+| reverse | <code>boolean</code> | get headers in reverse |
+
 <a name="module_blockchain.Chain+getLatestHeader"></a>
 
 #### chain.getLatestHeader() ⇒ <code>Promise</code>
@@ -278,6 +294,9 @@ into the blockchain once prior gaps are filled.
 ## net/peer
 
 * [net/peer](#module_net/peer)
+    * [.Libp2pPeer](#module_net/peer.Libp2pPeer)
+        * [new Libp2pPeer(options)](#new_module_net/peer.Libp2pPeer_new)
+        * [.connect()](#module_net/peer.Libp2pPeer+connect) ⇒ <code>Promise</code>
     * [.Peer](#module_net/peer.Peer)
         * [new Peer(options)](#new_module_net/peer.Peer_new)
         * [.id](#module_net/peer.Peer+id)
@@ -298,6 +317,55 @@ into the blockchain once prior gaps are filled.
         * _static_
             * [.capabilities(protocols)](#module_net/peer.RlpxPeer.capabilities) ⇒ <code>Array.&lt;Object&gt;</code>
 
+<a name="module_net/peer.Libp2pPeer"></a>
+
+### net/peer.Libp2pPeer
+Libp2p peer
+
+**Kind**: static class of [<code>net/peer</code>](#module_net/peer)  
+
+* [.Libp2pPeer](#module_net/peer.Libp2pPeer)
+    * [new Libp2pPeer(options)](#new_module_net/peer.Libp2pPeer_new)
+    * [.connect()](#module_net/peer.Libp2pPeer+connect) ⇒ <code>Promise</code>
+
+<a name="new_module_net/peer.Libp2pPeer_new"></a>
+
+#### new Libp2pPeer(options)
+Create new libp2p peer
+
+
+| Param | Type | Default | Description |
+| --- | --- | --- | --- |
+| options | <code>Object</code> |  | constructor parameters |
+| options.id | <code>string</code> |  | peer id |
+| options.host | <code>string</code> |  | peer hostname or ip address |
+| options.port | <code>number</code> |  | peer port |
+| [options.protocols] | <code>Array.&lt;Protocols&gt;</code> | <code>[]</code> | supported protocols |
+| [options.logger] | <code>Logger</code> |  | Logger instance |
+| [options.privateKey] | <code>Buffer</code> |  | private key |
+
+**Example**  
+```js
+const { Libp2pPeer } = require('./lib/net/peer')
+const { Chain } = require('./lib/blockchain')
+const { EthProtocol } = require('./lib/net/protocol')
+
+const chain = new Chain()
+const protocols = [ new EthProtocol({ chain })]
+const addr = '/ip4/192.0.2.1/tcp/12345'
+
+new Libp2pPeer({ addr, protocols })
+  .on('error', (err) => console.log('Error:', err))
+  .on('connected', () => console.log('Connected'))
+  .on('disconnected', (reason) => console.log('Disconnected:', reason))
+  .connect()
+```
+<a name="module_net/peer.Libp2pPeer+connect"></a>
+
+#### libp2pPeer.connect() ⇒ <code>Promise</code>
+Initiate peer connection
+
+**Kind**: instance method of [<code>Libp2pPeer</code>](#module_net/peer.Libp2pPeer)  
 <a name="module_net/peer.Peer"></a>
 
 ### net/peer.Peer
@@ -536,7 +604,7 @@ Return devp2p/rlpx capabilities for the specified protocols
         * [.open()](#module_net.PeerPool+open) ⇒ <code>Promise</code>
         * [.close()](#module_net.PeerPool+close) ⇒ <code>Promise</code>
         * [.contains(peer)](#module_net.PeerPool+contains) ⇒ <code>boolean</code>
-        * [.idle()](#module_net.PeerPool+idle) ⇒ <code>Peer</code>
+        * [.idle([filterFn])](#module_net.PeerPool+idle) ⇒ <code>Peer</code>
         * [.ban(peer, maxAge)](#module_net.PeerPool+ban)
         * [.add(peer)](#module_net.PeerPool+add)
         * [.remove(peer)](#module_net.PeerPool+remove)
@@ -556,7 +624,7 @@ Pool of connected peers
     * [.open()](#module_net.PeerPool+open) ⇒ <code>Promise</code>
     * [.close()](#module_net.PeerPool+close) ⇒ <code>Promise</code>
     * [.contains(peer)](#module_net.PeerPool+contains) ⇒ <code>boolean</code>
-    * [.idle()](#module_net.PeerPool+idle) ⇒ <code>Peer</code>
+    * [.idle([filterFn])](#module_net.PeerPool+idle) ⇒ <code>Peer</code>
     * [.ban(peer, maxAge)](#module_net.PeerPool+ban)
     * [.add(peer)](#module_net.PeerPool+add)
     * [.remove(peer)](#module_net.PeerPool+remove)
@@ -606,10 +674,15 @@ Return true if pool contains the specified peer
 
 <a name="module_net.PeerPool+idle"></a>
 
-#### peerPool.idle() ⇒ <code>Peer</code>
+#### peerPool.idle([filterFn]) ⇒ <code>Peer</code>
 Returns a random idle peer from the pool
 
 **Kind**: instance method of [<code>PeerPool</code>](#module_net.PeerPool)  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| [filterFn] | <code>function</code> | filter function to apply before finding idle peers |
+
 <a name="module_net.PeerPool+ban"></a>
 
 #### peerPool.ban(peer, maxAge)
@@ -671,6 +744,10 @@ Specify which protocols the peer pool must support
         * [.open()](#module_net/protocol.EthProtocol+open) ⇒ <code>Promise</code>
         * [.encodeStatus()](#module_net/protocol.EthProtocol+encodeStatus) ⇒ <code>Object</code>
         * [.decodeStatus(status)](#module_net/protocol.EthProtocol+decodeStatus) ⇒ <code>Object</code>
+    * [.FlowControl](#module_net/protocol.FlowControl)
+        * [.handleReply(peer, bv)](#module_net/protocol.FlowControl+handleReply)
+        * [.maxRequestCount(peer, messageName)](#module_net/protocol.FlowControl+maxRequestCount) ⇒ <code>number</code>
+        * [.handleRequest(peer, messageName, count)](#module_net/protocol.FlowControl+handleRequest) ⇒ <code>number</code>
     * [.LesProtocol](#module_net/protocol.LesProtocol)
         * [new LesProtocol(options)](#new_module_net/protocol.LesProtocol_new)
         * [.name](#module_net/protocol.LesProtocol+name) : <code>string</code>
@@ -679,8 +756,6 @@ Specify which protocols the peer pool must support
         * [.open()](#module_net/protocol.LesProtocol+open) ⇒ <code>Promise</code>
         * [.encodeStatus()](#module_net/protocol.LesProtocol+encodeStatus) ⇒ <code>Object</code>
         * [.decodeStatus(status)](#module_net/protocol.LesProtocol+decodeStatus) ⇒ <code>Object</code>
-        * [.encode(message, ...args)](#module_net/protocol.LesProtocol+encode) ⇒ <code>\*</code>
-        * [.decode(message, payload, bound)](#module_net/protocol.LesProtocol+decode) ⇒ <code>\*</code>
     * [.Protocol](#module_net/protocol.Protocol)
         * [new Protocol(options)](#new_module_net/protocol.Protocol_new)
         * [.name](#module_net/protocol.Protocol+name) : <code>string</code>
@@ -770,6 +845,59 @@ Decodes ETH status message payload into a status object
 | --- | --- | --- |
 | status | <code>Object</code> | status message payload |
 
+<a name="module_net/protocol.FlowControl"></a>
+
+### net/protocol.FlowControl
+LES flow control manager
+
+**Kind**: static class of [<code>net/protocol</code>](#module_net/protocol)  
+
+* [.FlowControl](#module_net/protocol.FlowControl)
+    * [.handleReply(peer, bv)](#module_net/protocol.FlowControl+handleReply)
+    * [.maxRequestCount(peer, messageName)](#module_net/protocol.FlowControl+maxRequestCount) ⇒ <code>number</code>
+    * [.handleRequest(peer, messageName, count)](#module_net/protocol.FlowControl+handleRequest) ⇒ <code>number</code>
+
+<a name="module_net/protocol.FlowControl+handleReply"></a>
+
+#### flowControl.handleReply(peer, bv)
+Process reply message from an LES peer by updating its BLE value
+
+**Kind**: instance method of [<code>FlowControl</code>](#module_net/protocol.FlowControl)  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| peer | <code>Peer</code> | LES peer |
+| bv | <code>number</code> | latest buffer value |
+
+<a name="module_net/protocol.FlowControl+maxRequestCount"></a>
+
+#### flowControl.maxRequestCount(peer, messageName) ⇒ <code>number</code>
+Calculate maximum items that can be requested from an LES peer
+
+**Kind**: instance method of [<code>FlowControl</code>](#module_net/protocol.FlowControl)  
+**Returns**: <code>number</code> - maximum count  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| peer | <code>Peer</code> | LES peer |
+| messageName | <code>string</code> | message name |
+
+<a name="module_net/protocol.FlowControl+handleRequest"></a>
+
+#### flowControl.handleRequest(peer, messageName, count) ⇒ <code>number</code>
+Calculate new buffer value for an LES peer after an incoming request is
+processed. If the new value is negative, the peer should be dropped by the
+caller.
+
+**Kind**: instance method of [<code>FlowControl</code>](#module_net/protocol.FlowControl)  
+**Returns**: <code>number</code> - new buffer value after request is sent (if negative, drop peer)  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| peer | <code>Peer</code> | LES peer |
+| messageName | <code>string</code> | message name |
+| count | <code>number</code> | number of items to request from peer |
+
 <a name="module_net/protocol.LesProtocol"></a>
 
 ### net/protocol.LesProtocol
@@ -785,8 +913,6 @@ Implements les/1 and les/2 protocols
     * [.open()](#module_net/protocol.LesProtocol+open) ⇒ <code>Promise</code>
     * [.encodeStatus()](#module_net/protocol.LesProtocol+encodeStatus) ⇒ <code>Object</code>
     * [.decodeStatus(status)](#module_net/protocol.LesProtocol+decodeStatus) ⇒ <code>Object</code>
-    * [.encode(message, ...args)](#module_net/protocol.LesProtocol+encode) ⇒ <code>\*</code>
-    * [.decode(message, payload, bound)](#module_net/protocol.LesProtocol+decode) ⇒ <code>\*</code>
 
 <a name="new_module_net/protocol.LesProtocol_new"></a>
 
@@ -798,6 +924,7 @@ Create les protocol
 | --- | --- | --- | --- |
 | options | <code>Object</code> |  | constructor parameters |
 | options.chain | <code>Chain</code> |  | blockchain |
+| options.flow | <code>FlowControl</code> |  | flow control manager |
 | [options.timeout] | <code>number</code> | <code>5000</code> | handshake timeout in ms |
 | [options.logger] | <code>Logger</code> |  | logger instance |
 
@@ -841,33 +968,6 @@ Decodes ETH status message payload into a status object
 | Param | Type | Description |
 | --- | --- | --- |
 | status | <code>Object</code> | status message payload |
-
-<a name="module_net/protocol.LesProtocol+encode"></a>
-
-#### lesProtocol.encode(message, ...args) ⇒ <code>\*</code>
-Encodes message into proper format before sending
-
-**Kind**: instance method of [<code>LesProtocol</code>](#module_net/protocol.LesProtocol)  
-**Access**: protected  
-
-| Param | Type | Description |
-| --- | --- | --- |
-| message | [<code>Message</code>](#Protocol..Message) | message definition |
-| ...args | <code>\*</code> | message arguments |
-
-<a name="module_net/protocol.LesProtocol+decode"></a>
-
-#### lesProtocol.decode(message, payload, bound) ⇒ <code>\*</code>
-Decodes message payload
-
-**Kind**: instance method of [<code>LesProtocol</code>](#module_net/protocol.LesProtocol)  
-**Access**: protected  
-
-| Param | Type | Description |
-| --- | --- | --- |
-| message | [<code>Message</code>](#Protocol..Message) | message definition |
-| payload | <code>\*</code> | message payload |
-| bound | [<code>BoundProtocol</code>](#BoundProtocol) | reference to bound protocol |
 
 <a name="module_net/protocol.Protocol"></a>
 
@@ -1441,38 +1541,35 @@ Start service
         * [.fetch(first, last)](#module_sync.FastSynchronizer+fetch) ⇒ <code>Promise</code>
         * [.start()](#module_sync.FastSynchronizer+start) ⇒ <code>Promise</code>
         * [.stop()](#module_sync.FastSynchronizer+stop) ⇒ <code>Promise</code>
-    * [.HeaderFetcher](#module_sync.HeaderFetcher)
-        * [.before(taskOne, taskTwo)](#module_sync.HeaderFetcher+before) ⇒ <code>boolean</code>
-        * [.fetch(task, peer)](#module_sync.HeaderFetcher+fetch) ⇒ <code>Promise</code>
-        * [.process(task, payload)](#module_sync.HeaderFetcher+process)
-        * [.before(taskOne, taskTwo)](#module_sync.HeaderFetcher+before) ⇒ <code>boolean</code>
-        * [.fetch(task, peer)](#module_sync.HeaderFetcher+fetch) ⇒ <code>Promise</code>
-        * [.process(task, payload)](#module_sync.HeaderFetcher+process)
+    * [.BlockFetcher](#module_sync.BlockFetcher)
+        * [.before(taskOne, taskTwo)](#module_sync.BlockFetcher+before) ⇒ <code>boolean</code>
+        * [.fetch(task, peer)](#module_sync.BlockFetcher+fetch) ⇒ <code>Promise</code>
+        * [.process(entry, reply)](#module_sync.BlockFetcher+process)
     * [.Fetcher](#module_sync.Fetcher)
         * [new Fetcher(options)](#new_module_sync.Fetcher_new)
         * [.add(task)](#module_sync.Fetcher+add)
         * [.next()](#module_sync.Fetcher+next)
-        * [.handle(message, peer)](#module_sync.Fetcher+handle)
+        * [.handle(reply, peer)](#module_sync.Fetcher+handle)
         * [.error(error, task, peer)](#module_sync.Fetcher+error)
         * [.expire()](#module_sync.Fetcher+expire)
         * [.start()](#module_sync.Fetcher+start) ⇒ <code>Promise</code>
         * [.stop()](#module_sync.Fetcher+stop) ⇒ <code>Promise</code>
         * [.before(taskOne, taskTwo)](#module_sync.Fetcher+before) ⇒ <code>boolean</code>
+        * [.fetchable(peer)](#module_sync.Fetcher+fetchable) ⇒ <code>boolean</code>
         * [.fetch(task, peer)](#module_sync.Fetcher+fetch) ⇒ <code>Promise</code>
-        * [.process(task, data)](#module_sync.Fetcher+process)
+        * [.process(entry, reply)](#module_sync.Fetcher+process)
     * [.LightSynchronizer](#module_sync.LightSynchronizer)
         * [new LightSynchronizer(options)](#new_module_sync.LightSynchronizer_new)
         * [.origin()](#module_sync.LightSynchronizer+origin) ⇒ <code>Promise</code>
         * [.fetch(first, last)](#module_sync.LightSynchronizer+fetch) ⇒ <code>Promise</code>
+        * [.handle(message, peer)](#module_sync.LightSynchronizer+handle) ⇒ <code>Promise</code>
         * [.start()](#module_sync.LightSynchronizer+start) ⇒ <code>Promise</code>
         * [.stop()](#module_sync.LightSynchronizer+stop) ⇒ <code>Promise</code>
     * [.HeaderFetcher](#module_sync.HeaderFetcher)
+        * [new HeaderFetcher(options)](#new_module_sync.HeaderFetcher_new)
         * [.before(taskOne, taskTwo)](#module_sync.HeaderFetcher+before) ⇒ <code>boolean</code>
         * [.fetch(task, peer)](#module_sync.HeaderFetcher+fetch) ⇒ <code>Promise</code>
-        * [.process(task, payload)](#module_sync.HeaderFetcher+process)
-        * [.before(taskOne, taskTwo)](#module_sync.HeaderFetcher+before) ⇒ <code>boolean</code>
-        * [.fetch(task, peer)](#module_sync.HeaderFetcher+fetch) ⇒ <code>Promise</code>
-        * [.process(task, payload)](#module_sync.HeaderFetcher+process)
+        * [.process(entry, reply)](#module_sync.HeaderFetcher+process)
     * [.Synchronizer](#module_sync.Synchronizer)
 
 <a name="module_sync.FastSynchronizer"></a>
@@ -1527,15 +1624,15 @@ an origin peer is found.
 <a name="module_sync.FastSynchronizer+fetch"></a>
 
 #### fastSynchronizer.fetch(first, last) ⇒ <code>Promise</code>
-Fetch all headers with block numbers ranings from first to last. Returns a
-promise that resolves once all headers are downloaded.
+Fetch all blocks with block numbers ranging from first to last. Returns a
+promise that resolves once all blocks are downloaded.
 
 **Kind**: instance method of [<code>FastSynchronizer</code>](#module_sync.FastSynchronizer)  
 
 | Param | Type | Description |
 | --- | --- | --- |
-| first | <code>BN</code> | number of first block header |
-| last | <code>BN</code> | number of last block header |
+| first | <code>BN</code> | number of first block |
+| last | <code>BN</code> | number of last block |
 
 <a name="module_sync.FastSynchronizer+start"></a>
 
@@ -1550,27 +1647,24 @@ synchronized
 Stop synchronization. Returns a promise that resolves once its stopped.
 
 **Kind**: instance method of [<code>FastSynchronizer</code>](#module_sync.FastSynchronizer)  
-<a name="module_sync.HeaderFetcher"></a>
+<a name="module_sync.BlockFetcher"></a>
 
-### sync.HeaderFetcher
-Implements an eth/62 based header fetcher
+### sync.BlockFetcher
+Implements an eth/62 based block fetcher
 
 **Kind**: static class of [<code>sync</code>](#module_sync)  
 
-* [.HeaderFetcher](#module_sync.HeaderFetcher)
-    * [.before(taskOne, taskTwo)](#module_sync.HeaderFetcher+before) ⇒ <code>boolean</code>
-    * [.fetch(task, peer)](#module_sync.HeaderFetcher+fetch) ⇒ <code>Promise</code>
-    * [.process(task, payload)](#module_sync.HeaderFetcher+process)
-    * [.before(taskOne, taskTwo)](#module_sync.HeaderFetcher+before) ⇒ <code>boolean</code>
-    * [.fetch(task, peer)](#module_sync.HeaderFetcher+fetch) ⇒ <code>Promise</code>
-    * [.process(task, payload)](#module_sync.HeaderFetcher+process)
+* [.BlockFetcher](#module_sync.BlockFetcher)
+    * [.before(taskOne, taskTwo)](#module_sync.BlockFetcher+before) ⇒ <code>boolean</code>
+    * [.fetch(task, peer)](#module_sync.BlockFetcher+fetch) ⇒ <code>Promise</code>
+    * [.process(entry, reply)](#module_sync.BlockFetcher+process)
 
-<a name="module_sync.HeaderFetcher+before"></a>
+<a name="module_sync.BlockFetcher+before"></a>
 
-#### headerFetcher.before(taskOne, taskTwo) ⇒ <code>boolean</code>
+#### blockFetcher.before(taskOne, taskTwo) ⇒ <code>boolean</code>
 Prioritizes tasks based on first block number
 
-**Kind**: instance method of [<code>HeaderFetcher</code>](#module_sync.HeaderFetcher)  
+**Kind**: instance method of [<code>BlockFetcher</code>](#module_sync.BlockFetcher)  
 **Returns**: <code>boolean</code> - true if taskOne has a lower first number than taskTwo  
 
 | Param | Type |
@@ -1578,12 +1672,12 @@ Prioritizes tasks based on first block number
 | taskOne | <code>Object</code> | 
 | taskTwo | <code>Object</code> | 
 
-<a name="module_sync.HeaderFetcher+fetch"></a>
+<a name="module_sync.BlockFetcher+fetch"></a>
 
-#### headerFetcher.fetch(task, peer) ⇒ <code>Promise</code>
-Fetches block headers for the given task
+#### blockFetcher.fetch(task, peer) ⇒ <code>Promise</code>
+Fetches blocks for the given task
 
-**Kind**: instance method of [<code>HeaderFetcher</code>](#module_sync.HeaderFetcher)  
+**Kind**: instance method of [<code>BlockFetcher</code>](#module_sync.BlockFetcher)  
 **Returns**: <code>Promise</code> - method must return  
 
 | Param | Type |
@@ -1591,57 +1685,21 @@ Fetches block headers for the given task
 | task | <code>Object</code> | 
 | peer | <code>Peer</code> | 
 
-<a name="module_sync.HeaderFetcher+process"></a>
+<a name="module_sync.BlockFetcher+process"></a>
 
-#### headerFetcher.process(task, payload)
-Process the message payload for the getBlockHeaders response
+#### blockFetcher.process(entry, reply)
+Process fetch reply
 
-**Kind**: instance method of [<code>HeaderFetcher</code>](#module_sync.HeaderFetcher)  
+**Kind**: instance method of [<code>BlockFetcher</code>](#module_sync.BlockFetcher)  
 **Emits**: <code>event:headers</code>  
 
 | Param | Type | Description |
 | --- | --- | --- |
-| task | <code>Object</code> |  |
-| payload | <code>Array</code> | rlp encoded payload |
-
-<a name="module_sync.HeaderFetcher+before"></a>
-
-#### headerFetcher.before(taskOne, taskTwo) ⇒ <code>boolean</code>
-Prioritizes tasks based on first block number
-
-**Kind**: instance method of [<code>HeaderFetcher</code>](#module_sync.HeaderFetcher)  
-**Returns**: <code>boolean</code> - true if taskOne has a lower first number than taskTwo  
-
-| Param | Type |
-| --- | --- |
-| taskOne | <code>Object</code> | 
-| taskTwo | <code>Object</code> | 
-
-<a name="module_sync.HeaderFetcher+fetch"></a>
-
-#### headerFetcher.fetch(task, peer) ⇒ <code>Promise</code>
-Fetches block headers for the given task
-
-**Kind**: instance method of [<code>HeaderFetcher</code>](#module_sync.HeaderFetcher)  
-**Returns**: <code>Promise</code> - method must return  
-
-| Param | Type |
-| --- | --- |
-| task | <code>Object</code> | 
-| peer | <code>Peer</code> | 
-
-<a name="module_sync.HeaderFetcher+process"></a>
-
-#### headerFetcher.process(task, payload)
-Process the message payload for the getBlockHeaders response
-
-**Kind**: instance method of [<code>HeaderFetcher</code>](#module_sync.HeaderFetcher)  
-**Emits**: <code>event:headers</code>  
-
-| Param | Type | Description |
-| --- | --- | --- |
-| task | <code>Object</code> |  |
-| payload | <code>Array</code> | rlp encoded payload |
+| entry | <code>Object</code> | entry object |
+| entry.task | <code>Object</code> | fetch task |
+| entry.peer | <code>Peer</code> | peer that handled task |
+| entry.time | <code>number</code> | time task was generated |
+| reply | <code>Object</code> | reply data |
 
 <a name="module_sync.Fetcher"></a>
 
@@ -1657,14 +1715,15 @@ ensure most important tasks are processed first based on the before() function.
     * [new Fetcher(options)](#new_module_sync.Fetcher_new)
     * [.add(task)](#module_sync.Fetcher+add)
     * [.next()](#module_sync.Fetcher+next)
-    * [.handle(message, peer)](#module_sync.Fetcher+handle)
+    * [.handle(reply, peer)](#module_sync.Fetcher+handle)
     * [.error(error, task, peer)](#module_sync.Fetcher+error)
     * [.expire()](#module_sync.Fetcher+expire)
     * [.start()](#module_sync.Fetcher+start) ⇒ <code>Promise</code>
     * [.stop()](#module_sync.Fetcher+stop) ⇒ <code>Promise</code>
     * [.before(taskOne, taskTwo)](#module_sync.Fetcher+before) ⇒ <code>boolean</code>
+    * [.fetchable(peer)](#module_sync.Fetcher+fetchable) ⇒ <code>boolean</code>
     * [.fetch(task, peer)](#module_sync.Fetcher+fetch) ⇒ <code>Promise</code>
-    * [.process(task, data)](#module_sync.Fetcher+process)
+    * [.process(entry, reply)](#module_sync.Fetcher+process)
 
 <a name="new_module_sync.Fetcher_new"></a>
 
@@ -1697,7 +1756,7 @@ Process next task
 **Kind**: instance method of [<code>Fetcher</code>](#module_sync.Fetcher)  
 <a name="module_sync.Fetcher+handle"></a>
 
-#### fetcher.handle(message, peer)
+#### fetcher.handle(reply, peer)
 Handler for responses from peers. Finds and processes the corresponding
 task using the process() method, and resets peer to an idle state.
 
@@ -1705,7 +1764,7 @@ task using the process() method, and resets peer to an idle state.
 
 | Param | Type |
 | --- | --- |
-| message | <code>Object</code> | 
+| reply | <code>Object</code> | 
 | peer | <code>Peer</code> | 
 
 <a name="module_sync.Fetcher+error"></a>
@@ -1753,6 +1812,17 @@ True if taskOne has a higher priority than taskTwo
 | taskOne | <code>Object</code> | 
 | taskTwo | <code>Object</code> | 
 
+<a name="module_sync.Fetcher+fetchable"></a>
+
+#### fetcher.fetchable(peer) ⇒ <code>boolean</code>
+True if peer can process fetch tasks
+
+**Kind**: instance method of [<code>Fetcher</code>](#module_sync.Fetcher)  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| peer | <code>Peer</code> | candidate peer |
+
 <a name="module_sync.Fetcher+fetch"></a>
 
 #### fetcher.fetch(task, peer) ⇒ <code>Promise</code>
@@ -1768,15 +1838,18 @@ promise that resolves with the decoded response to the commad.
 
 <a name="module_sync.Fetcher+process"></a>
 
-#### fetcher.process(task, data)
-Process the decoded message payload for the given task
+#### fetcher.process(entry, reply)
+Process the reply for the given fetch queue entry
 
 **Kind**: instance method of [<code>Fetcher</code>](#module_sync.Fetcher)  
 
 | Param | Type | Description |
 | --- | --- | --- |
-| task | <code>Object</code> |  |
-| data | <code>Array</code> | decoded message data |
+| entry | <code>Object</code> | entry object |
+| entry.task | <code>Object</code> | fetch task |
+| entry.peer | <code>Peer</code> | peer that handled task |
+| entry.time | <code>number</code> | time task was generated |
+| reply | <code>Object</code> | reply data |
 
 <a name="module_sync.LightSynchronizer"></a>
 
@@ -1789,6 +1862,7 @@ Implements an ethereum light sync synchronizer
     * [new LightSynchronizer(options)](#new_module_sync.LightSynchronizer_new)
     * [.origin()](#module_sync.LightSynchronizer+origin) ⇒ <code>Promise</code>
     * [.fetch(first, last)](#module_sync.LightSynchronizer+fetch) ⇒ <code>Promise</code>
+    * [.handle(message, peer)](#module_sync.LightSynchronizer+handle) ⇒ <code>Promise</code>
     * [.start()](#module_sync.LightSynchronizer+start) ⇒ <code>Promise</code>
     * [.stop()](#module_sync.LightSynchronizer+stop) ⇒ <code>Promise</code>
 
@@ -1803,6 +1877,7 @@ Create new node
 | options | <code>Object</code> | constructor parameters |
 | options.pool | <code>PeerPool</code> | peer pool |
 | options.chain | <code>Chain</code> | blockchain |
+| options.flow | <code>FlowControl</code> | flow control manager |
 | [options.logger] | <code>Logger</code> | Logger instance |
 
 <a name="module_sync.LightSynchronizer+origin"></a>
@@ -1817,7 +1892,7 @@ an origin peer is found.
 <a name="module_sync.LightSynchronizer+fetch"></a>
 
 #### lightSynchronizer.fetch(first, last) ⇒ <code>Promise</code>
-Fetch all headers with block numbers ranings from first to last. Returns a
+Fetch all headers with block numbers ranging from first to last. Returns a
 promise that resolves once all headers are downloaded.
 
 **Kind**: instance method of [<code>LightSynchronizer</code>](#module_sync.LightSynchronizer)  
@@ -1826,6 +1901,18 @@ promise that resolves once all headers are downloaded.
 | --- | --- | --- |
 | first | <code>BN</code> | number of first block header |
 | last | <code>BN</code> | number of last block header |
+
+<a name="module_sync.LightSynchronizer+handle"></a>
+
+#### lightSynchronizer.handle(message, peer) ⇒ <code>Promise</code>
+Handler for incoming requests from connected peers
+
+**Kind**: instance method of [<code>LightSynchronizer</code>](#module_sync.LightSynchronizer)  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| message | <code>Object</code> | message object |
+| peer | <code>Peer</code> | peer |
 
 <a name="module_sync.LightSynchronizer+start"></a>
 
@@ -1848,12 +1935,23 @@ Implements an les/1 based header fetcher
 **Kind**: static class of [<code>sync</code>](#module_sync)  
 
 * [.HeaderFetcher](#module_sync.HeaderFetcher)
+    * [new HeaderFetcher(options)](#new_module_sync.HeaderFetcher_new)
     * [.before(taskOne, taskTwo)](#module_sync.HeaderFetcher+before) ⇒ <code>boolean</code>
     * [.fetch(task, peer)](#module_sync.HeaderFetcher+fetch) ⇒ <code>Promise</code>
-    * [.process(task, payload)](#module_sync.HeaderFetcher+process)
-    * [.before(taskOne, taskTwo)](#module_sync.HeaderFetcher+before) ⇒ <code>boolean</code>
-    * [.fetch(task, peer)](#module_sync.HeaderFetcher+fetch) ⇒ <code>Promise</code>
-    * [.process(task, payload)](#module_sync.HeaderFetcher+process)
+    * [.process(entry, reply)](#module_sync.HeaderFetcher+process)
+
+<a name="new_module_sync.HeaderFetcher_new"></a>
+
+#### new HeaderFetcher(options)
+Create new header fetcher
+
+
+| Param | Type | Description |
+| --- | --- | --- |
+| options | <code>Object</code> | constructor parameters |
+| options.pool | <code>PeerPool</code> | peer pool |
+| options.flow | <code>FlowControl</code> | flow control manager |
+| [options.logger] | <code>Logger</code> | Logger instance |
 
 <a name="module_sync.HeaderFetcher+before"></a>
 
@@ -1883,55 +1981,19 @@ Fetches block headers for the given task
 
 <a name="module_sync.HeaderFetcher+process"></a>
 
-#### headerFetcher.process(task, payload)
-Process the message payload for the getBlockHeaders response
+#### headerFetcher.process(entry, reply)
+Process the getBlockHeaders reply
 
 **Kind**: instance method of [<code>HeaderFetcher</code>](#module_sync.HeaderFetcher)  
 **Emits**: <code>event:headers</code>  
 
 | Param | Type | Description |
 | --- | --- | --- |
-| task | <code>Object</code> |  |
-| payload | <code>Array</code> | rlp encoded payload |
-
-<a name="module_sync.HeaderFetcher+before"></a>
-
-#### headerFetcher.before(taskOne, taskTwo) ⇒ <code>boolean</code>
-Prioritizes tasks based on first block number
-
-**Kind**: instance method of [<code>HeaderFetcher</code>](#module_sync.HeaderFetcher)  
-**Returns**: <code>boolean</code> - true if taskOne has a lower first number than taskTwo  
-
-| Param | Type |
-| --- | --- |
-| taskOne | <code>Object</code> | 
-| taskTwo | <code>Object</code> | 
-
-<a name="module_sync.HeaderFetcher+fetch"></a>
-
-#### headerFetcher.fetch(task, peer) ⇒ <code>Promise</code>
-Fetches block headers for the given task
-
-**Kind**: instance method of [<code>HeaderFetcher</code>](#module_sync.HeaderFetcher)  
-**Returns**: <code>Promise</code> - method must return  
-
-| Param | Type |
-| --- | --- |
-| task | <code>Object</code> | 
-| peer | <code>Peer</code> | 
-
-<a name="module_sync.HeaderFetcher+process"></a>
-
-#### headerFetcher.process(task, payload)
-Process the message payload for the getBlockHeaders response
-
-**Kind**: instance method of [<code>HeaderFetcher</code>](#module_sync.HeaderFetcher)  
-**Emits**: <code>event:headers</code>  
-
-| Param | Type | Description |
-| --- | --- | --- |
-| task | <code>Object</code> |  |
-| payload | <code>Array</code> | rlp encoded payload |
+| entry | <code>Object</code> | entry object |
+| entry.task | <code>Object</code> | fetch task |
+| entry.peer | <code>Peer</code> | peer that handled task |
+| entry.time | <code>number</code> | time task was generated |
+| reply | <code>Object</code> | reply data |
 
 <a name="module_sync.Synchronizer"></a>
 
@@ -1952,8 +2014,8 @@ Binds a protocol implementation to the specified peer
 
 * [BoundProtocol](#BoundProtocol) ⇐ <code>EventEmitter</code>
     * [new BoundProtocol(options)](#new_BoundProtocol_new)
-    * [.send(name, ...args)](#BoundProtocol+send)
-    * [.request(name, ...args)](#BoundProtocol+request) ⇒ <code>Promise</code>
+    * [.send(name, args)](#BoundProtocol+send)
+    * [.request(name, args)](#BoundProtocol+request) ⇒ <code>Promise</code>
     * [.addMethods()](#BoundProtocol+addMethods)
 
 <a name="new_BoundProtocol_new"></a>
@@ -1971,7 +2033,7 @@ Create bound protocol
 
 <a name="BoundProtocol+send"></a>
 
-### boundProtocol.send(name, ...args)
+### boundProtocol.send(name, args)
 Send message with name and the specified args
 
 **Kind**: instance method of [<code>BoundProtocol</code>](#BoundProtocol)  
@@ -1979,11 +2041,11 @@ Send message with name and the specified args
 | Param | Type | Description |
 | --- | --- | --- |
 | name | <code>string</code> | message name |
-| ...args | <code>\*</code> | message arguments |
+| args | <code>object</code> | message arguments |
 
 <a name="BoundProtocol+request"></a>
 
-### boundProtocol.request(name, ...args) ⇒ <code>Promise</code>
+### boundProtocol.request(name, args) ⇒ <code>Promise</code>
 Returns a promise that resolves with the message payload when a response
 to the specified message is received
 
@@ -1992,7 +2054,7 @@ to the specified message is received
 | Param | Type | Description |
 | --- | --- | --- |
 | name | <code>string</code> | message to wait for |
-| ...args | <code>\*</code> | message arguments |
+| args | <code>object</code> | message arguments |
 
 <a name="BoundProtocol+addMethods"></a>
 
