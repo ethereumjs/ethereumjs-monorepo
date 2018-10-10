@@ -1,9 +1,8 @@
-const levelup = require('levelup')
-const memdown = require('memdown')
+const level = require('level-mem')
 const async = require('async')
 const inherits = require('util').inherits
 const Readable = require('readable-stream').Readable
-const levelws = require('level-ws')
+const WriteStream = require('level-ws')
 const callTogether = require('./util').callTogether
 
 module.exports = checkpointInterface
@@ -90,9 +89,7 @@ function revert (cb) {
 
 // enter into checkpoint mode
 function _enterCpMode () {
-  this._scratch = levelup('', {
-    db: memdown
-  })
+  this._scratch = level()
   this._getDBs = [this._scratch].concat(this._getDBs)
   this.__putDBs = this._putDBs
   this._putDBs = [this._scratch]
@@ -110,12 +107,8 @@ function _exitCpMode (commitState, cb) {
   this.putRaw = this._putRaw
 
   function flushScratch (db, cb) {
-    if (!db.createWriteStream) {
-      db = levelws(db)
-    }
-
     self.createScratchReadStream(scratch)
-      .pipe(db.createWriteStream())
+      .pipe(WriteStream(db))
       .on('close', cb)
   }
 

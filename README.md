@@ -1,4 +1,4 @@
-# SYNOPSIS 
+# SYNOPSIS
 [![NPM Package](https://img.shields.io/npm/v/merkle-patricia-tree.svg?style=flat-square)](https://www.npmjs.org/package/merkle-patricia-tree)
 [![Build Status](https://img.shields.io/travis/ethereumjs/merkle-patricia-tree.svg?branch=master&style=flat-square)](https://travis-ci.org/ethereumjs/merkle-patricia-tree)
 [![Coverage Status](https://img.shields.io/coveralls/ethereumjs/merkle-patricia-tree.svg?style=flat-square)](https://coveralls.io/r/ethereumjs/merkle-patricia-tree)
@@ -22,9 +22,9 @@ The only backing store supported is LevelDB through the ```levelup``` module.
 
 ```javascript
 var Trie = require('merkle-patricia-tree'),
-levelup = require('levelup'),
-db = levelup('./testdb'),
-trie = new Trie(db); 
+level = require('level'),
+db = level('./testdb'),
+trie = new Trie(db);
 
 trie.put('test', 'one', function () {
   trie.get('test', function (err, value) {
@@ -49,19 +49,19 @@ Trie.prove(trie, 'test', function (err, prove) {
 ## Read stream on Geth DB
 
 ```javascript
-var levelup = require('levelup')
+var level = require('level')
 var Trie = require('./secure')
 
 var stateRoot = "0xd7f8974fb5ac78d9ac099b9ad5018bedc2ce0a72dad1827a1709da30580f0544" // Block #222
 
-var db = levelup('YOUR_PATH_TO_THE_GETH_CHAIN_DB')
+var db = level('YOUR_PATH_TO_THE_GETH_CHAIN_DB')
 var trie = new Trie(db, stateRoot)
 
 trie.createReadStream()
   .on('data', function (data) {
     console.log(data)
   })
-  .on('end', function() { 
+  .on('end', function() {
     console.log('End.')
   })
 ```
