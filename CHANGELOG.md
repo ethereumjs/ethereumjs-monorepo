@@ -6,11 +6,17 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 
+## [0.6.0] - 2018-10-11
+Parameter support for the ``Constantinople`` hardfork (see ``hardforks/constantinople.json``):
+- Added ``SSTORE`` gas/refund prices (``EIP-1283``), PR [#27](https://github.com/ethereumjs/ethereumjs-common/pull/27)
+- Added Block Reward Adjustment (``EIP-1234``), PR [#26](https://github.com/ethereumjs/ethereumjs-common/pull/26)
+
+[0.6.0]: https://github.com/ethereumjs/ethereumjs-common/compare/v0.5.0...v0.6.0
+
 ## [0.5.0] - 2018-08-27
 - Introduces **support for private chains** by allowing to pass a custom dictionary as the ``chain`` parameter
   in the constructor or the ``setChain()`` method as an alternative to just passing one of the predefined
   ``chain`` ``String`` names (e.g. ``mainnet``, ``ropsten``), PR [#24](https://github.com/ethereumjs/ethereumjs-common/pull/24)
-  
 
 [0.5.0]: https://github.com/ethereumjs/ethereumjs-common/compare/v0.4.1...v0.5.0
 
