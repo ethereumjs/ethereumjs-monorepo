@@ -1,4 +1,6 @@
 const { spawn } = require('child_process')
+const fs = require('fs')
+const path = require('path');
 
 const testScript = process.argv.find((arg, i, array) => array[i - 1] === '-t')
 const formatter = process.argv.find((arg, i, array) => array[i - 1] === '-with')
@@ -11,20 +13,9 @@ function runTestsWithFormatter (testScript, formatter = './node_modules/.bin/tap
     return
   }
 
-  const npmTestScriptNames = [
-    'coverageTests',
-    'testVM',
-    'testStateByzantium',
-    'testStateConstantinople',
-    'testBuildIntegrity',
-    'testBlockchain',
-    'testBlockchainGeneralStateTests',
-    'testBlockchainBlockGasLimit',
-    'testBlockchainValid',
-    'testBlockchainTotalDifficulty',
-    'testAPI',
-    'test'
-  ]
+  const packageJson = fs.readFileSync(path.dirname(__dirname) + '/package.json', 'utf8')
+  const parsedPackageJson = JSON.parse(packageJson)
+  const npmTestScriptNames = Object.keys(parsedPackageJson.scripts)
 
   const commandToRun = npmTestScriptNames.find(name => name === testScript)
     ? `npm run ${testScript}`
