@@ -70,7 +70,7 @@ library supported:
 - ``tangerineWhistle``
 - ``spuriousDragon``
 - ``byzantium``
-- ``constantinople`` (Draft)
+- ``constantinople``
 - ``hybridCasper`` (Draft)
 
 
