@@ -34,6 +34,7 @@ tape('[Common]: Parameter access', function (t) {
 
     st.equal(c.param('pow', 'minerReward', 'chainstart'), '5000000000000000000', 'Should return correct value for chain start')
     st.equal(c.param('pow', 'minerReward', 'byzantium'), '3000000000000000000', 'Should reflect HF update changes')
+    st.equal(c.param('gasPrices', 'netSstoreNoopGas', 'constantinople'), 200, 'Should return updated sstore gas prices for constantinople')
 
     st.end()
   })
