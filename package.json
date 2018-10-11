@@ -17,7 +17,7 @@
     "testBlockchain": "npm run build:dist && node --stack-size=1500 ./tests/tester -b --dist --excludeDir='GeneralStateTests'",
     "testBlockchainGeneralStateTests": "npm run build:dist && node --stack-size=1500 ./tests/tester -b --dist --dir='GeneralStateTests'",
     "testBlockchainBlockGasLimit": "npm run build:dist && node --stack-size=1500 ./tests/tester -b --dist --dir='bcBlockGasLimitTest'",
-    "testBlockchainValid": "npm run build:dist && node --stack-size=1500 ./tests/tester -b --dist --dir='bcValidBlockTest' | tap-spec",
+    "testBlockchainValid": "npm run build:dist && node --stack-size=1500 ./tests/tester -b --dist --dir='bcValidBlockTest'",
     "testBlockchainTotalDifficulty": "npm run build:dist && node --stack-size=1500 ./tests/tester -b --dist --dir='bcTotalDifficultyTest'",
     "testAPI": "tape ./tests/api/*.js",
     "test": "node ./tests/tester -a",
@@ -61,7 +61,6 @@
     "minimist": "^1.1.1",
     "nyc": "^12.0.2",
     "standard": "^10.0.0",
-    "tap-mocha-reporter": "^3.0.7",
     "tap-spec": "^5.0.0",
     "tape": "4.6.3"
   },
