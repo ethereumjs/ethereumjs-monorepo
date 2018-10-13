@@ -6,12 +6,12 @@
 [![Gitter](https://img.shields.io/gitter/room/ethereum/ethereumjs.svg?style=flat-square)](https://gitter.im/ethereum/ethereumjs)
 
 This is the work repository for the EthereumJS main chain client implementation project.
-This is a community project. See [Development Stages](https://github.com/ethereumjs/ethereumjs-client#development-stages) for idea
+This is a community project. See [Development Stages](./PROJECT.md#development-stages) for idea
 about the current project status, [issues](https://github.com/ethereumjs/ethereumjs-client/issues)
-for open issues and a project layout and read through [Community Project](https://github.com/ethereumjs/ethereumjs-client#community-project)
+for open issues and a project layout and read through [Community Project](./PROJECT.md#community-project)
 if you want to join.
 
-See [Technical Guidelines](https://github.com/ethereumjs/ethereumjs-client#technical-guidelines) if
+See [Technical Guidelines](#technical-guidelines) if
 you directly want to dive into development info.
 
 Current development stage: ``CONCEPT ANALYSIS / EARLY DEVELOPMENT``
