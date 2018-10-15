@@ -283,6 +283,23 @@ test docs), provided by the index of the array element in the test ``transaction
 Run a state test from a specified source file not under the ``tests`` directory:
 `node ./tests/tester -s --customStateTest='{path_to_file}'`
 
+#### Running tests with a reporter/formatter
+
+`npm run formatTest -t [npm script name OR node command]` will pipe to `tap-spec` by default.
+
+To pipe the results of the API tests through `tap-spec`:
+
+`npm run formatTest -- -t testAPI`
+
+To pipe the results of tests run with a node command through `tap-spec`:
+
+`npm run formatTest -- -t "./tests/tester -b --dir='bcBlockGasLimitTest'"`
+
+The `-with` flag allows the specification of a formatter of your choosing:
+
+`npm install -g tap-mocha-reporter`
+`npm run formatTest -- -t testAPI -with 'tap-mocha-reporter json'`
+
 #### Skipping Tests
 
 There are three types of skip lists (``BROKEN``, ``PERMANENT`` and ``SLOW``) which

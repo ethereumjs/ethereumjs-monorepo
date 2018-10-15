@@ -23,7 +23,8 @@
     "test": "node ./tests/tester -a",
     "lint": "standard",
     "prepublishOnly": "npm run lint && npm run build:dist && npm run testBuildIntegrity",
-    "build:dist": "babel lib/ -d dist/"
+    "build:dist": "babel lib/ -d dist/",
+    "formatTest": "node ./scripts/formatTest"
   },
   "repository": {
     "type": "git",
@@ -60,6 +61,7 @@
     "minimist": "^1.1.1",
     "nyc": "^12.0.2",
     "standard": "^10.0.0",
+    "tap-spec": "^5.0.0",
     "tape": "4.6.3"
   },
   "author": "mjbecze <mjbecze@gmail.com>",
