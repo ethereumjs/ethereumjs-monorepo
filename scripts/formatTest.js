@@ -1,6 +1,6 @@
 const { spawn } = require('child_process')
 const fs = require('fs')
-const path = require('path');
+const path = require('path')
 
 const testScript = process.argv.find((arg, i, array) => array[i - 1] === '-t')
 const formatter = process.argv.find((arg, i, array) => array[i - 1] === '-with')
