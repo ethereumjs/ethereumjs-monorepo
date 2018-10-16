@@ -8,10 +8,10 @@ tape('StateManager', (t) => {
   t.test('should instantiate', (st) => {
     const stateManager = new StateManager()
 
-    st.equal(stateManager.trie.root, util.KECCAK256_RLP, 'it has default root')
+    st.deepEqual(stateManager.trie.root, util.KECCAK256_RLP, 'it has default root')
     stateManager.getStateRoot((err, res) => {
       st.error(err, 'getStateRoot returns no error')
-      st.equal(res, util.KECCAK256_RLP, 'it has default root')
+      st.deepEqual(res, util.KECCAK256_RLP, 'it has default root')
     })
 
     st.equal(stateManager._common.hardfork(), 'byzantium', 'it has default hardfork')

@@ -11,7 +11,7 @@ tape('VM with fake blockchain', (t) => {
   t.test('should insantiate without params', (st) => {
     const vm = new VM()
     st.ok(vm.stateManager)
-    st.equal(vm.stateManager.trie.root, util.KECCAK256_RLP, 'it has default trie')
+    st.deepEqual(vm.stateManager.trie.root, util.KECCAK256_RLP, 'it has default trie')
     st.ok(vm.blockchain.fake, 'it has fake blockchain by default')
     st.end()
   })
@@ -47,7 +47,7 @@ tape('VM with fake blockchain', (t) => {
 tape('VM with blockchain', (t) => {
   t.test('should instantiate', (st) => {
     const vm = setupVM()
-    st.equal(vm.stateManager.trie.root, util.KECCAK256_RLP, 'it has default trie')
+    st.deepEqual(vm.stateManager.trie.root, util.KECCAK256_RLP, 'it has default trie')
     st.notOk(vm.stateManager.fake, 'it doesn\'t have fake blockchain')
     st.end()
   })
