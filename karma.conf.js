@@ -40,6 +40,9 @@ module.exports = function (config) {
         if (process.env.TRAVIS) {
           return ['Firefox']
         }
+        if (availableBrowser.includes('Chrome')) {
+          return ['ChromeHeadless']
+        }
 
         var browsers = ['Chrome', 'Firefox']
         return browsers.filter(function (browser) {
