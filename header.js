@@ -116,7 +116,7 @@ BlockHeader.prototype.canonicalDifficulty = function (parentBlock) {
   var dif
 
   if (this._common.hardforkGteHardfork(hardfork, 'byzantium')) {
-    // max((2 if len(parent.uncles) else 1) - ((timestamp - parent.timestamp) // 9), -99)
+    // max((2 if len(parent.uncles) else 1) - ((timestamp - parent.timestamp) // 9), -99) (EIP100)
     var uncleAddend = parentBlock.header.uncleHash.equals(utils.SHA3_RLP_ARRAY) ? 1 : 2
     a = blockTs.sub(parentTs).idivn(9).ineg().iaddn(uncleAddend)
     cutoff = new BN(-99)
@@ -125,8 +125,16 @@ BlockHeader.prototype.canonicalDifficulty = function (parentBlock) {
       a = cutoff
     }
     dif = parentDif.add(offset.mul(a))
+  }
 
-    // Byzantium difficulty bomb delay
+  if (this._common.hardforkGteHardfork(hardfork, 'constantinople')) {
+    // Constantinople difficulty bomb delay (EIP1234)
+    num.isubn(5000000)
+    if (num.ltn(0)) {
+      num = new BN(0)
+    }
+  } else if (this._common.hardforkGteHardfork(hardfork, 'byzantium')) {
+    // Byzantium difficulty bomb delay (EIP649)
     num.isubn(3000000)
     if (num.ltn(0)) {
       num = new BN(0)
