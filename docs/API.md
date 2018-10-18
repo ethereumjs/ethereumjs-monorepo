@@ -299,13 +299,6 @@ into the blockchain once prior gaps are filled.
         * [.connect()](#module_net/peer.Libp2pPeer+connect) ⇒ <code>Promise</code>
     * [.Peer](#module_net/peer.Peer)
         * [new Peer(options)](#new_module_net/peer.Peer_new)
-        * [.id](#module_net/peer.Peer+id)
-        * [.address](#module_net/peer.Peer+address)
-        * [.logger](#module_net/peer.Peer+logger)
-        * [.protocols](#module_net/peer.Peer+protocols)
-        * [.bound](#module_net/peer.Peer+bound)
-        * [.server](#module_net/peer.Peer+server)
-        * [.inbound](#module_net/peer.Peer+inbound)
         * [.idle](#module_net/peer.Peer+idle) : <code>boolean</code>
         * [.idle](#module_net/peer.Peer+idle) : <code>boolean</code>
         * [.bindProtocol(protocol, sender)](#module_net/peer.Peer+bindProtocol) ⇒ <code>Promise</code>
@@ -316,6 +309,7 @@ into the blockchain once prior gaps are filled.
             * [.connect()](#module_net/peer.RlpxPeer+connect) ⇒ <code>Promise</code>
         * _static_
             * [.capabilities(protocols)](#module_net/peer.RlpxPeer.capabilities) ⇒ <code>Array.&lt;Object&gt;</code>
+    * [.TCP](#module_net/peer.TCP)
 
 <a name="module_net/peer.Libp2pPeer"></a>
 
@@ -338,11 +332,9 @@ Create new libp2p peer
 | --- | --- | --- | --- |
 | options | <code>Object</code> |  | constructor parameters |
 | options.id | <code>string</code> |  | peer id |
-| options.host | <code>string</code> |  | peer hostname or ip address |
-| options.port | <code>number</code> |  | peer port |
+| options.multiaddrs | <code>Array.&lt;multiaddr&gt;</code> |  | multiaddrs to listen on (can be a comma separated string or list) |
 | [options.protocols] | <code>Array.&lt;Protocols&gt;</code> | <code>[]</code> | supported protocols |
 | [options.logger] | <code>Logger</code> |  | Logger instance |
-| [options.privateKey] | <code>Buffer</code> |  | private key |
 
 **Example**  
 ```js
@@ -352,9 +344,10 @@ const { EthProtocol } = require('./lib/net/protocol')
 
 const chain = new Chain()
 const protocols = [ new EthProtocol({ chain })]
-const addr = '/ip4/192.0.2.1/tcp/12345'
+const id = 'QmWYhkpLFDhQBwHCMSWzEebbJ5JzXWBKLJxjEuiL8wGzUu'
+const multiaddrs = [ '/ip4/192.0.2.1/tcp/12345' ]
 
-new Libp2pPeer({ addr, protocols })
+new Libp2pPeer({ id, multiaddrs, protocols })
   .on('error', (err) => console.log('Error:', err))
   .on('connected', () => console.log('Connected'))
   .on('disconnected', (reason) => console.log('Disconnected:', reason))
@@ -375,13 +368,6 @@ Network peer
 
 * [.Peer](#module_net/peer.Peer)
     * [new Peer(options)](#new_module_net/peer.Peer_new)
-    * [.id](#module_net/peer.Peer+id)
-    * [.address](#module_net/peer.Peer+address)
-    * [.logger](#module_net/peer.Peer+logger)
-    * [.protocols](#module_net/peer.Peer+protocols)
-    * [.bound](#module_net/peer.Peer+bound)
-    * [.server](#module_net/peer.Peer+server)
-    * [.inbound](#module_net/peer.Peer+inbound)
     * [.idle](#module_net/peer.Peer+idle) : <code>boolean</code>
     * [.idle](#module_net/peer.Peer+idle) : <code>boolean</code>
     * [.bindProtocol(protocol, sender)](#module_net/peer.Peer+bindProtocol) ⇒ <code>Promise</code>
@@ -397,81 +383,10 @@ Create new peer
 | --- | --- | --- | --- |
 | options | <code>Object</code> |  | constructor parameters |
 | options.id | <code>string</code> |  | peer id |
-| options.address | <code>string</code> |  | peer address |
+| [options.address] | <code>string</code> |  | peer address |
+| [options.transport] | <code>string</code> |  | transport name |
 | [options.protocols] | <code>Array.&lt;Protocols&gt;</code> | <code>[]</code> | supported protocols |
 | [options.logger] | <code>Logger</code> |  | logger instance |
-
-<a name="module_net/peer.Peer+id"></a>
-
-#### peer.id
-[id description]
-
-**Kind**: instance property of [<code>Peer</code>](#module_net/peer.Peer)  
-**Properties**
-
-| Name | Type |
-| --- | --- |
-| id | <code>string</code> | 
-
-<a name="module_net/peer.Peer+address"></a>
-
-#### peer.address
-**Kind**: instance property of [<code>Peer</code>](#module_net/peer.Peer)  
-**Properties**
-
-| Name | Type |
-| --- | --- |
-| address | <code>string</code> | 
-
-<a name="module_net/peer.Peer+logger"></a>
-
-#### peer.logger
-**Kind**: instance property of [<code>Peer</code>](#module_net/peer.Peer)  
-**Properties**
-
-| Name | Type |
-| --- | --- |
-| logger | <code>Logger</code> | 
-
-<a name="module_net/peer.Peer+protocols"></a>
-
-#### peer.protocols
-**Kind**: instance property of [<code>Peer</code>](#module_net/peer.Peer)  
-**Properties**
-
-| Name | Type | Description |
-| --- | --- | --- |
-| protocols | <code>Array.&lt;Protocol&gt;</code> | supported protocols |
-
-<a name="module_net/peer.Peer+bound"></a>
-
-#### peer.bound
-**Kind**: instance property of [<code>Peer</code>](#module_net/peer.Peer)  
-**Properties**
-
-| Name | Type | Description |
-| --- | --- | --- |
-| bound | <code>Array.&lt;Protocol&gt;</code> | bound protocols |
-
-<a name="module_net/peer.Peer+server"></a>
-
-#### peer.server
-**Kind**: instance property of [<code>Peer</code>](#module_net/peer.Peer)  
-**Properties**
-
-| Name | Type |
-| --- | --- |
-| server | <code>Server</code> | 
-
-<a name="module_net/peer.Peer+inbound"></a>
-
-#### peer.inbound
-**Kind**: instance property of [<code>Peer</code>](#module_net/peer.Peer)  
-**Properties**
-
-| Name | Type | Description |
-| --- | --- | --- |
-| inbound | <code>boolean</code> | true if peer initiated connection |
 
 <a name="module_net/peer.Peer+idle"></a>
 
@@ -555,7 +470,6 @@ Create new devp2p/rlpx peer
 | options.port | <code>number</code> |  | peer port |
 | [options.protocols] | <code>Array.&lt;Protocols&gt;</code> | <code>[]</code> | supported protocols |
 | [options.logger] | <code>Logger</code> |  | Logger instance |
-| [options.privateKey] | <code>Buffer</code> |  | private key |
 
 **Example**  
 ```js
@@ -593,6 +507,12 @@ Return devp2p/rlpx capabilities for the specified protocols
 | --- | --- | --- |
 | protocols | <code>Array.&lt;Protocols&gt;</code> | protocol instances |
 
+<a name="module_net/peer.TCP"></a>
+
+### net/peer.TCP
+Libp2p Bundle
+
+**Kind**: static constant of [<code>net/peer</code>](#module_net/peer)  
 <a name="module_net"></a>
 
 ## net
@@ -756,6 +676,11 @@ Specify which protocols the peer pool must support
         * [.open()](#module_net/protocol.LesProtocol+open) ⇒ <code>Promise</code>
         * [.encodeStatus()](#module_net/protocol.LesProtocol+encodeStatus) ⇒ <code>Object</code>
         * [.decodeStatus(status)](#module_net/protocol.LesProtocol+decodeStatus) ⇒ <code>Object</code>
+    * [.Libp2pSender](#module_net/protocol.Libp2pSender)
+        * [new Libp2pSender(connection)](#new_module_net/protocol.Libp2pSender_new)
+        * [.sendStatus(status)](#module_net/protocol.Libp2pSender+sendStatus)
+        * [.sendMessage(code, data)](#module_net/protocol.Libp2pSender+sendMessage)
+        * [.error(error)](#module_net/protocol.Libp2pSender+error)
     * [.Protocol](#module_net/protocol.Protocol)
         * [new Protocol(options)](#new_module_net/protocol.Protocol_new)
         * [.name](#module_net/protocol.Protocol+name) : <code>string</code>
@@ -969,6 +894,64 @@ Decodes ETH status message payload into a status object
 | --- | --- | --- |
 | status | <code>Object</code> | status message payload |
 
+<a name="module_net/protocol.Libp2pSender"></a>
+
+### net/protocol.Libp2pSender
+Libp2p protocol sender
+
+**Kind**: static class of [<code>net/protocol</code>](#module_net/protocol)  
+**Emits**: <code>event:message</code>, <code>event:status</code>  
+
+* [.Libp2pSender](#module_net/protocol.Libp2pSender)
+    * [new Libp2pSender(connection)](#new_module_net/protocol.Libp2pSender_new)
+    * [.sendStatus(status)](#module_net/protocol.Libp2pSender+sendStatus)
+    * [.sendMessage(code, data)](#module_net/protocol.Libp2pSender+sendMessage)
+    * [.error(error)](#module_net/protocol.Libp2pSender+error)
+
+<a name="new_module_net/protocol.Libp2pSender_new"></a>
+
+#### new Libp2pSender(connection)
+Creates a new Libp2p protocol sender
+
+
+| Param | Type | Description |
+| --- | --- | --- |
+| connection | <code>Connection</code> | connection to libp2p peer |
+
+<a name="module_net/protocol.Libp2pSender+sendStatus"></a>
+
+#### libp2pSender.sendStatus(status)
+Send a status to peer
+
+**Kind**: instance method of [<code>Libp2pSender</code>](#module_net/protocol.Libp2pSender)  
+
+| Param | Type |
+| --- | --- |
+| status | <code>Object</code> | 
+
+<a name="module_net/protocol.Libp2pSender+sendMessage"></a>
+
+#### libp2pSender.sendMessage(code, data)
+Send a message to peer
+
+**Kind**: instance method of [<code>Libp2pSender</code>](#module_net/protocol.Libp2pSender)  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| code | <code>number</code> | message code |
+| data | <code>\*</code> | message payload |
+
+<a name="module_net/protocol.Libp2pSender+error"></a>
+
+#### libp2pSender.error(error)
+Handle pull stream errors
+
+**Kind**: instance method of [<code>Libp2pSender</code>](#module_net/protocol.Libp2pSender)  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| error | <code>Error</code> | error |
+
 <a name="module_net/protocol.Protocol"></a>
 
 ### net/protocol.Protocol
@@ -1172,6 +1155,13 @@ Send a message to peer
 ## net/server
 
 * [net/server](#module_net/server)
+    * [.Libp2pServer](#module_net/server.Libp2pServer)
+        * [new Libp2pServer(options)](#new_module_net/server.Libp2pServer_new)
+        * [.name](#module_net/server.Libp2pServer+name) : <code>string</code>
+        * [.start()](#module_net/server.Libp2pServer+start) ⇒ <code>Promise</code>
+        * [.stop()](#module_net/server.Libp2pServer+stop) ⇒ <code>Promise</code>
+        * [.ban(peerId, [maxAge])](#module_net/server.Libp2pServer+ban) ⇒ <code>Promise</code>
+        * [.isBanned(peerId)](#module_net/server.Libp2pServer+isBanned) ⇒ <code>Boolean</code>
     * [.RlpxServer](#module_net/server.RlpxServer)
         * [new RlpxServer(options)](#new_module_net/server.RlpxServer_new)
         * [.name](#module_net/server.RlpxServer+name) : <code>string</code>
@@ -1184,6 +1174,80 @@ Send a message to peer
         * [.stop()](#module_net/server.Server+stop) ⇒ <code>Promise</code>
         * [.addProtocols(protocols)](#module_net/server.Server+addProtocols)
         * [.ban(peerId, [maxAge])](#module_net/server.Server+ban) ⇒ <code>Promise</code>
+
+<a name="module_net/server.Libp2pServer"></a>
+
+### net/server.Libp2pServer
+Libp2p server
+
+**Kind**: static class of [<code>net/server</code>](#module_net/server)  
+**Emits**: <code>event:connected</code>, <code>event:disconnected</code>, <code>event:error</code>  
+
+* [.Libp2pServer](#module_net/server.Libp2pServer)
+    * [new Libp2pServer(options)](#new_module_net/server.Libp2pServer_new)
+    * [.name](#module_net/server.Libp2pServer+name) : <code>string</code>
+    * [.start()](#module_net/server.Libp2pServer+start) ⇒ <code>Promise</code>
+    * [.stop()](#module_net/server.Libp2pServer+stop) ⇒ <code>Promise</code>
+    * [.ban(peerId, [maxAge])](#module_net/server.Libp2pServer+ban) ⇒ <code>Promise</code>
+    * [.isBanned(peerId)](#module_net/server.Libp2pServer+isBanned) ⇒ <code>Boolean</code>
+
+<a name="new_module_net/server.Libp2pServer_new"></a>
+
+#### new Libp2pServer(options)
+Create new DevP2P/RLPx server
+
+
+| Param | Type | Default | Description |
+| --- | --- | --- | --- |
+| options | <code>Object</code> |  | constructor parameters |
+| [options.bootnodes] | <code>Array.&lt;Object&gt;</code> |  | list of bootnodes to use for discovery (can be a comma separated string or list) |
+| [options.maxPeers] | <code>number</code> | <code>25</code> | maximum peers allowed |
+| [options.multiaddrs] | <code>Array.&lt;multiaddr&gt;</code> |  | multiaddrs to listen on (can be a comma separated string or list) |
+| [options.key] | <code>Buffer</code> |  | private key to use for server |
+| [options.refreshInterval] | <code>number</code> | <code>30000</code> | how often (in ms) to discover new peers |
+| [options.logger] | <code>Logger</code> |  | Logger instance |
+
+<a name="module_net/server.Libp2pServer+name"></a>
+
+#### libp2pServer.name : <code>string</code>
+Server name
+
+**Kind**: instance property of [<code>Libp2pServer</code>](#module_net/server.Libp2pServer)  
+<a name="module_net/server.Libp2pServer+start"></a>
+
+#### libp2pServer.start() ⇒ <code>Promise</code>
+Start Libp2p server. Returns a promise that resolves once server has been started.
+
+**Kind**: instance method of [<code>Libp2pServer</code>](#module_net/server.Libp2pServer)  
+<a name="module_net/server.Libp2pServer+stop"></a>
+
+#### libp2pServer.stop() ⇒ <code>Promise</code>
+Stop Libp2p server. Returns a promise that resolves once server has been stopped.
+
+**Kind**: instance method of [<code>Libp2pServer</code>](#module_net/server.Libp2pServer)  
+<a name="module_net/server.Libp2pServer+ban"></a>
+
+#### libp2pServer.ban(peerId, [maxAge]) ⇒ <code>Promise</code>
+Ban peer for a specified time
+
+**Kind**: instance method of [<code>Libp2pServer</code>](#module_net/server.Libp2pServer)  
+
+| Param | Type | Default | Description |
+| --- | --- | --- | --- |
+| peerId | <code>string</code> |  | id of peer |
+| [maxAge] | <code>number</code> | <code>60000</code> | how long to ban peer |
+
+<a name="module_net/server.Libp2pServer+isBanned"></a>
+
+#### libp2pServer.isBanned(peerId) ⇒ <code>Boolean</code>
+Check if peer is currently banned
+
+**Kind**: instance method of [<code>Libp2pServer</code>](#module_net/server.Libp2pServer)  
+**Returns**: <code>Boolean</code> - true if banned  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| peerId | <code>string</code> | id of peer |
 
 <a name="module_net/server.RlpxServer"></a>
 
@@ -1209,10 +1273,10 @@ Create new DevP2P/RLPx server
 | Param | Type | Default | Description |
 | --- | --- | --- | --- |
 | options | <code>Object</code> |  | constructor parameters |
-| options.bootnodes | <code>Array.&lt;Object&gt;</code> |  | list of bootnodes to use for discovery |
+| [options.bootnodes] | <code>Array.&lt;Object&gt;</code> |  | list of bootnodes to use for discovery (can be a comma separated string or list) |
 | [options.maxPeers] | <code>number</code> | <code>25</code> | maximum peers allowed |
-| [options.localPort] | <code>number</code> | <code></code> | local port to listen on |
-| [options.privateKey] | <code>Buffer</code> |  | private key to use for server |
+| [options.port] | <code>number</code> | <code></code> | local port to listen on |
+| [options.key] | <code>Buffer</code> |  | private key to use for server |
 | [options.clientFilter] | <code>Array.&lt;string&gt;</code> |  | list of supported clients |
 | [options.refreshInterval] | <code>number</code> | <code>30000</code> | how often (in ms) to discover new peers |
 | [options.logger] | <code>Logger</code> |  | Logger instance |

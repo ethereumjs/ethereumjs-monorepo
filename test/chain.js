@@ -8,19 +8,15 @@ const { defaultLogger } = require('../lib/logging')
 defaultLogger.silent = true
 
 tape('[Chain]: Database functions', t => {
-  const config = {}
-
   t.test('should test object creation without logger', st => {
-    const tmpdir = tmp.dirSync()
-    config.dataDir = `${tmpdir.name}/chaindb`
-
-    st.equal(new Chain(config).logger, defaultLogger)
+    st.equal(new Chain().logger, defaultLogger)
 
     st.end()
   })
 
   t.test('should test data dir creation', st => {
     const tmpdir = tmp.dirSync()
+    const config = {}
     config.dataDir = `${tmpdir.name}/chaindb`
 
     new Chain(config) // eslint-disable-line no-new
@@ -32,6 +28,7 @@ tape('[Chain]: Database functions', t => {
 
   t.test('should test non-error on already created data dir', st => {
     const tmpdir = tmp.dirSync()
+    const config = {}
     config.dataDir = `${tmpdir.name}/chaindb`
 
     fs.mkdirSync(config.dataDir)
@@ -46,10 +43,7 @@ tape('[Chain]: Database functions', t => {
   })
 
   t.test('should test blockchain DB is initialized', st => {
-    const tmpdir = tmp.dirSync()
-    config.dataDir = `${tmpdir.name}/chaindb`
-
-    const chain = new Chain(config) // eslint-disable-line no-new
+    const chain = new Chain() // eslint-disable-line no-new
 
     const db = chain.db
     const testKey = 'name'
@@ -68,10 +62,7 @@ tape('[Chain]: Database functions', t => {
   })
 
   t.test('should retrieve chain properties', async (st) => {
-    const tmpdir = tmp.dirSync()
-    config.dataDir = `${tmpdir.name}/chaindb`
-
-    const chain = new Chain(config) // eslint-disable-line no-new
+    const chain = new Chain() // eslint-disable-line no-new
     await chain.open()
     st.equal(chain.networkId, 1, 'get chain.networkId')
     st.equal(chain.blocks.td.toString(10), '17179869184', 'get chain.blocks.td')
@@ -87,10 +78,7 @@ tape('[Chain]: Database functions', t => {
   })
 
   t.test('should detect unopened chain', async (st) => {
-    const tmpdir = tmp.dirSync()
-    config.dataDir = `${tmpdir.name}/chaindb`
-
-    const chain = new Chain(config) // eslint-disable-line no-new
+    const chain = new Chain() // eslint-disable-line no-new
     const block = new Block()
     block.header.number = util.toBuffer(1)
     block.header.difficulty = '0xabcdffff'
@@ -126,10 +114,7 @@ tape('[Chain]: Database functions', t => {
   })
 
   t.test('should handle bad arguments to putBlocks()', async (st) => {
-    const tmpdir = tmp.dirSync()
-    config.dataDir = `${tmpdir.name}/chaindb`
-
-    const chain = new Chain(config) // eslint-disable-line no-new
+    const chain = new Chain() // eslint-disable-line no-new
     await chain.open()
     st.notOk(await chain.putBlocks(), 'add undefined block')
     st.notOk(await chain.putBlocks(null), 'add null block')
@@ -138,10 +123,7 @@ tape('[Chain]: Database functions', t => {
   })
 
   t.test('should handle bad arguments to putHeaders()', async (st) => {
-    const tmpdir = tmp.dirSync()
-    config.dataDir = `${tmpdir.name}/chaindb`
-
-    const chain = new Chain(config) // eslint-disable-line no-new
+    const chain = new Chain() // eslint-disable-line no-new
     await chain.open()
     st.notOk(await chain.putHeaders(), 'add undefined header')
     st.notOk(await chain.putHeaders(null), 'add null header')
@@ -150,10 +132,7 @@ tape('[Chain]: Database functions', t => {
   })
 
   t.test('should add block to chain', async (st) => {
-    const tmpdir = tmp.dirSync()
-    config.dataDir = `${tmpdir.name}/chaindb`
-
-    const chain = new Chain(config) // eslint-disable-line no-new
+    const chain = new Chain() // eslint-disable-line no-new
     await chain.open()
 
     const block = new Block()
