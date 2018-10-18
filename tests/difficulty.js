@@ -24,7 +24,8 @@ tape('[Header]: difficulty tests', t => {
   const hardforkTestData = {
     'chainstart': require('./difficultyFrontier.json').tests,
     'homestead': require('./difficultyHomestead.json').tests,
-    'byzantium': require('./difficultyByzantium.json').tests
+    'byzantium': require('./difficultyByzantium.json').tests,
+    'constantinople': require('./difficultyConstantinople.json').tests
   }
   for (let hardfork in hardforkTestData) {
     const testData = hardforkTestData[hardfork]
