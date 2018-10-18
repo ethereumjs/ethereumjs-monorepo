@@ -44,7 +44,7 @@
 -   [KECCAK256_RLP_ARRAY](#keccak256_rlp_array)
 -   [KECCAK256_RLP_ARRAY_S](#keccak256_rlp_array_s)
 -   [KECCAK256_RLP_S](#keccak256_rlp_s)
--   [lsetLength](#lsetlength)
+-   [setLengthLeft](#setLengthLeft)
 -   [MAX_INTEGER](#max_integer)
 -   [privateToPublic](#privatetopublic)
 -   [TWO_POW256](#two_pow256)
@@ -551,7 +551,7 @@ Keccak-256 hash of the RLP of null  (a `String`)
 
 Type: [String](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)
 
-## lsetLength
+## setLengthLeft
 
 [index.js:106-122](https://github.com/ethereumjs/ethereumjs-util/blob/9396416913125711e526a05591e3ce8471c3a528/index.js#L106-L122 "Source code on GitHub")
 
