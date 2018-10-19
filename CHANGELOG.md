@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 
+## [2.1.0] - 2018-10-19
+- **Constantinople** support, added difficulty bomb delay (EIP-1234), PR [#54](https://github.com/ethereumjs/ethereumjs-block/pull/54)
+- Updated test data, added Constantinople tests, PR [#56](https://github.com/ethereumjs/ethereumjs-block/pull/56), [#57](https://github.com/ethereumjs/ethereumjs-block/pull/57)
+- Added ``timestamp`` field to ``setGenesisParams()``, PR [#52](https://github.com/ethereumjs/ethereumjs-block/pull/52)
+
+[2.1.0]: https://github.com/ethereumjs/ethereumjs-vm/compare/v2.0.1...v2.1.0
+
 ## [2.0.1] - 2018-08-08
 - Fixes ``BlockHeader.prototype.validate()`` bug, see PR [#49](https://github.com/ethereumjs/ethereumjs-block/pull/49)
 
