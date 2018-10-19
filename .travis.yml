@@ -1,11 +1,9 @@
 language: node_js
 node_js:
-  - "4"
-  - "5"
   - "6"
-  - "7"
   - "8"
   - "9"
+  - "10"
 env:
   - CXX=g++-4.8
 addons:
@@ -35,5 +33,3 @@ matrix:
       env: CXX=g++-4.8 TEST_SUITE=test:browser
 script: npm run $TEST_SUITE
 
-notifications:
-  irc: "chat.freenode.net#ethereumjs"
