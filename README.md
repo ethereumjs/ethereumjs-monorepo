@@ -31,6 +31,10 @@ new Blockchain({db: db}).iterator('i', (block, reorg, cb) => {
 }, (err) => console.log(err || 'Done.'))
 ```
 
+**WARNING**: Since ``ethereumjs-blockchain`` is also doing write operations
+on the DB for safety reasons only run this on a copy of your database, otherwise this might lead
+to a compromised DB state.
+
 # API
 
 - [`Blockchain`](#blockchain)
@@ -56,7 +60,7 @@ Implements functions for retrieving, manipulating and storing Ethereum's blockch
 ### `new Blockchain(opts)`
 Creates new Blockchain object
 - `opts.db` - Database to store blocks and metadata. Should be a [levelup](https://github.com/rvagg/node-levelup) instance.
-- `opts.validate` - this the flag to validate blocks (e.g. Proof-of-Work).
+- `opts.validate` - this the flag to validate blocks (e.g. Proof-of-Work), latest HF rules supported: ``Constantinople``.
 
 [DEPRECATION NOTE]
 The old separated DB constructor parameters `opts.blockDB` and `opts.detailsDB` from before the Geth DB-compatible ``v3.0.0`` release are deprecated and continued usage is discouraged. When provided `opts.blockDB` will be used
