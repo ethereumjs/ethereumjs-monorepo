@@ -13,11 +13,20 @@ module.exports = function runBlockchainTest (options, testData, t, cb) {
     db: require('memdown')
   })
   var state = new Trie()
+  var validate = false
+  // Only run with block validation when sealEngine present in test file
+  // and being set to Ethash PoW validation
+  if (testData.sealEngine && testData.sealEngine === 'Ethash') {
+    validate = true
+  }
   var blockchain = new Blockchain({
     db: blockchainDB,
-    hardfork: options.forkConfig.toLowerCase()
+    hardfork: options.forkConfig.toLowerCase(),
+    validate: validate
   })
-  blockchain.ethash.cacheDB = cacheDB
+  if (validate) {
+    blockchain.ethash.cacheDB = cacheDB
+  }
   var VM
   if (options.dist) {
     VM = require('../dist/index.js')
