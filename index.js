@@ -97,7 +97,7 @@ exports.zeroAddress = function () {
 /**
  * Left Pads an `Array` or `Buffer` with leading zeros till it has `length` bytes.
  * Or it truncates the beginning if it exceeds.
- * @method lsetLength
+ * @method setLengthLeft
  * @param {Buffer|Array} msg the value to pad
  * @param {Number} length the number of bytes the output should be
  * @param {Boolean} [right=false] whether to start padding form the left or right
