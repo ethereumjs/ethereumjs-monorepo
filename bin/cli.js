@@ -24,6 +24,11 @@ const args = require('yargs')
       choices: [ 'light', 'fast' ],
       default: 'light'
     },
+    'lightserv': {
+      describe: 'Serve light peer requests',
+      boolean: true,
+      default: false
+    },
     'datadir': {
       describe: 'Data directory for the blockchain',
       default: `${os.homedir()}/Library/Ethereum`
@@ -63,13 +68,20 @@ const logger = getLogger({loglevel: args.loglevel})
 
 async function runNode (options) {
   logger.info('Initializing Ethereumjs client...')
+  if (options.lightserv) {
+    logger.info(`Serving light peer requests`)
+  }
   const node = new Node(options)
   node.on('error', err => logger.error(err))
-  node.on('listening', details => logger.info(`Listener up transport=${details.transport} url=${details.url}`))
-  node.on('synchronized', () => logger.info('Synchronized'))
+  node.on('listening', details => {
+    logger.info(`Listener up transport=${details.transport} url=${details.url}`)
+  })
+  node.on('synchronized', (stats) => {
+    logger.info(`Synchronized ${stats.count} ${stats.type === 'light' ? 'headers' : 'blocks'}`)
+  })
   logger.info(`Connecting to network: ${options.common.chainName()}`)
-  await node.open()
   logger.info(`Data directory: ${options.dataDir}`)
+  await node.open()
   logger.info('Synchronizing blockchain...')
   node.start()
 
@@ -94,6 +106,7 @@ async function run () {
     logger: logger,
     transports: args.transports,
     syncmode: args.syncmode,
+    lightserv: args.lightserv,
     dataDir: `${args.datadir}/${networkDirName}ethereumjs/${syncDirName}`,
     rpcport: args.rpcport,
     rpcaddr: args.rpcaddr
