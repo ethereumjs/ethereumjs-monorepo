@@ -1,5 +1,4 @@
 const tape = require('tape')
-const tmp = require('tmp')
 const Block = require('ethereumjs-block')
 const util = require('ethereumjs-util')
 const { Chain, BlockPool } = require('../lib/blockchain')
@@ -7,13 +6,8 @@ const { defaultLogger } = require('../lib/logging')
 defaultLogger.silent = true
 
 tape('[BlockPool]: functions', t => {
-  const config = {}
-
   t.test('should add block segment to chain', async (st) => {
-    const tmpdir = tmp.dirSync()
-    config.dataDir = `${tmpdir.name}/chaindb`
-
-    const chain = new Chain(config) // eslint-disable-line no-new
+    const chain = new Chain() // eslint-disable-line no-new
     const pool = new BlockPool({ chain })
     await pool.open()
 
@@ -37,10 +31,7 @@ tape('[BlockPool]: functions', t => {
   })
 
   t.test('should get pool size', async (st) => {
-    const tmpdir = tmp.dirSync()
-    config.dataDir = `${tmpdir.name}/chaindb`
-
-    const chain = new Chain(config) // eslint-disable-line no-new
+    const chain = new Chain() // eslint-disable-line no-new
     const pool = new BlockPool({ chain })
     await pool.open()
 
@@ -63,10 +54,7 @@ tape('[BlockPool]: functions', t => {
   })
 
   t.test('should check opened state', async (st) => {
-    const tmpdir = tmp.dirSync()
-    config.dataDir = `${tmpdir.name}/chaindb`
-
-    const chain = new Chain(config) // eslint-disable-line no-new
+    const chain = new Chain() // eslint-disable-line no-new
     const pool = new BlockPool({ chain })
     st.equal(await pool.add([]), false, 'not opened')
     await pool.open()

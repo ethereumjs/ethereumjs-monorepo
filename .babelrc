@@ -1,0 +1,23 @@
+{
+  "presets": [
+    [
+      "@babel/env",
+      {
+        "targets": {
+          "node": "6.5"
+        }
+      }
+    ]
+  ],
+  "plugins": [
+    [
+      "@babel/transform-runtime",
+      {
+        "corejs": 2,
+        "helpers": true,
+        "regenerator": true,
+        "useESModules": false
+      }
+    ]
+  ]
+}

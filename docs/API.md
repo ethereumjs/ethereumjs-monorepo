@@ -34,11 +34,19 @@
 ## Functions
 
 <dl>
+<dt><a href="#define">define(name, path)</a></dt>
+<dd><p>Define a library component for lazy loading. Borrowed from
+<a href="https://github.com/bcoin-org/bcoin/blob/master/lib/bcoin.js">https://github.com/bcoin-org/bcoin/blob/master/lib/bcoin.js</a></p>
+</dd>
 <dt><a href="#putBlocks">putBlocks(blocks)</a> ⇒ <code>Promise</code></dt>
 <dd><p>Insert new blocks into blockchain</p>
 </dd>
 <dt><a href="#putHeaders">putHeaders(headers)</a> ⇒ <code>Promise</code></dt>
 <dd><p>Insert new headers into blockchain</p>
+</dd>
+<dt><a href="#define">define(name, path)</a></dt>
+<dd><p>Define a library component for lazy loading. Borrowed from
+<a href="https://github.com/bcoin-org/bcoin/blob/master/lib/bcoin.js">https://github.com/bcoin-org/bcoin/blob/master/lib/bcoin.js</a></p>
 </dd>
 </dl>
 
@@ -58,7 +66,6 @@
         * [.genesis](#module_blockchain.Chain+genesis) : <code>Object</code>
         * [.headers](#module_blockchain.Chain+headers) : <code>Object</code>
         * [.blocks](#module_blockchain.Chain+blocks) : <code>Object</code>
-        * [.db](#module_blockchain.Chain+db) : <code>Object</code>
         * [.open()](#module_blockchain.Chain+open) ⇒ <code>Promise</code>
         * [.close()](#module_blockchain.Chain+close) ⇒ <code>Promise</code>
         * [.update()](#module_blockchain.Chain+update) ⇒ <code>Promise</code>
@@ -134,7 +141,6 @@ Blockchain
     * [.genesis](#module_blockchain.Chain+genesis) : <code>Object</code>
     * [.headers](#module_blockchain.Chain+headers) : <code>Object</code>
     * [.blocks](#module_blockchain.Chain+blocks) : <code>Object</code>
-    * [.db](#module_blockchain.Chain+db) : <code>Object</code>
     * [.open()](#module_blockchain.Chain+open) ⇒ <code>Promise</code>
     * [.close()](#module_blockchain.Chain+close) ⇒ <code>Promise</code>
     * [.update()](#module_blockchain.Chain+update) ⇒ <code>Promise</code>
@@ -154,7 +160,7 @@ Create new chain
 | Param | Type | Description |
 | --- | --- | --- |
 | options | <code>Object</code> | constructor parameters |
-| [options.dataDir] | <code>string</code> | data directory path (use in-memory db if missing) |
+| [options.db] | <code>LevelDB</code> | database (must implement leveldb interface) |
 | [options.common] | <code>Common</code> | common parameters |
 | [options.logger] | <code>Logger</code> | Logger instance |
 
@@ -184,12 +190,6 @@ headerchain, and the ``height`` is the height of the headerchain.
 Returns properties of the canonical blockchain. The ``latest`` property is
 the latest block in the chain, the ``td`` property is the total difficulty of
 blockchain, and the ``height`` is the height of the blockchain.
-
-**Kind**: instance property of [<code>Chain</code>](#module_blockchain.Chain)  
-<a name="module_blockchain.Chain+db"></a>
-
-#### chain.db : <code>Object</code>
-Blockchain database
 
 **Kind**: instance property of [<code>Chain</code>](#module_blockchain.Chain)  
 <a name="module_blockchain.Chain+open"></a>
@@ -1614,7 +1614,7 @@ Create new ETH service
 | [options.syncmode] | <code>string</code> | <code>&quot;light&quot;</code> | synchronization mode ('fast' or 'light') |
 | [options.lightserv] | <code>boolean</code> | <code>false</code> | serve LES requests |
 | [options.common] | <code>Common</code> |  | ethereum network name |
-| [options.dataDir] | <code>string</code> | <code>&quot;./chaindata&quot;</code> | data directory path |
+| [options.db] | <code>LevelDB</code> | <code></code> | blockchain database |
 | [options.logger] | <code>Logger</code> |  | logger instance |
 
 <a name="module_service.EthereumService+name"></a>
@@ -2355,6 +2355,19 @@ Add a methods to the bound protocol for each protocol message that has a
 corresponding response message
 
 **Kind**: instance method of [<code>BoundProtocol</code>](#BoundProtocol)  
+<a name="define"></a>
+
+## define(name, path)
+Define a library component for lazy loading. Borrowed from
+https://github.com/bcoin-org/bcoin/blob/master/lib/bcoin.js
+
+**Kind**: global function  
+
+| Param | Type |
+| --- | --- |
+| name | <code>string</code> | 
+| path | <code>string</code> | 
+
 <a name="putBlocks"></a>
 
 ## putBlocks(blocks) ⇒ <code>Promise</code>
@@ -2376,4 +2389,17 @@ Insert new headers into blockchain
 | Param | Type | Description |
 | --- | --- | --- |
 | headers | <code>Array.&lt;Block.Header&gt;</code> | list of headers to add |
+
+<a name="define"></a>
+
+## define(name, path)
+Define a library component for lazy loading. Borrowed from
+https://github.com/bcoin-org/bcoin/blob/master/lib/bcoin.js
+
+**Kind**: global function  
+
+| Param | Type |
+| --- | --- |
+| name | <code>string</code> | 
+| path | <code>string</code> | 
 

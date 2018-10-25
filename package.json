@@ -2,15 +2,21 @@
   "name": "ethereumjs-client",
   "version": "0.0.1",
   "description": "EthereumJS client implementation",
+  "main": "./lib/index.js",
   "bin": {
-    "ethereumjs": "bin/cli.js"
+    "ethereumjs": "./bin/cli.js"
   },
   "scripts": {
     "coverage": "nyc npm run test && nyc report --reporter=text-lcov > .nyc_output/lcov.info",
     "coveralls": "npm run coverage && coveralls <.nyc_output/lcov.info",
     "docs": "jsdoc2md --no-cache -c .jsdoc.json lib/*.js > docs/API.md",
     "lint": "standard",
-    "test": "npm run lint && tape 'test/**/*.js'"
+    "test": "npm run lint && tape 'test/**/*.js'",
+    "build": "npm run test && browserify browser/index.js -s ethereumjs -t babelify --outfile dist/bundle.js"
+  },
+  "browser": {
+    "./lib/net/peer/libp2pnode.js": "./browser/libp2pnode.js",
+    "./lib/logging": "./browser/logging.js"
   },
   "repository": {
     "type": "git",
@@ -20,9 +26,13 @@
     "ethereum",
     "ethereumjs",
     "client",
+    "blockchain",
     "light",
     "fast"
   ],
+  "engines": {
+    "node": ">=8.0.0"
+  },
   "author": "Vinay Pulim (v@pulim.com)",
   "license": "MPL-2.0",
   "bugs": {
@@ -32,38 +42,48 @@
   "dependencies": {
     "await-lock": "^1.1.3",
     "ethereumjs-account": "^2.0.5",
-    "ethereumjs-block": "ethereumjs/ethereumjs-block#master",
-    "ethereumjs-blockchain": "vpulim/ethereumjs-blockchain#updated-deps",
-    "ethereumjs-common": "^0.5.0",
+    "ethereumjs-block": "^2.1.0",
+    "ethereumjs-blockchain": "ethereumjs/ethereumjs-blockchain#toarray-fix",
+    "ethereumjs-common": "^0.6.0",
     "ethereumjs-devp2p": "^2.5.0",
-    "ethereumjs-util": "^5.2.0",
+    "ethereumjs-util": "^6.0.0",
     "fs-extra": "^6.0.1",
     "jayson": "^2.0.6",
-    "leveldown": "^1.9.0",
-    "levelup": "^1.3.9",
-    "libp2p-tcp": "^0.13.0",
-    "libp2p-websockets": "^0.12.0",
+    "level": "^4.0.0",
+    "libp2p": "^0.23.1",
     "libp2p-bootstrap": "^0.9.3",
     "libp2p-kad-dht": "^0.10.5",
     "libp2p-mplex": "^0.8.2",
     "libp2p-secio": "^0.10.0",
-    "libp2p": "^0.23.1",
+    "libp2p-tcp": "^0.13.0",
+    "libp2p-websockets": "^0.12.0",
     "merkle-patricia-tree": "^2.3.1",
     "ms": "^2.1.1",
-    "qheap": "^1.4.0",
     "peer-id": "^0.11.0",
     "peer-info": "^0.14.1",
     "pull-catch": "^1.0.0",
     "pull-pushable": "^2.2.0",
     "pull-stream": "^3.6.9",
+    "qheap": "^1.4.0",
     "rlp": "^2.0.0",
-    "winston": "^3.0.0-rc4",
+    "util-promisify": "^2.1.0",
+    "winston": "^3.1.0",
     "yargs": "^11.0.0"
   },
   "devDependencies": {
+    "@babel/core": "^7.1.2",
+    "@babel/plugin-transform-runtime": "^7.1.0",
+    "@babel/preset-env": "^7.1.0",
+    "@babel/runtime": "^7.1.2",
+    "@babel/runtime-corejs2": "^7.1.2",
+    "babelify": "^10.0.0",
+    "browserify": "^16.2.3",
     "coveralls": "^3.0.0",
     "json-to-markdown": "^1.0.4",
+    "level-browserify": "^2.0.0",
     "nyc": "~11.6.0",
+    "pino": "^5.8.0",
+    "pino-pretty": "^2.2.2",
     "sinon": "^6.0.0",
     "standard": "~11.0.1",
     "supertest": "^3.1.0",
