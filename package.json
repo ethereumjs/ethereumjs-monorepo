@@ -48,7 +48,7 @@
     "chalk": "^2.4.1",
     "ethereumjs-account": "^2.0.5",
     "ethereumjs-block": "^2.1.0",
-    "ethereumjs-blockchain": "ethereumjs/ethereumjs-blockchain",
+    "ethereumjs-blockchain": "^3.3.1",
     "ethereumjs-common": "^0.6.0",
     "ethereumjs-devp2p": "^2.5.0",
     "ethereumjs-util": "^6.0.0",
