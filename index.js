@@ -24,7 +24,7 @@ const blockHashPrefix = new Buffer('H') // blockHashPrefix + hash -> number
 const bodyPrefix = new Buffer('b') // bodyPrefix + number + hash -> block body
 
 // utility functions
-const bufBE8 = n => n.toBuffer('be', 8) // convert BN to big endian Buffer
+const bufBE8 = n => n.toArrayLike(Buffer, 'be', 8) // convert BN to big endian Buffer
 const tdKey = (n, hash) => Buffer.concat([headerPrefix, bufBE8(n), hash, tdSuffix])
 const headerKey = (n, hash) => Buffer.concat([headerPrefix, bufBE8(n), hash])
 const bodyKey = (n, hash) => Buffer.concat([bodyPrefix, bufBE8(n), hash])
