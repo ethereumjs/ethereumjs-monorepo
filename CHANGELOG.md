@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 
+## [3.3.1] - 2018-10-26
+- Replaced calls to BN.toBuffer() with BN.toArrayLike() so that ``ethereumjs-blockchain`` can run in a browser environment, PR [#73](https://github.com/ethereumjs/ethereumjs-blockchain/pull/73)
+
+[3.3.1]: https://github.com/ethereumjs/ethereumjs-blockchain/compare/v3.3.0...v3.3.1
+
 ## [3.3.0] - 2018-10-19
 - Constantinople support when using block validation (set with ``opts.validate`` in constructor),
  update to a Constantinople-ready version of the ``ethereumjs-block`` dependency (>2.1.0), PR [#71](https://github.com/ethereumjs/ethereumjs-blockchain/pull/71)
