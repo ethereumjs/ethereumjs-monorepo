@@ -5,10 +5,8 @@
 * @memberof module:net/peer
 */
 
-const TCP = require('libp2p-tcp')
 const WS = require('libp2p-websockets')
 const Bootstrap = require('libp2p-bootstrap')
-const KadDHT = require('libp2p-kad-dht')
 const Multiplex = require('libp2p-mplex')
 const SECIO = require('libp2p-secio')
 const libp2p = require('libp2p')
@@ -20,7 +18,6 @@ class Libp2pNode extends libp2p {
       peerInfo: options.peerInfo,
       modules: {
         transport: [
-          TCP,
           WS
         ],
         streamMuxer: [
@@ -31,8 +28,7 @@ class Libp2pNode extends libp2p {
         ],
         peerDiscovery: [
           Bootstrap
-        ],
-        dht: KadDHT
+        ]
       },
       config: {
         peerDiscovery: {
@@ -41,9 +37,6 @@ class Libp2pNode extends libp2p {
             enabled: options.bootnodes !== undefined,
             list: options.bootnodes || []
           }
-        },
-        dht: {
-          kBucketSize: 20
         },
         EXPERIMENTAL: {
           dht: false,

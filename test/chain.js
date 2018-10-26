@@ -1,6 +1,4 @@
-const fs = require('fs')
 const tape = require('tape')
-const tmp = require('tmp')
 const Block = require('ethereumjs-block')
 const util = require('ethereumjs-util')
 const { Chain } = require('../lib/blockchain')
@@ -10,34 +8,6 @@ defaultLogger.silent = true
 tape('[Chain]: Database functions', t => {
   t.test('should test object creation without logger', st => {
     st.equal(new Chain().logger, defaultLogger)
-
-    st.end()
-  })
-
-  t.test('should test data dir creation', st => {
-    const tmpdir = tmp.dirSync()
-    const config = {}
-    config.dataDir = `${tmpdir.name}/chaindb`
-
-    new Chain(config) // eslint-disable-line no-new
-
-    st.ok(fs.existsSync(config.dataDir), 'data dir exists')
-
-    st.end()
-  })
-
-  t.test('should test non-error on already created data dir', st => {
-    const tmpdir = tmp.dirSync()
-    const config = {}
-    config.dataDir = `${tmpdir.name}/chaindb`
-
-    fs.mkdirSync(config.dataDir)
-
-    st.ok(fs.existsSync(config.dataDir), 'data dir exists before creating DBManager')
-
-    new Chain(config) // eslint-disable-line no-new
-
-    st.ok(fs.existsSync(config.dataDir), 'data dir exists after creating DBManager')
 
     st.end()
   })
