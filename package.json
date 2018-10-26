@@ -6,6 +6,10 @@
   "bin": {
     "ethereumjs": "./bin/cli.js"
   },
+  "files": [
+    "bin",
+    "lib"
+  ],
   "scripts": {
     "coverage": "nyc npm run test && nyc report --reporter=text-lcov > .nyc_output/lcov.info",
     "coveralls": "npm run coverage && coveralls <.nyc_output/lcov.info",
