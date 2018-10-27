@@ -52,8 +52,8 @@ exports.logging = require('./logging')
 exports.createNode = function (args) {
   const logger = exports.logging.getLogger({loglevel: args.loglevel})
   const options = {
-    common: new Common(args.network),
-    servers: [new exports.Libp2pServer(args)],
+    common: new Common(args.network || 'mainnet'),
+    servers: [new exports.Libp2pServer({ multiaddrs: [], ...args })],
     syncmode: args.syncmode || 'fast',
     db: level(args.db || 'ethereumjs'),
     logger: logger

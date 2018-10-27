@@ -38,7 +38,7 @@ const args = require('yargs')
     },
     'transports': {
       describe: 'Network transports',
-      default: ['rlpx:port=30303'],
+      default: ['rlpx:port=30303', 'libp2p'],
       array: true
     },
     'rpc': {
