@@ -46,24 +46,6 @@ jobs:
       - run:
           name: testAPI
           command: npm run testAPI
-  test_gas_limit:
-    <<: *defaults
-    steps:
-      - attach_workspace:
-          at: ~/project
-      - *restore_node_modules
-      - run:
-          name: testBlockchainBlockGasLimit
-          command: npm run testBlockchainBlockGasLimit
-  test_total_difficulty:
-    <<: *defaults
-    steps:
-      - attach_workspace:
-          at: ~/project
-      - *restore_node_modules
-      - run:
-          name: testBlockchainTotalDifficulty
-          command: npm run testBlockchainTotalDifficulty
   test_state_byzantium:
     <<: *defaults
     steps:
@@ -82,6 +64,15 @@ jobs:
       - run:
           name: testStateConstantinople
           command: npm run testStateConstantinople
+  test_blockchain:
+    <<: *defaults
+    steps:
+      - attach_workspace:
+          at: ~/project
+      - *restore_node_modules
+      - run:
+          name: testBlockchain
+          command: npm run testBlockchain
   coveralls:
     <<: *defaults
     steps:
@@ -102,16 +93,13 @@ workflows:
       - test_api:
           requires:
             - install
-      - test_gas_limit:
-          requires:
-            - install
-      - test_total_difficulty:
-          requires:
-            - install
       - test_state_byzantium:
           requires:
             - install
       - test_state_constantinople:
+          requires:
+            - install
+      - test_blockchain:
           requires:
             - install
       - coveralls:
