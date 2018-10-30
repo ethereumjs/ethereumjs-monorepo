@@ -1,3 +1,5 @@
+# Travis CI runs are deactivated in favour of CircleCI build checks
+# Turn to the CircleCI configuration in .circleci directory for changing build settings
 sudo: false
 os:
   - linux
