@@ -1,17 +1,18 @@
 {
   "name": "merkle-patricia-tree",
   "version": "2.3.2",
-  "description": "This is an implementation of the modified merkle patricia tree as speficed in the Ethereum's yellow paper.",
+  "description": "This is an implementation of the modified merkle patricia tree as specified in the Ethereum's yellow paper.",
   "main": "index.js",
   "scripts": {
     "test": "npm run test:node && npm run test:browser",
     "coverage": "istanbul cover tape ./test/*.js",
     "coveralls": "npm run coverage && coveralls <coverage/lcov.info",
     "lint": "standard",
-    "prepublish": "npm run build",
+    "prepublishOnly": "npm run build",
     "test:browser": "karma start karma.conf.js",
-    "test:node": "tape ./test/*.js",
-    "build": "browserify --s Trie index.js > ./dist/trie.js",
+    "test:node": "babel-tape-runner ./test/*.js",
+    "babel": "npx babel src --out-dir ./",
+    "build": "npm run babel && mkdir -p dist && browserify --s Trie index.js -o dist/trie.js -t [ babelify --presets [ @babel/preset-env ] ]",
     "build:docs": "documentation --github  -f md ./index.js ./secure.js ./proof.js > ./docs/index-template.md"
   },
   "author": {
@@ -42,6 +43,12 @@
     "semaphore": ">=1.0.1"
   },
   "devDependencies": {
+    "@babel/cli": "^7.1.5",
+    "@babel/core": "^7.1.2",
+    "@babel/plugin-proposal-class-properties": "^7.1.0",
+    "@babel/preset-env": "^7.1.0",
+    "babel-tape-runner": "^3.0.0",
+    "babelify": "^10.0.0",
     "browserify": "^13.0.0",
     "coveralls": "^2.11.6",
     "documentation": "^3.0.4",
