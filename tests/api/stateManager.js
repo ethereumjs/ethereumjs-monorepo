@@ -4,7 +4,7 @@ const util = require('ethereumjs-util')
 const StateManager = require('../../lib/stateManager')
 const { createAccount } = require('./utils')
 
-tape.only('StateManager', (t) => {
+tape('StateManager', (t) => {
   t.test('should instantiate', (st) => {
     const stateManager = new StateManager()
 
@@ -53,7 +53,7 @@ tape.only('StateManager', (t) => {
       account
     )
 
-    let res = await promisify(stateManager.getAccountPure.bind(stateManager))(
+    let res = await promisify(stateManager._getAccountPure.bind(stateManager))(
       'a94f5374fce5edbc8e2a8697c15331677e6ebf0b'
     )
 
@@ -61,7 +61,7 @@ tape.only('StateManager', (t) => {
 
     stateManager.cache.clear()
 
-    res = await promisify(stateManager.getAccountPure.bind(stateManager))(
+    res = await promisify(stateManager._getAccountPure.bind(stateManager))(
       'a94f5374fce5edbc8e2a8697c15331677e6ebf0b'
     )
 
