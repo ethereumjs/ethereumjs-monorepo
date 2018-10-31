@@ -89,6 +89,7 @@ function createBlock (parent = null, n = 0) {
   b.header.number = util.toBuffer(n)
   b.header.parentHash = parent.hash()
   b.header.difficulty = '0xfffffff'
+  b.header.stateRoot = parent.header.stateRoot
 
   return b
 }
