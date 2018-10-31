@@ -60,169 +60,34 @@ Also more examples can be found here
 To build for standalone use in the browser, install `browserify` and check [run-transactions-simple example](https://github.com/ethereumjs/ethereumjs-vm/tree/master/examples/run-transactions-simple). This will give you a global variable `EthVM` to use. The generated file will be at `./examples/run-transactions-simple/build.js`.
 
 # API
-  - [`new VM([opts])`](#new-vmstatetrie-blockchain)
-  - [`VM` methods](#vm-methods)
-    - [`vm.runBlockchain([blockchain], [cb])`](#vmrunblockchainblockchain-cb)
-    - [`vm.runBlock(opts, cb)`](#vmrunblockopts-cb)
-    - [`vm.runTx(opts, cb)`](#vmruntxopts-cb)
-    - [`vm.runCode(opts, cb)`](#vmruncodeopts-cb)
-    - [`vm.generateCanonicalGenesis(cb)`](#vmgeneratecanonicalgenesiscb)
-    - [`vm.generateGenesis(cb)`](#vmgenerategenesiscb)
-  - [`VM` Events](#events)
-    - [`step`](#step)
-    - [`newContract`](#newcontract)
-    - [`beforeBlock`](#beforeblock)
-    - [`afterBlock`](#afterblock)
-    - [`beforeTx`](#beforetx)
-    - [`afterTx`](#aftertx)
 
-### `new VM([opts])`
-Creates a new VM object
-- `opts`
-  - `stateManager` - A state manager instance (**EXPERIMENTAL** - unstable API)
-  - `state` - A merkle-patricia-tree instance for the state tree (ignored if `stateManager` is passed)
-  - `blockchain` - A blockchain object for storing/retrieving blocks (ignored if `stateManager` is passed)
-  - `chain` - The chain the VM operates on [default: 'mainnet']
-  - `hardfork` - Hardfork rules to be used [default: 'byzantium', supported: 'byzantium' (will throw on unsupported)]
-  - `activatePrecompiles` - Create entries in the state tree for the precompiled contracts
-  - `allowUnlimitedContractSize` - Allows unlimited contract sizes while debugging. By setting this to `true`, the check for contract size limit of 24KB (see [EIP-170](https://git.io/vxZkK)) is bypassed. (default: `false`; **ONLY** set to `true` during debugging).
-
-### `VM` methods
-
-
-#### `vm.runBlockchain(blockchain, cb)`
-Process blocks and adds them to the blockchain.
-- `blockchain` - A [blockchain](https://github.com/ethereum/ethereumjs-blockchain) that to process
-- `cb` - The callback. It is given an err parameter if it fails
-
---------------------------------------------------------
-
-#### `vm.runBlock(opts, cb)`
-Processes the `block` running all of the transactions it contains and updating the miner's account.
-- `opts.block` - The [`Block`](https://github.com/ethereumjs/ethereumjs-block) to process
-- `opts.generate` - a `Boolean`; whether to generate the stateRoot. If false  `runBlock` will check the stateRoot of the block against the Trie
-- `cb` - The callback. It is given two arguments, an `error` string containing an error that may have happened or `null`, and a `results` object with the following properties:
-  - `receipts` - the receipts from the transactions in the block
-  - `results` - an Array for results from the transactions in the block
---------------------------------------------------------
-
-
-#### `vm.runTx(opts, cb)`
-Process a transaction.
-- `opts.tx` - A [`Transaction`](https://github.com/ethereum/ethereumjs-tx) to run.
-- `opts.block` - The block to which the `tx` belongs. If omitted a blank block will be used.
-- `cb` - The callback. It is given two arguments, an `error` string containing an error that may have happened or `null`, and a `results` object with the following properties:
-  - `amountSpent` - the amount of ether used by this transaction as a `bignum`
-  - `gasUsed` - the amount of gas as a `bignum` used by the transaction
-  - `gasRefund` - the amount of gas as a `bignum` that was refunded during the transaction (i.e. `gasUsed = totalGasConsumed - gasRefund`)
-  - `vm` - contains the results from running the code, if any, as described in [`vm.runCode(params, cb)`](#vmruncodeopts-cb)
-
---------------------------------------------------------
-
-#### `vm.runCode(opts, cb)`
-Runs EVM code
-- `opts.code` - The EVM code to run given as a `Buffer`
-- `opts.data` - The input data given as a `Buffer`
-- `opts.value` - The value in ether that is being sent to `opt.address`. Defaults to `0`
-- `opts.block` - The [`Block`](https://github.com/ethereumjs/ethereumjs-block) the `tx` belongs to. If omitted a blank block will be used.
-- `opts.gasLimit` - The gas limit for the code given as a `Buffer`
-- `opts.account` - The [`Account`](https://github.com/ethereumjs/ethereumjs-account) that the executing code belongs to. If omitted an empty account will be used
-- `opts.address` - The address of the account that is executing this code. The address should be a `Buffer` of bytes. Defaults to `0`
-- `opts.origin` - The address where the call originated from. The address should be a `Buffer` of 20bits. Defaults to `0`
-- `opts.caller` - The address that ran this code. The address should be a `Buffer` of 20bits. Defaults to `0`
-- `cb` - The callback. It is given two arguments, an `error` string containing an error that may have happened or `null` and a `results` object with the following properties
-  - `gas` - the amount of gas left as a `bignum`
-  - `gasUsed` - the amount of gas as a `bignum` the code used to run.
-  - `gasRefund` - a `bignum` containing the amount of gas to refund from deleting storage values
-  - `selfdestruct` - an `Object` with keys for accounts that have selfdestructed and values for balance transfer recipient accounts.
-  - `logs` - an `Array` of logs that the contract emitted.
-  - `exception` - `0` if the contract encountered an exception, `1` otherwise.
-  - `exceptionError` - a `String` describing the exception if there was one.
-  - `return` - a `Buffer` containing the value that was returned by the contract
-
-
---------------------------------------------------------
-
-#### `vm.stateManager.generateCanonicalGenesis(cb)`
-Generates the Canonical genesis state.
-
---------------------------------------------------------
-
-#### `vm.stateManager.generateGenesis(genesisData, cb)`
-Generate the genesis state.
-- `genesisData` - an `Object` whose keys are addresses and values are `string`s representing initial allocation of ether.
-- `cb` - The callback
-
-```javascript
-var genesisData = {
-  "51ba59315b3a95761d0863b05ccc7a7f54703d99": "1606938044258990275541962092341162602522202993782792835301376",
-  "e4157b34ea9615cfbde6b4fda419828124b70c78": "1606938044258990275541962092341162602522202993782792835301376"
-}
-
-vm.generateGenesis(genesisData, function(){
-  console.log('generation done');
-})
-```
-
-### `events`
-All events are instances of [async-eventemmiter](https://www.npmjs.com/package/async-eventemitter). If an event handler has an arity of 2 the VM will pause until the callback is called, otherwise the VM will treat the event handler as a synchronous function.
-
-#### `step`
-The `step` event is given an `Object` and callback. The `Object` has the following properties.
-- `pc` - a `Number` representing the program counter
-- `opcode` - the next opcode to be ran
-- `gasLeft` - a `bignum` standing for the amount of gasLeft
-- `stack` - an `Array` of `Buffers` containing the stack.
-- `storageTrie` - the storage [trie](https://github.com/wanderer/merkle-patricia-tree) for the account
-- `account` - the [`Account`](https://github.com/ethereum/ethereumjs-account) which owns the code running.
-- `address` - the address of the `account`
-- `depth` - the current number of calls deep the contract is
-- `memory` - the memory of the VM as a `buffer`
-- `cache` - The account cache. Contains all the accounts loaded from the trie. It is an instance of [functional red black tree](https://www.npmjs.com/package/functional-red-black-tree)
-
-#### `newContract`
-The `newContract` event is given an `Object` and callback. The `Object` has the following properties.
-- `address`: The created address for the new contract (type `Buffer | Uint8Array`)
-- `code`: The deployment bytecode for reference (type `Buffer | Uint8Array`)
-
-#### `beforeBlock`
-Emits the block that is about to be processed.
-
-#### `afterBlock`
-Emits the results of the processing a block.
-
-#### `beforeTx`
-Emits the Transaction that is about to be processed.
-
-#### `afterTx`
-Emits the result of the transaction.
-
+For documentation on ``VM`` instantiation, exposed API and emitted ``events`` see generated [API docs](./docs/index.md).
 
 # Internal Structure
 The VM processes state changes at many levels.
 
-* runBlockchain
+* **runBlockchain**
   * for every block, runBlock
-* runBlock
+* **runBlock**
   * for every tx, runTx
   * pay miner and uncles
-* runTx
+* **runTx**
   * check sender balance
   * check sender nonce
   * runCall
   * transfer gas charges
-* runCall
+* **runCall**
   * checkpoint state
   * transfer value
   * load code
   * runCode
   * materialize created contracts
   * revert or commit checkpoint
-* runCode
+* **runCode**
   * iterate over code
   * run op codes
   * track gas usage
-* OpFns
+* **OpFns**
   * run individual op code
   * modify stack
   * modify memory
