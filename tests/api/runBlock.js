@@ -20,7 +20,6 @@ function setup (vm = null) {
     vm = {
       stateManager,
       emit: (e, val, cb) => cb(),
-      populateCache: stateManager.warmCache.bind(stateManager),
       runTx: (opts, cb) => cb(new Error('test')),
       runCall: (opts, cb) => cb(new Error('test')),
       _common: new Common('mainnet', 'byzantium')
@@ -32,8 +31,7 @@ function setup (vm = null) {
     data: testData,
     p: {
       runBlock: promisify(runBlock.bind(vm)),
-      putAccount: promisify(vm.stateManager.putAccount.bind(vm.stateManager)),
-      cacheFlush: promisify(vm.stateManager.cache.flush.bind(vm.stateManager.cache))
+      putAccount: promisify(vm.stateManager.putAccount.bind(vm.stateManager))
     }
   }
 }
@@ -94,7 +92,6 @@ tape('should fail when runCall fails', async (t) => {
     const acc = createAccount()
     await suite.p.putAccount(tx.from.toString('hex'), acc)
   }
-  await suite.p.cacheFlush()
 
   // The mocked VM uses a mocked runCall
   // which always returns an error.
