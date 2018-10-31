@@ -11,10 +11,10 @@ function createGenesis () {
   return genesis
 }
 
-function createAccount () {
+function createAccount (nonce, balance) {
   const raw = {
-    nonce: '0x00',
-    balance: '0xfff384'
+    nonce: nonce || '0x00',
+    balance: balance || '0xfff384'
   }
   const acc = new Account(raw)
   return acc
