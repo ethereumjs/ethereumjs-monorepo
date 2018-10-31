@@ -21,6 +21,7 @@
     "lint": "standard",
     "prepublishOnly": "npm run lint && npm run build:dist && npm run testBuildIntegrity",
     "build:dist": "babel lib/ -d dist/",
+    "build:docs": "documentation build ./lib/index.js ./lib/runBlockchain.js ./lib/runBlock.js ./lib/runTx.js ./lib/runCode.js ./lib/runCall.js --format md --shallow > ./docs/index.md",
     "formatTest": "node ./scripts/formatTest"
   },
   "repository": {
@@ -48,6 +49,7 @@
     "babel-cli": "^6.26.0",
     "babel-preset-env": "^1.6.1",
     "coveralls": "^3.0.0",
+    "documentation": "^8.1.2",
     "ethereumjs-blockchain": "~3.3.0",
     "ethereumjs-testing": "git+https://github.com/ethereumjs/ethereumjs-testing.git#v1.2.4",
     "ethereumjs-tx": "1.3.7",
