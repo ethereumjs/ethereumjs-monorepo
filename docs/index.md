@@ -54,6 +54,7 @@ VM Class, `new VM(opts)` creates a new VM object
     -   `opts.hardfork` **[String][32]** hardfork rules to be used [default: 'byzantium', supported: 'byzantium' (will throw on unsupported)]
     -   `opts.activatePrecompiles` **[Boolean][34]** create entries in the state tree for the precompiled contracts
     -   `opts.allowUnlimitedContractSize` **[Boolean][34]** allows unlimited contract sizes while debugging. By setting this to `true`, the check for contract size limit of 24KB (see [EIP-170][35]) is bypassed. (default: `false`; ONLY set to `true` during debugging)
+    -   `opts.emitFreeLogs` **[Boolean][34]** Changes the behavior of the LOG opcode, the gas cost of the opcode becomes zero and calling it using STATICCALL won't throw. (default: `false`; ONLY set to `true` during debugging)
 
 ## vm.runBlock
 
