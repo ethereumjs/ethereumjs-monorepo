@@ -20,7 +20,7 @@ tape('VM with free logs', async (t) => {
       gasLimit: 1000
     }, function (err, val) {
       st.notOk(err)
-      st.ok(val.runState.gasLeft >= 0x8e, 'should expend less gas')
+      st.ok(val.runState.gasLeft >= 0x235, 'should expend less gas')
       st.ok(val.logs.length === 1, 'should emit event')
       st.end()
     })
@@ -32,7 +32,7 @@ tape('VM with free logs', async (t) => {
       gasLimit: 1000
     }, function (err, val) {
       st.notOk(err)
-      st.ok(val.runState.gasLeft < 0x8e, 'should expend normal gas')
+      st.ok(val.runState.gasLeft < 0x235, 'should expend normal gas')
       st.ok(val.logs.length === 1, 'should emit event')
       st.end()
     })
