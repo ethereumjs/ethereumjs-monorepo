@@ -17,10 +17,22 @@ tape('VM with free logs', async (t) => {
     const vm = new VM({ emitFreeLogs: true })
     vm.runCode({
       code: code,
-      gasLimit: 810
+      gasLimit: 1000
     }, function (err, val) {
       st.notOk(err)
-      st.ok(val.runState.gasLeft >= 0x177, 'should expend less gas')
+      st.ok(val.runState.gasLeft >= 0x235, 'should expend less gas')
+      st.ok(val.logs.length === 1, 'should emit event')
+      st.end()
+    })
+  })
+  t.test('should charge normal gas if flag is not set', async (st) => {
+    const vm = new VM()
+    vm.runCode({
+      code: code,
+      gasLimit: 1000
+    }, function (err, val) {
+      st.notOk(err)
+      st.ok(val.runState.gasLeft < 0x235, 'should expend normal gas')
       st.ok(val.logs.length === 1, 'should emit event')
       st.end()
     })
