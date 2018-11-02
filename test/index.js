@@ -6,8 +6,7 @@ const Block = require('ethereumjs-block')
 const Common = require('ethereumjs-common')
 const async = require('async')
 const ethUtil = require('ethereumjs-util')
-const levelup = require('levelup')
-const memdown = require('memdown')
+const level = require('level-mem')
 const testData = require('./testdata.json')
 const BN = require('bn.js')
 const rlp = ethUtil.rlp
@@ -45,7 +44,7 @@ test('blockchain test', function (t) {
       })
     },
     function alternateConstructors (done) {
-      var db = levelup('', { db: memdown })
+      var db = level()
       var blockchain = new Blockchain(db)
       t.equals(db, blockchain.db, 'support constructor with db parameter')
       blockchain = new Blockchain({detailsDb: db, blockDb: db})
@@ -375,7 +374,7 @@ test('blockchain test', function (t) {
       })
     },
     function saveHeads (done) {
-      var db = levelup('', { db: memdown })
+      var db = level()
       var blockchain = new Blockchain({db: db, validate: false})
       var header = new Block.Header()
       header.number = ethUtil.toBuffer(1)
@@ -523,7 +522,7 @@ function isConsecutive (blocks) {
 function createTestDB (cb) {
   var genesis = new Block()
   genesis.setGenesisParams()
-  var db = levelup('', { db: memdown })
+  var db = level()
   db.batch([{
     type: 'put',
     key: Buffer.from('6800000000000000006e', 'hex'),

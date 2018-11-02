@@ -11,17 +11,16 @@ A module to store and interact with blocks.
 
 # EXAMPLE
 
-The following is an example to iterate through an existing Geth DB (needs ``leveldown`` to be
+The following is an example to iterate through an existing Geth DB (needs ``level`` to be
 installed separately):
 
 ```javascript
-const levelup = require('levelup')
-const leveldown = require('leveldown')
+const level = require('level')
 const Blockchain = require('ethereumjs-blockchain')
 const utils = require('ethereumjs-util')
 
 const gethDbPath = './chaindata' // Add your own path here
-const db = levelup(gethDbPath, { db: leveldown })
+const db = level(gethDbPath)
 
 new Blockchain({db: db}).iterator('i', (block, reorg, cb) => {
   const blockNumber = utils.bufferToInt(block.header.number)

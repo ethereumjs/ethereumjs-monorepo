@@ -3,8 +3,7 @@
 const async = require('async')
 const Stoplight = require('flow-stoplight')
 const semaphore = require('semaphore')
-const levelup = require('levelup')
-const memdown = require('memdown')
+const level = require('level-mem')
 const Block = require('ethereumjs-block')
 const Common = require('ethereumjs-common')
 const ethUtil = require('ethereumjs-util')
@@ -55,7 +54,7 @@ function Blockchain (opts) {
   self.db = opts.db || opts.blockDb
 
   // defaults
-  self.db = self.db ? self.db : levelup('', { db: memdown })
+  self.db = self.db ? self.db : level()
   self.validate = (opts.validate === undefined ? true : opts.validate)
   self.ethash = self.validate ? new Ethash(self.db) : null
   self._heads = {}
@@ -938,7 +937,7 @@ Blockchain.prototype._iterator = function (name, func, cb) {
       } else {
         blockNumber = false
         // No more blocks, return
-        if (err instanceof levelup.errors.NotFoundError) {
+        if (err instanceof level.errors.NotFoundError) {
           return cb2()
         }
       }
@@ -1001,7 +1000,7 @@ Blockchain.prototype._numberToHash = function (number, cb) {
   const self = this
 
   if (number.ltn(0)) {
-    return cb(new levelup.errors.NotFoundError())
+    return cb(new level.errors.NotFoundError())
   }
   var key = numberToHashKey(number)
   var hash = self._cache.numberToHash.get(key)
