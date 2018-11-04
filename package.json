@@ -7,6 +7,7 @@
     "test": "test"
   },
   "scripts": {
+    "build": "tsc",
     "coverage": "istanbul cover _mocha",
     "coveralls": "npm run coverage && coveralls <coverage/lcov.info",
     "lint": "standard",
@@ -37,12 +38,15 @@
     "safe-buffer": "^5.1.1"
   },
   "devDependencies": {
+    "@types/bn.js": "^4.11.3",
+    "@types/node": "^10.12.2",
     "bn.js": "^4.11.1",
     "coveralls": "^2.11.4",
     "ethereumjs-testing": "git+https://github.com/ethereumjs/ethereumjs-testing.git",
     "istanbul": "^0.4.2",
     "mocha": "^2.3.4",
-    "standard": "^6.0.8"
+    "standard": "^6.0.8",
+    "typescript": "^3.1.6"
   },
   "bin": {
     "rlp": "./bin/rlp"

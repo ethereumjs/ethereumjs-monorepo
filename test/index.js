@@ -1,5 +1,5 @@
 const assert = require('assert')
-const RLP = require('../index.js')
+const RLP = require('../dist/index.js')
 const BN = require('bn.js')
 const testing = require('ethereumjs-testing')
 
