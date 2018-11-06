@@ -1,7 +1,7 @@
-const assert = require('assert')
-const RLP = require('../dist/index.js')
-const BN = require('bn.js')
-const testing = require('ethereumjs-testing')
+import * as assert from "assert";
+import * as RLP from "../src";
+const BN = require('bn.js');
+const testing = require('ethereumjs-testing');
 
 describe('invalid rlps', function () {
   it('should not crash on an invalid rlp', function () {
@@ -113,11 +113,12 @@ describe('RLP decoding (int):', function () {
 })
 
 describe('strings over 55 bytes long', function () {
-  var testString = 'This function takes in a data, convert it to buffer if not, and a length for recursion'
-  testString = Buffer.from(testString)
-  var encoded = null
+  const testString = 'This function takes in a data, convert it to buffer if not, and a length for recursion'
+  const testBuffer = Buffer.from(testString)
+  let encoded:Buffer
+
   it('should encode it', function () {
-    encoded = RLP.encode(testString)
+    encoded = RLP.encode(testBuffer)
     assert.equal(encoded[0], 184)
     assert.equal(encoded[1], 86)
   })
@@ -129,17 +130,18 @@ describe('strings over 55 bytes long', function () {
 })
 
 describe('list over 55 bytes long', function () {
-  var testString = ['This', 'function', 'takes', 'in', 'a', 'data', 'convert', 'it', 'to', 'buffer', 'if', 'not', 'and', 'a', 'length', 'for', 'recursion', 'a1', 'a2', 'a3', 'ia4', 'a5', 'a6', 'a7', 'a8', 'ba9']
-  var encoded = null
+  const testString = ['This', 'function', 'takes', 'in', 'a', 'data', 'convert', 'it', 'to', 'buffer', 'if', 'not', 'and', 'a', 'length', 'for', 'recursion', 'a1', 'a2', 'a3', 'ia4', 'a5', 'a6', 'a7', 'a8', 'ba9']
+  let encoded: Buffer
 
   it('should encode it', function () {
     encoded = RLP.encode(testString)
   })
 
   it('should decode', function () {
-    var decoded = RLP.decode(encoded)
-    for (var i = 0; i < decoded.length; i++) {
-      decoded[i] = decoded[i].toString()
+    const decodedBuffer = RLP.decode(encoded)
+    const decoded: string[] = []
+    for (var i = 0; i < decodedBuffer.length; i++) {
+      decoded[i] = decodedBuffer[i].toString()
     }
     assert.deepEqual(decoded, testString)
   })
@@ -169,7 +171,7 @@ describe('nested lists:', function () {
       ]
     ]
   ]
-  var encoded
+  var encoded: Buffer
   it('encode a nested list', function () {
     encoded = RLP.encode(nestedList)
     assert.deepEqual(encoded, Buffer.from([0xc7, 0xc0, 0xc1, 0xc0, 0xc3, 0xc0, 0xc1, 0xc0]))
