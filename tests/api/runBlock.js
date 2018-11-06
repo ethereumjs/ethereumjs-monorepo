@@ -69,6 +69,23 @@ tape('runBlock', async (t) => {
   })
 })
 
+tape('should fail when block gas limit higher than 2^63-1', async (t) => {
+  const suite = setup()
+
+  const genesis = createGenesis()
+  const block = new Block({
+    header: {
+      ...suite.data.blocks[0].header,
+      gasLimit: Buffer.from('8000000000000000', 16)
+    }
+  })
+  suite.p.runBlock({ block, root: genesis.header.stateRoot })
+    .then(() => t.fail('should have returned error'))
+    .catch((e) => t.ok(e.message.includes('Invalid block')))
+
+  t.end()
+})
+
 tape('should fail when tx gas limit higher than block gas limit', async (t) => {
   const suite = setup()
 
