@@ -7,14 +7,6 @@ const testing = require('ethereumjs-testing')
 const FORK_CONFIG = argv.fork || 'Byzantium'
 // tests which should be fixed
 const skipBroken = [
-  'CreateHashCollision', // impossible hash collision on generating address
-  'RecursiveCreateContracts',
-  'createJS_ExampleContract', // creates an account that already exsists
-  'CreateCollisionToEmpty', // temporary till fixed (2017-09-21)
-  'TransactionCollisionToEmptyButCode', // temporary till fixed (2017-09-21)
-  'TransactionCollisionToEmptyButNonce', // temporary till fixed (2017-09-21)
-  'RevertDepthCreateAddressCollision', // test case is wrong
-  'randomStatetest642', // BROKEN, rustbn.js error
   'ecmul_0-3_5616_28000_96' // temporary till fixed (2018-09-20)
 ]
 // tests skipped due to system specifics / design considerations
