@@ -73,6 +73,9 @@ tape('VM with blockchain', (t) => {
       testData.blocks[0].blockHeader.hash.slice(2)
     )
 
+    const setupPreP = promisify(setupPreConditions)
+    await setupPreP(vm.stateManager.trie, testData)
+
     vm.runBlock = (block, cb) => cb(new Error('test'))
     runBlockchainP(vm)
       .then(() => st.fail('it hasn\'t returned any errors'))

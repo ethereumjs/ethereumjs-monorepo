@@ -10,9 +10,9 @@
     -   [Parameters][6]
 -   [runBlock~callback][7]
     -   [Parameters][8]
--   [vm.runTx][9]
+-   [runTx~callback][9]
     -   [Parameters][10]
--   [runTx~callback][11]
+-   [vm.runTx][11]
     -   [Parameters][12]
 -   [vm.runCode][13]
     -   [Parameters][14]
@@ -20,9 +20,9 @@
     -   [Parameters][16]
 -   [Event: beforeBlock][17]
     -   [Properties][18]
--   [Event: beforeTx][19]
+-   [Event: afterBlock][19]
     -   [Properties][20]
--   [Event: afterBlock][21]
+-   [Event: beforeTx][21]
     -   [Properties][22]
 -   [Event: afterTx][23]
     -   [Properties][24]
@@ -80,19 +80,6 @@ Type: [Function][30]
     -   `results.receipts` **[Array][39]** the receipts from the transactions in the block
     -   `results.results` **[Array][39]** 
 
-## vm.runTx
-
-Process a transaction. Run the vm. Transfers eth. Checks balances.
-
-### Parameters
-
--   `opts`  
-    -   `opts.tx` **Transaction** a [`Transaction`][40] to run
-    -   `opts.skipNonce` **[Boolean][34]** skips the nonce check
-    -   `opts.skipBalance` **[Boolean][34]** skips the balance check
-    -   `opts.block` **Block** the block to which the `tx` belongs, if no block is given a default one is created
--   `cb` **[runTx~callback][41]** the callback
-
 ## runTx~callback
 
 Callback for `runTx` method
@@ -106,7 +93,20 @@ Type: [Function][30]
     -   `results.amountSpent` **BN** the amount of ether used by this transaction as a `bignum`
     -   `results.gasUsed` **BN** the amount of gas as a `bignum` used by the transaction
     -   `results.gasRefund` **BN** the amount of gas as a `bignum` that was refunded during the transaction (i.e. `gasUsed = totalGasConsumed - gasRefund`)
--   `vm` **[VM][42]** contains the results from running the code, if any, as described in `vm.runCode(params, cb)`
+-   `vm` **[VM][40]** contains the results from running the code, if any, as described in `vm.runCode(params, cb)`
+
+## vm.runTx
+
+Process a transaction. Run the vm. Transfers eth. Checks balances.
+
+### Parameters
+
+-   `opts`  
+    -   `opts.tx` **Transaction** a [`Transaction`][41] to run
+    -   `opts.skipNonce` **[Boolean][34]** skips the nonce check
+    -   `opts.skipBalance` **[Boolean][34]** skips the balance check
+    -   `opts.block` **Block** the block to which the `tx` belongs, if no block is given a default one is created
+-   `cb` **[runTx~callback][42]** the callback
 
 ## vm.runCode
 
@@ -155,16 +155,6 @@ Type: [Object][31]
 
 -   `block` **Block** emits the block that is about to be processed
 
-## Event: beforeTx
-
-The `beforeTx` event
-
-Type: [Object][31]
-
-### Properties
-
--   `tx` **Transaction** emits the Transaction that is about to be processed
-
 ## Event: afterBlock
 
 The `afterBlock` event
@@ -174,6 +164,16 @@ Type: [Object][31]
 ### Properties
 
 -   `result` **[Object][31]** emits the results of processing a block
+
+## Event: beforeTx
+
+The `beforeTx` event
+
+Type: [Object][31]
+
+### Properties
+
+-   `tx` **Transaction** emits the Transaction that is about to be processed
 
 ## Event: afterTx
 
@@ -208,12 +208,11 @@ Type: [Object][31]
 -   `opcode` **[String][32]** the next opcode to be ran
 -   `gasLeft` **BN** amount of gasLeft
 -   `stack` **[Array][39]** an `Array` of `Buffers` containing the stack
--   `storageTrie` **Trie** the storage [trie][46] for the account
--   `account` **Account** the [`Account`][47] which owns the code running
+-   `account` **Account** the [`Account`][46] which owns the code running
 -   `address` **[Buffer][44]** the address of the `account`
 -   `depth` **[Number][33]** the current number of calls deep the contract is
 -   `memory` **[Buffer][44]** the memory of the VM as a `buffer`
--   `cache` **FunctionalRedBlackTree** the account cache. Contains all the accounts loaded from the trie. It is an instance of [functional red black tree][48]
+-   `storageManager` **StateManager** a state manager instance (EXPERIMENTAL - unstable API)
 
 [1]: #vmrunblockchain
 
@@ -231,11 +230,11 @@ Type: [Object][31]
 
 [8]: #parameters-3
 
-[9]: #vmruntx
+[9]: #runtxcallback
 
 [10]: #parameters-4
 
-[11]: #runtxcallback
+[11]: #vmruntx
 
 [12]: #parameters-5
 
@@ -251,11 +250,11 @@ Type: [Object][31]
 
 [18]: #properties
 
-[19]: #event-beforetx
+[19]: #event-afterblock
 
 [20]: #properties-1
 
-[21]: #event-afterblock
+[21]: #event-beforetx
 
 [22]: #properties-2
 
@@ -293,11 +292,11 @@ Type: [Object][31]
 
 [39]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array
 
-[40]: https://github.com/ethereum/ethereumjs-tx
+[40]: #vm
 
-[41]: #runtxcallback
+[41]: https://github.com/ethereum/ethereumjs-tx
 
-[42]: #vm
+[42]: #runtxcallback
 
 [43]: https://github.com/ethereumjs/ethereumjs-account
 
@@ -305,8 +304,4 @@ Type: [Object][31]
 
 [45]: #runcodecallback
 
-[46]: https://github.com/wanderer/merkle-patricia-tree
-
-[47]: https://github.com/ethereum/ethereumjs-account
-
-[48]: https://www.npmjs.com/package/functional-red-black-tree
+[46]: https://github.com/ethereum/ethereumjs-account
