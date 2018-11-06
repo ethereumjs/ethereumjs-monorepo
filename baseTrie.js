@@ -1,6 +1,5 @@
 const assert = require('assert')
-const levelup = require('levelup')
-const memdown = require('memdown')
+const level = require('level-mem')
 const async = require('async')
 const rlp = require('rlp')
 const ethUtil = require('ethereumjs-util')
@@ -19,7 +18,7 @@ module.exports = Trie
  * Use `require('merkel-patricia-tree')` for the base interface. In Ethereum applications stick with the Secure Trie Overlay `require('merkel-patricia-tree/secure')`. The API for the raw and the secure interface are about the same
  * @class Trie
  * @param {Object} [db] An instance of [levelup](https://github.com/rvagg/node-levelup/) or a compatible API. If the db is `null` or left undefined, then the trie will be stored in memory via [memdown](https://github.com/rvagg/memdown)
- * @param {Buffer|String} [root]` A hex `String` or `Buffer` for the root of a previously stored trie
+ * @param {Buffer|String} [root] A hex `String` or `Buffer` for the root of a previously stored trie
  * @prop {Buffer} root The current root of the `trie`
  * @prop {Boolean} isCheckpoint  determines if you are saving to a checkpoint or directly to the db
  * @prop {Buffer} EMPTY_TRIE_ROOT the Root for an empty trie
@@ -30,10 +29,7 @@ function Trie (db, root) {
   this.sem = semaphore(1)
 
   // setup dbs
-  this.db = db ||
-    levelup('', {
-      db: memdown
-    })
+  this.db = db || level()
 
   this._getDBs = [this.db]
   this._putDBs = [this.db]

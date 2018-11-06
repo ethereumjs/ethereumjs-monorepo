@@ -35,9 +35,8 @@
   "dependencies": {
     "async": "^1.4.2",
     "ethereumjs-util": "^5.0.0",
-    "level-ws": "0.0.0",
-    "levelup": "^1.2.1",
-    "memdown": "^1.0.0",
+    "level-ws": "^1.0.0",
+    "level-mem": "^3.0.1",
     "readable-stream": "^2.0.0",
     "rlp": "^2.0.0",
     "semaphore": ">=1.0.1"
