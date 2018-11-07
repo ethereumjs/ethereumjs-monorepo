@@ -41,7 +41,7 @@ tape('runBlock', async (t) => {
   const suite = setup()
 
   t.test('should fail without params', async (st) => {
-    suite.p.runBlock()
+    await suite.p.runBlock()
       .then(() => st.fail('should have returned error'))
       .catch((e) => st.ok(e.message.includes('invalid input'), 'correct error'))
 
@@ -49,7 +49,7 @@ tape('runBlock', async (t) => {
   })
 
   t.test('should fail without opts', async (st) => {
-    suite.p.runBlock({})
+    await suite.p.runBlock({})
       .then(() => st.fail('should have returned error'))
       .catch((e) => st.ok(e.message.includes('invalid input'), 'correct error'))
 
@@ -64,7 +64,7 @@ tape('runBlock', async (t) => {
 
     // The mocked VM uses a mocked runTx
     // which always returns an error.
-    await suite.p.runBlock({ block, root: genesis.header.stateRoot })
+    await suite.p.runBlock({ block, root: genesis.header.stateRoot, skipBlockValidation: true })
       .then(() => t.fail('should have returned error'))
       .catch((e) => t.equal(e.message, 'test'))
 
@@ -82,9 +82,23 @@ tape('should fail when block gas limit higher than 2^63-1', async (t) => {
       gasLimit: Buffer.from('8000000000000000', 16)
     }
   })
-  suite.p.runBlock({ block, root: genesis.header.stateRoot })
+  await suite.p.runBlock({ block, root: genesis.header.stateRoot })
     .then(() => t.fail('should have returned error'))
     .catch((e) => t.ok(e.message.includes('Invalid block')))
+
+  t.end()
+})
+
+tape('should fail when block validation fails', async (t) => {
+  const suite = setup()
+
+  const genesis = createGenesis()
+  const block = new Block(util.rlp.decode(suite.data.blocks[0].rlp))
+  block.validate = (_, cb) => cb(new Error('test'))
+
+  await suite.p.runBlock({ block, root: genesis.header.stateRoot })
+    .then(() => t.fail('should have returned error'))
+    .catch((e) => t.ok(e.message.includes('test')))
 
   t.end()
 })
@@ -98,7 +112,7 @@ tape('should fail when tx gas limit higher than block gas limit', async (t) => {
 
   await suite.p.generateCanonicalGenesis()
 
-  await suite.p.runBlock({ block, root: genesis.header.stateRoot })
+  await suite.p.runBlock({ block, root: genesis.header.stateRoot, skipBlockValidation: true })
     .then(() => t.fail('should have returned error'))
     .catch((e) => t.ok(e.message.includes('higher gas limit')))
 
@@ -122,7 +136,9 @@ tape('should fail when runCall fails', async (t) => {
   // which always returns an error.
   // runTx is a full implementation that works.
   suite.vm.runTx = runTx
-  await suite.p.runBlock({ block, root: suite.vm.stateManager._trie.root })
+
+  await suite.p.runBlock({ block, root: suite.vm.stateManager._trie.root, skipBlockValidation: true })
+
     .then(() => t.fail('should have returned error'))
     .catch((e) => t.equal(e.message, 'test'))
 
@@ -145,7 +161,8 @@ tape('should run valid block', async (t) => {
     'genesis state root should match calculated state root'
   )
 
-  let res = await suite.p.runBlock({ block, root: suite.vm.stateManager._trie.root })
+  let res = await suite.p.runBlock({ block, root: suite.vm.stateManager._trie.root, skipBlockValidation: true })
+
   t.error(res.error, 'runBlock shouldn\'t have returned error')
   t.equal(res.results[0].gasUsed.toString('hex'), '5208', 'actual gas used should equal blockHeader gasUsed')
 
