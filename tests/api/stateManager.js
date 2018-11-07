@@ -8,7 +8,7 @@ tape('StateManager', (t) => {
   t.test('should instantiate', (st) => {
     const stateManager = new StateManager()
 
-    st.deepEqual(stateManager.trie.root, util.KECCAK256_RLP, 'it has default root')
+    st.deepEqual(stateManager._trie.root, util.KECCAK256_RLP, 'it has default root')
     stateManager.getStateRoot((err, res) => {
       st.error(err, 'getStateRoot returns no error')
       st.deepEqual(res, util.KECCAK256_RLP, 'it has default root')
@@ -33,13 +33,13 @@ tape('StateManager', (t) => {
 
     st.equal(res.balance.toString('hex'), 'fff384')
 
-    stateManager.cache.clear()
+    stateManager._cache.clear()
 
     res = await promisify(stateManager.getAccount.bind(stateManager))(
       'a94f5374fce5edbc8e2a8697c15331677e6ebf0b'
     )
 
-    st.equal(stateManager.cache._cache.keys[0], 'a94f5374fce5edbc8e2a8697c15331677e6ebf0b')
+    st.equal(stateManager._cache._cache.keys[0], 'a94f5374fce5edbc8e2a8697c15331677e6ebf0b')
 
     st.end()
   })
