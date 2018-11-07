@@ -122,7 +122,7 @@ tape('should fail when runCall fails', async (t) => {
   // which always returns an error.
   // runTx is a full implementation that works.
   suite.vm.runTx = runTx
-  await suite.p.runBlock({ block, root: suite.vm.stateManager.trie.root })
+  await suite.p.runBlock({ block, root: suite.vm.stateManager._trie.root })
     .then(() => t.fail('should have returned error'))
     .catch((e) => t.equal(e.message, 'test'))
 
@@ -137,15 +137,15 @@ tape('should run valid block', async (t) => {
   const block = new Block(util.rlp.decode(suite.data.blocks[0].rlp))
 
   const setupPreP = promisify(setupPreConditions)
-  await setupPreP(suite.vm.stateManager.trie, suite.data)
+  await setupPreP(suite.vm.stateManager._trie, suite.data)
 
   t.equal(
-    suite.vm.stateManager.trie.root.toString('hex'),
+    suite.vm.stateManager._trie.root.toString('hex'),
     genesis.header.stateRoot.toString('hex'),
     'genesis state root should match calculated state root'
   )
 
-  let res = await suite.p.runBlock({ block, root: suite.vm.stateManager.trie.root })
+  let res = await suite.p.runBlock({ block, root: suite.vm.stateManager._trie.root })
   t.error(res.error, 'runBlock shouldn\'t have returned error')
   t.equal(res.results[0].gasUsed.toString('hex'), '5208', 'actual gas used should equal blockHeader gasUsed')
 
