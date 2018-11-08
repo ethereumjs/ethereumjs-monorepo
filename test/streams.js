@@ -1,4 +1,4 @@
-const Trie = require('../index.js')
+const Trie = require('../src/index.js')
 const describe = require('tape')
 
 describe('kv stream test', function (tester) {

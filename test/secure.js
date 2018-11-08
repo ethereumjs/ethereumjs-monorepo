@@ -1,4 +1,4 @@
-const Trie = require('../secure.js')
+const Trie = require('../src/secure.js')
 const async = require('async')
 const tape = require('tape')
 const jsonTests = require('ethereumjs-testing').tests.trieTests.trietest_secureTrie
