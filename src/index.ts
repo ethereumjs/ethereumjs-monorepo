@@ -53,6 +53,8 @@ function encodeLength(len: number, offset: number): Buffer {
  * @param stream - Is the input a stream (false by default)
  * @returns - returns decode Array of Buffers containg the original message
  **/
+export function decode(input: Buffer, stream?: boolean): Buffer;
+export function decode(input: Buffer[], stream?: boolean): Buffer[];
 export function decode(input: RLPInput, stream: boolean = false): Buffer[] | Buffer | RLPDecoded {
   if (!input || (<any>input).length === 0) {
     return Buffer.from([]);
@@ -259,5 +261,6 @@ function isNumber(input: RLPInput): input is number {
 
 // Check if an input is a BigNumber
 function isBN(input: RLPInput): input is BN {
-    return !!input.hasOwnProperty('toArray');
+  if (!input) return false;
+  return !!input.hasOwnProperty('toArray');
 }
