@@ -1,4 +1,4 @@
-const PrioritizedTaskExecutor = require('../prioritizedTaskExecutor.js')
+const PrioritizedTaskExecutor = require('../src/prioritizedTaskExecutor.js')
 const tape = require('tape')
 const taskExecutor = new PrioritizedTaskExecutor(2)
 

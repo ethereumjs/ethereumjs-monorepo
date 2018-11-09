@@ -1,4 +1,4 @@
-const Trie = require('../index.js')
+const Trie = require('../src/index.js')
 const async = require('async')
 const tape = require('tape')
 const jsonTests = require('ethereumjs-testing').tests.trieTests

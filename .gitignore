@@ -1,1 +1,13 @@
 node_modules
+dist/
+
+baseTrie.js
+checkpoint-interface.js
+index.js
+prioritizedTaskExecutor.js
+proof.js
+readStream.js
+secure-interface.js
+secure.js
+trieNode.js
+util.js

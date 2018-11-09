@@ -1,7 +1,7 @@
 const async = require('async')
 const tape = require('tape')
 
-const Trie = require('../secure.js')
+const Trie = require('../src/secure.js')
 const trie = new Trie()
 const a = new Buffer('f8448080a056e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421a0a155280bc3c09fd31b0adebbdd4ef3d5128172c0d2008be964dc9e10e0f0fedf', 'hex')
 const ak = new Buffer('095e7baea6a6c7c4c2dfeb977efac326af552d87', 'hex')
