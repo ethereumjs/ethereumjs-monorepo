@@ -10,8 +10,15 @@
     "build": "tsc",
     "coverage": "nyc mocha --reporter spec --require ts-node/register 'test/index.ts'",
     "coveralls": "npm run coverage && nyc report --reporter=text-lcov | coveralls",
-    "lint": "standard",
-    "test": "mocha --reporter spec --require ts-node/register 'test/index.ts'",
+    "format": "prettier --list-different '**/*.{ts,json,md,gql}'",
+    "format:fix": "prettier --write '**/*.{ts,json,md,gql}'",
+    "tslint": "tslint -p ./tsconfig.json -e 'node_modules/**/*' -e '**/node_modules/**/*' -e 'dist/**/*' '**/*.ts'",
+    "tslint:fix": "tslint --fix --format stylish -p ./tsconfig.json -e 'node_modules/**/*' -e '**/node_modules/**/*' -e 'dist/**/*' '**/*.ts'",
+    "tsc": "tsc --noEmit",
+    "lint": "yarn format && yarn tslint && yarn tsc",
+    "lint:fix": "yarn format:fix && yarn tslint:fix && yarn tsc",
+    "test": "yarn lint && mocha --reporter spec --require ts-node/register 'test/index.ts'",
+    "test:fix": "yarn lint:fix && mocha --reporter spec --require ts-node/register 'test/index.ts'",
     "webtest": "browserify test/max.js | testling -u"
   },
   "repository": {
@@ -42,13 +49,15 @@
     "@types/mocha": "^5.2.5",
     "@types/node": "^10.12.2",
     "bn.js": "^4.11.1",
-    "nyc": "^13.1.0",
     "coveralls": "^2.11.4",
     "ethereumjs-testing": "git+https://github.com/ethereumjs/ethereumjs-testing.git",
     "mocha": "4.1.0",
-    "standard": "^6.0.8",
+    "nyc": "^13.1.0",
+    "prettier": "^1.15.2",
     "ts-node": "^7.0.1",
-    "typescript": "^3.1.6"
+    "tslint": "^5.11.0",
+    "typescript": "^3.1.6",
+    "typestrict": "^1.0.1"
   },
   "bin": {
     "rlp": "./bin/rlp"
@@ -64,12 +73,6 @@
       "iphone/6",
       "ipad/6",
       "android-browser/latest"
-    ]
-  },
-  "standard": {
-    "globals": [
-      "describe",
-      "it"
     ]
   }
 }

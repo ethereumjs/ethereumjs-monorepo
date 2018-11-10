@@ -44,7 +44,7 @@ CLI
 
 TESTS
 =====
-Test uses mocha. To run `npm test`
+Test uses mocha. To run tests and linting: `npm test`. To auto fix linting problems use: `npm run test:fix`.
 
 CODE COVERAGE
 =============
