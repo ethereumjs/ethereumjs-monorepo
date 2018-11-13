@@ -15,6 +15,7 @@
     "coveralls": "npm run coverage && coveralls <.nyc_output/lcov.info",
     "docs": "jsdoc2md --no-cache -c .jsdoc.json lib/*.js > docs/API.md",
     "lint": "standard",
+    "lint:fix": "standard --fix",
     "test": "npm run lint && tape 'test/**/*.js'",
     "build": "npm run test && browserify browser/index.js -s ethereumjs -t babelify --outfile dist/bundle.js"
   },
