@@ -108,9 +108,9 @@ export function getLength(input: RLPInput): Buffer | number {
 
 /** Decode an input with RLP */
 function _decode(input: Buffer): RLPDecoded {
-  var length, llength, data, innerRemainder, d;
-  var decoded = [];
-  var firstByte = input[0];
+  let length, llength, data, innerRemainder, d;
+  const decoded = [];
+  const firstByte = input[0];
 
   if (firstByte <= 0x7f) {
     // a single byte whose value is in the [0x00, 0x7f] range, that byte is its own RLP encoding.
@@ -246,7 +246,7 @@ function toBuffer(v: RLPInput): Buffer {
       throw new Error("invalid type");
     }
   }
-  return v as Buffer;
+  return v;
 }
 
 // Check is input is a number
