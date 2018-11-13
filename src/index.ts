@@ -1,5 +1,5 @@
-import { RLPInput, RLPDecoded } from "./types";
-import BN from 'bn.js';
+import { RLPInput, RLPDecoded } from './types'
+import BN from 'bn.js'
 
 /**
  * RLP Encoding based on: https://github.com/ethereum/wiki/wiki/%5BEnglish%5D-RLP
@@ -9,17 +9,17 @@ import BN from 'bn.js';
  **/
 export function encode(input: RLPInput): Buffer {
   if (input instanceof Array) {
-    const output: Buffer[] = [];
+    const output: Buffer[] = []
     for (let i = 0; i < input.length; i++) {
-      output.push(encode(input[i]));
+      output.push(encode(input[i]))
     }
-    const buf = Buffer.concat(output);
-    return Buffer.concat([encodeLength(buf.length, 192), buf]);
+    const buf = Buffer.concat(output)
+    return Buffer.concat([encodeLength(buf.length, 192), buf])
   } else {
-    const inputBuf = toBuffer(input);
+    const inputBuf = toBuffer(input)
     return inputBuf.length === 1 && inputBuf[0] < 128
       ? inputBuf
-      : Buffer.concat([encodeLength(inputBuf.length, 128), inputBuf]);
+      : Buffer.concat([encodeLength(inputBuf.length, 128), inputBuf])
   }
 }
 
@@ -29,21 +29,21 @@ export function encode(input: RLPInput): Buffer {
  * @param base The base to parse the integer into
  */
 function safeParseInt(v: string, base: number): number {
-  if (v.slice(0, 2) === "00") {
-    throw new Error("invalid RLP: extra zeros");
+  if (v.slice(0, 2) === '00') {
+    throw new Error('invalid RLP: extra zeros')
   }
 
-  return parseInt(v, base);
+  return parseInt(v, base)
 }
 
 function encodeLength(len: number, offset: number): Buffer {
   if (len < 56) {
-    return Buffer.from([len + offset]);
+    return Buffer.from([len + offset])
   } else {
-    const hexLength = intToHex(len);
-    const lLength = hexLength.length / 2;
-    const firstByte = intToHex(offset + 55 + lLength);
-    return Buffer.from(firstByte + hexLength, "hex");
+    const hexLength = intToHex(len)
+    const lLength = hexLength.length / 2
+    const firstByte = intToHex(offset + 55 + lLength)
+    return Buffer.from(firstByte + hexLength, 'hex')
   }
 }
 
@@ -53,24 +53,27 @@ function encodeLength(len: number, offset: number): Buffer {
  * @param stream - Is the input a stream (false by default)
  * @returns - returns decode Array of Buffers containg the original message
  **/
-export function decode(input: Buffer, stream?: boolean): Buffer;
-export function decode(input: Buffer[], stream?: boolean): Buffer[];
-export function decode(input: RLPInput, stream: boolean = false): Buffer[] | Buffer | RLPDecoded {
+export function decode(input: Buffer, stream?: boolean): Buffer
+export function decode(input: Buffer[], stream?: boolean): Buffer[]
+export function decode(
+  input: RLPInput,
+  stream: boolean = false,
+): Buffer[] | Buffer | RLPDecoded {
   if (!input || (<any>input).length === 0) {
-    return Buffer.from([]);
+    return Buffer.from([])
   }
 
-  const inputBuffer = toBuffer(input);
-  const decoded = _decode(inputBuffer);
+  const inputBuffer = toBuffer(input)
+  const decoded = _decode(inputBuffer)
 
   if (stream) {
-    return decoded;
+    return decoded
   }
   if (decoded.remainder.length !== 0) {
-    throw new Error("invalid remainder");
+    throw new Error('invalid remainder')
   }
 
-  return decoded.data;
+  return decoded.data
 }
 
 /**
@@ -80,144 +83,144 @@ export function decode(input: RLPInput, stream: boolean = false): Buffer[] | Buf
  */
 export function getLength(input: RLPInput): Buffer | number {
   if (!input || (<any>input).length === 0) {
-    return Buffer.from([]);
+    return Buffer.from([])
   }
 
-  const inputBuffer = toBuffer(input);
-  const firstByte = inputBuffer[0];
+  const inputBuffer = toBuffer(input)
+  const firstByte = inputBuffer[0]
 
   if (firstByte <= 0x7f) {
-    return inputBuffer.length;
+    return inputBuffer.length
   } else if (firstByte <= 0xb7) {
-    return firstByte - 0x7f;
+    return firstByte - 0x7f
   } else if (firstByte <= 0xbf) {
-    return firstByte - 0xb6;
+    return firstByte - 0xb6
   } else if (firstByte <= 0xf7) {
     // a list between  0-55 bytes long
-    return firstByte - 0xbf;
+    return firstByte - 0xbf
   } else {
     // a list  over 55 bytes long
-    const llength = firstByte - 0xf6;
+    const llength = firstByte - 0xf6
     const length = safeParseInt(
-      inputBuffer.slice(1, llength).toString("hex"),
-      16
-    );
-    return llength + length;
+      inputBuffer.slice(1, llength).toString('hex'),
+      16,
+    )
+    return llength + length
   }
 }
 
 /** Decode an input with RLP */
 function _decode(input: Buffer): RLPDecoded {
-  var length, llength, data, innerRemainder, d;
-  var decoded = [];
-  var firstByte = input[0];
+  let length, llength, data, innerRemainder, d
+  const decoded = []
+  const firstByte = input[0]
 
   if (firstByte <= 0x7f) {
     // a single byte whose value is in the [0x00, 0x7f] range, that byte is its own RLP encoding.
     return {
       data: input.slice(0, 1),
-      remainder: input.slice(1)
-    };
+      remainder: input.slice(1),
+    }
   } else if (firstByte <= 0xb7) {
     // string is 0-55 bytes long. A single byte with value 0x80 plus the length of the string followed by the string
     // The range of the first byte is [0x80, 0xb7]
-    length = firstByte - 0x7f;
+    length = firstByte - 0x7f
 
     // set 0x80 null to 0
     if (firstByte === 0x80) {
-      data = Buffer.from([]);
+      data = Buffer.from([])
     } else {
-      data = input.slice(1, length);
+      data = input.slice(1, length)
     }
 
     if (length === 2 && data[0] < 0x80) {
-      throw new Error("invalid rlp encoding: byte must be less 0x80");
+      throw new Error('invalid rlp encoding: byte must be less 0x80')
     }
 
     return {
       data: data,
-      remainder: input.slice(length)
-    };
+      remainder: input.slice(length),
+    }
   } else if (firstByte <= 0xbf) {
-    llength = firstByte - 0xb6;
-    length = safeParseInt(input.slice(1, llength).toString("hex"), 16);
-    data = input.slice(llength, length + llength);
+    llength = firstByte - 0xb6
+    length = safeParseInt(input.slice(1, llength).toString('hex'), 16)
+    data = input.slice(llength, length + llength)
     if (data.length < length) {
-      throw new Error("invalid RLP");
+      throw new Error('invalid RLP')
     }
 
     return {
       data: data,
-      remainder: input.slice(length + llength)
-    };
+      remainder: input.slice(length + llength),
+    }
   } else if (firstByte <= 0xf7) {
     // a list between  0-55 bytes long
-    length = firstByte - 0xbf;
-    innerRemainder = input.slice(1, length);
+    length = firstByte - 0xbf
+    innerRemainder = input.slice(1, length)
     while (innerRemainder.length) {
-      d = _decode(innerRemainder);
-      decoded.push(d.data as Buffer);
-      innerRemainder = d.remainder;
+      d = _decode(innerRemainder)
+      decoded.push(d.data as Buffer)
+      innerRemainder = d.remainder
     }
 
     return {
       data: decoded,
-      remainder: input.slice(length)
-    };
+      remainder: input.slice(length),
+    }
   } else {
     // a list  over 55 bytes long
-    llength = firstByte - 0xf6;
-    length = safeParseInt(input.slice(1, llength).toString("hex"), 16);
-    const totalLength = llength + length;
+    llength = firstByte - 0xf6
+    length = safeParseInt(input.slice(1, llength).toString('hex'), 16)
+    const totalLength = llength + length
     if (totalLength > input.length) {
-      throw new Error("invalid rlp: total length is larger than the data");
+      throw new Error('invalid rlp: total length is larger than the data')
     }
 
-    innerRemainder = input.slice(llength, totalLength);
+    innerRemainder = input.slice(llength, totalLength)
     if (innerRemainder.length === 0) {
-      throw new Error("invalid rlp, List has a invalid length");
+      throw new Error('invalid rlp, List has a invalid length')
     }
 
     while (innerRemainder.length) {
-      d = _decode(innerRemainder);
-      decoded.push(d.data as Buffer);
-      innerRemainder = d.remainder;
+      d = _decode(innerRemainder)
+      decoded.push(d.data as Buffer)
+      innerRemainder = d.remainder
     }
     return {
       data: decoded,
-      remainder: input.slice(totalLength)
-    };
+      remainder: input.slice(totalLength),
+    }
   }
 }
 
 /** Check if a string is prefixed by 0x */
 function isHexPrefixed(str: string): boolean {
-  return str.slice(0, 2) === "0x";
+  return str.slice(0, 2) === '0x'
 }
 
 /** Removes 0x from a given String */
 function stripHexPrefix(str: string): string {
-  if (typeof str !== "string") {
-    return str;
+  if (typeof str !== 'string') {
+    return str
   }
-  return isHexPrefixed(str) ? str.slice(2) : str;
+  return isHexPrefixed(str) ? str.slice(2) : str
 }
 
 /** Transform an integer into its hexadecimal value */
 function intToHex(integer: number): string {
-  const hex = integer.toString(16);
-  return hex.length % 2 ? `0${hex}` : hex;
+  const hex = integer.toString(16)
+  return hex.length % 2 ? `0${hex}` : hex
 }
 
 /** Pad a string to be even */
 function padToEven(a: string): string {
-  return a.length % 2 ? `0${a}` : a;
+  return a.length % 2 ? `0${a}` : a
 }
 
 /** Transform an integer into a Buffer */
 function intToBuffer(integer: number): Buffer {
-  const hex = intToHex(integer);
-  return Buffer.from(hex, "hex");
+  const hex = intToHex(integer)
+  return Buffer.from(hex, 'hex')
 }
 
 /** Transform anything into a Buffer */
@@ -225,42 +228,42 @@ function toBuffer(v: RLPInput): Buffer {
   if (!Buffer.isBuffer(v)) {
     if (isString(v)) {
       if (isHexPrefixed(v)) {
-        return Buffer.from(padToEven(stripHexPrefix(v)), "hex");
+        return Buffer.from(padToEven(stripHexPrefix(v)), 'hex')
       } else {
-        return Buffer.from(v);
+        return Buffer.from(v)
       }
     } else if (isNumber(v)) {
       if (!v) {
-        return Buffer.from([]);
+        return Buffer.from([])
       } else {
-        return intToBuffer(v);
+        return intToBuffer(v)
       }
     } else if (v === null || v === undefined) {
-        return Buffer.from([]);
+      return Buffer.from([])
     } else if (v instanceof Uint8Array) {
-        return Buffer.from(v as any);
+      return Buffer.from(v as any)
     } else if (isBN(v)) {
       // converts a BN to a Buffer
-      return Buffer.from(v.toArray());
+      return Buffer.from(v.toArray())
     } else {
-      throw new Error("invalid type");
+      throw new Error('invalid type')
     }
   }
-  return v as Buffer;
+  return v
 }
 
 // Check is input is a number
 function isString(input: RLPInput): input is string {
-    return typeof input === 'string';
+  return typeof input === 'string'
 }
 
 // Check is input is a number
 function isNumber(input: RLPInput): input is number {
-    return typeof input === 'number';
+  return typeof input === 'number'
 }
 
 // Check if an input is a BigNumber
 function isBN(input: RLPInput): input is BN {
-  if (!input) return false;
-  return !!input.hasOwnProperty('toArray');
+  if (!input) return false
+  return !!input.hasOwnProperty('toArray')
 }
