@@ -1,24 +1,19 @@
 {
-    "compileOnSave": false,
-    "compilerOptions": {
-      "baseUrl": "./src",
-      "outDir": "./dist",
-      "sourceMap": false,
-      "declaration": false,
-      "module": "commonjs",
-      "moduleResolution": "node",
-      "emitDecoratorMetadata": false,
-      "experimentalDecorators": true,
-      "allowSyntheticDefaultImports": true,
-      "strict": true,
-      "noImplicitAny": true,
-      "target": "es5",
-      "typeRoots": [
-        "node_modules/@types"
-      ],
-      "lib": [
-        "es2018"
-      ]
-    }
+  "compileOnSave": false,
+  "compilerOptions": {
+    "baseUrl": "./src",
+    "outDir": "./dist",
+    "sourceMap": false,
+    "declaration": false,
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "emitDecoratorMetadata": false,
+    "experimentalDecorators": true,
+    "allowSyntheticDefaultImports": true,
+    "strict": true,
+    "noImplicitAny": true,
+    "target": "es5",
+    "typeRoots": ["node_modules/@types"],
+    "lib": ["es2018"]
   }
-  
+}
