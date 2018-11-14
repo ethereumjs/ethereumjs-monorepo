@@ -326,6 +326,22 @@ describe('hex prefix', function() {
   })
 })
 
+describe('recursive typings', function() {
+  it('should not throw compilation error', function() {
+    type IsType<T, U> = Exclude<T, U> extends never
+      ? Exclude<U, T> extends never
+        ? true
+        : false
+      : false
+    const assertType = <T, U>(isTrue: IsType<T, U>) => {
+      return isTrue
+    }
+    // tslint:disable-next-line:no-dead-store
+    const a = RLP.encode([[[[[0]]]]])
+    assert.ok(assertType<typeof a, Buffer>(true))
+  })
+})
+
 describe('offical tests', function() {
   it('pass all tests', function(done) {
     const officalTests = testing.getSingleFile('RLPTests/rlptest.json')
