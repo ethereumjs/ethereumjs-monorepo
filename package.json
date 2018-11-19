@@ -15,10 +15,10 @@
     "tslint": "tslint -p ./tsconfig.json -e node_modules/**/* -e **/node_modules/**/* -e dist/**/* **/*.ts",
     "tslint:fix": "tslint --fix --format stylish -p ./tsconfig.json -e node_modules/**/* -e **/node_modules/**/* -e dist/**/* **/*.ts",
     "tsc": "tsc --noEmit",
-    "lint": "yarn format && yarn tslint && yarn tsc",
-    "lint:fix": "yarn format:fix && yarn tslint:fix && yarn tsc",
-    "test": "yarn lint && mocha --reporter spec --require ts-node/register test/index.ts",
-    "test:fix": "yarn lint:fix && mocha --reporter spec --require ts-node/register test/index.ts",
+    "lint": "npm run format && npm run tslint && npm run tsc",
+    "lint:fix": "npm run format:fix && npm run tslint:fix && npm run tsc",
+    "test": "npm run lint && mocha --reporter spec --require ts-node/register test/index.ts",
+    "test:fix": "npm run lint:fix && mocha --reporter spec --require ts-node/register test/index.ts",
     "webtest": "browserify test/max.js | testling -u"
   },
   "repository": {
