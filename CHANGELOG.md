@@ -5,6 +5,101 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to 
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+
+## [2.5.0] - 2018-11-21
+
+This is the first release of the VM with full support for all ``Constantinople`` EIPs. It further comes along with huge improvements on consensus conformity and introduces the ``Beta`` version of a new ``StateManager`` API.
+
+### Constantinople Support
+
+For running the VM with ``Constantinople`` hardfork rules, set the [option](https://github.com/ethereumjs/ethereumjs-vm/blob/master/docs/index.md#vm) in the ``VM`` constructor ``opts.hardfork`` to ``constantinople``. Supported hardforks are ``byzantium`` and ``constantinople``, ``default`` setting will stay on ``byzantium`` for now but this will change in a future release.
+
+Changes related to Constantinople:
+
+- EIP 1283 ``SSTORE``, see PR [#367](https://github.com/ethereumjs/ethereumjs-vm/pull/367)
+- EIP 1014 ``CREATE2``, see PR [#329](https://github.com/ethereumjs/ethereumjs-vm/pull/329)
+- EIP 1052 ``EXTCODEHASH``, see PR [#324](https://github.com/ethereumjs/ethereumjs-vm/pull/324)
+- Constantinople ready versions of [ethereumjs-block](https://github.com/ethereumjs/ethereumjs-block/releases/tag/v2.1.0) and [ethereumjs-blockchain](https://github.com/ethereumjs/ethereumjs-blockchain/releases/tag/v3.3.0) dependencies (difficulty bomb delay), see PRs [#371](https://github.com/ethereumjs/ethereumjs-vm/pull/371), [#325](https://github.com/ethereumjs/ethereumjs-vm/pull/325)
+
+### Consensus Conformity
+
+This release is making a huge leap forward regarding consensus conformity, and even if you are not interested in ``Constantinople`` support at all, you should upgrade just for this reason. Some context: we couldn't run blockchain tests for a long time on a steady basis due to performance constraints and when we re-triggered a test run after quite some time with PR [#341](https://github.com/ethereumjs/ethereumjs-vm/pull/341) the result was a bit depressing with over 300 failing tests. Thanks to joined efforts from the community and core team members we could bring this down far quicker than expected and this is the first release for a long time which practically comes with complete consensus conformity - with just three recently added tests failing (see ``skipBroken`` list in ``tests/tester.js``) and otherwise passing all blockchain tests and all state tests for both ``Constantinople`` and ``Byzantium`` rules. 🏆 🏆 🏆
+
+Consensus Conformity related changes:
+
+- Reset ``selfdestruct`` on ``REVERT``, see PR [#392](https://github.com/ethereumjs/ethereumjs-vm/pull/392)
+- Undo ``Bloom`` filter changes from PR [#295](https://github.com/ethereumjs/ethereumjs-vm/pull/295), see PR [#384](https://github.com/ethereumjs/ethereumjs-vm/pull/384)
+- Fixes broken ``BLOCKHASH`` opcode, see PR [#381](https://github.com/ethereumjs/ethereumjs-vm/pull/381)
+- Fix failing blockchain test ``GasLimitHigherThan2p63m1``, see PR [#380](https://github.com/ethereumjs/ethereumjs-vm/pull/380)
+- Stop adding ``account`` to ``cache`` when checking if it is empty, see PR [#375](https://github.com/ethereumjs/ethereumjs-vm/pull/375)
+
+### State Manager Interface
+
+The ``StateManager`` (``lib/stateManager.js``) - providing a high-level interface to account and contract data from the underlying state trie structure - has been completely reworked and there is now a close-to-being finalized API (currently marked as ``Beta``) coming with its own [documentation](https://github.com/ethereumjs/ethereumjs-vm/blob/master/docs/stateManager.md).
+
+This comes along with larger refactoring work throughout more-or-less the whole code base and the ``StateManager`` now completely encapsulates the trie structure and the cache backend used, see issue [#268](https://github.com/ethereumjs/ethereumjs-vm/issues/268) and associated PRs for reference. This will make it much easier in the future to bring along an own state manager serving special needs (optimized for memory and performance, run on mobile,...) by e.g. using a different trie implementation, cache or underlying storage or database backend.
+
+We plan to completely separate the currently still integrated state manager into its own repository in one of the next releases, this will then be a breaking ``v3.0.0`` release. Discussion around a finalized interface (we might e.g. drop all genesis-releated methods respectively methods implemented in the ``DefaultStateManager``) is still ongoing and you are very much invited to jump in and articulate your needs, just take e.g. the issue mentioned above as an entry point.
+
+Change related to the new ``StateManager`` interface:
+
+
+- ``StateManager`` interface simplification, see PR [#388](https://github.com/ethereumjs/ethereumjs-vm/pull/388)
+- Make ``StateManager`` cache and trie private, see PR [#385](https://github.com/ethereumjs/ethereumjs-vm/pull/385)
+- Remove vm accesses to ``StateManager`` ``trie`` and ``cache``, see PR [#376](https://github.com/ethereumjs/ethereumjs-vm/pull/376)
+- Remove explicit direct cache interactions, see PR [#366](https://github.com/ethereumjs/ethereumjs-vm/pull/366)
+- Remove contract specific commit, see PR [#335](https://github.com/ethereumjs/ethereumjs-vm/pull/335)
+- Fixed incorrect references to ``trie`` in tests, see PR [#345](https://github.com/ethereumjs/ethereumjs-vm/pull/345)
+- Added ``StateManager`` API documentation, see PR [#393](https://github.com/ethereumjs/ethereumjs-vm/pull/393)
+
+
+### New Features
+
+- New ``emitFreeLogs`` option, allowing any contract to emit an unlimited quantity of events without modifying the block gas limit (default: ``false``) which can be used in debugging contexts, see PRs [#378](https://github.com/ethereumjs/ethereumjs-vm/pull/378), [#379](https://github.com/ethereumjs/ethereumjs-vm/pull/379)
+
+### Testing and Documentation
+
+Beyond the reintegrated blockchain tests there is now a separate test suite to test the API of the library, see ``tests/api``. This should largely reduce the risk of introducing new bugs on the API level on future changes, generally ease the development process by being able to develop against the specific tests and also allows using the tests as a reference for examples on how to use the API.
+
+On the documentation side the API documentation has also been consolidated and there is now a unified and auto-generated [API documentation](https://github.com/ethereumjs/ethereumjs-vm/blob/master/docs/index.md) (previously being manually edited (and too often forgotten) in ``README``).
+
+- Added API tests for ``index.js``, ``StateManager``, see PR [#364](https://github.com/ethereumjs/ethereumjs-vm/pull/364)
+- Added API Tests for ``runJit`` and ``fakeBlockchain``, see PR [#331](https://github.com/ethereumjs/ethereumjs-vm/pull/331)
+- Added API tests for ``runBlockchain``, see PR [#336](https://github.com/ethereumjs/ethereumjs-vm/pull/336)
+- Added ``runBlock`` API tests, see PR [#360](https://github.com/ethereumjs/ethereumjs-vm/pull/360)
+- Added ``runTx`` API tests, see PR [#352](https://github.com/ethereumjs/ethereumjs-vm/pull/352)
+- Added API Tests for the ``Bloom`` module, see PR [#330](https://github.com/ethereumjs/ethereumjs-vm/pull/330)
+- New consistent auto-generated [API documentation](https://github.com/ethereumjs/ethereumjs-vm/blob/master/docs/index.md), see PR [#377](https://github.com/ethereumjs/ethereumjs-vm/pull/377)
+- Blockchain tests now run by default on CI, see PR [#374](https://github.com/ethereumjs/ethereumjs-vm/pull/374)
+- Switched from ``istanbul`` to ``nyc``, see PR [#334](https://github.com/ethereumjs/ethereumjs-vm/pull/334)
+- Usage of ``sealEngine`` in blockchain tests, see PR [#373](https://github.com/ethereumjs/ethereumjs-vm/pull/373)
+- New ``tap-spec`` option to get a formatted test run result summary, see [README](https://github.com/ethereumjs/ethereumjs-vm#running-tests-with-a-reporterformatter), see PR [#363](https://github.com/ethereumjs/ethereumjs-vm/pull/363)
+- Updates/fixes on the JSDoc comments, see PRs [#362](https://github.com/ethereumjs/ethereumjs-vm/pull/362), [#361](https://github.com/ethereumjs/ethereumjs-vm/pull/361)
+
+### Bug Fixes and Maintenance
+
+Some bug fix and maintenance updates:
+
+- Fix error handling in ``fakeBlockChain``, see PR [#320](https://github.com/ethereumjs/ethereumjs-vm/pull/320)
+- Update of ``ethereumjs-util`` to [v6.0.0](https://github.com/ethereumjs/ethereumjs-util/releases/tag/v6.0.0), see PR [#369](https://github.com/ethereumjs/ethereumjs-vm/pull/369)
+
+
+### Thank You
+
+Special thanks to:
+
+- @mattdean-digicatapult for his indefatigable work on the new StateManager interface and for fixing a large portion of the failing blockchain tests
+- @rmeissner for the work on Constantinople 
+- @vpulim for jumping in so quickly and doing a reliable ``SSTORE`` implementation within 4 days
+- @s1na for the new API test suite
+
+Beyond this release contains contributions from the following people:
+@jwasinger, @Agusx1211, @HolgerD77, @danjm, @whymarrh, @seesemichaelj, @kn
+
+Thank you all very much, and thanks @axic for keeping an ongoing eye on overall library quality!
+
+[2.5.0]: https://github.com/ethereumjs/ethereumjs-vm/compare/v2.4.0...v2.5.0
+
 ## [2.4.0] - 2018-07-27
 
 With the ``2.4.x`` release series we now start to gradually add ``Constantinople`` features with the

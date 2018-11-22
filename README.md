@@ -13,23 +13,7 @@ Implements Ethereum's VM in Javascript.
 
 #### Fork Support
 
-With the ``2.4.x`` release series we now start to gradually add ``Constantinople`` features with the
-bitwise shifting instructions from [EIP 145](https://github.com/ethereum/EIPs/blob/master/EIPS/eip-145.md)
-making the start being introduced in the ``v2.4.0`` release.
-
-Since both the scope of the ``Constantinople`` hardfork as well as the state of at least some of the EIPs
-to be included are not yet finalized, this is only meant for ``EXPERIMENTAL`` purposes, e.g. for developer
-tools to give users early access and make themself familiar with dedicated features.
-
-Once scope and EIPs from ``Constantinople`` are final we will target a ``v2.5.0`` release which will officially
-introduce ``Constantinople`` support with all the changes bundled together.
-
-Note that from this release on we also introduce new ``chain`` (default: ``mainnet``) and ``hardfork`` 
-(default: ``byzantium``) parameters, which make use of our new [ethereumjs-common](https://github.com/ethereumjs/ethereumjs-common) library and in the future will allow
-for parallel hardfork support from ``Byzantium`` onwards.
-
-Since ``hardfork`` default might be changed or dropped in future releases, you might want to explicitly
-set this to ``byzantium`` on your next update to avoid future unexpected behavior.
+Starting with the ``v2.5.0`` release we now support both ``Byzantium`` and ``Constantinople`` fork rules - with ``Byzantium`` currently being the default (this will change in the future). See [release notes](https://github.com/ethereumjs/ethereumjs-vm/releases/tag/v2.5.0) for further details and have a look at the [API docs](./docs/index.md) on instructions how to instantiate the VM with the respective fork rules.
 
 If you are still looking for a [Spurious Dragon](https://github.com/ethereum/EIPs/blob/master/EIPS/eip-607.md) compatible version of this library install the latest of the ``2.2.x`` series (see [Changelog](./CHANGELOG.md)).
 
@@ -61,7 +45,15 @@ To build for standalone use in the browser, install `browserify` and check [run-
 
 # API
 
+## VM
+
 For documentation on ``VM`` instantiation, exposed API and emitted ``events`` see generated [API docs](./docs/index.md).
+
+## StateManger
+
+The API for the ``StateManager`` is currently in ``Beta``, separate documentation can be found [here](./docs/stateManager.md).
+
+The ``StateManager`` API has been largely reworked recently and the ``StateManager`` will be removed from the VM and provided as a separate package in a future ``v3.0.0`` release, see [release notes](https://github.com/ethereumjs/ethereumjs-vm/releases/tag/v2.5.0) for the ``v2.5.0`` VM release for further details.
 
 # Internal Structure
 The VM processes state changes at many levels.
