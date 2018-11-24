@@ -1,0 +1,145 @@
+{
+  "name": "goerli",
+  "chainId": 6284,
+  "networkId": 6284,
+  "comment": "Cross-client PoA test network",
+  "url": "https://github.com/goerli/testnet",
+  "genesis": {
+    "hash": "0xfa57319d09fd8a32faaf18d338c8a925a5a7975285bf29ecd024e083cba8abb1",
+    "timestamp": "0x5bdda800",
+    "gasLimit": 10485760,
+    "difficulty": 1,
+    "nonce": "0x0000000000000000",
+    "extraData": "0x2249276d20646f6e652077616974696e672e2e2e20666f7220626c6f636b2066696e616c69747922202d2049676779270000000001fa1804c408085d9c57eeb167ce953c99b6cb1e20794Fd02933F303FbA550bd1fe2f0649E3576eB0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+    "stateRoot": "0x0f410b6a6eae3d3156eccd966ac842a4c545c47921b9fe36386de18152cfddcf"
+  },
+  "hardforks": [
+    {
+      "name": "chainstart",
+      "block": 0,
+      "consensus": "poa",
+      "finality": null
+    },
+    {
+      "name": "homestead",
+      "block": 0,
+      "consensus": "poa",
+      "finality": null
+    },
+    {
+      "name": "dao",
+      "block": null,
+      "consensus": "poa",
+      "finality": null
+    },
+    {
+      "name": "tangerineWhistle",
+      "block": 0,
+      "consensus": "poa",
+      "finality": null
+    },
+    {
+      "name": "spuriousDragon",
+      "block": 0,
+      "consensus": "poa",
+      "finality": null
+    },
+    {
+      "name": "byzantium",
+      "block": 0,
+      "consensus": "poa",
+      "finality": null
+    },
+    {
+      "name": "constantinople",
+      "block": 0,
+      "consensus": "poa",
+      "finality": null
+    },
+    {
+      "name": "hybridCasper",
+      "block": null,
+      "consensus": "poa",
+      "finality": "pos"
+    }
+  ],
+  "bootstrapNodes": [
+    {
+      "ip": "40.70.214.166",
+      "port": 40303,
+      "id": "04fb7acb86f47b64298374b5ccb3c2959f1e5e9362158e50e0793c261518ffe83759d8295ca4a88091d4726d5f85e6276d53ae9ef4f35b8c4c0cc6b99c8c0537",
+      "location": "",
+      "comment": ""
+    },
+    {
+      "ip": "213.186.16.82",
+      "port": 1345,
+      "id": "17de5580bbc1620081a21f82954731c7854305463630a0d677ed991487609829a6bf1ffcb8fb8ef269eff4829690625db176b498c629b9b13cb39b73b6e7b08b",
+      "location": "",
+      "comment": ""
+    },
+    {
+      "ip": "85.7.110.224",
+      "port": 30303,
+      "id": "22da3ef3707626a92a32b0527d0846f88228daa0536c62d83c9ac7e96660bc8e4ac70a9aa8f8cedf71b580cd41449ad46c6e5a06ecf138b142f38a9d1b2b856a",
+      "location": "",
+      "comment": ""
+    },
+    {
+      "ip": "54.88.169.219",
+      "port": 30303,
+      "id": "3897b1a5786948f643d9755df92dc56d0b2284f36730dc198ef371aebf191b24b5cbe8162c2032b09b2f14ba73460bfc3f7d4ef1e26bcc59297d4f235dc5cdc5",
+      "location": "",
+      "comment": ""
+    },
+    {
+      "ip": "40.70.214.166",
+      "port": 30405,
+      "id": "3d197d65ed92af6d0adf280ce486714fb641ef9f9f38f0bdd5ddd552666fc1132f033eb249a87f7f30086902c131f30f054f872ae80ac83eea6bd3760a7bbce2",
+      "location": "",
+      "comment": ""
+    },
+    {
+      "ip": "188.166.20.30",
+      "port": 30303,
+      "id": "3d8d6698d2d4d730d896c7c1e3602ff845343f71bacbf8cb614b0e94fcb3b10e1a49ac2a5063c76617182a1c5928a4a63d4be897e54ae1cb858a1b94d0d275b8",
+      "location": "",
+      "comment": ""
+    },
+    {
+      "ip": "94.237.54.114",
+      "port": 30313,
+      "id": "46add44b9f13965f7b9875ac6b85f016f341012d84f975377573800a863526f4da19ae2c620ec73d11591fa9510e992ecc03ad0751f53cc02f7c7ed6d55c7291",
+      "location": "",
+      "comment": ""
+    },
+    {
+      "ip": "13.113.211.0",
+      "port": 30303,
+      "id": "5065d5221b507764771a8b74abc69df0351217eae09b96ec0df4275576a8b2bbba9986ce3037e6fb3c933b5b301364e18030c1ada8cec4ae00f1fa4dfff32eb8",
+      "location": "",
+      "comment": ""
+    },
+    {
+      "ip": "52.56.136.200",
+      "port": 30303,
+      "id": "573b6607cd59f241e30e4c4943fd50e99e2b6f42f9bd5ca111659d309c06741247f4f1e93843ad3e8c8c18b6e2d94c161b7ef67479b3938780a97134b618b5ce",
+      "location": "",
+      "comment": ""
+    },
+    {
+      "ip": "213.186.16.82",
+      "port": 30303,
+      "id": "57f58f16fccdd9fb6f587565ac09af4b3b4b33d0fbd14252cc61d29a65b0d83c08419e67ac5292b9342090053526b847f2487278e609f4b4cd1dbf0f48105b2b",
+      "location": "",
+      "comment": ""
+    },
+    {
+      "ip": "13.78.10.94",
+      "port": 30405,
+      "id": "5d9b1cba03738dfd23e12e4efb99b72623474fece2cc582c95e3ba7d481d519dea0029901f1f844116bab806044e8552f0431b21cf8d96010fc351b483330faa",
+      "location": "",
+      "comment": ""
+    }
+  ]
+}
