@@ -34,11 +34,11 @@
   ],
   "license": "MPL-2.0",
   "dependencies": {
-    "async": "^1.4.2",
-    "ethereumjs-util": "^5.0.0",
-    "level-ws": "^1.0.0",
+    "async": "^2.6.1",
+    "ethereumjs-util": "^5.2.0",
     "level-mem": "^3.0.1",
-    "readable-stream": "^2.0.0",
+    "level-ws": "^1.0.0",
+    "readable-stream": "^3.0.6",
     "rlp": "^2.0.0",
     "semaphore": ">=1.0.1"
   },
