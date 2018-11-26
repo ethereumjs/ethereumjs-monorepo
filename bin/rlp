@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-const rlp = require('../index.js')
+const rlp = require('./dist/index.js')
 const command = process.argv[2]
 var raw = process.argv[3]
 

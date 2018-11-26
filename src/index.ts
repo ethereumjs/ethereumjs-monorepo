@@ -55,6 +55,7 @@ function encodeLength(len: number, offset: number): Buffer {
  **/
 export function decode(input: Buffer, stream?: boolean): Buffer
 export function decode(input: Buffer[], stream?: boolean): Buffer[]
+export function decode(input: RLPInput, stream?: boolean): Buffer[] | Buffer | RLPDecoded
 export function decode(
   input: RLPInput,
   stream: boolean = false,
