@@ -1,13 +1,3 @@
 {
-  "extends": "typestrict",
-  "rules": {
-    "no-console": true,
-    "no-debugger": true,
-    "mocha-avoid-only": true,
-    "prefer-const": true,
-    "no-var-keyword": true,
-    "interface-name": [true, "never-prefix"],
-    "no-commented-code": true,
-    "no-use-before-declare": false
-  }
+  "extends": "./node_modules/ethereumjs-config/typescript/tslint.json"
 }
