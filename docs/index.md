@@ -20,33 +20,34 @@
     -   [getUpfrontCost][16]
     -   [validate][17]
         -   [Parameters][18]
-    -   [serialize][19]
-    -   [from][20]
-        -   [Properties][21]
+    -   [toJSON][19]
+    -   [serialize][20]
+    -   [from][21]
+        -   [Properties][22]
 
 ## Transaction
 
-[index.js:46-296][22]
+[index.js:46-305][23]
 
 Creates a new transaction object.
 
 ### Parameters
 
--   `data` **([Buffer][23] \| [Array][24] \| [Object][25])** a transaction can be initiailized with either a buffer containing the RLP serialized transaction or an array of buffers relating to each of the tx Properties, listed in order below in the exmple.Or lastly an Object containing the Properties of the transaction like in the Usage example.For Object and Arrays each of the elements can either be a Buffer, a hex-prefixed (0x) String , Number, or an object with a toBuffer method such as Bignum
-    -   `data.nonce` **[Buffer][23]** nonce number
-    -   `data.gasLimit` **[Buffer][23]** transaction gas limit
-    -   `data.gasPrice` **[Buffer][23]** transaction gas price
-    -   `data.to` **[Buffer][23]** to the to address
-    -   `data.value` **[Buffer][23]** the amount of ether sent
-    -   `data.data` **[Buffer][23]** this will contain the data of the message or the init of a contract
-    -   `data.v` **[Buffer][23]** EC recovery ID
-    -   `data.r` **[Buffer][23]** EC signature parameter
-    -   `data.s` **[Buffer][23]** EC signature parameter
-    -   `data.chainId` **[Number][26]** EIP 155 chainId - mainnet: 1, ropsten: 3
+-   `data` **([Buffer][24] \| [Array][25] \| [Object][26])** a transaction can be initiailized with either a buffer containing the RLP serialized transaction or an array of buffers relating to each of the tx Properties, listed in order below in the exmple.Or lastly an Object containing the Properties of the transaction like in the Usage example.For Object and Arrays each of the elements can either be a Buffer, a hex-prefixed (0x) String , Number, or an object with a toBuffer method such as Bignum
+    -   `data.nonce` **[Buffer][24]** nonce number
+    -   `data.gasLimit` **[Buffer][24]** transaction gas limit
+    -   `data.gasPrice` **[Buffer][24]** transaction gas price
+    -   `data.to` **[Buffer][24]** to the to address
+    -   `data.value` **[Buffer][24]** the amount of ether sent
+    -   `data.data` **[Buffer][24]** this will contain the data of the message or the init of a contract
+    -   `data.v` **[Buffer][24]** EC recovery ID
+    -   `data.r` **[Buffer][24]** EC signature parameter
+    -   `data.s` **[Buffer][24]** EC signature parameter
+    -   `data.chainId` **[Number][27]** EIP 155 chainId - mainnet: 1, ropsten: 3
 
 ### Properties
 
--   `raw` **[Buffer][23]** The raw rlp encoded transaction
+-   `raw` **[Buffer][24]** The raw rlp encoded transaction
 
 ### Examples
 
@@ -67,69 +68,69 @@ var tx = new Transaction(rawTx);
 
 ### toCreationAddress
 
-[index.js:134-136][27]
+[index.js:143-145][28]
 
 If the tx's `to` is to the creation address
 
-Returns **[Boolean][28]** 
+Returns **[Boolean][29]** 
 
 ### hash
 
-[index.js:143-169][29]
+[index.js:152-178][30]
 
 Computes a sha3-256 hash of the serialized tx
 
 #### Parameters
 
--   `includeSignature` **[Boolean][28]** whether or not to inculde the signature (optional, default `true`)
+-   `includeSignature` **[Boolean][29]** whether or not to inculde the signature (optional, default `true`)
 
-Returns **[Buffer][23]** 
+Returns **[Buffer][24]** 
 
 ### getChainId
 
-[index.js:175-177][30]
+[index.js:184-186][31]
 
 returns chain ID
 
-Returns **[Buffer][23]** 
+Returns **[Buffer][24]** 
 
 ### getSenderAddress
 
-[index.js:183-190][31]
+[index.js:192-199][32]
 
 returns the sender's address
 
-Returns **[Buffer][23]** 
+Returns **[Buffer][24]** 
 
 ### getSenderPublicKey
 
-[index.js:196-201][32]
+[index.js:205-210][33]
 
 returns the public key of the sender
 
-Returns **[Buffer][23]** 
+Returns **[Buffer][24]** 
 
 ### verifySignature
 
-[index.js:207-225][33]
+[index.js:216-234][34]
 
 Determines if the signature is valid
 
-Returns **[Boolean][28]** 
+Returns **[Boolean][29]** 
 
 ### sign
 
-[index.js:231-238][34]
+[index.js:240-247][35]
 
 sign a transaction with a given private key
 
 #### Parameters
 
--   `privateKey` **[Buffer][23]** 
+-   `privateKey` **[Buffer][24]** Must be 32 bytes in length
 
 ### getDataFee
 
-[index.js:244-251][35]
+[index.js:253-260][36]
 
 The amount of gas paid for the data in this tx
 
@@ -137,7 +138,7 @@ Returns **BN**
 
 ### getBaseFee
 
-[index.js:257-263][36]
+[index.js:266-272][37]
 
 the minimum amount of gas the tx must have (DataFee + TxFee + Creation Fee)
 
@@ -145,7 +146,7 @@ Returns **BN**
 
 ### getUpfrontCost
 
-[index.js:269-273][37]
+[index.js:278-282][38]
 
 the up front amount that an account must have for this transaction to be valid
 
@@ -153,31 +154,43 @@ Returns **BN**
 
 ### validate
 
-[index.js:280-295][38]
+[index.js:289-304][39]
 
 validates the signature and checks to see if it has enough gas
 
 #### Parameters
 
--   `stringError` **[Boolean][28]** whether to return a string with a description of why the validation failed or return a Boolean (optional, default `false`)
+-   `stringError` **[Boolean][29]** whether to return a string with a description of why the validation failed or return a Boolean (optional, default `false`)
 
-Returns **([Boolean][28] \| [String][39])** 
+Returns **([Boolean][29] \| [String][40])** 
+
+### toJSON
+
+[index.js:116-116][41]
+
+-   **See: [ethereumjs-util][42]**
+
+Returns the transaction in JSON format
+
+Returns **([Array][25] \| [String][40])** 
 
 ### serialize
 
-[index.js:107-107][40]
+[index.js:116-116][41]
+
+-   **See: [ethereumjs-util][42]**
 
 Returns the rlp encoding of the transaction
 
-Returns **[Buffer][23]** 
+Returns **[Buffer][24]** 
 
 ### from
 
-[index.js:114-118][41]
+[index.js:123-127][43]
 
 #### Properties
 
--   `from` **[Buffer][23]** (read only) sender address of this transaction, mathematically derived from other parameters.
+-   `from` **[Buffer][24]** (read only) sender address of this transaction, mathematically derived from other parameters.
 
 [1]: #transaction
 
@@ -215,48 +228,52 @@ Returns **[Buffer][23]**
 
 [18]: #parameters-3
 
-[19]: #serialize
+[19]: #tojson
 
-[20]: #from
+[20]: #serialize
 
-[21]: #properties-1
+[21]: #from
 
-[22]: https://git@github.com/:danjm/ethereumjs-tx/blob/ab415f9a6a760540fd06df5c5578e9eae8957491/index.js#L46-L296 "Source code on GitHub"
+[22]: #properties-1
 
-[23]: https://nodejs.org/api/buffer.html
+[23]: https://git@github.com/:danjm/ethereumjs-tx/blob/ef8e9059eea7ddcc4f511e39142655d0a95ab7ef/index.js#L46-L305 "Source code on GitHub"
 
-[24]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array
+[24]: https://nodejs.org/api/buffer.html
 
-[25]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object
+[25]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array
 
-[26]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number
+[26]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object
 
-[27]: https://git@github.com/:danjm/ethereumjs-tx/blob/ab415f9a6a760540fd06df5c5578e9eae8957491/index.js#L134-L136 "Source code on GitHub"
+[27]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number
 
-[28]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean
+[28]: https://git@github.com/:danjm/ethereumjs-tx/blob/ef8e9059eea7ddcc4f511e39142655d0a95ab7ef/index.js#L143-L145 "Source code on GitHub"
 
-[29]: https://git@github.com/:danjm/ethereumjs-tx/blob/ab415f9a6a760540fd06df5c5578e9eae8957491/index.js#L143-L169 "Source code on GitHub"
+[29]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean
 
-[30]: https://git@github.com/:danjm/ethereumjs-tx/blob/ab415f9a6a760540fd06df5c5578e9eae8957491/index.js#L175-L177 "Source code on GitHub"
+[30]: https://git@github.com/:danjm/ethereumjs-tx/blob/ef8e9059eea7ddcc4f511e39142655d0a95ab7ef/index.js#L152-L178 "Source code on GitHub"
 
-[31]: https://git@github.com/:danjm/ethereumjs-tx/blob/ab415f9a6a760540fd06df5c5578e9eae8957491/index.js#L183-L190 "Source code on GitHub"
+[31]: https://git@github.com/:danjm/ethereumjs-tx/blob/ef8e9059eea7ddcc4f511e39142655d0a95ab7ef/index.js#L184-L186 "Source code on GitHub"
 
-[32]: https://git@github.com/:danjm/ethereumjs-tx/blob/ab415f9a6a760540fd06df5c5578e9eae8957491/index.js#L196-L201 "Source code on GitHub"
+[32]: https://git@github.com/:danjm/ethereumjs-tx/blob/ef8e9059eea7ddcc4f511e39142655d0a95ab7ef/index.js#L192-L199 "Source code on GitHub"
 
-[33]: https://git@github.com/:danjm/ethereumjs-tx/blob/ab415f9a6a760540fd06df5c5578e9eae8957491/index.js#L207-L225 "Source code on GitHub"
+[33]: https://git@github.com/:danjm/ethereumjs-tx/blob/ef8e9059eea7ddcc4f511e39142655d0a95ab7ef/index.js#L205-L210 "Source code on GitHub"
 
-[34]: https://git@github.com/:danjm/ethereumjs-tx/blob/ab415f9a6a760540fd06df5c5578e9eae8957491/index.js#L231-L238 "Source code on GitHub"
+[34]: https://git@github.com/:danjm/ethereumjs-tx/blob/ef8e9059eea7ddcc4f511e39142655d0a95ab7ef/index.js#L216-L234 "Source code on GitHub"
 
-[35]: https://git@github.com/:danjm/ethereumjs-tx/blob/ab415f9a6a760540fd06df5c5578e9eae8957491/index.js#L244-L251 "Source code on GitHub"
+[35]: https://git@github.com/:danjm/ethereumjs-tx/blob/ef8e9059eea7ddcc4f511e39142655d0a95ab7ef/index.js#L240-L247 "Source code on GitHub"
 
-[36]: https://git@github.com/:danjm/ethereumjs-tx/blob/ab415f9a6a760540fd06df5c5578e9eae8957491/index.js#L257-L263 "Source code on GitHub"
+[36]: https://git@github.com/:danjm/ethereumjs-tx/blob/ef8e9059eea7ddcc4f511e39142655d0a95ab7ef/index.js#L253-L260 "Source code on GitHub"
 
-[37]: https://git@github.com/:danjm/ethereumjs-tx/blob/ab415f9a6a760540fd06df5c5578e9eae8957491/index.js#L269-L273 "Source code on GitHub"
+[37]: https://git@github.com/:danjm/ethereumjs-tx/blob/ef8e9059eea7ddcc4f511e39142655d0a95ab7ef/index.js#L266-L272 "Source code on GitHub"
 
-[38]: https://git@github.com/:danjm/ethereumjs-tx/blob/ab415f9a6a760540fd06df5c5578e9eae8957491/index.js#L280-L295 "Source code on GitHub"
+[38]: https://git@github.com/:danjm/ethereumjs-tx/blob/ef8e9059eea7ddcc4f511e39142655d0a95ab7ef/index.js#L278-L282 "Source code on GitHub"
 
-[39]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String
+[39]: https://git@github.com/:danjm/ethereumjs-tx/blob/ef8e9059eea7ddcc4f511e39142655d0a95ab7ef/index.js#L289-L304 "Source code on GitHub"
 
-[40]: https://git@github.com/:danjm/ethereumjs-tx/blob/ab415f9a6a760540fd06df5c5578e9eae8957491/index.js#L107-L107 "Source code on GitHub"
+[40]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String
 
-[41]: https://git@github.com/:danjm/ethereumjs-tx/blob/ab415f9a6a760540fd06df5c5578e9eae8957491/index.js#L114-L118 "Source code on GitHub"
+[41]: https://git@github.com/:danjm/ethereumjs-tx/blob/ef8e9059eea7ddcc4f511e39142655d0a95ab7ef/index.js#L116-L116 "Source code on GitHub"
+
+[42]: https://github.com/ethereumjs/ethereumjs-util/blob/master/docs/index.md#defineproperties
+
+[43]: https://git@github.com/:danjm/ethereumjs-tx/blob/ef8e9059eea7ddcc4f511e39142655d0a95ab7ef/index.js#L123-L127 "Source code on GitHub"

@@ -102,6 +102,15 @@ class Transaction {
      * @return {Buffer}
      * @memberof Transaction
      * @name serialize
+     * @see {@link https://github.com/ethereumjs/ethereumjs-util/blob/master/docs/index.md#defineproperties|ethereumjs-util}
+     */
+    /**
+     * Returns the transaction in JSON format
+     * @method toJSON
+     * @return {Array | String}
+     * @memberof Transaction
+     * @name toJSON
+     * @see {@link https://github.com/ethereumjs/ethereumjs-util/blob/master/docs/index.md#defineproperties|ethereumjs-util}
      */
     // attached serialize
     ethUtil.defineProperties(this, fields, data)
@@ -226,7 +235,7 @@ class Transaction {
 
   /**
    * sign a transaction with a given private key
-   * @param {Buffer} privateKey
+   * @param {Buffer} privateKey Must be 32 bytes in length
    */
   sign (privateKey) {
     const msgHash = this.hash(false)
