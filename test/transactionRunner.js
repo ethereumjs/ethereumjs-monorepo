@@ -1,64 +1,56 @@
 const Tx = require('../index.js')
 const tape = require('tape')
 const ethUtil = require('ethereumjs-util')
-const Common = require('ethereumjs-common')
 const argv = require('minimist')(process.argv.slice(2))
 const testing = require('ethereumjs-testing')
 
-var txTests = testing.getTests('transaction', argv)
+const forkNames = [
+  'Byzantium',
+  'Constantinople',
+  'EIP150',
+  'EIP158',
+  'Frontier',
+  'Homestead'
+]
 
-const bufferToHex = ethUtil.bufferToHex
-const addHexPrefix = ethUtil.addHexPrefix
-const stripHexPrefix = ethUtil.stripHexPrefix
-const setLength = ethUtil.setLength
-
-function addPad (v) {
-  if (v.length % 2 === 1) {
-    v = '0' + v
-  }
-  return v
-}
-
-function normalizeZero (v) {
-  if (!v || v === '0x') {
-    return '0x00'
-  } else {
-    return v
-  }
-}
-
-testing.runTests(function (testData, sst, cb) {
-  var tTx = testData.transaction
-
-  try {
-    var rawTx = ethUtil.toBuffer(testData.rlp)
-    var tx = new Tx(rawTx, {
-      hardfork: testData.blockNumber >= 1150000 ? 'homestead' : 'chainstart'
+tape('TransactionTests', (t) => {
+  testing.getTests('TransactionTests', (testName, testData) => {
+    let rawTx
+    let tx
+    t.test(`${testName}: creates tx`, (st) => {
+      try {
+        rawTx = ethUtil.toBuffer(testData.rlp)
+        tx = new Tx(rawTx)
+        if (Object.keys(testData.Homestead).length === 0) {
+          tx._homestead = false
+        }
+      } catch (e) {
+        st.equal(undefined, tx, 'should not have any fields ')
+        st.end()
+      }
     })
-  } catch (e) {
-    sst.equal(undefined, tTx, 'should not have any fields ')
-    cb()
-    return
-  }
 
-  if (tTx && tx.validate()) {
-    try {
-      sst.equal(tx._common instanceof Common, true, '_common class attribute')
-      sst.equal(bufferToHex(tx.data), addHexPrefix(addPad(stripHexPrefix(tTx.data))), 'data')
-      sst.equal(normalizeZero(bufferToHex(tx.gasLimit)), tTx.gasLimit, 'gasLimit')
-      sst.equal(normalizeZero(bufferToHex(tx.gasPrice)), tTx.gasPrice, 'gasPrice')
-      sst.equal(normalizeZero(bufferToHex(tx.nonce)), tTx.nonce, 'nonce')
-      sst.equal(normalizeZero(bufferToHex(setLength(tx.r, 32))), normalizeZero(bufferToHex(setLength(tTx.r, 32))), 'r')
-      sst.equal(normalizeZero(bufferToHex(tx.s)), normalizeZero(bufferToHex(tTx.s)), 's')
-      sst.equal(normalizeZero(bufferToHex(tx.v)), normalizeZero(bufferToHex(tTx.v)), 'v')
-      sst.equal(bufferToHex(tx.to), addHexPrefix(tTx.to), 'to')
-      sst.equal(normalizeZero(bufferToHex(tx.value)), tTx.value, 'value')
-      sst.equal(normalizeZero(bufferToHex(tx.getSenderAddress())), addHexPrefix(testData.sender), "sender's address")
-    } catch (e) {
-      sst.fail(e)
-    }
-  } else {
-    sst.equal(undefined, tTx, 'no tx params in test')
-  }
-  cb()
-}, txTests, tape)
+    let sender
+    let hash
+    t.test(`${testName}: tx has correct data`, (st) => {
+      if (tx && tx.validate()) {
+        sender = tx.getSenderAddress().toString('hex')
+        hash = tx.hash().toString('hex')
+        try {
+          forkNames.forEach(forkName => {
+            st.equal(testData[forkName].sender, sender)
+            st.equal(testData[forkName].hash, hash)
+          })
+        } catch (e) {
+          st.fail(e)
+        }
+      } else {
+        st.equal(undefined, tx, 'no tx params in test')
+      }
+      st.end()
+    })
+  })
+  .then(() => {
+    t.end()
+  })
+})

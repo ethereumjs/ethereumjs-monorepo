@@ -33,7 +33,7 @@
     "contributor": "^0.1.25",
     "coveralls": "^2.11.4",
     "documentation": "^8.0.0",
-    "ethereumjs-testing": "0.0.1",
+    "ethereumjs-testing": "git+https://github.com/ethereumjs/ethereumjs-testing.git#v1.2.5",
     "istanbul": "^0.4.1",
     "karma": "^1.1.1",
     "karma-browserify": "^5.1.0",
