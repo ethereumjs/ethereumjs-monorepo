@@ -21,7 +21,10 @@ module.exports = function (config) {
     ],
     detectBrowsers: {
       enabled: true,
-      usePhantomJS: false
+      usePhantomJS: false,
+      postDetection: function (availableBrowsers) {
+        return [ 'Firefox' ]
+      }
     }
   })
 }
