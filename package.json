@@ -7,6 +7,7 @@
     "coverage": "nyc npm run test && nyc report --reporter=text-lcov > .nyc_output/lcov.info",
     "coveralls": "npm run coverage && coveralls <.nyc_output/lcov.info",
     "lint": "standard",
+    "lint:fix": "standard --fix",
     "test": "npm run lint && node tests/",
     "build:docs": "documentation build ./index.js --format md --shallow > ./docs/index.md"
   },

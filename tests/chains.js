@@ -57,6 +57,8 @@ tape('[Common]: Initialization / Chain params', function (t) {
     st.equal(c.genesis().hash, '0x6341fd3daf94b748c72ced5a5b26028f2474f5f00d824504e4fa37a75767e177', 'rinkeby')
     c.setChain('kovan')
     st.equal(c.genesis().hash, '0xa3c565fc15c7478862d50ccd6561e3c06b24cc509bf388941c25ea985ce32cb9', 'kovan')
+    c.setChain('goerli')
+    st.equal(c.genesis().hash, '0xfa57319d09fd8a32faaf18d338c8a925a5a7975285bf29ecd024e083cba8abb1', 'goerli')
 
     st.end()
   })
