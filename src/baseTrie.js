@@ -51,6 +51,16 @@ module.exports = class Trie {
     })
 
     this.root = root
+
+    /**
+     * Writes a value directly to the underlining db
+     * @method putRaw
+     * @memberof Trie
+     * @param {Buffer|String} key The key as a `Buffer` or `String`
+     * @param {Buffer} value The value to be stored
+     * @param {Function} callback A callback `Function`, which is given the argument `err` - for errors that may have occured
+     */
+    this.putRaw = this._putRaw
   }
 
   /**
@@ -190,16 +200,6 @@ module.exports = class Trie {
   }
 
   /**
-   * Writes a value directly to the underlining db
-   * @method putRaw
-   * @memberof Trie
-   * @param {Buffer|String} key The key as a `Buffer` or `String`
-   * @param {Buffer} value The value to be stored
-   * @param {Function} callback A callback `Function`, which is given the argument `err` - for errors that may have occured
-   */
-  putRaw = this._putRaw
-
-  /**
    * Removes a raw value in the underlying db
    * @method delRaw
    * @memberof Trie
@@ -217,7 +217,7 @@ module.exports = class Trie {
   }
 
   // writes a single node to dbs
-  _putNode = function (node, cb) {
+  _putNode (node, cb) {
     const hash = node.hash()
     const serialized = node.serialize()
     this._putRaw(hash, serialized, cb)
