@@ -1,9 +1,9 @@
 const level = require('level-mem')
 const async = require('async')
-const inherits = require('util').inherits
-const Readable = require('readable-stream').Readable
 const WriteStream = require('level-ws')
 const callTogether = require('./util').callTogether
+
+const ScratchReadStream = require('./scratchReadStream')
 
 module.exports = checkpointInterface
 
@@ -148,34 +148,4 @@ function createScratchReadStream (scratch) {
   trie._getDBs = [scratch]
   trie._scratch = scratch
   return new ScratchReadStream(trie)
-}
-
-// ScratchReadStream
-// this is used to minimally dump the scratch into the db
-
-inherits(ScratchReadStream, Readable)
-
-function ScratchReadStream (trie) {
-  this.trie = trie
-  this.next = null
-  Readable.call(this, {
-    objectMode: true
-  })
-}
-
-ScratchReadStream.prototype._read = function () {
-  var self = this
-  if (!self._started) {
-    self._started = true
-    self.trie._findDbNodes(function (nodeRef, node, key, next) {
-      self.push({
-        key: nodeRef,
-        value: node.serialize()
-      })
-      next()
-    }, function () {
-      // close stream
-      self.push(null)
-    })
-  }
 }
