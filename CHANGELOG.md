@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 
+## [0.6.1] - 2018-11-28
+- Experimental support for the [Goerli](https://github.com/goerli/testnet) cross-client ``PoA`` testnet (``chains/goerli.json``), see PR [#31](https://github.com/ethereumjs/ethereumjs-common/pull/31)
+- Unified hex-prefixing (so always prefixing with ``0x``) of account addresses in genesis files (fixes an issue with state root computation on other libraries), see PR [#32](https://github.com/ethereumjs/ethereumjs-common/issues/32)
+
+[0.6.1]: https://github.com/ethereumjs/ethereumjs-common/compare/v0.6.0...v0.6.1
+
 ## [0.6.0] - 2018-10-11
 Parameter support for the ``Constantinople`` hardfork (see ``hardforks/constantinople.json``):
 - Added ``SSTORE`` gas/refund prices (``EIP-1283``), PR [#27](https://github.com/ethereumjs/ethereumjs-common/pull/27)
