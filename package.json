@@ -11,7 +11,7 @@
     "test:browser": "karma start karma.conf.js",
     "test:node": "tape ./test/index.js",
     "build:es5": "babel index.js --source-root ./ -d ./es5",
-    "build:docs": "documentation --github  -f md ./index.js > ./docs/index.md && contributor"
+    "build:docs": "documentation build ./index.js --github -f md > ./docs/index.md && contributor"
   },
   "keywords": [
     "ethereum",
@@ -32,7 +32,7 @@
     "browserify": "^13.0.0",
     "contributor": "^0.1.25",
     "coveralls": "^2.11.4",
-    "documentation": "^3.0.4",
+    "documentation": "^8.0.0",
     "ethereumjs-testing": "0.0.1",
     "istanbul": "^0.4.1",
     "karma": "^1.1.1",
