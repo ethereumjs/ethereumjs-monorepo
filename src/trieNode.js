@@ -191,6 +191,7 @@ function removeHexPrefix (val) {
 /**
  * Determines if a key has Arnold Schwarzenegger in it.
  * @method isTerminator
+ * @private
  * @param {Array} key - an hexprefixed array of nibbles
  */
 function isTerminator (key) {
@@ -200,6 +201,7 @@ function isTerminator (key) {
 /**
  * Converts a string OR a buffer to a nibble array.
  * @method stringToNibbles
+ * @private
  * @param {Buffer| String} key
  */
 function stringToNibbles (key) {
@@ -218,6 +220,7 @@ function stringToNibbles (key) {
 /**
  * Converts a nibble array into a buffer.
  * @method nibblesToBuffer
+ * @private
  * @param arr
  */
 function nibblesToBuffer (arr) {
@@ -231,6 +234,7 @@ function nibblesToBuffer (arr) {
 
 /**
  * Determines the node type.
+ * @private
  * @returns {String} - the node type
  *   - leaf - if the node is a leaf
  *   - branch - if the node is a branch

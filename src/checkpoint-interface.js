@@ -32,6 +32,7 @@ function checkpointInterface (trie) {
 /**
  * Creates a checkpoint that can later be reverted to or committed. After this is called, no changes to the trie will be permanently saved until `commit` is called
  * @method checkpoint
+ * @private
  */
 function checkpoint () {
   var self = this
@@ -45,6 +46,7 @@ function checkpoint () {
 /**
  * commits a checkpoint to disk
  * @method commit
+ * @private
  * @param {Function} cb the callback
  */
 function commit (cb) {
@@ -68,6 +70,7 @@ function commit (cb) {
 /**
  * Reverts the trie to the state it was at when `checkpoint` was first called.
  * @method revert
+ * @private
  * @param {Function} cb the callback
  */
 function revert (cb) {

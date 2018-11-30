@@ -17,6 +17,7 @@ module.exports = Trie
 /**
  * Use `require('merkel-patricia-tree')` for the base interface. In Ethereum applications stick with the Secure Trie Overlay `require('merkel-patricia-tree/secure')`. The API for the raw and the secure interface are about the same
  * @class Trie
+ * @public
  * @param {Object} [db] An instance of [levelup](https://github.com/rvagg/node-levelup/) or a compatible API. If the db is `null` or left undefined, then the trie will be stored in memory via [memdown](https://github.com/rvagg/memdown)
  * @param {Buffer|String} [root] A hex `String` or `Buffer` for the root of a previously stored trie
  * @prop {Buffer} root The current root of the `trie`
@@ -56,6 +57,7 @@ function Trie (db, root) {
 /**
  * Gets a value given a `key`
  * @method get
+ * @memberof Trie
  * @param {Buffer|String} key - the key to search for
  * @param {Function} cb A callback `Function` which is given the arguments `err` - for errors that may have occured and `value` - the found value in a `Buffer` or if no value was found `null`
  */
@@ -77,6 +79,7 @@ Trie.prototype.get = function (key, cb) {
 /**
  * Stores a given `value` at the given `key`
  * @method put
+ * @memberof Trie
  * @param {Buffer|String} key
  * @param {Buffer|String} Value
  * @param {Function} cb A callback `Function` which is given the argument `err` - for errors that may have occured
@@ -112,6 +115,7 @@ Trie.prototype.put = function (key, value, cb) {
 /**
  * deletes a value given a `key`
  * @method del
+ * @memberof Trie
  * @param {Buffer|String} key
  * @param {Function} callback the callback `Function`
  */
@@ -138,6 +142,7 @@ Trie.prototype.del = function (key, cb) {
 /**
  * Retrieves a raw value in the underlying db
  * @method getRaw
+ * @memberof Trie
  * @param {Buffer} key
  * @param {Function} callback A callback `Function`, which is given the arguments `err` - for errors that may have occured and `value` - the found value in a `Buffer` or if no value was found `null`.
  */
@@ -192,6 +197,7 @@ Trie.prototype._putRaw = function (key, val, cb) {
 /**
  * Writes a value directly to the underlining db
  * @method putRaw
+ * @memberof Trie
  * @param {Buffer|String} key The key as a `Buffer` or `String`
  * @param {Buffer} value The value to be stored
  * @param {Function} callback A callback `Function`, which is given the argument `err` - for errors that may have occured
@@ -201,6 +207,7 @@ Trie.prototype.putRaw = Trie.prototype._putRaw
 /**
  * Removes a raw value in the underlying db
  * @method delRaw
+ * @memberof Trie
  * @param {Buffer|String} key
  * @param {Function} callback A callback `Function`, which is given the argument `err` - for errors that may have occured
  */
@@ -236,6 +243,7 @@ Trie.prototype._batchNodes = function (opStack, cb) {
  * Trys to find a path to the node for the given key
  * It returns a `stack` of nodes to the closet node
  * @method findPath
+ * @memberof Trie
  * @param {String|Buffer} - key - the search key
  * @param {Function} - cb - the callback function. Its is given the following
  * arguments
@@ -345,6 +353,7 @@ Trie.prototype._findDbNodes = function (onFound, cb) {
 /**
  * Updates a node
  * @method _updateNode
+ * @private
  * @param {Buffer} key
  * @param {Buffer| String} value
  * @param {Array} keyRemainder
@@ -521,6 +530,7 @@ Trie.prototype._walkTrie = function (root, onNode, onDone) {
 /**
  * saves a stack
  * @method _saveStack
+ * @private
  * @param {Array} key - the key. Should follow the stack
  * @param {Array} stack - a stack of nodes to the value given by the key
  * @param {Array} opStack - a stack of levelup operations to commit at the end of this funciton
@@ -707,6 +717,7 @@ Trie.prototype._formatNode = function (node, topLevel, remove, opStack) {
 /**
  * The `data` event is given an `Object` hat has two properties; the `key` and the `value`. Both should be Buffers.
  * @method createReadStream
+ * @memberof Trie
  * @return {stream.Readable} Returns a [stream](https://nodejs.org/dist/latest-v5.x/docs/api/stream.html#stream_class_stream_readable) of the contents of the `trie`
  */
 Trie.prototype.createReadStream = function () {
@@ -722,6 +733,7 @@ Trie.prototype.copy = function () {
 /**
  * The given hash of operations (key additions or deletions) are executed on the DB
  * @method batch
+ * @memberof Trie
  * @example
  * var ops = [
  *    { type: 'del', key: 'father' }
@@ -751,6 +763,7 @@ Trie.prototype.batch = function (ops, cb) {
 /**
  * Checks if a given root exists
  * @method checkRoot
+ * @memberof Trie
  * @param {Buffer} root
  * @param {Function} cb
  */

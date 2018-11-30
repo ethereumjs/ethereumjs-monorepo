@@ -13,7 +13,7 @@
     "test:node": "babel-tape-runner ./test/*.js",
     "babel": "npx babel src --out-dir ./",
     "build": "npm run babel && mkdir -p dist && browserify --s Trie index.js -o dist/trie.js -t [ babelify --presets [ @babel/preset-env ] ]",
-    "build:docs": "documentation --github  -f md ./index.js ./secure.js ./proof.js > ./docs/index-template.md"
+    "build:docs": "documentation build ./src/** -f md --shallow ./src/index.js ./src/secure.js ./src/proof.js > ./docs/index.md --github --config documentation.yml --markdown-toc false"
   },
   "author": {
     "name": "mjbecze",
@@ -51,7 +51,7 @@
     "babelify": "^10.0.0",
     "browserify": "^13.0.0",
     "coveralls": "^2.11.6",
-    "documentation": "^3.0.4",
+    "documentation": "^8.1.2",
     "ethereumjs-testing": "0.0.1",
     "istanbul": "^0.4.1",
     "karma": "^1.7.1",
