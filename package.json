@@ -30,71 +30,44 @@
     {
       "name": "Tim Coulter",
       "email": "tim@timothyjcoulter.com",
-      "url": "https://github.com/tcoulter",
-      "contributions": 1,
-      "additions": 2,
-      "deletions": 2
+      "url": "https://github.com/tcoulter"
     },
     {
       "name": "Nick Dodson",
-      "url": "https://github.com/SilentCicero",
-      "contributions": 2,
-      "additions": 26,
-      "deletions": 2
+      "url": "https://github.com/SilentCicero"
     },
     {
       "name": "Mr. Chico",
-      "url": "https://github.com/MrChico",
-      "contributions": 1,
-      "additions": 11,
-      "deletions": 1
+      "url": "https://github.com/MrChico"
     },
     {
       "name": "Dũng Trần",
       "email": "tad88.dev@gmail.com",
-      "url": "https://github.com/tad88dev",
-      "contributions": 2,
-      "additions": 5,
-      "deletions": 5
+      "url": "https://github.com/tad88dev"
     },
     {
       "name": "Alex Beregszaszi",
       "email": "alex@rtfs.hu",
-      "url": "https://github.com/axic",
-      "contributions": 77,
-      "additions": 1796,
-      "deletions": 642
+      "url": "https://github.com/axic"
     },
     {
       "name": "Taylor Gerring",
-      "url": "https://github.com/tgerring",
-      "contributions": 1,
-      "additions": 1,
-      "deletions": 1
+      "url": "https://github.com/tgerring"
     },
     {
       "name": "Kirill Fomichev",
       "email": "fanatid@ya.ru",
-      "url": "https://github.com/fanatid",
-      "contributions": 8,
-      "additions": 32,
-      "deletions": 16
+      "url": "https://github.com/fanatid"
     },
     {
       "name": "kumavis",
       "email": "aaron@kumavis.me",
-      "url": "https://github.com/kumavis",
-      "contributions": 2,
-      "additions": 2,
-      "deletions": 2
+      "url": "https://github.com/kumavis"
     },
     {
       "name": "Alexander Sinyagin",
       "email": "sinyagin.alexander@gmail.com",
-      "url": "https://github.com/asinyagin",
-      "contributions": 1,
-      "additions": 3,
-      "deletions": 1
+      "url": "https://github.com/asinyagin"
     }
   ],
   "license": "MPL-2.0",
