@@ -10,8 +10,7 @@ tape('[Common]: Hardfork logic', function (t) {
       'tangerineWhistle',
       'spuriousDragon',
       'byzantium',
-      'constantinople',
-      'hybridCasper'
+      'constantinople'
     ]
     let c
 
@@ -86,8 +85,8 @@ tape('[Common]: Hardfork logic', function (t) {
 
   t.test('hardforkGteHardfork()', function (st) {
     let c = new Common('ropsten')
-    st.equal(c.hardforkGteHardfork('hybridCasper', 'byzantium'), true, 'Ropsten, hybridCasper >= byzantium (provided) -> true')
-    st.equal(c.hardforkGteHardfork('hybridCasper', 'byzantium', { onlyActive: true }), false, 'Ropsten, hybridCasper >= byzantium (provided), onlyActive -> fale')
+    st.equal(c.hardforkGteHardfork('constantinople', 'byzantium'), true, 'Ropsten, constantinople >= byzantium (provided) -> true')
+    st.equal(c.hardforkGteHardfork('constantinople', 'byzantium', { onlyActive: true }), false, 'Ropsten, constantinople >= byzantium (provided), onlyActive -> fale')
     st.equal(c.hardforkGteHardfork('byzantium', 'byzantium'), true, 'Ropsten, byzantium >= byzantium (provided) -> true')
     st.equal(c.hardforkGteHardfork('spuriousDragon', 'byzantium'), false, 'Ropsten, spuriousDragon >= byzantium (provided) -> false')
 
@@ -96,7 +95,7 @@ tape('[Common]: Hardfork logic', function (t) {
     st.equal(c.gteHardfork('spuriousDragon'), true, 'Ropsten, byzantium (set) >= spuriousDragon -> true (alias function)')
     st.equal(c.hardforkGteHardfork(null, 'spuriousDragon', { onlyActive: true }), true, 'Ropsten, byzantium (set) >= spuriousDragon, onlyActive -> true')
     st.equal(c.hardforkGteHardfork(null, 'byzantium'), true, 'Ropsten, byzantium (set) >= byzantium -> true')
-    st.equal(c.hardforkGteHardfork(null, 'hybridCasper'), false, 'Ropsten, byzantium (set) >= hybridCasper -> false')
+    st.equal(c.hardforkGteHardfork(null, 'constantinople'), false, 'Ropsten, byzantium (set) >= constantinople -> false')
 
     st.end()
   })
@@ -105,7 +104,7 @@ tape('[Common]: Hardfork logic', function (t) {
     let c = new Common('ropsten')
     st.equal(c.hardforkIsActiveOnChain('byzantium'), true, 'should return true for byzantium (provided) on Ropsten')
     st.equal(c.hardforkIsActiveOnChain('dao'), false, 'should return false for dao (provided) on Ropsten')
-    st.equal(c.hardforkIsActiveOnChain('hybridCasper'), false, 'should return false for hybridCasper (provided) on Ropsten')
+    st.equal(c.hardforkIsActiveOnChain('constantinople'), false, 'should return false for constantinople (provided) on Ropsten')
     st.equal(c.hardforkIsActiveOnChain('notexistinghardfork'), false, 'should return false for a non-existing HF (provided) on Ropsten')
     st.doesNotThrow(function () { c.hardforkIsActiveOnChain('spuriousDragon', { onlySupported: true }) }, /unsupported hardfork$/, 'should not throw with unsupported Hf (provided) and onlySupported set to false') // eslint-disable-line no-new
 
@@ -121,9 +120,8 @@ tape('[Common]: Hardfork logic', function (t) {
   t.test('consensus()/finality()', function (st) {
     let c = new Common('mainnet')
     st.equal(c.consensus('byzantium'), 'pow', 'should return pow for byzantium consensus')
-    st.equal(c.consensus('hybridCasper'), 'pow', 'should return pow for hybridCasper consensus')
+    st.equal(c.consensus('constantinople'), 'pow', 'should return pow for constantinople consensus')
     st.equal(c.finality('byzantium'), null, 'should return null for byzantium finality')
-    st.equal(c.finality('hybridCasper'), 'pos', 'should return pos for hybridCasper finality')
 
     st.end()
   })
