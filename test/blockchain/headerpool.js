@@ -2,14 +2,14 @@ const tape = require('tape')
 const tmp = require('tmp')
 const Block = require('ethereumjs-block')
 const util = require('ethereumjs-util')
-const { Chain, HeaderPool } = require('../lib/blockchain')
-const { defaultLogger } = require('../lib/logging')
+const { Chain, HeaderPool } = require('../../lib/blockchain')
+const { defaultLogger } = require('../../lib/logging')
 defaultLogger.silent = true
 
-tape('[HeaderPool]: functions', t => {
+tape('[HeaderPool]', t => {
   const config = {}
 
-  t.test('should add header segment to chain', async (st) => {
+  t.test('should add header segment to chain', async (t) => {
     const tmpdir = tmp.dirSync()
     config.dataDir = `${tmpdir.name}/chaindb`
 
@@ -30,19 +30,19 @@ tape('[HeaderPool]: functions', t => {
     // add headers out of order to make sure they are inserted in order
     await pool.add(header2)
     await pool.add(header1)
-    st.equal(chain.headers.td.toString(16), '433333333', 'get chain.headers.td')
-    st.equal(chain.headers.height.toString(10), '2', 'get chain.headers.height')
+    t.equal(chain.headers.td.toString(16), '433333333', 'get chain.headers.td')
+    t.equal(chain.headers.height.toString(10), '2', 'get chain.headers.height')
     chain.close()
-    st.end()
+    t.end()
   })
 
-  t.test('should check opened state', async (st) => {
+  t.test('should check opened state', async (t) => {
     const tmpdir = tmp.dirSync()
     config.dataDir = `${tmpdir.name}/chaindb`
 
     const chain = new Chain(config) // eslint-disable-line no-new
     const pool = new HeaderPool({ chain })
-    st.equal(await pool.add([]), false, 'not opened')
-    st.end()
+    t.equal(await pool.add([]), false, 'not opened')
+    t.end()
   })
 })

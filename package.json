@@ -50,7 +50,7 @@
     "ethereumjs-account": "^2.0.5",
     "ethereumjs-block": "^2.1.0",
     "ethereumjs-blockchain": "^3.3.1",
-    "ethereumjs-common": "^0.6.1",
+    "ethereumjs-common": "^0.6.0",
     "ethereumjs-devp2p": "^2.5.0",
     "ethereumjs-util": "^6.0.0",
     "fs-extra": "^6.0.1",
@@ -90,10 +90,12 @@
     "nyc": "~11.6.0",
     "pino": "^5.8.0",
     "pino-pretty": "^2.2.2",
-    "sinon": "^6.0.0",
     "standard": "~11.0.1",
     "supertest": "^3.1.0",
     "tape": "~4.9.0",
+    "tape-catch": "~1.0.6",
+    "testdouble": "^3.8.2",
+    "testdouble-timers": "^0.1.1",
     "tmp": "~0.0.33"
   }
 }
