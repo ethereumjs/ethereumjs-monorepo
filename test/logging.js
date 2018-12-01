@@ -1,7 +1,7 @@
 const tape = require('tape')
 const { getLogger } = require('../lib/logging')
 
-tape('[Logging]: Logging functions', t => {
+tape('[Logging]', t => {
   const logger = getLogger()
 
   t.test('should log error stacks properly', st => {

@@ -1,5 +1,5 @@
 const test = require('tape')
-const sinon = require('sinon')
+
 const request = require('supertest')
 const { INVALID_PARAMS } = require('../../../lib/rpc/error-code')
 const { startRPC, closeRPC, createManager } = require('../helpers')
@@ -9,10 +9,10 @@ function createBlockchain () {
     hash: '0xc6ef2fc5426d6ad6fd9e2a26abeab0aa2411b7ab17f30a99d3cb96aed1d1055b'
   }]
   const block = {
-    toJSON: sinon.stub().returns({ number: 1, transactions })
+    toJSON: () => ({ number: 1, transactions })
   }
   return {
-    getBlock: sinon.stub().returns(block)
+    getBlock: () => block
   }
 }
 
