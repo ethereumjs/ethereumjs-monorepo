@@ -8,8 +8,9 @@ module.exports = {
 }
 
 /**
- * Returns the number of in order matching nibbles of two give nibble arrayes
+ * Returns the number of in order matching nibbles of two give nibble arrays
  * @method matchingNibbleLength
+ * @private
  * @param {Array} nib1
  * @param {Array} nib2
  */

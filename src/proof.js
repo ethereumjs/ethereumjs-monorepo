@@ -4,7 +4,7 @@ const matchingNibbleLength = require('./util').matchingNibbleLength
 
 /**
  * Returns a merkle proof for a given key
- * @method Trie.prove
+ * @method prove
  * @param {Trie} trie
  * @param {String} key
  * @param {Function} cb A callback `Function` (arguments {Error} `err`, {Array.<TrieNode>} `proof`)
@@ -30,7 +30,7 @@ exports.prove = function (trie, key, cb) {
 
 /**
  * Verifies a merkle proof for a given key
- * @method Trie.verifyProof
+ * @method verifyProof
  * @param {Buffer} rootHash
  * @param {String} key
  * @param {Array.<TrieNode>} proof
