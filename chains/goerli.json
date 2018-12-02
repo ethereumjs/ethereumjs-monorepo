@@ -55,12 +55,6 @@
       "block": 0,
       "consensus": "poa",
       "finality": null
-    },
-    {
-      "name": "hybridCasper",
-      "block": null,
-      "consensus": "poa",
-      "finality": "pos"
     }
   ],
   "bootstrapNodes": [

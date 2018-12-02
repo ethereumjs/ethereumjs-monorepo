@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.org/ethereumjs/ethereumjs-common.svg?branch=master)](https://travis-ci.org/ethereumjs/ethereumjs-common)
 [![Coverage Status](https://img.shields.io/coveralls/ethereumjs/ethereumjs-common.svg?style=flat-square)](https://coveralls.io/r/ethereumjs/ethereumjs-common)
-[![JavaScript Style Guide](https://img.shields.io/badge/code_style-standard-brightgreen.svg)](https://standardjs.com) 
+[![JavaScript Style Guide](https://img.shields.io/badge/code_style-standard-brightgreen.svg)](https://standardjs.com)
 [![Gitter](https://img.shields.io/gitter/room/ethereum/ethereumjs.svg?style=flat-square)]()
 
 # ETHEREUMJS-COMMON
@@ -52,7 +52,7 @@ like this prevents unpredicted behaviour.
 # API
 
 See the API documentation for a full list of functions for accessing specific chain and
-depending hardfork parameters. There are also additional helper functions like 
+depending hardfork parameters. There are also additional helper functions like
 ``paramByBlock (topic, name, blockNumber)`` or ``hardforkIsActiveOnBlock (hardfork, blockNumber)``
 to ease ``blockNumber`` based access to parameters.
 
@@ -71,7 +71,6 @@ library supported:
 - ``spuriousDragon``
 - ``byzantium``
 - ``constantinople``
-- ``hybridCasper`` (Draft)
 
 
 For hardfork-specific parameter access with the ``param()`` and ``paramByBlock()`` functions
@@ -85,13 +84,13 @@ you can use the following ``topics``:
 - ``sharding``
 
 See one of the hardfork files like ``byzantium.json`` in the ``hardforks`` directory
-for an overview. For consistency, the chain start (``chainstart``) is considered an own 
+for an overview. For consistency, the chain start (``chainstart``) is considered an own
 hardfork.
 
 The hardfork-specific json files only contain the deltas from ``chainstart`` and
 shouldn't be accessed directly until you have a specific reason for it.
 
-Note: The list of ``gasPrices`` and gas price changes on hardforks is consistent 
+Note: The list of ``gasPrices`` and gas price changes on hardforks is consistent
 but not complete, so there are currently gas price values missing (PRs welcome!).
 
 # Chain Params
