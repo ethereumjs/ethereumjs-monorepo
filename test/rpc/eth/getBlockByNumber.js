@@ -1,13 +1,16 @@
 const test = require('tape')
 
 const request = require('supertest')
+const Common = require('ethereumjs-common')
 const { INVALID_PARAMS } = require('../../../lib/rpc/error-code')
 const { startRPC, closeRPC, createManager } = require('../helpers')
 
 function createBlockchain () {
-  const transactions = [{
-    hash: '0xc6ef2fc5426d6ad6fd9e2a26abeab0aa2411b7ab17f30a99d3cb96aed1d1055b'
-  }]
+  const transactions = [
+    {
+      hash: '0xc6ef2fc5426d6ad6fd9e2a26abeab0aa2411b7ab17f30a99d3cb96aed1d1055b'
+    }
+  ]
   const block = {
     toJSON: () => ({ number: 1, transactions })
   }
@@ -16,9 +19,19 @@ function createBlockchain () {
   }
 }
 
-function createNode () {
+function createNode (opened = true, commonChain = new Common('mainnet')) {
   return {
-    services: [{name: 'eth', chain: createBlockchain()}]
+    services: [
+      {
+        name: 'eth',
+        chain: createBlockchain(),
+        synchronizer: {
+          pool: { peers: [1, 2, 3] }
+        }
+      }
+    ],
+    common: commonChain,
+    opened
   }
 }
 
@@ -83,7 +96,7 @@ test('call eth_getBlockByNumber with false for second argument', t => {
       if (res.body.result.number !== 1) {
         throw new Error('number is not 1')
       }
-      if (typeof (res.body.result.transactions[0]) !== 'string') {
+      if (typeof res.body.result.transactions[0] !== 'string') {
         throw new Error('only the hashes of the transactions')
       }
     })
@@ -103,8 +116,10 @@ test('call eth_getBlockByNumber with invalid block number', t => {
     params: ['WRONG BLOCK NUMBER', true],
     id: 1
   }
-  const checkInvalidParams = checkError(INVALID_PARAMS,
-    'invalid argument 0: hex string without 0x prefix')
+  const checkInvalidParams = checkError(
+    INVALID_PARAMS,
+    'invalid argument 0: hex string without 0x prefix'
+  )
 
   request(server)
     .post('/')
@@ -112,7 +127,7 @@ test('call eth_getBlockByNumber with invalid block number', t => {
     .send(req)
     .expect(200)
     .expect(checkInvalidParams)
-    .end((err) => {
+    .end(err => {
       closeRPC(server)
       t.end(err)
     })
@@ -129,8 +144,10 @@ test('call eth_getBlockByNumber without second parameter', t => {
     id: 1
   }
 
-  const checkInvalidParams = checkError(INVALID_PARAMS,
-    'missing value for required argument 1')
+  const checkInvalidParams = checkError(
+    INVALID_PARAMS,
+    'missing value for required argument 1'
+  )
 
   request(server)
     .post('/')
@@ -138,7 +155,7 @@ test('call eth_getBlockByNumber without second parameter', t => {
     .send(req)
     .expect(200)
     .expect(checkInvalidParams)
-    .end((err) => {
+    .end(err => {
       closeRPC(server)
       t.end(err)
     })
@@ -163,7 +180,7 @@ test('call eth_getBlockByNumber with invalid second parameter', t => {
     .send(req)
     .expect(200)
     .expect(checkInvalidParams)
-    .end((err) => {
+    .end(err => {
       closeRPC(server)
       t.end(err)
     })

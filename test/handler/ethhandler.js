@@ -22,7 +22,7 @@ tape('[EthHandler]', t => {
         reverse: 1
       }
     }
-    const headers = [ 'header0', 'header1' ]
+    const headers = ['header0', 'header1']
     td.when(chain.getHeaders(5, 100, 10, 1)).thenResolve(headers)
     pool.emit('message:eth', message, peer)
     setTimeout(() => {
