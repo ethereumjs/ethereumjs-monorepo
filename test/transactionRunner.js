@@ -14,6 +14,8 @@ const forkNames = [
 ]
 
 tape('TransactionTests', (t) => {
+  const fileFilterRegex = argv.file ? new RegExp(argv.file + '[^\\w]') : undefined
+
   testing.getTests('TransactionTests', (filename, testName, testData) => {
     let rawTx
     let tx
@@ -41,7 +43,7 @@ tape('TransactionTests', (t) => {
       })
       st.end()
     })
-  })
+  }, fileFilterRegex)
   .then(() => {
     t.end()
   })
