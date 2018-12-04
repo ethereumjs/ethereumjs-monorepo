@@ -10,7 +10,7 @@ const forkNames = [
   'EIP150',
   'EIP158',
   'Frontier',
-  'Homestead'
+  'Homestead',
 ]
 
 tape('TransactionTests', (t) => {
@@ -18,34 +18,27 @@ tape('TransactionTests', (t) => {
     let rawTx
     let tx
     t.test(testName, (st) => {
-      try {
-        rawTx = ethUtil.toBuffer(testData.rlp)
-        tx = new Tx(rawTx)
-        if (Object.keys(testData.Homestead).length === 0) {
-          tx._homestead = false
-        }
-      } catch (e) {
-        st.equal(undefined, tx, 'should not have any fields ')
-        st.end()
-      }
-
+      const rawTx = ethUtil.toBuffer(testData.rlp)
+      let tx
       let sender
       let hash
-
-      if (tx && tx.validate()) {
-        sender = tx.getSenderAddress().toString('hex')
-        hash = tx.hash().toString('hex')
+      forkNames.forEach(forkName => {
         try {
-          forkNames.forEach(forkName => {
-            st.equal(testData[forkName].sender, sender)
-            st.equal(testData[forkName].hash, hash)
-          })
+          tx = new Tx(rawTx)
+          if (forkName !== 'Homestead') {
+            tx._homestead = false
+          }
+          const sender = tx.getSenderAddress().toString('hex')
+          const hash = tx.hash().toString('hex')
+          st.assert(sender === testData[forkName].sender && hash === testData[forkName].hash, `Sender and hash should be correct on ${forkName}`)
         } catch (e) {
-          st.fail(e)
+          if (tx !== undefined) {
+            st.equal(e.message, 'Invalid Signature', `Transaction signature should be invalid on ${forkName}`)
+          } else {
+            st.pass(`Transaction should be invalid and should error on creation on ${forkName}`)
+          }
         }
-      } else {
-        st.equal(undefined, tx, 'no tx params in test')
-      }
+      })
       st.end()
     })
   })
