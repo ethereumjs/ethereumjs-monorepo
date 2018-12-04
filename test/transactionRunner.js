@@ -3,10 +3,12 @@ const tape = require('tape')
 const ethUtil = require('ethereumjs-util')
 const argv = require('minimist')(process.argv.slice(2))
 const testing = require('ethereumjs-testing')
-const common = require('ethereum-common/params.json')
+const { hardforks } = require('ethereumjs-common/chains/mainnet.json')
 
 var txTests = testing.getTests('transaction', argv)
 
+const homesteadIndex = 1
+const homestead = hardforks[homesteadIndex]
 const bufferToHex = ethUtil.bufferToHex
 const addHexPrefix = ethUtil.addHexPrefix
 const stripHexPrefix = ethUtil.stripHexPrefix
@@ -33,7 +35,7 @@ testing.runTests(function (testData, sst, cb) {
   try {
     var rawTx = ethUtil.toBuffer(testData.rlp)
     var tx = new Tx(rawTx)
-    if (testData.blocknumber !== String(common.homeSteadForkNumber.v)) {
+    if (testData.blocknumber !== String(homestead.block)) {
       tx._homestead = false
     }
   } catch (e) {
