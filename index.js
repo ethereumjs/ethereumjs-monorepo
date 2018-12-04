@@ -1,7 +1,10 @@
 'use strict'
 const ethUtil = require('ethereumjs-util')
-const { gasPrices: fees } = require('ethereumjs-common/hardforks/chainstart.json')
+const Common = require('ethereumjs-common')
 const BN = ethUtil.BN
+
+// instantiate Common class instance
+const common = new Common('mainnet', 'chainstart')
 
 // secp256k1n/2
 const N_DIV_2 = new BN('7fffffffffffffffffffffffffffffff5d576e7357a4501ddfe92f46681b20a0', 16)
@@ -254,7 +257,9 @@ class Transaction {
     const data = this.raw[5]
     const cost = new BN(0)
     for (let i = 0; i < data.length; i++) {
-      data[i] === 0 ? cost.iaddn(fees.txDataZero.v) : cost.iaddn(fees.txDataNonZero.v)
+      data[i] === 0
+        ? cost.iaddn(common.param('gasPrices', 'txDataZero'))
+        : cost.iaddn(common.param('gasPrices', 'txDataNonZero'))
     }
     return cost
   }
@@ -264,9 +269,9 @@ class Transaction {
    * @return {BN}
    */
   getBaseFee () {
-    const fee = this.getDataFee().iaddn(fees.tx.v)
+    const fee = this.getDataFee().iaddn(common.param('gasPrices', 'tx'))
     if (this._homestead && this.toCreationAddress()) {
-      fee.iaddn(fees.txCreation.v)
+      fee.iaddn(common.param('gasPrices', 'txCreation'))
     }
     return fee
   }
