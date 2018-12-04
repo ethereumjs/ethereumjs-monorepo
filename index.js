@@ -1,6 +1,6 @@
 'use strict'
 const ethUtil = require('ethereumjs-util')
-const fees = require('ethereum-common/params.json')
+const { gasPrices: fees } = require('ethereumjs-common/hardforks/chainstart.json')
 const BN = ethUtil.BN
 
 // secp256k1n/2
@@ -254,7 +254,7 @@ class Transaction {
     const data = this.raw[5]
     const cost = new BN(0)
     for (let i = 0; i < data.length; i++) {
-      data[i] === 0 ? cost.iaddn(fees.txDataZeroGas.v) : cost.iaddn(fees.txDataNonZeroGas.v)
+      data[i] === 0 ? cost.iaddn(fees.txDataZero.v) : cost.iaddn(fees.txDataNonZero.v)
     }
     return cost
   }
@@ -264,7 +264,7 @@ class Transaction {
    * @return {BN}
    */
   getBaseFee () {
-    const fee = this.getDataFee().iaddn(fees.txGas.v)
+    const fee = this.getDataFee().iaddn(fees.tx.v)
     if (this._homestead && this.toCreationAddress()) {
       fee.iaddn(fees.txCreation.v)
     }
