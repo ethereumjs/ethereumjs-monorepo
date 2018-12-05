@@ -6,17 +6,26 @@ const { startRPC, closeRPC, createManager } = require('../helpers')
 const blockChain = require('../blockChainStub.js')
 const Chain = require('../../../lib/blockchain/chain.js')
 
-function createNode (commonChain = new Common('mainnet')) {
+function createNode (opened = true, commonChain = new Common('mainnet')) {
   let chain = new Chain({ blockchain: blockChain({}) })
   chain.opened = true
   return {
-    services: [{ name: 'eth', chain: chain }],
-    common: commonChain
+    services: [
+      {
+        name: 'eth',
+        chain: chain,
+        synchronizer: {
+          pool: { peers: [1, 2, 3] }
+        }
+      }
+    ],
+    common: commonChain,
+    opened
   }
 }
 
 test('call net_version on ropsten', t => {
-  const manager = createManager(createNode(new Common('ropsten')))
+  const manager = createManager(createNode(true, new Common('ropsten')))
   const server = startRPC(manager.getMethods())
 
   const req = {
@@ -90,7 +99,7 @@ test('call net_version on mainnet', t => {
 })
 
 test('call net_version on rinkeby', t => {
-  const manager = createManager(createNode(new Common('rinkeby')))
+  const manager = createManager(createNode(true, new Common('rinkeby')))
   const server = startRPC(manager.getMethods())
 
   const req = {
@@ -127,7 +136,7 @@ test('call net_version on rinkeby', t => {
 })
 
 test('call net_version on kovan', t => {
-  const manager = createManager(createNode(new Common('kovan')))
+  const manager = createManager(createNode(true, new Common('kovan')))
   const server = startRPC(manager.getMethods())
 
   const req = {
