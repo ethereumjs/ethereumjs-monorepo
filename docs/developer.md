@@ -126,3 +126,11 @@ python utils/diffTestOutput.py output-wip-byzantium.txt output-master.txt
 ```
 
 An extremely rich and powerful toolbox is the [evmlab](https://github.com/holiman/evmlab) from ``holiman``, both for debugging and creating new test cases or example data.
+
+## Profiling
+
+[Clinic](https://github.com/nearform/node-clinic) Allows profiling the VM in the node environment. It supports various profiling methods, among them is [flame](https://github.com/nearform/node-clinic-flame) which can be used for generating flamegraphs to highlight bottlenecks and hot paths. As an example, to generate a flamegraph for the VM blockchain tests, you can run:
+
+```sh
+NODE_OPTIONS="--max-old-space-size=4096" clinic flame -- node ./tests/tester.js -b --excludeDir='GeneralStateTests'
+```
