@@ -118,7 +118,7 @@ exports.verifyPostConditions = function (state, testData, t, cb) {
   var keyMap = {}
 
   for (var key in testData) {
-    var hash = utils.sha3(Buffer.from(utils.stripHexPrefix(key), 'hex')).toString('hex')
+    var hash = utils.keccak256(Buffer.from(utils.stripHexPrefix(key), 'hex')).toString('hex')
     hashedAccounts[hash] = testData[key]
     keyMap[hash] = key
   }
@@ -182,7 +182,7 @@ exports.verifyAccountPostConditions = function (state, address, account, acctDat
 
   var hashedStorage = {}
   for (var key in acctData.storage) {
-    hashedStorage[utils.sha3(utils.setLength(Buffer.from(key.slice(2), 'hex'), 32)).toString('hex')] = acctData.storage[key]
+    hashedStorage[utils.keccak256(utils.setLength(Buffer.from(key.slice(2), 'hex'), 32)).toString('hex')] = acctData.storage[key]
   }
 
   if (storageKeys.length > 0) {
@@ -286,12 +286,12 @@ exports.fromAddress = function (hexString) {
 }
 
 /**
- * toCodeHash - applies sha3 to hexCode
+ * toCodeHash - applies keccak256 to hexCode
  * @param {String} hexCode string from tests repo
  * @returns {Buffer}
  */
 exports.toCodeHash = function (hexCode) {
-  return utils.sha3(Buffer.from(hexCode.slice(2), 'hex'))
+  return utils.keccak256(Buffer.from(hexCode.slice(2), 'hex'))
 }
 
 exports.makeBlockHeader = function (data) {
