@@ -10,7 +10,7 @@ tape('test the cache api', function (t) {
   t.test('should have the correct value in the cache ', function (st) {
     var account1 = {
       address: Buffer.from('cd2a3d9f938e13cd947ec05abc7fe734df8dd826', 'hex'),
-      key: ethUtil.sha3('cow')
+      key: ethUtil.keccak256('cow')
     }
 
     /*
