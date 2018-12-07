@@ -50,7 +50,7 @@ tape('[Block]: block functions', function (t) {
   t.test('should test isGenesis (mainnet default)', function (st) {
     var block = new Block()
     st.notEqual(block.isGenesis(), true)
-    block.header.number = new Buffer([])
+    block.header.number = Buffer.from([])
     st.equal(block.isGenesis(), true)
     st.end()
   })
@@ -58,7 +58,7 @@ tape('[Block]: block functions', function (t) {
   t.test('should test isGenesis (ropsten)', function (st) {
     var block = new Block(null, { 'chain': 'ropsten' })
     st.notEqual(block.isGenesis(), true)
-    block.header.number = new Buffer([])
+    block.header.number = Buffer.from([])
     st.equal(block.isGenesis(), true)
     st.end()
   })
