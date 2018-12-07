@@ -66,26 +66,26 @@ var BlockHeader = module.exports = function (data, opts) {
     default: utils.zeros(256)
   }, {
     name: 'difficulty',
-    default: new Buffer([])
+    default: Buffer.from([])
   }, {
     name: 'number',
     // TODO: params.homeSteadForkNumber.v left for legacy reasons, replace on future release
     default: utils.intToBuffer(1150000)
   }, {
     name: 'gasLimit',
-    default: new Buffer('ffffffffffffff', 'hex')
+    default: Buffer.from('ffffffffffffff', 'hex')
   }, {
     name: 'gasUsed',
     empty: true,
-    default: new Buffer([])
+    default: Buffer.from([])
   }, {
     name: 'timestamp',
-    default: new Buffer([])
+    default: Buffer.from([])
   }, {
     name: 'extraData',
     allowZero: true,
     empty: true,
-    default: new Buffer([])
+    default: Buffer.from([])
   }, {
     name: 'mixHash',
     default: utils.zeros(32)
@@ -289,5 +289,5 @@ BlockHeader.prototype.setGenesisParams = function () {
   this.extraData = this._common.genesis().extraData
   this.nonce = this._common.genesis().nonce
   this.stateRoot = this._common.genesis().stateRoot
-  this.number = new Buffer([])
+  this.number = Buffer.from([])
 }
