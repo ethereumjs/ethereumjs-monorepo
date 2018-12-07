@@ -1,16 +1,16 @@
-var genesisStates = {}
-genesisStates['names'] = {}
+import { genesisStatesType } from './../types'
 
-genesisStates['names'][1] = 'mainnet'
-genesisStates['names'][3] = 'ropsten'
-genesisStates['names'][4] = 'rinkeby'
-genesisStates['names'][42] = 'kovan'
-genesisStates['names'][6284] = 'goerli'
-
-genesisStates['mainnet'] = require('./mainnet.json')
-genesisStates['ropsten'] = require('./ropsten.json')
-genesisStates['rinkeby'] = require('./rinkeby.json')
-genesisStates['kovan'] = require('./kovan.json')
-genesisStates['goerli'] = require('./goerli.json')
-
-module.exports = genesisStates
+export const genesisStates: genesisStatesType = {
+  names: {
+    '1': 'mainnet',
+    '3': 'ropsten',
+    '4': 'rinkeby',
+    '42': 'kovan',
+    '6284': 'goerli',
+  },
+  mainnet: require('./mainnet.json'),
+  ropsten: require('./ropsten.json'),
+  rinkeby: require('./rinkeby.json'),
+  kovan: require('./kovan.json'),
+  goerli: require('./goerli.json'),
+}
