@@ -2,10 +2,10 @@
  * Example - Running code on an ethereum-vm
  *
  *
- * To run this example in the browser, use the pre-bundled
- * version (bundle.js) or bundle it with browserify
- * `browserify index.js -o bundle.js` and then load
- * this folder onto a HTTP WebServer (such as node-static)
+ * To run this example in the browser, bundle this file
+ * with browserify using `browserify index.js -o bundle.js`
+ * and then load this folder onto a HTTP WebServer (e.g.
+ * using node-static or `python -mSimpleHTTPServer`).
  */
 var Buffer = require('safe-buffer').Buffer // use for Node.js <4.5.0
 var VM = require('../../index.js')
