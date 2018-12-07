@@ -344,8 +344,7 @@ Blockchain.prototype._putBlockOrHeader = function (item, cb, isGenesis) {
     getCurrentTd,
     getBlockTd,
     rebuildInfo,
-    (cb) => self._saveHeads(cb),
-    (cb) => self._batchDbOps(dbOps, cb)
+    (cb) => self._batchDbOps(dbOps.concat(self._saveHeadOps()), cb)
   ], cb)
 
   function verify (next) {
@@ -623,8 +622,8 @@ Blockchain.prototype.selectNeededHashes = function (hashes, cb) {
   })
 }
 
-Blockchain.prototype._saveHeads = function (cb) {
-  var dbOps = [{
+Blockchain.prototype._saveHeadOps = function () {
+  return [{
     type: 'put',
     key: 'heads',
     keyEncoding: 'binary',
@@ -643,7 +642,10 @@ Blockchain.prototype._saveHeads = function (cb) {
     valueEncoding: 'binary',
     value: this._headBlock
   }]
-  this._batchDbOps(dbOps, cb)
+}
+
+Blockchain.prototype._saveHeads = function (cb) {
+  this._batchDbOps(this._saveHeadOps(), cb)
 }
 
 // delete canonical number assignments for specified number and above
