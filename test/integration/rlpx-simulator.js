@@ -15,6 +15,18 @@ test('RLPX: add working node', async (t) => {
   })
 })
 
+test('RLPX: ban node with missing tcp port', async (t) => {
+  const rlpxs = util.initTwoPeerRLPXSetup(null, null)
+  rlpxs[0].on('peer:added', function () {
+    const peer = { id: Buffer.from('abcd', 'hex'), address: '127.0.0.1', udpPort: 30308, tcpPort: null }
+    t.notOk(rlpxs[0]._dpt._banlist.has(peer), 'should not be in ban list before bad peer discovered')
+    rlpxs[0]._dpt.emit('peer:new', peer)
+    t.ok(rlpxs[0]._dpt._banlist.has(peer), 'should be in ban list after bad peer discovered')
+    util.destroyRLPXs(rlpxs)
+    t.end()
+  })
+})
+
 test('RLPX: remove node', async (t) => {
   const rlpxs = util.initTwoPeerRLPXSetup(null, null)
 

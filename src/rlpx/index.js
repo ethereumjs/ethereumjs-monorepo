@@ -31,6 +31,12 @@ class RLPx extends EventEmitter {
     this._dpt = options.dpt || null
     if (this._dpt !== null) {
       this._dpt.on('peer:new', (peer) => {
+        if (!peer.tcpPort) {
+          this._dpt.banPeer(peer, ms('5m'))
+          debug(`banning peer with missing tcp port: ${peer.address}`)
+          return
+        }
+
         if (this._peersLRU.has(peer.id.toString('hex'))) return
         this._peersLRU.set(peer.id.toString('hex'), true)
 
