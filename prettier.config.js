@@ -1,1 +1,1 @@
-module.exports = require('ethereumjs-config/typescript/prettier.json')
+module.exports = require('ethereumjs-config-prettier')
