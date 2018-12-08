@@ -2,7 +2,6 @@ const tape = require('tape')
 const Common = require('ethereumjs-common')
 const utils = require('ethereumjs-util')
 const rlp = utils.rlp
-const testing = require('ethereumjs-testing')
 const Header = require('../header.js')
 const Block = require('../index.js')
 
@@ -49,11 +48,15 @@ tape('[Block]: Header functions', function (t) {
   })
 
   t.test('should test validateGasLimit', function (st) {
-    const testData = testing.getSingleFile('BlockchainTests/bcBlockGasLimitTest.json')
+    const testData = require('./bcBlockGasLimitTest.json').tests
+    const bcBlockGasLimigTestData = testData.BlockGasLimit2p63m1
 
-    var parentBlock = new Block(rlp.decode(testData['BlockGasLimit2p63m1'].genesisRLP))
-    var block = new Block(rlp.decode(testData['BlockGasLimit2p63m1'].blocks[0].rlp))
-    st.equal(block.header.validateGasLimit(parentBlock), true)
+    Object.keys(bcBlockGasLimigTestData).forEach(key => {
+      var parentBlock = new Block(rlp.decode(bcBlockGasLimigTestData[key].genesisRLP))
+      var block = new Block(rlp.decode(bcBlockGasLimigTestData[key].blocks[0].rlp))
+      st.equal(block.header.validateGasLimit(parentBlock), true)
+    })
+
     st.end()
   })
 
@@ -65,7 +68,7 @@ tape('[Block]: Header functions', function (t) {
     st.end()
   })
 
-  const testDataGenesis = testing.getSingleFile('BasicTests/genesishashestest.json')
+  const testDataGenesis = require('./genesishashestest.json').test
   t.test('should test genesis hashes (mainnet default)', function (st) {
     var header = new Header()
     header.setGenesisParams()

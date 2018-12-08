@@ -1,6 +1,5 @@
 const tape = require('tape')
 const Common = require('ethereumjs-common')
-const testing = require('ethereumjs-testing')
 const rlp = require('ethereumjs-util').rlp
 const Block = require('../index.js')
 
@@ -63,7 +62,7 @@ tape('[Block]: block functions', function (t) {
     st.end()
   })
 
-  const testDataGenesis = testing.getSingleFile('BasicTests/genesishashestest.json')
+  const testDataGenesis = require('./genesishashestest.json').test
   t.test('should test genesis hashes (mainnet default)', function (st) {
     var genesisBlock = new Block()
     genesisBlock.setGenesisParams()
