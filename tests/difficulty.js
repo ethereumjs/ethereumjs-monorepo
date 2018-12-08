@@ -1,4 +1,3 @@
-// const testing = require('ethereumjs-testing')
 const utils = require('ethereumjs-util')
 const tape = require('tape')
 const Block = require('../')
