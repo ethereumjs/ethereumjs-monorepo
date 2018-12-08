@@ -85,7 +85,7 @@ async function runNode (options) {
   logger.info(`Connecting to network: ${options.common.chainName()}`)
   await node.open()
   logger.info('Synchronizing blockchain...')
-  node.start()
+  await node.start()
 
   return node
 }
@@ -96,6 +96,8 @@ function runRpcServer (node, options) {
   const server = jayson.server(manager.getMethods())
   logger.info(`RPC HTTP endpoint opened: http://${rpcaddr}:${rpcport}`)
   server.http().listen(rpcport)
+
+  return server
 }
 
 async function run () {
@@ -126,10 +128,15 @@ async function run () {
     rpcaddr: args.rpcaddr
   }
   const node = await runNode(options)
+  const server = args.rpc ? runRpcServer(node, options) : null
 
-  if (args.rpc) {
-    runRpcServer(node, options)
-  }
+  process.on('SIGINT', async () => {
+    logger.info('Caught interrupt signal. Shutting down...')
+    if (server) await server.stop()
+    await node.stop()
+    logger.info('Exiting.')
+    process.exit()
+  })
 }
 
 run().catch(err => logger.error(err))

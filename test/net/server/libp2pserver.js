@@ -16,8 +16,8 @@ tape('[Libp2pServer]', t => {
   Libp2pNode.prototype.peerInfo = { multiaddrs: { toArray: () => ['ma0'] } }
   td.when(Libp2pNode.prototype.handle('/proto/1')).thenCallback(null, 'conn0')
   td.when(Libp2pNode.prototype.handle('/proto/2')).thenCallback(null, 'conn1')
-  td.when(Libp2pNode.prototype.start()).thenResolve()
-  td.when(Libp2pNode.prototype.stop()).thenResolve()
+  td.when(Libp2pNode.prototype.start()).thenCallback()
+  td.when(Libp2pNode.prototype.stop()).thenCallback()
   td.replace('../../../lib/net/peer/libp2pnode', Libp2pNode)
   const Libp2pServer = require('../../../lib/net/server/libp2pserver')
   const peerInfo = { multiaddrs: { add: td.func(), toArray: td.func() }, id: {toB58String: td.func()} }

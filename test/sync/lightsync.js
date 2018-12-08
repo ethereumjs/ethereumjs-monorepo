@@ -18,6 +18,8 @@ tape('[LightSynchronizer]', t => {
   td.replace('../../lib/blockchain', { HeaderPool })
   class HeaderFetcher extends EventEmitter {}
   HeaderFetcher.prototype.add = td.func()
+  HeaderFetcher.prototype.open = td.func()
+  td.when(HeaderFetcher.prototype.open()).thenResolve()
   HeaderFetcher.prototype.start = function () {
     this.running = true
     this.emit('headers', 'headers')
