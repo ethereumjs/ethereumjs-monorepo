@@ -18,6 +18,8 @@ tape('[FastSynchronizer]', t => {
   td.replace('../../lib/blockchain', { BlockPool })
   class BlockFetcher extends EventEmitter {}
   BlockFetcher.prototype.add = td.func()
+  BlockFetcher.prototype.open = td.func()
+  td.when(BlockFetcher.prototype.open()).thenResolve()
   BlockFetcher.prototype.start = function () {
     this.running = true
     this.emit('blocks', 'blocks')
