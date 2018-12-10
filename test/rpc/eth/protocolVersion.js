@@ -3,13 +3,13 @@ const test = require('tape')
 const request = require('supertest')
 const { startRPC, closeRPC, createManager, createNode } = require('../helpers')
 
-test('call net_peerCount', t => {
-  const manager = createManager(createNode({ opened: true }))
+test('call eth_protocolVersion ', t => {
+  const manager = createManager(createNode())
   const server = startRPC(manager.getMethods())
 
   const req = {
     jsonrpc: '2.0',
-    method: 'net_peerCount',
+    method: 'eth_protocolVersion',
     params: [],
     id: 1
   }
@@ -20,9 +20,9 @@ test('call net_peerCount', t => {
     .send(req)
     .expect(200)
     .expect(res => {
-      const { result } = res.body
-      if (result.substring(0, 2) !== '0x') {
-        throw new Error('Result should be a hex number, but is not')
+      const responseBlob = res.body
+      if (typeof responseBlob.result !== 'string') {
+        throw new Error('Protocol version is not a string')
       }
     })
     .end((err, res) => {

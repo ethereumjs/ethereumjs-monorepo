@@ -1,31 +1,10 @@
 const test = require('tape')
 
 const request = require('supertest')
-const Common = require('ethereumjs-common')
-const { startRPC, closeRPC, createManager } = require('../helpers')
-const blockChain = require('../blockChainStub.js')
-const Chain = require('../../../lib/blockchain/chain.js')
-
-function createNode (opened = true, commonChain = new Common('mainnet')) {
-  let chain = new Chain({ blockchain: blockChain({}) })
-  chain.opened = true
-  return {
-    services: [
-      {
-        name: 'eth',
-        chain: chain,
-        synchronizer: {
-          pool: { peers: [1, 2, 3] }
-        }
-      }
-    ],
-    common: commonChain,
-    opened
-  }
-}
+const { startRPC, closeRPC, createManager, createNode } = require('../helpers')
 
 test('call net_listening while listening', t => {
-  const manager = createManager(createNode(true))
+  const manager = createManager(createNode({ opened: true }))
   const server = startRPC(manager.getMethods())
 
   const req = {
@@ -57,7 +36,7 @@ test('call net_listening while listening', t => {
 })
 
 test('call net_listening while not listening', t => {
-  const manager = createManager(createNode(false))
+  const manager = createManager(createNode({ opened: false }))
   const server = startRPC(manager.getMethods())
 
   const req = {

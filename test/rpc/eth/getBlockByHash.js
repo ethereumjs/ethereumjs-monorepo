@@ -1,29 +1,8 @@
 const test = require('tape')
 
 const request = require('supertest')
-const Common = require('ethereumjs-common')
 const { INVALID_PARAMS } = require('../../../lib/rpc/error-code')
-const { startRPC, closeRPC, createManager } = require('../helpers')
-const blockChain = require('../blockChainStub.js')
-const Chain = require('../../../lib/blockchain/chain.js')
-
-function createNode (opened = true, commonChain = new Common('mainnet')) {
-  let chain = new Chain({ blockchain: blockChain({}) })
-  chain.opened = true
-  return {
-    services: [
-      {
-        name: 'eth',
-        chain: chain,
-        synchronizer: {
-          pool: { peers: [1, 2, 3] }
-        }
-      }
-    ],
-    common: commonChain,
-    opened
-  }
-}
+const { startRPC, closeRPC, createManager, createNode } = require('../helpers')
 
 function checkError (expectedCode, expectedMessage) {
   return function (res) {
