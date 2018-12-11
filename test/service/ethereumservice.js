@@ -5,7 +5,7 @@ const { defaultLogger } = require('../../lib/logging')
 defaultLogger.silent = true
 
 tape('[EthereumService]', t => {
-  class PeerPool extends EventEmitter {}
+  class PeerPool extends EventEmitter { }
   PeerPool.prototype.open = td.func()
   td.replace('../../lib/net/peerpool', PeerPool)
   td.replace('../../lib/net/protocol/flowcontrol')
@@ -19,8 +19,8 @@ tape('[EthereumService]', t => {
   const LesProtocol = td.constructor()
   td.replace('../../lib/net/protocol/ethprotocol', EthProtocol)
   td.replace('../../lib/net/protocol/lesprotocol', LesProtocol)
-  class FastSynchronizer extends EventEmitter {}
-  class LightSynchronizer extends EventEmitter {}
+  class FastSynchronizer extends EventEmitter { }
+  class LightSynchronizer extends EventEmitter { }
   LightSynchronizer.prototype.sync = td.func()
   LightSynchronizer.prototype.stop = td.func()
   LightSynchronizer.prototype.open = td.func()
@@ -29,23 +29,23 @@ tape('[EthereumService]', t => {
   const EthereumService = require('../../lib/service/ethereumservice')
 
   t.test('should initialize correctly', async (t) => {
-    let service = new EthereumService({syncmode: 'light'})
+    let service = new EthereumService({ syncmode: 'light' })
     t.ok(service.synchronizer instanceof LightSynchronizer, 'light mode')
-    service = new EthereumService({syncmode: 'fast', lightserv: true})
+    service = new EthereumService({ syncmode: 'fast', lightserv: true })
     t.ok(service.synchronizer instanceof FastSynchronizer, 'fast mode')
     t.ok(service.handlers[0] instanceof EthHandler, 'eth handler')
     t.ok(service.handlers[1] instanceof LesHandler, 'les handler')
-    t.throws(() => new EthereumService({syncmode: 'unknown'}), /Unsupported/, 'bad syncmode')
+    t.throws(() => new EthereumService({ syncmode: 'unknown' }), /Unsupported/, 'bad syncmode')
     t.equals(service.name, 'eth', 'got name')
     t.end()
   })
 
   t.test('should get protocols', async (t) => {
-    let service = new EthereumService({syncmode: 'light'})
-    t.ok(service.protocols()[0] instanceof LesProtocol, 'light protocols')
-    service = new EthereumService({syncmode: 'fast', lightserv: true})
-    t.ok(service.protocols()[0] instanceof EthProtocol, 'fast protocols')
-    t.ok(service.protocols()[1] instanceof LesProtocol, 'lightserv protocols')
+    let service = new EthereumService({ syncmode: 'light' })
+    t.ok(service.protocols[0] instanceof LesProtocol, 'light protocols')
+    service = new EthereumService({ syncmode: 'fast', lightserv: true })
+    t.ok(service.protocols[0] instanceof EthProtocol, 'fast protocols')
+    t.ok(service.protocols[1] instanceof LesProtocol, 'lightserv protocols')
     t.end()
   })
 
@@ -53,7 +53,7 @@ tape('[EthereumService]', t => {
     t.plan(3)
     const server = td.object()
     let service = new EthereumService({
-      servers: [ server ]
+      servers: [server]
     })
     await service.open()
     td.verify(service.chain.open())
@@ -72,7 +72,7 @@ tape('[EthereumService]', t => {
 
   t.test('should start/stop', async (t) => {
     const server = td.object()
-    let service = new EthereumService({servers: [server]})
+    let service = new EthereumService({ servers: [server] })
     await service.start()
     td.verify(service.synchronizer.sync())
     t.notOk(await service.start(), 'already started')

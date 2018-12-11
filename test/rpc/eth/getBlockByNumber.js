@@ -1,9 +1,8 @@
 const test = require('tape')
 
 const request = require('supertest')
-const Common = require('ethereumjs-common')
 const { INVALID_PARAMS } = require('../../../lib/rpc/error-code')
-const { startRPC, closeRPC, createManager } = require('../helpers')
+const { startRPC, closeRPC, createManager, createNode } = require('../helpers')
 
 function createBlockchain () {
   const transactions = [
@@ -16,22 +15,6 @@ function createBlockchain () {
   }
   return {
     getBlock: () => block
-  }
-}
-
-function createNode (opened = true, commonChain = new Common('mainnet')) {
-  return {
-    services: [
-      {
-        name: 'eth',
-        chain: createBlockchain(),
-        synchronizer: {
-          pool: { peers: [1, 2, 3] }
-        }
-      }
-    ],
-    common: commonChain,
-    opened
   }
 }
 
@@ -50,7 +33,7 @@ function checkError (expectedCode, expectedMessage) {
 }
 
 test('call eth_getBlockByNumber with valid arguments', t => {
-  const manager = createManager(createNode())
+  const manager = createManager(createNode({ blockchain: createBlockchain() }))
   const server = startRPC(manager.getMethods())
 
   const req = {
@@ -77,7 +60,7 @@ test('call eth_getBlockByNumber with valid arguments', t => {
 })
 
 test('call eth_getBlockByNumber with false for second argument', t => {
-  const manager = createManager(createNode())
+  const manager = createManager(createNode({ blockchain: createBlockchain() }))
   const server = startRPC(manager.getMethods())
 
   const req = {
@@ -107,7 +90,7 @@ test('call eth_getBlockByNumber with false for second argument', t => {
 })
 
 test('call eth_getBlockByNumber with invalid block number', t => {
-  const manager = createManager(createNode())
+  const manager = createManager(createNode({ blockchain: createBlockchain() }))
   const server = startRPC(manager.getMethods())
 
   const req = {
@@ -134,7 +117,7 @@ test('call eth_getBlockByNumber with invalid block number', t => {
 })
 
 test('call eth_getBlockByNumber without second parameter', t => {
-  const manager = createManager(createNode())
+  const manager = createManager(createNode({ blockchain: createBlockchain() }))
   const server = startRPC(manager.getMethods())
 
   const req = {
@@ -162,7 +145,7 @@ test('call eth_getBlockByNumber without second parameter', t => {
 })
 
 test('call eth_getBlockByNumber with invalid second parameter', t => {
-  const manager = createManager(createNode())
+  const manager = createManager(createNode({ blockchain: createBlockchain() }))
   const server = startRPC(manager.getMethods())
 
   const req = {
