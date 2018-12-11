@@ -63,6 +63,7 @@ tape('[LightSynchronizer]', t => {
   t.test('should find origin', async (t) => {
     t.plan(2)
     const sync = new LightSynchronizer({interval: 1, pool: new PeerPool()})
+    sync.syncing = true
     sync.chain = {headers: {td: new BN(1)}}
     sync.pool = {peers: []}
     const peers = [

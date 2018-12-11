@@ -16,7 +16,9 @@
     "docs": "jsdoc2md --no-cache -c .jsdoc.json lib/*.js > docs/API.md",
     "lint": "standard",
     "lint:fix": "standard --fix",
-    "test": "npm run lint && tape 'test/**/*.js'",
+    "unit": "tape 'test/!(integration)/**/*.js'",
+    "integration": "tape 'test/integration/**/*.js'",
+    "test": "npm run lint && npm run unit && npm run integration",
     "build": "npm run test && browserify browser/index.js -s ethereumjs -t babelify --outfile dist/bundle.js"
   },
   "browser": {

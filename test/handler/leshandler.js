@@ -24,6 +24,7 @@ tape('[LesHandler]', t => {
     }
   }
   const headers = [ 'header0', 'header1' ]
+  handler.start()
 
   t.test('should handle GetBlockHeaders', t => {
     td.when(flow.handleRequest(peer, message.name, 100)).thenReturn(11)
@@ -56,5 +57,11 @@ tape('[LesHandler]', t => {
       t.end()
     })
     pool.emit('message:les', null, peer)
+  })
+
+  t.test('should stop handler', t => {
+    handler.stop()
+    t.notOk(handler.running, 'stopped handler')
+    t.end()
   })
 })
