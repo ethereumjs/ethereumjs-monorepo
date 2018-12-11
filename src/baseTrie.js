@@ -52,14 +52,6 @@ module.exports = class Trie {
 
     this.root = root
 
-    /**
-     * Writes a value directly to the underlining db
-     * @method putRaw
-     * @memberof Trie
-     * @param {Buffer|String} key The key as a `Buffer` or `String`
-     * @param {Buffer} value The value to be stored
-     * @param {Function} callback A callback `Function`, which is given the argument `err` - for errors that may have occured
-     */
     this.putRaw = this._putRaw
   }
 
@@ -146,6 +138,7 @@ module.exports = class Trie {
   /**
    * Retrieves a raw value in the underlying db
    * @method getRaw
+   * @memberof Trie
    * @param {Buffer} key
    * @param {Function} callback A callback `Function`, which is given the arguments `err` - for errors that may have occured and `value` - the found value in a `Buffer` or if no value was found `null`.
    */
@@ -187,6 +180,14 @@ module.exports = class Trie {
     }
   }
 
+  /**
+   * Writes a value directly to the underlining db
+   * @method putRaw
+   * @memberof Trie
+   * @param {Buffer|String} key The key as a `Buffer` or `String`
+   * @param {Buffer} value The value to be stored
+   * @param {Function} callback A callback `Function`, which is given the argument `err` - for errors that may have occured
+   */
   // TODO: remove the proxy method when changing the caching
   _putRaw (key, val, cb) {
     function dbPut (db, cb2) {
