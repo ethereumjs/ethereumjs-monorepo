@@ -11,6 +11,7 @@ tape('[EthHandler]', t => {
   const chain = new Chain()
   const handler = new EthHandler({ pool, chain })
   const peer = { eth: { send: td.func() } }
+  handler.start()
 
   t.test('should handle GetBlockHeaders', t => {
     const message = {
@@ -39,5 +40,11 @@ tape('[EthHandler]', t => {
       t.end()
     })
     pool.emit('message:eth', null, peer)
+  })
+
+  t.test('should stop handler', t => {
+    handler.stop()
+    t.notOk(handler.running, 'stopped handler')
+    t.end()
   })
 })

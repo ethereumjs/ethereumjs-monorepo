@@ -73,6 +73,7 @@ tape('[FastSynchronizer]', t => {
   t.test('should find origin', async (t) => {
     t.plan(3)
     const sync = new FastSynchronizer({interval: 1, pool: new PeerPool()})
+    sync.syncing = true
     sync.height = td.func()
     sync.chain = {blocks: {td: new BN(1)}}
     sync.pool = {peers: []}
