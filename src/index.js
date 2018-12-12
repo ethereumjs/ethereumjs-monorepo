@@ -277,7 +277,7 @@ Wallet.fromV3 = function (input, password, nonStrict) {
   }
 
   var decipher = crypto.createDecipheriv(json.crypto.cipher, derivedKey.slice(0, 16), Buffer.from(json.crypto.cipherparams.iv, 'hex'))
-  var seed = decipherBuffer(decipher, ciphertext, 'hex')
+  var seed = decipherBuffer(decipher, ciphertext)
 
   return new Wallet(seed)
 }
