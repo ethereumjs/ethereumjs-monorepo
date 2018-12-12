@@ -199,6 +199,7 @@ Type: [Object][29]
 -   `address` **[Buffer][42]** the address of the `account`
 -   `depth` **[Number][32]** the current number of calls deep the contract is
 -   `memory` **[Buffer][42]** the memory of the VM as a `buffer`
+-   `memoryWordCount` **BN** current size of memory in words
 -   `stateManager` **StateManager** a [`StateManager`][30] instance (Beta API)
 
 [1]: #vmrunblockchain
