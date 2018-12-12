@@ -23,14 +23,6 @@
 <dd></dd>
 </dl>
 
-## Classes
-
-<dl>
-<dt><a href="#BoundProtocol">BoundProtocol</a> ⇐ <code>EventEmitter</code></dt>
-<dd><p>Binds a protocol implementation to the specified peer</p>
-</dd>
-</dl>
-
 ## Functions
 
 <dl>
@@ -297,13 +289,17 @@ into the blockchain once prior gaps are filled.
 
 * [handler](#module_handler)
     * [.EthHandler](#module_handler.EthHandler)
-        * [new EthHandler(options)](#new_module_handler.EthHandler_new)
+        * [.event](#module_handler.EthHandler+event) ⇒ <code>string</code>
         * [.handle(message, peer)](#module_handler.EthHandler+handle) ⇒ <code>Promise</code>
     * [.Handler](#module_handler.Handler)
         * [new Handler(options)](#new_module_handler.Handler_new)
+        * [.event](#module_handler.Handler+event) ⇒ <code>string</code>
+        * [.start()](#module_handler.Handler+start)
+        * [.stop()](#module_handler.Handler+stop)
         * [.handle(message, peer)](#module_handler.Handler+handle) ⇒ <code>Promise</code>
     * [.LesHandler](#module_handler.LesHandler)
         * [new LesHandler(options)](#new_module_handler.LesHandler_new)
+        * [.event](#module_handler.LesHandler+event) ⇒ <code>string</code>
         * [.handle(message, peer)](#module_handler.LesHandler+handle) ⇒ <code>Promise</code>
 
 <a name="module_handler.EthHandler"></a>
@@ -314,22 +310,16 @@ ETH protocol handler
 **Kind**: static class of [<code>handler</code>](#module_handler)  
 
 * [.EthHandler](#module_handler.EthHandler)
-    * [new EthHandler(options)](#new_module_handler.EthHandler_new)
+    * [.event](#module_handler.EthHandler+event) ⇒ <code>string</code>
     * [.handle(message, peer)](#module_handler.EthHandler+handle) ⇒ <code>Promise</code>
 
-<a name="new_module_handler.EthHandler_new"></a>
+<a name="module_handler.EthHandler+event"></a>
 
-#### new EthHandler(options)
-Create new handler
+#### ethHandler.event ⇒ <code>string</code>
+Message event to listen for
 
-
-| Param | Type | Description |
-| --- | --- | --- |
-| options | <code>Object</code> | constructor parameters |
-| options.pool | <code>PeerPool</code> | peer pool |
-| options.chain | <code>Chain</code> | blockchain |
-| [options.logger] | <code>Logger</code> | Logger instance |
-
+**Kind**: instance property of [<code>EthHandler</code>](#module_handler.EthHandler)  
+**Returns**: <code>string</code> - name of message event  
 <a name="module_handler.EthHandler+handle"></a>
 
 #### ethHandler.handle(message, peer) ⇒ <code>Promise</code>
@@ -351,6 +341,9 @@ Base class for protocol handlers
 
 * [.Handler](#module_handler.Handler)
     * [new Handler(options)](#new_module_handler.Handler_new)
+    * [.event](#module_handler.Handler+event) ⇒ <code>string</code>
+    * [.start()](#module_handler.Handler+start)
+    * [.stop()](#module_handler.Handler+stop)
     * [.handle(message, peer)](#module_handler.Handler+handle) ⇒ <code>Promise</code>
 
 <a name="new_module_handler.Handler_new"></a>
@@ -366,6 +359,25 @@ Create new handler
 | options.chain | <code>Chain</code> | blockchain |
 | [options.logger] | <code>Logger</code> | Logger instance |
 
+<a name="module_handler.Handler+event"></a>
+
+#### handler.event ⇒ <code>string</code>
+Message event to listen for
+
+**Kind**: instance property of [<code>Handler</code>](#module_handler.Handler)  
+**Returns**: <code>string</code> - name of message event  
+<a name="module_handler.Handler+start"></a>
+
+#### handler.start()
+Start handler
+
+**Kind**: instance method of [<code>Handler</code>](#module_handler.Handler)  
+<a name="module_handler.Handler+stop"></a>
+
+#### handler.stop()
+Stop handler
+
+**Kind**: instance method of [<code>Handler</code>](#module_handler.Handler)  
 <a name="module_handler.Handler+handle"></a>
 
 #### handler.handle(message, peer) ⇒ <code>Promise</code>
@@ -387,6 +399,7 @@ LES protocol handler
 
 * [.LesHandler](#module_handler.LesHandler)
     * [new LesHandler(options)](#new_module_handler.LesHandler_new)
+    * [.event](#module_handler.LesHandler+event) ⇒ <code>string</code>
     * [.handle(message, peer)](#module_handler.LesHandler+handle) ⇒ <code>Promise</code>
 
 <a name="new_module_handler.LesHandler_new"></a>
@@ -403,6 +416,13 @@ Create new handler
 | options.flow | <code>FlowControl</code> | flow control manager |
 | [options.logger] | <code>Logger</code> | Logger instance |
 
+<a name="module_handler.LesHandler+event"></a>
+
+#### lesHandler.event ⇒ <code>string</code>
+Message event to listen for
+
+**Kind**: instance property of [<code>LesHandler</code>](#module_handler.LesHandler)  
+**Returns**: <code>string</code> - name of message event  
 <a name="module_handler.LesHandler+handle"></a>
 
 #### lesHandler.handle(message, peer) ⇒ <code>Promise</code>
@@ -696,7 +716,7 @@ Connected peers
 <a name="module_net.PeerPool+open"></a>
 
 #### peerPool.open() ⇒ <code>Promise</code>
-Open pool and make sure all associated servers are also open
+Open pool
 
 **Kind**: instance method of [<code>PeerPool</code>](#module_net.PeerPool)  
 <a name="module_net.PeerPool+close"></a>
@@ -769,6 +789,11 @@ Remove peer from pool
 ## net/protocol
 
 * [net/protocol](#module_net/protocol)
+    * [.BoundProtocol](#module_net/protocol.BoundProtocol)
+        * [new BoundProtocol(options)](#new_module_net/protocol.BoundProtocol_new)
+        * [.send(name, args)](#module_net/protocol.BoundProtocol+send)
+        * [.request(name, args)](#module_net/protocol.BoundProtocol+request) ⇒ <code>Promise</code>
+        * [.addMethods()](#module_net/protocol.BoundProtocol+addMethods)
     * [.EthProtocol](#module_net/protocol.EthProtocol)
         * [new EthProtocol(options)](#new_module_net/protocol.EthProtocol_new)
         * [.name](#module_net/protocol.EthProtocol+name) : <code>string</code>
@@ -813,6 +838,64 @@ Remove peer from pool
         * [.sendStatus(status)](#module_net/protocol.Sender+sendStatus)
         * [.sendMessage(code, rlpEncodedData)](#module_net/protocol.Sender+sendMessage)
 
+<a name="module_net/protocol.BoundProtocol"></a>
+
+### net/protocol.BoundProtocol
+Binds a protocol implementation to the specified peer
+
+**Kind**: static class of [<code>net/protocol</code>](#module_net/protocol)  
+
+* [.BoundProtocol](#module_net/protocol.BoundProtocol)
+    * [new BoundProtocol(options)](#new_module_net/protocol.BoundProtocol_new)
+    * [.send(name, args)](#module_net/protocol.BoundProtocol+send)
+    * [.request(name, args)](#module_net/protocol.BoundProtocol+request) ⇒ <code>Promise</code>
+    * [.addMethods()](#module_net/protocol.BoundProtocol+addMethods)
+
+<a name="new_module_net/protocol.BoundProtocol_new"></a>
+
+#### new BoundProtocol(options)
+Create bound protocol
+
+
+| Param | Type | Description |
+| --- | --- | --- |
+| options | <code>Object</code> | constructor parameters |
+| options.protocol | <code>Protocol</code> | protocol to bind |
+| options.peer | <code>Peer</code> | peer that protocol is bound to |
+| options.sender | <code>Sender</code> | message sender |
+
+<a name="module_net/protocol.BoundProtocol+send"></a>
+
+#### boundProtocol.send(name, args)
+Send message with name and the specified args
+
+**Kind**: instance method of [<code>BoundProtocol</code>](#module_net/protocol.BoundProtocol)  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| name | <code>string</code> | message name |
+| args | <code>object</code> | message arguments |
+
+<a name="module_net/protocol.BoundProtocol+request"></a>
+
+#### boundProtocol.request(name, args) ⇒ <code>Promise</code>
+Returns a promise that resolves with the message payload when a response
+to the specified message is received
+
+**Kind**: instance method of [<code>BoundProtocol</code>](#module_net/protocol.BoundProtocol)  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| name | <code>string</code> | message to wait for |
+| args | <code>object</code> | message arguments |
+
+<a name="module_net/protocol.BoundProtocol+addMethods"></a>
+
+#### boundProtocol.addMethods()
+Add a methods to the bound protocol for each protocol message that has a
+corresponding response message
+
+**Kind**: instance method of [<code>BoundProtocol</code>](#module_net/protocol.BoundProtocol)  
 <a name="module_net/protocol.EthProtocol"></a>
 
 ### net/protocol.EthProtocol
@@ -1163,7 +1246,7 @@ Decodes message payload
 | --- | --- | --- |
 | message | [<code>Message</code>](#Protocol..Message) | message definition |
 | payload | <code>\*</code> | message payload |
-| bound | [<code>BoundProtocol</code>](#BoundProtocol) | reference to bound protocol |
+| bound | <code>BoundProtocol</code> | reference to bound protocol |
 
 <a name="module_net/protocol.Protocol+bind"></a>
 
@@ -1282,7 +1365,7 @@ Send a message to peer
         * [.stop()](#module_net/server.RlpxServer+stop) ⇒ <code>Promise</code>
         * [.ban(peerId, [maxAge])](#module_net/server.RlpxServer+ban) ⇒ <code>Promise</code>
     * [.Server](#module_net/server.Server)
-        * [.running](#module_net/server.Server+running) : <code>boolean</code>
+        * [.running](#module_net/server.Server+running) ⇒ <code>boolean</code>
         * [.start()](#module_net/server.Server+start) ⇒ <code>Promise</code>
         * [.stop()](#module_net/server.Server+stop) ⇒ <code>Promise</code>
         * [.addProtocols(protocols)](#module_net/server.Server+addProtocols)
@@ -1432,7 +1515,7 @@ Base class for transport specific server implementations.
 **Kind**: static class of [<code>net/server</code>](#module_net/server)  
 
 * [.Server](#module_net/server.Server)
-    * [.running](#module_net/server.Server+running) : <code>boolean</code>
+    * [.running](#module_net/server.Server+running) ⇒ <code>boolean</code>
     * [.start()](#module_net/server.Server+start) ⇒ <code>Promise</code>
     * [.stop()](#module_net/server.Server+stop) ⇒ <code>Promise</code>
     * [.addProtocols(protocols)](#module_net/server.Server+addProtocols)
@@ -1440,10 +1523,11 @@ Base class for transport specific server implementations.
 
 <a name="module_net/server.Server+running"></a>
 
-#### server.running : <code>boolean</code>
+#### server.running ⇒ <code>boolean</code>
 Check if server is running
 
 **Kind**: instance property of [<code>Server</code>](#module_net/server.Server)  
+**Returns**: <code>boolean</code> - true if server is running  
 <a name="module_net/server.Server+start"></a>
 
 #### server.start() ⇒ <code>Promise</code>
@@ -1574,15 +1658,16 @@ middleware for parameters validation
     * [.EthereumService](#module_service.EthereumService)
         * [new EthereumService(options)](#new_module_service.EthereumService_new)
         * [.name](#module_service.EthereumService+name) : <code>string</code>
-        * [.protocols()](#module_service.EthereumService+protocols) : <code>Array.&lt;Protocol&gt;</code>
+        * [.protocols](#module_service.EthereumService+protocols) : <code>Array.&lt;Protocol&gt;</code>
         * [.open()](#module_service.EthereumService+open) ⇒ <code>Promise</code>
         * [.start()](#module_service.EthereumService+start) ⇒ <code>Promise</code>
         * [.stop()](#module_service.EthereumService+stop) ⇒ <code>Promise</code>
     * [.Service](#module_service.Service)
         * [new Service(options)](#new_module_service.Service_new)
         * [.name](#module_service.Service+name) : <code>string</code>
-        * [.protocols()](#module_service.Service+protocols) : <code>Array.&lt;Protocol&gt;</code>
+        * [.protocols](#module_service.Service+protocols) : <code>Array.&lt;Protocol&gt;</code>
         * [.open()](#module_service.Service+open) ⇒ <code>Promise</code>
+        * [.close()](#module_service.Service+close) ⇒ <code>Promise</code>
         * [.start()](#module_service.Service+start) ⇒ <code>Promise</code>
         * [.stop()](#module_service.Service+stop) ⇒ <code>Promise</code>
 
@@ -1596,7 +1681,7 @@ Ethereum service
 * [.EthereumService](#module_service.EthereumService)
     * [new EthereumService(options)](#new_module_service.EthereumService_new)
     * [.name](#module_service.EthereumService+name) : <code>string</code>
-    * [.protocols()](#module_service.EthereumService+protocols) : <code>Array.&lt;Protocol&gt;</code>
+    * [.protocols](#module_service.EthereumService+protocols) : <code>Array.&lt;Protocol&gt;</code>
     * [.open()](#module_service.EthereumService+open) ⇒ <code>Promise</code>
     * [.start()](#module_service.EthereumService+start) ⇒ <code>Promise</code>
     * [.stop()](#module_service.EthereumService+stop) ⇒ <code>Promise</code>
@@ -1613,8 +1698,9 @@ Create new ETH service
 | options.servers | <code>Array.&lt;Server&gt;</code> |  | servers to run service on |
 | [options.syncmode] | <code>string</code> | <code>&quot;light&quot;</code> | synchronization mode ('fast' or 'light') |
 | [options.lightserv] | <code>boolean</code> | <code>false</code> | serve LES requests |
+| [options.chain] | <code>Chain</code> |  | blockchain |
 | [options.common] | <code>Common</code> |  | ethereum network name |
-| [options.db] | <code>LevelDB</code> | <code></code> | blockchain database |
+| [options.interval] | <code>number</code> |  | sync interval |
 | [options.logger] | <code>Logger</code> |  | logger instance |
 
 <a name="module_service.EthereumService+name"></a>
@@ -1626,10 +1712,10 @@ Service name
 **Access**: protected  
 <a name="module_service.EthereumService+protocols"></a>
 
-#### ethereumService.protocols() : <code>Array.&lt;Protocol&gt;</code>
+#### ethereumService.protocols : <code>Array.&lt;Protocol&gt;</code>
 Returns all protocols required by this service
 
-**Kind**: instance method of [<code>EthereumService</code>](#module_service.EthereumService)  
+**Kind**: instance property of [<code>EthereumService</code>](#module_service.EthereumService)  
 <a name="module_service.EthereumService+open"></a>
 
 #### ethereumService.open() ⇒ <code>Promise</code>
@@ -1659,8 +1745,9 @@ Base class for all services
 * [.Service](#module_service.Service)
     * [new Service(options)](#new_module_service.Service_new)
     * [.name](#module_service.Service+name) : <code>string</code>
-    * [.protocols()](#module_service.Service+protocols) : <code>Array.&lt;Protocol&gt;</code>
+    * [.protocols](#module_service.Service+protocols) : <code>Array.&lt;Protocol&gt;</code>
     * [.open()](#module_service.Service+open) ⇒ <code>Promise</code>
+    * [.close()](#module_service.Service+close) ⇒ <code>Promise</code>
     * [.start()](#module_service.Service+start) ⇒ <code>Promise</code>
     * [.stop()](#module_service.Service+stop) ⇒ <code>Promise</code>
 
@@ -1685,14 +1772,20 @@ Service name
 **Access**: protected  
 <a name="module_service.Service+protocols"></a>
 
-#### service.protocols() : <code>Array.&lt;Protocol&gt;</code>
+#### service.protocols : <code>Array.&lt;Protocol&gt;</code>
 Returns all protocols required by this service
 
-**Kind**: instance method of [<code>Service</code>](#module_service.Service)  
+**Kind**: instance property of [<code>Service</code>](#module_service.Service)  
 <a name="module_service.Service+open"></a>
 
 #### service.open() ⇒ <code>Promise</code>
 Open service. Must be called before service is started
+
+**Kind**: instance method of [<code>Service</code>](#module_service.Service)  
+<a name="module_service.Service+close"></a>
+
+#### service.close() ⇒ <code>Promise</code>
+Close service.
 
 **Kind**: instance method of [<code>Service</code>](#module_service.Service)  
 <a name="module_service.Service+start"></a>
@@ -1712,6 +1805,12 @@ Start service
 ## sync
 
 * [sync](#module_sync)
+    * [.BlockFetcher](#module_sync.BlockFetcher)
+        * [new BlockFetcher(options)](#new_module_sync.BlockFetcher_new)
+        * [.open()](#module_sync.BlockFetcher+open) ⇒ <code>Promise</code>
+        * [.before(taskOne, taskTwo)](#module_sync.BlockFetcher+before) ⇒ <code>boolean</code>
+        * [.fetch(task, peer)](#module_sync.BlockFetcher+fetch) ⇒ <code>Promise</code>
+        * [.process(entry, reply)](#module_sync.BlockFetcher+process)
     * [.FastSynchronizer](#module_sync.FastSynchronizer)
         * [new FastSynchronizer(options)](#new_module_sync.FastSynchronizer_new)
         * [.type](#module_sync.FastSynchronizer+type) ⇒ <code>string</code>
@@ -1721,11 +1820,7 @@ Start service
         * [.fetch([last])](#module_sync.FastSynchronizer+fetch) ⇒ <code>Promise</code>
         * [.handle(message, peer)](#module_sync.FastSynchronizer+handle) ⇒ <code>Promise</code>
         * [.open()](#module_sync.FastSynchronizer+open) ⇒ <code>Promise</code>
-    * [.BlockFetcher](#module_sync.BlockFetcher)
-        * [new BlockFetcher(options)](#new_module_sync.BlockFetcher_new)
-        * [.before(taskOne, taskTwo)](#module_sync.BlockFetcher+before) ⇒ <code>boolean</code>
-        * [.fetch(task, peer)](#module_sync.BlockFetcher+fetch) ⇒ <code>Promise</code>
-        * [.process(entry, reply)](#module_sync.BlockFetcher+process)
+        * [.stop()](#module_sync.FastSynchronizer+stop) ⇒ <code>Promise</code>
     * [.Fetcher](#module_sync.Fetcher)
         * [new Fetcher(options)](#new_module_sync.Fetcher_new)
         * [.add(task)](#module_sync.Fetcher+add)
@@ -1733,12 +1828,19 @@ Start service
         * [.handle(reply, peer)](#module_sync.Fetcher+handle)
         * [.error(error, task, peer)](#module_sync.Fetcher+error)
         * [.expire()](#module_sync.Fetcher+expire)
+        * [.open()](#module_sync.Fetcher+open) ⇒ <code>Promise</code>
         * [.start()](#module_sync.Fetcher+start) ⇒ <code>Promise</code>
         * [.stop()](#module_sync.Fetcher+stop) ⇒ <code>Promise</code>
         * [.before(taskOne, taskTwo)](#module_sync.Fetcher+before) ⇒ <code>boolean</code>
         * [.fetchable(peer)](#module_sync.Fetcher+fetchable) ⇒ <code>boolean</code>
         * [.fetch(task, peer)](#module_sync.Fetcher+fetch) ⇒ <code>Promise</code>
         * [.process(entry, reply)](#module_sync.Fetcher+process)
+    * [.HeaderFetcher](#module_sync.HeaderFetcher)
+        * [new HeaderFetcher(options)](#new_module_sync.HeaderFetcher_new)
+        * [.open()](#module_sync.HeaderFetcher+open) ⇒ <code>Promise</code>
+        * [.before(taskOne, taskTwo)](#module_sync.HeaderFetcher+before) ⇒ <code>boolean</code>
+        * [.fetch(task, peer)](#module_sync.HeaderFetcher+fetch) ⇒ <code>Promise</code>
+        * [.process(entry, reply)](#module_sync.HeaderFetcher+process)
     * [.LightSynchronizer](#module_sync.LightSynchronizer)
         * [new LightSynchronizer(options)](#new_module_sync.LightSynchronizer_new)
         * [.type](#module_sync.LightSynchronizer+type) ⇒ <code>string</code>
@@ -1747,11 +1849,7 @@ Start service
         * [.fetch([last])](#module_sync.LightSynchronizer+fetch) ⇒ <code>Promise</code>
         * [.handle(message, peer)](#module_sync.LightSynchronizer+handle) ⇒ <code>Promise</code>
         * [.open()](#module_sync.LightSynchronizer+open) ⇒ <code>Promise</code>
-    * [.HeaderFetcher](#module_sync.HeaderFetcher)
-        * [new HeaderFetcher(options)](#new_module_sync.HeaderFetcher_new)
-        * [.before(taskOne, taskTwo)](#module_sync.HeaderFetcher+before) ⇒ <code>boolean</code>
-        * [.fetch(task, peer)](#module_sync.HeaderFetcher+fetch) ⇒ <code>Promise</code>
-        * [.process(entry, reply)](#module_sync.HeaderFetcher+process)
+        * [.stop()](#module_sync.LightSynchronizer+stop) ⇒ <code>Promise</code>
     * [.Synchronizer](#module_sync.Synchronizer)
         * [new Synchronizer(options)](#new_module_sync.Synchronizer_new)
         * [.type](#module_sync.Synchronizer+type) ⇒ <code>string</code>
@@ -1759,6 +1857,82 @@ Start service
         * [.fetchable()](#module_sync.Synchronizer+fetchable) ⇒ <code>boolean</code>
         * [.sync([height])](#module_sync.Synchronizer+sync) ⇒ <code>Promise</code>
         * [.stop()](#module_sync.Synchronizer+stop) ⇒ <code>Promise</code>
+
+<a name="module_sync.BlockFetcher"></a>
+
+### sync.BlockFetcher
+Implements an eth/62 based block fetcher
+
+**Kind**: static class of [<code>sync</code>](#module_sync)  
+
+* [.BlockFetcher](#module_sync.BlockFetcher)
+    * [new BlockFetcher(options)](#new_module_sync.BlockFetcher_new)
+    * [.open()](#module_sync.BlockFetcher+open) ⇒ <code>Promise</code>
+    * [.before(taskOne, taskTwo)](#module_sync.BlockFetcher+before) ⇒ <code>boolean</code>
+    * [.fetch(task, peer)](#module_sync.BlockFetcher+fetch) ⇒ <code>Promise</code>
+    * [.process(entry, reply)](#module_sync.BlockFetcher+process)
+
+<a name="new_module_sync.BlockFetcher_new"></a>
+
+#### new BlockFetcher(options)
+Create new block fetcher
+
+
+| Param | Type | Default | Description |
+| --- | --- | --- | --- |
+| options | <code>Object</code> |  | constructor parameters |
+| options.pool | <code>PeerPool</code> |  | peer pool |
+| options.chain | <code>Chain</code> |  | blockchain |
+| [options.maxPerRequest] | <code>number</code> | <code>128</code> | max items per request |
+| [options.logger] | <code>Logger</code> |  | Logger instance |
+
+<a name="module_sync.BlockFetcher+open"></a>
+
+#### blockFetcher.open() ⇒ <code>Promise</code>
+Open block fetcher. Must be called before fetcher is started
+
+**Kind**: instance method of [<code>BlockFetcher</code>](#module_sync.BlockFetcher)  
+<a name="module_sync.BlockFetcher+before"></a>
+
+#### blockFetcher.before(taskOne, taskTwo) ⇒ <code>boolean</code>
+Prioritizes tasks based on first block number
+
+**Kind**: instance method of [<code>BlockFetcher</code>](#module_sync.BlockFetcher)  
+**Returns**: <code>boolean</code> - true if taskOne has a lower first number than taskTwo  
+
+| Param | Type |
+| --- | --- |
+| taskOne | <code>Object</code> | 
+| taskTwo | <code>Object</code> | 
+
+<a name="module_sync.BlockFetcher+fetch"></a>
+
+#### blockFetcher.fetch(task, peer) ⇒ <code>Promise</code>
+Fetches blocks for the given task
+
+**Kind**: instance method of [<code>BlockFetcher</code>](#module_sync.BlockFetcher)  
+**Returns**: <code>Promise</code> - method must return  
+
+| Param | Type |
+| --- | --- |
+| task | <code>Object</code> | 
+| peer | <code>Peer</code> | 
+
+<a name="module_sync.BlockFetcher+process"></a>
+
+#### blockFetcher.process(entry, reply)
+Process fetch reply
+
+**Kind**: instance method of [<code>BlockFetcher</code>](#module_sync.BlockFetcher)  
+**Emits**: <code>event:headers</code>  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| entry | <code>Object</code> | entry object |
+| entry.task | <code>Object</code> | fetch task |
+| entry.peer | <code>Peer</code> | peer that handled task |
+| entry.time | <code>number</code> | time task was generated |
+| reply | <code>Object</code> | reply data |
 
 <a name="module_sync.FastSynchronizer"></a>
 
@@ -1776,6 +1950,7 @@ Implements an ethereum fast sync synchronizer
     * [.fetch([last])](#module_sync.FastSynchronizer+fetch) ⇒ <code>Promise</code>
     * [.handle(message, peer)](#module_sync.FastSynchronizer+handle) ⇒ <code>Promise</code>
     * [.open()](#module_sync.FastSynchronizer+open) ⇒ <code>Promise</code>
+    * [.stop()](#module_sync.FastSynchronizer+stop) ⇒ <code>Promise</code>
 
 <a name="new_module_sync.FastSynchronizer_new"></a>
 
@@ -1856,74 +2031,12 @@ Handler for incoming requests from connected peers
 Open synchronizer. Must be called before sync() is called
 
 **Kind**: instance method of [<code>FastSynchronizer</code>](#module_sync.FastSynchronizer)  
-<a name="module_sync.BlockFetcher"></a>
+<a name="module_sync.FastSynchronizer+stop"></a>
 
-### sync.BlockFetcher
-Implements an eth/62 based block fetcher
+#### fastSynchronizer.stop() ⇒ <code>Promise</code>
+Stop synchronization. Returns a promise that resolves once its stopped.
 
-**Kind**: static class of [<code>sync</code>](#module_sync)  
-
-* [.BlockFetcher](#module_sync.BlockFetcher)
-    * [new BlockFetcher(options)](#new_module_sync.BlockFetcher_new)
-    * [.before(taskOne, taskTwo)](#module_sync.BlockFetcher+before) ⇒ <code>boolean</code>
-    * [.fetch(task, peer)](#module_sync.BlockFetcher+fetch) ⇒ <code>Promise</code>
-    * [.process(entry, reply)](#module_sync.BlockFetcher+process)
-
-<a name="new_module_sync.BlockFetcher_new"></a>
-
-#### new BlockFetcher(options)
-Create new block fetcher
-
-
-| Param | Type | Description |
-| --- | --- | --- |
-| options | <code>Object</code> | constructor parameters |
-| options.pool | <code>PeerPool</code> | peer pool |
-| options.sync | <code>Synchronizer</code> | parent synchronizer |
-| [options.logger] | <code>Logger</code> | Logger instance |
-
-<a name="module_sync.BlockFetcher+before"></a>
-
-#### blockFetcher.before(taskOne, taskTwo) ⇒ <code>boolean</code>
-Prioritizes tasks based on first block number
-
-**Kind**: instance method of [<code>BlockFetcher</code>](#module_sync.BlockFetcher)  
-**Returns**: <code>boolean</code> - true if taskOne has a lower first number than taskTwo  
-
-| Param | Type |
-| --- | --- |
-| taskOne | <code>Object</code> | 
-| taskTwo | <code>Object</code> | 
-
-<a name="module_sync.BlockFetcher+fetch"></a>
-
-#### blockFetcher.fetch(task, peer) ⇒ <code>Promise</code>
-Fetches blocks for the given task
-
-**Kind**: instance method of [<code>BlockFetcher</code>](#module_sync.BlockFetcher)  
-**Returns**: <code>Promise</code> - method must return  
-
-| Param | Type |
-| --- | --- |
-| task | <code>Object</code> | 
-| peer | <code>Peer</code> | 
-
-<a name="module_sync.BlockFetcher+process"></a>
-
-#### blockFetcher.process(entry, reply)
-Process fetch reply
-
-**Kind**: instance method of [<code>BlockFetcher</code>](#module_sync.BlockFetcher)  
-**Emits**: <code>event:headers</code>  
-
-| Param | Type | Description |
-| --- | --- | --- |
-| entry | <code>Object</code> | entry object |
-| entry.task | <code>Object</code> | fetch task |
-| entry.peer | <code>Peer</code> | peer that handled task |
-| entry.time | <code>number</code> | time task was generated |
-| reply | <code>Object</code> | reply data |
-
+**Kind**: instance method of [<code>FastSynchronizer</code>](#module_sync.FastSynchronizer)  
 <a name="module_sync.Fetcher"></a>
 
 ### sync.Fetcher
@@ -1941,6 +2054,7 @@ ensure most important tasks are processed first based on the before() function.
     * [.handle(reply, peer)](#module_sync.Fetcher+handle)
     * [.error(error, task, peer)](#module_sync.Fetcher+error)
     * [.expire()](#module_sync.Fetcher+expire)
+    * [.open()](#module_sync.Fetcher+open) ⇒ <code>Promise</code>
     * [.start()](#module_sync.Fetcher+start) ⇒ <code>Promise</code>
     * [.stop()](#module_sync.Fetcher+stop) ⇒ <code>Promise</code>
     * [.before(taskOne, taskTwo)](#module_sync.Fetcher+before) ⇒ <code>boolean</code>
@@ -1958,6 +2072,8 @@ Create new fetcher
 | --- | --- | --- |
 | options | <code>Object</code> | constructor parameters |
 | options.pool | <code>PeerPool</code> | peer pool |
+| [options.timeout] | <code>number</code> | fetch task timeout |
+| [options.interval] | <code>number</code> | retry interval |
 | [options.logger] | <code>Logger</code> | Logger instance |
 
 <a name="module_sync.Fetcher+add"></a>
@@ -2009,6 +2125,12 @@ Handle error
 Expires all tasks that have timed out. Peers that take too long to respond
 will be banned for 5 minutes. Timeout out tasks will be re-inserted into the
 queue.
+
+**Kind**: instance method of [<code>Fetcher</code>](#module_sync.Fetcher)  
+<a name="module_sync.Fetcher+open"></a>
+
+#### fetcher.open() ⇒ <code>Promise</code>
+Open fetcher. Must be called before fetcher is started
 
 **Kind**: instance method of [<code>Fetcher</code>](#module_sync.Fetcher)  
 <a name="module_sync.Fetcher+start"></a>
@@ -2074,6 +2196,83 @@ Process the reply for the given fetch queue entry
 | entry.time | <code>number</code> | time task was generated |
 | reply | <code>Object</code> | reply data |
 
+<a name="module_sync.HeaderFetcher"></a>
+
+### sync.HeaderFetcher
+Implements an les/1 based header fetcher
+
+**Kind**: static class of [<code>sync</code>](#module_sync)  
+
+* [.HeaderFetcher](#module_sync.HeaderFetcher)
+    * [new HeaderFetcher(options)](#new_module_sync.HeaderFetcher_new)
+    * [.open()](#module_sync.HeaderFetcher+open) ⇒ <code>Promise</code>
+    * [.before(taskOne, taskTwo)](#module_sync.HeaderFetcher+before) ⇒ <code>boolean</code>
+    * [.fetch(task, peer)](#module_sync.HeaderFetcher+fetch) ⇒ <code>Promise</code>
+    * [.process(entry, reply)](#module_sync.HeaderFetcher+process)
+
+<a name="new_module_sync.HeaderFetcher_new"></a>
+
+#### new HeaderFetcher(options)
+Create new header fetcher
+
+
+| Param | Type | Default | Description |
+| --- | --- | --- | --- |
+| options | <code>Object</code> |  | constructor parameters |
+| options.pool | <code>PeerPool</code> |  | peer pool |
+| options.flow | <code>FlowControl</code> |  | flow control manager |
+| options.chain | <code>Chain</code> |  | blockchain |
+| [options.maxPerRequest] | <code>number</code> | <code>192</code> | max items per request |
+| [options.logger] | <code>Logger</code> |  | Logger instance |
+
+<a name="module_sync.HeaderFetcher+open"></a>
+
+#### headerFetcher.open() ⇒ <code>Promise</code>
+Open header fetcher. Must be called before fetcher is started
+
+**Kind**: instance method of [<code>HeaderFetcher</code>](#module_sync.HeaderFetcher)  
+<a name="module_sync.HeaderFetcher+before"></a>
+
+#### headerFetcher.before(taskOne, taskTwo) ⇒ <code>boolean</code>
+Prioritizes tasks based on first block number
+
+**Kind**: instance method of [<code>HeaderFetcher</code>](#module_sync.HeaderFetcher)  
+**Returns**: <code>boolean</code> - true if taskOne has a lower first number than taskTwo  
+
+| Param | Type |
+| --- | --- |
+| taskOne | <code>Object</code> | 
+| taskTwo | <code>Object</code> | 
+
+<a name="module_sync.HeaderFetcher+fetch"></a>
+
+#### headerFetcher.fetch(task, peer) ⇒ <code>Promise</code>
+Fetches block headers for the given task
+
+**Kind**: instance method of [<code>HeaderFetcher</code>](#module_sync.HeaderFetcher)  
+**Returns**: <code>Promise</code> - method must return  
+
+| Param | Type |
+| --- | --- |
+| task | <code>Object</code> | 
+| peer | <code>Peer</code> | 
+
+<a name="module_sync.HeaderFetcher+process"></a>
+
+#### headerFetcher.process(entry, reply)
+Process the getBlockHeaders reply
+
+**Kind**: instance method of [<code>HeaderFetcher</code>](#module_sync.HeaderFetcher)  
+**Emits**: <code>event:headers</code>  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| entry | <code>Object</code> | entry object |
+| entry.task | <code>Object</code> | fetch task |
+| entry.peer | <code>Peer</code> | peer that handled task |
+| entry.time | <code>number</code> | time task was generated |
+| reply | <code>Object</code> | reply data |
+
 <a name="module_sync.LightSynchronizer"></a>
 
 ### sync.LightSynchronizer
@@ -2089,6 +2288,7 @@ Implements an ethereum light sync synchronizer
     * [.fetch([last])](#module_sync.LightSynchronizer+fetch) ⇒ <code>Promise</code>
     * [.handle(message, peer)](#module_sync.LightSynchronizer+handle) ⇒ <code>Promise</code>
     * [.open()](#module_sync.LightSynchronizer+open) ⇒ <code>Promise</code>
+    * [.stop()](#module_sync.LightSynchronizer+stop) ⇒ <code>Promise</code>
 
 <a name="new_module_sync.LightSynchronizer_new"></a>
 
@@ -2158,75 +2358,12 @@ Handler for incoming requests from connected peers
 Open synchronizer. Must be called before sync() is called
 
 **Kind**: instance method of [<code>LightSynchronizer</code>](#module_sync.LightSynchronizer)  
-<a name="module_sync.HeaderFetcher"></a>
+<a name="module_sync.LightSynchronizer+stop"></a>
 
-### sync.HeaderFetcher
-Implements an les/1 based header fetcher
+#### lightSynchronizer.stop() ⇒ <code>Promise</code>
+Stop synchronization. Returns a promise that resolves once its stopped.
 
-**Kind**: static class of [<code>sync</code>](#module_sync)  
-
-* [.HeaderFetcher](#module_sync.HeaderFetcher)
-    * [new HeaderFetcher(options)](#new_module_sync.HeaderFetcher_new)
-    * [.before(taskOne, taskTwo)](#module_sync.HeaderFetcher+before) ⇒ <code>boolean</code>
-    * [.fetch(task, peer)](#module_sync.HeaderFetcher+fetch) ⇒ <code>Promise</code>
-    * [.process(entry, reply)](#module_sync.HeaderFetcher+process)
-
-<a name="new_module_sync.HeaderFetcher_new"></a>
-
-#### new HeaderFetcher(options)
-Create new header fetcher
-
-
-| Param | Type | Description |
-| --- | --- | --- |
-| options | <code>Object</code> | constructor parameters |
-| options.pool | <code>PeerPool</code> | peer pool |
-| options.flow | <code>FlowControl</code> | flow control manager |
-| options.sync | <code>Synchronizer</code> | parent synchronizer |
-| [options.logger] | <code>Logger</code> | Logger instance |
-
-<a name="module_sync.HeaderFetcher+before"></a>
-
-#### headerFetcher.before(taskOne, taskTwo) ⇒ <code>boolean</code>
-Prioritizes tasks based on first block number
-
-**Kind**: instance method of [<code>HeaderFetcher</code>](#module_sync.HeaderFetcher)  
-**Returns**: <code>boolean</code> - true if taskOne has a lower first number than taskTwo  
-
-| Param | Type |
-| --- | --- |
-| taskOne | <code>Object</code> | 
-| taskTwo | <code>Object</code> | 
-
-<a name="module_sync.HeaderFetcher+fetch"></a>
-
-#### headerFetcher.fetch(task, peer) ⇒ <code>Promise</code>
-Fetches block headers for the given task
-
-**Kind**: instance method of [<code>HeaderFetcher</code>](#module_sync.HeaderFetcher)  
-**Returns**: <code>Promise</code> - method must return  
-
-| Param | Type |
-| --- | --- |
-| task | <code>Object</code> | 
-| peer | <code>Peer</code> | 
-
-<a name="module_sync.HeaderFetcher+process"></a>
-
-#### headerFetcher.process(entry, reply)
-Process the getBlockHeaders reply
-
-**Kind**: instance method of [<code>HeaderFetcher</code>](#module_sync.HeaderFetcher)  
-**Emits**: <code>event:headers</code>  
-
-| Param | Type | Description |
-| --- | --- | --- |
-| entry | <code>Object</code> | entry object |
-| entry.task | <code>Object</code> | fetch task |
-| entry.peer | <code>Peer</code> | peer that handled task |
-| entry.time | <code>number</code> | time task was generated |
-| reply | <code>Object</code> | reply data |
-
+**Kind**: instance method of [<code>LightSynchronizer</code>](#module_sync.LightSynchronizer)  
 <a name="module_sync.Synchronizer"></a>
 
 ### sync.Synchronizer
@@ -2296,65 +2433,6 @@ Stop synchronization. Returns a promise that resolves once its stopped.
 <a name="module_util"></a>
 
 ## util
-<a name="BoundProtocol"></a>
-
-## BoundProtocol ⇐ <code>EventEmitter</code>
-Binds a protocol implementation to the specified peer
-
-**Kind**: global class  
-**Extends**: <code>EventEmitter</code>  
-
-* [BoundProtocol](#BoundProtocol) ⇐ <code>EventEmitter</code>
-    * [new BoundProtocol(options)](#new_BoundProtocol_new)
-    * [.send(name, args)](#BoundProtocol+send)
-    * [.request(name, args)](#BoundProtocol+request) ⇒ <code>Promise</code>
-    * [.addMethods()](#BoundProtocol+addMethods)
-
-<a name="new_BoundProtocol_new"></a>
-
-### new BoundProtocol(options)
-Create bound protocol
-
-
-| Param | Type | Description |
-| --- | --- | --- |
-| options | <code>Object</code> | constructor parameters |
-| options.protocol | <code>Protocol</code> | protocol to bind |
-| options.peer | <code>Peer</code> | peer that protocol is bound to |
-| options.sender | <code>Sender</code> | message sender |
-
-<a name="BoundProtocol+send"></a>
-
-### boundProtocol.send(name, args)
-Send message with name and the specified args
-
-**Kind**: instance method of [<code>BoundProtocol</code>](#BoundProtocol)  
-
-| Param | Type | Description |
-| --- | --- | --- |
-| name | <code>string</code> | message name |
-| args | <code>object</code> | message arguments |
-
-<a name="BoundProtocol+request"></a>
-
-### boundProtocol.request(name, args) ⇒ <code>Promise</code>
-Returns a promise that resolves with the message payload when a response
-to the specified message is received
-
-**Kind**: instance method of [<code>BoundProtocol</code>](#BoundProtocol)  
-
-| Param | Type | Description |
-| --- | --- | --- |
-| name | <code>string</code> | message to wait for |
-| args | <code>object</code> | message arguments |
-
-<a name="BoundProtocol+addMethods"></a>
-
-### boundProtocol.addMethods()
-Add a methods to the bound protocol for each protocol message that has a
-corresponding response message
-
-**Kind**: instance method of [<code>BoundProtocol</code>](#BoundProtocol)  
 <a name="define"></a>
 
 ## define(name, path)
