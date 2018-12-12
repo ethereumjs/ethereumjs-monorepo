@@ -1,6 +1,6 @@
 {
   "name": "ethereumjs-devp2p",
-  "version": "2.5.0",
+  "version": "2.5.1",
   "description": "A JavaScript implementation of ÐΞVp2p",
   "keywords": [
     "ethereum",
@@ -14,9 +14,9 @@
     "les",
     "les2"
   ],
-  "homepage": "https://github.com/fanatid/ethereumjs-devp2p",
+  "homepage": "https://github.com/ethereumjs/ethereumjs-devp2p",
   "bugs": {
-    "url": "https://github.com/fanatid/ethereumjs-devp2p/issues"
+    "url": "https://github.com/ethereumjs/ethereumjs-devp2p/issues"
   },
   "license": "MIT",
   "contributors": [
@@ -32,7 +32,7 @@
   "main": "./lib/index.js",
   "repository": {
     "type": "git",
-    "url": "https://github.com/fanatid/ethereumjs-devp2p.git"
+    "url": "https://github.com/ethereumjs/ethereumjs-devp2p.git"
   },
   "engines": {
     "node": ">=6.0"

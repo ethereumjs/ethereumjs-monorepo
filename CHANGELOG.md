@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 
+## [2.5.1] - 2018-12-12
+- Fix connection error by ignoring ``RLPX`` peers with missing tcp port, PR [#45](https://github.com/ethereumjs/ethereumjs-devp2p/pull/45)
+
+[2.5.1]: https://github.com/ethereumjs/ethereumjs-devp2p/compare/v2.5.0...v2.5.1
+
 ## [2.5.0] - 2018-03-22
 - Light client protocol (``LES/2``) implementation, PR [#21](https://github.com/ethereumjs/ethereumjs-devp2p/pull/21)
 - ``LES/2`` usage example, see: ``examples/peer-communication-les.js`` 
