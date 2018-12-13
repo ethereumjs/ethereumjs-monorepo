@@ -182,10 +182,7 @@ describe('nested lists:', function() {
   let encoded: Buffer
   it('encode a nested list', function() {
     encoded = RLP.encode(nestedList)
-    assert.deepEqual(
-      encoded,
-      Buffer.from([0xc7, 0xc0, 0xc1, 0xc0, 0xc3, 0xc0, 0xc1, 0xc0]),
-    )
+    assert.deepEqual(encoded, Buffer.from([0xc7, 0xc0, 0xc1, 0xc0, 0xc3, 0xc0, 0xc1, 0xc0]))
   })
 
   it('should decode a nested list', function() {
@@ -355,10 +352,7 @@ describe('offical tests', function() {
       }
 
       const encoded = RLP.encode(incoming)
-      assert.equal(
-        encoded.toString('hex'),
-        officalTests[test].out.toLowerCase(),
-      )
+      assert.equal(encoded.toString('hex'), officalTests[test].out.toLowerCase())
     }
     done()
   })
