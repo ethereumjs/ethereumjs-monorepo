@@ -2,12 +2,14 @@
   "name": "rlp",
   "version": "2.1.0",
   "description": "Recursive Length Prefix Encoding Module",
-  "main": "index.js",
-  "directories": {
-    "test": "test"
-  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist/**",
+    "bin/**"
+  ],
   "scripts": {
-    "build": "tsc",
+    "build": "tsc -p ./tsconfig.prod.json",
     "coverage": "nyc mocha --reporter spec --require ts-node/register test/index.ts",
     "coveralls": "npm run coverage && nyc report --reporter=text-lcov | coveralls",
     "format": "prettier --list-different **/*.{ts,json,md,gql}",
@@ -45,6 +47,10 @@
     "safe-buffer": "^5.1.1"
   },
   "devDependencies": {
+    "@ethereumjs/config-nyc": "^1.0.0",
+    "@ethereumjs/config-prettier": "^1.0.0",
+    "@ethereumjs/config-tsc": "^1.0.0",
+    "@ethereumjs/config-tslint": "^1.0.0",
     "@types/bn.js": "^4.11.3",
     "@types/mocha": "^5.2.5",
     "@types/node": "^10.12.2",

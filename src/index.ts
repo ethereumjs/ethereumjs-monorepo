@@ -55,10 +55,8 @@ function encodeLength(len: number, offset: number): Buffer {
  **/
 export function decode(input: Buffer, stream?: boolean): Buffer
 export function decode(input: Buffer[], stream?: boolean): Buffer[]
-export function decode(
-  input: RLPInput,
-  stream: boolean = false,
-): Buffer[] | Buffer | RLPDecoded {
+export function decode(input: RLPInput, stream?: boolean): Buffer[] | Buffer | RLPDecoded
+export function decode(input: RLPInput, stream: boolean = false): Buffer[] | Buffer | RLPDecoded {
   if (!input || (<any>input).length === 0) {
     return Buffer.from([])
   }
@@ -101,10 +99,7 @@ export function getLength(input: RLPInput): Buffer | number {
   } else {
     // a list  over 55 bytes long
     const llength = firstByte - 0xf6
-    const length = safeParseInt(
-      inputBuffer.slice(1, llength).toString('hex'),
-      16,
-    )
+    const length = safeParseInt(inputBuffer.slice(1, llength).toString('hex'), 16)
     return llength + length
   }
 }
