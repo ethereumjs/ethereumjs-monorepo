@@ -1,5 +1,7 @@
-import { RLPInput, RLPDecoded } from './types'
 import BN from 'bn.js'
+import { isNumber, isString } from 'util'
+
+import { RLPInput, RLPDecoded } from './types'
 
 /**
  * RLP Encoding based on: https://github.com/ethereum/wiki/wiki/%5BEnglish%5D-RLP
@@ -237,7 +239,7 @@ function toBuffer(v: RLPInput): Buffer {
       return Buffer.from([])
     } else if (v instanceof Uint8Array) {
       return Buffer.from(v as any)
-    } else if (isBN(v)) {
+    } else if (BN.isBN(v)) {
       // converts a BN to a Buffer
       return Buffer.from(v.toArray())
     } else {
@@ -245,20 +247,4 @@ function toBuffer(v: RLPInput): Buffer {
     }
   }
   return v
-}
-
-// Check is input is a number
-function isString(input: RLPInput): input is string {
-  return typeof input === 'string'
-}
-
-// Check is input is a number
-function isNumber(input: RLPInput): input is number {
-  return typeof input === 'number'
-}
-
-// Check if an input is a BigNumber
-function isBN(input: RLPInput): input is BN {
-  if (!input) return false
-  return !!input.hasOwnProperty('toArray')
 }
