@@ -5,17 +5,15 @@
 [![Coverage Status](https://img.shields.io/coveralls/ethereumjs/rlp.svg?style=flat-square)](https://coveralls.io/r/ethereumjs/rlp)
 [![Gitter](https://img.shields.io/gitter/room/ethereum/ethereumjs-lib.svg?style=flat-square)](https://gitter.im/ethereum/ethereumjs-lib) or #ethereumjs on freenode
 
-[![js-standard-style](https://cdn.rawgit.com/feross/standard/master/badge.svg)](https://github.com/feross/standard)
-
 [Recursive Length](https://github.com/ethereum/wiki/wiki/RLP) Prefix Encoding for node.js.
 
-# INSTALL
+## INSTALL
 
 `npm install rlp`
 
 install with `-g` if you want to use the cli.
 
-# USAGE
+## USAGE
 
 ```javascript
 var RLP = require('rlp')
@@ -27,22 +25,22 @@ var decoded = RLP.decode(encoded)
 assert.deepEqual(nestedList, decoded)
 ```
 
-# API
+## API
 
 `rlp.encode(plain)` - RLP encodes an `Array`, `Buffer` or `String` and returns a `Buffer`.
 
 `rlp.decode(encoded, [skipRemainderCheck=false])` - Decodes an RLP encoded `Buffer`, `Array` or `String` and returns a `Buffer` or an `Array` of `Buffers`. If `skipRemainderCheck` is enabled, `rlp` will just decode the first rlp sequence in the buffer. By default, it would throw an error if there are more bytes in Buffer than used by rlp sequence.
 
-# CLI
+## CLI
 
 `rlp decode <hex string>`  
 `rlp encode <json String>`
 
-# TESTS
+## TESTS
 
 Test uses mocha. To run tests and linting: `npm test`. To auto fix linting problems use: `npm run test:fix`.
 
-# CODE COVERAGE
+## CODE COVERAGE
 
 Install dev dependencies
 `npm install`
