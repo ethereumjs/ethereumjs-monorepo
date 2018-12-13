@@ -141,6 +141,7 @@ Runs EVM code
     -   `opts.gasLimit` **[Buffer][42]** the gas limit for the code
     -   `opts.origin` **[Buffer][42]** the address where the call originated from. The address should be a `Buffer` of 20bits. Defaults to `0`
     -   `opts.value` **[Buffer][42]** the value in ether that is being sent to `opt.address`. Defaults to `0`
+    -   `opts.pc` **[Number][32]** the initial program counter. Defaults to `0`
 -   `cb` **[runCode~callback][44]** callback
 
 ## Event: beforeBlock
