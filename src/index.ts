@@ -1,5 +1,4 @@
 import BN from 'bn.js'
-import { isNumber, isString } from 'util'
 
 import { RLPInput, RLPDecoded } from './types'
 
@@ -223,13 +222,13 @@ function intToBuffer(integer: number): Buffer {
 /** Transform anything into a Buffer */
 function toBuffer(v: RLPInput): Buffer {
   if (!Buffer.isBuffer(v)) {
-    if (isString(v)) {
+    if (typeof v === 'string') {
       if (isHexPrefixed(v)) {
         return Buffer.from(padToEven(stripHexPrefix(v)), 'hex')
       } else {
         return Buffer.from(v)
       }
-    } else if (isNumber(v)) {
+    } else if (typeof v === 'number') {
       if (!v) {
         return Buffer.from([])
       } else {
