@@ -18,4 +18,7 @@ matrix:
     - os: linux
       node_js: "6"
       env: TEST_SUITE=lint
+    - os: linux
+      node_js: "6"
+      env: TEST_SUITE=build
 script: npm run $TEST_SUITE

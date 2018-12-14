@@ -2,15 +2,25 @@
   "name": "rlp",
   "version": "2.1.0",
   "description": "Recursive Length Prefix Encoding Module",
-  "main": "index.js",
-  "directories": {
-    "test": "test"
-  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist/**",
+    "bin/**"
+  ],
   "scripts": {
-    "coverage": "istanbul cover _mocha",
-    "coveralls": "npm run coverage && coveralls <coverage/lcov.info",
-    "lint": "standard",
-    "test": "istanbul test mocha -- --reporter spec",
+    "build": "tsc -p ./tsconfig.prod.json",
+    "coverage": "nyc mocha --reporter spec --require ts-node/register test/index.ts",
+    "coveralls": "npm run coverage && nyc report --reporter=text-lcov | coveralls",
+    "format": "prettier --list-different **/*.{ts,json,md,gql}",
+    "format:fix": "prettier --write **/*.{ts,json,md,gql}",
+    "tslint": "tslint -p ./tsconfig.json -e node_modules/**/* -e **/node_modules/**/* -e dist/**/* **/*.ts",
+    "tslint:fix": "tslint --fix --format stylish -p ./tsconfig.json -e node_modules/**/* -e **/node_modules/**/* -e dist/**/* **/*.ts",
+    "tsc": "tsc --noEmit",
+    "lint": "npm run format && npm run tslint && npm run tsc",
+    "lint:fix": "npm run format:fix && npm run tslint:fix && npm run tsc",
+    "test": "npm run lint && mocha --reporter spec --require ts-node/register test/index.ts",
+    "test:fix": "npm run lint:fix && mocha --reporter spec --require ts-node/register test/index.ts",
     "webtest": "browserify test/max.js | testling -u"
   },
   "repository": {
@@ -37,12 +47,23 @@
     "safe-buffer": "^5.1.1"
   },
   "devDependencies": {
+    "@ethereumjs/config-nyc": "^1.0.0",
+    "@ethereumjs/config-prettier": "^1.0.0",
+    "@ethereumjs/config-tsc": "^1.0.0",
+    "@ethereumjs/config-tslint": "^1.0.0",
+    "@types/bn.js": "^4.11.3",
+    "@types/mocha": "^5.2.5",
+    "@types/node": "^10.12.2",
     "bn.js": "^4.11.1",
     "coveralls": "^2.11.4",
     "ethereumjs-testing": "git+https://github.com/ethereumjs/ethereumjs-testing.git",
-    "istanbul": "^0.4.2",
-    "mocha": "^2.3.4",
-    "standard": "^6.0.8"
+    "mocha": "4.1.0",
+    "nyc": "^13.1.0",
+    "prettier": "^1.15.2",
+    "ts-node": "^7.0.1",
+    "tslint": "^5.11.0",
+    "typescript": "^3.1.6",
+    "typestrict": "^1.0.1"
   },
   "bin": {
     "rlp": "./bin/rlp"
@@ -58,12 +79,6 @@
       "iphone/6",
       "ipad/6",
       "android-browser/latest"
-    ]
-  },
-  "standard": {
-    "globals": [
-      "describe",
-      "it"
     ]
   }
 }
