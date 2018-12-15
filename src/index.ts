@@ -1,4 +1,4 @@
-import BN from 'bn.js'
+import BN = require('bn.js')
 
 import { RLPInput, RLPDecoded } from './types'
 
