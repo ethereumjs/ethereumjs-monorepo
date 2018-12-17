@@ -62,6 +62,13 @@ describe('RLP encoding (list):', function() {
   // })
 })
 
+describe('RLP encoding (BN):', function() {
+  it('should encode a BN value', function() {
+    const encodedBN = RLP.encode(new BN(3))
+    assert.equal(encodedBN[0], 3)
+  })
+})
+
 describe('RLP encoding (integer):', function() {
   it('length of int = 1, less than 0x7f, similar to string', function() {
     const encodedNumber = RLP.encode(15)
