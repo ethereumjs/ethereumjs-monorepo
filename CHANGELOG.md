@@ -6,6 +6,34 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [v2.2.0] - 2018-12-17
+
+First `TypeScript` based release of `EthereumJS` libraries, thanks @krzkaczor,
+@GrandSchtroumpf, @whymarrh, @holgerd77 for the great work on this!
+
+This release doesn't introduce any main new features but will serve as a basis
+for further `TypeScript` transitions coming along with greater type safety
+for `EthereumJS` libraries. If you are developing in `TypeScript` you can
+further already benefit from the `RLP` type declarations published from now on
+along new releases.
+
+See PR [#37](https://github.com/ethereumjs/rlp/pull/37) and subsequent PRs merged
+towards the associated `typescript` branch to get an overview on the changes.
+The release also comes along with the introduction of a new repo
+[ethereumjs-config](https://github.com/ethereumjs/ethereumjs-config) centralizing
+configuration for `EthereumJS` libraries on `TypeScript` itself as well as
+linting, formatting and testing.
+
+This release passes all existing unit tests and other checks. If you nevertheless
+experience problems please report on the `EthereumJS`
+[Gitter](https://gitter.im/ethereum/ethereumjs) channel.
+
+Other changes:
+
+- Added `LICENSE` file for `MPL2.0`, see PR [#31](https://github.com/ethereumjs/rlp/pull/31)
+
+[v2.2.0]: https://github.com/ethereumjs/rlp/compare/2.1.0...v2.2.0
+
 ## [v2.1.0] - 2018-06-28
 
 - Updated supported Node versions, PR [#13](https://github.com/ethereumjs/rlp/pull/13)
