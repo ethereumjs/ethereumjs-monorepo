@@ -1,6 +1,6 @@
 import BN = require('bn.js')
 
-import { RLPInput, RLPDecoded } from './types'
+import { Decoded, Input } from './types'
 
 /**
  * RLP Encoding based on: https://github.com/ethereum/wiki/wiki/%5BEnglish%5D-RLP
@@ -8,7 +8,7 @@ import { RLPInput, RLPDecoded } from './types'
  * @param input - will be converted to buffer
  * @returns returns buffer of encoded data
  **/
-export function encode(input: RLPInput): Buffer {
+export function encode(input: Input): Buffer {
   if (input instanceof Array) {
     const output: Buffer[] = []
     for (let i = 0; i < input.length; i++) {
@@ -56,8 +56,8 @@ function encodeLength(len: number, offset: number): Buffer {
  **/
 export function decode(input: Buffer, stream?: boolean): Buffer
 export function decode(input: Buffer[], stream?: boolean): Buffer[]
-export function decode(input: RLPInput, stream?: boolean): Buffer[] | Buffer | RLPDecoded
-export function decode(input: RLPInput, stream: boolean = false): Buffer[] | Buffer | RLPDecoded {
+export function decode(input: Input, stream?: boolean): Buffer[] | Buffer | Decoded
+export function decode(input: Input, stream: boolean = false): Buffer[] | Buffer | Decoded {
   if (!input || (<any>input).length === 0) {
     return Buffer.from([])
   }
@@ -80,7 +80,7 @@ export function decode(input: RLPInput, stream: boolean = false): Buffer[] | Buf
  * @param input
  * @returns The length of the input or an empty Buffer if no input
  */
-export function getLength(input: RLPInput): Buffer | number {
+export function getLength(input: Input): Buffer | number {
   if (!input || (<any>input).length === 0) {
     return Buffer.from([])
   }
@@ -106,7 +106,7 @@ export function getLength(input: RLPInput): Buffer | number {
 }
 
 /** Decode an input with RLP */
-function _decode(input: Buffer): RLPDecoded {
+function _decode(input: Buffer): Decoded {
   let length, llength, data, innerRemainder, d
   const decoded = []
   const firstByte = input[0]
@@ -220,7 +220,7 @@ function intToBuffer(integer: number): Buffer {
 }
 
 /** Transform anything into a Buffer */
-function toBuffer(v: RLPInput): Buffer {
+function toBuffer(v: Input): Buffer {
   if (!Buffer.isBuffer(v)) {
     if (typeof v === 'string') {
       if (isHexPrefixed(v)) {
