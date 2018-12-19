@@ -236,10 +236,21 @@ describe('.fromV3()', function () {
 
 describe('.fromEthSale()', function () {
   // Generated using https://github.com/ethereum/pyethsaletool/ [4afd19ad60cee8d09b645555180bc3a7c8a25b67]
-  var json = '{"encseed": "81ffdfaf2736310ce87df268b53169783e8420b98f3405fb9364b96ac0feebfb62f4cf31e0d25f1ded61f083514dd98c3ce1a14a24d7618fd513b6d97044725c7d2e08a7d9c2061f2c8a05af01f06755c252f04cab20fee2a4778130440a9344", "ethaddr": "22f8c5dd4a0a9d59d580667868df2da9592ab292", "email": "hello@ethereum.org", "btcaddr": "1DHW32MFwHxU2nk2SLAQq55eqFotT9jWcq"}'
-  it('should work', function () {
+  it('should work with short password (8 characters)', function () {
+    var json = '{"encseed": "81ffdfaf2736310ce87df268b53169783e8420b98f3405fb9364b96ac0feebfb62f4cf31e0d25f1ded61f083514dd98c3ce1a14a24d7618fd513b6d97044725c7d2e08a7d9c2061f2c8a05af01f06755c252f04cab20fee2a4778130440a9344", "ethaddr": "22f8c5dd4a0a9d59d580667868df2da9592ab292", "email": "hello@ethereum.org", "btcaddr": "1DHW32MFwHxU2nk2SLAQq55eqFotT9jWcq"}'
     var wallet = Wallet.fromEthSale(json, 'testtest')
     assert.strictEqual(wallet.getAddressString(), '0x22f8c5dd4a0a9d59d580667868df2da9592ab292')
+  })
+  it('should work with long password (19 characters)', function () {
+    var json = '{"encseed": "0c7e462bd67c6840ed2fa291090b2f46511b798d34492e146d6de148abbccba45d8fcfc06bea2e5b9d6c5d17b51a9a046c1054a032f24d96a56614a14dcd02e3539685d7f09b93180067160f3a9db648ccca610fc2f983fc65bf973304cbf5b6", "ethaddr": "c90b232231c83b462723f473b35cb8b1db868108", "email": "thisisalongpassword@test.com", "btcaddr": "1Cy2fN2ov5BrMkzgrzE34YadCH2yLMNkTE"}'
+    var wallet = Wallet.fromEthSale(json, 'thisisalongpassword')
+    assert.strictEqual(wallet.getAddressString(), '0xc90b232231c83b462723f473b35cb8b1db868108')
+  })
+  // From https://github.com/ryepdx/pyethrecover/blob/master/test_wallets/ico.json
+  it('should work with pyethrecover\'s wallet', function () {
+    var json = '{"encseed": "8b4001bf61a10760d8e0876fb791e4ebeb85962f565c71697c789c23d1ade4d1285d80b2383ae5fc419ecf5319317cd94200b65df0cc50d659cbbc4365fc08e8", "ethaddr": "83b6371ba6bd9a47f82a7c4920835ef4be08f47b", "bkp": "9f566775e56486f69413c59f7ef923bc", "btcaddr": "1Nzg5v6uRCAa6Fk3CUU5qahWxEDZdZ1pBm"}'
+    var wallet = Wallet.fromEthSale(json, 'password123')
+    assert.strictEqual(wallet.getAddressString(), '0x83b6371ba6bd9a47f82a7c4920835ef4be08f47b')
   })
 })
 
