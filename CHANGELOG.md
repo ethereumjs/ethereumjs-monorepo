@@ -6,6 +6,15 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 
+## [0.6.3] - 2018-12-19
+- Fixed installation errors for certain packaging tools, PR [#67](https://github.com/ethereumjs/ethereumjs-wallet/pull/67)
+- Remove dependency on ``crypto.randomBytes`` and use ``randombytes`` package instead, PR [#63](https://github.com/ethereumjs/ethereumjs-wallet/pull/63)
+- Add comprehensive test coverage for ``fromV3``, PR [#62](https://github.com/ethereumjs/ethereumjs-wallet/pull/62)
+- Remove excess parameter from ``decipherBuffer`` usage, PR [#77](https://github.com/ethereumjs/ethereumjs-wallet/pull/77)
+- Update dependencies, including a fixed ``scrypt.js``, which should resolve more installation issues, PR [#78](https://github.com/ethereumjs/ethereumjs-wallet/pull/78)
+
+[0.6.3]: https://github.com/ethereumjs/ethereumjs-wallet/compare/v0.6.2...v0.6.3
+
 ## [0.6.2] - 2018-08-08
 - [PLEASE UPDATE!] Fixes a critical import bug introduced in ``v0.6.1`` accidentally
   changing the import path for the different submodules, see PR [#65](https://github.com/ethereumjs/ethereumjs-wallet/pull/65)
