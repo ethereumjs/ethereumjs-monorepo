@@ -134,7 +134,7 @@ Thirdparty.fromEtherWallet = function (input, password) {
 }
 
 Thirdparty.fromEtherCamp = function (passphrase) {
-  return new Wallet(ethUtil.sha3(Buffer.from(passphrase)))
+  return new Wallet(ethUtil.keccak256(Buffer.from(passphrase)))
 }
 
 Thirdparty.fromKryptoKit = function (entropy, password) {
