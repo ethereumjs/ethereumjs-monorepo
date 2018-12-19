@@ -1,7 +1,6 @@
 import * as assert from 'assert'
 import * as RLP from '../src'
 const BN = require('bn.js')
-const testing = require('ethereumjs-testing')
 
 describe('invalid rlps', function() {
   it('should not crash on an invalid rlp', function() {
@@ -343,24 +342,5 @@ describe('recursive typings', function() {
     // tslint:disable-next-line:no-dead-store
     const a = RLP.encode([[[[[0]]]]])
     assert.ok(assertType<typeof a, Buffer>(true))
-  })
-})
-
-describe('offical tests', function() {
-  it('pass all tests', function(done) {
-    const officalTests = testing.getSingleFile('RLPTests/rlptest.json')
-
-    for (const test in officalTests) {
-      let incoming = officalTests[test].in
-      // if we are testing a big number
-      if (incoming[0] === '#') {
-        const bn = new BN(incoming.slice(1))
-        incoming = Buffer.from(bn.toArray())
-      }
-
-      const encoded = RLP.encode(incoming)
-      assert.equal(encoded.toString('hex'), officalTests[test].out.toLowerCase())
-    }
-    done()
   })
 })

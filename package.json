@@ -11,7 +11,7 @@
   "scripts": {
     "build": "tsc -p ./tsconfig.prod.json",
     "prepublishOnly": "npm run test && npm run build",
-    "coverage": "nyc mocha --reporter spec --require ts-node/register test/index.ts",
+    "coverage": "nyc mocha --reporter spec --require ts-node/register test/*.spec.ts",
     "coveralls": "npm run coverage && nyc report --reporter=text-lcov | coveralls",
     "format": "prettier --list-different **/*.{ts,json,md,gql}",
     "format:fix": "prettier --write **/*.{ts,json,md,gql}",
@@ -20,7 +20,7 @@
     "tsc": "tsc --noEmit",
     "lint": "npm run format && npm run tslint && npm run tsc",
     "lint:fix": "npm run format:fix && npm run tslint:fix && npm run tsc",
-    "unitTests": "mocha --reporter spec --require ts-node/register test/index.ts",
+    "unitTests": "mocha --reporter spec --require ts-node/register test/*.spec.ts",
     "test": "npm run lint && npm run unitTests",
     "test:fix": "npm run lint:fix && npm run unitTests",
     "webtest": "browserify test/max.js | testling -u"
