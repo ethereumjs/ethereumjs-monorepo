@@ -12,8 +12,8 @@ function assert (val, msg) {
   }
 }
 
-function decipherBuffer (decipher, data) {
-  return Buffer.concat([ decipher.update(data), decipher.final() ])
+function runCipherBuffer (cipher, data) {
+  return Buffer.concat([ cipher.update(data), cipher.final() ])
 }
 
 var Wallet = function (priv, pub) {
@@ -140,7 +140,7 @@ Wallet.prototype.toV3 = function (password, opts) {
     throw new Error('Unsupported cipher')
   }
 
-  var ciphertext = Buffer.concat([ cipher.update(this.privKey), cipher.final() ])
+  var ciphertext = runCipherBuffer(cipher, this.privKey)
 
   var mac = ethUtil.keccak256(Buffer.concat([ derivedKey.slice(16, 32), Buffer.from(ciphertext, 'hex') ]))
 
@@ -237,7 +237,7 @@ Wallet.fromV1 = function (input, password) {
   }
 
   var decipher = crypto.createDecipheriv('aes-128-cbc', ethUtil.keccak256(derivedKey.slice(0, 16)).slice(0, 16), Buffer.from(json.Crypto.IV, 'hex'))
-  var seed = decipherBuffer(decipher, ciphertext)
+  var seed = runCipherBuffer(decipher, ciphertext)
 
   return new Wallet(seed)
 }
@@ -277,7 +277,7 @@ Wallet.fromV3 = function (input, password, nonStrict) {
   }
 
   var decipher = crypto.createDecipheriv(json.crypto.cipher, derivedKey.slice(0, 16), Buffer.from(json.crypto.cipherparams.iv, 'hex'))
-  var seed = decipherBuffer(decipher, ciphertext)
+  var seed = runCipherBuffer(decipher, ciphertext)
 
   return new Wallet(seed)
 }
@@ -299,7 +299,7 @@ Wallet.fromEthSale = function (input, password) {
   // NOTE: crypto (derived from openssl) when used with aes-*-cbc will handle PKCS#7 padding internally
   //       see also http://stackoverflow.com/a/31614770/4964819
   var decipher = crypto.createDecipheriv('aes-128-cbc', derivedKey, encseed.slice(0, 16))
-  var seed = decipherBuffer(decipher, encseed.slice(16))
+  var seed = runCipherBuffer(decipher, encseed.slice(16))
 
   var wallet = new Wallet(ethUtil.keccak256(seed))
   if (wallet.getAddress().toString('hex') !== json.ethaddr) {
