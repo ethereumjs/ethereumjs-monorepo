@@ -6,7 +6,24 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [v2.2.1] - 2018-12-20
+
+- Fixed a bug introduced in `v2.2.0` causing the CLI `bin/rlp` command not to
+  work, see PR [#60](https://github.com/ethereumjs/rlp/pull/60)
+- Additional exports of types used by `decode` and `encode`
+  (PR [#59](https://github.com/ethereumjs/rlp/pull/59)):
+  - `Input`: input type for `encode()`
+  - `Dictionary` and `List`: interfaces for possible `Input` values
+  - `Decoded`: interface for `decode()` return type
+- Additional test structure and new integration tests for distribution and
+  `bin/rlp` CLI command, see PR [#57](https://github.com/ethereumjs/rlp/pull/57)
+
+[v2.2.1]: https://github.com/ethereumjs/rlp/compare/2.2.0...v2.2.1
+
 ## [v2.2.0] - 2018-12-17
+
+[DEPRECATED] Please update to `v2.2.1`, release contains a broken CLI `bin/rlp`
+command!
 
 First `TypeScript` based release of `EthereumJS` libraries, thanks @krzkaczor,
 @GrandSchtroumpf, @whymarrh, @holgerd77 for the great work on this!
