@@ -207,7 +207,7 @@ Block.prototype.validate = function (blockChain, cb) {
     }
 
     if (!self.validateTransactionsTrie()) {
-      errors.push('invalid transaction true')
+      errors.push('invalid transaction trie')
     }
 
     var txErrors = self.validateTransactions(true)
@@ -216,7 +216,7 @@ Block.prototype.validate = function (blockChain, cb) {
     }
 
     if (!self.validateUnclesHash()) {
-      errors.push('invild uncle hash')
+      errors.push('invalid uncle hash')
     }
 
     cb(arrayToString(errors))
@@ -260,7 +260,7 @@ Block.prototype.validateUncles = function (blockChain, cb) {
   })
 
   if (!((new Set(uncleHashes)).size === uncleHashes.length)) {
-    return cb('dublicate unlces')
+    return cb('duplicate uncles')
   }
 
   async.each(self.uncleHeaders, function (uncle, cb2) {
