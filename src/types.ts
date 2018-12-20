@@ -1,13 +1,16 @@
 import BN = require('bn.js')
 
-export type RLPInput = Buffer | string | number | Uint8Array | BN | RLPObject | RLPArray | null
+export type Input = Buffer | string | number | Uint8Array | BN | Dictionary | List | null
 
-export interface RLPArray extends Array<RLPInput> {}
-interface RLPObject {
-  [x: string]: RLPInput
+// Use interface extension instead of type alias to
+// make circular declaration possible.
+export interface List extends Array<Input> {}
+
+export interface Dictionary {
+  [x: string]: Input
 }
 
-export interface RLPDecoded {
+export interface Decoded {
   data: Buffer | Buffer[]
   remainder: Buffer
 }
