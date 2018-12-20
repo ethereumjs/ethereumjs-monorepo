@@ -1,4 +1,5 @@
 import * as assert from 'assert'
+import { exec } from 'child_process'
 import * as RLP from '../dist'
 
 describe('Distribution:', function() {
@@ -9,16 +10,10 @@ describe('Distribution:', function() {
   })
 })
 
-/*
 describe('CLI command:', function() {
   it('should be able to run CLI command', function() {
-    const execP = util.promisify(exec)
-
-    async function bin() {
-      const { stdout, stderr } = await execP('./bin/rlp encode "[ 5 ]"')
+    exec('./bin/rlp encode "[ 5 ]"', (_error, stdout, _stderr) => {
       assert.equal(stdout.trim(), 'c105')
-    }
-    bin()
+    })
   })
 })
-*/
