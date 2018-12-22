@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 
+## [3.3.2] - 2018-12-20
+- Updated ``levelup`` dependency to ``level-mem`` ``v3.0.1``, PR [#75](https://github.com/ethereumjs/ethereumjs-blockchain/pull/75)
+- Fix ``putBlock()`` edge case, PR [#79](https://github.com/ethereumjs/ethereumjs-blockchain/pull/79)
+- Replaced uses of deprecated `new Buffer` with `Buffer.from`, PR [#80](https://github.com/ethereumjs/ethereumjs-blockchain/pull/80)
+
+[3.3.2]: https://github.com/ethereumjs/ethereumjs-blockchain/compare/v3.3.1...v3.3.2
+
 ## [3.3.1] - 2018-10-26
 - Replaced calls to BN.toBuffer() with BN.toArrayLike() so that ``ethereumjs-blockchain`` can run in a browser environment, PR [#73](https://github.com/ethereumjs/ethereumjs-blockchain/pull/73)
 
