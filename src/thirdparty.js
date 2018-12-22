@@ -12,8 +12,8 @@ function assert (val, msg) {
   }
 }
 
-function decipherBuffer (decipher, data) {
-  return Buffer.concat([ decipher.update(data), decipher.final() ])
+function runCipherBuffer (cipher, data) {
+  return Buffer.concat([ cipher.update(data), cipher.final() ])
 }
 
 var Thirdparty = {}
@@ -118,7 +118,7 @@ Thirdparty.fromEtherWallet = function (input, password) {
     var evp = evp_kdf(Buffer.from(password), cipher.salt, { keysize: 32, ivsize: 16 })
 
     var decipher = crypto.createDecipheriv('aes-256-cbc', evp.key, evp.iv)
-    privKey = decipherBuffer(decipher, Buffer.from(cipher.ciphertext))
+    privKey = runCipherBuffer(decipher, Buffer.from(cipher.ciphertext))
 
     // NOTE: yes, they've run it through UTF8
     privKey = Buffer.from(utf8.decode(privKey.toString()), 'hex')
