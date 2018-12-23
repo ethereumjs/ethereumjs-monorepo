@@ -278,8 +278,8 @@ class Transaction {
     const cost = new BN(0)
     for (let i = 0; i < data.length; i++) {
       data[i] === 0
-        ? cost.iaddn(common.param('gasPrices', 'txDataZero'))
-        : cost.iaddn(common.param('gasPrices', 'txDataNonZero'))
+        ? cost.iaddn(this._common.param('gasPrices', 'txDataZero'))
+        : cost.iaddn(this._common.param('gasPrices', 'txDataNonZero'))
     }
     return cost
   }
@@ -289,9 +289,9 @@ class Transaction {
    * @return {BN}
    */
   getBaseFee () {
-    const fee = this.getDataFee().iaddn(common.param('gasPrices', 'tx'))
+    const fee = this.getDataFee().iaddn(this._common.param('gasPrices', 'tx'))
     if (this._homestead && this.toCreationAddress()) {
-      fee.iaddn(common.param('gasPrices', 'txCreation'))
+      fee.iaddn(this._common.param('gasPrices', 'txCreation'))
     }
     return fee
   }
