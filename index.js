@@ -156,7 +156,7 @@ class Transaction {
 
     // set chainId
     this._chainId = chainId || data.chainId || 0
-    this._homestead = true
+    this._homestead = this._common.gteHardfork('homestead')
   }
 
   /**
