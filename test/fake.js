@@ -71,8 +71,7 @@ tape('[FakeTransaction]: Basic functions', function (t) {
     }
     st.plan(1)
     st.throws(
-      () => new FakeTransaction(txData, txOptsInvalid),
-      'Instantiation with both opts.common and opts.chain parameter not allowed!'
+      () => new FakeTransaction(txData, txOptsInvalid)
     )
   })
 })
