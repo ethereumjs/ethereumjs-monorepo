@@ -3,9 +3,6 @@ const ethUtil = require('ethereumjs-util')
 const Common = require('ethereumjs-common')
 const BN = ethUtil.BN
 
-// instantiate Common class instance
-const common = new Common('mainnet', 'chainstart')
-
 // secp256k1n/2
 const N_DIV_2 = new BN('7fffffffffffffffffffffffffffffff5d576e7357a4501ddfe92f46681b20a0', 16)
 
@@ -52,7 +49,25 @@ const N_DIV_2 = new BN('7fffffffffffffffffffffffffffffff5d576e7357a4501ddfe92f46
  * */
 
 class Transaction {
-  constructor (data) {
+  constructor (data, opts) {
+    opts = opts || {}
+
+    // instantiate Common class instance based on passed options
+    if (opts.common) {
+      if (opts.chain) {
+        throw new Error('Instantiation with both opts.common and opts.chain parameter not allowed!')
+      }
+      this._common = opts.common
+    } else {
+      let chain = opts.chain ? opts.chain : 'mainnet'
+      let hardfork = opts.hardfork ? opts.hardfork : 'byzantium'
+      let supportedHardforks = [
+        'byzantium',
+        'constantinople'
+      ]
+      this._common = new Common(chain, hardfork, supportedHardforks)
+    }
+
     data = data || {}
     // Define Properties
     const fields = [{
