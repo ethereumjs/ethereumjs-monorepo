@@ -44,6 +44,11 @@ const N_DIV_2 = new BN('7fffffffffffffffffffffffffffffff5d576e7357a4501ddfe92f46
  * @param {Buffer} data.r EC signature parameter
  * @param {Buffer} data.s EC signature parameter
  * @param {Number} data.chainId EIP 155 chainId - mainnet: 1, ropsten: 3
+ *
+ * @param {Array} opts Options
+ * @param {String|Number} opts.chain The chain for the block [default: 'mainnet']
+ * @param {String} opts.hardfork Hardfork for the block [default: null, block number-based behaviour]
+ * @param {Object} opts.common Alternatively pass a Common instance (ethereumjs-common) instead of setting chain/hardfork directly
  * */
 
 class Transaction {
