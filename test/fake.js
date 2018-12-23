@@ -70,7 +70,7 @@ tape('[FakeTransaction]: Basic functions', function (t) {
       common: new Common('mainnet', 'chainstart')
     }
     st.plan(1)
-    t.throws(
+    st.throws(
       () => new FakeTransaction(txData, txOptsInvalid),
       'Instantiation with both opts.common and opts.chain parameter not allowed!'
     )
