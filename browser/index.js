@@ -5,13 +5,6 @@ const level = require('level-browserify')
 
 // Blockchain
 exports.Chain = require('../lib/blockchain/chain')
-exports.BlockPool = require('../lib/blockchain/blockpool')
-exports.HeaderPool = require('../lib/blockchain/headerpool')
-
-// Handler
-exports.Handler = require('../lib/handler/handler')
-exports.EthHandler = require('../lib/handler/ethhandler')
-exports.LesHandler = require('../lib/handler/leshandler')
 
 // Peer
 exports.Peer = require('../lib/net/peer/peer')
@@ -36,7 +29,8 @@ exports.Node = require('../lib/node')
 
 // Service
 exports.Service = require('../lib/service/service')
-exports.EthereumService = require('../lib/service/ethereumservice')
+exports.FastEthereumService = require('../lib/service/fastethereumservice')
+exports.LightEthereumService = require('../lib/service/lightethereumservice')
 
 // Synchronizer
 exports.Synchronizer = require('../lib/sync/sync')
