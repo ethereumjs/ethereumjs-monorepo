@@ -17,13 +17,11 @@ tape('[Integration:Node]', t => {
     node.on('listening', details => {
       t.deepEqual(details, { transport: 'mock', url: 'mock://127.0.0.1' }, 'server listening')
     })
-    node.on('synchronized', stats => {
-      t.deepEqual(stats, { count: 0, type: 'fast' }, 'synchronized')
-    })
     await node.open()
     node.service('eth').synchronizer.interval = 100
     node.service('eth').emit('error', 'err0')
     await node.start()
+    t.ok(node.service('eth').synchronizer.running, 'sync running')
     await node.stop()
     t.pass('node stopped')
   })

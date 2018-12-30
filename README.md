@@ -183,13 +183,12 @@ to help contributors better understand how the project is organized.
 
 - ``/bin`` Contains the CLI script for the ``ethereumjs`` command
 - ``/docs`` Contains auto-generated API docs as well as other supporting documentation
-- ``/lib/blockchain`` Contains the ``Chain``, ``BlockPool`` and ``HeaderPool`` classes.
+- ``/lib/blockchain`` Contains the ``Chain`` class.
 - ``/lib/net`` Contains all of the network layer classes including ``Peer``, ``Protocol`` and its subclasses,
   ``Server`` and its subclasses, and ``PeerPool``.
-- ``/lib/service`` Contains the various services. Currently, only ``EthereumService`` is implemented.
-- ``/lib/handler`` Contains the various message handlers
+- ``/lib/service`` Contains the main Ethereum services (``FastEthereumService`` and ``LightEthereumService``)
 - ``/lib/rpc`` Contains the RPC server (optionally) embedded in the client.
-- ``/lib/sync`` Contains the various chain synchronizers
+- ``/lib/sync`` Contains the various chain synchronizers and ``Fetcher`` helpers.
 - ``/tests`` Contains test cases, testing helper functions, mocks and test data
 
 **Components**
@@ -198,11 +197,6 @@ to help contributors better understand how the project is organized.
 ``ethereumjs-blockchain``. It handles creation of the data directory, provides basic blockchain operations
 and maintains an updated current state of the blockchain, including current height, total difficulty, and
 latest block.
-- ``BlockPool`` [**In Progress**] This class holds segments of the blockchain that have been downloaded
-from other peers. Once valid, sequential segments are available, they are automatically added to the
-blockchain
-    - ``HeaderPool`` [**In Progress**] This is a subclass of ``BlockPool`` that holds header segments instead of
-    block segments. It is useful for light syncs when downloading sequential headers in parallel.
 - ``Server`` This class represents a server that discovers new peers and handles incoming and dropped
 connections. When a new peer connects, the ``Server`` class will negotiate protocols and emit a ``connected``
 event with a new ``Peer``instance. The peer will have properties corresponding to each protocol. For example,
@@ -224,14 +218,15 @@ low level ethereum protocols such as ``eth/62``, ``eth/62`` and ``les/2``. Subcl
 and ``removed`` events when new peers are added and removed and also emit the ``message`` event whenever
 any of the peers in the pool emit a message. Each ``Service`` has an associated ``PeerPool`` and they are used primarily by ``Synchronizer``s to help with blockchain synchronization.
 - ``Synchronizer`` Subclasses of this class implements a specific blockchain synchronization strategy. They
-also make use of subclasses of the ``Fetcher`` class that help fetch headers and bodies from pool peers.
+also make use of subclasses of the ``Fetcher`` class that help fetch headers and bodies from pool peers. The fetchers internally make use of streams to handle things like queuing and backpressure.
     - ``FastSynchronizer`` [**In Progress**] Implements fast syncing of the blockchain
     - ``LightSynchronizer`` [**In Progress**] Implements light syncing of the blockchain
 - ``Handler`` Subclasses of this class implements a protocol message handler. Handlers respond to incoming requests from peers.
     - ``EthHandler`` [**In Progress**] Handles incoming ETH requests
     - ``LesHandler`` [**In Progress**] Handles incoming LES requests
-- ``Service`` Subclasses of ``Service`` will implement specific functionality of a ``Node``. For example, the ``EthereumService`` will synchronize the blockchain using the fast or light sync protocols. Each service must specify which protocols it needs and define a ``start()`` and ``stop()`` function.
-    - ``EthereumService`` [**In Progress**] Implementation of an ethereum fast sync and light sync node.
+- ``Service`` Subclasses of ``Service`` will implement specific functionality of a ``Node``. For example, the ``EthereumService`` subclasses will synchronize the blockchain using the fast or light sync protocols. Each service must specify which protocols it needs and define a ``start()`` and ``stop()`` function.
+    - ``FastEthereumService`` [**In Progress**] Implementation of ethereum fast sync.
+    - ``LightEthereumService`` [**In Progress**] Implementation of ethereum light sync.
     - ``WhisperService`` [**Not Started**] Implementation of an ethereum whisper node.    
 - ``Node`` [**In Progress**] Represents the top-level ethereum node, and is responsible for managing the lifecycle of included services.
 - ``RPCManager`` [**In Progress**] Implements an embedded JSON-RPC server to handle incoming RPC requests.
