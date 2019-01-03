@@ -939,7 +939,7 @@ Blockchain.prototype._iterator = function (name, func, cb) {
       } else {
         blockNumber = false
         // No more blocks, return
-        if (err instanceof level.errors.NotFoundError) {
+        if (err.type === 'NotFoundError') {
           return cb2()
         }
       }
