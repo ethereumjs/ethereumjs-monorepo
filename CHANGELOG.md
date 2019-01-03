@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 
+## [3.3.3] - 2019-01-03
+- Fixed a bug causing the ``iterate()`` method to fail when an older version
+  ``levelup`` DB instance is passed, see PR [#83](https://github.com/ethereumjs/ethereumjs-blockchain/pull/83)
+
+[3.3.3]: https://github.com/ethereumjs/ethereumjs-blockchain/compare/v3.3.2...v3.3.3
+
 ## [3.3.2] - 2018-12-20
 - Updated ``levelup`` dependency to ``level-mem`` ``v3.0.1``, PR [#75](https://github.com/ethereumjs/ethereumjs-blockchain/pull/75)
 - Fix ``putBlock()`` edge case, PR [#79](https://github.com/ethereumjs/ethereumjs-blockchain/pull/79)
