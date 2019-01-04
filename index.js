@@ -598,7 +598,7 @@ exports.isValidSignature = function (v, r, s, homestead, chainId) {
     return false
   }
 
-  if ((homestead === false) && (new BN(s).cmp(SECP256K1_N_DIV_2) === 1)) {
+  if (homestead && (new BN(s).cmp(SECP256K1_N_DIV_2) === 1)) {
     return false
   }
 
