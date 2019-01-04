@@ -571,7 +571,7 @@ exports.addHexPrefix = function (str) {
 /**
  * Validate ECDSA signature
  * @method isValidSignature
- * @param {Buffer} v
+ * @param {Number} v
  * @param {Buffer} r
  * @param {Buffer} s
  * @param {Boolean} [homestead=true]
