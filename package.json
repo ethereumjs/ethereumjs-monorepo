@@ -20,8 +20,8 @@
   "author": "mjbecze <mb@ethdev.com>",
   "license": "MPL-2.0",
   "dependencies": {
-    "ethereumjs-common": "^0.6.1",
-    "ethereumjs-util": "^5.0.0"
+    "ethereumjs-common": "^1.0.0",
+    "ethereumjs-util": "^6.0.0"
   },
   "devDependencies": {
     "async": "^2.0.0",
