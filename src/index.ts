@@ -26,21 +26,26 @@ export default class Account {
   public codeHash!: Buffer
 
   constructor(data?: any) {
-    const fields = [{
-      name: 'nonce',
-      default: Buffer.alloc(0)
-    }, {
-      name: 'balance',
-      default: Buffer.alloc(0)
-    }, {
-      name: 'stateRoot',
-      length: 32,
-      default: ethUtil.SHA3_RLP
-    }, {
-      name: 'codeHash',
-      length: 32,
-      default: ethUtil.SHA3_NULL
-    }]
+    const fields = [
+      {
+        name: 'nonce',
+        default: Buffer.alloc(0),
+      },
+      {
+        name: 'balance',
+        default: Buffer.alloc(0),
+      },
+      {
+        name: 'stateRoot',
+        length: 32,
+        default: ethUtil.SHA3_RLP,
+      },
+      {
+        name: 'codeHash',
+        length: 32,
+        default: ethUtil.SHA3_NULL,
+      },
+    ]
 
     ethUtil.defineProperties(this, fields, data)
   }
