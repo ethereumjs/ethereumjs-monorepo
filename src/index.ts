@@ -1,65 +1,32 @@
 import * as rlp from 'rlp'
-import BinaryValue from './binary'
 
 const ethUtil = require('ethereumjs-util')
 const Buffer = require('safe-buffer').Buffer
 
 export default class Account {
-  _nonce: BinaryValue
-  _balance: BinaryValue
-  _stateRoot: BinaryValue
-  _codeHash: BinaryValue
+  public nonce!: Buffer
+  public balance!: Buffer
+  public stateRoot!: Buffer
+  public codeHash!: Buffer
 
   constructor(data?: any) {
-    // Set default values
-    this._nonce = new BinaryValue(Buffer.alloc(0))
-    this._balance = new BinaryValue(Buffer.alloc(0))
-    this._stateRoot = new BinaryValue(ethUtil.SHA3_RLP, 32)
-    this._codeHash = new BinaryValue(ethUtil.SHA3_NULL, 32)
+    const fields = [{
+      name: 'nonce',
+      default: Buffer.alloc(0)
+    }, {
+      name: 'balance',
+      default: Buffer.alloc(0)
+    }, {
+      name: 'stateRoot',
+      length: 32,
+      default: ethUtil.SHA3_RLP
+    }, {
+      name: 'codeHash',
+      length: 32,
+      default: ethUtil.SHA3_NULL
+    }]
 
-    if (data) {
-      if (typeof data === 'string') {
-        data = Buffer.from(ethUtil.stripHexPrefix(data), 'hex')
-      }
-
-      if (typeof data !== 'undefined' && Buffer.isBuffer(data)) {
-        data = rlp.decode(data)
-      }
-
-      if (Array.isArray(data)) {
-        if (data.length > 4) {
-          throw new Error('wrong number of fields in data')
-        }
-
-        this._nonce.set(data[0])
-        this._balance.set(data[1])
-        this._stateRoot.set(data[2])
-        this._codeHash.set(data[3])
-      } else if (data !== null && typeof data === 'object') {
-        if ('nonce' in data) this._nonce.set(data.nonce)
-        if ('balance' in data) this._balance.set(data.balance)
-        if ('stateRoot' in data) this._stateRoot.set(data.stateRoot)
-        if ('codeHash' in data) this._codeHash.set(data.codeHash)
-      } else {
-        throw new Error('invalid data')
-      }
-    }
-  }
-
-  get nonce(): Buffer {
-    return this._nonce.get()
-  }
-
-  get balance(): Buffer {
-    return this._balance.get()
-  }
-
-  get stateRoot(): Buffer {
-    return this._stateRoot.get()
-  }
-
-  get codeHash(): Buffer {
-    return this._codeHash.get()
+    ethUtil.defineProperties(this, fields, data)
   }
 
   serialize(): Buffer {
@@ -80,7 +47,7 @@ export default class Account {
   }
 
   setCode(trie: any, code: any, cb: any): void {
-    this._codeHash.set(ethUtil.sha3(code))
+    this.codeHash = ethUtil.sha3(code)
 
     if (this.codeHash.toString('hex') === ethUtil.SHA3_NULL_S) {
       cb(null, Buffer.alloc(0))
@@ -103,7 +70,7 @@ export default class Account {
     t.root = this.stateRoot
     t.put(key, val, (err: any) => {
       if (err) return cb()
-      this._stateRoot.set(t.root)
+      this.stateRoot = t.root
       cb()
     })
   }
