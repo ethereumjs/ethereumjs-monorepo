@@ -1,6 +1,5 @@
 const tape = require('tape')
-const Levelup = require('levelup')
-const Memdown = require('memdown')
+const level = require('level-mem')
 const { promisify } = require('util')
 const Blockchain = require('ethereumjs-blockchain')
 const Block = require('ethereumjs-block')
@@ -10,7 +9,7 @@ const StateManager = require('../../lib/stateManager')
 const { createGenesis } = require('./utils')
 
 tape('runBlockchain', (t) => {
-  const blockchainDB = new Levelup('', { db: Memdown })
+  const blockchainDB = level()
   const blockchain = new Blockchain({ db: blockchainDB })
   const vm = { stateManager: new StateManager(), blockchain }
 
