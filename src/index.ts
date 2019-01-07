@@ -3,6 +3,22 @@ import * as rlp from 'rlp'
 const ethUtil = require('ethereumjs-util')
 const Buffer = require('safe-buffer').Buffer
 
+interface TrieGetCb {
+  (err: any, value: Buffer | null): void
+}
+interface TriePutCb {
+  (err?: any): void
+}
+
+interface Trie {
+  root: Buffer
+  copy(): Trie
+  getRaw(key: Buffer, cb: TrieGetCb): void
+  putRaw(key: Buffer | string, value: Buffer, cb: TriePutCb): void
+  get(key: Buffer | string, cb: TrieGetCb): void
+  put(key: Buffer | string, value: Buffer | string, cb: TriePutCb): void
+}
+
 export default class Account {
   public nonce!: Buffer
   public balance!: Buffer
@@ -37,7 +53,7 @@ export default class Account {
     return this.codeHash.toString('hex') !== ethUtil.SHA3_NULL_S
   }
 
-  getCode(trie: any, cb: any): void {
+  getCode(trie: Trie, cb: TrieGetCb): void {
     if (!this.isContract()) {
       cb(null, Buffer.alloc(0))
       return
@@ -46,7 +62,7 @@ export default class Account {
     trie.getRaw(this.codeHash, cb)
   }
 
-  setCode(trie: any, code: any, cb: any): void {
+  setCode(trie: Trie, code: Buffer, cb: (err: any, codeHash: Buffer) => void): void {
     this.codeHash = ethUtil.sha3(code)
 
     if (this.codeHash.toString('hex') === ethUtil.SHA3_NULL_S) {
@@ -59,13 +75,13 @@ export default class Account {
     })
   }
 
-  getStorage(trie: any, key: any, cb: any) {
+  getStorage(trie: Trie, key: Buffer | string, cb: TrieGetCb) {
     const t = trie.copy()
     t.root = this.stateRoot
     t.get(key, cb)
   }
 
-  setStorage(trie: any, key: any, val: any, cb: any) {
+  setStorage(trie: Trie, key: Buffer | string, val: Buffer | string, cb: () => void) {
     const t = trie.copy()
     t.root = this.stateRoot
     t.put(key, val, (err: any) => {
