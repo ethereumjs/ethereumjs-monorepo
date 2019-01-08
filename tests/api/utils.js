@@ -1,6 +1,6 @@
 const Block = require('ethereumjs-block')
 const Account = require('ethereumjs-account')
-const Level = require('levelup')
+const level = require('level-mem')
 const Blockchain = require('ethereumjs-blockchain')
 const VM = require('../../lib/index')
 
@@ -21,9 +21,7 @@ function createAccount (nonce, balance) {
 }
 
 function setupVM () {
-  const db = new Level('', {
-    db: require('memdown')
-  })
+  const db = level()
   const blockchain = new Blockchain(db)
   const vm = new VM({ blockchain })
 
