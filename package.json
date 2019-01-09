@@ -4,6 +4,9 @@
   "description": "Resources common to all Ethereum implementations",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "tsc -p ./tsconfig.prod.json",
     "prepublishOnly": "npm run test && npm run build",
