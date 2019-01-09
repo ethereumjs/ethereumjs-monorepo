@@ -68,7 +68,7 @@ export default class Account {
   }
 
   setCode(trie: Trie, code: Buffer, cb: (err: any, codeHash: Buffer) => void): void {
-    this.codeHash = ethUtil.sha3(code)
+    this.codeHash = ethUtil.keccak256(code)
 
     if (this.codeHash.toString('hex') === ethUtil.SHA3_NULL_S) {
       cb(null, Buffer.alloc(0))
