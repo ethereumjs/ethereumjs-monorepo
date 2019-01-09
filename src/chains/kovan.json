@@ -13,8 +13,7 @@
     "extraData": "0x",
     "stateRoot": "0x2480155b48a1cea17d67dbfdfaafe821c1d19cdd478c5358e8ec56dec24502b2"
   },
-  "hardforks": [
-  ],
+  "hardforks": [],
   "bootstrapNodes": [
     {
       "ip": "40.71.221.215",
