@@ -26,7 +26,7 @@
 
 **● names**: _`object`_
 
-_Defined in [types.ts:2](https://github.com/ethereumjs/ethereumjs-common/blob/12f6f69/src/types.ts#L2)_
+_Defined in [types.ts:2](https://github.com/ethereumjs/ethereumjs-common/blob/c779647/src/types.ts#L2)_
 
 #### Type declaration
 

@@ -133,15 +133,15 @@ Due to the large file sizes genesis states are not directly included in the `ind
 but have to be accessed directly, e.g.:
 
 ```javascript
-const mainnetGenesisState = require('ethereumjs-common/genesisStates/mainnet')
+const mainnetGenesisState = require('ethereumjs-common/dist/genesisStates/mainnet')
 ```
 
-Or by choosing dynamically:
+Or by accessing dynamically:
 
 ```javascript
-const genesisStates = require('ethereumjs-common/genesisStates')
-const mainnetGenesisState = genesisStates['mainnet']
-const mainnetGenesisState = genesisStates[genesisStates['names'][1]] // alternative via chain Id
+const genesisStates = require('ethereumjs-common/dist/genesisStates')
+const mainnetGenesisState = genesisStates.genesisStateByName('mainnet')
+const mainnetGenesisState = genesisStates.genesisStateById(1) // alternative via network Id
 ```
 
 # LICENSE
