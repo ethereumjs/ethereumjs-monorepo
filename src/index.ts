@@ -38,12 +38,12 @@ export default class Account {
       {
         name: 'stateRoot',
         length: 32,
-        default: ethUtil.SHA3_RLP,
+        default: ethUtil.KECCAK256_RLP,
       },
       {
         name: 'codeHash',
         length: 32,
-        default: ethUtil.SHA3_NULL,
+        default: ethUtil.KECCAK256_NULL,
       },
     ]
 
@@ -55,7 +55,7 @@ export default class Account {
   }
 
   isContract(): boolean {
-    return this.codeHash.toString('hex') !== ethUtil.SHA3_NULL_S
+    return this.codeHash.toString('hex') !== ethUtil.KECCAK256_NULL_S
   }
 
   getCode(trie: Trie, cb: TrieGetCb): void {
@@ -70,7 +70,7 @@ export default class Account {
   setCode(trie: Trie, code: Buffer, cb: (err: any, codeHash: Buffer) => void): void {
     this.codeHash = ethUtil.keccak256(code)
 
-    if (this.codeHash.toString('hex') === ethUtil.SHA3_NULL_S) {
+    if (this.codeHash.toString('hex') === ethUtil.KECCAK256_NULL_S) {
       cb(null, Buffer.alloc(0))
       return
     }
@@ -100,8 +100,8 @@ export default class Account {
     return (
       this.balance.toString('hex') === '' &&
       this.nonce.toString('hex') === '' &&
-      this.stateRoot.toString('hex') === ethUtil.SHA3_RLP_S &&
-      this.codeHash.toString('hex') === ethUtil.SHA3_NULL_S
+      this.stateRoot.toString('hex') === ethUtil.KECCAK256_RLP_S &&
+      this.codeHash.toString('hex') === ethUtil.KECCAK256_NULL_S
     )
   }
 }
