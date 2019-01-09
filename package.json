@@ -4,6 +4,9 @@
   "description": "Resources common to all Ethereum implementations",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "tsc -p ./tsconfig.prod.json",
     "prepublishOnly": "npm run test && npm run build",
@@ -19,7 +22,7 @@
     "unitTests": "ts-node ./node_modules/tape/bin/tape ./tests/*.ts",
     "test": "npm run lint && npm run unitTests",
     "test:fix": "npm run lint:fix && npm run unitTests",
-    "docs:build": "typedoc --out docs --excludePrivate --excludeExternals --mode file --readme none --theme markdown --mdEngine github src/*.ts"
+    "docs:build": "typedoc --out docs --excludePrivate --excludeExternals --mode file --readme none --theme markdown --mdEngine github src/*.ts src/genesisStates/*.ts"
   },
   "repository": {
     "type": "git",

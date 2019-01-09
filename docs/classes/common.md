@@ -52,7 +52,7 @@ Common class to access chain and hardfork parameters
 
 ⊕ **new Common**(chain: _`string` | `number` | `object`_, hardfork?: _`string` | `null`_, supportedHardforks?: _`Array`<`string`>_): [Common](common.md)
 
-_Defined in [index.ts:17](https://github.com/ethereumjs/ethereumjs-common/blob/12f6f69/src/index.ts#L17)_
+_Defined in [index.ts:17](https://github.com/ethereumjs/ethereumjs-common/blob/c779647/src/index.ts#L17)_
 
 _**constructor**_:
 
@@ -76,7 +76,7 @@ _**constructor**_:
 
 ▸ **\_chooseHardfork**(hardfork?: _`string` | `null`_, onlySupported?: _`undefined` | `false` | `true`_): `string`
 
-_Defined in [index.ts:96](https://github.com/ethereumjs/ethereumjs-common/blob/12f6f69/src/index.ts#L96)_
+_Defined in [index.ts:96](https://github.com/ethereumjs/ethereumjs-common/blob/c779647/src/index.ts#L96)_
 
 Internal helper function to choose between hardfork set and hardfork provided as param
 
@@ -98,7 +98,7 @@ Hardfork chosen to be used
 
 ▸ **\_getHardfork**(hardfork: _`string`_): `any`
 
-_Defined in [index.ts:115](https://github.com/ethereumjs/ethereumjs-common/blob/12f6f69/src/index.ts#L115)_
+_Defined in [index.ts:115](https://github.com/ethereumjs/ethereumjs-common/blob/c779647/src/index.ts#L115)_
 
 Internal helper function, returns the params for the given hardfork for the chain set
 
@@ -119,7 +119,7 @@ Dictionary with hardfork params
 
 ▸ **\_isSupportedHardfork**(hardfork: _`string` | `null`_): `boolean`
 
-_Defined in [index.ts:128](https://github.com/ethereumjs/ethereumjs-common/blob/12f6f69/src/index.ts#L128)_
+_Defined in [index.ts:128](https://github.com/ethereumjs/ethereumjs-common/blob/c779647/src/index.ts#L128)_
 
 Internal helper function to check if a hardfork is set to be supported by the library
 
@@ -140,7 +140,7 @@ True if hardfork is supported
 
 ▸ **activeHardfork**(blockNumber?: _`number` | `null`_, opts?: _[hardforkOptions](../interfaces/hardforkoptions.md)_): `string`
 
-_Defined in [index.ts:292](https://github.com/ethereumjs/ethereumjs-common/blob/12f6f69/src/index.ts#L292)_
+_Defined in [index.ts:292](https://github.com/ethereumjs/ethereumjs-common/blob/c779647/src/index.ts#L292)_
 
 Returns the latest active hardfork name for chain or block or throws if unavailable
 
@@ -162,7 +162,7 @@ Hardfork name
 
 ▸ **activeHardforks**(blockNumber?: _`number` | `null`_, opts?: _[hardforkOptions](../interfaces/hardforkoptions.md)_): `Array`<`any`>
 
-_Defined in [index.ts:272](https://github.com/ethereumjs/ethereumjs-common/blob/12f6f69/src/index.ts#L272)_
+_Defined in [index.ts:272](https://github.com/ethereumjs/ethereumjs-common/blob/c779647/src/index.ts#L272)_
 
 Returns the active hardfork switches for the current chain
 
@@ -184,7 +184,7 @@ Array with hardfork arrays
 
 ▸ **activeOnBlock**(blockNumber: _`number`_, opts?: _[hardforkOptions](../interfaces/hardforkoptions.md)_): `boolean`
 
-_Defined in [index.ts:202](https://github.com/ethereumjs/ethereumjs-common/blob/12f6f69/src/index.ts#L202)_
+_Defined in [index.ts:202](https://github.com/ethereumjs/ethereumjs-common/blob/c779647/src/index.ts#L202)_
 
 Alias to hardforkIsActiveOnBlock when hardfork is set
 
@@ -206,7 +206,7 @@ True if HF is active on block number
 
 ▸ **bootstrapNodes**(): `any`
 
-_Defined in [index.ts:367](https://github.com/ethereumjs/ethereumjs-common/blob/12f6f69/src/index.ts#L367)_
+_Defined in [index.ts:367](https://github.com/ethereumjs/ethereumjs-common/blob/c779647/src/index.ts#L367)_
 
 Returns bootstrap nodes for the current chain
 
@@ -221,7 +221,7 @@ Dict with bootstrap nodes
 
 ▸ **chainId**(): `number`
 
-_Defined in [index.ts:383](https://github.com/ethereumjs/ethereumjs-common/blob/12f6f69/src/index.ts#L383)_
+_Defined in [index.ts:383](https://github.com/ethereumjs/ethereumjs-common/blob/c779647/src/index.ts#L383)_
 
 Returns the Id of current chain
 
@@ -236,7 +236,7 @@ chain Id
 
 ▸ **chainName**(): `string`
 
-_Defined in [index.ts:391](https://github.com/ethereumjs/ethereumjs-common/blob/12f6f69/src/index.ts#L391)_
+_Defined in [index.ts:391](https://github.com/ethereumjs/ethereumjs-common/blob/c779647/src/index.ts#L391)_
 
 Returns the name of current chain
 
@@ -251,7 +251,7 @@ chain name (lower case)
 
 ▸ **consensus**(hardfork?: _`undefined` | `string`_): `string`
 
-_Defined in [index.ts:332](https://github.com/ethereumjs/ethereumjs-common/blob/12f6f69/src/index.ts#L332)_
+_Defined in [index.ts:332](https://github.com/ethereumjs/ethereumjs-common/blob/c779647/src/index.ts#L332)_
 
 Provide the consensus type for the hardfork set or provided as param
 
@@ -272,7 +272,7 @@ Consensus type (e.g. 'pow', 'poa')
 
 ▸ **finality**(hardfork?: _`undefined` | `string`_): `string`
 
-_Defined in [index.ts:342](https://github.com/ethereumjs/ethereumjs-common/blob/12f6f69/src/index.ts#L342)_
+_Defined in [index.ts:342](https://github.com/ethereumjs/ethereumjs-common/blob/c779647/src/index.ts#L342)_
 
 Provide the finality type for the hardfork set or provided as param
 
@@ -293,7 +293,7 @@ Finality type (e.g. 'pos', null of no finality)
 
 ▸ **genesis**(): `any`
 
-_Defined in [index.ts:351](https://github.com/ethereumjs/ethereumjs-common/blob/12f6f69/src/index.ts#L351)_
+_Defined in [index.ts:351](https://github.com/ethereumjs/ethereumjs-common/blob/c779647/src/index.ts#L351)_
 
 Returns the Genesis parameters of current chain
 
@@ -308,7 +308,7 @@ Genesis dictionary
 
 ▸ **gteHardfork**(hardfork: _`string`_, opts?: _[hardforkOptions](../interfaces/hardforkoptions.md)_): `boolean`
 
-_Defined in [index.ts:246](https://github.com/ethereumjs/ethereumjs-common/blob/12f6f69/src/index.ts#L246)_
+_Defined in [index.ts:246](https://github.com/ethereumjs/ethereumjs-common/blob/c779647/src/index.ts#L246)_
 
 Alias to hardforkGteHardfork when hardfork is set
 
@@ -330,7 +330,7 @@ True if hardfork set is greater than hardfork provided
 
 ▸ **hardfork**(): `string` | `null`
 
-_Defined in [index.ts:375](https://github.com/ethereumjs/ethereumjs-common/blob/12f6f69/src/index.ts#L375)_
+_Defined in [index.ts:375](https://github.com/ethereumjs/ethereumjs-common/blob/c779647/src/index.ts#L375)_
 
 Returns the hardfork set
 
@@ -345,7 +345,7 @@ Hardfork name
 
 ▸ **hardforkBlock**(hardfork?: _`undefined` | `string`_): `number`
 
-_Defined in [index.ts:307](https://github.com/ethereumjs/ethereumjs-common/blob/12f6f69/src/index.ts#L307)_
+_Defined in [index.ts:307](https://github.com/ethereumjs/ethereumjs-common/blob/c779647/src/index.ts#L307)_
 
 Returns the hardfork change block for hardfork provided or set
 
@@ -366,7 +366,7 @@ Block number
 
 ▸ **hardforkGteHardfork**(hardfork1: _`string` | `null`_, hardfork2: _`string`_, opts?: _[hardforkOptions](../interfaces/hardforkoptions.md)_): `boolean`
 
-_Defined in [index.ts:213](https://github.com/ethereumjs/ethereumjs-common/blob/12f6f69/src/index.ts#L213)_
+_Defined in [index.ts:213](https://github.com/ethereumjs/ethereumjs-common/blob/c779647/src/index.ts#L213)_
 
 Sequence based check if given or set HF1 is greater than or equal HF2
 
@@ -389,7 +389,7 @@ True if HF1 gte HF2
 
 ▸ **hardforkIsActiveOnBlock**(hardfork: _`string` | `null`_, blockNumber: _`number`_, opts?: _[hardforkOptions](../interfaces/hardforkoptions.md)_): `boolean`
 
-_Defined in [index.ts:183](https://github.com/ethereumjs/ethereumjs-common/blob/12f6f69/src/index.ts#L183)_
+_Defined in [index.ts:183](https://github.com/ethereumjs/ethereumjs-common/blob/c779647/src/index.ts#L183)_
 
 Checks if set or provided hardfork is active on block number
 
@@ -412,7 +412,7 @@ True if HF is active on block number
 
 ▸ **hardforkIsActiveOnChain**(hardfork?: _`string` | `null`_, opts?: _[hardforkOptions](../interfaces/hardforkoptions.md)_): `boolean`
 
-_Defined in [index.ts:256](https://github.com/ethereumjs/ethereumjs-common/blob/12f6f69/src/index.ts#L256)_
+_Defined in [index.ts:256](https://github.com/ethereumjs/ethereumjs-common/blob/c779647/src/index.ts#L256)_
 
 Checks if given or set hardfork is active on the chain
 
@@ -434,7 +434,7 @@ True if hardfork is active on the chain
 
 ▸ **hardforks**(): `any`
 
-_Defined in [index.ts:359](https://github.com/ethereumjs/ethereumjs-common/blob/12f6f69/src/index.ts#L359)_
+_Defined in [index.ts:359](https://github.com/ethereumjs/ethereumjs-common/blob/c779647/src/index.ts#L359)_
 
 Returns the hardforks for current chain
 
@@ -449,7 +449,7 @@ Array with arrays of hardforks
 
 ▸ **isHardforkBlock**(blockNumber: _`number`_, hardfork?: _`undefined` | `string`_): `boolean`
 
-_Defined in [index.ts:318](https://github.com/ethereumjs/ethereumjs-common/blob/12f6f69/src/index.ts#L318)_
+_Defined in [index.ts:318](https://github.com/ethereumjs/ethereumjs-common/blob/c779647/src/index.ts#L318)_
 
 True if block number provided is the hardfork (given or set) change block of the current chain
 
@@ -471,7 +471,7 @@ True if blockNumber is HF block
 
 ▸ **networkId**(): `number`
 
-_Defined in [index.ts:399](https://github.com/ethereumjs/ethereumjs-common/blob/12f6f69/src/index.ts#L399)_
+_Defined in [index.ts:399](https://github.com/ethereumjs/ethereumjs-common/blob/c779647/src/index.ts#L399)_
 
 Returns the Id of current network
 
@@ -486,7 +486,7 @@ network Id
 
 ▸ **param**(topic: _`string`_, name: _`string`_, hardfork?: _`undefined` | `string`_): `any`
 
-_Defined in [index.ts:145](https://github.com/ethereumjs/ethereumjs-common/blob/12f6f69/src/index.ts#L145)_
+_Defined in [index.ts:145](https://github.com/ethereumjs/ethereumjs-common/blob/c779647/src/index.ts#L145)_
 
 Returns the parameter corresponding to a hardfork
 
@@ -508,7 +508,7 @@ Returns the parameter corresponding to a hardfork
 
 ▸ **paramByBlock**(topic: _`string`_, name: _`string`_, blockNumber: _`number`_): `any`
 
-_Defined in [index.ts:170](https://github.com/ethereumjs/ethereumjs-common/blob/12f6f69/src/index.ts#L170)_
+_Defined in [index.ts:170](https://github.com/ethereumjs/ethereumjs-common/blob/c779647/src/index.ts#L170)_
 
 Returns a parameter for the hardfork active on block number
 
@@ -530,7 +530,7 @@ Returns a parameter for the hardfork active on block number
 
 ▸ **setChain**(chain: _`string` | `number` | `object`_): `any`
 
-_Defined in [index.ts:44](https://github.com/ethereumjs/ethereumjs-common/blob/12f6f69/src/index.ts#L44)_
+_Defined in [index.ts:44](https://github.com/ethereumjs/ethereumjs-common/blob/c779647/src/index.ts#L44)_
 
 Sets the chain
 
@@ -551,7 +551,7 @@ The dictionary with parameters set as chain
 
 ▸ **setHardfork**(hardfork: _`string` | `null`_): `void`
 
-_Defined in [index.ts:75](https://github.com/ethereumjs/ethereumjs-common/blob/12f6f69/src/index.ts#L75)_
+_Defined in [index.ts:75](https://github.com/ethereumjs/ethereumjs-common/blob/c779647/src/index.ts#L75)_
 
 Sets the hardfork to get params for
 
