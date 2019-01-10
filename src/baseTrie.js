@@ -388,7 +388,7 @@ module.exports = class Trie {
       stack.push(lastNode)
     } else if (lastNode.type === 'branch') {
       stack.push(lastNode)
-      if (keyRemainder !== 0) {
+      if (keyRemainder.length !== 0) {
         // add an extention to a branch node
         keyRemainder.shift()
         // create a new leaf
