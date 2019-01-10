@@ -36,7 +36,6 @@
   },
   "homepage": "https://github.com/ethereumjs/ethereumjs-account#readme",
   "dependencies": {
-    "bn.js": "^4.11.8",
     "ethereumjs-util": "^6.0.0",
     "rlp": "^2.2.1",
     "safe-buffer": "^5.1.1"
