@@ -3,7 +3,7 @@ const async = require('async')
 const tape = require('tape')
 
 tape('offical tests', function (t) {
-  const jsonTests = require('./fixture/trietest.json')
+  const jsonTests = require('./fixture/trietest.json').tests
   const testNames = Object.keys(jsonTests)
   let trie = new Trie()
   async.eachSeries(testNames, function (i, done) {
@@ -29,7 +29,7 @@ tape('offical tests', function (t) {
 })
 
 tape('offical tests any order', function (t) {
-  const jsonTests = require('./fixture/trieanyorder.json')
+  const jsonTests = require('./fixture/trieanyorder.json').tests
   var testNames = Object.keys(jsonTests)
   var trie = new Trie()
   async.eachSeries(testNames, function (i, done) {
