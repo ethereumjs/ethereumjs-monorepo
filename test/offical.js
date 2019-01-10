@@ -1,14 +1,15 @@
 const Trie = require('../src/index.js')
 const async = require('async')
 const tape = require('tape')
-const jsonTests = require('ethereumjs-testing').tests.trieTests
+const testing = require('ethereumjs-testing')
 
-tape('offical tests', function (t) {
-  var trie = new Trie()
-  var testNames = Object.keys(jsonTests.trietest)
+tape('offical tests', async (t) => {
+  const jsonTests = testing.getSingleFile('TrieTests/trietest.json')
+  const testNames = Object.keys(jsonTests)
+  let trie = new Trie()
   async.eachSeries(testNames, function (i, done) {
-    var inputs = jsonTests.trietest[i].in
-    var expect = jsonTests.trietest[i].root
+    let inputs = jsonTests[i].in
+    let expect = jsonTests[i].root
 
     async.eachSeries(inputs, function (input, done) {
       for (i = 0; i < 2; i++) {
@@ -29,10 +30,11 @@ tape('offical tests', function (t) {
 })
 
 tape('offical tests any order', function (t) {
-  var testNames = Object.keys(jsonTests.trieanyorder)
+  const jsonTests = testing.getSingleFile('TrieTests/trieanyorder.json')
+  var testNames = Object.keys(jsonTests)
   var trie = new Trie()
   async.eachSeries(testNames, function (i, done) {
-    var test = jsonTests.trieanyorder[i]
+    var test = jsonTests[i]
     var keys = Object.keys(test.in)
 
     async.eachSeries(keys, function (key, done) {
