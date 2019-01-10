@@ -1,11 +1,11 @@
 const Trie = require('../src/secure.js')
 const async = require('async')
 const tape = require('tape')
-const jsonTests = require('ethereumjs-testing').tests.trieTests.trietest_secureTrie
 
 var trie = new Trie()
 
 tape('secure tests', function (it) {
+  const jsonTests = require('./fixture/trietest_secureTrie.json').tests
   it.test('empty values', function (t) {
     async.eachSeries(jsonTests.emptyValues.in, function (row, cb) {
       trie.put(new Buffer(row[0]), row[1], cb)
