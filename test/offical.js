@@ -3,7 +3,7 @@ const async = require('async')
 const tape = require('tape')
 const testing = require('ethereumjs-testing')
 
-tape('offical tests', async (t) => {
+tape('offical tests', function (t) {
   const jsonTests = testing.getSingleFile('TrieTests/trietest.json')
   const testNames = Object.keys(jsonTests)
   let trie = new Trie()
