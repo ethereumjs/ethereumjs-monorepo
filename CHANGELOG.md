@@ -6,6 +6,24 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [3.0.0] - 2019-01-14
+
+First **TypeScript** based release of the library together with a switch to an `ES6`
+class structure of the `Account` class. `TypeScript` handles `ES6` transpilation
+[a bit differently](https://github.com/Microsoft/TypeScript/issues/2719) (at the
+end: cleaner) than `babel` so `require` syntax of the library slightly changes to:
+
+```javascript
+let Account = require('ethereumjs-account').default
+```
+
+The library now also comes with a **type declaration file** distributed along with the package published.
+
+- Migration of code base and toolchain to `TypeScript`, PR [#27](https://github.com/ethereumjs/ethereumjs-account/pull/27)
+- Updated `ethereumjs-util` dependency to `v6.0.0`
+
+[3.0.0]: https://github.com/ethereumjs/ethereumjs-account/compare/v2.0.5...v3.0.0
+
 ## [2.0.5] - 2018-05-08
 
 - Fixes a bug for contract code stored with level DB, PR [#5](https://github.com/ethereumjs/ethereumjs-account/pull/5)
