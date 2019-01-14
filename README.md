@@ -117,7 +117,7 @@ Example for `getCode` and `setCode`:
 ```javascript
 // Requires manual merkle-patricia-tree install
 const SecureTrie = require('merkle-patricia-tree/secure')
-const Account = require('./index.js')
+const Account = require('./index.js').default
 
 let code = Buffer.from(
   '73095e7baea6a6c7c4c2dfeb977efac326af552d873173095e7baea6a6c7c4c2dfeb977efac326af552d873157',
@@ -155,7 +155,7 @@ Example for `getStorage` and `setStorage`:
 ```javascript
 // Requires manual merkle-patricia-tree install
 const SecureTrie = require('merkle-patricia-tree/secure')
-const Account = require('./index.js')
+const Account = require('./index.js').default
 
 let raw = {
   nonce: '',
