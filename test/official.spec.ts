@@ -1,10 +1,9 @@
 import * as assert from 'assert'
 import * as RLP from '../src'
 const BN = require('bn.js')
-const testing = require('ethereumjs-testing')
 
 describe('offical tests', function() {
-  const officalTests = testing.getSingleFile('RLPTests/rlptest.json')
+  const officalTests = require('./fixture/rlptest.json').tests
 
   for (const testName in officalTests) {
     it(`should pass ${testName}`, function(done) {
@@ -16,7 +15,7 @@ describe('offical tests', function() {
       }
 
       const encoded = RLP.encode(incoming)
-      assert.equal(encoded.toString('hex'), officalTests[testName].out.toLowerCase())
+      assert.equal('0x' + encoded.toString('hex'), officalTests[testName].out.toLowerCase())
       done()
     })
   }
