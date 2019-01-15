@@ -64,7 +64,7 @@ tape('runBlock', async (t) => {
 
     // The mocked VM uses a mocked runTx
     // which always returns an error.
-    await suite.p.runBlock({ block, root: genesis.header.stateRoot, skipBlockValidation: true })
+    await suite.p.runBlock({ block, skipBlockValidation: true })
       .then(() => t.fail('should have returned error'))
       .catch((e) => t.equal(e.message, 'test'))
 
@@ -112,7 +112,7 @@ tape('should fail when tx gas limit higher than block gas limit', async (t) => {
 
   await suite.p.generateCanonicalGenesis()
 
-  await suite.p.runBlock({ block, root: genesis.header.stateRoot, skipBlockValidation: true })
+  await suite.p.runBlock({ block, skipBlockValidation: true })
     .then(() => t.fail('should have returned error'))
     .catch((e) => t.ok(e.message.includes('higher gas limit')))
 
@@ -137,7 +137,7 @@ tape('should fail when runCall fails', async (t) => {
   // runTx is a full implementation that works.
   suite.vm.runTx = runTx
 
-  await suite.p.runBlock({ block, root: suite.vm.stateManager._trie.root, skipBlockValidation: true })
+  await suite.p.runBlock({ block, skipBlockValidation: true })
 
     .then(() => t.fail('should have returned error'))
     .catch((e) => t.equal(e.message, 'test'))
