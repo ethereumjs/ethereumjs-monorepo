@@ -57,7 +57,6 @@ tape('runBlock', async (t) => {
   })
 
   t.test('should fail when runTx fails', async (st) => {
-    const genesis = createGenesis()
     const block = new Block(util.rlp.decode(suite.data.blocks[0].rlp))
 
     await suite.p.generateCanonicalGenesis()
@@ -106,7 +105,6 @@ tape('should fail when block validation fails', async (t) => {
 tape('should fail when tx gas limit higher than block gas limit', async (t) => {
   const suite = setup()
 
-  const genesis = createGenesis()
   const block = new Block(util.rlp.decode(suite.data.blocks[0].rlp))
   block.transactions[0].gasLimit = Buffer.from('3fefba', 'hex')
 
