@@ -2,11 +2,13 @@
 
 ## SecureTrie
 
-[src/secure.js:10-15][1]
+[src/secure.js:12-43][1]
 
 **Extends Trie**
 
-You can create a secure Trie where the keys are automatically hashed using **SHA3** by using `require('merkle-patricia-tree/secure')`. It has the same methods and constructor as `Trie`.
+You can create a secure Trie where the keys are automatically hashed
+using **keccak256** by using `require('merkle-patricia-tree/secure')`.
+It has the same methods and constructor as `Trie`.
 
 ## Trie
 
@@ -231,9 +233,76 @@ Compare two nibble array keys.
 Take two or more functions and returns a function  that will execute all of
 the given functions
 
-[1]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/f6dbe761448c6a886a2e8fdb920c396c29d8c99b/src/secure.js#L10-L15 "Source code on GitHub"
+## isCheckpoint
 
-[2]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/f6dbe761448c6a886a2e8fdb920c396c29d8c99b/src/baseTrie.js#L23-L779 "Source code on GitHub"
+[src/checkpoint-trie.js:27-29][30]
+
+Is the trie during a checkpoint phase?
+
+## put
+
+[src/secure.js:30-37][31]
+
+For a falsey value, use the original key
+to avoid double hashing the key.
+
+### Parameters
+
+-   `key`  
+-   `val`  
+-   `cb`  
+
+## checkpoint
+
+[src/checkpoint-trie.js:38-46][32]
+
+Creates a checkpoint that can later be reverted to or committed.
+After this is called, no changes to the trie will be permanently saved
+until `commit` is called. Calling `putRaw` overrides the checkpointing
+mechanism and would directly write to db.
+
+## commit
+
+[src/checkpoint-trie.js:55-70][33]
+
+Commits a checkpoint to disk, if current checkpoint is not nested. If
+nested, only sets the parent checkpoint as current checkpoint.
+
+### Parameters
+
+-   `cb` **[Function][10]** the callback
+
+
+-   Throws **any** If not during a checkpoint phase
+
+## revert
+
+[src/checkpoint-trie.js:78-92][34]
+
+Reverts the trie to the state it was at when `checkpoint` was first called.
+If during a nested checkpoint, only sets parent as current checkpoint.
+
+### Parameters
+
+-   `cb` **[Function][10]** the callback
+
+## copy
+
+[src/checkpoint-trie.js:99-104][35]
+
+Returns a copy of the underlying trie with the interface
+of CheckpointTrie.
+
+## createScratchReadStream
+
+[src/checkpoint-trie.js:111-118][36]
+
+Returns a `ScratchReadStream` based on the state updates
+since checkpoint.
+
+[1]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/4194fd7855a3b9bd85742ea3c20ebfc405182742/src/secure.js#L12-L43 "Source code on GitHub"
+
+[2]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/4194fd7855a3b9bd85742ea3c20ebfc405182742/src/baseTrie.js#L23-L779 "Source code on GitHub"
 
 [3]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object
 
@@ -247,44 +316,58 @@ the given functions
 
 [8]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean
 
-[9]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/f6dbe761448c6a886a2e8fdb920c396c29d8c99b/src/baseTrie.js#L63-L75 "Source code on GitHub"
+[9]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/4194fd7855a3b9bd85742ea3c20ebfc405182742/src/baseTrie.js#L63-L75 "Source code on GitHub"
 
 [10]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Statements/function
 
-[11]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/f6dbe761448c6a886a2e8fdb920c396c29d8c99b/src/baseTrie.js#L85-L109 "Source code on GitHub"
+[11]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/4194fd7855a3b9bd85742ea3c20ebfc405182742/src/baseTrie.js#L85-L109 "Source code on GitHub"
 
-[12]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/f6dbe761448c6a886a2e8fdb920c396c29d8c99b/src/baseTrie.js#L118-L134 "Source code on GitHub"
+[12]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/4194fd7855a3b9bd85742ea3c20ebfc405182742/src/baseTrie.js#L118-L134 "Source code on GitHub"
 
-[13]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/f6dbe761448c6a886a2e8fdb920c396c29d8c99b/src/baseTrie.js#L143-L160 "Source code on GitHub"
+[13]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/4194fd7855a3b9bd85742ea3c20ebfc405182742/src/baseTrie.js#L143-L160 "Source code on GitHub"
 
-[14]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/f6dbe761448c6a886a2e8fdb920c396c29d8c99b/src/baseTrie.js#L190-L199 "Source code on GitHub"
+[14]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/4194fd7855a3b9bd85742ea3c20ebfc405182742/src/baseTrie.js#L190-L199 "Source code on GitHub"
 
-[15]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/f6dbe761448c6a886a2e8fdb920c396c29d8c99b/src/baseTrie.js#L208-L216 "Source code on GitHub"
+[15]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/4194fd7855a3b9bd85742ea3c20ebfc405182742/src/baseTrie.js#L208-L216 "Source code on GitHub"
 
-[16]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/f6dbe761448c6a886a2e8fdb920c396c29d8c99b/src/baseTrie.js#L250-L296 "Source code on GitHub"
+[16]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/4194fd7855a3b9bd85742ea3c20ebfc405182742/src/baseTrie.js#L250-L296 "Source code on GitHub"
 
-[17]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/f6dbe761448c6a886a2e8fdb920c396c29d8c99b/src/baseTrie.js#L728-L730 "Source code on GitHub"
+[17]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/4194fd7855a3b9bd85742ea3c20ebfc405182742/src/baseTrie.js#L728-L730 "Source code on GitHub"
 
 [18]: https://nodejs.org/api/stream.html#stream_class_stream_readable
 
 [19]: https://nodejs.org/dist/latest-v5.x/docs/api/stream.html#stream_class_stream_readable
 
-[20]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/f6dbe761448c6a886a2e8fdb920c396c29d8c99b/src/baseTrie.js#L754-L764 "Source code on GitHub"
+[20]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/4194fd7855a3b9bd85742ea3c20ebfc405182742/src/baseTrie.js#L754-L764 "Source code on GitHub"
 
 [21]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array
 
-[22]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/f6dbe761448c6a886a2e8fdb920c396c29d8c99b/src/baseTrie.js#L773-L778 "Source code on GitHub"
+[22]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/4194fd7855a3b9bd85742ea3c20ebfc405182742/src/baseTrie.js#L773-L778 "Source code on GitHub"
 
-[23]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/f6dbe761448c6a886a2e8fdb920c396c29d8c99b/src/proof.js#L12-L29 "Source code on GitHub"
+[23]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/4194fd7855a3b9bd85742ea3c20ebfc405182742/src/proof.js#L12-L29 "Source code on GitHub"
 
 [24]: #trie
 
-[25]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/f6dbe761448c6a886a2e8fdb920c396c29d8c99b/src/proof.js#L39-L100 "Source code on GitHub"
+[25]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/4194fd7855a3b9bd85742ea3c20ebfc405182742/src/proof.js#L39-L100 "Source code on GitHub"
 
-[26]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/f6dbe761448c6a886a2e8fdb920c396c29d8c99b/src/util/hex.js#L7-L22 "Source code on GitHub"
+[26]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/4194fd7855a3b9bd85742ea3c20ebfc405182742/src/util/hex.js#L7-L22 "Source code on GitHub"
 
-[27]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/f6dbe761448c6a886a2e8fdb920c396c29d8c99b/src/util/async.js#L38-L54 "Source code on GitHub"
+[27]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/4194fd7855a3b9bd85742ea3c20ebfc405182742/src/util/async.js#L38-L54 "Source code on GitHub"
 
-[28]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/f6dbe761448c6a886a2e8fdb920c396c29d8c99b/src/util/nibbles.js#L56-L59 "Source code on GitHub"
+[28]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/4194fd7855a3b9bd85742ea3c20ebfc405182742/src/util/nibbles.js#L56-L59 "Source code on GitHub"
 
-[29]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/f6dbe761448c6a886a2e8fdb920c396c29d8c99b/src/util/async.js#L3-L6 "Source code on GitHub"
+[29]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/4194fd7855a3b9bd85742ea3c20ebfc405182742/src/util/async.js#L3-L6 "Source code on GitHub"
+
+[30]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/4194fd7855a3b9bd85742ea3c20ebfc405182742/src/checkpoint-trie.js#L27-L29 "Source code on GitHub"
+
+[31]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/4194fd7855a3b9bd85742ea3c20ebfc405182742/src/secure.js#L30-L37 "Source code on GitHub"
+
+[32]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/4194fd7855a3b9bd85742ea3c20ebfc405182742/src/checkpoint-trie.js#L38-L46 "Source code on GitHub"
+
+[33]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/4194fd7855a3b9bd85742ea3c20ebfc405182742/src/checkpoint-trie.js#L55-L70 "Source code on GitHub"
+
+[34]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/4194fd7855a3b9bd85742ea3c20ebfc405182742/src/checkpoint-trie.js#L78-L92 "Source code on GitHub"
+
+[35]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/4194fd7855a3b9bd85742ea3c20ebfc405182742/src/checkpoint-trie.js#L99-L104 "Source code on GitHub"
+
+[36]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/4194fd7855a3b9bd85742ea3c20ebfc405182742/src/checkpoint-trie.js#L111-L118 "Source code on GitHub"
