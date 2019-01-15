@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "npm run test:node && npm run test:browser",
-    "coverage": "istanbul cover tape ./test/*.js",
+    "coverage": "istanbul cover babel-tape-runner ./test/*.js",
     "coveralls": "npm run coverage && coveralls <coverage/lcov.info",
     "lint": "standard",
     "prepublishOnly": "npm run build",

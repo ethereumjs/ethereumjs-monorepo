@@ -1,7 +1,7 @@
 const level = require('level-mem')
 const async = require('async')
 const WriteStream = require('level-ws')
-const callTogether = require('./util').callTogether
+const callTogether = require('./util/async').callTogether
 
 const ScratchReadStream = require('./scratchReadStream')
 

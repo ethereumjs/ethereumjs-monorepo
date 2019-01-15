@@ -1,5 +1,5 @@
 const Readable = require('readable-stream').Readable
-const TrieNode = require('./trieNode')
+const { nibblesToBuffer } = require('./util/nibbles')
 
 module.exports = class TrieReadStream extends Readable {
   constructor (trie) {
@@ -14,7 +14,7 @@ module.exports = class TrieReadStream extends Readable {
       this._started = true
       this.trie._findValueNodes((nodeRef, node, key, next) => {
         this.push({
-          key: TrieNode.nibblesToBuffer(key),
+          key: nibblesToBuffer(key),
           value: node.value
         })
 

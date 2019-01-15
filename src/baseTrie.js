@@ -7,10 +7,8 @@ const semaphore = require('semaphore')
 const TrieNode = require('./trieNode')
 const ReadStream = require('./readStream')
 const PrioritizedTaskExecutor = require('./prioritizedTaskExecutor')
-const matchingNibbleLength = require('./util').matchingNibbleLength
-const doKeysMatch = require('./util').doKeysMatch
-const callTogether = require('./util').callTogether
-const asyncFirstSeries = require('./util').asyncFirstSeries
+const { callTogether, asyncFirstSeries } = require('./util/async')
+const { stringToNibbles, matchingNibbleLength, doKeysMatch } = require('./util/nibbles')
 
 /**
  * Use `require('merkel-patricia-tree')` for the base interface. In Ethereum applications stick with the Secure Trie Overlay `require('merkel-patricia-tree/secure')`. The API for the raw and the secure interface are about the same
@@ -251,7 +249,7 @@ module.exports = class Trie {
    */
   findPath (targetKey, cb) {
     const stack = []
-    targetKey = TrieNode.stringToNibbles(targetKey)
+    targetKey = stringToNibbles(targetKey)
 
     this._walkTrie(this.root, processNode, cb)
 
@@ -359,7 +357,7 @@ module.exports = class Trie {
     const lastNode = stack.pop()
 
     // add the new nodes
-    key = TrieNode.stringToNibbles(key)
+    key = stringToNibbles(key)
 
     // Check if the last node is a leaf and the key matches to this
     let matchLeaf = false
@@ -626,7 +624,7 @@ module.exports = class Trie {
 
     if (!Array.isArray(key)) {
       // convert key to nibbles
-      key = TrieNode.stringToNibbles(key)
+      key = stringToNibbles(key)
     }
 
     if (!parentNode) {
