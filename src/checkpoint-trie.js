@@ -4,7 +4,7 @@ const WriteStream = require('level-ws')
 const BaseTrie = require('./baseTrie')
 const proof = require('./proof.js')
 const ScratchReadStream = require('./scratchReadStream')
-const { asyncFirstSeries, callTogether } = require('./util/async')
+const { callTogether } = require('./util/async')
 
 module.exports = class CheckpointTrie extends BaseTrie {
   constructor (...args) {
