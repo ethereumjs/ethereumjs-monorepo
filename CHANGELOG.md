@@ -6,6 +6,33 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 
+## [2.5.1] - 2019-01-19
+
+### Features
+
+- Added `memoryWordCount` to the `step` event object,
+  PR [#405](https://github.com/ethereumjs/ethereumjs-vm/pull/405)
+
+### Bug Fixes
+
+- Fixed a bug which caused an overwrite of the passed state trie (`opts.state`)
+  when instantiating the library with the `opts.activatePrecompiles` option,
+  PR [#415](https://github.com/ethereumjs/ethereumjs-vm/pull/415)
+- Fixed error handling in `runCode` (in case `loadContract` fails),
+  PR [#408](https://github.com/ethereumjs/ethereumjs-vm/pull/408)
+- Fixed a bug in the `StateManager.generateGenesis()` function,
+  PR [#400](https://github.com/ethereumjs/ethereumjs-vm/pull/400)
+  
+### Tests
+
+- Upgraded `ethereumjs-blockchain` and `level` for test runs,
+  PR [#414](https://github.com/ethereumjs/ethereumjs-vm/pull/414)
+- Fixed issue when running code coverage on PRs from forks,
+  PR [#402](https://github.com/ethereumjs/ethereumjs-vm/pull/402)
+
+
+[2.5.1]: https://github.com/ethereumjs/ethereumjs-vm/compare/v2.5.0...v2.5.1
+
 ## [2.5.0] - 2018-11-21
 
 This is the first release of the VM with full support for all ``Constantinople`` EIPs. It further comes along with huge improvements on consensus conformity and introduces the ``Beta`` version of a new ``StateManager`` API.
