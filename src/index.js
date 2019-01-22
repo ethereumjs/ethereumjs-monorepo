@@ -1,1 +1,1 @@
-module.exports = require('./checkpoint-trie')
+module.exports = require('./checkpointTrie')

@@ -1,15 +1,19 @@
 const async = require('async')
-const level = require('level-mem')
 const WriteStream = require('level-ws')
 const BaseTrie = require('./baseTrie')
 const proof = require('./proof.js')
 const ScratchReadStream = require('./scratchReadStream')
+const ScratchDB = require('./scratch')
 const { callTogether } = require('./util/async')
 
 module.exports = class CheckpointTrie extends BaseTrie {
   constructor (...args) {
     super(...args)
+    // Reference to main DB instance
+    this._mainDB = this.db
+    // DB instance used for checkpoints
     this._scratch = null
+    // Roots of trie at the moment of checkpoint
     this._checkpoints = []
   }
 
@@ -71,7 +75,8 @@ module.exports = class CheckpointTrie extends BaseTrie {
 
   /**
    * Reverts the trie to the state it was at when `checkpoint` was first called.
-   * If during a nested checkpoint, only sets parent as current checkpoint.
+   * If during a nested checkpoint, sets root to most recent checkpoint, and sets
+   * parent checkpoint as current.
    * @method revert
    * @param {Function} cb the callback
    */
@@ -93,42 +98,19 @@ module.exports = class CheckpointTrie extends BaseTrie {
 
   /**
    * Returns a copy of the underlying trie with the interface
-   * of CheckpointTrie.
+   * of CheckpointTrie. If during a checkpoint, the copy will
+   * contain the checkpointing metadata (incl. reference to the same scratch).
    * @method copy
    */
   copy () {
-    const trie = new CheckpointTrie(this.db, this.root)
-    trie._scratch = this._scratch
-    // trie._checkpoints = this._checkpoints.slice()
-    return trie
-  }
-
-  /**
-   * Returns a `ScratchReadStream` based on the state updates
-   * since checkpoint.
-   * @method createScratchReadStream
-   */
-  createScratchReadStream (scratch) {
-    const trie = this.copy()
-    scratch = scratch || this._scratch
-    // Only read from the scratch
-    trie._getDBs = [scratch]
-    trie._scratch = scratch
-    return new ScratchReadStream(trie)
-  }
-
-  /**
-   * Puts kv-pair directly to db, ignoring checkpoints.
-   * @private
-   */
-  _overridePutRaw (key, val, cb) {
-    const dbPut = (db, cb2) => {
-      db.put(key, val, {
-        keyEncoding: 'binary',
-        valueEncoding: 'binary'
-      }, cb2)
+    const db = this._mainDB.copy()
+    const trie = new CheckpointTrie(db, this.root)
+    if (this.isCheckpoint) {
+      trie._checkpoints = this._checkpoints.slice()
+      trie._scratch = this._scratch.copy()
+      trie.db = trie._scratch
     }
-    async.each(this.__putDBs, dbPut, cb)
+    return trie
   }
 
   /**
@@ -136,12 +118,8 @@ module.exports = class CheckpointTrie extends BaseTrie {
    * @private
    */
   _enterCpMode () {
-    this._scratch = level()
-    this._getDBs = [this._scratch].concat(this._getDBs)
-    this.__putDBs = this._putDBs
-    this._putDBs = [this._scratch]
-    this._putRaw = this.putRaw
-    this.putRaw = this._overridePutRaw
+    this._scratch = new ScratchDB(this._mainDB)
+    this.db = this._scratch
   }
 
   /**
@@ -149,22 +127,28 @@ module.exports = class CheckpointTrie extends BaseTrie {
    * @private
    */
   _exitCpMode (commitState, cb) {
-    var scratch = this._scratch
+    const scratch = this._scratch
     this._scratch = null
-    this._getDBs = this._getDBs.slice(1)
-    this._putDBs = this.__putDBs
-    this.putRaw = this._putRaw
-
-    const flushScratch = (db, cb) => {
-      this.createScratchReadStream(scratch)
-        .pipe(WriteStream(db))
-        .on('close', cb)
-    }
+    this.db = this._mainDB
 
     if (commitState) {
-      async.map(this._putDBs, flushScratch, cb)
+      this._createScratchReadStream(scratch)
+        .pipe(WriteStream(this.db))
+        .on('close', cb)
     } else {
-      cb()
+      async.nextTick(cb)
     }
+  }
+
+  /**
+   * Returns a `ScratchReadStream` based on the state updates
+   * since checkpoint.
+   * @method createScratchReadStream
+   * @private
+   */
+  _createScratchReadStream (scratch) {
+    scratch = scratch || this._scratch
+    const trie = new BaseTrie(scratch, this.root)
+    return new ScratchReadStream(trie)
   }
 }

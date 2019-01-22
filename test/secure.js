@@ -2,10 +2,36 @@ const Trie = require('../src/secure.js')
 const async = require('async')
 const tape = require('tape')
 
-var trie = new Trie()
+
+tape('SecureTrie', function (t) {
+  const trie = new Trie()
+  const k = Buffer.from('foo')
+  const v = Buffer.from('bar')
+
+  t.test('put and get value', function (st) {
+    trie.put(k, v, function () {
+      trie.get(k, function (err, res) {
+        st.error(err)
+        st.ok(v.equals(res))
+        st.end()
+      })
+    })
+  })
+
+  t.test('copy trie', function (st) {
+    const t = trie.copy()
+    t.get(k, function (err, res) {
+      st.error(err)
+      st.ok(v.equals(res))
+      st.end()
+    })
+  })
+})
 
 tape('secure tests', function (it) {
+  let trie = new Trie()
   const jsonTests = require('./fixture/trietest_secureTrie.json').tests
+
   it.test('empty values', function (t) {
     async.eachSeries(jsonTests.emptyValues.in, function (row, cb) {
       trie.put(new Buffer(row[0]), row[1], cb)

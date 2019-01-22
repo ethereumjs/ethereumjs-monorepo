@@ -141,7 +141,7 @@ describe('db stream test', function (tester) {
   })
 
   it('should only fetch nodes in the current trie', function (t) {
-    var stream = trie.createScratchReadStream()
+    var stream = trie._createScratchReadStream()
     stream.on('data', function (d) {
       var key = d.key.toString('hex')
       t.ok(!!expectedNodes[key])

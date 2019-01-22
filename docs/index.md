@@ -2,7 +2,7 @@
 
 ## SecureTrie
 
-[src/secure.js:12-43][1]
+[src/secure.js:12-44][1]
 
 **Extends Trie**
 
@@ -12,100 +12,68 @@ It has the same methods and constructor as `Trie`.
 
 ## Trie
 
-[src/baseTrie.js:23-779][2]
+[src/baseTrie.js:25-701][2]
 
-Use `require('merkel-patricia-tree')` for the base interface. In Ethereum applications stick with the Secure Trie Overlay `require('merkel-patricia-tree/secure')`. The API for the raw and the secure interface are about the same
+Use `require('merkel-patricia-tree')` for the base interface. In Ethereum applications
+stick with the Secure Trie Overlay `require('merkel-patricia-tree/secure')`.
+The API for the raw and the secure interface are about the same
 
 ### Parameters
 
--   `db` **[Object][3]?** An instance of [levelup][4] or a compatible API. If the db is `null` or left undefined, then the trie will be stored in memory via [memdown][5]
--   `root` **([Buffer][6] \| [String][7])?** A hex `String` or `Buffer` for the root of a previously stored trie
+-   `db` **[Object][3]?** An instance of `DB`.
+    If the db is `null` or left undefined, then the trie will be stored in memory via [memdown][4]
+-   `root` **([Buffer][5] \| [String][6])?** A hex `String` or `Buffer` for the root of a previously stored trie
 
 ### Properties
 
--   `root` **[Buffer][6]** The current root of the `trie`
--   `isCheckpoint` **[Boolean][8]** determines if you are saving to a checkpoint or directly to the db
--   `EMPTY_TRIE_ROOT` **[Buffer][6]** the Root for an empty trie
+-   `root` **[Buffer][5]** The current root of the `trie`
+-   `EMPTY_TRIE_ROOT` **[Buffer][5]** the Root for an empty trie
 
 ### get
 
-[src/baseTrie.js:63-75][9]
+[src/baseTrie.js:59-71][7]
 
 Gets a value given a `key`
 
 #### Parameters
 
--   `key` **([Buffer][6] \| [String][7])** the key to search for
--   `cb` **[Function][10]** A callback `Function` which is given the arguments `err` - for errors that may have occured and `value` - the found value in a `Buffer` or if no value was found `null`
+-   `key` **([Buffer][5] \| [String][6])** the key to search for
+-   `cb` **[Function][8]** A callback `Function` which is given the arguments `err` - for errors that may have occured and `value` - the found value in a `Buffer` or if no value was found `null`
 
 ### put
 
-[src/baseTrie.js:85-109][11]
+[src/baseTrie.js:81-105][9]
 
 Stores a given `value` at the given `key`
 
 #### Parameters
 
--   `key` **([Buffer][6] \| [String][7])** 
--   `Value` **([Buffer][6] \| [String][7])** 
--   `cb` **[Function][10]** A callback `Function` which is given the argument `err` - for errors that may have occured
+-   `key` **([Buffer][5] \| [String][6])** 
+-   `Value` **([Buffer][5] \| [String][6])** 
+-   `cb` **[Function][8]** A callback `Function` which is given the argument `err` - for errors that may have occured
 
 ### del
 
-[src/baseTrie.js:118-134][12]
+[src/baseTrie.js:114-130][10]
 
 deletes a value given a `key`
 
 #### Parameters
 
--   `key` **([Buffer][6] \| [String][7])** 
--   `callback` **[Function][10]** the callback `Function`
-
-### getRaw
-
-[src/baseTrie.js:143-160][13]
-
-Retrieves a raw value in the underlying db
-
-#### Parameters
-
--   `key` **[Buffer][6]** 
--   `callback` **[Function][10]** A callback `Function`, which is given the arguments `err` - for errors that may have occured and `value` - the found value in a `Buffer` or if no value was found `null`.
-
-### putRaw
-
-[src/baseTrie.js:190-199][14]
-
-Writes a value directly to the underlining db
-
-#### Parameters
-
--   `key` **([Buffer][6] \| [String][7])** The key as a `Buffer` or `String`
--   `value` **[Buffer][6]** The value to be stored
--   `callback` **[Function][10]** A callback `Function`, which is given the argument `err` - for errors that may have occured
-
-### delRaw
-
-[src/baseTrie.js:208-216][15]
-
-Removes a raw value in the underlying db
-
-#### Parameters
-
--   `key` **([Buffer][6] \| [String][7])** 
--   `callback` **[Function][10]** A callback `Function`, which is given the argument `err` - for errors that may have occured
+-   `key` **([Buffer][5] \| [String][6])** 
+-   `callback` **[Function][8]** the callback `Function`
 
 ### findPath
 
-[src/baseTrie.js:250-296][16]
+[src/baseTrie.js:171-217][11]
 
 Tries to find a path to the node for the given key
 It returns a `stack` of nodes to the closet node
 
 #### Parameters
 
--   `null-null` **([String][7] \| [Buffer][6])** key - the search key
--   `null-null` **[Function][10]** cb - the callback function. Its is given the following
+-   `null-null` **([String][6] \| [Buffer][5])** key - the search key
+-   `null-null` **[Function][8]** cb - the callback function. Its is given the following
     arguments-   err - any errors encontered
     -   node - the last node found
     -   keyRemainder - the remaining key nibbles not accounted for
@@ -113,22 +81,22 @@ It returns a `stack` of nodes to the closet node
 
 ### createReadStream
 
-[src/baseTrie.js:728-730][17]
+[src/baseTrie.js:649-651][12]
 
 The `data` event is given an `Object` hat has two properties; the `key` and the `value`. Both should be Buffers.
 
-Returns **[stream.Readable][18]** Returns a [stream][19] of the contents of the `trie`
+Returns **[stream.Readable][13]** Returns a [stream][14] of the contents of the `trie`
 
 ### batch
 
-[src/baseTrie.js:754-764][20]
+[src/baseTrie.js:676-686][15]
 
 The given hash of operations (key additions or deletions) are executed on the DB
 
 #### Parameters
 
--   `ops` **[Array][21]** 
--   `cb` **[Function][10]** 
+-   `ops` **[Array][16]** 
+-   `cb` **[Function][8]** 
 
 #### Examples
 
@@ -145,14 +113,14 @@ trie.batch(ops)
 
 ### checkRoot
 
-[src/baseTrie.js:773-778][22]
+[src/baseTrie.js:695-700][17]
 
 Checks if a given root exists
 
 #### Parameters
 
--   `root` **[Buffer][6]** 
--   `cb` **[Function][10]** 
+-   `root` **[Buffer][5]** 
+-   `cb` **[Function][8]** 
 
 ## Merkle Proof
 
@@ -161,28 +129,28 @@ Static functions for creating/verifying a merkle proof.
 
 ### prove
 
-[src/proof.js:12-29][23]
+[src/proof.js:12-29][18]
 
 Returns a merkle proof for a given key
 
 #### Parameters
 
--   `trie` **[Trie][24]** 
--   `key` **[String][7]** 
--   `cb` **[Function][10]** A callback `Function` (arguments {Error} `err`, {Array.<TrieNode>} `proof`)
+-   `trie` **[Trie][19]** 
+-   `key` **[String][6]** 
+-   `cb` **[Function][8]** A callback `Function` (arguments {Error} `err`, {Array.<TrieNode>} `proof`)
 
 ### verifyProof
 
-[src/proof.js:39-100][25]
+[src/proof.js:39-100][20]
 
 Verifies a merkle proof for a given key
 
 #### Parameters
 
--   `rootHash` **[Buffer][6]** 
--   `key` **[String][7]** 
--   `proof` **[Array][21]&lt;TrieNode>** 
--   `cb` **[Function][10]** A callback `Function` (arguments {Error} `err`, {String} `val`)
+-   `rootHash` **[Buffer][5]** 
+-   `key` **[String][6]** 
+-   `proof` **[Array][16]&lt;TrieNode>** 
+-   `cb` **[Function][8]** A callback `Function` (arguments {Error} `err`, {String} `val`)
 
 ## Internal Util Functions
 
@@ -191,20 +159,20 @@ These are not exposed.
 
 ### addHexPrefix
 
-[src/util/hex.js:7-22][26]
+[src/util/hex.js:7-22][21]
 
 Prepends hex prefix to an array of nibbles.
 
 #### Parameters
 
--   `Array` **[Array][21]** of nibbles
+-   `Array` **[Array][16]** of nibbles
 
-Returns **[Array][21]** returns buffer of encoded data
+Returns **[Array][16]** returns buffer of encoded data
 \*
 
 ### asyncFirstSeries
 
-[src/util/async.js:38-54][27]
+[src/util/async.js:38-54][22]
 
 Take a collection of async fns, call the cb on the first to return a truthy value.
 If all run without a truthy result, return undefined
@@ -217,31 +185,138 @@ If all run without a truthy result, return undefined
 
 ### doKeysMatch
 
-[src/util/nibbles.js:56-59][28]
+[src/util/nibbles.js:56-59][23]
 
 Compare two nibble array keys.
 
 #### Parameters
 
--   `keyA` **[Array][21]** 
--   `keyB` **[Array][21]** 
+-   `keyA` **[Array][16]** 
+-   `keyB` **[Array][16]** 
 
 ## 
 
-[src/util/async.js:3-6][29]
+[src/util/async.js:3-6][24]
 
 Take two or more functions and returns a function  that will execute all of
 the given functions
 
+## 
+
+[src/db.js:3-3][25]
+
+DB is a thin wrapper around the underlying levelup db,
+which validates inputs and sets encoding type.
+
+## 
+
+[src/scratch.js:4-4][26]
+
+An in-memory wrap over `DB` with an upstream DB
+which will be queried when a key is not found
+in the in-memory scratch. This class is used to implement
+checkpointing functionality in CheckpointTrie.
+
+## decodeNode
+
+[src/node/index.js:12-31][27]
+
+Returns node instance given encoded RLP value.
+
+### Parameters
+
+-   `v`  
+
+## constructor
+
+[src/db.js:15-17][28]
+
+Initialize a DB instance. If `leveldb` is not provided, DB
+defaults to an [in-memory store][4].
+
+### Parameters
+
+-   `leveldb` **[Object][3]?** An abstract-leveldown compliant store
+
+## get
+
+[src/db.js:26-36][29]
+
+Retrieves a raw value from leveldb.
+
+### Parameters
+
+-   `key` **[Buffer][5]** 
+-   `cb` **[Function][8]** A callback `Function`, which is given the arguments
+    `err` - for errors that may have occured
+    and `value` - the found value in a `Buffer` or if no value was found `null`.
+
+## put
+
+[src/db.js:45-50][30]
+
+Writes a value directly to leveldb.
+
+### Parameters
+
+-   `key` **[Buffer][5]** The key as a `Buffer` or `String`
+-   `val`  
+-   `cb` **[Function][8]** A callback `Function`, which is given the argument
+    `err` - for errors that may have occured
+-   `value` **[Buffer][5]** The value to be stored
+
+## del
+
+[src/db.js:58-62][31]
+
+Removes a raw value in the underlying leveldb.
+
+### Parameters
+
+-   `key` **[Buffer][5]** 
+-   `cb` **[Function][8]** A callback `Function`, which is given the argument
+    `err` - for errors that may have occured
+
+## batch
+
+[src/db.js:70-74][32]
+
+Performs a batch operation on db.
+
+### Parameters
+
+-   `opStack` **[Array][16]** A stack of levelup operations
+-   `cb` **[Function][8]** A callback `Function`, which is given the argument
+    `err` - for errors that may have occured
+
+## copy
+
+[src/db.js:80-82][33]
+
+Returns a copy of the DB instance, with a reference
+to the **same** underlying leveldb instance.
+
+## get
+
+[src/scratch.js:22-35][34]
+
+Similar to `DB.get`, but first searches in-memory
+scratch DB, if key not found, searches upstream DB.
+
+### Parameters
+
+-   `key`  
+-   `cb`  
+
 ## isCheckpoint
 
-[src/checkpoint-trie.js:27-29][30]
+[src/checkpointTrie.js:31-33][35]
 
 Is the trie during a checkpoint phase?
 
 ## put
 
-[src/secure.js:30-37][31]
+[src/secure.js:31-38][36]
 
 For a falsey value, use the original key
 to avoid double hashing the key.
@@ -254,7 +329,7 @@ to avoid double hashing the key.
 
 ## checkpoint
 
-[src/checkpoint-trie.js:38-46][32]
+[src/checkpointTrie.js:42-50][37]
 
 Creates a checkpoint that can later be reverted to or committed.
 After this is called, no changes to the trie will be permanently saved
@@ -263,111 +338,114 @@ mechanism and would directly write to db.
 
 ## commit
 
-[src/checkpoint-trie.js:55-70][33]
+[src/checkpointTrie.js:59-74][38]
 
 Commits a checkpoint to disk, if current checkpoint is not nested. If
 nested, only sets the parent checkpoint as current checkpoint.
 
 ### Parameters
 
--   `cb` **[Function][10]** the callback
+-   `cb` **[Function][8]** the callback
 
 
 -   Throws **any** If not during a checkpoint phase
 
 ## revert
 
-[src/checkpoint-trie.js:78-92][34]
+[src/checkpointTrie.js:83-97][39]
 
 Reverts the trie to the state it was at when `checkpoint` was first called.
-If during a nested checkpoint, only sets parent as current checkpoint.
+If during a nested checkpoint, sets root to most recent checkpoint, and sets
+parent checkpoint as current.
 
 ### Parameters
 
--   `cb` **[Function][10]** the callback
+-   `cb` **[Function][8]** the callback
 
 ## copy
 
-[src/checkpoint-trie.js:99-104][35]
+[src/checkpointTrie.js:105-114][40]
 
 Returns a copy of the underlying trie with the interface
-of CheckpointTrie.
+of CheckpointTrie. If during a checkpoint, the copy will
+contain the checkpointing metadata (incl. reference to the same scratch).
 
-## createScratchReadStream
+[1]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/a4c7f5423da6a9d23ff0aa886c2fd560dac05b7d/src/secure.js#L12-L44 "Source code on GitHub"
 
-[src/checkpoint-trie.js:111-118][36]
-
-Returns a `ScratchReadStream` based on the state updates
-since checkpoint.
-
-[1]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/4194fd7855a3b9bd85742ea3c20ebfc405182742/src/secure.js#L12-L43 "Source code on GitHub"
-
-[2]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/4194fd7855a3b9bd85742ea3c20ebfc405182742/src/baseTrie.js#L23-L779 "Source code on GitHub"
+[2]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/a4c7f5423da6a9d23ff0aa886c2fd560dac05b7d/src/baseTrie.js#L25-L701 "Source code on GitHub"
 
 [3]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object
 
-[4]: https://github.com/rvagg/node-levelup/
+[4]: https://github.com/Level/memdown
 
-[5]: https://github.com/rvagg/memdown
+[5]: https://nodejs.org/api/buffer.html
 
-[6]: https://nodejs.org/api/buffer.html
+[6]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String
 
-[7]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String
+[7]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/a4c7f5423da6a9d23ff0aa886c2fd560dac05b7d/src/baseTrie.js#L59-L71 "Source code on GitHub"
 
-[8]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean
+[8]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Statements/function
 
-[9]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/4194fd7855a3b9bd85742ea3c20ebfc405182742/src/baseTrie.js#L63-L75 "Source code on GitHub"
+[9]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/a4c7f5423da6a9d23ff0aa886c2fd560dac05b7d/src/baseTrie.js#L81-L105 "Source code on GitHub"
 
-[10]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Statements/function
+[10]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/a4c7f5423da6a9d23ff0aa886c2fd560dac05b7d/src/baseTrie.js#L114-L130 "Source code on GitHub"
 
-[11]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/4194fd7855a3b9bd85742ea3c20ebfc405182742/src/baseTrie.js#L85-L109 "Source code on GitHub"
+[11]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/a4c7f5423da6a9d23ff0aa886c2fd560dac05b7d/src/baseTrie.js#L171-L217 "Source code on GitHub"
 
-[12]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/4194fd7855a3b9bd85742ea3c20ebfc405182742/src/baseTrie.js#L118-L134 "Source code on GitHub"
+[12]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/a4c7f5423da6a9d23ff0aa886c2fd560dac05b7d/src/baseTrie.js#L649-L651 "Source code on GitHub"
 
-[13]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/4194fd7855a3b9bd85742ea3c20ebfc405182742/src/baseTrie.js#L143-L160 "Source code on GitHub"
+[13]: https://nodejs.org/api/stream.html#stream_class_stream_readable
 
-[14]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/4194fd7855a3b9bd85742ea3c20ebfc405182742/src/baseTrie.js#L190-L199 "Source code on GitHub"
+[14]: https://nodejs.org/dist/latest-v5.x/docs/api/stream.html#stream_class_stream_readable
 
-[15]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/4194fd7855a3b9bd85742ea3c20ebfc405182742/src/baseTrie.js#L208-L216 "Source code on GitHub"
+[15]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/a4c7f5423da6a9d23ff0aa886c2fd560dac05b7d/src/baseTrie.js#L676-L686 "Source code on GitHub"
 
-[16]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/4194fd7855a3b9bd85742ea3c20ebfc405182742/src/baseTrie.js#L250-L296 "Source code on GitHub"
+[16]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array
 
-[17]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/4194fd7855a3b9bd85742ea3c20ebfc405182742/src/baseTrie.js#L728-L730 "Source code on GitHub"
+[17]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/a4c7f5423da6a9d23ff0aa886c2fd560dac05b7d/src/baseTrie.js#L695-L700 "Source code on GitHub"
 
-[18]: https://nodejs.org/api/stream.html#stream_class_stream_readable
+[18]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/a4c7f5423da6a9d23ff0aa886c2fd560dac05b7d/src/proof.js#L12-L29 "Source code on GitHub"
 
-[19]: https://nodejs.org/dist/latest-v5.x/docs/api/stream.html#stream_class_stream_readable
+[19]: #trie
 
-[20]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/4194fd7855a3b9bd85742ea3c20ebfc405182742/src/baseTrie.js#L754-L764 "Source code on GitHub"
+[20]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/a4c7f5423da6a9d23ff0aa886c2fd560dac05b7d/src/proof.js#L39-L100 "Source code on GitHub"
 
-[21]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array
+[21]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/a4c7f5423da6a9d23ff0aa886c2fd560dac05b7d/src/util/hex.js#L7-L22 "Source code on GitHub"
 
-[22]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/4194fd7855a3b9bd85742ea3c20ebfc405182742/src/baseTrie.js#L773-L778 "Source code on GitHub"
+[22]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/a4c7f5423da6a9d23ff0aa886c2fd560dac05b7d/src/util/async.js#L38-L54 "Source code on GitHub"
 
-[23]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/4194fd7855a3b9bd85742ea3c20ebfc405182742/src/proof.js#L12-L29 "Source code on GitHub"
+[23]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/a4c7f5423da6a9d23ff0aa886c2fd560dac05b7d/src/util/nibbles.js#L56-L59 "Source code on GitHub"
 
-[24]: #trie
+[24]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/a4c7f5423da6a9d23ff0aa886c2fd560dac05b7d/src/util/async.js#L3-L6 "Source code on GitHub"
 
-[25]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/4194fd7855a3b9bd85742ea3c20ebfc405182742/src/proof.js#L39-L100 "Source code on GitHub"
+[25]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/a4c7f5423da6a9d23ff0aa886c2fd560dac05b7d/src/db.js#L3-L3 "Source code on GitHub"
 
-[26]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/4194fd7855a3b9bd85742ea3c20ebfc405182742/src/util/hex.js#L7-L22 "Source code on GitHub"
+[26]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/a4c7f5423da6a9d23ff0aa886c2fd560dac05b7d/src/scratch.js#L4-L4 "Source code on GitHub"
 
-[27]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/4194fd7855a3b9bd85742ea3c20ebfc405182742/src/util/async.js#L38-L54 "Source code on GitHub"
+[27]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/a4c7f5423da6a9d23ff0aa886c2fd560dac05b7d/src/node/index.js#L12-L31 "Source code on GitHub"
 
-[28]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/4194fd7855a3b9bd85742ea3c20ebfc405182742/src/util/nibbles.js#L56-L59 "Source code on GitHub"
+[28]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/a4c7f5423da6a9d23ff0aa886c2fd560dac05b7d/src/db.js#L15-L17 "Source code on GitHub"
 
-[29]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/4194fd7855a3b9bd85742ea3c20ebfc405182742/src/util/async.js#L3-L6 "Source code on GitHub"
+[29]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/a4c7f5423da6a9d23ff0aa886c2fd560dac05b7d/src/db.js#L26-L36 "Source code on GitHub"
 
-[30]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/4194fd7855a3b9bd85742ea3c20ebfc405182742/src/checkpoint-trie.js#L27-L29 "Source code on GitHub"
+[30]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/a4c7f5423da6a9d23ff0aa886c2fd560dac05b7d/src/db.js#L45-L50 "Source code on GitHub"
 
-[31]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/4194fd7855a3b9bd85742ea3c20ebfc405182742/src/secure.js#L30-L37 "Source code on GitHub"
+[31]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/a4c7f5423da6a9d23ff0aa886c2fd560dac05b7d/src/db.js#L58-L62 "Source code on GitHub"
 
-[32]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/4194fd7855a3b9bd85742ea3c20ebfc405182742/src/checkpoint-trie.js#L38-L46 "Source code on GitHub"
+[32]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/a4c7f5423da6a9d23ff0aa886c2fd560dac05b7d/src/db.js#L70-L74 "Source code on GitHub"
 
-[33]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/4194fd7855a3b9bd85742ea3c20ebfc405182742/src/checkpoint-trie.js#L55-L70 "Source code on GitHub"
+[33]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/a4c7f5423da6a9d23ff0aa886c2fd560dac05b7d/src/db.js#L80-L82 "Source code on GitHub"
 
-[34]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/4194fd7855a3b9bd85742ea3c20ebfc405182742/src/checkpoint-trie.js#L78-L92 "Source code on GitHub"
+[34]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/a4c7f5423da6a9d23ff0aa886c2fd560dac05b7d/src/scratch.js#L22-L35 "Source code on GitHub"
 
-[35]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/4194fd7855a3b9bd85742ea3c20ebfc405182742/src/checkpoint-trie.js#L99-L104 "Source code on GitHub"
+[35]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/a4c7f5423da6a9d23ff0aa886c2fd560dac05b7d/src/checkpointTrie.js#L31-L33 "Source code on GitHub"
 
-[36]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/4194fd7855a3b9bd85742ea3c20ebfc405182742/src/checkpoint-trie.js#L111-L118 "Source code on GitHub"
+[36]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/a4c7f5423da6a9d23ff0aa886c2fd560dac05b7d/src/secure.js#L31-L38 "Source code on GitHub"
+
+[37]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/a4c7f5423da6a9d23ff0aa886c2fd560dac05b7d/src/checkpointTrie.js#L42-L50 "Source code on GitHub"
+
+[38]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/a4c7f5423da6a9d23ff0aa886c2fd560dac05b7d/src/checkpointTrie.js#L59-L74 "Source code on GitHub"
+
+[39]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/a4c7f5423da6a9d23ff0aa886c2fd560dac05b7d/src/checkpointTrie.js#L83-L97 "Source code on GitHub"
+
+[40]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/a4c7f5423da6a9d23ff0aa886c2fd560dac05b7d/src/checkpointTrie.js#L105-L114 "Source code on GitHub"
