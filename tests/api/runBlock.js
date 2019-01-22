@@ -57,14 +57,13 @@ tape('runBlock', async (t) => {
   })
 
   t.test('should fail when runTx fails', async (st) => {
-    const genesis = createGenesis()
     const block = new Block(util.rlp.decode(suite.data.blocks[0].rlp))
 
     await suite.p.generateCanonicalGenesis()
 
     // The mocked VM uses a mocked runTx
     // which always returns an error.
-    await suite.p.runBlock({ block, root: genesis.header.stateRoot, skipBlockValidation: true })
+    await suite.p.runBlock({ block, skipBlockValidation: true })
       .then(() => t.fail('should have returned error'))
       .catch((e) => t.equal(e.message, 'test'))
 
@@ -106,13 +105,12 @@ tape('should fail when block validation fails', async (t) => {
 tape('should fail when tx gas limit higher than block gas limit', async (t) => {
   const suite = setup()
 
-  const genesis = createGenesis()
   const block = new Block(util.rlp.decode(suite.data.blocks[0].rlp))
   block.transactions[0].gasLimit = Buffer.from('3fefba', 'hex')
 
   await suite.p.generateCanonicalGenesis()
 
-  await suite.p.runBlock({ block, root: genesis.header.stateRoot, skipBlockValidation: true })
+  await suite.p.runBlock({ block, skipBlockValidation: true })
     .then(() => t.fail('should have returned error'))
     .catch((e) => t.ok(e.message.includes('higher gas limit')))
 
@@ -137,7 +135,7 @@ tape('should fail when runCall fails', async (t) => {
   // runTx is a full implementation that works.
   suite.vm.runTx = runTx
 
-  await suite.p.runBlock({ block, root: suite.vm.stateManager._trie.root, skipBlockValidation: true })
+  await suite.p.runBlock({ block, skipBlockValidation: true })
 
     .then(() => t.fail('should have returned error'))
     .catch((e) => t.equal(e.message, 'test'))

@@ -18,6 +18,36 @@ tape('StateManager', (t) => {
     st.end()
   })
 
+  t.test('should clear the cache when the state root is set', async (st) => {
+    const stateManager = new StateManager()
+    const addressBuffer = Buffer.from('a94f5374fce5edbc8e2a8697c15331677e6ebf0b', 'hex')
+    const account = createAccount()
+
+    const getStateRoot = promisify((...args) => stateManager.getStateRoot(...args))
+    const checkpoint = promisify((...args) => stateManager.checkpoint(...args))
+    const putAccount = promisify((...args) => stateManager.putAccount(...args))
+    const getAccount = promisify((...args) => stateManager.getAccount(...args))
+    const commit = promisify((...args) => stateManager.commit(...args))
+    const setStateRoot = promisify((...args) => stateManager.setStateRoot(...args))
+
+    const initialStateRoot = await getStateRoot()
+    await checkpoint()
+    await putAccount(addressBuffer, account)
+
+    const account0 = await getAccount(addressBuffer)
+    st.equal(account0.balance.toString('hex'), account.balance.toString('hex'), 'account value is set in the cache')
+
+    await commit()
+    const account1 = await getAccount(addressBuffer)
+    st.equal(account1.balance.toString('hex'), account.balance.toString('hex'), 'account value is set in the state trie')
+
+    await setStateRoot(initialStateRoot)
+    const account2 = await getAccount(addressBuffer)
+    st.equal(account2.balance.toString('hex'), '', 'account value is set to 0 in original state root')
+
+    st.end()
+  })
+
   t.test('should put and get account, and add to the underlying cache if the account is not found', async (st) => {
     const stateManager = new StateManager()
     const account = createAccount()

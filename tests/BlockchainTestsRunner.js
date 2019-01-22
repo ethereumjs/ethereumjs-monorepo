@@ -5,13 +5,12 @@ const Trie = require('merkle-patricia-tree/secure')
 const Block = require('ethereumjs-block')
 const Blockchain = require('ethereumjs-blockchain')
 const BlockHeader = require('ethereumjs-block/header.js')
-const Level = require('levelup')
+const level = require('level')
+const levelMem = require('level-mem')
 
-var cacheDB = new Level('./.cachedb')
+var cacheDB = level('./.cachedb')
 module.exports = function runBlockchainTest (options, testData, t, cb) {
-  var blockchainDB = new Level('', {
-    db: require('memdown')
-  })
+  var blockchainDB = levelMem()
   var state = new Trie()
   var validate = false
   // Only run with block validation when sealEngine present in test file

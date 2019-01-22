@@ -5,19 +5,20 @@ const Block = require('ethereumjs-block')
 const Blockchain = require('ethereumjs-blockchain')
 const BlockHeader = require('ethereumjs-block/header.js')
 const VM = require('../../')
-const Level = require('levelup')
+const level = require('level')
+const levelMem = require('level-mem')
 const Account = require('ethereumjs-account')
 const utils = require('ethereumjs-util')
 const BN = utils.BN
 const rlp = utils.rlp
 const testData = require('./test-data')
 // inMemory blockchainDB
-var blockchainDB = new Level('', { db: require('memdown') })
+var blockchainDB = levelMem()
 
 var state = new Trie()
 
 var blockchain = new Blockchain(blockchainDB)
-blockchain.ethash.cacheDB = new Level('./.cachedb')
+blockchain.ethash.cacheDB = level('./.cachedb')
 
 var vm = new VM({
   state: state,
