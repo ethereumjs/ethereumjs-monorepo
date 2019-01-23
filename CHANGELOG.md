@@ -6,6 +6,50 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [1.0.0] - 2019-01-23
+
+First `TypeScript` based release of the library (for details see
+PR [#38](https://github.com/ethereumjs/ethereumjs-common/pull/38)),
+so release coming with type declaration files and additional type safety! 😄
+
+### Breaking Changes
+
+**Library Import**
+
+`TypeScript` handles `ES6` transpilation
+[a bit differently](https://github.com/Microsoft/TypeScript/issues/2719) (at the
+end: cleaner) than `babel` so `require` syntax of the library slightly changes to:
+
+```javascript
+const Common = require('ethereumjs-common').default
+```
+
+**Genesis State Import/Usage**
+
+Import path and usage API of genesis state has changed, see also the
+[docs](https://github.com/ethereumjs/ethereumjs-common#genesis-states) on this,
+PR [#39](https://github.com/ethereumjs/ethereumjs-common/pull/39):
+
+```javascript
+const mainnetGenesisState = require('ethereumjs-common/dist/genesisStates/mainnet')
+```
+
+Or by accessing dynamically:
+
+```javascript
+const genesisStates = require('ethereumjs-common/dist/genesisStates')
+const mainnetGenesisState = genesisStates.genesisStateByName('mainnet')
+const mainnetGenesisState = genesisStates.genesisStateById(1) // alternative via network Id
+```
+
+**Removed `hybridCasper` (draft) hardfork**
+
+Not likely that anyone has used this, but just in case:
+The once anticipated `hybridCasper` (draft) hardfork has been removed from the
+list of hardforks, see PR [#37](https://github.com/ethereumjs/ethereumjs-common/pull/37)
+
+[1.0.0]: https://github.com/ethereumjs/ethereumjs-common/compare/v0.6.1...v1.0.0
+
 ## [0.6.1] - 2018-11-28
 
 - Experimental support for the [Goerli](https://github.com/goerli/testnet) cross-client `PoA` testnet (`chains/goerli.json`), see PR [#31](https://github.com/ethereumjs/ethereumjs-common/pull/31)
