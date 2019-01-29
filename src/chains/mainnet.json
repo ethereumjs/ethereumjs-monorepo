@@ -52,7 +52,13 @@
     },
     {
       "name": "constantinople",
-      "block": null,
+      "block": 7280000,
+      "consensus": "pow",
+      "finality": null
+    },
+    {
+      "name": "petersburg",
+      "block": 7280000,
       "consensus": "pow",
       "finality": null
     }
