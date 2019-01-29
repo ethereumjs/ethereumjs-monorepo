@@ -242,7 +242,6 @@ function runTests (name, runnerArgs, cb) {
 
 function runAll () {
   require('./tester.js')
-  require('./cacheTest.js')
   require('./genesishashes.js')
   require('./constantinopleSstoreTest.js')
   async.series([
