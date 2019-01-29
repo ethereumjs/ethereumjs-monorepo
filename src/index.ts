@@ -226,8 +226,8 @@ export default class Common {
       hardforks = this.hardforks()
     }
 
-    let posHf1 = 0,
-      posHf2 = 0
+    let posHf1 = -1,
+      posHf2 = -1
     let index = 0
     for (const hf of hardforks) {
       if (hf['name'] === hardfork1) posHf1 = index
