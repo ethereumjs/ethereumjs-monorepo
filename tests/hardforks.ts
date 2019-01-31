@@ -24,248 +24,170 @@ tape('[Common]: Hardfork logic', function(t: tape.Test) {
 
   t.test('hardforkBlock()', function(st: tape.Test) {
     let c = new Common('ropsten')
-    st.equal(
-      c.hardforkBlock('byzantium'),
-      1700000,
-      'should return the correct HF change block for byzantium (provided)',
-    )
+    let msg = 'should return the correct HF change block for byzantium (provided)'
+    st.equal(c.hardforkBlock('byzantium'), 1700000, msg)
 
     c = new Common('ropsten', 'byzantium')
-    st.equal(
-      c.hardforkBlock(),
-      1700000,
-      'should return the correct HF change block for byzantium (set)',
-    )
+    msg = 'should return the correct HF change block for byzantium (set)'
+    st.equal(c.hardforkBlock(), 1700000, msg)
 
     st.end()
   })
 
   t.test('isHardforkBlock()', function(st: tape.Test) {
     let c = new Common('ropsten')
-    st.equal(
-      c.isHardforkBlock(1700000, 'byzantium'),
-      true,
-      'should return true for HF change block for byzantium (provided)',
-    )
-    st.equal(
-      c.isHardforkBlock(1700001, 'byzantium'),
-      false,
-      'should return false for another block for byzantium (provided)',
-    )
+    let msg = 'should return true for HF change block for byzantium (provided)'
+    st.equal(c.isHardforkBlock(1700000, 'byzantium'), true, msg)
+
+    msg = 'should return false for another block for byzantium (provided)'
+    st.equal(c.isHardforkBlock(1700001, 'byzantium'), false, msg)
 
     c = new Common('ropsten', 'byzantium')
-    st.equal(
-      c.isHardforkBlock(1700000),
-      true,
-      'should return true for HF change block for byzantium (set)',
-    )
-    st.equal(
-      c.isHardforkBlock(1700001),
-      false,
-      'should return false for another block for byzantium (set)',
-    )
+    msg = 'should return true for HF change block for byzantium (set)'
+    st.equal(c.isHardforkBlock(1700000), true, msg)
+
+    msg = 'should return false for another block for byzantium (set)'
+    st.equal(c.isHardforkBlock(1700001), false, msg)
 
     st.end()
   })
 
   t.test('activeHardforks()', function(st: tape.Test) {
     let c = new Common('ropsten')
-    st.equal(c.activeHardforks().length, 7, 'should return 7 active hardforks for Ropsten')
-    st.equal(
-      c.activeHardforks()[3]['name'],
-      'spuriousDragon',
-      'should return the correct HF data for Ropsten',
-    )
-    st.equal(
-      c.activeHardforks(9).length,
-      3,
-      'should return 3 active hardforks for Ropsten up to block 9',
-    )
-    st.equal(
-      c.activeHardforks(10).length,
-      4,
-      'should return 4 active hardforks for Ropsten up to block 10',
-    )
+    let msg = 'should return 7 active hardforks for Ropsten'
+    st.equal(c.activeHardforks().length, 7, msg)
+
+    msg = 'should return the correct HF data for Ropsten'
+    st.equal(c.activeHardforks()[3]['name'], 'spuriousDragon', msg)
+
+    msg = 'should return 3 active hardforks for Ropsten up to block 9'
+    st.equal(c.activeHardforks(9).length, 3, msg)
+
+    msg = 'should return 4 active hardforks for Ropsten up to block 10'
+    st.equal(c.activeHardforks(10).length, 4, msg)
 
     c = new Common('ropsten', null, ['spuriousDragon', 'byzantium', 'constantinople'])
-    st.equal(
-      c.activeHardforks(null, { onlySupported: true }).length,
-      3,
-      'should return 3 active HFs when restricted to supported HFs',
-    )
+    msg = 'should return 3 active HFs when restricted to supported HFs'
+    st.equal(c.activeHardforks(null, { onlySupported: true }).length, 3, msg)
 
     c = new Common('ropsten', null, ['spuriousDragon', 'byzantium', 'dao'])
-    st.equal(
-      c.activeHardforks(null, { onlySupported: true }).length,
-      2,
-      'should return 2 active HFs when restricted to supported HFs',
-    )
+    msg = 'should return 2 active HFs when restricted to supported HFs'
+    st.equal(c.activeHardforks(null, { onlySupported: true }).length, 2, msg)
 
     st.end()
   })
 
   t.test('activeHardfork()', function(st: tape.Test) {
     let c = new Common('ropsten')
-    st.equal(
-      c.activeHardfork(),
-      'petersburg',
-      'should return petersburg as latest active HF for Ropsten',
-    )
-    st.equal(
-      c.activeHardfork(10),
-      'spuriousDragon',
-      'should return spuriousDragon as latest active HF for Ropsten for block 10',
-    )
+    let msg = 'should return petersburg as latest active HF for Ropsten'
+    st.equal(c.activeHardfork(), 'petersburg', msg)
+
+    msg = 'should return spuriousDragon as latest active HF for Ropsten for block 10'
+    st.equal(c.activeHardfork(10), 'spuriousDragon', msg)
 
     c = new Common('ropsten', null, ['tangerineWhistle', 'spuriousDragon'])
-    st.equal(
-      c.activeHardfork(null, { onlySupported: true }),
-      'spuriousDragon',
-      'should return spuriousDragon as latest active HF for Ropsten with limited supported hardforks',
-    )
+    msg = 'should return spuriousDragon as latest active HF for Ropsten with limited supported HFs'
+    st.equal(c.activeHardfork(null, { onlySupported: true }), 'spuriousDragon', msg)
 
     st.end()
   })
 
   t.test('hardforkIsActiveOnBlock() / activeOnBlock()', function(st: tape.Test) {
     let c = new Common('ropsten')
-    st.equal(
-      c.hardforkIsActiveOnBlock('byzantium', 1700000),
-      true,
-      'Ropsten, byzantium (provided), 1700000 -> true',
-    )
-    st.equal(
-      c.hardforkIsActiveOnBlock('byzantium', 1700005),
-      true,
-      'Ropsten, byzantium (provided), 1700005 -> true',
-    )
-    st.equal(
-      c.hardforkIsActiveOnBlock('byzantium', 1699999),
-      false,
-      'Ropsten, byzantium (provided), 1699999 -> false',
-    )
+    let msg = 'Ropsten, byzantium (provided), 1700000 -> true'
+    st.equal(c.hardforkIsActiveOnBlock('byzantium', 1700000), true, msg)
+
+    msg = 'Ropsten, byzantium (provided), 1700005 -> true'
+    st.equal(c.hardforkIsActiveOnBlock('byzantium', 1700005), true, msg)
+
+    msg = 'Ropsten, byzantium (provided), 1699999 -> false'
+    st.equal(c.hardforkIsActiveOnBlock('byzantium', 1699999), false, msg)
 
     c = new Common('ropsten', 'byzantium')
-    st.equal(
-      c.hardforkIsActiveOnBlock(null, 1700000),
-      true,
-      'Ropsten, byzantium (set), 1700000 -> true',
-    )
-    st.equal(
-      c.activeOnBlock(1700000),
-      true,
-      'Ropsten, byzantium (set), 1700000 -> true (alias function)',
-    )
-    st.equal(
-      c.hardforkIsActiveOnBlock(null, 1700005),
-      true,
-      'Ropsten, byzantium (set), 1700005 -> true',
-    )
-    st.equal(
-      c.hardforkIsActiveOnBlock(null, 1699999),
-      false,
-      'Ropsten, byzantium (set), 1699999 -> false',
-    )
+    msg = 'Ropsten, byzantium (set), 1700000 -> true'
+    st.equal(c.hardforkIsActiveOnBlock(null, 1700000), true, msg)
+
+    msg = 'Ropsten, byzantium (set), 1700000 -> true (alias function)'
+    st.equal(c.activeOnBlock(1700000), true, msg)
+
+    msg = 'Ropsten, byzantium (set), 1700005 -> true'
+    st.equal(c.hardforkIsActiveOnBlock(null, 1700005), true, msg)
+
+    msg = 'Ropsten, byzantium (set), 1699999 -> false'
+    st.equal(c.hardforkIsActiveOnBlock(null, 1699999), false, msg)
 
     st.end()
   })
 
   t.test('hardforkGteHardfork()', function(st: tape.Test) {
     let c = new Common('ropsten')
-    st.equal(
-      c.hardforkGteHardfork('constantinople', 'byzantium'),
-      true,
-      'Ropsten, constantinople >= byzantium (provided) -> true',
-    )
+    let msg = 'Ropsten, constantinople >= byzantium (provided) -> true'
+    st.equal(c.hardforkGteHardfork('constantinople', 'byzantium'), true, msg)
+
+    msg = 'Ropsten, dao >= chainstart (provided), onlyActive -> false'
     st.equal(
       c.hardforkGteHardfork('dao', 'chainstart', {
         onlyActive: true,
       }),
       false,
-      'Ropsten, dao >= chainstart (provided), onlyActive -> false',
-    )
-    st.equal(
-      c.hardforkGteHardfork('byzantium', 'byzantium'),
-      true,
-      'Ropsten, byzantium >= byzantium (provided) -> true',
-    )
-    st.equal(
-      c.hardforkGteHardfork('spuriousDragon', 'byzantium'),
-      false,
-      'Ropsten, spuriousDragon >= byzantium (provided) -> false',
+      msg,
     )
 
+    msg = 'Ropsten, byzantium >= byzantium (provided) -> true'
+    st.equal(c.hardforkGteHardfork('byzantium', 'byzantium'), true, msg)
+
+    msg = 'Ropsten, spuriousDragon >= byzantium (provided) -> false'
+    st.equal(c.hardforkGteHardfork('spuriousDragon', 'byzantium'), false, msg)
+
     c = new Common('ropsten', 'byzantium')
-    st.equal(
-      c.hardforkGteHardfork(null, 'spuriousDragon'),
-      true,
-      'Ropsten, byzantium (set) >= spuriousDragon -> true',
-    )
-    st.equal(
-      c.gteHardfork('spuriousDragon'),
-      true,
-      'Ropsten, byzantium (set) >= spuriousDragon -> true (alias function)',
-    )
-    st.equal(
-      c.hardforkGteHardfork(null, 'spuriousDragon', { onlyActive: true }),
-      true,
-      'Ropsten, byzantium (set) >= spuriousDragon, onlyActive -> true',
-    )
-    st.equal(
-      c.hardforkGteHardfork(null, 'byzantium'),
-      true,
-      'Ropsten, byzantium (set) >= byzantium -> true',
-    )
-    st.equal(
-      c.hardforkGteHardfork(null, 'constantinople'),
-      false,
-      'Ropsten, byzantium (set) >= constantinople -> false',
-    )
+    msg = 'Ropsten, byzantium (set) >= spuriousDragon -> true'
+    st.equal(c.hardforkGteHardfork(null, 'spuriousDragon'), true, msg)
+
+    msg = 'Ropsten, byzantium (set) >= spuriousDragon -> true (alias function)'
+    st.equal(c.gteHardfork('spuriousDragon'), true, msg)
+
+    msg = 'Ropsten, byzantium (set) >= spuriousDragon, onlyActive -> true'
+    st.equal(c.hardforkGteHardfork(null, 'spuriousDragon', { onlyActive: true }), true, msg)
+
+    msg = 'Ropsten, byzantium (set) >= byzantium -> true'
+    st.equal(c.hardforkGteHardfork(null, 'byzantium'), true, msg)
+
+    msg = 'Ropsten, byzantium (set) >= constantinople -> false'
+    st.equal(c.hardforkGteHardfork(null, 'constantinople'), false, msg)
 
     st.end()
   })
 
   t.test('hardforkIsActiveOnChain()', function(st: tape.Test) {
     let c = new Common('ropsten')
-    st.equal(
-      c.hardforkIsActiveOnChain('byzantium'),
-      true,
-      'should return true for byzantium (provided) on Ropsten',
-    )
-    st.equal(
-      c.hardforkIsActiveOnChain('dao'),
-      false,
-      'should return false for dao (provided) on Ropsten',
-    )
-    st.equal(
-      c.hardforkIsActiveOnChain('petersburg'),
-      true,
-      'should return true for petersburg (provided) on Ropsten',
-    )
-    st.equal(
-      c.hardforkIsActiveOnChain('notexistinghardfork'),
-      false,
-      'should return false for a non-existing HF (provided) on Ropsten',
-    )
-    st.doesNotThrow(
-      function() {
-        c.hardforkIsActiveOnChain('spuriousDragon', { onlySupported: true })
-      },
-      /unsupported hardfork$/,
-      'should not throw with unsupported Hf (provided) and onlySupported set to false',
-    ) // eslint-disable-line no-new
+    let msg = 'should return true for byzantium (provided) on Ropsten'
+    st.equal(c.hardforkIsActiveOnChain('byzantium'), true, msg)
+
+    msg = 'should return false for dao (provided) on Ropsten'
+    st.equal(c.hardforkIsActiveOnChain('dao'), false, msg)
+
+    msg = 'should return true for petersburg (provided) on Ropsten'
+    st.equal(c.hardforkIsActiveOnChain('petersburg'), true, msg)
+
+    msg = 'should return false for a non-existing HF (provided) on Ropsten'
+    st.equal(c.hardforkIsActiveOnChain('notexistinghardfork'), false, msg)
+
+    let f = function() {
+      c.hardforkIsActiveOnChain('spuriousDragon', { onlySupported: true })
+    }
+    msg = 'should not throw with unsupported Hf (provided) and onlySupported set to false'
+    st.doesNotThrow(f, /unsupported hardfork$/, msg)
 
     c = new Common('ropsten', 'byzantium')
-    st.equal(c.hardforkIsActiveOnChain(), true, 'should return true for byzantium (set) on Ropsten')
+    msg = 'should return true for byzantium (set) on Ropsten'
+    st.equal(c.hardforkIsActiveOnChain(), true, msg)
 
     c = new Common('ropsten', null, ['byzantium', 'constantinople'])
-    st.throws(
-      function() {
-        c.hardforkIsActiveOnChain('spuriousDragon', { onlySupported: true })
-      },
-      /not set as supported in supportedHardforks$/,
-      'should throw with unsupported Hf and onlySupported set to true',
-    ) // eslint-disable-line no-new
+    f = function() {
+      c.hardforkIsActiveOnChain('spuriousDragon', { onlySupported: true })
+    }
+    msg = 'should throw with unsupported Hf and onlySupported set to true'
+    st.throws(f, /not set as supported in supportedHardforks$/, msg)
 
     st.end()
   })
