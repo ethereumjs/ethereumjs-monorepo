@@ -139,6 +139,7 @@ tape('[Common]: Initialization / Chain params', function(t: tape.Test) {
       'should throw an exception on missing parameter',
     ) // eslint-disable-line no-new
 
+    st.comment('-----------------------------------------------------------------')
     st.end()
   })
 })

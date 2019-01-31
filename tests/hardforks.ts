@@ -70,7 +70,7 @@ tape('[Common]: Hardfork logic', function(t: tape.Test) {
 
   t.test('activeHardforks()', function(st: tape.Test) {
     let c = new Common('ropsten')
-    st.equal(c.activeHardforks().length, 5, 'should return 5 active hardforks for Ropsten')
+    st.equal(c.activeHardforks().length, 7, 'should return 7 active hardforks for Ropsten')
     st.equal(
       c.activeHardforks()[3]['name'],
       'spuriousDragon',
@@ -90,6 +90,13 @@ tape('[Common]: Hardfork logic', function(t: tape.Test) {
     c = new Common('ropsten', null, ['spuriousDragon', 'byzantium', 'constantinople'])
     st.equal(
       c.activeHardforks(null, { onlySupported: true }).length,
+      3,
+      'should return 3 active HFs when restricted to supported HFs',
+    )
+
+    c = new Common('ropsten', null, ['spuriousDragon', 'byzantium', 'dao'])
+    st.equal(
+      c.activeHardforks(null, { onlySupported: true }).length,
       2,
       'should return 2 active HFs when restricted to supported HFs',
     )
@@ -101,8 +108,8 @@ tape('[Common]: Hardfork logic', function(t: tape.Test) {
     let c = new Common('ropsten')
     st.equal(
       c.activeHardfork(),
-      'byzantium',
-      'should return byzantium as latest active HF for Ropsten',
+      'petersburg',
+      'should return petersburg as latest active HF for Ropsten',
     )
     st.equal(
       c.activeHardfork(10),
@@ -171,11 +178,11 @@ tape('[Common]: Hardfork logic', function(t: tape.Test) {
       'Ropsten, constantinople >= byzantium (provided) -> true',
     )
     st.equal(
-      c.hardforkGteHardfork('constantinople', 'byzantium', {
+      c.hardforkGteHardfork('dao', 'chainstart', {
         onlyActive: true,
       }),
       false,
-      'Ropsten, constantinople >= byzantium (provided), onlyActive -> fale',
+      'Ropsten, dao >= chainstart (provided), onlyActive -> false',
     )
     st.equal(
       c.hardforkGteHardfork('byzantium', 'byzantium'),
@@ -231,9 +238,9 @@ tape('[Common]: Hardfork logic', function(t: tape.Test) {
       'should return false for dao (provided) on Ropsten',
     )
     st.equal(
-      c.hardforkIsActiveOnChain('constantinople'),
-      false,
-      'should return false for constantinople (provided) on Ropsten',
+      c.hardforkIsActiveOnChain('petersburg'),
+      true,
+      'should return true for petersburg (provided) on Ropsten',
     )
     st.equal(
       c.hardforkIsActiveOnChain('notexistinghardfork'),
@@ -269,6 +276,7 @@ tape('[Common]: Hardfork logic', function(t: tape.Test) {
     st.equal(c.consensus('constantinople'), 'pow', 'should return pow for constantinople consensus')
     st.equal(c.finality('byzantium'), null, 'should return null for byzantium finality')
 
+    st.comment('-----------------------------------------------------------------')
     st.end()
   })
 })

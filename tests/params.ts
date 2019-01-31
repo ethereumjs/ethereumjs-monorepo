@@ -87,6 +87,11 @@ tape('[Common]: Parameter access', function(t: tape.Test) {
       200,
       'Should return updated sstore gas prices for constantinople',
     )
+    st.equal(
+      c.param('gasPrices', 'netSstoreNoopGas', 'petersburg'),
+      null,
+      'Should nullify SSTORE related values for petersburg',
+    )
 
     st.end()
   })
@@ -105,6 +110,7 @@ tape('[Common]: Parameter access', function(t: tape.Test) {
       'Should correctly translate block numbers into HF states (original value)',
     )
 
+    st.comment('-----------------------------------------------------------------')
     st.end()
   })
 })

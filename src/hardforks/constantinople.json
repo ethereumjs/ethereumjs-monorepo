@@ -1,9 +1,9 @@
 {
   "name": "constantinople",
-  "comment": "Hardfork with new instructions and protocol changes",
+  "comment": "Postponed hardfork including EIP-1283 (SSTORE gas metering changes)",
   "eip": {
     "url": "https://eips.ethereum.org/EIPS/eip-1013",
-    "status": "Draft"
+    "status": "Final"
   },
   "gasConfig": {},
   "gasPrices": {
