@@ -574,12 +574,13 @@ exports.addHexPrefix = function (str) {
  * @param {Number} v
  * @param {Buffer} r
  * @param {Buffer} s
- * @param {Boolean} [homestead=true]
+ * @param {Boolean} [homesteadOrLater=true] Indicates whether this is being used on either the homestead hardfork or a later one
  * @param {Number} [chainId]
  * @return {Boolean}
  */
 
-exports.isValidSignature = function (v, r, s, homestead, chainId) {
+exports.isValidSignature = function (v, r, s, homesteadOrLater, chainId) {
+  homesteadOrLater = homesteadOrLater === undefined ? true : homesteadOrLater
   const SECP256K1_N_DIV_2 = new BN('7fffffffffffffffffffffffffffffff5d576e7357a4501ddfe92f46681b20a0', 16)
   const SECP256K1_N = new BN('fffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141', 16)
 
@@ -598,7 +599,7 @@ exports.isValidSignature = function (v, r, s, homestead, chainId) {
     return false
   }
 
-  if (homestead && (new BN(s).cmp(SECP256K1_N_DIV_2) === 1)) {
+  if (homesteadOrLater && (new BN(s).cmp(SECP256K1_N_DIV_2) === 1)) {
     return false
   }
 

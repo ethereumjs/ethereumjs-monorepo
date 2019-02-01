@@ -565,7 +565,7 @@ describe('isValidSignature', function () {
     const s = Buffer.from(SECP256K1_N_DIV_2.add(new BN('1', 16)).toString(16), 'hex')
 
     const v = 27
-    assert.equal(ethUtils.isValidSignature(v, r, s), true)
+    assert.equal(ethUtils.isValidSignature(v, r, s, true), false)
   })
   it('should not fail when not on homestead but s > secp256k1n/2', function () {
     const SECP256K1_N_DIV_2 = new BN('7fffffffffffffffffffffffffffffff5d576e7357a4501ddfe92f46681b20a0', 16)
@@ -574,7 +574,7 @@ describe('isValidSignature', function () {
     const s = Buffer.from(SECP256K1_N_DIV_2.add(new BN('1', 16)).toString(16), 'hex')
 
     const v = 27
-    assert.equal(ethUtils.isValidSignature(v, r, s), true)
+    assert.equal(ethUtils.isValidSignature(v, r, s, false), true)
   })
   it('should work otherwise', function () {
     const r = Buffer.from('99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9', 'hex')
