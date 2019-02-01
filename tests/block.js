@@ -1,5 +1,5 @@
 const tape = require('tape')
-const Common = require('ethereumjs-common')
+const Common = require('ethereumjs-common').default
 const rlp = require('ethereumjs-util').rlp
 const Block = require('../index.js')
 

@@ -46,7 +46,7 @@ tape('[Header]: difficulty tests', t => {
 
   const chainTestData = {
     'mainnet': require('./difficultyMainNetwork.json').tests,
-    'ropsten': require('./difficultyRopstenByzantium.json').tests
+    'ropsten': require('./difficultyRopstenConstantinople.json').tests
   }
   for (let chain in chainTestData) {
     const testData = chainTestData[chain]

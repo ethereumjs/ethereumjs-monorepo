@@ -1,4 +1,4 @@
-const Common = require('ethereumjs-common')
+const Common = require('ethereumjs-common').default
 const utils = require('ethereumjs-util')
 const BN = utils.BN
   /**
