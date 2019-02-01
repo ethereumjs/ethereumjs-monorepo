@@ -126,7 +126,11 @@ function runTestCase (options, testData, t, cb) {
 
 module.exports = function runStateTest (options, testData, t, cb) {
   try {
-    const testCases = parseTestCases(options.forkConfig, testData, options.data, options.gasLimit, options.value)
+    let aliasForkConfig
+    if (options.forkConfig === 'Petersburg') {
+      aliasForkConfig = 'ConstantinopleFix'
+    }
+    const testCases = parseTestCases(aliasForkConfig || options.forkConfig, testData, options.data, options.gasLimit, options.value)
     if (testCases.length > 0) {
       async.eachSeries(testCases,
                       (testCase, done) => runTestCase(options, testCase, t, done),

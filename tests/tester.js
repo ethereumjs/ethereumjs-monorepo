@@ -178,7 +178,7 @@ function runTests (name, runnerArgs, cb) {
   testGetterArgs.skipTests = getSkipTests(argv.skip, argv.runSkipped ? 'NONE' : 'ALL')
   testGetterArgs.runSkipped = getSkipTests(argv.runSkipped, 'NONE')
   testGetterArgs.skipVM = skipVM
-  testGetterArgs.forkConfig = FORK_CONFIG
+  testGetterArgs.forkConfig = FORK_CONFIG === 'Petersburg' ? 'ConstantinopleFix' : FORK_CONFIG
   testGetterArgs.file = argv.file
   testGetterArgs.test = argv.test
   testGetterArgs.dir = argv.dir

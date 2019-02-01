@@ -13,6 +13,7 @@
     "testVM": "node ./tests/tester -v",
     "testStateByzantium": "npm run build:dist && node ./tests/tester -s --fork='Byzantium' --dist",
     "testStateConstantinople": "npm run build:dist && node ./tests/tester -s --fork='Constantinople' --dist",
+    "testStatePetersburg": "npm run build:dist && node ./tests/tester -s --fork='Petersburg' --dist",
     "testBuildIntegrity": "npm run build:dist && node ./tests/tester -s --dist --test='stackOverflow'",
     "testBlockchain": "npm run build:dist && node --stack-size=1500 ./tests/tester -b --fork='Constantinople' --dist --excludeDir='GeneralStateTests'",
     "testBlockchainGeneralStateTests": "npm run build:dist && node --stack-size=1500 ./tests/tester -b --dist --dir='GeneralStateTests'",
