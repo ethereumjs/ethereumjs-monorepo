@@ -64,6 +64,15 @@ jobs:
       - run:
           name: testStateConstantinople
           command: npm run testStateConstantinople
+  test_state_petersburg:
+    <<: *defaults
+    steps:
+      - attach_workspace:
+          at: ~/project
+      - *restore_node_modules
+      - run:
+          name: testStatePetersburg
+          command: npm run testStatePetersburg
   test_blockchain:
     <<: *defaults
     steps:
@@ -97,6 +106,9 @@ workflows:
           requires:
             - install
       - test_state_constantinople:
+          requires:
+            - install
+      - test_state_petersburg:
           requires:
             - install
       - test_blockchain:
