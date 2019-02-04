@@ -61,11 +61,7 @@ class Transaction {
     } else {
       let chain = opts.chain ? opts.chain : 'mainnet'
       let hardfork = opts.hardfork ? opts.hardfork : 'byzantium'
-      let supportedHardforks = [
-        'byzantium',
-        'constantinople'
-      ]
-      this._common = new Common(chain, hardfork, supportedHardforks)
+      this._common = new Common(chain, hardfork)
     }
 
     data = data || {}
