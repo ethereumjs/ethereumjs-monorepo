@@ -156,7 +156,6 @@ class Transaction {
 
     // set chainId
     this._chainId = chainId || data.chainId || 0
-    this._homestead = this._common.gteHardfork('homestead')
   }
 
   /**
@@ -239,7 +238,7 @@ class Transaction {
   verifySignature () {
     const msgHash = this.hash(false)
     // All transaction signatures whose s-value is greater than secp256k1n/2 are considered invalid.
-    if (this._homestead && new BN(this.s).cmp(N_DIV_2) === 1) {
+    if (this._common.gteHardfork('homestead') && new BN(this.s).cmp(N_DIV_2) === 1) {
       return false
     }
 
@@ -290,7 +289,7 @@ class Transaction {
    */
   getBaseFee () {
     const fee = this.getDataFee().iaddn(this._common.param('gasPrices', 'tx'))
-    if (this._homestead && this.toCreationAddress()) {
+    if (this._common.gteHardfork('homestead') && this.toCreationAddress()) {
       fee.iaddn(this._common.param('gasPrices', 'txCreation'))
     }
     return fee
