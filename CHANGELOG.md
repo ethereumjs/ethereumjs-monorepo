@@ -6,6 +6,47 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [1.1.0] - 2019-02-04
+
+**Petersburg Hardfork Support**
+
+This release now supports the new `Petersburg` (aka
+`constantinopleFix`) HF removing support for [EIP 1283](https://eips.ethereum.org/EIPS/eip-1283). `Petersburg` is conceptualized
+within the library as a separate delta-containing HF, only removing `EIP 1283`
+support and containing nothing else. It should therefore always be applied
+together with the `Constantinople` HF, either by using the same block number to
+update on both (`mainnet` scenario) or applying subsequently on subsequent
+block numbers (`ropsten` scenario).
+
+HF related changes (from PR [#44](https://github.com/ethereumjs/ethereumjs-common/pull/44)):
+
+- New `hardforks/petersburg.json` HF file
+- `constantinople` and `petersburg` block numbers for `ropsten` and `mainnet`
+- Updated tests, new `petersburg` related tests
+
+**Launched/Final Goerli Configuration Support**
+
+The release now supports the final [Goerli](https://github.com/goerli/testnet)
+cross-client testnet configuration.
+
+Goerli related changes (from PR [#48](https://github.com/ethereumjs/ethereumjs-common/pull/48)):
+
+- Updated `chains/goerli.json` configuration file (`chainId` -> 5,
+  `networkId` -> 5, genesis parameters)
+- HF block numbers up to `petersburg` hardfork
+- Updated bootstrap nodes
+- Updated `genesisStates/goerli.json` genesis state
+- Test updates
+
+**Other Changes**
+
+- Fixed a bug in `hardforkGteHardfork()` where non-active hardforks were considered equal to `chainstart` when `onlyActive` is passed, see
+  PR [#44](https://github.com/ethereumjs/ethereumjs-common/pull/44)
+- Use CLI scripts from ethereumjs-config in package.json, PR
+  [#43](https://github.com/ethereumjs/ethereumjs-common/pull/43)
+
+[1.1.0]: https://github.com/ethereumjs/ethereumjs-common/compare/v1.0.0...v1.1.0
+
 ## [1.0.0] - 2019-01-23
 
 First `TypeScript` based release of the library (for details see

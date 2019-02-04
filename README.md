@@ -45,7 +45,7 @@ It is encouraged to also explicitly set the `supportedHardforks` if the initiali
 only supports a certain range of `hardforks`:
 
 ```javascript
-let c = new Common('ropsten', null, ['byzantium', 'constantinople'])
+let c = new Common('ropsten', null, ['byzantium', 'constantinople', 'petersburg'])
 ```
 
 This will e.g. throw an error when a param is requested for an unsupported hardfork and
@@ -58,7 +58,7 @@ depending hardfork parameters. There are also additional helper functions like
 `paramByBlock (topic, name, blockNumber)` or `hardforkIsActiveOnBlock (hardfork, blockNumber)`
 to ease `blockNumber` based access to parameters.
 
-- [API Docs](./docs/Readme.md)
+- [API Docs](./docs/README.md)
 
 # Hardfork Params
 
@@ -72,6 +72,7 @@ library supported:
 - `spuriousDragon`
 - `byzantium`
 - `constantinople`
+- `petersburg` (aka `constantinopleFix`, apply together with `constantinople`)
 
 For hardfork-specific parameter access with the `param()` and `paramByBlock()` functions
 you can use the following `topics`:
@@ -101,7 +102,7 @@ Supported chains:
 - `ropsten`
 - `rinkeby`
 - `kovan`
-- `goerli` (EXPERIMENTAL)
+- `goerli` (final configuration since `v1.1.0`)
 - Private/custom chain parameters
 
 The following chain-specific parameters are provided:
