@@ -1124,7 +1124,7 @@ Blockchain.prototype._getTd = function (hash, number, cb) {
 
 // Simple LRU Cache that allows for keys of type Buffer
 function Cache (opts) {
-  this._cache = LRU(opts)
+  this._cache = new LRU(opts)
 }
 
 Cache.prototype.set = function (key, value) {
