@@ -210,7 +210,7 @@ whenever a new message is received using any of the supported protocols.
     - ``RlpxPeer`` [**In Progress**] Subclass of ``Peer`` that implements the ``devp2p/rlpx`` transport.
     - ``Libp2pPeer`` [**In Progress**] Subclass of ``Peer`` that implements the ``libp2p`` transport.
 - ``Protocol`` [**In Progress**] This class and subclasses provide a user-friendly wrapper around the
-low level ethereum protocols such as ``eth/62``, ``eth/62`` and ``les/2``. Subclasses must define the messages provided by the protocol.
+low level ethereum protocols such as ``eth/62``, ``eth/63`` and ``les/2``. Subclasses must define the messages provided by the protocol.
     - ``EthProtocol`` [**In Progress**] Implements the ``eth/62`` and ``eth/63`` protocols.
     - ``LesProtocol`` [**In Progress**] Implements the ``les/2`` protocol.
     - ``ShhProtocol`` [**Not Started**] Implements the whisper protocol.
