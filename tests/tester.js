@@ -5,6 +5,9 @@ const async = require('async')
 const tape = require('tape')
 const testing = require('ethereumjs-testing')
 const FORK_CONFIG = argv.fork || 'Byzantium'
+const {
+  getRequiredForkConfigAlias
+} = require('./util')
 // tests which should be fixed
 const skipBroken = [
   'ExtCodeCopyTargetRangeLongerThanCodeTests', // temporary till fixed (2018-11-14)
@@ -178,7 +181,7 @@ function runTests (name, runnerArgs, cb) {
   testGetterArgs.skipTests = getSkipTests(argv.skip, argv.runSkipped ? 'NONE' : 'ALL')
   testGetterArgs.runSkipped = getSkipTests(argv.runSkipped, 'NONE')
   testGetterArgs.skipVM = skipVM
-  testGetterArgs.forkConfig = FORK_CONFIG === 'Petersburg' ? 'ConstantinopleFix' : FORK_CONFIG
+  testGetterArgs.forkConfig = getRequiredForkConfigAlias(FORK_CONFIG)
   testGetterArgs.file = argv.file
   testGetterArgs.test = argv.test
   testGetterArgs.dir = argv.dir
