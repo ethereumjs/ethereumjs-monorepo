@@ -1,7 +1,7 @@
 'use strict'
 
 const test = require('tape')
-const Blockchain = require('..')
+const Blockchain = require('../src')
 const Block = require('ethereumjs-block')
 const Common = require('ethereumjs-common').default
 const async = require('async')

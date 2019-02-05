@@ -2,15 +2,17 @@
   "name": "ethereumjs-blockchain",
   "version": "3.4.0",
   "description": "A module to store and interact with blocks",
-  "main": "index.js",
+  "main": "dist/index.js",
   "files": [
-    "*.js"
+    "dist/**/*.js"
   ],
   "scripts": {
+    "prepublishOnly": "npm run lint && npm run test && npm run build",
+    "build": "babel src --out-dir dist",
     "coverage": "nyc npm run test && nyc report --reporter=text-lcov > .nyc_output/lcov.info",
     "coveralls": "npm run coverage && coveralls <.nyc_output/lcov.info",
     "lint": "standard",
-    "test": "tape ./test/index.js"
+    "test": "tape ./test/*.js"
   },
   "repository": {
     "type": "git",
@@ -39,6 +41,9 @@
     "semaphore": "^1.1.0"
   },
   "devDependencies": {
+    "@babel/cli": "^7.2.3",
+    "@babel/core": "^7.2.2",
+    "@babel/preset-env": "^7.3.1",
     "coveralls": "^3.0.2",
     "nyc": "^13.0.1",
     "standard": "^11.0.1",
