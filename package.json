@@ -12,17 +12,17 @@
     "url": "git+https://github.com/ethereumjs/ethereumjs-account.git"
   },
   "scripts": {
-    "build": "tsc -p ./tsconfig.prod.json",
+    "build": "ethereumjs-config-build",
     "prepublishOnly": "npm run test && npm run build",
-    "coverage": "nyc npm run test && nyc report --reporter=text-lcov > .nyc_output/lcov.info",
-    "coveralls": "npm run coverage && coveralls <.nyc_output/lcov.info",
-    "format": "prettier --list-different **/*.{ts,json,md}",
-    "format:fix": "prettier --write **/*.{ts,json,md}",
-    "tslint": "tslint -p ./tsconfig.json -e node_modules/**/* -e **/node_modules/**/* -e dist/**/* **/*.ts",
-    "tslint:fix": "tslint --fix --format stylish -p ./tsconfig.json -e node_modules/**/* -e **/node_modules/**/* -e dist/**/* **/*.ts",
-    "tsc": "tsc --noEmit",
-    "lint": "npm run format && npm run tslint && npm run tsc",
-    "lint:fix": "npm run format:fix && npm run tslint:fix && npm run tsc",
+    "coverage": "ethereumjs-config-coverage",
+    "coveralls": "ethereumjs-config-coveralls",
+    "format": "ethereumjs-config-format",
+    "format:fix": "ethereumjs-config-format-fix",
+    "tslint": "ethereumjs-config-tslint",
+    "tslint:fix": "ethereumjs-config-tslint-fix",
+    "tsc": "ethereumjs-config-tsc",
+    "lint": "ethereumjs-config-lint",
+    "lint:fix": "ethereumjs-config-lint-fix",
     "test": "ts-node node_modules/tape/bin/tape ./test/index.ts"
   },
   "keywords": [
@@ -41,10 +41,10 @@
     "safe-buffer": "^5.1.1"
   },
   "devDependencies": {
-    "@ethereumjs/config-nyc": "^1.0.0",
-    "@ethereumjs/config-prettier": "^1.0.1",
-    "@ethereumjs/config-tsc": "^1.0.2",
-    "@ethereumjs/config-tslint": "^1.0.0",
+    "@ethereumjs/config-nyc": "^1.1.0",
+    "@ethereumjs/config-prettier": "^1.1.0",
+    "@ethereumjs/config-tsc": "^1.1.0",
+    "@ethereumjs/config-tslint": "^1.1.0",
     "@types/bn.js": "^4.11.3",
     "@types/node": "^10.12.18",
     "@types/tape": "^4.2.33",
