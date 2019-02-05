@@ -78,7 +78,7 @@ tape('[Common]: Initialization / Chain params', function(t: tape.Test) {
     hash = '0xa3c565fc15c7478862d50ccd6561e3c06b24cc509bf388941c25ea985ce32cb9'
     st.equal(c.genesis().hash, hash, 'kovan')
     c.setChain('goerli')
-    hash = '0xfa57319d09fd8a32faaf18d338c8a925a5a7975285bf29ecd024e083cba8abb1'
+    hash = '0xbf7e331f7f7c1dd2e05159666b3bf8bc7a8a3a9eb1d518969eab529dd9b88c1a'
     st.equal(c.genesis().hash, hash, 'goerli')
 
     st.end()
