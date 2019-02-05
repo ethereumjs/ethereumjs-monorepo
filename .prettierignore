@@ -1,0 +1,7 @@
+node_modules
+.vscode
+package.json
+dist
+.nyc_output
+test/testdata
+docs
