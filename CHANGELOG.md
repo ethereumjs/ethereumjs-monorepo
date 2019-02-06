@@ -6,6 +6,14 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 
+## [3.4.0] - 2019-02-06
+**Petersburg** (aka `constantinopleFix`) as well as **Goerli** 
+support/readiness by updating to a supporting `ethereumjs-common` version 
+[v1.1.0](https://github.com/ethereumjs/ethereumjs-common/releases/tag/v1.1.0), 
+PR [#86](https://github.com/ethereumjs/ethereumjs-blockchain/pull/86)
+
+[3.4.0]: https://github.com/ethereumjs/ethereumjs-blockchain/compare/v3.3.3...v3.4.0
+
 ## [3.3.3] - 2019-01-03
 - Fixed a bug causing the ``iterate()`` method to fail when an older version
   ``levelup`` DB instance is passed, see PR [#83](https://github.com/ethereumjs/ethereumjs-blockchain/pull/83)
