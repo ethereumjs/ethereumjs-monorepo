@@ -58,6 +58,9 @@ Implements functions for retrieving, manipulating and storing Ethereum's blockch
 
 ### `new Blockchain(opts)`
 Creates new Blockchain object
+-   `opts.chain` **([String](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String) \| [Number](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number))** The chain for the block [default: 'mainnet']
+-   `opts.hardfork` **[String](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String)** Hardfork for the block [default: null, block number-based behavior]
+-   `opts.common` **[Object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)** Alternatively pass a Common instance (ethereumjs-common) instead of setting chain/hardfork directly
 - `opts.db` - Database to store blocks and metadata. Should be a [levelup](https://github.com/rvagg/node-levelup) instance.
 - `opts.validate` - this the flag to validate blocks (e.g. Proof-of-Work), latest HF rules supported: ``Constantinople``.
 

@@ -1,8 +1,11 @@
 {
   "name": "ethereumjs-blockchain",
-  "version": "3.3.3",
+  "version": "3.4.0",
   "description": "A module to store and interact with blocks",
   "main": "index.js",
+  "files": [
+    "*.js"
+  ],
   "scripts": {
     "coverage": "nyc npm run test && nyc report --reporter=text-lcov > .nyc_output/lcov.info",
     "coveralls": "npm run coverage && coveralls <.nyc_output/lcov.info",
