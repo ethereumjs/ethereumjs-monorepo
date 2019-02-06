@@ -31,7 +31,9 @@ testing.runTests(function (testData, sst, cb) {
 
   try {
     var rawTx = ethUtil.toBuffer(testData.rlp)
-    var tx = new Tx(rawTx)
+    var tx = new Tx(rawTx, {
+      hardfork: testData.blockNumber >= 1150000 ? 'homestead' : 'chainstart'
+    })
   } catch (e) {
     sst.equal(undefined, tTx, 'should not have any fields ')
     cb()
