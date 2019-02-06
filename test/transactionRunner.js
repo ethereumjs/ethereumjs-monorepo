@@ -1,6 +1,7 @@
 const Tx = require('../index.js')
 const tape = require('tape')
 const ethUtil = require('ethereumjs-util')
+const Common = require('ethereumjs-common')
 const argv = require('minimist')(process.argv.slice(2))
 const testing = require('ethereumjs-testing')
 
@@ -42,6 +43,7 @@ testing.runTests(function (testData, sst, cb) {
 
   if (tTx && tx.validate()) {
     try {
+      sst.equal(tx._common instanceof Common, true, '_common class attribute')
       sst.equal(bufferToHex(tx.data), addHexPrefix(addPad(stripHexPrefix(tTx.data))), 'data')
       sst.equal(normalizeZero(bufferToHex(tx.gasLimit)), tTx.gasLimit, 'gasLimit')
       sst.equal(normalizeZero(bufferToHex(tx.gasPrice)), tTx.gasPrice, 'gasPrice')
