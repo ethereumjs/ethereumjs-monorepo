@@ -3,6 +3,9 @@
   "version": "2.2.0",
   "description": "Provides Block serialization and help functions",
   "main": "index.js",
+  "files": [
+    "*.js"
+  ],
   "scripts": {
     "coverage": "istanbul cover ./tests/index.js",
     "coveralls": "npm run coverage && coveralls < coverage/lcov.info",
