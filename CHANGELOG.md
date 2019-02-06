@@ -13,6 +13,8 @@ support/readiness by updating to a supporting `ethereumjs-common` version
 PR [#64](https://github.com/ethereumjs/ethereumjs-block/pull/64)
 
 **Other Changes:**
+- Fixed package size issue by excluding tests and docs from being included in 
+  the package, PR [#66](https://github.com/ethereumjs/ethereumjs-block/pull/66)
 - Error message fixes in `index.js`,
   PR [#62](https://github.com/ethereumjs/ethereumjs-block/pull/62)
 - Replace uses of deprecated `new Buffer` with `Buffer.from`,
