@@ -6,6 +6,22 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 
+## [2.2.0] - 2019-02-06
+**Petersburg** (aka `constantinopleFix`) as well as **Goerli** 
+support/readiness by updating to a supporting `ethereumjs-common` version 
+[v1.1.0](https://github.com/ethereumjs/ethereumjs-common/releases/tag/v1.1.0), 
+PR [#64](https://github.com/ethereumjs/ethereumjs-block/pull/64)
+
+**Other Changes:**
+- Error message fixes in `index.js`,
+  PR [#62](https://github.com/ethereumjs/ethereumjs-block/pull/62)
+- Replace uses of deprecated `new Buffer` with `Buffer.from`,
+  PR [#60](https://github.com/ethereumjs/ethereumjs-block/pull/60)
+- Remove `ethereumjs-testing` dependency (much smaller dev dependencies),
+  PR [#61](https://github.com/ethereumjs/ethereumjs-block/pull/61)
+
+[2.2.0]: https://github.com/ethereumjs/ethereumjs-vm/compare/v2.1.0...v2.2.0
+
 ## [2.1.0] - 2018-10-19
 - **Constantinople** support, added difficulty bomb delay (EIP-1234), PR [#54](https://github.com/ethereumjs/ethereumjs-block/pull/54)
 - Updated test data, added Constantinople tests, PR [#56](https://github.com/ethereumjs/ethereumjs-block/pull/56), [#57](https://github.com/ethereumjs/ethereumjs-block/pull/57)
