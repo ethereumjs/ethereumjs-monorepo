@@ -1,5 +1,6 @@
 const tape = require('tape')
 const utils = require('ethereumjs-util')
+const Common = require('ethereumjs-common')
 const FakeTransaction = require('../fake.js')
 
 // Use private key 0x0000000000000000000000000000000000000000000000000000000000000001 as 'from' Account
@@ -60,5 +61,17 @@ tape('[FakeTransaction]: Basic functions', function (t) {
 
     var tx = new FakeTransaction(txDataNoFrom)
     st.equal(utils.bufferToHex(tx.from), txData.from)
+  })
+
+  t.test('should throw if common and chain options are passed to constructor', function (st) {
+    var txData = Object.assign({}, txData)
+    var txOptsInvalid = {
+      chain: 'mainnet',
+      common: new Common('mainnet', 'chainstart')
+    }
+    st.plan(1)
+    st.throws(
+      () => new FakeTransaction(txData, txOptsInvalid)
+    )
   })
 })

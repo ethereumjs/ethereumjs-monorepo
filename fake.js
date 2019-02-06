@@ -32,8 +32,8 @@ const ethUtil = require('ethereumjs-util')
  * @prop {Buffer} s EC signature parameter
  */
 module.exports = class FakeTransaction extends Transaction {
-  constructor (data) {
-    super(data)
+  constructor (data, opts) {
+    super(data, opts)
 
     var self = this
 

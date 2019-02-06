@@ -1,6 +1,6 @@
 'use strict'
 const ethUtil = require('ethereumjs-util')
-const fees = require('ethereum-common/params.json')
+const Common = require('ethereumjs-common')
 const BN = ethUtil.BN
 
 // secp256k1n/2
@@ -41,10 +41,29 @@ const N_DIV_2 = new BN('7fffffffffffffffffffffffffffffff5d576e7357a4501ddfe92f46
  * @param {Buffer} data.r EC signature parameter
  * @param {Buffer} data.s EC signature parameter
  * @param {Number} data.chainId EIP 155 chainId - mainnet: 1, ropsten: 3
+ *
+ * @param {Array} opts Options
+ * @param {String|Number} opts.chain The chain for the block [default: 'mainnet']
+ * @param {String} opts.hardfork Hardfork for the block [default: null, block number-based behaviour]
+ * @param {Object} opts.common Alternatively pass a Common instance (ethereumjs-common) instead of setting chain/hardfork directly
  * */
 
 class Transaction {
-  constructor (data) {
+  constructor (data, opts) {
+    opts = opts || {}
+
+    // instantiate Common class instance based on passed options
+    if (opts.common) {
+      if (opts.chain) {
+        throw new Error('Instantiation with both opts.common and opts.chain parameter not allowed!')
+      }
+      this._common = opts.common
+    } else {
+      let chain = opts.chain ? opts.chain : 'mainnet'
+      let hardfork = opts.hardfork ? opts.hardfork : 'byzantium'
+      this._common = new Common(chain, hardfork)
+    }
+
     data = data || {}
     // Define Properties
     const fields = [{
@@ -133,7 +152,6 @@ class Transaction {
 
     // set chainId
     this._chainId = chainId || data.chainId || 0
-    this._homestead = true
   }
 
   /**
@@ -216,7 +234,7 @@ class Transaction {
   verifySignature () {
     const msgHash = this.hash(false)
     // All transaction signatures whose s-value is greater than secp256k1n/2 are considered invalid.
-    if (this._homestead && new BN(this.s).cmp(N_DIV_2) === 1) {
+    if (this._common.gteHardfork('homestead') && new BN(this.s).cmp(N_DIV_2) === 1) {
       return false
     }
 
@@ -254,7 +272,9 @@ class Transaction {
     const data = this.raw[5]
     const cost = new BN(0)
     for (let i = 0; i < data.length; i++) {
-      data[i] === 0 ? cost.iaddn(fees.txDataZeroGas.v) : cost.iaddn(fees.txDataNonZeroGas.v)
+      data[i] === 0
+        ? cost.iaddn(this._common.param('gasPrices', 'txDataZero'))
+        : cost.iaddn(this._common.param('gasPrices', 'txDataNonZero'))
     }
     return cost
   }
@@ -264,9 +284,9 @@ class Transaction {
    * @return {BN}
    */
   getBaseFee () {
-    const fee = this.getDataFee().iaddn(fees.txGas.v)
-    if (this._homestead && this.toCreationAddress()) {
-      fee.iaddn(fees.txCreation.v)
+    const fee = this.getDataFee().iaddn(this._common.param('gasPrices', 'tx'))
+    if (this._common.gteHardfork('homestead') && this.toCreationAddress()) {
+      fee.iaddn(this._common.param('gasPrices', 'txCreation'))
     }
     return fee
   }
