@@ -1,4 +1,4 @@
-const Common = require('ethereumjs-common')
+const Common = require('ethereumjs-common').default
 const ethUtil = require('ethereumjs-util')
 const Tx = require('ethereumjs-tx')
 const Trie = require('merkle-patricia-tree')
