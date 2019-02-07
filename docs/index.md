@@ -49,7 +49,7 @@ VM Class, `new VM(opts)` creates a new VM object
     -   `opts.state` **Trie** a merkle-patricia-tree instance for the state tree (ignored if stateManager is passed)
     -   `opts.blockchain` **Blockchain** a blockchain object for storing/retrieving blocks (ignored if stateManager is passed)
     -   `opts.chain` **([String][31] \| [Number][32])** the chain the VM operates on [default: 'mainnet']
-    -   `opts.hardfork` **[String][31]** hardfork rules to be used [default: 'byzantium', supported: 'byzantium', 'constantinople' (will throw on unsupported)]
+    -   `opts.hardfork` **[String][31]** hardfork rules to be used [default: 'byzantium', supported: 'byzantium', 'constantinople', 'petersburg' (will throw on unsupported)]
     -   `opts.activatePrecompiles` **[Boolean][33]** create entries in the state tree for the precompiled contracts
     -   `opts.allowUnlimitedContractSize` **[Boolean][33]** allows unlimited contract sizes while debugging. By setting this to `true`, the check for contract size limit of 24KB (see [EIP-170][34]) is bypassed. (default: `false`; ONLY set to `true` during debugging)
     -   `opts.emitFreeLogs` **[Boolean][33]** Changes the behavior of the LOG opcode, the gas cost of the opcode becomes zero and calling it using STATICCALL won't throw. (default: `false`; ONLY set to `true` during debugging)
