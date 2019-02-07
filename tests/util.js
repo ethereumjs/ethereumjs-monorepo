@@ -393,3 +393,15 @@ exports.setupPreConditions = function (state, testData, done) {
     ], callback)
   }, done)
 }
+
+/**
+ * Returns an alias for specified hardforks to meet test dependencies requirements/assumptions.
+ * @param {String} forkConfig - the name of the hardfork for which an alias should be returned
+ * @returns {String} Either an alias of the forkConfig param, or the forkConfig param itself
+ */
+exports.getRequiredForkConfigAlias = function (forkConfig) {
+  if (String(forkConfig).match(/^petersburg$/i)) {
+    return 'ConstantinopleFix'
+  }
+  return forkConfig
+}
