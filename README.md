@@ -13,7 +13,16 @@ Implements Ethereum's VM in Javascript.
 
 #### Fork Support
 
-Starting with the ``v2.5.0`` release we now support both ``Byzantium`` and ``Constantinople`` fork rules - with ``Byzantium`` currently being the default (this will change in the future). See [release notes](https://github.com/ethereumjs/ethereumjs-vm/releases/tag/v2.5.0) for further details and have a look at the [API docs](./docs/index.md) on instructions how to instantiate the VM with the respective fork rules.
+The VM (`v2.6.x` release series) currently supports the following hardforks
+(default: `Byzantium`):
+
+- `Byzantium`
+- `Constantinople`
+- `Petersburg`
+
+Parallel HF support was introduced in the `v2.5.0` release, if you want
+some background have a look at the respective 
+[release notes](https://github.com/ethereumjs/ethereumjs-vm/releases/tag/v2.5.0).
 
 If you are still looking for a [Spurious Dragon](https://github.com/ethereum/EIPs/blob/master/EIPS/eip-607.md) compatible version of this library install the latest of the ``2.2.x`` series (see [Changelog](./CHANGELOG.md)).
 

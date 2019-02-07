@@ -6,6 +6,55 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 
+## [2.6.0] - 2019-02-07
+
+**Petersburg Support**
+
+Support for the `Petersburg` (aka `constantinopleFix`) hardfork by integrating
+`Petersburg` ready versions of associated libraries, see also 
+PR [#433](https://github.com/ethereumjs/ethereumjs-vm/pull/433):
+
+- `ethereumjs-common` (chain and HF logic and helper functionality) [v1.1.0](https://github.com/ethereumjs/ethereumjs-common/releases/tag/v1.1.0)
+- `ethereumjs-blockchain` [v3.4.0](https://github.com/ethereumjs/ethereumjs-blockchain/releases/tag/v3.4.0)
+- `ethereumjs-block` [v2.2.0](https://github.com/ethereumjs/ethereumjs-block/releases)
+
+To instantiate the VM with `Petersburg` HF rules set the `opts.hardfork`
+constructor parameter to `petersburg`. This will run the VM on the new
+Petersburg rules having removed the support for 
+[EIP 1283](https://eips.ethereum.org/EIPS/eip-1283).
+
+**Goerli Readiness**
+
+The VM is now also ready to execute on blocks from the final version of the
+[Goerli](https://github.com/goerli/testnet) cross-client testnet and can
+therefore be instantiated with `opts.chain` set to `goerli`. 
+
+**Bug Fixes**
+
+- Fixed mixed `sync`/`async` functions in `cache`,
+  PR [#422](https://github.com/ethereumjs/ethereumjs-vm/pull/422)
+- Fixed a bug in `setStateroot` and caching by clearing the `stateManager` cache
+  after setting the state root such that stale values are not returned,
+  PR [#420](https://github.com/ethereumjs/ethereumjs-vm/pull/420)
+- Fixed cache access on the hooked VM (*deprecated*), 
+  PR [#434](https://github.com/ethereumjs/ethereumjs-vm/pull/434)
+
+**Refactoring**
+
+Following changes might be relevant for you if you are hotfixing/monkey-patching
+on parts of the VM:
+
+- Moved `bloom` to its own directory, 
+  PR [#429](https://github.com/ethereumjs/ethereumjs-vm/pull/429)
+- Moved `opcodes`, `opFns` and `logTable` to `lib/vm`,
+  PR [#425](https://github.com/ethereumjs/ethereumjs-vm/pull/425)
+- Converted `Bloom` to `ES6` class, 
+  PR [#428](https://github.com/ethereumjs/ethereumjs-vm/pull/428)
+- Converted `Cache` to `ES6` class, added unit tests,
+  PR [427](https://github.com/ethereumjs/ethereumjs-vm/pull/427)
+
+[2.6.0]: https://github.com/ethereumjs/ethereumjs-vm/compare/v2.5.1...v2.6.0
+
 ## [2.5.1] - 2019-01-19
 
 ### Features
