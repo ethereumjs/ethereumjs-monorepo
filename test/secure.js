@@ -28,6 +28,30 @@ tape('SecureTrie', function (t) {
   })
 })
 
+tape('SecureTrie proof', function (t) {
+  t.test('create a merkle proof and verify it with a single short key', function (st) {
+    const trie = new Trie()
+
+    async.series([
+      function (cb) {
+        trie.put('key1aa', '01234', cb)
+      },
+      function (cb) {
+        Trie.prove(trie, 'key1aa', function (err, prove) {
+          if (err) return cb(err)
+          Trie.verifyProof(trie.root, 'key1aa', prove, function (err, val) {
+            if (err) return cb(err)
+            st.equal(val.toString('utf8'), '01234')
+            cb()
+          })
+        })
+      }
+    ], function (err) {
+      st.end(err)
+    })
+  })
+})
+
 tape('secure tests', function (it) {
   let trie = new Trie()
   const jsonTests = require('./fixture/trietest_secureTrie.json').tests

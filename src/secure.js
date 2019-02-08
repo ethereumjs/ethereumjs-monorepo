@@ -14,6 +14,16 @@ module.exports = class SecureTrie extends CheckpointTrie {
     super(...args)
   }
 
+  static prove (trie, key, cb) {
+    const hash = ethUtil.keccak256(key)
+    super.prove(trie, hash, cb)
+  }
+
+  static verifyProof (rootHash, key, proof, cb) {
+    const hash = ethUtil.keccak256(key)
+    super.verifyProof(rootHash, hash, proof, cb)
+  }
+
   copy () {
     const db = this.db.copy()
     return new SecureTrie(db, this.root)
