@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 
+## [0.0.5] - 2019-02-12
+- Add support for final [Goerli](https://github.com/goerli/testnet) testnet,
+  PR [#89](https://github.com/ethereumjs/ethereumjs-client/pull/89)
+
+[0.0.5]: https://github.com/ethereumjs/ethereumjs-client/compare/v0.0.4...v0.0.5
+
 ## [0.0.4] - 2018-12-30
 - Add more RPC endpoints, PR [#65](https://github.com/ethereumjs/ethereumjs-client/pull/65), [#69](https://github.com/ethereumjs/ethereumjs-client/pull/69), [#75](https://github.com/ethereumjs/ethereumjs-client/pull/75), [#81](https://github.com/ethereumjs/ethereumjs-client/pull/81)
 - Add unit tests, PR [#70](https://github.com/ethereumjs/ethereumjs-client/pull/70)
