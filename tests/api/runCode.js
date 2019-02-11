@@ -1,6 +1,6 @@
 const tape = require('tape')
 const async = require('async')
-const VM = require('../')
+const VM = require('../../lib/index')
 
 const STOP = '00'
 const JUMP = '56'

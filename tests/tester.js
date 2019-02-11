@@ -249,7 +249,6 @@ function runAll () {
   require('./tester.js')
   require('./genesishashes.js')
   require('./constantinopleSstoreTest.js')
-  require('./programCounter.js')
   async.series([
     // runTests.bind(this, 'VMTests', {}), // VM tests disabled since we don't support Frontier gas costs
     runTests.bind(this, 'GeneralStateTests', {}),
