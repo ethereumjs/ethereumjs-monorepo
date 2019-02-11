@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 'use strict'
 
-const Common = require('ethereumjs-common')
-const chains = require('ethereumjs-common/chains')
+const Common = require('ethereumjs-common').default
+const chains = require('ethereumjs-common/dist/chains').chains
 const { getLogger } = require('../lib/logging')
 const { parse } = require('../lib/util')
 const { fromName: serverFromName } = require('../lib/net/server')
