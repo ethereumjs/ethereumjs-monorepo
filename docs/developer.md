@@ -11,10 +11,6 @@ or the associated YouTube video introduction to [core development with Ethereumj
 
 #### Running different Test Types
 
-Running all the tests:
-
-`npm test`
-
 Running the State tests:
 
 `node ./tests/tester -s`
