@@ -33,7 +33,7 @@
     "ethashjs": "~0.0.7",
     "ethereumjs-block": "~2.2.0",
     "ethereumjs-common": "^1.1.0",
-    "ethereumjs-util": "~6.0.0",
+    "ethereumjs-util": "~6.1.0",
     "flow-stoplight": "^1.0.0",
     "level-mem": "^3.0.1",
     "lru-cache": "^5.1.1",
