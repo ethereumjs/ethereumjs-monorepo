@@ -1,5 +1,5 @@
 const tape = require('tape')
-const createHookedVm = require('../lib/hooked')
+const createHookedVm = require('../../lib/hooked')
 
 tape('hooked-vm', function (test) {
   var contractAddressHex = '0x1234000000000000000000000000000000001234'

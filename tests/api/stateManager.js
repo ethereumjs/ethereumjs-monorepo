@@ -105,4 +105,19 @@ tape('StateManager', (t) => {
 
     st.end()
   })
+
+  t.test('should generate the genesis state correctly', async (st) => {
+    const genesisData = require('ethereumjs-testing').getSingleFile('BasicTests/genesishashestest.json')
+    const stateManager = new StateManager()
+
+    const generateCanonicalGenesis = promisify((...args) => stateManager.generateCanonicalGenesis(...args))
+    const getStateRoot = promisify((...args) => stateManager.getStateRoot(...args))
+
+    await generateCanonicalGenesis()
+    let stateRoot = await getStateRoot()
+
+    st.equal(stateRoot.toString('hex'), genesisData.genesis_state_root)
+
+    st.end()
+  })
 })

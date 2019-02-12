@@ -1,7 +1,6 @@
 #!/usr/bin/env node
 
 const argv = require('minimist')(process.argv.slice(2))
-const async = require('async')
 const tape = require('tape')
 const testing = require('ethereumjs-testing')
 const FORK_CONFIG = argv.fork || 'Byzantium'
@@ -115,8 +114,6 @@ if (argv.r) {
   runTests('VMTests', argv)
 } else if (argv.b) {
   runTests('BlockchainTests', argv)
-} else if (argv.a) {
-  runAll()
 }
 
 // randomized tests
@@ -243,15 +240,4 @@ function runTests (name, runnerArgs, cb) {
       })
     })
   }
-}
-
-function runAll () {
-  require('./tester.js')
-  require('./genesishashes.js')
-  require('./constantinopleSstoreTest.js')
-  async.series([
-    // runTests.bind(this, 'VMTests', {}), // VM tests disabled since we don't support Frontier gas costs
-    runTests.bind(this, 'GeneralStateTests', {}),
-    runTests.bind(this, 'BlockchainTests', {})
-  ])
 }
