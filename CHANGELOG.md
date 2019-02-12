@@ -6,6 +6,31 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [6.1.0] - 2019-02-12
+
+First **TypeScript** based release of the library, now also including a
+**type declaration file** distributed along with the package published,
+see PR [#170](https://github.com/ethereumjs/ethereumjs-util/pull/170).
+
+**Bug Fixes**
+
+- Fixed a bug in `isValidSignature()` not correctly returning `false`
+  if passed an `s`-value greater than `secp256k1n/2` on `homestead` or later.
+  If you use the method signature with more than three arguments (so not just
+  passing in `v`, `r`, `s` and use it like `isValidSignature(v, r, s)` and omit
+  the optional args) please read the thread from
+  PR [#171](https://github.com/ethereumjs/ethereumjs-util/pull/171) carefully
+  and check your code.
+
+**Development**
+
+- Updated `@types/node` to Node `11` types,
+  PR [#175](https://github.com/ethereumjs/ethereumjs-util/pull/175)
+- Changed browser from Chrome to ChromeHeadless,
+  PR [#156](https://github.com/ethereumjs/ethereumjs-util/pull/156)
+
+[6.1.0]: https://github.com/ethereumjs/ethereumjs-util/compare/v6.0.0...v6.1.0
+
 ## [6.0.0] - 2018-10-08
 
 - Support for `EIP-155` replay protection by adding an optional `chainId` parameter
