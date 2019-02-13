@@ -91,7 +91,7 @@ function runTestCase (options, testData, t, cb) {
           })
           vm.on('afterTx', function (results) {
             let stateRoot = {
-              'stateRoot': results.vm.runState.stateManager.trie.root.toString('hex')
+              'stateRoot': results.vm.runState.stateManager._trie.root.toString('hex')
             }
             t.comment(JSON.stringify(stateRoot))
           })
@@ -100,6 +100,9 @@ function runTestCase (options, testData, t, cb) {
           tx: tx,
           block: block
         }, function (err, r) {
+          if (err) {
+            console.log(err)
+          }
           err = null
           done()
         })
