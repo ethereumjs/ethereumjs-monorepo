@@ -92,7 +92,7 @@ module.exports = function runBlockchainTest (options, testData, t, cb) {
           })
         } catch (err) {
           if (err) {
-            console.log(err)
+            t.fail(err)
           }
           cb()
         }

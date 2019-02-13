@@ -101,7 +101,7 @@ function runTestCase (options, testData, t, cb) {
           block: block
         }, function (err, r) {
           if (err) {
-            console.log(err)
+            t.fail(err)
           }
           err = null
           done()
