@@ -1,7 +1,10 @@
 {
   "presets": [
     [
-      "env"
+      "@babel/preset-env",
+      {
+        "useBuiltIns": "usage"
+      }
     ]
   ]
 }

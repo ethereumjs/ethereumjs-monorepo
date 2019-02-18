@@ -36,6 +36,7 @@
   "dependencies": {
     "async": "^2.1.2",
     "async-eventemitter": "^0.2.2",
+    "core-js": "^2.6.5",
     "ethereumjs-account": "^2.0.3",
     "ethereumjs-block": "~2.2.0",
     "ethereumjs-common": "^1.1.0",
@@ -47,8 +48,10 @@
     "safe-buffer": "^5.1.1"
   },
   "devDependencies": {
-    "babel-cli": "^6.26.0",
-    "babel-preset-env": "^1.6.1",
+    "@babel/cli": "^7.2.3",
+    "@babel/core": "^7.2.2",
+    "@babel/polyfill": "^7.2.5",
+    "@babel/preset-env": "^7.2.3",
     "coveralls": "^3.0.0",
     "documentation": "^8.1.2",
     "ethereumjs-blockchain": "^3.4.0",
