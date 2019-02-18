@@ -29,6 +29,7 @@
   },
   "homepage": "https://github.com/ethereumjs/ethereumjs-blockchain#readme",
   "dependencies": {
+    "@babel/runtime": "^7.3.1",
     "async": "^2.6.1",
     "ethashjs": "~0.0.7",
     "ethereumjs-block": "~2.2.0",
@@ -44,6 +45,7 @@
   "devDependencies": {
     "@babel/cli": "^7.2.3",
     "@babel/core": "^7.2.2",
+    "@babel/plugin-transform-runtime": "^7.2.0",
     "@babel/preset-env": "^7.3.1",
     "coveralls": "^3.0.2",
     "nyc": "^13.0.1",
