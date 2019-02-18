@@ -6,28 +6,40 @@
     -   [Parameters][2]
 -   [VM][3]
     -   [Parameters][4]
--   [vm.runBlock][5]
+-   [runBlock~callback][5]
     -   [Parameters][6]
--   [runBlock~callback][7]
+-   [vm.runBlock][7]
     -   [Parameters][8]
--   [runTx~callback][9]
+-   [vm.runTx][9]
     -   [Parameters][10]
--   [vm.runTx][11]
+-   [runTx~callback][11]
     -   [Parameters][12]
--   [runCode~callback][13]
+-   [MetaVM][13]
     -   [Parameters][14]
--   [vm.runCode][15]
-    -   [Parameters][16]
--   [Event: beforeBlock][17]
-    -   [Properties][18]
--   [Event: afterBlock][19]
-    -   [Properties][20]
--   [Event: beforeTx][21]
-    -   [Properties][22]
--   [Event: afterTx][23]
-    -   [Properties][24]
--   [Event: step][25]
-    -   [Properties][26]
+    -   [canContinueExecution][15]
+        -   [Parameters][16]
+    -   [initRunState][17]
+        -   [Parameters][18]
+    -   [runNextStep][19]
+        -   [Parameters][20]
+    -   [run][21]
+        -   [Parameters][22]
+    -   [handleOPCODE][23]
+        -   [Parameters][24]
+-   [runCode~callback][25]
+    -   [Parameters][26]
+-   [vm.runCode][27]
+    -   [Parameters][28]
+-   [Event: beforeBlock][29]
+    -   [Properties][30]
+-   [Event: afterBlock][31]
+    -   [Properties][32]
+-   [Event: beforeTx][33]
+    -   [Properties][34]
+-   [Event: step][35]
+    -   [Properties][36]
+-   [Event: afterTx][37]
+    -   [Properties][38]
 
 ## vm.runBlockchain
 
@@ -35,8 +47,8 @@ Processes blocks and adds them to the blockchain
 
 ### Parameters
 
--   `blockchain` **Blockchain** A [blockchain][27] that to process
--   `cb` **[Function][28]** the callback function
+-   `blockchain` **Blockchain** A [blockchain][39] that to process
+-   `cb` **[Function][40]** the callback function
 
 ## VM
 
@@ -44,15 +56,28 @@ VM Class, `new VM(opts)` creates a new VM object
 
 ### Parameters
 
--   `opts` **[Object][29]** 
-    -   `opts.stateManager` **StateManager** a [`StateManager`][30] instance to use as the state store (Beta API)
+-   `opts` **[Object][41]** 
+    -   `opts.stateManager` **StateManager** a [`StateManager`][42] instance to use as the state store (Beta API)
     -   `opts.state` **Trie** a merkle-patricia-tree instance for the state tree (ignored if stateManager is passed)
     -   `opts.blockchain` **Blockchain** a blockchain object for storing/retrieving blocks (ignored if stateManager is passed)
-    -   `opts.chain` **([String][31] \| [Number][32])** the chain the VM operates on [default: 'mainnet']
-    -   `opts.hardfork` **[String][31]** hardfork rules to be used [default: 'byzantium', supported: 'byzantium', 'constantinople', 'petersburg' (will throw on unsupported)]
-    -   `opts.activatePrecompiles` **[Boolean][33]** create entries in the state tree for the precompiled contracts
-    -   `opts.allowUnlimitedContractSize` **[Boolean][33]** allows unlimited contract sizes while debugging. By setting this to `true`, the check for contract size limit of 24KB (see [EIP-170][34]) is bypassed. (default: `false`; ONLY set to `true` during debugging)
-    -   `opts.emitFreeLogs` **[Boolean][33]** Changes the behavior of the LOG opcode, the gas cost of the opcode becomes zero and calling it using STATICCALL won't throw. (default: `false`; ONLY set to `true` during debugging)
+    -   `opts.chain` **([String][43] \| [Number][44])** the chain the VM operates on [default: 'mainnet']
+    -   `opts.hardfork` **[String][43]** hardfork rules to be used [default: 'byzantium', supported: 'byzantium', 'constantinople', 'petersburg' (will throw on unsupported)]
+    -   `opts.activatePrecompiles` **[Boolean][45]** create entries in the state tree for the precompiled contracts
+    -   `opts.allowUnlimitedContractSize` **[Boolean][45]** allows unlimited contract sizes while debugging. By setting this to `true`, the check for contract size limit of 24KB (see [EIP-170][46]) is bypassed. (default: `false`; ONLY set to `true` during debugging)
+    -   `opts.emitFreeLogs` **[Boolean][45]** Changes the behavior of the LOG opcode, the gas cost of the opcode becomes zero and calling it using STATICCALL won't throw. (default: `false`; ONLY set to `true` during debugging)
+
+## runBlock~callback
+
+Callback for `runBlock` method
+
+Type: [Function][40]
+
+### Parameters
+
+-   `error` **[Error][47]** an error that may have happened or `null`
+-   `results` **[Object][41]** 
+    -   `results.receipts` **[Array][48]** the receipts from the transactions in the block
+    -   `results.results` **[Array][48]** 
 
 ## vm.runBlock
 
@@ -61,37 +86,9 @@ Processes the `block` running all of the transactions it contains and updating t
 ### Parameters
 
 -   `opts`  
-    -   `opts.block` **Block** the [`Block`][35] to process
-    -   `opts.generate` **[Boolean][33]** [gen=false] whether to generate the stateRoot, if false `runBlock` will check the stateRoot of the block against the Trie
--   `cb` **[runBlock~callback][36]** callback
-
-## runBlock~callback
-
-Callback for `runBlock` method
-
-Type: [Function][28]
-
-### Parameters
-
--   `error` **[Error][37]** an error that may have happened or `null`
--   `results` **[Object][29]** 
-    -   `results.receipts` **[Array][38]** the receipts from the transactions in the block
-    -   `results.results` **[Array][38]** 
-
-## runTx~callback
-
-Callback for `runTx` method
-
-Type: [Function][28]
-
-### Parameters
-
--   `error` **[Error][37]** an error that may have happened or `null`
--   `results` **[Object][29]** 
-    -   `results.amountSpent` **BN** the amount of ether used by this transaction as a `bignum`
-    -   `results.gasUsed` **BN** the amount of gas as a `bignum` used by the transaction
-    -   `results.gasRefund` **BN** the amount of gas as a `bignum` that was refunded during the transaction (i.e. `gasUsed = totalGasConsumed - gasRefund`)
--   `vm` **[VM][39]** contains the results from running the code, if any, as described in `vm.runCode(params, cb)`
+    -   `opts.block` **Block** the [`Block`][49] to process
+    -   `opts.generate` **[Boolean][45]** [gen=false] whether to generate the stateRoot, if false `runBlock` will check the stateRoot of the block against the Trie
+-   `cb` **[runBlock~callback][50]** callback
 
 ## vm.runTx
 
@@ -100,30 +97,116 @@ Process a transaction. Run the vm. Transfers eth. Checks balances.
 ### Parameters
 
 -   `opts`  
-    -   `opts.tx` **Transaction** a [`Transaction`][40] to run
-    -   `opts.skipNonce` **[Boolean][33]** skips the nonce check
-    -   `opts.skipBalance` **[Boolean][33]** skips the balance check
+    -   `opts.tx` **Transaction** a [`Transaction`][51] to run
+    -   `opts.skipNonce` **[Boolean][45]** skips the nonce check
+    -   `opts.skipBalance` **[Boolean][45]** skips the balance check
     -   `opts.block` **Block** the block to which the `tx` belongs, if no block is given a default one is created
--   `cb` **[runTx~callback][41]** the callback
+-   `cb` **[runTx~callback][52]** the callback
+
+## runTx~callback
+
+Callback for `runTx` method
+
+Type: [Function][40]
+
+### Parameters
+
+-   `error` **[Error][47]** an error that may have happened or `null`
+-   `results` **[Object][41]** 
+    -   `results.amountSpent` **BN** the amount of ether used by this transaction as a `bignum`
+    -   `results.gasUsed` **BN** the amount of gas as a `bignum` used by the transaction
+    -   `results.gasRefund` **BN** the amount of gas as a `bignum` that was refunded during the transaction (i.e. `gasUsed = totalGasConsumed - gasRefund`)
+-   `vm` **[VM][53]** contains the results from running the code, if any, as described in `vm.runCode(params, cb)`
+
+## MetaVM
+
+An extensible base class for using the EVM.
+
+### Parameters
+
+-   `opts` **[Object][41]** 
+    -   `opts.stateManager` **StateManager** a [`StateManager`][42] instance to use as the state store (Beta API)
+    -   `opts.state` **Trie** a merkle-patricia-tree instance for the state tree (ignored if stateManager is passed)
+    -   `opts.blockchain` **Blockchain** a blockchain object for storing/retrieving blocks (ignored if stateManager is passed)
+    -   `opts.chain` **([String][43] \| [Number][44])** the chain the VM operates on [default: 'mainnet']
+    -   `opts.hardfork` **[String][43]** hardfork rules to be used [default: 'byzantium', supported: 'byzantium', 'constantinople', 'petersburg' (will throw on unsupported)]
+    -   `opts.activatePrecompiles` **[Boolean][45]** create entries in the state tree for the precompiled contracts
+    -   `opts.allowUnlimitedContractSize` **[Boolean][45]** allows unlimited contract sizes while debugging. By setting this to `true`, the check for contract size limit of 24KB (see [EIP-170][46]) is bypassed. (default: `false`; ONLY set to `true` during debugging)
+    -   `opts.emitFreeLogs` **[Boolean][45]** Changes the behavior of the LOG opcode, the gas cost of the opcode becomes zero and calling it using STATICCALL won't throw. (default: `false`; ONLY set to `true` during debugging)
+
+### canContinueExecution
+
+Checks if the execution given `runState` is not yet completed.
+
+#### Parameters
+
+-   `runState` **[Object][41]** 
+
+Returns **[boolean][45]** Returns {@code true} if the execution is not yet completed.
+
+### initRunState
+
+Common function to create the VM (internal) `runState` object.
+
+#### Parameters
+
+-   `opts` **[Object][41]** 
+    -   `opts.account` **Account** the [`Account`][54] that the executing code belongs to. If omitted an empty account will be used
+    -   `opts.address` **[Buffer][55]** the address of the account that is executing this code. The address should be a `Buffer` of bytes. Defaults to `0`
+    -   `opts.block` **Block** the [`Block`][49] the `tx` belongs to. If omitted a blank block will be used
+    -   `opts.caller` **[Buffer][55]** the address that ran this code. The address should be a `Buffer` of 20bits. Defaults to `0`
+    -   `opts.code` **[Buffer][55]** the EVM code to run given as a `Buffer`
+    -   `opts.data` **[Buffer][55]** the input data
+    -   `opts.gasLimit` **[Buffer][55]** the gas limit for the code
+    -   `opts.origin` **[Buffer][55]** the address where the call originated from. The address should be a `Buffer` of 20bits. Defaults to `0`
+    -   `opts.value` **[Buffer][55]** the value in ether that is being sent to `opt.address`. Defaults to `0`
+    -   `opts.pc` **[Number][44]** the initial program counter. Defaults to `0`
+
+Returns **[Object][41]** Returns the initial `runState` object.
+
+### runNextStep
+
+Run the next execution step given `runState.programCounter`.
+
+#### Parameters
+
+-   `The` **[Object][41]** runState object.
+
+### run
+
+Runs the next `stepCount` steps given the `runState` object. If `stepCount` is `0`, the function runs until the vm execution ends.
+
+#### Parameters
+
+-   `runState` **[Object][41]** 
+-   `stepCount` **[Number][44]** (Optional) The initial program counter. Defaults to `0`.
+
+### handleOPCODE
+
+Function(s) that handles the opcode, like `handleADD(runState)`. It serves the purpose to add custom logic.
+
+#### Parameters
+
+-   `runState` **[Object][41]** 
 
 ## runCode~callback
 
 Callback for `runCode` method
 
-Type: [Function][28]
+Type: [Function][40]
 
 ### Parameters
 
--   `error` **[Error][37]** an error that may have happened or `null`
--   `results` **[Object][29]** 
+-   `error` **[Error][47]** an error that may have happened or `null`
+-   `results` **[Object][41]** 
     -   `results.gas` **BN** the amount of gas left
     -   `results.gasUsed` **BN** the amount of gas as a `bignum` the code used to run
     -   `results.gasRefund` **BN** a `bignum` containing the amount of gas to refund from deleting storage values
-    -   `results.selfdestruct` **[Object][29]** an `Object` with keys for accounts that have selfdestructed and values for balance transfer recipient accounts
-    -   `results.logs` **[Array][38]** an `Array` of logs that the contract emitted
-    -   `results.exception` **[Number][32]** `0` if the contract encountered an exception, `1` otherwise
-    -   `results.exceptionError` **[String][31]** a `String` describing the exception if there was one
-    -   `results.return` **[Buffer][42]** a `Buffer` containing the value that was returned by the contract
+    -   `results.selfdestruct` **[Object][41]** an `Object` with keys for accounts that have selfdestructed and values for balance transfer recipient accounts
+    -   `results.logs` **[Array][48]** an `Array` of logs that the contract emitted
+    -   `results.exception` **[Number][44]** `0` if the contract encountered an exception, `1` otherwise
+    -   `results.exceptionError` **[String][43]** a `String` describing the exception if there was one
+    -   `results.return` **[Buffer][55]** a `Buffer` containing the value that was returned by the contract
 
 ## vm.runCode
 
@@ -131,24 +214,24 @@ Runs EVM code
 
 ### Parameters
 
--   `opts` **[Object][29]** 
-    -   `opts.account` **Account** the [`Account`][43] that the executing code belongs to. If omitted an empty account will be used
-    -   `opts.address` **[Buffer][42]** the address of the account that is executing this code. The address should be a `Buffer` of bytes. Defaults to `0`
-    -   `opts.block` **Block** the [`Block`][35] the `tx` belongs to. If omitted a blank block will be used
-    -   `opts.caller` **[Buffer][42]** the address that ran this code. The address should be a `Buffer` of 20bits. Defaults to `0`
-    -   `opts.code` **[Buffer][42]** the EVM code to run given as a `Buffer`
-    -   `opts.data` **[Buffer][42]** the input data
-    -   `opts.gasLimit` **[Buffer][42]** the gas limit for the code
-    -   `opts.origin` **[Buffer][42]** the address where the call originated from. The address should be a `Buffer` of 20bits. Defaults to `0`
-    -   `opts.value` **[Buffer][42]** the value in ether that is being sent to `opt.address`. Defaults to `0`
-    -   `opts.pc` **[Number][32]** the initial program counter. Defaults to `0`
--   `cb` **[runCode~callback][44]** callback
+-   `opts` **[Object][41]** 
+    -   `opts.account` **Account** the [`Account`][54] that the executing code belongs to. If omitted an empty account will be used
+    -   `opts.address` **[Buffer][55]** the address of the account that is executing this code. The address should be a `Buffer` of bytes. Defaults to `0`
+    -   `opts.block` **Block** the [`Block`][49] the `tx` belongs to. If omitted a blank block will be used
+    -   `opts.caller` **[Buffer][55]** the address that ran this code. The address should be a `Buffer` of 20bits. Defaults to `0`
+    -   `opts.code` **[Buffer][55]** the EVM code to run given as a `Buffer`
+    -   `opts.data` **[Buffer][55]** the input data
+    -   `opts.gasLimit` **[Buffer][55]** the gas limit for the code
+    -   `opts.origin` **[Buffer][55]** the address where the call originated from. The address should be a `Buffer` of 20bits. Defaults to `0`
+    -   `opts.value` **[Buffer][55]** the value in ether that is being sent to `opt.address`. Defaults to `0`
+    -   `opts.pc` **[Number][44]** the initial program counter. Defaults to `0`
+-   `cb` **[runCode~callback][56]** callback
 
 ## Event: beforeBlock
 
 The `beforeBlock` event
 
-Type: [Object][29]
+Type: [Object][41]
 
 ### Properties
 
@@ -158,50 +241,50 @@ Type: [Object][29]
 
 The `afterBlock` event
 
-Type: [Object][29]
+Type: [Object][41]
 
 ### Properties
 
--   `result` **[Object][29]** emits the results of processing a block
+-   `result` **[Object][41]** emits the results of processing a block
 
 ## Event: beforeTx
 
 The `beforeTx` event
 
-Type: [Object][29]
+Type: [Object][41]
 
 ### Properties
 
 -   `tx` **Transaction** emits the Transaction that is about to be processed
 
-## Event: afterTx
-
-The `afterTx` event
-
-Type: [Object][29]
-
-### Properties
-
--   `result` **[Object][29]** result of the transaction
-
 ## Event: step
 
 The `step` event for trace output
 
-Type: [Object][29]
+Type: [Object][41]
 
 ### Properties
 
--   `pc` **[Number][32]** representing the program counter
--   `opcode` **[String][31]** the next opcode to be ran
+-   `pc` **[Number][44]** representing the program counter
+-   `opcode` **[String][43]** the next opcode to be ran
 -   `gasLeft` **BN** amount of gasLeft
--   `stack` **[Array][38]** an `Array` of `Buffers` containing the stack
--   `account` **Account** the [`Account`][45] which owns the code running
--   `address` **[Buffer][42]** the address of the `account`
--   `depth` **[Number][32]** the current number of calls deep the contract is
--   `memory` **[Buffer][42]** the memory of the VM as a `buffer`
+-   `stack` **[Array][48]** an `Array` of `Buffers` containing the stack
+-   `account` **Account** the [`Account`][57] which owns the code running
+-   `address` **[Buffer][55]** the address of the `account`
+-   `depth` **[Number][44]** the current number of calls deep the contract is
+-   `memory` **[Buffer][55]** the memory of the VM as a `buffer`
 -   `memoryWordCount` **BN** current size of memory in words
--   `stateManager` **StateManager** a [`StateManager`][30] instance (Beta API)
+-   `stateManager` **StateManager** a [`StateManager`][42] instance (Beta API)
+
+## Event: afterTx
+
+The `afterTx` event
+
+Type: [Object][41]
+
+### Properties
+
+-   `result` **[Object][41]** result of the transaction
 
 [1]: #vmrunblockchain
 
@@ -211,84 +294,108 @@ Type: [Object][29]
 
 [4]: #parameters-1
 
-[5]: #vmrunblock
+[5]: #runblockcallback
 
 [6]: #parameters-2
 
-[7]: #runblockcallback
+[7]: #vmrunblock
 
 [8]: #parameters-3
 
-[9]: #runtxcallback
+[9]: #vmruntx
 
 [10]: #parameters-4
 
-[11]: #vmruntx
+[11]: #runtxcallback
 
 [12]: #parameters-5
 
-[13]: #runcodecallback
+[13]: #metavm
 
 [14]: #parameters-6
 
-[15]: #vmruncode
+[15]: #cancontinueexecution
 
 [16]: #parameters-7
 
-[17]: #event-beforeblock
+[17]: #initrunstate
 
-[18]: #properties
+[18]: #parameters-8
 
-[19]: #event-afterblock
+[19]: #runnextstep
 
-[20]: #properties-1
+[20]: #parameters-9
 
-[21]: #event-beforetx
+[21]: #run
 
-[22]: #properties-2
+[22]: #parameters-10
 
-[23]: #event-aftertx
+[23]: #handleopcode
 
-[24]: #properties-3
+[24]: #parameters-11
 
-[25]: #event-step
+[25]: #runcodecallback
 
-[26]: #properties-4
+[26]: #parameters-12
 
-[27]: https://github.com/ethereum/ethereumjs-blockchain
+[27]: #vmruncode
 
-[28]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Statements/function
+[28]: #parameters-13
 
-[29]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object
+[29]: #event-beforeblock
 
-[30]: stateManager.md
+[30]: #properties
 
-[31]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String
+[31]: #event-afterblock
 
-[32]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number
+[32]: #properties-1
 
-[33]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean
+[33]: #event-beforetx
 
-[34]: https://git.io/vxZkK
+[34]: #properties-2
 
-[35]: https://github.com/ethereumjs/ethereumjs-block
+[35]: #event-step
 
-[36]: #runblockcallback
+[36]: #properties-3
 
-[37]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Error
+[37]: #event-aftertx
 
-[38]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array
+[38]: #properties-4
 
-[39]: #vm
+[39]: https://github.com/ethereum/ethereumjs-blockchain
 
-[40]: https://github.com/ethereum/ethereumjs-tx
+[40]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Statements/function
 
-[41]: #runtxcallback
+[41]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object
 
-[42]: https://nodejs.org/api/buffer.html
+[42]: stateManager.md
 
-[43]: https://github.com/ethereumjs/ethereumjs-account
+[43]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String
 
-[44]: #runcodecallback
+[44]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number
 
-[45]: https://github.com/ethereum/ethereumjs-account
+[45]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean
+
+[46]: https://git.io/vxZkK
+
+[47]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Error
+
+[48]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array
+
+[49]: https://github.com/ethereumjs/ethereumjs-block
+
+[50]: #runblockcallback
+
+[51]: https://github.com/ethereum/ethereumjs-tx
+
+[52]: #runtxcallback
+
+[53]: #vm
+
+[54]: https://github.com/ethereumjs/ethereumjs-account
+
+[55]: https://nodejs.org/api/buffer.html
+
+[56]: #runcodecallback
+
+[57]: https://github.com/ethereum/ethereumjs-account
