@@ -16,6 +16,7 @@
     "prepublishOnly": "npm run test && npm run build",
     "coverage": "ethereumjs-config-coverage",
     "coveralls": "ethereumjs-config-coveralls",
+    "docs:build": "typedoc --out docs --mode file --readme none --theme markdown --mdEngine github --excludeNotExported src",
     "format": "ethereumjs-config-format",
     "format:fix": "ethereumjs-config-format-fix",
     "tslint": "ethereumjs-config-tslint",
@@ -54,6 +55,8 @@
     "tape": "^4.10.1",
     "ts-node": "^7.0.1",
     "tslint": "^5.12.0",
+    "typedoc": "^0.14.0",
+    "typedoc-plugin-markdown": "^1.1.21",
     "typescript": "^3.2.2",
     "typestrict": "^1.0.2"
   }
