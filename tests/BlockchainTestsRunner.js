@@ -91,6 +91,9 @@ module.exports = function runBlockchainTest (options, testData, t, cb) {
             cb(err)
           })
         } catch (err) {
+          if (err) {
+            t.fail(err)
+          }
           cb()
         }
       }, function () {
