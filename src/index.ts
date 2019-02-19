@@ -92,29 +92,29 @@ export default class Account {
     ethUtil.defineProperties(this, fields, data)
   }
 
-    /**
-     * Returns the RLP serialization of the account as a `Buffer`.
-     *
-     * @return {Buffer}
-     */
+  /**
+   * Returns the RLP serialization of the account as a `Buffer`.
+   *
+   * @return {Buffer}
+   */
   serialize(): Buffer {
     return rlp.encode([this.nonce, this.balance, this.stateRoot, this.codeHash])
   }
 
-    /**
-     * Returns a `Boolean` deteremining if the account is a contract.
-     *
-     * @return {boolean}
-     */
+  /**
+   * Returns a `Boolean` deteremining if the account is a contract.
+   *
+   * @return {boolean}
+   */
   isContract(): boolean {
     return this.codeHash.toString('hex') !== ethUtil.KECCAK256_NULL_S
   }
 
-    /**
-     * Fetches the code from the trie.
-     * @param trie The [trie](https://github.com/ethereumjs/merkle-patricia-tree) storing the accounts
-     * @param cb The callback
-     */
+  /**
+   * Fetches the code from the trie.
+   * @param trie The [trie](https://github.com/ethereumjs/merkle-patricia-tree) storing the accounts
+   * @param cb The callback
+   */
   getCode(trie: Trie, cb: TrieGetCb): void {
     if (!this.isContract()) {
       cb(null, Buffer.alloc(0))
@@ -124,41 +124,41 @@ export default class Account {
     trie.getRaw(this.codeHash, cb)
   }
 
-    /**
-     * Stores the code in the trie.
-     *
-     * ~~~
-     * // Requires manual merkle-patricia-tree install
-     * const SecureTrie = require('merkle-patricia-tree/secure')
-     * const Account = require('./index.js').default
-     *
-     * let code = Buffer.from(
-     * '73095e7baea6a6c7c4c2dfeb977efac326af552d873173095e7baea6a6c7c4c2dfeb977efac326af552d873157',
-     * 'hex',
-     * )
-     *
-     * let raw = {
-     * nonce: '',
-     * balance: '0x03e7',
-     * stateRoot: '0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421',
-     * codeHash: '0xb30fb32201fe0486606ad451e1a61e2ae1748343cd3d411ed992ffcc0774edd4',
-     * }
-     * let account = new Account(raw)
-     * let trie = new SecureTrie()
-     *
-     * account.setCode(trie, code, function(err, codeHash) {
-     *   console.log(`Code with hash 0x${codeHash.toString('hex')} set to trie`)
-     *   account.getCode(trie, function(err, code) {
-     *     console.log(`Code ${code.toString('hex')} read from trie`)
-     *   })
-     * })
-     * ~~~
-     *
-     * @param trie The [trie](https://github.com/ethereumjs/merkle-patricia-tree) storing the accounts.
-     * @param {Buffer} code
-     * @param cb The callback.
-     *
-     */
+  /**
+   * Stores the code in the trie.
+   *
+   * ~~~
+   * // Requires manual merkle-patricia-tree install
+   * const SecureTrie = require('merkle-patricia-tree/secure')
+   * const Account = require('./index.js').default
+   *
+   * let code = Buffer.from(
+   * '73095e7baea6a6c7c4c2dfeb977efac326af552d873173095e7baea6a6c7c4c2dfeb977efac326af552d873157',
+   * 'hex',
+   * )
+   *
+   * let raw = {
+   * nonce: '',
+   * balance: '0x03e7',
+   * stateRoot: '0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421',
+   * codeHash: '0xb30fb32201fe0486606ad451e1a61e2ae1748343cd3d411ed992ffcc0774edd4',
+   * }
+   * let account = new Account(raw)
+   * let trie = new SecureTrie()
+   *
+   * account.setCode(trie, code, function(err, codeHash) {
+   *   console.log(`Code with hash 0x${codeHash.toString('hex')} set to trie`)
+   *   account.getCode(trie, function(err, code) {
+   *     console.log(`Code ${code.toString('hex')} read from trie`)
+   *   })
+   * })
+   * ~~~
+   *
+   * @param trie The [trie](https://github.com/ethereumjs/merkle-patricia-tree) storing the accounts.
+   * @param {Buffer} code
+   * @param cb The callback.
+   *
+   */
   setCode(trie: Trie, code: Buffer, cb: (err: any, codeHash: Buffer) => void): void {
     this.codeHash = ethUtil.keccak256(code)
 
@@ -172,51 +172,51 @@ export default class Account {
     })
   }
 
-    /**
-     * Fetches `key` from the account's storage.
-     * @param trie
-     * @param key
-     * @param cb
-     */
+  /**
+   * Fetches `key` from the account's storage.
+   * @param trie
+   * @param key
+   * @param cb
+   */
   getStorage(trie: Trie, key: Buffer | string, cb: TrieGetCb) {
     const t = trie.copy()
     t.root = this.stateRoot
     t.get(key, cb)
   }
 
-    /**
-     * Stores a `val` at the `key` in the contract's storage.
-     *
-     * Example for `getStorage` and `setStorage`:
-     *
-     * ~~~
-     * // Requires manual merkle-patricia-tree install
-     * const SecureTrie = require('merkle-patricia-tree/secure')
-     * const Account = require('./index.js').default
-     *
-     * let raw = {
-     *   nonce: '',
-     *   balance: '0x03e7',
-     *   stateRoot: '0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421',
-     *   codeHash: '0xb30fb32201fe0486606ad451e1a61e2ae1748343cd3d411ed992ffcc0774edd4',
-     * }
-     * let account = new Account(raw)
-     * let trie = new SecureTrie()
-     * let key = Buffer.from('0000000000000000000000000000000000000000', 'hex')
-     * let value = Buffer.from('01', 'hex')
-     *
-     * account.setStorage(trie, key, value, function(err, value) {
-     *   account.getStorage(trie, key, function(err, value) {
-     *     console.log(`Value ${value.toString('hex')} set and retrieved from trie.`)
-     *   })
-     * })
-     * ~~~
-     *
-     * @param trie
-     * @param key
-     * @param val
-     * @param cb
-     */
+  /**
+   * Stores a `val` at the `key` in the contract's storage.
+   *
+   * Example for `getStorage` and `setStorage`:
+   *
+   * ~~~
+   * // Requires manual merkle-patricia-tree install
+   * const SecureTrie = require('merkle-patricia-tree/secure')
+   *  const Account = require('./index.js').default
+   *
+   * let raw = {
+   *   nonce: '',
+   *   balance: '0x03e7',
+   *   stateRoot: '0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421',
+   *   codeHash: '0xb30fb32201fe0486606ad451e1a61e2ae1748343cd3d411ed992ffcc0774edd4',
+   * }
+   * let account = new Account(raw)
+   * let trie = new SecureTrie()
+   * let key = Buffer.from('0000000000000000000000000000000000000000', 'hex')
+   * let value = Buffer.from('01', 'hex')
+   *
+   * account.setStorage(trie, key, value, function(err, value) {
+   *   account.getStorage(trie, key, function(err, value) {
+   *     console.log(`Value ${value.toString('hex')} set and retrieved from trie.`)
+   *   })
+   * })
+   * ~~~
+   *
+   * @param trie
+   * @param key
+   * @param val
+   * @param cb
+   */
   setStorage(trie: Trie, key: Buffer | string, val: Buffer | string, cb: () => void) {
     const t = trie.copy()
     t.root = this.stateRoot
@@ -227,11 +227,11 @@ export default class Account {
     })
   }
 
-    /**
-     * Returns a `Boolean` determining if the account is empty.
-     *
-     * @return {boolean} if account is empty
-     */
+   /**
+   * Returns a `Boolean` determining if the account is empty.
+   *
+   * @return {boolean} if account is empty
+   */
   isEmpty() {
     return (
       this.balance.toString('hex') === '' &&
