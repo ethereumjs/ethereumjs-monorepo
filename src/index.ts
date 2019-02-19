@@ -100,7 +100,6 @@ export default class Account {
     return (
       this.balance.toString('hex') === '' &&
       this.nonce.toString('hex') === '' &&
-      this.stateRoot.toString('hex') === ethUtil.KECCAK256_RLP_S &&
       this.codeHash.toString('hex') === ethUtil.KECCAK256_NULL_S
     )
   }
