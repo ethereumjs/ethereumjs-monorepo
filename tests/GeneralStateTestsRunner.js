@@ -100,9 +100,6 @@ function runTestCase (options, testData, t, cb) {
           tx: tx,
           block: block
         }, function (err, r) {
-          if (err) {
-            t.fail(err)
-          }
           err = null
           done()
         })
