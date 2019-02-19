@@ -227,7 +227,7 @@ export default class Account {
     })
   }
 
-   /**
+  /**
    * Returns a `Boolean` determining if the account is empty.
    *
    * @return {boolean} if account is empty
