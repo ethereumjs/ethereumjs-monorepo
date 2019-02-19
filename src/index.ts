@@ -43,12 +43,6 @@ export default class Account {
   /**
    * Creates a new account object
    *
-   * @param data
-   * An account can be initialized with either a `buffer` containing the RLP serialized account.
-   * Or an `Array` of buffers relating to each of the account Properties, listed in order below.
-   *
-   * For example:
-   *
    * ~~~
    * var data = [
    *   '0x02', //nonce
@@ -62,8 +56,14 @@ export default class Account {
    *   balance: '0x03e7',
    *   stateRoot: '0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421',
    *   codeHash: '0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470',
-   *   }
+   * }
+   *
+   * const account = new Account(data)
    * ~~~
+   *
+   * @param data
+   * An account can be initialized with either a `buffer` containing the RLP serialized account.
+   * Or an `Array` of buffers relating to each of the account Properties, listed in order below.
    *
    * For `Object` and `Array` each of the elements can either be a `Buffer`, hex `String`, `Number`, or an object with a `toBuffer` method such as `Bignum`.
    */
@@ -126,9 +126,6 @@ export default class Account {
 
     /**
      * Stores the code in the trie.
-     * @param trie The [trie](https://github.com/ethereumjs/merkle-patricia-tree) storing the accounts.
-     * @param {Buffer} code
-     * @param cb The callback.
      *
      * ~~~
      * // Requires manual merkle-patricia-tree install
@@ -156,6 +153,10 @@ export default class Account {
      *   })
      * })
      * ~~~
+     *
+     * @param trie The [trie](https://github.com/ethereumjs/merkle-patricia-tree) storing the accounts.
+     * @param {Buffer} code
+     * @param cb The callback.
      *
      */
   setCode(trie: Trie, code: Buffer, cb: (err: any, codeHash: Buffer) => void): void {
@@ -186,11 +187,6 @@ export default class Account {
     /**
      * Stores a `val` at the `key` in the contract's storage.
      *
-     * @param trie
-     * @param key
-     * @param val
-     * @param cb
-     *
      * Example for `getStorage` and `setStorage`:
      *
      * ~~~
@@ -216,6 +212,10 @@ export default class Account {
      * })
      * ~~~
      *
+     * @param trie
+     * @param key
+     * @param val
+     * @param cb
      */
   setStorage(trie: Trie, key: Buffer | string, val: Buffer | string, cb: () => void) {
     const t = trie.copy()
