@@ -12,7 +12,7 @@
     "prepublishOnly": "npm run test && npm run build",
     "coverage": "npm run build && istanbul cover _mocha",
     "coveralls": "npm run coverage && coveralls <coverage/lcov.info",
-    "docs:build": "typedoc --out docs --mode file --readme none --theme markdown --mdEngine github --excludeNotExported src",
+    "docs:build": "typedoc --out docs --mode file --readme none --theme markdown --mdEngine github --gitRevision master --excludeNotExported src",
     "format": "ethereumjs-config-format",
     "format:fix": "ethereumjs-config-format-fix",
     "lint": "ethereumjs-config-lint",
