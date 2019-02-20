@@ -15,6 +15,9 @@ Note that the library is not meant to be used to handle your wallet accounts, us
 `web3.js` library for that. This is just a semantic wrapper to ease the use of account data and
 provide functionality for reading and writing accounts from and to the Ethereum state trie.
 
+Note: The library implements [EIP-161](https://github.com/ethereum/EIPs/blob/master/EIPS/eip-161.md) to determine empty accounts,
+and as such doesn't support hardforks before the Spurious Dragon.
+
 # INSTALL
 
 `npm install ethereumjs-account`
