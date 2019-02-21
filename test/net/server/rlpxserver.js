@@ -114,6 +114,17 @@ tape('[RlpxServer]', t => {
     server.rlpx.emit('listening')
   })
 
+  t.test('should handles errors from id-less peers', t => {
+    t.plan(1)
+    const server = new RlpxServer()
+    const rlpxPeer = td.object()
+    td.when(rlpxPeer.getId()).thenReturn(null)
+    td.when(RlpxPeer.prototype.accept(rlpxPeer, td.matchers.isA(RlpxServer))).thenResolve()
+    server.initRlpx()
+    server.on('error', err => t.equals(err, 'err0', 'got error'))
+    server.rlpx.emit('peer:error', rlpxPeer, 'err0')
+  })
+
   t.test('should reset td', t => {
     td.reset()
     t.end()
