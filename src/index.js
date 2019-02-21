@@ -1,5 +1,6 @@
 'use strict'
 
+const util = require('util')
 const async = require('async')
 const Stoplight = require('flow-stoplight')
 const semaphore = require('semaphore')
@@ -11,24 +12,17 @@ const Ethash = require('ethashjs')
 const Buffer = require('safe-buffer').Buffer
 const BN = ethUtil.BN
 const rlp = ethUtil.rlp
-const Cache = require('./cache')
-
-// geth compatible db keys
-const headHeaderKey = 'LastHeader' // current canonical head for light sync
-const headBlockKey = 'LastBlock' // current canonical head for full sync
-const headerPrefix = Buffer.from('h') // headerPrefix + number + hash -> header
-const tdSuffix = Buffer.from('t') // headerPrefix + number + hash + tdSuffix -> td
-const numSuffix = Buffer.from('n') // headerPrefix + number + numSuffix -> hash
-const blockHashPrefix = Buffer.from('H') // blockHashPrefix + hash -> number
-const bodyPrefix = Buffer.from('b') // bodyPrefix + number + hash -> block body
-
-// utility functions
-const bufBE8 = n => n.toArrayLike(Buffer, 'be', 8) // convert BN to big endian Buffer
-const tdKey = (n, hash) => Buffer.concat([headerPrefix, bufBE8(n), hash, tdSuffix])
-const headerKey = (n, hash) => Buffer.concat([headerPrefix, bufBE8(n), hash])
-const bodyKey = (n, hash) => Buffer.concat([bodyPrefix, bufBE8(n), hash])
-const numberToHashKey = n => Buffer.concat([headerPrefix, bufBE8(n), numSuffix])
-const hashToNumberKey = hash => Buffer.concat([blockHashPrefix, hash])
+const DBManager = require('./dbManager')
+const {
+  tdKey,
+  headerKey,
+  bodyKey,
+  headHeaderKey,
+  headBlockKey,
+  hashToNumberKey,
+  numberToHashKey,
+  bufBE8
+} = require('./util')
 
 module.exports = class Blockchain {
   constructor (opts) {
@@ -54,19 +48,13 @@ module.exports = class Blockchain {
 
     // defaults
     self.db = self.db ? self.db : level()
+    self.dbManager = new DBManager(self.db, self._common)
     self.validate = (opts.validate === undefined ? true : opts.validate)
     self.ethash = self.validate ? new Ethash(self.db) : null
     self._heads = {}
     self._genesis = null
     self._headHeader = null
     self._headBlock = null
-    self._cache = {
-      td: new Cache({ max: 1024 }),
-      header: new Cache({ max: 512 }),
-      body: new Cache({ max: 256 }),
-      numberToHash: new Cache({ max: 2048 }),
-      hashToNumber: new Cache({ max: 2048 })
-    }
     self._initDone = false
     self._putSemaphore = semaphore(1)
     self._initLock = new Stoplight()
@@ -98,7 +86,7 @@ module.exports = class Blockchain {
 
     async.waterfall([
       (cb) => self._numberToHash(new BN(0), cb),
-      getHeads
+      util.callbackify(getHeads.bind(this))
     ], (err) => {
       if (err) {
         // if genesis block doesn't exist, create one
@@ -113,36 +101,33 @@ module.exports = class Blockchain {
       cb()
     })
 
-    function getHeads (genesisHash, cb) {
+    async function getHeads (genesisHash) {
       self._genesis = genesisHash
-      async.series([
-        // load verified iterator heads
-        (cb) => self.db.get('heads', {
-          keyEncoding: 'binary',
-          valueEncoding: 'json'
-        }, (err, heads) => {
-          if (err) heads = {}
-          Object.keys(heads).map(key => { heads[key] = Buffer.from(heads[key]) })
-          self._heads = heads
-          cb()
-        }),
-        // load headerchain head
-        (cb) => self.db.get(headHeaderKey, {
-          keyEncoding: 'binary',
-          valueEncoding: 'binary'
-        }, (err, hash) => {
-          self._headHeader = err ? genesisHash : hash
-          cb()
-        }),
-        // load blockchain head
-        (cb) => self.db.get(headBlockKey, {
-          keyEncoding: 'binary',
-          valueEncoding: 'binary'
-        }, (err, hash) => {
-          self._headBlock = err ? genesisHash : hash
-          cb()
-        })
-      ], cb)
+      // load verified iterator heads
+      try {
+        const heads = await self.dbManager.getHeads()
+        Object.keys(heads).map(key => { heads[key] = Buffer.from(heads[key]) })
+        self._heads = heads
+      } catch (e) {
+        self._heads = {}
+      }
+
+      // load headerchain head
+      let hash
+      try {
+        hash = await self.dbManager.getHeadHeader()
+        self._headHeader = hash
+      } catch (e) {
+        self._headHeader = genesisHash
+      }
+
+      // load blockchain head
+      try {
+        hash = await self.dbManager.getHeadBlock()
+        self._headBlock = hash
+      } catch (e) {
+        self._headBlock = genesisHash
+      }
     }
   }
 
@@ -402,7 +387,7 @@ module.exports = class Blockchain {
         valueEncoding: 'binary',
         value: value
       })
-      self._cache.td.set(key, value)
+      self.dbManager._cache.td.set(key, value)
 
       // save header
       key = headerKey(number, hash)
@@ -414,7 +399,7 @@ module.exports = class Blockchain {
         valueEncoding: 'binary',
         value: value
       })
-      self._cache.header.set(key, value)
+      self.dbManager._cache.header.set(key, value)
 
       // store body if it exists
       if (isGenesis || block.transactions.length || block.uncleHeaders.length) {
@@ -428,7 +413,7 @@ module.exports = class Blockchain {
           valueEncoding: 'binary',
           value: value
         })
-        self._cache.body.set(key, value)
+        self.dbManager._cache.body.set(key, value)
       }
 
       // if total difficulty is higher than current, add it to canonical chain
@@ -460,7 +445,7 @@ module.exports = class Blockchain {
           valueEncoding: 'binary',
           value: value
         })
-        self._cache.hashToNumber.set(key, value)
+        self.dbManager._cache.hashToNumber.set(key, value)
         next()
       }
     }
@@ -482,50 +467,7 @@ module.exports = class Blockchain {
   }
 
   _getBlock (blockTag, cb) {
-    const self = this
-
-    // determine BlockTag type
-    if (Number.isInteger(blockTag)) {
-      blockTag = new BN(blockTag)
-    }
-    async.waterfall([
-      (cb) => {
-        if (Buffer.isBuffer(blockTag)) {
-          self._hashToNumber(blockTag, (err, number) => {
-            if (err) return cb(err)
-            cb(null, blockTag, number)
-          })
-        } else if (BN.isBN(blockTag)) {
-          self._numberToHash(blockTag, (err, hash) => {
-            if (err) return cb(err)
-            cb(null, hash, blockTag)
-          })
-        } else {
-          cb(new Error('Unknown blockTag type'))
-        }
-      },
-      lookupByHashAndNumber
-    ], cb)
-
-    function lookupByHashAndNumber (hash, number, cb) {
-      async.parallel({
-        header: (cb) => {
-          self._getHeader(hash, number, (err, header) => {
-            if (err) return cb(err)
-            cb(null, header.raw)
-          })
-        },
-        body: (cb) => {
-          self._getBody(hash, number, (err, body) => {
-            if (err) return cb(null, [[], []])
-            cb(null, body)
-          })
-        }
-      }, (err, parts) => {
-        if (err) return cb(err)
-        cb(null, new Block([parts.header].concat(parts.body), {common: self._common}))
-      })
-    }
+    util.callbackify(this.dbManager.getBlock.bind(this.dbManager))(blockTag, cb)
   }
 
   /**
@@ -655,7 +597,7 @@ module.exports = class Blockchain {
         key: key,
         keyEncoding: 'binary'
       })
-      self._cache.numberToHash.del(key)
+      self.dbManager._cache.numberToHash.del(key)
 
       // reset stale iterator heads to current canonical head
       Object.keys(self._heads).forEach(function (name) {
@@ -688,7 +630,7 @@ module.exports = class Blockchain {
         valueEncoding: 'binary',
         value: hash
       })
-      self._cache.numberToHash.set(key, hash)
+      self.dbManager._cache.numberToHash.set(key, hash)
 
       key = hashToNumberKey(hash)
       value = bufBE8(number)
@@ -699,7 +641,7 @@ module.exports = class Blockchain {
         valueEncoding: 'binary',
         value: value
       })
-      self._cache.hashToNumber.set(key, value)
+      self.dbManager._cache.hashToNumber.set(key, value)
     }
 
     // handle genesis block
@@ -844,28 +786,28 @@ module.exports = class Blockchain {
       key: headerKey(number, hash),
       keyEncoding: 'binary'
     })
-    self._cache.header.del(headerKey(number, hash))
+    self.dbManager._cache.header.del(headerKey(number, hash))
 
     ops.push({
       type: 'del',
       key: bodyKey(number, hash),
       keyEncoding: 'binary'
     })
-    self._cache.body.del(bodyKey(number, hash))
+    self.dbManager._cache.body.del(bodyKey(number, hash))
 
     ops.push({
       type: 'del',
       key: hashToNumberKey(hash),
       keyEncoding: 'binary'
     })
-    self._cache.hashToNumber.del(hashToNumberKey(hash))
+    self.dbManager._cache.hashToNumber.del(hashToNumberKey(hash))
 
     ops.push({
       type: 'del',
       key: tdKey(number, hash),
       keyEncoding: 'binary'
     })
-    self._cache.td.del(tdKey(number, hash))
+    self.dbManager._cache.td.del(tdKey(number, hash))
 
     if (!headHash) {
       return cb()
@@ -964,7 +906,7 @@ module.exports = class Blockchain {
    * @method _batchDbOps
    */
   _batchDbOps (dbOps, cb) {
-    this.db.batch(dbOps, cb)
+    util.callbackify(this.dbManager.batch.bind(this.dbManager))(dbOps, cb)
   }
 
   /**
@@ -972,21 +914,7 @@ module.exports = class Blockchain {
    * @method _hashToNumber
    */
   _hashToNumber (hash, cb) {
-    const self = this
-
-    var key = hashToNumberKey(hash)
-    var number = self._cache.hashToNumber.get(key)
-    if (number) {
-      return cb(null, new BN(number))
-    }
-    self.db.get(key, {
-      keyEncoding: 'binary',
-      valueEncoding: 'binary'
-    }, (err, number) => {
-      if (err) return cb(err)
-      self._cache.hashToNumber.set(key, number)
-      cb(null, new BN(number))
-    })
+    util.callbackify(this.dbManager.hashToNumber.bind(this.dbManager))(hash, cb)
   }
 
   /**
@@ -994,24 +922,7 @@ module.exports = class Blockchain {
    * @method _numberToHash
    */
   _numberToHash (number, cb) {
-    const self = this
-
-    if (number.ltn(0)) {
-      return cb(new level.errors.NotFoundError())
-    }
-    var key = numberToHashKey(number)
-    var hash = self._cache.numberToHash.get(key)
-    if (hash) {
-      return cb(null, hash)
-    }
-    self.db.get(key, {
-      keyEncoding: 'binary',
-      valueEncoding: 'binary'
-    }, (err, hash) => {
-      if (err) return cb(err)
-      self._cache.numberToHash.set(key, hash)
-      cb(null, hash)
-    })
+    util.callbackify(this.dbManager.numberToHash.bind(this.dbManager))(number, cb)
   }
 
   /**
@@ -1034,23 +945,9 @@ module.exports = class Blockchain {
    * @method _getHeader
    */
   _getHeader (hash, number, cb) {
-    const self = this
-
-    self._lookupByHashNumber(hash, number, cb, (err, hash, number, cb) => {
+    this._lookupByHashNumber(hash, number, cb, (err, hash, number, cb) => {
       if (err) return cb(err)
-      var key = headerKey(number, hash)
-      var encodedHeader = self._cache.header.get(key)
-      if (encodedHeader) {
-        return cb(null, new Block.Header(rlp.decode(encodedHeader), {common: self._common}))
-      }
-      self.db.get(key, {
-        keyEncoding: 'binary',
-        valueEncoding: 'binary'
-      }, (err, encodedHeader) => {
-        if (err) return cb(err)
-        self._cache.header.set(key, encodedHeader)
-        cb(null, new Block.Header(rlp.decode(encodedHeader), {common: self._common}))
-      })
+      util.callbackify(this.dbManager.getHeader.bind(this.dbManager))(hash, number, cb)
     })
   }
 
@@ -1059,11 +956,9 @@ module.exports = class Blockchain {
    * @method _getCanonicalHeader
    */
   _getCanonicalHeader (number, cb) {
-    const self = this
-
-    self._numberToHash(number, (err, hash) => {
+    this._numberToHash(number, (err, hash) => {
       if (err) return cb(err)
-      self._getHeader(hash, number, cb)
+      this._getHeader(hash, number, cb)
     })
   }
 
@@ -1072,23 +967,9 @@ module.exports = class Blockchain {
    * @method _getBody
    */
   _getBody (hash, number, cb) {
-    const self = this
-
-    self._lookupByHashNumber(hash, number, cb, (err, hash, number, cb) => {
+    this._lookupByHashNumber(hash, number, cb, (err, hash, number, cb) => {
       if (err) return cb(err)
-      var key = bodyKey(number, hash)
-      var encodedBody = self._cache.body.get(key)
-      if (encodedBody) {
-        return cb(null, rlp.decode(encodedBody))
-      }
-      self.db.get(key, {
-        keyEncoding: 'binary',
-        valueEncoding: 'binary'
-      }, (err, encodedBody) => {
-        if (err) return cb(err)
-        self._cache.body.set(key, encodedBody)
-        cb(null, rlp.decode(encodedBody))
-      })
+      util.callbackify(this.dbManager.getBody.bind(this.dbManager))(hash, number, cb)
     })
   }
 
@@ -1097,23 +978,9 @@ module.exports = class Blockchain {
    * @method _getTd
    */
   _getTd (hash, number, cb) {
-    const self = this
-
-    self._lookupByHashNumber(hash, number, cb, (err, hash, number, cb) => {
+    this._lookupByHashNumber(hash, number, cb, (err, hash, number, cb) => {
       if (err) return cb(err)
-      var key = tdKey(number, hash)
-      var td = self._cache.td.get(key)
-      if (td) {
-        return cb(null, new BN(rlp.decode(td)))
-      }
-      self.db.get(key, {
-        keyEncoding: 'binary',
-        valueEncoding: 'binary'
-      }, (err, td) => {
-        if (err) return cb(err)
-        self._cache.td.set(key, td)
-        cb(null, new BN(rlp.decode(td)))
-      })
+      util.callbackify(this.dbManager.getTd.bind(this.dbManager))(hash, number, cb)
     })
   }
 }

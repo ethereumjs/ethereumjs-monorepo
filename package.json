@@ -12,7 +12,7 @@
     "coverage": "nyc npm run test && nyc report --reporter=text-lcov > .nyc_output/lcov.info",
     "coveralls": "npm run coverage && coveralls <.nyc_output/lcov.info",
     "lint": "standard",
-    "test": "tape ./test/*.js"
+    "test": "babel-tape-runner ./test/*.js"
   },
   "repository": {
     "type": "git",
@@ -29,6 +29,7 @@
   },
   "homepage": "https://github.com/ethereumjs/ethereumjs-blockchain#readme",
   "dependencies": {
+    "@babel/runtime": "^7.3.1",
     "async": "^2.6.1",
     "ethashjs": "~0.0.7",
     "ethereumjs-block": "~2.2.0",
@@ -38,12 +39,15 @@
     "level-mem": "^3.0.1",
     "lru-cache": "^5.1.1",
     "safe-buffer": "^5.1.2",
-    "semaphore": "^1.1.0"
+    "semaphore": "^1.1.0",
+    "util": "^0.11.1"
   },
   "devDependencies": {
     "@babel/cli": "^7.2.3",
     "@babel/core": "^7.2.2",
+    "@babel/plugin-transform-runtime": "^7.2.0",
     "@babel/preset-env": "^7.3.1",
+    "babel-tape-runner": "^3.0.0",
     "coveralls": "^3.0.2",
     "nyc": "^13.0.1",
     "standard": "^11.0.1",
