@@ -8,7 +8,7 @@
   ],
   "scripts": {
     "coverage": "nyc npm run coverageTests && nyc report --reporter=text-lcov > .nyc_output/lcov.info",
-    "coverageTests": "tape ./tests/api/*.js ./tests/tester.js -s",
+    "coverageTests": "tape './tests/api/**/*.js' ./tests/tester.js -s",
     "coveralls": "npm run coverage && if [ -n \"$COVERALLS_REPO_TOKEN\" ]; then coveralls <.nyc_output/lcov.info; fi",
     "testVM": "node ./tests/tester -v",
     "testStateByzantium": "npm run build:dist && node ./tests/tester -s --fork='Byzantium' --dist",
