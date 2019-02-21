@@ -2,7 +2,7 @@ const { promisify } = require('util')
 const tape = require('tape')
 const Transaction = require('ethereumjs-tx')
 const runTx = require('../../lib/runTx')
-const StateManager = require('../../lib/stateManager')
+const { StateManager } = require('../../lib/state')
 const VM = require('../../lib/index')
 const { createAccount } = require('./utils')
 
