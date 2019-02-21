@@ -9,7 +9,7 @@ tape('[Libp2pPeer]', t => {
   const Libp2pNode = td.replace('../../../lib/net/peer/libp2pnode')
   const Libp2pSender = td.replace('../../../lib/net/protocol/libp2psender')
   const Libp2pPeer = require('../../../lib/net/peer/libp2ppeer')
-  const peerInfo = { multiaddrs: { add: td.func() }, id: {toB58String: td.func()} }
+  const peerInfo = { multiaddrs: { add: td.func() }, id: { toB58String: td.func() } }
   const peerInfo0 = { multiaddrs: { add: td.func() } }
   td.when(PeerId.createFromB58String('id0')).thenReturn('peerId0')
   td.when(PeerId.createFromB58String('id1')).thenReturn('peerId1')

@@ -44,7 +44,7 @@ exports.util = require('../lib/util')
 exports.logging = require('./logging')
 
 exports.createNode = function (args) {
-  const logger = exports.logging.getLogger({loglevel: args.loglevel})
+  const logger = exports.logging.getLogger({ loglevel: args.loglevel })
   const options = {
     common: new Common(args.network || 'mainnet'),
     servers: [new exports.Libp2pServer({ multiaddrs: [], ...args })],

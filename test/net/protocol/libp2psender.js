@@ -13,7 +13,7 @@ tape('[Libp2pSender]', t => {
       t.equal(receiver.status.id.toString('hex'), '05', 'status getter')
       t.end()
     })
-    sender.sendStatus({id: 5})
+    sender.sendStatus({ id: 5 })
   })
 
   t.test('should send/receive message', t => {

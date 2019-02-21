@@ -7,7 +7,7 @@ const rlp = require('rlp')
 tape('[RlpxSender]', t => {
   t.test('should send status', t => {
     const rlpxProtocol = td.object()
-    const status = {id: 5}
+    const status = { id: 5 }
     const sender = new RlpxSender(rlpxProtocol)
     sender.sendStatus(status)
     td.verify(rlpxProtocol.sendStatus(status))
@@ -34,7 +34,7 @@ tape('[RlpxSender]', t => {
       t.equal(sender.status.id, 5, 'status getter')
       t.end()
     })
-    rlpxProtocol.emit('status', {id: 5})
+    rlpxProtocol.emit('status', { id: 5 })
   })
 
   t.test('should receive message', t => {
@@ -51,7 +51,7 @@ tape('[RlpxSender]', t => {
   t.test('should catch errors', t => {
     const rlpxProtocol = new EventEmitter()
     const sender = new RlpxSender(rlpxProtocol)
-    t.throws(() => sender.sendStatus({id: 5}), /not a function/, 'sendStatus error')
+    t.throws(() => sender.sendStatus({ id: 5 }), /not a function/, 'sendStatus error')
     t.throws(() => sender.sendMessage(1, 5), /not a function/, 'sendMessage error')
     t.end()
   })

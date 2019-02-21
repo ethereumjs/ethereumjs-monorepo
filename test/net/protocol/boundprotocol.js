@@ -34,17 +34,17 @@ tape('[BoundProtocol]', t => {
     const sender = new EventEmitter()
     const bound = new BoundProtocol({ protocol, peer, sender })
     t.deepEquals(bound.status, {}, 'empty status')
-    bound.status = {id: 1}
-    t.deepEquals(bound.status, {id: 1}, 'status set')
+    bound.status = { id: 1 }
+    t.deepEquals(bound.status, { id: 1 }, 'status set')
     t.end()
   })
 
   t.test('should do handshake', async (t) => {
     const sender = new EventEmitter()
     const bound = new BoundProtocol({ protocol, peer, sender })
-    td.when(protocol.handshake(td.matchers.isA(EventEmitter))).thenResolve({id: 1})
+    td.when(protocol.handshake(td.matchers.isA(EventEmitter))).thenResolve({ id: 1 })
     await bound.handshake(sender)
-    t.deepEquals(bound.status, {id: 1}, 'handshake success')
+    t.deepEquals(bound.status, { id: 1 }, 'handshake success')
     t.end()
   })
 
@@ -56,12 +56,12 @@ tape('[BoundProtocol]', t => {
       t.ok(/error0/.test(err.message), 'decode error')
     })
     td.when(protocol.decode(testMessage, '1')).thenThrow(new Error('error0'))
-    bound.handle({code: 0x01, payload: '1'})
+    bound.handle({ code: 0x01, payload: '1' })
     bound.once('message', (message) => {
       t.deepEquals(message, { name: 'TestMessage', data: 2 }, 'correct message')
     })
     td.when(protocol.decode(testMessage, '2')).thenReturn(2)
-    bound.handle({code: 0x01, payload: '2'})
+    bound.handle({ code: 0x01, payload: '2' })
     t.end()
   })
 
@@ -84,7 +84,7 @@ tape('[BoundProtocol]', t => {
     td.when(protocol.decode(testResponse, '2')).thenReturn(2)
     td.when(sender.sendMessage(0x01, '1')).thenDo(() => {
       setTimeout(() => {
-        sender.emit('message', {code: 0x02, payload: '2'})
+        sender.emit('message', { code: 0x02, payload: '2' })
       }, 100)
     })
     const response = await bound.testMessage(1)
