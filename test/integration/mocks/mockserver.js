@@ -47,7 +47,7 @@ class MockServer extends Server {
   }
 
   async discover (id, location) {
-    const peer = new MockPeer({id, location, protocols: Array.from(this.protocols)})
+    const peer = new MockPeer({ id, location, protocols: Array.from(this.protocols) })
     await peer.connect()
     this.peers[id] = peer
     this.emit('connected', peer)
@@ -55,14 +55,14 @@ class MockServer extends Server {
   }
 
   async accept (id) {
-    const peer = new MockPeer({id, protocols: Array.from(this.protocols)})
+    const peer = new MockPeer({ id, protocols: Array.from(this.protocols) })
     await peer.accept(this)
     return peer
   }
 
   async connect (connection) {
     const id = connection.remoteId
-    const peer = new MockPeer({id, inbound: true, server: this, protocols: Array.from(this.protocols)})
+    const peer = new MockPeer({ id, inbound: true, server: this, protocols: Array.from(this.protocols) })
     await peer.bindProtocols(connection)
     this.peers[id] = peer
     this.emit('connected', peer)

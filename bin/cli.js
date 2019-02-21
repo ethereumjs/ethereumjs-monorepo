@@ -77,7 +77,7 @@ const args = require('yargs')
   })
   .locale('en_EN')
   .argv
-const logger = getLogger({loglevel: args.loglevel})
+const logger = getLogger({ loglevel: args.loglevel })
 
 async function runNode (options) {
   logger.info('Initializing Ethereumjs client...')

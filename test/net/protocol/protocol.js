@@ -42,7 +42,7 @@ tape('[Protocol]', t => {
     const sender = new EventEmitter()
     sender.sendStatus = td.func()
     sender.status = [1]
-    t.deepEquals(await p.handshake(sender), {id: 1}, 'got status now')
+    t.deepEquals(await p.handshake(sender), { id: 1 }, 'got status now')
     t.end()
   })
 
@@ -55,7 +55,7 @@ tape('[Protocol]', t => {
     }, 100)
     const status = await p.handshake(sender)
     td.verify(sender.sendStatus([1]))
-    t.deepEquals(status, {id: 1}, 'got status later')
+    t.deepEquals(status, { id: 1 }, 'got status later')
     t.end()
   })
 

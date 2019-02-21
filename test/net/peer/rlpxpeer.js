@@ -20,8 +20,8 @@ tape('[RlpxPeer]', t => {
   })
 
   t.test('should compute capabilities', t => {
-    const protocols = [ {name: 'eth', versions: [62, 63]}, {name: 'les', versions: [2]} ]
-    const caps = RlpxPeer.capabilities(protocols).map(({name, version, length}) => ({name, version, length}))
+    const protocols = [ { name: 'eth', versions: [62, 63] }, { name: 'les', versions: [2] } ]
+    const caps = RlpxPeer.capabilities(protocols).map(({ name, version, length }) => ({ name, version, length }))
     t.deepEquals(caps, [
       { name: 'eth', version: 62, length: 8 },
       { name: 'eth', version: 63, length: 17 },
@@ -31,7 +31,7 @@ tape('[RlpxPeer]', t => {
   })
 
   t.test('should connect to peer', async (t) => {
-    const proto0 = {name: 'les', versions: [2]}
+    const proto0 = { name: 'les', versions: [2] }
     const peer = new RlpxPeer({ id: 'abcdef0123', protocols: [proto0] })
     proto0.open = td.func()
     td.when(proto0.open()).thenResolve()
@@ -89,14 +89,14 @@ tape('[RlpxPeer]', t => {
   })
 
   t.test('should bind protocols', async (t) => {
-    const protocols = [{name: 'proto0'}]
+    const protocols = [{ name: 'proto0' }]
     const peer = new RlpxPeer({ id: 'abcdef0123', protocols })
     const proto0 = new (class Proto0 {})()
     const rlpxPeer = { getProtocols: td.func() }
     peer.bindProtocol = td.func()
     td.when(rlpxPeer.getProtocols()).thenReturn([proto0])
     await peer.bindProtocols(rlpxPeer)
-    td.verify(peer.bindProtocol({name: 'proto0'}, td.matchers.isA(RlpxSender)))
+    td.verify(peer.bindProtocol({ name: 'proto0' }, td.matchers.isA(RlpxSender)))
     t.ok(peer.connected, 'connected set to true')
     t.end()
   })

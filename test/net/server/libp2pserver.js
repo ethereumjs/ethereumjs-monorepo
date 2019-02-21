@@ -20,7 +20,7 @@ tape('[Libp2pServer]', t => {
   td.when(Libp2pNode.prototype.stop()).thenCallback()
   td.replace('../../../lib/net/peer/libp2pnode', Libp2pNode)
   const Libp2pServer = require('../../../lib/net/server/libp2pserver')
-  const peerInfo = { multiaddrs: { add: td.func(), toArray: td.func() }, id: {toB58String: td.func()} }
+  const peerInfo = { multiaddrs: { add: td.func(), toArray: td.func() }, id: { toB58String: td.func() } }
   const peerInfo0 = { multiaddrs: { add: td.func() } }
   td.when(PeerId.createFromPrivKey(1)).thenCallback(null, 'id0')
   td.when(PeerId.createFromPrivKey(2)).thenCallback(null, 'id1')
@@ -90,10 +90,10 @@ tape('[Libp2pServer]', t => {
   t.test('should start/stop server and test banning', async (t) => {
     t.plan(11)
     const server = new Libp2pServer({ multiaddrs: 'ma0' })
-    const protos = [{name: 'proto', versions: [1]}, {name: 'proto', versions: [2]}]
+    const protos = [{ name: 'proto', versions: [1] }, { name: 'proto', versions: [2] }]
     const peer = td.object()
-    const peer2 = td.object({id: 'id2', bindProtocols: td.func()})
-    const peerInfo2 = {id: {toB58String: () => 'id2'}, multiaddrs: {toArray: () => []}}
+    const peer2 = td.object({ id: 'id2', bindProtocols: td.func() })
+    const peerInfo2 = { id: { toB58String: () => 'id2' }, multiaddrs: { toArray: () => [] } }
     protos.forEach(p => {
       p.open = td.func()
       td.when(p.open()).thenResolve()
@@ -106,7 +106,7 @@ tape('[Libp2pServer]', t => {
     td.when(peer.accept(protos[0], 'conn0', server)).thenResolve()
     server.peers.set('id', peer)
     server.addProtocols(protos)
-    server.on('listening', (info) => t.deepEquals(info, {transport: 'libp2p', url: 'ma0'}, 'listening'))
+    server.on('listening', (info) => t.deepEquals(info, { transport: 'libp2p', url: 'ma0' }, 'listening'))
     server.once('connected', (p) => t.equals(p, peer, 'peer connected'))
     server.on('error', (err) => t.equals(err, 'err0', 'got err0'))
     t.notOk(server.ban('peer'), 'unbannable')

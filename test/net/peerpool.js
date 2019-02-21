@@ -17,7 +17,7 @@ tape('[PeerPool]', t => {
 
   t.test('should open/close', async (t) => {
     const server = new EventEmitter()
-    const pool = new PeerPool({servers: [server]})
+    const pool = new PeerPool({ servers: [server] })
     pool.connected = td.func()
     pool.disconnected = td.func()
     await pool.open()
@@ -75,7 +75,7 @@ tape('[PeerPool]', t => {
   })
 
   t.test('should ban peer', t => {
-    const peers = [{id: 1}, {id: 2, server: { ban: td.func() }}]
+    const peers = [{ id: 1 }, { id: 2, server: { ban: td.func() } }]
     const pool = new PeerPool()
     peers.forEach(p => pool.add(p))
     peers.forEach(p => pool.ban(p, 1000))
