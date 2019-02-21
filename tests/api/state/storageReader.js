@@ -1,6 +1,6 @@
 const { promisify } = require('util')
 const tape = require('tape')
-const StorageReader = require('../../lib/storageReader')
+const { StorageReader } = require('../../../lib/state')
 
 const mkStateManagerMock = () => {
   let i = 0
