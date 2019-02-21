@@ -144,7 +144,7 @@ async function run () {
 
   process.on('SIGINT', async () => {
     logger.info('Caught interrupt signal. Shutting down...')
-    if (server) await server.stop()
+    if (server) server.http().close()
     await node.stop()
     logger.info('Exiting.')
     process.exit()
