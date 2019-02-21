@@ -36,4 +36,11 @@ tape('[Util/Parse]', t => {
     t.deepEquals(params, expected, 'parsed params correctly')
     t.end()
   })
+
+  t.test('should parse contracts from geth params file', async (t) => {
+    const params = await parse.params(path.resolve(__dirname, 'lisinski.json'))
+    const expected = 'e7fd8db206dcaf066b7c97b8a42a0abc18653613560748557ab44868652a78b6'
+    t.equals(params.genesis.hash.toString('hex'), expected, 'parsed contracts correctly')
+    t.end()
+  })
 })
