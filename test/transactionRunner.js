@@ -13,6 +13,15 @@ const forkNames = [
   'Homestead',
 ]
 
+const forkNameMap = {
+  Byzantium: 'byzantium',
+  Constantinople: 'constantinople',
+  EIP150: 'tangerineWhistle',
+  EIP158: 'spuriousDragon',
+  Frontier: 'chainstart',
+  Homestead: 'homestead',
+}
+
 tape('TransactionTests', (t) => {
   const fileFilterRegex = argv.file ? new RegExp(argv.file + '[^\\w]') : undefined
 
@@ -21,23 +30,35 @@ tape('TransactionTests', (t) => {
     let tx
     t.test(testName, (st) => {
       const rawTx = ethUtil.toBuffer(testData.rlp)
+
       let tx
       let sender
       let hash
       forkNames.forEach(forkName => {
+        const forkTestData = testData[forkName]
+        const shouldBeInvalid = Object.keys(forkTestData).length === 0
         try {
-          tx = new Tx(rawTx)
-          if (forkName !== 'Homestead') {
-            tx._homestead = false
-          }
+          tx = new Tx(rawTx, {
+            hardfork: forkNameMap[forkName],
+          })
+
           const sender = tx.getSenderAddress().toString('hex')
           const hash = tx.hash().toString('hex')
-          st.assert(sender === testData[forkName].sender && hash === testData[forkName].hash, `Sender and hash should be correct on ${forkName}`)
-        } catch (e) {
-          if (tx !== undefined) {
-            st.equal(e.message, 'Invalid Signature', `Transaction signature should be invalid on ${forkName}`)
+
+          const validationErrors = tx.validate(true)
+          const transactionIsValid = validationErrors.length === 0
+          const hashAndSenderAreCorrect = forkTestData && (sender === forkTestData.sender && hash === forkTestData.hash)
+
+          if (shouldBeInvalid) {
+            st.assert(!transactionIsValid, `Transaction should be invalid on ${forkName}`)
           } else {
-            st.pass(`Transaction should be invalid and should error on creation on ${forkName}`)
+            st.assert(hashAndSenderAreCorrect && transactionIsValid, `Transaction should be valid on ${forkName}`)
+          }
+        } catch (e) {
+          if (shouldBeInvalid) {
+            st.assert(shouldBeInvalid, `Transaction should be invalid on ${forkName}`)
+          } else {
+            st.fail(`Transaction should be valid on ${forkName}`)
           }
         }
       })
