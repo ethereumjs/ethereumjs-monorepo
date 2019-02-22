@@ -1,6 +1,6 @@
 'use strict'
 const ethUtil = require('ethereumjs-util')
-const Common = require('ethereumjs-common')
+const Common = require('ethereumjs-common').default
 const BN = ethUtil.BN
 
 // secp256k1n/2
@@ -179,7 +179,8 @@ class Transaction {
     if (includeSignature) {
       items = this.raw
     } else {
-      if (this._chainId > 0) {
+      const v = ethUtil.bufferToInt(this.v)
+      if ((v === this._chainId * 2 + 35 || v === this._chainId * 2 + 36) && this._common.gteHardfork('spuriousDragon')) {
         const raw = this.raw.slice()
         this.v = this._chainId
         this.r = 0
@@ -239,11 +240,9 @@ class Transaction {
     }
 
     try {
-      let v = ethUtil.bufferToInt(this.v)
-      if (this._chainId > 0) {
-        v -= this._chainId * 2 + 8
-      }
-      this._senderPubKey = ethUtil.ecrecover(msgHash, v, this.r, this.s)
+      const v = ethUtil.bufferToInt(this.v)
+      const useChainIdWhileRecoveringPubKey = v >= this._chainId * 2 + 35 && this._common.gteHardfork('spuriousDragon')
+      this._senderPubKey = ethUtil.ecrecover(msgHash, v, this.r, this.s, useChainIdWhileRecoveringPubKey && this._chainId)
     } catch (e) {
       return false
     }
