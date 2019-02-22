@@ -1,7 +1,7 @@
 const createKeccakHash = require('keccak')
 const createHash = require('create-hash')
 import rlp = require('rlp')
-import { toBuffer, setLength } from './buffer'
+import { toBuffer, setLength } from './bytes'
 
 /**
  * Creates Keccak hash of the input

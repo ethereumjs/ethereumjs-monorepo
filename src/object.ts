@@ -1,7 +1,7 @@
 const assert = require('assert')
 const ethjsUtil = require('ethjs-util')
 import rlp = require('rlp')
-import { toBuffer, baToJSON, stripZeros } from './buffer'
+import { toBuffer, baToJSON, stripZeros } from './bytes'
 
 /**
  * Defines properties on a `Object`. It make the assumption that underlying data is binary.

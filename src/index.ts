@@ -40,9 +40,9 @@ export * from './hash'
 export * from './signature'
 
 /**
- * Utilities for manipulating Buffers
+ * Utilities for manipulating Buffers, byte arrays, etc.
  */
-export * from './buffer'
+export * from './bytes'
 
 /**
  * Function for definining properties on an object

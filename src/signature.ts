@@ -1,6 +1,6 @@
 const secp256k1 = require('secp256k1')
 import BN = require('bn.js')
-import { toBuffer, setLength, setLengthLeft, bufferToHex } from './buffer'
+import { toBuffer, setLength, setLengthLeft, bufferToHex } from './bytes'
 import { keccak } from './hash'
 
 export interface ECDSASignature {
