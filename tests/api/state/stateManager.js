@@ -50,9 +50,9 @@ tape('StateManager', (t) => {
 
     // test contract storage cache
     await checkpoint()
-    const key = Buffer.from("0x1234");
-    const value = Buffer.from("0x1234");
-    await putContractStorage(addressBuffer, key, value);
+    const key = Buffer.from('0x1234')
+    const value = Buffer.from('0x1234')
+    await putContractStorage(addressBuffer, key, value)
 
     const contract0 = await getContractStorage(addressBuffer, key)
     st.equal(contract0.toString('hex'), value.toString('hex'), 'contract key\'s value is set in the _storageTries cache')
