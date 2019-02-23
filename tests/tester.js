@@ -3,7 +3,7 @@
 const argv = require('minimist')(process.argv.slice(2))
 const tape = require('tape')
 const testing = require('ethereumjs-testing')
-const FORK_CONFIG = argv.fork || 'Byzantium'
+const FORK_CONFIG = argv.fork || 'Petersburg'
 const {
   getRequiredForkConfigAlias
 } = require('./util')
