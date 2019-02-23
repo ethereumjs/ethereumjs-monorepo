@@ -15,7 +15,7 @@
     "testStateConstantinople": "npm run build:dist && node ./tests/tester -s --fork='Constantinople' --dist",
     "testStatePetersburg": "npm run build:dist && node ./tests/tester -s --fork='Petersburg' --dist",
     "testBuildIntegrity": "npm run build:dist && node ./tests/tester -s --dist --test='stackOverflow'",
-    "testBlockchain": "npm run build:dist && node --stack-size=1500 ./tests/tester -b --fork='Constantinople' --dist --excludeDir='GeneralStateTests'",
+    "testBlockchain": "npm run build:dist && node --stack-size=1500 ./tests/tester -b --fork='Petersburg' --dist --excludeDir='GeneralStateTests'",
     "testBlockchainGeneralStateTests": "npm run build:dist && node --stack-size=1500 ./tests/tester -b --dist --dir='GeneralStateTests'",
     "testAPI": "tape './tests/api/**/*.js'",
     "test": "echo \"[INFO] Generic test cmd not used. See package.json for more specific test run cmds.\"",
