@@ -9,7 +9,6 @@ const {
 } = require('./util')
 // tests which should be fixed
 const skipBroken = [
-  'CallIdentity_6_inputShorterThanOutput', // temporary till fixed (2018-11-14)
   'ecmul_0-3_5616_28000_96', // temporary till fixed (2018-09-20)
   'dynamicAccountOverwriteEmpty' // temporary till fixed (2019-01-30), skipped along constantinopleFix work time constraints
 ]
