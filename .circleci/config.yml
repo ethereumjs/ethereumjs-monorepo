@@ -18,7 +18,7 @@ jobs:
       - *restore_node_modules
       - run:
           name: npm install
-          command: npm install
+          command: npm install highlight.js@9.14.2 && npm install
       - save_cache:
           name: Save node_modules cache
           key: v1-node-{{ .Branch }}-{{ checksum "package.json" }}
