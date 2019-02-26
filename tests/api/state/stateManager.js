@@ -29,7 +29,10 @@ tape('StateManager', (t) => {
     const getAccount = promisify((...args) => stateManager.getAccount(...args))
     const commit = promisify((...args) => stateManager.commit(...args))
     const setStateRoot = promisify((...args) => stateManager.setStateRoot(...args))
+    const putContractStorage = promisify((...args) => stateManager.putContractStorage(...args))
+    const getContractStorage = promisify((...args) => stateManager.getContractStorage(...args))
 
+    // test account storage cache
     const initialStateRoot = await getStateRoot()
     await checkpoint()
     await putAccount(addressBuffer, account)
@@ -44,6 +47,20 @@ tape('StateManager', (t) => {
     await setStateRoot(initialStateRoot)
     const account2 = await getAccount(addressBuffer)
     st.equal(account2.balance.toString('hex'), '', 'account value is set to 0 in original state root')
+
+    // test contract storage cache
+    await checkpoint()
+    const key = Buffer.from('0x1234')
+    const value = Buffer.from('0x1234')
+    await putContractStorage(addressBuffer, key, value)
+
+    const contract0 = await getContractStorage(addressBuffer, key)
+    st.equal(contract0.toString('hex'), value.toString('hex'), 'contract key\'s value is set in the _storageTries cache')
+
+    await commit()
+    await setStateRoot(initialStateRoot)
+    const contract1 = await getContractStorage(addressBuffer, key)
+    st.equal(contract1.toString('hex'), '', 'contract key\'s value is unset in the _storageTries cache')
 
     st.end()
   })
