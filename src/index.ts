@@ -12,7 +12,7 @@ export { Decoded, Dictionary, Input, List }
  * @returns returns buffer of encoded data
  **/
 export function encode(input: Input): Buffer {
-  if (input instanceof Array) {
+  if (Array.isArray(input)) {
     const output: Buffer[] = []
     for (let i = 0; i < input.length; i++) {
       output.push(encode(input[i]))
