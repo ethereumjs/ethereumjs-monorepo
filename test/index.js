@@ -3,6 +3,50 @@ const ethUtils = require('../dist/index.js')
 const BN = require('bn.js')
 const eip1014Testdata = require('./testdata/eip1014Examples.json')
 
+describe('constants', function() {
+  it('should match constants', function () {
+    assert.equal(
+      ethUtils.MAX_INTEGER.toString('hex'),
+      'ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff'
+    )
+
+    assert.equal(
+      ethUtils.TWO_POW256.toString('hex'),
+      '10000000000000000000000000000000000000000000000000000000000000000'
+    )
+
+    assert.equal(
+      ethUtils.KECCAK256_NULL_S,
+      'c5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470'
+    )
+
+    assert.equal(
+      ethUtils.KECCAK256_NULL.toString('hex'),
+      'c5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470'
+    )
+
+    assert.equal(
+      ethUtils.KECCAK256_RLP_ARRAY_S,
+      '1dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d49347'
+    )
+
+    assert.equal(
+      ethUtils.KECCAK256_RLP_ARRAY.toString('hex'),
+      '1dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d49347'
+    )
+
+    assert.equal(
+      ethUtils.KECCAK256_RLP_S,
+      '56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421'
+    )
+
+    assert.equal(
+      ethUtils.KECCAK256_RLP.toString('hex'),
+      '56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421'
+    )
+  })
+})
+
 describe('zeros function', function () {
   it('should produce lots of 0s', function () {
     const z60 = ethUtils.zeros(30)
@@ -557,6 +601,24 @@ describe('isValidSignature', function () {
     const r = Buffer.from('99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9', 'hex')
     const s = Buffer.from('129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66', 'hex')
     assert.equal(ethUtils.isValidSignature(29, r, s), false)
+  })
+  it('should fail when on homestead and s > secp256k1n/2', function () {
+    const SECP256K1_N_DIV_2 = new BN('7fffffffffffffffffffffffffffffff5d576e7357a4501ddfe92f46681b20a0', 16)
+
+    const r = Buffer.from('99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9', 'hex')
+    const s = Buffer.from(SECP256K1_N_DIV_2.add(new BN('1', 16)).toString(16), 'hex')
+
+    const v = 27
+    assert.equal(ethUtils.isValidSignature(v, r, s, true), false)
+  })
+  it('should not fail when not on homestead but s > secp256k1n/2', function () {
+    const SECP256K1_N_DIV_2 = new BN('7fffffffffffffffffffffffffffffff5d576e7357a4501ddfe92f46681b20a0', 16)
+
+    const r = Buffer.from('99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9', 'hex')
+    const s = Buffer.from(SECP256K1_N_DIV_2.add(new BN('1', 16)).toString(16), 'hex')
+
+    const v = 27
+    assert.equal(ethUtils.isValidSignature(v, r, s, false), true)
   })
   it('should work otherwise', function () {
     const r = Buffer.from('99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9', 'hex')
