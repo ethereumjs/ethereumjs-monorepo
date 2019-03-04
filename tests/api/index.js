@@ -1,4 +1,4 @@
-const { promisify } = require('util')
+const promisify = require('util.promisify')
 const tape = require('tape')
 const util = require('ethereumjs-util')
 const Block = require('ethereumjs-block')
