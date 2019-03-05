@@ -1,11 +1,9 @@
-
-#  ethereumjs-account
+# ethereumjs-account
 
 ## Index
 
 ### Classes
 
-* [Account](classes/account.md)
+- [Account](classes/account.md)
 
 ---
-

@@ -27,4 +27,5 @@ and as such doesn't support hardforks before the Spurious Dragon.
 This module work with `browserify`.
 
 # API
+
 [./docs/](./docs/README.md)
