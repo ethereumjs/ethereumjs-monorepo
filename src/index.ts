@@ -95,7 +95,6 @@ export default class Account {
   /**
    * Returns the RLP serialization of the account as a `Buffer`.
    *
-   * @return {Buffer}
    */
   serialize(): Buffer {
     return rlp.encode([this.nonce, this.balance, this.stateRoot, this.codeHash])
@@ -104,7 +103,6 @@ export default class Account {
   /**
    * Returns a `Boolean` deteremining if the account is a contract.
    *
-   * @return {boolean}
    */
   isContract(): boolean {
     return this.codeHash.toString('hex') !== ethUtil.KECCAK256_NULL_S
@@ -230,9 +228,8 @@ export default class Account {
   /**
    * Returns a `Boolean` determining if the account is empty.
    *
-   * @return {boolean} if account is empty
    */
-  isEmpty() {
+  isEmpty(): boolean {
     return (
       this.balance.toString('hex') === '' &&
       this.nonce.toString('hex') === '' &&

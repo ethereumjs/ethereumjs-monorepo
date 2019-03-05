@@ -39,7 +39,7 @@
 
 ⊕ **new Account**(data?: *`any`*): [Account](account.md)
 
-*Defined in [index.ts:41](https://github.com/ethereumjs/ethereumjs-account/blob/783c932/src/index.ts#L41)*
+*Defined in [index.ts:41](https://github.com/ethereumjs/ethereumjs-account/blob/be66a6a/src/index.ts#L41)*
 
 Creates a new account object
 
@@ -79,7 +79,7 @@ ___
 
 **● balance**: *`Buffer`*
 
-*Defined in [index.ts:31](https://github.com/ethereumjs/ethereumjs-account/blob/783c932/src/index.ts#L31)*
+*Defined in [index.ts:31](https://github.com/ethereumjs/ethereumjs-account/blob/be66a6a/src/index.ts#L31)*
 
 The account's balance in wei.
 
@@ -90,7 +90,7 @@ ___
 
 **● codeHash**: *`Buffer`*
 
-*Defined in [index.ts:41](https://github.com/ethereumjs/ethereumjs-account/blob/783c932/src/index.ts#L41)*
+*Defined in [index.ts:41](https://github.com/ethereumjs/ethereumjs-account/blob/be66a6a/src/index.ts#L41)*
 
 The hash of the code of the contract.
 
@@ -101,7 +101,7 @@ ___
 
 **● nonce**: *`Buffer`*
 
-*Defined in [index.ts:26](https://github.com/ethereumjs/ethereumjs-account/blob/783c932/src/index.ts#L26)*
+*Defined in [index.ts:26](https://github.com/ethereumjs/ethereumjs-account/blob/be66a6a/src/index.ts#L26)*
 
 The account's nonce.
 
@@ -112,7 +112,7 @@ ___
 
 **● stateRoot**: *`Buffer`*
 
-*Defined in [index.ts:36](https://github.com/ethereumjs/ethereumjs-account/blob/783c932/src/index.ts#L36)*
+*Defined in [index.ts:36](https://github.com/ethereumjs/ethereumjs-account/blob/be66a6a/src/index.ts#L36)*
 
 The stateRoot for the storage of the contract.
 
@@ -126,7 +126,7 @@ ___
 
 ▸ **getCode**(trie: *`Trie`*, cb: *`TrieGetCb`*): `void`
 
-*Defined in [index.ts:118](https://github.com/ethereumjs/ethereumjs-account/blob/783c932/src/index.ts#L118)*
+*Defined in [index.ts:116](https://github.com/ethereumjs/ethereumjs-account/blob/be66a6a/src/index.ts#L116)*
 
 Fetches the code from the trie.
 
@@ -146,7 +146,7 @@ ___
 
 ▸ **getStorage**(trie: *`Trie`*, key: *`Buffer` \| `string`*, cb: *`TrieGetCb`*): `void`
 
-*Defined in [index.ts:181](https://github.com/ethereumjs/ethereumjs-account/blob/783c932/src/index.ts#L181)*
+*Defined in [index.ts:179](https://github.com/ethereumjs/ethereumjs-account/blob/be66a6a/src/index.ts#L179)*
 
 Fetches `key` from the account's storage.
 
@@ -167,7 +167,7 @@ ___
 
 ▸ **isContract**(): `boolean`
 
-*Defined in [index.ts:109](https://github.com/ethereumjs/ethereumjs-account/blob/783c932/src/index.ts#L109)*
+*Defined in [index.ts:107](https://github.com/ethereumjs/ethereumjs-account/blob/be66a6a/src/index.ts#L107)*
 
 Returns a `Boolean` deteremining if the account is a contract.
 
@@ -180,12 +180,11 @@ ___
 
 ▸ **isEmpty**(): `boolean`
 
-*Defined in [index.ts:235](https://github.com/ethereumjs/ethereumjs-account/blob/783c932/src/index.ts#L235)*
+*Defined in [index.ts:232](https://github.com/ethereumjs/ethereumjs-account/blob/be66a6a/src/index.ts#L232)*
 
 Returns a `Boolean` determining if the account is empty.
 
 **Returns:** `boolean`
-if account is empty
 
 ___
 <a id="serialize"></a>
@@ -194,7 +193,7 @@ ___
 
 ▸ **serialize**(): `Buffer`
 
-*Defined in [index.ts:100](https://github.com/ethereumjs/ethereumjs-account/blob/783c932/src/index.ts#L100)*
+*Defined in [index.ts:99](https://github.com/ethereumjs/ethereumjs-account/blob/be66a6a/src/index.ts#L99)*
 
 Returns the RLP serialization of the account as a `Buffer`.
 
@@ -207,7 +206,7 @@ ___
 
 ▸ **setCode**(trie: *`Trie`*, code: *`Buffer`*, cb: *`function`*): `void`
 
-*Defined in [index.ts:162](https://github.com/ethereumjs/ethereumjs-account/blob/783c932/src/index.ts#L162)*
+*Defined in [index.ts:160](https://github.com/ethereumjs/ethereumjs-account/blob/be66a6a/src/index.ts#L160)*
 
 Stores the code in the trie.
 
@@ -255,7 +254,7 @@ ___
 
 ▸ **setStorage**(trie: *`Trie`*, key: *`Buffer` \| `string`*, val: *`Buffer` \| `string`*, cb: *`function`*): `void`
 
-*Defined in [index.ts:220](https://github.com/ethereumjs/ethereumjs-account/blob/783c932/src/index.ts#L220)*
+*Defined in [index.ts:218](https://github.com/ethereumjs/ethereumjs-account/blob/be66a6a/src/index.ts#L218)*
 
 Stores a `val` at the `key` in the contract's storage.
 
