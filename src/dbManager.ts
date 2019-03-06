@@ -1,9 +1,6 @@
-const BN = require('bn.js')
-const level = require('level-mem')
-const rlp = require('rlp')
-const Block = require('ethereumjs-block')
-const Cache = require('./cache')
-const {
+import * as rlp from 'rlp'
+import Cache from './cache'
+import {
   headsKey,
   headHeaderKey,
   headBlockKey,
@@ -11,15 +8,26 @@ const {
   numberToHashKey,
   tdKey,
   bodyKey,
-  headerKey
-} = require('./util')
+  headerKey,
+} from './util'
+
+import BN = require('bn.js')
+
+const level = require('level-mem')
+const Block = require('ethereumjs-block')
 
 /**
- * Abstraction over db to facilitate storing/fetching blockchain-related
+ * Abstraction over a DB to facilitate storing/fetching blockchain-related
  * data, such as blocks and headers, indices, and the head block.
  */
-module.exports = class DBManager {
-  constructor (db, common) {
+export default class DBManager {
+  _cache: { [k: string]: Cache<Buffer> }
+
+  _common: any
+
+  _db: any
+
+  constructor(db: any, common: any) {
     this._db = db
     this._common = common
     this._cache = {
@@ -27,43 +35,38 @@ module.exports = class DBManager {
       header: new Cache({ max: 512 }),
       body: new Cache({ max: 256 }),
       numberToHash: new Cache({ max: 2048 }),
-      hashToNumber: new Cache({ max: 2048 })
+      hashToNumber: new Cache({ max: 2048 }),
     }
   }
 
   /**
    * Fetches iterator heads from the db.
-   * @returns Promise
    */
-  getHeads () {
+  getHeads(): Promise<any> {
     return this.get(headsKey, { valueEncoding: 'json' })
   }
 
   /**
    * Fetches header of the head block.
-   * @returns Promise
    */
-  getHeadHeader () {
+  getHeadHeader(): Promise<any> {
     return this.get(headHeaderKey)
   }
 
   /**
    * Fetches head block.
-   * @returns Promise
    */
-  getHeadBlock () {
+  getHeadBlock(): Promise<any> {
     return this.get(headBlockKey)
   }
 
   /**
    * Fetches a block (header and body), given a block tag
    * which can be either its hash or its number.
-   * @param {Buffer|BN|number} blockTag - Hash or number of the block
-   * @returns Promise
    */
-  async getBlock (blockTag) {
+  async getBlock(blockTag: Buffer | BN | number): Promise<any> {
     // determine BlockTag type
-    if (Number.isInteger(blockTag)) {
+    if (typeof blockTag === 'number' && Number.isInteger(blockTag)) {
       blockTag = new BN(blockTag)
     }
 
@@ -87,39 +90,32 @@ module.exports = class DBManager {
       body = [[], []]
     }
 
-    return new Block([header].concat(body), {common: this._common})
+    return new Block([header].concat(body), { common: this._common })
   }
 
   /**
    * Fetches body of a block given its hash and number.
-   * @param {Buffer} hash
-   * @param {BN} number
-   * @returns Promise
    */
-  async getBody (hash, number) {
+  async getBody(hash: Buffer, number: BN): Promise<Buffer> {
     const key = bodyKey(number, hash)
     return rlp.decode(await this.get(key, { cache: 'body' }))
   }
 
   /**
    * Fetches header of a block given its hash and number.
-   * @param {Buffer} hash
-   * @param {BN} number
-   * @returns Promise
    */
-  async getHeader (hash, number) {
+  async getHeader(hash: Buffer, number: BN) {
     const key = headerKey(number, hash)
-    let encodedHeader = await this.get(key, { cache: 'header' })
-    return new Block.Header(rlp.decode(encodedHeader), { common: this._common })
+    const encodedHeader = await this.get(key, { cache: 'header' })
+    return new Block.Header(rlp.decode(encodedHeader), {
+      common: this._common,
+    })
   }
 
   /**
    * Fetches total difficulty for a block given its hash and number.
-   * @param {Buffer} hash
-   * @param {BN} number
-   * @returns Promise
    */
-  async getTd (hash, number) {
+  async getTd(hash: Buffer, number: BN): Promise<BN> {
     const key = tdKey(number, hash)
     const td = await this.get(key, { cache: 'td' })
     return new BN(rlp.decode(td))
@@ -127,20 +123,16 @@ module.exports = class DBManager {
 
   /**
    * Performs a block hash to block number lookup.
-   * @param {Buffer} hash
-   * @returns Promise
    */
-  async hashToNumber (hash) {
+  async hashToNumber(hash: Buffer): Promise<BN> {
     const key = hashToNumberKey(hash)
     return new BN(await this.get(key, { cache: 'hashToNumber' }))
   }
 
   /**
    * Performs a block number to block hash lookup.
-   * @param {BN} number
-   * @returns Promise
    */
-  async numberToHash (number) {
+  async numberToHash(number: BN): Promise<Buffer> {
     if (number.ltn(0)) {
       throw new level.errors.NotFoundError()
     }
@@ -153,17 +145,11 @@ module.exports = class DBManager {
    * Fetches a key from the db. If `opts.cache` is specified
    * it first tries to load from cache, and on cache miss will
    * try to put the fetched item on cache afterwards.
-   * @param {Buffer} key
-   * @param {Object} opts - Options and their default values are:
-   * - {string} [keyEncoding='binary']
-   * - {string} [valueEncodingr='binary']
-   * - {string} [cache=undefined] name of cache to use
-   * @returns Promise
    */
-  async get (key, opts = {}) {
+  async get(key: string | Buffer, opts: any = {}): Promise<any> {
     const dbOpts = {
       keyEncoding: opts.keyEncoding || 'binary',
-      valueEncoding: opts.valueEncoding || 'binary'
+      valueEncoding: opts.valueEncoding || 'binary',
     }
 
     if (opts.cache) {
@@ -173,7 +159,7 @@ module.exports = class DBManager {
 
       let value = this._cache[opts.cache].get(key)
       if (!value) {
-        value = await this._db.get(key, dbOpts)
+        value = <Buffer>await this._db.get(key, dbOpts)
         this._cache[opts.cache].set(key, value)
       }
 
@@ -185,10 +171,8 @@ module.exports = class DBManager {
 
   /**
    * Performs a batch operation on db.
-   * @param {Array} ops
-   * @returns Promise
    */
-  batch (ops) {
+  batch(ops: Array<any>): Promise<any> {
     return this._db.batch(ops)
   }
 }
