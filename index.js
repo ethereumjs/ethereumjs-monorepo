@@ -174,17 +174,20 @@ class Transaction {
   hash (includeSignature) {
     if (includeSignature === undefined) includeSignature = true
 
-    // EIP155 spec:
-    // when computing the hash of a transaction for purposes of signing or recovering,
-    // instead of hashing only the first six elements (ie. nonce, gasprice, startgas, to, value, data),
-    // hash nine elements, with v replaced by CHAIN_ID, r = 0 and s = 0
-
     let items
     if (includeSignature) {
       items = this.raw
     } else {
+      // EIP155 spec:
+      // If block.number >= 2,675,000 and v = CHAIN_ID * 2 + 35 or v = CHAIN_ID * 2 + 36, then when computing
+      // the hash of a transaction for purposes of signing or recovering, instead of hashing only the first six
+      // elements (i.e. nonce, gasprice, startgas, to, value, data), hash nine elements, with v replaced by
+      // CHAIN_ID, r = 0 and s = 0.
+
+      const onEIP155BlockOrLater = this._common.gteHardfork('spuriousDragon')
       const v = ethUtil.bufferToInt(this.v)
-      if ((v === this._chainId * 2 + 35 || v === this._chainId * 2 + 36) && this._common.gteHardfork('spuriousDragon')) {
+      const vAndChainIdMeetEIP155Conditions = v === this._chainId * 2 + 35 || v === this._chainId * 2 + 36
+      if (vAndChainIdMeetEIP155Conditions && onEIP155BlockOrLater) {
         const raw = this.raw.slice()
         this.v = this._chainId
         this.r = 0
