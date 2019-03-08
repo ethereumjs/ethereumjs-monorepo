@@ -1,4 +1,4 @@
-const { promisify } = require('util')
+const promisify = require('util.promisify')
 const tape = require('tape')
 const Trie = require('merkle-patricia-tree/secure.js')
 const Account = require('ethereumjs-account')

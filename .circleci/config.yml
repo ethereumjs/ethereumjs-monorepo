@@ -3,7 +3,7 @@ version: 2
 defaults: &defaults
   working_directory: ~/project/ethereumjs-vm
   docker:
-    - image: circleci/node:8
+    - image: circleci/node:8-browsers
 restore_node_modules: &restore_node_modules
   restore_cache:
     name: Restore node_modules cache
@@ -46,6 +46,15 @@ jobs:
       - run:
           name: testAPI
           command: npm run testAPI
+  test_api_browser:
+    <<: *defaults
+    steps:
+      - attach_workspace:
+          at: ~/project
+      - *restore_node_modules
+      - run:
+          name: testAPI:browser
+          command: npm run testAPI:browser
   test_state_byzantium:
     <<: *defaults
     steps:
@@ -100,6 +109,9 @@ workflows:
           requires:
             - install
       - test_api:
+          requires:
+            - install
+      - test_api_browser:
           requires:
             - install
       - test_state_byzantium:
