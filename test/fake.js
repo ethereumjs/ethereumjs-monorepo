@@ -96,15 +96,15 @@ tape('[FakeTransaction]: Basic functions', function (t) {
   t.test('should getSenderAddress and getSenderPublicKey', st => {
     const tx = new FakeTransaction(txData)
     st.plan(2)
-    st.equal(tx._from.toString('hex'), '7e5f4552091a69125d5dfcb7b8c2659029395bdf', 'this._from is set in FakeTransaction');
-    st.equal(tx.getSenderAddress().toString('hex'), '7e5f4552091a69125d5dfcb7b8c2659029395bdf', 'should return correct address');
+    st.equal(tx._from.toString('hex'), '7e5f4552091a69125d5dfcb7b8c2659029395bdf', 'this._from is set in FakeTransaction')
+    st.equal(tx.getSenderAddress().toString('hex'), '7e5f4552091a69125d5dfcb7b8c2659029395bdf', 'should return correct address')
   })
 
   t.test('should verifySignature', st => {
     const tx = new FakeTransaction(txData)
     const txWithWrongSignature = new FakeTransaction({
       ...txData,
-      r: Buffer.from('abcd1558260ac737ea6d800906c6d085a801e5e0f0952bf93978d6fa468fbdff', 'hex'),
+      r: Buffer.from('abcd1558260ac737ea6d800906c6d085a801e5e0f0952bf93978d6fa468fbdff', 'hex')
     })
     st.plan(2)
     st.true(tx.verifySignature(), 'signature is valid')
