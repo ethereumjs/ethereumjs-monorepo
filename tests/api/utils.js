@@ -22,7 +22,7 @@ function createAccount (nonce, balance) {
 
 function setupVM () {
   const db = level()
-  const blockchain = new Blockchain(db)
+  const blockchain = new Blockchain({ db, validate: false })
   const vm = new VM({ blockchain })
 
   return vm

@@ -1,4 +1,4 @@
-const { promisify } = require('util')
+const promisify = require('util.promisify')
 const tape = require('tape')
 const { StorageReader } = require('../../../lib/state')
 

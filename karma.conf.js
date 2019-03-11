@@ -17,10 +17,8 @@ module.exports = function (config) {
     ],
 
     // list of files / patterns to exclude
-    // currently failing tests, open separate PRs to fix
     exclude: [
       './tests/api/state/stateManager.js', // 4, "# should clear the cache when the state root is set"
-      './tests/api/state/storageReader.js', // 1, "# should get value from stateManager"
       './tests/api/index.js', // 11, "# should run blockchain with mocked runBlock" not working"
       './tests/api/runBlock.js', // 3, "# should fail when runTx fails"
       './tests/api/runBlockchain.js' // 2, "# should run with valid and invalid blocks"
@@ -69,6 +67,10 @@ module.exports = function (config) {
 
     // Concurrency level
     // how many browser should be started simultaneous
-    concurrency: Infinity
+    concurrency: Infinity,
+
+    // Fail after timeout
+    browserDisconnectTimeout: 100000,
+    browserNoActivityTimeout: 100000
   })
 }

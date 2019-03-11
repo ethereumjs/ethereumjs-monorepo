@@ -1,4 +1,4 @@
-const { promisify } = require('util')
+const promisify = require('util.promisify')
 const tape = require('tape')
 const util = require('ethereumjs-util')
 const StateManager = require('../../../lib/state/stateManager')
@@ -9,13 +9,12 @@ tape('StateManager', (t) => {
     const stateManager = new StateManager()
 
     st.deepEqual(stateManager._trie.root, util.KECCAK256_RLP, 'it has default root')
+    st.equal(stateManager._common.hardfork(), 'byzantium', 'it has default hardfork')
     stateManager.getStateRoot((err, res) => {
       st.error(err, 'getStateRoot returns no error')
       st.deepEqual(res, util.KECCAK256_RLP, 'it has default root')
+      st.end()
     })
-
-    st.equal(stateManager._common.hardfork(), 'byzantium', 'it has default hardfork')
-    st.end()
   })
 
   t.test('should clear the cache when the state root is set', async (st) => {
