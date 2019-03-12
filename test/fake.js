@@ -20,6 +20,7 @@ var txData = {
 tape('[FakeTransaction]: Basic functions', function (t) {
   t.test('instantiate with from / create a hash', function (st) {
     st.plan(3)
+
     var tx = new FakeTransaction(txData)
     var hash = tx.hash()
     var cmpHash = Buffer.from('f74b039f6361c4351a99a7c6a10867369fe6701731d85dc07c15671ac1c1b648', 'hex')
