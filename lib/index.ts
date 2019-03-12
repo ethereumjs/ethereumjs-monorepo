@@ -1,7 +1,8 @@
 import BN = require('bn.js')
-import { StateManager } from './state'
-import Common from 'ethereumjs-common'
 import Account from 'ethereumjs-account'
+import Blockchain from 'ethereumjs-blockchain'
+import Common from 'ethereumjs-common'
+import { StateManager } from './state'
 import { default as runCode, RunCodeOpts } from './runCode'
 import { default as runCall, RunCallOpts } from './runCall'
 import { default as runTx, RunTxOpts, RunTxResult } from './runTx'
@@ -10,7 +11,6 @@ import { EVMResult, ExecResult } from './evm/evm'
 import runBlockchain from './runBlockchain'
 const promisify = require('util.promisify')
 const AsyncEventEmitter = require('async-eventemitter')
-const Blockchain = require('ethereumjs-blockchain')
 const Trie = require('merkle-patricia-tree/secure.js')
 
 /**
@@ -37,7 +37,7 @@ export interface VMOpts {
   /**
    * A [blockchain](https://github.com/ethereumjs/ethereumjs-blockchain) object for storing/retrieving blocks
    */
-  blockchain?: any // TODO
+  blockchain?: Blockchain
   /**
    * If true, create entries in the state tree for the precompiled contracts
    */
@@ -57,7 +57,7 @@ export default class VM extends AsyncEventEmitter {
   opts: VMOpts
   _common: Common
   stateManager: StateManager
-  blockchain: any
+  blockchain: Blockchain
   allowUnlimitedContractSize: boolean
 
   /**

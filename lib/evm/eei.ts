@@ -1,6 +1,7 @@
 import BN = require('bn.js')
 import { toBuffer } from 'ethereumjs-util'
 import Account from 'ethereumjs-account'
+import Blockchain from 'ethereumjs-blockchain'
 import Common from 'ethereumjs-common'
 import PStateManager from '../state/promisified'
 import { VmError, ERROR } from '../exceptions'
@@ -12,7 +13,7 @@ const promisify = require('util.promisify')
  * Environment data which is made available to EVM bytecode.
  */
 export interface Env {
-  blockchain: any // TODO: update to ethereumjs-blockchain v4.0.0
+  blockchain: Blockchain
   address: Buffer
   caller: Buffer
   callData: Buffer
