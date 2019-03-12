@@ -156,7 +156,9 @@ tape('StateManager', (t) => {
 
     stateManager.dumpStorage(addressBuffer, (data) => {
       const expect = { '1ac7d1b81b7ba1025b36ccb86723da6ee5a87259f1c2fd5abe69d3200b512ec8': '86307831323334' }
-      st.strictEqual(data, expect, 'should dump storage value')
+      st.deepEqual(data, expect, 'should dump storage value')
+
+      st.end()
     })
   })
 })
