@@ -26,7 +26,6 @@
     "Holger Drewes <holger.drewes@gmail.com>"
   ],
   "files": [
-    "src",
     "lib"
   ],
   "main": "./lib/index.js",
