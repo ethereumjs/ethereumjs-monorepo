@@ -1,6 +1,7 @@
 const promisify = require('util.promisify')
 const tape = require('tape')
 const Transaction = require('ethereumjs-tx')
+const ethUtil = require('ethereumjs-util')
 const runTx = require('../../lib/runTx')
 const { StateManager } = require('../../lib/state')
 const VM = require('../../lib/index')
@@ -85,6 +86,24 @@ tape('should run simple tx without errors', async (t) => {
   t.end()
 })
 
+tape('should fail when account balance overflows', async t => {
+  const vm = new VM()
+  const suite = setup(vm)
+
+  const tx = getTransaction(true, true, '0x01')
+  const from = createAccount()
+  const to = createAccount('0x00', ethUtil.MAX_INTEGER)
+  await suite.putAccount(tx.from.toString('hex'), from)
+  await suite.putAccount(tx.to, to)
+
+  shouldFail(t,
+    suite.runTx({ tx }),
+    (e) => t.equal(e.message, 'Value overflow')
+  )
+
+  t.end()
+})
+
 // The following test tries to verify that running a tx
 // would work, even when stateManager is not using a cache.
 // It fails at the moment, and has been therefore commented.
@@ -110,14 +129,14 @@ function shouldFail (st, p, onErr) {
   p.then(() => st.fail('runTx didnt return any errors')).catch(onErr)
 }
 
-function getTransaction (sign = false, calculageGas = false) {
+function getTransaction (sign = false, calculageGas = false, value = '0x00') {
   const privateKey = Buffer.from('e331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109', 'hex')
   const txParams = {
     nonce: '0x00',
     gasPrice: 100,
     gasLimit: 1000,
     to: '0x0000000000000000000000000000000000000000',
-    value: '0x00',
+    value: value,
     data: '0x7f7465737432000000000000000000000000000000000000000000000000000000600057',
     chainId: 3
   }
