@@ -2,6 +2,7 @@ const async = require('async')
 const testUtil = require('./util')
 const Trie = require('merkle-patricia-tree/secure')
 const ethUtil = require('ethereumjs-util')
+const Account = require('ethereumjs-account')
 const BN = ethUtil.BN
 const { getRequiredForkConfigAlias } = require('./util')
 
@@ -100,8 +101,31 @@ function runTestCase (options, testData, t, cb) {
           tx: tx,
           block: block
         }, function (err, r) {
-          err = null
-          done()
+          // If tx is invalid and coinbase is empty, the test harness
+          // expects the coinbase account to be deleted from state.
+          // Without this ecmul_0-3_5616_28000_96 would fail.
+          if (err) {
+            vm.stateManager.getAccount(block.header.coinbase, function (err, account) {
+              if (err) {
+                done()
+                return
+              }
+              if (new BN(account.balance).isZero()) {
+                async.series([
+                  (cb) => vm.stateManager.putAccount(block.header.coinbase, new Account(), cb),
+                  (cb) => vm.stateManager.cleanupTouchedAccounts(cb),
+                  (cb) => vm.stateManager._cache.flush(cb)
+                ], (err) => {
+                  err = null
+                  done()
+                })
+              } else {
+                done()
+              }
+            })
+          } else {
+            done()
+          }
         })
       } else {
         done()
