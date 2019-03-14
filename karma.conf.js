@@ -18,8 +18,7 @@ module.exports = function (config) {
 
     // list of files / patterns to exclude
     exclude: [
-      './tests/api/state/stateManager.js', // 4, "# should clear the cache when the state root is set"
-      './tests/api/runBlockchain.js' // 2, "# should run with valid and invalid blocks"
+      './tests/api/state/stateManager.js' // 4, "# should clear the cache when the state root is set"
     ],
 
     // preprocess matching files before serving them to the browser

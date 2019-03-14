@@ -3,6 +3,7 @@ const level = require('level-mem')
 const promisify = require('util.promisify')
 const Blockchain = require('ethereumjs-blockchain')
 const Block = require('ethereumjs-block')
+const Common = require('ethereumjs-common').default
 const util = require('ethereumjs-util')
 const runBlockchain = require('../../lib/runBlockchain')
 const { StateManager } = require('../../lib/state')
@@ -10,8 +11,15 @@ const { createGenesis } = require('./utils')
 
 tape('runBlockchain', (t) => {
   const blockchainDB = level()
-  const blockchain = new Blockchain({ db: blockchainDB })
-  const vm = { stateManager: new StateManager(), blockchain }
+  const blockchain = new Blockchain({
+    db: blockchainDB,
+    chain: 'goerli',
+    validate: false
+  })
+  const vm = {
+    stateManager: new StateManager({ common: new Common('goerli') }),
+    blockchain: blockchain
+  }
 
   const putGenesisP = promisify(blockchain.putGenesis.bind(blockchain))
   const putBlockP = promisify(blockchain.putBlock.bind(blockchain))
@@ -29,7 +37,7 @@ tape('runBlockchain', (t) => {
   })
 
   t.test('should run with genesis block', async (st) => {
-    const genesis = createGenesis()
+    const genesis = createGenesis({ chain: 'goerli' })
 
     await putGenesisP(genesis)
     st.ok(blockchain.meta.genesis, 'genesis should be set for blockchain')
@@ -49,12 +57,12 @@ tape('runBlockchain', (t) => {
       cb(null, {})
     }
 
-    const genesis = createGenesis()
+    const genesis = createGenesis({ chain: 'goerli' })
     await putGenesisP(genesis)
 
-    const b1 = createBlock(genesis, 1)
-    const b2 = createBlock(b1, 2)
-    const b3 = createBlock(b2, 3)
+    const b1 = createBlock(genesis, 1, { chain: 'goerli' })
+    const b2 = createBlock(b1, 2, { chain: 'goerli' })
+    const b3 = createBlock(b2, 3, { chain: 'goerli' })
 
     blockchain.validate = false
 
@@ -79,12 +87,13 @@ tape('runBlockchain', (t) => {
   })
 })
 
-function createBlock (parent = null, n = 0) {
+function createBlock (parent = null, n = 0, opts = {}) {
+  opts.chain = opts.chain ? opts.chain : 'mainnet'
   if (parent === null) {
-    return createGenesis()
+    return createGenesis(opts)
   }
 
-  const b = new Block()
+  const b = new Block(null, opts)
   b.header.number = util.toBuffer(n)
   b.header.parentHash = parent.hash()
   b.header.difficulty = '0xfffffff'
