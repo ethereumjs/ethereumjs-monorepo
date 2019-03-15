@@ -29,7 +29,9 @@
 
   (func $getGasLeft
     (result i64)
-    (call $useGas (i32.const 0) (i32.const 2))
+    ;; The line below was in the original version. Commented it
+    ;; out to conform with existing gas rules.
+    ;; (call $useGas (i32.const 0) (i32.const 2))
     (return
       (i64.add
         (i64.shl (i64.extend_u/i32 (call $getGasLeftHigh)) (i64.const 32))
