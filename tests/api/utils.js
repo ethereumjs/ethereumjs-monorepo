@@ -4,8 +4,9 @@ const level = require('level-mem')
 const Blockchain = require('ethereumjs-blockchain')
 const VM = require('../../lib/index')
 
-function createGenesis () {
-  const genesis = new Block()
+function createGenesis (opts = {}) {
+  opts.chain = opts.chain ? opts.chain : 'mainnet'
+  const genesis = new Block(null, opts)
   genesis.setGenesisParams()
 
   return genesis
@@ -20,10 +21,10 @@ function createAccount (nonce, balance) {
   return acc
 }
 
-function setupVM () {
+function setupVM (opts = {}) {
   const db = level()
-  const blockchain = new Blockchain(db)
-  const vm = new VM({ blockchain })
+  opts.blockchain = opts.blockchain ? opts.blockchain : new Blockchain({ db, validate: false })
+  const vm = new VM(opts)
 
   return vm
 }

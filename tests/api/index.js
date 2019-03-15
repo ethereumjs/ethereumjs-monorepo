@@ -69,7 +69,7 @@ tape('VM with blockchain', (t) => {
   })
 
   t.test('should run blockchain with mocked runBlock', async (st) => {
-    const vm = setupVM()
+    const vm = setupVM({ chain: 'goerli' })
     const genesis = new Block(Buffer.from(testData.genesisRLP.slice(2), 'hex'))
     const block = new Block(Buffer.from(testData.blocks[0].rlp.slice(2), 'hex'))
 
@@ -96,7 +96,7 @@ tape('VM with blockchain', (t) => {
   })
 
   t.test('should run blockchain with blocks', async (st) => {
-    const vm = setupVM()
+    const vm = setupVM({ chain: 'goerli' })
     const genesis = new Block(Buffer.from(testData.genesisRLP.slice(2), 'hex'))
     const block = new Block(Buffer.from(testData.blocks[0].rlp.slice(2), 'hex'))
 
