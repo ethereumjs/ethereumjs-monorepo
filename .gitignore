@@ -2,14 +2,15 @@ package-lock.json
 node_modules
 dist/
 
-baseTrie.js
-checkpoint-interface.js
-index.js
-prioritizedTaskExecutor.js
-proof.js
-readStream.js
-secure-interface.js
-secure.js
-scratchReadStream.js
-trieNode.js
-util.js
+/baseTrie.js
+/checkpointTrie.js
+/db.js
+/index.js
+/prioritizedTaskExecutor.js
+/proof.js
+/readStream.js
+/scratch.js
+/scratchReadStream.js
+/secure.js
+/trieNode.js
+/util/
