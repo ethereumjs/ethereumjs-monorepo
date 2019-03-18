@@ -10,6 +10,11 @@ export * from './constants'
 export * from './account'
 
 /**
+ * Address typeß
+ */
+export * from './address'
+
+/**
  * Hash functions
  */
 export * from './hash'

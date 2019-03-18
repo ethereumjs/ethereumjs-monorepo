@@ -33,6 +33,8 @@ assert.equal(new BN('dead', 16).add(new BN('101010', 2)), 57047)
 
 - [account](docs/modules/_account_.md)
   - Private/public key and address-related functionality (creation, validation, conversion)
+- [address](docs/modules/_address_.md)
+  - Address class and type
 - [bytes](docs/modules/_bytes_.md)
   - Byte-related helper and conversion functions
 - [constants](docs/modules/_constants_.md)
