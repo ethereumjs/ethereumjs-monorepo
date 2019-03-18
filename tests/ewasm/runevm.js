@@ -71,9 +71,10 @@ tape('Runevm', (t) => {
           const acc = state.get(ethUtil.stripHexPrefix(addr))
           st.ok(typeof acc !== 'undefined')
           for (let k of Object.keys(testcase.post[addr].storage)) {
-            k = ethUtil.setLengthLeft(ethUtil.stripHexPrefix(k), 32)
-            const v = acc.storage.get(k)
-            st.deepEqual(v, testcase.post[addr].storage[k])
+            const expected = testcase.post[addr].storage[k]
+            k = ethUtil.setLengthLeft(k, 32)
+            const v = acc.storage.get(k.toString('hex'))
+            st.deepEqual(v, ethUtil.setLengthLeft(expected, 32))
           }
         }
       } else {
