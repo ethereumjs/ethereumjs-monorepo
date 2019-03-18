@@ -27,7 +27,7 @@ tape('Runevm', (t) => {
     st.end()
   })
 
-  require('ethereumjs-testing').getTestsFromArgs('VMTests/vmArithmeticTest', (fileName, testName, test) => {
+  require('ethereumjs-testing').getTestsFromArgs('VMTests/vmBlockInfoTest', (fileName, testName, test) => {
     t.test(`${fileName}/${testName}`, st => {
       const testcase = test
       const state = new Map()
@@ -44,8 +44,17 @@ tape('Runevm', (t) => {
         state.set(ethUtil.stripHexPrefix(addr), acc)
       }
 
+      const block = {
+        coinbase: ethUtil.toBuffer(testcase.env.currentCoinbase),
+        difficulty: new BN(ethUtil.stripHexPrefix(testcase.env.currentDifficulty), 16),
+        gasLimit: new BN(ethUtil.stripHexPrefix(testcase.env.currentGasLimit), 16),
+        number: new BN(ethUtil.stripHexPrefix(testcase.env.currentNumber), 16),
+        timestamp: new BN(ethUtil.stripHexPrefix(testcase.env.currentTimestamp), 16)
+      }
+
       const opts = {
         state: state,
+        block: block,
         address: ethUtil.toBuffer(testcase.exec.address),
         caller: ethUtil.toBuffer(testcase.exec.caller),
         code: ethUtil.toBuffer(testcase.exec.code),

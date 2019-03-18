@@ -11,6 +11,12 @@
   (import "interface" "callCode" (func $callCode (param i32 i32 i32 i32 i32 i32) (result i32)))
   (import "interface" "callDelegate" (func $callDelegate (param i32 i32 i32 i32 i32) (result i32)))
   (import "interface" "callStatic" (func $callStatic (param i32 i32 i32 i32 i32) (result i32)))
+  (import "interface" "getBlockNumberHigh" (func $getBlockNumberHigh (result i32)))
+  (import "interface" "getBlockNumberLow" (func $getBlockNumberLow (result i32)))
+  (import "interface" "getBlockTimestampHigh" (func $getBlockTimestampHigh (result i32)))
+  (import "interface" "getBlockTimestampLow" (func $getBlockTimestampLow (result i32)))
+  (import "interface" "getBlockGasLimitHigh" (func $getBlockGasLimitHigh (result i32)))
+  (import "interface" "getBlockGasLimitLow" (func $getBlockGasLimitLow (result i32)))
 
   (export "useGas" (func $useGasShim))
   (export "getGasLeft" (func $getGasLeft))
@@ -18,6 +24,9 @@
   (export "callCode" (func $callCodeShim))
   (export "callDelegate" (func $callDelegateShim))
   (export "callStatic" (func $callStaticShim))
+  (export "getBlockNumber" (func $getBlockNumberShim))
+  (export "getBlockTimestamp" (func $getBlockTimestampShim))
+  (export "getBlockGasLimit" (func $getBlockGasLimitShim))
 
   (func $useGasShim
     (param $amount i64)
@@ -32,10 +41,10 @@
     ;; The line below was in the original version. Commented it
     ;; out to conform with existing gas rules.
     ;; (call $useGas (i32.const 0) (i32.const 2))
-    (return
-      (i64.add
-        (i64.shl (i64.extend_u/i32 (call $getGasLeftHigh)) (i64.const 32))
-        (i64.extend_u/i32 (call $getGasLeftLow))))
+    (call $toI64
+      (call $getGasLeftHigh)
+      (call $getGasLeftLow)
+    )
   )
 
   ;; call
@@ -94,5 +103,39 @@
            (get_local 2)
            (get_local 3)
     )
+  )
+
+  (func $getBlockNumberShim
+    (result i64)
+    (call $toI64
+      (call $getBlockNumberHigh)
+      (call $getBlockNumberLow)
+    )
+  )
+
+  (func $getBlockTimestampShim
+    (result i64)
+    (call $toI64
+      (call $getBlockTimestampHigh)
+      (call $getBlockTimestampLow)
+    )
+  )
+
+  (func $getBlockGasLimitShim
+    (result i64)
+    (call $toI64
+      (call $getBlockGasLimitHigh)
+      (call $getBlockGasLimitLow)
+    )
+  )
+
+  (func $toI64
+    ;; high, low -> i64
+    (param i32 i32)
+    (result i64)
+    (return
+      (i64.add
+        (i64.shl (i64.extend_u/i32 (get_local 0)) (i64.const 32))
+        (i64.extend_u/i32 (get_local 1))))
   )
 )
