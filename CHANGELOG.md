@@ -6,6 +6,16 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [v2.2.3] - 2019-03-19
+
+- More robust `Array` type checking in `RLP.encode()` function,
+  PR [#70](https://github.com/ethereumjs/rlp/pull/70)
+- Library now throws an error when trying to encode negative integer
+  values (e.g. `RLP.encode(-1)`),
+  PR [#71](https://github.com/ethereumjs/rlp/pull/70)
+
+[v2.2.3]: https://github.com/ethereumjs/rlp/compare/2.2.1...v2.2.3
+
 ## [v2.2.2] - 2019-01-15
 
 - Added `bn.js` dependency to fix module resolution bug when require the module after
