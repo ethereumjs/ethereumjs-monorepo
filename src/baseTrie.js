@@ -31,7 +31,7 @@ module.exports = class Trie {
     this.db = db || new DB()
 
     Object.defineProperty(this, 'root', {
-      set(value) {
+      set (value) {
         if (value) {
           value = ethUtil.toBuffer(value)
           assert(value.length === 32, 'Invalid root length. Roots are 32 bytes')
@@ -41,7 +41,7 @@ module.exports = class Trie {
 
         this._root = value
       },
-      get() {
+      get () {
         return this._root
       }
     })
@@ -132,7 +132,7 @@ module.exports = class Trie {
   // retrieves a node from dbs by hash
   _lookupNode (node, cb) {
     if (TrieNode.isRawNode(node)) {
-      cb(new TrieNode(node))
+      cb(null, new TrieNode(node))
     } else {
       this.db.get(node, (err, value) => {
         if (err) {
@@ -141,9 +141,11 @@ module.exports = class Trie {
 
         if (value) {
           value = new TrieNode(rlp.decode(value))
+        } else {
+          err = new Error('Missing node in DB')
         }
 
-        cb(value)
+        cb(err, value)
       })
     }
   }
@@ -375,7 +377,10 @@ module.exports = class Trie {
       return onDone()
     }
 
-    this._lookupNode(root, node => {
+    this._lookupNode(root, (e, node) => {
+      if (e) {
+        return onDone(e, node)
+      }
       processNode(root, node, null, err => {
         if (err) {
           return onDone(err)
@@ -421,7 +426,10 @@ module.exports = class Trie {
             const childKey = key.concat(keyExtension)
             const priority = childKey.length
             taskExecutor.execute(priority, taskCallback => {
-              self._lookupNode(childRef, childNode => {
+              self._lookupNode(childRef, (e, childNode) => {
+                if (e) {
+                  return cb(e, node)
+                }
                 taskCallback()
                 processNode(childRef, childNode, childKey, cb)
               })
@@ -434,7 +442,10 @@ module.exports = class Trie {
           childKey.push(childIndex)
           const priority = childKey.length
           taskExecutor.execute(priority, taskCallback => {
-            self._lookupNode(childRef, childNode => {
+            self._lookupNode(childRef, (e, childNode) => {
+              if (e) {
+                return cb(e, node)
+              }
               taskCallback()
               processNode(childRef, childNode, childKey, cb)
             })
@@ -585,7 +596,10 @@ module.exports = class Trie {
         const branchNodeKey = branchNodes[0][0]
 
         // look up node
-        this._lookupNode(branchNode, foundNode => {
+        this._lookupNode(branchNode, (e, foundNode) => {
+          if (e) {
+            return cb(e, foundNode)
+          }
           key = processBranchNode(key, branchNodeKey, foundNode, parentNode, stack, opStack)
           this._saveStack(key, stack, opStack, cb)
         })
@@ -694,7 +708,7 @@ module.exports = class Trie {
    */
   checkRoot (root, cb) {
     root = ethUtil.toBuffer(root)
-    this._lookupNode(root, value => {
+    this._lookupNode(root, (e, value) => {
       cb(null, !!value)
     })
   }

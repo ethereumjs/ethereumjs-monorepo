@@ -2,7 +2,6 @@ const Trie = require('../src/secure.js')
 const async = require('async')
 const tape = require('tape')
 
-
 tape('SecureTrie', function (t) {
   const trie = new Trie()
   const k = Buffer.from('foo')
