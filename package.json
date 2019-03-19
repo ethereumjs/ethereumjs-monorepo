@@ -3,16 +3,24 @@
   "version": "3.4.0",
   "description": "A module to store and interact with blocks",
   "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "files": [
     "dist/**/*.js"
   ],
   "scripts": {
     "prepublishOnly": "npm run lint && npm run test && npm run build",
-    "build": "babel src --out-dir dist",
-    "coverage": "nyc npm run test && nyc report --reporter=text-lcov > .nyc_output/lcov.info",
-    "coveralls": "npm run coverage && coveralls <.nyc_output/lcov.info",
-    "lint": "standard",
-    "test": "babel-tape-runner ./test/*.js"
+    "build": "ethereumjs-config-build",
+    "coverage": "ethereumjs-config-coverage",
+    "coveralls": "ethereumjs-config-coveralls",
+    "docs:build": "typedoc --out docs --mode file --readme none --theme markdown --mdEngine github --excludeNotExported src",
+    "format": "ethereumjs-config-format",
+    "format:fix": "ethereumjs-config-format-fix",
+    "tslint": "ethereumjs-config-tslint",
+    "tslint:fix": "ethereumjs-config-tslint-fix",
+    "tsc": "ethereumjs-config-tsc",
+    "lint": "ethereumjs-config-lint",
+    "lint:fix": "ethereumjs-config-lint-fix",
+    "test": "ts-node node_modules/tape/bin/tape ./test/index.ts"
   },
   "repository": {
     "type": "git",
@@ -29,7 +37,6 @@
   },
   "homepage": "https://github.com/ethereumjs/ethereumjs-blockchain#readme",
   "dependencies": {
-    "@babel/runtime": "^7.3.1",
     "async": "^2.6.1",
     "ethashjs": "~0.0.7",
     "ethereumjs-block": "~2.2.0",
@@ -38,19 +45,30 @@
     "flow-stoplight": "^1.0.0",
     "level-mem": "^3.0.1",
     "lru-cache": "^5.1.1",
-    "safe-buffer": "^5.1.2",
+    "rlp": "^2.2.2",
     "semaphore": "^1.1.0",
     "util": "^0.11.1"
   },
   "devDependencies": {
-    "@babel/cli": "^7.2.3",
-    "@babel/core": "^7.2.2",
-    "@babel/plugin-transform-runtime": "^7.2.0",
-    "@babel/preset-env": "^7.3.1",
-    "babel-tape-runner": "^3.0.0",
+    "@ethereumjs/config-nyc": "^1.1.1",
+    "@ethereumjs/config-prettier": "^1.1.1",
+    "@ethereumjs/config-tsc": "^1.1.1",
+    "@ethereumjs/config-tslint": "^1.1.1",
+    "@types/async": "^2.4.1",
+    "@types/bn.js": "^4.11.4",
+    "@types/lru-cache": "^5.1.0",
+    "@types/node": "^10.12.30",
+    "@types/semaphore": "^1.1.0",
+    "@types/tape": "^4.2.33",
     "coveralls": "^3.0.2",
     "nyc": "^13.0.1",
-    "standard": "^11.0.1",
-    "tape": "^4.9.1"
+    "prettier": "^1.16.4",
+    "tape": "^4.9.1",
+    "ts-node": "^8.0.3",
+    "tslint": "^5.13.1",
+    "typedoc": "^0.14.2",
+    "typedoc-plugin-markdown": "^1.1.27",
+    "typescript": "^3.3.3333",
+    "typestrict": "^1.0.2"
   }
 }
