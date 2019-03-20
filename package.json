@@ -57,7 +57,7 @@
     "@types/async": "^2.4.1",
     "@types/bn.js": "^4.11.4",
     "@types/lru-cache": "^5.1.0",
-    "@types/node": "^10.12.30",
+    "@types/node": "^11.11.4",
     "@types/semaphore": "^1.1.0",
     "@types/tape": "^4.2.33",
     "coveralls": "^3.0.2",
