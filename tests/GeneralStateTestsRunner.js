@@ -92,7 +92,7 @@ function runTestCase (options, testData, t, cb) {
           })
           vm.on('afterTx', function (results) {
             let stateRoot = {
-              'stateRoot': results.vm.runState.stateManager._trie.root.toString('hex')
+              'stateRoot': vm.stateManager._trie.root.toString('hex')
             }
             t.comment(JSON.stringify(stateRoot))
           })
