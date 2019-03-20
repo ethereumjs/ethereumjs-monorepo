@@ -35,6 +35,7 @@
     "VM"
   ],
   "dependencies": {
+    "@babel/runtime": "^7.4.0",
     "async": "^2.1.2",
     "async-eventemitter": "^0.2.2",
     "ethereumjs-account": "^2.0.3",
@@ -48,8 +49,10 @@
     "safe-buffer": "^5.1.1"
   },
   "devDependencies": {
-    "babel-cli": "^6.26.0",
-    "babel-preset-env": "^1.6.1",
+    "@babel/cli": "^7.2.3",
+    "@babel/core": "^7.4.0",
+    "@babel/plugin-transform-runtime": "^7.4.0",
+    "@babel/preset-env": "^7.4.1",
     "browserify": "^16.2.3",
     "coveralls": "^3.0.0",
     "documentation": "^8.1.2",
