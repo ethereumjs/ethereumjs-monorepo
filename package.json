@@ -1,6 +1,6 @@
 {
   "name": "ethereumjs-vm",
-  "version": "2.6.0",
+  "version": "4.0.0",
   "description": "An Ethereum VM implementation",
   "main": "dist/index.js",
   "files": [
