@@ -1,14 +1,12 @@
 const promisify = require('util.promisify')
 const tape = require('tape')
 const Block = require('ethereumjs-block')
-const Transaction = require('ethereumjs-tx')
 const Common = require('ethereumjs-common').default
 const util = require('ethereumjs-util')
 const runBlock = require('../../lib/runBlock')
 const { StateManager } = require('../../lib/state')
-const runTx = require('../../lib/runTx')
 const testData = require('./testdata.json')
-const { createGenesis, createAccount, setupVM } = require('./utils')
+const { createGenesis, setupVM } = require('./utils')
 const { setupPreConditions } = require('../util')
 
 function setup (vm = null) {
