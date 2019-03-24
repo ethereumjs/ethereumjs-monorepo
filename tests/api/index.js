@@ -8,12 +8,11 @@ const { setupVM } = require('./utils')
 const { setupPreConditions } = require('../util')
 const testData = require('./testdata.json')
 
-tape('VM with fake blockchain', (t) => {
+tape('VM with default blockchain', (t) => {
   t.test('should instantiate without params', (st) => {
     const vm = new VM()
     st.ok(vm.stateManager)
     st.deepEqual(vm.stateManager._trie.root, util.KECCAK256_RLP, 'it has default trie')
-    st.ok(vm.blockchain.fake, 'it has fake blockchain by default')
     st.end()
   })
 
@@ -58,7 +57,6 @@ tape('VM with blockchain', (t) => {
   t.test('should instantiate', (st) => {
     const vm = setupVM()
     st.deepEqual(vm.stateManager._trie.root, util.KECCAK256_RLP, 'it has default trie')
-    st.notOk(vm.stateManager.fake, 'it doesn\'t have fake blockchain')
     st.end()
   })
 
