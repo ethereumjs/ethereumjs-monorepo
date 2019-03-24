@@ -11,8 +11,7 @@ function setup (vm = null) {
   if (vm === null) {
     vm = {
       stateManager: new StateManager({ }),
-      emit: (e, val, cb) => { cb() },
-      runCall: (opts, cb) => cb(new Error('test'))
+      emit: (e, val, cb) => { cb() }
     }
   }
 
@@ -55,21 +54,6 @@ tape('runTx', (t) => {
     )
     st.end()
   })
-})
-
-tape('should fail when runCall fails', async (t) => {
-  const suite = setup()
-
-  const tx = getTransaction(true, true)
-  const acc = createAccount()
-  await suite.putAccount(tx.from.toString('hex'), acc)
-
-  shouldFail(t,
-    suite.runTx({ tx, populateCache: true }),
-    (e) => t.equal(e.message, 'test', 'error should be equal to what the mock runCall returns')
-  )
-
-  t.end()
 })
 
 tape('should run simple tx without errors', async (t) => {

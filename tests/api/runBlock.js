@@ -21,7 +21,6 @@ function setup (vm = null) {
       stateManager,
       emit: (e, val, cb) => cb(),
       runTx: (opts, cb) => cb(new Error('test')),
-      runCall: (opts, cb) => cb(new Error('test')),
       _common: new Common('mainnet', 'byzantium')
     }
   }
@@ -108,30 +107,6 @@ tape('should fail when tx gas limit higher than block gas limit', async (t) => {
   await suite.p.runBlock({ block, skipBlockValidation: true })
     .then(() => t.fail('should have returned error'))
     .catch((e) => t.ok(e.message.includes('higher gas limit')))
-
-  t.end()
-})
-
-tape('should fail when runCall fails', async (t) => {
-  const suite = setup()
-
-  const block = new Block(util.rlp.decode(suite.data.blocks[0].rlp))
-  // Add some balance to accounts, so they can run txes
-  for (let i = 0; i < block.transactions.length; i++) {
-    let tx = new Transaction(block.transactions[i])
-    const acc = createAccount()
-    await suite.p.putAccount(tx.from.toString('hex'), acc)
-  }
-
-  // The mocked VM uses a mocked runCall
-  // which always returns an error.
-  // runTx is a full implementation that works.
-  suite.vm.runTx = runTx
-
-  await suite.p.runBlock({ block, skipBlockValidation: true })
-
-    .then(() => t.fail('should have returned error'))
-    .catch((e) => t.equal(e.message, 'test'))
 
   t.end()
 })
