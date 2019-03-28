@@ -47,7 +47,8 @@
     "functional-red-black-tree": "^1.0.1",
     "merkle-patricia-tree": "^2.3.2",
     "rustbn.js": "~0.2.0",
-    "safe-buffer": "^5.1.1"
+    "safe-buffer": "^5.1.1",
+    "util.promisify": "^1.0.0"
   },
   "devDependencies": {
     "@babel/cli": "^7.2.3",
@@ -71,8 +72,7 @@
     "nyc": "^12.0.2",
     "standard": "^10.0.0",
     "tap-spec": "^5.0.0",
-    "tape": "4.6.3",
-    "util.promisify": "^1.0.0"
+    "tape": "4.6.3"
   },
   "author": "mjbecze <mjbecze@gmail.com>",
   "contributors": [

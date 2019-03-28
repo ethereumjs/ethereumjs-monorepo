@@ -1,14 +1,12 @@
 const promisify = require('util.promisify')
 const tape = require('tape')
 const Block = require('ethereumjs-block')
-const Transaction = require('ethereumjs-tx')
 const Common = require('ethereumjs-common').default
 const util = require('ethereumjs-util')
 const runBlock = require('../../lib/runBlock')
 const { StateManager } = require('../../lib/state')
-const runTx = require('../../lib/runTx')
 const testData = require('./testdata.json')
-const { createGenesis, createAccount, setupVM } = require('./utils')
+const { createGenesis, setupVM } = require('./utils')
 const { setupPreConditions } = require('../util')
 
 function setup (vm = null) {
@@ -21,7 +19,6 @@ function setup (vm = null) {
       stateManager,
       emit: (e, val, cb) => cb(),
       runTx: (opts, cb) => cb(new Error('test')),
-      runCall: (opts, cb) => cb(new Error('test')),
       _common: new Common('mainnet', 'byzantium')
     }
   }
@@ -108,30 +105,6 @@ tape('should fail when tx gas limit higher than block gas limit', async (t) => {
   await suite.p.runBlock({ block, skipBlockValidation: true })
     .then(() => t.fail('should have returned error'))
     .catch((e) => t.ok(e.message.includes('higher gas limit')))
-
-  t.end()
-})
-
-tape('should fail when runCall fails', async (t) => {
-  const suite = setup()
-
-  const block = new Block(util.rlp.decode(suite.data.blocks[0].rlp))
-  // Add some balance to accounts, so they can run txes
-  for (let i = 0; i < block.transactions.length; i++) {
-    let tx = new Transaction(block.transactions[i])
-    const acc = createAccount()
-    await suite.p.putAccount(tx.from.toString('hex'), acc)
-  }
-
-  // The mocked VM uses a mocked runCall
-  // which always returns an error.
-  // runTx is a full implementation that works.
-  suite.vm.runTx = runTx
-
-  await suite.p.runBlock({ block, skipBlockValidation: true })
-
-    .then(() => t.fail('should have returned error'))
-    .catch((e) => t.equal(e.message, 'test'))
 
   t.end()
 })
