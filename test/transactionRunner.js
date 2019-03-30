@@ -40,6 +40,7 @@ tape('TransactionTests', (t) => {
         try {
           tx = new Tx(rawTx, {
             hardfork: forkNameMap[forkName],
+            chain: 1,
           })
 
           const sender = tx.getSenderAddress().toString('hex')
