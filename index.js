@@ -100,7 +100,7 @@ class Transaction {
     }, {
       name: 'v',
       allowZero: true,
-      default: new Buffer([0x1c])
+      default: new Buffer([opts.chain || opts.common ? this._common.chainId() : 0x1c])
     }, {
       name: 'r',
       length: 32,
@@ -184,10 +184,15 @@ class Transaction {
       // elements (i.e. nonce, gasprice, startgas, to, value, data), hash nine elements, with v replaced by
       // CHAIN_ID, r = 0 and s = 0.
 
-      const onEIP155BlockOrLater = this._common.gteHardfork('spuriousDragon')
       const v = ethUtil.bufferToInt(this.v)
+      const onEIP155BlockOrLater = this._common.gteHardfork('spuriousDragon')
       const vAndChainIdMeetEIP155Conditions = v === this._chainId * 2 + 35 || v === this._chainId * 2 + 36
-      if (vAndChainIdMeetEIP155Conditions && onEIP155BlockOrLater) {
+      const meetsAllEIP155Conditions = vAndChainIdMeetEIP155Conditions && onEIP155BlockOrLater
+
+      const unsigned = !this.r.length && !this.s.length
+      const seeksReplayProtection = this._chainId > 0
+
+      if (unsigned && seeksReplayProtection || !unsigned && meetsAllEIP155Conditions) {
         const raw = this.raw.slice()
         this.v = this._chainId
         this.r = 0
@@ -229,8 +234,8 @@ class Transaction {
    * @return {Buffer}
    */
   getSenderPublicKey () {
-    if (!this._senderPubKey || !this._senderPubKey.length) {
-      if (!this.verifySignature()) throw new Error('Invalid Signature')
+    if (!this.verifySignature()) {
+      throw new Error('Invalid Signature')
     }
     return this._senderPubKey
   }
