@@ -10,7 +10,7 @@ const forkNames = [
   'EIP150',
   'EIP158',
   'Frontier',
-  'Homestead',
+  'Homestead'
 ]
 
 const forkNameMap = {
@@ -19,28 +19,24 @@ const forkNameMap = {
   EIP150: 'tangerineWhistle',
   EIP158: 'spuriousDragon',
   Frontier: 'chainstart',
-  Homestead: 'homestead',
+  Homestead: 'homestead'
 }
 
 tape('TransactionTests', (t) => {
   const fileFilterRegex = argv.file ? new RegExp(argv.file + '[^\\w]') : undefined
 
   testing.getTests('TransactionTests', (filename, testName, testData) => {
-    let rawTx
-    let tx
     t.test(testName, (st) => {
       const rawTx = ethUtil.toBuffer(testData.rlp)
 
       let tx
-      let sender
-      let hash
       forkNames.forEach(forkName => {
         const forkTestData = testData[forkName]
         const shouldBeInvalid = Object.keys(forkTestData).length === 0
         try {
           tx = new Tx(rawTx, {
             hardfork: forkNameMap[forkName],
-            chain: 1,
+            chain: 1
           })
 
           const sender = tx.getSenderAddress().toString('hex')
