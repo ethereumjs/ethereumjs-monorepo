@@ -238,4 +238,21 @@ tape('[Transaction]: Basic functions', function (t) {
     st.equal(tx.getChainId(), 0x16b2)
     st.end()
   })
+
+  t.test('EIP155 hashing when singing', function (st) {
+    txFixtures.slice(0, 3).forEach(function (txData) {
+      const tx = new Transaction(txData.raw.slice(0, 6), {chain: 1})
+
+      var privKey = new Buffer(txData.privateKey, 'hex')
+      tx.sign(privKey)
+
+      st.equal(
+        tx.getSenderAddress().toString('hex'),
+        txData.sendersAddress,
+        'computed sender address should equal the fixture\'s one'
+      )
+    })
+
+    st.end()
+  })
 })
