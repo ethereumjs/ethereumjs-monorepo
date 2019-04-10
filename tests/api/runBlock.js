@@ -6,7 +6,7 @@ const util = require('ethereumjs-util')
 const runBlock = require('../../lib/runBlock')
 const { StateManager } = require('../../lib/state')
 const testData = require('./testdata.json')
-const { createGenesis, setupVM } = require('./utils')
+const { setupVM } = require('./utils')
 const { setupPreConditions } = require('../util')
 
 function setup (vm = null) {
@@ -18,6 +18,7 @@ function setup (vm = null) {
     vm = {
       stateManager,
       emit: (e, val, cb) => cb(),
+      _emit: (e, val) => new Promise((resolve, reject) => resolve()),
       runTx: (opts, cb) => cb(new Error('test')),
       _common: new Common('mainnet', 'byzantium')
     }
@@ -68,14 +69,13 @@ tape('runBlock', async (t) => {
 tape('should fail when block gas limit higher than 2^63-1', async (t) => {
   const suite = setup()
 
-  const genesis = createGenesis()
   const block = new Block({
     header: {
       ...suite.data.blocks[0].header,
       gasLimit: Buffer.from('8000000000000000', 16)
     }
   })
-  await suite.p.runBlock({ block, root: genesis.header.stateRoot })
+  await suite.p.runBlock({ block })
     .then(() => t.fail('should have returned error'))
     .catch((e) => t.ok(e.message.includes('Invalid block')))
 
@@ -85,11 +85,10 @@ tape('should fail when block gas limit higher than 2^63-1', async (t) => {
 tape('should fail when block validation fails', async (t) => {
   const suite = setup()
 
-  const genesis = createGenesis()
   const block = new Block(util.rlp.decode(suite.data.blocks[0].rlp))
   block.validate = (_, cb) => cb(new Error('test'))
 
-  await suite.p.runBlock({ block, root: genesis.header.stateRoot })
+  await suite.p.runBlock({ block })
     .then(() => t.fail('should have returned error'))
     .catch((e) => t.ok(e.message.includes('test')))
 
