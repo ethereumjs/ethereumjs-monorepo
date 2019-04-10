@@ -11,7 +11,8 @@ function setup (vm = null) {
   if (vm === null) {
     vm = {
       stateManager: new StateManager({ }),
-      emit: (e, val, cb) => { cb() }
+      emit: (e, val, cb) => { cb() },
+      _emit: (e, val) => new Promise((resolve, reject) => resolve())
     }
   }
 
@@ -40,7 +41,7 @@ tape('runTx', (t) => {
   })
 
   t.test('should fail to run without signature', async (st) => {
-    const tx = getTransaction()
+    const tx = getTransaction(false, true)
     shouldFail(st, suite.runTx({ tx }),
       (e) => st.ok(e.message.toLowerCase().includes('signature'), 'should fail with appropriate error')
     )
