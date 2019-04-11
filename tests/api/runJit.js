@@ -1,6 +1,6 @@
 const tape = require('tape')
-const runJit = require('../../lib/runJit')
-const exceptions = require('../../lib/exceptions.js')
+const runJit = require('../../dist/runJit')
+const exceptions = require('../../dist/exceptions.js')
 
 tape('Should run code with func type', (t) => {
   // TODO: Determine if account is still necessary for runJit
@@ -10,7 +10,8 @@ tape('Should run code with func type', (t) => {
     code: (o) => ({ exceptionError: new exceptions.VmError('Invalid opcode') })
   }
 
-  runJit(opts, (err, res) => {
+  const vm = {}
+  runJit.bind(vm)(opts, (err, res) => {
     t.ok(err, 'error should be set')
     t.equal(err.errorType, 'VmError')
     t.equal(err, res.exceptionError, 'callback error should be taken from exceptionError')
@@ -25,7 +26,8 @@ tape('should run stringy code', (t) => {
     code: `return { exceptionError: null }`
   }
 
-  runJit(opts, (err, res) => {
+  const vm = {}
+  runJit.bind(vm)(opts, (err, res) => {
     t.error(err, 'error should be null')
     t.error(res.exceptionError, 'exceptionError should be null')
     t.equal(res.account, 'account')

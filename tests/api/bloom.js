@@ -1,5 +1,5 @@
 const tape = require('tape')
-const Bloom = require('../../lib/bloom')
+const Bloom = require('../../dist/bloom').default
 const utils = require('ethereumjs-util')
 
 const byteSize = 256
@@ -22,42 +22,42 @@ tape('bloom', (t) => {
     const vector = Buffer.from(hex, 'hex')
 
     const b = new Bloom(vector)
-    st.true(b.check('value 1'), 'should contain string "value 1"')
-    st.true(b.check('value 2'), 'should contain string "value 2"')
+    st.true(b.check(utils.toBuffer('value 1')), 'should contain string "value 1"')
+    st.true(b.check(utils.toBuffer('value 2')), 'should contain string "value 2"')
     st.end()
   })
 
   t.test('check shouldnt be tautology', (st) => {
     const b = new Bloom()
-    st.false(b.check('random value'), 'should not contain string "random value"')
+    st.false(b.check(utils.toBuffer('random value')), 'should not contain string "random value"')
     st.end()
   })
 
   t.test('should correctly add value', (st) => {
     const b = new Bloom()
-    b.add('value')
-    let found = b.check('value')
+    b.add(utils.toBuffer('value'))
+    let found = b.check(utils.toBuffer('value'))
     st.true(found, 'should contain added value')
     st.end()
   })
 
   t.test('should check multiple values', (st) => {
     const b = new Bloom()
-    b.add('value 1')
-    b.add('value 2')
-    let found = b.multiCheck(['value 1', 'value 2'])
+    b.add(utils.toBuffer('value 1'))
+    b.add(utils.toBuffer('value 2'))
+    let found = b.multiCheck([utils.toBuffer('value 1'), utils.toBuffer('value 2')])
     st.true(found, 'should contain both values')
     st.end()
   })
 
   t.test('should or two filters', (st) => {
     const b1 = new Bloom()
-    b1.add('value 1')
+    b1.add(utils.toBuffer('value 1'))
     const b2 = new Bloom()
-    b2.add('value 2')
+    b2.add(utils.toBuffer('value 2'))
 
     b1.or(b2)
-    st.true(b1.check('value 2'), 'should contain "value 2" after or')
+    st.true(b1.check(utils.toBuffer('value 2')), 'should contain "value 2" after or')
     st.end()
   })
 

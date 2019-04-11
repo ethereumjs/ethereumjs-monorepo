@@ -2,9 +2,9 @@ const promisify = require('util.promisify')
 const tape = require('tape')
 const Transaction = require('ethereumjs-tx')
 const ethUtil = require('ethereumjs-util')
-const runTx = require('../../lib/runTx')
-const { StateManager } = require('../../lib/state')
-const VM = require('../../lib/index')
+const runTx = require('../../dist/runTx')
+const { StateManager } = require('../../dist/state')
+const VM = require('../../dist/index')
 const { createAccount } = require('./utils')
 
 function setup (vm = null) {

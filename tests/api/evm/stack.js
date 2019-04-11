@@ -1,6 +1,6 @@
 const tape = require('tape')
 const BN = require('bn.js')
-const Stack = require('../../../lib/evm/stack')
+const Stack = require('../../../dist/evm/stack')
 
 tape('Stack', t => {
   t.test('should be empty initially', st => {

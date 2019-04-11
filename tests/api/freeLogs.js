@@ -1,5 +1,5 @@
 const tape = require('tape')
-const VM = require('../../lib/index')
+const VM = require('../../dist/index')
 
 /*
 contract Contract1 {
