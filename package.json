@@ -22,7 +22,7 @@
     "test": "echo \"[INFO] Generic test cmd not used. See package.json for more specific test run cmds.\"",
     "lint": "standard",
     "prepublishOnly": "npm run lint && npm run build:dist && npm run testBuildIntegrity",
-    "build:dist": "babel lib/ -d dist/",
+    "build:dist": "tsc",
     "build:docs": "documentation build ./lib/index.js ./lib/runBlockchain.js ./lib/runBlock.js ./lib/runTx.js ./lib/runCode.js ./lib/runCall.js --format md --shallow > ./docs/index.md",
     "formatTest": "node ./scripts/formatTest"
   },
@@ -35,9 +35,9 @@
     "VM"
   ],
   "dependencies": {
-    "@babel/runtime": "^7.4.0",
     "async": "^2.1.2",
     "async-eventemitter": "^0.2.2",
+    "core-js-pure": "^3.0.1",
     "ethereumjs-account": "^2.0.3",
     "ethereumjs-block": "~2.2.0",
     "ethereumjs-blockchain": "^3.4.0",
@@ -51,10 +51,6 @@
     "util.promisify": "^1.0.0"
   },
   "devDependencies": {
-    "@babel/cli": "^7.2.3",
-    "@babel/core": "^7.4.0",
-    "@babel/plugin-transform-runtime": "^7.4.0",
-    "@babel/preset-env": "^7.4.1",
     "browserify": "^16.2.3",
     "coveralls": "^3.0.0",
     "documentation": "^8.1.2",
@@ -72,7 +68,8 @@
     "nyc": "^12.0.2",
     "standard": "^10.0.0",
     "tap-spec": "^5.0.0",
-    "tape": "4.6.3"
+    "tape": "4.6.3",
+    "typescript": "^3.4.3"
   },
   "author": "mjbecze <mjbecze@gmail.com>",
   "contributors": [
