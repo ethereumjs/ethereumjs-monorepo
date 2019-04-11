@@ -8,7 +8,7 @@
   ],
   "scripts": {
     "coverage": "nyc npm run coverageTests && nyc report --reporter=text-lcov > .nyc_output/lcov.info",
-    "coverageTests": "tape './tests/api/**/*.js' ./tests/tester.js -s",
+    "coverageTests": "npm run build:dist && tape './tests/api/**/*.js' ./tests/tester.js -s",
     "coveralls": "npm run coverage && if [ -n \"$COVERALLS_REPO_TOKEN\" ]; then coveralls <.nyc_output/lcov.info; fi",
     "testVM": "node ./tests/tester -v",
     "testStateByzantium": "npm run build:dist && node ./tests/tester -s --fork='Byzantium' --dist",
@@ -18,7 +18,7 @@
     "testBlockchain": "npm run build:dist && node --stack-size=1500 ./tests/tester -b --fork='Petersburg' --dist --excludeDir='GeneralStateTests'",
     "testBlockchainGeneralStateTests": "npm run build:dist && node --stack-size=1500 ./tests/tester -b --dist --dir='GeneralStateTests'",
     "testAPI": "npm run build:dist && tape './tests/api/**/*.js'",
-    "testAPI:browser": "karma start karma.conf.js",
+    "testAPI:browser": "npm run build:dist && karma start karma.conf.js",
     "test": "echo \"[INFO] Generic test cmd not used. See package.json for more specific test run cmds.\"",
     "lint": "standard",
     "format": "ethereumjs-config-format",
