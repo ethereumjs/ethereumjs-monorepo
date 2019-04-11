@@ -1,11 +1,13 @@
-const BN = require('bn.js')
-const ethUtil = require('ethereumjs-util')
+import BN = require('bn.js')
+import { MAX_INTEGER } from 'ethereumjs-util'
 const { ERROR, VmError } = require('../exceptions')
 
 /**
  * Implementation of the stack used in evm.
  */
-module.exports = class Stack {
+export default class Stack {
+  _store: BN[]
+
   constructor () {
     this._store = []
   }
@@ -14,24 +16,29 @@ module.exports = class Stack {
     return this._store.length
   }
 
-  push (value) {
-    if (this._store.length > 1023) {
-      throw new VmError(ERROR.STACK_OVERFLOW)
+  push (value: BN) {
+    if (!BN.isBN(value)) {
+      throw new VmError(ERROR.INTERNAL_ERROR)
     }
 
-    if (!this._isValidValue(value)) {
+    if (value.gt(MAX_INTEGER)) {
       throw new VmError(ERROR.OUT_OF_RANGE)
+    }
+
+    if (this._store.length > 1023) {
+      throw new VmError(ERROR.STACK_OVERFLOW)
     }
 
     this._store.push(value)
   }
 
-  pop () {
+  pop (): BN {
     if (this._store.length < 1) {
       throw new VmError(ERROR.STACK_UNDERFLOW)
     }
 
-    return this._store.pop()
+    // Length is checked above, so pop shouldn't return undefined
+    return this._store.pop()!
   }
 
   /**
@@ -40,7 +47,7 @@ module.exports = class Stack {
    * @param {Number} num - Number of items to pop
    * @returns {Array}
    */
-  popN (num = 1) {
+  popN (num: number = 1): BN[] {
     if (this._store.length < num) {
       throw new VmError(ERROR.STACK_UNDERFLOW)
     }
@@ -56,7 +63,7 @@ module.exports = class Stack {
    * Swap top of stack with an item in the stack.
    * @param {Number} position - Index of item from top of the stack (0-indexed)
    */
-  swap (position) {
+  swap (position: number) {
     if (this._store.length <= position) {
       throw new VmError(ERROR.STACK_UNDERFLOW)
     }
@@ -73,26 +80,12 @@ module.exports = class Stack {
    * Pushes a copy of an item in the stack.
    * @param {Number} position - Index of item to be copied (1-indexed)
    */
-  dup (position) {
+  dup (position: number) {
     if (this._store.length < position) {
       throw new VmError(ERROR.STACK_UNDERFLOW)
     }
 
     const i = this._store.length - position
     this.push(this._store[i])
-  }
-
-  _isValidValue (value) {
-    if (BN.isBN(value)) {
-      if (value.lte(ethUtil.MAX_INTEGER)) {
-        return true
-      }
-    } else if (Buffer.isBuffer(value)) {
-      if (value.length <= 32) {
-        return true
-      }
-    }
-
-    return false
   }
 }
