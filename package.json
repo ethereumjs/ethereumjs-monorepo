@@ -21,6 +21,8 @@
     "testAPI:browser": "karma start karma.conf.js",
     "test": "echo \"[INFO] Generic test cmd not used. See package.json for more specific test run cmds.\"",
     "lint": "standard",
+    "format": "ethereumjs-config-format",
+    "format-fix": "ethereumjs-config-format-fix",
     "prepublishOnly": "npm run lint && npm run build:dist && npm run testBuildIntegrity",
     "build:dist": "tsc",
     "build:docs": "documentation build ./lib/index.js ./lib/runBlockchain.js ./lib/runBlock.js ./lib/runTx.js ./lib/runCode.js ./lib/runCall.js --format md --shallow > ./docs/index.md",
@@ -51,6 +53,7 @@
     "util.promisify": "^1.0.0"
   },
   "devDependencies": {
+    "@ethereumjs/config-prettier": "^1.1.1",
     "browserify": "^16.2.3",
     "coveralls": "^3.0.0",
     "documentation": "^8.1.2",
@@ -66,6 +69,7 @@
     "level-mem": "^3.0.1",
     "minimist": "^1.1.1",
     "nyc": "^12.0.2",
+    "prettier": "^1.16.4",
     "standard": "^10.0.0",
     "tap-spec": "^5.0.0",
     "tape": "4.6.3",

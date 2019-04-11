@@ -1,11 +1,9 @@
 {
-    "compilerOptions": {
-        "outDir": "./dist",
-        "allowJs": true,
-        "target": "es5",
-        "lib": ["es2018"]
-    },
-    "include": [
-        "./lib/**/*"
-    ]
+  "compilerOptions": {
+    "outDir": "./dist",
+    "allowJs": true,
+    "target": "es5",
+    "lib": ["es2018"]
+  },
+  "include": ["./lib/**/*"]
 }
