@@ -1,5 +1,5 @@
 const tape = require('tape')
-const Memory = require('../../../lib/evm/memory')
+const Memory = require('../../../dist/evm/memory').default
 
 tape('Memory', t => {
   const m = new Memory()

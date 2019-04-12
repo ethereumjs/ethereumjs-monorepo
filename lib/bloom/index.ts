@@ -1,17 +1,19 @@
-const assert = require('assert')
-const utils = require('ethereumjs-util')
+import * as assert from 'assert'
+import { zeros, keccak256 } from 'ethereumjs-util'
 
 const BYTE_SIZE = 256
 
-module.exports = class Bloom {
+export default class Bloom {
+  bitvector: Buffer
+
   /**
    * Represents a Bloom
    * @constructor
    * @param {Buffer} bitvector
    */
-  constructor (bitvector) {
+  constructor (bitvector: Buffer) {
     if (!bitvector) {
-      this.bitvector = utils.zeros(BYTE_SIZE)
+      this.bitvector = zeros(BYTE_SIZE)
     } else {
       assert(bitvector.length === BYTE_SIZE, 'bitvectors must be 2048 bits long')
       this.bitvector = bitvector
@@ -21,10 +23,11 @@ module.exports = class Bloom {
   /**
    * adds an element to a bit vector of a 64 byte bloom filter
    * @method add
-   * @param {Buffer|Array|String|Number} e the element to add
+   * @param {Buffer} e the element to add
    */
-  add (e) {
-    e = utils.keccak256(e)
+  add (e: Buffer) {
+    assert(Buffer.isBuffer(e), 'Element should be buffer')
+    e = keccak256(e)
     const mask = 2047 // binary 11111111111
 
     for (let i = 0; i < 3; i++) {
@@ -39,11 +42,12 @@ module.exports = class Bloom {
   /**
    * checks if an element is in the bloom
    * @method check
-   * @param {Buffer|Array|String|Number} e the element to check
+   * @param {Buffer} e the element to check
    * @returns {boolean} Returns {@code true} if the element is in the bloom
    */
-  check (e) {
-    e = utils.keccak256(e)
+  check (e: Buffer): boolean {
+    assert(Buffer.isBuffer(e), 'Element should be Buffer')
+    e = keccak256(e)
     const mask = 2047 // binary 11111111111
     let match = true
 
@@ -52,7 +56,7 @@ module.exports = class Bloom {
       const loc = mask & first2bytes
       const byteLoc = loc >> 3
       const bitLoc = 1 << loc % 8
-      match = (this.bitvector[BYTE_SIZE - byteLoc - 1] & bitLoc)
+      match = (this.bitvector[BYTE_SIZE - byteLoc - 1] & bitLoc) !== 0
     }
 
     return Boolean(match)
@@ -61,11 +65,11 @@ module.exports = class Bloom {
   /**
    * checks if multiple topics are in a bloom
    * @method multiCheck
-   * @param {Buffer[]|Array[]|String[]|Number[]} topics
+   * @param {Buffer[]} topics
    * @returns {boolean} Returns {@code true} if every topic is in the bloom
    */
-  multiCheck (topics) {
-    return topics.every((t) => this.check(t))
+  multiCheck (topics: Buffer[]): boolean {
+    return topics.every((t: Buffer) => this.check(t))
   }
 
   /**
@@ -73,7 +77,7 @@ module.exports = class Bloom {
    * @method or
    * @param {Bloom} bloom
    */
-  or (bloom) {
+  or (bloom: Bloom) {
     if (bloom) {
       for (let i = 0; i <= BYTE_SIZE; i++) {
         this.bitvector[i] = this.bitvector[i] | bloom.bitvector[i]

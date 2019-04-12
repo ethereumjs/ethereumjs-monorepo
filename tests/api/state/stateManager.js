@@ -1,7 +1,7 @@
 const promisify = require('util.promisify')
 const tape = require('tape')
 const util = require('ethereumjs-util')
-const StateManager = require('../../../lib/state/stateManager')
+const StateManager = require('../../../dist/state/stateManager')
 const { createAccount } = require('../utils')
 
 tape('StateManager', (t) => {

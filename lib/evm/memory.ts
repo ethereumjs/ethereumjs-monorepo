@@ -1,8 +1,12 @@
+import * as assert from 'assert'
+
 /**
  * Memory implements a simple memory model
  * for the ethereum virtual machine.
  */
-module.exports = class Memory {
+export default class Memory {
+  _store: number[]
+
   constructor () {
     this._store = []
   }
@@ -11,9 +15,9 @@ module.exports = class Memory {
    * Extends the memory given an offset and size. Rounds extended
    * memory to word-size.
    * @param {Number} offset
-   * @param {size} size
+   * @param {Number} size
    */
-  extend (offset, size) {
+  extend (offset: number, size: number) {
     if (size === 0) {
       return
     }
@@ -31,18 +35,14 @@ module.exports = class Memory {
    * @param {Number} size - How many bytes to write
    * @param {Buffer} value - Value
    */
-  write (offset, size, value) {
+  write (offset: number, size: number, value: Buffer) {
     if (size === 0) {
       return
     }
 
-    if (value.length !== size) {
-      throw new Error('Invalid value size')
-    }
-
-    if (offset + size > this._store.length) {
-      throw new Error('Value exceeds memory capacity')
-    }
+    assert(value.length === size, 'Invalid value size')
+    assert(offset + size <= this._store.length, 'Value exceeds memory capacity')
+    assert(Buffer.isBuffer(value), 'Invalid value type')
 
     for (let i = 0; i < size; i++) {
       this._store[offset + i] = value[i]
@@ -56,7 +56,7 @@ module.exports = class Memory {
    * @param {Number} size - How many bytes to read
    * @returns {Buffer}
    */
-  read (offset, size) {
+  read (offset: number, size: number): Buffer {
     const loaded = this._store.slice(offset, offset + size)
     // Fill the remaining length with zeros
     for (let i = loaded.length; i < size; i++) {
@@ -66,7 +66,7 @@ module.exports = class Memory {
   }
 }
 
-const ceil = (value, ceiling) => {
+const ceil = (value: number, ceiling: number): number => {
   const r = value % ceiling
   if (r === 0) {
     return value
