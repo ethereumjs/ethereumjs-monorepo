@@ -1,5 +1,3 @@
-'use strict'
-
 import Transaction from './index.js'
 import { toBuffer } from 'ethereumjs-util'
 
