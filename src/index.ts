@@ -6,6 +6,7 @@ import {
   rlphash,
   publicToAddress,
   ecsign,
+  toBuffer,
 } from 'ethereumjs-util'
 import Common from 'ethereumjs-common'
 
@@ -54,8 +55,53 @@ const N_DIV_2 = new BN('7fffffffffffffffffffffffffffffff5d576e7357a4501ddfe92f46
  * @param {Object} opts.common Alternatively pass a Common instance (ethereumjs-common) instead of setting chain/hardfork directly
  * */
 
+export interface TransformableToBuffer {
+  toBuffer(): Buffer
+}
+
+export type PrefixedHexString = string
+
+export type BufferLike = Buffer | TransformableToBuffer | PrefixedHexString | number
+
+export interface TransactionObject {
+  chainId?: number
+  gasLimit?: BufferLike
+  gasPrice?: BufferLike
+  to?: BufferLike
+  nonce?: BufferLike
+  data?: BufferLike
+  v?: BufferLike
+  r?: BufferLike
+  s?: BufferLike
+  value?: BufferLike
+}
+
+export interface TransactionOptions {
+  common?: Common
+  chain?: number | string
+  hardfork?: string
+}
+
+export type TransactionData = Buffer | PrefixedHexString | BufferLike[] | TransactionObject
+
 export default class Transaction {
-  constructor(data, opts) {
+  public raw!: Buffer[]
+  public nonce!: Buffer
+  public gasLimit!: Buffer
+  public gasPrice!: Buffer
+  public to!: Buffer
+  public value!: Buffer
+  public data!: Buffer
+  public v!: Buffer
+  public r!: Buffer
+  public s!: Buffer
+
+  private _common: Common
+  private _chainId: number
+  private _senderPubKey?: Buffer
+  protected _from?: Buffer
+
+  constructor(data?: TransactionData, opts?: TransactionOptions) {
     opts = opts || {}
 
     // instantiate Common class instance based on passed options
@@ -170,7 +216,8 @@ export default class Transaction {
     if (opts.chain || opts.common) {
       this._chainId = this._common.chainId()
     } else {
-      this._chainId = chainId || data.chainId || 0
+      const dataAsTransactionObject = data as TransactionObject
+      this._chainId = chainId || dataAsTransactionObject.chainId || 0
     }
   }
 
@@ -187,7 +234,7 @@ export default class Transaction {
    * @param {Boolean} [includeSignature=true] whether or not to inculde the signature
    * @return {Buffer}
    */
-  hash(includeSignature) {
+  hash(includeSignature?: boolean) {
     if (includeSignature === undefined) includeSignature = true
 
     let items
@@ -211,9 +258,9 @@ export default class Transaction {
 
       if ((unsigned && seeksReplayProtection) || (!unsigned && meetsAllEIP155Conditions)) {
         const raw = this.raw.slice()
-        this.v = this._chainId
-        this.r = 0
-        this.s = 0
+        this.v = toBuffer(this._chainId)
+        this.r = toBuffer(0)
+        this.s = toBuffer(0)
         items = this.raw
         this.raw = raw
       } else {
@@ -250,11 +297,13 @@ export default class Transaction {
    * returns the public key of the sender
    * @return {Buffer}
    */
-  getSenderPublicKey() {
+  getSenderPublicKey(): Buffer {
     if (!this.verifySignature()) {
       throw new Error('Invalid Signature')
     }
-    return this._senderPubKey
+
+    // If the signature was verified successfully the _senderPubKey field is defined
+    return this._senderPubKey!
   }
 
   /**
@@ -277,7 +326,7 @@ export default class Transaction {
         v,
         this.r,
         this.s,
-        useChainIdWhileRecoveringPubKey && this._chainId,
+        useChainIdWhileRecoveringPubKey ? this._chainId : undefined,
       )
     } catch (e) {
       return false
@@ -290,7 +339,7 @@ export default class Transaction {
    * sign a transaction with a given private key
    * @param {Buffer} privateKey Must be 32 bytes in length
    */
-  sign(privateKey) {
+  sign(privateKey: Buffer) {
     const msgHash = this.hash(false)
     const sig = ecsign(msgHash, privateKey)
     if (this._chainId > 0) {
@@ -339,7 +388,7 @@ export default class Transaction {
    * @param {Boolean} [stringError=false] whether to return a string with a description of why the validation failed or return a Boolean
    * @return {Boolean|String}
    */
-  validate(stringError) {
+  validate(stringError?: boolean) {
     const errors = []
     if (!this.verifySignature()) {
       errors.push('Invalid Signature')

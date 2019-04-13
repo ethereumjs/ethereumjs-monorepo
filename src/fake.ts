@@ -1,5 +1,10 @@
-import Transaction from './index.js'
+import Transaction, { TransactionData, TransactionOptions, BufferLike } from './index.js'
 import { toBuffer } from 'ethereumjs-util'
+
+// We extend this interface here as FakeTransactions have one extra field
+export interface TransactionObject {
+  from?: BufferLike
+}
 
 /**
  * Creates a new transaction object that doesn't need to be signed
@@ -30,7 +35,8 @@ import { toBuffer } from 'ethereumjs-util'
  * @prop {Buffer} s EC signature parameter
  */
 export default class FakeTransaction extends Transaction {
-  constructor(data, opts) {
+  public from?: Buffer
+  constructor(data?: TransactionData, opts?: TransactionOptions) {
     super(data, opts)
 
     var self = this
@@ -49,7 +55,8 @@ export default class FakeTransaction extends Transaction {
       },
     })
 
-    this.from = data.from
+    const dataAsTransactionObject = data as TransactionObject
+    this.from = toBuffer(dataAsTransactionObject.from)
   }
 
   /**
