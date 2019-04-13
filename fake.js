@@ -32,7 +32,7 @@ const ethUtil = require('ethereumjs-util')
  * @prop {Buffer} s EC signature parameter
  */
 module.exports = class FakeTransaction extends Transaction {
-  constructor (data, opts) {
+  constructor(data, opts) {
     super(data, opts)
 
     var self = this
@@ -44,11 +44,11 @@ module.exports = class FakeTransaction extends Transaction {
       enumerable: true,
       configurable: true,
       get: this.getSenderAddress.bind(self),
-      set: function (val) {
+      set: function(val) {
         if (val) {
           self._from = ethUtil.toBuffer(val)
         }
-      }
+      },
     })
 
     this.from = data.from
@@ -59,7 +59,7 @@ module.exports = class FakeTransaction extends Transaction {
    * @param {Boolean} [includeSignature=true] whether or not to inculde the signature
    * @return {Buffer}
    */
-  hash (includeSignature = true) {
+  hash(includeSignature = true) {
     if (includeSignature && this._from && this._from.toString('hex') !== '') {
       // include a fake signature using the from address as a private key
       let fakeKey = Buffer.concat([this._from, this._from.slice(0, 12)])
@@ -69,4 +69,3 @@ module.exports = class FakeTransaction extends Transaction {
     return super.hash(includeSignature)
   }
 }
-

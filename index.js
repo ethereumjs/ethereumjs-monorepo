@@ -49,7 +49,7 @@ const N_DIV_2 = new BN('7fffffffffffffffffffffffffffffff5d576e7357a4501ddfe92f46
  * */
 
 class Transaction {
-  constructor (data, opts) {
+  constructor(data, opts) {
     opts = opts || {}
 
     // instantiate Common class instance based on passed options
@@ -66,54 +66,64 @@ class Transaction {
 
     data = data || {}
     // Define Properties
-    const fields = [{
-      name: 'nonce',
-      length: 32,
-      allowLess: true,
-      default: new Buffer([])
-    }, {
-      name: 'gasPrice',
-      length: 32,
-      allowLess: true,
-      default: new Buffer([])
-    }, {
-      name: 'gasLimit',
-      alias: 'gas',
-      length: 32,
-      allowLess: true,
-      default: new Buffer([])
-    }, {
-      name: 'to',
-      allowZero: true,
-      length: 20,
-      default: new Buffer([])
-    }, {
-      name: 'value',
-      length: 32,
-      allowLess: true,
-      default: new Buffer([])
-    }, {
-      name: 'data',
-      alias: 'input',
-      allowZero: true,
-      default: new Buffer([])
-    }, {
-      name: 'v',
-      allowZero: true,
-      default: new Buffer([opts.chain || opts.common ? this._common.chainId() : 0x1c])
-    }, {
-      name: 'r',
-      length: 32,
-      allowZero: true,
-      allowLess: true,
-      default: new Buffer([])
-    }, {
-      name: 's',
-      length: 32,
-      allowZero: true,
-      allowLess: true,
-      default: new Buffer([])
-    }]
+    const fields = [
+      {
+        name: 'nonce',
+        length: 32,
+        allowLess: true,
+        default: new Buffer([]),
+      },
+      {
+        name: 'gasPrice',
+        length: 32,
+        allowLess: true,
+        default: new Buffer([]),
+      },
+      {
+        name: 'gasLimit',
+        alias: 'gas',
+        length: 32,
+        allowLess: true,
+        default: new Buffer([]),
+      },
+      {
+        name: 'to',
+        allowZero: true,
+        length: 20,
+        default: new Buffer([]),
+      },
+      {
+        name: 'value',
+        length: 32,
+        allowLess: true,
+        default: new Buffer([]),
+      },
+      {
+        name: 'data',
+        alias: 'input',
+        allowZero: true,
+        default: new Buffer([]),
+      },
+      {
+        name: 'v',
+        allowZero: true,
+        default: new Buffer([opts.chain || opts.common ? this._common.chainId() : 0x1c]),
+      },
+      {
+        name: 'r',
+        length: 32,
+        allowZero: true,
+        allowLess: true,
+        default: new Buffer([]),
+      },
+      {
+        name: 's',
+        length: 32,
+        allowZero: true,
+        allowLess: true,
+        default: new Buffer([]),
+      },
+    ]
 
     /**
      * Returns the rlp encoding of the transaction
@@ -142,7 +152,7 @@ class Transaction {
     Object.defineProperty(this, 'from', {
       enumerable: true,
       configurable: true,
-      get: this.getSenderAddress.bind(this)
+      get: this.getSenderAddress.bind(this),
     })
 
     // calculate chainId from signature
@@ -162,7 +172,7 @@ class Transaction {
    * If the tx's `to` is to the creation address
    * @return {Boolean}
    */
-  toCreationAddress () {
+  toCreationAddress() {
     return this.to.toString('hex') === ''
   }
 
@@ -171,7 +181,7 @@ class Transaction {
    * @param {Boolean} [includeSignature=true] whether or not to inculde the signature
    * @return {Buffer}
    */
-  hash (includeSignature) {
+  hash(includeSignature) {
     if (includeSignature === undefined) includeSignature = true
 
     let items
@@ -186,13 +196,14 @@ class Transaction {
 
       const v = ethUtil.bufferToInt(this.v)
       const onEIP155BlockOrLater = this._common.gteHardfork('spuriousDragon')
-      const vAndChainIdMeetEIP155Conditions = v === this._chainId * 2 + 35 || v === this._chainId * 2 + 36
+      const vAndChainIdMeetEIP155Conditions =
+        v === this._chainId * 2 + 35 || v === this._chainId * 2 + 36
       const meetsAllEIP155Conditions = vAndChainIdMeetEIP155Conditions && onEIP155BlockOrLater
 
       const unsigned = !this.r.length && !this.s.length
       const seeksReplayProtection = this._chainId > 0
 
-      if (unsigned && seeksReplayProtection || !unsigned && meetsAllEIP155Conditions) {
+      if ((unsigned && seeksReplayProtection) || (!unsigned && meetsAllEIP155Conditions)) {
         const raw = this.raw.slice()
         this.v = this._chainId
         this.r = 0
@@ -212,7 +223,7 @@ class Transaction {
    * returns chain ID
    * @return {Buffer}
    */
-  getChainId () {
+  getChainId() {
     return this._chainId
   }
 
@@ -220,7 +231,7 @@ class Transaction {
    * returns the sender's address
    * @return {Buffer}
    */
-  getSenderAddress () {
+  getSenderAddress() {
     if (this._from) {
       return this._from
     }
@@ -233,7 +244,7 @@ class Transaction {
    * returns the public key of the sender
    * @return {Buffer}
    */
-  getSenderPublicKey () {
+  getSenderPublicKey() {
     if (!this.verifySignature()) {
       throw new Error('Invalid Signature')
     }
@@ -244,7 +255,7 @@ class Transaction {
    * Determines if the signature is valid
    * @return {Boolean}
    */
-  verifySignature () {
+  verifySignature() {
     const msgHash = this.hash(false)
     // All transaction signatures whose s-value is greater than secp256k1n/2 are considered invalid.
     if (this._common.gteHardfork('homestead') && new BN(this.s).cmp(N_DIV_2) === 1) {
@@ -253,8 +264,15 @@ class Transaction {
 
     try {
       const v = ethUtil.bufferToInt(this.v)
-      const useChainIdWhileRecoveringPubKey = v >= this._chainId * 2 + 35 && this._common.gteHardfork('spuriousDragon')
-      this._senderPubKey = ethUtil.ecrecover(msgHash, v, this.r, this.s, useChainIdWhileRecoveringPubKey && this._chainId)
+      const useChainIdWhileRecoveringPubKey =
+        v >= this._chainId * 2 + 35 && this._common.gteHardfork('spuriousDragon')
+      this._senderPubKey = ethUtil.ecrecover(
+        msgHash,
+        v,
+        this.r,
+        this.s,
+        useChainIdWhileRecoveringPubKey && this._chainId,
+      )
     } catch (e) {
       return false
     }
@@ -266,7 +284,7 @@ class Transaction {
    * sign a transaction with a given private key
    * @param {Buffer} privateKey Must be 32 bytes in length
    */
-  sign (privateKey) {
+  sign(privateKey) {
     const msgHash = this.hash(false)
     const sig = ethUtil.ecsign(msgHash, privateKey)
     if (this._chainId > 0) {
@@ -279,7 +297,7 @@ class Transaction {
    * The amount of gas paid for the data in this tx
    * @return {BN}
    */
-  getDataFee () {
+  getDataFee() {
     const data = this.raw[5]
     const cost = new BN(0)
     for (let i = 0; i < data.length; i++) {
@@ -294,7 +312,7 @@ class Transaction {
    * the minimum amount of gas the tx must have (DataFee + TxFee + Creation Fee)
    * @return {BN}
    */
-  getBaseFee () {
+  getBaseFee() {
     const fee = this.getDataFee().iaddn(this._common.param('gasPrices', 'tx'))
     if (this._common.gteHardfork('homestead') && this.toCreationAddress()) {
       fee.iaddn(this._common.param('gasPrices', 'txCreation'))
@@ -306,10 +324,8 @@ class Transaction {
    * the up front amount that an account must have for this transaction to be valid
    * @return {BN}
    */
-  getUpfrontCost () {
-    return new BN(this.gasLimit)
-      .imul(new BN(this.gasPrice))
-      .iadd(new BN(this.value))
+  getUpfrontCost() {
+    return new BN(this.gasLimit).imul(new BN(this.gasPrice)).iadd(new BN(this.value))
   }
 
   /**
@@ -317,7 +333,7 @@ class Transaction {
    * @param {Boolean} [stringError=false] whether to return a string with a description of why the validation failed or return a Boolean
    * @return {Boolean|String}
    */
-  validate (stringError) {
+  validate(stringError) {
     const errors = []
     if (!this.verifySignature()) {
       errors.push('Invalid Signature')
