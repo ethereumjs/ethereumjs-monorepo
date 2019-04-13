@@ -13,6 +13,35 @@ import Common from 'ethereumjs-common'
 // secp256k1n/2
 const N_DIV_2 = new BN('7fffffffffffffffffffffffffffffff5d576e7357a4501ddfe92f46681b20a0', 16)
 
+export interface TransformableToBuffer {
+  toBuffer(): Buffer
+}
+
+export type PrefixedHexString = string
+
+export type BufferLike = Buffer | TransformableToBuffer | PrefixedHexString | number
+
+export interface TransactionObject {
+  chainId?: number
+  gasLimit?: BufferLike
+  gasPrice?: BufferLike
+  to?: BufferLike
+  nonce?: BufferLike
+  data?: BufferLike
+  v?: BufferLike
+  r?: BufferLike
+  s?: BufferLike
+  value?: BufferLike
+}
+
+export interface TransactionOptions {
+  common?: Common
+  chain?: number | string
+  hardfork?: string
+}
+
+export type TransactionData = Buffer | PrefixedHexString | BufferLike[] | TransactionObject
+
 /**
  * Creates a new transaction object.
  *
@@ -54,36 +83,6 @@ const N_DIV_2 = new BN('7fffffffffffffffffffffffffffffff5d576e7357a4501ddfe92f46
  * @param {String} opts.hardfork Hardfork for the block [default: null, block number-based behaviour]
  * @param {Object} opts.common Alternatively pass a Common instance (ethereumjs-common) instead of setting chain/hardfork directly
  * */
-
-export interface TransformableToBuffer {
-  toBuffer(): Buffer
-}
-
-export type PrefixedHexString = string
-
-export type BufferLike = Buffer | TransformableToBuffer | PrefixedHexString | number
-
-export interface TransactionObject {
-  chainId?: number
-  gasLimit?: BufferLike
-  gasPrice?: BufferLike
-  to?: BufferLike
-  nonce?: BufferLike
-  data?: BufferLike
-  v?: BufferLike
-  r?: BufferLike
-  s?: BufferLike
-  value?: BufferLike
-}
-
-export interface TransactionOptions {
-  common?: Common
-  chain?: number | string
-  hardfork?: string
-}
-
-export type TransactionData = Buffer | PrefixedHexString | BufferLike[] | TransactionObject
-
 export default class Transaction {
   public raw!: Buffer[]
   public nonce!: Buffer
