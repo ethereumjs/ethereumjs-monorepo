@@ -1,7 +1,7 @@
 'use strict'
 
-const Transaction = require('./index.js')
-const ethUtil = require('ethereumjs-util')
+import Transaction from './index.js'
+import { toBuffer } from 'ethereumjs-util'
 
 /**
  * Creates a new transaction object that doesn't need to be signed
@@ -31,7 +31,7 @@ const ethUtil = require('ethereumjs-util')
  * @prop {Buffer} r EC signature parameter
  * @prop {Buffer} s EC signature parameter
  */
-module.exports = class FakeTransaction extends Transaction {
+export default class FakeTransaction extends Transaction {
   constructor(data, opts) {
     super(data, opts)
 
@@ -46,7 +46,7 @@ module.exports = class FakeTransaction extends Transaction {
       get: this.getSenderAddress.bind(self),
       set: function(val) {
         if (val) {
-          self._from = ethUtil.toBuffer(val)
+          self._from = toBuffer(val)
         }
       },
     })

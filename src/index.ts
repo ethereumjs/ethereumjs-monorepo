@@ -1,7 +1,14 @@
 'use strict'
-const ethUtil = require('ethereumjs-util')
-const Common = require('ethereumjs-common').default
-const BN = ethUtil.BN
+import {
+  BN,
+  defineProperties,
+  bufferToInt,
+  ecrecover,
+  rlphash,
+  publicToAddress,
+  ecsign,
+} from 'ethereumjs-util'
+import Common from 'ethereumjs-common'
 
 // secp256k1n/2
 const N_DIV_2 = new BN('7fffffffffffffffffffffffffffffff5d576e7357a4501ddfe92f46681b20a0', 16)
@@ -48,7 +55,7 @@ const N_DIV_2 = new BN('7fffffffffffffffffffffffffffffff5d576e7357a4501ddfe92f46
  * @param {Object} opts.common Alternatively pass a Common instance (ethereumjs-common) instead of setting chain/hardfork directly
  * */
 
-class Transaction {
+export default class Transaction {
   constructor(data, opts) {
     opts = opts || {}
 
@@ -142,7 +149,7 @@ class Transaction {
      * @see {@link https://github.com/ethereumjs/ethereumjs-util/blob/master/docs/index.md#defineproperties|ethereumjs-util}
      */
     // attached serialize
-    ethUtil.defineProperties(this, fields, data)
+    defineProperties(this, fields, data)
 
     /**
      * @property {Buffer} from (read only) sender address of this transaction, mathematically derived from other parameters.
@@ -156,7 +163,7 @@ class Transaction {
     })
 
     // calculate chainId from signature
-    let sigV = ethUtil.bufferToInt(this.v)
+    let sigV = bufferToInt(this.v)
     let chainId = Math.floor((sigV - 35) / 2)
     if (chainId < 0) chainId = 0
 
@@ -194,7 +201,7 @@ class Transaction {
       // elements (i.e. nonce, gasprice, startgas, to, value, data), hash nine elements, with v replaced by
       // CHAIN_ID, r = 0 and s = 0.
 
-      const v = ethUtil.bufferToInt(this.v)
+      const v = bufferToInt(this.v)
       const onEIP155BlockOrLater = this._common.gteHardfork('spuriousDragon')
       const vAndChainIdMeetEIP155Conditions =
         v === this._chainId * 2 + 35 || v === this._chainId * 2 + 36
@@ -216,7 +223,7 @@ class Transaction {
     }
 
     // create hash
-    return ethUtil.rlphash(items)
+    return rlphash(items)
   }
 
   /**
@@ -236,7 +243,7 @@ class Transaction {
       return this._from
     }
     const pubkey = this.getSenderPublicKey()
-    this._from = ethUtil.publicToAddress(pubkey)
+    this._from = publicToAddress(pubkey)
     return this._from
   }
 
@@ -263,10 +270,10 @@ class Transaction {
     }
 
     try {
-      const v = ethUtil.bufferToInt(this.v)
+      const v = bufferToInt(this.v)
       const useChainIdWhileRecoveringPubKey =
         v >= this._chainId * 2 + 35 && this._common.gteHardfork('spuriousDragon')
-      this._senderPubKey = ethUtil.ecrecover(
+      this._senderPubKey = ecrecover(
         msgHash,
         v,
         this.r,
@@ -286,7 +293,7 @@ class Transaction {
    */
   sign(privateKey) {
     const msgHash = this.hash(false)
-    const sig = ethUtil.ecsign(msgHash, privateKey)
+    const sig = ecsign(msgHash, privateKey)
     if (this._chainId > 0) {
       sig.v += this._chainId * 2 + 8
     }
@@ -350,5 +357,3 @@ class Transaction {
     }
   }
 }
-
-module.exports = Transaction
