@@ -1,6 +1,6 @@
 'use strict'
 const ethUtil = require('ethereumjs-util')
-const Common = require('ethereumjs-common')
+const Common = require('ethereumjs-common').default
 const BN = ethUtil.BN
 
 // secp256k1n/2
@@ -151,7 +151,11 @@ class Transaction {
     if (chainId < 0) chainId = 0
 
     // set chainId
-    this._chainId = chainId || data.chainId || 0
+    if (opts.chain || opts.common) {
+      this._chainId = this._common.chainId()
+    } else {
+      this._chainId = chainId || data.chainId || 0
+    }
   }
 
   /**
@@ -170,16 +174,20 @@ class Transaction {
   hash (includeSignature) {
     if (includeSignature === undefined) includeSignature = true
 
-    // EIP155 spec:
-    // when computing the hash of a transaction for purposes of signing or recovering,
-    // instead of hashing only the first six elements (ie. nonce, gasprice, startgas, to, value, data),
-    // hash nine elements, with v replaced by CHAIN_ID, r = 0 and s = 0
-
     let items
     if (includeSignature) {
       items = this.raw
     } else {
-      if (this._chainId > 0) {
+      // EIP155 spec:
+      // If block.number >= 2,675,000 and v = CHAIN_ID * 2 + 35 or v = CHAIN_ID * 2 + 36, then when computing
+      // the hash of a transaction for purposes of signing or recovering, instead of hashing only the first six
+      // elements (i.e. nonce, gasprice, startgas, to, value, data), hash nine elements, with v replaced by
+      // CHAIN_ID, r = 0 and s = 0.
+
+      const onEIP155BlockOrLater = this._common.gteHardfork('spuriousDragon')
+      const v = ethUtil.bufferToInt(this.v)
+      const vAndChainIdMeetEIP155Conditions = v === this._chainId * 2 + 35 || v === this._chainId * 2 + 36
+      if (vAndChainIdMeetEIP155Conditions && onEIP155BlockOrLater) {
         const raw = this.raw.slice()
         this.v = this._chainId
         this.r = 0
@@ -239,11 +247,9 @@ class Transaction {
     }
 
     try {
-      let v = ethUtil.bufferToInt(this.v)
-      if (this._chainId > 0) {
-        v -= this._chainId * 2 + 8
-      }
-      this._senderPubKey = ethUtil.ecrecover(msgHash, v, this.r, this.s)
+      const v = ethUtil.bufferToInt(this.v)
+      const useChainIdWhileRecoveringPubKey = v >= this._chainId * 2 + 35 && this._common.gteHardfork('spuriousDragon')
+      this._senderPubKey = ethUtil.ecrecover(msgHash, v, this.r, this.s, useChainIdWhileRecoveringPubKey && this._chainId)
     } catch (e) {
       return false
     }

@@ -1,64 +1,68 @@
 const Tx = require('../index.js')
 const tape = require('tape')
 const ethUtil = require('ethereumjs-util')
-const Common = require('ethereumjs-common')
 const argv = require('minimist')(process.argv.slice(2))
 const testing = require('ethereumjs-testing')
 
-var txTests = testing.getTests('transaction', argv)
+const forkNames = [
+  'Byzantium',
+  'Constantinople',
+  'EIP150',
+  'EIP158',
+  'Frontier',
+  'Homestead'
+]
 
-const bufferToHex = ethUtil.bufferToHex
-const addHexPrefix = ethUtil.addHexPrefix
-const stripHexPrefix = ethUtil.stripHexPrefix
-const setLength = ethUtil.setLength
-
-function addPad (v) {
-  if (v.length % 2 === 1) {
-    v = '0' + v
-  }
-  return v
+const forkNameMap = {
+  Byzantium: 'byzantium',
+  Constantinople: 'constantinople',
+  EIP150: 'tangerineWhistle',
+  EIP158: 'spuriousDragon',
+  Frontier: 'chainstart',
+  Homestead: 'homestead'
 }
 
-function normalizeZero (v) {
-  if (!v || v === '0x') {
-    return '0x00'
-  } else {
-    return v
-  }
-}
+tape('TransactionTests', (t) => {
+  const fileFilterRegex = argv.file ? new RegExp(argv.file + '[^\\w]') : undefined
 
-testing.runTests(function (testData, sst, cb) {
-  var tTx = testData.transaction
+  testing.getTests('TransactionTests', (filename, testName, testData) => {
+    t.test(testName, (st) => {
+      const rawTx = ethUtil.toBuffer(testData.rlp)
 
-  try {
-    var rawTx = ethUtil.toBuffer(testData.rlp)
-    var tx = new Tx(rawTx, {
-      hardfork: testData.blockNumber >= 1150000 ? 'homestead' : 'chainstart'
+      let tx
+      forkNames.forEach(forkName => {
+        const forkTestData = testData[forkName]
+        const shouldBeInvalid = Object.keys(forkTestData).length === 0
+        try {
+          tx = new Tx(rawTx, {
+            hardfork: forkNameMap[forkName],
+            chain: 1
+          })
+
+          const sender = tx.getSenderAddress().toString('hex')
+          const hash = tx.hash().toString('hex')
+
+          const validationErrors = tx.validate(true)
+          const transactionIsValid = validationErrors.length === 0
+          const hashAndSenderAreCorrect = forkTestData && (sender === forkTestData.sender && hash === forkTestData.hash)
+
+          if (shouldBeInvalid) {
+            st.assert(!transactionIsValid, `Transaction should be invalid on ${forkName}`)
+          } else {
+            st.assert(hashAndSenderAreCorrect && transactionIsValid, `Transaction should be valid on ${forkName}`)
+          }
+        } catch (e) {
+          if (shouldBeInvalid) {
+            st.assert(shouldBeInvalid, `Transaction should be invalid on ${forkName}`)
+          } else {
+            st.fail(`Transaction should be valid on ${forkName}`)
+          }
+        }
+      })
+      st.end()
     })
-  } catch (e) {
-    sst.equal(undefined, tTx, 'should not have any fields ')
-    cb()
-    return
-  }
-
-  if (tTx && tx.validate()) {
-    try {
-      sst.equal(tx._common instanceof Common, true, '_common class attribute')
-      sst.equal(bufferToHex(tx.data), addHexPrefix(addPad(stripHexPrefix(tTx.data))), 'data')
-      sst.equal(normalizeZero(bufferToHex(tx.gasLimit)), tTx.gasLimit, 'gasLimit')
-      sst.equal(normalizeZero(bufferToHex(tx.gasPrice)), tTx.gasPrice, 'gasPrice')
-      sst.equal(normalizeZero(bufferToHex(tx.nonce)), tTx.nonce, 'nonce')
-      sst.equal(normalizeZero(bufferToHex(setLength(tx.r, 32))), normalizeZero(bufferToHex(setLength(tTx.r, 32))), 'r')
-      sst.equal(normalizeZero(bufferToHex(tx.s)), normalizeZero(bufferToHex(tTx.s)), 's')
-      sst.equal(normalizeZero(bufferToHex(tx.v)), normalizeZero(bufferToHex(tTx.v)), 'v')
-      sst.equal(bufferToHex(tx.to), addHexPrefix(tTx.to), 'to')
-      sst.equal(normalizeZero(bufferToHex(tx.value)), tTx.value, 'value')
-      sst.equal(normalizeZero(bufferToHex(tx.getSenderAddress())), addHexPrefix(testData.sender), "sender's address")
-    } catch (e) {
-      sst.fail(e)
-    }
-  } else {
-    sst.equal(undefined, tTx, 'no tx params in test')
-  }
-  cb()
-}, txTests, tape)
+  }, fileFilterRegex)
+  .then(() => {
+    t.end()
+  })
+})

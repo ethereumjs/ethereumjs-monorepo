@@ -20,8 +20,8 @@
   "author": "mjbecze <mb@ethdev.com>",
   "license": "MPL-2.0",
   "dependencies": {
-    "ethereumjs-common": "^0.6.1",
-    "ethereumjs-util": "^5.0.0"
+    "ethereumjs-common": "^1.0.0",
+    "ethereumjs-util": "^6.0.0"
   },
   "devDependencies": {
     "async": "^2.0.0",
@@ -33,7 +33,7 @@
     "contributor": "^0.1.25",
     "coveralls": "^2.11.4",
     "documentation": "^8.0.0",
-    "ethereumjs-testing": "0.0.1",
+    "ethereumjs-testing": "git+https://github.com/ethereumjs/ethereumjs-testing.git#v1.2.5",
     "istanbul": "^0.4.1",
     "karma": "^1.1.1",
     "karma-browserify": "^5.1.0",
