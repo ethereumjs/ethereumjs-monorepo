@@ -1,10 +1,13 @@
-const Buffer = require('safe-buffer').Buffer
+const asyncLib = require('async')
 const Tree = require('functional-red-black-tree')
-const Account = require('ethereumjs-account')
-const async = require('async')
+import Account from 'ethereumjs-account'
 
-module.exports = class Cache {
-  constructor (trie) {
+export default class Cache {
+  _cache: any
+  _checkpoints: any[]
+  _trie: any
+
+  constructor (trie: any) {
     this._cache = Tree()
     this._checkpoints = []
     this._trie = trie
@@ -16,7 +19,7 @@ module.exports = class Cache {
    * @param {Account} val - Account
    * @param {bool} [fromTrie]
    */
-  put (key, val, fromTrie = false) {
+  put (key: Buffer, val: Account, fromTrie = false): void {
     const modified = !fromTrie
     this._update(key, val, modified, false)
   }
@@ -25,7 +28,7 @@ module.exports = class Cache {
    * Returns the queried account or an empty account.
    * @param {Buffer} key - Address of account
    */
-  get (key) {
+  get (key: Buffer): Account {
     let account = this.lookup(key)
     if (!account) {
       account = new Account()
@@ -37,10 +40,10 @@ module.exports = class Cache {
    * Returns the queried account or undefined.
    * @param {buffer} key - Address of account
    */
-  lookup (key) {
-    key = key.toString('hex')
+  lookup (key: Buffer): Account | undefined {
+    const keyStr = key.toString('hex')
 
-    const it = this._cache.find(key)
+    const it = this._cache.find(keyStr)
     if (it.node) {
       const account = new Account(it.value.val)
       return account
@@ -52,8 +55,8 @@ module.exports = class Cache {
    * @param {Buffer} address - Address of account
    * @param {Function} cb - Callback with params (err, account)
    */
-  _lookupAccount (address, cb) {
-    this._trie.get(address, (err, raw) => {
+  _lookupAccount (address: Buffer, cb: any): void {
+    this._trie.get(address, (err: Error, raw: Buffer) => {
       if (err) return cb(err)
       var account = new Account(raw)
       cb(null, account)
@@ -66,12 +69,12 @@ module.exports = class Cache {
    * @param {Buffer} key - Address of account
    * @param {Function} cb - Callback with params (err, account)
    */
-  getOrLoad (key, cb) {
+  getOrLoad (key: Buffer, cb: any): void {
     const account = this.lookup(key)
     if (account) {
-      async.nextTick(cb, null, account)
+      asyncLib.nextTick(cb, null, account)
     } else {
-      this._lookupAccount(key, (err, account) => {
+      this._lookupAccount(key, (err: Error, account: Account) => {
         if (err) return cb(err)
         this._update(key, account, false, false)
         cb(null, account)
@@ -85,16 +88,16 @@ module.exports = class Cache {
    * @param {Array} addresses - Array of addresses
    * @param {Function} cb - Callback
    */
-  warm (addresses, cb) {
+  warm (addresses: string[], cb: any): void {
     // shim till async supports iterators
-    var accountArr = []
+    const accountArr: string[] = []
     addresses.forEach((val) => {
       if (val) accountArr.push(val)
     })
 
-    async.eachSeries(accountArr, (addressHex, done) => {
+    asyncLib.eachSeries(accountArr, (addressHex: string, done: any) => {
       var address = Buffer.from(addressHex, 'hex')
-      this._lookupAccount(address, (err, account) => {
+      this._lookupAccount(address, (err: Error, account: Account) => {
         if (err) return done(err)
         this._update(address, account, false, false)
         done()
@@ -107,10 +110,10 @@ module.exports = class Cache {
    * and removing accounts that have been deleted.
    * @param {function} cb - Callback
    */
-  flush (cb) {
+  flush (cb: any): void {
     const it = this._cache.begin
     let next = true
-    async.whilst(() => next, (done) => {
+    asyncLib.whilst(() => next, (done: any) => {
       if (it.value && it.value.modified) {
         it.value.modified = false
         it.value.val = it.value.val.serialize()
@@ -131,7 +134,7 @@ module.exports = class Cache {
       } else {
         next = it.hasNext
         it.next()
-        async.nextTick(done)
+        asyncLib.nextTick(done)
       }
     }, cb)
   }
@@ -140,28 +143,28 @@ module.exports = class Cache {
    * Marks current state of cache as checkpoint, which can
    * later on be reverted or commited.
    */
-  checkpoint () {
+  checkpoint (): void {
     this._checkpoints.push(this._cache)
   }
 
   /**
    * Revert changes to cache last checkpoint (no effect on trie).
    */
-  revert () {
+  revert (): void {
     this._cache = this._checkpoints.pop()
   }
 
   /**
    * Commits to current state of cache (no effect on trie).
    */
-  commit () {
+  commit (): void {
     this._checkpoints.pop()
   }
 
   /**
    * Clears cache.
    */
-  clear () {
+  clear (): void {
     this._cache = Tree()
   }
 
@@ -169,13 +172,13 @@ module.exports = class Cache {
    * Marks address as deleted in cache.
    * @params {Buffer} key - Address
    */
-  del (key) {
+  del (key: Buffer): void {
     this._update(key, new Account(), false, true)
   }
 
-  _update (key, val, modified, deleted) {
-    key = key.toString('hex')
-    const it = this._cache.find(key)
+  _update (key: Buffer, val: Account, modified: boolean, deleted: boolean): void {
+    const keyHex = key.toString('hex')
+    const it = this._cache.find(keyHex)
     if (it.node) {
       this._cache = it.update({
         val: val,
@@ -183,7 +186,7 @@ module.exports = class Cache {
         deleted: deleted
       })
     } else {
-      this._cache = this._cache.insert(key, {
+      this._cache = this._cache.insert(keyHex, {
         val: val,
         modified: modified,
         deleted: deleted

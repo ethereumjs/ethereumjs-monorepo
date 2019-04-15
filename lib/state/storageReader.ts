@@ -1,14 +1,19 @@
-module.exports = class StorageReader {
-  constructor (stateManager) {
+import StateManager from './stateManager'
+
+export default class StorageReader {
+  _stateManager: StateManager
+  _storageCache: Map<string, any>
+
+  constructor (stateManager: StateManager) {
     this._stateManager = stateManager
     this._storageCache = new Map()
   }
 
-  getContractStorage (address, key, cb) {
+  getContractStorage (address: Buffer, key: Buffer, cb: any): void {
     const addressHex = address.toString('hex')
     const keyHex = key.toString('hex')
 
-    this._stateManager.getContractStorage(address, key, (err, current) => {
+    this._stateManager.getContractStorage(address, key, (err: Error, current: any) => {
       if (err) return cb(err)
 
       let map = null

@@ -1,7 +1,2 @@
-const StateManager = require('./stateManager')
-const StorageReader = require('./storageReader')
-
-module.exports = {
-  StateManager,
-  StorageReader
-}
+export { default as StateManager } from './stateManager'
+export { default as StorageReader } from './storageReader'
