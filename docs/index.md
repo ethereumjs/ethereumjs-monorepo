@@ -2,28 +2,28 @@
 
 ### Table of Contents
 
--   [Transaction][1]
-    -   [Parameters][2]
-    -   [Properties][3]
-    -   [Examples][4]
-    -   [toCreationAddress][5]
-    -   [hash][6]
-        -   [Parameters][7]
-    -   [getChainId][8]
-    -   [getSenderAddress][9]
-    -   [getSenderPublicKey][10]
-    -   [verifySignature][11]
-    -   [sign][12]
-        -   [Parameters][13]
-    -   [getDataFee][14]
-    -   [getBaseFee][15]
-    -   [getUpfrontCost][16]
-    -   [validate][17]
-        -   [Parameters][18]
-    -   [toJSON][19]
-    -   [serialize][20]
-    -   [from][21]
-        -   [Properties][22]
+- [Transaction][1]
+  - [Parameters][2]
+  - [Properties][3]
+  - [Examples][4]
+  - [toCreationAddress][5]
+  - [hash][6]
+    - [Parameters][7]
+  - [getChainId][8]
+  - [getSenderAddress][9]
+  - [getSenderPublicKey][10]
+  - [verifySignature][11]
+  - [sign][12]
+    - [Parameters][13]
+  - [getDataFee][14]
+  - [getBaseFee][15]
+  - [getUpfrontCost][16]
+  - [validate][17]
+    - [Parameters][18]
+  - [toJSON][19]
+  - [serialize][20]
+  - [from][21]
+    - [Properties][22]
 
 ## Transaction
 
@@ -33,21 +33,21 @@ Creates a new transaction object.
 
 ### Parameters
 
--   `data` **([Buffer][24] \| [Array][25] \| [Object][26])** a transaction can be initiailized with either a buffer containing the RLP serialized transaction or an array of buffers relating to each of the tx Properties, listed in order below in the exmple.Or lastly an Object containing the Properties of the transaction like in the Usage example.For Object and Arrays each of the elements can either be a Buffer, a hex-prefixed (0x) String , Number, or an object with a toBuffer method such as Bignum
-    -   `data.nonce` **[Buffer][24]** nonce number
-    -   `data.gasLimit` **[Buffer][24]** transaction gas limit
-    -   `data.gasPrice` **[Buffer][24]** transaction gas price
-    -   `data.to` **[Buffer][24]** to the to address
-    -   `data.value` **[Buffer][24]** the amount of ether sent
-    -   `data.data` **[Buffer][24]** this will contain the data of the message or the init of a contract
-    -   `data.v` **[Buffer][24]** EC recovery ID
-    -   `data.r` **[Buffer][24]** EC signature parameter
-    -   `data.s` **[Buffer][24]** EC signature parameter
-    -   `data.chainId` **[Number][27]** EIP 155 chainId - mainnet: 1, ropsten: 3
+- `data` **([Buffer][24] \| [Array][25] \| [Object][26])** a transaction can be initiailized with either a buffer containing the RLP serialized transaction or an array of buffers relating to each of the tx Properties, listed in order below in the exmple.Or lastly an Object containing the Properties of the transaction like in the Usage example.For Object and Arrays each of the elements can either be a Buffer, a hex-prefixed (0x) String , Number, or an object with a toBuffer method such as Bignum
+  - `data.nonce` **[Buffer][24]** nonce number
+  - `data.gasLimit` **[Buffer][24]** transaction gas limit
+  - `data.gasPrice` **[Buffer][24]** transaction gas price
+  - `data.to` **[Buffer][24]** to the to address
+  - `data.value` **[Buffer][24]** the amount of ether sent
+  - `data.data` **[Buffer][24]** this will contain the data of the message or the init of a contract
+  - `data.v` **[Buffer][24]** EC recovery ID
+  - `data.r` **[Buffer][24]** EC signature parameter
+  - `data.s` **[Buffer][24]** EC signature parameter
+  - `data.chainId` **[Number][27]** EIP 155 chainId - mainnet: 1, ropsten: 3
 
 ### Properties
 
--   `raw` **[Buffer][24]** The raw rlp encoded transaction
+- `raw` **[Buffer][24]** The raw rlp encoded transaction
 
 ### Examples
 
@@ -61,9 +61,9 @@ var rawTx = {
   data: '0x7f7465737432000000000000000000000000000000000000000000000000000000600057',
   v: '0x1c',
   r: '0x5e1d3a76fbf824220eafc8c79ad578ad2b67d01b0c2425eb1f1347e8f50882ab',
-  s: '0x5bd428537f05f9830e93792f90ea6a3e2d1ee84952dd96edbae9f658f831ab13'
-};
-var tx = new Transaction(rawTx);
+  s: '0x5bd428537f05f9830e93792f90ea6a3e2d1ee84952dd96edbae9f658f831ab13',
+}
+var tx = new Transaction(rawTx)
 ```
 
 ### toCreationAddress
@@ -72,7 +72,7 @@ var tx = new Transaction(rawTx);
 
 If the tx's `to` is to the creation address
 
-Returns **[Boolean][29]** 
+Returns **[Boolean][29]**
 
 ### hash
 
@@ -82,9 +82,9 @@ Computes a sha3-256 hash of the serialized tx
 
 #### Parameters
 
--   `includeSignature` **[Boolean][29]** whether or not to inculde the signature (optional, default `true`)
+- `includeSignature` **[Boolean][29]** whether or not to inculde the signature (optional, default `true`)
 
-Returns **[Buffer][24]** 
+Returns **[Buffer][24]**
 
 ### getChainId
 
@@ -92,7 +92,7 @@ Returns **[Buffer][24]**
 
 returns chain ID
 
-Returns **[Buffer][24]** 
+Returns **[Buffer][24]**
 
 ### getSenderAddress
 
@@ -100,7 +100,7 @@ Returns **[Buffer][24]**
 
 returns the sender's address
 
-Returns **[Buffer][24]** 
+Returns **[Buffer][24]**
 
 ### getSenderPublicKey
 
@@ -108,7 +108,7 @@ Returns **[Buffer][24]**
 
 returns the public key of the sender
 
-Returns **[Buffer][24]** 
+Returns **[Buffer][24]**
 
 ### verifySignature
 
@@ -116,7 +116,7 @@ Returns **[Buffer][24]**
 
 Determines if the signature is valid
 
-Returns **[Boolean][29]** 
+Returns **[Boolean][29]**
 
 ### sign
 
@@ -126,7 +126,7 @@ sign a transaction with a given private key
 
 #### Parameters
 
--   `privateKey` **[Buffer][24]** Must be 32 bytes in length
+- `privateKey` **[Buffer][24]** Must be 32 bytes in length
 
 ### getDataFee
 
@@ -134,7 +134,7 @@ sign a transaction with a given private key
 
 The amount of gas paid for the data in this tx
 
-Returns **BN** 
+Returns **BN**
 
 ### getBaseFee
 
@@ -142,7 +142,7 @@ Returns **BN**
 
 the minimum amount of gas the tx must have (DataFee + TxFee + Creation Fee)
 
-Returns **BN** 
+Returns **BN**
 
 ### getUpfrontCost
 
@@ -150,7 +150,7 @@ Returns **BN**
 
 the up front amount that an account must have for this transaction to be valid
 
-Returns **BN** 
+Returns **BN**
 
 ### validate
 
@@ -160,29 +160,29 @@ validates the signature and checks to see if it has enough gas
 
 #### Parameters
 
--   `stringError` **[Boolean][29]** whether to return a string with a description of why the validation failed or return a Boolean (optional, default `false`)
+- `stringError` **[Boolean][29]** whether to return a string with a description of why the validation failed or return a Boolean (optional, default `false`)
 
-Returns **([Boolean][29] \| [String][40])** 
+Returns **([Boolean][29] \| [String][40])**
 
 ### toJSON
 
 [index.js:116-116][41]
 
--   **See: [ethereumjs-util][42]**
+- **See: [ethereumjs-util][42]**
 
 Returns the transaction in JSON format
 
-Returns **([Array][25] \| [String][40])** 
+Returns **([Array][25] \| [String][40])**
 
 ### serialize
 
 [index.js:116-116][41]
 
--   **See: [ethereumjs-util][42]**
+- **See: [ethereumjs-util][42]**
 
 Returns the rlp encoding of the transaction
 
-Returns **[Buffer][24]** 
+Returns **[Buffer][24]**
 
 ### from
 
@@ -190,90 +190,48 @@ Returns **[Buffer][24]**
 
 #### Properties
 
--   `from` **[Buffer][24]** (read only) sender address of this transaction, mathematically derived from other parameters.
+- `from` **[Buffer][24]** (read only) sender address of this transaction, mathematically derived from other parameters.
 
 [1]: #transaction
-
 [2]: #parameters
-
 [3]: #properties
-
 [4]: #examples
-
 [5]: #tocreationaddress
-
 [6]: #hash
-
 [7]: #parameters-1
-
 [8]: #getchainid
-
 [9]: #getsenderaddress
-
 [10]: #getsenderpublickey
-
 [11]: #verifysignature
-
 [12]: #sign
-
 [13]: #parameters-2
-
 [14]: #getdatafee
-
 [15]: #getbasefee
-
 [16]: #getupfrontcost
-
 [17]: #validate
-
 [18]: #parameters-3
-
 [19]: #tojson
-
 [20]: #serialize
-
 [21]: #from
-
 [22]: #properties-1
-
-[23]: https://git@github.com/:danjm/ethereumjs-tx/blob/ef8e9059eea7ddcc4f511e39142655d0a95ab7ef/index.js#L46-L305 "Source code on GitHub"
-
+[23]: https://git@github.com/:danjm/ethereumjs-tx/blob/ef8e9059eea7ddcc4f511e39142655d0a95ab7ef/index.js#L46-L305 'Source code on GitHub'
 [24]: https://nodejs.org/api/buffer.html
-
 [25]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array
-
 [26]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object
-
 [27]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number
-
-[28]: https://git@github.com/:danjm/ethereumjs-tx/blob/ef8e9059eea7ddcc4f511e39142655d0a95ab7ef/index.js#L143-L145 "Source code on GitHub"
-
+[28]: https://git@github.com/:danjm/ethereumjs-tx/blob/ef8e9059eea7ddcc4f511e39142655d0a95ab7ef/index.js#L143-L145 'Source code on GitHub'
 [29]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean
-
-[30]: https://git@github.com/:danjm/ethereumjs-tx/blob/ef8e9059eea7ddcc4f511e39142655d0a95ab7ef/index.js#L152-L178 "Source code on GitHub"
-
-[31]: https://git@github.com/:danjm/ethereumjs-tx/blob/ef8e9059eea7ddcc4f511e39142655d0a95ab7ef/index.js#L184-L186 "Source code on GitHub"
-
-[32]: https://git@github.com/:danjm/ethereumjs-tx/blob/ef8e9059eea7ddcc4f511e39142655d0a95ab7ef/index.js#L192-L199 "Source code on GitHub"
-
-[33]: https://git@github.com/:danjm/ethereumjs-tx/blob/ef8e9059eea7ddcc4f511e39142655d0a95ab7ef/index.js#L205-L210 "Source code on GitHub"
-
-[34]: https://git@github.com/:danjm/ethereumjs-tx/blob/ef8e9059eea7ddcc4f511e39142655d0a95ab7ef/index.js#L216-L234 "Source code on GitHub"
-
-[35]: https://git@github.com/:danjm/ethereumjs-tx/blob/ef8e9059eea7ddcc4f511e39142655d0a95ab7ef/index.js#L240-L247 "Source code on GitHub"
-
-[36]: https://git@github.com/:danjm/ethereumjs-tx/blob/ef8e9059eea7ddcc4f511e39142655d0a95ab7ef/index.js#L253-L260 "Source code on GitHub"
-
-[37]: https://git@github.com/:danjm/ethereumjs-tx/blob/ef8e9059eea7ddcc4f511e39142655d0a95ab7ef/index.js#L266-L272 "Source code on GitHub"
-
-[38]: https://git@github.com/:danjm/ethereumjs-tx/blob/ef8e9059eea7ddcc4f511e39142655d0a95ab7ef/index.js#L278-L282 "Source code on GitHub"
-
-[39]: https://git@github.com/:danjm/ethereumjs-tx/blob/ef8e9059eea7ddcc4f511e39142655d0a95ab7ef/index.js#L289-L304 "Source code on GitHub"
-
+[30]: https://git@github.com/:danjm/ethereumjs-tx/blob/ef8e9059eea7ddcc4f511e39142655d0a95ab7ef/index.js#L152-L178 'Source code on GitHub'
+[31]: https://git@github.com/:danjm/ethereumjs-tx/blob/ef8e9059eea7ddcc4f511e39142655d0a95ab7ef/index.js#L184-L186 'Source code on GitHub'
+[32]: https://git@github.com/:danjm/ethereumjs-tx/blob/ef8e9059eea7ddcc4f511e39142655d0a95ab7ef/index.js#L192-L199 'Source code on GitHub'
+[33]: https://git@github.com/:danjm/ethereumjs-tx/blob/ef8e9059eea7ddcc4f511e39142655d0a95ab7ef/index.js#L205-L210 'Source code on GitHub'
+[34]: https://git@github.com/:danjm/ethereumjs-tx/blob/ef8e9059eea7ddcc4f511e39142655d0a95ab7ef/index.js#L216-L234 'Source code on GitHub'
+[35]: https://git@github.com/:danjm/ethereumjs-tx/blob/ef8e9059eea7ddcc4f511e39142655d0a95ab7ef/index.js#L240-L247 'Source code on GitHub'
+[36]: https://git@github.com/:danjm/ethereumjs-tx/blob/ef8e9059eea7ddcc4f511e39142655d0a95ab7ef/index.js#L253-L260 'Source code on GitHub'
+[37]: https://git@github.com/:danjm/ethereumjs-tx/blob/ef8e9059eea7ddcc4f511e39142655d0a95ab7ef/index.js#L266-L272 'Source code on GitHub'
+[38]: https://git@github.com/:danjm/ethereumjs-tx/blob/ef8e9059eea7ddcc4f511e39142655d0a95ab7ef/index.js#L278-L282 'Source code on GitHub'
+[39]: https://git@github.com/:danjm/ethereumjs-tx/blob/ef8e9059eea7ddcc4f511e39142655d0a95ab7ef/index.js#L289-L304 'Source code on GitHub'
 [40]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String
-
-[41]: https://git@github.com/:danjm/ethereumjs-tx/blob/ef8e9059eea7ddcc4f511e39142655d0a95ab7ef/index.js#L116-L116 "Source code on GitHub"
-
+[41]: https://git@github.com/:danjm/ethereumjs-tx/blob/ef8e9059eea7ddcc4f511e39142655d0a95ab7ef/index.js#L116-L116 'Source code on GitHub'
 [42]: https://github.com/ethereumjs/ethereumjs-util/blob/master/docs/index.md#defineproperties
-
-[43]: https://git@github.com/:danjm/ethereumjs-tx/blob/ef8e9059eea7ddcc4f511e39142655d0a95ab7ef/index.js#L123-L127 "Source code on GitHub"
+[43]: https://git@github.com/:danjm/ethereumjs-tx/blob/ef8e9059eea7ddcc4f511e39142655d0a95ab7ef/index.js#L123-L127 'Source code on GitHub'

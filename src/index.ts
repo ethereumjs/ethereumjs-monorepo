@@ -407,5 +407,4 @@ export default class Transaction {
     // Note: This never gets executed, defineProperties overwrites it.
     return rlp.encode(this.raw)
   }
-
 }
