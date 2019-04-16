@@ -36,7 +36,7 @@ export interface TransactionObject {
  * @prop {Buffer} s EC signature parameter
  */
 export default class FakeTransaction extends Transaction {
-  public from?: Buffer
+  public from: Buffer
   constructor(data?: TransactionData, opts?: TransactionOptions) {
     super(data, opts)
 
