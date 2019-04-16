@@ -385,7 +385,10 @@ export default class Transaction {
    * @param {Boolean} [stringError=false] whether to return a string with a description of why the validation failed or return a Boolean
    * @return {Boolean|String}
    */
-  validate(stringError: boolean = false) {
+  validate(): boolean
+  validate(stringError: false): boolean
+  validate(stringError: true): string
+  validate(stringError: boolean = false): boolean | string {
     const errors = []
     if (!this.verifySignature()) {
       errors.push('Invalid Signature')
