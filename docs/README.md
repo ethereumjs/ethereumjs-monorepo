@@ -1,24 +1,23 @@
-
-#  ethereumjs-tx
+# ethereumjs-tx
 
 ## Index
 
 ### Classes
 
-* [FakeTransaction](classes/faketransaction.md)
-* [Transaction](classes/transaction.md)
+- [FakeTransaction](classes/faketransaction.md)
+- [Transaction](classes/transaction.md)
 
 ### Interfaces
 
-* [FakeTxData](interfaces/faketxdata.md)
-* [TransactionOptions](interfaces/transactionoptions.md)
-* [TransformableToBuffer](interfaces/transformabletobuffer.md)
-* [TxData](interfaces/txdata.md)
+- [FakeTxData](interfaces/faketxdata.md)
+- [TransactionOptions](interfaces/transactionoptions.md)
+- [TransformableToBuffer](interfaces/transformabletobuffer.md)
+- [TxData](interfaces/txdata.md)
 
 ### Type aliases
 
-* [BufferLike](#bufferlike)
-* [PrefixedHexString](#prefixedhexstring)
+- [BufferLike](#bufferlike)
+- [PrefixedHexString](#prefixedhexstring)
 
 ---
 
@@ -26,24 +25,24 @@
 
 <a id="bufferlike"></a>
 
-###  BufferLike
+### BufferLike
 
-**Ƭ BufferLike**: *`Buffer` \| [TransformableToBuffer](interfaces/transformabletobuffer.md) \| [PrefixedHexString](#prefixedhexstring) \| `number`*
+**Ƭ BufferLike**: _`Buffer` \| [TransformableToBuffer](interfaces/transformabletobuffer.md) \| [PrefixedHexString](#prefixedhexstring) \| `number`_
 
-*Defined in [types.ts:19](https://github.com/ethereumjs/ethereumjs-tx/blob/eece5af/src/types.ts#L19)*
+_Defined in [types.ts:19](https://github.com/ethereumjs/ethereumjs-tx/blob/eece5af/src/types.ts#L19)_
 
 A Buffer, hex string prefixed with `0x`, Number, or an object with a toBuffer method such as BN.
 
-___
+---
+
 <a id="prefixedhexstring"></a>
 
-###  PrefixedHexString
+### PrefixedHexString
 
-**Ƭ PrefixedHexString**: *`string`*
+**Ƭ PrefixedHexString**: _`string`_
 
-*Defined in [types.ts:14](https://github.com/ethereumjs/ethereumjs-tx/blob/eece5af/src/types.ts#L14)*
+_Defined in [types.ts:14](https://github.com/ethereumjs/ethereumjs-tx/blob/eece5af/src/types.ts#L14)_
 
 A hex string prefixed with `0x`.
 
-___
-
+---

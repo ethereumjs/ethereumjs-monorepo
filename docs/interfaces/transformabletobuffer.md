@@ -12,7 +12,7 @@ Any object that can be transformed into a `Buffer`
 
 ### Methods
 
-* [toBuffer](transformabletobuffer.md#tobuffer)
+- [toBuffer](transformabletobuffer.md#tobuffer)
 
 ---
 
@@ -20,13 +20,12 @@ Any object that can be transformed into a `Buffer`
 
 <a id="tobuffer"></a>
 
-###  toBuffer
+### toBuffer
 
 ▸ **toBuffer**(): `Buffer`
 
-*Defined in [types.ts:8](https://github.com/ethereumjs/ethereumjs-tx/blob/eece5af/src/types.ts#L8)*
+_Defined in [types.ts:8](https://github.com/ethereumjs/ethereumjs-tx/blob/eece5af/src/types.ts#L8)_
 
 **Returns:** `Buffer`
 
-___
-
+---

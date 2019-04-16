@@ -4,15 +4,15 @@
 
 Creates a new transaction object that doesn't need to be signed.
 
-*__param__*: A transaction can be initialized with its rlp representation, an array containing the value of its fields in order, or an object containing them by name. If the latter is used, a `chainId` and `from` can also be provided.
+_**param**_: A transaction can be initialized with its rlp representation, an array containing the value of its fields in order, or an object containing them by name. If the latter is used, a `chainId` and `from` can also be provided.
 
-*__param__*: The transaction's options, used to indicate the chain and hardfork the transactions belongs to.
+_**param**_: The transaction's options, used to indicate the chain and hardfork the transactions belongs to.
 
-*__see__*: Transaction
+_**see**_: Transaction
 
 ## Hierarchy
 
- [Transaction](transaction.md)
+[Transaction](transaction.md)
 
 **↳ FakeTransaction**
 
@@ -20,37 +20,37 @@ Creates a new transaction object that doesn't need to be signed.
 
 ### Constructors
 
-* [constructor](faketransaction.md#constructor)
+- [constructor](faketransaction.md#constructor)
 
 ### Properties
 
-* [_from](faketransaction.md#_from)
-* [data](faketransaction.md#data)
-* [from](faketransaction.md#from)
-* [gasLimit](faketransaction.md#gaslimit)
-* [gasPrice](faketransaction.md#gasprice)
-* [nonce](faketransaction.md#nonce)
-* [r](faketransaction.md#r)
-* [raw](faketransaction.md#raw)
-* [s](faketransaction.md#s)
-* [to](faketransaction.md#to)
-* [v](faketransaction.md#v)
-* [value](faketransaction.md#value)
+- [\_from](faketransaction.md#_from)
+- [data](faketransaction.md#data)
+- [from](faketransaction.md#from)
+- [gasLimit](faketransaction.md#gaslimit)
+- [gasPrice](faketransaction.md#gasprice)
+- [nonce](faketransaction.md#nonce)
+- [r](faketransaction.md#r)
+- [raw](faketransaction.md#raw)
+- [s](faketransaction.md#s)
+- [to](faketransaction.md#to)
+- [v](faketransaction.md#v)
+- [value](faketransaction.md#value)
 
 ### Methods
 
-* [getBaseFee](faketransaction.md#getbasefee)
-* [getChainId](faketransaction.md#getchainid)
-* [getDataFee](faketransaction.md#getdatafee)
-* [getSenderAddress](faketransaction.md#getsenderaddress)
-* [getSenderPublicKey](faketransaction.md#getsenderpublickey)
-* [getUpfrontCost](faketransaction.md#getupfrontcost)
-* [hash](faketransaction.md#hash)
-* [serialize](faketransaction.md#serialize)
-* [sign](faketransaction.md#sign)
-* [toCreationAddress](faketransaction.md#tocreationaddress)
-* [validate](faketransaction.md#validate)
-* [verifySignature](faketransaction.md#verifysignature)
+- [getBaseFee](faketransaction.md#getbasefee)
+- [getChainId](faketransaction.md#getchainid)
+- [getDataFee](faketransaction.md#getdatafee)
+- [getSenderAddress](faketransaction.md#getsenderaddress)
+- [getSenderPublicKey](faketransaction.md#getsenderpublickey)
+- [getUpfrontCost](faketransaction.md#getupfrontcost)
+- [hash](faketransaction.md#hash)
+- [serialize](faketransaction.md#serialize)
+- [sign](faketransaction.md#sign)
+- [toCreationAddress](faketransaction.md#tocreationaddress)
+- [validate](faketransaction.md#validate)
+- [verifySignature](faketransaction.md#verifysignature)
 
 ---
 
@@ -58,380 +58,401 @@ Creates a new transaction object that doesn't need to be signed.
 
 <a id="constructor"></a>
 
-###  constructor
+### constructor
 
-⊕ **new FakeTransaction**(data?: *`Buffer` \| [PrefixedHexString](../#prefixedhexstring) \| [BufferLike](../#bufferlike)[] \| [FakeTxData](../interfaces/faketxdata.md)*, opts?: *[TransactionOptions](../interfaces/transactionoptions.md)*): [FakeTransaction](faketransaction.md)
+⊕ **new FakeTransaction**(data?: _`Buffer` \| [PrefixedHexString](../#prefixedhexstring) \| [BufferLike](../#bufferlike)[] \| [FakeTxData](../interfaces/faketxdata.md)_, opts?: _[TransactionOptions](../interfaces/transactionoptions.md)_): [FakeTransaction](faketransaction.md)
 
-*Overrides [Transaction](transaction.md).[constructor](transaction.md#constructor)*
+_Overrides [Transaction](transaction.md).[constructor](transaction.md#constructor)_
 
-*Defined in [fake.ts:23](https://github.com/ethereumjs/ethereumjs-tx/blob/eece5af/src/fake.ts#L23)*
+_Defined in [fake.ts:23](https://github.com/ethereumjs/ethereumjs-tx/blob/eece5af/src/fake.ts#L23)_
 
 **Parameters:**
 
-| Name | Type | Default value |
-| ------ | ------ | ------ |
-| `Default value` data | `Buffer` \| [PrefixedHexString](../#prefixedhexstring) \| [BufferLike](../#bufferlike)[] \| [FakeTxData](../interfaces/faketxdata.md) |  {} |
-| `Default value` opts | [TransactionOptions](../interfaces/transactionoptions.md) |  {} |
+| Name                 | Type                                                                                                                                  | Default value |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------- | ------------- |
+| `Default value` data | `Buffer` \| [PrefixedHexString](../#prefixedhexstring) \| [BufferLike](../#bufferlike)[] \| [FakeTxData](../interfaces/faketxdata.md) | {}            |
+| `Default value` opts | [TransactionOptions](../interfaces/transactionoptions.md)                                                                             | {}            |
 
 **Returns:** [FakeTransaction](faketransaction.md)
 
-___
+---
 
 ## Properties
 
 <a id="_from"></a>
 
-### `<Protected>``<Optional>` _from
+### ` <Protected>``<Optional> ` \_from
 
-**● _from**: *`Buffer`*
+**● \_from**: _`Buffer`_
 
-*Inherited from [Transaction](transaction.md).[_from](transaction.md#_from)*
+_Inherited from [Transaction](transaction.md).[\_from](transaction.md#_from)_
 
-*Defined in [index.ts:37](https://github.com/ethereumjs/ethereumjs-tx/blob/eece5af/src/index.ts#L37)*
+_Defined in [index.ts:37](https://github.com/ethereumjs/ethereumjs-tx/blob/eece5af/src/index.ts#L37)_
 
-___
+---
+
 <a id="data"></a>
 
-###  data
+### data
 
-**● data**: *`Buffer`*
+**● data**: _`Buffer`_
 
-*Inherited from [Transaction](transaction.md).[data](transaction.md#data)*
+_Inherited from [Transaction](transaction.md).[data](transaction.md#data)_
 
-*Defined in [index.ts:29](https://github.com/ethereumjs/ethereumjs-tx/blob/eece5af/src/index.ts#L29)*
+_Defined in [index.ts:29](https://github.com/ethereumjs/ethereumjs-tx/blob/eece5af/src/index.ts#L29)_
 
-___
+---
+
 <a id="from"></a>
 
-###  from
+### from
 
-**● from**: *`Buffer`*
+**● from**: _`Buffer`_
 
-*Defined in [fake.ts:23](https://github.com/ethereumjs/ethereumjs-tx/blob/eece5af/src/fake.ts#L23)*
+_Defined in [fake.ts:23](https://github.com/ethereumjs/ethereumjs-tx/blob/eece5af/src/fake.ts#L23)_
 
 Set from address to bypass transaction signing. This is not an optional property, as its getter never returns undefined.
 
-___
+---
+
 <a id="gaslimit"></a>
 
-###  gasLimit
+### gasLimit
 
-**● gasLimit**: *`Buffer`*
+**● gasLimit**: _`Buffer`_
 
-*Inherited from [Transaction](transaction.md).[gasLimit](transaction.md#gaslimit)*
+_Inherited from [Transaction](transaction.md).[gasLimit](transaction.md#gaslimit)_
 
-*Defined in [index.ts:25](https://github.com/ethereumjs/ethereumjs-tx/blob/eece5af/src/index.ts#L25)*
+_Defined in [index.ts:25](https://github.com/ethereumjs/ethereumjs-tx/blob/eece5af/src/index.ts#L25)_
 
-___
+---
+
 <a id="gasprice"></a>
 
-###  gasPrice
+### gasPrice
 
-**● gasPrice**: *`Buffer`*
+**● gasPrice**: _`Buffer`_
 
-*Inherited from [Transaction](transaction.md).[gasPrice](transaction.md#gasprice)*
+_Inherited from [Transaction](transaction.md).[gasPrice](transaction.md#gasprice)_
 
-*Defined in [index.ts:26](https://github.com/ethereumjs/ethereumjs-tx/blob/eece5af/src/index.ts#L26)*
+_Defined in [index.ts:26](https://github.com/ethereumjs/ethereumjs-tx/blob/eece5af/src/index.ts#L26)_
 
-___
+---
+
 <a id="nonce"></a>
 
-###  nonce
+### nonce
 
-**● nonce**: *`Buffer`*
+**● nonce**: _`Buffer`_
 
-*Inherited from [Transaction](transaction.md).[nonce](transaction.md#nonce)*
+_Inherited from [Transaction](transaction.md).[nonce](transaction.md#nonce)_
 
-*Defined in [index.ts:24](https://github.com/ethereumjs/ethereumjs-tx/blob/eece5af/src/index.ts#L24)*
+_Defined in [index.ts:24](https://github.com/ethereumjs/ethereumjs-tx/blob/eece5af/src/index.ts#L24)_
 
-___
+---
+
 <a id="r"></a>
 
-###  r
+### r
 
-**● r**: *`Buffer`*
+**● r**: _`Buffer`_
 
-*Inherited from [Transaction](transaction.md).[r](transaction.md#r)*
+_Inherited from [Transaction](transaction.md).[r](transaction.md#r)_
 
-*Defined in [index.ts:31](https://github.com/ethereumjs/ethereumjs-tx/blob/eece5af/src/index.ts#L31)*
+_Defined in [index.ts:31](https://github.com/ethereumjs/ethereumjs-tx/blob/eece5af/src/index.ts#L31)_
 
-___
+---
+
 <a id="raw"></a>
 
-###  raw
+### raw
 
-**● raw**: *`Buffer`[]*
+**● raw**: _`Buffer`[]_
 
-*Inherited from [Transaction](transaction.md).[raw](transaction.md#raw)*
+_Inherited from [Transaction](transaction.md).[raw](transaction.md#raw)_
 
-*Defined in [index.ts:23](https://github.com/ethereumjs/ethereumjs-tx/blob/eece5af/src/index.ts#L23)*
+_Defined in [index.ts:23](https://github.com/ethereumjs/ethereumjs-tx/blob/eece5af/src/index.ts#L23)_
 
-___
+---
+
 <a id="s"></a>
 
-###  s
+### s
 
-**● s**: *`Buffer`*
+**● s**: _`Buffer`_
 
-*Inherited from [Transaction](transaction.md).[s](transaction.md#s)*
+_Inherited from [Transaction](transaction.md).[s](transaction.md#s)_
 
-*Defined in [index.ts:32](https://github.com/ethereumjs/ethereumjs-tx/blob/eece5af/src/index.ts#L32)*
+_Defined in [index.ts:32](https://github.com/ethereumjs/ethereumjs-tx/blob/eece5af/src/index.ts#L32)_
 
-___
+---
+
 <a id="to"></a>
 
-###  to
+### to
 
-**● to**: *`Buffer`*
+**● to**: _`Buffer`_
 
-*Inherited from [Transaction](transaction.md).[to](transaction.md#to)*
+_Inherited from [Transaction](transaction.md).[to](transaction.md#to)_
 
-*Defined in [index.ts:27](https://github.com/ethereumjs/ethereumjs-tx/blob/eece5af/src/index.ts#L27)*
+_Defined in [index.ts:27](https://github.com/ethereumjs/ethereumjs-tx/blob/eece5af/src/index.ts#L27)_
 
-___
+---
+
 <a id="v"></a>
 
-###  v
+### v
 
-**● v**: *`Buffer`*
+**● v**: _`Buffer`_
 
-*Inherited from [Transaction](transaction.md).[v](transaction.md#v)*
+_Inherited from [Transaction](transaction.md).[v](transaction.md#v)_
 
-*Defined in [index.ts:30](https://github.com/ethereumjs/ethereumjs-tx/blob/eece5af/src/index.ts#L30)*
+_Defined in [index.ts:30](https://github.com/ethereumjs/ethereumjs-tx/blob/eece5af/src/index.ts#L30)_
 
-___
+---
+
 <a id="value"></a>
 
-###  value
+### value
 
-**● value**: *`Buffer`*
+**● value**: _`Buffer`_
 
-*Inherited from [Transaction](transaction.md).[value](transaction.md#value)*
+_Inherited from [Transaction](transaction.md).[value](transaction.md#value)_
 
-*Defined in [index.ts:28](https://github.com/ethereumjs/ethereumjs-tx/blob/eece5af/src/index.ts#L28)*
+_Defined in [index.ts:28](https://github.com/ethereumjs/ethereumjs-tx/blob/eece5af/src/index.ts#L28)_
 
-___
+---
 
 ## Methods
 
 <a id="getbasefee"></a>
 
-###  getBaseFee
+### getBaseFee
 
 ▸ **getBaseFee**(): `BN`
 
-*Inherited from [Transaction](transaction.md).[getBaseFee](transaction.md#getbasefee)*
+_Inherited from [Transaction](transaction.md).[getBaseFee](transaction.md#getbasefee)_
 
-*Defined in [index.ts:314](https://github.com/ethereumjs/ethereumjs-tx/blob/eece5af/src/index.ts#L314)*
+_Defined in [index.ts:314](https://github.com/ethereumjs/ethereumjs-tx/blob/eece5af/src/index.ts#L314)_
 
 the minimum amount of gas the tx must have (DataFee + TxFee + Creation Fee)
 
 **Returns:** `BN`
 
-___
+---
+
 <a id="getchainid"></a>
 
-###  getChainId
+### getChainId
 
 ▸ **getChainId**(): `number`
 
-*Inherited from [Transaction](transaction.md).[getChainId](transaction.md#getchainid)*
+_Inherited from [Transaction](transaction.md).[getChainId](transaction.md#getchainid)_
 
-*Defined in [index.ts:228](https://github.com/ethereumjs/ethereumjs-tx/blob/eece5af/src/index.ts#L228)*
+_Defined in [index.ts:228](https://github.com/ethereumjs/ethereumjs-tx/blob/eece5af/src/index.ts#L228)_
 
 returns chain ID
 
 **Returns:** `number`
 
-___
+---
+
 <a id="getdatafee"></a>
 
-###  getDataFee
+### getDataFee
 
 ▸ **getDataFee**(): `BN`
 
-*Inherited from [Transaction](transaction.md).[getDataFee](transaction.md#getdatafee)*
+_Inherited from [Transaction](transaction.md).[getDataFee](transaction.md#getdatafee)_
 
-*Defined in [index.ts:300](https://github.com/ethereumjs/ethereumjs-tx/blob/eece5af/src/index.ts#L300)*
+_Defined in [index.ts:300](https://github.com/ethereumjs/ethereumjs-tx/blob/eece5af/src/index.ts#L300)_
 
 The amount of gas paid for the data in this tx
 
 **Returns:** `BN`
 
-___
+---
+
 <a id="getsenderaddress"></a>
 
-###  getSenderAddress
+### getSenderAddress
 
 ▸ **getSenderAddress**(): `Buffer`
 
-*Inherited from [Transaction](transaction.md).[getSenderAddress](transaction.md#getsenderaddress)*
+_Inherited from [Transaction](transaction.md).[getSenderAddress](transaction.md#getsenderaddress)_
 
-*Defined in [index.ts:235](https://github.com/ethereumjs/ethereumjs-tx/blob/eece5af/src/index.ts#L235)*
+_Defined in [index.ts:235](https://github.com/ethereumjs/ethereumjs-tx/blob/eece5af/src/index.ts#L235)_
 
 returns the sender's address
 
 **Returns:** `Buffer`
 
-___
+---
+
 <a id="getsenderpublickey"></a>
 
-###  getSenderPublicKey
+### getSenderPublicKey
 
 ▸ **getSenderPublicKey**(): `Buffer`
 
-*Inherited from [Transaction](transaction.md).[getSenderPublicKey](transaction.md#getsenderpublickey)*
+_Inherited from [Transaction](transaction.md).[getSenderPublicKey](transaction.md#getsenderpublickey)_
 
-*Defined in [index.ts:247](https://github.com/ethereumjs/ethereumjs-tx/blob/eece5af/src/index.ts#L247)*
+_Defined in [index.ts:247](https://github.com/ethereumjs/ethereumjs-tx/blob/eece5af/src/index.ts#L247)_
 
 returns the public key of the sender
 
 **Returns:** `Buffer`
 
-___
+---
+
 <a id="getupfrontcost"></a>
 
-###  getUpfrontCost
+### getUpfrontCost
 
 ▸ **getUpfrontCost**(): `BN`
 
-*Inherited from [Transaction](transaction.md).[getUpfrontCost](transaction.md#getupfrontcost)*
+_Inherited from [Transaction](transaction.md).[getUpfrontCost](transaction.md#getupfrontcost)_
 
-*Defined in [index.ts:325](https://github.com/ethereumjs/ethereumjs-tx/blob/eece5af/src/index.ts#L325)*
+_Defined in [index.ts:325](https://github.com/ethereumjs/ethereumjs-tx/blob/eece5af/src/index.ts#L325)_
 
 the up front amount that an account must have for this transaction to be valid
 
 **Returns:** `BN`
 
-___
+---
+
 <a id="hash"></a>
 
-###  hash
+### hash
 
-▸ **hash**(includeSignature?: *`boolean`*): `Buffer`
+▸ **hash**(includeSignature?: _`boolean`_): `Buffer`
 
-*Overrides [Transaction](transaction.md).[hash](transaction.md#hash)*
+_Overrides [Transaction](transaction.md).[hash](transaction.md#hash)_
 
-*Defined in [fake.ts:54](https://github.com/ethereumjs/ethereumjs-tx/blob/eece5af/src/fake.ts#L54)*
+_Defined in [fake.ts:54](https://github.com/ethereumjs/ethereumjs-tx/blob/eece5af/src/fake.ts#L54)_
 
 Computes a sha3-256 hash of the serialized tx, using the sender address to generate a fake signature.
 
 **Parameters:**
 
-| Name | Type | Default value | Description |
-| ------ | ------ | ------ | ------ |
-| `Default value` includeSignature | `boolean` | true |  Whether or not to include the signature |
+| Name                             | Type      | Default value | Description                             |
+| -------------------------------- | --------- | ------------- | --------------------------------------- |
+| `Default value` includeSignature | `boolean` | true          | Whether or not to include the signature |
 
 **Returns:** `Buffer`
 
-___
+---
+
 <a id="serialize"></a>
 
-###  serialize
+### serialize
 
 ▸ **serialize**(): `Buffer`
 
-*Inherited from [Transaction](transaction.md).[serialize](transaction.md#serialize)*
+_Inherited from [Transaction](transaction.md).[serialize](transaction.md#serialize)_
 
-*Defined in [index.ts:355](https://github.com/ethereumjs/ethereumjs-tx/blob/eece5af/src/index.ts#L355)*
+_Defined in [index.ts:355](https://github.com/ethereumjs/ethereumjs-tx/blob/eece5af/src/index.ts#L355)_
 
 Returns the rlp encoding of the transaction
 
 **Returns:** `Buffer`
 
-___
+---
+
 <a id="sign"></a>
 
-###  sign
+### sign
 
-▸ **sign**(privateKey: *`Buffer`*): `void`
+▸ **sign**(privateKey: _`Buffer`_): `void`
 
-*Inherited from [Transaction](transaction.md).[sign](transaction.md#sign)*
+_Inherited from [Transaction](transaction.md).[sign](transaction.md#sign)_
 
-*Defined in [index.ts:288](https://github.com/ethereumjs/ethereumjs-tx/blob/eece5af/src/index.ts#L288)*
+_Defined in [index.ts:288](https://github.com/ethereumjs/ethereumjs-tx/blob/eece5af/src/index.ts#L288)_
 
 sign a transaction with a given private key
 
 **Parameters:**
 
-| Name | Type | Description |
-| ------ | ------ | ------ |
-| privateKey | `Buffer` |  Must be 32 bytes in length |
+| Name       | Type     | Description                |
+| ---------- | -------- | -------------------------- |
+| privateKey | `Buffer` | Must be 32 bytes in length |
 
 **Returns:** `void`
 
-___
+---
+
 <a id="tocreationaddress"></a>
 
-###  toCreationAddress
+### toCreationAddress
 
 ▸ **toCreationAddress**(): `boolean`
 
-*Inherited from [Transaction](transaction.md).[toCreationAddress](transaction.md#tocreationaddress)*
+_Inherited from [Transaction](transaction.md).[toCreationAddress](transaction.md#tocreationaddress)_
 
-*Defined in [index.ts:181](https://github.com/ethereumjs/ethereumjs-tx/blob/eece5af/src/index.ts#L181)*
+_Defined in [index.ts:181](https://github.com/ethereumjs/ethereumjs-tx/blob/eece5af/src/index.ts#L181)_
 
 If the tx's `to` is to the creation address
 
 **Returns:** `boolean`
 
-___
+---
+
 <a id="validate"></a>
 
-###  validate
+### validate
 
 ▸ **validate**(): `boolean`
 
-▸ **validate**(stringError: *`false`*): `boolean`
+▸ **validate**(stringError: _`false`_): `boolean`
 
-▸ **validate**(stringError: *`true`*): `string`
+▸ **validate**(stringError: _`true`_): `string`
 
-*Inherited from [Transaction](transaction.md).[validate](transaction.md#validate)*
+_Inherited from [Transaction](transaction.md).[validate](transaction.md#validate)_
 
-*Defined in [index.ts:332](https://github.com/ethereumjs/ethereumjs-tx/blob/eece5af/src/index.ts#L332)*
+_Defined in [index.ts:332](https://github.com/ethereumjs/ethereumjs-tx/blob/eece5af/src/index.ts#L332)_
 
 Validates the signature and checks to see if it has enough gas.
 
 **Returns:** `boolean`
 
-*Inherited from [Transaction](transaction.md).[validate](transaction.md#validate)*
+_Inherited from [Transaction](transaction.md).[validate](transaction.md#validate)_
 
-*Defined in [index.ts:333](https://github.com/ethereumjs/ethereumjs-tx/blob/eece5af/src/index.ts#L333)*
+_Defined in [index.ts:333](https://github.com/ethereumjs/ethereumjs-tx/blob/eece5af/src/index.ts#L333)_
 
 **Parameters:**
 
-| Name | Type |
-| ------ | ------ |
+| Name        | Type    |
+| ----------- | ------- |
 | stringError | `false` |
 
 **Returns:** `boolean`
 
-*Inherited from [Transaction](transaction.md).[validate](transaction.md#validate)*
+_Inherited from [Transaction](transaction.md).[validate](transaction.md#validate)_
 
-*Defined in [index.ts:334](https://github.com/ethereumjs/ethereumjs-tx/blob/eece5af/src/index.ts#L334)*
+_Defined in [index.ts:334](https://github.com/ethereumjs/ethereumjs-tx/blob/eece5af/src/index.ts#L334)_
 
 **Parameters:**
 
-| Name | Type |
-| ------ | ------ |
+| Name        | Type   |
+| ----------- | ------ |
 | stringError | `true` |
 
 **Returns:** `string`
 
-___
+---
+
 <a id="verifysignature"></a>
 
-###  verifySignature
+### verifySignature
 
 ▸ **verifySignature**(): `boolean`
 
-*Inherited from [Transaction](transaction.md).[verifySignature](transaction.md#verifysignature)*
+_Inherited from [Transaction](transaction.md).[verifySignature](transaction.md#verifysignature)_
 
-*Defined in [index.ts:259](https://github.com/ethereumjs/ethereumjs-tx/blob/eece5af/src/index.ts#L259)*
+_Defined in [index.ts:259](https://github.com/ethereumjs/ethereumjs-tx/blob/eece5af/src/index.ts#L259)_
 
 Determines if the signature is valid
 
 **Returns:** `boolean`
 
-___
-
+---

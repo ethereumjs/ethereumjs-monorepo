@@ -12,9 +12,9 @@ The transaction's options. This could be specified using a Common object, or `ch
 
 ### Properties
 
-* [chain](transactionoptions.md#chain)
-* [common](transactionoptions.md#common)
-* [hardfork](transactionoptions.md#hardfork)
+- [chain](transactionoptions.md#chain)
+- [common](transactionoptions.md#common)
+- [hardfork](transactionoptions.md#hardfork)
 
 ---
 
@@ -24,33 +24,34 @@ The transaction's options. This could be specified using a Common object, or `ch
 
 ### `<Optional>` chain
 
-**● chain**: *`number` \| `string`*
+**● chain**: _`number` \| `string`_
 
-*Defined in [types.ts:99](https://github.com/ethereumjs/ethereumjs-tx/blob/eece5af/src/types.ts#L99)*
+_Defined in [types.ts:99](https://github.com/ethereumjs/ethereumjs-tx/blob/eece5af/src/types.ts#L99)_
 
 The chain of the transaction.
 
-___
+---
+
 <a id="common"></a>
 
 ### `<Optional>` common
 
-**● common**: *`Common`*
+**● common**: _`Common`_
 
-*Defined in [types.ts:94](https://github.com/ethereumjs/ethereumjs-tx/blob/eece5af/src/types.ts#L94)*
+_Defined in [types.ts:94](https://github.com/ethereumjs/ethereumjs-tx/blob/eece5af/src/types.ts#L94)_
 
 A Common object defining the chain and the hardfork a transaction belongs to.
 
-___
+---
+
 <a id="hardfork"></a>
 
 ### `<Optional>` hardfork
 
-**● hardfork**: *`undefined` \| `string`*
+**● hardfork**: _`undefined` \| `string`_
 
-*Defined in [types.ts:104](https://github.com/ethereumjs/ethereumjs-tx/blob/eece5af/src/types.ts#L104)*
+_Defined in [types.ts:104](https://github.com/ethereumjs/ethereumjs-tx/blob/eece5af/src/types.ts#L104)_
 
 The hardfork of the transaction.
 
-___
-
+---

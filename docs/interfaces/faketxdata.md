@@ -6,7 +6,7 @@ The data of a fake (self-signing) transaction.
 
 ## Hierarchy
 
- [TxData](txdata.md)
+[TxData](txdata.md)
 
 **↳ FakeTxData**
 
@@ -14,17 +14,17 @@ The data of a fake (self-signing) transaction.
 
 ### Properties
 
-* [chainId](faketxdata.md#chainid)
-* [data](faketxdata.md#data)
-* [from](faketxdata.md#from)
-* [gasLimit](faketxdata.md#gaslimit)
-* [gasPrice](faketxdata.md#gasprice)
-* [nonce](faketxdata.md#nonce)
-* [r](faketxdata.md#r)
-* [s](faketxdata.md#s)
-* [to](faketxdata.md#to)
-* [v](faketxdata.md#v)
-* [value](faketxdata.md#value)
+- [chainId](faketxdata.md#chainid)
+- [data](faketxdata.md#data)
+- [from](faketxdata.md#from)
+- [gasLimit](faketxdata.md#gaslimit)
+- [gasPrice](faketxdata.md#gasprice)
+- [nonce](faketxdata.md#nonce)
+- [r](faketxdata.md#r)
+- [s](faketxdata.md#s)
+- [to](faketxdata.md#to)
+- [v](faketxdata.md#v)
+- [value](faketxdata.md#value)
 
 ---
 
@@ -34,141 +34,150 @@ The data of a fake (self-signing) transaction.
 
 ### `<Optional>` chainId
 
-**● chainId**: *`undefined` \| `number`*
+**● chainId**: _`undefined` \| `number`_
 
-*Inherited from [TxData](txdata.md).[chainId](txdata.md#chainid)*
+_Inherited from [TxData](txdata.md).[chainId](txdata.md#chainid)_
 
-*Defined in [types.ts:28](https://github.com/ethereumjs/ethereumjs-tx/blob/eece5af/src/types.ts#L28)*
+_Defined in [types.ts:28](https://github.com/ethereumjs/ethereumjs-tx/blob/eece5af/src/types.ts#L28)_
 
 EIP 155 chainId - mainnet: 1, ropsten: 3
 
-___
+---
+
 <a id="data"></a>
 
 ### `<Optional>` data
 
-**● data**: *[BufferLike](../#bufferlike)*
+**● data**: _[BufferLike](../#bufferlike)_
 
-*Inherited from [TxData](txdata.md).[data](txdata.md#data)*
+_Inherited from [TxData](txdata.md).[data](txdata.md#data)_
 
-*Defined in [types.ts:53](https://github.com/ethereumjs/ethereumjs-tx/blob/eece5af/src/types.ts#L53)*
+_Defined in [types.ts:53](https://github.com/ethereumjs/ethereumjs-tx/blob/eece5af/src/types.ts#L53)_
 
 This will contain the data of the message or the init of a contract
 
-___
+---
+
 <a id="from"></a>
 
 ### `<Optional>` from
 
-**● from**: *[BufferLike](../#bufferlike)*
+**● from**: _[BufferLike](../#bufferlike)_
 
-*Defined in [types.ts:83](https://github.com/ethereumjs/ethereumjs-tx/blob/eece5af/src/types.ts#L83)*
+_Defined in [types.ts:83](https://github.com/ethereumjs/ethereumjs-tx/blob/eece5af/src/types.ts#L83)_
 
 The sender of the Tx.
 
-___
+---
+
 <a id="gaslimit"></a>
 
 ### `<Optional>` gasLimit
 
-**● gasLimit**: *[BufferLike](../#bufferlike)*
+**● gasLimit**: _[BufferLike](../#bufferlike)_
 
-*Inherited from [TxData](txdata.md).[gasLimit](txdata.md#gaslimit)*
+_Inherited from [TxData](txdata.md).[gasLimit](txdata.md#gaslimit)_
 
-*Defined in [types.ts:33](https://github.com/ethereumjs/ethereumjs-tx/blob/eece5af/src/types.ts#L33)*
+_Defined in [types.ts:33](https://github.com/ethereumjs/ethereumjs-tx/blob/eece5af/src/types.ts#L33)_
 
 The transaction's gas limit.
 
-___
+---
+
 <a id="gasprice"></a>
 
 ### `<Optional>` gasPrice
 
-**● gasPrice**: *[BufferLike](../#bufferlike)*
+**● gasPrice**: _[BufferLike](../#bufferlike)_
 
-*Inherited from [TxData](txdata.md).[gasPrice](txdata.md#gasprice)*
+_Inherited from [TxData](txdata.md).[gasPrice](txdata.md#gasprice)_
 
-*Defined in [types.ts:38](https://github.com/ethereumjs/ethereumjs-tx/blob/eece5af/src/types.ts#L38)*
+_Defined in [types.ts:38](https://github.com/ethereumjs/ethereumjs-tx/blob/eece5af/src/types.ts#L38)_
 
 The transaction's gas price.
 
-___
+---
+
 <a id="nonce"></a>
 
 ### `<Optional>` nonce
 
-**● nonce**: *[BufferLike](../#bufferlike)*
+**● nonce**: _[BufferLike](../#bufferlike)_
 
-*Inherited from [TxData](txdata.md).[nonce](txdata.md#nonce)*
+_Inherited from [TxData](txdata.md).[nonce](txdata.md#nonce)_
 
-*Defined in [types.ts:48](https://github.com/ethereumjs/ethereumjs-tx/blob/eece5af/src/types.ts#L48)*
+_Defined in [types.ts:48](https://github.com/ethereumjs/ethereumjs-tx/blob/eece5af/src/types.ts#L48)_
 
 The transaction's nonce.
 
-___
+---
+
 <a id="r"></a>
 
 ### `<Optional>` r
 
-**● r**: *[BufferLike](../#bufferlike)*
+**● r**: _[BufferLike](../#bufferlike)_
 
-*Inherited from [TxData](txdata.md).[r](txdata.md#r)*
+_Inherited from [TxData](txdata.md).[r](txdata.md#r)_
 
-*Defined in [types.ts:63](https://github.com/ethereumjs/ethereumjs-tx/blob/eece5af/src/types.ts#L63)*
+_Defined in [types.ts:63](https://github.com/ethereumjs/ethereumjs-tx/blob/eece5af/src/types.ts#L63)_
 
 EC signature parameter.
 
-___
+---
+
 <a id="s"></a>
 
 ### `<Optional>` s
 
-**● s**: *[BufferLike](../#bufferlike)*
+**● s**: _[BufferLike](../#bufferlike)_
 
-*Inherited from [TxData](txdata.md).[s](txdata.md#s)*
+_Inherited from [TxData](txdata.md).[s](txdata.md#s)_
 
-*Defined in [types.ts:68](https://github.com/ethereumjs/ethereumjs-tx/blob/eece5af/src/types.ts#L68)*
+_Defined in [types.ts:68](https://github.com/ethereumjs/ethereumjs-tx/blob/eece5af/src/types.ts#L68)_
 
 EC signature parameter.
 
-___
+---
+
 <a id="to"></a>
 
 ### `<Optional>` to
 
-**● to**: *[BufferLike](../#bufferlike)*
+**● to**: _[BufferLike](../#bufferlike)_
 
-*Inherited from [TxData](txdata.md).[to](txdata.md#to)*
+_Inherited from [TxData](txdata.md).[to](txdata.md#to)_
 
-*Defined in [types.ts:43](https://github.com/ethereumjs/ethereumjs-tx/blob/eece5af/src/types.ts#L43)*
+_Defined in [types.ts:43](https://github.com/ethereumjs/ethereumjs-tx/blob/eece5af/src/types.ts#L43)_
 
 The transaction's the address is sent to.
 
-___
+---
+
 <a id="v"></a>
 
 ### `<Optional>` v
 
-**● v**: *[BufferLike](../#bufferlike)*
+**● v**: _[BufferLike](../#bufferlike)_
 
-*Inherited from [TxData](txdata.md).[v](txdata.md#v)*
+_Inherited from [TxData](txdata.md).[v](txdata.md#v)_
 
-*Defined in [types.ts:58](https://github.com/ethereumjs/ethereumjs-tx/blob/eece5af/src/types.ts#L58)*
+_Defined in [types.ts:58](https://github.com/ethereumjs/ethereumjs-tx/blob/eece5af/src/types.ts#L58)_
 
 EC recovery ID.
 
-___
+---
+
 <a id="value"></a>
 
 ### `<Optional>` value
 
-**● value**: *[BufferLike](../#bufferlike)*
+**● value**: _[BufferLike](../#bufferlike)_
 
-*Inherited from [TxData](txdata.md).[value](txdata.md#value)*
+_Inherited from [TxData](txdata.md).[value](txdata.md#value)_
 
-*Defined in [types.ts:73](https://github.com/ethereumjs/ethereumjs-tx/blob/eece5af/src/types.ts#L73)*
+_Defined in [types.ts:73](https://github.com/ethereumjs/ethereumjs-tx/blob/eece5af/src/types.ts#L73)_
 
 The amount of Ether sent.
 
-___
-
+---

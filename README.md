@@ -46,7 +46,7 @@ For a browser build please see https://github.com/ethereumjs/browser-builds.
 
 # API
 
-[./docs/](./docs/index.md)
+[./docs/](./docs/README.md)
 
 # LICENSE
 
