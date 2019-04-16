@@ -1,5 +1,6 @@
 import Transaction, { TransactionData, TransactionOptions, BufferLike } from './index.js'
 import { toBuffer } from 'ethereumjs-util'
+import { Buffer } from 'buffer'
 
 // We extend this interface here as FakeTransactions have one extra field
 export interface TransactionObject {

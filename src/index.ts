@@ -9,6 +9,7 @@ import {
   toBuffer,
 } from 'ethereumjs-util'
 import Common from 'ethereumjs-common'
+import { Buffer } from 'buffer'
 
 // secp256k1n/2
 const N_DIV_2 = new BN('7fffffffffffffffffffffffffffffff5d576e7357a4501ddfe92f46681b20a0', 16)
