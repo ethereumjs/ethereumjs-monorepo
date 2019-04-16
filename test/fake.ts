@@ -1,10 +1,11 @@
-const tape = require('tape')
-const utils = require('ethereumjs-util')
-const Common = require('ethereumjs-common').default
-const FakeTransaction = require('../fake.js')
+import * as tape from 'tape'
+import { bufferToHex } from 'ethereumjs-util'
+import Common from 'ethereumjs-common'
+import FakeTransaction from '../src/fake'
+import { FakeTxData } from './types'
 
 // Use private key 0x0000000000000000000000000000000000000000000000000000000000000001 as 'from' Account
-var txData = {
+const txData: FakeTxData = {
   data: '0x7cf5dab00000000000000000000000000000000000000000000000000000000000000005',
   gasLimit: '0x15f90',
   gasPrice: '0x1',
@@ -20,16 +21,15 @@ var txData = {
 tape('[FakeTransaction]: Basic functions', function(t) {
   t.test('instantiate with from / create a hash', function(st) {
     st.plan(3)
-
-    var tx = new FakeTransaction(txData)
-    var hash = tx.hash()
-    var cmpHash = Buffer.from(
+    const tx = new FakeTransaction(txData)
+    const hash = tx.hash()
+    const cmpHash = Buffer.from(
       'f74b039f6361c4351a99a7c6a10867369fe6701731d85dc07c15671ac1c1b648',
       'hex',
     )
     st.deepEqual(hash, cmpHash, 'should create hash with includeSignature=true (default)')
-    var hash2 = tx.hash(false)
-    var cmpHash2 = Buffer.from(
+    const hash2 = tx.hash(false)
+    const cmpHash2 = Buffer.from(
       '0401bf740d698674be321d0064f92cd6ebba5d73d1e5e5189c0bebbda33a85fe',
       'hex',
     )
@@ -38,18 +38,18 @@ tape('[FakeTransaction]: Basic functions', function(t) {
   })
 
   t.test('instantiate without from / create a hash', function(st) {
-    var txDataNoFrom = Object.assign({}, txData)
+    const txDataNoFrom = Object.assign({}, txData)
     delete txDataNoFrom['from']
     st.plan(3)
-    var tx = new FakeTransaction(txDataNoFrom)
-    var hash = tx.hash()
-    var cmpHash = Buffer.from(
+    const tx = new FakeTransaction(txDataNoFrom)
+    const hash = tx.hash()
+    const cmpHash = Buffer.from(
       '80a2ca70509414908881f718502e6bbb3bc67f416abdf972ea7c0888579be7b9',
       'hex',
     )
     st.deepEqual(hash, cmpHash, 'should create hash with includeSignature=true (default)')
-    var hash2 = tx.hash(false)
-    var cmpHash2 = Buffer.from(
+    const hash2 = tx.hash(false)
+    const cmpHash2 = Buffer.from(
       '0401bf740d698674be321d0064f92cd6ebba5d73d1e5e5189c0bebbda33a85fe',
       'hex',
     )
@@ -59,13 +59,13 @@ tape('[FakeTransaction]: Basic functions', function(t) {
 
   t.test('should not produce hash collsions for different senders', function(st) {
     st.plan(1)
-    var txDataModFrom = Object.assign({}, txData, {
+    const txDataModFrom = Object.assign({}, txData, {
       from: '0x2222222222222222222222222222222222222222',
     })
-    var tx = new FakeTransaction(txData)
-    var txModFrom = new FakeTransaction(txDataModFrom)
-    var hash = utils.bufferToHex(tx.hash())
-    var hashModFrom = utils.bufferToHex(txModFrom.hash())
+    const tx = new FakeTransaction(txData)
+    const txModFrom = new FakeTransaction(txDataModFrom)
+    const hash = bufferToHex(tx.hash())
+    const hashModFrom = bufferToHex(txModFrom.hash())
     st.notEqual(
       hash,
       hashModFrom,
@@ -74,17 +74,16 @@ tape('[FakeTransaction]: Basic functions', function(t) {
   })
 
   t.test('should retrieve "from" from signature if transaction is signed', function(st) {
-    var txDataNoFrom = Object.assign({}, txData)
+    const txDataNoFrom = Object.assign({}, txData)
     delete txDataNoFrom['from']
     st.plan(1)
 
-    var tx = new FakeTransaction(txDataNoFrom)
-    st.equal(utils.bufferToHex(tx.from), txData.from)
+    const tx = new FakeTransaction(txDataNoFrom)
+    st.equal(bufferToHex(tx.from), txData.from)
   })
 
   t.test('should throw if common and chain options are passed to constructor', function(st) {
-    var txData = Object.assign({}, txData)
-    var txOptsInvalid = {
+    const txOptsInvalid = {
       chain: 'mainnet',
       common: new Common('mainnet', 'chainstart'),
     }

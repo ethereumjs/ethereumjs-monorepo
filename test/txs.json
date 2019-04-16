@@ -68,6 +68,10 @@
     ]
   },
   {
+    "privateKey": "not-available",
+    "sendersAddress": "TODO",
+    "type": "message",
+    "cost": 12312,
     "raw": [
       "0x0b",
       "0x051f4d5c00",

@@ -1,12 +1,23 @@
-const Tx = require('../index.js')
-const tape = require('tape')
-const ethUtil = require('ethereumjs-util')
-const argv = require('minimist')(process.argv.slice(2))
-const testing = require('ethereumjs-testing')
+import Tx from '../src/index.js'
+import * as tape from 'tape'
+import { toBuffer } from 'ethereumjs-util'
+import testing from 'ethereumjs-testing'
+import * as minimist from 'minimist'
+import { ForkName, ForkNamesMap, OfficialTransactionTestData } from './types'
 
-const forkNames = ['Byzantium', 'Constantinople', 'EIP150', 'EIP158', 'Frontier', 'Homestead']
+const argv = minimist(process.argv.slice(2))
+const file: string | undefined = argv.file
 
-const forkNameMap = {
+const forkNames: ForkName[] = [
+  'Byzantium',
+  'Constantinople',
+  'EIP150',
+  'EIP158',
+  'Frontier',
+  'Homestead',
+]
+
+const forkNameMap: ForkNamesMap = {
   Byzantium: 'byzantium',
   Constantinople: 'constantinople',
   EIP150: 'tangerineWhistle',
@@ -16,14 +27,14 @@ const forkNameMap = {
 }
 
 tape('TransactionTests', t => {
-  const fileFilterRegex = argv.file ? new RegExp(argv.file + '[^\\w]') : undefined
+  const fileFilterRegex = file ? new RegExp(file + '[^\\w]') : undefined
 
   testing
     .getTests(
       'TransactionTests',
-      (filename, testName, testData) => {
+      (_filename: string, testName: string, testData: OfficialTransactionTestData) => {
         t.test(testName, st => {
-          const rawTx = ethUtil.toBuffer(testData.rlp)
+          const rawTx = toBuffer(testData.rlp)
 
           let tx
           forkNames.forEach(forkName => {
