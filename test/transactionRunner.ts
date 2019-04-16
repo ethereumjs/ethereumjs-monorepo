@@ -1,9 +1,11 @@
-import Tx from '../src/index.js'
+import Tx from '../src/index'
 import * as tape from 'tape'
 import { toBuffer } from 'ethereumjs-util'
-import testing from 'ethereumjs-testing'
 import * as minimist from 'minimist'
 import { ForkName, ForkNamesMap, OfficialTransactionTestData } from './types'
+
+// We use require here because this module doesn't have types and this works better with ts-node.
+const testing = require('ethereumjs-testing')
 
 const argv = minimist(process.argv.slice(2))
 const file: string | undefined = argv.file

@@ -9,7 +9,7 @@ if (argv.f) {
 } else if (argv.t) {
   require('./transactionRunner')
 } else {
-  require('./fake ')
+  require('./fake')
   require('./api')
   require('./transactionRunner')
 }
