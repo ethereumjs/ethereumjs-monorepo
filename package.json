@@ -52,7 +52,8 @@
     "tape": "^4.0.3",
     "ts-node": "^8.0.3",
     "tslint": "^5.15.0",
-    "typescript": "^3.4.3"
+    "typescript": "^3.4.3",
+    "typestrict": "^1.0.2"
   },
   "repository": {
     "type": "git",
