@@ -1,4 +1,4 @@
-import Transaction, { TransactionData, TransactionOptions, BufferLike } from './index.js'
+import Transaction, { TransactionData, TransactionOptions, BufferLike } from './index'
 import { toBuffer } from 'ethereumjs-util'
 import { Buffer } from 'buffer'
 
