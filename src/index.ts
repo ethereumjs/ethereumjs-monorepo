@@ -404,6 +404,8 @@ export default class Transaction {
    * @return {Buffer}
    */
   serialize() {
+    // Note: This never gets executed, defineProperties overwrites it.
     return rlp.encode(this.raw)
   }
+
 }
