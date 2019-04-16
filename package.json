@@ -73,14 +73,6 @@
     "url": "https://github.com/ethereumjs/ethereumjs-tx/issues"
   },
   "homepage": "https://github.com/ethereumjs/ethereumjs-tx",
-  "standard": {
-    "ignore": [
-      "es5/**",
-      "dist/**",
-      "package-init.js",
-      "package.js"
-    ]
-  },
   "contributors": [
     {
       "name": "<-c-g-> ",
