@@ -32,6 +32,7 @@
     "ethereumjs-util": "^6.0.0"
   },
   "devDependencies": {
+    "@ethereumjs/config-nyc": "^1.1.1",
     "@ethereumjs/config-prettier": "^1.1.1",
     "@ethereumjs/config-tsc": "^1.1.1",
     "@ethereumjs/config-tslint": "^1.1.1",
@@ -57,11 +58,14 @@
     "karma-firefox-launcher": "^1.0.0",
     "karma-tap": "^2.0.1",
     "minimist": "^1.2.0",
+    "nyc": "^14.0.0",
     "prettier": "^1.17.0",
     "standard": "^7.1.2",
     "tape": "^4.0.3",
     "ts-node": "^8.0.3",
     "tslint": "^5.15.0",
+    "typedoc": "^0.14.2",
+    "typedoc-plugin-markdown": "^1.2.0",
     "typescript": "^3.4.3",
     "typestrict": "^1.0.2"
   },
