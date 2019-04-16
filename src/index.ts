@@ -7,6 +7,7 @@ import {
   publicToAddress,
   ecsign,
   toBuffer,
+  rlp,
 } from 'ethereumjs-util'
 import Common from 'ethereumjs-common'
 import { Buffer } from 'buffer'
@@ -177,14 +178,6 @@ export default class Transaction {
       },
     ]
 
-    /**
-     * Returns the rlp encoding of the transaction
-     * @method serialize
-     * @return {Buffer}
-     * @memberof Transaction
-     * @name serialize
-     * @see {@link https://github.com/ethereumjs/ethereumjs-util/blob/master/docs/index.md#defineproperties|ethereumjs-util}
-     */
     /**
      * Returns the transaction in JSON format
      * @method toJSON
@@ -404,5 +397,13 @@ export default class Transaction {
     } else {
       return errors.join(' ')
     }
+  }
+
+  /**
+   * Returns the rlp encoding of the transaction
+   * @return {Buffer}
+   */
+  serialize() {
+    return rlp.encode(this.raw)
   }
 }
