@@ -36,28 +36,30 @@ export interface TransactionObject {
  * @prop {Buffer} s EC signature parameter
  */
 export default class FakeTransaction extends Transaction {
-  public from: Buffer
+  /**
+   * Set from address to bypass transaction signing.
+   * This is not an optional property, as its getter never returns undefined.
+   */
+  public from!: Buffer
+
   constructor(data?: TransactionData, opts?: TransactionOptions) {
     super(data, opts)
 
-    const self = this
-
-    /**
-     * @prop {Buffer} from (read/write) Set from address to bypass transaction signing.
-     */
     Object.defineProperty(this, 'from', {
       enumerable: true,
       configurable: true,
-      get: this.getSenderAddress.bind(self),
-      set: function(val) {
+      get: () => this.getSenderAddress(),
+      set: val => {
         if (val) {
-          self._from = toBuffer(val)
+          this._from = toBuffer(val)
         }
       },
     })
 
     const dataAsTransactionObject = data as TransactionObject
-    this.from = toBuffer(dataAsTransactionObject.from)
+    if (dataAsTransactionObject.from) {
+      this.from = toBuffer(dataAsTransactionObject.from)
+    }
   }
 
   /**
