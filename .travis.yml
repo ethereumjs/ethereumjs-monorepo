@@ -1,7 +1,7 @@
 language: node_js
 node_js:
-  - "6"
   - "8"
+  - "10"
 env:
   - CXX=g++-4.8
 addons:
@@ -21,16 +21,16 @@ matrix:
   fast_finish: true
   include:
     - os: linux
-      node_js: "6"
+      node_js: "8"
       env: CXX=g++-4.8 TEST_SUITE=coveralls
     - os: linux
-      node_js: "6"
+      node_js: "8"
       env: CXX=g++-4.8 TEST_SUITE=lint
     - os: linux
-      node_js: "8"
+      node_js: "10"
       env: CXX=g++-4.8 TEST_SUITE=coveralls
     - os: linux
-      node_js: "8"
+      node_js: "10"
       env: CXX=g++-4.8 TEST_SUITE=lint
     # - os: linux
     #   node_js: "4"
