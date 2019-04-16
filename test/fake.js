@@ -14,48 +14,66 @@ var txData = {
   from: '0x7e5f4552091a69125d5dfcb7b8c2659029395bdf',
   v: '0x1c',
   r: '0x25641558260ac737ea6d800906c6d085a801e5e0f0952bf93978d6fa468fbdfe',
-  s: '0x5d0904b8f9cfc092805df0cde2574d25e2c5fc28907a9a4741b3e857b68b0778'
+  s: '0x5d0904b8f9cfc092805df0cde2574d25e2c5fc28907a9a4741b3e857b68b0778',
 }
 
-tape('[FakeTransaction]: Basic functions', function (t) {
-  t.test('instantiate with from / create a hash', function (st) {
+tape('[FakeTransaction]: Basic functions', function(t) {
+  t.test('instantiate with from / create a hash', function(st) {
     st.plan(3)
 
     var tx = new FakeTransaction(txData)
     var hash = tx.hash()
-    var cmpHash = Buffer.from('f74b039f6361c4351a99a7c6a10867369fe6701731d85dc07c15671ac1c1b648', 'hex')
+    var cmpHash = Buffer.from(
+      'f74b039f6361c4351a99a7c6a10867369fe6701731d85dc07c15671ac1c1b648',
+      'hex',
+    )
     st.deepEqual(hash, cmpHash, 'should create hash with includeSignature=true (default)')
     var hash2 = tx.hash(false)
-    var cmpHash2 = Buffer.from('0401bf740d698674be321d0064f92cd6ebba5d73d1e5e5189c0bebbda33a85fe', 'hex')
+    var cmpHash2 = Buffer.from(
+      '0401bf740d698674be321d0064f92cd6ebba5d73d1e5e5189c0bebbda33a85fe',
+      'hex',
+    )
     st.deepEqual(hash2, cmpHash2, 'should create hash with includeSignature=false')
     st.notDeepEqual(hash, hash2, 'previous hashes should be different')
   })
 
-  t.test('instantiate without from / create a hash', function (st) {
+  t.test('instantiate without from / create a hash', function(st) {
     var txDataNoFrom = Object.assign({}, txData)
     delete txDataNoFrom['from']
     st.plan(3)
     var tx = new FakeTransaction(txDataNoFrom)
     var hash = tx.hash()
-    var cmpHash = Buffer.from('80a2ca70509414908881f718502e6bbb3bc67f416abdf972ea7c0888579be7b9', 'hex')
+    var cmpHash = Buffer.from(
+      '80a2ca70509414908881f718502e6bbb3bc67f416abdf972ea7c0888579be7b9',
+      'hex',
+    )
     st.deepEqual(hash, cmpHash, 'should create hash with includeSignature=true (default)')
     var hash2 = tx.hash(false)
-    var cmpHash2 = Buffer.from('0401bf740d698674be321d0064f92cd6ebba5d73d1e5e5189c0bebbda33a85fe', 'hex')
+    var cmpHash2 = Buffer.from(
+      '0401bf740d698674be321d0064f92cd6ebba5d73d1e5e5189c0bebbda33a85fe',
+      'hex',
+    )
     st.deepEqual(hash2, cmpHash2, 'should create hash with includeSignature=false')
     st.notDeepEqual(hash, hash2, 'previous hashes should be different')
   })
 
-  t.test('should not produce hash collsions for different senders', function (st) {
+  t.test('should not produce hash collsions for different senders', function(st) {
     st.plan(1)
-    var txDataModFrom = Object.assign({}, txData, { from: '0x2222222222222222222222222222222222222222' })
+    var txDataModFrom = Object.assign({}, txData, {
+      from: '0x2222222222222222222222222222222222222222',
+    })
     var tx = new FakeTransaction(txData)
     var txModFrom = new FakeTransaction(txDataModFrom)
     var hash = utils.bufferToHex(tx.hash())
     var hashModFrom = utils.bufferToHex(txModFrom.hash())
-    st.notEqual(hash, hashModFrom, 'FakeTransactions with different `from` addresses but otherwise identical data should have different hashes')
+    st.notEqual(
+      hash,
+      hashModFrom,
+      'FakeTransactions with different `from` addresses but otherwise identical data should have different hashes',
+    )
   })
 
-  t.test('should retrieve "from" from signature if transaction is signed', function (st) {
+  t.test('should retrieve "from" from signature if transaction is signed', function(st) {
     var txDataNoFrom = Object.assign({}, txData)
     delete txDataNoFrom['from']
     st.plan(1)
@@ -64,16 +82,14 @@ tape('[FakeTransaction]: Basic functions', function (t) {
     st.equal(utils.bufferToHex(tx.from), txData.from)
   })
 
-  t.test('should throw if common and chain options are passed to constructor', function (st) {
+  t.test('should throw if common and chain options are passed to constructor', function(st) {
     var txData = Object.assign({}, txData)
     var txOptsInvalid = {
       chain: 'mainnet',
-      common: new Common('mainnet', 'chainstart')
+      common: new Common('mainnet', 'chainstart'),
     }
     st.plan(1)
-    st.throws(
-      () => new FakeTransaction(txData, txOptsInvalid)
-    )
+    st.throws(() => new FakeTransaction(txData, txOptsInvalid))
   })
 
   t.test('should return toCreationAddress', st => {
