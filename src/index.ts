@@ -11,80 +11,14 @@ import {
 } from 'ethereumjs-util'
 import Common from 'ethereumjs-common'
 import { Buffer } from 'buffer'
+import { BufferLike, PrefixedHexString, TxData, TransactionOptions } from './types'
 
 // secp256k1n/2
 const N_DIV_2 = new BN('7fffffffffffffffffffffffffffffff5d576e7357a4501ddfe92f46681b20a0', 16)
 
-export interface TransformableToBuffer {
-  toBuffer(): Buffer
-}
-
-export type PrefixedHexString = string
-
-export type BufferLike = Buffer | TransformableToBuffer | PrefixedHexString | number
-
-export interface TransactionObject {
-  chainId?: number
-  gasLimit?: BufferLike
-  gasPrice?: BufferLike
-  to?: BufferLike
-  nonce?: BufferLike
-  data?: BufferLike
-  v?: BufferLike
-  r?: BufferLike
-  s?: BufferLike
-  value?: BufferLike
-}
-
-export interface TransactionOptions {
-  common?: Common
-  chain?: number | string
-  hardfork?: string
-}
-
-export type TransactionData = Buffer | PrefixedHexString | BufferLike[] | TransactionObject
-
 /**
- * Creates a new transaction object.
- *
- * @example
- * var rawTx = {
- *   nonce: '0x00',
- *   gasPrice: '0x09184e72a000',
- *   gasLimit: '0x2710',
- *   to: '0x0000000000000000000000000000000000000000',
- *   value: '0x00',
- *   data: '0x7f7465737432000000000000000000000000000000000000000000000000000000600057',
- *   v: '0x1c',
- *   r: '0x5e1d3a76fbf824220eafc8c79ad578ad2b67d01b0c2425eb1f1347e8f50882ab',
- *   s: '0x5bd428537f05f9830e93792f90ea6a3e2d1ee84952dd96edbae9f658f831ab13'
- * };
- * var tx = new Transaction(rawTx);
- *
- * @class
- * @param {Buffer | Array | Object} data a transaction can be initiailized with either a buffer containing the RLP serialized transaction or an array of buffers relating to each of the tx Properties, listed in order below in the exmple.
- *
- * Or lastly an Object containing the Properties of the transaction like in the Usage example.
- *
- * For Object and Arrays each of the elements can either be a Buffer, a hex-prefixed (0x) String , Number, or an object with a toBuffer method such as Bignum
- *
- * @property {Buffer} raw The raw rlp encoded transaction
- * @param {Buffer} data.nonce nonce number
- * @param {Buffer} data.gasLimit transaction gas limit
- * @param {Buffer} data.gasPrice transaction gas price
- * @param {Buffer} data.to to the to address
- * @param {Buffer} data.value the amount of ether sent
- * @param {Buffer} data.data this will contain the data of the message or the init of a contract
- * @param {Buffer} data.v EC recovery ID
- * @param {Buffer} data.r EC signature parameter
- * @param {Buffer} data.s EC signature parameter
- * @param {Number} data.chainId EIP 155 chainId - mainnet: 1, ropsten: 3
- *
- * @param {Array} opts Options
- * @param {String|Number} opts.chain The chain for the block [default: 'mainnet']
- * @param {String} opts.hardfork Hardfork for the block [default: null, block number-based behaviour]
- * @param {Object} opts.common Alternatively pass a Common instance (ethereumjs-common) instead of setting chain/hardfork directly
- * */
+ * An Ethereum transaction.
+ */
 export default class Transaction {
   public raw!: Buffer[]
   public nonce!: Buffer
@@ -102,9 +36,36 @@ export default class Transaction {
   private _senderPubKey?: Buffer
   protected _from?: Buffer
 
-  constructor(data?: TransactionData, opts?: TransactionOptions) {
-    opts = opts || {}
-
+  /**
+   * Creates a new transaction from an object with its fields' values.
+   *
+   * @param data - A transaction can be initialized with its rlp representation, an array containing
+   * the value of its fields in order, or an object containing them by name. If the latter is used,
+   * a `chainId` can also be provided.
+   *
+   * @param opts - The transaction's options, used to indicate the chain and hardfork the
+   * transactions belongs to.
+   *
+   * @example
+   * ```js
+   * const txData = {
+   *   nonce: '0x00',
+   *   gasPrice: '0x09184e72a000',
+   *   gasLimit: '0x2710',
+   *   to: '0x0000000000000000000000000000000000000000',
+   *   value: '0x00',
+   *   data: '0x7f7465737432000000000000000000000000000000000000000000000000000000600057',
+   *   v: '0x1c',
+   *   r: '0x5e1d3a76fbf824220eafc8c79ad578ad2b67d01b0c2425eb1f1347e8f50882ab',
+   *   s: '0x5bd428537f05f9830e93792f90ea6a3e2d1ee84952dd96edbae9f658f831ab13'
+   * };
+   * const tx = new Transaction(txData);
+   * ```
+   */
+  constructor(
+    data: Buffer | PrefixedHexString | BufferLike[] | TxData = {},
+    opts: TransactionOptions = {},
+  ) {
     // instantiate Common class instance based on passed options
     if (opts.common) {
       if (opts.chain) {
@@ -117,7 +78,6 @@ export default class Transaction {
       this._common = new Common(chain, hardfork)
     }
 
-    data = data || {}
     // Define Properties
     const fields = [
       {
@@ -186,6 +146,7 @@ export default class Transaction {
      * @name toJSON
      * @see {@link https://github.com/ethereumjs/ethereumjs-util/blob/master/docs/index.md#defineproperties|ethereumjs-util}
      */
+
     // attached serialize
     defineProperties(this, fields, data)
 
@@ -209,25 +170,23 @@ export default class Transaction {
     if (opts.chain || opts.common) {
       this._chainId = this._common.chainId()
     } else {
-      const dataAsTransactionObject = data as TransactionObject
+      const dataAsTransactionObject = data as TxData
       this._chainId = chainId || dataAsTransactionObject.chainId || 0
     }
   }
 
   /**
    * If the tx's `to` is to the creation address
-   * @return {Boolean}
    */
-  toCreationAddress() {
+  toCreationAddress(): boolean {
     return this.to.toString('hex') === ''
   }
 
   /**
    * Computes a sha3-256 hash of the serialized tx
-   * @param {Boolean} [includeSignature=true] whether or not to inculde the signature
-   * @return {Buffer}
+   * @param includeSignature - Whether or not to include the signature
    */
-  hash(includeSignature: boolean = true) {
+  hash(includeSignature: boolean = true): Buffer {
     let items
     if (includeSignature) {
       items = this.raw
@@ -265,17 +224,15 @@ export default class Transaction {
 
   /**
    * returns chain ID
-   * @return {Buffer}
    */
-  getChainId() {
+  getChainId(): number {
     return this._chainId
   }
 
   /**
    * returns the sender's address
-   * @return {Buffer}
    */
-  getSenderAddress() {
+  getSenderAddress(): Buffer {
     if (this._from) {
       return this._from
     }
@@ -286,7 +243,6 @@ export default class Transaction {
 
   /**
    * returns the public key of the sender
-   * @return {Buffer}
    */
   getSenderPublicKey(): Buffer {
     if (!this.verifySignature()) {
@@ -299,9 +255,8 @@ export default class Transaction {
 
   /**
    * Determines if the signature is valid
-   * @return {Boolean}
    */
-  verifySignature() {
+  verifySignature(): boolean {
     const msgHash = this.hash(false)
     // All transaction signatures whose s-value is greater than secp256k1n/2 are considered invalid.
     if (this._common.gteHardfork('homestead') && new BN(this.s).cmp(N_DIV_2) === 1) {
@@ -328,7 +283,7 @@ export default class Transaction {
 
   /**
    * sign a transaction with a given private key
-   * @param {Buffer} privateKey Must be 32 bytes in length
+   * @param privateKey - Must be 32 bytes in length
    */
   sign(privateKey: Buffer) {
     const msgHash = this.hash(false)
@@ -341,9 +296,8 @@ export default class Transaction {
 
   /**
    * The amount of gas paid for the data in this tx
-   * @return {BN}
    */
-  getDataFee() {
+  getDataFee(): BN {
     const data = this.raw[5]
     const cost = new BN(0)
     for (let i = 0; i < data.length; i++) {
@@ -356,9 +310,8 @@ export default class Transaction {
 
   /**
    * the minimum amount of gas the tx must have (DataFee + TxFee + Creation Fee)
-   * @return {BN}
    */
-  getBaseFee() {
+  getBaseFee(): BN {
     const fee = this.getDataFee().iaddn(this._common.param('gasPrices', 'tx'))
     if (this._common.gteHardfork('homestead') && this.toCreationAddress()) {
       fee.iaddn(this._common.param('gasPrices', 'txCreation'))
@@ -368,16 +321,13 @@ export default class Transaction {
 
   /**
    * the up front amount that an account must have for this transaction to be valid
-   * @return {BN}
    */
-  getUpfrontCost() {
+  getUpfrontCost(): BN {
     return new BN(this.gasLimit).imul(new BN(this.gasPrice)).iadd(new BN(this.value))
   }
 
   /**
-   * validates the signature and checks to see if it has enough gas
-   * @param {Boolean} [stringError=false] whether to return a string with a description of why the validation failed or return a Boolean
-   * @return {Boolean|String}
+   * Validates the signature and checks to see if it has enough gas.
    */
   validate(): boolean
   validate(stringError: false): boolean
@@ -401,9 +351,8 @@ export default class Transaction {
 
   /**
    * Returns the rlp encoding of the transaction
-   * @return {Buffer}
    */
-  serialize() {
+  serialize(): Buffer {
     // Note: This never gets executed, defineProperties overwrites it.
     return rlp.encode(this.raw)
   }
