@@ -1,5 +1,5 @@
 import * as tape from 'tape'
-import { rlp, zeros, privateToPublic } from 'ethereumjs-util'
+import { rlp, zeros, privateToPublic, toBuffer } from 'ethereumjs-util'
 
 import Transaction from '../src/index'
 import { TxsJsonEntry, VitaliksTestsDataEntry } from './types'
@@ -154,7 +154,7 @@ tape('[Transaction]: Basic functions', function(t) {
 
   t.test('should validate with string option', function(st) {
     transactions.forEach(function(tx) {
-      tx.gasLimit = 30000
+      tx.gasLimit = toBuffer(30000)
       st.equals(tx.validate(true), '')
     })
     st.end()
@@ -162,7 +162,7 @@ tape('[Transaction]: Basic functions', function(t) {
 
   t.test('should round trip decode a tx', function(st) {
     const tx = new Transaction()
-    tx.value = 5000
+    tx.value = toBuffer(5000)
     const s1 = tx.serialize().toString('hex')
     const tx2 = new Transaction(s1)
     const s2 = tx2.serialize().toString('hex')
@@ -172,7 +172,7 @@ tape('[Transaction]: Basic functions', function(t) {
 
   t.test('should accept lesser r values', function(st) {
     const tx = new Transaction()
-    tx.r = '0x0005'
+    tx.r = toBuffer('0x0005')
     st.equals(tx.r.toString('hex'), '05')
     st.end()
   })
