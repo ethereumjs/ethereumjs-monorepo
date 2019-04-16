@@ -49,6 +49,7 @@
     "karma-env-preprocessor": "^0.1.1",
     "karma-firefox-launcher": "^1.0.0",
     "karma-tap": "^2.0.1",
+    "karma-typescript": "^4.0.0",
     "minimist": "^1.2.0",
     "nyc": "^14.0.0",
     "prettier": "^1.17.0",
