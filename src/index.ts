@@ -110,8 +110,8 @@ export default class Transaction {
       }
       this._common = opts.common
     } else {
-      let chain = opts.chain ? opts.chain : 'mainnet'
-      let hardfork = opts.hardfork ? opts.hardfork : 'byzantium'
+      const chain = opts.chain ? opts.chain : 'mainnet'
+      const hardfork = opts.hardfork ? opts.hardfork : 'byzantium'
       this._common = new Common(chain, hardfork)
     }
 
@@ -207,7 +207,7 @@ export default class Transaction {
     })
 
     // calculate chainId from signature
-    let sigV = bufferToInt(this.v)
+    const sigV = bufferToInt(this.v)
     let chainId = Math.floor((sigV - 35) / 2)
     if (chainId < 0) chainId = 0
 

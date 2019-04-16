@@ -39,7 +39,7 @@ export default class FakeTransaction extends Transaction {
   constructor(data?: TransactionData, opts?: TransactionOptions) {
     super(data, opts)
 
-    var self = this
+    const self = this
 
     /**
      * @prop {Buffer} from (read/write) Set from address to bypass transaction signing.
@@ -67,7 +67,7 @@ export default class FakeTransaction extends Transaction {
   hash(includeSignature = true) {
     if (includeSignature && this._from && this._from.toString('hex') !== '') {
       // include a fake signature using the from address as a private key
-      let fakeKey = Buffer.concat([this._from, this._from.slice(0, 12)])
+      const fakeKey = Buffer.concat([this._from, this._from.slice(0, 12)])
       this.sign(fakeKey)
     }
 
