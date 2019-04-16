@@ -233,9 +233,7 @@ export default class Transaction {
    * @param {Boolean} [includeSignature=true] whether or not to inculde the signature
    * @return {Buffer}
    */
-  hash(includeSignature?: boolean) {
-    if (includeSignature === undefined) includeSignature = true
-
+  hash(includeSignature: boolean = true) {
     let items
     if (includeSignature) {
       items = this.raw
@@ -387,7 +385,7 @@ export default class Transaction {
    * @param {Boolean} [stringError=false] whether to return a string with a description of why the validation failed or return a Boolean
    * @return {Boolean|String}
    */
-  validate(stringError?: boolean) {
+  validate(stringError: boolean = false) {
     const errors = []
     if (!this.verifySignature()) {
       errors.push('Invalid Signature')
@@ -397,7 +395,7 @@ export default class Transaction {
       errors.push([`gas limit is too low. Need at least ${this.getBaseFee()}`])
     }
 
-    if (stringError === undefined || stringError === false) {
+    if (stringError === false) {
       return errors.length === 0
     } else {
       return errors.join(' ')
