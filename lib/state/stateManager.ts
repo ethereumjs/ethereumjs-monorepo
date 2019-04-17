@@ -1,26 +1,38 @@
 const Set = require('core-js-pure/es/set')
 const Trie = require('merkle-patricia-tree/secure.js')
-const Common = require('ethereumjs-common').default
-const { genesisStateByName } = require('ethereumjs-common/dist/genesisStates')
-const async = require('async')
-const Account = require('ethereumjs-account')
-const Cache = require('./cache.js')
-const utils = require('ethereumjs-util')
-const BN = utils.BN
-const rlp = utils.rlp
+const asyncLib = require('async')
+import * as utils from 'ethereumjs-util'
+import BN = require('bn.js')
+import { encode, decode } from 'rlp'
+import Common from 'ethereumjs-common'
+import { genesisStateByName } from 'ethereumjs-common/dist/genesisStates'
+import Account from 'ethereumjs-account'
+import Cache from './cache'
+
+export interface StorageDump {
+  [key:string]: string
+}
 
 /**
  * Interface for getting and setting data from an underlying
  * state trie.
  */
-module.exports = class StateManager {
+export default class StateManager {
+  _common: Common
+  _trie: any
+  _storageTries: any
+  _cache: Cache
+  _touched: Set<string>
+  _touchedStack: Set<string>[]
+  _checkpointCount: number
+
   /**
    * Instantiate the StateManager interface.
    * @param {Object} [opts={}]
    * @param {Common} [opts.common] - [`Common`](https://github.com/ethereumjs/ethereumjs-common) parameters of the chain
    * @param {Trie} [opts.trie] - a [`merkle-patricia-tree`](https://github.com/ethereumjs/merkle-patricia-tree) instance
    */
-  constructor (opts = {}) {
+  constructor (opts: any = {}) {
     let common = opts.common
     if (!common) {
       common = new Common('mainnet', 'byzantium')
@@ -42,7 +54,7 @@ module.exports = class StateManager {
    * @memberof DefaultStateManager
    * @method copy
    */
-  copy () {
+  copy (): StateManager {
     return new StateManager({ trie: this._trie.copy() })
   }
 
@@ -62,7 +74,7 @@ module.exports = class StateManager {
    * @param {Buffer} address Address of the `account` to get
    * @param {getAccount~callback} cb
    */
-  getAccount (address, cb) {
+  getAccount (address: Buffer, cb: any): void {
     this._cache.getOrLoad(address, cb)
   }
 
@@ -75,7 +87,7 @@ module.exports = class StateManager {
    * @param {Account} account The [`ethereumjs-account`](https://github.com/ethereumjs/ethereumjs-account) to store
    * @param {Function} cb Callback function
    */
-  putAccount (address, account, cb) {
+  putAccount (address: Buffer, account: Account, cb: any): void {
     // TODO: dont save newly created accounts that have no balance
     // if (toAccount.balance.toString('hex') === '00') {
     // if they have money or a non-zero nonce or code, then write to tree
@@ -94,8 +106,8 @@ module.exports = class StateManager {
    * @param {Buffer} value - The value of the `code`
    * @param {Function} cb Callback function
    */
-  putContractCode (address, value, cb) {
-    this.getAccount(address, (err, account) => {
+  putContractCode (address: Buffer, value: Buffer, cb: any): void {
+    this.getAccount(address, (err: Error, account: Account) => {
       if (err) {
         return cb(err)
       }
@@ -124,8 +136,8 @@ module.exports = class StateManager {
    * @param {Buffer} address Address to get the `code` for
    * @param {getContractCode~callback} cb
    */
-  getContractCode (address, cb) {
-    this.getAccount(address, (err, account) => {
+  getContractCode (address: Buffer, cb: any): void {
+    this.getAccount(address, (err: Error, account: Account) => {
       if (err) {
         return cb(err)
       }
@@ -142,9 +154,9 @@ module.exports = class StateManager {
    * @param {Buffer} address
    * @param {Function} cb Callback function
    */
-  _lookupStorageTrie (address, cb) {
+  _lookupStorageTrie (address: Buffer, cb: any): void {
     // from state trie
-    this.getAccount(address, (err, account) => {
+    this.getAccount(address, (err: Error, account: Account) => {
       if (err) {
         return cb(err)
       }
@@ -164,7 +176,7 @@ module.exports = class StateManager {
    * @param {Buffer} address
    * @param {Function} cb Callback function
    */
-  _getStorageTrie (address, cb) {
+  _getStorageTrie (address: Buffer, cb: any): void {
     const storageTrie = this._storageTries[address.toString('hex')]
     // from storage cache
     if (storageTrie) {
@@ -191,16 +203,16 @@ module.exports = class StateManager {
    * @param {Buffer} key Key in the account's storage to get the value for
    * @param {getContractCode~callback} cb
    */
-  getContractStorage (address, key, cb) {
-    this._getStorageTrie(address, (err, trie) => {
+  getContractStorage (address: Buffer, key: Buffer, cb: any): void {
+    this._getStorageTrie(address, (err: Error, trie: any) => {
       if (err) {
         return cb(err)
       }
-      trie.get(key, (err, value) => {
+      trie.get(key, (err: Error, value: Buffer) => {
         if (err) {
           return cb(err)
         }
-        const decoded = rlp.decode(value)
+        const decoded = decode(value)
         cb(null, decoded)
       })
     })
@@ -214,13 +226,13 @@ module.exports = class StateManager {
    * @param {Buffer} address Address of the account whose storage is to be modified
    * @param {Function} modifyTrie function to modify the storage trie of the account
    */
-  _modifyContractStorage (address, modifyTrie, cb) {
-    this._getStorageTrie(address, (err, storageTrie) => {
+  _modifyContractStorage (address: Buffer, modifyTrie: any, cb: any): void {
+    this._getStorageTrie(address, (err: Error, storageTrie: any) => {
       if (err) {
         return cb(err)
       }
 
-      modifyTrie(storageTrie, (err) => {
+      modifyTrie(storageTrie, (err: Error) => {
         if (err) return cb(err)
         // update storage cache
         this._storageTries[address.toString('hex')] = storageTrie
@@ -243,11 +255,11 @@ module.exports = class StateManager {
    * @param {Buffer} value Value to set at `key` for account corresponding to `address`
    * @param {Function} cb Callback function
    */
-  putContractStorage (address, key, value, cb) {
-    this._modifyContractStorage(address, (storageTrie, done) => {
+  putContractStorage (address: Buffer, key: Buffer, value: Buffer, cb: any): void {
+    this._modifyContractStorage(address, (storageTrie: any, done: any) => {
       if (value && value.length) {
         // format input
-        const encodedValue = rlp.encode(value)
+        const encodedValue = encode(value)
         storageTrie.put(key, encodedValue, done)
       } else {
         // deleting a value
@@ -263,8 +275,8 @@ module.exports = class StateManager {
    * @param {Buffer} address Address to clear the storage of
    * @param {Function} cb Callback function
    */
-  clearContractStorage (address, cb) {
-    this._modifyContractStorage(address, (storageTrie, done) => {
+  clearContractStorage (address: Buffer, cb: any) {
+    this._modifyContractStorage(address, (storageTrie: any, done: any) => {
       storageTrie.root = storageTrie.EMPTY_TRIE_ROOT
       done()
     }, cb)
@@ -278,7 +290,7 @@ module.exports = class StateManager {
    * @method checkpoint
    * @param {Function} cb Callback function
    */
-  checkpoint (cb) {
+  checkpoint (cb: any): void {
     this._trie.checkpoint()
     this._cache.checkpoint()
     this._touchedStack.push(new Set(Array.from(this._touched)))
@@ -293,7 +305,7 @@ module.exports = class StateManager {
    * @method commit
    * @param {Function} cb Callback function
    */
-  commit (cb) {
+  commit (cb: any): void {
     // setup trie checkpointing
     this._trie.commit(() => {
       // setup cache checkpointing
@@ -313,13 +325,17 @@ module.exports = class StateManager {
    * @method revert
    * @param {Function} cb Callback function
    */
-  revert (cb) {
+  revert (cb: any): void {
     // setup trie checkpointing
     this._trie.revert()
     // setup cache checkpointing
     this._cache.revert()
     this._storageTries = {}
-    this._touched = this._touchedStack.pop()
+    const touched = this._touchedStack.pop()
+    if (!touched) {
+      throw new Error('Reverting to invalid state checkpoint failed')
+    }
+    this._touched = touched
     this._checkpointCount--
 
     if (this._checkpointCount === 0) this._cache.flush(cb)
@@ -342,10 +358,10 @@ module.exports = class StateManager {
    * @method getStateRoot
    * @param {getStateRoot~callback} cb
    */
-  getStateRoot (cb) {
+  getStateRoot (cb: any): void {
     if (this._checkpointCount !== 0) { return cb(new Error('Cannot get state root with uncommitted checkpoints')) }
 
-    this._cache.flush((err) => {
+    this._cache.flush((err: Error) => {
       if (err) {
         return cb(err)
       }
@@ -364,10 +380,10 @@ module.exports = class StateManager {
    * @param {Buffer} stateRoot The state-root to reset the instance to
    * @param {Function} cb Callback function
    */
-  setStateRoot (stateRoot, cb) {
+  setStateRoot (stateRoot: Buffer, cb: any): void {
     if (this._checkpointCount !== 0) { return cb(new Error('Cannot set state root with uncommitted checkpoints')) }
 
-    this._cache.flush((err) => {
+    this._cache.flush((err: Error) => {
       if (err) { return cb(err) }
       if (stateRoot === this._trie.EMPTY_TRIE_ROOT) {
         this._trie.root = stateRoot
@@ -375,7 +391,7 @@ module.exports = class StateManager {
         this._storageTries = {}
         return cb()
       }
-      this._trie.checkRoot(stateRoot, (err, hasRoot) => {
+      this._trie.checkRoot(stateRoot, (err: Error, hasRoot: boolean) => {
         if (err || !hasRoot) {
           cb(err || new Error('State trie does not contain state root'))
         } else {
@@ -404,14 +420,14 @@ module.exports = class StateManager {
    * @param {Buffer} address The address of the `account` to return storage for
    * @param {dumpStorage~callback} cb
    */
-  dumpStorage (address, cb) {
-    this._getStorageTrie(address, (err, trie) => {
+  dumpStorage (address: Buffer, cb: any): void {
+    this._getStorageTrie(address, (err: Error, trie: any) => {
       if (err) {
         return cb(err)
       }
-      const storage = {}
+      const storage: StorageDump = {}
       const stream = trie.createReadStream()
-      stream.on('data', (val) => {
+      stream.on('data', (val: any) => {
         storage[val.key.toString('hex')] = val.value.toString('hex')
       })
       stream.on('end', () => {
@@ -435,7 +451,7 @@ module.exports = class StateManager {
    * @method hasGenesisState
    * @param {hasGenesisState~callback} cb
    */
-  hasGenesisState (cb) {
+  hasGenesisState (cb: any): void {
     const root = this._common.genesis().stateRoot
     this._trie.checkRoot(root, cb)
   }
@@ -448,10 +464,10 @@ module.exports = class StateManager {
    * @method generateCanonicalGenesis
    * @param {Function} cb Callback function
    */
-  generateCanonicalGenesis (cb) {
+  generateCanonicalGenesis (cb: any): void {
     if (this._checkpointCount !== 0) { return cb(new Error('Cannot create genesis state with uncommitted checkpoints')) }
 
-    this.hasGenesisState((err, genesis) => {
+    this.hasGenesisState((err: Error, genesis: boolean) => {
       if (!genesis && !err) {
         this.generateGenesis(genesisStateByName(this._common.chainName()), cb)
       } else {
@@ -467,15 +483,15 @@ module.exports = class StateManager {
    * @param {Object} initState
    * @param {Function} cb Callback function
    */
-  generateGenesis (initState, cb) {
+  generateGenesis (initState: any, cb: any) {
     if (this._checkpointCount !== 0) { return cb(new Error('Cannot create genesis state with uncommitted checkpoints')) }
 
     const addresses = Object.keys(initState)
-    async.eachSeries(addresses, (address, done) => {
+    asyncLib.eachSeries(addresses, (address: string, done: any) => {
       const account = new Account()
       account.balance = new BN(initState[address]).toArrayLike(Buffer)
-      address = utils.toBuffer(address)
-      this._trie.put(address, account.serialize(), done)
+      const addressBuffer = utils.toBuffer(address)
+      this._trie.put(addressBuffer, account.serialize(), done)
     }, cb)
   }
 
@@ -494,8 +510,8 @@ module.exports = class StateManager {
    * @param {Buffer} address Address to check
    * @param {accountIsEmpty~callback} cb
    */
-  accountIsEmpty (address, cb) {
-    this.getAccount.bind(this)(address, (err, account) => {
+  accountIsEmpty (address: Buffer, cb: any): void {
+    this.getAccount.bind(this)(address, (err: Error, account: Account) => {
       if (err) {
         return cb(err)
       }
@@ -512,11 +528,11 @@ module.exports = class StateManager {
    * @method cleanupTouchedAccounts
    * @param {Function} cb Callback function
    */
-  cleanupTouchedAccounts (cb) {
+  cleanupTouchedAccounts (cb: any): void {
     const touchedArray = Array.from(this._touched)
-    async.forEach(touchedArray, (addressHex, next) => {
+    asyncLib.forEach(touchedArray, (addressHex: string, next: any) => {
       const address = Buffer.from(addressHex, 'hex')
-      this.accountIsEmpty(address, (err, empty) => {
+      this.accountIsEmpty(address, (err: Error, empty: boolean) => {
         if (err) {
           next(err)
           return

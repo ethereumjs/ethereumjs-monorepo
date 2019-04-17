@@ -1,83 +1,87 @@
 const promisify = require('util.promisify')
+import Account from 'ethereumjs-account'
+import { default as StateManager, StorageDump } from './stateManager'
 
-module.exports = class PStateManager {
-  constructor (wrapped) {
+export default class PStateManager {
+  _wrapped: StateManager
+
+  constructor (wrapped: StateManager) {
     this._wrapped = wrapped
   }
 
-  copy () {
+  copy (): PStateManager {
     return new PStateManager(this._wrapped.copy())
   }
 
-  getAccount (addr) {
+  getAccount (addr: Buffer): Promise<Account> {
     return promisify(this._wrapped.getAccount.bind(this._wrapped))(addr)
   }
 
-  putAccount (addr, account) {
+  putAccount (addr: Buffer, account: Account): Promise<void> {
     return promisify(this._wrapped.putAccount.bind(this._wrapped))(addr, account)
   }
 
-  putContractCode (addr, code) {
+  putContractCode (addr: Buffer, code: Buffer): Promise<void> {
     return promisify(this._wrapped.putContractCode.bind(this._wrapped))(addr, code)
   }
 
-  getContractCode (addr) {
+  getContractCode (addr: Buffer): Promise<Buffer|null> {
     return promisify(this._wrapped.getContractCode.bind(this._wrapped))(addr)
   }
 
-  getContractStorage (addr, key) {
+  getContractStorage (addr: Buffer, key: Buffer): Promise<any> {
     return promisify(this._wrapped.getContractStorage.bind(this._wrapped))(addr, key)
   }
 
-  putContractStorage (addr, key, value) {
+  putContractStorage (addr: Buffer, key: Buffer, value: Buffer): Promise<void> {
     return promisify(this._wrapped.putContractStorage.bind(this._wrapped))(addr, key, value)
   }
 
-  clearContractStorage (addr) {
+  clearContractStorage (addr: Buffer): Promise<void> {
     return promisify(this._wrapped.clearContractStorage.bind(this._wrapped))(addr)
   }
 
-  checkpoint () {
+  checkpoint (): Promise<void> {
     return promisify(this._wrapped.checkpoint.bind(this._wrapped))()
   }
 
-  commit () {
+  commit (): Promise<void> {
     return promisify(this._wrapped.commit.bind(this._wrapped))()
   }
 
-  revert () {
+  revert (): Promise<void> {
     return promisify(this._wrapped.revert.bind(this._wrapped))()
   }
 
-  getStateRoot () {
+  getStateRoot (): Promise<Buffer> {
     return promisify(this._wrapped.getStateRoot.bind(this._wrapped))()
   }
 
-  setStateRoot (root) {
+  setStateRoot (root: Buffer): Promise<void> {
     return promisify(this._wrapped.setStateRoot.bind(this._wrapped))(root)
   }
 
-  dumpStorage (address) {
+  dumpStorage (address: Buffer): Promise<StorageDump> {
     return promisify(this._wrapped.dumpStorage.bind(this._wrapped))(address)
   }
 
-  hasGenesisState () {
+  hasGenesisState (): Promise<boolean> {
     return promisify(this._wrapped.hasGenesisState.bind(this._wrapped))()
   }
 
-  generateCanonicalGenesis () {
+  generateCanonicalGenesis (): Promise<void> {
     return promisify(this._wrapped.generateCanonicalGenesis.bind(this._wrapped))()
   }
 
-  generateGenesis (initState) {
+  generateGenesis (initState: any): Promise<void> {
     return promisify(this._wrapped.generateGenesis.bind(this._wrapped))(initState)
   }
 
-  accountIsEmpty (address) {
+  accountIsEmpty (address: Buffer): Promise<boolean> {
     return promisify(this._wrapped.accountIsEmpty.bind(this._wrapped))(address)
   }
 
-  cleanupTouchedAccounts () {
+  cleanupTouchedAccounts (): Promise<void> {
     return promisify(this._wrapped.cleanupTouchedAccounts.bind(this._wrapped))()
   }
 }
