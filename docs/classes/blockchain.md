@@ -76,7 +76,7 @@ new Blockchain({ db: db }).iterator(
 
 ⊕ **new Blockchain**(opts?: _`any`_): [Blockchain](blockchain.md)
 
-_Defined in [index.ts:73](https://github.com/ethereumjs/ethereumjs-blockchain/blob/6e88434/src/index.ts#L73)_
+_Defined in [index.ts:112](https://github.com/ethereumjs/ethereumjs-blockchain/blob/c93b4dd/src/index.ts#L112)_
 
 Creates new Blockchain object
 
@@ -110,7 +110,7 @@ The old separated DB constructor parameters `opts.blockDB` and `opts.detailsDB` 
 
 **● db**: _`any`_
 
-_Defined in [index.ts:66](https://github.com/ethereumjs/ethereumjs-blockchain/blob/6e88434/src/index.ts#L66)_
+_Defined in [index.ts:105](https://github.com/ethereumjs/ethereumjs-blockchain/blob/c93b4dd/src/index.ts#L105)_
 
 ---
 
@@ -120,7 +120,7 @@ _Defined in [index.ts:66](https://github.com/ethereumjs/ethereumjs-blockchain/bl
 
 **● dbManager**: _`DBManager`_
 
-_Defined in [index.ts:67](https://github.com/ethereumjs/ethereumjs-blockchain/blob/6e88434/src/index.ts#L67)_
+_Defined in [index.ts:106](https://github.com/ethereumjs/ethereumjs-blockchain/blob/c93b4dd/src/index.ts#L106)_
 
 ---
 
@@ -130,7 +130,7 @@ _Defined in [index.ts:67](https://github.com/ethereumjs/ethereumjs-blockchain/bl
 
 **● ethash**: _`any`_
 
-_Defined in [index.ts:68](https://github.com/ethereumjs/ethereumjs-blockchain/blob/6e88434/src/index.ts#L68)_
+_Defined in [index.ts:107](https://github.com/ethereumjs/ethereumjs-blockchain/blob/c93b4dd/src/index.ts#L107)_
 
 ---
 
@@ -140,7 +140,7 @@ _Defined in [index.ts:68](https://github.com/ethereumjs/ethereumjs-blockchain/bl
 
 **● validate**: _`boolean`_
 
-_Defined in [index.ts:73](https://github.com/ethereumjs/ethereumjs-blockchain/blob/6e88434/src/index.ts#L73)_
+_Defined in [index.ts:112](https://github.com/ethereumjs/ethereumjs-blockchain/blob/c93b4dd/src/index.ts#L112)_
 
 A flag indicating if this Blockchain validates blocks or not.
 
@@ -154,7 +154,7 @@ A flag indicating if this Blockchain validates blocks or not.
 
 **get meta**(): `object`
 
-_Defined in [index.ts:136](https://github.com/ethereumjs/ethereumjs-blockchain/blob/6e88434/src/index.ts#L136)_
+_Defined in [index.ts:175](https://github.com/ethereumjs/ethereumjs-blockchain/blob/c93b4dd/src/index.ts#L175)_
 
 Returns an object with metadata about the Blockchain. It's defined for backwards compatibility.
 
@@ -170,7 +170,7 @@ Returns an object with metadata about the Blockchain. It's defined for backwards
 
 ▸ **delBlock**(blockHash: _`Buffer`_, cb: _`any`_): `void`
 
-_Defined in [index.ts:762](https://github.com/ethereumjs/ethereumjs-blockchain/blob/6e88434/src/index.ts#L762)_
+_Defined in [index.ts:823](https://github.com/ethereumjs/ethereumjs-blockchain/blob/c93b4dd/src/index.ts#L823)_
 
 Deletes a block from the blockchain. All child blocks in the chain are deleted and any encountered heads are set to the parent block.
 
@@ -191,7 +191,7 @@ Deletes a block from the blockchain. All child blocks in the chain are deleted a
 
 ▸ **getBlock**(blockTag: _`Buffer` \| `number` \| `BN`_, cb: _`any`_): `void`
 
-_Defined in [index.ts:514](https://github.com/ethereumjs/ethereumjs-blockchain/blob/6e88434/src/index.ts#L514)_
+_Defined in [index.ts:560](https://github.com/ethereumjs/ethereumjs-blockchain/blob/c93b4dd/src/index.ts#L560)_
 
 Gets a block by its hash.
 
@@ -212,7 +212,7 @@ Gets a block by its hash.
 
 ▸ **getBlocks**(blockId: _`Buffer` \| `number`_, maxBlocks: _`number`_, skip: _`number`_, reverse: _`boolean`_, cb: _`any`_): `void`
 
-_Defined in [index.ts:534](https://github.com/ethereumjs/ethereumjs-blockchain/blob/6e88434/src/index.ts#L534)_
+_Defined in [index.ts:583](https://github.com/ethereumjs/ethereumjs-blockchain/blob/c93b4dd/src/index.ts#L583)_
 
 Looks up many blocks relative to blockId
 
@@ -236,7 +236,7 @@ Looks up many blocks relative to blockId
 
 ▸ **getDetails**(\_: _`string`_, cb: _`any`_): `void`
 
-_Defined in [index.ts:575](https://github.com/ethereumjs/ethereumjs-blockchain/blob/6e88434/src/index.ts#L575)_
+_Defined in [index.ts:624](https://github.com/ethereumjs/ethereumjs-blockchain/blob/c93b4dd/src/index.ts#L624)_
 
 This method used to return block details by its hash. It's only here for backwards compatibility.
 
@@ -259,7 +259,7 @@ _**deprecated**_:
 
 ▸ **getHead**(name: _`any`_, cb?: _`any`_): `void`
 
-_Defined in [index.ts:228](https://github.com/ethereumjs/ethereumjs-blockchain/blob/6e88434/src/index.ts#L228)_
+_Defined in [index.ts:271](https://github.com/ethereumjs/ethereumjs-blockchain/blob/c93b4dd/src/index.ts#L271)_
 
 Returns the specified iterator head.
 
@@ -280,7 +280,7 @@ Returns the specified iterator head.
 
 ▸ **getLatestBlock**(cb: _`any`_): `void`
 
-_Defined in [index.ts:268](https://github.com/ethereumjs/ethereumjs-blockchain/blob/6e88434/src/index.ts#L268)_
+_Defined in [index.ts:311](https://github.com/ethereumjs/ethereumjs-blockchain/blob/c93b4dd/src/index.ts#L311)_
 
 Returns the latest full block in the canonical chain.
 
@@ -300,7 +300,7 @@ Returns the latest full block in the canonical chain.
 
 ▸ **getLatestHeader**(cb: _`any`_): `void`
 
-_Defined in [index.ts:251](https://github.com/ethereumjs/ethereumjs-blockchain/blob/6e88434/src/index.ts#L251)_
+_Defined in [index.ts:294](https://github.com/ethereumjs/ethereumjs-blockchain/blob/c93b4dd/src/index.ts#L294)_
 
 Returns the latest header in the canonical chain.
 
@@ -320,7 +320,7 @@ Returns the latest header in the canonical chain.
 
 ▸ **iterator**(name: _`string`_, onBlock: _`any`_, cb: _`any`_): `void`
 
-_Defined in [index.ts:890](https://github.com/ethereumjs/ethereumjs-blockchain/blob/6e88434/src/index.ts#L890)_
+_Defined in [index.ts:957](https://github.com/ethereumjs/ethereumjs-blockchain/blob/c93b4dd/src/index.ts#L957)_
 
 Iterates through blocks starting at the specified iterator head and calls the onBlock function on each block. The current location of an iterator head can be retrieved using the `getHead()` method.
 
@@ -342,7 +342,7 @@ Iterates through blocks starting at the specified iterator head and calls the on
 
 ▸ **putBlock**(block: _`object`_, cb: _`any`_, isGenesis?: _`undefined` \| `false` \| `true`_): `void`
 
-_Defined in [index.ts:297](https://github.com/ethereumjs/ethereumjs-blockchain/blob/6e88434/src/index.ts#L297)_
+_Defined in [index.ts:340](https://github.com/ethereumjs/ethereumjs-blockchain/blob/c93b4dd/src/index.ts#L340)_
 
 Adds a block to the blockchain.
 
@@ -364,7 +364,7 @@ Adds a block to the blockchain.
 
 ▸ **putBlocks**(blocks: _`Array`<`any`>_, cb: _`any`_): `void`
 
-_Defined in [index.ts:281](https://github.com/ethereumjs/ethereumjs-blockchain/blob/6e88434/src/index.ts#L281)_
+_Defined in [index.ts:324](https://github.com/ethereumjs/ethereumjs-blockchain/blob/c93b4dd/src/index.ts#L324)_
 
 Adds many blocks to the blockchain.
 
@@ -385,7 +385,7 @@ Adds many blocks to the blockchain.
 
 ▸ **putGenesis**(genesis: _`any`_, cb: _`any`_): `void`
 
-_Defined in [index.ts:218](https://github.com/ethereumjs/ethereumjs-blockchain/blob/6e88434/src/index.ts#L218)_
+_Defined in [index.ts:261](https://github.com/ethereumjs/ethereumjs-blockchain/blob/c93b4dd/src/index.ts#L261)_
 
 Puts the genesis block in the database
 
@@ -406,7 +406,7 @@ Puts the genesis block in the database
 
 ▸ **putHeader**(header: _`object`_, cb: _`any`_): `void`
 
-_Defined in [index.ts:329](https://github.com/ethereumjs/ethereumjs-blockchain/blob/6e88434/src/index.ts#L329)_
+_Defined in [index.ts:372](https://github.com/ethereumjs/ethereumjs-blockchain/blob/c93b4dd/src/index.ts#L372)_
 
 Adds a header to the blockchain.
 
@@ -427,7 +427,7 @@ Adds a header to the blockchain.
 
 ▸ **putHeaders**(headers: _`Array`<`any`>_, cb: _`any`_): `void`
 
-_Defined in [index.ts:313](https://github.com/ethereumjs/ethereumjs-blockchain/blob/6e88434/src/index.ts#L313)_
+_Defined in [index.ts:356](https://github.com/ethereumjs/ethereumjs-blockchain/blob/c93b4dd/src/index.ts#L356)_
 
 Adds many headers to the blockchain.
 
@@ -448,7 +448,7 @@ Adds many headers to the blockchain.
 
 ▸ **selectNeededHashes**(hashes: _`Array`<`any`>_, cb: _`any`_): `void`
 
-_Defined in [index.ts:585](https://github.com/ethereumjs/ethereumjs-blockchain/blob/6e88434/src/index.ts#L585)_
+_Defined in [index.ts:634](https://github.com/ethereumjs/ethereumjs-blockchain/blob/c93b4dd/src/index.ts#L634)_
 
 Given an ordered array, returns to the callback an array of hashes that are not in the blockchain yet.
 
