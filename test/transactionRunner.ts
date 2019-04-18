@@ -1,4 +1,4 @@
-import Tx from '../src/index'
+import Tx from '../src/transaction'
 import * as tape from 'tape'
 import { toBuffer } from 'ethereumjs-util'
 import * as minimist from 'minimist'

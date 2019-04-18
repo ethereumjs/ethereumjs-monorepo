@@ -1,7 +1,7 @@
 import * as tape from 'tape'
 import { rlp, zeros, privateToPublic, toBuffer } from 'ethereumjs-util'
 
-import Transaction from '../src/index'
+import Transaction from '../src/transaction'
 import { TxsJsonEntry, VitaliksTestsDataEntry } from './types'
 
 const txFixtures: TxsJsonEntry[] = require('./txs.json')

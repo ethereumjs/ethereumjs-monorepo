@@ -1,7 +1,7 @@
 import { toBuffer } from 'ethereumjs-util'
 import { Buffer } from 'buffer'
 import { BufferLike, FakeTxData, PrefixedHexString, TransactionOptions } from './types'
-import Transaction from './index'
+import Transaction from './transaction'
 
 /**
  * Creates a new transaction object that doesn't need to be signed.
