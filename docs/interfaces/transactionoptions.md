@@ -26,7 +26,7 @@ The transaction's options. This could be specified using a Common object, or `ch
 
 **● chain**: _`number` \| `string`_
 
-_Defined in [types.ts:99](https://github.com/ethereumjs/ethereumjs-tx/blob/eece5af/src/types.ts#L99)_
+_Defined in [types.ts:99](https://github.com/alcuadrado/ethereumjs-tx/blob/84f5b82/src/types.ts#L99)_
 
 The chain of the transaction.
 
@@ -38,7 +38,7 @@ The chain of the transaction.
 
 **● common**: _`Common`_
 
-_Defined in [types.ts:94](https://github.com/ethereumjs/ethereumjs-tx/blob/eece5af/src/types.ts#L94)_
+_Defined in [types.ts:94](https://github.com/alcuadrado/ethereumjs-tx/blob/84f5b82/src/types.ts#L94)_
 
 A Common object defining the chain and the hardfork a transaction belongs to.
 
@@ -50,7 +50,7 @@ A Common object defining the chain and the hardfork a transaction belongs to.
 
 **● hardfork**: _`undefined` \| `string`_
 
-_Defined in [types.ts:104](https://github.com/ethereumjs/ethereumjs-tx/blob/eece5af/src/types.ts#L104)_
+_Defined in [types.ts:104](https://github.com/alcuadrado/ethereumjs-tx/blob/84f5b82/src/types.ts#L104)_
 
 The hardfork of the transaction.
 

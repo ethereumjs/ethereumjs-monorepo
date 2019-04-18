@@ -24,7 +24,7 @@ Any object that can be transformed into a `Buffer`
 
 ▸ **toBuffer**(): `Buffer`
 
-_Defined in [types.ts:8](https://github.com/ethereumjs/ethereumjs-tx/blob/eece5af/src/types.ts#L8)_
+_Defined in [types.ts:8](https://github.com/alcuadrado/ethereumjs-tx/blob/84f5b82/src/types.ts#L8)_
 
 **Returns:** `Buffer`
 

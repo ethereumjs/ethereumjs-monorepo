@@ -58,7 +58,7 @@ An Ethereum transaction.
 
 ⊕ **new Transaction**(data?: _`Buffer` \| [PrefixedHexString](../#prefixedhexstring) \| [BufferLike](../#bufferlike)[] \| [TxData](../interfaces/txdata.md)_, opts?: _[TransactionOptions](../interfaces/transactionoptions.md)_): [Transaction](transaction.md)
 
-_Defined in [index.ts:37](https://github.com/ethereumjs/ethereumjs-tx/blob/eece5af/src/index.ts#L37)_
+_Defined in [transaction.ts:37](https://github.com/alcuadrado/ethereumjs-tx/blob/84f5b82/src/transaction.ts#L37)_
 
 Creates a new transaction from an object with its fields' values.
 
@@ -98,7 +98,7 @@ const tx = new Transaction(txData)
 
 **● \_chainId**: _`number`_
 
-_Defined in [index.ts:35](https://github.com/ethereumjs/ethereumjs-tx/blob/eece5af/src/index.ts#L35)_
+_Defined in [transaction.ts:35](https://github.com/alcuadrado/ethereumjs-tx/blob/84f5b82/src/transaction.ts#L35)_
 
 ---
 
@@ -108,7 +108,7 @@ _Defined in [index.ts:35](https://github.com/ethereumjs/ethereumjs-tx/blob/eece5
 
 **● \_common**: _`Common`_
 
-_Defined in [index.ts:34](https://github.com/ethereumjs/ethereumjs-tx/blob/eece5af/src/index.ts#L34)_
+_Defined in [transaction.ts:34](https://github.com/alcuadrado/ethereumjs-tx/blob/84f5b82/src/transaction.ts#L34)_
 
 ---
 
@@ -118,7 +118,7 @@ _Defined in [index.ts:34](https://github.com/ethereumjs/ethereumjs-tx/blob/eece5
 
 **● \_from**: _`Buffer`_
 
-_Defined in [index.ts:37](https://github.com/ethereumjs/ethereumjs-tx/blob/eece5af/src/index.ts#L37)_
+_Defined in [transaction.ts:37](https://github.com/alcuadrado/ethereumjs-tx/blob/84f5b82/src/transaction.ts#L37)_
 
 ---
 
@@ -128,7 +128,7 @@ _Defined in [index.ts:37](https://github.com/ethereumjs/ethereumjs-tx/blob/eece5
 
 **● \_senderPubKey**: _`Buffer`_
 
-_Defined in [index.ts:36](https://github.com/ethereumjs/ethereumjs-tx/blob/eece5af/src/index.ts#L36)_
+_Defined in [transaction.ts:36](https://github.com/alcuadrado/ethereumjs-tx/blob/84f5b82/src/transaction.ts#L36)_
 
 ---
 
@@ -138,7 +138,7 @@ _Defined in [index.ts:36](https://github.com/ethereumjs/ethereumjs-tx/blob/eece5
 
 **● data**: _`Buffer`_
 
-_Defined in [index.ts:29](https://github.com/ethereumjs/ethereumjs-tx/blob/eece5af/src/index.ts#L29)_
+_Defined in [transaction.ts:29](https://github.com/alcuadrado/ethereumjs-tx/blob/84f5b82/src/transaction.ts#L29)_
 
 ---
 
@@ -148,7 +148,7 @@ _Defined in [index.ts:29](https://github.com/ethereumjs/ethereumjs-tx/blob/eece5
 
 **● gasLimit**: _`Buffer`_
 
-_Defined in [index.ts:25](https://github.com/ethereumjs/ethereumjs-tx/blob/eece5af/src/index.ts#L25)_
+_Defined in [transaction.ts:25](https://github.com/alcuadrado/ethereumjs-tx/blob/84f5b82/src/transaction.ts#L25)_
 
 ---
 
@@ -158,7 +158,7 @@ _Defined in [index.ts:25](https://github.com/ethereumjs/ethereumjs-tx/blob/eece5
 
 **● gasPrice**: _`Buffer`_
 
-_Defined in [index.ts:26](https://github.com/ethereumjs/ethereumjs-tx/blob/eece5af/src/index.ts#L26)_
+_Defined in [transaction.ts:26](https://github.com/alcuadrado/ethereumjs-tx/blob/84f5b82/src/transaction.ts#L26)_
 
 ---
 
@@ -168,7 +168,7 @@ _Defined in [index.ts:26](https://github.com/ethereumjs/ethereumjs-tx/blob/eece5
 
 **● nonce**: _`Buffer`_
 
-_Defined in [index.ts:24](https://github.com/ethereumjs/ethereumjs-tx/blob/eece5af/src/index.ts#L24)_
+_Defined in [transaction.ts:24](https://github.com/alcuadrado/ethereumjs-tx/blob/84f5b82/src/transaction.ts#L24)_
 
 ---
 
@@ -178,7 +178,7 @@ _Defined in [index.ts:24](https://github.com/ethereumjs/ethereumjs-tx/blob/eece5
 
 **● r**: _`Buffer`_
 
-_Defined in [index.ts:31](https://github.com/ethereumjs/ethereumjs-tx/blob/eece5af/src/index.ts#L31)_
+_Defined in [transaction.ts:31](https://github.com/alcuadrado/ethereumjs-tx/blob/84f5b82/src/transaction.ts#L31)_
 
 ---
 
@@ -188,7 +188,7 @@ _Defined in [index.ts:31](https://github.com/ethereumjs/ethereumjs-tx/blob/eece5
 
 **● raw**: _`Buffer`[]_
 
-_Defined in [index.ts:23](https://github.com/ethereumjs/ethereumjs-tx/blob/eece5af/src/index.ts#L23)_
+_Defined in [transaction.ts:23](https://github.com/alcuadrado/ethereumjs-tx/blob/84f5b82/src/transaction.ts#L23)_
 
 ---
 
@@ -198,7 +198,7 @@ _Defined in [index.ts:23](https://github.com/ethereumjs/ethereumjs-tx/blob/eece5
 
 **● s**: _`Buffer`_
 
-_Defined in [index.ts:32](https://github.com/ethereumjs/ethereumjs-tx/blob/eece5af/src/index.ts#L32)_
+_Defined in [transaction.ts:32](https://github.com/alcuadrado/ethereumjs-tx/blob/84f5b82/src/transaction.ts#L32)_
 
 ---
 
@@ -208,7 +208,7 @@ _Defined in [index.ts:32](https://github.com/ethereumjs/ethereumjs-tx/blob/eece5
 
 **● to**: _`Buffer`_
 
-_Defined in [index.ts:27](https://github.com/ethereumjs/ethereumjs-tx/blob/eece5af/src/index.ts#L27)_
+_Defined in [transaction.ts:27](https://github.com/alcuadrado/ethereumjs-tx/blob/84f5b82/src/transaction.ts#L27)_
 
 ---
 
@@ -218,7 +218,7 @@ _Defined in [index.ts:27](https://github.com/ethereumjs/ethereumjs-tx/blob/eece5
 
 **● v**: _`Buffer`_
 
-_Defined in [index.ts:30](https://github.com/ethereumjs/ethereumjs-tx/blob/eece5af/src/index.ts#L30)_
+_Defined in [transaction.ts:30](https://github.com/alcuadrado/ethereumjs-tx/blob/84f5b82/src/transaction.ts#L30)_
 
 ---
 
@@ -228,7 +228,7 @@ _Defined in [index.ts:30](https://github.com/ethereumjs/ethereumjs-tx/blob/eece5
 
 **● value**: _`Buffer`_
 
-_Defined in [index.ts:28](https://github.com/ethereumjs/ethereumjs-tx/blob/eece5af/src/index.ts#L28)_
+_Defined in [transaction.ts:28](https://github.com/alcuadrado/ethereumjs-tx/blob/84f5b82/src/transaction.ts#L28)_
 
 ---
 
@@ -240,7 +240,7 @@ _Defined in [index.ts:28](https://github.com/ethereumjs/ethereumjs-tx/blob/eece5
 
 ▸ **getBaseFee**(): `BN`
 
-_Defined in [index.ts:314](https://github.com/ethereumjs/ethereumjs-tx/blob/eece5af/src/index.ts#L314)_
+_Defined in [transaction.ts:314](https://github.com/alcuadrado/ethereumjs-tx/blob/84f5b82/src/transaction.ts#L314)_
 
 the minimum amount of gas the tx must have (DataFee + TxFee + Creation Fee)
 
@@ -254,7 +254,7 @@ the minimum amount of gas the tx must have (DataFee + TxFee + Creation Fee)
 
 ▸ **getChainId**(): `number`
 
-_Defined in [index.ts:228](https://github.com/ethereumjs/ethereumjs-tx/blob/eece5af/src/index.ts#L228)_
+_Defined in [transaction.ts:228](https://github.com/alcuadrado/ethereumjs-tx/blob/84f5b82/src/transaction.ts#L228)_
 
 returns chain ID
 
@@ -268,7 +268,7 @@ returns chain ID
 
 ▸ **getDataFee**(): `BN`
 
-_Defined in [index.ts:300](https://github.com/ethereumjs/ethereumjs-tx/blob/eece5af/src/index.ts#L300)_
+_Defined in [transaction.ts:300](https://github.com/alcuadrado/ethereumjs-tx/blob/84f5b82/src/transaction.ts#L300)_
 
 The amount of gas paid for the data in this tx
 
@@ -282,7 +282,7 @@ The amount of gas paid for the data in this tx
 
 ▸ **getSenderAddress**(): `Buffer`
 
-_Defined in [index.ts:235](https://github.com/ethereumjs/ethereumjs-tx/blob/eece5af/src/index.ts#L235)_
+_Defined in [transaction.ts:235](https://github.com/alcuadrado/ethereumjs-tx/blob/84f5b82/src/transaction.ts#L235)_
 
 returns the sender's address
 
@@ -296,7 +296,7 @@ returns the sender's address
 
 ▸ **getSenderPublicKey**(): `Buffer`
 
-_Defined in [index.ts:247](https://github.com/ethereumjs/ethereumjs-tx/blob/eece5af/src/index.ts#L247)_
+_Defined in [transaction.ts:247](https://github.com/alcuadrado/ethereumjs-tx/blob/84f5b82/src/transaction.ts#L247)_
 
 returns the public key of the sender
 
@@ -310,7 +310,7 @@ returns the public key of the sender
 
 ▸ **getUpfrontCost**(): `BN`
 
-_Defined in [index.ts:325](https://github.com/ethereumjs/ethereumjs-tx/blob/eece5af/src/index.ts#L325)_
+_Defined in [transaction.ts:325](https://github.com/alcuadrado/ethereumjs-tx/blob/84f5b82/src/transaction.ts#L325)_
 
 the up front amount that an account must have for this transaction to be valid
 
@@ -324,7 +324,7 @@ the up front amount that an account must have for this transaction to be valid
 
 ▸ **hash**(includeSignature?: _`boolean`_): `Buffer`
 
-_Defined in [index.ts:189](https://github.com/ethereumjs/ethereumjs-tx/blob/eece5af/src/index.ts#L189)_
+_Defined in [transaction.ts:189](https://github.com/alcuadrado/ethereumjs-tx/blob/84f5b82/src/transaction.ts#L189)_
 
 Computes a sha3-256 hash of the serialized tx
 
@@ -344,7 +344,7 @@ Computes a sha3-256 hash of the serialized tx
 
 ▸ **serialize**(): `Buffer`
 
-_Defined in [index.ts:355](https://github.com/ethereumjs/ethereumjs-tx/blob/eece5af/src/index.ts#L355)_
+_Defined in [transaction.ts:355](https://github.com/alcuadrado/ethereumjs-tx/blob/84f5b82/src/transaction.ts#L355)_
 
 Returns the rlp encoding of the transaction
 
@@ -358,7 +358,7 @@ Returns the rlp encoding of the transaction
 
 ▸ **sign**(privateKey: _`Buffer`_): `void`
 
-_Defined in [index.ts:288](https://github.com/ethereumjs/ethereumjs-tx/blob/eece5af/src/index.ts#L288)_
+_Defined in [transaction.ts:288](https://github.com/alcuadrado/ethereumjs-tx/blob/84f5b82/src/transaction.ts#L288)_
 
 sign a transaction with a given private key
 
@@ -378,7 +378,7 @@ sign a transaction with a given private key
 
 ▸ **toCreationAddress**(): `boolean`
 
-_Defined in [index.ts:181](https://github.com/ethereumjs/ethereumjs-tx/blob/eece5af/src/index.ts#L181)_
+_Defined in [transaction.ts:181](https://github.com/alcuadrado/ethereumjs-tx/blob/84f5b82/src/transaction.ts#L181)_
 
 If the tx's `to` is to the creation address
 
@@ -396,13 +396,13 @@ If the tx's `to` is to the creation address
 
 ▸ **validate**(stringError: _`true`_): `string`
 
-_Defined in [index.ts:332](https://github.com/ethereumjs/ethereumjs-tx/blob/eece5af/src/index.ts#L332)_
+_Defined in [transaction.ts:332](https://github.com/alcuadrado/ethereumjs-tx/blob/84f5b82/src/transaction.ts#L332)_
 
 Validates the signature and checks to see if it has enough gas.
 
 **Returns:** `boolean`
 
-_Defined in [index.ts:333](https://github.com/ethereumjs/ethereumjs-tx/blob/eece5af/src/index.ts#L333)_
+_Defined in [transaction.ts:333](https://github.com/alcuadrado/ethereumjs-tx/blob/84f5b82/src/transaction.ts#L333)_
 
 **Parameters:**
 
@@ -412,7 +412,7 @@ _Defined in [index.ts:333](https://github.com/ethereumjs/ethereumjs-tx/blob/eece
 
 **Returns:** `boolean`
 
-_Defined in [index.ts:334](https://github.com/ethereumjs/ethereumjs-tx/blob/eece5af/src/index.ts#L334)_
+_Defined in [transaction.ts:334](https://github.com/alcuadrado/ethereumjs-tx/blob/84f5b82/src/transaction.ts#L334)_
 
 **Parameters:**
 
@@ -430,7 +430,7 @@ _Defined in [index.ts:334](https://github.com/ethereumjs/ethereumjs-tx/blob/eece
 
 ▸ **verifySignature**(): `boolean`
 
-_Defined in [index.ts:259](https://github.com/ethereumjs/ethereumjs-tx/blob/eece5af/src/index.ts#L259)_
+_Defined in [transaction.ts:259](https://github.com/alcuadrado/ethereumjs-tx/blob/84f5b82/src/transaction.ts#L259)_
 
 Determines if the signature is valid
 
