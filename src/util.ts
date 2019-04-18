@@ -44,6 +44,9 @@ const bodyKey = (n: BN, hash: Buffer) => Buffer.concat([bodyPrefix, bufBE8(n), h
 const numberToHashKey = (n: BN) => Buffer.concat([headerPrefix, bufBE8(n), numSuffix])
 const hashToNumberKey = (hash: Buffer) => Buffer.concat([blockHashPrefix, hash])
 
+/**
+ * @hidden
+ */
 export {
   headsKey,
   headHeaderKey,

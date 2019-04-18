@@ -21,16 +21,16 @@ const level = require('level-mem')
 const semaphore = require('semaphore')
 
 export default class Blockchain {
-  _common: any
-  _genesis: any
-  _headBlock: any
-  _headHeader: any
-  _heads: any
-  _initDone: boolean
-  _initLock: any
-  _putSemaphore: any
-  _staleHeadBlock: any
-  _staleHeads: any
+  private _common: Common
+  private _genesis: any
+  private _headBlock: any
+  private _headHeader: any
+  private _heads: any
+  private _initDone: boolean
+  private _initLock: any
+  private _putSemaphore: any
+  private _staleHeadBlock: any
+  private _staleHeads: any
 
   db: any
   dbManager: DBManager
@@ -91,7 +91,7 @@ export default class Blockchain {
    * hashes of the headerchain head, blockchain head, genesis block and iterator
    * heads.
    */
-  _init(cb: any): void {
+  private _init(cb: any): void {
     const self = this
 
     async.waterfall(
@@ -148,7 +148,7 @@ export default class Blockchain {
   /**
    * Sets the default genesis block
    */
-  _setCanonicalGenesisBlock(cb: any): void {
+  private _setCanonicalGenesisBlock(cb: any): void {
     const genesisBlock = new Block(null, { common: this._common })
     genesisBlock.setGenesisParams()
     this._putBlockOrHeader(genesisBlock, cb, true)
@@ -259,7 +259,7 @@ export default class Blockchain {
     })
   }
 
-  _putBlockOrHeader(item: any, cb: any, isGenesis?: boolean) {
+  private _putBlockOrHeader(item: any, cb: any, isGenesis?: boolean) {
     const self = this
     const isHeader = item instanceof Block.Header
     let block = isHeader ? new Block([item.raw, [], []], { common: item._common }) : item
@@ -523,7 +523,7 @@ export default class Blockchain {
     )
   }
 
-  _saveHeadOps() {
+  private _saveHeadOps() {
     return [
       {
         type: 'put',
@@ -549,14 +549,14 @@ export default class Blockchain {
     ]
   }
 
-  _saveHeads(cb: any) {
+  private _saveHeads(cb: any) {
     this._batchDbOps(this._saveHeadOps(), cb)
   }
 
   /**
    * Delete canonical number assignments for specified number and above
    */
-  _deleteStaleAssignments(number: BN, headHash: Buffer, ops: any, cb: any) {
+  private _deleteStaleAssignments(number: BN, headHash: Buffer, ops: any, cb: any) {
     const key = numberToHashKey(number)
 
     this._numberToHash(number, (err?: any, hash?: Buffer) => {
@@ -586,7 +586,7 @@ export default class Blockchain {
   }
 
   // overwrite stale canonical number assignments
-  _rebuildCanonical(header: any, ops: any, cb: any) {
+  private _rebuildCanonical(header: any, ops: any, cb: any) {
     const self = this
     const hash = header.hash()
     const number = new BN(header.number)
@@ -677,7 +677,7 @@ export default class Blockchain {
     })
   }
 
-  _delBlock(blockHash: Buffer | typeof Block, cb: any) {
+  private _delBlock(blockHash: Buffer | typeof Block, cb: any) {
     const self = this
     const dbOps: any[] = []
     let blockHeader = null
@@ -734,7 +734,7 @@ export default class Blockchain {
     }
   }
 
-  _delChild(hash: Buffer, number: BN, headHash: Buffer, ops: any, cb: any) {
+  private _delChild(hash: Buffer, number: BN, headHash: Buffer, ops: any, cb: any) {
     const self = this
 
     // delete header, body, hash to number mapping and td
@@ -798,7 +798,7 @@ export default class Blockchain {
     })
   }
 
-  _iterator(name: string, func: any, cb: any) {
+  private _iterator(name: string, func: any, cb: any) {
     const self = this
     const blockHash = self._heads[name] || self._genesis
     let blockNumber: any
@@ -851,28 +851,28 @@ export default class Blockchain {
   /**
    * Executes multiple db operations in a single batch call
    */
-  _batchDbOps(dbOps: any, cb: any): void {
+  private _batchDbOps(dbOps: any, cb: any): void {
     util.callbackify(this.dbManager.batch.bind(this.dbManager))(dbOps, cb)
   }
 
   /**
    * Performs a block hash to block number lookup
    */
-  _hashToNumber(hash: Buffer, cb: any): void {
+  private _hashToNumber(hash: Buffer, cb: any): void {
     util.callbackify(this.dbManager.hashToNumber.bind(this.dbManager))(hash, cb)
   }
 
   /**
    * Performs a block number to block hash lookup
    */
-  _numberToHash(number: BN, cb: any): void {
+  private _numberToHash(number: BN, cb: any): void {
     util.callbackify(this.dbManager.numberToHash.bind(this.dbManager))(number, cb)
   }
 
   /**
    * Helper function to lookup a block by either hash only or a hash and number pair
    */
-  _lookupByHashNumber(hash: Buffer, number: BN, cb: any, next: any): void {
+  private _lookupByHashNumber(hash: Buffer, number: BN, cb: any, next: any): void {
     if (typeof number === 'function') {
       cb = number
       return this._hashToNumber(hash, (err?: any, number?: BN) => {
@@ -888,7 +888,7 @@ export default class Blockchain {
   /**
    * Gets a header by hash and number. Header can exist outside the canonical chain
    */
-  _getHeader(hash: Buffer, number: any, cb?: any): void {
+  private _getHeader(hash: Buffer, number: any, cb?: any): void {
     this._lookupByHashNumber(
       hash,
       number,
@@ -905,7 +905,7 @@ export default class Blockchain {
   /**
    * Gets a header by number. Header must be in the canonical chain
    */
-  _getCanonicalHeader(number: BN, cb: any): void {
+  private _getCanonicalHeader(number: BN, cb: any): void {
     this._numberToHash(number, (err: Error | undefined, hash: Buffer) => {
       if (err) {
         return cb(err)
@@ -917,7 +917,7 @@ export default class Blockchain {
   /**
    * Gets total difficulty for a block specified by hash and number
    */
-  _getTd(hash: any, number: any, cb?: any): void {
+  private _getTd(hash: any, number: any, cb?: any): void {
     this._lookupByHashNumber(
       hash,
       number,
@@ -931,7 +931,7 @@ export default class Blockchain {
     )
   }
 
-  _lockUnlock(fn: any, cb: any): void {
+  private _lockUnlock(fn: any, cb: any): void {
     const self = this
     this._putSemaphore.take(() => {
       fn(after)
