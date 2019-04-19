@@ -12,11 +12,11 @@ This are the options that the Blockchain constructor can receive.
 
 ### Properties
 
-* [chain](blockchainoptions.md#chain)
-* [common](blockchainoptions.md#common)
-* [db](blockchainoptions.md#db)
-* [hardfork](blockchainoptions.md#hardfork)
-* [validate](blockchainoptions.md#validate)
+- [chain](blockchainoptions.md#chain)
+- [common](blockchainoptions.md#common)
+- [db](blockchainoptions.md#db)
+- [hardfork](blockchainoptions.md#hardfork)
+- [validate](blockchainoptions.md#validate)
 
 ---
 
@@ -26,55 +26,58 @@ This are the options that the Blockchain constructor can receive.
 
 ### `<Optional>` chain
 
-**● chain**: *`string` \| `number`*
+**● chain**: _`string` \| `number`_
 
-*Defined in [index.ts:30](https://github.com/ethereumjs/ethereumjs-blockchain/blob/8190375/src/index.ts#L30)*
+_Defined in [index.ts:30](https://github.com/ethereumjs/ethereumjs-blockchain/blob/8190375/src/index.ts#L30)_
 
 The chain id or name. Default: `"mainnet"`.
 
-___
+---
+
 <a id="common"></a>
 
 ### `<Optional>` common
 
-**● common**: *`Common`*
+**● common**: _`Common`_
 
-*Defined in [index.ts:41](https://github.com/ethereumjs/ethereumjs-blockchain/blob/8190375/src/index.ts#L41)*
+_Defined in [index.ts:41](https://github.com/ethereumjs/ethereumjs-blockchain/blob/8190375/src/index.ts#L41)_
 
 An alternative way to specify the chain and hardfork is by passing a Common instance.
 
-___
+---
+
 <a id="db"></a>
 
 ### `<Optional>` db
 
-**● db**: *`any`*
+**● db**: _`any`_
 
-*Defined in [index.ts:47](https://github.com/ethereumjs/ethereumjs-blockchain/blob/8190375/src/index.ts#L47)*
+_Defined in [index.ts:47](https://github.com/ethereumjs/ethereumjs-blockchain/blob/8190375/src/index.ts#L47)_
 
 Database to store blocks and metadata. Should be a [levelup](https://github.com/rvagg/node-levelup) instance.
 
-___
+---
+
 <a id="hardfork"></a>
 
 ### `<Optional>` hardfork
 
-**● hardfork**: *`string` \| `null`*
+**● hardfork**: _`string` \| `null`_
 
-*Defined in [index.ts:36](https://github.com/ethereumjs/ethereumjs-blockchain/blob/8190375/src/index.ts#L36)*
+_Defined in [index.ts:36](https://github.com/ethereumjs/ethereumjs-blockchain/blob/8190375/src/index.ts#L36)_
 
 Hardfork for the blocks. If `undefined` or `null` is passed, it gets computed based on block numbers.
 
-___
+---
+
 <a id="validate"></a>
 
 ### `<Optional>` validate
 
-**● validate**: *`undefined` \| `false` \| `true`*
+**● validate**: _`undefined` \| `false` \| `true`_
 
-*Defined in [index.ts:53](https://github.com/ethereumjs/ethereumjs-blockchain/blob/8190375/src/index.ts#L53)*
+_Defined in [index.ts:53](https://github.com/ethereumjs/ethereumjs-blockchain/blob/8190375/src/index.ts#L53)_
 
 This the flag indicates if blocks should be validated (e.g. Proof-of-Work), latest HF rules supported: `Petersburg`.
 
-___
-
+---

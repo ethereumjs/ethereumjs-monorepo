@@ -1,15 +1,13 @@
-
-#  ethereumjs-blockchain
+# ethereumjs-blockchain
 
 ## Index
 
 ### Classes
 
-* [Blockchain](classes/blockchain.md)
+- [Blockchain](classes/blockchain.md)
 
 ### Interfaces
 
-* [BlockchainOptions](interfaces/blockchainoptions.md)
+- [BlockchainOptions](interfaces/blockchainoptions.md)
 
 ---
-

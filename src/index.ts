@@ -133,11 +133,6 @@ export default class Blockchain {
       this._common = new Common(chain, hardfork)
     }
 
-    // backwards compatibility with older constructor interfaces
-    if (opts.constructor.name === 'LevelUP') {
-      opts = { db: opts }
-    }
-
     // defaults
     this.db = opts.db ? opts.db : level()
     this.dbManager = new DBManager(this.db, this._common)
