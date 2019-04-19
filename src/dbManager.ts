@@ -19,6 +19,7 @@ const Block = require('ethereumjs-block')
 /**
  * Abstraction over a DB to facilitate storing/fetching blockchain-related
  * data, such as blocks and headers, indices, and the head block.
+ * @hidden
  */
 export default class DBManager {
   _cache: { [k: string]: Cache<Buffer> }

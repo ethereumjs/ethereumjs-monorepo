@@ -12,7 +12,7 @@
     "build": "ethereumjs-config-build",
     "coverage": "ethereumjs-config-coverage",
     "coveralls": "ethereumjs-config-coveralls",
-    "docs:build": "typedoc --out docs --mode file --readme none --theme markdown --mdEngine github --excludeNotExported src",
+    "docs:build": "typedoc --out docs --mode file --readme none --theme markdown --mdEngine github --excludeNotExported --excludePrivate src",
     "format": "ethereumjs-config-format",
     "format:fix": "ethereumjs-config-format-fix",
     "tslint": "ethereumjs-config-tslint",
