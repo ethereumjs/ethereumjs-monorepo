@@ -51,16 +51,6 @@ export interface BlockchainOptions {
    * supported: `Petersburg`.
    */
   validate?: boolean
-
-  /**
-   * @deprecated
-   */
-  blockDb?: any
-
-  /**
-   * @deprecated
-   */
-  detailsDb?: any
 }
 
 /**
@@ -129,13 +119,6 @@ export default class Blockchain {
   /**
    * Creates new Blockchain object
    *
-   * **Deprecation note**:
-   *
-   * The old separated DB constructor parameters `opts.blockDB` and `opts.detailsDb` from before the Geth DB-compatible
-   * `v3.0.0` release are deprecated and continued usage is discouraged. When provided `opts.blockDB` will be used as
-   * `opts.db` and `opts.detailsDB` is ignored. On the storage level the DB formats are not compatible and it is not
-   * possible to load an old-format DB state into a post-`v3.0.0` `Blockchain` object.
-   *
    * @param opts - An object with the options that this constructor takes. See [[BlockchainOptions]].
    */
   constructor(opts: BlockchainOptions = {}) {
@@ -154,10 +137,9 @@ export default class Blockchain {
     if (opts.constructor.name === 'LevelUP') {
       opts = { db: opts }
     }
-    this.db = opts.db || opts.blockDb
 
     // defaults
-    this.db = this.db ? this.db : level()
+    this.db = opts.db ? opts.db : level()
     this.dbManager = new DBManager(this.db, this._common)
     this.validate = opts.validate === undefined ? true : opts.validate
     this.ethash = this.validate ? new Ethash(this.db) : null

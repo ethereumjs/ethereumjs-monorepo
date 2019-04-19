@@ -12,35 +12,35 @@ This class stores and interacts with blocks.
 
 ### Constructors
 
-- [constructor](blockchain.md#constructor)
+* [constructor](blockchain.md#constructor)
 
 ### Properties
 
-- [db](blockchain.md#db)
-- [dbManager](blockchain.md#dbmanager)
-- [ethash](blockchain.md#ethash)
-- [validate](blockchain.md#validate)
+* [db](blockchain.md#db)
+* [dbManager](blockchain.md#dbmanager)
+* [ethash](blockchain.md#ethash)
+* [validate](blockchain.md#validate)
 
 ### Accessors
 
-- [meta](blockchain.md#meta)
+* [meta](blockchain.md#meta)
 
 ### Methods
 
-- [delBlock](blockchain.md#delblock)
-- [getBlock](blockchain.md#getblock)
-- [getBlocks](blockchain.md#getblocks)
-- [getDetails](blockchain.md#getdetails)
-- [getHead](blockchain.md#gethead)
-- [getLatestBlock](blockchain.md#getlatestblock)
-- [getLatestHeader](blockchain.md#getlatestheader)
-- [iterator](blockchain.md#iterator)
-- [putBlock](blockchain.md#putblock)
-- [putBlocks](blockchain.md#putblocks)
-- [putGenesis](blockchain.md#putgenesis)
-- [putHeader](blockchain.md#putheader)
-- [putHeaders](blockchain.md#putheaders)
-- [selectNeededHashes](blockchain.md#selectneededhashes)
+* [delBlock](blockchain.md#delblock)
+* [getBlock](blockchain.md#getblock)
+* [getBlocks](blockchain.md#getblocks)
+* [getDetails](blockchain.md#getdetails)
+* [getHead](blockchain.md#gethead)
+* [getLatestBlock](blockchain.md#getlatestblock)
+* [getLatestHeader](blockchain.md#getlatestheader)
+* [iterator](blockchain.md#iterator)
+* [putBlock](blockchain.md#putblock)
+* [putBlocks](blockchain.md#putblocks)
+* [putGenesis](blockchain.md#putgenesis)
+* [putHeader](blockchain.md#putheader)
+* [putHeaders](blockchain.md#putheaders)
+* [selectNeededHashes](blockchain.md#selectneededhashes)
 
 ---
 
@@ -48,385 +48,366 @@ This class stores and interacts with blocks.
 
 <a id="constructor"></a>
 
-### constructor
+###  constructor
 
-⊕ **new Blockchain**(opts?: _[BlockchainOptions](../interfaces/blockchainoptions.md)_): [Blockchain](blockchain.md)
+⊕ **new Blockchain**(opts?: *[BlockchainOptions](../interfaces/blockchainoptions.md)*): [Blockchain](blockchain.md)
 
-_Defined in [index.ts:127](https://github.com/ethereumjs/ethereumjs-blockchain/blob/29a8a30/src/index.ts#L127)_
+*Defined in [index.ts:117](https://github.com/ethereumjs/ethereumjs-blockchain/blob/8190375/src/index.ts#L117)*
 
 Creates new Blockchain object
 
-**Deprecation note**:
-
-The old separated DB constructor parameters `opts.blockDB` and `opts.detailsDb` from before the Geth DB-compatible `v3.0.0` release are deprecated and continued usage is discouraged. When provided `opts.blockDB` will be used as `opts.db` and `opts.detailsDB` is ignored. On the storage level the DB formats are not compatible and it is not possible to load an old-format DB state into a post-`v3.0.0` `Blockchain` object.
-
 **Parameters:**
 
-| Name                 | Type                                                    | Default value | Description                                                                                                          |
-| -------------------- | ------------------------------------------------------- | ------------- | -------------------------------------------------------------------------------------------------------------------- |
-| `Default value` opts | [BlockchainOptions](../interfaces/blockchainoptions.md) | {}            | An object with the options that this constructor takes. See [BlockchainOptions](../interfaces/blockchainoptions.md). |
+| Name | Type | Default value | Description |
+| ------ | ------ | ------ | ------ |
+| `Default value` opts | [BlockchainOptions](../interfaces/blockchainoptions.md) |  {} |  An object with the options that this constructor takes. See [BlockchainOptions](../interfaces/blockchainoptions.md). |
 
 **Returns:** [Blockchain](blockchain.md)
 
----
+___
 
 ## Properties
 
 <a id="db"></a>
 
-### db
+###  db
 
-**● db**: _`any`_
+**● db**: *`any`*
 
-_Defined in [index.ts:120](https://github.com/ethereumjs/ethereumjs-blockchain/blob/29a8a30/src/index.ts#L120)_
+*Defined in [index.ts:110](https://github.com/ethereumjs/ethereumjs-blockchain/blob/8190375/src/index.ts#L110)*
 
----
-
+___
 <a id="dbmanager"></a>
 
-### dbManager
+###  dbManager
 
-**● dbManager**: _`DBManager`_
+**● dbManager**: *`DBManager`*
 
-_Defined in [index.ts:121](https://github.com/ethereumjs/ethereumjs-blockchain/blob/29a8a30/src/index.ts#L121)_
+*Defined in [index.ts:111](https://github.com/ethereumjs/ethereumjs-blockchain/blob/8190375/src/index.ts#L111)*
 
----
-
+___
 <a id="ethash"></a>
 
-### ethash
+###  ethash
 
-**● ethash**: _`any`_
+**● ethash**: *`any`*
 
-_Defined in [index.ts:122](https://github.com/ethereumjs/ethereumjs-blockchain/blob/29a8a30/src/index.ts#L122)_
+*Defined in [index.ts:112](https://github.com/ethereumjs/ethereumjs-blockchain/blob/8190375/src/index.ts#L112)*
 
----
-
+___
 <a id="validate"></a>
 
-### validate
+###  validate
 
-**● validate**: _`boolean`_
+**● validate**: *`boolean`*
 
-_Defined in [index.ts:127](https://github.com/ethereumjs/ethereumjs-blockchain/blob/29a8a30/src/index.ts#L127)_
+*Defined in [index.ts:117](https://github.com/ethereumjs/ethereumjs-blockchain/blob/8190375/src/index.ts#L117)*
 
 A flag indicating if this Blockchain validates blocks or not.
 
----
+___
 
 ## Accessors
 
 <a id="meta"></a>
 
-### meta
+###  meta
 
 **get meta**(): `object`
 
-_Defined in [index.ts:182](https://github.com/ethereumjs/ethereumjs-blockchain/blob/29a8a30/src/index.ts#L182)_
+*Defined in [index.ts:164](https://github.com/ethereumjs/ethereumjs-blockchain/blob/8190375/src/index.ts#L164)*
 
 Returns an object with metadata about the Blockchain. It's defined for backwards compatibility.
 
 **Returns:** `object`
 
----
+___
 
 ## Methods
 
 <a id="delblock"></a>
 
-### delBlock
+###  delBlock
 
-▸ **delBlock**(blockHash: _`Buffer`_, cb: _`any`_): `void`
+▸ **delBlock**(blockHash: *`Buffer`*, cb: *`any`*): `void`
 
-_Defined in [index.ts:830](https://github.com/ethereumjs/ethereumjs-blockchain/blob/29a8a30/src/index.ts#L830)_
+*Defined in [index.ts:812](https://github.com/ethereumjs/ethereumjs-blockchain/blob/8190375/src/index.ts#L812)*
 
 Deletes a block from the blockchain. All child blocks in the chain are deleted and any encountered heads are set to the parent block.
 
 **Parameters:**
 
-| Name      | Type     | Description                         |
-| --------- | -------- | ----------------------------------- |
-| blockHash | `Buffer` | The hash of the block to be deleted |
-| cb        | `any`    | A callback.                         |
+| Name | Type | Description |
+| ------ | ------ | ------ |
+| blockHash | `Buffer` |  The hash of the block to be deleted |
+| cb | `any` |  A callback. |
 
 **Returns:** `void`
 
----
-
+___
 <a id="getblock"></a>
 
-### getBlock
+###  getBlock
 
-▸ **getBlock**(blockTag: _`Buffer` \| `number` \| `BN`_, cb: _`any`_): `void`
+▸ **getBlock**(blockTag: *`Buffer` \| `number` \| `BN`*, cb: *`any`*): `void`
 
-_Defined in [index.ts:567](https://github.com/ethereumjs/ethereumjs-blockchain/blob/29a8a30/src/index.ts#L567)_
+*Defined in [index.ts:549](https://github.com/ethereumjs/ethereumjs-blockchain/blob/8190375/src/index.ts#L549)*
 
 Gets a block by its hash.
 
 **Parameters:**
 
-| Name     | Type                         | Description                                                                                                                                                                                        |
-| -------- | ---------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| blockTag | `Buffer` \| `number` \| `BN` | The block's hash or number                                                                                                                                                                         |
-| cb       | `any`                        | The callback. It is given two parameters \`err\` and the found \`block\` (an instance of [https://github.com/ethereumjs/ethereumjs-block](https://github.com/ethereumjs/ethereumjs-block)) if any. |
+| Name | Type | Description |
+| ------ | ------ | ------ |
+| blockTag | `Buffer` \| `number` \| `BN` |  The block's hash or number |
+| cb | `any` |  The callback. It is given two parameters \`err\` and the found \`block\` (an instance of [https://github.com/ethereumjs/ethereumjs-block](https://github.com/ethereumjs/ethereumjs-block)) if any. |
 
 **Returns:** `void`
 
----
-
+___
 <a id="getblocks"></a>
 
-### getBlocks
+###  getBlocks
 
-▸ **getBlocks**(blockId: _`Buffer` \| `number`_, maxBlocks: _`number`_, skip: _`number`_, reverse: _`boolean`_, cb: _`any`_): `void`
+▸ **getBlocks**(blockId: *`Buffer` \| `number`*, maxBlocks: *`number`*, skip: *`number`*, reverse: *`boolean`*, cb: *`any`*): `void`
 
-_Defined in [index.ts:590](https://github.com/ethereumjs/ethereumjs-blockchain/blob/29a8a30/src/index.ts#L590)_
+*Defined in [index.ts:572](https://github.com/ethereumjs/ethereumjs-blockchain/blob/8190375/src/index.ts#L572)*
 
 Looks up many blocks relative to blockId
 
 **Parameters:**
 
-| Name      | Type                 | Description                                                                       |
-| --------- | -------------------- | --------------------------------------------------------------------------------- |
-| blockId   | `Buffer` \| `number` | The block's hash or number                                                        |
-| maxBlocks | `number`             | Max number of blocks to return                                                    |
-| skip      | `number`             | Number of blocks to skip                                                          |
-| reverse   | `boolean`            | Fetch blocks in reverse                                                           |
-| cb        | `any`                | The callback. It is given two parameters \`err\` and the found \`blocks\` if any. |
+| Name | Type | Description |
+| ------ | ------ | ------ |
+| blockId | `Buffer` \| `number` |  The block's hash or number |
+| maxBlocks | `number` |  Max number of blocks to return |
+| skip | `number` |  Number of blocks to skip |
+| reverse | `boolean` |  Fetch blocks in reverse |
+| cb | `any` |  The callback. It is given two parameters \`err\` and the found \`blocks\` if any. |
 
 **Returns:** `void`
 
----
-
+___
 <a id="getdetails"></a>
 
-### getDetails
+###  getDetails
 
-▸ **getDetails**(\_: _`string`_, cb: _`any`_): `void`
+▸ **getDetails**(_: *`string`*, cb: *`any`*): `void`
 
-_Defined in [index.ts:631](https://github.com/ethereumjs/ethereumjs-blockchain/blob/29a8a30/src/index.ts#L631)_
+*Defined in [index.ts:613](https://github.com/ethereumjs/ethereumjs-blockchain/blob/8190375/src/index.ts#L613)*
 
 This method used to return block details by its hash. It's only here for backwards compatibility.
 
-_**deprecated**_:
+*__deprecated__*: 
 
 **Parameters:**
 
-| Name | Type     |
-| ---- | -------- |
-| \_   | `string` |
-| cb   | `any`    |
+| Name | Type |
+| ------ | ------ |
+| _ | `string` |
+| cb | `any` |
 
 **Returns:** `void`
 
----
-
+___
 <a id="gethead"></a>
 
-### getHead
+###  getHead
 
-▸ **getHead**(name: _`any`_, cb?: _`any`_): `void`
+▸ **getHead**(name: *`any`*, cb?: *`any`*): `void`
 
-_Defined in [index.ts:278](https://github.com/ethereumjs/ethereumjs-blockchain/blob/29a8a30/src/index.ts#L278)_
+*Defined in [index.ts:260](https://github.com/ethereumjs/ethereumjs-blockchain/blob/8190375/src/index.ts#L260)*
 
 Returns the specified iterator head.
 
 **Parameters:**
 
-| Name          | Type  | Description                                                                 |
-| ------------- | ----- | --------------------------------------------------------------------------- |
-| name          | `any` | Optional name of the state root head (default: 'vm')                        |
-| `Optional` cb | `any` | The callback. It is given two parameters \`err\` and the returned \`block\` |
+| Name | Type | Description |
+| ------ | ------ | ------ |
+| name | `any` |  Optional name of the state root head (default: 'vm') |
+| `Optional` cb | `any` |  The callback. It is given two parameters \`err\` and the returned \`block\` |
 
 **Returns:** `void`
 
----
-
+___
 <a id="getlatestblock"></a>
 
-### getLatestBlock
+###  getLatestBlock
 
-▸ **getLatestBlock**(cb: _`any`_): `void`
+▸ **getLatestBlock**(cb: *`any`*): `void`
 
-_Defined in [index.ts:318](https://github.com/ethereumjs/ethereumjs-blockchain/blob/29a8a30/src/index.ts#L318)_
+*Defined in [index.ts:300](https://github.com/ethereumjs/ethereumjs-blockchain/blob/8190375/src/index.ts#L300)*
 
 Returns the latest full block in the canonical chain.
 
 **Parameters:**
 
-| Name | Type  | Description                                                                 |
-| ---- | ----- | --------------------------------------------------------------------------- |
-| cb   | `any` | The callback. It is given two parameters \`err\` and the returned \`block\` |
+| Name | Type | Description |
+| ------ | ------ | ------ |
+| cb | `any` |  The callback. It is given two parameters \`err\` and the returned \`block\` |
 
 **Returns:** `void`
 
----
-
+___
 <a id="getlatestheader"></a>
 
-### getLatestHeader
+###  getLatestHeader
 
-▸ **getLatestHeader**(cb: _`any`_): `void`
+▸ **getLatestHeader**(cb: *`any`*): `void`
 
-_Defined in [index.ts:301](https://github.com/ethereumjs/ethereumjs-blockchain/blob/29a8a30/src/index.ts#L301)_
+*Defined in [index.ts:283](https://github.com/ethereumjs/ethereumjs-blockchain/blob/8190375/src/index.ts#L283)*
 
 Returns the latest header in the canonical chain.
 
 **Parameters:**
 
-| Name | Type  | Description                                                                  |
-| ---- | ----- | ---------------------------------------------------------------------------- |
-| cb   | `any` | The callback. It is given two parameters \`err\` and the returned \`header\` |
+| Name | Type | Description |
+| ------ | ------ | ------ |
+| cb | `any` |  The callback. It is given two parameters \`err\` and the returned \`header\` |
 
 **Returns:** `void`
 
----
-
+___
 <a id="iterator"></a>
 
-### iterator
+###  iterator
 
-▸ **iterator**(name: _`string`_, onBlock: _`any`_, cb: _`any`_): `void`
+▸ **iterator**(name: *`string`*, onBlock: *`any`*, cb: *`any`*): `void`
 
-_Defined in [index.ts:964](https://github.com/ethereumjs/ethereumjs-blockchain/blob/29a8a30/src/index.ts#L964)_
+*Defined in [index.ts:946](https://github.com/ethereumjs/ethereumjs-blockchain/blob/8190375/src/index.ts#L946)*
 
 Iterates through blocks starting at the specified iterator head and calls the onBlock function on each block. The current location of an iterator head can be retrieved using the `getHead()` method.
 
 **Parameters:**
 
-| Name    | Type     | Description                                                  |
-| ------- | -------- | ------------------------------------------------------------ |
-| name    | `string` | Name of the state root head                                  |
-| onBlock | `any`    | Function called on each block with params (block, reorg, cb) |
-| cb      | `any`    | A callback function                                          |
+| Name | Type | Description |
+| ------ | ------ | ------ |
+| name | `string` |  Name of the state root head |
+| onBlock | `any` |  Function called on each block with params (block, reorg, cb) |
+| cb | `any` |  A callback function |
 
 **Returns:** `void`
 
----
-
+___
 <a id="putblock"></a>
 
-### putBlock
+###  putBlock
 
-▸ **putBlock**(block: _`object`_, cb: _`any`_, isGenesis?: _`undefined` \| `false` \| `true`_): `void`
+▸ **putBlock**(block: *`object`*, cb: *`any`*, isGenesis?: *`undefined` \| `false` \| `true`*): `void`
 
-_Defined in [index.ts:347](https://github.com/ethereumjs/ethereumjs-blockchain/blob/29a8a30/src/index.ts#L347)_
+*Defined in [index.ts:329](https://github.com/ethereumjs/ethereumjs-blockchain/blob/8190375/src/index.ts#L329)*
 
 Adds a block to the blockchain.
 
 **Parameters:**
 
-| Name                 | Type                             | Description                                                              |
-| -------------------- | -------------------------------- | ------------------------------------------------------------------------ |
-| block                | `object`                         | The block to be added to the blockchain                                  |
-| cb                   | `any`                            | The callback. It is given two parameters \`err\` and the saved \`block\` |
+| Name | Type | Description |
+| ------ | ------ | ------ |
+| block | `object` |  The block to be added to the blockchain |
+| cb | `any` |  The callback. It is given two parameters \`err\` and the saved \`block\` |
 | `Optional` isGenesis | `undefined` \| `false` \| `true` |
 
 **Returns:** `void`
 
----
-
+___
 <a id="putblocks"></a>
 
-### putBlocks
+###  putBlocks
 
-▸ **putBlocks**(blocks: _`Array`<`any`>_, cb: _`any`_): `void`
+▸ **putBlocks**(blocks: *`Array`<`any`>*, cb: *`any`*): `void`
 
-_Defined in [index.ts:331](https://github.com/ethereumjs/ethereumjs-blockchain/blob/29a8a30/src/index.ts#L331)_
+*Defined in [index.ts:313](https://github.com/ethereumjs/ethereumjs-blockchain/blob/8190375/src/index.ts#L313)*
 
 Adds many blocks to the blockchain.
 
 **Parameters:**
 
-| Name   | Type           | Description                                                                           |
-| ------ | -------------- | ------------------------------------------------------------------------------------- |
-| blocks | `Array`<`any`> | The blocks to be added to the blockchain                                              |
-| cb     | `any`          | The callback. It is given two parameters \`err\` and the last of the saved \`blocks\` |
+| Name | Type | Description |
+| ------ | ------ | ------ |
+| blocks | `Array`<`any`> |  The blocks to be added to the blockchain |
+| cb | `any` |  The callback. It is given two parameters \`err\` and the last of the saved \`blocks\` |
 
 **Returns:** `void`
 
----
-
+___
 <a id="putgenesis"></a>
 
-### putGenesis
+###  putGenesis
 
-▸ **putGenesis**(genesis: _`any`_, cb: _`any`_): `void`
+▸ **putGenesis**(genesis: *`any`*, cb: *`any`*): `void`
 
-_Defined in [index.ts:268](https://github.com/ethereumjs/ethereumjs-blockchain/blob/29a8a30/src/index.ts#L268)_
+*Defined in [index.ts:250](https://github.com/ethereumjs/ethereumjs-blockchain/blob/8190375/src/index.ts#L250)*
 
 Puts the genesis block in the database
 
 **Parameters:**
 
-| Name    | Type  | Description                                                              |
-| ------- | ----- | ------------------------------------------------------------------------ |
-| genesis | `any` | The genesis block to be added                                            |
-| cb      | `any` | The callback. It is given two parameters \`err\` and the saved \`block\` |
+| Name | Type | Description |
+| ------ | ------ | ------ |
+| genesis | `any` |  The genesis block to be added |
+| cb | `any` |  The callback. It is given two parameters \`err\` and the saved \`block\` |
 
 **Returns:** `void`
 
----
-
+___
 <a id="putheader"></a>
 
-### putHeader
+###  putHeader
 
-▸ **putHeader**(header: _`object`_, cb: _`any`_): `void`
+▸ **putHeader**(header: *`object`*, cb: *`any`*): `void`
 
-_Defined in [index.ts:379](https://github.com/ethereumjs/ethereumjs-blockchain/blob/29a8a30/src/index.ts#L379)_
+*Defined in [index.ts:361](https://github.com/ethereumjs/ethereumjs-blockchain/blob/8190375/src/index.ts#L361)*
 
 Adds a header to the blockchain.
 
 **Parameters:**
 
-| Name   | Type     | Description                                                               |
-| ------ | -------- | ------------------------------------------------------------------------- |
-| header | `object` | The header to be added to the blockchain                                  |
-| cb     | `any`    | The callback. It is given two parameters \`err\` and the saved \`header\` |
+| Name | Type | Description |
+| ------ | ------ | ------ |
+| header | `object` |  The header to be added to the blockchain |
+| cb | `any` |  The callback. It is given two parameters \`err\` and the saved \`header\` |
 
 **Returns:** `void`
 
----
-
+___
 <a id="putheaders"></a>
 
-### putHeaders
+###  putHeaders
 
-▸ **putHeaders**(headers: _`Array`<`any`>_, cb: _`any`_): `void`
+▸ **putHeaders**(headers: *`Array`<`any`>*, cb: *`any`*): `void`
 
-_Defined in [index.ts:363](https://github.com/ethereumjs/ethereumjs-blockchain/blob/29a8a30/src/index.ts#L363)_
+*Defined in [index.ts:345](https://github.com/ethereumjs/ethereumjs-blockchain/blob/8190375/src/index.ts#L345)*
 
 Adds many headers to the blockchain.
 
 **Parameters:**
 
-| Name    | Type           | Description                                                                            |
-| ------- | -------------- | -------------------------------------------------------------------------------------- |
-| headers | `Array`<`any`> | The headers to be added to the blockchain                                              |
-| cb      | `any`          | The callback. It is given two parameters \`err\` and the last of the saved \`headers\` |
+| Name | Type | Description |
+| ------ | ------ | ------ |
+| headers | `Array`<`any`> |  The headers to be added to the blockchain |
+| cb | `any` |  The callback. It is given two parameters \`err\` and the last of the saved \`headers\` |
 
 **Returns:** `void`
 
----
-
+___
 <a id="selectneededhashes"></a>
 
-### selectNeededHashes
+###  selectNeededHashes
 
-▸ **selectNeededHashes**(hashes: _`Array`<`any`>_, cb: _`any`_): `void`
+▸ **selectNeededHashes**(hashes: *`Array`<`any`>*, cb: *`any`*): `void`
 
-_Defined in [index.ts:641](https://github.com/ethereumjs/ethereumjs-blockchain/blob/29a8a30/src/index.ts#L641)_
+*Defined in [index.ts:623](https://github.com/ethereumjs/ethereumjs-blockchain/blob/8190375/src/index.ts#L623)*
 
 Given an ordered array, returns to the callback an array of hashes that are not in the blockchain yet.
 
 **Parameters:**
 
-| Name   | Type           | Description                                                        |
-| ------ | -------------- | ------------------------------------------------------------------ |
-| hashes | `Array`<`any`> | Ordered array of hashes                                            |
-| cb     | `any`          | The callback. It is given two parameters \`err\` and hashes found. |
+| Name | Type | Description |
+| ------ | ------ | ------ |
+| hashes | `Array`<`any`> |  Ordered array of hashes |
+| cb | `any` |  The callback. It is given two parameters \`err\` and hashes found. |
 
 **Returns:** `void`
 
----
+___
+
