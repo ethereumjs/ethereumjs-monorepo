@@ -1,9 +1,10 @@
-const utils = require('ethereumjs-util')
-const BN = utils.BN
+import BN = require('bn.js')
+import { setLengthRight } from 'ethereumjs-util'
+import { PrecompileInput, PrecompileResult, OOGResult } from './types'
 const error = require('../../exceptions.js').ERROR
 const assert = require('assert')
 
-function multComplexity (x) {
+function multComplexity (x: BN): BN {
   var fac1
   var fac2
   if (x.lten(64)) {
@@ -21,7 +22,7 @@ function multComplexity (x) {
   }
 }
 
-function getAdjustedExponentLength (data) {
+function getAdjustedExponentLength (data: Buffer): BN {
   var expBytesStart
   try {
     var baseLen = new BN(data.slice(0, 32)).toNumber()
@@ -31,18 +32,18 @@ function getAdjustedExponentLength (data) {
   }
   var expLen = new BN(data.slice(32, 64))
   var firstExpBytes = Buffer.from(data.slice(expBytesStart, expBytesStart + 32)) // first word of the exponent data
-  firstExpBytes = utils.setLengthRight(firstExpBytes, 32) // reading past the data reads virtual zeros
-  firstExpBytes = new BN(firstExpBytes)
+  firstExpBytes = setLengthRight(firstExpBytes, 32) // reading past the data reads virtual zeros
+  let firstExpBN = new BN(firstExpBytes)
   var max32expLen = 0
   if (expLen.ltn(32)) {
     max32expLen = 32 - expLen.toNumber()
   }
-  firstExpBytes = firstExpBytes.shrn(8 * Math.max(max32expLen, 0))
+  firstExpBN = firstExpBN.shrn(8 * Math.max(max32expLen, 0))
 
   var bitLen = -1
-  while (firstExpBytes.gtn(0)) {
+  while (firstExpBN.gtn(0)) {
     bitLen = bitLen + 1
-    firstExpBytes = firstExpBytes.ushrn(1)
+    firstExpBN = firstExpBN.ushrn(1)
   }
   var expLenMinus32OrZero = expLen.subn(32)
   if (expLenMinus32OrZero.ltn(0)) {
@@ -56,7 +57,7 @@ function getAdjustedExponentLength (data) {
   return adjustedExpLen
 }
 
-function expmod (B, E, M) {
+function expmod (B: BN, E: BN, M: BN): BN {
   if (E.isZero()) return new BN(1).mod(M)
   // Red asserts M > 1
   if (M.lten(1)) return new BN(0)
@@ -66,97 +67,79 @@ function expmod (B, E, M) {
   return res.fromRed()
 }
 
-function getOOGResults (opts, results) {
-  results.return = Buffer.alloc(0)
-  results.gasUsed = opts.gasLimit
-  results.exception = 0 // 0 means VM fail (in this case because of OOG)
-  results.exceptionError = error.OUT_OF_GAS
-  return results
-}
-
-module.exports = function (opts) {
+export default function (opts: PrecompileInput): PrecompileResult {
   assert(opts.data)
 
-  var results = {}
-  var data = opts.data
+  const data = opts.data
 
-  var adjustedELen = getAdjustedExponentLength(data)
+  let adjustedELen = getAdjustedExponentLength(data)
   if (adjustedELen.ltn(1)) {
     adjustedELen = new BN(1)
   }
 
-  var bLen = new BN(data.slice(0, 32))
-  var eLen = new BN(data.slice(32, 64))
-  var mLen = new BN(data.slice(64, 96))
+  const bLen = new BN(data.slice(0, 32))
+  const eLen = new BN(data.slice(32, 64))
+  const mLen = new BN(data.slice(64, 96))
 
-  var maxLen = bLen
+  let maxLen = bLen
   if (maxLen.lt(mLen)) {
     maxLen = mLen
   }
   const Gquaddivisor = opts._common.param('gasPrices', 'modexpGquaddivisor')
-  var gasUsed = adjustedELen.mul(multComplexity(maxLen)).divn(Gquaddivisor)
+  const gasUsed = adjustedELen.mul(multComplexity(maxLen)).divn(Gquaddivisor)
 
   if (opts.gasLimit.lt(gasUsed)) {
-    return getOOGResults(opts, results)
+    return OOGResult(opts.gasLimit)
   }
 
-  results.gasUsed = gasUsed
-
   if (bLen.isZero()) {
-    results.return = new BN(0).toArrayLike(Buffer, 'be', 1)
-    results.exception = 1
-    return results
+    return {
+      gasUsed,
+      return: new BN(0).toArrayLike(Buffer, 'be', 1),
+      exception: 1
+    }
   }
 
   if (mLen.isZero()) {
-    results.return = Buffer.alloc(0)
-    results.exception = 1
-    return results
+    return {
+      gasUsed,
+      return: Buffer.alloc(0),
+      exception: 1
+    }
   }
 
-  var maxInt = new BN(Number.MAX_SAFE_INTEGER)
-  var maxSize = new BN(2147483647) // ethereumjs-util setLengthRight limitation
+  const maxInt = new BN(Number.MAX_SAFE_INTEGER)
+  const maxSize = new BN(2147483647) // ethereumjs-util setLengthRight limitation
 
   if (bLen.gt(maxSize) || eLen.gt(maxSize) || mLen.gt(maxSize)) {
-    return getOOGResults(opts, results)
+    return OOGResult(opts.gasLimit)
   }
 
-  var bStart = new BN(96)
-  var bEnd = bStart.add(bLen)
-  var eStart = bEnd
-  var eEnd = eStart.add(eLen)
-  var mStart = eEnd
-  var mEnd = mStart.add(mLen)
+  const bStart = new BN(96)
+  const bEnd = bStart.add(bLen)
+  const eStart = bEnd
+  const eEnd = eStart.add(eLen)
+  const mStart = eEnd
+  const mEnd = mStart.add(mLen)
 
   if (mEnd.gt(maxInt)) {
-    return getOOGResults(opts, results)
+    return OOGResult(opts.gasLimit)
   }
 
-  bLen = bLen.toNumber()
-  eLen = eLen.toNumber()
-  mLen = mLen.toNumber()
+  const B = new BN(setLengthRight(data.slice(bStart.toNumber(), bEnd.toNumber()), bLen.toNumber()))
+  const E = new BN(setLengthRight(data.slice(eStart.toNumber(), eEnd.toNumber()), eLen.toNumber()))
+  const M = new BN(setLengthRight(data.slice(mStart.toNumber(), mEnd.toNumber()), mLen.toNumber()))
 
-  var B = new BN(utils.setLengthRight(data.slice(bStart.toNumber(), bEnd.toNumber()), bLen))
-  var E = new BN(utils.setLengthRight(data.slice(eStart.toNumber(), eEnd.toNumber()), eLen))
-  var M = new BN(utils.setLengthRight(data.slice(mStart.toNumber(), mEnd.toNumber()), mLen))
-
-  // console.log('MODEXP input')
-  // console.log('B:', bLen, B)
-  // console.log('E:', eLen, E)
-  // console.log('M:', mLen, M)
-
-  var R
+  let R
   if (M.isZero()) {
     R = new BN(0)
   } else {
     R = expmod(B, E, M)
   }
-  var result = R.toArrayLike(Buffer, 'be', mLen)
 
-  results.return = result
-  results.exception = 1
-
-  // console.log('MODEXP output', result)
-
-  return results
+  return {
+    gasUsed,
+    return: R.toArrayLike(Buffer, 'be', mLen.toNumber()),
+    exception: 1
+  }
 }

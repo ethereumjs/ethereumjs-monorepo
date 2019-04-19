@@ -1,38 +1,28 @@
-const utils = require('ethereumjs-util')
+import BN = require('bn.js')
+import { PrecompileInput, PrecompileResult, OOGResult } from './types'
 const ERROR = require('../../exceptions.js').ERROR
-const BN = utils.BN
 const assert = require('assert')
-
 const bn128 = require('rustbn.js')
 
-module.exports = function (opts) {
+export default function (opts: PrecompileInput): PrecompileResult {
   assert(opts.data)
 
-  let results = {}
-  let inputData = opts.data
+  const inputData = opts.data
+  const gasUsed = new BN(opts._common.param('gasPrices', 'ecMul'))
 
-  results.gasUsed = new BN(opts._common.param('gasPrices', 'ecMul'))
-
-  if (opts.gasLimit.lt(results.gasUsed)) {
-    results.return = Buffer.alloc(0)
-    results.exception = 0
-    results.gasUsed = new BN(opts.gasLimit)
-    results.exceptionError = ERROR.OUT_OF_GAS
-    return results
+  if (opts.gasLimit.lt(gasUsed)) {
+    return OOGResult(opts.gasLimit)
   }
 
   let returnData = bn128.mul(inputData)
-
   // check ecmul success or failure by comparing the output length
   if (returnData.length !== 64) {
-    results.return = Buffer.alloc(0)
-    results.exception = 0
-    results.gasUsed = new BN(opts.gasLimit)
-    results.exceptionError = ERROR.OUT_OF_GAS
-  } else {
-    results.return = returnData
-    results.exception = 1
+    return OOGResult(opts.gasLimit)
   }
 
-  return results
+  return {
+    gasUsed,
+    return: returnData,
+    exception: 1
+  }
 }

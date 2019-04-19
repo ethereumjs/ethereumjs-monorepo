@@ -1,41 +1,39 @@
-const utils = require('ethereumjs-util')
-const BN = utils.BN
+import BN = require('bn.js')
+import { setLengthLeft, setLengthRight, ecrecover, publicToAddress } from 'ethereumjs-util'
+import { PrecompileInput, PrecompileResult, OOGResult } from './types'
 const error = require('../../exceptions.js').ERROR
 const assert = require('assert')
 
-module.exports = function (opts) {
+export default function (opts: PrecompileInput): PrecompileResult {
   assert(opts.data)
 
-  var results = {}
+  const gasUsed = new BN(opts._common.param('gasPrices', 'ecRecover'))
 
-  results.gasUsed = new BN(opts._common.param('gasPrices', 'ecRecover'))
-
-  if (opts.gasLimit.lt(results.gasUsed)) {
-    results.return = Buffer.alloc(0)
-    results.gasUsed = opts.gasLimit
-    results.exception = 0 // 0 means VM fail (in this case because of OOG)
-    results.exceptionError = error.OUT_OF_GAS
-    return results
+  if (opts.gasLimit.lt(gasUsed)) {
+    return OOGResult(opts.gasLimit)
   }
 
-  var data = utils.setLengthRight(opts.data, 128)
+  const data = setLengthRight(opts.data, 128)
 
   var msgHash = data.slice(0, 32)
-  var v = data.slice(32, 64)
-  var r = data.slice(64, 96)
-  var s = data.slice(96, 128)
+  const v = data.slice(32, 64)
+  const r = data.slice(64, 96)
+  const s = data.slice(96, 128)
 
-  var publicKey
+  let publicKey
   try {
-    publicKey = utils.ecrecover(msgHash, new BN(v).toNumber(), r, s)
+    publicKey = ecrecover(msgHash, new BN(v).toNumber(), r, s)
   } catch (e) {
-    results.return = Buffer.alloc(0)
-    results.exception = 1
-    return results
+    return {
+      gasUsed,
+      return: Buffer.alloc(0),
+      exception: 1
+    }
   }
 
-  results.return = utils.setLengthLeft(utils.publicToAddress(publicKey), 32)
-  results.exception = 1
-
-  return results
+  return {
+    gasUsed,
+    return: setLengthLeft(publicToAddress(publicKey), 32),
+    exception: 1
+  }
 }
