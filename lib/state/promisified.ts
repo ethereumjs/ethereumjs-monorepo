@@ -25,7 +25,7 @@ export default class PStateManager {
     return promisify(this._wrapped.putContractCode.bind(this._wrapped))(addr, code)
   }
 
-  getContractCode (addr: Buffer): Promise<Buffer|null> {
+  getContractCode (addr: Buffer): Promise<Buffer> {
     return promisify(this._wrapped.getContractCode.bind(this._wrapped))(addr)
   }
 

@@ -1,4 +1,12 @@
-const codes = {
+export interface OpInfo {
+  name: string;
+  opcode: number;
+  fee: number;
+  dynamic: boolean;
+  isAsync: boolean;
+}
+
+const codes: any = {
   // 0x0 range - arithmetic ops
   // name, baseCost, off stack, on stack, dynamic, async
   0x00: ['STOP', 0, false],
@@ -162,7 +170,7 @@ const codes = {
   0xff: ['SELFDESTRUCT', 5000, false, true]
 }
 
-module.exports = function (op, full, freeLogs) {
+export function lookupOpInfo (op: number, full: boolean, freeLogs: boolean): OpInfo {
   var code = codes[op] ? codes[op] : ['INVALID', 0, false, false]
   var opcode = code[0]
 
@@ -192,5 +200,5 @@ module.exports = function (op, full, freeLogs) {
     }
   }
 
-  return {name: opcode, opcode: op, fee: fee, dynamic: code[2], async: code[3]}
+  return { name: opcode, opcode: op, fee: fee, dynamic: code[2], isAsync: code[3] }
 }
