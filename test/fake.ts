@@ -113,7 +113,7 @@ tape('[FakeTransaction]: Basic functions', function(t) {
   t.test('should getSenderAddress and getSenderPublicKey', st => {
     const tx = new FakeTransaction(txData)
     st.plan(2)
-    st.equal(tx._from.toString('hex'), '7e5f4552091a69125d5dfcb7b8c2659029395bdf', 'this._from is set in FakeTransaction')
+    st.equal(tx.from.toString('hex'), '7e5f4552091a69125d5dfcb7b8c2659029395bdf', 'this._from is set in FakeTransaction')
     st.equal(tx.getSenderAddress().toString('hex'), '7e5f4552091a69125d5dfcb7b8c2659029395bdf', 'should return correct address')
   })
 
@@ -173,4 +173,5 @@ tape('[FakeTransaction]: Basic functions', function(t) {
     st.equal(txWithWrongSignature.validate(true), 'Invalid Signature', 'tx should return correct error')
     st.equal(txWithLowLimit.validate(true), 'gas limit is too low. Need at least 21464', 'tx should return correct error')
   })
+
 })
