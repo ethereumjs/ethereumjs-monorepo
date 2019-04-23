@@ -113,15 +113,23 @@ tape('[FakeTransaction]: Basic functions', function(t) {
   t.test('should getSenderAddress and getSenderPublicKey', st => {
     const tx = new FakeTransaction(txData)
     st.plan(2)
-    st.equal(tx.from.toString('hex'), '7e5f4552091a69125d5dfcb7b8c2659029395bdf', 'this._from is set in FakeTransaction')
-    st.equal(tx.getSenderAddress().toString('hex'), '7e5f4552091a69125d5dfcb7b8c2659029395bdf', 'should return correct address')
+    st.equal(
+      tx.from.toString('hex'),
+      '7e5f4552091a69125d5dfcb7b8c2659029395bdf',
+      'this._from is set in FakeTransaction',
+    )
+    st.equal(
+      tx.getSenderAddress().toString('hex'),
+      '7e5f4552091a69125d5dfcb7b8c2659029395bdf',
+      'should return correct address',
+    )
   })
 
   t.test('should verifySignature', st => {
     const tx = new FakeTransaction(txData)
     const txWithWrongSignature = new FakeTransaction({
       ...txData,
-      r: Buffer.from('abcd1558260ac737ea6d800906c6d085a801e5e0f0952bf93978d6fa468fbdff', 'hex')
+      r: Buffer.from('abcd1558260ac737ea6d800906c6d085a801e5e0f0952bf93978d6fa468fbdff', 'hex'),
     })
     st.plan(2)
     st.true(tx.verifySignature(), 'signature is valid')
@@ -132,25 +140,33 @@ tape('[FakeTransaction]: Basic functions', function(t) {
     const tx = new FakeTransaction(txData)
     tx.sign(Buffer.from('164122e5d39e9814ca723a749253663bafb07f6af91704d9754c361eb315f0c1', 'hex'))
     st.plan(3)
-    st.equal(tx.r.toString('hex'), 'c10062450d68caa5a688e2b6930f34f8302064afe6e1ba7f6ca459115a31d3b8', 'r should be valid')
-    st.equal(tx.s.toString('hex'), '31718e6bf821a98d35b0d9cd66ea86f91f420c3c4658f60c607222de925d222a', 's should be valid')
+    st.equal(
+      tx.r.toString('hex'),
+      'c10062450d68caa5a688e2b6930f34f8302064afe6e1ba7f6ca459115a31d3b8',
+      'r should be valid',
+    )
+    st.equal(
+      tx.s.toString('hex'),
+      '31718e6bf821a98d35b0d9cd66ea86f91f420c3c4658f60c607222de925d222a',
+      's should be valid',
+    )
     st.equal(tx.v.toString('hex'), '1c', 'v should be valid')
   })
 
   t.test('should getDataFee', st => {
-    const tx = new FakeTransaction({...txData, data: '0x00000001'})
+    const tx = new FakeTransaction({ ...txData, data: '0x00000001' })
     st.plan(1)
     st.equal(tx.getDataFee().toString(), '80', 'data fee should be correct')
   })
 
   t.test('should getBaseFee', st => {
-    const tx = new FakeTransaction({...txData, data: '0x00000001'})
+    const tx = new FakeTransaction({ ...txData, data: '0x00000001' })
     st.plan(1)
     st.equal(tx.getBaseFee().toString(), '21080', 'base fee should be correct')
   })
 
   t.test('should getUpfrontCost', st => {
-    const tx = new FakeTransaction({...txData, gasLimit: '0x6464', gasPrice: '0x2'})
+    const tx = new FakeTransaction({ ...txData, gasLimit: '0x6464', gasPrice: '0x2' })
     st.plan(1)
     st.equal(tx.getUpfrontCost().toString(), '51400', 'base fee should be correct')
   })
@@ -159,19 +175,26 @@ tape('[FakeTransaction]: Basic functions', function(t) {
     const tx = new FakeTransaction(txData)
     const txWithWrongSignature = new FakeTransaction({
       ...txData,
-      r: Buffer.from('abcd1558260ac737ea6d800906c6d085a801e5e0f0952bf93978d6fa468fbdff', 'hex')
+      r: Buffer.from('abcd1558260ac737ea6d800906c6d085a801e5e0f0952bf93978d6fa468fbdff', 'hex'),
     })
     const txWithLowLimit = new FakeTransaction({
       ...txData,
-      gasLimit: '0x1'
+      gasLimit: '0x1',
     })
     st.plan(6)
     st.true(tx.validate(), 'tx should be valid')
     st.false(txWithWrongSignature.validate(), 'tx should be invalid')
     st.false(txWithLowLimit.validate(), 'tx should be invalid')
     st.equal(tx.validate(true), '', 'tx should return no errors')
-    st.equal(txWithWrongSignature.validate(true), 'Invalid Signature', 'tx should return correct error')
-    st.equal(txWithLowLimit.validate(true), 'gas limit is too low. Need at least 21464', 'tx should return correct error')
+    st.equal(
+      txWithWrongSignature.validate(true),
+      'Invalid Signature',
+      'tx should return correct error',
+    )
+    st.equal(
+      txWithLowLimit.validate(true),
+      'gas limit is too low. Need at least 21464',
+      'tx should return correct error',
+    )
   })
-
 })
