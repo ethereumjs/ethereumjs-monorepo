@@ -550,8 +550,7 @@ export default class EEI {
    */
   async isAccountEmpty (address: BN): Promise<boolean> {
     const addressBuf = addressToBuffer(address)
-    const account = await this._state.getAccount(addressBuf)
-    return account.isEmpty()
+    return this._state.accountIsEmpty(addressBuf)
   }
 }
 
