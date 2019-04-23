@@ -69,30 +69,6 @@ export interface BlockchainOptions {
  * @remarks
  * This class performs write operations. Making a backup of your data before trying this module is
  * recommended. Otherwise, you can end up with a compromised DB state.
- *
- * @example
- * The following is an example to iterate through an existing Geth DB (needs `level` to be
- * installed separately).
- *
- * ```javascript
- * const level = require('level')
- * const Blockchain = require('ethereumjs-blockchain')
- * const utils = require('ethereumjs-util')
- *
- * const gethDbPath = './chaindata' // Add your own path here. It will get modified, see remarks.
- * const db = level(gethDbPath)
- *
- * new Blockchain({ db: db }).iterator(
- *   'i',
- *   (block, reorg, cb) => {
- *     const blockNumber = utils.bufferToInt(block.header.number)
- *     const blockHash = block.hash().toString('hex')
- *     console.log(`BLOCK ${blockNumber}: ${blockHash}`)
- *     cb()
- *   },
- *   err => console.log(err || 'Done.'),
- * )
- * ```
  */
 export default class Blockchain {
   /**
