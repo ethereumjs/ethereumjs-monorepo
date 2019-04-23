@@ -21,6 +21,49 @@ const level = require('level-mem')
 const semaphore = require('semaphore')
 
 /**
+ * This are the options that the Blockchain constructor can receive.
+ */
+export interface BlockchainOptions {
+  /**
+   * The chain id or name. Default: `"mainnet"`.
+   */
+  chain?: string | number
+
+  /**
+   * Hardfork for the blocks. If `undefined` or `null` is passed, it gets computed based on block
+   * numbers.
+   */
+  hardfork?: string | null
+
+  /**
+   * An alternative way to specify the chain and hardfork is by passing a Common instance.
+   */
+  common?: Common
+
+  /**
+   * Database to store blocks and metadata. Should be a
+   * [levelup](https://github.com/rvagg/node-levelup) instance.
+   */
+  db?: any
+
+  /**
+   * This the flag indicates if blocks should be validated (e.g. Proof-of-Work), latest HF rules
+   * supported: `Petersburg`.
+   */
+  validate?: boolean
+
+  /**
+   * @deprecated
+   */
+  blockDb?: any
+
+  /**
+   * @deprecated
+   */
+  detailsDb?: any
+}
+
+/**
  * This class stores and interacts with blocks.
  *
  * @remarks
@@ -114,24 +157,16 @@ export default class Blockchain {
   /**
    * Creates new Blockchain object
    *
-   * This constructor receives an object with different options, all of them are optional:
-   *
-   * * `opts.chain` **([String](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String) \| [Number](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number))** The chain for the block [default: 'mainnet']
-   * * `opts.hardfork` **[String](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String)** Hardfork for the block [default: null, block number-based behavior]
-   * * `opts.common` **[Object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)** Alternatively pass a Common instance (ethereumjs-common) instead of setting chain/hardfork directly
-   * * `opts.db` - Database to store blocks and metadata. Should be a [levelup](https://github.com/rvagg/node-levelup) instance.
-   * * `opts.validate` - this the flag to validate blocks (e.g. Proof-of-Work), latest HF rules supported: `Constantinople`.
-   *
    * **Deprecation note**:
    *
-   * The old separated DB constructor parameters `opts.blockDB` and `opts.detailsDB` from before the Geth DB-compatible
+   * The old separated DB constructor parameters `opts.blockDB` and `opts.detailsDb` from before the Geth DB-compatible
    * `v3.0.0` release are deprecated and continued usage is discouraged. When provided `opts.blockDB` will be used as
    * `opts.db` and `opts.detailsDB` is ignored. On the storage level the DB formats are not compatible and it is not
    * possible to load an old-format DB state into a post-`v3.0.0` `Blockchain` object.
    *
-   * @param opts See above documentation.
+   * @param opts - An object with the options that this constructor takes. See [[BlockchainOptions]].
    */
-  constructor(opts: any = {}) {
+  constructor(opts: BlockchainOptions = {}) {
     if (opts.common) {
       if (opts.chain) {
         throw new Error('Instantiation with both opts.common and opts.chain parameter not allowed!')
