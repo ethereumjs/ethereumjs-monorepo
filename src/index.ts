@@ -65,10 +65,6 @@ export interface BlockchainOptions {
 
 /**
  * This class stores and interacts with blocks.
- *
- * @remarks
- * This class performs write operations. Making a backup of your data before trying this module is
- * recommended. Otherwise, you can end up with a compromised DB state.
  */
 export default class Blockchain {
   /**

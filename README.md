@@ -19,6 +19,8 @@ A module to store and interact with blocks.
 
 The following is an example to iterate through an existing Geth DB (needs `level` to be installed separately).
 
+This module performs write operations. Making a backup of your data before trying it is recommended. Otherwise, you can end up with a compromised DB state.
+
 ```javascript
 const level = require('level')
 const Blockchain = require('ethereumjs-blockchain')
