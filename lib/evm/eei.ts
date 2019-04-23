@@ -119,6 +119,10 @@ export default class EEI {
     return this._env.code
   }
 
+  isStatic (): boolean {
+    return this._env.isStatic
+  }
+
   /**
    * Get size of an account’s code.
    * @param {BN} address - Address of account
@@ -342,7 +346,7 @@ export default class EEI {
       to: address,
       value: value,
       data: data,
-      isStatic: this._runState.static,
+      isStatic: this._env.isStatic,
       depth: this._runState.depth + 1
     })
 
@@ -364,7 +368,7 @@ export default class EEI {
       codeAddress: address,
       value: value,
       data: data,
-      isStatic: this._runState.static,
+      isStatic: this._env.isStatic,
       depth: this._runState.depth + 1
     })
 
@@ -410,7 +414,7 @@ export default class EEI {
       codeAddress: address,
       value: value,
       data: data,
-      isStatic: this._runState.static,
+      isStatic: this._env.isStatic,
       delegatecall: true,
       depth: this._runState.depth + 1
     })

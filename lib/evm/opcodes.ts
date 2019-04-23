@@ -170,9 +170,9 @@ const codes: any = {
   0xff: ['SELFDESTRUCT', 5000, false, true]
 }
 
-export function lookupOpInfo (op: number, full: boolean, freeLogs: boolean): OpInfo {
-  var code = codes[op] ? codes[op] : ['INVALID', 0, false, false]
-  var opcode = code[0]
+export function lookupOpInfo (op: number, full: boolean): OpInfo {
+  const code = codes[op] ? codes[op] : ['INVALID', 0, false, false]
+  let opcode = code[0]
 
   if (full) {
     if (opcode === 'LOG') {
@@ -192,13 +192,5 @@ export function lookupOpInfo (op: number, full: boolean, freeLogs: boolean): OpI
     }
   }
 
-  var fee = code[1]
-
-  if (freeLogs) {
-    if (opcode === 'LOG') {
-      fee = 0
-    }
-  }
-
-  return { name: opcode, opcode: op, fee: fee, dynamic: code[2], isAsync: code[3] }
+  return { name: opcode, opcode: op, fee: code[1], dynamic: code[2], isAsync: code[3] }
 }
