@@ -11,6 +11,7 @@ export default class EEI {
   _result: any
   _state: PStateManager
   _interpreter: any
+  _lastReturned: Buffer
 
   constructor (env: any, runState: any, result: any, state: PStateManager, interpreter: any) {
     this._env = env
@@ -18,6 +19,7 @@ export default class EEI {
     this._result = result
     this._state = state
     this._interpreter = interpreter
+    this._lastReturned = Buffer.alloc(0)
   }
 
   /**
@@ -151,7 +153,7 @@ export default class EEI {
    * @returns {BN}
    */
   getReturnDataSize (): BN {
-    return new BN(this._runState.lastReturned.length)
+    return new BN(this._lastReturned.length)
   }
 
   /**
@@ -161,7 +163,7 @@ export default class EEI {
    * @returns {Buffer}
    */
   getReturnData (): Buffer {
-    return this._runState.lastReturned
+    return this._lastReturned
   }
 
   /**
@@ -427,7 +429,7 @@ export default class EEI {
     msg.selfdestruct = selfdestruct
 
     // empty the return data buffer
-    this._runState.lastReturned = Buffer.alloc(0)
+    this._lastReturned = Buffer.alloc(0)
 
     // Check if account has enough ether and max depth not exceeded
     if (this._env.depth >= this._runState._common.param('vm', 'stackLimit') || (msg.delegatecall !== true && new BN(this._env.contract.balance).lt(msg.value))) {
@@ -450,7 +452,7 @@ export default class EEI {
 
     // Set return value
     if (results.vm.return && (!results.vm.exceptionError || results.vm.exceptionError.error === ERROR.REVERT)) {
-      this._runState.lastReturned = results.vm.return
+      this._lastReturned = results.vm.return
     }
 
     if (!results.vm.exceptionError) {
@@ -482,7 +484,7 @@ export default class EEI {
     })
 
     // empty the return data buffer
-    this._runState.lastReturned = Buffer.alloc(0)
+    this._lastReturned = Buffer.alloc(0)
 
     // Check if account has enough ether and max depth not exceeded
     if (this._env.depth >= this._runState._common.param('vm', 'stackLimit') || (msg.delegatecall !== true && new BN(this._env.contract.balance).lt(msg.value))) {
@@ -508,7 +510,7 @@ export default class EEI {
 
     // Set return buffer in case revert happened
     if (results.vm.exceptionError && results.vm.exceptionError.error === ERROR.REVERT) {
-      this._runState.lastReturned = results.vm.return
+      this._lastReturned = results.vm.return
     }
 
     if (!results.vm.exceptionError) {
