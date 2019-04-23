@@ -347,7 +347,7 @@ export default class EEI {
       value: value,
       data: data,
       isStatic: this._env.isStatic,
-      depth: this._runState.depth + 1
+      depth: this._env.depth + 1
     })
 
     return this._baseCall(msg)
@@ -369,7 +369,7 @@ export default class EEI {
       value: value,
       data: data,
       isStatic: this._env.isStatic,
-      depth: this._runState.depth + 1
+      depth: this._env.depth + 1
     })
 
     return this._baseCall(msg)
@@ -392,7 +392,7 @@ export default class EEI {
       value: value,
       data: data,
       isStatic: true,
-      depth: this._runState.depth + 1
+      depth: this._env.depth + 1
     })
 
     return this._baseCall(msg)
@@ -416,7 +416,7 @@ export default class EEI {
       data: data,
       isStatic: this._env.isStatic,
       delegatecall: true,
-      depth: this._runState.depth + 1
+      depth: this._env.depth + 1
     })
 
     return this._baseCall(msg)
@@ -430,7 +430,7 @@ export default class EEI {
     this._runState.lastReturned = Buffer.alloc(0)
 
     // Check if account has enough ether and max depth not exceeded
-    if (this._runState.depth >= this._runState._common.param('vm', 'stackLimit') || (msg.delegatecall !== true && new BN(this._env.contract.balance).lt(msg.value))) {
+    if (this._env.depth >= this._runState._common.param('vm', 'stackLimit') || (msg.delegatecall !== true && new BN(this._env.contract.balance).lt(msg.value))) {
       return new BN(0)
     }
 
@@ -477,7 +477,7 @@ export default class EEI {
       value: value,
       data: data,
       salt: salt,
-      depth: this._runState.depth + 1,
+      depth: this._env.depth + 1,
       selfdestruct: selfdestruct
     })
 
@@ -485,7 +485,7 @@ export default class EEI {
     this._runState.lastReturned = Buffer.alloc(0)
 
     // Check if account has enough ether and max depth not exceeded
-    if (this._runState.depth >= this._runState._common.param('vm', 'stackLimit') || (msg.delegatecall !== true && new BN(this._env.contract.balance).lt(msg.value))) {
+    if (this._env.depth >= this._runState._common.param('vm', 'stackLimit') || (msg.delegatecall !== true && new BN(this._env.contract.balance).lt(msg.value))) {
       return new BN(0)
     }
 
