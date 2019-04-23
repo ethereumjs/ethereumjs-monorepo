@@ -1,9 +1,9 @@
 import BN = require('bn.js')
 
-import { Decoded, Dictionary, Input, List } from './types'
+import { Decoded, Input, List } from './types'
 
 // Types exported outside of this package
-export { Decoded, Dictionary, Input, List }
+export { Decoded, Input, List }
 
 /**
  * RLP Encoding based on: https://github.com/ethereum/wiki/wiki/%5BEnglish%5D-RLP
