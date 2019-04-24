@@ -14,3 +14,29 @@ A module to store and interact with blocks.
 # API
 
 [./docs/](./docs/README.md)
+
+# EXAMPLE USAGE
+
+The following is an example to iterate through an existing Geth DB (needs `level` to be installed separately).
+
+This module performs write operations. Making a backup of your data before trying it is recommended. Otherwise, you can end up with a compromised DB state.
+
+```javascript
+const level = require('level')
+const Blockchain = require('ethereumjs-blockchain')
+const utils = require('ethereumjs-util')
+
+const gethDbPath = './chaindata' // Add your own path here. It will get modified, see remarks.
+const db = level(gethDbPath)
+
+new Blockchain({ db: db }).iterator(
+  'i',
+  (block, reorg, cb) => {
+    const blockNumber = utils.bufferToInt(block.header.number)
+    const blockHash = block.hash().toString('hex')
+    console.log(`BLOCK ${blockNumber}: ${blockHash}`)
+    cb()
+  },
+  err => console.log(err || 'Done.'),
+)
+```
