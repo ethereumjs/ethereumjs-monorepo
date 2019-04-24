@@ -11,7 +11,7 @@ const level = require('level-mem')
 const testData = require('./testdata.json')
 
 test('blockchain test', function(t) {
-  t.plan(73)
+  t.plan(70)
   const blockchain = new Blockchain()
   let genesisBlock: any
   const blocks: any[] = []
@@ -56,15 +56,6 @@ test('blockchain test', function(t) {
           )
           done()
         })
-      },
-      function alternateConstructors(done) {
-        const db = level()
-        let blockchain = new Blockchain(db)
-        t.equals(db, blockchain.db, 'support constructor with db parameter')
-        blockchain = new Blockchain({ detailsDb: db, blockDb: db })
-        t.equals(db, blockchain.db, 'support blockDb and detailsDb params')
-        t.notOk((<any>blockchain).detailsDb, 'ignore detailsDb param')
-        done()
       },
       function addgenesis(done) {
         genesisBlock = new Block()
