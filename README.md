@@ -5,8 +5,6 @@
 [![Coverage Status](https://img.shields.io/coveralls/ethereumjs/ethereumjs-util.svg?style=flat-square)](https://coveralls.io/r/ethereumjs/ethereumjs-util)
 [![Gitter](https://img.shields.io/gitter/room/ethereum/ethereumjs-lib.svg?style=flat-square)](https://gitter.im/ethereum/ethereumjs-lib) or #ethereumjs on freenode
 
-[![js-standard-style](https://cdn.rawgit.com/feross/standard/master/badge.svg)](https://github.com/feross/standard)
-
 A collection of utility functions for ethereum. It can be used in node.js or can be in the browser with browserify.
 
 # API
