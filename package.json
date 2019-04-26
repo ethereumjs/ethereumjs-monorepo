@@ -15,6 +15,11 @@
     "build": "npm run babel && mkdir -p dist && browserify --s Trie index.js -o dist/trie.js -t [ babelify --presets [ @babel/preset-env ] ]",
     "build:docs": "documentation build ./src/** -f md --shallow ./src/index.js ./src/secure.js ./src/proof.js > ./docs/index.md --github --config documentation.yml --markdown-toc false"
   },
+  "husky": {
+    "hooks": {
+      "pre-push": "npm run lint"
+    }
+  },
   "author": {
     "name": "mjbecze",
     "email": "mjbecze@gmail.com"
@@ -52,6 +57,7 @@
     "browserify": "^13.0.0",
     "coveralls": "^2.11.6",
     "documentation": "^8.1.2",
+    "husky": "^2.1.0",
     "istanbul": "^0.4.1",
     "karma": "^1.7.1",
     "karma-browserify": "^5.0.0",
