@@ -94,5 +94,11 @@ The opFns for `CREATE`, `CALL`, and `CALLCODE` call back up to `runCall`.
 
 Developer documentation - currently mainly with information on testing and debugging - can be found [here](./docs/developer.md). 
 
+# EthereumJS
+
+See our organizational [documentation](https://ethereumjs.readthedocs.io) for an introduction to `EthereumJS` as well as information on current standards and best practices.
+
+If you want to join for work or do improvements on the libraries have a look at our [contribution guidelines](https://ethereumjs.readthedocs.io/en/latest/contributing.html).
+
 # LICENSE
 [MPL-2.0](https://www.mozilla.org/MPL/2.0/)
