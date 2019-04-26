@@ -44,3 +44,9 @@ new Blockchain({ db: db }).iterator(
 **WARNING**: Since `ethereumjs-blockchain` is also doing write operations
 on the DB for safety reasons only run this on a copy of your database, otherwise this might lead
 to a compromised DB state.
+
+# EthereumJS
+
+See our organizational [documentation](https://ethereumjs.readthedocs.io) for an introduction to `EthereumJS` as well as information on current standards and best practices.
+
+If you want to join for work or do improvements on the libraries have a look at our [contribution guidelines](https://ethereumjs.readthedocs.io/en/latest/contributing.html).
