@@ -145,6 +145,12 @@ const mainnetGenesisState = genesisStates.genesisStateByName('mainnet')
 const mainnetGenesisState = genesisStates.genesisStateById(1) // alternative via network Id
 ```
 
+# EthereumJS
+
+See our organizational [documentation](https://ethereumjs.readthedocs.io) for an introduction to `EthereumJS` as well as information on current standards and best practices.
+
+If you want to join for work or do improvements on the libraries have a look at our [contribution guidelines](https://ethereumjs.readthedocs.io/en/latest/contributing.html).
+
 # LICENSE
 
 [MIT](https://opensource.org/licenses/MIT)
