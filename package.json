@@ -4,6 +4,9 @@
   "description": "An simple module for creating, manipulating and signing ethereum transactions",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "ethereumjs-config-build",
     "prepublishOnly": "npm run test && npm run build",
