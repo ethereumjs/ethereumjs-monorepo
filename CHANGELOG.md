@@ -6,6 +6,40 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [4.0.0] - 2019-04-26
+
+First **TypeScript** based release of the library. `TypeScript` handles `ES6` transpilation
+[a bit differently](https://github.com/Microsoft/TypeScript/issues/2719) (at the
+end: cleaner) than `babel` so `require` syntax of the library slightly changes to:
+
+```javascript
+let Blockchain = require('ethereumjs-blockchain').default
+```
+
+The library now also comes with a **type declaration file** distributed along
+with the package published.
+
+This release drops support for Node versions `4` and `6` due to
+internal code updates requiring newer Node.js versions and removes the previously
+deprecated DB constructor options `opts.blockDb` and `opts.detailsDb`.
+
+**Change Summary:**
+
+- Migration of code base and internal toolchain to `TypeScript`,
+  PR [#92](https://github.com/ethereumjs/ethereumjs-blockchain/pull/92)
+- Refactoring of `DB` operations introducing a separate `DBManager` class
+  (comes along with dropped Node `6` support),
+  PR [#91](https://github.com/ethereumjs/ethereumjs-blockchain/pull/91)
+- Auto-generated `TSDoc` documentation,
+  PR [#98](https://github.com/ethereumjs/ethereumjs-blockchain/pull/98)
+- Replaced `safe-buffer` with native Node.js `Buffer` usage (this comes along
+  with dropped support for Node `4`),
+  PR [#92](https://github.com/ethereumjs/ethereumjs-blockchain/pull/92)
+- Dropped deprecated `DB` options,
+  PR [#100](https://github.com/ethereumjs/ethereumjs-blockchain/pull/100)
+
+[4.0.0]: https://github.com/ethereumjs/ethereumjs-blockchain/compare/v3.4.0...v4.0.0
+
 ## [3.4.0] - 2019-02-06
 
 **Petersburg** (aka `constantinopleFix`) as well as **Goerli**
