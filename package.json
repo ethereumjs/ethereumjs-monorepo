@@ -26,6 +26,11 @@
     "build:docs": "documentation build ./lib/index.js ./lib/runBlockchain.js ./lib/runBlock.js ./lib/runTx.js ./lib/runCode.js ./lib/runCall.js --format md --shallow > ./docs/index.md",
     "formatTest": "node ./scripts/formatTest"
   },
+  "husky": {
+    "hooks": {
+      "pre-push": "npm run lint"
+    }
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/ethereumjs/ethereumjs-vm.git"
@@ -56,6 +61,7 @@
     "documentation": "^8.1.2",
     "ethereumjs-testing": "git+https://github.com/ethereumjs/ethereumjs-testing.git#v1.2.7",
     "ethereumjs-tx": "1.3.7",
+    "husky": "^2.1.0",
     "karma": "^4.0.1",
     "karma-browserify": "^6.0.0",
     "karma-chrome-launcher": "^2.2.0",
