@@ -15,6 +15,11 @@
     "test:node": "node tests/index.js",
     "build:docs": "documentation build ./index.js ./header.js --format md --shallow > ./docs/index.md && documentation build ./from-rpc.js --format md --shallow  > ./docs/fromRpc.md"
   },
+  "husky": {
+    "hooks": {
+      "pre-push": "npm run lint"
+    }
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/ethereumjs/ethereumjs-block.git"
@@ -37,11 +42,12 @@
     "merkle-patricia-tree": "^2.1.2"
   },
   "devDependencies": {
-    "babelify": "^8.0.0",
     "babel-preset-env": "^1.6.1",
+    "babelify": "^8.0.0",
     "browserify": "^15.0.0",
     "coveralls": "^2.11.6",
     "documentation": "4.0.0-beta16",
+    "husky": "^2.1.0",
     "istanbul": "^0.4.2",
     "karma": "^2.0.0",
     "karma-browserify": "^5.1.0",
