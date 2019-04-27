@@ -1,8 +1,8 @@
-const { createCipheriv } = require('crypto')
-const createKeccakHash = require('keccak')
-const { xor } = require('../util')
+import { createCipheriv } from 'crypto'
+import createKeccakHash from 'keccak'
+import { xor } from '../util'
 
-class MAC {
+export class MAC {
   constructor (secret) {
     this._hash = createKeccakHash('keccak256')
     this._secret = secret

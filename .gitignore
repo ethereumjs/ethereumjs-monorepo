@@ -1,8 +1,3 @@
-### App ###
-
-.cachedb
-
-
 # Created by https://www.gitignore.io/api/osx,node
 
 ### OSX ###
@@ -38,6 +33,7 @@ Temporary Items
 logs
 *.log
 npm-debug.log*
+package-lock.json
 
 # Runtime data
 pids
@@ -49,8 +45,6 @@ lib-cov
 
 # Coverage directory used by tools like istanbul
 coverage
-
-# nyc test coverage
 .nyc_output
 
 # Grunt intermediate storage (http://gruntjs.com/creating-plugins#storing-task-files)
@@ -65,7 +59,11 @@ build/Release
 # Dependency directory
 # https://docs.npmjs.com/misc/faq#should-i-check-my-node-modules-folder-into-git
 node_modules
-package-lock.json
 
-# Library specific
-lib/
+dist
+src/*.d.ts
+src/*.js.map
+src/*.js
+test/*.d.ts
+test/*.js.map
+test/*.js

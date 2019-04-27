@@ -1,29 +1,35 @@
-const { EventEmitter } = require('events')
-const secp256k1 = require('secp256k1')
-const Buffer = require('safe-buffer').Buffer
-const { randomBytes } = require('crypto')
-const createDebugLogger = require('debug')
-const ms = require('ms')
-const { pk2id } = require('../util')
-const KBucket = require('./kbucket')
-const BanList = require('./ban-list')
-const DPTServer = require('./server')
+import { EventEmitter } from 'events'
+import { publicKeyCreate } from 'secp256k1'
+import { randomBytes } from 'crypto'
+import { debug as createDebugLogger } from 'debug'
+import ms from 'ms'
+import { pk2id } from '../util'
+import { KBucket } from './kbucket'
+import { BanList } from './ban-list'
+import { Server as DPTServer } from './server'
 
 const debug = createDebugLogger('devp2p:dpt')
 
-class DPT extends EventEmitter {
-  constructor (privateKey, options) {
+export class DPT extends EventEmitter {
+  private _privateKey: Buffer
+  private _id: string
+  private _banlist: BanList
+  _kbucket: KBucket
+  _server: DPTServer
+  _refreshIntervalId: NodeJS.Timeout
+
+  constructor(privateKey: string, options: any) {
     super()
 
     this._privateKey = Buffer.from(privateKey)
-    this._id = pk2id(secp256k1.publicKeyCreate(this._privateKey, false))
+    this._id = pk2id(publicKeyCreate(this._privateKey, false))
 
     this._banlist = new BanList()
 
     this._kbucket = new KBucket(this._id)
     this._kbucket.on('added', (peer) => this.emit('peer:added', peer))
     this._kbucket.on('removed', (peer) => this.emit('peer:removed', peer))
-    this._kbucket.on('ping', (...args) => this._onKBucketPing(...args))
+    this._kbucket.on('ping', (...args: any[]) => this._onKBucketPing(...args))
 
     this._server = new DPTServer(this, this._privateKey, {
       createSocket: options.createSocket,
@@ -39,23 +45,23 @@ class DPT extends EventEmitter {
     this._refreshIntervalId = setInterval(() => this.refresh(), refreshInterval)
   }
 
-  bind (...args) {
+  bind(...args: any[]): void {
     this._server.bind(...args)
   }
 
-  destroy (...args) {
+  destroy(...args: any[]): void {
     clearInterval(this._refreshIntervalId)
     this._server.destroy(...args)
   }
 
-  _onKBucketPing (oldPeers, newPeer) {
+  _onKBucketPing(oldPeers: any[], newPeer: any): void {
     if (this._banlist.has(newPeer)) return
 
     let count = 0
-    let err = null
+    let err: Error | null = null
     for (let peer of oldPeers) {
       this._server.ping(peer)
-        .catch((_err) => {
+        .catch((_err: Error) => {
           this._banlist.add(peer, ms('5m'))
           this._kbucket.remove(peer)
           err = err || _err
@@ -69,18 +75,18 @@ class DPT extends EventEmitter {
     }
   }
 
-  _onServerPeers (peers) {
-    for (let peer of peers) this.addPeer(peer).catch(() => {})
+  _onServerPeers(peers: any[]): void {
+    for (let peer of peers) this.addPeer(peer).catch(() => { })
   }
 
-  async bootstrap (peer) {
+  async bootstrap(peer: any): Promise<void> {
     debug(`bootstrap with peer ${peer.address}:${peer.udpPort}`)
 
     peer = await this.addPeer(peer)
     this._server.findneighbours(peer, this._id)
   }
 
-  async addPeer (obj) {
+  async addPeer(obj: any): Promise<any> {
     if (this._banlist.has(obj)) throw new Error('Peer is banned')
     debug(`attempt adding peer ${obj.address}:${obj.udpPort}`)
 
@@ -100,28 +106,28 @@ class DPT extends EventEmitter {
     }
   }
 
-  getPeer (obj) {
+  getPeer(obj: any): any {
     return this._kbucket.get(obj)
   }
 
-  getPeers () {
+  getPeers(): any[] {
     return this._kbucket.getAll()
   }
 
-  getClosestPeers (id) {
+  getClosestPeers(id: string): any {
     return this._kbucket.closest(id)
   }
 
-  removePeer (obj) {
+  removePeer(obj: any) {
     this._kbucket.remove(obj)
   }
 
-  banPeer (obj, maxAge) {
+  banPeer(obj: any, maxAge: number) {
     this._banlist.add(obj, maxAge)
     this._kbucket.remove(obj)
   }
 
-  refresh () {
+  refresh(): void {
     const peers = this.getPeers()
     debug(`call .refresh (${peers.length} peers in table)`)
 

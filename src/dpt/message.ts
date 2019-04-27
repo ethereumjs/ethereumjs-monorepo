@@ -1,32 +1,37 @@
-const ip = require('ip')
-const rlp = require('rlp-encoding')
-const secp256k1 = require('secp256k1')
-const Buffer = require('safe-buffer').Buffer
-const { keccak256, int2buffer, buffer2int, assertEq } = require('../util')
+import ip from 'ip'
+import rlp from 'rlp-encoding'
+import secp256k1 from 'secp256k1'
+import { keccak256, int2buffer, buffer2int, assertEq } from '../util'
 
-function getTimestamp () {
+function getTimestamp() {
   return (Date.now() / 1000) | 0
+}
+
+interface PeerAddr {
+  address: string,
+  udpPort: number,
+  tcpPort: number
 }
 
 const timestamp = {
   encode: function (value = getTimestamp() + 60) {
     const buffer = Buffer.allocUnsafe(4)
-    buffer.writeUInt32BE(value)
+    buffer.writeUInt32BE(value, 0)
     return buffer
   },
-  decode: function (buffer) {
+  decode: function (buffer: Buffer) {
     if (buffer.length !== 4) throw new RangeError(`Invalid timestamp buffer :${buffer.toString('hex')}`)
     return buffer.readUInt32BE(0)
   }
 }
 
 const address = {
-  encode: function (value) {
+  encode: function (value: string) {
     if (ip.isV4Format(value)) return ip.toBuffer(value)
     if (ip.isV6Format(value)) return ip.toBuffer(value)
     throw new Error(`Invalid address: ${value}`)
   },
-  decode: function (buffer) {
+  decode: function (buffer: Buffer) {
     if (buffer.length === 4) return ip.toString(buffer)
     if (buffer.length === 16) return ip.toString(buffer)
 
@@ -39,12 +44,12 @@ const address = {
 }
 
 const port = {
-  encode: function (value) {
+  encode: function (value: number): Buffer {
     if (value === null) return Buffer.allocUnsafe(0)
     if ((value >>> 16) > 0) throw new RangeError(`Invalid port: ${value}`)
-    return Buffer.from([ (value >>> 8) & 0xff, (value >>> 0) & 0xff ])
+    return Buffer.from([(value >>> 8) & 0xff, (value >>> 0) & 0xff])
   },
-  decode: function (buffer) {
+  decode: function (buffer: Buffer): number | null {
     if (buffer.length === 0) return null
     // if (buffer.length !== 2) throw new RangeError(`Invalid port buffer: ${buffer.toString('hex')}`)
     return buffer2int(buffer)
@@ -52,14 +57,14 @@ const port = {
 }
 
 const endpoint = {
-  encode: function (obj) {
+  encode: function (obj: PeerAddr): Buffer[] {
     return [
       address.encode(obj.address),
       port.encode(obj.udpPort),
       port.encode(obj.tcpPort)
     ]
   },
-  decode: function (payload) {
+  decode: function (payload: Buffer[]): PeerAddr {
     return {
       address: address.decode(payload[0]),
       udpPort: port.decode(payload[1]),
@@ -68,8 +73,10 @@ const endpoint = {
   }
 }
 
+type InPing = { [0]: Buffer, [1]: Buffer[], [2]: Buffer[], [3]: Buffer }
+type OutPing = { version: number, from: PeerAddr, to: PeerAddr, timestamp: number }
 const ping = {
-  encode: function (obj) {
+  encode: function (obj: OutPing): InPing {
     return [
       int2buffer(obj.version),
       endpoint.encode(obj.from),
@@ -77,7 +84,7 @@ const ping = {
       timestamp.encode(obj.timestamp)
     ]
   },
-  decode: function (payload) {
+  decode: function (payload: InPing): OutPing {
     return {
       version: buffer2int(payload[0]),
       from: endpoint.decode(payload[1]),
@@ -87,15 +94,17 @@ const ping = {
   }
 }
 
+type OutPong = { to: PeerAddr, hash: Buffer, timestamp: number }
+type InPong = { [0]: Buffer[], [1]: Buffer[], [2]: Buffer }
 const pong = {
-  encode: function (obj) {
+  encode: function (obj: OutPong) {
     return [
       endpoint.encode(obj.to),
       obj.hash,
       timestamp.encode(obj.timestamp)
     ]
   },
-  decode: function (payload) {
+  decode: function (payload: InPong) {
     return {
       to: endpoint.decode(payload[0]),
       hash: payload[1],
@@ -104,14 +113,16 @@ const pong = {
   }
 }
 
+type OutFindMsg = { id: string, timestamp: number }
+type InFindMsg = { [0]: string, [1]: Buffer }
 const findneighbours = {
-  encode: function (obj) {
+  encode: function (obj: OutFindMsg): InFindMsg {
     return [
       obj.id,
       timestamp.encode(obj.timestamp)
     ]
   },
-  decode: function (payload) {
+  decode: function (payload: InFindMsg): OutFindMsg  {
     return {
       id: payload[0],
       timestamp: timestamp.decode(payload[1])
@@ -119,14 +130,16 @@ const findneighbours = {
   }
 }
 
+type InNeighbourMsg = { peers: any[], timestamp: number }
+type OutNeighbourMsg = { [0]: Buffer[][], [1]: Buffer }
 const neighbours = {
-  encode: function (obj) {
+  encode: function (obj: InNeighbourMsg): OutNeighbourMsg {
     return [
       obj.peers.map((peer) => endpoint.encode(peer).concat(peer.id)),
       timestamp.encode(obj.timestamp)
     ]
   },
-  decode: function (payload) {
+  decode: function (payload: OutNeighbourMsg): InNeighbourMsg {
     return {
       peers: payload[0].map((data) => {
         return { endpoint: endpoint.decode(data), id: data[3] } // hack for id
@@ -136,9 +149,9 @@ const neighbours = {
   }
 }
 
-const messages = { ping, pong, findneighbours, neighbours }
+const messages: any = { ping, pong, findneighbours, neighbours }
 
-const types = {
+const types: { [index: string]: { [index: string]: number | string } } = {
   byName: {
     ping: 0x01,
     pong: 0x02,
@@ -159,20 +172,20 @@ const types = {
 // 97 type
 // [98, length) data
 
-function encode (typename, data, privateKey) {
+export function encode<T>(typename: string, data: T, privateKey: Buffer) {
   const type = types.byName[typename]
   if (type === undefined) throw new Error(`Invalid typename: ${typename}`)
   const encodedMsg = messages[typename].encode(data)
-  const typedata = Buffer.concat([ Buffer.from([ type ]), rlp.encode(encodedMsg) ])
+  const typedata = Buffer.concat([Buffer.from([type]), rlp.encode(encodedMsg)])
 
   const sighash = keccak256(typedata)
   const sig = secp256k1.sign(sighash, privateKey)
-  const hashdata = Buffer.concat([ sig.signature, Buffer.from([ sig.recovery ]), typedata ])
+  const hashdata = Buffer.concat([sig.signature, Buffer.from([sig.recovery]), typedata])
   const hash = keccak256(hashdata)
-  return Buffer.concat([ hash, hashdata ])
+  return Buffer.concat([hash, hashdata])
 }
 
-function decode (buffer) {
+export function decode(buffer: Buffer) {
   const hash = keccak256(buffer.slice(32))
   assertEq(buffer.slice(0, 32), hash, 'Hash verification failed')
 
@@ -190,4 +203,3 @@ function decode (buffer) {
   return { typename, data, publicKey }
 }
 
-module.exports = { encode, decode }

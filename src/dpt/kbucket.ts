@@ -1,15 +1,20 @@
-const { EventEmitter } = require('events')
-const Buffer = require('safe-buffer').Buffer
-const _KBucket = require('k-bucket')
+import { EventEmitter } from 'events'
+import _KBucket from 'k-bucket'
 
 const KBUCKET_SIZE = 16
 const KBUCKET_CONCURRENCY = 3
 
-class KBucket extends EventEmitter {
-  constructor (id) {
-    super()
+interface KObj {
+  id?: string
+  port?: string
+  address?: string
+}
 
-    this._peers = new Map()
+export class KBucket extends EventEmitter {
+  _peers: Map<string, any> = new Map()
+  _kbucket: _KBucket
+  constructor(id: string) {
+    super()
 
     this._kbucket = new _KBucket({
       localNodeId: id,
@@ -17,22 +22,22 @@ class KBucket extends EventEmitter {
       numberOfNodesToPing: KBUCKET_CONCURRENCY
     })
 
-    this._kbucket.on('added', (peer) => {
+    this._kbucket.on('added', (peer: any) => {
       KBucket.getKeys(peer).forEach((key) => this._peers.set(key, peer))
       this.emit('added', peer)
     })
 
-    this._kbucket.on('removed', (peer) => {
-      KBucket.getKeys(peer).forEach((key) => this._peers.delete(key, peer))
+    this._kbucket.on('removed', (peer: any) => {
+      KBucket.getKeys(peer).forEach((key) => this._peers.delete(key))
       this.emit('removed', peer)
     })
 
-    this._kbucket.on('ping', (...args) => this.emit('ping', ...args))
+    this._kbucket.on('ping', (...args: any[]) => this.emit('ping', ...args))
   }
 
-  static getKeys (obj) {
-    if (Buffer.isBuffer(obj)) return [ obj.toString('hex') ]
-    if (typeof obj === 'string') return [ obj ]
+  static getKeys(obj: Buffer | string | KObj): string[] {
+    if (Buffer.isBuffer(obj)) return [obj.toString('hex')]
+    if (typeof obj === 'string') return [obj]
 
     const keys = []
     if (Buffer.isBuffer(obj.id)) keys.push(obj.id.toString('hex'))
@@ -40,12 +45,12 @@ class KBucket extends EventEmitter {
     return keys
   }
 
-  add (peer) {
+  add(peer: any) {
     const isExists = KBucket.getKeys(peer).some((key) => this._peers.has(key))
     if (!isExists) this._kbucket.add(peer)
   }
 
-  get (obj) {
+  get(obj: Buffer | string | KObj) {
     for (let key of KBucket.getKeys(obj)) {
       const peer = this._peers.get(key)
       if (peer !== undefined) return peer
@@ -54,18 +59,16 @@ class KBucket extends EventEmitter {
     return null
   }
 
-  getAll () {
+  getAll() {
     return this._kbucket.toArray()
   }
 
-  closest (id) {
+  closest(id: string): any {
     return this._kbucket.closest(id, KBUCKET_SIZE)
   }
 
-  remove (obj) {
+  remove(obj: Buffer | string | KObj) {
     const peer = this.get(obj)
     if (peer !== null) this._kbucket.remove(peer.id)
   }
 }
-
-module.exports = KBucket

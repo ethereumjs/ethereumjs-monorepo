@@ -1,16 +1,16 @@
-const { EventEmitter } = require('events')
-const dgram = require('dgram')
-const ms = require('ms')
-const createDebugLogger = require('debug')
-const LRUCache = require('lru-cache')
-const message = require('./message')
-const { keccak256, pk2id, createDeferred } = require('../util')
+import { EventEmitter } from 'events'
+import * as dgram from 'dgram'
+import ms from 'ms'
+import { debug as createDebugLogger } from 'debug'
+import LRUCache from 'lru-cache'
+import {encode, decode} from './message'
+import { keccak256, pk2id, createDeferred } from '../util'
 
 const debug = createDebugLogger('devp2p:dpt:server')
 const VERSION = 0x04
 const createSocketUDP4 = dgram.createSocket.bind(null, 'udp4')
 
-class Server extends EventEmitter {
+export class Server extends EventEmitter {
   constructor (dpt, privateKey, options) {
     super()
 
@@ -96,7 +96,7 @@ class Server extends EventEmitter {
   _send (peer, typename, data) {
     debug(`send ${typename} to ${peer.address}:${peer.udpPort} (peerId: ${peer.id && peer.id.toString('hex')})`)
 
-    const msg = message.encode(typename, data, this._privateKey)
+    const msg = encode(typename, data, this._privateKey)
     // Parity hack
     // There is a bug in Parity up to at lease 1.8.10 not echoing the hash from
     // discovery spec (hash: sha3(signature || packet-type || packet-data))
@@ -116,7 +116,7 @@ class Server extends EventEmitter {
   }
 
   _handler (msg, rinfo) {
-    const info = message.decode(msg)
+    const info = decode(msg)
     const peerId = pk2id(info.publicKey)
     debug(`received ${info.typename} from ${rinfo.address}:${rinfo.port} (peerId: ${peerId.toString('hex')})`)
 
@@ -171,5 +171,3 @@ class Server extends EventEmitter {
     }
   }
 }
-
-module.exports = Server

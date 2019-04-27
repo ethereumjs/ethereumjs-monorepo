@@ -1,23 +1,22 @@
-const net = require('net')
-const os = require('os')
-const secp256k1 = require('secp256k1')
-const { EventEmitter } = require('events')
-const ms = require('ms')
-const Buffer = require('safe-buffer').Buffer
-const createDebugLogger = require('debug')
-const LRUCache = require('lru-cache')
-const pVersion = require('../../package.json').version
-const { pk2id, createDeferred } = require('../util')
-const Peer = require('./peer')
+import * as net from 'net'
+import * as os from 'os'
+import { publicKeyCreate } from 'secp256k1'
+import { EventEmitter } from 'events'
+import ms from 'ms'
+import { debug as createDebugLogger} from 'debug'
+import LRUCache from 'lru-cache'
+import {version as pVersion} from '../../package.json'
+import { pk2id, createDeferred } from '../util'
+import { Peer } from './peer'
 
 const debug = createDebugLogger('devp2p:rlpx')
 
-class RLPx extends EventEmitter {
+export class RLPx extends EventEmitter {
   constructor (privateKey, options) {
     super()
 
     this._privateKey = Buffer.from(privateKey)
-    this._id = pk2id(secp256k1.publicKeyCreate(this._privateKey, false))
+    this._id = pk2id(publicKeyCreate(this._privateKey, false))
 
     // options
     this._timeout = options.timeout || ms('10s')
@@ -225,5 +224,3 @@ class RLPx extends EventEmitter {
     })
   }
 }
-
-module.exports = RLPx

@@ -1,10 +1,10 @@
-const { EventEmitter } = require('events')
-const rlp = require('rlp-encoding')
-const ms = require('ms')
-const { int2buffer, buffer2int, assertEq } = require('../util')
-const Peer = require('../rlpx/peer')
+import { EventEmitter } from 'events'
+import rlp from 'rlp-encoding'
+import ms from 'ms'
+import { debug as createDebugLogger } from 'debug'
+import { int2buffer, buffer2int, assertEq } from '../util'
+import { Peer } from '../rlpx/peer'
 
-const createDebugLogger = require('debug')
 const debug = createDebugLogger('devp2p:les')
 
 const MESSAGE_CODES = {
@@ -37,8 +37,8 @@ const MESSAGE_CODES = {
 
 const DEFAULT_ACCOUNCE_TYPE = 1
 
-class LES extends EventEmitter {
-  constructor (version, peer, send) {
+export class LES extends EventEmitter {
+  constructor(version, peer, send) {
     super()
 
     this._version = version
@@ -56,7 +56,7 @@ class LES extends EventEmitter {
 
   static MESSAGE_CODES = MESSAGE_CODES
 
-  _handleMessage (code, data) {
+  _handleMessage(code, data) {
     const payload = rlp.decode(data)
     if (code !== MESSAGE_CODES.STATUS) {
       debug(`Received ${this.getMsgPrefix(code)} message from ${this._peer._socket.remoteAddress}:${this._peer._socket.remotePort}: ${data.toString('hex')}`)
@@ -104,7 +104,7 @@ class LES extends EventEmitter {
     this.emit('message', code, payload)
   }
 
-  _handleStatus () {
+  _handleStatus() {
     if (this._status === null || this._peerStatus === null) return
     clearTimeout(this._statusTimeoutId)
     assertEq(this._status['protocolVersion'], this._peerStatus['protocolVersion'], 'Protocol version mismatch')
@@ -114,11 +114,11 @@ class LES extends EventEmitter {
     this.emit('status', this._peerStatus)
   }
 
-  getVersion () {
+  getVersion() {
     return this._version
   }
 
-  _getStatusString (status) {
+  _getStatusString(status) {
     var sStr = `[V:${buffer2int(status['protocolVersion'])}, `
     sStr += `NID:${buffer2int(status['networkId'])}, HTD:${buffer2int(status['headTd'])}, `
     sStr += `HeadH:${status['headHash'].toString('hex')}, HeadN:${buffer2int(status['headNum'])}, `
@@ -134,7 +134,7 @@ class LES extends EventEmitter {
     return sStr
   }
 
-  sendStatus (status) {
+  sendStatus(status) {
     if (this._status !== null) return
 
     if (!status.announceType) {
@@ -156,7 +156,7 @@ class LES extends EventEmitter {
     this._handleStatus()
   }
 
-  sendMessage (code, reqId, payload) {
+  sendMessage(code, reqId, payload) {
     debug(`Send ${this.getMsgPrefix(code)} message to ${this._peer._socket.remoteAddress}:${this._peer._socket.remotePort}: ${rlp.encode(payload).toString('hex')}`)
     switch (code) {
       case MESSAGE_CODES.STATUS:
@@ -193,9 +193,7 @@ class LES extends EventEmitter {
     this._send(code, rlp.encode([reqId, payload]))
   }
 
-  getMsgPrefix (msgCode) {
+  getMsgPrefix(msgCode) {
     return Object.keys(MESSAGE_CODES).find(key => MESSAGE_CODES[key] === msgCode)
   }
 }
-
-module.exports = LES

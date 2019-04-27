@@ -1,9 +1,8 @@
-const { EventEmitter } = require('events')
-const rlp = require('rlp-encoding')
-const ms = require('ms')
-const Buffer = require('safe-buffer').Buffer
-const { int2buffer, buffer2int, assertEq } = require('../util')
-const Peer = require('../rlpx/peer')
+import { EventEmitter } from 'events'
+import rlp from 'rlp-encoding'
+import ms from 'ms'
+import { int2buffer, buffer2int, assertEq } from '../util'
+import { Peer } from '../rlpx/peer'
 
 const createDebugLogger = require('debug')
 const debug = createDebugLogger('devp2p:eth')
@@ -26,7 +25,7 @@ const MESSAGE_CODES = {
   RECEIPTS: 0x10
 }
 
-class ETH extends EventEmitter {
+export class ETH extends EventEmitter {
   constructor (version, peer, send) {
     super()
 
@@ -158,5 +157,3 @@ class ETH extends EventEmitter {
     return Object.keys(MESSAGE_CODES).find(key => MESSAGE_CODES[key] === msgCode)
   }
 }
-
-module.exports = ETH
