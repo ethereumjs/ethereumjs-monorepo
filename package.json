@@ -2,16 +2,28 @@
   "name": "ethereumjs-tx",
   "version": "1.3.7",
   "description": "An simple module for creating, manipulating and signing ethereum transactions",
-  "main": "es5/index.js",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
   "scripts": {
-    "coverage": "istanbul cover ./test/index.js",
-    "coveralls": "npm run coverage && coveralls <coverage/lcov.info",
-    "lint": "standard",
-    "test": "npm run test:node && npm run test:browser",
-    "test:browser": "karma start karma.conf.js",
-    "test:node": "tape ./test/index.js",
-    "build:es5": "babel index.js --source-root ./ -d ./es5",
-    "build:docs": "documentation build ./index.js --github -f md > ./docs/index.md && contributor"
+    "build": "ethereumjs-config-build",
+    "prepublishOnly": "npm run test && npm run build",
+    "coverage": "ethereumjs-config-coverage",
+    "coveralls": "ethereumjs-config-coveralls",
+    "docs:build": "typedoc --out docs --mode file --readme none --theme markdown --mdEngine github --excludeNotExported src",
+    "format": "ethereumjs-config-format",
+    "format:fix": "ethereumjs-config-format-fix",
+    "tslint": "ethereumjs-config-tslint",
+    "tslint:fix": "ethereumjs-config-tslint-fix",
+    "tsc": "ethereumjs-config-tsc",
+    "lint": "ethereumjs-config-lint",
+    "lint:fix": "ethereumjs-config-lint-fix",
+    "test": "npm run test:node",
+    "test:node": "ts-node node_modules/tape/bin/tape ./test/index.ts",
+    "test:browser:build": "tsc && cp ./test/*.json test-build/test/",
+    "test:browser": "npm run test:browser:build && karma start karma.conf.js"
   },
   "keywords": [
     "ethereum",
@@ -24,26 +36,34 @@
     "ethereumjs-util": "^6.0.0"
   },
   "devDependencies": {
-    "async": "^2.0.0",
-    "babel-cli": "^6.22.2",
-    "babel-preset-env": "^1.6.1",
-    "babel-preset-stage-0": "^6.16.0",
-    "babelify": "^7.3.0",
-    "browserify": "^13.0.0",
+    "@ethereumjs/config-nyc": "^1.1.1",
+    "@ethereumjs/config-prettier": "^1.1.1",
+    "@ethereumjs/config-tsc": "^1.1.1",
+    "@ethereumjs/config-tslint": "^1.1.1",
+    "@types/bn.js": "^4.11.5",
+    "@types/minimist": "^1.2.0",
+    "@types/node": "^11.13.4",
+    "@types/tape": "^4.2.33",
+    "browserify": "^16.2.3",
     "contributor": "^0.1.25",
     "coveralls": "^2.11.4",
-    "documentation": "^8.0.0",
-    "ethereumjs-testing": "git+https://github.com/ethereumjs/ethereumjs-testing.git#v1.2.5",
+    "ethereumjs-testing": "git+https://github.com/ethereumjs/ethereumjs-testing.git#v1.2.8",
     "istanbul": "^0.4.1",
-    "karma": "^1.1.1",
-    "karma-browserify": "^5.1.0",
-    "karma-detect-browsers": "^2.0.2",
-    "karma-env-preprocessor": "^0.1.1",
-    "karma-firefox-launcher": "^1.0.0",
-    "karma-tap": "^2.0.1",
+    "karma": "^4.1.0",
+    "karma-browserify": "^6.0.0",
+    "karma-detect-browsers": "^2.3.3",
+    "karma-firefox-launcher": "^1.1.0",
+    "karma-tap": "^4.1.4",
     "minimist": "^1.2.0",
-    "standard": "^7.1.2",
-    "tape": "^4.0.3"
+    "nyc": "^14.0.0",
+    "prettier": "^1.17.0",
+    "tape": "^4.0.3",
+    "ts-node": "^8.0.3",
+    "tslint": "^5.15.0",
+    "typedoc": "^0.14.2",
+    "typedoc-plugin-markdown": "^1.2.0",
+    "typescript": "^3.4.3",
+    "typestrict": "^1.0.2"
   },
   "repository": {
     "type": "git",
@@ -53,14 +73,6 @@
     "url": "https://github.com/ethereumjs/ethereumjs-tx/issues"
   },
   "homepage": "https://github.com/ethereumjs/ethereumjs-tx",
-  "standard": {
-    "ignore": [
-      "es5/**",
-      "dist/**",
-      "package-init.js",
-      "package.js"
-    ]
-  },
   "contributors": [
     {
       "name": "<-c-g-> ",

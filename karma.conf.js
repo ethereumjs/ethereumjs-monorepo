@@ -1,30 +1,21 @@
 process.env.ethTest = 'TransactionTests'
 
-module.exports = function (config) {
+module.exports = function(config) {
   config.set({
     browserNoActivityTimeout: 60000,
     frameworks: ['browserify', 'detectBrowsers', 'tap'],
-    files: [
-      './test/api.js',
-      './test/transactionRunner.js'
-    ],
+    // the official transaction's test suite is disabled for now, see https://github.com/ethereumjs/ethereumjs-testing/issues/40
+    files: ['./test-build/test/api.js', './test-build/test/fake.js'],
     preprocessors: {
-      'test/*.js': ['browserify', 'env']
+      './test-build/**/*.js': ['browserify']
     },
     singleRun: true,
-    plugins: [
-      'karma-browserify',
-      'karma-env-preprocessor',
-      'karma-tap',
-      'karma-firefox-launcher',
-      'karma-detect-browsers'
-    ],
     detectBrowsers: {
       enabled: true,
       usePhantomJS: false,
-      postDetection: function (availableBrowsers) {
-        return [ 'Firefox' ]
-      }
+      postDetection: function(availableBrowsers) {
+        return ['Firefox']
+      },
     }
   })
 }
