@@ -48,6 +48,12 @@ For a browser build please see https://github.com/ethereumjs/browser-builds.
 
 [./docs/](./docs/README.md)
 
+# EthereumJS
+
+See our organizational [documentation](https://ethereumjs.readthedocs.io) for an introduction to `EthereumJS` as well as information on current standards and best practices.
+
+If you want to join for work or do improvements on the libraries have a look at our [contribution guidelines](https://ethereumjs.readthedocs.io/en/latest/contributing.html).
+
 # LICENSE
 
 [MPL-2.0](<https://tldrlegal.com/license/mozilla-public-license-2.0-(mpl-2)>)
