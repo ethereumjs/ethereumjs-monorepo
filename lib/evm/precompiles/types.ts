@@ -1,6 +1,6 @@
 import BN = require('bn.js')
 import Common from 'ethereumjs-common'
-const { ERROR } = require('../../exceptions.js')
+import { ERROR } from '../../exceptions'
 
 export interface PrecompileFunc {
   (opts: PrecompileInput): PrecompileResult
@@ -16,7 +16,7 @@ export interface PrecompileResult {
   gasUsed: BN;
   return: Buffer;
   exception: 0 | 1;
-  exceptionError?: string;
+  exceptionError?: ERROR;
 }
 
 export function OOGResult(gasLimit: BN): PrecompileResult {

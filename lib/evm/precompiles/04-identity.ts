@@ -1,6 +1,5 @@
 import BN = require('bn.js')
 import { PrecompileInput, PrecompileResult, OOGResult } from './types'
-const error = require('../../exceptions.js').ERROR
 const assert = require('assert')
 
 export default function (opts: PrecompileInput): PrecompileResult {

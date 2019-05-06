@@ -1,6 +1,6 @@
 const tape = require('tape')
 const runJit = require('../../dist/runJit')
-const exceptions = require('../../dist/exceptions.js')
+const exceptions = require('../../dist/exceptions')
 
 tape('Should run code with func type', (t) => {
   // TODO: Determine if account is still necessary for runJit
