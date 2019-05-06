@@ -1,22 +1,22 @@
-const ERROR = {
-  OUT_OF_GAS: 'out of gas',
-  STACK_UNDERFLOW: 'stack underflow',
-  STACK_OVERFLOW: 'stack overflow',
-  INVALID_JUMP: 'invalid JUMP',
-  INVALID_OPCODE: 'invalid opcode',
-  OUT_OF_RANGE: 'value out of range',
-  REVERT: 'revert',
-  STATIC_STATE_CHANGE: 'static state change',
-  INTERNAL_ERROR: 'internal error',
-  CREATE_COLLISION: 'create collision'
+export enum ERROR {
+  OUT_OF_GAS = 'out of gas',
+  STACK_UNDERFLOW = 'stack underflow',
+  STACK_OVERFLOW = 'stack overflow',
+  INVALID_JUMP = 'invalid JUMP',
+  INVALID_OPCODE = 'invalid opcode',
+  OUT_OF_RANGE = 'value out of range',
+  REVERT = 'revert',
+  STATIC_STATE_CHANGE = 'static state change',
+  INTERNAL_ERROR = 'internal error',
+  CREATE_COLLISION = 'create collision'
 }
 
-function VmError (error) {
-  this.error = error
-  this.errorType = 'VmError'
-}
+export class VmError {
+  error: ERROR
+  errorType: string
 
-module.exports = {
-  ERROR: ERROR,
-  VmError: VmError
+  constructor (error: ERROR) {
+    this.error = error
+    this.errorType = 'VmError'
+  }
 }
