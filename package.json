@@ -37,8 +37,8 @@
     "node": ">=6.0"
   },
   "scripts": {
-    "prepublishOnly": "npm run lint && npm run test && npm run build",
     "build": "ethereumjs-config-build",
+    "prepublishOnly": "npm run test && npm run build",
     "coverage": "ethereumjs-config-coverage",
     "coveralls": "ethereumjs-config-coveralls",
     "docs:build": "typedoc --out docs --mode file --readme none --theme markdown --mdEngine github --excludeNotExported src",

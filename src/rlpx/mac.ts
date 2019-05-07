@@ -3,22 +3,24 @@ import createKeccakHash from 'keccak'
 import { xor } from '../util'
 
 export class MAC {
-  constructor (secret) {
+  _hash: any
+  _secret: Buffer
+  constructor(secret: Buffer) {
     this._hash = createKeccakHash('keccak256')
     this._secret = secret
   }
 
-  update (data) {
+  update(data: Buffer) {
     this._hash.update(data)
   }
 
-  updateHeader (data) {
+  updateHeader(data: Buffer) {
     const aes = createCipheriv('aes-256-ecb', this._secret, '')
     const encrypted = aes.update(this.digest())
     this._hash.update(xor(encrypted, data))
   }
 
-  updateBody (data) {
+  updateBody(data: Buffer) {
     this._hash.update(data)
     const prev = this.digest()
     const aes = createCipheriv('aes-256-ecb', this._secret, '')
@@ -26,9 +28,10 @@ export class MAC {
     this._hash.update(xor(encrypted, prev))
   }
 
-  digest () {
-    return this._hash._clone().digest().slice(0, 16)
+  digest() {
+    return this._hash
+      ._clone()
+      .digest()
+      .slice(0, 16)
   }
 }
-
-module.exports = MAC

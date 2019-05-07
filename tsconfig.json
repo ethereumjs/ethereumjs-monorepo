@@ -3,8 +3,8 @@
   "include": ["src/**/*.ts", "test/**/*.ts"],
   "compilerOptions": {
     "baseUrl": ".",
-    "paths": { 
-      "*": ["definitions/*"] 
+    "paths": {
+      "*": ["definitions/*"]
     },
     "typeRoots": ["definitions", "node_modules/@types"],
     "esModuleInterop": true,

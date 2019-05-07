@@ -12,23 +12,40 @@ const Buffer = require('safe-buffer').Buffer
 const PRIVATE_KEY = randomBytes(32)
 const CHAIN_ID = 1
 
-const BOOTNODES = require('ethereum-common').bootstrapNodes.filter((node) => {
-  return node.chainId === CHAIN_ID
-}).map((node) => {
-  return {
-    address: node.ip,
-    udpPort: node.port,
-    tcpPort: node.port
-  }
-})
-const REMOTE_CLIENTID_FILTER = ['go1.5', 'go1.6', 'go1.7', 'quorum', 'pirl', 'ubiq', 'gmc', 'gwhale', 'prichain']
+const BOOTNODES = require('ethereum-common')
+  .bootstrapNodes.filter(node => {
+    return node.chainId === CHAIN_ID
+  })
+  .map(node => {
+    return {
+      address: node.ip,
+      udpPort: node.port,
+      tcpPort: node.port,
+    }
+  })
+const REMOTE_CLIENTID_FILTER = [
+  'go1.5',
+  'go1.6',
+  'go1.7',
+  'quorum',
+  'pirl',
+  'ubiq',
+  'gmc',
+  'gwhale',
+  'prichain',
+]
 
 const CHECK_BLOCK_TITLE = 'Byzantium Fork' // Only for debugging/console output
 const CHECK_BLOCK_NR = 4370000
 const CHECK_BLOCK = 'b1fcff633029ee18ab6482b58ff8b6e95dd7c82a954c852157152a7a6d32785e'
-const CHECK_BLOCK_HEADER = rlp.decode(Buffer.from('f9020aa0a0890da724dd95c90a72614c3a906e402134d3859865f715f5dfb398ac00f955a01dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d49347942a65aca4d5fc5b5c859090a6c34d164135398226a074cccff74c5490fbffc0e6883ea15c0e1139e2652e671f31f25f2a36970d2f87a00e750bf284c2b3ed1785b178b6f49ff3690a3a91779d400de3b9a3333f699a80a0c68e3e82035e027ade5d966c36a1d49abaeec04b83d64976621c355e58724b8bb90100040019000040000000010000000000021000004020100688001a05000020816800000010a0000100201400000000080100020000000400080000800004c0200000201040000000018110400c000000200001000000280000000100000010010080000120010000050041004000018000204002200804000081000011800022002020020140000000020005080001800000000008102008140008600000000100000500000010080082002000102080000002040120008820400020100004a40801000002a0040c000010000114000000800000050008300020100000000008010000000100120000000040000000808448200000080a00000624013000000080870552416761fabf83475b02836652b383661a72845a25c530894477617266506f6f6ca0dc425fdb323c469c91efac1d2672dfdd3ebfde8fa25d68c1b3261582503c433788c35ca7100349f430', 'hex'))
+const CHECK_BLOCK_HEADER = rlp.decode(
+  Buffer.from(
+    'f9020aa0a0890da724dd95c90a72614c3a906e402134d3859865f715f5dfb398ac00f955a01dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d49347942a65aca4d5fc5b5c859090a6c34d164135398226a074cccff74c5490fbffc0e6883ea15c0e1139e2652e671f31f25f2a36970d2f87a00e750bf284c2b3ed1785b178b6f49ff3690a3a91779d400de3b9a3333f699a80a0c68e3e82035e027ade5d966c36a1d49abaeec04b83d64976621c355e58724b8bb90100040019000040000000010000000000021000004020100688001a05000020816800000010a0000100201400000000080100020000000400080000800004c0200000201040000000018110400c000000200001000000280000000100000010010080000120010000050041004000018000204002200804000081000011800022002020020140000000020005080001800000000008102008140008600000000100000500000010080082002000102080000002040120008820400020100004a40801000002a0040c000010000114000000800000050008300020100000000008010000000100120000000040000000808448200000080a00000624013000000080870552416761fabf83475b02836652b383661a72845a25c530894477617266506f6f6ca0dc425fdb323c469c91efac1d2672dfdd3ebfde8fa25d68c1b3261582503c433788c35ca7100349f430',
+    'hex',
+  ),
+)
 
-const getPeerAddr = (peer) => `${peer._socket.remoteAddress}:${peer._socket.remotePort}`
+const getPeerAddr = peer => `${peer._socket.remoteAddress}:${peer._socket.remotePort}`
 
 // DPT
 const dpt = new devp2p.DPT(PRIVATE_KEY, {
@@ -36,46 +53,53 @@ const dpt = new devp2p.DPT(PRIVATE_KEY, {
   endpoint: {
     address: '0.0.0.0',
     udpPort: null,
-    tcpPort: null
-  }
+    tcpPort: null,
+  },
 })
 
-dpt.on('error', (err) => console.error(chalk.red(`DPT error: ${err}`)))
+dpt.on('error', err => console.error(chalk.red(`DPT error: ${err}`)))
 
 // RLPx
 const rlpx = new devp2p.RLPx(PRIVATE_KEY, {
   dpt: dpt,
   maxPeers: 25,
-  capabilities: [
-    devp2p.ETH.eth63,
-    devp2p.ETH.eth62
-  ],
+  capabilities: [devp2p.ETH.eth63, devp2p.ETH.eth62],
   remoteClientIdFilter: REMOTE_CLIENTID_FILTER,
-  listenPort: null
+  listenPort: null,
 })
 
-rlpx.on('error', (err) => console.error(chalk.red(`RLPx error: ${err.stack || err}`)))
+rlpx.on('error', err => console.error(chalk.red(`RLPx error: ${err.stack || err}`)))
 
-rlpx.on('peer:added', (peer) => {
+rlpx.on('peer:added', peer => {
   const addr = getPeerAddr(peer)
   const eth = peer.getProtocols()[0]
   const requests = { headers: [], bodies: [], msgTypes: {} }
 
   const clientId = peer.getHelloMessage().clientId
-  console.log(chalk.green(`Add peer: ${addr} ${clientId} (eth${eth.getVersion()}) (total: ${rlpx.getPeers().length})`))
+  console.log(
+    chalk.green(
+      `Add peer: ${addr} ${clientId} (eth${eth.getVersion()}) (total: ${rlpx.getPeers().length})`,
+    ),
+  )
 
   eth.sendStatus({
     networkId: CHAIN_ID,
     td: devp2p._util.int2buffer(17179869184), // total difficulty in genesis block
-    bestHash: Buffer.from('d4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3', 'hex'),
-    genesisHash: Buffer.from('d4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3', 'hex')
+    bestHash: Buffer.from(
+      'd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3',
+      'hex',
+    ),
+    genesisHash: Buffer.from(
+      'd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3',
+      'hex',
+    ),
   })
 
   // check CHECK_BLOCK
   let forkDrop = null
   let forkVerified = false
   eth.once('status', () => {
-    eth.sendMessage(devp2p.ETH.MESSAGE_CODES.GET_BLOCK_HEADERS, [ CHECK_BLOCK_NR, 1, 0, 0 ])
+    eth.sendMessage(devp2p.ETH.MESSAGE_CODES.GET_BLOCK_HEADERS, [CHECK_BLOCK_NR, 1, 0, 0])
     forkDrop = setTimeout(() => {
       peer.disconnect(devp2p.RLPx.DISCONNECT_REASONS.USELESS_PEER)
     }, ms('15s'))
@@ -97,7 +121,7 @@ rlpx.on('peer:added', (peer) => {
           const blockHash = item[0]
           if (blocksCache.has(blockHash.toString('hex'))) continue
           setTimeout(() => {
-            eth.sendMessage(devp2p.ETH.MESSAGE_CODES.GET_BLOCK_HEADERS, [ blockHash, 1, 0, 0 ])
+            eth.sendMessage(devp2p.ETH.MESSAGE_CODES.GET_BLOCK_HEADERS, [blockHash, 1, 0, 0])
             requests.headers.push(blockHash)
           }, ms('0.1s'))
         }
@@ -130,7 +154,11 @@ rlpx.on('peer:added', (peer) => {
       case devp2p.ETH.MESSAGE_CODES.BLOCK_HEADERS:
         if (!forkVerified) {
           if (payload.length !== 1) {
-            console.log(`${addr} expected one header for ${CHECK_BLOCK_TITLE} verify (received: ${payload.length})`)
+            console.log(
+              `${addr} expected one header for ${CHECK_BLOCK_TITLE} verify (received: ${
+                payload.length
+              })`,
+            )
             peer.disconnect(devp2p.RLPx.DISCONNECT_REASONS.USELESS_PEER)
             break
           }
@@ -144,7 +172,9 @@ rlpx.on('peer:added', (peer) => {
           }
         } else {
           if (payload.length > 1) {
-            console.log(`${addr} not more than one block header expected (received: ${payload.length})`)
+            console.log(
+              `${addr} not more than one block header expected (received: ${payload.length})`,
+            )
             break
           }
 
@@ -155,7 +185,7 @@ rlpx.on('peer:added', (peer) => {
             if (header.hash().equals(blockHash)) {
               isValidPayload = true
               setTimeout(() => {
-                eth.sendMessage(devp2p.ETH.MESSAGE_CODES.GET_BLOCK_BODIES, [ blockHash ])
+                eth.sendMessage(devp2p.ETH.MESSAGE_CODES.GET_BLOCK_BODIES, [blockHash])
                 requests.bodies.push(header)
               }, ms('0.1s'))
               break
@@ -240,7 +270,13 @@ rlpx.on('peer:added', (peer) => {
 rlpx.on('peer:removed', (peer, reasonCode, disconnectWe) => {
   const who = disconnectWe ? 'we disconnect' : 'peer disconnect'
   const total = rlpx.getPeers().length
-  console.log(chalk.yellow(`Remove peer: ${getPeerAddr(peer)} - ${who}, reason: ${peer.getDisconnectPrefix(reasonCode)} (${String(reasonCode)}) (total: ${total})`))
+  console.log(
+    chalk.yellow(
+      `Remove peer: ${getPeerAddr(peer)} - ${who}, reason: ${peer.getDisconnectPrefix(
+        reasonCode,
+      )} (${String(reasonCode)}) (total: ${total})`,
+    ),
+  )
 })
 
 rlpx.on('peer:error', (peer, err) => {
@@ -262,7 +298,7 @@ rlpx.on('peer:error', (peer, err) => {
 // dpt.bind(30303, '0.0.0.0')
 
 for (let bootnode of BOOTNODES) {
-  dpt.bootstrap(bootnode).catch((err) => {
+  dpt.bootstrap(bootnode).catch(err => {
     console.error(chalk.bold.red(`DPT bootstrap error: ${err.stack || err}`))
   })
 }
@@ -281,7 +317,7 @@ dpt.addPeer({ address: '127.0.0.1', udpPort: 30303, tcpPort: 30303 })
 */
 
 const txCache = new LRUCache({ max: 1000 })
-function onNewTx (tx, peer) {
+function onNewTx(tx, peer) {
   const txHashHex = tx.hash().toString('hex')
   if (txCache.has(txHashHex)) return
 
@@ -290,23 +326,27 @@ function onNewTx (tx, peer) {
 }
 
 const blocksCache = new LRUCache({ max: 100 })
-function onNewBlock (block, peer) {
+function onNewBlock(block, peer) {
   const blockHashHex = block.hash().toString('hex')
   const blockNumber = devp2p._util.buffer2int(block.header.number)
   if (blocksCache.has(blockHashHex)) return
 
   blocksCache.set(blockHashHex, true)
-  console.log(`----------------------------------------------------------------------------------------------------------`)
+  console.log(
+    `----------------------------------------------------------------------------------------------------------`,
+  )
   console.log(`New block ${blockNumber}: ${blockHashHex} (from ${getPeerAddr(peer)})`)
-  console.log(`----------------------------------------------------------------------------------------------------------`)
+  console.log(
+    `----------------------------------------------------------------------------------------------------------`,
+  )
   for (let tx of block.transactions) onNewTx(tx, peer)
 }
 
-function isValidTx (tx) {
+function isValidTx(tx) {
   return tx.validate(false)
 }
 
-async function isValidBlock (block) {
+async function isValidBlock(block) {
   if (!block.validateUnclesHash()) return false
   if (!block.transactions.every(isValidTx)) return false
   return new Promise((resolve, reject) => {
@@ -324,7 +364,11 @@ setInterval(() => {
   const peersCount = dpt.getPeers().length
   const openSlots = rlpx._getOpenSlots()
   const queueLength = rlpx._peersQueue.length
-  const queueLength2 = rlpx._peersQueue.filter((o) => o.ts <= Date.now()).length
+  const queueLength2 = rlpx._peersQueue.filter(o => o.ts <= Date.now()).length
 
-  console.log(chalk.yellow(`Total nodes in DPT: ${peersCount}, open slots: ${openSlots}, queue: ${queueLength} / ${queueLength2}`))
+  console.log(
+    chalk.yellow(
+      `Total nodes in DPT: ${peersCount}, open slots: ${openSlots}, queue: ${queueLength} / ${queueLength2}`,
+    ),
+  )
 }, ms('30s'))

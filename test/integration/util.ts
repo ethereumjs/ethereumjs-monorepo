@@ -3,7 +3,7 @@ const devp2p = require('../../src')
 const localhost = '127.0.0.1'
 const basePort = 30306
 
-exports.getTestDPTs = function (numDPTs) {
+exports.getTestDPTs = function(numDPTs) {
   const dpts = []
 
   for (let i = 0; i < numDPTs; ++i) {
@@ -11,9 +11,9 @@ exports.getTestDPTs = function (numDPTs) {
       endpoint: {
         address: localhost,
         udpPort: basePort + i,
-        tcpPort: basePort + i
+        tcpPort: basePort + i,
       },
-      timeout: 100
+      timeout: 100,
     })
     dpt.bind(basePort + i)
     dpts.push(dpt)
@@ -21,24 +21,21 @@ exports.getTestDPTs = function (numDPTs) {
   return dpts
 }
 
-exports.initTwoPeerDPTSetup = function () {
+exports.initTwoPeerDPTSetup = function() {
   const dpts = exports.getTestDPTs(2)
   const peer = { address: localhost, udpPort: basePort + 1 }
   dpts[0].addPeer(peer)
   return dpts
 }
 
-exports.destroyDPTs = function (dpts) {
+exports.destroyDPTs = function(dpts) {
   for (let dpt of dpts) dpt.destroy()
 }
 
-exports.getTestRLPXs = function (numRLPXs, maxPeers, capabilities) {
+exports.getTestRLPXs = function(numRLPXs, maxPeers, capabilities) {
   const rlpxs = []
   if (!capabilities) {
-    capabilities = [
-      devp2p.ETH.eth63,
-      devp2p.ETH.eth62
-    ]
+    capabilities = [devp2p.ETH.eth63, devp2p.ETH.eth62]
   }
   const dpts = exports.getTestDPTs(numRLPXs)
 
@@ -47,7 +44,7 @@ exports.getTestRLPXs = function (numRLPXs, maxPeers, capabilities) {
       dpt: dpts[i],
       maxPeers: maxPeers,
       capabilities: capabilities,
-      listenPort: basePort + i
+      listenPort: basePort + i,
     })
     rlpx.listen(basePort + i)
     rlpxs.push(rlpx)
@@ -55,7 +52,7 @@ exports.getTestRLPXs = function (numRLPXs, maxPeers, capabilities) {
   return rlpxs
 }
 
-exports.initTwoPeerRLPXSetup = function (maxPeers, capabilities) {
+exports.initTwoPeerRLPXSetup = function(maxPeers, capabilities) {
   const rlpxs = exports.getTestRLPXs(2, maxPeers, capabilities)
   const peer = { address: localhost, udpPort: basePort + 1, tcpPort: basePort + 1 }
   rlpxs[0]._dpt.addPeer(peer)
@@ -74,15 +71,19 @@ exports.initTwoPeerRLPXSetup = function (maxPeers, capabilities) {
  * @param {Function} opts.onOnMsg0 (rlpxs, protocol, code, payload) Optional handler function
  * @param {Function} opts.onOnMsg1 (rlpxs, protocol, code, payload) Optional handler function
  */
-exports.twoPeerMsgExchange = function (t, capabilities, opts) {
+exports.twoPeerMsgExchange = function(t, capabilities, opts) {
   const rlpxs = exports.initTwoPeerRLPXSetup(null, capabilities)
-  rlpxs[0].on('peer:added', function (peer) {
+  rlpxs[0].on('peer:added', function(peer) {
     const protocol = peer.getProtocols()[0]
     protocol.sendStatus(opts.status0) // (1 ->)
 
-    protocol.once('status', () => { if (opts.onOnceStatus0) opts.onOnceStatus0(rlpxs, protocol) }) // (-> 2)
-    protocol.on('message', async (code, payload) => { if (opts.onOnMsg0) opts.onOnMsg0(rlpxs, protocol, code, payload) })
-    peer.on('error', (err) => {
+    protocol.once('status', () => {
+      if (opts.onOnceStatus0) opts.onOnceStatus0(rlpxs, protocol)
+    }) // (-> 2)
+    protocol.on('message', async (code, payload) => {
+      if (opts.onOnMsg0) opts.onOnMsg0(rlpxs, protocol, code, payload)
+    })
+    peer.on('error', err => {
       if (opts.onPeerError0) {
         opts.onPeerError0(err, rlpxs)
       } else {
@@ -91,7 +92,7 @@ exports.twoPeerMsgExchange = function (t, capabilities, opts) {
     }) // (-> 2)
   })
 
-  rlpxs[1].on('peer:added', function (peer) {
+  rlpxs[1].on('peer:added', function(peer) {
     const protocol = peer.getProtocols()[0]
     protocol.on('message', async (code, payload) => {
       switch (code) {
@@ -104,7 +105,7 @@ exports.twoPeerMsgExchange = function (t, capabilities, opts) {
       }
       if (opts.onOnMsg1) opts.onOnMsg1(rlpxs, protocol, code, payload)
     })
-    peer.on('error', (err) => {
+    peer.on('error', err => {
       if (opts.onPeerError1) {
         opts.onPeerError1(err, rlpxs)
       } else {
@@ -114,7 +115,7 @@ exports.twoPeerMsgExchange = function (t, capabilities, opts) {
   })
 }
 
-exports.destroyRLPXs = function (rlpxs) {
+exports.destroyRLPXs = function(rlpxs) {
   for (let rlpx of rlpxs) {
     // FIXME: Call destroy() on dpt instance from the rlpx.destroy() method
     rlpx._dpt.destroy()

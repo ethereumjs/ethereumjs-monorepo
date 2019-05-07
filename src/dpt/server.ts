@@ -3,15 +3,28 @@ import * as dgram from 'dgram'
 import ms from 'ms'
 import { debug as createDebugLogger } from 'debug'
 import LRUCache from 'lru-cache'
-import {encode, decode} from './message'
+import { encode, decode } from './message'
 import { keccak256, pk2id, createDeferred } from '../util'
+import { DPT } from './dpt'
+import { Socket as DgramSocket, RemoteInfo } from 'dgram'
+import { Peer } from '../rlpx'
+import { PeerInfo } from './message'
 
 const debug = createDebugLogger('devp2p:dpt:server')
 const VERSION = 0x04
-const createSocketUDP4 = dgram.createSocket.bind(null, 'udp4')
+const createSocketUDP4 = dgram.createSocket.bind(null, { type: 'udp4' })
 
 export class Server extends EventEmitter {
-  constructor (dpt, privateKey, options) {
+  _dpt: DPT
+  _privateKey: Buffer
+  _timeout: number
+  _endpoint: any
+  _requests: Map<any, any>
+  _parityRequestMap: Map<any, any>
+  _requestsCache: LRUCache<{}, {}>
+  _socket: DgramSocket | null
+
+  constructor(dpt: DPT, privateKey: Buffer, options: any) {
     super()
 
     this._dpt = dpt
@@ -25,34 +38,38 @@ export class Server extends EventEmitter {
 
     const createSocket = options.createSocket || createSocketUDP4
     this._socket = createSocket()
-    this._socket.once('listening', () => this.emit('listening'))
-    this._socket.once('close', () => this.emit('close'))
-    this._socket.on('error', (err) => this.emit('error', err))
-    this._socket.on('message', (msg, rinfo) => {
-      try {
-        this._handler(msg, rinfo)
-      } catch (err) {
-        this.emit('error', err)
-      }
-    })
+    if (this._socket) {
+      this._socket.once('listening', () => this.emit('listening'))
+      this._socket.once('close', () => this.emit('close'))
+      this._socket.on('error', err => this.emit('error', err))
+      this._socket.on('message', (msg: Buffer, rinfo: RemoteInfo) => {
+        try {
+          this._handler(msg, rinfo)
+        } catch (err) {
+          this.emit('error', err)
+        }
+      })
+    }
   }
 
-  bind (...args) {
+  bind(...args: any[]) {
     this._isAliveCheck()
     debug('call .bind')
 
-    this._socket.bind(...args)
+    if (this._socket) this._socket.bind(...args)
   }
 
-  destroy (...args) {
+  destroy(...args: any[]) {
     this._isAliveCheck()
     debug('call .destroy')
 
-    this._socket.close(...args)
-    this._socket = null
+    if (this._socket) {
+      this._socket.close(...args)
+      this._socket = null
+    }
   }
 
-  async ping (peer) {
+  async ping(peer: PeerInfo) {
     this._isAliveCheck()
 
     const rckey = `${peer.address}:${peer.udpPort}`
@@ -62,7 +79,7 @@ export class Server extends EventEmitter {
     const hash = this._send(peer, 'ping', {
       version: VERSION,
       from: this._endpoint,
-      to: peer
+      to: peer,
     })
 
     const deferred = createDeferred()
@@ -72,29 +89,34 @@ export class Server extends EventEmitter {
       deferred,
       timeoutId: setTimeout(() => {
         if (this._requests.get(rkey) !== undefined) {
-          debug(`ping timeout: ${peer.address}:${peer.udpPort} ${peer.id && peer.id.toString('hex')}`)
+          debug(
+            `ping timeout: ${peer.address}:${peer.udpPort} ${peer.id && peer.id.toString('hex')}`,
+          )
           this._requests.delete(rkey)
           deferred.reject(new Error(`Timeout error: ping ${peer.address}:${peer.udpPort}`))
         } else {
           return deferred.promise
         }
-      }, this._timeout)
+      }, this._timeout),
     })
     this._requestsCache.set(rckey, deferred.promise)
     return deferred.promise
   }
 
-  findneighbours (peer, id) {
+  findneighbours(peer: PeerInfo, id: Buffer) {
     this._isAliveCheck()
     this._send(peer, 'findneighbours', { id })
   }
 
-  _isAliveCheck () {
+  _isAliveCheck() {
     if (this._socket === null) throw new Error('Server already destroyed')
   }
 
-  _send (peer, typename, data) {
-    debug(`send ${typename} to ${peer.address}:${peer.udpPort} (peerId: ${peer.id && peer.id.toString('hex')})`)
+  _send(peer: PeerInfo, typename: string, data: any) {
+    debug(
+      `send ${typename} to ${peer.address}:${peer.udpPort} (peerId: ${peer.id &&
+        peer.id.toString('hex')})`,
+    )
 
     const msg = encode(typename, data, this._privateKey)
     // Parity hack
@@ -111,31 +133,35 @@ export class Server extends EventEmitter {
         }
       }, this._timeout)
     }
-    this._socket.send(msg, 0, msg.length, peer.udpPort, peer.address)
+    if (this._socket) this._socket.send(msg, 0, msg.length, peer.udpPort, peer.address)
     return msg.slice(0, 32) // message id
   }
 
-  _handler (msg, rinfo) {
+  _handler(msg: Buffer, rinfo: RemoteInfo) {
     const info = decode(msg)
     const peerId = pk2id(info.publicKey)
-    debug(`received ${info.typename} from ${rinfo.address}:${rinfo.port} (peerId: ${peerId.toString('hex')})`)
+    debug(
+      `received ${info.typename} from ${rinfo.address}:${rinfo.port} (peerId: ${peerId.toString(
+        'hex',
+      )})`,
+    )
 
     // add peer if not in our table
     const peer = this._dpt.getPeer(peerId)
     if (peer === null && info.typename === 'ping' && info.data.from.udpPort !== null) {
-      setTimeout(() => this.emit('peers', [ info.data.from ]), ms('100ms'))
+      setTimeout(() => this.emit('peers', [info.data.from]), ms('100ms'))
     }
 
     switch (info.typename) {
       case 'ping':
-        Object.assign(rinfo, { id: peerId, udpPort: rinfo.port })
-        this._send(rinfo, 'pong', {
+        const remote: PeerInfo = { id: peerId, udpPort: rinfo.port, address: rinfo.address }
+        this._send(remote, 'pong', {
           to: {
             address: rinfo.address,
             udpPort: rinfo.port,
-            tcpPort: info.data.from.tcpPort
+            tcpPort: info.data.from.tcpPort,
           },
-          hash: msg.slice(0, 32)
+          hash: msg.slice(0, 32),
         })
         break
 
@@ -153,7 +179,7 @@ export class Server extends EventEmitter {
             id: peerId,
             address: request.peer.address,
             udpPort: request.peer.udpPort,
-            tcpPort: request.peer.tcpPort
+            tcpPort: request.peer.tcpPort,
           })
         }
         break
@@ -161,12 +187,12 @@ export class Server extends EventEmitter {
       case 'findneighbours':
         Object.assign(rinfo, { id: peerId, udpPort: rinfo.port })
         this._send(rinfo, 'neighbours', {
-          peers: this._dpt.getClosestPeers(info.data.id)
+          peers: this._dpt.getClosestPeers(info.data.id),
         })
         break
 
       case 'neighbours':
-        this.emit('peers', info.data.peers.map((peer) => peer.endpoint))
+        this.emit('peers', info.data.peers.map((peer: Peer) => peer.endpoint))
         break
     }
   }
