@@ -1,15 +1,15 @@
-const async = require('async')
-const test = require('tape')
-const util = require('./util.js')
+import async from 'async'
+import test from 'tape'
+import * as util from './util'
 
-async function delay(ms) {
+async function delay(ms: number) {
   await new Promise(resolve => setTimeout(resolve, ms))
 }
 
 test('DPT: new working node', async t => {
   const dpts = util.initTwoPeerDPTSetup()
 
-  dpts[0].on('peer:new', function(peer) {
+  dpts[0].on('peer:new', function(peer: any) {
     t.equal(peer.address, '127.0.0.1', 'should have added peer on peer:new')
     util.destroyDPTs(dpts)
     t.end()
@@ -19,7 +19,7 @@ test('DPT: new working node', async t => {
 test('DPT: working node added', async t => {
   const dpts = util.initTwoPeerDPTSetup()
 
-  dpts[0].on('peer:added', function(peer) {
+  dpts[0].on('peer:added', function(peer: any) {
     t.equal(dpts[0].getPeers().length, 1, 'should have added peer to k-bucket on peer:added')
     util.destroyDPTs(dpts)
     t.end()
@@ -32,13 +32,13 @@ test('DPT: remove node', async t => {
   async.series(
     [
       function(cb) {
-        dpts[0].on('peer:added', function(peer) {
+        dpts[0].on('peer:added', function(peer: any) {
           dpts[0].removePeer(peer)
           cb(null)
         })
       },
       function(cb) {
-        dpts[0].on('peer:removed', function(peer) {
+        dpts[0].on('peer:removed', function(peer: any) {
           t.equal(
             dpts[0].getPeers().length,
             0,
@@ -64,13 +64,13 @@ test('DPT: ban node', async t => {
   async.series(
     [
       function(cb) {
-        dpts[0].on('peer:added', function(peer) {
+        dpts[0].on('peer:added', function(peer: any) {
           dpts[0].banPeer(peer)
           cb(null)
         })
       },
       function(cb) {
-        dpts[0].on('peer:removed', function(peer) {
+        dpts[0].on('peer:removed', function(peer: any) {
           t.equal(dpts[0]._banlist.has(peer), true, 'ban-list should contain peer')
           t.equal(
             dpts[0].getPeers().length,
@@ -97,7 +97,7 @@ test('DPT: k-bucket ping', async t => {
   async.series(
     [
       function(cb) {
-        dpts[0].on('peer:added', function(peer) {
+        dpts[0].on('peer:added', function(peer: any) {
           dpts[0]._onKBucketPing([peer], peer)
           setTimeout(function() {
             cb(null)
@@ -123,7 +123,7 @@ test('DPT: add non-available node', async t => {
   const dpts = util.getTestDPTs(1)
   const peer = { address: util.localhost, udpPort: util.basePort + 1 }
 
-  await dpts[0].addPeer(peer).catch(e => {
+  await dpts[0].addPeer(peer).catch((e: Error) => {
     t.equal(e.message, 'Timeout error: ping 127.0.0.1:30307', 'should throw Timeout error')
     util.destroyDPTs(dpts)
     t.end()

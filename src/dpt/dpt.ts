@@ -30,7 +30,7 @@ export class DPT extends EventEmitter {
     this._kbucket.on('added', peer => this.emit('peer:added', peer))
     this._kbucket.on('removed', peer => this.emit('peer:removed', peer))
     this._kbucket.on('ping', (...args: any[]) =>
-      this._onKBucketPing.apply(this._onKBucketPing, ...args),
+      this._onKBucketPing.apply(this._onKBucketPing, args),
     )
 
     this._server = new DPTServer(this, this._privateKey, {
@@ -86,6 +86,7 @@ export class DPT extends EventEmitter {
     debug(`bootstrap with peer ${peer.address}:${peer.udpPort}`)
 
     peer = await this.addPeer(peer)
+    if (!this._id) return
     this._server.findneighbours(peer, this._id)
   }
 

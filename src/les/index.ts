@@ -3,11 +3,11 @@ import rlp from 'rlp-encoding'
 import ms from 'ms'
 import { debug as createDebugLogger } from 'debug'
 import { int2buffer, buffer2int, assertEq } from '../util'
-import { Peer } from '../rlpx/peer'
+import { Peer, DISCONNECT_REASONS } from '../rlpx/peer'
 
 const debug = createDebugLogger('devp2p:les')
 
-export enum MESSAGE_CODES {
+export enum LES_MESSAGE_CODES {
   // LES/1
   STATUS = 0x00,
   ANNOUNCE = 0x01,
@@ -37,7 +37,7 @@ export enum MESSAGE_CODES {
 
 export const DEFAULT_ANNOUNCE_TYPE = 1
 
-export interface Status {
+export interface LesStatus {
   [key: string]: Buffer | number
   protocolVersion: Buffer
   networkId: Buffer | number
@@ -59,8 +59,8 @@ export class LES extends EventEmitter {
   _version: any
   _peer: any
   _send: any
-  _status: Status | null
-  _peerStatus: Status | null
+  _status: LesStatus | null
+  _peerStatus: LesStatus | null
   _statusTimeoutId: NodeJS.Timeout
   constructor(version: number, peer: Peer, send: any) {
     super()
@@ -72,17 +72,15 @@ export class LES extends EventEmitter {
     this._status = null
     this._peerStatus = null
     this._statusTimeoutId = setTimeout(() => {
-      this._peer.disconnect(Peer.DISCONNECT_REASONS.TIMEOUT)
+      this._peer.disconnect(DISCONNECT_REASONS.TIMEOUT)
     }, ms('5s'))
   }
 
   static les2 = { name: 'les', version: 2, length: 21, constructor: LES }
 
-  static MESSAGE_CODES = MESSAGE_CODES
-
-  _handleMessage(code: MESSAGE_CODES, data: any) {
+  _handleMessage(code: LES_MESSAGE_CODES, data: any) {
     const payload = rlp.decode(data)
-    if (code !== MESSAGE_CODES.STATUS) {
+    if (code !== LES_MESSAGE_CODES.STATUS) {
       debug(
         `Received ${this.getMsgPrefix(code)} message from ${this._peer._socket.remoteAddress}:${
           this._peer._socket.remotePort
@@ -90,7 +88,7 @@ export class LES extends EventEmitter {
       )
     }
     switch (code) {
-      case MESSAGE_CODES.STATUS:
+      case LES_MESSAGE_CODES.STATUS:
         assertEq(this._peerStatus, null, 'Uncontrolled status message')
         let statusArray: any = {}
         payload.forEach(function(value: any) {
@@ -105,27 +103,27 @@ export class LES extends EventEmitter {
         this._handleStatus()
         break
 
-      case MESSAGE_CODES.ANNOUNCE:
-      case MESSAGE_CODES.GET_BLOCK_HEADERS:
-      case MESSAGE_CODES.BLOCK_HEADERS:
-      case MESSAGE_CODES.GET_BLOCK_BODIES:
-      case MESSAGE_CODES.BLOCK_BODIES:
-      case MESSAGE_CODES.GET_RECEIPTS:
-      case MESSAGE_CODES.RECEIPTS:
-      case MESSAGE_CODES.GET_PROOFS:
-      case MESSAGE_CODES.PROOFS:
-      case MESSAGE_CODES.GET_CONTRACT_CODES:
-      case MESSAGE_CODES.CONTRACT_CODES:
-      case MESSAGE_CODES.GET_HEADER_PROOFS:
-      case MESSAGE_CODES.HEADER_PROOFS:
-      case MESSAGE_CODES.SEND_TX:
-      case MESSAGE_CODES.GET_PROOFS_V2:
-      case MESSAGE_CODES.PROOFS_V2:
-      case MESSAGE_CODES.GET_HELPER_TRIE_PROOFS:
-      case MESSAGE_CODES.HELPER_TRIE_PROOFS:
-      case MESSAGE_CODES.SEND_TX_V2:
-      case MESSAGE_CODES.GET_TX_STATUS:
-      case MESSAGE_CODES.TX_STATUS:
+      case LES_MESSAGE_CODES.ANNOUNCE:
+      case LES_MESSAGE_CODES.GET_BLOCK_HEADERS:
+      case LES_MESSAGE_CODES.BLOCK_HEADERS:
+      case LES_MESSAGE_CODES.GET_BLOCK_BODIES:
+      case LES_MESSAGE_CODES.BLOCK_BODIES:
+      case LES_MESSAGE_CODES.GET_RECEIPTS:
+      case LES_MESSAGE_CODES.RECEIPTS:
+      case LES_MESSAGE_CODES.GET_PROOFS:
+      case LES_MESSAGE_CODES.PROOFS:
+      case LES_MESSAGE_CODES.GET_CONTRACT_CODES:
+      case LES_MESSAGE_CODES.CONTRACT_CODES:
+      case LES_MESSAGE_CODES.GET_HEADER_PROOFS:
+      case LES_MESSAGE_CODES.HEADER_PROOFS:
+      case LES_MESSAGE_CODES.SEND_TX:
+      case LES_MESSAGE_CODES.GET_PROOFS_V2:
+      case LES_MESSAGE_CODES.PROOFS_V2:
+      case LES_MESSAGE_CODES.GET_HELPER_TRIE_PROOFS:
+      case LES_MESSAGE_CODES.HELPER_TRIE_PROOFS:
+      case LES_MESSAGE_CODES.SEND_TX_V2:
+      case LES_MESSAGE_CODES.GET_TX_STATUS:
+      case LES_MESSAGE_CODES.TX_STATUS:
         if (this._version >= LES.les2.version) break
         return
 
@@ -154,7 +152,7 @@ export class LES extends EventEmitter {
     return this._version
   }
 
-  _getStatusString(status: Status) {
+  _getStatusString(status: LesStatus) {
     var sStr = `[V:${buffer2int(status['protocolVersion'])}, `
     sStr += `NID:${buffer2int(status['networkId'] as Buffer)}, HTD:${buffer2int(
       status['headTd'],
@@ -172,7 +170,7 @@ export class LES extends EventEmitter {
     return sStr
   }
 
-  sendStatus(status: Status) {
+  sendStatus(status: LesStatus) {
     if (this._status !== null) return
 
     if (!status.announceType) {
@@ -194,41 +192,41 @@ export class LES extends EventEmitter {
         this._peer._socket.remotePort
       } (les${this._version}): ${this._getStatusString(this._status)}`,
     )
-    this._send(MESSAGE_CODES.STATUS, rlp.encode(statusList))
+    this._send(LES_MESSAGE_CODES.STATUS, rlp.encode(statusList))
     this._handleStatus()
   }
 
-  sendMessage(code: MESSAGE_CODES, reqId: number, payload: any) {
+  sendMessage(code: LES_MESSAGE_CODES, reqId: number, payload: any) {
     debug(
       `Send ${this.getMsgPrefix(code)} message to ${this._peer._socket.remoteAddress}:${
         this._peer._socket.remotePort
       }: ${rlp.encode(payload).toString('hex')}`,
     )
     switch (code) {
-      case MESSAGE_CODES.STATUS:
+      case LES_MESSAGE_CODES.STATUS:
         throw new Error('Please send status message through .sendStatus')
 
-      case MESSAGE_CODES.ANNOUNCE: // LES/1
-      case MESSAGE_CODES.GET_BLOCK_HEADERS:
-      case MESSAGE_CODES.BLOCK_HEADERS:
-      case MESSAGE_CODES.GET_BLOCK_BODIES:
-      case MESSAGE_CODES.BLOCK_BODIES:
-      case MESSAGE_CODES.GET_RECEIPTS:
-      case MESSAGE_CODES.RECEIPTS:
-      case MESSAGE_CODES.GET_PROOFS:
-      case MESSAGE_CODES.PROOFS:
-      case MESSAGE_CODES.GET_CONTRACT_CODES:
-      case MESSAGE_CODES.CONTRACT_CODES:
-      case MESSAGE_CODES.GET_HEADER_PROOFS:
-      case MESSAGE_CODES.HEADER_PROOFS:
-      case MESSAGE_CODES.SEND_TX:
-      case MESSAGE_CODES.GET_PROOFS_V2: // LES/2
-      case MESSAGE_CODES.PROOFS_V2:
-      case MESSAGE_CODES.GET_HELPER_TRIE_PROOFS:
-      case MESSAGE_CODES.HELPER_TRIE_PROOFS:
-      case MESSAGE_CODES.SEND_TX_V2:
-      case MESSAGE_CODES.GET_TX_STATUS:
-      case MESSAGE_CODES.TX_STATUS:
+      case LES_MESSAGE_CODES.ANNOUNCE: // LES/1
+      case LES_MESSAGE_CODES.GET_BLOCK_HEADERS:
+      case LES_MESSAGE_CODES.BLOCK_HEADERS:
+      case LES_MESSAGE_CODES.GET_BLOCK_BODIES:
+      case LES_MESSAGE_CODES.BLOCK_BODIES:
+      case LES_MESSAGE_CODES.GET_RECEIPTS:
+      case LES_MESSAGE_CODES.RECEIPTS:
+      case LES_MESSAGE_CODES.GET_PROOFS:
+      case LES_MESSAGE_CODES.PROOFS:
+      case LES_MESSAGE_CODES.GET_CONTRACT_CODES:
+      case LES_MESSAGE_CODES.CONTRACT_CODES:
+      case LES_MESSAGE_CODES.GET_HEADER_PROOFS:
+      case LES_MESSAGE_CODES.HEADER_PROOFS:
+      case LES_MESSAGE_CODES.SEND_TX:
+      case LES_MESSAGE_CODES.GET_PROOFS_V2: // LES/2
+      case LES_MESSAGE_CODES.PROOFS_V2:
+      case LES_MESSAGE_CODES.GET_HELPER_TRIE_PROOFS:
+      case LES_MESSAGE_CODES.HELPER_TRIE_PROOFS:
+      case LES_MESSAGE_CODES.SEND_TX_V2:
+      case LES_MESSAGE_CODES.GET_TX_STATUS:
+      case LES_MESSAGE_CODES.TX_STATUS:
         if (this._version >= LES.les2.version) break
         throw new Error(`Code ${code} not allowed with version ${this._version}`)
 
@@ -239,7 +237,7 @@ export class LES extends EventEmitter {
     this._send(code, rlp.encode([reqId, payload]))
   }
 
-  getMsgPrefix(msgCode: MESSAGE_CODES) {
-    return MESSAGE_CODES[msgCode]
+  getMsgPrefix(msgCode: LES_MESSAGE_CODES) {
+    return LES_MESSAGE_CODES[msgCode]
   }
 }

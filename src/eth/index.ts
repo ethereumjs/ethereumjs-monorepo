@@ -2,7 +2,7 @@ import { EventEmitter } from 'events'
 import rlp from 'rlp-encoding'
 import ms from 'ms'
 import { int2buffer, buffer2int, assertEq } from '../util'
-import { Peer } from '../rlpx/peer'
+import { Peer, DISCONNECT_REASONS } from '../rlpx/peer'
 
 const createDebugLogger = require('debug')
 const debug = createDebugLogger('devp2p:eth')
@@ -60,14 +60,12 @@ export class ETH extends EventEmitter {
     this._status = null
     this._peerStatus = null
     this._statusTimeoutId = setTimeout(() => {
-      this._peer.disconnect(Peer.DISCONNECT_REASONS.TIMEOUT)
+      this._peer.disconnect(DISCONNECT_REASONS.TIMEOUT)
     }, ms('5s'))
   }
 
   static eth62 = { name: 'eth', version: 62, length: 8, constructor: ETH }
   static eth63 = { name: 'eth', version: 63, length: 17, constructor: ETH }
-
-  static MESSAGE_CODES = MESSAGE_CODES
 
   _handleMessage(code: MESSAGE_CODES, data: any) {
     const payload = rlp.decode(data)

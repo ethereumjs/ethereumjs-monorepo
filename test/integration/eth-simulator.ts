@@ -1,6 +1,6 @@
-const test = require('tape')
-const devp2p = require('../../src')
-const util = require('./util.js')
+import test from 'tape'
+import * as devp2p from '../../src'
+import * as util from './util'
 
 const CHAIN_ID = 1
 
@@ -14,7 +14,7 @@ var capabilities = [devp2p.ETH.eth63, devp2p.ETH.eth62]
 
 const status = {
   networkId: CHAIN_ID,
-  td: devp2p._util.int2buffer(GENESIS_TD),
+  td: devp2p.int2buffer(GENESIS_TD),
   bestHash: GENESIS_HASH,
   genesisHash: GENESIS_HASH,
 }
@@ -23,10 +23,10 @@ const status = {
 process.on('unhandledRejection', (reason, p) => {})
 
 test('ETH: send status message (successful)', async t => {
-  let opts = {}
+  let opts: any = {}
   opts.status0 = Object.assign({}, status)
   opts.status1 = Object.assign({}, status)
-  opts.onOnceStatus0 = function(rlpxs, eth) {
+  opts.onOnceStatus0 = function(rlpxs: any, eth: any) {
     t.pass('should receive echoing status message and welcome connection')
     util.destroyRLPXs(rlpxs)
     t.end()
@@ -35,12 +35,12 @@ test('ETH: send status message (successful)', async t => {
 })
 
 test('ETH: send status message (NetworkId mismatch)', async t => {
-  let opts = {}
+  let opts: any = {}
   opts.status0 = Object.assign({}, status)
   let status1 = Object.assign({}, status)
   status1['networkId'] = 2
   opts.status1 = status1
-  opts.onPeerError0 = function(err, rlpxs) {
+  opts.onPeerError0 = function(err: Error, rlpxs: any) {
     const msg = 'NetworkId mismatch: 01 / 02'
     t.equal(err.message, msg, `should emit error: ${msg}`)
     util.destroyRLPXs(rlpxs)
@@ -50,12 +50,12 @@ test('ETH: send status message (NetworkId mismatch)', async t => {
 })
 
 test('ETH: send status message (Genesis block mismatch)', async t => {
-  let opts = {}
+  let opts: any = {}
   opts.status0 = Object.assign({}, status)
   let status1 = Object.assign({}, status)
   status1['genesisHash'] = Buffer.alloc(32)
   opts.status1 = status1
-  opts.onPeerError0 = function(err, rlpxs) {
+  opts.onPeerError0 = function(err: Error, rlpxs: any) {
     const msg =
       'Genesis block mismatch: d4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3 / 0000000000000000000000000000000000000000000000000000000000000000'
     t.equal(err.message, msg, `should emit error: ${msg}`)
@@ -66,16 +66,16 @@ test('ETH: send status message (Genesis block mismatch)', async t => {
 })
 
 test('ETH: send allowed eth63', async t => {
-  let opts = {}
+  let opts: any = {}
   opts.status0 = Object.assign({}, status)
   opts.status1 = Object.assign({}, status)
-  opts.onOnceStatus0 = function(rlpxs, eth) {
+  opts.onOnceStatus0 = function(rlpxs: any, eth: any) {
     t.equal(eth.getVersion(), 63, 'should use eth63 as protocol version')
-    eth.sendMessage(devp2p.ETH.MESSAGE_CODES.NEW_BLOCK_HASHES, [437000, 1, 0, 0])
+    eth.sendMessage(devp2p.MESSAGE_CODES.NEW_BLOCK_HASHES, [437000, 1, 0, 0])
     t.pass('should send NEW_BLOCK_HASHES message')
   }
-  opts.onOnMsg1 = function(rlpxs, eth, code, payload) {
-    if (code === devp2p.ETH.MESSAGE_CODES.NEW_BLOCK_HASHES) {
+  opts.onOnMsg1 = function(rlpxs: any, eth: any, code: any, payload: any) {
+    if (code === devp2p.MESSAGE_CODES.NEW_BLOCK_HASHES) {
       t.pass('should receive NEW_BLOCK_HASHES message')
       util.destroyRLPXs(rlpxs)
       t.end()
@@ -86,15 +86,15 @@ test('ETH: send allowed eth63', async t => {
 
 test('ETH: send allowed eth62', async t => {
   let cap = [devp2p.ETH.eth62]
-  let opts = {}
+  let opts: any = {}
   opts.status0 = Object.assign({}, status)
   opts.status1 = Object.assign({}, status)
-  opts.onOnceStatus0 = function(rlpxs, eth) {
-    eth.sendMessage(devp2p.ETH.MESSAGE_CODES.NEW_BLOCK_HASHES, [437000, 1, 0, 0])
+  opts.onOnceStatus0 = function(rlpxs: any, eth: any) {
+    eth.sendMessage(devp2p.MESSAGE_CODES.NEW_BLOCK_HASHES, [437000, 1, 0, 0])
     t.pass('should send NEW_BLOCK_HASHES message')
   }
-  opts.onOnMsg1 = function(rlpxs, eth, code, payload) {
-    if (code === devp2p.ETH.MESSAGE_CODES.NEW_BLOCK_HASHES) {
+  opts.onOnMsg1 = function(rlpxs: any, eth: any, code: any, payload: any) {
+    if (code === devp2p.MESSAGE_CODES.NEW_BLOCK_HASHES) {
       t.pass('should receive NEW_BLOCK_HASHES message')
       util.destroyRLPXs(rlpxs)
       t.end()
@@ -105,12 +105,12 @@ test('ETH: send allowed eth62', async t => {
 
 test('ETH: send not-allowed eth62', async t => {
   let cap = [devp2p.ETH.eth62]
-  let opts = {}
+  let opts: any = {}
   opts.status0 = Object.assign({}, status)
   opts.status1 = Object.assign({}, status)
-  opts.onOnceStatus0 = function(rlpxs, eth) {
+  opts.onOnceStatus0 = function(rlpxs: any, eth: any) {
     try {
-      eth.sendMessage(devp2p.ETH.MESSAGE_CODES.GET_NODE_DATA, [])
+      eth.sendMessage(devp2p.MESSAGE_CODES.GET_NODE_DATA, [])
     } catch (err) {
       const msg = 'Error: Code 13 not allowed with version 62'
       t.equal(err.toString(), msg, `should emit error: ${msg}`)
@@ -122,10 +122,10 @@ test('ETH: send not-allowed eth62', async t => {
 })
 
 test('ETH: send unknown message code', async t => {
-  let opts = {}
+  let opts: any = {}
   opts.status0 = Object.assign({}, status)
   opts.status1 = Object.assign({}, status)
-  opts.onOnceStatus0 = function(rlpxs, eth) {
+  opts.onOnceStatus0 = function(rlpxs: any, eth: any) {
     try {
       eth.sendMessage(0x55, [])
     } catch (err) {
@@ -139,12 +139,12 @@ test('ETH: send unknown message code', async t => {
 })
 
 test('ETH: invalid status send', async t => {
-  let opts = {}
+  let opts: any = {}
   opts.status0 = Object.assign({}, status)
   opts.status1 = Object.assign({}, status)
-  opts.onOnceStatus0 = function(rlpxs, eth) {
+  opts.onOnceStatus0 = function(rlpxs: any, eth: any) {
     try {
-      eth.sendMessage(devp2p.ETH.MESSAGE_CODES.STATUS, [])
+      eth.sendMessage(devp2p.MESSAGE_CODES.STATUS, [])
     } catch (err) {
       const msg = 'Error: Please send status message through .sendStatus'
       t.equal(err.toString(), msg, `should emit error: ${msg}`)

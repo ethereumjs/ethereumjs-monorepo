@@ -1,9 +1,11 @@
+import { Test } from "tape";
+
 const devp2p = require('../../src')
 
-const localhost = '127.0.0.1'
-const basePort = 30306
+export const localhost = '127.0.0.1'
+export const basePort = 30306
 
-exports.getTestDPTs = function(numDPTs) {
+export function getTestDPTs(numDPTs: any) {
   const dpts = []
 
   for (let i = 0; i < numDPTs; ++i) {
@@ -21,18 +23,18 @@ exports.getTestDPTs = function(numDPTs) {
   return dpts
 }
 
-exports.initTwoPeerDPTSetup = function() {
+export function initTwoPeerDPTSetup () {
   const dpts = exports.getTestDPTs(2)
   const peer = { address: localhost, udpPort: basePort + 1 }
   dpts[0].addPeer(peer)
   return dpts
 }
 
-exports.destroyDPTs = function(dpts) {
+export function destroyDPTs(dpts: any) {
   for (let dpt of dpts) dpt.destroy()
 }
 
-exports.getTestRLPXs = function(numRLPXs, maxPeers, capabilities) {
+export function getTestRLPXs(numRLPXs: any, maxPeers: any, capabilities: any) {
   const rlpxs = []
   if (!capabilities) {
     capabilities = [devp2p.ETH.eth63, devp2p.ETH.eth62]
@@ -52,7 +54,7 @@ exports.getTestRLPXs = function(numRLPXs, maxPeers, capabilities) {
   return rlpxs
 }
 
-exports.initTwoPeerRLPXSetup = function(maxPeers, capabilities) {
+export function initTwoPeerRLPXSetup(maxPeers: any, capabilities: any) {
   const rlpxs = exports.getTestRLPXs(2, maxPeers, capabilities)
   const peer = { address: localhost, udpPort: basePort + 1, tcpPort: basePort + 1 }
   rlpxs[0]._dpt.addPeer(peer)
@@ -71,19 +73,19 @@ exports.initTwoPeerRLPXSetup = function(maxPeers, capabilities) {
  * @param {Function} opts.onOnMsg0 (rlpxs, protocol, code, payload) Optional handler function
  * @param {Function} opts.onOnMsg1 (rlpxs, protocol, code, payload) Optional handler function
  */
-exports.twoPeerMsgExchange = function(t, capabilities, opts) {
+export function twoPeerMsgExchange(t: Test, capabilities: any, opts: any) {
   const rlpxs = exports.initTwoPeerRLPXSetup(null, capabilities)
-  rlpxs[0].on('peer:added', function(peer) {
+  rlpxs[0].on('peer:added', function(peer: any) {
     const protocol = peer.getProtocols()[0]
     protocol.sendStatus(opts.status0) // (1 ->)
 
     protocol.once('status', () => {
       if (opts.onOnceStatus0) opts.onOnceStatus0(rlpxs, protocol)
     }) // (-> 2)
-    protocol.on('message', async (code, payload) => {
+    protocol.on('message', async (code: any, payload: any) => {
       if (opts.onOnMsg0) opts.onOnMsg0(rlpxs, protocol, code, payload)
     })
-    peer.on('error', err => {
+    peer.on('error', (err: Error) => {
       if (opts.onPeerError0) {
         opts.onPeerError0(err, rlpxs)
       } else {
@@ -92,9 +94,9 @@ exports.twoPeerMsgExchange = function(t, capabilities, opts) {
     }) // (-> 2)
   })
 
-  rlpxs[1].on('peer:added', function(peer) {
+  rlpxs[1].on('peer:added', function(peer: any) {
     const protocol = peer.getProtocols()[0]
-    protocol.on('message', async (code, payload) => {
+    protocol.on('message', async (code: any, payload: any) => {
       switch (code) {
         // Comfortability hack, use constants like devp2p.ETH.MESSAGE_CODES.STATUS
         // in production use
@@ -105,7 +107,7 @@ exports.twoPeerMsgExchange = function(t, capabilities, opts) {
       }
       if (opts.onOnMsg1) opts.onOnMsg1(rlpxs, protocol, code, payload)
     })
-    peer.on('error', err => {
+    peer.on('error', (err: any) => {
       if (opts.onPeerError1) {
         opts.onPeerError1(err, rlpxs)
       } else {
@@ -115,13 +117,10 @@ exports.twoPeerMsgExchange = function(t, capabilities, opts) {
   })
 }
 
-exports.destroyRLPXs = function(rlpxs) {
+export function destroyRLPXs(rlpxs: any) {
   for (let rlpx of rlpxs) {
     // FIXME: Call destroy() on dpt instance from the rlpx.destroy() method
     rlpx._dpt.destroy()
     rlpx.destroy()
   }
 }
-
-exports.localhost = localhost
-exports.basePort = basePort

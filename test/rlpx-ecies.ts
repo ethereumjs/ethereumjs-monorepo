@@ -1,15 +1,21 @@
-const { randomBytes } = require('crypto')
-const secp256k1 = require('secp256k1')
-const test = require('tape')
-const util = require('../src/util')
-const ECIES = require('../src/rlpx/ecies')
+import { randomBytes } from 'crypto'
+import * as secp256k1 from 'secp256k1'
+import test, { Test } from 'tape'
+import * as util from '../src/util'
+import {ECIES} from '../src/rlpx/ecies'
 
-const testdata = require('./testdata.json')
+import testdata from './testdata.json'
 
-function randomBefore(fn) {
-  return t => {
-    const privateKey1 = util.genPrivateKey(32)
-    const privateKey2 = util.genPrivateKey(32)
+declare module 'tape' {
+  export interface Test {
+    context: any
+  }
+}
+
+function randomBefore(fn: Function) {
+  return (t: Test) => {
+    const privateKey1 = util.genPrivateKey()
+    const privateKey2 = util.genPrivateKey()
     const publicKey1 = secp256k1.publicKeyCreate(privateKey1, false)
     const publicKey2 = secp256k1.publicKeyCreate(privateKey2, false)
     t.context = {
@@ -21,8 +27,8 @@ function randomBefore(fn) {
   }
 }
 
-function testdataBefore(fn) {
-  return t => {
+function testdataBefore(fn: Function) {
+  return (t: Test) => {
     const v = testdata.eip8Values
     const keyA = Buffer.from(v.keyA, 'hex')
     const keyB = Buffer.from(v.keyB, 'hex')
@@ -47,8 +53,8 @@ function testdataBefore(fn) {
 }
 
 test(
-  'Random: message encryption',
-  randomBefore(t => {
+'Random: message encryption',
+  randomBefore((t: Test) => {
     const message = Buffer.from('The Magic Words are Squeamish Ossifrage')
     const encrypted = t.context.a._encryptMessage(message)
     const decrypted = t.context.b._decryptMessage(encrypted)
@@ -59,7 +65,7 @@ test(
 
 test(
   'Random: auth -> ack -> header -> body (old format/no EIP8)',
-  randomBefore(t => {
+  randomBefore((t: Test) => {
     t.doesNotThrow(() => {
       const auth = t.context.a.createAuthNonEIP8()
       t.context.b._gotEIP8Auth = false
@@ -85,7 +91,7 @@ test(
 
 test(
   'Random: auth -> ack (EIP8)',
-  randomBefore(t => {
+  randomBefore((t: Test) => {
     t.doesNotThrow(() => {
       const auth = t.context.a.createAuthEIP8()
       t.context.b._gotEIP8Auth = true
@@ -104,7 +110,7 @@ test(
 
 test(
   'Testdata: auth -> ack (old format/no EIP8)',
-  testdataBefore(t => {
+  testdataBefore((t: Test) => {
     t.doesNotThrow(() => {
       t.context.b._gotEIP8Auth = false
       t.context.b.parseAuthPlain(t.context.h0.auth)
@@ -122,7 +128,7 @@ test(
 
 test(
   'Testdata: auth -> ack (EIP8)',
-  testdataBefore(t => {
+  testdataBefore((t: Test) => {
     t.doesNotThrow(() => {
       t.context.b._gotEIP8Auth = true
       t.context.b.parseAuthEIP8(t.context.h1.auth)
