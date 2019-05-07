@@ -2,7 +2,7 @@ import { randomBytes } from 'crypto'
 import * as secp256k1 from 'secp256k1'
 import test, { Test } from 'tape'
 import * as util from '../src/util'
-import {ECIES} from '../src/rlpx/ecies'
+import { ECIES } from '../src/rlpx/ecies'
 
 import testdata from './testdata.json'
 
@@ -53,7 +53,7 @@ function testdataBefore(fn: Function) {
 }
 
 test(
-'Random: message encryption',
+  'Random: message encryption',
   randomBefore((t: Test) => {
     const message = Buffer.from('The Magic Words are Squeamish Ossifrage')
     const encrypted = t.context.a._encryptMessage(message)

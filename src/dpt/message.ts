@@ -10,8 +10,8 @@ function getTimestamp() {
 export interface PeerInfo {
   id?: Buffer
   address: string
-  udpPort: number | null
-  tcpPort: number | null
+  udpPort?: number | null
+  tcpPort?: number | null
 }
 
 const timestamp = {
@@ -46,7 +46,7 @@ const address = {
 }
 
 const port = {
-  encode: function(value: number): Buffer {
+  encode: function(value: number | null): Buffer {
     if (value === null) return Buffer.allocUnsafe(0)
     if (value >>> 16 > 0) throw new RangeError(`Invalid port: ${value}`)
     return Buffer.from([(value >>> 8) & 0xff, (value >>> 0) & 0xff])
@@ -60,13 +60,17 @@ const port = {
 
 const endpoint = {
   encode: function(obj: PeerInfo): Buffer[] {
-    return [address.encode(obj.address), port.encode(obj.udpPort), port.encode(obj.tcpPort)]
+    return [
+      address.encode(obj.address),
+      port.encode(obj.udpPort || null),
+      port.encode(obj.tcpPort || null),
+    ]
   },
   decode: function(payload: Buffer[]): PeerInfo {
     return {
       address: address.decode(payload[0]),
-      udpPort: port.decode(payload[1]) || null,
-      tcpPort: port.decode(payload[2]) || null,
+      udpPort: port.decode(payload[1]),
+      tcpPort: port.decode(payload[2]),
     }
   },
 }

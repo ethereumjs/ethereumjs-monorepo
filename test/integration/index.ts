@@ -1,5 +1,6 @@
-export * from './dpt-simulator'
-export * from './eth-simulator'
-export * from './les-simulator'
-export * from './rlpx-simulator'
+import './dpt-simulator'
+import './eth-simulator'
+import './les-simulator'
+import './rlpx-simulator'
+
 export * from './util'

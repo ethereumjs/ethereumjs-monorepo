@@ -20,12 +20,9 @@ export function genPrivateKey() {
   }
 }
 
-export function pk2id(pk: Buffer): Buffer | never {
-  if (pk.length !== 33) {
-    throw new Error('pk has to be a valid private key!')
-  }
-  const pkBuff = publicKeyConvert(pk, false)
-  return pkBuff.slice(1)
+export function pk2id(pk: Buffer): Buffer {
+  if (pk.length === 33) pk = publicKeyConvert(pk, false)
+  return pk.slice(1)
 }
 
 export function id2pk(id: Buffer): Buffer {
@@ -53,7 +50,7 @@ export function zfill(buffer: Buffer, size: number, leftpad: boolean = true): Bu
   return leftpad ? Buffer.concat([pad, buffer]) : Buffer.concat([buffer, pad])
 }
 
-export function xor(a: Buffer, b: Buffer): Buffer {
+export function xor(a: Buffer, b: any): Buffer {
   const length = Math.min(a.length, b.length)
   const buffer = Buffer.allocUnsafe(length)
   for (let i = 0; i < length; ++i) buffer[i] = a[i] ^ b[i]

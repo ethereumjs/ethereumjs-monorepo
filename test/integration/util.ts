@@ -1,6 +1,6 @@
-import { Test } from "tape";
+import { Test } from 'tape'
 
-const devp2p = require('../../src')
+import { DPT, ETH, RLPx, genPrivateKey } from '../../src'
 
 export const localhost = '127.0.0.1'
 export const basePort = 30306
@@ -9,7 +9,7 @@ export function getTestDPTs(numDPTs: any) {
   const dpts = []
 
   for (let i = 0; i < numDPTs; ++i) {
-    const dpt = new devp2p.DPT(devp2p._util.genPrivateKey(), {
+    const dpt = new DPT(genPrivateKey(), {
       endpoint: {
         address: localhost,
         udpPort: basePort + i,
@@ -23,8 +23,8 @@ export function getTestDPTs(numDPTs: any) {
   return dpts
 }
 
-export function initTwoPeerDPTSetup () {
-  const dpts = exports.getTestDPTs(2)
+export function initTwoPeerDPTSetup() {
+  const dpts = getTestDPTs(2)
   const peer = { address: localhost, udpPort: basePort + 1 }
   dpts[0].addPeer(peer)
   return dpts
@@ -37,12 +37,12 @@ export function destroyDPTs(dpts: any) {
 export function getTestRLPXs(numRLPXs: any, maxPeers: any, capabilities: any) {
   const rlpxs = []
   if (!capabilities) {
-    capabilities = [devp2p.ETH.eth63, devp2p.ETH.eth62]
+    capabilities = [ETH.eth63, ETH.eth62]
   }
-  const dpts = exports.getTestDPTs(numRLPXs)
+  const dpts = getTestDPTs(numRLPXs)
 
   for (let i = 0; i < numRLPXs; ++i) {
-    const rlpx = new devp2p.RLPx(dpts[i]._privateKey, {
+    const rlpx = new RLPx(dpts[i].privateKey, {
       dpt: dpts[i],
       maxPeers: maxPeers,
       capabilities: capabilities,
@@ -55,7 +55,7 @@ export function getTestRLPXs(numRLPXs: any, maxPeers: any, capabilities: any) {
 }
 
 export function initTwoPeerRLPXSetup(maxPeers: any, capabilities: any) {
-  const rlpxs = exports.getTestRLPXs(2, maxPeers, capabilities)
+  const rlpxs = getTestRLPXs(2, maxPeers, capabilities)
   const peer = { address: localhost, udpPort: basePort + 1, tcpPort: basePort + 1 }
   rlpxs[0]._dpt.addPeer(peer)
   return rlpxs
@@ -74,7 +74,7 @@ export function initTwoPeerRLPXSetup(maxPeers: any, capabilities: any) {
  * @param {Function} opts.onOnMsg1 (rlpxs, protocol, code, payload) Optional handler function
  */
 export function twoPeerMsgExchange(t: Test, capabilities: any, opts: any) {
-  const rlpxs = exports.initTwoPeerRLPXSetup(null, capabilities)
+  const rlpxs = initTwoPeerRLPXSetup(null, capabilities)
   rlpxs[0].on('peer:added', function(peer: any) {
     const protocol = peer.getProtocols()[0]
     protocol.sendStatus(opts.status0) // (1 ->)

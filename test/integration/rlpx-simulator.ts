@@ -1,7 +1,7 @@
 import async from 'async'
 import test from 'tape'
-import * as util from './util.js'
-import { Peer, DISCONNECT_REASONS } from '../../src/rlpx/peer'
+import * as util from './util'
+import { DISCONNECT_REASONS } from '../../src/rlpx/peer'
 
 test('RLPX: add working node', async t => {
   const rlpxs = util.initTwoPeerRLPXSetup(null, null)
@@ -25,11 +25,11 @@ test('RLPX: ban node with missing tcp port', async t => {
       tcpPort: null,
     }
     t.notOk(
-      rlpxs[0]._dpt._banlist.has(peer),
+      rlpxs[0]._dpt.banlist.has(peer),
       'should not be in ban list before bad peer discovered',
     )
     rlpxs[0]._dpt.emit('peer:new', peer)
-    t.ok(rlpxs[0]._dpt._banlist.has(peer), 'should be in ban list after bad peer discovered')
+    t.ok(rlpxs[0]._dpt.banlist.has(peer), 'should be in ban list after bad peer discovered')
     util.destroyRLPXs(rlpxs)
     t.end()
   })
@@ -47,7 +47,7 @@ test('RLPX: remove node', async t => {
         })
       },
       function(cb) {
-        rlpxs[0].on('peer:removed', function(peer: any, reason: any, disconnectWe: any) {
+        rlpxs[0].on('peer:removed', function(peer: any, reason: any) {
           t.equal(
             reason,
             DISCONNECT_REASONS.CLIENT_QUITTING,
@@ -58,7 +58,7 @@ test('RLPX: remove node', async t => {
         })
       },
     ],
-    function(err, results) {
+    function(err) {
       if (err) {
         t.fail('An unexpected error occured.')
       }
@@ -77,7 +77,7 @@ test('RLPX: test peer queue / refill connections', async t => {
   async.series(
     [
       function(cb) {
-        rlpxs[0].once('peer:added', function(peer: any) {
+        rlpxs[0].once('peer:added', function() {
           t.equal(rlpxs[0]._peersQueue.length, 0, 'peers queue should contain no peers')
           const peer2 = {
             address: util.localhost,
@@ -89,14 +89,14 @@ test('RLPX: test peer queue / refill connections', async t => {
         })
       },
       function(cb) {
-        rlpxs[0].once('peer:added', function(peer: any) {
+        rlpxs[0].once('peer:added', function() {
           // FIXME: values not as expected
           // t.equal(rlpxs[0]._peersQueue.length, 1, 'peers queue should contain one peer')
           cb(null)
         })
       },
     ],
-    function(err, results) {
+    function(err) {
       if (err) {
         t.fail('An unexpected error occured.')
       }

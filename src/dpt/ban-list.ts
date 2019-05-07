@@ -10,7 +10,7 @@ export class BanList {
     this.lru = new LRUCache({ max: 30000 }) // 10k should be enough (each peer obj can has 3 keys)
   }
 
-  add(obj: any, maxAge: number) {
+  add(obj: any, maxAge?: number) {
     for (let key of KBucket.getKeys(obj)) {
       debug(`add ${key}, size: ${this.lru.length}`)
       this.lru.set(key, true, maxAge)

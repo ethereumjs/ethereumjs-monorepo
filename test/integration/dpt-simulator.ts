@@ -71,7 +71,7 @@ test('DPT: ban node', async t => {
       },
       function(cb) {
         dpts[0].on('peer:removed', function(peer: any) {
-          t.equal(dpts[0]._banlist.has(peer), true, 'ban-list should contain peer')
+          t.equal(dpts[0].banlist.has(peer), true, 'ban-list should contain peer')
           t.equal(
             dpts[0].getPeers().length,
             0,

@@ -8,6 +8,7 @@ import LRUCache from 'lru-cache'
 import { version as pVersion } from '../../package.json'
 import { pk2id, createDeferred } from '../util'
 import { Peer, DISCONNECT_REASONS } from './peer'
+import { DPT } from '../dpt'
 
 const debug = createDebugLogger('devp2p:rlpx')
 
@@ -20,10 +21,10 @@ export class RLPx extends EventEmitter {
   _remoteClientIdFilter: any
   _capabilities: any
   _listenPort: any
-  _dpt: any
+  _dpt: DPT
   _peersLRU: any
   _peersQueue: any
-  _server: net.Server
+  _server: net.Server | null
   _peers: Map<any, any>
   _refillIntervalId: NodeJS.Timeout
 
@@ -46,7 +47,7 @@ export class RLPx extends EventEmitter {
     // DPT
     this._dpt = options.dpt || null
     if (this._dpt !== null) {
-      this._dpt.on('peer:new', peer => {
+      this._dpt.on('peer:new', (peer: any) => {
         if (!peer.tcpPort) {
           this._dpt.banPeer(peer, ms('5m'))
           debug(`banning peer with missing tcp port: ${peer.address}`)
@@ -59,9 +60,9 @@ export class RLPx extends EventEmitter {
         if (this._getOpenSlots() > 0) return this._connectToPeer(peer)
         this._peersQueue.push({ peer: peer, ts: 0 }) // save to queue
       })
-      this._dpt.on('peer:removed', peer => {
+      this._dpt.on('peer:removed', (peer: any) => {
         // remove from queue
-        this._peersQueue = this._peersQueue.filter(item => !item.peer.id.equals(peer.id))
+        this._peersQueue = this._peersQueue.filter((item: any) => !item.peer.id.equals(peer.id))
       })
     }
 
@@ -82,7 +83,7 @@ export class RLPx extends EventEmitter {
     this._isAliveCheck()
     debug('call .listen')
 
-    this._server.listen(...args)
+    if (this._server) this._server.listen(...args)
   }
 
   destroy(...args: any[]) {
@@ -91,13 +92,13 @@ export class RLPx extends EventEmitter {
 
     clearInterval(this._refillIntervalId)
 
-    this._server.close(...args)
+    if (this._server) this._server.close(...args)
     this._server = null
 
     for (let peerKey of this._peers.keys()) this.disconnect(Buffer.from(peerKey, 'hex'))
   }
 
-  async connect(peer) {
+  async connect(peer: any) {
     this._isAliveCheck()
 
     if (!Buffer.isBuffer(peer.id)) throw new TypeError('Expected peer.id as Buffer')
@@ -145,7 +146,7 @@ export class RLPx extends EventEmitter {
     return Math.max(this._maxPeers - this._peers.size, 0)
   }
 
-  _connectToPeer(peer) {
+  _connectToPeer(peer: any) {
     const opts = { id: peer.id, address: peer.address, port: peer.tcpPort }
     this.connect(opts).catch(err => {
       if (this._dpt === null) return
@@ -155,10 +156,10 @@ export class RLPx extends EventEmitter {
     })
   }
 
-  _onConnect(socket, peerId) {
+  _onConnect(socket: net.Socket, peerId: any) {
     debug(`connected to ${socket.remoteAddress}:${socket.remotePort}, handshake waiting..`)
 
-    const peer = new Peer({
+    const peer: Peer = new Peer({
       socket: socket,
       remoteId: peerId,
       privateKey: this._privateKey,
@@ -188,11 +189,13 @@ export class RLPx extends EventEmitter {
         msg += ` (peer eip8 ack)`
       }
       debug(msg)
-      if (peer.getId().equals(this._id)) {
+      const id = peer.getId()
+      if (id && id.equals(this._id)) {
         return peer.disconnect(DISCONNECT_REASONS.SAME_IDENTITY)
       }
 
-      const peerKey = peer.getId().toString('hex')
+      if (!id) return
+      const peerKey = id.toString('hex')
       const item = this._peers.get(peerKey)
       if (item && item instanceof Peer) {
         return peer.disconnect(DISCONNECT_REASONS.ALREADY_CONNECTED)
@@ -222,9 +225,13 @@ export class RLPx extends EventEmitter {
           ts: Date.now() + ms('5m'),
         })
       }
-      let peerKey = peer.getId().toString('hex')
-      this._peers.delete(peerKey)
-      this.emit('peer:removed', peer, reason, disconnectWe)
+
+      const id = peer.getId()
+      if (id) {
+        let peerKey = id.toString('hex')
+        this._peers.delete(peerKey)
+        this.emit('peer:removed', peer, reason, disconnectWe)
+      }
     })
   }
 
@@ -236,7 +243,7 @@ export class RLPx extends EventEmitter {
       }, open slots: ${this._getOpenSlots()}`,
     )
 
-    this._peersQueue = this._peersQueue.filter(item => {
+    this._peersQueue = this._peersQueue.filter((item: any) => {
       if (this._getOpenSlots() === 0) return true
       if (item.ts > Date.now()) return true
 

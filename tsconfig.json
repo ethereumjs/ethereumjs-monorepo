@@ -8,6 +8,7 @@
     },
     "typeRoots": ["definitions", "node_modules/@types"],
     "esModuleInterop": true,
-    "allowSyntheticDefaultImports": true
+    "allowSyntheticDefaultImports": true,
+    "downlevelIteration": true
   }
 }

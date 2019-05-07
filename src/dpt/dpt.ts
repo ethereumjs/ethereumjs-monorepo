@@ -11,29 +11,28 @@ import { Server as DPTServer } from './server'
 const debug = createDebugLogger('devp2p:dpt')
 
 export class DPT extends EventEmitter {
-  private _privateKey: Buffer
-  private _id: Buffer | undefined
-  private _banlist: BanList
-  _kbucket: KBucket
-  _server: DPTServer
-  _refreshIntervalId: NodeJS.Timeout
+  privateKey: Buffer
+  banlist: BanList
 
-  constructor(privateKey: string, options: any) {
+  private _id: Buffer | undefined
+  private _kbucket: KBucket
+  private _server: DPTServer
+  private _refreshIntervalId: NodeJS.Timeout
+
+  constructor(privateKey: Buffer, options: any) {
     super()
 
-    this._privateKey = Buffer.from(privateKey)
-    this._id = pk2id(publicKeyCreate(this._privateKey, false))
+    this.privateKey = Buffer.from(privateKey)
+    this._id = pk2id(publicKeyCreate(this.privateKey, false))
 
-    this._banlist = new BanList()
+    this.banlist = new BanList()
 
     this._kbucket = new KBucket(this._id)
     this._kbucket.on('added', peer => this.emit('peer:added', peer))
     this._kbucket.on('removed', peer => this.emit('peer:removed', peer))
-    this._kbucket.on('ping', (...args: any[]) =>
-      this._onKBucketPing.apply(this._onKBucketPing, args),
-    )
+    this._kbucket.on('ping', this._onKBucketPing)
 
-    this._server = new DPTServer(this, this._privateKey, {
+    this._server = new DPTServer(this, this.privateKey, {
       createSocket: options.createSocket,
       timeout: options.timeout,
       endpoint: options.endpoint,
@@ -57,7 +56,7 @@ export class DPT extends EventEmitter {
   }
 
   _onKBucketPing(oldPeers: any[], newPeer: any): void {
-    if (this._banlist.has(newPeer)) return
+    if (this.banlist.has(newPeer)) return
 
     let count = 0
     let err: Error | null = null
@@ -65,14 +64,14 @@ export class DPT extends EventEmitter {
       this._server
         .ping(peer)
         .catch((_err: Error) => {
-          this._banlist.add(peer, ms('5m'))
+          this.banlist.add(peer, ms('5m'))
           this._kbucket.remove(peer)
           err = err || _err
         })
         .then(() => {
           if (++count < oldPeers.length) return
 
-          if (err === null) this._banlist.add(newPeer, ms('5m'))
+          if (err === null) this.banlist.add(newPeer, ms('5m'))
           else this._kbucket.add(newPeer)
         })
     }
@@ -91,7 +90,7 @@ export class DPT extends EventEmitter {
   }
 
   async addPeer(obj: any): Promise<any> {
-    if (this._banlist.has(obj)) throw new Error('Peer is banned')
+    if (this.banlist.has(obj)) throw new Error('Peer is banned')
     debug(`attempt adding peer ${obj.address}:${obj.udpPort}`)
 
     // check k-bucket first
@@ -105,7 +104,7 @@ export class DPT extends EventEmitter {
       this._kbucket.add(peer)
       return peer
     } catch (err) {
-      this._banlist.add(obj, ms('5m'))
+      this.banlist.add(obj, ms('5m'))
       throw err
     }
   }
@@ -126,8 +125,8 @@ export class DPT extends EventEmitter {
     this._kbucket.remove(obj)
   }
 
-  banPeer(obj: any, maxAge: number) {
-    this._banlist.add(obj, maxAge)
+  banPeer(obj: any, maxAge?: number) {
+    this.banlist.add(obj, maxAge)
     this._kbucket.remove(obj)
   }
 
@@ -138,5 +137,3 @@ export class DPT extends EventEmitter {
     for (let peer of peers) this._server.findneighbours(peer, randomBytes(64))
   }
 }
-
-module.exports = DPT

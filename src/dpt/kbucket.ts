@@ -4,7 +4,7 @@ import _KBucket from 'k-bucket'
 const KBUCKET_SIZE = 16
 const KBUCKET_CONCURRENCY = 3
 
-interface KObj {
+export interface KObj {
   id?: string
   port?: string
   address?: string

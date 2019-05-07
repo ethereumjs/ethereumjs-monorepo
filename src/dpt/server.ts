@@ -133,7 +133,8 @@ export class Server extends EventEmitter {
         }
       }, this._timeout)
     }
-    if (this._socket) this._socket.send(msg, 0, msg.length, peer.udpPort, peer.address)
+    if (this._socket && peer.udpPort)
+      this._socket.send(msg, 0, msg.length, peer.udpPort, peer.address)
     return msg.slice(0, 32) // message id
   }
 
@@ -153,8 +154,12 @@ export class Server extends EventEmitter {
     }
 
     switch (info.typename) {
-      case 'ping':
-        const remote: PeerInfo = { id: peerId, udpPort: rinfo.port, address: rinfo.address }
+      case 'ping': {
+        const remote: PeerInfo = {
+          id: peerId,
+          udpPort: rinfo.port,
+          address: rinfo.address,
+        }
         this._send(remote, 'pong', {
           to: {
             address: rinfo.address,
@@ -164,8 +169,9 @@ export class Server extends EventEmitter {
           hash: msg.slice(0, 32),
         })
         break
+      }
 
-      case 'pong':
+      case 'pong': {
         var rkey = info.data.hash.toString('hex')
         const rkeyParity = this._parityRequestMap.get(rkey)
         if (rkeyParity) {
@@ -183,17 +189,23 @@ export class Server extends EventEmitter {
           })
         }
         break
-
-      case 'findneighbours':
-        Object.assign(rinfo, { id: peerId, udpPort: rinfo.port })
-        this._send(rinfo, 'neighbours', {
+      }
+      case 'findneighbours': {
+        const remote: PeerInfo = {
+          id: peerId,
+          udpPort: rinfo.port,
+          address: rinfo.address,
+        }
+        this._send(remote, 'neighbours', {
           peers: this._dpt.getClosestPeers(info.data.id),
         })
         break
+      }
 
-      case 'neighbours':
-        this.emit('peers', info.data.peers.map((peer: Peer) => peer.endpoint))
+      case 'neighbours': {
+        this.emit('peers', info.data.peers.map((peer: any) => peer.endpoint))
         break
+      }
     }
   }
 }
