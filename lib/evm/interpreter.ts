@@ -1,19 +1,19 @@
 import BN = require('bn.js')
 import { toBuffer, generateAddress, generateAddress2, KECCAK256_NULL, MAX_INTEGER } from 'ethereumjs-util'
 import Account from 'ethereumjs-account'
-import { ERROR } from '../exceptions'
+import { VmError, ERROR } from '../exceptions'
 import { StorageReader } from '../state'
 import PStateManager from '../state/promisified'
 import { getPrecompile, PrecompileFunc, PrecompileResult } from './precompiles'
 import { OOGResult } from './precompiles/types'
 import TxContext from './txContext'
 import Message from './message'
-const Loop = require('./loop')
+import { default as Loop, LoopResult } from './loop'
 
 export interface InterpreterResult {
   gasUsed: BN
   createdAddress?: Buffer
-  vm: any // TODO
+  vm: LoopResult
 }
 
 export default class Interpreter {
@@ -50,7 +50,7 @@ export default class Interpreter {
         // because the bug in both Geth and Parity led to deleting RIPEMD precompiled in this case
         // see https://github.com/ethereum/go-ethereum/pull/3341/files#diff-2433aa143ee4772026454b8abd76b9dd
         // We mark the account as touched here, so that is can be removed among other touched empty accounts (after tx finalization)
-        if (err === ERROR.OUT_OF_GAS || err.error === ERROR.OUT_OF_GAS) {
+        if (err as ERROR === ERROR.OUT_OF_GAS || (err as VmError).error === ERROR.OUT_OF_GAS) {
           await this._touchAccount(message.to)
         }
       }
@@ -80,7 +80,9 @@ export default class Interpreter {
       return {
         gasUsed: new BN(0),
         vm: {
-          exception: 1
+          exception: 1,
+          gasUsed: new BN(0),
+          return: Buffer.alloc(0)
         }
       }
     }
@@ -131,7 +133,9 @@ export default class Interpreter {
         gasUsed: new BN(0),
         createdAddress: message.to,
         vm: {
-          exception: 1
+          exception: 1,
+          gasUsed: new BN(0),
+          return: Buffer.alloc(0)
         }
       }
     }
@@ -140,7 +144,7 @@ export default class Interpreter {
 
     // fee for size of the return value
     let totalGas = result.gasUsed
-    if (!result.runState.vmError) {
+    if (!result.exceptionError) {
       const returnFee = new BN(result.return.length * this._vm._common.param('gasPrices', 'createData'))
       totalGas = totalGas.add(returnFee)
     }
@@ -153,7 +157,7 @@ export default class Interpreter {
     }
 
     // Save code if a new contract was created
-    if (!result.runState.vmError && result.return && result.return.toString() !== '') {
+    if (!result.exceptionError && result.return && result.return.toString() !== '') {
       await this._state.putContractCode(message.to, result.return)
     }
 

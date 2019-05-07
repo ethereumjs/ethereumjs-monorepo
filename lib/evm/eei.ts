@@ -1,19 +1,37 @@
 import BN = require('bn.js')
-import PStateManager from '../state/promisified'
-import Message from './message'
 import { toBuffer } from 'ethereumjs-util'
+import Account from 'ethereumjs-account'
+import PStateManager from '../state/promisified'
+import { VmError, ERROR } from '../exceptions'
+import Message from './message'
+import { RunState, RunResult } from './loop'
+import Interpreter from './interpreter'
 const promisify = require('util.promisify')
-const { VmError, ERROR } = require('../exceptions')
+
+export interface Env {
+  blockchain: any // TODO: update to ethereumjs-blockchain v4.0.0
+  address: Buffer
+  caller: Buffer
+  callData: Buffer
+  callValue: BN
+  code: Buffer
+  isStatic: boolean
+  depth: number
+  gasPrice: Buffer // TODO: Set type to BN?
+  origin: Buffer
+  block: any
+  contract: Account
+}
 
 export default class EEI {
-  _env: any
-  _runState: any
-  _result: any
+  _env: Env
+  _runState: RunState
+  _result: RunResult
   _state: PStateManager
-  _interpreter: any
+  _interpreter: Interpreter
   _lastReturned: Buffer
 
-  constructor (env: any, runState: any, result: any, state: PStateManager, interpreter: any) {
+  constructor (env: Env, runState: RunState, result: RunResult, state: PStateManager, interpreter: Interpreter) {
     this._env = env
     this._runState = runState
     this._result = result
@@ -36,7 +54,7 @@ export default class EEI {
   }
 
   refundGas (amount: BN): void {
-    this._result.gasRefund.iaddn(amount)
+    this._result.gasRefund.iadd(amount)
   }
 
   /**
@@ -115,9 +133,9 @@ export default class EEI {
 
   /**
    * Returns the code running in current environment.
-   * @returns {BN}
+   * @returns {Buffer}
    */
-  getCode (): BN {
+  getCode (): Buffer {
     return this._env.code
   }
 
@@ -314,9 +332,9 @@ export default class EEI {
    * Creates a new log in the current environment.
    * @param {Buffer} data
    * @param {Number} numberOfTopics
-   * @param {BN[]} topics
+   * @param {Buffer[]} topics
    */
-  log (data: Buffer, numberOfTopics: number, topics: BN[]): void {
+  log (data: Buffer, numberOfTopics: number, topics: Buffer[]): void {
     if (numberOfTopics < 0 || numberOfTopics > 4) {
       trap(ERROR.OUT_OF_RANGE)
     }
@@ -326,7 +344,7 @@ export default class EEI {
     }
 
     // add address
-    const log = [this._env.address]
+    const log: any = [this._env.address]
     log.push(topics)
 
     // add data
@@ -451,7 +469,7 @@ export default class EEI {
     this.useGas(results.gasUsed)
 
     // Set return value
-    if (results.vm.return && (!results.vm.exceptionError || results.vm.exceptionError.error === ERROR.REVERT)) {
+    if (results.vm.return && (!results.vm.exceptionError || (results.vm.exceptionError as VmError).error === ERROR.REVERT)) {
       this._lastReturned = results.vm.return
     }
 
@@ -491,7 +509,7 @@ export default class EEI {
       return new BN(0)
     }
 
-    this._env.contract.nonce = new BN(this._env.contract.nonce).addn(1)
+    this._env.contract.nonce = toBuffer(new BN(this._env.contract.nonce).addn(1))
     await this._state.putAccount(this._env.address, this._env.contract)
 
     const results = await this._interpreter.executeMessage(msg)
@@ -509,7 +527,7 @@ export default class EEI {
     this.useGas(results.gasUsed)
 
     // Set return buffer in case revert happened
-    if (results.vm.exceptionError && results.vm.exceptionError.error === ERROR.REVERT) {
+    if (results.vm.exceptionError && (results.vm.exceptionError as VmError).error === ERROR.REVERT) {
       this._lastReturned = results.vm.return
     }
 
@@ -521,11 +539,6 @@ export default class EEI {
       if (results.createdAddress) {
         // push the created address to the stack
         return new BN(results.createdAddress)
-      }
-    } else {
-      // creation failed so don't increment the nonce
-      if (results.vm.createdAddress) {
-        this._env.contract.nonce = new BN(this._env.contract.nonce).subn(1)
       }
     }
 
@@ -554,7 +567,7 @@ export default class EEI {
   }
 }
 
-function trap (err: string) {
+function trap (err: ERROR) {
   throw new VmError(err)
 }
 
