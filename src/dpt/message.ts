@@ -9,7 +9,7 @@ function getTimestamp() {
 
 export interface PeerInfo {
   id?: Buffer
-  address: string
+  address?: string
   udpPort?: number | null
   tcpPort?: number | null
 }
@@ -61,7 +61,7 @@ const port = {
 const endpoint = {
   encode: function(obj: PeerInfo): Buffer[] {
     return [
-      address.encode(obj.address),
+      address.encode(obj.address!),
       port.encode(obj.udpPort || null),
       port.encode(obj.tcpPort || null),
     ]
@@ -125,12 +125,12 @@ const findneighbours = {
   },
 }
 
-type InNeighborMsg = { peers: any[]; timestamp: number }
+type InNeighborMsg = { peers: PeerInfo[]; timestamp: number }
 type OutNeighborMsg = { [0]: Buffer[][]; [1]: Buffer }
 const neighbours = {
   encode: function(obj: InNeighborMsg): OutNeighborMsg {
     return [
-      obj.peers.map(peer => endpoint.encode(peer).concat(peer.id)),
+      obj.peers.map((peer: PeerInfo) => endpoint.encode(peer).concat(peer.id!)),
       timestamp.encode(obj.timestamp),
     ]
   },

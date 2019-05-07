@@ -45,12 +45,12 @@ export type Status = {
 export class ETH extends EventEmitter {
   _version: number
   _peer: Peer
-  _send: any
+  _send: (code: MESSAGE_CODES, data: Buffer) => any
   _status: StatusMsg | null
   _peerStatus: StatusMsg | null
   _statusTimeoutId: NodeJS.Timeout
 
-  constructor(version: number, peer: Peer, send: any) {
+  constructor(version: number, peer: Peer, send: (code: MESSAGE_CODES, data: Buffer) => any) {
     super()
 
     this._version = version

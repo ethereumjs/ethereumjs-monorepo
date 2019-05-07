@@ -7,24 +7,29 @@ import { encode, decode } from './message'
 import { keccak256, pk2id, createDeferred } from '../util'
 import { DPT } from './dpt'
 import { Socket as DgramSocket, RemoteInfo } from 'dgram'
-import { Peer } from '../rlpx'
 import { PeerInfo } from './message'
 
 const debug = createDebugLogger('devp2p:dpt:server')
 const VERSION = 0x04
 const createSocketUDP4 = dgram.createSocket.bind(null, { type: 'udp4' })
 
+export interface Options {
+  timeout?: number
+  endpoint?: PeerInfo
+  createSocket?: typeof createSocketUDP4
+}
+
 export class Server extends EventEmitter {
   _dpt: DPT
   _privateKey: Buffer
   _timeout: number
-  _endpoint: any
-  _requests: Map<any, any>
-  _parityRequestMap: Map<any, any>
-  _requestsCache: LRUCache<{}, {}>
+  _endpoint: PeerInfo
+  _requests: Map<string, any>
+  _parityRequestMap: Map<string, string>
+  _requestsCache: LRUCache<string, Promise<any>>
   _socket: DgramSocket | null
 
-  constructor(dpt: DPT, privateKey: Buffer, options: any) {
+  constructor(dpt: DPT, privateKey: Buffer, options: Options) {
     super()
 
     this._dpt = dpt
@@ -69,7 +74,7 @@ export class Server extends EventEmitter {
     }
   }
 
-  async ping(peer: PeerInfo) {
+  async ping(peer: PeerInfo): Promise<any> {
     this._isAliveCheck()
 
     const rckey = `${peer.address}:${peer.udpPort}`
