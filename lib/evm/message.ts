@@ -1,4 +1,5 @@
 import BN = require('bn.js')
+import { PrecompileFunc } from './precompiles'
 
 export default class Message {
   to: Buffer
@@ -7,7 +8,7 @@ export default class Message {
   gasLimit: BN
   data: Buffer
   depth: number
-  code: Buffer
+  code: Buffer | PrecompileFunc
   _codeAddress: Buffer
   isStatic: boolean
   isCompiled: boolean
@@ -20,7 +21,7 @@ export default class Message {
     this.value = opts.value ? new BN(opts.value) : new BN(0)
     this.caller = opts.caller
     this.gasLimit = opts.gasLimit
-    this.data = opts.data
+    this.data = opts.data || Buffer.alloc(0)
     this.depth = opts.depth || 0
     this.code = opts.code
     this._codeAddress = opts.codeAddress

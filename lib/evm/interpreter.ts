@@ -1,14 +1,29 @@
-const BN = require('bn.js')
-const ethUtil = require('ethereumjs-util')
-const { ERROR } = require('../exceptions')
+import BN = require('bn.js')
+import { toBuffer, generateAddress, generateAddress2, KECCAK256_NULL, MAX_INTEGER } from 'ethereumjs-util'
+import Account from 'ethereumjs-account'
+import { ERROR } from '../exceptions'
+import { StorageReader } from '../state'
+import PStateManager from '../state/promisified'
+import { getPrecompile, PrecompileFunc, PrecompileResult } from './precompiles'
+import { OOGResult } from './precompiles/types'
+import TxContext from './txContext'
+import Message from './message'
 const Loop = require('./loop')
-const { StorageReader } = require('../state')
-const PStateManager = require('../state/promisified').default
-const { getPrecompile } = require('./precompiles')
-const { OOGResult } = require('./precompiles/types')
 
-module.exports = class Interpreter {
-  constructor (vm, txContext, block, storageReader) {
+export interface InterpreterResult {
+  gasUsed: BN
+  createdAddress?: Buffer
+  vm: any // TODO
+}
+
+export default class Interpreter {
+  _vm: any
+  _state: PStateManager
+  _storageReader: StorageReader
+  _tx: TxContext
+  _block: any
+
+  constructor (vm: any, txContext: TxContext, block: any, storageReader: StorageReader) {
     this._vm = vm
     this._state = new PStateManager(this._vm.stateManager)
     this._storageReader = storageReader || new StorageReader(this._state._wrapped)
@@ -16,7 +31,7 @@ module.exports = class Interpreter {
     this._block = block
   }
 
-  async executeMessage (message) {
+  async executeMessage (message: Message): Promise<InterpreterResult> {
     await this._state.checkpoint()
 
     let result
@@ -46,14 +61,18 @@ module.exports = class Interpreter {
     return result
   }
 
-  async _executeCall (message) {
+  async _executeCall (message: Message): Promise<InterpreterResult> {
     const account = await this._state.getAccount(message.caller)
     // Reduce tx value from sender
-    await this._reduceSenderBalance(account, message)
+    if (!message.delegatecall) {
+      await this._reduceSenderBalance(account, message)
+    }
     // Load `to` account
     const toAccount = await this._state.getAccount(message.to)
     // Add tx value to the `to` account
-    await this._addToBalance(toAccount, message)
+    if (!message.delegatecall) {
+      await this._addToBalance(toAccount, message)
+    }
 
     // Load code
     await this._loadCode(message)
@@ -73,17 +92,17 @@ module.exports = class Interpreter {
     }
   }
 
-  async _executeCreate (message) {
+  async _executeCreate (message: Message): Promise<InterpreterResult> {
     const account = await this._state.getAccount(message.caller)
     // Reduce tx value from sender
     await this._reduceSenderBalance(account, message)
 
     message.code = message.data
-    message.data = undefined
+    message.data = Buffer.alloc(0)
     message.to = await this._generateAddress(message)
     let toAccount = await this._state.getAccount(message.to)
     // Check for collision
-    if ((toAccount.nonce && new BN(toAccount.nonce) > 0) || toAccount.codeHash.compare(ethUtil.KECCAK256_NULL) !== 0) {
+    if ((toAccount.nonce && new BN(toAccount.nonce).gtn(0)) || toAccount.codeHash.compare(KECCAK256_NULL) !== 0) {
       return {
         gasUsed: message.gasLimit,
         createdAddress: message.to,
@@ -145,7 +164,7 @@ module.exports = class Interpreter {
     }
   }
 
-  async runLoop (message) {
+  async runLoop (message: Message): Promise<any> {
     const opts = {
       storageReader: this._storageReader,
       block: this._block,
@@ -157,7 +176,7 @@ module.exports = class Interpreter {
     let results
     const loop = new Loop(this._vm, this)
     if (message.isCompiled) {
-      results = this.runPrecompile(message.code, message.data, message.gasLimit)
+      results = this.runPrecompile(message.code as PrecompileFunc, message.data, message.gasLimit)
     } else {
       results = await loop.run(opts)
     }
@@ -170,11 +189,11 @@ module.exports = class Interpreter {
    * if no such precompile exists.
    * @param {Buffer} address
    */
-  getPrecompile (address) {
+  getPrecompile (address: Buffer): PrecompileFunc {
     return getPrecompile(address.toString('hex'))
   }
 
-  runPrecompile (code, data, gasLimit) {
+  runPrecompile (code: PrecompileFunc, data: Buffer, gasLimit: BN): PrecompileResult {
     if (typeof code !== 'function') {
       throw new Error('Invalid precompile')
     }
@@ -188,7 +207,7 @@ module.exports = class Interpreter {
     return code(opts)
   }
 
-  async _loadCode (message) {
+  async _loadCode (message: Message): Promise<void> {
     if (!message.code) {
       const precompile = this.getPrecompile(message.codeAddress)
       if (precompile) {
@@ -201,39 +220,35 @@ module.exports = class Interpreter {
     }
   }
 
-  async _generateAddress (message) {
+  async _generateAddress (message: Message): Promise<Buffer> {
     let addr
     if (message.salt) {
-      addr = ethUtil.generateAddress2(message.caller, message.salt, message.code)
+      addr = generateAddress2(message.caller, message.salt, message.code as Buffer)
     } else {
       const acc = await this._state.getAccount(message.caller)
       const newNonce = new BN(acc.nonce).subn(1)
-      addr = ethUtil.generateAddress(message.caller, newNonce.toArray())
+      addr = generateAddress(message.caller, newNonce.toArrayLike(Buffer))
     }
     return addr
   }
 
-  async _reduceSenderBalance (account, message) {
-    if (!message.delegatecall) {
-      const newBalance = new BN(account.balance).sub(message.value)
-      account.balance = newBalance
-      await this._state.putAccount(ethUtil.toBuffer(message.caller), account)
-    }
+  async _reduceSenderBalance (account: Account, message: Message): Promise<void> {
+    const newBalance = new BN(account.balance).sub(message.value)
+    account.balance = toBuffer(newBalance)
+    return this._state.putAccount(toBuffer(message.caller), account)
   }
 
-  async _addToBalance (toAccount, message) {
-    if (!message.delegatecall) {
-      const newBalance = new BN(toAccount.balance).add(message.value)
-      if (newBalance.gt(ethUtil.MAX_INTEGER)) {
-        throw new Error('Value overflow')
-      }
-      toAccount.balance = newBalance
-      // putAccount as the nonce may have changed for contract creation
-      this._state.putAccount(ethUtil.toBuffer(message.to), toAccount)
+  async _addToBalance (toAccount: Account, message: Message): Promise<void> {
+    const newBalance = new BN(toAccount.balance).add(message.value)
+    if (newBalance.gt(MAX_INTEGER)) {
+      throw new Error('Value overflow')
     }
+    toAccount.balance = toBuffer(newBalance)
+    // putAccount as the nonce may have changed for contract creation
+    return this._state.putAccount(toBuffer(message.to), toAccount)
   }
 
-  async _touchAccount (address) {
+  async _touchAccount (address: Buffer): Promise<void> {
     const acc = await this._state.getAccount(address)
     return this._state.putAccount(address, acc)
   }
