@@ -170,7 +170,7 @@ const codes: any = {
   0xff: ['SELFDESTRUCT', 5000, false, true]
 }
 
-export function lookupOpInfo (op: number, full: boolean): OpInfo {
+export function lookupOpInfo (op: number, full: boolean = false): OpInfo {
   const code = codes[op] ? codes[op] : ['INVALID', 0, false, false]
   let opcode = code[0]
 
