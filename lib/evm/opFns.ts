@@ -21,8 +21,18 @@ function addressToBuffer (address: BN) {
   return address.and(MASK_160).toArrayLike(Buffer, 'be', 20)
 }
 
+export interface SyncOpHandler {
+  (runState: RunState): void
+}
+
+export interface AsyncOpHandler {
+  (runState: RunState): Promise<void>
+}
+
+export type OpHandler = SyncOpHandler | AsyncOpHandler
+
 // the opcode functions
-module.exports = {
+export const handlers: {[k: string]: OpHandler} = {
   STOP: function (runState: RunState) {
     runState.stopped = true
   },
