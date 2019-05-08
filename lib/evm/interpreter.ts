@@ -1,5 +1,5 @@
 import BN = require('bn.js')
-import { toBuffer, generateAddress, generateAddress2, KECCAK256_NULL, MAX_INTEGER } from 'ethereumjs-util'
+import { toBuffer, generateAddress, generateAddress2, zeros, KECCAK256_NULL, MAX_INTEGER } from 'ethereumjs-util'
 import Account from 'ethereumjs-account'
 import { VmError, ERROR } from '../exceptions'
 import { StorageReader } from '../state'
@@ -8,7 +8,9 @@ import { getPrecompile, PrecompileFunc, PrecompileResult } from './precompiles'
 import { OOGResult } from './precompiles/types'
 import TxContext from './txContext'
 import Message from './message'
+import EEI from './eei'
 import { default as Loop, LoopResult } from './loop'
+const Block = require('ethereumjs-block')
 
 export interface InterpreterResult {
   gasUsed: BN
@@ -168,20 +170,36 @@ export default class Interpreter {
     }
   }
 
-  async runLoop (message: Message): Promise<any> {
-    const opts = {
+  async runLoop (message: Message, loopOpts: {[k: string]: any} = {}): Promise<any> {
+    const opts = Object.assign({}, {
       storageReader: this._storageReader,
       block: this._block,
       txContext: this._tx,
       message
-    }
+    }, loopOpts)
 
     // Run code
     let results
-    const loop = new Loop(this._vm, this)
     if (message.isCompiled) {
       results = this.runPrecompile(message.code as PrecompileFunc, message.data, message.gasLimit)
     } else {
+      const gasLeft = message.gasLimit.clone()
+      const env = {
+        blockchain: this._vm.blockchain, // Only used in BLOCKHASH
+        address: opts.message.to || zeros(32),
+        caller: opts.message.caller || zeros(32),
+        callData: opts.message.data || Buffer.from([0]),
+        callValue: opts.message.value || new BN(0),
+        code: opts.message.code as Buffer,
+        isStatic: opts.message.isStatic || false,
+        depth: opts.message.depth || 0,
+        gasPrice: opts.txContext.gasPrice,
+        origin: opts.txContext.origin || opts.message.caller || zeros(32),
+        block: opts.block || new Block(),
+        contract: await this._state.getAccount(opts.message.to || zeros(32))
+      }
+      const eei = new EEI(env, this._state, this, this._vm._common, gasLeft)
+      const loop = new Loop(this._vm, eei)
       results = await loop.run(opts)
     }
 
