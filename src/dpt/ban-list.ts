@@ -5,7 +5,7 @@ import { KBucket } from './kbucket'
 const debug = createDebugLogger('devp2p:dpt:ban-list')
 
 export class BanList {
-  private lru: LRUCache<string, boolean>
+  private lru: LRUCache<any, boolean>
   constructor() {
     this.lru = new LRUCache({ max: 30000 }) // 10k should be enough (each peer obj can has 3 keys)
   }

@@ -122,7 +122,7 @@ test('LES: invalid status send', async t => {
   opts.status1 = Object.assign({}, status)
   opts.onOnceStatus0 = function(rlpxs: any, les: any) {
     try {
-      les.sendMessage(devp2p.MESSAGE_CODES.STATUS, 1, [])
+      les.sendMessage(devp2p.ETH_MESSAGE_CODES.STATUS, 1, [])
     } catch (err) {
       const msg = 'Error: Please send status message through .sendStatus'
       t.equal(err.toString(), msg, `should emit error: ${msg}`)

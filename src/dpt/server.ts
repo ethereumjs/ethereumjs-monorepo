@@ -13,7 +13,7 @@ const debug = createDebugLogger('devp2p:dpt:server')
 const VERSION = 0x04
 const createSocketUDP4 = dgram.createSocket.bind(null, { type: 'udp4' })
 
-export interface Options {
+export interface DptServerOptions {
   timeout?: number
   endpoint?: PeerInfo
   createSocket?: typeof createSocketUDP4
@@ -29,7 +29,7 @@ export class Server extends EventEmitter {
   _requestsCache: LRUCache<string, Promise<any>>
   _socket: DgramSocket | null
 
-  constructor(dpt: DPT, privateKey: Buffer, options: Options) {
+  constructor(dpt: DPT, privateKey: Buffer, options: DptServerOptions) {
     super()
 
     this._dpt = dpt

@@ -1,34 +1,44 @@
 import * as net from 'net'
 import * as os from 'os'
+import ms from 'ms'
 import { publicKeyCreate } from 'secp256k1'
 import { EventEmitter } from 'events'
-import ms from 'ms'
 import { debug as createDebugLogger } from 'debug'
 import LRUCache from 'lru-cache'
 import { version as pVersion } from '../../package.json'
 import { pk2id, createDeferred } from '../util'
-import { Peer, DISCONNECT_REASONS } from './peer'
-import { DPT } from '../dpt'
+import { Peer, DISCONNECT_REASONS, Capabilities } from './peer'
+import { DPT, PeerInfo } from '../dpt'
 
 const debug = createDebugLogger('devp2p:rlpx')
 
+export interface RLPxOptions {
+  clientId?: Buffer
+  timeout?: number
+  dpt: DPT
+  maxPeers: number
+  remoteClientIdFilter?: string | Buffer
+  capabilities: Capabilities[]
+  listenPort: number
+}
+
 export class RLPx extends EventEmitter {
   _privateKey: Buffer
-  _id: any
-  _timeout: any
-  _maxPeers: any
+  _id: Buffer
+  _timeout: number
+  _maxPeers: number
   _clientId: Buffer
-  _remoteClientIdFilter: any
-  _capabilities: any
-  _listenPort: any
+  _remoteClientIdFilter?: string | Buffer
+  _capabilities: Capabilities[]
+  _listenPort: number
   _dpt: DPT
-  _peersLRU: any
-  _peersQueue: any
+  _peersLRU: LRUCache<any, any>
+  _peersQueue: { peer: PeerInfo; ts: number }[]
   _server: net.Server | null
-  _peers: Map<any, any>
+  _peers: Map<string, net.Socket | Peer>
   _refillIntervalId: NodeJS.Timeout
 
-  constructor(privateKey: Buffer, options: any) {
+  constructor(privateKey: Buffer, options: RLPxOptions) {
     super()
 
     this._privateKey = Buffer.from(privateKey)
@@ -37,9 +47,11 @@ export class RLPx extends EventEmitter {
     // options
     this._timeout = options.timeout || ms('10s')
     this._maxPeers = options.maxPeers || 10
-    this._clientId = Buffer.from(
-      options.clientId || `ethereumjs-devp2p/v${pVersion}/${os.platform()}-${os.arch()}/nodejs`,
-    )
+
+    this._clientId = options.clientId
+      ? Buffer.from(options.clientId)
+      : Buffer.from(`ethereumjs-devp2p/v${pVersion}/${os.platform()}-${os.arch()}/nodejs`)
+
     this._remoteClientIdFilter = options.remoteClientIdFilter
     this._capabilities = options.capabilities
     this._listenPort = options.listenPort
@@ -47,15 +59,15 @@ export class RLPx extends EventEmitter {
     // DPT
     this._dpt = options.dpt || null
     if (this._dpt !== null) {
-      this._dpt.on('peer:new', (peer: any) => {
+      this._dpt.on('peer:new', (peer: PeerInfo) => {
         if (!peer.tcpPort) {
           this._dpt.banPeer(peer, ms('5m'))
           debug(`banning peer with missing tcp port: ${peer.address}`)
           return
         }
 
-        if (this._peersLRU.has(peer.id.toString('hex'))) return
-        this._peersLRU.set(peer.id.toString('hex'), true)
+        if (this._peersLRU.has(peer.id!.toString('hex'))) return
+        this._peersLRU.set(peer.id!.toString('hex'), true)
 
         if (this._getOpenSlots() > 0) return this._connectToPeer(peer)
         this._peersQueue.push({ peer: peer, ts: 0 }) // save to queue
@@ -98,16 +110,17 @@ export class RLPx extends EventEmitter {
     for (let peerKey of this._peers.keys()) this.disconnect(Buffer.from(peerKey, 'hex'))
   }
 
-  async connect(peer: any) {
+  async connect(peer: PeerInfo) {
+    if (!peer.tcpPort || !peer.address) return
     this._isAliveCheck()
 
     if (!Buffer.isBuffer(peer.id)) throw new TypeError('Expected peer.id as Buffer')
     const peerKey = peer.id.toString('hex')
 
     if (this._peers.has(peerKey)) throw new Error('Already connected')
-    if (this._getOpenSlots() === 0) throw new Error('Too much peers already connected')
+    if (this._getOpenSlots() === 0) throw new Error('Too many peers already connected')
 
-    debug(`connect to ${peer.address}:${peer.port} (id: ${peerKey})`)
+    debug(`connect to ${peer.address}:${peer.tcpPort} (id: ${peerKey})`)
     const deferred = createDeferred()
 
     const socket = new net.Socket()
@@ -119,7 +132,7 @@ export class RLPx extends EventEmitter {
 
     socket.once('error', deferred.reject)
     socket.setTimeout(this._timeout, () => deferred.reject(new Error('Connection timeout')))
-    socket.connect(peer.port, peer.address, deferred.resolve)
+    socket.connect(peer.tcpPort, peer.address, deferred.resolve)
 
     await deferred.promise
     this._onConnect(socket, peer.id)
@@ -146,12 +159,11 @@ export class RLPx extends EventEmitter {
     return Math.max(this._maxPeers - this._peers.size, 0)
   }
 
-  _connectToPeer(peer: any) {
-    const opts = { id: peer.id, address: peer.address, port: peer.tcpPort }
-    this.connect(opts).catch(err => {
+  _connectToPeer(peer: PeerInfo) {
+    this.connect(peer).catch(err => {
       if (this._dpt === null) return
       if (err.code === 'ECONNRESET' || err.toString().includes('Connection timeout')) {
-        this._dpt.banPeer(opts, ms('5m'))
+        this._dpt.banPeer(peer, ms('5m'))
       }
     })
   }
@@ -164,7 +176,6 @@ export class RLPx extends EventEmitter {
       remoteId: peerId,
       privateKey: this._privateKey,
       id: this._id,
-
       timeout: this._timeout,
       clientId: this._clientId,
       remoteClientIdFilter: this._remoteClientIdFilter,
@@ -194,8 +205,7 @@ export class RLPx extends EventEmitter {
         return peer.disconnect(DISCONNECT_REASONS.SAME_IDENTITY)
       }
 
-      if (!id) return
-      const peerKey = id.toString('hex')
+      const peerKey = id!.toString('hex')
       const item = this._peers.get(peerKey)
       if (item && item instanceof Peer) {
         return peer.disconnect(DISCONNECT_REASONS.ALREADY_CONNECTED)
@@ -218,7 +228,7 @@ export class RLPx extends EventEmitter {
         // hack
         this._peersQueue.push({
           peer: {
-            id: peer.getId(),
+            id: peer.getId()!,
             address: peer._socket.remoteAddress,
             tcpPort: peer._socket.remotePort,
           },

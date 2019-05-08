@@ -26,9 +26,9 @@
     "Holger Drewes <holger.drewes@gmail.com>"
   ],
   "files": [
-    "lib"
+    "dist/**/*"
   ],
-  "main": "./lib/index.js",
+  "main": "dist/src/index.js",
   "repository": {
     "type": "git",
     "url": "https://github.com/ethereumjs/ethereumjs-devp2p.git"

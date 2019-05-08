@@ -47,9 +47,24 @@ export type HelloMsg = {
   length: 5
 }
 
+export interface Capabilities {
+  name: string
+  version: number
+  length: number
+  constructor: new (...args: any) => any
+}
+
+export interface Hello {
+  protocolVersion: number
+  clientId: string
+  capabilities: Capabilities[]
+  port: number
+  id: Buffer
+}
+
 export class Peer extends EventEmitter {
   _clientId: Buffer
-  _capabilities: any
+  _capabilities: Capabilities[]
   _port: number
   _id: Buffer
   _remoteClientIdFilter: any
@@ -58,13 +73,13 @@ export class Peer extends EventEmitter {
   _eciesSession: ECIES
   _state: string
   _weHello: HelloMsg | null
-  _hello: any | null
+  _hello: Hello | null
   _nextPacketSize: number
   _socket: Socket
-  _pingIntervalId: any
-  _pingTimeoutId: any
+  _pingIntervalId: NodeJS.Timeout | null
+  _pingTimeoutId: NodeJS.Timeout | null
   _closed: boolean
-  _connected: any
+  _connected: boolean
   _disconnectReason: any
   _disconnectWe: any
   _pingTimeout: any
@@ -95,8 +110,8 @@ export class Peer extends EventEmitter {
     this._socket = options.socket
     this._socket.on('error', (err: Error) => this.emit('error', err))
     this._socket.once('close', () => {
-      clearInterval(this._pingIntervalId)
-      clearTimeout(this._pingTimeoutId)
+      clearInterval(this._pingIntervalId!)
+      clearTimeout(this._pingTimeoutId!)
 
       this._closed = true
       if (this._connected) this.emit('close', this._disconnectReason, this._disconnectWe)
@@ -196,6 +211,7 @@ export class Peer extends EventEmitter {
           debug('empty body!')
           return
         }
+
         debug(
           `Received body ${this._socket.remoteAddress}:${this._socket.remotePort} ${body.toString(
             'hex',
@@ -271,8 +287,8 @@ export class Peer extends EventEmitter {
         }
 
         const shared: any = {}
-        for (let item of this._hello.capabilities) {
-          for (let obj of this._capabilities) {
+        for (const item of this._hello.capabilities) {
+          for (const obj of this._capabilities) {
             if (obj.name !== item.name || obj.version !== item.version) continue
             if (shared[obj.name] && shared[obj.name].version > obj.version) continue
             shared[obj.name] = obj
@@ -319,7 +335,7 @@ export class Peer extends EventEmitter {
         break
 
       case PREFIXES.PONG:
-        clearTimeout(this._pingTimeoutId)
+        clearTimeout(this._pingTimeoutId!)
         break
     }
   }
@@ -401,7 +417,7 @@ export class Peer extends EventEmitter {
     const data = rlp.encode([])
     if (!this._sendMessage(PREFIXES.PING, data)) return
 
-    clearTimeout(this._pingTimeoutId)
+    clearTimeout(this._pingTimeoutId!)
     this._pingTimeoutId = setTimeout(() => {
       this.disconnect(DISCONNECT_REASONS.TIMEOUT)
     }, this._pingTimeout)
