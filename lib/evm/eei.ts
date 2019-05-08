@@ -296,6 +296,7 @@ export default class EEI {
    */
   finish (returnData: Buffer): void {
     this._result.returnValue = returnData
+    trap(ERROR.STOP)
   }
 
   /**

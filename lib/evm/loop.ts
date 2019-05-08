@@ -1,5 +1,4 @@
 import BN = require('bn.js')
-import { zeros } from 'ethereumjs-util'
 import Common from 'ethereumjs-common'
 import { StateManager, StorageReader } from '../state'
 import PStateManager from '../state/promisified'
@@ -7,23 +6,17 @@ import { ERROR, VmError } from '../exceptions'
 import Memory from './memory'
 import Stack from './stack'
 import EEI from './eei'
-import Message from './message'
-import TxContext from './txContext'
 import { lookupOpInfo, OpInfo } from './opcodes'
-const opFns = require('./opFns.js')
+import { handlers as opHandlers, OpHandler } from './opFns.js'
 
-type IsException = 0 | 1
+export type IsException = 0 | 1
 
 export interface RunOpts {
-  storageReader: StorageReader
-  block: any
-  message: Message
-  txContext: TxContext
   pc?: number
+  storageReader?: StorageReader
 }
 
 export interface RunState {
-  stopped: boolean
   programCounter: number
   opCode: number
   memory: Memory
@@ -42,14 +35,6 @@ export interface LoopResult {
   runState?: RunState
   exception: IsException
   exceptionError?: VmError | ERROR
-  gas?: BN
-  gasUsed: BN
-  return: Buffer
-  // From RunResult
-  logs?: Buffer[]
-  returnValue?: Buffer
-  gasRefund?: BN
-  selfdestruct?: {[k: string]: Buffer}
 }
 
 export default class Loop {
@@ -63,7 +48,6 @@ export default class Loop {
     this._state = new PStateManager(vm.stateManager)
     this._eei = eei
     this._runState = {
-      stopped: false,
       programCounter: 0,
       opCode: 0xfe, // INVALID opcode
       memory: new Memory(),
@@ -80,15 +64,11 @@ export default class Loop {
     }
   }
 
-  async run (opts: RunOpts): Promise<LoopResult> {
-    if (opts.message.selfdestruct) {
-      this._eei._result.selfdestruct = opts.message.selfdestruct
-    }
-
+  async run (code: Buffer, opts: RunOpts = {}): Promise<LoopResult> {
     Object.assign(this._runState, {
-      code: opts.message.code,
+      code: code,
       programCounter: opts.pc || this._runState.programCounter,
-      validJumps: this._getValidJumpDests(opts.message.code as Buffer),
+      validJumps: this._getValidJumpDests(code),
       storageReader: opts.storageReader || this._runState.storageReader
     })
 
@@ -99,87 +79,57 @@ export default class Loop {
     }
 
     let err
-    // iterate through the given ops until something breaks or we hit STOP
-    while (this.canContinueExecution()) {
+    // Iterate through the given ops until something breaks or we hit STOP
+    while (this._runState.programCounter < this._runState.code.length) {
       const opCode = this._runState.code[this._runState.programCounter]
       this._runState.opCode = opCode
-      await this.runStepHook()
+      await this._runStepHook()
 
       try {
         await this.runStep()
       } catch (e) {
-        if (e.error === ERROR.STOP) {
-          this._runState.stopped = true
-        } else {
+        // STOP is not an exception
+        if (e.error !== ERROR.STOP) {
           err = e
-          break
         }
+        // TODO: Throw on non-VmError exceptions
+        break
       }
     }
 
-    let result = this._eei._result
-    let gasUsed = opts.message.gasLimit.sub(this._eei.getGasLeft())
-    if (err) {
-      if (err.error !== ERROR.REVERT) {
-        gasUsed = opts.message.gasLimit
-      }
-
-      // remove any logs on error
-      result = Object.assign({}, result, {
-        logs: [],
-        gasRefund: null,
-        selfdestruct: null
-      })
-    }
-
-    return Object.assign({}, result, {
-      runState: Object.assign({}, this._runState, result, this._eei._env),
+    return {
+      runState: this._runState,
       exception: err ? 0 as IsException : 1 as IsException,
-      exceptionError: err,
-      gas: this._eei.getGasLeft(),
-      gasUsed,
-      'return': result.returnValue ? result.returnValue : Buffer.alloc(0)
-    })
-  }
-
-  canContinueExecution (): boolean {
-    const notAtEnd = this._runState.programCounter < this._runState.code.length
-    return !this._runState.stopped && notAtEnd && !this._eei._result.returnValue
+      exceptionError: err
+    }
   }
 
   async runStep (): Promise<void> {
     const opInfo = lookupOpInfo(this._runState.opCode)
-    // check for invalid opcode
+    // Check for invalid opcode
     if (opInfo.name === 'INVALID') {
       throw new VmError(ERROR.INVALID_OPCODE)
     }
 
-    // calculate gas
+    // Reduce opcode's base fee
     this._eei.useGas(new BN(opInfo.fee))
-
-    // advance program counter
+    // Advance program counter
     this._runState.programCounter++
 
-    await this.handleOp(opInfo)
-  }
-
-  async handleOp (opInfo: OpInfo): Promise<void> {
+    // Execute opcode handler
     const opFn = this.getOpHandler(opInfo)
-    let args = [this._runState]
-
-    // run the opcode
     if (opInfo.isAsync) {
-      await opFn.apply(null, args)
+      await opFn.apply(null, [this._runState])
     } else {
-      opFn.apply(null, args)
+      opFn.apply(null, [this._runState])
     }
   }
 
-  getOpHandler (opInfo: OpInfo) {
-    return opFns[opInfo.name]
+  getOpHandler (opInfo: OpInfo): OpHandler {
+    return opHandlers[opInfo.name]
   }
 
-  async runStepHook (): Promise<void> {
+  async _runStepHook (): Promise<void> {
     const eventObj = {
       pc: this._runState.programCounter,
       gasLeft: this._eei.getGasLeft(),

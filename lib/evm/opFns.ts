@@ -34,7 +34,7 @@ export type OpHandler = SyncOpHandler | AsyncOpHandler
 // the opcode functions
 export const handlers: {[k: string]: OpHandler} = {
   STOP: function (runState: RunState) {
-    runState.stopped = true
+    trap(ERROR.STOP)
   },
   ADD: function (runState: RunState) {
     const [a, b] = runState.stack.popN(2)
@@ -745,7 +745,6 @@ export const handlers: {[k: string]: OpHandler} = {
   },
   REVERT: function (runState: RunState) {
     const [offset, length] = runState.stack.popN(2)
-    runState.stopped = true
     subMemUsage(runState, offset, length)
     let returnData = Buffer.alloc(0)
     if (!length.isZero()) {
