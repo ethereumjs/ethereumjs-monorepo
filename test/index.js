@@ -507,9 +507,9 @@ describe('toBuffer', function () {
   })
 
   it('should fail with non 0x-prefixed hex strings', function() {
-    assert.throws(() => ethUtils.toBuffer('11'))
+    assert.throws(() => ethUtils.toBuffer('11'), '11')
     assert.throws(() => ethUtils.toBuffer(''))
-    assert.throws(() => ethUtils.toBuffer('0xR'))
+    assert.throws(() => ethUtils.toBuffer('0xR'), '0xR')
   })
 })
 
