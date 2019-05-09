@@ -133,7 +133,7 @@ export const isValidSignature = function(
  * call for a given `message`, or fed to `ecrecover` along with a signature to recover the public key
  * used to produce the signature.
  */
-export const hashPersonalMessage = function(message: any): Buffer {
+export const hashPersonalMessage = function(message: Buffer): Buffer {
   const prefix = Buffer.from(
     `\u0019Ethereum Signed Message:\n${message.length.toString()}`,
     'utf-8',
