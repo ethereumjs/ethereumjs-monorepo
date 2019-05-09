@@ -55,22 +55,22 @@ describe('define', function () {
   it('it should accept rlp encoded intial data', function () {
     var someOb = {}
     var data = {
-      aword: 'test',
-      cannotBeZero: 'not zero',
-      value: 'a value',
-      r: 'rrr'
+      aword: '0x01',
+      cannotBeZero: '0x02',
+      value: '0x03',
+      r: '0x04'
     }
 
     var expected = {
-      aword: '0x74657374',
+      aword: '0x01',
       empty: '0x',
-      cannotBeZero: '0x6e6f74207a65726f',
-      value: '0x612076616c7565',
-      r: '0x727272'
+      cannotBeZero: '0x02',
+      value: '0x03',
+      r: '0x04'
     }
 
     var expectedArray = [
-      '0x74657374', '0x', '0x6e6f74207a65726f', '0x612076616c7565', '0x727272'
+      '0x01', '0x', '0x02', '0x03', '0x04'
     ]
 
     ethUtil.defineProperties(someOb, fields, data)
@@ -100,25 +100,25 @@ describe('define', function () {
   it('alias should work ', function () {
     var someOb = {}
     var data = {
-      aword: 'test',
-      cannotBeZero: 'not zero',
-      value: 'a value',
-      r: 'rrr'
+      aword: '0x01',
+      cannotBeZero: '0x02',
+      value: '0x03',
+      r: '0x04'
     }
 
     ethUtil.defineProperties(someOb, fields, data)
-    assert.equal(someOb.blah.toString(), 'test')
-    someOb.blah = 'lol'
-    assert.equal(someOb.blah.toString(), 'lol')
-    assert.equal(someOb.aword.toString(), 'lol')
+    assert.equal(someOb.blah.toString('hex'), '01')
+    someOb.blah = '0x09'
+    assert.equal(someOb.blah.toString('hex'), '09')
+    assert.equal(someOb.aword.toString('hex'), '09')
   })
 
   it('alias should work #2', function () {
     var someOb = {}
-    var data = { blah: '42' }
+    var data = { blah: '0x1' }
 
     ethUtil.defineProperties(someOb, fields, data)
-    assert.equal(someOb.blah, '42')
-    assert.equal(someOb.aword, '42')
+    assert.equal(someOb.blah.toString('hex'), '01')
+    assert.equal(someOb.aword.toString('hex'), '01')
   })
 })
