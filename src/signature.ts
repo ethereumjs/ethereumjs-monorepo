@@ -134,7 +134,10 @@ export const isValidSignature = function(
  * used to produce the signature.
  */
 export const hashPersonalMessage = function(message: any): Buffer {
-  const prefix = toBuffer(`\u0019Ethereum Signed Message:\n${message.length.toString()}`)
+  const prefix = Buffer.from(
+    `\u0019Ethereum Signed Message:\n${message.length.toString()}`,
+    'utf-8',
+  )
   return keccak(Buffer.concat([prefix, message]))
 }
 
