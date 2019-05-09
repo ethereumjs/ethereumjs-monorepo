@@ -484,10 +484,9 @@ describe('toBuffer', function () {
     // Array
     assert.deepEqual(ethUtils.toBuffer([]), Buffer.allocUnsafe(0))
     // String
-    assert.deepEqual(ethUtils.toBuffer('11'), Buffer.from([49, 49]))
     assert.deepEqual(ethUtils.toBuffer('0x11'), Buffer.from([17]))
-    assert.deepEqual(ethUtils.toBuffer('1234').toString('hex'), '31323334')
     assert.deepEqual(ethUtils.toBuffer('0x1234').toString('hex'), '1234')
+    assert.deepEqual(ethUtils.toBuffer('0x'), Buffer.from([]))
     // Number
     assert.deepEqual(ethUtils.toBuffer(1), Buffer.from([1]))
     // null
@@ -503,6 +502,12 @@ describe('toBuffer', function () {
     assert.throws(function () {
       ethUtils.toBuffer({ test: 1 })
     })
+  })
+
+  it('should fail with non 0x-prefixed hex strings', function() {
+    assert.throws(() => ethUtils.toBuffer('11'))
+    assert.throws(() => ethUtils.toBuffer(''))
+    assert.throws(() => ethUtils.toBuffer('0xR'))
   })
 })
 
