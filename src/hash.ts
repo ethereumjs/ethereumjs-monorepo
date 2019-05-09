@@ -1,15 +1,22 @@
 const createKeccakHash = require('keccak')
 const createHash = require('create-hash')
+const ethjsUtil = require('ethjs-util')
 import rlp = require('rlp')
 import { toBuffer, setLength } from './bytes'
 
 /**
  * Creates Keccak hash of the input
- * @param a The input data (Buffer|Array|String|Number)
+ * @param a The input data (Buffer|Array|String|Number) If the string is a 0x-prefixed hex value
+ * it's interpreted as hexadecimal, otherwise as utf8.
  * @param bits The Keccak width
  */
 export const keccak = function(a: any, bits: number = 256): Buffer {
-  a = toBuffer(a)
+  if (typeof a === 'string' && !ethjsUtil.isHexString(a)) {
+    a = Buffer.from(a, 'utf8')
+  } else {
+    a = toBuffer(a)
+  }
+
   if (!bits) bits = 256
 
   return createKeccakHash(`keccak${bits}`)
