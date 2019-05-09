@@ -75,7 +75,9 @@ export const toBuffer = function(v: any): Buffer {
       if (ethjsUtil.isHexString(v)) {
         v = Buffer.from(ethjsUtil.padToEven(ethjsUtil.stripHexPrefix(v)), 'hex')
       } else {
-        v = Buffer.from(v)
+        throw new Error(
+          'Cannot convert string to buffer. toBuffer only supports 0x-prefixed hex strings.',
+        )
       }
     } else if (typeof v === 'number') {
       v = ethjsUtil.intToBuffer(v)
