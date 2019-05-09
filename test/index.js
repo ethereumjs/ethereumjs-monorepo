@@ -416,9 +416,11 @@ describe('privateToAddress', function () {
   })
 })
 
-describe('generateAddress', function () {
-  it('should produce an address given a public key', function () {
-    const add = ethUtils.generateAddress('990ccf8a0de58091c028d6ff76bb235ee67c1c39', 14).toString('hex')
+describe('generateAddress', function() {
+  it('should produce an address given a public key', function() {
+    const add = ethUtils
+      .generateAddress(Buffer.from('990ccf8a0de58091c028d6ff76bb235ee67c1c39', 'utf8'), 14)
+      .toString('hex')
     assert.equal(add.toString('hex'), '936a4295d8d74e310c0c95f0a63e53737b998d12')
   })
 })
