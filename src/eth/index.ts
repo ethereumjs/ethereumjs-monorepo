@@ -7,47 +7,13 @@ import { Peer, DISCONNECT_REASONS } from '../rlpx/peer'
 import { debug as createDebugLogger } from 'debug'
 const debug = createDebugLogger('devp2p:eth')
 
-export enum ETH_MESSAGE_CODES {
-  // eth62
-  STATUS = 0x00,
-  NEW_BLOCK_HASHES = 0x01,
-  TX = 0x02,
-  GET_BLOCK_HEADERS = 0x03,
-  BLOCK_HEADERS = 0x04,
-  GET_BLOCK_BODIES = 0x05,
-  BLOCK_BODIES = 0x06,
-  NEW_BLOCK = 0x07,
+type SendMethod = (code: ETH.MESSAGE_CODES, data: Buffer) => any
 
-  // eth63
-  GET_NODE_DATA = 0x0d,
-  NODE_DATA = 0x0e,
-  GET_RECEIPTS = 0x0f,
-  RECEIPTS = 0x10,
-}
-
-export type EthStatusMsg = {
-  0: Buffer
-  1: Buffer
-  2: Buffer
-  3: Buffer
-  4: Buffer
-  length: 5
-}
-
-export type EthStatus = {
-  version: number
-  networkId: number
-  td: Buffer
-  bestHash: Buffer
-  genesisHash: Buffer
-}
-
-type SendMethod = (code: ETH_MESSAGE_CODES, data: Buffer) => any
 export class ETH extends EventEmitter {
   _version: number
   _peer: Peer
-  _status: EthStatusMsg | null
-  _peerStatus: EthStatusMsg | null
+  _status: ETH.StatusMsg | null
+  _peerStatus: ETH.StatusMsg | null
   _statusTimeoutId: NodeJS.Timeout
   _send: SendMethod
 
@@ -68,9 +34,9 @@ export class ETH extends EventEmitter {
   static eth62 = { name: 'eth', version: 62, length: 8, constructor: ETH }
   static eth63 = { name: 'eth', version: 63, length: 17, constructor: ETH }
 
-  _handleMessage(code: ETH_MESSAGE_CODES, data: any) {
+  _handleMessage(code: ETH.MESSAGE_CODES, data: any) {
     const payload = rlp.decode(data)
-    if (code !== ETH_MESSAGE_CODES.STATUS) {
+    if (code !== ETH.MESSAGE_CODES.STATUS) {
       debug(
         `Received ${this.getMsgPrefix(code)} message from ${this._peer._socket.remoteAddress}:${
           this._peer._socket.remotePort
@@ -78,7 +44,7 @@ export class ETH extends EventEmitter {
       )
     }
     switch (code) {
-      case ETH_MESSAGE_CODES.STATUS:
+      case ETH.MESSAGE_CODES.STATUS:
         assertEq(this._peerStatus, null, 'Uncontrolled status message')
         this._peerStatus = payload
         debug(
@@ -89,20 +55,20 @@ export class ETH extends EventEmitter {
         this._handleStatus()
         break
 
-      case ETH_MESSAGE_CODES.NEW_BLOCK_HASHES:
-      case ETH_MESSAGE_CODES.TX:
-      case ETH_MESSAGE_CODES.GET_BLOCK_HEADERS:
-      case ETH_MESSAGE_CODES.BLOCK_HEADERS:
-      case ETH_MESSAGE_CODES.GET_BLOCK_BODIES:
-      case ETH_MESSAGE_CODES.BLOCK_BODIES:
-      case ETH_MESSAGE_CODES.NEW_BLOCK:
+      case ETH.MESSAGE_CODES.NEW_BLOCK_HASHES:
+      case ETH.MESSAGE_CODES.TX:
+      case ETH.MESSAGE_CODES.GET_BLOCK_HEADERS:
+      case ETH.MESSAGE_CODES.BLOCK_HEADERS:
+      case ETH.MESSAGE_CODES.GET_BLOCK_BODIES:
+      case ETH.MESSAGE_CODES.BLOCK_BODIES:
+      case ETH.MESSAGE_CODES.NEW_BLOCK:
         if (this._version >= ETH.eth62.version) break
         return
 
-      case ETH_MESSAGE_CODES.GET_NODE_DATA:
-      case ETH_MESSAGE_CODES.NODE_DATA:
-      case ETH_MESSAGE_CODES.GET_RECEIPTS:
-      case ETH_MESSAGE_CODES.RECEIPTS:
+      case ETH.MESSAGE_CODES.GET_NODE_DATA:
+      case ETH.MESSAGE_CODES.NODE_DATA:
+      case ETH.MESSAGE_CODES.GET_RECEIPTS:
+      case ETH.MESSAGE_CODES.RECEIPTS:
         if (this._version >= ETH.eth63.version) break
         return
 
@@ -133,7 +99,7 @@ export class ETH extends EventEmitter {
     return this._version
   }
 
-  _getStatusString(status: EthStatusMsg) {
+  _getStatusString(status: ETH.StatusMsg) {
     var sStr = `[V:${buffer2int(status[0])}, NID:${buffer2int(status[1])}, TD:${buffer2int(
       status[2],
     )}`
@@ -141,7 +107,7 @@ export class ETH extends EventEmitter {
     return sStr
   }
 
-  sendStatus(status: EthStatus) {
+  sendStatus(status: ETH.Status) {
     if (this._status !== null) return
     this._status = [
       int2buffer(this._version),
@@ -156,34 +122,34 @@ export class ETH extends EventEmitter {
         this._peer._socket.remotePort
       } (eth${this._version}): ${this._getStatusString(this._status)}`,
     )
-    this._send(ETH_MESSAGE_CODES.STATUS, rlp.encode(this._status))
+    this._send(ETH.MESSAGE_CODES.STATUS, rlp.encode(this._status))
     this._handleStatus()
   }
 
-  sendMessage(code: ETH_MESSAGE_CODES, payload: any) {
+  sendMessage(code: ETH.MESSAGE_CODES, payload: any) {
     debug(
       `Send ${this.getMsgPrefix(code)} message to ${this._peer._socket.remoteAddress}:${
         this._peer._socket.remotePort
       }: ${rlp.encode(payload).toString('hex')}`,
     )
     switch (code) {
-      case ETH_MESSAGE_CODES.STATUS:
+      case ETH.MESSAGE_CODES.STATUS:
         throw new Error('Please send status message through .sendStatus')
 
-      case ETH_MESSAGE_CODES.NEW_BLOCK_HASHES:
-      case ETH_MESSAGE_CODES.TX:
-      case ETH_MESSAGE_CODES.GET_BLOCK_HEADERS:
-      case ETH_MESSAGE_CODES.BLOCK_HEADERS:
-      case ETH_MESSAGE_CODES.GET_BLOCK_BODIES:
-      case ETH_MESSAGE_CODES.BLOCK_BODIES:
-      case ETH_MESSAGE_CODES.NEW_BLOCK:
+      case ETH.MESSAGE_CODES.NEW_BLOCK_HASHES:
+      case ETH.MESSAGE_CODES.TX:
+      case ETH.MESSAGE_CODES.GET_BLOCK_HEADERS:
+      case ETH.MESSAGE_CODES.BLOCK_HEADERS:
+      case ETH.MESSAGE_CODES.GET_BLOCK_BODIES:
+      case ETH.MESSAGE_CODES.BLOCK_BODIES:
+      case ETH.MESSAGE_CODES.NEW_BLOCK:
         if (this._version >= ETH.eth62.version) break
         throw new Error(`Code ${code} not allowed with version ${this._version}`)
 
-      case ETH_MESSAGE_CODES.GET_NODE_DATA:
-      case ETH_MESSAGE_CODES.NODE_DATA:
-      case ETH_MESSAGE_CODES.GET_RECEIPTS:
-      case ETH_MESSAGE_CODES.RECEIPTS:
+      case ETH.MESSAGE_CODES.GET_NODE_DATA:
+      case ETH.MESSAGE_CODES.NODE_DATA:
+      case ETH.MESSAGE_CODES.GET_RECEIPTS:
+      case ETH.MESSAGE_CODES.RECEIPTS:
         if (this._version >= ETH.eth63.version) break
         throw new Error(`Code ${code} not allowed with version ${this._version}`)
 
@@ -194,7 +160,44 @@ export class ETH extends EventEmitter {
     this._send(code, rlp.encode(payload))
   }
 
-  getMsgPrefix(msgCode: ETH_MESSAGE_CODES): string {
-    return ETH_MESSAGE_CODES[msgCode]
+  getMsgPrefix(msgCode: ETH.MESSAGE_CODES): string {
+    return ETH.MESSAGE_CODES[msgCode]
+  }
+}
+
+export namespace ETH {
+  export type StatusMsg = {
+    0: Buffer
+    1: Buffer
+    2: Buffer
+    3: Buffer
+    4: Buffer
+    length: 5
+  }
+
+  export type Status = {
+    version: number
+    networkId: number
+    td: Buffer
+    bestHash: Buffer
+    genesisHash: Buffer
+  }
+
+  export enum MESSAGE_CODES {
+    // eth62
+    STATUS = 0x00,
+    NEW_BLOCK_HASHES = 0x01,
+    TX = 0x02,
+    GET_BLOCK_HEADERS = 0x03,
+    BLOCK_HEADERS = 0x04,
+    GET_BLOCK_BODIES = 0x05,
+    BLOCK_BODIES = 0x06,
+    NEW_BLOCK = 0x07,
+
+    // eth63
+    GET_NODE_DATA = 0x0d,
+    NODE_DATA = 0x0e,
+    GET_RECEIPTS = 0x0f,
+    RECEIPTS = 0x10,
   }
 }

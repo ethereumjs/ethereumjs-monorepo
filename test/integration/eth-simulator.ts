@@ -71,11 +71,11 @@ test('ETH: send allowed eth63', async t => {
   opts.status1 = Object.assign({}, status)
   opts.onOnceStatus0 = function(rlpxs: any, eth: any) {
     t.equal(eth.getVersion(), 63, 'should use eth63 as protocol version')
-    eth.sendMessage(devp2p.ETH_MESSAGE_CODES.NEW_BLOCK_HASHES, [437000, 1, 0, 0])
+    eth.sendMessage(devp2p.ETH.MESSAGE_CODES.NEW_BLOCK_HASHES, [437000, 1, 0, 0])
     t.pass('should send NEW_BLOCK_HASHES message')
   }
   opts.onOnMsg1 = function(rlpxs: any, eth: any, code: any, payload: any) {
-    if (code === devp2p.ETH_MESSAGE_CODES.NEW_BLOCK_HASHES) {
+    if (code === devp2p.ETH.MESSAGE_CODES.NEW_BLOCK_HASHES) {
       t.pass('should receive NEW_BLOCK_HASHES message')
       util.destroyRLPXs(rlpxs)
       t.end()
@@ -90,11 +90,11 @@ test('ETH: send allowed eth62', async t => {
   opts.status0 = Object.assign({}, status)
   opts.status1 = Object.assign({}, status)
   opts.onOnceStatus0 = function(rlpxs: any, eth: any) {
-    eth.sendMessage(devp2p.ETH_MESSAGE_CODES.NEW_BLOCK_HASHES, [437000, 1, 0, 0])
+    eth.sendMessage(devp2p.ETH.MESSAGE_CODES.NEW_BLOCK_HASHES, [437000, 1, 0, 0])
     t.pass('should send NEW_BLOCK_HASHES message')
   }
   opts.onOnMsg1 = function(rlpxs: any, eth: any, code: any, payload: any) {
-    if (code === devp2p.ETH_MESSAGE_CODES.NEW_BLOCK_HASHES) {
+    if (code === devp2p.ETH.MESSAGE_CODES.NEW_BLOCK_HASHES) {
       t.pass('should receive NEW_BLOCK_HASHES message')
       util.destroyRLPXs(rlpxs)
       t.end()
@@ -110,7 +110,7 @@ test('ETH: send not-allowed eth62', async t => {
   opts.status1 = Object.assign({}, status)
   opts.onOnceStatus0 = function(rlpxs: any, eth: any) {
     try {
-      eth.sendMessage(devp2p.ETH_MESSAGE_CODES.GET_NODE_DATA, [])
+      eth.sendMessage(devp2p.ETH.MESSAGE_CODES.GET_NODE_DATA, [])
     } catch (err) {
       const msg = 'Error: Code 13 not allowed with version 62'
       t.equal(err.toString(), msg, `should emit error: ${msg}`)
@@ -144,7 +144,7 @@ test('ETH: invalid status send', async t => {
   opts.status1 = Object.assign({}, status)
   opts.onOnceStatus0 = function(rlpxs: any, eth: any) {
     try {
-      eth.sendMessage(devp2p.ETH_MESSAGE_CODES.STATUS, [])
+      eth.sendMessage(devp2p.ETH.MESSAGE_CODES.STATUS, [])
     } catch (err) {
       const msg = 'Error: Please send status message through .sendStatus'
       t.equal(err.toString(), msg, `should emit error: ${msg}`)

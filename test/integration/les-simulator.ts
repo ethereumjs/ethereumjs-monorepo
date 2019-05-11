@@ -86,11 +86,11 @@ test('LES: send valid message', async t => {
   opts.status1 = Object.assign({}, status)
   opts.onOnceStatus0 = function(rlpxs: any, les: any) {
     t.equal(les.getVersion(), 2, 'should use les2 as protocol version')
-    les.sendMessage(devp2p.LES_MESSAGE_CODES.GET_BLOCK_HEADERS, 1, [437000, 1, 0, 0])
+    les.sendMessage(devp2p.LES.MESSAGE_CODES.GET_BLOCK_HEADERS, 1, [437000, 1, 0, 0])
     t.pass('should send GET_BLOCK_HEADERS message')
   }
   opts.onOnMsg1 = function(rlpxs: any, eth: any, code: any, payload: any) {
-    if (code === devp2p.LES_MESSAGE_CODES.GET_BLOCK_HEADERS) {
+    if (code === devp2p.LES.MESSAGE_CODES.GET_BLOCK_HEADERS) {
       t.pass('should receive GET_BLOCK_HEADERS message')
       util.destroyRLPXs(rlpxs)
       t.end()
@@ -122,7 +122,7 @@ test('LES: invalid status send', async t => {
   opts.status1 = Object.assign({}, status)
   opts.onOnceStatus0 = function(rlpxs: any, les: any) {
     try {
-      les.sendMessage(devp2p.ETH_MESSAGE_CODES.STATUS, 1, [])
+      les.sendMessage(devp2p.ETH.MESSAGE_CODES.STATUS, 1, [])
     } catch (err) {
       const msg = 'Error: Please send status message through .sendStatus'
       t.equal(err.toString(), msg, `should emit error: ${msg}`)

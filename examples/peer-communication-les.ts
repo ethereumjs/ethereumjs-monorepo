@@ -1,5 +1,5 @@
 import * as devp2p from '../src'
-import { LES_MESSAGE_CODES, Peer, LesStatus } from '../src'
+import { LES, Peer } from '../src'
 import Tx from 'ethereumjs-tx'
 import Block from 'ethereumjs-block'
 import ms from 'ms'
@@ -70,7 +70,7 @@ rlpx.on('error', err => console.error(chalk.red(`RLPx error: ${err.stack || err}
 rlpx.on('peer:added', peer => {
   const addr = getPeerAddr(peer)
   const les = peer.getProtocols()[0]
-  const requests: { headers: Header[], bodies: any[] } = { headers: [], bodies: [] }
+  const requests: { headers: Header[]; bodies: any[] } = { headers: [], bodies: [] }
 
   const clientId = peer.getHelloMessage().clientId
   console.log(
@@ -87,14 +87,14 @@ rlpx.on('peer:added', peer => {
     genesisHash: GENESIS_HASH,
   })
 
-  les.once('status', (status: LesStatus) => {
+  les.once('status', (status: LES.Status) => {
     let msg = [devp2p.buffer2int(status['headNum']), 1, 0, 1]
-    les.sendMessage(devp2p.LES_MESSAGE_CODES.GET_BLOCK_HEADERS, 1, msg)
+    les.sendMessage(devp2p.LES.MESSAGE_CODES.GET_BLOCK_HEADERS, 1, msg)
   })
 
-  les.on('message', async (code: LES_MESSAGE_CODES, payload: any) => {
+  les.on('message', async (code: LES.MESSAGE_CODES, payload: any) => {
     switch (code) {
-      case devp2p.LES_MESSAGE_CODES.BLOCK_HEADERS:
+      case devp2p.LES.MESSAGE_CODES.BLOCK_HEADERS:
         if (payload[2].length > 1) {
           console.log(
             `${addr} not more than one block header expected (received: ${payload[2].length})`,
@@ -104,12 +104,12 @@ rlpx.on('peer:added', peer => {
         let header: Block.Header = new Block.Header(payload[2][0])
 
         setTimeout(() => {
-          les.sendMessage(devp2p.LES_MESSAGE_CODES.GET_BLOCK_BODIES, 2, [header.hash()])
+          les.sendMessage(devp2p.LES.MESSAGE_CODES.GET_BLOCK_BODIES, 2, [header.hash()])
           requests.bodies.push(header)
         }, ms('0.1s'))
         break
 
-      case devp2p.LES_MESSAGE_CODES.BLOCK_BODIES:
+      case devp2p.LES.MESSAGE_CODES.BLOCK_BODIES:
         if (payload[2].length !== 1) {
           console.log(
             `${addr} not more than one block body expected (received: ${payload[2].length})`,

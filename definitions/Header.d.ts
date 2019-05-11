@@ -1,2 +1,1 @@
-declare class Header {
-}
+declare class Header {}
