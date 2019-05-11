@@ -17,9 +17,9 @@ export interface RLPxOptions {
   timeout?: number
   dpt: DPT
   maxPeers: number
-  remoteClientIdFilter?: string | Buffer
+  remoteClientIdFilter?: string[]
   capabilities: Capabilities[]
-  listenPort: number
+  listenPort: number | null
 }
 
 export class RLPx extends EventEmitter {
@@ -28,9 +28,9 @@ export class RLPx extends EventEmitter {
   _timeout: number
   _maxPeers: number
   _clientId: Buffer
-  _remoteClientIdFilter?: string | Buffer
+  _remoteClientIdFilter?: string[]
   _capabilities: Capabilities[]
-  _listenPort: number
+  _listenPort: number | null
   _dpt: DPT
   _peersLRU: LRUCache<string, boolean>
   _peersQueue: { peer: PeerInfo; ts: number }[]

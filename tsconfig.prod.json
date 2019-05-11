@@ -1,5 +1,6 @@
 {
   "extends": "@ethereumjs/config-tsc",
+  "include": ["src/**/*.ts", "test/**/*.ts", "examples/**/*.ts"],
   "compilerOptions": {
     "baseUrl": "./",
     "paths": {
@@ -7,9 +8,9 @@
     },
     "outDir": "./dist",
     "typeRoots": ["definitions", "node_modules/@types"],
+    "declaration": true,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "downlevelIteration": true
-  },
-  "include": ["src/**/*.ts"]
+  }
 }
