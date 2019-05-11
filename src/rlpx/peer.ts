@@ -47,11 +47,21 @@ export type HelloMsg = {
   length: 5
 }
 
+export interface ProtocolDescriptor {
+  protocol: any
+  offset: number
+  length?: number
+}
+
+export interface ProtocolConstructor {
+  new (...args: any[]): any
+}
+
 export interface Capabilities {
   name: string
   version: number
   length: number
-  constructor: new (...args: any) => any
+  constructor: ProtocolConstructor
 }
 
 export interface Hello {
@@ -64,12 +74,12 @@ export interface Hello {
 
 export class Peer extends EventEmitter {
   _clientId: Buffer
-  _capabilities: Capabilities[]
+  _capabilities?: Capabilities[]
   _port: number
   _id: Buffer
   _remoteClientIdFilter: any
-  _remoteId: any
-  _EIP8: any
+  _remoteId: Buffer
+  _EIP8: Buffer
   _eciesSession: ECIES
   _state: string
   _weHello: HelloMsg | null
@@ -80,10 +90,10 @@ export class Peer extends EventEmitter {
   _pingTimeoutId: NodeJS.Timeout | null
   _closed: boolean
   _connected: boolean
-  _disconnectReason: any
+  _disconnectReason?: DISCONNECT_REASONS
   _disconnectWe: any
-  _pingTimeout: any
-  _protocols: any[]
+  _pingTimeout: number
+  _protocols: ProtocolDescriptor[]
 
   constructor(options: any) {
     super()
@@ -175,7 +185,6 @@ export class Peer extends EventEmitter {
 
     this._connected = false
     this._closed = false
-    this._disconnectReason = null
     this._disconnectWe = null
     this._pingIntervalId = null
     this._pingTimeout = options.timeout
@@ -251,10 +260,10 @@ export class Peer extends EventEmitter {
     }
   }
 
-  private _getProtocol(code: number) {
+  private _getProtocol(code: number): ProtocolDescriptor | undefined {
     if (code < BASE_PROTOCOL_LENGTH) return { protocol: this, offset: 0 }
     for (let obj of this._protocols) {
-      if (code >= obj.offset && code < obj.offset + obj.length) return obj
+      if (code >= obj.offset && code < obj.offset + obj.length!) return obj
     }
   }
 
@@ -288,7 +297,7 @@ export class Peer extends EventEmitter {
 
         const shared: any = {}
         for (const item of this._hello.capabilities) {
-          for (const obj of this._capabilities) {
+          for (const obj of this._capabilities!) {
             if (obj.name !== item.name || obj.version !== item.version) continue
             if (shared[obj.name] && shared[obj.name].version > obj.version) continue
             shared[obj.name] = obj
@@ -397,9 +406,9 @@ export class Peer extends EventEmitter {
     const payload: HelloMsg = [
       int2buffer(BASE_PROTOCOL_VERSION),
       this._clientId,
-      this._capabilities.map((obj: any) => [Buffer.from(obj.name), int2buffer(obj.version)]),
-      this._port === null ? Buffer.allocUnsafe(0) : int2buffer(this._port),
-      this._id,
+      this._capabilities!.map((obj: any) => [Buffer.from(obj.name), int2buffer(obj.version)]),
+      this._port === null ? Buffer.allocUnsafe(0) : int2buffer(this._port!),
+      this._id!,
     ]
 
     if (!this._closed) {
@@ -453,7 +462,7 @@ export class Peer extends EventEmitter {
     return this._hello
   }
 
-  getProtocols() {
+  getProtocols(): ProtocolDescriptor[] {
     return this._protocols.map(obj => obj.protocol)
   }
 

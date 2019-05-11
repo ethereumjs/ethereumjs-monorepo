@@ -32,7 +32,7 @@ export class RLPx extends EventEmitter {
   _capabilities: Capabilities[]
   _listenPort: number
   _dpt: DPT
-  _peersLRU: LRUCache<any, any>
+  _peersLRU: LRUCache<string, boolean>
   _peersQueue: { peer: PeerInfo; ts: number }[]
   _server: net.Server | null
   _peers: Map<string, net.Socket | Peer>
@@ -168,7 +168,7 @@ export class RLPx extends EventEmitter {
     })
   }
 
-  _onConnect(socket: net.Socket, peerId: any) {
+  _onConnect(socket: net.Socket, peerId: Buffer | null) {
     debug(`connected to ${socket.remoteAddress}:${socket.remotePort}, handshake waiting..`)
 
     const peer: Peer = new Peer({

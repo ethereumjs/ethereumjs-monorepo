@@ -42,15 +42,16 @@ export type EthStatus = {
   genesisHash: Buffer
 }
 
+type SendMethod = (code: ETH_MESSAGE_CODES, data: Buffer) => any
 export class ETH extends EventEmitter {
   _version: number
   _peer: Peer
   _status: EthStatusMsg | null
   _peerStatus: EthStatusMsg | null
   _statusTimeoutId: NodeJS.Timeout
-  _send: (code: ETH_MESSAGE_CODES, data: Buffer) => any
+  _send: SendMethod
 
-  constructor(version: number, peer: Peer, send: (code: ETH_MESSAGE_CODES, data: Buffer) => any) {
+  constructor(version: number, peer: Peer, send: SendMethod) {
     super()
 
     this._version = version
