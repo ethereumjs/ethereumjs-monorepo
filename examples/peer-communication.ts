@@ -76,7 +76,7 @@ rlpx.on('peer:added', peer => {
   const requests: { 
     headers: any[], 
     bodies: any[], 
-    msgTypes: any 
+    msgTypes: { [ key: string ]: ETH_MESSAGE_CODES }
   } = { headers: [], bodies: [], msgTypes: {} }
 
   const clientId = peer.getHelloMessage().clientId
@@ -111,8 +111,8 @@ rlpx.on('peer:added', peer => {
   })
 
   eth.on('message', async (code: ETH_MESSAGE_CODES, payload: any) => {
-    if (code in requests.msgTypes) {
-      requests.msgTypes[code] += 1
+    if (code in ETH_MESSAGE_CODES) {
+      requests.msgTypes[code] = code + 1
     } else {
       requests.msgTypes[code] = 1
     }
