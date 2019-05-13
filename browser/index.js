@@ -1,6 +1,6 @@
 'use strict'
 
-const Common = require('ethereumjs-common')
+const Common = require('ethereumjs-common').default
 const level = require('level-browserify')
 
 // Blockchain
