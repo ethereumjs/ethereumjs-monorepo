@@ -1,45 +1,57 @@
-const Buffer = require('safe-buffer').Buffer
-const utils = require('ethereumjs-util')
-const BN = utils.BN
-const { ERROR, VmError } = require('../exceptions')
+import BN = require('bn.js')
+import * as utils from 'ethereumjs-util'
+import { ERROR, VmError } from '../exceptions'
+import { RunState } from './loop'
+
 const MASK_160 = new BN(1).shln(160).subn(1)
 
 // Find Ceil(`this` / `num`)
-BN.prototype.divCeil = function divCeil (num) {
-  var dm = this.divmod(num)
+function divCeil (a: BN, b: BN) {
+  const div = a.div(b)
+  const mod = a.mod(b)
 
   // Fast case - exact division
-  if (dm.mod.isZero()) return dm.div
+  if (mod.isZero()) return div
 
   // Round up
-  return dm.div.negative !== 0 ? dm.div.isubn(1) : dm.div.iaddn(1)
+  return div.isNeg() ? div.isubn(1) : div.iaddn(1)
 }
 
-function addressToBuffer (address) {
+function addressToBuffer (address: BN) {
   return address.and(MASK_160).toArrayLike(Buffer, 'be', 20)
 }
 
+export interface SyncOpHandler {
+  (runState: RunState): void
+}
+
+export interface AsyncOpHandler {
+  (runState: RunState): Promise<void>
+}
+
+export type OpHandler = SyncOpHandler | AsyncOpHandler
+
 // the opcode functions
-module.exports = {
-  STOP: function (runState) {
-    runState.stopped = true
+export const handlers: {[k: string]: OpHandler} = {
+  STOP: function (runState: RunState) {
+    trap(ERROR.STOP)
   },
-  ADD: function (runState) {
+  ADD: function (runState: RunState) {
     const [a, b] = runState.stack.popN(2)
     const r = a.add(b).mod(utils.TWO_POW256)
     runState.stack.push(r)
   },
-  MUL: function (runState) {
+  MUL: function (runState: RunState) {
     const [a, b] = runState.stack.popN(2)
     const r = a.mul(b).mod(utils.TWO_POW256)
     runState.stack.push(r)
   },
-  SUB: function (runState) {
+  SUB: function (runState: RunState) {
     const [a, b] = runState.stack.popN(2)
     const r = a.sub(b).toTwos(256)
     runState.stack.push(r)
   },
-  DIV: function (runState) {
+  DIV: function (runState: RunState) {
     const [a, b] = runState.stack.popN(2)
     let r
     if (b.isZero()) {
@@ -49,7 +61,7 @@ module.exports = {
     }
     runState.stack.push(r)
   },
-  SDIV: function (runState) {
+  SDIV: function (runState: RunState) {
     let [a, b] = runState.stack.popN(2)
     let r
     if (b.isZero()) {
@@ -61,7 +73,7 @@ module.exports = {
     }
     runState.stack.push(r)
   },
-  MOD: function (runState) {
+  MOD: function (runState: RunState) {
     const [a, b] = runState.stack.popN(2)
     let r
     if (b.isZero()) {
@@ -71,7 +83,7 @@ module.exports = {
     }
     runState.stack.push(r)
   },
-  SMOD: function (runState) {
+  SMOD: function (runState: RunState) {
     let [a, b] = runState.stack.popN(2)
     let r
     if (b.isZero()) {
@@ -87,7 +99,7 @@ module.exports = {
     }
     runState.stack.push(r)
   },
-  ADDMOD: function (runState) {
+  ADDMOD: function (runState: RunState) {
     const [a, b, c] = runState.stack.popN(3)
     let r
     if (c.isZero()) {
@@ -97,7 +109,7 @@ module.exports = {
     }
     runState.stack.push(r)
   },
-  MULMOD: function (runState) {
+  MULMOD: function (runState: RunState) {
     const [a, b, c] = runState.stack.popN(3)
     let r
     if (c.isZero()) {
@@ -107,7 +119,7 @@ module.exports = {
     }
     runState.stack.push(r)
   },
-  EXP: function (runState) {
+  EXP: function (runState: RunState) {
     let [base, exponent] = runState.stack.popN(2)
     if (exponent.isZero()) {
       runState.stack.push(new BN(1))
@@ -126,82 +138,82 @@ module.exports = {
       return
     }
     const m = BN.red(utils.TWO_POW256)
-    base = base.toRed(m)
-    const r = base.redPow(exponent)
-    runState.stack.push(r)
+    const redBase = base.toRed(m)
+    const r = redBase.redPow(exponent)
+    runState.stack.push(r.fromRed())
   },
-  SIGNEXTEND: function (runState) {
+  SIGNEXTEND: function (runState: RunState) {
     let [k, val] = runState.stack.popN(2)
-    val = val.toArrayLike(Buffer, 'be', 32)
+    const buf = val.toArrayLike(Buffer, 'be', 32)
     var extendOnes = false
 
     if (k.lten(31)) {
-      k = k.toNumber()
+      const n = k.toNumber()
 
-      if (val[31 - k] & 0x80) {
+      if (buf[31 - n] & 0x80) {
         extendOnes = true
       }
 
       // 31-k-1 since k-th byte shouldn't be modified
-      for (var i = 30 - k; i >= 0; i--) {
-        val[i] = extendOnes ? 0xff : 0
+      for (var i = 30 - n; i >= 0; i--) {
+        buf[i] = extendOnes ? 0xff : 0
       }
     }
 
-    runState.stack.push(new BN(val))
+    runState.stack.push(new BN(buf))
   },
   // 0x10 range - bit ops
-  LT: function (runState) {
+  LT: function (runState: RunState) {
     const [a, b] = runState.stack.popN(2)
     const r = new BN(a.lt(b) ? 1 : 0)
     runState.stack.push(r)
   },
-  GT: function (runState) {
+  GT: function (runState: RunState) {
     const [a, b] = runState.stack.popN(2)
     const r = new BN(a.gt(b) ? 1 : 0)
     runState.stack.push(r)
   },
-  SLT: function (runState) {
+  SLT: function (runState: RunState) {
     const [a, b] = runState.stack.popN(2)
     const r = new BN(a.fromTwos(256).lt(b.fromTwos(256)) ? 1 : 0)
     runState.stack.push(r)
   },
-  SGT: function (runState) {
+  SGT: function (runState: RunState) {
     const [a, b] = runState.stack.popN(2)
     const r = new BN(a.fromTwos(256).gt(b.fromTwos(256)) ? 1 : 0)
     runState.stack.push(r)
   },
-  EQ: function (runState) {
+  EQ: function (runState: RunState) {
     const [a, b] = runState.stack.popN(2)
     const r = new BN(a.eq(b) ? 1 : 0)
     runState.stack.push(r)
   },
-  ISZERO: function (runState) {
+  ISZERO: function (runState: RunState) {
     const a = runState.stack.pop()
     const r = new BN(a.isZero() ? 1 : 0)
     runState.stack.push(r)
   },
-  AND: function (runState) {
+  AND: function (runState: RunState) {
     const [a, b] = runState.stack.popN(2)
     const r = a.and(b)
     runState.stack.push(r)
   },
-  OR: function (runState) {
+  OR: function (runState: RunState) {
     const [a, b] = runState.stack.popN(2)
     const r = a.or(b)
     runState.stack.push(r)
   },
-  XOR: function (runState) {
+  XOR: function (runState: RunState) {
     const [a, b] = runState.stack.popN(2)
     const r = a.xor(b)
     runState.stack.push(r)
   },
-  NOT: function (runState) {
+  NOT: function (runState: RunState) {
     const a = runState.stack.pop()
     const r = a.notn(256)
     runState.stack.push(r)
   },
-  BYTE: function (runState) {
+  BYTE: function (runState: RunState) {
     const [pos, word] = runState.stack.popN(2)
     if (pos.gten(32)) {
       runState.stack.push(new BN(0))
@@ -211,7 +223,7 @@ module.exports = {
     const r = new BN(word.shrn((31 - pos.toNumber()) * 8).andln(0xff))
     runState.stack.push(r)
   },
-  SHL: function (runState) {
+  SHL: function (runState: RunState) {
     const [a, b] = runState.stack.popN(2)
     if (!runState._common.gteHardfork('constantinople')) {
       trap(ERROR.INVALID_OPCODE)
@@ -224,7 +236,7 @@ module.exports = {
     const r = b.shln(a.toNumber()).iand(utils.MAX_INTEGER)
     runState.stack.push(r)
   },
-  SHR: function (runState) {
+  SHR: function (runState: RunState) {
     const [a, b] = runState.stack.popN(2)
     if (!runState._common.gteHardfork('constantinople')) {
       trap(ERROR.INVALID_OPCODE)
@@ -237,7 +249,7 @@ module.exports = {
     const r = b.shrn(a.toNumber())
     runState.stack.push(r)
   },
-  SAR: function (runState) {
+  SAR: function (runState: RunState) {
     const [a, b] = runState.stack.popN(2)
     if (!runState._common.gteHardfork('constantinople')) {
       trap(ERROR.INVALID_OPCODE)
@@ -266,7 +278,7 @@ module.exports = {
     runState.stack.push(r)
   },
   // 0x20 range - crypto
-  SHA3: function (runState) {
+  SHA3: function (runState: RunState) {
     const [offset, length] = runState.stack.popN(2)
     subMemUsage(runState, offset, length)
     let data = Buffer.alloc(0)
@@ -274,101 +286,103 @@ module.exports = {
       data = runState.memory.read(offset.toNumber(), length.toNumber())
     }
     // copy fee
-    runState.eei.useGas(new BN(runState._common.param('gasPrices', 'sha3Word')).imul(length.divCeil(new BN(32))))
+    runState.eei.useGas(new BN(runState._common.param('gasPrices', 'sha3Word')).imul(divCeil(length, new BN(32))))
     const r = new BN(utils.keccak256(data))
     runState.stack.push(r)
   },
   // 0x30 range - closure state
-  ADDRESS: function (runState) {
+  ADDRESS: function (runState: RunState) {
     runState.stack.push(new BN(runState.eei.getAddress()))
   },
-  BALANCE: async function (runState) {
+  BALANCE: async function (runState: RunState) {
     const address = runState.stack.pop()
-    const balance = await runState.eei.getExternalBalance(address)
+    const addressBuf = addressToBuffer(address)
+    const balance = await runState.eei.getExternalBalance(addressBuf)
     runState.stack.push(balance)
   },
-  ORIGIN: function (runState) {
+  ORIGIN: function (runState: RunState) {
     runState.stack.push(runState.eei.getTxOrigin())
   },
-  CALLER: function (runState) {
+  CALLER: function (runState: RunState) {
     runState.stack.push(runState.eei.getCaller())
   },
-  CALLVALUE: function (runState) {
+  CALLVALUE: function (runState: RunState) {
     runState.stack.push(runState.eei.getCallValue())
   },
-  CALLDATALOAD: function (runState) {
+  CALLDATALOAD: function (runState: RunState) {
     let pos = runState.stack.pop()
-    if (pos.gtn(runState.eei.getCallDataSize())) {
+    if (pos.gt(runState.eei.getCallDataSize())) {
       runState.stack.push(new BN(0))
       return
     }
 
-    pos = pos.toNumber()
-    let loaded = runState.eei.getCallData().slice(pos, pos + 32)
+    const i = pos.toNumber()
+    let loaded = runState.eei.getCallData().slice(i, i + 32)
     loaded = loaded.length ? loaded : Buffer.from([0])
     const r = new BN(utils.setLengthRight(loaded, 32))
 
     runState.stack.push(r)
   },
-  CALLDATASIZE: function (runState) {
+  CALLDATASIZE: function (runState: RunState) {
     const r = runState.eei.getCallDataSize()
     runState.stack.push(r)
   },
-  CALLDATACOPY: function (runState) {
+  CALLDATACOPY: function (runState: RunState) {
     let [memOffset, dataOffset, dataLength] = runState.stack.popN(3)
 
     subMemUsage(runState, memOffset, dataLength)
-    runState.eei.useGas(new BN(runState._common.param('gasPrices', 'copy')).imul(dataLength.divCeil(new BN(32))))
+    runState.eei.useGas(new BN(runState._common.param('gasPrices', 'copy')).imul(divCeil(dataLength, new BN(32))))
 
     const data = getDataSlice(runState.eei.getCallData(), dataOffset, dataLength)
-    memOffset = memOffset.toNumber()
-    dataLength = dataLength.toNumber()
-    runState.memory.extend(memOffset, dataLength)
-    runState.memory.write(memOffset, dataLength, data)
+    const memOffsetNum = memOffset.toNumber()
+    const dataLengthNum = dataLength.toNumber()
+    runState.memory.extend(memOffsetNum, dataLengthNum)
+    runState.memory.write(memOffsetNum, dataLengthNum, data)
   },
-  CODESIZE: function (runState) {
+  CODESIZE: function (runState: RunState) {
     runState.stack.push(runState.eei.getCodeSize())
   },
-  CODECOPY: function (runState) {
+  CODECOPY: function (runState: RunState) {
     let [memOffset, codeOffset, length] = runState.stack.popN(3)
 
     subMemUsage(runState, memOffset, length)
-    runState.eei.useGas(new BN(runState._common.param('gasPrices', 'copy')).imul(length.divCeil(new BN(32))))
+    runState.eei.useGas(new BN(runState._common.param('gasPrices', 'copy')).imul(divCeil(length, new BN(32))))
 
     const data = getDataSlice(runState.eei.getCode(), codeOffset, length)
-    memOffset = memOffset.toNumber()
-    length = length.toNumber()
-    runState.memory.extend(memOffset, length)
-    runState.memory.write(memOffset, length, data)
+    const memOffsetNum = memOffset.toNumber()
+    const lengthNum = length.toNumber()
+    runState.memory.extend(memOffsetNum, lengthNum)
+    runState.memory.write(memOffsetNum, lengthNum, data)
   },
-  EXTCODESIZE: async function (runState) {
+  EXTCODESIZE: async function (runState: RunState) {
     const address = runState.stack.pop()
     const size = await runState.eei.getExternalCodeSize(address)
     runState.stack.push(size)
   },
-  EXTCODECOPY: async function (runState) {
+  EXTCODECOPY: async function (runState: RunState) {
     let [address, memOffset, codeOffset, length] = runState.stack.popN(4)
 
     // FIXME: for some reason this must come before subGas
     subMemUsage(runState, memOffset, length)
     // copy fee
-    runState.eei.useGas(new BN(runState._common.param('gasPrices', 'copy')).imul(length.divCeil(new BN(32))))
+    runState.eei.useGas(new BN(runState._common.param('gasPrices', 'copy')).imul(divCeil(length, new BN(32))))
 
     const code = await runState.eei.getExternalCode(address)
 
     const data = getDataSlice(code, codeOffset, length)
-    memOffset = memOffset.toNumber()
-    length = length.toNumber()
-    runState.memory.extend(memOffset, length)
-    runState.memory.write(memOffset, length, data)
+    const memOffsetNum = memOffset.toNumber()
+    const lengthNum = length.toNumber()
+    runState.memory.extend(memOffsetNum, lengthNum)
+    runState.memory.write(memOffsetNum, lengthNum, data)
   },
-  EXTCODEHASH: async function (runState) {
+  EXTCODEHASH: async function (runState: RunState) {
     let address = runState.stack.pop()
     if (!runState._common.gteHardfork('constantinople')) {
       trap(ERROR.INVALID_OPCODE)
     }
 
-    const empty = await runState.eei.isAccountEmpty(address)
+    const addressBuf = addressToBuffer(address)
+    const empty = await runState.eei.isAccountEmpty(addressBuf)
     if (empty) {
       runState.stack.push(new BN(0))
       return
@@ -382,10 +396,10 @@ module.exports = {
 
     runState.stack.push(new BN(utils.keccak256(code)))
   },
-  RETURNDATASIZE: function (runState) {
+  RETURNDATASIZE: function (runState: RunState) {
     runState.stack.push(runState.eei.getReturnDataSize())
   },
-  RETURNDATACOPY: function (runState) {
+  RETURNDATACOPY: function (runState: RunState) {
     let [memOffset, returnDataOffset, length] = runState.stack.popN(3)
 
     if ((returnDataOffset.add(length)).gt(runState.eei.getReturnDataSize())) {
@@ -393,19 +407,19 @@ module.exports = {
     }
 
     subMemUsage(runState, memOffset, length)
-    runState.eei.useGas(new BN(runState._common.param('gasPrices', 'copy')).mul(length.divCeil(new BN(32))))
+    runState.eei.useGas(new BN(runState._common.param('gasPrices', 'copy')).mul(divCeil(length, new BN(32))))
 
     const data = getDataSlice(runState.eei.getReturnData(), returnDataOffset, length)
-    memOffset = memOffset.toNumber()
-    length = length.toNumber()
-    runState.memory.extend(memOffset, length)
-    runState.memory.write(memOffset, length, data)
+    const memOffsetNum = memOffset.toNumber()
+    const lengthNum = length.toNumber()
+    runState.memory.extend(memOffsetNum, lengthNum)
+    runState.memory.write(memOffsetNum, lengthNum, data)
   },
-  GASPRICE: function (runState) {
+  GASPRICE: function (runState: RunState) {
     runState.stack.push(runState.eei.getTxGasPrice())
   },
   // '0x40' range - block operations
-  BLOCKHASH: async function (runState) {
+  BLOCKHASH: async function (runState: RunState) {
     const number = runState.stack.pop()
 
     const diff = runState.eei.getBlockNumber().sub(number)
@@ -418,67 +432,69 @@ module.exports = {
     const hash = await runState.eei.getBlockHash(number)
     runState.stack.push(hash)
   },
-  COINBASE: function (runState) {
+  COINBASE: function (runState: RunState) {
     runState.stack.push(runState.eei.getBlockCoinbase())
   },
-  TIMESTAMP: function (runState) {
+  TIMESTAMP: function (runState: RunState) {
     runState.stack.push(runState.eei.getBlockTimestamp())
   },
-  NUMBER: function (runState) {
+  NUMBER: function (runState: RunState) {
     runState.stack.push(runState.eei.getBlockNumber())
   },
-  DIFFICULTY: function (runState) {
+  DIFFICULTY: function (runState: RunState) {
     runState.stack.push(runState.eei.getBlockDifficulty())
   },
-  GASLIMIT: function (runState) {
+  GASLIMIT: function (runState: RunState) {
     runState.stack.push(runState.eei.getBlockGasLimit())
   },
   // 0x50 range - 'storage' and execution
-  POP: function (runState) {
+  POP: function (runState: RunState) {
     runState.stack.pop()
   },
-  MLOAD: function (runState) {
+  MLOAD: function (runState: RunState) {
     const pos = runState.stack.pop()
     subMemUsage(runState, pos, new BN(32))
     const word = runState.memory.read(pos.toNumber(), 32)
     runState.stack.push(new BN(word))
   },
-  MSTORE: function (runState) {
+  MSTORE: function (runState: RunState) {
     let [offset, word] = runState.stack.popN(2)
-    word = word.toArrayLike(Buffer, 'be', 32)
+    const buf = word.toArrayLike(Buffer, 'be', 32)
     subMemUsage(runState, offset, new BN(32))
-    offset = offset.toNumber()
-    runState.memory.extend(offset, 32)
-    runState.memory.write(offset, 32, word)
+    const offsetNum = offset.toNumber()
+    runState.memory.extend(offsetNum, 32)
+    runState.memory.write(offsetNum, 32, buf)
   },
-  MSTORE8: function (runState) {
+  MSTORE8: function (runState: RunState) {
     let [offset, byte] = runState.stack.popN(2)
 
     // NOTE: we're using a 'trick' here to get the least significant byte
-    byte = Buffer.from([ byte.andln(0xff) ])
+    // NOTE: force cast necessary because `BN.andln` returns number but
+    // the types are wrong
+    const buf = Buffer.from([ (byte.andln(0xff) as unknown) as number ])
     subMemUsage(runState, offset, new BN(1))
-    offset = offset.toNumber()
-    runState.memory.extend(offset, 1)
-    runState.memory.write(offset, 1, byte)
+    const offsetNum = offset.toNumber()
+    runState.memory.extend(offsetNum, 1)
+    runState.memory.write(offsetNum, 1, buf)
   },
-  SLOAD: async function (runState) {
+  SLOAD: async function (runState: RunState) {
     let key = runState.stack.pop()
-    key = key.toArrayLike(Buffer, 'be', 32)
+    const keyBuf = key.toArrayLike(Buffer, 'be', 32)
 
-    let value = await runState.eei.storageLoad(key)
-    value = value.length ? new BN(value) : new BN(0)
-    runState.stack.push(value)
+    const value = await runState.eei.storageLoad(keyBuf)
+    const valueBN = value.length ? new BN(value) : new BN(0)
+    runState.stack.push(valueBN)
   },
-  SSTORE: async function (runState) {
+  SSTORE: async function (runState: RunState) {
     if (runState.eei.isStatic()) {
       trap(ERROR.STATIC_STATE_CHANGE)
     }
 
     let [key, val] = runState.stack.popN(2)
 
-    key = key.toArrayLike(Buffer, 'be', 32)
+    const keyBuf = key.toArrayLike(Buffer, 'be', 32)
     // NOTE: this should be the shortest representation
-    var value
+    let value
     if (val.isZero()) {
       value = Buffer.from([])
     } else {
@@ -486,65 +502,65 @@ module.exports = {
     }
 
     // TODO: Replace getContractStorage with EEI method
-    const found = await getContractStorage(runState, runState.eei.getAddress(), key)
+    const found = await getContractStorage(runState, runState.eei.getAddress(), keyBuf)
     updateSstoreGas(runState, found, value)
-    await runState.eei.storageStore(key, value)
+    await runState.eei.storageStore(keyBuf, value)
   },
-  JUMP: function (runState) {
-    let dest = runState.stack.pop()
-    if (dest.gtn(runState.eei.getCodeSize())) {
+  JUMP: function (runState: RunState) {
+    const dest = runState.stack.pop()
+    if (dest.gt(runState.eei.getCodeSize())) {
       trap(ERROR.INVALID_JUMP + ' at ' + describeLocation(runState))
     }
 
-    dest = dest.toNumber()
+    const destNum = dest.toNumber()
 
-    if (!jumpIsValid(runState, dest)) {
+    if (!jumpIsValid(runState, destNum)) {
       trap(ERROR.INVALID_JUMP + ' at ' + describeLocation(runState))
     }
 
-    runState.programCounter = dest
+    runState.programCounter = destNum
   },
-  JUMPI: function (runState) {
+  JUMPI: function (runState: RunState) {
     let [dest, cond] = runState.stack.popN(2)
     if (!cond.isZero()) {
-      if (dest.gtn(runState.eei.getCodeSize())) {
+      if (dest.gt(runState.eei.getCodeSize())) {
         trap(ERROR.INVALID_JUMP + ' at ' + describeLocation(runState))
       }
 
-      dest = dest.toNumber()
+      const destNum = dest.toNumber()
 
-      if (!jumpIsValid(runState, dest)) {
+      if (!jumpIsValid(runState, destNum)) {
         trap(ERROR.INVALID_JUMP + ' at ' + describeLocation(runState))
       }
 
-      runState.programCounter = dest
+      runState.programCounter = destNum
     }
   },
-  PC: function (runState) {
+  PC: function (runState: RunState) {
     runState.stack.push(new BN(runState.programCounter - 1))
   },
-  MSIZE: function (runState) {
+  MSIZE: function (runState: RunState) {
     runState.stack.push(runState.memoryWordCount.muln(32))
   },
-  GAS: function (runState) {
-    runState.stack.push(runState.eei.getGasLeft())
+  GAS: function (runState: RunState) {
+    runState.stack.push(new BN(runState.eei.getGasLeft()))
   },
-  JUMPDEST: function (runState) {},
-  PUSH: function (runState) {
+  JUMPDEST: function (runState: RunState) {},
+  PUSH: function (runState: RunState) {
     const numToPush = runState.opCode - 0x5f
     const loaded = new BN(runState.eei.getCode().slice(runState.programCounter, runState.programCounter + numToPush).toString('hex'), 16)
     runState.programCounter += numToPush
     runState.stack.push(loaded)
   },
-  DUP: function (runState) {
+  DUP: function (runState: RunState) {
     const stackPos = runState.opCode - 0x7f
     runState.stack.dup(stackPos)
   },
-  SWAP: function (runState) {
+  SWAP: function (runState: RunState) {
     const stackPos = runState.opCode - 0x8f
     runState.stack.swap(stackPos)
   },
-  LOG: function (runState) {
+  LOG: function (runState: RunState) {
     if (runState.eei.isStatic()) {
       trap(ERROR.STATIC_STATE_CHANGE)
     }
@@ -557,7 +573,7 @@ module.exports = {
     }
 
     let topics = runState.stack.popN(topicsCount)
-    topics = topics.map(function (a) {
+    const topicsBuf = topics.map(function (a) {
       return a.toArrayLike(Buffer, 'be', 32)
     })
 
@@ -568,11 +584,11 @@ module.exports = {
     }
     runState.eei.useGas(new BN(runState._common.param('gasPrices', 'logTopic')).imuln(topicsCount).iadd(memLength.muln(runState._common.param('gasPrices', 'logData'))))
 
-    runState.eei.log(mem, topicsCount, topics)
+    runState.eei.log(mem, topicsCount, topicsBuf)
   },
 
   // '0xf0' range - closures
-  CREATE: async function (runState) {
+  CREATE: async function (runState: RunState) {
     if (runState.eei.isStatic()) {
       trap(ERROR.STATIC_STATE_CHANGE)
     }
@@ -580,8 +596,8 @@ module.exports = {
     const [value, offset, length] = runState.stack.popN(3)
 
     subMemUsage(runState, offset, length)
-    let gasLimit = new BN(runState.gasLeft)
-    gasLimit = maxCallGas(gasLimit, runState.gasLeft)
+    let gasLimit = new BN(runState.eei.getGasLeft())
+    gasLimit = maxCallGas(gasLimit, runState.eei.getGasLeft())
 
     let data = Buffer.alloc(0)
     if (!length.isZero()) {
@@ -591,7 +607,7 @@ module.exports = {
     const ret = await runState.eei.create(gasLimit, value, data)
     runState.stack.push(ret)
   },
-  CREATE2: async function (runState) {
+  CREATE2: async function (runState: RunState) {
     if (!runState._common.gteHardfork('constantinople')) {
       trap(ERROR.INVALID_OPCODE)
     }
@@ -604,7 +620,7 @@ module.exports = {
 
     subMemUsage(runState, offset, length)
     // Deduct gas costs for hashing
-    runState.eei.useGas(new BN(runState._common.param('gasPrices', 'sha3Word')).imul(length.divCeil(new BN(32))))
+    runState.eei.useGas(new BN(runState._common.param('gasPrices', 'sha3Word')).imul(divCeil(length, new BN(32))))
     let gasLimit = new BN(runState.eei.getGasLeft())
     gasLimit = maxCallGas(gasLimit, runState.eei.getGasLeft())
 
@@ -616,9 +632,9 @@ module.exports = {
     const ret = await runState.eei.create2(gasLimit, value, data, salt.toArrayLike(Buffer, 'be', 32))
     runState.stack.push(ret)
   },
-  CALL: async function (runState) {
+  CALL: async function (runState: RunState) {
     let [gasLimit, toAddress, value, inOffset, inLength, outOffset, outLength] = runState.stack.popN(7)
-    toAddress = addressToBuffer(toAddress)
+    const toAddressBuf = addressToBuffer(toAddress)
 
     if (runState.eei.isStatic() && !value.isZero()) {
       trap(ERROR.STATIC_STATE_CHANGE)
@@ -629,14 +645,14 @@ module.exports = {
     if (!value.isZero()) {
       runState.eei.useGas(new BN(runState._common.param('gasPrices', 'callValueTransfer')))
     }
-    gasLimit = maxCallGas(gasLimit, runState.gasLeft)
+    gasLimit = maxCallGas(gasLimit, runState.eei.getGasLeft())
 
     let data = Buffer.alloc(0)
     if (!inLength.isZero()) {
       data = runState.memory.read(inOffset.toNumber(), inLength.toNumber())
     }
 
-    const empty = await runState.eei.isAccountEmpty(toAddress)
+    const empty = await runState.eei.isAccountEmpty(toAddressBuf)
     if (empty) {
       if (!value.isZero()) {
         runState.eei.useGas(new BN(runState._common.param('gasPrices', 'callNewAccount')))
@@ -644,27 +660,29 @@ module.exports = {
     }
 
     if (!value.isZero()) {
-      runState.gasLeft.iaddn(runState._common.param('gasPrices', 'callStipend'))
+      // TODO: Don't use private attr directly
+      runState.eei._gasLeft.iaddn(runState._common.param('gasPrices', 'callStipend'))
       gasLimit.iaddn(runState._common.param('gasPrices', 'callStipend'))
     }
 
-    const ret = await runState.eei.call(gasLimit, toAddress, value, data)
+    const ret = await runState.eei.call(gasLimit, toAddressBuf, value, data)
     // Write return data to memory
     writeCallOutput(runState, outOffset, outLength)
     runState.stack.push(ret)
   },
-  CALLCODE: async function (runState) {
+  CALLCODE: async function (runState: RunState) {
     let [gasLimit, toAddress, value, inOffset, inLength, outOffset, outLength] = runState.stack.popN(7)
-    toAddress = addressToBuffer(toAddress)
+    const toAddressBuf = addressToBuffer(toAddress)
 
     subMemUsage(runState, inOffset, inLength)
     subMemUsage(runState, outOffset, outLength)
     if (!value.isZero()) {
       runState.eei.useGas(new BN(runState._common.param('gasPrices', 'callValueTransfer')))
     }
-    gasLimit = maxCallGas(gasLimit, runState.gasLeft)
+    gasLimit = maxCallGas(gasLimit, runState.eei.getGasLeft())
     if (!value.isZero()) {
-      runState.gasLeft.iaddn(runState._common.param('gasPrices', 'callStipend'))
+      // TODO: Don't use private attr directly
+      runState.eei._gasLeft.iaddn(runState._common.param('gasPrices', 'callStipend'))
       gasLimit.iaddn(runState._common.param('gasPrices', 'callStipend'))
     }
 
@@ -673,50 +691,50 @@ module.exports = {
       data = runState.memory.read(inOffset.toNumber(), inLength.toNumber())
     }
 
-    const ret = await runState.eei.callCode(gasLimit, toAddress, value, data)
+    const ret = await runState.eei.callCode(gasLimit, toAddressBuf, value, data)
     // Write return data to memory
     writeCallOutput(runState, outOffset, outLength)
     runState.stack.push(ret)
   },
-  DELEGATECALL: async function (runState) {
+  DELEGATECALL: async function (runState: RunState) {
     const value = runState.eei.getCallValue()
     let [gasLimit, toAddress, inOffset, inLength, outOffset, outLength] = runState.stack.popN(6)
-    toAddress = addressToBuffer(toAddress)
+    const toAddressBuf = addressToBuffer(toAddress)
 
     subMemUsage(runState, inOffset, inLength)
     subMemUsage(runState, outOffset, outLength)
-    gasLimit = maxCallGas(gasLimit, runState.gasLeft)
+    gasLimit = maxCallGas(gasLimit, runState.eei.getGasLeft())
 
     let data = Buffer.alloc(0)
     if (!inLength.isZero()) {
       data = runState.memory.read(inOffset.toNumber(), inLength.toNumber())
     }
 
-    const ret = await runState.eei.callDelegate(gasLimit, toAddress, value, data)
+    const ret = await runState.eei.callDelegate(gasLimit, toAddressBuf, value, data)
     // Write return data to memory
     writeCallOutput(runState, outOffset, outLength)
     runState.stack.push(ret)
   },
-  STATICCALL: async function (runState) {
+  STATICCALL: async function (runState: RunState) {
     const value = new BN(0)
     let [gasLimit, toAddress, inOffset, inLength, outOffset, outLength] = runState.stack.popN(6)
-    toAddress = addressToBuffer(toAddress)
+    const toAddressBuf = addressToBuffer(toAddress)
 
     subMemUsage(runState, inOffset, inLength)
     subMemUsage(runState, outOffset, outLength)
-    gasLimit = maxCallGas(gasLimit, runState.gasLeft)
+    gasLimit = maxCallGas(gasLimit, runState.eei.getGasLeft())
 
     let data = Buffer.alloc(0)
     if (!inLength.isZero()) {
       data = runState.memory.read(inOffset.toNumber(), inLength.toNumber())
     }
 
-    const ret = await runState.eei.callStatic(gasLimit, toAddress, value, data)
+    const ret = await runState.eei.callStatic(gasLimit, toAddressBuf, value, data)
     // Write return data to memory
     writeCallOutput(runState, outOffset, outLength)
     runState.stack.push(ret)
   },
-  RETURN: function (runState) {
+  RETURN: function (runState: RunState) {
     const [offset, length] = runState.stack.popN(2)
     subMemUsage(runState, offset, length)
     let returnData = Buffer.alloc(0)
@@ -725,9 +743,8 @@ module.exports = {
     }
     runState.eei.finish(returnData)
   },
-  REVERT: function (runState) {
+  REVERT: function (runState: RunState) {
     const [offset, length] = runState.stack.popN(2)
-    runState.stopped = true
     subMemUsage(runState, offset, length)
     let returnData = Buffer.alloc(0)
     if (!length.isZero()) {
@@ -736,34 +753,35 @@ module.exports = {
     runState.eei.revert(returnData)
   },
   // '0x70', range - other
-  SELFDESTRUCT: async function (runState) {
+  SELFDESTRUCT: async function (runState: RunState) {
     let selfdestructToAddress = runState.stack.pop()
     if (runState.eei.isStatic()) {
       trap(ERROR.STATIC_STATE_CHANGE)
     }
 
+    const selfdestructToAddressBuf = addressToBuffer(selfdestructToAddress)
     const balance = await runState.eei.getExternalBalance(runState.eei.getAddress())
     if (balance.gtn(0)) {
-      const empty = await runState.eei.isAccountEmpty(selfdestructToAddress)
+      const empty = await runState.eei.isAccountEmpty(selfdestructToAddressBuf)
       if (empty) {
         runState.eei.useGas(new BN(runState._common.param('gasPrices', 'callNewAccount')))
       }
     }
 
-    selfdestructToAddress = addressToBuffer(selfdestructToAddress)
-    return runState.eei.selfDestruct(selfdestructToAddress)
+    return runState.eei.selfDestruct(selfdestructToAddressBuf)
   }
 }
 
-function describeLocation (runState) {
+function describeLocation (runState: RunState) {
   var hash = utils.keccak256(runState.eei.getCode()).toString('hex')
   var address = runState.eei.getAddress().toString('hex')
   var pc = runState.programCounter - 1
   return hash + '/' + address + ':' + pc
 }
 
-function trap (err) {
-  throw new VmError(err)
+function trap (err: string) {
+  // TODO: facilitate extra data along with errors
+  throw new VmError(err as ERROR)
 }
 
 /**
@@ -774,11 +792,11 @@ function trap (err) {
  * @param {BN} length
  * @returns {String}
  */
-function subMemUsage (runState, offset, length) {
+function subMemUsage (runState: RunState, offset: BN, length: BN) {
   // YP (225): access with zero length will not extend the memory
   if (length.isZero()) return
 
-  const newMemoryWordCount = offset.add(length).divCeil(new BN(32))
+  const newMemoryWordCount = divCeil(offset.add(length), new BN(32))
   if (newMemoryWordCount.lte(runState.memoryWordCount)) return
 
   const words = newMemoryWordCount
@@ -802,7 +820,7 @@ function subMemUsage (runState, offset, length) {
  * @param {BN} length
  * @param {Buffer} data
  */
-function getDataSlice (data, offset, length) {
+function getDataSlice (data: Buffer, offset: BN, length: BN): Buffer {
   let len = new BN(data.length)
   if (offset.gt(len)) {
     offset = len
@@ -821,18 +839,18 @@ function getDataSlice (data, offset, length) {
 }
 
 // checks if a jump is valid given a destination
-function jumpIsValid (runState, dest) {
+function jumpIsValid (runState: RunState, dest: number): boolean {
   return runState.validJumps.indexOf(dest) !== -1
 }
 
-function maxCallGas (gasLimit, gasLeft) {
+function maxCallGas (gasLimit: BN, gasLeft: BN): BN {
   const gasAllowed = gasLeft.sub(gasLeft.divn(64))
   return gasLimit.gt(gasAllowed) ? gasAllowed : gasLimit
 }
 
-function getContractStorage (runState, address, key) {
+function getContractStorage (runState: RunState, address: Buffer, key: Buffer) {
   return new Promise((resolve, reject) => {
-    const cb = (err, res) => {
+    const cb = (err: Error, res: any) => {
       if (err) return reject(err)
       resolve(res)
     }
@@ -844,7 +862,7 @@ function getContractStorage (runState, address, key) {
   })
 }
 
-function updateSstoreGas (runState, found, value) {
+function updateSstoreGas (runState: RunState, found: any, value: Buffer) {
   if (runState._common.hardfork() === 'constantinople') {
     var original = found.original
     var current = found.current
@@ -904,7 +922,7 @@ function updateSstoreGas (runState, found, value) {
   }
 }
 
-function writeCallOutput (runState, outOffset, outLength) {
+function writeCallOutput (runState: RunState, outOffset: BN, outLength: BN) {
   const returnData = runState.eei.getReturnData()
   if (returnData.length > 0) {
     const memOffset = outOffset.toNumber()

@@ -1,5 +1,5 @@
 import BN = require('bn.js')
-import { toBuffer, generateAddress, generateAddress2, KECCAK256_NULL, MAX_INTEGER } from 'ethereumjs-util'
+import { toBuffer, generateAddress, generateAddress2, zeros, KECCAK256_NULL, MAX_INTEGER } from 'ethereumjs-util'
 import Account from 'ethereumjs-account'
 import { VmError, ERROR } from '../exceptions'
 import { StorageReader } from '../state'
@@ -8,12 +8,28 @@ import { getPrecompile, PrecompileFunc, PrecompileResult } from './precompiles'
 import { OOGResult } from './precompiles/types'
 import TxContext from './txContext'
 import Message from './message'
-import { default as Loop, LoopResult } from './loop'
+import EEI from './eei'
+import { default as Loop, LoopResult, RunState, IsException, RunOpts } from './loop'
+const Block = require('ethereumjs-block')
 
 export interface InterpreterResult {
   gasUsed: BN
   createdAddress?: Buffer
-  vm: LoopResult
+  vm: ExecResult
+}
+
+export interface ExecResult {
+  runState?: RunState
+  exception: IsException
+  exceptionError?: VmError | ERROR
+  gas?: BN
+  gasUsed: BN
+  return: Buffer
+  // From RunResult
+  logs?: Buffer[]
+  returnValue?: Buffer
+  gasRefund?: BN
+  selfdestruct?: {[k: string]: Buffer}
 }
 
 export default class Interpreter {
@@ -87,7 +103,13 @@ export default class Interpreter {
       }
     }
 
-    const result = await this.runLoop(message)
+    let result
+    if (message.isCompiled) {
+      result = this.runPrecompile(message.code as PrecompileFunc, message.data, message.gasLimit)
+    } else {
+      result = await this.runLoop(message)
+    }
+
     return {
       gasUsed: result.gasUsed,
       vm: result
@@ -168,24 +190,53 @@ export default class Interpreter {
     }
   }
 
-  async runLoop (message: Message): Promise<any> {
-    const opts = {
-      storageReader: this._storageReader,
-      block: this._block,
-      txContext: this._tx,
-      message
+  async runLoop (message: Message, loopOpts: RunOpts = {}): Promise<ExecResult> {
+    const env = {
+      blockchain: this._vm.blockchain, // Only used in BLOCKHASH
+      address: message.to || zeros(32),
+      caller: message.caller || zeros(32),
+      callData: message.data || Buffer.from([0]),
+      callValue: message.value || new BN(0),
+      code: message.code as Buffer,
+      isStatic: message.isStatic || false,
+      depth: message.depth || 0,
+      gasPrice: this._tx.gasPrice,
+      origin: this._tx.origin || message.caller || zeros(32),
+      block: this._block || new Block(),
+      contract: await this._state.getAccount(message.to || zeros(32))
+    }
+    const eei = new EEI(env, this._state, this, this._vm._common, message.gasLimit.clone())
+    if (message.selfdestruct) {
+      eei._result.selfdestruct = message.selfdestruct
     }
 
-    // Run code
-    let results
-    const loop = new Loop(this._vm, this)
-    if (message.isCompiled) {
-      results = this.runPrecompile(message.code as PrecompileFunc, message.data, message.gasLimit)
-    } else {
-      results = await loop.run(opts)
+    const loop = new Loop(this._vm, eei)
+    const opts = Object.assign({ storageReader: this._storageReader }, loopOpts)
+    const loopRes = await loop.run(message.code as Buffer, opts)
+
+    let result = eei._result
+    let gasUsed = message.gasLimit.sub(eei._gasLeft)
+    if (loopRes.exceptionError) {
+      if ((loopRes.exceptionError as VmError).error !== ERROR.REVERT) {
+        gasUsed = message.gasLimit
+      }
+
+      // remove any logs on error
+      result = Object.assign({}, result, {
+        logs: [],
+        gasRefund: null,
+        selfdestruct: null
+      })
     }
 
-    return results
+    return Object.assign({}, result, {
+      runState: Object.assign({}, loopRes.runState, result, eei._env),
+      exception: loopRes.exception,
+      exceptionError: loopRes.exceptionError,
+      gas: eei._gasLeft,
+      gasUsed,
+      'return': result.returnValue ? result.returnValue : Buffer.alloc(0)
+    })
   }
 
   /**

@@ -8,7 +8,8 @@ export enum ERROR {
   REVERT = 'revert',
   STATIC_STATE_CHANGE = 'static state change',
   INTERNAL_ERROR = 'internal error',
-  CREATE_COLLISION = 'create collision'
+  CREATE_COLLISION = 'create collision',
+  STOP = 'stop'
 }
 
 export class VmError {
