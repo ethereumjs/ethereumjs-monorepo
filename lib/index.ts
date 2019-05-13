@@ -1,13 +1,21 @@
-const Buffer = require('safe-buffer').Buffer
+import BN = require('bn.js')
+import { StateManager } from './state'
+import Common from 'ethereumjs-common'
+import Account from 'ethereumjs-account'
 const promisify = require('util.promisify')
-const ethUtil = require('ethereumjs-util')
-const { StateManager } = require('./state')
-const Common = require('ethereumjs-common').default
-const Blockchain = require('ethereumjs-blockchain')
-const Account = require('ethereumjs-account').default
 const AsyncEventEmitter = require('async-eventemitter')
+const Blockchain = require('ethereumjs-blockchain')
 const Trie = require('merkle-patricia-tree/secure.js')
-const BN = ethUtil.BN
+
+export interface VMOpts {
+  chain?: string
+  hardfork?: string
+  stateManager?: StateManager
+  state?: any // TODO
+  blockchain?: any // TODO
+  activatePrecompiles?: boolean
+  allowUnlimitedContractSize?: boolean
+}
 
 /**
  * VM Class, `new VM(opts)` creates a new VM object
@@ -21,8 +29,14 @@ const BN = ethUtil.BN
  * @param {Boolean} opts.activatePrecompiles create entries in the state tree for the precompiled contracts
  * @param {Boolean} opts.allowUnlimitedContractSize allows unlimited contract sizes while debugging. By setting this to `true`, the check for contract size limit of 24KB (see [EIP-170](https://git.io/vxZkK)) is bypassed. (default: `false`; ONLY set to `true` during debugging)
  */
-module.exports = class VM extends AsyncEventEmitter {
-  constructor (opts = {}) {
+export default class VM extends AsyncEventEmitter {
+  opts: VMOpts
+  _common: Common
+  stateManager: StateManager
+  blockchain: any
+  allowUnlimitedContractSize: boolean
+
+  constructor (opts: VMOpts = {}) {
     super()
 
     this.opts = opts
@@ -61,11 +75,11 @@ module.exports = class VM extends AsyncEventEmitter {
     this.runBlockchain = require('./runBlockchain.js').bind(this)
   }
 
-  copy () {
+  copy (): VM {
     return new VM({ stateManager: this.stateManager.copy(), blockchain: this.blockchain })
   }
 
-  async _emit (topic, data) {
+  async _emit (topic: string, data: any) {
     return promisify(this.emit.bind(this))(topic, data)
   }
 }

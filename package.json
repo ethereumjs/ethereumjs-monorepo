@@ -56,6 +56,7 @@
     "@ethereumjs/config-prettier": "^1.1.1",
     "@types/bn.js": "^4.11.5",
     "@types/core-js": "^2.5.0",
+    "@types/lru-cache": "^5.1.0",
     "@types/node": "^11.13.4",
     "browserify": "^16.2.3",
     "coveralls": "^3.0.0",

@@ -51,9 +51,9 @@ function runTestCase (options, testData, t, cb) {
     function (done) {
       var VM
       if (options.dist) {
-        VM = require('../dist/index.js')
+        VM = require('../dist/index.js').default
       } else {
-        VM = require('../lib/index.js')
+        VM = require('../lib/index').default
       }
       vm = new VM({
         state: state,

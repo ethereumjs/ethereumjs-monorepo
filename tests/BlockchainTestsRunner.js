@@ -28,9 +28,9 @@ module.exports = function runBlockchainTest (options, testData, t, cb) {
   }
   var VM
   if (options.dist) {
-    VM = require('../dist/index.js')
+    VM = require('../dist/index.js').default
   } else {
-    VM = require('../lib/index.js')
+    VM = require('../lib/index.js').default
   }
   var vm = new VM({
     state: state,
