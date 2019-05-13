@@ -4,7 +4,7 @@ const Transaction = require('ethereumjs-tx')
 const ethUtil = require('ethereumjs-util')
 const runTx = require('../../dist/runTx')
 const { StateManager } = require('../../dist/state')
-const VM = require('../../dist/index')
+const VM = require('../../dist/index').default
 const { createAccount } = require('./utils')
 
 function setup (vm = null) {
