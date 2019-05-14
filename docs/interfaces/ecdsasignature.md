@@ -24,7 +24,7 @@
 
 **● r**: *`Buffer`*
 
-*Defined in [index.ts:13](https://github.com/ethereumjs/ethereumjs-util/blob/master/src/index.ts#L13)*
+*Defined in [signature.ts:8](https://github.com/ethereumjs/ethereumjs-util/blob/master/src/signature.ts#L8)*
 
 ___
 <a id="s"></a>
@@ -33,7 +33,7 @@ ___
 
 **● s**: *`Buffer`*
 
-*Defined in [index.ts:14](https://github.com/ethereumjs/ethereumjs-util/blob/master/src/index.ts#L14)*
+*Defined in [signature.ts:9](https://github.com/ethereumjs/ethereumjs-util/blob/master/src/signature.ts#L9)*
 
 ___
 <a id="v"></a>
@@ -42,7 +42,7 @@ ___
 
 **● v**: *`number`*
 
-*Defined in [index.ts:12](https://github.com/ethereumjs/ethereumjs-util/blob/master/src/index.ts#L12)*
+*Defined in [signature.ts:7](https://github.com/ethereumjs/ethereumjs-util/blob/master/src/signature.ts#L7)*
 
 ___
 
