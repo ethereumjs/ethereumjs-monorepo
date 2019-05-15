@@ -2,6 +2,7 @@ import BN = require('bn.js')
 import { StateManager } from './state'
 import Common from 'ethereumjs-common'
 import Account from 'ethereumjs-account'
+import { default as runCode, RunCodeOpts, RunCodeCb } from './runCode'
 const promisify = require('util.promisify')
 const AsyncEventEmitter = require('async-eventemitter')
 const Blockchain = require('ethereumjs-blockchain')
@@ -66,13 +67,16 @@ export default class VM extends AsyncEventEmitter {
 
     this.allowUnlimitedContractSize = opts.allowUnlimitedContractSize === undefined ? false : opts.allowUnlimitedContractSize
 
-    this.runCode = require('./runCode.js').bind(this)
     // @deprecated
     this.runJIT = require('./runJit.js').bind(this)
     this.runBlock = require('./runBlock.js').bind(this)
     this.runTx = require('./runTx.js').bind(this)
     this.runCall = require('./runCall.js').bind(this)
     this.runBlockchain = require('./runBlockchain.js').bind(this)
+  }
+
+  runCode (opts: RunCodeOpts, cb: RunCodeCb): void {
+    runCode.bind(this)(opts, cb)
   }
 
   copy (): VM {
