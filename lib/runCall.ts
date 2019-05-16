@@ -1,10 +1,34 @@
-const ethUtil = require('ethereumjs-util')
+import BN = require('bn.js')
+import { zeros } from 'ethereumjs-util'
+import VM from './index'
+import { StorageReader } from './state'
+import TxContext from './evm/txContext'
+import Message from './evm/message'
+import { default as Interpreter, InterpreterResult } from './evm/interpreter'
 const Block = require('ethereumjs-block')
-const BN = ethUtil.BN
-const { StorageReader } = require('./state')
-const TxContext = require('./evm/txContext').default
-const Message = require('./evm/message').default
-const Interpreter = require('./evm/interpreter').default
+
+export interface RunCallOpts {
+  block?: any
+  storageReader?: StorageReader
+  gasPrice?: Buffer
+  origin?: Buffer
+  caller?: Buffer
+  gasLimit?: Buffer
+  to?: Buffer
+  value?: Buffer
+  data?: Buffer
+  code?: Buffer
+  depth?: number
+  compiled?: boolean
+  static?: boolean
+  salt?: Buffer
+  selfdestruct?: {[k: string]: boolean}
+  delegatecall?: boolean
+}
+
+export interface RunCallCb {
+  (err: Error | null, results: InterpreterResult | null): void
+}
 
 /**
  * runs a CALL operation
@@ -22,11 +46,11 @@ const Interpreter = require('./evm/interpreter').default
  * @param opts.value {Buffer}
  * @param {Function} cb the callback
  */
-module.exports = function (opts, cb) {
+export default function runCall (this: VM, opts: RunCallOpts, cb: RunCallCb): void {
   const block = opts.block || new Block()
   const storageReader = opts.storageReader || new StorageReader(this.stateManager)
 
-  const txContext = new TxContext(opts.gasPrice, opts.origin || opts.caller)
+  const txContext = new TxContext(opts.gasPrice || Buffer.alloc(0), opts.origin || opts.caller || zeros(32))
   const message = new Message({
     caller: opts.caller,
     gasLimit: opts.gasLimit ? new BN(opts.gasLimit) : new BN(0xffffff),
@@ -34,13 +58,12 @@ module.exports = function (opts, cb) {
     value: opts.value,
     data: opts.data,
     code: opts.code,
-    depth: opts.depth,
-    isCompiled: opts.compiled,
-    isStatic: opts.static,
-    salt: opts.salt,
-    // opts.suicides is kept for backward compatiblity with pre-EIP6 syntax
-    selfdestruct: opts.selfdestruct || opts.suicides,
-    delegatecall: opts.delegatecall
+    depth: opts.depth || 0,
+    isCompiled: opts.compiled || false,
+    isStatic: opts.static || false,
+    salt: opts.salt || null,
+    selfdestruct: opts.selfdestruct || {},
+    delegatecall: opts.delegatecall || false
   })
 
   const interpreter = new Interpreter(this, txContext, block, storageReader)
