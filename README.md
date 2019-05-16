@@ -98,7 +98,7 @@ First, let's set up the browserify bundle:
 git clone https://github.com/ethereumjs/ethereumjs-client
 cd ethereumjs-client
 npm i
-npm r build
+npm run build
 ```
 
 This will create a new file (``dist/bundle.js``) in your source tree. Now, we will create an ``index.html`` file that loads ``dist/bundle.js`` and then serves it up on ``http://localhost:8080``.
