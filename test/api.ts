@@ -4,6 +4,7 @@ import { rlp, zeros, privateToPublic, toBuffer } from 'ethereumjs-util'
 
 import Transaction from '../src/transaction'
 import { TxsJsonEntry, VitaliksTestsDataEntry } from './types'
+import Common from 'ethereumjs-common'
 
 const txFixtures: TxsJsonEntry[] = require('./txs.json')
 const txFixturesEip155: VitaliksTestsDataEntry[] = require('./ttTransactionTestEip155VitaliksTests.json')
@@ -228,10 +229,10 @@ tape('[Transaction]: Basic functions', function(t) {
       '4646464646464646464646464646464646464646464646464646464646464646',
       'hex',
     )
-    const pt = new Transaction(txRaw, { chain: 1 })
+    const pt = new Transaction(txRaw)
     st.equal(
       pt.serialize().toString('hex'),
-      'ec098504a817c800825208943535353535353535353535353535353535353535880de0b6b3a764000080018080',
+      'ec098504a817c800825208943535353535353535353535353535353535353535880de0b6b3a764000080808080',
     )
     pt.sign(privateKey)
     st.equal(
@@ -272,20 +273,43 @@ tape('[Transaction]: Basic functions', function(t) {
   )
 
   t.test('sign tx with chainId specified in params', function(st) {
-    const tx = new Transaction({ chainId: 42 })
+    const tx = new Transaction({}, { chain: 42 })
     st.equal(tx.getChainId(), 42)
     const privKey = new Buffer(txFixtures[0].privateKey, 'hex')
     tx.sign(privKey)
     const serialized = tx.serialize()
-    const reTx = new Transaction(serialized)
+    const reTx = new Transaction(serialized, { chain: 42 })
     st.equal(reTx.verifySignature(), true)
     st.equal(reTx.getChainId(), 42)
     st.end()
   })
 
-  t.test('allow chainId more than 1 byte', function(st) {
-    const tx = new Transaction({ chainId: 0x16b2 })
-    st.equal(tx.getChainId(), 0x16b2)
+  t.test('throws when creating a a transaction with incompatible chainid and v value', function(
+    st,
+  ) {
+    const tx = new Transaction({}, { chain: 42 })
+    st.equal(tx.getChainId(), 42)
+    const privKey = new Buffer(txFixtures[0].privateKey, 'hex')
+    tx.sign(privKey)
+    const serialized = tx.serialize()
+    st.throws(() => new Transaction(serialized))
+    st.end()
+  })
+
+  t.test('If chain/hardfork and commmon options are given', function(st) {
+    st.throws(
+      () => new Transaction({}, { common: new Common('mainnet', 'petersburg'), chain: 'mainnet' }),
+    )
+    st.throws(
+      () => new Transaction({}, { common: new Common('mainnet', 'petersburg'), chain: 'ropsten' }),
+    )
+    st.throws(
+      () =>
+        new Transaction(
+          {},
+          { common: new Common('mainnet', 'petersburg'), hardfork: 'petersburg' },
+        ),
+    )
     st.end()
   })
 

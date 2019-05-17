@@ -22,7 +22,8 @@ const txData: FakeTxData = {
 tape('[FakeTransaction]: Basic functions', function(t) {
   t.test('instantiate with from / create a hash', function(st) {
     st.plan(3)
-    const tx = new FakeTransaction(txData)
+    // This test doesn't use EIP155
+    const tx = new FakeTransaction(txData, { chain: 'mainnet', hardfork: 'homestead' })
     const hash = tx.hash()
     const cmpHash = Buffer.from(
       'f74b039f6361c4351a99a7c6a10867369fe6701731d85dc07c15671ac1c1b648',
@@ -102,12 +103,10 @@ tape('[FakeTransaction]: Basic functions', function(t) {
 
   t.test('should return getChainId', st => {
     const tx = new FakeTransaction(txData)
-    const txWithV = new FakeTransaction({ ...txData, v: '0x28' })
-    const txWithChainId = new FakeTransaction({ ...txData, chainId: 4 })
-    st.plan(3)
-    st.equal(tx.getChainId(), 0, 'should return correct chainId')
-    st.equal(txWithV.getChainId(), 2, 'should return correct chainId')
-    st.equal(txWithChainId.getChainId(), 4, 'should return correct chainId')
+    const txWithChain = new FakeTransaction(txData, { chain: 3 })
+    st.plan(2)
+    st.equal(tx.getChainId(), 1, 'should return correct chainId')
+    st.equal(txWithChain.getChainId(), 3, 'should return correct chainId')
   })
 
   t.test('should getSenderAddress and getSenderPublicKey', st => {
@@ -150,7 +149,7 @@ tape('[FakeTransaction]: Basic functions', function(t) {
       '31718e6bf821a98d35b0d9cd66ea86f91f420c3c4658f60c607222de925d222a',
       's should be valid',
     )
-    st.equal(tx.v.toString('hex'), '1c', 'v should be valid')
+    st.equal(tx.v.toString('hex'), '26', 'v should be valid')
   })
 
   t.test('should getDataFee', st => {
