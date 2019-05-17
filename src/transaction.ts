@@ -32,7 +32,6 @@ export default class Transaction {
   public s!: Buffer
 
   private _common: Common
-  private _chainId: number
   private _senderPubKey?: Buffer
   protected _from?: Buffer
 
@@ -45,6 +44,10 @@ export default class Transaction {
    *
    * @param opts - The transaction's options, used to indicate the chain and hardfork the
    * transactions belongs to.
+   *
+   * @note Transaction objects implement EIP155 by default. To disable it, use the constructor's
+   * second parameter to set a chain and hardfork before EIP155 activation (i.e. before Spurious
+   * Dragon.)
    *
    * @example
    * ```js
@@ -68,13 +71,17 @@ export default class Transaction {
   ) {
     // instantiate Common class instance based on passed options
     if (opts.common) {
-      if (opts.chain) {
-        throw new Error('Instantiation with both opts.common and opts.chain parameter not allowed!')
+      if (opts.chain || opts.hardfork) {
+        throw new Error(
+          'Instantiation with both opts.common, and opts.chain and opts.hardfork parameter not allowed!',
+        )
       }
+
       this._common = opts.common
     } else {
       const chain = opts.chain ? opts.chain : 'mainnet'
-      const hardfork = opts.hardfork ? opts.hardfork : 'byzantium'
+      const hardfork = opts.hardfork ? opts.hardfork : 'petersburg'
+
       this._common = new Common(chain, hardfork)
     }
 
@@ -120,7 +127,7 @@ export default class Transaction {
       {
         name: 'v',
         allowZero: true,
-        default: new Buffer([opts.chain || opts.common ? this._common.chainId() : 0x1c]),
+        default: new Buffer([]),
       },
       {
         name: 'r',
@@ -161,18 +168,7 @@ export default class Transaction {
       get: this.getSenderAddress.bind(this),
     })
 
-    // calculate chainId from signature
-    const sigV = bufferToInt(this.v)
-    let chainId = Math.floor((sigV - 35) / 2)
-    if (chainId < 0) chainId = 0
-
-    // set chainId
-    if (opts.chain || opts.common) {
-      this._chainId = this._common.chainId()
-    } else {
-      const dataAsTransactionObject = data as TxData
-      this._chainId = chainId || dataAsTransactionObject.chainId || 0
-    }
+    this._validateV()
   }
 
   /**
@@ -196,19 +192,21 @@ export default class Transaction {
       // the hash of a transaction for purposes of signing or recovering, instead of hashing only the first six
       // elements (i.e. nonce, gasprice, startgas, to, value, data), hash nine elements, with v replaced by
       // CHAIN_ID, r = 0 and s = 0.
-
       const v = bufferToInt(this.v)
       const onEIP155BlockOrLater = this._common.gteHardfork('spuriousDragon')
       const vAndChainIdMeetEIP155Conditions =
-        v === this._chainId * 2 + 35 || v === this._chainId * 2 + 36
+        v === this.getChainId() * 2 + 35 || v === this.getChainId() * 2 + 36
       const meetsAllEIP155Conditions = vAndChainIdMeetEIP155Conditions && onEIP155BlockOrLater
 
-      const unsigned = !this.r.length && !this.s.length
-      const seeksReplayProtection = this._chainId > 0
+      // We sign with EIP155 all transactions after spuriousDragon
+      const seeksReplayProtection = onEIP155BlockOrLater
 
-      if ((unsigned && seeksReplayProtection) || (!unsigned && meetsAllEIP155Conditions)) {
+      if (
+        (!this._isSigned() && seeksReplayProtection) ||
+        (this._isSigned() && meetsAllEIP155Conditions)
+      ) {
         const raw = this.raw.slice()
-        this.v = toBuffer(this._chainId)
+        this.v = toBuffer(this.getChainId())
         this.r = toBuffer(0)
         this.s = toBuffer(0)
         items = this.raw
@@ -226,7 +224,7 @@ export default class Transaction {
    * returns chain ID
    */
   getChainId(): number {
-    return this._chainId
+    return this._common.chainId()
   }
 
   /**
@@ -257,6 +255,8 @@ export default class Transaction {
    * Determines if the signature is valid
    */
   verifySignature(): boolean {
+    this._validateV()
+
     const msgHash = this.hash(false)
     // All transaction signatures whose s-value is greater than secp256k1n/2 are considered invalid.
     if (this._common.gteHardfork('homestead') && new BN(this.s).cmp(N_DIV_2) === 1) {
@@ -266,13 +266,13 @@ export default class Transaction {
     try {
       const v = bufferToInt(this.v)
       const useChainIdWhileRecoveringPubKey =
-        v >= this._chainId * 2 + 35 && this._common.gteHardfork('spuriousDragon')
+        v >= this.getChainId() * 2 + 35 && this._common.gteHardfork('spuriousDragon')
       this._senderPubKey = ecrecover(
         msgHash,
         v,
         this.r,
         this.s,
-        useChainIdWhileRecoveringPubKey ? this._chainId : undefined,
+        useChainIdWhileRecoveringPubKey ? this.getChainId() : undefined,
       )
     } catch (e) {
       return false
@@ -288,9 +288,12 @@ export default class Transaction {
   sign(privateKey: Buffer) {
     const msgHash = this.hash(false)
     const sig = ecsign(msgHash, privateKey)
-    if (this._chainId > 0) {
-      sig.v += this._chainId * 2 + 8
+
+    // SpuriousDragon activated EIP155, which changes how v should be represented
+    if (this._common.gteHardfork('spuriousDragon')) {
+      sig.v += this.getChainId() * 2 + 8
     }
+
     Object.assign(this, sig)
   }
 
@@ -355,5 +358,33 @@ export default class Transaction {
   serialize(): Buffer {
     // Note: This never gets executed, defineProperties overwrites it.
     return rlp.encode(this.raw)
+  }
+
+  private _validateV(): void {
+    if (this.v.length === 0) {
+      return
+    }
+
+    if (!this._common.gteHardfork('spuriousDragon')) {
+      return
+    }
+
+    const v = bufferToInt(this.v)
+
+    if (v === 27 || v === 28) {
+      return
+    }
+
+    const isValidEIP155V = v === this.getChainId() * 2 + 35 || v === this.getChainId() * 2 + 36
+
+    if (!isValidEIP155V) {
+      throw new Error(
+        `Incompatible EIP155-based V ${v} and chain id ${this.getChainId()}. See the second parameter of the Transaction constructor to set the chain id.`,
+      )
+    }
+  }
+
+  private _isSigned(): boolean {
+    return this.v.length > 0 && this.r.length > 0 && this.s.length > 0
   }
 }

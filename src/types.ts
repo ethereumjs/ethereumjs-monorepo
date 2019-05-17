@@ -23,11 +23,6 @@ export type BufferLike = Buffer | TransformableToBuffer | PrefixedHexString | nu
  */
 export interface TxData {
   /**
-   * EIP 155 chainId - mainnet: 1, ropsten: 3
-   */
-  chainId?: number
-
-  /**
    * The transaction's gas limit.
    */
   gasLimit?: BufferLike
