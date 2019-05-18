@@ -149,7 +149,7 @@ tape('[FakeTransaction]: Basic functions', function(t) {
       '31718e6bf821a98d35b0d9cd66ea86f91f420c3c4658f60c607222de925d222a',
       's should be valid',
     )
-    st.equal(tx.v.toString('hex'), '26', 'v should be valid')
+    st.equal(tx.v.toString('hex'), '1c', 'v should be valid')
   })
 
   t.test('should getDataFee', st => {

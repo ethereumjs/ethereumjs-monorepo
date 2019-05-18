@@ -189,24 +189,7 @@ export default class Transaction {
     if (includeSignature) {
       items = this.raw
     } else {
-      // EIP155 spec:
-      // If block.number >= 2,675,000 and v = CHAIN_ID * 2 + 35 or v = CHAIN_ID * 2 + 36, then when computing
-      // the hash of a transaction for purposes of signing or recovering, instead of hashing only the first six
-      // elements (i.e. nonce, gasprice, startgas, to, value, data), hash nine elements, with v replaced by
-      // CHAIN_ID, r = 0 and s = 0.
-      const v = bufferToInt(this.v)
-      const onEIP155BlockOrLater = this._common.gteHardfork('spuriousDragon')
-      const vAndChainIdMeetEIP155Conditions =
-        v === this.getChainId() * 2 + 35 || v === this.getChainId() * 2 + 36
-      const meetsAllEIP155Conditions = vAndChainIdMeetEIP155Conditions && onEIP155BlockOrLater
-
-      // We sign with EIP155 all transactions after spuriousDragon
-      const seeksReplayProtection = onEIP155BlockOrLater
-
-      if (
-        (!this._isSigned() && seeksReplayProtection) ||
-        (this._isSigned() && meetsAllEIP155Conditions)
-      ) {
+      if (this._implementsEIP155()) {
         items = [
           ...this.raw.slice(0, 6),
           toBuffer(this.getChainId()),
@@ -290,8 +273,7 @@ export default class Transaction {
     const msgHash = this.hash(false)
     const sig = ecsign(msgHash, privateKey)
 
-    // SpuriousDragon activated EIP155, which changes how v should be represented
-    if (this._common.gteHardfork('spuriousDragon')) {
+    if (this._implementsEIP155()) {
       sig.v += this.getChainId() * 2 + 8
     }
 
@@ -403,5 +385,25 @@ export default class Transaction {
         vDescriptor.set!(v)
       },
     })
+  }
+
+  private _implementsEIP155(): boolean {
+    const onEIP155BlockOrLater = this._common.gteHardfork('spuriousDragon')
+
+    if (!this._isSigned()) {
+      // We sign with EIP155 all unsigned transactions after spuriousDragon
+      return onEIP155BlockOrLater
+    }
+
+    // EIP155 spec:
+    // If block.number >= 2,675,000 and v = CHAIN_ID * 2 + 35 or v = CHAIN_ID * 2 + 36, then when computing
+    // the hash of a transaction for purposes of signing or recovering, instead of hashing only the first six
+    // elements (i.e. nonce, gasprice, startgas, to, value, data), hash nine elements, with v replaced by
+    // CHAIN_ID, r = 0 and s = 0.
+    const v = bufferToInt(this.v)
+
+    const vAndChainIdMeetEIP155Conditions =
+      v === this.getChainId() * 2 + 35 || v === this.getChainId() * 2 + 36
+    return vAndChainIdMeetEIP155Conditions && onEIP155BlockOrLater
   }
 }
