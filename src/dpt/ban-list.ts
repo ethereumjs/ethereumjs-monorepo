@@ -1,8 +1,8 @@
 import LRUCache from 'lru-cache'
-import { debug as createDebugLogger } from 'debug'
+import Debug from 'debug'
 import { KBucket } from './kbucket'
 
-const debug = createDebugLogger('devp2p:dpt:ban-list')
+const debug = Debug('devp2p:dpt:ban-list')
 
 export class BanList {
   private lru: LRUCache<any, boolean>
@@ -11,7 +11,7 @@ export class BanList {
   }
 
   add(obj: any, maxAge?: number) {
-    for (let key of KBucket.getKeys(obj)) {
+    for (const key of KBucket.getKeys(obj)) {
       debug(`add ${key}, size: ${this.lru.length}`)
       this.lru.set(key, true, maxAge)
     }

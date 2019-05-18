@@ -11,12 +11,11 @@ import { PeerInfo } from './message'
 
 const debug = createDebugLogger('devp2p:dpt:server')
 const VERSION = 0x04
-const createSocketUDP4 = dgram.createSocket.bind(null, { type: 'udp4' })
 
 export interface DptServerOptions {
   timeout?: number
   endpoint?: PeerInfo
-  createSocket?: typeof createSocketUDP4
+  createSocket?: Function
 }
 
 export class Server extends EventEmitter {
@@ -41,7 +40,7 @@ export class Server extends EventEmitter {
     this._parityRequestMap = new Map()
     this._requestsCache = new LRUCache({ max: 1000, maxAge: ms('1s'), stale: false })
 
-    const createSocket = options.createSocket || createSocketUDP4
+    const createSocket = options.createSocket || dgram.createSocket.bind(null, { type: 'udp4' })
     this._socket = createSocket()
     if (this._socket) {
       this._socket.once('listening', () => this.emit('listening'))
