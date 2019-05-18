@@ -8,6 +8,7 @@ import {
   ecsign,
   toBuffer,
   rlp,
+  stripZeros,
 } from 'ethereumjs-util'
 import Common from 'ethereumjs-common'
 import { Buffer } from 'buffer'
@@ -168,7 +169,8 @@ export default class Transaction {
       get: this.getSenderAddress.bind(this),
     })
 
-    this._validateV()
+    this._validateV(this.v)
+    this._overrideVSetterWithValidation()
   }
 
   /**
@@ -205,12 +207,13 @@ export default class Transaction {
         (!this._isSigned() && seeksReplayProtection) ||
         (this._isSigned() && meetsAllEIP155Conditions)
       ) {
-        const raw = this.raw.slice()
-        this.v = toBuffer(this.getChainId())
-        this.r = toBuffer(0)
-        this.s = toBuffer(0)
-        items = this.raw
-        this.raw = raw
+        items = [
+          ...this.raw.slice(0, 6),
+          toBuffer(this.getChainId()),
+          // TODO: stripping zeros should probably be a responsibility of the rlp module
+          stripZeros(toBuffer(0)),
+          stripZeros(toBuffer(0)),
+        ]
       } else {
         items = this.raw.slice(0, 6)
       }
@@ -255,8 +258,6 @@ export default class Transaction {
    * Determines if the signature is valid
    */
   verifySignature(): boolean {
-    this._validateV()
-
     const msgHash = this.hash(false)
     // All transaction signatures whose s-value is greater than secp256k1n/2 are considered invalid.
     if (this._common.gteHardfork('homestead') && new BN(this.s).cmp(N_DIV_2) === 1) {
@@ -360,8 +361,8 @@ export default class Transaction {
     return rlp.encode(this.raw)
   }
 
-  private _validateV(): void {
-    if (this.v.length === 0) {
+  private _validateV(v?: Buffer): void {
+    if (v === undefined || v.length === 0) {
       return
     }
 
@@ -369,22 +370,38 @@ export default class Transaction {
       return
     }
 
-    const v = bufferToInt(this.v)
+    const vInt = bufferToInt(v)
 
-    if (v === 27 || v === 28) {
+    if (vInt === 27 || vInt === 28) {
       return
     }
 
-    const isValidEIP155V = v === this.getChainId() * 2 + 35 || v === this.getChainId() * 2 + 36
+    const isValidEIP155V =
+      vInt === this.getChainId() * 2 + 35 || vInt === this.getChainId() * 2 + 36
 
     if (!isValidEIP155V) {
       throw new Error(
-        `Incompatible EIP155-based V ${v} and chain id ${this.getChainId()}. See the second parameter of the Transaction constructor to set the chain id.`,
+        `Incompatible EIP155-based V ${vInt} and chain id ${this.getChainId()}. See the second parameter of the Transaction constructor to set the chain id.`,
       )
     }
   }
 
   private _isSigned(): boolean {
     return this.v.length > 0 && this.r.length > 0 && this.s.length > 0
+  }
+
+  private _overrideVSetterWithValidation() {
+    const vDescriptor = Object.getOwnPropertyDescriptor(this, 'v')!
+
+    Object.defineProperty(this, 'v', {
+      ...vDescriptor,
+      set: v => {
+        if (v !== undefined) {
+          this._validateV(toBuffer(v))
+        }
+
+        vDescriptor.set!(v)
+      },
+    })
   }
 }

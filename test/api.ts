@@ -296,7 +296,7 @@ tape('[Transaction]: Basic functions', function(t) {
     st.end()
   })
 
-  t.test('If chain/hardfork and commmon options are given', function(st) {
+  t.test('Throws if chain/hardfork and commmon options are given', function(st) {
     st.throws(
       () => new Transaction({}, { common: new Common('mainnet', 'petersburg'), chain: 'mainnet' }),
     )
@@ -310,6 +310,21 @@ tape('[Transaction]: Basic functions', function(t) {
           { common: new Common('mainnet', 'petersburg'), hardfork: 'petersburg' },
         ),
     )
+    st.end()
+  })
+
+  t.test('Throws if v is set to an EIP155-encoded value incompatible with the chain id', function(
+    st,
+  ) {
+    const tx = new Transaction({}, { chain: 42 })
+    const privKey = new Buffer(txFixtures[0].privateKey, 'hex')
+    tx.sign(privKey)
+
+    st.throws(() => (tx.v = toBuffer(1)))
+
+    const unsignedTx = new Transaction(tx.raw.slice(0, 6))
+    st.throws(() => (unsignedTx.v = tx.v))
+
     st.end()
   })
 
