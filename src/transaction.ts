@@ -145,15 +145,6 @@ export default class Transaction {
       },
     ]
 
-    /**
-     * Returns the transaction in JSON format
-     * @method toJSON
-     * @return {Array | String}
-     * @memberof Transaction
-     * @name toJSON
-     * @see {@link https://github.com/ethereumjs/ethereumjs-util/blob/master/docs/index.md#defineproperties|ethereumjs-util}
-     */
-
     // attached serialize
     defineProperties(this, fields, data)
 
@@ -340,6 +331,15 @@ export default class Transaction {
   serialize(): Buffer {
     // Note: This never gets executed, defineProperties overwrites it.
     return rlp.encode(this.raw)
+  }
+
+  /**
+   * Returns the transaction in JSON format
+   * @see {@link https://github.com/ethereumjs/ethereumjs-util/blob/master/docs/index.md#defineproperties|ethereumjs-util}
+   */
+  toJSON(labels: boolean = false): { [key: string]: string } | string[] {
+    // Note: This never gets executed, defineProperties overwrites it.
+    return {}
   }
 
   private _validateV(v?: Buffer): void {
