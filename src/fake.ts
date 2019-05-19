@@ -7,8 +7,7 @@ import Transaction from './transaction'
  * Creates a new transaction object that doesn't need to be signed.
  *
  * @param data - A transaction can be initialized with its rlp representation, an array containing
- * the value of its fields in order, or an object containing them by name. If the latter is used,
- * a `chainId` and `from` can also be provided.
+ * the value of its fields in order, or an object containing them by name.
  *
  * @param opts - The transaction's options, used to indicate the chain and hardfork the
  * transactions belongs to.
