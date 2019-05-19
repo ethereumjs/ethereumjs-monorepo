@@ -3,8 +3,9 @@ import { Buffer } from 'buffer'
 import { rlp, zeros, privateToPublic, toBuffer } from 'ethereumjs-util'
 
 import Transaction from '../src/transaction'
-import { TxsJsonEntry, VitaliksTestsDataEntry } from './types'
+import { FakeTxData, TxsJsonEntry, VitaliksTestsDataEntry } from './types'
 import Common from 'ethereumjs-common'
+import { TxData } from '../src'
 
 const txFixtures: TxsJsonEntry[] = require('./txs.json')
 const txFixturesEip155: VitaliksTestsDataEntry[] = require('./ttTransactionTestEip155VitaliksTests.json')
@@ -344,4 +345,65 @@ tape('[Transaction]: Basic functions', function(t) {
 
     st.end()
   })
+
+  t.test(
+    'Should ignore any previous signature when decided if EIP155 should be used in a new one',
+    function(st) {
+      const privateKey = Buffer.from(
+        '4646464646464646464646464646464646464646464646464646464646464646',
+        'hex',
+      )
+
+      const txData: TxData = {
+        data: '0x7cf5dab00000000000000000000000000000000000000000000000000000000000000005',
+        gasLimit: '0x15f90',
+        gasPrice: '0x1',
+        nonce: '0x01',
+        to: '0xd9024df085d09398ec76fbed18cac0e1149f50dc',
+        value: '0x0',
+      }
+
+      const fixtureTxSignedWithEIP155 = new Transaction(txData)
+      fixtureTxSignedWithEIP155.sign(privateKey)
+
+      const fixtureTxSignedWithoutEIP155 = new Transaction(txData, { hardfork: 'tangerineWhistle' })
+      fixtureTxSignedWithoutEIP155.sign(privateKey)
+
+      let signedWithEIP155 = new Transaction(fixtureTxSignedWithEIP155.toJSON(true))
+      signedWithEIP155.sign(privateKey)
+      st.true(signedWithEIP155.verifySignature())
+      st.notEqual(signedWithEIP155.v.toString('hex'), '1c')
+      st.notEqual(signedWithEIP155.v.toString('hex'), '1b')
+
+      signedWithEIP155 = new Transaction(fixtureTxSignedWithoutEIP155.toJSON(true))
+      signedWithEIP155.sign(privateKey)
+      st.true(signedWithEIP155.verifySignature())
+      st.notEqual(signedWithEIP155.v.toString('hex'), '1c')
+      st.notEqual(signedWithEIP155.v.toString('hex'), '1b')
+
+      let signedWithoutEIP155 = new Transaction(fixtureTxSignedWithEIP155.toJSON(true), {
+        hardfork: 'tangerineWhistle',
+      })
+      signedWithoutEIP155.sign(privateKey)
+      st.true(signedWithoutEIP155.verifySignature())
+      st.true(
+        signedWithoutEIP155.v.toString('hex') == '1c' ||
+          signedWithoutEIP155.v.toString('hex') == '1b',
+        "v shouldn' be EIP155 encoded",
+      )
+
+      signedWithoutEIP155 = new Transaction(fixtureTxSignedWithoutEIP155.toJSON(true), {
+        hardfork: 'tangerineWhistle',
+      })
+      signedWithoutEIP155.sign(privateKey)
+      st.true(signedWithoutEIP155.verifySignature())
+      st.true(
+        signedWithoutEIP155.v.toString('hex') == '1c' ||
+          signedWithoutEIP155.v.toString('hex') == '1b',
+        "v shouldn' be EIP155 encoded",
+      )
+
+      st.end()
+    },
+  )
 })
