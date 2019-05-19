@@ -260,6 +260,12 @@ export default class Transaction {
    * @param privateKey - Must be 32 bytes in length
    */
   sign(privateKey: Buffer) {
+    // We clear any previous signature before signing it. Otherwise, _implementsEIP155's can give
+    // different results if this tx was already signed.
+    this.v = new Buffer([])
+    this.s = new Buffer([])
+    this.r = new Buffer([])
+
     const msgHash = this.hash(false)
     const sig = ecsign(msgHash, privateKey)
 
