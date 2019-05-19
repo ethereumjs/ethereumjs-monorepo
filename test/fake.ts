@@ -136,7 +136,7 @@ tape('[FakeTransaction]: Basic functions', function(t) {
   })
 
   t.test('should sign', st => {
-    const tx = new FakeTransaction(txData)
+    const tx = new FakeTransaction(txData, { hardfork: 'tangerineWhistle' })
     tx.sign(Buffer.from('164122e5d39e9814ca723a749253663bafb07f6af91704d9754c361eb315f0c1', 'hex'))
     st.plan(3)
     st.equal(
