@@ -26,7 +26,7 @@ export interface ExecResult {
   gasUsed: BN
   return: Buffer
   // From RunResult
-  logs?: Buffer[]
+  logs?: any[]
   returnValue?: Buffer
   gasRefund?: BN
   selfdestruct?: {[k: string]: Buffer}

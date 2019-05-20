@@ -1,13 +1,31 @@
-const utils = require('ethereumjs-util')
-const BN = utils.BN
-const Bloom = require('./bloom').default
+import BN = require('bn.js')
+import { toBuffer} from 'ethereumjs-util'
+import Account from 'ethereumjs-account'
+import VM from './index'
+import Bloom from './bloom'
+import { default as Interpreter, InterpreterResult } from './evm/interpreter'
+import Message from './evm/message'
+import TxContext from './evm/txContext'
+import { StorageReader } from './state'
+import PStateManager from './state/promisified'
 const Block = require('ethereumjs-block')
-const Account = require('ethereumjs-account').default
-const Interpreter = require('./evm/interpreter').default
-const Message = require('./evm/message').default
-const TxContext = require('./evm/txContext').default
-const { StorageReader } = require('./state')
-const PStateManager = require('./state/promisified').default
+
+export interface RunTxOpts {
+  block?: any
+  tx: any // TODO: Update ethereumjs-tx
+  skipNonce?: boolean
+  skipBalance?: boolean
+}
+
+export interface RunTxCb {
+  (err: Error | null, results: RunTxResult | null): void
+}
+
+export interface RunTxResult extends InterpreterResult {
+  bloom: Bloom
+  amountSpent: BN
+  gasRefund?: BN
+}
 
 /**
  * Process a transaction. Run the vm. Transfers eth. Checks balances.
@@ -30,15 +48,15 @@ const PStateManager = require('./state/promisified').default
  * @param {BN} results.gasRefund the amount of gas as a `bignum` that was refunded during the transaction (i.e. `gasUsed = totalGasConsumed - gasRefund`)
  * @param {VM} vm contains the results from running the code, if any, as described in `vm.runCode(params, cb)`
 */
-module.exports = function (opts, cb) {
+export default function runTx (this: VM, opts: RunTxOpts, cb: RunTxCb) {
   if (typeof opts === 'function' && cb === undefined) {
-    cb = opts
-    return cb(new Error('invalid input, opts must be provided'))
+    cb = opts as RunTxCb
+    return cb(new Error('invalid input, opts must be provided'), null)
   }
 
   // tx is required
   if (!opts.tx) {
-    return cb(new Error('invalid input, tx is required'))
+    return cb(new Error('invalid input, tx is required'), null)
   }
 
   // create a reasonable default if no block is given
@@ -47,13 +65,13 @@ module.exports = function (opts, cb) {
   }
 
   if (new BN(opts.block.header.gasLimit).lt(new BN(opts.tx.gasLimit))) {
-    return cb(new Error('tx has a higher gas limit than the block'))
+    return cb(new Error('tx has a higher gas limit than the block'), null)
   }
 
   this.stateManager.checkpoint(() => {
     _runTx.bind(this)(opts)
       .then((results) => {
-        this.stateManager.commit(function (err) {
+        this.stateManager.commit(function (err: Error) {
           cb(err, results)
         })
       }).catch((err) => {
@@ -64,7 +82,7 @@ module.exports = function (opts, cb) {
   })
 }
 
-async function _runTx (opts) {
+async function _runTx (this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   const block = opts.block
   const tx = opts.tx
   const state = new PStateManager(this.stateManager)
@@ -100,8 +118,8 @@ async function _runTx (opts) {
     )
   }
   // Update from account's nonce and balance
-  fromAccount.nonce = new BN(fromAccount.nonce).addn(1)
-  fromAccount.balance = new BN(fromAccount.balance).sub(new BN(tx.gasLimit).mul(new BN(tx.gasPrice)))
+  fromAccount.nonce = toBuffer(new BN(fromAccount.nonce).addn(1))
+  fromAccount.balance = toBuffer(new BN(fromAccount.balance).sub(new BN(tx.gasLimit).mul(new BN(tx.gasPrice))))
   await state.putAccount(tx.from, fromAccount)
 
   /*
@@ -117,7 +135,7 @@ async function _runTx (opts) {
   })
   const storageReader = new StorageReader(this.stateManager)
   const interpreter = new Interpreter(this, txContext, block, storageReader)
-  const results = await interpreter.executeMessage(message)
+  const results = await interpreter.executeMessage(message) as RunTxResult
 
   /*
    * Parse results
@@ -142,13 +160,13 @@ async function _runTx (opts) {
   const finalFromBalance = new BN(tx.gasLimit).sub(results.gasUsed)
     .mul(new BN(tx.gasPrice))
     .add(new BN(fromAccount.balance))
-  fromAccount.balance = finalFromBalance
-  await state.putAccount(utils.toBuffer(tx.from), fromAccount)
+  fromAccount.balance = toBuffer(finalFromBalance)
+  await state.putAccount(toBuffer(tx.from), fromAccount)
 
   // Update miner's balance
   let minerAccount = await state.getAccount(block.header.coinbase)
   // add the amount spent on gas to the miner's account
-  minerAccount.balance = new BN(minerAccount.balance).add(results.amountSpent)
+  minerAccount.balance = toBuffer(new BN(minerAccount.balance).add(results.amountSpent))
   if (!(new BN(minerAccount.balance).isZero())) {
     await state.putAccount(block.header.coinbase, minerAccount)
   }
@@ -180,16 +198,16 @@ async function _runTx (opts) {
  * @method txLogsBloom
  * @private
  */
-function txLogsBloom (logs) {
-  var bloom = new Bloom()
+function txLogsBloom (logs?: any[]): Bloom {
+  const bloom = new Bloom()
   if (logs) {
-    for (var i = 0; i < logs.length; i++) {
-      var log = logs[i]
+    for (let i = 0; i < logs.length; i++) {
+      const log = logs[i]
       // add the address
       bloom.add(log[0])
       // add the topics
-      var topics = log[1]
-      for (var q = 0; q < topics.length; q++) {
+      const topics = log[1]
+      for (let q = 0; q < topics.length; q++) {
         bloom.add(topics[q])
       }
     }
