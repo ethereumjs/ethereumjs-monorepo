@@ -11,7 +11,7 @@ export default class Bloom {
    * @constructor
    * @param {Buffer} bitvector
    */
-  constructor (bitvector: Buffer) {
+  constructor (bitvector?: Buffer) {
     if (!bitvector) {
       this.bitvector = zeros(BYTE_SIZE)
     } else {
