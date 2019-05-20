@@ -5,6 +5,7 @@ import Account from 'ethereumjs-account'
 import { default as runCode, RunCodeOpts, RunCodeCb } from './runCode'
 import { default as runCall, RunCallOpts, RunCallCb } from './runCall'
 import { default as runTx, RunTxOpts, RunTxCb } from './runTx'
+import { default as runBlock, RunBlockOpts, RunBlockCb } from './runBlock'
 const promisify = require('util.promisify')
 const AsyncEventEmitter = require('async-eventemitter')
 const Blockchain = require('ethereumjs-blockchain')
@@ -71,8 +72,11 @@ export default class VM extends AsyncEventEmitter {
 
     // @deprecated
     this.runJIT = require('./runJit.js').bind(this)
-    this.runBlock = require('./runBlock.js').bind(this)
     this.runBlockchain = require('./runBlockchain.js').bind(this)
+  }
+
+  runBlock (opts: RunBlockOpts, cb: RunBlockCb): void {
+    runBlock.bind(this)(opts, cb)
   }
 
   runTx (opts: RunTxOpts, cb: RunTxCb): void {
