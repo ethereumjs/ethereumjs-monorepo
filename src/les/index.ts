@@ -107,7 +107,7 @@ export class LES extends EventEmitter {
   }
 
   _getStatusString(status: LES.Status) {
-    var sStr = `[V:${buffer2int(status['protocolVersion'])}, `
+    let sStr = `[V:${buffer2int(status['protocolVersion'])}, `
     sStr += `NID:${buffer2int(status['networkId'] as Buffer)}, HTD:${buffer2int(
       status['headTd'],
     )}, `

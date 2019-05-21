@@ -100,7 +100,7 @@ export class ETH extends EventEmitter {
   }
 
   _getStatusString(status: ETH.StatusMsg) {
-    var sStr = `[V:${buffer2int(status[0])}, NID:${buffer2int(status[1])}, TD:${buffer2int(
+    let sStr = `[V:${buffer2int(status[0])}, NID:${buffer2int(status[1])}, TD:${buffer2int(
       status[2],
     )}`
     sStr += `, BestH:${status[3].toString('hex')}, GenH:${status[4].toString('hex')}]`

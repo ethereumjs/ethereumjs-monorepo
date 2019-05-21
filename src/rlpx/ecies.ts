@@ -298,8 +298,8 @@ export class ECIES {
   parseAckPlain(data: Buffer, sharedMacData: Buffer | null = null): void {
     const decrypted = this._decryptMessage(data, sharedMacData)
 
-    var remoteEphemeralPublicKey = null
-    var remoteNonce = null
+    let remoteEphemeralPublicKey = null
+    let remoteNonce = null
 
     if (!this._gotEIP8Ack) {
       assertEq(decrypted.length, 97, 'invalid packet length')

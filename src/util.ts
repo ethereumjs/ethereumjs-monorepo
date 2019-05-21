@@ -58,7 +58,7 @@ export function xor(a: Buffer, b: any): Buffer {
 }
 
 export function assertEq(expected: any, actual: any, msg: string): void {
-  var message
+  let message
   if (Buffer.isBuffer(expected) && Buffer.isBuffer(actual)) {
     if (expected.equals(actual)) return
     message = `${msg}: ${expected.toString('hex')} / ${actual.toString('hex')}`

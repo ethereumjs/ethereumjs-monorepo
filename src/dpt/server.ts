@@ -176,7 +176,7 @@ export class Server extends EventEmitter {
       }
 
       case 'pong': {
-        var rkey = info.data.hash.toString('hex')
+        let rkey = info.data.hash.toString('hex')
         const rkeyParity = this._parityRequestMap.get(rkey)
         if (rkeyParity) {
           rkey = rkeyParity
