@@ -231,6 +231,10 @@ tape('[Transaction]: Basic functions', function(t) {
       'hex',
     )
     const pt = new Transaction(txRaw)
+
+    // Note that Vitalik's example has a very similar value denoted "signing data". It's not the
+    // output of `serialize()`, but the pre-image of the hash returned by `tx.hash(false)`.
+    // We don't have a getter for such a value in Transaction.
     st.equal(
       pt.serialize().toString('hex'),
       'ec098504a817c800825208943535353535353535353535353535353535353535880de0b6b3a764000080808080',
