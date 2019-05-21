@@ -3,7 +3,9 @@ import { Buffer } from 'buffer'
 import { rlp, zeros, privateToPublic, toBuffer } from 'ethereumjs-util'
 
 import Transaction from '../src/transaction'
-import { TxsJsonEntry, VitaliksTestsDataEntry } from './types'
+import { FakeTxData, TxsJsonEntry, VitaliksTestsDataEntry } from './types'
+import Common from 'ethereumjs-common'
+import { TxData } from '../src'
 
 const txFixtures: TxsJsonEntry[] = require('./txs.json')
 const txFixturesEip155: VitaliksTestsDataEntry[] = require('./ttTransactionTestEip155VitaliksTests.json')
@@ -228,10 +230,14 @@ tape('[Transaction]: Basic functions', function(t) {
       '4646464646464646464646464646464646464646464646464646464646464646',
       'hex',
     )
-    const pt = new Transaction(txRaw, { chain: 1 })
+    const pt = new Transaction(txRaw)
+
+    // Note that Vitalik's example has a very similar value denoted "signing data". It's not the
+    // output of `serialize()`, but the pre-image of the hash returned by `tx.hash(false)`.
+    // We don't have a getter for such a value in Transaction.
     st.equal(
       pt.serialize().toString('hex'),
-      'ec098504a817c800825208943535353535353535353535353535353535353535880de0b6b3a764000080018080',
+      'ec098504a817c800825208943535353535353535353535353535353535353535880de0b6b3a764000080808080',
     )
     pt.sign(privateKey)
     st.equal(
@@ -272,20 +278,58 @@ tape('[Transaction]: Basic functions', function(t) {
   )
 
   t.test('sign tx with chainId specified in params', function(st) {
-    const tx = new Transaction({ chainId: 42 })
+    const tx = new Transaction({}, { chain: 42 })
     st.equal(tx.getChainId(), 42)
     const privKey = new Buffer(txFixtures[0].privateKey, 'hex')
     tx.sign(privKey)
     const serialized = tx.serialize()
-    const reTx = new Transaction(serialized)
+    const reTx = new Transaction(serialized, { chain: 42 })
     st.equal(reTx.verifySignature(), true)
     st.equal(reTx.getChainId(), 42)
     st.end()
   })
 
-  t.test('allow chainId more than 1 byte', function(st) {
-    const tx = new Transaction({ chainId: 0x16b2 })
-    st.equal(tx.getChainId(), 0x16b2)
+  t.test('throws when creating a a transaction with incompatible chainid and v value', function(
+    st,
+  ) {
+    const tx = new Transaction({}, { chain: 42 })
+    st.equal(tx.getChainId(), 42)
+    const privKey = new Buffer(txFixtures[0].privateKey, 'hex')
+    tx.sign(privKey)
+    const serialized = tx.serialize()
+    st.throws(() => new Transaction(serialized))
+    st.end()
+  })
+
+  t.test('Throws if chain/hardfork and commmon options are given', function(st) {
+    st.throws(
+      () => new Transaction({}, { common: new Common('mainnet', 'petersburg'), chain: 'mainnet' }),
+    )
+    st.throws(
+      () => new Transaction({}, { common: new Common('mainnet', 'petersburg'), chain: 'ropsten' }),
+    )
+    st.throws(
+      () =>
+        new Transaction(
+          {},
+          { common: new Common('mainnet', 'petersburg'), hardfork: 'petersburg' },
+        ),
+    )
+    st.end()
+  })
+
+  t.test('Throws if v is set to an EIP155-encoded value incompatible with the chain id', function(
+    st,
+  ) {
+    const tx = new Transaction({}, { chain: 42 })
+    const privKey = new Buffer(txFixtures[0].privateKey, 'hex')
+    tx.sign(privKey)
+
+    st.throws(() => (tx.v = toBuffer(1)))
+
+    const unsignedTx = new Transaction(tx.raw.slice(0, 6))
+    st.throws(() => (unsignedTx.v = tx.v))
+
     st.end()
   })
 
@@ -305,4 +349,65 @@ tape('[Transaction]: Basic functions', function(t) {
 
     st.end()
   })
+
+  t.test(
+    'Should ignore any previous signature when decided if EIP155 should be used in a new one',
+    function(st) {
+      const privateKey = Buffer.from(
+        '4646464646464646464646464646464646464646464646464646464646464646',
+        'hex',
+      )
+
+      const txData: TxData = {
+        data: '0x7cf5dab00000000000000000000000000000000000000000000000000000000000000005',
+        gasLimit: '0x15f90',
+        gasPrice: '0x1',
+        nonce: '0x01',
+        to: '0xd9024df085d09398ec76fbed18cac0e1149f50dc',
+        value: '0x0',
+      }
+
+      const fixtureTxSignedWithEIP155 = new Transaction(txData)
+      fixtureTxSignedWithEIP155.sign(privateKey)
+
+      const fixtureTxSignedWithoutEIP155 = new Transaction(txData, { hardfork: 'tangerineWhistle' })
+      fixtureTxSignedWithoutEIP155.sign(privateKey)
+
+      let signedWithEIP155 = new Transaction(fixtureTxSignedWithEIP155.toJSON(true))
+      signedWithEIP155.sign(privateKey)
+      st.true(signedWithEIP155.verifySignature())
+      st.notEqual(signedWithEIP155.v.toString('hex'), '1c')
+      st.notEqual(signedWithEIP155.v.toString('hex'), '1b')
+
+      signedWithEIP155 = new Transaction(fixtureTxSignedWithoutEIP155.toJSON(true))
+      signedWithEIP155.sign(privateKey)
+      st.true(signedWithEIP155.verifySignature())
+      st.notEqual(signedWithEIP155.v.toString('hex'), '1c')
+      st.notEqual(signedWithEIP155.v.toString('hex'), '1b')
+
+      let signedWithoutEIP155 = new Transaction(fixtureTxSignedWithEIP155.toJSON(true), {
+        hardfork: 'tangerineWhistle',
+      })
+      signedWithoutEIP155.sign(privateKey)
+      st.true(signedWithoutEIP155.verifySignature())
+      st.true(
+        signedWithoutEIP155.v.toString('hex') == '1c' ||
+          signedWithoutEIP155.v.toString('hex') == '1b',
+        "v shouldn' be EIP155 encoded",
+      )
+
+      signedWithoutEIP155 = new Transaction(fixtureTxSignedWithoutEIP155.toJSON(true), {
+        hardfork: 'tangerineWhistle',
+      })
+      signedWithoutEIP155.sign(privateKey)
+      st.true(signedWithoutEIP155.verifySignature())
+      st.true(
+        signedWithoutEIP155.v.toString('hex') == '1c' ||
+          signedWithoutEIP155.v.toString('hex') == '1b',
+        "v shouldn' be EIP155 encoded",
+      )
+
+      st.end()
+    },
+  )
 })

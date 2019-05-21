@@ -8,6 +8,7 @@ import {
   ecsign,
   toBuffer,
   rlp,
+  stripZeros,
 } from 'ethereumjs-util'
 import Common from 'ethereumjs-common'
 import { Buffer } from 'buffer'
@@ -32,7 +33,6 @@ export default class Transaction {
   public s!: Buffer
 
   private _common: Common
-  private _chainId: number
   private _senderPubKey?: Buffer
   protected _from?: Buffer
 
@@ -40,11 +40,14 @@ export default class Transaction {
    * Creates a new transaction from an object with its fields' values.
    *
    * @param data - A transaction can be initialized with its rlp representation, an array containing
-   * the value of its fields in order, or an object containing them by name. If the latter is used,
-   * a `chainId` can also be provided.
+   * the value of its fields in order, or an object containing them by name.
    *
    * @param opts - The transaction's options, used to indicate the chain and hardfork the
    * transactions belongs to.
+   *
+   * @note Transaction objects implement EIP155 by default. To disable it, use the constructor's
+   * second parameter to set a chain and hardfork before EIP155 activation (i.e. before Spurious
+   * Dragon.)
    *
    * @example
    * ```js
@@ -68,13 +71,17 @@ export default class Transaction {
   ) {
     // instantiate Common class instance based on passed options
     if (opts.common) {
-      if (opts.chain) {
-        throw new Error('Instantiation with both opts.common and opts.chain parameter not allowed!')
+      if (opts.chain || opts.hardfork) {
+        throw new Error(
+          'Instantiation with both opts.common, and opts.chain and opts.hardfork parameter not allowed!',
+        )
       }
+
       this._common = opts.common
     } else {
       const chain = opts.chain ? opts.chain : 'mainnet'
-      const hardfork = opts.hardfork ? opts.hardfork : 'byzantium'
+      const hardfork = opts.hardfork ? opts.hardfork : 'petersburg'
+
       this._common = new Common(chain, hardfork)
     }
 
@@ -120,7 +127,7 @@ export default class Transaction {
       {
         name: 'v',
         allowZero: true,
-        default: new Buffer([opts.chain || opts.common ? this._common.chainId() : 0x1c]),
+        default: new Buffer([]),
       },
       {
         name: 'r',
@@ -138,15 +145,6 @@ export default class Transaction {
       },
     ]
 
-    /**
-     * Returns the transaction in JSON format
-     * @method toJSON
-     * @return {Array | String}
-     * @memberof Transaction
-     * @name toJSON
-     * @see {@link https://github.com/ethereumjs/ethereumjs-util/blob/master/docs/index.md#defineproperties|ethereumjs-util}
-     */
-
     // attached serialize
     defineProperties(this, fields, data)
 
@@ -161,18 +159,8 @@ export default class Transaction {
       get: this.getSenderAddress.bind(this),
     })
 
-    // calculate chainId from signature
-    const sigV = bufferToInt(this.v)
-    let chainId = Math.floor((sigV - 35) / 2)
-    if (chainId < 0) chainId = 0
-
-    // set chainId
-    if (opts.chain || opts.common) {
-      this._chainId = this._common.chainId()
-    } else {
-      const dataAsTransactionObject = data as TxData
-      this._chainId = chainId || dataAsTransactionObject.chainId || 0
-    }
+    this._validateV(this.v)
+    this._overrideVSetterWithValidation()
   }
 
   /**
@@ -191,28 +179,14 @@ export default class Transaction {
     if (includeSignature) {
       items = this.raw
     } else {
-      // EIP155 spec:
-      // If block.number >= 2,675,000 and v = CHAIN_ID * 2 + 35 or v = CHAIN_ID * 2 + 36, then when computing
-      // the hash of a transaction for purposes of signing or recovering, instead of hashing only the first six
-      // elements (i.e. nonce, gasprice, startgas, to, value, data), hash nine elements, with v replaced by
-      // CHAIN_ID, r = 0 and s = 0.
-
-      const v = bufferToInt(this.v)
-      const onEIP155BlockOrLater = this._common.gteHardfork('spuriousDragon')
-      const vAndChainIdMeetEIP155Conditions =
-        v === this._chainId * 2 + 35 || v === this._chainId * 2 + 36
-      const meetsAllEIP155Conditions = vAndChainIdMeetEIP155Conditions && onEIP155BlockOrLater
-
-      const unsigned = !this.r.length && !this.s.length
-      const seeksReplayProtection = this._chainId > 0
-
-      if ((unsigned && seeksReplayProtection) || (!unsigned && meetsAllEIP155Conditions)) {
-        const raw = this.raw.slice()
-        this.v = toBuffer(this._chainId)
-        this.r = toBuffer(0)
-        this.s = toBuffer(0)
-        items = this.raw
-        this.raw = raw
+      if (this._implementsEIP155()) {
+        items = [
+          ...this.raw.slice(0, 6),
+          toBuffer(this.getChainId()),
+          // TODO: stripping zeros should probably be a responsibility of the rlp module
+          stripZeros(toBuffer(0)),
+          stripZeros(toBuffer(0)),
+        ]
       } else {
         items = this.raw.slice(0, 6)
       }
@@ -226,7 +200,7 @@ export default class Transaction {
    * returns chain ID
    */
   getChainId(): number {
-    return this._chainId
+    return this._common.chainId()
   }
 
   /**
@@ -266,13 +240,13 @@ export default class Transaction {
     try {
       const v = bufferToInt(this.v)
       const useChainIdWhileRecoveringPubKey =
-        v >= this._chainId * 2 + 35 && this._common.gteHardfork('spuriousDragon')
+        v >= this.getChainId() * 2 + 35 && this._common.gteHardfork('spuriousDragon')
       this._senderPubKey = ecrecover(
         msgHash,
         v,
         this.r,
         this.s,
-        useChainIdWhileRecoveringPubKey ? this._chainId : undefined,
+        useChainIdWhileRecoveringPubKey ? this.getChainId() : undefined,
       )
     } catch (e) {
       return false
@@ -286,11 +260,19 @@ export default class Transaction {
    * @param privateKey - Must be 32 bytes in length
    */
   sign(privateKey: Buffer) {
+    // We clear any previous signature before signing it. Otherwise, _implementsEIP155's can give
+    // different results if this tx was already signed.
+    this.v = new Buffer([])
+    this.s = new Buffer([])
+    this.r = new Buffer([])
+
     const msgHash = this.hash(false)
     const sig = ecsign(msgHash, privateKey)
-    if (this._chainId > 0) {
-      sig.v += this._chainId * 2 + 8
+
+    if (this._implementsEIP155()) {
+      sig.v += this.getChainId() * 2 + 8
     }
+
     Object.assign(this, sig)
   }
 
@@ -355,5 +337,78 @@ export default class Transaction {
   serialize(): Buffer {
     // Note: This never gets executed, defineProperties overwrites it.
     return rlp.encode(this.raw)
+  }
+
+  /**
+   * Returns the transaction in JSON format
+   * @see {@link https://github.com/ethereumjs/ethereumjs-util/blob/master/docs/index.md#defineproperties|ethereumjs-util}
+   */
+  toJSON(labels: boolean = false): { [key: string]: string } | string[] {
+    // Note: This never gets executed, defineProperties overwrites it.
+    return {}
+  }
+
+  private _validateV(v?: Buffer): void {
+    if (v === undefined || v.length === 0) {
+      return
+    }
+
+    if (!this._common.gteHardfork('spuriousDragon')) {
+      return
+    }
+
+    const vInt = bufferToInt(v)
+
+    if (vInt === 27 || vInt === 28) {
+      return
+    }
+
+    const isValidEIP155V =
+      vInt === this.getChainId() * 2 + 35 || vInt === this.getChainId() * 2 + 36
+
+    if (!isValidEIP155V) {
+      throw new Error(
+        `Incompatible EIP155-based V ${vInt} and chain id ${this.getChainId()}. See the second parameter of the Transaction constructor to set the chain id.`,
+      )
+    }
+  }
+
+  private _isSigned(): boolean {
+    return this.v.length > 0 && this.r.length > 0 && this.s.length > 0
+  }
+
+  private _overrideVSetterWithValidation() {
+    const vDescriptor = Object.getOwnPropertyDescriptor(this, 'v')!
+
+    Object.defineProperty(this, 'v', {
+      ...vDescriptor,
+      set: v => {
+        if (v !== undefined) {
+          this._validateV(toBuffer(v))
+        }
+
+        vDescriptor.set!(v)
+      },
+    })
+  }
+
+  private _implementsEIP155(): boolean {
+    const onEIP155BlockOrLater = this._common.gteHardfork('spuriousDragon')
+
+    if (!this._isSigned()) {
+      // We sign with EIP155 all unsigned transactions after spuriousDragon
+      return onEIP155BlockOrLater
+    }
+
+    // EIP155 spec:
+    // If block.number >= 2,675,000 and v = CHAIN_ID * 2 + 35 or v = CHAIN_ID * 2 + 36, then when computing
+    // the hash of a transaction for purposes of signing or recovering, instead of hashing only the first six
+    // elements (i.e. nonce, gasprice, startgas, to, value, data), hash nine elements, with v replaced by
+    // CHAIN_ID, r = 0 and s = 0.
+    const v = bufferToInt(this.v)
+
+    const vAndChainIdMeetEIP155Conditions =
+      v === this.getChainId() * 2 + 35 || v === this.getChainId() * 2 + 36
+    return vAndChainIdMeetEIP155Conditions && onEIP155BlockOrLater
   }
 }
