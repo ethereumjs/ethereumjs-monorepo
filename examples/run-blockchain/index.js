@@ -17,14 +17,24 @@ var blockchainDB = levelMem()
 
 var state = new Trie()
 
-var blockchain = new Blockchain(blockchainDB)
-blockchain.ethash.cacheDB = level('./.cachedb')
+var validate = false
+
+var hardfork = 'byzantium'
+
+var blockchain = new Blockchain({ db: blockchainDB, hardfork, validate })
+
+if (validate) {
+  blockchain.ethash.cacheDB = level('./.cachedb')
+}
 
 var vm = new VM({
   state: state,
-  blockchain: blockchain
+  blockchain: blockchain,
+  hardfork
 })
-var genesisBlock = new Block()
+var genesisBlock = new Block({ hardfork })
+
+testData.homestead = true
 
 vm.on('beforeTx', function (tx) {
   tx._homestead = true
@@ -44,9 +54,9 @@ async.series([
 
   // create and add genesis block
   function (next) {
-    genesisBlock.header = new BlockHeader(
-                            testData.genesisBlockHeader
-                          )
+    genesisBlock.header = new BlockHeader(formatBlockHeader(testData.genesisBlockHeader),
+      { hardfork })
+
     blockchain.putGenesis(genesisBlock, next)
   },
 
@@ -57,7 +67,7 @@ async.series([
     function eachBlock (raw, cb) {
       try {
         var block = new Block(
-            Buffer.from(raw.rlp.slice(2), 'hex'))
+          Buffer.from(raw.rlp.slice(2), 'hex'))
 
         // forces the block into thinking they are homestead
         block.header.isHomestead = function () {
@@ -161,4 +171,13 @@ function format (a, toZero, isHex) {
   }
 
   return a
+}
+
+function formatBlockHeader (data) {
+  var r = {}
+  var keys = Object.keys(data)
+  keys.forEach(function (key) {
+    r[key] = utils.addHexPrefix(data[key])
+  })
+  return r
 }
