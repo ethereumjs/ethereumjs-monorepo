@@ -1,0 +1,135 @@
+syntax = "proto3";
+package io.iohk.ethereum.extvm;
+
+message Hello {
+  string version = 1;
+
+  // A blockchain related configuration for the VM for the entire session.
+  // Currently only Mantis-EVM is supported. Other VMs may ingore this
+  // or may required different configurations.
+  oneof config {
+    EthereumConfig ethereumConfig = 2;
+    IeleConfig ieleConfig = 3;
+  }
+}
+
+message CallContext {
+  bytes callerAddr = 1;
+  // empty if contract creation
+  bytes recipientAddr = 2;
+  bytes inputData = 3;
+  bytes callValue = 4;
+  bytes gasPrice = 5;
+  bytes gasProvided = 6;
+  BlockHeader blockHeader = 7;
+
+  // This may be used to override the VM configuration for the session. It used in tests to avoid
+  // re-instantiating VM for each test.
+  oneof config {
+    EthereumConfig ethereumConfig = 8;
+    IeleConfig ieleConfig = 9;
+  }
+}
+
+message BlockHeader {
+  bytes beneficiary = 1;
+  bytes difficulty = 2;
+  bytes number = 3;
+  bytes gasLimit = 4;
+  int64 unixTimestamp = 5;
+}
+
+message EthereumConfig {
+  bytes frontierBlockNumber = 1;
+  bytes homesteadBlockNumber = 2;
+  bytes eip150BlockNumber = 3;
+  bytes eip160BlockNumber = 4;
+  bytes eip161BlockNumber = 5;
+  bytes maxCodeSize = 6;
+  bytes accountStartNonce = 7;
+}
+
+message IeleConfig {
+  bytes danseBlockNumber = 1;
+}
+
+message GetAccount {
+  bytes address = 1;
+}
+
+message Account {
+  // if account does not exist, nonce and balance will be empty
+  // if account exists but is empty, nonce and balance will be equivalent to numeric zeroes
+  bytes nonce = 1;
+  bytes balance = 2;
+  bool codeEmpty = 3;
+}
+
+message GetStorageData {
+  bytes address = 1;
+  bytes offset = 2;
+}
+
+message StorageData {
+  bytes data = 1;
+}
+
+message GetCode {
+  bytes address = 1;
+}
+
+message Code {
+  bytes code = 1;
+}
+
+message GetBlockhash {
+  int32 offset = 1;
+}
+
+message Blockhash {
+  bytes hash = 1;
+}
+
+message CallResult {
+  bytes returnData = 1;
+  // required for IELE VM
+  bytes returnCode = 2;
+  bytes gasRemaining = 3;
+  bytes gasRefund = 4;
+  bool error = 5;
+  repeated ModifiedAccount modifiedAccounts = 6;
+  repeated bytes deletedAccounts = 7;
+  // touchedAccounts is specific Ethereum's EIP-161. VMs that do not follow these rules may ignore this field
+  repeated bytes touchedAccounts = 8;
+  repeated LogEntry logs = 9;
+}
+
+message ModifiedAccount {
+  bytes address = 1;
+  bytes nonce = 2;
+  bytes balance = 3;
+  repeated StorageUpdate storageUpdates = 4;
+  // empty value indicates that no code has been assigned to this account
+  bytes code = 5;
+}
+
+message StorageUpdate {
+  bytes offset = 1;
+  bytes data = 2;
+}
+
+message LogEntry {
+  bytes address = 1;
+  repeated bytes topics = 2;
+  bytes data = 3;
+}
+
+message VMQuery {
+  oneof query {
+    GetAccount getAccount = 1;
+    GetStorageData getStorageData = 2;
+    GetCode getCode = 3;
+    GetBlockhash getBlockhash = 4;
+    CallResult callResult = 5;
+  }
+}
