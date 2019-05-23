@@ -70,8 +70,6 @@ export default class VM extends AsyncEventEmitter {
 
     this.allowUnlimitedContractSize = opts.allowUnlimitedContractSize === undefined ? false : opts.allowUnlimitedContractSize
 
-    // @deprecated
-    this.runJIT = require('./runJit.js').bind(this)
     this.runBlockchain = require('./runBlockchain.js').bind(this)
   }
 
