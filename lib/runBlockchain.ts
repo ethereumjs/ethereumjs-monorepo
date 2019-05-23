@@ -1,3 +1,4 @@
+import VM from './index'
 const async = require('async')
 
 /**
@@ -6,31 +7,32 @@ const async = require('async')
  * @param {Blockchain} blockchain A [blockchain](https://github.com/ethereum/ethereumjs-blockchain) that to process
  * @param {Function} cb the callback function
  */
-module.exports = function (blockchain, cb) {
-  var self = this
-  var headBlock, parentState
+export default function runBlockchain (this: VM, blockchain: any, cb: any) {
+  const self = this
+  let headBlock: any
+  let parentState: Buffer
 
   // parse arguments
   if (typeof blockchain === 'function') {
     cb = blockchain
-    blockchain = undefined
+    blockchain = this.blockchain
   }
 
-  blockchain = blockchain || self.blockchain
+  blockchain = blockchain || this.blockchain
 
   // setup blockchain iterator
   blockchain.iterator('vm', processBlock, cb)
-  function processBlock (block, reorg, cb) {
+  function processBlock (block: any, reorg: boolean, cb: any) {
     async.series([
       getStartingState,
       runBlock
     ], cb)
 
     // determine starting state for block run
-    function getStartingState (cb) {
+    function getStartingState (cb: any) {
       // if we are just starting or if a chain re-org has happened
       if (!headBlock || reorg) {
-        blockchain.getBlock(block.header.parentHash, function (err, parentBlock) {
+        blockchain.getBlock(block.header.parentHash, function (err: any, parentBlock: any) {
           parentState = parentBlock.header.stateRoot
           // generate genesis state if we are at the genesis block
           // we don't have the genesis state
@@ -47,7 +49,7 @@ module.exports = function (blockchain, cb) {
     }
 
     // run block, update head if valid
-    function runBlock (cb) {
+    function runBlock (cb: any) {
       self.runBlock({
         block: block,
         root: parentState
