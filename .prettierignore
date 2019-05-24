@@ -4,3 +4,4 @@ package.json
 dist
 .nyc_output
 *.json
+docs
