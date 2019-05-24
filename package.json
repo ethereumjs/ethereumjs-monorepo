@@ -3,10 +3,13 @@
   "version": "4.0.0",
   "description": "An Ethereum VM implementation",
   "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "files": [
-    "dist"
+    "dist/**/*"
   ],
   "scripts": {
+    "build:dist": "ethereumjs-config-build",
+    "prepublishOnly": "npm run lint && npm run build:dist && npm run testBuildIntegrity",
     "coverage": "nyc npm run coverageTests && nyc report --reporter=text-lcov > .nyc_output/lcov.info",
     "coverageTests": "npm run build:dist && tape './tests/api/**/*.js' ./tests/tester.js -s --dist",
     "coveralls": "npm run coverage && if [ -n \"$COVERALLS_REPO_TOKEN\" ]; then coveralls <.nyc_output/lcov.info; fi",
@@ -20,13 +23,14 @@
     "testAPI": "npm run build:dist && tape './tests/api/**/*.js'",
     "testAPI:browser": "npm run build:dist && karma start karma.conf.js",
     "test": "echo \"[INFO] Generic test cmd not used. See package.json for more specific test run cmds.\"",
-    "lint": "standard",
+    "tslint": "ethereumjs-config-tslint",
+    "tslint:fix": "ethereumjs-config-tslint-fix",
+    "lint": "ethereumjs-config-lint",
+    "lint:fix": "ethereumjs-config-lint-fix",
     "format": "ethereumjs-config-format",
-    "format-fix": "ethereumjs-config-format-fix",
-    "prepublishOnly": "npm run lint && npm run build:dist && npm run testBuildIntegrity",
-    "build:dist": "tsc",
-    "build:docs": "documentation build ./lib/index.js ./lib/runBlockchain.js ./lib/runBlock.js ./lib/runTx.js ./lib/runCode.js ./lib/runCall.js --format md --shallow > ./docs/index.md",
-    "formatTest": "node ./scripts/formatTest"
+    "format:fix": "ethereumjs-config-format-fix",
+    "formatTest": "node ./scripts/formatTest",
+    "tsc": "ethereumjs-config-tsc"
   },
   "repository": {
     "type": "git",
@@ -53,7 +57,10 @@
     "util.promisify": "^1.0.0"
   },
   "devDependencies": {
+    "@ethereumjs/config-nyc": "^1.1.1",
     "@ethereumjs/config-prettier": "^1.1.1",
+    "@ethereumjs/config-tsc": "^1.1.1",
+    "@ethereumjs/config-tslint": "^1.1.1",
     "@types/bn.js": "^4.11.5",
     "@types/core-js": "^2.5.0",
     "@types/lru-cache": "^5.1.0",
@@ -78,7 +85,9 @@
     "standard": "^10.0.0",
     "tap-spec": "^5.0.0",
     "tape": "4.6.3",
-    "typescript": "^3.4.3"
+    "tslint": "^5.16.0",
+    "typescript": "^3.4.3",
+    "typestrict": "^1.0.2"
   },
   "author": "mjbecze <mjbecze@gmail.com>",
   "contributors": [
