@@ -2,6 +2,10 @@ const promisify = require('util.promisify')
 import Account from 'ethereumjs-account'
 import { default as StateManager, StorageDump } from './stateManager'
 
+/**
+ * Promisified wrapper around [[StateManager]]
+ * @ignore
+ */
 export default class PStateManager {
   _wrapped: StateManager
 

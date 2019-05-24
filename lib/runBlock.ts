@@ -8,45 +8,78 @@ import PStateManager from './state/promisified'
 const promisify = require('util.promisify')
 const Trie = require('merkle-patricia-tree')
 
+/**
+ * Options for running a block.
+ */
 export interface RunBlockOpts {
+  /**
+   * The [`Block`](https://github.com/ethereumjs/ethereumjs-block) to process
+   */
   block: any
+  /**
+   * Root of the state trie
+   */
   root?: Buffer
+  /**
+   * Whether to generate the stateRoot. If false `runBlock` will check the
+   * stateRoot of the block against the Trie
+   */
   generate?: boolean
+  /**
+   * If true, will skip block validation
+   */
   skipBlockValidation?: boolean
 }
 
+/**
+ * Callback function for [[runBlock]]
+ */
 export interface RunBlockCb {
+  /**
+   * @param err - Any error that happened during execution, or `null`
+   * @param result - Result of execution, `null` in case of error
+   */
   (err: Error | null, result: RunBlockResult | null): void
 }
 
+/**
+ * Result of [[runBlock]]
+ */
 export interface RunBlockResult {
+  /**
+   * Receipts generated for transactions in the block
+   */
   receipts: TxReceipt[]
+  /**
+   * Results of executing the transactions in the block
+   */
   results: RunTxResult[]
 }
 
+/**
+ * Receipt generated for a transaction
+ */
 export interface TxReceipt {
+  /**
+   * Status of transaction, `0` if successful, `1` if an exception occured
+   */
   status: 0 | 1
+  /**
+   * Gas used
+   */
   gasUsed: Buffer
+  /**
+   * Bloom bitvector
+   */
   bitvector: Buffer
+  /**
+   * Logs emitted
+   */
   logs: any[]
 }
 
 /**
- * Processes the `block` running all of the transactions it contains and updating the miner's account
- * @method vm.runBlock
- * @param opts
- * @param {Block} opts.block the [`Block`](https://github.com/ethereumjs/ethereumjs-block) to process
- * @param {Boolean} opts.generate [gen=false] whether to generate the stateRoot, if false `runBlock` will check the stateRoot of the block against the Trie
- * @param {runBlock~callback} cb callback
- */
-
-/**
- * Callback for `runBlock` method
- * @callback runBlock~callback
- * @param {Error} error an error that may have happened or `null`
- * @param {Object} results
- * @param {Array} results.receipts the receipts from the transactions in the block
- * @param {Array} results.results
+ * @ignore
  */
 export default function runBlock(this: VM, opts: RunBlockOpts, cb: RunBlockCb): void {
   if (typeof opts === 'function' && cb === undefined) {
@@ -69,7 +102,7 @@ async function _runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockResult> 
   const generateStateRoot = !!opts.generate
 
   /**
-   * The `beforeBlock` event
+   * The `beforeBlock` event.
    *
    * @event Event: beforeBlock
    * @type {Object}

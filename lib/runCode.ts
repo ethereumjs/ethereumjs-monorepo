@@ -19,60 +19,69 @@ import { default as Interpreter, ExecResult } from './evm/interpreter'
 import { StorageReader } from './state'
 const Block = require('ethereumjs-block')
 
+/**
+ * Options for the [[runCode]] method.
+ */
 export interface RunCodeOpts {
+  /**
+   * The [`Block`](https://github.com/ethereumjs/ethereumjs-block) the `tx` belongs to. If omitted a blank block will be used
+   */
   block?: any
   storageReader?: StorageReader
   interpreter?: Interpreter
   txContext?: TxContext
   gasPrice?: Buffer
+  /**
+   * The address where the call originated from. The address should be a `Buffer` of 20bits. Defaults to `0`
+   */
   origin?: Buffer
   message?: Message
+  /**
+   * The address that ran this code. The address should be a `Buffer` of 20bits. Defaults to `0`
+   */
   caller?: Buffer
+  /**
+   * The EVM code to run
+   */
   code?: Buffer
+  /**
+   * The input data
+   */
   data?: Buffer
+  /**
+   * Gas limit
+   */
   gasLimit?: Buffer
+  /**
+   * The value in ether that is being sent to `opt.address`. Defaults to `0`
+   */
   value?: Buffer
   depth?: number
   isStatic?: boolean
   selfdestruct?: { [k: string]: boolean }
+  /**
+   * The address of the account that is executing this code. The address should be a `Buffer` of bytes. Defaults to `0`
+   */
   address?: Buffer
+  /**
+   * The initial program counter. Defaults to `0`
+   */
   pc?: number
 }
 
+/**
+ * Callback for `runCode` method
+ */
 export interface RunCodeCb {
+  /**
+   * @param error - an error that may have happened or `null`
+   * @param results - results of code execution
+   */
   (err: Error | null, res: ExecResult | null): void
 }
 
 /**
- * Runs EVM code
- * @method vm.runCode
- * @param {Object} opts
- * @param {Account} opts.account the [`Account`](https://github.com/ethereumjs/ethereumjs-account) that the executing code belongs to. If omitted an empty account will be used
- * @param {Buffer} opts.address the address of the account that is executing this code. The address should be a `Buffer` of bytes. Defaults to `0`
- * @param {Block} opts.block the [`Block`](https://github.com/ethereumjs/ethereumjs-block) the `tx` belongs to. If omitted a blank block will be used
- * @param {Buffer} opts.caller the address that ran this code. The address should be a `Buffer` of 20bits. Defaults to `0`
- * @param {Buffer} opts.code the EVM code to run given as a `Buffer`
- * @param {Buffer} opts.data the input data
- * @param {Buffer} opts.gasLimit the gas limit for the code
- * @param {Buffer} opts.origin the address where the call originated from. The address should be a `Buffer` of 20bits. Defaults to `0`
- * @param {Buffer} opts.value the value in ether that is being sent to `opt.address`. Defaults to `0`
- * @param {Number} opts.pc the initial program counter. Defaults to `0`
- * @param {runCode~callback} cb callback
- */
-
-/**
- * Callback for `runCode` method
- * @callback runCode~callback
- * @param {Error} error an error that may have happened or `null`
- * @param {Object} results
- * @param {BN} results.gas the amount of gas left
- * @param {BN} results.gasUsed the amount of gas as a `bignum` the code used to run
- * @param {BN} results.gasRefund a `bignum` containing the amount of gas to refund from deleting storage values
- * @param {Object} results.selfdestruct an `Object` with keys for accounts that have selfdestructed and values for balance transfer recipient accounts
- * @param {Array} results.logs an `Array` of logs that the contract emitted
- * @param {Number} results.exception `0` if the contract encountered an exception, `1` otherwise
- * @param {String} results.exceptionError a `String` describing the exception if there was one
- * @param {Buffer} results.return a `Buffer` containing the value that was returned by the contract
+ * @ignore
  */
 export default function runCode(this: VM, opts: RunCodeOpts, cb: RunCodeCb): void {
   if (!opts.block) {
