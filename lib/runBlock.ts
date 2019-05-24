@@ -47,8 +47,8 @@ export interface TxReceipt {
  * @param {Object} results
  * @param {Array} results.receipts the receipts from the transactions in the block
  * @param {Array} results.results
-*/
-export default function runBlock (this: VM, opts: RunBlockOpts, cb: RunBlockCb): void {
+ */
+export default function runBlock(this: VM, opts: RunBlockOpts, cb: RunBlockCb): void {
   if (typeof opts === 'function' && cb === undefined) {
     cb = opts as RunBlockCb
     return cb(new Error('invalid input, opts must be provided'), null)
@@ -57,12 +57,13 @@ export default function runBlock (this: VM, opts: RunBlockOpts, cb: RunBlockCb):
     return cb(new Error('invalid input, block must be provided'), null)
   }
 
-  _runBlock.bind(this)(opts)
-    .then((results) => cb(null, results))
-    .catch((err) => cb(err, null))
+  _runBlock
+    .bind(this)(opts)
+    .then(results => cb(null, results))
+    .catch(err => cb(err, null))
 }
 
-async function _runBlock (this: VM, opts: RunBlockOpts): Promise<RunBlockResult> {
+async function _runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockResult> {
   const state = new PStateManager(this.stateManager)
   const block = opts.block
   const generateStateRoot = !!opts.generate
@@ -102,7 +103,10 @@ async function _runBlock (this: VM, opts: RunBlockOpts): Promise<RunBlockResult>
     block.header.stateRoot = stateRoot
     block.header.bloom = result.bloom.bitvector
   } else {
-    if (result.receiptRoot && result.receiptRoot.toString('hex') !== block.header.receiptTrie.toString('hex')) {
+    if (
+      result.receiptRoot &&
+      result.receiptRoot.toString('hex') !== block.header.receiptTrie.toString('hex')
+    ) {
       throw new Error('invalid receiptTrie ')
     }
     if (result.bloom.bitvector.toString('hex') !== block.header.bloom.toString('hex')) {
@@ -123,7 +127,10 @@ async function _runBlock (this: VM, opts: RunBlockOpts): Promise<RunBlockResult>
    * @type {Object}
    * @property {Object} result emits the results of processing a block
    */
-  await this._emit('afterBlock', { receipts: result.receipts, results: result.results })
+  await this._emit('afterBlock', {
+    receipts: result.receipts,
+    results: result.results,
+  })
 
   return { receipts: result.receipts, results: result.results }
 }
@@ -136,8 +143,7 @@ async function _runBlock (this: VM, opts: RunBlockOpts): Promise<RunBlockResult>
  * @param {Block} block
  * @param {Boolean} [skipBlockValidation=false]
  */
-async function applyBlock (this: VM, block: any, skipBlockValidation = false) {
-  const state = new PStateManager(this.stateManager)
+async function applyBlock(this: VM, block: any, skipBlockValidation = false) {
   // Validate block
   if (!skipBlockValidation) {
     if (new BN(block.header.gasLimit).gte(new BN('8000000000000000', 16))) {
@@ -159,7 +165,7 @@ async function applyBlock (this: VM, block: any, skipBlockValidation = false) {
  * side-effect free (it doesn't modify the block nor the state).
  * @param {Block} block
  */
-async function applyTransactions (this: VM, block: any) {
+async function applyTransactions(this: VM, block: any) {
   const bloom = new Bloom()
   // the total amount of gas used processing these transactions
   let gasUsed = new BN(0)
@@ -172,13 +178,18 @@ async function applyTransactions (this: VM, block: any) {
    */
   for (let txIdx = 0; txIdx < block.transactions.length; txIdx++) {
     const tx = block.transactions[txIdx]
-    const gasLimitIsHigherThanBlock = new BN(block.header.gasLimit).lt(new BN(tx.gasLimit).add(gasUsed))
+    const gasLimitIsHigherThanBlock = new BN(block.header.gasLimit).lt(
+      new BN(tx.gasLimit).add(gasUsed),
+    )
     if (gasLimitIsHigherThanBlock) {
       throw new Error('tx has a higher gas limit than the block')
     }
 
     // Run the tx through the VM
-    let txRes = await promisify(this.runTx).bind(this)({ tx: tx, block: block })
+    const txRes = await promisify(this.runTx).bind(this)({
+      tx: tx,
+      block: block,
+    })
     txResults.push(txRes)
 
     // Add to total block gas usage
@@ -190,28 +201,41 @@ async function applyTransactions (this: VM, block: any) {
       status: txRes.vm.exception ? 1 : 0, // result.vm.exception is 0 when an exception occurs, and 1 when it doesn't.  TODO make this the opposite
       gasUsed: gasUsed.toArrayLike(Buffer),
       bitvector: txRes.bloom.bitvector,
-      logs: txRes.vm.logs || []
+      logs: txRes.vm.logs || [],
     }
     receipts.push(txReceipt)
 
     // Add receipt to trie to later calculate receipt root
-    await promisify(receiptTrie.put).bind(receiptTrie)(encode(txIdx), encode(Object.values(txReceipt)))
+    await promisify(receiptTrie.put).bind(receiptTrie)(
+      encode(txIdx),
+      encode(Object.values(txReceipt)),
+    )
   }
 
-  return { bloom, gasUsed, receiptRoot: receiptTrie.root, receipts, results: txResults }
+  return {
+    bloom,
+    gasUsed,
+    receiptRoot: receiptTrie.root,
+    receipts,
+    results: txResults,
+  }
 }
 
 /**
  * Calculates block rewards for miner and ommers and puts
  * the updated balances of their accounts to state.
  */
-async function assignBlockRewards (this: VM, block: any): Promise<void> {
+async function assignBlockRewards(this: VM, block: any): Promise<void> {
   const state = new PStateManager(this.stateManager)
   const minerReward = new BN(this._common.param('pow', 'minerReward'))
   const ommers = block.uncleHeaders
   // Reward ommers
-  for (let ommer of ommers) {
-    const reward = calculateOmmerReward(new BN(ommer.number), new BN(block.header.number), minerReward)
+  for (const ommer of ommers) {
+    const reward = calculateOmmerReward(
+      new BN(ommer.number),
+      new BN(block.header.number),
+      minerReward,
+    )
     await rewardAccount(state, ommer.coinbase, reward)
   }
   // Reward miner
@@ -219,16 +243,16 @@ async function assignBlockRewards (this: VM, block: any): Promise<void> {
   await rewardAccount(state, block.header.coinbase, reward)
 }
 
-function calculateOmmerReward (ommerBlockNumber: BN, blockNumber: BN, minerReward: BN): BN {
+function calculateOmmerReward(ommerBlockNumber: BN, blockNumber: BN, minerReward: BN): BN {
   const heightDiff = blockNumber.sub(ommerBlockNumber)
-  let reward = ((new BN(8)).sub(heightDiff)).mul(minerReward.divn(8))
+  let reward = new BN(8).sub(heightDiff).mul(minerReward.divn(8))
   if (reward.ltn(0)) {
     reward = new BN(0)
   }
   return reward
 }
 
-function calculateMinerReward (minerReward: BN, ommersNum: number): BN {
+function calculateMinerReward(minerReward: BN, ommersNum: number): BN {
   // calculate nibling reward
   const niblingReward = minerReward.divn(32)
   const totalNiblingReward = niblingReward.muln(ommersNum)
@@ -236,7 +260,7 @@ function calculateMinerReward (minerReward: BN, ommersNum: number): BN {
   return reward
 }
 
-async function rewardAccount (state: PStateManager, address: Buffer, reward: BN): Promise<void> {
+async function rewardAccount(state: PStateManager, address: Buffer, reward: BN): Promise<void> {
   const account = await state.getAccount(address)
   account.balance = toBuffer(new BN(account.balance).add(reward))
   await state.putAccount(address, account)

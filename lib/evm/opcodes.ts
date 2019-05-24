@@ -1,9 +1,9 @@
 export interface OpInfo {
-  name: string;
-  opcode: number;
-  fee: number;
-  dynamic: boolean;
-  isAsync: boolean;
+  name: string
+  opcode: number
+  fee: number
+  dynamic: boolean
+  isAsync: boolean
 }
 
 const codes: any = {
@@ -167,10 +167,10 @@ const codes: any = {
 
   // '0x70', range - other
   0xfe: ['INVALID', 0, false],
-  0xff: ['SELFDESTRUCT', 5000, false, true]
+  0xff: ['SELFDESTRUCT', 5000, false, true],
 }
 
-export function lookupOpInfo (op: number, full: boolean = false): OpInfo {
+export function lookupOpInfo(op: number, full: boolean = false): OpInfo {
   const code = codes[op] ? codes[op] : ['INVALID', 0, false, false]
   let opcode = code[0]
 
@@ -192,5 +192,11 @@ export function lookupOpInfo (op: number, full: boolean = false): OpInfo {
     }
   }
 
-  return { name: opcode, opcode: op, fee: code[1], dynamic: code[2], isAsync: code[3] }
+  return {
+    name: opcode,
+    opcode: op,
+    fee: code[1],
+    dynamic: code[2],
+    isAsync: code[3],
+  }
 }

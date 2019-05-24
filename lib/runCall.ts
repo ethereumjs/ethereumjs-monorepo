@@ -22,7 +22,7 @@ export interface RunCallOpts {
   compiled?: boolean
   static?: boolean
   salt?: Buffer
-  selfdestruct?: {[k: string]: boolean}
+  selfdestruct?: { [k: string]: boolean }
   delegatecall?: boolean
 }
 
@@ -46,11 +46,14 @@ export interface RunCallCb {
  * @param opts.value {Buffer}
  * @param {Function} cb the callback
  */
-export default function runCall (this: VM, opts: RunCallOpts, cb: RunCallCb): void {
+export default function runCall(this: VM, opts: RunCallOpts, cb: RunCallCb): void {
   const block = opts.block || new Block()
   const storageReader = opts.storageReader || new StorageReader(this.stateManager)
 
-  const txContext = new TxContext(opts.gasPrice || Buffer.alloc(0), opts.origin || opts.caller || zeros(32))
+  const txContext = new TxContext(
+    opts.gasPrice || Buffer.alloc(0),
+    opts.origin || opts.caller || zeros(32),
+  )
   const message = new Message({
     caller: opts.caller,
     gasLimit: opts.gasLimit ? new BN(opts.gasLimit) : new BN(0xffffff),
@@ -63,11 +66,12 @@ export default function runCall (this: VM, opts: RunCallOpts, cb: RunCallCb): vo
     isStatic: opts.static || false,
     salt: opts.salt || null,
     selfdestruct: opts.selfdestruct || {},
-    delegatecall: opts.delegatecall || false
+    delegatecall: opts.delegatecall || false,
   })
 
   const interpreter = new Interpreter(this, txContext, block, storageReader)
-  interpreter.executeMessage(message)
-    .then((results) => cb(null, results))
-    .catch((err) => cb(err, null))
+  interpreter
+    .executeMessage(message)
+    .then(results => cb(null, results))
+    .catch(err => cb(err, null))
 }

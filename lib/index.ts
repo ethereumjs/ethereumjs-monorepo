@@ -41,26 +41,22 @@ export default class VM extends AsyncEventEmitter {
   blockchain: any
   allowUnlimitedContractSize: boolean
 
-  constructor (opts: VMOpts = {}) {
+  constructor(opts: VMOpts = {}) {
     super()
 
     this.opts = opts
 
-    let chain = opts.chain ? opts.chain : 'mainnet'
-    let hardfork = opts.hardfork ? opts.hardfork : 'byzantium'
-    let supportedHardforks = [
-      'byzantium',
-      'constantinople',
-      'petersburg'
-    ]
+    const chain = opts.chain ? opts.chain : 'mainnet'
+    const hardfork = opts.hardfork ? opts.hardfork : 'byzantium'
+    const supportedHardforks = ['byzantium', 'constantinople', 'petersburg']
     this._common = new Common(chain, hardfork, supportedHardforks)
 
     if (opts.stateManager) {
       this.stateManager = opts.stateManager
     } else {
-      var trie = opts.state || new Trie()
+      const trie = opts.state || new Trie()
       if (opts.activatePrecompiles) {
-        for (var i = 1; i <= 8; i++) {
+        for (let i = 1; i <= 8; i++) {
           trie.put(new BN(i).toArrayLike(Buffer, 'be', 20), new Account().serialize())
         }
       }
@@ -69,34 +65,38 @@ export default class VM extends AsyncEventEmitter {
 
     this.blockchain = opts.blockchain || new Blockchain({ common: this._common })
 
-    this.allowUnlimitedContractSize = opts.allowUnlimitedContractSize === undefined ? false : opts.allowUnlimitedContractSize
+    this.allowUnlimitedContractSize =
+      opts.allowUnlimitedContractSize === undefined ? false : opts.allowUnlimitedContractSize
   }
 
-  runBlockchain (blockchain: any, cb: any): void {
+  runBlockchain(blockchain: any, cb: any): void {
     runBlockchain.bind(this)(blockchain, cb)
   }
 
-  runBlock (opts: RunBlockOpts, cb: RunBlockCb): void {
+  runBlock(opts: RunBlockOpts, cb: RunBlockCb): void {
     runBlock.bind(this)(opts, cb)
   }
 
-  runTx (opts: RunTxOpts, cb: RunTxCb): void {
+  runTx(opts: RunTxOpts, cb: RunTxCb): void {
     runTx.bind(this)(opts, cb)
   }
 
-  runCall (opts: RunCallOpts, cb: RunCallCb): void {
+  runCall(opts: RunCallOpts, cb: RunCallCb): void {
     runCall.bind(this)(opts, cb)
   }
 
-  runCode (opts: RunCodeOpts, cb: RunCodeCb): void {
+  runCode(opts: RunCodeOpts, cb: RunCodeCb): void {
     runCode.bind(this)(opts, cb)
   }
 
-  copy (): VM {
-    return new VM({ stateManager: this.stateManager.copy(), blockchain: this.blockchain })
+  copy(): VM {
+    return new VM({
+      stateManager: this.stateManager.copy(),
+      blockchain: this.blockchain,
+    })
   }
 
-  async _emit (topic: string, data: any) {
+  async _emit(topic: string, data: any) {
     return promisify(this.emit.bind(this))(topic, data)
   }
 }

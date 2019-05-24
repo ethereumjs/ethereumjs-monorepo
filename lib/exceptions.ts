@@ -9,14 +9,14 @@ export enum ERROR {
   STATIC_STATE_CHANGE = 'static state change',
   INTERNAL_ERROR = 'internal error',
   CREATE_COLLISION = 'create collision',
-  STOP = 'stop'
+  STOP = 'stop',
 }
 
 export class VmError {
   error: ERROR
   errorType: string
 
-  constructor (error: ERROR) {
+  constructor(error: ERROR) {
     this.error = error
     this.errorType = 'VmError'
   }

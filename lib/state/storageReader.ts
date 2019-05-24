@@ -4,12 +4,12 @@ export default class StorageReader {
   _stateManager: StateManager
   _storageCache: Map<string, any>
 
-  constructor (stateManager: StateManager) {
+  constructor(stateManager: StateManager) {
     this._stateManager = stateManager
     this._storageCache = new Map()
   }
 
-  getContractStorage (address: Buffer, key: Buffer, cb: any): void {
+  getContractStorage(address: Buffer, key: Buffer, cb: any): void {
     const addressHex = address.toString('hex')
     const keyHex = key.toString('hex')
 
@@ -35,7 +35,7 @@ export default class StorageReader {
 
       cb(null, {
         original,
-        current
+        current,
       })
     })
   }

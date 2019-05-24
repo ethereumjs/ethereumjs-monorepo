@@ -3,14 +3,15 @@ import { PrecompileInput, PrecompileResult, OOGResult } from './types'
 const assert = require('assert')
 const bn128 = require('rustbn.js')
 
-export default function (opts: PrecompileInput): PrecompileResult {
+export default function(opts: PrecompileInput): PrecompileResult {
   assert(opts.data)
 
   const inputData = opts.data
   // no need to care about non-divisible-by-192, because bn128.pairing will properly fail in that case
   const inputDataSize = Math.floor(inputData.length / 192)
   const gasUsed = new BN(
-    opts._common.param('gasPrices', 'ecPairing') + (inputDataSize * opts._common.param('gasPrices', 'ecPairingWord'))
+    opts._common.param('gasPrices', 'ecPairing') +
+      inputDataSize * opts._common.param('gasPrices', 'ecPairingWord'),
   )
 
   if (opts.gasLimit.lt(gasUsed)) {
@@ -27,6 +28,6 @@ export default function (opts: PrecompileInput): PrecompileResult {
   return {
     gasUsed,
     return: returnData,
-    exception: 1
+    exception: 1,
   }
 }

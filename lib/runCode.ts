@@ -34,7 +34,7 @@ export interface RunCodeOpts {
   value?: Buffer
   depth?: number
   isStatic?: boolean
-  selfdestruct?: {[k: string]: boolean}
+  selfdestruct?: { [k: string]: boolean }
   address?: Buffer
   pc?: number
 }
@@ -60,21 +60,21 @@ export interface RunCodeCb {
  * @param {runCode~callback} cb callback
  */
 
- /**
-  * Callback for `runCode` method
-  * @callback runCode~callback
-  * @param {Error} error an error that may have happened or `null`
-  * @param {Object} results
-  * @param {BN} results.gas the amount of gas left
-  * @param {BN} results.gasUsed the amount of gas as a `bignum` the code used to run
-  * @param {BN} results.gasRefund a `bignum` containing the amount of gas to refund from deleting storage values
-  * @param {Object} results.selfdestruct an `Object` with keys for accounts that have selfdestructed and values for balance transfer recipient accounts
-  * @param {Array} results.logs an `Array` of logs that the contract emitted
-  * @param {Number} results.exception `0` if the contract encountered an exception, `1` otherwise
-  * @param {String} results.exceptionError a `String` describing the exception if there was one
-  * @param {Buffer} results.return a `Buffer` containing the value that was returned by the contract
+/**
+ * Callback for `runCode` method
+ * @callback runCode~callback
+ * @param {Error} error an error that may have happened or `null`
+ * @param {Object} results
+ * @param {BN} results.gas the amount of gas left
+ * @param {BN} results.gasUsed the amount of gas as a `bignum` the code used to run
+ * @param {BN} results.gasRefund a `bignum` containing the amount of gas to refund from deleting storage values
+ * @param {Object} results.selfdestruct an `Object` with keys for accounts that have selfdestructed and values for balance transfer recipient accounts
+ * @param {Array} results.logs an `Array` of logs that the contract emitted
+ * @param {Number} results.exception `0` if the contract encountered an exception, `1` otherwise
+ * @param {String} results.exceptionError a `String` describing the exception if there was one
+ * @param {Buffer} results.return a `Buffer` containing the value that was returned by the contract
  */
-export default function runCode (this: VM, opts: RunCodeOpts, cb: RunCodeCb): void {
+export default function runCode(this: VM, opts: RunCodeOpts, cb: RunCodeCb): void {
   if (!opts.block) {
     opts.block = new Block()
   }
@@ -85,7 +85,10 @@ export default function runCode (this: VM, opts: RunCodeOpts, cb: RunCodeCb): vo
 
   // Backwards compatibility
   if (!opts.txContext) {
-    opts.txContext = new TxContext(opts.gasPrice || Buffer.alloc(0), opts.origin || opts.caller || zeros(32))
+    opts.txContext = new TxContext(
+      opts.gasPrice || Buffer.alloc(0),
+      opts.origin || opts.caller || zeros(32),
+    )
   }
   if (!opts.message) {
     opts.message = new Message({
@@ -97,7 +100,7 @@ export default function runCode (this: VM, opts: RunCodeOpts, cb: RunCodeCb): vo
       value: opts.value,
       depth: opts.depth || 0,
       selfdestruct: opts.selfdestruct || {},
-      isStatic: opts.isStatic || false
+      isStatic: opts.isStatic || false,
     })
   }
 
@@ -106,7 +109,8 @@ export default function runCode (this: VM, opts: RunCodeOpts, cb: RunCodeCb): vo
     interpreter = new Interpreter(this, opts.txContext, opts.block, opts.storageReader)
   }
 
-  interpreter.runLoop(opts.message, { pc: opts.pc })
-    .then((res) => cb(null, res))
-    .catch((err) => cb(err, null))
+  interpreter
+    .runLoop(opts.message, { pc: opts.pc })
+    .then(res => cb(null, res))
+    .catch(err => cb(err, null))
 }

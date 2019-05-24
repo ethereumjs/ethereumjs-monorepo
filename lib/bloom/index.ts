@@ -11,7 +11,7 @@ export default class Bloom {
    * @constructor
    * @param {Buffer} bitvector
    */
-  constructor (bitvector?: Buffer) {
+  constructor(bitvector?: Buffer) {
     if (!bitvector) {
       this.bitvector = zeros(BYTE_SIZE)
     } else {
@@ -25,7 +25,7 @@ export default class Bloom {
    * @method add
    * @param {Buffer} e the element to add
    */
-  add (e: Buffer) {
+  add(e: Buffer) {
     assert(Buffer.isBuffer(e), 'Element should be buffer')
     e = keccak256(e)
     const mask = 2047 // binary 11111111111
@@ -45,7 +45,7 @@ export default class Bloom {
    * @param {Buffer} e the element to check
    * @returns {boolean} Returns {@code true} if the element is in the bloom
    */
-  check (e: Buffer): boolean {
+  check(e: Buffer): boolean {
     assert(Buffer.isBuffer(e), 'Element should be Buffer')
     e = keccak256(e)
     const mask = 2047 // binary 11111111111
@@ -68,7 +68,7 @@ export default class Bloom {
    * @param {Buffer[]} topics
    * @returns {boolean} Returns {@code true} if every topic is in the bloom
    */
-  multiCheck (topics: Buffer[]): boolean {
+  multiCheck(topics: Buffer[]): boolean {
     return topics.every((t: Buffer) => this.check(t))
   }
 
@@ -77,7 +77,7 @@ export default class Bloom {
    * @method or
    * @param {Bloom} bloom
    */
-  or (bloom: Bloom) {
+  or(bloom: Bloom) {
     if (bloom) {
       for (let i = 0; i <= BYTE_SIZE; i++) {
         this.bitvector[i] = this.bitvector[i] | bloom.bitvector[i]

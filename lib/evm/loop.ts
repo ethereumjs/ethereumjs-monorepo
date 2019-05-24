@@ -43,7 +43,7 @@ export default class Loop {
   _runState: RunState
   _eei: EEI
 
-  constructor (vm: any, eei: EEI) {
+  constructor(vm: any, eei: EEI) {
     this._vm = vm // TODO: remove when not needed
     this._state = new PStateManager(vm.stateManager)
     this._eei = eei
@@ -60,16 +60,16 @@ export default class Loop {
       _common: this._vm._common,
       stateManager: this._state._wrapped,
       storageReader: new StorageReader(this._state._wrapped),
-      eei: this._eei
+      eei: this._eei,
     }
   }
 
-  async run (code: Buffer, opts: RunOpts = {}): Promise<LoopResult> {
+  async run(code: Buffer, opts: RunOpts = {}): Promise<LoopResult> {
     Object.assign(this._runState, {
       code: code,
       programCounter: opts.pc || this._runState.programCounter,
       validJumps: this._getValidJumpDests(code),
-      storageReader: opts.storageReader || this._runState.storageReader
+      storageReader: opts.storageReader || this._runState.storageReader,
     })
 
     // Check that the programCounter is in range
@@ -99,12 +99,12 @@ export default class Loop {
 
     return {
       runState: this._runState,
-      exception: err ? 0 as IsException : 1 as IsException,
-      exceptionError: err
+      exception: err ? (0 as IsException) : (1 as IsException),
+      exceptionError: err,
     }
   }
 
-  async runStep (): Promise<void> {
+  async runStep(): Promise<void> {
     const opInfo = lookupOpInfo(this._runState.opCode)
     // Check for invalid opcode
     if (opInfo.name === 'INVALID') {
@@ -125,11 +125,11 @@ export default class Loop {
     }
   }
 
-  getOpHandler (opInfo: OpInfo): OpHandler {
+  getOpHandler(opInfo: OpInfo): OpHandler {
     return opHandlers[opInfo.name]
   }
 
-  async _runStepHook (): Promise<void> {
+  async _runStepHook(): Promise<void> {
     const eventObj = {
       pc: this._runState.programCounter,
       gasLeft: this._eei.getGasLeft(),
@@ -140,7 +140,7 @@ export default class Loop {
       account: this._eei._env.contract,
       stateManager: this._runState.stateManager,
       memory: this._runState.memory._store, // Return underlying array for backwards-compatibility
-      memoryWordCount: this._runState.memoryWordCount
+      memoryWordCount: this._runState.memoryWordCount,
     }
     /**
      * The `step` event for trace output
@@ -162,7 +162,7 @@ export default class Loop {
   }
 
   // Returns all valid jump destinations.
-  _getValidJumpDests (code: Buffer): number[] {
+  _getValidJumpDests(code: Buffer): number[] {
     const jumps = []
 
     for (let i = 0; i < code.length; i++) {

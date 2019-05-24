@@ -20,17 +20,11 @@ const precompiles: Precompiles = {
   '0000000000000000000000000000000000000005': p5,
   '0000000000000000000000000000000000000006': p6,
   '0000000000000000000000000000000000000007': p7,
-  '0000000000000000000000000000000000000008': p8
+  '0000000000000000000000000000000000000008': p8,
 }
 
-function getPrecompile (address: string): PrecompileFunc {
+function getPrecompile(address: string): PrecompileFunc {
   return precompiles[address]
 }
 
-export {
-  precompiles,
-  getPrecompile,
-  PrecompileFunc,
-  PrecompileInput,
-  PrecompileResult
-}
+export { precompiles, getPrecompile, PrecompileFunc, PrecompileInput, PrecompileResult }

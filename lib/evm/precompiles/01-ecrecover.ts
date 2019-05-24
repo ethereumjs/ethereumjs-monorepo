@@ -3,7 +3,7 @@ import { setLengthLeft, setLengthRight, ecrecover, publicToAddress } from 'ether
 import { PrecompileInput, PrecompileResult, OOGResult } from './types'
 const assert = require('assert')
 
-export default function (opts: PrecompileInput): PrecompileResult {
+export default function(opts: PrecompileInput): PrecompileResult {
   assert(opts.data)
 
   const gasUsed = new BN(opts._common.param('gasPrices', 'ecRecover'))
@@ -26,13 +26,13 @@ export default function (opts: PrecompileInput): PrecompileResult {
     return {
       gasUsed,
       return: Buffer.alloc(0),
-      exception: 1
+      exception: 1,
     }
   }
 
   return {
     gasUsed,
     return: setLengthLeft(publicToAddress(publicKey), 32),
-    exception: 1
+    exception: 1,
   }
 }
