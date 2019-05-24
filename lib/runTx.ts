@@ -164,7 +164,7 @@ async function _runTx (this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   await state.putAccount(toBuffer(tx.from), fromAccount)
 
   // Update miner's balance
-  let minerAccount = await state.getAccount(block.header.coinbase)
+  const minerAccount = await state.getAccount(block.header.coinbase)
   // add the amount spent on gas to the miner's account
   minerAccount.balance = toBuffer(new BN(minerAccount.balance).add(results.amountSpent))
   if (!(new BN(minerAccount.balance).isZero())) {
@@ -176,7 +176,7 @@ async function _runTx (this: VM, opts: RunTxOpts): Promise<RunTxResult> {
    */
   if (results.vm.selfdestruct) {
     const keys = Object.keys(results.vm.selfdestruct)
-    for (let k of keys) {
+    for (const k of keys) {
       await state.putAccount(Buffer.from(k, 'hex'), new Account())
     }
   }

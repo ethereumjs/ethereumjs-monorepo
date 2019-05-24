@@ -137,7 +137,6 @@ async function _runBlock (this: VM, opts: RunBlockOpts): Promise<RunBlockResult>
  * @param {Boolean} [skipBlockValidation=false]
  */
 async function applyBlock (this: VM, block: any, skipBlockValidation = false) {
-  const state = new PStateManager(this.stateManager)
   // Validate block
   if (!skipBlockValidation) {
     if (new BN(block.header.gasLimit).gte(new BN('8000000000000000', 16))) {
@@ -178,7 +177,7 @@ async function applyTransactions (this: VM, block: any) {
     }
 
     // Run the tx through the VM
-    let txRes = await promisify(this.runTx).bind(this)({ tx: tx, block: block })
+    const txRes = await promisify(this.runTx).bind(this)({ tx: tx, block: block })
     txResults.push(txRes)
 
     // Add to total block gas usage
@@ -210,7 +209,7 @@ async function assignBlockRewards (this: VM, block: any): Promise<void> {
   const minerReward = new BN(this._common.param('pow', 'minerReward'))
   const ommers = block.uncleHeaders
   // Reward ommers
-  for (let ommer of ommers) {
+  for (const ommer of ommers) {
     const reward = calculateOmmerReward(new BN(ommer.number), new BN(block.header.number), minerReward)
     await rewardAccount(state, ommer.coinbase, reward)
   }

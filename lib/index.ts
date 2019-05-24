@@ -46,9 +46,9 @@ export default class VM extends AsyncEventEmitter {
 
     this.opts = opts
 
-    let chain = opts.chain ? opts.chain : 'mainnet'
-    let hardfork = opts.hardfork ? opts.hardfork : 'byzantium'
-    let supportedHardforks = [
+    const chain = opts.chain ? opts.chain : 'mainnet'
+    const hardfork = opts.hardfork ? opts.hardfork : 'byzantium'
+    const supportedHardforks = [
       'byzantium',
       'constantinople',
       'petersburg'
@@ -58,9 +58,9 @@ export default class VM extends AsyncEventEmitter {
     if (opts.stateManager) {
       this.stateManager = opts.stateManager
     } else {
-      var trie = opts.state || new Trie()
+      const trie = opts.state || new Trie()
       if (opts.activatePrecompiles) {
-        for (var i = 1; i <= 8; i++) {
+        for (let i = 1; i <= 8; i++) {
           trie.put(new BN(i).toArrayLike(Buffer, 'be', 20), new Account().serialize())
         }
       }

@@ -53,7 +53,7 @@ export default function runBlockchain (this: VM, blockchain: any, cb: any) {
       self.runBlock({
         block: block,
         root: parentState
-      }, function (err, results) {
+      }, function (err) {
         if (err) {
           // remove invalid block
           blockchain.delBlock(block.header.hash(), function () {
