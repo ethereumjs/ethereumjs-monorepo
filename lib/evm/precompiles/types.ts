@@ -7,16 +7,16 @@ export interface PrecompileFunc {
 }
 
 export interface PrecompileInput {
-  data: Buffer;
-  gasLimit: BN;
-  _common: Common;
+  data: Buffer
+  gasLimit: BN
+  _common: Common
 }
 
 export interface PrecompileResult {
-  gasUsed: BN;
-  return: Buffer;
-  exception: 0 | 1;
-  exceptionError?: ERROR;
+  gasUsed: BN
+  return: Buffer
+  exception: 0 | 1
+  exceptionError?: ERROR
 }
 
 export function OOGResult(gasLimit: BN): PrecompileResult {
@@ -24,6 +24,6 @@ export function OOGResult(gasLimit: BN): PrecompileResult {
     return: Buffer.alloc(0),
     gasUsed: gasLimit,
     exception: 0, // 0 means VM fail (in this case because of OOG)
-    exceptionError: ERROR.OUT_OF_GAS
+    exceptionError: ERROR.OUT_OF_GAS,
   }
 }

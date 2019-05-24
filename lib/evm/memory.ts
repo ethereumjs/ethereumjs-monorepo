@@ -7,7 +7,7 @@ import * as assert from 'assert'
 export default class Memory {
   _store: number[]
 
-  constructor () {
+  constructor() {
     this._store = []
   }
 
@@ -17,7 +17,7 @@ export default class Memory {
    * @param {Number} offset
    * @param {Number} size
    */
-  extend (offset: number, size: number) {
+  extend(offset: number, size: number) {
     if (size === 0) {
       return
     }
@@ -35,7 +35,7 @@ export default class Memory {
    * @param {Number} size - How many bytes to write
    * @param {Buffer} value - Value
    */
-  write (offset: number, size: number, value: Buffer) {
+  write(offset: number, size: number, value: Buffer) {
     if (size === 0) {
       return
     }
@@ -56,7 +56,7 @@ export default class Memory {
    * @param {Number} size - How many bytes to read
    * @returns {Buffer}
    */
-  read (offset: number, size: number): Buffer {
+  read(offset: number, size: number): Buffer {
     const loaded = this._store.slice(offset, offset + size)
     // Fill the remaining length with zeros
     for (let i = loaded.length; i < size; i++) {

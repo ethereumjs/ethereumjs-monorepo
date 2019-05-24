@@ -3,7 +3,7 @@ import { setLengthRight } from 'ethereumjs-util'
 import { PrecompileInput, PrecompileResult, OOGResult } from './types'
 const assert = require('assert')
 
-function multComplexity (x: BN): BN {
+function multComplexity(x: BN): BN {
   var fac1
   var fac2
   if (x.lten(64)) {
@@ -21,7 +21,7 @@ function multComplexity (x: BN): BN {
   }
 }
 
-function getAdjustedExponentLength (data: Buffer): BN {
+function getAdjustedExponentLength(data: Buffer): BN {
   var expBytesStart
   try {
     var baseLen = new BN(data.slice(0, 32)).toNumber()
@@ -56,7 +56,7 @@ function getAdjustedExponentLength (data: Buffer): BN {
   return adjustedExpLen
 }
 
-function expmod (B: BN, E: BN, M: BN): BN {
+function expmod(B: BN, E: BN, M: BN): BN {
   if (E.isZero()) return new BN(1).mod(M)
   // Red asserts M > 1
   if (M.lten(1)) return new BN(0)
@@ -66,7 +66,7 @@ function expmod (B: BN, E: BN, M: BN): BN {
   return res.fromRed()
 }
 
-export default function (opts: PrecompileInput): PrecompileResult {
+export default function(opts: PrecompileInput): PrecompileResult {
   assert(opts.data)
 
   const data = opts.data
@@ -95,7 +95,7 @@ export default function (opts: PrecompileInput): PrecompileResult {
     return {
       gasUsed,
       return: new BN(0).toArrayLike(Buffer, 'be', 1),
-      exception: 1
+      exception: 1,
     }
   }
 
@@ -103,7 +103,7 @@ export default function (opts: PrecompileInput): PrecompileResult {
     return {
       gasUsed,
       return: Buffer.alloc(0),
-      exception: 1
+      exception: 1,
     }
   }
 
@@ -139,6 +139,6 @@ export default function (opts: PrecompileInput): PrecompileResult {
   return {
     gasUsed,
     return: R.toArrayLike(Buffer, 'be', mLen.toNumber()),
-    exception: 1
+    exception: 1,
   }
 }

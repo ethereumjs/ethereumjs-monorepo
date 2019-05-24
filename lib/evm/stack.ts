@@ -8,15 +8,15 @@ const { ERROR, VmError } = require('../exceptions')
 export default class Stack {
   _store: BN[]
 
-  constructor () {
+  constructor() {
     this._store = []
   }
 
-  get length () {
+  get length() {
     return this._store.length
   }
 
-  push (value: BN) {
+  push(value: BN) {
     if (!BN.isBN(value)) {
       throw new VmError(ERROR.INTERNAL_ERROR)
     }
@@ -32,7 +32,7 @@ export default class Stack {
     this._store.push(value)
   }
 
-  pop (): BN {
+  pop(): BN {
     if (this._store.length < 1) {
       throw new VmError(ERROR.STACK_UNDERFLOW)
     }
@@ -47,7 +47,7 @@ export default class Stack {
    * @param {Number} num - Number of items to pop
    * @returns {Array}
    */
-  popN (num: number = 1): BN[] {
+  popN(num: number = 1): BN[] {
     if (this._store.length < num) {
       throw new VmError(ERROR.STACK_UNDERFLOW)
     }
@@ -63,7 +63,7 @@ export default class Stack {
    * Swap top of stack with an item in the stack.
    * @param {Number} position - Index of item from top of the stack (0-indexed)
    */
-  swap (position: number) {
+  swap(position: number) {
     if (this._store.length <= position) {
       throw new VmError(ERROR.STACK_UNDERFLOW)
     }
@@ -80,7 +80,7 @@ export default class Stack {
    * Pushes a copy of an item in the stack.
    * @param {Number} position - Index of item to be copied (1-indexed)
    */
-  dup (position: number) {
+  dup(position: number) {
     if (this._store.length < position) {
       throw new VmError(ERROR.STACK_UNDERFLOW)
     }

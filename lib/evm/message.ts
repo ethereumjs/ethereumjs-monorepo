@@ -16,7 +16,7 @@ export default class Message {
   selfdestruct: any
   delegatecall: boolean
 
-  constructor (opts: any) {
+  constructor(opts: any) {
     this.to = opts.to
     this.value = opts.value ? new BN(opts.value) : new BN(0)
     this.caller = opts.caller
@@ -32,7 +32,7 @@ export default class Message {
     this.delegatecall = opts.delegatecall || false
   }
 
-  get codeAddress (): Buffer {
+  get codeAddress(): Buffer {
     return this._codeAddress ? this._codeAddress : this.to
   }
 }

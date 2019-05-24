@@ -3,7 +3,7 @@ import { PrecompileInput, PrecompileResult, OOGResult } from './types'
 const assert = require('assert')
 const bn128 = require('rustbn.js')
 
-export default function (opts: PrecompileInput): PrecompileResult {
+export default function(opts: PrecompileInput): PrecompileResult {
   assert(opts.data)
 
   let inputData = opts.data
@@ -23,6 +23,6 @@ export default function (opts: PrecompileInput): PrecompileResult {
   return {
     gasUsed,
     return: returnData,
-    exception: 1
+    exception: 1,
   }
 }

@@ -10,7 +10,7 @@ import Account from 'ethereumjs-account'
 import Cache from './cache'
 
 export interface StorageDump {
-  [key:string]: string
+  [key: string]: string
 }
 
 /**
@@ -32,7 +32,7 @@ export default class StateManager {
    * @param {Common} [opts.common] - [`Common`](https://github.com/ethereumjs/ethereumjs-common) parameters of the chain
    * @param {Trie} [opts.trie] - a [`merkle-patricia-tree`](https://github.com/ethereumjs/merkle-patricia-tree) instance
    */
-  constructor (opts: any = {}) {
+  constructor(opts: any = {}) {
     let common = opts.common
     if (!common) {
       common = new Common('mainnet', 'byzantium')
@@ -54,7 +54,7 @@ export default class StateManager {
    * @memberof DefaultStateManager
    * @method copy
    */
-  copy (): StateManager {
+  copy(): StateManager {
     return new StateManager({ trie: this._trie.copy() })
   }
 
@@ -74,7 +74,7 @@ export default class StateManager {
    * @param {Buffer} address Address of the `account` to get
    * @param {getAccount~callback} cb
    */
-  getAccount (address: Buffer, cb: any): void {
+  getAccount(address: Buffer, cb: any): void {
     this._cache.getOrLoad(address, cb)
   }
 
@@ -87,7 +87,7 @@ export default class StateManager {
    * @param {Account} account The [`ethereumjs-account`](https://github.com/ethereumjs/ethereumjs-account) to store
    * @param {Function} cb Callback function
    */
-  putAccount (address: Buffer, account: Account, cb: any): void {
+  putAccount(address: Buffer, account: Account, cb: any): void {
     // TODO: dont save newly created accounts that have no balance
     // if (toAccount.balance.toString('hex') === '00') {
     // if they have money or a non-zero nonce or code, then write to tree
@@ -106,13 +106,13 @@ export default class StateManager {
    * @param {Buffer} value - The value of the `code`
    * @param {Function} cb Callback function
    */
-  putContractCode (address: Buffer, value: Buffer, cb: any): void {
+  putContractCode(address: Buffer, value: Buffer, cb: any): void {
     this.getAccount(address, (err: Error, account: Account) => {
       if (err) {
         return cb(err)
       }
       // TODO: setCode use trie.setRaw which creates a storage leak
-      account.setCode(this._trie, value, (err) => {
+      account.setCode(this._trie, value, err => {
         if (err) {
           return cb(err)
         }
@@ -136,7 +136,7 @@ export default class StateManager {
    * @param {Buffer} address Address to get the `code` for
    * @param {getContractCode~callback} cb
    */
-  getContractCode (address: Buffer, cb: any): void {
+  getContractCode(address: Buffer, cb: any): void {
     this.getAccount(address, (err: Error, account: Account) => {
       if (err) {
         return cb(err)
@@ -154,7 +154,7 @@ export default class StateManager {
    * @param {Buffer} address
    * @param {Function} cb Callback function
    */
-  _lookupStorageTrie (address: Buffer, cb: any): void {
+  _lookupStorageTrie(address: Buffer, cb: any): void {
     // from state trie
     this.getAccount(address, (err: Error, account: Account) => {
       if (err) {
@@ -176,7 +176,7 @@ export default class StateManager {
    * @param {Buffer} address
    * @param {Function} cb Callback function
    */
-  _getStorageTrie (address: Buffer, cb: any): void {
+  _getStorageTrie(address: Buffer, cb: any): void {
     const storageTrie = this._storageTries[address.toString('hex')]
     // from storage cache
     if (storageTrie) {
@@ -203,7 +203,7 @@ export default class StateManager {
    * @param {Buffer} key Key in the account's storage to get the value for
    * @param {getContractCode~callback} cb
    */
-  getContractStorage (address: Buffer, key: Buffer, cb: any): void {
+  getContractStorage(address: Buffer, key: Buffer, cb: any): void {
     this._getStorageTrie(address, (err: Error, trie: any) => {
       if (err) {
         return cb(err)
@@ -226,7 +226,7 @@ export default class StateManager {
    * @param {Buffer} address Address of the account whose storage is to be modified
    * @param {Function} modifyTrie function to modify the storage trie of the account
    */
-  _modifyContractStorage (address: Buffer, modifyTrie: any, cb: any): void {
+  _modifyContractStorage(address: Buffer, modifyTrie: any, cb: any): void {
     this._getStorageTrie(address, (err: Error, storageTrie: any) => {
       if (err) {
         return cb(err)
@@ -255,17 +255,21 @@ export default class StateManager {
    * @param {Buffer} value Value to set at `key` for account corresponding to `address`
    * @param {Function} cb Callback function
    */
-  putContractStorage (address: Buffer, key: Buffer, value: Buffer, cb: any): void {
-    this._modifyContractStorage(address, (storageTrie: any, done: any) => {
-      if (value && value.length) {
-        // format input
-        const encodedValue = encode(value)
-        storageTrie.put(key, encodedValue, done)
-      } else {
-        // deleting a value
-        storageTrie.del(key, done)
-      }
-    }, cb)
+  putContractStorage(address: Buffer, key: Buffer, value: Buffer, cb: any): void {
+    this._modifyContractStorage(
+      address,
+      (storageTrie: any, done: any) => {
+        if (value && value.length) {
+          // format input
+          const encodedValue = encode(value)
+          storageTrie.put(key, encodedValue, done)
+        } else {
+          // deleting a value
+          storageTrie.del(key, done)
+        }
+      },
+      cb,
+    )
   }
 
   /**
@@ -275,11 +279,15 @@ export default class StateManager {
    * @param {Buffer} address Address to clear the storage of
    * @param {Function} cb Callback function
    */
-  clearContractStorage (address: Buffer, cb: any) {
-    this._modifyContractStorage(address, (storageTrie: any, done: any) => {
-      storageTrie.root = storageTrie.EMPTY_TRIE_ROOT
-      done()
-    }, cb)
+  clearContractStorage(address: Buffer, cb: any) {
+    this._modifyContractStorage(
+      address,
+      (storageTrie: any, done: any) => {
+        storageTrie.root = storageTrie.EMPTY_TRIE_ROOT
+        done()
+      },
+      cb,
+    )
   }
 
   /**
@@ -290,7 +298,7 @@ export default class StateManager {
    * @method checkpoint
    * @param {Function} cb Callback function
    */
-  checkpoint (cb: any): void {
+  checkpoint(cb: any): void {
     this._trie.checkpoint()
     this._cache.checkpoint()
     this._touchedStack.push(new Set(Array.from(this._touched)))
@@ -305,7 +313,7 @@ export default class StateManager {
    * @method commit
    * @param {Function} cb Callback function
    */
-  commit (cb: any): void {
+  commit(cb: any): void {
     // setup trie checkpointing
     this._trie.commit(() => {
       // setup cache checkpointing
@@ -325,7 +333,7 @@ export default class StateManager {
    * @method revert
    * @param {Function} cb Callback function
    */
-  revert (cb: any): void {
+  revert(cb: any): void {
     // setup trie checkpointing
     this._trie.revert()
     // setup cache checkpointing
@@ -358,8 +366,10 @@ export default class StateManager {
    * @method getStateRoot
    * @param {getStateRoot~callback} cb
    */
-  getStateRoot (cb: any): void {
-    if (this._checkpointCount !== 0) { return cb(new Error('Cannot get state root with uncommitted checkpoints')) }
+  getStateRoot(cb: any): void {
+    if (this._checkpointCount !== 0) {
+      return cb(new Error('Cannot get state root with uncommitted checkpoints'))
+    }
 
     this._cache.flush((err: Error) => {
       if (err) {
@@ -380,11 +390,15 @@ export default class StateManager {
    * @param {Buffer} stateRoot The state-root to reset the instance to
    * @param {Function} cb Callback function
    */
-  setStateRoot (stateRoot: Buffer, cb: any): void {
-    if (this._checkpointCount !== 0) { return cb(new Error('Cannot set state root with uncommitted checkpoints')) }
+  setStateRoot(stateRoot: Buffer, cb: any): void {
+    if (this._checkpointCount !== 0) {
+      return cb(new Error('Cannot set state root with uncommitted checkpoints'))
+    }
 
     this._cache.flush((err: Error) => {
-      if (err) { return cb(err) }
+      if (err) {
+        return cb(err)
+      }
       if (stateRoot === this._trie.EMPTY_TRIE_ROOT) {
         this._trie.root = stateRoot
         this._cache.clear()
@@ -420,7 +434,7 @@ export default class StateManager {
    * @param {Buffer} address The address of the `account` to return storage for
    * @param {dumpStorage~callback} cb
    */
-  dumpStorage (address: Buffer, cb: any): void {
+  dumpStorage(address: Buffer, cb: any): void {
     this._getStorageTrie(address, (err: Error, trie: any) => {
       if (err) {
         return cb(err)
@@ -451,7 +465,7 @@ export default class StateManager {
    * @method hasGenesisState
    * @param {hasGenesisState~callback} cb
    */
-  hasGenesisState (cb: any): void {
+  hasGenesisState(cb: any): void {
     const root = this._common.genesis().stateRoot
     this._trie.checkRoot(root, cb)
   }
@@ -464,8 +478,10 @@ export default class StateManager {
    * @method generateCanonicalGenesis
    * @param {Function} cb Callback function
    */
-  generateCanonicalGenesis (cb: any): void {
-    if (this._checkpointCount !== 0) { return cb(new Error('Cannot create genesis state with uncommitted checkpoints')) }
+  generateCanonicalGenesis(cb: any): void {
+    if (this._checkpointCount !== 0) {
+      return cb(new Error('Cannot create genesis state with uncommitted checkpoints'))
+    }
 
     this.hasGenesisState((err: Error, genesis: boolean) => {
       if (!genesis && !err) {
@@ -483,16 +499,22 @@ export default class StateManager {
    * @param {Object} initState
    * @param {Function} cb Callback function
    */
-  generateGenesis (initState: any, cb: any) {
-    if (this._checkpointCount !== 0) { return cb(new Error('Cannot create genesis state with uncommitted checkpoints')) }
+  generateGenesis(initState: any, cb: any) {
+    if (this._checkpointCount !== 0) {
+      return cb(new Error('Cannot create genesis state with uncommitted checkpoints'))
+    }
 
     const addresses = Object.keys(initState)
-    asyncLib.eachSeries(addresses, (address: string, done: any) => {
-      const account = new Account()
-      account.balance = new BN(initState[address]).toArrayLike(Buffer)
-      const addressBuffer = utils.toBuffer(address)
-      this._trie.put(addressBuffer, account.serialize(), done)
-    }, cb)
+    asyncLib.eachSeries(
+      addresses,
+      (address: string, done: any) => {
+        const account = new Account()
+        account.balance = new BN(initState[address]).toArrayLike(Buffer)
+        const addressBuffer = utils.toBuffer(address)
+        this._trie.put(addressBuffer, account.serialize(), done)
+      },
+      cb,
+    )
   }
 
   /**
@@ -510,14 +532,19 @@ export default class StateManager {
    * @param {Buffer} address Address to check
    * @param {accountIsEmpty~callback} cb
    */
-  accountIsEmpty (address: Buffer, cb: any): void {
+  accountIsEmpty(address: Buffer, cb: any): void {
     this.getAccount.bind(this)(address, (err: Error, account: Account) => {
       if (err) {
         return cb(err)
       }
 
       // should be replaced by account.isEmpty() once updated
-      cb(null, account.nonce.toString('hex') === '' && account.balance.toString('hex') === '' && account.codeHash.toString('hex') === utils.KECCAK256_NULL_S)
+      cb(
+        null,
+        account.nonce.toString('hex') === '' &&
+          account.balance.toString('hex') === '' &&
+          account.codeHash.toString('hex') === utils.KECCAK256_NULL_S,
+      )
     })
   }
 
@@ -528,25 +555,28 @@ export default class StateManager {
    * @method cleanupTouchedAccounts
    * @param {Function} cb Callback function
    */
-  cleanupTouchedAccounts (cb: any): void {
+  cleanupTouchedAccounts(cb: any): void {
     const touchedArray = Array.from(this._touched)
-    asyncLib.forEach(touchedArray, (addressHex: string, next: any) => {
-      const address = Buffer.from(addressHex, 'hex')
-      this.accountIsEmpty(address, (err: Error, empty: boolean) => {
-        if (err) {
-          next(err)
-          return
-        }
+    asyncLib.forEach(
+      touchedArray,
+      (addressHex: string, next: any) => {
+        const address = Buffer.from(addressHex, 'hex')
+        this.accountIsEmpty(address, (err: Error, empty: boolean) => {
+          if (err) {
+            next(err)
+            return
+          }
 
-        if (empty) {
-          this._cache.del(address)
-        }
-        next(null)
-      })
-    },
-    () => {
-      this._touched.clear()
-      cb()
-    })
+          if (empty) {
+            this._cache.del(address)
+          }
+          next(null)
+        })
+      },
+      () => {
+        this._touched.clear()
+        cb()
+      },
+    )
   }
 }

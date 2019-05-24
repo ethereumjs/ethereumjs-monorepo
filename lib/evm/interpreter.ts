@@ -1,5 +1,12 @@
 import BN = require('bn.js')
-import { toBuffer, generateAddress, generateAddress2, zeros, KECCAK256_NULL, MAX_INTEGER } from 'ethereumjs-util'
+import {
+  toBuffer,
+  generateAddress,
+  generateAddress2,
+  zeros,
+  KECCAK256_NULL,
+  MAX_INTEGER,
+} from 'ethereumjs-util'
 import Account from 'ethereumjs-account'
 import { VmError, ERROR } from '../exceptions'
 import { StorageReader } from '../state'
@@ -29,7 +36,7 @@ export interface ExecResult {
   logs?: any[]
   returnValue?: Buffer
   gasRefund?: BN
-  selfdestruct?: {[k: string]: Buffer}
+  selfdestruct?: { [k: string]: Buffer }
 }
 
 export default class Interpreter {
@@ -39,7 +46,7 @@ export default class Interpreter {
   _tx: TxContext
   _block: any
 
-  constructor (vm: any, txContext: TxContext, block: any, storageReader: StorageReader) {
+  constructor(vm: any, txContext: TxContext, block: any, storageReader: StorageReader) {
     this._vm = vm
     this._state = new PStateManager(this._vm.stateManager)
     this._storageReader = storageReader || new StorageReader(this._state._wrapped)
@@ -47,7 +54,7 @@ export default class Interpreter {
     this._block = block
   }
 
-  async executeMessage (message: Message): Promise<InterpreterResult> {
+  async executeMessage(message: Message): Promise<InterpreterResult> {
     await this._state.checkpoint()
 
     let result
@@ -66,7 +73,7 @@ export default class Interpreter {
         // because the bug in both Geth and Parity led to deleting RIPEMD precompiled in this case
         // see https://github.com/ethereum/go-ethereum/pull/3341/files#diff-2433aa143ee4772026454b8abd76b9dd
         // We mark the account as touched here, so that is can be removed among other touched empty accounts (after tx finalization)
-        if (err as ERROR === ERROR.OUT_OF_GAS || (err as VmError).error === ERROR.OUT_OF_GAS) {
+        if ((err as ERROR) === ERROR.OUT_OF_GAS || (err as VmError).error === ERROR.OUT_OF_GAS) {
           await this._touchAccount(message.to)
         }
       }
@@ -77,7 +84,7 @@ export default class Interpreter {
     return result
   }
 
-  async _executeCall (message: Message): Promise<InterpreterResult> {
+  async _executeCall(message: Message): Promise<InterpreterResult> {
     const account = await this._state.getAccount(message.caller)
     // Reduce tx value from sender
     if (!message.delegatecall) {
@@ -98,8 +105,8 @@ export default class Interpreter {
         vm: {
           exception: 1,
           gasUsed: new BN(0),
-          return: Buffer.alloc(0)
-        }
+          return: Buffer.alloc(0),
+        },
       }
     }
 
@@ -112,11 +119,11 @@ export default class Interpreter {
 
     return {
       gasUsed: result.gasUsed,
-      vm: result
+      vm: result,
     }
   }
 
-  async _executeCreate (message: Message): Promise<InterpreterResult> {
+  async _executeCreate(message: Message): Promise<InterpreterResult> {
     const account = await this._state.getAccount(message.caller)
     // Reduce tx value from sender
     await this._reduceSenderBalance(account, message)
@@ -126,7 +133,10 @@ export default class Interpreter {
     message.to = await this._generateAddress(message)
     let toAccount = await this._state.getAccount(message.to)
     // Check for collision
-    if ((toAccount.nonce && new BN(toAccount.nonce).gtn(0)) || toAccount.codeHash.compare(KECCAK256_NULL) !== 0) {
+    if (
+      (toAccount.nonce && new BN(toAccount.nonce).gtn(0)) ||
+      toAccount.codeHash.compare(KECCAK256_NULL) !== 0
+    ) {
       return {
         gasUsed: message.gasLimit,
         createdAddress: message.to,
@@ -134,15 +144,15 @@ export default class Interpreter {
           return: Buffer.alloc(0),
           exception: 0,
           exceptionError: ERROR.CREATE_COLLISION,
-          gasUsed: message.gasLimit
-        }
+          gasUsed: message.gasLimit,
+        },
       }
     }
 
     await this._state.clearContractStorage(message.to)
     await this._vm._emit('newContract', {
       address: message.to,
-      code: message.code
+      code: message.code,
     })
     toAccount = await this._state.getAccount(message.to)
     toAccount.nonce = new BN(toAccount.nonce).addn(1).toArrayLike(Buffer)
@@ -157,8 +167,8 @@ export default class Interpreter {
         vm: {
           exception: 1,
           gasUsed: new BN(0),
-          return: Buffer.alloc(0)
-        }
+          return: Buffer.alloc(0),
+        },
       }
     }
 
@@ -167,12 +177,17 @@ export default class Interpreter {
     // fee for size of the return value
     let totalGas = result.gasUsed
     if (!result.exceptionError) {
-      const returnFee = new BN(result.return.length * this._vm._common.param('gasPrices', 'createData'))
+      const returnFee = new BN(
+        result.return.length * this._vm._common.param('gasPrices', 'createData'),
+      )
       totalGas = totalGas.add(returnFee)
     }
 
     // if not enough gas
-    if (totalGas.lte(message.gasLimit) && (this._vm.allowUnlimitedContractSize || result.return.length <= 24576)) {
+    if (
+      totalGas.lte(message.gasLimit) &&
+      (this._vm.allowUnlimitedContractSize || result.return.length <= 24576)
+    ) {
       result.gasUsed = totalGas
     } else {
       Object.assign(result, OOGResult(message.gasLimit))
@@ -186,11 +201,11 @@ export default class Interpreter {
     return {
       gasUsed: result.gasUsed,
       createdAddress: message.to,
-      vm: result
+      vm: result,
     }
   }
 
-  async runLoop (message: Message, loopOpts: RunOpts = {}): Promise<ExecResult> {
+  async runLoop(message: Message, loopOpts: RunOpts = {}): Promise<ExecResult> {
     const env = {
       blockchain: this._vm.blockchain, // Only used in BLOCKHASH
       address: message.to || zeros(32),
@@ -203,7 +218,7 @@ export default class Interpreter {
       gasPrice: this._tx.gasPrice,
       origin: this._tx.origin || message.caller || zeros(32),
       block: this._block || new Block(),
-      contract: await this._state.getAccount(message.to || zeros(32))
+      contract: await this._state.getAccount(message.to || zeros(32)),
     }
     const eei = new EEI(env, this._state, this, this._vm._common, message.gasLimit.clone())
     if (message.selfdestruct) {
@@ -225,7 +240,7 @@ export default class Interpreter {
       result = Object.assign({}, result, {
         logs: [],
         gasRefund: null,
-        selfdestruct: null
+        selfdestruct: null,
       })
     }
 
@@ -235,7 +250,7 @@ export default class Interpreter {
       exceptionError: loopRes.exceptionError,
       gas: eei._gasLeft,
       gasUsed,
-      'return': result.returnValue ? result.returnValue : Buffer.alloc(0)
+      return: result.returnValue ? result.returnValue : Buffer.alloc(0),
     })
   }
 
@@ -244,11 +259,11 @@ export default class Interpreter {
    * if no such precompile exists.
    * @param {Buffer} address
    */
-  getPrecompile (address: Buffer): PrecompileFunc {
+  getPrecompile(address: Buffer): PrecompileFunc {
     return getPrecompile(address.toString('hex'))
   }
 
-  runPrecompile (code: PrecompileFunc, data: Buffer, gasLimit: BN): PrecompileResult {
+  runPrecompile(code: PrecompileFunc, data: Buffer, gasLimit: BN): PrecompileResult {
     if (typeof code !== 'function') {
       throw new Error('Invalid precompile')
     }
@@ -256,13 +271,13 @@ export default class Interpreter {
     const opts = {
       data,
       gasLimit,
-      _common: this._vm._common
+      _common: this._vm._common,
     }
 
     return code(opts)
   }
 
-  async _loadCode (message: Message): Promise<void> {
+  async _loadCode(message: Message): Promise<void> {
     if (!message.code) {
       const precompile = this.getPrecompile(message.codeAddress)
       if (precompile) {
@@ -275,7 +290,7 @@ export default class Interpreter {
     }
   }
 
-  async _generateAddress (message: Message): Promise<Buffer> {
+  async _generateAddress(message: Message): Promise<Buffer> {
     let addr
     if (message.salt) {
       addr = generateAddress2(message.caller, message.salt, message.code as Buffer)
@@ -287,13 +302,13 @@ export default class Interpreter {
     return addr
   }
 
-  async _reduceSenderBalance (account: Account, message: Message): Promise<void> {
+  async _reduceSenderBalance(account: Account, message: Message): Promise<void> {
     const newBalance = new BN(account.balance).sub(message.value)
     account.balance = toBuffer(newBalance)
     return this._state.putAccount(toBuffer(message.caller), account)
   }
 
-  async _addToBalance (toAccount: Account, message: Message): Promise<void> {
+  async _addToBalance(toAccount: Account, message: Message): Promise<void> {
     const newBalance = new BN(toAccount.balance).add(message.value)
     if (newBalance.gt(MAX_INTEGER)) {
       throw new Error('Value overflow')
@@ -303,7 +318,7 @@ export default class Interpreter {
     return this._state.putAccount(toBuffer(message.to), toAccount)
   }
 
-  async _touchAccount (address: Buffer): Promise<void> {
+  async _touchAccount(address: Buffer): Promise<void> {
     const acc = await this._state.getAccount(address)
     return this._state.putAccount(address, acc)
   }

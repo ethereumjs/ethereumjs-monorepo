@@ -12,7 +12,7 @@ Run command
 $ browserify index.js -o bundle.js
 ```
 
-Then host this folder in a web server 
+Then host this folder in a web server
 
 ```
 $ http-server

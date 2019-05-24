@@ -7,7 +7,7 @@ export default class Cache {
   _checkpoints: any[]
   _trie: any
 
-  constructor (trie: any) {
+  constructor(trie: any) {
     this._cache = Tree()
     this._checkpoints = []
     this._trie = trie
@@ -19,7 +19,7 @@ export default class Cache {
    * @param {Account} val - Account
    * @param {bool} [fromTrie]
    */
-  put (key: Buffer, val: Account, fromTrie = false): void {
+  put(key: Buffer, val: Account, fromTrie = false): void {
     const modified = !fromTrie
     this._update(key, val, modified, false)
   }
@@ -28,7 +28,7 @@ export default class Cache {
    * Returns the queried account or an empty account.
    * @param {Buffer} key - Address of account
    */
-  get (key: Buffer): Account {
+  get(key: Buffer): Account {
     let account = this.lookup(key)
     if (!account) {
       account = new Account()
@@ -40,7 +40,7 @@ export default class Cache {
    * Returns the queried account or undefined.
    * @param {buffer} key - Address of account
    */
-  lookup (key: Buffer): Account | undefined {
+  lookup(key: Buffer): Account | undefined {
     const keyStr = key.toString('hex')
 
     const it = this._cache.find(keyStr)
@@ -55,7 +55,7 @@ export default class Cache {
    * @param {Buffer} address - Address of account
    * @param {Function} cb - Callback with params (err, account)
    */
-  _lookupAccount (address: Buffer, cb: any): void {
+  _lookupAccount(address: Buffer, cb: any): void {
     this._trie.get(address, (err: Error, raw: Buffer) => {
       if (err) return cb(err)
       var account = new Account(raw)
@@ -69,7 +69,7 @@ export default class Cache {
    * @param {Buffer} key - Address of account
    * @param {Function} cb - Callback with params (err, account)
    */
-  getOrLoad (key: Buffer, cb: any): void {
+  getOrLoad(key: Buffer, cb: any): void {
     const account = this.lookup(key)
     if (account) {
       asyncLib.nextTick(cb, null, account)
@@ -88,21 +88,25 @@ export default class Cache {
    * @param {Array} addresses - Array of addresses
    * @param {Function} cb - Callback
    */
-  warm (addresses: string[], cb: any): void {
+  warm(addresses: string[], cb: any): void {
     // shim till async supports iterators
     const accountArr: string[] = []
-    addresses.forEach((val) => {
+    addresses.forEach(val => {
       if (val) accountArr.push(val)
     })
 
-    asyncLib.eachSeries(accountArr, (addressHex: string, done: any) => {
-      var address = Buffer.from(addressHex, 'hex')
-      this._lookupAccount(address, (err: Error, account: Account) => {
-        if (err) return done(err)
-        this._update(address, account, false, false)
-        done()
-      })
-    }, cb)
+    asyncLib.eachSeries(
+      accountArr,
+      (addressHex: string, done: any) => {
+        var address = Buffer.from(addressHex, 'hex')
+        this._lookupAccount(address, (err: Error, account: Account) => {
+          if (err) return done(err)
+          this._update(address, account, false, false)
+          done()
+        })
+      },
+      cb,
+    )
   }
 
   /**
@@ -110,61 +114,65 @@ export default class Cache {
    * and removing accounts that have been deleted.
    * @param {function} cb - Callback
    */
-  flush (cb: any): void {
+  flush(cb: any): void {
     const it = this._cache.begin
     let next = true
-    asyncLib.whilst(() => next, (done: any) => {
-      if (it.value && it.value.modified) {
-        it.value.modified = false
-        it.value.val = it.value.val.serialize()
-        this._trie.put(Buffer.from(it.key, 'hex'), it.value.val, () => {
+    asyncLib.whilst(
+      () => next,
+      (done: any) => {
+        if (it.value && it.value.modified) {
+          it.value.modified = false
+          it.value.val = it.value.val.serialize()
+          this._trie.put(Buffer.from(it.key, 'hex'), it.value.val, () => {
+            next = it.hasNext
+            it.next()
+            done()
+          })
+        } else if (it.value && it.value.deleted) {
+          it.value.modified = false
+          it.value.deleted = false
+          it.value.val = new Account().serialize()
+          this._trie.del(Buffer.from(it.key, 'hex'), () => {
+            next = it.hasNext
+            it.next()
+            done()
+          })
+        } else {
           next = it.hasNext
           it.next()
-          done()
-        })
-      } else if (it.value && it.value.deleted) {
-        it.value.modified = false
-        it.value.deleted = false
-        it.value.val = (new Account()).serialize()
-        this._trie.del(Buffer.from(it.key, 'hex'), () => {
-          next = it.hasNext
-          it.next()
-          done()
-        })
-      } else {
-        next = it.hasNext
-        it.next()
-        asyncLib.nextTick(done)
-      }
-    }, cb)
+          asyncLib.nextTick(done)
+        }
+      },
+      cb,
+    )
   }
 
   /**
    * Marks current state of cache as checkpoint, which can
    * later on be reverted or commited.
    */
-  checkpoint (): void {
+  checkpoint(): void {
     this._checkpoints.push(this._cache)
   }
 
   /**
    * Revert changes to cache last checkpoint (no effect on trie).
    */
-  revert (): void {
+  revert(): void {
     this._cache = this._checkpoints.pop()
   }
 
   /**
    * Commits to current state of cache (no effect on trie).
    */
-  commit (): void {
+  commit(): void {
     this._checkpoints.pop()
   }
 
   /**
    * Clears cache.
    */
-  clear (): void {
+  clear(): void {
     this._cache = Tree()
   }
 
@@ -172,24 +180,24 @@ export default class Cache {
    * Marks address as deleted in cache.
    * @params {Buffer} key - Address
    */
-  del (key: Buffer): void {
+  del(key: Buffer): void {
     this._update(key, new Account(), false, true)
   }
 
-  _update (key: Buffer, val: Account, modified: boolean, deleted: boolean): void {
+  _update(key: Buffer, val: Account, modified: boolean, deleted: boolean): void {
     const keyHex = key.toString('hex')
     const it = this._cache.find(keyHex)
     if (it.node) {
       this._cache = it.update({
         val: val,
         modified: modified,
-        deleted: deleted
+        deleted: deleted,
       })
     } else {
       this._cache = this._cache.insert(keyHex, {
         val: val,
         modified: modified,
-        deleted: deleted
+        deleted: deleted,
       })
     }
   }
