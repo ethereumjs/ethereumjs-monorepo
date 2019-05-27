@@ -73,6 +73,7 @@ library supported:
 - `byzantium`
 - `constantinople`
 - `petersburg` (aka `constantinopleFix`, apply together with `constantinople`)
+- `istanbul` (`DRAFT`)
 
 For hardfork-specific parameter access with the `param()` and `paramByBlock()` functions
 you can use the following `topics`:
