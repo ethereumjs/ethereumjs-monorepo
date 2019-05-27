@@ -28,7 +28,7 @@ Result of executing a message via the \[\[Interpreter\]\].
 
 **● createdAddress**: *`Buffer`*
 
-*Defined in [evm/interpreter.ts:33](https://github.com/ethereumjs/ethereumjs-vm/blob/06d36f3/lib/evm/interpreter.ts#L33)*
+*Defined in [evm/interpreter.ts:33](https://github.com/ethereumjs/ethereumjs-vm/blob/de4d574/lib/evm/interpreter.ts#L33)*
 
 Address of created account durint transaction, if any
 
@@ -39,7 +39,7 @@ ___
 
 **● gasUsed**: *`BN`*
 
-*Defined in [evm/interpreter.ts:29](https://github.com/ethereumjs/ethereumjs-vm/blob/06d36f3/lib/evm/interpreter.ts#L29)*
+*Defined in [evm/interpreter.ts:29](https://github.com/ethereumjs/ethereumjs-vm/blob/de4d574/lib/evm/interpreter.ts#L29)*
 
 Amount of gas used by the transaction
 
@@ -50,7 +50,7 @@ ___
 
 **● vm**: *[ExecResult](execresult.md)*
 
-*Defined in [evm/interpreter.ts:37](https://github.com/ethereumjs/ethereumjs-vm/blob/06d36f3/lib/evm/interpreter.ts#L37)*
+*Defined in [evm/interpreter.ts:37](https://github.com/ethereumjs/ethereumjs-vm/blob/de4d574/lib/evm/interpreter.ts#L37)*
 
 Contains the results from running the code, if any, as described in [runCode](../classes/vm.md#runcode)
 

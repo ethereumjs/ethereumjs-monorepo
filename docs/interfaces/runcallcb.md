@@ -11,7 +11,7 @@ Callback for the [runCall](../classes/vm.md#runcall) method.
 ## Callable
 ▸ **__call**(err: *`Error` \| `null`*, results: *[InterpreterResult](interpreterresult.md) \| `null`*): `void`
 
-*Defined in [runCall.ts:38](https://github.com/ethereumjs/ethereumjs-vm/blob/06d36f3/lib/runCall.ts#L38)*
+*Defined in [runCall.ts:38](https://github.com/ethereumjs/ethereumjs-vm/blob/de4d574/lib/runCall.ts#L38)*
 
 Callback for the [runCall](../classes/vm.md#runcall) method.
 

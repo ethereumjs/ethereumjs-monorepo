@@ -11,7 +11,7 @@ Callback for `runCode` method
 ## Callable
 ▸ **__call**(err: *`Error` \| `null`*, res: *[ExecResult](execresult.md) \| `null`*): `void`
 
-*Defined in [runCode.ts:75](https://github.com/ethereumjs/ethereumjs-vm/blob/06d36f3/lib/runCode.ts#L75)*
+*Defined in [runCode.ts:75](https://github.com/ethereumjs/ethereumjs-vm/blob/de4d574/lib/runCode.ts#L75)*
 
 Callback for `runCode` method
 
