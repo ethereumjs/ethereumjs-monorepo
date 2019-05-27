@@ -2,10 +2,7 @@ import VM from './index'
 const async = require('async')
 
 /**
- * Processes blocks and adds them to the blockchain
- * @method vm.runBlockchain
- * @param {Blockchain} blockchain A [blockchain](https://github.com/ethereum/ethereumjs-blockchain) that to process
- * @param {Function} cb the callback function
+ * @ignore
  */
 export default function runBlockchain(this: VM, blockchain: any, cb: any) {
   const self = this
