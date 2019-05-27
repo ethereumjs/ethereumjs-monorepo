@@ -9,6 +9,9 @@ import { genesisStateByName } from 'ethereumjs-common/dist/genesisStates'
 import Account from 'ethereumjs-account'
 import Cache from './cache'
 
+/**
+ * Storage values of an account
+ */
 export interface StorageDump {
   [key: string]: string
 }

@@ -1,5 +1,8 @@
 import StateManager from './stateManager'
 
+/**
+ * @ignore
+ */
 export default class StorageReader {
   _stateManager: StateManager
   _storageCache: Map<string, any>

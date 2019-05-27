@@ -10,43 +10,59 @@ import { StorageReader } from './state'
 import PStateManager from './state/promisified'
 const Block = require('ethereumjs-block')
 
+/**
+ * Options for the `runTx` method.
+ */
 export interface RunTxOpts {
+  /**
+   * The block to which the `tx` belongs
+   */
   block?: any
+  /**
+   * A [`Transaction`](https://github.com/ethereum/ethereumjs-tx) to run
+   */
   tx: any // TODO: Update ethereumjs-tx
+  /**
+   * If true, skips the nonce check
+   */
   skipNonce?: boolean
+  /**
+   * If true, skips the balance check
+   */
   skipBalance?: boolean
 }
 
+/**
+ * Callback for `runTx` method
+ */
 export interface RunTxCb {
+  /**
+   * @param error - An error that may have happened or `null`
+   * @param results - Results of the execution
+   */
   (err: Error | null, results: RunTxResult | null): void
 }
 
+/**
+ * Execution result of a transaction
+ */
 export interface RunTxResult extends InterpreterResult {
+  /**
+   * Bloom filter resulted from transaction
+   */
   bloom: Bloom
+  /**
+   * The amount of ether used by this transaction
+   */
   amountSpent: BN
+  /**
+   * The amount of gas as that was refunded during the transaction (i.e. `gasUsed = totalGasConsumed - gasRefund`)
+   */
   gasRefund?: BN
 }
 
 /**
- * Process a transaction. Run the vm. Transfers eth. Checks balances.
- * @method vm.runTx
- * @param opts
- * @param {Transaction} opts.tx a [`Transaction`](https://github.com/ethereum/ethereumjs-tx) to run
- * @param {Boolean} opts.skipNonce skips the nonce check
- * @param {Boolean} opts.skipBalance skips the balance check
- * @param {Block} opts.block the block to which the `tx` belongs, if no block is given a default one is created
- * @param {runTx~callback} cb the callback
- */
-
-/**
- * Callback for `runTx` method
- * @callback runTx~callback
- * @param {Error} error an error that may have happened or `null`
- * @param {Object} results
- * @param {BN} results.amountSpent the amount of ether used by this transaction as a `bignum`
- * @param {BN} results.gasUsed the amount of gas as a `bignum` used by the transaction
- * @param {BN} results.gasRefund the amount of gas as a `bignum` that was refunded during the transaction (i.e. `gasUsed = totalGasConsumed - gasRefund`)
- * @param {VM} vm contains the results from running the code, if any, as described in `vm.runCode(params, cb)`
+ * @ignore
  */
 export default function runTx(this: VM, opts: RunTxOpts, cb: RunTxCb) {
   if (typeof opts === 'function' && cb === undefined) {

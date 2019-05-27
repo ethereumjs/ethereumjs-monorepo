@@ -57,11 +57,11 @@ To build for standalone use in the browser, install `browserify` and check [run-
 
 ## VM
 
-For documentation on `VM` instantiation, exposed API and emitted `events` see generated [API docs](./docs/index.md).
+For documentation on `VM` instantiation, exposed API and emitted `events` see generated [API docs](./docs/README.md).
 
 ## StateManger
 
-The API for the `StateManager` is currently in `Beta`, separate documentation can be found [here](./docs/stateManager.md), see also [release notes](https://github.com/ethereumjs/ethereumjs-vm/releases/tag/v2.5.0) from the `v2.5.0` VM release for details on the `StateManager` rewrite.
+The API for the `StateManager` is currently in `Beta`, separate documentation can be found [here](./docs/classes/statemanager.md), see also [release notes](https://github.com/ethereumjs/ethereumjs-vm/releases/tag/v2.5.0) from the `v2.5.0` VM release for details on the `StateManager` rewrite.
 
 # Internal Structure
 
@@ -98,7 +98,7 @@ The opFns for `CREATE`, `CALL`, and `CALLCODE` call back up to `runCall`.
 
 # DEVELOPMENT
 
-Developer documentation - currently mainly with information on testing and debugging - can be found [here](./docs/developer.md).
+Developer documentation - currently mainly with information on testing and debugging - can be found [here](./developer.md).
 
 # EthereumJS
 
