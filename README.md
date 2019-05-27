@@ -5,8 +5,6 @@
 [![Coverage Status](https://img.shields.io/coveralls/ethereumjs/ethereumjs-tx.svg?style=flat-square)](https://coveralls.io/r/ethereumjs/ethereumjs-tx)
 [![Gitter](https://img.shields.io/gitter/room/ethereum/ethereumjs-lib.svg?style=flat-square)](https://gitter.im/ethereum/ethereumjs-lib) or #ethereumjs on freenode
 
-[![js-standard-style](https://cdn.rawgit.com/feross/standard/master/badge.svg)](https://github.com/feross/standard)
-
 # INSTALL
 
 `npm install ethereumjs-tx`
@@ -29,8 +27,6 @@ const txParams = {
   to: '0x0000000000000000000000000000000000000000',
   value: '0x00',
   data: '0x7f7465737432000000000000000000000000000000000000000000000000000000600057',
-  // EIP 155 chainId - mainnet: 1, ropsten: 3
-  chainId: 3,
 }
 
 const tx = new EthereumTx(txParams)
