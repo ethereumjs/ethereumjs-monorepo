@@ -58,7 +58,7 @@ export default class StateManager {
    * @method copy
    */
   copy(): StateManager {
-    return new StateManager({ trie: this._trie.copy() })
+    return new StateManager({ trie: this._trie.copy(), common: this._common })
   }
 
   /**
