@@ -38,7 +38,7 @@ export default class StateManager {
   constructor(opts: any = {}) {
     let common = opts.common
     if (!common) {
-      common = new Common('mainnet', 'byzantium')
+      common = new Common('mainnet', 'petersburg')
     }
     this._common = common
 
