@@ -5,8 +5,8 @@ const Blockchain = require('ethereumjs-blockchain')
 const Block = require('ethereumjs-block')
 const Common = require('ethereumjs-common').default
 const util = require('ethereumjs-util')
-const runBlockchain = require('../../lib/runBlockchain')
-const { StateManager } = require('../../lib/state')
+const runBlockchain = require('../../dist/runBlockchain').default
+const { StateManager } = require('../../dist/state')
 const { createGenesis } = require('./utils')
 
 tape('runBlockchain', (t) => {

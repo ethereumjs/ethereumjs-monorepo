@@ -3,12 +3,15 @@
   "version": "3.0.0",
   "description": "An Ethereum VM implementation",
   "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "files": [
-    "dist"
+    "dist/**/*"
   ],
   "scripts": {
+    "build:dist": "ethereumjs-config-build",
+    "prepublishOnly": "npm run lint && npm run build:dist && npm run testBuildIntegrity",
     "coverage": "nyc npm run coverageTests && nyc report --reporter=text-lcov > .nyc_output/lcov.info",
-    "coverageTests": "tape './tests/api/**/*.js' ./tests/tester.js -s",
+    "coverageTests": "npm run build:dist && tape './tests/api/**/*.js' ./tests/tester.js -s --dist",
     "coveralls": "npm run coverage && if [ -n \"$COVERALLS_REPO_TOKEN\" ]; then coveralls <.nyc_output/lcov.info; fi",
     "testVM": "node ./tests/tester -v",
     "testStateByzantium": "npm run build:dist && node ./tests/tester -s --fork='Byzantium' --dist",
@@ -17,14 +20,17 @@
     "testBuildIntegrity": "npm run build:dist && node ./tests/tester -s --dist --test='stackOverflow'",
     "testBlockchain": "npm run build:dist && node --stack-size=1500 ./tests/tester -b --fork='Petersburg' --dist --excludeDir='GeneralStateTests'",
     "testBlockchainGeneralStateTests": "npm run build:dist && node --stack-size=1500 ./tests/tester -b --dist --dir='GeneralStateTests'",
-    "testAPI": "tape './tests/api/**/*.js'",
-    "testAPI:browser": "karma start karma.conf.js",
+    "testAPI": "npm run build:dist && tape './tests/api/**/*.js'",
+    "testAPI:browser": "npm run build:dist && karma start karma.conf.js",
     "test": "echo \"[INFO] Generic test cmd not used. See package.json for more specific test run cmds.\"",
-    "lint": "standard",
-    "prepublishOnly": "npm run lint && npm run build:dist && npm run testBuildIntegrity",
-    "build:dist": "babel lib/ -d dist/",
-    "build:docs": "documentation build ./lib/index.js ./lib/runBlockchain.js ./lib/runBlock.js ./lib/runTx.js ./lib/runCode.js ./lib/runCall.js --format md --shallow > ./docs/index.md",
-    "formatTest": "node ./scripts/formatTest"
+    "tslint": "ethereumjs-config-tslint",
+    "tslint:fix": "ethereumjs-config-tslint-fix",
+    "lint": "ethereumjs-config-lint",
+    "lint:fix": "ethereumjs-config-lint-fix",
+    "format": "ethereumjs-config-format",
+    "format:fix": "ethereumjs-config-format-fix",
+    "formatTest": "node ./scripts/formatTest",
+    "tsc": "ethereumjs-config-tsc"
   },
   "husky": {
     "hooks": {
@@ -42,20 +48,28 @@
   "dependencies": {
     "async": "^2.1.2",
     "async-eventemitter": "^0.2.2",
-    "ethereumjs-account": "^2.0.3",
+    "core-js-pure": "^3.0.1",
+    "ethereumjs-account": "^3.0.0",
     "ethereumjs-block": "~2.2.0",
     "ethereumjs-blockchain": "^3.4.0",
     "ethereumjs-common": "^1.1.0",
-    "ethereumjs-util": "^6.0.0",
+    "ethereumjs-util": "^6.1.0",
     "fake-merkle-patricia-tree": "^1.0.1",
     "functional-red-black-tree": "^1.0.1",
     "merkle-patricia-tree": "^2.3.2",
     "rustbn.js": "~0.2.0",
-    "safe-buffer": "^5.1.1"
+    "safe-buffer": "^5.1.1",
+    "util.promisify": "^1.0.0"
   },
   "devDependencies": {
-    "babel-cli": "^6.26.0",
-    "babel-preset-env": "^1.6.1",
+    "@ethereumjs/config-nyc": "^1.1.1",
+    "@ethereumjs/config-prettier": "^1.1.1",
+    "@ethereumjs/config-tsc": "^1.1.1",
+    "@ethereumjs/config-tslint": "^1.1.1",
+    "@types/bn.js": "^4.11.5",
+    "@types/core-js": "^2.5.0",
+    "@types/lru-cache": "^5.1.0",
+    "@types/node": "^11.13.4",
     "browserify": "^16.2.3",
     "coveralls": "^3.0.0",
     "documentation": "^8.1.2",
@@ -72,10 +86,14 @@
     "level-mem": "^3.0.1",
     "minimist": "^1.1.1",
     "nyc": "^12.0.2",
+    "prettier": "^1.16.4",
+    "rlp": "^2.2.3",
     "standard": "^10.0.0",
     "tap-spec": "^5.0.0",
     "tape": "4.6.3",
-    "util.promisify": "^1.0.0"
+    "tslint": "^5.16.0",
+    "typescript": "^3.4.3",
+    "typestrict": "^1.0.2"
   },
   "author": "mjbecze <mjbecze@gmail.com>",
   "contributors": [

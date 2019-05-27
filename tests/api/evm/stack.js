@@ -1,6 +1,6 @@
 const tape = require('tape')
 const BN = require('bn.js')
-const Stack = require('../../../lib/evm/stack')
+const Stack = require('../../../dist/evm/stack').default
 
 tape('Stack', t => {
   t.test('should be empty initially', st => {
@@ -109,12 +109,6 @@ tape('Stack', t => {
     s.push(max)
     st.deepEqual(s.pop(), max)
     st.throws(() => s.push(max.addn(1)))
-
-    const maxBuf = max.toArrayLike(Buffer, 'be', 32)
-    s.push(maxBuf)
-    st.deepEqual(s.pop(), maxBuf)
-    st.throws(() => s.push(max.addn(1).toArrayLike(Buffer, 'be', 32)))
-
     st.end()
   })
 })

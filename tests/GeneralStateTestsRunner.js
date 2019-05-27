@@ -2,7 +2,7 @@ const async = require('async')
 const testUtil = require('./util')
 const Trie = require('merkle-patricia-tree/secure')
 const ethUtil = require('ethereumjs-util')
-const Account = require('ethereumjs-account')
+const Account = require('ethereumjs-account').default
 const BN = ethUtil.BN
 const { getRequiredForkConfigAlias } = require('./util')
 
@@ -51,9 +51,9 @@ function runTestCase (options, testData, t, cb) {
     function (done) {
       var VM
       if (options.dist) {
-        VM = require('../dist/index.js')
+        VM = require('../dist/index.js').default
       } else {
-        VM = require('../lib/index.js')
+        VM = require('../lib/index').default
       }
       vm = new VM({
         state: state,
@@ -92,7 +92,7 @@ function runTestCase (options, testData, t, cb) {
           })
           vm.on('afterTx', function (results) {
             let stateRoot = {
-              'stateRoot': results.vm.runState.stateManager._trie.root.toString('hex')
+              'stateRoot': vm.stateManager._trie.root.toString('hex')
             }
             t.comment(JSON.stringify(stateRoot))
           })

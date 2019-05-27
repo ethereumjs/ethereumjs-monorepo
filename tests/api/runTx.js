@@ -2,9 +2,9 @@ const promisify = require('util.promisify')
 const tape = require('tape')
 const Transaction = require('ethereumjs-tx')
 const ethUtil = require('ethereumjs-util')
-const runTx = require('../../lib/runTx')
-const { StateManager } = require('../../lib/state')
-const VM = require('../../lib/index')
+const runTx = require('../../dist/runTx').default
+const { StateManager } = require('../../dist/state')
+const VM = require('../../dist/index').default
 const { createAccount } = require('./utils')
 
 function setup (vm = null) {
@@ -12,7 +12,7 @@ function setup (vm = null) {
     vm = {
       stateManager: new StateManager({ }),
       emit: (e, val, cb) => { cb() },
-      runCall: (opts, cb) => cb(new Error('test'))
+      _emit: (e, val) => new Promise((resolve, reject) => resolve())
     }
   }
 
@@ -41,7 +41,7 @@ tape('runTx', (t) => {
   })
 
   t.test('should fail to run without signature', async (st) => {
-    const tx = getTransaction()
+    const tx = getTransaction(false, true)
     shouldFail(st, suite.runTx({ tx }),
       (e) => st.ok(e.message.toLowerCase().includes('signature'), 'should fail with appropriate error')
     )
@@ -55,21 +55,6 @@ tape('runTx', (t) => {
     )
     st.end()
   })
-})
-
-tape('should fail when runCall fails', async (t) => {
-  const suite = setup()
-
-  const tx = getTransaction(true, true)
-  const acc = createAccount()
-  await suite.putAccount(tx.from.toString('hex'), acc)
-
-  shouldFail(t,
-    suite.runTx({ tx, populateCache: true }),
-    (e) => t.equal(e.message, 'test', 'error should be equal to what the mock runCall returns')
-  )
-
-  t.end()
 })
 
 tape('should run simple tx without errors', async (t) => {

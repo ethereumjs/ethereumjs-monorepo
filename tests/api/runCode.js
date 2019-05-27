@@ -1,6 +1,7 @@
 const tape = require('tape')
 const async = require('async')
-const VM = require('../../lib/index')
+const BN = require('bn.js')
+const VM = require('../../dist/index').default
 
 const STOP = '00'
 const JUMP = '56'
@@ -9,8 +10,8 @@ const PUSH1 = '60'
 
 const testCases = [
   { code: [STOP, JUMPDEST, PUSH1, '05', JUMP, JUMPDEST], pc: 1, resultPC: 6 },
-  { code: [STOP, JUMPDEST, PUSH1, '05', JUMP, JUMPDEST], pc: -1, error: 'invalid opcode' },
-  { code: [STOP], pc: 3, error: 'invalid opcode' },
+  { code: [STOP, JUMPDEST, PUSH1, '05', JUMP, JUMPDEST], pc: -1, error: 'Internal error: program counter not in range' },
+  { code: [STOP], pc: 3, error: 'Internal error: program counter not in range' },
   { code: [STOP], resultPC: 1 }
 ]
 
@@ -22,7 +23,7 @@ tape('VM.runcode: initial program counter', function (t) {
       const runCodeArgs = {
         code: Buffer.from(testData.code.join(''), 'hex'),
         pc: testData.pc,
-        gasLimit: 0xffff
+        gasLimit: new BN(0xffff)
       }
       let result
 
@@ -45,7 +46,7 @@ tape('VM.runcode: initial program counter', function (t) {
         }
       ], function (err) {
         if (testData.error) {
-          err = err ? err.error : 'no error thrown'
+          err = err ? err.message : 'no error thrown'
           t.equals(err, testData.error, 'error message should match')
           err = false
         }

@@ -1,8 +1,8 @@
 const Block = require('ethereumjs-block')
-const Account = require('ethereumjs-account')
+const Account = require('ethereumjs-account').default
 const level = require('level-mem')
 const Blockchain = require('ethereumjs-blockchain')
-const VM = require('../../lib/index')
+const VM = require('../../dist/index').default
 
 function createGenesis (opts = {}) {
   opts.chain = opts.chain ? opts.chain : 'mainnet'
