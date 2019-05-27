@@ -9,7 +9,7 @@ tape('StateManager', (t) => {
     const stateManager = new StateManager()
 
     st.deepEqual(stateManager._trie.root, util.KECCAK256_RLP, 'it has default root')
-    st.equal(stateManager._common.hardfork(), 'byzantium', 'it has default hardfork')
+    st.equal(stateManager._common.hardfork(), 'petersburg', 'it has default hardfork')
     stateManager.getStateRoot((err, res) => {
       st.error(err, 'getStateRoot returns no error')
       st.deepEqual(res, util.KECCAK256_RLP, 'it has default root')
