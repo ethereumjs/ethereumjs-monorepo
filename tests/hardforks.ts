@@ -11,6 +11,8 @@ tape('[Common]: Hardfork logic', function(t: tape.Test) {
       'spuriousDragon',
       'byzantium',
       'constantinople',
+      'petersburg',
+      'istanbul',
     ]
     let c
 

@@ -61,6 +61,12 @@
       "block": 0,
       "consensus": "poa",
       "finality": null
+    },
+    {
+      "name": "istanbul",
+      "block": null,
+      "consensus": "poa",
+      "finality": null
     }
   ],
   "bootstrapNodes": [

@@ -61,6 +61,12 @@
       "block": 4939394,
       "consensus": "pow",
       "finality": null
+    },
+    {
+      "name": "istanbul",
+      "block": null,
+      "consensus": "pow",
+      "finality": null
     }
   ],
   "bootstrapNodes": [
