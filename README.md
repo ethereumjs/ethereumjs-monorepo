@@ -61,7 +61,7 @@ For documentation on `VM` instantiation, exposed API and emitted `events` see ge
 
 ## StateManger
 
-The API for the ``StateManager`` is currently in ``Beta``, separate documentation can be found [here](./docs/stateManager.md), see also [release notes](https://github.com/ethereumjs/ethereumjs-vm/releases/tag/v2.5.0) from the ``v2.5.0`` VM release for details on the ``StateManager`` rewrite.
+The API for the `StateManager` is currently in `Beta`, separate documentation can be found [here](./docs/stateManager.md), see also [release notes](https://github.com/ethereumjs/ethereumjs-vm/releases/tag/v2.5.0) from the `v2.5.0` VM release for details on the `StateManager` rewrite.
 
 # Internal Structure
 

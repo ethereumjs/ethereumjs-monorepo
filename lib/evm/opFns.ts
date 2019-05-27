@@ -145,7 +145,10 @@ export const handlers: { [k: string]: OpHandler } = {
   SIGNEXTEND: function(runState: RunState) {
     let [k, val] = runState.stack.popN(2)
     if (k.ltn(31)) {
-      const signBit = k.muln(8).iaddn(7).toNumber()
+      const signBit = k
+        .muln(8)
+        .iaddn(7)
+        .toNumber()
       const mask = new BN(1).ishln(signBit).isubn(1)
       if (val.testn(signBit)) {
         val = val.or(mask.notn(256))
