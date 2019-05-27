@@ -115,6 +115,18 @@ tape('VM with blockchain', (t) => {
 
     st.end()
   })
+
+  t.test('should pass the correct Common object when copying the VM', st => {
+    const vm = setupVM({ chain: 'goerli', hardfork: 'byzantium' })
+    st.equal(vm._common.chainName(), 'goerli')
+    st.equal(vm._common.hardfork(), 'byzantium')
+
+    const copiedVM = vm.copy()
+    st.equal(copiedVM._common.chainName(), 'goerli')
+    st.equal(copiedVM._common.hardfork(), 'byzantium')
+
+    st.end()
+  })
 })
 
 const runBlockchainP = (vm) => promisify(vm.runBlockchain.bind(vm))()

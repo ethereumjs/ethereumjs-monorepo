@@ -138,9 +138,13 @@ export default class VM extends AsyncEventEmitter {
    * Returns a copy of the [[VM]] instance.
    */
   copy(): VM {
+    const hardfork = this._common.hardfork()
+
     return new VM({
       stateManager: this.stateManager.copy(),
       blockchain: this.blockchain,
+      chain: this._common.chainName(),
+      hardfork: hardfork !== null ? hardfork : undefined,
     })
   }
 
