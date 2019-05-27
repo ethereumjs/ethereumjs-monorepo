@@ -6,6 +6,96 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+
+## [3.0.0] - 2019-03-29
+
+This release comes with a modernized ``ES6``-class structured code base, some
+significant local refactoring work regarding how ``Stack`` and ``Memory``
+are organized within the VM and it finalizes a first round of module structuring
+now having separate folders for ``bloom``, ``evm`` and ``state`` related code. The
+release also removes some rarely used parts of the API (``hookedVM``, ``VM.deps``).
+
+All this is to a large extend preparatory work for a ``v4.0.0`` release which will
+follow in the next months with ``TypeScript`` support and more system-wide 
+refactoring work leading to a more modular and expandable VM and providing the
+ground for future ``eWASM`` integration. If you are interested in the release
+process and want to take part in the refactoring discussion see the associated
+issue [#455](https://github.com/ethereumjs/ethereumjs-vm/issues/455).
+
+**VM Refactoring/Breaking Changes**
+
+- New ``Memory`` class for evm memory manipulation,
+  PR [#442](https://github.com/ethereumjs/ethereumjs-vm/pull/442)
+- Refactored ``Stack`` manipulation in evm,
+  PR [#460](https://github.com/ethereumjs/ethereumjs-vm/pull/460)
+- Dropped ``createHookedVm`` (BREAKING), being made obsolete by the
+  new ``StateManager`` API,
+  PR [#451](https://github.com/ethereumjs/ethereumjs-vm/pull/451)
+- Dropped ``VM.deps`` attribute (please require dependencies yourself if you
+  used this),
+  PR [#478](https://github.com/ethereumjs/ethereumjs-vm/pull/478)
+- Removed ``fakeBlockchain`` class and associated tests,
+  PR [#466](https://github.com/ethereumjs/ethereumjs-vm/pull/466)
+- The ``petersburg`` hardfork rules are now run as default 
+  (before: ``byzantium``),
+  PR [#485](https://github.com/ethereumjs/ethereumjs-vm/pull/485)
+
+**Modularization**
+
+- Renamed ``vm`` module to ``evm``, move ``precompiles`` to ``evm`` module,
+  PR [#481](https://github.com/ethereumjs/ethereumjs-vm/pull/481)
+- Moved ``stateManager``, ``storageReader`` and ``cache`` to ``state`` module,
+  [#443](https://github.com/ethereumjs/ethereumjs-vm/pull/443)
+- Replaced static VM ``logTable`` with dynamic inline version in ``EXP`` opcode,
+  [#450](https://github.com/ethereumjs/ethereumjs-vm/pull/450)
+  
+**Code Modernization/ES6**
+
+- Converted ``VM`` to ``ES6`` class,
+  PR [#478](https://github.com/ethereumjs/ethereumjs-vm/pull/478)
+- Migrated ``stateManager`` and ``storageReader`` to ``ES6`` class syntax,
+  PR [#452](https://github.com/ethereumjs/ethereumjs-vm/pull/452)
+
+**Bug Fixes**
+
+- Fixed a bug where ``stateManager.setStateRoot()`` didn't clear 
+  the ``_storageTries`` cache,
+  PR [#445](https://github.com/ethereumjs/ethereumjs-vm/issues/445)
+- Fixed longer output than return length in ``CALL`` opcode,
+  PR [#454](https://github.com/ethereumjs/ethereumjs-vm/pull/454)
+- Use ``BN.toArrayLike()`` instead of ``BN.toBuffer()`` (browser compatibility),
+  PR [#458](https://github.com/ethereumjs/ethereumjs-vm/pull/458)
+- Fixed tx value overflow 256 bits,
+  PR [#471](https://github.com/ethereumjs/ethereumjs-vm/pull/471)
+
+**Maintenance/Optimization**
+
+- Use ``BN`` reduction context in ``MODEXP`` precompile,
+  PR [#463](https://github.com/ethereumjs/ethereumjs-vm/pull/463)
+
+**Documentation**
+
+- Fixed API doc types for ``Bloom`` filter methods,
+  PR [#439](https://github.com/ethereumjs/ethereumjs-vm/pull/439)
+
+**Testing**
+
+- New Karma browser testing for the API tests,
+  PRs [#461](https://github.com/ethereumjs/ethereumjs-vm/pull/461),
+  [#468](https://github.com/ethereumjs/ethereumjs-vm/pull/468)
+- Removed unused parts and tests within the test setup,
+  PR [#437](https://github.com/ethereumjs/ethereumjs-vm/pull/437)
+- Fixed a bug using ``--json`` trace flag in the tests,
+  PR [#438](https://github.com/ethereumjs/ethereumjs-vm/pull/438)
+- Complete switch to Petersburg on tests, fix coverage,
+  PR [#448](https://github.com/ethereumjs/ethereumjs-vm/pull/448)
+- Added test for ``StateManager.dumpStorage()``,
+  PR [#462](https://github.com/ethereumjs/ethereumjs-vm/pull/462)
+- Fixed ``ecmul_0-3_5616_28000_96`` (by test setup adoption),
+  PR [#473](https://github.com/ethereumjs/ethereumjs-vm/pull/473)
+
+[3.0.0]: https://github.com/ethereumjs/ethereumjs-vm/compare/v2.6.0...v3.0.0
+
 ## [2.6.0] - 2019-02-07
 
 **Petersburg Support**

@@ -8,7 +8,7 @@ export interface OpInfo {
 
 const codes: any = {
   // 0x0 range - arithmetic ops
-  // name, baseCost, off stack, on stack, dynamic, async
+  // name, baseCost, dynamic, async
   0x00: ['STOP', 0, false],
   0x01: ['ADD', 3, false],
   0x02: ['MUL', 5, false],

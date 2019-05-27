@@ -30,7 +30,7 @@ export interface VMOpts {
  * @param {Trie} opts.state a merkle-patricia-tree instance for the state tree (ignored if stateManager is passed)
  * @param {Blockchain} opts.blockchain a blockchain object for storing/retrieving blocks (ignored if stateManager is passed)
  * @param {String|Number} opts.chain the chain the VM operates on [default: 'mainnet']
- * @param {String} opts.hardfork hardfork rules to be used [default: 'byzantium', supported: 'byzantium', 'constantinople', 'petersburg' (will throw on unsupported)]
+ * @param {String} opts.hardfork hardfork rules to be used [default: 'petersburg', supported: 'byzantium', 'constantinople', 'petersburg' (will throw on unsupported)]
  * @param {Boolean} opts.activatePrecompiles create entries in the state tree for the precompiled contracts
  * @param {Boolean} opts.allowUnlimitedContractSize allows unlimited contract sizes while debugging. By setting this to `true`, the check for contract size limit of 24KB (see [EIP-170](https://git.io/vxZkK)) is bypassed. (default: `false`; ONLY set to `true` during debugging)
  */
@@ -47,7 +47,7 @@ export default class VM extends AsyncEventEmitter {
     this.opts = opts
 
     const chain = opts.chain ? opts.chain : 'mainnet'
-    const hardfork = opts.hardfork ? opts.hardfork : 'byzantium'
+    const hardfork = opts.hardfork ? opts.hardfork : 'petersburg'
     const supportedHardforks = ['byzantium', 'constantinople', 'petersburg']
     this._common = new Common(chain, hardfork, supportedHardforks)
 

@@ -3,7 +3,7 @@
 [![NPM Package](https://img.shields.io/npm/v/ethereumjs-vm.svg?style=flat-square)](https://www.npmjs.org/package/ethereumjs-vm)
 [![Build Status](https://img.shields.io/circleci/project/github/ethereumjs/ethereumjs-vm/master.svg)](https://circleci.com/gh/ethereumjs/ethereumjs-vm)
 [![Coverage Status](https://img.shields.io/coveralls/ethereumjs/ethereumjs-vm.svg?style=flat-square)](https://coveralls.io/r/ethereumjs/ethereumjs-vm)
-[![Gitter](https://img.shields.io/gitter/room/ethereum/ethereumjs-lib.svg?style=flat-square)](https://gitter.im/ethereum/ethereumjs-lib) or #ethereumjs on freenode
+[![Gitter](https://img.shields.io/gitter/room/ethereum/ethereumjs.svg?style=flat-square)](https://gitter.im/ethereum/ethereumjs)
 
 [![js-standard-style](https://cdn.rawgit.com/feross/standard/master/badge.svg)](https://github.com/feross/standard)
 
@@ -11,16 +11,11 @@ Implements Ethereum's VM in Javascript.
 
 #### Fork Support
 
-The VM (`v2.6.x` release series) currently supports the following hardforks
-(default: `Byzantium`):
+The VM currently supports the following hardfork rules:
 
 - `Byzantium`
 - `Constantinople`
-- `Petersburg`
-
-Parallel HF support was introduced in the `v2.5.0` release, if you want
-some background have a look at the respective
-[release notes](https://github.com/ethereumjs/ethereumjs-vm/releases/tag/v2.5.0).
+- `Petersburg` (default)
 
 If you are still looking for a [Spurious Dragon](https://github.com/ethereum/EIPs/blob/master/EIPS/eip-607.md) compatible version of this library install the latest of the `2.2.x` series (see [Changelog](./CHANGELOG.md)).
 
@@ -66,9 +61,7 @@ For documentation on `VM` instantiation, exposed API and emitted `events` see ge
 
 ## StateManger
 
-The API for the `StateManager` is currently in `Beta`, separate documentation can be found [here](./docs/stateManager.md).
-
-The `StateManager` API has been largely reworked recently and the `StateManager` will be removed from the VM and provided as a separate package in a future `v3.0.0` release, see [release notes](https://github.com/ethereumjs/ethereumjs-vm/releases/tag/v2.5.0) for the `v2.5.0` VM release for further details.
+The API for the ``StateManager`` is currently in ``Beta``, separate documentation can be found [here](./docs/stateManager.md), see also [release notes](https://github.com/ethereumjs/ethereumjs-vm/releases/tag/v2.5.0) from the ``v2.5.0`` VM release for details on the ``StateManager`` rewrite.
 
 # Internal Structure
 
@@ -106,6 +99,12 @@ The opFns for `CREATE`, `CALL`, and `CALLCODE` call back up to `runCall`.
 # DEVELOPMENT
 
 Developer documentation - currently mainly with information on testing and debugging - can be found [here](./docs/developer.md).
+
+# EthereumJS
+
+See our organizational [documentation](https://ethereumjs.readthedocs.io) for an introduction to `EthereumJS` as well as information on current standards and best practices.
+
+If you want to join for work or do improvements on the libraries have a look at our [contribution guidelines](https://ethereumjs.readthedocs.io/en/latest/contributing.html).
 
 # LICENSE
 

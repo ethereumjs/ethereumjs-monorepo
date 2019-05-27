@@ -144,23 +144,19 @@ export const handlers: { [k: string]: OpHandler } = {
   },
   SIGNEXTEND: function(runState: RunState) {
     let [k, val] = runState.stack.popN(2)
-    const buf = val.toArrayLike(Buffer, 'be', 32)
-    var extendOnes = false
-
-    if (k.lten(31)) {
-      const n = k.toNumber()
-
-      if (buf[31 - n] & 0x80) {
-        extendOnes = true
+    if (k.ltn(31)) {
+      const signBit = k.muln(8).iaddn(7).toNumber()
+      const mask = new BN(1).ishln(signBit).isubn(1)
+      if (val.testn(signBit)) {
+        val = val.or(mask.notn(256))
+      } else {
+        val = val.and(mask)
       }
-
-      // 31-k-1 since k-th byte shouldn't be modified
-      for (var i = 30 - n; i >= 0; i--) {
-        buf[i] = extendOnes ? 0xff : 0
-      }
+    } else {
+      // return the same value
+      val = new BN(val)
     }
-
-    runState.stack.push(new BN(buf))
+    runState.stack.push(val)
   },
   // 0x10 range - bit ops
   LT: function(runState: RunState) {
