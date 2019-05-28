@@ -2,6 +2,7 @@ const promisify = require('util.promisify')
 const tape = require('tape')
 const util = require('ethereumjs-util')
 const Block = require('ethereumjs-block')
+const Common = require('ethereumjs-common').default
 const Trie = require('merkle-patricia-tree/secure')
 const VM = require('../../dist/index').default
 const { setupVM } = require('./utils')
@@ -28,6 +29,25 @@ tape('VM with default blockchain', (t) => {
     let vm = new VM({ state: trie, activatePrecompiles: true })
     st.notEqual(vm.stateManager._trie.root, util.KECCAK256_RLP, 'it has different root')
     st.ok(vm.stateManager._trie.isTestTrie, 'it works on trie provided')
+    st.end()
+  })
+
+  t.test('should only accept common or chain and fork', (st) => {
+    const common = new Common('mainnet');
+
+    st.throws(() => new VM({ chain: 'a', common }))
+    st.throws(() => new VM({ hardfork: 'a', common }))
+    st.throws(() => new VM({ chain: 'a', hardfork: 'a', common }))
+
+    st.end()
+  })
+
+  t.test('should accept a common object as option', (st) => {
+    const common = new Common('mainnet')
+
+    const vm = new VM({ common })
+    st.equal(vm._common, common)
+
     st.end()
   })
 
@@ -112,6 +132,18 @@ tape('VM with blockchain', (t) => {
     await setupPreP(vm.stateManager._trie, testData)
 
     await runBlockchainP(vm)
+
+    st.end()
+  })
+
+  t.test('should pass the correct Common object when copying the VM', st => {
+    const vm = setupVM({ chain: 'goerli', hardfork: 'byzantium' })
+    st.equal(vm._common.chainName(), 'goerli')
+    st.equal(vm._common.hardfork(), 'byzantium')
+
+    const copiedVM = vm.copy()
+    st.equal(copiedVM._common.chainName(), 'goerli')
+    st.equal(copiedVM._common.hardfork(), 'byzantium')
 
     st.end()
   })
