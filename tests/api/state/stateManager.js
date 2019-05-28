@@ -1,6 +1,7 @@
 const promisify = require('util.promisify')
 const tape = require('tape')
 const util = require('ethereumjs-util')
+const Common = require('ethereumjs-common').default
 const { StateManager } = require('../../../dist/state')
 const { createAccount } = require('../utils')
 
@@ -159,5 +160,20 @@ tape('StateManager', (t) => {
 
       st.end()
     })
+  })
+
+  t.test('should pass Common object when copying the state manager', st => {
+    const stateManager = new StateManager({
+      common: new Common('goerli', 'byzantium')
+    })
+
+    st.equal(stateManager._common.chainName(), 'goerli')
+    st.equal(stateManager._common.hardfork(), 'byzantium')
+
+    const stateManagerCopy = stateManager.copy()
+    st.equal(stateManagerCopy._common.chainName(), 'goerli')
+    st.equal(stateManagerCopy._common.hardfork(), 'byzantium')
+
+    st.end()
   })
 })
