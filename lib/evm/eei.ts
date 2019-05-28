@@ -467,7 +467,7 @@ export default class EEI {
   }
 
   async _baseCall(msg: Message): Promise<BN> {
-    const selfdestruct = Object.assign({}, this._result.selfdestruct)
+    const selfdestruct = { ...this._result.selfdestruct }
     msg.selfdestruct = selfdestruct
 
     // empty the return data buffer
@@ -520,7 +520,7 @@ export default class EEI {
    * @param {Buffer} data
    */
   async create(gasLimit: BN, value: BN, data: Buffer, salt: Buffer | null = null): Promise<BN> {
-    const selfdestruct = Object.assign({}, this._result.selfdestruct)
+    const selfdestruct = { ...this._result.selfdestruct }
     const msg = new Message({
       caller: this._env.address,
       gasLimit: gasLimit,
