@@ -75,7 +75,7 @@ export interface ExecResult {
    */
   gasRefund?: BN
   /**
-   * A set of accounts that have self-destructed
+   * A map from the accounts that have self-destructed to the addresses to send their funds to
    */
   selfdestruct?: { [k: string]: Buffer }
 }

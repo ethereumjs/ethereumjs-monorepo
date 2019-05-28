@@ -27,6 +27,9 @@ export interface RunResult {
   logs: any // TODO: define type for Log (each log: [Buffer(address), [Buffer(topic0), ...]])
   returnValue?: Buffer
   gasRefund: BN
+  /**
+   * A map from the accounts that have self-destructed to the addresses to send their funds to
+   */
   selfdestruct: { [k: string]: Buffer }
 }
 
