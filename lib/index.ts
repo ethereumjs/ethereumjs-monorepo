@@ -45,6 +45,7 @@ export interface VMOpts {
    * Allows unlimited contract sizes while debugging. By setting this to `true`, the check for contract size limit of 24KB (see [EIP-170](https://git.io/vxZkK)) is bypassed
    */
   allowUnlimitedContractSize?: boolean
+  common?: Common
 }
 
 /**
@@ -71,10 +72,21 @@ export default class VM extends AsyncEventEmitter {
 
     this.opts = opts
 
-    const chain = opts.chain ? opts.chain : 'mainnet'
-    const hardfork = opts.hardfork ? opts.hardfork : 'petersburg'
-    const supportedHardforks = ['byzantium', 'constantinople', 'petersburg']
-    this._common = new Common(chain, hardfork, supportedHardforks)
+    if (opts.common) {
+      if (opts.chain || opts.hardfork) {
+        throw new Error(
+          'You can only instantiate the VM class with one of: opts.common, or opts.chain and opts.hardfork',
+        )
+      }
+
+      this._common = opts.common
+    } else {
+      const chain = opts.chain ? opts.chain : 'mainnet'
+      const hardfork = opts.hardfork ? opts.hardfork : 'petersburg'
+      const supportedHardforks = ['byzantium', 'constantinople', 'petersburg']
+
+      this._common = new Common(chain, hardfork, supportedHardforks)
+    }
 
     if (opts.stateManager) {
       this.stateManager = opts.stateManager
