@@ -4,7 +4,7 @@ const Trie = require('merkle-patricia-tree/secure')
 const Block = require('ethereumjs-block')
 const Blockchain = require('ethereumjs-blockchain')
 const BlockHeader = require('ethereumjs-block/header.js')
-const VM = require('../../')
+const VM = require('../../').default
 const level = require('level')
 const levelMem = require('level-mem')
 const Account = require('ethereumjs-account').default
@@ -17,15 +17,10 @@ var blockchainDB = levelMem()
 
 var state = new Trie()
 
-var validate = false
+var hardfork = testData.network.toLowerCase()
 
-var hardfork = 'byzantium'
-
-var blockchain = new Blockchain({ db: blockchainDB, hardfork, validate })
-
-if (validate) {
-  blockchain.ethash.cacheDB = level('./.cachedb')
-}
+var blockchain = new Blockchain({ db: blockchainDB, hardfork })
+blockchain.ethash.cacheDB = level('./.cachedb')
 
 var vm = new VM({
   state: state,
@@ -33,8 +28,6 @@ var vm = new VM({
   hardfork
 })
 var genesisBlock = new Block({ hardfork })
-
-testData.homestead = true
 
 vm.on('beforeTx', function (tx) {
   tx._homestead = true
@@ -54,7 +47,7 @@ async.series([
 
   // create and add genesis block
   function (next) {
-    genesisBlock.header = new BlockHeader(formatBlockHeader(testData.genesisBlockHeader),
+    genesisBlock.header = new BlockHeader(testData.genesisBlockHeader,
       { hardfork })
 
     blockchain.putGenesis(genesisBlock, next)
@@ -173,11 +166,3 @@ function format (a, toZero, isHex) {
   return a
 }
 
-function formatBlockHeader (data) {
-  var r = {}
-  var keys = Object.keys(data)
-  keys.forEach(function (key) {
-    r[key] = utils.addHexPrefix(data[key])
-  })
-  return r
-}
