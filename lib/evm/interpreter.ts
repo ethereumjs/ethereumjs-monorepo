@@ -19,26 +19,70 @@ import EEI from './eei'
 import { default as Loop, LoopResult, RunState, IsException, RunOpts } from './loop'
 const Block = require('ethereumjs-block')
 
+/**
+ * Result of executing a message via the [[Interpreter]].
+ */
 export interface InterpreterResult {
+  /**
+   * Amount of gas used by the transaction
+   */
   gasUsed: BN
+  /**
+   * Address of created account durint transaction, if any
+   */
   createdAddress?: Buffer
+  /**
+   * Contains the results from running the code, if any, as described in [[runCode]]
+   */
   vm: ExecResult
 }
 
+/**
+ * Result of executing a call via the [[Interpreter]].
+ */
 export interface ExecResult {
   runState?: RunState
+  /**
+   * `0` if the contract encountered an exception, `1` otherwise
+   */
   exception: IsException
+  /**
+   * Description of the exception, if any occured
+   */
   exceptionError?: VmError | ERROR
+  /**
+   * Amount of gas left
+   */
   gas?: BN
+  /**
+   * Amount of gas the code used to run
+   */
   gasUsed: BN
+  /**
+   * Return value from the contract
+   */
   return: Buffer
-  // From RunResult
+  /**
+   * Array of logs that the contract emitted
+   */
   logs?: any[]
+  /**
+   * Value returned by the contract
+   */
   returnValue?: Buffer
+  /**
+   * Amount of gas to refund from deleting storage values
+   */
   gasRefund?: BN
+  /**
+   * A set of accounts that have self-destructed
+   */
   selfdestruct?: { [k: string]: Buffer }
 }
 
+/**
+ * @ignore
+ */
 export default class Interpreter {
   _vm: any
   _state: PStateManager

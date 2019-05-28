@@ -9,6 +9,9 @@ import { genesisStateByName } from 'ethereumjs-common/dist/genesisStates'
 import Account from 'ethereumjs-account'
 import Cache from './cache'
 
+/**
+ * Storage values of an account
+ */
 export interface StorageDump {
   [key: string]: string
 }
@@ -35,7 +38,7 @@ export default class StateManager {
   constructor(opts: any = {}) {
     let common = opts.common
     if (!common) {
-      common = new Common('mainnet', 'byzantium')
+      common = new Common('mainnet', 'petersburg')
     }
     this._common = common
 

@@ -2,6 +2,9 @@ const asyncLib = require('async')
 const Tree = require('functional-red-black-tree')
 import Account from 'ethereumjs-account'
 
+/**
+ * @ignore
+ */
 export default class Cache {
   _cache: any
   _checkpoints: any[]

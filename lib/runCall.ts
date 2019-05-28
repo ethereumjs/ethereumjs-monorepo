@@ -7,6 +7,9 @@ import Message from './evm/message'
 import { default as Interpreter, InterpreterResult } from './evm/interpreter'
 const Block = require('ethereumjs-block')
 
+/**
+ * Options for running a call (or create) operation
+ */
 export interface RunCallOpts {
   block?: any
   storageReader?: StorageReader
@@ -17,6 +20,9 @@ export interface RunCallOpts {
   to?: Buffer
   value?: Buffer
   data?: Buffer
+  /**
+   * This is for CALLCODE where the code to load is different than the code from the to account
+   */
   code?: Buffer
   depth?: number
   compiled?: boolean
@@ -26,25 +32,19 @@ export interface RunCallOpts {
   delegatecall?: boolean
 }
 
+/**
+ * Callback for the [[runCall]] method.
+ */
 export interface RunCallCb {
+  /**
+   * @param error - Any error that occured during execution, or `null`
+   * @param results - Results of call, or `null` if an error occured
+   */
   (err: Error | null, results: InterpreterResult | null): void
 }
 
 /**
- * runs a CALL operation
- * @method vm.runCall
- * @private
- * @param opts
- * @param opts.block {Block}
- * @param opts.caller {Buffer}
- * @param opts.code {Buffer} this is for CALLCODE where the code to load is different than the code from the to account.
- * @param opts.data {Buffer}
- * @param opts.gasLimit {Buffer | BN.js }
- * @param opts.gasPrice {Buffer}
- * @param opts.origin {Buffer} []
- * @param opts.to {Buffer}
- * @param opts.value {Buffer}
- * @param {Function} cb the callback
+ * @ignore
  */
 export default function runCall(this: VM, opts: RunCallOpts, cb: RunCallCb): void {
   const block = opts.block || new Block()
