@@ -7,6 +7,7 @@ import { debug as createDebugLogger } from 'debug'
 import { int2buffer, buffer2int } from '../util'
 import { ECIES } from './ecies'
 import { Socket } from 'net'
+import { ETH, LES } from '../'
 
 const debug = createDebugLogger('devp2p:rlpx:peer')
 
@@ -48,7 +49,7 @@ export type HelloMsg = {
 }
 
 export interface ProtocolDescriptor {
-  protocol: any
+  protocol?: any
   offset: number
   length?: number
 }
@@ -407,8 +408,8 @@ export class Peer extends EventEmitter {
       int2buffer(BASE_PROTOCOL_VERSION),
       this._clientId,
       this._capabilities!.map((obj: any) => [Buffer.from(obj.name), int2buffer(obj.version)]),
-      this._port === null ? Buffer.allocUnsafe(0) : int2buffer(this._port!),
-      this._id!,
+      this._port === null ? Buffer.allocUnsafe(0) : int2buffer(this._port),
+      this._id,
     ]
 
     if (!this._closed) {
@@ -462,7 +463,7 @@ export class Peer extends EventEmitter {
     return this._hello
   }
 
-  getProtocols(): ProtocolDescriptor[] {
+  getProtocols<T extends ETH | LES>(): T[] {
     return this._protocols.map(obj => obj.protocol)
   }
 
