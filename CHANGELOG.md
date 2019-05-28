@@ -6,6 +6,21 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [1.2.0] - 2019-05-27
+
+**DRAFT Istanbul Hardfork Support**
+
+Draft support for the upcoming `Istanbul` hardfork planned for October 2019,
+use `istanbul` as constructor `hardfork` parameter to activate. Parameters
+relevant to new EIPs accepted for the HF will be added along subsequent `1.2.x`
+releases, the finalized HF version will be released along a subsequent `1.x.0`
+release (likely `1.3.0`).
+
+See new `hardforks/istanbul.json` file as well as PR
+[#51](https://github.com/ethereumjs/ethereumjs-common/pull/51).
+
+[1.2.0]: https://github.com/ethereumjs/ethereumjs-common/compare/v1.1.0...v1.2.0
+
 ## [1.1.0] - 2019-02-04
 
 **Petersburg Hardfork Support**
