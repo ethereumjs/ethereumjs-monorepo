@@ -136,7 +136,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
       `the tx doesn't have the correct nonce. account has nonce of: ${new BN(
         fromAccount.nonce,
       ).toString()}\
-      tx has nonce of: $new BN(tx.nonce).toString()}`,
+      tx has nonce of: ${new BN(tx.nonce).toString()}`,
     )
   }
   // Update from account's nonce and balance
