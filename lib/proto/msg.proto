@@ -1,5 +1,5 @@
 syntax = "proto3";
-package io.iohk.ethereum.extvm;
+package org.kframework.kevm.extvm;
 
 message Hello {
   string version = 1;
@@ -47,6 +47,9 @@ message EthereumConfig {
   bytes eip161BlockNumber = 5;
   bytes maxCodeSize = 6;
   bytes accountStartNonce = 7;
+  bytes byzantiumBlockNumber = 8;
+  bytes constantinopleBlockNumber = 9;
+  bytes petersburgBlockNumber = 10;
 }
 
 message IeleConfig {
