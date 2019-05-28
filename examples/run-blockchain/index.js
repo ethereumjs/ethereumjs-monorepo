@@ -4,7 +4,7 @@ const Trie = require('merkle-patricia-tree/secure')
 const Block = require('ethereumjs-block')
 const Blockchain = require('ethereumjs-blockchain')
 const BlockHeader = require('ethereumjs-block/header.js')
-const VM = require('../../')
+const VM = require('../../').default
 const level = require('level')
 const levelMem = require('level-mem')
 const Account = require('ethereumjs-account').default
@@ -17,14 +17,17 @@ var blockchainDB = levelMem()
 
 var state = new Trie()
 
-var blockchain = new Blockchain(blockchainDB)
+var hardfork = testData.network.toLowerCase()
+
+var blockchain = new Blockchain({ db: blockchainDB, hardfork })
 blockchain.ethash.cacheDB = level('./.cachedb')
 
 var vm = new VM({
   state: state,
-  blockchain: blockchain
+  blockchain: blockchain,
+  hardfork
 })
-var genesisBlock = new Block()
+var genesisBlock = new Block({ hardfork })
 
 vm.on('beforeTx', function (tx) {
   tx._homestead = true
@@ -44,9 +47,9 @@ async.series([
 
   // create and add genesis block
   function (next) {
-    genesisBlock.header = new BlockHeader(
-                            testData.genesisBlockHeader
-                          )
+    genesisBlock.header = new BlockHeader(testData.genesisBlockHeader,
+      { hardfork })
+
     blockchain.putGenesis(genesisBlock, next)
   },
 
@@ -57,7 +60,7 @@ async.series([
     function eachBlock (raw, cb) {
       try {
         var block = new Block(
-            Buffer.from(raw.rlp.slice(2), 'hex'))
+          Buffer.from(raw.rlp.slice(2), 'hex'))
 
         // forces the block into thinking they are homestead
         block.header.isHomestead = function () {
@@ -162,3 +165,4 @@ function format (a, toZero, isHex) {
 
   return a
 }
+
