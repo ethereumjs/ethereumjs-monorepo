@@ -2,7 +2,7 @@ import * as tape from 'tape'
 import { Buffer } from 'buffer'
 import { bufferToHex } from 'ethereumjs-util'
 import Common from 'ethereumjs-common'
-import FakeTransaction from '../src/fake'
+import { FakeTransaction } from '../src'
 import { FakeTxData } from './types'
 
 // Use private key 0x0000000000000000000000000000000000000000000000000000000000000001 as 'from' Account
