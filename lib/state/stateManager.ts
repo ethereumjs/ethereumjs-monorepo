@@ -28,6 +28,7 @@ export default class StateManager {
   _touched: Set<string>
   _touchedStack: Set<string>[]
   _checkpointCount: number
+  _originalStorageCache: Map<string, Map<string, Buffer>>
 
   /**
    * Instantiate the StateManager interface.
@@ -48,6 +49,7 @@ export default class StateManager {
     this._touched = new Set()
     this._touchedStack = []
     this._checkpointCount = 0
+    this._originalStorageCache = new Map()
   }
 
   /**
@@ -219,6 +221,38 @@ export default class StateManager {
         cb(null, decoded)
       })
     })
+  }
+
+  /**
+   * Caches the storage value associated with the provided `address` and `key`
+   * on first invocation, and returns the cached (original) value from then
+   * onwards. This is used to get the original value of a storage slot for
+   * computing gas costs according to EIP-1283.
+   * @param address - Address of the account to get the storage for
+   * @param key - Key in the account's storage to get the value for
+   */
+  getOriginalContractStorage(address: Buffer, key: Buffer, cb: any): void {
+    const addressHex = address.toString('hex')
+    const keyHex = key.toString('hex')
+
+    let map: Map<string, Buffer>
+    if (!this._originalStorageCache.has(addressHex)) {
+      map = new Map()
+      this._originalStorageCache.set(addressHex, map)
+    } else {
+      map = this._originalStorageCache.get(addressHex) as Map<string, Buffer>
+    }
+
+    if (map.has(keyHex)) {
+      cb(null, map.get(keyHex))
+    } else {
+      this.getContractStorage(address, key, (err: Error, current: Buffer) => {
+        if (err) return cb(err)
+
+        map.set(keyHex, current)
+        cb(null, current)
+      })
+    }
   }
 
   /**
@@ -581,5 +615,14 @@ export default class StateManager {
         cb()
       },
     )
+  }
+
+  /**
+   * Clears the original storage cache. Refer to [[getOriginalContractStorage]]
+   * for more explanation.
+   * @ignore
+   */
+  _clearOriginalStorageCache(): void {
+    this._originalStorageCache = new Map()
   }
 }

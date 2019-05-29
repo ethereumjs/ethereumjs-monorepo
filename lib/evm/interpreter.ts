@@ -9,7 +9,6 @@ import {
 } from 'ethereumjs-util'
 import Account from 'ethereumjs-account'
 import { VmError, ERROR } from '../exceptions'
-import { StorageReader } from '../state'
 import PStateManager from '../state/promisified'
 import { getPrecompile, PrecompileFunc, PrecompileResult } from './precompiles'
 import { OOGResult } from './precompiles/types'
@@ -86,14 +85,12 @@ export interface ExecResult {
 export default class Interpreter {
   _vm: any
   _state: PStateManager
-  _storageReader: StorageReader
   _tx: TxContext
   _block: any
 
-  constructor(vm: any, txContext: TxContext, block: any, storageReader: StorageReader) {
+  constructor(vm: any, txContext: TxContext, block: any) {
     this._vm = vm
     this._state = new PStateManager(this._vm.stateManager)
-    this._storageReader = storageReader || new StorageReader(this._state._wrapped)
     this._tx = txContext
     this._block = block
   }
@@ -270,8 +267,7 @@ export default class Interpreter {
     }
 
     const loop = new Loop(this._vm, eei)
-    const opts = Object.assign({ storageReader: this._storageReader }, loopOpts)
-    const loopRes = await loop.run(message.code as Buffer, opts)
+    const loopRes = await loop.run(message.code as Buffer, loopOpts)
 
     let result = eei._result
     let gasUsed = message.gasLimit.sub(eei._gasLeft)

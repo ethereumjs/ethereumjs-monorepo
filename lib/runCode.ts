@@ -16,7 +16,6 @@ import VM from './index'
 import TxContext from './evm/txContext'
 import Message from './evm/message'
 import { default as Interpreter, ExecResult } from './evm/interpreter'
-import { StorageReader } from './state'
 const Block = require('ethereumjs-block')
 
 /**
@@ -27,7 +26,6 @@ export interface RunCodeOpts {
    * The [`Block`](https://github.com/ethereumjs/ethereumjs-block) the `tx` belongs to. If omitted a blank block will be used
    */
   block?: any
-  storageReader?: StorageReader
   interpreter?: Interpreter
   txContext?: TxContext
   gasPrice?: Buffer
@@ -88,10 +86,6 @@ export default function runCode(this: VM, opts: RunCodeOpts, cb: RunCodeCb): voi
     opts.block = new Block()
   }
 
-  if (!opts.storageReader) {
-    opts.storageReader = new StorageReader(this.stateManager)
-  }
-
   // Backwards compatibility
   if (!opts.txContext) {
     opts.txContext = new TxContext(
@@ -115,7 +109,7 @@ export default function runCode(this: VM, opts: RunCodeOpts, cb: RunCodeCb): voi
 
   let interpreter = opts.interpreter
   if (!interpreter) {
-    interpreter = new Interpreter(this, opts.txContext, opts.block, opts.storageReader)
+    interpreter = new Interpreter(this, opts.txContext, opts.block)
   }
 
   interpreter
