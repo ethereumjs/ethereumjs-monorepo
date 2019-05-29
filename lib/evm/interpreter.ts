@@ -288,7 +288,7 @@ export default class Interpreter {
     return {
       ...result,
       runState: {
-        ...loopRes.runState,
+        ...loopRes.runState!,
         ...result,
         ...eei._env,
       },
