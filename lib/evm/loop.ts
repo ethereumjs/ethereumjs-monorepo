@@ -1,6 +1,6 @@
 import BN = require('bn.js')
 import Common from 'ethereumjs-common'
-import { StateManager, StorageReader } from '../state'
+import { StateManager } from '../state'
 import PStateManager from '../state/promisified'
 import { ERROR, VmError } from '../exceptions'
 import Memory from './memory'
@@ -13,7 +13,6 @@ export type IsException = 0 | 1
 
 export interface RunOpts {
   pc?: number
-  storageReader?: StorageReader
 }
 
 export interface RunState {
@@ -27,7 +26,6 @@ export interface RunState {
   validJumps: number[]
   _common: Common
   stateManager: StateManager
-  storageReader: StorageReader
   eei: EEI
 }
 
@@ -59,7 +57,6 @@ export default class Loop {
       // TODO: Replace with EEI methods
       _common: this._vm._common,
       stateManager: this._state._wrapped,
-      storageReader: new StorageReader(this._state._wrapped),
       eei: this._eei,
     }
   }
@@ -69,7 +66,6 @@ export default class Loop {
       code: code,
       programCounter: opts.pc || this._runState.programCounter,
       validJumps: this._getValidJumpDests(code),
-      storageReader: opts.storageReader || this._runState.storageReader,
     })
 
     // Check that the programCounter is in range

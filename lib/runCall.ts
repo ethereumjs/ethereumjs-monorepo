@@ -1,7 +1,6 @@
 import BN = require('bn.js')
 import { zeros } from 'ethereumjs-util'
 import VM from './index'
-import { StorageReader } from './state'
 import TxContext from './evm/txContext'
 import Message from './evm/message'
 import { default as Interpreter, InterpreterResult } from './evm/interpreter'
@@ -12,7 +11,6 @@ const Block = require('ethereumjs-block')
  */
 export interface RunCallOpts {
   block?: any
-  storageReader?: StorageReader
   gasPrice?: Buffer
   origin?: Buffer
   caller?: Buffer
@@ -48,7 +46,6 @@ export interface RunCallCb {
  */
 export default function runCall(this: VM, opts: RunCallOpts, cb: RunCallCb): void {
   const block = opts.block || new Block()
-  const storageReader = opts.storageReader || new StorageReader(this.stateManager)
 
   const txContext = new TxContext(
     opts.gasPrice || Buffer.alloc(0),
@@ -69,7 +66,7 @@ export default function runCall(this: VM, opts: RunCallOpts, cb: RunCallCb): voi
     delegatecall: opts.delegatecall || false,
   })
 
-  const interpreter = new Interpreter(this, txContext, block, storageReader)
+  const interpreter = new Interpreter(this, txContext, block)
   interpreter
     .executeMessage(message)
     .then(results => cb(null, results))

@@ -6,7 +6,6 @@ import Bloom from './bloom'
 import { default as Interpreter, InterpreterResult } from './evm/interpreter'
 import Message from './evm/message'
 import TxContext from './evm/txContext'
-import { StorageReader } from './state'
 import PStateManager from './state/promisified'
 const Block = require('ethereumjs-block')
 
@@ -157,8 +156,8 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     value: tx.value,
     data: tx.data,
   })
-  const storageReader = new StorageReader(this.stateManager)
-  const interpreter = new Interpreter(this, txContext, block, storageReader)
+  state._wrapped._clearOriginalStorageCache()
+  const interpreter = new Interpreter(this, txContext, block)
   const results = (await interpreter.executeMessage(message)) as RunTxResult
 
   /*

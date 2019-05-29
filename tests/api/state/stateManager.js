@@ -177,3 +177,84 @@ tape('StateManager', (t) => {
     st.end()
   })
 })
+
+tape('Original storage cache', async t => {
+  const stateManager = new StateManager()
+
+  const putAccount = promisify(stateManager.putAccount.bind(stateManager))
+  const putContractStorage = promisify(stateManager.putContractStorage.bind(stateManager))
+  const getContractStorage = promisify(stateManager.getContractStorage.bind(stateManager))
+  const getOriginalContractStorage = promisify(stateManager.getOriginalContractStorage.bind(stateManager))
+
+  const address = 'a94f5374fce5edbc8e2a8697c15331677e6ebf0b'
+  const addressBuffer = Buffer.from(address, 'hex')
+  const account = createAccount()
+  await putAccount(address, account)
+
+  const key = Buffer.from('1234', 'hex')
+  const value = Buffer.from('1234', 'hex')
+
+  t.test('should initially have empty storage value', async st => {
+    const res = await getContractStorage(addressBuffer, key)
+    st.deepEqual(res, Buffer.alloc(0))
+
+    const origRes = await getOriginalContractStorage(addressBuffer, key)
+    st.deepEqual(origRes, Buffer.alloc(0))
+
+    stateManager._clearOriginalStorageCache()
+
+    st.end()
+  })
+
+  t.test('should set original storage value', async st => {
+    await putContractStorage(addressBuffer, key, value)
+    const res = await getContractStorage(addressBuffer, key)
+    st.deepEqual(res, value)
+
+    st.end()
+  })
+
+  t.test('should get original storage value', async st => {
+    const res = await getOriginalContractStorage(addressBuffer, key)
+    st.deepEqual(res, value)
+    st.end()
+  })
+
+  t.test('should return correct original value after modification', async st => {
+    const newValue = Buffer.from('1235', 'hex')
+    await putContractStorage(addressBuffer, key, newValue)
+    const res = await getContractStorage(addressBuffer, key)
+    st.deepEqual(res, newValue)
+
+    const origRes = await getOriginalContractStorage(addressBuffer, key)
+    st.deepEqual(origRes, value)
+    st.end()
+  })
+
+  t.test('should cache keys separately', async st => {
+    const key2 = Buffer.from('12', 'hex')
+    const value2 = Buffer.from('12', 'hex')
+    const value3 = Buffer.from('123', 'hex')
+    await putContractStorage(addressBuffer, key2, value2)
+
+    let res = await getContractStorage(addressBuffer, key2)
+    st.deepEqual(res, value2)
+    let origRes = await getOriginalContractStorage(addressBuffer, key2)
+    st.deepEqual(origRes, value2)
+
+    await putContractStorage(addressBuffer, key2, value3)
+
+    res = await getContractStorage(addressBuffer, key2)
+    st.deepEqual(res, value3)
+    origRes = await getOriginalContractStorage(addressBuffer, key2)
+    st.deepEqual(origRes, value2)
+
+    // Check previous key
+    res = await getContractStorage(addressBuffer, key)
+    st.deepEqual(res, Buffer.from('1235', 'hex'))
+    origRes = await getOriginalContractStorage(addressBuffer, key)
+    st.deepEqual(origRes, value)
+
+    st.end()
+  })
+})

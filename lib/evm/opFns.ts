@@ -892,15 +892,25 @@ function maxCallGas(gasLimit: BN, gasLeft: BN): BN {
 
 function getContractStorage(runState: RunState, address: Buffer, key: Buffer) {
   return new Promise((resolve, reject) => {
-    const cb = (err: Error, res: any) => {
+    const cb = (err: Error | null, res: any) => {
       if (err) return reject(err)
       resolve(res)
     }
-    if (runState._common.hardfork() === 'constantinople') {
-      runState.storageReader.getContractStorage(address, key, cb)
-    } else {
-      runState.stateManager.getContractStorage(address, key, cb)
-    }
+    runState.stateManager.getContractStorage(address, key, (err: Error, current: Buffer) => {
+      if (err) return cb(err, null)
+      if (runState._common.hardfork() === 'constantinople') {
+        runState.stateManager.getOriginalContractStorage(
+          address,
+          key,
+          (err: Error, original: Buffer) => {
+            if (err) return cb(err, null)
+            cb(null, { current, original })
+          },
+        )
+      } else {
+        cb(null, current)
+      }
+    })
   })
 }
 

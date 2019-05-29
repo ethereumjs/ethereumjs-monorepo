@@ -37,6 +37,10 @@ export default class PStateManager {
     return promisify(this._wrapped.getContractStorage.bind(this._wrapped))(addr, key)
   }
 
+  getOriginalContractStorage(addr: Buffer, key: Buffer): Promise<any> {
+    return promisify(this._wrapped.getOriginalContractStorage.bind(this._wrapped))(addr, key)
+  }
+
   putContractStorage(addr: Buffer, key: Buffer, value: Buffer): Promise<void> {
     return promisify(this._wrapped.putContractStorage.bind(this._wrapped))(addr, key, value)
   }
