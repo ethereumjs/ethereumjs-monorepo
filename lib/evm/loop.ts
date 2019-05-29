@@ -30,7 +30,7 @@ export interface RunState {
 }
 
 export interface LoopResult {
-  runState: RunState
+  runState?: RunState
   exception: IsException
   exceptionError?: VmError | ERROR
 }
