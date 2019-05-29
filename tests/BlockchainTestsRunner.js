@@ -100,6 +100,14 @@ module.exports = function runBlockchainTest (options, testData, t, cb) {
         done()
       })
     },
+    function setGenesisStateRoot (done) {
+      // This is a trick to avoid generating the canonical genesis
+      // state. Generating the genesis state is not needed because
+      // blockchain tests come with their own `pre` world state.
+      // TODO: Add option to `runBlockchain` not to generate genesis state.
+      vm._common.genesis().stateRoot = state.root
+      done()
+    },
     function runBlockchain (done) {
       vm.runBlockchain(function () {
         done()
