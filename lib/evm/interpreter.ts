@@ -231,7 +231,7 @@ export default class Interpreter {
     ) {
       result.gasUsed = totalGas
     } else {
-      Object.assign(result, OOGResult(message.gasLimit))
+      result = { ...result, ...OOGResult(message.gasLimit) }
     }
 
     // Save code if a new contract was created
@@ -276,22 +276,28 @@ export default class Interpreter {
         gasUsed = message.gasLimit
       }
 
-      // remove any logs on error
-      result = Object.assign({}, result, {
+      // Clear the result on error
+      result = {
+        ...result,
         logs: [],
-        gasRefund: null,
-        selfdestruct: null,
-      })
+        gasRefund: new BN(0),
+        selfdestruct: {},
+      }
     }
 
-    return Object.assign({}, result, {
-      runState: Object.assign({}, loopRes.runState, result, eei._env),
+    return {
+      ...result,
+      runState: {
+        ...loopRes.runState!,
+        ...result,
+        ...eei._env,
+      },
       exception: loopRes.exception,
       exceptionError: loopRes.exceptionError,
       gas: eei._gasLeft,
       gasUsed,
       return: result.returnValue ? result.returnValue : Buffer.alloc(0),
-    })
+    }
   }
 
   /**

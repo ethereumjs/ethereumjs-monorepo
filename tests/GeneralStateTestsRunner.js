@@ -11,7 +11,7 @@ function parseTestCases (forkConfig, testData, data, gasLimit, value) {
   if (testData['post'][forkConfig]) {
     testCases = testData['post'][forkConfig].map(testCase => {
       let testIndexes = testCase['indexes']
-      let tx = Object.assign({}, testData.transaction)
+      let tx = { ...testData.transaction }
       if (data !== undefined && testIndexes['data'] !== data) {
         return null
       }

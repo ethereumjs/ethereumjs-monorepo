@@ -62,11 +62,9 @@ export default class Loop {
   }
 
   async run(code: Buffer, opts: RunOpts = {}): Promise<LoopResult> {
-    Object.assign(this._runState, {
-      code: code,
-      programCounter: opts.pc || this._runState.programCounter,
-      validJumps: this._getValidJumpDests(code),
-    })
+    this._runState.code = code
+    this._runState.programCounter = opts.pc || this._runState.programCounter
+    this._runState.validJumps = this._getValidJumpDests(code)
 
     // Check that the programCounter is in range
     const pc = this._runState.programCounter
