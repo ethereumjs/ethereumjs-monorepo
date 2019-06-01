@@ -14,7 +14,6 @@ The data of a fake (self-signing) transaction.
 
 ### Properties
 
-- [chainId](faketxdata.md#chainid)
 - [data](faketxdata.md#data)
 - [from](faketxdata.md#from)
 - [gasLimit](faketxdata.md#gaslimit)
@@ -30,20 +29,6 @@ The data of a fake (self-signing) transaction.
 
 ## Properties
 
-<a id="chainid"></a>
-
-### `<Optional>` chainId
-
-**● chainId**: _`undefined` \| `number`_
-
-_Inherited from [TxData](txdata.md).[chainId](txdata.md#chainid)_
-
-_Defined in [types.ts:28](https://github.com/alcuadrado/ethereumjs-tx/blob/84f5b82/src/types.ts#L28)_
-
-EIP 155 chainId - mainnet: 1, ropsten: 3
-
----
-
 <a id="data"></a>
 
 ### `<Optional>` data
@@ -52,7 +37,7 @@ EIP 155 chainId - mainnet: 1, ropsten: 3
 
 _Inherited from [TxData](txdata.md).[data](txdata.md#data)_
 
-_Defined in [types.ts:53](https://github.com/alcuadrado/ethereumjs-tx/blob/84f5b82/src/types.ts#L53)_
+_Defined in [types.ts:48](https://github.com/ethereumjs/ethereumjs-tx/blob/5b72ca6/src/types.ts#L48)_
 
 This will contain the data of the message or the init of a contract
 
@@ -64,7 +49,7 @@ This will contain the data of the message or the init of a contract
 
 **● from**: _[BufferLike](../#bufferlike)_
 
-_Defined in [types.ts:83](https://github.com/alcuadrado/ethereumjs-tx/blob/84f5b82/src/types.ts#L83)_
+_Defined in [types.ts:78](https://github.com/ethereumjs/ethereumjs-tx/blob/5b72ca6/src/types.ts#L78)_
 
 The sender of the Tx.
 
@@ -78,7 +63,7 @@ The sender of the Tx.
 
 _Inherited from [TxData](txdata.md).[gasLimit](txdata.md#gaslimit)_
 
-_Defined in [types.ts:33](https://github.com/alcuadrado/ethereumjs-tx/blob/84f5b82/src/types.ts#L33)_
+_Defined in [types.ts:28](https://github.com/ethereumjs/ethereumjs-tx/blob/5b72ca6/src/types.ts#L28)_
 
 The transaction's gas limit.
 
@@ -92,7 +77,7 @@ The transaction's gas limit.
 
 _Inherited from [TxData](txdata.md).[gasPrice](txdata.md#gasprice)_
 
-_Defined in [types.ts:38](https://github.com/alcuadrado/ethereumjs-tx/blob/84f5b82/src/types.ts#L38)_
+_Defined in [types.ts:33](https://github.com/ethereumjs/ethereumjs-tx/blob/5b72ca6/src/types.ts#L33)_
 
 The transaction's gas price.
 
@@ -106,7 +91,7 @@ The transaction's gas price.
 
 _Inherited from [TxData](txdata.md).[nonce](txdata.md#nonce)_
 
-_Defined in [types.ts:48](https://github.com/alcuadrado/ethereumjs-tx/blob/84f5b82/src/types.ts#L48)_
+_Defined in [types.ts:43](https://github.com/ethereumjs/ethereumjs-tx/blob/5b72ca6/src/types.ts#L43)_
 
 The transaction's nonce.
 
@@ -120,7 +105,7 @@ The transaction's nonce.
 
 _Inherited from [TxData](txdata.md).[r](txdata.md#r)_
 
-_Defined in [types.ts:63](https://github.com/alcuadrado/ethereumjs-tx/blob/84f5b82/src/types.ts#L63)_
+_Defined in [types.ts:58](https://github.com/ethereumjs/ethereumjs-tx/blob/5b72ca6/src/types.ts#L58)_
 
 EC signature parameter.
 
@@ -134,7 +119,7 @@ EC signature parameter.
 
 _Inherited from [TxData](txdata.md).[s](txdata.md#s)_
 
-_Defined in [types.ts:68](https://github.com/alcuadrado/ethereumjs-tx/blob/84f5b82/src/types.ts#L68)_
+_Defined in [types.ts:63](https://github.com/ethereumjs/ethereumjs-tx/blob/5b72ca6/src/types.ts#L63)_
 
 EC signature parameter.
 
@@ -148,7 +133,7 @@ EC signature parameter.
 
 _Inherited from [TxData](txdata.md).[to](txdata.md#to)_
 
-_Defined in [types.ts:43](https://github.com/alcuadrado/ethereumjs-tx/blob/84f5b82/src/types.ts#L43)_
+_Defined in [types.ts:38](https://github.com/ethereumjs/ethereumjs-tx/blob/5b72ca6/src/types.ts#L38)_
 
 The transaction's the address is sent to.
 
@@ -162,7 +147,7 @@ The transaction's the address is sent to.
 
 _Inherited from [TxData](txdata.md).[v](txdata.md#v)_
 
-_Defined in [types.ts:58](https://github.com/alcuadrado/ethereumjs-tx/blob/84f5b82/src/types.ts#L58)_
+_Defined in [types.ts:53](https://github.com/ethereumjs/ethereumjs-tx/blob/5b72ca6/src/types.ts#L53)_
 
 EC recovery ID.
 
@@ -176,7 +161,7 @@ EC recovery ID.
 
 _Inherited from [TxData](txdata.md).[value](txdata.md#value)_
 
-_Defined in [types.ts:73](https://github.com/alcuadrado/ethereumjs-tx/blob/84f5b82/src/types.ts#L73)_
+_Defined in [types.ts:68](https://github.com/ethereumjs/ethereumjs-tx/blob/5b72ca6/src/types.ts#L68)_
 
 The amount of Ether sent.
 
