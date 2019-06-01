@@ -89,12 +89,12 @@ export interface TransactionOptions {
   common?: Common
 
   /**
-   * The chain of the transaction.
+   * The chain of the transaction, default: 'mainnet'
    */
   chain?: number | string
 
   /**
-   * The hardfork of the transaction.
+   * The hardfork of the transaction, default: 'petersburg'
    */
   hardfork?: string
 }
