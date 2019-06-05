@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [1.2.1] - 2019-06-03
+
+- Added `Istanbul` HF candidate [EIP-1108](https://eips.ethereum.org/EIPS/eip-1108)
+  (`DRAFT`) updated `alt_bn128` precompile gas costs (see `hardforks/istanbul.json`)
+
+[1.2.1]: https://github.com/ethereumjs/ethereumjs-common/compare/v1.2.0...v1.2.1
+
 ## [1.2.0] - 2019-05-27
 
 **DRAFT Istanbul Hardfork Support**

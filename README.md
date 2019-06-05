@@ -62,6 +62,8 @@ to ease `blockNumber` based access to parameters.
 
 # Hardfork Params
 
+## Active Hardforks
+
 There are currently parameter changes by the following past and future hardfork by the
 library supported:
 
@@ -73,7 +75,19 @@ library supported:
 - `byzantium`
 - `constantinople`
 - `petersburg` (aka `constantinopleFix`, apply together with `constantinople`)
-- `istanbul` (`DRAFT`)
+
+## Future Hardforks
+
+Scope and technical details on the `Istanbul` HF are currently forming out
+within [EIP-1679](https://eips.ethereum.org/EIPS/eip-1679) respectively the
+associated EIP pages.
+
+Supported EIPs in the library:
+
+- [EIP-1108](https://eips.ethereum.org/EIPS/eip-1108) `alt_bn128` precompile
+  gas cost reductions (HF candidate, `DRAFT` status)
+
+## Parameter Access
 
 For hardfork-specific parameter access with the `param()` and `paramByBlock()` functions
 you can use the following `topics`:
