@@ -16,8 +16,30 @@ The VM currently supports the following hardfork rules:
 - `Byzantium`
 - `Constantinople`
 - `Petersburg` (default)
+- `Istanbul` (`DRAFT`)
 
 If you are still looking for a [Spurious Dragon](https://github.com/ethereum/EIPs/blob/master/EIPS/eip-607.md) compatible version of this library install the latest of the `2.2.x` series (see [Changelog](./CHANGELOG.md)).
+
+##### Istanbul Harfork Support
+
+With the `v4.0.0` release we are starting to add implementations of EIPs being
+candidates or accepted for inclusion within the `Istanbul` hardfork. You can
+activate a preliminary `Istanbul` VM by using the `istanbul` `hardfork` option
+flag.
+
+Currently supported `Istanbul` EIPs:
+
+- [EIP-1108](https://eips.ethereum.org/EIPS/eip-1803) (Candidate): `alt_bn128` Gas Cost Reductions, see PR [#540](https://github.com/ethereumjs/ethereumjs-vm/pull/540)
+
+Note that this is highly experimental and solely meant for experimental purposes,
+since `Istanbul` scope is not yet finalized and most EIPs are still in a `DRAFT`
+state and likely subject to updates and changes.
+
+A final `Istanbul` VM will be released along a major version bump to likely
+`v5.0.0` or `v6.0.0`.
+
+Have a look at the corresponding issue to follow the discussion and current state on
+[Istanbul planning](https://github.com/ethereumjs/ethereumjs-vm/issues/501).
 
 # INSTALL
 
