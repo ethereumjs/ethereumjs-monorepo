@@ -6,6 +6,68 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [2.0.0] - 2019-06-03
+
+**TypeScript / Module Import / Node Support**
+
+First `TypeScript` based release of the library, see
+PR [#145](https://github.com/ethereumjs/ethereumjs-tx/pull/145) for details.
+
+This comes along with some changes on the API, Node import of the exposed
+classes now goes like this:
+
+```javascript
+const EthereumTx = require('ethereumjs-transaction').Transaction
+const FakeEthereumTx = require('ethereumjs-transaction').FakeTransaction
+```
+
+The library now also comes with a **type declaration file** distributed along
+with the package published.
+
+Along with this release we drop official support for `Node` versions `4`,`5`
+and `6`. Officially tested versions are now `Node` `8`, `10` and `11`
+(see PRs [#138](https://github.com/ethereumjs/ethereumjs-tx/pull/138) and
+[#146](https://github.com/ethereumjs/ethereumjs-tx/pull/146)).
+
+**Hardfork Support / Official Test Updates**
+
+Along with a long overdue update of the official Ethereum Transaction tests
+(see PRs [#131](https://github.com/ethereumjs/ethereumjs-tx/pull/131) and
+[#138](https://github.com/ethereumjs/ethereumjs-tx/pull/138) for
+`FakeTransaction`) and
+an introduction of setting chain and hardfork by using our shared
+[ethereumjs-common](https://github.com/ethereumjs/ethereumjs-common) class
+(see PR [#131](https://github.com/ethereumjs/ethereumjs-tx/pull/130)) the
+transaction library now supports all HFs up to the `Petersburg` hardfork,
+see [constructor option docs](https://github.com/ethereumjs/ethereumjs-tx/blob/master/docs/interfaces/transactionoptions.md) for information on instantiation and default values (current hardfork default: `petersburg`).
+
+API Changes:
+
+- Removal of the `data.chainId` parameter, use the `opts.chain` parameter or a custom `Common` instance
+
+**Default EIP-155 Support**
+
+Along with defaulting to a post-`Spurious Dragon` HF replay protection from
+[EIP-155](https://eips.ethereum.org/EIPS/eip-155) is now activated by default. Transactions are subsequently also by default signed with `EIP-155` replay protection,
+see PRs [#153](https://github.com/ethereumjs/ethereumjs-tx/pull/153),
+[#147](https://github.com/ethereumjs/ethereumjs-tx/pull/147) and
+[#143](https://github.com/ethereumjs/ethereumjs-tx/pull/143).
+
+This comes with some changes in how different `v` values passed on instantation
+or changed on runtime are handled:
+
+- The constructor throws if the `v` value is present, indicates that `EIP-155`
+  was enabled, and the chain id it indicates doesn't match the one of the
+  internal `common` object
+- No default `v` is set. If a transaction isn't signed, it would be an empty
+  buffer
+- If `v` is changed after construction its value is validated in its setter
+
+For activating non-`EIP-155` behavior instantiate the transaction with a
+pre-`Spurious Dragon` hardfork option.
+
+[2.0.0]: https://github.com/ethereumjs/ethereumjs-tx/compare/v1.3.7...v2.0.0
+
 ## [1.3.7] - 2018-07-25
 
 - Fix bug causing `FakeTransaction.from` to not retrieve sender address from tx signature, see PR [#118](https://github.com/ethereumjs/ethereumjs-tx/pull/118)

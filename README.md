@@ -11,10 +11,10 @@
 
 # USAGE
 
-- [example](https://github.com/ethereumjs/ethereumjs-tx/blob/master/examples/transactions.js)
+- [example](https://github.com/ethereumjs/ethereumjs-tx/blob/master/examples/transactions.ts)
 
 ```javascript
-const EthereumTx = require('ethereumjs-tx')
+const EthereumTx = require('ethereumjs-tx').Transaction
 const privateKey = Buffer.from(
   'e331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109',
   'hex',
@@ -34,11 +34,14 @@ tx.sign(privateKey)
 const serializedTx = tx.serialize()
 ```
 
-**Note:** this package expects ECMAScript 6 (ES6) as a minimum environment. From browsers lacking ES6 support, please use a shim (like [es6-shim](https://github.com/paulmillr/es6-shim)) before including any of the builds from this repo.
+# Chain and Hardfork Support
 
-# BROWSER
+This library uses the [ethereumjs-common](https://github.com/ethereumjs/ethereumjs-common)
+package to support different chain and hardfork options, see API documentation
+for details.
 
-For a browser build please see https://github.com/ethereumjs/browser-builds.
+Currently all hardforks up to `petersburg` are supported, `EIP-155` replay protection
+is activated since the `spuriousDragon` hardfork.
 
 # API
 
