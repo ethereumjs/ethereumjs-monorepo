@@ -33,7 +33,7 @@ tape('VM with default blockchain', (t) => {
   })
 
   t.test('should only accept common or chain and fork', (st) => {
-    const common = new Common('mainnet');
+    const common = new Common('mainnet')
 
     st.throws(() => new VM({ chain: 'a', common }))
     st.throws(() => new VM({ hardfork: 'a', common }))
@@ -104,7 +104,7 @@ tape('VM with blockchain', (t) => {
     const setupPreP = promisify(setupPreConditions)
     await setupPreP(vm.stateManager._trie, testData)
 
-    vm.runBlock = (block, cb) => cb(new Error('test'))
+    vm.runBlock = (block) => new Promise((resolve, reject) => reject(new Error('test')))
     runBlockchainP(vm)
       .then(() => st.fail('it hasn\'t returned any errors'))
       .catch((e) => {

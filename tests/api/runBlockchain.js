@@ -49,13 +49,13 @@ tape('runBlockchain', (t) => {
   t.test('should run with valid and invalid blocks', async (st) => {
     // Produce error on the third time runBlock is called
     let runBlockInvocations = 0
-    vm.runBlock = (opts, cb) => {
+    vm.runBlock = (opts) => new Promise((resolve, reject) => {
       runBlockInvocations++
       if (runBlockInvocations === 3) {
-        return cb(new Error('test'), {})
+        return reject(new Error('test'))
       }
-      cb(null, {})
-    }
+      resolve({})
+    })
 
     const genesis = createGenesis({ chain: 'goerli' })
     await putGenesisP(genesis)

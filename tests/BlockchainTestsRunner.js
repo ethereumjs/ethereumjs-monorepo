@@ -109,9 +109,9 @@ module.exports = function runBlockchainTest (options, testData, t, cb) {
       done()
     },
     function runBlockchain (done) {
-      vm.runBlockchain(function () {
-        done()
-      })
+      vm.runBlockchain()
+        .then(() => done())
+        .catch(() => done())
     },
     function getHead (done) {
       vm.blockchain.getHead(function (err, block) {

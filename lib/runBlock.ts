@@ -32,17 +32,6 @@ export interface RunBlockOpts {
 }
 
 /**
- * Callback function for [[runBlock]]
- */
-export interface RunBlockCb {
-  /**
-   * @param err - Any error that happened during execution, or `null`
-   * @param result - Result of execution, `null` in case of error
-   */
-  (err: Error | null, result: RunBlockResult | null): void
-}
-
-/**
  * Result of [[runBlock]]
  */
 export interface RunBlockResult {
@@ -81,22 +70,14 @@ export interface TxReceipt {
 /**
  * @ignore
  */
-export default function runBlock(this: VM, opts: RunBlockOpts, cb: RunBlockCb): void {
-  if (typeof opts === 'function' && cb === undefined) {
-    cb = opts as RunBlockCb
-    return cb(new Error('invalid input, opts must be provided'), null)
+export default async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockResult> {
+  if (opts === undefined) {
+    throw new Error('invalid input, opts must be provided')
   }
   if (!opts.block) {
-    return cb(new Error('invalid input, block must be provided'), null)
+    throw new Error('invalid input, block must be provided')
   }
 
-  _runBlock
-    .bind(this)(opts)
-    .then(results => cb(null, results))
-    .catch(err => cb(err, null))
-}
-
-async function _runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockResult> {
   const state = new PStateManager(this.stateManager)
   const block = opts.block
   const generateStateRoot = !!opts.generate
@@ -219,7 +200,7 @@ async function applyTransactions(this: VM, block: any) {
     }
 
     // Run the tx through the VM
-    const txRes = await promisify(this.runTx).bind(this)({
+    const txRes = await this.runTx({
       tx: tx,
       block: block,
     })

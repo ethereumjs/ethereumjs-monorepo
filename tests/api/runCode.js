@@ -15,45 +15,35 @@ const testCases = [
   { code: [STOP], resultPC: 1 }
 ]
 
-tape('VM.runcode: initial program counter', function (t) {
+tape('VM.runcode: initial program counter', t => {
   const vm = new VM()
 
-  testCases.forEach(function (testData, i) {
-    t.test('should start the execution at the specified pc or 0 #' + i, function (st) {
+  testCases.forEach((testData, i) => {
+    t.test('should start the execution at the specified pc or 0 #' + i, async st => {
       const runCodeArgs = {
         code: Buffer.from(testData.code.join(''), 'hex'),
         pc: testData.pc,
         gasLimit: new BN(0xffff)
       }
-      let result
 
-      async.series([
-        function (done) {
-          vm.runCode(runCodeArgs, function (err, res) {
-            if (res) {
-              result = res
-            }
-
-            done(err)
-          })
-        },
-        function (done) {
-          if (testData.resultPC !== undefined) {
-            t.equals(result.runState.programCounter, testData.resultPC, 'runstate.programCounter')
-          }
-
-          done()
+      let err
+      try {
+        const result = await vm.runCode(runCodeArgs)
+        if (testData.resultPC !== undefined) {
+          t.equals(result.runState.programCounter, testData.resultPC, 'runstate.programCounter')
         }
-      ], function (err) {
-        if (testData.error) {
-          err = err ? err.message : 'no error thrown'
-          t.equals(err, testData.error, 'error message should match')
-          err = false
-        }
+      } catch (e) {
+        err = e
+      }
 
-        t.assert(!err)
-        st.end()
-      })
+      if (testData.error) {
+        err = err ? err.message : 'no error thrown'
+        st.equals(err, testData.error, 'error message should match')
+        err = false
+      }
+
+      st.assert(!err)
+      st.end()
     })
   })
 })

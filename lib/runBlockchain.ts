@@ -44,24 +44,22 @@ export default function runBlockchain(this: VM, blockchain: any, cb: any) {
 
     // run block, update head if valid
     function runBlock(cb: any) {
-      self.runBlock(
-        {
+      self
+        .runBlock({
           block: block,
           root: parentState,
-        },
-        function(err) {
-          if (err) {
-            // remove invalid block
-            blockchain.delBlock(block.header.hash(), function() {
-              cb(err)
-            })
-          } else {
-            // set as new head block
-            headBlock = block
-            cb()
-          }
-        },
-      )
+        })
+        .then(() => {
+          // set as new head block
+          headBlock = block
+          cb()
+        })
+        .catch(err => {
+          // remove invalid block
+          blockchain.delBlock(block.header.hash(), function() {
+            cb(err)
+          })
+        })
     }
   }
 }
