@@ -11,7 +11,7 @@ Callback for `runTx` method
 ## Callable
 ▸ **__call**(err: *`Error` \| `null`*, results: *[RunTxResult](runtxresult.md) \| `null`*): `void`
 
-*Defined in [runTx.ts:37](https://github.com/ethereumjs/ethereumjs-vm/blob/5938d6a/lib/runTx.ts#L37)*
+*Defined in [runTx.ts:37](https://github.com/ethereumjs/ethereumjs-vm/blob/eab4a99/lib/runTx.ts#L37)*
 
 Callback for `runTx` method
 
