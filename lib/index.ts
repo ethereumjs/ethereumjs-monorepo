@@ -97,7 +97,7 @@ export default class VM extends AsyncEventEmitter {
           trie.put(new BN(i).toArrayLike(Buffer, 'be', 20), new Account().serialize())
         }
       }
-      this.stateManager = new StateManager({ trie, common: this._common })
+      this.stateManager = new StateManager({ trie })
     }
 
     this.blockchain = opts.blockchain || new Blockchain({ common: this._common })

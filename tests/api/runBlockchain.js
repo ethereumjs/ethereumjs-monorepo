@@ -16,9 +16,11 @@ tape('runBlockchain', (t) => {
     chain: 'goerli',
     validate: false
   })
+  const common = new Common('goerli')
   const vm = {
-    stateManager: new StateManager({ common: new Common('goerli') }),
-    blockchain: blockchain
+    stateManager: new StateManager({ common }),
+    blockchain: blockchain,
+    _common: common
   }
 
   const putGenesisP = promisify(blockchain.putGenesis.bind(blockchain))

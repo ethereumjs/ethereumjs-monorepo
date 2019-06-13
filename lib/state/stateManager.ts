@@ -4,7 +4,6 @@ const asyncLib = require('async')
 import * as utils from 'ethereumjs-util'
 import BN = require('bn.js')
 import { encode, decode } from 'rlp'
-import Common from 'ethereumjs-common'
 import { genesisStateByName } from 'ethereumjs-common/dist/genesisStates'
 import Account from 'ethereumjs-account'
 import Cache from './cache'
@@ -21,7 +20,6 @@ export interface StorageDump {
  * state trie.
  */
 export default class StateManager {
-  _common: Common
   _trie: any
   _storageTries: any
   _cache: Cache
@@ -33,16 +31,9 @@ export default class StateManager {
   /**
    * Instantiate the StateManager interface.
    * @param {Object} [opts={}]
-   * @param {Common} [opts.common] - [`Common`](https://github.com/ethereumjs/ethereumjs-common) parameters of the chain
    * @param {Trie} [opts.trie] - a [`merkle-patricia-tree`](https://github.com/ethereumjs/merkle-patricia-tree) instance
    */
   constructor(opts: any = {}) {
-    let common = opts.common
-    if (!common) {
-      common = new Common('mainnet', 'petersburg')
-    }
-    this._common = common
-
     this._trie = opts.trie || new Trie()
     this._storageTries = {} // the storage trie cache
     this._cache = new Cache(this._trie)
@@ -60,7 +51,7 @@ export default class StateManager {
    * @method copy
    */
   copy(): StateManager {
-    return new StateManager({ trie: this._trie.copy(), common: this._common })
+    return new StateManager({ trie: this._trie.copy() })
   }
 
   /**
@@ -485,73 +476,6 @@ export default class StateManager {
         cb(storage)
       })
     })
-  }
-
-  /**
-   * Callback for `hasGenesisState` method
-   * @callback hasGenesisState~callback
-   * @param {Error} error an error that may have happened or `null`
-   * @param {Boolean} hasGenesisState Whether the storage trie contains the
-   * canonical genesis state for the configured chain parameters.
-   */
-
-  /**
-   * Checks whether the current instance has the canonical genesis state
-   * for the configured chain parameters.
-   * @memberof DefaultStateManager
-   * @method hasGenesisState
-   * @param {hasGenesisState~callback} cb
-   */
-  hasGenesisState(cb: any): void {
-    const root = this._common.genesis().stateRoot
-    this._trie.checkRoot(root, cb)
-  }
-
-  /**
-   * Generates a canonical genesis state on the instance based on the
-   * configured chain parameters. Will error if there are uncommitted
-   * checkpoints on the instance.
-   * @memberof StateManager
-   * @method generateCanonicalGenesis
-   * @param {Function} cb Callback function
-   */
-  generateCanonicalGenesis(cb: any): void {
-    if (this._checkpointCount !== 0) {
-      return cb(new Error('Cannot create genesis state with uncommitted checkpoints'))
-    }
-
-    this.hasGenesisState((err: Error, genesis: boolean) => {
-      if (!genesis && !err) {
-        this.generateGenesis(genesisStateByName(this._common.chainName()), cb)
-      } else {
-        cb(err)
-      }
-    })
-  }
-
-  /**
-   * Initializes the provided genesis state into the state trie
-   * @memberof DefaultStateManager
-   * @method generateGenesis
-   * @param {Object} initState
-   * @param {Function} cb Callback function
-   */
-  generateGenesis(initState: any, cb: any) {
-    if (this._checkpointCount !== 0) {
-      return cb(new Error('Cannot create genesis state with uncommitted checkpoints'))
-    }
-
-    const addresses = Object.keys(initState)
-    asyncLib.eachSeries(
-      addresses,
-      (address: string, done: any) => {
-        const account = new Account()
-        account.balance = new BN(initState[address]).toArrayLike(Buffer)
-        const addressBuffer = utils.toBuffer(address)
-        this._trie.put(addressBuffer, account.serialize(), done)
-      },
-      cb,
-    )
   }
 
   /**

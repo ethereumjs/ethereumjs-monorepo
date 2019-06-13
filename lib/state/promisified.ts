@@ -73,18 +73,6 @@ export default class PStateManager {
     return promisify(this._wrapped.dumpStorage.bind(this._wrapped))(address)
   }
 
-  hasGenesisState(): Promise<boolean> {
-    return promisify(this._wrapped.hasGenesisState.bind(this._wrapped))()
-  }
-
-  generateCanonicalGenesis(): Promise<void> {
-    return promisify(this._wrapped.generateCanonicalGenesis.bind(this._wrapped))()
-  }
-
-  generateGenesis(initState: any): Promise<void> {
-    return promisify(this._wrapped.generateGenesis.bind(this._wrapped))(initState)
-  }
-
   accountIsEmpty(address: Buffer): Promise<boolean> {
     return promisify(this._wrapped.accountIsEmpty.bind(this._wrapped))(address)
   }

@@ -1,7 +1,6 @@
 const promisify = require('util.promisify')
 const tape = require('tape')
 const util = require('ethereumjs-util')
-const Common = require('ethereumjs-common').default
 const { StateManager } = require('../../../dist/state')
 const { createAccount } = require('../utils')
 
@@ -10,7 +9,6 @@ tape('StateManager', (t) => {
     const stateManager = new StateManager()
 
     st.deepEqual(stateManager._trie.root, util.KECCAK256_RLP, 'it has default root')
-    st.equal(stateManager._common.hardfork(), 'petersburg', 'it has default hardfork')
     stateManager.getStateRoot((err, res) => {
       st.error(err, 'getStateRoot returns no error')
       st.deepEqual(res, util.KECCAK256_RLP, 'it has default root')
@@ -123,21 +121,6 @@ tape('StateManager', (t) => {
     st.end()
   })
 
-  t.test('should generate the genesis state correctly', async (st) => {
-    const genesisData = require('ethereumjs-testing').getSingleFile('BasicTests/genesishashestest.json')
-    const stateManager = new StateManager()
-
-    const generateCanonicalGenesis = promisify((...args) => stateManager.generateCanonicalGenesis(...args))
-    const getStateRoot = promisify((...args) => stateManager.getStateRoot(...args))
-
-    await generateCanonicalGenesis()
-    let stateRoot = await getStateRoot()
-
-    st.equal(stateRoot.toString('hex'), genesisData.genesis_state_root)
-
-    st.end()
-  })
-
   t.test('should dump storage', async st => {
     const stateManager = new StateManager()
     const addressBuffer = Buffer.from('a94f5374fce5edbc8e2a8697c15331677e6ebf0b', 'hex')
@@ -160,21 +143,6 @@ tape('StateManager', (t) => {
 
       st.end()
     })
-  })
-
-  t.test('should pass Common object when copying the state manager', st => {
-    const stateManager = new StateManager({
-      common: new Common('goerli', 'byzantium')
-    })
-
-    st.equal(stateManager._common.chainName(), 'goerli')
-    st.equal(stateManager._common.hardfork(), 'byzantium')
-
-    const stateManagerCopy = stateManager.copy()
-    st.equal(stateManagerCopy._common.chainName(), 'goerli')
-    st.equal(stateManagerCopy._common.hardfork(), 'byzantium')
-
-    st.end()
   })
 })
 

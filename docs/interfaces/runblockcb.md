@@ -11,7 +11,7 @@ Callback function for [runBlock](../classes/vm.md#runblock)
 ## Callable
 ▸ **__call**(err: *`Error` \| `null`*, result: *[RunBlockResult](runblockresult.md) \| `null`*): `void`
 
-*Defined in [runBlock.ts:37](https://github.com/ethereumjs/ethereumjs-vm/blob/de4d574/lib/runBlock.ts#L37)*
+*Defined in [runBlock.ts:37](https://github.com/ethereumjs/ethereumjs-vm/blob/5938d6a/lib/runBlock.ts#L37)*
 
 Callback function for [runBlock](../classes/vm.md#runblock)
 

@@ -33,7 +33,7 @@ tape('VM with default blockchain', (t) => {
   })
 
   t.test('should only accept common or chain and fork', (st) => {
-    const common = new Common('mainnet');
+    const common = new Common('mainnet')
 
     st.throws(() => new VM({ chain: 'a', common }))
     st.throws(() => new VM({ hardfork: 'a', common }))
@@ -53,7 +53,7 @@ tape('VM with default blockchain', (t) => {
 
   t.test('should only accept valid chain and fork', (st) => {
     let vm = new VM({ chain: 'ropsten', hardfork: 'byzantium' })
-    st.equal(vm.stateManager._common.param('gasPrices', 'ecAdd'), 500)
+    st.equal(vm._common.param('gasPrices', 'ecAdd'), 500)
 
     try {
       vm = new VM({ chain: 'mainchain', hardfork: 'homestead' })
