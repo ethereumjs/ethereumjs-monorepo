@@ -1,6 +1,7 @@
 import BN = require('bn.js')
 import { toBuffer } from 'ethereumjs-util'
 import Account from 'ethereumjs-account'
+import { Transaction } from 'ethereumjs-tx'
 import VM from './index'
 import Bloom from './bloom'
 import { default as EVM, EVMResult } from './evm/evm'
@@ -20,7 +21,7 @@ export interface RunTxOpts {
   /**
    * A [`Transaction`](https://github.com/ethereum/ethereumjs-tx) to run
    */
-  tx: any // TODO: Update ethereumjs-tx
+  tx: Transaction
   /**
    * If true, skips the nonce check
    */
