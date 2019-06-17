@@ -44,7 +44,7 @@ Execution engine which can be used to run a blockchain, individual blocks, indiv
 
 ⊕ **new VM**(opts?: *[VMOpts](../interfaces/vmopts.md)*): [VM](vm.md)
 
-*Defined in [index.ts:61](https://github.com/ethereumjs/ethereumjs-vm/blob/2fcfe31/lib/index.ts#L61)*
+*Defined in [index.ts:61](https://github.com/ethereumjs/ethereumjs-vm/blob/4fbb5ef/lib/index.ts#L61)*
 
 Instantiates a new [VM](vm.md) Object.
 
@@ -66,7 +66,7 @@ ___
 
 **● _common**: *`Common`*
 
-*Defined in [index.ts:58](https://github.com/ethereumjs/ethereumjs-vm/blob/2fcfe31/lib/index.ts#L58)*
+*Defined in [index.ts:58](https://github.com/ethereumjs/ethereumjs-vm/blob/4fbb5ef/lib/index.ts#L58)*
 
 ___
 <a id="allowunlimitedcontractsize"></a>
@@ -75,7 +75,7 @@ ___
 
 **● allowUnlimitedContractSize**: *`boolean`*
 
-*Defined in [index.ts:61](https://github.com/ethereumjs/ethereumjs-vm/blob/2fcfe31/lib/index.ts#L61)*
+*Defined in [index.ts:61](https://github.com/ethereumjs/ethereumjs-vm/blob/4fbb5ef/lib/index.ts#L61)*
 
 ___
 <a id="blockchain"></a>
@@ -84,7 +84,7 @@ ___
 
 **● blockchain**: *`any`*
 
-*Defined in [index.ts:60](https://github.com/ethereumjs/ethereumjs-vm/blob/2fcfe31/lib/index.ts#L60)*
+*Defined in [index.ts:60](https://github.com/ethereumjs/ethereumjs-vm/blob/4fbb5ef/lib/index.ts#L60)*
 
 ___
 <a id="opts"></a>
@@ -93,7 +93,7 @@ ___
 
 **● opts**: *[VMOpts](../interfaces/vmopts.md)*
 
-*Defined in [index.ts:57](https://github.com/ethereumjs/ethereumjs-vm/blob/2fcfe31/lib/index.ts#L57)*
+*Defined in [index.ts:57](https://github.com/ethereumjs/ethereumjs-vm/blob/4fbb5ef/lib/index.ts#L57)*
 
 ___
 <a id="statemanager"></a>
@@ -102,7 +102,7 @@ ___
 
 **● stateManager**: *[StateManager](statemanager.md)*
 
-*Defined in [index.ts:59](https://github.com/ethereumjs/ethereumjs-vm/blob/2fcfe31/lib/index.ts#L59)*
+*Defined in [index.ts:59](https://github.com/ethereumjs/ethereumjs-vm/blob/4fbb5ef/lib/index.ts#L59)*
 
 ___
 
@@ -114,7 +114,7 @@ ___
 
 ▸ **_emit**(topic: *`string`*, data: *`any`*): `Promise`<`any`>
 
-*Defined in [index.ts:160](https://github.com/ethereumjs/ethereumjs-vm/blob/2fcfe31/lib/index.ts#L160)*
+*Defined in [index.ts:160](https://github.com/ethereumjs/ethereumjs-vm/blob/4fbb5ef/lib/index.ts#L160)*
 
 **Parameters:**
 
@@ -132,7 +132,7 @@ ___
 
 ▸ **copy**(): [VM](vm.md)
 
-*Defined in [index.ts:152](https://github.com/ethereumjs/ethereumjs-vm/blob/2fcfe31/lib/index.ts#L152)*
+*Defined in [index.ts:152](https://github.com/ethereumjs/ethereumjs-vm/blob/4fbb5ef/lib/index.ts#L152)*
 
 Returns a copy of the [VM](vm.md) instance.
 
@@ -145,7 +145,7 @@ ___
 
 ▸ **runBlock**(opts: *[RunBlockOpts](../interfaces/runblockopts.md)*): `Promise`<[RunBlockResult](../interfaces/runblockresult.md)>
 
-*Defined in [index.ts:124](https://github.com/ethereumjs/ethereumjs-vm/blob/2fcfe31/lib/index.ts#L124)*
+*Defined in [index.ts:124](https://github.com/ethereumjs/ethereumjs-vm/blob/4fbb5ef/lib/index.ts#L124)*
 
 Processes the `block` running all of the transactions it contains and updating the miner's account
 
@@ -164,7 +164,7 @@ ___
 
 ▸ **runBlockchain**(blockchain: *`any`*): `Promise`<`void`>
 
-*Defined in [index.ts:115](https://github.com/ethereumjs/ethereumjs-vm/blob/2fcfe31/lib/index.ts#L115)*
+*Defined in [index.ts:115](https://github.com/ethereumjs/ethereumjs-vm/blob/4fbb5ef/lib/index.ts#L115)*
 
 Processes blocks and adds them to the blockchain.
 
@@ -183,7 +183,7 @@ ___
 
 ▸ **runCall**(opts: *[RunCallOpts](../interfaces/runcallopts.md)*): `Promise`<[InterpreterResult](../interfaces/interpreterresult.md)>
 
-*Defined in [index.ts:138](https://github.com/ethereumjs/ethereumjs-vm/blob/2fcfe31/lib/index.ts#L138)*
+*Defined in [index.ts:138](https://github.com/ethereumjs/ethereumjs-vm/blob/4fbb5ef/lib/index.ts#L138)*
 
 runs a call (or create) operation.
 
@@ -202,7 +202,7 @@ ___
 
 ▸ **runCode**(opts: *[RunCodeOpts](../interfaces/runcodeopts.md)*): `Promise`<[ExecResult](../interfaces/execresult.md)>
 
-*Defined in [index.ts:145](https://github.com/ethereumjs/ethereumjs-vm/blob/2fcfe31/lib/index.ts#L145)*
+*Defined in [index.ts:145](https://github.com/ethereumjs/ethereumjs-vm/blob/4fbb5ef/lib/index.ts#L145)*
 
 Runs EVM code.
 
@@ -221,7 +221,7 @@ ___
 
 ▸ **runTx**(opts: *[RunTxOpts](../interfaces/runtxopts.md)*): `Promise`<[RunTxResult](../interfaces/runtxresult.md)>
 
-*Defined in [index.ts:131](https://github.com/ethereumjs/ethereumjs-vm/blob/2fcfe31/lib/index.ts#L131)*
+*Defined in [index.ts:131](https://github.com/ethereumjs/ethereumjs-vm/blob/4fbb5ef/lib/index.ts#L131)*
 
 Process a transaction. Run the vm. Transfers eth. Checks balances.
 

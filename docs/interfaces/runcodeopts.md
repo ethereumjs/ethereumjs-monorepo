@@ -39,7 +39,7 @@ Options for the [runCode](../classes/vm.md#runcode) method.
 
 **● address**: *`Buffer`*
 
-*Defined in [runCode.ts:63](https://github.com/ethereumjs/ethereumjs-vm/blob/2fcfe31/lib/runCode.ts#L63)*
+*Defined in [runCode.ts:63](https://github.com/ethereumjs/ethereumjs-vm/blob/4fbb5ef/lib/runCode.ts#L63)*
 
 The address of the account that is executing this code. The address should be a `Buffer` of bytes. Defaults to `0`
 
@@ -50,7 +50,7 @@ ___
 
 **● block**: *`any`*
 
-*Defined in [runCode.ts:28](https://github.com/ethereumjs/ethereumjs-vm/blob/2fcfe31/lib/runCode.ts#L28)*
+*Defined in [runCode.ts:28](https://github.com/ethereumjs/ethereumjs-vm/blob/4fbb5ef/lib/runCode.ts#L28)*
 
 The [`Block`](https://github.com/ethereumjs/ethereumjs-block) the `tx` belongs to. If omitted a blank block will be used
 
@@ -61,7 +61,7 @@ ___
 
 **● caller**: *`Buffer`*
 
-*Defined in [runCode.ts:40](https://github.com/ethereumjs/ethereumjs-vm/blob/2fcfe31/lib/runCode.ts#L40)*
+*Defined in [runCode.ts:40](https://github.com/ethereumjs/ethereumjs-vm/blob/4fbb5ef/lib/runCode.ts#L40)*
 
 The address that ran this code. The address should be a `Buffer` of 20bits. Defaults to `0`
 
@@ -72,7 +72,7 @@ ___
 
 **● code**: *`Buffer`*
 
-*Defined in [runCode.ts:44](https://github.com/ethereumjs/ethereumjs-vm/blob/2fcfe31/lib/runCode.ts#L44)*
+*Defined in [runCode.ts:44](https://github.com/ethereumjs/ethereumjs-vm/blob/4fbb5ef/lib/runCode.ts#L44)*
 
 The EVM code to run
 
@@ -83,7 +83,7 @@ ___
 
 **● data**: *`Buffer`*
 
-*Defined in [runCode.ts:48](https://github.com/ethereumjs/ethereumjs-vm/blob/2fcfe31/lib/runCode.ts#L48)*
+*Defined in [runCode.ts:48](https://github.com/ethereumjs/ethereumjs-vm/blob/4fbb5ef/lib/runCode.ts#L48)*
 
 The input data
 
@@ -94,7 +94,7 @@ ___
 
 **● depth**: *`undefined` \| `number`*
 
-*Defined in [runCode.ts:57](https://github.com/ethereumjs/ethereumjs-vm/blob/2fcfe31/lib/runCode.ts#L57)*
+*Defined in [runCode.ts:57](https://github.com/ethereumjs/ethereumjs-vm/blob/4fbb5ef/lib/runCode.ts#L57)*
 
 ___
 <a id="gaslimit"></a>
@@ -103,7 +103,7 @@ ___
 
 **● gasLimit**: *`Buffer`*
 
-*Defined in [runCode.ts:52](https://github.com/ethereumjs/ethereumjs-vm/blob/2fcfe31/lib/runCode.ts#L52)*
+*Defined in [runCode.ts:52](https://github.com/ethereumjs/ethereumjs-vm/blob/4fbb5ef/lib/runCode.ts#L52)*
 
 Gas limit
 
@@ -114,7 +114,7 @@ ___
 
 **● gasPrice**: *`Buffer`*
 
-*Defined in [runCode.ts:31](https://github.com/ethereumjs/ethereumjs-vm/blob/2fcfe31/lib/runCode.ts#L31)*
+*Defined in [runCode.ts:31](https://github.com/ethereumjs/ethereumjs-vm/blob/4fbb5ef/lib/runCode.ts#L31)*
 
 ___
 <a id="interpreter"></a>
@@ -123,7 +123,7 @@ ___
 
 **● interpreter**: *`Interpreter`*
 
-*Defined in [runCode.ts:29](https://github.com/ethereumjs/ethereumjs-vm/blob/2fcfe31/lib/runCode.ts#L29)*
+*Defined in [runCode.ts:29](https://github.com/ethereumjs/ethereumjs-vm/blob/4fbb5ef/lib/runCode.ts#L29)*
 
 ___
 <a id="isstatic"></a>
@@ -132,7 +132,7 @@ ___
 
 **● isStatic**: *`undefined` \| `false` \| `true`*
 
-*Defined in [runCode.ts:58](https://github.com/ethereumjs/ethereumjs-vm/blob/2fcfe31/lib/runCode.ts#L58)*
+*Defined in [runCode.ts:58](https://github.com/ethereumjs/ethereumjs-vm/blob/4fbb5ef/lib/runCode.ts#L58)*
 
 ___
 <a id="message"></a>
@@ -141,7 +141,7 @@ ___
 
 **● message**: *`Message`*
 
-*Defined in [runCode.ts:36](https://github.com/ethereumjs/ethereumjs-vm/blob/2fcfe31/lib/runCode.ts#L36)*
+*Defined in [runCode.ts:36](https://github.com/ethereumjs/ethereumjs-vm/blob/4fbb5ef/lib/runCode.ts#L36)*
 
 ___
 <a id="origin"></a>
@@ -150,7 +150,7 @@ ___
 
 **● origin**: *`Buffer`*
 
-*Defined in [runCode.ts:35](https://github.com/ethereumjs/ethereumjs-vm/blob/2fcfe31/lib/runCode.ts#L35)*
+*Defined in [runCode.ts:35](https://github.com/ethereumjs/ethereumjs-vm/blob/4fbb5ef/lib/runCode.ts#L35)*
 
 The address where the call originated from. The address should be a `Buffer` of 20bits. Defaults to `0`
 
@@ -161,7 +161,7 @@ ___
 
 **● pc**: *`undefined` \| `number`*
 
-*Defined in [runCode.ts:67](https://github.com/ethereumjs/ethereumjs-vm/blob/2fcfe31/lib/runCode.ts#L67)*
+*Defined in [runCode.ts:67](https://github.com/ethereumjs/ethereumjs-vm/blob/4fbb5ef/lib/runCode.ts#L67)*
 
 The initial program counter. Defaults to `0`
 
@@ -172,7 +172,7 @@ ___
 
 **● selfdestruct**: *`undefined` \| `object`*
 
-*Defined in [runCode.ts:59](https://github.com/ethereumjs/ethereumjs-vm/blob/2fcfe31/lib/runCode.ts#L59)*
+*Defined in [runCode.ts:59](https://github.com/ethereumjs/ethereumjs-vm/blob/4fbb5ef/lib/runCode.ts#L59)*
 
 ___
 <a id="txcontext"></a>
@@ -181,7 +181,7 @@ ___
 
 **● txContext**: *`TxContext`*
 
-*Defined in [runCode.ts:30](https://github.com/ethereumjs/ethereumjs-vm/blob/2fcfe31/lib/runCode.ts#L30)*
+*Defined in [runCode.ts:30](https://github.com/ethereumjs/ethereumjs-vm/blob/4fbb5ef/lib/runCode.ts#L30)*
 
 ___
 <a id="value"></a>
@@ -190,7 +190,7 @@ ___
 
 **● value**: *`Buffer`*
 
-*Defined in [runCode.ts:56](https://github.com/ethereumjs/ethereumjs-vm/blob/2fcfe31/lib/runCode.ts#L56)*
+*Defined in [runCode.ts:56](https://github.com/ethereumjs/ethereumjs-vm/blob/4fbb5ef/lib/runCode.ts#L56)*
 
 The value in ether that is being sent to `opt.address`. Defaults to `0`
 
