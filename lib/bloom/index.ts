@@ -7,9 +7,7 @@ export default class Bloom {
   bitvector: Buffer
 
   /**
-   * Represents a Bloom
-   * @constructor
-   * @param {Buffer} bitvector
+   * Represents a Bloom filter.
    */
   constructor(bitvector?: Buffer) {
     if (!bitvector) {
@@ -21,9 +19,8 @@ export default class Bloom {
   }
 
   /**
-   * adds an element to a bit vector of a 64 byte bloom filter
-   * @method add
-   * @param {Buffer} e the element to add
+   * Adds an element to a bit vector of a 64 byte bloom filter.
+   * @param e - The element to add
    */
   add(e: Buffer) {
     assert(Buffer.isBuffer(e), 'Element should be buffer')
@@ -40,10 +37,8 @@ export default class Bloom {
   }
 
   /**
-   * checks if an element is in the bloom
-   * @method check
-   * @param {Buffer} e the element to check
-   * @returns {boolean} Returns {@code true} if the element is in the bloom
+   * Checks if an element is in the bloom.
+   * @param e - The element to check
    */
   check(e: Buffer): boolean {
     assert(Buffer.isBuffer(e), 'Element should be Buffer')
@@ -63,19 +58,15 @@ export default class Bloom {
   }
 
   /**
-   * checks if multiple topics are in a bloom
-   * @method multiCheck
-   * @param {Buffer[]} topics
-   * @returns {boolean} Returns {@code true} if every topic is in the bloom
+   * Checks if multiple topics are in a bloom.
+   * @returns `true` if every topic is in the bloom
    */
   multiCheck(topics: Buffer[]): boolean {
     return topics.every((t: Buffer) => this.check(t))
   }
 
   /**
-   * bitwise or blooms together
-   * @method or
-   * @param {Bloom} bloom
+   * Bitwise or blooms together.
    */
   or(bloom: Bloom) {
     if (bloom) {

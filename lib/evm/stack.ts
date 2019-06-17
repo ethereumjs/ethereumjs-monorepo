@@ -44,8 +44,7 @@ export default class Stack {
   /**
    * Pop multiple items from stack. Top of stack is first item
    * in returned array.
-   * @param {Number} num - Number of items to pop
-   * @returns {Array}
+   * @param num - Number of items to pop
    */
   popN(num: number = 1): BN[] {
     if (this._store.length < num) {
@@ -61,7 +60,7 @@ export default class Stack {
 
   /**
    * Swap top of stack with an item in the stack.
-   * @param {Number} position - Index of item from top of the stack (0-indexed)
+   * @param position - Index of item from top of the stack (0-indexed)
    */
   swap(position: number) {
     if (this._store.length <= position) {
@@ -78,7 +77,7 @@ export default class Stack {
 
   /**
    * Pushes a copy of an item in the stack.
-   * @param {Number} position - Index of item to be copied (1-indexed)
+   * @param position - Index of item to be copied (1-indexed)
    */
   dup(position: number) {
     if (this._store.length < position) {

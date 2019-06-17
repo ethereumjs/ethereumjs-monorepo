@@ -35,6 +35,9 @@ export interface LoopResult {
   exceptionError?: VmError | ERROR
 }
 
+/**
+ * Parses and executes EVM bytecode.
+ */
 export default class Loop {
   _vm: any
   _state: PStateManager
@@ -98,6 +101,10 @@ export default class Loop {
     }
   }
 
+  /**
+   * Executes the opcode to which the program counter is pointing,
+   * reducing it's base gas cost, and increments the program counter.
+   */
   async runStep(): Promise<void> {
     const opInfo = lookupOpInfo(this._runState.opCode)
     // Check for invalid opcode
@@ -119,6 +126,9 @@ export default class Loop {
     }
   }
 
+  /**
+   * Get the handler function for an opcode.
+   */
   getOpHandler(opInfo: OpInfo): OpHandler {
     return opHandlers[opInfo.name]
   }

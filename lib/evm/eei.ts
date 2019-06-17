@@ -8,6 +8,9 @@ import Message from './message'
 import Interpreter from './interpreter'
 const promisify = require('util.promisify')
 
+/**
+ * Environment data which is made available to EVM bytecode.
+ */
 export interface Env {
   blockchain: any // TODO: update to ethereumjs-blockchain v4.0.0
   address: Buffer
@@ -23,6 +26,9 @@ export interface Env {
   contract: Account
 }
 
+/**
+ * Immediate (unprocessed) result of running an EVM bytecode.
+ */
 export interface RunResult {
   logs: any // TODO: define type for Log (each log: [Buffer(address), [Buffer(topic0), ...]])
   returnValue?: Buffer
@@ -33,6 +39,14 @@ export interface RunResult {
   selfdestruct: { [k: string]: Buffer }
 }
 
+/**
+ * External interface made available to EVM bytecode. Modeled after
+ * the ewasm EEI [spec](https://github.com/ewasm/design/blob/master/eth_interface.md).
+ * It includes methods for accessing/modifying state, calling or creating contracts, access
+ * to environment data among other things.
+ * The EEI instance also keeps artifacts produced by the bytecode such as logs
+ * and to-be-selfdestructed addresses.
+ */
 export default class EEI {
   _env: Env
   _result: RunResult
@@ -65,7 +79,7 @@ export default class EEI {
 
   /**
    * Subtracts an amount from the gas counter.
-   * @param {BN} amount - Amount of gas to consume
+   * @param amount - Amount of gas to consume
    * @throws if out of gas
    */
   useGas(amount: BN): void {
@@ -76,13 +90,16 @@ export default class EEI {
     }
   }
 
+  /**
+   * Adds a positive amount to the gas counter.
+   * @param amount - Amount of gas refunded
+   */
   refundGas(amount: BN): void {
     this._result.gasRefund.iadd(amount)
   }
 
   /**
    * Returns address of currently executing account.
-   * @returns {Buffer}
    */
   getAddress(): Buffer {
     return this._env.address
@@ -106,7 +123,6 @@ export default class EEI {
   /**
    * Returns caller address. This is the address of the account
    * that is directly responsible for this execution.
-   * @returns {BN}
    */
   getCaller(): BN {
     return new BN(this._env.caller)
@@ -115,7 +131,6 @@ export default class EEI {
   /**
    * Returns the deposited value by the instruction/transaction
    * responsible for this execution.
-   * @returns {BN}
    */
   getCallValue(): BN {
     return new BN(this._env.callValue)
@@ -124,7 +139,6 @@ export default class EEI {
   /**
    * Returns input data in current environment. This pertains to the input
    * data passed with the message call instruction or transaction.
-   * @returns {Buffer}
    */
   getCallData(): Buffer {
     return this._env.callData
@@ -133,7 +147,6 @@ export default class EEI {
   /**
    * Returns size of input data in current environment. This pertains to the
    * input data passed with the message call instruction or transaction.
-   * @returns {BN}
    */
   getCallDataSize(): BN {
     if (this._env.callData.length === 1 && this._env.callData[0] === 0) {
@@ -145,7 +158,6 @@ export default class EEI {
 
   /**
    * Returns the size of code running in current environment.
-   * @returns {BN}
    */
   getCodeSize(): BN {
     return new BN(this._env.code.length)
@@ -153,19 +165,21 @@ export default class EEI {
 
   /**
    * Returns the code running in current environment.
-   * @returns {Buffer}
    */
   getCode(): Buffer {
     return this._env.code
   }
 
+  /**
+   * Returns true if the current call must be executed statically.
+   */
   isStatic(): boolean {
     return this._env.isStatic
   }
 
   /**
    * Get size of an account’s code.
-   * @param {BN} address - Address of account
+   * @param address - Address of account
    */
   async getExternalCodeSize(address: BN): Promise<BN> {
     const addressBuf = addressToBuffer(address)
@@ -174,8 +188,8 @@ export default class EEI {
   }
 
   /**
-   * Returns  code of an account.
-   * @param {BN} address - Address of account
+   * Returns code of an account.
+   * @param address - Address of account
    */
   async getExternalCode(address: BN | Buffer): Promise<Buffer> {
     if (!Buffer.isBuffer(address)) {
@@ -188,7 +202,6 @@ export default class EEI {
    * Returns size of current return data buffer. This contains the return data
    * from the last executed call, callCode, callDelegate, callStatic or create.
    * Note: create only fills the return data buffer in case of a failure.
-   * @returns {BN}
    */
   getReturnDataSize(): BN {
     return new BN(this._lastReturned.length)
@@ -198,7 +211,6 @@ export default class EEI {
    * Returns the current return data buffer. This contains the return data
    * from last executed call, callCode, callDelegate, callStatic or create.
    * Note: create only fills the return data buffer in case of a failure.
-   * @returns {Buffer}
    */
   getReturnData(): Buffer {
     return this._lastReturned
@@ -206,7 +218,6 @@ export default class EEI {
 
   /**
    * Returns price of gas in current environment.
-   * @returns {BN}
    */
   getTxGasPrice(): BN {
     return new BN(this._env.gasPrice)
@@ -216,7 +227,6 @@ export default class EEI {
    * Returns the execution's origination address. This is the
    * sender of original transaction; it is never an account with
    * non-empty associated code.
-   * @returns {BN}
    */
   getTxOrigin(): BN {
     return new BN(this._env.origin)
@@ -224,7 +234,6 @@ export default class EEI {
 
   /**
    * Returns the block’s number.
-   * @returns {BN}
    */
   getBlockNumber(): BN {
     return new BN(this._env.block.header.number)
@@ -232,7 +241,6 @@ export default class EEI {
 
   /**
    * Returns the block's beneficiary address.
-   * @returns {BN}
    */
   getBlockCoinbase(): BN {
     return new BN(this._env.block.header.coinbase)
@@ -240,7 +248,6 @@ export default class EEI {
 
   /**
    * Returns the block's timestamp.
-   * @returns {BN}
    */
   getBlockTimestamp(): BN {
     return new BN(this._env.block.header.timestamp)
@@ -248,7 +255,6 @@ export default class EEI {
 
   /**
    * Returns the block's difficulty.
-   * @returns {BN}
    */
   getBlockDifficulty(): BN {
     return new BN(this._env.block.header.difficulty)
@@ -256,7 +262,6 @@ export default class EEI {
 
   /**
    * Returns the block's gas limit.
-   * @returns {BN}
    */
   getBlockGasLimit(): BN {
     return new BN(this._env.block.header.gasLimit)
@@ -264,7 +269,7 @@ export default class EEI {
 
   /**
    * Returns Gets the hash of one of the 256 most recent complete blocks.
-   * @param {BN} - Number of block
+   * @param num - Number of block
    */
   async getBlockHash(num: BN): Promise<BN> {
     const block = await promisify(this._env.blockchain.getBlock).bind(this._env.blockchain)(num)
@@ -273,8 +278,6 @@ export default class EEI {
 
   /**
    * Store 256-bit a value in memory to persistent storage.
-   * @param {Buffer} key
-   * @param {Buffer} value
    */
   async storageStore(key: Buffer, value: Buffer): Promise<void> {
     await this._state.putContractStorage(this._env.address, key, value)
@@ -284,8 +287,7 @@ export default class EEI {
 
   /**
    * Loads a 256-bit value to memory from persistent storage.
-   * @param {Buffer} key - Storage key
-   * @returns {Buffer}
+   * @param key - Storage key
    */
   async storageLoad(key: Buffer): Promise<Buffer> {
     return this._state.getContractStorage(this._env.address, key)
@@ -293,7 +295,6 @@ export default class EEI {
 
   /**
    * Returns the current gasCounter.
-   * @returns {BN}
    */
   getGasLeft(): BN {
     return this._gasLeft.clone()
@@ -301,7 +302,7 @@ export default class EEI {
 
   /**
    * Set the returning output data for the execution.
-   * @param {Buffer} returnData - Output data to return
+   * @param returnData - Output data to return
    */
   finish(returnData: Buffer): void {
     this._result.returnValue = returnData
@@ -311,7 +312,7 @@ export default class EEI {
   /**
    * Set the returning output data for the execution. This will halt the
    * execution immediately and set the execution result to "reverted".
-   * @param {Buffer} returnData - Output data to return
+   * @param returnData - Output data to return
    */
   revert(returnData: Buffer): void {
     this._result.returnValue = returnData
@@ -322,7 +323,7 @@ export default class EEI {
    * Mark account for later deletion and give the remaining balance to the
    * specified beneficiary address. This will cause a trap and the
    * execution will be aborted immediately.
-   * @param {Buffer} toAddress - Beneficiary address
+   * @param toAddress - Beneficiary address
    */
   async selfDestruct(toAddress: Buffer): Promise<void> {
     return this._selfDestruct(toAddress)
@@ -354,9 +355,6 @@ export default class EEI {
 
   /**
    * Creates a new log in the current environment.
-   * @param {Buffer} data
-   * @param {Number} numberOfTopics
-   * @param {Buffer[]} topics
    */
   log(data: Buffer, numberOfTopics: number, topics: Buffer[]): void {
     if (numberOfTopics < 0 || numberOfTopics > 4) {
@@ -378,10 +376,6 @@ export default class EEI {
 
   /**
    * Sends a message with arbitrary data to a given address path.
-   * @param {BN} gasLimit
-   * @param {Buffer} address
-   * @param {BN} value
-   * @param {Buffer} data
    */
   async call(gasLimit: BN, address: Buffer, value: BN, data: Buffer): Promise<BN> {
     const msg = new Message({
@@ -399,10 +393,6 @@ export default class EEI {
 
   /**
    * Message-call into this account with an alternative account's code.
-   * @param {BN} gasLimit
-   * @param {Buffer} address
-   * @param {BN} value
-   * @param {Buffer} data
    */
   async callCode(gasLimit: BN, address: Buffer, value: BN, data: Buffer): Promise<BN> {
     const msg = new Message({
@@ -423,10 +413,6 @@ export default class EEI {
    * Sends a message with arbitrary data to a given address path, but disallow
    * state modifications. This includes log, create, selfdestruct and call with
    * a non-zero value.
-   * @param {BN} gasLimit
-   * @param {Buffer} address
-   * @param {BN} value
-   * @param {Buffer} data
    */
   async callStatic(gasLimit: BN, address: Buffer, value: BN, data: Buffer): Promise<BN> {
     const msg = new Message({
@@ -445,10 +431,6 @@ export default class EEI {
   /**
    * Message-call into this account with an alternative account’s code, but
    * persisting the current values for sender and value.
-   * @param {BN} gasLimit
-   * @param {Buffer} address
-   * @param {BN} value
-   * @param {Buffer} data
    */
   async callDelegate(gasLimit: BN, address: Buffer, value: BN, data: Buffer): Promise<BN> {
     const msg = new Message({
@@ -515,9 +497,6 @@ export default class EEI {
 
   /**
    * Creates a new contract with a given value.
-   * @param {BN} gasLimit
-   * @param {BN} value
-   * @param {Buffer} data
    */
   async create(gasLimit: BN, value: BN, data: Buffer, salt: Buffer | null = null): Promise<BN> {
     const selfdestruct = { ...this._result.selfdestruct }
@@ -584,10 +563,6 @@ export default class EEI {
   /**
    * Creates a new contract with a given value. Generates
    * a deterministic address via CREATE2 rules.
-   * @param {BN} gasLimit
-   * @param {BN} value
-   * @param {Buffer} data
-   * @param {Buffer} salt
    */
   async create2(gasLimit: BN, value: BN, data: Buffer, salt: Buffer): Promise<BN> {
     return this.create(gasLimit, value, data, salt)
