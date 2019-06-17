@@ -113,7 +113,7 @@ export default class VM extends AsyncEventEmitter {
    * @param cb - the callback function
    */
   runBlockchain(blockchain: any): Promise<void> {
-    return promisify(runBlockchain.bind(this))(blockchain)
+    return runBlockchain.bind(this)(blockchain)
   }
 
   /**
