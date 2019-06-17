@@ -68,20 +68,9 @@ export interface RunCodeOpts {
 }
 
 /**
- * Callback for `runCode` method
- */
-export interface RunCodeCb {
-  /**
-   * @param error - an error that may have happened or `null`
-   * @param results - results of code execution
-   */
-  (err: Error | null, res: ExecResult | null): void
-}
-
-/**
  * @ignore
  */
-export default function runCode(this: VM, opts: RunCodeOpts, cb: RunCodeCb): void {
+export default function runCode(this: VM, opts: RunCodeOpts): Promise<ExecResult> {
   if (!opts.block) {
     opts.block = new Block()
   }
@@ -112,8 +101,5 @@ export default function runCode(this: VM, opts: RunCodeOpts, cb: RunCodeCb): voi
     interpreter = new Interpreter(this, opts.txContext, opts.block)
   }
 
-  interpreter
-    .runLoop(opts.message, { pc: opts.pc })
-    .then(res => cb(null, res))
-    .catch(err => cb(err, null))
+  return interpreter.runLoop(opts.message, { pc: opts.pc })
 }

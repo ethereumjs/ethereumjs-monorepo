@@ -25,7 +25,6 @@ Options for running a call (or create) operation
 * [salt](runcallopts.md#salt)
 * [selfdestruct](runcallopts.md#selfdestruct)
 * [static](runcallopts.md#static)
-* [storageReader](runcallopts.md#storagereader)
 * [to](runcallopts.md#to)
 * [value](runcallopts.md#value)
 
@@ -39,7 +38,7 @@ Options for running a call (or create) operation
 
 **● block**: *`any`*
 
-*Defined in [runCall.ts:14](https://github.com/ethereumjs/ethereumjs-vm/blob/de4d574/lib/runCall.ts#L14)*
+*Defined in [runCall.ts:13](https://github.com/ethereumjs/ethereumjs-vm/blob/2fcfe31/lib/runCall.ts#L13)*
 
 ___
 <a id="caller"></a>
@@ -48,7 +47,7 @@ ___
 
 **● caller**: *`Buffer`*
 
-*Defined in [runCall.ts:18](https://github.com/ethereumjs/ethereumjs-vm/blob/de4d574/lib/runCall.ts#L18)*
+*Defined in [runCall.ts:16](https://github.com/ethereumjs/ethereumjs-vm/blob/2fcfe31/lib/runCall.ts#L16)*
 
 ___
 <a id="code"></a>
@@ -57,7 +56,7 @@ ___
 
 **● code**: *`Buffer`*
 
-*Defined in [runCall.ts:26](https://github.com/ethereumjs/ethereumjs-vm/blob/de4d574/lib/runCall.ts#L26)*
+*Defined in [runCall.ts:24](https://github.com/ethereumjs/ethereumjs-vm/blob/2fcfe31/lib/runCall.ts#L24)*
 
 This is for CALLCODE where the code to load is different than the code from the to account
 
@@ -68,7 +67,7 @@ ___
 
 **● compiled**: *`undefined` \| `false` \| `true`*
 
-*Defined in [runCall.ts:28](https://github.com/ethereumjs/ethereumjs-vm/blob/de4d574/lib/runCall.ts#L28)*
+*Defined in [runCall.ts:26](https://github.com/ethereumjs/ethereumjs-vm/blob/2fcfe31/lib/runCall.ts#L26)*
 
 ___
 <a id="data"></a>
@@ -77,7 +76,7 @@ ___
 
 **● data**: *`Buffer`*
 
-*Defined in [runCall.ts:22](https://github.com/ethereumjs/ethereumjs-vm/blob/de4d574/lib/runCall.ts#L22)*
+*Defined in [runCall.ts:20](https://github.com/ethereumjs/ethereumjs-vm/blob/2fcfe31/lib/runCall.ts#L20)*
 
 ___
 <a id="delegatecall"></a>
@@ -86,7 +85,7 @@ ___
 
 **● delegatecall**: *`undefined` \| `false` \| `true`*
 
-*Defined in [runCall.ts:32](https://github.com/ethereumjs/ethereumjs-vm/blob/de4d574/lib/runCall.ts#L32)*
+*Defined in [runCall.ts:30](https://github.com/ethereumjs/ethereumjs-vm/blob/2fcfe31/lib/runCall.ts#L30)*
 
 ___
 <a id="depth"></a>
@@ -95,7 +94,7 @@ ___
 
 **● depth**: *`undefined` \| `number`*
 
-*Defined in [runCall.ts:27](https://github.com/ethereumjs/ethereumjs-vm/blob/de4d574/lib/runCall.ts#L27)*
+*Defined in [runCall.ts:25](https://github.com/ethereumjs/ethereumjs-vm/blob/2fcfe31/lib/runCall.ts#L25)*
 
 ___
 <a id="gaslimit"></a>
@@ -104,7 +103,7 @@ ___
 
 **● gasLimit**: *`Buffer`*
 
-*Defined in [runCall.ts:19](https://github.com/ethereumjs/ethereumjs-vm/blob/de4d574/lib/runCall.ts#L19)*
+*Defined in [runCall.ts:17](https://github.com/ethereumjs/ethereumjs-vm/blob/2fcfe31/lib/runCall.ts#L17)*
 
 ___
 <a id="gasprice"></a>
@@ -113,7 +112,7 @@ ___
 
 **● gasPrice**: *`Buffer`*
 
-*Defined in [runCall.ts:16](https://github.com/ethereumjs/ethereumjs-vm/blob/de4d574/lib/runCall.ts#L16)*
+*Defined in [runCall.ts:14](https://github.com/ethereumjs/ethereumjs-vm/blob/2fcfe31/lib/runCall.ts#L14)*
 
 ___
 <a id="origin"></a>
@@ -122,7 +121,7 @@ ___
 
 **● origin**: *`Buffer`*
 
-*Defined in [runCall.ts:17](https://github.com/ethereumjs/ethereumjs-vm/blob/de4d574/lib/runCall.ts#L17)*
+*Defined in [runCall.ts:15](https://github.com/ethereumjs/ethereumjs-vm/blob/2fcfe31/lib/runCall.ts#L15)*
 
 ___
 <a id="salt"></a>
@@ -131,7 +130,7 @@ ___
 
 **● salt**: *`Buffer`*
 
-*Defined in [runCall.ts:30](https://github.com/ethereumjs/ethereumjs-vm/blob/de4d574/lib/runCall.ts#L30)*
+*Defined in [runCall.ts:28](https://github.com/ethereumjs/ethereumjs-vm/blob/2fcfe31/lib/runCall.ts#L28)*
 
 ___
 <a id="selfdestruct"></a>
@@ -140,7 +139,7 @@ ___
 
 **● selfdestruct**: *`undefined` \| `object`*
 
-*Defined in [runCall.ts:31](https://github.com/ethereumjs/ethereumjs-vm/blob/de4d574/lib/runCall.ts#L31)*
+*Defined in [runCall.ts:29](https://github.com/ethereumjs/ethereumjs-vm/blob/2fcfe31/lib/runCall.ts#L29)*
 
 ___
 <a id="static"></a>
@@ -149,16 +148,7 @@ ___
 
 **● static**: *`undefined` \| `false` \| `true`*
 
-*Defined in [runCall.ts:29](https://github.com/ethereumjs/ethereumjs-vm/blob/de4d574/lib/runCall.ts#L29)*
-
-___
-<a id="storagereader"></a>
-
-### `<Optional>` storageReader
-
-**● storageReader**: *`StorageReader`*
-
-*Defined in [runCall.ts:15](https://github.com/ethereumjs/ethereumjs-vm/blob/de4d574/lib/runCall.ts#L15)*
+*Defined in [runCall.ts:27](https://github.com/ethereumjs/ethereumjs-vm/blob/2fcfe31/lib/runCall.ts#L27)*
 
 ___
 <a id="to"></a>
@@ -167,7 +157,7 @@ ___
 
 **● to**: *`Buffer`*
 
-*Defined in [runCall.ts:20](https://github.com/ethereumjs/ethereumjs-vm/blob/de4d574/lib/runCall.ts#L20)*
+*Defined in [runCall.ts:18](https://github.com/ethereumjs/ethereumjs-vm/blob/2fcfe31/lib/runCall.ts#L18)*
 
 ___
 <a id="value"></a>
@@ -176,7 +166,7 @@ ___
 
 **● value**: *`Buffer`*
 
-*Defined in [runCall.ts:21](https://github.com/ethereumjs/ethereumjs-vm/blob/de4d574/lib/runCall.ts#L21)*
+*Defined in [runCall.ts:19](https://github.com/ethereumjs/ethereumjs-vm/blob/2fcfe31/lib/runCall.ts#L19)*
 
 ___
 

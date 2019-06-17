@@ -32,17 +32,6 @@ export interface RunTxOpts {
 }
 
 /**
- * Callback for `runTx` method
- */
-export interface RunTxCb {
-  /**
-   * @param error - An error that may have happened or `null`
-   * @param results - Results of the execution
-   */
-  (err: Error | null, results: RunTxResult | null): void
-}
-
-/**
  * Execution result of a transaction
  */
 export interface RunTxResult extends InterpreterResult {
@@ -63,15 +52,14 @@ export interface RunTxResult extends InterpreterResult {
 /**
  * @ignore
  */
-export default function runTx(this: VM, opts: RunTxOpts, cb: RunTxCb) {
-  if (typeof opts === 'function' && cb === undefined) {
-    cb = opts as RunTxCb
-    return cb(new Error('invalid input, opts must be provided'), null)
+export default async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
+  if (opts === undefined) {
+    throw new Error('invalid input, opts must be provided')
   }
 
   // tx is required
   if (!opts.tx) {
-    return cb(new Error('invalid input, tx is required'), null)
+    throw new Error('invalid input, tx is required')
   }
 
   // create a reasonable default if no block is given
@@ -80,23 +68,21 @@ export default function runTx(this: VM, opts: RunTxOpts, cb: RunTxCb) {
   }
 
   if (new BN(opts.block.header.gasLimit).lt(new BN(opts.tx.gasLimit))) {
-    return cb(new Error('tx has a higher gas limit than the block'), null)
+    throw new Error('tx has a higher gas limit than the block')
   }
 
-  this.stateManager.checkpoint(() => {
-    _runTx
-      .bind(this)(opts)
-      .then(results => {
-        this.stateManager.commit(function(err: Error) {
-          cb(err, results)
-        })
-      })
-      .catch(err => {
-        this.stateManager.revert(function() {
-          cb(err, null)
-        })
-      })
-  })
+  const state = new PStateManager(this.stateManager)
+
+  await state.checkpoint()
+
+  try {
+    const result = await _runTx.bind(this)(opts)
+    await state.commit()
+    return result
+  } catch (e) {
+    await state.revert()
+    throw e
+  }
 }
 
 async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {

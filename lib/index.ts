@@ -2,10 +2,11 @@ import BN = require('bn.js')
 import { StateManager } from './state'
 import Common from 'ethereumjs-common'
 import Account from 'ethereumjs-account'
-import { default as runCode, RunCodeOpts, RunCodeCb } from './runCode'
-import { default as runCall, RunCallOpts, RunCallCb } from './runCall'
-import { default as runTx, RunTxOpts, RunTxCb } from './runTx'
-import { default as runBlock, RunBlockOpts, RunBlockCb } from './runBlock'
+import { default as runCode, RunCodeOpts } from './runCode'
+import { default as runCall, RunCallOpts } from './runCall'
+import { default as runTx, RunTxOpts, RunTxResult } from './runTx'
+import { default as runBlock, RunBlockOpts, RunBlockResult } from './runBlock'
+import { InterpreterResult, ExecResult } from './evm/interpreter'
 import runBlockchain from './runBlockchain'
 const promisify = require('util.promisify')
 const AsyncEventEmitter = require('async-eventemitter')
@@ -111,39 +112,38 @@ export default class VM extends AsyncEventEmitter {
    * @param blockchain -  A [blockchain](https://github.com/ethereum/ethereumjs-blockchain) object to process
    * @param cb - the callback function
    */
-  runBlockchain(blockchain: any, cb: any): void {
-    runBlockchain.bind(this)(blockchain, cb)
+  runBlockchain(blockchain: any): Promise<void> {
+    return runBlockchain.bind(this)(blockchain)
   }
 
   /**
    * Processes the `block` running all of the transactions it contains and updating the miner's account
    * @param opts - Default values for options:
    *  - `generate`: false
-   *  @param cb - Callback function
    */
-  runBlock(opts: RunBlockOpts, cb: RunBlockCb): void {
-    runBlock.bind(this)(opts, cb)
+  runBlock(opts: RunBlockOpts): Promise<RunBlockResult> {
+    return runBlock.bind(this)(opts)
   }
 
   /**
    * Process a transaction. Run the vm. Transfers eth. Checks balances.
    */
-  runTx(opts: RunTxOpts, cb: RunTxCb): void {
-    runTx.bind(this)(opts, cb)
+  runTx(opts: RunTxOpts): Promise<RunTxResult> {
+    return runTx.bind(this)(opts)
   }
 
   /**
    * runs a call (or create) operation.
    */
-  runCall(opts: RunCallOpts, cb: RunCallCb): void {
-    runCall.bind(this)(opts, cb)
+  runCall(opts: RunCallOpts): Promise<InterpreterResult> {
+    return runCall.bind(this)(opts)
   }
 
   /**
    * Runs EVM code.
    */
-  runCode(opts: RunCodeOpts, cb: RunCodeCb): void {
-    runCode.bind(this)(opts, cb)
+  runCode(opts: RunCodeOpts): Promise<ExecResult> {
+    return runCode.bind(this)(opts)
   }
 
   /**

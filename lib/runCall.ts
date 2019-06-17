@@ -31,20 +31,9 @@ export interface RunCallOpts {
 }
 
 /**
- * Callback for the [[runCall]] method.
- */
-export interface RunCallCb {
-  /**
-   * @param error - Any error that occured during execution, or `null`
-   * @param results - Results of call, or `null` if an error occured
-   */
-  (err: Error | null, results: InterpreterResult | null): void
-}
-
-/**
  * @ignore
  */
-export default function runCall(this: VM, opts: RunCallOpts, cb: RunCallCb): void {
+export default function runCall(this: VM, opts: RunCallOpts): Promise<InterpreterResult> {
   const block = opts.block || new Block()
 
   const txContext = new TxContext(
@@ -67,8 +56,5 @@ export default function runCall(this: VM, opts: RunCallOpts, cb: RunCallCb): voi
   })
 
   const interpreter = new Interpreter(this, txContext, block)
-  interpreter
-    .executeMessage(message)
-    .then(results => cb(null, results))
-    .catch(err => cb(err, null))
+  return interpreter.executeMessage(message)
 }

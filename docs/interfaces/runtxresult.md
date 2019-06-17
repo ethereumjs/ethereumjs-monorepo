@@ -31,7 +31,7 @@ Execution result of a transaction
 
 **● amountSpent**: *`BN`*
 
-*Defined in [runTx.ts:57](https://github.com/ethereumjs/ethereumjs-vm/blob/de4d574/lib/runTx.ts#L57)*
+*Defined in [runTx.ts:45](https://github.com/ethereumjs/ethereumjs-vm/blob/2fcfe31/lib/runTx.ts#L45)*
 
 The amount of ether used by this transaction
 
@@ -42,7 +42,7 @@ ___
 
 **● bloom**: *`Bloom`*
 
-*Defined in [runTx.ts:53](https://github.com/ethereumjs/ethereumjs-vm/blob/de4d574/lib/runTx.ts#L53)*
+*Defined in [runTx.ts:41](https://github.com/ethereumjs/ethereumjs-vm/blob/2fcfe31/lib/runTx.ts#L41)*
 
 Bloom filter resulted from transaction
 
@@ -55,7 +55,7 @@ ___
 
 *Inherited from [InterpreterResult](interpreterresult.md).[createdAddress](interpreterresult.md#createdaddress)*
 
-*Defined in [evm/interpreter.ts:33](https://github.com/ethereumjs/ethereumjs-vm/blob/de4d574/lib/evm/interpreter.ts#L33)*
+*Defined in [evm/interpreter.ts:32](https://github.com/ethereumjs/ethereumjs-vm/blob/2fcfe31/lib/evm/interpreter.ts#L32)*
 
 Address of created account durint transaction, if any
 
@@ -66,7 +66,7 @@ ___
 
 **● gasRefund**: *`BN`*
 
-*Defined in [runTx.ts:61](https://github.com/ethereumjs/ethereumjs-vm/blob/de4d574/lib/runTx.ts#L61)*
+*Defined in [runTx.ts:49](https://github.com/ethereumjs/ethereumjs-vm/blob/2fcfe31/lib/runTx.ts#L49)*
 
 The amount of gas as that was refunded during the transaction (i.e. `gasUsed = totalGasConsumed - gasRefund`)
 
@@ -79,7 +79,7 @@ ___
 
 *Inherited from [InterpreterResult](interpreterresult.md).[gasUsed](interpreterresult.md#gasused)*
 
-*Defined in [evm/interpreter.ts:29](https://github.com/ethereumjs/ethereumjs-vm/blob/de4d574/lib/evm/interpreter.ts#L29)*
+*Defined in [evm/interpreter.ts:28](https://github.com/ethereumjs/ethereumjs-vm/blob/2fcfe31/lib/evm/interpreter.ts#L28)*
 
 Amount of gas used by the transaction
 
@@ -92,7 +92,7 @@ ___
 
 *Inherited from [InterpreterResult](interpreterresult.md).[vm](interpreterresult.md#vm)*
 
-*Defined in [evm/interpreter.ts:37](https://github.com/ethereumjs/ethereumjs-vm/blob/de4d574/lib/evm/interpreter.ts#L37)*
+*Defined in [evm/interpreter.ts:36](https://github.com/ethereumjs/ethereumjs-vm/blob/2fcfe31/lib/evm/interpreter.ts#L36)*
 
 Contains the results from running the code, if any, as described in [runCode](../classes/vm.md#runcode)
 

@@ -24,15 +24,14 @@ tape('runBlockchain', (t) => {
   const putGenesisP = promisify(blockchain.putGenesis.bind(blockchain))
   const putBlockP = promisify(blockchain.putBlock.bind(blockchain))
   const getHeadP = promisify(blockchain.getHead.bind(blockchain))
-  const runBlockchainP = promisify(runBlockchain.bind(vm))
 
   t.test('should run without a blockchain parameter', async (st) => {
-    await runBlockchainP()
+    await runBlockchain.bind(vm)()
     st.end()
   })
 
   t.test('should run without blocks', async (st) => {
-    await runBlockchainP(blockchain)
+    await runBlockchain.bind(vm)(blockchain)
     st.end()
   })
 
@@ -42,20 +41,20 @@ tape('runBlockchain', (t) => {
     await putGenesisP(genesis)
     st.ok(blockchain.meta.genesis, 'genesis should be set for blockchain')
 
-    await runBlockchainP(blockchain)
+    await runBlockchain.bind(vm)(blockchain)
     st.end()
   })
 
   t.test('should run with valid and invalid blocks', async (st) => {
     // Produce error on the third time runBlock is called
     let runBlockInvocations = 0
-    vm.runBlock = (opts, cb) => {
+    vm.runBlock = (opts) => new Promise((resolve, reject) => {
       runBlockInvocations++
       if (runBlockInvocations === 3) {
-        return cb(new Error('test'), {})
+        return reject(new Error('test'))
       }
-      cb(null, {})
-    }
+      resolve({})
+    })
 
     const genesis = createGenesis({ chain: 'goerli' })
     await putGenesisP(genesis)
@@ -74,7 +73,7 @@ tape('runBlockchain', (t) => {
     st.deepEqual(head.hash(), b3.hash(), 'block3 should be the current head')
 
     try {
-      await runBlockchainP(blockchain)
+      await runBlockchain.bind(vm)(blockchain)
       st.fail('should have returned error')
     } catch (e) {
       st.equal(e.message, 'test')

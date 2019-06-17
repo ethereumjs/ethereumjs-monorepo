@@ -33,7 +33,7 @@ Result of executing a call via the \[\[Interpreter\]\].
 
 **● exception**: *`IsException`*
 
-*Defined in [evm/interpreter.ts:48](https://github.com/ethereumjs/ethereumjs-vm/blob/de4d574/lib/evm/interpreter.ts#L48)*
+*Defined in [evm/interpreter.ts:47](https://github.com/ethereumjs/ethereumjs-vm/blob/2fcfe31/lib/evm/interpreter.ts#L47)*
 
 `0` if the contract encountered an exception, `1` otherwise
 
@@ -44,7 +44,7 @@ ___
 
 **● exceptionError**: *[VmError](../classes/vmerror.md) \| [ERROR](../enums/error.md)*
 
-*Defined in [evm/interpreter.ts:52](https://github.com/ethereumjs/ethereumjs-vm/blob/de4d574/lib/evm/interpreter.ts#L52)*
+*Defined in [evm/interpreter.ts:51](https://github.com/ethereumjs/ethereumjs-vm/blob/2fcfe31/lib/evm/interpreter.ts#L51)*
 
 Description of the exception, if any occured
 
@@ -55,7 +55,7 @@ ___
 
 **● gas**: *`BN`*
 
-*Defined in [evm/interpreter.ts:56](https://github.com/ethereumjs/ethereumjs-vm/blob/de4d574/lib/evm/interpreter.ts#L56)*
+*Defined in [evm/interpreter.ts:55](https://github.com/ethereumjs/ethereumjs-vm/blob/2fcfe31/lib/evm/interpreter.ts#L55)*
 
 Amount of gas left
 
@@ -66,7 +66,7 @@ ___
 
 **● gasRefund**: *`BN`*
 
-*Defined in [evm/interpreter.ts:76](https://github.com/ethereumjs/ethereumjs-vm/blob/de4d574/lib/evm/interpreter.ts#L76)*
+*Defined in [evm/interpreter.ts:75](https://github.com/ethereumjs/ethereumjs-vm/blob/2fcfe31/lib/evm/interpreter.ts#L75)*
 
 Amount of gas to refund from deleting storage values
 
@@ -77,7 +77,7 @@ ___
 
 **● gasUsed**: *`BN`*
 
-*Defined in [evm/interpreter.ts:60](https://github.com/ethereumjs/ethereumjs-vm/blob/de4d574/lib/evm/interpreter.ts#L60)*
+*Defined in [evm/interpreter.ts:59](https://github.com/ethereumjs/ethereumjs-vm/blob/2fcfe31/lib/evm/interpreter.ts#L59)*
 
 Amount of gas the code used to run
 
@@ -88,7 +88,7 @@ ___
 
 **● logs**: *`any`[]*
 
-*Defined in [evm/interpreter.ts:68](https://github.com/ethereumjs/ethereumjs-vm/blob/de4d574/lib/evm/interpreter.ts#L68)*
+*Defined in [evm/interpreter.ts:67](https://github.com/ethereumjs/ethereumjs-vm/blob/2fcfe31/lib/evm/interpreter.ts#L67)*
 
 Array of logs that the contract emitted
 
@@ -99,7 +99,7 @@ ___
 
 **● return**: *`Buffer`*
 
-*Defined in [evm/interpreter.ts:64](https://github.com/ethereumjs/ethereumjs-vm/blob/de4d574/lib/evm/interpreter.ts#L64)*
+*Defined in [evm/interpreter.ts:63](https://github.com/ethereumjs/ethereumjs-vm/blob/2fcfe31/lib/evm/interpreter.ts#L63)*
 
 Return value from the contract
 
@@ -110,7 +110,7 @@ ___
 
 **● returnValue**: *`Buffer`*
 
-*Defined in [evm/interpreter.ts:72](https://github.com/ethereumjs/ethereumjs-vm/blob/de4d574/lib/evm/interpreter.ts#L72)*
+*Defined in [evm/interpreter.ts:71](https://github.com/ethereumjs/ethereumjs-vm/blob/2fcfe31/lib/evm/interpreter.ts#L71)*
 
 Value returned by the contract
 
@@ -121,7 +121,7 @@ ___
 
 **● runState**: *`RunState`*
 
-*Defined in [evm/interpreter.ts:44](https://github.com/ethereumjs/ethereumjs-vm/blob/de4d574/lib/evm/interpreter.ts#L44)*
+*Defined in [evm/interpreter.ts:43](https://github.com/ethereumjs/ethereumjs-vm/blob/2fcfe31/lib/evm/interpreter.ts#L43)*
 
 ___
 <a id="selfdestruct"></a>
@@ -130,9 +130,9 @@ ___
 
 **● selfdestruct**: *`undefined` \| `object`*
 
-*Defined in [evm/interpreter.ts:80](https://github.com/ethereumjs/ethereumjs-vm/blob/de4d574/lib/evm/interpreter.ts#L80)*
+*Defined in [evm/interpreter.ts:79](https://github.com/ethereumjs/ethereumjs-vm/blob/2fcfe31/lib/evm/interpreter.ts#L79)*
 
-A set of accounts that have self-destructed
+A map from the accounts that have self-destructed to the addresses to send their funds to
 
 ___
 

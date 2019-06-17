@@ -33,7 +33,7 @@ tape('VM with default blockchain', (t) => {
   })
 
   t.test('should only accept common or chain and fork', (st) => {
-    const common = new Common('mainnet');
+    const common = new Common('mainnet')
 
     st.throws(() => new VM({ chain: 'a', common }))
     st.throws(() => new VM({ hardfork: 'a', common }))
@@ -67,8 +67,7 @@ tape('VM with default blockchain', (t) => {
 
   t.test('should run blockchain without blocks', async (st) => {
     const vm = new VM()
-    const run = promisify(vm.runBlockchain.bind(vm))
-    await run()
+    await vm.runBlockchain()
     st.end()
   })
 })
@@ -82,7 +81,7 @@ tape('VM with blockchain', (t) => {
 
   t.test('should run blockchain without blocks', async (st) => {
     const vm = setupVM()
-    await runBlockchainP(vm)
+    await vm.runBlockchain()
     st.end()
   })
 
@@ -104,8 +103,8 @@ tape('VM with blockchain', (t) => {
     const setupPreP = promisify(setupPreConditions)
     await setupPreP(vm.stateManager._trie, testData)
 
-    vm.runBlock = (block, cb) => cb(new Error('test'))
-    runBlockchainP(vm)
+    vm.runBlock = (block) => new Promise((resolve, reject) => reject(new Error('test')))
+    vm.runBlockchain()
       .then(() => st.fail('it hasn\'t returned any errors'))
       .catch((e) => {
         st.equal(e.message, 'test', 'it has correctly propagated runBlock\'s error')
@@ -131,7 +130,7 @@ tape('VM with blockchain', (t) => {
     const setupPreP = promisify(setupPreConditions)
     await setupPreP(vm.stateManager._trie, testData)
 
-    await runBlockchainP(vm)
+    await vm.runBlockchain()
 
     st.end()
   })
@@ -149,7 +148,6 @@ tape('VM with blockchain', (t) => {
   })
 })
 
-const runBlockchainP = (vm) => promisify(vm.runBlockchain.bind(vm))()
 const putGenesisP = (blockchain, genesis) => promisify(blockchain.putGenesis.bind(blockchain))(genesis)
 const putBlockP = (blockchain, block) => promisify(blockchain.putBlock.bind(blockchain))(block)
 const getHeadP = (blockchain) => promisify(blockchain.getHead.bind(blockchain))()

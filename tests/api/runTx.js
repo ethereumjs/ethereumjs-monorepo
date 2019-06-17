@@ -18,7 +18,7 @@ function setup (vm = null) {
 
   return {
     vm,
-    runTx: promisify(runTx.bind(vm)),
+    runTx: runTx.bind(vm),
     putAccount: promisify(vm.stateManager.putAccount.bind(vm.stateManager))
   }
 }

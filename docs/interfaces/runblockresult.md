@@ -25,7 +25,7 @@ Result of [runBlock](../classes/vm.md#runblock)
 
 **● receipts**: *[TxReceipt](txreceipt.md)[]*
 
-*Defined in [runBlock.ts:52](https://github.com/ethereumjs/ethereumjs-vm/blob/de4d574/lib/runBlock.ts#L52)*
+*Defined in [runBlock.ts:41](https://github.com/ethereumjs/ethereumjs-vm/blob/2fcfe31/lib/runBlock.ts#L41)*
 
 Receipts generated for transactions in the block
 
@@ -36,7 +36,7 @@ ___
 
 **● results**: *[RunTxResult](runtxresult.md)[]*
 
-*Defined in [runBlock.ts:56](https://github.com/ethereumjs/ethereumjs-vm/blob/de4d574/lib/runBlock.ts#L56)*
+*Defined in [runBlock.ts:45](https://github.com/ethereumjs/ethereumjs-vm/blob/2fcfe31/lib/runBlock.ts#L45)*
 
 Results of executing the transactions in the block
 

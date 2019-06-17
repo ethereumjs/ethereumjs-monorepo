@@ -70,66 +70,62 @@ function runTestCase (options, testData, t, cb) {
         return true
       }
 
-      if (tx.validate()) {
-        if (options.jsontrace) {
-          vm.on('step', function (e) {
-            let hexStack = []
-            hexStack = e.stack.map(item => {
-              return '0x' + new BN(item).toString(16, 0)
-            })
+      if (!tx.validate()) {
+        return done()
+      }
 
-            var opTrace = {
-              'pc': e.pc,
-              'op': e.opcode.opcode,
-              'gas': '0x' + e.gasLeft.toString('hex'),
-              'gasCost': '0x' + e.opcode.fee.toString(16),
-              'stack': hexStack,
-              'depth': e.depth,
-              'opName': e.opcode.name
-            }
+      if (options.jsontrace) {
+        vm.on('step', function (e) {
+          let hexStack = []
+          hexStack = e.stack.map(item => {
+            return '0x' + new BN(item).toString(16, 0)
+          })
 
-            t.comment(JSON.stringify(opTrace))
-          })
-          vm.on('afterTx', function (results) {
-            let stateRoot = {
-              'stateRoot': vm.stateManager._trie.root.toString('hex')
-            }
-            t.comment(JSON.stringify(stateRoot))
-          })
-        }
-        vm.runTx({
-          tx: tx,
-          block: block
-        }, function (err, r) {
+          var opTrace = {
+            'pc': e.pc,
+            'op': e.opcode.opcode,
+            'gas': '0x' + e.gasLeft.toString('hex'),
+            'gasCost': '0x' + e.opcode.fee.toString(16),
+            'stack': hexStack,
+            'depth': e.depth,
+            'opName': e.opcode.name
+          }
+
+          t.comment(JSON.stringify(opTrace))
+        })
+        vm.on('afterTx', function (results) {
+          let stateRoot = {
+            'stateRoot': vm.stateManager._trie.root.toString('hex')
+          }
+          t.comment(JSON.stringify(stateRoot))
+        })
+      }
+
+      vm.runTx({ tx: tx, block: block })
+        .then(() => done())
+        .catch((err) => {
           // If tx is invalid and coinbase is empty, the test harness
           // expects the coinbase account to be deleted from state.
           // Without this ecmul_0-3_5616_28000_96 would fail.
-          if (err) {
-            vm.stateManager.getAccount(block.header.coinbase, function (err, account) {
-              if (err) {
+          vm.stateManager.getAccount(block.header.coinbase, function (err, account) {
+            if (err) {
+              done()
+              return
+            }
+            if (new BN(account.balance).isZero()) {
+              async.series([
+                (cb) => vm.stateManager.putAccount(block.header.coinbase, new Account(), cb),
+                (cb) => vm.stateManager.cleanupTouchedAccounts(cb),
+                (cb) => vm.stateManager._cache.flush(cb)
+              ], (err) => {
+                err = null
                 done()
-                return
-              }
-              if (new BN(account.balance).isZero()) {
-                async.series([
-                  (cb) => vm.stateManager.putAccount(block.header.coinbase, new Account(), cb),
-                  (cb) => vm.stateManager.cleanupTouchedAccounts(cb),
-                  (cb) => vm.stateManager._cache.flush(cb)
-                ], (err) => {
-                  err = null
-                  done()
-                })
-              } else {
-                done()
-              }
-            })
-          } else {
-            done()
-          }
+              })
+            } else {
+              done()
+            }
+          })
         })
-      } else {
-        done()
-      }
     },
     function (done) {
       if (testData.postStateRoot.substr(0, 2) === '0x') {

@@ -44,7 +44,7 @@ Execution engine which can be used to run a blockchain, individual blocks, indiv
 
 ⊕ **new VM**(opts?: *[VMOpts](../interfaces/vmopts.md)*): [VM](vm.md)
 
-*Defined in [index.ts:59](https://github.com/ethereumjs/ethereumjs-vm/blob/de4d574/lib/index.ts#L59)*
+*Defined in [index.ts:61](https://github.com/ethereumjs/ethereumjs-vm/blob/2fcfe31/lib/index.ts#L61)*
 
 Instantiates a new [VM](vm.md) Object.
 
@@ -52,7 +52,7 @@ Instantiates a new [VM](vm.md) Object.
 
 | Name | Type | Default value | Description |
 | ------ | ------ | ------ | ------ |
-| `Default value` opts | [VMOpts](../interfaces/vmopts.md) |  {} |  Default values for the options are:*   \`chain\`: 'mainnet'*   \`hardfork\`: 'petersburg' \[supported: 'byzantium', 'constantinople', 'petersburg' (will throw on unsupported)\]*   \`activatePrecompiles\`: false*   \`allowUnlimitedContractSize\`: false \[ONLY set to \`true\` during debugging\] |
+| `Default value` opts | [VMOpts](../interfaces/vmopts.md) |  {} |  Default values for the options are:*   \`chain\`: 'mainnet'*   \`hardfork\`: 'petersburg' \[supported: 'byzantium', 'constantinople', 'petersburg', 'istanbul' (DRAFT) (will throw on unsupported)\]*   \`activatePrecompiles\`: false*   \`allowUnlimitedContractSize\`: false \[ONLY set to \`true\` during debugging\] |
 
 **Returns:** [VM](vm.md)
 
@@ -66,7 +66,7 @@ ___
 
 **● _common**: *`Common`*
 
-*Defined in [index.ts:56](https://github.com/ethereumjs/ethereumjs-vm/blob/de4d574/lib/index.ts#L56)*
+*Defined in [index.ts:58](https://github.com/ethereumjs/ethereumjs-vm/blob/2fcfe31/lib/index.ts#L58)*
 
 ___
 <a id="allowunlimitedcontractsize"></a>
@@ -75,7 +75,7 @@ ___
 
 **● allowUnlimitedContractSize**: *`boolean`*
 
-*Defined in [index.ts:59](https://github.com/ethereumjs/ethereumjs-vm/blob/de4d574/lib/index.ts#L59)*
+*Defined in [index.ts:61](https://github.com/ethereumjs/ethereumjs-vm/blob/2fcfe31/lib/index.ts#L61)*
 
 ___
 <a id="blockchain"></a>
@@ -84,7 +84,7 @@ ___
 
 **● blockchain**: *`any`*
 
-*Defined in [index.ts:58](https://github.com/ethereumjs/ethereumjs-vm/blob/de4d574/lib/index.ts#L58)*
+*Defined in [index.ts:60](https://github.com/ethereumjs/ethereumjs-vm/blob/2fcfe31/lib/index.ts#L60)*
 
 ___
 <a id="opts"></a>
@@ -93,7 +93,7 @@ ___
 
 **● opts**: *[VMOpts](../interfaces/vmopts.md)*
 
-*Defined in [index.ts:55](https://github.com/ethereumjs/ethereumjs-vm/blob/de4d574/lib/index.ts#L55)*
+*Defined in [index.ts:57](https://github.com/ethereumjs/ethereumjs-vm/blob/2fcfe31/lib/index.ts#L57)*
 
 ___
 <a id="statemanager"></a>
@@ -102,7 +102,7 @@ ___
 
 **● stateManager**: *[StateManager](statemanager.md)*
 
-*Defined in [index.ts:57](https://github.com/ethereumjs/ethereumjs-vm/blob/de4d574/lib/index.ts#L57)*
+*Defined in [index.ts:59](https://github.com/ethereumjs/ethereumjs-vm/blob/2fcfe31/lib/index.ts#L59)*
 
 ___
 
@@ -114,7 +114,7 @@ ___
 
 ▸ **_emit**(topic: *`string`*, data: *`any`*): `Promise`<`any`>
 
-*Defined in [index.ts:147](https://github.com/ethereumjs/ethereumjs-vm/blob/de4d574/lib/index.ts#L147)*
+*Defined in [index.ts:160](https://github.com/ethereumjs/ethereumjs-vm/blob/2fcfe31/lib/index.ts#L160)*
 
 **Parameters:**
 
@@ -132,7 +132,7 @@ ___
 
 ▸ **copy**(): [VM](vm.md)
 
-*Defined in [index.ts:140](https://github.com/ethereumjs/ethereumjs-vm/blob/de4d574/lib/index.ts#L140)*
+*Defined in [index.ts:152](https://github.com/ethereumjs/ethereumjs-vm/blob/2fcfe31/lib/index.ts#L152)*
 
 Returns a copy of the [VM](vm.md) instance.
 
@@ -143,9 +143,9 @@ ___
 
 ###  runBlock
 
-▸ **runBlock**(opts: *[RunBlockOpts](../interfaces/runblockopts.md)*, cb: *[RunBlockCb](../interfaces/runblockcb.md)*): `void`
+▸ **runBlock**(opts: *[RunBlockOpts](../interfaces/runblockopts.md)*): `Promise`<[RunBlockResult](../interfaces/runblockresult.md)>
 
-*Defined in [index.ts:112](https://github.com/ethereumjs/ethereumjs-vm/blob/de4d574/lib/index.ts#L112)*
+*Defined in [index.ts:124](https://github.com/ethereumjs/ethereumjs-vm/blob/2fcfe31/lib/index.ts#L124)*
 
 Processes the `block` running all of the transactions it contains and updating the miner's account
 
@@ -153,19 +153,18 @@ Processes the `block` running all of the transactions it contains and updating t
 
 | Name | Type | Description |
 | ------ | ------ | ------ |
-| opts | [RunBlockOpts](../interfaces/runblockopts.md) |  Default values for options:*   \`generate\`: false @param cb - Callback function |
-| cb | [RunBlockCb](../interfaces/runblockcb.md) |
+| opts | [RunBlockOpts](../interfaces/runblockopts.md) |  Default values for options:*   \`generate\`: false |
 
-**Returns:** `void`
+**Returns:** `Promise`<[RunBlockResult](../interfaces/runblockresult.md)>
 
 ___
 <a id="runblockchain"></a>
 
 ###  runBlockchain
 
-▸ **runBlockchain**(blockchain: *`any`*, cb: *`any`*): `void`
+▸ **runBlockchain**(blockchain: *`any`*): `Promise`<`void`>
 
-*Defined in [index.ts:102](https://github.com/ethereumjs/ethereumjs-vm/blob/de4d574/lib/index.ts#L102)*
+*Defined in [index.ts:115](https://github.com/ethereumjs/ethereumjs-vm/blob/2fcfe31/lib/index.ts#L115)*
 
 Processes blocks and adds them to the blockchain.
 
@@ -174,18 +173,17 @@ Processes blocks and adds them to the blockchain.
 | Name | Type | Description |
 | ------ | ------ | ------ |
 | blockchain | `any` |  A [blockchain](https://github.com/ethereum/ethereumjs-blockchain) object to process |
-| cb | `any` |  the callback function |
 
-**Returns:** `void`
+**Returns:** `Promise`<`void`>
 
 ___
 <a id="runcall"></a>
 
 ###  runCall
 
-▸ **runCall**(opts: *[RunCallOpts](../interfaces/runcallopts.md)*, cb: *[RunCallCb](../interfaces/runcallcb.md)*): `void`
+▸ **runCall**(opts: *[RunCallOpts](../interfaces/runcallopts.md)*): `Promise`<[InterpreterResult](../interfaces/interpreterresult.md)>
 
-*Defined in [index.ts:126](https://github.com/ethereumjs/ethereumjs-vm/blob/de4d574/lib/index.ts#L126)*
+*Defined in [index.ts:138](https://github.com/ethereumjs/ethereumjs-vm/blob/2fcfe31/lib/index.ts#L138)*
 
 runs a call (or create) operation.
 
@@ -194,18 +192,17 @@ runs a call (or create) operation.
 | Name | Type |
 | ------ | ------ |
 | opts | [RunCallOpts](../interfaces/runcallopts.md) |
-| cb | [RunCallCb](../interfaces/runcallcb.md) |
 
-**Returns:** `void`
+**Returns:** `Promise`<[InterpreterResult](../interfaces/interpreterresult.md)>
 
 ___
 <a id="runcode"></a>
 
 ###  runCode
 
-▸ **runCode**(opts: *[RunCodeOpts](../interfaces/runcodeopts.md)*, cb: *[RunCodeCb](../interfaces/runcodecb.md)*): `void`
+▸ **runCode**(opts: *[RunCodeOpts](../interfaces/runcodeopts.md)*): `Promise`<[ExecResult](../interfaces/execresult.md)>
 
-*Defined in [index.ts:133](https://github.com/ethereumjs/ethereumjs-vm/blob/de4d574/lib/index.ts#L133)*
+*Defined in [index.ts:145](https://github.com/ethereumjs/ethereumjs-vm/blob/2fcfe31/lib/index.ts#L145)*
 
 Runs EVM code.
 
@@ -214,18 +211,17 @@ Runs EVM code.
 | Name | Type |
 | ------ | ------ |
 | opts | [RunCodeOpts](../interfaces/runcodeopts.md) |
-| cb | [RunCodeCb](../interfaces/runcodecb.md) |
 
-**Returns:** `void`
+**Returns:** `Promise`<[ExecResult](../interfaces/execresult.md)>
 
 ___
 <a id="runtx"></a>
 
 ###  runTx
 
-▸ **runTx**(opts: *[RunTxOpts](../interfaces/runtxopts.md)*, cb: *[RunTxCb](../interfaces/runtxcb.md)*): `void`
+▸ **runTx**(opts: *[RunTxOpts](../interfaces/runtxopts.md)*): `Promise`<[RunTxResult](../interfaces/runtxresult.md)>
 
-*Defined in [index.ts:119](https://github.com/ethereumjs/ethereumjs-vm/blob/de4d574/lib/index.ts#L119)*
+*Defined in [index.ts:131](https://github.com/ethereumjs/ethereumjs-vm/blob/2fcfe31/lib/index.ts#L131)*
 
 Process a transaction. Run the vm. Transfers eth. Checks balances.
 
@@ -234,9 +230,8 @@ Process a transaction. Run the vm. Transfers eth. Checks balances.
 | Name | Type |
 | ------ | ------ |
 | opts | [RunTxOpts](../interfaces/runtxopts.md) |
-| cb | [RunTxCb](../interfaces/runtxcb.md) |
 
-**Returns:** `void`
+**Returns:** `Promise`<[RunTxResult](../interfaces/runtxresult.md)>
 
 ___
 

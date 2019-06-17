@@ -19,7 +19,7 @@ function setup (vm = null) {
       stateManager,
       emit: (e, val, cb) => cb(),
       _emit: (e, val) => new Promise((resolve, reject) => resolve()),
-      runTx: (opts, cb) => cb(new Error('test')),
+      runTx: (opts) => new Promise((resolve, reject) => reject(new Error('test'))),
       _common: new Common('mainnet', 'byzantium')
     }
   }
@@ -28,7 +28,7 @@ function setup (vm = null) {
     vm,
     data: testData,
     p: {
-      runBlock: promisify(runBlock.bind(vm)),
+      runBlock: runBlock.bind(vm),
       putAccount: promisify(vm.stateManager.putAccount.bind(vm.stateManager))
     }
   }
