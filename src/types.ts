@@ -9,7 +9,7 @@ export interface chainsType {
   names: {
     [key: string]: string
   }
-  [key: string]: {}
+  [key: string]: any
 }
 
 export interface Chain {
