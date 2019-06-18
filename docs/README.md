@@ -8,6 +8,10 @@
 
 ### Interfaces
 
+- [BootstrapNode](interfaces/bootstrapnode.md)
+- [Chain](interfaces/chain.md)
+- [GenesisBlock](interfaces/genesisblock.md)
+- [Hardfork](interfaces/hardfork.md)
 - [chainsType](interfaces/chainstype.md)
 - [genesisStatesType](interfaces/genesisstatestype.md)
 - [hardforkOptions](interfaces/hardforkoptions.md)
@@ -31,7 +35,7 @@
 
 ▸ **genesisStateById**(id: _`number`_): `any`
 
-_Defined in [genesisStates/index.ts:23](https://github.com/ethereumjs/ethereumjs-common/blob/c779647/src/genesisStates/index.ts#L23)_
+_Defined in [genesisStates/index.ts:23](https://github.com/ethereumjs/ethereumjs-common/blob/30c4186/src/genesisStates/index.ts#L23)_
 
 Returns the genesis state by network ID
 
@@ -52,7 +56,7 @@ Dictionary with genesis accounts
 
 ▸ **genesisStateByName**(name: _`string`_): `any`
 
-_Defined in [genesisStates/index.ts:32](https://github.com/ethereumjs/ethereumjs-common/blob/c779647/src/genesisStates/index.ts#L32)_
+_Defined in [genesisStates/index.ts:32](https://github.com/ethereumjs/ethereumjs-common/blob/30c4186/src/genesisStates/index.ts#L32)_
 
 Returns the genesis state by network name
 
@@ -75,7 +79,7 @@ Dictionary with genesis accounts
 
 **genesisStates**: _`object`_
 
-_Defined in [genesisStates/index.ts:3](https://github.com/ethereumjs/ethereumjs-common/blob/c779647/src/genesisStates/index.ts#L3)_
+_Defined in [genesisStates/index.ts:3](https://github.com/ethereumjs/ethereumjs-common/blob/30c4186/src/genesisStates/index.ts#L3)_
 
 <a id="genesisstates.goerli"></a>
 
@@ -83,7 +87,7 @@ _Defined in [genesisStates/index.ts:3](https://github.com/ethereumjs/ethereumjs-
 
 **● goerli**: _`any`_ = require('./goerli.json')
 
-_Defined in [genesisStates/index.ts:15](https://github.com/ethereumjs/ethereumjs-common/blob/c779647/src/genesisStates/index.ts#L15)_
+_Defined in [genesisStates/index.ts:15](https://github.com/ethereumjs/ethereumjs-common/blob/30c4186/src/genesisStates/index.ts#L15)_
 
 ---
 
@@ -93,7 +97,7 @@ _Defined in [genesisStates/index.ts:15](https://github.com/ethereumjs/ethereumjs
 
 **● kovan**: _`any`_ = require('./kovan.json')
 
-_Defined in [genesisStates/index.ts:14](https://github.com/ethereumjs/ethereumjs-common/blob/c779647/src/genesisStates/index.ts#L14)_
+_Defined in [genesisStates/index.ts:14](https://github.com/ethereumjs/ethereumjs-common/blob/30c4186/src/genesisStates/index.ts#L14)_
 
 ---
 
@@ -103,7 +107,7 @@ _Defined in [genesisStates/index.ts:14](https://github.com/ethereumjs/ethereumjs
 
 **● mainnet**: _`any`_ = require('./mainnet.json')
 
-_Defined in [genesisStates/index.ts:11](https://github.com/ethereumjs/ethereumjs-common/blob/c779647/src/genesisStates/index.ts#L11)_
+_Defined in [genesisStates/index.ts:11](https://github.com/ethereumjs/ethereumjs-common/blob/30c4186/src/genesisStates/index.ts#L11)_
 
 ---
 
@@ -113,7 +117,7 @@ _Defined in [genesisStates/index.ts:11](https://github.com/ethereumjs/ethereumjs
 
 **● rinkeby**: _`any`_ = require('./rinkeby.json')
 
-_Defined in [genesisStates/index.ts:13](https://github.com/ethereumjs/ethereumjs-common/blob/c779647/src/genesisStates/index.ts#L13)_
+_Defined in [genesisStates/index.ts:13](https://github.com/ethereumjs/ethereumjs-common/blob/30c4186/src/genesisStates/index.ts#L13)_
 
 ---
 
@@ -123,7 +127,7 @@ _Defined in [genesisStates/index.ts:13](https://github.com/ethereumjs/ethereumjs
 
 **● ropsten**: _`any`_ = require('./ropsten.json')
 
-_Defined in [genesisStates/index.ts:12](https://github.com/ethereumjs/ethereumjs-common/blob/c779647/src/genesisStates/index.ts#L12)_
+_Defined in [genesisStates/index.ts:12](https://github.com/ethereumjs/ethereumjs-common/blob/30c4186/src/genesisStates/index.ts#L12)_
 
 ---
 
@@ -133,7 +137,7 @@ _Defined in [genesisStates/index.ts:12](https://github.com/ethereumjs/ethereumjs
 
 **names**: _`object`_
 
-_Defined in [genesisStates/index.ts:4](https://github.com/ethereumjs/ethereumjs-common/blob/c779647/src/genesisStates/index.ts#L4)_
+_Defined in [genesisStates/index.ts:4](https://github.com/ethereumjs/ethereumjs-common/blob/30c4186/src/genesisStates/index.ts#L4)_
 
 <a id="genesisstates.names.1"></a>
 
@@ -141,7 +145,7 @@ _Defined in [genesisStates/index.ts:4](https://github.com/ethereumjs/ethereumjs-
 
 **● 1**: _`string`_ = "mainnet"
 
-_Defined in [genesisStates/index.ts:5](https://github.com/ethereumjs/ethereumjs-common/blob/c779647/src/genesisStates/index.ts#L5)_
+_Defined in [genesisStates/index.ts:5](https://github.com/ethereumjs/ethereumjs-common/blob/30c4186/src/genesisStates/index.ts#L5)_
 
 ---
 
@@ -151,7 +155,7 @@ _Defined in [genesisStates/index.ts:5](https://github.com/ethereumjs/ethereumjs-
 
 **● 3**: _`string`_ = "ropsten"
 
-_Defined in [genesisStates/index.ts:6](https://github.com/ethereumjs/ethereumjs-common/blob/c779647/src/genesisStates/index.ts#L6)_
+_Defined in [genesisStates/index.ts:6](https://github.com/ethereumjs/ethereumjs-common/blob/30c4186/src/genesisStates/index.ts#L6)_
 
 ---
 
@@ -161,7 +165,7 @@ _Defined in [genesisStates/index.ts:6](https://github.com/ethereumjs/ethereumjs-
 
 **● 4**: _`string`_ = "rinkeby"
 
-_Defined in [genesisStates/index.ts:7](https://github.com/ethereumjs/ethereumjs-common/blob/c779647/src/genesisStates/index.ts#L7)_
+_Defined in [genesisStates/index.ts:7](https://github.com/ethereumjs/ethereumjs-common/blob/30c4186/src/genesisStates/index.ts#L7)_
 
 ---
 
@@ -171,7 +175,7 @@ _Defined in [genesisStates/index.ts:7](https://github.com/ethereumjs/ethereumjs-
 
 **● 42**: _`string`_ = "kovan"
 
-_Defined in [genesisStates/index.ts:8](https://github.com/ethereumjs/ethereumjs-common/blob/c779647/src/genesisStates/index.ts#L8)_
+_Defined in [genesisStates/index.ts:8](https://github.com/ethereumjs/ethereumjs-common/blob/30c4186/src/genesisStates/index.ts#L8)_
 
 ---
 
@@ -181,7 +185,7 @@ _Defined in [genesisStates/index.ts:8](https://github.com/ethereumjs/ethereumjs-
 
 **● 6284**: _`string`_ = "goerli"
 
-_Defined in [genesisStates/index.ts:9](https://github.com/ethereumjs/ethereumjs-common/blob/c779647/src/genesisStates/index.ts#L9)_
+_Defined in [genesisStates/index.ts:9](https://github.com/ethereumjs/ethereumjs-common/blob/30c4186/src/genesisStates/index.ts#L9)_
 
 ---
 
