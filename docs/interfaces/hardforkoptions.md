@@ -21,9 +21,9 @@
 
 ### `<Optional>` onlyActive
 
-**● onlyActive**: _`undefined` | `false` | `true`_
+**● onlyActive**: _`undefined` \| `false` \| `true`_
 
-_Defined in [index.ts:8](https://github.com/ethereumjs/ethereumjs-common/blob/c779647/src/index.ts#L8)_
+_Defined in [index.ts:9](https://github.com/ethereumjs/ethereumjs-common/blob/30c4186/src/index.ts#L9)_
 
 optional, only active HFs (default: false)
 
@@ -33,9 +33,9 @@ optional, only active HFs (default: false)
 
 ### `<Optional>` onlySupported
 
-**● onlySupported**: _`undefined` | `false` | `true`_
+**● onlySupported**: _`undefined` \| `false` \| `true`_
 
-_Defined in [index.ts:6](https://github.com/ethereumjs/ethereumjs-common/blob/c779647/src/index.ts#L6)_
+_Defined in [index.ts:7](https://github.com/ethereumjs/ethereumjs-common/blob/30c4186/src/index.ts#L7)_
 
 optional, only allow supported HFs (default: false)
 
