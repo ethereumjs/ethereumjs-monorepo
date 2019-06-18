@@ -15,8 +15,8 @@
 
 ### Interfaces
 
+* [EVMResult](interfaces/evmresult.md)
 * [ExecResult](interfaces/execresult.md)
-* [InterpreterResult](interfaces/interpreterresult.md)
 * [RunBlockOpts](interfaces/runblockopts.md)
 * [RunBlockResult](interfaces/runblockresult.md)
 * [RunCallOpts](interfaces/runcallopts.md)

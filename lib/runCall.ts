@@ -3,7 +3,7 @@ import { zeros } from 'ethereumjs-util'
 import VM from './index'
 import TxContext from './evm/txContext'
 import Message from './evm/message'
-import { default as Interpreter, InterpreterResult } from './evm/interpreter'
+import { default as EVM, EVMResult } from './evm/evm'
 const Block = require('ethereumjs-block')
 
 /**
@@ -33,7 +33,7 @@ export interface RunCallOpts {
 /**
  * @ignore
  */
-export default function runCall(this: VM, opts: RunCallOpts): Promise<InterpreterResult> {
+export default function runCall(this: VM, opts: RunCallOpts): Promise<EVMResult> {
   const block = opts.block || new Block()
 
   const txContext = new TxContext(
@@ -55,6 +55,6 @@ export default function runCall(this: VM, opts: RunCallOpts): Promise<Interprete
     delegatecall: opts.delegatecall || false,
   })
 
-  const interpreter = new Interpreter(this, txContext, block)
-  return interpreter.executeMessage(message)
+  const evm = new EVM(this, txContext, block)
+  return evm.executeMessage(message)
 }

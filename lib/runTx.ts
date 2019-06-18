@@ -3,7 +3,7 @@ import { toBuffer } from 'ethereumjs-util'
 import Account from 'ethereumjs-account'
 import VM from './index'
 import Bloom from './bloom'
-import { default as Interpreter, InterpreterResult } from './evm/interpreter'
+import { default as EVM, EVMResult } from './evm/evm'
 import Message from './evm/message'
 import TxContext from './evm/txContext'
 import PStateManager from './state/promisified'
@@ -34,7 +34,7 @@ export interface RunTxOpts {
 /**
  * Execution result of a transaction
  */
-export interface RunTxResult extends InterpreterResult {
+export interface RunTxResult extends EVMResult {
   /**
    * Bloom filter resulted from transaction
    */
@@ -143,8 +143,8 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     data: tx.data,
   })
   state._wrapped._clearOriginalStorageCache()
-  const interpreter = new Interpreter(this, txContext, block)
-  const results = (await interpreter.executeMessage(message)) as RunTxResult
+  const evm = new EVM(this, txContext, block)
+  const results = (await evm.executeMessage(message)) as RunTxResult
 
   /*
    * Parse results

@@ -31,7 +31,7 @@ Options for instantiating a [VM](../classes/vm.md).
 
 **● activatePrecompiles**: *`undefined` \| `false` \| `true`*
 
-*Defined in [index.ts:44](https://github.com/ethereumjs/ethereumjs-vm/blob/4fbb5ef/lib/index.ts#L44)*
+*Defined in [index.ts:44](https://github.com/ethereumjs/ethereumjs-vm/blob/3e1633c/lib/index.ts#L44)*
 
 If true, create entries in the state tree for the precompiled contracts
 
@@ -42,7 +42,7 @@ ___
 
 **● allowUnlimitedContractSize**: *`undefined` \| `false` \| `true`*
 
-*Defined in [index.ts:48](https://github.com/ethereumjs/ethereumjs-vm/blob/4fbb5ef/lib/index.ts#L48)*
+*Defined in [index.ts:48](https://github.com/ethereumjs/ethereumjs-vm/blob/3e1633c/lib/index.ts#L48)*
 
 Allows unlimited contract sizes while debugging. By setting this to `true`, the check for contract size limit of 24KB (see [EIP-170](https://git.io/vxZkK)) is bypassed
 
@@ -53,7 +53,7 @@ ___
 
 **● blockchain**: *`any`*
 
-*Defined in [index.ts:40](https://github.com/ethereumjs/ethereumjs-vm/blob/4fbb5ef/lib/index.ts#L40)*
+*Defined in [index.ts:40](https://github.com/ethereumjs/ethereumjs-vm/blob/3e1633c/lib/index.ts#L40)*
 
 A [blockchain](https://github.com/ethereumjs/ethereumjs-blockchain) object for storing/retrieving blocks
 
@@ -64,7 +64,7 @@ ___
 
 **● chain**: *`undefined` \| `string`*
 
-*Defined in [index.ts:23](https://github.com/ethereumjs/ethereumjs-vm/blob/4fbb5ef/lib/index.ts#L23)*
+*Defined in [index.ts:23](https://github.com/ethereumjs/ethereumjs-vm/blob/3e1633c/lib/index.ts#L23)*
 
 The chain the VM operates on
 
@@ -75,7 +75,7 @@ ___
 
 **● common**: *`Common`*
 
-*Defined in [index.ts:49](https://github.com/ethereumjs/ethereumjs-vm/blob/4fbb5ef/lib/index.ts#L49)*
+*Defined in [index.ts:49](https://github.com/ethereumjs/ethereumjs-vm/blob/3e1633c/lib/index.ts#L49)*
 
 ___
 <a id="hardfork"></a>
@@ -84,7 +84,7 @@ ___
 
 **● hardfork**: *`undefined` \| `string`*
 
-*Defined in [index.ts:27](https://github.com/ethereumjs/ethereumjs-vm/blob/4fbb5ef/lib/index.ts#L27)*
+*Defined in [index.ts:27](https://github.com/ethereumjs/ethereumjs-vm/blob/3e1633c/lib/index.ts#L27)*
 
 Hardfork rules to be used
 
@@ -95,7 +95,7 @@ ___
 
 **● state**: *`any`*
 
-*Defined in [index.ts:36](https://github.com/ethereumjs/ethereumjs-vm/blob/4fbb5ef/lib/index.ts#L36)*
+*Defined in [index.ts:36](https://github.com/ethereumjs/ethereumjs-vm/blob/3e1633c/lib/index.ts#L36)*
 
 A [merkle-patricia-tree](https://github.com/ethereumjs/merkle-patricia-tree) instance for the state tree (ignored if stateManager is passed)
 
@@ -108,7 +108,7 @@ ___
 
 **● stateManager**: *[StateManager](../classes/statemanager.md)*
 
-*Defined in [index.ts:31](https://github.com/ethereumjs/ethereumjs-vm/blob/4fbb5ef/lib/index.ts#L31)*
+*Defined in [index.ts:31](https://github.com/ethereumjs/ethereumjs-vm/blob/3e1633c/lib/index.ts#L31)*
 
 A [StateManager](../classes/statemanager.md) instance to use as the state store (Beta API)
 

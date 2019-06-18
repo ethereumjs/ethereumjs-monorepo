@@ -6,7 +6,7 @@ import { default as runCode, RunCodeOpts } from './runCode'
 import { default as runCall, RunCallOpts } from './runCall'
 import { default as runTx, RunTxOpts, RunTxResult } from './runTx'
 import { default as runBlock, RunBlockOpts, RunBlockResult } from './runBlock'
-import { InterpreterResult, ExecResult } from './evm/interpreter'
+import { EVMResult, ExecResult } from './evm/evm'
 import runBlockchain from './runBlockchain'
 const promisify = require('util.promisify')
 const AsyncEventEmitter = require('async-eventemitter')
@@ -135,7 +135,7 @@ export default class VM extends AsyncEventEmitter {
   /**
    * runs a call (or create) operation.
    */
-  runCall(opts: RunCallOpts): Promise<InterpreterResult> {
+  runCall(opts: RunCallOpts): Promise<EVMResult> {
     return runCall.bind(this)(opts)
   }
 

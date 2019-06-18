@@ -6,7 +6,7 @@ Execution result of a transaction
 
 ## Hierarchy
 
- [InterpreterResult](interpreterresult.md)
+ [EVMResult](evmresult.md)
 
 **↳ RunTxResult**
 
@@ -31,7 +31,7 @@ Execution result of a transaction
 
 **● amountSpent**: *`BN`*
 
-*Defined in [runTx.ts:45](https://github.com/ethereumjs/ethereumjs-vm/blob/4fbb5ef/lib/runTx.ts#L45)*
+*Defined in [runTx.ts:45](https://github.com/ethereumjs/ethereumjs-vm/blob/3e1633c/lib/runTx.ts#L45)*
 
 The amount of ether used by this transaction
 
@@ -42,7 +42,7 @@ ___
 
 **● bloom**: *`Bloom`*
 
-*Defined in [runTx.ts:41](https://github.com/ethereumjs/ethereumjs-vm/blob/4fbb5ef/lib/runTx.ts#L41)*
+*Defined in [runTx.ts:41](https://github.com/ethereumjs/ethereumjs-vm/blob/3e1633c/lib/runTx.ts#L41)*
 
 Bloom filter resulted from transaction
 
@@ -53,9 +53,9 @@ ___
 
 **● createdAddress**: *`Buffer`*
 
-*Inherited from [InterpreterResult](interpreterresult.md).[createdAddress](interpreterresult.md#createdaddress)*
+*Inherited from [EVMResult](evmresult.md).[createdAddress](evmresult.md#createdaddress)*
 
-*Defined in [evm/interpreter.ts:32](https://github.com/ethereumjs/ethereumjs-vm/blob/4fbb5ef/lib/evm/interpreter.ts#L32)*
+*Defined in [evm/evm.ts:38](https://github.com/ethereumjs/ethereumjs-vm/blob/3e1633c/lib/evm/evm.ts#L38)*
 
 Address of created account durint transaction, if any
 
@@ -66,7 +66,7 @@ ___
 
 **● gasRefund**: *`BN`*
 
-*Defined in [runTx.ts:49](https://github.com/ethereumjs/ethereumjs-vm/blob/4fbb5ef/lib/runTx.ts#L49)*
+*Defined in [runTx.ts:49](https://github.com/ethereumjs/ethereumjs-vm/blob/3e1633c/lib/runTx.ts#L49)*
 
 The amount of gas as that was refunded during the transaction (i.e. `gasUsed = totalGasConsumed - gasRefund`)
 
@@ -77,9 +77,9 @@ ___
 
 **● gasUsed**: *`BN`*
 
-*Inherited from [InterpreterResult](interpreterresult.md).[gasUsed](interpreterresult.md#gasused)*
+*Inherited from [EVMResult](evmresult.md).[gasUsed](evmresult.md#gasused)*
 
-*Defined in [evm/interpreter.ts:28](https://github.com/ethereumjs/ethereumjs-vm/blob/4fbb5ef/lib/evm/interpreter.ts#L28)*
+*Defined in [evm/evm.ts:34](https://github.com/ethereumjs/ethereumjs-vm/blob/3e1633c/lib/evm/evm.ts#L34)*
 
 Amount of gas used by the transaction
 
@@ -90,9 +90,9 @@ ___
 
 **● vm**: *[ExecResult](execresult.md)*
 
-*Inherited from [InterpreterResult](interpreterresult.md).[vm](interpreterresult.md#vm)*
+*Inherited from [EVMResult](evmresult.md).[vm](evmresult.md#vm)*
 
-*Defined in [evm/interpreter.ts:36](https://github.com/ethereumjs/ethereumjs-vm/blob/4fbb5ef/lib/evm/interpreter.ts#L36)*
+*Defined in [evm/evm.ts:42](https://github.com/ethereumjs/ethereumjs-vm/blob/3e1633c/lib/evm/evm.ts#L42)*
 
 Contains the results from running the code, if any, as described in [runCode](../classes/vm.md#runcode)
 
