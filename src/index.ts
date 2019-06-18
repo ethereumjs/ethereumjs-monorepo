@@ -17,6 +17,34 @@ export default class Common {
   private _supportedHardforks: Array<string>
   private _chainParams: Chain
 
+  /**
+   * Creates a Common object for a custom chain, based on a standard one. It uses all the [[Chain]]
+   * params from [[baseChain]] except the ones overridden in [[customChainParams]].
+   *
+   * @param baseChain The name (`mainnet`) or id (`1`) of a standard chain used to base the custom
+   * chain params on.
+   * @param customChainParams The custom parameters of the chain.
+   * @param hardfork String identifier ('byzantium') for hardfork (optional)
+   * @param supportedHardforks Limit parameter returns to the given hardforks (optional)
+   */
+  static forCustomChain(
+    baseChain: string | number,
+    customChainParams: Partial<Chain>,
+    hardfork?: string | null,
+    supportedHardforks?: Array<string>,
+  ): Common {
+    const standardChainParams = Common._getChainParams(baseChain)
+
+    return new Common(
+      {
+        ...standardChainParams,
+        ...customChainParams,
+      },
+      hardfork,
+      supportedHardforks,
+    )
+  }
+
   private static _getChainParams(chain: string | number): Chain {
     if (typeof chain === 'number') {
       if (chainParams['names'][chain]) {
