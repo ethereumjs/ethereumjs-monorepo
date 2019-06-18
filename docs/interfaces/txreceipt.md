@@ -27,7 +27,7 @@ Receipt generated for a transaction
 
 **● bitvector**: *`Buffer`*
 
-*Defined in [runBlock.ts:63](https://github.com/ethereumjs/ethereumjs-vm/blob/2fcfe31/lib/runBlock.ts#L63)*
+*Defined in [runBlock.ts:63](https://github.com/ethereumjs/ethereumjs-vm/blob/4fbb5ef/lib/runBlock.ts#L63)*
 
 Bloom bitvector
 
@@ -38,7 +38,7 @@ ___
 
 **● gasUsed**: *`Buffer`*
 
-*Defined in [runBlock.ts:59](https://github.com/ethereumjs/ethereumjs-vm/blob/2fcfe31/lib/runBlock.ts#L59)*
+*Defined in [runBlock.ts:59](https://github.com/ethereumjs/ethereumjs-vm/blob/4fbb5ef/lib/runBlock.ts#L59)*
 
 Gas used
 
@@ -49,7 +49,7 @@ ___
 
 **● logs**: *`any`[]*
 
-*Defined in [runBlock.ts:67](https://github.com/ethereumjs/ethereumjs-vm/blob/2fcfe31/lib/runBlock.ts#L67)*
+*Defined in [runBlock.ts:67](https://github.com/ethereumjs/ethereumjs-vm/blob/4fbb5ef/lib/runBlock.ts#L67)*
 
 Logs emitted
 
@@ -60,7 +60,7 @@ ___
 
 **● status**: *`0` \| `1`*
 
-*Defined in [runBlock.ts:55](https://github.com/ethereumjs/ethereumjs-vm/blob/2fcfe31/lib/runBlock.ts#L55)*
+*Defined in [runBlock.ts:55](https://github.com/ethereumjs/ethereumjs-vm/blob/4fbb5ef/lib/runBlock.ts#L55)*
 
 Status of transaction, `0` if successful, `1` if an exception occured
 

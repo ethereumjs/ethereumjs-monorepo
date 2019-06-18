@@ -14,8 +14,6 @@ export default class Memory {
   /**
    * Extends the memory given an offset and size. Rounds extended
    * memory to word-size.
-   * @param {Number} offset
-   * @param {Number} size
    */
   extend(offset: number, size: number) {
     if (size === 0) {
@@ -31,9 +29,9 @@ export default class Memory {
 
   /**
    * Writes a byte array with length `size` to memory, starting from `offset`.
-   * @param {Number} offset - Starting position
-   * @param {Number} size - How many bytes to write
-   * @param {Buffer} value - Value
+   * @param offset - Starting position
+   * @param size - How many bytes to write
+   * @param value - Value
    */
   write(offset: number, size: number, value: Buffer) {
     if (size === 0) {
@@ -52,9 +50,8 @@ export default class Memory {
   /**
    * Reads a slice of memory from `offset` till `offset + size` as a `Buffer`.
    * It fills up the difference between memory's length and `offset + size` with zeros.
-   * @param {Number} offset - Starting position
-   * @param {Number} size - How many bytes to read
-   * @returns {Buffer}
+   * @param offset - Starting position
+   * @param size - How many bytes to read
    */
   read(offset: number, size: number): Buffer {
     const loaded = this._store.slice(offset, offset + size)

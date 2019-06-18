@@ -18,18 +18,17 @@ export default class Cache {
 
   /**
    * Puts account to cache under its address.
-   * @param {Buffer} key - Address of account
-   * @param {Account} val - Account
-   * @param {bool} [fromTrie]
+   * @param key - Address of account
+   * @param val - Account
    */
-  put(key: Buffer, val: Account, fromTrie = false): void {
+  put(key: Buffer, val: Account, fromTrie: boolean = false): void {
     const modified = !fromTrie
     this._update(key, val, modified, false)
   }
 
   /**
    * Returns the queried account or an empty account.
-   * @param {Buffer} key - Address of account
+   * @param key - Address of account
    */
   get(key: Buffer): Account {
     let account = this.lookup(key)
@@ -41,7 +40,7 @@ export default class Cache {
 
   /**
    * Returns the queried account or undefined.
-   * @param {buffer} key - Address of account
+   * @param key - Address of account
    */
   lookup(key: Buffer): Account | undefined {
     const keyStr = key.toString('hex')
@@ -55,8 +54,8 @@ export default class Cache {
 
   /**
    * Looks up address in underlying trie.
-   * @param {Buffer} address - Address of account
-   * @param {Function} cb - Callback with params (err, account)
+   * @param address - Address of account
+   * @param cb - Callback with params (err, account)
    */
   _lookupAccount(address: Buffer, cb: any): void {
     this._trie.get(address, (err: Error, raw: Buffer) => {
@@ -69,8 +68,8 @@ export default class Cache {
   /**
    * Looks up address in cache, if not found, looks it up
    * in the underlying trie.
-   * @param {Buffer} key - Address of account
-   * @param {Function} cb - Callback with params (err, account)
+   * @param key - Address of account
+   * @param cb - Callback with params (err, account)
    */
   getOrLoad(key: Buffer, cb: any): void {
     const account = this.lookup(key)
@@ -88,8 +87,8 @@ export default class Cache {
   /**
    * Warms cache by loading their respective account from trie
    * and putting them in cache.
-   * @param {Array} addresses - Array of addresses
-   * @param {Function} cb - Callback
+   * @param addresses - Array of addresses
+   * @param cb - Callback
    */
   warm(addresses: string[], cb: any): void {
     // shim till async supports iterators
@@ -115,7 +114,7 @@ export default class Cache {
   /**
    * Flushes cache by updating accounts that have been modified
    * and removing accounts that have been deleted.
-   * @param {function} cb - Callback
+   * @param cb - Callback
    */
   flush(cb: any): void {
     const it = this._cache.begin
@@ -181,7 +180,7 @@ export default class Cache {
 
   /**
    * Marks address as deleted in cache.
-   * @params {Buffer} key - Address
+   * @param key - Address
    */
   del(key: Buffer): void {
     this._update(key, new Account(), false, true)

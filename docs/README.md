@@ -23,6 +23,7 @@
 * [RunCodeOpts](interfaces/runcodeopts.md)
 * [RunTxOpts](interfaces/runtxopts.md)
 * [RunTxResult](interfaces/runtxresult.md)
+* [StateManagerOpts](interfaces/statemanageropts.md)
 * [StorageDump](interfaces/storagedump.md)
 * [TxReceipt](interfaces/txreceipt.md)
 * [VMOpts](interfaces/vmopts.md)

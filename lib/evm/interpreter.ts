@@ -80,6 +80,9 @@ export interface ExecResult {
 }
 
 /**
+ * Interpreter is responsible for executing an EVM message fully
+ * (including any nested calls and creates), processing the results
+ * and storing them to state (or discarding changes in case of exceptions).
  * @ignore
  */
 export default class Interpreter {
@@ -95,6 +98,11 @@ export default class Interpreter {
     this._block = block
   }
 
+  /**
+   * Executes an EVM message, determining whether it's a call or create
+   * based on the `to` address. It checkpoints the state and reverts changes
+   * if an exception happens during the message execution.
+   */
   async executeMessage(message: Message): Promise<InterpreterResult> {
     await this._state.checkpoint()
 
@@ -246,6 +254,10 @@ export default class Interpreter {
     }
   }
 
+  /**
+   * Starts the actual bytecode processing for a CALL or CREATE, providing
+   * it with the [[EEI]].
+   */
   async runLoop(message: Message, loopOpts: RunOpts = {}): Promise<ExecResult> {
     const env = {
       blockchain: this._vm.blockchain, // Only used in BLOCKHASH
@@ -303,12 +315,14 @@ export default class Interpreter {
   /**
    * Returns code for precompile at the given address, or undefined
    * if no such precompile exists.
-   * @param {Buffer} address
    */
   getPrecompile(address: Buffer): PrecompileFunc {
     return getPrecompile(address.toString('hex'))
   }
 
+  /**
+   * Executes a precompiled contract with given data and gas limit.
+   */
   runPrecompile(code: PrecompileFunc, data: Buffer, gasLimit: BN): PrecompileResult {
     if (typeof code !== 'function') {
       throw new Error('Invalid precompile')
