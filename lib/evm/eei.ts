@@ -5,7 +5,7 @@ import Common from 'ethereumjs-common'
 import PStateManager from '../state/promisified'
 import { VmError, ERROR } from '../exceptions'
 import Message from './message'
-import Interpreter from './interpreter'
+import EVM from './evm'
 const promisify = require('util.promisify')
 
 /**
@@ -51,21 +51,15 @@ export default class EEI {
   _env: Env
   _result: RunResult
   _state: PStateManager
-  _interpreter: Interpreter
+  _evm: EVM
   _lastReturned: Buffer
   _common: Common
   _gasLeft: BN
 
-  constructor(
-    env: Env,
-    state: PStateManager,
-    interpreter: Interpreter,
-    common: Common,
-    gasLeft: BN,
-  ) {
+  constructor(env: Env, state: PStateManager, evm: EVM, common: Common, gasLeft: BN) {
     this._env = env
     this._state = state
-    this._interpreter = interpreter
+    this._evm = evm
     this._lastReturned = Buffer.alloc(0)
     this._common = common
     this._gasLeft = gasLeft
@@ -463,7 +457,7 @@ export default class EEI {
       return new BN(0)
     }
 
-    const results = await this._interpreter.executeMessage(msg)
+    const results = await this._evm.executeMessage(msg)
 
     if (results.vm.logs) {
       this._result.logs = this._result.logs.concat(results.vm.logs)
@@ -524,7 +518,7 @@ export default class EEI {
     this._env.contract.nonce = toBuffer(new BN(this._env.contract.nonce).addn(1))
     await this._state.putAccount(this._env.address, this._env.contract)
 
-    const results = await this._interpreter.executeMessage(msg)
+    const results = await this._evm.executeMessage(msg)
 
     if (results.vm.logs) {
       this._result.logs = this._result.logs.concat(results.vm.logs)

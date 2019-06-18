@@ -15,13 +15,19 @@ import { OOGResult } from './precompiles/types'
 import TxContext from './txContext'
 import Message from './message'
 import EEI from './eei'
-import { default as Loop, LoopResult, RunState, IsException, RunOpts } from './loop'
+import {
+  default as Interpreter,
+  InterpreterResult,
+  RunState,
+  IsException,
+  InterpreterOpts,
+} from './interpreter'
 const Block = require('ethereumjs-block')
 
 /**
- * Result of executing a message via the [[Interpreter]].
+ * Result of executing a message via the [[EVM]].
  */
-export interface InterpreterResult {
+export interface EVMResult {
   /**
    * Amount of gas used by the transaction
    */
@@ -37,7 +43,7 @@ export interface InterpreterResult {
 }
 
 /**
- * Result of executing a call via the [[Interpreter]].
+ * Result of executing a call via the [[EVM]].
  */
 export interface ExecResult {
   runState?: RunState
@@ -80,12 +86,12 @@ export interface ExecResult {
 }
 
 /**
- * Interpreter is responsible for executing an EVM message fully
+ * EVM is responsible for executing an EVM message fully
  * (including any nested calls and creates), processing the results
  * and storing them to state (or discarding changes in case of exceptions).
  * @ignore
  */
-export default class Interpreter {
+export default class EVM {
   _vm: any
   _state: PStateManager
   _tx: TxContext
@@ -103,7 +109,7 @@ export default class Interpreter {
    * based on the `to` address. It checkpoints the state and reverts changes
    * if an exception happens during the message execution.
    */
-  async executeMessage(message: Message): Promise<InterpreterResult> {
+  async executeMessage(message: Message): Promise<EVMResult> {
     await this._state.checkpoint()
 
     let result
@@ -133,7 +139,7 @@ export default class Interpreter {
     return result
   }
 
-  async _executeCall(message: Message): Promise<InterpreterResult> {
+  async _executeCall(message: Message): Promise<EVMResult> {
     const account = await this._state.getAccount(message.caller)
     // Reduce tx value from sender
     if (!message.delegatecall) {
@@ -163,7 +169,7 @@ export default class Interpreter {
     if (message.isCompiled) {
       result = this.runPrecompile(message.code as PrecompileFunc, message.data, message.gasLimit)
     } else {
-      result = await this.runLoop(message)
+      result = await this.runInterpreter(message)
     }
 
     return {
@@ -172,7 +178,7 @@ export default class Interpreter {
     }
   }
 
-  async _executeCreate(message: Message): Promise<InterpreterResult> {
+  async _executeCreate(message: Message): Promise<EVMResult> {
     const account = await this._state.getAccount(message.caller)
     // Reduce tx value from sender
     await this._reduceSenderBalance(account, message)
@@ -221,7 +227,7 @@ export default class Interpreter {
       }
     }
 
-    let result = await this.runLoop(message)
+    let result = await this.runInterpreter(message)
 
     // fee for size of the return value
     let totalGas = result.gasUsed
@@ -258,7 +264,7 @@ export default class Interpreter {
    * Starts the actual bytecode processing for a CALL or CREATE, providing
    * it with the [[EEI]].
    */
-  async runLoop(message: Message, loopOpts: RunOpts = {}): Promise<ExecResult> {
+  async runInterpreter(message: Message, opts: InterpreterOpts = {}): Promise<ExecResult> {
     const env = {
       blockchain: this._vm.blockchain, // Only used in BLOCKHASH
       address: message.to || zeros(32),
@@ -278,13 +284,13 @@ export default class Interpreter {
       eei._result.selfdestruct = message.selfdestruct
     }
 
-    const loop = new Loop(this._vm, eei)
-    const loopRes = await loop.run(message.code as Buffer, loopOpts)
+    const interpreter = new Interpreter(this._vm, eei)
+    const interpreterRes = await interpreter.run(message.code as Buffer, opts)
 
     let result = eei._result
     let gasUsed = message.gasLimit.sub(eei._gasLeft)
-    if (loopRes.exceptionError) {
-      if ((loopRes.exceptionError as VmError).error !== ERROR.REVERT) {
+    if (interpreterRes.exceptionError) {
+      if ((interpreterRes.exceptionError as VmError).error !== ERROR.REVERT) {
         gasUsed = message.gasLimit
       }
 
@@ -300,12 +306,12 @@ export default class Interpreter {
     return {
       ...result,
       runState: {
-        ...loopRes.runState!,
+        ...interpreterRes.runState!,
         ...result,
         ...eei._env,
       },
-      exception: loopRes.exception,
-      exceptionError: loopRes.exceptionError,
+      exception: interpreterRes.exception,
+      exceptionError: interpreterRes.exceptionError,
       gas: eei._gasLeft,
       gasUsed,
       return: result.returnValue ? result.returnValue : Buffer.alloc(0),

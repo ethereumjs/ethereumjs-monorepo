@@ -1,7 +1,7 @@
 import BN = require('bn.js')
 import * as utils from 'ethereumjs-util'
 import { ERROR, VmError } from '../exceptions'
-import { RunState } from './loop'
+import { RunState } from './interpreter'
 
 const MASK_160 = new BN(1).shln(160).subn(1)
 

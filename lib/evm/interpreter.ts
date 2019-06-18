@@ -11,7 +11,7 @@ import { handlers as opHandlers, OpHandler } from './opFns.js'
 
 export type IsException = 0 | 1
 
-export interface RunOpts {
+export interface InterpreterOpts {
   pc?: number
 }
 
@@ -29,7 +29,7 @@ export interface RunState {
   eei: EEI
 }
 
-export interface LoopResult {
+export interface InterpreterResult {
   runState?: RunState
   exception: IsException
   exceptionError?: VmError | ERROR
@@ -38,7 +38,7 @@ export interface LoopResult {
 /**
  * Parses and executes EVM bytecode.
  */
-export default class Loop {
+export default class Interpreter {
   _vm: any
   _state: PStateManager
   _runState: RunState
@@ -64,7 +64,7 @@ export default class Loop {
     }
   }
 
-  async run(code: Buffer, opts: RunOpts = {}): Promise<LoopResult> {
+  async run(code: Buffer, opts: InterpreterOpts = {}): Promise<InterpreterResult> {
     this._runState.code = code
     this._runState.programCounter = opts.pc || this._runState.programCounter
     this._runState.validJumps = this._getValidJumpDests(code)

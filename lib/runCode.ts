@@ -15,7 +15,7 @@ import { zeros } from 'ethereumjs-util'
 import VM from './index'
 import TxContext from './evm/txContext'
 import Message from './evm/message'
-import { default as Interpreter, ExecResult } from './evm/interpreter'
+import { default as EVM, ExecResult } from './evm/evm'
 const Block = require('ethereumjs-block')
 
 /**
@@ -26,7 +26,7 @@ export interface RunCodeOpts {
    * The [`Block`](https://github.com/ethereumjs/ethereumjs-block) the `tx` belongs to. If omitted a blank block will be used
    */
   block?: any
-  interpreter?: Interpreter
+  evm?: EVM
   txContext?: TxContext
   gasPrice?: Buffer
   /**
@@ -96,10 +96,10 @@ export default function runCode(this: VM, opts: RunCodeOpts): Promise<ExecResult
     })
   }
 
-  let interpreter = opts.interpreter
-  if (!interpreter) {
-    interpreter = new Interpreter(this, opts.txContext, opts.block)
+  let evm = opts.evm
+  if (!evm) {
+    evm = new EVM(this, opts.txContext, opts.block)
   }
 
-  return interpreter.runLoop(opts.message, { pc: opts.pc })
+  return evm.runInterpreter(opts.message, { pc: opts.pc })
 }
