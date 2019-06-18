@@ -1,5 +1,6 @@
 import { chains as chainParams } from './chains'
 import { hardforks as hardforkChanges } from './hardforks'
+import { Chain } from './types'
 
 interface hardforkOptions {
   /** optional, only allow supported HFs (default: false) */
@@ -14,7 +15,51 @@ interface hardforkOptions {
 export default class Common {
   private _hardfork: string | null
   private _supportedHardforks: Array<string>
-  private _chainParams: object
+  private _chainParams: Chain
+
+  /**
+   * Creates a Common object for a custom chain, based on a standard one. It uses all the [[Chain]]
+   * params from [[baseChain]] except the ones overridden in [[customChainParams]].
+   *
+   * @param baseChain The name (`mainnet`) or id (`1`) of a standard chain used to base the custom
+   * chain params on.
+   * @param customChainParams The custom parameters of the chain.
+   * @param hardfork String identifier ('byzantium') for hardfork (optional)
+   * @param supportedHardforks Limit parameter returns to the given hardforks (optional)
+   */
+  static forCustomChain(
+    baseChain: string | number,
+    customChainParams: Partial<Chain>,
+    hardfork?: string | null,
+    supportedHardforks?: Array<string>,
+  ): Common {
+    const standardChainParams = Common._getChainParams(baseChain)
+
+    return new Common(
+      {
+        ...standardChainParams,
+        ...customChainParams,
+      },
+      hardfork,
+      supportedHardforks,
+    )
+  }
+
+  private static _getChainParams(chain: string | number): Chain {
+    if (typeof chain === 'number') {
+      if (chainParams['names'][chain]) {
+        return chainParams[chainParams['names'][chain]]
+      }
+
+      throw new Error(`Chain with ID ${chain} not supported`)
+    }
+
+    if (chainParams[chain]) {
+      return chainParams[chain]
+    }
+
+    throw new Error(`Chain with name ${chain} not supported`)
+  }
 
   /**
    * @constructor
@@ -42,18 +87,8 @@ export default class Common {
    * @returns The dictionary with parameters set as chain
    */
   setChain(chain: string | number | object): any {
-    if (typeof chain === 'number') {
-      if (chainParams['names'][chain]) {
-        this._chainParams = chainParams[chainParams['names'][chain]]
-      } else {
-        throw new Error(`Chain with ID ${chain} not supported`)
-      }
-    } else if (typeof chain === 'string') {
-      if (chainParams[chain]) {
-        this._chainParams = chainParams[chain]
-      } else {
-        throw new Error(`Chain with name ${chain} not supported`)
-      }
+    if (typeof chain === 'number' || typeof chain === 'string') {
+      this._chainParams = Common._getChainParams(chain)
     } else if (typeof chain === 'object') {
       const required = ['networkId', 'genesis', 'hardforks', 'bootstrapNodes']
       for (const param of required) {
@@ -61,7 +96,7 @@ export default class Common {
           throw new Error(`Missing required chain parameter: ${param}`)
         }
       }
-      this._chainParams = chain
+      this._chainParams = chain as Chain
     } else {
       throw new Error('Wrong input format')
     }
