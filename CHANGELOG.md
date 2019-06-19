@@ -6,6 +6,230 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [4.0.0-beta.1] - 2019-06-19
+
+Since changes in this release are pretty deep reaching and broadly distributed,
+we will first drop out one or several `beta` releases until we are confident on
+both external API as well as inner structural changes. See
+[v4 branch](https://github.com/ethereumjs/ethereumjs-vm/pull/479) for some
+major entry point into the work on the release.
+
+It is highly recommended that you do some testing of your library against this
+and following `beta` versions and give us some feedback!
+
+These will be the main release notes for the `v4` feature updates, subsequent
+`beta` releases and the final release will just publish the delta changes and
+point here for reference.
+
+Breaking changes in the release notes are preeceeded with `[BREAKING]`, do a
+search for an overview.
+
+The outstanding work of [@s1na](https://github.com/s1na) has to be mentioned
+here. He has done the very large portion of the coding and without him this
+release wouldn't have been possible. Thanks Sina! 🙂
+
+So what's new?
+
+### TypeScript
+
+This is the first `TypeScript` release of the VM (yay! 🎉).
+
+`TypeScript` handles `ES6` transpilation
+[a bit differently](https://github.com/Microsoft/TypeScript/issues/2719) (at the
+end: cleaner) than `babel` so `require` syntax of the library slightly changes to:
+
+```javascript
+const VM = require('ethereumjs-vm').default
+```
+
+The library now also comes with **type declaration files** distributed along
+with the package published.
+
+##### Relevant PRs
+
+- Preparation, migration of `Bloom`, `Stack` and `Memory`,
+  PR [#495](https://github.com/ethereumjs/ethereumjs-vm/pull/495)
+- `StateManager` migration,
+  PR [#496](https://github.com/ethereumjs/ethereumjs-vm/pull/496)
+- Migration of precompiles, opcode list, `EEI`, `Message`, `TxContext` to
+  `TypeScript`, PR [#497](https://github.com/ethereumjs/ethereumjs-vm/pull/497)
+- Migration of `EVM` (old: `Interpreter`) and exceptions,
+  PR [#504](https://github.com/ethereumjs/ethereumjs-vm/pull/504)
+- Migration of `Interpreter` (old: `Loop`),
+  PR [#505](https://github.com/ethereumjs/ethereumjs-vm/pull/505)
+- Migration of `opFns` (opcode implementations),
+  PR [#506](https://github.com/ethereumjs/ethereumjs-vm/pull/506)
+- Migration of the main `index.js` `VM` class,
+  PR [#507](https://github.com/ethereumjs/ethereumjs-vm/pull/507)
+- Migration of `VM.runCode()`,
+  PR [#508](https://github.com/ethereumjs/ethereumjs-vm/pull/508)
+- Migration of `VM.runCall()`,
+  PR [#510](https://github.com/ethereumjs/ethereumjs-vm/pull/510)
+- Migration of `VM.runTx()`,
+  PR [#511](https://github.com/ethereumjs/ethereumjs-vm/pull/511)
+- Migration of `VM.runBlock()`,
+  PR [#512](https://github.com/ethereumjs/ethereumjs-vm/pull/512)
+- Migration of `VM.runBlockchain()`,
+  PR [#517](https://github.com/ethereumjs/ethereumjs-vm/pull/517)
+- `TypeScript` finalization PR, config switch,
+  PR [#518](https://github.com/ethereumjs/ethereumjs-vm/pull/518)
+- Doc generation via `TypeDoc`,
+  PR [#522](https://github.com/ethereumjs/ethereumjs-vm/pull/522)
+
+### EVM Modularization and Structural Refactoring
+
+##### New Call and Code Loop Structure / EVM Encapsulation
+
+This release switches to a new class based and promisified structure for
+working down VM calls and running through code loops, and encapsulates this
+logic to be bound to the specific `EVM` (so the classical Ethereum Virtual Machine)
+implementation in the
+[evm](https://github.com/ethereumjs/ethereumjs-vm/tree/master/lib/evm) module,
+opening the way for a future parallel `eWASM` additional implementation.
+
+This new logic is mainly handled by the two new classes `EVM` (old: `Interpreter`)
+and `Interpreter` (old: `Loop`),
+see PR [#483](https://github.com/ethereumjs/ethereumjs-vm/pull/483)
+for the initial work on this. The old `VM.runCall()` and `VM.runCode()`
+methods are just kept as being wrappers and will likely be deprecated on future
+releases once the inner API structure further stabilizes.
+
+This new structure should make extending the VM by subclassing and
+adopting functionality much easier, e.g. by changing opcode functionality or adding
+custom onces by using an own `Interpreter.getOpHandler()` implementation. You are
+highly encouraged to play around, see what you can do and give us feedback on
+possibilities and limitations.
+
+#### EEI for Environment Communication
+
+For interacting with the blockchain environment there has been introduced a
+dedicated `EEI` (Ethereum Environment Interface) module closely resembling the
+respective
+[EEI spec](https://github.com/ewasm/design/blob/master/eth_interface.md), see
+PR [#486](https://github.com/ethereumjs/ethereumjs-vm/pull/486) for the initial
+work.
+
+This makes handling of environmental data by the VM a lot cleaner and transparent
+and should as well allow for much easier extension and modification.
+
+##### Changes
+
+- Detached precompiles from the VM,
+  PR [#492](https://github.com/ethereumjs/ethereumjs-vm/pull/492)
+- Subdivided `runState`, refactored `Interpreter` (old: `Loop`),
+  PR [#498](https://github.com/ethereumjs/ethereumjs-vm/pull/498)
+- [BREAKING] Dropped `emitFreeLogs` flag, to replace it is suggested to
+  implement by inheriting `Interpreter` (old: `Loop`),
+  PR [#498](https://github.com/ethereumjs/ethereumjs-vm/pull/498)
+- Split `EVM.executeMessage()` with `EVM.executeCall()` and
+  `EVM.executeCreate()` for `call` and `create` specific logic
+  (old names: `Interpreter.[METHOD_NAME]()`),
+  PR [#499](https://github.com/ethereumjs/ethereumjs-vm/pull/499)
+- Further simplification of `Interpreter`/`EVM`
+  (old: `Loop`/`Interpreter`) structure,
+  PR [#506](https://github.com/ethereumjs/ethereumjs-vm/pull/506)
+- [BREAKING] Dropped `VM.runJit()` in favor of direct handling in
+  `EVM` (old: `Interpreter`),
+  officially not part of the external API but mentioning just in case,
+  PR [#515](https://github.com/ethereumjs/ethereumjs-vm/pull/515)
+- Removed `StorageReader`, moved logic to `StateManager`,
+  [#534](https://github.com/ethereumjs/ethereumjs-vm/pull/534)
+
+### Istanbul Process Start
+
+With this release we start the `Istanbul` hardfork integration process and
+have activated the `istanbul` `hardfork` option for the constructor.
+
+This is meant to be used experimentation and reference implementations, we have made
+a start with integrating draft [EIP-1108](https://eips.ethereum.org/EIPS/eip-1108)
+`Istanbul` candidate support reducing the gas costs for `alt_bn128` precompiles,
+see PR [#539](https://github.com/ethereumjs/ethereumjs-vm/issues/539) for
+implementation details.
+
+Note that this is still very early in the process since no EIP in a final
+state is actually accepted for being included into `Istanbul` on the time of
+release. The `v4` release series will be kept as an experimental series
+during the process with breaking changes introduced along the way without too
+much notice, so be careful and tighten the VM dependency if you want to give
+your users the chance for some early experimentation with some specific
+implementation state.
+
+Once scope of `Istanbul` as well as associated EIPs are finalized a stable
+`Istanbul` VM version will be released as a subsequent major release.
+
+### Code Modernization and Version Updates
+
+The main API with the `v4` release switches from being `callback` based to
+using promises,
+see PR [#546](https://github.com/ethereumjs/ethereumjs-vm/pull/546).
+
+Here is an example for changed API call `runTx`.
+
+Old `callback`-style invocation:
+
+```javascript
+vm.runTx(
+  {
+    tx: tx,
+  },
+  function(err, result) {
+    if (err) {
+      // Handle errors appropriately
+    }
+    // Do something with the result
+  },
+)
+```
+
+Promisified usage:
+
+```javascript
+try {
+  let result = await vm.runTx({ tx: tx })
+  // Do something with the result
+} catch (err) {
+  // handle errors appropriately
+}
+```
+
+##### Code Modernization Changes
+
+- Promisified internal usage of async opcode handlers,
+  PR [#491](https://github.com/ethereumjs/ethereumjs-vm/pull/491)
+- Promisified `runTx` internals,
+  PR [#493](https://github.com/ethereumjs/ethereumjs-vm/pull/493)
+- Promisified `runBlock` internals, restructure, reduced shared global state,
+  PR [#494](https://github.com/ethereumjs/ethereumjs-vm/pull/494)
+
+##### Version Updates
+
+- Updated `ethereumjs-account` from `2.x` to `3.x`, part of
+  PR [#496](https://github.com/ethereumjs/ethereumjs-vm/pull/496)
+
+##### Features
+
+- The VM now also supports a
+  [Common](https://github.com/ethereumjs/ethereumjs-common)
+  class instance for chain and HF setting,
+  PRs [#525](https://github.com/ethereumjs/ethereumjs-vm/pull/525) and
+  [#526](https://github.com/ethereumjs/ethereumjs-vm/pull/526)
+
+##### Bug Fixes
+
+- Fixed error message in `runTx()`,
+  PR [#523](https://github.com/ethereumjs/ethereumjs-vm/pull/523)
+- Changed default hardfork in `StateManager` to `petersburg`,
+  PR [#524](https://github.com/ethereumjs/ethereumjs-vm/pull/524)
+- Replaced `Object.assign()` calls and fixed type errors,
+  PR [#529](https://github.com/ethereumjs/ethereumjs-vm/pull/529)
+
+#### Development
+
+- Significant blockchain test speed improvements,
+  PR [#536](https://github.com/ethereumjs/ethereumjs-vm/pull/536)
+
+[4.0.0-beta.1]: https://github.com/ethereumjs/ethereumjs-vm/compare/v3.0.0...v4.0.0-beta.1
+
 ## [3.0.0] - 2019-03-29
 
 This release comes with a modernized `ES6`-class structured code base, some
