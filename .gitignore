@@ -69,7 +69,6 @@ package-lock.json
 yarn.lock
 
 # Build folder
-dist
 
 # Protobuf Generated Libraries
 lib/proto/*.js
