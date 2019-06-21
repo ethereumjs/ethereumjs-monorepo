@@ -26,7 +26,7 @@
     "Holger Drewes <holger.drewes@gmail.com>"
   ],
   "files": [
-    "dist/**/*"
+    "./dist/src/**/*"
   ],
   "main": "dist/src/index.js",
   "repository": {
