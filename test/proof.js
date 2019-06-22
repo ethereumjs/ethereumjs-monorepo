@@ -39,28 +39,53 @@ tape('simple merkle proofs generation and verification', function (tester) {
       },
       function (cb) {
         Trie.prove(trie, 'key2bb', function (err, prove) {
+          t.equal(err, null, 'Path to key2 should create valid proof of absence')
           if (err) return cb(err)
-          Trie.verifyProof(trie.root, 'randomkey', prove, function (err, val) {
-            t.notEqual(err, null, 'Expected error: ' + err.message)
+          Trie.verifyProof(trie.root, 'key2', prove, function (err, val) {
+            // In this case, the proof _happens_ to contain enough nodes to prove `key2` because
+            // traversing into `key22` would touch all the same nodes as traversing into `key2`
+            t.equal(val, null, 'Expected value at a random key to be null')
+            t.equal(err, null, 'Path to key2 should show a null value')
             cb()
           })
         })
       },
       function (cb) {
-        Trie.prove(trie, 'key2bb', function (err, prove) {
+        let myKey = 'anyrandomkey'
+        Trie.prove(trie, myKey, function (err, prove) {
           if (err) return cb(err)
-          Trie.verifyProof(trie.root, 'key2b', prove, function (err, val) {
-            t.notEqual(err, null, 'Expected error: ' + err.message)
+          Trie.verifyProof(trie.root, myKey, prove, function (err, val) {
+            t.equal(val, null, 'Expected value to be null')
+            t.equal(err, null, err)
             cb()
           })
         })
       },
       function (cb) {
-        Trie.prove(trie, 'key2bb', function (err, prove) {
+        let myKey = 'anothergarbagekey' // should generate a valid proof of null
+        Trie.prove(trie, myKey, function (err, prove) {
           if (err) return cb(err)
-          prove.push(Buffer.from('123456'))
-          Trie.verifyProof(trie.root, 'key2b', prove, function (err, val) {
-            t.notEqual(err, null, 'Expected error: ' + err.message)
+          prove.push(Buffer.from('123456'))// extra nodes are just ignored
+          Trie.verifyProof(trie.root, myKey, prove, function (err, val) {
+            t.equal(val, null, 'Expected value to be null')
+            t.equal(err, null, err)
+            cb()
+          })
+        })
+      },
+      function (cb) {
+        trie.put('another', '3498h4riuhgwe', cb)
+      },
+      function (cb) {
+        // to throw an error we need to request proof for one key
+        Trie.prove(trie, 'another', function (err, prove) {
+          if (err) return cb(err)
+          // and try to use that proof on another key
+          Trie.verifyProof(trie.root, 'key1aa', prove, function (err, val) {
+            t.equal(val, null, 'Expected value: to be null ')
+            // this proof would be insignificant to prove `key1aa`
+            t.notEqual(err, null, 'Expected error: Missing node in DB')
+            t.notEqual(err, undefined, 'Expected error: Missing node in DB')
             cb()
           })
         })

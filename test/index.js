@@ -6,18 +6,17 @@ const ethUtil = require('ethereumjs-util')
 
 tape('simple save and retrive', function (tester) {
   var it = tester.test
+
   it('should not crash if given a non-existant root', function (t) {
     var root = new Buffer('3f4399b08efe68945c1cf90ffe85bbe3ce978959da753f9e649f034015b8817d', 'hex')
     var trie = new Trie(null, root)
 
     trie.get('test', function (err, value) {
       t.equal(value, null)
-
       t.notEqual(err, null)
       t.end()
     })
   })
-
   var trie = new Trie()
 
   it('save a value', function (t) {
