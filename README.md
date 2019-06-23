@@ -66,6 +66,49 @@ trie.createReadStream()
   })
 ```
 
+## Read Account State including Storage from Geth DB
+
+```javascript
+var level = require('level')
+var rlp = require('rlp')
+var ethutil = require('ethereumjs-util')
+
+var Trie = require('merkle-patricia-tree/secure')
+var Account = require('ethereumjs-account').default
+var BN = ethutil.BN
+
+var stateRoot = 'STATE_ROOT_OF_A_BLOCK'
+
+var db = level('YOUR_PATH_TO_THE_GETH_CHAINDATA_FOLDER')
+var trie = new Trie(db, stateRoot)
+
+var address = 'AN_ETHEREUM_ACCOUNT_ADDRESS'
+
+trie.get(address, function (err, data) {
+  if (err) return cb(err)
+
+  var acc = new Account(data)
+  console.log('-------State-------')
+  console.log(`nonce: ${new BN(acc.nonce)}`)
+  console.log(`balance in wei: ${new BN(acc.balance)}`)
+  console.log(`storageRoot: ${ethutil.bufferToHex(acc.stateRoot)}`)
+  console.log(`codeHash: ${ethutil.bufferToHex(acc.codeHash)}`)
+
+  var storageTrie = trie.copy()
+  storageTrie.root = acc.stateRoot
+
+  console.log('------Storage------')
+  var stream = storageTrie.createReadStream()
+  stream.on('data', function(data) {
+    console.log(`key: ${ethutil.bufferToHex(data.key)}`)
+    console.log(`Value: ${ethutil.bufferToHex(rlp.decode(data.value))}`)
+  })
+  .on('end', function() {
+    console.log('Finished reading storage.')
+  })
+})
+```
+
 # API
 [./docs/](./docs/index.md)
 
