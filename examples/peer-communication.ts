@@ -159,9 +159,7 @@ rlpx.on('peer:added', peer => {
         if (!forkVerified) {
           if (payload.length !== 1) {
             console.log(
-              `${addr} expected one header for ${CHECK_BLOCK_TITLE} verify (received: ${
-                payload.length
-              })`,
+              `${addr} expected one header for ${CHECK_BLOCK_TITLE} verify (received: ${payload.length})`,
             )
             peer.disconnect(devp2p.DISCONNECT_REASONS.USELESS_PEER)
             break

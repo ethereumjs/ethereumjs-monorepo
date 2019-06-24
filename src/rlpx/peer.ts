@@ -156,9 +156,7 @@ export class Peer extends EventEmitter {
               try {
                 this._eciesSession.parseAckPlain(parseData)
                 debug(
-                  `Received ack (old format) from ${this._socket.remoteAddress}:${
-                    this._socket.remotePort
-                  }`,
+                  `Received ack (old format) from ${this._socket.remoteAddress}:${this._socket.remotePort}`,
                 )
               } catch (err) {
                 this._eciesSession._gotEIP8Ack = true
@@ -245,9 +243,7 @@ export class Peer extends EventEmitter {
         const msgCode = code - obj.offset
         const prefix = this.getMsgPrefix(msgCode)
         debug(
-          `Received ${prefix} (message code: ${code} - ${obj.offset} = ${msgCode}) ${
-            this._socket.remoteAddress
-          }:${this._socket.remotePort}`,
+          `Received ${prefix} (message code: ${code} - ${obj.offset} = ${msgCode}) ${this._socket.remoteAddress}:${this._socket.remotePort}`,
         )
 
         try {
@@ -371,9 +367,7 @@ export class Peer extends EventEmitter {
   _sendAck() {
     if (this._closed) return
     debug(
-      `Send ack (EIP8: ${this._eciesSession._gotEIP8Auth}) to ${this._socket.remoteAddress}:${
-        this._socket.remotePort
-      }`,
+      `Send ack (EIP8: ${this._eciesSession._gotEIP8Auth}) to ${this._socket.remoteAddress}:${this._socket.remotePort}`,
     )
     if (this._eciesSession._gotEIP8Auth) {
       const ackEIP8 = this._eciesSession.createAckEIP8()
