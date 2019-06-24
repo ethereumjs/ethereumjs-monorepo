@@ -31,10 +31,16 @@ export const isZeroAddress = function(address: string): boolean {
 
 /**
  * Returns a checksummed address.
+ *
+ * If a chainId is provided, the result will be an EIP-1191 checksum. Otherwise, it will be an
+ * EIP-55 checksum.
  */
-export const toChecksumAddress = function(address: string): string {
+export const toChecksumAddress = function(address: string, chainId?: number): string {
   address = ethjsUtil.stripHexPrefix(address).toLowerCase()
-  const hash = keccak(address).toString('hex')
+
+  const prefix = chainId !== undefined ? chainId.toString() + '0x' : ''
+
+  const hash = keccak(prefix + address).toString('hex')
   let ret = '0x'
 
   for (let i = 0; i < address.length; i++) {
@@ -50,9 +56,12 @@ export const toChecksumAddress = function(address: string): string {
 
 /**
  * Checks if the address is a valid checksummed address.
+ *
+ * If a chainId is provided, the address is compared to an EIP-1191 checksum. Otherwise, it will be
+ * compared to an EIP-55 checksum.
  */
-export const isValidChecksumAddress = function(address: string): boolean {
-  return isValidAddress(address) && toChecksumAddress(address) === address
+export const isValidChecksumAddress = function(address: string, chainId?: number): boolean {
+  return isValidAddress(address) && toChecksumAddress(address, chainId) === address
 }
 
 /**
