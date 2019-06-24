@@ -25,11 +25,11 @@ function run (cb) {
       return i <= ROUNDS
     },
     function (done) {
-      seed = ethUtil.sha3(seed)
+      seed = ethUtil.keccak256(seed)
       if (SYMMETRIC) {
         trie.put(seed, seed, genRoot)
       } else {
-        let val = ethUtil.sha3(seed)
+        let val = ethUtil.keccak256(seed)
         trie.put(seed, val, genRoot)
       }
 

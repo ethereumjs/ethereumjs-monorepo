@@ -25,7 +25,7 @@ const { stringToNibbles, matchingNibbleLength, doKeysMatch } = require('./util/n
 module.exports = class Trie {
   constructor (db, root) {
     const self = this
-    this.EMPTY_TRIE_ROOT = ethUtil.SHA3_RLP
+    this.EMPTY_TRIE_ROOT = ethUtil.KECCAK256_RLP
     this.sem = semaphore(1)
 
     this.db = db || new DB()
@@ -121,7 +121,7 @@ module.exports = class Trie {
       cb = callTogether(cb, this.sem.leave)
 
       this.sem.take(() => {
-        if (this.root.toString('hex') !== ethUtil.SHA3_RLP.toString('hex')) {
+        if (this.root.toString('hex') !== ethUtil.KECCAK256_RLP.toString('hex')) {
           // first try to find the give key or its nearst node
           this.findPath(key, (err, foundValue, keyRemainder, stack) => {
             if (err) {
@@ -401,7 +401,7 @@ module.exports = class Trie {
     let aborted = false
     let returnValues = []
 
-    if (root.toString('hex') === ethUtil.SHA3_RLP.toString('hex')) {
+    if (root.toString('hex') === ethUtil.KECCAK256_RLP.toString('hex')) {
       return onDone()
     }
 

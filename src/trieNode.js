@@ -126,7 +126,7 @@ module.exports = class TrieNode {
   }
 
   hash () {
-    return ethUtil.sha3(this.serialize())
+    return ethUtil.keccak256(this.serialize())
   }
 
   toString () {

@@ -243,7 +243,7 @@ tape('it should create the genesis state root from ethereum', function (tester) 
   var startAmount = new Buffer(26)
   startAmount.fill(0)
   startAmount[0] = 1
-  var account = [startAmount, 0, stateRoot, ethUtil.sha3()]
+  var account = [startAmount, 0, stateRoot, ethUtil.keccak256()]
   var rlpAccount = rlp.encode(account)
   var cppRlp = 'f85e9a010000000000000000000000000000000000000000000000000080a00000000000000000000000000000000000000000000000000000000000000000a0c5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470'
 
