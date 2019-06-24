@@ -17,17 +17,17 @@ as other sub-libraries (`node-*` named) (all outdated).
 
 ## Run/Build
 
-This library has to be compiled with babel to a `Node 6` friendly source format.
-For triggering a (first) build to create the `lib/` directory run:
+This library has to be compiled with typescript to a `Node 6` and above friendly source format.
+For triggering a (first) build to create the `dist/` directory run:
 
 ```
 npm run build
 ```
 
-You can also use babel just-in-time compilation to run a script:
+You can also use `ts-node` to run a script without first transpiling to js (you need to `npm i --save-dev ts-node` first):
 
 ```
-node -r babel-register [YOUR_SCRIPT_TO_RUN.js]
+node -r ts-node/register [YOUR_SCRIPT_TO_RUN.ts]
 ```
 
 ## Usage/Examples
@@ -45,22 +45,22 @@ dpt.on('peer:added', (peer) => {
 
 Basic example to connect to some bootstrap nodes and get basic peer info:
 
-- [simple](examples/simple.js)
+- [simple](examples/simple.ts)
 
 Communicate with peers to read new transaction and block information:
 
-- [peer-communication](examples/peer-communication.js)
+- [peer-communication](examples/peer-communication.ts)
 
 Run an example with:
 
 ```
-node -r babel-register ./examples/peer-communication.js
+DEBUG='*devp2p*' node -r ts-node/register ./examples/peer-communication.ts
 ```
 
 ## Distributed Peer Table (DPT) / Node Discovery
 
 Maintain/manage a list of peers, see [./src/dpt/](./src/dpt/), also
-includes node discovery ([./src/dpt/server.js](./src/dpt/server.js))
+includes node discovery ([./src/dpt/server.ts](./src/dpt/server.ts))
 
 ### Usage
 
@@ -112,7 +112,7 @@ Adds a new peer.
 
 - `object` - Peer to be added, format `{ address: [ADDRESS], udpPort: [UDPPORT], tcpPort: [TCPPORT] }`.
 
-For other utility functions like `getPeer`, `getPeers` see [./src/dpt/index.js](./src/dpt/index.js).
+For other utility functions like `getPeer`, `getPeers` see [./src/dpt/dpt.ts](./src/dpt/dpt.ts).
 
 ### Events
 
@@ -178,7 +178,7 @@ Manually connect to peer without `DPT`.
 
 - `peer` - Peer to connect to, format `{ id: PEER_ID, address: PEER_ADDRESS, port: PEER_PORT }`.
 
-For other connection/utility functions like `listen`, `getPeers` see [./src/rlpx/index.js](./src/rlpx/index.js).
+For other connection/utility functions like `listen`, `getPeers` see [./src/rlpx/rlpx.ts](./src/rlpx/rlpx.ts).
 
 ### Events
 
@@ -224,7 +224,7 @@ eth.on('message', async (code, payload) => {
 })
 ```
 
-See the `peer-communication.js` example for a more detailed use case.
+See the `peer-communication.ts` example for a more detailed use case.
 
 ### API
 
@@ -293,7 +293,7 @@ les.on('message', async (code, payload) => {
 })
 ```
 
-See the `peer-communication-les.js` example for a more detailed use case.
+See the `peer-communication-les.ts` example for a more detailed use case.
 
 ### API
 
