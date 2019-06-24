@@ -5,6 +5,7 @@ import { Transaction } from '../src'
 
 // We create an unsigned transaction.
 // Notice we don't set the `to` field because we are creating a new contract.
+// This transaction's chain is set to mainnet
 const tx = new Transaction({
   nonce: 0,
   gasPrice: 100,
@@ -49,7 +50,7 @@ const rawTx = [
   '0x5bd428537f05f9830e93792f90ea6a3e2d1ee84952dd96edbae9f658f831ab13',
 ]
 
-const tx2 = new Transaction(rawTx)
+const tx2 = new Transaction(rawTx) // This is also a maninnet transaction
 
 // Note rlp.decode will actually produce an array of buffers `new Transaction` will
 // take either an array of buffers or an array of hex strings.
