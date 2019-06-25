@@ -1,6 +1,6 @@
 {
   "name": "run-solidity-contract",
-  "main": "index.js",
+  "private": true,
   "scripts": {
     "example": "ts-node index.ts"
   },
