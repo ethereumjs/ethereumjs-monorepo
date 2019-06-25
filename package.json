@@ -88,6 +88,7 @@
   },
   "homepage": "https://github.com/ethereumjs/ethereumjs-util",
   "dependencies": {
+    "@types/bn.js": "^4.11.3",
     "bn.js": "^4.11.0",
     "create-hash": "^1.1.2",
     "ethjs-util": "0.1.6",
@@ -99,7 +100,6 @@
     "@ethereumjs/config-prettier": "^1.1.0",
     "@ethereumjs/config-tsc": "^1.1.0",
     "@ethereumjs/config-tslint": "^1.1.0",
-    "@types/bn.js": "^4.11.3",
     "@types/node": "^11.9.0",
     "babel-cli": "^6.26.0",
     "babel-preset-env": "^1.6.1",
