@@ -105,7 +105,7 @@ export const bufferToInt = function(buf: Buffer): number {
 }
 
 /**
- * Converts a `Buffer` into a hex `String`.
+ * Converts a `Buffer` into a `0x`-prefixed hex `String`.
  * @param buf `Buffer` object to convert
  */
 export const bufferToHex = function(buf: Buffer): string {
