@@ -6,6 +6,14 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [2.1.0] - 2018-06-26
+
+- Upgraded [ethereumjs-common](https://github.com/ethereumjs/ethereumjs-common) to `^1.3.0`
+- Added more documentation and examples on how to create transactions for public testnets and
+  custom networks
+
+[2.1.0]: https://github.com/ethereumjs/ethereumjs-tx/compare/v2.0.0...v2.1.0
+
 ## [2.0.0] - 2019-06-03
 
 **TypeScript / Module Import / Node Support**
