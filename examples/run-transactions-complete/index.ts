@@ -2,7 +2,6 @@ import VM from '../..'
 import Account from 'ethereumjs-account'
 import * as utils from 'ethereumjs-util'
 import { promisify } from 'util'
-import stateManager from '../../lib/state/stateManager'
 
 const Transaction = require('ethereumjs-tx') // Change when https://github.com/ethereumjs/ethereumjs-vm/pull/541 gets merged
 
