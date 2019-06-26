@@ -66,17 +66,15 @@ vm.on('step', function(data) {
   console.log(`Opcode: ${data.opcode.name}\tStack: ${data.stack}`)
 })
 
-vm.runCode(
-  {
-    code: Buffer.from(code.join(''), 'hex'),
-    gasLimit: new BN(0xffff),
-  },
-  function(err, results) {
+vm.runCode({
+  code: Buffer.from(code.join(''), 'hex'),
+  gasLimit: new BN(0xffff),
+})
+  .then(results => {
     console.log('Returned : ' + results.return.toString('hex'))
     console.log('gasUsed  : ' + results.gasUsed.toString())
-    console.log('Error    : ' + err)
-  },
-)
+  })
+  .catch(err => console.log('Error    : ' + err))
 ```
 
 ## Example
