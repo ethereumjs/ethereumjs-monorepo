@@ -15,8 +15,6 @@ The example does these things:
 
 ## Installation
 
-To install this example you should
-
 1. Run `npm install` in the root of this project
 1. Run `npm install` in this directory
 
