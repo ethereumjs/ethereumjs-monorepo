@@ -6,7 +6,6 @@ The example does these things:
 
 1. Takes binary EVM code and decodes it into opcodes
 
-
 ## Installation
 
 1. Run `npm install` in the root of this project

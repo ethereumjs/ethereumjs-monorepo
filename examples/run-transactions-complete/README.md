@@ -10,7 +10,7 @@ The example does these things:
 
 ## Installation
 
-1. Run `npm install` in the root of this project
+1. Run `npm install` in the root of this project`
 
 ## Running the example
 
