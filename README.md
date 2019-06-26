@@ -29,19 +29,26 @@ const txParams = {
   data: '0x7f7465737432000000000000000000000000000000000000000000000000000000600057',
 }
 
-const tx = new EthereumTx(txParams)
+// The second parameter is not necessary if these values are used
+const tx = new EthereumTx(txParams, { chain: 'mainnet', hardfork: 'petersburg' })
 tx.sign(privateKey)
 const serializedTx = tx.serialize()
 ```
 
 # Chain and Hardfork Support
 
-This library uses the [ethereumjs-common](https://github.com/ethereumjs/ethereumjs-common)
-package to support different chain and hardfork options, see API documentation
-for details.
+The `Transaction` and `FakeTransaction` constructors receives a second parameter that lets you specify the chain and hardfork
+to be used. By default, `mainnet` and `petersburg` will be used.
 
-Currently all hardforks up to `petersburg` are supported, `EIP-155` replay protection
-is activated since the `spuriousDragon` hardfork.
+There are two ways of customizing these. The first one, as shown in the previous section, is by
+using an object with `chain` and `hardfork` names. You can see en example of this in [./examples/ropsten-tx.ts](./examples/ropsten-tx.ts).
+
+The second option is by passing the option `common` set to an instance of [ethereumjs-common](https://github.com/ethereumjs/ethereumjs-common)' Common. This is specially useful for custom networks or chains/hardforks not yet supported by `ethereumjs-common`. You can see en example of this in [./examples/custom-chain-tx.ts](./examples/custom-chain-tx.ts).
+
+# EIP-155 support
+
+`EIP-155` replay protection is activated since the `spuriousDragon` hardfork. To disable it, set the
+hardfork in the `Transaction`'s constructor.
 
 # API
 
