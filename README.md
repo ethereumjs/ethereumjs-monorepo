@@ -87,7 +87,7 @@ This projects contain the following examples:
 1. [./examples/run-transactions-complete](./examples/run-transactions-complete): Runs a contract-deployment transaction and then calls one of its functions.
 1. [./examples/decode-opcodes](./examples/decode-opcodes): Decodes a binary EVM program into its opcodes.
 
-All of the examples have its own `README.md` explaining how to run them.
+All of the examples have their own `README.md` explaining how to run them.
 
 # BROWSER
 
