@@ -36,7 +36,6 @@ async function main() {
   await vm.runBlockchain(blockchain)
 
   const blockchainHead = await promisify(vm.blockchain.getHead.bind(vm.blockchain))()
-  state.root = blockchainHead.header.stateRoot
 
   console.log('--- Finished processing the BlockChain ---')
   console.log('New head:', '0x' + blockchain.meta.rawHead.toString('hex'))
