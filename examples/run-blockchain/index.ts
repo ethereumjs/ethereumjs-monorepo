@@ -82,19 +82,6 @@ async function setupPreConditions(vm: VM, testData: any) {
   await psm.getStateRoot()
 }
 
-async function setCode(account: Account, state: any, code: Buffer) {
-  return new Promise((resolve, reject) => {
-    account.setCode(state, code, (err, codeHash) => {
-      if (err) {
-        reject(err)
-        return
-      }
-
-      resolve(codeHash)
-    })
-  })
-}
-
 async function setGenesisBlock(blockchain: any, hardfork: string) {
   const genesisBlock = new Block({ hardfork })
   genesisBlock.header = new BlockHeader(testData.genesisBlockHeader, { hardfork })
