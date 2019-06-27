@@ -27,16 +27,6 @@ async function main() {
     hardfork,
   })
 
-  vm.on('beforeTx', (tx: any) => {
-    tx._homestead = true
-  })
-
-  vm.on('beforeBlock', (block: any) => {
-    block.header.isHomestead = function() {
-      return true
-    }
-  })
-
   await setupPreConditions(state, testData)
 
   await setGenesisBlock(blockchain, hardfork)
