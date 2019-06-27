@@ -4,7 +4,6 @@ import Account from 'ethereumjs-account'
 import * as utils from 'ethereumjs-util'
 import { promisify } from 'util'
 import PStateManager from '../../lib/state/promisified'
-import { toBuffer } from 'ethereumjs-util'
 
 const Block = require('ethereumjs-block')
 const Blockchain = require('ethereumjs-blockchain')
@@ -55,6 +54,9 @@ function setEthashCache(blockchain: any) {
 
 async function setupPreConditions(vm: VM, testData: any) {
   const psm = new PStateManager(vm.stateManager)
+
+  await psm.checkpoint()
+
   for (const address of Object.keys(testData.pre)) {
     const addressBuf = utils.toBuffer(address)
 
@@ -78,8 +80,7 @@ async function setupPreConditions(vm: VM, testData: any) {
     await psm.putContractCode(addressBuf, codeBuf)
   }
 
-  // This forces a cache flush, which is necessary here
-  await psm.getStateRoot()
+  await psm.commit()
 }
 
 async function setGenesisBlock(blockchain: any, hardfork: string) {
