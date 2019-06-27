@@ -32,13 +32,17 @@ export const isZeroAddress = function(address: string): boolean {
 /**
  * Returns a checksummed address.
  *
- * If a chainId is provided, the result will be an EIP-1191 checksum. Otherwise, it will be an
- * EIP-55 checksum.
+ * If a eip1191ChainId is provided, the chainId will be included in the checksum calculation. This
+ * has the effect of checksummed addresses for one chain having invalid checksums for others.
+ * For more details, consult EIP-1191.
+ *
+ * WARNING: Checksums with and without the chainId will differ. As of 2019-06-26, the most commonly
+ * used variation in Ethereum was without the chainId. This may change in the future.
  */
-export const toChecksumAddress = function(address: string, chainId?: number): string {
+export const toChecksumAddress = function(address: string, eip1191ChainId?: number): string {
   address = ethjsUtil.stripHexPrefix(address).toLowerCase()
 
-  const prefix = chainId !== undefined ? chainId.toString() + '0x' : ''
+  const prefix = eip1191ChainId !== undefined ? eip1191ChainId.toString() + '0x' : ''
 
   const hash = keccak(prefix + address).toString('hex')
   let ret = '0x'
@@ -57,11 +61,10 @@ export const toChecksumAddress = function(address: string, chainId?: number): st
 /**
  * Checks if the address is a valid checksummed address.
  *
- * If a chainId is provided, the address is compared to an EIP-1191 checksum. Otherwise, it will be
- * compared to an EIP-55 checksum.
+ * See toChecksumAddress' documentation for details about the eip1191ChainId parameter.
  */
-export const isValidChecksumAddress = function(address: string, chainId?: number): boolean {
-  return isValidAddress(address) && toChecksumAddress(address, chainId) === address
+export const isValidChecksumAddress = function(address: string, eip1191ChainId?: number): boolean {
+  return isValidAddress(address) && toChecksumAddress(address, eip1191ChainId) === address
 }
 
 /**

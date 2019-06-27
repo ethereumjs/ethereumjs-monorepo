@@ -165,7 +165,7 @@ ___
 
 **● publicToAddress**: *[pubToAddress]()* =  pubToAddress
 
-*Defined in [account.ts:160](https://github.com/ethereumjs/ethereumjs-util/blob/master/src/account.ts#L160)*
+*Defined in [account.ts:163](https://github.com/ethereumjs/ethereumjs-util/blob/master/src/account.ts#L163)*
 
 ___
 <a id="setlength"></a>
@@ -376,7 +376,7 @@ ___
 
 ▸ **generateAddress**(from: *`Buffer`*, nonce: *`Buffer`*): `Buffer`
 
-*Defined in [account.ts:72](https://github.com/ethereumjs/ethereumjs-util/blob/master/src/account.ts#L72)*
+*Defined in [account.ts:75](https://github.com/ethereumjs/ethereumjs-util/blob/master/src/account.ts#L75)*
 
 Generates an address of a newly created contract.
 
@@ -396,7 +396,7 @@ ___
 
 ▸ **generateAddress2**(from: *`Buffer` \| `string`*, salt: *`Buffer` \| `string`*, initCode: *`Buffer` \| `string`*): `Buffer`
 
-*Defined in [account.ts:92](https://github.com/ethereumjs/ethereumjs-util/blob/master/src/account.ts#L92)*
+*Defined in [account.ts:95](https://github.com/ethereumjs/ethereumjs-util/blob/master/src/account.ts#L95)*
 
 Generates an address for a contract created using CREATE2.
 
@@ -436,7 +436,7 @@ ___
 
 ▸ **importPublic**(publicKey: *`Buffer`*): `Buffer`
 
-*Defined in [account.ts:183](https://github.com/ethereumjs/ethereumjs-util/blob/master/src/account.ts#L183)*
+*Defined in [account.ts:186](https://github.com/ethereumjs/ethereumjs-util/blob/master/src/account.ts#L186)*
 
 Converts a public key to the Ethereum format.
 
@@ -455,7 +455,7 @@ ___
 
 ▸ **isPrecompiled**(address: *`Buffer` \| `string`*): `boolean`
 
-*Defined in [account.ts:114](https://github.com/ethereumjs/ethereumjs-util/blob/master/src/account.ts#L114)*
+*Defined in [account.ts:117](https://github.com/ethereumjs/ethereumjs-util/blob/master/src/account.ts#L117)*
 
 Returns true if the supplied address belongs to a precompiled account (Byzantium).
 
@@ -491,20 +491,20 @@ ___
 
 ### `<Const>` isValidChecksumAddress
 
-▸ **isValidChecksumAddress**(address: *`string`*, chainId?: *`undefined` \| `number`*): `boolean`
+▸ **isValidChecksumAddress**(address: *`string`*, eip1191ChainId?: *`undefined` \| `number`*): `boolean`
 
-*Defined in [account.ts:63](https://github.com/ethereumjs/ethereumjs-util/blob/master/src/account.ts#L63)*
+*Defined in [account.ts:66](https://github.com/ethereumjs/ethereumjs-util/blob/master/src/account.ts#L66)*
 
 Checks if the address is a valid checksummed address.
 
-If a chainId is provided, the address is compared to an EIP-1191 checksum. Otherwise, it will be compared to an EIP-55 checksum.
+See toChecksumAddress' documentation for details about the eip1191ChainId parameter.
 
 **Parameters:**
 
 | Name | Type |
 | ------ | ------ |
 | address | `string` |
-| `Optional` chainId | `undefined` \| `number` |
+| `Optional` eip1191ChainId | `undefined` \| `number` |
 
 **Returns:** `boolean`
 
@@ -515,7 +515,7 @@ ___
 
 ▸ **isValidPrivate**(privateKey: *`Buffer`*): `boolean`
 
-*Defined in [account.ts:122](https://github.com/ethereumjs/ethereumjs-util/blob/master/src/account.ts#L122)*
+*Defined in [account.ts:125](https://github.com/ethereumjs/ethereumjs-util/blob/master/src/account.ts#L125)*
 
 Checks if the private key satisfies the rules of the curve secp256k1.
 
@@ -534,7 +534,7 @@ ___
 
 ▸ **isValidPublic**(publicKey: *`Buffer`*, sanitize?: *`boolean`*): `boolean`
 
-*Defined in [account.ts:132](https://github.com/ethereumjs/ethereumjs-util/blob/master/src/account.ts#L132)*
+*Defined in [account.ts:135](https://github.com/ethereumjs/ethereumjs-util/blob/master/src/account.ts#L135)*
 
 Checks if the public key satisfies the rules of the curve secp256k1 and the requirements of Ethereum.
 
@@ -635,7 +635,7 @@ ___
 
 ▸ **privateToAddress**(privateKey: *`Buffer`*): `Buffer`
 
-*Defined in [account.ts:166](https://github.com/ethereumjs/ethereumjs-util/blob/master/src/account.ts#L166)*
+*Defined in [account.ts:169](https://github.com/ethereumjs/ethereumjs-util/blob/master/src/account.ts#L169)*
 
 Returns the ethereum address of a given private key.
 
@@ -654,7 +654,7 @@ ___
 
 ▸ **privateToPublic**(privateKey: *`Buffer`*): `Buffer`
 
-*Defined in [account.ts:174](https://github.com/ethereumjs/ethereumjs-util/blob/master/src/account.ts#L174)*
+*Defined in [account.ts:177](https://github.com/ethereumjs/ethereumjs-util/blob/master/src/account.ts#L177)*
 
 Returns the ethereum public key of a given private key.
 
@@ -673,7 +673,7 @@ ___
 
 ▸ **pubToAddress**(pubKey: *`Buffer`*, sanitize?: *`boolean`*): `Buffer`
 
-*Defined in [account.ts:151](https://github.com/ethereumjs/ethereumjs-util/blob/master/src/account.ts#L151)*
+*Defined in [account.ts:154](https://github.com/ethereumjs/ethereumjs-util/blob/master/src/account.ts#L154)*
 
 Returns the ethereum address of a given public key. Accepts "Ethereum public keys" and SEC1 encoded keys.
 
@@ -811,20 +811,22 @@ ___
 
 ### `<Const>` toChecksumAddress
 
-▸ **toChecksumAddress**(address: *`string`*, chainId?: *`undefined` \| `number`*): `string`
+▸ **toChecksumAddress**(address: *`string`*, eip1191ChainId?: *`undefined` \| `number`*): `string`
 
-*Defined in [account.ts:38](https://github.com/ethereumjs/ethereumjs-util/blob/master/src/account.ts#L38)*
+*Defined in [account.ts:42](https://github.com/ethereumjs/ethereumjs-util/blob/master/src/account.ts#L42)*
 
 Returns a checksummed address.
 
-If a chainId is provided, the result will be an EIP-1191 checksum. Otherwise, it will be an EIP-55 checksum.
+If a eip1191ChainId is provided, the chainId will be included in the checksum calculation. This has the effect of checksummed addresses for one chain having invalid checksums for others. For more details, consult EIP-1191.
+
+WARNING: Checksums with and without the chainId will differ. As of 2019-06-26, the most commonly used variation in Ethereum was without the chainId. This may change in the future.
 
 **Parameters:**
 
 | Name | Type |
 | ------ | ------ |
 | address | `string` |
-| `Optional` chainId | `undefined` \| `number` |
+| `Optional` eip1191ChainId | `undefined` \| `number` |
 
 **Returns:** `string`
 
