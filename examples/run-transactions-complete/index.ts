@@ -1,32 +1,19 @@
 import VM from '../..'
 import Account from 'ethereumjs-account'
 import * as utils from 'ethereumjs-util'
-import { promisify } from 'util'
+import PStateManager from '../../lib/state/promisified'
 
 const Transaction = require('ethereumjs-tx') // Change when https://github.com/ethereumjs/ethereumjs-vm/pull/541 gets merged
 
 async function main() {
   const vm = new VM()
+  const psm = new PStateManager(vm.stateManager)
 
   // import the key pair
-  //   pre-generated (saves time)
   //   used to sign transactions and generate addresses
   const keyPair = require('./key-pair')
+  const privateKey = utils.toBuffer(keyPair.secretKey)
 
-  // Transaction to initalize the name register, in this case
-  // it will register the sending address as 'null_radix'
-  // Notes:
-  //   - A transaction has the fiels:
-  //     - nonce
-  //     - gasPrice
-  //     - gasLimit
-  //     - data
-  const rawTx1 = require('./raw-tx1')
-
-  // 2nd Transaction
-  const rawTx2 = require('./raw-tx2')
-
-  // the address we are sending from
   const publicKeyBuf = utils.toBuffer(keyPair.publicKey)
   const address = utils.pubToAddress(publicKeyBuf, true)
 
@@ -34,27 +21,27 @@ async function main() {
   console.log('Sender address: ', utils.bufferToHex(address))
 
   // create a new account
-  const account = new Account()
-
-  // give the account some wei.
-  account.balance = utils.toBuffer('0xf00000000000000001')
+  const account = new Account({
+    balance: 100e18,
+  })
 
   // Save the account
-  await promisify(vm.stateManager.putAccount.bind(vm.stateManager))(address, account)
+  await psm.putAccount(address, account)
+
+  const rawTx1 = require('./raw-tx1')
+  const rawTx2 = require('./raw-tx2')
 
   // The first transaction deploys a contract
-  const createdAddress = (await runTx(vm, rawTx1, keyPair))!
+  const createdAddress = (await runTx(vm, rawTx1, privateKey))!
 
   // The second transaction calls that contract
-  await runTx(vm, rawTx2, keyPair)
+  await runTx(vm, rawTx2, privateKey)
 
   // Now lets look at what we created. The transaction
   // should have created a new account for the contract
   // in the state. Lets test to see if it did.
 
-  const createdAccount = (await promisify(vm.stateManager.getAccount.bind(vm.stateManager))(
-    createdAddress,
-  )) as Account
+  const createdAccount = await psm.getAccount(createdAddress)
 
   console.log('-------results-------')
   console.log('nonce: ' + createdAccount.nonce.toString('hex'))
@@ -64,27 +51,25 @@ async function main() {
   console.log('---------------------')
 }
 
-async function runTx(vm: VM, rawTx: any, keyPair: { secretKey: string }) {
-  // create a new transaction out of the json
+async function runTx(vm: VM, rawTx: any, privateKey: Buffer) {
   const tx = new Transaction(rawTx)
 
-  tx.sign(utils.toBuffer(keyPair.secretKey))
+  tx.sign(privateKey)
 
   console.log('----running tx-------')
   const results = await vm.runTx({
     tx: tx,
   })
-  const createdAddress = results.createdAddress
 
-  // log some results
   console.log('gas used: ' + results.gasUsed.toString())
   console.log('returned: ' + results.vm.return.toString('hex'))
 
+  const createdAddress = results.createdAddress
+
   if (createdAddress) {
     console.log('address created: ' + createdAddress.toString('hex'))
+    return createdAddress
   }
-
-  return createdAddress
 }
 
 main()
