@@ -25,8 +25,9 @@ module.exports = class SecureTrie extends CheckpointTrie {
   }
 
   copy () {
-    const db = this.db.copy()
-    return new SecureTrie(db, this.root)
+    const trie = super.copy(false)
+    const db = trie.db.copy()
+    return new SecureTrie(db._leveldb, this.root)
   }
 
   get (key, cb) {

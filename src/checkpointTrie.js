@@ -91,17 +91,27 @@ module.exports = class CheckpointTrie extends BaseTrie {
    * Returns a copy of the underlying trie with the interface
    * of CheckpointTrie. If during a checkpoint, the copy will
    * contain the checkpointing metadata (incl. reference to the same scratch).
-   * @method copy
+   * @param {boolean} includeCheckpoints - If true and during a checkpoint, the copy will
+   * contain the checkpointing metadata and will use the same scratch as underlying db.
    */
-  copy () {
+  copy (includeCheckpoints = true) {
     const db = this._mainDB.copy()
-    const trie = new CheckpointTrie(db, this.root)
-    if (this.isCheckpoint) {
+    const trie = new CheckpointTrie(db._leveldb, this.root)
+    if (includeCheckpoints && this.isCheckpoint) {
       trie._checkpoints = this._checkpoints.slice()
       trie._scratch = this._scratch.copy()
       trie.db = trie._scratch
     }
     return trie
+  }
+
+  /**
+   * Writes a value under given key directly to the
+   * key/value db, disregarding checkpoints.
+   * @deprecated
+   */
+  putRaw (key, value, cb) {
+    this._mainDB.put(key, value, cb)
   }
 
   /**
@@ -124,7 +134,7 @@ module.exports = class CheckpointTrie extends BaseTrie {
 
     if (commitState) {
       this._createScratchReadStream(scratch)
-        .pipe(WriteStream(this.db))
+        .pipe(WriteStream(this.db._leveldb))
         .on('close', cb)
     } else {
       async.nextTick(cb)
@@ -139,7 +149,8 @@ module.exports = class CheckpointTrie extends BaseTrie {
    */
   _createScratchReadStream (scratch) {
     scratch = scratch || this._scratch
-    const trie = new BaseTrie(scratch, this.root)
+    const trie = new BaseTrie(scratch._leveldb, this.root)
+    trie.db = scratch
     return new ScratchReadStream(trie)
   }
 }

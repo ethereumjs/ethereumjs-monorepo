@@ -16,7 +16,7 @@ const { stringToNibbles, matchingNibbleLength, doKeysMatch } = require('./util/n
  * The API for the raw and the secure interface are about the same
  * @class Trie
  * @public
- * @param {Object} [db] An instance of `DB`.
+ * @param {Object} [db] A [levelup](https://github.com/Level/levelup) instance. By default creates an in-memory [memdown](https://github.com/Level/memdown) instance.
  * If the db is `null` or left undefined, then the trie will be stored in memory via [memdown](https://github.com/Level/memdown)
  * @param {Buffer|String} [root] A hex `String` or `Buffer` for the root of a previously stored trie
  * @prop {Buffer} root The current root of the `trie`
@@ -28,7 +28,7 @@ module.exports = class Trie {
     this.EMPTY_TRIE_ROOT = ethUtil.KECCAK256_RLP
     this.sem = semaphore(1)
 
-    this.db = db || new DB()
+    this.db = db ? new DB(db) : new DB()
 
     Object.defineProperty(this, 'root', {
       set (value) {
@@ -160,6 +160,31 @@ module.exports = class Trie {
         }
       })
     })
+  }
+
+  /**
+   * Retrieves a value directly from key/value db.
+   * @deprecated
+   */
+  getRaw (key, cb) {
+    this.db.get(key, cb)
+  }
+
+  /**
+   * Writes a value under given key directly to the
+   * key/value db.
+   * @deprecated
+   */
+  putRaw (key, value, cb) {
+    this.db.put(key, value, cb)
+  }
+
+  /**
+   * Deletes key directly from underlying key/value db.
+   * @deprecated
+   */
+  delRaw (key, cb) {
+    this.db.del(key, cb)
   }
 
   // retrieves a node from dbs by hash
@@ -696,7 +721,7 @@ module.exports = class Trie {
   // and starting at the same root
   copy () {
     const db = this.db.copy()
-    return new Trie(db, this.root)
+    return new Trie(db._leveldb, this.root)
   }
 
   /**
