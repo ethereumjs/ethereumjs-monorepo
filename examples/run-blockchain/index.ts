@@ -81,8 +81,6 @@ async function setupPreConditions(db: any, state: any, testData: any) {
 
     await setCode(account, state, codeBuf)
 
-    account.stateRoot = storageTrie.root
-
     await promisify(state.put.bind(state))(utils.toBuffer(address), account.serialize())
   }
 }
