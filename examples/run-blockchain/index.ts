@@ -15,8 +15,8 @@ const level = require('level')
 const rlp = utils.rlp
 
 async function main() {
-  const state = new Trie()
   const blockchainDB = levelMem()
+  const state = new Trie(blockchainDB)
 
   const hardfork = testData.network.toLowerCase()
 
@@ -39,7 +39,7 @@ async function main() {
     hardfork,
   })
 
-  await setupPreConditions(state, testData)
+  await setupPreConditions(blockchainDB, state, testData)
 
   await setGenesisBlock(blockchain, hardfork)
 
@@ -60,7 +60,7 @@ function setEthashCache(blockchain: any) {
   }
 }
 
-async function setupPreConditions(state: any, testData: any) {
+async function setupPreConditions(db: any, state: any, testData: any) {
   for (const address of Object.keys(testData.pre)) {
     const acctData = testData.pre[address]
     const account = new Account()
@@ -68,8 +68,7 @@ async function setupPreConditions(state: any, testData: any) {
     account.nonce = utils.toBuffer(acctData.nonce)
     account.balance = utils.toBuffer(acctData.balance)
 
-    const storageTrie = state.copy()
-    storageTrie.root = null
+    const storageTrie = new Trie(db)
 
     for (const hexStorageKey of Object.keys(acctData.storage)) {
       const val = utils.toBuffer(acctData.storage[hexStorageKey])
