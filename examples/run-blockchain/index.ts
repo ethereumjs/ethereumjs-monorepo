@@ -3,25 +3,19 @@ import VM from '../../'
 import Account from 'ethereumjs-account'
 import * as utils from 'ethereumjs-util'
 import { promisify } from 'util'
+import PStateManager from '../../lib/state/promisified'
+import { toBuffer } from 'ethereumjs-util'
 
-const Trie = require('merkle-patricia-tree/secure')
 const Block = require('ethereumjs-block')
 const Blockchain = require('ethereumjs-blockchain')
 const BlockHeader = require('ethereumjs-block/header.js')
-const levelMem = require('level-mem')
 const testData = require('./test-data')
 const level = require('level')
 
-const rlp = utils.rlp
-
 async function main() {
-  const blockchainDB = levelMem()
-  const state = new Trie(blockchainDB)
-
   const hardfork = testData.network.toLowerCase()
 
   const blockchain = new Blockchain({
-    db: blockchainDB,
     hardfork,
     // This flag can be control whether the blocks are validated. This includes:
     //    * Verifying PoW
@@ -34,12 +28,11 @@ async function main() {
   setEthashCache(blockchain)
 
   const vm = new VM({
-    state: state,
     blockchain: blockchain,
     hardfork,
   })
 
-  await setupPreConditions(blockchainDB, state, testData)
+  await setupPreConditions(vm, testData)
 
   await setGenesisBlock(blockchain, hardfork)
 
@@ -60,29 +53,33 @@ function setEthashCache(blockchain: any) {
   }
 }
 
-async function setupPreConditions(db: any, state: any, testData: any) {
+async function setupPreConditions(vm: VM, testData: any) {
+  const psm = new PStateManager(vm.stateManager)
   for (const address of Object.keys(testData.pre)) {
+    const addressBuf = utils.toBuffer(address)
+
     const acctData = testData.pre[address]
-    const account = new Account()
+    const account = new Account({
+      nonce: acctData.nonce,
+      balance: acctData.balance,
+    })
 
-    account.nonce = utils.toBuffer(acctData.nonce)
-    account.balance = utils.toBuffer(acctData.balance)
-
-    const storageTrie = new Trie(db)
+    await psm.putAccount(addressBuf, account)
 
     for (const hexStorageKey of Object.keys(acctData.storage)) {
       const val = utils.toBuffer(acctData.storage[hexStorageKey])
       const storageKey = utils.setLength(utils.toBuffer(hexStorageKey), 32)
 
-      await promisify(storageTrie.put.bind(storageTrie))(storageKey, rlp.encode(val))
+      await psm.putContractStorage(addressBuf, storageKey, val)
     }
 
     const codeBuf = utils.toBuffer(acctData.code)
 
-    await setCode(account, state, codeBuf)
-
-    await promisify(state.put.bind(state))(utils.toBuffer(address), account.serialize())
+    await psm.putContractCode(addressBuf, codeBuf)
   }
+
+  // This forces a cache flush, which is necessary here
+  await psm.getStateRoot()
 }
 
 async function setCode(account: Account, state: any, code: Buffer) {
