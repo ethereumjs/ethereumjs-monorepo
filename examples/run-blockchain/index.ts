@@ -8,7 +8,6 @@ const Trie = require('merkle-patricia-tree/secure')
 const Block = require('ethereumjs-block')
 const Blockchain = require('ethereumjs-blockchain')
 const BlockHeader = require('ethereumjs-block/header.js')
-const level = require('level')
 const levelMem = require('level-mem')
 const testData = require('./test-data')
 
@@ -21,7 +20,6 @@ async function main() {
   const hardfork = testData.network.toLowerCase()
 
   const blockchain = new Blockchain({ db: blockchainDB, hardfork })
-  blockchain.ethash.cacheDB = level('./.cachedb')
 
   const vm = new VM({
     state: state,
