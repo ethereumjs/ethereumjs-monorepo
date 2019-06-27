@@ -7,7 +7,7 @@ var rawTx2 = {
   gasLimit: '0x20710',
   value: '0x10',
   to: '0x692a70d2e424a56d2c6c27aa97d1a86395877b3a',
-  data: bidSig + time
+  data: bidSig + time,
 }
 
 module.exports = rawTx2

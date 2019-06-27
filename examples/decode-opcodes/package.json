@@ -1,0 +1,7 @@
+{
+  "name": "decode-opcodes",
+  "private": true,
+  "scripts": {
+    "example": "node index.js"
+  }
+}

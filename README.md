@@ -66,23 +66,28 @@ vm.on('step', function(data) {
   console.log(`Opcode: ${data.opcode.name}\tStack: ${data.stack}`)
 })
 
-vm.runCode(
-  {
-    code: Buffer.from(code.join(''), 'hex'),
-    gasLimit: new BN(0xffff),
-  },
-  function(err, results) {
+vm.runCode({
+  code: Buffer.from(code.join(''), 'hex'),
+  gasLimit: new BN(0xffff),
+})
+  .then(results => {
     console.log('Returned : ' + results.return.toString('hex'))
     console.log('gasUsed  : ' + results.gasUsed.toString())
-    console.log('Error    : ' + err)
-  },
-)
+  })
+  .catch(err => console.log('Error    : ' + err))
 ```
 
-Also more examples can be found here
+## Example
 
-- [examples](./examples)
-- [old blog post](https://wanderer.github.io/ethereum/nodejs/code/2014/08/12/running-contracts-with-vm/)
+This projects contain the following examples:
+
+1. [./examples/run-blockchain](./examples/run-blockchain): Loads tests data, including accounts and blocks, and runs all of them in the VM.
+1. [./examples/run-code-browser](./examples/run-code-browser): Show how to use this library in a browser.
+1. [./examples/run-solidity-contract](./examples/run-solidity-contract): Compiles a Solidity contract, and calls constant and non-constant functions.
+1. [./examples/run-transactions-complete](./examples/run-transactions-complete): Runs a contract-deployment transaction and then calls one of its functions.
+1. [./examples/decode-opcodes](./examples/decode-opcodes): Decodes a binary EVM program into its opcodes.
+
+All of the examples have their own `README.md` explaining how to run them.
 
 # BROWSER
 

@@ -1,39 +1,30 @@
-# Build
+# Running the VM in a browser
 
-Build the project from the console:
+This directory contains an example on how to run the VM in a browser.
 
-```shell
-npm run build:dist
-```
+The example does these things:
 
-This will create a new folder `dist/`.
+1. Instantiates a VM
+1. Set ups a listener of the VM's `step` event
+1. Runs a sample code in the VM
+1. Logs the results
 
-# Run Example in Node
+## Installation
 
-```shell
-node index.js
-```
+1. Run `npm install` in the root of this project
+1. Run `npm install` in this directory
+
+## Running the example
+
+First, follow these instructions:
+
+1. Run `npm run build:dist` in the root of this project
+
+### Node
+
+1. Run `npm run example:node` in this directory
 
 # Run Example in a Browser
 
-## Prerequisites
-
-```shell
-$ npm install -g browserify http-server
-```
-
-## Instruction
-
-Run command
-
-```shell
-$ browserify index.js -o bundle.js
-```
-
-Then host this folder in a web server
-
-```shell
-$ http-server
-```
-
-open http://localhost:8080 in a browser and check the result in web console.
+1. `npm run example:browser`
+1. Open [http://localhost:8080](http://localhost:8080) in a browser and check the result in web console.
