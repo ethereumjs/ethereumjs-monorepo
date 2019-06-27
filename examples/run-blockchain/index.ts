@@ -10,6 +10,7 @@ const Blockchain = require('ethereumjs-blockchain')
 const BlockHeader = require('ethereumjs-block/header.js')
 const levelMem = require('level-mem')
 const testData = require('./test-data')
+const level = require('level')
 
 const rlp = utils.rlp
 
@@ -19,7 +20,18 @@ async function main() {
 
   const hardfork = testData.network.toLowerCase()
 
-  const blockchain = new Blockchain({ db: blockchainDB, hardfork })
+  const blockchain = new Blockchain({
+    db: blockchainDB,
+    hardfork,
+    // This flag can be control whether the blocks are validated. This includes:
+    //    * Verifying PoW
+    //    * Validating each blocks's difficulty, uncles, tries, header and uncles.
+    validate: true,
+  })
+
+  // When verifying PoW, setting this cache improves the performance of subsequent runs of this
+  // script. It has no effect if the blockchain is initialized with `validate: false`.
+  setEthashCache(blockchain)
 
   const vm = new VM({
     state: state,
@@ -40,6 +52,12 @@ async function main() {
   console.log('--- Finished processing the BlockChain ---')
   console.log('New head:', '0x' + blockchain.meta.rawHead.toString('hex'))
   console.log('Expected:', testData.lastblockhash)
+}
+
+function setEthashCache(blockchain: any) {
+  if (blockchain.validate) {
+    blockchain.ethash.cacheDB = level('./.cachedb')
+  }
 }
 
 async function setupPreConditions(state: any, testData: any) {
