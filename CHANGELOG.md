@@ -6,11 +6,26 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## [2.1.0] - 2018-06-26
+## [2.1.0] - 2018-06-28
+
+**Using testnets and custom/private networks is now easier**
+
+This release is focused on making this library easier to use in chains other than `mainnet`.
+
+Using standard testnets can be as easy as passing their names to the `Transaction` constructor. For
+example, `new Transaction(rawTx, {chain: 'ropsten', hardfork: 'byzantium'})` is enough to use this
+library with Ropsten on Byzantium.
+
+If you are using a custom network, you can take advantage of [ethereumjs-common](https://github.com/ethereumjs/ethereumjs-common),
+which contains all the network parameters. In this version of `ethereumjs-tx` you can use its new
+`Common.forCustomNetwork` to create a `Common` instance based on a standard network with some
+parameters changed. You can see an example of how to do this [here](https://github.com/ethereumjs/ethereumjs-common/blob/9e624f86107cea904d8171524130d92c99bf9302/src/index.ts).
+
+List of changes:
 
 - Upgraded [ethereumjs-common](https://github.com/ethereumjs/ethereumjs-common) to `^1.3.0`
 - Added more documentation and examples on how to create transactions for public testnets and
-  custom networks
+  custom networks.
 
 [2.1.0]: https://github.com/ethereumjs/ethereumjs-tx/compare/v2.0.0...v2.1.0
 
