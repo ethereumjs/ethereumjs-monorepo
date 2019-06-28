@@ -2,19 +2,23 @@
   "name": "ethereumjs-wallet",
   "version": "0.6.3",
   "description": "Utilities for handling Ethereum keys",
-  "main": "index.js",
+  "main": "dist/index.js",
+  "types": "./dist/index.d.ts",
   "files": [
-    "*.js",
-    "test/"
+    "dist"
   ],
   "scripts": {
-    "coverage": "istanbul cover _mocha",
-    "coveralls": "npm run build:dist && npm run coverage && coveralls <coverage/lcov.info",
-    "lint": "standard",
-    "prepublishOnly": "npm run lint && npm run test:build",
-    "test": "mocha ./src/test/*.js",
-    "test:build": "npm run build:dist && mocha ./test/*.js",
-    "build:dist": "babel src/ -d ."
+    "build": "ethereumjs-config-build",
+    "prepublishOnly": "npm run format && npm run tslint && npm run test",
+    "coverage": "ethereumjs-config-coverage",
+    "coveralls": "ethereumjs-config-coveralls",
+    "format": "ethereumjs-config-format",
+    "format-fix": "ethereumjs-config-format-fix",
+    "pretest": "npm run build",
+    "test": "nyc mocha ./test/**/*.ts",
+    "tsc": "ethereumjs-config-tsc",
+    "tslint": "ethereumjs-config-tslint",
+    "tslint:fix": "ethereumjs-config-tslint-fix"
   },
   "husky": {
     "hooks": {
@@ -42,27 +46,27 @@
     "ethereumjs-util": "^6.0.0",
     "hdkey": "^1.1.1",
     "randombytes": "^2.0.6",
-    "safe-buffer": "^5.1.2",
     "scrypt.js": "^0.3.0",
     "utf8": "^3.0.0",
     "uuid": "^3.3.2"
   },
   "devDependencies": {
-    "babel-cli": "^6.26.0",
-    "babel-preset-env": "^1.7.0",
+    "@ethereumjs/config-nyc": "^1.1.1",
+    "@ethereumjs/config-prettier": "^1.1.1",
+    "@ethereumjs/config-tsc": "^1.1.1",
+    "@ethereumjs/config-tslint": "^1.1.1",
+    "@types/bn.js": "^4.11.5",
+    "@types/mocha": "^5.2.7",
+    "@types/node": "^12.0.10",
     "coveralls": "^3.0.0",
     "husky": "^2.1.0",
-    "istanbul": "^0.4.5",
     "mocha": "^5.2.0",
-    "standard": "^12.0.0"
-  },
-  "standard": {
-    "globals": [
-      "describe",
-      "it"
-    ],
-    "ignore": [
-      "./*.js"
-    ]
+    "nyc": "^14.1.1",
+    "prettier": "^1.18.2",
+    "source-map-support": "^0.5.12",
+    "ts-node": "^8.3.0",
+    "tslint": "^5.18.0",
+    "typescript": "^3.5.2",
+    "typestrict": "^1.0.2"
   }
 }

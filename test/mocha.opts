@@ -1,0 +1,4 @@
+--require ./node_modules/ts-node/register
+--require ./node_modules/source-map-support/register
+--recursive
+--exit
