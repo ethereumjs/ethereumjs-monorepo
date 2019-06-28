@@ -101,7 +101,7 @@ function stripUnusedKDFParamsForScrypt(params: KDFParams): Partial<KDFParams> {
   return params
 }
 
-export class Wallet {
+class Wallet {
   // static methods
 
   public static generate(icapDirect: boolean = false): Wallet {
@@ -309,6 +309,9 @@ export class Wallet {
       throw new Error('Cannot supply both a private and a public key to the constructor')
     }
 
+    if (!privateKey && !publicKey) {
+    }
+
     if (privateKey && !ethUtil.isValidPrivate(privateKey)) {
       throw new Error('Private key does not satisfy the curve requirements (ie. it is invalid)')
     }
@@ -442,3 +445,5 @@ function runCipherBuffer(cipher: crypto.Cipher | crypto.Decipher, data: Buffer):
 function keyExists(k: Buffer | undefined): k is Buffer {
   return k !== undefined
 }
+
+export = Wallet
