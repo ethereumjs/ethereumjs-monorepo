@@ -353,7 +353,7 @@ export class Wallet {
       throw new Error('This is a public key only wallet')
     }
 
-    const params = mergeToV3ParamsWithDefaults(opts);
+    const params = mergeToV3ParamsWithDefaults(opts)
     const kdfParams = mergeKDFParamsWithDefaults(params)
 
     let derivedKey: Buffer, finalKDFParams: Partial<KDFParams>
