@@ -1,21 +1,21 @@
 import BN = require('bn.js')
 import {
-  toBuffer,
   generateAddress,
   generateAddress2,
-  zeros,
   KECCAK256_NULL,
   MAX_INTEGER,
+  toBuffer,
+  zeros,
 } from 'ethereumjs-util'
 import Account from 'ethereumjs-account'
-import { VmError, ERROR } from '../exceptions'
+import { ERROR, VmError } from '../exceptions'
 import PStateManager from '../state/promisified'
-import { getPrecompile, PrecompileFunc, PrecompileResult } from './precompiles'
-import { OOGResult } from './precompiles/types'
+import { getPrecompile, PrecompileFunc, ExecResult } from './precompiles'
 import TxContext from './txContext'
 import Message from './message'
 import EEI from './eei'
-import { default as Interpreter, RunState, IsException, InterpreterOpts } from './interpreter'
+import { default as Interpreter, InterpreterOpts, IsException, RunState } from './interpreter'
+
 const Block = require('ethereumjs-block')
 
 /**
@@ -77,6 +77,15 @@ export interface ExecResult {
    * A map from the accounts that have self-destructed to the addresses to send their funds to
    */
   selfdestruct?: { [k: string]: Buffer }
+}
+
+export function OOGResult(gasLimit: BN): ExecResult {
+  return {
+    return: Buffer.alloc(0),
+    gasUsed: gasLimit,
+    exception: 0, // 0 means VM fail (in this case because of OOG)
+    exceptionError: new VmError(ERROR.OUT_OF_GAS),
+  }
 }
 
 /**
@@ -159,7 +168,7 @@ export default class EVM {
       }
     }
 
-    let result
+    let result: ExecResult
     if (message.isCompiled) {
       result = this.runPrecompile(message.code as PrecompileFunc, message.data, message.gasLimit)
     } else {
@@ -323,7 +332,7 @@ export default class EVM {
   /**
    * Executes a precompiled contract with given data and gas limit.
    */
-  runPrecompile(code: PrecompileFunc, data: Buffer, gasLimit: BN): PrecompileResult {
+  runPrecompile(code: PrecompileFunc, data: Buffer, gasLimit: BN): ExecResult {
     if (typeof code !== 'function') {
       throw new Error('Invalid precompile')
     }

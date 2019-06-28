@@ -1,6 +1,7 @@
 import BN = require('bn.js')
 import { setLengthRight } from 'ethereumjs-util'
-import { PrecompileInput, PrecompileResult, OOGResult } from './types'
+import { PrecompileInput } from './types'
+import { OOGResult, ExecResult } from '../evm'
 const assert = require('assert')
 
 function multComplexity(x: BN): BN {
@@ -66,7 +67,7 @@ function expmod(B: BN, E: BN, M: BN): BN {
   return res.fromRed()
 }
 
-export default function(opts: PrecompileInput): PrecompileResult {
+export default function(opts: PrecompileInput): ExecResult {
   assert(opts.data)
 
   const data = opts.data

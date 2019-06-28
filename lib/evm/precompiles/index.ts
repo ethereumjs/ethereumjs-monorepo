@@ -1,4 +1,4 @@
-import { PrecompileInput, PrecompileResult, PrecompileFunc } from './types'
+import { PrecompileInput, PrecompileFunc } from './types'
 import { default as p1 } from './01-ecrecover'
 import { default as p2 } from './02-sha256'
 import { default as p3 } from './03-ripemd160'
@@ -7,6 +7,7 @@ import { default as p5 } from './05-modexp'
 import { default as p6 } from './06-ecadd'
 import { default as p7 } from './07-ecmul'
 import { default as p8 } from './08-ecpairing'
+import { ExecResult } from '../evm'
 
 interface Precompiles {
   [key: string]: PrecompileFunc
@@ -27,4 +28,4 @@ function getPrecompile(address: string): PrecompileFunc {
   return precompiles[address]
 }
 
-export { precompiles, getPrecompile, PrecompileFunc, PrecompileInput, PrecompileResult }
+export { precompiles, getPrecompile, PrecompileFunc, PrecompileInput, ExecResult }
