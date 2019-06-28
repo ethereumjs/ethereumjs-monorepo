@@ -460,13 +460,13 @@ export default class EEI {
 
     const results = await this._evm.executeMessage(msg)
 
-    if (results.vm.logs) {
-      this._result.logs = this._result.logs.concat(results.vm.logs)
+    if (results.execResult.logs) {
+      this._result.logs = this._result.logs.concat(results.execResult.logs)
     }
 
     // add gasRefund
-    if (results.vm.gasRefund) {
-      this._result.gasRefund = this._result.gasRefund.add(results.vm.gasRefund)
+    if (results.execResult.gasRefund) {
+      this._result.gasRefund = this._result.gasRefund.add(results.execResult.gasRefund)
     }
 
     // this should always be safe
@@ -474,20 +474,21 @@ export default class EEI {
 
     // Set return value
     if (
-      results.vm.return &&
-      (!results.vm.exceptionError || results.vm.exceptionError.error === ERROR.REVERT)
+      results.execResult.return &&
+      (!results.execResult.exceptionError ||
+        results.execResult.exceptionError.error === ERROR.REVERT)
     ) {
-      this._lastReturned = results.vm.return
+      this._lastReturned = results.execResult.return
     }
 
-    if (!results.vm.exceptionError) {
+    if (!results.execResult.exceptionError) {
       Object.assign(this._result.selfdestruct, selfdestruct)
       // update stateRoot on current contract
       const account = await this._state.getAccount(this._env.address)
       this._env.contract = account
     }
 
-    return new BN(results.vm.exception)
+    return new BN(results.execResult.exception)
   }
 
   /**
@@ -521,24 +522,27 @@ export default class EEI {
 
     const results = await this._evm.executeMessage(msg)
 
-    if (results.vm.logs) {
-      this._result.logs = this._result.logs.concat(results.vm.logs)
+    if (results.execResult.logs) {
+      this._result.logs = this._result.logs.concat(results.execResult.logs)
     }
 
     // add gasRefund
-    if (results.vm.gasRefund) {
-      this._result.gasRefund = this._result.gasRefund.add(results.vm.gasRefund)
+    if (results.execResult.gasRefund) {
+      this._result.gasRefund = this._result.gasRefund.add(results.execResult.gasRefund)
     }
 
     // this should always be safe
     this.useGas(results.gasUsed)
 
     // Set return buffer in case revert happened
-    if (results.vm.exceptionError && results.vm.exceptionError.error === ERROR.REVERT) {
-      this._lastReturned = results.vm.return
+    if (
+      results.execResult.exceptionError &&
+      results.execResult.exceptionError.error === ERROR.REVERT
+    ) {
+      this._lastReturned = results.execResult.return
     }
 
-    if (!results.vm.exceptionError) {
+    if (!results.execResult.exceptionError) {
       Object.assign(this._result.selfdestruct, selfdestruct)
       // update stateRoot on current contract
       const account = await this._state.getAccount(this._env.address)
@@ -549,7 +553,7 @@ export default class EEI {
       }
     }
 
-    return new BN(results.vm.exception)
+    return new BN(results.execResult.exception)
   }
 
   /**

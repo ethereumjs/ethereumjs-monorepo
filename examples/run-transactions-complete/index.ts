@@ -62,7 +62,7 @@ async function runTx(vm: VM, rawTx: any, privateKey: Buffer) {
   })
 
   console.log('gas used: ' + results.gasUsed.toString())
-  console.log('returned: ' + results.vm.return.toString('hex'))
+  console.log('returned: ' + results.execResult.return.toString('hex'))
 
   const createdAddress = results.createdAddress
 

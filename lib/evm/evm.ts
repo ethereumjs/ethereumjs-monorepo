@@ -33,7 +33,7 @@ export interface EVMResult {
   /**
    * Contains the results from running the code, if any, as described in [[runCode]]
    */
-  vm: ExecResult
+  execResult: ExecResult
 }
 
 /**
@@ -122,9 +122,9 @@ export default class EVM {
       result = await this._executeCreate(message)
     }
 
-    const err = result.vm.exceptionError
+    const err = result.execResult.exceptionError
     if (err) {
-      result.vm.logs = []
+      result.execResult.logs = []
       await this._state.revert()
       if (message.isCompiled) {
         // Empty precompiled contracts need to be deleted even in case of OOG
@@ -160,7 +160,7 @@ export default class EVM {
     if (!message.code || message.code.length === 0) {
       return {
         gasUsed: new BN(0),
-        vm: {
+        execResult: {
           exception: 1,
           gasUsed: new BN(0),
           return: Buffer.alloc(0),
@@ -177,7 +177,7 @@ export default class EVM {
 
     return {
       gasUsed: result.gasUsed,
-      vm: result,
+      execResult: result,
     }
   }
 
@@ -198,7 +198,7 @@ export default class EVM {
       return {
         gasUsed: message.gasLimit,
         createdAddress: message.to,
-        vm: {
+        execResult: {
           return: Buffer.alloc(0),
           exception: 0,
           exceptionError: new VmError(ERROR.CREATE_COLLISION),
@@ -222,7 +222,7 @@ export default class EVM {
       return {
         gasUsed: new BN(0),
         createdAddress: message.to,
-        vm: {
+        execResult: {
           exception: 1,
           gasUsed: new BN(0),
           return: Buffer.alloc(0),
@@ -259,7 +259,7 @@ export default class EVM {
     return {
       gasUsed: result.gasUsed,
       createdAddress: message.to,
-      vm: result,
+      execResult: result,
     }
   }
 

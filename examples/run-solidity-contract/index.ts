@@ -107,8 +107,8 @@ async function deployContract(
 
   const deploymentResult = await vm.runTx({ tx })
 
-  if (deploymentResult.vm.exception === 0) {
-    throw deploymentResult.vm.exceptionError
+  if (deploymentResult.execResult.exception === 0) {
+    throw deploymentResult.execResult.exceptionError
   }
 
   return deploymentResult.createdAddress!
@@ -135,8 +135,8 @@ async function setGreeting(
 
   const setGreetingResult = await vm.runTx({ tx })
 
-  if (setGreetingResult.vm.exception === 0) {
-    throw setGreetingResult.vm.exceptionError
+  if (setGreetingResult.execResult.exception === 0) {
+    throw setGreetingResult.execResult.exceptionError
   }
 }
 
@@ -148,11 +148,11 @@ async function getGreeting(vm: VM, contractAddress: Buffer, caller: Buffer) {
     data: abi.methodID('greet', []),
   })
 
-  if (greetResult.vm.exception === 0) {
-    throw greetResult.vm.exceptionError
+  if (greetResult.execResult.exception === 0) {
+    throw greetResult.execResult.exceptionError
   }
 
-  const results = abi.rawDecode(['string'], greetResult.vm.return)
+  const results = abi.rawDecode(['string'], greetResult.execResult.return)
 
   return results[0]
 }

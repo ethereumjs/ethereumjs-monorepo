@@ -212,10 +212,10 @@ async function applyTransactions(this: VM, block: any) {
     bloom.or(txRes.bloom)
 
     const txReceipt: TxReceipt = {
-      status: txRes.vm.exception ? 1 : 0, // result.vm.exception is 0 when an exception occurs, and 1 when it doesn't.  TODO make this the opposite
+      status: txRes.execResult.exception ? 1 : 0, // result.execResult.exception is 0 when an exception occurs, and 1 when it doesn't.  TODO make this the opposite
       gasUsed: gasUsed.toArrayLike(Buffer),
       bitvector: txRes.bloom.bitvector,
-      logs: txRes.vm.logs || [],
+      logs: txRes.execResult.logs || [],
     }
     receipts.push(txReceipt)
 
