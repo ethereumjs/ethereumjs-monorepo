@@ -1,7 +1,7 @@
 import * as async from 'async'
 import { BN, rlp } from 'ethereumjs-util'
 import Common from 'ethereumjs-common'
-import * as util from 'util'
+import { callbackify } from './callbackify'
 import DBManager from './dbManager'
 import {
   bodyKey,
@@ -175,7 +175,7 @@ export default class Blockchain {
     const self = this
 
     async.waterfall(
-      [(cb: any) => self._numberToHash(new BN(0), cb), util.callbackify(getHeads.bind(this))],
+      [(cb: any) => self._numberToHash(new BN(0), cb), callbackify(getHeads.bind(this))],
       err => {
         if (err) {
           // if genesis block doesn't exist, create one
@@ -552,7 +552,7 @@ export default class Blockchain {
    * @hidden
    */
   _getBlock(blockTag: Buffer | number | BN, cb: any) {
-    util.callbackify(this.dbManager.getBlock.bind(this.dbManager))(blockTag, cb)
+    callbackify(this.dbManager.getBlock.bind(this.dbManager))(blockTag, cb)
   }
 
   /**
@@ -1004,7 +1004,7 @@ export default class Blockchain {
    * @hidden
    */
   _batchDbOps(dbOps: any, cb: any): void {
-    util.callbackify(this.dbManager.batch.bind(this.dbManager))(dbOps, cb)
+    callbackify(this.dbManager.batch.bind(this.dbManager))(dbOps, cb)
   }
 
   /**
@@ -1013,7 +1013,7 @@ export default class Blockchain {
    * @hidden
    */
   _hashToNumber(hash: Buffer, cb: any): void {
-    util.callbackify(this.dbManager.hashToNumber.bind(this.dbManager))(hash, cb)
+    callbackify(this.dbManager.hashToNumber.bind(this.dbManager))(hash, cb)
   }
 
   /**
@@ -1022,7 +1022,7 @@ export default class Blockchain {
    * @hidden
    */
   _numberToHash(number: BN, cb: any): void {
-    util.callbackify(this.dbManager.numberToHash.bind(this.dbManager))(number, cb)
+    callbackify(this.dbManager.numberToHash.bind(this.dbManager))(number, cb)
   }
 
   /**
@@ -1057,7 +1057,7 @@ export default class Blockchain {
         if (err) {
           return cb(err)
         }
-        util.callbackify(this.dbManager.getHeader.bind(this.dbManager))(hash, number, cb)
+        callbackify(this.dbManager.getHeader.bind(this.dbManager))(hash, number, cb)
       },
     )
   }
@@ -1090,7 +1090,7 @@ export default class Blockchain {
         if (err) {
           return cb(err)
         }
-        util.callbackify(this.dbManager.getTd.bind(this.dbManager))(hash, number, cb)
+        callbackify(this.dbManager.getTd.bind(this.dbManager))(hash, number, cb)
       },
     )
   }
