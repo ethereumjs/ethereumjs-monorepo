@@ -32,7 +32,7 @@ export interface RunState {
 export interface InterpreterResult {
   runState?: RunState
   exception: IsException
-  exceptionError?: VmError | ERROR
+  exceptionError?: VmError
 }
 
 /**

@@ -475,7 +475,7 @@ export default class EEI {
     // Set return value
     if (
       results.vm.return &&
-      (!results.vm.exceptionError || (results.vm.exceptionError as VmError).error === ERROR.REVERT)
+      (!results.vm.exceptionError || results.vm.exceptionError.error === ERROR.REVERT)
     ) {
       this._lastReturned = results.vm.return
     }
@@ -534,10 +534,7 @@ export default class EEI {
     this.useGas(results.gasUsed)
 
     // Set return buffer in case revert happened
-    if (
-      results.vm.exceptionError &&
-      (results.vm.exceptionError as VmError).error === ERROR.REVERT
-    ) {
+    if (results.vm.exceptionError && results.vm.exceptionError.error === ERROR.REVERT) {
       this._lastReturned = results.vm.return
     }
 

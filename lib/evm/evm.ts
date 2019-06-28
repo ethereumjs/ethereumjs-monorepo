@@ -15,13 +15,7 @@ import { OOGResult } from './precompiles/types'
 import TxContext from './txContext'
 import Message from './message'
 import EEI from './eei'
-import {
-  default as Interpreter,
-  InterpreterResult,
-  RunState,
-  IsException,
-  InterpreterOpts,
-} from './interpreter'
+import { default as Interpreter, RunState, IsException, InterpreterOpts } from './interpreter'
 const Block = require('ethereumjs-block')
 
 /**
@@ -54,7 +48,7 @@ export interface ExecResult {
   /**
    * Description of the exception, if any occured
    */
-  exceptionError?: VmError | ERROR
+  exceptionError?: VmError
   /**
    * Amount of gas left
    */
@@ -128,7 +122,7 @@ export default class EVM {
         // because the bug in both Geth and Parity led to deleting RIPEMD precompiled in this case
         // see https://github.com/ethereum/go-ethereum/pull/3341/files#diff-2433aa143ee4772026454b8abd76b9dd
         // We mark the account as touched here, so that is can be removed among other touched empty accounts (after tx finalization)
-        if ((err as ERROR) === ERROR.OUT_OF_GAS || (err as VmError).error === ERROR.OUT_OF_GAS) {
+        if (err.error === ERROR.OUT_OF_GAS) {
           await this._touchAccount(message.to)
         }
       }
@@ -198,7 +192,7 @@ export default class EVM {
         vm: {
           return: Buffer.alloc(0),
           exception: 0,
-          exceptionError: ERROR.CREATE_COLLISION,
+          exceptionError: new VmError(ERROR.CREATE_COLLISION),
           gasUsed: message.gasLimit,
         },
       }
@@ -290,7 +284,7 @@ export default class EVM {
     let result = eei._result
     let gasUsed = message.gasLimit.sub(eei._gasLeft)
     if (interpreterRes.exceptionError) {
-      if ((interpreterRes.exceptionError as VmError).error !== ERROR.REVERT) {
+      if (interpreterRes.exceptionError.error !== ERROR.REVERT) {
         gasUsed = message.gasLimit
       }
 
