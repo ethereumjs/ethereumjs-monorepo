@@ -32,7 +32,7 @@ export interface Env {
  */
 export interface RunResult {
   logs: any // TODO: define type for Log (each log: [Buffer(address), [Buffer(topic0), ...]])
-  returnValue?: Buffer
+  return?: Buffer
   gasRefund: BN
   /**
    * A map from the accounts that have self-destructed to the addresses to send their funds to
@@ -66,7 +66,7 @@ export default class EEI {
     this._gasLeft = gasLeft
     this._result = {
       logs: [],
-      returnValue: undefined,
+      return: undefined,
       gasRefund: new BN(0),
       selfdestruct: {},
     }
@@ -300,7 +300,7 @@ export default class EEI {
    * @param returnData - Output data to return
    */
   finish(returnData: Buffer): void {
-    this._result.returnValue = returnData
+    this._result.return = returnData
     trap(ERROR.STOP)
   }
 
@@ -310,7 +310,7 @@ export default class EEI {
    * @param returnData - Output data to return
    */
   revert(returnData: Buffer): void {
-    this._result.returnValue = returnData
+    this._result.return = returnData
     trap(ERROR.REVERT)
   }
 

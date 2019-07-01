@@ -66,10 +66,6 @@ export interface ExecResult {
    */
   logs?: any[]
   /**
-   * Value returned by the contract
-   */
-  returnValue?: Buffer
-  /**
    * Amount of gas to refund from deleting storage values
    */
   gasRefund?: BN
@@ -317,7 +313,7 @@ export default class EVM {
       exceptionError: interpreterRes.exceptionError,
       gas: eei._gasLeft,
       gasUsed,
-      return: result.returnValue ? result.returnValue : Buffer.alloc(0),
+      return: result.return ? result.return : Buffer.alloc(0),
     }
   }
 
