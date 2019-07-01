@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [4.0.1] - 2019-07-01
+
+- Fixes a browser-compatibility issue caused by the library using `util.callbackify`,
+  PR [#117](https://github.com/ethereumjs/ethereumjs-blockchain/pull/117)
+
+[4.0.1]: https://github.com/ethereumjs/ethereumjs-blockchain/compare/v4.0.0...v4.0.1
+
 ## [4.0.0] - 2019-04-26
 
 First **TypeScript** based release of the library. `TypeScript` handles `ES6` transpilation
