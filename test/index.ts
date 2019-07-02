@@ -2,8 +2,8 @@
 import * as assert from 'assert'
 import * as ethUtil from 'ethereumjs-util'
 
-import Wallet = require('../src')
-import Thirdparty = require('../src/thirdparty')
+import Wallet from '../src'
+import Thirdparty from '../src/thirdparty'
 
 const fixturePrivateKey = 'efca4cdd31923b50f4214af5d2ae10e7ac45a5019e9431cc195482d707485378'
 const fixturePrivateKeyStr = '0x' + fixturePrivateKey

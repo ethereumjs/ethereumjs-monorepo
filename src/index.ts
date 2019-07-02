@@ -52,14 +52,40 @@ function mergeToV3ParamsWithDefaults(params?: Partial<V3Params>): V3Params {
   }
 }
 
-interface KDFParams {
-  c: number
-  prf: string
+// KDF params
+
+interface ScryptKDFParams {
   dklen: number
   n: number
-  r: number
   p: number
+  r: number
   salt: string
+}
+
+interface PBKDFParams {
+  c: number
+  dklen: number
+  prf: string
+  salt: string
+}
+
+// union of both the PBKDF2 and Scrypt KDF parameters representing all possible
+// parameters the user could supply
+type AllKDFParams = ScryptKDFParams & PBKDFParams
+
+type KDFParams = ScryptKDFParams | PBKDFParams
+
+function kdfParamsForPBKDF(params: AllKDFParams): PBKDFParams {
+  delete params.n
+  delete params.p
+  delete params.r
+  return params
+}
+
+function kdfParamsForScrypt(params: AllKDFParams): ScryptKDFParams {
+  delete params.c
+  delete params.prf
+  return params
 }
 
 /**
@@ -67,7 +93,7 @@ interface KDFParams {
  * returns a list of parameters for running the key derivation function.
  * @param params params passed into the .toV3() method
  */
-function mergeKDFParamsWithDefaults(params: V3Params): KDFParams {
+function mergeKDFParamsWithDefaults(params: V3Params): AllKDFParams {
   const kdfDefaults = {
     c: 262144,
     prf: 'hmac-sha256',
@@ -84,24 +110,79 @@ function mergeKDFParamsWithDefaults(params: V3Params): KDFParams {
     prf: kdfDefaults.prf,
     n: params.n || kdfDefaults.n,
     r: params.r || kdfDefaults.r,
-    p: params.p || kdfDefaults.c,
+    p: params.p || kdfDefaults.p,
   }
 }
 
-function stripUnusedKDFParamsForPBKDF2(params: KDFParams): Partial<KDFParams> {
-  delete params.n
-  delete params.r
-  delete params.p
-  return params
+// JSON keystore types
+
+// https://github.com/ethereum/homestead-guide/blob/master/old-docs-for-reference/go-ethereum-wiki.rst/Passphrase-protected-key-store-spec.rst
+interface V1Keystore {
+  Address: string
+  Crypto: {
+    CipherText: string
+    IV: string
+    KeyHeader: {
+      Kdf: string
+      KdfParams: {
+        DkLen: number
+        N: number
+        P: number
+        R: number
+        SaltLen: number
+      }
+      Version: string
+    }
+    MAC: string
+    Salt: string
+  }
+  Id: string
+  Version: string
 }
 
-function stripUnusedKDFParamsForScrypt(params: KDFParams): Partial<KDFParams> {
-  delete params.c
-  delete params.prf
-  return params
+// https://github.com/ethereum/wiki/wiki/Web3-Secret-Storage-Definition
+interface V3Keystore {
+  crypto: {
+    cipher: string
+    cipherparams: {
+      iv: string
+    }
+    ciphertext: string
+    kdf: string
+    kdfparams: KDFParams
+    mac: string
+  }
+  id: string
+  version: number
 }
 
-class Wallet {
+interface EthSaleKeystore {
+  encseed: string
+  ethaddr: string
+  btcaddr: string
+  email: string
+}
+
+// wallet implementation
+
+export default class Wallet {
+  constructor(
+    private readonly privateKey?: Buffer | undefined,
+    private publicKey: Buffer | undefined = undefined,
+  ) {
+    if (privateKey && publicKey) {
+      throw new Error('Cannot supply both a private and a public key to the constructor')
+    }
+
+    if (privateKey && !ethUtil.isValidPrivate(privateKey)) {
+      throw new Error('Private key does not satisfy the curve requirements (ie. it is invalid)')
+    }
+
+    if (publicKey && !ethUtil.isValidPublic(publicKey)) {
+      throw new Error('Invalid public key')
+    }
+  }
+
   // static methods
 
   public static generate(icapDirect: boolean = false): Wallet {
@@ -164,10 +245,8 @@ class Wallet {
     return Wallet.fromPrivateKey(tmp.slice(46))
   }
 
-  // https://github.com/ethereum/go-ethereum/wiki/Passphrase-protected-key-store-spec
-  public static fromV1(input: string | Object, password: string): Wallet {
-    const json = typeof input === 'object' ? input : JSON.parse(input)
-
+  public static fromV1(input: string | V1Keystore, password: string): Wallet {
+    const json: V1Keystore = typeof input === 'object' ? input : JSON.parse(input)
     if (json.Version !== '1') {
       throw new Error('Not a V1 Wallet')
     }
@@ -187,7 +266,6 @@ class Wallet {
 
     const ciphertext = Buffer.from(json.Crypto.CipherText, 'hex')
     const mac = ethUtil.keccak256(Buffer.concat([derivedKey.slice(16, 32), ciphertext]))
-
     if (mac.toString('hex') !== json.Crypto.MAC) {
       throw new Error('Key derivation failed - possibly wrong passphrase')
     }
@@ -198,16 +276,15 @@ class Wallet {
       Buffer.from(json.Crypto.IV, 'hex'),
     )
     const seed = runCipherBuffer(decipher, ciphertext)
-
     return new Wallet(seed)
   }
 
   public static fromV3(
-    input: string | Object,
+    input: string | V3Keystore,
     password: string,
     nonStrict: boolean = false,
   ): Wallet {
-    const json =
+    const json: V3Keystore =
       typeof input === 'object' ? input : JSON.parse(nonStrict ? input.toLowerCase() : input)
 
     if (json.version !== 3) {
@@ -264,8 +341,8 @@ class Wallet {
    * Based on https://github.com/ethereum/pyethsaletool/blob/master/pyethsaletool.py
    * JSON fields: encseed, ethaddr, btcaddr, email
    */
-  public static fromEthSale(input: string | Object, password: string): Wallet {
-    const json = typeof input === 'object' ? input : JSON.parse(input)
+  public static fromEthSale(input: string | EthSaleKeystore, password: string): Wallet {
+    const json: EthSaleKeystore = typeof input === 'object' ? input : JSON.parse(input)
 
     const encseed = Buffer.from(json.encseed, 'hex')
 
@@ -301,26 +378,6 @@ class Wallet {
     return this.privateKey
   }
 
-  constructor(
-    private readonly privateKey?: Buffer | undefined,
-    private publicKey: Buffer | undefined = undefined,
-  ) {
-    if (privateKey && publicKey) {
-      throw new Error('Cannot supply both a private and a public key to the constructor')
-    }
-
-    if (!privateKey && !publicKey) {
-    }
-
-    if (privateKey && !ethUtil.isValidPrivate(privateKey)) {
-      throw new Error('Private key does not satisfy the curve requirements (ie. it is invalid)')
-    }
-
-    if (publicKey && !ethUtil.isValidPublic(publicKey)) {
-      throw new Error('Invalid public key')
-    }
-  }
-
   // public instance methods
 
   public getPrivateKey(): Buffer {
@@ -351,7 +408,7 @@ class Wallet {
     return ethUtil.toChecksumAddress(this.getAddressString())
   }
 
-  public toV3(password: string, opts?: Partial<V3Params>) {
+  public toV3(password: string, opts?: Partial<V3Params>): V3Keystore {
     if (!keyExists(this.privateKey)) {
       throw new Error('This is a public key only wallet')
     }
@@ -359,7 +416,9 @@ class Wallet {
     const params = mergeToV3ParamsWithDefaults(opts)
     const kdfParams = mergeKDFParamsWithDefaults(params)
 
-    let derivedKey: Buffer, finalKDFParams: Partial<KDFParams>
+    let derivedKey: Buffer
+    let finalKDFParams: KDFParams
+
     if (params.kdf === 'pbkdf2') {
       derivedKey = crypto.pbkdf2Sync(
         Buffer.from(password),
@@ -368,7 +427,7 @@ class Wallet {
         kdfParams.dklen,
         'sha256',
       )
-      finalKDFParams = stripUnusedKDFParamsForPBKDF2(kdfParams)
+      finalKDFParams = kdfParamsForPBKDF(kdfParams)
     } else if (params.kdf === 'scrypt') {
       // FIXME: support progress reporting callback
       derivedKey = scryptsy(
@@ -379,7 +438,7 @@ class Wallet {
         kdfParams.p,
         kdfParams.dklen,
       )
-      finalKDFParams = stripUnusedKDFParamsForScrypt(kdfParams)
+      finalKDFParams = kdfParamsForScrypt(kdfParams)
     } else {
       throw new Error('Unsupported kdf')
     }
@@ -401,6 +460,7 @@ class Wallet {
     return {
       version: 3,
       id: uuidv4({ random: params.uuid }),
+      // @ts-ignore FIXME: official V3 keystore spec omits the address key
       address: this.getAddress().toString('hex'),
       crypto: {
         ciphertext: ciphertext.toString('hex'),
@@ -442,8 +502,6 @@ function runCipherBuffer(cipher: crypto.Cipher | crypto.Decipher, data: Buffer):
   return Buffer.concat([cipher.update(data), cipher.final()])
 }
 
-function keyExists(k: Buffer | undefined): k is Buffer {
-  return k !== undefined
+function keyExists(k: Buffer | undefined | null): k is Buffer {
+  return k !== undefined && k !== null
 }
-
-export = Wallet

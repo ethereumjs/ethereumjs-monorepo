@@ -1,7 +1,7 @@
 import * as crypto from 'crypto'
 import * as ethUtil from 'ethereumjs-util'
 
-import Wallet = require('./index')
+import Wallet from './index'
 
 const scryptsy = require('scrypt.js')
 const utf8 = require('utf8')
@@ -95,12 +95,30 @@ function decodeCryptojsSalt(input: string): { ciphertext: Buffer; salt?: Buffer 
   return { ciphertext }
 }
 
+// {
+//   "address": "0x169aab499b549eac087035e640d3f7d882ef5e2d",
+//   "encrypted": true,
+//   "locked": true,
+//   "hash": "342f636d174cc1caa49ce16e5b257877191b663e0af0271d2ea03ac7e139317d",
+//   "private": "U2FsdGVkX19ZrornRBIfl1IDdcj6S9YywY8EgOeOtLj2DHybM/CHL4Jl0jcwjT+36kDnjj+qEfUBu6J1mGQF/fNcD/TsAUgGUTEUEOsP1CKDvNHfLmWLIfxqnYHhHsG5",
+//   "public": "U2FsdGVkX19EaDNK52q7LEz3hL/VR3dYW5VcoP04tcVKNS0Q3JINpM4XzttRJCBtq4g22hNDrOR8RWyHuh3nPo0pRSe9r5AUfEiCLaMBAhI16kf2KqCA8ah4brkya9ZLECdIl0HDTMYfDASBnyNXd87qodt46U0vdRT3PppK+9hsyqP8yqm9kFcWqMHktqubBE937LIU0W22Rfw6cJRwIw=="
+// }
+
+interface EtherWalletOptions {
+  address: string
+  encrypted: boolean
+  locked: boolean
+  hash: string
+  private: string
+  public: string
+}
+
 /*
  * This wallet format is created by https://github.com/SilentCicero/ethereumjs-accounts
  * and used on https://www.myetherwallet.com/
  */
-function fromEtherWallet(input: string | Object, password: string): Wallet {
-  const json = typeof input === 'object' ? input : JSON.parse(input)
+function fromEtherWallet(input: string | EtherWalletOptions, password: string): Wallet {
+  const json: EtherWalletOptions = typeof input === 'object' ? input : JSON.parse(input)
 
   let privateKey: Buffer
   if (!json.locked) {
@@ -109,16 +127,20 @@ function fromEtherWallet(input: string | Object, password: string): Wallet {
     }
     privateKey = Buffer.from(json.private, 'hex')
   } else {
+    if (typeof password !== 'string') {
+      throw new Error('Password required')
+    }
+
     if (password.length < 7) {
       throw new Error('Password must be at least 7 characters')
     }
 
     // the "encrypted" version has the low 4 bytes
     // of the hash of the address appended
-    let cipher = json.encrypted ? json.private.slice(0, 128) : json.private
+    const hash = json.encrypted ? json.private.slice(0, 128) : json.private
 
     // decode openssl ciphertext + salt encoding
-    cipher = decodeCryptojsSalt(cipher)
+    const cipher = decodeCryptojsSalt(hash)
     if (!cipher.salt) {
       throw new Error('Unsupported EtherWallet key format')
     }
@@ -183,6 +205,10 @@ function fromKryptoKit(entropy: string, password: string): Wallet {
   if (type === 'd') {
     privateKey = ethUtil.sha256(entropy)
   } else if (type === 'q') {
+    if (typeof password !== 'string') {
+      throw new Error('Password required')
+    }
+
     const encryptedSeed = ethUtil.sha256(Buffer.from(entropy.slice(0, 30)))
     const checksum = entropy.slice(30, 46)
 
@@ -246,4 +272,4 @@ const Thirdparty = {
   fromQuorumWallet,
 }
 
-export = Thirdparty
+export default Thirdparty
