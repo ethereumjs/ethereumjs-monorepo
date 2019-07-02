@@ -64,7 +64,7 @@ export default class StateManager {
   }
 
   /**
-   * Copies the current instance of the `DefaultStateManager`
+   * Copies the current instance of the `StateManager`
    * at the last fully committed point, i.e. as if all current
    * checkpoints were reverted.
    */
