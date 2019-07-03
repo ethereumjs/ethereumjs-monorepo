@@ -168,7 +168,6 @@ module.exports = function (opts, cb) {
       results.gasUsed = results.gasUsed.add(basefee);
 
       // process any gas refund
-      results.gasRefund = results.vm.gasRefund;
       if (results.gasRefund) {
         if (results.gasRefund.lt(results.gasUsed.divn(2))) {
           results.gasUsed.isub(results.gasRefund);
