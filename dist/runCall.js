@@ -106,8 +106,14 @@ module.exports = function (opts, cb) {
           }
         case GETBLOCKHASH:
           {
-            // TODO
             console.log('GETBLOCKHASH');
+            computeGetBlockHash(query, function (hash) {
+              var blockhashObject = new msg_pb.Blockhash();
+              blockhashObject.setHash(hash);
+              var bytes = blockhashObject.serializeBinary();
+              var buffer = createBufferFromBytes(bytes);
+              client.write(buffer);
+            });
             break;
           }
         case CALLRESULT:
@@ -293,6 +299,26 @@ module.exports = function (opts, cb) {
       var message = createCode(code);
       client.write(message);
     });
+  }
+
+  function computeGetBlockHash(query, _callback) {
+    var getHashObject = query.getGetblockhash();
+    var hash;
+
+    var offset = getHashObject.getOffset();
+    if (offset > 256 || offset < 0) {
+      hash = new BN(0).toBuffer('le', 256);
+      _callback(hash);
+    } else {
+      self.blockchain.getBlock(offset, function (err, block) {
+        if (err) {
+          hash = new BN(0).toBuffer('le', 256);
+        } else {
+          hash = block.hash();
+        }
+        _callback(hash);
+      });
+    }
   }
 
   function computeGetStorageData(query) {
