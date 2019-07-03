@@ -50,7 +50,7 @@ export interface RunBlockResult {
  */
 export interface TxReceipt {
   /**
-   * Status of transaction, `0` if successful, `1` if an exception occured
+   * Status of transaction, `1` if successful, `0` if an exception occured
    */
   status: 0 | 1
   /**
