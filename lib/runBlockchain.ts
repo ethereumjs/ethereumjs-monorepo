@@ -1,10 +1,11 @@
+import Blockchain from 'ethereumjs-blockchain'
 import VM from './index'
 const async = require('async')
 
 /**
  * @ignore
  */
-export default function runBlockchain(this: VM, blockchain: any): Promise<void> {
+export default function runBlockchain(this: VM, blockchain: Blockchain): Promise<void> {
   return new Promise((resolve, reject) => {
     const self = this
     let headBlock: any
