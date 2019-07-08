@@ -1,6 +1,7 @@
 import BN = require('bn.js')
 import { toBuffer } from 'ethereumjs-util'
 import Account from 'ethereumjs-account'
+import { Transaction } from 'ethereumjs-tx'
 import VM from './index'
 import Bloom from './bloom'
 import { default as EVM, EVMResult } from './evm/evm'
@@ -20,7 +21,7 @@ export interface RunTxOpts {
   /**
    * A [`Transaction`](https://github.com/ethereum/ethereumjs-tx) to run
    */
-  tx: any // TODO: Update ethereumjs-tx
+  tx: Transaction
   /**
    * If true, skips the nonce check
    */
@@ -108,7 +109,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   gasLimit.isub(basefee)
 
   // Check from account's balance and nonce
-  let fromAccount = await state.getAccount(tx.from)
+  let fromAccount = await state.getAccount(tx.getSenderAddress())
   if (!opts.skipBalance && new BN(fromAccount.balance).lt(tx.getUpfrontCost())) {
     throw new Error(
       `sender doesn't have enough funds to send tx. The upfront cost is: ${tx
@@ -129,14 +130,14 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   fromAccount.balance = toBuffer(
     new BN(fromAccount.balance).sub(new BN(tx.gasLimit).mul(new BN(tx.gasPrice))),
   )
-  await state.putAccount(tx.from, fromAccount)
+  await state.putAccount(tx.getSenderAddress(), fromAccount)
 
   /*
    * Execute message
    */
-  const txContext = new TxContext(tx.gasPrice, tx.from)
+  const txContext = new TxContext(tx.gasPrice, tx.getSenderAddress())
   const message = new Message({
-    caller: tx.from,
+    caller: tx.getSenderAddress(),
     gasLimit: gasLimit,
     to: tx.to.toString('hex') !== '' ? tx.to : undefined,
     value: tx.value,
@@ -165,13 +166,13 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   results.amountSpent = results.gasUsed.mul(new BN(tx.gasPrice))
 
   // Update sender's balance
-  fromAccount = await state.getAccount(tx.from)
+  fromAccount = await state.getAccount(tx.getSenderAddress())
   const finalFromBalance = new BN(tx.gasLimit)
     .sub(results.gasUsed)
     .mul(new BN(tx.gasPrice))
     .add(new BN(fromAccount.balance))
   fromAccount.balance = toBuffer(finalFromBalance)
-  await state.putAccount(toBuffer(tx.from), fromAccount)
+  await state.putAccount(toBuffer(tx.getSenderAddress()), fromAccount)
 
   // Update miner's balance
   const minerAccount = await state.getAccount(block.header.coinbase)

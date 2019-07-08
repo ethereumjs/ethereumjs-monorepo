@@ -1,6 +1,6 @@
 const promisify = require('util.promisify')
 const tape = require('tape')
-const Transaction = require('ethereumjs-tx')
+const Transaction = require('ethereumjs-tx').Transaction
 const ethUtil = require('ethereumjs-util')
 const runTx = require('../../dist/runTx').default
 const { StateManager } = require('../../dist/state')
