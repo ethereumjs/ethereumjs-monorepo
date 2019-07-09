@@ -1,0 +1,12 @@
+[submodule "deps/evm-semantics"]
+	path = deps/evm-semantics
+	url = https://github.com/kframework/evm-semantics.git
+[submodule "deps/ganache-core"]
+	path = deps/ganache-core
+	url = https://github.com/runtimeverification/ganache-core.git
+[submodule "deps/ganache-cli"]
+	path = deps/ganache-cli
+	url = https://github.com/runtimeverification/ganache-cli.git
+[submodule "deps/openzeppelin-solidity"]
+	path = deps/openzeppelin-solidity
+	url = https://github.com/openzeppelin/openzeppelin-solidity.git
