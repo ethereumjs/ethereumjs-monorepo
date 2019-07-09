@@ -4,7 +4,8 @@
   "description": "An Ethereum VM implementation",
   "main": "dist/index.js",
   "files": [
-    "dist"
+    "dist",
+    "lib"
   ],
   "scripts": {
     "coverage": "nyc npm run coverageTests && nyc report --reporter=text-lcov > .nyc_output/lcov.info",
@@ -24,7 +25,8 @@
     "prepublishOnly": "npm run lint && npm run build:dist && npm run testBuildIntegrity",
     "build:dist": "babel lib/ -d dist/",
     "build:docs": "documentation build ./lib/index.js ./lib/runBlockchain.js ./lib/runBlock.js ./lib/runTx.js ./lib/runCode.js ./lib/runCall.js --format md --shallow > ./docs/index.md",
-    "formatTest": "node ./scripts/formatTest"
+    "formatTest": "node ./scripts/formatTest",
+    "postinstall": "babel lib/ -d dist/"
   },
   "husky": {
     "hooks": {
@@ -42,6 +44,8 @@
   "dependencies": {
     "async": "^2.1.2",
     "async-eventemitter": "^0.2.2",
+    "babel-cli": "^6.26.0",
+    "babel-preset-env": "^1.6.1",
     "ethereumjs-account": "^2.0.3",
     "ethereumjs-block": "~2.2.0",
     "ethereumjs-blockchain": "^3.4.0",
@@ -49,14 +53,12 @@
     "ethereumjs-util": "^6.0.0",
     "fake-merkle-patricia-tree": "^1.0.1",
     "functional-red-black-tree": "^1.0.1",
+    "google-protobuf": "^3.6.0",
     "merkle-patricia-tree": "^2.3.2",
     "rustbn.js": "~0.2.0",
-    "safe-buffer": "^5.1.1",
-    "google-protobuf": "^3.6.0"
+    "safe-buffer": "^5.1.1"
   },
   "devDependencies": {
-    "babel-cli": "^6.26.0",
-    "babel-preset-env": "^1.6.1",
     "browserify": "^16.2.3",
     "coveralls": "^3.0.0",
     "documentation": "^8.1.2",
@@ -73,7 +75,7 @@
     "level-mem": "^3.0.1",
     "minimist": "^1.1.1",
     "nyc": "^12.0.2",
-    "standard": "^10.0.0",
+    "standard": "^12.0.0",
     "tap-spec": "^5.0.0",
     "tape": "4.6.3",
     "util.promisify": "^1.0.0"

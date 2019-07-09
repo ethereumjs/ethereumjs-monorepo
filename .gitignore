@@ -72,3 +72,5 @@ yarn.lock
 
 # Protobuf Generated Libraries
 lib/proto/*.js
+
+dist/

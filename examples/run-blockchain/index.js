@@ -45,8 +45,8 @@ async.series([
   // create and add genesis block
   function (next) {
     genesisBlock.header = new BlockHeader(
-                            testData.genesisBlockHeader
-                          )
+      testData.genesisBlockHeader
+    )
     blockchain.putGenesis(genesisBlock, next)
   },
 
@@ -57,7 +57,7 @@ async.series([
     function eachBlock (raw, cb) {
       try {
         var block = new Block(
-            Buffer.from(raw.rlp.slice(2), 'hex'))
+          Buffer.from(raw.rlp.slice(2), 'hex'))
 
         // forces the block into thinking they are homestead
         block.header.isHomestead = function () {

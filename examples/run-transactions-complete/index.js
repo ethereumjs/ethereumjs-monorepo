@@ -18,7 +18,7 @@ var utils = require('ethereumjs-util')
 var stateTrie = new Trie()
 
 // create a new VM instance
-var vm = new VM({state: stateTrie})
+var vm = new VM({ state: stateTrie })
 
 // import the key pair
 //   pre-generated (saves time)
