@@ -23,7 +23,7 @@
     "test": "echo \"[INFO] Generic test cmd not used. See package.json for more specific test run cmds.\"",
     "lint": "standard",
     "prepublishOnly": "npm run lint && npm run build:dist && npm run testBuildIntegrity",
-    "build:dist": "babel lib/ -d dist/",
+    "build:dist": "protoc --js_out=import_style=commonjs,binary:. lib/proto/msg.proto && babel lib/ -d dist/",
     "build:docs": "documentation build ./lib/index.js ./lib/runBlockchain.js ./lib/runBlock.js ./lib/runTx.js ./lib/runCode.js ./lib/runCall.js --format md --shallow > ./docs/index.md",
     "formatTest": "node ./scripts/formatTest",
     "postinstall": "babel lib/ -d dist/"
