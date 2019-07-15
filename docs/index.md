@@ -408,9 +408,9 @@ Deletes key directly from underlying key/value db.
 -   **deprecated**: This is deprecated.
 
 
-[1]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/88e1a25df6ec3cb591ed2c7e78d00788d8adf60f/src/secure.js#L12-L55 "Source code on GitHub"
+[1]: https://github.com/ethereumjs/merkle-patricia-tree/blob/2685d6759e18abeba0967b151bf965a5b1f9eec8/src/secure.js#L12-L55 "Source code on GitHub"
 
-[2]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/88e1a25df6ec3cb591ed2c7e78d00788d8adf60f/src/baseTrie.js#L25-L768 "Source code on GitHub"
+[2]: https://github.com/ethereumjs/merkle-patricia-tree/blob/2685d6759e18abeba0967b151bf965a5b1f9eec8/src/baseTrie.js#L25-L768 "Source code on GitHub"
 
 [3]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object
 
@@ -422,72 +422,72 @@ Deletes key directly from underlying key/value db.
 
 [7]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String
 
-[8]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/88e1a25df6ec3cb591ed2c7e78d00788d8adf60f/src/baseTrie.js#L92-L104 "Source code on GitHub"
+[8]: https://github.com/ethereumjs/merkle-patricia-tree/blob/2685d6759e18abeba0967b151bf965a5b1f9eec8/src/baseTrie.js#L92-L104 "Source code on GitHub"
 
 [9]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Statements/function
 
-[10]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/88e1a25df6ec3cb591ed2c7e78d00788d8adf60f/src/baseTrie.js#L114-L138 "Source code on GitHub"
+[10]: https://github.com/ethereumjs/merkle-patricia-tree/blob/2685d6759e18abeba0967b151bf965a5b1f9eec8/src/baseTrie.js#L114-L138 "Source code on GitHub"
 
-[11]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/88e1a25df6ec3cb591ed2c7e78d00788d8adf60f/src/baseTrie.js#L147-L163 "Source code on GitHub"
+[11]: https://github.com/ethereumjs/merkle-patricia-tree/blob/2685d6759e18abeba0967b151bf965a5b1f9eec8/src/baseTrie.js#L147-L163 "Source code on GitHub"
 
-[12]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/88e1a25df6ec3cb591ed2c7e78d00788d8adf60f/src/baseTrie.js#L226-L272 "Source code on GitHub"
+[12]: https://github.com/ethereumjs/merkle-patricia-tree/blob/2685d6759e18abeba0967b151bf965a5b1f9eec8/src/baseTrie.js#L226-L272 "Source code on GitHub"
 
-[13]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/88e1a25df6ec3cb591ed2c7e78d00788d8adf60f/src/baseTrie.js#L716-L718 "Source code on GitHub"
+[13]: https://github.com/ethereumjs/merkle-patricia-tree/blob/2685d6759e18abeba0967b151bf965a5b1f9eec8/src/baseTrie.js#L716-L718 "Source code on GitHub"
 
 [14]: https://nodejs.org/api/stream.html#stream_class_stream_readable
 
 [15]: https://nodejs.org/dist/latest-v5.x/docs/api/stream.html#stream_class_stream_readable
 
-[16]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/88e1a25df6ec3cb591ed2c7e78d00788d8adf60f/src/baseTrie.js#L743-L753 "Source code on GitHub"
+[16]: https://github.com/ethereumjs/merkle-patricia-tree/blob/2685d6759e18abeba0967b151bf965a5b1f9eec8/src/baseTrie.js#L743-L753 "Source code on GitHub"
 
 [17]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array
 
-[18]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/88e1a25df6ec3cb591ed2c7e78d00788d8adf60f/src/baseTrie.js#L762-L767 "Source code on GitHub"
+[18]: https://github.com/ethereumjs/merkle-patricia-tree/blob/2685d6759e18abeba0967b151bf965a5b1f9eec8/src/baseTrie.js#L762-L767 "Source code on GitHub"
 
-[19]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/88e1a25df6ec3cb591ed2c7e78d00788d8adf60f/src/util/hex.js#L7-L22 "Source code on GitHub"
+[19]: https://github.com/ethereumjs/merkle-patricia-tree/blob/2685d6759e18abeba0967b151bf965a5b1f9eec8/src/util/hex.js#L7-L22 "Source code on GitHub"
 
-[20]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/88e1a25df6ec3cb591ed2c7e78d00788d8adf60f/src/util/async.js#L38-L54 "Source code on GitHub"
+[20]: https://github.com/ethereumjs/merkle-patricia-tree/blob/2685d6759e18abeba0967b151bf965a5b1f9eec8/src/util/async.js#L38-L54 "Source code on GitHub"
 
-[21]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/88e1a25df6ec3cb591ed2c7e78d00788d8adf60f/src/util/nibbles.js#L56-L59 "Source code on GitHub"
+[21]: https://github.com/ethereumjs/merkle-patricia-tree/blob/2685d6759e18abeba0967b151bf965a5b1f9eec8/src/util/nibbles.js#L56-L59 "Source code on GitHub"
 
-[22]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/88e1a25df6ec3cb591ed2c7e78d00788d8adf60f/src/db.js#L3-L3 "Source code on GitHub"
+[22]: https://github.com/ethereumjs/merkle-patricia-tree/blob/2685d6759e18abeba0967b151bf965a5b1f9eec8/src/db.js#L3-L3 "Source code on GitHub"
 
-[23]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/88e1a25df6ec3cb591ed2c7e78d00788d8adf60f/src/util/async.js#L3-L6 "Source code on GitHub"
+[23]: https://github.com/ethereumjs/merkle-patricia-tree/blob/2685d6759e18abeba0967b151bf965a5b1f9eec8/src/util/async.js#L3-L6 "Source code on GitHub"
 
-[24]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/88e1a25df6ec3cb591ed2c7e78d00788d8adf60f/src/scratch.js#L4-L4 "Source code on GitHub"
+[24]: https://github.com/ethereumjs/merkle-patricia-tree/blob/2685d6759e18abeba0967b151bf965a5b1f9eec8/src/scratch.js#L4-L4 "Source code on GitHub"
 
-[25]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/88e1a25df6ec3cb591ed2c7e78d00788d8adf60f/src/db.js#L15-L17 "Source code on GitHub"
+[25]: https://github.com/ethereumjs/merkle-patricia-tree/blob/2685d6759e18abeba0967b151bf965a5b1f9eec8/src/db.js#L15-L17 "Source code on GitHub"
 
-[26]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/88e1a25df6ec3cb591ed2c7e78d00788d8adf60f/src/db.js#L26-L36 "Source code on GitHub"
+[26]: https://github.com/ethereumjs/merkle-patricia-tree/blob/2685d6759e18abeba0967b151bf965a5b1f9eec8/src/db.js#L26-L36 "Source code on GitHub"
 
-[27]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/88e1a25df6ec3cb591ed2c7e78d00788d8adf60f/src/db.js#L45-L50 "Source code on GitHub"
+[27]: https://github.com/ethereumjs/merkle-patricia-tree/blob/2685d6759e18abeba0967b151bf965a5b1f9eec8/src/db.js#L45-L50 "Source code on GitHub"
 
-[28]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/88e1a25df6ec3cb591ed2c7e78d00788d8adf60f/src/db.js#L58-L62 "Source code on GitHub"
+[28]: https://github.com/ethereumjs/merkle-patricia-tree/blob/2685d6759e18abeba0967b151bf965a5b1f9eec8/src/db.js#L58-L62 "Source code on GitHub"
 
-[29]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/88e1a25df6ec3cb591ed2c7e78d00788d8adf60f/src/db.js#L70-L74 "Source code on GitHub"
+[29]: https://github.com/ethereumjs/merkle-patricia-tree/blob/2685d6759e18abeba0967b151bf965a5b1f9eec8/src/db.js#L70-L74 "Source code on GitHub"
 
-[30]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/88e1a25df6ec3cb591ed2c7e78d00788d8adf60f/src/db.js#L80-L82 "Source code on GitHub"
+[30]: https://github.com/ethereumjs/merkle-patricia-tree/blob/2685d6759e18abeba0967b151bf965a5b1f9eec8/src/db.js#L80-L82 "Source code on GitHub"
 
-[31]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/88e1a25df6ec3cb591ed2c7e78d00788d8adf60f/src/checkpointTrie.js#L22-L24 "Source code on GitHub"
+[31]: https://github.com/ethereumjs/merkle-patricia-tree/blob/2685d6759e18abeba0967b151bf965a5b1f9eec8/src/checkpointTrie.js#L22-L24 "Source code on GitHub"
 
-[32]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/88e1a25df6ec3cb591ed2c7e78d00788d8adf60f/src/checkpointTrie.js#L97-L106 "Source code on GitHub"
+[32]: https://github.com/ethereumjs/merkle-patricia-tree/blob/2685d6759e18abeba0967b151bf965a5b1f9eec8/src/checkpointTrie.js#L97-L106 "Source code on GitHub"
 
 [33]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean
 
-[34]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/88e1a25df6ec3cb591ed2c7e78d00788d8adf60f/src/checkpointTrie.js#L113-L115 "Source code on GitHub"
+[34]: https://github.com/ethereumjs/merkle-patricia-tree/blob/2685d6759e18abeba0967b151bf965a5b1f9eec8/src/checkpointTrie.js#L113-L115 "Source code on GitHub"
 
-[35]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/88e1a25df6ec3cb591ed2c7e78d00788d8adf60f/src/scratch.js#L22-L35 "Source code on GitHub"
+[35]: https://github.com/ethereumjs/merkle-patricia-tree/blob/2685d6759e18abeba0967b151bf965a5b1f9eec8/src/scratch.js#L22-L35 "Source code on GitHub"
 
-[36]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/88e1a25df6ec3cb591ed2c7e78d00788d8adf60f/src/checkpointTrie.js#L33-L41 "Source code on GitHub"
+[36]: https://github.com/ethereumjs/merkle-patricia-tree/blob/2685d6759e18abeba0967b151bf965a5b1f9eec8/src/checkpointTrie.js#L33-L41 "Source code on GitHub"
 
-[37]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/88e1a25df6ec3cb591ed2c7e78d00788d8adf60f/src/secure.js#L42-L49 "Source code on GitHub"
+[37]: https://github.com/ethereumjs/merkle-patricia-tree/blob/2685d6759e18abeba0967b151bf965a5b1f9eec8/src/secure.js#L42-L49 "Source code on GitHub"
 
-[38]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/88e1a25df6ec3cb591ed2c7e78d00788d8adf60f/src/checkpointTrie.js#L50-L65 "Source code on GitHub"
+[38]: https://github.com/ethereumjs/merkle-patricia-tree/blob/2685d6759e18abeba0967b151bf965a5b1f9eec8/src/checkpointTrie.js#L50-L65 "Source code on GitHub"
 
-[39]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/88e1a25df6ec3cb591ed2c7e78d00788d8adf60f/src/checkpointTrie.js#L74-L88 "Source code on GitHub"
+[39]: https://github.com/ethereumjs/merkle-patricia-tree/blob/2685d6759e18abeba0967b151bf965a5b1f9eec8/src/checkpointTrie.js#L74-L88 "Source code on GitHub"
 
-[40]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/88e1a25df6ec3cb591ed2c7e78d00788d8adf60f/src/baseTrie.js#L169-L171 "Source code on GitHub"
+[40]: https://github.com/ethereumjs/merkle-patricia-tree/blob/2685d6759e18abeba0967b151bf965a5b1f9eec8/src/baseTrie.js#L169-L171 "Source code on GitHub"
 
-[41]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/88e1a25df6ec3cb591ed2c7e78d00788d8adf60f/src/baseTrie.js#L178-L180 "Source code on GitHub"
+[41]: https://github.com/ethereumjs/merkle-patricia-tree/blob/2685d6759e18abeba0967b151bf965a5b1f9eec8/src/baseTrie.js#L178-L180 "Source code on GitHub"
 
-[42]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/88e1a25df6ec3cb591ed2c7e78d00788d8adf60f/src/baseTrie.js#L186-L188 "Source code on GitHub"
+[42]: https://github.com/ethereumjs/merkle-patricia-tree/blob/2685d6759e18abeba0967b151bf965a5b1f9eec8/src/baseTrie.js#L186-L188 "Source code on GitHub"
