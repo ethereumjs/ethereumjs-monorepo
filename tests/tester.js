@@ -110,6 +110,8 @@ if (argv.r) {
   runTests('VMTests', argv)
 } else if (argv.b) {
   runTests('BlockchainTests', argv)
+} else if (argv.stateless) {
+  runTests('Stateless', argv)
 }
 
 // randomized tests
@@ -194,7 +196,24 @@ function runTests (name, runnerArgs, cb) {
 
   // runnerArgs.vmtrace = true; // for VMTests
 
-  if (argv.customStateTest) {
+  if (name === 'Stateless') {
+    tape(name, t => {
+      const stateTestRunner = require('./StatelessRunner.js')
+      testing.getTestsFromArgs('GeneralStateTests', async (fileName, testName, test) => {
+        let runSkipped = testGetterArgs.runSkipped
+        let inRunSkipped = runSkipped.includes(fileName)
+        if (runSkipped.length === 0 || inRunSkipped) {
+          t.comment(`file: ${fileName} test: ${testName}`)
+          return stateTestRunner(runnerArgs, test, t)
+        }
+      }, testGetterArgs).then(() => {
+        t.end()
+      }).catch((err) => {
+        console.log(err)
+        t.end()
+      })
+    })
+  } else if (argv.customStateTest) {
     const stateTestRunner = require('./GeneralStateTestsRunner.js')
     let fileName = argv.customStateTest
     tape(name, t => {
