@@ -52,7 +52,12 @@ function mergeToV3ParamsWithDefaults(params?: Partial<V3Params>): V3Params {
   }
 }
 
-// KDF params
+// KDF
+
+const enum KDFFunctions {
+  PBKDF = 'pbkdf2',
+  Scrypt = 'scrypt',
+}
 
 interface ScryptKDFParams {
   dklen: number
@@ -69,48 +74,24 @@ interface PBKDFParams {
   salt: string
 }
 
-// union of both the PBKDF2 and Scrypt KDF parameters representing all possible
-// parameters the user could supply
-type AllKDFParams = ScryptKDFParams & PBKDFParams
-
 type KDFParams = ScryptKDFParams | PBKDFParams
 
-function kdfParamsForPBKDF(params: AllKDFParams): PBKDFParams {
-  delete params.n
-  delete params.p
-  delete params.r
-  return params
-}
-
-function kdfParamsForScrypt(params: AllKDFParams): ScryptKDFParams {
-  delete params.c
-  delete params.prf
-  return params
-}
-
-/**
- * Based on the parameter list passed to the Wallet.prototype.toV3() method this
- * returns a list of parameters for running the key derivation function.
- * @param params params passed into the .toV3() method
- */
-function mergeKDFParamsWithDefaults(params: V3Params): AllKDFParams {
-  const kdfDefaults = {
-    c: 262144,
-    prf: 'hmac-sha256',
-    n: 262144,
-    r: 8,
-    p: 1,
-    salt: params.salt.toString('hex'),
-  }
-
+function kdfParamsForPBKDF(opts: V3Params): PBKDFParams {
   return {
-    dklen: params.dklen,
-    salt: kdfDefaults.salt,
-    c: params.c || kdfDefaults.c,
-    prf: kdfDefaults.prf,
-    n: params.n || kdfDefaults.n,
-    r: params.r || kdfDefaults.r,
-    p: params.p || kdfDefaults.p,
+    dklen: opts.dklen,
+    salt: opts.salt.toString('hex'),
+    c: opts.c,
+    prf: 'hmac-sha256',
+  }
+}
+
+function kdfParamsForScrypt(opts: V3Params): ScryptKDFParams {
+  return {
+    dklen: opts.dklen,
+    salt: opts.salt.toString('hex'),
+    n: opts.n,
+    r: opts.r,
+    p: opts.p,
   }
 }
 
@@ -413,40 +394,41 @@ export default class Wallet {
       throw new Error('This is a public key only wallet')
     }
 
-    const params = mergeToV3ParamsWithDefaults(opts)
-    const kdfParams = mergeKDFParamsWithDefaults(params)
+    const v3Params: V3Params = mergeToV3ParamsWithDefaults(opts)
 
+    let kdfParams: PBKDFParams | ScryptKDFParams
     let derivedKey: Buffer
-    let finalKDFParams: KDFParams
-
-    if (params.kdf === 'pbkdf2') {
-      derivedKey = crypto.pbkdf2Sync(
-        Buffer.from(password),
-        params.salt,
-        kdfParams.c,
-        kdfParams.dklen,
-        'sha256',
-      )
-      finalKDFParams = kdfParamsForPBKDF(kdfParams)
-    } else if (params.kdf === 'scrypt') {
-      // FIXME: support progress reporting callback
-      derivedKey = scryptsy(
-        Buffer.from(password),
-        params.salt,
-        kdfParams.n,
-        kdfParams.r,
-        kdfParams.p,
-        kdfParams.dklen,
-      )
-      finalKDFParams = kdfParamsForScrypt(kdfParams)
-    } else {
-      throw new Error('Unsupported kdf')
+    switch (v3Params.kdf) {
+      case KDFFunctions.PBKDF:
+        kdfParams = kdfParamsForPBKDF(v3Params)
+        derivedKey = crypto.pbkdf2Sync(
+          Buffer.from(password),
+          v3Params.salt,
+          kdfParams.c,
+          kdfParams.dklen,
+          'sha256',
+        )
+        break
+      case KDFFunctions.Scrypt:
+        kdfParams = kdfParamsForScrypt(v3Params)
+        // FIXME: support progress reporting callback
+        derivedKey = scryptsy(
+          Buffer.from(password),
+          v3Params.salt,
+          kdfParams.n,
+          kdfParams.r,
+          kdfParams.p,
+          kdfParams.dklen,
+        )
+        break
+      default:
+        throw new Error('Unsupported kdf')
     }
 
     const cipher: crypto.Cipher = crypto.createCipheriv(
-      params.cipher,
+      v3Params.cipher,
       derivedKey.slice(0, 16),
-      params.iv,
+      v3Params.iv,
     )
     if (!cipher) {
       throw new Error('Unsupported cipher')
@@ -459,15 +441,15 @@ export default class Wallet {
 
     return {
       version: 3,
-      id: uuidv4({ random: params.uuid }),
-      // @ts-ignore FIXME: official V3 keystore spec omits the address key
+      id: uuidv4({ random: v3Params.uuid }),
+      // @ts-ignore - the official V3 keystore spec omits the address key
       address: this.getAddress().toString('hex'),
       crypto: {
         ciphertext: ciphertext.toString('hex'),
-        cipherparams: { iv: params.iv.toString('hex') },
-        cipher: params.cipher,
-        kdf: params.kdf,
-        kdfparams: finalKDFParams,
+        cipherparams: { iv: v3Params.iv.toString('hex') },
+        cipher: v3Params.cipher,
+        kdf: v3Params.kdf,
+        kdfparams: kdfParams,
         mac: mac.toString('hex'),
       },
     }
