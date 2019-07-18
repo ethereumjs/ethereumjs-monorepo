@@ -93,10 +93,21 @@ export interface BlockchainOptions {
   db?: any
 
   /**
-   * This the flag indicates if blocks should be validated (e.g. Proof-of-Work), latest HF rules
-   * supported: `Petersburg`.
+   * This the flag indicates if blocks and Proof-of-Work should be validated. Defaults to true.
+   * See
    */
   validate?: boolean
+
+  /**
+   * This flags indicates if Proof-of-work should be validated. Defaults to the value of `validate`.
+   */
+  validatePow?: boolean
+
+  /**
+   * This flags indicates if blocks should be validated. See Block#validate for details. Defaults to
+   * the value of `validate`.
+   */
+  validateBlocks?: boolean
 }
 
 /**
@@ -162,6 +173,9 @@ export default class Blockchain implements BlockchainInterface {
    */
   validate: boolean
 
+  private readonly _validatePow: boolean
+  private readonly _validateBlocks: boolean
+
   /**
    * Creates new Blockchain object
    *
@@ -183,6 +197,8 @@ export default class Blockchain implements BlockchainInterface {
     this.db = opts.db ? opts.db : level()
     this.dbManager = new DBManager(this.db, this._common)
     this.validate = opts.validate === undefined ? true : opts.validate
+    this._validatePow = opts.validatePow !== undefined ? opts.validatePow : this.validate
+    this._validateBlocks = opts.validateBlocks !== undefined ? opts.validateBlocks : this.validate
     this.ethash = this.validate ? new Ethash(this.db) : null
     this._heads = {}
     this._genesis = null
@@ -444,7 +460,7 @@ export default class Blockchain implements BlockchainInterface {
     )
 
     function verify(next: any) {
-      if (!self.validate) {
+      if (!self._validateBlocks) {
         return next()
       }
 
@@ -456,7 +472,7 @@ export default class Blockchain implements BlockchainInterface {
     }
 
     function verifyPOW(next: any) {
-      if (!self.validate) {
+      if (!self._validatePow) {
         return next()
       }
 
