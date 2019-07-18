@@ -40,7 +40,6 @@ distclean: clean
 ganache:
 	git submodule update --init --recursive -- $(GANACHE_CORE_SUBMODULE) $(GANACHE_CLI_SUBMODULE)
 	npm install
-	protoc --js_out=import_style=commonjs,binary:. lib/proto/msg.proto
 	npm run build:dist
 	npm link
 	cd $(GANACHE_CORE_SUBMODULE)  \
