@@ -105,6 +105,7 @@ message CallResult {
   // touchedAccounts is specific Ethereum's EIP-161. VMs that do not follow these rules may ignore this field
   repeated bytes touchedAccounts = 8;
   repeated LogEntry logs = 9;
+  bytes statusCode = 10;
 }
 
 message ModifiedAccount {
