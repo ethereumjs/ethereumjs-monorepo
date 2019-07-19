@@ -1,6 +1,6 @@
 {
   "name": "kevm-ethereumjs-vm",
-  "version": "0.0.2",
+  "version": "3.0.0",
   "description": "The KEVM Ethereum VM implementation",
   "main": "dist/index.js",
   "files": [
