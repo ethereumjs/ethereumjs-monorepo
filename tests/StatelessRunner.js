@@ -4,7 +4,7 @@ const ethUtil = require('ethereumjs-util')
 const Account = require('ethereumjs-account').default
 const BN = ethUtil.BN
 const { getRequiredForkConfigAlias } = require('./util')
-const { HookedStateManager, stateFromProofs } = require('./stateless')
+const { HookedStateManager, stateFromProofs } = require('../dist/stateless')
 
 const VM = require('../dist/index.js').default
 const PStateManager = require('../dist/state/promisified').default
