@@ -13,6 +13,7 @@ export class HookedStateManager extends StateManager {
   proofs: Map<string, Buffer[]>
   codes: Map<string, Buffer>
   storageProofs: Map<string, Map<string, Buffer[]>>
+  storageTrieRoots: Map<string, Buffer>
   seenKeys: Set<string>
   preStateRoot: Buffer
 
@@ -21,6 +22,7 @@ export class HookedStateManager extends StateManager {
     this.proofs = new Map()
     this.codes = new Map()
     this.storageProofs = new Map()
+    this.storageTrieRoots = new Map()
     this.seenKeys = new Set()
     this.preStateRoot = ethUtil.KECCAK256_RLP
   }
@@ -48,7 +50,6 @@ export class HookedStateManager extends StateManager {
   }
 
   getContractCode (addr: Buffer, cb: Function) {
-    console.log('get contract code for', addr)
     super.getContractCode(addr, (err: Error, code: Buffer) => {
       if (!err && !this.codes.has(addr.toString('hex'))) {
         this.codes.set(addr.toString('hex'), code)
@@ -71,6 +72,17 @@ export class HookedStateManager extends StateManager {
 
       this._getStorageTrie(addr, (err: Error, trie: any) => {
         if (err) return cb(err, null)
+
+        // Cache root of contract's storage root the first time
+        // to use the same root even after modifications
+        trie = trie.copy()
+        let trieRoot = this.storageTrieRoots.get(addrS)
+        if (trieRoot === undefined) {
+          trieRoot = trie.root
+          this.storageTrieRoots.set(addrS, trieRoot!)
+        }
+        trie.root = trieRoot
+
         SecureTrie.prove(trie, key, (err: Error, proof: Buffer[]) => {
           if (err) return cb(err, null)
           let storageMap = this.storageProofs.get(addrS)
@@ -117,11 +129,11 @@ export async function stateFromProofs (preStateRoot: Buffer, data: { accountProo
     }
     if (!account.stateRoot.equals(ethUtil.KECCAK256_RLP)) {
       const storageMap = storageProofs.get(key)
-      assert(storageMap)
-      for (const [k, v] of storageMap!.entries()) {
-        const sp = await verifyProof(account.stateRoot, Buffer.from(k, 'hex'), v)
-        assert(sp)
-        await trieFromProof(stateManager._trie, v)
+      if (storageMap) {
+        for (const [k, v] of storageMap!.entries()) {
+          const sp = await verifyProof(account.stateRoot, Buffer.from(k, 'hex'), v)
+          await trieFromProof(stateManager._trie, v)
+        }
       }
     }
   }
