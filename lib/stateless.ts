@@ -48,6 +48,7 @@ export class HookedStateManager extends StateManager {
   }
 
   getContractCode (addr: Buffer, cb: Function) {
+    console.log('get contract code for', addr)
     super.getContractCode(addr, (err: Error, code: Buffer) => {
       if (!err && !this.codes.has(addr.toString('hex'))) {
         this.codes.set(addr.toString('hex'), code)
@@ -107,11 +108,12 @@ export async function stateFromProofs (preStateRoot: Buffer, data: { accountProo
     const account = new Account(accountRaw)
     if (!account.codeHash.equals(ethUtil.KECCAK256_NULL)) {
       const code = codes.get(key)
-      assert(code)
-      // There's some issue with how typescript handles promisify and cb types
-      // @ts-ignore
-      const codeHash = await promisify(account.setCode.bind(account))(stateManager._trie, code)
-      assert(codeHash.equals(account.codeHash))
+      if (code !== undefined) {
+        // There's some issue with how typescript handles promisify and cb types
+        // @ts-ignore
+        const codeHash = await promisify(account.setCode.bind(account))(stateManager._trie, code)
+        assert(codeHash.equals(account.codeHash))
+      }
     }
     if (!account.stateRoot.equals(ethUtil.KECCAK256_RLP)) {
       const storageMap = storageProofs.get(key)
