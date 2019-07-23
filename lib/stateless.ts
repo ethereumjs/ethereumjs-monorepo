@@ -17,7 +17,7 @@ export class HookedStateManager extends StateManager {
   seenKeys: Set<string>
   origState: StateManager
 
-  constructor (opts: StateManagerOpts) {
+  constructor(opts: StateManagerOpts) {
     super(opts)
     this.proofs = new Map()
     this.codes = new Map()
@@ -27,7 +27,7 @@ export class HookedStateManager extends StateManager {
     this.origState = new StateManager()
   }
 
-  getAccount (addr: Buffer, cb: Function) {
+  getAccount(addr: Buffer, cb: Function) {
     super.getAccount(addr, (err: Error, res: Account) => {
       if (!err && !this.seenKeys.has(addr.toString('hex'))) {
         this.seenKeys.add(addr.toString('hex'))
@@ -47,7 +47,7 @@ export class HookedStateManager extends StateManager {
     })
   }
 
-  getContractCode (addr: Buffer, cb: Function) {
+  getContractCode(addr: Buffer, cb: Function) {
     super.getContractCode(addr, (err: Error, code: Buffer) => {
       if (!err && !this.codes.has(addr.toString('hex'))) {
         this.codes.set(addr.toString('hex'), code)
@@ -56,7 +56,7 @@ export class HookedStateManager extends StateManager {
     })
   }
 
-  getContractStorage (addr: Buffer, key: Buffer, cb: Function) {
+  getContractStorage(addr: Buffer, key: Buffer, cb: Function) {
     super.getContractStorage(addr, key, (err: Error, value: any) => {
       const addrS = addr.toString('hex')
       const keyS = key.toString('hex')
@@ -92,18 +92,27 @@ export class HookedStateManager extends StateManager {
     })
   }
 
-  _isAccountEmpty (account: Account) {
-    return account.nonce.toString('hex') === '' &&
+  _isAccountEmpty(account: Account) {
+    return (
+      account.nonce.toString('hex') === '' &&
       account.balance.toString('hex') === '' &&
       account.codeHash.toString('hex') === ethUtil.KECCAK256_NULL_S
+    )
   }
 }
 
-export async function proveTx (vm: VM, opts: any) {
+export async function proveTx(vm: VM, opts: any) {
   return runTx.bind(vm)(opts)
 }
 
-export async function stateFromProofs (preStateRoot: Buffer, data: { accountProofs: Map<string, Buffer[]>, codes: Map<string, Buffer>, storageProofs: Map<string, Map<string, Buffer[]>> }) {
+export async function stateFromProofs(
+  preStateRoot: Buffer,
+  data: {
+    accountProofs: Map<string, Buffer[]>
+    codes: Map<string, Buffer>
+    storageProofs: Map<string, Map<string, Buffer[]>>
+  },
+) {
   const { accountProofs, codes, storageProofs } = data
   const stateManager = new StateManager()
   stateManager._trie.root = preStateRoot
@@ -135,8 +144,8 @@ export async function stateFromProofs (preStateRoot: Buffer, data: { accountProo
   return stateManager
 }
 
-async function trieFromProof (trie: any, proofNodes: Buffer[]) {
-  let opStack = proofNodes.map((nodeValue) => {
+async function trieFromProof(trie: any, proofNodes: Buffer[]) {
+  let opStack = proofNodes.map(nodeValue => {
     return { type: 'put', key: ethUtil.keccak256(nodeValue), value: ethUtil.toBuffer(nodeValue) }
   })
 
