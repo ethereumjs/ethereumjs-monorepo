@@ -6,7 +6,7 @@ import Common from 'ethereumjs-common'
 import PStateManager from '../state/promisified'
 import { VmError, ERROR } from '../exceptions'
 import Message from './message'
-import EVM from './evm'
+import EVM, { EVMResult } from './evm'
 const promisify = require('util.promisify')
 
 /**
@@ -488,7 +488,7 @@ export default class EEI {
       this._env.contract = account
     }
 
-    return new BN(results.execResult.exception)
+    return this._getReturnCode(results)
   }
 
   /**
@@ -553,7 +553,7 @@ export default class EEI {
       }
     }
 
-    return new BN(results.execResult.exception)
+    return this._getReturnCode(results)
   }
 
   /**
@@ -570,6 +570,16 @@ export default class EEI {
    */
   async isAccountEmpty(address: Buffer): Promise<boolean> {
     return this._state.accountIsEmpty(address)
+  }
+
+  private _getReturnCode(results: EVMResult) {
+    // This preserves the previous logic, but seems to contradict the EEI spec
+    // https://github.com/ewasm/design/blob/38eeded28765f3e193e12881ea72a6ab807a3371/eth_interface.md
+    if (results.execResult.exceptionError) {
+      return new BN(0)
+    } else {
+      return new BN(1)
+    }
   }
 }
 

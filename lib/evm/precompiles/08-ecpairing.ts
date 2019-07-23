@@ -29,6 +29,5 @@ export default function(opts: PrecompileInput): ExecResult {
   return {
     gasUsed,
     return: returnData,
-    exception: 1,
   }
 }

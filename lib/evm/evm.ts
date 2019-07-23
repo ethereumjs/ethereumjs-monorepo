@@ -14,7 +14,7 @@ import { getPrecompile, PrecompileFunc, ExecResult } from './precompiles'
 import TxContext from './txContext'
 import Message from './message'
 import EEI from './eei'
-import { default as Interpreter, InterpreterOpts, IsException, RunState } from './interpreter'
+import { default as Interpreter, InterpreterOpts, RunState } from './interpreter'
 
 const Block = require('ethereumjs-block')
 
@@ -41,10 +41,6 @@ export interface EVMResult {
  */
 export interface ExecResult {
   runState?: RunState
-  /**
-   * `0` if the contract encountered an exception, `1` otherwise
-   */
-  exception: IsException
   /**
    * Description of the exception, if any occured
    */
@@ -79,7 +75,6 @@ export function OOGResult(gasLimit: BN): ExecResult {
   return {
     return: Buffer.alloc(0),
     gasUsed: gasLimit,
-    exception: 0, // 0 means VM fail (in this case because of OOG)
     exceptionError: new VmError(ERROR.OUT_OF_GAS),
   }
 }
@@ -157,7 +152,6 @@ export default class EVM {
       return {
         gasUsed: new BN(0),
         execResult: {
-          exception: 1,
           gasUsed: new BN(0),
           return: Buffer.alloc(0),
         },
@@ -196,7 +190,6 @@ export default class EVM {
         createdAddress: message.to,
         execResult: {
           return: Buffer.alloc(0),
-          exception: 0,
           exceptionError: new VmError(ERROR.CREATE_COLLISION),
           gasUsed: message.gasLimit,
         },
@@ -219,7 +212,6 @@ export default class EVM {
         gasUsed: new BN(0),
         createdAddress: message.to,
         execResult: {
-          exception: 1,
           gasUsed: new BN(0),
           return: Buffer.alloc(0),
         },
@@ -309,7 +301,6 @@ export default class EVM {
         ...result,
         ...eei._env,
       },
-      exception: interpreterRes.exception,
       exceptionError: interpreterRes.exceptionError,
       gas: eei._gasLeft,
       gasUsed,

@@ -27,13 +27,11 @@ export default function(opts: PrecompileInput): ExecResult {
     return {
       gasUsed,
       return: Buffer.alloc(0),
-      exception: 1,
     }
   }
 
   return {
     gasUsed,
     return: setLengthLeft(publicToAddress(publicKey), 32),
-    exception: 1,
   }
 }

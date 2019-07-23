@@ -21,6 +21,5 @@ export default function(opts: PrecompileInput): ExecResult {
   return {
     gasUsed,
     return: ripemd160(data, true),
-    exception: 1,
   }
 }

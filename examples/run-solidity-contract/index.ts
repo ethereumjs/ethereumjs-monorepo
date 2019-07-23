@@ -6,7 +6,7 @@ import * as fs from 'fs'
 import { promisify } from 'util'
 import * as util from 'ethereumjs-util'
 import Account from 'ethereumjs-account'
-const Transaction = require('ethereumjs-tx') // Change when https://github.com/ethereumjs/ethereumjs-vm/pull/541 gets merged
+import { Transaction } from 'ethereumjs-tx'
 const abi = require('ethereumjs-abi')
 const solc = require('solc')
 
@@ -95,9 +95,8 @@ async function deployContract(
   const params = abi.rawEncode(['string'], [greeting])
 
   const tx = new Transaction({
-    to: null,
     value: 0,
-    gas: 2000000, // We assume that 2M is enough,
+    gasLimit: 2000000, // We assume that 2M is enough,
     gasPrice: 1,
     data: '0x' + deploymentBytecode + params.toString('hex'),
     nonce: await getAccountNonce(vm, senderPrivateKey),
@@ -107,7 +106,7 @@ async function deployContract(
 
   const deploymentResult = await vm.runTx({ tx })
 
-  if (deploymentResult.execResult.exception === 0) {
+  if (deploymentResult.execResult.exceptionError) {
     throw deploymentResult.execResult.exceptionError
   }
 
@@ -125,7 +124,7 @@ async function setGreeting(
   const tx = new Transaction({
     to: contractAddress,
     value: 0,
-    gas: 2000000, // We assume that 2M is enough,
+    gasLimit: 2000000, // We assume that 2M is enough,
     gasPrice: 1,
     data: '0x' + abi.methodID('setGreeting', ['string']).toString('hex') + params.toString('hex'),
     nonce: await getAccountNonce(vm, senderPrivateKey),
@@ -135,7 +134,7 @@ async function setGreeting(
 
   const setGreetingResult = await vm.runTx({ tx })
 
-  if (setGreetingResult.execResult.exception === 0) {
+  if (setGreetingResult.execResult.exceptionError) {
     throw setGreetingResult.execResult.exceptionError
   }
 }
@@ -148,7 +147,7 @@ async function getGreeting(vm: VM, contractAddress: Buffer, caller: Buffer) {
     data: abi.methodID('greet', []),
   })
 
-  if (greetResult.execResult.exception === 0) {
+  if (greetResult.execResult.exceptionError) {
     throw greetResult.execResult.exceptionError
   }
 
