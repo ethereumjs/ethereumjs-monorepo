@@ -15,7 +15,7 @@ export class HookedStateManager extends StateManager {
   storageProofs: Map<string, Map<string, Buffer[]>>
   storageTrieRoots: Map<string, Buffer>
   seenKeys: Set<string>
-  preStateRoot: Buffer
+  origState: StateManager
 
   constructor (opts: StateManagerOpts) {
     super(opts)
@@ -24,7 +24,7 @@ export class HookedStateManager extends StateManager {
     this.storageProofs = new Map()
     this.storageTrieRoots = new Map()
     this.seenKeys = new Set()
-    this.preStateRoot = ethUtil.KECCAK256_RLP
+    this.origState = new StateManager()
   }
 
   getAccount (addr: Buffer, cb: Function) {
@@ -32,9 +32,7 @@ export class HookedStateManager extends StateManager {
       if (!err && !this.seenKeys.has(addr.toString('hex'))) {
         this.seenKeys.add(addr.toString('hex'))
 
-        const trie = this._trie.copy()
-        trie.root = this.preStateRoot
-        trie._checkpoints = []
+        const trie = this.origState._trie.copy()
 
         SecureTrie.prove(trie, addr, (err: Error, proof: Buffer[]) => {
           if (err) {
@@ -70,18 +68,14 @@ export class HookedStateManager extends StateManager {
         return cb(err, value)
       }
 
-      this._getStorageTrie(addr, (err: Error, trie: any) => {
+      // Use state previous to running this transaction to fetch storage trie for account
+      // because account could be modified during current transaction.
+      this.origState._getStorageTrie(addr, (err: Error, trie: any) => {
         if (err) return cb(err, null)
 
-        // Cache root of contract's storage root the first time
-        // to use the same root even after modifications
-        trie = trie.copy()
-        let trieRoot = this.storageTrieRoots.get(addrS)
-        if (trieRoot === undefined) {
-          trieRoot = trie.root
-          this.storageTrieRoots.set(addrS, trieRoot!)
+        if (trie.root.equals(ethUtil.KECCAK256_RLP)) {
+          return cb(null, value)
         }
-        trie.root = trieRoot
 
         SecureTrie.prove(trie, key, (err: Error, proof: Buffer[]) => {
           if (err) return cb(err, null)

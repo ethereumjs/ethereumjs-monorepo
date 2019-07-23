@@ -2,9 +2,11 @@ const testUtil = require('./util')
 const { promisify } = require('util')
 const ethUtil = require('ethereumjs-util')
 const Account = require('ethereumjs-account').default
+const Trie = require('merkle-patricia-tree/secure')
 const BN = ethUtil.BN
 const { getRequiredForkConfigAlias } = require('./util')
 const { HookedStateManager, stateFromProofs } = require('../dist/stateless')
+const StateManager = require('../dist/state/stateManager').default
 
 const VM = require('../dist/index.js').default
 const PStateManager = require('../dist/state/promisified').default
@@ -41,7 +43,7 @@ async function runTestCase (options, testData, t) {
   await promisify(testUtil.setupPreConditions)(stateManager._trie, testData)
 
   const preStateRoot = stateManager._trie.root
-  stateManager.preStateRoot = preStateRoot
+  stateManager.origState = new StateManager({ trie: new Trie(stateManager._trie.db._leveldb, preStateRoot) })
 
   try {
     await vm.runTx({ tx: tx, block: block })
