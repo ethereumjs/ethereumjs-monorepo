@@ -132,6 +132,9 @@ workflows:
       - test_state_petersburg:
           requires:
             - install
+      - test_stateless:
+          requires:
+            - install
       - test_blockchain:
           requires:
             - install
