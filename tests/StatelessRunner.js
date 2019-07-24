@@ -44,7 +44,7 @@ async function runTestCase (options, testData, t) {
   // Determine set of all node hashes in the database
   // before running the tx.
   const existingKeys = new Set()
-  const it = stateManager._trie.db._leveldb.iterator()
+  const it = stateManager._trie.db.iterator()
   const next = promisify(it.next.bind(it))
   while (true) {
     const key = await next()
@@ -56,8 +56,8 @@ async function runTestCase (options, testData, t) {
   // to a bag of proof nodes, under the condition that this node existed
   // before execution.
   const proofNodes = new Map()
-  const getFunc = stateManager._trie.db._leveldb.get.bind(stateManager._trie.db._leveldb)
-  stateManager._trie.db._leveldb.get = (key, opts, cb) => {
+  const getFunc = stateManager._trie.db.get.bind(stateManager._trie.db)
+  stateManager._trie.db.get = (key, opts, cb) => {
     getFunc(key, opts, (err, v) => {
       if (!err && v) {
         if (existingKeys.has(key.toString('hex'))) {

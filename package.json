@@ -18,6 +18,7 @@
     "testStateByzantium": "npm run build:dist && node ./tests/tester -s --fork='Byzantium' --dist",
     "testStateConstantinople": "npm run build:dist && node ./tests/tester -s --fork='Constantinople' --dist",
     "testStatePetersburg": "npm run build:dist && node ./tests/tester -s --fork='Petersburg' --dist",
+    "testStateless": "npm run build:dist && node ./tests/tester --stateless --fork='Petersburg' --dist",
     "testBuildIntegrity": "npm run build:dist && node ./tests/tester -s --dist --test='stackOverflow'",
     "testBlockchain": "npm run build:dist && node --stack-size=1500 ./tests/tester -b --fork='Petersburg' --dist --excludeDir='GeneralStateTests'",
     "testBlockchainGeneralStateTests": "npm run build:dist && node --stack-size=1500 ./tests/tester -b --dist --dir='GeneralStateTests'",
@@ -58,7 +59,7 @@
     "ethereumjs-util": "^6.1.0",
     "fake-merkle-patricia-tree": "^1.0.1",
     "functional-red-black-tree": "^1.0.1",
-    "merkle-patricia-tree": "^2.3.2",
+    "merkle-patricia-tree": "^3.0.0",
     "rustbn.js": "~0.2.0",
     "safe-buffer": "^5.1.1",
     "util.promisify": "^1.0.0"
