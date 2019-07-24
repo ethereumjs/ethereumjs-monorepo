@@ -60,7 +60,7 @@ export class HookedStateManager extends StateManager {
     super.getContractStorage(addr, key, (err: Error, value: any) => {
       const addrS = addr.toString('hex')
       const keyS = key.toString('hex')
-      if (err || value.length === 0) {
+      if (err) {
         return cb(err, value)
       }
 
