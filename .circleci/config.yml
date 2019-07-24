@@ -1,0 +1,140 @@
+version: 2
+
+defaults: &defaults
+  working_directory: ~/project/ethereumjs-vm
+  docker:
+    - image: circleci/node:8-browsers
+restore_node_modules: &restore_node_modules
+  restore_cache:
+    name: Restore node_modules cache
+    keys:
+      - v1-node-{{ .Branch }}-{{ checksum "package.json" }}
+      - v1-node-{{ checksum "package.json" }}
+jobs:
+  install:
+    <<: *defaults
+    steps:
+      - checkout
+      - *restore_node_modules
+      - run:
+          name: npm install
+          command: npm install
+      - save_cache:
+          name: Save node_modules cache
+          key: v1-node-{{ .Branch }}-{{ checksum "package.json" }}
+          paths:
+            - node_modules/
+      - persist_to_workspace:
+          root: ~/project
+          paths:
+            - ethereumjs-vm/
+  lint:
+    <<: *defaults
+    steps:
+      - attach_workspace:
+          at: ~/project
+      - *restore_node_modules
+      - run:
+          name: Lint
+          command: npm run lint
+  test_api:
+    <<: *defaults
+    steps:
+      - attach_workspace:
+          at: ~/project
+      - *restore_node_modules
+      - run:
+          name: testAPI
+          command: npm run testAPI
+  test_api_browser:
+    <<: *defaults
+    steps:
+      - attach_workspace:
+          at: ~/project
+      - *restore_node_modules
+      - run:
+          name: testAPI:browser
+          command: npm run testAPI:browser
+  test_state_byzantium:
+    <<: *defaults
+    steps:
+      - attach_workspace:
+          at: ~/project
+      - *restore_node_modules
+      - run:
+          name: testStateByzantium
+          command: npm run testStateByzantium
+  test_state_constantinople:
+    <<: *defaults
+    steps:
+      - attach_workspace:
+          at: ~/project
+      - *restore_node_modules
+      - run:
+          name: testStateConstantinople
+          command: npm run testStateConstantinople
+  test_state_petersburg:
+    <<: *defaults
+    steps:
+      - attach_workspace:
+          at: ~/project
+      - *restore_node_modules
+      - run:
+          name: testStatePetersburg
+          command: npm run testStatePetersburg
+  test_stateless:
+    <<: *defaults
+    steps:
+      - attach_workspace:
+          at: ~/project
+      - *restore_node_modules
+      - run:
+          name: testStateless
+          command: npm run testStateless
+  test_blockchain:
+    <<: *defaults
+    steps:
+      - attach_workspace:
+          at: ~/project
+      - *restore_node_modules
+      - run:
+          name: testBlockchain
+          command: npm run testBlockchain
+  coveralls:
+    <<: *defaults
+    steps:
+      - attach_workspace:
+          at: ~/project
+      - *restore_node_modules
+      - run:
+          name: coveralls
+          command: npm run coveralls
+workflows:
+  version: 2
+  install-lint-test:
+    jobs:
+      - install
+      - lint:
+          requires:
+            - install
+      - test_api:
+          requires:
+            - install
+      - test_api_browser:
+          requires:
+            - install
+      - test_state_byzantium:
+          requires:
+            - install
+      - test_state_constantinople:
+          requires:
+            - install
+      - test_state_petersburg:
+          requires:
+            - install
+      - test_blockchain:
+          requires:
+            - install
+      - coveralls:
+          requires:
+            - install
