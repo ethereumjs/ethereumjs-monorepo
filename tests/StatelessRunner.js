@@ -5,7 +5,6 @@ const Account = require('ethereumjs-account').default
 const Trie = require('merkle-patricia-tree/secure')
 const BN = ethUtil.BN
 const { getRequiredForkConfigAlias } = require('./util')
-const { HookedStateManager } = require('../dist/stateless')
 const StateManager = require('../dist/state/stateManager').default
 
 const VM = require('../dist/index.js').default
@@ -29,9 +28,10 @@ async function runTestCase (options, testData, t) {
     return
   }
 
-  // Hooked state manager proves necessary trie nodes
-  // for a stateless execution
-  let stateManager = new HookedStateManager()
+  let stateManager = new StateManager()
+  await promisify(testUtil.setupPreConditions)(stateManager._trie, testData)
+  const preStateRoot = stateManager._trie.root
+
   // Set up VM
   let vm = new VM({
     stateManager: stateManager,
@@ -40,10 +40,33 @@ async function runTestCase (options, testData, t) {
   if (options.jsontrace) {
     hookVM(vm, t)
   }
-  await promisify(testUtil.setupPreConditions)(stateManager._trie, testData)
 
-  const preStateRoot = stateManager._trie.root
-  stateManager.origState = new StateManager({ trie: new Trie(stateManager._trie.db._leveldb, preStateRoot) })
+  // Determine set of all node hashes in the database
+  // before running the tx.
+  const existingKeys = new Set()
+  const it = stateManager._trie.db._leveldb.iterator()
+  const next = promisify(it.next.bind(it))
+  while (true) {
+    const key = await next()
+    if (!key) break
+    existingKeys.add(key.toString('hex'))
+  }
+
+  // Hook leveldb.get and add any node that was fetched during execution
+  // to a bag of proof nodes, under the condition that this node existed
+  // before execution.
+  const proofNodes = new Map()
+  const getFunc = stateManager._trie.db._leveldb.get.bind(stateManager._trie.db._leveldb)
+  stateManager._trie.db._leveldb.get = (key, opts, cb) => {
+    getFunc(key, opts, (err, v) => {
+      if (!err && v) {
+        if (existingKeys.has(key.toString('hex'))) {
+          proofNodes.set(key.toString('hex'), v)
+        }
+      }
+      cb(err, v)
+    })
+  }
 
   try {
     await vm.runTx({ tx: tx, block: block })
@@ -52,9 +75,10 @@ async function runTestCase (options, testData, t) {
   }
   t.equal(stateManager._trie.root.toString('hex'), expectedPostStateRoot, 'the state roots should match')
 
+  // Save bag of proof nodes to a new trie's underlying leveldb
   const trie = new Trie(null, preStateRoot)
   const opStack = []
-  for (const [k, v] of stateManager.proofNodes) {
+  for (const [k, v] of proofNodes) {
     opStack.push({ type: 'put', key: Buffer.from(k, 'hex'), value: v })
   }
   await promisify(trie.db.batch.bind(trie.db))(opStack)
