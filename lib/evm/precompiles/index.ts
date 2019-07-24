@@ -7,7 +7,6 @@ import { default as p5 } from './05-modexp'
 import { default as p6 } from './06-ecadd'
 import { default as p7 } from './07-ecmul'
 import { default as p8 } from './08-ecpairing'
-import { ExecResult } from '../evm'
 
 interface Precompiles {
   [key: string]: PrecompileFunc
@@ -28,4 +27,4 @@ function getPrecompile(address: string): PrecompileFunc {
   return precompiles[address]
 }
 
-export { precompiles, getPrecompile, PrecompileFunc, PrecompileInput, ExecResult }
+export { precompiles, getPrecompile, PrecompileFunc, PrecompileInput }

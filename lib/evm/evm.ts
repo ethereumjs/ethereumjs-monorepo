@@ -10,7 +10,7 @@ import {
 import Account from 'ethereumjs-account'
 import { ERROR, VmError } from '../exceptions'
 import PStateManager from '../state/promisified'
-import { getPrecompile, PrecompileFunc, ExecResult } from './precompiles'
+import { getPrecompile, PrecompileFunc } from './precompiles'
 import TxContext from './txContext'
 import Message from './message'
 import EEI from './eei'
