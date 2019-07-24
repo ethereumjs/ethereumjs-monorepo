@@ -82,6 +82,15 @@ jobs:
       - run:
           name: testStatePetersburg
           command: npm run testStatePetersburg
+  test_stateless:
+    <<: *defaults
+    steps:
+      - attach_workspace:
+          at: ~/project
+      - *restore_node_modules
+      - run:
+          name: testStateless
+          command: npm run testStateless
   test_blockchain:
     <<: *defaults
     steps:
