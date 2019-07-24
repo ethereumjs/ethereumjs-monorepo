@@ -10,21 +10,15 @@ const SecureTrie = require('merkle-patricia-tree/secure')
 const verifyProof = promisify(SecureTrie.verifyProof)
 
 export class HookedStateManager extends StateManager {
-  proofs: Map<string, Buffer[]>
-  codes: Map<string, Buffer>
-  storageProofs: Map<string, Map<string, Buffer[]>>
-  storageTrieRoots: Map<string, Buffer>
   seenKeys: Set<string>
   origState: StateManager
+  proofNodes: Map<string, Buffer>
 
   constructor(opts: StateManagerOpts) {
     super(opts)
-    this.proofs = new Map()
-    this.codes = new Map()
-    this.storageProofs = new Map()
-    this.storageTrieRoots = new Map()
     this.seenKeys = new Set()
     this.origState = new StateManager()
+    this.proofNodes = new Map()
   }
 
   getAccount(addr: Buffer, cb: Function) {
@@ -38,7 +32,10 @@ export class HookedStateManager extends StateManager {
           if (err) {
             return cb(err, null)
           }
-          this.proofs.set(addr.toString('hex'), proof)
+          for (const n of proof) {
+            const h = ethUtil.keccak256(n)
+            this.proofNodes.set(h.toString('hex'), n)
+          }
           cb(null, res)
         })
       } else {
@@ -49,8 +46,9 @@ export class HookedStateManager extends StateManager {
 
   getContractCode(addr: Buffer, cb: Function) {
     super.getContractCode(addr, (err: Error, code: Buffer) => {
-      if (!err && !this.codes.has(addr.toString('hex'))) {
-        this.codes.set(addr.toString('hex'), code)
+      if (!err) {
+        const h = ethUtil.keccak256(code)
+        this.proofNodes.set(h.toString('hex'), code)
       }
       cb(err, code)
     })
@@ -64,9 +62,11 @@ export class HookedStateManager extends StateManager {
         return cb(err, value)
       }
 
-      if (this.storageProofs.has(addrS) && this.storageProofs.get(addrS)!.has(keyS)) {
+      if (this.seenKeys.has(addrS.concat(keyS))) {
         return cb(err, value)
       }
+
+      this.seenKeys.add(addrS.concat(keyS))
 
       // Use state previous to running this transaction to fetch storage trie for account
       // because account could be modified during current transaction.
@@ -79,12 +79,10 @@ export class HookedStateManager extends StateManager {
 
         SecureTrie.prove(trie, key, (err: Error, proof: Buffer[]) => {
           if (err) return cb(err, null)
-          let storageMap = this.storageProofs.get(addrS)
-          if (storageMap === undefined) {
-            storageMap = new Map()
-            this.storageProofs.set(addrS, storageMap)
+          for (const n of proof) {
+            const h = ethUtil.keccak256(n)
+            this.proofNodes.set(h.toString('hex'), n)
           }
-          storageMap.set(keyS, proof)
         })
       })
 
@@ -99,55 +97,4 @@ export class HookedStateManager extends StateManager {
       account.codeHash.toString('hex') === ethUtil.KECCAK256_NULL_S
     )
   }
-}
-
-export async function proveTx(vm: VM, opts: any) {
-  return runTx.bind(vm)(opts)
-}
-
-export async function stateFromProofs(
-  preStateRoot: Buffer,
-  data: {
-    accountProofs: Map<string, Buffer[]>
-    codes: Map<string, Buffer>
-    storageProofs: Map<string, Map<string, Buffer[]>>
-  },
-) {
-  const { accountProofs, codes, storageProofs } = data
-  const stateManager = new StateManager()
-  stateManager._trie.root = preStateRoot
-  for (const [key, value] of accountProofs.entries()) {
-    let keyBuf = Buffer.from(key, 'hex')
-    await trieFromProof(stateManager._trie, value)
-    const accountRaw = await promisify(stateManager._trie.get.bind(stateManager._trie))(keyBuf)
-    const account = new Account(accountRaw)
-    if (!account.codeHash.equals(ethUtil.KECCAK256_NULL)) {
-      const code = codes.get(key)
-      if (code !== undefined) {
-        // There's some issue with how typescript handles promisify and cb types
-        // @ts-ignore
-        const codeHash = await promisify(account.setCode.bind(account))(stateManager._trie, code)
-        assert(codeHash.equals(account.codeHash))
-      }
-    }
-    if (!account.stateRoot.equals(ethUtil.KECCAK256_RLP)) {
-      const storageMap = storageProofs.get(key)
-      if (storageMap) {
-        for (const [k, v] of storageMap!.entries()) {
-          const sp = await verifyProof(account.stateRoot, Buffer.from(k, 'hex'), v)
-          await trieFromProof(stateManager._trie, v)
-        }
-      }
-    }
-  }
-
-  return stateManager
-}
-
-async function trieFromProof(trie: any, proofNodes: Buffer[]) {
-  let opStack = proofNodes.map(nodeValue => {
-    return { type: 'put', key: ethUtil.keccak256(nodeValue), value: ethUtil.toBuffer(nodeValue) }
-  })
-
-  return promisify(trie.db.batch.bind(trie.db))(opStack)
 }

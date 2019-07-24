@@ -5,7 +5,7 @@ const Account = require('ethereumjs-account').default
 const Trie = require('merkle-patricia-tree/secure')
 const BN = ethUtil.BN
 const { getRequiredForkConfigAlias } = require('./util')
-const { HookedStateManager, stateFromProofs } = require('../dist/stateless')
+const { HookedStateManager } = require('../dist/stateless')
 const StateManager = require('../dist/state/stateManager').default
 
 const VM = require('../dist/index.js').default
@@ -52,14 +52,14 @@ async function runTestCase (options, testData, t) {
   }
   t.equal(stateManager._trie.root.toString('hex'), expectedPostStateRoot, 'the state roots should match')
 
-  const proofData = {
-    accountProofs: stateManager.proofs,
-    codes: stateManager.codes,
-    storageProofs: stateManager.storageProofs
+  const trie = new Trie(null, preStateRoot)
+  const opStack = []
+  for (const [k, v] of stateManager.proofNodes) {
+    opStack.push({ type: 'put', key: Buffer.from(k, 'hex'), value: v })
   }
-  // Now use proofs to construct stateManager
-  // and run tx again to make sure it works
-  stateManager = await stateFromProofs(preStateRoot, proofData)
+  await promisify(trie.db.batch.bind(trie.db))(opStack)
+
+  stateManager = new StateManager({ trie: trie })
   vm = new VM({
     stateManager: stateManager,
     hardfork: options.forkConfig.toLowerCase()
