@@ -1,41 +1,45 @@
-const utils = require('ethereumjs-util')
-const tape = require('tape')
-const Block = require('../')
-const BN = utils.BN
+import * as utils from 'ethereumjs-util'
+import { BN } from 'ethereumjs-util'
+import { Block } from '../src/block'
+import tape = require('tape')
 
-function normalize(data) {
-  Object.keys(data).map(function(i) {
+function isHexPrefixed(str: string) {
+  return str.toLowerCase().startsWith('0x')
+}
+
+function normalize(data: any) {
+  Object.keys(data).forEach(function(i) {
     if (i !== 'homestead' && typeof data[i] === 'string') {
-      data[i] = utils.isHexPrefixed(data[i]) ? new BN(utils.toBuffer(data[i])) : new BN(data[i])
+      data[i] = isHexPrefixed(data[i]) ? new BN(utils.toBuffer(data[i])) : new BN(data[i])
     }
   })
 }
 
 tape('[Header]: difficulty tests', t => {
-  function runDifficultyTests(test, parentBlock, block, msg) {
+  function runDifficultyTests(test: any, parentBlock: Block, block: Block, msg: string) {
     normalize(test)
 
-    var dif = block.header.canonicalDifficulty(parentBlock)
+    const dif = block.header.canonicalDifficulty(parentBlock)
     t.equal(dif.toString(), test.currentDifficulty.toString(), `test canonicalDifficulty (${msg})`)
     t.assert(block.header.validateDifficulty(parentBlock), `test validateDifficulty (${msg})`)
   }
 
-  const hardforkTestData = {
+  const hardforkTestData: any = {
     chainstart: require('./difficultyFrontier.json').tests,
     homestead: require('./difficultyHomestead.json').tests,
     byzantium: require('./difficultyByzantium.json').tests,
     constantinople: require('./difficultyConstantinople.json').tests,
   }
-  for (let hardfork in hardforkTestData) {
+  for (const hardfork in hardforkTestData) {
     const testData = hardforkTestData[hardfork]
-    for (let testName in testData) {
-      let test = testData[testName]
-      let parentBlock = new Block(null, { chain: 'mainnet', hardfork: hardfork })
+    for (const testName in testData) {
+      const test = testData[testName]
+      const parentBlock = new Block(undefined, { chain: 'mainnet', hardfork: hardfork })
       parentBlock.header.timestamp = test.parentTimestamp
       parentBlock.header.difficulty = test.parentDifficulty
       parentBlock.header.uncleHash = test.parentUncles
 
-      let block = new Block(null, { chain: 'mainnet', hardfork: hardfork })
+      const block = new Block(undefined, { chain: 'mainnet', hardfork: hardfork })
       block.header.timestamp = test.currentTimestamp
       block.header.difficulty = test.currentDifficulty
       block.header.number = test.currentBlockNumber
@@ -44,20 +48,20 @@ tape('[Header]: difficulty tests', t => {
     }
   }
 
-  const chainTestData = {
+  const chainTestData: any = {
     mainnet: require('./difficultyMainNetwork.json').tests,
     ropsten: require('./difficultyRopstenConstantinople.json').tests,
   }
-  for (let chain in chainTestData) {
+  for (const chain in chainTestData) {
     const testData = chainTestData[chain]
-    for (let testName in testData) {
-      let test = testData[testName]
-      let parentBlock = new Block(null, { chain: chain })
+    for (const testName in testData) {
+      const test = testData[testName]
+      const parentBlock = new Block(undefined, { chain: chain })
       parentBlock.header.timestamp = test.parentTimestamp
       parentBlock.header.difficulty = test.parentDifficulty
       parentBlock.header.uncleHash = test.parentUncles
 
-      let block = new Block(null, { chain: chain })
+      const block = new Block(undefined, { chain: chain })
       block.header.timestamp = test.currentTimestamp
       block.header.difficulty = test.currentDifficulty
       block.header.number = test.currentBlockNumber

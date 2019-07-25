@@ -1,9 +1,9 @@
 language: node_js
 node_js:
-  - "7"
   - "8"
-env:
-  - CXX=g++-4.8
+  - "10"
+  - "11"
+  - "12"
 addons:
   firefox: latest
   apt:
@@ -14,6 +14,7 @@ addons:
 before_install:
   - sh -e /etc/init.d/xvfb start
 env:
+  - CXX=g++-4.8
   global:
     - DISPLAY=:99.0
   matrix:
@@ -28,9 +29,19 @@ matrix:
       node_js: "8"
       env: CXX=g++-4.8 TEST_SUITE=lint
     - os: linux
-      node_js: "7"
+      node_js: "8"
       env: CXX=g++-4.8 TEST_SUITE=test:node
     - os: linux
       node_js: "8"
       env: CXX=g++-4.8 TEST_SUITE=test:node
+    - os: linux
+      node_js: "10"
+      env: CXX=g++-4.8 TEST_SUITE=test:node
+    - os: linux
+    node_js: "11"
+      env: CXX=g++-4.8 TEST_SUITE=test:node
+    - os: linux
+      node_js: "12"
+      env: CXX=g++-4.8 TEST_SUITE=test:node
+
 script: npm run $TEST_SUITE
