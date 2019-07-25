@@ -1,5 +1,3 @@
-import { keccak256 } from 'ethereumjs-util'
-
 const Set = require('core-js-pure/es/set')
 const Trie = require('merkle-patricia-tree/secure.js')
 const asyncLib = require('async')
