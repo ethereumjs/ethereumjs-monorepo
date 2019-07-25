@@ -52,6 +52,10 @@ export interface VMOpts {
 /**
  * Execution engine which can be used to run a blockchain, individual
  * blocks, individual transactions, or snippets of EVM bytecode.
+ *
+ * This class is an AsyncEventEmitter, which means that event handlers are run to completion before
+ * continuing. If an error is thrown in an event handler, it will bubble up to the VM and thrown
+ * from the method call that triggered the event.
  */
 export default class VM extends AsyncEventEmitter {
   opts: VMOpts
@@ -109,6 +113,9 @@ export default class VM extends AsyncEventEmitter {
 
   /**
    * Processes blocks and adds them to the blockchain.
+   *
+   * This method modifies the state.
+   *
    * @param blockchain -  A [blockchain](https://github.com/ethereum/ethereumjs-blockchain) object to process
    * @param cb - the callback function
    */
@@ -118,6 +125,11 @@ export default class VM extends AsyncEventEmitter {
 
   /**
    * Processes the `block` running all of the transactions it contains and updating the miner's account
+   *
+   * This method modifies the state. If `generate` is `true`, the state modifications will be
+   * reverted if an exception is raised. If it's `false`, it won't revert if the block's header is
+   * invalid. If an error is thrown from an event handler, the state may or may not be reverted.
+   *
    * @param opts - Default values for options:
    *  - `generate`: false
    */
@@ -127,6 +139,10 @@ export default class VM extends AsyncEventEmitter {
 
   /**
    * Process a transaction. Run the vm. Transfers eth. Checks balances.
+   *
+   * This method modifies the state. If an error is thrown, the modifications are reverted, except
+   * when the error is thrown from an event handler. In the latter case the state may or may not be
+   * reverted.
    */
   runTx(opts: RunTxOpts): Promise<RunTxResult> {
     return runTx.bind(this)(opts)
@@ -134,6 +150,8 @@ export default class VM extends AsyncEventEmitter {
 
   /**
    * runs a call (or create) operation.
+   *
+   * This method modifies the state.
    */
   runCall(opts: RunCallOpts): Promise<EVMResult> {
     return runCall.bind(this)(opts)
@@ -141,6 +159,8 @@ export default class VM extends AsyncEventEmitter {
 
   /**
    * Runs EVM code.
+   *
+   * This method modifies the state.
    */
   runCode(opts: RunCodeOpts): Promise<ExecResult> {
     return runCode.bind(this)(opts)
