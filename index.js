@@ -19,7 +19,7 @@ const BlockHeader = require('./header')
  * @prop {Array.<Header>} uncleList an array of uncle headers
  * @prop {Array.<Buffer>} raw an array of buffers containing the raw blocks.
  */
-var Block = module.exports = function (data, opts) {
+var Block = (module.exports = function(data, opts) {
   opts = opts || {}
 
   if (opts.common) {
@@ -39,9 +39,9 @@ var Block = module.exports = function (data, opts) {
   this.txTrie = new Trie()
 
   Object.defineProperty(this, 'raw', {
-    get: function () {
+    get: function() {
       return this.serialize(false)
-    }
+    },
   })
 
   var rawTransactions, rawUncleHeaders
@@ -76,7 +76,7 @@ var Block = module.exports = function (data, opts) {
     tx._homestead = true
     this.transactions.push(tx)
   }
-}
+})
 
 Block.Header = BlockHeader
 
@@ -84,7 +84,7 @@ Block.Header = BlockHeader
  * Produces a hash the RLP of the block
  * @method hash
  */
-Block.prototype.hash = function () {
+Block.prototype.hash = function() {
   return this.header.hash()
 }
 
@@ -93,7 +93,7 @@ Block.prototype.hash = function () {
  * @method isGenisis
  * @return Boolean
  */
-Block.prototype.isGenesis = function () {
+Block.prototype.isGenesis = function() {
   return this.header.isGenesis()
 }
 
@@ -101,7 +101,7 @@ Block.prototype.isGenesis = function () {
  * turns the block into the canonical genesis block
  * @method setGenesisParams
  */
-Block.prototype.setGenesisParams = function () {
+Block.prototype.setGenesisParams = function() {
   this.header.setGenesisParams()
 }
 
@@ -110,21 +110,19 @@ Block.prototype.setGenesisParams = function () {
  * @method serialize
  * @param {Boolean} rlpEncode whether to rlp encode the block or not
  */
-Block.prototype.serialize = function (rlpEncode) {
-  var raw = [this.header.raw, [],
-    []
-  ]
+Block.prototype.serialize = function(rlpEncode) {
+  var raw = [this.header.raw, [], []]
 
   // rlpEnode defaults to true
   if (typeof rlpEncode === 'undefined') {
     rlpEncode = true
   }
 
-  this.transactions.forEach(function (tx) {
+  this.transactions.forEach(function(tx) {
     raw[1].push(tx.raw)
   })
 
-  this.uncleHeaders.forEach(function (uncle) {
+  this.uncleHeaders.forEach(function(uncle) {
     raw[2].push(uncle.raw)
   })
 
@@ -137,14 +135,18 @@ Block.prototype.serialize = function (rlpEncode) {
  * @method genTxTrie
  * @param {Function} cb the callback
  */
-Block.prototype.genTxTrie = function (cb) {
+Block.prototype.genTxTrie = function(cb) {
   var i = 0
   var self = this
 
-  async.eachSeries(this.transactions, function (tx, done) {
-    self.txTrie.put(rlp.encode(i), tx.serialize(), done)
-    i++
-  }, cb)
+  async.eachSeries(
+    this.transactions,
+    function(tx, done) {
+      self.txTrie.put(rlp.encode(i), tx.serialize(), done)
+      i++
+    },
+    cb,
+  )
 }
 
 /**
@@ -152,7 +154,7 @@ Block.prototype.genTxTrie = function (cb) {
  * @method validateTransactionTrie
  * @return {Boolean}
  */
-Block.prototype.validateTransactionsTrie = function () {
+Block.prototype.validateTransactionsTrie = function() {
   var txT = this.header.transactionsTrie.toString('hex')
   if (this.transactions.length) {
     return txT === this.txTrie.root.toString('hex')
@@ -167,10 +169,10 @@ Block.prototype.validateTransactionsTrie = function () {
  * @param {Boolean} [stringError=false] whether to return a string with a dscription of why the validation failed or return a Bloolean
  * @return {Boolean}
  */
-Block.prototype.validateTransactions = function (stringError) {
+Block.prototype.validateTransactions = function(stringError) {
   var errors = []
 
-  this.transactions.forEach(function (tx, i) {
+  this.transactions.forEach(function(tx, i) {
     var error = tx.validate(true)
     if (error) {
       errors.push(error + ' at tx ' + i)
@@ -190,37 +192,40 @@ Block.prototype.validateTransactions = function (stringError) {
  * @param {BlockChain} blockChain the blockchain that this block wants to be part of
  * @param {Function} cb the callback which is given a `String` if the block is not valid
  */
-Block.prototype.validate = function (blockChain, cb) {
+Block.prototype.validate = function(blockChain, cb) {
   var self = this
   var errors = []
 
-  async.parallel([
-    // validate uncles
-    self.validateUncles.bind(self, blockChain),
-    // validate block
-    self.header.validate.bind(self.header, blockChain),
-    // generate the transaction trie
-    self.genTxTrie.bind(self)
-  ], function (err) {
-    if (err) {
-      errors.push(err)
-    }
+  async.parallel(
+    [
+      // validate uncles
+      self.validateUncles.bind(self, blockChain),
+      // validate block
+      self.header.validate.bind(self.header, blockChain),
+      // generate the transaction trie
+      self.genTxTrie.bind(self),
+    ],
+    function(err) {
+      if (err) {
+        errors.push(err)
+      }
 
-    if (!self.validateTransactionsTrie()) {
-      errors.push('invalid transaction trie')
-    }
+      if (!self.validateTransactionsTrie()) {
+        errors.push('invalid transaction trie')
+      }
 
-    var txErrors = self.validateTransactions(true)
-    if (txErrors !== '') {
-      errors.push(txErrors)
-    }
+      var txErrors = self.validateTransactions(true)
+      if (txErrors !== '') {
+        errors.push(txErrors)
+      }
 
-    if (!self.validateUnclesHash()) {
-      errors.push('invalid uncle hash')
-    }
+      if (!self.validateUnclesHash()) {
+        errors.push('invalid uncle hash')
+      }
 
-    cb(arrayToString(errors))
-  })
+      cb(arrayToString(errors))
+    },
+  )
 }
 
 /**
@@ -228,9 +233,9 @@ Block.prototype.validate = function (blockChain, cb) {
  * @method validateUncleHash
  * @return {Boolean}
  */
-Block.prototype.validateUnclesHash = function () {
+Block.prototype.validateUnclesHash = function() {
   var raw = []
-  this.uncleHeaders.forEach(function (uncle) {
+  this.uncleHeaders.forEach(function(uncle) {
     raw.push(uncle.raw)
   })
 
@@ -244,7 +249,7 @@ Block.prototype.validateUnclesHash = function () {
  * @param {Blockchain} blockChaina an instance of the Blockchain
  * @param {Function} cb the callback
  */
-Block.prototype.validateUncles = function (blockChain, cb) {
+Block.prototype.validateUncles = function(blockChain, cb) {
   if (this.isGenesis()) {
     return cb()
   }
@@ -255,31 +260,38 @@ Block.prototype.validateUncles = function (blockChain, cb) {
     return cb('too many uncle headers')
   }
 
-  var uncleHashes = self.uncleHeaders.map(function (header) {
+  var uncleHashes = self.uncleHeaders.map(function(header) {
     return header.hash().toString('hex')
   })
 
-  if (!((new Set(uncleHashes)).size === uncleHashes.length)) {
+  if (!(new Set(uncleHashes).size === uncleHashes.length)) {
     return cb('duplicate uncles')
   }
 
-  async.each(self.uncleHeaders, function (uncle, cb2) {
-    var height = new BN(self.header.number)
-    async.parallel([
-      uncle.validate.bind(uncle, blockChain, height),
-      // check to make sure the uncle is not already in the blockchain
-      function (cb3) {
-        blockChain.getDetails(uncle.hash(), function (err, blockInfo) {
-          // TODO: remove uncles from BC
-          if (blockInfo && blockInfo.isUncle) {
-            cb3(err || 'uncle already included')
-          } else {
-            cb3()
-          }
-        })
-      }
-    ], cb2)
-  }, cb)
+  async.each(
+    self.uncleHeaders,
+    function(uncle, cb2) {
+      var height = new BN(self.header.number)
+      async.parallel(
+        [
+          uncle.validate.bind(uncle, blockChain, height),
+          // check to make sure the uncle is not already in the blockchain
+          function(cb3) {
+            blockChain.getDetails(uncle.hash(), function(err, blockInfo) {
+              // TODO: remove uncles from BC
+              if (blockInfo && blockInfo.isUncle) {
+                cb3(err || 'uncle already included')
+              } else {
+                cb3()
+              }
+            })
+          },
+        ],
+        cb2,
+      )
+    },
+    cb,
+  )
 }
 
 /**
@@ -288,19 +300,19 @@ Block.prototype.validateUncles = function (blockChain, cb) {
  * @param {Bool} labeled whether to create an labeled object or an array
  * @return {Object}
  */
-Block.prototype.toJSON = function (labeled) {
+Block.prototype.toJSON = function(labeled) {
   if (labeled) {
     var obj = {
       header: this.header.toJSON(true),
       transactions: [],
-      uncleHeaders: []
+      uncleHeaders: [],
     }
 
-    this.transactions.forEach(function (tx) {
+    this.transactions.forEach(function(tx) {
       obj.transactions.push(tx.toJSON(labeled))
     })
 
-    this.uncleHeaders.forEach(function (uh) {
+    this.uncleHeaders.forEach(function(uh) {
       obj.uncleHeaders.push(uh.toJSON())
     })
     return obj
@@ -309,9 +321,9 @@ Block.prototype.toJSON = function (labeled) {
   }
 }
 
-function arrayToString (array) {
+function arrayToString(array) {
   try {
-    return array.reduce(function (str, err) {
+    return array.reduce(function(str, err) {
       if (str) {
         str += ' '
       }

@@ -11,39 +11,43 @@ module.exports = blockFromRpc
  * @param {Object} blockParams - Ethereum JSON RPC of block (eth_getBlockByNumber)
  * @param {Array.<Object>} Optional list of Ethereum JSON RPC of uncles (eth_getUncleByBlockHashAndIndex)
  */
-function blockFromRpc (blockParams, uncles) {
+function blockFromRpc(blockParams, uncles) {
   uncles = uncles || []
   const block = new Block({
     transactions: [],
-    uncleHeaders: []
+    uncleHeaders: [],
   })
   block.header = blockHeaderFromRpc(blockParams)
 
-  block.transactions = (blockParams.transactions || []).map(function (_txParams) {
+  block.transactions = (blockParams.transactions || []).map(function(_txParams) {
     const txParams = normalizeTxParams(_txParams)
     // override from address
     const fromAddress = ethUtil.toBuffer(txParams.from)
     delete txParams.from
     const tx = new Transaction(txParams)
     tx._from = fromAddress
-    tx.getSenderAddress = function () { return fromAddress }
+    tx.getSenderAddress = function() {
+      return fromAddress
+    }
     // override hash
     const txHash = ethUtil.toBuffer(txParams.hash)
-    tx.hash = function () { return txHash }
+    tx.hash = function() {
+      return txHash
+    }
     return tx
   })
-  block.uncleHeaders = uncles.map(function (uncleParams) {
+  block.uncleHeaders = uncles.map(function(uncleParams) {
     return blockHeaderFromRpc(uncleParams)
   })
 
   return block
 }
 
-function normalizeTxParams (_txParams) {
+function normalizeTxParams(_txParams) {
   const txParams = Object.assign({}, _txParams)
   // hot fix for https://github.com/ethereumjs/ethereumjs-util/issues/40
-  txParams.gasLimit = (txParams.gasLimit === undefined) ? txParams.gas : txParams.gasLimit
-  txParams.data = (txParams.data === undefined) ? txParams.input : txParams.data
+  txParams.gasLimit = txParams.gasLimit === undefined ? txParams.gas : txParams.gasLimit
+  txParams.data = txParams.data === undefined ? txParams.input : txParams.data
   // strict byte length checking
   txParams.to = txParams.to ? ethUtil.setLengthLeft(ethUtil.toBuffer(txParams.to), 20) : null
   // v as raw signature value {0,1}

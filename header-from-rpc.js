@@ -8,7 +8,7 @@ module.exports = blockHeaderFromRpc
  * Creates a new block header object from Ethereum JSON RPC.
  * @param {Object} blockParams - Ethereum JSON RPC of block (eth_getBlockByNumber)
  */
-function blockHeaderFromRpc (blockParams) {
+function blockHeaderFromRpc(blockParams) {
   const blockHeader = new BlockHeader({
     parentHash: blockParams.parentHash,
     uncleHash: blockParams.sha3Uncles,
@@ -24,11 +24,11 @@ function blockHeaderFromRpc (blockParams) {
     timestamp: blockParams.timestamp,
     extraData: blockParams.extraData,
     mixHash: blockParams.mixHash,
-    nonce: blockParams.nonce
+    nonce: blockParams.nonce,
   })
 
   // override hash incase something was missing
-  blockHeader.hash = function () {
+  blockHeader.hash = function() {
     return ethUtil.toBuffer(blockParams.hash)
   }
 
