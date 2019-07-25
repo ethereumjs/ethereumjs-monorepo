@@ -56,7 +56,7 @@ export interface ExecResult {
   /**
    * Return value from the contract
    */
-  return: Buffer
+  returnValue: Buffer
   /**
    * Array of logs that the contract emitted
    */
@@ -73,7 +73,7 @@ export interface ExecResult {
 
 export function OOGResult(gasLimit: BN): ExecResult {
   return {
-    return: Buffer.alloc(0),
+    returnValue: Buffer.alloc(0),
     gasUsed: gasLimit,
     exceptionError: new VmError(ERROR.OUT_OF_GAS),
   }
@@ -153,7 +153,7 @@ export default class EVM {
         gasUsed: new BN(0),
         execResult: {
           gasUsed: new BN(0),
-          return: Buffer.alloc(0),
+          returnValue: Buffer.alloc(0),
         },
       }
     }
@@ -189,7 +189,7 @@ export default class EVM {
         gasUsed: message.gasLimit,
         createdAddress: message.to,
         execResult: {
-          return: Buffer.alloc(0),
+          returnValue: Buffer.alloc(0),
           exceptionError: new VmError(ERROR.CREATE_COLLISION),
           gasUsed: message.gasLimit,
         },
@@ -213,7 +213,7 @@ export default class EVM {
         createdAddress: message.to,
         execResult: {
           gasUsed: new BN(0),
-          return: Buffer.alloc(0),
+          returnValue: Buffer.alloc(0),
         },
       }
     }
@@ -224,7 +224,7 @@ export default class EVM {
     let totalGas = result.gasUsed
     if (!result.exceptionError) {
       const returnFee = new BN(
-        result.return.length * this._vm._common.param('gasPrices', 'createData'),
+        result.returnValue.length * this._vm._common.param('gasPrices', 'createData'),
       )
       totalGas = totalGas.add(returnFee)
     }
@@ -232,7 +232,7 @@ export default class EVM {
     // if not enough gas
     if (
       totalGas.lte(message.gasLimit) &&
-      (this._vm.allowUnlimitedContractSize || result.return.length <= 24576)
+      (this._vm.allowUnlimitedContractSize || result.returnValue.length <= 24576)
     ) {
       result.gasUsed = totalGas
     } else {
@@ -240,8 +240,8 @@ export default class EVM {
     }
 
     // Save code if a new contract was created
-    if (!result.exceptionError && result.return && result.return.toString() !== '') {
-      await this._state.putContractCode(message.to, result.return)
+    if (!result.exceptionError && result.returnValue && result.returnValue.toString() !== '') {
+      await this._state.putContractCode(message.to, result.returnValue)
     }
 
     return {
@@ -304,7 +304,7 @@ export default class EVM {
       exceptionError: interpreterRes.exceptionError,
       gas: eei._gasLeft,
       gasUsed,
-      return: result.return ? result.return : Buffer.alloc(0),
+      returnValue: result.returnValue ? result.returnValue : Buffer.alloc(0),
     }
   }
 

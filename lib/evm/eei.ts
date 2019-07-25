@@ -32,7 +32,7 @@ export interface Env {
  */
 export interface RunResult {
   logs: any // TODO: define type for Log (each log: [Buffer(address), [Buffer(topic0), ...]])
-  return?: Buffer
+  returnValue?: Buffer
   gasRefund: BN
   /**
    * A map from the accounts that have self-destructed to the addresses to send their funds to
@@ -66,7 +66,7 @@ export default class EEI {
     this._gasLeft = gasLeft
     this._result = {
       logs: [],
-      return: undefined,
+      returnValue: undefined,
       gasRefund: new BN(0),
       selfdestruct: {},
     }
@@ -300,7 +300,7 @@ export default class EEI {
    * @param returnData - Output data to return
    */
   finish(returnData: Buffer): void {
-    this._result.return = returnData
+    this._result.returnValue = returnData
     trap(ERROR.STOP)
   }
 
@@ -310,7 +310,7 @@ export default class EEI {
    * @param returnData - Output data to return
    */
   revert(returnData: Buffer): void {
-    this._result.return = returnData
+    this._result.returnValue = returnData
     trap(ERROR.REVERT)
   }
 
@@ -474,11 +474,11 @@ export default class EEI {
 
     // Set return value
     if (
-      results.execResult.return &&
+      results.execResult.returnValue &&
       (!results.execResult.exceptionError ||
         results.execResult.exceptionError.error === ERROR.REVERT)
     ) {
-      this._lastReturned = results.execResult.return
+      this._lastReturned = results.execResult.returnValue
     }
 
     if (!results.execResult.exceptionError) {
@@ -539,7 +539,7 @@ export default class EEI {
       results.execResult.exceptionError &&
       results.execResult.exceptionError.error === ERROR.REVERT
     ) {
-      this._lastReturned = results.execResult.return
+      this._lastReturned = results.execResult.returnValue
     }
 
     if (!results.execResult.exceptionError) {

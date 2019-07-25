@@ -20,6 +20,6 @@ export default function(opts: PrecompileInput): ExecResult {
 
   return {
     gasUsed,
-    return: sha256(data),
+    returnValue: sha256(data),
   }
 }

@@ -20,6 +20,6 @@ export default function(opts: PrecompileInput): ExecResult {
 
   return {
     gasUsed,
-    return: ripemd160(data, true),
+    returnValue: ripemd160(data, true),
   }
 }

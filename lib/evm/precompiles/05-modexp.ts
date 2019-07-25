@@ -95,14 +95,14 @@ export default function(opts: PrecompileInput): ExecResult {
   if (bLen.isZero()) {
     return {
       gasUsed,
-      return: new BN(0).toArrayLike(Buffer, 'be', 1),
+      returnValue: new BN(0).toArrayLike(Buffer, 'be', 1),
     }
   }
 
   if (mLen.isZero()) {
     return {
       gasUsed,
-      return: Buffer.alloc(0),
+      returnValue: Buffer.alloc(0),
     }
   }
 
@@ -137,6 +137,6 @@ export default function(opts: PrecompileInput): ExecResult {
 
   return {
     gasUsed,
-    return: R.toArrayLike(Buffer, 'be', mLen.toNumber()),
+    returnValue: R.toArrayLike(Buffer, 'be', mLen.toNumber()),
   }
 }

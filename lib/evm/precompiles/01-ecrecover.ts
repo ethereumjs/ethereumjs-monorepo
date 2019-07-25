@@ -26,12 +26,12 @@ export default function(opts: PrecompileInput): ExecResult {
   } catch (e) {
     return {
       gasUsed,
-      return: Buffer.alloc(0),
+      returnValue: Buffer.alloc(0),
     }
   }
 
   return {
     gasUsed,
-    return: setLengthLeft(publicToAddress(publicKey), 32),
+    returnValue: setLengthLeft(publicToAddress(publicKey), 32),
   }
 }
