@@ -1,11 +1,14 @@
-const testUtil = require('./util')
+const fs = require('fs')
 const { promisify } = require('util')
 const ethUtil = require('ethereumjs-util')
 const Account = require('ethereumjs-account').default
 const Trie = require('merkle-patricia-tree/secure')
 const BN = ethUtil.BN
+const testUtil = require('./util')
 const { getRequiredForkConfigAlias } = require('./util')
 const StateManager = require('../dist/state/stateManager').default
+const yaml = require('js-yaml')
+const rlp = require('rlp')
 
 const VM = require('../dist/index.js').default
 const PStateManager = require('../dist/state/promisified').default
@@ -97,6 +100,14 @@ async function runTestCase (options, testData, t) {
     await deleteCoinbase(new PStateManager(stateManager), block.header.coinbase)
   }
   t.equal(stateManager._trie.root.toString('hex'), expectedPostStateRoot, 'the state roots should match')
+
+  return {
+    preStateRoot,
+    tx,
+    block,
+    proofNodes: Array.from(proofNodes.values()),
+    postStateRoot: Buffer.from(expectedPostStateRoot, 'hex')
+  }
 }
 
 /*
@@ -177,13 +188,56 @@ function parseTestCases (forkConfig, testData, data, gasLimit, value) {
   return testCases
 }
 
-module.exports = async function runStateTest (options, testData, t) {
+function encodeBlockData (tx, proofNodes) {
+  return rlp.encode([
+    [tx.getSenderAddress(), tx.nonce, tx.gasPrice, tx.gasLimit, tx.to, tx.value, tx.data],
+    proofNodes
+  ])
+}
+
+function writeToYaml (name, preStateRoot, blockData, postStateRoot) {
+  const testSuite = {
+    'beacon_state': {
+      'execution_scripts': [
+        'target/wasm32-unknown-unknown/release/smpt.wasm'
+      ]
+    },
+    'shard_pre_state': {
+      'exec_env_states': [
+        preStateRoot.toString('hex')
+      ]
+    },
+    'shard_blocks': [
+      {
+        'env': 0,
+        'data': blockData.toString('hex')
+      }
+    ],
+    'shard_post_state': {
+      'exec_env_states': [
+        postStateRoot.toString('hex')
+      ]
+    }
+  }
+  const serializedTestSuite = yaml.safeDump(testSuite)
+  fs.writeFileSync(name + '.yaml', serializedTestSuite)
+}
+
+module.exports = async function runStateTest (options, testData, testName, t) {
   const forkConfig = getRequiredForkConfigAlias(options.forkConfig)
   try {
     const testCases = parseTestCases(forkConfig, testData, options.data, options.gasLimit, options.value)
     if (testCases.length > 0) {
+      let i = 0
       for (const testCase of testCases) {
-        await runTestCase(options, testCase, t)
+        const res = await runTestCase(options, testCase, t)
+        if (options.scout) {
+          console.log('Number of proof nodes:', res.proofNodes.length)
+          const blockData = encodeBlockData(res.tx, res.proofNodes)
+          console.log('Block data length:', blockData.byteLength)
+          writeToYaml(testName + '-' + i, res.preStateRoot, blockData, res.postStateRoot)
+        }
+        i++
       }
     } else {
       t.comment(`No ${forkConfig} post state defined, skip test`)

@@ -77,6 +77,7 @@
     "coveralls": "^3.0.0",
     "ethereumjs-testing": "git+https://github.com/ethereumjs/ethereumjs-testing.git#v1.2.7",
     "husky": "^2.1.0",
+    "js-yaml": "^3.13.1",
     "karma": "^4.0.1",
     "karma-browserify": "^6.0.0",
     "karma-chrome-launcher": "^2.2.0",

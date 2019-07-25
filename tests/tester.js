@@ -196,6 +196,9 @@ function runTests (name, runnerArgs, cb) {
 
   // runnerArgs.vmtrace = true; // for VMTests
 
+  // for StatelessTests
+  runnerArgs.scout = argv.scout
+
   if (name === 'Stateless') {
     tape(name, t => {
       const stateTestRunner = require('./StatelessRunner.js')
@@ -204,7 +207,7 @@ function runTests (name, runnerArgs, cb) {
         let inRunSkipped = runSkipped.includes(fileName)
         if (runSkipped.length === 0 || inRunSkipped) {
           t.comment(`file: ${fileName} test: ${testName}`)
-          return stateTestRunner(runnerArgs, test, t)
+          return stateTestRunner(runnerArgs, test, testName, t)
         }
       }, testGetterArgs).then(() => {
         t.end()
