@@ -171,8 +171,7 @@ export default class Blockchain implements BlockchainInterface {
   /**
    * A flag indicating if this Blockchain validates blocks or not.
    */
-  validate: boolean
-
+  public readonly validate: boolean
   private readonly _validatePow: boolean
   private readonly _validateBlocks: boolean
 
