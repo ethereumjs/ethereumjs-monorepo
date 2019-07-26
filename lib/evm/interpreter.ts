@@ -9,8 +9,6 @@ import EEI from './eei'
 import { lookupOpInfo, OpInfo } from './opcodes'
 import { handlers as opHandlers, OpHandler } from './opFns.js'
 
-export type IsException = 0 | 1
-
 export interface InterpreterOpts {
   pc?: number
 }
@@ -31,8 +29,7 @@ export interface RunState {
 
 export interface InterpreterResult {
   runState?: RunState
-  exception: IsException
-  exceptionError?: VmError | ERROR
+  exceptionError?: VmError
 }
 
 /**
@@ -96,7 +93,6 @@ export default class Interpreter {
 
     return {
       runState: this._runState,
-      exception: err ? (0 as IsException) : (1 as IsException),
       exceptionError: err,
     }
   }

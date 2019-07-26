@@ -6,7 +6,7 @@ import Common from 'ethereumjs-common'
 import PStateManager from '../state/promisified'
 import { VmError, ERROR } from '../exceptions'
 import Message from './message'
-import EVM from './evm'
+import EVM, { EVMResult } from './evm'
 const promisify = require('util.promisify')
 
 /**
@@ -460,13 +460,13 @@ export default class EEI {
 
     const results = await this._evm.executeMessage(msg)
 
-    if (results.vm.logs) {
-      this._result.logs = this._result.logs.concat(results.vm.logs)
+    if (results.execResult.logs) {
+      this._result.logs = this._result.logs.concat(results.execResult.logs)
     }
 
     // add gasRefund
-    if (results.vm.gasRefund) {
-      this._result.gasRefund = this._result.gasRefund.add(results.vm.gasRefund)
+    if (results.execResult.gasRefund) {
+      this._result.gasRefund = this._result.gasRefund.add(results.execResult.gasRefund)
     }
 
     // this should always be safe
@@ -474,20 +474,21 @@ export default class EEI {
 
     // Set return value
     if (
-      results.vm.return &&
-      (!results.vm.exceptionError || (results.vm.exceptionError as VmError).error === ERROR.REVERT)
+      results.execResult.returnValue &&
+      (!results.execResult.exceptionError ||
+        results.execResult.exceptionError.error === ERROR.REVERT)
     ) {
-      this._lastReturned = results.vm.return
+      this._lastReturned = results.execResult.returnValue
     }
 
-    if (!results.vm.exceptionError) {
+    if (!results.execResult.exceptionError) {
       Object.assign(this._result.selfdestruct, selfdestruct)
       // update stateRoot on current contract
       const account = await this._state.getAccount(this._env.address)
       this._env.contract = account
     }
 
-    return new BN(results.vm.exception)
+    return this._getReturnCode(results)
   }
 
   /**
@@ -521,13 +522,13 @@ export default class EEI {
 
     const results = await this._evm.executeMessage(msg)
 
-    if (results.vm.logs) {
-      this._result.logs = this._result.logs.concat(results.vm.logs)
+    if (results.execResult.logs) {
+      this._result.logs = this._result.logs.concat(results.execResult.logs)
     }
 
     // add gasRefund
-    if (results.vm.gasRefund) {
-      this._result.gasRefund = this._result.gasRefund.add(results.vm.gasRefund)
+    if (results.execResult.gasRefund) {
+      this._result.gasRefund = this._result.gasRefund.add(results.execResult.gasRefund)
     }
 
     // this should always be safe
@@ -535,13 +536,13 @@ export default class EEI {
 
     // Set return buffer in case revert happened
     if (
-      results.vm.exceptionError &&
-      (results.vm.exceptionError as VmError).error === ERROR.REVERT
+      results.execResult.exceptionError &&
+      results.execResult.exceptionError.error === ERROR.REVERT
     ) {
-      this._lastReturned = results.vm.return
+      this._lastReturned = results.execResult.returnValue
     }
 
-    if (!results.vm.exceptionError) {
+    if (!results.execResult.exceptionError) {
       Object.assign(this._result.selfdestruct, selfdestruct)
       // update stateRoot on current contract
       const account = await this._state.getAccount(this._env.address)
@@ -552,7 +553,7 @@ export default class EEI {
       }
     }
 
-    return new BN(results.vm.exception)
+    return this._getReturnCode(results)
   }
 
   /**
@@ -569,6 +570,16 @@ export default class EEI {
    */
   async isAccountEmpty(address: Buffer): Promise<boolean> {
     return this._state.accountIsEmpty(address)
+  }
+
+  private _getReturnCode(results: EVMResult) {
+    // This preserves the previous logic, but seems to contradict the EEI spec
+    // https://github.com/ewasm/design/blob/38eeded28765f3e193e12881ea72a6ab807a3371/eth_interface.md
+    if (results.execResult.exceptionError) {
+      return new BN(0)
+    } else {
+      return new BN(1)
+    }
   }
 }
 

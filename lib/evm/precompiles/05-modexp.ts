@@ -1,6 +1,7 @@
 import BN = require('bn.js')
 import { setLengthRight } from 'ethereumjs-util'
-import { PrecompileInput, PrecompileResult, OOGResult } from './types'
+import { PrecompileInput } from './types'
+import { OOGResult, ExecResult } from '../evm'
 const assert = require('assert')
 
 function multComplexity(x: BN): BN {
@@ -66,7 +67,7 @@ function expmod(B: BN, E: BN, M: BN): BN {
   return res.fromRed()
 }
 
-export default function(opts: PrecompileInput): PrecompileResult {
+export default function(opts: PrecompileInput): ExecResult {
   assert(opts.data)
 
   const data = opts.data
@@ -94,16 +95,14 @@ export default function(opts: PrecompileInput): PrecompileResult {
   if (bLen.isZero()) {
     return {
       gasUsed,
-      return: new BN(0).toArrayLike(Buffer, 'be', 1),
-      exception: 1,
+      returnValue: new BN(0).toArrayLike(Buffer, 'be', 1),
     }
   }
 
   if (mLen.isZero()) {
     return {
       gasUsed,
-      return: Buffer.alloc(0),
-      exception: 1,
+      returnValue: Buffer.alloc(0),
     }
   }
 
@@ -138,7 +137,6 @@ export default function(opts: PrecompileInput): PrecompileResult {
 
   return {
     gasUsed,
-    return: R.toArrayLike(Buffer, 'be', mLen.toNumber()),
-    exception: 1,
+    returnValue: R.toArrayLike(Buffer, 'be', mLen.toNumber()),
   }
 }

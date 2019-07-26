@@ -1,4 +1,4 @@
-import { PrecompileInput, PrecompileResult, PrecompileFunc } from './types'
+import { PrecompileInput, PrecompileFunc } from './types'
 import { default as p1 } from './01-ecrecover'
 import { default as p2 } from './02-sha256'
 import { default as p3 } from './03-ripemd160'
@@ -27,4 +27,4 @@ function getPrecompile(address: string): PrecompileFunc {
   return precompiles[address]
 }
 
-export { precompiles, getPrecompile, PrecompileFunc, PrecompileInput, PrecompileResult }
+export { precompiles, getPrecompile, PrecompileFunc, PrecompileInput }

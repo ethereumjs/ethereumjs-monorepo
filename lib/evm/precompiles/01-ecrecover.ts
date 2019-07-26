@@ -1,9 +1,10 @@
 import BN = require('bn.js')
 import { setLengthLeft, setLengthRight, ecrecover, publicToAddress } from 'ethereumjs-util'
-import { PrecompileInput, PrecompileResult, OOGResult } from './types'
+import { PrecompileInput } from './types'
+import { OOGResult, ExecResult } from '../evm'
 const assert = require('assert')
 
-export default function(opts: PrecompileInput): PrecompileResult {
+export default function(opts: PrecompileInput): ExecResult {
   assert(opts.data)
 
   const gasUsed = new BN(opts._common.param('gasPrices', 'ecRecover'))
@@ -25,14 +26,12 @@ export default function(opts: PrecompileInput): PrecompileResult {
   } catch (e) {
     return {
       gasUsed,
-      return: Buffer.alloc(0),
-      exception: 1,
+      returnValue: Buffer.alloc(0),
     }
   }
 
   return {
     gasUsed,
-    return: setLengthLeft(publicToAddress(publicKey), 32),
-    exception: 1,
+    returnValue: setLengthLeft(publicToAddress(publicKey), 32),
   }
 }
