@@ -125,7 +125,8 @@ export default class Cache {
         if (it.value && it.value.modified) {
           it.value.modified = false
           it.value.val = it.value.val.serialize()
-          this._trie.put(Buffer.from(it.key, 'hex'), it.value.val, () => {
+          this._trie.put(Buffer.from(it.key, 'hex'), it.value.val, (err: Error) => {
+            if (err) return done(err)
             next = it.hasNext
             it.next()
             done()
@@ -134,7 +135,8 @@ export default class Cache {
           it.value.modified = false
           it.value.deleted = false
           it.value.val = new Account().serialize()
-          this._trie.del(Buffer.from(it.key, 'hex'), () => {
+          this._trie.del(Buffer.from(it.key, 'hex'), (err: Error) => {
+            if (err) return done(err)
             next = it.hasNext
             it.next()
             done()
