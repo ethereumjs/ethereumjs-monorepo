@@ -2,8 +2,7 @@ import VM from '../..'
 import Account from 'ethereumjs-account'
 import * as utils from 'ethereumjs-util'
 import PStateManager from '../../lib/state/promisified'
-
-const Transaction = require('ethereumjs-tx') // Change when https://github.com/ethereumjs/ethereumjs-vm/pull/541 gets merged
+import { Transaction } from 'ethereumjs-tx'
 
 async function main() {
   const vm = new VM()
@@ -62,7 +61,7 @@ async function runTx(vm: VM, rawTx: any, privateKey: Buffer) {
   })
 
   console.log('gas used: ' + results.gasUsed.toString())
-  console.log('returned: ' + results.vm.return.toString('hex'))
+  console.log('returned: ' + results.execResult.return.toString('hex'))
 
   const createdAddress = results.createdAddress
 
