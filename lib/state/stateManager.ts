@@ -194,12 +194,17 @@ export default class StateManager {
    */
 
   /**
-   * Gets the storage value associated with the provided `address` and `key`.
+   * Gets the storage value associated with the provided `address` and `key`. This method returns
+   * the shortest representation of the stored value.
    * @param address -  Address of the account to get the storage for
-   * @param key - Key in the account's storage to get the value for
-   * @param {getContractCode~callback} cb
+   * @param key - Key in the account's storage to get the value for. Must be 32 bytes long.
+   * @param {getContractCode~callback} cb.
    */
   getContractStorage(address: Buffer, key: Buffer, cb: any): void {
+    if (key.length !== 32) {
+      return cb(new Error('Storage key must be 32 bytes long'))
+    }
+
     this._getStorageTrie(address, (err: Error, trie: any) => {
       if (err) {
         return cb(err)
@@ -220,9 +225,13 @@ export default class StateManager {
    * onwards. This is used to get the original value of a storage slot for
    * computing gas costs according to EIP-1283.
    * @param address - Address of the account to get the storage for
-   * @param key - Key in the account's storage to get the value for
+   * @param key - Key in the account's storage to get the value for. Must be 32 bytes long.
    */
   getOriginalContractStorage(address: Buffer, key: Buffer, cb: any): void {
+    if (key.length !== 32) {
+      return cb(new Error('Storage key must be 32 bytes long'))
+    }
+
     const addressHex = address.toString('hex')
     const keyHex = key.toString('hex')
 
@@ -275,11 +284,15 @@ export default class StateManager {
    * Adds value to the state trie for the `account`
    * corresponding to `address` at the provided `key`.
    * @param address -  Address to set a storage value for
-   * @param key - Key to set the value at
+   * @param key - Key to set the value at. Must be 32 bytes long.
    * @param value - Value to set at `key` for account corresponding to `address`
    * @param cb - Callback function
    */
   putContractStorage(address: Buffer, key: Buffer, value: Buffer, cb: any): void {
+    if (key.length !== 32) {
+      return cb(new Error('Storage key must be 32 bytes long'))
+    }
+
     this._modifyContractStorage(
       address,
       (storageTrie: any, done: any) => {

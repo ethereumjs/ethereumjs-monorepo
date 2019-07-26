@@ -50,7 +50,7 @@ tape('StateManager', (t) => {
 
     // test contract storage cache
     await checkpoint()
-    const key = Buffer.from('0x1234')
+    const key = util.toBuffer('0x1234567890123456789012345678901234567890123456789012345678901234')
     const value = Buffer.from('0x1234')
     await putContractStorage(addressBuffer, key, value)
 
@@ -150,12 +150,12 @@ tape('StateManager', (t) => {
       account
     )
 
-    const key = Buffer.from('0x1234')
-    const value = Buffer.from('0x1234')
+    const key = util.toBuffer('0x1234567890123456789012345678901234567890123456789012345678901234')
+    const value = util.toBuffer('0x0a') // We used this value as its RLP encoding is also 0a
     await putContractStorage(addressBuffer, key, value)
 
     stateManager.dumpStorage(addressBuffer, (data) => {
-      const expect = { '1ac7d1b81b7ba1025b36ccb86723da6ee5a87259f1c2fd5abe69d3200b512ec8': '86307831323334' }
+      const expect = { [util.keccak256(key).toString('hex')]: '0a' }
       st.deepEqual(data, expect, 'should dump storage value')
 
       st.end()
@@ -176,6 +176,38 @@ tape('StateManager', (t) => {
 
     st.end()
   })
+
+  t.test('should validate the key\'s length when modifying a contract\'s storage', async st => {
+    const stateManager = new StateManager()
+    const addressBuffer = Buffer.from('a94f5374fce5edbc8e2a8697c15331677e6ebf0b', 'hex')
+    const putContractStorage = promisify((...args) => stateManager.putContractStorage(...args))
+    try {
+      await putContractStorage(addressBuffer, Buffer.alloc(12), util.toBuffer('0x1231'))
+    } catch (e) {
+      st.equal(e.message, 'Storage key must be 32 bytes long')
+      st.end()
+      return
+    }
+
+    st.fail('Should have failed')
+    st.end()
+  })
+
+  t.test('should validate the key\'s length when reading a contract\'s storage', async st => {
+    const stateManager = new StateManager()
+    const addressBuffer = Buffer.from('a94f5374fce5edbc8e2a8697c15331677e6ebf0b', 'hex')
+    const getContractStorage = promisify((...args) => stateManager.getContractStorage(...args))
+    try {
+      await getContractStorage(addressBuffer, Buffer.alloc(12))
+    } catch (e) {
+      st.equal(e.message, 'Storage key must be 32 bytes long')
+      st.end()
+      return
+    }
+
+    st.fail('Should have failed')
+    st.end()
+  })
 })
 
 tape('Original storage cache', async t => {
@@ -191,7 +223,7 @@ tape('Original storage cache', async t => {
   const account = createAccount()
   await putAccount(address, account)
 
-  const key = Buffer.from('1234', 'hex')
+  const key = Buffer.from('1234567890123456789012345678901234567890123456789012345678901234', 'hex')
   const value = Buffer.from('1234', 'hex')
 
   t.test('should initially have empty storage value', async st => {
@@ -232,7 +264,7 @@ tape('Original storage cache', async t => {
   })
 
   t.test('should cache keys separately', async st => {
-    const key2 = Buffer.from('12', 'hex')
+    const key2 = Buffer.from('0000000000000000000000000000000000000000000000000000000000000012', 'hex')
     const value2 = Buffer.from('12', 'hex')
     const value3 = Buffer.from('123', 'hex')
     await putContractStorage(addressBuffer, key2, value2)
@@ -255,6 +287,19 @@ tape('Original storage cache', async t => {
     origRes = await getOriginalContractStorage(addressBuffer, key)
     st.deepEqual(origRes, value)
 
+    st.end()
+  })
+
+  t.test('getOriginalContractStorage should validate the key\'s length', async st => {
+    try {
+      await getOriginalContractStorage(addressBuffer, Buffer.alloc(12))
+    } catch (e) {
+      st.equal(e.message, 'Storage key must be 32 bytes long')
+      st.end()
+      return
+    }
+
+    st.fail('Should have failed')
     st.end()
   })
 })
