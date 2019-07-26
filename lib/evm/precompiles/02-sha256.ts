@@ -1,9 +1,10 @@
 import BN = require('bn.js')
 import { sha256 } from 'ethereumjs-util'
-import { PrecompileInput, PrecompileResult, OOGResult } from './types'
+import { PrecompileInput } from './types'
+import { OOGResult, ExecResult } from '../evm'
 const assert = require('assert')
 
-export default function(opts: PrecompileInput): PrecompileResult {
+export default function(opts: PrecompileInput): ExecResult {
   assert(opts.data)
 
   const data = opts.data
@@ -19,7 +20,6 @@ export default function(opts: PrecompileInput): PrecompileResult {
 
   return {
     gasUsed,
-    return: sha256(data),
-    exception: 1,
+    returnValue: sha256(data),
   }
 }

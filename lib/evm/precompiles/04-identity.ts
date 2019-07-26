@@ -1,8 +1,9 @@
 import BN = require('bn.js')
-import { PrecompileInput, PrecompileResult, OOGResult } from './types'
+import { PrecompileInput } from './types'
+import { OOGResult, ExecResult } from '../evm'
 const assert = require('assert')
 
-export default function(opts: PrecompileInput): PrecompileResult {
+export default function(opts: PrecompileInput): ExecResult {
   assert(opts.data)
 
   const data = opts.data
@@ -18,7 +19,6 @@ export default function(opts: PrecompileInput): PrecompileResult {
 
   return {
     gasUsed,
-    return: data,
-    exception: 1,
+    returnValue: data,
   }
 }

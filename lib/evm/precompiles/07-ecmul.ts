@@ -1,9 +1,10 @@
 import BN = require('bn.js')
-import { PrecompileInput, PrecompileResult, OOGResult } from './types'
+import { PrecompileInput } from './types'
+import { OOGResult, ExecResult } from '../evm'
 const assert = require('assert')
 const bn128 = require('rustbn.js')
 
-export default function(opts: PrecompileInput): PrecompileResult {
+export default function(opts: PrecompileInput): ExecResult {
   assert(opts.data)
 
   const inputData = opts.data
@@ -21,7 +22,6 @@ export default function(opts: PrecompileInput): PrecompileResult {
 
   return {
     gasUsed,
-    return: returnData,
-    exception: 1,
+    returnValue: returnData,
   }
 }
