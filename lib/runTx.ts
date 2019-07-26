@@ -151,11 +151,11 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
    * Parse results
    */
   // Generate the bloom for the tx
-  results.bloom = txLogsBloom(results.vm.logs)
+  results.bloom = txLogsBloom(results.execResult.logs)
   // Caculate the total gas used
   results.gasUsed = results.gasUsed.add(basefee)
   // Process any gas refund
-  results.gasRefund = results.vm.gasRefund
+  results.gasRefund = results.execResult.gasRefund
   if (results.gasRefund) {
     if (results.gasRefund.lt(results.gasUsed.divn(2))) {
       results.gasUsed.isub(results.gasRefund)
@@ -185,8 +185,8 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   /*
    * Cleanup accounts
    */
-  if (results.vm.selfdestruct) {
-    const keys = Object.keys(results.vm.selfdestruct)
+  if (results.execResult.selfdestruct) {
+    const keys = Object.keys(results.execResult.selfdestruct)
     for (const k of keys) {
       await state.putAccount(Buffer.from(k, 'hex'), new Account())
     }

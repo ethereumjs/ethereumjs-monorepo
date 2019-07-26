@@ -1,27 +1,21 @@
 import BN = require('bn.js')
 import {
-  toBuffer,
   generateAddress,
   generateAddress2,
-  zeros,
   KECCAK256_NULL,
   MAX_INTEGER,
+  toBuffer,
+  zeros,
 } from 'ethereumjs-util'
 import Account from 'ethereumjs-account'
-import { VmError, ERROR } from '../exceptions'
+import { ERROR, VmError } from '../exceptions'
 import PStateManager from '../state/promisified'
-import { getPrecompile, PrecompileFunc, PrecompileResult } from './precompiles'
-import { OOGResult } from './precompiles/types'
+import { getPrecompile, PrecompileFunc } from './precompiles'
 import TxContext from './txContext'
 import Message from './message'
 import EEI from './eei'
-import {
-  default as Interpreter,
-  InterpreterResult,
-  RunState,
-  IsException,
-  InterpreterOpts,
-} from './interpreter'
+import { default as Interpreter, InterpreterOpts, RunState } from './interpreter'
+
 const Block = require('ethereumjs-block')
 
 /**
@@ -39,7 +33,7 @@ export interface EVMResult {
   /**
    * Contains the results from running the code, if any, as described in [[runCode]]
    */
-  vm: ExecResult
+  execResult: ExecResult
 }
 
 /**
@@ -48,13 +42,9 @@ export interface EVMResult {
 export interface ExecResult {
   runState?: RunState
   /**
-   * `0` if the contract encountered an exception, `1` otherwise
-   */
-  exception: IsException
-  /**
    * Description of the exception, if any occured
    */
-  exceptionError?: VmError | ERROR
+  exceptionError?: VmError
   /**
    * Amount of gas left
    */
@@ -66,15 +56,11 @@ export interface ExecResult {
   /**
    * Return value from the contract
    */
-  return: Buffer
+  returnValue: Buffer
   /**
    * Array of logs that the contract emitted
    */
   logs?: any[]
-  /**
-   * Value returned by the contract
-   */
-  returnValue?: Buffer
   /**
    * Amount of gas to refund from deleting storage values
    */
@@ -83,6 +69,14 @@ export interface ExecResult {
    * A map from the accounts that have self-destructed to the addresses to send their funds to
    */
   selfdestruct?: { [k: string]: Buffer }
+}
+
+export function OOGResult(gasLimit: BN): ExecResult {
+  return {
+    returnValue: Buffer.alloc(0),
+    gasUsed: gasLimit,
+    exceptionError: new VmError(ERROR.OUT_OF_GAS),
+  }
 }
 
 /**
@@ -119,16 +113,16 @@ export default class EVM {
       result = await this._executeCreate(message)
     }
 
-    const err = result.vm.exceptionError
+    const err = result.execResult.exceptionError
     if (err) {
-      result.vm.logs = []
+      result.execResult.logs = []
       await this._state.revert()
       if (message.isCompiled) {
         // Empty precompiled contracts need to be deleted even in case of OOG
         // because the bug in both Geth and Parity led to deleting RIPEMD precompiled in this case
         // see https://github.com/ethereum/go-ethereum/pull/3341/files#diff-2433aa143ee4772026454b8abd76b9dd
         // We mark the account as touched here, so that is can be removed among other touched empty accounts (after tx finalization)
-        if ((err as ERROR) === ERROR.OUT_OF_GAS || (err as VmError).error === ERROR.OUT_OF_GAS) {
+        if (err.error === ERROR.OUT_OF_GAS) {
           await this._touchAccount(message.to)
         }
       }
@@ -157,15 +151,14 @@ export default class EVM {
     if (!message.code || message.code.length === 0) {
       return {
         gasUsed: new BN(0),
-        vm: {
-          exception: 1,
+        execResult: {
           gasUsed: new BN(0),
-          return: Buffer.alloc(0),
+          returnValue: Buffer.alloc(0),
         },
       }
     }
 
-    let result
+    let result: ExecResult
     if (message.isCompiled) {
       result = this.runPrecompile(message.code as PrecompileFunc, message.data, message.gasLimit)
     } else {
@@ -174,7 +167,7 @@ export default class EVM {
 
     return {
       gasUsed: result.gasUsed,
-      vm: result,
+      execResult: result,
     }
   }
 
@@ -195,10 +188,9 @@ export default class EVM {
       return {
         gasUsed: message.gasLimit,
         createdAddress: message.to,
-        vm: {
-          return: Buffer.alloc(0),
-          exception: 0,
-          exceptionError: ERROR.CREATE_COLLISION,
+        execResult: {
+          returnValue: Buffer.alloc(0),
+          exceptionError: new VmError(ERROR.CREATE_COLLISION),
           gasUsed: message.gasLimit,
         },
       }
@@ -219,10 +211,9 @@ export default class EVM {
       return {
         gasUsed: new BN(0),
         createdAddress: message.to,
-        vm: {
-          exception: 1,
+        execResult: {
           gasUsed: new BN(0),
-          return: Buffer.alloc(0),
+          returnValue: Buffer.alloc(0),
         },
       }
     }
@@ -233,7 +224,7 @@ export default class EVM {
     let totalGas = result.gasUsed
     if (!result.exceptionError) {
       const returnFee = new BN(
-        result.return.length * this._vm._common.param('gasPrices', 'createData'),
+        result.returnValue.length * this._vm._common.param('gasPrices', 'createData'),
       )
       totalGas = totalGas.add(returnFee)
     }
@@ -241,7 +232,7 @@ export default class EVM {
     // if not enough gas
     if (
       totalGas.lte(message.gasLimit) &&
-      (this._vm.allowUnlimitedContractSize || result.return.length <= 24576)
+      (this._vm.allowUnlimitedContractSize || result.returnValue.length <= 24576)
     ) {
       result.gasUsed = totalGas
     } else {
@@ -249,14 +240,14 @@ export default class EVM {
     }
 
     // Save code if a new contract was created
-    if (!result.exceptionError && result.return && result.return.toString() !== '') {
-      await this._state.putContractCode(message.to, result.return)
+    if (!result.exceptionError && result.returnValue && result.returnValue.toString() !== '') {
+      await this._state.putContractCode(message.to, result.returnValue)
     }
 
     return {
       gasUsed: result.gasUsed,
       createdAddress: message.to,
-      vm: result,
+      execResult: result,
     }
   }
 
@@ -290,7 +281,7 @@ export default class EVM {
     let result = eei._result
     let gasUsed = message.gasLimit.sub(eei._gasLeft)
     if (interpreterRes.exceptionError) {
-      if ((interpreterRes.exceptionError as VmError).error !== ERROR.REVERT) {
+      if (interpreterRes.exceptionError.error !== ERROR.REVERT) {
         gasUsed = message.gasLimit
       }
 
@@ -310,11 +301,10 @@ export default class EVM {
         ...result,
         ...eei._env,
       },
-      exception: interpreterRes.exception,
       exceptionError: interpreterRes.exceptionError,
       gas: eei._gasLeft,
       gasUsed,
-      return: result.returnValue ? result.returnValue : Buffer.alloc(0),
+      returnValue: result.returnValue ? result.returnValue : Buffer.alloc(0),
     }
   }
 
@@ -329,7 +319,7 @@ export default class EVM {
   /**
    * Executes a precompiled contract with given data and gas limit.
    */
-  runPrecompile(code: PrecompileFunc, data: Buffer, gasLimit: BN): PrecompileResult {
+  runPrecompile(code: PrecompileFunc, data: Buffer, gasLimit: BN): ExecResult {
     if (typeof code !== 'function') {
       throw new Error('Invalid precompile')
     }
