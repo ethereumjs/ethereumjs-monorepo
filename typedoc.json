@@ -1,0 +1,8 @@
+{
+  "out": "docs",
+  "mode": "file",
+  "readme": "none",
+  "theme": "markdown",
+  "mdEngine": "github",
+  "excludeNotExported": true
+}
