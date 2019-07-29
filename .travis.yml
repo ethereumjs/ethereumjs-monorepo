@@ -38,7 +38,7 @@ matrix:
       node_js: "10"
       env: CXX=g++-4.8 TEST_SUITE=test:node
     - os: linux
-    node_js: "11"
+      node_js: "11"
       env: CXX=g++-4.8 TEST_SUITE=test:node
     - os: linux
       node_js: "12"
