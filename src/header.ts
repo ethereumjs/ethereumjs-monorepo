@@ -1,14 +1,7 @@
 import Common from 'ethereumjs-common'
 import * as utils from 'ethereumjs-util'
 import { BN } from 'ethereumjs-util'
-import {
-  Blockchain,
-  BlockHeaderData,
-  BufferLike,
-  NetworkOptions,
-  NoReturnValueCallback,
-  PrefixedHexString,
-} from './types'
+import { Blockchain, BlockHeaderData, BufferLike, NetworkOptions, PrefixedHexString } from './types'
 import { Buffer } from 'buffer'
 import { Block } from './block'
 
@@ -270,70 +263,50 @@ export class BlockHeader {
    * @method validate
    * @param {Blockchain} blockChain the blockchain that this block is validating against
    * @param {Bignum} [height] if this is an uncle header, this is the height of the block that is including it
-   * @param {Function} cb the callback function. The callback is given an `error` if the block is invalid
    */
-  validate(blockchain: Blockchain, cb: NoReturnValueCallback): void
-  validate(blockchain: Blockchain, height: BN, cb: NoReturnValueCallback): void
-  validate(
-    blockchain: Blockchain,
-    heightOrCb: BN | NoReturnValueCallback,
-    cb?: NoReturnValueCallback,
-  ): void {
-    if (heightOrCb instanceof Function) {
-      cb = heightOrCb
-    }
-
-    if (cb === undefined) {
-      throw new Error('No callback provided')
-    }
-
-    const callback = cb
-
+  async validate(blockchain: Blockchain, height?: BN): Promise<void> {
     if (this.isGenesis()) {
-      return callback(null)
+      return
     }
 
-    // find the blocks parent
-    blockchain.getBlock(this.parentHash, (err, parentBlock) => {
-      if (err || parentBlock === undefined) {
-        return callback(new Error('could not find parent block'))
-      }
+    const parentBlock = await this._getBlockByHash(blockchain, this.parentHash)
 
-      const number = new BN(this.number)
-      if (number.cmp(new BN(parentBlock.header.number).iaddn(1)) !== 0) {
-        return callback(new Error('invalid number'))
-      }
+    if (parentBlock === undefined) {
+      throw new Error('could not find parent block')
+    }
 
-      if (BN.isBN(heightOrCb)) {
-        const dif = heightOrCb.sub(new BN(parentBlock.header.number))
-        if (!(dif.cmpn(8) === -1 && dif.cmpn(1) === 1)) {
-          return callback(new Error('uncle block has a parent that is too old or to young'))
-        }
-      }
+    const number = new BN(this.number)
+    if (number.cmp(new BN(parentBlock.header.number).iaddn(1)) !== 0) {
+      throw new Error('invalid number')
+    }
 
-      if (!this.validateDifficulty(parentBlock)) {
-        return callback(new Error('invalid Difficulty'))
+    if (height !== undefined && BN.isBN(height)) {
+      const dif = height.sub(new BN(parentBlock.header.number))
+      if (!(dif.cmpn(8) === -1 && dif.cmpn(1) === 1)) {
+        throw new Error('uncle block has a parent that is too old or to young')
       }
+    }
 
-      if (!this.validateGasLimit(parentBlock)) {
-        return callback(new Error('invalid gas limit'))
-      }
+    if (!this.validateDifficulty(parentBlock)) {
+      throw new Error('invalid Difficulty')
+    }
 
-      if (utils.bufferToInt(parentBlock.header.number) + 1 !== utils.bufferToInt(this.number)) {
-        return callback(new Error('invalid heigth'))
-      }
+    if (!this.validateGasLimit(parentBlock)) {
+      throw new Error('invalid gas limit')
+    }
 
-      if (utils.bufferToInt(this.timestamp) <= utils.bufferToInt(parentBlock.header.timestamp)) {
-        return callback(new Error('invalid timestamp'))
-      }
+    if (utils.bufferToInt(parentBlock.header.number) + 1 !== utils.bufferToInt(this.number)) {
+      throw new Error('invalid heigth')
+    }
 
-      const hardfork = this._getHardfork()
-      if (this.extraData.length > this._common.param('vm', 'maxExtraDataSize', hardfork)) {
-        return callback(new Error('invalid amount of extra data'))
-      }
+    if (utils.bufferToInt(this.timestamp) <= utils.bufferToInt(parentBlock.header.timestamp)) {
+      throw new Error('invalid timestamp')
+    }
 
-      callback(null)
-    })
+    const hardfork = this._getHardfork()
+    if (this.extraData.length > this._common.param('vm', 'maxExtraDataSize', hardfork)) {
+      throw new Error('invalid amount of extra data')
+    }
   }
 
   /**
@@ -391,5 +364,18 @@ export class BlockHeader {
     return commonHardFork !== null
       ? commonHardFork
       : this._common.activeHardfork(utils.bufferToInt(this.number))
+  }
+
+  private async _getBlockByHash(blockchain: Blockchain, hash: Buffer): Promise<Block | undefined> {
+    return new Promise((resolve, reject) => {
+      blockchain.getBlock(hash, (err, block) => {
+        if (err) {
+          reject(err)
+          return
+        }
+
+        resolve(block)
+      })
+    })
   }
 }

@@ -4,8 +4,7 @@ import { BN, rlp } from 'ethereumjs-util'
 import { Transaction } from 'ethereumjs-tx'
 
 import { BlockHeader } from './header'
-import { Blockchain, BlockData, NetworkOptions, NoReturnValueCallback } from './types'
-import { callbackify } from './callbackify'
+import { Blockchain, BlockData, NetworkOptions } from './types'
 
 const Trie = require('merkle-patricia-tree')
 
@@ -130,11 +129,7 @@ export class Block {
    * Generate transaction trie. The tx trie must be generated before the transaction trie can
    * be validated with `validateTransactionTrie`
    */
-  genTxTrie(cb: NoReturnValueCallback) {
-    callbackify(this._getTxTrie.bind(this))(cb)
-  }
-
-  private async _getTxTrie() {
+  async genTxTrie() {
     for (let i = 0; i < this.transactions.length; i++) {
       const tx = this.transactions[i]
       await this._putTxInTrie(i, tx)
@@ -179,7 +174,7 @@ export class Block {
     this.transactions.forEach(function(tx, i) {
       const error = tx.validate(true)
       if (error) {
-        errors.push(error + ' at tx ' + i)
+        errors.push(`${error} at tx ${i}`)
       }
     })
 
@@ -193,18 +188,13 @@ export class Block {
   /**
    * Validates the entire block. Returns a string to the callback if block is invalid
    * @method validate
-   * @param {BlockChain} blockChain the blockchain that this block wants to be part of
-   * @param {Function} cb the callback which is given a `String` if the block is not valid
+   * @param blockChain the blockchain that this block wants to be part of
    */
-  validate(blockChain: Blockchain, cb: NoReturnValueCallback) {
-    callbackify(this._validate.bind(this, blockChain))(cb)
-  }
-
-  private async _validate(blockChain: Blockchain) {
+  async validate(blockChain: Blockchain) {
     await Promise.all([
-      this._validateUncles(blockChain),
-      this._getTxTrie(),
-      this._validateHeader(this.header, blockChain),
+      this.validateUncles(blockChain),
+      this.genTxTrie(),
+      this.header.validate(blockChain),
     ])
 
     if (!this.validateTransactionsTrie()) {
@@ -236,11 +226,7 @@ export class Block {
    * @param {Blockchain} blockChain an instance of the Blockchain
    * @param {Function} cb the callback
    */
-  validateUncles(blockChain: Blockchain, cb: NoReturnValueCallback) {
-    callbackify(this._validateUncles.bind(this, blockChain))(cb)
-  }
-
-  private async _validateUncles(blockchain: Blockchain) {
+  async validateUncles(blockchain: Blockchain) {
     if (this.isGenesis()) {
       return
     }
@@ -258,7 +244,7 @@ export class Block {
     return Promise.all(
       this.uncleHeaders.map(async uh => {
         const height = new BN(this.header.number)
-        return this._validateHeader(uh, blockchain, height)
+        return uh.validate(blockchain, height)
       }),
     )
   }
@@ -277,27 +263,5 @@ export class Block {
     } else {
       return ethUtil.baToJSON(this.raw)
     }
-  }
-
-  private _validateHeader(header: BlockHeader, blockchain: Blockchain, height?: BN) {
-    return new Promise((resolve, reject) => {
-      if (height !== undefined) {
-        header.validate(blockchain, height, err => {
-          if (err) {
-            reject(err)
-          }
-
-          resolve()
-        })
-      } else {
-        header.validate(blockchain, err => {
-          if (err) {
-            reject(err)
-          }
-
-          resolve()
-        })
-      }
-    })
   }
 }

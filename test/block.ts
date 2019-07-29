@@ -29,25 +29,25 @@ tape('[Block]: block functions', function(t) {
 
   const testData = require('./testdata.json')
 
-  function testTransactionValidation(st: tape.Test, block: Block) {
+  async function testTransactionValidation(st: tape.Test, block: Block) {
     st.equal(block.validateTransactions(), true)
 
-    block.genTxTrie(function() {
-      st.equal(block.validateTransactionsTrie(), true)
-      st.end()
-    })
+    await block.genTxTrie()
+
+    st.equal(block.validateTransactionsTrie(), true)
+    st.end()
   }
 
-  t.test('should test transaction validation', function(st) {
+  t.test('should test transaction validation', async function(st) {
     const block = new Block(rlp.decode(testData.blocks[0].rlp))
     st.plan(2)
-    testTransactionValidation(st, block)
+    await testTransactionValidation(st, block)
   })
 
-  t.test('should test transaction validation with empty transaction list', function(st) {
+  t.test('should test transaction validation with empty transaction list', async function(st) {
     const block = new Block()
     st.plan(2)
-    testTransactionValidation(st, block)
+    await testTransactionValidation(st, block)
   })
 
   const testData2 = require('./testdata2.json')

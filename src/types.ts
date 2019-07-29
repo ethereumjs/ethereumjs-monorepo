@@ -73,5 +73,3 @@ export interface BlockData {
 export interface Blockchain {
   getBlock(hash: Buffer, callback: (err: Error | null, block?: Block) => void): void
 }
-
-export type NoReturnValueCallback = (err: Error | null) => void
