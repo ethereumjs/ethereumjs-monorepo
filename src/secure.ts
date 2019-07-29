@@ -1,5 +1,5 @@
-const ethUtil = require('ethereumjs-util')
-const CheckpointTrie = require('./checkpointTrie')
+import { keccak256 } from 'ethereumjs-util'
+import { CheckpointTrie } from './checkpointTrie'
 
 /**
  * You can create a secure Trie where the keys are automatically hashed
@@ -9,29 +9,29 @@ const CheckpointTrie = require('./checkpointTrie')
  * @extends Trie
  * @public
  */
-module.exports = class SecureTrie extends CheckpointTrie {
-  constructor (...args) {
+export class SecureTrie extends CheckpointTrie {
+  constructor (...args: any) {
     super(...args)
   }
 
-  static prove (trie, key, cb) {
-    const hash = ethUtil.keccak256(key)
+  static prove (trie: SecureTrie, key: Buffer, cb: Function) {
+    const hash = keccak256(key)
     super.prove(trie, hash, cb)
   }
 
-  static verifyProof (rootHash, key, proof, cb) {
-    const hash = ethUtil.keccak256(key)
+  static verifyProof (rootHash: Buffer, key: Buffer, proof: Buffer[], cb: Function) {
+    const hash = keccak256(key)
     super.verifyProof(rootHash, hash, proof, cb)
   }
 
-  copy () {
+  copy (): SecureTrie {
     const trie = super.copy(false)
     const db = trie.db.copy()
     return new SecureTrie(db._leveldb, this.root)
   }
 
-  get (key, cb) {
-    const hash = ethUtil.keccak256(key)
+  get (key: Buffer, cb: Function) {
+    const hash = keccak256(key)
     super.get(hash, cb)
   }
 
@@ -39,17 +39,17 @@ module.exports = class SecureTrie extends CheckpointTrie {
    * For a falsey value, use the original key
    * to avoid double hashing the key.
    */
-  put (key, val, cb) {
+  put (key: Buffer, val: Buffer, cb: Function) {
     if (!val) {
       this.del(key, cb)
     } else {
-      const hash = ethUtil.keccak256(key)
+      const hash = keccak256(key)
       super.put(hash, val, cb)
     }
   }
 
-  del (key, cb) {
-    const hash = ethUtil.keccak256(key)
+  del (key: Buffer, cb: Function) {
+    const hash = keccak256(key)
     super.del(hash, cb)
   }
 }

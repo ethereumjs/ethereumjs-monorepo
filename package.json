@@ -23,7 +23,7 @@
     "tsc": "ethereumjs-config-tsc",
     "test": "npm run test:node && npm run test:browser",
     "test:browser": "karma start karma.conf.js",
-    "test:node": "babel-tape-runner ./test/*.js"
+    "test:node": "npm run build && tape ./test/*.js"
   },
   "husky": {
     "hooks": {
@@ -50,11 +50,11 @@
   "license": "MPL-2.0",
   "dependencies": {
     "async": "^2.6.1",
-    "ethereumjs-util": "^5.2.0",
+    "ethereumjs-util": "^6.1.0",
     "level-mem": "^3.0.1",
     "level-ws": "^1.0.0",
     "readable-stream": "^3.0.6",
-    "rlp": "^2.0.0",
+    "rlp": "^2.2.3",
     "semaphore": ">=1.0.1"
   },
   "devDependencies": {
@@ -66,6 +66,7 @@
     "@ethereumjs/config-prettier": "^1.1.1",
     "@ethereumjs/config-tsc": "^1.1.1",
     "@ethereumjs/config-tslint": "^1.1.1",
+    "@types/bn.js": "^4.11.5",
     "babel-tape-runner": "^3.0.0",
     "babelify": "^10.0.0",
     "browserify": "^13.0.0",

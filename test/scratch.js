@@ -1,6 +1,6 @@
 const tape = require('tape')
-const ScratchDB = require('../src/scratch')
-const DB = require('../src/db')
+const ScratchDB = require('../dist/scratch').ScratchDB
+const DB = require('../dist/db').DB
 
 tape('ScratchDB', (t) => {
   const upstream = new DB()

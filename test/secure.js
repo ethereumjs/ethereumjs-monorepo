@@ -1,4 +1,4 @@
-const Trie = require('../src/secure.js')
+const Trie = require('../dist/secure.js').SecureTrie
 const async = require('async')
 const tape = require('tape')
 

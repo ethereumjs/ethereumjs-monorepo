@@ -1,5 +1,5 @@
 const tape = require('tape')
-const Trie = require('../src/checkpointTrie')
+const Trie = require('../dist/checkpointTrie').CheckpointTrie
 
 tape('testing checkpoints', function (tester) {
   let trie, preRoot, postRoot, trieCopy

@@ -1,5 +1,5 @@
 const tape = require('tape')
-const DB = require('../src/db')
+const DB = require('../dist/db').DB
 
 tape('DB basic functionality', (t) => {
   const db = new DB()
