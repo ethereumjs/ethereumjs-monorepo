@@ -4,7 +4,7 @@
  * @param {Buffer| String} key
  * @private
  */
-export function stringToNibbles (key: Buffer): number[] {
+export function stringToNibbles(key: Buffer): number[] {
   const bkey = new Buffer(key)
   let nibbles = []
 
@@ -24,7 +24,7 @@ export function stringToNibbles (key: Buffer): number[] {
  * @param {Array} Nibble array
  * @private
  */
-export function nibblesToBuffer (arr: number[]): Buffer {
+export function nibblesToBuffer(arr: number[]): Buffer {
   let buf = new Buffer(arr.length / 2)
   for (let i = 0; i < buf.length; i++) {
     let q = i * 2
@@ -40,7 +40,7 @@ export function nibblesToBuffer (arr: number[]): Buffer {
  * @param {Array} nib2
  * @private
  */
-export function matchingNibbleLength (nib1: number[], nib2: number[]): number {
+export function matchingNibbleLength(nib1: number[], nib2: number[]): number {
   let i = 0
   while (nib1[i] === nib2[i] && nib1.length > i) {
     i++
@@ -53,7 +53,7 @@ export function matchingNibbleLength (nib1: number[], nib2: number[]): number {
  * @param {Array} keyA
  * @param {Array} keyB
  */
-export function doKeysMatch (keyA: number[], keyB: number[]): boolean {
+export function doKeysMatch(keyA: number[], keyB: number[]): boolean {
   const length = matchingNibbleLength(keyA, keyB)
   return length === keyA.length && length === keyB.length
 }

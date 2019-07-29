@@ -10,7 +10,7 @@ import { asyncFirstSeries } from './util/async'
 export class ScratchDB extends DB {
   private _upstream: DB
 
-  constructor (upstreamDB: DB) {
+  constructor(upstreamDB: DB) {
     super()
     this._upstream = upstreamDB
   }
@@ -19,8 +19,10 @@ export class ScratchDB extends DB {
    * Similar to `DB.get`, but first searches in-memory
    * scratch DB, if key not found, searches upstream DB.
    */
-  get (key: Buffer, cb: Function) {
-    const getDBs = this._upstream._leveldb ? [this._leveldb, this._upstream._leveldb] : [this._leveldb]
+  get(key: Buffer, cb: Function) {
+    const getDBs = this._upstream._leveldb
+      ? [this._leveldb, this._upstream._leveldb]
+      : [this._leveldb]
     const dbGet = (db: any, cb2: Function) => {
       db.get(key, ENCODING_OPTS, (err: Error, v: Buffer | null) => {
         if (err || !v) {
@@ -34,7 +36,7 @@ export class ScratchDB extends DB {
     asyncFirstSeries(getDBs, dbGet, cb)
   }
 
-  copy (): ScratchDB {
+  copy(): ScratchDB {
     const scratch = new ScratchDB(this._upstream)
     scratch._leveldb = this._leveldb
     return scratch

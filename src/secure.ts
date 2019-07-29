@@ -10,27 +10,27 @@ import { CheckpointTrie } from './checkpointTrie'
  * @public
  */
 export class SecureTrie extends CheckpointTrie {
-  constructor (...args: any) {
+  constructor(...args: any) {
     super(...args)
   }
 
-  static prove (trie: SecureTrie, key: Buffer, cb: Function) {
+  static prove(trie: SecureTrie, key: Buffer, cb: Function) {
     const hash = keccak256(key)
     super.prove(trie, hash, cb)
   }
 
-  static verifyProof (rootHash: Buffer, key: Buffer, proof: Buffer[], cb: Function) {
+  static verifyProof(rootHash: Buffer, key: Buffer, proof: Buffer[], cb: Function) {
     const hash = keccak256(key)
     super.verifyProof(rootHash, hash, proof, cb)
   }
 
-  copy (): SecureTrie {
+  copy(): SecureTrie {
     const trie = super.copy(false)
     const db = trie.db.copy()
     return new SecureTrie(db._leveldb, this.root)
   }
 
-  get (key: Buffer, cb: Function) {
+  get(key: Buffer, cb: Function) {
     const hash = keccak256(key)
     super.get(hash, cb)
   }
@@ -39,7 +39,7 @@ export class SecureTrie extends CheckpointTrie {
    * For a falsey value, use the original key
    * to avoid double hashing the key.
    */
-  put (key: Buffer, val: Buffer, cb: Function) {
+  put(key: Buffer, val: Buffer, cb: Function) {
     if (!val) {
       this.del(key, cb)
     } else {
@@ -48,7 +48,7 @@ export class SecureTrie extends CheckpointTrie {
     }
   }
 
-  del (key: Buffer, cb: Function) {
+  del(key: Buffer, cb: Function) {
     const hash = keccak256(key)
     super.del(hash, cb)
   }

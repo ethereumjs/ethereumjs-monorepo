@@ -17,7 +17,7 @@ export class PrioritizedTaskExecutor {
    * @prop {Number} currentPoolSize The current size of the pool
    * @prop {Array} queue The task queue
    */
-  constructor (maxPoolSize: number) {
+  constructor(maxPoolSize: number) {
     this.maxPoolSize = maxPoolSize
     this.currentPoolSize = 0
     this.queue = []
@@ -29,7 +29,7 @@ export class PrioritizedTaskExecutor {
    * @param {Number} priority The priority of the task
    * @param {Function} task The function that accepts the callback, which must be called upon the task completion.
    */
-  execute (priority: number, fn: Function) {
+  execute(priority: number, fn: Function) {
     if (this.currentPoolSize < this.maxPoolSize) {
       this.currentPoolSize++
       fn(() => {
@@ -43,7 +43,7 @@ export class PrioritizedTaskExecutor {
     } else {
       this.queue.push({
         priority: priority,
-        fn: fn
+        fn: fn,
       })
     }
   }

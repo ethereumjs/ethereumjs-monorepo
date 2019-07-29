@@ -20,7 +20,7 @@ export class DB {
    * defaults to an [in-memory store](https://github.com/Level/memdown).
    * @param {Object} [leveldb] - An abstract-leveldown compliant store
    */
-  constructor (leveldb?: any) {
+  constructor(leveldb?: any) {
     this._leveldb = leveldb || level()
   }
 
@@ -31,7 +31,7 @@ export class DB {
    * `err` - for errors that may have occured
    * and `value` - the found value in a `Buffer` or if no value was found `null`.
    */
-  get (key: Buffer, cb: Function) {
+  get(key: Buffer, cb: Function) {
     if (!Buffer.isBuffer(key)) throw new Error('Invalid input: expected buffer')
 
     this._leveldb.get(key, ENCODING_OPTS, (err: Error, v?: Buffer) => {
@@ -50,7 +50,7 @@ export class DB {
    * @param {Function} cb A callback `Function`, which is given the argument
    * `err` - for errors that may have occured
    */
-  put (key: Buffer, val: Buffer, cb: Function) {
+  put(key: Buffer, val: Buffer, cb: Function) {
     if (!Buffer.isBuffer(key)) throw new Error('Invalid input: expected buffer')
     if (!Buffer.isBuffer(val)) throw new Error('Invalid input: expected buffer')
 
@@ -63,7 +63,7 @@ export class DB {
    * @param {Function} cb A callback `Function`, which is given the argument
    * `err` - for errors that may have occured
    */
-  del (key: Buffer, cb: Function) {
+  del(key: Buffer, cb: Function) {
     if (!Buffer.isBuffer(key)) throw new Error('Invalid input: expected buffer')
 
     this._leveldb.del(key, ENCODING_OPTS, cb)
@@ -75,7 +75,7 @@ export class DB {
    * @param {Function} cb A callback `Function`, which is given the argument
    * `err` - for errors that may have occured
    */
-  batch (opStack: BatchDBOp[], cb: Function) {
+  batch(opStack: BatchDBOp[], cb: Function) {
     if (!Array.isArray(opStack)) throw new Error('Invalid input: expected buffer')
 
     this._leveldb.batch(opStack, ENCODING_OPTS, cb)
@@ -85,7 +85,7 @@ export class DB {
    * Returns a copy of the DB instance, with a reference
    * to the **same** underlying leveldb instance.
    */
-  copy (): DB {
+  copy(): DB {
     return new DB(this._leveldb)
   }
 }

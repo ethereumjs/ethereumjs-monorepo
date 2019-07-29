@@ -7,14 +7,14 @@ enum NodeType {
   Leaf = 'leaf',
   Branch = 'branch',
   Extension = 'extention', // FIXME
-  Unknown = 'unknown' // TODO
+  Unknown = 'unknown', // TODO
 }
 
 export class TrieNode {
   raw: Buffer[]
   type: NodeType
 
-  constructor (type: any, key?: any, value?: any) {
+  constructor(type: any, key?: any, value?: any) {
     if (Array.isArray(type)) {
       this.raw = type
       this.type = TrieNode.getNodeType(type)
@@ -25,7 +25,7 @@ export class TrieNode {
         // @ts-ignore
         this.raw = Array.apply(null, Array(17))
         if (values) {
-          values.forEach(function (this: any, keyVal: any) {
+          values.forEach(function(this: any, keyVal: any) {
             this.set.apply(this, keyVal)
           })
         }
@@ -46,7 +46,7 @@ export class TrieNode {
    *   - extention - if the node is an extention
    *   - unknown - if something else got borked
    */
-  static getNodeType (node: Buffer[]): NodeType {
+  static getNodeType(node: Buffer[]): NodeType {
     if (node.length === 17) {
       return NodeType.Branch
     } else if (node.length === 2) {
@@ -60,33 +60,33 @@ export class TrieNode {
     throw new Error('invalid node type')
   }
 
-  static isRawNode (node: any): boolean {
+  static isRawNode(node: any): boolean {
     return Array.isArray(node) && !Buffer.isBuffer(node)
   }
 
-  get value (): Buffer {
+  get value(): Buffer {
     return this.getValue()
   }
 
-  set value (v) {
+  set value(v) {
     this.setValue(v)
   }
 
-  get key (): number[] {
+  get key(): number[] {
     return this.getKey()
   }
 
-  set key (k) {
+  set key(k) {
     this.setKey(k)
   }
 
-  parseNode (rawNode: Buffer[]) {
+  parseNode(rawNode: Buffer[]) {
     this.raw = rawNode
     this.type = TrieNode.getNodeType(rawNode)
   }
 
   // TODO: refactor
-  setValue (key: Buffer | number, value?: Buffer) {
+  setValue(key: Buffer | number, value?: Buffer) {
     if (this.type !== 'branch') {
       this.raw[1] = key as Buffer
     } else {
@@ -99,7 +99,7 @@ export class TrieNode {
   }
 
   // @ts-ignore
-  getValue (key?: number): Buffer {
+  getValue(key?: number): Buffer {
     if (this.type === 'branch') {
       if (arguments.length === 0) {
         key = 16
@@ -115,7 +115,7 @@ export class TrieNode {
     //throw new Error('invalid node')
   }
 
-  setKey (key: Buffer | number[]) {
+  setKey(key: Buffer | number[]) {
     if (this.type !== 'branch') {
       if (Buffer.isBuffer(key)) {
         key = stringToNibbles(key)
@@ -129,7 +129,7 @@ export class TrieNode {
   }
 
   // @ts-ignore
-  getKey (): number[] {
+  getKey(): number[] {
     if (this.type !== 'branch') {
       let key = this.raw[0]
       let nibbles = removeHexPrefix(stringToNibbles(key))
@@ -138,19 +138,19 @@ export class TrieNode {
     //throw new Error('invalid node')
   }
 
-  serialize (): Buffer {
+  serialize(): Buffer {
     return rlp.encode(this.raw)
   }
 
-  hash (): Buffer {
+  hash(): Buffer {
     return keccak256(this.serialize())
   }
 
-  toString (): string {
+  toString(): string {
     // @ts-ignore
     let out = NodeType[this.type]
     out += ': ['
-    this.raw.forEach(function (el) {
+    this.raw.forEach(function(el) {
       if (Buffer.isBuffer(el)) {
         out += el.toString('hex') + ', '
       } else if (el) {
@@ -164,7 +164,7 @@ export class TrieNode {
     return out
   }
 
-  getChildren (): (Buffer | number[])[][] {
+  getChildren(): (Buffer | number[])[][] {
     var children = []
     switch (this.type) {
       case 'leaf':
@@ -178,9 +178,7 @@ export class TrieNode {
         for (let index = 0, end = 16; index < end; index++) {
           const value = this.getValue(index)
           if (value) {
-            children.push([
-              [index], value
-            ])
+            children.push([[index], value])
           }
         }
         break

@@ -4,7 +4,7 @@
  * @param {Array} Array of nibbles
  * @returns {Array} - returns buffer of encoded data
  **/
-export function addHexPrefix (key: number[], terminator: boolean): number[] {
+export function addHexPrefix(key: number[], terminator: boolean): number[] {
   // odd
   if (key.length % 2) {
     key.unshift(1)
@@ -27,7 +27,7 @@ export function addHexPrefix (key: number[], terminator: boolean): number[] {
  * @param {Array} Array of nibbles
  * @private
  */
-export function removeHexPrefix (val: number[]): number[] {
+export function removeHexPrefix(val: number[]): number[] {
   if (val[0] % 2) {
     val = val.slice(1)
   } else {
@@ -43,6 +43,6 @@ export function removeHexPrefix (val: number[]): number[] {
  * @param {Array} key - an hexprefixed array of nibbles
  * @private
  */
-export function isTerminator (key: number[]): boolean {
+export function isTerminator(key: number[]): boolean {
   return key[0] > 1
 }

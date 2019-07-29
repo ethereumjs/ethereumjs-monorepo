@@ -8,27 +8,30 @@ export class TrieReadStream extends Readable {
   private trie: BaseTrie
   private _started: boolean
 
-  constructor (trie: BaseTrie) {
+  constructor(trie: BaseTrie) {
     super({ objectMode: true })
 
     this.trie = trie
     this._started = false
   }
 
-  _read () {
+  _read() {
     if (!this._started) {
       this._started = true
-      this.trie._findValueNodes((nodeRef: Buffer, node: TrieNode, key: number[], next: Function) => {
-        this.push({
-          key: nibblesToBuffer(key),
-          value: node.value
-        })
+      this.trie._findValueNodes(
+        (nodeRef: Buffer, node: TrieNode, key: number[], next: Function) => {
+          this.push({
+            key: nibblesToBuffer(key),
+            value: node.value,
+          })
 
-        next()
-      }, () => {
-        // close stream
-        this.push(null)
-      })
+          next()
+        },
+        () => {
+          // close stream
+          this.push(null)
+        },
+      )
     }
   }
 }
