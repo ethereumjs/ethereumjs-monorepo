@@ -8,14 +8,14 @@ addons:
   firefox: latest
   apt:
     sources:
-    - ubuntu-toolchain-r-test
+      - ubuntu-toolchain-r-test
     packages:
-    - g++-4.8
+      - g++-4.8
 before_install:
   - sh -e /etc/init.d/xvfb start
 env:
-  - CXX=g++-4.8
   global:
+    - CXX=g++-4.8
     - DISPLAY=:99.0
   matrix:
     - CXX=g++-4.8 TEST_SUITE=test:node
