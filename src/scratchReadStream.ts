@@ -1,4 +1,3 @@
-//import { Readable } from 'readable-stream'
 import { Trie as BaseTrie } from './baseTrie'
 import { TrieNode } from './trieNode'
 const Readable = require('readable-stream').Readable

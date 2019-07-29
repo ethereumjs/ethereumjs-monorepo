@@ -1,4 +1,3 @@
-//import { Readable } from 'readable-stream'
 import { nibblesToBuffer } from './util/nibbles'
 import { Trie as BaseTrie } from './baseTrie'
 import { TrieNode } from './trieNode'

@@ -112,7 +112,6 @@ export class TrieNode {
     } else {
       return this.raw[1]
     }
-    //throw new Error('invalid node')
   }
 
   setKey(key: Buffer | number[]) {
@@ -135,7 +134,6 @@ export class TrieNode {
       let nibbles = removeHexPrefix(stringToNibbles(key))
       return nibbles
     }
-    //throw new Error('invalid node')
   }
 
   serialize(): Buffer {
