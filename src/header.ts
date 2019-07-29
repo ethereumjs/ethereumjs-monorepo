@@ -6,27 +6,7 @@ import { Buffer } from 'buffer'
 import { Block } from './block'
 
 /**
- * An object that repersents the block header
- * @constructor
- * @param {Array} data raw data, deserialized
- * @param {Array} opts Options
- * @param {String|Number} opts.chain The chain for the block header [default: 'mainnet']
- * @param {String} opts.hardfork Hardfork for the block header [default: null, block number-based behaviour]
- * @param {Object} opts.common Alternatively pass a Common instance instead of setting chain/hardfork directly
- * @prop {Buffer} parentHash the blocks' parent's hash
- * @prop {Buffer} uncleHash sha3(rlp_encode(uncle_list))
- * @prop {Buffer} coinbase the miner address
- * @prop {Buffer} stateRoot The root of a Merkle Patricia tree
- * @prop {Buffer} transactionTrie the root of a Trie containing the transactions
- * @prop {Buffer} receiptTrie the root of a Trie containing the transaction Reciept
- * @prop {Buffer} bloom
- * @prop {Buffer} difficulty
- * @prop {Buffer} number the block's height
- * @prop {Buffer} gasLimit
- * @prop {Buffer} gasUsed
- * @prop {Buffer} timestamp
- * @prop {Buffer} extraData
- * @prop {Array.<Buffer>} raw an array of buffers containing the raw blocks.
+ * An object that represents the block header
  */
 export class BlockHeader {
   public raw!: Buffer[]
@@ -48,6 +28,11 @@ export class BlockHeader {
 
   private readonly _common: Common
 
+  /**
+   * Creates a new block header.
+   * @param data - The data of the block header.
+   * @param opts - The network options for this block, and its header, uncle headers and txs.
+   */
   constructor(
     data: Buffer | PrefixedHexString | BufferLike[] | BlockHeaderData = {},
     opts: NetworkOptions = {},
@@ -142,10 +127,9 @@ export class BlockHeader {
   }
 
   /**
-   * Returns the canoncical difficulty of the block
-   * @method canonicalDifficulty
-   * @param {Block} parentBlock the parent `Block` of the this header
-   * @return {BN}
+   * Returns the canonical difficulty for this block.
+   *
+   * @param parentBlock - the parent `Block` of the this header
    */
   canonicalDifficulty(parentBlock: Block): BN {
     const hardfork = this._getHardfork()
@@ -224,10 +208,9 @@ export class BlockHeader {
   }
 
   /**
-   * checks that the block's `difficuly` matches the canonical difficulty
-   * @method validateDifficulty
-   * @param {Block} parentBlock this block's parent
-   * @return {Boolean}
+   * Checks that the block's `difficulty` matches the canonical difficulty.
+   *
+   * @param parentBlock - this block's parent
    */
   validateDifficulty(parentBlock: Block): boolean {
     const dif = this.canonicalDifficulty(parentBlock)
@@ -235,10 +218,9 @@ export class BlockHeader {
   }
 
   /**
-   * Validates the gasLimit
-   * @method validateGasLimit
-   * @param {Block} parentBlock this block's parent
-   * @returns {Boolean}
+   * Validates the gasLimit.
+   *
+   * @param parentBlock - this block's parent
    */
   validateGasLimit(parentBlock: Block): boolean {
     const pGasLimit = new BN(parentBlock.header.gasLimit)
@@ -259,10 +241,10 @@ export class BlockHeader {
   }
 
   /**
-   * Validates the entire block header
-   * @method validate
-   * @param {Blockchain} blockChain the blockchain that this block is validating against
-   * @param {Bignum} [height] if this is an uncle header, this is the height of the block that is including it
+   * Validates the entire block header, throwing if invalid.
+   *
+   * @param blockchain - the blockchain that this block is validating against
+   * @param height - If this is an uncle header, this is the height of the block that is including it
    */
   async validate(blockchain: Blockchain, height?: BN): Promise<void> {
     if (this.isGenesis()) {
@@ -310,26 +292,21 @@ export class BlockHeader {
   }
 
   /**
-   * Returns the sha3 hash of the blockheader
-   * @method hash
-   * @return {Buffer}
+   * Returns the hash of the block header.
    */
   hash(): Buffer {
     return utils.rlphash(this.raw)
   }
 
   /**
-   * checks if the blockheader is a genesis header
-   * @method isGenesis
-   * @return {Boolean}
+   * Checks if the block header is a genesis header.
    */
   isGenesis(): boolean {
     return this.number.length === 0
   }
 
   /**
-   * turns the header into the canonical genesis block header
-   * @method setGenesisParams
+   * Turns the header into the canonical genesis block header.
    */
   setGenesisParams(): void {
     this.timestamp = this._common.genesis().timestamp
@@ -351,6 +328,7 @@ export class BlockHeader {
 
   /**
    * Returns the block header in JSON format
+   *
    * @see {@link https://github.com/ethereumjs/ethereumjs-util/blob/master/docs/index.md#defineproperties|ethereumjs-util}
    */
   toJSON(_labels: boolean = false): { [key: string]: string } | string[] {

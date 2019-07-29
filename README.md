@@ -5,8 +5,6 @@
 [![Coverage Status](https://img.shields.io/coveralls/ethereumjs/ethereumjs-block.svg?style=flat-square)](https://coveralls.io/r/ethereumjs/ethereumjs-block)
 [![Gitter](https://img.shields.io/gitter/room/ethereum/ethereumjs-lib.svg?style=flat-square)]() or #ethereumjs on freenode
 
-[![js-standard-style](https://cdn.rawgit.com/feross/standard/master/badge.svg)](https://github.com/feross/standard)
-
 Implements schema and functions related to Ethereum's block.
 
 # INSTALL
@@ -24,11 +22,6 @@ This module work with `browserify`.
 # TESTING
 
 Tests in the `tests` directory are partly outdated and testing is primarily done by running the `BlockchainTests` from within the [ethereumjs-vm](https://github.com/ethereumjs/ethereumjs-vm) repository.
-
-Relevant test folders:
-
-- `bcTotalDifficultyTest`
-- TODO
 
 # EthereumJS
 

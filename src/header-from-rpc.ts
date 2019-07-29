@@ -4,6 +4,7 @@ import { NetworkOptions } from './types'
 
 /**
  * Creates a new block header object from Ethereum JSON RPC.
+ *
  * @param blockParams - Ethereum JSON RPC of block (eth_getBlockByNumber)
  * @param networkOptions - An object describing the network
  */

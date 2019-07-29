@@ -9,16 +9,7 @@ import { Blockchain, BlockData, NetworkOptions } from './types'
 const Trie = require('merkle-patricia-tree')
 
 /**
- * Creates a new block object
- * @constructor the raw serialized or the deserialized block.
- * @param {Array|Buffer|Object} data
- * @param {Array} opts Options
- * @param {String|Number} opts.chain The chain for the block [default: 'mainnet']
- * @param {String} opts.hardfork Hardfork for the block [default: null, block number-based behaviour]
- * @param {Object} opts.common Alternatively pass a Common instance (ethereumjs-common) instead of setting chain/hardfork directly
- * @prop {Header} header the block's header
- * @prop {Array.<Header>} uncleList an array of uncle headers
- * @prop {Array.<Buffer>} raw an array of buffers containing the raw blocks.
+ * An object that represents the block
  */
 export class Block {
   public readonly header: BlockHeader
@@ -28,6 +19,13 @@ export class Block {
 
   private readonly _common: Common
 
+  /**
+   * Creates a new block object
+   *
+   *
+   * @param data - The block's data.
+   * @param opts - The network options for this block, and its header, uncle headers and txs.
+   */
   constructor(
     data: Buffer | [Buffer[], Buffer[], Buffer[]] | BlockData = {},
     opts: NetworkOptions = {},
@@ -80,37 +78,37 @@ export class Block {
     }
   }
 
-  get raw() {
+  get raw(): [Buffer[], Buffer[], Buffer[]] {
     return this.serialize(false)
   }
 
   /**
    * Produces a hash the RLP of the block
-   * @method hash
    */
-  hash() {
+  hash(): Buffer {
     return this.header.hash()
   }
 
   /**
-   * Determines if a given block is the genesis block
-   * @method isGenisis
-   * @return Boolean
+   * Determines if this block is the genesis block
    */
-  isGenesis() {
+  isGenesis(): boolean {
     return this.header.isGenesis()
   }
 
   /**
-   * turns the block into the canonical genesis block
-   * @method setGenesisParams
+   * Turns the block into the canonical genesis block
    */
-  setGenesisParams() {
+  setGenesisParams(): void {
     this.header.setGenesisParams()
   }
 
   /**
    * Produces a serialization of the block.
+   *
+   * @param rlpEncode - If `true`, the returned object is the RLP encoded data as seen by the
+   * Ethereum wire protocol. If `true`, a tuple with the raw data of the header, the txs and the
+   * uncle headers is returned.
    */
   serialize(): Buffer
   serialize(rlpEncode: true): Buffer
@@ -129,29 +127,15 @@ export class Block {
    * Generate transaction trie. The tx trie must be generated before the transaction trie can
    * be validated with `validateTransactionTrie`
    */
-  async genTxTrie() {
+  async genTxTrie(): Promise<void> {
     for (let i = 0; i < this.transactions.length; i++) {
       const tx = this.transactions[i]
       await this._putTxInTrie(i, tx)
     }
   }
 
-  private async _putTxInTrie(txIndex: number, tx: Transaction) {
-    await new Promise((resolve, reject) => {
-      this.txTrie.put(rlp.encode(txIndex), tx.serialize(), (err: any) => {
-        if (err) {
-          reject(err)
-        } else {
-          resolve()
-        }
-      })
-    })
-  }
-
   /**
    * Validates the transaction trie
-   * @method validateTransactionTrie
-   * @return {Boolean}
    */
   validateTransactionsTrie(): boolean {
     const txT = this.header.transactionsTrie.toString('hex')
@@ -164,6 +148,8 @@ export class Block {
 
   /**
    * Validates the transactions
+   *
+   * @param stringError - If `true`, a string with the indices of the invalid txs is returned.
    */
   validateTransactions(): boolean
   validateTransactions(stringError: false): boolean
@@ -186,11 +172,11 @@ export class Block {
   }
 
   /**
-   * Validates the entire block. Returns a string to the callback if block is invalid
-   * @method validate
-   * @param blockChain the blockchain that this block wants to be part of
+   * Validates the entire block, throwing if invalid.
+   *
+   * @param blockChain - the blockchain that this block wants to be part of
    */
-  async validate(blockChain: Blockchain) {
+  async validate(blockChain: Blockchain): Promise<void> {
     await Promise.all([
       this.validateUncles(blockChain),
       this.genTxTrie(),
@@ -221,10 +207,9 @@ export class Block {
   }
 
   /**
-   * Validates the uncles that are in the block if any. Returns a string to the callback if uncles are invalid
-   * @method validateUncles
-   * @param {Blockchain} blockChain an instance of the Blockchain
-   * @param {Function} cb the callback
+   * Validates the uncles that are in the block, if any. This method throws if they are invalid.
+   *
+   * @param blockChain - the blockchain that this block wants to be part of
    */
   async validateUncles(blockchain: Blockchain) {
     if (this.isGenesis()) {
@@ -246,6 +231,7 @@ export class Block {
 
   /**
    * Returns the block in JSON format
+   *
    * @see {@link https://github.com/ethereumjs/ethereumjs-util/blob/master/docs/index.md#defineproperties|ethereumjs-util}
    */
   toJSON(labeled: boolean = false) {
@@ -258,6 +244,18 @@ export class Block {
     } else {
       return ethUtil.baToJSON(this.raw)
     }
+  }
+
+  private async _putTxInTrie(txIndex: number, tx: Transaction) {
+    await new Promise((resolve, reject) => {
+      this.txTrie.put(rlp.encode(txIndex), tx.serialize(), (err: any) => {
+        if (err) {
+          reject(err)
+        } else {
+          resolve()
+        }
+      })
+    })
   }
 
   private _validateUncleHeader(uncleHeader: BlockHeader, blockchain: Blockchain) {

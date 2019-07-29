@@ -6,6 +6,7 @@ import blockHeaderFromRpc from './header-from-rpc'
 
 /**
  * Creates a new block object from Ethereum JSON RPC.
+ *
  * @param blockParams - Ethereum JSON RPC of block (eth_getBlockByNumber)
  * @param uncles - Optional list of Ethereum JSON RPC of uncles (eth_getUncleByBlockHashAndIndex)
  * @param networkOptions - An object describing the network
