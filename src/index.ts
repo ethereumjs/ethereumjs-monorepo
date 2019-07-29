@@ -94,18 +94,21 @@ export interface BlockchainOptions {
 
   /**
    * This the flag indicates if blocks and Proof-of-Work should be validated. Defaults to true.
-   * See
+   * This option can't be used in conjunction with `validatePow` nor `validateBlocks`.
+   *
+   * @deprecated
    */
   validate?: boolean
 
   /**
-   * This flags indicates if Proof-of-work should be validated. Defaults to the value of `validate`.
+   * This flags indicates if Proof-of-work should be validated. If `validate` is provided, this
+   * option takes its value.
    */
   validatePow?: boolean
 
   /**
-   * This flags indicates if blocks should be validated. See Block#validate for details. Defaults to
-   * the value of `validate`.
+   * This flags indicates if blocks should be validated. See Block#validate for details. If
+   * `validate` is provided, this option takes its value.
    */
   validateBlocks?: boolean
 }
@@ -169,9 +172,12 @@ export default class Blockchain implements BlockchainInterface {
   ethash: any
 
   /**
-   * A flag indicating if this Blockchain validates blocks or not.
+   * This field is always `true`. It's here only for backwards compatibility.
+   *
+   * @deprecated
    */
-  public readonly validate: boolean
+  public readonly validate: boolean = true
+
   private readonly _validatePow: boolean
   private readonly _validateBlocks: boolean
 
@@ -192,13 +198,20 @@ export default class Blockchain implements BlockchainInterface {
       this._common = new Common(chain, hardfork)
     }
 
+    if (opts.validate !== undefined) {
+      if (opts.validatePow !== undefined || opts.validateBlocks !== undefined) {
+        throw new Error(
+          "opts.validate can't be used at the same time than opts.validatePow nor opts.validateBlocks",
+        )
+      }
+    }
+
     // defaults
     this.db = opts.db ? opts.db : level()
     this.dbManager = new DBManager(this.db, this._common)
-    this.validate = opts.validate === undefined ? true : opts.validate
-    this._validatePow = opts.validatePow !== undefined ? opts.validatePow : this.validate
-    this._validateBlocks = opts.validateBlocks !== undefined ? opts.validateBlocks : this.validate
-    this.ethash = this.validate ? new Ethash(this.db) : null
+    this._validatePow = opts.validatePow !== undefined ? opts.validatePow : !!opts.validate
+    this._validateBlocks = opts.validateBlocks !== undefined ? opts.validateBlocks : !!opts.validate
+    this.ethash = this._validatePow ? new Ethash(this.db) : null
     this._heads = {}
     this._genesis = null
     this._headHeader = null
