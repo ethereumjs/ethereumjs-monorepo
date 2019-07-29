@@ -1,4 +1,4 @@
-import Blockchain from 'ethereumjs-blockchain'
+import { Blockchain } from './blockchain'
 import VM from './index'
 const async = require('async')
 

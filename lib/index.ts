@@ -1,6 +1,5 @@
 import BN = require('bn.js')
 import Account from 'ethereumjs-account'
-import Blockchain from 'ethereumjs-blockchain'
 import Common from 'ethereumjs-common'
 import { StateManager } from './state'
 import { default as runCode, RunCodeOpts } from './runCode'
@@ -9,6 +8,7 @@ import { default as runTx, RunTxOpts, RunTxResult } from './runTx'
 import { default as runBlock, RunBlockOpts, RunBlockResult } from './runBlock'
 import { EVMResult, ExecResult } from './evm/evm'
 import runBlockchain from './runBlockchain'
+import { Blockchain, MockBlockchain } from './blockchain'
 const promisify = require('util.promisify')
 const AsyncEventEmitter = require('async-eventemitter')
 const Trie = require('merkle-patricia-tree/secure.js')
@@ -35,7 +35,7 @@ export interface VMOpts {
    */
   state?: any // TODO
   /**
-   * A [blockchain](https://github.com/ethereumjs/ethereumjs-blockchain) object for storing/retrieving blocks
+   * A blockchain object for storing/retrieving blocks
    */
   blockchain?: Blockchain
   /**
@@ -105,7 +105,7 @@ export default class VM extends AsyncEventEmitter {
       this.stateManager = new StateManager({ trie, common: this._common })
     }
 
-    this.blockchain = opts.blockchain || new Blockchain({ common: this._common })
+    this.blockchain = opts.blockchain || new MockBlockchain()
 
     this.allowUnlimitedContractSize =
       opts.allowUnlimitedContractSize === undefined ? false : opts.allowUnlimitedContractSize
@@ -116,7 +116,7 @@ export default class VM extends AsyncEventEmitter {
    *
    * This method modifies the state.
    *
-   * @param blockchain -  A [blockchain](https://github.com/ethereum/ethereumjs-blockchain) object to process
+   * @param blockchain - A blockchain object to process
    * @param cb - the callback function
    */
   runBlockchain(blockchain: any): Promise<void> {
