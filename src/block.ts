@@ -241,12 +241,7 @@ export class Block {
       throw new Error('duplicate uncles')
     }
 
-    return Promise.all(
-      this.uncleHeaders.map(async uh => {
-        const height = new BN(this.header.number)
-        return uh.validate(blockchain, height)
-      }),
-    )
+    return Promise.all(this.uncleHeaders.map(async uh => this._validateUncleHeader(uh, blockchain)))
   }
 
   /**
@@ -263,5 +258,14 @@ export class Block {
     } else {
       return ethUtil.baToJSON(this.raw)
     }
+  }
+
+  private _validateUncleHeader(uncleHeader: BlockHeader, blockchain: Blockchain) {
+    // TODO: Validate that the uncle header hasn't been included in the blockchain yet.
+    // This is not possible in ethereumjs-blockchain since this PR was merged:
+    // https://github.com/ethereumjs/ethereumjs-blockchain/pull/47
+
+    const height = new BN(this.header.number)
+    return uncleHeader.validate(blockchain, height)
   }
 }
