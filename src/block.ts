@@ -39,6 +39,8 @@ export class Block {
       this._common = opts.common
     } else {
       const chain = opts.chain ? opts.chain : 'mainnet'
+      // TODO: Compute the hardfork based on this block's number. It can be implemented right now
+      // because the block number is not immutable, so the Common can get out of sync.
       const hardfork = opts.hardfork ? opts.hardfork : null
       this._common = new Common(chain, hardfork)
     }
@@ -70,6 +72,8 @@ export class Block {
 
     // parse transactions
     for (let i = 0; i < rawTransactions.length; i++) {
+      // TODO: Pass the common object instead of the options. It can't be implemented right now
+      // because the hardfork may be `null`. Read the above TODO for more info.
       const tx = new Transaction(rawTransactions[i], opts)
       this.transactions.push(tx)
     }
