@@ -10,8 +10,8 @@ addons:
       - ubuntu-toolchain-r-test
     packages:
       - g++-4.8
-before_install:
-  - sh -e /etc/init.d/xvfb start
+services:
+  - xvfb
 env:
   global:
     - CXX=g++-4.8
