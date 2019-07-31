@@ -4,7 +4,7 @@ import { BN, rlp } from 'ethereumjs-util'
 import { Transaction } from 'ethereumjs-tx'
 
 import { BlockHeader } from './header'
-import { Blockchain, BlockData, NetworkOptions } from './types'
+import { Blockchain, BlockData, ChainOptions } from './types'
 
 const Trie = require('merkle-patricia-tree')
 
@@ -27,7 +27,7 @@ export class Block {
    */
   constructor(
     data: Buffer | [Buffer[], Buffer[], Buffer[]] | BlockData = {},
-    opts: NetworkOptions = {},
+    opts: ChainOptions = {},
   ) {
     if (opts.common) {
       if (opts.chain !== undefined || opts.hardfork !== undefined) {

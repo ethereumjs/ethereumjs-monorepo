@@ -3,10 +3,11 @@ import { TxData } from 'ethereumjs-tx'
 import { Block } from './block'
 
 /**
- * An object to set to which network blocks and their headers belong. This could be specified using
- * a Common object, or `chain` and `hardfork`. Defaults to mainnet without specifying a hardfork.
+ * An object to set to which blockchain the blocks and their headers belong. This could be specified
+ * using a Common object, or `chain` and `hardfork`. Defaults to mainnet without specifying a
+ * hardfork.
  */
-export interface NetworkOptions {
+export interface ChainOptions {
   /**
    * A Common object defining the chain and the hardfork a block/block header belongs to.
    */

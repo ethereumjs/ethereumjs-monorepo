@@ -1,7 +1,7 @@
 import Common from 'ethereumjs-common'
 import * as utils from 'ethereumjs-util'
 import { BN } from 'ethereumjs-util'
-import { Blockchain, BlockHeaderData, BufferLike, NetworkOptions, PrefixedHexString } from './types'
+import { Blockchain, BlockHeaderData, BufferLike, ChainOptions, PrefixedHexString } from './types'
 import { Buffer } from 'buffer'
 import { Block } from './block'
 
@@ -35,7 +35,7 @@ export class BlockHeader {
    */
   constructor(
     data: Buffer | PrefixedHexString | BufferLike[] | BlockHeaderData = {},
-    opts: NetworkOptions = {},
+    opts: ChainOptions = {},
   ) {
     if (opts.common !== undefined) {
       if (opts.chain !== undefined || opts.hardfork !== undefined) {

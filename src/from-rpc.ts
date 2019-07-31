@@ -1,6 +1,6 @@
 import { FakeTransaction } from 'ethereumjs-tx'
 import * as ethUtil from 'ethereumjs-util'
-import { Block, NetworkOptions } from './index'
+import { Block, ChainOptions } from './index'
 
 import blockHeaderFromRpc from './header-from-rpc'
 
@@ -9,24 +9,24 @@ import blockHeaderFromRpc from './header-from-rpc'
  *
  * @param blockParams - Ethereum JSON RPC of block (eth_getBlockByNumber)
  * @param uncles - Optional list of Ethereum JSON RPC of uncles (eth_getUncleByBlockHashAndIndex)
- * @param networkOptions - An object describing the network
+ * @param chainOptions - An object describing the blockchain
  */
 export default function blockFromRpc(
   blockParams: any,
   uncles?: any[],
-  networkOptions?: NetworkOptions,
+  chainOptions?: ChainOptions,
 ) {
   uncles = uncles || []
 
-  const header = blockHeaderFromRpc(blockParams, networkOptions)
+  const header = blockHeaderFromRpc(blockParams, chainOptions)
 
   const block = new Block(
     {
       header: header.toJSON(true),
       transactions: [],
-      uncleHeaders: uncles.map(uh => blockHeaderFromRpc(uh, networkOptions).toJSON(true)),
+      uncleHeaders: uncles.map(uh => blockHeaderFromRpc(uh, chainOptions).toJSON(true)),
     },
-    networkOptions,
+    chainOptions,
   )
 
   if (blockParams.transactions) {
@@ -35,7 +35,7 @@ export default function blockFromRpc(
       // override from address
       const fromAddress = ethUtil.toBuffer(txParams.from)
       delete txParams.from
-      const tx = new FakeTransaction(txParams, networkOptions)
+      const tx = new FakeTransaction(txParams, chainOptions)
       tx.from = fromAddress
       tx.getSenderAddress = function() {
         return fromAddress
