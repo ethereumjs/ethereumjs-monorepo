@@ -22,7 +22,6 @@ export class Block {
   /**
    * Creates a new block object
    *
-   *
    * @param data - The block's data.
    * @param opts - The network options for this block, and its header, uncle headers and txs.
    */
