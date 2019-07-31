@@ -29,6 +29,9 @@ matrix:
       env: CXX=g++-4.8 TEST_SUITE=lint
     - os: linux
       node_js: "8"
+      env: CXX=g++-4.8 TEST_SUITE=test:browser
+    - os: linux
+      node_js: "8"
       env: CXX=g++-4.8 TEST_SUITE=test:node
     - os: linux
       node_js: "8"
