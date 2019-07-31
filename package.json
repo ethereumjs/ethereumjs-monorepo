@@ -21,9 +21,9 @@
     "format:fix": "ethereumjs-config-format-fix",
     "formatTest": "node ./scripts/formatTest",
     "tsc": "ethereumjs-config-tsc",
-    "test": "npm run test:node && npm run test:browser",
-    "test:browser": "karma start karma.conf.js",
-    "test:node": "npm run build && tape ./test/*.js"
+    "test": "npm run build && test:node && npm run test:browser",
+    "test:browser": "npm run build && karma start karma.conf.js",
+    "test:node": "tape ./test/*.js"
   },
   "husky": {
     "hooks": {
