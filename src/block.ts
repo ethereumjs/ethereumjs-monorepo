@@ -106,7 +106,7 @@ export class Block {
    * Produces a serialization of the block.
    *
    * @param rlpEncode - If `true`, the returned object is the RLP encoded data as seen by the
-   * Ethereum wire protocol. If `true`, a tuple with the raw data of the header, the txs and the
+   * Ethereum wire protocol. If `false`, a tuple with the raw data of the header, the txs and the
    * uncle headers is returned.
    */
   serialize(): Buffer
