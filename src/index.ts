@@ -207,10 +207,17 @@ export default class Blockchain implements BlockchainInterface {
     }
 
     // defaults
+
+    if (opts.validate) {
+      this._validatePow = true
+      this._validateBlocks = true
+    } else {
+      this._validatePow = opts.validatePow !== undefined ? opts.validatePow : false
+      this._validateBlocks = opts.validateBlocks !== undefined ? opts.validateBlocks : false
+    }
+
     this.db = opts.db ? opts.db : level()
     this.dbManager = new DBManager(this.db, this._common)
-    this._validatePow = opts.validatePow !== undefined ? opts.validatePow : !!opts.validate
-    this._validateBlocks = opts.validateBlocks !== undefined ? opts.validateBlocks : !!opts.validate
     this.ethash = this._validatePow ? new Ethash(this.db) : null
     this._heads = {}
     this._genesis = null
