@@ -22,7 +22,7 @@
 
 ▸ **getBlock**(hash: _`Buffer`_, callback: _`function`_): `void`
 
-_Defined in [types.ts:74](https://github.com/ethereumjs/ethereumjs-block/blob/4769f90/src/types.ts#L74)_
+_Defined in [types.ts:75](https://github.com/ethereumjs/ethereumjs-block/blob/6adbfae/src/types.ts#L75)_
 
 **Parameters:**
 

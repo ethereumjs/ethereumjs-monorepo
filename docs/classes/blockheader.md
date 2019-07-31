@@ -56,9 +56,9 @@ An object that represents the block header
 
 ### constructor
 
-⊕ **new BlockHeader**(data?: _`Buffer` \| [PrefixedHexString](../#prefixedhexstring) \| [BufferLike](../#bufferlike)[] \| [BlockHeaderData](../interfaces/blockheaderdata.md)_, opts?: _[NetworkOptions](../interfaces/networkoptions.md)_): [BlockHeader](blockheader.md)
+⊕ **new BlockHeader**(data?: _`Buffer` \| [PrefixedHexString](../#prefixedhexstring) \| [BufferLike](../#bufferlike)[] \| [BlockHeaderData](../interfaces/blockheaderdata.md)_, opts?: _[ChainOptions](../interfaces/chainoptions.md)_): [BlockHeader](blockheader.md)
 
-_Defined in [header.ts:29](https://github.com/ethereumjs/ethereumjs-block/blob/4769f90/src/header.ts#L29)_
+_Defined in [header.ts:29](https://github.com/ethereumjs/ethereumjs-block/blob/6adbfae/src/header.ts#L29)_
 
 Creates a new block header.
 
@@ -67,7 +67,7 @@ Creates a new block header.
 | Name                 | Type                                                                                                                                            | Default value | Description                                                                |
 | -------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- | ------------- | -------------------------------------------------------------------------- |
 | `Default value` data | `Buffer` \| [PrefixedHexString](../#prefixedhexstring) \| [BufferLike](../#bufferlike)[] \| [BlockHeaderData](../interfaces/blockheaderdata.md) | {}            | The data of the block header.                                              |
-| `Default value` opts | [NetworkOptions](../interfaces/networkoptions.md)                                                                                               | {}            | The network options for this block, and its header, uncle headers and txs. |
+| `Default value` opts | [ChainOptions](../interfaces/chainoptions.md)                                                                                                   | {}            | The network options for this block, and its header, uncle headers and txs. |
 
 **Returns:** [BlockHeader](blockheader.md)
 
@@ -81,7 +81,7 @@ Creates a new block header.
 
 **● \_common**: _`Common`_
 
-_Defined in [header.ts:29](https://github.com/ethereumjs/ethereumjs-block/blob/4769f90/src/header.ts#L29)_
+_Defined in [header.ts:29](https://github.com/ethereumjs/ethereumjs-block/blob/6adbfae/src/header.ts#L29)_
 
 ---
 
@@ -91,7 +91,7 @@ _Defined in [header.ts:29](https://github.com/ethereumjs/ethereumjs-block/blob/4
 
 **● bloom**: _`Buffer`_
 
-_Defined in [header.ts:19](https://github.com/ethereumjs/ethereumjs-block/blob/4769f90/src/header.ts#L19)_
+_Defined in [header.ts:19](https://github.com/ethereumjs/ethereumjs-block/blob/6adbfae/src/header.ts#L19)_
 
 ---
 
@@ -101,7 +101,7 @@ _Defined in [header.ts:19](https://github.com/ethereumjs/ethereumjs-block/blob/4
 
 **● coinbase**: _`Buffer`_
 
-_Defined in [header.ts:15](https://github.com/ethereumjs/ethereumjs-block/blob/4769f90/src/header.ts#L15)_
+_Defined in [header.ts:15](https://github.com/ethereumjs/ethereumjs-block/blob/6adbfae/src/header.ts#L15)_
 
 ---
 
@@ -111,7 +111,7 @@ _Defined in [header.ts:15](https://github.com/ethereumjs/ethereumjs-block/blob/4
 
 **● difficulty**: _`Buffer`_
 
-_Defined in [header.ts:20](https://github.com/ethereumjs/ethereumjs-block/blob/4769f90/src/header.ts#L20)_
+_Defined in [header.ts:20](https://github.com/ethereumjs/ethereumjs-block/blob/6adbfae/src/header.ts#L20)_
 
 ---
 
@@ -121,7 +121,7 @@ _Defined in [header.ts:20](https://github.com/ethereumjs/ethereumjs-block/blob/4
 
 **● extraData**: _`Buffer`_
 
-_Defined in [header.ts:25](https://github.com/ethereumjs/ethereumjs-block/blob/4769f90/src/header.ts#L25)_
+_Defined in [header.ts:25](https://github.com/ethereumjs/ethereumjs-block/blob/6adbfae/src/header.ts#L25)_
 
 ---
 
@@ -131,7 +131,7 @@ _Defined in [header.ts:25](https://github.com/ethereumjs/ethereumjs-block/blob/4
 
 **● gasLimit**: _`Buffer`_
 
-_Defined in [header.ts:22](https://github.com/ethereumjs/ethereumjs-block/blob/4769f90/src/header.ts#L22)_
+_Defined in [header.ts:22](https://github.com/ethereumjs/ethereumjs-block/blob/6adbfae/src/header.ts#L22)_
 
 ---
 
@@ -141,7 +141,7 @@ _Defined in [header.ts:22](https://github.com/ethereumjs/ethereumjs-block/blob/4
 
 **● gasUsed**: _`Buffer`_
 
-_Defined in [header.ts:23](https://github.com/ethereumjs/ethereumjs-block/blob/4769f90/src/header.ts#L23)_
+_Defined in [header.ts:23](https://github.com/ethereumjs/ethereumjs-block/blob/6adbfae/src/header.ts#L23)_
 
 ---
 
@@ -151,7 +151,7 @@ _Defined in [header.ts:23](https://github.com/ethereumjs/ethereumjs-block/blob/4
 
 **● mixHash**: _`Buffer`_
 
-_Defined in [header.ts:26](https://github.com/ethereumjs/ethereumjs-block/blob/4769f90/src/header.ts#L26)_
+_Defined in [header.ts:26](https://github.com/ethereumjs/ethereumjs-block/blob/6adbfae/src/header.ts#L26)_
 
 ---
 
@@ -161,7 +161,7 @@ _Defined in [header.ts:26](https://github.com/ethereumjs/ethereumjs-block/blob/4
 
 **● nonce**: _`Buffer`_
 
-_Defined in [header.ts:27](https://github.com/ethereumjs/ethereumjs-block/blob/4769f90/src/header.ts#L27)_
+_Defined in [header.ts:27](https://github.com/ethereumjs/ethereumjs-block/blob/6adbfae/src/header.ts#L27)_
 
 ---
 
@@ -171,7 +171,7 @@ _Defined in [header.ts:27](https://github.com/ethereumjs/ethereumjs-block/blob/4
 
 **● number**: _`Buffer`_
 
-_Defined in [header.ts:21](https://github.com/ethereumjs/ethereumjs-block/blob/4769f90/src/header.ts#L21)_
+_Defined in [header.ts:21](https://github.com/ethereumjs/ethereumjs-block/blob/6adbfae/src/header.ts#L21)_
 
 ---
 
@@ -181,7 +181,7 @@ _Defined in [header.ts:21](https://github.com/ethereumjs/ethereumjs-block/blob/4
 
 **● parentHash**: _`Buffer`_
 
-_Defined in [header.ts:13](https://github.com/ethereumjs/ethereumjs-block/blob/4769f90/src/header.ts#L13)_
+_Defined in [header.ts:13](https://github.com/ethereumjs/ethereumjs-block/blob/6adbfae/src/header.ts#L13)_
 
 ---
 
@@ -191,7 +191,7 @@ _Defined in [header.ts:13](https://github.com/ethereumjs/ethereumjs-block/blob/4
 
 **● raw**: _`Buffer`[]_
 
-_Defined in [header.ts:12](https://github.com/ethereumjs/ethereumjs-block/blob/4769f90/src/header.ts#L12)_
+_Defined in [header.ts:12](https://github.com/ethereumjs/ethereumjs-block/blob/6adbfae/src/header.ts#L12)_
 
 ---
 
@@ -201,7 +201,7 @@ _Defined in [header.ts:12](https://github.com/ethereumjs/ethereumjs-block/blob/4
 
 **● receiptTrie**: _`Buffer`_
 
-_Defined in [header.ts:18](https://github.com/ethereumjs/ethereumjs-block/blob/4769f90/src/header.ts#L18)_
+_Defined in [header.ts:18](https://github.com/ethereumjs/ethereumjs-block/blob/6adbfae/src/header.ts#L18)_
 
 ---
 
@@ -211,7 +211,7 @@ _Defined in [header.ts:18](https://github.com/ethereumjs/ethereumjs-block/blob/4
 
 **● stateRoot**: _`Buffer`_
 
-_Defined in [header.ts:16](https://github.com/ethereumjs/ethereumjs-block/blob/4769f90/src/header.ts#L16)_
+_Defined in [header.ts:16](https://github.com/ethereumjs/ethereumjs-block/blob/6adbfae/src/header.ts#L16)_
 
 ---
 
@@ -221,7 +221,7 @@ _Defined in [header.ts:16](https://github.com/ethereumjs/ethereumjs-block/blob/4
 
 **● timestamp**: _`Buffer`_
 
-_Defined in [header.ts:24](https://github.com/ethereumjs/ethereumjs-block/blob/4769f90/src/header.ts#L24)_
+_Defined in [header.ts:24](https://github.com/ethereumjs/ethereumjs-block/blob/6adbfae/src/header.ts#L24)_
 
 ---
 
@@ -231,7 +231,7 @@ _Defined in [header.ts:24](https://github.com/ethereumjs/ethereumjs-block/blob/4
 
 **● transactionsTrie**: _`Buffer`_
 
-_Defined in [header.ts:17](https://github.com/ethereumjs/ethereumjs-block/blob/4769f90/src/header.ts#L17)_
+_Defined in [header.ts:17](https://github.com/ethereumjs/ethereumjs-block/blob/6adbfae/src/header.ts#L17)_
 
 ---
 
@@ -241,7 +241,7 @@ _Defined in [header.ts:17](https://github.com/ethereumjs/ethereumjs-block/blob/4
 
 **● uncleHash**: _`Buffer`_
 
-_Defined in [header.ts:14](https://github.com/ethereumjs/ethereumjs-block/blob/4769f90/src/header.ts#L14)_
+_Defined in [header.ts:14](https://github.com/ethereumjs/ethereumjs-block/blob/6adbfae/src/header.ts#L14)_
 
 ---
 
@@ -253,7 +253,7 @@ _Defined in [header.ts:14](https://github.com/ethereumjs/ethereumjs-block/blob/4
 
 ▸ **\_getBlockByHash**(blockchain: _[Blockchain](../interfaces/blockchain.md)_, hash: _`Buffer`_): `Promise`<[Block](block.md) \| `undefined`>
 
-_Defined in [header.ts:347](https://github.com/ethereumjs/ethereumjs-block/blob/4769f90/src/header.ts#L347)_
+_Defined in [header.ts:347](https://github.com/ethereumjs/ethereumjs-block/blob/6adbfae/src/header.ts#L347)_
 
 **Parameters:**
 
@@ -272,7 +272,7 @@ _Defined in [header.ts:347](https://github.com/ethereumjs/ethereumjs-block/blob/
 
 ▸ **\_getHardfork**(): `string`
 
-_Defined in [header.ts:339](https://github.com/ethereumjs/ethereumjs-block/blob/4769f90/src/header.ts#L339)_
+_Defined in [header.ts:339](https://github.com/ethereumjs/ethereumjs-block/blob/6adbfae/src/header.ts#L339)_
 
 **Returns:** `string`
 
@@ -284,7 +284,7 @@ _Defined in [header.ts:339](https://github.com/ethereumjs/ethereumjs-block/blob/
 
 ▸ **canonicalDifficulty**(parentBlock: _[Block](block.md)_): `BN`
 
-_Defined in [header.ts:134](https://github.com/ethereumjs/ethereumjs-block/blob/4769f90/src/header.ts#L134)_
+_Defined in [header.ts:134](https://github.com/ethereumjs/ethereumjs-block/blob/6adbfae/src/header.ts#L134)_
 
 Returns the canonical difficulty for this block.
 
@@ -304,7 +304,7 @@ Returns the canonical difficulty for this block.
 
 ▸ **hash**(): `Buffer`
 
-_Defined in [header.ts:297](https://github.com/ethereumjs/ethereumjs-block/blob/4769f90/src/header.ts#L297)_
+_Defined in [header.ts:297](https://github.com/ethereumjs/ethereumjs-block/blob/6adbfae/src/header.ts#L297)_
 
 Returns the hash of the block header.
 
@@ -318,7 +318,7 @@ Returns the hash of the block header.
 
 ▸ **isGenesis**(): `boolean`
 
-_Defined in [header.ts:304](https://github.com/ethereumjs/ethereumjs-block/blob/4769f90/src/header.ts#L304)_
+_Defined in [header.ts:304](https://github.com/ethereumjs/ethereumjs-block/blob/6adbfae/src/header.ts#L304)_
 
 Checks if the block header is a genesis header.
 
@@ -332,7 +332,7 @@ Checks if the block header is a genesis header.
 
 ▸ **serialize**(): `Buffer`
 
-_Defined in [header.ts:324](https://github.com/ethereumjs/ethereumjs-block/blob/4769f90/src/header.ts#L324)_
+_Defined in [header.ts:324](https://github.com/ethereumjs/ethereumjs-block/blob/6adbfae/src/header.ts#L324)_
 
 Returns the rlp encoding of the block header
 
@@ -346,7 +346,7 @@ Returns the rlp encoding of the block header
 
 ▸ **setGenesisParams**(): `void`
 
-_Defined in [header.ts:311](https://github.com/ethereumjs/ethereumjs-block/blob/4769f90/src/header.ts#L311)_
+_Defined in [header.ts:311](https://github.com/ethereumjs/ethereumjs-block/blob/6adbfae/src/header.ts#L311)_
 
 Turns the header into the canonical genesis block header.
 
@@ -360,7 +360,7 @@ Turns the header into the canonical genesis block header.
 
 ▸ **toJSON**(\_labels?: _`boolean`_): `object` \| `string`[]
 
-_Defined in [header.ts:334](https://github.com/ethereumjs/ethereumjs-block/blob/4769f90/src/header.ts#L334)_
+_Defined in [header.ts:334](https://github.com/ethereumjs/ethereumjs-block/blob/6adbfae/src/header.ts#L334)_
 
 Returns the block header in JSON format
 
@@ -382,7 +382,7 @@ _**see**_: [ethereumjs-util](https://github.com/ethereumjs/ethereumjs-util/blob/
 
 ▸ **validate**(blockchain: _[Blockchain](../interfaces/blockchain.md)_, height?: _`BN`_): `Promise`<`void`>
 
-_Defined in [header.ts:249](https://github.com/ethereumjs/ethereumjs-block/blob/4769f90/src/header.ts#L249)_
+_Defined in [header.ts:249](https://github.com/ethereumjs/ethereumjs-block/blob/6adbfae/src/header.ts#L249)_
 
 Validates the entire block header, throwing if invalid.
 
@@ -403,7 +403,7 @@ Validates the entire block header, throwing if invalid.
 
 ▸ **validateDifficulty**(parentBlock: _[Block](block.md)_): `boolean`
 
-_Defined in [header.ts:215](https://github.com/ethereumjs/ethereumjs-block/blob/4769f90/src/header.ts#L215)_
+_Defined in [header.ts:215](https://github.com/ethereumjs/ethereumjs-block/blob/6adbfae/src/header.ts#L215)_
 
 Checks that the block's `difficulty` matches the canonical difficulty.
 
@@ -423,7 +423,7 @@ Checks that the block's `difficulty` matches the canonical difficulty.
 
 ▸ **validateGasLimit**(parentBlock: _[Block](block.md)_): `boolean`
 
-_Defined in [header.ts:225](https://github.com/ethereumjs/ethereumjs-block/blob/4769f90/src/header.ts#L225)_
+_Defined in [header.ts:225](https://github.com/ethereumjs/ethereumjs-block/blob/6adbfae/src/header.ts#L225)_
 
 Validates the gasLimit.
 
