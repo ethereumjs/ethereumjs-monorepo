@@ -6,6 +6,7 @@ module.exports = function(config) {
     preprocessors: {
       './test-build/**/*.js': ['browserify']
     },
+    reporters: ["dots"],
     singleRun: true,
     detectBrowsers: {
       enabled: true,
