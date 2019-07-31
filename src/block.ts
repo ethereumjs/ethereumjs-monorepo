@@ -54,13 +54,11 @@ export class Block {
     }
 
     if (Array.isArray(data)) {
-      // TODO: Pass the common object
-      this.header = new BlockHeader(data[0], opts)
+      this.header = new BlockHeader(data[0], { common: this._common })
       rawTransactions = data[1]
       rawUncleHeaders = data[2]
     } else {
-      // TODO: Pass the common object
-      this.header = new BlockHeader(data.header, opts)
+      this.header = new BlockHeader(data.header, { common: this._common })
       rawTransactions = data.transactions || []
       rawUncleHeaders = data.uncleHeaders || []
     }
