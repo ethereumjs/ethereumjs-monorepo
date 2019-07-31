@@ -2,7 +2,6 @@ language: node_js
 node_js:
   - "8"
   - "10"
-  - "11"
   - "12"
 addons:
   firefox: latest
@@ -36,9 +35,6 @@ matrix:
       env: CXX=g++-4.8 TEST_SUITE=test:node
     - os: linux
       node_js: "10"
-      env: CXX=g++-4.8 TEST_SUITE=test:node
-    - os: linux
-      node_js: "11"
       env: CXX=g++-4.8 TEST_SUITE=test:node
     - os: linux
       node_js: "12"
