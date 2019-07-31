@@ -210,7 +210,7 @@ export class Block {
    *
    * @param blockChain - the blockchain that this block wants to be part of
    */
-  async validateUncles(blockchain: Blockchain) {
+  async validateUncles(blockchain: Blockchain): Promise<void> {
     if (this.isGenesis()) {
       return
     }
@@ -225,7 +225,7 @@ export class Block {
       throw new Error('duplicate uncles')
     }
 
-    return Promise.all(this.uncleHeaders.map(async uh => this._validateUncleHeader(uh, blockchain)))
+    await Promise.all(this.uncleHeaders.map(async uh => this._validateUncleHeader(uh, blockchain)))
   }
 
   /**
