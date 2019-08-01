@@ -13,6 +13,7 @@ lib-cov
 
 # Coverage directory used by tools like istanbul
 coverage
+.nyc_output
 
 # Grunt intermediate storage (http://gruntjs.com/creating-plugins#storing-task-files)
 .grunt
@@ -34,9 +35,10 @@ package-lock.json
 # Optional REPL history
 .node_repl_history
 
-# Build folder
-# Update 2018-08-07: currently build is done to / (before: dist/) due to
-# backwards compatibility reasons, JS files from root and root test/ folder
-# are excluded
-/*.js
-/test
+
+# IDE and text editor config files
+.idea
+.vscode
+
+# build output
+dist
