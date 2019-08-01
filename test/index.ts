@@ -73,11 +73,11 @@ test('blockchain test', function(t) {
         })
       },
       function invalidGenesis(done) {
-        const blockchain = new Blockchain({ validate: true })
+        const localBlockchain = new Blockchain({ validate: true })
         const badBlock = new Block()
         badBlock.header.number = Buffer.from([])
 
-        blockchain.putBlock(
+        localBlockchain.putBlock(
           badBlock,
           function(err?: any) {
             t.ok(err, 'should not validate a block incorrectly flagged as genesis')
