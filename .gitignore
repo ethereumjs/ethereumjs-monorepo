@@ -1,3 +1,7 @@
+.idea
+package-lock.json
+test-build
+dist
 
 # Created by https://www.gitignore.io/api/osx,node
 
