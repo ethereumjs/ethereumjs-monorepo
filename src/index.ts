@@ -93,7 +93,7 @@ export interface BlockchainOptions {
   db?: any
 
   /**
-   * This the flag indicates if blocks and Proof-of-Work should be validated. Defaults to true.
+   * This the flag indicates if blocks and Proof-of-Work should be validated.
    * This option can't be used in conjunction with `validatePow` nor `validateBlocks`.
    *
    * @deprecated
@@ -102,13 +102,15 @@ export interface BlockchainOptions {
 
   /**
    * This flags indicates if Proof-of-work should be validated. If `validate` is provided, this
-   * option takes its value.
+   * option takes its value. If neither `validate` nor this option are provided, it defaults to
+   * `true`.
    */
   validatePow?: boolean
 
   /**
    * This flags indicates if blocks should be validated. See Block#validate for details. If
-   * `validate` is provided, this option takes its value.
+   * `validate` is provided, this option takes its value. If neither `validate` nor this option are
+   * provided, it defaults to `true`.
    */
   validateBlocks?: boolean
 }
@@ -208,12 +210,12 @@ export default class Blockchain implements BlockchainInterface {
 
     // defaults
 
-    if (opts.validate) {
-      this._validatePow = true
-      this._validateBlocks = true
+    if (opts.validate !== undefined) {
+      this._validatePow = opts.validate
+      this._validateBlocks = opts.validate
     } else {
-      this._validatePow = opts.validatePow !== undefined ? opts.validatePow : false
-      this._validateBlocks = opts.validateBlocks !== undefined ? opts.validateBlocks : false
+      this._validatePow = opts.validatePow !== undefined ? opts.validatePow : true
+      this._validateBlocks = opts.validateBlocks !== undefined ? opts.validateBlocks : true
     }
 
     this.db = opts.db ? opts.db : level()
