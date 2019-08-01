@@ -10,7 +10,7 @@
   "scripts": {
     "build": "ethereumjs-config-build",
     "prepublishOnly": "npm run test && npm run build",
-    "coverage": "ethereumjs-config-coverage",
+    "coverage": "nyc npm run test:node && nyc report --reporter=text-lcov > .nyc_output/lcov.info",
     "coveralls": "ethereumjs-config-coveralls",
     "docs:build": "typedoc src",
     "tslint": "ethereumjs-config-tslint",

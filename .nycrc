@@ -1,0 +1,10 @@
+{
+  "extends": "@ethereumjs/config-nyc",
+  "include": [
+    "dist/**/*.js"
+  ],
+  "extension": [
+    ".js"
+  ],
+  "source-map": false
+}
