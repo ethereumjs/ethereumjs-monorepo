@@ -80,13 +80,6 @@
     "typescript": "^3.5.3",
     "typestrict": "^1.0.2"
   },
-  "standard": {
-    "ignore": [
-      "dist/**",
-      "package-init.js",
-      "package.js"
-    ]
-  },
   "contributors": [
     "Aaron Kumavis <http://aaron.kumavis.me/> (https://github.com/kumavis)"
   ]
