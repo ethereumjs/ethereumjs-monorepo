@@ -20,6 +20,52 @@ const Stoplight = require('flow-stoplight')
 const level = require('level-mem')
 const semaphore = require('semaphore')
 
+export type Block = any
+
+export interface BlockchainInterface {
+  /**
+   * Adds a block to the blockchain.
+   *
+   * @param block - The block to be added to the blockchain.
+   * @param cb - The callback. It is given two parameters `err` and the saved `block`
+   * @param isGenesis - True if block is the genesis block.
+   */
+  putBlock(block: Block, cb: any, isGenesis?: boolean): void
+
+  /**
+   * Deletes a block from the blockchain. All child blocks in the chain are deleted and any
+   * encountered heads are set to the parent block.
+   *
+   * @param blockHash - The hash of the block to be deleted
+   * @param cb - A callback.
+   */
+  delBlock(blockHash: Buffer, cb: any): void
+
+  /**
+   * Returns a block by its hash or number.
+   */
+  getBlock(blockTag: Buffer | number | BN, cb: (err: Error | null, block?: Block) => void): void
+
+  /**
+   * Iterates through blocks starting at the specified iterator head and calls the onBlock function
+   * on each block.
+   *
+   * @param name - Name of the state root head
+   * @param onBlock - Function called on each block with params (block, reorg, cb)
+   * @param cb - A callback function
+   */
+  iterator(name: string, onBlock: any, cb: any): void
+
+  /**
+   * This method is only here for backwards compatibility. It can be removed once
+   * [this PR](https://github.com/ethereumjs/ethereumjs-block/pull/72/files) gets merged, released,
+   * and ethereumjs-block is updated here.
+   *
+   * The method should just call `cb` with `null` as first argument.
+   */
+  getDetails(_: string, cb: any): void
+}
+
 /**
  * This are the options that the Blockchain constructor can receive.
  */
@@ -56,7 +102,7 @@ export interface BlockchainOptions {
 /**
  * This class stores and interacts with blocks.
  */
-export default class Blockchain {
+export default class Blockchain implements BlockchainInterface {
   /**
    * @hidden
    */
