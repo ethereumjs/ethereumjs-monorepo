@@ -12,11 +12,10 @@ const testData = require('./testdata.json')
 
 test('blockchain test', function(t) {
   t.plan(70)
-  const blockchain = new Blockchain()
+  const blockchain = new Blockchain({ validate: false })
   let genesisBlock: any
   const blocks: any[] = []
   let forkHeader: any
-  blockchain.validate = false
   async.series(
     [
       function(done) {
@@ -74,14 +73,14 @@ test('blockchain test', function(t) {
         })
       },
       function invalidGenesis(done) {
+        const localBlockchain = new Blockchain({ validate: true })
         const badBlock = new Block()
         badBlock.header.number = Buffer.from([])
-        blockchain.validate = true
-        blockchain.putBlock(
+
+        localBlockchain.putBlock(
           badBlock,
           function(err?: any) {
             t.ok(err, 'should not validate a block incorrectly flagged as genesis')
-            blockchain.validate = false
             done()
           },
           false,
@@ -314,8 +313,7 @@ test('blockchain test', function(t) {
         )
       },
       function iterateEmpty(done) {
-        const blockchain = new Blockchain()
-        blockchain.validate = false
+        const blockchain = new Blockchain({ validate: false })
         blockchain.iterator(
           'test',
           function() {
