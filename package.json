@@ -23,7 +23,7 @@
     "tsc": "ethereumjs-config-tsc",
     "test": "npm run build && npm run test:node && npm run test:browser",
     "test:browser": "npm run build && karma start karma.conf.js",
-    "test:node": "tape ./test/*.js"
+    "test:node": "npm run build && tape ./test/*.js"
   },
   "husky": {
     "hooks": {
