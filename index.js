@@ -17,17 +17,17 @@ Ethash.prototype.mkcache = function (cacheSize, seed) {
   // console.log('size: ' + cacheSize)
   // console.log('seed: ' + seed.toString('hex'))
   const n = Math.floor(cacheSize / ethHashUtil.params.HASH_BYTES)
-  var o = [ethUtil.sha3(seed, 512)]
+  var o = [ethUtil.keccak(seed, 512)]
 
   var i
   for (i = 1; i < n; i++) {
-    o.push(ethUtil.sha3(o[o.length - 1], 512))
+    o.push(ethUtil.keccak(o[o.length - 1], 512))
   }
 
   for (var _ = 0; _ < ethHashUtil.params.CACHE_ROUNDS; _++) {
     for (i = 0; i < n; i++) {
       var v = o[i].readUInt32LE(0) % n
-      o[i] = ethUtil.sha3(xor(o[(i - 1 + n) % n], o[v]), 512)
+      o[i] = ethUtil.keccak(xor(o[(i - 1 + n) % n], o[v]), 512)
     }
   }
 
@@ -40,19 +40,19 @@ Ethash.prototype.calcDatasetItem = function (i) {
   const r = Math.floor(ethHashUtil.params.HASH_BYTES / ethHashUtil.params.WORD_BYTES)
   var mix = new Buffer(this.cache[i % n])
   mix.writeInt32LE(mix.readUInt32LE(0) ^ i, 0)
-  mix = ethUtil.sha3(mix, 512)
+  mix = ethUtil.keccak(mix, 512)
   for (var j = 0; j < ethHashUtil.params.DATASET_PARENTS; j++) {
     var cacheIndex = ethHashUtil.fnv(i ^ j, mix.readUInt32LE(j % r * 4))
     mix = ethHashUtil.fnvBuffer(mix, this.cache[cacheIndex % n])
   }
-  return ethUtil.sha3(mix, 512)
+  return ethUtil.keccak(mix, 512)
 }
 
 Ethash.prototype.run = function (val, nonce, fullSize) {
   fullSize = fullSize || this.fullSize
   const n = Math.floor(fullSize / ethHashUtil.params.HASH_BYTES)
   const w = Math.floor(ethHashUtil.params.MIX_BYTES / ethHashUtil.params.WORD_BYTES)
-  const s = ethUtil.sha3(Buffer.concat([val, ethHashUtil.bufReverse(nonce)]), 512)
+  const s = ethUtil.keccak(Buffer.concat([val, ethHashUtil.bufReverse(nonce)]), 512)
   const mixhashes = Math.floor(ethHashUtil.params.MIX_BYTES / ethHashUtil.params.HASH_BYTES)
   var mix = Buffer.concat(Array(mixhashes).fill(s))
 
@@ -78,12 +78,12 @@ Ethash.prototype.run = function (val, nonce, fullSize) {
 
   return {
     mix: cmix,
-    hash: ethUtil.sha3(Buffer.concat([s, cmix]))
+    hash: ethUtil.keccak256(Buffer.concat([s, cmix]))
   }
 }
 
 Ethash.prototype.cacheHash = function () {
-  return ethUtil.sha3(Buffer.concat(this.cache))
+  return ethUtil.keccak256(Buffer.concat(this.cache))
 }
 
 Ethash.prototype.headerHash = function (header) {
