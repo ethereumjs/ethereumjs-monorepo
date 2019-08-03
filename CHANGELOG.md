@@ -6,6 +6,30 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [4.0.0] - 2019-08-06
+
+First `TypeScript` based VM release, other highlights:
+
+- New Call and Code Loop Structure / EVM Encapsulation
+- EEI for Environment Communication
+- Istanbul Process Start
+- Promise-based API
+
+See [v4.0.0-beta.1](https://github.com/ethereumjs/ethereumjs-vm/releases/tag/v4.0.0-beta.1)
+release for full release notes.
+
+**Changes since last beta**
+
+- Simplification of execution results,
+  PR [#551](https://github.com/ethereumjs/ethereumjs-vm/pull/551)
+- Fix error propagation in `Cache.flush()` method from `StateManager`,
+  PR [#562](https://github.com/ethereumjs/ethereumjs-vm/pull/562)
+- `StateManager` storage key length validation (now throws on addresses not
+  having a 32-byte length),
+  PR [#565](https://github.com/ethereumjs/ethereumjs-vm/pull/565)
+
+[4.0.0]: https://github.com/ethereumjs/ethereumjs-vm/compare/v4.0.0-beta.1...v4.0.0
+
 ## [4.0.0-beta.1] - 2019-06-19
 
 Since changes in this release are pretty deep reaching and broadly distributed,
