@@ -7,6 +7,10 @@
   },
   "gasConfig": {},
   "gasPrices": {
+    "blake2bRound": {
+      "v": 1,
+      "d": "Gas cost per round for the Blake2b F precompile"
+    },
     "ecAdd": {
       "v": 150,
       "d": "Gas costs for curve addition precompile"
@@ -22,6 +26,10 @@
     "ecPairingWord": {
       "v": 34000,
       "d": "Gas costs regarding curve pairing precompile input length"
+    },
+    "txDataNonZero": {
+      "v": 16,
+      "d": "Per byte of data attached to a transaction that is not equal to zero. NOTE: Not payable on data of calls between transactions"
     }
   },
   "vm": {},
