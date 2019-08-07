@@ -85,7 +85,11 @@ associated EIP pages.
 Supported EIPs in the library:
 
 - [EIP-1108](https://eips.ethereum.org/EIPS/eip-1108) `alt_bn128` precompile
-  gas cost reductions (HF candidate, `DRAFT` status)
+  gas cost reductions (`DRAFT` status)
+- [EIP-1344](https://eips.ethereum.org/EIPS/eip-1344) ChainID opcode
+  (as `gasPrices` -> `base` parameter in `hardforks/chainstart.json`)
+- [EIP-2129/152](https://github.com/ethereum/EIPs/pull/2129) Blake2b precompile
+- [EIP-2028](https://eips.ethereum.org/EIPS/eip-2028) Calldata gas cost reduction
 
 ## Parameter Access
 

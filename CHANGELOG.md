@@ -6,6 +6,18 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [1.3.1] - 2019-08-08
+
+Added missing **Istanbul** gas costs for:
+
+- ChainID opcode (EIP-1344, as base param in `hardforks/chainstart.json`)
+- Blake2b precompile (EIP-2129/152)
+- Calldata gas cost reduction (EIP-2028)
+
+See PR [#58](https://github.com/ethereumjs/ethereumjs-common/pull/58).
+
+[1.3.1]: https://github.com/ethereumjs/ethereumjs-common/compare/v1.3.0...v1.3.1
+
 ## [1.3.0] - 2019-06-18
 
 - Add a static factory method `Custom.forCustomChain` to make working with
