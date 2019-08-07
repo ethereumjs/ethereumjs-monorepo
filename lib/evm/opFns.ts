@@ -456,6 +456,13 @@ export const handlers: { [k: string]: OpHandler } = {
   GASLIMIT: function(runState: RunState) {
     runState.stack.push(runState.eei.getBlockGasLimit())
   },
+  CHAINID: function(runState: RunState) {
+    if (!runState._common.gteHardfork('istanbul')) {
+      trap(ERROR.INVALID_OPCODE)
+    }
+
+    runState.stack.push(runState.eei.getChainId())
+  },
   // 0x50 range - 'storage' and execution
   POP: function(runState: RunState) {
     runState.stack.pop()

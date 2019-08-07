@@ -66,6 +66,7 @@ const codes: any = {
   0x43: ['NUMBER', 2, true],
   0x44: ['DIFFICULTY', 2, true],
   0x45: ['GASLIMIT', 2, true],
+  0x46: ['CHAINID', 2, false],
 
   // 0x50 range - 'storage' and execution
   0x50: ['POP', 2, false],
