@@ -20,10 +20,12 @@ The only backing store supported is LevelDB through the `levelup` module.
 
 # USAGE
 
+There are 3 variants of the tree implemented in this library, namely: `BaseTrie`, `CheckpointTrie` and `SecureTrie`. `CheckpointTrie` adds checkpointing functionality to the `BaseTrie` with the methods `checkpoint`, `commit` and `revert`. `SecureTrie` extends `CheckpointTrie` and is the most suitable variant for Ethereum applications. It stores values under the `keccak256` hash of their keys.
+
 ## Initialization and Basic Usage
 
 ```javascript
-var Trie = require('merkle-patricia-tree'),
+const Trie = require('merkle-patricia-tree').BaseTrie,
   level = require('level'),
   db = level('./testdb'),
   trie = new Trie(db)
@@ -52,7 +54,7 @@ Trie.prove(trie, 'test', function(err, prove) {
 
 ```javascript
 var level = require('level')
-var Trie = require('./secure')
+var Trie = require('merkle-patricia-tree').SecureTrie
 
 var stateRoot = '0xd7f8974fb5ac78d9ac099b9ad5018bedc2ce0a72dad1827a1709da30580f0544' // Block #222
 
@@ -76,7 +78,7 @@ var level = require('level')
 var rlp = require('rlp')
 var ethutil = require('ethereumjs-util')
 
-var Trie = require('merkle-patricia-tree/secure')
+var Trie = require('merkle-patricia-tree').SecureTrie
 var Account = require('ethereumjs-account').default
 var BN = ethutil.BN
 

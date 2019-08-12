@@ -11,11 +11,9 @@ const async = require('async')
 const semaphore = require('semaphore')
 
 /**
- * Use `require('merkel-patricia-tree')` for the base interface. In Ethereum applications
- * stick with the Secure Trie Overlay `require('merkel-patricia-tree/secure')`.
- * The API for the raw and the secure interface are about the same
- * @class Trie
- * @public
+ * Use `require('merkel-patricia-tree').BaseTrie` for the base interface. In Ethereum applications
+ * stick with the Secure Trie Overlay `require('merkel-patricia-tree').SecureTrie`.
+ * The API for the raw and the secure interface are about the same.
  * @param {Object} [db] A [levelup](https://github.com/Level/levelup) instance. By default creates an in-memory [memdown](https://github.com/Level/memdown) instance.
  * If the db is `null` or left undefined, then the trie will be stored in memory via [memdown](https://github.com/Level/memdown)
  * @param {Buffer|String} [root] A hex `String` or `Buffer` for the root of a previously stored trie
