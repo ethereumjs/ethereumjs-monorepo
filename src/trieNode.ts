@@ -80,11 +80,6 @@ export class TrieNode {
     this.setKey(k)
   }
 
-  parseNode(rawNode: Buffer[]) {
-    this.raw = rawNode
-    this.type = TrieNode.getNodeType(rawNode)
-  }
-
   // TODO: refactor
   setValue(key: Buffer | number, value?: Buffer) {
     if (this.type !== 'branch') {
