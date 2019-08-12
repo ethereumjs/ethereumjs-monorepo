@@ -306,16 +306,6 @@ export class Trie {
     }
   }
 
-  // TODO: see if needs to be deprecated. can't find any usage
-  /*
-   * Finds all nodes that store k,v values
-   */
-  /*_findNode (key: Buffer, root: Buffer, stack, cb) {
-    this.findPath(key, () => {
-      cb.apply(null, arguments)
-    })
-  }*/
-
   /*
    * Finds all nodes that store k,v values
    */
