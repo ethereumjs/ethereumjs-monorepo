@@ -1,4 +1,4 @@
-const PrioritizedTaskExecutor = require('../dist/prioritizedTaskExecutor.js').PrioritizedTaskExecutor
+const PrioritizedTaskExecutor = require('../dist/prioritizedTaskExecutor').PrioritizedTaskExecutor
 const tape = require('tape')
 const taskExecutor = new PrioritizedTaskExecutor(2)
 
