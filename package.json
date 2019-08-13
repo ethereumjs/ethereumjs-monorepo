@@ -51,7 +51,6 @@
     "url": "https://github.com/ethereumjs/rlp/issues"
   },
   "dependencies": {
-    "safe-buffer": "^5.1.1",
     "bn.js": "^4.11.1"
   },
   "devDependencies": {
