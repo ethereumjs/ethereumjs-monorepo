@@ -1,4 +1,13 @@
-module.exports = class PrioritizedTaskExecutor {
+interface Task {
+  priority: number
+  fn: Function
+}
+
+export class PrioritizedTaskExecutor {
+  private maxPoolSize: number
+  private currentPoolSize: number
+  private queue: Task[]
+
   /**
    * Executes tasks up to maxPoolSize at a time, other items are put in a priority queue.
    * @class PrioritizedTaskExecutor
@@ -8,7 +17,7 @@ module.exports = class PrioritizedTaskExecutor {
    * @prop {Number} currentPoolSize The current size of the pool
    * @prop {Array} queue The task queue
    */
-  constructor (maxPoolSize) {
+  constructor(maxPoolSize: number) {
     this.maxPoolSize = maxPoolSize
     this.currentPoolSize = 0
     this.queue = []
@@ -18,23 +27,23 @@ module.exports = class PrioritizedTaskExecutor {
    * Executes the task.
    * @private
    * @param {Number} priority The priority of the task
-   * @param {Function} task The function that accepts the callback, which must be called upon the task completion.
+   * @param {Function} fn The function that accepts the callback, which must be called upon the task completion.
    */
-  execute (priority, task) {
+  execute(priority: number, fn: Function) {
     if (this.currentPoolSize < this.maxPoolSize) {
       this.currentPoolSize++
-      task(() => {
+      fn(() => {
         this.currentPoolSize--
         if (this.queue.length > 0) {
           this.queue.sort((a, b) => b.priority - a.priority)
           const item = this.queue.shift()
-          this.execute(item.priority, item.task)
+          this.execute(item!.priority, item!.fn)
         }
       })
     } else {
       this.queue.push({
         priority: priority,
-        task: task
+        fn: fn,
       })
     }
   }

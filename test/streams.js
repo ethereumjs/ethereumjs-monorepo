@@ -1,4 +1,4 @@
-const Trie = require('../src/index.js')
+const Trie = require('../dist/index').CheckpointTrie
 const describe = require('tape')
 
 describe('kv stream test', function (tester) {

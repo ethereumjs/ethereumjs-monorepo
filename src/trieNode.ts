@@ -1,20 +1,31 @@
-const rlp = require('rlp')
-const ethUtil = require('ethereumjs-util')
-const { stringToNibbles, nibblesToBuffer } = require('./util/nibbles')
-const { isTerminator, addHexPrefix, removeHexPrefix } = require('./util/hex')
+import * as rlp from 'rlp'
+import { keccak256 } from 'ethereumjs-util'
+import { stringToNibbles, nibblesToBuffer } from './util/nibbles'
+import { isTerminator, addHexPrefix, removeHexPrefix } from './util/hex'
 
-module.exports = class TrieNode {
-  constructor (type, key, value) {
+enum NodeType {
+  Leaf = 'leaf',
+  Branch = 'branch',
+  Extension = 'extention', // FIXME
+  Unknown = 'unknown', // TODO
+}
+
+export class TrieNode {
+  raw: Buffer[]
+  type: NodeType
+
+  constructor(type: any, key?: any, value?: any) {
     if (Array.isArray(type)) {
-      // parse raw node
-      this.parseNode(type)
+      this.raw = type
+      this.type = TrieNode.getNodeType(type)
     } else {
       this.type = type
       if (type === 'branch') {
         var values = key
+        // @ts-ignore
         this.raw = Array.apply(null, Array(17))
         if (values) {
-          values.forEach(function (keyVal) {
+          values.forEach(function(this: any, keyVal: any) {
             this.set.apply(this, keyVal)
           })
         }
@@ -35,63 +46,61 @@ module.exports = class TrieNode {
    *   - extention - if the node is an extention
    *   - unknown - if something else got borked
    */
-  static getNodeType (node) {
+  static getNodeType(node: Buffer[]): NodeType {
     if (node.length === 17) {
-      return 'branch'
+      return NodeType.Branch
     } else if (node.length === 2) {
       var key = stringToNibbles(node[0])
       if (isTerminator(key)) {
-        return 'leaf'
+        return NodeType.Leaf
       }
 
-      return 'extention'
+      return NodeType.Extension
     }
+    throw new Error('invalid node type')
   }
 
-  static isRawNode (node) {
+  static isRawNode(node: any): boolean {
     return Array.isArray(node) && !Buffer.isBuffer(node)
   }
 
-  get value () {
+  get value(): Buffer {
     return this.getValue()
   }
 
-  set value (v) {
+  set value(v) {
     this.setValue(v)
   }
 
-  get key () {
+  get key(): number[] {
     return this.getKey()
   }
 
-  set key (k) {
+  set key(k) {
     this.setKey(k)
   }
 
-  parseNode (rawNode) {
-    this.raw = rawNode
-    this.type = TrieNode.getNodeType(rawNode)
-  }
-
-  setValue (key, value) {
+  // TODO: refactor
+  setValue(key: Buffer | number, value?: Buffer) {
     if (this.type !== 'branch') {
-      this.raw[1] = key
+      this.raw[1] = key as Buffer
     } else {
       if (arguments.length === 1) {
-        value = key
+        value = key as Buffer
         key = 16
       }
-      this.raw[key] = value
+      this.raw[key as number] = value as Buffer
     }
   }
 
-  getValue (key) {
+  // @ts-ignore
+  getValue(key?: number): Buffer {
     if (this.type === 'branch') {
       if (arguments.length === 0) {
         key = 16
       }
 
-      var val = this.raw[key]
+      var val = this.raw[key as number]
       if (val !== null && val !== undefined && val.length !== 0) {
         return val
       }
@@ -100,7 +109,7 @@ module.exports = class TrieNode {
     }
   }
 
-  setKey (key) {
+  setKey(key: Buffer | number[]) {
     if (this.type !== 'branch') {
       if (Buffer.isBuffer(key)) {
         key = stringToNibbles(key)
@@ -113,26 +122,28 @@ module.exports = class TrieNode {
     }
   }
 
-  getKey () {
+  // @ts-ignore
+  getKey(): number[] {
     if (this.type !== 'branch') {
-      var key = this.raw[0]
-      key = removeHexPrefix(stringToNibbles(key))
-      return (key)
+      let key = this.raw[0]
+      let nibbles = removeHexPrefix(stringToNibbles(key))
+      return nibbles
     }
   }
 
-  serialize () {
+  serialize(): Buffer {
     return rlp.encode(this.raw)
   }
 
-  hash () {
-    return ethUtil.keccak256(this.serialize())
+  hash(): Buffer {
+    return keccak256(this.serialize())
   }
 
-  toString () {
-    var out = this.type
+  toString(): string {
+    // @ts-ignore
+    let out = NodeType[this.type]
     out += ': ['
-    this.raw.forEach(function (el) {
+    this.raw.forEach(function(el) {
       if (Buffer.isBuffer(el)) {
         out += el.toString('hex') + ', '
       } else if (el) {
@@ -146,7 +157,7 @@ module.exports = class TrieNode {
     return out
   }
 
-  getChildren () {
+  getChildren(): (Buffer | number[])[][] {
     var children = []
     switch (this.type) {
       case 'leaf':
@@ -157,12 +168,10 @@ module.exports = class TrieNode {
         children.push([this.key, this.getValue()])
         break
       case 'branch':
-        for (var index = 0, end = 16; index < end; index++) {
-          var value = this.getValue(index)
+        for (let index = 0, end = 16; index < end; index++) {
+          const value = this.getValue(index)
           if (value) {
-            children.push([
-              [index], value
-            ])
+            children.push([[index], value])
           }
         }
         break

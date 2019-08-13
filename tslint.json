@@ -1,0 +1,3 @@
+{
+  "extends": "@ethereumjs/config-tslint"
+}

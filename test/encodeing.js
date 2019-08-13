@@ -1,4 +1,4 @@
-const Trie = require('../src/index.js')
+const Trie = require('../dist/index').CheckpointTrie
 const tape = require('tape')
 const trie = new Trie()
 const trie2 = new Trie()

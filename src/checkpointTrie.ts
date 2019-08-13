@@ -1,12 +1,18 @@
+import { Trie as BaseTrie } from './baseTrie'
+import { ScratchReadStream } from './scratchReadStream'
+import { ScratchDB } from './scratch'
+import { callTogether } from './util/async'
+import { DB, BatchDBOp } from './db'
+import { TrieNode } from './trieNode'
 const async = require('async')
 const WriteStream = require('level-ws')
-const BaseTrie = require('./baseTrie')
-const ScratchReadStream = require('./scratchReadStream')
-const ScratchDB = require('./scratch')
-const { callTogether } = require('./util/async')
 
-module.exports = class CheckpointTrie extends BaseTrie {
-  constructor (...args) {
+export class CheckpointTrie extends BaseTrie {
+  _mainDB: DB
+  _scratch: ScratchDB | null
+  _checkpoints: Buffer[]
+
+  constructor(...args: any) {
     super(...args)
     // Reference to main DB instance
     this._mainDB = this.db
@@ -19,7 +25,7 @@ module.exports = class CheckpointTrie extends BaseTrie {
   /**
    * Is the trie during a checkpoint phase?
    */
-  get isCheckpoint () {
+  get isCheckpoint() {
     return this._checkpoints.length > 0
   }
 
@@ -28,9 +34,8 @@ module.exports = class CheckpointTrie extends BaseTrie {
    * After this is called, no changes to the trie will be permanently saved
    * until `commit` is called. Calling `putRaw` overrides the checkpointing
    * mechanism and would directly write to db.
-   * @method checkpoint
    */
-  checkpoint () {
+  checkpoint() {
     const wasCheckpoint = this.isCheckpoint
     this._checkpoints.push(this.root)
 
@@ -47,7 +52,7 @@ module.exports = class CheckpointTrie extends BaseTrie {
    * @param {Function} cb the callback
    * @throws If not during a checkpoint phase
    */
-  commit (cb) {
+  commit(cb: Function) {
     cb = callTogether(cb, this.sem.leave)
 
     this.sem.take(() => {
@@ -68,15 +73,13 @@ module.exports = class CheckpointTrie extends BaseTrie {
    * Reverts the trie to the state it was at when `checkpoint` was first called.
    * If during a nested checkpoint, sets root to most recent checkpoint, and sets
    * parent checkpoint as current.
-   * @method revert
-   * @param {Function} cb the callback
    */
-  revert (cb) {
+  revert(cb: Function) {
     cb = callTogether(cb, this.sem.leave)
 
     this.sem.take(() => {
       if (this.isCheckpoint) {
-        this.root = this._checkpoints.pop()
+        this.root = this._checkpoints.pop()!
         if (!this.isCheckpoint) {
           this._exitCpMode(false, cb)
           return
@@ -94,12 +97,12 @@ module.exports = class CheckpointTrie extends BaseTrie {
    * @param {boolean} includeCheckpoints - If true and during a checkpoint, the copy will
    * contain the checkpointing metadata and will use the same scratch as underlying db.
    */
-  copy (includeCheckpoints = true) {
+  copy(includeCheckpoints: boolean = true): CheckpointTrie {
     const db = this._mainDB.copy()
     const trie = new CheckpointTrie(db._leveldb, this.root)
     if (includeCheckpoints && this.isCheckpoint) {
       trie._checkpoints = this._checkpoints.slice()
-      trie._scratch = this._scratch.copy()
+      trie._scratch = this._scratch!.copy()
       trie.db = trie._scratch
     }
     return trie
@@ -110,7 +113,7 @@ module.exports = class CheckpointTrie extends BaseTrie {
    * key/value db, disregarding checkpoints.
    * @deprecated
    */
-  putRaw (key, value, cb) {
+  putRaw(key: Buffer, value: Buffer, cb: Function) {
     this._mainDB.put(key, value, cb)
   }
 
@@ -118,7 +121,7 @@ module.exports = class CheckpointTrie extends BaseTrie {
    * Enter into checkpoint mode.
    * @private
    */
-  _enterCpMode () {
+  _enterCpMode() {
     this._scratch = new ScratchDB(this._mainDB)
     this.db = this._scratch
   }
@@ -127,8 +130,8 @@ module.exports = class CheckpointTrie extends BaseTrie {
    * Exit from checkpoint mode.
    * @private
    */
-  _exitCpMode (commitState, cb) {
-    const scratch = this._scratch
+  _exitCpMode(commitState: boolean, cb: Function) {
+    const scratch = this._scratch as ScratchDB
     this._scratch = null
     this.db = this._mainDB
 
@@ -147,10 +150,37 @@ module.exports = class CheckpointTrie extends BaseTrie {
    * @method createScratchReadStream
    * @private
    */
-  _createScratchReadStream (scratch) {
+  _createScratchReadStream(scratch: ScratchDB) {
     scratch = scratch || this._scratch
     const trie = new BaseTrie(scratch._leveldb, this.root)
     trie.db = scratch
     return new ScratchReadStream(trie)
+  }
+
+  // formats node to be saved by levelup.batch.
+  // returns either the hash that will be used key or the rawNode
+  _formatNode(node: TrieNode, topLevel: boolean, opStack: BatchDBOp[], remove: boolean = false) {
+    const rlpNode = node.serialize()
+
+    if (rlpNode.length >= 32 || topLevel) {
+      const hashRoot = node.hash()
+
+      if (remove && this.isCheckpoint) {
+        opStack.push({
+          type: 'del',
+          key: hashRoot,
+        })
+      } else {
+        opStack.push({
+          type: 'put',
+          key: hashRoot,
+          value: rlpNode,
+        })
+      }
+
+      return hashRoot
+    }
+
+    return node.raw
   }
 }
