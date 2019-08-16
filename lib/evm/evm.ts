@@ -104,6 +104,8 @@ export default class EVM {
    * if an exception happens during the message execution.
    */
   async executeMessage(message: Message): Promise<EVMResult> {
+    await this._vm._emit('beforeMessage', message)
+
     await this._state.checkpoint()
 
     let result
@@ -129,6 +131,8 @@ export default class EVM {
     } else {
       await this._state.commit()
     }
+
+    await this._vm._emit('afterMessage', result)
 
     return result
   }
