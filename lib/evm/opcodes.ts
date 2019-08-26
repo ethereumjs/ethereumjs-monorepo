@@ -170,7 +170,11 @@ let codes: any = {
 }
 
 const istanbulOpcodes: any = {
+  0x31: ['BALANCE', 700, true],
+  0x3f: ['EXTCODEHASH', 700, true],
   0x46: ['CHAINID', 2, false],
+  0x47: ['SELFBALANCE', 5, false],
+  0x54: ['SLOAD', 800, true],
 }
 
 export function setOpcodes(hf: string) {
