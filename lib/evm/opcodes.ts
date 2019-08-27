@@ -175,7 +175,7 @@ const istanbulOpcodes: any = {
 
 export function setOpcodes(hf: string) {
   if (hf === 'istanbul') {
-    codes = {...codes, ...istanbulOpcodes}
+    codes = { ...codes, ...istanbulOpcodes }
   }
 }
 
