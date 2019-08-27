@@ -5,7 +5,7 @@ export interface OpInfo {
   isAsync: boolean
 }
 
-const codes: any = {
+let codes: any = {
   // 0x0 range - arithmetic ops
   // name, baseCost, async
   0x00: ['STOP', 0, false],
@@ -65,7 +65,6 @@ const codes: any = {
   0x43: ['NUMBER', 2, true],
   0x44: ['DIFFICULTY', 2, true],
   0x45: ['GASLIMIT', 2, true],
-  0x46: ['CHAINID', 2, false],
 
   // 0x50 range - 'storage' and execution
   0x50: ['POP', 2, false],
@@ -168,6 +167,16 @@ const codes: any = {
   // '0x70', range - other
   0xfe: ['INVALID', 0, false],
   0xff: ['SELFDESTRUCT', 5000, true],
+}
+
+const istanbulOpcodes: any = {
+  0x46: ['CHAINID', 2, false],
+}
+
+export function setOpcodes(hf: string) {
+  if (hf === 'istanbul') {
+    codes = {...codes, ...istanbulOpcodes}
+  }
 }
 
 export function lookupOpInfo(op: number, full: boolean = false): OpInfo {
