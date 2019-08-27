@@ -114,15 +114,14 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     throw new Error(
       `sender doesn't have enough funds to send tx. The upfront cost is: ${tx
         .getUpfrontCost()
-        .toString()}\
-      and the sender's account only has: ${new BN(fromAccount.balance).toString()}`,
+        .toString()}` +
+        ` and the sender's account only has: ${new BN(fromAccount.balance).toString()}`,
     )
   } else if (!opts.skipNonce && !new BN(fromAccount.nonce).eq(new BN(tx.nonce))) {
     throw new Error(
       `the tx doesn't have the correct nonce. account has nonce of: ${new BN(
         fromAccount.nonce,
-      ).toString()}\
-      tx has nonce of: ${new BN(tx.nonce).toString()}`,
+      ).toString()} tx has nonce of: ${new BN(tx.nonce).toString()}`,
     )
   }
   // Update from account's nonce and balance
