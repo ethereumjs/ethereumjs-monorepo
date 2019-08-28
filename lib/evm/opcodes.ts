@@ -2,13 +2,12 @@ export interface OpInfo {
   name: string
   opcode: number
   fee: number
-  dynamic: boolean
   isAsync: boolean
 }
 
-const codes: any = {
+let codes: any = {
   // 0x0 range - arithmetic ops
-  // name, baseCost, dynamic, async
+  // name, baseCost, async
   0x00: ['STOP', 0, false],
   0x01: ['ADD', 3, false],
   0x02: ['MUL', 5, false],
@@ -43,7 +42,7 @@ const codes: any = {
 
   // 0x30 range - closure state
   0x30: ['ADDRESS', 2, true],
-  0x31: ['BALANCE', 400, true, true],
+  0x31: ['BALANCE', 400, true],
   0x32: ['ORIGIN', 2, true],
   0x33: ['CALLER', 2, true],
   0x34: ['CALLVALUE', 2, true],
@@ -53,28 +52,27 @@ const codes: any = {
   0x38: ['CODESIZE', 2, false],
   0x39: ['CODECOPY', 3, false],
   0x3a: ['GASPRICE', 2, false],
-  0x3b: ['EXTCODESIZE', 700, true, true],
-  0x3c: ['EXTCODECOPY', 700, true, true],
+  0x3b: ['EXTCODESIZE', 700, true],
+  0x3c: ['EXTCODECOPY', 700, true],
   0x3d: ['RETURNDATASIZE', 2, true],
   0x3e: ['RETURNDATACOPY', 3, true],
-  0x3f: ['EXTCODEHASH', 400, true, true],
+  0x3f: ['EXTCODEHASH', 400, true],
 
   // '0x40' range - block operations
-  0x40: ['BLOCKHASH', 20, true, true],
+  0x40: ['BLOCKHASH', 20, true],
   0x41: ['COINBASE', 2, true],
   0x42: ['TIMESTAMP', 2, true],
   0x43: ['NUMBER', 2, true],
   0x44: ['DIFFICULTY', 2, true],
   0x45: ['GASLIMIT', 2, true],
-  0x46: ['CHAINID', 2, false],
 
   // 0x50 range - 'storage' and execution
   0x50: ['POP', 2, false],
   0x51: ['MLOAD', 3, false],
   0x52: ['MSTORE', 3, false],
   0x53: ['MSTORE8', 3, false],
-  0x54: ['SLOAD', 200, true, true],
-  0x55: ['SSTORE', 0, true, true],
+  0x54: ['SLOAD', 200, true],
+  0x55: ['SSTORE', 0, true],
   0x56: ['JUMP', 8, false],
   0x57: ['JUMPI', 10, false],
   0x58: ['PC', 2, false],
@@ -157,22 +155,32 @@ const codes: any = {
   0xa4: ['LOG', 375, false],
 
   // '0xf0' range - closures
-  0xf0: ['CREATE', 32000, true, true],
-  0xf1: ['CALL', 700, true, true],
-  0xf2: ['CALLCODE', 700, true, true],
+  0xf0: ['CREATE', 32000, true],
+  0xf1: ['CALL', 700, true],
+  0xf2: ['CALLCODE', 700, true],
   0xf3: ['RETURN', 0, false],
-  0xf4: ['DELEGATECALL', 700, true, true],
-  0xf5: ['CREATE2', 32000, true, true],
-  0xfa: ['STATICCALL', 700, true, true],
+  0xf4: ['DELEGATECALL', 700, true],
+  0xf5: ['CREATE2', 32000, true],
+  0xfa: ['STATICCALL', 700, true],
   0xfd: ['REVERT', 0, false],
 
   // '0x70', range - other
   0xfe: ['INVALID', 0, false],
-  0xff: ['SELFDESTRUCT', 5000, false, true],
+  0xff: ['SELFDESTRUCT', 5000, true],
+}
+
+const istanbulOpcodes: any = {
+  0x46: ['CHAINID', 2, false],
+}
+
+export function setOpcodes(hf: string) {
+  if (hf === 'istanbul') {
+    codes = { ...codes, ...istanbulOpcodes }
+  }
 }
 
 export function lookupOpInfo(op: number, full: boolean = false): OpInfo {
-  const code = codes[op] ? codes[op] : ['INVALID', 0, false, false]
+  const code = codes[op] ? codes[op] : ['INVALID', 0, false]
   let opcode = code[0]
 
   if (full) {
@@ -197,7 +205,6 @@ export function lookupOpInfo(op: number, full: boolean = false): OpInfo {
     name: opcode,
     opcode: op,
     fee: code[1],
-    dynamic: code[2],
-    isAsync: code[3],
+    isAsync: code[2],
   }
 }
