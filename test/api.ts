@@ -410,4 +410,14 @@ tape('[Transaction]: Basic functions', function(t) {
       st.end()
     },
   )
+
+  t.test('should return correct data fee for istanbul', function(st) {
+    let tx = new Transaction({}, { hardfork: 'istanbul' })
+    st.equals(tx.getDataFee().toNumber(), 0)
+
+    tx = new Transaction(txFixtures[3].raw, { hardfork: 'istanbul' })
+    st.equals(tx.getDataFee().toNumber(), 1716)
+
+    st.end()
+  })
 })
