@@ -45,6 +45,12 @@ using an object with `chain` and `hardfork` names. You can see en example of thi
 
 The second option is by passing the option `common` set to an instance of [ethereumjs-common](https://github.com/ethereumjs/ethereumjs-common)' Common. This is specially useful for custom networks or chains/hardforks not yet supported by `ethereumjs-common`. You can see en example of this in [./examples/custom-chain-tx.ts](./examples/custom-chain-tx.ts).
 
+## Istanbul Support
+
+Support for reduced non-zero call data gas prices from the `Istanbul` hardfork
+([EIP-2028](https://eips.ethereum.org/EIPS/eip-2028)) has been added to the library
+along with the `v2.1.1` release.
+
 # EIP-155 support
 
 `EIP-155` replay protection is activated since the `spuriousDragon` hardfork. To disable it, set the
