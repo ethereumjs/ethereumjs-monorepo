@@ -1,11 +1,18 @@
+import { LevelUp } from 'levelup'
+import { ErrorCallback } from './types'
 const level = require('level-mem')
 
 export const ENCODING_OPTS = { keyEncoding: 'binary', valueEncoding: 'binary' }
 
-export interface BatchDBOp {
-  type: string
+export type BatchDBOp = PutBatch | DelBatch
+export interface PutBatch {
+  type: 'put'
   key: Buffer
-  value?: Buffer
+  value: Buffer
+}
+export interface DelBatch {
+  type: 'del'
+  key: Buffer
 }
 
 /**
@@ -13,14 +20,14 @@ export interface BatchDBOp {
  * which validates inputs and sets encoding type.
  */
 export class DB {
-  _leveldb: any
+  _leveldb: LevelUp
 
   /**
    * Initialize a DB instance. If `leveldb` is not provided, DB
    * defaults to an [in-memory store](https://github.com/Level/memdown).
    * @param {Object} [leveldb] - An abstract-leveldown compliant store
    */
-  constructor(leveldb?: any) {
+  constructor(leveldb?: LevelUp) {
     this._leveldb = leveldb || level()
   }
 
@@ -34,7 +41,7 @@ export class DB {
   get(key: Buffer, cb: Function) {
     if (!Buffer.isBuffer(key)) throw new Error('Invalid input: expected buffer')
 
-    this._leveldb.get(key, ENCODING_OPTS, (err: Error, v?: Buffer) => {
+    this._leveldb.get(key, ENCODING_OPTS, (err?: Error, v?: Buffer) => {
       if (err || !v) {
         cb(null, null)
       } else {
@@ -50,7 +57,7 @@ export class DB {
    * @param {Function} cb A callback `Function`, which is given the argument
    * `err` - for errors that may have occured
    */
-  put(key: Buffer, val: Buffer, cb: Function) {
+  put(key: Buffer, val: Buffer, cb: ErrorCallback) {
     if (!Buffer.isBuffer(key)) throw new Error('Invalid input: expected buffer')
     if (!Buffer.isBuffer(val)) throw new Error('Invalid input: expected buffer')
 
@@ -63,7 +70,7 @@ export class DB {
    * @param {Function} cb A callback `Function`, which is given the argument
    * `err` - for errors that may have occured
    */
-  del(key: Buffer, cb: Function) {
+  del(key: Buffer, cb: ErrorCallback) {
     if (!Buffer.isBuffer(key)) throw new Error('Invalid input: expected buffer')
 
     this._leveldb.del(key, ENCODING_OPTS, cb)
@@ -75,7 +82,7 @@ export class DB {
    * @param {Function} cb A callback `Function`, which is given the argument
    * `err` - for errors that may have occured
    */
-  batch(opStack: BatchDBOp[], cb: Function) {
+  batch(opStack: BatchDBOp[], cb: ErrorCallback) {
     if (!Array.isArray(opStack)) throw new Error('Invalid input: expected buffer')
 
     this._leveldb.batch(opStack, ENCODING_OPTS, cb)

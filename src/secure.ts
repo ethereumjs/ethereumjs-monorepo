@@ -1,5 +1,6 @@
 import { keccak256 } from 'ethereumjs-util'
 import { CheckpointTrie } from './checkpointTrie'
+import { ErrorCallback } from './types'
 
 /**
  * You can create a secure Trie where the keys are automatically hashed
@@ -39,7 +40,7 @@ export class SecureTrie extends CheckpointTrie {
    * For a falsey value, use the original key
    * to avoid double hashing the key.
    */
-  put(key: Buffer, val: Buffer, cb: Function) {
+  put(key: Buffer, val: Buffer, cb: ErrorCallback) {
     if (!val) {
       this.del(key, cb)
     } else {
@@ -48,7 +49,7 @@ export class SecureTrie extends CheckpointTrie {
     }
   }
 
-  del(key: Buffer, cb: Function) {
+  del(key: Buffer, cb: ErrorCallback) {
     const hash = keccak256(key)
     super.del(hash, cb)
   }

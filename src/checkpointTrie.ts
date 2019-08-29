@@ -4,6 +4,7 @@ import { ScratchDB } from './scratch'
 import { callTogether } from './util/async'
 import { DB, BatchDBOp } from './db'
 import { TrieNode } from './trieNode'
+import { ErrorCallback } from './types'
 const async = require('async')
 const WriteStream = require('level-ws')
 
@@ -113,7 +114,7 @@ export class CheckpointTrie extends BaseTrie {
    * key/value db, disregarding checkpoints.
    * @deprecated
    */
-  putRaw(key: Buffer, value: Buffer, cb: Function) {
+  putRaw(key: Buffer, value: Buffer, cb: ErrorCallback) {
     this._mainDB.put(key, value, cb)
   }
 
@@ -181,6 +182,6 @@ export class CheckpointTrie extends BaseTrie {
       return hashRoot
     }
 
-    return node.raw
+    return node.raw()
   }
 }
