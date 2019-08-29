@@ -116,6 +116,13 @@ export default class EEI {
   }
 
   /**
+   * Returns balance of self.
+   */
+  getSelfBalance(): BN {
+    return new BN(this._env.contract.balance)
+  }
+
+  /**
    * Returns caller address. This is the address of the account
    * that is directly responsible for this execution.
    */
