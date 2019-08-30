@@ -347,14 +347,15 @@ export function F(h: Uint32Array, m: Uint32Array, t: Uint32Array, f: boolean, ro
   // util.debugPrint('          m[16]', m, 64)
   for (i = 0; i < rounds; i++) {
     // util.debugPrint('   (i=' + (i < 10 ? ' ' : '') + i + ') v[16]', v, 64)
-    B2B_G(0, 8, 16, 24, SIGMA82[i * 16 + 0], SIGMA82[i * 16 + 1])
-    B2B_G(2, 10, 18, 26, SIGMA82[i * 16 + 2], SIGMA82[i * 16 + 3])
-    B2B_G(4, 12, 20, 28, SIGMA82[i * 16 + 4], SIGMA82[i * 16 + 5])
-    B2B_G(6, 14, 22, 30, SIGMA82[i * 16 + 6], SIGMA82[i * 16 + 7])
-    B2B_G(0, 10, 20, 30, SIGMA82[i * 16 + 8], SIGMA82[i * 16 + 9])
-    B2B_G(2, 12, 22, 24, SIGMA82[i * 16 + 10], SIGMA82[i * 16 + 11])
-    B2B_G(4, 14, 16, 26, SIGMA82[i * 16 + 12], SIGMA82[i * 16 + 13])
-    B2B_G(6, 8, 18, 28, SIGMA82[i * 16 + 14], SIGMA82[i * 16 + 15])
+    const ri = (i % 10) * 16
+    B2B_G(0, 8, 16, 24, SIGMA82[ri + 0], SIGMA82[ri + 1])
+    B2B_G(2, 10, 18, 26, SIGMA82[ri + 2], SIGMA82[ri + 3])
+    B2B_G(4, 12, 20, 28, SIGMA82[ri + 4], SIGMA82[ri + 5])
+    B2B_G(6, 14, 22, 30, SIGMA82[ri + 6], SIGMA82[ri + 7])
+    B2B_G(0, 10, 20, 30, SIGMA82[ri + 8], SIGMA82[ri + 9])
+    B2B_G(2, 12, 22, 24, SIGMA82[ri + 10], SIGMA82[ri + 11])
+    B2B_G(4, 14, 16, 26, SIGMA82[ri + 12], SIGMA82[ri + 13])
+    B2B_G(6, 8, 18, 28, SIGMA82[ri + 14], SIGMA82[ri + 15])
   }
 
   for (i = 0; i < 16; i++) {
