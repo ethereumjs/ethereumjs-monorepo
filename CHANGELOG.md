@@ -6,7 +6,15 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## [2.1.0] - 2018-06-28
+## [2.1.1] - 2019-08-30
+
+- Added support for `Istanbul` reduced non-zero call data gas prices
+  ([EIP-2028](https://eips.ethereum.org/EIPS/eip-2028)),
+  PR [#171](https://github.com/ethereumjs/ethereumjs-tx/pull/171)
+
+[2.1.1]: https://github.com/ethereumjs/ethereumjs-tx/compare/v2.1.0...v2.1.1
+
+## [2.1.0] - 2019-06-28
 
 **Using testnets and custom/private networks is now easier**
 
