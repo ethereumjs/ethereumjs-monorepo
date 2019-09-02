@@ -7,9 +7,9 @@
   },
   "gasConfig": {},
   "gasPrices": {
-    "blake2bRound": {
+    "blake2Round": {
       "v": 1,
-      "d": "Gas cost per round for the Blake2b F precompile"
+      "d": "Gas cost per round for the Blake2 F precompile"
     },
     "ecAdd": {
       "v": 150,
