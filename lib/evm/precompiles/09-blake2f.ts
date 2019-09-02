@@ -401,10 +401,10 @@ export default function(opts: PrecompileInput): ExecResult {
   const mRaw = data.slice(68, 196)
   const tRaw = data.slice(196, 212)
   // final
-  const f = data.slice(212, 213)[0] === 1
+  const f = lastByte === 1
 
   const gasUsed = new BN(opts._common.param('gasPrices', 'blake2bRound'))
-  gasUsed.imul(new BN(rounds))
+  gasUsed.imuln(rounds)
   if (opts.gasLimit.lt(gasUsed)) {
     return OOGResult(opts.gasLimit)
   }
