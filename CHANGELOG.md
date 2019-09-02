@@ -6,6 +6,22 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [1.3.2] - 2019-09-04
+
+**Istanbul** Updates:
+
+- Added gas parameters for `EIP-2200` (rebalanced net-metered SSTORE
+  gas costs), PR [#65](https://github.com/ethereumjs/ethereumjs-common/pull/65)
+- Renamed hardfork `blake2bRound` (-> `blake2Round`) parameter,
+  PR [#63](https://github.com/ethereumjs/ethereumjs-common/pull/63)
+
+Other Changes:
+
+- Fixed `Kovan` genesis state,
+  PR [#66](https://github.com/ethereumjs/ethereumjs-common/pull/66)
+
+[1.3.2]: https://github.com/ethereumjs/ethereumjs-common/compare/v1.3.1...v1.3.2
+
 ## [1.3.1] - 2019-08-08
 
 Added missing **Istanbul** gas costs for:
