@@ -463,6 +463,13 @@ export const handlers: { [k: string]: OpHandler } = {
 
     runState.stack.push(runState.eei.getChainId())
   },
+  SELFBALANCE: function(runState: RunState) {
+    if (!runState._common.gteHardfork('istanbul')) {
+      trap(ERROR.INVALID_OPCODE)
+    }
+
+    runState.stack.push(runState.eei.getSelfBalance())
+  },
   // 0x50 range - 'storage' and execution
   POP: function(runState: RunState) {
     runState.stack.pop()
