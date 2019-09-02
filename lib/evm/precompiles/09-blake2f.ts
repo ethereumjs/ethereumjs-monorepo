@@ -15,9 +15,9 @@ const assert = require('assert')
 // 64-bit unsigned addition
 // Sets v[a,a+1] += v[b,b+1]
 // v should be a Uint32Array
-function ADD64AA(v: any, a: any, b: any) {
-  var o0 = v[a] + v[b]
-  var o1 = v[a + 1] + v[b + 1]
+function ADD64AA(v: Uint32Array, a: number, b: number) {
+  const o0 = v[a] + v[b]
+  let o1 = v[a + 1] + v[b + 1]
   if (o0 >= 0x100000000) {
     o1++
   }
@@ -28,12 +28,12 @@ function ADD64AA(v: any, a: any, b: any) {
 // 64-bit unsigned addition
 // Sets v[a,a+1] += b
 // b0 is the low 32 bits of b, b1 represents the high 32 bits
-function ADD64AC(v: any, a: any, b0: any, b1: any) {
-  var o0 = v[a] + b0
+function ADD64AC(v: Uint32Array, a: number, b0: number, b1: number) {
+  let o0 = v[a] + b0
   if (b0 < 0) {
     o0 += 0x100000000
   }
-  var o1 = v[a + 1] + b1
+  let o1 = v[a + 1] + b1
   if (o0 >= 0x100000000) {
     o1++
   }
@@ -42,24 +42,24 @@ function ADD64AC(v: any, a: any, b0: any, b1: any) {
 }
 
 // Little-endian byte access
-function B2B_GET32(arr: any, i: any) {
+function B2B_GET32(arr: Uint32Array, i: number) {
   return arr[i] ^ (arr[i + 1] << 8) ^ (arr[i + 2] << 16) ^ (arr[i + 3] << 24)
 }
 
 // G Mixing function
 // The ROTRs are inlined for speed
-function B2B_G(a: any, b: any, c: any, d: any, ix: any, iy: any) {
-  var x0 = my[ix]
-  var x1 = my[ix + 1]
-  var y0 = my[iy]
-  var y1 = my[iy + 1]
+function B2B_G(a: number, b: number, c: number, d: number, ix: number, iy: number) {
+  const x0 = my[ix]
+  const x1 = my[ix + 1]
+  const y0 = my[iy]
+  const y1 = my[iy + 1]
 
   ADD64AA(v, a, b) // v[a,a+1] += v[b,b+1] ... in JS we must store a uint64 as two uint32s
   ADD64AC(v, a, x0, x1) // v[a, a+1] += x ... x0 is the low 32 bits of x, x1 is the high 32 bits
 
   // v[d,d+1] = (v[d,d+1] xor v[a,a+1]) rotated to the right by 32 bits
-  var xor0 = v[d] ^ v[a]
-  var xor1 = v[d + 1] ^ v[a + 1]
+  let xor0 = v[d] ^ v[a]
+  let xor1 = v[d + 1] ^ v[a + 1]
   v[d] = xor1
   v[d + 1] = xor0
 
@@ -316,7 +316,7 @@ const SIGMA82 = new Uint8Array(
 const v = new Uint32Array(32)
 var my = new Uint32Array(32)
 export function F(h: Uint32Array, m: Uint32Array, t: Uint32Array, f: boolean, rounds: number) {
-  var i = 0
+  let i = 0
 
   // init work variables
   for (i = 0; i < 16; i++) {
@@ -324,7 +324,7 @@ export function F(h: Uint32Array, m: Uint32Array, t: Uint32Array, f: boolean, ro
     v[i + 16] = BLAKE2B_IV32[i]
   }
 
-  // low 64 bits of offset
+  // 128 bits of offset
   v[24] = v[24] ^ t[0]
   v[25] = v[25] ^ t[1]
   v[26] = v[26] ^ t[2]
