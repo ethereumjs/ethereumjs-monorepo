@@ -5,12 +5,15 @@ import { OOGResult, ExecResult } from '../evm'
 import { VmError, ERROR } from '../../exceptions'
 const assert = require('assert')
 
-// The following blake2 code has been taken from:
+// The following blake2 code has been taken from (license: Creative Commons CC0):
 // https://github.com/dcposch/blakejs/blob/410c640d0f08d3b26904c6d1ab3d81df3619d282/blake2s.js
 // The modifications include:
 //  - Avoiding the use of context in F
 //  - F accepts number of rounds as parameter
 //  - Expect 2 64-byte t values, xor them both
+//  - Take modulo 10 for indices of SIGMA
+//  - Added type annotations
+//  - Moved previously global `v` and `m` variables inside the F function
 
 // 64-bit unsigned addition
 // Sets v[a,a+1] += v[b,b+1]
@@ -48,11 +51,11 @@ function B2B_GET32(arr: Uint32Array, i: number) {
 
 // G Mixing function
 // The ROTRs are inlined for speed
-function B2B_G(a: number, b: number, c: number, d: number, ix: number, iy: number) {
-  const x0 = my[ix]
-  const x1 = my[ix + 1]
-  const y0 = my[iy]
-  const y1 = my[iy + 1]
+function B2B_G(v: Uint32Array, mw: Uint32Array, a: number, b: number, c: number, d: number, ix: number, iy: number) {
+  const x0 = mw[ix]
+  const x1 = mw[ix + 1]
+  const y0 = mw[iy]
+  const y1 = mw[iy + 1]
 
   ADD64AA(v, a, b) // v[a,a+1] += v[b,b+1] ... in JS we must store a uint64 as two uint32s
   ADD64AC(v, a, x0, x1) // v[a, a+1] += x ... x0 is the low 32 bits of x, x1 is the high 32 bits
@@ -313,9 +316,8 @@ const SIGMA82 = new Uint8Array(
   }),
 )
 
-const v = new Uint32Array(32)
-var my = new Uint32Array(32)
 export function F(h: Uint32Array, m: Uint32Array, t: Uint32Array, f: boolean, rounds: number) {
+  const v = new Uint32Array(32)
   let i = 0
 
   // init work variables
@@ -336,9 +338,11 @@ export function F(h: Uint32Array, m: Uint32Array, t: Uint32Array, f: boolean, ro
     v[29] = ~v[29]
   }
 
+  // message words
+  const mw = new Uint32Array(32)
   // get little-endian words
   for (i = 0; i < 32; i++) {
-    my[i] = B2B_GET32(m, 4 * i)
+    mw[i] = B2B_GET32(m, 4 * i)
   }
 
   // twelve rounds of mixing
@@ -348,14 +352,14 @@ export function F(h: Uint32Array, m: Uint32Array, t: Uint32Array, f: boolean, ro
   for (i = 0; i < rounds; i++) {
     // util.debugPrint('   (i=' + (i < 10 ? ' ' : '') + i + ') v[16]', v, 64)
     const ri = (i % 10) * 16
-    B2B_G(0, 8, 16, 24, SIGMA82[ri + 0], SIGMA82[ri + 1])
-    B2B_G(2, 10, 18, 26, SIGMA82[ri + 2], SIGMA82[ri + 3])
-    B2B_G(4, 12, 20, 28, SIGMA82[ri + 4], SIGMA82[ri + 5])
-    B2B_G(6, 14, 22, 30, SIGMA82[ri + 6], SIGMA82[ri + 7])
-    B2B_G(0, 10, 20, 30, SIGMA82[ri + 8], SIGMA82[ri + 9])
-    B2B_G(2, 12, 22, 24, SIGMA82[ri + 10], SIGMA82[ri + 11])
-    B2B_G(4, 14, 16, 26, SIGMA82[ri + 12], SIGMA82[ri + 13])
-    B2B_G(6, 8, 18, 28, SIGMA82[ri + 14], SIGMA82[ri + 15])
+    B2B_G(v, mw, 0, 8, 16, 24, SIGMA82[ri + 0], SIGMA82[ri + 1])
+    B2B_G(v, mw, 2, 10, 18, 26, SIGMA82[ri + 2], SIGMA82[ri + 3])
+    B2B_G(v, mw, 4, 12, 20, 28, SIGMA82[ri + 4], SIGMA82[ri + 5])
+    B2B_G(v, mw, 6, 14, 22, 30, SIGMA82[ri + 6], SIGMA82[ri + 7])
+    B2B_G(v, mw, 0, 10, 20, 30, SIGMA82[ri + 8], SIGMA82[ri + 9])
+    B2B_G(v, mw, 2, 12, 22, 24, SIGMA82[ri + 10], SIGMA82[ri + 11])
+    B2B_G(v, mw, 4, 14, 16, 26, SIGMA82[ri + 12], SIGMA82[ri + 13])
+    B2B_G(v, mw, 6, 8, 18, 28, SIGMA82[ri + 14], SIGMA82[ri + 15])
   }
 
   for (i = 0; i < 16; i++) {
