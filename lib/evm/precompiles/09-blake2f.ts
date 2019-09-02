@@ -51,7 +51,16 @@ function B2B_GET32(arr: Uint32Array, i: number) {
 
 // G Mixing function
 // The ROTRs are inlined for speed
-function B2B_G(v: Uint32Array, mw: Uint32Array, a: number, b: number, c: number, d: number, ix: number, iy: number) {
+function B2B_G(
+  v: Uint32Array,
+  mw: Uint32Array,
+  a: number,
+  b: number,
+  c: number,
+  d: number,
+  ix: number,
+  iy: number,
+) {
   const x0 = mw[ix]
   const x1 = mw[ix + 1]
   const y0 = mw[iy]
