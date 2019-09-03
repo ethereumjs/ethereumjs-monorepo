@@ -11,6 +11,15 @@ const BlockHeader = require('ethereumjs-block/header.js')
 const testData = require('./test-data')
 const level = require('level')
 
+interface IBlockchainHead {
+  _common?: any
+  transactions?: any
+  uncleHeaders?: any
+  _inBlockchain?: any
+  txTrie?: any
+  header?: any
+}
+
 async function main() {
   const hardfork = testData.network.toLowerCase()
 
@@ -39,10 +48,12 @@ async function main() {
 
   await vm.runBlockchain(blockchain)
 
-  const blockchainHead = await promisify(vm.blockchain.getHead.bind(vm.blockchain))()
+  const blockchainHead: IBlockchainHead = await promisify(
+    vm.blockchain.getHead.bind(vm.blockchain),
+  )()
 
   console.log('--- Finished processing the BlockChain ---')
-  console.log('New head:', '0x' + blockchainHead.hash().toString('hex'))
+  console.log('New head:', '0x' + blockchainHead.header.hash().toString('hex'))
   console.log('Expected:', testData.lastblockhash)
 }
 
