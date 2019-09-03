@@ -138,6 +138,25 @@ tape('StateManager', (t) => {
     st.end()
   })
 
+  t.test('should generate correct genesis state root for all chains', async (st) => {
+    const chains = ['mainnet', 'ropsten', 'rinkeby', 'kovan', 'goerli']
+    for (const chain of chains) {
+      const common = new Common(chain, 'petersburg')
+      const expectedStateRoot = Buffer.from(common.genesis().stateRoot.slice(2), 'hex')
+      const stateManager = new StateManager({ common: common })
+
+      const generateCanonicalGenesis = promisify((...args) => stateManager.generateCanonicalGenesis(...args))
+      const getStateRoot = promisify((...args) => stateManager.getStateRoot(...args))
+
+      await generateCanonicalGenesis()
+      let stateRoot = await getStateRoot()
+
+      st.true(stateRoot.equals(expectedStateRoot), `generateCanonicalGenesis should produce correct state root for ${chain}`)
+    }
+
+    st.end()
+  })
+
   t.test('should dump storage', async st => {
     const stateManager = new StateManager()
     const addressBuffer = Buffer.from('a94f5374fce5edbc8e2a8697c15331677e6ebf0b', 'hex')
