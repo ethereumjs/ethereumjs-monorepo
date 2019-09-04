@@ -959,7 +959,7 @@ function updateSstoreGas(runState: RunState, found: any, value: Buffer) {
       // If original value is not 0
       if (current.length === 0) {
         // If current value is 0 (also means that new value is not 0), remove 15000 gas from refund counter. We can prove that refund counter will never go below 0.
-        runState.eei.subRefund(new BN(runState._common.param('gasPrices', 'netSstoreClearRefund')))
+        runState.eei._result.gasRefund.isub(new BN(runState._common.param('gasPrices', 'netSstoreClearRefund')))
       } else if (value.length === 0) {
         // If new value is 0 (also means that current value is not 0), add 15000 gas to refund counter.
         runState.eei.refundGas(new BN(runState._common.param('gasPrices', 'netSstoreClearRefund')))
