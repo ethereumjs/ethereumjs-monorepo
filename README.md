@@ -82,7 +82,7 @@ Scope and technical details on the `Istanbul` HF are currently forming out
 within [EIP-1679](https://eips.ethereum.org/EIPS/eip-1679) respectively the
 associated EIP pages.
 
-Supported EIPs in the library:
+Supported EIPs in the library (use `istanbul` HF parameter):
 
 - [EIP-1108](https://eips.ethereum.org/EIPS/eip-1108) `alt_bn128` precompile
   gas cost reductions (`DRAFT` status)
@@ -90,6 +90,7 @@ Supported EIPs in the library:
   (as `gasPrices` -> `base` parameter in `hardforks/chainstart.json`)
 - [EIP-2129/152](https://github.com/ethereum/EIPs/pull/2129) Blake2b precompile
 - [EIP-2028](https://eips.ethereum.org/EIPS/eip-2028) Calldata gas cost reduction
+- [EIP-2200](https://github.com/ethereum/EIPs/pull/2200) Rebalance net-metered SSTORE gas cost
 
 ## Parameter Access
 
