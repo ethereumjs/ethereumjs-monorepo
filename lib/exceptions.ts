@@ -10,7 +10,7 @@ export enum ERROR {
   INTERNAL_ERROR = 'internal error',
   CREATE_COLLISION = 'create collision',
   STOP = 'stop',
-  REFUND_EXHAUSTED = 'refund exhausted'
+  REFUND_EXHAUSTED = 'refund exhausted',
 }
 
 export class VmError {
