@@ -912,7 +912,7 @@ function getContractStorage(runState: RunState, address: Buffer, key: Buffer) {
     }
     runState.stateManager.getContractStorage(address, key, (err: Error, current: Buffer) => {
       if (err) return cb(err, null)
-      if (runState._common.hardfork() === 'constantinople') {
+      if (runState._common.hardfork() === 'constantinople' || runState._common.gteHardfork('istanbul')) {
         runState.stateManager.getOriginalContractStorage(
           address,
           key,
@@ -956,10 +956,7 @@ function updateSstoreGas(runState: RunState, found: any, value: Buffer) {
       // If original value is not 0
       if (current.length === 0) {
         // If current value is 0 (also means that new value is not 0), remove 15000 gas from refund counter. We can prove that refund counter will never go below 0.
-        // TODO: Remove usage of private attr
-        runState.eei._result.gasRefund = runState.eei._result.gasRefund.subn(
-          runState._common.param('gasPrices', 'netSstoreClearRefund'),
-        )
+        runState.eei.subRefund(new BN(runState._common.param('gasPrices', 'netSstoreClearRefund')))
       } else if (value.length === 0) {
         // If new value is 0 (also means that current value is not 0), add 15000 gas to refund counter.
         runState.eei.refundGas(new BN(runState._common.param('gasPrices', 'netSstoreClearRefund')))
@@ -978,6 +975,51 @@ function updateSstoreGas(runState: RunState, found: any, value: Buffer) {
       }
     }
     return runState.eei.useGas(new BN(runState._common.param('gasPrices', 'netSstoreDirtyGas')))
+  } else if (runState._common.hardfork() === 'istanbul') {
+    // EIP-2200
+    const original = found.original
+    const current = found.current
+    // Fail if not enough gas is left
+    if (runState.eei.getGasLeft().lten(runState._common.param('gasPrices', 'sstoreSentryGasEIP2200'))) {
+      trap(ERROR.OUT_OF_GAS)
+    }
+
+    // Noop
+    if (current.equals(value)) {
+      return runState.eei.useGas(new BN(runState._common.param('gasPrices', 'sstoreNoopGasEIP2200')))
+    }
+    if (original.equals(current)) {
+      // Create slot
+      if (original.length === 0) {
+        return runState.eei.useGas(new BN(runState._common.param('gasPrices', 'sstoreInitGasEIP2200')))
+      }
+      // Delete slot
+      if (value.length === 0) {
+        runState.eei.refundGas(new BN(runState._common.param('gasPrices', 'sstoreClearRefundEIP2200')))
+      }
+      // Write existing slot
+      return runState.eei.useGas(new BN(runState._common.param('gasPrices', 'sstoreCleanGasEIP2200')))
+    }
+    if (original.length > 0) {
+      // Recreate slot
+      if (current.length === 0) {
+        runState.eei.subRefund(new BN(runState._common.param('gasPrices', 'sstoreClearRefundEIP2200')))
+      // Delete slot
+      } else if (value.length === 0) {
+        runState.eei.refundGas(new BN(runState._common.param('gasPrices', 'sstoreClearRefundEIP2200')))
+      }
+    }
+    if (original.equals(value)) {
+      // Reset to original non-existent slot
+      if (original.length === 0) {
+        runState.eei.refundGas(new BN(runState._common.param('gasPrices', 'sstoreInitRefundEIP2200')))
+      // Reset to original existing slot
+      } else {
+        runState.eei.refundGas(new BN(runState._common.param('gasPrices', 'sstoreCleanRefundEIP2200')))
+      }
+    }
+    // Dirty update
+    return runState.eei.useGas(new BN(runState._common.param('gasPrices', 'sstoreDirtyGasEIP2200')))
   } else {
     if (value.length === 0 && !found.length) {
       runState.eei.useGas(new BN(runState._common.param('gasPrices', 'sstoreReset')))
