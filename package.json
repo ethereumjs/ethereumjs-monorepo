@@ -55,7 +55,8 @@
     "level-ws": "^1.0.0",
     "readable-stream": "^3.0.6",
     "rlp": "^2.2.3",
-    "semaphore": ">=1.0.1"
+    "semaphore": ">=1.0.1",
+    "util.promisify": "^1.0.0"
   },
   "devDependencies": {
     "@ethereumjs/config-nyc": "^1.1.1",

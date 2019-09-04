@@ -15,14 +15,14 @@ export class SecureTrie extends CheckpointTrie {
     super(...args)
   }
 
-  static prove(trie: SecureTrie, key: Buffer, cb: Function) {
+  static prove(trie: SecureTrie, key: Buffer): Promise<Buffer[]> {
     const hash = keccak256(key)
-    super.prove(trie, hash, cb)
+    return super.prove(trie, hash)
   }
 
-  static verifyProof(rootHash: Buffer, key: Buffer, proof: Buffer[], cb: Function) {
+  static async verifyProof(rootHash: Buffer, key: Buffer, proof: Buffer[]): Promise<Buffer | null> {
     const hash = keccak256(key)
-    super.verifyProof(rootHash, hash, proof, cb)
+    return super.verifyProof(rootHash, hash, proof)
   }
 
   copy(): SecureTrie {

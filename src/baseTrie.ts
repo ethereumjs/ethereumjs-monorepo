@@ -19,6 +19,7 @@ import {
 const assert = require('assert')
 const async = require('async')
 const semaphore = require('semaphore')
+const promisify = require('util.promisify')
 
 /**
  * Use `require('merkel-patricia-tree').BaseTrie` for the base interface. In Ethereum applications
@@ -46,7 +47,7 @@ export class Trie {
     }
   }
 
-  static fromProof(proofNodes: Buffer[], cb: Function, proofTrie?: Trie) {
+  static async fromProof(proofNodes: Buffer[], proofTrie?: Trie): Promise<Trie> {
     let opStack = proofNodes.map(nodeValue => {
       return {
         type: 'put',
@@ -62,38 +63,39 @@ export class Trie {
       }
     }
 
-    proofTrie.db.batch(opStack, (e?: Error) => {
-      cb(e, proofTrie)
-    })
+    await promisify(proofTrie.db.batch.bind(proofTrie.db))(opStack)
+    return proofTrie
   }
 
-  static prove(trie: Trie, key: Buffer, cb: Function) {
-    trie.findPath(key, function(
-      err: Error,
-      node: TrieNode,
-      remaining: number[],
-      stack: TrieNode[],
-    ) {
-      if (err) return cb(err)
-      let p = stack.map(stackElem => {
-        return stackElem.serialize()
-      })
-      cb(null, p)
-    })
-  }
-
-  static verifyProof(rootHash: Buffer, key: Buffer, proofNodes: Buffer[], cb: Function) {
-    let proofTrie = new Trie(null, rootHash)
-    Trie.fromProof(
-      proofNodes,
-      (error: Error, proofTrie: Trie) => {
-        if (error) cb(new Error('Invalid proof nodes given'), null)
-        proofTrie.get(key, (e: Error, r: Buffer | null) => {
-          return cb(e, r)
+  static async prove(trie: Trie, key: Buffer): Promise<Buffer[]> {
+    return new Promise((resolve, reject) => {
+      trie.findPath(key, function(
+        err: Error,
+        node: TrieNode,
+        remaining: number[],
+        stack: TrieNode[],
+      ) {
+        if (err) return reject(err)
+        let p = stack.map(stackElem => {
+          return stackElem.serialize()
         })
-      },
-      proofTrie,
-    )
+        resolve(p)
+      })
+    })
+  }
+
+  static async verifyProof(
+    rootHash: Buffer,
+    key: Buffer,
+    proofNodes: Buffer[],
+  ): Promise<Buffer | null> {
+    let proofTrie = new Trie(null, rootHash)
+    try {
+      proofTrie = await Trie.fromProof(proofNodes, proofTrie)
+    } catch (e) {
+      throw new Error('Invalid proof nodes given')
+    }
+    return promisify(proofTrie.get.bind(proofTrie))(key)
   }
 
   set root(value: Buffer) {
