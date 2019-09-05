@@ -980,7 +980,7 @@ function updateSstoreGas(runState: RunState, found: any, value: Buffer) {
       }
     }
     return runState.eei.useGas(new BN(runState._common.param('gasPrices', 'netSstoreDirtyGas')))
-  } else if (runState._common.hardfork() === 'istanbul') {
+  } else if (runState._common.gteHardfork('istanbul')) {
     // EIP-2200
     const original = found.original
     const current = found.current
