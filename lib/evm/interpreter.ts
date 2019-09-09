@@ -133,7 +133,9 @@ export default class Interpreter {
    * Get info for an opcode from VM's list of opcodes.
    */
   lookupOpInfo(op: number, full: boolean = false): Opcode {
-    const opcode = this._vm._opcodes[op] ? this._vm._opcodes[op] : { name: 'INVALID', fee: 0, isAsync: false }
+    const opcode = this._vm._opcodes[op]
+      ? this._vm._opcodes[op]
+      : { name: 'INVALID', fee: 0, isAsync: false }
 
     if (full) {
       let name = opcode.name
