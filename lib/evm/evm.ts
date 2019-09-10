@@ -71,6 +71,12 @@ export interface ExecResult {
   selfdestruct?: { [k: string]: Buffer }
 }
 
+export interface NewContractEvent {
+  address: Buffer
+  // The deployment code
+  code: Buffer
+}
+
 export function OOGResult(gasLimit: BN): ExecResult {
   return {
     returnValue: Buffer.alloc(0),
@@ -104,6 +110,8 @@ export default class EVM {
    * if an exception happens during the message execution.
    */
   async executeMessage(message: Message): Promise<EVMResult> {
+    await this._vm._emit('beforeMessage', message)
+
     await this._state.checkpoint()
 
     let result
@@ -129,6 +137,8 @@ export default class EVM {
     } else {
       await this._state.commit()
     }
+
+    await this._vm._emit('afterMessage', result)
 
     return result
   }
@@ -197,10 +207,14 @@ export default class EVM {
     }
 
     await this._state.clearContractStorage(message.to)
-    await this._vm._emit('newContract', {
+
+    const newContractEvent: NewContractEvent = {
       address: message.to,
       code: message.code,
-    })
+    }
+
+    await this._vm._emit('newContract', newContractEvent)
+
     toAccount = await this._state.getAccount(message.to)
     toAccount.nonce = new BN(toAccount.nonce).addn(1).toArrayLike(Buffer)
 
