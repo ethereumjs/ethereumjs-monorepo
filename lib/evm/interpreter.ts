@@ -8,6 +8,7 @@ import Stack from './stack'
 import EEI from './eei'
 import { Opcode } from './opcodes'
 import { handlers as opHandlers, OpHandler } from './opFns.js'
+import Account from 'ethereumjs-account'
 
 export interface InterpreterOpts {
   pc?: number
@@ -30,6 +31,19 @@ export interface RunState {
 export interface InterpreterResult {
   runState?: RunState
   exceptionError?: VmError
+}
+
+export interface InterpreterStep {
+  gasLeft: BN
+  stateManager: StateManager
+  stack: BN[]
+  pc: number
+  depth: number
+  address: Buffer
+  memory: number[]
+  memoryWordCount: BN
+  opcode: OpInfo
+  account: Account
 }
 
 /**
@@ -161,7 +175,7 @@ export default class Interpreter {
   }
 
   async _runStepHook(): Promise<void> {
-    const eventObj = {
+    const eventObj: InterpreterStep = {
       pc: this._runState.programCounter,
       gasLeft: this._eei.getGasLeft(),
       opcode: this.lookupOpInfo(this._runState.opCode, true),
