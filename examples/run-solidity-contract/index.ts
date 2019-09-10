@@ -151,7 +151,7 @@ async function getGreeting(vm: VM, contractAddress: Buffer, caller: Buffer) {
     throw greetResult.execResult.exceptionError
   }
 
-  const results = abi.rawDecode(['string'], greetResult.execResult.return)
+  const results = abi.rawDecode(['string'], greetResult.execResult.returnValue)
 
   return results[0]
 }
