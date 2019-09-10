@@ -8,7 +8,7 @@ import { default as runCall, RunCallOpts } from './runCall'
 import { default as runTx, RunTxOpts, RunTxResult } from './runTx'
 import { default as runBlock, RunBlockOpts, RunBlockResult } from './runBlock'
 import { EVMResult, ExecResult } from './evm/evm'
-import { setOpcodes } from './evm/opcodes'
+import { OpcodeList, getOpcodesForHF } from './evm/opcodes'
 import runBlockchain from './runBlockchain'
 const promisify = require('util.promisify')
 const AsyncEventEmitter = require('async-eventemitter')
@@ -64,6 +64,7 @@ export default class VM extends AsyncEventEmitter {
   stateManager: StateManager
   blockchain: Blockchain
   allowUnlimitedContractSize: boolean
+  _opcodes: OpcodeList
 
   /**
    * Instantiates a new [[VM]] Object.
@@ -94,6 +95,9 @@ export default class VM extends AsyncEventEmitter {
       this._common = new Common(chain, hardfork, supportedHardforks)
     }
 
+    // Set list of opcodes based on HF
+    this._opcodes = getOpcodesForHF(this._common.hardfork()!)
+
     if (opts.stateManager) {
       this.stateManager = opts.stateManager
     } else {
@@ -110,9 +114,6 @@ export default class VM extends AsyncEventEmitter {
 
     this.allowUnlimitedContractSize =
       opts.allowUnlimitedContractSize === undefined ? false : opts.allowUnlimitedContractSize
-
-    // Set list of opcodes based on HF
-    setOpcodes(this._common.hardfork()!)
   }
 
   /**

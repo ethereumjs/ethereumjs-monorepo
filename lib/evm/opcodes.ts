@@ -1,214 +1,189 @@
-export interface OpInfo {
+export interface Opcode {
   name: string
-  opcode: number
   fee: number
   isAsync: boolean
 }
 
-let codes: any = {
+export interface OpcodeList {
+  [code: number]: Opcode
+}
+
+const opcodes: OpcodeList = {
   // 0x0 range - arithmetic ops
   // name, baseCost, async
-  0x00: ['STOP', 0, false],
-  0x01: ['ADD', 3, false],
-  0x02: ['MUL', 5, false],
-  0x03: ['SUB', 3, false],
-  0x04: ['DIV', 5, false],
-  0x05: ['SDIV', 5, false],
-  0x06: ['MOD', 5, false],
-  0x07: ['SMOD', 5, false],
-  0x08: ['ADDMOD', 8, false],
-  0x09: ['MULMOD', 8, false],
-  0x0a: ['EXP', 10, false],
-  0x0b: ['SIGNEXTEND', 5, false],
+  0x00: { name: 'STOP', fee: 0, isAsync: false },
+  0x01: { name: 'ADD', fee: 3, isAsync: false },
+  0x02: { name: 'MUL', fee: 5, isAsync: false },
+  0x03: { name: 'SUB', fee: 3, isAsync: false },
+  0x04: { name: 'DIV', fee: 5, isAsync: false },
+  0x05: { name: 'SDIV', fee: 5, isAsync: false },
+  0x06: { name: 'MOD', fee: 5, isAsync: false },
+  0x07: { name: 'SMOD', fee: 5, isAsync: false },
+  0x08: { name: 'ADDMOD', fee: 8, isAsync: false },
+  0x09: { name: 'MULMOD', fee: 8, isAsync: false },
+  0x0a: { name: 'EXP', fee: 10, isAsync: false },
+  0x0b: { name: 'SIGNEXTEND', fee: 5, isAsync: false },
 
   // 0x10 range - bit ops
-  0x10: ['LT', 3, false],
-  0x11: ['GT', 3, false],
-  0x12: ['SLT', 3, false],
-  0x13: ['SGT', 3, false],
-  0x14: ['EQ', 3, false],
-  0x15: ['ISZERO', 3, false],
-  0x16: ['AND', 3, false],
-  0x17: ['OR', 3, false],
-  0x18: ['XOR', 3, false],
-  0x19: ['NOT', 3, false],
-  0x1a: ['BYTE', 3, false],
-  0x1b: ['SHL', 3, false],
-  0x1c: ['SHR', 3, false],
-  0x1d: ['SAR', 3, false],
+  0x10: { name: 'LT', fee: 3, isAsync: false },
+  0x11: { name: 'GT', fee: 3, isAsync: false },
+  0x12: { name: 'SLT', fee: 3, isAsync: false },
+  0x13: { name: 'SGT', fee: 3, isAsync: false },
+  0x14: { name: 'EQ', fee: 3, isAsync: false },
+  0x15: { name: 'ISZERO', fee: 3, isAsync: false },
+  0x16: { name: 'AND', fee: 3, isAsync: false },
+  0x17: { name: 'OR', fee: 3, isAsync: false },
+  0x18: { name: 'XOR', fee: 3, isAsync: false },
+  0x19: { name: 'NOT', fee: 3, isAsync: false },
+  0x1a: { name: 'BYTE', fee: 3, isAsync: false },
+  0x1b: { name: 'SHL', fee: 3, isAsync: false },
+  0x1c: { name: 'SHR', fee: 3, isAsync: false },
+  0x1d: { name: 'SAR', fee: 3, isAsync: false },
 
   // 0x20 range - crypto
-  0x20: ['SHA3', 30, false],
+  0x20: { name: 'SHA3', fee: 30, isAsync: false },
 
   // 0x30 range - closure state
-  0x30: ['ADDRESS', 2, true],
-  0x31: ['BALANCE', 400, true],
-  0x32: ['ORIGIN', 2, true],
-  0x33: ['CALLER', 2, true],
-  0x34: ['CALLVALUE', 2, true],
-  0x35: ['CALLDATALOAD', 3, true],
-  0x36: ['CALLDATASIZE', 2, true],
-  0x37: ['CALLDATACOPY', 3, true],
-  0x38: ['CODESIZE', 2, false],
-  0x39: ['CODECOPY', 3, false],
-  0x3a: ['GASPRICE', 2, false],
-  0x3b: ['EXTCODESIZE', 700, true],
-  0x3c: ['EXTCODECOPY', 700, true],
-  0x3d: ['RETURNDATASIZE', 2, true],
-  0x3e: ['RETURNDATACOPY', 3, true],
-  0x3f: ['EXTCODEHASH', 400, true],
+  0x30: { name: 'ADDRESS', fee: 2, isAsync: true },
+  0x31: { name: 'BALANCE', fee: 400, isAsync: true },
+  0x32: { name: 'ORIGIN', fee: 2, isAsync: true },
+  0x33: { name: 'CALLER', fee: 2, isAsync: true },
+  0x34: { name: 'CALLVALUE', fee: 2, isAsync: true },
+  0x35: { name: 'CALLDATALOAD', fee: 3, isAsync: true },
+  0x36: { name: 'CALLDATASIZE', fee: 2, isAsync: true },
+  0x37: { name: 'CALLDATACOPY', fee: 3, isAsync: true },
+  0x38: { name: 'CODESIZE', fee: 2, isAsync: false },
+  0x39: { name: 'CODECOPY', fee: 3, isAsync: false },
+  0x3a: { name: 'GASPRICE', fee: 2, isAsync: false },
+  0x3b: { name: 'EXTCODESIZE', fee: 700, isAsync: true },
+  0x3c: { name: 'EXTCODECOPY', fee: 700, isAsync: true },
+  0x3d: { name: 'RETURNDATASIZE', fee: 2, isAsync: true },
+  0x3e: { name: 'RETURNDATACOPY', fee: 3, isAsync: true },
+  0x3f: { name: 'EXTCODEHASH', fee: 400, isAsync: true },
 
   // '0x40' range - block operations
-  0x40: ['BLOCKHASH', 20, true],
-  0x41: ['COINBASE', 2, true],
-  0x42: ['TIMESTAMP', 2, true],
-  0x43: ['NUMBER', 2, true],
-  0x44: ['DIFFICULTY', 2, true],
-  0x45: ['GASLIMIT', 2, true],
+  0x40: { name: 'BLOCKHASH', fee: 20, isAsync: true },
+  0x41: { name: 'COINBASE', fee: 2, isAsync: true },
+  0x42: { name: 'TIMESTAMP', fee: 2, isAsync: true },
+  0x43: { name: 'NUMBER', fee: 2, isAsync: true },
+  0x44: { name: 'DIFFICULTY', fee: 2, isAsync: true },
+  0x45: { name: 'GASLIMIT', fee: 2, isAsync: true },
 
   // 0x50 range - 'storage' and execution
-  0x50: ['POP', 2, false],
-  0x51: ['MLOAD', 3, false],
-  0x52: ['MSTORE', 3, false],
-  0x53: ['MSTORE8', 3, false],
-  0x54: ['SLOAD', 200, true],
-  0x55: ['SSTORE', 0, true],
-  0x56: ['JUMP', 8, false],
-  0x57: ['JUMPI', 10, false],
-  0x58: ['PC', 2, false],
-  0x59: ['MSIZE', 2, false],
-  0x5a: ['GAS', 2, false],
-  0x5b: ['JUMPDEST', 1, false],
+  0x50: { name: 'POP', fee: 2, isAsync: false },
+  0x51: { name: 'MLOAD', fee: 3, isAsync: false },
+  0x52: { name: 'MSTORE', fee: 3, isAsync: false },
+  0x53: { name: 'MSTORE8', fee: 3, isAsync: false },
+  0x54: { name: 'SLOAD', fee: 200, isAsync: true },
+  0x55: { name: 'SSTORE', fee: 0, isAsync: true },
+  0x56: { name: 'JUMP', fee: 8, isAsync: false },
+  0x57: { name: 'JUMPI', fee: 10, isAsync: false },
+  0x58: { name: 'PC', fee: 2, isAsync: false },
+  0x59: { name: 'MSIZE', fee: 2, isAsync: false },
+  0x5a: { name: 'GAS', fee: 2, isAsync: false },
+  0x5b: { name: 'JUMPDEST', fee: 1, isAsync: false },
 
   // 0x60, range
-  0x60: ['PUSH', 3, false],
-  0x61: ['PUSH', 3, false],
-  0x62: ['PUSH', 3, false],
-  0x63: ['PUSH', 3, false],
-  0x64: ['PUSH', 3, false],
-  0x65: ['PUSH', 3, false],
-  0x66: ['PUSH', 3, false],
-  0x67: ['PUSH', 3, false],
-  0x68: ['PUSH', 3, false],
-  0x69: ['PUSH', 3, false],
-  0x6a: ['PUSH', 3, false],
-  0x6b: ['PUSH', 3, false],
-  0x6c: ['PUSH', 3, false],
-  0x6d: ['PUSH', 3, false],
-  0x6e: ['PUSH', 3, false],
-  0x6f: ['PUSH', 3, false],
-  0x70: ['PUSH', 3, false],
-  0x71: ['PUSH', 3, false],
-  0x72: ['PUSH', 3, false],
-  0x73: ['PUSH', 3, false],
-  0x74: ['PUSH', 3, false],
-  0x75: ['PUSH', 3, false],
-  0x76: ['PUSH', 3, false],
-  0x77: ['PUSH', 3, false],
-  0x78: ['PUSH', 3, false],
-  0x79: ['PUSH', 3, false],
-  0x7a: ['PUSH', 3, false],
-  0x7b: ['PUSH', 3, false],
-  0x7c: ['PUSH', 3, false],
-  0x7d: ['PUSH', 3, false],
-  0x7e: ['PUSH', 3, false],
-  0x7f: ['PUSH', 3, false],
+  0x60: { name: 'PUSH', fee: 3, isAsync: false },
+  0x61: { name: 'PUSH', fee: 3, isAsync: false },
+  0x62: { name: 'PUSH', fee: 3, isAsync: false },
+  0x63: { name: 'PUSH', fee: 3, isAsync: false },
+  0x64: { name: 'PUSH', fee: 3, isAsync: false },
+  0x65: { name: 'PUSH', fee: 3, isAsync: false },
+  0x66: { name: 'PUSH', fee: 3, isAsync: false },
+  0x67: { name: 'PUSH', fee: 3, isAsync: false },
+  0x68: { name: 'PUSH', fee: 3, isAsync: false },
+  0x69: { name: 'PUSH', fee: 3, isAsync: false },
+  0x6a: { name: 'PUSH', fee: 3, isAsync: false },
+  0x6b: { name: 'PUSH', fee: 3, isAsync: false },
+  0x6c: { name: 'PUSH', fee: 3, isAsync: false },
+  0x6d: { name: 'PUSH', fee: 3, isAsync: false },
+  0x6e: { name: 'PUSH', fee: 3, isAsync: false },
+  0x6f: { name: 'PUSH', fee: 3, isAsync: false },
+  0x70: { name: 'PUSH', fee: 3, isAsync: false },
+  0x71: { name: 'PUSH', fee: 3, isAsync: false },
+  0x72: { name: 'PUSH', fee: 3, isAsync: false },
+  0x73: { name: 'PUSH', fee: 3, isAsync: false },
+  0x74: { name: 'PUSH', fee: 3, isAsync: false },
+  0x75: { name: 'PUSH', fee: 3, isAsync: false },
+  0x76: { name: 'PUSH', fee: 3, isAsync: false },
+  0x77: { name: 'PUSH', fee: 3, isAsync: false },
+  0x78: { name: 'PUSH', fee: 3, isAsync: false },
+  0x79: { name: 'PUSH', fee: 3, isAsync: false },
+  0x7a: { name: 'PUSH', fee: 3, isAsync: false },
+  0x7b: { name: 'PUSH', fee: 3, isAsync: false },
+  0x7c: { name: 'PUSH', fee: 3, isAsync: false },
+  0x7d: { name: 'PUSH', fee: 3, isAsync: false },
+  0x7e: { name: 'PUSH', fee: 3, isAsync: false },
+  0x7f: { name: 'PUSH', fee: 3, isAsync: false },
 
-  0x80: ['DUP', 3, false],
-  0x81: ['DUP', 3, false],
-  0x82: ['DUP', 3, false],
-  0x83: ['DUP', 3, false],
-  0x84: ['DUP', 3, false],
-  0x85: ['DUP', 3, false],
-  0x86: ['DUP', 3, false],
-  0x87: ['DUP', 3, false],
-  0x88: ['DUP', 3, false],
-  0x89: ['DUP', 3, false],
-  0x8a: ['DUP', 3, false],
-  0x8b: ['DUP', 3, false],
-  0x8c: ['DUP', 3, false],
-  0x8d: ['DUP', 3, false],
-  0x8e: ['DUP', 3, false],
-  0x8f: ['DUP', 3, false],
+  0x80: { name: 'DUP', fee: 3, isAsync: false },
+  0x81: { name: 'DUP', fee: 3, isAsync: false },
+  0x82: { name: 'DUP', fee: 3, isAsync: false },
+  0x83: { name: 'DUP', fee: 3, isAsync: false },
+  0x84: { name: 'DUP', fee: 3, isAsync: false },
+  0x85: { name: 'DUP', fee: 3, isAsync: false },
+  0x86: { name: 'DUP', fee: 3, isAsync: false },
+  0x87: { name: 'DUP', fee: 3, isAsync: false },
+  0x88: { name: 'DUP', fee: 3, isAsync: false },
+  0x89: { name: 'DUP', fee: 3, isAsync: false },
+  0x8a: { name: 'DUP', fee: 3, isAsync: false },
+  0x8b: { name: 'DUP', fee: 3, isAsync: false },
+  0x8c: { name: 'DUP', fee: 3, isAsync: false },
+  0x8d: { name: 'DUP', fee: 3, isAsync: false },
+  0x8e: { name: 'DUP', fee: 3, isAsync: false },
+  0x8f: { name: 'DUP', fee: 3, isAsync: false },
 
-  0x90: ['SWAP', 3, false],
-  0x91: ['SWAP', 3, false],
-  0x92: ['SWAP', 3, false],
-  0x93: ['SWAP', 3, false],
-  0x94: ['SWAP', 3, false],
-  0x95: ['SWAP', 3, false],
-  0x96: ['SWAP', 3, false],
-  0x97: ['SWAP', 3, false],
-  0x98: ['SWAP', 3, false],
-  0x99: ['SWAP', 3, false],
-  0x9a: ['SWAP', 3, false],
-  0x9b: ['SWAP', 3, false],
-  0x9c: ['SWAP', 3, false],
-  0x9d: ['SWAP', 3, false],
-  0x9e: ['SWAP', 3, false],
-  0x9f: ['SWAP', 3, false],
+  0x90: { name: 'SWAP', fee: 3, isAsync: false },
+  0x91: { name: 'SWAP', fee: 3, isAsync: false },
+  0x92: { name: 'SWAP', fee: 3, isAsync: false },
+  0x93: { name: 'SWAP', fee: 3, isAsync: false },
+  0x94: { name: 'SWAP', fee: 3, isAsync: false },
+  0x95: { name: 'SWAP', fee: 3, isAsync: false },
+  0x96: { name: 'SWAP', fee: 3, isAsync: false },
+  0x97: { name: 'SWAP', fee: 3, isAsync: false },
+  0x98: { name: 'SWAP', fee: 3, isAsync: false },
+  0x99: { name: 'SWAP', fee: 3, isAsync: false },
+  0x9a: { name: 'SWAP', fee: 3, isAsync: false },
+  0x9b: { name: 'SWAP', fee: 3, isAsync: false },
+  0x9c: { name: 'SWAP', fee: 3, isAsync: false },
+  0x9d: { name: 'SWAP', fee: 3, isAsync: false },
+  0x9e: { name: 'SWAP', fee: 3, isAsync: false },
+  0x9f: { name: 'SWAP', fee: 3, isAsync: false },
 
-  0xa0: ['LOG', 375, false],
-  0xa1: ['LOG', 375, false],
-  0xa2: ['LOG', 375, false],
-  0xa3: ['LOG', 375, false],
-  0xa4: ['LOG', 375, false],
+  0xa0: { name: 'LOG', fee: 375, isAsync: false },
+  0xa1: { name: 'LOG', fee: 375, isAsync: false },
+  0xa2: { name: 'LOG', fee: 375, isAsync: false },
+  0xa3: { name: 'LOG', fee: 375, isAsync: false },
+  0xa4: { name: 'LOG', fee: 375, isAsync: false },
 
   // '0xf0' range - closures
-  0xf0: ['CREATE', 32000, true],
-  0xf1: ['CALL', 700, true],
-  0xf2: ['CALLCODE', 700, true],
-  0xf3: ['RETURN', 0, false],
-  0xf4: ['DELEGATECALL', 700, true],
-  0xf5: ['CREATE2', 32000, true],
-  0xfa: ['STATICCALL', 700, true],
-  0xfd: ['REVERT', 0, false],
+  0xf0: { name: 'CREATE', fee: 32000, isAsync: true },
+  0xf1: { name: 'CALL', fee: 700, isAsync: true },
+  0xf2: { name: 'CALLCODE', fee: 700, isAsync: true },
+  0xf3: { name: 'RETURN', fee: 0, isAsync: false },
+  0xf4: { name: 'DELEGATECALL', fee: 700, isAsync: true },
+  0xf5: { name: 'CREATE2', fee: 32000, isAsync: true },
+  0xfa: { name: 'STATICCALL', fee: 700, isAsync: true },
+  0xfd: { name: 'REVERT', fee: 0, isAsync: false },
 
   // '0x70', range - other
-  0xfe: ['INVALID', 0, false],
-  0xff: ['SELFDESTRUCT', 5000, true],
+  0xfe: { name: 'INVALID', fee: 0, isAsync: false },
+  0xff: { name: 'SELFDESTRUCT', fee: 5000, isAsync: true },
 }
 
-const istanbulOpcodes: any = {
-  0x31: ['BALANCE', 700, true],
-  0x3f: ['EXTCODEHASH', 700, true],
-  0x46: ['CHAINID', 2, false],
-  0x47: ['SELFBALANCE', 5, false],
-  0x54: ['SLOAD', 800, true],
+const istanbulOpcodes: OpcodeList = {
+  0x31: { name: 'BALANCE', fee: 700, isAsync: true },
+  0x3f: { name: 'EXTCODEHASH', fee: 700, isAsync: true },
+  0x46: { name: 'CHAINID', fee: 2, isAsync: false },
+  0x47: { name: 'SELFBALANCE', fee: 5, isAsync: false },
+  0x54: { name: 'SLOAD', fee: 800, isAsync: true },
 }
 
-export function setOpcodes(hf: string) {
+export function getOpcodesForHF(hf: string) {
   if (hf === 'istanbul') {
-    codes = { ...codes, ...istanbulOpcodes }
-  }
-}
-
-export function lookupOpInfo(op: number, full: boolean = false): OpInfo {
-  const code = codes[op] ? codes[op] : ['INVALID', 0, false]
-  let opcode = code[0]
-
-  if (full) {
-    if (opcode === 'LOG') {
-      opcode += op - 0xa0
-    }
-
-    if (opcode === 'PUSH') {
-      opcode += op - 0x5f
-    }
-
-    if (opcode === 'DUP') {
-      opcode += op - 0x7f
-    }
-
-    if (opcode === 'SWAP') {
-      opcode += op - 0x8f
-    }
-  }
-
-  return {
-    name: opcode,
-    opcode: op,
-    fee: code[1],
-    isAsync: code[2],
+    return { ...opcodes, ...istanbulOpcodes }
+  } else {
+    return { ...opcodes }
   }
 }

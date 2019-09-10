@@ -6,7 +6,7 @@ import { ERROR, VmError } from '../exceptions'
 import Memory from './memory'
 import Stack from './stack'
 import EEI from './eei'
-import { lookupOpInfo, OpInfo } from './opcodes'
+import { Opcode } from './opcodes'
 import { handlers as opHandlers, OpHandler } from './opFns.js'
 
 export interface InterpreterOpts {
@@ -102,7 +102,7 @@ export default class Interpreter {
    * reducing it's base gas cost, and increments the program counter.
    */
   async runStep(): Promise<void> {
-    const opInfo = lookupOpInfo(this._runState.opCode)
+    const opInfo = this.lookupOpInfo(this._runState.opCode)
     // Check for invalid opcode
     if (opInfo.name === 'INVALID') {
       throw new VmError(ERROR.INVALID_OPCODE)
@@ -125,15 +125,46 @@ export default class Interpreter {
   /**
    * Get the handler function for an opcode.
    */
-  getOpHandler(opInfo: OpInfo): OpHandler {
+  getOpHandler(opInfo: Opcode): OpHandler {
     return opHandlers[opInfo.name]
+  }
+
+  /**
+   * Get info for an opcode from VM's list of opcodes.
+   */
+  lookupOpInfo(op: number, full: boolean = false): Opcode {
+    const opcode = this._vm._opcodes[op]
+      ? this._vm._opcodes[op]
+      : { name: 'INVALID', fee: 0, isAsync: false }
+
+    if (full) {
+      let name = opcode.name
+      if (name === 'LOG') {
+        name += op - 0xa0
+      }
+
+      if (name === 'PUSH') {
+        name += op - 0x5f
+      }
+
+      if (name === 'DUP') {
+        name += op - 0x7f
+      }
+
+      if (name === 'SWAP') {
+        name += op - 0x8f
+      }
+      return { ...opcode, ...{ name } }
+    }
+
+    return opcode
   }
 
   async _runStepHook(): Promise<void> {
     const eventObj = {
       pc: this._runState.programCounter,
       gasLeft: this._eei.getGasLeft(),
-      opcode: lookupOpInfo(this._runState.opCode, true),
+      opcode: this.lookupOpInfo(this._runState.opCode, true),
       stack: this._runState.stack._store,
       depth: this._eei._env.depth,
       address: this._eei._env.address,
@@ -166,7 +197,7 @@ export default class Interpreter {
     const jumps = []
 
     for (let i = 0; i < code.length; i++) {
-      const curOpCode = lookupOpInfo(code[i]).name
+      const curOpCode = this.lookupOpInfo(code[i]).name
 
       // no destinations into the middle of PUSH
       if (curOpCode === 'PUSH') {
