@@ -403,7 +403,7 @@ export default function(opts: PrecompileInput): ExecResult {
   // final
   const f = lastByte === 1
 
-  const gasUsed = new BN(opts._common.param('gasPrices', 'blake2bRound'))
+  const gasUsed = new BN(opts._common.param('gasPrices', 'blake2Round'))
   gasUsed.imuln(rounds)
   if (opts.gasLimit.lt(gasUsed)) {
     return OOGResult(opts.gasLimit)
