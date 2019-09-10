@@ -243,6 +243,11 @@ export default class Wallet {
 
   // static methods
 
+  /**
+   * Create an instance based on a new random key.
+   *
+   * @param icapDirect setting this to `true` will generate an address suitable for the `ICAP Direct mode`
+   */
   public static generate(icapDirect: boolean = false): Wallet {
     if (icapDirect) {
       const max = new ethUtil.BN('088f924eeceeda7fe92e1f5b0fffffffffffffff', 16)
@@ -257,6 +262,9 @@ export default class Wallet {
     }
   }
 
+  /**
+   * Create an instance where the address is valid against the supplied pattern (**this will be very slow**)
+   */
   public static generateVanityAddress(pattern: RegExp | string): Wallet {
     if (!(pattern instanceof RegExp)) {
       pattern = new RegExp(pattern)
@@ -272,6 +280,12 @@ export default class Wallet {
     }
   }
 
+  /**
+   * Create an instance based on a public key (certain methods will not be available)
+   *
+   * This method only accepts uncompressed Ethereum-style public keys, unless
+   * the `nonStrict` flag is set to true.
+   */
   public static fromPublicKey(publicKey: Buffer, nonStrict: boolean = false): Wallet {
     if (nonStrict) {
       publicKey = ethUtil.importPublic(publicKey)
@@ -279,6 +293,9 @@ export default class Wallet {
     return new Wallet(undefined, publicKey)
   }
 
+  /**
+   * Create an instance based on a BIP32 extended public key (xpub)
+   */
   public static fromExtendedPublicKey(extendedPublicKey: string): Wallet {
     if (extendedPublicKey.slice(0, 4) !== 'xpub') {
       throw new Error('Not an extended public key')
@@ -288,10 +305,16 @@ export default class Wallet {
     return Wallet.fromPublicKey(publicKey, true)
   }
 
+  /**
+   * Create an instance based on a raw private key
+   */
   public static fromPrivateKey(privateKey: Buffer): Wallet {
     return new Wallet(privateKey)
   }
 
+  /**
+   * Create an instance based on a BIP32 extended private key (xprv)
+   */
   public static fromExtendedPrivateKey(extendedPrivateKey: string): Wallet {
     if (extendedPrivateKey.slice(0, 4) !== 'xprv') {
       throw new Error('Not an extended private key')
@@ -303,6 +326,9 @@ export default class Wallet {
     return Wallet.fromPrivateKey(tmp.slice(46))
   }
 
+  /**
+   * Import a wallet (Version 1 of the Ethereum wallet format)
+   */
   public static fromV1(input: string | V1Keystore, password: string): Wallet {
     const json: V1Keystore = typeof input === 'object' ? input : JSON.parse(input)
     if (json.Version !== '1') {
@@ -337,6 +363,9 @@ export default class Wallet {
     return new Wallet(seed)
   }
 
+  /**
+   * Import a wallet (Version 3 of the Ethereum wallet format). Set `nonStrict` true to accept files with mixed-caps.
+   */
   public static fromV3(
     input: string | V3Keystore,
     password: string,
@@ -396,6 +425,7 @@ export default class Wallet {
   }
 
   /*
+   * Import an Ethereum Pre Sale wallet
    * Based on https://github.com/ethereum/pyethsaletool/blob/master/pyethsaletool.py
    * JSON fields: encseed, ethaddr, btcaddr, email
    */
