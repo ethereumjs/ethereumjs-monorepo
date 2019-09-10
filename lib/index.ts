@@ -97,9 +97,6 @@ export default class VM extends AsyncEventEmitter {
 
     // Set list of opcodes based on HF
     this._opcodes = getOpcodesForHF(this._common.hardfork()!)
-    if (this._opcodes === undefined) {
-      throw new Error('hereee')
-    }
 
     if (opts.stateManager) {
       this.stateManager = opts.stateManager
