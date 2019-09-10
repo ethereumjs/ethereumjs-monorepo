@@ -136,6 +136,23 @@ The VM processes state changes at many levels.
 
 The opFns for `CREATE`, `CALL`, and `CALLCODE` call back up to `runCall`.
 
+## VM's tracing events
+
+You can subscribe to the following events of the VM:
+
+- `beforeBlock`: Emits a `Block` right before running it.
+- `afterBlock`: Emits `RunBlockResult` right after running a block.
+- `beforeTx`: Emits a `Transaction` right before running it.
+- `afterTx`: Emits a `RunTxResult` right after running a transaction.
+- `beforeMessage`: Emits a `Message` right after running it.
+- `afterMessage`: Emits an `EVMResult` right after running a message.
+- `step`: Emits an `InterpreterStep` right before running an EVM step.
+- `newContract`: Emits a `NewContractEvent` right before creating a contract. This event contains the deployment code, not the deployed code, as the creation message may not return such a code.
+
+If an `async` function is used as an event handler, the VM will wait for it to resolve before continuing executing.
+
+If an exception is thrown from within an event handler, it will bubble into the VM and interrupt it, possibly corrupting its state. It's strongly recommended not to throw from event handlers.
+
 # DEVELOPMENT
 
 Developer documentation - currently mainly with information on testing and debugging - can be found [here](./developer.md).
