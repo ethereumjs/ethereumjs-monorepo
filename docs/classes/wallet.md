@@ -54,7 +54,7 @@
 
 ⊕ **new Wallet**(privateKey?: _`Buffer` \| `undefined`_, publicKey?: _`Buffer` \| `undefined`_): [Wallet](wallet.md)
 
-_Defined in [index.ts:226](https://github.com/ethereumjs/ethereumjs-wallet/blob/ac90675/src/index.ts#L226)_
+_Defined in [index.ts:226](https://github.com/alcuadrado/ethereumjs-wallet/blob/8b5f5a9/src/index.ts#L226)_
 
 **Parameters:**
 
@@ -75,7 +75,7 @@ _Defined in [index.ts:226](https://github.com/ethereumjs/ethereumjs-wallet/blob/
 
 **● privateKey**: _`Buffer` \| `undefined`_
 
-_Defined in [index.ts:228](https://github.com/ethereumjs/ethereumjs-wallet/blob/ac90675/src/index.ts#L228)_
+_Defined in [index.ts:228](https://github.com/alcuadrado/ethereumjs-wallet/blob/8b5f5a9/src/index.ts#L228)_
 
 ---
 
@@ -85,7 +85,7 @@ _Defined in [index.ts:228](https://github.com/ethereumjs/ethereumjs-wallet/blob/
 
 **● publicKey**: _`Buffer` \| `undefined`_
 
-_Defined in [index.ts:229](https://github.com/ethereumjs/ethereumjs-wallet/blob/ac90675/src/index.ts#L229)_
+_Defined in [index.ts:229](https://github.com/alcuadrado/ethereumjs-wallet/blob/8b5f5a9/src/index.ts#L229)_
 
 ---
 
@@ -97,7 +97,7 @@ _Defined in [index.ts:229](https://github.com/ethereumjs/ethereumjs-wallet/blob/
 
 **get privKey**(): `Buffer`
 
-_Defined in [index.ts:432](https://github.com/ethereumjs/ethereumjs-wallet/blob/ac90675/src/index.ts#L432)_
+_Defined in [index.ts:462](https://github.com/alcuadrado/ethereumjs-wallet/blob/8b5f5a9/src/index.ts#L462)_
 
 **Returns:** `Buffer`
 
@@ -109,7 +109,7 @@ _Defined in [index.ts:432](https://github.com/ethereumjs/ethereumjs-wallet/blob/
 
 **get pubKey**(): `Buffer`
 
-_Defined in [index.ts:425](https://github.com/ethereumjs/ethereumjs-wallet/blob/ac90675/src/index.ts#L425)_
+_Defined in [index.ts:455](https://github.com/alcuadrado/ethereumjs-wallet/blob/8b5f5a9/src/index.ts#L455)_
 
 **Returns:** `Buffer`
 
@@ -123,7 +123,7 @@ _Defined in [index.ts:425](https://github.com/ethereumjs/ethereumjs-wallet/blob/
 
 ▸ **getAddress**(): `Buffer`
 
-_Defined in [index.ts:459](https://github.com/ethereumjs/ethereumjs-wallet/blob/ac90675/src/index.ts#L459)_
+_Defined in [index.ts:489](https://github.com/alcuadrado/ethereumjs-wallet/blob/8b5f5a9/src/index.ts#L489)_
 
 **Returns:** `Buffer`
 
@@ -135,7 +135,7 @@ _Defined in [index.ts:459](https://github.com/ethereumjs/ethereumjs-wallet/blob/
 
 ▸ **getAddressString**(): `string`
 
-_Defined in [index.ts:463](https://github.com/ethereumjs/ethereumjs-wallet/blob/ac90675/src/index.ts#L463)_
+_Defined in [index.ts:493](https://github.com/alcuadrado/ethereumjs-wallet/blob/8b5f5a9/src/index.ts#L493)_
 
 **Returns:** `string`
 
@@ -147,7 +147,7 @@ _Defined in [index.ts:463](https://github.com/ethereumjs/ethereumjs-wallet/blob/
 
 ▸ **getChecksumAddressString**(): `string`
 
-_Defined in [index.ts:467](https://github.com/ethereumjs/ethereumjs-wallet/blob/ac90675/src/index.ts#L467)_
+_Defined in [index.ts:497](https://github.com/alcuadrado/ethereumjs-wallet/blob/8b5f5a9/src/index.ts#L497)_
 
 **Returns:** `string`
 
@@ -159,7 +159,7 @@ _Defined in [index.ts:467](https://github.com/ethereumjs/ethereumjs-wallet/blob/
 
 ▸ **getPrivateKey**(): `Buffer`
 
-_Defined in [index.ts:442](https://github.com/ethereumjs/ethereumjs-wallet/blob/ac90675/src/index.ts#L442)_
+_Defined in [index.ts:472](https://github.com/alcuadrado/ethereumjs-wallet/blob/8b5f5a9/src/index.ts#L472)_
 
 **Returns:** `Buffer`
 
@@ -171,7 +171,7 @@ _Defined in [index.ts:442](https://github.com/ethereumjs/ethereumjs-wallet/blob/
 
 ▸ **getPrivateKeyString**(): `string`
 
-_Defined in [index.ts:446](https://github.com/ethereumjs/ethereumjs-wallet/blob/ac90675/src/index.ts#L446)_
+_Defined in [index.ts:476](https://github.com/alcuadrado/ethereumjs-wallet/blob/8b5f5a9/src/index.ts#L476)_
 
 **Returns:** `string`
 
@@ -183,7 +183,7 @@ _Defined in [index.ts:446](https://github.com/ethereumjs/ethereumjs-wallet/blob/
 
 ▸ **getPublicKey**(): `Buffer`
 
-_Defined in [index.ts:451](https://github.com/ethereumjs/ethereumjs-wallet/blob/ac90675/src/index.ts#L451)_
+_Defined in [index.ts:481](https://github.com/alcuadrado/ethereumjs-wallet/blob/8b5f5a9/src/index.ts#L481)_
 
 **Returns:** `Buffer`
 
@@ -195,7 +195,7 @@ _Defined in [index.ts:451](https://github.com/ethereumjs/ethereumjs-wallet/blob/
 
 ▸ **getPublicKeyString**(): `string`
 
-_Defined in [index.ts:455](https://github.com/ethereumjs/ethereumjs-wallet/blob/ac90675/src/index.ts#L455)_
+_Defined in [index.ts:485](https://github.com/alcuadrado/ethereumjs-wallet/blob/8b5f5a9/src/index.ts#L485)_
 
 **Returns:** `string`
 
@@ -207,7 +207,7 @@ _Defined in [index.ts:455](https://github.com/ethereumjs/ethereumjs-wallet/blob/
 
 ▸ **getV3Filename**(timestamp?: _`undefined` \| `number`_): `string`
 
-_Defined in [index.ts:540](https://github.com/ethereumjs/ethereumjs-wallet/blob/ac90675/src/index.ts#L540)_
+_Defined in [index.ts:570](https://github.com/alcuadrado/ethereumjs-wallet/blob/8b5f5a9/src/index.ts#L570)_
 
 **Parameters:**
 
@@ -225,7 +225,7 @@ _Defined in [index.ts:540](https://github.com/ethereumjs/ethereumjs-wallet/blob/
 
 ▸ **toV3**(password: _`string`_, opts?: _`Partial`<`V3Params`>_): `V3Keystore`
 
-_Defined in [index.ts:471](https://github.com/ethereumjs/ethereumjs-wallet/blob/ac90675/src/index.ts#L471)_
+_Defined in [index.ts:501](https://github.com/alcuadrado/ethereumjs-wallet/blob/8b5f5a9/src/index.ts#L501)_
 
 **Parameters:**
 
@@ -244,7 +244,7 @@ _Defined in [index.ts:471](https://github.com/ethereumjs/ethereumjs-wallet/blob/
 
 ▸ **toV3String**(password: _`string`_, opts?: _`Partial`<`V3Params`>_): `string`
 
-_Defined in [index.ts:558](https://github.com/ethereumjs/ethereumjs-wallet/blob/ac90675/src/index.ts#L558)_
+_Defined in [index.ts:588](https://github.com/alcuadrado/ethereumjs-wallet/blob/8b5f5a9/src/index.ts#L588)_
 
 **Parameters:**
 
@@ -263,7 +263,7 @@ _Defined in [index.ts:558](https://github.com/ethereumjs/ethereumjs-wallet/blob/
 
 ▸ **fromEthSale**(input: _`string` \| `EthSaleKeystore`_, password: _`string`_): [Wallet](wallet.md)
 
-_Defined in [index.ts:402](https://github.com/ethereumjs/ethereumjs-wallet/blob/ac90675/src/index.ts#L402)_
+_Defined in [index.ts:432](https://github.com/alcuadrado/ethereumjs-wallet/blob/8b5f5a9/src/index.ts#L432)_
 
 **Parameters:**
 
@@ -282,7 +282,9 @@ _Defined in [index.ts:402](https://github.com/ethereumjs/ethereumjs-wallet/blob/
 
 ▸ **fromExtendedPrivateKey**(extendedPrivateKey: _`string`_): [Wallet](wallet.md)
 
-_Defined in [index.ts:295](https://github.com/ethereumjs/ethereumjs-wallet/blob/ac90675/src/index.ts#L295)_
+_Defined in [index.ts:318](https://github.com/alcuadrado/ethereumjs-wallet/blob/8b5f5a9/src/index.ts#L318)_
+
+Create an instance based on a BIP32 extended private key (xprv)
 
 **Parameters:**
 
@@ -300,7 +302,9 @@ _Defined in [index.ts:295](https://github.com/ethereumjs/ethereumjs-wallet/blob/
 
 ▸ **fromExtendedPublicKey**(extendedPublicKey: _`string`_): [Wallet](wallet.md)
 
-_Defined in [index.ts:282](https://github.com/ethereumjs/ethereumjs-wallet/blob/ac90675/src/index.ts#L282)_
+_Defined in [index.ts:299](https://github.com/alcuadrado/ethereumjs-wallet/blob/8b5f5a9/src/index.ts#L299)_
+
+Create an instance based on a BIP32 extended public key (xpub)
 
 **Parameters:**
 
@@ -318,7 +322,9 @@ _Defined in [index.ts:282](https://github.com/ethereumjs/ethereumjs-wallet/blob/
 
 ▸ **fromPrivateKey**(privateKey: _`Buffer`_): [Wallet](wallet.md)
 
-_Defined in [index.ts:291](https://github.com/ethereumjs/ethereumjs-wallet/blob/ac90675/src/index.ts#L291)_
+_Defined in [index.ts:311](https://github.com/alcuadrado/ethereumjs-wallet/blob/8b5f5a9/src/index.ts#L311)_
+
+Create an instance based on a raw private key
 
 **Parameters:**
 
@@ -336,7 +342,11 @@ _Defined in [index.ts:291](https://github.com/ethereumjs/ethereumjs-wallet/blob/
 
 ▸ **fromPublicKey**(publicKey: _`Buffer`_, nonStrict?: _`boolean`_): [Wallet](wallet.md)
 
-_Defined in [index.ts:275](https://github.com/ethereumjs/ethereumjs-wallet/blob/ac90675/src/index.ts#L275)_
+_Defined in [index.ts:289](https://github.com/alcuadrado/ethereumjs-wallet/blob/8b5f5a9/src/index.ts#L289)_
+
+Create an instance based on a public key (certain methods will not be available)
+
+This method only accepts uncompressed Ethereum-style public keys, unless the `nonStrict` flag is set to true.
 
 **Parameters:**
 
@@ -355,7 +365,9 @@ _Defined in [index.ts:275](https://github.com/ethereumjs/ethereumjs-wallet/blob/
 
 ▸ **fromV1**(input: _`string` \| `V1Keystore`_, password: _`string`_): [Wallet](wallet.md)
 
-_Defined in [index.ts:306](https://github.com/ethereumjs/ethereumjs-wallet/blob/ac90675/src/index.ts#L306)_
+_Defined in [index.ts:332](https://github.com/alcuadrado/ethereumjs-wallet/blob/8b5f5a9/src/index.ts#L332)_
+
+Import a wallet (Version 1 of the Ethereum wallet format)
 
 **Parameters:**
 
@@ -374,7 +386,9 @@ _Defined in [index.ts:306](https://github.com/ethereumjs/ethereumjs-wallet/blob/
 
 ▸ **fromV3**(input: _`string` \| `V3Keystore`_, password: _`string`_, nonStrict?: _`boolean`_): [Wallet](wallet.md)
 
-_Defined in [index.ts:340](https://github.com/ethereumjs/ethereumjs-wallet/blob/ac90675/src/index.ts#L340)_
+_Defined in [index.ts:369](https://github.com/alcuadrado/ethereumjs-wallet/blob/8b5f5a9/src/index.ts#L369)_
+
+Import a wallet (Version 3 of the Ethereum wallet format). Set `nonStrict` true to accept files with mixed-caps.
 
 **Parameters:**
 
@@ -394,13 +408,15 @@ _Defined in [index.ts:340](https://github.com/ethereumjs/ethereumjs-wallet/blob/
 
 ▸ **generate**(icapDirect?: _`boolean`_): [Wallet](wallet.md)
 
-_Defined in [index.ts:246](https://github.com/ethereumjs/ethereumjs-wallet/blob/ac90675/src/index.ts#L246)_
+_Defined in [index.ts:251](https://github.com/alcuadrado/ethereumjs-wallet/blob/8b5f5a9/src/index.ts#L251)_
+
+Create an instance based on a new random key.
 
 **Parameters:**
 
-| Name                       | Type      | Default value |
-| -------------------------- | --------- | ------------- |
-| `Default value` icapDirect | `boolean` | false         |
+| Name                       | Type      | Default value | Description                                                                             |
+| -------------------------- | --------- | ------------- | --------------------------------------------------------------------------------------- |
+| `Default value` icapDirect | `boolean` | false         | setting this to \`true\` will generate an address suitable for the \`ICAP Direct mode\` |
 
 **Returns:** [Wallet](wallet.md)
 
@@ -412,7 +428,9 @@ _Defined in [index.ts:246](https://github.com/ethereumjs/ethereumjs-wallet/blob/
 
 ▸ **generateVanityAddress**(pattern: _`RegExp` \| `string`_): [Wallet](wallet.md)
 
-_Defined in [index.ts:260](https://github.com/ethereumjs/ethereumjs-wallet/blob/ac90675/src/index.ts#L260)_
+_Defined in [index.ts:268](https://github.com/alcuadrado/ethereumjs-wallet/blob/8b5f5a9/src/index.ts#L268)_
+
+Create an instance where the address is valid against the supplied pattern (**this will be very slow**)
 
 **Parameters:**
 

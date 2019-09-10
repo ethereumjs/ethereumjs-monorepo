@@ -36,7 +36,7 @@
 
 ⊕ **new EthereumHDKey**(\_hdkey?: _`any`_): [EthereumHDKey](ethereumhdkey.md)
 
-_Defined in [hdkey.ts:12](https://github.com/ethereumjs/ethereumjs-wallet/blob/ac90675/src/hdkey.ts#L12)_
+_Defined in [hdkey.ts:12](https://github.com/alcuadrado/ethereumjs-wallet/blob/8b5f5a9/src/hdkey.ts#L12)_
 
 **Parameters:**
 
@@ -56,7 +56,7 @@ _Defined in [hdkey.ts:12](https://github.com/ethereumjs/ethereumjs-wallet/blob/a
 
 **● \_hdkey**: _`any`_
 
-_Defined in [hdkey.ts:14](https://github.com/ethereumjs/ethereumjs-wallet/blob/ac90675/src/hdkey.ts#L14)_
+_Defined in [hdkey.ts:14](https://github.com/alcuadrado/ethereumjs-wallet/blob/8b5f5a9/src/hdkey.ts#L14)_
 
 ---
 
@@ -68,7 +68,7 @@ _Defined in [hdkey.ts:14](https://github.com/ethereumjs/ethereumjs-wallet/blob/a
 
 ▸ **deriveChild**(index: _`number`_): [EthereumHDKey](ethereumhdkey.md)
 
-_Defined in [hdkey.ts:31](https://github.com/ethereumjs/ethereumjs-wallet/blob/ac90675/src/hdkey.ts#L31)_
+_Defined in [hdkey.ts:31](https://github.com/alcuadrado/ethereumjs-wallet/blob/8b5f5a9/src/hdkey.ts#L31)_
 
 **Parameters:**
 
@@ -86,7 +86,7 @@ _Defined in [hdkey.ts:31](https://github.com/ethereumjs/ethereumjs-wallet/blob/a
 
 ▸ **derivePath**(path: _`string`_): [EthereumHDKey](ethereumhdkey.md)
 
-_Defined in [hdkey.ts:27](https://github.com/ethereumjs/ethereumjs-wallet/blob/ac90675/src/hdkey.ts#L27)_
+_Defined in [hdkey.ts:27](https://github.com/alcuadrado/ethereumjs-wallet/blob/8b5f5a9/src/hdkey.ts#L27)_
 
 **Parameters:**
 
@@ -104,7 +104,7 @@ _Defined in [hdkey.ts:27](https://github.com/ethereumjs/ethereumjs-wallet/blob/a
 
 ▸ **getWallet**(): [Wallet](wallet.md)
 
-_Defined in [hdkey.ts:35](https://github.com/ethereumjs/ethereumjs-wallet/blob/ac90675/src/hdkey.ts#L35)_
+_Defined in [hdkey.ts:35](https://github.com/alcuadrado/ethereumjs-wallet/blob/8b5f5a9/src/hdkey.ts#L35)_
 
 **Returns:** [Wallet](wallet.md)
 
@@ -116,7 +116,7 @@ _Defined in [hdkey.ts:35](https://github.com/ethereumjs/ethereumjs-wallet/blob/a
 
 ▸ **privateExtendedKey**(): `Buffer`
 
-_Defined in [hdkey.ts:16](https://github.com/ethereumjs/ethereumjs-wallet/blob/ac90675/src/hdkey.ts#L16)_
+_Defined in [hdkey.ts:16](https://github.com/alcuadrado/ethereumjs-wallet/blob/8b5f5a9/src/hdkey.ts#L16)_
 
 **Returns:** `Buffer`
 
@@ -128,7 +128,7 @@ _Defined in [hdkey.ts:16](https://github.com/ethereumjs/ethereumjs-wallet/blob/a
 
 ▸ **publicExtendedKey**(): `Buffer`
 
-_Defined in [hdkey.ts:23](https://github.com/ethereumjs/ethereumjs-wallet/blob/ac90675/src/hdkey.ts#L23)_
+_Defined in [hdkey.ts:23](https://github.com/alcuadrado/ethereumjs-wallet/blob/8b5f5a9/src/hdkey.ts#L23)_
 
 **Returns:** `Buffer`
 
@@ -140,7 +140,7 @@ _Defined in [hdkey.ts:23](https://github.com/ethereumjs/ethereumjs-wallet/blob/a
 
 ▸ **fromExtendedKey**(base58Key: _`string`_): [EthereumHDKey](ethereumhdkey.md)
 
-_Defined in [hdkey.ts:10](https://github.com/ethereumjs/ethereumjs-wallet/blob/ac90675/src/hdkey.ts#L10)_
+_Defined in [hdkey.ts:10](https://github.com/alcuadrado/ethereumjs-wallet/blob/8b5f5a9/src/hdkey.ts#L10)_
 
 **Parameters:**
 
@@ -158,7 +158,7 @@ _Defined in [hdkey.ts:10](https://github.com/ethereumjs/ethereumjs-wallet/blob/a
 
 ▸ **fromMasterSeed**(seedBuffer: _`Buffer`_): [EthereumHDKey](ethereumhdkey.md)
 
-_Defined in [hdkey.ts:6](https://github.com/ethereumjs/ethereumjs-wallet/blob/ac90675/src/hdkey.ts#L6)_
+_Defined in [hdkey.ts:6](https://github.com/alcuadrado/ethereumjs-wallet/blob/8b5f5a9/src/hdkey.ts#L6)_
 
 **Parameters:**
 
