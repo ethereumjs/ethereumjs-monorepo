@@ -40,7 +40,14 @@ export interface VMOpts {
    */
   blockchain?: Blockchain
   /**
-   * If true, create entries in the state tree for the precompiled contracts
+   * If true, create entries in the state tree for the precompiled contracts, saving some gas the
+   * first time each of them is called.
+   *
+   * If this parameter is false, the first call to each of them has to pay an extra 25000 gas
+   * for creating the account.
+   *
+   * Setting this to true has the effect of precompiled contracts' gas costs matching mainnet's from
+   * the very first call, which is intended for testing networks.
    */
   activatePrecompiles?: boolean
   /**
