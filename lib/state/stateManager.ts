@@ -526,7 +526,11 @@ export default class StateManager {
       addresses,
       (address: string, done: any) => {
         const account = new Account()
-        account.balance = new BN(initState[address]).toArrayLike(Buffer)
+        if (initState[address].slice(0, 2) === '0x') {
+          account.balance = new BN(initState[address].slice(2), 16).toArrayLike(Buffer)
+        } else {
+          account.balance = new BN(initState[address]).toArrayLike(Buffer)
+        }
         const addressBuffer = utils.toBuffer(address)
         this._trie.put(addressBuffer, account.serialize(), done)
       },
