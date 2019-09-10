@@ -94,6 +94,18 @@ export default class EEI {
   }
 
   /**
+   * Reduces amount of gas to be refunded by a positive value.
+   * @param amount - Amount to subtract from gas refunds
+   */
+  subRefund(amount: BN): void {
+    this._result.gasRefund.isub(amount)
+    if (this._result.gasRefund.ltn(0)) {
+      this._result.gasRefund = new BN(0)
+      trap(ERROR.REFUND_EXHAUSTED)
+    }
+  }
+
+  /**
    * Returns address of currently executing account.
    */
   getAddress(): Buffer {
