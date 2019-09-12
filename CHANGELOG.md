@@ -6,6 +6,71 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [4.1.0] - 2019-09-12
+
+This is the first feature-complete `Istanbul` release, containing implementations
+for all 6 EIPs, see the HF meta EIP [EIP-1679](https://eips.ethereum.org/EIPS/eip-1679)
+for an overview. Beside this release contains further unrelated features as
+well as bug fixes.
+
+Note that `Istanbul` support is still labeled as `beta`. All implementations
+have only basic test coverage since the official Ethereum consensus tests are
+not yet merged. There might be also last minute changes to EIPs during the
+testing period.
+
+**Istanbul Summary**
+
+See the VM `Istanbul` hardfork meta issue
+[#501](https://github.com/ethereumjs/ethereumjs-vm/issues/501) for a summary
+on all the changes.
+
+Added EIPs:
+
+- [EIP-152](https://github.com/ethereum/EIPs/pull/2129): Blake 2b `F` precompile,
+  PR [#584](https://github.com/ethereumjs/ethereumjs-vm/pull/584)
+- [EIP-1108](https://eips.ethereum.org/EIPS/eip-1108): Reduce `alt_bn128`
+  precompile gas costs,  
+  PR [#540](https://github.com/ethereumjs/ethereumjs-vm/pull/540)
+  (already released in `v4.0.0`)
+- [EIP-1344](https://eips.ethereum.org/EIPS/eip-1344): Add ChainID Opcode,
+  PR [#572](https://github.com/ethereumjs/ethereumjs-vm/pull/572)
+- [EIP-1884](https://eips.ethereum.org/EIPS/eip-1884): Trie-size-dependent
+  Opcode Repricing,
+  PR [#581](https://github.com/ethereumjs/ethereumjs-vm/pull/581)
+- [EIP-2200](https://github.com/ethereum/EIPs/pull/2200): Rebalance net-metered
+  SSTORE gas costs,
+  PR [#590](https://github.com/ethereumjs/ethereumjs-vm/pull/590)
+
+**Other Features**
+
+- Two new event types `beforeMessage` and `afterMessage`, emitting a `Message`
+  before and an `EVMResult` after running a `Message`, see also the
+  [updated section](https://github.com/ethereumjs/ethereumjs-vm#vms-tracing-events)
+  in the `README` on this,
+  PR [#577](https://github.com/ethereumjs/ethereumjs-vm/pull/577)
+
+**Bug Fixes**
+
+- Transaction error strings should not contain multiple consecutive whitespace
+  characters, this has been fixed,
+  PR [#578](https://github.com/ethereumjs/ethereumjs-vm/pull/578)
+- Fixed `vm.stateManager.generateCanonicalGenesis()` to produce a correct
+  genesis block state root (in particular for the `Goerli` testnet),
+  PR [#589](https://github.com/ethereumjs/ethereumjs-vm/pull/589)
+
+**Refactoring / Docs**
+
+- Preparation for separate lists of opcodes for the different HFs,
+  PR [#582](https://github.com/ethereumjs/ethereumjs-vm/pull/582),
+  see also follow-up
+  PR [#592](https://github.com/ethereumjs/ethereumjs-vm/pull/592) making this
+  list a property of the VM instance
+- Clarification in the docs for the behavior of the `activatePrecompiles`
+  VM option,
+  PR [#595](https://github.com/ethereumjs/ethereumjs-vm/pull/595)
+
+[4.1.0]: https://github.com/ethereumjs/ethereumjs-vm/compare/v4.0.0...v4.1.0
+
 ## [4.0.0] - 2019-08-06
 
 First `TypeScript` based VM release, other highlights:

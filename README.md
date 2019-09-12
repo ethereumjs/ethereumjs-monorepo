@@ -16,30 +16,37 @@ The VM currently supports the following hardfork rules:
 - `Byzantium`
 - `Constantinople`
 - `Petersburg` (default)
-- `Istanbul` (`DRAFT`)
+- `Istanbul` (`beta`)
 
 If you are still looking for a [Spurious Dragon](https://github.com/ethereum/EIPs/blob/master/EIPS/eip-607.md) compatible version of this library install the latest of the `2.2.x` series (see [Changelog](./CHANGELOG.md)).
 
 ##### Istanbul Harfork Support
 
-With the `v4.0.0` release we are starting to add implementations of EIPs being
-candidates or accepted for inclusion within the `Istanbul` hardfork. You can
-activate a preliminary `Istanbul` VM by using the `istanbul` `hardfork` option
-flag.
+A feature-complete `Istanbul` HF implementation is available since the `v4.1.0`
+VM release. You can activate an `Istanbul` VM by using the `istanbul`
+`hardfork` option flag.
 
-Currently supported `Istanbul` EIPs:
+Supported `Istanbul` EIPs:
 
-- [EIP-1108](https://eips.ethereum.org/EIPS/eip-1803) (Candidate): `alt_bn128` Gas Cost Reductions, see PR [#540](https://github.com/ethereumjs/ethereumjs-vm/pull/540)
+- [EIP-152](https://github.com/ethereum/EIPs/pull/2129): Blake 2b `F` precompile,
+  PR [#584](https://github.com/ethereumjs/ethereumjs-vm/pull/584)
+- [EIP-1108](https://eips.ethereum.org/EIPS/eip-1108): Reduce `alt_bn128`
+  precompile gas costs,  
+  PR [#540](https://github.com/ethereumjs/ethereumjs-vm/pull/540)
+  (already released in `v4.0.0`)
+- [EIP-1344](https://eips.ethereum.org/EIPS/eip-1344): Add ChainID Opcode,
+  PR [#572](https://github.com/ethereumjs/ethereumjs-vm/pull/572)
+- [EIP-1884](https://eips.ethereum.org/EIPS/eip-1884): Trie-size-dependent
+  Opcode Repricing,
+  PR [#581](https://github.com/ethereumjs/ethereumjs-vm/pull/581)
+- [EIP-2200](https://github.com/ethereum/EIPs/pull/2200): Rebalance net-metered
+  SSTORE gas costs,
+  PR [#590](https://github.com/ethereumjs/ethereumjs-vm/pull/590)
 
-Note that this is highly experimental and solely meant for experimental purposes,
-since `Istanbul` scope is not yet finalized and most EIPs are still in a `DRAFT`
-state and likely subject to updates and changes.
-
-A final `Istanbul` VM will be released along a major version bump to likely
-`v5.0.0` or `v6.0.0`.
-
-Have a look at the corresponding issue to follow the discussion and current state on
-[Istanbul planning](https://github.com/ethereumjs/ethereumjs-vm/issues/501).
+Note that `Istanbul` support is still labeled as `beta`. All implementations
+have only basic test coverage since the official Ethereum consensus tests are
+not yet merged. There might be also last minute changes to EIPs during the
+testing period.
 
 # INSTALL
 
