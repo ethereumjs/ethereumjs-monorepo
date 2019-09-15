@@ -3,15 +3,14 @@ const testUtil = require('./util.js')
 const ethUtil = require('ethereumjs-util')
 const Trie = require('merkle-patricia-tree/secure')
 const Block = require('ethereumjs-block')
-const Blockchain = require('ethereumjs-blockchain')
+const Blockchain = require('ethereumjs-blockchain').default
 const BlockHeader = require('ethereumjs-block/header.js')
-const Level = require('levelup')
+const level = require('level')
+const levelMem = require('level-mem')
 
-var cacheDB = new Level('./.cachedb')
+var cacheDB = level('./.cachedb')
 module.exports = function runBlockchainTest (options, testData, t, cb) {
-  var blockchainDB = new Level('', {
-    db: require('memdown')
-  })
+  var blockchainDB = levelMem()
   var state = new Trie()
   var validate = false
   // Only run with block validation when sealEngine present in test file
@@ -29,9 +28,9 @@ module.exports = function runBlockchainTest (options, testData, t, cb) {
   }
   var VM
   if (options.dist) {
-    VM = require('../dist/index.js')
+    VM = require('../dist/index.js').default
   } else {
-    VM = require('../lib/index.js')
+    VM = require('../lib/index.js').default
   }
   var vm = new VM({
     state: state,
@@ -92,16 +91,27 @@ module.exports = function runBlockchainTest (options, testData, t, cb) {
             cb(err)
           })
         } catch (err) {
+          if (err) {
+            t.fail(err)
+          }
           cb()
         }
       }, function () {
         done()
       })
     },
+    function setGenesisStateRoot (done) {
+      // This is a trick to avoid generating the canonical genesis
+      // state. Generating the genesis state is not needed because
+      // blockchain tests come with their own `pre` world state.
+      // TODO: Add option to `runBlockchain` not to generate genesis state.
+      vm._common.genesis().stateRoot = state.root
+      done()
+    },
     function runBlockchain (done) {
-      vm.runBlockchain(function () {
-        done()
-      })
+      vm.runBlockchain()
+        .then(() => done())
+        .catch(() => done())
     },
     function getHead (done) {
       vm.blockchain.getHead(function (err, block) {

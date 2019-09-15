@@ -1,24 +1,53 @@
-const { promisify } = require('util')
+const promisify = require('util.promisify')
 const tape = require('tape')
 const util = require('ethereumjs-util')
 const Block = require('ethereumjs-block')
-const VM = require('../../lib/index')
+const Common = require('ethereumjs-common').default
+const Trie = require('merkle-patricia-tree/secure')
+const VM = require('../../dist/index').default
 const { setupVM } = require('./utils')
 const { setupPreConditions } = require('../util')
 const testData = require('./testdata.json')
 
-tape('VM with fake blockchain', (t) => {
-  t.test('should insantiate without params', (st) => {
+tape('VM with default blockchain', (t) => {
+  t.test('should instantiate without params', (st) => {
     const vm = new VM()
     st.ok(vm.stateManager)
     st.deepEqual(vm.stateManager._trie.root, util.KECCAK256_RLP, 'it has default trie')
-    st.ok(vm.blockchain.fake, 'it has fake blockchain by default')
     st.end()
   })
 
   t.test('should be able to activate precompiles', (st) => {
     let vm = new VM({ activatePrecompiles: true })
     st.notEqual(vm.stateManager._trie.root, util.KECCAK256_RLP, 'it has different root')
+    st.end()
+  })
+
+  t.test('should work with trie (state) provided', (st) => {
+    let trie = new Trie()
+    trie.isTestTrie = true
+    let vm = new VM({ state: trie, activatePrecompiles: true })
+    st.notEqual(vm.stateManager._trie.root, util.KECCAK256_RLP, 'it has different root')
+    st.ok(vm.stateManager._trie.isTestTrie, 'it works on trie provided')
+    st.end()
+  })
+
+  t.test('should only accept common or chain and fork', (st) => {
+    const common = new Common('mainnet')
+
+    st.throws(() => new VM({ chain: 'a', common }))
+    st.throws(() => new VM({ hardfork: 'a', common }))
+    st.throws(() => new VM({ chain: 'a', hardfork: 'a', common }))
+
+    st.end()
+  })
+
+  t.test('should accept a common object as option', (st) => {
+    const common = new Common('mainnet')
+
+    const vm = new VM({ common })
+    st.equal(vm._common, common)
+
     st.end()
   })
 
@@ -38,8 +67,7 @@ tape('VM with fake blockchain', (t) => {
 
   t.test('should run blockchain without blocks', async (st) => {
     const vm = new VM()
-    const run = promisify(vm.runBlockchain.bind(vm))
-    await run()
+    await vm.runBlockchain()
     st.end()
   })
 })
@@ -48,18 +76,17 @@ tape('VM with blockchain', (t) => {
   t.test('should instantiate', (st) => {
     const vm = setupVM()
     st.deepEqual(vm.stateManager._trie.root, util.KECCAK256_RLP, 'it has default trie')
-    st.notOk(vm.stateManager.fake, 'it doesn\'t have fake blockchain')
     st.end()
   })
 
   t.test('should run blockchain without blocks', async (st) => {
     const vm = setupVM()
-    await runBlockchainP(vm)
+    await vm.runBlockchain()
     st.end()
   })
 
   t.test('should run blockchain with mocked runBlock', async (st) => {
-    const vm = setupVM()
+    const vm = setupVM({ chain: 'goerli' })
     const genesis = new Block(Buffer.from(testData.genesisRLP.slice(2), 'hex'))
     const block = new Block(Buffer.from(testData.blocks[0].rlp.slice(2), 'hex'))
 
@@ -76,8 +103,8 @@ tape('VM with blockchain', (t) => {
     const setupPreP = promisify(setupPreConditions)
     await setupPreP(vm.stateManager._trie, testData)
 
-    vm.runBlock = (block, cb) => cb(new Error('test'))
-    runBlockchainP(vm)
+    vm.runBlock = (block) => new Promise((resolve, reject) => reject(new Error('test')))
+    vm.runBlockchain()
       .then(() => st.fail('it hasn\'t returned any errors'))
       .catch((e) => {
         st.equal(e.message, 'test', 'it has correctly propagated runBlock\'s error')
@@ -86,7 +113,7 @@ tape('VM with blockchain', (t) => {
   })
 
   t.test('should run blockchain with blocks', async (st) => {
-    const vm = setupVM()
+    const vm = setupVM({ chain: 'goerli' })
     const genesis = new Block(Buffer.from(testData.genesisRLP.slice(2), 'hex'))
     const block = new Block(Buffer.from(testData.blocks[0].rlp.slice(2), 'hex'))
 
@@ -103,13 +130,24 @@ tape('VM with blockchain', (t) => {
     const setupPreP = promisify(setupPreConditions)
     await setupPreP(vm.stateManager._trie, testData)
 
-    await runBlockchainP(vm)
+    await vm.runBlockchain()
+
+    st.end()
+  })
+
+  t.test('should pass the correct Common object when copying the VM', st => {
+    const vm = setupVM({ chain: 'goerli', hardfork: 'byzantium' })
+    st.equal(vm._common.chainName(), 'goerli')
+    st.equal(vm._common.hardfork(), 'byzantium')
+
+    const copiedVM = vm.copy()
+    st.equal(copiedVM._common.chainName(), 'goerli')
+    st.equal(copiedVM._common.hardfork(), 'byzantium')
 
     st.end()
   })
 })
 
-const runBlockchainP = (vm) => promisify(vm.runBlockchain.bind(vm))()
 const putGenesisP = (blockchain, genesis) => promisify(blockchain.putGenesis.bind(blockchain))(genesis)
 const putBlockP = (blockchain, block) => promisify(blockchain.putBlock.bind(blockchain))(block)
 const getHeadP = (blockchain) => promisify(blockchain.getHead.bind(blockchain))()
