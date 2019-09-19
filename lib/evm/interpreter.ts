@@ -57,7 +57,7 @@ export default class Interpreter {
 
   constructor(vm: any, eei: EEI) {
     this._vm = vm // TODO: remove when not needed
-    this._state = new PStateManager(vm.stateManager)
+    this._state = vm.pStateManager
     this._eei = eei
     this._runState = {
       programCounter: 0,

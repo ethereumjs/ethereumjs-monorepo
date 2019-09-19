@@ -99,7 +99,7 @@ export default class EVM {
 
   constructor(vm: any, txContext: TxContext, block: any) {
     this._vm = vm
-    this._state = new PStateManager(this._vm.stateManager)
+    this._state = this._vm.pStateManager
     this._tx = txContext
     this._block = block
   }

@@ -3,14 +3,17 @@ const tape = require('tape')
 const Transaction = require('ethereumjs-tx').Transaction
 const ethUtil = require('ethereumjs-util')
 const runTx = require('../../dist/runTx').default
+const PStateManager = require('../../dist/state/promisified').default
 const { StateManager } = require('../../dist/state')
 const VM = require('../../dist/index').default
 const { createAccount } = require('./utils')
 
 function setup (vm = null) {
   if (vm === null) {
+    const stateManager = new StateManager({ })
     vm = {
-      stateManager: new StateManager({ }),
+      stateManager,
+      pStateManager: new PStateManager(stateManager),
       emit: (e, val, cb) => { cb() },
       _emit: (e, val) => new Promise((resolve, reject) => resolve())
     }
