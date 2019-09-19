@@ -72,6 +72,7 @@ export default class VM extends AsyncEventEmitter {
   blockchain: Blockchain
   allowUnlimitedContractSize: boolean
   _opcodes: OpcodeList
+  public readonly _emit: (topic: string, data: any) => Promise<void>
 
   /**
    * Instantiates a new [[VM]] Object.
@@ -121,6 +122,8 @@ export default class VM extends AsyncEventEmitter {
 
     this.allowUnlimitedContractSize =
       opts.allowUnlimitedContractSize === undefined ? false : opts.allowUnlimitedContractSize
+
+    this._emit = promisify(this.emit.bind(this))
   }
 
   /**
@@ -187,9 +190,5 @@ export default class VM extends AsyncEventEmitter {
       blockchain: this.blockchain,
       common: this._common,
     })
-  }
-
-  async _emit(topic: string, data: any) {
-    return promisify(this.emit.bind(this))(topic, data)
   }
 }
