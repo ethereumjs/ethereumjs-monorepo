@@ -1,0 +1,8 @@
+{
+  "extends": "@ethereumjs/config-tsc",
+  "compilerOptions": {
+    "target": "ES2017",
+    "outDir": "./modernjs"
+  },
+  "include": ["lib/**/*.ts"]
+}

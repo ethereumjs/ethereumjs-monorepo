@@ -183,6 +183,19 @@ by it, the exception will bubble into the VM and interrupt it, possibly
 corrupting its state. It's strongly recommended not to throw from withing
 event handlers.
 
+# Running the project in modern environments
+
+The NPM `ethereumjs-vm` package includes two different builds of the project:
+
+1. The default one, located in the `dist/` directory, is an ES5 compatible build, distributed as
+   CommonJS modules.
+
+2. A second build, targeting Node and modern JavaScript bundlers, located in the `modernjs/`
+   directory, is an ES2017 build, distributed as CommonJS modules. To use this version, you should
+   import the VM form `"ethereumjs-vm/modernjs"`.
+
+Using the second build is recommended when possible, as it has significant performance improvements.
+
 # DEVELOPMENT
 
 Developer documentation - currently mainly with information on testing and debugging - can be found [here](./developer.md).

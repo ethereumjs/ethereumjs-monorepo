@@ -68,6 +68,7 @@ node_modules
 package-lock.json
 yarn.lock
 
-# Build folder
+# Build folders
 dist
+modernjs
 
