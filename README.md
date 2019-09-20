@@ -165,17 +165,23 @@ In order to do that, your event handler has to accept two arguments.
 The first one will be the event object, and the second one a function.
 The VM won't continue until you call this function.
 
-If an exception is passed to that function, it will bubble into the
+If an exception is passed to that function, or thrown from within the
+handler or a function called by it, the exception will bubble into the
 VM and interrupt it, possibly corrupting its state. It's strongly
 recommended not to do that.
 
 ### Synchronous event handlers
 
-If you want to perform asynchronous operations, you don't need
+If you want to perform synchronous operations, you don't need
 to receive a function as the handler's second argument, nor call it.
 
 Note that if your event handler receives multiple arguments, the second
 one will be the continuation function, and it must be called.
+
+If an exception is thrown from withing the handler or a function called
+by it, the exception will bubble into the VM and interrupt it, possibly
+corrupting its state. It's strongly recommended not to throw from withing
+event handlers.
 
 # DEVELOPMENT
 
