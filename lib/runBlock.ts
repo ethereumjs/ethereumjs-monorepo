@@ -78,7 +78,7 @@ export default async function runBlock(this: VM, opts: RunBlockOpts): Promise<Ru
     throw new Error('invalid input, block must be provided')
   }
 
-  const state = new PStateManager(this.stateManager)
+  const state = this.pStateManager
   const block = opts.block
   const generateStateRoot = !!opts.generate
 
@@ -240,7 +240,7 @@ async function applyTransactions(this: VM, block: any) {
  * the updated balances of their accounts to state.
  */
 async function assignBlockRewards(this: VM, block: any): Promise<void> {
-  const state = new PStateManager(this.stateManager)
+  const state = this.pStateManager
   const minerReward = new BN(this._common.param('pow', 'minerReward'))
   const ommers = block.uncleHeaders
   // Reward ommers

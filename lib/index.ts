@@ -10,6 +10,7 @@ import { default as runBlock, RunBlockOpts, RunBlockResult } from './runBlock'
 import { EVMResult, ExecResult } from './evm/evm'
 import { OpcodeList, getOpcodesForHF } from './evm/opcodes'
 import runBlockchain from './runBlockchain'
+import PStateManager from './state/promisified'
 const promisify = require('util.promisify')
 const AsyncEventEmitter = require('async-eventemitter')
 const Trie = require('merkle-patricia-tree/secure.js')
@@ -72,6 +73,8 @@ export default class VM extends AsyncEventEmitter {
   blockchain: Blockchain
   allowUnlimitedContractSize: boolean
   _opcodes: OpcodeList
+  public readonly _emit: (topic: string, data: any) => Promise<void>
+  public readonly pStateManager: PStateManager
 
   /**
    * Instantiates a new [[VM]] Object.
@@ -117,10 +120,14 @@ export default class VM extends AsyncEventEmitter {
       this.stateManager = new StateManager({ trie, common: this._common })
     }
 
+    this.pStateManager = new PStateManager(this.stateManager)
+
     this.blockchain = opts.blockchain || new Blockchain({ common: this._common })
 
     this.allowUnlimitedContractSize =
       opts.allowUnlimitedContractSize === undefined ? false : opts.allowUnlimitedContractSize
+
+    this._emit = promisify(this.emit.bind(this))
   }
 
   /**
@@ -187,9 +194,5 @@ export default class VM extends AsyncEventEmitter {
       blockchain: this.blockchain,
       common: this._common,
     })
-  }
-
-  async _emit(topic: string, data: any) {
-    return promisify(this.emit.bind(this))(topic, data)
   }
 }

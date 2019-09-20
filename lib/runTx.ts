@@ -72,7 +72,7 @@ export default async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxRes
     throw new Error('tx has a higher gas limit than the block')
   }
 
-  const state = new PStateManager(this.stateManager)
+  const state = this.pStateManager
 
   await state.checkpoint()
 
@@ -89,7 +89,7 @@ export default async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxRes
 async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   const block = opts.block
   const tx = opts.tx
-  const state = new PStateManager(this.stateManager)
+  const state = this.pStateManager
 
   /**
    * The `beforeTx` event

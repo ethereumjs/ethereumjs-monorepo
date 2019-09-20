@@ -4,6 +4,7 @@ const Block = require('ethereumjs-block')
 const Common = require('ethereumjs-common').default
 const util = require('ethereumjs-util')
 const runBlock = require('../../dist/runBlock').default
+const PStateManager = require('../../dist/state/promisified').default
 const { StateManager } = require('../../dist/state')
 const testData = require('./testdata.json')
 const { setupVM } = require('./utils')
@@ -17,6 +18,7 @@ function setup (vm = null) {
     const stateManager = new StateManager()
     vm = {
       stateManager,
+      pStateManager: new PStateManager(stateManager),
       emit: (e, val, cb) => cb(),
       _emit: (e, val) => new Promise((resolve, reject) => resolve()),
       runTx: (opts) => new Promise((resolve, reject) => reject(new Error('test'))),
