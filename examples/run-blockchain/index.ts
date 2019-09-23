@@ -39,7 +39,7 @@ async function main() {
 
   await vm.runBlockchain(blockchain)
 
-  const blockchainHead = await promisify(vm.blockchain.getHead.bind(vm.blockchain))()
+  const blockchainHead = await promisify<any>(vm.blockchain.getHead.bind(vm.blockchain))()
 
   console.log('--- Finished processing the BlockChain ---')
   console.log('New head:', '0x' + blockchainHead.hash().toString('hex'))
