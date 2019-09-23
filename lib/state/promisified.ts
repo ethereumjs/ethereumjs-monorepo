@@ -32,6 +32,8 @@ export default class PStateManager {
   constructor(wrapped: StateManager) {
     this._wrapped = wrapped
 
+    // We cache these promisified function as they are called lots of times during the VM execution,
+    // and promisifying them each time has degrades its performance.
     this.getAccount = promisify(this._wrapped.getAccount.bind(this._wrapped))
 
     this.putAccount = promisify(this._wrapped.putAccount.bind(this._wrapped))

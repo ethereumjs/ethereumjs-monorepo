@@ -125,6 +125,8 @@ export default class VM extends AsyncEventEmitter {
     this.allowUnlimitedContractSize =
       opts.allowUnlimitedContractSize === undefined ? false : opts.allowUnlimitedContractSize
 
+    // We cache this promisified function as it's called from the main execution loop, and
+    // promisifying each time has a huge performance impact.
     this._emit = promisify(this.emit.bind(this))
   }
 
