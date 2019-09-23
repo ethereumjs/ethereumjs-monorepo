@@ -156,9 +156,32 @@ You can subscribe to the following events of the VM:
 - `step`: Emits an `InterpreterStep` right before running an EVM step.
 - `newContract`: Emits a `NewContractEvent` right before creating a contract. This event contains the deployment code, not the deployed code, as the creation message may not return such a code.
 
-If an `async` function is used as an event handler, the VM will wait for it to resolve before continuing executing.
+### Asynchronous event handlers
 
-If an exception is thrown from within an event handler, it will bubble into the VM and interrupt it, possibly corrupting its state. It's strongly recommended not to throw from event handlers.
+You can perform asynchronous operations from within an event handler
+and prevent the VM to keep running until they finish.
+
+In order to do that, your event handler has to accept two arguments.
+The first one will be the event object, and the second one a function.
+The VM won't continue until you call this function.
+
+If an exception is passed to that function, or thrown from within the
+handler or a function called by it, the exception will bubble into the
+VM and interrupt it, possibly corrupting its state. It's strongly
+recommended not to do that.
+
+### Synchronous event handlers
+
+If you want to perform synchronous operations, you don't need
+to receive a function as the handler's second argument, nor call it.
+
+Note that if your event handler receives multiple arguments, the second
+one will be the continuation function, and it must be called.
+
+If an exception is thrown from withing the handler or a function called
+by it, the exception will bubble into the VM and interrupt it, possibly
+corrupting its state. It's strongly recommended not to throw from withing
+event handlers.
 
 # DEVELOPMENT
 

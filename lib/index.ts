@@ -62,9 +62,7 @@ export interface VMOpts {
  * Execution engine which can be used to run a blockchain, individual
  * blocks, individual transactions, or snippets of EVM bytecode.
  *
- * This class is an AsyncEventEmitter, which means that event handlers are run to completion before
- * continuing. If an error is thrown in an event handler, it will bubble up to the VM and thrown
- * from the method call that triggered the event.
+ * This class is an AsyncEventEmitter, please consult the README to learn how to use it.
  */
 export default class VM extends AsyncEventEmitter {
   opts: VMOpts
