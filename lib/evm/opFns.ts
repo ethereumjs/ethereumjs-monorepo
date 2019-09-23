@@ -7,14 +7,15 @@ const MASK_160 = new BN(1).shln(160).subn(1)
 
 // Find Ceil(`this` / `num`)
 function divCeil(a: BN, b: BN) {
-  const div = a.div(b)
+  let div = a.div(b)
   const mod = a.mod(b)
 
   // Fast case - exact division
   if (mod.isZero()) return div
 
   // Round up
-  return div.isNeg() ? div.isubn(1) : div.iaddn(1)
+  div = div.isNeg() ? div.subn(1) : div.addn(1)
+  return div
 }
 
 function addressToBuffer(address: BN) {
@@ -93,7 +94,7 @@ export const handlers: { [k: string]: OpHandler } = {
       b = b.fromTwos(256)
       r = a.abs().mod(b.abs())
       if (a.isNeg()) {
-        r = r.ineg()
+        r = r.neg()
       }
       r = r.toTwos(256)
     }
@@ -147,9 +148,9 @@ export const handlers: { [k: string]: OpHandler } = {
     if (k.ltn(31)) {
       const signBit = k
         .muln(8)
-        .iaddn(7)
+        .addn(7)
         .toNumber()
-      const mask = new BN(1).ishln(signBit).isubn(1)
+      const mask = new BN(1).shln(signBit).subn(1)
       if (val.testn(signBit)) {
         val = val.or(mask.notn(256))
       } else {
@@ -232,7 +233,7 @@ export const handlers: { [k: string]: OpHandler } = {
       return
     }
 
-    const r = b.shln(a.toNumber()).iand(utils.MAX_INTEGER)
+    const r = b.shln(a.toNumber()).and(utils.MAX_INTEGER)
     runState.stack.push(r)
   },
   SHR: function(runState: RunState) {
@@ -270,7 +271,7 @@ export const handlers: { [k: string]: OpHandler } = {
     if (isSigned) {
       const shiftedOutWidth = 255 - a.toNumber()
       const mask = utils.MAX_INTEGER.shrn(shiftedOutWidth).shln(shiftedOutWidth)
-      r = c.ior(mask)
+      r = c.or(mask)
     } else {
       r = c
     }
@@ -286,7 +287,7 @@ export const handlers: { [k: string]: OpHandler } = {
     }
     // copy fee
     runState.eei.useGas(
-      new BN(runState._common.param('gasPrices', 'sha3Word')).imul(divCeil(length, new BN(32))),
+      new BN(runState._common.param('gasPrices', 'sha3Word')).mul(divCeil(length, new BN(32))),
     )
     const r = new BN(utils.keccak256(data))
     runState.stack.push(r)
@@ -333,7 +334,7 @@ export const handlers: { [k: string]: OpHandler } = {
 
     subMemUsage(runState, memOffset, dataLength)
     runState.eei.useGas(
-      new BN(runState._common.param('gasPrices', 'copy')).imul(divCeil(dataLength, new BN(32))),
+      new BN(runState._common.param('gasPrices', 'copy')).mul(divCeil(dataLength, new BN(32))),
     )
 
     const data = getDataSlice(runState.eei.getCallData(), dataOffset, dataLength)
@@ -350,7 +351,7 @@ export const handlers: { [k: string]: OpHandler } = {
 
     subMemUsage(runState, memOffset, length)
     runState.eei.useGas(
-      new BN(runState._common.param('gasPrices', 'copy')).imul(divCeil(length, new BN(32))),
+      new BN(runState._common.param('gasPrices', 'copy')).mul(divCeil(length, new BN(32))),
     )
 
     const data = getDataSlice(runState.eei.getCode(), codeOffset, length)
@@ -371,7 +372,7 @@ export const handlers: { [k: string]: OpHandler } = {
     subMemUsage(runState, memOffset, length)
     // copy fee
     runState.eei.useGas(
-      new BN(runState._common.param('gasPrices', 'copy')).imul(divCeil(length, new BN(32))),
+      new BN(runState._common.param('gasPrices', 'copy')).mul(divCeil(length, new BN(32))),
     )
 
     const code = await runState.eei.getExternalCode(address)
@@ -613,8 +614,8 @@ export const handlers: { [k: string]: OpHandler } = {
     }
     runState.eei.useGas(
       new BN(runState._common.param('gasPrices', 'logTopic'))
-        .imuln(topicsCount)
-        .iadd(memLength.muln(runState._common.param('gasPrices', 'logData'))),
+        .muln(topicsCount)
+        .add(memLength.muln(runState._common.param('gasPrices', 'logData'))),
     )
 
     runState.eei.log(mem, topicsCount, topicsBuf)
@@ -654,7 +655,7 @@ export const handlers: { [k: string]: OpHandler } = {
     subMemUsage(runState, offset, length)
     // Deduct gas costs for hashing
     runState.eei.useGas(
-      new BN(runState._common.param('gasPrices', 'sha3Word')).imul(divCeil(length, new BN(32))),
+      new BN(runState._common.param('gasPrices', 'sha3Word')).mul(divCeil(length, new BN(32))),
     )
     let gasLimit = new BN(runState.eei.getGasLeft())
     gasLimit = maxCallGas(gasLimit, runState.eei.getGasLeft())
@@ -709,8 +710,10 @@ export const handlers: { [k: string]: OpHandler } = {
 
     if (!value.isZero()) {
       // TODO: Don't use private attr directly
-      runState.eei._gasLeft.iaddn(runState._common.param('gasPrices', 'callStipend'))
-      gasLimit.iaddn(runState._common.param('gasPrices', 'callStipend'))
+      runState.eei._gasLeft = runState.eei._gasLeft.addn(
+        runState._common.param('gasPrices', 'callStipend'),
+      )
+      gasLimit = gasLimit.addn(runState._common.param('gasPrices', 'callStipend'))
     }
 
     const ret = await runState.eei.call(gasLimit, toAddressBuf, value, data)
@@ -738,8 +741,10 @@ export const handlers: { [k: string]: OpHandler } = {
     gasLimit = maxCallGas(gasLimit, runState.eei.getGasLeft())
     if (!value.isZero()) {
       // TODO: Don't use private attr directly
-      runState.eei._gasLeft.iaddn(runState._common.param('gasPrices', 'callStipend'))
-      gasLimit.iaddn(runState._common.param('gasPrices', 'callStipend'))
+      runState.eei._gasLeft = runState.eei._gasLeft.addn(
+        runState._common.param('gasPrices', 'callStipend'),
+      )
+      gasLimit = gasLimit.addn(runState._common.param('gasPrices', 'callStipend'))
     }
 
     let data = Buffer.alloc(0)
@@ -959,7 +964,7 @@ function updateSstoreGas(runState: RunState, found: any, value: Buffer) {
       // If original value is not 0
       if (current.length === 0) {
         // If current value is 0 (also means that new value is not 0), remove 15000 gas from refund counter. We can prove that refund counter will never go below 0.
-        runState.eei._result.gasRefund.isub(
+        runState.eei._result.gasRefund = runState.eei._result.gasRefund.sub(
           new BN(runState._common.param('gasPrices', 'netSstoreClearRefund')),
         )
       } else if (value.length === 0) {

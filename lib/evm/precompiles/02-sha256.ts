@@ -9,9 +9,9 @@ export default function(opts: PrecompileInput): ExecResult {
 
   const data = opts.data
 
-  const gasUsed = new BN(opts._common.param('gasPrices', 'sha256'))
-  gasUsed.iadd(
-    new BN(opts._common.param('gasPrices', 'sha256Word')).imuln(Math.ceil(data.length / 32)),
+  let gasUsed = new BN(opts._common.param('gasPrices', 'sha256'))
+  gasUsed = gasUsed.add(
+    new BN(opts._common.param('gasPrices', 'sha256Word')).muln(Math.ceil(data.length / 32)),
   )
 
   if (opts.gasLimit.lt(gasUsed)) {

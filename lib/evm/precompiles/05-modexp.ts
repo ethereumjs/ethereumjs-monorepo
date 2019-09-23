@@ -52,7 +52,7 @@ function getAdjustedExponentLength(data: Buffer): BN {
   var eightTimesExpLenMinus32OrZero = expLenMinus32OrZero.muln(8)
   var adjustedExpLen = eightTimesExpLenMinus32OrZero
   if (bitLen > 0) {
-    adjustedExpLen.iaddn(bitLen)
+    adjustedExpLen = adjustedExpLen.addn(bitLen)
   }
   return adjustedExpLen
 }

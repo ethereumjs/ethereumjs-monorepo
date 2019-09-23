@@ -102,11 +102,11 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
 
   // Validate gas limit against base fee
   const basefee = tx.getBaseFee()
-  const gasLimit = new BN(tx.gasLimit)
+  let gasLimit = new BN(tx.gasLimit)
   if (gasLimit.lt(basefee)) {
     throw new Error('base fee exceeds gas limit')
   }
-  gasLimit.isub(basefee)
+  gasLimit = gasLimit.sub(basefee)
 
   // Check from account's balance and nonce
   let fromAccount = await state.getAccount(tx.getSenderAddress())
@@ -157,9 +157,9 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   results.gasRefund = results.execResult.gasRefund
   if (results.gasRefund) {
     if (results.gasRefund.lt(results.gasUsed.divn(2))) {
-      results.gasUsed.isub(results.gasRefund)
+      results.gasUsed = results.gasUsed.sub(results.gasRefund)
     } else {
-      results.gasUsed.isub(results.gasUsed.divn(2))
+      results.gasUsed = results.gasUsed.sub(results.gasUsed.divn(2))
     }
   }
   results.amountSpent = results.gasUsed.mul(new BN(tx.gasPrice))

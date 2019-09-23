@@ -78,7 +78,7 @@ export default class EEI {
    * @throws if out of gas
    */
   useGas(amount: BN): void {
-    this._gasLeft.isub(amount)
+    this._gasLeft = this._gasLeft.sub(amount)
     if (this._gasLeft.ltn(0)) {
       this._gasLeft = new BN(0)
       trap(ERROR.OUT_OF_GAS)
@@ -90,7 +90,7 @@ export default class EEI {
    * @param amount - Amount of gas refunded
    */
   refundGas(amount: BN): void {
-    this._result.gasRefund.iadd(amount)
+    this._result.gasRefund = this._result.gasRefund.add(amount)
   }
 
   /**
@@ -98,7 +98,7 @@ export default class EEI {
    * @param amount - Amount to subtract from gas refunds
    */
   subRefund(amount: BN): void {
-    this._result.gasRefund.isub(amount)
+    this._result.gasRefund = this._result.gasRefund.sub(amount)
     if (this._result.gasRefund.ltn(0)) {
       this._result.gasRefund = new BN(0)
       trap(ERROR.REFUND_EXHAUSTED)
