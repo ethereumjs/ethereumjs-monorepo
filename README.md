@@ -16,30 +16,37 @@ The VM currently supports the following hardfork rules:
 - `Byzantium`
 - `Constantinople`
 - `Petersburg` (default)
-- `Istanbul` (`DRAFT`)
+- `Istanbul` (`beta`)
 
 If you are still looking for a [Spurious Dragon](https://github.com/ethereum/EIPs/blob/master/EIPS/eip-607.md) compatible version of this library install the latest of the `2.2.x` series (see [Changelog](./CHANGELOG.md)).
 
 ##### Istanbul Harfork Support
 
-With the `v4.0.0` release we are starting to add implementations of EIPs being
-candidates or accepted for inclusion within the `Istanbul` hardfork. You can
-activate a preliminary `Istanbul` VM by using the `istanbul` `hardfork` option
-flag.
+A feature-complete `Istanbul` HF implementation is available since the `v4.1.0`
+VM release. You can activate an `Istanbul` VM by using the `istanbul`
+`hardfork` option flag.
 
-Currently supported `Istanbul` EIPs:
+Supported `Istanbul` EIPs:
 
-- [EIP-1108](https://eips.ethereum.org/EIPS/eip-1803) (Candidate): `alt_bn128` Gas Cost Reductions, see PR [#540](https://github.com/ethereumjs/ethereumjs-vm/pull/540)
+- [EIP-152](https://github.com/ethereum/EIPs/pull/2129): Blake 2b `F` precompile,
+  PR [#584](https://github.com/ethereumjs/ethereumjs-vm/pull/584)
+- [EIP-1108](https://eips.ethereum.org/EIPS/eip-1108): Reduce `alt_bn128`
+  precompile gas costs,  
+  PR [#540](https://github.com/ethereumjs/ethereumjs-vm/pull/540)
+  (already released in `v4.0.0`)
+- [EIP-1344](https://eips.ethereum.org/EIPS/eip-1344): Add ChainID Opcode,
+  PR [#572](https://github.com/ethereumjs/ethereumjs-vm/pull/572)
+- [EIP-1884](https://eips.ethereum.org/EIPS/eip-1884): Trie-size-dependent
+  Opcode Repricing,
+  PR [#581](https://github.com/ethereumjs/ethereumjs-vm/pull/581)
+- [EIP-2200](https://github.com/ethereum/EIPs/pull/2200): Rebalance net-metered
+  SSTORE gas costs,
+  PR [#590](https://github.com/ethereumjs/ethereumjs-vm/pull/590)
 
-Note that this is highly experimental and solely meant for experimental purposes,
-since `Istanbul` scope is not yet finalized and most EIPs are still in a `DRAFT`
-state and likely subject to updates and changes.
-
-A final `Istanbul` VM will be released along a major version bump to likely
-`v5.0.0` or `v6.0.0`.
-
-Have a look at the corresponding issue to follow the discussion and current state on
-[Istanbul planning](https://github.com/ethereumjs/ethereumjs-vm/issues/501).
+Note that `Istanbul` support is still labeled as `beta`. All implementations
+have only basic test coverage since the official Ethereum consensus tests are
+not yet merged. There might be also last minute changes to EIPs during the
+testing period.
 
 # INSTALL
 
@@ -135,6 +142,46 @@ The VM processes state changes at many levels.
   - calculate fee
 
 The opFns for `CREATE`, `CALL`, and `CALLCODE` call back up to `runCall`.
+
+## VM's tracing events
+
+You can subscribe to the following events of the VM:
+
+- `beforeBlock`: Emits a `Block` right before running it.
+- `afterBlock`: Emits `RunBlockResult` right after running a block.
+- `beforeTx`: Emits a `Transaction` right before running it.
+- `afterTx`: Emits a `RunTxResult` right after running a transaction.
+- `beforeMessage`: Emits a `Message` right after running it.
+- `afterMessage`: Emits an `EVMResult` right after running a message.
+- `step`: Emits an `InterpreterStep` right before running an EVM step.
+- `newContract`: Emits a `NewContractEvent` right before creating a contract. This event contains the deployment code, not the deployed code, as the creation message may not return such a code.
+
+### Asynchronous event handlers
+
+You can perform asynchronous operations from within an event handler
+and prevent the VM to keep running until they finish.
+
+In order to do that, your event handler has to accept two arguments.
+The first one will be the event object, and the second one a function.
+The VM won't continue until you call this function.
+
+If an exception is passed to that function, or thrown from within the
+handler or a function called by it, the exception will bubble into the
+VM and interrupt it, possibly corrupting its state. It's strongly
+recommended not to do that.
+
+### Synchronous event handlers
+
+If you want to perform synchronous operations, you don't need
+to receive a function as the handler's second argument, nor call it.
+
+Note that if your event handler receives multiple arguments, the second
+one will be the continuation function, and it must be called.
+
+If an exception is thrown from withing the handler or a function called
+by it, the exception will bubble into the VM and interrupt it, possibly
+corrupting its state. It's strongly recommended not to throw from withing
+event handlers.
 
 # DEVELOPMENT
 

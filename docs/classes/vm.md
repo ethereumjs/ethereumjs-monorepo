@@ -4,6 +4,8 @@
 
 Execution engine which can be used to run a blockchain, individual blocks, individual transactions, or snippets of EVM bytecode.
 
+This class is an AsyncEventEmitter, which means that event handlers are run to completion before continuing. If an error is thrown in an event handler, it will bubble up to the VM and thrown from the method call that triggered the event.
+
 ## Hierarchy
 
  `any`
@@ -19,6 +21,7 @@ Execution engine which can be used to run a blockchain, individual blocks, indiv
 ### Properties
 
 * [_common](vm.md#_common)
+* [_opcodes](vm.md#_opcodes)
 * [allowUnlimitedContractSize](vm.md#allowunlimitedcontractsize)
 * [blockchain](vm.md#blockchain)
 * [opts](vm.md#opts)
@@ -44,7 +47,7 @@ Execution engine which can be used to run a blockchain, individual blocks, indiv
 
 ⊕ **new VM**(opts?: *[VMOpts](../interfaces/vmopts.md)*): [VM](vm.md)
 
-*Defined in [index.ts:61](https://github.com/ethereumjs/ethereumjs-vm/blob/3e1633c/lib/index.ts#L61)*
+*Defined in [index.ts:74](https://github.com/ethereumjs/ethereumjs-vm/blob/439570a/lib/index.ts#L74)*
 
 Instantiates a new [VM](vm.md) Object.
 
@@ -66,7 +69,16 @@ ___
 
 **● _common**: *`Common`*
 
-*Defined in [index.ts:58](https://github.com/ethereumjs/ethereumjs-vm/blob/3e1633c/lib/index.ts#L58)*
+*Defined in [index.ts:70](https://github.com/ethereumjs/ethereumjs-vm/blob/439570a/lib/index.ts#L70)*
+
+___
+<a id="_opcodes"></a>
+
+###  _opcodes
+
+**● _opcodes**: *`OpcodeList`*
+
+*Defined in [index.ts:74](https://github.com/ethereumjs/ethereumjs-vm/blob/439570a/lib/index.ts#L74)*
 
 ___
 <a id="allowunlimitedcontractsize"></a>
@@ -75,16 +87,16 @@ ___
 
 **● allowUnlimitedContractSize**: *`boolean`*
 
-*Defined in [index.ts:61](https://github.com/ethereumjs/ethereumjs-vm/blob/3e1633c/lib/index.ts#L61)*
+*Defined in [index.ts:73](https://github.com/ethereumjs/ethereumjs-vm/blob/439570a/lib/index.ts#L73)*
 
 ___
 <a id="blockchain"></a>
 
 ###  blockchain
 
-**● blockchain**: *`any`*
+**● blockchain**: *`Blockchain`*
 
-*Defined in [index.ts:60](https://github.com/ethereumjs/ethereumjs-vm/blob/3e1633c/lib/index.ts#L60)*
+*Defined in [index.ts:72](https://github.com/ethereumjs/ethereumjs-vm/blob/439570a/lib/index.ts#L72)*
 
 ___
 <a id="opts"></a>
@@ -93,7 +105,7 @@ ___
 
 **● opts**: *[VMOpts](../interfaces/vmopts.md)*
 
-*Defined in [index.ts:57](https://github.com/ethereumjs/ethereumjs-vm/blob/3e1633c/lib/index.ts#L57)*
+*Defined in [index.ts:69](https://github.com/ethereumjs/ethereumjs-vm/blob/439570a/lib/index.ts#L69)*
 
 ___
 <a id="statemanager"></a>
@@ -102,7 +114,7 @@ ___
 
 **● stateManager**: *[StateManager](statemanager.md)*
 
-*Defined in [index.ts:59](https://github.com/ethereumjs/ethereumjs-vm/blob/3e1633c/lib/index.ts#L59)*
+*Defined in [index.ts:71](https://github.com/ethereumjs/ethereumjs-vm/blob/439570a/lib/index.ts#L71)*
 
 ___
 
@@ -114,7 +126,7 @@ ___
 
 ▸ **_emit**(topic: *`string`*, data: *`any`*): `Promise`<`any`>
 
-*Defined in [index.ts:160](https://github.com/ethereumjs/ethereumjs-vm/blob/3e1633c/lib/index.ts#L160)*
+*Defined in [index.ts:192](https://github.com/ethereumjs/ethereumjs-vm/blob/439570a/lib/index.ts#L192)*
 
 **Parameters:**
 
@@ -132,7 +144,7 @@ ___
 
 ▸ **copy**(): [VM](vm.md)
 
-*Defined in [index.ts:152](https://github.com/ethereumjs/ethereumjs-vm/blob/3e1633c/lib/index.ts#L152)*
+*Defined in [index.ts:184](https://github.com/ethereumjs/ethereumjs-vm/blob/439570a/lib/index.ts#L184)*
 
 Returns a copy of the [VM](vm.md) instance.
 
@@ -145,9 +157,11 @@ ___
 
 ▸ **runBlock**(opts: *[RunBlockOpts](../interfaces/runblockopts.md)*): `Promise`<[RunBlockResult](../interfaces/runblockresult.md)>
 
-*Defined in [index.ts:124](https://github.com/ethereumjs/ethereumjs-vm/blob/3e1633c/lib/index.ts#L124)*
+*Defined in [index.ts:148](https://github.com/ethereumjs/ethereumjs-vm/blob/439570a/lib/index.ts#L148)*
 
 Processes the `block` running all of the transactions it contains and updating the miner's account
+
+This method modifies the state. If `generate` is `true`, the state modifications will be reverted if an exception is raised. If it's `false`, it won't revert if the block's header is invalid. If an error is thrown from an event handler, the state may or may not be reverted.
 
 **Parameters:**
 
@@ -164,9 +178,11 @@ ___
 
 ▸ **runBlockchain**(blockchain: *`any`*): `Promise`<`void`>
 
-*Defined in [index.ts:115](https://github.com/ethereumjs/ethereumjs-vm/blob/3e1633c/lib/index.ts#L115)*
+*Defined in [index.ts:134](https://github.com/ethereumjs/ethereumjs-vm/blob/439570a/lib/index.ts#L134)*
 
 Processes blocks and adds them to the blockchain.
+
+This method modifies the state.
 
 **Parameters:**
 
@@ -183,9 +199,11 @@ ___
 
 ▸ **runCall**(opts: *[RunCallOpts](../interfaces/runcallopts.md)*): `Promise`<[EVMResult](../interfaces/evmresult.md)>
 
-*Defined in [index.ts:138](https://github.com/ethereumjs/ethereumjs-vm/blob/3e1633c/lib/index.ts#L138)*
+*Defined in [index.ts:168](https://github.com/ethereumjs/ethereumjs-vm/blob/439570a/lib/index.ts#L168)*
 
 runs a call (or create) operation.
+
+This method modifies the state.
 
 **Parameters:**
 
@@ -202,9 +220,11 @@ ___
 
 ▸ **runCode**(opts: *[RunCodeOpts](../interfaces/runcodeopts.md)*): `Promise`<[ExecResult](../interfaces/execresult.md)>
 
-*Defined in [index.ts:145](https://github.com/ethereumjs/ethereumjs-vm/blob/3e1633c/lib/index.ts#L145)*
+*Defined in [index.ts:177](https://github.com/ethereumjs/ethereumjs-vm/blob/439570a/lib/index.ts#L177)*
 
 Runs EVM code.
+
+This method modifies the state.
 
 **Parameters:**
 
@@ -221,9 +241,11 @@ ___
 
 ▸ **runTx**(opts: *[RunTxOpts](../interfaces/runtxopts.md)*): `Promise`<[RunTxResult](../interfaces/runtxresult.md)>
 
-*Defined in [index.ts:131](https://github.com/ethereumjs/ethereumjs-vm/blob/3e1633c/lib/index.ts#L131)*
+*Defined in [index.ts:159](https://github.com/ethereumjs/ethereumjs-vm/blob/439570a/lib/index.ts#L159)*
 
 Process a transaction. Run the vm. Transfers eth. Checks balances.
+
+This method modifies the state. If an error is thrown, the modifications are reverted, except when the error is thrown from an event handler. In the latter case the state may or may not be reverted.
 
 **Parameters:**
 

@@ -10,6 +10,7 @@ import { default as runBlock, RunBlockOpts, RunBlockResult } from './runBlock'
 import { EVMResult, ExecResult } from './evm/evm'
 import { OpcodeList, getOpcodesForHF } from './evm/opcodes'
 import runBlockchain from './runBlockchain'
+import PStateManager from './state/promisified'
 const promisify = require('util.promisify')
 const AsyncEventEmitter = require('async-eventemitter')
 const Trie = require('merkle-patricia-tree/secure.js')
@@ -40,7 +41,14 @@ export interface VMOpts {
    */
   blockchain?: Blockchain
   /**
-   * If true, create entries in the state tree for the precompiled contracts
+   * If true, create entries in the state tree for the precompiled contracts, saving some gas the
+   * first time each of them is called.
+   *
+   * If this parameter is false, the first call to each of them has to pay an extra 25000 gas
+   * for creating the account.
+   *
+   * Setting this to true has the effect of precompiled contracts' gas costs matching mainnet's from
+   * the very first call, which is intended for testing networks.
    */
   activatePrecompiles?: boolean
   /**
@@ -54,9 +62,7 @@ export interface VMOpts {
  * Execution engine which can be used to run a blockchain, individual
  * blocks, individual transactions, or snippets of EVM bytecode.
  *
- * This class is an AsyncEventEmitter, which means that event handlers are run to completion before
- * continuing. If an error is thrown in an event handler, it will bubble up to the VM and thrown
- * from the method call that triggered the event.
+ * This class is an AsyncEventEmitter, please consult the README to learn how to use it.
  */
 export default class VM extends AsyncEventEmitter {
   opts: VMOpts
@@ -65,6 +71,8 @@ export default class VM extends AsyncEventEmitter {
   blockchain: Blockchain
   allowUnlimitedContractSize: boolean
   _opcodes: OpcodeList
+  public readonly _emit: (topic: string, data: any) => Promise<void>
+  public readonly pStateManager: PStateManager
 
   /**
    * Instantiates a new [[VM]] Object.
@@ -110,10 +118,16 @@ export default class VM extends AsyncEventEmitter {
       this.stateManager = new StateManager({ trie, common: this._common })
     }
 
+    this.pStateManager = new PStateManager(this.stateManager)
+
     this.blockchain = opts.blockchain || new Blockchain({ common: this._common })
 
     this.allowUnlimitedContractSize =
       opts.allowUnlimitedContractSize === undefined ? false : opts.allowUnlimitedContractSize
+
+    // We cache this promisified function as it's called from the main execution loop, and
+    // promisifying each time has a huge performance impact.
+    this._emit = promisify(this.emit.bind(this))
   }
 
   /**
@@ -180,9 +194,5 @@ export default class VM extends AsyncEventEmitter {
       blockchain: this.blockchain,
       common: this._common,
     })
-  }
-
-  async _emit(topic: string, data: any) {
-    return promisify(this.emit.bind(this))(topic, data)
   }
 }
