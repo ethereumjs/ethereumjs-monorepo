@@ -190,9 +190,9 @@ The NPM `ethereumjs-vm` package includes two different builds of the project:
 1. The default one, located in the `dist/` directory, is an ES5 compatible build, distributed as
    CommonJS modules.
 
-2. A second build, targeting Node and modern JavaScript bundlers, located in the `modernjs/`
+2. A second build, targeting Node and modern JavaScript bundlers, located in the `es2017/`
    directory, is an ES2017 build, distributed as CommonJS modules. To use this version, you should
-   import the VM form `"ethereumjs-vm/modernjs"`.
+   import the VM form `"ethereumjs-vm/es2017"`.
 
 Using the second build is recommended when possible, as it has significant performance improvements.
 

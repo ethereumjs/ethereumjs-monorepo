@@ -5,4 +5,4 @@ dist
 .nyc_output
 *.json
 docs
-modernjs
+es2017

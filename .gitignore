@@ -70,5 +70,5 @@ yarn.lock
 
 # Build folders
 dist
-modernjs
+/es2017
 
