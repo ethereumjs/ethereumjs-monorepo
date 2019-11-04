@@ -58,7 +58,7 @@
     },
     {
       "name": "petersburg",
-      "block": 9999999,
+      "block": 4321234,
       "consensus": "poa",
       "finality": null
     },
