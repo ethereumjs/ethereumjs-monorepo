@@ -62,7 +62,7 @@ function runTestCase (options, testData, t, cb) {
       testUtil.setupPreConditions(state, testData, done)
     },
     function (done) {
-      var tx = testUtil.makeTx(testData.transaction)
+      var tx = testUtil.makeTx(testData.transaction, options.forkConfig.toLowerCase())
       block = testUtil.makeBlockFromEnv(testData.env)
       tx._homestead = true
       tx.enableHomestead = true
