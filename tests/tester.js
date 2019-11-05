@@ -3,7 +3,7 @@
 const argv = require('minimist')(process.argv.slice(2))
 const tape = require('tape')
 const testing = require('ethereumjs-testing')
-const FORK_CONFIG = argv.fork || 'Petersburg'
+const FORK_CONFIG = argv.fork || 'Istanbul'
 const {
   getRequiredForkConfigAlias
 } = require('./util')
@@ -212,6 +212,11 @@ function runTests (name, runnerArgs, cb) {
   } else {
     tape(name, t => {
       const runner = require(`./${name}Runner.js`)
+      // Tests for HFs before Istanbul have been moved under `LegacyTests/Constantinople`:
+      // https://github.com/ethereum/tests/releases/tag/v7.0.0-beta.1
+      if (runnerArgs.forkConfig !== 'Istanbul') {
+        name = 'LegacyTests/Constantinople/'.concat(name)
+      }
       testing.getTestsFromArgs(name, (fileName, testName, test) => {
         return new Promise((resolve, reject) => {
           if (name === 'VMTests') {
