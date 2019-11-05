@@ -13,7 +13,62 @@
     "extraData": "0x",
     "stateRoot": "0x2480155b48a1cea17d67dbfdfaafe821c1d19cdd478c5358e8ec56dec24502b2"
   },
-  "hardforks": [],
+  "hardforks": [
+    {
+      "name": "chainstart",
+      "block": 0,
+      "consensus": "poa",
+      "finality": null
+    },
+    {
+      "name": "homestead",
+      "block": 0,
+      "consensus": "poa",
+      "finality": null
+    },
+    {
+      "name": "dao",
+      "block": 0,
+      "consensus": "poa",
+      "finality": null
+    },
+    {
+      "name": "tangerineWhistle",
+      "block": 0,
+      "consensus": "poa",
+      "finality": null
+    },
+    {
+      "name": "spuriousDragon",
+      "block": 0,
+      "consensus": "poa",
+      "finality": null
+    },
+    {
+      "name": "byzantium",
+      "block": 5067000,
+      "consensus": "poa",
+      "finality": null
+    },
+    {
+      "name": "constantinople",
+      "block": 9200000,
+      "consensus": "poa",
+      "finality": null
+    },
+    {
+      "name": "petersburg",
+      "block": 10255201,
+      "consensus": "poa",
+      "finality": null
+    },
+    {
+      "name": "istanbul",
+      "block": 14111141,
+      "consensus": "poa",
+      "finality": null
+    }
+  ],
   "bootstrapNodes": [
     {
       "ip": "40.71.221.215",

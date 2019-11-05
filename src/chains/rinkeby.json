@@ -64,7 +64,7 @@
     },
     {
       "name": "istanbul",
-      "block": null,
+      "block": 5435345,
       "consensus": "poa",
       "finality": null
     }
