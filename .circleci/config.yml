@@ -141,7 +141,13 @@ workflows:
       - test_state_petersburg:
           requires:
             - install
+      - test_state_istanbul:
+          requires:
+            - install
       - test_blockchain:
+          requires:
+            - install
+      - test_blockchain_petersburg:
           requires:
             - install
       - coveralls:
