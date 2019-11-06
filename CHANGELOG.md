@@ -6,6 +6,29 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [1.4.0] - 2019-11-05
+
+First release with full `Istanbul` support regarding parameter introductions/updates
+and HF block numbers set for supported chains.
+
+Relevant PRs:
+
+- Added `Istanbul` block numbers for `mainnet`, `goerli` and `rinkeby`,
+  PR [#68](https://github.com/ethereumjs/ethereumjs-common/pull/68)
+- Added `Petersburg` and `Constantinople` fork blocks to `rinkeby`,
+  PR [#71](https://github.com/ethereumjs/ethereumjs-common/pull/71)
+- Added `EIP-2200` (rebalance net-metered SSTORE gas costs) parameters for `Istanbul`,
+  PR [#65](https://github.com/ethereumjs/ethereumjs-common/pull/65)
+
+Other noteworthy changes:
+
+- Adding forks (including `Istanbul`) for `kovan`,
+  PR [#70](https://github.com/ethereumjs/ethereumjs-common/pull/70)
+- Fixed `kovan` genesis state,
+  PR [#66](https://github.com/ethereumjs/ethereumjs-common/pull/66)
+
+[1.4.0]: https://github.com/ethereumjs/ethereumjs-common/compare/v1.3.2...v1.4.0
+
 ## [1.3.2] - 2019-09-04
 
 **Istanbul** Updates:
