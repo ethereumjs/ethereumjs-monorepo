@@ -52,6 +52,7 @@ and [#179](https://github.com/ethereumjs/ethereumjs-util/pull/179).
   PR [#187](https://github.com/ethereumjs/ethereumjs-util/pull/187)
 - Made `@types/bn.js` a `dependency` instead of a `devDependency`,
   PR [#205](https://github.com/ethereumjs/ethereumjs-util/pull/205)
+- Updated `keccak256` dependency from `v1.4.0` to `v2.0.0`, PR [#168](https://github.com/ethereumjs/ethereumjs-util/pull/168)
 
 [6.2.0]: https://github.com/ethereumjs/ethereumjs-util/compare/v6.1.0...v6.2.0
 
