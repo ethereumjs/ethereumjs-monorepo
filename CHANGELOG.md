@@ -6,6 +6,56 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [6.2.0] - 2019-11-06
+
+This release comes with a new file structure, related functionality is now broken
+down into separate files (like `account.js`) allowing for more oversight and
+modular integration. All functionality is additionally exposed through an
+aggregating `index.js` file, so this version remains backwards-compatible.
+
+Overview on the new structure:
+
+- `account`: Private/public key and address-related functionality
+  (creation, validation, conversion)
+- `byte`: Byte-related helper and conversion functions
+- `constants`: Exposed constants (e.g. `KECCAK256_NULL_S` for the string
+  representation of the Keccak-256 hash of null)
+- `hash`: Hash functions
+- `object`: Helper function for creating a binary object (`DEPRECATED`)
+- `signature`: Signing, signature validation, conversion, recovery
+
+See associated PRs [#182](https://github.com/ethereumjs/ethereumjs-util/pull/182)
+and [#179](https://github.com/ethereumjs/ethereumjs-util/pull/179).
+
+**Features**
+
+- `account`: Added `EIP-1191` address checksum algorithm support for
+  `toChecksumAddress()`,
+  PR [#204](https://github.com/ethereumjs/ethereumjs-util/pull/204)
+
+**Bug Fixes**
+
+- `bytes`: `toBuffer()` conversion function now throws if strings aren't
+  `0x`-prefixed hex values making the behavior of `toBuffer()` more predictable
+  respectively less error-prone (you might generally want to check cases in your
+  code where you eventually allowed non-`0x`-prefixed input before),
+  PR [#197](https://github.com/ethereumjs/ethereumjs-util/pull/197)
+
+**Dependencies / Environment**
+
+- Dropped Node `6`, added Node `11` and `12` to officially supported Node versions,
+  PR [#207](https://github.com/ethereumjs/ethereumjs-util/pull/207)
+- Dropped `safe-buffer` dependency,
+  PR [#182](https://github.com/ethereumjs/ethereumjs-util/pull/182)
+- Updated `rlp` dependency from `v2.0.0` to `v2.2.3` (`TypeScript` improvements
+  for RLP hash functionality),
+  PR [#187](https://github.com/ethereumjs/ethereumjs-util/pull/187)
+- Made `@types/bn.js` a `dependency` instead of a `devDependency`,
+  PR [#205](https://github.com/ethereumjs/ethereumjs-util/pull/205)
+- Updated `keccak256` dependency from `v1.4.0` to `v2.0.0`, PR [#168](https://github.com/ethereumjs/ethereumjs-util/pull/168)
+
+[6.2.0]: https://github.com/ethereumjs/ethereumjs-util/compare/v6.1.0...v6.2.0
+
 ## [6.1.0] - 2019-02-12
 
 First **TypeScript** based release of the library, now also including a
