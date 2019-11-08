@@ -154,10 +154,10 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   // Caculate the total gas used
   results.gasUsed = results.gasUsed.add(basefee)
   // Process any gas refund
-  results.gasRefund = results.execResult.gasRefund
-  if (results.gasRefund) {
-    if (results.gasRefund.lt(results.gasUsed.divn(2))) {
-      results.gasUsed.isub(results.gasRefund)
+  const gasRefund = evm._refund
+  if (gasRefund) {
+    if (gasRefund.lt(results.gasUsed.divn(2))) {
+      results.gasUsed.isub(gasRefund)
     } else {
       results.gasUsed.isub(results.gasUsed.divn(2))
     }
