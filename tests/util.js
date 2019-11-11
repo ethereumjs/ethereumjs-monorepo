@@ -370,8 +370,11 @@ exports.setupPreConditions = function (state, testData, done) {
         var keys = Object.keys(acctData.storage)
 
         async.forEachSeries(keys, function (key, cb3) {
-          var val = acctData.storage[key]
-          val = rlp.encode(Buffer.from(val.slice(2), 'hex'))
+          const valBN = new BN(acctData.storage[key].slice(2), 16)
+          if (valBN.isZero()) {
+            return cb3()
+          }
+          let val = rlp.encode(valBN.toArrayLike(Buffer, 'be'))
           key = utils.setLength(Buffer.from(key.slice(2), 'hex'), 32)
 
           storageTrie.put(key, val, cb3)
