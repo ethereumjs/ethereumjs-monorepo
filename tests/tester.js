@@ -51,7 +51,8 @@ const skipSlow = [
   'static_Callcode50000', // slow
   'static_Return50000', // slow
   'static_Return50000_2', // slow
-  'QuadraticComplexitySolidity_CallDataCopy'
+  'QuadraticComplexitySolidity_CallDataCopy',
+  'CALLBlake2f_MaxRounds'
 ]
 
 /*
