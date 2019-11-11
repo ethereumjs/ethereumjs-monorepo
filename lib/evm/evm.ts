@@ -34,6 +34,10 @@ export interface EVMResult {
    * Contains the results from running the code, if any, as described in [[runCode]]
    */
   execResult: ExecResult
+  /**
+   * Amount of gas to refund from deleting storage values
+   */
+  gasRefund?: BN
 }
 
 /**
@@ -121,6 +125,7 @@ export default class EVM {
     } else {
       result = await this._executeCreate(message)
     }
+    result.gasRefund = this._refund.clone()
 
     const err = result.execResult.exceptionError
     if (err) {
