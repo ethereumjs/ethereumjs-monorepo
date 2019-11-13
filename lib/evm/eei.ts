@@ -161,10 +161,6 @@ export default class EEI {
    * input data passed with the message call instruction or transaction.
    */
   getCallDataSize(): BN {
-    if (this._env.callData.length === 1 && this._env.callData[0] === 0) {
-      return new BN(0)
-    }
-
     return new BN(this._env.callData.length)
   }
 

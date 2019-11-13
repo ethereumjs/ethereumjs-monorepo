@@ -10,7 +10,7 @@ import {
 import Account from 'ethereumjs-account'
 import { ERROR, VmError } from '../exceptions'
 import PStateManager from '../state/promisified'
-import { getPrecompile, PrecompileFunc } from './precompiles'
+import { getPrecompile, PrecompileFunc, ripemdPrecompileAddress } from './precompiles'
 import TxContext from './txContext'
 import Message from './message'
 import EEI from './eei'
@@ -131,15 +131,6 @@ export default class EVM {
     if (err) {
       result.execResult.logs = []
       await this._state.revert()
-      if (message.isCompiled) {
-        // Empty precompiled contracts need to be deleted even in case of OOG
-        // because the bug in both Geth and Parity led to deleting RIPEMD precompiled in this case
-        // see https://github.com/ethereum/go-ethereum/pull/3341/files#diff-2433aa143ee4772026454b8abd76b9dd
-        // We mark the account as touched here, so that is can be removed among other touched empty accounts (after tx finalization)
-        if (err.error === ERROR.OUT_OF_GAS) {
-          await this._touchAccount(message.to)
-        }
-      }
     } else {
       await this._state.commit()
     }

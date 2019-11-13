@@ -8,6 +8,7 @@ import Common from 'ethereumjs-common'
 import { genesisStateByName } from 'ethereumjs-common/dist/genesisStates'
 import Account from 'ethereumjs-account'
 import Cache from './cache'
+import { ripemdPrecompileAddress } from '../evm/precompiles'
 
 /**
  * Storage values of an account
@@ -102,9 +103,20 @@ export default class StateManager {
     // if (toAccount.balance.toString('hex') === '00') {
     // if they have money or a non-zero nonce or code, then write to tree
     this._cache.put(address, account)
-    this._touched.add(address.toString('hex'))
+    this.touchAccount(address)
     // self._trie.put(addressHex, account.serialize(), cb)
     cb()
+  }
+
+  /**
+   * Marks an account as touched, according to the definition
+   * in [EIP-158](https://github.com/ethereum/EIPs/issues/158).
+   * This happens when the account is triggered for a state-changing
+   * event. Touched accounts that are empty will be cleared
+   * at the end of the tx.
+   */
+  touchAccount(address: Buffer): void {
+    this._touched.add(address.toString('hex'))
   }
 
   /**
@@ -275,7 +287,7 @@ export default class StateManager {
         const contract = this._cache.get(address)
         contract.stateRoot = storageTrie.root
         this.putAccount(address, contract, cb)
-        this._touched.add(address.toString('hex'))
+        this.touchAccount(address)
       })
     })
   }
@@ -371,6 +383,13 @@ export default class StateManager {
     const touched = this._touchedStack.pop()
     if (!touched) {
       throw new Error('Reverting to invalid state checkpoint failed')
+    }
+    // Exceptional case due to consensus issue in Geth and Parity.
+    // See [EIP-716](https://github.com/ethereum/EIPs/issues/716) for context.
+    // The RIPEMD precompile has to remain *touched* even when the call reverts,
+    // and be considered for deletion.
+    if (this._touched.has(ripemdPrecompileAddress)) {
+      touched.add(ripemdPrecompileAddress)
     }
     this._touched = touched
     this._checkpointCount--

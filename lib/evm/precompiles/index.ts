@@ -13,10 +13,11 @@ interface Precompiles {
   [key: string]: PrecompileFunc
 }
 
+const ripemdPrecompileAddress = '0000000000000000000000000000000000000003'
 const precompiles: Precompiles = {
   '0000000000000000000000000000000000000001': p1,
   '0000000000000000000000000000000000000002': p2,
-  '0000000000000000000000000000000000000003': p3,
+  [ripemdPrecompileAddress]: p3,
   '0000000000000000000000000000000000000004': p4,
   '0000000000000000000000000000000000000005': p5,
   '0000000000000000000000000000000000000006': p6,
@@ -29,4 +30,4 @@ function getPrecompile(address: string): PrecompileFunc {
   return precompiles[address]
 }
 
-export { precompiles, getPrecompile, PrecompileFunc, PrecompileInput }
+export { precompiles, getPrecompile, PrecompileFunc, PrecompileInput, ripemdPrecompileAddress }
