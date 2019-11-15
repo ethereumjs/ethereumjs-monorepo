@@ -8,7 +8,7 @@ stack items are lazily duplicated.
 So you must never directly change a buffer from the stack,
 instead you should `copy` it first
 
-not all stack items are 32 bytes, so if the operation realies on the stack
+not all stack items are 32 bytes, so if the operation relies on the stack
 item length then you must use utils.pad(<item>, 32) first.
 */
 import { zeros } from 'ethereumjs-util'
@@ -30,12 +30,12 @@ export interface RunCodeOpts {
   txContext?: TxContext
   gasPrice?: Buffer
   /**
-   * The address where the call originated from. The address should be a `Buffer` of 20bits. Defaults to `0`
+   * The address where the call originated from. The address should be a `Buffer` of 20 bits. Defaults to `0`
    */
   origin?: Buffer
   message?: Message
   /**
-   * The address that ran this code. The address should be a `Buffer` of 20bits. Defaults to `0`
+   * The address that ran this code. The address should be a `Buffer` of 20 bits. Defaults to `0`
    */
   caller?: Buffer
   /**
