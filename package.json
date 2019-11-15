@@ -76,7 +76,7 @@
     "@types/node": "^11.13.4",
     "browserify": "^16.2.3",
     "coveralls": "^3.0.0",
-    "ethereumjs-testing": "git+https://github.com/ethereumjs/ethereumjs-testing.git#istanbul-tests",
+    "ethereumjs-testing": "git+https://github.com/ethereumjs/ethereumjs-testing.git#v1.3.0",
     "husky": "^2.1.0",
     "karma": "^4.0.1",
     "karma-browserify": "^6.0.0",
