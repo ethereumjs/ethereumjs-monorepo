@@ -1044,7 +1044,11 @@ export default class Blockchain implements BlockchainInterface {
     self._hashToNumber(blockHash, (err?: any, number?: any) => {
       if (err) return cb(err)
       blockNumber = number.addn(1)
-      async.whilst(() => blockNumber, run, err => (err ? cb(err) : self._saveHeads(cb)))
+      async.whilst(
+        () => blockNumber,
+        run,
+        err => (err ? cb(err) : self._saveHeads(cb)),
+      )
     })
 
     function run(cb2: any) {
