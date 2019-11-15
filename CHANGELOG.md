@@ -6,6 +6,24 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [4.0.2] - 2019-11-15
+
+Supports Istanbul by updating `ethereumjs-block` to
+[v2.2.1](https://github.com/ethereumjs/ethereumjs-block/releases/tag/v2.2.1) which in turn
+uses `ethereumjs-tx` [v2.1.1](https://github.com/ethereumjs/ethereumjs-tx/releases/tag/v2.1.1)
+which implements EIP-2028 (calldata fee reduction),
+PR [#130](https://github.com/ethereumjs/ethereumjs-blockchain/pull/130).
+
+From this release the `validate` flag is deprecated and users are encouraged
+to use the more granular flags `validatePow` and `validateBlocks`. For more
+on this please see [#121](https://github.com/ethereumjs/ethereumjs-blockchain/pull/121).
+
+For Typescript users this release also comes with a `BlockchainInterface` interface
+which the `Blockchain` class implements,
+PR [#124](https://github.com/ethereumjs/ethereumjs-blockchain/pull/124).
+
+[4.0.2]: https://github.com/ethereumjs/ethereumjs-blockchain/compare/v4.0.1...v4.0.2
+
 ## [4.0.1] - 2019-07-01
 
 - Fixes a browser-compatibility issue caused by the library using `util.callbackify`,
