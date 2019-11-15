@@ -52,7 +52,8 @@ const skipSlow = [
   'static_Return50000', // slow
   'static_Return50000_2', // slow
   'QuadraticComplexitySolidity_CallDataCopy',
-  'CALLBlake2f_MaxRounds'
+  'CALLBlake2f_MaxRounds',
+  'randomStatetest94_Istanbul'
 ]
 
 /*
