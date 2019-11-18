@@ -34,10 +34,6 @@ export interface EVMResult {
    * Contains the results from running the code, if any, as described in [[runCode]]
    */
   execResult: ExecResult
-  /**
-   * Amount of gas to refund from deleting storage values
-   */
-  gasRefund?: BN
 }
 
 /**
@@ -69,6 +65,10 @@ export interface ExecResult {
    * A map from the accounts that have self-destructed to the addresses to send their funds to
    */
   selfdestruct?: { [k: string]: Buffer }
+  /**
+   * Total amount of gas to be refunded from all nested calls.
+   */
+  gasRefund?: BN
 }
 
 export interface NewContractEvent {
@@ -125,7 +125,9 @@ export default class EVM {
     } else {
       result = await this._executeCreate(message)
     }
-    result.gasRefund = this._refund.clone()
+    // TODO: Move `gasRefund` to a tx-level result object
+    // instead of `ExecResult`.
+    result.execResult.gasRefund = this._refund.clone()
 
     const err = result.execResult.exceptionError
     if (err) {

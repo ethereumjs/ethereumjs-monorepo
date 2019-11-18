@@ -58,7 +58,7 @@ tape('Istanbul: EIP-2200: net-metering SSTORE', async (t) => {
         t.assert(res.execResult.exceptionError === undefined)
       }
       t.assert(new BN(testCase.used).eq(res.gasUsed))
-      t.assert(new BN(testCase.refund).eq(res.gasRefund))
+      t.assert(new BN(testCase.refund).eq(res.execResult.gasRefund))
     } catch (e) {
       t.fail(e.message)
     }
