@@ -33,7 +33,6 @@ export interface Env {
 export interface RunResult {
   logs: any // TODO: define type for Log (each log: [Buffer(address), [Buffer(topic0), ...]])
   returnValue?: Buffer
-  gasRefund: BN
   /**
    * A map from the accounts that have self-destructed to the addresses to send their funds to
    */
@@ -67,7 +66,6 @@ export default class EEI {
     this._result = {
       logs: [],
       returnValue: undefined,
-      gasRefund: new BN(0),
       selfdestruct: {},
     }
   }
@@ -90,7 +88,7 @@ export default class EEI {
    * @param amount - Amount of gas refunded
    */
   refundGas(amount: BN): void {
-    this._result.gasRefund.iadd(amount)
+    this._evm._refund.iadd(amount)
   }
 
   /**
@@ -98,9 +96,9 @@ export default class EEI {
    * @param amount - Amount to subtract from gas refunds
    */
   subRefund(amount: BN): void {
-    this._result.gasRefund.isub(amount)
-    if (this._result.gasRefund.ltn(0)) {
-      this._result.gasRefund = new BN(0)
+    this._evm._refund.isub(amount)
+    if (this._evm._refund.ltn(0)) {
+      this._evm._refund = new BN(0)
       trap(ERROR.REFUND_EXHAUSTED)
     }
   }
@@ -163,10 +161,6 @@ export default class EEI {
    * input data passed with the message call instruction or transaction.
    */
   getCallDataSize(): BN {
-    if (this._env.callData.length === 1 && this._env.callData[0] === 0) {
-      return new BN(0)
-    }
-
     return new BN(this._env.callData.length)
   }
 
@@ -354,9 +348,7 @@ export default class EEI {
   async _selfDestruct(toAddress: Buffer): Promise<void> {
     // only add to refund if this is the first selfdestruct for the address
     if (!this._result.selfdestruct[this._env.address.toString('hex')]) {
-      this._result.gasRefund = this._result.gasRefund.addn(
-        this._common.param('gasPrices', 'selfdestructRefund'),
-      )
+      this.refundGas(new BN(this._common.param('gasPrices', 'selfdestructRefund')))
     }
 
     this._result.selfdestruct[this._env.address.toString('hex')] = toAddress
@@ -491,11 +483,6 @@ export default class EEI {
       this._result.logs = this._result.logs.concat(results.execResult.logs)
     }
 
-    // add gasRefund
-    if (results.execResult.gasRefund) {
-      this._result.gasRefund = this._result.gasRefund.add(results.execResult.gasRefund)
-    }
-
     // this should always be safe
     this.useGas(results.gasUsed)
 
@@ -551,11 +538,6 @@ export default class EEI {
 
     if (results.execResult.logs) {
       this._result.logs = this._result.logs.concat(results.execResult.logs)
-    }
-
-    // add gasRefund
-    if (results.execResult.gasRefund) {
-      this._result.gasRefund = this._result.gasRefund.add(results.execResult.gasRefund)
     }
 
     // this should always be safe

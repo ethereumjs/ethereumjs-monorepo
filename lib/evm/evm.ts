@@ -10,7 +10,7 @@ import {
 import Account from 'ethereumjs-account'
 import { ERROR, VmError } from '../exceptions'
 import PStateManager from '../state/promisified'
-import { getPrecompile, PrecompileFunc } from './precompiles'
+import { getPrecompile, PrecompileFunc, ripemdPrecompileAddress } from './precompiles'
 import TxContext from './txContext'
 import Message from './message'
 import EEI from './eei'
@@ -62,13 +62,13 @@ export interface ExecResult {
    */
   logs?: any[]
   /**
-   * Amount of gas to refund from deleting storage values
-   */
-  gasRefund?: BN
-  /**
    * A map from the accounts that have self-destructed to the addresses to send their funds to
    */
   selfdestruct?: { [k: string]: Buffer }
+  /**
+   * Total amount of gas to be refunded from all nested calls.
+   */
+  gasRefund?: BN
 }
 
 export interface NewContractEvent {
@@ -96,12 +96,17 @@ export default class EVM {
   _state: PStateManager
   _tx: TxContext
   _block: any
+  /**
+   * Amount of gas to refund from deleting storage values
+   */
+  _refund: BN
 
   constructor(vm: any, txContext: TxContext, block: any) {
     this._vm = vm
     this._state = this._vm.pStateManager
     this._tx = txContext
     this._block = block
+    this._refund = new BN(0)
   }
 
   /**
@@ -120,20 +125,14 @@ export default class EVM {
     } else {
       result = await this._executeCreate(message)
     }
+    // TODO: Move `gasRefund` to a tx-level result object
+    // instead of `ExecResult`.
+    result.execResult.gasRefund = this._refund.clone()
 
     const err = result.execResult.exceptionError
     if (err) {
       result.execResult.logs = []
       await this._state.revert()
-      if (message.isCompiled) {
-        // Empty precompiled contracts need to be deleted even in case of OOG
-        // because the bug in both Geth and Parity led to deleting RIPEMD precompiled in this case
-        // see https://github.com/ethereum/go-ethereum/pull/3341/files#diff-2433aa143ee4772026454b8abd76b9dd
-        // We mark the account as touched here, so that is can be removed among other touched empty accounts (after tx finalization)
-        if (err.error === ERROR.OUT_OF_GAS) {
-          await this._touchAccount(message.to)
-        }
-      }
     } else {
       await this._state.commit()
     }
@@ -289,6 +288,7 @@ export default class EVM {
       eei._result.selfdestruct = message.selfdestruct
     }
 
+    const oldRefund = this._refund.clone()
     const interpreter = new Interpreter(this._vm, eei)
     const interpreterRes = await interpreter.run(message.code as Buffer, opts)
 
@@ -303,9 +303,10 @@ export default class EVM {
       result = {
         ...result,
         logs: [],
-        gasRefund: new BN(0),
         selfdestruct: {},
       }
+      // Revert gas refund if message failed
+      this._refund = oldRefund
     }
 
     return {

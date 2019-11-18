@@ -82,6 +82,15 @@ jobs:
       - run:
           name: testStatePetersburg
           command: npm run testStatePetersburg
+  test_state_istanbul:
+    <<: *defaults
+    steps:
+      - attach_workspace:
+          at: ~/project
+      - *restore_node_modules
+      - run:
+          name: testStateIstanbul
+          command: npm run testStateIstanbul
   test_blockchain:
     <<: *defaults
     steps:
@@ -91,6 +100,15 @@ jobs:
       - run:
           name: testBlockchain
           command: npm run testBlockchain
+  test_blockchain_petersburg:
+    <<: *defaults
+    steps:
+      - attach_workspace:
+          at: ~/project
+      - *restore_node_modules
+      - run:
+          name: testBlockchainPetersburg
+          command: npm run testBlockchainPetersburg
   coveralls:
     <<: *defaults
     steps:
@@ -123,7 +141,13 @@ workflows:
       - test_state_petersburg:
           requires:
             - install
+      - test_state_istanbul:
+          requires:
+            - install
       - test_blockchain:
+          requires:
+            - install
+      - test_blockchain_petersburg:
           requires:
             - install
       - coveralls:
