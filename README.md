@@ -16,15 +16,15 @@ The VM currently supports the following hardfork rules:
 - `Byzantium`
 - `Constantinople`
 - `Petersburg` (default)
-- `Istanbul` (`beta`)
+- `Istanbul`
 
 If you are still looking for a [Spurious Dragon](https://github.com/ethereum/EIPs/blob/master/EIPS/eip-607.md) compatible version of this library install the latest of the `2.2.x` series (see [Changelog](./CHANGELOG.md)).
 
 ##### Istanbul Harfork Support
 
-A feature-complete `Istanbul` HF implementation is available since the `v4.1.0`
-VM release. You can activate an `Istanbul` VM by using the `istanbul`
-`hardfork` option flag.
+An Ethereum test suite compliant `Istanbul` HF implementation is available
+since the `v4.1.1` VM release. You can activate an `Istanbul` VM by using the
+`istanbul` `hardfork` option flag.
 
 Supported `Istanbul` EIPs:
 
@@ -42,11 +42,6 @@ Supported `Istanbul` EIPs:
 - [EIP-2200](https://github.com/ethereum/EIPs/pull/2200): Rebalance net-metered
   SSTORE gas costs,
   PR [#590](https://github.com/ethereumjs/ethereumjs-vm/pull/590)
-
-Note that `Istanbul` support is still labeled as `beta`. All implementations
-have only basic test coverage since the official Ethereum consensus tests are
-not yet merged. There might be also last minute changes to EIPs during the
-testing period.
 
 # INSTALL
 

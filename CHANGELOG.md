@@ -6,6 +6,46 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [4.1.1] - 2019-11-19
+
+First stable `Istanbul` release passing all `StateTests` and `BlockchainTests`
+from the official Ethereum test suite
+[v7.0.0-beta.1](https://github.com/ethereum/tests/releases/tag/v7.0.0-beta.1).
+Test suite conformance have been reached along work on
+PR [#607](https://github.com/ethereumjs/ethereumjs-vm/pull/607) (thanks @s1na!)
+and there were several fixes along the way, so it is strongly recommended that
+you upgrade from the first `beta` `Istanbul` release `v4.1.0`.
+
+**Istanbul Related Fixes**
+
+- Refund counter has been moved from the `EEI` to the `EVM` module,
+  PR [#612](https://github.com/ethereumjs/ethereumjs-vm/pull/612), `gasRefund`
+  is re-added to the `execResult` in the `EVM` module at the end of message
+  execution in `EVM` to remain (for the most part) backwards-compatible in the
+  release
+- Fixed `blake2f` precompile for rounds > `0x4000000`
+- Fixed issues causing `RevertPrecompiled*` test failures
+- Fixed an issue where the `RIPEMD` precompile has to remain _touched_ even
+  when the call reverts and be considered for deletion,
+  see [EIP-716](https://github.com/ethereum/EIPs/issues/716) for context
+- Updated `ethereumjs-block` to `v2.2.1`
+- Updated `ethereumjs-blockchain` to `v4.0.2`
+- Limited `ethereumjs-util` from `^6.1.0` to `~6.1.0`
+- Hardfork-related fixes in test runners and test utilities
+
+**Other Changes**
+
+- Introduction of a new caching mechanism to cache calls towards `promisify`
+  being present in hot paths (performance optimization),
+  PR [#600](https://github.com/ethereumjs/ethereumjs-vm/pull/600)
+- Renamed some missing `result.return` to `result.returnValue` on `EVM`
+  execution in examples,
+  PR [#604](https://github.com/ethereumjs/ethereumjs-vm/pull/604)
+- Improved event documentation,
+  PR [#601](https://github.com/ethereumjs/ethereumjs-vm/pull/601)
+
+[4.1.1]: https://github.com/ethereumjs/ethereumjs-vm/compare/v4.1.0...v4.1.1
+
 ## [4.1.0] - 2019-09-12
 
 This is the first feature-complete `Istanbul` release, containing implementations
