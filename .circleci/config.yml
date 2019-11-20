@@ -31,7 +31,6 @@ jobs:
     steps:
       - checkout
       - *restore_node_modules
-      - run: npm install
       - run:
           name: Install dependencies
           command: npm install
