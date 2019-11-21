@@ -80,6 +80,10 @@ tape('[Common]: Hardfork logic', function(t: tape.Test) {
     msg = 'should return 2 active HFs when restricted to supported HFs'
     st.equal(c.activeHardforks(null, { onlySupported: true }).length, 2, msg)
 
+    c = new Common('mainnet')
+    msg = 'should return 10 active HFs for mainnet'
+    st.equal(c.activeHardforks().length, 10, msg)
+
     st.end()
   })
 
