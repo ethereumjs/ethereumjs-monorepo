@@ -25,7 +25,7 @@ tape('Istanbul: EIP-1884: SELFBALANCE', async (t) => {
     const common = new Common(testCase.chain, testCase.hardfork)
     const vm = new VM({ common })
     const state = new PStateManager(vm.stateManager)
-    const account = createAccount('00', testCase.selfbalance)
+    const account = createAccount('0x00', testCase.selfbalance)
     await state.putAccount(addr, account)
     try {
       const res = await vm.runCode(runCodeArgs)
