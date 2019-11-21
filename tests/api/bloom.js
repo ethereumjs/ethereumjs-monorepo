@@ -22,42 +22,42 @@ tape('bloom', (t) => {
     const vector = Buffer.from(hex, 'hex')
 
     const b = new Bloom(vector)
-    st.true(b.check(utils.toBuffer('value 1')), 'should contain string "value 1"')
-    st.true(b.check(utils.toBuffer('value 2')), 'should contain string "value 2"')
+    st.true(b.check(Buffer.from('value 1', 'utf8')), 'should contain string "value 1"')
+    st.true(b.check(Buffer.from('value 2', 'utf8')), 'should contain string "value 2"')
     st.end()
   })
 
   t.test('check shouldnt be tautology', (st) => {
     const b = new Bloom()
-    st.false(b.check(utils.toBuffer('random value')), 'should not contain string "random value"')
+    st.false(b.check(Buffer.from('random value', 'utf8')), 'should not contain string "random value"')
     st.end()
   })
 
   t.test('should correctly add value', (st) => {
     const b = new Bloom()
-    b.add(utils.toBuffer('value'))
-    let found = b.check(utils.toBuffer('value'))
+    b.add(Buffer.from('value', 'utf8'))
+    let found = b.check(Buffer.from('value', 'utf8'))
     st.true(found, 'should contain added value')
     st.end()
   })
 
   t.test('should check multiple values', (st) => {
     const b = new Bloom()
-    b.add(utils.toBuffer('value 1'))
-    b.add(utils.toBuffer('value 2'))
-    let found = b.multiCheck([utils.toBuffer('value 1'), utils.toBuffer('value 2')])
+    b.add(Buffer.from('value 1', 'utf8'))
+    b.add(Buffer.from('value 2', 'utf8'))
+    let found = b.multiCheck([Buffer.from('value 1'), Buffer.from('value 2')])
     st.true(found, 'should contain both values')
     st.end()
   })
 
   t.test('should or two filters', (st) => {
     const b1 = new Bloom()
-    b1.add(utils.toBuffer('value 1'))
+    b1.add(Buffer.from('value 1', 'utf8'))
     const b2 = new Bloom()
-    b2.add(utils.toBuffer('value 2'))
+    b2.add(Buffer.from('value 2', 'utf8'))
 
     b1.or(b2)
-    st.true(b1.check(utils.toBuffer('value 2')), 'should contain "value 2" after or')
+    st.true(b1.check(Buffer.from('value 2', 'utf-8')), 'should contain "value 2" after or')
     st.end()
   })
 
