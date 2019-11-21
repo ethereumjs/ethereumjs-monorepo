@@ -1,15 +1,30 @@
 version: 2
 
-defaults: &defaults
-  working_directory: ~/project/ethereumjs-vm
-  docker:
-    - image: circleci/node:8-browsers
-restore_node_modules: &restore_node_modules
-  restore_cache:
-    name: Restore node_modules cache
-    keys:
-      - v1-node-{{ .Branch }}-{{ checksum "package.json" }}
-      - v1-node-{{ checksum "package.json" }}
+aliases: 
+  - &defaults
+    working_directory: ~/project/ethereumjs-vm
+    docker:
+      - image: circleci/node:8-browsers
+
+  - &restore_node_modules
+    restore_cache:
+      name: Restore node_modules cache
+      keys:
+        - v1-node-{{ .Branch }}-{{ checksum "package.json" }}
+        - v1-node-{{ checksum "package.json" }}
+
+  - &convert_tap_to_xunit
+    run: 
+      name: convert TAP results to xunit format
+      command:  |
+        mkdir -p tests/tape;
+        cat results.tap | npx tap-xunit > tests/tape/results.xml
+      when: always
+
+  - &save_test_metadata
+    store_test_results:
+      path: tests/tape/
+
 jobs:
   install:
     <<: *defaults
@@ -17,7 +32,7 @@ jobs:
       - checkout
       - *restore_node_modules
       - run:
-          name: npm install
+          name: Install dependencies
           command: npm install
       - save_cache:
           name: Save node_modules cache
@@ -28,6 +43,7 @@ jobs:
           root: ~/project
           paths:
             - ethereumjs-vm/
+
   lint:
     <<: *defaults
     steps:
@@ -37,6 +53,7 @@ jobs:
       - run:
           name: Lint
           command: npm run lint
+
   test_api:
     <<: *defaults
     steps:
@@ -46,6 +63,7 @@ jobs:
       - run:
           name: testAPI
           command: npm run testAPI
+
   test_api_browser:
     <<: *defaults
     steps:
@@ -55,6 +73,7 @@ jobs:
       - run:
           name: testAPI:browser
           command: npm run testAPI:browser
+  
   test_state_byzantium:
     <<: *defaults
     steps:
@@ -63,7 +82,10 @@ jobs:
       - *restore_node_modules
       - run:
           name: testStateByzantium
-          command: npm run testStateByzantium
+          command: npm run testStateByzantium | tee -a results.tap
+      - *convert_tap_to_xunit
+      - *save_test_metadata
+
   test_state_constantinople:
     <<: *defaults
     steps:
@@ -72,7 +94,10 @@ jobs:
       - *restore_node_modules
       - run:
           name: testStateConstantinople
-          command: npm run testStateConstantinople
+          command: npm run testStateConstantinople | tee -a results.tap
+      - *convert_tap_to_xunit
+      - *save_test_metadata
+
   test_state_petersburg:
     <<: *defaults
     steps:
@@ -81,7 +106,10 @@ jobs:
       - *restore_node_modules
       - run:
           name: testStatePetersburg
-          command: npm run testStatePetersburg
+          command: npm run testStatePetersburg | tee -a results.tap
+      - *convert_tap_to_xunit
+      - *save_test_metadata
+
   test_state_istanbul:
     <<: *defaults
     steps:
@@ -90,7 +118,10 @@ jobs:
       - *restore_node_modules
       - run:
           name: testStateIstanbul
-          command: npm run testStateIstanbul
+          command: npm run testStateIstanbul | tee -a results.tap
+      - *convert_tap_to_xunit
+      - *save_test_metadata
+
   test_blockchain:
     <<: *defaults
     steps:
@@ -99,7 +130,10 @@ jobs:
       - *restore_node_modules
       - run:
           name: testBlockchain
-          command: npm run testBlockchain
+          command: npm run testBlockchain | tee -a results.tap
+      - *convert_tap_to_xunit
+      - *save_test_metadata
+
   test_blockchain_petersburg:
     <<: *defaults
     steps:
@@ -108,7 +142,9 @@ jobs:
       - *restore_node_modules
       - run:
           name: testBlockchainPetersburg
-          command: npm run testBlockchainPetersburg
+          command: npm run testBlockchainPetersburg | tee -a results.tap
+      - *convert_tap_to_xunit
+      - *save_test_metadata
   coveralls:
     <<: *defaults
     steps:
