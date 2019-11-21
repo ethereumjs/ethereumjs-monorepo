@@ -37,7 +37,7 @@ tape('Istanbul: EIP-2200: net-metering SSTORE', async (t) => {
     const vm = new VM({ common })
     const state = new PStateManager(vm.stateManager)
 
-    const account = createAccount('00', '00')
+    const account = createAccount('0x00', '0x00')
     await state.putAccount(addr, account)
     await state.putContractCode(addr, Buffer.from(testCase.code, 'hex'))
     if (!testCase.original.isZero()) {
