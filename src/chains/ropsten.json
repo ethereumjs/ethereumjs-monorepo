@@ -69,7 +69,7 @@
       "finality": null
     },
     {
-      "name": "eip2384",
+      "name": "mountainGlacier",
       "block": 6585846,
       "consensus": "pow",
       "finality": null

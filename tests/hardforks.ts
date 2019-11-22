@@ -89,8 +89,8 @@ tape('[Common]: Hardfork logic', function(t: tape.Test) {
 
   t.test('activeHardfork()', function(st: tape.Test) {
     let c = new Common('ropsten')
-    let msg = 'should return eip2384 as latest active HF for Ropsten'
-    st.equal(c.activeHardfork(), 'eip2384', msg)
+    let msg = 'should return mountainGlacier as latest active HF for Ropsten'
+    st.equal(c.activeHardfork(), 'mountainGlacier', msg)
 
     msg = 'should return spuriousDragon as latest active HF for Ropsten for block 10'
     st.equal(c.activeHardfork(10), 'spuriousDragon', msg)
@@ -170,8 +170,8 @@ tape('[Common]: Hardfork logic', function(t: tape.Test) {
 
   t.test('hardforkGteHardfork() ropsten', function(st: tape.Test) {
     const c = new Common('ropsten')
-    const msg = 'ropsten, spuriousDragon >= eip2384 (provided) -> false'
-    st.equal(c.hardforkGteHardfork('spuriousDragon', 'eip2384'), false, msg)
+    const msg = 'ropsten, spuriousDragon >= mountainGlacier (provided) -> false'
+    st.equal(c.hardforkGteHardfork('spuriousDragon', 'mountainGlacier'), false, msg)
 
     st.end()
   })
