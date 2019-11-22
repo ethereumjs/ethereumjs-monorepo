@@ -67,6 +67,12 @@
       "block": 6485846,
       "consensus": "pow",
       "finality": null
+    },
+    {
+      "name": "eip2384",
+      "block": 6585846,
+      "consensus": "pow",
+      "finality": null
     }
   ],
   "bootstrapNodes": [
