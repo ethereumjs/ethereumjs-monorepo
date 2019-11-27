@@ -44,7 +44,7 @@ async function main() {
 
   console.log('-------results-------')
   console.log('nonce: ' + createdAccount.nonce.toString('hex'))
-  console.log('balance in wei: ' + createdAccount.balance.toString('hex'))
+  console.log('balance in wei: ', createdAccount.balance.toString('hex') || 0)
   console.log('stateRoot: ' + createdAccount.stateRoot.toString('hex'))
   console.log('codeHash: ' + createdAccount.codeHash.toString('hex'))
   console.log('---------------------')
