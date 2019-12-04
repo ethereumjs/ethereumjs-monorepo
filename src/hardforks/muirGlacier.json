@@ -2,7 +2,7 @@
   "name": "muirGlacier",
   "comment": "HF to delay the difficulty bomb",
   "eip": {
-    "url": "https://github.com/ethereum/EIPs/pull/2384",
+    "url": "https://eips.ethereum.org/EIPS/eip-2384",
     "status": "PR"
   },
   "gasConfig": {},
