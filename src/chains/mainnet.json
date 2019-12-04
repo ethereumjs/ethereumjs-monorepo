@@ -70,7 +70,7 @@
     },
     {
       "name": "muirGlacier",
-      "block": 9169000,
+      "block": 9200000,
       "consensus": "pow",
       "finality": null
     }
