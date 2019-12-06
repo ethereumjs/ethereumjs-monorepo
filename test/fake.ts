@@ -95,7 +95,7 @@ tape('[FakeTransaction]: Basic functions', function(t) {
 
   t.test('should return toCreationAddress', st => {
     const tx = new FakeTransaction(txData)
-    const txNoTo = new FakeTransaction({ ...txData, to: '' })
+    const txNoTo = new FakeTransaction({ ...txData, to: undefined })
     st.plan(2)
     st.equal(tx.toCreationAddress(), false, 'tx is not "to" creation address')
     st.equal(txNoTo.toCreationAddress(), true, 'tx is "to" creation address')
