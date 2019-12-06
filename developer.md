@@ -83,7 +83,7 @@ It is also possible to only run the tests from the skip lists:
 
 ### CI Test Integration
 
-Tests are run on `CircleCI` on every PR, configuration can be found in `.circleci/config.yml`.
+Tests are run on [Actions](https://github.com/ethereumjs/ethereumjs-vm/actions) on every PR, configuration can be found in `.github/workflows`.
 
 ### Debugging
 
