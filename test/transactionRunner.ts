@@ -54,7 +54,7 @@ tape('TransactionTests', t => {
               const validationErrors = tx.validate(true)
               const transactionIsValid = validationErrors.length === 0
               const hashAndSenderAreCorrect =
-                forkTestData && (sender === forkTestData.sender && hash === forkTestData.hash)
+                forkTestData && sender === forkTestData.sender && hash === forkTestData.hash
 
               if (shouldBeInvalid) {
                 st.assert(!transactionIsValid, `Transaction should be invalid on ${forkName}`)
