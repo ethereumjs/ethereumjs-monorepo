@@ -206,7 +206,7 @@ function stripHexPrefix(str: string): string {
 }
 
 /** Transform an integer into its hexadecimal value */
-function intToHex(integer: number): string {
+function intToHex(integer: number | bigint): string {
   if (integer < 0) {
     throw new Error('Invalid integer as argument, must be unsigned!')
   }
@@ -220,7 +220,7 @@ function padToEven(a: string): string {
 }
 
 /** Transform an integer into a Buffer */
-function intToBuffer(integer: number): Buffer {
+function intToBuffer(integer: number | bigint): Buffer {
   const hex = intToHex(integer)
   return Buffer.from(hex, 'hex')
 }
@@ -234,7 +234,7 @@ function toBuffer(v: Input): Buffer {
       } else {
         return Buffer.from(v)
       }
-    } else if (typeof v === 'number') {
+    } else if (typeof v === 'number' || typeof v === 'bigint') {
       if (!v) {
         return Buffer.from([])
       } else {

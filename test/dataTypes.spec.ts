@@ -61,6 +61,13 @@ describe('RLP encoding (list):', function() {
   // })
 })
 
+describe('RLP encoding (BigInt):', function() {
+  it('should encode a BigInt value', function() {
+    const encodedBN = RLP.encode(BigInt(3))
+    assert.equal(encodedBN[0], 3)
+  })
+})
+
 describe('RLP encoding (BN):', function() {
   it('should encode a BN value', function() {
     const encodedBN = RLP.encode(new BN(3))
