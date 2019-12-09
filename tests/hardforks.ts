@@ -84,6 +84,14 @@ tape('[Common]: Hardfork logic', function(t: tape.Test) {
     msg = 'should return 10 active HFs for mainnet'
     st.equal(c.activeHardforks().length, 10, msg)
 
+    c = new Common('rinkeby')
+    msg = 'should return 8 active HFs for rinkeby'
+    st.equal(c.activeHardforks().length, 8, msg)
+
+    c = new Common('goerli')
+    msg = 'should return 9 active HFs for goerli'
+    st.equal(c.activeHardforks().length, 9, msg)
+
     st.end()
   })
 
