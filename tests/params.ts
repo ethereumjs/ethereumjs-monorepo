@@ -55,7 +55,7 @@ tape('[Common]: Parameter access', function(t: tape.Test) {
 
   t.test('Parameter updates', function(st: tape.Test) {
     const c = new Common('mainnet')
-    let f = function() {
+    const f = function() {
       c.param('gasPrices', 'ecAdd', 'spuriousDragon')
     }
     let msg = 'Should throw for a value set on a later HF'

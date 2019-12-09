@@ -26,7 +26,7 @@ tape('[Common]: Initialization / Chain params', function(t: tape.Test) {
   t.test('Should initialize with supportedHardforks provided', function(st: tape.Test) {
     const c = new Common('mainnet', 'byzantium', ['byzantium', 'constantinople'])
     st.equal(c._isSupportedHardfork('byzantium'), true, 'should return true for supported HF')
-    let msg = 'should return false for unsupported HF'
+    const msg = 'should return false for unsupported HF'
     st.equal(c._isSupportedHardfork('spuriousDragon'), false, msg)
 
     st.end()
@@ -56,7 +56,7 @@ tape('[Common]: Initialization / Chain params', function(t: tape.Test) {
 
   t.test('Should provide correct access to chain parameters', function(st: tape.Test) {
     const c = new Common('mainnet')
-    let hash = '0xd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3'
+    const hash = '0xd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3'
     st.equal(c.genesis().hash, hash, 'should return correct genesis hash')
     st.equal(c.hardforks()[3]['block'], 2463000, 'should return correct hardfork data')
     st.equal(c.bootstrapNodes()[0].port, 30303, 'should return a bootstrap node array')

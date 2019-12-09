@@ -67,6 +67,12 @@
       "block": 6485846,
       "consensus": "pow",
       "finality": null
+    },
+    {
+      "name": "muirGlacier",
+      "block": 7117117,
+      "consensus": "pow",
+      "finality": null
     }
   ],
   "bootstrapNodes": [

@@ -60,8 +60,8 @@ tape('[Common]: Hardfork logic', function(t: tape.Test) {
 
   t.test('activeHardforks()', function(st: tape.Test) {
     let c = new Common('ropsten')
-    let msg = 'should return 8 active hardforks for Ropsten'
-    st.equal(c.activeHardforks().length, 8, msg)
+    let msg = 'should return 9 active hardforks for Ropsten'
+    st.equal(c.activeHardforks().length, 9, msg)
 
     msg = 'should return the correct HF data for Ropsten'
     st.equal(c.activeHardforks()[3]['name'], 'spuriousDragon', msg)
@@ -80,13 +80,25 @@ tape('[Common]: Hardfork logic', function(t: tape.Test) {
     msg = 'should return 2 active HFs when restricted to supported HFs'
     st.equal(c.activeHardforks(null, { onlySupported: true }).length, 2, msg)
 
+    c = new Common('mainnet')
+    msg = 'should return 10 active HFs for mainnet'
+    st.equal(c.activeHardforks().length, 10, msg)
+
+    c = new Common('rinkeby')
+    msg = 'should return 8 active HFs for rinkeby'
+    st.equal(c.activeHardforks().length, 8, msg)
+
+    c = new Common('goerli')
+    msg = 'should return 9 active HFs for goerli'
+    st.equal(c.activeHardforks().length, 9, msg)
+
     st.end()
   })
 
   t.test('activeHardfork()', function(st: tape.Test) {
     let c = new Common('ropsten')
-    let msg = 'should return istanbul as latest active HF for Ropsten'
-    st.equal(c.activeHardfork(), 'istanbul', msg)
+    let msg = 'should return muirGlacier as latest active HF for Ropsten'
+    st.equal(c.activeHardfork(), 'muirGlacier', msg)
 
     msg = 'should return spuriousDragon as latest active HF for Ropsten for block 10'
     st.equal(c.activeHardfork(10), 'spuriousDragon', msg)
@@ -94,6 +106,10 @@ tape('[Common]: Hardfork logic', function(t: tape.Test) {
     c = new Common('ropsten', null, ['tangerineWhistle', 'spuriousDragon'])
     msg = 'should return spuriousDragon as latest active HF for Ropsten with limited supported HFs'
     st.equal(c.activeHardfork(null, { onlySupported: true }), 'spuriousDragon', msg)
+
+    c = new Common('rinkeby')
+    msg = 'should return Istanbul as latest active HF for Rinkeby'
+    st.equal(c.activeHardfork(), 'istanbul', msg)
 
     st.end()
   })
@@ -160,6 +176,14 @@ tape('[Common]: Hardfork logic', function(t: tape.Test) {
 
     msg = 'Ropsten, byzantium (set) >= constantinople -> false'
     st.equal(c.hardforkGteHardfork(null, 'constantinople'), false, msg)
+
+    st.end()
+  })
+
+  t.test('hardforkGteHardfork() ropsten', function(st: tape.Test) {
+    const c = new Common('ropsten')
+    const msg = 'ropsten, spuriousDragon >= muirGlacier (provided) -> false'
+    st.equal(c.hardforkGteHardfork('spuriousDragon', 'muirGlacier'), false, msg)
 
     st.end()
   })
