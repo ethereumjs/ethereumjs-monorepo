@@ -4,16 +4,16 @@ module.exports = function(config) {
     frameworks: ['browserify', 'detectBrowsers', 'tap'],
     files: ['./test-build/test/index.js'],
     preprocessors: {
-      './test-build/**/*.js': ['browserify']
+      './test-build/**/*.js': ['browserify'],
     },
-    reporters: ["dots"],
+    reporters: ['dots'],
     singleRun: true,
     detectBrowsers: {
       enabled: true,
       usePhantomJS: false,
       postDetection: function(availableBrowsers) {
-        return ['Firefox']
+        return ['FirefoxHeadless']
       },
-    }
+    },
   })
 }
