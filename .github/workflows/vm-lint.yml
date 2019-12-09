@@ -1,0 +1,15 @@
+name: vm-lint
+on: [push]
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/setup-node@v1
+        with:
+          node-version: 8.x
+
+      - uses: actions/checkout@v1
+      - run: npm install
+      - run: npm run lint
+        env:
+          CI: true

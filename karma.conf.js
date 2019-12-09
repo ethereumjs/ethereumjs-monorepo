@@ -1,9 +1,8 @@
 // Karma configuration
 // Generated on Fri Mar 01 2019 22:02:29 GMT+0100 (CET)
 
-module.exports = function (config) {
+module.exports = function(config) {
   config.set({
-
     // base path that will be used to resolve all patterns (eg. files, exclude)
     basePath: '',
 
@@ -12,19 +11,17 @@ module.exports = function (config) {
     frameworks: ['browserify', 'detectBrowsers', 'tap'],
 
     // list of files / patterns to load in the browser
-    files: [
-      './tests/api/**/*.js'
-    ],
+    files: ['./tests/api/**/*.js'],
 
     // list of files / patterns to exclude
     exclude: [
-      './tests/api/state/stateManager.js' // 4, "# should clear the cache when the state root is set"
+      './tests/api/state/stateManager.js', // 4, "# should clear the cache when the state root is set"
     ],
 
     // preprocess matching files before serving them to the browser
     // available preprocessors: https://npmjs.org/browse/keyword/karma-preprocessor
     preprocessors: {
-      './tests/api/**/*.js': [ 'browserify' ]
+      './tests/api/**/*.js': ['browserify'],
     },
 
     // test results reporter to use
@@ -47,7 +44,7 @@ module.exports = function (config) {
 
     // start these browsers
     // available browser launchers: https://npmjs.org/browse/keyword/karma-launcher
-    browsers: ['Firefox'],
+    browsers: ['FirefoxHeadless'],
 
     // Continuous Integration mode
     // if true, Karma captures browsers, runs the tests and exits
@@ -57,9 +54,9 @@ module.exports = function (config) {
     detectBrowsers: {
       enabled: true,
       usePhantomJS: false,
-      postDetection: function (availableBrowsers) {
-        return [ 'Firefox' ]
-      }
+      postDetection: function(availableBrowsers) {
+        return ['FirefoxHeadless']
+      },
     },
 
     // Concurrency level
@@ -68,6 +65,6 @@ module.exports = function (config) {
 
     // Fail after timeout
     browserDisconnectTimeout: 100000,
-    browserNoActivityTimeout: 100000
+    browserNoActivityTimeout: 100000,
   })
 }
