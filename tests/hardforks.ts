@@ -107,6 +107,10 @@ tape('[Common]: Hardfork logic', function(t: tape.Test) {
     msg = 'should return spuriousDragon as latest active HF for Ropsten with limited supported HFs'
     st.equal(c.activeHardfork(null, { onlySupported: true }), 'spuriousDragon', msg)
 
+    c = new Common('rinkeby')
+    msg = 'should return Istanbul as latest active HF for Rinkeby'
+    st.equal(c.activeHardfork(), 'istanbul', msg)
+
     st.end()
   })
 
