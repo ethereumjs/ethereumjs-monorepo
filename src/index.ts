@@ -643,7 +643,7 @@ export default class Blockchain implements BlockchainInterface {
    *
    * @param blockId - The block's hash or number
    * @param maxBlocks - Max number of blocks to return
-   * @param skip - Number of blocks to skip
+   * @param skip - Number of blocks to skip apart
    * @param reverse - Fetch blocks in reverse
    * @param cb - The callback. It is given two parameters `err` and the found `blocks` if any.
    */
