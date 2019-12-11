@@ -6,6 +6,21 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [1.5.0] - 2019-12-10
+
+Support for the `MuirGlacier` HF
+([EIP-2387](https://eips.ethereum.org/EIPS/eip-2387)) scheduled for January 2020
+delaying the difficulty bomb.
+
+Changes:
+
+- Implemented [EIP-2384](https://eips.ethereum.org/EIPS/eip-2384) Difficulty
+  Bomb Delay, PR [#75](https://github.com/ethereumjs/ethereumjs-common/pull/75)
+- Consistent genesis account balance format, converted from decimal to hex
+  where necessary, PR [#73](https://github.com/ethereumjs/ethereumjs-common/pull/73)
+
+[1.5.0]: https://github.com/ethereumjs/ethereumjs-common/compare/v1.4.0...v1.5.0
+
 ## [1.4.0] - 2019-11-05
 
 First release with full `Istanbul` support regarding parameter introductions/updates
