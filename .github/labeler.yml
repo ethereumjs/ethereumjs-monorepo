@@ -1,0 +1,23 @@
+'package: account':
+  - package/account/*
+  - package/account/**/*
+
+'package: block':
+  - package/block/*
+  - package/block/**/*
+
+'package: blockchain':
+  - package/blockchain/*
+  - package/blockchain/**/*
+
+'package: common':
+  - package/common/*
+  - package/common/**/*
+
+'package: tx':
+  - package/tx/*
+  - package/tx/**/*
+
+'package: vm':
+  - package/vm/*
+  - package/vm/**/*
