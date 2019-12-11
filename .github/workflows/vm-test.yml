@@ -51,27 +51,10 @@ jobs:
       - run: npm install
         if: steps.cache-node-modules.outputs.cache-hit != 'true'
 
-      - run: mkdir -p tests/tape
-
       - name: Run ${{ matrix.hardfork }} state tests
-        run: |
-          npm run ${{ format('testState{0}', matrix.hardfork) }} | tee -a ${{ format('testState{0}.tap', matrix.hardfork) }};
-          cat ${{ format('testState{0}.tap', matrix.hardfork) }} | npx tap-xunit > ${{ format('testState{0}.xml', matrix.hardfork) }}
+        run: npm run ${{ format('testState{0}', matrix.hardfork) }}
         env:
           CI: true
-
-      - name: Upload ${{ matrix.hardfork }} state test metadata (if failure)
-        uses: actions/upload-artifact@v1
-        if: failure()
-        with:
-          name: ${{ format('vmTestState{0}', matrix.hardfork) }}
-          path: ${{ format('tests/tape/testState{0}.xml', matrix.hardfork) }}
-
-      - name: Upload state test metadata
-        uses: actions/upload-artifact@v1
-        with:
-          name: vmTestStateMetadata
-          path: tests/tape
 
   test-blockchain:
     runs-on: ubuntu-latest
@@ -96,24 +79,7 @@ jobs:
       - run: npm install
         if: steps.cache-node-modules.outputs.cache-hit != 'true'
 
-      - run: mkdir -p tests/tape
-
       - name: Run ${{ matrix.hardfork }} blockchain state tests
-        run: |
-          npm run ${{ format('testBlockchain{0}', matrix.hardfork) }} | tee -a ${{ format('testBlockchain{0}.tap', matrix.hardfork) }};
-          cat ${{ format('testBlockchain{0}.tap', matrix.hardfork) }} | npx tap-xunit > ${{ format('tests/tape/testBlockchain{0}.xml', matrix.hardfork) }}
+        run: npm run ${{ format('testBlockchain{0}', matrix.hardfork) }}
         env:
           CI: true
-
-      - name: Upload ${{ matrix.hardfork }} blockchain state test metadata (if failure)
-        uses: actions/upload-artifact@v1
-        if: failure()
-        with:
-          name: ${{ format('vmTestBlockchainState{0}', matrix.hardfork) }}
-          path: ${{ format('tests/tape/testBlockchain{0}.xml', matrix.hardfork) }}
-
-      - name: Upload blockhain state test metadata
-        uses: actions/upload-artifact@v1
-        with:
-          name: vmTestBlockchainStateMetadata
-          path: tests/tape
