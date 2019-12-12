@@ -1,5 +1,6 @@
 # SYNOPSIS
 
+[![NPM Package](https://img.shields.io/npm/v/ethereumjs-common.svg?style=flat-square)](https://www.npmjs.org/package/ethereumjs-common)
 [![Build Status](https://travis-ci.org/ethereumjs/ethereumjs-common.svg?branch=master)](https://travis-ci.org/ethereumjs/ethereumjs-common)
 [![Actions Status](https://github.com/ethereumjs/ethereumjs-common/workflows/common-test/badge.svg)](https://github.com/ethereumjs/ethereumjs-common/actions)
 [![Coverage Status](https://img.shields.io/coveralls/ethereumjs/ethereumjs-common.svg?style=flat-square)](https://coveralls.io/r/ethereumjs/ethereumjs-common)
