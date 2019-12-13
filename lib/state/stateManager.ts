@@ -110,7 +110,7 @@ export default class StateManager {
 
   /**
    * Marks an account as touched, according to the definition
-   * in [EIP-158](https://github.com/ethereum/EIPs/issues/158).
+   * in [EIP-158](https://eips.ethereum.org/EIPS/eip-158).
    * This happens when the account is triggered for a state-changing
    * event. Touched accounts that are empty will be cleared
    * at the end of the tx.
@@ -385,7 +385,7 @@ export default class StateManager {
       throw new Error('Reverting to invalid state checkpoint failed')
     }
     // Exceptional case due to consensus issue in Geth and Parity.
-    // See [EIP-716](https://github.com/ethereum/EIPs/issues/716) for context.
+    // See [EIP issue #716](https://github.com/ethereum/EIPs/issues/716) for context.
     // The RIPEMD precompile has to remain *touched* even when the call reverts,
     // and be considered for deletion.
     if (this._touched.has(ripemdPrecompileAddress)) {
@@ -566,7 +566,7 @@ export default class StateManager {
 
   /**
    * Checks if the `account` corresponding to `address` is empty as defined in
-   * EIP-161 (https://github.com/ethereum/EIPs/blob/master/EIPS/eip-161.md).
+   * EIP-161 (https://eips.ethereum.org/EIPS/eip-161).
    * @param address - Address to check
    * @param {accountIsEmpty~callback} cb
    */
@@ -588,7 +588,7 @@ export default class StateManager {
 
   /**
    * Removes accounts form the state trie that have been touched,
-   * as defined in EIP-161 (https://github.com/ethereum/EIPs/blob/master/EIPS/eip-161.md).
+   * as defined in EIP-161 (https://eips.ethereum.org/EIPS/eip-161).
    * @param cb - Callback function
    */
   cleanupTouchedAccounts(cb: any): void {

@@ -221,7 +221,7 @@ ___
 
 *Defined in [state/stateManager.ts:554](https://github.com/ethereumjs/ethereumjs-vm/blob/439570a/lib/state/stateManager.ts#L554)*
 
-Checks if the `account` corresponding to `address` is empty as defined in EIP-161 ([https://github.com/ethereum/EIPs/blob/master/EIPS/eip-161.md)](https://github.com/ethereum/EIPs/blob/master/EIPS/eip-161.md)).
+Checks if the `account` corresponding to `address` is empty as defined in [EIP-161](https://eips.ethereum.org/EIPS/eip-161).
 
 **Parameters:**
 
@@ -260,7 +260,7 @@ ___
 
 *Defined in [state/stateManager.ts:575](https://github.com/ethereumjs/ethereumjs-vm/blob/439570a/lib/state/stateManager.ts#L575)*
 
-Removes accounts form the state trie that have been touched, as defined in EIP-161 ([https://github.com/ethereum/EIPs/blob/master/EIPS/eip-161.md)](https://github.com/ethereum/EIPs/blob/master/EIPS/eip-161.md)).
+Removes accounts form the state trie that have been touched, as defined in [EIP-161](https://eips.ethereum.org/EIPS/eip-161).
 
 **Parameters:**
 
