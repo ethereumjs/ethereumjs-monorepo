@@ -49,7 +49,7 @@ jobs:
           key: ${{ runner.os }}-node8-${{ hashFiles('**/package.json') }}
 
       - run: npm install
-        if: steps.cache-node-modules.outputs.cache-hit != 'true''
+        if: steps.cache-node-modules.outputs.cache-hit != 'true'
 
       - run: mkdir -p tests/tape
 
