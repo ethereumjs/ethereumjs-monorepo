@@ -1,5 +1,5 @@
 name: blockchain-coverage
-on: [push]
+on: [push, pull_request]
 jobs:
   coverage:
     runs-on: ubuntu-latest
