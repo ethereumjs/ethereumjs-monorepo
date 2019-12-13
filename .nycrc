@@ -1,3 +1,6 @@
 {
-  "extends": "@ethereumjs/config-nyc"
+  "extends": "@ethereumjs/config-nyc",
+  "include": [
+    "dist/**/*.js"
+  ]
 }
