@@ -23,7 +23,7 @@ This module work with `browserify`.
 
 Tests in the `tests` directory are partly outdated and testing is primarily done by running the `BlockchainTests` from within the [ethereumjs-vm](https://github.com/ethereumjs/ethereumjs-vm) repository.
 
-To avoid bloating this repository with [ethereum/test](https://github.com/ethereum/tests) JSON files, we usually copy specific JSON files and wrap them with some metadata (source, date, commit hash). There's a helper to aid on that process and can be found at [wrap-ethereum-test.sh](https://github.com/ethereumjs/ethereumjs-block/blob/master/scripts/wrap-ethereum-test.sh).
+To avoid bloating this repository with [ethereum/tests](https://github.com/ethereum/tests) JSON files, we usually copy specific JSON files and wrap them with some metadata (source, date, commit hash). There's a helper to aid on that process and can be found at [wrap-ethereum-test.sh](https://github.com/ethereumjs/ethereumjs-block/blob/master/scripts/wrap-ethereum-test.sh).
 
 # EthereumJS
 
