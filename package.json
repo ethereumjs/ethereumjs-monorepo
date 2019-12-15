@@ -46,7 +46,7 @@
   "homepage": "https://github.com/ethereumjs/ethereumjs-block#readme",
   "dependencies": {
     "@types/bn.js": "^4.11.5",
-    "ethereumjs-common": "^1.3.0",
+    "ethereumjs-common": "^1.5.0",
     "ethereumjs-tx": "^2.1.1",
     "ethereumjs-util": "^6.1.0",
     "merkle-patricia-tree": "^2.1.2"
