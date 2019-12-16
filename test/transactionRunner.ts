@@ -36,14 +36,12 @@ tape('TransactionTests', t => {
       'TransactionTests',
       (_filename: string, testName: string, testData: OfficialTransactionTestData) => {
         t.test(testName, st => {
-          const rawTx = toBuffer(testData.rlp)
-
-          let tx
           forkNames.forEach(forkName => {
             const forkTestData = testData[forkName]
             const shouldBeInvalid = Object.keys(forkTestData).length === 0
             try {
-              tx = new Tx(rawTx, {
+              const rawTx = toBuffer(testData.rlp)
+              const tx = new Tx(rawTx, {
                 hardfork: forkNameMap[forkName],
                 chain: 1,
               })
