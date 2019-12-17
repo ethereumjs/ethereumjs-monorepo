@@ -61,3 +61,15 @@ jobs:
         run: npm run ${{ format('testBlockchain{0}', matrix.hardfork) }}
         env:
           CI: true
+
+  slow-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/setup-node@v1
+        with:
+          node-version: 8.x
+      - uses: actions/checkout@v1
+      - run: npm install
+      - run: npm run testStateIstanbul -- --runSkipped=SLOW
+        env:
+          CI: true
