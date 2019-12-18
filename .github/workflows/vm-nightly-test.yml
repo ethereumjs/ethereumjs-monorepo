@@ -9,16 +9,12 @@ jobs:
       - uses: actions/setup-node@v1
         with:
           node-version: 8.x
-
       - uses: actions/checkout@v1
-
       - run: npm install
-
-      - run: npm run testAPI
+      - run: npm run test:API
         env:
           CI: true
-
-      - run: npm run testAPI:browser
+      - run: npm run test:API:browser
         env:
           CI: true
 
@@ -27,18 +23,13 @@ jobs:
     strategy:
       matrix:
         hardfork: ['Byzantium', 'Constantinople', 'Petersburg', 'Istanbul']
-
     steps:
       - uses: actions/setup-node@v1
         with:
           node-version: 8.x
-
       - uses: actions/checkout@v1
-
       - run: npm install
-
-      - name: Run ${{ matrix.hardfork }} state tests
-        run: npm run ${{ format('testState{0}', matrix.hardfork) }}
+      - run: npm run test:state -- --fork=${{matrix.hardfork}}
         env:
           CI: true
 
@@ -46,18 +37,25 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        hardfork: ['', 'Petersburg']
-
+        hardfork: ['Byzantium', 'Constantinople', 'Petersburg', 'Istanbul']
     steps:
       - uses: actions/setup-node@v1
         with:
           node-version: 8.x
-
       - uses: actions/checkout@v1
-
       - run: npm install
+      - run: npm run test:blockchain -- --fork=${{matrix.hardfork}}
+        env:
+          CI: true
 
-      - name: Run ${{ matrix.hardfork }} blockchain state tests
-        run: npm run ${{ format('testBlockchain{0}', matrix.hardfork) }}
+  slow-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/setup-node@v1
+        with:
+          node-version: 8.x
+      - uses: actions/checkout@v1
+      - run: npm install
+      - run: npm run test:state:slow
         env:
           CI: true

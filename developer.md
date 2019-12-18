@@ -4,24 +4,36 @@
 
 ### Running Tests
 
-Tests can be found in the `tests` directory, with `FORK_CONFIG` set in `tests/tester.js`. There are test runners for [State tests](http://www.ethdocs.org/en/latest/contracts-and-transactions/ethereum-tests/state_tests/index.html) and [Blockchain tests](http://www.ethdocs.org/en/latest/contracts-and-transactions/ethereum-tests/blockchain_tests/index.html). VM tests are disabled since Frontier gas costs are not supported any more. Tests are then executed by the [ethereumjs-testing](https://github.com/ethereumjs/ethereumjs-testing) utility library using the official client-independent [Ethereum tests](https://github.com/ethereum/tests).
+Tests can be found in the `tests` directory. There are test runners for [State tests](http://www.ethdocs.org/en/latest/contracts-and-transactions/ethereum-tests/state_tests/index.html) and [Blockchain tests](http://www.ethdocs.org/en/latest/contracts-and-transactions/ethereum-tests/blockchain_tests/index.html). VM tests are disabled since Frontier gas costs are not supported any more. Tests are then executed by the [ethereumjs-testing](https://github.com/ethereumjs/ethereumjs-testing) utility library using the official client-independent [Ethereum tests](https://github.com/ethereum/tests).
 
-For a wider picture about how to use tests to implement EIPs you can have a look at this [reddit post](https://www.reddit.com/r/ethereum/comments/6kc5g3/ethereumjs_team_is_seeking_contributors/)
-or the associated YouTube video introduction to [core development with Ethereumjs-vm](https://www.youtube.com/watch?v=L0BVDl6HZzk&feature=youtu.be).
+For a wider picture about how to use tests to implement EIPs you can have a look at this [Reddit post](https://www.reddit.com/r/ethereum/comments/6kc5g3/ethereumjs_team_is_seeking_contributors/)
+or the associated YouTube video introduction to [Core Development with Ethereumjs-vm](https://www.youtube.com/watch?v=L0BVDl6HZzk).
 
 #### Running different Test Types
 
 Running the State tests:
 
-`node ./tests/tester -s`
+`node ./tests/tester --state`
 
 Running the Blockchain tests:
 
-`node ./tests/tester -b`
+`node ./tests/tester --blockchain`
 
-State tests and Blockchain tests can also be run against the `dist` folder (default: `lib`):
+Tests run against source by default. They can be run with the `--dist` flag:
 
-`node ./tests/tester -b --dist`
+`npm run build:dist && node ./tests/tester --state --dist`
+
+See `package.json` for all the scripts in the `test:` namespace, such as `npm run test:state` which would execute the above.
+
+Use `--fork` to pass in the desired hardfork:
+
+`node ./tests/tester --state --fork='Constantinople'`
+
+or
+
+`npm run test:state -- --fork='Constantinople'`
+
+By default it is set to use the latest hardfork (`FORK_CONFIG` in `tests/tester.js`).
 
 State tests run significantly faster than Blockchain tests, so it is often a good choice to start fixing State tests.
 
@@ -29,24 +41,24 @@ State tests run significantly faster than Blockchain tests, so it is often a goo
 
 Running all the blockchain tests in a file:
 
-`node ./tests/tester -b --file='randomStatetest303'`
+`node ./tests/tester --blockchain --file='randomStatetest303'`
 
 Running tests from a specific directory:
 
-`node ./tests/tester -b --dir='bcBlockGasLimitTest'`
+`node ./tests/tester --blockchain --dir='bcBlockGasLimitTest'`
 
 Running a specific state test case:
 
-`node ./tests/tester -s --test='stackOverflow'`
+`node ./tests/tester --state --test='stackOverflow'`
 
 Only run test cases with selected `data`, `gas` and/or `value` values (see
 [attribute description](http://ethereum-tests.readthedocs.io/en/latest/test_types/state_tests.html) in
 test docs), provided by the index of the array element in the test `transaction` section:
 
-`node tests/tester -s --test='CreateCollisionToEmpty' --data=0 --gas=1 --value=0`
+`node ./tests/tester --state --test='CreateCollisionToEmpty' --data=0 --gas=1 --value=0`
 
 Run a state test from a specified source file not under the `tests` directory:
-`node ./tests/tester -s --customStateTest='{path_to_file}'`
+`node ./tests/tester --state --customStateTest='{path_to_file}'`
 
 #### Running tests with a reporter/formatter
 
@@ -58,7 +70,7 @@ To pipe the results of the API tests through `tap-spec`:
 
 To pipe the results of tests run with a node command through `tap-spec`:
 
-`npm run formatTest -- -t "./tests/tester -b --dir='bcBlockGasLimitTest'"`
+`npm run formatTest -- -t "./tests/tester --blockchain --dir='bcBlockGasLimitTest'"`
 
 The `-with` flag allows the specification of a formatter of your choosing:
 
@@ -72,18 +84,18 @@ can be found in `tests/tester.js`. By default tests from all skip lists are omit
 
 You can change this behaviour with:
 
-`node tests/tester -s --skip=BROKEN,PERMANENT`
+`node ./tests/tester --state --skip=BROKEN,PERMANENT`
 
 to skip only the `BROKEN` and `PERMANENT` tests and include the `SLOW` tests.
 There are also the keywords `NONE` or `ALL` for convenience.
 
 It is also possible to only run the tests from the skip lists:
 
-`node tests/tester -s --runSkipped=SLOW`
+`node ./tests/tester --state --runSkipped=SLOW`
 
 ### CI Test Integration
 
-Tests are run on [Actions](https://github.com/ethereumjs/ethereumjs-vm/actions) on every PR, configuration can be found in `.github/workflows`.
+Tests and checks are run in CI using [Github Actions](https://github.com/ethereumjs/ethereumjs-vm/actions). The configuration can be found in `.github/workflows`.
 
 ### Debugging
 
@@ -93,7 +105,7 @@ For state tests you can use the `--jsontrace` flag to output opcode trace inform
 
 Blockchain tests support `--debug` to verify the postState:
 
-`node ./tests/tester -b --debug --test='ZeroValue_SELFDESTRUCT_ToOneStorageKey_OOGRevert_d0g0v0_EIP158'`
+`node ./tests/tester --blockchain --debug --test='ZeroValue_SELFDESTRUCT_ToOneStorageKey_OOGRevert_d0g0v0_EIP158'`
 
 All/most State tests are replicated as Blockchain tests in a `GeneralStateTests` [sub directory](https://github.com/ethereum/tests/tree/develop/BlockchainTests/GeneralStateTests) in the Ethereum tests repo, so for debugging single test cases the Blockchain test version of the State test can be used.
 
@@ -125,8 +137,8 @@ An extremely rich and powerful toolbox is the [evmlab](https://github.com/holima
 
 ## Profiling
 
-[Clinic](https://github.com/nearform/node-clinic) Allows profiling the VM in the node environment. It supports various profiling methods, among them is [flame](https://github.com/nearform/node-clinic-flame) which can be used for generating flamegraphs to highlight bottlenecks and hot paths. As an example, to generate a flamegraph for the VM blockchain tests, you can run:
+[Clinic](https://github.com/nearform/node-clinic) allows profiling the VM in the node environment. It supports various profiling methods, among them is [flame](https://github.com/nearform/node-clinic-flame) which can be used for generating flamegraphs to highlight bottlenecks and hot paths. As an example, to generate a flamegraph for the VM blockchain tests, you can run:
 
 ```sh
-NODE_OPTIONS="--max-old-space-size=4096" clinic flame -- node ./tests/tester.js -b --excludeDir='GeneralStateTests'
+NODE_OPTIONS="--max-old-space-size=4096" clinic flame -- node ./tests/tester.js --blockchain --excludeDir='GeneralStateTests'
 ```
