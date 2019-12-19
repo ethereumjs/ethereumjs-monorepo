@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [2.1.2] - 2019-12-19
+
+- Added support for the `MuirGlacier` HF by updating the `ethereumjs-common` dependency
+  to [v1.5.0](https://github.com/ethereumjs/ethereumjs-common/releases/tag/v1.5.0)
+
+[2.1.2]: https://github.com/ethereumjs/ethereumjs-tx/compare/v2.1.1...v2.1.2
+
 ## [2.1.1] - 2019-08-30
 
 - Added support for `Istanbul` reduced non-zero call data gas prices
