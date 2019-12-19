@@ -98,7 +98,13 @@ export default class VM extends AsyncEventEmitter {
     } else {
       const chain = opts.chain ? opts.chain : 'mainnet'
       const hardfork = opts.hardfork ? opts.hardfork : 'petersburg'
-      const supportedHardforks = ['byzantium', 'constantinople', 'petersburg', 'istanbul']
+      const supportedHardforks = [
+        'byzantium',
+        'constantinople',
+        'petersburg',
+        'istanbul',
+        'muirGlacier',
+      ]
 
       this._common = new Common(chain, hardfork, supportedHardforks)
     }
