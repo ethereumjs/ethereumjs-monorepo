@@ -45,6 +45,10 @@ using an object with `chain` and `hardfork` names. You can see en example of thi
 
 The second option is by passing the option `common` set to an instance of [ethereumjs-common](https://github.com/ethereumjs/ethereumjs-common)' Common. This is specially useful for custom networks or chains/hardforks not yet supported by `ethereumjs-common`. You can see en example of this in [./examples/custom-chain-tx.ts](./examples/custom-chain-tx.ts).
 
+## MuirGlacier Support
+
+The `MuirGlacier` hardfork is supported by the library since the `v2.1.2` release.
+
 ## Istanbul Support
 
 Support for reduced non-zero call data gas prices from the `Istanbul` hardfork
