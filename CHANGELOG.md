@@ -6,6 +6,20 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [4.0.3] - 2019-12-19
+
+Supports `MuirGlacier` by updating `ethereumjs-block` to
+[v2.2.2](https://github.com/ethereumjs/ethereumjs-block/releases/tag/v2.2.2)
+and `ethereumjs-common` to
+[v1.5.0](https://github.com/ethereumjs/ethereumjs-common/releases/tag/v1.5.0).
+
+This release comes also with a completely refactored test suite, see
+PR [#134](https://github.com/ethereumjs/ethereumjs-blockchain/pull/134).
+Tests are now less coupled and it gets easier to modify tests or extend
+the test suite.
+
+[4.0.3]: https://github.com/ethereumjs/ethereumjs-blockchain/compare/v4.0.2...v4.0.3
+
 ## [4.0.2] - 2019-11-15
 
 Supports Istanbul by updating `ethereumjs-block` to

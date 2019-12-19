@@ -871,11 +871,11 @@ test('blockchain test', t => {
   })
 
   t.test('mismatched chains', st => {
-    const common = new Common('rinkeby')
+    const common = new Common('mainnet')
     const blockchain = new Blockchain({ common: common, validateBlocks: true, validatePow: false })
     const blocks = [
       new Block(null, { common: common }),
-      new Block(null, { chain: 'rinkeby' }),
+      new Block(null, { chain: 'mainnet' }),
       new Block(null, { chain: 'ropsten' }),
     ]
 
