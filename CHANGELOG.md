@@ -6,6 +6,31 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [4.1.2] - 2019-12-19
+
+Release adds support for the `MuirGlacier` hardfork by updating relevant
+dependencies:
+
+- `ethereumjs-tx`:
+  [v2.1.2](https://github.com/ethereumjs/ethereumjs-tx/releases/tag/v2.1.2)
+- `ethereumjs-block`:
+  [v2.2.2](https://github.com/ethereumjs/ethereumjs-block/releases/tag/v2.2.2)
+- `ethereumjs-blockchain`:
+  [v4.0.3](https://github.com/ethereumjs/ethereumjs-blockchain/releases/tag/v4.0.3)
+- `ethereumjs-common`:
+  [v1.5.0](https://github.com/ethereumjs/ethereumjs-common/releases/tag/v1.5.0)
+
+Other changes:
+
+- Upgraded `ethereumjs-util` to `v6.2.0`,
+  PR [#621](https://github.com/ethereumjs/ethereumjs-vm/pull/621)
+- Removed outdated cb param definition in `runBlockchain`,
+  PR [#623](https://github.com/ethereumjs/ethereumjs-vm/pull/623)
+- Properly output zero balance in `examples/run-transactions-complete`,
+  PR [#624](https://github.com/ethereumjs/ethereumjs-vm/pull/624)
+
+[4.1.2]: https://github.com/ethereumjs/ethereumjs-vm/compare/v4.1.1...v4.1.2
+
 ## [4.1.1] - 2019-11-19
 
 First stable `Istanbul` release passing all `StateTests` and `BlockchainTests`
