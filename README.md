@@ -17,8 +17,15 @@ The VM currently supports the following hardfork rules:
 - `Constantinople`
 - `Petersburg` (default)
 - `Istanbul`
+- `MuirGlacier` (only `mainnet` and `ropsten`)
 
 If you are still looking for a [Spurious Dragon](https://github.com/ethereum/EIPs/blob/master/EIPS/eip-607.md) compatible version of this library install the latest of the `2.2.x` series (see [Changelog](./CHANGELOG.md)).
+
+##### MuirGlacier Hardfork Support
+
+An Ethereum test suite compliant `MuirGlacier` HF implementation is available
+since the `v4.1.2` VM release. You can activate a `MuirGlacier` VM by using the
+`muirGlacier` `hardfork` option flag.
 
 ##### Istanbul Harfork Support
 
