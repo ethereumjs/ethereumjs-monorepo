@@ -1,4 +1,4 @@
-name: vm-test
+name: 'VM Test'
 on: [push, pull_request]
 jobs:
   test-api:
@@ -30,10 +30,6 @@ jobs:
 
   test-state:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        hardfork: ['Byzantium', 'Constantinople', 'Petersburg', 'Istanbul']
-
     steps:
       - uses: actions/setup-node@v1
         with:
@@ -51,16 +47,12 @@ jobs:
       - run: npm install
         if: steps.cache-node-modules.outputs.cache-hit != 'true'
 
-      - run: npm run test:state -- --fork=${{matrix.hardfork}}
+      - run: npm run test:state:allForks
         env:
           CI: true
 
   test-blockchain:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        hardfork: ['Byzantium', 'Constantinople', 'Petersburg', 'Istanbul']
-
     steps:
       - uses: actions/setup-node@v1
         with:
@@ -78,6 +70,6 @@ jobs:
       - run: npm install
         if: steps.cache-node-modules.outputs.cache-hit != 'true'
 
-      - run: npm run test:blockchain -- --fork=${{matrix.hardfork}}
+      - run: npm run test:blockchain
         env:
           CI: true

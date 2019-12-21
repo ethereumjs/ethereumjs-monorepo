@@ -1,4 +1,4 @@
-name: vm-coverage
+name: 'VM Coverage'
 on: [push, pull_request]
 jobs:
   coverage:
@@ -21,9 +21,8 @@ jobs:
         if: steps.cache-node-modules.outputs.cache-hit != 'true'
 
       - run: npm run coverage
-      - run: npm run coveralls
 
-      - name: Post coverage data to coveralls.io for analysis
+      - name: Post coverage data to Coveralls
         uses: coverallsapp/github-action@master
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}

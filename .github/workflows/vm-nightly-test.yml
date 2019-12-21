@@ -1,4 +1,4 @@
-name: vm-nightly-test # without caching
+name: 'VM Nightly Test' # without caching
 on:
   schedule:
     - cron: '0 0 * * *' # once a day at midnight
@@ -20,31 +20,25 @@ jobs:
 
   test-state:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        hardfork: ['Byzantium', 'Constantinople', 'Petersburg', 'Istanbul']
     steps:
       - uses: actions/setup-node@v1
         with:
           node-version: 8.x
       - uses: actions/checkout@v1
       - run: npm install
-      - run: npm run test:state -- --fork=${{matrix.hardfork}}
+      - run: npm run test:state:allForks
         env:
           CI: true
 
   test-blockchain:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        hardfork: ['Byzantium', 'Constantinople', 'Petersburg', 'Istanbul']
     steps:
       - uses: actions/setup-node@v1
         with:
           node-version: 8.x
       - uses: actions/checkout@v1
       - run: npm install
-      - run: npm run test:blockchain -- --fork=${{matrix.hardfork}}
+      - run: npm run test:blockchain
         env:
           CI: true
 
