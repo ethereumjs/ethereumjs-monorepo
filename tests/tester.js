@@ -4,19 +4,17 @@ const argv = require('minimist')(process.argv.slice(2))
 const tape = require('tape')
 const testing = require('ethereumjs-testing')
 const FORK_CONFIG = argv.fork || 'Istanbul'
-const {
-  getRequiredForkConfigAlias
-} = require('./util')
+const { getRequiredForkConfigAlias } = require('./util')
 // tests which should be fixed
 const skipBroken = [
-  'dynamicAccountOverwriteEmpty' // temporary till fixed (2019-01-30), skipped along constantinopleFix work time constraints
+  'dynamicAccountOverwriteEmpty', // temporary till fixed (2019-01-30), skipped along constantinopleFix work time constraints
 ]
 // tests skipped due to system specifics / design considerations
 const skipPermanent = [
   'SuicidesMixingCoinbase', // sucides to the coinbase, since we run a blockLevel we create coinbase account.
   'static_SuicidesMixingCoinbase', // sucides to the coinbase, since we run a blockLevel we create coinbase account.
   'ForkUncle', // Only BlockchainTest, correct behaviour unspecified (?)
-  'UncleFromSideChain' // Only BlockchainTest, same as ForkUncle, the TD is the same for two diffent branches so its not clear which one should be the finally chain
+  'UncleFromSideChain', // Only BlockchainTest, same as ForkUncle, the TD is the same for two diffent branches so its not clear which one should be the finally chain
 ]
 // tests running slow (run from time to time)
 const skipSlow = [
@@ -53,7 +51,7 @@ const skipSlow = [
   'static_Return50000_2', // slow
   'QuadraticComplexitySolidity_CallDataCopy',
   'CALLBlake2f_MaxRounds',
-  'randomStatetest94_Istanbul'
+  'randomStatetest94_Istanbul',
 ]
 
 /*
@@ -101,54 +99,18 @@ const skipVM = [
   'callstatelessToNameRegistrator0',
   'callstatelessToReturn1',
   'createNameRegistrator',
-  'randomTest643' // TODO fix this
+  'randomTest643', // TODO fix this
 ]
 
-if (argv.r) {
-  randomized(argv.r, argv.v)
-} else if (argv.s) {
+if (argv.state) {
   runTests('GeneralStateTests', argv)
-} else if (argv.v) {
-  runTests('VMTests', argv)
-} else if (argv.b) {
+} else if (argv.blockchain) {
   runTests('BlockchainTests', argv)
+} else if (argv.vm) {
+  runTests('VMTests', argv)
 }
 
-// randomized tests
-// returns 1 if the tests fails
-// returns 0 if the tests succeds
-function randomized (stateTest) {
-  const stateRunner = require('./stateRunner.js')
-  let errored = false
-
-  tape.createStream({
-    objectMode: true
-  }).on('data', function (row) {
-    if (row.ok === false && !errored) {
-      errored = true
-      process.stdout.write('1')
-      process.exit()
-    }
-  }).on('end', function () {
-    process.stdout.write('0')
-  })
-
-  try {
-    stateTest = JSON.parse(stateTest)
-  } catch (e) {
-    console.error('invalid json')
-    process.exit()
-  }
-
-  var keys = Object.keys(stateTest)
-  stateTest = stateTest[keys[0]]
-
-  tape('', t => {
-    stateRunner({}, stateTest, t, t.end)
-  })
-}
-
-function getSkipTests (choices, defaultChoice) {
+function getSkipTests(choices, defaultChoice) {
   let skipTests = []
   if (!choices) {
     choices = defaultChoice
@@ -170,7 +132,7 @@ function getSkipTests (choices, defaultChoice) {
   return skipTests
 }
 
-function runTests (name, runnerArgs, cb) {
+function runTests(name, runnerArgs, cb) {
   let testGetterArgs = {}
 
   testGetterArgs.skipTests = getSkipTests(argv.skip, argv.runSkipped ? 'NONE' : 'ALL')
@@ -219,28 +181,34 @@ function runTests (name, runnerArgs, cb) {
       if (runnerArgs.forkConfig !== 'Istanbul') {
         name = 'LegacyTests/Constantinople/'.concat(name)
       }
-      testing.getTestsFromArgs(name, (fileName, testName, test) => {
-        return new Promise((resolve, reject) => {
-          if (name === 'VMTests') {
-            // suppress some output of VMTests
-            // t.comment(`file: ${fileName} test: ${testName}`)
-            test.fileName = fileName
-            test.testName = testName
-            runner(runnerArgs, test, t, resolve)
-          } else {
-            let runSkipped = testGetterArgs.runSkipped
-            let inRunSkipped = runSkipped.includes(fileName)
-            if (runSkipped.length === 0 || inRunSkipped) {
-              t.comment(`file: ${fileName} test: ${testName}`)
-              runner(runnerArgs, test, t, resolve)
-            } else {
-              resolve()
-            }
-          }
-        }).catch(err => console.log(err))
-      }, testGetterArgs).then(() => {
-        t.end()
-      })
+      testing
+        .getTestsFromArgs(
+          name,
+          (fileName, testName, test) => {
+            return new Promise((resolve, reject) => {
+              if (name === 'VMTests') {
+                // suppress some output of VMTests
+                // t.comment(`file: ${fileName} test: ${testName}`)
+                test.fileName = fileName
+                test.testName = testName
+                runner(runnerArgs, test, t, resolve)
+              } else {
+                let runSkipped = testGetterArgs.runSkipped
+                let inRunSkipped = runSkipped.includes(fileName)
+                if (runSkipped.length === 0 || inRunSkipped) {
+                  t.comment(`file: ${fileName} test: ${testName}`)
+                  runner(runnerArgs, test, t, resolve)
+                } else {
+                  resolve()
+                }
+              }
+            }).catch(err => console.log(err))
+          },
+          testGetterArgs,
+        )
+        .then(() => {
+          t.end()
+        })
     })
   }
 }
