@@ -1,4 +1,4 @@
-name: vm-lint
+name: 'VM Lint'
 on: [push, pull_request]
 jobs:
   lint:
