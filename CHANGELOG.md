@@ -52,7 +52,7 @@ you upgrade from the first `beta` `Istanbul` release `v4.1.0`.
 - Fixed issues causing `RevertPrecompiled*` test failures
 - Fixed an issue where the `RIPEMD` precompile has to remain _touched_ even
   when the call reverts and be considered for deletion,
-  see [EIP-716](https://github.com/ethereum/EIPs/issues/716) for context
+  see [EIP issue #716](https://github.com/ethereum/EIPs/issues/716) for context
 - Updated `ethereumjs-block` to `v2.2.1`
 - Updated `ethereumjs-blockchain` to `v4.0.2`
 - Limited `ethereumjs-util` from `^6.1.0` to `~6.1.0`
@@ -91,7 +91,7 @@ on all the changes.
 
 Added EIPs:
 
-- [EIP-152](https://github.com/ethereum/EIPs/pull/2129): Blake 2b `F` precompile,
+- [EIP-152](https://eips.ethereum.org/EIPS/eip-152): Blake 2b `F` precompile,
   PR [#584](https://github.com/ethereumjs/ethereumjs-vm/pull/584)
 - [EIP-1108](https://eips.ethereum.org/EIPS/eip-1108): Reduce `alt_bn128`
   precompile gas costs,  
@@ -102,7 +102,7 @@ Added EIPs:
 - [EIP-1884](https://eips.ethereum.org/EIPS/eip-1884): Trie-size-dependent
   Opcode Repricing,
   PR [#581](https://github.com/ethereumjs/ethereumjs-vm/pull/581)
-- [EIP-2200](https://github.com/ethereum/EIPs/pull/2200): Rebalance net-metered
+- [EIP-2200](https://eips.ethereum.org/EIPS/eip-2200): Rebalance net-metered
   SSTORE gas costs,
   PR [#590](https://github.com/ethereumjs/ethereumjs-vm/pull/590)
 
@@ -642,7 +642,7 @@ Thank you all very much, and thanks @axic for keeping an ongoing eye on overall 
 ## [2.4.0] - 2018-07-27
 
 With the `2.4.x` release series we now start to gradually add `Constantinople` features with the
-bitwise shifting instructions from [EIP 145](https://github.com/ethereum/EIPs/blob/master/EIPS/eip-145.md)
+bitwise shifting instructions from [EIP 145](https://eips.ethereum.org/EIPS/eip-145)
 making the start being introduced in the `v2.4.0` release.
 
 Since both the scope of the `Constantinople` hardfork as well as the state of at least some of the EIPs

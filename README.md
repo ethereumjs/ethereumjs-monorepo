@@ -19,7 +19,7 @@ The VM currently supports the following hardfork rules:
 - `Istanbul`
 - `MuirGlacier` (only `mainnet` and `ropsten`)
 
-If you are still looking for a [Spurious Dragon](https://github.com/ethereum/EIPs/blob/master/EIPS/eip-607.md) compatible version of this library install the latest of the `2.2.x` series (see [Changelog](./CHANGELOG.md)).
+If you are still looking for a [Spurious Dragon](https://eips.ethereum.org/EIPS/eip-607) compatible version of this library install the latest of the `2.2.x` series (see [Changelog](./CHANGELOG.md)).
 
 ##### MuirGlacier Hardfork Support
 
@@ -35,7 +35,7 @@ since the `v4.1.1` VM release. You can activate an `Istanbul` VM by using the
 
 Supported `Istanbul` EIPs:
 
-- [EIP-152](https://github.com/ethereum/EIPs/pull/2129): Blake 2b `F` precompile,
+- [EIP-152](https://eips.ethereum.org/EIPS/eip-152): Blake 2b `F` precompile,
   PR [#584](https://github.com/ethereumjs/ethereumjs-vm/pull/584)
 - [EIP-1108](https://eips.ethereum.org/EIPS/eip-1108): Reduce `alt_bn128`
   precompile gas costs,  
@@ -46,7 +46,7 @@ Supported `Istanbul` EIPs:
 - [EIP-1884](https://eips.ethereum.org/EIPS/eip-1884): Trie-size-dependent
   Opcode Repricing,
   PR [#581](https://github.com/ethereumjs/ethereumjs-vm/pull/581)
-- [EIP-2200](https://github.com/ethereum/EIPs/pull/2200): Rebalance net-metered
+- [EIP-2200](https://eips.ethereum.org/EIPS/eip-2200): Rebalance net-metered
   SSTORE gas costs,
   PR [#590](https://github.com/ethereumjs/ethereumjs-vm/pull/590)
 
