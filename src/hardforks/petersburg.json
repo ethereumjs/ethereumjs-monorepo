@@ -2,7 +2,7 @@
   "name": "petersburg",
   "comment": "Aka constantinopleFix, removes EIP-1283, activate together with or after constantinople",
   "eip": {
-    "url": "https://github.com/ethereum/EIPs/pull/1716",
+    "url": "https://eips.ethereum.org/EIPS/eip-1716",
     "status": "Draft"
   },
   "gasConfig": {},
