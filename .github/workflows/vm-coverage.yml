@@ -22,8 +22,7 @@ jobs:
 
       - run: npm run coverage
 
-      - name: Post coverage data to Coveralls
-        uses: coverallsapp/github-action@master
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v1
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          path-to-lcov: .nyc_output/lcov.info
+          flags: vm
