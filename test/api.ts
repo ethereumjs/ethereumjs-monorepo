@@ -217,7 +217,7 @@ tape('[Transaction]: Basic functions', function(t) {
   })
 
   t.test('Verify EIP155 Signature before and after signing with private key', function(st) {
-    // Inputs and expected results for this test are taken directly from the example in https://github.com/ethereum/EIPs/blob/master/EIPS/eip-155.md
+    // Inputs and expected results for this test are taken directly from the example in https://eips.ethereum.org/EIPS/eip-155
     const txRaw = [
       '0x09',
       '0x4a817c800',
