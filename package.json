@@ -10,9 +10,8 @@
   "scripts": {
     "build:dist": "ethereumjs-config-build",
     "prepublishOnly": "npm run lint && npm run build:dist && npm run testBuildIntegrity",
-    "coverage": "nyc npm run coverage:test && nyc report --reporter=text-lcov > .nyc_output/lcov.info",
+    "coverage": "nyc npm run coverage:test && nyc report --reporter=lcov",
     "coverage:test": "npm run build:dist && tape './tests/api/**/*.js' ./tests/tester.js --state --dist",
-    "coveralls": "npm run coverage && if [ -n \"$COVERALLS_REPO_TOKEN\" ]; then coveralls <.nyc_output/lcov.info; fi",
     "docs:build": "typedoc lib",
     "test:vm": "node ./tests/tester --vm",
     "test:state": "npm run build:dist && node ./tests/tester --state --dist",
@@ -72,7 +71,6 @@
     "@types/lru-cache": "^5.1.0",
     "@types/node": "^11.13.4",
     "browserify": "^16.2.3",
-    "coveralls": "^3.0.0",
     "ethereumjs-testing": "git+https://github.com/ethereumjs/ethereumjs-testing.git#v1.3.0",
     "husky": "^2.1.0",
     "karma": "^4.0.1",

@@ -1,5 +1,12 @@
 name: 'VM Test'
-on: [push, pull_request]
+on:
+  push:
+    branches:
+      - master
+    tags:
+      - '*'
+  pull_request:
+    types: [opened, reopened, synchronize]
 jobs:
   test-api:
     runs-on: ubuntu-latest
