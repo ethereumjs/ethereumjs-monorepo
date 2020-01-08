@@ -43,7 +43,7 @@ tape('VM with default blockchain', (t) => {
   })
 
   t.test('should accept a common object as option', (st) => {
-    const common = new Common('mainnet')
+    const common = new Common('mainnet', 'istanbul')
 
     const vm = new VM({ common })
     st.equal(vm._common, common)

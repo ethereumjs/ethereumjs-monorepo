@@ -1,3 +1,5 @@
+import Common from 'ethereumjs-common'
+
 export interface Opcode {
   name: string
   fee: number
@@ -180,8 +182,8 @@ const istanbulOpcodes: OpcodeList = {
   0x54: { name: 'SLOAD', fee: 800, isAsync: true },
 }
 
-export function getOpcodesForHF(hf: string) {
-  if (hf === 'istanbul') {
+export function getOpcodesForHF(common: Common) {
+  if (common.gteHardfork('istanbul')) {
     return { ...opcodes, ...istanbulOpcodes }
   } else {
     return { ...opcodes }
