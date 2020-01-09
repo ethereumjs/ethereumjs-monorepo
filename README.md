@@ -24,8 +24,11 @@ If you are still looking for a [Spurious Dragon](https://eips.ethereum.org/EIPS/
 ##### MuirGlacier Hardfork Support
 
 An Ethereum test suite compliant `MuirGlacier` HF implementation is available
-since the `v4.1.2` VM release. You can activate a `MuirGlacier` VM by using the
+since the `v4.1.3` VM release. You can activate a `MuirGlacier` VM by using the
 `muirGlacier` `hardfork` option flag.
+
+**Note:** The original `v4.1.2` release contains a critical bug preventing the
+`MuirGlacier` VM to work properly and there is the need to update.
 
 ##### Istanbul Harfork Support
 

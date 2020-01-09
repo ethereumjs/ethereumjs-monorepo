@@ -6,7 +6,33 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## [4.1.2] - 2019-12-19
+## [4.1.3] - 2020-01-09
+
+This release fixes a critical bug preventing the `MuirGlacier` release `4.1.2`
+working properly, an update is mandatory if you want a working installation.
+
+**Bug Fixes**
+
+- Fixed `getOpcodesForHF()` opcode selection for any HF > Istanbul,
+  PR [#647](https://github.com/ethereumjs/ethereumjs-vm/pull/647)
+
+**Test Related Changes**
+
+- Switched from `Coveralls` to `Codecov` (monorepo preparation, coverage
+  reports on PRs),
+  PR [#646](https://github.com/ethereumjs/ethereumjs-vm/pull/646)
+- Added nightly `StateTests` runs,
+  PR [#639](https://github.com/ethereumjs/ethereumjs-vm/pull/639)
+- Run consensus tests on `MuirGlacier`,
+  PR [#648](https://github.com/ethereumjs/ethereumjs-vm/pull/648)
+
+[4.1.3]: https://github.com/ethereumjs/ethereumjs-vm/compare/v4.1.2...v4.1.3
+
+## [4.1.2] - 2019-12-19 [DEPRECATED]
+
+**Deprecation Notice**: This is a broken release containing a critical bug
+affecting all installations using the `MuirGlacier` HF option. Please update
+to the `4.1.3` release.
 
 Release adds support for the `MuirGlacier` hardfork by updating relevant
 dependencies:
