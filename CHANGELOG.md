@@ -30,7 +30,7 @@ working properly, an update is mandatory if you want a working installation.
 
 ## [4.1.2] - 2019-12-19 [DEPRECATED]
 
-**Deprecation Noice**: This is a broken release containing a critical bug
+**Deprecation Notice**: This is a broken release containing a critical bug
 affecting all installations using the `MuirGlacier` HF option. Please update
 to the `4.1.3` release.
 
