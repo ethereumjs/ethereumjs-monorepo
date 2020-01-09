@@ -4,12 +4,11 @@ const Trie = require('merkle-patricia-tree/secure')
 const ethUtil = require('ethereumjs-util')
 const Account = require('ethereumjs-account').default
 const BN = ethUtil.BN
-const { getRequiredForkConfigAlias } = require('./util')
 
-function parseTestCases (forkConfig, testData, data, gasLimit, value) {
+function parseTestCases (forkConfigTestSuite, testData, data, gasLimit, value) {
   let testCases = []
-  if (testData['post'][forkConfig]) {
-    testCases = testData['post'][forkConfig].map(testCase => {
+  if (testData['post'][forkConfigTestSuite]) {
+    testCases = testData['post'][forkConfigTestSuite].map(testCase => {
       let testIndexes = testCase['indexes']
       let tx = { ...testData.transaction }
       if (data !== undefined && testIndexes['data'] !== data) {
@@ -57,12 +56,12 @@ function runTestCase (options, testData, t, cb) {
       }
       vm = new VM({
         state: state,
-        hardfork: options.forkConfig.toLowerCase()
+        hardfork: options.forkConfigVM
       })
       testUtil.setupPreConditions(state, testData, done)
     },
     function (done) {
-      var tx = testUtil.makeTx(testData.transaction, options.forkConfig.toLowerCase())
+      var tx = testUtil.makeTx(testData.transaction, options.forkConfigVM)
       block = testUtil.makeBlockFromEnv(testData.env)
       tx._homestead = true
       tx.enableHomestead = true
@@ -146,19 +145,18 @@ function runTestCase (options, testData, t, cb) {
 }
 
 module.exports = function runStateTest (options, testData, t, cb) {
-  const forkConfig = getRequiredForkConfigAlias(options.forkConfig)
   try {
-    const testCases = parseTestCases(forkConfig, testData, options.data, options.gasLimit, options.value)
+    const testCases = parseTestCases(options.forkConfigTestSuite, testData, options.data, options.gasLimit, options.value)
     if (testCases.length > 0) {
       async.eachSeries(testCases,
                       (testCase, done) => runTestCase(options, testCase, t, done),
                       cb)
     } else {
-      t.comment(`No ${forkConfig} post state defined, skip test`)
+      t.comment(`No ${options.forkConfigTestSuite} post state defined, skip test`)
       cb()
     }
   } catch (e) {
-    t.fail('error running test case for fork: ' + forkConfig)
+    t.fail('error running test case for fork: ' + options.forkConfigTestSuite)
     console.log('error:', e)
     cb()
   }

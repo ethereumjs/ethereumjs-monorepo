@@ -20,7 +20,7 @@ module.exports = function runBlockchainTest (options, testData, t, cb) {
   }
   var blockchain = new Blockchain({
     db: blockchainDB,
-    hardfork: options.forkConfig.toLowerCase(),
+    hardfork: options.forkConfigVM,
     validate: validate
   })
   if (validate) {
@@ -35,9 +35,9 @@ module.exports = function runBlockchainTest (options, testData, t, cb) {
   var vm = new VM({
     state: state,
     blockchain: blockchain,
-    hardfork: options.forkConfig.toLowerCase()
+    hardfork: options.forkConfigVM
   })
-  var genesisBlock = new Block({ hardfork: options.forkConfig.toLowerCase() })
+  var genesisBlock = new Block({ hardfork: options.forkConfigVM })
 
   testData.homestead = true
   if (testData.homestead) {
@@ -60,7 +60,7 @@ module.exports = function runBlockchainTest (options, testData, t, cb) {
     function (done) {
       // create and add genesis block
       genesisBlock.header = new BlockHeader(formatBlockHeader(testData.genesisBlockHeader), {
-        hardfork: options.forkConfig.toLowerCase()
+        hardfork: options.forkConfigVM
       })
       t.equal(state.root.toString('hex'), genesisBlock.header.stateRoot.toString('hex'), 'correct pre stateRoot')
       if (testData.genesisRLP) {
@@ -74,7 +74,7 @@ module.exports = function runBlockchainTest (options, testData, t, cb) {
       async.eachSeries(testData.blocks, function (raw, cb) {
         try {
           var block = new Block(Buffer.from(raw.rlp.slice(2), 'hex'), {
-            hardfork: options.forkConfig.toLowerCase()
+            hardfork: options.forkConfigVM
           })
           // forces the block into thinking they are homestead
           if (testData.homestead) {
