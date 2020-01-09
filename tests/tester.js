@@ -3,8 +3,11 @@
 const argv = require('minimist')(process.argv.slice(2))
 const tape = require('tape')
 const testing = require('ethereumjs-testing')
-const FORK_CONFIG = argv.fork || 'Istanbul'
 const { getRequiredForkConfigAlias } = require('./util')
+const FORK_CONFIG = (argv.fork || 'Istanbul')
+const FORK_CONFIG_TEST_SUITE = getRequiredForkConfigAlias(FORK_CONFIG)
+// Istanbul -> istanbul, MuirGlacier -> muirGlacier
+const FORK_CONFIG_VM = FORK_CONFIG.charAt(0).toLowerCase() + FORK_CONFIG.substring(1)
 // tests which should be fixed
 const skipBroken = [
   'dynamicAccountOverwriteEmpty', // temporary till fixed (2019-01-30), skipped along constantinopleFix work time constraints
@@ -138,7 +141,7 @@ function runTests(name, runnerArgs, cb) {
   testGetterArgs.skipTests = getSkipTests(argv.skip, argv.runSkipped ? 'NONE' : 'ALL')
   testGetterArgs.runSkipped = getSkipTests(argv.runSkipped, 'NONE')
   testGetterArgs.skipVM = skipVM
-  testGetterArgs.forkConfig = getRequiredForkConfigAlias(FORK_CONFIG)
+  testGetterArgs.forkConfig = FORK_CONFIG_TEST_SUITE
   testGetterArgs.file = argv.file
   testGetterArgs.test = argv.test
   testGetterArgs.dir = argv.dir
@@ -147,7 +150,8 @@ function runTests(name, runnerArgs, cb) {
 
   testGetterArgs.customStateTest = argv.customStateTest
 
-  runnerArgs.forkConfig = FORK_CONFIG
+  runnerArgs.forkConfigVM = FORK_CONFIG_VM
+  runnerArgs.forkConfigTestSuite = FORK_CONFIG_TEST_SUITE
   runnerArgs.jsontrace = argv.jsontrace
   runnerArgs.debug = argv.debug // for BlockchainTests
 
@@ -178,7 +182,7 @@ function runTests(name, runnerArgs, cb) {
       const runner = require(`./${name}Runner.js`)
       // Tests for HFs before Istanbul have been moved under `LegacyTests/Constantinople`:
       // https://github.com/ethereum/tests/releases/tag/v7.0.0-beta.1
-      if (runnerArgs.forkConfig !== 'Istanbul') {
+      if (testGetterArgs.forkConfig !== 'Istanbul') {
         name = 'LegacyTests/Constantinople/'.concat(name)
       }
       testing
