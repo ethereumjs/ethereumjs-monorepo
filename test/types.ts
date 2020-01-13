@@ -1,4 +1,5 @@
 export type ForkName =
+  | 'Istanbul'
   | 'Byzantium'
   | 'Constantinople'
   | 'EIP150'

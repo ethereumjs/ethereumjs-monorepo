@@ -52,7 +52,7 @@
     "browserify": "^16.2.3",
     "contributor": "^0.1.25",
     "coveralls": "^2.11.4",
-    "ethereumjs-testing": "git+https://github.com/ethereumjs/ethereumjs-testing.git#v1.2.8",
+    "ethereumjs-testing": "git+https://github.com/ethereumjs/ethereumjs-testing.git#v1.3.0",
     "husky": "^2.1.0",
     "istanbul": "^0.4.1",
     "karma": "^4.1.0",

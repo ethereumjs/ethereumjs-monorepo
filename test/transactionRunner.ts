@@ -11,6 +11,7 @@ const argv = minimist(process.argv.slice(2))
 const file: string | undefined = argv.file
 
 const forkNames: ForkName[] = [
+  'Istanbul',
   'Byzantium',
   'Constantinople',
   'EIP150',
@@ -20,6 +21,7 @@ const forkNames: ForkName[] = [
 ]
 
 const forkNameMap: ForkNamesMap = {
+  Istanbul: 'istanbul',
   Byzantium: 'byzantium',
   Constantinople: 'constantinople',
   EIP150: 'tangerineWhistle',
