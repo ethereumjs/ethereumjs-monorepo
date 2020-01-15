@@ -25,6 +25,8 @@ export interface Env {
   origin: Buffer
   block: any
   contract: Account
+  // Different than address for DELEGATECALL and CALLCODE
+  codeAddress: Buffer
 }
 
 /**

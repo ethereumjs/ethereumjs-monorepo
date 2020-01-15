@@ -282,6 +282,7 @@ export default class EVM {
       origin: this._tx.origin || message.caller || zeros(32),
       block: this._block || new Block(),
       contract: await this._state.getAccount(message.to || zeros(32)),
+      codeAddress: message.codeAddress,
     }
     const eei = new EEI(env, this._state, this, this._vm._common, message.gasLimit.clone())
     if (message.selfdestruct) {
