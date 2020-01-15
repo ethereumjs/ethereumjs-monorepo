@@ -44,6 +44,7 @@ export interface InterpreterStep {
   memoryWordCount: BN
   opcode: Opcode
   account: Account
+  codeAddress: Buffer
 }
 
 /**
@@ -186,6 +187,7 @@ export default class Interpreter {
       stateManager: this._runState.stateManager,
       memory: this._runState.memory._store, // Return underlying array for backwards-compatibility
       memoryWordCount: this._runState.memoryWordCount,
+      codeAddress: this._eei._env.codeAddress,
     }
     /**
      * The `step` event for trace output
