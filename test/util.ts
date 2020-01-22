@@ -1,6 +1,6 @@
 import { rlp, toBuffer, bufferToInt } from 'ethereumjs-util'
 import BN = require('bn.js')
-import Blockchain, { Block } from '../dist'
+import Blockchain, { Block } from '../src'
 
 const util = require('util')
 const Block = require('ethereumjs-block')
