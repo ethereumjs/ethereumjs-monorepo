@@ -1,51 +1,23 @@
-module.exports = function (config) {
+module.exports = function(config) {
   config.set({
-    frameworks: ['browserify', 'detectBrowsers', 'mocha'],
-    files: [
-      'test/*.js'
-    ],
+    frameworks: ['mocha', 'karma-typescript'],
+    files: ['src/**/*.ts', 'test/**/*.ts'],
     preprocessors: {
-      'test/*.js': ['browserify', 'env']
+      '**/*.ts': ['karma-typescript'],
     },
+    plugins: ['karma-mocha', 'karma-typescript', 'karma-chrome-launcher', 'karma-firefox-launcher'],
+    karmaTypescriptConfig: {
+      bundlerOptions: {
+        entrypoints: /\.spec\.ts$/,
+      },
+    },
+    colors: true,
+    reporters: ['progress', 'karma-typescript'],
+    browsers: ['FirefoxHeadless', 'ChromeHeadless'],
     singleRun: true,
-    plugins: [
-      'karma-browserify',
-      'karma-chrome-launcher',
-      'karma-env-preprocessor',
-      'karma-firefox-launcher',
-      'karma-detect-browsers',
-      'karma-mocha'
-    ],
-    browserify: {
-      'transform': [
-        [
-          'babelify',
-          {
-            'presets': [
-              'env'
-            ]
-          }
-        ]
-      ],
-      debug: true
-    },
-    envPreprocessor: [
-      'RANDOM_TESTS_REPEAT',
-      'TRAVIS'
-    ],
-    detectBrowsers: {
-      enabled: true,
-      usePhantomJS: false,
-      postDetection: function (availableBrowser) {
-        if (availableBrowser.includes('Chrome')) {
-          return ['ChromeHeadless']
-        }
-
-        var browsers = ['Chrome', 'Firefox']
-        return browsers.filter(function (browser) {
-          return availableBrowser.indexOf(browser) !== -1
-        })
-      }
-    }
+    concurrency: Infinity,
+    // Fail after timeout
+    browserDisconnectTimeout: 100000,
+    browserNoActivityTimeout: 100000,
   })
 }
