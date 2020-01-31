@@ -1,10 +1,10 @@
-[ethereumjs-util](../README.md) > [ECDSASignature](../interfaces/ecdsasignature.md)
+[ethereumjs-util](../README.md) › [ECDSASignature](ecdsasignature.md)
 
 # Interface: ECDSASignature
 
 ## Hierarchy
 
-**ECDSASignature**
+* **ECDSASignature**
 
 ## Index
 
@@ -14,35 +14,26 @@
 * [s](ecdsasignature.md#s)
 * [v](ecdsasignature.md#v)
 
----
-
 ## Properties
-
-<a id="r"></a>
 
 ###  r
 
-**● r**: *`Buffer`*
+• **r**: *[Buffer](../README.md#const-buffer)*
 
 *Defined in [signature.ts:8](https://github.com/ethereumjs/ethereumjs-util/blob/master/src/signature.ts#L8)*
 
 ___
-<a id="s"></a>
 
 ###  s
 
-**● s**: *`Buffer`*
+• **s**: *[Buffer](../README.md#const-buffer)*
 
 *Defined in [signature.ts:9](https://github.com/ethereumjs/ethereumjs-util/blob/master/src/signature.ts#L9)*
 
 ___
-<a id="v"></a>
 
 ###  v
 
-**● v**: *`number`*
+• **v**: *number*
 
 *Defined in [signature.ts:7](https://github.com/ethereumjs/ethereumjs-util/blob/master/src/signature.ts#L7)*
-
-___
-

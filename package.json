@@ -10,7 +10,7 @@
   "scripts": {
     "build": "ethereumjs-config-build",
     "prepublishOnly": "npm run test && npm run build",
-    "docs:build": "typedoc --out docs --mode file --readme none --theme markdown --mdEngine github --gitRevision master --excludeNotExported src",
+    "docs:build": "npx typedoc --plugin typedoc-plugin-markdown --out docs --mode file --readme none --gitRevision master --module commonjs --excludeNotExported src",
     "format": "ethereumjs-config-format",
     "format:fix": "ethereumjs-config-format-fix",
     "lint": "ethereumjs-config-lint",
@@ -112,8 +112,8 @@
     "prettier": "^1.15.3",
     "ts-node": "^8.6.2",
     "tslint": "^5.12.0",
-    "typedoc": "^0.14.0",
-    "typedoc-plugin-markdown": "^1.1.21",
+    "typedoc": "^0.16.9",
+    "typedoc-plugin-markdown": "^2.2.16",
     "typescript": "^3.2.2",
     "typestrict": "^1.0.2"
   }
