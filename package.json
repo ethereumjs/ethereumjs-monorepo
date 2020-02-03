@@ -20,7 +20,7 @@
     "tsc": "ethereumjs-config-tsc",
     "lint": "ethereumjs-config-lint",
     "lint:fix": "ethereumjs-config-lint-fix",
-    "test": "ts-node node_modules/tape/bin/tape ./test/index.ts"
+    "test": "nyc --reporter=lcov ts-node node_modules/tape/bin/tape ./test/index.ts"
   },
   "husky": {
     "hooks": {

@@ -1,6 +1,6 @@
 {
   "extends": "@ethereumjs/config-nyc",
   "include": [
-    "dist/**/*.js"
+    "src/*.ts"
   ]
 }
