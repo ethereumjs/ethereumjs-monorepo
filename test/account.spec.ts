@@ -27,6 +27,11 @@ describe('isValidPrivate', function() {
       '3a443d8381a6798a70c6ff9304bdc8cb0163c23211d11628fae52ef9e0dca11a001cf066d56a8156fc201cd5df8a36ef694eecd258903fca7086c1fae7441e1d'
     assert.equal(isValidPrivate(Buffer.from(tmp, 'hex')), false)
   })
+  it('should fail on wrong input type', function() {
+    assert.throws(function() {
+      isValidPrivate('WRONG_INPUT_TYPE')
+    })
+  })
   it('should fail on invalid curve (zero)', function() {
     const tmp = '0000000000000000000000000000000000000000000000000000000000000000'
     assert.equal(isValidPrivate(Buffer.from(tmp, 'hex')), false)
