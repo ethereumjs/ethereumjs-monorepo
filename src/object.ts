@@ -1,6 +1,6 @@
-const assert = require('assert')
 const ethjsUtil = require('ethjs-util')
-import rlp = require('rlp')
+import * as assert from 'assert'
+import * as rlp from 'rlp'
 import { toBuffer, baToJSON, stripZeros } from './bytes'
 
 /**

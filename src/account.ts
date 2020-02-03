@@ -1,7 +1,7 @@
-const assert = require('assert')
 const ethjsUtil = require('ethjs-util')
-const secp256k1 = require('secp256k1')
-import BN = require('bn.js')
+import * as assert from 'assert'
+import * as secp256k1 from 'secp256k1'
+import * as BN from 'bn.js'
 import { toBuffer, addHexPrefix, zeros, bufferToHex, unpad } from './bytes'
 import { keccak, keccak256, rlphash } from './hash'
 
