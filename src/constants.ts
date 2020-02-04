@@ -1,5 +1,5 @@
-import BN = require('bn.js')
 const Buffer = require('buffer').Buffer
+import * as BN from 'bn.js'
 
 /**
  * The max integer that this VM can handle

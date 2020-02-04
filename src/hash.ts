@@ -1,7 +1,7 @@
 const createKeccakHash = require('keccak')
 const createHash = require('create-hash')
 const ethjsUtil = require('ethjs-util')
-import rlp = require('rlp')
+import * as rlp from 'rlp'
 import { toBuffer, setLength } from './bytes'
 
 /**

@@ -1,5 +1,5 @@
-const secp256k1 = require('secp256k1')
-import BN = require('bn.js')
+import * as secp256k1 from 'secp256k1'
+import * as BN from 'bn.js'
 import { toBuffer, setLength, setLengthLeft, bufferToHex } from './bytes'
 import { keccak } from './hash'
 

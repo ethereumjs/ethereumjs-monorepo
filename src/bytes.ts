@@ -1,5 +1,5 @@
 const ethjsUtil = require('ethjs-util')
-import BN = require('bn.js')
+import * as BN from 'bn.js'
 
 /**
  * Returns a buffer filled with 0s.
