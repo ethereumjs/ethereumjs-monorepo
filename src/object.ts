@@ -14,7 +14,7 @@ import { toBuffer, baToJSON, stripZeros } from './bytes'
  * @param data data to be validated against the definitions
  * @deprecated
  */
-export const defineProperties = function(self: any, fields: any, data: any) {
+export const defineProperties = function(self: any, fields: any, data?: any) {
   self.raw = []
   self._fields = []
 

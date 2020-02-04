@@ -1,5 +1,6 @@
 import * as assert from 'assert'
-const {
+import * as BN from 'bn.js'
+import {
   zeros,
   zeroAddress,
   isZeroAddress,
@@ -8,16 +9,13 @@ const {
   setLengthLeft,
   setLengthRight,
   bufferToHex,
-  intToHex,
-  intToBuffer,
   bufferToInt,
   fromSigned,
   toUnsigned,
   addHexPrefix,
   toBuffer,
   baToJSON,
-} = require('../src')
-import BN = require('bn.js')
+} from '../src'
 
 describe('zeros function', function() {
   it('should produce lots of 0s', function() {
@@ -109,22 +107,6 @@ describe('bufferToHex', function() {
   })
 })
 
-describe('intToHex', function() {
-  it('should convert a int to hex', function() {
-    const i = 6003400
-    const hex = intToHex(i)
-    assert.equal(hex, '0x5b9ac8')
-  })
-})
-
-describe('intToBuffer', function() {
-  it('should convert a int to a buffer', function() {
-    const i = 6003400
-    const buf = intToBuffer(i)
-    assert.equal(buf.toString('hex'), '5b9ac8')
-  })
-})
-
 describe('bufferToInt', function() {
   it('should convert a int to hex', function() {
     const buf = Buffer.from('5b9ac8', 'hex')
@@ -178,7 +160,7 @@ describe('hex prefix', function() {
     assert.equal(addHexPrefix(string), '0x' + string)
   })
   it('should return on non-string input', function() {
-    assert.equal(addHexPrefix(1), 1)
+    assert.equal(addHexPrefix(1 as any), 1)
   })
 })
 

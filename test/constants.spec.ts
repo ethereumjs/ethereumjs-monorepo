@@ -1,5 +1,5 @@
-import assert = require('assert')
-const {
+import * as assert from 'assert'
+import {
   MAX_INTEGER,
   TWO_POW256,
   KECCAK256_NULL_S,
@@ -8,7 +8,7 @@ const {
   KECCAK256_RLP_ARRAY,
   KECCAK256_RLP_S,
   KECCAK256_RLP,
-} = require('../src')
+} from '../src'
 
 describe('constants', function() {
   it('should match constants', function() {
