@@ -14,8 +14,7 @@
   "scripts": {
     "build": "ethereumjs-config-build",
     "prepublishOnly": "npm run test && npm run build",
-    "coverage": "ethereumjs-config-coverage",
-    "coveralls": "ethereumjs-config-coveralls",
+    "coverage": "npx nyc npm run test",
     "docs:build": "typedoc --out docs --mode file --readme none --theme markdown --mdEngine github --excludeNotExported src",
     "format": "ethereumjs-config-format",
     "format:fix": "ethereumjs-config-format-fix",
@@ -24,7 +23,7 @@
     "tsc": "ethereumjs-config-tsc",
     "lint": "ethereumjs-config-lint",
     "lint:fix": "ethereumjs-config-lint-fix",
-    "test": "ts-node node_modules/tape/bin/tape ./test/index.ts"
+    "test": "npx tape -r ts-node/register test/*.spec.ts"
   },
   "husky": {
     "hooks": {
@@ -54,9 +53,9 @@
     "@types/bn.js": "^4.11.3",
     "@types/node": "^11.9.4",
     "@types/tape": "^4.2.33",
-    "coveralls": "^3.0.0",
     "husky": "^2.1.0",
-    "nyc": "^13.2.0",
+    "merkle-patricia-tree": "^3.0.0",
+    "nyc": "^15.0.0",
     "prettier": "^1.15.3",
     "tape": "^4.10.1",
     "ts-node": "^7.0.1",
