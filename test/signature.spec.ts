@@ -1,5 +1,6 @@
-import assert = require('assert')
-const {
+import * as assert from 'assert'
+import * as BN from 'bn.js'
+import {
   ecsign,
   ecrecover,
   privateToPublic,
@@ -7,8 +8,7 @@ const {
   isValidSignature,
   fromRpcSig,
   toRpcSig,
-} = require('../src')
-import BN = require('bn.js')
+} from '../src'
 
 const echash = Buffer.from(
   '82ff40c0a986c6a5cfad4ddf4c3aa6996f1a7837f9c398e17e5de5cbd5a12b28',

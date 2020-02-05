@@ -1,5 +1,6 @@
-import assert = require('assert')
-const {
+import * as assert from 'assert'
+import * as BN from 'bn.js'
+import {
   isValidPrivate,
   isValidPublic,
   importPublic,
@@ -13,8 +14,7 @@ const {
   isValidChecksumAddress,
   isValidAddress,
   toChecksumAddress,
-} = require('../src')
-import BN = require('bn.js')
+} from '../src'
 const eip1014Testdata = require('./testdata/eip1014Examples.json')
 
 describe('isValidPrivate', function() {
