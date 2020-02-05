@@ -1,5 +1,5 @@
-var assert = require('assert')
-const { zeros, defineProperties } = require('../src')
+import * as assert from 'assert'
+import { zeros, defineProperties } from '../src'
 
 describe('define', function() {
   const fields = [

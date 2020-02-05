@@ -1,5 +1,5 @@
-import assert = require('assert')
-const { keccak, keccak256, sha256, ripemd160, rlphash } = require('../src')
+import * as assert from 'assert'
+import { keccak, keccak256, sha256, ripemd160, rlphash } from '../src'
 
 describe('keccak', function() {
   it('should produce a hash', function() {
