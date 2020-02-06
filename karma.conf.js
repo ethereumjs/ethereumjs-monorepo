@@ -1,19 +1,13 @@
 module.exports = function(config) {
   config.set({
     browserNoActivityTimeout: 60000,
-    frameworks: ['browserify', 'detectBrowsers', 'tap'],
-    files: ['./test-build/test/index.js'],
+    frameworks: ['browserify', 'tap'],
+    files: ['./test-build/test/**/*.js'],
     preprocessors: {
       './test-build/**/*.js': ['browserify'],
     },
     reporters: ['dots'],
+    browsers: ['FirefoxHeadless', 'ChromeHeadless'],
     singleRun: true,
-    detectBrowsers: {
-      enabled: true,
-      usePhantomJS: false,
-      postDetection: function(availableBrowsers) {
-        return ['FirefoxHeadless']
-      },
-    },
   })
 }

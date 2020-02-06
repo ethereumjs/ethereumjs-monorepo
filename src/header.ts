@@ -129,7 +129,7 @@ export class BlockHeader {
   /**
    * Returns the canonical difficulty for this block.
    *
-   * @param parentBlock - the parent `Block` of the this header
+   * @param parentBlock - the parent `Block` of this header
    */
   canonicalDifficulty(parentBlock: Block): BN {
     const hardfork = this._getHardfork()
@@ -271,7 +271,7 @@ export class BlockHeader {
     if (height !== undefined && BN.isBN(height)) {
       const dif = height.sub(new BN(parentBlock.header.number))
       if (!(dif.cmpn(8) === -1 && dif.cmpn(1) === 1)) {
-        throw new Error('uncle block has a parent that is too old or to young')
+        throw new Error('uncle block has a parent that is too old or too young')
       }
     }
 
@@ -284,7 +284,7 @@ export class BlockHeader {
     }
 
     if (utils.bufferToInt(parentBlock.header.number) + 1 !== utils.bufferToInt(this.number)) {
-      throw new Error('invalid heigth')
+      throw new Error('invalid height')
     }
 
     if (utils.bufferToInt(this.timestamp) <= utils.bufferToInt(parentBlock.header.timestamp)) {

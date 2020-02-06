@@ -10,5 +10,10 @@ jobs:
 
       - uses: actions/checkout@v1
       - run: npm install
+
       - run: npm run coverage
-      - run: npm run coveralls
+
+      - name: Post coverage to Coveralls
+        uses: coverallsapp/github-action@master
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}

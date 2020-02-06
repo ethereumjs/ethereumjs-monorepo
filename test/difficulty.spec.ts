@@ -25,14 +25,14 @@ tape('[Header]: difficulty tests', t => {
   }
 
   const hardforkTestData: any = {
-    chainstart: require('./difficultyFrontier.json').tests,
-    homestead: require('./difficultyHomestead.json').tests,
-    byzantium: require('./difficultyByzantium.json').tests,
-    constantinople: require('./difficultyConstantinople.json').tests,
+    chainstart: require('./testdata/difficultyFrontier.json').tests,
+    homestead: require('./testdata/difficultyHomestead.json').tests,
+    byzantium: require('./testdata/difficultyByzantium.json').tests,
+    constantinople: require('./testdata/difficultyConstantinople.json').tests,
     muirGlacier: Object.assign(
-      require('./difficultyEIP2384.json').tests,
-      require('./difficultyEIP2384_random.json').tests,
-      require('./difficultyEIP2384_random_to20M.json').tests,
+      require('./testdata/difficultyEIP2384.json').tests,
+      require('./testdata/difficultyEIP2384_random.json').tests,
+      require('./testdata/difficultyEIP2384_random_to20M.json').tests,
     ),
   }
   for (const hardfork in hardforkTestData) {
@@ -59,8 +59,8 @@ tape('[Header]: difficulty tests', t => {
   }
 
   const chainTestData: any = {
-    mainnet: require('./difficultyMainNetwork.json').tests,
-    ropsten: require('./difficultyRopstenConstantinople.json').tests,
+    mainnet: require('./testdata/difficultyMainNetwork.json').tests,
+    ropsten: require('./testdata/difficultyRopstenConstantinople.json').tests,
   }
   for (const chain in chainTestData) {
     const testData = chainTestData[chain]
