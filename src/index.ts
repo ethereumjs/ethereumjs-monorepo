@@ -52,7 +52,7 @@ export default class Account {
    * ]
    *
    * var data = {
-   *   nonce: '',
+   *   nonce: '0x0',
    *   balance: '0x03e7',
    *   stateRoot: '0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421',
    *   codeHash: '0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470',
@@ -136,7 +136,7 @@ export default class Account {
    * )
    *
    * let raw = {
-   * nonce: '',
+   * nonce: '0x0',
    * balance: '0x03e7',
    * stateRoot: '0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421',
    * codeHash: '0xb30fb32201fe0486606ad451e1a61e2ae1748343cd3d411ed992ffcc0774edd4',
@@ -190,10 +190,10 @@ export default class Account {
    * ~~~
    * // Requires manual merkle-patricia-tree install
    * const SecureTrie = require('merkle-patricia-tree/secure')
-   *  const Account = require('./index.js').default
+   * const Account = require('./index.js').default
    *
    * let raw = {
-   *   nonce: '',
+   *   nonce: '0x0',
    *   balance: '0x03e7',
    *   stateRoot: '0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421',
    *   codeHash: '0xb30fb32201fe0486606ad451e1a61e2ae1748343cd3d411ed992ffcc0774edd4',
@@ -203,7 +203,7 @@ export default class Account {
    * let key = Buffer.from('0000000000000000000000000000000000000000', 'hex')
    * let value = Buffer.from('01', 'hex')
    *
-   * account.setStorage(trie, key, value, function(err, value) {
+   * account.setStorage(trie, key, value, function(err) {
    *   account.getStorage(trie, key, function(err, value) {
    *     console.log(`Value ${value.toString('hex')} set and retrieved from trie.`)
    *   })
@@ -215,11 +215,11 @@ export default class Account {
    * @param val
    * @param cb
    */
-  setStorage(trie: Trie, key: Buffer | string, val: Buffer | string, cb: () => void) {
+  setStorage(trie: Trie, key: Buffer | string, val: Buffer | string, cb: TriePutCb) {
     const t = trie.copy()
     t.root = this.stateRoot
     t.put(key, val, (err: any) => {
-      if (err) return cb()
+      if (err) return cb(err)
       this.stateRoot = t.root
       cb()
     })
