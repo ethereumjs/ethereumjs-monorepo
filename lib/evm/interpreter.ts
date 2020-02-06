@@ -7,7 +7,7 @@ import Memory from './memory'
 import Stack from './stack'
 import EEI from './eei'
 import { Opcode } from './opcodes'
-import { handlers as opHandlers, OpHandler } from './opFns.js'
+import { handlers as opHandlers, OpHandler } from './opFns'
 import Account from 'ethereumjs-account'
 
 export interface InterpreterOpts {

@@ -13,11 +13,11 @@ or the associated YouTube video introduction to [Core Development with Ethereumj
 
 Running the State tests:
 
-`node ./tests/tester --state`
+`ts-node ./tests/tester --state`
 
 Running the Blockchain tests:
 
-`node ./tests/tester --blockchain`
+`ts-node ./tests/tester --blockchain`
 
 Tests run against source by default. They can be run with the `--dist` flag:
 
@@ -27,7 +27,7 @@ See `package.json` for all the scripts in the `test:` namespace, such as `npm ru
 
 Use `--fork` to pass in the desired hardfork:
 
-`node ./tests/tester --state --fork='Constantinople'`
+`ts-node ./tests/tester --state --fork='Constantinople'`
 
 or
 
@@ -41,24 +41,24 @@ State tests run significantly faster than Blockchain tests, so it is often a goo
 
 Running all the blockchain tests in a file:
 
-`node ./tests/tester --blockchain --file='randomStatetest303'`
+`ts-node ./tests/tester --blockchain --file='randomStatetest303'`
 
 Running tests from a specific directory:
 
-`node ./tests/tester --blockchain --dir='bcBlockGasLimitTest'`
+`ts-node ./tests/tester --blockchain --dir='bcBlockGasLimitTest'`
 
 Running a specific state test case:
 
-`node ./tests/tester --state --test='stackOverflow'`
+`ts-node ./tests/tester --state --test='stackOverflow'`
 
 Only run test cases with selected `data`, `gas` and/or `value` values (see
 [attribute description](http://ethereum-tests.readthedocs.io/en/latest/test_types/state_tests.html) in
 test docs), provided by the index of the array element in the test `transaction` section:
 
-`node ./tests/tester --state --test='CreateCollisionToEmpty' --data=0 --gas=1 --value=0`
+`ts-node ./tests/tester --state --test='CreateCollisionToEmpty' --data=0 --gas=1 --value=0`
 
 Run a state test from a specified source file not under the `tests` directory:
-`node ./tests/tester --state --customStateTest='{path_to_file}'`
+`ts-node ./tests/tester --state --customStateTest='{path_to_file}'`
 
 #### Running tests with a reporter/formatter
 
@@ -66,7 +66,7 @@ Run a state test from a specified source file not under the `tests` directory:
 
 To pipe the results of the API tests through `tap-spec`:
 
-`npm run formatTest -- -t testAPI`
+`npm run formatTest -- -t test:API`
 
 To pipe the results of tests run with a node command through `tap-spec`:
 
@@ -75,7 +75,7 @@ To pipe the results of tests run with a node command through `tap-spec`:
 The `-with` flag allows the specification of a formatter of your choosing:
 
 `npm install -g tap-mocha-reporter`
-`npm run formatTest -- -t testAPI -with 'tap-mocha-reporter json'`
+`npm run formatTest -- -t test:API -with 'tap-mocha-reporter json'`
 
 #### Skipping Tests
 
@@ -84,14 +84,14 @@ can be found in `tests/tester.js`. By default tests from all skip lists are omit
 
 You can change this behaviour with:
 
-`node ./tests/tester --state --skip=BROKEN,PERMANENT`
+`ts-node ./tests/tester --state --skip=BROKEN,PERMANENT`
 
 to skip only the `BROKEN` and `PERMANENT` tests and include the `SLOW` tests.
 There are also the keywords `NONE` or `ALL` for convenience.
 
 It is also possible to only run the tests from the skip lists:
 
-`node ./tests/tester --state --runSkipped=SLOW`
+`ts-node ./tests/tester --state --runSkipped=SLOW`
 
 ### CI Test Integration
 
@@ -105,7 +105,7 @@ For state tests you can use the `--jsontrace` flag to output opcode trace inform
 
 Blockchain tests support `--debug` to verify the postState:
 
-`node ./tests/tester --blockchain --debug --test='ZeroValue_SELFDESTRUCT_ToOneStorageKey_OOGRevert_d0g0v0_EIP158'`
+`ts-node ./tests/tester --blockchain --debug --test='ZeroValue_SELFDESTRUCT_ToOneStorageKey_OOGRevert_d0g0v0_EIP158'`
 
 All/most State tests are replicated as Blockchain tests in a `GeneralStateTests` [sub directory](https://github.com/ethereum/tests/tree/develop/BlockchainTests/GeneralStateTests) in the Ethereum tests repo, so for debugging single test cases the Blockchain test version of the State test can be used.
 
