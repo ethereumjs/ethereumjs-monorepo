@@ -78,7 +78,6 @@
     "karma": "^4.0.1",
     "karma-browserify": "^6.0.0",
     "karma-chrome-launcher": "^2.2.0",
-    "karma-detect-browsers": "^2.3.3",
     "karma-firefox-launcher": "^1.1.0",
     "karma-tap": "^4.1.4",
     "level": "^4.0.0",
