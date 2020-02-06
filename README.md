@@ -1,9 +1,9 @@
 # SYNOPSIS
 
-[![NPM Package](https://img.shields.io/npm/v/merkle-patricia-tree.svg?style=flat-square)](https://www.npmjs.org/package/merkle-patricia-tree)
-[![Build Status](https://img.shields.io/travis/ethereumjs/merkle-patricia-tree.svg?branch=master&style=flat-square)](https://travis-ci.org/ethereumjs/merkle-patricia-tree)
-[![Coverage Status](https://img.shields.io/coveralls/ethereumjs/merkle-patricia-tree.svg?style=flat-square)](https://coveralls.io/r/ethereumjs/merkle-patricia-tree)
-[![Gitter](https://img.shields.io/gitter/room/ethereum/ethereumjs-lib.svg?style=flat-square)](https://gitter.im/ethereum/ethereumjs-lib) or #ethereumjs on freenode
+[![NPM Package](https://img.shields.io/npm/v/merkle-patricia-tree)](https://www.npmjs.org/package/merkle-patricia-tree)
+[![Build Status](https://img.shields.io/travis/ethereumjs/merkle-patricia-tree/master)](https://travis-ci.org/ethereumjs/merkle-patricia-tree)
+[![Coverage Status](https://img.shields.io/coveralls/ethereumjs/merkle-patricia-tree.svg)](https://coveralls.io/r/ethereumjs/merkle-patricia-tree)
+[![Gitter](https://img.shields.io/gitter/room/ethereum/ethereumjs-lib.svg)](https://gitter.im/ethereum/ethereumjs-lib)
 
 [![js-standard-style](https://cdn.rawgit.com/feross/standard/master/badge.svg)](https://github.com/feross/standard)
 
@@ -30,8 +30,8 @@ const Trie = require('merkle-patricia-tree').BaseTrie,
   db = level('./testdb'),
   trie = new Trie(db)
 
-trie.put('test', 'one', function() {
-  trie.get('test', function(err, value) {
+trie.put(Buffer.from('test'), Buffer.from('one'), function() {
+  trie.get(Buffer.from('test'), function(err, value) {
     if (value) console.log(value.toString())
   })
 })
@@ -40,9 +40,9 @@ trie.put('test', 'one', function() {
 ## Merkle Proofs
 
 ```javascript
-Trie.prove(trie, 'test', function(err, prove) {
+Trie.prove(trie, Buffer.from('test'), function(err, prove) {
   if (err) return cb(err)
-  Trie.verifyProof(trie.root, 'test', prove, function(err, value) {
+  Trie.verifyProof(trie.root, Buffer.from('test'), prove, function(err, value) {
     if (err) return cb(err)
     console.log(value.toString())
     cb()
@@ -117,7 +117,7 @@ trie.get(address, function(err, data) {
 
 # API
 
-[./docs/](./docs/index.md)
+[Documentation](./docs/README.md)
 
 # TESTING
 

@@ -119,7 +119,7 @@ export class Trie {
    * Gets a value given a `key`
    * @method get
    * @memberof Trie
-   * @param {Buffer|String} key - the key to search for
+   * @param {Buffer} key - the key to search for
    * @param {Function} cb A callback `Function` which is given the arguments `err` - for errors that may have occured and `value` - the found value in a `Buffer` or if no value was found `null`
    */
   get(key: Buffer, cb: Function) {
@@ -140,8 +140,8 @@ export class Trie {
    * Stores a given `value` at the given `key`
    * @method put
    * @memberof Trie
-   * @param {Buffer|String} key
-   * @param {Buffer|String} Value
+   * @param {Buffer} key
+   * @param {Buffer} Value
    * @param {Function} cb A callback `Function` which is given the argument `err` - for errors that may have occured
    */
   put(key: Buffer, value: Buffer, cb: ErrorCallback) {
@@ -177,7 +177,7 @@ export class Trie {
    * deletes a value given a `key`
    * @method del
    * @memberof Trie
-   * @param {Buffer|String} key
+   * @param {Buffer} key
    * @param {Function} callback the callback `Function`
    */
   del(key: Buffer, cb: Function) {
@@ -786,11 +786,11 @@ export class Trie {
    * @memberof Trie
    * @example
    * var ops = [
-   *    { type: 'del', key: 'father' }
-   *  , { type: 'put', key: 'name', value: 'Yuri Irsenovich Kim' }
-   *  , { type: 'put', key: 'dob', value: '16 February 1941' }
-   *  , { type: 'put', key: 'spouse', value: 'Kim Young-sook' }
-   *  , { type: 'put', key: 'occupation', value: 'Clown' }
+   *    { type: 'del', key: Buffer.from('father') }
+   *  , { type: 'put', key: Buffer.from('name'), value: Buffer.from('Yuri Irsenovich Kim') }
+   *  , { type: 'put', key: Buffer.from('dob'), value: Buffer.from('16 February 1941') }
+   *  , { type: 'put', key: Buffer.from('spouse'), value: Buffer.from('Kim Young-sook') }
+   *  , { type: 'put', key: Buffer.from('occupation'), value: Buffer.from('Clown') }
    * ]
    * trie.batch(ops)
    * @param {Array} ops

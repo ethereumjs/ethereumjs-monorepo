@@ -1,9 +1,9 @@
 language: node_js
 node_js:
-  - "6"
   - "8"
   - "9"
   - "10"
+  - "12"
 env:
   - CXX=g++-4.8
 services:
@@ -32,4 +32,3 @@ matrix:
       node_js: "8"
       env: CXX=g++-4.8 TEST_SUITE=test:browser
 script: npm run build && npm run $TEST_SUITE
-

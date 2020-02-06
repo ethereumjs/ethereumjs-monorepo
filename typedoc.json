@@ -1,8 +1,9 @@
 {
+  "inputFiles": ["src/*.ts"],
   "out": "docs",
   "mode": "file",
+  "plugin": "typedoc-plugin-markdown",
   "readme": "none",
-  "theme": "markdown",
-  "mdEngine": "github",
+  "gitRevision": "master",
   "excludeNotExported": true
 }
