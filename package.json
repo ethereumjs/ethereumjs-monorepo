@@ -76,7 +76,7 @@
     "prettier": "^1.18.2",
     "tape": "^4.10.1",
     "tslint": "^5.18.0",
-    "typedoc": "^0.16.9",
+    "typedoc": "next",
     "typedoc-plugin-markdown": "^2.2.16",
     "typescript": "^3.5.3",
     "typestrict": "^1.0.2"

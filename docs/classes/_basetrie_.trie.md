@@ -1,4 +1,4 @@
-[merkle-patricia-tree](../README.md) › [Trie](trie.md)
+[merkle-patricia-tree](../README.md) › ["baseTrie"](../modules/_basetrie_.md) › [Trie](_basetrie_.trie.md)
 
 # Class: Trie
 
@@ -19,58 +19,56 @@ If the db is `null` or left undefined, then the trie will be stored in memory vi
 
 * **Trie**
 
-  ↳ [CheckpointTrie](checkpointtrie.md)
+  ↳ [CheckpointTrie](_checkpointtrie_.checkpointtrie.md)
 
 ## Index
 
 ### Constructors
 
-* [constructor](trie.md#constructor)
+* [constructor](_basetrie_.trie.md#constructor)
 
 ### Properties
 
-* [EMPTY_TRIE_ROOT](trie.md#empty_trie_root)
-* [_root](trie.md#private-_root)
-* [db](trie.md#db)
-* [sem](trie.md#protected-sem)
+* [EMPTY_TRIE_ROOT](_basetrie_.trie.md#empty_trie_root)
+* [db](_basetrie_.trie.md#db)
 
 ### Accessors
 
-* [root](trie.md#root)
+* [root](_basetrie_.trie.md#root)
 
 ### Methods
 
-* [_createInitialNode](trie.md#_createinitialnode)
-* [_deleteNode](trie.md#_deletenode)
-* [_findDbNodes](trie.md#_finddbnodes)
-* [_findValueNodes](trie.md#_findvaluenodes)
-* [_formatNode](trie.md#_formatnode)
-* [_lookupNode](trie.md#_lookupnode)
-* [_putNode](trie.md#_putnode)
-* [_saveStack](trie.md#private-_savestack)
-* [_updateNode](trie.md#private-_updatenode)
-* [_walkTrie](trie.md#_walktrie)
-* [batch](trie.md#batch)
-* [checkRoot](trie.md#checkroot)
-* [copy](trie.md#copy)
-* [createReadStream](trie.md#createreadstream)
-* [del](trie.md#del)
-* [delRaw](trie.md#delraw)
-* [findPath](trie.md#findpath)
-* [get](trie.md#get)
-* [getRaw](trie.md#getraw)
-* [put](trie.md#put)
-* [putRaw](trie.md#putraw)
-* [setRoot](trie.md#setroot)
-* [fromProof](trie.md#static-fromproof)
-* [prove](trie.md#static-prove)
-* [verifyProof](trie.md#static-verifyproof)
+* [_createInitialNode](_basetrie_.trie.md#_createinitialnode)
+* [_deleteNode](_basetrie_.trie.md#_deletenode)
+* [_findDbNodes](_basetrie_.trie.md#_finddbnodes)
+* [_findValueNodes](_basetrie_.trie.md#_findvaluenodes)
+* [_formatNode](_basetrie_.trie.md#_formatnode)
+* [_lookupNode](_basetrie_.trie.md#_lookupnode)
+* [_putNode](_basetrie_.trie.md#_putnode)
+* [_saveStack](_basetrie_.trie.md#private-_savestack)
+* [_updateNode](_basetrie_.trie.md#private-_updatenode)
+* [_walkTrie](_basetrie_.trie.md#_walktrie)
+* [batch](_basetrie_.trie.md#batch)
+* [checkRoot](_basetrie_.trie.md#checkroot)
+* [copy](_basetrie_.trie.md#copy)
+* [createReadStream](_basetrie_.trie.md#createreadstream)
+* [del](_basetrie_.trie.md#del)
+* [delRaw](_basetrie_.trie.md#delraw)
+* [findPath](_basetrie_.trie.md#findpath)
+* [get](_basetrie_.trie.md#get)
+* [getRaw](_basetrie_.trie.md#getraw)
+* [put](_basetrie_.trie.md#put)
+* [putRaw](_basetrie_.trie.md#putraw)
+* [setRoot](_basetrie_.trie.md#setroot)
+* [fromProof](_basetrie_.trie.md#static-fromproof)
+* [prove](_basetrie_.trie.md#static-prove)
+* [verifyProof](_basetrie_.trie.md#static-verifyproof)
 
 ## Constructors
 
 ###  constructor
 
-\+ **new Trie**(`db?`: LevelUp | null, `root?`: Buffer): *[Trie](trie.md)*
+\+ **new Trie**(`db?`: LevelUp | null, `root?`: Buffer): *[Trie](_basetrie_.trie.md)*
 
 *Defined in [baseTrie.ts:37](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/baseTrie.ts#L37)*
 
@@ -81,7 +79,7 @@ Name | Type |
 `db?` | LevelUp &#124; null |
 `root?` | Buffer |
 
-**Returns:** *[Trie](trie.md)*
+**Returns:** *[Trie](_basetrie_.trie.md)*
 
 ## Properties
 
@@ -93,27 +91,11 @@ Name | Type |
 
 ___
 
-### `Private` _root
-
-• **_root**: *Buffer*
-
-*Defined in [baseTrie.ts:37](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/baseTrie.ts#L37)*
-
-___
-
 ###  db
 
-• **db**: *[DB](db.md)*
+• **db**: *DB*
 
 *Defined in [baseTrie.ts:35](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/baseTrie.ts#L35)*
-
-___
-
-### `Protected` sem
-
-• **sem**: *any*
-
-*Defined in [baseTrie.ts:36](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/baseTrie.ts#L36)*
 
 ## Accessors
 
@@ -141,7 +123,7 @@ Name | Type |
 
 ###  _createInitialNode
 
-▸ **_createInitialNode**(`key`: Buffer, `value`: Buffer, `cb`: [ErrorCallback](../README.md#errorcallback)): *void*
+▸ **_createInitialNode**(`key`: Buffer, `value`: Buffer, `cb`: ErrorCallback): *void*
 
 *Defined in [baseTrie.ts:735](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/baseTrie.ts#L735)*
 
@@ -151,7 +133,7 @@ Name | Type |
 ------ | ------ |
 `key` | Buffer |
 `value` | Buffer |
-`cb` | [ErrorCallback](../README.md#errorcallback) |
+`cb` | ErrorCallback |
 
 **Returns:** *void*
 
@@ -159,7 +141,7 @@ ___
 
 ###  _deleteNode
 
-▸ **_deleteNode**(`k`: Buffer, `stack`: [TrieNode](../README.md#trienode)[], `cb`: Function): *any*
+▸ **_deleteNode**(`k`: Buffer, `stack`: TrieNode[], `cb`: Function): *any*
 
 *Defined in [baseTrie.ts:617](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/baseTrie.ts#L617)*
 
@@ -168,7 +150,7 @@ ___
 Name | Type |
 ------ | ------ |
 `k` | Buffer |
-`stack` | [TrieNode](../README.md#trienode)[] |
+`stack` | TrieNode[] |
 `cb` | Function |
 
 **Returns:** *any*
@@ -211,7 +193,7 @@ ___
 
 ###  _formatNode
 
-▸ **_formatNode**(`node`: [TrieNode](../README.md#trienode), `topLevel`: boolean, `opStack`: [BatchDBOp](../README.md#batchdbop)[], `remove`: boolean): *Buffer | null | Buffer‹› | Buffer‹›[][]*
+▸ **_formatNode**(`node`: TrieNode, `topLevel`: boolean, `opStack`: BatchDBOp[], `remove`: boolean): *Buffer | null | Buffer‹› | Buffer‹›[][]*
 
 *Defined in [baseTrie.ts:743](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/baseTrie.ts#L743)*
 
@@ -219,9 +201,9 @@ ___
 
 Name | Type | Default |
 ------ | ------ | ------ |
-`node` | [TrieNode](../README.md#trienode) | - |
+`node` | TrieNode | - |
 `topLevel` | boolean | - |
-`opStack` | [BatchDBOp](../README.md#batchdbop)[] | - |
+`opStack` | BatchDBOp[] | - |
 `remove` | boolean | false |
 
 **Returns:** *Buffer | null | Buffer‹› | Buffer‹›[][]*
@@ -247,7 +229,7 @@ ___
 
 ###  _putNode
 
-▸ **_putNode**(`node`: [TrieNode](../README.md#trienode), `cb`: [ErrorCallback](../README.md#errorcallback)): *void*
+▸ **_putNode**(`node`: TrieNode, `cb`: ErrorCallback): *void*
 
 *Defined in [baseTrie.ts:247](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/baseTrie.ts#L247)*
 
@@ -255,8 +237,8 @@ ___
 
 Name | Type |
 ------ | ------ |
-`node` | [TrieNode](../README.md#trienode) |
-`cb` | [ErrorCallback](../README.md#errorcallback) |
+`node` | TrieNode |
+`cb` | ErrorCallback |
 
 **Returns:** *void*
 
@@ -264,7 +246,7 @@ ___
 
 ### `Private` _saveStack
 
-▸ **_saveStack**(`key`: number[], `stack`: [TrieNode](../README.md#trienode)[], `opStack`: [BatchDBOp](../README.md#batchdbop)[], `cb`: [ErrorCallback](../README.md#errorcallback)): *void*
+▸ **_saveStack**(`key`: number[], `stack`: TrieNode[], `opStack`: BatchDBOp[], `cb`: ErrorCallback): *void*
 
 *Defined in [baseTrie.ts:588](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/baseTrie.ts#L588)*
 
@@ -277,9 +259,9 @@ saves a stack
 Name | Type | Description |
 ------ | ------ | ------ |
 `key` | number[] | the key. Should follow the stack |
-`stack` | [TrieNode](../README.md#trienode)[] | a stack of nodes to the value given by the key |
-`opStack` | [BatchDBOp](../README.md#batchdbop)[] | a stack of levelup operations to commit at the end of this funciton |
-`cb` | [ErrorCallback](../README.md#errorcallback) |   |
+`stack` | TrieNode[] | a stack of nodes to the value given by the key |
+`opStack` | BatchDBOp[] | a stack of levelup operations to commit at the end of this funciton |
+`cb` | ErrorCallback |   |
 
 **Returns:** *void*
 
@@ -287,7 +269,7 @@ ___
 
 ### `Private` _updateNode
 
-▸ **_updateNode**(`k`: Buffer, `value`: Buffer, `keyRemainder`: number[], `stack`: [TrieNode](../README.md#trienode)[], `cb`: [ErrorCallback](../README.md#errorcallback)): *void*
+▸ **_updateNode**(`k`: Buffer, `value`: Buffer, `keyRemainder`: number[], `stack`: TrieNode[], `cb`: ErrorCallback): *void*
 
 *Defined in [baseTrie.ts:370](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/baseTrie.ts#L370)*
 
@@ -302,8 +284,8 @@ Name | Type | Description |
 `k` | Buffer | - |
 `value` | Buffer | - |
 `keyRemainder` | number[] | - |
-`stack` | [TrieNode](../README.md#trienode)[] | - |
-`cb` | [ErrorCallback](../README.md#errorcallback) | the callback  |
+`stack` | TrieNode[] | - |
+`cb` | ErrorCallback | the callback  |
 
 **Returns:** *void*
 
@@ -329,7 +311,7 @@ ___
 
 ###  batch
 
-▸ **batch**(`ops`: [BatchDBOp](../README.md#batchdbop)[], `cb`: [ErrorCallback](../README.md#errorcallback)): *void*
+▸ **batch**(`ops`: BatchDBOp[], `cb`: ErrorCallback): *void*
 
 *Defined in [baseTrie.ts:799](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/baseTrie.ts#L799)*
 
@@ -353,8 +335,8 @@ trie.batch(ops)
 
 Name | Type | Description |
 ------ | ------ | ------ |
-`ops` | [BatchDBOp](../README.md#batchdbop)[] | - |
-`cb` | [ErrorCallback](../README.md#errorcallback) |   |
+`ops` | BatchDBOp[] | - |
+`cb` | ErrorCallback |   |
 
 **Returns:** *void*
 
@@ -381,11 +363,11 @@ ___
 
 ###  copy
 
-▸ **copy**(): *[Trie](trie.md)*
+▸ **copy**(): *[Trie](_basetrie_.trie.md)*
 
 *Defined in [baseTrie.ts:778](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/baseTrie.ts#L778)*
 
-**Returns:** *[Trie](trie.md)*
+**Returns:** *[Trie](_basetrie_.trie.md)*
 
 ___
 
@@ -432,7 +414,7 @@ ___
 
 ###  delRaw
 
-▸ **delRaw**(`key`: Buffer, `cb`: [ErrorCallback](../README.md#errorcallback)): *void*
+▸ **delRaw**(`key`: Buffer, `cb`: ErrorCallback): *void*
 
 *Defined in [baseTrie.ts:225](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/baseTrie.ts#L225)*
 
@@ -445,7 +427,7 @@ Deletes key directly from underlying key/value db.
 Name | Type |
 ------ | ------ |
 `key` | Buffer |
-`cb` | [ErrorCallback](../README.md#errorcallback) |
+`cb` | ErrorCallback |
 
 **Returns:** *void*
 
@@ -521,7 +503,7 @@ ___
 
 ###  put
 
-▸ **put**(`key`: Buffer, `value`: Buffer, `cb`: [ErrorCallback](../README.md#errorcallback)): *void*
+▸ **put**(`key`: Buffer, `value`: Buffer, `cb`: ErrorCallback): *void*
 
 *Defined in [baseTrie.ts:147](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/baseTrie.ts#L147)*
 
@@ -537,7 +519,7 @@ Name | Type | Description |
 ------ | ------ | ------ |
 `key` | Buffer | - |
 `value` | Buffer | - |
-`cb` | [ErrorCallback](../README.md#errorcallback) | A callback `Function` which is given the argument `err` - for errors that may have occured  |
+`cb` | ErrorCallback | A callback `Function` which is given the argument `err` - for errors that may have occured  |
 
 **Returns:** *void*
 
@@ -545,7 +527,7 @@ ___
 
 ###  putRaw
 
-▸ **putRaw**(`key`: Buffer, `value`: Buffer, `cb`: [ErrorCallback](../README.md#errorcallback)): *void*
+▸ **putRaw**(`key`: Buffer, `value`: Buffer, `cb`: ErrorCallback): *void*
 
 *Defined in [baseTrie.ts:217](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/baseTrie.ts#L217)*
 
@@ -560,7 +542,7 @@ Name | Type |
 ------ | ------ |
 `key` | Buffer |
 `value` | Buffer |
-`cb` | [ErrorCallback](../README.md#errorcallback) |
+`cb` | ErrorCallback |
 
 **Returns:** *void*
 
@@ -584,7 +566,7 @@ ___
 
 ### `Static` fromProof
 
-▸ **fromProof**(`proofNodes`: Buffer[], `cb`: Function, `proofTrie?`: [Trie](trie.md)): *void*
+▸ **fromProof**(`proofNodes`: Buffer[], `cb`: Function, `proofTrie?`: [Trie](_basetrie_.trie.md)): *void*
 
 *Defined in [baseTrie.ts:49](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/baseTrie.ts#L49)*
 
@@ -594,7 +576,7 @@ Name | Type |
 ------ | ------ |
 `proofNodes` | Buffer[] |
 `cb` | Function |
-`proofTrie?` | [Trie](trie.md) |
+`proofTrie?` | [Trie](_basetrie_.trie.md) |
 
 **Returns:** *void*
 
@@ -602,7 +584,7 @@ ___
 
 ### `Static` prove
 
-▸ **prove**(`trie`: [Trie](trie.md), `key`: Buffer, `cb`: Function): *void*
+▸ **prove**(`trie`: [Trie](_basetrie_.trie.md), `key`: Buffer, `cb`: Function): *void*
 
 *Defined in [baseTrie.ts:70](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/baseTrie.ts#L70)*
 
@@ -610,7 +592,7 @@ ___
 
 Name | Type |
 ------ | ------ |
-`trie` | [Trie](trie.md) |
+`trie` | [Trie](_basetrie_.trie.md) |
 `key` | Buffer |
 `cb` | Function |
 
