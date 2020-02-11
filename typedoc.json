@@ -1,8 +1,13 @@
 {
+  "inputFiles": ["src/index.ts"],
   "out": "docs",
-  "mode": "file",
+  "mode": "library",
+  "plugin": "typedoc-plugin-markdown",
   "readme": "none",
-  "theme": "markdown",
-  "mdEngine": "github",
-  "excludeNotExported": true
+  "gitRevision": "master",
+  "exclude": "src/**/!(secure|checkpointTrie|baseTrie).ts",
+  "excludeNotExported": true,
+  "excludeExternals": true,
+  "excludePrivate": true,
+  "excludeProtected": true
 }
