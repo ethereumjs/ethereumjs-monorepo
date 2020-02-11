@@ -27,7 +27,7 @@ tape('[Block]: block functions', function(t) {
     st.end()
   })
 
-  const testData = require('./testdata.json')
+  const testData = require('./testdata/testdata.json')
 
   async function testTransactionValidation(st: tape.Test, block: Block) {
     st.equal(block.validateTransactions(), true)
@@ -50,7 +50,7 @@ tape('[Block]: block functions', function(t) {
     await testTransactionValidation(st, block)
   })
 
-  const testData2 = require('./testdata2.json')
+  const testData2 = require('./testdata/testdata2.json')
   t.test('should test uncles hash validation', function(st) {
     const block = new Block(rlp.decode(testData2.blocks[2].rlp))
     st.equal(block.validateUnclesHash(), true)
@@ -73,7 +73,7 @@ tape('[Block]: block functions', function(t) {
     st.end()
   })
 
-  const testDataGenesis = require('./genesishashestest.json').test
+  const testDataGenesis = require('./testdata/genesishashestest.json').test
   t.test('should test genesis hashes (mainnet default)', function(st) {
     const genesisBlock = new Block()
     genesisBlock.setGenesisParams()

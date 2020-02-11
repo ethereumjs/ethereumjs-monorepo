@@ -1,9 +1,9 @@
 # SYNOPSIS
 
-[![NPM Package](https://img.shields.io/npm/v/ethereumjs-block.svg?style=flat-square)](https://www.npmjs.org/package/ethereumjs-block)
+[![NPM Package](https://img.shields.io/npm/v/ethereumjs-block.svg)](https://www.npmjs.org/package/ethereumjs-block)
 [![Actions Status](https://github.com/ethereumjs/ethereumjs-block/workflows/block-test/badge.svg)](https://github.com/ethereumjs/ethereumjs-block/actions)
-[![Coverage Status](https://img.shields.io/coveralls/ethereumjs/ethereumjs-block.svg?style=flat-square)](https://coveralls.io/r/ethereumjs/ethereumjs-block)
-[![Gitter](https://img.shields.io/gitter/room/ethereum/ethereumjs-lib.svg?style=flat-square)]() or #ethereumjs on freenode
+[![Coverage Status](https://img.shields.io/coveralls/ethereumjs/ethereumjs-block.svg)](https://coveralls.io/r/ethereumjs/ethereumjs-block)
+[![Gitter](https://img.shields.io/gitter/room/ethereum/ethereumjs-lib.svg)](https://gitter.im/ethereum/ethereumjs)
 
 Implements schema and functions related to Ethereum's block.
 
@@ -17,7 +17,7 @@ This module works with `browserify`.
 
 # API
 
-[./docs](./docs/README.md)
+[Documentation](./docs/README.md)
 
 # TESTING
 
