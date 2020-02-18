@@ -219,7 +219,7 @@ function createOpcodes(
   const result: OpcodeList = {}
   for (const [key, value] of Object.entries(opcodes)) {
     const code = parseInt(key, 10)
-    result[key] = new Opcode({
+    result[<any>key] = new Opcode({
       code,
       fullName: getFullname(code, value.name),
       ...value
