@@ -221,7 +221,7 @@ function createOpcodes(
     const code = parseInt(key, 10)
     result[key] = new Opcode({
       code,
-      fullName: getFullname(code, name),
+      fullName: getFullname(code, value.name),
       ...value
     })
   }
