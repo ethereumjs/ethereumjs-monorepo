@@ -1,16 +1,41 @@
 import Common from 'ethereumjs-common'
 
-export interface Opcode {
-  name: string
-  fee: number
-  isAsync: boolean
+export class Opcode {
+  readonly code: number
+  readonly name: string
+  readonly fullName: string
+  readonly fee: number
+  readonly isAsync: boolean
+
+  constructor({
+    code,
+    name,
+    fullName,
+    fee,
+    isAsync,
+  }: {
+    code: number,
+    name: string,
+    fullName: string,
+    fee: number,
+    isAsync: boolean,
+  }) {
+    this.code = code
+    this.name = name
+    this.fullName = fullName
+    this.fee = fee
+    this.isAsync = isAsync
+
+    // Opcode isn't subject to change, thus all futher modifications are prevented.
+    Object.freeze(this)
+  }
 }
 
 export interface OpcodeList {
   [code: number]: Opcode
 }
 
-const opcodes: OpcodeList = {
+const opcodes: OpcodeList = createOpcodes({
   // 0x0 range - arithmetic ops
   // name, baseCost, async
   0x00: { name: 'STOP', fee: 0, isAsync: false },
@@ -172,17 +197,69 @@ const opcodes: OpcodeList = {
   // '0x70', range - other
   0xfe: { name: 'INVALID', fee: 0, isAsync: false },
   0xff: { name: 'SELFDESTRUCT', fee: 5000, isAsync: true },
-}
+})
 
-const istanbulOpcodes: OpcodeList = {
+const istanbulOpcodes: OpcodeList = createOpcodes({
   0x31: { name: 'BALANCE', fee: 700, isAsync: true },
   0x3f: { name: 'EXTCODEHASH', fee: 700, isAsync: true },
   0x46: { name: 'CHAINID', fee: 2, isAsync: false },
   0x47: { name: 'SELFBALANCE', fee: 5, isAsync: false },
   0x54: { name: 'SLOAD', fee: 800, isAsync: true },
+})
+
+/**
+ * Convert basic opcode info dictonary into complete OpcodeList instance.
+ *
+ * @param opcodes {Object} Receive basic opcodes info dictionary.
+ * @returns {OpcodeList} Complete Opcode list
+ */
+function createOpcodes(
+  opcodes: {[key:string]: {name: string, fee: number, isAsync: boolean}}
+): OpcodeList {
+  const result: OpcodeList = {}
+  for (const [key, value] of Object.entries(opcodes)) {
+    const code = parseInt(key, 10)
+    result[key] = new Opcode({
+      code,
+      fullName: getFullname(code, name),
+      ...value
+    })
+  }
+  return result
 }
 
-export function getOpcodesForHF(common: Common) {
+/**
+ * Get full opcode name from its name and code.
+ *
+ * @param code {number} Integer code of opcode.
+ * @param name {string} Short name of the opcode.
+ * @returns {string} Full opcode name
+ */
+function getFullname(code: number, name: string): string {
+  switch (name) {
+    case 'LOG':
+      name += code - 0xa0
+      break
+    case 'PUSH':
+      name += code - 0x5f
+      break
+    case 'DUP':
+      name += code - 0x7f
+      break
+    case 'SWAP':
+      name += code - 0x8f
+      break
+  }
+  return name
+}
+
+/**
+ * Get suitable opcodes for the required hardfork.
+ *
+ * @param common {Common} Ethereumjs Common metadaata object.
+ * @returns {OpcodeList} Opcodes dictionary object.
+ */
+export function getOpcodesForHF(common: Common): OpcodeList {
   if (common.gteHardfork('istanbul')) {
     return { ...opcodes, ...istanbulOpcodes }
   } else {
