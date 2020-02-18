@@ -152,9 +152,7 @@ export default class Interpreter {
    * Get info for an opcode from VM's list of opcodes.
    */
   lookupOpInfo(op: number): Opcode {
-    const opcode = this._vm._opcodes[op]
-      ? this._vm._opcodes[op]
-      : this._vm._opcodes[0xfe]
+    const opcode = this._vm._opcodes[op] ? this._vm._opcodes[op] : this._vm._opcodes[0xfe]
 
     return opcode
   }

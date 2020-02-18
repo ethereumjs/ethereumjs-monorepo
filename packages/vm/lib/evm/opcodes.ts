@@ -14,11 +14,11 @@ export class Opcode {
     fee,
     isAsync,
   }: {
-    code: number,
-    name: string,
-    fullName: string,
-    fee: number,
-    isAsync: boolean,
+    code: number
+    name: string
+    fullName: string
+    fee: number
+    isAsync: boolean
   }) {
     this.code = code
     this.name = name
@@ -213,16 +213,16 @@ const istanbulOpcodes: OpcodeList = createOpcodes({
  * @param opcodes {Object} Receive basic opcodes info dictionary.
  * @returns {OpcodeList} Complete Opcode list
  */
-function createOpcodes(
-  opcodes: {[key:string]: {name: string, fee: number, isAsync: boolean}}
-): OpcodeList {
+function createOpcodes(opcodes: {
+  [key: string]: { name: string; fee: number; isAsync: boolean }
+}): OpcodeList {
   const result: OpcodeList = {}
   for (const [key, value] of Object.entries(opcodes)) {
     const code = parseInt(key, 10)
     result[<any>key] = new Opcode({
       code,
       fullName: getFullname(code, value.name),
-      ...value
+      ...value,
     })
   }
   return result
