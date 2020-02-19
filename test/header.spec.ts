@@ -5,6 +5,7 @@ import * as utils from 'ethereumjs-util'
 import { rlp } from 'ethereumjs-util'
 import { BlockHeader } from '../src/header'
 import { Block } from '../src/block'
+import { setupBlockchain } from './util'
 
 tape('[Block]: Header functions', function(t) {
   t.test('should create with default constructor', function(st) {
@@ -110,45 +111,6 @@ tape('[Block]: Header functions', function(t) {
     st.ok(genesisHeader.validate(blockchain))
     st.end()
   })
-
-  const setupBlockchain = async (): Promise<[Blockchain, Block]> => {
-    return new Promise((resolve, reject) => {
-      const blockchain = new Blockchain({
-        validateBlocks: true,
-        validatePow: false,
-        chain: 'ropsten',
-      })
-      const genesisBlock = new Block(undefined, { chain: 'ropsten' })
-      genesisBlock.setGenesisParams()
-
-      blockchain.putGenesis(genesisBlock, (err?: Error) => {
-        if (err) {
-          return reject(err)
-        }
-        const nextBlock = new Block(
-          {
-            header: new BlockHeader({
-              number: 1,
-              parentHash: genesisBlock.header.hash(),
-              gasLimit: genesisBlock.header.gasLimit,
-              timestamp: Date.now(),
-            }),
-          },
-          { chain: 'ropsten' },
-        )
-        nextBlock.header.difficulty = utils.toBuffer(
-          nextBlock.header.canonicalDifficulty(genesisBlock),
-        )
-
-        blockchain.putBlock(nextBlock, async (err?: Error) => {
-          if (err) {
-            return reject(err)
-          }
-          resolve([blockchain, nextBlock])
-        })
-      })
-    })
-  }
 
   t.test('should validate a valid block header', async st => {
     const [blockchain, lastBlock] = await setupBlockchain()
@@ -307,6 +269,29 @@ tape('[Block]: Header functions', function(t) {
     nextBlock.extraData = Buffer.from('a'.repeat(1000))
     try {
       await nextBlock.validate(blockchain)
+      st.fail('should not validate')
+      st.end()
+    } catch (error) {
+      st.ok(true)
+      st.end()
+    }
+  })
+
+  t.test('should not validate a header with invalid height', async st => {
+    const [blockchain, lastBlock] = await setupBlockchain()
+    const nextBlock = new BlockHeader(
+      {
+        number: 2,
+        parentHash: lastBlock.header.hash(),
+        gasLimit: lastBlock.header.gasLimit,
+        timestamp: Date.now(),
+        extraData: Buffer.from('abc'),
+      },
+      { chain: 'ropsten' },
+    )
+    nextBlock.difficulty = utils.toBuffer(nextBlock.canonicalDifficulty(lastBlock))
+    try {
+      await nextBlock.validate(blockchain, new utils.BN(15))
       st.fail('should not validate')
       st.end()
     } catch (error) {
