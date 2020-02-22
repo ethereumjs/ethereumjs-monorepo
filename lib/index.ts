@@ -8,6 +8,7 @@ import { default as runCall, RunCallOpts } from './runCall'
 import { default as runTx, RunTxOpts, RunTxResult } from './runTx'
 import { default as runBlock, RunBlockOpts, RunBlockResult } from './runBlock'
 import { EVMResult, ExecResult } from './evm/evm'
+import { Precompiles, precompiles } from './evm/precompiles'
 import { OpcodeList, getOpcodesForHF } from './evm/opcodes'
 import runBlockchain from './runBlockchain'
 import PStateManager from './state/promisified'
@@ -49,12 +50,17 @@ export interface VMOpts {
    *
    * Setting this to true has the effect of precompiled contracts' gas costs matching mainnet's from
    * the very first call, which is intended for testing networks.
+   * @deprecated
    */
   activatePrecompiles?: boolean
   /**
    * Allows unlimited contract sizes while debugging. By setting this to `true`, the check for contract size limit of 24KB (see [EIP-170](https://git.io/vxZkK)) is bypassed
    */
   allowUnlimitedContractSize?: boolean
+  /**
+   * Acctive precompiled contracts as a dictionary.
+   */
+  precompiledContracts?: Precompiles
   common?: Common
 }
 
@@ -73,6 +79,7 @@ export default class VM extends AsyncEventEmitter {
   _opcodes: OpcodeList
   public readonly _emit: (topic: string, data: any) => Promise<void>
   public readonly pStateManager: PStateManager
+  public readonly precompiledContracts: Precompiles
 
   /**
    * Instantiates a new [[VM]] Object.
@@ -116,12 +123,13 @@ export default class VM extends AsyncEventEmitter {
       this.stateManager = opts.stateManager
     } else {
       const trie = opts.state || new Trie()
-      if (opts.activatePrecompiles) {
-        for (let i = 1; i <= 8; i++) {
-          trie.put(new BN(i).toArrayLike(Buffer, 'be', 20), new Account().serialize())
-        }
-      }
       this.stateManager = new StateManager({ trie, common: this._common })
+    }
+
+    if (opts.precompiledContracts) {
+      this.precompiledContracts = opts.precompiledContracts
+    } else {
+      this.precompiledContracts = precompiles
     }
 
     this.pStateManager = new PStateManager(this.stateManager)
@@ -198,6 +206,7 @@ export default class VM extends AsyncEventEmitter {
       stateManager: this.stateManager.copy(),
       blockchain: this.blockchain,
       common: this._common,
+      precompiledContracts: this.precompiledContracts,
     })
   }
 }

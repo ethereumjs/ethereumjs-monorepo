@@ -30,4 +30,11 @@ function getPrecompile(address: string): PrecompileFunc {
   return precompiles[address]
 }
 
-export { precompiles, getPrecompile, PrecompileFunc, PrecompileInput, ripemdPrecompileAddress }
+export {
+  Precompiles,
+  precompiles,
+  getPrecompile,
+  PrecompileFunc,
+  PrecompileInput,
+  ripemdPrecompileAddress,
+}

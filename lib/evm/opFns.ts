@@ -702,7 +702,8 @@ export const handlers: { [k: string]: OpHandler } = {
 
     const empty = await runState.eei.isAccountEmpty(toAddressBuf)
     if (empty) {
-      if (!value.isZero()) {
+      const precompiledContracts = runState.eei._evm._precompiledContracts
+      if (!precompiledContracts[toAddressBuf.toString('hex')] && !value.isZero()) {
         runState.eei.useGas(new BN(runState._common.param('gasPrices', 'callNewAccount')))
       }
     }
