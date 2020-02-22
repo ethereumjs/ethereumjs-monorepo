@@ -150,11 +150,13 @@ export default class VM extends AsyncEventEmitter {
     }
 
     const { opts } = this
-    const state = this.pStateManager
+    const state = this.stateManager
 
     if (opts.activatePrecompiles && !opts.stateManager) {
+      const put = promisify(state._trie.put.bind(state._trie))
       for (const address of Object.keys(this.precompiledContracts)) {
-        await state.putAccount(Buffer.from(address, 'hex'), new Account())
+        // await state.putAccount(Buffer.from(address, 'hex'), new Account())
+        await put(Buffer.from(address, 'hex'), new Account().serialize())
       }
     }
 
