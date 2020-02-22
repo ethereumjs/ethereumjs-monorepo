@@ -70,6 +70,37 @@ tape('VM with default blockchain', (t) => {
     await vm.runBlockchain()
     st.end()
   })
+
+  t.test('should init precompiled contracts', async (st) => {
+    let trie = new Trie()
+    trie.isTestTrie = true
+
+    const address = '0000000000000000000000000000000000000001'
+    const vm = new VM({
+      activatePrecompiles: true,
+      precompiledContracts: {
+        [address]: () => {},
+      },
+      state: trie,
+    })
+    st.notEqual(vm.stateManager._trie.root, util.KECCAK256_RLP, 'it has different root')
+    st.ok(vm.stateManager._trie.isTestTrie, 'it works on trie provided')
+    st.end()
+  })
+
+  t.test('should not init empty precompiled contracts', async (st) => {
+    let trie = new Trie()
+    trie.isTestTrie = true
+
+    const vm = new VM({
+      activatePrecompiles: true,
+      precompiledContracts: {},
+      state: trie,
+    })
+    st.deepEqual(vm.stateManager._trie.root, util.KECCAK256_RLP, 'it has different root')
+    st.ok(vm.stateManager._trie.isTestTrie, 'it works on trie provided')
+    st.end()
+  })
 })
 
 tape('VM with blockchain', (t) => {
