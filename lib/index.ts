@@ -128,9 +128,9 @@ export default class VM extends AsyncEventEmitter {
     }
 
     if (opts.precompiledContracts) {
-      this.precompiledContracts = {...opts.precompiledContracts}
+      this.precompiledContracts = { ...opts.precompiledContracts }
     } else {
-      this.precompiledContracts = {...precompiles}
+      this.precompiledContracts = { ...precompiles }
     }
 
     this.pStateManager = new PStateManager(this.stateManager)
@@ -153,7 +153,7 @@ export default class VM extends AsyncEventEmitter {
     const { opts } = this
     const state = this.pStateManager
 
-    if (opts.activatePrecompiles && ! opts.stateManager) {
+    if (opts.activatePrecompiles && !opts.stateManager) {
       for (const address of Object.keys(this.precompiledContracts)) {
         await state.putAccount(new BN(address).toArrayLike(Buffer, 'be', 20), new Account())
       }
