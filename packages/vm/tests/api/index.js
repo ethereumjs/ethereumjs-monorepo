@@ -17,9 +17,10 @@ tape('VM with default blockchain', (t) => {
     st.end()
   })
 
-  t.test('should be able to activate precompiles', (st) => {
+  t.test('should be able to activate precompiles', async (st) => {
     let vm = new VM({ activatePrecompiles: true })
-    st.notEqual(vm.stateManager._trie.root, util.KECCAK256_RLP, 'it has different root')
+    await vm.init()
+    st.notDeepEqual(vm.stateManager._trie.root, util.KECCAK256_RLP, 'it has different root')
     st.end()
   })
 
