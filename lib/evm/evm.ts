@@ -10,7 +10,7 @@ import {
 import Account from 'ethereumjs-account'
 import { ERROR, VmError } from '../exceptions'
 import PStateManager from '../state/promisified'
-import { getPrecompile, PrecompileFunc, Precompiles, ripemdPrecompileAddress } from './precompiles'
+import { PrecompileFunc, Precompiles } from './precompiles'
 import TxContext from './txContext'
 import Message from './message'
 import EEI from './eei'
@@ -331,7 +331,7 @@ export default class EVM {
    * if no such precompile exists.
    */
   getPrecompile(address: Buffer): PrecompileFunc {
-    return getPrecompile(address.toString('hex'))
+    return this._precompiledContracts[address.toString('hex')]
   }
 
   /**

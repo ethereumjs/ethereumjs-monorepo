@@ -50,7 +50,6 @@ export interface VMOpts {
    *
    * Setting this to true has the effect of precompiled contracts' gas costs matching mainnet's from
    * the very first call, which is intended for testing networks.
-   * @deprecated
    */
   activatePrecompiles?: boolean
   /**
@@ -155,7 +154,7 @@ export default class VM extends AsyncEventEmitter {
 
     if (opts.activatePrecompiles && !opts.stateManager) {
       for (const address of Object.keys(this.precompiledContracts)) {
-        await state.putAccount(new BN(address).toArrayLike(Buffer, 'be', 20), new Account())
+        await state.putAccount(Buffer.from(address, 'hex'), new Account())
       }
     }
 
