@@ -80,6 +80,7 @@ export default class VM extends AsyncEventEmitter {
   public readonly _emit: (topic: string, data: any) => Promise<void>
   public readonly pStateManager: PStateManager
   public readonly precompiledContracts: Precompiles
+  protected isInitialized: boolean = false
 
   /**
    * Instantiates a new [[VM]] Object.
@@ -127,9 +128,9 @@ export default class VM extends AsyncEventEmitter {
     }
 
     if (opts.precompiledContracts) {
-      this.precompiledContracts = opts.precompiledContracts
+      this.precompiledContracts = {...opts.precompiledContracts}
     } else {
-      this.precompiledContracts = precompiles
+      this.precompiledContracts = {...precompiles}
     }
 
     this.pStateManager = new PStateManager(this.stateManager)
@@ -144,6 +145,23 @@ export default class VM extends AsyncEventEmitter {
     this._emit = promisify(this.emit.bind(this))
   }
 
+  async init(): Promise<void> {
+    if (this.isInitialized) {
+      return
+    }
+
+    const { opts } = this
+    const state = this.pStateManager
+
+    if (opts.activatePrecompiles && ! opts.stateManager) {
+      for (const address of Object.keys(this.precompiledContracts)) {
+        await state.putAccount(new BN(address).toArrayLike(Buffer, 'be', 20), new Account())
+      }
+    }
+
+    this.isInitialized = true
+  }
+
   /**
    * Processes blocks and adds them to the blockchain.
    *
@@ -151,7 +169,8 @@ export default class VM extends AsyncEventEmitter {
    *
    * @param blockchain -  A [blockchain](https://github.com/ethereum/ethereumjs-blockchain) object to process
    */
-  runBlockchain(blockchain: any): Promise<void> {
+  async runBlockchain(blockchain: any): Promise<void> {
+    await this.init()
     return runBlockchain.bind(this)(blockchain)
   }
 
@@ -165,7 +184,8 @@ export default class VM extends AsyncEventEmitter {
    * @param opts - Default values for options:
    *  - `generate`: false
    */
-  runBlock(opts: RunBlockOpts): Promise<RunBlockResult> {
+  async runBlock(opts: RunBlockOpts): Promise<RunBlockResult> {
+    await this.init()
     return runBlock.bind(this)(opts)
   }
 
@@ -176,7 +196,8 @@ export default class VM extends AsyncEventEmitter {
    * when the error is thrown from an event handler. In the latter case the state may or may not be
    * reverted.
    */
-  runTx(opts: RunTxOpts): Promise<RunTxResult> {
+  async runTx(opts: RunTxOpts): Promise<RunTxResult> {
+    await this.init()
     return runTx.bind(this)(opts)
   }
 
@@ -185,7 +206,8 @@ export default class VM extends AsyncEventEmitter {
    *
    * This method modifies the state.
    */
-  runCall(opts: RunCallOpts): Promise<EVMResult> {
+  async runCall(opts: RunCallOpts): Promise<EVMResult> {
+    await this.init()
     return runCall.bind(this)(opts)
   }
 
@@ -194,7 +216,8 @@ export default class VM extends AsyncEventEmitter {
    *
    * This method modifies the state.
    */
-  runCode(opts: RunCodeOpts): Promise<ExecResult> {
+  async runCode(opts: RunCodeOpts): Promise<ExecResult> {
+    await this.init()
     return runCode.bind(this)(opts)
   }
 
