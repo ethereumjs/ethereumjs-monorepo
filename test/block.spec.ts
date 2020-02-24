@@ -1,8 +1,9 @@
 import Common from 'ethereumjs-common'
 import tape = require('tape')
-import { rlp } from 'ethereumjs-util'
+import { rlp, toBuffer } from 'ethereumjs-util'
 
 import { Block } from '../src/block'
+import { setupBlockchain } from './util'
 
 tape('[Block]: block functions', function(t) {
   t.test('should test block initialization', function(st) {
@@ -128,5 +129,110 @@ tape('[Block]: block functions', function(t) {
     st.equal(typeof block.toJSON(), 'object')
     st.equal(typeof block.toJSON(true), 'object')
     st.end()
+  })
+
+  t.test('should validate a valid block', async st => {
+    const [blockchain, lastBlock] = await setupBlockchain()
+    const nextBlock = new Block(
+      {
+        header: {
+          number: 2,
+          parentHash: lastBlock.header.hash(),
+          gasLimit: lastBlock.header.gasLimit,
+          timestamp: Date.now(),
+          extraData: Buffer.from('abc'),
+        },
+      },
+      { chain: 'ropsten' },
+    )
+    nextBlock.header.difficulty = toBuffer(nextBlock.header.canonicalDifficulty(lastBlock))
+    try {
+      await nextBlock.validate(blockchain)
+      st.ok(true)
+      st.end()
+    } catch (error) {
+      st.fail(error)
+      st.end()
+    }
+  })
+
+  t.test('should throw on invalid uncle hash', async st => {
+    const [blockchain, lastBlock] = await setupBlockchain()
+    const nextBlock = new Block(
+      {
+        header: {
+          number: 2,
+          parentHash: lastBlock.header.hash(),
+          gasLimit: lastBlock.header.gasLimit,
+          timestamp: Date.now(),
+          extraData: Buffer.from('abc'),
+          uncleHash: Buffer.from('testFail'),
+        },
+      },
+      { chain: 'ropsten' },
+    )
+    nextBlock.header.difficulty = toBuffer(nextBlock.header.canonicalDifficulty(lastBlock))
+    try {
+      await nextBlock.validate(blockchain)
+      st.fail('should not validate')
+      st.end()
+    } catch (error) {
+      st.ok(true)
+      st.end()
+    }
+  })
+
+  const testBadTx = require('./testdata/DataTestNotEnoughGAS.json')
+  t.test('should throw on invalid transaction', async st => {
+    const [blockchain, lastBlock] = await setupBlockchain()
+    const nextBlock = new Block(
+      {
+        header: {
+          number: 2,
+          parentHash: lastBlock.header.hash(),
+          gasLimit: lastBlock.header.gasLimit,
+          timestamp: Date.now(),
+          extraData: Buffer.from('abc'),
+        },
+        transactions: [testBadTx.rlp],
+      },
+      { chain: 'ropsten' },
+    )
+    nextBlock.header.difficulty = toBuffer(nextBlock.header.canonicalDifficulty(lastBlock))
+    try {
+      await nextBlock.validate(blockchain)
+      st.fail('should not validate')
+      st.end()
+    } catch (error) {
+      st.ok(true)
+      st.end()
+    }
+  })
+
+  t.test('should throw on invalid uncle data', async st => {
+    const [blockchain, lastBlock] = await setupBlockchain()
+    const nextBlock = new Block(
+      {
+        header: {
+          number: 2,
+          parentHash: lastBlock.header.hash(),
+          gasLimit: lastBlock.header.gasLimit,
+          timestamp: Date.now(),
+          extraData: Buffer.from('abc'),
+        },
+        transactions: [],
+        uncleHeaders: ['0xabc', '0xdef'],
+      },
+      { chain: 'ropsten' },
+    )
+    nextBlock.header.difficulty = toBuffer(nextBlock.header.canonicalDifficulty(lastBlock))
+    try {
+      await nextBlock.validateUncles(blockchain)
+      st.fail('should not validate')
+      st.end()
+    } catch (error) {
+      st.ok(true)
+      st.end()
+    }
   })
 })
