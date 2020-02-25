@@ -1,0 +1,45 @@
+language: node_js
+node_js:
+  - "8"
+  - "10"
+  - "11"
+env:
+  - CXX=g++-4.8
+services:
+  - xvfb
+addons:
+  apt:
+    sources:
+    - ubuntu-toolchain-r-test
+    packages:
+    - g++-4.8
+env:
+  global:
+    - DISPLAY=:99.0
+  matrix:
+    - CXX=g++-4.8 TEST_SUITE=test:node
+matrix:
+  fast_finish: true
+  include:
+    - os: linux
+      node_js: "8"
+      env: CXX=g++-4.8 TEST_SUITE=coveralls
+    - os: linux
+      node_js: "8"
+      env: CXX=g++-4.8 TEST_SUITE=lint
+    - os: linux
+      node_js: "10"
+      env: CXX=g++-4.8 TEST_SUITE=coveralls
+    - os: linux
+      node_js: "10"
+      env: CXX=g++-4.8 TEST_SUITE=lint
+    - os: linux
+      node_js: "11"
+      env: CXX=g++-4.8 TEST_SUITE=coveralls
+    - os: linux
+      node_js: "11"
+      env: CXX=g++-4.8 TEST_SUITE=lint
+    # - os: linux
+    #   node_js: "4"
+    #   env: CXX=g++-4.8 TEST_SUITE=test:browser
+script: npm run $TEST_SUITE
