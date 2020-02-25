@@ -22,9 +22,14 @@ jobs:
           node-version: '${{ matrix.node-version }}'
       - uses: actions/checkout@v1
       - run: npm install
+        working-directory: '${{ env.cwd }}'
       - run: 'npm run test:node'
         env:
           CI: true
+        working-directory: '${{ env.cwd }}'
       - run: 'npm run test:browser'
         env:
           CI: true
+        working-directory: '${{ env.cwd }}'
+    env:
+      cwd: '${{github.workspace}}/packages/block'
