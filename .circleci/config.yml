@@ -1,0 +1,49 @@
+# 
+# This whole file is a workaround, as Codecov does not fully support GitHub Actions for pull requests from external repositories. Codecov + CircleCI does.
+# As soon as a release is made, we can migrate to GitHub Actions, taking advantage of their job filtering. 
+# 
+
+version: 2.1
+
+aliases:
+  - &steps
+    docker:
+      - image: circleci/node:10
+    steps:
+      - checkout
+      - run: 
+          name: Installing dependencies
+          command: cd ~/project/packages/${CIRCLE_JOB} && npm install
+      - run: 
+          name: Running coverage tests
+          command: cd ~/project/packages/${CIRCLE_JOB} && npm run coverage
+      - run: 
+          name: Codecov upload
+          command: curl -s https://codecov.io/bash | bash -s -- -f ~/project/packages/${CIRCLE_JOB}/coverage/lcov.info -F "${CIRCLE_JOB}" -t "${CODECOV_TOKEN}" -n "${CIRCLE_BUILD_NUM}" -y ".codecov.yml" -Z || echo 'Codecov upload failed'
+
+jobs:
+  account:
+    <<: *steps
+  block:
+    <<: *steps
+  blockchain:
+    <<: *steps
+  common:
+    <<: *steps
+  tx:
+    <<: *steps
+  vm:
+    <<: *steps
+
+
+
+workflows:
+  version: 2
+  coverage:
+    jobs:
+      - account
+      - block
+      - blockchain
+      - common
+      - tx
+      - vm
