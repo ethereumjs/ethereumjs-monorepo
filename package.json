@@ -55,7 +55,7 @@
     "@types/tape": "^4.2.33",
     "husky": "^2.1.0",
     "merkle-patricia-tree": "^3.0.0",
-    "nyc": "^15.0.0",
+    "nyc": "^13.2.0",
     "prettier": "^1.15.3",
     "tape": "^4.10.1",
     "ts-node": "^7.0.1",
