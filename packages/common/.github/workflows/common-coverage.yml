@@ -1,0 +1,19 @@
+name: common-coverage
+on: [push, pull_request]
+jobs:
+  coverage:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/setup-node@v1
+        with:
+          node-version: 12.x
+
+      - uses: actions/checkout@v1
+      - run: npm install
+      - run: npm run coverage
+      - run: npm run coveralls
+
+      - name: Post coverage data to coveralls.io for analysis
+        uses: coverallsapp/github-action@master
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}

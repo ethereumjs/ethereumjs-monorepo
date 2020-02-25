@@ -1,0 +1,15 @@
+name: common-lint
+on: [push, pull_request]
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/setup-node@v1
+        with:
+          node-version: 12.x
+
+      - uses: actions/checkout@v1
+      - run: npm install
+      - run: npm run lint
+        env:
+          CI: true
