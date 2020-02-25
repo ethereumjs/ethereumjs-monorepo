@@ -11,7 +11,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 - Added support for the `MuirGlacier` HF by updating the `ethereumjs-common` dependency
   to [v1.5.0](https://github.com/ethereumjs/ethereumjs-common/releases/tag/v1.5.0)
 
-[2.1.2]: https://github.com/ethereumjs/ethereumjs-tx/compare/v2.1.1...v2.1.2
+[2.1.2]: https://github.com/ethereumjs/ethereumjs-vm/compare/%40ethereumjs%2Ftx%402.1.1...%40ethereumjs%2F2.1.2
 
 ## [2.1.1] - 2019-08-30
 
@@ -19,7 +19,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
   ([EIP-2028](https://eips.ethereum.org/EIPS/eip-2028)),
   PR [#171](https://github.com/ethereumjs/ethereumjs-tx/pull/171)
 
-[2.1.1]: https://github.com/ethereumjs/ethereumjs-tx/compare/v2.1.0...v2.1.1
+[2.1.1]: https://github.com/ethereumjs/ethereumjs-vm/compare/%40ethereumjs%2Ftx%402.1.0...%40ethereumjs%2F2.1.1
 
 ## [2.1.0] - 2019-06-28
 
@@ -42,7 +42,7 @@ List of changes:
 - Added more documentation and examples on how to create transactions for public testnets and
   custom networks.
 
-[2.1.0]: https://github.com/ethereumjs/ethereumjs-tx/compare/v2.0.0...v2.1.0
+[2.1.0]: https://github.com/ethereumjs/ethereumjs-vm/compare/%40ethereumjs%2Ftx%402.0.0...%40ethereumjs%2F2.1.0
 
 ## [2.0.0] - 2019-06-03
 
@@ -104,27 +104,27 @@ or changed on runtime are handled:
 For activating non-`EIP-155` behavior instantiate the transaction with a
 pre-`Spurious Dragon` hardfork option.
 
-[2.0.0]: https://github.com/ethereumjs/ethereumjs-tx/compare/v1.3.7...v2.0.0
+[2.0.0]: https://github.com/ethereumjs/ethereumjs-vm/compare/%40ethereumjs%2Ftx%401.3.7...%40ethereumjs%2F2.0.0
 
 ## [1.3.7] - 2018-07-25
 
 - Fix bug causing `FakeTransaction.from` to not retrieve sender address from tx signature, see PR [#118](https://github.com/ethereumjs/ethereumjs-tx/pull/118)
 
-[1.3.7]: https://github.com/ethereumjs/ethereumjs-tx/compare/v1.3.6...v1.3.7
+[1.3.7]: https://github.com/ethereumjs/ethereumjs-vm/compare/%40ethereumjs%2Ftx%401.3.6...%40ethereumjs%2F1.3.7
 
 ## [1.3.6] - 2018-07-02
 
 - Fixes issue [#108](https://github.com/ethereumjs/ethereumjs-tx/issues/108) with the `FakeTransaction.hash()` function by reverting the introduced signature handling changes in Fake transaction hash creation from PR [#94](https://github.com/ethereumjs/ethereumjs-tx/pull/94) introduced in `v1.3.5`. The signature is now again only created and added to the hash when `from` address is set and `from` is not defaulting to the zero adress any more, see PR [#110](https://github.com/ethereumjs/ethereumjs-tx/pull/110)
 - Added additional tests to cover issue described above
 
-[1.3.6]: https://github.com/ethereumjs/ethereumjs-tx/compare/v1.3.5...v1.3.6
+[1.3.6]: https://github.com/ethereumjs/ethereumjs-vm/compare/%40ethereumjs%2Ftx%401.3.5...%40ethereumjs%2F1.3.6
 
 ## [1.3.5] - 2018-06-22
 
 - Include signature by default in `FakeTransaction.hash`, PR [#97](https://github.com/ethereumjs/ethereumjs-tx/pull/97)
 - Fix `FakeTransaction` signature failure bug, PR [#94](https://github.com/ethereumjs/ethereumjs-tx/pull/94)
 
-[1.3.5]: https://github.com/ethereumjs/ethereumjs-tx/compare/v1.3.4...v1.3.5
+[1.3.5]: https://github.com/ethereumjs/ethereumjs-vm/compare/%40ethereumjs%2Ftx%401.3.4...%40ethereumjs%2F1.3.5
 
 ## [1.3.4] - 2018-03-06
 
@@ -132,7 +132,7 @@ pre-`Spurious Dragon` hardfork option.
 - Switched from deprecated `es2015` to `env` babel preset, PR [#86](https://github.com/ethereumjs/ethereumjs-tx/pull/86)
 - Dropped Node 4 support
 
-[1.3.4]: https://github.com/ethereumjs/ethereumjs-tx/compare/v1.3.3...v1.3.4
+[1.3.4]: https://github.com/ethereumjs/ethereumjs-vm/compare/%40ethereumjs%2Ftx%401.3.3...%40ethereumjs%2F1.3.4
 
 ## [1.3.3] - 2017-07-12
 
@@ -140,13 +140,13 @@ pre-`Spurious Dragon` hardfork option.
 - Dropped `browserify` transform from `package.json`
 - (combined v1.3.3 and v1.3.2 release notes)
 
-[1.3.3]: https://github.com/ethereumjs/ethereumjs-tx/compare/v1.3.1...v1.3.3
+[1.3.3]: https://github.com/ethereumjs/ethereumjs-vm/compare/%40ethereumjs%2Ftx%401.3.1...%40ethereumjs%2F1.3.3
 
 ## [1.3.1] - 2017-05-13
 
 - Added `ES5` build
 
-[1.3.1]: https://github.com/ethereumjs/ethereumjs-tx/compare/v1.3.0...v1.3.1
+[1.3.1]: https://github.com/ethereumjs/ethereumjs-vm/compare/%40ethereumjs%2Ftx%401.3.0...%40ethereumjs%2F1.3.1
 
 ## [1.3.0] - 2017-04-24
 
@@ -155,14 +155,14 @@ pre-`Spurious Dragon` hardfork option.
 - Improved documentation
 - (combined v1.3.0, v1.2.5 and v1.2.4 release notes)
 
-[1.3.0]: https://github.com/ethereumjs/ethereumjs-tx/compare/v1.2.3...v1.3.0
+[1.3.0]: https://github.com/ethereumjs/ethereumjs-vm/compare/%40ethereumjs%2Ftx%401.2.3...%40ethereumjs%2F1.3.0
 
 ## [1.2.3] - 2017-01-30
 
 - `EIP155` hash implementation
 - README example and doc fixes
 
-[1.2.3]: https://github.com/ethereumjs/ethereumjs-tx/compare/v1.2.2...v1.2.3
+[1.2.3]: https://github.com/ethereumjs/ethereumjs-vm/compare/%40ethereumjs%2Ftx%401.2.2...%40ethereumjs%2F1.2.3
 
 ## [1.2.2] - 2016-12-15
 
@@ -170,7 +170,7 @@ pre-`Spurious Dragon` hardfork option.
 - Test improvements
 - (combined v1.2.2 and v1.2.1 release notes)
 
-[1.2.2]: https://github.com/ethereumjs/ethereumjs-tx/compare/v1.2.0...v1.2.2
+[1.2.2]: https://github.com/ethereumjs/ethereumjs-vm/compare/%40ethereumjs%2Ftx%401.2.0...%40ethereumjs%2F1.2.2
 
 ## [1.2.0] - 2016-12-14
 
@@ -179,14 +179,14 @@ pre-`Spurious Dragon` hardfork option.
 - Node 4/5 compatibility
 - `ES6` standards
 
-[1.2.0]: https://github.com/ethereumjs/ethereumjs-tx/compare/v1.1.4...v1.2.0
+[1.2.0]: https://github.com/ethereumjs/ethereumjs-vm/compare/%40ethereumjs%2Ftx%401.1.4...%40ethereumjs%2F1.2.0
 
 ## Older releases:
 
-- [1.1.4](https://github.com/ethereumjs/ethereumjs-tx/compare/v1.1.3...v1.1.4) - 2016-11-17
-- [1.1.3](https://github.com/ethereumjs/ethereumjs-tx/compare/v1.1.2...v1.1.3) - 2016-11-10
-- [1.1.2](https://github.com/ethereumjs/ethereumjs-tx/compare/v1.1.1...v1.1.2) - 2016-07-17
-- [1.1.1](https://github.com/ethereumjs/ethereumjs-tx/compare/v1.1.0...v1.1.1) - 2016-03-05
-- [1.1.0](https://github.com/ethereumjs/ethereumjs-tx/compare/v1.0.1...v1.1.0) - 2016-03-03
-- [1.0.1](https://github.com/ethereumjs/ethereumjs-tx/compare/v1.0.0...v1.0.1) - 2016-03-03
-- [1.0.0](https://github.com/ethereumjs/ethereumjs-tx/compare/v0.7.3...v1.0.0) - 2016-02-11
+- [1.1.4](https://github.com/ethereumjs/ethereumjs-vm/compare/%40ethereumjs%2Ftx%401.1.3...%40ethereumjs%2F1.1.4) - 2016-11-17
+- [1.1.3](https://github.com/ethereumjs/ethereumjs-vm/compare/%40ethereumjs%2Ftx%401.1.2...%40ethereumjs%2F1.1.3) - 2016-11-10
+- [1.1.2](https://github.com/ethereumjs/ethereumjs-vm/compare/%40ethereumjs%2Ftx%401.1.1...%40ethereumjs%2F1.1.2) - 2016-07-17
+- [1.1.1](https://github.com/ethereumjs/ethereumjs-vm/compare/%40ethereumjs%2Ftx%401.1.0...%40ethereumjs%2F1.1.1) - 2016-03-05
+- [1.1.0](https://github.com/ethereumjs/ethereumjs-vm/compare/%40ethereumjs%2Ftx%401.0.1...%40ethereumjs%2F1.1.0) - 2016-03-03
+- [1.0.1](https://github.com/ethereumjs/ethereumjs-vm/compare/%40ethereumjs%2Ftx%401.0.0...%40ethereumjs%2F1.0.1) - 2016-03-03
+- [1.0.0](https://github.com/ethereumjs/ethereumjs-vm/compare/%40ethereumjs%2Ftx%400.7.3...%40ethereumjs%2F1.0.0) - 2016-02-11

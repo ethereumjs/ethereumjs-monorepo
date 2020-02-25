@@ -19,7 +19,7 @@ Changes:
 - Consistent genesis account balance format, converted from decimal to hex
   where necessary, PR [#73](https://github.com/ethereumjs/ethereumjs-common/pull/73)
 
-[1.5.0]: https://github.com/ethereumjs/ethereumjs-common/compare/v1.4.0...v1.5.0
+[1.5.0]: https://github.com/ethereumjs/ethereumjs-vm/compare/%40ethereumjs%2Fcommon%401.4.0...%40ethereumjs%2F1.5.0
 
 ## [1.4.0] - 2019-11-05
 
@@ -42,7 +42,7 @@ Other noteworthy changes:
 - Fixed `kovan` genesis state,
   PR [#66](https://github.com/ethereumjs/ethereumjs-common/pull/66)
 
-[1.4.0]: https://github.com/ethereumjs/ethereumjs-common/compare/v1.3.2...v1.4.0
+[1.4.0]: https://github.com/ethereumjs/ethereumjs-vm/compare/%40ethereumjs%2Fcommon%401.3.2...%40ethereumjs%2F1.4.0
 
 ## [1.3.2] - 2019-09-04
 
@@ -58,7 +58,7 @@ Other Changes:
 - Fixed `Kovan` genesis state,
   PR [#66](https://github.com/ethereumjs/ethereumjs-common/pull/66)
 
-[1.3.2]: https://github.com/ethereumjs/ethereumjs-common/compare/v1.3.1...v1.3.2
+[1.3.2]: https://github.com/ethereumjs/ethereumjs-vm/compare/%40ethereumjs%2Fcommon%401.3.1...%40ethereumjs%2F1.3.2
 
 ## [1.3.1] - 2019-08-08
 
@@ -70,21 +70,21 @@ Added missing **Istanbul** gas costs for:
 
 See PR [#58](https://github.com/ethereumjs/ethereumjs-common/pull/58).
 
-[1.3.1]: https://github.com/ethereumjs/ethereumjs-common/compare/v1.3.0...v1.3.1
+[1.3.1]: https://github.com/ethereumjs/ethereumjs-vm/compare/%40ethereumjs%2Fcommon%401.3.0...%40ethereumjs%2F1.3.1
 
 ## [1.3.0] - 2019-06-18
 
 - Add a static factory method `Custom.forCustomChain` to make working with
   custom/private chains easier.
 
-[1.3.0]: https://github.com/ethereumjs/ethereumjs-common/compare/v1.2.1...v1.3.0
+[1.3.0]: https://github.com/ethereumjs/ethereumjs-vm/compare/%40ethereumjs%2Fcommon%401.2.1...%40ethereumjs%2F1.3.0
 
 ## [1.2.1] - 2019-06-03
 
 - Added `Istanbul` HF candidate [EIP-1108](https://eips.ethereum.org/EIPS/eip-1108)
   (`DRAFT`) updated `alt_bn128` precompile gas costs (see `hardforks/istanbul.json`)
 
-[1.2.1]: https://github.com/ethereumjs/ethereumjs-common/compare/v1.2.0...v1.2.1
+[1.2.1]: https://github.com/ethereumjs/ethereumjs-vm/compare/%40ethereumjs%2Fcommon%401.2.0...%40ethereumjs%2F1.2.1
 
 ## [1.2.0] - 2019-05-27
 
@@ -99,7 +99,7 @@ release (likely `1.3.0`).
 See new `hardforks/istanbul.json` file as well as PR
 [#51](https://github.com/ethereumjs/ethereumjs-common/pull/51).
 
-[1.2.0]: https://github.com/ethereumjs/ethereumjs-common/compare/v1.1.0...v1.2.0
+[1.2.0]: https://github.com/ethereumjs/ethereumjs-vm/compare/%40ethereumjs%2Fcommon%401.1.0...%40ethereumjs%2F1.2.0
 
 ## [1.1.0] - 2019-02-04
 
@@ -140,7 +140,7 @@ Goerli related changes (from PR [#48](https://github.com/ethereumjs/ethereumjs-c
 - Use CLI scripts from ethereumjs-config in package.json, PR
   [#43](https://github.com/ethereumjs/ethereumjs-common/pull/43)
 
-[1.1.0]: https://github.com/ethereumjs/ethereumjs-common/compare/v1.0.0...v1.1.0
+[1.1.0]: https://github.com/ethereumjs/ethereumjs-vm/compare/%40ethereumjs%2Fcommon%401.0.0...%40ethereumjs%2F1.1.0
 
 ## [1.0.0] - 2019-01-23
 
@@ -184,14 +184,14 @@ Not likely that anyone has used this, but just in case:
 The once anticipated `hybridCasper` (draft) hardfork has been removed from the
 list of hardforks, see PR [#37](https://github.com/ethereumjs/ethereumjs-common/pull/37)
 
-[1.0.0]: https://github.com/ethereumjs/ethereumjs-common/compare/v0.6.1...v1.0.0
+[1.0.0]: https://github.com/ethereumjs/ethereumjs-vm/compare/%40ethereumjs%2Fcommon%400.6.1...%40ethereumjs%2F1.0.0
 
 ## [0.6.1] - 2018-11-28
 
 - Experimental support for the [Goerli](https://github.com/goerli/testnet) cross-client `PoA` testnet (`chains/goerli.json`), see PR [#31](https://github.com/ethereumjs/ethereumjs-common/pull/31)
 - Unified hex-prefixing (so always prefixing with `0x`) of account addresses in genesis files (fixes an issue with state root computation on other libraries), see PR [#32](https://github.com/ethereumjs/ethereumjs-common/issues/32)
 
-[0.6.1]: https://github.com/ethereumjs/ethereumjs-common/compare/v0.6.0...v0.6.1
+[0.6.1]: https://github.com/ethereumjs/ethereumjs-vm/compare/%40ethereumjs%2Fcommon%400.6.0...%40ethereumjs%2F0.6.1
 
 ## [0.6.0] - 2018-10-11
 
@@ -200,7 +200,7 @@ Parameter support for the `Constantinople` hardfork (see `hardforks/constantinop
 - Added `SSTORE` gas/refund prices (`EIP-1283`), PR [#27](https://github.com/ethereumjs/ethereumjs-common/pull/27)
 - Added Block Reward Adjustment (`EIP-1234`), PR [#26](https://github.com/ethereumjs/ethereumjs-common/pull/26)
 
-[0.6.0]: https://github.com/ethereumjs/ethereumjs-common/compare/v0.5.0...v0.6.0
+[0.6.0]: https://github.com/ethereumjs/ethereumjs-vm/compare/%40ethereumjs%2Fcommon%400.5.0...%40ethereumjs%2F0.6.0
 
 ## [0.5.0] - 2018-08-27
 
@@ -208,35 +208,35 @@ Parameter support for the `Constantinople` hardfork (see `hardforks/constantinop
   in the constructor or the `setChain()` method as an alternative to just passing one of the predefined
   `chain` `String` names (e.g. `mainnet`, `ropsten`), PR [#24](https://github.com/ethereumjs/ethereumjs-common/pull/24)
 
-[0.5.0]: https://github.com/ethereumjs/ethereumjs-common/compare/v0.4.1...v0.5.0
+[0.5.0]: https://github.com/ethereumjs/ethereumjs-vm/compare/%40ethereumjs%2Fcommon%400.4.1...%40ethereumjs%2F0.5.0
 
 ## [0.4.1] - 2018-08-13
 
 - Added `timestamp` field to genesis definitions in chain files, set for `Rinkeby` and `null` for other chains, PR [#21](https://github.com/ethereumjs/ethereumjs-common/pull/21)
 - Updated `Ropsten` bootstrap nodes, PR [#20](https://github.com/ethereumjs/ethereumjs-common/pull/20)
 
-[0.4.1]: https://github.com/ethereumjs/ethereumjs-common/compare/v0.4.0...v0.4.1
+[0.4.1]: https://github.com/ethereumjs/ethereumjs-vm/compare/%40ethereumjs%2Fcommon%400.4.0...%40ethereumjs%2F0.4.1
 
 ## [0.4.0] - 2018-06-20
 
 - Remove leftover ...Gas postfix for some gas prices (e.g. `ecAddGas` -> `ecAdd`) to
   be consistent with overall gas price naming
 
-[0.4.0]: https://github.com/ethereumjs/ethereumjs-common/compare/v0.3.1...v0.4.0
+[0.4.0]: https://github.com/ethereumjs/ethereumjs-vm/compare/%40ethereumjs%2Fcommon%400.3.1...%40ethereumjs%2F0.4.0
 
 ## [0.3.1] - 2018-05-28
 
 - Added two alias functions `activeOnBlock()` and `gteHardfork()` when hardfork is set for convenience, PR [#15](https://github.com/ethereumjs/ethereumjs-common/pull/15)
 - Added option to dynamically choose genesis state (see `README`), PR [#15](https://github.com/ethereumjs/ethereumjs-common/pull/15)
 
-[0.3.1]: https://github.com/ethereumjs/ethereumjs-common/compare/v0.3.0...v0.3.1
+[0.3.1]: https://github.com/ethereumjs/ethereumjs-vm/compare/%40ethereumjs%2Fcommon%400.3.0...%40ethereumjs%2F0.3.1
 
 ## [0.3.0] - 2018-05-25
 
 - Allow functions like `hardforkIsActiveOnBlock()` - where hardfork is provided as param - also to be run on hardfork set for greater flexibility/comfort, PR [#13](https://github.com/ethereumjs/ethereumjs-common/pull/13)
 - New `hardforkGteHardfork()` method for HF order comparisons, PR [#13](https://github.com/ethereumjs/ethereumjs-common/pull/13)
 
-[0.3.0]: https://github.com/ethereumjs/ethereumjs-common/compare/v0.2.0...v0.3.0
+[0.3.0]: https://github.com/ethereumjs/ethereumjs-vm/compare/%40ethereumjs%2Fcommon%400.2.0...%40ethereumjs%2F0.3.0
 
 ## [0.2.0] - 2018-05-14
 
@@ -244,13 +244,13 @@ Parameter support for the `Constantinople` hardfork (see `hardforks/constantinop
   library implementations by preventing undefined behaviour, PR [#10](https://github.com/ethereumjs/ethereumjs-common/pull/10)
 - Added `activeHardfork()` function to get latest active HF for chain or block, PR [#11](https://github.com/ethereumjs/ethereumjs-common/pull/11)
 
-[0.2.0]: https://github.com/ethereumjs/ethereumjs-common/compare/v0.1.1...v0.2.0
+[0.2.0]: https://github.com/ethereumjs/ethereumjs-vm/compare/%40ethereumjs%2Fcommon%400.1.1...%40ethereumjs%2F0.2.0
 
 ## [0.1.1] - 2018-05-09
 
 - Remove dynamic require to prevent browserify issue, PR [#8](https://github.com/ethereumjs/ethereumjs-common/pull/8)
 
-[0.1.1]: https://github.com/ethereumjs/ethereumjs-common/compare/v0.1.0...v0.1.1
+[0.1.1]: https://github.com/ethereumjs/ethereumjs-vm/compare/%40ethereumjs%2Fcommon%400.1.0...%40ethereumjs%2F0.1.1
 
 ## [0.1.0] - 2018-05-09
 
@@ -265,4 +265,4 @@ Features:
 - Improved structure for parameter access (mainly through topics like `gasPrices`, `pow`, `sharding`) for better readability/developer overview
 - See [README](https://github.com/ethereumjs/ethereumjs-common) and [API Docs](https://github.com/ethereumjs/ethereumjs-common/blob/master/docs/index.md) for a more in-depth feature overview and usage instructions
 
-[0.1.0]: https://github.com/ethereumjs/ethereumjs-common/compare/6d0df89...v0.1.0
+[0.1.0]: https://github.com/ethereumjs/ethereumjs-vm/compare/%40ethereumjs%2Fcommon%406d0df...%40ethereumjs%2F..v0.1.0

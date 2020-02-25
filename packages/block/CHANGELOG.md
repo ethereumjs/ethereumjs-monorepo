@@ -24,7 +24,7 @@ PR [#64](https://github.com/ethereumjs/ethereumjs-block/pull/64)
 - Remove `ethereumjs-testing` dependency (much smaller dev dependencies),
   PR [#61](https://github.com/ethereumjs/ethereumjs-block/pull/61)
 
-[2.2.0]: https://github.com/ethereumjs/ethereumjs-vm/compare/v2.1.0...v2.2.0
+[2.2.0]: https://github.com/ethereumjs/ethereumjs-vm/compare/%40ethereumjs%2Fvm%402.1.0...%40ethereumjs%2F2.2.0
 
 ## [2.1.0] - 2018-10-19
 
@@ -32,13 +32,13 @@ PR [#64](https://github.com/ethereumjs/ethereumjs-block/pull/64)
 - Updated test data, added Constantinople tests, PR [#56](https://github.com/ethereumjs/ethereumjs-block/pull/56), [#57](https://github.com/ethereumjs/ethereumjs-block/pull/57)
 - Added `timestamp` field to `setGenesisParams()`, PR [#52](https://github.com/ethereumjs/ethereumjs-block/pull/52)
 
-[2.1.0]: https://github.com/ethereumjs/ethereumjs-vm/compare/v2.0.1...v2.1.0
+[2.1.0]: https://github.com/ethereumjs/ethereumjs-vm/compare/%40ethereumjs%2Fvm%402.0.1...%40ethereumjs%2F2.1.0
 
 ## [2.0.1] - 2018-08-08
 
 - Fixes `BlockHeader.prototype.validate()` bug, see PR [#49](https://github.com/ethereumjs/ethereumjs-block/pull/49)
 
-[2.0.1]: https://github.com/ethereumjs/ethereumjs-vm/compare/v2.0.0...v2.0.1
+[2.0.1]: https://github.com/ethereumjs/ethereumjs-vm/compare/%40ethereumjs%2Fvm%402.0.0...%40ethereumjs%2F2.0.1
 
 ## [2.0.0] - 2018-06-25
 
@@ -60,7 +60,7 @@ Changes in detail:
 - Extensive test additions to cover the newly introduced capabilities and changes
 - Fix default value for `nonce` (empty buffer -> `<Buffer 00 00 00 00 00 00 00 00>`), PR [#42](https://github.com/ethereumjs/ethereumjs-block/pull/42)
 
-[2.0.0]: https://github.com/ethereumjs/ethereumjs-vm/compare/v1.7.1...v2.0.0
+[2.0.0]: https://github.com/ethereumjs/ethereumjs-vm/compare/%40ethereumjs%2Fvm%401.7.1...%40ethereumjs%2F2.0.0
 
 ## [1.7.1] - 2018-02-15
 
@@ -68,7 +68,7 @@ Changes in detail:
   library, PR [#40](https://github.com/ethereumjs/ethereumjs-block/pull/40)
 - Updated `ethereumjs/common` dependency, PR [#38](https://github.com/ethereumjs/ethereumjs-block/pull/38)
 
-[1.7.1]: https://github.com/ethereumjs/ethereumjs-vm/compare/v1.7.0...v1.7.1
+[1.7.1]: https://github.com/ethereumjs/ethereumjs-vm/compare/%40ethereumjs%2Fvm%401.7.0...%40ethereumjs%2F1.7.1
 
 ## [1.7.0] - 2017-10-11
 
@@ -77,24 +77,24 @@ Changes in detail:
 - Difficulty bomb delay (EIP 649)
 - Removed `isHomestead`, `isHomesteadReprice` from API methods
 
-[1.7.0]: https://github.com/ethereumjs/ethereumjs-vm/compare/v1.6.0...v1.7.0
+[1.7.0]: https://github.com/ethereumjs/ethereumjs-vm/compare/%40ethereumjs%2Fvm%401.6.0...%40ethereumjs%2F1.7.0
 
 ## [1.6.0] - 2017-07-12
 
 - Breakout header-from-rpc as separate module
 
-[1.6.0]: https://github.com/ethereumjs/ethereumjs-block/compare/v1.5.1...v1.6.0
+[1.6.0]: https://github.com/ethereumjs/ethereumjs-vm/compare/%40ethereumjs%2Fblock%401.5.1...%40ethereumjs%2F1.6.0
 
 ## [1.5.1] - 2017-06-04
 
 - Dev dependency updates
 - BN for gas limit
 
-[1.5.1]: https://github.com/ethereumjs/ethereumjs-block/compare/v1.5.0...v1.5.1
+[1.5.1]: https://github.com/ethereumjs/ethereumjs-vm/compare/%40ethereumjs%2Fblock%401.5.0...%40ethereumjs%2F1.5.1
 
 ## Older releases:
 
-- [1.5.0](https://github.com/ethereumjs/ethereumjs-block/compare/v1.4.0...v1.5.0) - 2017-01-31
-- [1.4.0](https://github.com/ethereumjs/ethereumjs-block/compare/v1.3.1...v1.4.0) - 2016-12-15
-- [1.3.1](https://github.com/ethereumjs/ethereumjs-block/compare/v1.3.0...v1.3.1) - 2016-10-14
-- [1.3.0](https://github.com/ethereumjs/ethereumjs-block/compare/v1.2.2...v1.3.0) - 2017-10-11
+- [1.5.0](https://github.com/ethereumjs/ethereumjs-vm/compare/%40ethereumjs%2Fblock%401.4.0...%40ethereumjs%2F1.5.0) - 2017-01-31
+- [1.4.0](https://github.com/ethereumjs/ethereumjs-vm/compare/%40ethereumjs%2Fblock%401.3.1...%40ethereumjs%2F1.4.0) - 2016-12-15
+- [1.3.1](https://github.com/ethereumjs/ethereumjs-vm/compare/%40ethereumjs%2Fblock%401.3.0...%40ethereumjs%2F1.3.1) - 2016-10-14
+- [1.3.0](https://github.com/ethereumjs/ethereumjs-vm/compare/%40ethereumjs%2Fblock%401.2.2...%40ethereumjs%2F1.3.0) - 2017-10-11

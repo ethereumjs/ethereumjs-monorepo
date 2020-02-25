@@ -18,7 +18,7 @@ PR [#134](https://github.com/ethereumjs/ethereumjs-blockchain/pull/134).
 Tests are now less coupled and it gets easier to modify tests or extend
 the test suite.
 
-[4.0.3]: https://github.com/ethereumjs/ethereumjs-blockchain/compare/v4.0.2...v4.0.3
+[4.0.3]: https://github.com/ethereumjs/ethereumjs-vm/compare/%40ethereumjs%2Fblockchain%404.0.2...%40ethereumjs%2F4.0.3
 
 ## [4.0.2] - 2019-11-15
 
@@ -36,14 +36,14 @@ For Typescript users this release also comes with a `BlockchainInterface` interf
 which the `Blockchain` class implements,
 PR [#124](https://github.com/ethereumjs/ethereumjs-blockchain/pull/124).
 
-[4.0.2]: https://github.com/ethereumjs/ethereumjs-blockchain/compare/v4.0.1...v4.0.2
+[4.0.2]: https://github.com/ethereumjs/ethereumjs-vm/compare/%40ethereumjs%2Fblockchain%404.0.1...%40ethereumjs%2F4.0.2
 
 ## [4.0.1] - 2019-07-01
 
 - Fixes a browser-compatibility issue caused by the library using `util.callbackify`,
   PR [#117](https://github.com/ethereumjs/ethereumjs-blockchain/pull/117)
 
-[4.0.1]: https://github.com/ethereumjs/ethereumjs-blockchain/compare/v4.0.0...v4.0.1
+[4.0.1]: https://github.com/ethereumjs/ethereumjs-vm/compare/%40ethereumjs%2Fblockchain%404.0.0...%40ethereumjs%2F4.0.1
 
 ## [4.0.0] - 2019-04-26
 
@@ -77,7 +77,7 @@ deprecated DB constructor options `opts.blockDb` and `opts.detailsDb`.
 - Dropped deprecated `DB` options,
   PR [#100](https://github.com/ethereumjs/ethereumjs-blockchain/pull/100)
 
-[4.0.0]: https://github.com/ethereumjs/ethereumjs-blockchain/compare/v3.4.0...v4.0.0
+[4.0.0]: https://github.com/ethereumjs/ethereumjs-vm/compare/%40ethereumjs%2Fblockchain%403.4.0...%40ethereumjs%2F4.0.0
 
 ## [3.4.0] - 2019-02-06
 
@@ -86,14 +86,14 @@ support/readiness by updating to a supporting `ethereumjs-common` version
 [v1.1.0](https://github.com/ethereumjs/ethereumjs-common/releases/tag/v1.1.0),
 PR [#86](https://github.com/ethereumjs/ethereumjs-blockchain/pull/86)
 
-[3.4.0]: https://github.com/ethereumjs/ethereumjs-blockchain/compare/v3.3.3...v3.4.0
+[3.4.0]: https://github.com/ethereumjs/ethereumjs-vm/compare/%40ethereumjs%2Fblockchain%403.3.3...%40ethereumjs%2F3.4.0
 
 ## [3.3.3] - 2019-01-03
 
 - Fixed a bug causing the `iterate()` method to fail when an older version
   `levelup` DB instance is passed, see PR [#83](https://github.com/ethereumjs/ethereumjs-blockchain/pull/83)
 
-[3.3.3]: https://github.com/ethereumjs/ethereumjs-blockchain/compare/v3.3.2...v3.3.3
+[3.3.3]: https://github.com/ethereumjs/ethereumjs-vm/compare/%40ethereumjs%2Fblockchain%403.3.2...%40ethereumjs%2F3.3.3
 
 ## [3.3.2] - 2018-12-20
 
@@ -101,27 +101,27 @@ PR [#86](https://github.com/ethereumjs/ethereumjs-blockchain/pull/86)
 - Fix `putBlock()` edge case, PR [#79](https://github.com/ethereumjs/ethereumjs-blockchain/pull/79)
 - Replaced uses of deprecated `new Buffer` with `Buffer.from`, PR [#80](https://github.com/ethereumjs/ethereumjs-blockchain/pull/80)
 
-[3.3.2]: https://github.com/ethereumjs/ethereumjs-blockchain/compare/v3.3.1...v3.3.2
+[3.3.2]: https://github.com/ethereumjs/ethereumjs-vm/compare/%40ethereumjs%2Fblockchain%403.3.1...%40ethereumjs%2F3.3.2
 
 ## [3.3.1] - 2018-10-26
 
 - Replaced calls to BN.toBuffer() with BN.toArrayLike() so that `ethereumjs-blockchain` can run in a browser environment, PR [#73](https://github.com/ethereumjs/ethereumjs-blockchain/pull/73)
 
-[3.3.1]: https://github.com/ethereumjs/ethereumjs-blockchain/compare/v3.3.0...v3.3.1
+[3.3.1]: https://github.com/ethereumjs/ethereumjs-vm/compare/%40ethereumjs%2Fblockchain%403.3.0...%40ethereumjs%2F3.3.1
 
 ## [3.3.0] - 2018-10-19
 
 - Constantinople support when using block validation (set with `opts.validate` in constructor),
   update to a Constantinople-ready version of the `ethereumjs-block` dependency (>2.1.0), PR [#71](https://github.com/ethereumjs/ethereumjs-blockchain/pull/71)
 
-[3.3.0]: https://github.com/ethereumjs/ethereumjs-blockchain/compare/v3.2.1...v3.3.0
+[3.3.0]: https://github.com/ethereumjs/ethereumjs-vm/compare/%40ethereumjs%2Fblockchain%403.2.1...%40ethereumjs%2F3.3.0
 
 ## [3.2.1] - 2018-08-29
 
 - Fixed an issue with the `iterator()` function returning an error on end of block iteration instead of finish gracefully, PR [#64](https://github.com/ethereumjs/ethereumjs-blockchain/pull/64)
 - Updated `ethereumjs-common` dependency to `v0.5.0` (custom chain support), PR [#63](https://github.com/ethereumjs/ethereumjs-blockchain/pull/63)
 
-[3.2.1]: https://github.com/ethereumjs/ethereumjs-blockchain/compare/v3.2.0...v3.2.1
+[3.2.1]: https://github.com/ethereumjs/ethereumjs-vm/compare/%40ethereumjs%2Fblockchain%403.2.0...%40ethereumjs%2F3.2.1
 
 ## [3.2.0] - 2018-08-13
 
@@ -130,7 +130,7 @@ PR [#86](https://github.com/ethereumjs/ethereumjs-blockchain/pull/86)
 - Fixed a bug with caching, PR [#59](https://github.com/ethereumjs/ethereumjs-blockchain/pull/59)
 - Fixed error propagation in `Blockchain.iterator()`, PR [#60](https://github.com/ethereumjs/ethereumjs-blockchain/pull/60)
 
-[3.2.0]: https://github.com/ethereumjs/ethereumjs-blockchain/compare/v3.1.0...v3.2.0
+[3.2.0]: https://github.com/ethereumjs/ethereumjs-vm/compare/%40ethereumjs%2Fblockchain%403.1.0...%40ethereumjs%2F3.2.0
 
 ## [3.1.0] - 2018-05-24
 
@@ -140,7 +140,7 @@ PR [#86](https://github.com/ethereumjs/ethereumjs-blockchain/pull/86)
   to the DB, PR [#52](https://github.com/ethereumjs/ethereumjs-blockchain/pull/52)
 - Updated API docs
 
-[3.1.0]: https://github.com/ethereumjs/ethereumjs-blockchain/compare/v3.0.0...v3.1.0
+[3.1.0]: https://github.com/ethereumjs/ethereumjs-vm/compare/%40ethereumjs%2Fblockchain%403.0.0...%40ethereumjs%2F3.1.0
 
 ## [3.0.0] - 2018-05-18
 
@@ -170,57 +170,57 @@ Summary of the changes:
 - Updated docs to reflect the API changes
 - Updated library dependencies
 
-[3.0.0]: https://github.com/ethereumjs/ethereumjs-blockchain/compare/v2.1.0...v3.0.0
+[3.0.0]: https://github.com/ethereumjs/ethereumjs-vm/compare/%40ethereumjs%2Fblockchain%402.1.0...%40ethereumjs%2F3.0.0
 
 ## [2.1.0] - 2017-10-11
 
 - `Metro-Byzantium` compatible
 - Updated `ethereumjs-block` dependency (new difficulty formula / difficulty bomb delay)
 
-[2.1.0]: https://github.com/ethereumjs/ethereumjs-blockchain/compare/v2.0.2...v2.1.0
+[2.1.0]: https://github.com/ethereumjs/ethereumjs-vm/compare/%40ethereumjs%2Fblockchain%402.0.2...%40ethereumjs%2F2.1.0
 
 ## [2.0.2] - 2017-09-19
 
 - Tightened dependencies to prevent the `2.0.x` version of the library to break
   after `ethereumjs` Byzantium library updates
 
-[2.0.2]: https://github.com/ethereumjs/ethereumjs-blockchain/compare/v2.0.1...v2.0.2
+[2.0.2]: https://github.com/ethereumjs/ethereumjs-vm/compare/%40ethereumjs%2Fblockchain%402.0.1...%40ethereumjs%2F2.0.2
 
 ## [2.0.1] - 2017-09-14
 
 - Fixed severe bug adding blocks before blockchain init is complete
 
-[2.0.1]: https://github.com/ethereumjs/ethereumjs-blockchain/compare/v2.0.0...v2.0.1
+[2.0.1]: https://github.com/ethereumjs/ethereumjs-vm/compare/%40ethereumjs%2Fblockchain%402.0.0...%40ethereumjs%2F2.0.1
 
 ## [2.0.0] - 2017-01-01
 
 - Split `db` into `blockDB` and `detailsDB` (breaking)
 
-[2.0.0]: https://github.com/ethereumjs/ethereumjs-blockchain/compare/v1.4.2...v2.0.0
+[2.0.0]: https://github.com/ethereumjs/ethereumjs-vm/compare/%40ethereumjs%2Fblockchain%401.4.2...%40ethereumjs%2F2.0.0
 
 ## [1.4.2] - 2016-12-29
 
 - New `getBlocks` API method
 - Testing improvements
 
-[1.4.2]: https://github.com/ethereumjs/ethereumjs-blockchain/compare/v1.4.1...v1.4.2
+[1.4.2]: https://github.com/ethereumjs/ethereumjs-vm/compare/%40ethereumjs%2Fblockchain%401.4.1...%40ethereumjs%2F1.4.2
 
 ## [1.4.1] - 2016-03-01
 
 - Update dependencies to support Windows
 
-[1.4.1]: https://github.com/ethereumjs/ethereumjs-blockchain/compare/v1.4.0...v1.4.1
+[1.4.1]: https://github.com/ethereumjs/ethereumjs-vm/compare/%40ethereumjs%2Fblockchain%401.4.0...%40ethereumjs%2F1.4.1
 
 ## [1.4.0] - 2016-01-09
 
 - Bump dependencies
 
-[1.4.0]: https://github.com/ethereumjs/ethereumjs-blockchain/compare/v1.3.4...v1.4.0
+[1.4.0]: https://github.com/ethereumjs/ethereumjs-vm/compare/%40ethereumjs%2Fblockchain%401.3.4...%40ethereumjs%2F1.4.0
 
 ## Older releases:
 
-- [1.3.4](https://github.com/ethereumjs/ethereumjs-blockchain/compare/v1.3.3...v1.3.4) - 2016-01-08
-- [1.3.3](https://github.com/ethereumjs/ethereumjs-blockchain/compare/v1.3.2...v1.3.3) - 2015-11-27
-- [1.3.2](https://github.com/ethereumjs/ethereumjs-blockchain/compare/v1.3.1...v1.3.2) - 2015-11-27
-- [1.3.1](https://github.com/ethereumjs/ethereumjs-blockchain/compare/v1.2.0...v1.3.1) - 2015-10-23
+- [1.3.4](https://github.com/ethereumjs/ethereumjs-vm/compare/%40ethereumjs%2Fblockchain%401.3.3...%40ethereumjs%2F1.3.4) - 2016-01-08
+- [1.3.3](https://github.com/ethereumjs/ethereumjs-vm/compare/%40ethereumjs%2Fblockchain%401.3.2...%40ethereumjs%2F1.3.3) - 2015-11-27
+- [1.3.2](https://github.com/ethereumjs/ethereumjs-vm/compare/%40ethereumjs%2Fblockchain%401.3.1...%40ethereumjs%2F1.3.2) - 2015-11-27
+- [1.3.1](https://github.com/ethereumjs/ethereumjs-vm/compare/%40ethereumjs%2Fblockchain%401.2.0...%40ethereumjs%2F1.3.1) - 2015-10-23
 - 1.2.0 - 2015-10-01
