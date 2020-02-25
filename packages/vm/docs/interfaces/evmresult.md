@@ -2,8 +2,6 @@
 
 # Interface: EVMResult
 
-Result of executing a message via the \[\[EVM\]\].
-
 ## Hierarchy
 
 **EVMResult**
@@ -28,9 +26,7 @@ Result of executing a message via the \[\[EVM\]\].
 
 **● createdAddress**: *`Buffer`*
 
-*Defined in [evm/evm.ts:32](https://github.com/ethereumjs/ethereumjs-vm/blob/439570a/lib/evm/evm.ts#L32)*
-
-Address of created account durint transaction, if any
+*Defined in [evm/evm.ts:32](https://github.com/ethereumjs/ethereumjs-vm/blob/d660c58/packages/vm/lib/evm/evm.ts#L32)*
 
 ___
 <a id="execresult"></a>
@@ -39,9 +35,7 @@ ___
 
 **● execResult**: *[ExecResult](execresult.md)*
 
-*Defined in [evm/evm.ts:36](https://github.com/ethereumjs/ethereumjs-vm/blob/439570a/lib/evm/evm.ts#L36)*
-
-Contains the results from running the code, if any, as described in [runCode](../classes/vm.md#runcode)
+*Defined in [evm/evm.ts:36](https://github.com/ethereumjs/ethereumjs-vm/blob/d660c58/packages/vm/lib/evm/evm.ts#L36)*
 
 ___
 <a id="gasused"></a>
@@ -50,9 +44,7 @@ ___
 
 **● gasUsed**: *`BN`*
 
-*Defined in [evm/evm.ts:28](https://github.com/ethereumjs/ethereumjs-vm/blob/439570a/lib/evm/evm.ts#L28)*
-
-Amount of gas used by the transaction
+*Defined in [evm/evm.ts:28](https://github.com/ethereumjs/ethereumjs-vm/blob/d660c58/packages/vm/lib/evm/evm.ts#L28)*
 
 ___
 

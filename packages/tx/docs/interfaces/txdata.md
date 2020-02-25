@@ -2,8 +2,6 @@
 
 # Interface: TxData
 
-A transaction's data.
-
 ## Hierarchy
 
 **TxData**
@@ -34,9 +32,7 @@ A transaction's data.
 
 **● data**: _[BufferLike](../#bufferlike)_
 
-_Defined in [types.ts:48](https://github.com/ethereumjs/ethereumjs-tx/blob/5c81b38/src/types.ts#L48)_
-
-This will contain the data of the message or the init of a contract
+_Defined in [types.ts:48](https://github.com/ethereumjs/ethereumjs-vm/blob/d660c58/packages/tx/src/types.ts#L48)_
 
 ---
 
@@ -46,9 +42,7 @@ This will contain the data of the message or the init of a contract
 
 **● gasLimit**: _[BufferLike](../#bufferlike)_
 
-_Defined in [types.ts:28](https://github.com/ethereumjs/ethereumjs-tx/blob/5c81b38/src/types.ts#L28)_
-
-The transaction's gas limit.
+_Defined in [types.ts:28](https://github.com/ethereumjs/ethereumjs-vm/blob/d660c58/packages/tx/src/types.ts#L28)_
 
 ---
 
@@ -58,9 +52,7 @@ The transaction's gas limit.
 
 **● gasPrice**: _[BufferLike](../#bufferlike)_
 
-_Defined in [types.ts:33](https://github.com/ethereumjs/ethereumjs-tx/blob/5c81b38/src/types.ts#L33)_
-
-The transaction's gas price.
+_Defined in [types.ts:33](https://github.com/ethereumjs/ethereumjs-vm/blob/d660c58/packages/tx/src/types.ts#L33)_
 
 ---
 
@@ -70,9 +62,7 @@ The transaction's gas price.
 
 **● nonce**: _[BufferLike](../#bufferlike)_
 
-_Defined in [types.ts:43](https://github.com/ethereumjs/ethereumjs-tx/blob/5c81b38/src/types.ts#L43)_
-
-The transaction's nonce.
+_Defined in [types.ts:43](https://github.com/ethereumjs/ethereumjs-vm/blob/d660c58/packages/tx/src/types.ts#L43)_
 
 ---
 
@@ -82,9 +72,7 @@ The transaction's nonce.
 
 **● r**: _[BufferLike](../#bufferlike)_
 
-_Defined in [types.ts:58](https://github.com/ethereumjs/ethereumjs-tx/blob/5c81b38/src/types.ts#L58)_
-
-EC signature parameter.
+_Defined in [types.ts:58](https://github.com/ethereumjs/ethereumjs-vm/blob/d660c58/packages/tx/src/types.ts#L58)_
 
 ---
 
@@ -94,9 +82,7 @@ EC signature parameter.
 
 **● s**: _[BufferLike](../#bufferlike)_
 
-_Defined in [types.ts:63](https://github.com/ethereumjs/ethereumjs-tx/blob/5c81b38/src/types.ts#L63)_
-
-EC signature parameter.
+_Defined in [types.ts:63](https://github.com/ethereumjs/ethereumjs-vm/blob/d660c58/packages/tx/src/types.ts#L63)_
 
 ---
 
@@ -106,9 +92,7 @@ EC signature parameter.
 
 **● to**: _[BufferLike](../#bufferlike)_
 
-_Defined in [types.ts:38](https://github.com/ethereumjs/ethereumjs-tx/blob/5c81b38/src/types.ts#L38)_
-
-The transaction's the address is sent to.
+_Defined in [types.ts:38](https://github.com/ethereumjs/ethereumjs-vm/blob/d660c58/packages/tx/src/types.ts#L38)_
 
 ---
 
@@ -118,9 +102,7 @@ The transaction's the address is sent to.
 
 **● v**: _[BufferLike](../#bufferlike)_
 
-_Defined in [types.ts:53](https://github.com/ethereumjs/ethereumjs-tx/blob/5c81b38/src/types.ts#L53)_
-
-EC recovery ID.
+_Defined in [types.ts:53](https://github.com/ethereumjs/ethereumjs-vm/blob/d660c58/packages/tx/src/types.ts#L53)_
 
 ---
 
@@ -130,8 +112,6 @@ EC recovery ID.
 
 **● value**: _[BufferLike](../#bufferlike)_
 
-_Defined in [types.ts:68](https://github.com/ethereumjs/ethereumjs-tx/blob/5c81b38/src/types.ts#L68)_
-
-The amount of Ether sent.
+_Defined in [types.ts:68](https://github.com/ethereumjs/ethereumjs-vm/blob/d660c58/packages/tx/src/types.ts#L68)_
 
 ---

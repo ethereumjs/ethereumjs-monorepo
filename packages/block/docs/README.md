@@ -35,9 +35,7 @@
 
 **Ƭ BufferLike**: _`Buffer` \| [TransformableToBuffer](interfaces/transformabletobuffer.md) \| [PrefixedHexString](#prefixedhexstring) \| `number`_
 
-_Defined in [types.ts:42](https://github.com/ethereumjs/ethereumjs-block/blob/6adbfae/src/types.ts#L42)_
-
-A Buffer, hex string prefixed with `0x`, Number, or an object with a toBuffer method such as BN.
+_Defined in [types.ts:42](https://github.com/ethereumjs/ethereumjs-vm/blob/d660c58/packages/block/src/types.ts#L42)_
 
 ---
 
@@ -47,9 +45,7 @@ A Buffer, hex string prefixed with `0x`, Number, or an object with a toBuffer me
 
 **Ƭ PrefixedHexString**: _`string`_
 
-_Defined in [types.ts:37](https://github.com/ethereumjs/ethereumjs-block/blob/6adbfae/src/types.ts#L37)_
-
-A hex string prefixed with `0x`.
+_Defined in [types.ts:37](https://github.com/ethereumjs/ethereumjs-vm/blob/d660c58/packages/block/src/types.ts#L37)_
 
 ---
 
@@ -59,11 +55,9 @@ A hex string prefixed with `0x`.
 
 ### blockFromRpc
 
-▸ **blockFromRpc**(blockParams: _`any`_, uncles?: _`any`[]_, chainOptions?: _[ChainOptions](interfaces/chainoptions.md)_): [Block](classes/block.md)
+▸ **blockFromRpc**(blockParams: _`any`_, uncles: _`any`[]_, chainOptions: _[ChainOptions](interfaces/chainoptions.md)_): [Block](classes/block.md)
 
-_Defined in [from-rpc.ts:14](https://github.com/ethereumjs/ethereumjs-block/blob/6adbfae/src/from-rpc.ts#L14)_
-
-Creates a new block object from Ethereum JSON RPC.
+_Defined in [from-rpc.ts:14](https://github.com/ethereumjs/ethereumjs-vm/blob/d660c58/packages/block/src/from-rpc.ts#L14)_
 
 **Parameters:**
 
@@ -81,11 +75,9 @@ Creates a new block object from Ethereum JSON RPC.
 
 ### blockHeaderFromRpc
 
-▸ **blockHeaderFromRpc**(blockParams: _`any`_, chainOptions?: _[ChainOptions](interfaces/chainoptions.md)_): [BlockHeader](classes/blockheader.md)
+▸ **blockHeaderFromRpc**(blockParams: _`any`_, chainOptions: _[ChainOptions](interfaces/chainoptions.md)_): [BlockHeader](classes/blockheader.md)
 
-_Defined in [header-from-rpc.ts:11](https://github.com/ethereumjs/ethereumjs-block/blob/6adbfae/src/header-from-rpc.ts#L11)_
-
-Creates a new block header object from Ethereum JSON RPC.
+_Defined in [header-from-rpc.ts:11](https://github.com/ethereumjs/ethereumjs-vm/blob/d660c58/packages/block/src/header-from-rpc.ts#L11)_
 
 **Parameters:**
 

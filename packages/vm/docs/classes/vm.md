@@ -2,10 +2,6 @@
 
 # Class: VM
 
-Execution engine which can be used to run a blockchain, individual blocks, individual transactions, or snippets of EVM bytecode.
-
-This class is an AsyncEventEmitter, which means that event handlers are run to completion before continuing. If an error is thrown in an event handler, it will bubble up to the VM and thrown from the method call that triggered the event.
-
 ## Hierarchy
 
  `any`
@@ -21,15 +17,16 @@ This class is an AsyncEventEmitter, which means that event handlers are run to c
 ### Properties
 
 * [_common](vm.md#_common)
+* [_emit](vm.md#_emit)
 * [_opcodes](vm.md#_opcodes)
 * [allowUnlimitedContractSize](vm.md#allowunlimitedcontractsize)
 * [blockchain](vm.md#blockchain)
 * [opts](vm.md#opts)
+* [pStateManager](vm.md#pstatemanager)
 * [stateManager](vm.md#statemanager)
 
 ### Methods
 
-* [_emit](vm.md#_emit)
 * [copy](vm.md#copy)
 * [runBlock](vm.md#runblock)
 * [runBlockchain](vm.md#runblockchain)
@@ -47,9 +44,7 @@ This class is an AsyncEventEmitter, which means that event handlers are run to c
 
 ⊕ **new VM**(opts?: *[VMOpts](../interfaces/vmopts.md)*): [VM](vm.md)
 
-*Defined in [index.ts:74](https://github.com/ethereumjs/ethereumjs-vm/blob/439570a/lib/index.ts#L74)*
-
-Instantiates a new [VM](vm.md) Object.
+*Defined in [index.ts:75](https://github.com/ethereumjs/ethereumjs-vm/blob/d660c58/packages/vm/lib/index.ts#L75)*
 
 **Parameters:**
 
@@ -69,64 +64,19 @@ ___
 
 **● _common**: *`Common`*
 
-*Defined in [index.ts:70](https://github.com/ethereumjs/ethereumjs-vm/blob/439570a/lib/index.ts#L70)*
+*Defined in [index.ts:69](https://github.com/ethereumjs/ethereumjs-vm/blob/d660c58/packages/vm/lib/index.ts#L69)*
 
 ___
-<a id="_opcodes"></a>
-
-###  _opcodes
-
-**● _opcodes**: *`OpcodeList`*
-
-*Defined in [index.ts:74](https://github.com/ethereumjs/ethereumjs-vm/blob/439570a/lib/index.ts#L74)*
-
-___
-<a id="allowunlimitedcontractsize"></a>
-
-###  allowUnlimitedContractSize
-
-**● allowUnlimitedContractSize**: *`boolean`*
-
-*Defined in [index.ts:73](https://github.com/ethereumjs/ethereumjs-vm/blob/439570a/lib/index.ts#L73)*
-
-___
-<a id="blockchain"></a>
-
-###  blockchain
-
-**● blockchain**: *`Blockchain`*
-
-*Defined in [index.ts:72](https://github.com/ethereumjs/ethereumjs-vm/blob/439570a/lib/index.ts#L72)*
-
-___
-<a id="opts"></a>
-
-###  opts
-
-**● opts**: *[VMOpts](../interfaces/vmopts.md)*
-
-*Defined in [index.ts:69](https://github.com/ethereumjs/ethereumjs-vm/blob/439570a/lib/index.ts#L69)*
-
-___
-<a id="statemanager"></a>
-
-###  stateManager
-
-**● stateManager**: *[StateManager](statemanager.md)*
-
-*Defined in [index.ts:71](https://github.com/ethereumjs/ethereumjs-vm/blob/439570a/lib/index.ts#L71)*
-
-___
-
-## Methods
-
 <a id="_emit"></a>
 
 ###  _emit
 
-▸ **_emit**(topic: *`string`*, data: *`any`*): `Promise`<`any`>
+**● _emit**: *`function`*
 
-*Defined in [index.ts:192](https://github.com/ethereumjs/ethereumjs-vm/blob/439570a/lib/index.ts#L192)*
+*Defined in [index.ts:74](https://github.com/ethereumjs/ethereumjs-vm/blob/d660c58/packages/vm/lib/index.ts#L74)*
+
+#### Type declaration
+▸(topic: *`string`*, data: *`any`*): `Promise`<`void`>
 
 **Parameters:**
 
@@ -135,18 +85,73 @@ ___
 | topic | `string` |
 | data | `any` |
 
-**Returns:** `Promise`<`any`>
+**Returns:** `Promise`<`void`>
 
 ___
+<a id="_opcodes"></a>
+
+###  _opcodes
+
+**● _opcodes**: *`OpcodeList`*
+
+*Defined in [index.ts:73](https://github.com/ethereumjs/ethereumjs-vm/blob/d660c58/packages/vm/lib/index.ts#L73)*
+
+___
+<a id="allowunlimitedcontractsize"></a>
+
+###  allowUnlimitedContractSize
+
+**● allowUnlimitedContractSize**: *`boolean`*
+
+*Defined in [index.ts:72](https://github.com/ethereumjs/ethereumjs-vm/blob/d660c58/packages/vm/lib/index.ts#L72)*
+
+___
+<a id="blockchain"></a>
+
+###  blockchain
+
+**● blockchain**: *`Blockchain`*
+
+*Defined in [index.ts:71](https://github.com/ethereumjs/ethereumjs-vm/blob/d660c58/packages/vm/lib/index.ts#L71)*
+
+___
+<a id="opts"></a>
+
+###  opts
+
+**● opts**: *[VMOpts](../interfaces/vmopts.md)*
+
+*Defined in [index.ts:68](https://github.com/ethereumjs/ethereumjs-vm/blob/d660c58/packages/vm/lib/index.ts#L68)*
+
+___
+<a id="pstatemanager"></a>
+
+###  pStateManager
+
+**● pStateManager**: *`PStateManager`*
+
+*Defined in [index.ts:75](https://github.com/ethereumjs/ethereumjs-vm/blob/d660c58/packages/vm/lib/index.ts#L75)*
+
+___
+<a id="statemanager"></a>
+
+###  stateManager
+
+**● stateManager**: *[StateManager](statemanager.md)*
+
+*Defined in [index.ts:70](https://github.com/ethereumjs/ethereumjs-vm/blob/d660c58/packages/vm/lib/index.ts#L70)*
+
+___
+
+## Methods
+
 <a id="copy"></a>
 
 ###  copy
 
 ▸ **copy**(): [VM](vm.md)
 
-*Defined in [index.ts:184](https://github.com/ethereumjs/ethereumjs-vm/blob/439570a/lib/index.ts#L184)*
-
-Returns a copy of the [VM](vm.md) instance.
+*Defined in [index.ts:196](https://github.com/ethereumjs/ethereumjs-vm/blob/d660c58/packages/vm/lib/index.ts#L196)*
 
 **Returns:** [VM](vm.md)
 
@@ -157,11 +162,7 @@ ___
 
 ▸ **runBlock**(opts: *[RunBlockOpts](../interfaces/runblockopts.md)*): `Promise`<[RunBlockResult](../interfaces/runblockresult.md)>
 
-*Defined in [index.ts:148](https://github.com/ethereumjs/ethereumjs-vm/blob/439570a/lib/index.ts#L148)*
-
-Processes the `block` running all of the transactions it contains and updating the miner's account
-
-This method modifies the state. If `generate` is `true`, the state modifications will be reverted if an exception is raised. If it's `false`, it won't revert if the block's header is invalid. If an error is thrown from an event handler, the state may or may not be reverted.
+*Defined in [index.ts:160](https://github.com/ethereumjs/ethereumjs-vm/blob/d660c58/packages/vm/lib/index.ts#L160)*
 
 **Parameters:**
 
@@ -178,11 +179,7 @@ ___
 
 ▸ **runBlockchain**(blockchain: *`any`*): `Promise`<`void`>
 
-*Defined in [index.ts:134](https://github.com/ethereumjs/ethereumjs-vm/blob/439570a/lib/index.ts#L134)*
-
-Processes blocks and adds them to the blockchain.
-
-This method modifies the state.
+*Defined in [index.ts:146](https://github.com/ethereumjs/ethereumjs-vm/blob/d660c58/packages/vm/lib/index.ts#L146)*
 
 **Parameters:**
 
@@ -199,11 +196,7 @@ ___
 
 ▸ **runCall**(opts: *[RunCallOpts](../interfaces/runcallopts.md)*): `Promise`<[EVMResult](../interfaces/evmresult.md)>
 
-*Defined in [index.ts:168](https://github.com/ethereumjs/ethereumjs-vm/blob/439570a/lib/index.ts#L168)*
-
-runs a call (or create) operation.
-
-This method modifies the state.
+*Defined in [index.ts:180](https://github.com/ethereumjs/ethereumjs-vm/blob/d660c58/packages/vm/lib/index.ts#L180)*
 
 **Parameters:**
 
@@ -220,11 +213,7 @@ ___
 
 ▸ **runCode**(opts: *[RunCodeOpts](../interfaces/runcodeopts.md)*): `Promise`<[ExecResult](../interfaces/execresult.md)>
 
-*Defined in [index.ts:177](https://github.com/ethereumjs/ethereumjs-vm/blob/439570a/lib/index.ts#L177)*
-
-Runs EVM code.
-
-This method modifies the state.
+*Defined in [index.ts:189](https://github.com/ethereumjs/ethereumjs-vm/blob/d660c58/packages/vm/lib/index.ts#L189)*
 
 **Parameters:**
 
@@ -241,11 +230,7 @@ ___
 
 ▸ **runTx**(opts: *[RunTxOpts](../interfaces/runtxopts.md)*): `Promise`<[RunTxResult](../interfaces/runtxresult.md)>
 
-*Defined in [index.ts:159](https://github.com/ethereumjs/ethereumjs-vm/blob/439570a/lib/index.ts#L159)*
-
-Process a transaction. Run the vm. Transfers eth. Checks balances.
-
-This method modifies the state. If an error is thrown, the modifications are reverted, except when the error is thrown from an event handler. In the latter case the state may or may not be reverted.
+*Defined in [index.ts:171](https://github.com/ethereumjs/ethereumjs-vm/blob/d660c58/packages/vm/lib/index.ts#L171)*
 
 **Parameters:**
 

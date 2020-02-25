@@ -2,8 +2,6 @@
 
 # Class: Block
 
-An object that represents the block
-
 ## Hierarchy
 
 **Block**
@@ -52,9 +50,7 @@ An object that represents the block
 
 ⊕ **new Block**(data?: _`Buffer` \| [`Buffer`[], `Buffer`[], `Buffer`[]] \| [BlockData](../interfaces/blockdata.md)_, opts?: _[ChainOptions](../interfaces/chainoptions.md)_): [Block](block.md)
 
-_Defined in [block.ts:20](https://github.com/ethereumjs/ethereumjs-block/blob/6adbfae/src/block.ts#L20)_
-
-Creates a new block object
+_Defined in [block.ts:20](https://github.com/ethereumjs/ethereumjs-vm/blob/d660c58/packages/block/src/block.ts#L20)_
 
 **Parameters:**
 
@@ -75,7 +71,7 @@ Creates a new block object
 
 **● \_common**: _`Common`_
 
-_Defined in [block.ts:20](https://github.com/ethereumjs/ethereumjs-block/blob/6adbfae/src/block.ts#L20)_
+_Defined in [block.ts:20](https://github.com/ethereumjs/ethereumjs-vm/blob/d660c58/packages/block/src/block.ts#L20)_
 
 ---
 
@@ -85,7 +81,7 @@ _Defined in [block.ts:20](https://github.com/ethereumjs/ethereumjs-block/blob/6a
 
 **● header**: _[BlockHeader](blockheader.md)_
 
-_Defined in [block.ts:15](https://github.com/ethereumjs/ethereumjs-block/blob/6adbfae/src/block.ts#L15)_
+_Defined in [block.ts:15](https://github.com/ethereumjs/ethereumjs-vm/blob/d660c58/packages/block/src/block.ts#L15)_
 
 ---
 
@@ -95,7 +91,7 @@ _Defined in [block.ts:15](https://github.com/ethereumjs/ethereumjs-block/blob/6a
 
 **● transactions**: _`Transaction`[]_ = []
 
-_Defined in [block.ts:16](https://github.com/ethereumjs/ethereumjs-block/blob/6adbfae/src/block.ts#L16)_
+_Defined in [block.ts:16](https://github.com/ethereumjs/ethereumjs-vm/blob/d660c58/packages/block/src/block.ts#L16)_
 
 ---
 
@@ -105,7 +101,7 @@ _Defined in [block.ts:16](https://github.com/ethereumjs/ethereumjs-block/blob/6a
 
 **● txTrie**: _`any`_ = new Trie()
 
-_Defined in [block.ts:18](https://github.com/ethereumjs/ethereumjs-block/blob/6adbfae/src/block.ts#L18)_
+_Defined in [block.ts:18](https://github.com/ethereumjs/ethereumjs-vm/blob/d660c58/packages/block/src/block.ts#L18)_
 
 ---
 
@@ -115,7 +111,7 @@ _Defined in [block.ts:18](https://github.com/ethereumjs/ethereumjs-block/blob/6a
 
 **● uncleHeaders**: _[BlockHeader](blockheader.md)[]_ = []
 
-_Defined in [block.ts:17](https://github.com/ethereumjs/ethereumjs-block/blob/6adbfae/src/block.ts#L17)_
+_Defined in [block.ts:17](https://github.com/ethereumjs/ethereumjs-vm/blob/d660c58/packages/block/src/block.ts#L17)_
 
 ---
 
@@ -125,11 +121,9 @@ _Defined in [block.ts:17](https://github.com/ethereumjs/ethereumjs-block/blob/6a
 
 ### raw
 
-**get raw**(): [`Buffer`[], `Buffer`[], `Buffer`[]]
+**raw**:
 
-_Defined in [block.ts:82](https://github.com/ethereumjs/ethereumjs-block/blob/6adbfae/src/block.ts#L82)_
-
-**Returns:** [`Buffer`[], `Buffer`[], `Buffer`[]]
+_Defined in [block.ts:82](https://github.com/ethereumjs/ethereumjs-vm/blob/d660c58/packages/block/src/block.ts#L82)_
 
 ---
 
@@ -141,7 +135,7 @@ _Defined in [block.ts:82](https://github.com/ethereumjs/ethereumjs-block/blob/6a
 
 ▸ **\_putTxInTrie**(txIndex: _`number`_, tx: _`Transaction`_): `Promise`<`void`>
 
-_Defined in [block.ts:250](https://github.com/ethereumjs/ethereumjs-block/blob/6adbfae/src/block.ts#L250)_
+_Defined in [block.ts:250](https://github.com/ethereumjs/ethereumjs-vm/blob/d660c58/packages/block/src/block.ts#L250)_
 
 **Parameters:**
 
@@ -160,7 +154,7 @@ _Defined in [block.ts:250](https://github.com/ethereumjs/ethereumjs-block/blob/6
 
 ▸ **\_validateUncleHeader**(uncleHeader: _[BlockHeader](blockheader.md)_, blockchain: _[Blockchain](../interfaces/blockchain.md)_): `Promise`<`void`>
 
-_Defined in [block.ts:262](https://github.com/ethereumjs/ethereumjs-block/blob/6adbfae/src/block.ts#L262)_
+_Defined in [block.ts:262](https://github.com/ethereumjs/ethereumjs-vm/blob/d660c58/packages/block/src/block.ts#L262)_
 
 **Parameters:**
 
@@ -179,9 +173,7 @@ _Defined in [block.ts:262](https://github.com/ethereumjs/ethereumjs-block/blob/6
 
 ▸ **genTxTrie**(): `Promise`<`void`>
 
-_Defined in [block.ts:131](https://github.com/ethereumjs/ethereumjs-block/blob/6adbfae/src/block.ts#L131)_
-
-Generate transaction trie. The tx trie must be generated before the transaction trie can be validated with `validateTransactionTrie`
+_Defined in [block.ts:131](https://github.com/ethereumjs/ethereumjs-vm/blob/d660c58/packages/block/src/block.ts#L131)_
 
 **Returns:** `Promise`<`void`>
 
@@ -193,9 +185,7 @@ Generate transaction trie. The tx trie must be generated before the transaction 
 
 ▸ **hash**(): `Buffer`
 
-_Defined in [block.ts:89](https://github.com/ethereumjs/ethereumjs-block/blob/6adbfae/src/block.ts#L89)_
-
-Produces a hash the RLP of the block
+_Defined in [block.ts:89](https://github.com/ethereumjs/ethereumjs-vm/blob/d660c58/packages/block/src/block.ts#L89)_
 
 **Returns:** `Buffer`
 
@@ -207,9 +197,7 @@ Produces a hash the RLP of the block
 
 ▸ **isGenesis**(): `boolean`
 
-_Defined in [block.ts:96](https://github.com/ethereumjs/ethereumjs-block/blob/6adbfae/src/block.ts#L96)_
-
-Determines if this block is the genesis block
+_Defined in [block.ts:96](https://github.com/ethereumjs/ethereumjs-vm/blob/d660c58/packages/block/src/block.ts#L96)_
 
 **Returns:** `boolean`
 
@@ -225,13 +213,11 @@ Determines if this block is the genesis block
 
 ▸ **serialize**(rlpEncode: _`false`_): [`Buffer`[], `Buffer`[], `Buffer`[]]
 
-_Defined in [block.ts:114](https://github.com/ethereumjs/ethereumjs-block/blob/6adbfae/src/block.ts#L114)_
-
-Produces a serialization of the block.
+_Defined in [block.ts:114](https://github.com/ethereumjs/ethereumjs-vm/blob/d660c58/packages/block/src/block.ts#L114)_
 
 **Returns:** `Buffer`
 
-_Defined in [block.ts:115](https://github.com/ethereumjs/ethereumjs-block/blob/6adbfae/src/block.ts#L115)_
+_Defined in [block.ts:115](https://github.com/ethereumjs/ethereumjs-vm/blob/d660c58/packages/block/src/block.ts#L115)_
 
 **Parameters:**
 
@@ -241,7 +227,7 @@ _Defined in [block.ts:115](https://github.com/ethereumjs/ethereumjs-block/blob/6
 
 **Returns:** `Buffer`
 
-_Defined in [block.ts:116](https://github.com/ethereumjs/ethereumjs-block/blob/6adbfae/src/block.ts#L116)_
+_Defined in [block.ts:116](https://github.com/ethereumjs/ethereumjs-vm/blob/d660c58/packages/block/src/block.ts#L116)_
 
 **Parameters:**
 
@@ -259,9 +245,7 @@ _Defined in [block.ts:116](https://github.com/ethereumjs/ethereumjs-block/blob/6
 
 ▸ **setGenesisParams**(): `void`
 
-_Defined in [block.ts:103](https://github.com/ethereumjs/ethereumjs-block/blob/6adbfae/src/block.ts#L103)_
-
-Turns the block into the canonical genesis block
+_Defined in [block.ts:103](https://github.com/ethereumjs/ethereumjs-vm/blob/d660c58/packages/block/src/block.ts#L103)_
 
 **Returns:** `void`
 
@@ -271,13 +255,9 @@ Turns the block into the canonical genesis block
 
 ### toJSON
 
-▸ **toJSON**(labeled?: _`boolean`_): `undefined` \| `string` \| `any`[] \| `object`
+▸ **toJSON**(labeled?: _`boolean`_): `any`
 
-_Defined in [block.ts:238](https://github.com/ethereumjs/ethereumjs-block/blob/6adbfae/src/block.ts#L238)_
-
-Returns the block in JSON format
-
-_**see**_: [ethereumjs-util](https://github.com/ethereumjs/ethereumjs-util/blob/master/docs/index.md#defineproperties)
+_Defined in [block.ts:238](https://github.com/ethereumjs/ethereumjs-vm/blob/d660c58/packages/block/src/block.ts#L238)_
 
 **Parameters:**
 
@@ -285,7 +265,7 @@ _**see**_: [ethereumjs-util](https://github.com/ethereumjs/ethereumjs-util/blob/
 | ----------------------- | --------- | ------------- |
 | `Default value` labeled | `boolean` | false         |
 
-**Returns:** `undefined` \| `string` \| `any`[] \| `object`
+**Returns:** `any`
 
 ---
 
@@ -295,9 +275,7 @@ _**see**_: [ethereumjs-util](https://github.com/ethereumjs/ethereumjs-util/blob/
 
 ▸ **validate**(blockChain: _[Blockchain](../interfaces/blockchain.md)_): `Promise`<`void`>
 
-_Defined in [block.ts:180](https://github.com/ethereumjs/ethereumjs-block/blob/6adbfae/src/block.ts#L180)_
-
-Validates the entire block, throwing if invalid.
+_Defined in [block.ts:180](https://github.com/ethereumjs/ethereumjs-vm/blob/d660c58/packages/block/src/block.ts#L180)_
 
 **Parameters:**
 
@@ -319,13 +297,11 @@ Validates the entire block, throwing if invalid.
 
 ▸ **validateTransactions**(stringError: _`true`_): `string`
 
-_Defined in [block.ts:155](https://github.com/ethereumjs/ethereumjs-block/blob/6adbfae/src/block.ts#L155)_
-
-Validates the transactions
+_Defined in [block.ts:155](https://github.com/ethereumjs/ethereumjs-vm/blob/d660c58/packages/block/src/block.ts#L155)_
 
 **Returns:** `boolean`
 
-_Defined in [block.ts:156](https://github.com/ethereumjs/ethereumjs-block/blob/6adbfae/src/block.ts#L156)_
+_Defined in [block.ts:156](https://github.com/ethereumjs/ethereumjs-vm/blob/d660c58/packages/block/src/block.ts#L156)_
 
 **Parameters:**
 
@@ -335,7 +311,7 @@ _Defined in [block.ts:156](https://github.com/ethereumjs/ethereumjs-block/blob/6
 
 **Returns:** `boolean`
 
-_Defined in [block.ts:157](https://github.com/ethereumjs/ethereumjs-block/blob/6adbfae/src/block.ts#L157)_
+_Defined in [block.ts:157](https://github.com/ethereumjs/ethereumjs-vm/blob/d660c58/packages/block/src/block.ts#L157)_
 
 **Parameters:**
 
@@ -353,9 +329,7 @@ _Defined in [block.ts:157](https://github.com/ethereumjs/ethereumjs-block/blob/6
 
 ▸ **validateTransactionsTrie**(): `boolean`
 
-_Defined in [block.ts:141](https://github.com/ethereumjs/ethereumjs-block/blob/6adbfae/src/block.ts#L141)_
-
-Validates the transaction trie
+_Defined in [block.ts:141](https://github.com/ethereumjs/ethereumjs-vm/blob/d660c58/packages/block/src/block.ts#L141)_
 
 **Returns:** `boolean`
 
@@ -367,9 +341,7 @@ Validates the transaction trie
 
 ▸ **validateUncles**(blockchain: _[Blockchain](../interfaces/blockchain.md)_): `Promise`<`void`>
 
-_Defined in [block.ts:215](https://github.com/ethereumjs/ethereumjs-block/blob/6adbfae/src/block.ts#L215)_
-
-Validates the uncles that are in the block, if any. This method throws if they are invalid.
+_Defined in [block.ts:215](https://github.com/ethereumjs/ethereumjs-vm/blob/d660c58/packages/block/src/block.ts#L215)_
 
 **Parameters:**
 
@@ -387,9 +359,7 @@ Validates the uncles that are in the block, if any. This method throws if they a
 
 ▸ **validateUnclesHash**(): `boolean`
 
-_Defined in [block.ts:204](https://github.com/ethereumjs/ethereumjs-block/blob/6adbfae/src/block.ts#L204)_
-
-Validates the uncle's hash
+_Defined in [block.ts:204](https://github.com/ethereumjs/ethereumjs-vm/blob/d660c58/packages/block/src/block.ts#L204)_
 
 **Returns:** `boolean`
 

@@ -29,7 +29,7 @@
 
 **CREATE_COLLISION**:  = "create collision"
 
-*Defined in [exceptions.ts:11](https://github.com/ethereumjs/ethereumjs-vm/blob/439570a/lib/exceptions.ts#L11)*
+*Defined in [exceptions.ts:11](https://github.com/ethereumjs/ethereumjs-vm/blob/d660c58/packages/vm/lib/exceptions.ts#L11)*
 
 ___
 <a id="internal_error"></a>
@@ -38,7 +38,7 @@ ___
 
 **INTERNAL_ERROR**:  = "internal error"
 
-*Defined in [exceptions.ts:10](https://github.com/ethereumjs/ethereumjs-vm/blob/439570a/lib/exceptions.ts#L10)*
+*Defined in [exceptions.ts:10](https://github.com/ethereumjs/ethereumjs-vm/blob/d660c58/packages/vm/lib/exceptions.ts#L10)*
 
 ___
 <a id="invalid_jump"></a>
@@ -47,7 +47,7 @@ ___
 
 **INVALID_JUMP**:  = "invalid JUMP"
 
-*Defined in [exceptions.ts:5](https://github.com/ethereumjs/ethereumjs-vm/blob/439570a/lib/exceptions.ts#L5)*
+*Defined in [exceptions.ts:5](https://github.com/ethereumjs/ethereumjs-vm/blob/d660c58/packages/vm/lib/exceptions.ts#L5)*
 
 ___
 <a id="invalid_opcode"></a>
@@ -56,7 +56,7 @@ ___
 
 **INVALID_OPCODE**:  = "invalid opcode"
 
-*Defined in [exceptions.ts:6](https://github.com/ethereumjs/ethereumjs-vm/blob/439570a/lib/exceptions.ts#L6)*
+*Defined in [exceptions.ts:6](https://github.com/ethereumjs/ethereumjs-vm/blob/d660c58/packages/vm/lib/exceptions.ts#L6)*
 
 ___
 <a id="out_of_gas"></a>
@@ -65,7 +65,7 @@ ___
 
 **OUT_OF_GAS**:  = "out of gas"
 
-*Defined in [exceptions.ts:2](https://github.com/ethereumjs/ethereumjs-vm/blob/439570a/lib/exceptions.ts#L2)*
+*Defined in [exceptions.ts:2](https://github.com/ethereumjs/ethereumjs-vm/blob/d660c58/packages/vm/lib/exceptions.ts#L2)*
 
 ___
 <a id="out_of_range"></a>
@@ -74,7 +74,7 @@ ___
 
 **OUT_OF_RANGE**:  = "value out of range"
 
-*Defined in [exceptions.ts:7](https://github.com/ethereumjs/ethereumjs-vm/blob/439570a/lib/exceptions.ts#L7)*
+*Defined in [exceptions.ts:7](https://github.com/ethereumjs/ethereumjs-vm/blob/d660c58/packages/vm/lib/exceptions.ts#L7)*
 
 ___
 <a id="refund_exhausted"></a>
@@ -83,7 +83,7 @@ ___
 
 **REFUND_EXHAUSTED**:  = "refund exhausted"
 
-*Defined in [exceptions.ts:13](https://github.com/ethereumjs/ethereumjs-vm/blob/439570a/lib/exceptions.ts#L13)*
+*Defined in [exceptions.ts:13](https://github.com/ethereumjs/ethereumjs-vm/blob/d660c58/packages/vm/lib/exceptions.ts#L13)*
 
 ___
 <a id="revert"></a>
@@ -92,7 +92,7 @@ ___
 
 **REVERT**:  = "revert"
 
-*Defined in [exceptions.ts:8](https://github.com/ethereumjs/ethereumjs-vm/blob/439570a/lib/exceptions.ts#L8)*
+*Defined in [exceptions.ts:8](https://github.com/ethereumjs/ethereumjs-vm/blob/d660c58/packages/vm/lib/exceptions.ts#L8)*
 
 ___
 <a id="stack_overflow"></a>
@@ -101,7 +101,7 @@ ___
 
 **STACK_OVERFLOW**:  = "stack overflow"
 
-*Defined in [exceptions.ts:4](https://github.com/ethereumjs/ethereumjs-vm/blob/439570a/lib/exceptions.ts#L4)*
+*Defined in [exceptions.ts:4](https://github.com/ethereumjs/ethereumjs-vm/blob/d660c58/packages/vm/lib/exceptions.ts#L4)*
 
 ___
 <a id="stack_underflow"></a>
@@ -110,7 +110,7 @@ ___
 
 **STACK_UNDERFLOW**:  = "stack underflow"
 
-*Defined in [exceptions.ts:3](https://github.com/ethereumjs/ethereumjs-vm/blob/439570a/lib/exceptions.ts#L3)*
+*Defined in [exceptions.ts:3](https://github.com/ethereumjs/ethereumjs-vm/blob/d660c58/packages/vm/lib/exceptions.ts#L3)*
 
 ___
 <a id="static_state_change"></a>
@@ -119,7 +119,7 @@ ___
 
 **STATIC_STATE_CHANGE**:  = "static state change"
 
-*Defined in [exceptions.ts:9](https://github.com/ethereumjs/ethereumjs-vm/blob/439570a/lib/exceptions.ts#L9)*
+*Defined in [exceptions.ts:9](https://github.com/ethereumjs/ethereumjs-vm/blob/d660c58/packages/vm/lib/exceptions.ts#L9)*
 
 ___
 <a id="stop"></a>
@@ -128,7 +128,7 @@ ___
 
 **STOP**:  = "stop"
 
-*Defined in [exceptions.ts:12](https://github.com/ethereumjs/ethereumjs-vm/blob/439570a/lib/exceptions.ts#L12)*
+*Defined in [exceptions.ts:12](https://github.com/ethereumjs/ethereumjs-vm/blob/d660c58/packages/vm/lib/exceptions.ts#L12)*
 
 ___
 

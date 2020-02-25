@@ -28,7 +28,7 @@
 
 **● difficulty**: _`number`_
 
-_Defined in [types.ts:30](https://github.com/ethereumjs/ethereumjs-common/blob/30c4186/src/types.ts#L30)_
+_Defined in [types.ts:30](https://github.com/ethereumjs/ethereumjs-vm/blob/d660c58/packages/common/src/types.ts#L30)_
 
 ---
 
@@ -38,7 +38,7 @@ _Defined in [types.ts:30](https://github.com/ethereumjs/ethereumjs-common/blob/3
 
 **● extraData**: _`string`_
 
-_Defined in [types.ts:32](https://github.com/ethereumjs/ethereumjs-common/blob/30c4186/src/types.ts#L32)_
+_Defined in [types.ts:32](https://github.com/ethereumjs/ethereumjs-vm/blob/d660c58/packages/common/src/types.ts#L32)_
 
 ---
 
@@ -48,7 +48,7 @@ _Defined in [types.ts:32](https://github.com/ethereumjs/ethereumjs-common/blob/3
 
 **● gasLimit**: _`number`_
 
-_Defined in [types.ts:29](https://github.com/ethereumjs/ethereumjs-common/blob/30c4186/src/types.ts#L29)_
+_Defined in [types.ts:29](https://github.com/ethereumjs/ethereumjs-vm/blob/d660c58/packages/common/src/types.ts#L29)_
 
 ---
 
@@ -58,7 +58,7 @@ _Defined in [types.ts:29](https://github.com/ethereumjs/ethereumjs-common/blob/3
 
 **● hash**: _`string`_
 
-_Defined in [types.ts:27](https://github.com/ethereumjs/ethereumjs-common/blob/30c4186/src/types.ts#L27)_
+_Defined in [types.ts:27](https://github.com/ethereumjs/ethereumjs-vm/blob/d660c58/packages/common/src/types.ts#L27)_
 
 ---
 
@@ -68,7 +68,7 @@ _Defined in [types.ts:27](https://github.com/ethereumjs/ethereumjs-common/blob/3
 
 **● nonce**: _`string`_
 
-_Defined in [types.ts:31](https://github.com/ethereumjs/ethereumjs-common/blob/30c4186/src/types.ts#L31)_
+_Defined in [types.ts:31](https://github.com/ethereumjs/ethereumjs-vm/blob/d660c58/packages/common/src/types.ts#L31)_
 
 ---
 
@@ -78,7 +78,7 @@ _Defined in [types.ts:31](https://github.com/ethereumjs/ethereumjs-common/blob/3
 
 **● stateRoot**: _`string`_
 
-_Defined in [types.ts:33](https://github.com/ethereumjs/ethereumjs-common/blob/30c4186/src/types.ts#L33)_
+_Defined in [types.ts:33](https://github.com/ethereumjs/ethereumjs-vm/blob/d660c58/packages/common/src/types.ts#L33)_
 
 ---
 
@@ -88,6 +88,6 @@ _Defined in [types.ts:33](https://github.com/ethereumjs/ethereumjs-common/blob/3
 
 **● timestamp**: _`string` \| `null`_
 
-_Defined in [types.ts:28](https://github.com/ethereumjs/ethereumjs-common/blob/30c4186/src/types.ts#L28)_
+_Defined in [types.ts:28](https://github.com/ethereumjs/ethereumjs-vm/blob/d660c58/packages/common/src/types.ts#L28)_
 
 ---

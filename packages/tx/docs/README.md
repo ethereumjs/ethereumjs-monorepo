@@ -29,9 +29,7 @@
 
 **Ƭ BufferLike**: _`Buffer` \| [TransformableToBuffer](interfaces/transformabletobuffer.md) \| [PrefixedHexString](#prefixedhexstring) \| `number`_
 
-_Defined in [types.ts:19](https://github.com/ethereumjs/ethereumjs-tx/blob/5c81b38/src/types.ts#L19)_
-
-A Buffer, hex string prefixed with `0x`, Number, or an object with a toBuffer method such as BN.
+_Defined in [types.ts:19](https://github.com/ethereumjs/ethereumjs-vm/blob/d660c58/packages/tx/src/types.ts#L19)_
 
 ---
 
@@ -41,8 +39,6 @@ A Buffer, hex string prefixed with `0x`, Number, or an object with a toBuffer me
 
 **Ƭ PrefixedHexString**: _`string`_
 
-_Defined in [types.ts:14](https://github.com/ethereumjs/ethereumjs-tx/blob/5c81b38/src/types.ts#L14)_
-
-A hex string prefixed with `0x`.
+_Defined in [types.ts:14](https://github.com/ethereumjs/ethereumjs-vm/blob/d660c58/packages/tx/src/types.ts#L14)_
 
 ---

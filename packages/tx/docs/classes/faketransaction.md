@@ -2,14 +2,6 @@
 
 # Class: FakeTransaction
 
-Creates a new transaction object that doesn't need to be signed.
-
-_**param**_: A transaction can be initialized with its rlp representation, an array containing the value of its fields in order, or an object containing them by name.
-
-_**param**_: The transaction's options, used to indicate the chain and hardfork the transactions belongs to.
-
-_**see**_: Transaction
-
 ## Hierarchy
 
 [Transaction](transaction.md)
@@ -65,7 +57,7 @@ _**see**_: Transaction
 
 _Overrides [Transaction](transaction.md).[constructor](transaction.md#constructor)_
 
-_Defined in [fake.ts:22](https://github.com/ethereumjs/ethereumjs-tx/blob/5c81b38/src/fake.ts#L22)_
+_Defined in [fake.ts:22](https://github.com/ethereumjs/ethereumjs-vm/blob/d660c58/packages/tx/src/fake.ts#L22)_
 
 **Parameters:**
 
@@ -88,7 +80,7 @@ _Defined in [fake.ts:22](https://github.com/ethereumjs/ethereumjs-tx/blob/5c81b3
 
 _Inherited from [Transaction](transaction.md).[\_from](transaction.md#_from)_
 
-_Defined in [transaction.ts:37](https://github.com/ethereumjs/ethereumjs-tx/blob/5c81b38/src/transaction.ts#L37)_
+_Defined in [transaction.ts:37](https://github.com/ethereumjs/ethereumjs-vm/blob/d660c58/packages/tx/src/transaction.ts#L37)_
 
 ---
 
@@ -100,7 +92,7 @@ _Defined in [transaction.ts:37](https://github.com/ethereumjs/ethereumjs-tx/blob
 
 _Inherited from [Transaction](transaction.md).[data](transaction.md#data)_
 
-_Defined in [transaction.ts:30](https://github.com/ethereumjs/ethereumjs-tx/blob/5c81b38/src/transaction.ts#L30)_
+_Defined in [transaction.ts:30](https://github.com/ethereumjs/ethereumjs-vm/blob/d660c58/packages/tx/src/transaction.ts#L30)_
 
 ---
 
@@ -110,9 +102,7 @@ _Defined in [transaction.ts:30](https://github.com/ethereumjs/ethereumjs-tx/blob
 
 **● from**: _`Buffer`_
 
-_Defined in [fake.ts:22](https://github.com/ethereumjs/ethereumjs-tx/blob/5c81b38/src/fake.ts#L22)_
-
-Set from address to bypass transaction signing. This is not an optional property, as its getter never returns undefined.
+_Defined in [fake.ts:22](https://github.com/ethereumjs/ethereumjs-vm/blob/d660c58/packages/tx/src/fake.ts#L22)_
 
 ---
 
@@ -124,7 +114,7 @@ Set from address to bypass transaction signing. This is not an optional property
 
 _Inherited from [Transaction](transaction.md).[gasLimit](transaction.md#gaslimit)_
 
-_Defined in [transaction.ts:26](https://github.com/ethereumjs/ethereumjs-tx/blob/5c81b38/src/transaction.ts#L26)_
+_Defined in [transaction.ts:26](https://github.com/ethereumjs/ethereumjs-vm/blob/d660c58/packages/tx/src/transaction.ts#L26)_
 
 ---
 
@@ -136,7 +126,7 @@ _Defined in [transaction.ts:26](https://github.com/ethereumjs/ethereumjs-tx/blob
 
 _Inherited from [Transaction](transaction.md).[gasPrice](transaction.md#gasprice)_
 
-_Defined in [transaction.ts:27](https://github.com/ethereumjs/ethereumjs-tx/blob/5c81b38/src/transaction.ts#L27)_
+_Defined in [transaction.ts:27](https://github.com/ethereumjs/ethereumjs-vm/blob/d660c58/packages/tx/src/transaction.ts#L27)_
 
 ---
 
@@ -148,7 +138,7 @@ _Defined in [transaction.ts:27](https://github.com/ethereumjs/ethereumjs-tx/blob
 
 _Inherited from [Transaction](transaction.md).[nonce](transaction.md#nonce)_
 
-_Defined in [transaction.ts:25](https://github.com/ethereumjs/ethereumjs-tx/blob/5c81b38/src/transaction.ts#L25)_
+_Defined in [transaction.ts:25](https://github.com/ethereumjs/ethereumjs-vm/blob/d660c58/packages/tx/src/transaction.ts#L25)_
 
 ---
 
@@ -160,7 +150,7 @@ _Defined in [transaction.ts:25](https://github.com/ethereumjs/ethereumjs-tx/blob
 
 _Inherited from [Transaction](transaction.md).[r](transaction.md#r)_
 
-_Defined in [transaction.ts:32](https://github.com/ethereumjs/ethereumjs-tx/blob/5c81b38/src/transaction.ts#L32)_
+_Defined in [transaction.ts:32](https://github.com/ethereumjs/ethereumjs-vm/blob/d660c58/packages/tx/src/transaction.ts#L32)_
 
 ---
 
@@ -172,7 +162,7 @@ _Defined in [transaction.ts:32](https://github.com/ethereumjs/ethereumjs-tx/blob
 
 _Inherited from [Transaction](transaction.md).[raw](transaction.md#raw)_
 
-_Defined in [transaction.ts:24](https://github.com/ethereumjs/ethereumjs-tx/blob/5c81b38/src/transaction.ts#L24)_
+_Defined in [transaction.ts:24](https://github.com/ethereumjs/ethereumjs-vm/blob/d660c58/packages/tx/src/transaction.ts#L24)_
 
 ---
 
@@ -184,7 +174,7 @@ _Defined in [transaction.ts:24](https://github.com/ethereumjs/ethereumjs-tx/blob
 
 _Inherited from [Transaction](transaction.md).[s](transaction.md#s)_
 
-_Defined in [transaction.ts:33](https://github.com/ethereumjs/ethereumjs-tx/blob/5c81b38/src/transaction.ts#L33)_
+_Defined in [transaction.ts:33](https://github.com/ethereumjs/ethereumjs-vm/blob/d660c58/packages/tx/src/transaction.ts#L33)_
 
 ---
 
@@ -196,7 +186,7 @@ _Defined in [transaction.ts:33](https://github.com/ethereumjs/ethereumjs-tx/blob
 
 _Inherited from [Transaction](transaction.md).[to](transaction.md#to)_
 
-_Defined in [transaction.ts:28](https://github.com/ethereumjs/ethereumjs-tx/blob/5c81b38/src/transaction.ts#L28)_
+_Defined in [transaction.ts:28](https://github.com/ethereumjs/ethereumjs-vm/blob/d660c58/packages/tx/src/transaction.ts#L28)_
 
 ---
 
@@ -208,7 +198,7 @@ _Defined in [transaction.ts:28](https://github.com/ethereumjs/ethereumjs-tx/blob
 
 _Inherited from [Transaction](transaction.md).[v](transaction.md#v)_
 
-_Defined in [transaction.ts:31](https://github.com/ethereumjs/ethereumjs-tx/blob/5c81b38/src/transaction.ts#L31)_
+_Defined in [transaction.ts:31](https://github.com/ethereumjs/ethereumjs-vm/blob/d660c58/packages/tx/src/transaction.ts#L31)_
 
 ---
 
@@ -220,7 +210,7 @@ _Defined in [transaction.ts:31](https://github.com/ethereumjs/ethereumjs-tx/blob
 
 _Inherited from [Transaction](transaction.md).[value](transaction.md#value)_
 
-_Defined in [transaction.ts:29](https://github.com/ethereumjs/ethereumjs-tx/blob/5c81b38/src/transaction.ts#L29)_
+_Defined in [transaction.ts:29](https://github.com/ethereumjs/ethereumjs-vm/blob/d660c58/packages/tx/src/transaction.ts#L29)_
 
 ---
 
@@ -234,9 +224,7 @@ _Defined in [transaction.ts:29](https://github.com/ethereumjs/ethereumjs-tx/blob
 
 _Inherited from [Transaction](transaction.md).[getBaseFee](transaction.md#getbasefee)_
 
-_Defined in [transaction.ts:296](https://github.com/ethereumjs/ethereumjs-tx/blob/5c81b38/src/transaction.ts#L296)_
-
-the minimum amount of gas the tx must have (DataFee + TxFee + Creation Fee)
+_Defined in [transaction.ts:296](https://github.com/ethereumjs/ethereumjs-vm/blob/d660c58/packages/tx/src/transaction.ts#L296)_
 
 **Returns:** `BN`
 
@@ -250,9 +238,7 @@ the minimum amount of gas the tx must have (DataFee + TxFee + Creation Fee)
 
 _Inherited from [Transaction](transaction.md).[getChainId](transaction.md#getchainid)_
 
-_Defined in [transaction.ts:202](https://github.com/ethereumjs/ethereumjs-tx/blob/5c81b38/src/transaction.ts#L202)_
-
-returns chain ID
+_Defined in [transaction.ts:202](https://github.com/ethereumjs/ethereumjs-vm/blob/d660c58/packages/tx/src/transaction.ts#L202)_
 
 **Returns:** `number`
 
@@ -266,9 +252,7 @@ returns chain ID
 
 _Inherited from [Transaction](transaction.md).[getDataFee](transaction.md#getdatafee)_
 
-_Defined in [transaction.ts:282](https://github.com/ethereumjs/ethereumjs-tx/blob/5c81b38/src/transaction.ts#L282)_
-
-The amount of gas paid for the data in this tx
+_Defined in [transaction.ts:282](https://github.com/ethereumjs/ethereumjs-vm/blob/d660c58/packages/tx/src/transaction.ts#L282)_
 
 **Returns:** `BN`
 
@@ -282,9 +266,7 @@ The amount of gas paid for the data in this tx
 
 _Inherited from [Transaction](transaction.md).[getSenderAddress](transaction.md#getsenderaddress)_
 
-_Defined in [transaction.ts:209](https://github.com/ethereumjs/ethereumjs-tx/blob/5c81b38/src/transaction.ts#L209)_
-
-returns the sender's address
+_Defined in [transaction.ts:209](https://github.com/ethereumjs/ethereumjs-vm/blob/d660c58/packages/tx/src/transaction.ts#L209)_
 
 **Returns:** `Buffer`
 
@@ -298,9 +280,7 @@ returns the sender's address
 
 _Inherited from [Transaction](transaction.md).[getSenderPublicKey](transaction.md#getsenderpublickey)_
 
-_Defined in [transaction.ts:221](https://github.com/ethereumjs/ethereumjs-tx/blob/5c81b38/src/transaction.ts#L221)_
-
-returns the public key of the sender
+_Defined in [transaction.ts:221](https://github.com/ethereumjs/ethereumjs-vm/blob/d660c58/packages/tx/src/transaction.ts#L221)_
 
 **Returns:** `Buffer`
 
@@ -314,9 +294,7 @@ returns the public key of the sender
 
 _Inherited from [Transaction](transaction.md).[getUpfrontCost](transaction.md#getupfrontcost)_
 
-_Defined in [transaction.ts:307](https://github.com/ethereumjs/ethereumjs-tx/blob/5c81b38/src/transaction.ts#L307)_
-
-the up front amount that an account must have for this transaction to be valid
+_Defined in [transaction.ts:307](https://github.com/ethereumjs/ethereumjs-vm/blob/d660c58/packages/tx/src/transaction.ts#L307)_
 
 **Returns:** `BN`
 
@@ -330,9 +308,7 @@ the up front amount that an account must have for this transaction to be valid
 
 _Overrides [Transaction](transaction.md).[hash](transaction.md#hash)_
 
-_Defined in [fake.ts:53](https://github.com/ethereumjs/ethereumjs-tx/blob/5c81b38/src/fake.ts#L53)_
-
-Computes a sha3-256 hash of the serialized tx, using the sender address to generate a fake signature.
+_Defined in [fake.ts:53](https://github.com/ethereumjs/ethereumjs-vm/blob/d660c58/packages/tx/src/fake.ts#L53)_
 
 **Parameters:**
 
@@ -352,9 +328,7 @@ Computes a sha3-256 hash of the serialized tx, using the sender address to gener
 
 _Inherited from [Transaction](transaction.md).[serialize](transaction.md#serialize)_
 
-_Defined in [transaction.ts:337](https://github.com/ethereumjs/ethereumjs-tx/blob/5c81b38/src/transaction.ts#L337)_
-
-Returns the rlp encoding of the transaction
+_Defined in [transaction.ts:337](https://github.com/ethereumjs/ethereumjs-vm/blob/d660c58/packages/tx/src/transaction.ts#L337)_
 
 **Returns:** `Buffer`
 
@@ -368,9 +342,7 @@ Returns the rlp encoding of the transaction
 
 _Inherited from [Transaction](transaction.md).[sign](transaction.md#sign)_
 
-_Defined in [transaction.ts:262](https://github.com/ethereumjs/ethereumjs-tx/blob/5c81b38/src/transaction.ts#L262)_
-
-sign a transaction with a given private key
+_Defined in [transaction.ts:262](https://github.com/ethereumjs/ethereumjs-vm/blob/d660c58/packages/tx/src/transaction.ts#L262)_
 
 **Parameters:**
 
@@ -390,9 +362,7 @@ sign a transaction with a given private key
 
 _Inherited from [Transaction](transaction.md).[toCreationAddress](transaction.md#tocreationaddress)_
 
-_Defined in [transaction.ts:169](https://github.com/ethereumjs/ethereumjs-tx/blob/5c81b38/src/transaction.ts#L169)_
-
-If the tx's `to` is to the creation address
+_Defined in [transaction.ts:169](https://github.com/ethereumjs/ethereumjs-vm/blob/d660c58/packages/tx/src/transaction.ts#L169)_
 
 **Returns:** `boolean`
 
@@ -406,11 +376,7 @@ If the tx's `to` is to the creation address
 
 _Inherited from [Transaction](transaction.md).[toJSON](transaction.md#tojson)_
 
-_Defined in [transaction.ts:346](https://github.com/ethereumjs/ethereumjs-tx/blob/5c81b38/src/transaction.ts#L346)_
-
-Returns the transaction in JSON format
-
-_**see**_: [ethereumjs-util](https://github.com/ethereumjs/ethereumjs-util/blob/master/docs/index.md#defineproperties)
+_Defined in [transaction.ts:346](https://github.com/ethereumjs/ethereumjs-vm/blob/d660c58/packages/tx/src/transaction.ts#L346)_
 
 **Parameters:**
 
@@ -434,15 +400,13 @@ _**see**_: [ethereumjs-util](https://github.com/ethereumjs/ethereumjs-util/blob/
 
 _Inherited from [Transaction](transaction.md).[validate](transaction.md#validate)_
 
-_Defined in [transaction.ts:314](https://github.com/ethereumjs/ethereumjs-tx/blob/5c81b38/src/transaction.ts#L314)_
-
-Validates the signature and checks to see if it has enough gas.
+_Defined in [transaction.ts:314](https://github.com/ethereumjs/ethereumjs-vm/blob/d660c58/packages/tx/src/transaction.ts#L314)_
 
 **Returns:** `boolean`
 
 _Inherited from [Transaction](transaction.md).[validate](transaction.md#validate)_
 
-_Defined in [transaction.ts:315](https://github.com/ethereumjs/ethereumjs-tx/blob/5c81b38/src/transaction.ts#L315)_
+_Defined in [transaction.ts:315](https://github.com/ethereumjs/ethereumjs-vm/blob/d660c58/packages/tx/src/transaction.ts#L315)_
 
 **Parameters:**
 
@@ -454,7 +418,7 @@ _Defined in [transaction.ts:315](https://github.com/ethereumjs/ethereumjs-tx/blo
 
 _Inherited from [Transaction](transaction.md).[validate](transaction.md#validate)_
 
-_Defined in [transaction.ts:316](https://github.com/ethereumjs/ethereumjs-tx/blob/5c81b38/src/transaction.ts#L316)_
+_Defined in [transaction.ts:316](https://github.com/ethereumjs/ethereumjs-vm/blob/d660c58/packages/tx/src/transaction.ts#L316)_
 
 **Parameters:**
 
@@ -474,9 +438,7 @@ _Defined in [transaction.ts:316](https://github.com/ethereumjs/ethereumjs-tx/blo
 
 _Inherited from [Transaction](transaction.md).[verifySignature](transaction.md#verifysignature)_
 
-_Defined in [transaction.ts:233](https://github.com/ethereumjs/ethereumjs-tx/blob/5c81b38/src/transaction.ts#L233)_
-
-Determines if the signature is valid
+_Defined in [transaction.ts:233](https://github.com/ethereumjs/ethereumjs-vm/blob/d660c58/packages/tx/src/transaction.ts#L233)_
 
 **Returns:** `boolean`
 

@@ -2,8 +2,6 @@
 
 # Interface: BlockchainOptions
 
-This are the options that the Blockchain constructor can receive.
-
 ## Hierarchy
 
 **BlockchainOptions**
@@ -17,6 +15,8 @@ This are the options that the Blockchain constructor can receive.
 - [db](blockchainoptions.md#db)
 - [hardfork](blockchainoptions.md#hardfork)
 - [validate](blockchainoptions.md#validate)
+- [validateBlocks](blockchainoptions.md#validateblocks)
+- [validatePow](blockchainoptions.md#validatepow)
 
 ---
 
@@ -28,9 +28,7 @@ This are the options that the Blockchain constructor can receive.
 
 **● chain**: _`string` \| `number`_
 
-_Defined in [index.ts:30](https://github.com/ethereumjs/ethereumjs-blockchain/blob/8190375/src/index.ts#L30)_
-
-The chain id or name. Default: `"mainnet"`.
+_Defined in [index.ts:76](https://github.com/ethereumjs/ethereumjs-vm/blob/d660c58/packages/blockchain/src/index.ts#L76)_
 
 ---
 
@@ -40,9 +38,7 @@ The chain id or name. Default: `"mainnet"`.
 
 **● common**: _`Common`_
 
-_Defined in [index.ts:41](https://github.com/ethereumjs/ethereumjs-blockchain/blob/8190375/src/index.ts#L41)_
-
-An alternative way to specify the chain and hardfork is by passing a Common instance.
+_Defined in [index.ts:87](https://github.com/ethereumjs/ethereumjs-vm/blob/d660c58/packages/blockchain/src/index.ts#L87)_
 
 ---
 
@@ -52,9 +48,7 @@ An alternative way to specify the chain and hardfork is by passing a Common inst
 
 **● db**: _`any`_
 
-_Defined in [index.ts:47](https://github.com/ethereumjs/ethereumjs-blockchain/blob/8190375/src/index.ts#L47)_
-
-Database to store blocks and metadata. Should be a [levelup](https://github.com/rvagg/node-levelup) instance.
+_Defined in [index.ts:93](https://github.com/ethereumjs/ethereumjs-vm/blob/d660c58/packages/blockchain/src/index.ts#L93)_
 
 ---
 
@@ -64,9 +58,7 @@ Database to store blocks and metadata. Should be a [levelup](https://github.com/
 
 **● hardfork**: _`string` \| `null`_
 
-_Defined in [index.ts:36](https://github.com/ethereumjs/ethereumjs-blockchain/blob/8190375/src/index.ts#L36)_
-
-Hardfork for the blocks. If `undefined` or `null` is passed, it gets computed based on block numbers.
+_Defined in [index.ts:82](https://github.com/ethereumjs/ethereumjs-vm/blob/d660c58/packages/blockchain/src/index.ts#L82)_
 
 ---
 
@@ -76,8 +68,26 @@ Hardfork for the blocks. If `undefined` or `null` is passed, it gets computed ba
 
 **● validate**: _`undefined` \| `false` \| `true`_
 
-_Defined in [index.ts:53](https://github.com/ethereumjs/ethereumjs-blockchain/blob/8190375/src/index.ts#L53)_
+_Defined in [index.ts:101](https://github.com/ethereumjs/ethereumjs-vm/blob/d660c58/packages/blockchain/src/index.ts#L101)_
 
-This the flag indicates if blocks should be validated (e.g. Proof-of-Work), latest HF rules supported: `Petersburg`.
+---
+
+<a id="validateblocks"></a>
+
+### `<Optional>` validateBlocks
+
+**● validateBlocks**: _`undefined` \| `false` \| `true`_
+
+_Defined in [index.ts:115](https://github.com/ethereumjs/ethereumjs-vm/blob/d660c58/packages/blockchain/src/index.ts#L115)_
+
+---
+
+<a id="validatepow"></a>
+
+### `<Optional>` validatePow
+
+**● validatePow**: _`undefined` \| `false` \| `true`_
+
+_Defined in [index.ts:108](https://github.com/ethereumjs/ethereumjs-vm/blob/d660c58/packages/blockchain/src/index.ts#L108)_
 
 ---

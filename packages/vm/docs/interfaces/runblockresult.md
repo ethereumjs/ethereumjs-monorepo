@@ -2,8 +2,6 @@
 
 # Interface: RunBlockResult
 
-Result of [runBlock](../classes/vm.md#runblock)
-
 ## Hierarchy
 
 **RunBlockResult**
@@ -25,9 +23,7 @@ Result of [runBlock](../classes/vm.md#runblock)
 
 **● receipts**: *[TxReceipt](txreceipt.md)[]*
 
-*Defined in [runBlock.ts:41](https://github.com/ethereumjs/ethereumjs-vm/blob/439570a/lib/runBlock.ts#L41)*
-
-Receipts generated for transactions in the block
+*Defined in [runBlock.ts:49](https://github.com/ethereumjs/ethereumjs-vm/blob/d660c58/packages/vm/lib/runBlock.ts#L49)*
 
 ___
 <a id="results"></a>
@@ -36,9 +32,7 @@ ___
 
 **● results**: *[RunTxResult](runtxresult.md)[]*
 
-*Defined in [runBlock.ts:45](https://github.com/ethereumjs/ethereumjs-vm/blob/439570a/lib/runBlock.ts#L45)*
-
-Results of executing the transactions in the block
+*Defined in [runBlock.ts:53](https://github.com/ethereumjs/ethereumjs-vm/blob/d660c58/packages/vm/lib/runBlock.ts#L53)*
 
 ___
 

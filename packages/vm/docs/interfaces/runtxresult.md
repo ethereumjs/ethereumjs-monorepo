@@ -2,8 +2,6 @@
 
 # Interface: RunTxResult
 
-Execution result of a transaction
-
 ## Hierarchy
 
  [EVMResult](evmresult.md)
@@ -31,9 +29,7 @@ Execution result of a transaction
 
 **● amountSpent**: *`BN`*
 
-*Defined in [runTx.ts:46](https://github.com/ethereumjs/ethereumjs-vm/blob/439570a/lib/runTx.ts#L46)*
-
-The amount of ether used by this transaction
+*Defined in [runTx.ts:46](https://github.com/ethereumjs/ethereumjs-vm/blob/d660c58/packages/vm/lib/runTx.ts#L46)*
 
 ___
 <a id="bloom"></a>
@@ -42,9 +38,7 @@ ___
 
 **● bloom**: *`Bloom`*
 
-*Defined in [runTx.ts:42](https://github.com/ethereumjs/ethereumjs-vm/blob/439570a/lib/runTx.ts#L42)*
-
-Bloom filter resulted from transaction
+*Defined in [runTx.ts:42](https://github.com/ethereumjs/ethereumjs-vm/blob/d660c58/packages/vm/lib/runTx.ts#L42)*
 
 ___
 <a id="createdaddress"></a>
@@ -55,9 +49,7 @@ ___
 
 *Inherited from [EVMResult](evmresult.md).[createdAddress](evmresult.md#createdaddress)*
 
-*Defined in [evm/evm.ts:32](https://github.com/ethereumjs/ethereumjs-vm/blob/439570a/lib/evm/evm.ts#L32)*
-
-Address of created account durint transaction, if any
+*Defined in [evm/evm.ts:32](https://github.com/ethereumjs/ethereumjs-vm/blob/d660c58/packages/vm/lib/evm/evm.ts#L32)*
 
 ___
 <a id="execresult"></a>
@@ -68,9 +60,7 @@ ___
 
 *Inherited from [EVMResult](evmresult.md).[execResult](evmresult.md#execresult)*
 
-*Defined in [evm/evm.ts:36](https://github.com/ethereumjs/ethereumjs-vm/blob/439570a/lib/evm/evm.ts#L36)*
-
-Contains the results from running the code, if any, as described in [runCode](../classes/vm.md#runcode)
+*Defined in [evm/evm.ts:36](https://github.com/ethereumjs/ethereumjs-vm/blob/d660c58/packages/vm/lib/evm/evm.ts#L36)*
 
 ___
 <a id="gasrefund"></a>
@@ -79,9 +69,7 @@ ___
 
 **● gasRefund**: *`BN`*
 
-*Defined in [runTx.ts:50](https://github.com/ethereumjs/ethereumjs-vm/blob/439570a/lib/runTx.ts#L50)*
-
-The amount of gas as that was refunded during the transaction (i.e. `gasUsed = totalGasConsumed - gasRefund`)
+*Defined in [runTx.ts:50](https://github.com/ethereumjs/ethereumjs-vm/blob/d660c58/packages/vm/lib/runTx.ts#L50)*
 
 ___
 <a id="gasused"></a>
@@ -92,9 +80,7 @@ ___
 
 *Inherited from [EVMResult](evmresult.md).[gasUsed](evmresult.md#gasused)*
 
-*Defined in [evm/evm.ts:28](https://github.com/ethereumjs/ethereumjs-vm/blob/439570a/lib/evm/evm.ts#L28)*
-
-Amount of gas used by the transaction
+*Defined in [evm/evm.ts:28](https://github.com/ethereumjs/ethereumjs-vm/blob/d660c58/packages/vm/lib/evm/evm.ts#L28)*
 
 ___
 

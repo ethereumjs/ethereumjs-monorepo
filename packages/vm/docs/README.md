@@ -43,7 +43,7 @@
 
 ▸ **OOGResult**(gasLimit: *`BN`*): [ExecResult](interfaces/execresult.md)
 
-*Defined in [evm/evm.ts:80](https://github.com/ethereumjs/ethereumjs-vm/blob/439570a/lib/evm/evm.ts#L80)*
+*Defined in [evm/evm.ts:80](https://github.com/ethereumjs/ethereumjs-vm/blob/d660c58/packages/vm/lib/evm/evm.ts#L80)*
 
 **Parameters:**
 

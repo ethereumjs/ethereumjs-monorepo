@@ -2,8 +2,6 @@
 
 # Interface: TransformableToBuffer
 
-Any object that can be transformed into a `Buffer`
-
 ## Hierarchy
 
 **TransformableToBuffer**
@@ -24,7 +22,7 @@ Any object that can be transformed into a `Buffer`
 
 ▸ **toBuffer**(): `Buffer`
 
-_Defined in [types.ts:31](https://github.com/ethereumjs/ethereumjs-block/blob/6adbfae/src/types.ts#L31)_
+_Defined in [types.ts:31](https://github.com/ethereumjs/ethereumjs-vm/blob/d660c58/packages/block/src/types.ts#L31)_
 
 **Returns:** `Buffer`
 

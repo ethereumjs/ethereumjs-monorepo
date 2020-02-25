@@ -23,7 +23,7 @@
 
 **● address**: *`Buffer`*
 
-*Defined in [evm/evm.ts:75](https://github.com/ethereumjs/ethereumjs-vm/blob/439570a/lib/evm/evm.ts#L75)*
+*Defined in [evm/evm.ts:75](https://github.com/ethereumjs/ethereumjs-vm/blob/d660c58/packages/vm/lib/evm/evm.ts#L75)*
 
 ___
 <a id="code"></a>
@@ -32,7 +32,7 @@ ___
 
 **● code**: *`Buffer`*
 
-*Defined in [evm/evm.ts:77](https://github.com/ethereumjs/ethereumjs-vm/blob/439570a/lib/evm/evm.ts#L77)*
+*Defined in [evm/evm.ts:77](https://github.com/ethereumjs/ethereumjs-vm/blob/d660c58/packages/vm/lib/evm/evm.ts#L77)*
 
 ___
 

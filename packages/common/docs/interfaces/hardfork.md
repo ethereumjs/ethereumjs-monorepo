@@ -25,7 +25,7 @@
 
 **● block**: _`number` \| `null`_
 
-_Defined in [types.ts:38](https://github.com/ethereumjs/ethereumjs-common/blob/30c4186/src/types.ts#L38)_
+_Defined in [types.ts:38](https://github.com/ethereumjs/ethereumjs-vm/blob/d660c58/packages/common/src/types.ts#L38)_
 
 ---
 
@@ -35,7 +35,7 @@ _Defined in [types.ts:38](https://github.com/ethereumjs/ethereumjs-common/blob/3
 
 **● consensus**: _`string`_
 
-_Defined in [types.ts:39](https://github.com/ethereumjs/ethereumjs-common/blob/30c4186/src/types.ts#L39)_
+_Defined in [types.ts:39](https://github.com/ethereumjs/ethereumjs-vm/blob/d660c58/packages/common/src/types.ts#L39)_
 
 ---
 
@@ -45,7 +45,7 @@ _Defined in [types.ts:39](https://github.com/ethereumjs/ethereumjs-common/blob/3
 
 **● finality**: _`any`_
 
-_Defined in [types.ts:40](https://github.com/ethereumjs/ethereumjs-common/blob/30c4186/src/types.ts#L40)_
+_Defined in [types.ts:40](https://github.com/ethereumjs/ethereumjs-vm/blob/d660c58/packages/common/src/types.ts#L40)_
 
 ---
 
@@ -55,6 +55,6 @@ _Defined in [types.ts:40](https://github.com/ethereumjs/ethereumjs-common/blob/3
 
 **● name**: _`string`_
 
-_Defined in [types.ts:37](https://github.com/ethereumjs/ethereumjs-common/blob/30c4186/src/types.ts#L37)_
+_Defined in [types.ts:37](https://github.com/ethereumjs/ethereumjs-vm/blob/d660c58/packages/common/src/types.ts#L37)_
 
 ---

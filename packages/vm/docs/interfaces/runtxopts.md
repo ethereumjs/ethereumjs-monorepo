@@ -2,8 +2,6 @@
 
 # Interface: RunTxOpts
 
-Options for the `runTx` method.
-
 ## Hierarchy
 
 **RunTxOpts**
@@ -27,9 +25,7 @@ Options for the `runTx` method.
 
 **● block**: *`any`*
 
-*Defined in [runTx.ts:20](https://github.com/ethereumjs/ethereumjs-vm/blob/439570a/lib/runTx.ts#L20)*
-
-The block to which the `tx` belongs
+*Defined in [runTx.ts:20](https://github.com/ethereumjs/ethereumjs-vm/blob/d660c58/packages/vm/lib/runTx.ts#L20)*
 
 ___
 <a id="skipbalance"></a>
@@ -38,9 +34,7 @@ ___
 
 **● skipBalance**: *`undefined` \| `false` \| `true`*
 
-*Defined in [runTx.ts:32](https://github.com/ethereumjs/ethereumjs-vm/blob/439570a/lib/runTx.ts#L32)*
-
-If true, skips the balance check
+*Defined in [runTx.ts:32](https://github.com/ethereumjs/ethereumjs-vm/blob/d660c58/packages/vm/lib/runTx.ts#L32)*
 
 ___
 <a id="skipnonce"></a>
@@ -49,9 +43,7 @@ ___
 
 **● skipNonce**: *`undefined` \| `false` \| `true`*
 
-*Defined in [runTx.ts:28](https://github.com/ethereumjs/ethereumjs-vm/blob/439570a/lib/runTx.ts#L28)*
-
-If true, skips the nonce check
+*Defined in [runTx.ts:28](https://github.com/ethereumjs/ethereumjs-vm/blob/d660c58/packages/vm/lib/runTx.ts#L28)*
 
 ___
 <a id="tx"></a>
@@ -60,9 +52,7 @@ ___
 
 **● tx**: *`Transaction`*
 
-*Defined in [runTx.ts:24](https://github.com/ethereumjs/ethereumjs-vm/blob/439570a/lib/runTx.ts#L24)*
-
-A [`Transaction`](https://github.com/ethereum/ethereumjs-tx) to run
+*Defined in [runTx.ts:24](https://github.com/ethereumjs/ethereumjs-vm/blob/d660c58/packages/vm/lib/runTx.ts#L24)*
 
 ___
 

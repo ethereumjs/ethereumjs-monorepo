@@ -2,8 +2,6 @@
 
 # Interface: TxReceipt
 
-Receipt generated for a transaction
-
 ## Hierarchy
 
 **TxReceipt**
@@ -27,9 +25,7 @@ Receipt generated for a transaction
 
 **● bitvector**: *`Buffer`*
 
-*Defined in [runBlock.ts:63](https://github.com/ethereumjs/ethereumjs-vm/blob/439570a/lib/runBlock.ts#L63)*
-
-Bloom bitvector
+*Defined in [runBlock.ts:71](https://github.com/ethereumjs/ethereumjs-vm/blob/d660c58/packages/vm/lib/runBlock.ts#L71)*
 
 ___
 <a id="gasused"></a>
@@ -38,9 +34,7 @@ ___
 
 **● gasUsed**: *`Buffer`*
 
-*Defined in [runBlock.ts:59](https://github.com/ethereumjs/ethereumjs-vm/blob/439570a/lib/runBlock.ts#L59)*
-
-Gas used
+*Defined in [runBlock.ts:67](https://github.com/ethereumjs/ethereumjs-vm/blob/d660c58/packages/vm/lib/runBlock.ts#L67)*
 
 ___
 <a id="logs"></a>
@@ -49,9 +43,7 @@ ___
 
 **● logs**: *`any`[]*
 
-*Defined in [runBlock.ts:67](https://github.com/ethereumjs/ethereumjs-vm/blob/439570a/lib/runBlock.ts#L67)*
-
-Logs emitted
+*Defined in [runBlock.ts:75](https://github.com/ethereumjs/ethereumjs-vm/blob/d660c58/packages/vm/lib/runBlock.ts#L75)*
 
 ___
 <a id="status"></a>
@@ -60,9 +52,7 @@ ___
 
 **● status**: *`0` \| `1`*
 
-*Defined in [runBlock.ts:55](https://github.com/ethereumjs/ethereumjs-vm/blob/439570a/lib/runBlock.ts#L55)*
-
-Status of transaction, `1` if successful, `0` if an exception occured
+*Defined in [runBlock.ts:63](https://github.com/ethereumjs/ethereumjs-vm/blob/d660c58/packages/vm/lib/runBlock.ts#L63)*
 
 ___
 

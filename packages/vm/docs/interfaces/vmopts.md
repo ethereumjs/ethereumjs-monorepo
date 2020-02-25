@@ -2,8 +2,6 @@
 
 # Interface: VMOpts
 
-Options for instantiating a [VM](../classes/vm.md).
-
 ## Hierarchy
 
 **VMOpts**
@@ -31,13 +29,7 @@ Options for instantiating a [VM](../classes/vm.md).
 
 **● activatePrecompiles**: *`undefined` \| `false` \| `true`*
 
-*Defined in [index.ts:52](https://github.com/ethereumjs/ethereumjs-vm/blob/439570a/lib/index.ts#L52)*
-
-If true, create entries in the state tree for the precompiled contracts, saving some gas the first time each of them is called.
-
-If this parameter is false, the first call to each of them has to pay an extra 25000 gas for creating the account.
-
-Setting this to true has the effect of precompiled contracts' gas costs matching mainnet's from the very first call, which is intended for testing networks.
+*Defined in [index.ts:53](https://github.com/ethereumjs/ethereumjs-vm/blob/d660c58/packages/vm/lib/index.ts#L53)*
 
 ___
 <a id="allowunlimitedcontractsize"></a>
@@ -46,9 +38,7 @@ ___
 
 **● allowUnlimitedContractSize**: *`undefined` \| `false` \| `true`*
 
-*Defined in [index.ts:56](https://github.com/ethereumjs/ethereumjs-vm/blob/439570a/lib/index.ts#L56)*
-
-Allows unlimited contract sizes while debugging. By setting this to `true`, the check for contract size limit of 24KB (see [EIP-170](https://git.io/vxZkK)) is bypassed
+*Defined in [index.ts:57](https://github.com/ethereumjs/ethereumjs-vm/blob/d660c58/packages/vm/lib/index.ts#L57)*
 
 ___
 <a id="blockchain"></a>
@@ -57,9 +47,7 @@ ___
 
 **● blockchain**: *`Blockchain`*
 
-*Defined in [index.ts:41](https://github.com/ethereumjs/ethereumjs-vm/blob/439570a/lib/index.ts#L41)*
-
-A [blockchain](https://github.com/ethereumjs/ethereumjs-blockchain) object for storing/retrieving blocks
+*Defined in [index.ts:42](https://github.com/ethereumjs/ethereumjs-vm/blob/d660c58/packages/vm/lib/index.ts#L42)*
 
 ___
 <a id="chain"></a>
@@ -68,9 +56,7 @@ ___
 
 **● chain**: *`undefined` \| `string`*
 
-*Defined in [index.ts:24](https://github.com/ethereumjs/ethereumjs-vm/blob/439570a/lib/index.ts#L24)*
-
-The chain the VM operates on
+*Defined in [index.ts:25](https://github.com/ethereumjs/ethereumjs-vm/blob/d660c58/packages/vm/lib/index.ts#L25)*
 
 ___
 <a id="common"></a>
@@ -79,7 +65,7 @@ ___
 
 **● common**: *`Common`*
 
-*Defined in [index.ts:57](https://github.com/ethereumjs/ethereumjs-vm/blob/439570a/lib/index.ts#L57)*
+*Defined in [index.ts:58](https://github.com/ethereumjs/ethereumjs-vm/blob/d660c58/packages/vm/lib/index.ts#L58)*
 
 ___
 <a id="hardfork"></a>
@@ -88,9 +74,7 @@ ___
 
 **● hardfork**: *`undefined` \| `string`*
 
-*Defined in [index.ts:28](https://github.com/ethereumjs/ethereumjs-vm/blob/439570a/lib/index.ts#L28)*
-
-Hardfork rules to be used
+*Defined in [index.ts:29](https://github.com/ethereumjs/ethereumjs-vm/blob/d660c58/packages/vm/lib/index.ts#L29)*
 
 ___
 <a id="state"></a>
@@ -99,11 +83,7 @@ ___
 
 **● state**: *`any`*
 
-*Defined in [index.ts:37](https://github.com/ethereumjs/ethereumjs-vm/blob/439570a/lib/index.ts#L37)*
-
-A [merkle-patricia-tree](https://github.com/ethereumjs/merkle-patricia-tree) instance for the state tree (ignored if stateManager is passed)
-
-*__deprecated__*: 
+*Defined in [index.ts:38](https://github.com/ethereumjs/ethereumjs-vm/blob/d660c58/packages/vm/lib/index.ts#L38)*
 
 ___
 <a id="statemanager"></a>
@@ -112,9 +92,7 @@ ___
 
 **● stateManager**: *[StateManager](../classes/statemanager.md)*
 
-*Defined in [index.ts:32](https://github.com/ethereumjs/ethereumjs-vm/blob/439570a/lib/index.ts#L32)*
-
-A [StateManager](../classes/statemanager.md) instance to use as the state store (Beta API)
+*Defined in [index.ts:33](https://github.com/ethereumjs/ethereumjs-vm/blob/d660c58/packages/vm/lib/index.ts#L33)*
 
 ___
 

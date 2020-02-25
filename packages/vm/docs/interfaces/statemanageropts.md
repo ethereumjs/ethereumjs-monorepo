@@ -2,8 +2,6 @@
 
 # Interface: StateManagerOpts
 
-Options for constructing a [StateManager](../classes/statemanager.md).
-
 ## Hierarchy
 
 **StateManagerOpts**
@@ -25,9 +23,7 @@ Options for constructing a [StateManager](../classes/statemanager.md).
 
 **● common**: *`Common`*
 
-*Defined in [state/stateManager.ts:26](https://github.com/ethereumjs/ethereumjs-vm/blob/439570a/lib/state/stateManager.ts#L26)*
-
-Parameters of the chain ([`Common`](https://github.com/ethereumjs/ethereumjs-common))
+*Defined in [state/stateManager.ts:27](https://github.com/ethereumjs/ethereumjs-vm/blob/d660c58/packages/vm/lib/state/stateManager.ts#L27)*
 
 ___
 <a id="trie"></a>
@@ -36,9 +32,7 @@ ___
 
 **● trie**: *`any`*
 
-*Defined in [state/stateManager.ts:30](https://github.com/ethereumjs/ethereumjs-vm/blob/439570a/lib/state/stateManager.ts#L30)*
-
-A [`merkle-patricia-tree`](https://github.com/ethereumjs/merkle-patricia-tree) instance
+*Defined in [state/stateManager.ts:31](https://github.com/ethereumjs/ethereumjs-vm/blob/d660c58/packages/vm/lib/state/stateManager.ts#L31)*
 
 ___
 

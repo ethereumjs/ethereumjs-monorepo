@@ -2,8 +2,6 @@
 
 # Interface: ExecResult
 
-Result of executing a call via the \[\[EVM\]\].
-
 ## Hierarchy
 
 **ExecResult**
@@ -31,9 +29,7 @@ Result of executing a call via the \[\[EVM\]\].
 
 **● exceptionError**: *[VmError](../classes/vmerror.md)*
 
-*Defined in [evm/evm.ts:47](https://github.com/ethereumjs/ethereumjs-vm/blob/439570a/lib/evm/evm.ts#L47)*
-
-Description of the exception, if any occured
+*Defined in [evm/evm.ts:47](https://github.com/ethereumjs/ethereumjs-vm/blob/d660c58/packages/vm/lib/evm/evm.ts#L47)*
 
 ___
 <a id="gas"></a>
@@ -42,9 +38,7 @@ ___
 
 **● gas**: *`BN`*
 
-*Defined in [evm/evm.ts:51](https://github.com/ethereumjs/ethereumjs-vm/blob/439570a/lib/evm/evm.ts#L51)*
-
-Amount of gas left
+*Defined in [evm/evm.ts:51](https://github.com/ethereumjs/ethereumjs-vm/blob/d660c58/packages/vm/lib/evm/evm.ts#L51)*
 
 ___
 <a id="gasrefund"></a>
@@ -53,9 +47,7 @@ ___
 
 **● gasRefund**: *`BN`*
 
-*Defined in [evm/evm.ts:67](https://github.com/ethereumjs/ethereumjs-vm/blob/439570a/lib/evm/evm.ts#L67)*
-
-Amount of gas to refund from deleting storage values
+*Defined in [evm/evm.ts:71](https://github.com/ethereumjs/ethereumjs-vm/blob/d660c58/packages/vm/lib/evm/evm.ts#L71)*
 
 ___
 <a id="gasused"></a>
@@ -64,9 +56,7 @@ ___
 
 **● gasUsed**: *`BN`*
 
-*Defined in [evm/evm.ts:55](https://github.com/ethereumjs/ethereumjs-vm/blob/439570a/lib/evm/evm.ts#L55)*
-
-Amount of gas the code used to run
+*Defined in [evm/evm.ts:55](https://github.com/ethereumjs/ethereumjs-vm/blob/d660c58/packages/vm/lib/evm/evm.ts#L55)*
 
 ___
 <a id="logs"></a>
@@ -75,9 +65,7 @@ ___
 
 **● logs**: *`any`[]*
 
-*Defined in [evm/evm.ts:63](https://github.com/ethereumjs/ethereumjs-vm/blob/439570a/lib/evm/evm.ts#L63)*
-
-Array of logs that the contract emitted
+*Defined in [evm/evm.ts:63](https://github.com/ethereumjs/ethereumjs-vm/blob/d660c58/packages/vm/lib/evm/evm.ts#L63)*
 
 ___
 <a id="returnvalue"></a>
@@ -86,9 +74,7 @@ ___
 
 **● returnValue**: *`Buffer`*
 
-*Defined in [evm/evm.ts:59](https://github.com/ethereumjs/ethereumjs-vm/blob/439570a/lib/evm/evm.ts#L59)*
-
-Return value from the contract
+*Defined in [evm/evm.ts:59](https://github.com/ethereumjs/ethereumjs-vm/blob/d660c58/packages/vm/lib/evm/evm.ts#L59)*
 
 ___
 <a id="runstate"></a>
@@ -97,7 +83,7 @@ ___
 
 **● runState**: *`RunState`*
 
-*Defined in [evm/evm.ts:43](https://github.com/ethereumjs/ethereumjs-vm/blob/439570a/lib/evm/evm.ts#L43)*
+*Defined in [evm/evm.ts:43](https://github.com/ethereumjs/ethereumjs-vm/blob/d660c58/packages/vm/lib/evm/evm.ts#L43)*
 
 ___
 <a id="selfdestruct"></a>
@@ -106,9 +92,7 @@ ___
 
 **● selfdestruct**: *`undefined` \| `object`*
 
-*Defined in [evm/evm.ts:71](https://github.com/ethereumjs/ethereumjs-vm/blob/439570a/lib/evm/evm.ts#L71)*
-
-A map from the accounts that have self-destructed to the addresses to send their funds to
+*Defined in [evm/evm.ts:67](https://github.com/ethereumjs/ethereumjs-vm/blob/d660c58/packages/vm/lib/evm/evm.ts#L67)*
 
 ___
 

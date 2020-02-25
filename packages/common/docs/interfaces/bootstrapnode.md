@@ -28,7 +28,7 @@
 
 **● chainId**: _`undefined` \| `number`_
 
-_Defined in [types.ts:47](https://github.com/ethereumjs/ethereumjs-common/blob/30c4186/src/types.ts#L47)_
+_Defined in [types.ts:47](https://github.com/ethereumjs/ethereumjs-vm/blob/d660c58/packages/common/src/types.ts#L47)_
 
 ---
 
@@ -38,7 +38,7 @@ _Defined in [types.ts:47](https://github.com/ethereumjs/ethereumjs-common/blob/3
 
 **● comment**: _`string`_
 
-_Defined in [types.ts:50](https://github.com/ethereumjs/ethereumjs-common/blob/30c4186/src/types.ts#L50)_
+_Defined in [types.ts:50](https://github.com/ethereumjs/ethereumjs-vm/blob/d660c58/packages/common/src/types.ts#L50)_
 
 ---
 
@@ -48,7 +48,7 @@ _Defined in [types.ts:50](https://github.com/ethereumjs/ethereumjs-common/blob/3
 
 **● id**: _`string`_
 
-_Defined in [types.ts:48](https://github.com/ethereumjs/ethereumjs-common/blob/30c4186/src/types.ts#L48)_
+_Defined in [types.ts:48](https://github.com/ethereumjs/ethereumjs-vm/blob/d660c58/packages/common/src/types.ts#L48)_
 
 ---
 
@@ -58,7 +58,7 @@ _Defined in [types.ts:48](https://github.com/ethereumjs/ethereumjs-common/blob/3
 
 **● ip**: _`string`_
 
-_Defined in [types.ts:44](https://github.com/ethereumjs/ethereumjs-common/blob/30c4186/src/types.ts#L44)_
+_Defined in [types.ts:44](https://github.com/ethereumjs/ethereumjs-vm/blob/d660c58/packages/common/src/types.ts#L44)_
 
 ---
 
@@ -68,7 +68,7 @@ _Defined in [types.ts:44](https://github.com/ethereumjs/ethereumjs-common/blob/3
 
 **● location**: _`string`_
 
-_Defined in [types.ts:49](https://github.com/ethereumjs/ethereumjs-common/blob/30c4186/src/types.ts#L49)_
+_Defined in [types.ts:49](https://github.com/ethereumjs/ethereumjs-vm/blob/d660c58/packages/common/src/types.ts#L49)_
 
 ---
 
@@ -78,7 +78,7 @@ _Defined in [types.ts:49](https://github.com/ethereumjs/ethereumjs-common/blob/3
 
 **● network**: _`undefined` \| `string`_
 
-_Defined in [types.ts:46](https://github.com/ethereumjs/ethereumjs-common/blob/30c4186/src/types.ts#L46)_
+_Defined in [types.ts:46](https://github.com/ethereumjs/ethereumjs-vm/blob/d660c58/packages/common/src/types.ts#L46)_
 
 ---
 
@@ -88,6 +88,6 @@ _Defined in [types.ts:46](https://github.com/ethereumjs/ethereumjs-common/blob/3
 
 **● port**: _`number` \| `string`_
 
-_Defined in [types.ts:45](https://github.com/ethereumjs/ethereumjs-common/blob/30c4186/src/types.ts#L45)_
+_Defined in [types.ts:45](https://github.com/ethereumjs/ethereumjs-vm/blob/d660c58/packages/common/src/types.ts#L45)_
 
 ---
