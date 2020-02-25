@@ -179,5 +179,8 @@
       "deletions": 53,
       "hireable": null
     }
-  ]
+  ],
+  "publishConfig": {
+    "directory": "src"
+  }
 }

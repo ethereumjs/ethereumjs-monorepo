@@ -75,5 +75,8 @@
     "typedoc-plugin-markdown": "^1.1.27",
     "typescript": "^3.3.3333",
     "typestrict": "^1.0.2"
+  },
+  "publishConfig": {
+    "directory": "src"
   }
 }
