@@ -1,0 +1,80 @@
+{
+  "name": "ethereumjs-block",
+  "version": "2.2.0",
+  "description": "Provides Block serialization and help functions",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "ethereumjs-config-build",
+    "prepublishOnly": "npm run test && npm run build",
+    "coverage": "npx nyc npm run test:node",
+    "docs:build": "typedoc --out docs --mode file --readme none --theme markdown --mdEngine github --excludeNotExported src",
+    "format": "ethereumjs-config-format",
+    "format:fix": "ethereumjs-config-format-fix",
+    "tslint": "ethereumjs-config-tslint",
+    "tslint:fix": "ethereumjs-config-tslint-fix",
+    "tsc": "ethereumjs-config-tsc",
+    "lint": "ethereumjs-config-lint",
+    "lint:fix": "ethereumjs-config-lint-fix",
+    "test": "npm run test:node && npm run test:browser",
+    "test:node": "npx tape -r ts-node/register test/*.spec.ts",
+    "test:browser:build": "tsc && cp test/testdata/*.json test-build/test/testdata",
+    "test:browser": "npm run test:browser:build && karma start karma.conf.js"
+  },
+  "husky": {
+    "hooks": {
+      "pre-push": "npm run lint"
+    }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ethereumjs/ethereumjs-block.git"
+  },
+  "keywords": [
+    "ethereum",
+    "block"
+  ],
+  "author": "mjbecze (mb@ethdev.com)",
+  "license": "MPL-2.0",
+  "bugs": {
+    "url": "https://github.com/ethereumjs/ethereumjs-block/issues"
+  },
+  "homepage": "https://github.com/ethereumjs/ethereumjs-block#readme",
+  "dependencies": {
+    "@types/bn.js": "^4.11.5",
+    "ethereumjs-common": "^1.5.0",
+    "ethereumjs-tx": "^2.1.1",
+    "ethereumjs-util": "^6.1.0",
+    "merkle-patricia-tree": "^2.1.2"
+  },
+  "devDependencies": {
+    "@ethereumjs/config-nyc": "^1.1.1",
+    "@ethereumjs/config-prettier": "^1.1.1",
+    "@ethereumjs/config-tsc": "^1.1.1",
+    "@ethereumjs/config-tslint": "^1.1.1",
+    "@types/lru-cache": "^5.1.0",
+    "@types/node": "^11.13.4",
+    "@types/tape": "^4.2.33",
+    "browserify": "^16.2.3",
+    "ethereumjs-blockchain": "^4.0.3",
+    "husky": "^2.1.0",
+    "istanbul": "^0.4.1",
+    "karma": "^4.1.0",
+    "karma-browserify": "^6.0.0",
+    "karma-chrome-launcher": "^2.0.0",
+    "karma-firefox-launcher": "^1.1.0",
+    "karma-tap": "^4.1.4",
+    "nyc": "^15.0.0",
+    "prettier": "^1.17.0",
+    "tape": "^4.0.3",
+    "ts-node": "^8.0.3",
+    "tslint": "^5.15.0",
+    "typedoc": "^0.14.2",
+    "typedoc-plugin-markdown": "^1.2.0",
+    "typescript": "^3.4.3",
+    "typestrict": "^1.0.2"
+  }
+}
