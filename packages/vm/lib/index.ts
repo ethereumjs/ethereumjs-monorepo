@@ -74,7 +74,16 @@ export default class VM extends AsyncEventEmitter {
   public readonly _emit: (topic: string, data: any) => Promise<void>
   public readonly pStateManager: PStateManager
   protected isInitialized: boolean = false
-
+  /**
+   * VM async constructor. Creates engine instance and initializes it.
+   *
+   * @param opts VM engine constructor options
+   */
+  static async create(opts: VMOpts = {}): Promise<VM> {
+    const vm = new this(opts)
+    await vm.init()
+    return vm
+  }
   /**
    * Instantiates a new [[VM]] Object.
    * @param opts - Default values for the options are:
