@@ -13,7 +13,7 @@ A module to store and interact with blocks.
 
 # API
 
-[./docs/](./docs/README.md)
+[Documentation](./docs/README.md)
 
 # EXAMPLE
 

@@ -1,9 +1,0 @@
-{
-  "out": "docs",
-  "mode": "file",
-  "readme": "none",
-  "theme": "markdown",
-  "mdEngine": "github",
-  "excludeNotExported": true,
-  "exclude": ["lib/bloom/*.ts", "lib/evm/precompiles/*.ts", "lib/evm/eei.ts", "lib/evm/interpreter.ts", "lib/evm/memory.ts", "lib/evm/message.ts", "lib/evm/opcodes.ts", "lib/evm/opFns.ts", "lib/evm/stack.ts", "lib/evm/txContext.ts"]
-}

@@ -28,7 +28,7 @@ This module work with `browserify`.
 
 # API
 
-[./docs/](./docs/README.md)
+[Documentation](./docs/README.md)
 
 # EthereumJS
 

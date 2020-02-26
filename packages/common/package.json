@@ -22,7 +22,7 @@
     "unitTests": "ts-node ./node_modules/tape/bin/tape ./tests/*.ts",
     "test": "npm run lint && npm run unitTests",
     "test:fix": "npm run lint:fix && npm run unitTests",
-    "docs:build": "typedoc --out docs --excludePrivate --excludeExternals --mode file --readme none --theme markdown --mdEngine github src/*.ts src/genesisStates/*.ts"
+    "docs:build": "typedoc --options typedoc.js"
   },
   "husky": {
     "hooks": {
@@ -62,8 +62,8 @@
     "tape": "^4.9.2",
     "ts-node": "^7.0.1",
     "tslint": "^5.12.0",
-    "typedoc": "^0.14.0",
-    "typedoc-plugin-markdown": "^1.1.21",
+    "typedoc": "next",
+    "typedoc-plugin-markdown": "^2.2.17",
     "typescript": "^3.2.2",
     "typestrict": "^1.0.2"
   },

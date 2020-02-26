@@ -1,9 +1,9 @@
+[ethereumjs-account](README.md)
+
 # ethereumjs-account
 
 ## Index
 
-### Classes
+### Modules
 
-- [Account](classes/account.md)
-
----
+- ["index"](modules/_index_.md)

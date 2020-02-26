@@ -62,7 +62,7 @@ hardfork in the `Transaction`'s constructor.
 
 # API
 
-[./docs/](./docs/README.md)
+[Documentation](./docs/README.md)
 
 # EthereumJS
 
