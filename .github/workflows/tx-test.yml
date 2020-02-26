@@ -4,7 +4,6 @@ name: tx-test
     paths-ignore:
       - packages/account/**
       - packages/common/**
-      - packages/vm/**
 jobs:
   test:
     runs-on: ubuntu-latest

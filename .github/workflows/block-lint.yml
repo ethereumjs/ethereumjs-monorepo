@@ -1,10 +1,8 @@
 name: block-lint
 'on':
   push:
-    paths-ignore:
-      - packages/account/**
-      - packages/common/**
-      - packages/tx/**
+    paths-include:
+      - packages/block/**
 jobs:
   lint:
     runs-on: ubuntu-latest

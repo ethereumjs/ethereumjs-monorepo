@@ -1,11 +1,8 @@
 name: blockchain-lint
 'on':
   push:
-    paths-ignore:
-      - packages/account/**
-      - packages/block/**
-      - packages/common/**
-      - packages/tx/**
+    paths-include:
+      - packages/blockchain/**
 jobs:
   lint:
     runs-on: ubuntu-latest

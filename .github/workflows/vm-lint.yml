@@ -1,12 +1,8 @@
 name: VM Lint
 'on':
   push:
-    paths-ignore:
-      - packages/account/**
-      - packages/block/**
-      - packages/blockchain/**
-      - packages/common/**
-      - packages/tx/**
+    paths-include:
+      - packages/vm/**
 jobs:
   lint:
     runs-on: ubuntu-latest

@@ -1,12 +1,8 @@
 name: account-lint
 'on':
   push:
-    paths-ignore:
-      - packages/block/**
-      - packages/blockchain/**
-      - packages/common/**
-      - packages/tx/**
-      - packages/vm/**
+    paths-include:
+      - packages/account/**
 jobs:
   lint:
     runs-on: ubuntu-latest

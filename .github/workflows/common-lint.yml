@@ -1,11 +1,8 @@
 name: common-lint
 'on':
   push:
-    paths-ignore:
-      - packages/block/**
-      - packages/blockchain/**
-      - packages/tx/**
-      - packages/vm/**
+    paths-include:
+      - packages/common/**
 jobs:
   lint:
     runs-on: ubuntu-latest

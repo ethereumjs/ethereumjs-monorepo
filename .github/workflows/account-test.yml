@@ -6,7 +6,6 @@ name: account-test
       - packages/blockchain/**
       - packages/common/**
       - packages/tx/**
-      - packages/vm/**
 jobs:
   test:
     runs-on: ubuntu-latest

@@ -2,10 +2,7 @@ name: common-test
 'on':
   push:
     paths-ignore:
-      - packages/block/**
-      - packages/blockchain/**
-      - packages/tx/**
-      - packages/vm/**
+      - packages/account/**
 jobs:
   test:
     runs-on: ubuntu-latest
