@@ -1,0 +1,32 @@
+name: account-test
+'on':
+  push:
+    paths-ignore:
+      - packages/block/**
+      - packages/blockchain/**
+      - packages/common/**
+      - packages/tx/**
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version:
+          - 8.x
+          - 10.x
+          - 12.x
+          - 13.x
+    steps:
+      - name: 'Use Node.js ${{ matrix.node-version }}'
+        uses: actions/setup-node@v1
+        with:
+          node-version: '${{ matrix.node-version }}'
+      - uses: actions/checkout@v1
+      - run: npm install
+        working-directory: '${{ env.cwd }}'
+      - run: npm test
+        env:
+          CI: true
+        working-directory: '${{ env.cwd }}'
+    env:
+      cwd: '${{github.workspace}}/packages/account'

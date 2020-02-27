@@ -1,196 +1,44 @@
-# SYNOPSIS
+<p align="center">
+  <img src="https://avatars1.githubusercontent.com/u/16297473?s=200&v=4">
+</p>
 
-[![NPM Package](https://img.shields.io/npm/v/ethereumjs-vm.svg?style=flat-square)](https://www.npmjs.org/package/ethereumjs-vm)
-[![Actions Status](https://github.com/ethereumjs/ethereumjs-vm/workflows/vm-test/badge.svg)](https://github.com/ethereumjs/ethereumjs-vm/actions)
-[![Code Coverage](https://codecov.io/gh/ethereumjs/ethereumjs-vm/branch/master/graph/badge.svg)](https://codecov.io/gh/ethereumjs/ethereumjs-vm)
-[![Gitter](https://img.shields.io/gitter/room/ethereum/ethereumjs.svg?style=flat-square)](https://gitter.im/ethereum/ethereumjs)
+# EthereumJS Monorepo
+
+[![codecov](https://codecov.io/gh/ethereumjs/ethereumjs-vm/branch/master/graph/badge.svg)](https://codecov.io/gh/ethereumjs/ethereumjs-vm)
+[![Gitter](https://img.shields.io/gitter/room/ethereum/ethereumjs.svg?style=flat)](https://gitter.im/ethereum/ethereumjs)
+![Freenode](https://img.shields.io/badge/%23ethereumjs-freenode-brightgreen)
+[![StackExchange](https://img.shields.io/badge/ethereumjs-stackexchange-brightgreen)](https://ethereum.stackexchange.com/questions/tagged/ethereumjs)
 
 [![js-standard-style](https://cdn.rawgit.com/feross/standard/master/badge.svg)](https://github.com/feross/standard)
 
-Implements Ethereum's VM in Javascript.
+This was originally the EthereumJS VM repository. On Q1 2020 we brought some of its building blocks together to simplify development. Below you can find the packages included in this repository.
 
-#### Fork Support
 
-The VM currently supports the following hardfork rules:
+| package | npm | issues | tests | coverage |
+|---------|-----|--------| ----- | -------- |
+| [ethereumjs-account](https://github.com/ethereumjs/ethereumjs-vm/tree/master/packages/account)       | [![NPM Package](https://img.shields.io/npm/v/ethereumjs-account.svg?style=flat)](https://www.npmjs.org/package/ethereumjs-account)       | [![GitHub issues by-label](https://img.shields.io/github/issues/ethereumjs/ethereumjs-vm/package:%20account?label=issues)](https://github.com/ethereumjs/ethereumjs-vm/issues?q=is%3Aopen+is%3Aissue+label%3A"package%3A+account")       | [![Actions Status](https://github.com/ethereumjs/ethereumjs-vm/workflows/account-test/badge.svg)](https://github.com/ethereumjs/ethereumjs-vm/actions)          | [![Coverage](https://codecov.io/gh/ethereumjs/ethereumjs-vm/branch/master/graph/badge.svg?flag=account)](https://codecov.io/gh/ethereumjs/ethereumjs-vm)    | 
+| [ethereumjs-block](https://github.com/ethereumjs/ethereumjs-vm/tree/master/packages/block)           | [![NPM Package](https://img.shields.io/npm/v/ethereumjs-block.svg?style=flat)](https://www.npmjs.org/package/ethereumjs-block)           | [![GitHub issues by-label](https://img.shields.io/github/issues/ethereumjs/ethereumjs-vm/package:%20block?label=issues)](https://github.com/ethereumjs/ethereumjs-vm/issues?q=is%3Aopen+is%3Aissue+label%3A"package%3A+block")           | [![Actions Status](https://github.com/ethereumjs/ethereumjs-vm/workflows/block-test/badge.svg)](https://github.com/ethereumjs/ethereumjs-vm/actions)                | [![Coverage](https://codecov.io/gh/ethereumjs/ethereumjs-vm/branch/master/graph/badge.svg?flag=block)](https://codecov.io/gh/ethereumjs/ethereumjs-vm)      | 
+| [ethereumjs-blockchain](https://github.com/ethereumjs/ethereumjs-vm/tree/master/packages/blockchain) | [![NPM Package](https://img.shields.io/npm/v/ethereumjs-blockchain.svg?style=flat)](https://www.npmjs.org/package/ethereumjs-blockchain) | [![GitHub issues by-label](https://img.shields.io/github/issues/ethereumjs/ethereumjs-vm/package:%20blockchain?label=issues)](https://github.com/ethereumjs/ethereumjs-vm/issues?q=is%3Aopen+is%3Aissue+label%3A"package%3A+blockchain") | [![Actions Status](https://github.com/ethereumjs/ethereumjs-vm/workflows/blockchain-test/badge.svg)](https://github.com/ethereumjs/ethereumjs-vm/actions) | [![Coverage](https://codecov.io/gh/ethereumjs/ethereumjs-vm/branch/master/graph/badge.svg?flag=blockchain)](https://codecov.io/gh/ethereumjs/ethereumjs-vm) | 
+| [ethereumjs-common](https://github.com/ethereumjs/ethereumjs-vm/tree/master/packages/common)         | [![NPM Package](https://img.shields.io/npm/v/ethereumjs-common.svg?style=flat)](https://www.npmjs.org/package/ethereumjs-common)         | [![GitHub issues by-label](https://img.shields.io/github/issues/ethereumjs/ethereumjs-vm/package:%20common?label=issues)](https://github.com/ethereumjs/ethereumjs-vm/issues?q=is%3Aopen+is%3Aissue+label%3A"package%3A+common")         | [![Actions Status](https://github.com/ethereumjs/ethereumjs-vm/workflows/common-test/badge.svg)](https://github.com/ethereumjs/ethereumjs-vm/actions)             | [![Coverage](https://codecov.io/gh/ethereumjs/ethereumjs-vm/branch/master/graph/badge.svg?flag=common)](https://codecov.io/gh/ethereumjs/ethereumjs-vm)     | 
+| [ethereumjs-tx](https://github.com/ethereumjs/ethereumjs-vm/tree/master/packages/tx)                 | [![NPM Package](https://img.shields.io/npm/v/ethereumjs-tx.svg?style=flat)](https://www.npmjs.org/package/ethereumjs-tx)                 | [![GitHub issues by-label](https://img.shields.io/github/issues/ethereumjs/ethereumjs-vm/package:%20tx?label=issues)](https://github.com/ethereumjs/ethereumjs-vm/issues?q=is%3Aopen+is%3Aissue+label%3A"package%3A+tx")                 | [![Actions Status](https://github.com/ethereumjs/ethereumjs-vm/workflows/tx-test/badge.svg)](https://github.com/ethereumjs/ethereumjs-vm/actions)                         | [![Coverage](https://codecov.io/gh/ethereumjs/ethereumjs-vm/branch/master/graph/badge.svg?flag=tx)](https://codecov.io/gh/ethereumjs/ethereumjs-vm)         | 
+| [ethereumjs-vm](https://github.com/ethereumjs/ethereumjs-vm/tree/master/packages/vm)                 | [![NPM Package](https://img.shields.io/npm/v/ethereumjs-vm.svg?style=flat)](https://www.npmjs.org/package/ethereumjs-vm)                 | [![GitHub issues by-label](https://img.shields.io/github/issues/ethereumjs/ethereumjs-vm/package:%20vm?label=issues)](https://github.com/ethereumjs/ethereumjs-vm/issues?q=is%3Aopen+is%3Aissue+label%3A"package%3A+vm")                 | [![Actions Status](https://github.com/ethereumjs/ethereumjs-vm/workflows/vm-test/badge.svg)](https://github.com/ethereumjs/ethereumjs-vm/actions)                         | [![Coverage](https://codecov.io/gh/ethereumjs/ethereumjs-vm/branch/master/graph/badge.svg?flag=vm)](https://codecov.io/gh/ethereumjs/ethereumjs-vm)         | 
 
-- `Byzantium`
-- `Constantinople`
-- `Petersburg` (default)
-- `Istanbul`
-- `MuirGlacier` (only `mainnet` and `ropsten`)
 
-If you are still looking for a [Spurious Dragon](https://eips.ethereum.org/EIPS/eip-607) compatible version of this library install the latest of the `2.2.x` series (see [Changelog](./CHANGELOG.md)).
+# Coverage report
 
-##### MuirGlacier Hardfork Support
+Detailed version can be seen in [Codecov.io](https://codecov.io/gh/ethereumjs/ethereumjs-vm).
 
-An Ethereum test suite compliant `MuirGlacier` HF implementation is available
-since the `v4.1.3` VM release. You can activate a `MuirGlacier` VM by using the
-`muirGlacier` `hardfork` option flag.
+<p align="left">
+  <a href="https://codecov.io/gh/ethereumjs/ethereumjs-vm/">
+    <img src="https://codecov.io/gh/ethereumjs/ethereumjs-vm/branch/master/graphs/icicle.svg" width=750>
+  </a>
+</p>
 
-**Note:** The original `v4.1.2` release contains a critical bug preventing the
-`MuirGlacier` VM to work properly and there is the need to update.
+# Developing in a monorepo
 
-##### Istanbul Harfork Support
+`lerna bootstrap` links the packages contained in this repository, but only if they comply with the specified version range. 
 
-An Ethereum test suite compliant `Istanbul` HF implementation is available
-since the `v4.1.1` VM release. You can activate an `Istanbul` VM by using the
-`istanbul` `hardfork` option flag.
 
-Supported `Istanbul` EIPs:
-
-- [EIP-152](https://eips.ethereum.org/EIPS/eip-152): Blake 2b `F` precompile,
-  PR [#584](https://github.com/ethereumjs/ethereumjs-vm/pull/584)
-- [EIP-1108](https://eips.ethereum.org/EIPS/eip-1108): Reduce `alt_bn128`
-  precompile gas costs,  
-  PR [#540](https://github.com/ethereumjs/ethereumjs-vm/pull/540)
-  (already released in `v4.0.0`)
-- [EIP-1344](https://eips.ethereum.org/EIPS/eip-1344): Add ChainID Opcode,
-  PR [#572](https://github.com/ethereumjs/ethereumjs-vm/pull/572)
-- [EIP-1884](https://eips.ethereum.org/EIPS/eip-1884): Trie-size-dependent
-  Opcode Repricing,
-  PR [#581](https://github.com/ethereumjs/ethereumjs-vm/pull/581)
-- [EIP-2200](https://eips.ethereum.org/EIPS/eip-2200): Rebalance net-metered
-  SSTORE gas costs,
-  PR [#590](https://github.com/ethereumjs/ethereumjs-vm/pull/590)
-
-# INSTALL
-
-`npm install ethereumjs-vm`
-
-# USAGE
-
-```javascript
-const BN = require('bn.js')
-var VM = require('ethereumjs-vm').default
-
-// Create a new VM instance
-// For explicity setting the HF use e.g. `new VM({ hardfork: 'petersburg' })`
-const vm = new VM()
-
-const STOP = '00'
-const ADD = '01'
-const PUSH1 = '60'
-
-// Note that numbers added are hex values, so '20' would be '32' as decimal e.g.
-const code = [PUSH1, '03', PUSH1, '05', ADD, STOP]
-
-vm.on('step', function(data) {
-  console.log(`Opcode: ${data.opcode.name}\tStack: ${data.stack}`)
-})
-
-vm.runCode({
-  code: Buffer.from(code.join(''), 'hex'),
-  gasLimit: new BN(0xffff),
-})
-  .then(results => {
-    console.log('Returned : ' + results.returnValue.toString('hex'))
-    console.log('gasUsed  : ' + results.gasUsed.toString())
-  })
-  .catch(err => console.log('Error    : ' + err))
-```
-
-## Example
-
-This projects contain the following examples:
-
-1. [./examples/run-blockchain](./examples/run-blockchain): Loads tests data, including accounts and blocks, and runs all of them in the VM.
-1. [./examples/run-code-browser](./examples/run-code-browser): Show how to use this library in a browser.
-1. [./examples/run-solidity-contract](./examples/run-solidity-contract): Compiles a Solidity contract, and calls constant and non-constant functions.
-1. [./examples/run-transactions-complete](./examples/run-transactions-complete): Runs a contract-deployment transaction and then calls one of its functions.
-1. [./examples/decode-opcodes](./examples/decode-opcodes): Decodes a binary EVM program into its opcodes.
-
-All of the examples have their own `README.md` explaining how to run them.
-
-# BROWSER
-
-To build the VM for standalone use in the browser, see: [Running the VM in a browser](https://github.com/ethereumjs/ethereumjs-vm/tree/master/examples/run-code-browser).
-
-# API
-
-## VM
-
-For documentation on `VM` instantiation, exposed API and emitted `events` see generated [API docs](./docs/README.md).
-
-## StateManger
-
-The API for the `StateManager` is currently in `Beta`, separate documentation can be found [here](./docs/classes/statemanager.md), see also [release notes](https://github.com/ethereumjs/ethereumjs-vm/releases/tag/v2.5.0) from the `v2.5.0` VM release for details on the `StateManager` rewrite.
-
-# Internal Structure
-
-The VM processes state changes at many levels.
-
-- **runBlockchain**
-  - for every block, runBlock
-- **runBlock**
-  - for every tx, runTx
-  - pay miner and uncles
-- **runTx**
-  - check sender balance
-  - check sender nonce
-  - runCall
-  - transfer gas charges
-- **runCall**
-  - checkpoint state
-  - transfer value
-  - load code
-  - runCode
-  - materialize created contracts
-  - revert or commit checkpoint
-- **runCode**
-  - iterate over code
-  - run op codes
-  - track gas usage
-- **OpFns**
-  - run individual op code
-  - modify stack
-  - modify memory
-  - calculate fee
-
-The opFns for `CREATE`, `CALL`, and `CALLCODE` call back up to `runCall`.
-
-## VM's tracing events
-
-You can subscribe to the following events of the VM:
-
-- `beforeBlock`: Emits a `Block` right before running it.
-- `afterBlock`: Emits `RunBlockResult` right after running a block.
-- `beforeTx`: Emits a `Transaction` right before running it.
-- `afterTx`: Emits a `RunTxResult` right after running a transaction.
-- `beforeMessage`: Emits a `Message` right after running it.
-- `afterMessage`: Emits an `EVMResult` right after running a message.
-- `step`: Emits an `InterpreterStep` right before running an EVM step.
-- `newContract`: Emits a `NewContractEvent` right before creating a contract. This event contains the deployment code, not the deployed code, as the creation message may not return such a code.
-
-### Asynchronous event handlers
-
-You can perform asynchronous operations from within an event handler
-and prevent the VM to keep running until they finish.
-
-In order to do that, your event handler has to accept two arguments.
-The first one will be the event object, and the second one a function.
-The VM won't continue until you call this function.
-
-If an exception is passed to that function, or thrown from within the
-handler or a function called by it, the exception will bubble into the
-VM and interrupt it, possibly corrupting its state. It's strongly
-recommended not to do that.
-
-### Synchronous event handlers
-
-If you want to perform synchronous operations, you don't need
-to receive a function as the handler's second argument, nor call it.
-
-Note that if your event handler receives multiple arguments, the second
-one will be the continuation function, and it must be called.
-
-If an exception is thrown from withing the handler or a function called
-by it, the exception will bubble into the VM and interrupt it, possibly
-corrupting its state. It's strongly recommended not to throw from withing
-event handlers.
-
-# DEVELOPMENT
-
-Developer documentation - currently mainly with information on testing and debugging - can be found [here](./developer.md).
 
 # EthereumJS
 
@@ -200,4 +48,4 @@ If you want to join for work or do improvements on the libraries have a look at 
 
 # LICENSE
 
-[MPL-2.0](https://www.mozilla.org/MPL/2.0/)
+[MIT](https://opensource.org/licenses/MIT)

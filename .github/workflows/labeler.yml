@@ -1,7 +1,6 @@
-name: 'PR Labeler'
-on:
+name: PR Labeler
+'on':
   - pull_request
-
 jobs:
   label:
     runs-on: ubuntu-latest

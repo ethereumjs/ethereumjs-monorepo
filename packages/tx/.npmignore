@@ -1,0 +1,7 @@
+node_modules/
+.git/
+test/
+es5/.gitkeep
+.gitignore
+.travis.yml
+.babelrc

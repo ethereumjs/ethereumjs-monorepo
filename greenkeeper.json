@@ -1,0 +1,14 @@
+{
+  "groups": {
+    "default": {
+      "packages": [
+        "packages/account/package.json",
+        "packages/block/package.json",
+        "packages/blockchain/package.json",
+        "packages/common/package.json",
+        "packages/tx/package.json",
+        "packages/vm/package.json"
+      ]
+    }
+  }
+}

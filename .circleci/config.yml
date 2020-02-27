@@ -1,55 +1,49 @@
+# 
+# This whole file is a workaround, as Codecov does not fully support GitHub Actions for pull requests from external repositories. Codecov + CircleCI does.
+# As soon as a release is made, we can migrate to GitHub Actions, taking advantage of their job filtering. 
+# 
+
 version: 2.1
 
-orbs:
-  codecov: codecov/codecov@1.0.5
-
 aliases:
-  - &defaults
-    working_directory: ~/project/ethereumjs-vm
+  - &steps
     docker:
-      - image: circleci/node:8
-  - &restore_node_modules
-    restore_cache:
-      name: Restore node_modules cache
-      keys:
-        - node8-{{ checksum "package.json" }}
-
-jobs:
-  install:
-    <<: *defaults
+      - image: circleci/node:10
     steps:
       - checkout
-      - *restore_node_modules
-      - run:
-          name: Install dependencies
-          command: npm install
-      - save_cache:
-          name: Save node_modules cache
-          key: node8-{{ checksum "package.json" }}
-          paths:
-            - node_modules/
-      - persist_to_workspace:
-          root: ~/project
-          paths:
-            - ethereumjs-vm/
-  coverage:
-    <<: *defaults
-    steps:
-      - attach_workspace:
-          at: ~/project
-      - *restore_node_modules
-      - run:
-          name: coverage
-          command: npm run coverage
-      - codecov/upload:
-          file: ./coverage/lcov.info
-          flags: vm
+      - run: 
+          name: Installing dependencies
+          command: cd ~/project/packages/${CIRCLE_JOB} && npm install
+      - run: 
+          name: Running coverage tests
+          command: cd ~/project/packages/${CIRCLE_JOB} && npm run coverage
+      - run: 
+          name: Codecov upload
+          command: curl -s https://codecov.io/bash | bash -s -- -f ~/project/packages/${CIRCLE_JOB}/coverage/lcov.info -F "${CIRCLE_JOB}" -t "${CODECOV_TOKEN}" -n "${CIRCLE_BUILD_NUM}" -y ".codecov.yml" -Z || echo 'Codecov upload failed'
+
+jobs:
+  account:
+    <<: *steps
+  block:
+    <<: *steps
+  blockchain:
+    <<: *steps
+  common:
+    <<: *steps
+  tx:
+    <<: *steps
+  vm:
+    <<: *steps
+
+
 
 workflows:
   version: 2
-  install-and-coverage:
+  coverage:
     jobs:
-      - install
-      - coverage:
-          requires:
-            - install
+      - account
+      - block
+      - blockchain
+      - common
+      - tx
+      - vm

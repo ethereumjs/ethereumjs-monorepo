@@ -1,7 +1,7 @@
-name: 'VM Nightly Test' # without caching
-on:
+name: VM Nightly Test
+'on':
   schedule:
-    - cron: '0 0 * * *' # once a day at midnight
+    - cron: 0 0 * * *
 jobs:
   test-api:
     runs-on: ubuntu-latest
@@ -11,13 +11,17 @@ jobs:
           node-version: 8.x
       - uses: actions/checkout@v1
       - run: npm install
-      - run: npm run test:API
+        working-directory: '${{ env.cwd }}'
+      - run: 'npm run test:API'
         env:
           CI: true
-      - run: npm run test:API:browser
+        working-directory: '${{ env.cwd }}'
+      - run: 'npm run test:API:browser'
         env:
           CI: true
-
+        working-directory: '${{ env.cwd }}'
+    env:
+      cwd: '${{github.workspace}}/packages/vm'
   test-state:
     runs-on: ubuntu-latest
     steps:
@@ -26,10 +30,13 @@ jobs:
           node-version: 8.x
       - uses: actions/checkout@v1
       - run: npm install
-      - run: npm run test:state:allForks
+        working-directory: '${{ env.cwd }}'
+      - run: 'npm run test:state:allForks'
         env:
           CI: true
-
+        working-directory: '${{ env.cwd }}'
+    env:
+      cwd: '${{github.workspace}}/packages/vm'
   test-blockchain:
     runs-on: ubuntu-latest
     steps:
@@ -38,10 +45,13 @@ jobs:
           node-version: 8.x
       - uses: actions/checkout@v1
       - run: npm install
-      - run: npm run test:blockchain
+        working-directory: '${{ env.cwd }}'
+      - run: 'npm run test:blockchain'
         env:
           CI: true
-
+        working-directory: '${{ env.cwd }}'
+    env:
+      cwd: '${{github.workspace}}/packages/vm'
   slow-tests:
     runs-on: ubuntu-latest
     steps:
@@ -50,6 +60,10 @@ jobs:
           node-version: 8.x
       - uses: actions/checkout@v1
       - run: npm install
-      - run: npm run test:state:slow
+        working-directory: '${{ env.cwd }}'
+      - run: 'npm run test:state:slow'
         env:
           CI: true
+        working-directory: '${{ env.cwd }}'
+    env:
+      cwd: '${{github.workspace}}/packages/vm'
