@@ -14,6 +14,5 @@
 * ["runCall"](modules/_runcall_.md)
 * ["runCode"](modules/_runcode_.md)
 * ["runTx"](modules/_runtx_.md)
-* ["state/cache"](modules/_state_cache_.md)
 * ["state/index"](modules/_state_index_.md)
 * ["state/stateManager"](modules/_state_statemanager_.md)

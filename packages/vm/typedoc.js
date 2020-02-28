@@ -17,6 +17,7 @@ module.exports = {
     'lib/evm/opFns.ts',
     'lib/evm/stack.ts',
     'lib/evm/txContext.ts',
+    'lib/state/cache.ts',
     'lib/state/promisified.ts',
   ],
   excludeNotExported: true,
