@@ -1,6 +1,14 @@
-name: tx-lint
+name: Tx Lint
 'on':
   push:
+    branches:
+      - master
+    tags:
+      - '*'
+    paths-include:
+      - packages/tx/**
+  pull_request:
+    types: [opened, reopened, synchronize]
     paths-include:
       - packages/tx/**
 jobs:

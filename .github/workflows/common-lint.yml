@@ -1,6 +1,14 @@
-name: common-lint
+name: Common Lint
 'on':
   push:
+    branches:
+      - master
+    tags:
+      - '*'
+    paths-include:
+      - packages/common/**
+  pull_request:
+    types: [opened, reopened, synchronize]
     paths-include:
       - packages/common/**
 jobs:

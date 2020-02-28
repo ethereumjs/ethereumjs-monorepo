@@ -1,6 +1,17 @@
-name: blockchain-test
+name: Blockchain Test
 'on':
   push:
+    branches:
+      - master
+    tags:
+      - '*'
+    paths-ignore:
+      - packages/account/**
+      - packages/block/**
+      - packages/common/**
+      - packages/tx/**
+  pull_request:
+    types: [opened, reopened, synchronize]
     paths-ignore:
       - packages/account/**
       - packages/block/**
@@ -11,11 +22,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version:
-          - 8.x
-          - 10.x
-          - 12.x
-          - 13.x
+        node-version: [8.x, 10.x, 12.x, 13.x]
     steps:
       - name: 'Use Node.js ${{ matrix.node-version }}'
         uses: actions/setup-node@v1
