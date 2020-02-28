@@ -1,10 +1,12 @@
 # SYNOPSIS
 
-[![NPM Package](https://img.shields.io/npm/v/ethereumjs-account.svg?style=flat-square)](https://www.npmjs.org/package/ethereumjs-account)
-[![Actions Status](https://github.com/ethereumjs/ethereumjs-account/workflows/account-test/badge.svg)](https://github.com/ethereumjs/ethereumjs-account/actions)
-[![Coverage Status](https://img.shields.io/coveralls/ethereumjs/ethereumjs-account.svg?style=flat-square)](https://coveralls.io/r/ethereumjs/ethereumjs-account)
-[![Gitter](https://img.shields.io/gitter/room/ethereum/ethereumjs-lib.svg?style=flat-square)](https://gitter.im/ethereum/ethereumjs-lib)
-[![js-standard-style](https://img.shields.io/badge/code%20style-standard-brightgreen.svg?style=flat)](https://github.com/feross/standard)
+[![NPM Package][account-npm-badge]][account-npm-link]
+[![GitHub Issues][account-issues-badge]][account-issues-link]
+[![Actions Status][account-actions-badge]][account-actions-link]
+[![Code Coverage][account-coverage-badge]][account-coverage-link]
+[![Gitter][gitter-badge]][gitter-link]
+
+[![js-standard-style][js-standard-style-badge]][js-standard-style-link]
 
 This library eases the handling of Ethereum accounts, where accounts can be either external accounts
 or contracts (see
@@ -35,3 +37,16 @@ This module work with `browserify`.
 See our organizational [documentation](https://ethereumjs.readthedocs.io) for an introduction to `EthereumJS` as well as information on current standards and best practices.
 
 If you want to join for work or do improvements on the libraries have a look at our [contribution guidelines](https://ethereumjs.readthedocs.io/en/latest/contributing.html).
+
+[gitter-badge]: https://img.shields.io/gitter/room/ethereum/ethereumjs.svg
+[gitter-link]: https://gitter.im/ethereum/ethereumjs
+[js-standard-style-badge]: https://cdn.rawgit.com/feross/standard/master/badge.svg
+[js-standard-style-link]: https://github.com/feross/standard
+[account-npm-badge]: https://img.shields.io/npm/v/ethereumjs-account.svg
+[account-npm-link]: https://www.npmjs.org/package/ethereumjs-account
+[account-issues-badge]: https://img.shields.io/github/issues/ethereumjs/ethereumjs-vm/package:%20account?label=issues
+[account-issues-link]: https://github.com/ethereumjs/ethereumjs-vm/issues?q=is%3Aopen+is%3Aissue+label%3A"package%3A+account"
+[account-actions-badge]: https://github.com/ethereumjs/ethereumjs-vm/workflows/Account%20Test/badge.svg
+[account-actions-link]: https://github.com/ethereumjs/ethereumjs-vm/actions?query=workflow%3A%22Account+Test%22
+[account-coverage-badge]: https://codecov.io/gh/ethereumjs/ethereumjs-vm/branch/master/graph/badge.svg?flag=account
+[account-coverage-link]: https://codecov.io/gh/ethereumjs/ethereumjs-vm/tree/master/packages/account

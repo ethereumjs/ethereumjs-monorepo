@@ -4,41 +4,32 @@
 
 # EthereumJS Monorepo
 
-[![codecov](https://codecov.io/gh/ethereumjs/ethereumjs-vm/branch/master/graph/badge.svg)](https://codecov.io/gh/ethereumjs/ethereumjs-vm)
-[![Gitter](https://img.shields.io/gitter/room/ethereum/ethereumjs.svg?style=flat)](https://gitter.im/ethereum/ethereumjs)
-![Freenode](https://img.shields.io/badge/%23ethereumjs-freenode-brightgreen)
-[![StackExchange](https://img.shields.io/badge/ethereumjs-stackexchange-brightgreen)](https://ethereum.stackexchange.com/questions/tagged/ethereumjs)
+[![Code Coverage][coverage-badge]][coverage-link]
+[![Gitter][gitter-badge]][gitter-link]
+[![StackExchange][stackexchange-badge]][stackexchange-link]
 
-[![js-standard-style](https://cdn.rawgit.com/feross/standard/master/badge.svg)](https://github.com/feross/standard)
+[![JS Standard Style][js-standard-style-badge]][js-standard-style-link]
 
 This was originally the EthereumJS VM repository. On Q1 2020 we brought some of its building blocks together to simplify development. Below you can find the packages included in this repository.
 
+| package                                     | npm                                                         | issues                                                                  | tests                                                                  | coverage                                                                |
+| ------------------------------------------- | ----------------------------------------------------------- | ----------------------------------------------------------------------- | ---------------------------------------------------------------------- | ----------------------------------------------------------------------- |
+| [ethereumjs-account][account-package]       | [![NPM Package][account-npm-badge]][account-npm-link]       | [![Account Issues][account-issues-badge]][account-issues-link]          | [![Actions Status][account-actions-badge]][account-actions-link]       | [![Code Coverage][account-coverage-badge]][account-coverage-link]       |
+| [ethereumjs-block][block-package]           | [![NPM Package][block-npm-badge]][block-npm-link]           | [![Block Issues][block-issues-badge]][block-issues-link]                | [![Actions Status][block-actions-badge]][block-actions-link]           | [![Code Coverage][block-coverage-badge]][block-coverage-link]           |
+| [ethereumjs-blockchain][blockchain-package] | [![NPM Package][blockchain-npm-badge]][blockchain-npm-link] | [![Blockchain Issues][blockchain-issues-badge]][blockchain-issues-link] | [![Actions Status][blockchain-actions-badge]][blockchain-actions-link] | [![Code Coverage][blockchain-coverage-badge]][blockchain-coverage-link] |
+| [ethereumjs-common][common-package]         | [![NPM Package][common-npm-badge]][common-npm-link]         | [![Common Issues][common-issues-badge]][common-issues-link]             | [![Actions Status][common-actions-badge]][common-actions-link]         | [![Code Coverage][common-coverage-badge]][common-coverage-link]         |
+| [ethereumjs-tx][tx-package]                 | [![NPM Package][tx-npm-badge]][tx-npm-link]                 | [![Tx Issues][tx-issues-badge]][tx-issues-link]                         | [![Actions Status][tx-actions-badge]][tx-actions-link]                 | [![Code Coverage][tx-coverage-badge]][tx-coverage-link]                 |
+| [ethereumjs-vm][vm-package]                 | [![NPM Package][vm-npm-badge]][vm-npm-link]                 | [![VM Issues][vm-issues-badge]][vm-issues-link]                         | [![Actions Status][vm-actions-badge]][vm-actions-link]                 | [![Code Coverage][vm-coverage-badge]][vm-coverage-link]                 |
 
-| package | npm | issues | tests | coverage |
-|---------|-----|--------| ----- | -------- |
-| [ethereumjs-account](https://github.com/ethereumjs/ethereumjs-vm/tree/master/packages/account)       | [![NPM Package](https://img.shields.io/npm/v/ethereumjs-account.svg?style=flat)](https://www.npmjs.org/package/ethereumjs-account)       | [![GitHub issues by-label](https://img.shields.io/github/issues/ethereumjs/ethereumjs-vm/package:%20account?label=issues)](https://github.com/ethereumjs/ethereumjs-vm/issues?q=is%3Aopen+is%3Aissue+label%3A"package%3A+account")       | [![Actions Status](https://github.com/ethereumjs/ethereumjs-vm/workflows/account-test/badge.svg)](https://github.com/ethereumjs/ethereumjs-vm/actions)          | [![Coverage](https://codecov.io/gh/ethereumjs/ethereumjs-vm/branch/master/graph/badge.svg?flag=account)](https://codecov.io/gh/ethereumjs/ethereumjs-vm)    | 
-| [ethereumjs-block](https://github.com/ethereumjs/ethereumjs-vm/tree/master/packages/block)           | [![NPM Package](https://img.shields.io/npm/v/ethereumjs-block.svg?style=flat)](https://www.npmjs.org/package/ethereumjs-block)           | [![GitHub issues by-label](https://img.shields.io/github/issues/ethereumjs/ethereumjs-vm/package:%20block?label=issues)](https://github.com/ethereumjs/ethereumjs-vm/issues?q=is%3Aopen+is%3Aissue+label%3A"package%3A+block")           | [![Actions Status](https://github.com/ethereumjs/ethereumjs-vm/workflows/block-test/badge.svg)](https://github.com/ethereumjs/ethereumjs-vm/actions)                | [![Coverage](https://codecov.io/gh/ethereumjs/ethereumjs-vm/branch/master/graph/badge.svg?flag=block)](https://codecov.io/gh/ethereumjs/ethereumjs-vm)      | 
-| [ethereumjs-blockchain](https://github.com/ethereumjs/ethereumjs-vm/tree/master/packages/blockchain) | [![NPM Package](https://img.shields.io/npm/v/ethereumjs-blockchain.svg?style=flat)](https://www.npmjs.org/package/ethereumjs-blockchain) | [![GitHub issues by-label](https://img.shields.io/github/issues/ethereumjs/ethereumjs-vm/package:%20blockchain?label=issues)](https://github.com/ethereumjs/ethereumjs-vm/issues?q=is%3Aopen+is%3Aissue+label%3A"package%3A+blockchain") | [![Actions Status](https://github.com/ethereumjs/ethereumjs-vm/workflows/blockchain-test/badge.svg)](https://github.com/ethereumjs/ethereumjs-vm/actions) | [![Coverage](https://codecov.io/gh/ethereumjs/ethereumjs-vm/branch/master/graph/badge.svg?flag=blockchain)](https://codecov.io/gh/ethereumjs/ethereumjs-vm) | 
-| [ethereumjs-common](https://github.com/ethereumjs/ethereumjs-vm/tree/master/packages/common)         | [![NPM Package](https://img.shields.io/npm/v/ethereumjs-common.svg?style=flat)](https://www.npmjs.org/package/ethereumjs-common)         | [![GitHub issues by-label](https://img.shields.io/github/issues/ethereumjs/ethereumjs-vm/package:%20common?label=issues)](https://github.com/ethereumjs/ethereumjs-vm/issues?q=is%3Aopen+is%3Aissue+label%3A"package%3A+common")         | [![Actions Status](https://github.com/ethereumjs/ethereumjs-vm/workflows/common-test/badge.svg)](https://github.com/ethereumjs/ethereumjs-vm/actions)             | [![Coverage](https://codecov.io/gh/ethereumjs/ethereumjs-vm/branch/master/graph/badge.svg?flag=common)](https://codecov.io/gh/ethereumjs/ethereumjs-vm)     | 
-| [ethereumjs-tx](https://github.com/ethereumjs/ethereumjs-vm/tree/master/packages/tx)                 | [![NPM Package](https://img.shields.io/npm/v/ethereumjs-tx.svg?style=flat)](https://www.npmjs.org/package/ethereumjs-tx)                 | [![GitHub issues by-label](https://img.shields.io/github/issues/ethereumjs/ethereumjs-vm/package:%20tx?label=issues)](https://github.com/ethereumjs/ethereumjs-vm/issues?q=is%3Aopen+is%3Aissue+label%3A"package%3A+tx")                 | [![Actions Status](https://github.com/ethereumjs/ethereumjs-vm/workflows/tx-test/badge.svg)](https://github.com/ethereumjs/ethereumjs-vm/actions)                         | [![Coverage](https://codecov.io/gh/ethereumjs/ethereumjs-vm/branch/master/graph/badge.svg?flag=tx)](https://codecov.io/gh/ethereumjs/ethereumjs-vm)         | 
-| [ethereumjs-vm](https://github.com/ethereumjs/ethereumjs-vm/tree/master/packages/vm)                 | [![NPM Package](https://img.shields.io/npm/v/ethereumjs-vm.svg?style=flat)](https://www.npmjs.org/package/ethereumjs-vm)                 | [![GitHub issues by-label](https://img.shields.io/github/issues/ethereumjs/ethereumjs-vm/package:%20vm?label=issues)](https://github.com/ethereumjs/ethereumjs-vm/issues?q=is%3Aopen+is%3Aissue+label%3A"package%3A+vm")                 | [![Actions Status](https://github.com/ethereumjs/ethereumjs-vm/workflows/vm-test/badge.svg)](https://github.com/ethereumjs/ethereumjs-vm/actions)                         | [![Coverage](https://codecov.io/gh/ethereumjs/ethereumjs-vm/branch/master/graph/badge.svg?flag=vm)](https://codecov.io/gh/ethereumjs/ethereumjs-vm)         | 
+## Coverage report
 
+Detailed version can be seen on [Codecov.io][coverage-link]
 
-# Coverage report
+[![Code Coverage](https://codecov.io/gh/ethereumjs/ethereumjs-vm/branch/master/graphs/icicle.svg)][coverage-link]
 
-Detailed version can be seen in [Codecov.io](https://codecov.io/gh/ethereumjs/ethereumjs-vm).
+## Developing in a monorepo
 
-<p align="left">
-  <a href="https://codecov.io/gh/ethereumjs/ethereumjs-vm/">
-    <img src="https://codecov.io/gh/ethereumjs/ethereumjs-vm/branch/master/graphs/icicle.svg" width=750>
-  </a>
-</p>
-
-# Developing in a monorepo
-
-`lerna bootstrap` links the packages contained in this repository, but only if they comply with the specified version range. 
-
-
+`lerna bootstrap` links the packages contained in this repository, but only if they comply with the specified version range.
 
 # EthereumJS
 
@@ -49,3 +40,66 @@ If you want to join for work or do improvements on the libraries have a look at 
 # LICENSE
 
 [MIT](https://opensource.org/licenses/MIT)
+
+[coverage-badge]: https://codecov.io/gh/ethereumjs/ethereumjs-vm/branch/master/graph/badge.svg
+[coverage-link]: https://codecov.io/gh/ethereumjs/ethereumjs-vm
+[gitter-badge]: https://img.shields.io/gitter/room/ethereum/ethereumjs.svg
+[gitter-link]: https://gitter.im/ethereum/ethereumjs
+[stackexchange-badge]: https://img.shields.io/badge/ethereumjs-stackexchange-brightgreen
+[stackexchange-link]: https://ethereum.stackexchange.com/questions/tagged/ethereumjs
+[js-standard-style-badge]: https://cdn.rawgit.com/feross/standard/master/badge.svg
+[js-standard-style-link]: https://github.com/feross/standard
+[account-package]: ./packages/account
+[account-npm-badge]: https://img.shields.io/npm/v/ethereumjs-account.svg
+[account-npm-link]: https://www.npmjs.org/package/ethereumjs-account
+[account-issues-badge]: https://img.shields.io/github/issues/ethereumjs/ethereumjs-vm/package:%20account?label=issues
+[account-issues-link]: https://github.com/ethereumjs/ethereumjs-vm/issues?q=is%3Aopen+is%3Aissue+label%3A"package%3A+account"
+[account-actions-badge]: https://github.com/ethereumjs/ethereumjs-vm/workflows/Account%20Test/badge.svg
+[account-actions-link]: https://github.com/ethereumjs/ethereumjs-vm/actions?query=workflow%3A%22Account+Test%22
+[account-coverage-badge]: https://codecov.io/gh/ethereumjs/ethereumjs-vm/branch/master/graph/badge.svg?flag=account
+[account-coverage-link]: https://codecov.io/gh/ethereumjs/ethereumjs-vm/tree/master/packages/account
+[block-package]: ./packages/block
+[block-npm-badge]: https://img.shields.io/npm/v/ethereumjs-block.svg
+[block-npm-link]: https://www.npmjs.org/package/ethereumjs-block
+[block-issues-badge]: https://img.shields.io/github/issues/ethereumjs/ethereumjs-vm/package:%20block?label=issues
+[block-issues-link]: https://github.com/ethereumjs/ethereumjs-vm/issues?q=is%3Aopen+is%3Aissue+label%3A"package%3A+block"
+[block-actions-badge]: https://github.com/ethereumjs/ethereumjs-vm/workflows/Block%20Test/badge.svg
+[block-actions-link]: https://github.com/ethereumjs/ethereumjs-vm/actions?query=workflow%3A%22Block+Test%22
+[block-coverage-badge]: https://codecov.io/gh/ethereumjs/ethereumjs-vm/branch/master/graph/badge.svg?flag=block
+[block-coverage-link]: https://codecov.io/gh/ethereumjs/ethereumjs-vm/tree/master/packages/block
+[blockchain-package]: ./packages/blockchain
+[blockchain-npm-badge]: https://img.shields.io/npm/v/ethereumjs-blockchain.svg
+[blockchain-npm-link]: https://www.npmjs.org/package/ethereumjs-blockchain
+[blockchain-issues-badge]: https://img.shields.io/github/issues/ethereumjs/ethereumjs-vm/package:%20blockchain?label=issues
+[blockchain-issues-link]: https://github.com/ethereumjs/ethereumjs-vm/issues?q=is%3Aopen+is%3Aissue+label%3A"package%3A+blockchain"
+[blockchain-actions-badge]: https://github.com/ethereumjs/ethereumjs-vm/workflows/Blockchain%20Test/badge.svg
+[blockchain-actions-link]: https://github.com/ethereumjs/ethereumjs-vm/actions?query=workflow%3A%22Blockchain+Test%22
+[blockchain-coverage-badge]: https://codecov.io/gh/ethereumjs/ethereumjs-vm/branch/master/graph/badge.svg?flag=blockchain
+[blockchain-coverage-link]: https://codecov.io/gh/ethereumjs/ethereumjs-vm/tree/master/packages/blockchain
+[common-package]: ./packages/common
+[common-npm-badge]: https://img.shields.io/npm/v/ethereumjs-common.svg
+[common-npm-link]: https://www.npmjs.org/package/ethereumjs-common
+[common-issues-badge]: https://img.shields.io/github/issues/ethereumjs/ethereumjs-vm/package:%20common?label=issues
+[common-issues-link]: https://github.com/ethereumjs/ethereumjs-vm/issues?q=is%3Aopen+is%3Aissue+label%3A"package%3A+common"
+[common-actions-badge]: https://github.com/ethereumjs/ethereumjs-vm/workflows/Common%20Test/badge.svg
+[common-actions-link]: https://github.com/ethereumjs/ethereumjs-vm/actions?query=workflow%3A%22Common+Test%22
+[common-coverage-badge]: https://codecov.io/gh/ethereumjs/ethereumjs-vm/branch/master/graph/badge.svg?flag=common
+[common-coverage-link]: https://codecov.io/gh/ethereumjs/ethereumjs-vm/tree/master/packages/common
+[tx-package]: ./packages/tx
+[tx-npm-badge]: https://img.shields.io/npm/v/ethereumjs-tx.svg
+[tx-npm-link]: https://www.npmjs.org/package/ethereumjs-tx
+[tx-issues-badge]: https://img.shields.io/github/issues/ethereumjs/ethereumjs-vm/package:%20tx?label=issues
+[tx-issues-link]: https://github.com/ethereumjs/ethereumjs-vm/issues?q=is%3Aopen+is%3Aissue+label%3A"package%3A+tx"
+[tx-actions-badge]: https://github.com/ethereumjs/ethereumjs-vm/workflows/Tx%20Test/badge.svg
+[tx-actions-link]: https://github.com/ethereumjs/ethereumjs-vm/actions?query=workflow%3A%22Tx+Test%22
+[tx-coverage-badge]: https://codecov.io/gh/ethereumjs/ethereumjs-vm/branch/master/graph/badge.svg?flag=tx
+[tx-coverage-link]: https://codecov.io/gh/ethereumjs/ethereumjs-vm/tree/master/packages/tx
+[vm-package]: ./packages/vm
+[vm-npm-badge]: https://img.shields.io/npm/v/ethereumjs-vm.svg
+[vm-npm-link]: https://www.npmjs.org/package/ethereumjs-vm
+[vm-issues-badge]: https://img.shields.io/github/issues/ethereumjs/ethereumjs-vm/package:%20vm?label=issues
+[vm-issues-link]: https://github.com/ethereumjs/ethereumjs-vm/issues?q=is%3Aopen+is%3Aissue+label%3A"package%3A+vm"
+[vm-actions-badge]: https://github.com/ethereumjs/ethereumjs-vm/workflows/VM%20Test/badge.svg
+[vm-actions-link]: https://github.com/ethereumjs/ethereumjs-vm/actions?query=workflow%3A%22VM+Test%22
+[vm-coverage-badge]: https://codecov.io/gh/ethereumjs/ethereumjs-vm/branch/master/graph/badge.svg?flag=vm
+[vm-coverage-link]: https://codecov.io/gh/ethereumjs/ethereumjs-vm/tree/master/packages/vm

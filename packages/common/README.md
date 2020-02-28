@@ -1,15 +1,14 @@
 # SYNOPSIS
 
-[![NPM Package](https://img.shields.io/npm/v/ethereumjs-common.svg?style=flat-square)](https://www.npmjs.org/package/ethereumjs-common)
-[![Build Status](https://travis-ci.org/ethereumjs/ethereumjs-common.svg?branch=master)](https://travis-ci.org/ethereumjs/ethereumjs-common)
-[![Actions Status](https://github.com/ethereumjs/ethereumjs-common/workflows/common-test/badge.svg)](https://github.com/ethereumjs/ethereumjs-common/actions)
-[![Coverage Status](https://img.shields.io/coveralls/ethereumjs/ethereumjs-common.svg?style=flat-square)](https://coveralls.io/r/ethereumjs/ethereumjs-common)
-[![JavaScript Style Guide](https://img.shields.io/badge/code_style-standard-brightgreen.svg)](https://standardjs.com)
-[![Gitter](https://img.shields.io/gitter/room/ethereum/ethereumjs.svg?style=flat-square)]()
+[![NPM Package][common-npm-badge]][common-npm-link]
+[![GitHub Issues][common-issues-badge]][common-issues-link]
+[![Actions Status][common-actions-badge]][common-actions-link]
+[![Code Coverage][common-coverage-badge]][common-coverage-link]
+[![Gitter][gitter-badge]][gitter-link]
 
-# ETHEREUMJS-COMMON
+[![js-standard-style][js-standard-style-badge]][js-standard-style-link]
 
-Resources common to all Ethereum implementations
+Resources common to all Ethereum implementations.
 
 Succeeds the old [ethereum/common](https://github.com/ethereumjs/common/) library.
 
@@ -172,3 +171,16 @@ If you want to join for work or do improvements on the libraries have a look at 
 # LICENSE
 
 [MIT](https://opensource.org/licenses/MIT)
+
+[gitter-badge]: https://img.shields.io/gitter/room/ethereum/ethereumjs.svg
+[gitter-link]: https://gitter.im/ethereum/ethereumjs
+[js-standard-style-badge]: https://cdn.rawgit.com/feross/standard/master/badge.svg
+[js-standard-style-link]: https://github.com/feross/standard
+[common-npm-badge]: https://img.shields.io/npm/v/ethereumjs-common.svg
+[common-npm-link]: https://www.npmjs.org/package/ethereumjs-common
+[common-issues-badge]: https://img.shields.io/github/issues/ethereumjs/ethereumjs-vm/package:%20common?label=issues
+[common-issues-link]: https://github.com/ethereumjs/ethereumjs-vm/issues?q=is%3Aopen+is%3Aissue+label%3A"package%3A+common"
+[common-actions-badge]: https://github.com/ethereumjs/ethereumjs-vm/workflows/Common%20Test/badge.svg
+[common-actions-link]: https://github.com/ethereumjs/ethereumjs-vm/actions?query=workflow%3A%22Common+Test%22
+[common-coverage-badge]: https://codecov.io/gh/ethereumjs/ethereumjs-vm/branch/master/graph/badge.svg?flag=common
+[common-coverage-link]: https://codecov.io/gh/ethereumjs/ethereumjs-vm/tree/master/packages/common
