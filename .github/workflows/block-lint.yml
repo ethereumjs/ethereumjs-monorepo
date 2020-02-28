@@ -1,6 +1,14 @@
-name: block-lint
+name: Block Lint
 'on':
   push:
+    branches:
+      - master
+    tags:
+      - '*'
+    paths-include:
+      - packages/block/**
+  pull_request:
+    types: [opened, reopened, synchronize]
     paths-include:
       - packages/block/**
 jobs:

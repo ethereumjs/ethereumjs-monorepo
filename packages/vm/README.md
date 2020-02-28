@@ -1,11 +1,12 @@
 # SYNOPSIS
 
-[![NPM Package](https://img.shields.io/npm/v/ethereumjs-vm.svg?style=flat-square)](https://www.npmjs.org/package/ethereumjs-vm)
-[![Actions Status](https://github.com/ethereumjs/ethereumjs-vm/workflows/vm-test/badge.svg)](https://github.com/ethereumjs/ethereumjs-vm/actions)
-[![Code Coverage](https://codecov.io/gh/ethereumjs/ethereumjs-vm/branch/master/graph/badge.svg)](https://codecov.io/gh/ethereumjs/ethereumjs-vm)
-[![Gitter](https://img.shields.io/gitter/room/ethereum/ethereumjs.svg?style=flat-square)](https://gitter.im/ethereum/ethereumjs)
+[![NPM Package][vm-npm-badge]][vm-npm-link]
+[![GitHub Issues][vm-issues-badge]][vm-issues-link]
+[![Actions Status][vm-actions-badge]][vm-actions-link]
+[![Code Coverage][vm-coverage-badge]][vm-coverage-link]
+[![Gitter][gitter-badge]][gitter-link]
 
-[![js-standard-style](https://cdn.rawgit.com/feross/standard/master/badge.svg)](https://github.com/feross/standard)
+[![js-standard-style][js-standard-style-badge]][js-standard-style-link]
 
 Implements Ethereum's VM in Javascript.
 
@@ -201,3 +202,16 @@ If you want to join for work or do improvements on the libraries have a look at 
 # LICENSE
 
 [MPL-2.0](https://www.mozilla.org/MPL/2.0/)
+
+[gitter-badge]: https://img.shields.io/gitter/room/ethereum/ethereumjs.svg
+[gitter-link]: https://gitter.im/ethereum/ethereumjs
+[js-standard-style-badge]: https://cdn.rawgit.com/feross/standard/master/badge.svg
+[js-standard-style-link]: https://github.com/feross/standard
+[vm-npm-badge]: https://img.shields.io/npm/v/ethereumjs-vm.svg
+[vm-npm-link]: https://www.npmjs.org/package/ethereumjs-vm
+[vm-issues-badge]: https://img.shields.io/github/issues/ethereumjs/ethereumjs-vm/package:%20vm?label=issues
+[vm-issues-link]: https://github.com/ethereumjs/ethereumjs-vm/issues?q=is%3Aopen+is%3Aissue+label%3A"package%3A+vm"
+[vm-actions-badge]: https://github.com/ethereumjs/ethereumjs-vm/workflows/VM%20Test/badge.svg
+[vm-actions-link]: https://github.com/ethereumjs/ethereumjs-vm/actions?query=workflow%3A%22VM+Test%22
+[vm-coverage-badge]: https://codecov.io/gh/ethereumjs/ethereumjs-vm/branch/master/graph/badge.svg?flag=vm
+[vm-coverage-link]: https://codecov.io/gh/ethereumjs/ethereumjs-vm/tree/master/packages/vm

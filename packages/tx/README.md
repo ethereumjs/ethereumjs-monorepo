@@ -1,9 +1,12 @@
 # SYNOPSIS
 
-[![NPM Package](https://img.shields.io/npm/v/ethereumjs-tx.svg?style=flat-square)](https://www.npmjs.org/package/ethereumjs-tx)
-[![Actions Status](https://github.com/ethereumjs/ethereumjs-tx/workflows/tx-test/badge.svg)](https://github.com/ethereumjs/ethereumjs-tx/actions)
-[![Coverage Status](https://img.shields.io/coveralls/ethereumjs/ethereumjs-tx.svg?style=flat-square)](https://coveralls.io/r/ethereumjs/ethereumjs-tx)
-[![Gitter](https://img.shields.io/gitter/room/ethereum/ethereumjs-lib.svg?style=flat-square)](https://gitter.im/ethereum/ethereumjs-lib) or #ethereumjs on freenode
+[![NPM Package][tx-npm-badge]][tx-npm-link]
+[![GitHub Issues][tx-issues-badge]][tx-issues-link]
+[![Actions Status][tx-actions-badge]][tx-actions-link]
+[![Code Coverage][tx-coverage-badge]][tx-coverage-link]
+[![Gitter][gitter-badge]][gitter-link]
+
+[![js-standard-style][js-standard-style-badge]][js-standard-style-link]
 
 # INSTALL
 
@@ -73,3 +76,16 @@ If you want to join for work or do improvements on the libraries have a look at 
 # LICENSE
 
 [MPL-2.0](<https://tldrlegal.com/license/mozilla-public-license-2.0-(mpl-2)>)
+
+[gitter-badge]: https://img.shields.io/gitter/room/ethereum/ethereumjs.svg
+[gitter-link]: https://gitter.im/ethereum/ethereumjs
+[js-standard-style-badge]: https://cdn.rawgit.com/feross/standard/master/badge.svg
+[js-standard-style-link]: https://github.com/feross/standard
+[tx-npm-badge]: https://img.shields.io/npm/v/ethereumjs-tx.svg
+[tx-npm-link]: https://www.npmjs.org/package/ethereumjs-tx
+[tx-issues-badge]: https://img.shields.io/github/issues/ethereumjs/ethereumjs-vm/package:%20tx?label=issues
+[tx-issues-link]: https://github.com/ethereumjs/ethereumjs-vm/issues?q=is%3Aopen+is%3Aissue+label%3A"package%3A+tx"
+[tx-actions-badge]: https://github.com/ethereumjs/ethereumjs-vm/workflows/Tx%20Test/badge.svg
+[tx-actions-link]: https://github.com/ethereumjs/ethereumjs-vm/actions?query=workflow%3A%22Tx+Test%22
+[tx-coverage-badge]: https://codecov.io/gh/ethereumjs/ethereumjs-vm/branch/master/graph/badge.svg?flag=tx
+[tx-coverage-link]: https://codecov.io/gh/ethereumjs/ethereumjs-vm/tree/master/packages/tx

@@ -1,6 +1,18 @@
 name: VM Test
 'on':
   push:
+    branches:
+      - master
+    tags:
+      - '*'
+    paths-ignore:
+      - packages/account/**
+      - packages/block/**
+      - packages/blockchain/**
+      - packages/common/**
+      - packages/tx/**
+  pull_request:
+    types: [opened, reopened, synchronize]
     paths-ignore:
       - packages/account/**
       - packages/block/**
@@ -20,7 +32,7 @@ jobs:
         uses: actions/cache@v1
         with:
           path: node_modules
-          key: '${{ runner.os }}-node8-${{ hashFiles(''**/package.json'') }}'
+          key: "${{ runner.os }}-node8-${{ hashFiles('**/package.json') }}"
       - run: npm install
         if: steps.cache-node-modules.outputs.cache-hit != 'true'
         working-directory: '${{ env.cwd }}'
@@ -46,7 +58,7 @@ jobs:
         uses: actions/cache@v1
         with:
           path: node_modules
-          key: '${{ runner.os }}-node8-${{ hashFiles(''**/package.json'') }}'
+          key: "${{ runner.os }}-node8-${{ hashFiles('**/package.json') }}"
       - run: npm install
         if: steps.cache-node-modules.outputs.cache-hit != 'true'
         working-directory: '${{ env.cwd }}'
@@ -68,7 +80,7 @@ jobs:
         uses: actions/cache@v1
         with:
           path: node_modules
-          key: '${{ runner.os }}-node8-${{ hashFiles(''**/package.json'') }}'
+          key: "${{ runner.os }}-node8-${{ hashFiles('**/package.json') }}"
       - run: npm install
         if: steps.cache-node-modules.outputs.cache-hit != 'true'
         working-directory: '${{ env.cwd }}'

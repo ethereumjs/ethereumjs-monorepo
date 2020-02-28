@@ -1,6 +1,14 @@
-name: blockchain-lint
+name: Blockchain Lint
 'on':
   push:
+    branches:
+        - master
+      tags:
+        - '*'
+    paths-include:
+      - packages/blockchain/**
+  pull_request:
+    types: [opened, reopened, synchronize]
     paths-include:
       - packages/blockchain/**
 jobs:

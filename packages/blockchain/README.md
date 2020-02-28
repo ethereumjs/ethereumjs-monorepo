@@ -1,9 +1,12 @@
 # SYNOPSIS
 
-[![NPM Package](https://img.shields.io/npm/v/ethereumjs-blockchain.svg?style=flat-square)](https://www.npmjs.org/package/ethereumjs-blockchain)
-[![Actions Status](https://github.com/ethereumjs/ethereumjs-blockchain/workflows/blockchain-test/badge.svg)](https://github.com/ethereumjs/ethereumjs-blockchain/actions)
-[![Coverage Status](https://img.shields.io/coveralls/ethereumjs/ethereumjs-blockchain.svg?style=flat-square)](https://coveralls.io/r/ethereumjs/ethereumjs-blockchain)
-[![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/ethereum/ethereumjs-lib?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge) or #ethereumjs on freenode
+[![NPM Package][blockchain-npm-badge]][blockchain-npm-link]
+[![GitHub Issues][blockchain-issues-badge]][blockchain-issues-link]
+[![Actions Status][blockchain-actions-badge]][blockchain-actions-link]
+[![Code Coverage][blockchain-coverage-badge]][blockchain-coverage-link]
+[![Gitter][gitter-badge]][gitter-link]
+
+[![js-standard-style][js-standard-style-badge]][js-standard-style-link]
 
 A module to store and interact with blocks.
 
@@ -50,3 +53,16 @@ to a compromised DB state.
 See our organizational [documentation](https://ethereumjs.readthedocs.io) for an introduction to `EthereumJS` as well as information on current standards and best practices.
 
 If you want to join for work or do improvements on the libraries have a look at our [contribution guidelines](https://ethereumjs.readthedocs.io/en/latest/contributing.html).
+
+[gitter-badge]: https://img.shields.io/gitter/room/ethereum/ethereumjs.svg
+[gitter-link]: https://gitter.im/ethereum/ethereumjs
+[js-standard-style-badge]: https://cdn.rawgit.com/feross/standard/master/badge.svg
+[js-standard-style-link]: https://github.com/feross/standard
+[blockchain-npm-badge]: https://img.shields.io/npm/v/ethereumjs-blockchain.svg
+[blockchain-npm-link]: https://www.npmjs.org/package/ethereumjs-blockchain
+[blockchain-issues-badge]: https://img.shields.io/github/issues/ethereumjs/ethereumjs-vm/package:%20blockchain?label=issues
+[blockchain-issues-link]: https://github.com/ethereumjs/ethereumjs-vm/issues?q=is%3Aopen+is%3Aissue+label%3A"package%3A+blockchain"
+[blockchain-actions-badge]: https://github.com/ethereumjs/ethereumjs-vm/workflows/Blockchain%20Test/badge.svg
+[blockchain-actions-link]: https://github.com/ethereumjs/ethereumjs-vm/actions?query=workflow%3A%22Blockchain+Test%22
+[blockchain-coverage-badge]: https://codecov.io/gh/ethereumjs/ethereumjs-vm/branch/master/graph/badge.svg?flag=blockchain
+[blockchain-coverage-link]: https://codecov.io/gh/ethereumjs/ethereumjs-vm/tree/master/packages/blockchain

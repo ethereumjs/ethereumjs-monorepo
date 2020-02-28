@@ -1,6 +1,14 @@
-name: account-lint
+name: Account Lint
 'on':
   push:
+    branches:
+      - master
+    tags:
+      - '*'
+    paths-include:
+      - packages/account/**
+  pull_request:
+    types: [opened, reopened, synchronize]
     paths-include:
       - packages/account/**
 jobs:
