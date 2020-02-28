@@ -5,7 +5,7 @@ name: Account Test
       - master
     tags:
       - '*'
-          paths-ignore:
+    paths-ignore:
       - packages/block/**
       - packages/blockchain/**
       - packages/common/**
