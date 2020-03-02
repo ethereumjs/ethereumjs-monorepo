@@ -2,9 +2,9 @@ name: Blockchain Lint
 'on':
   push:
     branches:
-        - master
-      tags:
-        - '*'
+      - master
+    tags:
+      - '*'
     paths-include:
       - packages/blockchain/**
   pull_request:
