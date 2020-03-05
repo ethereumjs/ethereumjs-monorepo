@@ -11,6 +11,7 @@ export enum ERROR {
   CREATE_COLLISION = 'create collision',
   STOP = 'stop',
   REFUND_EXHAUSTED = 'refund exhausted',
+  VALUE_OVERFLOW = 'Value overflow',
 }
 
 export class VmError {

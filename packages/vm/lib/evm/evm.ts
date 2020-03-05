@@ -151,17 +151,24 @@ export default class EVM {
     // Load `to` account
     const toAccount = await this._state.getAccount(message.to)
     // Add tx value to the `to` account
+    let overflowError
     if (!message.delegatecall) {
-      await this._addToBalance(toAccount, message)
+      try {
+        await this._addToBalance(toAccount, message)
+      } catch (e) {
+        overflowError = e
+      }
     }
 
     // Load code
     await this._loadCode(message)
-    if (!message.code || message.code.length === 0) {
+    // Exit early if there's no code or value transfer overflowed
+    if (!message.code || message.code.length === 0 || overflowError) {
       return {
         gasUsed: new BN(0),
         execResult: {
           gasUsed: new BN(0),
+          exceptionError: overflowError, // Only defined if addToBalance failed
           returnValue: Buffer.alloc(0),
         },
       }
@@ -218,14 +225,21 @@ export default class EVM {
     toAccount.nonce = new BN(toAccount.nonce).addn(1).toArrayLike(Buffer)
 
     // Add tx value to the `to` account
-    await this._addToBalance(toAccount, message)
+    let overflowError
+    try {
+      await this._addToBalance(toAccount, message)
+    } catch (e) {
+      overflowError = e
+    }
 
-    if (!message.code || message.code.length === 0) {
+    // Exit early if there's no contract code or value transfer overflowed
+    if (!message.code || message.code.length === 0 || overflowError) {
       return {
         gasUsed: new BN(0),
         createdAddress: message.to,
         execResult: {
           gasUsed: new BN(0),
+          exceptionError: overflowError, // only defined if addToBalance failed
           returnValue: Buffer.alloc(0),
         },
       }
@@ -383,7 +397,7 @@ export default class EVM {
   async _addToBalance(toAccount: Account, message: Message): Promise<void> {
     const newBalance = new BN(toAccount.balance).add(message.value)
     if (newBalance.gt(MAX_INTEGER)) {
-      throw new Error('Value overflow')
+      throw new VmError(ERROR.VALUE_OVERFLOW)
     }
     toAccount.balance = toBuffer(newBalance)
     // putAccount as the nonce may have changed for contract creation
