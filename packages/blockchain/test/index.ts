@@ -1,5 +1,5 @@
 import * as async from 'async'
-import Common from 'ethereumjs-common'
+import Common from '@ethereumjs/common'
 import { toBuffer, bufferToInt } from 'ethereumjs-util'
 import * as test from 'tape'
 import Blockchain from '../src'

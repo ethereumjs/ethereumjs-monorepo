@@ -14,7 +14,7 @@ import {
 import BN = require('bn.js')
 
 const level = require('level-mem')
-import { Block, BlockHeader } from 'ethereumjs-block'
+import { Block, BlockHeader } from '@ethereumjs/block'
 
 /**
  * Abstraction over a DB to facilitate storing/fetching blockchain-related
