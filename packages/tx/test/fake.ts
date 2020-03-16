@@ -1,7 +1,7 @@
 import * as tape from 'tape'
 import { Buffer } from 'buffer'
 import { bufferToHex } from 'ethereumjs-util'
-import Common from 'ethereumjs-common'
+import Common from '@ethereumjs/common'
 import { FakeTransaction } from '../src'
 import { FakeTxData } from './types'
 
