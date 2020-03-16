@@ -1,5 +1,5 @@
 {
-  "name": "ethereumjs-account",
+  "name": "@ethereumjs/account",
   "version": "3.0.0",
   "description": "Encoding, decoding and validation of Ethereum's Account schema",
   "main": "./dist/index.js",
@@ -9,7 +9,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ethereumjs/ethereumjs-account.git"
+    "url": "git+https://github.com/ethereumjs/ethereumjs-vm.git"
   },
   "scripts": {
     "build": "ethereumjs-config-build",
@@ -32,9 +32,9 @@
   "author": "mjbecze (mjbecze@gmail.com)",
   "license": "MPL-2.0",
   "bugs": {
-    "url": "https://github.com/ethereumjs/ethereumjs-account/issues"
+    "url": "https://github.com/ethereumjs/ethereumjs-vm/issues?q=is%3Aissue+label%3A\"package%3A+account\""
   },
-  "homepage": "https://github.com/ethereumjs/ethereumjs-account#readme",
+  "homepage": "https://github.com/ethereumjs/ethereumjs-vm/tree/master/packages/account#synopsis",
   "dependencies": {
     "ethereumjs-util": "^7.0.2",
     "rlp": "^2.2.1",
