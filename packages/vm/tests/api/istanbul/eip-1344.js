@@ -1,6 +1,6 @@
 const tape = require('tape')
 const BN = require('bn.js')
-const Common = require('ethereumjs-common').default
+const Common = require('@ethereumjs/common').default
 const VM = require('../../../dist/index').default
 const { ERROR } = require('../../../dist/exceptions')
 

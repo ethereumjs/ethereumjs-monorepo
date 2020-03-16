@@ -1,7 +1,12 @@
 const tape = require('tape')
 const util = require('ethereumjs-util')
+<<<<<<< HEAD
 const { Transaction } = require('ethereumjs-tx')
 const Block = require('ethereumjs-block').Block
+=======
+const { Transaction } = require('@ethereumjs/tx')
+const Block = require('@ethereumjs/block')
+>>>>>>> vm: migrating to scoped packages
 const VM = require('../../dist/index').default
 
 tape('VM events', t => {

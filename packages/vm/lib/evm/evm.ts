@@ -7,7 +7,8 @@ import {
   toBuffer,
   zeros,
 } from 'ethereumjs-util'
-import Account from 'ethereumjs-account'
+import Account from '@ethereumjs/account'
+import { Block } from '@ethereumjs/block'
 import { ERROR, VmError } from '../exceptions'
 import { StateManager } from '../state/index'
 import { getPrecompile, PrecompileFunc, ripemdPrecompileAddress } from './precompiles'
@@ -15,8 +16,6 @@ import TxContext from './txContext'
 import Message from './message'
 import EEI from './eei'
 import { default as Interpreter, InterpreterOpts, RunState } from './interpreter'
-
-import { Block } from 'ethereumjs-block'
 
 /**
  * Result of executing a message via the [[EVM]].

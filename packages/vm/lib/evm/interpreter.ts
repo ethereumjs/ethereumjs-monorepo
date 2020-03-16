@@ -1,5 +1,6 @@
 import BN = require('bn.js')
-import Common from 'ethereumjs-common'
+import Account from '@ethereumjs/account'
+import Common from '@ethereumjs/common'
 import { StateManager } from '../state/index'
 import { ERROR, VmError } from '../exceptions'
 import Memory from './memory'
@@ -7,7 +8,6 @@ import Stack from './stack'
 import EEI from './eei'
 import { Opcode } from './opcodes'
 import { handlers as opHandlers, OpHandler } from './opFns'
-import Account from 'ethereumjs-account'
 
 export interface InterpreterOpts {
   pc?: number

@@ -1,13 +1,14 @@
 import VM from '../../'
 
-import Account from 'ethereumjs-account'
-import { Block, BlockHeader } from 'ethereumjs-block'
-import Blockchain from 'ethereumjs-blockchain'
+import Account from '@ethereumjs/account'
+import { Block, BlockHeader } from '@ethereumjs/block'
+import Blockchain from '@ethereumjs/blockchain'
 import { toBuffer, setLengthLeft } from 'ethereumjs-util'
+
+import { promisify } from 'util'
 
 const testData = require('./test-data')
 const level = require('level')
-const { promisify } = require('util')
 
 async function main() {
   const hardfork = testData.network.toLowerCase()

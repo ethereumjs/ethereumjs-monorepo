@@ -1,6 +1,6 @@
-import Account from 'ethereumjs-account'
-const Tree = require('functional-red-black-tree')
 const promisify = require('util.promisify')
+const Tree = require('functional-red-black-tree')
+import Account from '@ethereumjs/account'
 
 /**
  * @ignore
