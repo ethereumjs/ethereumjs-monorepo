@@ -72,7 +72,7 @@ If you want to join for work or do improvements on the libraries have a look at 
 [js-standard-style-badge]: https://cdn.rawgit.com/feross/standard/master/badge.svg
 [js-standard-style-link]: https://github.com/feross/standard
 [account-package]: ./packages/account
-[account-npm-badge]: https://img.shields.io/npm/v/ethereumjs-account.svg
+[account-npm-badge]: https://img.shields.io/npm/v/@ethereumjs/account.svg
 [account-npm-link]: https://www.npmjs.org/package/@ethereumjs/account
 [account-issues-badge]: https://img.shields.io/github/issues/ethereumjs/ethereumjs-vm/package:%20account?label=issues
 [account-issues-link]: https://github.com/ethereumjs/ethereumjs-vm/issues?q=is%3Aopen+is%3Aissue+label%3A"package%3A+account"
@@ -81,7 +81,7 @@ If you want to join for work or do improvements on the libraries have a look at 
 [account-coverage-badge]: https://codecov.io/gh/ethereumjs/ethereumjs-vm/branch/master/graph/badge.svg?flag=account
 [account-coverage-link]: https://codecov.io/gh/ethereumjs/ethereumjs-vm/tree/master/packages/account
 [block-package]: ./packages/block
-[block-npm-badge]: https://img.shields.io/npm/v/ethereumjs-block.svg
+[block-npm-badge]: https://img.shields.io/npm/v/@ethereumjs/block.svg
 [block-npm-link]: https://www.npmjs.org/package/@ethereumjs/block
 [block-issues-badge]: https://img.shields.io/github/issues/ethereumjs/ethereumjs-vm/package:%20block?label=issues
 [block-issues-link]: https://github.com/ethereumjs/ethereumjs-vm/issues?q=is%3Aopen+is%3Aissue+label%3A"package%3A+block"
@@ -90,7 +90,7 @@ If you want to join for work or do improvements on the libraries have a look at 
 [block-coverage-badge]: https://codecov.io/gh/ethereumjs/ethereumjs-vm/branch/master/graph/badge.svg?flag=block
 [block-coverage-link]: https://codecov.io/gh/ethereumjs/ethereumjs-vm/tree/master/packages/block
 [blockchain-package]: ./packages/blockchain
-[blockchain-npm-badge]: https://img.shields.io/npm/v/ethereumjs-blockchain.svg
+[blockchain-npm-badge]: https://img.shields.io/npm/v/@ethereumjs/blockchain.svg
 [blockchain-npm-link]: https://www.npmjs.org/package/@ethereumjs/blockchain
 [blockchain-issues-badge]: https://img.shields.io/github/issues/ethereumjs/ethereumjs-vm/package:%20blockchain?label=issues
 [blockchain-issues-link]: https://github.com/ethereumjs/ethereumjs-vm/issues?q=is%3Aopen+is%3Aissue+label%3A"package%3A+blockchain"
@@ -99,7 +99,7 @@ If you want to join for work or do improvements on the libraries have a look at 
 [blockchain-coverage-badge]: https://codecov.io/gh/ethereumjs/ethereumjs-vm/branch/master/graph/badge.svg?flag=blockchain
 [blockchain-coverage-link]: https://codecov.io/gh/ethereumjs/ethereumjs-vm/tree/master/packages/blockchain
 [common-package]: ./packages/common
-[common-npm-badge]: https://img.shields.io/npm/v/ethereumjs-common.svg
+[common-npm-badge]: https://img.shields.io/npm/v/@ethereumjs/common.svg
 [common-npm-link]: https://www.npmjs.org/package/@ethereumjs/common
 [common-issues-badge]: https://img.shields.io/github/issues/ethereumjs/ethereumjs-vm/package:%20common?label=issues
 [common-issues-link]: https://github.com/ethereumjs/ethereumjs-vm/issues?q=is%3Aopen+is%3Aissue+label%3A"package%3A+common"
@@ -108,7 +108,7 @@ If you want to join for work or do improvements on the libraries have a look at 
 [common-coverage-badge]: https://codecov.io/gh/ethereumjs/ethereumjs-vm/branch/master/graph/badge.svg?flag=common
 [common-coverage-link]: https://codecov.io/gh/ethereumjs/ethereumjs-vm/tree/master/packages/common
 [tx-package]: ./packages/tx
-[tx-npm-badge]: https://img.shields.io/npm/v/ethereumjs-tx.svg
+[tx-npm-badge]: https://img.shields.io/npm/v/@ethereumjs/tx.svg
 [tx-npm-link]: https://www.npmjs.org/package/@ethereumjs/tx
 [tx-issues-badge]: https://img.shields.io/github/issues/ethereumjs/ethereumjs-vm/package:%20tx?label=issues
 [tx-issues-link]: https://github.com/ethereumjs/ethereumjs-vm/issues?q=is%3Aopen+is%3Aissue+label%3A"package%3A+tx"
@@ -117,7 +117,7 @@ If you want to join for work or do improvements on the libraries have a look at 
 [tx-coverage-badge]: https://codecov.io/gh/ethereumjs/ethereumjs-vm/branch/master/graph/badge.svg?flag=tx
 [tx-coverage-link]: https://codecov.io/gh/ethereumjs/ethereumjs-vm/tree/master/packages/tx
 [vm-package]: ./packages/vm
-[vm-npm-badge]: https://img.shields.io/npm/v/ethereumjs-vm.svg
+[vm-npm-badge]: https://img.shields.io/npm/v/@ethereumjs/vm.svg
 [vm-npm-link]: https://www.npmjs.org/package/@ethereumjs/vm
 [vm-issues-badge]: https://img.shields.io/github/issues/ethereumjs/ethereumjs-vm/package:%20vm?label=issues
 [vm-issues-link]: https://github.com/ethereumjs/ethereumjs-vm/issues?q=is%3Aopen+is%3Aissue+label%3A"package%3A+vm"
