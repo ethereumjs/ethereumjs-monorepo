@@ -1,7 +1,6 @@
-import { FakeTransaction, TransactionOptions } from 'ethereumjs-tx'
+import { FakeTransaction, TransactionOptions } from '@ethereumjs/tx'
 import { toBuffer, setLengthLeft } from 'ethereumjs-util'
-import { Block } from './index'
-import { ChainOptions } from './types'
+import { Block, ChainOptions } from './index'
 
 import blockHeaderFromRpc from './header-from-rpc'
 
