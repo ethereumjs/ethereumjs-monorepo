@@ -9,10 +9,10 @@ export function callTogether(...funcs: Function[]) {
   const index = length
 
   if (!length) {
-    return function() {}
+    return function () {}
   }
 
-  return function(this: any, ...args: any) {
+  return function (this: any, ...args: any) {
     length = index
 
     while (length--) {
@@ -33,9 +33,9 @@ export function asyncFirstSeries(array: any[], iterator: Function, cb: Function)
   var didComplete = false
   async.eachSeries(
     array,
-    function(item: any, next: Function) {
+    function (item: any, next: Function) {
       if (didComplete) return next
-      iterator(item, function(err: Error, result: any) {
+      iterator(item, function (err: Error, result: any) {
         if (result) {
           didComplete = true
           process.nextTick(cb.bind(null, null, result))
@@ -43,7 +43,7 @@ export function asyncFirstSeries(array: any[], iterator: Function, cb: Function)
         next(err)
       })
     },
-    function() {
+    function () {
       if (!didComplete) {
         cb()
       }
