@@ -47,7 +47,7 @@ export class Trie {
   }
 
   static fromProof(proofNodes: Buffer[], cb: Function, proofTrie?: Trie) {
-    let opStack = proofNodes.map(nodeValue => {
+    let opStack = proofNodes.map((nodeValue) => {
       return {
         type: 'put',
         key: ethUtil.keccak(nodeValue),
@@ -68,14 +68,14 @@ export class Trie {
   }
 
   static prove(trie: Trie, key: Buffer, cb: Function) {
-    trie.findPath(key, function(
+    trie.findPath(key, function (
       err: Error,
       node: TrieNode,
       remaining: number[],
       stack: TrieNode[],
     ) {
       if (err) return cb(err)
-      let p = stack.map(stackElem => {
+      let p = stack.map((stackElem) => {
         return stackElem.serialize()
       })
       cb(null, p)
@@ -473,7 +473,7 @@ export class Trie {
   _walkTrie(root: Buffer, onNode: Function, onDone: Function) {
     const self = this
     root = root || this.root
-    onDone = onDone || function() {}
+    onDone = onDone || function () {}
     let aborted = false
     let returnValues: any = []
 
@@ -507,17 +507,17 @@ export class Trie {
       let stopped = false
 
       const walkController = {
-        stop: function() {
+        stop: function () {
           stopped = true
           cb()
         },
         // end all traversal and return values to the onDone cb
-        return: function(...args: any) {
+        return: function (...args: any) {
           aborted = true
           returnValues = args
           cb()
         },
-        next: function() {
+        next: function () {
           if (aborted || stopped) {
             return cb()
           }
@@ -530,7 +530,7 @@ export class Trie {
           if (node instanceof ExtensionNode) {
             children = [[node.key, node.value]]
           } else if (node instanceof BranchNode) {
-            children = node.getChildren().map(b => [[b[0]], b[1]])
+            children = node.getChildren().map((b) => [[b[0]], b[1]])
           }
           async.forEachOf(
             children,
@@ -552,7 +552,7 @@ export class Trie {
             cb,
           )
         },
-        only: function(childIndex: number) {
+        only: function (childIndex: number) {
           if (!(node instanceof BranchNode)) {
             return cb(new Error('Expected branch node'))
           }
