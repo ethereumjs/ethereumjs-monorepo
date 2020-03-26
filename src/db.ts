@@ -1,5 +1,5 @@
 import { LevelUp } from 'levelup'
-import { ErrorCallback } from './types'
+import { ErrorCallback, BufferCallback } from './types'
 const level = require('level-mem')
 
 export const ENCODING_OPTS = { keyEncoding: 'binary', valueEncoding: 'binary' }
@@ -38,7 +38,7 @@ export class DB {
    * `err` - for errors that may have occured
    * and `value` - the found value in a `Buffer` or if no value was found `null`.
    */
-  get(key: Buffer, cb: Function) {
+  get(key: Buffer, cb: BufferCallback) {
     if (!Buffer.isBuffer(key)) throw new Error('Invalid input: expected buffer')
 
     this._leveldb.get(key, ENCODING_OPTS, (err?: Error, v?: Buffer) => {

@@ -1,8 +1,9 @@
-const tape = require('tape')
+import * as tape from 'tape'
 const DB = require('../dist/db').DB
+import { DB as IDB, BatchDBOp } from '../dist/db'
 
 tape('DB basic functionality', (t) => {
-  const db = new DB()
+  const db = new DB() as IDB
 
   const k = Buffer.from('foo')
   const v = Buffer.from('bar')
@@ -11,7 +12,7 @@ tape('DB basic functionality', (t) => {
     db.put(k, v, () => {
       db.get(k, (err, res) => {
         st.error(err)
-        st.ok(v.equals(res))
+        st.ok(v.equals(res!))
         st.end()
       })
     })
@@ -30,12 +31,15 @@ tape('DB basic functionality', (t) => {
   t.test('batch ops', (st) => {
     const k2 = Buffer.from('bar')
     const v2 = Buffer.from('baz')
-    const ops = [{ type: 'put', key: k, value: v }, { type: 'put', key: k2, value: v2 }]
+    const ops = [
+      { type: 'put', key: k, value: v },
+      { type: 'put', key: k2, value: v2 },
+    ] as BatchDBOp[]
     db.batch(ops, (err) => {
       st.error(err)
       db.get(k2, (err, res) => {
         st.error(err)
-        st.ok(v2.equals(res))
+        st.ok(v2.equals(res!))
         st.end()
       })
     })

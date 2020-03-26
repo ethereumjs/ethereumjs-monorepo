@@ -5,7 +5,7 @@ import { TrieReadStream as ReadStream } from './readStream'
 import { PrioritizedTaskExecutor } from './prioritizedTaskExecutor'
 import { callTogether } from './util/async'
 import { stringToNibbles, matchingNibbleLength, doKeysMatch } from './util/nibbles'
-import { ErrorCallback } from './types'
+import { BufferCallback, ProveCallback, ErrorCallback } from './types'
 import {
   TrieNode,
   decodeNode,
@@ -62,12 +62,12 @@ export class Trie {
       }
     }
 
-    proofTrie.db.batch(opStack, (e?: Error) => {
-      cb(e, proofTrie)
+    proofTrie.db.batch(opStack, (err) => {
+      cb(err, proofTrie)
     })
   }
 
-  static prove(trie: Trie, key: Buffer, cb: Function) {
+  static prove(trie: Trie, key: Buffer, cb: ProveCallback) {
     trie.findPath(key, function (
       err: Error,
       node: TrieNode,
@@ -82,13 +82,13 @@ export class Trie {
     })
   }
 
-  static verifyProof(rootHash: Buffer, key: Buffer, proofNodes: Buffer[], cb: Function) {
+  static verifyProof(rootHash: Buffer, key: Buffer, proofNodes: Buffer[], cb: BufferCallback) {
     let proofTrie = new Trie(null, rootHash)
     Trie.fromProof(
       proofNodes,
       (error: Error, proofTrie: Trie) => {
         if (error) cb(new Error('Invalid proof nodes given'), null)
-        proofTrie.get(key, (e: Error, r: Buffer | null) => {
+        proofTrie.get(key, (e, r) => {
           return cb(e, r)
         })
       },
@@ -122,7 +122,7 @@ export class Trie {
    * @param {Buffer} key - the key to search for
    * @param {Function} cb A callback `Function` which is given the arguments `err` - for errors that may have occured and `value` - the found value in a `Buffer` or if no value was found `null`
    */
-  get(key: Buffer, cb: Function) {
+  get(key: Buffer, cb: BufferCallback) {
     key = ethUtil.toBuffer(key)
 
     this.findPath(key, (err: Error, node: TrieNode, remainder: number[], stack: TrieNode[]) => {
@@ -180,7 +180,7 @@ export class Trie {
    * @param {Buffer} key
    * @param {Function} callback the callback `Function`
    */
-  del(key: Buffer, cb: Function) {
+  del(key: Buffer, cb: ErrorCallback) {
     key = ethUtil.toBuffer(key)
     cb = callTogether(cb, this.sem.leave)
 
@@ -205,7 +205,7 @@ export class Trie {
    * Retrieves a value directly from key/value db.
    * @deprecated
    */
-  getRaw(key: Buffer, cb: Function) {
+  getRaw(key: Buffer, cb: BufferCallback) {
     this.db.get(key, cb)
   }
 
@@ -231,8 +231,8 @@ export class Trie {
     if (isRawNode(node)) {
       cb(null, decodeRawNode(node as Buffer[]))
     } else {
-      this.db.get(node as Buffer, (err: Error, value: Buffer | null) => {
-        let node = null
+      this.db.get(node as Buffer, (err, value) => {
+        let node = null as any
         if (value) {
           node = decodeNode(value)
         } else {

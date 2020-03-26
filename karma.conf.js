@@ -1,16 +1,22 @@
-module.exports = function(config) {
+module.exports = function (config) {
   config.set({
-    browserDisconnectTimeout: 100000,
-    browserNoActivityTimeout: 100000,
-    frameworks: ['browserify', 'tap'],
-    plugins: ['karma-browserify', 'karma-tap', 'karma-chrome-launcher', 'karma-firefox-launcher'],
-    files: ['./test/*.js'],
+    frameworks: ['karma-typescript', 'tap'],
+    files: ['src/**/*.ts', 'test/**/*.ts'],
     preprocessors: {
-      './dist/**/*.js': ['browserify'],
-      './test/**/*.js': ['browserify'],
+      '**/*.ts': ['karma-typescript'],
+    },
+    plugins: ['karma-typescript', 'karma-tap', 'karma-chrome-launcher', 'karma-firefox-launcher'],
+    karmaTypescriptConfig: {
+      bundlerOptions: {
+        entrypoints: /\.spec\.ts$/,
+      },
     },
     colors: true,
     browsers: ['FirefoxHeadless', 'ChromeHeadless'],
     singleRun: true,
+    concurrency: Infinity,
+    // Fail after timeout
+    browserDisconnectTimeout: 100000,
+    browserNoActivityTimeout: 100000,
   })
 }

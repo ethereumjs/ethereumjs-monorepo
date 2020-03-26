@@ -1,10 +1,12 @@
-const tape = require('tape')
+import * as tape from 'tape'
 const ScratchDB = require('../dist/scratch').ScratchDB
 const DB = require('../dist/db').DB
+import { DB as IDB } from '../dist/db'
+import { ScratchDB as IScratchDB } from '../dist/scratch'
 
 tape('ScratchDB', (t) => {
-  const upstream = new DB()
-  const scratch = new ScratchDB(upstream)
+  const upstream = new DB() as IDB
+  const scratch = new ScratchDB(upstream) as IScratchDB
 
   const k = Buffer.from('foo')
   const v = Buffer.from('bar')
@@ -23,7 +25,7 @@ tape('ScratchDB', (t) => {
     scratch.put(k, v, () => {
       scratch.get(k, (err, res) => {
         st.error(err)
-        st.ok(v.equals(res))
+        st.ok(v.equals(res!))
         st.end()
       })
     })
@@ -41,7 +43,7 @@ tape('ScratchDB', (t) => {
     upstream.put(k2, v2, () => {
       upstream.get(k2, (err, res) => {
         st.error(err)
-        st.ok(v2.equals(res))
+        st.ok(v2.equals(res!))
         st.end()
       })
     })
@@ -50,7 +52,7 @@ tape('ScratchDB', (t) => {
   t.test('scratch should get value from upstream', (st) => {
     scratch.get(k2, (err, res) => {
       st.error(err)
-      st.ok(v2.equals(res))
+      st.ok(v2.equals(res!))
       st.end()
     })
   })

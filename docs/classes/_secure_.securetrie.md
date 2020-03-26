@@ -205,7 +205,7 @@ ___
 
 *Inherited from [CheckpointTrie](_checkpointtrie_.checkpointtrie.md).[_createScratchReadStream](_checkpointtrie_.checkpointtrie.md#private-_createscratchreadstream)*
 
-*Defined in [checkpointTrie.ts:154](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/checkpointTrie.ts#L154)*
+*Defined in [checkpointTrie.ts:152](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/checkpointTrie.ts#L152)*
 
 Returns a `ScratchReadStream` based on the state updates
 since checkpoint.
@@ -323,7 +323,7 @@ ___
 
 *Overrides [Trie](_basetrie_.trie.md).[_formatNode](_basetrie_.trie.md#_formatnode)*
 
-*Defined in [checkpointTrie.ts:163](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/checkpointTrie.ts#L163)*
+*Defined in [checkpointTrie.ts:161](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/checkpointTrie.ts#L161)*
 
 **Parameters:**
 
@@ -647,7 +647,7 @@ ___
 
 ###  get
 
-▸ **get**(`key`: Buffer, `cb`: Function): *void*
+▸ **get**(`key`: Buffer, `cb`: BufferCallback): *void*
 
 *Overrides [Trie](_basetrie_.trie.md).[get](_basetrie_.trie.md#get)*
 
@@ -658,7 +658,7 @@ ___
 Name | Type |
 ------ | ------ |
 `key` | Buffer |
-`cb` | Function |
+`cb` | BufferCallback |
 
 **Returns:** *void*
 
@@ -666,7 +666,7 @@ ___
 
 ###  getRaw
 
-▸ **getRaw**(`key`: Buffer, `cb`: Function): *void*
+▸ **getRaw**(`key`: Buffer, `cb`: BufferCallback): *void*
 
 *Inherited from [Trie](_basetrie_.trie.md).[getRaw](_basetrie_.trie.md#getraw)*
 
@@ -681,7 +681,7 @@ Retrieves a value directly from key/value db.
 Name | Type |
 ------ | ------ |
 `key` | Buffer |
-`cb` | Function |
+`cb` | BufferCallback |
 
 **Returns:** *void*
 
@@ -799,7 +799,7 @@ ___
 
 ### `Static` prove
 
-▸ **prove**(`trie`: [SecureTrie](_secure_.securetrie.md), `key`: Buffer, `cb`: Function): *void*
+▸ **prove**(`trie`: [SecureTrie](_secure_.securetrie.md), `key`: Buffer, `cb`: ProveCallback): *void*
 
 *Overrides [Trie](_basetrie_.trie.md).[prove](_basetrie_.trie.md#static-prove)*
 
@@ -811,7 +811,7 @@ Name | Type |
 ------ | ------ |
 `trie` | [SecureTrie](_secure_.securetrie.md) |
 `key` | Buffer |
-`cb` | Function |
+`cb` | ProveCallback |
 
 **Returns:** *void*
 
@@ -819,7 +819,7 @@ ___
 
 ### `Static` verifyProof
 
-▸ **verifyProof**(`rootHash`: Buffer, `key`: Buffer, `proof`: Buffer[], `cb`: Function): *void*
+▸ **verifyProof**(`rootHash`: Buffer, `key`: Buffer, `proof`: Buffer[], `cb`: BufferCallback): *void*
 
 *Overrides [Trie](_basetrie_.trie.md).[verifyProof](_basetrie_.trie.md#static-verifyproof)*
 
@@ -832,6 +832,6 @@ Name | Type |
 `rootHash` | Buffer |
 `key` | Buffer |
 `proof` | Buffer[] |
-`cb` | Function |
+`cb` | BufferCallback |
 
 **Returns:** *void*

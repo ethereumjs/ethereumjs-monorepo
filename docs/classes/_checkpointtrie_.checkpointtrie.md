@@ -189,7 +189,7 @@ ___
 
 ▸ **_createScratchReadStream**(`scratch`: ScratchDB): *ScratchReadStream‹›*
 
-*Defined in [checkpointTrie.ts:154](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/checkpointTrie.ts#L154)*
+*Defined in [checkpointTrie.ts:152](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/checkpointTrie.ts#L152)*
 
 Returns a `ScratchReadStream` based on the state updates
 since checkpoint.
@@ -301,7 +301,7 @@ ___
 
 *Overrides [Trie](_basetrie_.trie.md).[_formatNode](_basetrie_.trie.md#_formatnode)*
 
-*Defined in [checkpointTrie.ts:163](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/checkpointTrie.ts#L163)*
+*Defined in [checkpointTrie.ts:161](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/checkpointTrie.ts#L161)*
 
 **Parameters:**
 
@@ -563,7 +563,7 @@ ___
 
 ###  del
 
-▸ **del**(`key`: Buffer, `cb`: Function): *void*
+▸ **del**(`key`: Buffer, `cb`: ErrorCallback): *void*
 
 *Inherited from [Trie](_basetrie_.trie.md).[del](_basetrie_.trie.md#del)*
 
@@ -580,7 +580,7 @@ deletes a value given a `key`
 Name | Type |
 ------ | ------ |
 `key` | Buffer |
-`cb` | Function |
+`cb` | ErrorCallback |
 
 **Returns:** *void*
 
@@ -637,7 +637,7 @@ ___
 
 ###  get
 
-▸ **get**(`key`: Buffer, `cb`: Function): *void*
+▸ **get**(`key`: Buffer, `cb`: BufferCallback): *void*
 
 *Inherited from [Trie](_basetrie_.trie.md).[get](_basetrie_.trie.md#get)*
 
@@ -654,7 +654,7 @@ Gets a value given a `key`
 Name | Type | Description |
 ------ | ------ | ------ |
 `key` | Buffer | the key to search for |
-`cb` | Function | A callback `Function` which is given the arguments `err` - for errors that may have occured and `value` - the found value in a `Buffer` or if no value was found `null`  |
+`cb` | BufferCallback | A callback `Function` which is given the arguments `err` - for errors that may have occured and `value` - the found value in a `Buffer` or if no value was found `null`  |
 
 **Returns:** *void*
 
@@ -662,7 +662,7 @@ ___
 
 ###  getRaw
 
-▸ **getRaw**(`key`: Buffer, `cb`: Function): *void*
+▸ **getRaw**(`key`: Buffer, `cb`: BufferCallback): *void*
 
 *Inherited from [Trie](_basetrie_.trie.md).[getRaw](_basetrie_.trie.md#getraw)*
 
@@ -677,7 +677,7 @@ Retrieves a value directly from key/value db.
 Name | Type |
 ------ | ------ |
 `key` | Buffer |
-`cb` | Function |
+`cb` | BufferCallback |
 
 **Returns:** *void*
 
@@ -794,7 +794,7 @@ ___
 
 ### `Static` prove
 
-▸ **prove**(`trie`: [Trie](_basetrie_.trie.md), `key`: Buffer, `cb`: Function): *void*
+▸ **prove**(`trie`: [Trie](_basetrie_.trie.md), `key`: Buffer, `cb`: ProveCallback): *void*
 
 *Inherited from [Trie](_basetrie_.trie.md).[prove](_basetrie_.trie.md#static-prove)*
 
@@ -806,7 +806,7 @@ Name | Type |
 ------ | ------ |
 `trie` | [Trie](_basetrie_.trie.md) |
 `key` | Buffer |
-`cb` | Function |
+`cb` | ProveCallback |
 
 **Returns:** *void*
 
@@ -814,7 +814,7 @@ ___
 
 ### `Static` verifyProof
 
-▸ **verifyProof**(`rootHash`: Buffer, `key`: Buffer, `proofNodes`: Buffer[], `cb`: Function): *void*
+▸ **verifyProof**(`rootHash`: Buffer, `key`: Buffer, `proofNodes`: Buffer[], `cb`: BufferCallback): *void*
 
 *Inherited from [Trie](_basetrie_.trie.md).[verifyProof](_basetrie_.trie.md#static-verifyproof)*
 
@@ -827,6 +827,6 @@ Name | Type |
 `rootHash` | Buffer |
 `key` | Buffer |
 `proofNodes` | Buffer[] |
-`cb` | Function |
+`cb` | BufferCallback |
 
 **Returns:** *void*
