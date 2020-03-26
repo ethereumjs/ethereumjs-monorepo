@@ -61,7 +61,7 @@ Note: `getPublicKey()` only returns uncompressed Ethereum-style public keys.
 
 Importing various third party wallets is possible through the `thirdparty` submodule:
 
-`var thirdparty = require('ethereumjs-wallet/thirdparty')`
+`const { thirdparty } = require('ethereumjs-wallet')`
 
 Constructors:
 
@@ -74,7 +74,7 @@ Constructors:
 
 To use BIP32 HD wallets, first include the `hdkey` submodule:
 
-`var hdkey = require('ethereumjs-wallet/hdkey')`
+`const { hdkey } = require('ethereumjs-wallet')`
 
 Constructors:
 
@@ -96,7 +96,7 @@ Instance methods:
 The Wallet can be easily plugged into [provider-engine](https://github.com/metamask/provider-engine) to provide signing:
 
 ```js
-const WalletSubprovider = require('ethereumjs-wallet/provider-engine')
+const { WalletSubprovider } = require('ethereumjs-wallet')
 
 <engine>.addProvider(new WalletSubprovider(<wallet instance>))
 ```
