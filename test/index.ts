@@ -297,12 +297,14 @@ describe('.toV3()', function() {
           p: p,
         })
 
-        const encFixtureEthersWallet = (await fixtureEthersWallet.encrypt(pw, {
-          scrypt: { N: n, r: r, p: p },
-          salt: ethersOpts.salt,
-          iv: ethersOpts.iv,
-          uuid: ethersOpts.uuid,
-        })).toLowerCase()
+        const encFixtureEthersWallet = (
+          await fixtureEthersWallet.encrypt(pw, {
+            scrypt: { N: n, r: r, p: p },
+            salt: ethersOpts.salt,
+            iv: ethersOpts.iv,
+            uuid: ethersOpts.uuid,
+          })
+        ).toLowerCase()
 
         const encRandomWallet = wRandom.toV3String(pw, {
           kdf: 'scrypt',
@@ -314,12 +316,14 @@ describe('.toV3()', function() {
           p: p,
         })
 
-        const encEthersWallet = (await wEthers.encrypt(pw, {
-          scrypt: { N: n, r: r, p: p },
-          salt: ethersOpts.salt,
-          iv: ethersOpts.iv,
-          uuid: ethersOpts.uuid,
-        })).toLowerCase()
+        const encEthersWallet = (
+          await wEthers.encrypt(pw, {
+            scrypt: { N: n, r: r, p: p },
+            salt: ethersOpts.salt,
+            iv: ethersOpts.iv,
+            uuid: ethersOpts.uuid,
+          })
+        ).toLowerCase()
 
         assert.deepStrictEqual(JSON.parse(wStatic), JSON.parse(encFixtureWallet))
         assert.deepStrictEqual(JSON.parse(wStatic), JSON.parse(encFixtureEthersWallet))
