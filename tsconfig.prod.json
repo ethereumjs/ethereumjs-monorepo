@@ -1,11 +1,6 @@
 {
   "extends": "@ethereumjs/config-tsc",
-  "exclude": [
-    "test",
-    "examples",
-    "node_modules",
-    "dist"
-  ],
+  "exclude": ["test", "examples", "node_modules", "dist"],
   "compilerOptions": {
     "baseUrl": "./",
     "paths": {

@@ -6,7 +6,7 @@ import { EventEmitter } from 'events'
 import { debug as createDebugLogger } from 'debug'
 import LRUCache from 'lru-cache'
 // note: relative path only valid in .js file in dist
-const { version : pVersion } = require('../../package.json')
+const { version: pVersion } = require('../../package.json')
 import { pk2id, createDeferred } from '../util'
 import { Peer, DISCONNECT_REASONS, Capabilities } from './peer'
 import { DPT, PeerInfo } from '../dpt'
