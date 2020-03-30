@@ -1,23 +1,23 @@
 import * as async from 'async'
 import * as crypto from 'crypto'
-var Trie = require('../dist/index.js').CheckpointTrie
+const Trie = require('../dist/index.js').CheckpointTrie
 
-var iterations = 500
-var samples = 20
-var i
+let iterations = 500
+let samples = 20
+let i = 0
 
-function iterTest(numOfIter, cb) {
-  var vals = [] as any
-  var keys = [] as any
+function iterTest(numOfIter: number, cb: Function) {
+  let vals = [] as any
+  let keys = [] as any
 
   for (i = 0; i <= numOfIter; i++) {
     vals.push(crypto.pseudoRandomBytes(32))
     keys.push(crypto.pseudoRandomBytes(32))
   }
 
-  var hrstart = process.hrtime()
-  var numOfOps = 0
-  var trie = new Trie()
+  let hrstart = process.hrtime()
+  let numOfOps = 0
+  let trie = new Trie()
 
   for (i = 0; i < numOfIter; i++) {
     trie.put(vals[i], keys[i], function () {
@@ -25,7 +25,7 @@ function iterTest(numOfIter, cb) {
       trie.get(Buffer.from('test'), function () {
         numOfOps++
         if (numOfOps === numOfIter) {
-          var hrend = process.hrtime(hrstart)
+          const hrend = process.hrtime(hrstart)
           cb(hrend)
         }
       })
@@ -34,7 +34,7 @@ function iterTest(numOfIter, cb) {
 }
 
 i = 0
-var avg = [0, 0]
+let avg = [0, 0]
 
 async.whilst(
   function () {
@@ -42,7 +42,7 @@ async.whilst(
     return i <= samples
   },
   function (done) {
-    iterTest(iterations, function (hrend) {
+    iterTest(iterations, function (hrend: Array<number>) {
       avg[0] += hrend[0]
       avg[1] += hrend[1]
 

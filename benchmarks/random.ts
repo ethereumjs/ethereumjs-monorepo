@@ -17,7 +17,7 @@ run(() => {
   console.timeEnd(testName)
 })
 
-function run(cb) {
+function run(cb: any) {
   let i = 0
   async.whilst(
     () => {
