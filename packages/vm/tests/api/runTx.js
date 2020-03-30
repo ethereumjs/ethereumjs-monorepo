@@ -86,7 +86,7 @@ tape('should fail when account balance overflows (call)', async t => {
 
   const res = await suite.runTx({ tx })
 
-  t.equal(res.execResult.exceptionError.error, 'Value overflow')
+  t.equal(res.execResult.exceptionError.error, 'value overflow')
   t.equal(vm.stateManager._checkpointCount, 0)
   t.end()
 })
@@ -104,7 +104,7 @@ tape('should fail when account balance overflows (create)', async t => {
 
   const res = await suite.runTx({ tx })
 
-  t.equal(res.execResult.exceptionError.error, 'Value overflow')
+  t.equal(res.execResult.exceptionError.error, 'value overflow')
   t.equal(vm.stateManager._checkpointCount, 0)
   t.end()
 })
