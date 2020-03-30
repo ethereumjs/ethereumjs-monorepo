@@ -151,24 +151,24 @@ export default class EVM {
     // Load `to` account
     const toAccount = await this._state.getAccount(message.to)
     // Add tx value to the `to` account
-    let overflowError
+    let errorMessage
     if (!message.delegatecall) {
       try {
         await this._addToBalance(toAccount, message)
       } catch (e) {
-        overflowError = e
+        errorMessage = e
       }
     }
 
     // Load code
     await this._loadCode(message)
     // Exit early if there's no code or value transfer overflowed
-    if (!message.code || message.code.length === 0 || overflowError) {
+    if (!message.code || message.code.length === 0 || errorMessage) {
       return {
         gasUsed: new BN(0),
         execResult: {
           gasUsed: new BN(0),
-          exceptionError: overflowError, // Only defined if addToBalance failed
+          exceptionError: errorMessage, // Only defined if addToBalance failed
           returnValue: Buffer.alloc(0),
         },
       }
@@ -225,21 +225,21 @@ export default class EVM {
     toAccount.nonce = new BN(toAccount.nonce).addn(1).toArrayLike(Buffer)
 
     // Add tx value to the `to` account
-    let overflowError
+    let errorMessage
     try {
       await this._addToBalance(toAccount, message)
     } catch (e) {
-      overflowError = e
+      errorMessage = e
     }
 
     // Exit early if there's no contract code or value transfer overflowed
-    if (!message.code || message.code.length === 0 || overflowError) {
+    if (!message.code || message.code.length === 0 || errorMessage) {
       return {
         gasUsed: new BN(0),
         createdAddress: message.to,
         execResult: {
           gasUsed: new BN(0),
-          exceptionError: overflowError, // only defined if addToBalance failed
+          exceptionError: errorMessage, // only defined if addToBalance failed
           returnValue: Buffer.alloc(0),
         },
       }
