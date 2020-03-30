@@ -1,19 +1,19 @@
+import * as tape from 'tape'
 const PrioritizedTaskExecutor = require('../dist/prioritizedTaskExecutor').PrioritizedTaskExecutor
-const tape = require('tape')
 const taskExecutor = new PrioritizedTaskExecutor(2)
 
 tape('prioritized task executor test', function (t) {
   var tasks = [1, 2, 3, 4]
-  var callbacks = []
-  var executionOrder = []
+  var callbacks = [] as any
+  var executionOrder = [] as any
   tasks.forEach(function (task) {
-    taskExecutor.execute(task, function (cb) {
+    taskExecutor.execute(task, function (cb: Function) {
       executionOrder.push(task)
       callbacks.push(cb)
     })
   })
 
-  callbacks.forEach(function (callback) {
+  callbacks.forEach(function (callback: Function) {
     callback()
   })
 

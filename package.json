@@ -8,6 +8,7 @@
     "dist/**/*"
   ],
   "scripts": {
+    "benchmarks": "npm run build && ts-node benchmarks/index.ts",
     "build": "ethereumjs-config-build",
     "prepublishOnly": "npm run test && npm run build",
     "coverage": "nyc --reporter=lcov npm run test:node",
@@ -22,7 +23,7 @@
     "tsc": "ethereumjs-config-tsc",
     "test": "npm run test:node && npm run test:browser",
     "test:browser": "npm run build && karma start karma.conf.js",
-    "test:node": "npm run build && tape test/*.js | tap-prettify -"
+    "test:node": "npm run build && tape -r ts-node/register test/*.ts | tap-prettify -"
   },
   "husky": {
     "hooks": {
@@ -48,6 +49,7 @@
   ],
   "license": "MPL-2.0",
   "dependencies": {
+    "@types/async": "^3.0.8",
     "async": "^2.6.1",
     "ethereumjs-util": "^6.1.0",
     "level-mem": "^3.0.1",
@@ -63,21 +65,23 @@
     "@ethereumjs/config-tslint": "^1.1.1",
     "@types/bn.js": "^4.11.5",
     "@types/levelup": "^3.1.1",
+    "@types/tape": "^4.2.34",
     "browserify": "^16.5.0",
     "husky": "^4.2.3",
     "karma": "^4.4.1",
-    "karma-browserify": "^7.0.0",
     "karma-chrome-launcher": "^3.1.0",
     "karma-firefox-launcher": "^1.3.0",
     "karma-tap": "^4.2.0",
+    "karma-typescript": "^5.0.1",
     "nyc": "^15.0.0",
     "prettier": "^2.0.2",
     "tap-prettify": "^0.0.2",
-    "tape": "^4.13.0",
+    "tape": "^4.13.2",
+    "ts-node": "^8.8.1",
     "tslint": "^5.18.0",
     "typedoc": "next",
     "typedoc-plugin-markdown": "^2.2.16",
-    "typescript": "^3.5.3",
+    "typescript": "^3.7.5",
     "typestrict": "^1.0.2"
   },
   "contributors": [

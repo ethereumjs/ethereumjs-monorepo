@@ -1,9 +1,11 @@
+import * as tape from 'tape'
 const Trie = require('../dist/index').CheckpointTrie
-const describe = require('tape')
+import { CheckpointTrie } from '../dist/checkpointTrie'
+import { BatchDBOp } from '../dist/db'
 
-describe('kv stream test', function(tester) {
+tape('kv stream test', function (tester) {
   var it = tester.test
-  var trie = new Trie()
+  var trie = new Trie() as CheckpointTrie
   var init = [
     {
       type: 'del',
@@ -89,26 +91,28 @@ describe('kv stream test', function(tester) {
       key: Buffer.from('occupssation'),
       value: Buffer.from('Clown'),
     },
-  ]
+  ] as BatchDBOp[]
 
-  var valObj = {}
-  init.forEach(function(i) {
-    if (i.type === 'put') valObj[i.key] = i.value
+  var valObj = {} as any
+  init.forEach(function (i) {
+    if (i.type === 'put') {
+      valObj[String(i.key)] = i.value
+    }
   })
 
-  it('should populate trie', function(t) {
-    trie.batch(init, function() {
+  it('should populate trie', function (t) {
+    trie.batch(init, function () {
       t.end()
     })
   })
 
-  it('should fetch all of the nodes', function(t) {
+  it('should fetch all of the nodes', function (t) {
     var stream = trie.createReadStream()
-    stream.on('data', function(d) {
+    stream.on('data', function (d: any) {
       t.equal(valObj[d.key.toString()].toString(), d.value.toString())
       delete valObj[d.key.toString()]
     })
-    stream.on('end', function() {
+    stream.on('end', function () {
       var keys = Object.keys(valObj)
       t.equal(keys.length, 0)
       t.end()
@@ -116,7 +120,7 @@ describe('kv stream test', function(tester) {
   })
 })
 
-describe('db stream test', function(tester) {
+tape('db stream test', function (tester) {
   var it = tester.test
   var trie = new Trie()
   var init = [
@@ -158,21 +162,21 @@ describe('db stream test', function(tester) {
     e64329dadee2fb8a113b4c88cfe973aeaa9b523d4dc8510b84ca23f9d5bfbd90: true,
     c916d458bfb5f27603c5bd93b00f022266712514a59cde749f19220daffc743f: true,
     '2386bfb0de9cf93902a110f5ab07b917ffc0b9ea599cb7f4f8bb6fd1123c866c': true,
-  }
+  } as any
 
-  it('should populate trie', function(t) {
+  it('should populate trie', function (t) {
     trie.checkpoint()
     trie.batch(init, t.end)
   })
 
-  it('should only fetch nodes in the current trie', function(t) {
+  it('should only fetch nodes in the current trie', function (t) {
     var stream = trie._createScratchReadStream()
-    stream.on('data', function(d) {
+    stream.on('data', function (d: any) {
       var key = d.key.toString('hex')
       t.ok(!!expectedNodes[key])
       delete expectedNodes[key]
     })
-    stream.on('end', function() {
+    stream.on('end', function () {
       t.equal(Object.keys(expectedNodes).length, 0)
       t.end()
     })

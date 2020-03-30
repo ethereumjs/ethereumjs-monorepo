@@ -1,33 +1,33 @@
+import * as tape from 'tape'
+import * as async from 'async'
 const Trie = require('../dist/index').CheckpointTrie
-const async = require('async')
-const tape = require('tape')
 
-tape('offical tests', function(t) {
-  const jsonTests = require('./fixture/trietest.json').tests
+tape('offical tests', function (t) {
+  const jsonTests = require('./fixtures/trietest.json').tests
   const testNames = Object.keys(jsonTests)
   let trie = new Trie()
   async.eachSeries(
     testNames,
-    function(i, done) {
+    function (i, done) {
       let inputs = jsonTests[i].in
       let expect = jsonTests[i].root
 
       async.eachSeries(
         inputs,
-        function(input, done) {
-          for (i = 0; i < 2; i++) {
+        function (input: any, done) {
+          for (let i = 0; i < 2; i++) {
             if (input[i] && input[i].slice(0, 2) === '0x') {
-              input[i] = new Buffer(input[i].slice(2), 'hex')
+              input[i] = Buffer.from(input[i].slice(2), 'hex')
             } else if (input[i] && typeof input[i] === 'string') {
               input[i] = Buffer.from(input[i])
             }
           }
 
-          trie.put(new Buffer(input[0]), input[1], function() {
+          trie.put(Buffer.from(input[0]), input[1], function () {
             done()
           })
         },
-        function() {
+        function () {
           t.equal('0x' + trie.root.toString('hex'), expect)
           trie = new Trie()
           done()
@@ -38,34 +38,34 @@ tape('offical tests', function(t) {
   )
 })
 
-tape('offical tests any order', function(t) {
-  const jsonTests = require('./fixture/trieanyorder.json').tests
+tape('offical tests any order', function (t) {
+  const jsonTests = require('./fixtures/trieanyorder.json').tests
   var testNames = Object.keys(jsonTests)
   var trie = new Trie()
   async.eachSeries(
     testNames,
-    function(i, done) {
+    function (i, done) {
       var test = jsonTests[i]
       var keys = Object.keys(test.in)
 
       async.eachSeries(
         keys,
-        function(key, done) {
+        function (key: any, done) {
           var val = test.in[key]
 
           if (key.slice(0, 2) === '0x') {
-            key = new Buffer(key.slice(2), 'hex')
+            key = Buffer.from(key.slice(2), 'hex')
           }
 
           if (val && val.slice(0, 2) === '0x') {
-            val = new Buffer(val.slice(2), 'hex')
+            val = Buffer.from(val.slice(2), 'hex')
           }
 
-          trie.put(new Buffer(key), new Buffer(val), function() {
+          trie.put(Buffer.from(key), Buffer.from(val), function () {
             done()
           })
         },
-        function() {
+        function () {
           t.equal('0x' + trie.root.toString('hex'), test.root)
           trie = new Trie()
           done()

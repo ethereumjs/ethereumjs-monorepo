@@ -1,15 +1,15 @@
 // https://github.com/ethereum/wiki/wiki/Benchmarks
 'use strict'
-const Trie = require('../')
-const ethUtil = require('ethereumjs-util')
-const async = require('async')
+import * as async from 'async'
+import * as ethUtil from 'ethereumjs-util'
+const Trie = require('../dist/index.js').BaseTrie
 
 const ROUNDS = 1000
 const SYMMETRIC = true
 const ERA_SIZE = 1000
 
 let trie = new Trie()
-let seed = new Buffer(32).fill(0)
+let seed = Buffer.alloc(32).fill(0)
 
 let testName = 'rounds ' + ROUNDS + ' ' + ERA_SIZE + ' ' + SYMMETRIC ? 'sys' : 'rand'
 console.time(testName)
@@ -17,7 +17,7 @@ run(() => {
   console.timeEnd(testName)
 })
 
-function run (cb) {
+function run(cb: any) {
   let i = 0
   async.whilst(
     () => {
@@ -33,12 +33,13 @@ function run (cb) {
         trie.put(seed, val, genRoot)
       }
 
-      function genRoot () {
+      function genRoot() {
         if (i % ERA_SIZE === 0) {
           seed = trie.root
         }
         done()
       }
-    }, cb
+    },
+    cb,
   )
 }

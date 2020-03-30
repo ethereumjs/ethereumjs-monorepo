@@ -1,6 +1,6 @@
 import { keccak256 } from 'ethereumjs-util'
 import { CheckpointTrie } from './checkpointTrie'
-import { ErrorCallback } from './types'
+import { BufferCallback, ProveCallback, ErrorCallback } from './types'
 
 /**
  * You can create a secure Trie where the keys are automatically hashed
@@ -15,12 +15,12 @@ export class SecureTrie extends CheckpointTrie {
     super(...args)
   }
 
-  static prove(trie: SecureTrie, key: Buffer, cb: Function) {
+  static prove(trie: SecureTrie, key: Buffer, cb: ProveCallback) {
     const hash = keccak256(key)
     super.prove(trie, hash, cb)
   }
 
-  static verifyProof(rootHash: Buffer, key: Buffer, proof: Buffer[], cb: Function) {
+  static verifyProof(rootHash: Buffer, key: Buffer, proof: Buffer[], cb: BufferCallback) {
     const hash = keccak256(key)
     super.verifyProof(rootHash, hash, proof, cb)
   }
@@ -31,7 +31,7 @@ export class SecureTrie extends CheckpointTrie {
     return new SecureTrie(db._leveldb, this.root)
   }
 
-  get(key: Buffer, cb: Function) {
+  get(key: Buffer, cb: BufferCallback) {
     const hash = keccak256(key)
     super.get(hash, cb)
   }

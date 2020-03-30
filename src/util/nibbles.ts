@@ -5,8 +5,8 @@
  * @private
  */
 export function stringToNibbles(key: Buffer): number[] {
-  const bkey = new Buffer(key)
-  let nibbles = []
+  const bkey = Buffer.from(key)
+  let nibbles = [] as any
 
   for (let i = 0; i < bkey.length; i++) {
     let q = i * 2
@@ -25,7 +25,7 @@ export function stringToNibbles(key: Buffer): number[] {
  * @private
  */
 export function nibblesToBuffer(arr: number[]): Buffer {
-  let buf = new Buffer(arr.length / 2)
+  let buf = Buffer.alloc(arr.length / 2)
   for (let i = 0; i < buf.length; i++) {
     let q = i * 2
     buf[i] = (arr[q] << 4) + arr[++q]

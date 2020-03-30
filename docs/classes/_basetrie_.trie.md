@@ -391,7 +391,7 @@ ___
 
 ###  del
 
-▸ **del**(`key`: Buffer, `cb`: Function): *void*
+▸ **del**(`key`: Buffer, `cb`: ErrorCallback): *void*
 
 *Defined in [baseTrie.ts:183](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/baseTrie.ts#L183)*
 
@@ -406,7 +406,7 @@ deletes a value given a `key`
 Name | Type |
 ------ | ------ |
 `key` | Buffer |
-`cb` | Function |
+`cb` | ErrorCallback |
 
 **Returns:** *void*
 
@@ -459,7 +459,7 @@ ___
 
 ###  get
 
-▸ **get**(`key`: Buffer, `cb`: Function): *void*
+▸ **get**(`key`: Buffer, `cb`: BufferCallback): *void*
 
 *Defined in [baseTrie.ts:125](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/baseTrie.ts#L125)*
 
@@ -474,7 +474,7 @@ Gets a value given a `key`
 Name | Type | Description |
 ------ | ------ | ------ |
 `key` | Buffer | the key to search for |
-`cb` | Function | A callback `Function` which is given the arguments `err` - for errors that may have occured and `value` - the found value in a `Buffer` or if no value was found `null`  |
+`cb` | BufferCallback | A callback `Function` which is given the arguments `err` - for errors that may have occured and `value` - the found value in a `Buffer` or if no value was found `null`  |
 
 **Returns:** *void*
 
@@ -482,7 +482,7 @@ ___
 
 ###  getRaw
 
-▸ **getRaw**(`key`: Buffer, `cb`: Function): *void*
+▸ **getRaw**(`key`: Buffer, `cb`: BufferCallback): *void*
 
 *Defined in [baseTrie.ts:208](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/baseTrie.ts#L208)*
 
@@ -495,7 +495,7 @@ Retrieves a value directly from key/value db.
 Name | Type |
 ------ | ------ |
 `key` | Buffer |
-`cb` | Function |
+`cb` | BufferCallback |
 
 **Returns:** *void*
 
@@ -584,7 +584,7 @@ ___
 
 ### `Static` prove
 
-▸ **prove**(`trie`: [Trie](_basetrie_.trie.md), `key`: Buffer, `cb`: Function): *void*
+▸ **prove**(`trie`: [Trie](_basetrie_.trie.md), `key`: Buffer, `cb`: ProveCallback): *void*
 
 *Defined in [baseTrie.ts:70](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/baseTrie.ts#L70)*
 
@@ -594,7 +594,7 @@ Name | Type |
 ------ | ------ |
 `trie` | [Trie](_basetrie_.trie.md) |
 `key` | Buffer |
-`cb` | Function |
+`cb` | ProveCallback |
 
 **Returns:** *void*
 
@@ -602,7 +602,7 @@ ___
 
 ### `Static` verifyProof
 
-▸ **verifyProof**(`rootHash`: Buffer, `key`: Buffer, `proofNodes`: Buffer[], `cb`: Function): *void*
+▸ **verifyProof**(`rootHash`: Buffer, `key`: Buffer, `proofNodes`: Buffer[], `cb`: BufferCallback): *void*
 
 *Defined in [baseTrie.ts:85](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/baseTrie.ts#L85)*
 
@@ -613,6 +613,6 @@ Name | Type |
 `rootHash` | Buffer |
 `key` | Buffer |
 `proofNodes` | Buffer[] |
-`cb` | Function |
+`cb` | BufferCallback |
 
 **Returns:** *void*
