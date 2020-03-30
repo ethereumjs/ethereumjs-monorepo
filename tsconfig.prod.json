@@ -7,6 +7,7 @@
       "*": ["definitions/*"]
     },
     "outDir": "./dist",
+    "rootDir": "./src",
     "typeRoots": ["definitions", "node_modules/@types"],
     "declaration": true,
     "esModuleInterop": true,
