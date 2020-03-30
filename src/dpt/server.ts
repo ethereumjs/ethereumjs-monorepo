@@ -207,7 +207,10 @@ export class Server extends EventEmitter {
       }
 
       case 'neighbours': {
-        this.emit('peers', info.data.peers.map((peer: any) => peer.endpoint))
+        this.emit(
+          'peers',
+          info.data.peers.map((peer: any) => peer.endpoint),
+        )
         break
       }
     }
