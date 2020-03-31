@@ -12,8 +12,10 @@ import rlp from 'rlp-encoding'
 const PRIVATE_KEY = randomBytes(32)
 const CHAIN_ID = 1
 
-const BOOTNODES = require('ethereum-common')
-  .bootstrapNodes.filter((node: any) => {
+const Common = require('ethereumjs-common').default
+const config = new Common('mainnet')
+const bootstrapNodes = config.bootstrapNodes()
+const BOOTNODES = bootstrapNodes.filter((node: any) => {
     return node.chainId === CHAIN_ID
   })
   .map((node: any) => {
