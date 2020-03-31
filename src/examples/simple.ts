@@ -1,5 +1,5 @@
 import chalk from 'chalk'
-import { DPT } from '../src'
+import { DPT } from '../index'
 
 const PRIVATE_KEY = 'd772e3d6a001a38064dd23964dd2836239fa0e6cec8b28972a87460a17210fe9'
 const BOOTNODES = require('ethereum-common').bootstrapNodes.map((node: any) => {

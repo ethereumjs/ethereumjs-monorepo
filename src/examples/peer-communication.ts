@@ -1,5 +1,5 @@
-import * as devp2p from '../src'
-import { ETH, Peer } from '../src'
+import * as devp2p from '../index'
+import { ETH, Peer } from '../index'
 import Tx from 'ethereumjs-tx'
 import Block from 'ethereumjs-block'
 import LRUCache from 'lru-cache'
