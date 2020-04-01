@@ -312,7 +312,7 @@ export default class Blockchain implements BlockchainInterface {
    * @hidden
    */
   _setCanonicalGenesisBlock(cb: any): void {
-    const genesisBlock = new Block(Buffer.from([]), { common: this._common })
+    const genesisBlock = new Block(undefined, { common: this._common })
     genesisBlock.setGenesisParams()
     this._putBlockOrHeader(genesisBlock, cb, true)
   }

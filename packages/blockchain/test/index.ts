@@ -875,9 +875,9 @@ test('blockchain test', t => {
     const common = new Common('mainnet')
     const blockchain = new Blockchain({ common: common, validateBlocks: true, validatePow: false })
     const blocks = [
-      new Block(null, { common: common }),
-      new Block(null, { chain: 'mainnet' }),
-      new Block(null, { chain: 'ropsten' }),
+      new Block(undefined, { common: common }),
+      new Block(undefined, { chain: 'mainnet' }),
+      new Block(undefined, { chain: 'ropsten' }),
     ]
 
     blocks[0].setGenesisParams()
