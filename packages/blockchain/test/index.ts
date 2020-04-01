@@ -2,12 +2,12 @@ import * as async from 'async'
 import Common from 'ethereumjs-common'
 import { toBuffer, bufferToInt } from 'ethereumjs-util'
 import * as test from 'tape'
-import Blockchain, { Block } from '../src'
+import Blockchain from '../src'
+import { Block, BlockHeader } from 'ethereumjs-block'
 import { generateBlockchain, generateBlocks, isConsecutive, createTestDB } from './util'
 
 import BN = require('bn.js')
 
-const Block = require('ethereumjs-block')
 const level = require('level-mem')
 const testData = require('./testdata.json')
 
@@ -437,7 +437,7 @@ test('blockchain test', t => {
       if (err) {
         return st.error(err)
       }
-      const forkHeader = new Block.Header()
+      const forkHeader = new BlockHeader()
       forkHeader.number = toBuffer(15)
       forkHeader.parentHash = blocks[14].hash()
       forkHeader.difficulty = forkHeader.canonicalDifficulty(blocks[14])
@@ -464,7 +464,7 @@ test('blockchain test', t => {
   t.test('should delete fork header', async st => {
     const { blockchain, blocks, error } = await generateBlockchain(15)
     st.error(error, 'no error')
-    const forkHeader = new Block.Header()
+    const forkHeader = new BlockHeader()
     forkHeader.number = toBuffer(15)
     forkHeader.parentHash = blocks[14].hash()
     forkHeader.difficulty = forkHeader.canonicalDifficulty(blocks[14])
@@ -669,7 +669,7 @@ test('blockchain test', t => {
       if (err) {
         return st.error(err)
       }
-      const header = new Block.Header()
+      const header = new BlockHeader()
       header.number = toBuffer(1)
       header.parentHash = genesisBlock.hash()
       header.difficulty = header.canonicalDifficulty(genesisBlock)
@@ -762,7 +762,7 @@ test('blockchain test', t => {
 
   t.test('should get latest', st => {
     const blockchain = new Blockchain({ validateBlocks: true, validatePow: false })
-    const headers = [new Block.Header(), new Block.Header()]
+    const headers = [new BlockHeader(), new BlockHeader()]
     const genesisBlock = new Block()
     genesisBlock.setGenesisParams()
     genesisBlock.header.gasLimit = toBuffer(8000000)

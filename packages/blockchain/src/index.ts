@@ -14,13 +14,11 @@ import {
   tdKey,
 } from './util'
 
-const Block = require('ethereumjs-block')
+import { Block, BlockHeader } from 'ethereumjs-block'
 const Ethash = require('ethashjs')
 const Stoplight = require('flow-stoplight')
 const level = require('level-mem')
 const semaphore = require('semaphore')
-
-export type Block = any
 
 export interface BlockchainInterface {
   /**
@@ -314,7 +312,7 @@ export default class Blockchain implements BlockchainInterface {
    * @hidden
    */
   _setCanonicalGenesisBlock(cb: any): void {
-    const genesisBlock = new Block(null, { common: this._common })
+    const genesisBlock = new Block(Buffer.from([]), { common: this._common })
     genesisBlock.setGenesisParams()
     this._putBlockOrHeader(genesisBlock, cb, true)
   }
@@ -451,7 +449,7 @@ export default class Blockchain implements BlockchainInterface {
    */
   _putBlockOrHeader(item: any, cb: any, isGenesis?: boolean) {
     const self = this
-    const isHeader = item instanceof Block.Header
+    const isHeader = item instanceof BlockHeader
     let block = isHeader ? new Block([item.raw, [], []], { common: item._common }) : item
     const header = block.header
     const hash = block.hash()

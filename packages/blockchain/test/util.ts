@@ -3,7 +3,7 @@ import BN = require('bn.js')
 import Blockchain, { Block } from '../src'
 
 const util = require('util')
-const Block = require('ethereumjs-block')
+import { Block } from 'ethereumjs-block'
 const level = require('level-mem')
 
 export const generateBlockchain = async (
