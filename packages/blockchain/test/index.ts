@@ -99,7 +99,7 @@ test('blockchain test', t => {
       const block = new Block()
       block.header.number = toBuffer(blockNumber)
       block.header.parentHash = blocks[blockNumber - 1].hash()
-      block.header.difficulty = block.header.canonicalDifficulty(blocks[blockNumber - 1])
+      block.header.difficulty = toBuffer(block.header.canonicalDifficulty(blocks[blockNumber - 1]))
       block.header.gasLimit = toBuffer(8000000)
       block.header.timestamp = toBuffer(bufferToInt(blocks[blockNumber - 1].header.timestamp) + 1)
       blockchain.putBlock(block, (err?: Error) => {
@@ -132,7 +132,7 @@ test('blockchain test', t => {
     const block = new Block()
     block.header.number = toBuffer(1)
     block.header.parentHash = blocks[0].hash()
-    block.header.difficulty = block.header.canonicalDifficulty(blocks[0])
+    block.header.difficulty = toBuffer(block.header.canonicalDifficulty(blocks[0]))
     block.header.gasLimit = toBuffer(8000000)
     block.header.timestamp = toBuffer(bufferToInt(blocks[0].header.timestamp) + 1)
     blocks.push(block)
@@ -440,7 +440,7 @@ test('blockchain test', t => {
       const forkHeader = new BlockHeader()
       forkHeader.number = toBuffer(15)
       forkHeader.parentHash = blocks[14].hash()
-      forkHeader.difficulty = forkHeader.canonicalDifficulty(blocks[14])
+      forkHeader.difficulty = toBuffer(forkHeader.canonicalDifficulty(blocks[14]))
       forkHeader.gasLimit = toBuffer(8000000)
       forkHeader.timestamp = toBuffer(bufferToInt(blocks[14].header.timestamp) + 1)
       blockchain._heads['staletest'] = blockchain._headHeader
@@ -467,7 +467,7 @@ test('blockchain test', t => {
     const forkHeader = new BlockHeader()
     forkHeader.number = toBuffer(15)
     forkHeader.parentHash = blocks[14].hash()
-    forkHeader.difficulty = forkHeader.canonicalDifficulty(blocks[14])
+    forkHeader.difficulty = toBuffer(forkHeader.canonicalDifficulty(blocks[14]))
     forkHeader.gasLimit = toBuffer(8000000)
     forkHeader.timestamp = toBuffer(bufferToInt(blocks[14].header.timestamp) + 1)
     blockchain._heads['staletest'] = blockchain._headHeader
@@ -672,7 +672,7 @@ test('blockchain test', t => {
       const header = new BlockHeader()
       header.number = toBuffer(1)
       header.parentHash = genesisBlock.hash()
-      header.difficulty = header.canonicalDifficulty(genesisBlock)
+      header.difficulty = toBuffer(header.canonicalDifficulty(genesisBlock))
       header.gasLimit = toBuffer(8000000)
       header.timestamp = toBuffer(bufferToInt(genesisBlock.header.timestamp) + 1)
       blockchain.putHeader(header, (err?: Error) => {
@@ -725,7 +725,7 @@ test('blockchain test', t => {
       const block = new Block()
       block.header.number = toBuffer(1)
       block.header.parentHash = genesisBlock.hash()
-      block.header.difficulty = block.header.canonicalDifficulty(genesisBlock)
+      block.header.difficulty = toBuffer(block.header.canonicalDifficulty(genesisBlock))
       block.header.gasLimit = toBuffer(8000000)
       block.header.timestamp = toBuffer(bufferToInt(genesisBlock.header.timestamp) + 1)
       let cachedHash: Buffer
@@ -760,6 +760,7 @@ test('blockchain test', t => {
     })
   })
 
+  // !!!
   t.test('should get latest', st => {
     const blockchain = new Blockchain({ validateBlocks: true, validatePow: false })
     const headers = [new BlockHeader(), new BlockHeader()]
@@ -774,19 +775,19 @@ test('blockchain test', t => {
       const block = new Block()
       block.header.number = toBuffer(1)
       block.header.parentHash = genesisBlock.hash()
-      block.header.difficulty = block.header.canonicalDifficulty(genesisBlock)
+      block.header.difficulty = toBuffer(block.header.canonicalDifficulty(genesisBlock))
       block.header.gasLimit = toBuffer(8000000)
       block.header.timestamp = toBuffer(bufferToInt(genesisBlock.header.timestamp) + 1)
 
       headers[0].number = toBuffer(1)
       headers[0].parentHash = genesisBlock.hash()
-      headers[0].difficulty = headers[0].canonicalDifficulty(genesisBlock)
+      headers[0].difficulty = toBuffer(headers[0].canonicalDifficulty(genesisBlock))
       headers[0].gasLimit = toBuffer(8000000)
       headers[0].timestamp = toBuffer(bufferToInt(genesisBlock.header.timestamp) + 1)
 
       headers[1].number = toBuffer(2)
       headers[1].parentHash = headers[0].hash()
-      headers[1].difficulty = headers[1].canonicalDifficulty(block)
+      headers[1].difficulty = toBuffer(headers[1].canonicalDifficulty(block))
       headers[1].gasLimit = toBuffer(8000000)
       headers[1].timestamp = toBuffer(bufferToInt(block.header.timestamp) + 1)
 
@@ -884,13 +885,13 @@ test('blockchain test', t => {
 
     blocks[1].header.number = toBuffer(1)
     blocks[1].header.parentHash = blocks[0].hash()
-    blocks[1].header.difficulty = blocks[1].header.canonicalDifficulty(blocks[0])
+    blocks[1].header.difficulty = toBuffer(blocks[1].header.canonicalDifficulty(blocks[0]))
     blocks[1].header.gasLimit = toBuffer(8000000)
     blocks[1].header.timestamp = toBuffer(bufferToInt(blocks[0].header.timestamp) + 1)
 
     blocks[2].header.number = toBuffer(2)
     blocks[2].header.parentHash = blocks[1].hash()
-    blocks[2].header.difficulty = blocks[2].header.canonicalDifficulty(blocks[0])
+    blocks[2].header.difficulty = toBuffer(blocks[2].header.canonicalDifficulty(blocks[0]))
     blocks[2].header.gasLimit = toBuffer(8000000)
     blocks[2].header.timestamp = toBuffer(bufferToInt(blocks[0].header.timestamp) + 2)
 
