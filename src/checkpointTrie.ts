@@ -137,9 +137,7 @@ export class CheckpointTrie extends BaseTrie {
     this.db = this._mainDB
 
     if (commitState) {
-      this._createScratchReadStream(scratch)
-        .pipe(WriteStream(this.db._leveldb))
-        .on('close', cb)
+      this._createScratchReadStream(scratch).pipe(WriteStream(this.db._leveldb)).on('close', cb)
     } else {
       async.nextTick(cb)
     }

@@ -5,7 +5,7 @@ import { TrieReadStream as ReadStream } from './readStream'
 import { PrioritizedTaskExecutor } from './prioritizedTaskExecutor'
 import { callTogether } from './util/async'
 import { stringToNibbles, matchingNibbleLength, doKeysMatch } from './util/nibbles'
-import { ErrorCallback } from './types'
+import { BufferCallback, ErrorCallback } from './types'
 import {
   TrieNode,
   decodeNode,
@@ -19,7 +19,7 @@ import {
 const assert = require('assert')
 const async = require('async')
 const semaphore = require('semaphore')
-const promisify = require('util.promisify')
+const { promisify } = require('util')
 
 /**
  * Use `require('merkel-patricia-tree').BaseTrie` for the base interface. In Ethereum applications
@@ -48,7 +48,7 @@ export class Trie {
   }
 
   static async fromProof(proofNodes: Buffer[], proofTrie?: Trie): Promise<Trie> {
-    let opStack = proofNodes.map(nodeValue => {
+    let opStack = proofNodes.map((nodeValue) => {
       return {
         type: 'put',
         key: ethUtil.keccak(nodeValue),
@@ -69,14 +69,14 @@ export class Trie {
 
   static async prove(trie: Trie, key: Buffer): Promise<Buffer[]> {
     return new Promise((resolve, reject) => {
-      trie.findPath(key, function(
+      trie.findPath(key, function (
         err: Error,
         node: TrieNode,
         remaining: number[],
         stack: TrieNode[],
       ) {
         if (err) return reject(err)
-        let p = stack.map(stackElem => {
+        let p = stack.map((stackElem) => {
           return stackElem.serialize()
         })
         resolve(p)
@@ -121,10 +121,10 @@ export class Trie {
    * Gets a value given a `key`
    * @method get
    * @memberof Trie
-   * @param {Buffer|String} key - the key to search for
+   * @param {Buffer} key - the key to search for
    * @param {Function} cb A callback `Function` which is given the arguments `err` - for errors that may have occured and `value` - the found value in a `Buffer` or if no value was found `null`
    */
-  get(key: Buffer, cb: Function) {
+  get(key: Buffer, cb: BufferCallback) {
     key = ethUtil.toBuffer(key)
 
     this.findPath(key, (err: Error, node: TrieNode, remainder: number[], stack: TrieNode[]) => {
@@ -142,8 +142,8 @@ export class Trie {
    * Stores a given `value` at the given `key`
    * @method put
    * @memberof Trie
-   * @param {Buffer|String} key
-   * @param {Buffer|String} Value
+   * @param {Buffer} key
+   * @param {Buffer} Value
    * @param {Function} cb A callback `Function` which is given the argument `err` - for errors that may have occured
    */
   put(key: Buffer, value: Buffer, cb: ErrorCallback) {
@@ -179,10 +179,10 @@ export class Trie {
    * deletes a value given a `key`
    * @method del
    * @memberof Trie
-   * @param {Buffer|String} key
+   * @param {Buffer} key
    * @param {Function} callback the callback `Function`
    */
-  del(key: Buffer, cb: Function) {
+  del(key: Buffer, cb: ErrorCallback) {
     key = ethUtil.toBuffer(key)
     cb = callTogether(cb, this.sem.leave)
 
@@ -207,7 +207,7 @@ export class Trie {
    * Retrieves a value directly from key/value db.
    * @deprecated
    */
-  getRaw(key: Buffer, cb: Function) {
+  getRaw(key: Buffer, cb: BufferCallback) {
     this.db.get(key, cb)
   }
 
@@ -233,8 +233,8 @@ export class Trie {
     if (isRawNode(node)) {
       cb(null, decodeRawNode(node as Buffer[]))
     } else {
-      this.db.get(node as Buffer, (err: Error, value: Buffer | null) => {
-        let node = null
+      this.db.get(node as Buffer, (err, value) => {
+        let node = null as any
         if (value) {
           node = decodeNode(value)
         } else {
@@ -475,7 +475,7 @@ export class Trie {
   _walkTrie(root: Buffer, onNode: Function, onDone: Function) {
     const self = this
     root = root || this.root
-    onDone = onDone || function() {}
+    onDone = onDone || function () {}
     let aborted = false
     let returnValues: any = []
 
@@ -509,17 +509,17 @@ export class Trie {
       let stopped = false
 
       const walkController = {
-        stop: function() {
+        stop: function () {
           stopped = true
           cb()
         },
         // end all traversal and return values to the onDone cb
-        return: function(...args: any) {
+        return: function (...args: any) {
           aborted = true
           returnValues = args
           cb()
         },
-        next: function() {
+        next: function () {
           if (aborted || stopped) {
             return cb()
           }
@@ -532,7 +532,7 @@ export class Trie {
           if (node instanceof ExtensionNode) {
             children = [[node.key, node.value]]
           } else if (node instanceof BranchNode) {
-            children = node.getChildren().map(b => [[b[0]], b[1]])
+            children = node.getChildren().map((b) => [[b[0]], b[1]])
           }
           async.forEachOf(
             children,
@@ -554,7 +554,7 @@ export class Trie {
             cb,
           )
         },
-        only: function(childIndex: number) {
+        only: function (childIndex: number) {
           if (!(node instanceof BranchNode)) {
             return cb(new Error('Expected branch node'))
           }
@@ -788,11 +788,11 @@ export class Trie {
    * @memberof Trie
    * @example
    * var ops = [
-   *    { type: 'del', key: 'father' }
-   *  , { type: 'put', key: 'name', value: 'Yuri Irsenovich Kim' }
-   *  , { type: 'put', key: 'dob', value: '16 February 1941' }
-   *  , { type: 'put', key: 'spouse', value: 'Kim Young-sook' }
-   *  , { type: 'put', key: 'occupation', value: 'Clown' }
+   *    { type: 'del', key: Buffer.from('father') }
+   *  , { type: 'put', key: Buffer.from('name'), value: Buffer.from('Yuri Irsenovich Kim') }
+   *  , { type: 'put', key: Buffer.from('dob'), value: Buffer.from('16 February 1941') }
+   *  , { type: 'put', key: Buffer.from('spouse'), value: Buffer.from('Kim Young-sook') }
+   *  , { type: 'put', key: Buffer.from('occupation'), value: Buffer.from('Clown') }
    * ]
    * trie.batch(ops)
    * @param {Array} ops
