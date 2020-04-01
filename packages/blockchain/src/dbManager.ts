@@ -14,7 +14,7 @@ import {
 import BN = require('bn.js')
 
 const level = require('level-mem')
-const Block = require('ethereumjs-block')
+import { Block, BlockHeader } from 'ethereumjs-block'
 
 /**
  * Abstraction over a DB to facilitate storing/fetching blockchain-related
@@ -108,7 +108,7 @@ export default class DBManager {
   async getHeader(hash: Buffer, number: BN) {
     const key = headerKey(number, hash)
     const encodedHeader = await this.get(key, { cache: 'header' })
-    return new Block.Header(rlp.decode(encodedHeader), {
+    return new BlockHeader(rlp.decode(encodedHeader), {
       common: this._common,
     })
   }
