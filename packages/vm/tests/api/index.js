@@ -17,17 +17,25 @@ tape('VM with default blockchain', (t) => {
     st.end()
   })
 
-  t.test('should be able to activate precompiles', (st) => {
+  t.test('should be able to activate precompiles', async (st) => {
     let vm = new VM({ activatePrecompiles: true })
-    st.notEqual(vm.stateManager._trie.root, util.KECCAK256_RLP, 'it has different root')
+    await vm.init()
+    st.notDeepEqual(vm.stateManager._trie.root, util.KECCAK256_RLP, 'it has different root')
     st.end()
   })
 
-  t.test('should work with trie (state) provided', (st) => {
+  t.test('should instantiate with async constructor', async (st) => {
+    let vm = await VM.create({ activatePrecompiles: true })
+    st.notDeepEqual(vm.stateManager._trie.root, util.KECCAK256_RLP, 'it has different root')
+    st.end()
+  })
+
+  t.test('should work with trie (state) provided', async (st) => {
     let trie = new Trie()
     trie.isTestTrie = true
     let vm = new VM({ state: trie, activatePrecompiles: true })
-    st.notEqual(vm.stateManager._trie.root, util.KECCAK256_RLP, 'it has different root')
+    await vm.init()
+    st.notDeepEqual(vm.stateManager._trie.root, util.KECCAK256_RLP, 'it has different root')
     st.ok(vm.stateManager._trie.isTestTrie, 'it works on trie provided')
     st.end()
   })
@@ -42,17 +50,19 @@ tape('VM with default blockchain', (t) => {
     st.end()
   })
 
-  t.test('should accept a common object as option', (st) => {
+  t.test('should accept a common object as option', async (st) => {
     const common = new Common('mainnet', 'istanbul')
 
     const vm = new VM({ common })
+    await vm.init()
     st.equal(vm._common, common)
 
     st.end()
   })
 
-  t.test('should only accept valid chain and fork', (st) => {
+  t.test('should only accept valid chain and fork', async (st) => {
     let vm = new VM({ chain: 'ropsten', hardfork: 'byzantium' })
+    await vm.init()
     st.equal(vm.stateManager._common.param('gasPrices', 'ecAdd'), 500)
 
     try {
@@ -73,8 +83,9 @@ tape('VM with default blockchain', (t) => {
 })
 
 tape('VM with blockchain', (t) => {
-  t.test('should instantiate', (st) => {
+  t.test('should instantiate', async (st) => {
     const vm = setupVM()
+    await vm.init()
     st.deepEqual(vm.stateManager._trie.root, util.KECCAK256_RLP, 'it has default trie')
     st.end()
   })
@@ -87,6 +98,8 @@ tape('VM with blockchain', (t) => {
 
   t.test('should run blockchain with mocked runBlock', async (st) => {
     const vm = setupVM({ chain: 'goerli' })
+    await vm.init()
+
     const genesis = new Block(Buffer.from(testData.genesisRLP.slice(2), 'hex'), { common: vm._common })
     const block = new Block(Buffer.from(testData.blocks[0].rlp.slice(2), 'hex'), { common: vm._common })
 
@@ -114,6 +127,7 @@ tape('VM with blockchain', (t) => {
 
   t.test('should run blockchain with blocks', async (st) => {
     const vm = setupVM({ chain: 'goerli' })
+    await vm.init()
     const genesis = new Block(Buffer.from(testData.genesisRLP.slice(2), 'hex'), { common: vm._common })
     const block = new Block(Buffer.from(testData.blocks[0].rlp.slice(2), 'hex'), { common: vm._common })
 
@@ -135,8 +149,10 @@ tape('VM with blockchain', (t) => {
     st.end()
   })
 
-  t.test('should pass the correct Common object when copying the VM', st => {
+  t.test('should pass the correct Common object when copying the VM', async (st) => {
     const vm = setupVM({ chain: 'goerli', hardfork: 'byzantium' })
+    await vm.init()
+
     st.equal(vm._common.chainName(), 'goerli')
     st.equal(vm._common.hardfork(), 'byzantium')
 
