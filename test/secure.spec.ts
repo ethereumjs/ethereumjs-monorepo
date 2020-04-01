@@ -37,15 +37,11 @@ tape('SecureTrie proof', function (t) {
         function (cb) {
           trie.put(Buffer.from('key1aa'), Buffer.from('01234'), cb)
         },
-        function (cb) {
-          SecureTrie.prove(trie, Buffer.from('key1aa'), function (err, prove) {
-            if (err) return cb(err)
-            SecureTrie.verifyProof(trie.root, Buffer.from('key1aa'), prove!, function (err, val) {
-              if (err) return cb(err)
-              st.equal(val!.toString('utf8'), '01234')
-              cb()
-            })
-          })
+        async function () {
+          const proof = await Trie.prove(trie, Buffer.from('key1aa'))
+          const val = await Trie.verifyProof(trie.root, Buffer.from('key1aa'), proof)
+          st.equal(val.toString('utf8'), '01234')
+          st.end()
         },
       ],
       function (err) {
