@@ -1,8 +1,9 @@
 # ethereumjs-devp2p
 
-[![NPM Package](https://img.shields.io/npm/v/ethereumjs-devp2p.svg?style=flat-square)](https://www.npmjs.org/package/ethereumjs-devp2p)
-[![Build Status](https://travis-ci.org/ethereumjs/ethereumjs-devp2p.svg?branch=master)](https://travis-ci.org/ethereumjs/ethereumjs-devp2p)
-[![Coverage Status](https://img.shields.io/coveralls/ethereumjs/ethereumjs-devp2p.svg?style=flat-square)](https://coveralls.io/r/ethereumjs/ethereumjs-devp2p)
+[![NPM Package](https://img.shields.io/npm/v/ethereumjs-devp2p.svg)](https://www.npmjs.org/package/ethereumjs-devp2p)
+[![Actions Status](https://github.com/ethereumjs/ethereumjs-devp2p/workflows/Build/badge.svg)](https://github.com/ethereumjs/ethereumjs-devp2p/actions)
+[![Coverage Status](https://img.shields.io/coveralls/ethereumjs/ethereumjs-devp2p.svg)](https://coveralls.io/r/ethereumjs/ethereumjs-devp2p)
+
 [![js-standard-style](https://cdn.rawgit.com/feross/standard/master/badge.svg)](https://github.com/feross/standard)
 
 This library bundles different components for lower-level peer-to-peer connection and message exchange:
@@ -369,9 +370,9 @@ Remove peer: 52.169.42.101:30303 (peer disconnect, reason code: 16) (total: 1)
 
 The following is a list of major implementations of the `devp2p` stack in other languages:
 
-- [pydevp2p](https://github.com/ethereum/pydevp2p) (Python)
-- [Go Ethereum](https://github.com/ethereum/go-ethereum/tree/master/p2p) (Go)
-- [Exthereum](https://github.com/exthereum/exth_crypto) (Elixir)
+- Python: [pydevp2p](https://github.com/ethereum/pydevp2p)
+- Go: [Go Ethereum](https://github.com/ethereum/go-ethereum/tree/master/p2p)
+- Elixir: [Exthereum](https://github.com/exthereum/exth_crypto)
 
 ### Links
 
