@@ -49,7 +49,6 @@ export default function blockFromRpc(
       block.transactions.push(tx)
     }
   }
-
   return block
 }
 
@@ -61,6 +60,7 @@ function normalizeTxParams(_txParams: any) {
   // strict byte length checking
   txParams.to = txParams.to ? ethUtil.setLengthLeft(ethUtil.toBuffer(txParams.to), 20) : null
   // v as raw signature value {0,1}
-  txParams.v = txParams.v < 27 ? txParams.v + 27 : txParams.v
+  const v: number = txParams.v
+  txParams.v = v < 27 ? v + 27 : v
   return txParams
 }
