@@ -1,0 +1,17 @@
+{
+  "extends": "@ethereumjs/config-tsc",
+  "exclude": ["test", "examples", "node_modules", "dist"],
+  "compilerOptions": {
+    "baseUrl": "./",
+    "paths": {
+      "*": ["definitions/*"]
+    },
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "typeRoots": ["definitions", "node_modules/@types"],
+    "declaration": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "downlevelIteration": true
+  }
+}

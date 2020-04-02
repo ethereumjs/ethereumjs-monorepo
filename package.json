@@ -26,9 +26,11 @@
     "Holger Drewes <holger.drewes@gmail.com>"
   ],
   "files": [
-    "lib"
+    "src/**/*.js",
+    "src/**/*.d.ts",
+    "src/**/*.map"
   ],
-  "main": "./lib/index.js",
+  "main": "dist/src/index.js",
   "repository": {
     "type": "git",
     "url": "https://github.com/ethereumjs/ethereumjs-devp2p.git"
@@ -37,47 +39,63 @@
     "node": ">=6.0"
   },
   "scripts": {
-    "coverage": "nyc npm run test && nyc report --reporter=text-lcov > .nyc_output/lcov.info",
-    "coveralls": "npm run coverage && coveralls <.nyc_output/lcov.info",
-    "build": "babel src -d lib",
-    "integration": "tape -r babel-register test/integration/*.js",
-    "lint": "standard",
-    "prepublish": "npm run build",
-    "test": "npm run lint && npm run unit && npm run integration",
-    "unit": "tape -r babel-register test/*.js"
+    "build": "ethereumjs-config-build",
+    "prepublishOnly": "npm run test && npm run build",
+    "coverage": "ethereumjs-config-coverage",
+    "coveralls": "ethereumjs-config-coveralls",
+    "docs:build": "typedoc --out docs --mode file --readme none --theme markdown --mdEngine github --excludeNotExported src",
+    "format": "ethereumjs-config-format",
+    "format:fix": "ethereumjs-config-format-fix",
+    "tslint": "ethereumjs-config-tslint",
+    "tslint:fix": "ethereumjs-config-tslint-fix",
+    "tsc": "ethereumjs-config-tsc",
+    "lint": "ethereumjs-config-lint",
+    "lint:fix": "ethereumjs-config-lint-fix",
+    "test": "ts-node node_modules/tape/bin/tape ./test/index.ts"
   },
   "dependencies": {
     "babel-runtime": "^6.11.6",
     "bl": "^1.1.2",
     "debug": "^2.2.0",
+    "ethereumjs-tx": "^1.3.7",
     "inherits": "^2.0.1",
     "ip": "^1.1.3",
     "k-bucket": "^3.2.1",
     "keccak": "^1.0.0",
-    "lru-cache": "^4.0.1",
+    "lru-cache": "^5.1.1",
     "ms": "^0.7.1",
     "rlp-encoding": "^3.0.0",
     "safe-buffer": "^5.1.1",
     "secp256k1": "^3.1.0"
   },
   "devDependencies": {
+    "@ethereumjs/config-nyc": "^1.1.1",
+    "@ethereumjs/config-prettier": "^1.1.1",
+    "@ethereumjs/config-tsc": "^1.1.1",
+    "@ethereumjs/config-tslint": "^1.1.1",
+    "@types/async": "^2.4.1",
+    "@types/bl": "^2.1.0",
+    "@types/chalk": "^2.2.0",
+    "@types/debug": "^4.1.4",
+    "@types/ethereumjs-tx": "^1.0.1",
+    "@types/ip": "^1.1.0",
+    "@types/lru-cache": "^5.1.0",
+    "@types/ms": "^0.7.30",
+    "@types/secp256k1": "3.5.0",
+    "@types/tape": "^4.2.33",
     "async": "^2.6.0",
-    "babel-cli": "^6.16.0",
-    "babel-eslint": "^7.0.0",
-    "babel-plugin-transform-class-properties": "^6.16.0",
-    "babel-plugin-transform-runtime": "^6.15.0",
-    "babel-preset-env": "^1.6.1",
-    "babel-register": "^6.14.0",
-    "chalk": "^1.1.3",
+    "chalk": "^2.4.2",
     "coveralls": "^3.0.0",
-    "ethereum-common": "~0.2.0",
     "ethereumjs-block": "^1.3.0",
-    "ethereumjs-tx": "^1.1.1",
+    "ethereumjs-common": "^1.5.0",
     "nyc": "^11.4.1",
+    "prettier": "^1.17.0",
     "standard": "*",
-    "tape": "^4.5.1"
-  },
-  "standard": {
-    "parser": "babel-eslint"
+    "tape": "^4.5.1",
+    "ts-node": "^8.1.0",
+    "typedoc": "^0.14.2",
+    "typedoc-plugin-markdown": "^1.2.0",
+    "typescript": "^3.4.5",
+    "typestrict": "^1.0.2"
   }
 }
