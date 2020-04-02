@@ -78,6 +78,7 @@ Other changes along with the `TypeScript` transition PR
 [3.0.0]: https://github.com/ethereumjs/ethereumjs-vm/compare/%40ethereumjs%2Fblock%402.2.0...%40ethereumjs%2Fblock%403.0.0
 
 ## [2.2.2] - 2019-12-17
+
 **MuirGlacier** support by updating to the new difficulty formula as stated
 in [EIP-2384](https://eips.ethereum.org/EIPS/eip-2384).
 
@@ -89,6 +90,7 @@ the `v3.0.0` which contains breaking changes.
 [2.2.2]: https://github.com/ethereumjs/ethereumjs-vm/compare/%40ethereumjs%2Fblock%402.2.1...%40ethereumjs%2Fblock%402.2.2
 
 ## [2.2.1] - 2019-11-14
+
 **Istanbul** support by updating to the most recent `ethereumjs-tx` version
 [v2.1.1](https://github.com/ethereumjs/ethereumjs-tx/releases/tag/v2.1.1).
 
@@ -98,7 +100,6 @@ master since the `v2.2.0` release and only backports the most recent
 to go through migration to the `v3.0.0` which contains breaking changes.
 
 [2.2.1]: https://github.com/ethereumjs/ethereumjs-vm/compare/%40ethereumjs%2Fblock%402.2.0...%40ethereumjs%2Fblock%402.2.1
-
 
 ## [2.2.0] - 2019-02-06
 
