@@ -142,8 +142,12 @@ test('blockchain test', t => {
         st.error(err, 'no error')
         blockchain.getBlock(1, (err?: Error, block?: Block) => {
           st.error(err, 'no error')
-          st.equal(block.hash().toString('hex'), blocks[1].hash().toString('hex'))
-          st.end()
+          if (block) {
+            st.equal(block.hash().toString('hex'), blocks[1].hash().toString('hex'))
+            st.end()
+          } else {
+            st.fail('block is not defined!')
+          }
         })
       })
     })
@@ -158,8 +162,12 @@ test('blockchain test', t => {
       st.error(err, 'no error')
       blockchain.getBlock(genesisBlock.hash(), (err?: Error, block?: Block) => {
         st.error(err, 'no error')
-        st.equal(block.hash().toString('hex'), genesisBlock.hash().toString('hex'))
-        st.end()
+        if (block) {
+          st.equal(block.hash().toString('hex'), genesisBlock.hash().toString('hex'))
+          st.end()
+        } else {
+          st.fail('block is not defined!')
+        }
       })
     })
   })
@@ -370,7 +378,7 @@ test('blockchain test', t => {
   })
 
   t.test('should catch iterator func error', async st => {
-    const { blockchain, blocks, error } = await generateBlockchain(25)
+    const { blockchain, error } = await generateBlockchain(25)
     st.error(error, 'no error')
     blockchain.iterator(
       'error',
@@ -585,9 +593,13 @@ test('blockchain test', t => {
         if (err) {
           return st.error(err)
         }
-        st.equals(head.hash().toString('hex'), genesis.hash().toString('hex'), 'should get head')
-        st.equals(blockchain._heads['head0'].toString('hex'), 'abcd', 'should get state root heads')
-        st.end()
+        if (genesis) {
+          st.equals(head.hash().toString('hex'), genesis.hash().toString('hex'), 'should get head')
+          st.equals(blockchain._heads['head0'].toString('hex'), 'abcd', 'should get state root heads')
+          st.end()
+        } else {
+          st.fail()
+        }
       })
     })
   })
@@ -626,6 +638,9 @@ test('blockchain test', t => {
     createTestDB((err?: Error, db?: any, genesis?: Block) => {
       if (err) {
         return st.error(err)
+      }
+      if (!genesis) {
+        return st.fail('genesis not defined!')
       }
       const blockchain = new Blockchain({ db: db })
       async.series(
@@ -746,6 +761,9 @@ test('blockchain test', t => {
               if (err) {
                 return st.error(err)
               }
+              if (!block) {
+                return st.fail('block not defined!')
+              }
               st.equals(
                 cachedHash.toString('hex'),
                 block.hash().toString('hex'),
@@ -853,6 +871,9 @@ test('blockchain test', t => {
                     blockchain.getLatestBlock((err?: Error, getBlock?: Block) => {
                       if (err) {
                         return st.error(err)
+                      }
+                      if (!getBlock) {
+                        return st.fail('getBlock not defined!')
                       }
                       t.equals(
                         getBlock.hash().toString('hex'),
