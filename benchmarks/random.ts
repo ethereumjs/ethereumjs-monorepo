@@ -1,45 +1,42 @@
 // https://github.com/ethereum/wiki/wiki/Benchmarks
 'use strict'
-import * as async from 'async'
-import * as ethUtil from 'ethereumjs-util'
-const Trie = require('../dist/index.js').BaseTrie
+import { keccak256 } from 'ethereumjs-util'
+import { BaseTrie } from '../dist/index.js'
 
 const ROUNDS = 1000
 const SYMMETRIC = true
 const ERA_SIZE = 1000
 
-let trie = new Trie()
+let trie = new BaseTrie()
 let seed = Buffer.alloc(32).fill(0)
 
-let testName = 'rounds ' + ROUNDS + ' ' + ERA_SIZE + ' ' + SYMMETRIC ? 'sys' : 'rand'
-console.time(testName)
-run(() => {
+const go = async () => {
+  let testName = `rounds ${ROUNDS} ${ERA_SIZE} ${SYMMETRIC ? 'sys' : 'rand'}`
+  console.time(testName)
+  await run()
   console.timeEnd(testName)
-})
-
-function run(cb: any) {
-  let i = 0
-  async.whilst(
-    () => {
-      i++
-      return i <= ROUNDS
-    },
-    function (done) {
-      seed = ethUtil.keccak256(seed)
-      if (SYMMETRIC) {
-        trie.put(seed, seed, genRoot)
-      } else {
-        let val = ethUtil.keccak256(seed)
-        trie.put(seed, val, genRoot)
-      }
-
-      function genRoot() {
-        if (i % ERA_SIZE === 0) {
-          seed = trie.root
-        }
-        done()
-      }
-    },
-    cb,
-  )
 }
+
+const run = async (): Promise<void> => {
+  let i = 0
+  while (i <= ROUNDS) {
+    seed = keccak256(seed)
+
+    const genRoot = () => {
+      if (i % ERA_SIZE === 0) {
+        seed = trie.root
+      }
+    }
+
+    if (SYMMETRIC) {
+      await trie.put(seed, seed)
+      genRoot()
+    } else {
+      let val = keccak256(seed)
+      await trie.put(seed, val)
+      genRoot()
+    }
+  }
+}
+
+go()

@@ -16,23 +16,17 @@ export class ScratchReadStream extends Readable {
     this._started = false
   }
 
-  _read() {
+  async _read() {
     if (!this._started) {
       this._started = true
-      this.trie._findDbNodes(
-        (nodeRef: Buffer, node: TrieNode, key: number[], next: Function) => {
-          this.push({
-            key: nodeRef,
-            value: node.serialize(),
-          })
-
-          next()
-        },
-        () => {
-          // close stream
-          this.push(null)
-        },
-      )
+      await this.trie._findDbNodes((nodeRef, node, key, next) => {
+        this.push({
+          key: nodeRef,
+          value: node.serialize(),
+        })
+        next()
+      })
+      this.push(null)
     }
   }
 }

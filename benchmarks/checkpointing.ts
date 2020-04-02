@@ -1,12 +1,12 @@
-import * as async from 'async'
 import * as crypto from 'crypto'
-const Trie = require('../dist/index.js').CheckpointTrie
+import { CheckpointTrie } from '../dist/index.js'
 
-let iterations = 500
-let samples = 20
+const iterations = 500
+const samples = 20
 let i = 0
+let avg = [0, 0]
 
-function iterTest(numOfIter: number, cb: Function) {
+const iterTest = async (numOfIter: number): Promise<Array<number>> => {
   let vals = [] as any
   let keys = [] as any
 
@@ -17,44 +17,32 @@ function iterTest(numOfIter: number, cb: Function) {
 
   let hrstart = process.hrtime()
   let numOfOps = 0
-  let trie = new Trie()
+  let trie = new CheckpointTrie()
 
   for (i = 0; i < numOfIter; i++) {
-    trie.put(vals[i], keys[i], function () {
-      trie.checkpoint()
-      trie.get(Buffer.from('test'), function () {
-        numOfOps++
-        if (numOfOps === numOfIter) {
-          const hrend = process.hrtime(hrstart)
-          cb(hrend)
-        }
-      })
-    })
+    await trie.put(vals[i], keys[i])
+    trie.checkpoint()
+    const value = await trie.get(Buffer.from('test'))
+    numOfOps++
+    if (numOfOps === numOfIter) {
+      const hrend = process.hrtime(hrstart)
+      return hrend
+    }
   }
 }
 
-i = 0
-let avg = [0, 0]
+const go = async () => {
+  while (i <= samples) {
+    const hrend = await iterTest(iterations)
+    avg[0] += hrend[0]
+    avg[1] += hrend[1]
+    console.info('Execution time (hr): %ds %dms', hrend[0], hrend[1] / 1000000)
+  }
+  return console.info(
+    'Average Execution time (hr): %ds %dms',
+    avg[0] / samples,
+    avg[1] / 1000000 / samples,
+  )
+}
 
-async.whilst(
-  function () {
-    i++
-    return i <= samples
-  },
-  function (done) {
-    iterTest(iterations, function (hrend: Array<number>) {
-      avg[0] += hrend[0]
-      avg[1] += hrend[1]
-
-      console.info('Execution time (hr): %ds %dms', hrend[0], hrend[1] / 1000000)
-      done()
-    })
-  },
-  function () {
-    console.info(
-      'Average Execution time (hr): %ds %dms',
-      avg[0] / samples,
-      avg[1] / 1000000 / samples,
-    )
-  },
-)
+go()

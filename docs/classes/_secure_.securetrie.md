@@ -57,12 +57,9 @@ It has the same methods and constructor as `Trie`.
 * [copy](_secure_.securetrie.md#copy)
 * [createReadStream](_secure_.securetrie.md#createreadstream)
 * [del](_secure_.securetrie.md#del)
-* [delRaw](_secure_.securetrie.md#delraw)
 * [findPath](_secure_.securetrie.md#findpath)
 * [get](_secure_.securetrie.md#get)
-* [getRaw](_secure_.securetrie.md#getraw)
 * [put](_secure_.securetrie.md#put)
-* [putRaw](_secure_.securetrie.md#putraw)
 * [revert](_secure_.securetrie.md#revert)
 * [setRoot](_secure_.securetrie.md#setroot)
 * [fromProof](_secure_.securetrie.md#static-fromproof)
@@ -77,7 +74,7 @@ It has the same methods and constructor as `Trie`.
 
 *Overrides [CheckpointTrie](_checkpointtrie_.checkpointtrie.md).[constructor](_checkpointtrie_.checkpointtrie.md#constructor)*
 
-*Defined in [secure.ts:13](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/secure.ts#L13)*
+*Defined in [secure.ts:12](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/secure.ts#L12)*
 
 **Parameters:**
 
@@ -95,7 +92,7 @@ Name | Type |
 
 *Inherited from [Trie](_basetrie_.trie.md).[EMPTY_TRIE_ROOT](_basetrie_.trie.md#empty_trie_root)*
 
-*Defined in [baseTrie.ts:35](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/baseTrie.ts#L35)*
+*Defined in [baseTrie.ts:44](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/baseTrie.ts#L44)*
 
 ___
 
@@ -105,7 +102,7 @@ ___
 
 *Inherited from [CheckpointTrie](_checkpointtrie_.checkpointtrie.md).[_checkpoints](_checkpointtrie_.checkpointtrie.md#_checkpoints)*
 
-*Defined in [checkpointTrie.ts:14](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/checkpointTrie.ts#L14)*
+*Defined in [checkpointTrie.ts:12](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/checkpointTrie.ts#L12)*
 
 ___
 
@@ -115,7 +112,7 @@ ___
 
 *Inherited from [CheckpointTrie](_checkpointtrie_.checkpointtrie.md).[_mainDB](_checkpointtrie_.checkpointtrie.md#_maindb)*
 
-*Defined in [checkpointTrie.ts:12](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/checkpointTrie.ts#L12)*
+*Defined in [checkpointTrie.ts:10](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/checkpointTrie.ts#L10)*
 
 ___
 
@@ -125,7 +122,7 @@ ___
 
 *Inherited from [CheckpointTrie](_checkpointtrie_.checkpointtrie.md).[_scratch](_checkpointtrie_.checkpointtrie.md#_scratch)*
 
-*Defined in [checkpointTrie.ts:13](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/checkpointTrie.ts#L13)*
+*Defined in [checkpointTrie.ts:11](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/checkpointTrie.ts#L11)*
 
 ___
 
@@ -135,7 +132,7 @@ ___
 
 *Inherited from [Trie](_basetrie_.trie.md).[db](_basetrie_.trie.md#db)*
 
-*Defined in [baseTrie.ts:36](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/baseTrie.ts#L36)*
+*Defined in [baseTrie.ts:45](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/baseTrie.ts#L45)*
 
 ## Accessors
 
@@ -145,7 +142,7 @@ ___
 
 *Inherited from [CheckpointTrie](_checkpointtrie_.checkpointtrie.md).[isCheckpoint](_checkpointtrie_.checkpointtrie.md#ischeckpoint)*
 
-*Defined in [checkpointTrie.ts:29](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/checkpointTrie.ts#L29)*
+*Defined in [checkpointTrie.ts:27](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/checkpointTrie.ts#L27)*
 
 Is the trie during a checkpoint phase?
 
@@ -159,7 +156,7 @@ ___
 
 *Inherited from [Trie](_basetrie_.trie.md).[root](_basetrie_.trie.md#root)*
 
-*Defined in [baseTrie.ts:105](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/baseTrie.ts#L105)*
+*Defined in [baseTrie.ts:107](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/baseTrie.ts#L107)*
 
 **Returns:** *Buffer*
 
@@ -167,7 +164,7 @@ ___
 
 *Inherited from [Trie](_basetrie_.trie.md).[root](_basetrie_.trie.md#root)*
 
-*Defined in [baseTrie.ts:101](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/baseTrie.ts#L101)*
+*Defined in [baseTrie.ts:103](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/baseTrie.ts#L103)*
 
 **Parameters:**
 
@@ -181,11 +178,11 @@ Name | Type |
 
 ###  _createInitialNode
 
-▸ **_createInitialNode**(`key`: Buffer, `value`: Buffer, `cb`: ErrorCallback): *void*
+▸ **_createInitialNode**(`key`: Buffer, `value`: Buffer): *Promise‹void›*
 
 *Inherited from [Trie](_basetrie_.trie.md).[_createInitialNode](_basetrie_.trie.md#_createinitialnode)*
 
-*Defined in [baseTrie.ts:737](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/baseTrie.ts#L737)*
+*Defined in [baseTrie.ts:696](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/baseTrie.ts#L696)*
 
 **Parameters:**
 
@@ -193,9 +190,8 @@ Name | Type |
 ------ | ------ |
 `key` | Buffer |
 `value` | Buffer |
-`cb` | ErrorCallback |
 
-**Returns:** *void*
+**Returns:** *Promise‹void›*
 
 ___
 
@@ -205,7 +201,7 @@ ___
 
 *Inherited from [CheckpointTrie](_checkpointtrie_.checkpointtrie.md).[_createScratchReadStream](_checkpointtrie_.checkpointtrie.md#private-_createscratchreadstream)*
 
-*Defined in [checkpointTrie.ts:152](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/checkpointTrie.ts#L152)*
+*Defined in [checkpointTrie.ts:147](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/checkpointTrie.ts#L147)*
 
 Returns a `ScratchReadStream` based on the state updates
 since checkpoint.
@@ -224,11 +220,11 @@ ___
 
 ###  _deleteNode
 
-▸ **_deleteNode**(`k`: Buffer, `stack`: TrieNode[], `cb`: Function): *any*
+▸ **_deleteNode**(`k`: Buffer, `stack`: TrieNode[]): *Promise‹void›*
 
 *Inherited from [Trie](_basetrie_.trie.md).[_deleteNode](_basetrie_.trie.md#_deletenode)*
 
-*Defined in [baseTrie.ts:619](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/baseTrie.ts#L619)*
+*Defined in [baseTrie.ts:579](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/baseTrie.ts#L579)*
 
 **Parameters:**
 
@@ -236,9 +232,8 @@ Name | Type |
 ------ | ------ |
 `k` | Buffer |
 `stack` | TrieNode[] |
-`cb` | Function |
 
-**Returns:** *any*
+**Returns:** *Promise‹void›*
 
 ___
 
@@ -248,7 +243,7 @@ ___
 
 *Inherited from [CheckpointTrie](_checkpointtrie_.checkpointtrie.md).[_enterCpMode](_checkpointtrie_.checkpointtrie.md#private-_entercpmode)*
 
-*Defined in [checkpointTrie.ts:125](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/checkpointTrie.ts#L125)*
+*Defined in [checkpointTrie.ts:118](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/checkpointTrie.ts#L118)*
 
 Enter into checkpoint mode.
 
@@ -258,11 +253,11 @@ ___
 
 ### `Private` _exitCpMode
 
-▸ **_exitCpMode**(`commitState`: boolean, `cb`: Function): *void*
+▸ **_exitCpMode**(`commitState`: boolean): *Promise‹void›*
 
 *Inherited from [CheckpointTrie](_checkpointtrie_.checkpointtrie.md).[_exitCpMode](_checkpointtrie_.checkpointtrie.md#private-_exitcpmode)*
 
-*Defined in [checkpointTrie.ts:134](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/checkpointTrie.ts#L134)*
+*Defined in [checkpointTrie.ts:127](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/checkpointTrie.ts#L127)*
 
 Exit from checkpoint mode.
 
@@ -271,47 +266,44 @@ Exit from checkpoint mode.
 Name | Type |
 ------ | ------ |
 `commitState` | boolean |
-`cb` | Function |
 
-**Returns:** *void*
+**Returns:** *Promise‹void›*
 
 ___
 
 ###  _findDbNodes
 
-▸ **_findDbNodes**(`onFound`: Function, `cb`: Function): *void*
+▸ **_findDbNodes**(`onFound`: FoundNode): *Promise‹void›*
 
 *Inherited from [Trie](_basetrie_.trie.md).[_findDbNodes](_basetrie_.trie.md#_finddbnodes)*
 
-*Defined in [baseTrie.ts:348](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/baseTrie.ts#L348)*
+*Defined in [baseTrie.ts:320](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/baseTrie.ts#L320)*
 
 **Parameters:**
 
 Name | Type |
 ------ | ------ |
-`onFound` | Function |
-`cb` | Function |
+`onFound` | FoundNode |
 
-**Returns:** *void*
+**Returns:** *Promise‹void›*
 
 ___
 
 ###  _findValueNodes
 
-▸ **_findValueNodes**(`onFound`: Function, `cb`: Function): *void*
+▸ **_findValueNodes**(`onFound`: FoundNode): *Promise‹void›*
 
 *Inherited from [Trie](_basetrie_.trie.md).[_findValueNodes](_basetrie_.trie.md#_findvaluenodes)*
 
-*Defined in [baseTrie.ts:322](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/baseTrie.ts#L322)*
+*Defined in [baseTrie.ts:293](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/baseTrie.ts#L293)*
 
 **Parameters:**
 
 Name | Type |
 ------ | ------ |
-`onFound` | Function |
-`cb` | Function |
+`onFound` | FoundNode |
 
-**Returns:** *void*
+**Returns:** *Promise‹void›*
 
 ___
 
@@ -323,7 +315,7 @@ ___
 
 *Overrides [Trie](_basetrie_.trie.md).[_formatNode](_basetrie_.trie.md#_formatnode)*
 
-*Defined in [checkpointTrie.ts:161](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/checkpointTrie.ts#L161)*
+*Defined in [checkpointTrie.ts:156](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/checkpointTrie.ts#L156)*
 
 **Parameters:**
 
@@ -340,49 +332,47 @@ ___
 
 ###  _lookupNode
 
-▸ **_lookupNode**(`node`: Buffer | Buffer[], `cb`: Function): *void*
+▸ **_lookupNode**(`node`: Buffer | Buffer[]): *Promise‹TrieNode | null›*
 
 *Inherited from [Trie](_basetrie_.trie.md).[_lookupNode](_basetrie_.trie.md#_lookupnode)*
 
-*Defined in [baseTrie.ts:232](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/baseTrie.ts#L232)*
+*Defined in [baseTrie.ts:201](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/baseTrie.ts#L201)*
 
 **Parameters:**
 
 Name | Type |
 ------ | ------ |
 `node` | Buffer &#124; Buffer[] |
-`cb` | Function |
 
-**Returns:** *void*
+**Returns:** *Promise‹TrieNode | null›*
 
 ___
 
 ###  _putNode
 
-▸ **_putNode**(`node`: TrieNode, `cb`: ErrorCallback): *void*
+▸ **_putNode**(`node`: TrieNode): *Promise‹void›*
 
 *Inherited from [Trie](_basetrie_.trie.md).[_putNode](_basetrie_.trie.md#_putnode)*
 
-*Defined in [baseTrie.ts:249](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/baseTrie.ts#L249)*
+*Defined in [baseTrie.ts:219](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/baseTrie.ts#L219)*
 
 **Parameters:**
 
 Name | Type |
 ------ | ------ |
 `node` | TrieNode |
-`cb` | ErrorCallback |
 
-**Returns:** *void*
+**Returns:** *Promise‹void›*
 
 ___
 
 ### `Private` _saveStack
 
-▸ **_saveStack**(`key`: number[], `stack`: TrieNode[], `opStack`: BatchDBOp[], `cb`: ErrorCallback): *void*
+▸ **_saveStack**(`key`: number[], `stack`: TrieNode[], `opStack`: BatchDBOp[]): *Promise‹void›*
 
 *Inherited from [Trie](_basetrie_.trie.md).[_saveStack](_basetrie_.trie.md#private-_savestack)*
 
-*Defined in [baseTrie.ts:590](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/baseTrie.ts#L590)*
+*Defined in [baseTrie.ts:547](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/baseTrie.ts#L547)*
 
 saves a stack
 
@@ -395,19 +385,18 @@ Name | Type | Description |
 `key` | number[] | the key. Should follow the stack |
 `stack` | TrieNode[] | a stack of nodes to the value given by the key |
 `opStack` | BatchDBOp[] | a stack of levelup operations to commit at the end of this funciton |
-`cb` | ErrorCallback |   |
 
-**Returns:** *void*
+**Returns:** *Promise‹void›*
 
 ___
 
 ### `Private` _updateNode
 
-▸ **_updateNode**(`k`: Buffer, `value`: Buffer, `keyRemainder`: number[], `stack`: TrieNode[], `cb`: ErrorCallback): *void*
+▸ **_updateNode**(`k`: Buffer, `value`: Buffer, `keyRemainder`: number[], `stack`: TrieNode[]): *Promise‹void›*
 
 *Inherited from [Trie](_basetrie_.trie.md).[_updateNode](_basetrie_.trie.md#private-_updatenode)*
 
-*Defined in [baseTrie.ts:372](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/baseTrie.ts#L372)*
+*Defined in [baseTrie.ts:345](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/baseTrie.ts#L345)*
 
 Updates a node
 
@@ -415,45 +404,43 @@ Updates a node
 
 **Parameters:**
 
-Name | Type | Description |
------- | ------ | ------ |
-`k` | Buffer | - |
-`value` | Buffer | - |
-`keyRemainder` | number[] | - |
-`stack` | TrieNode[] | - |
-`cb` | ErrorCallback | the callback  |
+Name | Type |
+------ | ------ |
+`k` | Buffer |
+`value` | Buffer |
+`keyRemainder` | number[] |
+`stack` | TrieNode[] |
 
-**Returns:** *void*
+**Returns:** *Promise‹void›*
 
 ___
 
 ###  _walkTrie
 
-▸ **_walkTrie**(`root`: Buffer, `onNode`: Function, `onDone`: Function): *any*
+▸ **_walkTrie**(`root`: Buffer, `onNode`: FoundNode): *Promise‹void›*
 
 *Inherited from [Trie](_basetrie_.trie.md).[_walkTrie](_basetrie_.trie.md#_walktrie)*
 
-*Defined in [baseTrie.ts:475](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/baseTrie.ts#L475)*
+*Defined in [baseTrie.ts:450](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/baseTrie.ts#L450)*
 
 **Parameters:**
 
 Name | Type |
 ------ | ------ |
 `root` | Buffer |
-`onNode` | Function |
-`onDone` | Function |
+`onNode` | FoundNode |
 
-**Returns:** *any*
+**Returns:** *Promise‹void›*
 
 ___
 
 ###  batch
 
-▸ **batch**(`ops`: BatchDBOp[], `cb`: ErrorCallback): *void*
+▸ **batch**(`ops`: BatchDBOp[]): *Promise‹void›*
 
 *Inherited from [Trie](_basetrie_.trie.md).[batch](_basetrie_.trie.md#batch)*
 
-*Defined in [baseTrie.ts:801](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/baseTrie.ts#L801)*
+*Defined in [baseTrie.ts:763](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/baseTrie.ts#L763)*
 
 The given hash of operations (key additions or deletions) are executed on the DB
 
@@ -473,22 +460,21 @@ trie.batch(ops)
 
 **Parameters:**
 
-Name | Type | Description |
------- | ------ | ------ |
-`ops` | BatchDBOp[] | - |
-`cb` | ErrorCallback |   |
+Name | Type |
+------ | ------ |
+`ops` | BatchDBOp[] |
 
-**Returns:** *void*
+**Returns:** *Promise‹void›*
 
 ___
 
 ###  checkRoot
 
-▸ **checkRoot**(`root`: Buffer, `cb`: Function): *void*
+▸ **checkRoot**(`root`: Buffer): *Promise‹boolean›*
 
 *Inherited from [Trie](_basetrie_.trie.md).[checkRoot](_basetrie_.trie.md#checkroot)*
 
-*Defined in [baseTrie.ts:821](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/baseTrie.ts#L821)*
+*Defined in [baseTrie.ts:780](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/baseTrie.ts#L780)*
 
 Checks if a given root exists
 
@@ -497,9 +483,8 @@ Checks if a given root exists
 Name | Type |
 ------ | ------ |
 `root` | Buffer |
-`cb` | Function |
 
-**Returns:** *void*
+**Returns:** *Promise‹boolean›*
 
 ___
 
@@ -509,7 +494,7 @@ ___
 
 *Inherited from [CheckpointTrie](_checkpointtrie_.checkpointtrie.md).[checkpoint](_checkpointtrie_.checkpointtrie.md#checkpoint)*
 
-*Defined in [checkpointTrie.ts:39](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/checkpointTrie.ts#L39)*
+*Defined in [checkpointTrie.ts:37](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/checkpointTrie.ts#L37)*
 
 Creates a checkpoint that can later be reverted to or committed.
 After this is called, no changes to the trie will be permanently saved
@@ -522,11 +507,11 @@ ___
 
 ###  commit
 
-▸ **commit**(`cb`: Function): *void*
+▸ **commit**(): *Promise‹void›*
 
 *Inherited from [CheckpointTrie](_checkpointtrie_.checkpointtrie.md).[commit](_checkpointtrie_.checkpointtrie.md#commit)*
 
-*Defined in [checkpointTrie.ts:56](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/checkpointTrie.ts#L56)*
+*Defined in [checkpointTrie.ts:54](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/checkpointTrie.ts#L54)*
 
 Commits a checkpoint to disk, if current checkpoint is not nested. If
 nested, only sets the parent checkpoint as current checkpoint.
@@ -535,13 +520,7 @@ nested, only sets the parent checkpoint as current checkpoint.
 
 **`throws`** If not during a checkpoint phase
 
-**Parameters:**
-
-Name | Type | Description |
------- | ------ | ------ |
-`cb` | Function | the callback |
-
-**Returns:** *void*
+**Returns:** *Promise‹void›*
 
 ___
 
@@ -551,7 +530,7 @@ ___
 
 *Overrides [CheckpointTrie](_checkpointtrie_.checkpointtrie.md).[copy](_checkpointtrie_.checkpointtrie.md#copy)*
 
-*Defined in [secure.ts:28](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/secure.ts#L28)*
+*Defined in [secure.ts:27](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/secure.ts#L27)*
 
 **Returns:** *[SecureTrie](_secure_.securetrie.md)*
 
@@ -563,7 +542,7 @@ ___
 
 *Inherited from [Trie](_basetrie_.trie.md).[createReadStream](_basetrie_.trie.md#createreadstream)*
 
-*Defined in [baseTrie.ts:774](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/baseTrie.ts#L774)*
+*Defined in [baseTrie.ts:736](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/baseTrie.ts#L736)*
 
 The `data` event is given an `Object` hat has two properties; the `key` and the `value`. Both should be Buffers.
 
@@ -579,53 +558,29 @@ ___
 
 ###  del
 
-▸ **del**(`key`: Buffer, `cb`: ErrorCallback): *void*
+▸ **del**(`key`: Buffer): *Promise‹void›*
 
 *Overrides [Trie](_basetrie_.trie.md).[del](_basetrie_.trie.md#del)*
 
-*Defined in [secure.ts:52](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/secure.ts#L52)*
+*Defined in [secure.ts:57](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/secure.ts#L57)*
 
 **Parameters:**
 
 Name | Type |
 ------ | ------ |
 `key` | Buffer |
-`cb` | ErrorCallback |
 
-**Returns:** *void*
-
-___
-
-###  delRaw
-
-▸ **delRaw**(`key`: Buffer, `cb`: ErrorCallback): *void*
-
-*Inherited from [Trie](_basetrie_.trie.md).[delRaw](_basetrie_.trie.md#delraw)*
-
-*Defined in [baseTrie.ts:227](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/baseTrie.ts#L227)*
-
-Deletes key directly from underlying key/value db.
-
-**`deprecated`** 
-
-**Parameters:**
-
-Name | Type |
------- | ------ |
-`key` | Buffer |
-`cb` | ErrorCallback |
-
-**Returns:** *void*
+**Returns:** *Promise‹void›*
 
 ___
 
 ###  findPath
 
-▸ **findPath**(`key`: Buffer, `cb`: Function): *void*
+▸ **findPath**(`key`: Buffer): *Promise‹Path›*
 
 *Inherited from [Trie](_basetrie_.trie.md).[findPath](_basetrie_.trie.md#findpath)*
 
-*Defined in [baseTrie.ts:268](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/baseTrie.ts#L268)*
+*Defined in [baseTrie.ts:236](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/baseTrie.ts#L236)*
 
 Tries to find a path to the node for the given key
 It returns a `stack` of nodes to the closet node
@@ -636,64 +591,41 @@ It returns a `stack` of nodes to the closet node
 
 **Parameters:**
 
-Name | Type |
------- | ------ |
-`key` | Buffer |
-`cb` | Function |
+Name | Type | Description |
+------ | ------ | ------ |
+`key` | Buffer | the search key |
 
-**Returns:** *void*
+**Returns:** *Promise‹Path›*
+
+- Returns promise resolving to interface Path
 
 ___
 
 ###  get
 
-▸ **get**(`key`: Buffer, `cb`: BufferCallback): *void*
+▸ **get**(`key`: Buffer): *Promise‹Buffer | null›*
 
 *Overrides [Trie](_basetrie_.trie.md).[get](_basetrie_.trie.md#get)*
 
-*Defined in [secure.ts:34](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/secure.ts#L34)*
+*Defined in [secure.ts:33](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/secure.ts#L33)*
 
 **Parameters:**
 
 Name | Type |
 ------ | ------ |
 `key` | Buffer |
-`cb` | BufferCallback |
 
-**Returns:** *void*
-
-___
-
-###  getRaw
-
-▸ **getRaw**(`key`: Buffer, `cb`: BufferCallback): *void*
-
-*Inherited from [Trie](_basetrie_.trie.md).[getRaw](_basetrie_.trie.md#getraw)*
-
-*Defined in [baseTrie.ts:210](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/baseTrie.ts#L210)*
-
-Retrieves a value directly from key/value db.
-
-**`deprecated`** 
-
-**Parameters:**
-
-Name | Type |
------- | ------ |
-`key` | Buffer |
-`cb` | BufferCallback |
-
-**Returns:** *void*
+**Returns:** *Promise‹Buffer | null›*
 
 ___
 
 ###  put
 
-▸ **put**(`key`: Buffer, `val`: Buffer, `cb`: ErrorCallback): *void*
+▸ **put**(`key`: Buffer, `val`: Buffer): *Promise‹void›*
 
 *Overrides [Trie](_basetrie_.trie.md).[put](_basetrie_.trie.md#put)*
 
-*Defined in [secure.ts:43](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/secure.ts#L43)*
+*Defined in [secure.ts:45](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/secure.ts#L45)*
 
 For a falsey value, use the original key
 to avoid double hashing the key.
@@ -704,58 +636,24 @@ Name | Type |
 ------ | ------ |
 `key` | Buffer |
 `val` | Buffer |
-`cb` | ErrorCallback |
 
-**Returns:** *void*
-
-___
-
-###  putRaw
-
-▸ **putRaw**(`key`: Buffer, `value`: Buffer, `cb`: ErrorCallback): *void*
-
-*Inherited from [CheckpointTrie](_checkpointtrie_.checkpointtrie.md).[putRaw](_checkpointtrie_.checkpointtrie.md#putraw)*
-
-*Overrides [Trie](_basetrie_.trie.md).[putRaw](_basetrie_.trie.md#putraw)*
-
-*Defined in [checkpointTrie.ts:117](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/checkpointTrie.ts#L117)*
-
-Writes a value under given key directly to the
-key/value db, disregarding checkpoints.
-
-**`deprecated`** 
-
-**Parameters:**
-
-Name | Type |
------- | ------ |
-`key` | Buffer |
-`value` | Buffer |
-`cb` | ErrorCallback |
-
-**Returns:** *void*
+**Returns:** *Promise‹void›*
 
 ___
 
 ###  revert
 
-▸ **revert**(`cb`: Function): *void*
+▸ **revert**(): *Promise‹void›*
 
 *Inherited from [CheckpointTrie](_checkpointtrie_.checkpointtrie.md).[revert](_checkpointtrie_.checkpointtrie.md#revert)*
 
-*Defined in [checkpointTrie.ts:78](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/checkpointTrie.ts#L78)*
+*Defined in [checkpointTrie.ts:79](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/checkpointTrie.ts#L79)*
 
 Reverts the trie to the state it was at when `checkpoint` was first called.
 If during a nested checkpoint, sets root to most recent checkpoint, and sets
 parent checkpoint as current.
 
-**Parameters:**
-
-Name | Type |
------- | ------ |
-`cb` | Function |
-
-**Returns:** *void*
+**Returns:** *Promise‹void›*
 
 ___
 
@@ -765,7 +663,7 @@ ___
 
 *Inherited from [Trie](_basetrie_.trie.md).[setRoot](_basetrie_.trie.md#setroot)*
 
-*Defined in [baseTrie.ts:109](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/baseTrie.ts#L109)*
+*Defined in [baseTrie.ts:111](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/baseTrie.ts#L111)*
 
 **Parameters:**
 
@@ -783,7 +681,7 @@ ___
 
 *Inherited from [Trie](_basetrie_.trie.md).[fromProof](_basetrie_.trie.md#static-fromproof)*
 
-*Defined in [baseTrie.ts:50](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/baseTrie.ts#L50)*
+*Defined in [baseTrie.ts:59](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/baseTrie.ts#L59)*
 
 **Parameters:**
 
@@ -802,7 +700,7 @@ ___
 
 *Overrides [Trie](_basetrie_.trie.md).[prove](_basetrie_.trie.md#static-prove)*
 
-*Defined in [secure.ts:18](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/secure.ts#L18)*
+*Defined in [secure.ts:17](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/secure.ts#L17)*
 
 **Parameters:**
 
@@ -821,7 +719,7 @@ ___
 
 *Overrides [Trie](_basetrie_.trie.md).[verifyProof](_basetrie_.trie.md#static-verifyproof)*
 
-*Defined in [secure.ts:23](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/secure.ts#L23)*
+*Defined in [secure.ts:22](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/secure.ts#L22)*
 
 **Parameters:**
 

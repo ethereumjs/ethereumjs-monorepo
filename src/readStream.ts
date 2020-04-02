@@ -14,23 +14,17 @@ export class TrieReadStream extends Readable {
     this._started = false
   }
 
-  _read() {
+  async _read() {
     if (!this._started) {
       this._started = true
-      this.trie._findValueNodes(
-        (nodeRef: Buffer, node: TrieNode, key: number[], next: Function) => {
-          this.push({
-            key: nibblesToBuffer(key),
-            value: node.value,
-          })
-
-          next()
-        },
-        () => {
-          // close stream
-          this.push(null)
-        },
-      )
+      await this.trie._findValueNodes((nodeRef, node, key, next) => {
+        this.push({
+          key: nibblesToBuffer(key),
+          value: node.value,
+        })
+        next()
+      })
+      this.push(null)
     }
   }
 }

@@ -1,6 +1,4 @@
 import { DB, ENCODING_OPTS } from './db'
-import { asyncFirstSeries } from './util/async'
-import { BufferCallback } from './types'
 
 /**
  * An in-memory wrap over `DB` with an upstream DB
@@ -20,21 +18,22 @@ export class ScratchDB extends DB {
    * Similar to `DB.get`, but first searches in-memory
    * scratch DB, if key not found, searches upstream DB.
    */
-  get(key: Buffer, cb: BufferCallback) {
-    const getDBs = this._upstream._leveldb
-      ? [this._leveldb, this._upstream._leveldb]
-      : [this._leveldb]
-    const dbGet = (db: any, cb2: Function) => {
-      db.get(key, ENCODING_OPTS, (err: Error, v: Buffer | null) => {
-        if (err || !v) {
-          cb2(null, null)
-        } else {
-          cb2(null, v)
-        }
-      })
+  async get(key: Buffer): Promise<Buffer | null> {
+    let value = null
+    try {
+      value = await this._leveldb.get(key, ENCODING_OPTS)
+      if (!value && this._upstream._leveldb) {
+        value = await this._upstream._leveldb.get(key)
+      }
+    } catch (error) {
+      if (error.notFound) {
+        console.log('not found')
+        // throw error
+      } else {
+        throw error
+      }
     }
-
-    asyncFirstSeries(getDBs, dbGet, cb)
+    return value
   }
 
   copy(): ScratchDB {

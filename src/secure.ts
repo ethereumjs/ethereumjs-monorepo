@@ -1,6 +1,5 @@
 import { keccak256 } from 'ethereumjs-util'
 import { CheckpointTrie } from './checkpointTrie'
-import { BufferCallback, ErrorCallback } from './types'
 
 /**
  * You can create a secure Trie where the keys are automatically hashed
@@ -31,26 +30,27 @@ export class SecureTrie extends CheckpointTrie {
     return new SecureTrie(db._leveldb, this.root)
   }
 
-  get(key: Buffer, cb: BufferCallback) {
+  async get(key: Buffer): Promise<Buffer | null> {
     const hash = keccak256(key)
-    super.get(hash, cb)
+    const value = await super.get(hash)
+    return value
   }
 
   /**
    * For a falsey value, use the original key
    * to avoid double hashing the key.
    */
-  put(key: Buffer, val: Buffer, cb: ErrorCallback) {
-    if (!val) {
-      this.del(key, cb)
+  async put(key: Buffer, val: Buffer): Promise<void> {
+    if (!val || val.toString() === '') {
+      await this.del(key)
     } else {
       const hash = keccak256(key)
-      super.put(hash, val, cb)
+      await super.put(hash, val)
     }
   }
 
-  del(key: Buffer, cb: ErrorCallback) {
+  async del(key: Buffer): Promise<void> {
     const hash = keccak256(key)
-    super.del(hash, cb)
+    await super.del(hash)
   }
 }

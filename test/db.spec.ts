@@ -1,57 +1,46 @@
 import * as tape from 'tape'
-const DB = require('../dist/db').DB
-import { DB as IDB, BatchDBOp } from '../dist/db'
+import { DB, BatchDBOp } from '../dist/db'
 
 tape('DB basic functionality', (t) => {
-  const db = new DB() as IDB
+  const db = new DB()
 
   const k = Buffer.from('foo')
   const v = Buffer.from('bar')
 
-  t.test('puts and gets value', (st) => {
-    db.put(k, v, () => {
-      db.get(k, (err, res) => {
-        st.error(err)
-        st.ok(v.equals(res!))
-        st.end()
-      })
-    })
+  t.test('puts and gets value', async (st) => {
+    await db.put(k, v)
+    const res = await db.get(k)
+    st.ok(v.equals(res!))
+    st.end()
   })
 
-  t.test('dels value', (st) => {
-    db.del(k, () => {
-      db.get(k, (err, res) => {
-        st.error(err)
-        st.notOk(res)
-        st.end()
-      })
-    })
+  t.test('dels value', async (st) => {
+    await db.del(k)
+    const res = await db.get(k)
+    st.notOk(res)
+    st.end()
   })
 
-  t.test('batch ops', (st) => {
+  t.test('batch ops', async (st) => {
     const k2 = Buffer.from('bar')
     const v2 = Buffer.from('baz')
     const ops = [
       { type: 'put', key: k, value: v },
       { type: 'put', key: k2, value: v2 },
     ] as BatchDBOp[]
-    db.batch(ops, (err) => {
-      st.error(err)
-      db.get(k2, (err, res) => {
-        st.error(err)
-        st.ok(v2.equals(res!))
-        st.end()
-      })
-    })
+    await db.batch(ops)
+    const res = await db.get(k2)
+    st.ok(v2.equals(res!))
+    st.end()
   })
 })
 
 tape('DB input types', (t) => {
   const db = new DB()
 
-  t.test('fails for invalid input', (st) => {
+  t.test('fails for invalid input', async (st) => {
     try {
-      db.get('test')
+      const res = await db.get(('test' as unknown) as Buffer)
     } catch (e) {
       st.end()
     }

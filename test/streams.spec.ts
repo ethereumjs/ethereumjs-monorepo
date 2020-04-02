@@ -1,12 +1,12 @@
 import * as tape from 'tape'
-const Trie = require('../dist/index').CheckpointTrie
-import { CheckpointTrie } from '../dist/checkpointTrie'
-import { BatchDBOp } from '../dist/db'
+import { CheckpointTrie } from '../dist'
+import { DB, BatchDBOp } from '../dist/db'
+import { ScratchDB } from '../dist/scratch'
 
 tape('kv stream test', function (tester) {
-  var it = tester.test
-  var trie = new Trie() as CheckpointTrie
-  var init = [
+  const it = tester.test
+  const trie = new CheckpointTrie()
+  const init = [
     {
       type: 'del',
       key: Buffer.from('father'),
@@ -93,21 +93,20 @@ tape('kv stream test', function (tester) {
     },
   ] as BatchDBOp[]
 
-  var valObj = {} as any
+  let valObj = {} as any
   init.forEach(function (i) {
     if (i.type === 'put') {
       valObj[String(i.key)] = i.value
     }
   })
 
-  it('should populate trie', function (t) {
-    trie.batch(init, function () {
-      t.end()
-    })
+  it('should populate trie', async function (t) {
+    await trie.batch(init)
+    t.end()
   })
 
   it('should fetch all of the nodes', function (t) {
-    var stream = trie.createReadStream()
+    const stream = trie.createReadStream()
     stream.on('data', function (d: any) {
       t.equal(valObj[d.key.toString()].toString(), d.value.toString())
       delete valObj[d.key.toString()]
@@ -121,9 +120,9 @@ tape('kv stream test', function (tester) {
 })
 
 tape('db stream test', function (tester) {
-  var it = tester.test
-  var trie = new Trie()
-  var init = [
+  const it = tester.test
+  const trie = new CheckpointTrie()
+  const init = [
     {
       type: 'put',
       key: Buffer.from('color'),
@@ -154,9 +153,9 @@ tape('db stream test', function (tester) {
       key: Buffer.from('color'),
       value: Buffer.from('pink'),
     },
-  ]
+  ] as BatchDBOp[]
 
-  var expectedNodes = {
+  const expectedNodes = {
     '3c38d9aa6ad288c8e27da701e17fe99a5b67c8b12fd0469651c80494d36bc4c1': true,
     d5f61e1ff2b918d1c2a2c4b1732a3c68bd7e3fd64f35019f2f084896d4546298: true,
     e64329dadee2fb8a113b4c88cfe973aeaa9b523d4dc8510b84ca23f9d5bfbd90: true,
@@ -164,15 +163,18 @@ tape('db stream test', function (tester) {
     '2386bfb0de9cf93902a110f5ab07b917ffc0b9ea599cb7f4f8bb6fd1123c866c': true,
   } as any
 
-  it('should populate trie', function (t) {
+  it('should populate trie', async function (t) {
     trie.checkpoint()
-    trie.batch(init, t.end)
+    await trie.batch(init)
+    t.end()
   })
 
   it('should only fetch nodes in the current trie', function (t) {
-    var stream = trie._createScratchReadStream()
+    const upstream = new DB()
+    const scratch = new ScratchDB(upstream)
+    const stream = trie._createScratchReadStream(scratch)
     stream.on('data', function (d: any) {
-      var key = d.key.toString('hex')
+      const key = d.key.toString('hex')
       t.ok(!!expectedNodes[key])
       delete expectedNodes[key]
     })
