@@ -1,6 +1,6 @@
 import * as rlp from 'rlp'
 import { keccak256 } from 'ethereumjs-util'
-import { stringToNibbles, nibblesToBuffer } from './util/nibbles'
+import { bufferToNibbles, nibblesToBuffer } from './util/nibbles'
 import { isTerminator, addHexPrefix, removeHexPrefix } from './util/hex'
 
 export type TrieNode = BranchNode | ExtensionNode | LeafNode
@@ -21,7 +21,7 @@ export function decodeRawNode(raw: Buffer[]): TrieNode {
   if (raw.length === 17) {
     return BranchNode.fromArray(raw)
   } else if (raw.length === 2) {
-    const nibbles = stringToNibbles(raw[0])
+    const nibbles = bufferToNibbles(raw[0])
     if (isTerminator(nibbles)) {
       return new LeafNode(LeafNode.decodeKey(nibbles), raw[1])
     }

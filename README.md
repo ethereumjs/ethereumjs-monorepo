@@ -25,7 +25,7 @@ There are 3 variants of the tree implemented in this library, namely: `BaseTrie`
 
 ```typescript
 import level from 'level'
-import { BaseTrie } from 'merkle-patricia-tree'
+import { BaseTrie as Trie } from 'merkle-patricia-tree'
 
 const db = level('./testdb')
 const trie = new Trie(db)
@@ -47,11 +47,12 @@ console.log(value.toString())
 
 ```typescript
 import level from 'level'
-import { SecureTrie } from 'merkle-patricia-tree'
+import { SecureTrie as Trie } from 'merkle-patricia-tree'
 
+const db = level('YOUR_PATH_TO_THE_GETH_CHAIN_DB')
 // Set stateRoot to block #222
 const stateRoot = '0xd7f8974fb5ac78d9ac099b9ad5018bedc2ce0a72dad1827a1709da30580f0544'
-const db = level('YOUR_PATH_TO_THE_GETH_CHAIN_DB')
+// Initialize trie
 const trie = new Trie(db, stateRoot)
 
 trie
@@ -68,8 +69,8 @@ trie
 import level from 'level'
 import rlp from 'rlp'
 import { BN, bufferToHex } from 'ethereumjs-util'
-import { SecureTrie } from 'merkle-patricia-tree'
 import Account from 'ethereumjs-account'
+import { SecureTrie as Trie } from 'merkle-patricia-tree'
 
 const stateRoot = 'STATE_ROOT_OF_A_BLOCK'
 
@@ -115,11 +116,11 @@ stream
 - Wiki
   - [Ethereum Trie Specification](https://github.com/ethereum/wiki/wiki/Patricia-Tree)
 - Blog posts
-  - ["Exploring Ethereum's State Trie with Node.js"](https://wanderer.github.io/ethereum/nodejs/code/2014/05/21/using-ethereums-tries-with-node/)
-  - ["Merkling in Ethereum"](https://blog.ethereum.org/2015/11/15/merkling-in-ethereum/)
-  - ["Understanding the Ethereum Trie"](https://easythereentropy.wordpress.com/2014/06/04/understanding-the-ethereum-trie/)
+  - [Exploring Ethereum's State Trie with Node.js](https://wanderer.github.io/ethereum/nodejs/code/2014/05/21/using-ethereums-tries-with-node/)
+  - [Merkling in Ethereum](https://blog.ethereum.org/2015/11/15/merkling-in-ethereum/)
+  - [Understanding the Ethereum Trie](https://easythereentropy.wordpress.com/2014/06/04/understanding-the-ethereum-trie/)
 - Videos
-  - ["Trie and Patricia Trie Overview"](https://www.youtube.com/watch?v=jXAHLqQthKw&t=26s)
+  - [Trie and Patricia Trie Overview](https://www.youtube.com/watch?v=jXAHLqQthKw&t=26s)
 
 # EthereumJS
 

@@ -1,5 +1,5 @@
 import * as tape from 'tape'
-import { SecureTrie } from '../dist'
+import { SecureTrie } from '../src'
 
 tape('SecureTrie', function (t) {
   const trie = new SecureTrie()
@@ -9,14 +9,14 @@ tape('SecureTrie', function (t) {
   t.test('put and get value', async function (st) {
     await trie.put(k, v)
     const res = await trie.get(k)
-    st.equal(v, res)
+    st.ok(v.equals(res!))
     st.end()
   })
 
   t.test('copy trie', async function (st) {
     const t = trie.copy()
     const res = await t.get(k)
-    st.equal(v, res)
+    st.ok(v.equals(res!))
     st.end()
   })
 
@@ -37,7 +37,7 @@ tape('SecureTrie', function (t) {
     const jsonTests = require('./fixtures/trietest_secureTrie.json').tests
 
     it.test('empty values', async function (t) {
-      for (const row in jsonTests.emptyValues.in) {
+      for await (const row of jsonTests.emptyValues.in) {
         const val = row[1] ? Buffer.from(row[1]) : ((null as unknown) as Buffer)
         await trie.put(Buffer.from(row[0]), val)
       }
@@ -47,7 +47,7 @@ tape('SecureTrie', function (t) {
 
     it.test('branchingTests', async function (t) {
       trie = new SecureTrie()
-      for (const row in jsonTests.branchingTests.in) {
+      for await (const row of jsonTests.branchingTests.in) {
         const val = row[1] ? Buffer.from(row[1]) : ((null as unknown) as Buffer)
         await trie.put(Buffer.from(row[0]), val)
       }
@@ -56,12 +56,12 @@ tape('SecureTrie', function (t) {
     })
 
     it.test('jeff', async function (t) {
-      for (const row in jsonTests.jeff.in) {
-        let val
-        if (row[1]) {
+      for await (const row of jsonTests.jeff.in) {
+        let val = row[1]
+        if (val) {
           val = Buffer.from(row[1].slice(2), 'hex')
-          await trie.put(Buffer.from(row[0].slice(2), 'hex'), val)
         }
+        await trie.put(Buffer.from(row[0].slice(2), 'hex'), val)
       }
       t.equal('0x' + trie.root.toString('hex'), jsonTests.jeff.root.toString('hex'))
       t.end()

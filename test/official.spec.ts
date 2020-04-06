@@ -1,14 +1,14 @@
 import * as tape from 'tape'
-import { CheckpointTrie } from '../dist'
+import { CheckpointTrie } from '../src'
 
 tape('offical tests', async function (t) {
   const jsonTests = require('./fixtures/trietest.json').tests
   const testNames = Object.keys(jsonTests)
   let trie = new CheckpointTrie()
 
-  for (let i = 0; i < testNames.length; i++) {
-    let inputs = jsonTests[i].in
-    let expect = jsonTests[i].root
+  for await (const testName of testNames) {
+    let inputs = jsonTests[testName].in
+    let expect = jsonTests[testName].root
     for (const input of inputs) {
       for (let i = 0; i < 2; i++) {
         if (input[i] && input[i].slice(0, 2) === '0x') {
@@ -27,13 +27,13 @@ tape('offical tests', async function (t) {
 
 tape('offical tests any order', async function (t) {
   const jsonTests = require('./fixtures/trieanyorder.json').tests
-  var testNames = Object.keys(jsonTests)
-  var trie = new CheckpointTrie()
-  for (let i = 0; i < testNames.length; i++) {
-    const test = jsonTests[i]
+  const testNames = Object.keys(jsonTests)
+  let trie = new CheckpointTrie()
+  for await (const testName of testNames) {
+    const test = jsonTests[testName]
     const keys = Object.keys(test.in)
     let key: any
-    for (key in keys) {
+    for await (key of keys) {
       let val = test.in[key]
 
       if (key.slice(0, 2) === '0x') {

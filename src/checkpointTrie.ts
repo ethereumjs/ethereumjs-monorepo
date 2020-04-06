@@ -51,16 +51,17 @@ export class CheckpointTrie extends BaseTrie {
    * @throws If not during a checkpoint phase
    */
   async commit(): Promise<void> {
-    await this.lock.wait()
     if (!this.isCheckpoint) {
       throw new Error('trying to commit when not checkpointed')
     }
 
-    this._checkpoints.pop()
+    await this.lock.wait()
 
+    this._checkpoints.pop()
     if (!this.isCheckpoint) {
       await this._exitCpMode(true)
     }
+
     this.lock.signal()
   }
 
@@ -133,8 +134,11 @@ export class CheckpointTrie extends BaseTrie {
    * @method createScratchReadStream
    * @private
    */
-  _createScratchReadStream(scratch: ScratchDB) {
-    scratch = scratch || this._scratch
+  _createScratchReadStream(scratchDb?: ScratchDB) {
+    let scratch = scratchDb || this._scratch
+    if (!scratch) {
+      throw new Error('No scratch found to use')
+    }
     const trie = new BaseTrie(scratch._leveldb, this.root)
     trie.db = scratch
     return new ScratchReadStream(trie)

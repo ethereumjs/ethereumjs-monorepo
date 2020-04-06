@@ -28,6 +28,7 @@ export class PrioritizedTaskExecutor {
    * @private
    * @param {Number} priority The priority of the task
    * @param {Function} fn The function that accepts the callback, which must be called upon the task completion.
+   * @returns {Promise}
    */
   execute(priority: number, fn: Function) {
     if (this.currentPoolSize < this.maxPoolSize) {
@@ -41,10 +42,16 @@ export class PrioritizedTaskExecutor {
         }
       })
     } else {
-      this.queue.push({
-        priority: priority,
-        fn: fn,
-      })
+      this.queue.push({ priority, fn })
     }
+  }
+
+  /**
+   * Checks if the taskExecutor is finished.
+   * @private
+   * @returns {Boolean} - Returns `true` if the taskExecutor is finished, otherwise returns `false`.
+   */
+  finished(): boolean {
+    return this.currentPoolSize === 0
   }
 }

@@ -1,6 +1,6 @@
 import * as tape from 'tape'
-import { DB } from '../dist/db'
-import { ScratchDB } from '../dist/scratch'
+import { DB } from '../src/db'
+import { ScratchDB } from '../src/scratch'
 
 tape('ScratchDB', (t) => {
   const upstream = new DB()

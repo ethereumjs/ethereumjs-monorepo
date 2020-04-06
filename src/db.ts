@@ -41,18 +41,18 @@ export class DB {
       value = await this._leveldb.get(key, ENCODING_OPTS)
     } catch (error) {
       if (error.notFound) {
-        console.log('not found')
-        // throw error
+        // not found, returning null
       } else {
         throw error
       }
+    } finally {
+      return value
     }
-    return value
   }
 
   /**
    * Writes a value directly to leveldb.
-   * @param {Buffer} key The key as a `Buffer` or `String`
+   * @param {Buffer} key The key as a `Buffer`
    * @param {Buffer} value The value to be stored
    * @returns {Promise}
    */

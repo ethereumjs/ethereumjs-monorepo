@@ -1,5 +1,5 @@
 import * as tape from 'tape'
-import { SecureTrie } from '../dist'
+import { SecureTrie } from '../src'
 
 const trie = new SecureTrie()
 const a = Buffer.from(
@@ -42,7 +42,7 @@ const g = Buffer.from(
 )
 const gk = Buffer.from('095e7baea6a6c7c4c2dfeb977efac326af552d87', 'hex')
 
-tape('secure tests shouldnt crash ', async function (t) {
+tape('secure tests should not crash', async function (t) {
   await trie.put(ak, a)
   await trie.put(bk, b)
   await trie.put(ck, c)

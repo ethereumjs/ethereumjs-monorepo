@@ -1,5 +1,5 @@
 import * as tape from 'tape'
-import { DB, BatchDBOp } from '../dist/db'
+import { DB, BatchDBOp } from '../src/db'
 
 tape('DB basic functionality', (t) => {
   const db = new DB()
@@ -32,17 +32,5 @@ tape('DB basic functionality', (t) => {
     const res = await db.get(k2)
     st.ok(v2.equals(res!))
     st.end()
-  })
-})
-
-tape('DB input types', (t) => {
-  const db = new DB()
-
-  t.test('fails for invalid input', async (st) => {
-    try {
-      const res = await db.get(('test' as unknown) as Buffer)
-    } catch (e) {
-      st.end()
-    }
   })
 })

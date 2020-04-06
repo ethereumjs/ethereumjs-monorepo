@@ -1,7 +1,7 @@
 import * as tape from 'tape'
 import * as rlp from 'rlp'
 import { KECCAK256_NULL } from 'ethereumjs-util'
-import { CheckpointTrie } from '../dist'
+import { CheckpointTrie } from '../src'
 
 tape('simple save and retrive', function (tester) {
   const it = tester.test
@@ -33,6 +33,8 @@ tape('simple save and retrive', function (tester) {
   it('should update a value', async function (t) {
     await trie.put(Buffer.from('test'), Buffer.from('two'))
     const value = await trie.get(Buffer.from('test'))
+    t.equal(value!.toString(), 'two')
+    t.end()
   })
 
   it('should delete a value', async function (t) {

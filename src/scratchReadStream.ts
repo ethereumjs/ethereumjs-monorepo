@@ -1,5 +1,4 @@
 import { Trie as BaseTrie } from './baseTrie'
-import { TrieNode } from './trieNode'
 const Readable = require('readable-stream').Readable
 
 /*
@@ -17,16 +16,17 @@ export class ScratchReadStream extends Readable {
   }
 
   async _read() {
-    if (!this._started) {
-      this._started = true
-      await this.trie._findDbNodes((nodeRef, node, key, next) => {
-        this.push({
-          key: nodeRef,
-          value: node.serialize(),
-        })
-        next()
-      })
-      this.push(null)
+    if (this._started) {
+      return
     }
+    this._started = true
+    await this.trie._findDbNodes(async (nodeRef, node, key, walkController) => {
+      this.push({
+        key: nodeRef,
+        value: node.serialize(),
+      })
+      await walkController.next()
+    })
+    this.push(null)
   }
 }

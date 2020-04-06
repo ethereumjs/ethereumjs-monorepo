@@ -1,7 +1,7 @@
 // https://github.com/ethereum/wiki/wiki/Benchmarks
 'use strict'
 import { keccak256 } from 'ethereumjs-util'
-import { BaseTrie } from '../dist/index.js'
+import { BaseTrie } from '../dist'
 
 const ROUNDS = 1000
 const SYMMETRIC = true
@@ -11,7 +11,7 @@ let trie = new BaseTrie()
 let seed = Buffer.alloc(32).fill(0)
 
 const go = async () => {
-  let testName = `rounds ${ROUNDS} ${ERA_SIZE} ${SYMMETRIC ? 'sys' : 'rand'}`
+  let testName = `rounds: ${ROUNDS} | ERA_SIZE: ${ERA_SIZE} | ${SYMMETRIC ? 'sys' : 'rand'}`
   console.time(testName)
   await run()
   console.timeEnd(testName)
@@ -36,6 +36,8 @@ const run = async (): Promise<void> => {
       await trie.put(seed, val)
       genRoot()
     }
+
+    i++
   }
 }
 

@@ -20,19 +20,30 @@ export class ScratchDB extends DB {
    */
   async get(key: Buffer): Promise<Buffer | null> {
     let value = null
+    // First, search in-memory db
     try {
       value = await this._leveldb.get(key, ENCODING_OPTS)
-      if (!value && this._upstream._leveldb) {
-        value = await this._upstream._leveldb.get(key)
-      }
     } catch (error) {
       if (error.notFound) {
-        console.log('not found')
-        // throw error
+        // not found, returning null
       } else {
         throw error
       }
     }
+
+    // If not found, try searching upstream db
+    if (!value && this._upstream._leveldb) {
+      try {
+        value = await this._upstream._leveldb.get(key, ENCODING_OPTS)
+      } catch (error) {
+        if (error.notFound) {
+          // not found, returning null
+        } else {
+          throw error
+        }
+      }
+    }
+
     return value
   }
 

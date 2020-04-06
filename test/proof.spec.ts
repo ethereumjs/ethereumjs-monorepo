@@ -1,8 +1,9 @@
 import * as tape from 'tape'
-import { CheckpointTrie } from '../dist'
+import { CheckpointTrie } from '../src'
 
 tape('simple merkle proofs generation and verification', function (tester) {
-  var it = tester.test
+  const it = tester.test
+
   it('create a merkle proof and verify it', async (t) => {
     const trie = new CheckpointTrie()
 
@@ -37,16 +38,11 @@ tape('simple merkle proofs generation and verification', function (tester) {
 
     await trie.put(Buffer.from('another'), Buffer.from('3498h4riuhgwe'))
 
-    // to throw an error we need to request proof for one key
+    // to fail our proof we can request a proof for one key
     proof = await CheckpointTrie.prove(trie, Buffer.from('another'))
-    // and try to use that proof on another key
-    try {
-      await CheckpointTrie.verifyProof(trie.root, Buffer.from('key1aa'), proof)
-      t.fail('expected error: Missing node in DB')
-    } catch (e) {
-      t.equal(e.message, 'Missing node in DB')
-    }
-
+    // and use that proof on another key
+    const result = await CheckpointTrie.verifyProof(trie.root, Buffer.from('key1aa'), proof)
+    t.equal(result, null)
     t.end()
   })
 

@@ -1,12 +1,11 @@
 import * as tape from 'tape'
-import { CheckpointTrie } from '../dist'
-import { DB, BatchDBOp } from '../dist/db'
-import { ScratchDB } from '../dist/scratch'
+import { CheckpointTrie } from '../src'
+import { BatchDBOp } from '../src/db'
 
 tape('kv stream test', function (tester) {
   const it = tester.test
   const trie = new CheckpointTrie()
-  const init = [
+  const ops = [
     {
       type: 'del',
       key: Buffer.from('father'),
@@ -94,25 +93,27 @@ tape('kv stream test', function (tester) {
   ] as BatchDBOp[]
 
   let valObj = {} as any
-  init.forEach(function (i) {
-    if (i.type === 'put') {
-      valObj[String(i.key)] = i.value
+  for (let op of ops) {
+    if (op.type === 'put') {
+      valObj[op.key.toString()] = op.value.toString()
     }
-  })
+  }
 
   it('should populate trie', async function (t) {
-    await trie.batch(init)
+    await trie.batch(ops)
     t.end()
   })
 
   it('should fetch all of the nodes', function (t) {
     const stream = trie.createReadStream()
-    stream.on('data', function (d: any) {
-      t.equal(valObj[d.key.toString()].toString(), d.value.toString())
-      delete valObj[d.key.toString()]
+    stream.on('data', (d: any) => {
+      const key = d.key.toString()
+      const value = d.value.toString()
+      t.equal(valObj[key], value)
+      delete valObj[key]
     })
-    stream.on('end', function () {
-      var keys = Object.keys(valObj)
+    stream.on('end', () => {
+      let keys = Object.keys(valObj)
       t.equal(keys.length, 0)
       t.end()
     })
@@ -122,7 +123,7 @@ tape('kv stream test', function (tester) {
 tape('db stream test', function (tester) {
   const it = tester.test
   const trie = new CheckpointTrie()
-  const init = [
+  const ops = [
     {
       type: 'put',
       key: Buffer.from('color'),
@@ -165,21 +166,20 @@ tape('db stream test', function (tester) {
 
   it('should populate trie', async function (t) {
     trie.checkpoint()
-    await trie.batch(init)
+    await trie.batch(ops)
     t.end()
   })
 
   it('should only fetch nodes in the current trie', function (t) {
-    const upstream = new DB()
-    const scratch = new ScratchDB(upstream)
-    const stream = trie._createScratchReadStream(scratch)
-    stream.on('data', function (d: any) {
+    const stream = trie._createScratchReadStream()
+    stream.on('data', (d: any) => {
       const key = d.key.toString('hex')
       t.ok(!!expectedNodes[key])
       delete expectedNodes[key]
     })
-    stream.on('end', function () {
-      t.equal(Object.keys(expectedNodes).length, 0)
+    stream.on('end', () => {
+      let keys = Object.keys(expectedNodes)
+      t.equal(keys.length, 0)
       t.end()
     })
   })

@@ -1,5 +1,5 @@
 import * as tape from 'tape'
-import { CheckpointTrie } from '../dist'
+import { CheckpointTrie } from '../src'
 
 tape('testing checkpoints', function (tester) {
   const it = tester.test
