@@ -1,4 +1,4 @@
-# SYNOPSIS
+# ethereumjs-account
 
 [![NPM Package][account-npm-badge]][account-npm-link]
 [![GitHub Issues][account-issues-badge]][account-issues-link]
