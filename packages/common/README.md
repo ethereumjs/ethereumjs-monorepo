@@ -1,4 +1,4 @@
-# SYNOPSIS
+# ethereumjs-common
 
 [![NPM Package][common-npm-badge]][common-npm-link]
 [![GitHub Issues][common-issues-badge]][common-issues-link]
