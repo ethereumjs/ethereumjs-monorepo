@@ -1,4 +1,4 @@
-# SYNOPSIS
+# ethereumjs-tx
 
 [![NPM Package][tx-npm-badge]][tx-npm-link]
 [![GitHub Issues][tx-issues-badge]][tx-issues-link]
