@@ -1,3 +1,4 @@
+import { version } from 'process'
 import * as assert from 'assert'
 import * as RLP from '../src'
 const BN = require('bn.js')
@@ -62,6 +63,13 @@ describe('RLP encoding (list):', function() {
 })
 
 describe('RLP encoding (BigInt):', function() {
+  before(function() {
+    const nodeVersionNumber = Number(version.match(/^v([0-9]+)/)![1])
+    if (nodeVersionNumber < 10) {
+      // tslint:disable-next-line no-invalid-this
+      this.skip()
+    }
+  })
   it('should encode a BigInt value', function() {
     const encodedBN = RLP.encode(BigInt(3))
     assert.equal(encodedBN[0], 3)
