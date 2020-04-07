@@ -159,7 +159,12 @@
       "out": "0xc7c0c1c0c3c0c1c0"
     },
     "dictTest1": {
-      "in": [["key1", "val1"], ["key2", "val2"], ["key3", "val3"], ["key4", "val4"]],
+      "in": [
+        ["key1", "val1"],
+        ["key2", "val2"],
+        ["key3", "val3"],
+        ["key4", "val4"]
+      ],
       "out": "0xecca846b6579318476616c31ca846b6579328476616c32ca846b6579338476616c33ca846b6579348476616c34"
     },
     "bigint": {
