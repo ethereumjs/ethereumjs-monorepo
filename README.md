@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://avatars1.githubusercontent.com/u/16297473?s=200&v=4">
+  <img src="https://user-images.githubusercontent.com/47108/78779352-d0839500-796a-11ea-9468-fd2a0b3fe1ef.png" width=280>
 </p>
 
 # EthereumJS Monorepo
@@ -26,6 +26,28 @@ This was originally the EthereumJS VM repository. On Q1 2020 we brought some of 
 Detailed version can be seen on [Codecov.io][coverage-link]
 
 [![Code Coverage](https://codecov.io/gh/ethereumjs/ethereumjs-vm/branch/master/graphs/icicle.svg)][coverage-link]
+
+## Package dependency relationship
+
+<p align="center">
+ <img width="409" alt="diagram" src="https://user-images.githubusercontent.com/47108/78778883-007e6880-796a-11ea-8353-772d6923d336.png">
+</p>
+
+<!-- CREATED WITH MERMAID
+https://mermaid-js.github.io/mermaid-live-editor/#/view/eyJjb2RlIjoiZ3JhcGggVERcbiAgdm17Vk19XG5cbiAgY29tbW9uIC0tPiBibG9ja2NoYWluXG4gIGNvbW1vbiAtLT4gYmxvY2tcbiAgY29tbW9uIC0tPiB2bVxuICBjb21tb24gLS0-IHR4XG5cbiAgYmxvY2sgLS0-IGJsb2NrY2hhaW5cbiAgYmxvY2tjaGFpbiAtLT4gdm1cbiAgYmxvY2sgLS0-IHZtXG5cbiAgdHggLS0-IHZtXG4gIHR4IC0tPiBibG9ja1xuXG4gIGFjY291bnQgLS0-IHZtXG5cblxuIiwibWVybWFpZCI6eyJ0aGVtZSI6ImRlZmF1bHQifSwidXBkYXRlRWRpdG9yIjpmYWxzZX0
+graph TD
+  vm{VM}
+  common -> blockchain
+  common -> block
+  common -> vm
+  common -> tx
+  block -> blockchain
+  blockchain -> vm
+  block -> vm
+  tx -> vm
+  tx -> block
+  account -> vm
+-->
 
 ## Developing in a monorepo
 
