@@ -28,7 +28,6 @@ export class PrioritizedTaskExecutor {
    * @private
    * @param {Number} priority The priority of the task
    * @param {Function} fn The function that accepts the callback, which must be called upon the task completion.
-   * @returns {Promise}
    */
   execute(priority: number, fn: Function) {
     if (this.currentPoolSize < this.maxPoolSize) {
