@@ -7,15 +7,8 @@ const ROUNDS = 1000
 const SYMMETRIC = true
 const ERA_SIZE = 1000
 
-let trie = new BaseTrie()
+const trie = new BaseTrie()
 let seed = Buffer.alloc(32).fill(0)
-
-const go = async () => {
-  let testName = `rounds: ${ROUNDS} | ERA_SIZE: ${ERA_SIZE} | ${SYMMETRIC ? 'sys' : 'rand'}`
-  console.time(testName)
-  await run()
-  console.timeEnd(testName)
-}
 
 const run = async (): Promise<void> => {
   let i = 0
@@ -32,13 +25,22 @@ const run = async (): Promise<void> => {
       await trie.put(seed, seed)
       genRoot()
     } else {
-      let val = keccak256(seed)
+      const val = keccak256(seed)
       await trie.put(seed, val)
       genRoot()
     }
 
     i++
   }
+}
+
+const go = async () => {
+  const testName = `benchmarks/random.ts | rounds: ${ROUNDS}, ERA_SIZE: ${ERA_SIZE}, ${
+    SYMMETRIC ? 'sys' : 'rand'
+  }`
+  console.time(testName)
+  await run()
+  console.timeEnd(testName)
 }
 
 go()
