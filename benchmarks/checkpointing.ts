@@ -1,60 +1,52 @@
-import * as async from 'async'
-import * as crypto from 'crypto'
-const Trie = require('../dist/index.js').CheckpointTrie
+import { pseudoRandomBytes } from 'crypto'
+import { CheckpointTrie } from '../dist'
 
-let iterations = 500
-let samples = 20
-let i = 0
+const iterations = 500
+const samples = 20
 
-function iterTest(numOfIter: number, cb: Function) {
-  let vals = [] as any
-  let keys = [] as any
+const iterTest = async (numOfIter: number): Promise<Array<number>> => {
+  return new Promise(async (resolve) => {
+    let vals = [] as any
+    let keys = [] as any
 
-  for (i = 0; i <= numOfIter; i++) {
-    vals.push(crypto.pseudoRandomBytes(32))
-    keys.push(crypto.pseudoRandomBytes(32))
-  }
+    for (let i = 0; i <= numOfIter; i++) {
+      vals.push(pseudoRandomBytes(32))
+      keys.push(pseudoRandomBytes(32))
+    }
 
-  let hrstart = process.hrtime()
-  let numOfOps = 0
-  let trie = new Trie()
+    let hrstart = process.hrtime()
+    let numOfOps = 0
+    let trie = new CheckpointTrie()
 
-  for (i = 0; i < numOfIter; i++) {
-    trie.put(vals[i], keys[i], function () {
+    for (let i = 0; i < numOfIter; i++) {
+      await trie.put(vals[i], keys[i])
       trie.checkpoint()
-      trie.get(Buffer.from('test'), function () {
-        numOfOps++
-        if (numOfOps === numOfIter) {
-          const hrend = process.hrtime(hrstart)
-          cb(hrend)
-        }
-      })
-    })
-  }
+      await trie.get(Buffer.from('test'))
+      numOfOps++
+      if (numOfOps === numOfIter) {
+        const hrend = process.hrtime(hrstart)
+        resolve(hrend)
+      }
+    }
+  })
 }
 
-i = 0
-let avg = [0, 0]
+const go = async () => {
+  let i = 0
+  let avg = [0, 0]
 
-async.whilst(
-  function () {
+  while (i <= samples) {
+    const hrend = await iterTest(iterations)
+    avg[0] += hrend[0]
+    avg[1] += hrend[1]
+    // console.log('benchmarks/checkpointing.ts | execution time: %ds %dms', hrend[0], (hrend[1] / 1000000).toFixed(3))
     i++
-    return i <= samples
-  },
-  function (done) {
-    iterTest(iterations, function (hrend: Array<number>) {
-      avg[0] += hrend[0]
-      avg[1] += hrend[1]
+  }
+  console.log(
+    'benchmarks/checkpointing.ts | average execution time: %ds %dms',
+    avg[0] / samples,
+    (avg[1] / 1000000 / samples).toFixed(3),
+  )
+}
 
-      console.info('Execution time (hr): %ds %dms', hrend[0], hrend[1] / 1000000)
-      done()
-    })
-  },
-  function () {
-    console.info(
-      'Average Execution time (hr): %ds %dms',
-      avg[0] / samples,
-      avg[1] / 1000000 / samples,
-    )
-  },
-)
+go()

@@ -1,10 +1,10 @@
 /**
- * Converts a string OR a buffer to a nibble array.
- * @method stringToNibbles
- * @param {Buffer| String} key
+ * Converts a buffer to a nibble array.
+ * @method bufferToNibbles
+ * @param {Buffer} key
  * @private
  */
-export function stringToNibbles(key: Buffer): number[] {
+export function bufferToNibbles(key: Buffer): number[] {
   const bkey = Buffer.from(key)
   let nibbles = [] as any
 

@@ -1,7 +1,7 @@
 # SYNOPSIS
 
 [![NPM Package](https://img.shields.io/npm/v/merkle-patricia-tree)](https://www.npmjs.org/package/merkle-patricia-tree)
-[![Actions Status](https://github.com/ethereumjs/ethereumjs-util/workflows/Build/badge.svg)](https://github.com/ethereumjs/merkle-patricia-tree/actions)
+[![Actions Status](https://github.com/ethereumjs/merkle-patricia-tree/workflows/Build/badge.svg)](https://github.com/ethereumjs/merkle-patricia-tree/actions)
 [![Coverage Status](https://img.shields.io/coveralls/ethereumjs/merkle-patricia-tree.svg)](https://coveralls.io/r/ethereumjs/merkle-patricia-tree)
 [![Gitter](https://img.shields.io/gitter/room/ethereum/ethereumjs.svg)](https://gitter.im/ethereum/ethereumjs)
 
@@ -23,95 +23,84 @@ There are 3 variants of the tree implemented in this library, namely: `BaseTrie`
 
 ## Initialization and Basic Usage
 
-```javascript
-const Trie = require('merkle-patricia-tree').BaseTrie,
-  level = require('level'),
-  db = level('./testdb'),
-  trie = new Trie(db)
+```typescript
+import level from 'level'
+import { BaseTrie as Trie } from 'merkle-patricia-tree'
 
-trie.put(Buffer.from('test'), Buffer.from('one'), function () {
-  trie.get(Buffer.from('test'), function (err, value) {
-    if (value) console.log(value.toString())
-  })
-})
+const db = level('./testdb')
+const trie = new Trie(db)
+
+await trie.put(Buffer.from('test'), Buffer.from('one'))
+const value = await trie.get(Buffer.from('test'))
+console.log(value.toString())
 ```
 
 ## Merkle Proofs
 
-```javascript
-Trie.prove(trie, Buffer.from('test'), function (err, prove) {
-  if (err) return cb(err)
-  Trie.verifyProof(trie.root, Buffer.from('test'), prove, function (err, value) {
-    if (err) return cb(err)
-    console.log(value.toString())
-    cb()
-  })
-})
+```typescript
+const prove = await Trie.prove(trie, Buffer.from('test'))
+const value = await Trie.verifyProof(trie.root, Buffer.from('test'), prove)
+console.log(value.toString())
 ```
 
 ## Read stream on Geth DB
 
-```javascript
-var level = require('level')
-var Trie = require('merkle-patricia-tree').SecureTrie
+```typescript
+import level from 'level'
+import { SecureTrie as Trie } from 'merkle-patricia-tree'
 
-var stateRoot = '0xd7f8974fb5ac78d9ac099b9ad5018bedc2ce0a72dad1827a1709da30580f0544' // Block #222
-
-var db = level('YOUR_PATH_TO_THE_GETH_CHAIN_DB')
-var trie = new Trie(db, stateRoot)
+const db = level('YOUR_PATH_TO_THE_GETH_CHAIN_DB')
+// Set stateRoot to block #222
+const stateRoot = '0xd7f8974fb5ac78d9ac099b9ad5018bedc2ce0a72dad1827a1709da30580f0544'
+// Initialize trie
+const trie = new Trie(db, stateRoot)
 
 trie
   .createReadStream()
-  .on('data', function (data) {
-    console.log(data)
-  })
-  .on('end', function () {
+  .on('data', console.log)
+  .on('end', () => {
     console.log('End.')
   })
 ```
 
 ## Read Account State including Storage from Geth DB
 
-```javascript
-var level = require('level')
-var rlp = require('rlp')
-var ethutil = require('ethereumjs-util')
+```typescript
+import level from 'level'
+import rlp from 'rlp'
+import { BN, bufferToHex } from 'ethereumjs-util'
+import Account from 'ethereumjs-account'
+import { SecureTrie as Trie } from 'merkle-patricia-tree'
 
-var Trie = require('merkle-patricia-tree').SecureTrie
-var Account = require('ethereumjs-account').default
-var BN = ethutil.BN
+const stateRoot = 'STATE_ROOT_OF_A_BLOCK'
 
-var stateRoot = 'STATE_ROOT_OF_A_BLOCK'
+const db = level('YOUR_PATH_TO_THE_GETH_CHAINDATA_FOLDER')
+const trie = new Trie(db, stateRoot)
 
-var db = level('YOUR_PATH_TO_THE_GETH_CHAINDATA_FOLDER')
-var trie = new Trie(db, stateRoot)
+const address = 'AN_ETHEREUM_ACCOUNT_ADDRESS'
 
-var address = 'AN_ETHEREUM_ACCOUNT_ADDRESS'
+const data = await trie.get(address)
+const acc = new Account(data)
 
-trie.get(address, function (err, data) {
-  if (err) return cb(err)
+console.log('-------State-------')
+console.log(`nonce: ${new BN(acc.nonce)}`)
+console.log(`balance in wei: ${new BN(acc.balance)}`)
+console.log(`storageRoot: ${bufferToHex(acc.stateRoot)}`)
+console.log(`codeHash: ${bufferToHex(acc.codeHash)}`)
 
-  var acc = new Account(data)
-  console.log('-------State-------')
-  console.log(`nonce: ${new BN(acc.nonce)}`)
-  console.log(`balance in wei: ${new BN(acc.balance)}`)
-  console.log(`storageRoot: ${ethutil.bufferToHex(acc.stateRoot)}`)
-  console.log(`codeHash: ${ethutil.bufferToHex(acc.codeHash)}`)
+let storageTrie = trie.copy()
+storageTrie.root = acc.stateRoot
 
-  var storageTrie = trie.copy()
-  storageTrie.root = acc.stateRoot
-
-  console.log('------Storage------')
-  var stream = storageTrie.createReadStream()
-  stream
-    .on('data', function (data) {
-      console.log(`key: ${ethutil.bufferToHex(data.key)}`)
-      console.log(`Value: ${ethutil.bufferToHex(rlp.decode(data.value))}`)
-    })
-    .on('end', function () {
-      console.log('Finished reading storage.')
-    })
-})
+console.log('------Storage------')
+const stream = storageTrie.createReadStream()
+stream
+  .on('data', (data) => {
+    console.log(`key: ${bufferToHex(data.key)}`)
+    console.log(`Value: ${bufferToHex(rlp.decode(data.value))}`)
+  })
+  .on('end', () => {
+    console.log('Finished reading storage.')
+  })
 ```
 
 # API
@@ -124,11 +113,14 @@ trie.get(address, function (err, data) {
 
 # REFERENCES
 
-- ["Exploring Ethereum's state trie with Node.js"](https://wanderer.github.io/ethereum/nodejs/code/2014/05/21/using-ethereums-tries-with-node/) blog post
-- ["Merkling in Ethereum"](https://blog.ethereum.org/2015/11/15/merkling-in-ethereum/) blog post
-- [Ethereum Trie Specification](https://github.com/ethereum/wiki/wiki/Patricia-Tree) Wiki
-- ["Understanding the ethereum trie"](https://easythereentropy.wordpress.com/2014/06/04/understanding-the-ethereum-trie/) blog post
-- ["Trie and Patricia Trie Overview"](https://www.youtube.com/watch?v=jXAHLqQthKw&t=26s) Video Talk on Youtube
+- Wiki
+  - [Ethereum Trie Specification](https://github.com/ethereum/wiki/wiki/Patricia-Tree)
+- Blog posts
+  - [Exploring Ethereum's State Trie with Node.js](https://wanderer.github.io/ethereum/nodejs/code/2014/05/21/using-ethereums-tries-with-node/)
+  - [Merkling in Ethereum](https://blog.ethereum.org/2015/11/15/merkling-in-ethereum/)
+  - [Understanding the Ethereum Trie](https://easythereentropy.wordpress.com/2014/06/04/understanding-the-ethereum-trie/)
+- Videos
+  - [Trie and Patricia Trie Overview](https://www.youtube.com/watch?v=jXAHLqQthKw&t=26s)
 
 # EthereumJS
 

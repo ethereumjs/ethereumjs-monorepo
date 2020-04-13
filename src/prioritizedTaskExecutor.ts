@@ -41,10 +41,16 @@ export class PrioritizedTaskExecutor {
         }
       })
     } else {
-      this.queue.push({
-        priority: priority,
-        fn: fn,
-      })
+      this.queue.push({ priority, fn })
     }
+  }
+
+  /**
+   * Checks if the taskExecutor is finished.
+   * @private
+   * @returns {Boolean} - Returns `true` if the taskExecutor is finished, otherwise returns `false`.
+   */
+  finished(): boolean {
+    return this.currentPoolSize === 0
   }
 }

@@ -1,6 +1,5 @@
 import { nibblesToBuffer } from './util/nibbles'
 import { Trie as BaseTrie } from './baseTrie'
-import { TrieNode } from './trieNode'
 const Readable = require('readable-stream').Readable
 
 export class TrieReadStream extends Readable {
@@ -14,23 +13,18 @@ export class TrieReadStream extends Readable {
     this._started = false
   }
 
-  _read() {
-    if (!this._started) {
-      this._started = true
-      this.trie._findValueNodes(
-        (nodeRef: Buffer, node: TrieNode, key: number[], next: Function) => {
-          this.push({
-            key: nibblesToBuffer(key),
-            value: node.value,
-          })
-
-          next()
-        },
-        () => {
-          // close stream
-          this.push(null)
-        },
-      )
+  async _read() {
+    if (this._started) {
+      return
     }
+    this._started = true
+    await this.trie._findValueNodes(async (nodeRef, node, key, walkController) => {
+      this.push({
+        key: nibblesToBuffer(key),
+        value: node.value,
+      })
+      await walkController.next()
+    })
+    this.push(null)
   }
 }
