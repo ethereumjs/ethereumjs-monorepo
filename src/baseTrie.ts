@@ -340,7 +340,7 @@ export class Trie {
     } else if (lastNode instanceof BranchNode) {
       stack.push(lastNode)
       if (keyRemainder.length !== 0) {
-        // add an extention to a branch node
+        // add an extension to a branch node
         keyRemainder.shift()
         // create a new leaf
         const newLeaf = new LeafNode(keyRemainder, value)
@@ -354,7 +354,7 @@ export class Trie {
       const matchingLength = matchingNibbleLength(lastKey, keyRemainder)
       const newBranchNode = new BranchNode()
 
-      // create a new extention node
+      // create a new extension node
       if (matchingLength !== 0) {
         const newKey = lastNode.key.slice(0, matchingLength)
         const newExtNode = new ExtensionNode(newKey, value)
@@ -369,12 +369,12 @@ export class Trie {
         const branchKey = lastKey.shift() as number
 
         if (lastKey.length !== 0 || lastNode instanceof LeafNode) {
-          // shriking extention or leaf
+          // shrinking extension or leaf
           lastNode.key = lastKey
-          const formatedNode = this._formatNode(lastNode, false, toSave)
-          newBranchNode.setBranch(branchKey, formatedNode as EmbeddedNode)
+          const formattedNode = this._formatNode(lastNode, false, toSave)
+          newBranchNode.setBranch(branchKey, formattedNode as EmbeddedNode)
         } else {
-          // remove extention or attaching
+          // remove extension or attaching
           this._formatNode(lastNode, false, toSave, true)
           newBranchNode.setBranch(branchKey, lastNode.value)
         }
@@ -395,7 +395,14 @@ export class Trie {
     await this._saveStack(key, stack, toSave)
   }
 
-  // walk tree
+  /**
+   * Walks a trie until finished.
+   * @method _walkTrie
+   * @private
+   * @param {Buffer} root
+   * @param {Function} onNode - callback to call when a node is found
+   * @returns {Promise} - returns when finished walking trie
+   */
   async _walkTrie(root: Buffer, onNode: FoundNode): Promise<void> {
     return new Promise(async (resolve) => {
       const self = this
@@ -542,23 +549,23 @@ export class Trie {
         }
 
         if (branchNode instanceof BranchNode) {
-          // create an extention node
-          // branch->extention->branch
+          // create an extension node
+          // branch->extension->branch
           // @ts-ignore
-          const extentionNode = new ExtensionNode([branchKey], null)
-          stack.push(extentionNode)
+          const extensionNode = new ExtensionNode([branchKey], null)
+          stack.push(extensionNode)
           key.push(branchKey)
         } else {
           const branchNodeKey = branchNode.key
-          // branch key is an extention or a leaf
-          // branch->(leaf or extention)
+          // branch key is an extension or a leaf
+          // branch->(leaf or extension)
           branchNodeKey.unshift(branchKey)
           branchNode.key = branchNodeKey.slice(0)
           key = key.concat(branchNodeKey)
         }
         stack.push(branchNode)
       } else {
-        // parent is an extention
+        // parent is an extension
         let parentKey = parentNode.key
 
         if (branchNode instanceof BranchNode) {
@@ -569,7 +576,7 @@ export class Trie {
           stack.push(parentNode)
         } else {
           const branchNodeKey = branchNode.key
-          // branch node is an leaf or extention and parent node is an exstention
+          // branch node is an leaf or extension and parent node is an exstention
           // add two keys together
           // dont push the parent node
           branchNodeKey.unshift(branchKey)
@@ -654,8 +661,16 @@ export class Trie {
     await this._putNode(newNode)
   }
 
-  // formats node to be saved by levelup.batch.
-  // returns either the hash that will be used key or the rawNode
+  /**
+   * Formats node to be saved by levelup.batch.
+   * @method _formatNode
+   * @private
+   * @param {TrieNode} node - the node to format
+   * @param {Boolean} topLevel - if the node is at the top level
+   * @param {BatchDBOp[]} opStack - the opStack to push the node's data
+   * @param {Boolean} remove - whether to remove the node (only used for CheckpointTrie)
+   * @returns {Buffer | (EmbeddedNode | null)[]} - the node's hash used as the key or the rawNode
+   */
   _formatNode(
     node: TrieNode,
     topLevel: boolean,
