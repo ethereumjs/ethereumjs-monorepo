@@ -144,8 +144,16 @@ export class CheckpointTrie extends BaseTrie {
     return new ScratchReadStream(trie)
   }
 
-  // formats node to be saved by levelup.batch.
-  // returns either the hash that will be used key or the rawNode
+  /**
+   * Formats node to be saved by levelup.batch.
+   * @method _formatNode
+   * @private
+   * @param {TrieNode} node - the node to format
+   * @param {Boolean} topLevel - if the node is at the top level
+   * @param {BatchDBOp[]} opStack - the opStack to push the node's data
+   * @param {Boolean} remove - whether to remove the node (only used for CheckpointTrie)
+   * @returns {Buffer | (EmbeddedNode | null)[]} - the node's hash used as the key or the rawNode
+   */
   _formatNode(node: TrieNode, topLevel: boolean, opStack: BatchDBOp[], remove: boolean = false) {
     const rlpNode = node.serialize()
 

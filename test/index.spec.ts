@@ -102,7 +102,7 @@ tape('simple save and retrive', function (tester) {
     })
   })
 
-  tape('testing Extentions and branches', function (tester) {
+  tape('testing extensions and branches', function (tester) {
     const it = tester.test
     const trie = new CheckpointTrie()
 
@@ -111,7 +111,7 @@ tape('simple save and retrive', function (tester) {
       t.end()
     })
 
-    it('should create extention to store this value', async function (t) {
+    it('should create extension to store this value', async function (t) {
       await trie.put(Buffer.from('do'), Buffer.from('verb'))
       t.equal(
         'f803dfcb7e8f1afd45e88eedb4699a7138d6c07b71243d9ae9bff720c99925f9',
@@ -120,7 +120,7 @@ tape('simple save and retrive', function (tester) {
       t.end()
     })
 
-    it('should store this value under the extention ', async function (t) {
+    it('should store this value under the extension', async function (t) {
       await trie.put(Buffer.from('done'), Buffer.from('finished'))
       t.equal(
         '409cff4d820b394ed3fb1cd4497bdd19ffa68d30ae34157337a7043c94a3e8cb',
@@ -130,11 +130,11 @@ tape('simple save and retrive', function (tester) {
     })
   })
 
-  tape('testing Extentions and branches - reverse', function (tester) {
+  tape('testing extensions and branches - reverse', function (tester) {
     const it = tester.test
     const trie = new CheckpointTrie()
 
-    it('should create extention to store this value', async function (t) {
+    it('should create extension to store this value', async function (t) {
       await trie.put(Buffer.from('do'), Buffer.from('verb'))
       t.end()
     })
@@ -144,7 +144,7 @@ tape('simple save and retrive', function (tester) {
       t.end()
     })
 
-    it('should store this value under the extention ', async function (t) {
+    it('should store this value under the extension', async function (t) {
       await trie.put(Buffer.from('done'), Buffer.from('finished'))
       t.equal(
         '409cff4d820b394ed3fb1cd4497bdd19ffa68d30ae34157337a7043c94a3e8cb',
@@ -155,7 +155,7 @@ tape('simple save and retrive', function (tester) {
   })
 })
 
-tape('testing deletions cases', function (tester) {
+tape('testing deletion cases', function (tester) {
   const it = tester.test
   const trie = new CheckpointTrie()
 
@@ -170,7 +170,7 @@ tape('testing deletions cases', function (tester) {
     t.end()
   })
 
-  it('should delete from a branch->branch-extention', async function (t) {
+  it('should delete from a branch->branch-extension', async function (t) {
     await trie.put(Buffer.from([11, 11, 11]), Buffer.from('first'))
     await trie.put(Buffer.from([12, 22, 22]), Buffer.from('create the first branch'))
     await trie.put(Buffer.from([12, 33, 33]), Buffer.from('create the middle branch'))
@@ -182,7 +182,7 @@ tape('testing deletions cases', function (tester) {
     t.end()
   })
 
-  it('should delete from a extention->branch-extention', async function (t) {
+  it('should delete from a extension->branch-extension', async function (t) {
     await trie.put(Buffer.from([11, 11, 11]), Buffer.from('first'))
     await trie.put(Buffer.from([12, 22, 22]), Buffer.from('create the first branch'))
     await trie.put(Buffer.from([12, 33, 33]), Buffer.from('create the middle branch'))
@@ -195,7 +195,7 @@ tape('testing deletions cases', function (tester) {
     t.end()
   })
 
-  it('should delete from a extention->branch-branch', async function (t) {
+  it('should delete from a extension->branch-branch', async function (t) {
     await trie.put(Buffer.from([11, 11, 11]), Buffer.from('first'))
     await trie.put(Buffer.from([12, 22, 22]), Buffer.from('create the first branch'))
     await trie.put(Buffer.from([12, 33, 33]), Buffer.from('create the middle branch'))
