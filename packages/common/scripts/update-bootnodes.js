@@ -35,14 +35,22 @@ const bootnodes = {
   // Görli test network.
   , GoerliBootnodes: {
     // Upstream bootnodes
-    'Upstream bootnode': "enode://011f758e6552d105183b1761c5e2dea0111bc20fd5f6422bc7f91e0fabbec9a6595caf6239b37feb773dddd3f87240d99d859431891e4a642cf2a0a9e6cbb98a@51.141.78.53:30303",
-    'Upstream bootnode': "enode://176b9417f511d05b6b2cf3e34b756cf0a7096b3094572a8f6ef4cdcb9d1f9d00683bf0f83347eebdf3b81c3521c2332086d9592802230bf528eaf606a1d9677b@13.93.54.137:30303",
-    'Upstream bootnode': "enode://46add44b9f13965f7b9875ac6b85f016f341012d84f975377573800a863526f4da19ae2c620ec73d11591fa9510e992ecc03ad0751f53cc02f7c7ed6d55c7291@94.237.54.114:30313",
-    'Upstream bootnode': "enode://c1f8b7c2ac4453271fa07d8e9ecf9a2e8285aa0bd0c07df0131f47153306b0736fd3db8924e7a9bf0bed6b1d8d4f87362a71b033dc7c64547728d953e43e59b2@52.64.155.147:30303",
-    'Upstream bootnode': "enode://f4a9c6ee28586009fb5a96c8af13a58ed6d8315a9eee4772212c1d4d9cebe5a8b8a78ea4434f318726317d04a3f531a1ef0420cf9752605a562cfe858c46e263@213.186.16.82:30303",
+    'Upstream bootnode 1': "enode://011f758e6552d105183b1761c5e2dea0111bc20fd5f6422bc7f91e0fabbec9a6595caf6239b37feb773dddd3f87240d99d859431891e4a642cf2a0a9e6cbb98a@51.141.78.53:30303",
+    'Upstream bootnode 2': "enode://176b9417f511d05b6b2cf3e34b756cf0a7096b3094572a8f6ef4cdcb9d1f9d00683bf0f83347eebdf3b81c3521c2332086d9592802230bf528eaf606a1d9677b@13.93.54.137:30303",
+    'Upstream bootnode 3': "enode://46add44b9f13965f7b9875ac6b85f016f341012d84f975377573800a863526f4da19ae2c620ec73d11591fa9510e992ecc03ad0751f53cc02f7c7ed6d55c7291@94.237.54.114:30313",
+    'Upstream bootnode 4': "enode://c1f8b7c2ac4453271fa07d8e9ecf9a2e8285aa0bd0c07df0131f47153306b0736fd3db8924e7a9bf0bed6b1d8d4f87362a71b033dc7c64547728d953e43e59b2@52.64.155.147:30303",
+    'Upstream bootnode 5': "enode://f4a9c6ee28586009fb5a96c8af13a58ed6d8315a9eee4772212c1d4d9cebe5a8b8a78ea4434f318726317d04a3f531a1ef0420cf9752605a562cfe858c46e263@213.186.16.82:30303",
 
     // Ethereum Foundation bootnode
     'Ethereum Foundation bootnode': "enode://a61215641fb8714a373c80edbfa0ea8878243193f57c96eeb44d0bc019ef295abd4e044fd619bfc4c59731a73fb79afe84e9ab6da0c743ceb479cbb6d263fa91@3.11.147.67:30303",
+  }
+
+  // https://github.com/openethereum/openethereum/blob/1840102edd672a7c79a40a34d4e4c7684e670de7/ethcore/res/ethereum/kovan.json#L6784
+  ,KovanBootnodes: {
+    '1': "enode://16898006ba2cd4fa8bf9a3dfe32684c178fa861df144bfc21fe800dc4838a03e342056951fa9fd533dcb0be1219e306106442ff2cf1f7e9f8faa5f2fc1a3aa45@116.203.116.241:30303",
+		'2': "enode://2909846f78c37510cc0e306f185323b83bb2209e5ff4fdd279d93c60e3f365e3c6e62ad1d2133ff11f9fd6d23ad9c3dad73bb974d53a22f7d1ac5b7dea79d0b0@3.217.96.11:30303",
+		'3': "enode://740e1c8ea64e71762c71a463a04e2046070a0c9394fcab5891d41301dc473c0cff00ebab5a9bc87fbcb610ab98ac18225ff897bc8b7b38def5975d5ceb0a7d7c@108.61.170.124:30303",
+		'4': "enode://2909846f78c37510cc0e306f185323b83bb2209e5ff4fdd279d93c60e3f365e3c6e62ad1d2133ff11f9fd6d23ad9c3dad73bb974d53a22f7d1ac5b7dea79d0b0@157.230.31.163:30303"
   }
 }
 
@@ -68,7 +76,7 @@ const generateJson = (bootnodes) => {
       ip,
       port: parseInt(port),
       id,
-      location: b.replace('bootnode-aws-', '').replace('bootnode-azure-', ''),
+      location: (b.includes('-aws-') || b.includes('-azure-')) ? b.replace('bootnode-aws-', '').replace('bootnode-azure-', '') : '',
       comment: b
     }
     console.log('node', node)
@@ -82,6 +90,7 @@ const nameToJsonFile = {
   RopstenBootnodes: 'ropsten',
   RinkebyBootnodes: 'rinkeby',
   GoerliBootnodes: 'goerli',
+  KovanBootnodes: 'kovan',
 }
 
 for (let configName in bootnodes) {
