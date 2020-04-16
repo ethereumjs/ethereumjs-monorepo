@@ -50,7 +50,7 @@
     "tsc": "ethereumjs-config-tsc",
     "lint": "ethereumjs-config-lint",
     "lint:fix": "ethereumjs-config-lint-fix",
-    "test": "node_modules/tape/bin/tape -r ts-node/register ./test/index.ts | tap-prettify - "
+    "test": "node_modules/tape/bin/tape -r ts-node/register ./test/index.ts"
   },
   "dependencies": {
     "babel-runtime": "^6.11.6",
@@ -89,10 +89,9 @@
     "nyc": "^15.0.0",
     "prettier": "^1.17.0",
     "standard": "*",
-    "tap-prettify": "0.0.2",
     "tape": "^4.5.1",
     "ts-node": "^8.1.0",
-    "typedoc": "^0.14.2",
+    "typedoc": "^0.17.4",
     "typedoc-plugin-markdown": "^1.2.0",
     "typescript": "^3.4.5",
     "typestrict": "^1.0.2"
