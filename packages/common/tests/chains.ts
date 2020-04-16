@@ -59,8 +59,7 @@ tape('[Common]: Initialization / Chain params', function(t: tape.Test) {
     const hash = '0xd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3'
     st.equal(c.genesis().hash, hash, 'should return correct genesis hash')
     st.equal(c.hardforks()[3]['block'], 2463000, 'should return correct hardfork data')
-    st.equal(c.bootstrapNodes()[0].port, 30303, 'should return a bootstrap node array')
-
+    st.true('port' in c.bootstrapNodes()[0], 'should return a bootstrap node array')
     st.end()
   })
 
