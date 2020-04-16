@@ -45,7 +45,7 @@ const bootnodes = {
     'Ethereum Foundation bootnode': "enode://a61215641fb8714a373c80edbfa0ea8878243193f57c96eeb44d0bc019ef295abd4e044fd619bfc4c59731a73fb79afe84e9ab6da0c743ceb479cbb6d263fa91@3.11.147.67:30303",
   }
 
-  // https://github.com/openethereum/openethereum/blob/1840102edd672a7c79a40a34d4e4c7684e670de7/ethcore/res/ethereum/kovan.json#L6784
+  // https://github.com/openethereum/openethereum/blob/master/ethcore/res/ethereum/kovan.json#L6783
   ,KovanBootnodes: {
     '1': "enode://16898006ba2cd4fa8bf9a3dfe32684c178fa861df144bfc21fe800dc4838a03e342056951fa9fd533dcb0be1219e306106442ff2cf1f7e9f8faa5f2fc1a3aa45@116.203.116.241:30303",
 		'2': "enode://2909846f78c37510cc0e306f185323b83bb2209e5ff4fdd279d93c60e3f365e3c6e62ad1d2133ff11f9fd6d23ad9c3dad73bb974d53a22f7d1ac5b7dea79d0b0@3.217.96.11:30303",
