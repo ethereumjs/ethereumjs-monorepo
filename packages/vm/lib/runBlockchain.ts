@@ -1,6 +1,7 @@
 import Blockchain from 'ethereumjs-blockchain'
 import VM from './index'
 const async = require('async')
+const callbackify = require('util-callbackify')
 
 /**
  * @ignore
@@ -29,12 +30,15 @@ export default function runBlockchain(this: VM, blockchain: Blockchain): Promise
       function getStartingState(cb: any) {
         // if we are just starting or if a chain re-org has happened
         if (!headBlock || reorg) {
-          blockchain.getBlock(block.header.parentHash, function(err: any, parentBlock: any) {
+          blockchain.getBlock(block.header.parentHash, function (err: any, parentBlock: any) {
             parentState = parentBlock.header.stateRoot
             // generate genesis state if we are at the genesis block
             // we don't have the genesis state
             if (!headBlock) {
-              return self.stateManager.generateCanonicalGenesis(cb)
+              const generateCanonicalGenesis = callbackify(
+                self.stateManager.generateCanonicalGenesis.bind(self.stateManager),
+              )
+              return generateCanonicalGenesis(cb)
             } else {
               cb(err)
             }
@@ -57,9 +61,9 @@ export default function runBlockchain(this: VM, blockchain: Blockchain): Promise
             headBlock = block
             cb()
           })
-          .catch(err => {
+          .catch((err) => {
             // remove invalid block
-            blockchain.delBlock(block.header.hash(), function() {
+            blockchain.delBlock(block.header.hash(), function () {
               cb(err)
             })
           })

@@ -27,7 +27,7 @@ Execution result of a transaction
 
 • **amountSpent**: *BN*
 
-*Defined in [runTx.ts:46](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/runTx.ts#L46)*
+*Defined in [runTx.ts:45](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/runTx.ts#L45)*
 
 The amount of ether used by this transaction
 
@@ -37,7 +37,7 @@ ___
 
 • **bloom**: *Bloom*
 
-*Defined in [runTx.ts:42](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/runTx.ts#L42)*
+*Defined in [runTx.ts:41](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/runTx.ts#L41)*
 
 Bloom filter resulted from transaction
 
@@ -71,7 +71,7 @@ ___
 
 • **gasRefund**? : *BN*
 
-*Defined in [runTx.ts:50](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/runTx.ts#L50)*
+*Defined in [runTx.ts:49](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/runTx.ts#L49)*
 
 The amount of gas as that was refunded during the transaction (i.e. `gasUsed = totalGasConsumed - gasRefund`)
 

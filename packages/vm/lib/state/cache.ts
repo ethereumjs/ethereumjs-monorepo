@@ -1,6 +1,6 @@
-const asyncLib = require('async')
-const Tree = require('functional-red-black-tree')
 import Account from 'ethereumjs-account'
+const Tree = require('functional-red-black-tree')
+const promisify = require('util-promisify')
 
 /**
  * @ignore
@@ -14,6 +14,10 @@ export default class Cache {
     this._cache = Tree()
     this._checkpoints = []
     this._trie = trie
+    // Temporary promisifed methods until new release of `merkle-patricia-tree`
+    this._trie.p_get = promisify(this._trie.get.bind(this._trie))
+    this._trie.p_put = promisify(this._trie.put.bind(this._trie))
+    this._trie.p_del = promisify(this._trie.del.bind(this._trie))
   }
 
   /**
@@ -55,100 +59,70 @@ export default class Cache {
   /**
    * Looks up address in underlying trie.
    * @param address - Address of account
-   * @param cb - Callback with params (err, account)
    */
-  _lookupAccount(address: Buffer, cb: any): void {
-    this._trie.get(address, (err: Error, raw: Buffer) => {
-      if (err) return cb(err)
-      var account = new Account(raw)
-      cb(null, account)
-    })
+  async _lookupAccount(address: Buffer): Promise<Account> {
+    const raw = await this._trie.p_get(address)
+    const account = new Account(raw)
+    return account
   }
 
   /**
    * Looks up address in cache, if not found, looks it up
    * in the underlying trie.
    * @param key - Address of account
-   * @param cb - Callback with params (err, account)
    */
-  getOrLoad(key: Buffer, cb: any): void {
-    const account = this.lookup(key)
-    if (account) {
-      asyncLib.nextTick(cb, null, account)
-    } else {
-      this._lookupAccount(key, (err: Error, account: Account) => {
-        if (err) return cb(err)
-        this._update(key, account, false, false)
-        cb(null, account)
-      })
+  async getOrLoad(key: Buffer): Promise<Account> {
+    let account = this.lookup(key)
+
+    if (!account) {
+      account = await this._lookupAccount(key)
+      this._update(key, account, false, false)
     }
+
+    return account
   }
 
   /**
    * Warms cache by loading their respective account from trie
    * and putting them in cache.
    * @param addresses - Array of addresses
-   * @param cb - Callback
    */
-  warm(addresses: string[], cb: any): void {
-    // shim till async supports iterators
-    const accountArr: string[] = []
-    addresses.forEach(val => {
-      if (val) accountArr.push(val)
-    })
-
-    asyncLib.eachSeries(
-      accountArr,
-      (addressHex: string, done: any) => {
-        var address = Buffer.from(addressHex, 'hex')
-        this._lookupAccount(address, (err: Error, account: Account) => {
-          if (err) return done(err)
-          this._update(address, account, false, false)
-          done()
-        })
-      },
-      cb,
-    )
+  async warm(addresses: string[]): Promise<void> {
+    for await (let addressHex of addresses) {
+      if (addressHex) {
+        const address = Buffer.from(addressHex, 'hex')
+        const account = await this._lookupAccount(address)
+        this._update(address, account, false, false)
+      }
+    }
   }
 
   /**
    * Flushes cache by updating accounts that have been modified
    * and removing accounts that have been deleted.
-   * @param cb - Callback
    */
-  flush(cb: any): void {
+  async flush(): Promise<void> {
     const it = this._cache.begin
     let next = true
-    asyncLib.whilst(
-      () => next,
-      (done: any) => {
-        if (it.value && it.value.modified) {
-          it.value.modified = false
-          it.value.val = it.value.val.serialize()
-          this._trie.put(Buffer.from(it.key, 'hex'), it.value.val, (err: Error) => {
-            if (err) return done(err)
-            next = it.hasNext
-            it.next()
-            done()
-          })
-        } else if (it.value && it.value.deleted) {
-          it.value.modified = false
-          it.value.deleted = false
-          it.value.val = new Account().serialize()
-          this._trie.del(Buffer.from(it.key, 'hex'), (err: Error) => {
-            if (err) return done(err)
-            next = it.hasNext
-            it.next()
-            done()
-          })
-        } else {
-          next = it.hasNext
-          it.next()
-          asyncLib.nextTick(done)
-        }
-      },
-      cb,
-    )
+    while (next) {
+      if (it.value && it.value.modified) {
+        it.value.modified = false
+        it.value.val = it.value.val.serialize()
+        await this._trie.p_put(Buffer.from(it.key, 'hex'), it.value.val)
+        next = it.hasNext
+        it.next()
+      } else if (it.value && it.value.deleted) {
+        it.value.modified = false
+        it.value.deleted = false
+        it.value.val = new Account().serialize()
+        await this._trie.p_del(Buffer.from(it.key, 'hex'))
+        next = it.hasNext
+        it.next()
+      } else {
+        next = it.hasNext
+        it.next()
+      }
+    }
   }
 
   /**

@@ -2,7 +2,7 @@ import BN = require('bn.js')
 import Account from 'ethereumjs-account'
 import Blockchain from 'ethereumjs-blockchain'
 import Common from 'ethereumjs-common'
-import { StateManager } from './state'
+import { StateManager } from './state/index'
 import { default as runCode, RunCodeOpts } from './runCode'
 import { default as runCall, RunCallOpts } from './runCall'
 import { default as runTx, RunTxOpts, RunTxResult } from './runTx'
@@ -10,10 +10,9 @@ import { default as runBlock, RunBlockOpts, RunBlockResult } from './runBlock'
 import { EVMResult, ExecResult } from './evm/evm'
 import { OpcodeList, getOpcodesForHF } from './evm/opcodes'
 import runBlockchain from './runBlockchain'
-import PStateManager from './state/promisified'
-const promisify = require('util.promisify')
 const AsyncEventEmitter = require('async-eventemitter')
 const Trie = require('merkle-patricia-tree/secure.js')
+const promisify = require('util-promisify')
 
 /**
  * Options for instantiating a [[VM]].
@@ -72,7 +71,6 @@ export default class VM extends AsyncEventEmitter {
   allowUnlimitedContractSize: boolean
   _opcodes: OpcodeList
   public readonly _emit: (topic: string, data: any) => Promise<void>
-  public readonly pStateManager: PStateManager
   protected isInitialized: boolean = false
   /**
    * VM async constructor. Creates engine instance and initializes it.
@@ -128,8 +126,6 @@ export default class VM extends AsyncEventEmitter {
       const trie = opts.state || new Trie()
       this.stateManager = new StateManager({ trie, common: this._common })
     }
-
-    this.pStateManager = new PStateManager(this.stateManager)
 
     this.blockchain = opts.blockchain || new Blockchain({ common: this._common })
 

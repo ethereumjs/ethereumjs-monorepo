@@ -2,14 +2,13 @@ import VM from '../../'
 
 import Account from 'ethereumjs-account'
 import Blockchain from 'ethereumjs-blockchain'
-import * as utils from 'ethereumjs-util'
-import { promisify } from 'util'
-import PStateManager from '../../lib/state/promisified'
+import { toBuffer, setLength } from 'ethereumjs-util'
 
 const Block = require('ethereumjs-block')
 const BlockHeader = require('ethereumjs-block/header.js')
 const testData = require('./test-data')
 const level = require('level')
+const { promisify } = require('util')
 
 async function main() {
   const hardfork = testData.network.toLowerCase()
@@ -39,7 +38,7 @@ async function main() {
 
   await vm.runBlockchain(blockchain)
 
-  const blockchainHead = await promisify<any>(vm.blockchain.getHead.bind(vm.blockchain))()
+  const blockchainHead = await promisify(vm.blockchain.getHead.bind(vm.blockchain))()
 
   console.log('--- Finished processing the BlockChain ---')
   console.log('New head:', '0x' + blockchainHead.hash().toString('hex'))
@@ -53,12 +52,10 @@ function setEthashCache(blockchain: any) {
 }
 
 async function setupPreConditions(vm: VM, testData: any) {
-  const psm = new PStateManager(vm.stateManager)
-
-  await psm.checkpoint()
+  await vm.stateManager.checkpoint()
 
   for (const address of Object.keys(testData.pre)) {
-    const addressBuf = utils.toBuffer(address)
+    const addressBuf = toBuffer(address)
 
     const acctData = testData.pre[address]
     const account = new Account({
@@ -66,21 +63,21 @@ async function setupPreConditions(vm: VM, testData: any) {
       balance: acctData.balance,
     })
 
-    await psm.putAccount(addressBuf, account)
+    await vm.stateManager.putAccount(addressBuf, account)
 
     for (const hexStorageKey of Object.keys(acctData.storage)) {
-      const val = utils.toBuffer(acctData.storage[hexStorageKey])
-      const storageKey = utils.setLength(utils.toBuffer(hexStorageKey), 32)
+      const val = toBuffer(acctData.storage[hexStorageKey])
+      const storageKey = setLength(toBuffer(hexStorageKey), 32)
 
-      await psm.putContractStorage(addressBuf, storageKey, val)
+      await vm.stateManager.putContractStorage(addressBuf, storageKey, val)
     }
 
-    const codeBuf = utils.toBuffer(acctData.code)
+    const codeBuf = toBuffer(acctData.code)
 
-    await psm.putContractCode(addressBuf, codeBuf)
+    await vm.stateManager.putContractCode(addressBuf, codeBuf)
   }
 
-  await psm.commit()
+  await vm.stateManager.commit()
 }
 
 async function setGenesisBlock(blockchain: any, hardfork: string) {
@@ -92,14 +89,14 @@ async function setGenesisBlock(blockchain: any, hardfork: string) {
 
 async function putBlocks(blockchain: any, hardfork: string, testData: any) {
   for (const blockData of testData.blocks) {
-    const block = new Block(utils.toBuffer(blockData.rlp), { hardfork })
+    const block = new Block(toBuffer(blockData.rlp), { hardfork })
     await promisify(blockchain.putBlock.bind(blockchain))(block)
   }
 }
 
 main()
   .then(() => process.exit(0))
-  .catch(err => {
+  .catch((err) => {
     console.error(err)
     process.exit(1)
   })

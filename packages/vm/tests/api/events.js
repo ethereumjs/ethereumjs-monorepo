@@ -5,7 +5,7 @@ const Block = require('ethereumjs-block')
 const VM = require('../../dist/index').default
 
 tape('VM events', t => {
-  t.test('should the Block before running it', async st => {
+  t.test('should emit the Block before running it', async st => {
     const vm = new VM()
 
     let emitted
@@ -18,7 +18,7 @@ tape('VM events', t => {
     await vm.runBlock({
       block,
       generate: true,
-      skipBlockValidation: true
+      skipBlockValidation: true,
     })
 
     st.equal(emitted, block)
@@ -39,7 +39,7 @@ tape('VM events', t => {
     await vm.runBlock({
       block,
       generate: true,
-      skipBlockValidation: true
+      skipBlockValidation: true,
     })
 
     st.deepEqual(emitted.receipts, [])
@@ -76,7 +76,7 @@ tape('VM events', t => {
     const tx = new Transaction({
       gas: 200000,
       to: '0x1111111111111111111111111111111111111111',
-      value: 1
+      value: 1,
     })
     tx.sign(util.toBuffer('0xa5737ecdc1b89ca0091647e727ba082ed8953f29182e94adc397210dda643b07'))
     await vm.runTx({ tx, skipBalance: true })
@@ -97,7 +97,7 @@ tape('VM events', t => {
     const tx = new Transaction({
       gas: 200000,
       to: '0x1111111111111111111111111111111111111111',
-      value: 1
+      value: 1,
     })
     tx.sign(util.toBuffer('0xa5737ecdc1b89ca0091647e727ba082ed8953f29182e94adc397210dda643b07'))
     await vm.runTx({ tx, skipBalance: true })
@@ -119,7 +119,7 @@ tape('VM events', t => {
     const tx = new Transaction({
       gas: 200000,
       to: '0x1111111111111111111111111111111111111111',
-      value: 1
+      value: 1,
     })
     tx.sign(util.toBuffer('0xa5737ecdc1b89ca0091647e727ba082ed8953f29182e94adc397210dda643b07'))
     await vm.runTx({ tx, skipBalance: true })
@@ -142,7 +142,7 @@ tape('VM events', t => {
     // This deploys a contract which a single byte of code, 0x41.
     const tx = new Transaction({
       gas: 200000,
-      data: '0x7f410000000000000000000000000000000000000000000000000000000000000060005260016000f3'
+      data: '0x7f410000000000000000000000000000000000000000000000000000000000000060005260016000f3',
     })
     tx.sign(util.toBuffer('0xa5737ecdc1b89ca0091647e727ba082ed8953f29182e94adc397210dda643b07'))
     await vm.runTx({ tx, skipBalance: true })
@@ -165,14 +165,14 @@ tape('VM events', t => {
     // This deploys a contract which a single byte of code, 0x41.
     const tx = new Transaction({
       gas: 200000,
-      data: '0x7f410000000000000000000000000000000000000000000000000000000000000060005260016000f3'
+      data: '0x7f410000000000000000000000000000000000000000000000000000000000000060005260016000f3',
     })
     tx.sign(util.toBuffer('0xa5737ecdc1b89ca0091647e727ba082ed8953f29182e94adc397210dda643b07'))
     await vm.runTx({ tx, skipBalance: true })
 
     st.equal(
       util.bufferToHex(emitted.code),
-      '0x7f410000000000000000000000000000000000000000000000000000000000000060005260016000f3'
+      '0x7f410000000000000000000000000000000000000000000000000000000000000060005260016000f3',
     )
 
     st.end()

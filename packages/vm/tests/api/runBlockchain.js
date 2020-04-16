@@ -1,12 +1,11 @@
 const tape = require('tape')
 const level = require('level-mem')
-const promisify = require('util.promisify')
+const promisify = require('util-promisify')
 const Blockchain = require('ethereumjs-blockchain').default
 const Block = require('ethereumjs-block')
 const Common = require('ethereumjs-common').default
 const util = require('ethereumjs-util')
 const runBlockchain = require('../../dist/runBlockchain').default
-const PStateManager = require('../../dist/state/promisified').default
 const { StateManager } = require('../../dist/state')
 const { createGenesis } = require('./utils')
 
@@ -15,13 +14,12 @@ tape('runBlockchain', (t) => {
   const blockchain = new Blockchain({
     db: blockchainDB,
     chain: 'goerli',
-    validate: false
+    validate: false,
   })
-  const stateManager = new StateManager({ common: new Common('goerli') });
+  const stateManager = new StateManager({ common: new Common('goerli') })
   const vm = {
     stateManager,
-    pStateManager: new PStateManager(stateManager),
-    blockchain: blockchain
+    blockchain: blockchain,
   }
 
   const putGenesisP = promisify(blockchain.putGenesis.bind(blockchain))
@@ -51,13 +49,14 @@ tape('runBlockchain', (t) => {
   t.test('should run with valid and invalid blocks', async (st) => {
     // Produce error on the third time runBlock is called
     let runBlockInvocations = 0
-    vm.runBlock = (opts) => new Promise((resolve, reject) => {
-      runBlockInvocations++
-      if (runBlockInvocations === 3) {
-        return reject(new Error('test'))
-      }
-      resolve({})
-    })
+    vm.runBlock = (opts) =>
+      new Promise((resolve, reject) => {
+        runBlockInvocations++
+        if (runBlockInvocations === 3) {
+          return reject(new Error('test'))
+        }
+        resolve({})
+      })
 
     const genesis = createGenesis({ chain: 'goerli' })
     await putGenesisP(genesis)
@@ -89,7 +88,7 @@ tape('runBlockchain', (t) => {
   })
 })
 
-function createBlock (parent = null, n = 0, opts = {}) {
+function createBlock(parent = null, n = 0, opts = {}) {
   opts.chain = opts.chain ? opts.chain : 'mainnet'
   if (parent === null) {
     return createGenesis(opts)

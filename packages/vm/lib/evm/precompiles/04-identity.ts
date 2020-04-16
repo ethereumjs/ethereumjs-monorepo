@@ -3,7 +3,7 @@ import { PrecompileInput } from './types'
 import { OOGResult, ExecResult } from '../evm'
 const assert = require('assert')
 
-export default function(opts: PrecompileInput): ExecResult {
+export default function (opts: PrecompileInput): ExecResult {
   assert(opts.data)
 
   const data = opts.data

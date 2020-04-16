@@ -9,7 +9,7 @@ import {
 } from 'ethereumjs-util'
 import Account from 'ethereumjs-account'
 import { ERROR, VmError } from '../exceptions'
-import PStateManager from '../state/promisified'
+import { StateManager } from '../state/index'
 import { getPrecompile, PrecompileFunc, ripemdPrecompileAddress } from './precompiles'
 import TxContext from './txContext'
 import Message from './message'
@@ -93,7 +93,7 @@ export function OOGResult(gasLimit: BN): ExecResult {
  */
 export default class EVM {
   _vm: any
-  _state: PStateManager
+  _state: StateManager
   _tx: TxContext
   _block: any
   /**
@@ -103,7 +103,7 @@ export default class EVM {
 
   constructor(vm: any, txContext: TxContext, block: any) {
     this._vm = vm
-    this._state = this._vm.pStateManager
+    this._state = this._vm.stateManager
     this._tx = txContext
     this._block = block
     this._refund = new BN(0)
