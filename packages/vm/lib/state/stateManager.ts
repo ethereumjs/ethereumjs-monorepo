@@ -1,6 +1,6 @@
 const Set = require('core-js-pure/es/set')
 const Trie = require('merkle-patricia-tree/secure.js')
-const promisify = require('util-promisify')
+const promisify = require('util.promisify')
 import { toBuffer, KECCAK256_NULL_S } from 'ethereumjs-util'
 import BN = require('bn.js')
 import { encode, decode } from 'rlp'

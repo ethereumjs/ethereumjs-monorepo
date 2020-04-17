@@ -1,6 +1,6 @@
 const tape = require('tape')
 const level = require('level-mem')
-const promisify = require('util-promisify')
+const promisify = require('util.promisify')
 const Blockchain = require('ethereumjs-blockchain').default
 const Block = require('ethereumjs-block')
 const Common = require('ethereumjs-common').default

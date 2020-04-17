@@ -1,5 +1,5 @@
 const tape = require('tape')
-const promisify = require('util-promisify')
+const promisify = require('util.promisify')
 const Trie = require('merkle-patricia-tree/secure.js')
 const Account = require('ethereumjs-account').default
 const Cache = require('../../../dist/state/cache').default

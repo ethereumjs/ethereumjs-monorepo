@@ -1,5 +1,5 @@
 const tape = require('tape')
-const promisify = require('util-promisify')
+const promisify = require('util.promisify')
 const Block = require('ethereumjs-block')
 const Common = require('ethereumjs-common').default
 const util = require('ethereumjs-util')

@@ -6,7 +6,7 @@ import Bloom from './bloom'
 import { RunTxResult } from './runTx'
 import { StateManager } from './state/index'
 const Trie = require('merkle-patricia-tree')
-const promisify = require('util-promisify')
+const promisify = require('util.promisify')
 
 /**
  * Options for running a block.

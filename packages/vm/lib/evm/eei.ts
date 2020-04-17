@@ -7,7 +7,7 @@ import { StateManager } from '../state/index'
 import { VmError, ERROR } from '../exceptions'
 import Message from './message'
 import EVM, { EVMResult } from './evm'
-const promisify = require('util-promisify')
+const promisify = require('util.promisify')
 
 /**
  * Environment data which is made available to EVM bytecode.

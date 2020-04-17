@@ -12,7 +12,7 @@ import { OpcodeList, getOpcodesForHF } from './evm/opcodes'
 import runBlockchain from './runBlockchain'
 const AsyncEventEmitter = require('async-eventemitter')
 const Trie = require('merkle-patricia-tree/secure.js')
-const promisify = require('util-promisify')
+const promisify = require('util.promisify')
 
 /**
  * Options for instantiating a [[VM]].
