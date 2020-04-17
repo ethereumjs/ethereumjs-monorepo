@@ -6,6 +6,38 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [4.0.0] - 2020-04-17
+
+This release introduces a major API upgrade from callbacks to Promises. Behind the scenes the library and its tests have been refactored to TypeScript.
+
+See the items below for other various updates and fixes included in this release.
+
+- Move `failingRefactorTests` to `secure.spec.ts`, PR [#110](https://github.com/ethereumjs/merkle-patricia-tree/pull/110)
+- Better document `_formatNode`, PR [#109](https://github.com/ethereumjs/merkle-patricia-tree/pull/109)
+- Promisify rest of library, PR [#107](https://github.com/ethereumjs/merkle-patricia-tree/pull/107)
+- Upgrade test suite to TS, PR [#106](https://github.com/ethereumjs/merkle-patricia-tree/pull/106)
+- Upgrade from Travis to GH Actions, PR [#105](https://github.com/ethereumjs/merkle-patricia-tree/pull/105)
+- Fix test cases and docs, PR [#104](https://github.com/ethereumjs/merkle-patricia-tree/pull/104)
+- Refactor TrieNode, add levelup types, PR [#98](https://github.com/ethereumjs/merkle-patricia-tree/pull/98)
+- Fix Travis's xvfb service, PR [#97](https://github.com/ethereumjs/merkle-patricia-tree/pull/97)
+- Migrate to Typescript, PR [#96](https://github.com/ethereumjs/merkle-patricia-tree/pull/96)
+- fixed src code links in docs, PR [#93](https://github.com/ethereumjs/merkle-patricia-tree/pull/93)
+- Re-add raw methods, accept leveldb in constructor, minor fixes, PR [#92](https://github.com/ethereumjs/merkle-patricia-tree/pull/92)
+- Rename deprecated sha3 consts and func to keccak256, PR [#91](https://github.com/ethereumjs/merkle-patricia-tree/pull/91)
+- Use module.exports syntax in util files, PR [#90](https://github.com/ethereumjs/merkle-patricia-tree/pull/90)
+- Add more Ethereum state DB focused example accessing account values, PR [#89](https://github.com/ethereumjs/merkle-patricia-tree/pull/89)
+- Org links and git hooks, PR [#87](https://github.com/ethereumjs/merkle-patricia-tree/pull/87)
+- \_lookupNode callback to use standard error, response pattern, PR [#83](https://github.com/ethereumjs/merkle-patricia-tree/pull/83)
+- Support for proofs of null/absence. Dried up prove/verify. PR [#82](https://github.com/ethereumjs/merkle-patricia-tree/pull/82)
+- Update tape to v4.10.1, PR [#81](https://github.com/ethereumjs/merkle-patricia-tree/pull/81)
+- Fix prove and verifyProof in SecureTrie, PR [#79](https://github.com/ethereumjs/merkle-patricia-tree/pull/79)
+- Extract db-related methods from baseTrie, PR [#74](https://github.com/ethereumjs/merkle-patricia-tree/pull/74)
+- Merge checkpoint and secure interface with their ES6 classes, PR [#73](https://github.com/ethereumjs/merkle-patricia-tree/pull/73)
+- Convert trieNode to ES6 class, PR [#71](https://github.com/ethereumjs/merkle-patricia-tree/pull/71)
+- Drop ethereumjs-testing dep and fix bug in branch value update, PR [#69](https://github.com/ethereumjs/merkle-patricia-tree/pull/69)
+
+[4.0.0]: https://github.com/ethereumjs/merkle-patricia-tree/compare/v3.0.0...v4.0.0
+
 ## [3.0.0] - 2019-01-03
 
 This release comes along with some major version bump of the underlying `level`
