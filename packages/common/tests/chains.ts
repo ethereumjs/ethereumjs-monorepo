@@ -59,8 +59,29 @@ tape('[Common]: Initialization / Chain params', function(t: tape.Test) {
     const hash = '0xd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3'
     st.equal(c.genesis().hash, hash, 'should return correct genesis hash')
     st.equal(c.hardforks()[3]['block'], 2463000, 'should return correct hardfork data')
-    st.equal(c.bootstrapNodes()[0].port, 30303, 'should return a bootstrap node array')
+    st.equal(typeof c.bootstrapNodes()[0].port, 'number', 'should return a port as number')
+    st.end()
+  })
 
+  t.test('Should provide the bootnode information in a uniform way', function(st: tape.Test) {
+    const configs = ['mainnet', 'ropsten', 'rinkeby', 'goerli']
+    for (const network of configs) {
+      const c = new Common(network)
+      const bootnode = c.bootstrapNodes()[0]
+      st.equal(typeof bootnode.ip, 'string', 'returns the ip as string')
+      st.equal(typeof bootnode.port, 'number', 'returns the port as number')
+      st.equal(typeof bootnode.id, 'string', 'returns the id as string')
+      st.equal(
+        typeof bootnode.location,
+        'string',
+        'returns the location as string (empty string if unavailable)',
+      )
+      st.equal(
+        typeof bootnode.comment,
+        'string',
+        'returns a comment as string (empty string if unavailable)',
+      )
+    }
     st.end()
   })
 
