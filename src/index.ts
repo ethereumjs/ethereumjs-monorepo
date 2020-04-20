@@ -1,6 +1,10 @@
 import * as crypto from 'crypto'
 import * as ethUtil from 'ethereumjs-util'
 
+export { default as hdkey } from './hdkey'
+export { default as WalletSubprovider } from './provider-engine'
+export { default as thirdparty } from './thirdparty'
+
 const bs58check = require('bs58check')
 const randomBytes = require('randombytes')
 const scryptsy = require('@web3-js/scrypt-shim')
