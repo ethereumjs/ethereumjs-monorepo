@@ -91,57 +91,57 @@ export default class Transaction {
         name: 'nonce',
         length: 32,
         allowLess: true,
-        default: new Buffer([]),
+        default: Buffer.from([]),
       },
       {
         name: 'gasPrice',
         length: 32,
         allowLess: true,
-        default: new Buffer([]),
+        default: Buffer.from([]),
       },
       {
         name: 'gasLimit',
         alias: 'gas',
         length: 32,
         allowLess: true,
-        default: new Buffer([]),
+        default: Buffer.from([]),
       },
       {
         name: 'to',
         allowZero: true,
         length: 20,
-        default: new Buffer([]),
+        default: Buffer.from([]),
       },
       {
         name: 'value',
         length: 32,
         allowLess: true,
-        default: new Buffer([]),
+        default: Buffer.from([]),
       },
       {
         name: 'data',
         alias: 'input',
         allowZero: true,
-        default: new Buffer([]),
+        default: Buffer.from([]),
       },
       {
         name: 'v',
         allowZero: true,
-        default: new Buffer([]),
+        default: Buffer.from([]),
       },
       {
         name: 'r',
         length: 32,
         allowZero: true,
         allowLess: true,
-        default: new Buffer([]),
+        default: Buffer.from([]),
       },
       {
         name: 's',
         length: 32,
         allowZero: true,
         allowLess: true,
-        default: new Buffer([]),
+        default: Buffer.from([]),
       },
     ]
 
@@ -262,9 +262,9 @@ export default class Transaction {
   sign(privateKey: Buffer) {
     // We clear any previous signature before signing it. Otherwise, _implementsEIP155's can give
     // different results if this tx was already signed.
-    this.v = new Buffer([])
-    this.s = new Buffer([])
-    this.r = new Buffer([])
+    this.v = Buffer.from([])
+    this.s = Buffer.from([])
+    this.r = Buffer.from([])
 
     const msgHash = this.hash(false)
     const sig = ecsign(msgHash, privateKey)
