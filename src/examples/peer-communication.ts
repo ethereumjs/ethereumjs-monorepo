@@ -15,17 +15,13 @@ const CHAIN_ID = 1
 const Common = require('ethereumjs-common').default
 const config = new Common('mainnet')
 const bootstrapNodes = config.bootstrapNodes()
-const BOOTNODES = bootstrapNodes
-  .filter((node: any) => {
-    return node.chainId === CHAIN_ID
-  })
-  .map((node: any) => {
-    return {
-      address: node.ip,
-      udpPort: node.port,
-      tcpPort: node.port,
-    }
-  })
+const BOOTNODES = bootstrapNodes.map((node: any) => {
+  return {
+    address: node.ip,
+    udpPort: node.port,
+    tcpPort: node.port,
+  }
+})
 const REMOTE_CLIENTID_FILTER = [
   'go1.5',
   'go1.6',
