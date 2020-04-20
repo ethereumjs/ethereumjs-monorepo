@@ -3,7 +3,7 @@ import * as ethUtil from 'ethereumjs-util'
 
 import Wallet from './index'
 
-const scryptsy = require('scrypt.js')
+const scryptsy = require('@web3-js/scrypt-shim')
 const utf8 = require('utf8')
 const aesjs = require('aes-js')
 
