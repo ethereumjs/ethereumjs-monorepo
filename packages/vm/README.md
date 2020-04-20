@@ -1,4 +1,4 @@
-# SYNOPSIS
+# ethereumjs-vm
 
 [![NPM Package][vm-npm-badge]][vm-npm-link]
 [![GitHub Issues][vm-issues-badge]][vm-issues-link]

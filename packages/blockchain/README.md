@@ -1,4 +1,4 @@
-# SYNOPSIS
+# ethereumjs-blockchain
 
 [![NPM Package][blockchain-npm-badge]][blockchain-npm-link]
 [![GitHub Issues][blockchain-issues-badge]][blockchain-issues-link]
