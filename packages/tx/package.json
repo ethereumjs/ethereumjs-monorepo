@@ -181,6 +181,6 @@
     }
   ],
   "publishConfig": {
-    "directory": "src"
+    "directory": "dist"
   }
 }

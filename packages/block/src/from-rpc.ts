@@ -1,6 +1,7 @@
-import { FakeTransaction } from 'ethereumjs-tx'
+import { FakeTransaction, TransactionOptions } from 'ethereumjs-tx'
 import * as ethUtil from 'ethereumjs-util'
-import { Block, ChainOptions } from './index'
+import { Block } from './index'
+import { ChainOptions } from './types'
 
 import blockHeaderFromRpc from './header-from-rpc'
 
@@ -35,7 +36,9 @@ export default function blockFromRpc(
       // override from address
       const fromAddress = ethUtil.toBuffer(txParams.from)
       delete txParams.from
-      const tx = new FakeTransaction(txParams, chainOptions)
+
+      
+      const tx = new FakeTransaction(txParams, chainOptions as TransactionOptions)
       tx.from = fromAddress
       tx.getSenderAddress = function() {
         return fromAddress

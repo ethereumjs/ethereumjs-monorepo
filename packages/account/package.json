@@ -66,6 +66,6 @@
     "typestrict": "^1.0.2"
   },
   "publishConfig": {
-    "directory": "src"
+    "directory": "dist"
   }
 }

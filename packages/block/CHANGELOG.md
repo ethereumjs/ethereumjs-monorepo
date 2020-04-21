@@ -8,10 +8,11 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ## [3.0.0] - 2020-04-01
 
+Verion 3.0.0 brings modernizations to the code and some **breaking changes** you should be aware of.
+
 ### TypeScript/Library Import
 
-First **TypeScript** based release of the library. The import structure has
-slightly changed along:
+First TypeScript based release of the library. The import structure has slightly changed along:
 
 **TypeScript**
 
@@ -58,6 +59,21 @@ try {
   // handle errors appropriately
 }
 ```
+
+### Different signature for constructor
+
+From now on, it's not allowed to initialize `Block` with a `null` value. If for any reason you need to initialize it without defining a value, use the more semantic `undefined` like the examples below:
+
+```typescript
+  const b = new Block(undefined, options)
+```
+
+or just:
+
+```typescript
+  const b = new Block()
+```
+
 
 ### Change Summary
 

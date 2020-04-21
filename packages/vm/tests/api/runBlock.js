@@ -1,6 +1,6 @@
 const promisify = require('util.promisify')
 const tape = require('tape')
-const Block = require('ethereumjs-block')
+const Block = require('ethereumjs-block').Block
 const Common = require('ethereumjs-common').default
 const util = require('ethereumjs-util')
 const runBlock = require('../../dist/runBlock').default

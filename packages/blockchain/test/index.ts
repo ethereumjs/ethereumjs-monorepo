@@ -595,7 +595,11 @@ test('blockchain test', t => {
         }
         if (genesis) {
           st.equals(head.hash().toString('hex'), genesis.hash().toString('hex'), 'should get head')
-          st.equals(blockchain._heads['head0'].toString('hex'), 'abcd', 'should get state root heads')
+          st.equals(
+            blockchain._heads['head0'].toString('hex'),
+            'abcd',
+            'should get state root heads',
+          )
           st.end()
         } else {
           st.fail()
@@ -610,7 +614,7 @@ test('blockchain test', t => {
     genesisBlock.setGenesisParams()
     genesisBlock.header.gasLimit = toBuffer(8000000)
     blockchain.putGenesis(genesisBlock, (err?: Error) => {
-      st.error(err, 'should validate genesisBlock')
+      st.error(err, 'should validate genesis!!Block')
       const invalidBlock = new Block()
       blockchain.putBlock(invalidBlock, (err?: Error) => {
         t.ok(err, 'should not validate an invalid block')

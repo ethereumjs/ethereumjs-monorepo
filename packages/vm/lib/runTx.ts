@@ -8,7 +8,8 @@ import { default as EVM, EVMResult } from './evm/evm'
 import Message from './evm/message'
 import TxContext from './evm/txContext'
 import PStateManager from './state/promisified'
-const Block = require('ethereumjs-block')
+import { Block } from 'ethereumjs-block'
+
 
 /**
  * Options for the `runTx` method.
