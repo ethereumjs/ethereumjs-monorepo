@@ -10,10 +10,10 @@
 
 ### Properties
 
-- [count](evpkdfopts.md#count)
-- [digest](evpkdfopts.md#digest)
-- [ivsize](evpkdfopts.md#ivsize)
-- [keysize](evpkdfopts.md#keysize)
+* [count](evpkdfopts.md#count)
+* [digest](evpkdfopts.md#digest)
+* [ivsize](evpkdfopts.md#ivsize)
+* [keysize](evpkdfopts.md#keysize)
 
 ---
 
@@ -21,40 +21,38 @@
 
 <a id="count"></a>
 
-### count
+###  count
 
-**● count**: _`number`_
+**● count**: *`number`*
 
-_Defined in [thirdparty.ts:17](https://github.com/alcuadrado/ethereumjs-wallet/blob/8b5f5a9/src/thirdparty.ts#L17)_
+*Defined in [thirdparty.ts:17](https://github.com/ethereumjs/ethereumjs-wallet/blob/15de3c4/src/thirdparty.ts#L17)*
 
----
-
+___
 <a id="digest"></a>
 
-### digest
+###  digest
 
-**● digest**: _`string`_
+**● digest**: *`string`*
 
-_Defined in [thirdparty.ts:20](https://github.com/alcuadrado/ethereumjs-wallet/blob/8b5f5a9/src/thirdparty.ts#L20)_
+*Defined in [thirdparty.ts:20](https://github.com/ethereumjs/ethereumjs-wallet/blob/15de3c4/src/thirdparty.ts#L20)*
 
----
-
+___
 <a id="ivsize"></a>
 
-### ivsize
+###  ivsize
 
-**● ivsize**: _`number`_
+**● ivsize**: *`number`*
 
-_Defined in [thirdparty.ts:19](https://github.com/alcuadrado/ethereumjs-wallet/blob/8b5f5a9/src/thirdparty.ts#L19)_
+*Defined in [thirdparty.ts:19](https://github.com/ethereumjs/ethereumjs-wallet/blob/15de3c4/src/thirdparty.ts#L19)*
 
----
-
+___
 <a id="keysize"></a>
 
-### keysize
+###  keysize
 
-**● keysize**: _`number`_
+**● keysize**: *`number`*
 
-_Defined in [thirdparty.ts:18](https://github.com/alcuadrado/ethereumjs-wallet/blob/8b5f5a9/src/thirdparty.ts#L18)_
+*Defined in [thirdparty.ts:18](https://github.com/ethereumjs/ethereumjs-wallet/blob/15de3c4/src/thirdparty.ts#L18)*
 
----
+___
+

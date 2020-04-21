@@ -1,24 +1,25 @@
-# ethereumjs-wallet
+
+#  ethereumjs-wallet
 
 ## Index
 
 ### Classes
 
-- [EthereumHDKey](classes/ethereumhdkey.md)
-- [Wallet](classes/wallet.md)
-- [WalletSubprovider](classes/walletsubprovider.md)
+* [EthereumHDKey](classes/ethereumhdkey.md)
+* [Wallet](classes/wallet.md)
+* [WalletSubprovider](classes/walletsubprovider.md)
 
 ### Interfaces
 
-- [EtherWalletOptions](interfaces/etherwalletoptions.md)
-- [EvpKdfOpts](interfaces/evpkdfopts.md)
+* [EtherWalletOptions](interfaces/etherwalletoptions.md)
+* [EvpKdfOpts](interfaces/evpkdfopts.md)
 
 ### Functions
 
-- [fromEtherCamp](#fromethercamp)
-- [fromEtherWallet](#frometherwallet)
-- [fromKryptoKit](#fromkryptokit)
-- [fromQuorumWallet](#fromquorumwallet)
+* [fromEtherCamp](#fromethercamp)
+* [fromEtherWallet](#frometherwallet)
+* [fromKryptoKit](#fromkryptokit)
+* [fromQuorumWallet](#fromquorumwallet)
 
 ---
 
@@ -26,75 +27,79 @@
 
 <a id="fromethercamp"></a>
 
-### fromEtherCamp
+###  fromEtherCamp
 
-▸ **fromEtherCamp**(passphrase: _`string`_): [Wallet](classes/wallet.md)
+▸ **fromEtherCamp**(passphrase: *`string`*): [Wallet](classes/wallet.md)
 
-_Defined in [thirdparty.ts:165](https://github.com/alcuadrado/ethereumjs-wallet/blob/8b5f5a9/src/thirdparty.ts#L165)_
+*Defined in [thirdparty.ts:169](https://github.com/ethereumjs/ethereumjs-wallet/blob/15de3c4/src/thirdparty.ts#L169)*
+
+Third Party API: Import a brain wallet used by Ether.Camp
 
 **Parameters:**
 
-| Name       | Type     |
-| ---------- | -------- |
+| Name | Type |
+| ------ | ------ |
 | passphrase | `string` |
 
 **Returns:** [Wallet](classes/wallet.md)
 
----
-
+___
 <a id="frometherwallet"></a>
 
-### fromEtherWallet
+###  fromEtherWallet
 
-▸ **fromEtherWallet**(input: _`string` \| [EtherWalletOptions](interfaces/etherwalletoptions.md)_, password: _`string`_): [Wallet](classes/wallet.md)
+▸ **fromEtherWallet**(input: *`string` \| [EtherWalletOptions](interfaces/etherwalletoptions.md)*, password: *`string`*): [Wallet](classes/wallet.md)
 
-_Defined in [thirdparty.ts:120](https://github.com/alcuadrado/ethereumjs-wallet/blob/8b5f5a9/src/thirdparty.ts#L120)_
-
-**Parameters:**
-
-| Name     | Type                                                               |
-| -------- | ------------------------------------------------------------------ |
-| input    | `string` \| [EtherWalletOptions](interfaces/etherwalletoptions.md) |
-| password | `string`                                                           |
-
-**Returns:** [Wallet](classes/wallet.md)
-
----
-
-<a id="fromkryptokit"></a>
-
-### fromKryptoKit
-
-▸ **fromKryptoKit**(entropy: _`string`_, password: _`string`_): [Wallet](classes/wallet.md)
-
-_Defined in [thirdparty.ts:169](https://github.com/alcuadrado/ethereumjs-wallet/blob/8b5f5a9/src/thirdparty.ts#L169)_
+*Defined in [thirdparty.ts:121](https://github.com/ethereumjs/ethereumjs-wallet/blob/15de3c4/src/thirdparty.ts#L121)*
 
 **Parameters:**
 
-| Name     | Type     |
-| -------- | -------- |
-| entropy  | `string` |
+| Name | Type |
+| ------ | ------ |
+| input | `string` \| [EtherWalletOptions](interfaces/etherwalletoptions.md) |
 | password | `string` |
 
 **Returns:** [Wallet](classes/wallet.md)
 
----
+___
+<a id="fromkryptokit"></a>
 
-<a id="fromquorumwallet"></a>
+###  fromKryptoKit
 
-### fromQuorumWallet
+▸ **fromKryptoKit**(entropy: *`string`*, password: *`string`*): [Wallet](classes/wallet.md)
 
-▸ **fromQuorumWallet**(passphrase: _`string`_, userid: _`string`_): [Wallet](classes/wallet.md)
+*Defined in [thirdparty.ts:176](https://github.com/ethereumjs/ethereumjs-wallet/blob/15de3c4/src/thirdparty.ts#L176)*
 
-_Defined in [thirdparty.ts:255](https://github.com/alcuadrado/ethereumjs-wallet/blob/8b5f5a9/src/thirdparty.ts#L255)_
+Third Party API: Import a wallet from a KryptoKit seed
 
 **Parameters:**
 
-| Name       | Type     |
-| ---------- | -------- |
-| passphrase | `string` |
-| userid     | `string` |
+| Name | Type |
+| ------ | ------ |
+| entropy | `string` |
+| password | `string` |
 
 **Returns:** [Wallet](classes/wallet.md)
 
----
+___
+<a id="fromquorumwallet"></a>
+
+###  fromQuorumWallet
+
+▸ **fromQuorumWallet**(passphrase: *`string`*, userid: *`string`*): [Wallet](classes/wallet.md)
+
+*Defined in [thirdparty.ts:265](https://github.com/ethereumjs/ethereumjs-wallet/blob/15de3c4/src/thirdparty.ts#L265)*
+
+Third Party API: Import a brain wallet used by Quorum Wallet
+
+**Parameters:**
+
+| Name | Type |
+| ------ | ------ |
+| passphrase | `string` |
+| userid | `string` |
+
+**Returns:** [Wallet](classes/wallet.md)
+
+___
+

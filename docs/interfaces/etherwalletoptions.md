@@ -10,12 +10,12 @@
 
 ### Properties
 
-- [address](etherwalletoptions.md#address)
-- [encrypted](etherwalletoptions.md#encrypted)
-- [hash](etherwalletoptions.md#hash)
-- [locked](etherwalletoptions.md#locked)
-- [private](etherwalletoptions.md#private)
-- [public](etherwalletoptions.md#public)
+* [address](etherwalletoptions.md#address)
+* [encrypted](etherwalletoptions.md#encrypted)
+* [hash](etherwalletoptions.md#hash)
+* [locked](etherwalletoptions.md#locked)
+* [private](etherwalletoptions.md#private)
+* [public](etherwalletoptions.md#public)
 
 ---
 
@@ -23,60 +23,56 @@
 
 <a id="address"></a>
 
-### address
+###  address
 
-**● address**: _`string`_
+**● address**: *`string`*
 
-_Defined in [thirdparty.ts:108](https://github.com/alcuadrado/ethereumjs-wallet/blob/8b5f5a9/src/thirdparty.ts#L108)_
+*Defined in [thirdparty.ts:108](https://github.com/ethereumjs/ethereumjs-wallet/blob/15de3c4/src/thirdparty.ts#L108)*
 
----
-
+___
 <a id="encrypted"></a>
 
-### encrypted
+###  encrypted
 
-**● encrypted**: _`boolean`_
+**● encrypted**: *`boolean`*
 
-_Defined in [thirdparty.ts:109](https://github.com/alcuadrado/ethereumjs-wallet/blob/8b5f5a9/src/thirdparty.ts#L109)_
+*Defined in [thirdparty.ts:109](https://github.com/ethereumjs/ethereumjs-wallet/blob/15de3c4/src/thirdparty.ts#L109)*
 
----
-
+___
 <a id="hash"></a>
 
-### hash
+###  hash
 
-**● hash**: _`string`_
+**● hash**: *`string`*
 
-_Defined in [thirdparty.ts:111](https://github.com/alcuadrado/ethereumjs-wallet/blob/8b5f5a9/src/thirdparty.ts#L111)_
+*Defined in [thirdparty.ts:111](https://github.com/ethereumjs/ethereumjs-wallet/blob/15de3c4/src/thirdparty.ts#L111)*
 
----
-
+___
 <a id="locked"></a>
 
-### locked
+###  locked
 
-**● locked**: _`boolean`_
+**● locked**: *`boolean`*
 
-_Defined in [thirdparty.ts:110](https://github.com/alcuadrado/ethereumjs-wallet/blob/8b5f5a9/src/thirdparty.ts#L110)_
+*Defined in [thirdparty.ts:110](https://github.com/ethereumjs/ethereumjs-wallet/blob/15de3c4/src/thirdparty.ts#L110)*
 
----
-
+___
 <a id="private"></a>
 
-### private
+###  private
 
-**● private**: _`string`_
+**● private**: *`string`*
 
-_Defined in [thirdparty.ts:112](https://github.com/alcuadrado/ethereumjs-wallet/blob/8b5f5a9/src/thirdparty.ts#L112)_
+*Defined in [thirdparty.ts:112](https://github.com/ethereumjs/ethereumjs-wallet/blob/15de3c4/src/thirdparty.ts#L112)*
 
----
-
+___
 <a id="public"></a>
 
-### public
+###  public
 
-**● public**: _`string`_
+**● public**: *`string`*
 
-_Defined in [thirdparty.ts:113](https://github.com/alcuadrado/ethereumjs-wallet/blob/8b5f5a9/src/thirdparty.ts#L113)_
+*Defined in [thirdparty.ts:113](https://github.com/ethereumjs/ethereumjs-wallet/blob/15de3c4/src/thirdparty.ts#L113)*
 
----
+___
+
