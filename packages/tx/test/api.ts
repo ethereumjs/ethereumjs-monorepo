@@ -41,15 +41,15 @@ tape('[Transaction]: Basic functions', function(t) {
     const tx = new Transaction(txFixtures[3].raw)
     st.deepEqual(
       tx.hash(),
-      new Buffer('375a8983c9fc56d7cfd118254a80a8d7403d590a6c9e105532b67aca1efb97aa', 'hex'),
+      Buffer.from('375a8983c9fc56d7cfd118254a80a8d7403d590a6c9e105532b67aca1efb97aa', 'hex'),
     )
     st.deepEqual(
       tx.hash(false),
-      new Buffer('61e1ec33764304dddb55348e7883d4437426f44ab3ef65e6da1e025734c03ff0', 'hex'),
+      Buffer.from('61e1ec33764304dddb55348e7883d4437426f44ab3ef65e6da1e025734c03ff0', 'hex'),
     )
     st.deepEqual(
       tx.hash(true),
-      new Buffer('375a8983c9fc56d7cfd118254a80a8d7403d590a6c9e105532b67aca1efb97aa', 'hex'),
+      Buffer.from('375a8983c9fc56d7cfd118254a80a8d7403d590a6c9e105532b67aca1efb97aa', 'hex'),
     )
     st.end()
   })
@@ -106,7 +106,7 @@ tape('[Transaction]: Basic functions', function(t) {
   t.test('should sign tx', function(st) {
     transactions.forEach(function(tx, i) {
       if (txFixtures[i].privateKey) {
-        const privKey = new Buffer(txFixtures[i].privateKey, 'hex')
+        const privKey = Buffer.from(txFixtures[i].privateKey, 'hex')
         tx.sign(privKey)
       }
     })
@@ -127,7 +127,7 @@ tape('[Transaction]: Basic functions', function(t) {
       if (txFixtures[i].privateKey) {
         st.equals(
           tx.getSenderPublicKey().toString('hex'),
-          privateToPublic(new Buffer(txFixtures[i].privateKey, 'hex')).toString('hex'),
+          privateToPublic(Buffer.from(txFixtures[i].privateKey, 'hex')).toString('hex'),
         )
       }
     })
@@ -280,7 +280,7 @@ tape('[Transaction]: Basic functions', function(t) {
   t.test('sign tx with chainId specified in params', function(st) {
     const tx = new Transaction({}, { chain: 42 })
     st.equal(tx.getChainId(), 42)
-    const privKey = new Buffer(txFixtures[0].privateKey, 'hex')
+    const privKey = Buffer.from(txFixtures[0].privateKey, 'hex')
     tx.sign(privKey)
     const serialized = tx.serialize()
     const reTx = new Transaction(serialized, { chain: 42 })
@@ -294,7 +294,7 @@ tape('[Transaction]: Basic functions', function(t) {
   ) {
     const tx = new Transaction({}, { chain: 42 })
     st.equal(tx.getChainId(), 42)
-    const privKey = new Buffer(txFixtures[0].privateKey, 'hex')
+    const privKey = Buffer.from(txFixtures[0].privateKey, 'hex')
     tx.sign(privKey)
     const serialized = tx.serialize()
     st.throws(() => new Transaction(serialized))
@@ -322,7 +322,7 @@ tape('[Transaction]: Basic functions', function(t) {
     st,
   ) {
     const tx = new Transaction({}, { chain: 42 })
-    const privKey = new Buffer(txFixtures[0].privateKey, 'hex')
+    const privKey = Buffer.from(txFixtures[0].privateKey, 'hex')
     tx.sign(privKey)
 
     st.throws(() => (tx.v = toBuffer(1)))
@@ -337,7 +337,7 @@ tape('[Transaction]: Basic functions', function(t) {
     txFixtures.slice(0, 3).forEach(function(txData) {
       const tx = new Transaction(txData.raw.slice(0, 6), { chain: 1 })
 
-      const privKey = new Buffer(txData.privateKey, 'hex')
+      const privKey = Buffer.from(txData.privateKey, 'hex')
       tx.sign(privKey)
 
       st.equal(

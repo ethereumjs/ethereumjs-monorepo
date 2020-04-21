@@ -31,7 +31,7 @@ const tx = new Transaction(
 // Once we created the transaction using the custom Common object, we can use it as a normal tx.
 
 // Here we sign it and validate its signature
-const privateKey = new Buffer(
+const privateKey = Buffer.from(
   'e331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109',
   'hex',
 )
