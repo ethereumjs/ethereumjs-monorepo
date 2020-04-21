@@ -87,11 +87,10 @@ export default class DBManager {
     let body
     try {
       body = await this.getBody(hash, number)
+      return new Block([header, [body], []], { common: this._common })
     } catch (e) {
-      body = [[], []]
+      return new Block([header, [Buffer.from([])], [Buffer.from([])]], { common: this._common })
     }
-
-    return new Block([header].concat(body), { common: this._common })
   }
 
   /**
@@ -105,6 +104,7 @@ export default class DBManager {
   /**
    * Fetches header of a block given its hash and number.
    */
+
   async getHeader(hash: Buffer, number: BN) {
     const key = headerKey(number, hash)
     const encodedHeader = await this.get(key, { cache: 'header' })

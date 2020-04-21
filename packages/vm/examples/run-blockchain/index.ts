@@ -1,11 +1,10 @@
 import VM from '../../'
 
 import Account from 'ethereumjs-account'
+import { Block, BlockHeader } from 'ethereumjs-block'
 import Blockchain from 'ethereumjs-blockchain'
 import { toBuffer, setLength } from 'ethereumjs-util'
 
-const Block = require('ethereumjs-block')
-const BlockHeader = require('ethereumjs-block/header.js')
 const testData = require('./test-data')
 const level = require('level')
 const { promisify } = require('util')

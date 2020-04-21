@@ -28,6 +28,21 @@ tape('[Block]: block functions', function(t) {
     st.end()
   })
 
+  t.test('should initialize with undefined parameters without throwing', function(st) {
+    st.doesNotThrow(function() {
+      new Block()
+      st.end()
+    })
+  })
+
+  t.test('should initialize with null parameters without throwing', function(st) {
+    st.doesNotThrow(function() {
+      const opts = {chain: "mainnet"}
+      new Block(undefined, opts)
+      st.end()
+    })
+  })
+
   const testData = require('./testdata/testdata.json')
 
   async function testTransactionValidation(st: tape.Test, block: Block) {

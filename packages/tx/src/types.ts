@@ -1,4 +1,3 @@
-import { Buffer } from 'buffer'
 import Common from 'ethereumjs-common'
 
 /**
@@ -79,8 +78,9 @@ export interface FakeTxData extends TxData {
 }
 
 /**
- * The transaction's options. This could be specified using a Common object, or `chain` and `hardfork`. Defaults to
- * mainnet.
+ * An object to set to which blockchain the blocks and their headers belong. This could be specified
+ * using a Common object, or `chain` and `hardfork`. Defaults to mainnet without specifying a
+ * hardfork.
  */
 export interface TransactionOptions {
   /**

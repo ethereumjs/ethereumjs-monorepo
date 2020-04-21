@@ -67,5 +67,12 @@
       "email": "Holger.Drewes@gmail.com"
     }
   ],
+<<<<<<< HEAD
   "dependencies": {}
+=======
+  "dependencies": {},
+  "publishConfig": {
+    "directory": "dist"
+  }
+>>>>>>> All siloed tests passing.
 }
