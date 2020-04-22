@@ -1,4 +1,4 @@
-import * as LRU from 'lru-cache'
+import LRU = require('lru-cache')
 
 /**
  * Simple LRU Cache that allows for keys of type Buffer

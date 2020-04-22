@@ -4,7 +4,7 @@ const ethUtil = require('ethereumjs-util')
 const Trie = require('merkle-patricia-tree/secure')
 const Block = require('ethereumjs-block').Block
 const Blockchain = require('ethereumjs-blockchain').default
-const BlockHeader = require('ethereumjs-block/header.js')
+const BlockHeader = require('ethereumjs-block').BlockHeader
 const level = require('level')
 const levelMem = require('level-mem')
 
