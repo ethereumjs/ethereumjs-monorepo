@@ -19,7 +19,7 @@ jobs:
         with:
           node-version: 12.x
       - uses: actions/checkout@v1
-      - run: npx lerna bootstrap --scope ethereumjs-common --ignore-scripts --include-dependencies
+      - run: npx lerna bootstrap --scope ethereumjs-common --ignore-scripts --include-dependencies --no-ci
 
       - run: npx lerna run --scope ethereumjs-common --include-dependencies build
 

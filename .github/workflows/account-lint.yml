@@ -21,7 +21,7 @@ jobs:
       - uses: actions/checkout@v1
       # - run: npm install
       #   working-directory: '${{ env.cwd }}'
-      - run: npx lerna bootstrap --scope ethereumjs-account --ignore-scripts --include-dependencies
+      - run: npx lerna bootstrap --scope ethereumjs-account --ignore-scripts --include-dependencies --no-ci
       - run: npx lerna run --scope ethereumjs-account --include-dependencies build
 
       - run: npm run lint

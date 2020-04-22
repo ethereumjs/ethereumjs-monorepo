@@ -36,7 +36,7 @@ jobs:
       # - run: npm install
         # if: steps.cache-node-modules.outputs.cache-hit != 'true'
         # working-directory: '${{ env.cwd }}'
-      - run: npx lerna bootstrap --scope ethereumjs-vm --ignore-scripts --include-dependencies
+      - run: npx lerna bootstrap --scope ethereumjs-vm --ignore-scripts --include-dependencies --no-ci
 
       - run: npx lerna run --scope ethereumjs-vm --include-dependencies build
 
@@ -64,7 +64,7 @@ jobs:
           path: node_modules
           key: "${{ runner.os }}-node8-${{ hashFiles('**/package.json') }}"
       
-      - run: npx lerna bootstrap --scope ethereumjs-vm --ignore-scripts --include-dependencies
+      - run: npx lerna bootstrap --scope ethereumjs-vm --ignore-scripts --include-dependencies --no-ci
 
       - run: npx lerna run --scope ethereumjs-vm --include-dependencies build
 
@@ -91,7 +91,7 @@ jobs:
           path: node_modules
           key: "${{ runner.os }}-node8-${{ hashFiles('**/package.json') }}"
 
-      - run: npx lerna bootstrap --scope ethereumjs-vm --ignore-scripts --include-dependencies
+      - run: npx lerna bootstrap --scope ethereumjs-vm --ignore-scripts --include-dependencies --no-ci
 
       - run: npx lerna run --scope ethereumjs-vm --include-dependencies build
 

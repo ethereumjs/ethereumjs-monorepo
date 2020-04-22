@@ -14,7 +14,7 @@ aliases:
       - run: 
           name: Installing dependencies
           # command: cd ~/project/packages/${CIRCLE_JOB} && npm install
-          command: npx lerna bootstrap --scope ethereumjs-${CIRCLE_JOB} --ignore-scripts --include-dependencies
+          command: npx lerna bootstrap --scope ethereumjs-${CIRCLE_JOB} --ignore-scripts --include-dependencies --no-ci
 
       - run: 
           name: Building target package and dependencies
