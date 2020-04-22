@@ -6,4 +6,4 @@
 
 ### Classes
 
-* [Transaction](../classes/_transaction_.transaction.md)
+- [Transaction](../classes/_transaction_.transaction.md)

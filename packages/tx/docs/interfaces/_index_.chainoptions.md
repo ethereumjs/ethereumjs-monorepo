@@ -8,42 +8,42 @@ hardfork.
 
 ## Hierarchy
 
-* **ChainOptions**
+- **ChainOptions**
 
 ## Index
 
 ### Properties
 
-* [chain](_index_.chainoptions.md#optional-chain)
-* [common](_index_.chainoptions.md#optional-common)
-* [hardfork](_index_.chainoptions.md#optional-hardfork)
+- [chain](_index_.chainoptions.md#optional-chain)
+- [common](_index_.chainoptions.md#optional-common)
+- [hardfork](_index_.chainoptions.md#optional-hardfork)
 
 ## Properties
 
 ### `Optional` chain
 
-• **chain**? : *number | string*
+• **chain**? : _number | string_
 
-*Defined in [types.ts:95](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/types.ts#L95)*
+_Defined in [types.ts:95](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/types.ts#L95)_
 
 The chain of the transaction, default: 'mainnet'
 
-___
+---
 
 ### `Optional` common
 
-• **common**? : *Common*
+• **common**? : _Common_
 
-*Defined in [types.ts:90](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/types.ts#L90)*
+_Defined in [types.ts:90](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/types.ts#L90)_
 
 A Common object defining the chain and the hardfork a transaction belongs to.
 
-___
+---
 
 ### `Optional` hardfork
 
-• **hardfork**? : *undefined | string*
+• **hardfork**? : _undefined | string_
 
-*Defined in [types.ts:100](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/types.ts#L100)*
+_Defined in [types.ts:100](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/types.ts#L100)_
 
 The hardfork of the transaction, default: 'petersburg'

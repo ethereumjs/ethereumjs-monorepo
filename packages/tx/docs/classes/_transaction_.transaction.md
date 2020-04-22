@@ -6,50 +6,50 @@ An Ethereum transaction.
 
 ## Hierarchy
 
-* **Transaction**
+- **Transaction**
 
 ## Index
 
 ### Constructors
 
-* [constructor](_transaction_.transaction.md#constructor)
+- [constructor](_transaction_.transaction.md#constructor)
 
 ### Properties
 
-* [data](_transaction_.transaction.md#data)
-* [gasLimit](_transaction_.transaction.md#gaslimit)
-* [gasPrice](_transaction_.transaction.md#gasprice)
-* [nonce](_transaction_.transaction.md#nonce)
-* [r](_transaction_.transaction.md#r)
-* [raw](_transaction_.transaction.md#raw)
-* [s](_transaction_.transaction.md#s)
-* [to](_transaction_.transaction.md#to)
-* [v](_transaction_.transaction.md#v)
-* [value](_transaction_.transaction.md#value)
+- [data](_transaction_.transaction.md#data)
+- [gasLimit](_transaction_.transaction.md#gaslimit)
+- [gasPrice](_transaction_.transaction.md#gasprice)
+- [nonce](_transaction_.transaction.md#nonce)
+- [r](_transaction_.transaction.md#r)
+- [raw](_transaction_.transaction.md#raw)
+- [s](_transaction_.transaction.md#s)
+- [to](_transaction_.transaction.md#to)
+- [v](_transaction_.transaction.md#v)
+- [value](_transaction_.transaction.md#value)
 
 ### Methods
 
-* [getBaseFee](_transaction_.transaction.md#getbasefee)
-* [getChainId](_transaction_.transaction.md#getchainid)
-* [getDataFee](_transaction_.transaction.md#getdatafee)
-* [getSenderAddress](_transaction_.transaction.md#getsenderaddress)
-* [getSenderPublicKey](_transaction_.transaction.md#getsenderpublickey)
-* [getUpfrontCost](_transaction_.transaction.md#getupfrontcost)
-* [hash](_transaction_.transaction.md#hash)
-* [serialize](_transaction_.transaction.md#serialize)
-* [sign](_transaction_.transaction.md#sign)
-* [toCreationAddress](_transaction_.transaction.md#tocreationaddress)
-* [toJSON](_transaction_.transaction.md#tojson)
-* [validate](_transaction_.transaction.md#validate)
-* [verifySignature](_transaction_.transaction.md#verifysignature)
+- [getBaseFee](_transaction_.transaction.md#getbasefee)
+- [getChainId](_transaction_.transaction.md#getchainid)
+- [getDataFee](_transaction_.transaction.md#getdatafee)
+- [getSenderAddress](_transaction_.transaction.md#getsenderaddress)
+- [getSenderPublicKey](_transaction_.transaction.md#getsenderpublickey)
+- [getUpfrontCost](_transaction_.transaction.md#getupfrontcost)
+- [hash](_transaction_.transaction.md#hash)
+- [serialize](_transaction_.transaction.md#serialize)
+- [sign](_transaction_.transaction.md#sign)
+- [toCreationAddress](_transaction_.transaction.md#tocreationaddress)
+- [toJSON](_transaction_.transaction.md#tojson)
+- [validate](_transaction_.transaction.md#validate)
+- [verifySignature](_transaction_.transaction.md#verifysignature)
 
 ## Constructors
 
-###  constructor
+### constructor
 
-\+ **new Transaction**(`data`: Buffer | [PrefixedHexString](../modules/_index_.md#prefixedhexstring) | [BufferLike](../modules/_index_.md#bufferlike)[] | [TxData](../interfaces/_index_.txdata.md), `opts`: [ChainOptions](../interfaces/_index_.chainoptions.md)): *[Transaction](_transaction_.transaction.md)*
+\+ **new Transaction**(`data`: Buffer | [PrefixedHexString](../modules/_index_.md#prefixedhexstring) | [BufferLike](../modules/_index_.md#bufferlike)[] | [TxData](../interfaces/_index_.txdata.md), `opts`: [ChainOptions](../interfaces/_index_.chainoptions.md)): _[Transaction](_transaction_.transaction.md)_
 
-*Defined in [transaction.ts:37](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/transaction.ts#L37)*
+_Defined in [transaction.ts:37](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/transaction.ts#L37)_
 
 Creates a new transaction from an object with its fields' values.
 
@@ -57,7 +57,8 @@ Creates a new transaction from an object with its fields' values.
 second parameter to set a chain and hardfork before EIP155 activation (i.e. before Spurious
 Dragon.)
 
-**`example`** 
+**`example`**
+
 ```js
 const txData = {
   nonce: '0x00',
@@ -68,239 +69,239 @@ const txData = {
   data: '0x7f7465737432000000000000000000000000000000000000000000000000000000600057',
   v: '0x1c',
   r: '0x5e1d3a76fbf824220eafc8c79ad578ad2b67d01b0c2425eb1f1347e8f50882ab',
-  s: '0x5bd428537f05f9830e93792f90ea6a3e2d1ee84952dd96edbae9f658f831ab13'
-};
-const tx = new Transaction(txData);
+  s: '0x5bd428537f05f9830e93792f90ea6a3e2d1ee84952dd96edbae9f658f831ab13',
+}
+const tx = new Transaction(txData)
 ```
 
 **Parameters:**
 
-Name | Type | Default | Description |
------- | ------ | ------ | ------ |
-`data` | Buffer &#124; [PrefixedHexString](../modules/_index_.md#prefixedhexstring) &#124; [BufferLike](../modules/_index_.md#bufferlike)[] &#124; [TxData](../interfaces/_index_.txdata.md) | {} | A transaction can be initialized with its rlp representation, an array containing the value of its fields in order, or an object containing them by name.  |
-`opts` | [ChainOptions](../interfaces/_index_.chainoptions.md) | {} | The transaction's options, used to indicate the chain and hardfork the transactions belongs to.  |
+| Name   | Type                                                                                                                                                                                | Default | Description                                                                                                                                               |
+| ------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `data` | Buffer &#124; [PrefixedHexString](../modules/_index_.md#prefixedhexstring) &#124; [BufferLike](../modules/_index_.md#bufferlike)[] &#124; [TxData](../interfaces/_index_.txdata.md) | {}      | A transaction can be initialized with its rlp representation, an array containing the value of its fields in order, or an object containing them by name. |
+| `opts` | [ChainOptions](../interfaces/_index_.chainoptions.md)                                                                                                                               | {}      | The transaction's options, used to indicate the chain and hardfork the transactions belongs to.                                                           |
 
-**Returns:** *[Transaction](_transaction_.transaction.md)*
+**Returns:** _[Transaction](_transaction_.transaction.md)_
 
 ## Properties
 
-###  data
+### data
 
-• **data**: *Buffer*
+• **data**: _Buffer_
 
-*Defined in [transaction.ts:30](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/transaction.ts#L30)*
+_Defined in [transaction.ts:30](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/transaction.ts#L30)_
 
-___
+---
 
-###  gasLimit
+### gasLimit
 
-• **gasLimit**: *Buffer*
+• **gasLimit**: _Buffer_
 
-*Defined in [transaction.ts:26](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/transaction.ts#L26)*
+_Defined in [transaction.ts:26](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/transaction.ts#L26)_
 
-___
+---
 
-###  gasPrice
+### gasPrice
 
-• **gasPrice**: *Buffer*
+• **gasPrice**: _Buffer_
 
-*Defined in [transaction.ts:27](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/transaction.ts#L27)*
+_Defined in [transaction.ts:27](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/transaction.ts#L27)_
 
-___
+---
 
-###  nonce
+### nonce
 
-• **nonce**: *Buffer*
+• **nonce**: _Buffer_
 
-*Defined in [transaction.ts:25](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/transaction.ts#L25)*
+_Defined in [transaction.ts:25](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/transaction.ts#L25)_
 
-___
+---
 
-###  r
+### r
 
-• **r**: *Buffer*
+• **r**: _Buffer_
 
-*Defined in [transaction.ts:32](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/transaction.ts#L32)*
+_Defined in [transaction.ts:32](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/transaction.ts#L32)_
 
-___
+---
 
-###  raw
+### raw
 
-• **raw**: *Buffer[]*
+• **raw**: _Buffer[]_
 
-*Defined in [transaction.ts:24](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/transaction.ts#L24)*
+_Defined in [transaction.ts:24](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/transaction.ts#L24)_
 
-___
+---
 
-###  s
+### s
 
-• **s**: *Buffer*
+• **s**: _Buffer_
 
-*Defined in [transaction.ts:33](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/transaction.ts#L33)*
+_Defined in [transaction.ts:33](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/transaction.ts#L33)_
 
-___
+---
 
-###  to
+### to
 
-• **to**: *Buffer*
+• **to**: _Buffer_
 
-*Defined in [transaction.ts:28](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/transaction.ts#L28)*
+_Defined in [transaction.ts:28](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/transaction.ts#L28)_
 
-___
+---
 
-###  v
+### v
 
-• **v**: *Buffer*
+• **v**: _Buffer_
 
-*Defined in [transaction.ts:31](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/transaction.ts#L31)*
+_Defined in [transaction.ts:31](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/transaction.ts#L31)_
 
-___
+---
 
-###  value
+### value
 
-• **value**: *Buffer*
+• **value**: _Buffer_
 
-*Defined in [transaction.ts:29](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/transaction.ts#L29)*
+_Defined in [transaction.ts:29](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/transaction.ts#L29)_
 
 ## Methods
 
-###  getBaseFee
+### getBaseFee
 
-▸ **getBaseFee**(): *BN*
+▸ **getBaseFee**(): _BN_
 
-*Defined in [transaction.ts:296](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/transaction.ts#L296)*
+_Defined in [transaction.ts:296](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/transaction.ts#L296)_
 
 the minimum amount of gas the tx must have (DataFee + TxFee + Creation Fee)
 
-**Returns:** *BN*
+**Returns:** _BN_
 
-___
+---
 
-###  getChainId
+### getChainId
 
-▸ **getChainId**(): *number*
+▸ **getChainId**(): _number_
 
-*Defined in [transaction.ts:202](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/transaction.ts#L202)*
+_Defined in [transaction.ts:202](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/transaction.ts#L202)_
 
 returns chain ID
 
-**Returns:** *number*
+**Returns:** _number_
 
-___
+---
 
-###  getDataFee
+### getDataFee
 
-▸ **getDataFee**(): *BN*
+▸ **getDataFee**(): _BN_
 
-*Defined in [transaction.ts:282](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/transaction.ts#L282)*
+_Defined in [transaction.ts:282](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/transaction.ts#L282)_
 
 The amount of gas paid for the data in this tx
 
-**Returns:** *BN*
+**Returns:** _BN_
 
-___
+---
 
-###  getSenderAddress
+### getSenderAddress
 
-▸ **getSenderAddress**(): *Buffer*
+▸ **getSenderAddress**(): _Buffer_
 
-*Defined in [transaction.ts:209](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/transaction.ts#L209)*
+_Defined in [transaction.ts:209](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/transaction.ts#L209)_
 
 returns the sender's address
 
-**Returns:** *Buffer*
+**Returns:** _Buffer_
 
-___
+---
 
-###  getSenderPublicKey
+### getSenderPublicKey
 
-▸ **getSenderPublicKey**(): *Buffer*
+▸ **getSenderPublicKey**(): _Buffer_
 
-*Defined in [transaction.ts:221](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/transaction.ts#L221)*
+_Defined in [transaction.ts:221](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/transaction.ts#L221)_
 
 returns the public key of the sender
 
-**Returns:** *Buffer*
+**Returns:** _Buffer_
 
-___
+---
 
-###  getUpfrontCost
+### getUpfrontCost
 
-▸ **getUpfrontCost**(): *BN*
+▸ **getUpfrontCost**(): _BN_
 
-*Defined in [transaction.ts:307](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/transaction.ts#L307)*
+_Defined in [transaction.ts:307](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/transaction.ts#L307)_
 
 the up front amount that an account must have for this transaction to be valid
 
-**Returns:** *BN*
+**Returns:** _BN_
 
-___
+---
 
-###  hash
+### hash
 
-▸ **hash**(`includeSignature`: boolean): *Buffer*
+▸ **hash**(`includeSignature`: boolean): _Buffer_
 
-*Defined in [transaction.ts:177](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/transaction.ts#L177)*
+_Defined in [transaction.ts:177](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/transaction.ts#L177)_
 
 Computes a sha3-256 hash of the serialized tx
 
 **Parameters:**
 
-Name | Type | Default | Description |
------- | ------ | ------ | ------ |
-`includeSignature` | boolean | true | Whether or not to include the signature  |
+| Name               | Type    | Default | Description                             |
+| ------------------ | ------- | ------- | --------------------------------------- |
+| `includeSignature` | boolean | true    | Whether or not to include the signature |
 
-**Returns:** *Buffer*
+**Returns:** _Buffer_
 
-___
+---
 
-###  serialize
+### serialize
 
-▸ **serialize**(): *Buffer*
+▸ **serialize**(): _Buffer_
 
-*Defined in [transaction.ts:337](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/transaction.ts#L337)*
+_Defined in [transaction.ts:337](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/transaction.ts#L337)_
 
 Returns the rlp encoding of the transaction
 
-**Returns:** *Buffer*
+**Returns:** _Buffer_
 
-___
+---
 
-###  sign
+### sign
 
-▸ **sign**(`privateKey`: Buffer): *void*
+▸ **sign**(`privateKey`: Buffer): _void_
 
-*Defined in [transaction.ts:262](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/transaction.ts#L262)*
+_Defined in [transaction.ts:262](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/transaction.ts#L262)_
 
 sign a transaction with a given private key
 
 **Parameters:**
 
-Name | Type | Description |
------- | ------ | ------ |
-`privateKey` | Buffer | Must be 32 bytes in length  |
+| Name         | Type   | Description                |
+| ------------ | ------ | -------------------------- |
+| `privateKey` | Buffer | Must be 32 bytes in length |
 
-**Returns:** *void*
+**Returns:** _void_
 
-___
+---
 
-###  toCreationAddress
+### toCreationAddress
 
-▸ **toCreationAddress**(): *boolean*
+▸ **toCreationAddress**(): _boolean_
 
-*Defined in [transaction.ts:169](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/transaction.ts#L169)*
+_Defined in [transaction.ts:169](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/transaction.ts#L169)_
 
 If the tx's `to` is to the creation address
 
-**Returns:** *boolean*
+**Returns:** _boolean_
 
-___
+---
 
-###  toJSON
+### toJSON
 
-▸ **toJSON**(`labels`: boolean): *object | string[]*
+▸ **toJSON**(`labels`: boolean): _object | string[]_
 
-*Defined in [transaction.ts:346](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/transaction.ts#L346)*
+_Defined in [transaction.ts:346](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/transaction.ts#L346)_
 
 Returns the transaction in JSON format
 
@@ -308,56 +309,56 @@ Returns the transaction in JSON format
 
 **Parameters:**
 
-Name | Type | Default |
------- | ------ | ------ |
-`labels` | boolean | false |
+| Name     | Type    | Default |
+| -------- | ------- | ------- |
+| `labels` | boolean | false   |
 
-**Returns:** *object | string[]*
+**Returns:** _object | string[]_
 
-___
+---
 
-###  validate
+### validate
 
-▸ **validate**(): *boolean*
+▸ **validate**(): _boolean_
 
-*Defined in [transaction.ts:314](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/transaction.ts#L314)*
+_Defined in [transaction.ts:314](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/transaction.ts#L314)_
 
 Validates the signature and checks to see if it has enough gas.
 
-**Returns:** *boolean*
+**Returns:** _boolean_
 
-▸ **validate**(`stringError`: false): *boolean*
+▸ **validate**(`stringError`: false): _boolean_
 
-*Defined in [transaction.ts:315](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/transaction.ts#L315)*
-
-**Parameters:**
-
-Name | Type |
------- | ------ |
-`stringError` | false |
-
-**Returns:** *boolean*
-
-▸ **validate**(`stringError`: true): *string*
-
-*Defined in [transaction.ts:316](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/transaction.ts#L316)*
+_Defined in [transaction.ts:315](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/transaction.ts#L315)_
 
 **Parameters:**
 
-Name | Type |
------- | ------ |
-`stringError` | true |
+| Name          | Type  |
+| ------------- | ----- |
+| `stringError` | false |
 
-**Returns:** *string*
+**Returns:** _boolean_
 
-___
+▸ **validate**(`stringError`: true): _string_
 
-###  verifySignature
+_Defined in [transaction.ts:316](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/transaction.ts#L316)_
 
-▸ **verifySignature**(): *boolean*
+**Parameters:**
 
-*Defined in [transaction.ts:233](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/transaction.ts#L233)*
+| Name          | Type |
+| ------------- | ---- |
+| `stringError` | true |
+
+**Returns:** _string_
+
+---
+
+### verifySignature
+
+▸ **verifySignature**(): _boolean_
+
+_Defined in [transaction.ts:233](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/transaction.ts#L233)_
 
 Determines if the signature is valid
 
-**Returns:** *boolean*
+**Returns:** _boolean_
