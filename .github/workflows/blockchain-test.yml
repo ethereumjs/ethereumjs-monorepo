@@ -29,8 +29,12 @@ jobs:
         with:
           node-version: '${{ matrix.node-version }}'
       - uses: actions/checkout@v1
-      - run: npm install
-        working-directory: '${{ env.cwd }}'
+      - run: lerna bootstrap --scope ethereumjs-blockchain --ignore-scripts --include-dependencies
+
+      - run: lerna run --scope ethereumjs-blockchain --ignore-scripts --include-dependencies npm run build
+
+      # - run: npm install
+      #   working-directory: '${{ env.cwd }}'
       - run: npm test
         env:
           CI: true
