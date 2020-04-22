@@ -10,7 +10,6 @@ import TxContext from './evm/txContext'
 import PStateManager from './state/promisified'
 import { Block } from 'ethereumjs-block'
 
-
 /**
  * Options for the `runTx` method.
  */
