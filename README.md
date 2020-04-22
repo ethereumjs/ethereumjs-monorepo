@@ -40,7 +40,8 @@ Importing various third party wallets is possible through the `thirdparty` submo
 `var thirdparty = require('ethereumjs-wallet/thirdparty')`
 =======
 Node.js / ES5:
->>>>>>> typedoc
+
+> > > > > > > typedoc
 
 ```js
 const thirdparty = require('ethereumjs-wallet/thirdparty').default
@@ -64,7 +65,8 @@ To use BIP32 HD wallets, first include the `hdkey` submodule:
 `var hdkey = require('ethereumjs-wallet/hdkey')`
 =======
 Node.js / ES5:
->>>>>>> typedoc
+
+> > > > > > > typedoc
 
 ```js
 const hdkey = require('ethereumjs-wallet/hdkey').default
@@ -75,7 +77,6 @@ ESM / TypeScript:
 ```js
 import hdkey from 'ethereumjs-wallet/hdkey'
 ```
-
 
 Please go to [./docs/classes/ethereumhdkey.md](./docs/classes/ethereumhdkey.md) for more info.
 

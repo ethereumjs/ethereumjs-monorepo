@@ -332,7 +332,7 @@ export default class Wallet {
 
   /**
    * Import a wallet (Version 1 of the Ethereum wallet format).
-   * 
+   *
    * @param input A JSON serialized string, or an object representing V1 Keystore.
    * @param password The keystore password.
    */
@@ -372,7 +372,7 @@ export default class Wallet {
 
   /**
    * Import a wallet (Version 3 of the Ethereum wallet format). Set `nonStrict` true to accept files with mixed-caps.
-   * 
+   *
    * @param input A JSON serialized string, or an object representing V3 Keystore.
    * @param password The keystore password.
    */
@@ -438,7 +438,7 @@ export default class Wallet {
    * Import an Ethereum Pre Sale wallet.
    * Based on https://github.com/ethereum/pyethsaletool/blob/master/pyethsaletool.py
    * JSON fields: encseed, ethaddr, btcaddr, email
-   * 
+   *
    * @param input A JSON serialized string, or an object representing EthSale Keystore.
    * @param password The keystore password.
    */
@@ -489,7 +489,7 @@ export default class Wallet {
 
   /**
    * Returns the wallet's private key.
-   * 
+   *
    */
   // tslint:disable-next-line
   public getPrivateKey(): Buffer {
@@ -539,7 +539,7 @@ export default class Wallet {
 
   /**
    * Returns an Etherem Version 3 Keystore Format object representing the wallet
-   * 
+   *
    * @param password The password used to encrypt the Keystore.
    * @param opts The options for the keystore. See [its spec](https://github.com/ethereum/wiki/wiki/Web3-Secret-Storage-Definition) for more info.
    */

@@ -10,12 +10,12 @@
 
 ### Properties
 
-* [address](etherwalletoptions.md#address)
-* [encrypted](etherwalletoptions.md#encrypted)
-* [hash](etherwalletoptions.md#hash)
-* [locked](etherwalletoptions.md#locked)
-* [private](etherwalletoptions.md#private)
-* [public](etherwalletoptions.md#public)
+- [address](etherwalletoptions.md#address)
+- [encrypted](etherwalletoptions.md#encrypted)
+- [hash](etherwalletoptions.md#hash)
+- [locked](etherwalletoptions.md#locked)
+- [private](etherwalletoptions.md#private)
+- [public](etherwalletoptions.md#public)
 
 ---
 
@@ -23,56 +23,60 @@
 
 <a id="address"></a>
 
-###  address
+### address
 
-**● address**: *`string`*
+**● address**: _`string`_
 
-*Defined in [thirdparty.ts:108](https://github.com/ethereumjs/ethereumjs-wallet/blob/15de3c4/src/thirdparty.ts#L108)*
+_Defined in [thirdparty.ts:108](https://github.com/ethereumjs/ethereumjs-wallet/blob/15de3c4/src/thirdparty.ts#L108)_
 
-___
+---
+
 <a id="encrypted"></a>
 
-###  encrypted
+### encrypted
 
-**● encrypted**: *`boolean`*
+**● encrypted**: _`boolean`_
 
-*Defined in [thirdparty.ts:109](https://github.com/ethereumjs/ethereumjs-wallet/blob/15de3c4/src/thirdparty.ts#L109)*
+_Defined in [thirdparty.ts:109](https://github.com/ethereumjs/ethereumjs-wallet/blob/15de3c4/src/thirdparty.ts#L109)_
 
-___
+---
+
 <a id="hash"></a>
 
-###  hash
+### hash
 
-**● hash**: *`string`*
+**● hash**: _`string`_
 
-*Defined in [thirdparty.ts:111](https://github.com/ethereumjs/ethereumjs-wallet/blob/15de3c4/src/thirdparty.ts#L111)*
+_Defined in [thirdparty.ts:111](https://github.com/ethereumjs/ethereumjs-wallet/blob/15de3c4/src/thirdparty.ts#L111)_
 
-___
+---
+
 <a id="locked"></a>
 
-###  locked
+### locked
 
-**● locked**: *`boolean`*
+**● locked**: _`boolean`_
 
-*Defined in [thirdparty.ts:110](https://github.com/ethereumjs/ethereumjs-wallet/blob/15de3c4/src/thirdparty.ts#L110)*
+_Defined in [thirdparty.ts:110](https://github.com/ethereumjs/ethereumjs-wallet/blob/15de3c4/src/thirdparty.ts#L110)_
 
-___
+---
+
 <a id="private"></a>
 
-###  private
+### private
 
-**● private**: *`string`*
+**● private**: _`string`_
 
-*Defined in [thirdparty.ts:112](https://github.com/ethereumjs/ethereumjs-wallet/blob/15de3c4/src/thirdparty.ts#L112)*
+_Defined in [thirdparty.ts:112](https://github.com/ethereumjs/ethereumjs-wallet/blob/15de3c4/src/thirdparty.ts#L112)_
 
-___
+---
+
 <a id="public"></a>
 
-###  public
+### public
 
-**● public**: *`string`*
+**● public**: _`string`_
 
-*Defined in [thirdparty.ts:113](https://github.com/ethereumjs/ethereumjs-wallet/blob/15de3c4/src/thirdparty.ts#L113)*
+_Defined in [thirdparty.ts:113](https://github.com/ethereumjs/ethereumjs-wallet/blob/15de3c4/src/thirdparty.ts#L113)_
 
-___
-
+---
