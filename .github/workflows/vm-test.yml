@@ -63,9 +63,14 @@ jobs:
         with:
           path: node_modules
           key: "${{ runner.os }}-node8-${{ hashFiles('**/package.json') }}"
-      - run: npm install
-        if: steps.cache-node-modules.outputs.cache-hit != 'true'
-        working-directory: '${{ env.cwd }}'
+      
+      - run: lerna bootstrap --scope ethereumjs-vm --ignore-scripts --include-dependencies
+
+      - run: lerna run --scope ethereumjs-vm --include-dependencies npm run build
+
+      # - run: npm install
+      #   if: steps.cache-node-modules.outputs.cache-hit != 'true'
+      #   working-directory: '${{ env.cwd }}'
       - run: 'npm run test:state:selectedForks'
         env:
           CI: true
@@ -85,9 +90,14 @@ jobs:
         with:
           path: node_modules
           key: "${{ runner.os }}-node8-${{ hashFiles('**/package.json') }}"
-      - run: npm install
-        if: steps.cache-node-modules.outputs.cache-hit != 'true'
-        working-directory: '${{ env.cwd }}'
+
+      - run: lerna bootstrap --scope ethereumjs-vm --ignore-scripts --include-dependencies
+
+      - run: lerna run --scope ethereumjs-vm --include-dependencies npm run build
+
+      # - run: npm install
+      #   if: steps.cache-node-modules.outputs.cache-hit != 'true'
+      #   working-directory: '${{ env.cwd }}'
       - run: 'npm run test:blockchain'
         env:
           CI: true
