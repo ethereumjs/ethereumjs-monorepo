@@ -13,7 +13,13 @@ aliases:
       - checkout
       - run: 
           name: Installing dependencies
-          command: cd ~/project/packages/${CIRCLE_JOB} && npm install
+          # command: cd ~/project/packages/${CIRCLE_JOB} && npm install
+          command: npx lerna bootstrap --scope ethereumjs-${CIRCLE_JOB} --ignore-scripts --include-dependencies
+
+      - run: 
+          name: Building target package and dependencies
+          command: npx lerna run --scope ethereumjs-${CIRCLE_JOB} --include-dependencies build
+
       - run: 
           name: Running coverage tests
           command: cd ~/project/packages/${CIRCLE_JOB} && npm run coverage
