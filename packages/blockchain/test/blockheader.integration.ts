@@ -108,7 +108,7 @@ tape('[Block]: Header functions', function(t) {
     const blockchain = new Blockchain({ chain: 'ropsten' })
     const genesisHeader = new BlockHeader(undefined, { chain: 'ropsten' })
     genesisHeader.setGenesisParams()
-    try{
+    try {
       await genesisHeader.validate(blockchain)
       st.pass()
     } catch (error) {

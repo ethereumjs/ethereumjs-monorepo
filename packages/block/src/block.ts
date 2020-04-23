@@ -29,7 +29,6 @@ export class Block {
     data: Buffer | [Buffer[], Buffer[], Buffer[]] | BlockData = {},
     chainOptions: ChainOptions = {},
   ) {
-
     // Checking at runtime, to prevent errors down the path for JavaScript consumers.
     if (data === null) {
       data = {}

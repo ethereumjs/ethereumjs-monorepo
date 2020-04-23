@@ -37,7 +37,7 @@ tape('[Block]: block functions', function(t) {
 
   t.test('should initialize with null parameters without throwing', function(st) {
     st.doesNotThrow(function() {
-      const opts = {chain: "mainnet"}
+      const opts = { chain: 'mainnet' }
       new Block(undefined, opts)
       st.end()
     })
