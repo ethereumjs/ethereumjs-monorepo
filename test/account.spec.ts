@@ -29,7 +29,7 @@ describe('isValidPrivate', function() {
   })
   it('should fail on wrong input type', function() {
     assert.throws(function() {
-      isValidPrivate('WRONG_INPUT_TYPE')
+      isValidPrivate((<unknown>'WRONG_INPUT_TYPE') as Buffer)
     })
   })
   it('should fail on invalid curve (zero)', function() {
