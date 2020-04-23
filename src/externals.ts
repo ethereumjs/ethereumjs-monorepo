@@ -6,7 +6,6 @@
  */
 
 const ethjsUtil = require('ethjs-util')
-import * as secp256k1 from 'secp256k1'
 import * as BN from 'bn.js'
 import * as rlp from 'rlp'
 
@@ -24,8 +23,3 @@ export { BN }
  * [`rlp`](https://github.com/ethereumjs/rlp)
  */
 export { rlp }
-
-/**
- * [`secp256k1`](https://github.com/cryptocoinjs/secp256k1-node/)
- */
-export { secp256k1 }
