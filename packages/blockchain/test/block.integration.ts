@@ -2,8 +2,8 @@ import Common from 'ethereumjs-common'
 import tape = require('tape')
 import { rlp, toBuffer } from 'ethereumjs-util'
 
-import { Block } from '../src/block'
-import { setupBlockchain } from './util'
+import { Block } from 'ethereumjs-block'
+import { setupBlockchain } from './block-util'
 
 tape('[Block]: block functions', function(t) {
   t.test('should test block initialization', function(st) {

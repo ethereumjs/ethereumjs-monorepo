@@ -1,11 +1,10 @@
 import tape = require('tape')
 import Common from 'ethereumjs-common'
-import Blockchain from 'ethereumjs-blockchain'
+import { Block, BlockHeader } from 'ethereumjs-block'
+import Blockchain from '../src'
 import * as utils from 'ethereumjs-util'
 import { rlp } from 'ethereumjs-util'
-import { BlockHeader } from '../src/header'
-import { Block } from '../src/block'
-import { setupBlockchain } from './util'
+import { setupBlockchain } from './block-util'
 
 tape('[Block]: Header functions', function(t) {
   t.test('should create with default constructor', function(st) {
@@ -104,11 +103,17 @@ tape('[Block]: Header functions', function(t) {
     st.end()
   })
 
-  t.test('should validate a genesis block header', st => {
+  // MOVE
+  t.test('should validate a genesis block header', async st => {
     const blockchain = new Blockchain({ chain: 'ropsten' })
     const genesisHeader = new BlockHeader(undefined, { chain: 'ropsten' })
     genesisHeader.setGenesisParams()
-    st.ok(genesisHeader.validate(blockchain))
+    try{
+      await genesisHeader.validate(blockchain)
+      st.pass()
+    } catch (error) {
+      st.fail(error)
+    }
     st.end()
   })
 
@@ -128,11 +133,10 @@ tape('[Block]: Header functions', function(t) {
     try {
       await nextBlock.validate(blockchain)
       st.ok(true)
-      st.end()
     } catch (error) {
       st.fail(error)
-      st.end()
     }
+    st.end()
   })
 
   t.test('should not validate a block header with invalid difficulty', async st => {

@@ -1,7 +1,6 @@
-import Blockchain from 'ethereumjs-blockchain'
+import Blockchain from '../src'
 import { toBuffer } from 'ethereumjs-util'
-import { Block } from '../src/block'
-import { BlockHeader } from '../src/header'
+import { Block, BlockHeader } from 'ethereumjs-block'
 
 export const setupBlockchain = async (): Promise<[Blockchain, Block]> => {
   return new Promise((resolve, reject) => {
