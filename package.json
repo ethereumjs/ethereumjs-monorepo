@@ -100,7 +100,7 @@
     "@ethereumjs/config-tslint": "^1.1.0",
     "@types/mocha": "^5.2.7",
     "@types/node": "^11.9.0",
-    "@types/secp256k1": "3.5.0",
+    "@types/secp256k1": "^4.0.1",
     "contributor": "^0.1.25",
     "husky": "^2.1.0",
     "karma": "^4.0.0",
