@@ -84,7 +84,7 @@ describe('isValidPublic', function() {
       '023a443d8381a6798a70c6ff9304bdc8cb0163c23211d11628fae52ef9e0dca11a001cf066d56a8156fc201cd5df8a36ef694eecd258903fca7086c1fae7441e1d',
       'hex',
     )
-    assert.equal(isValidPublic(pubKey, true), false)
+    assert.equal(isValidPublic(pubKey, false), false)
   })
   it('should work with compressed keys with sanitize enabled', function() {
     const pubKey = Buffer.from(
@@ -153,7 +153,7 @@ describe('publicToAddress', function() {
       'hex',
     )
     assert.throws(function() {
-      publicToAddress(pubKey, true)
+      publicToAddress(pubKey, false)
     })
   })
   it("shouldn't produce an address given an invalid public key", function() {
