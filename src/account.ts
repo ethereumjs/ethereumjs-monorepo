@@ -122,18 +122,7 @@ export const generateAddress2 = function(
  * Checks if the private key satisfies the rules of the curve secp256k1.
  */
 export const isValidPrivate = function(privateKey: Buffer): boolean {
-  let valid
-  try {
-    valid = secp256k1.privateKeyVerify(privateKey)
-  } catch (e) {
-    // TODO: Change API to also throw on wrong input instead of returning false
-    if (e.message === 'Expected private key to be an Uint8Array with length 32') {
-      valid = false
-    } else {
-      throw e
-    }
-  }
-  return valid
+  return secp256k1.privateKeyVerify(privateKey)
 }
 
 /**

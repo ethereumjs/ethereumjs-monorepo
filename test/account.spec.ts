@@ -20,12 +20,16 @@ describe('isValidPrivate', function() {
   const SECP256K1_N = new BN('fffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141', 16)
   it('should fail on short input', function() {
     const tmp = '0011223344'
-    assert.equal(isValidPrivate(Buffer.from(tmp, 'hex')), false)
+    assert.throws(function() {
+      isValidPrivate(Buffer.from(tmp, 'hex'))
+    })
   })
   it('should fail on too big input', function() {
     const tmp =
       '3a443d8381a6798a70c6ff9304bdc8cb0163c23211d11628fae52ef9e0dca11a001cf066d56a8156fc201cd5df8a36ef694eecd258903fca7086c1fae7441e1d'
-    assert.equal(isValidPrivate(Buffer.from(tmp, 'hex')), false)
+    assert.throws(function() {
+      isValidPrivate(Buffer.from(tmp, 'hex'))
+    })
   })
   it('should fail on wrong input type', function() {
     assert.throws(function() {
