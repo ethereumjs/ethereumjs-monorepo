@@ -25,7 +25,7 @@
 
 **● count**: _`number`_
 
-_Defined in [thirdparty.ts:17](https://github.com/ethereumjs/ethereumjs-wallet/blob/15de3c4/src/thirdparty.ts#L17)_
+_Defined in [thirdparty.ts:17](https://github.com/ethereumjs/ethereumjs-wallet/blob/c748f97/src/thirdparty.ts#L17)_
 
 ---
 
@@ -35,7 +35,7 @@ _Defined in [thirdparty.ts:17](https://github.com/ethereumjs/ethereumjs-wallet/b
 
 **● digest**: _`string`_
 
-_Defined in [thirdparty.ts:20](https://github.com/ethereumjs/ethereumjs-wallet/blob/15de3c4/src/thirdparty.ts#L20)_
+_Defined in [thirdparty.ts:20](https://github.com/ethereumjs/ethereumjs-wallet/blob/c748f97/src/thirdparty.ts#L20)_
 
 ---
 
@@ -45,7 +45,7 @@ _Defined in [thirdparty.ts:20](https://github.com/ethereumjs/ethereumjs-wallet/b
 
 **● ivsize**: _`number`_
 
-_Defined in [thirdparty.ts:19](https://github.com/ethereumjs/ethereumjs-wallet/blob/15de3c4/src/thirdparty.ts#L19)_
+_Defined in [thirdparty.ts:19](https://github.com/ethereumjs/ethereumjs-wallet/blob/c748f97/src/thirdparty.ts#L19)_
 
 ---
 
@@ -55,6 +55,6 @@ _Defined in [thirdparty.ts:19](https://github.com/ethereumjs/ethereumjs-wallet/b
 
 **● keysize**: _`number`_
 
-_Defined in [thirdparty.ts:18](https://github.com/ethereumjs/ethereumjs-wallet/blob/15de3c4/src/thirdparty.ts#L18)_
+_Defined in [thirdparty.ts:18](https://github.com/ethereumjs/ethereumjs-wallet/blob/c748f97/src/thirdparty.ts#L18)_
 
 ---

@@ -36,7 +36,7 @@
 
 ⊕ **new EthereumHDKey**(\_hdkey?: _`any`_): [EthereumHDKey](ethereumhdkey.md)
 
-_Defined in [hdkey.ts:21](https://github.com/ethereumjs/ethereumjs-wallet/blob/15de3c4/src/hdkey.ts#L21)_
+_Defined in [hdkey.ts:21](https://github.com/ethereumjs/ethereumjs-wallet/blob/c748f97/src/hdkey.ts#L21)_
 
 **Parameters:**
 
@@ -56,7 +56,7 @@ _Defined in [hdkey.ts:21](https://github.com/ethereumjs/ethereumjs-wallet/blob/1
 
 **● \_hdkey**: _`any`_
 
-_Defined in [hdkey.ts:23](https://github.com/ethereumjs/ethereumjs-wallet/blob/15de3c4/src/hdkey.ts#L23)_
+_Defined in [hdkey.ts:23](https://github.com/ethereumjs/ethereumjs-wallet/blob/c748f97/src/hdkey.ts#L23)_
 
 ---
 
@@ -68,7 +68,7 @@ _Defined in [hdkey.ts:23](https://github.com/ethereumjs/ethereumjs-wallet/blob/1
 
 ▸ **deriveChild**(index: _`number`_): [EthereumHDKey](ethereumhdkey.md)
 
-_Defined in [hdkey.ts:52](https://github.com/ethereumjs/ethereumjs-wallet/blob/15de3c4/src/hdkey.ts#L52)_
+_Defined in [hdkey.ts:52](https://github.com/ethereumjs/ethereumjs-wallet/blob/c748f97/src/hdkey.ts#L52)_
 
 Derive a node based on a child index
 
@@ -88,7 +88,7 @@ Derive a node based on a child index
 
 ▸ **derivePath**(path: _`string`_): [EthereumHDKey](ethereumhdkey.md)
 
-_Defined in [hdkey.ts:45](https://github.com/ethereumjs/ethereumjs-wallet/blob/15de3c4/src/hdkey.ts#L45)_
+_Defined in [hdkey.ts:45](https://github.com/ethereumjs/ethereumjs-wallet/blob/c748f97/src/hdkey.ts#L45)_
 
 Derives a node based on a path (e.g. m/44'/0'/0/1)
 
@@ -108,7 +108,7 @@ Derives a node based on a path (e.g. m/44'/0'/0/1)
 
 ▸ **getWallet**(): [Wallet](wallet.md)
 
-_Defined in [hdkey.ts:59](https://github.com/ethereumjs/ethereumjs-wallet/blob/15de3c4/src/hdkey.ts#L59)_
+_Defined in [hdkey.ts:59](https://github.com/ethereumjs/ethereumjs-wallet/blob/c748f97/src/hdkey.ts#L59)_
 
 Return a `Wallet` instance as seen above
 
@@ -122,7 +122,7 @@ Return a `Wallet` instance as seen above
 
 ▸ **privateExtendedKey**(): `Buffer`
 
-_Defined in [hdkey.ts:28](https://github.com/ethereumjs/ethereumjs-wallet/blob/15de3c4/src/hdkey.ts#L28)_
+_Defined in [hdkey.ts:28](https://github.com/ethereumjs/ethereumjs-wallet/blob/c748f97/src/hdkey.ts#L28)_
 
 Returns a BIP32 extended private key (xprv)
 
@@ -136,7 +136,7 @@ Returns a BIP32 extended private key (xprv)
 
 ▸ **publicExtendedKey**(): `Buffer`
 
-_Defined in [hdkey.ts:38](https://github.com/ethereumjs/ethereumjs-wallet/blob/15de3c4/src/hdkey.ts#L38)_
+_Defined in [hdkey.ts:38](https://github.com/ethereumjs/ethereumjs-wallet/blob/c748f97/src/hdkey.ts#L38)_
 
 Return a BIP32 extended public key (xpub)
 
@@ -150,7 +150,7 @@ Return a BIP32 extended public key (xpub)
 
 ▸ **fromExtendedKey**(base58Key: _`string`_): [EthereumHDKey](ethereumhdkey.md)
 
-_Defined in [hdkey.ts:19](https://github.com/ethereumjs/ethereumjs-wallet/blob/15de3c4/src/hdkey.ts#L19)_
+_Defined in [hdkey.ts:19](https://github.com/ethereumjs/ethereumjs-wallet/blob/c748f97/src/hdkey.ts#L19)_
 
 Create an instance based on a BIP32 extended private or public key.
 
@@ -170,7 +170,7 @@ Create an instance based on a BIP32 extended private or public key.
 
 ▸ **fromMasterSeed**(seedBuffer: _`Buffer`_): [EthereumHDKey](ethereumhdkey.md)
 
-_Defined in [hdkey.ts:12](https://github.com/ethereumjs/ethereumjs-wallet/blob/15de3c4/src/hdkey.ts#L12)_
+_Defined in [hdkey.ts:12](https://github.com/ethereumjs/ethereumjs-wallet/blob/c748f97/src/hdkey.ts#L12)_
 
 Creates an instance based on a seed.
 

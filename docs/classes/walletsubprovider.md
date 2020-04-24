@@ -24,7 +24,7 @@
 
 ⊕ **new WalletSubprovider**(wallet: _[Wallet](wallet.md)_, opts?: _`any`_): [WalletSubprovider](walletsubprovider.md)
 
-_Defined in [provider-engine.ts:5](https://github.com/ethereumjs/ethereumjs-wallet/blob/15de3c4/src/provider-engine.ts#L5)_
+_Defined in [provider-engine.ts:5](https://github.com/ethereumjs/ethereumjs-wallet/blob/c748f97/src/provider-engine.ts#L5)_
 
 **Parameters:**
 

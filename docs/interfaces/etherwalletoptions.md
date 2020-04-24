@@ -27,7 +27,7 @@
 
 **● address**: _`string`_
 
-_Defined in [thirdparty.ts:108](https://github.com/ethereumjs/ethereumjs-wallet/blob/15de3c4/src/thirdparty.ts#L108)_
+_Defined in [thirdparty.ts:108](https://github.com/ethereumjs/ethereumjs-wallet/blob/c748f97/src/thirdparty.ts#L108)_
 
 ---
 
@@ -37,7 +37,7 @@ _Defined in [thirdparty.ts:108](https://github.com/ethereumjs/ethereumjs-wallet/
 
 **● encrypted**: _`boolean`_
 
-_Defined in [thirdparty.ts:109](https://github.com/ethereumjs/ethereumjs-wallet/blob/15de3c4/src/thirdparty.ts#L109)_
+_Defined in [thirdparty.ts:109](https://github.com/ethereumjs/ethereumjs-wallet/blob/c748f97/src/thirdparty.ts#L109)_
 
 ---
 
@@ -47,7 +47,7 @@ _Defined in [thirdparty.ts:109](https://github.com/ethereumjs/ethereumjs-wallet/
 
 **● hash**: _`string`_
 
-_Defined in [thirdparty.ts:111](https://github.com/ethereumjs/ethereumjs-wallet/blob/15de3c4/src/thirdparty.ts#L111)_
+_Defined in [thirdparty.ts:111](https://github.com/ethereumjs/ethereumjs-wallet/blob/c748f97/src/thirdparty.ts#L111)_
 
 ---
 
@@ -57,7 +57,7 @@ _Defined in [thirdparty.ts:111](https://github.com/ethereumjs/ethereumjs-wallet/
 
 **● locked**: _`boolean`_
 
-_Defined in [thirdparty.ts:110](https://github.com/ethereumjs/ethereumjs-wallet/blob/15de3c4/src/thirdparty.ts#L110)_
+_Defined in [thirdparty.ts:110](https://github.com/ethereumjs/ethereumjs-wallet/blob/c748f97/src/thirdparty.ts#L110)_
 
 ---
 
@@ -67,7 +67,7 @@ _Defined in [thirdparty.ts:110](https://github.com/ethereumjs/ethereumjs-wallet/
 
 **● private**: _`string`_
 
-_Defined in [thirdparty.ts:112](https://github.com/ethereumjs/ethereumjs-wallet/blob/15de3c4/src/thirdparty.ts#L112)_
+_Defined in [thirdparty.ts:112](https://github.com/ethereumjs/ethereumjs-wallet/blob/c748f97/src/thirdparty.ts#L112)_
 
 ---
 
@@ -77,6 +77,6 @@ _Defined in [thirdparty.ts:112](https://github.com/ethereumjs/ethereumjs-wallet/
 
 **● public**: _`string`_
 
-_Defined in [thirdparty.ts:113](https://github.com/ethereumjs/ethereumjs-wallet/blob/15de3c4/src/thirdparty.ts#L113)_
+_Defined in [thirdparty.ts:113](https://github.com/ethereumjs/ethereumjs-wallet/blob/c748f97/src/thirdparty.ts#L113)_
 
 ---
