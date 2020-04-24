@@ -10,7 +10,6 @@ import {
   generateAddress,
   generateAddress2,
   toBuffer,
-  isPrecompiled,
   isValidChecksumAddress,
   isValidAddress,
   toChecksumAddress,
@@ -373,32 +372,6 @@ describe('generateAddress2: EIP-1014 testdata examples', function() {
       assert.equal('0x' + result.toString('hex'), e['result'])
     })
   }
-})
-
-describe('isPrecompiled', function() {
-  it('should return true', function() {
-    assert.equal(isPrecompiled('0000000000000000000000000000000000000001'), true)
-    assert.equal(isPrecompiled('0000000000000000000000000000000000000002'), true)
-    assert.equal(isPrecompiled('0000000000000000000000000000000000000003'), true)
-    assert.equal(isPrecompiled('0000000000000000000000000000000000000004'), true)
-    assert.equal(isPrecompiled('0000000000000000000000000000000000000005'), true)
-    assert.equal(isPrecompiled('0000000000000000000000000000000000000006'), true)
-    assert.equal(isPrecompiled('0000000000000000000000000000000000000007'), true)
-    assert.equal(isPrecompiled('0000000000000000000000000000000000000008'), true)
-    assert.equal(
-      isPrecompiled(Buffer.from('0000000000000000000000000000000000000001', 'hex')),
-      true,
-    )
-  })
-  it('should return false', function() {
-    assert.equal(isPrecompiled('0000000000000000000000000000000000000000'), false)
-    assert.equal(isPrecompiled('0000000000000000000000000000000000000009'), false)
-    assert.equal(isPrecompiled('1000000000000000000000000000000000000000'), false)
-    assert.equal(
-      isPrecompiled(Buffer.from('0000000000000000000000000000000000000000', 'hex')),
-      false,
-    )
-  })
 })
 
 const eip55ChecksumAddresses = [

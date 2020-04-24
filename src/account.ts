@@ -2,7 +2,7 @@ const ethjsUtil = require('ethjs-util')
 import * as assert from 'assert'
 import * as secp256k1 from 'secp256k1'
 import * as BN from 'bn.js'
-import { toBuffer, zeros, bufferToHex, unpad } from './bytes'
+import { toBuffer, zeros, bufferToHex } from './bytes'
 import { keccak, keccak256, rlphash } from './hash'
 import { assertIsHexString } from './helpers'
 
@@ -116,14 +116,6 @@ export const generateAddress2 = function(
   )
 
   return address.slice(-20)
-}
-
-/**
- * Returns true if the supplied address belongs to a precompiled account (Byzantium).
- */
-export const isPrecompiled = function(address: Buffer | string): boolean {
-  const a = unpad(address)
-  return a.length === 1 && a[0] >= 1 && a[0] <= 8
 }
 
 /**
