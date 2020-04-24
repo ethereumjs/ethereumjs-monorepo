@@ -2,9 +2,9 @@ const ethjsUtil = require('ethjs-util')
 import * as assert from 'assert'
 import * as secp256k1 from 'secp256k1'
 import * as BN from 'bn.js'
-import { toBuffer, zeros, bufferToHex, unpad } from './bytes'
+import { zeros, bufferToHex, unpad } from './bytes'
 import { keccak, keccak256, rlphash } from './hash'
-import { assertIsHexString } from './helpers'
+import { assertIsHexString, assertIsBuffer } from './helpers'
 
 /**
  * Returns a zero address.
@@ -80,7 +80,8 @@ export const isValidChecksumAddress = function(
  * @param nonce The nonce of the from account
  */
 export const generateAddress = function(from: Buffer, nonce: Buffer): Buffer {
-  from = toBuffer(from)
+  assertIsBuffer(from)
+  assertIsBuffer(nonce)
   const nonceBN = new BN(nonce)
 
   if (nonceBN.isZero()) {
@@ -99,20 +100,16 @@ export const generateAddress = function(from: Buffer, nonce: Buffer): Buffer {
  * @param salt A salt
  * @param initCode The init code of the contract being created
  */
-export const generateAddress2 = function(
-  from: Buffer | string,
-  salt: Buffer | string,
-  initCode: Buffer | string,
-): Buffer {
-  const fromBuf = toBuffer(from)
-  const saltBuf = toBuffer(salt)
-  const initCodeBuf = toBuffer(initCode)
+export const generateAddress2 = function(from: Buffer, salt: Buffer, initCode: Buffer): Buffer {
+  assertIsBuffer(from)
+  assertIsBuffer(salt)
+  assertIsBuffer(initCode)
 
-  assert(fromBuf.length === 20)
-  assert(saltBuf.length === 32)
+  assert(from.length === 20)
+  assert(salt.length === 32)
 
   const address = keccak256(
-    Buffer.concat([Buffer.from('ff', 'hex'), fromBuf, saltBuf, keccak256(initCodeBuf)]),
+    Buffer.concat([Buffer.from('ff', 'hex'), from, salt, keccak256(initCode)]),
   )
 
   return address.slice(-20)
@@ -159,7 +156,7 @@ export const isValidPublic = function(publicKey: Buffer, sanitize: boolean = fal
  * @param sanitize Accept public keys in other formats
  */
 export const pubToAddress = function(pubKey: Buffer, sanitize: boolean = false): Buffer {
-  pubKey = toBuffer(pubKey)
+  assertIsBuffer(pubKey)
   if (sanitize && pubKey.length !== 64) {
     pubKey = secp256k1.publicKeyConvert(pubKey, false).slice(1)
   }
@@ -182,7 +179,7 @@ export const privateToAddress = function(privateKey: Buffer): Buffer {
  * @param privateKey A private key must be 256 bits wide
  */
 export const privateToPublic = function(privateKey: Buffer): Buffer {
-  privateKey = toBuffer(privateKey)
+  assertIsBuffer(privateKey)
   // skip the type flag and use the X, Y points
   return secp256k1.publicKeyCreate(privateKey, false).slice(1)
 }
@@ -191,7 +188,7 @@ export const privateToPublic = function(privateKey: Buffer): Buffer {
  * Converts a public key to the Ethereum format.
  */
 export const importPublic = function(publicKey: Buffer): Buffer {
-  publicKey = toBuffer(publicKey)
+  assertIsBuffer(publicKey)
   if (publicKey.length !== 64) {
     publicKey = secp256k1.publicKeyConvert(publicKey, false).slice(1)
   }

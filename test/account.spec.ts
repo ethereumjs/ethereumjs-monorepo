@@ -122,6 +122,11 @@ describe('importPublic', function() {
     const tmp = '033a443d8381a6798a70c6ff9304bdc8cb0163c23211d11628fae52ef9e0dca11a'
     assert.equal(importPublic(Buffer.from(tmp, 'hex')).toString('hex'), pubKey)
   })
+  it('should throw if input is not Buffer', function() {
+    assert.throws(function() {
+      importPublic((<unknown>pubKey) as Buffer)
+    })
+  })
 })
 
 describe('publicToAddress', function() {
@@ -161,15 +166,12 @@ describe('publicToAddress', function() {
       publicToAddress(pubKey)
     })
   })
-})
-
-describe('publicToAddress 0x', function() {
-  it('should produce an address given a public key', function() {
+  it('should throw if input is not a buffer', function() {
     const pubKey: any =
       '0x3a443d8381a6798a70c6ff9304bdc8cb0163c23211d11628fae52ef9e0dca11a001cf066d56a8156fc201cd5df8a36ef694eecd258903fca7086c1fae7441e1d'
-    const address = '2f015c60e0be116b1f0cd534704db9c92118fb6a'
-    const r = publicToAddress(pubKey)
-    assert.equal(r.toString('hex'), address)
+    assert.throws(function() {
+      publicToAddress(pubKey)
+    })
   })
 })
 
@@ -290,6 +292,16 @@ describe('privateToPublic', function() {
       privateToPublic(privateKey2)
     })
   })
+
+  it('should throw if private key is not Buffer', function() {
+    const privateKey = '0xea54bdc52d163f88c93ab0615782cf718a2efb9e51a7989aab1b08067e9c1c5f'
+    try {
+      privateToPublic((<unknown>privateKey) as Buffer)
+    } catch (err) {
+      assert(err.message.includes('This method only supports Buffer'))
+      assert(err.message.includes(privateKey))
+    }
+  })
 })
 
 describe('privateToAddress', function() {
@@ -365,14 +377,69 @@ describe('generateAddress with nonce 0 (special case)', function() {
   })
 })
 
+describe('generateAddress with non-buffer inputs', function() {
+  it('should throw if address is not Buffer', function() {
+    assert.throws(function() {
+      generateAddress(
+        (<unknown>'0x990ccf8a0de58091c028d6ff76bb235ee67c1c39') as Buffer,
+        toBuffer(0),
+      )
+    })
+  })
+  it('should throw if nonce is not Buffer', function() {
+    assert.throws(function() {
+      generateAddress(
+        toBuffer('0x990ccf8a0de58091c028d6ff76bb235ee67c1c39'),
+        (<unknown>0) as Buffer,
+      )
+    })
+  })
+})
+
 describe('generateAddress2: EIP-1014 testdata examples', function() {
   for (let i = 0; i <= 6; i++) {
     let e = eip1014Testdata[i]
     it(`${e['comment']}: should generate the addresses provided`, function() {
-      let result = generateAddress2(e['address'], e['salt'], e['initCode'])
+      let result = generateAddress2(
+        toBuffer(e['address']),
+        toBuffer(e['salt']),
+        toBuffer(e['initCode']),
+      )
       assert.equal('0x' + result.toString('hex'), e['result'])
     })
   }
+})
+
+describe('generateAddress2: non-buffer inputs', function() {
+  const e = eip1014Testdata[0]
+
+  it('should throw if address is not Buffer', function() {
+    assert.throws(function() {
+      generateAddress2(
+        (<unknown>e['address']) as Buffer,
+        toBuffer(e['salt']),
+        toBuffer(e['initCode']),
+      )
+    })
+  })
+  it('should throw if salt is not Buffer', function() {
+    assert.throws(function() {
+      generateAddress2(
+        toBuffer(e['address']),
+        (<unknown>e['salt']) as Buffer,
+        toBuffer(e['initCode']),
+      )
+    })
+  })
+  it('should throw if initCode is not Buffer', function() {
+    assert.throws(function() {
+      generateAddress2(
+        toBuffer(e['address']),
+        toBuffer(e['salt']),
+        (<unknown>e['initCode']) as Buffer,
+      )
+    })
+  })
 })
 
 describe('isPrecompiled', function() {
