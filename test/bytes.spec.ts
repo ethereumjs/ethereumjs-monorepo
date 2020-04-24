@@ -40,6 +40,12 @@ describe('is zero address', function() {
     const nonZeroAddress = '0x2f015c60e0be116b1f0cd534704db9c92118fb6a'
     assert.equal(isZeroAddress(nonZeroAddress), false)
   })
+
+  it('should throw when address is not hex-prefixed', function() {
+    assert.throws(function() {
+      isZeroAddress('0000000000000000000000000000000000000000')
+    })
+  })
 })
 
 describe('unpad', function() {
