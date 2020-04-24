@@ -446,6 +446,14 @@ describe('.toChecksumAddress()', function() {
       }
     })
   })
+
+  describe('input format', function() {
+    it('Should throw when the address is not hex-prefixed', function() {
+      assert.throws(function() {
+        toChecksumAddress('52908400098527886E0F7030069857D2E4169EE7'.toLowerCase())
+      })
+    })
+  })
 })
 
 describe('.isValidChecksumAddress()', function() {
@@ -486,6 +494,14 @@ describe('.isValidChecksumAddress()', function() {
       }
     })
   })
+
+  describe('input format', function() {
+    it('Should throw when the address is not hex-prefixed', function() {
+      assert.throws(function() {
+        isValidChecksumAddress('2f015c60e0be116b1f0cd534704db9c92118fb6a')
+      })
+    })
+  })
 })
 
 describe('.isValidAddress()', function() {
@@ -494,10 +510,27 @@ describe('.isValidAddress()', function() {
     assert.equal(isValidAddress('0x52908400098527886E0F7030069857D2E4169EE7'), true)
   })
   it('should return false', function() {
-    assert.equal(isValidAddress('2f015c60e0be116b1f0cd534704db9c92118fb6a'), false)
     assert.equal(isValidAddress('0x2f015c60e0be116b1f0cd534704db9c92118fb6'), false)
     assert.equal(isValidAddress('0x2f015c60e0be116b1f0cd534704db9c92118fb6aa'), false)
-    assert.equal(isValidAddress('0X52908400098527886E0F7030069857D2E4169EE7'), false)
-    assert.equal(isValidAddress('x2f015c60e0be116b1f0cd534704db9c92118fb6a'), false)
+  })
+  it('should throw when input is not hex prefixed', function() {
+    assert.throws(function() {
+      isValidAddress('2f015c60e0be116b1f0cd534704db9c92118fb6a')
+    })
+    assert.throws(function() {
+      isValidAddress('x2f015c60e0be116b1f0cd534704db9c92118fb6a')
+    })
+    assert.throws(function() {
+      isValidAddress('0X52908400098527886E0F7030069857D2E4169EE7')
+    })
+  })
+  it('error message should have correct format', function() {
+    const input = '2f015c60e0be116b1f0cd534704db9c92118fb6a'
+    try {
+      isValidAddress('2f015c60e0be116b1f0cd534704db9c92118fb6a')
+    } catch (err) {
+      assert(err.message.includes('only supports 0x-prefixed hex strings'))
+      assert(err.message.includes(input))
+    }
   })
 })
