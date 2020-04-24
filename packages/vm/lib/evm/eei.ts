@@ -3,7 +3,7 @@ import { toBuffer } from 'ethereumjs-util'
 import Account from 'ethereumjs-account'
 import Blockchain from 'ethereumjs-blockchain'
 import Common from 'ethereumjs-common'
-import PStateManager from '../state/promisified'
+import { StateManager } from '../state/index'
 import { VmError, ERROR } from '../exceptions'
 import Message from './message'
 import EVM, { EVMResult } from './evm'
@@ -52,13 +52,13 @@ export interface RunResult {
 export default class EEI {
   _env: Env
   _result: RunResult
-  _state: PStateManager
+  _state: StateManager
   _evm: EVM
   _lastReturned: Buffer
   _common: Common
   _gasLeft: BN
 
-  constructor(env: Env, state: PStateManager, evm: EVM, common: Common, gasLeft: BN) {
+  constructor(env: Env, state: StateManager, evm: EVM, common: Common, gasLeft: BN) {
     this._env = env
     this._state = state
     this._evm = evm

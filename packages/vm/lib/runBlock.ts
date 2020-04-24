@@ -4,9 +4,9 @@ import { encode } from 'rlp'
 import VM from './index'
 import Bloom from './bloom'
 import { RunTxResult } from './runTx'
-import PStateManager from './state/promisified'
-const promisify = require('util.promisify')
+import { StateManager } from './state/index'
 const Trie = require('merkle-patricia-tree')
+const promisify = require('util.promisify')
 
 /**
  * Options for running a block.
@@ -86,7 +86,7 @@ export default async function runBlock(this: VM, opts: RunBlockOpts): Promise<Ru
     throw new Error('invalid input, block must be provided')
   }
 
-  const state = this.pStateManager
+  const state = this.stateManager
   const block = opts.block
   const generateStateRoot = !!opts.generate
 
@@ -250,7 +250,7 @@ async function applyTransactions(this: VM, block: any, opts: RunBlockOpts) {
  * the updated balances of their accounts to state.
  */
 async function assignBlockRewards(this: VM, block: any): Promise<void> {
-  const state = this.pStateManager
+  const state = this.stateManager
   const minerReward = new BN(this._common.param('pow', 'minerReward'))
   const ommers = block.uncleHeaders
   // Reward ommers
@@ -284,7 +284,7 @@ function calculateMinerReward(minerReward: BN, ommersNum: number): BN {
   return reward
 }
 
-async function rewardAccount(state: PStateManager, address: Buffer, reward: BN): Promise<void> {
+async function rewardAccount(state: StateManager, address: Buffer, reward: BN): Promise<void> {
   const account = await state.getAccount(address)
   account.balance = toBuffer(new BN(account.balance).add(reward))
   await state.putAccount(address, account)

@@ -67,7 +67,7 @@ function expmod(B: BN, E: BN, M: BN): BN {
   return res.fromRed()
 }
 
-export default function(opts: PrecompileInput): ExecResult {
+export default function (opts: PrecompileInput): ExecResult {
   assert(opts.data)
 
   const data = opts.data

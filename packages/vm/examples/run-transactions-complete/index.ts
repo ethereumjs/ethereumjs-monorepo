@@ -1,12 +1,10 @@
 import VM from '../..'
 import Account from 'ethereumjs-account'
 import * as utils from 'ethereumjs-util'
-import PStateManager from '../../lib/state/promisified'
 import { Transaction } from 'ethereumjs-tx'
 
 async function main() {
   const vm = new VM()
-  const psm = new PStateManager(vm.stateManager)
 
   // import the key pair
   //   used to sign transactions and generate addresses
@@ -25,7 +23,7 @@ async function main() {
   })
 
   // Save the account
-  await psm.putAccount(address, account)
+  await vm.stateManager.putAccount(address, account)
 
   const rawTx1 = require('./raw-tx1')
   const rawTx2 = require('./raw-tx2')
@@ -40,7 +38,7 @@ async function main() {
   // should have created a new account for the contract
   // in the state. Lets test to see if it did.
 
-  const createdAccount = await psm.getAccount(createdAddress)
+  const createdAccount = await vm.stateManager.getAccount(createdAddress)
 
   console.log('-------results-------')
   console.log('nonce: ' + createdAccount.nonce.toString('hex'))
@@ -73,7 +71,7 @@ async function runTx(vm: VM, rawTx: any, privateKey: Buffer) {
 
 main()
   .then(() => process.exit(0))
-  .catch(error => {
+  .catch((error) => {
     console.error(error)
     process.exit(1)
   })

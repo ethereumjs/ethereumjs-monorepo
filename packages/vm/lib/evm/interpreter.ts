@@ -1,7 +1,6 @@
 import BN = require('bn.js')
 import Common from 'ethereumjs-common'
-import { StateManager } from '../state'
-import PStateManager from '../state/promisified'
+import { StateManager } from '../state/index'
 import { ERROR, VmError } from '../exceptions'
 import Memory from './memory'
 import Stack from './stack'
@@ -56,13 +55,13 @@ export interface InterpreterStep {
  */
 export default class Interpreter {
   _vm: any
-  _state: PStateManager
+  _state: StateManager
   _runState: RunState
   _eei: EEI
 
   constructor(vm: any, eei: EEI) {
     this._vm = vm // TODO: remove when not needed
-    this._state = vm.pStateManager
+    this._state = vm.stateManager
     this._eei = eei
     this._runState = {
       programCounter: 0,
@@ -75,7 +74,7 @@ export default class Interpreter {
       validJumps: [],
       // TODO: Replace with EEI methods
       _common: this._vm._common,
-      stateManager: this._state._wrapped,
+      stateManager: this._state,
       eei: this._eei,
     }
   }

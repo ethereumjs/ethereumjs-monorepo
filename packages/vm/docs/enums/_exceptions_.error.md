@@ -18,6 +18,7 @@
 * [STACK_UNDERFLOW](_exceptions_.error.md#stack_underflow)
 * [STATIC_STATE_CHANGE](_exceptions_.error.md#static_state_change)
 * [STOP](_exceptions_.error.md#stop)
+* [VALUE_OVERFLOW](_exceptions_.error.md#value_overflow)
 
 ## Enumeration members
 
@@ -114,3 +115,11 @@ ___
 • **STOP**: = "stop"
 
 *Defined in [exceptions.ts:12](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/exceptions.ts#L12)*
+
+___
+
+###  VALUE_OVERFLOW
+
+• **VALUE_OVERFLOW**: = "value overflow"
+
+*Defined in [exceptions.ts:14](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/exceptions.ts#L14)*

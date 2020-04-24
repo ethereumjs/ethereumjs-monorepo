@@ -320,7 +320,7 @@ const SIGMA8 = [
 // Multiply them all by 2 to make them offsets into a uint32 buffer,
 // because this is Javascript and we don't have uint64s
 const SIGMA82 = new Uint8Array(
-  SIGMA8.map(function(x) {
+  SIGMA8.map(function (x) {
     return x * 2
   }),
 )
@@ -376,7 +376,7 @@ export function F(h: Uint32Array, m: Uint32Array, t: Uint32Array, f: boolean, ro
   }
 }
 
-export default function(opts: PrecompileInput): ExecResult {
+export default function (opts: PrecompileInput): ExecResult {
   assert(opts.data)
 
   const data = opts.data

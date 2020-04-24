@@ -3,12 +3,12 @@ import VM from '../../dist'
 import * as assert from 'assert'
 import * as path from 'path'
 import * as fs from 'fs'
-import { promisify } from 'util'
 import * as util from 'ethereumjs-util'
 import Account from 'ethereumjs-account'
 import { Transaction } from 'ethereumjs-tx'
 const abi = require('ethereumjs-abi')
 const solc = require('solc')
+const { promisify } = require('util')
 
 const INITIAL_GREETING = 'Hello, World!'
 const SECOND_GREETING = 'Hola, Mundo!'
@@ -157,7 +157,7 @@ async function getGreeting(vm: VM, contractAddress: Buffer, caller: Buffer) {
 }
 
 async function main() {
-  const accountPk = new Buffer(
+  const accountPk = Buffer.from(
     'e331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109',
     'hex',
   )
@@ -211,7 +211,7 @@ async function main() {
 
 main()
   .then(() => process.exit(0))
-  .catch(err => {
+  .catch((err) => {
     console.error(err)
     process.exit(1)
   })

@@ -7,7 +7,6 @@ import Bloom from './bloom'
 import { default as EVM, EVMResult } from './evm/evm'
 import Message from './evm/message'
 import TxContext from './evm/txContext'
-import PStateManager from './state/promisified'
 const Block = require('ethereumjs-block')
 
 /**
@@ -72,8 +71,7 @@ export default async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxRes
     throw new Error('tx has a higher gas limit than the block')
   }
 
-  const state = this.pStateManager
-
+  const state = this.stateManager
   await state.checkpoint()
 
   try {
@@ -89,7 +87,7 @@ export default async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxRes
 async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   const block = opts.block
   const tx = opts.tx
-  const state = this.pStateManager
+  const state = this.stateManager
 
   /**
    * The `beforeTx` event
@@ -142,7 +140,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     value: tx.value,
     data: tx.data,
   })
-  state._wrapped._clearOriginalStorageCache()
+  state._clearOriginalStorageCache()
   const evm = new EVM(this, txContext, block)
   const results = (await evm.executeMessage(message)) as RunTxResult
 
@@ -186,7 +184,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
    */
   if (results.execResult.selfdestruct) {
     const keys = Object.keys(results.execResult.selfdestruct)
-    for (const k of keys) {
+    for await (const k of keys) {
       await state.putAccount(Buffer.from(k, 'hex'), new Account())
     }
   }

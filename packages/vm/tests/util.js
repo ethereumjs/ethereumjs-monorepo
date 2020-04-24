@@ -366,19 +366,19 @@ exports.makeRunCodeData = function(exec, account, block) {
  * @param {Function} done     - callback when function is completed
  */
 exports.setupPreConditions = function(state, testData, done) {
-  var keysOfPre = Object.keys(testData.pre)
+  const keysOfPre = Object.keys(testData.pre)
 
   async.eachSeries(
     keysOfPre,
     function(key, callback) {
-      var acctData = testData.pre[key]
-      var account = new Account()
+      const acctData = testData.pre[key]
+      const account = new Account()
 
       account.nonce = format(acctData.nonce)
       account.balance = format(acctData.balance)
 
-      var codeBuf = Buffer.from(acctData.code.slice(2), 'hex')
-      var storageTrie = state.copy()
+      const codeBuf = Buffer.from(acctData.code.slice(2), 'hex')
+      const storageTrie = state.copy()
       storageTrie.root = null
 
       async.series(
