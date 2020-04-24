@@ -34,14 +34,7 @@ For information about the Wallet's API, please go to [./docs/classes/wallet.md](
 
 Importing various third party wallets is possible through the `thirdparty` submodule:
 
-<<<<<<< HEAD
-`const { thirdparty } = require('ethereumjs-wallet')`
-||||||| ac90675
-`var thirdparty = require('ethereumjs-wallet/thirdparty')`
-=======
 Node.js / ES5:
-
-> > > > > > > typedoc
 
 ```js
 const thirdparty = require('ethereumjs-wallet/thirdparty').default
@@ -59,14 +52,7 @@ Please go to [./docs/README.md](./docs/README.md) for more info.
 
 To use BIP32 HD wallets, first include the `hdkey` submodule:
 
-<<<<<<< HEAD
-`const { hdkey } = require('ethereumjs-wallet')`
-||||||| ac90675
-`var hdkey = require('ethereumjs-wallet/hdkey')`
-=======
 Node.js / ES5:
-
-> > > > > > > typedoc
 
 ```js
 const hdkey = require('ethereumjs-wallet/hdkey').default
@@ -95,13 +81,7 @@ const WalletSubprovider = require('ethereumjs-wallet/provider-engine').default
 ESM / TypeScript:
 
 ```js
-<<<<<<< HEAD
-const { WalletSubprovider } = require('ethereumjs-wallet')
-||||||| ac90675
-const WalletSubprovider = require('ethereumjs-wallet/provider-engine')
-=======
 import WalletSubprovider from 'ethereumjs-wallet/provider-engine'
->>>>>>> typedoc
 
 <engine>.addProvider(new WalletSubprovider(<wallet instance>))
 ```
