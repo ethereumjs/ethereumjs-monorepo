@@ -35,7 +35,6 @@ export const setLengthLeft = function(msg: Buffer, length: number, right: boolea
     return msg.slice(-length)
   }
 }
-export const setLength = setLengthLeft
 
 /**
  * Right Pads a `Buffer` with leading zeros till it has `length` bytes.
