@@ -1,5 +1,6 @@
 const ethjsUtil = require('ethjs-util')
 import * as BN from 'bn.js'
+import { assertIsBuffer } from './helpers'
 
 /**
  * Returns a buffer filled with 0s.
@@ -10,16 +11,16 @@ export const zeros = function(bytes: number): Buffer {
 }
 
 /**
- * Left Pads an `Array` or `Buffer` with leading zeros till it has `length` bytes.
+ * Left Pads a `Buffer` with leading zeros till it has `length` bytes.
  * Or it truncates the beginning if it exceeds.
- * @param msg the value to pad (Buffer|Array)
+ * @param msg the value to pad (Buffer)
  * @param length the number of bytes the output should be
  * @param right whether to start padding form the left or right
- * @return (Buffer|Array)
+ * @return (Buffer)
  */
-export const setLengthLeft = function(msg: any, length: number, right: boolean = false) {
+export const setLengthLeft = function(msg: Buffer, length: number, right: boolean = false) {
+  assertIsBuffer(msg)
   const buf = zeros(length)
-  msg = toBuffer(msg)
   if (right) {
     if (msg.length < length) {
       msg.copy(buf)
@@ -37,14 +38,14 @@ export const setLengthLeft = function(msg: any, length: number, right: boolean =
 export const setLength = setLengthLeft
 
 /**
- * Right Pads an `Array` or `Buffer` with leading zeros till it has `length` bytes.
+ * Right Pads a `Buffer` with leading zeros till it has `length` bytes.
  * Or it truncates the beginning if it exceeds.
- * @param msg the value to pad (Buffer|Array)
+ * @param msg the value to pad (Buffer)
  * @param length the number of bytes the output should be
- * @return (Buffer|Array)
+ * @return (Buffer)
  */
-export const setLengthRight = function(msg: any, length: number) {
-  return setLength(msg, length, true)
+export const setLengthRight = function(msg: Buffer, length: number) {
+  return setLengthLeft(msg, length, true)
 }
 
 /**

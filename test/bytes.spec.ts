@@ -5,7 +5,6 @@ import {
   zeroAddress,
   isZeroAddress,
   unpad,
-  setLength,
   setLengthLeft,
   setLengthRight,
   bufferToHex,
@@ -64,39 +63,39 @@ describe('unpad a hex string', function() {
   })
 })
 
-describe('pad', function() {
+describe('setLengthLeft', function() {
   it('should left pad a Buffer', function() {
-    const buf = Buffer.from([9, 9])
-    const padded = setLength(buf, 3)
-    assert.equal(padded.toString('hex'), '000909')
-  })
-  it('should left truncate a Buffer', function() {
-    const buf = Buffer.from([9, 0, 9])
-    const padded = setLength(buf, 2)
-    assert.equal(padded.toString('hex'), '0009')
-  })
-  it('should left pad a Buffer - alias', function() {
     const buf = Buffer.from([9, 9])
     const padded = setLengthLeft(buf, 3)
     assert.equal(padded.toString('hex'), '000909')
   })
+  it('should left truncate a Buffer', function() {
+    const buf = Buffer.from([9, 0, 9])
+    const padded = setLengthLeft(buf, 2)
+    assert.equal(padded.toString('hex'), '0009')
+  })
+  it('should throw if input is not a Buffer', function() {
+    assert.throws(function() {
+      setLengthLeft((<unknown>[9, 9]) as Buffer, 3)
+    })
+  })
 })
 
-describe('rpad', function() {
+describe('setLengthRight', function() {
   it('should right pad a Buffer', function() {
     const buf = Buffer.from([9, 9])
-    const padded = setLength(buf, 3, true)
+    const padded = setLengthRight(buf, 3)
     assert.equal(padded.toString('hex'), '090900')
   })
   it('should right truncate a Buffer', function() {
     const buf = Buffer.from([9, 0, 9])
-    const padded = setLength(buf, 2, true)
+    const padded = setLengthRight(buf, 2)
     assert.equal(padded.toString('hex'), '0900')
   })
-  it('should right pad a Buffer - alias', function() {
-    const buf = Buffer.from([9, 9])
-    const padded = setLengthRight(buf, 3)
-    assert.equal(padded.toString('hex'), '090900')
+  it('should throw if input is not a Buffer', function() {
+    assert.throws(function() {
+      setLengthRight((<unknown>[9, 9]) as Buffer, 3)
+    })
   })
 })
 
