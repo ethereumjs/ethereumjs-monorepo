@@ -459,7 +459,7 @@ export default class StateManager {
     const triePut = promisify(this._trie.put.bind(this._trie))
 
     const addresses = Object.keys(initState)
-    for await (let address of addresses) {
+    for (const address of addresses) {
       const account = new Account()
       if (initState[address].slice(0, 2) === '0x') {
         account.balance = new BN(initState[address].slice(2), 16).toArrayLike(Buffer)
@@ -493,7 +493,7 @@ export default class StateManager {
    */
   async cleanupTouchedAccounts(): Promise<void> {
     const touchedArray = Array.from(this._touched)
-    for await (let addressHex of touchedArray) {
+    for (const addressHex of touchedArray) {
       const address = Buffer.from(addressHex, 'hex')
       const empty = await this.accountIsEmpty(address)
       if (empty) {

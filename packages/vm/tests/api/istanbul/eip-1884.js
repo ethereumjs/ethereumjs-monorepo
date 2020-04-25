@@ -20,7 +20,7 @@ tape('Istanbul: EIP-1884: SELFBALANCE', async t => {
     address: addr,
   }
 
-  for await (const testCase of testCases) {
+  for (const testCase of testCases) {
     const common = new Common(testCase.chain, testCase.hardfork)
     const vm = new VM({ common })
     const account = createAccount('0x00', testCase.selfbalance)

@@ -38,7 +38,7 @@ tape('Istanbul: EIP-2200: net-metering SSTORE', async t => {
   const caller = Buffer.from('0000000000000000000000000000000000000000', 'hex')
   const addr = Buffer.from('00000000000000000000000000000000000000ff', 'hex')
   const key = new BN(0).toArrayLike(Buffer, 'be', 32)
-  for await (const testCase of testCases) {
+  for (const testCase of testCases) {
     const common = new Common('mainnet', 'istanbul')
     const vm = new VM({ common })
 
