@@ -171,7 +171,7 @@ tape('StateManager', t => {
   t.test('should generate the genesis state root correctly for all other chains', async st => {
     const chains = ['ropsten', 'rinkeby', 'kovan', 'goerli']
 
-    for await (const chain of chains) {
+    for (const chain of chains) {
       const common = new Common(chain, 'petersburg')
       const expectedStateRoot = Buffer.from(common.genesis().stateRoot.slice(2), 'hex')
       const stateManager = new StateManager({ common: common })

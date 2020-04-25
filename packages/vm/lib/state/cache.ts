@@ -88,7 +88,7 @@ export default class Cache {
    * @param addresses - Array of addresses
    */
   async warm(addresses: string[]): Promise<void> {
-    for await (let addressHex of addresses) {
+    for (const addressHex of addresses) {
       if (addressHex) {
         const address = Buffer.from(addressHex, 'hex')
         const account = await this._lookupAccount(address)
