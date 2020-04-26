@@ -51,7 +51,8 @@
     "hdkey": "^1.1.1",
     "randombytes": "^2.0.6",
     "utf8": "^3.0.0",
-    "uuid": "^3.3.2"
+    "uuid": "^3.3.2",
+    "web3-provider-engine": "^15.0.7"
   },
   "devDependencies": {
     "@ethereumjs/config-nyc": "^1.1.1",
@@ -75,7 +76,6 @@
     "typescript": "^3.2.2",
     "typestrict": "^1.0.2",
     "typedoc": "^0.14.2",
-    "typedoc-plugin-markdown": "^1.2.0",
-    "web3-provider-engine": "^15.0.7"
+    "typedoc-plugin-markdown": "^1.2.0"
   }
 }
