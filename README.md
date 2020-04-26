@@ -30,6 +30,20 @@ Features not supported:
 
 For information about the Wallet's API, please go to [./docs/classes/wallet.md](./docs/classes/wallet.md).
 
+You can import the `Wallet` class like this
+
+Node.js / ES5:
+
+```js
+const { Wallet } = require('ethereumjs-wallet')
+```
+
+ESM / TypeScript:
+
+```js
+import { Wallet } from 'ethereumjs-wallet'
+```
+
 ## Thirdparty API
 
 Importing various third party wallets is possible through the `thirdparty` submodule:
@@ -37,13 +51,13 @@ Importing various third party wallets is possible through the `thirdparty` submo
 Node.js / ES5:
 
 ```js
-const thirdparty = require('ethereumjs-wallet/thirdparty').default
+const { thirdparty } = require('ethereumjs-wallet')
 ```
 
 ESM / TypeScript:
 
 ```js
-import thirdparty from 'ethereumjs-wallet/thirdparty'
+import { thirdparty } from 'ethereumjs-wallet'
 ```
 
 Please go to [./docs/README.md](./docs/README.md) for more info.
@@ -55,13 +69,13 @@ To use BIP32 HD wallets, first include the `hdkey` submodule:
 Node.js / ES5:
 
 ```js
-const hdkey = require('ethereumjs-wallet/hdkey').default
+const { hdkey } = require('ethereumjs-wallet')
 ```
 
 ESM / TypeScript:
 
 ```js
-import hdkey from 'ethereumjs-wallet/hdkey'
+import { hdkey } from 'ethereumjs-wallet'
 ```
 
 Please go to [./docs/classes/ethereumhdkey.md](./docs/classes/ethereumhdkey.md) for more info.
@@ -73,7 +87,7 @@ The Wallet can be easily plugged into [provider-engine](https://github.com/metam
 Node.js / ES5:
 
 ```js
-const WalletSubprovider = require('ethereumjs-wallet/provider-engine').default
+const { WalletSubprovider } = require('ethereumjs-wallet')
 
 <engine>.addProvider(new WalletSubprovider(<wallet instance>))
 ```
@@ -81,7 +95,7 @@ const WalletSubprovider = require('ethereumjs-wallet/provider-engine').default
 ESM / TypeScript:
 
 ```js
-import WalletSubprovider from 'ethereumjs-wallet/provider-engine'
+import { WalletSubprovider } from 'ethereumjs-wallet'
 
 <engine>.addProvider(new WalletSubprovider(<wallet instance>))
 ```
