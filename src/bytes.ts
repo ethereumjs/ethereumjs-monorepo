@@ -110,7 +110,7 @@ const stripZeros = function(a: any): Buffer | number[] | string {
  */
 export const toBuffer = function(v: any): Buffer {
   if (!Buffer.isBuffer(v)) {
-    if (Array.isArray(v)) {
+    if (Array.isArray(v) || v instanceof Uint8Array) {
       v = Buffer.from(v)
     } else if (typeof v === 'string') {
       if (ethjsUtil.isHexString(v)) {

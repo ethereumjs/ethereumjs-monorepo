@@ -2,7 +2,7 @@ const ethjsUtil = require('ethjs-util')
 import * as assert from 'assert'
 import * as secp256k1 from 'secp256k1'
 import * as BN from 'bn.js'
-import { zeros, bufferToHex } from './bytes'
+import { zeros, bufferToHex, toBuffer } from './bytes'
 import { keccak, keccak256, rlphash } from './hash'
 import { assertIsHexString, assertIsBuffer } from './helpers'
 
@@ -129,6 +129,7 @@ export const isValidPrivate = function(privateKey: Buffer): boolean {
  * @param sanitize Accept public keys in other formats
  */
 export const isValidPublic = function(publicKey: Buffer, sanitize: boolean = false): boolean {
+  assertIsBuffer(publicKey)
   if (publicKey.length === 64) {
     // Convert to SEC1 for secp256k1
     return secp256k1.publicKeyVerify(Buffer.concat([Buffer.from([4]), publicKey]))
@@ -150,7 +151,7 @@ export const isValidPublic = function(publicKey: Buffer, sanitize: boolean = fal
 export const pubToAddress = function(pubKey: Buffer, sanitize: boolean = false): Buffer {
   assertIsBuffer(pubKey)
   if (sanitize && pubKey.length !== 64) {
-    pubKey = secp256k1.publicKeyConvert(pubKey, false).slice(1)
+    pubKey = toBuffer(secp256k1.publicKeyConvert(pubKey, false).slice(1))
   }
   assert(pubKey.length === 64)
   // Only take the lower 160bits of the hash
@@ -173,7 +174,7 @@ export const privateToAddress = function(privateKey: Buffer): Buffer {
 export const privateToPublic = function(privateKey: Buffer): Buffer {
   assertIsBuffer(privateKey)
   // skip the type flag and use the X, Y points
-  return secp256k1.publicKeyCreate(privateKey, false).slice(1)
+  return toBuffer(secp256k1.publicKeyCreate(privateKey, false).slice(1))
 }
 
 /**
@@ -182,7 +183,7 @@ export const privateToPublic = function(privateKey: Buffer): Buffer {
 export const importPublic = function(publicKey: Buffer): Buffer {
   assertIsBuffer(publicKey)
   if (publicKey.length !== 64) {
-    publicKey = secp256k1.publicKeyConvert(publicKey, false).slice(1)
+    publicKey = toBuffer(secp256k1.publicKeyConvert(publicKey, false).slice(1))
   }
   return publicKey
 }

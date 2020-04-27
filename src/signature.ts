@@ -17,12 +17,12 @@ export const ecsign = function(
   privateKey: Buffer,
   chainId?: number,
 ): ECDSASignature {
-  const sig = secp256k1.sign(msgHash, privateKey)
-  const recovery: number = sig.recovery
+  const sig = secp256k1.ecdsaSign(msgHash, privateKey)
+  const recovery: number = sig.recid
 
   const ret = {
-    r: sig.signature.slice(0, 32),
-    s: sig.signature.slice(32, 64),
+    r: toBuffer(sig.signature.slice(0, 32)),
+    s: toBuffer(sig.signature.slice(32, 64)),
     v: chainId ? recovery + (chainId * 2 + 35) : recovery + 27,
   }
 
@@ -45,8 +45,8 @@ export const ecrecover = function(
   if (!isValidSigRecovery(recovery)) {
     throw new Error('Invalid signature v value')
   }
-  const senderPubKey = secp256k1.recover(msgHash, signature, recovery)
-  return secp256k1.publicKeyConvert(senderPubKey, false).slice(1)
+  const senderPubKey = secp256k1.ecdsaRecover(signature, recovery, msgHash)
+  return toBuffer(secp256k1.publicKeyConvert(senderPubKey, false).slice(1))
 }
 
 /**

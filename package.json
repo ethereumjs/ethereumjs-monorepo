@@ -92,7 +92,7 @@
     "ethjs-util": "0.1.6",
     "keccak": "^3.0.0",
     "rlp": "^2.2.4",
-    "secp256k1": "^3.0.1"
+    "secp256k1": "^4.0.1"
   },
   "devDependencies": {
     "@ethereumjs/config-prettier": "^1.1.0",
@@ -100,7 +100,7 @@
     "@ethereumjs/config-tslint": "^1.1.0",
     "@types/mocha": "^5.2.7",
     "@types/node": "^11.9.0",
-    "@types/secp256k1": "3.5.0",
+    "@types/secp256k1": "^4.0.1",
     "contributor": "^0.1.25",
     "husky": "^2.1.0",
     "karma": "^4.0.0",

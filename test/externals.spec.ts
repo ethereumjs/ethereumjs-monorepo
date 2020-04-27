@@ -75,49 +75,6 @@ describe('External rlp export', () => {
   })
 })
 
-describe('External secp256k1 export', () => {
-  it('should export `secp256k1`', () => {
-    assert.equal(src.secp256k1, secp256k1_export)
-  })
-
-  it('should use a secp256k1 function correctly', () => {
-    // generate message to sign
-    const msg = Buffer.from(
-      '983232e10f8d440b3bde2c0787084b1228a0a0bd6d18bf78165696bc76f3530e',
-      'hex',
-    )
-    // generate privKey
-    const privKey = Buffer.from(
-      '59812df42e7bbb8f60a0ae92c660dcb6700927f944c709eaa0b9447d9ebffaf7',
-      'hex',
-    )
-    // get the public key in a compressed format
-    const pubKey = src.secp256k1.publicKeyCreate(privKey)
-    // sign the message
-    const sigObj = src.secp256k1.sign(msg, privKey)
-    // verify the signature
-    assert.ok(src.secp256k1.verify(msg, sigObj.signature, pubKey))
-  })
-
-  it('should throw on exceptions', () => {
-    // publicKeyVerify should be a Buffer
-    assert.throws(() => {
-      src.secp256k1.publicKeyVerify(null as any)
-    })
-
-    // publicKeyCombine public keys should have length greater that zero
-    assert.throws(() => {
-      src.secp256k1.publicKeyCombine([])
-    })
-
-    // privateKeyImport invalid format
-    assert.throws(() => {
-      const buffer = Buffer.from([0x00])
-      src.secp256k1.privateKeyImport(buffer)
-    })
-  })
-})
-
 describe('External ethjsUtil export', () => {
   it('should have all ethjsUtil methods', () => {
     const expected = [
