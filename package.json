@@ -92,7 +92,7 @@
     "ethjs-util": "0.1.6",
     "keccak": "^3.0.0",
     "rlp": "^2.2.4",
-    "secp256k1": "^4.0.0"
+    "secp256k1": "^4.0.1"
   },
   "devDependencies": {
     "@ethereumjs/config-prettier": "^1.1.0",
