@@ -15,11 +15,34 @@ export const zeros = function(bytes: number): Buffer {
  * Or it truncates the beginning if it exceeds.
  * @param msg the value to pad (Buffer)
  * @param length the number of bytes the output should be
+ * @return (Buffer)
+ */
+export const setLengthLeft = function(msg: Buffer, length: number) {
+  assertIsBuffer(msg)
+  return setLength(msg, length, false)
+}
+
+/**
+ * Right Pads a `Buffer` with trailing zeros till it has `length` bytes.
+ * it truncates the end if it exceeds.
+ * @param msg the value to pad (Buffer)
+ * @param length the number of bytes the output should be
+ * @return (Buffer)
+ */
+export const setLengthRight = function(msg: Buffer, length: number) {
+  assertIsBuffer(msg)
+  return setLength(msg, length, true)
+}
+
+/**
+ * Pads a `Buffer` with zeros till it has `length` bytes.
+ * Truncates the beginning or end of input if its length exceeds `length`.
+ * @param msg the value to pad (Buffer)
+ * @param length the number of bytes the output should be
  * @param right whether to start padding form the left or right
  * @return (Buffer)
  */
-export const setLengthLeft = function(msg: Buffer, length: number, right: boolean = false) {
-  assertIsBuffer(msg)
+const setLength = function(msg: Buffer, length: number, right: boolean) {
   const buf = zeros(length)
   if (right) {
     if (msg.length < length) {
@@ -34,17 +57,6 @@ export const setLengthLeft = function(msg: Buffer, length: number, right: boolea
     }
     return msg.slice(-length)
   }
-}
-
-/**
- * Right Pads a `Buffer` with leading zeros till it has `length` bytes.
- * Or it truncates the beginning if it exceeds.
- * @param msg the value to pad (Buffer)
- * @param length the number of bytes the output should be
- * @return (Buffer)
- */
-export const setLengthRight = function(msg: Buffer, length: number) {
-  return setLengthLeft(msg, length, true)
 }
 
 /**
