@@ -14,16 +14,17 @@ import {
   ExtensionNode,
   LeafNode,
   EmbeddedNode,
+  Nibbles,
 } from './trieNode'
 const assert = require('assert')
 
 interface Path {
   node: TrieNode | null
-  remaining: number[]
+  remaining: Nibbles
   stack: TrieNode[]
 }
 
-type FoundNode = (nodeRef: Buffer, node: TrieNode, key: number[], walkController: any) => void
+type FoundNode = (nodeRef: Buffer, node: TrieNode, key: Nibbles, walkController: any) => void
 
 /**
  * Use `import { BaseTrie as Trie } from 'merkle-patricia-tree'` for the base interface.
@@ -292,14 +293,14 @@ export class Trie {
    * @private
    * @param {Buffer} key
    * @param {Buffer} value
-   * @param {number[]} keyRemainder
+   * @param {Nibbles} keyRemainder
    * @param {TrieNode[]} stack
    * @returns {Promise}
    */
   async _updateNode(
     k: Buffer,
     value: Buffer,
-    keyRemainder: number[],
+    keyRemainder: Nibbles,
     stack: TrieNode[],
   ): Promise<void> {
     const toSave: BatchDBOp[] = []
@@ -421,7 +422,7 @@ export class Trie {
       const processNode = async (
         nodeRef: Buffer,
         node: TrieNode,
-        key: number[] = [],
+        key: Nibbles = [],
       ): Promise<void> => {
         const walkController = {
           next: async () => {
@@ -442,7 +443,7 @@ export class Trie {
               return resolve()
             }
             for (const child of children) {
-              const keyExtension = child[0] as number[]
+              const keyExtension = child[0] as Nibbles
               const childRef = child[1] as Buffer
               const childKey = key.concat(keyExtension)
               const priority = childKey.length
@@ -499,12 +500,12 @@ export class Trie {
    * saves a stack
    * @method _saveStack
    * @private
-   * @param {Array} key - the key. Should follow the stack
+   * @param {Nibbles} key - the key. Should follow the stack
    * @param {Array} stack - a stack of nodes to the value given by the key
    * @param {Array} opStack - a stack of levelup operations to commit at the end of this funciton
    * @returns {Promise}
    */
-  async _saveStack(key: number[], stack: TrieNode[], opStack: BatchDBOp[]): Promise<void> {
+  async _saveStack(key: Nibbles, stack: TrieNode[], opStack: BatchDBOp[]): Promise<void> {
     let lastRoot
 
     // update nodes
@@ -535,7 +536,7 @@ export class Trie {
 
   async _deleteNode(k: Buffer, stack: TrieNode[]): Promise<void> {
     const processBranchNode = (
-      key: number[],
+      key: Nibbles,
       branchKey: number,
       branchNode: TrieNode,
       parentNode: TrieNode,
