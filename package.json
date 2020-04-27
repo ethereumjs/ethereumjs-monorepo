@@ -10,12 +10,13 @@
   "scripts": {
     "build": "ethereumjs-config-build",
     "prepublishOnly": "npm run format && npm run tslint && npm run test",
+    "docs:build": "typedoc --out docs --mode file --readme none --theme markdown --mdEngine github --excludeNotExported src",
     "coverage": "ethereumjs-config-coverage",
     "coveralls": "ethereumjs-config-coveralls",
     "format": "ethereumjs-config-format",
-    "format-fix": "ethereumjs-config-format-fix",
+    "format:fix": "ethereumjs-config-format-fix",
     "lint": "ethereumjs-config-lint",
-    "lint-fix": "ethereumjs-config-lint-fix",
+    "lint:fix": "ethereumjs-config-lint-fix",
     "pretest": "npm run build",
     "test": "nyc mocha ./test/**/*.ts",
     "tsc": "ethereumjs-config-tsc",
@@ -50,7 +51,8 @@
     "hdkey": "^1.1.1",
     "randombytes": "^2.0.6",
     "utf8": "^3.0.0",
-    "uuid": "^3.3.2"
+    "uuid": "^3.3.2",
+    "web3-provider-engine": "^15.0.7"
   },
   "devDependencies": {
     "@ethereumjs/config-nyc": "^1.1.1",
@@ -73,6 +75,7 @@
     "tslint": "^5.12.0",
     "typescript": "^3.2.2",
     "typestrict": "^1.0.2",
-    "web3-provider-engine": "^15.0.7"
+    "typedoc": "^0.14.2",
+    "typedoc-plugin-markdown": "^1.2.0"
   }
 }
