@@ -4,8 +4,9 @@ import {
   zeros,
   zeroAddress,
   isZeroAddress,
-  unpad,
-  setLength,
+  unpadBuffer,
+  unpadArray,
+  unpadHexString,
   setLengthLeft,
   setLengthRight,
   bufferToHex,
@@ -48,55 +49,78 @@ describe('is zero address', function() {
   })
 })
 
-describe('unpad', function() {
-  it('should unpad a string', function() {
-    const str = '0000000006600'
-    const r = unpad(str)
-    assert.equal(r, '6600')
+describe('unpadBuffer', function() {
+  it('should unpad a Buffer', function() {
+    const buf = toBuffer('0x0000000006600')
+    const r = unpadBuffer(buf)
+    assert.deepEqual(r, toBuffer('0x6600'))
+  })
+  it('should throw if input is not a Buffer', function() {
+    assert.throws(function() {
+      unpadBuffer((<unknown>'0000000006600') as Buffer)
+    })
   })
 })
 
-describe('unpad a hex string', function() {
-  it('should unpad a string', function() {
+describe('unpadArray', function() {
+  it('should unpad an Array', function() {
+    const arr = [0, 0, 0, 1]
+    const r = unpadArray(arr)
+    assert.deepEqual(r, [1])
+  })
+  it('should throw if input is not an Array', function() {
+    assert.throws(function() {
+      unpadArray((<unknown>toBuffer([0, 0, 0, 1])) as number[])
+    })
+  })
+})
+
+describe('unpadHexString', function() {
+  it('should unpad a hex prefixed string', function() {
     const str = '0x0000000006600'
-    const r = unpad(str)
+    const r = unpadHexString(str)
     assert.equal(r, '6600')
+  })
+  it('should throw if input is not hex-prefixed', function() {
+    assert.throws(function() {
+      unpadHexString('0000000006600')
+    })
   })
 })
 
-describe('pad', function() {
+describe('setLengthLeft', function() {
   it('should left pad a Buffer', function() {
-    const buf = Buffer.from([9, 9])
-    const padded = setLength(buf, 3)
-    assert.equal(padded.toString('hex'), '000909')
-  })
-  it('should left truncate a Buffer', function() {
-    const buf = Buffer.from([9, 0, 9])
-    const padded = setLength(buf, 2)
-    assert.equal(padded.toString('hex'), '0009')
-  })
-  it('should left pad a Buffer - alias', function() {
     const buf = Buffer.from([9, 9])
     const padded = setLengthLeft(buf, 3)
     assert.equal(padded.toString('hex'), '000909')
   })
+  it('should left truncate a Buffer', function() {
+    const buf = Buffer.from([9, 0, 9])
+    const padded = setLengthLeft(buf, 2)
+    assert.equal(padded.toString('hex'), '0009')
+  })
+  it('should throw if input is not a Buffer', function() {
+    assert.throws(function() {
+      setLengthLeft((<unknown>[9, 9]) as Buffer, 3)
+    })
+  })
 })
 
-describe('rpad', function() {
+describe('setLengthRight', function() {
   it('should right pad a Buffer', function() {
     const buf = Buffer.from([9, 9])
-    const padded = setLength(buf, 3, true)
+    const padded = setLengthRight(buf, 3)
     assert.equal(padded.toString('hex'), '090900')
   })
   it('should right truncate a Buffer', function() {
     const buf = Buffer.from([9, 0, 9])
-    const padded = setLength(buf, 2, true)
+    const padded = setLengthRight(buf, 2)
     assert.equal(padded.toString('hex'), '0900')
   })
-  it('should right pad a Buffer - alias', function() {
-    const buf = Buffer.from([9, 9])
-    const padded = setLengthRight(buf, 3)
-    assert.equal(padded.toString('hex'), '090900')
+  it('should throw if input is not a Buffer', function() {
+    assert.throws(function() {
+      setLengthRight((<unknown>[9, 9]) as Buffer, 3)
+    })
   })
 })
 

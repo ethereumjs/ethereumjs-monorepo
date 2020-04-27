@@ -1,6 +1,6 @@
 import * as secp256k1 from 'secp256k1'
 import * as BN from 'bn.js'
-import { toBuffer, setLength, setLengthLeft, bufferToHex } from './bytes'
+import { toBuffer, setLengthLeft, bufferToHex } from './bytes'
 import { keccak } from './hash'
 
 export interface ECDSASignature {
@@ -40,7 +40,7 @@ export const ecrecover = function(
   s: Buffer,
   chainId?: number,
 ): Buffer {
-  const signature = Buffer.concat([setLength(r, 32), setLength(s, 32)], 64)
+  const signature = Buffer.concat([setLengthLeft(r, 32), setLengthLeft(s, 32)], 64)
   const recovery = calculateSigRecovery(v, chainId)
   if (!isValidSigRecovery(recovery)) {
     throw new Error('Invalid signature v value')

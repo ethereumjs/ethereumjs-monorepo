@@ -21,3 +21,14 @@ export const assertIsBuffer = function(input: Buffer): void {
     throw new Error(msg)
   }
 }
+
+/**
+ * Throws if input is not an array
+ * @param {number[]} input value to check
+ */
+export const assertIsArray = function(input: number[]): void {
+  const msg = `This method only supports number arrays but input was: ${input}`
+  if (!Array.isArray(input)) {
+    throw new Error(msg)
+  }
+}

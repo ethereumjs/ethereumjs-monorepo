@@ -2,7 +2,7 @@ const createKeccakHash = require('keccak')
 const createHash = require('create-hash')
 const ethjsUtil = require('ethjs-util')
 import * as rlp from 'rlp'
-import { toBuffer, setLength } from './bytes'
+import { toBuffer, setLengthLeft } from './bytes'
 
 /**
  * Creates Keccak hash of the input
@@ -54,7 +54,7 @@ export const ripemd160 = function(a: any, padded: boolean): Buffer {
     .update(a)
     .digest()
   if (padded === true) {
-    return setLength(hash, 32)
+    return setLengthLeft(hash, 32)
   } else {
     return hash
   }
