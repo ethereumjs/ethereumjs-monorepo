@@ -30,7 +30,7 @@ export class CheckpointTrie extends BaseTrie {
   /**
    * Creates a checkpoint that can later be reverted to or committed.
    * After this is called, no changes to the trie will be permanently saved
-   * until `commit` is called. Calling `putRaw` overrides the checkpointing
+   * until `commit` is called. Calling `db.put` overrides the checkpointing
    * mechanism and would directly write to db.
    */
   checkpoint() {
