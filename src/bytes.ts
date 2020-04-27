@@ -70,7 +70,7 @@ export const unpadBuffer = function(a: Buffer): Buffer {
 }
 
 /**
- * Trims leading zeros from a `Array` (of numbers).
+ * Trims leading zeros from an `Array` (of numbers).
  * @param a (number[])
  * @return (number[])
  */
