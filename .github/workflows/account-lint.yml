@@ -19,7 +19,8 @@ jobs:
         with:
           node-version: 12.x
       - uses: actions/checkout@v1
-      - run: npm install
+      - run: npx lerna bootstrap --scope ethereumjs-account --ignore-scripts --include-dependencies --no-ci
+      - run: npx lerna run --scope ethereumjs-account --include-dependencies build
         working-directory: '${{ env.cwd }}'
       - run: npm run lint
         env:
