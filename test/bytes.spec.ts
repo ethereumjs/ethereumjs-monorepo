@@ -57,7 +57,7 @@ describe('unpadBuffer', function() {
   })
   it('should throw if input is not a Buffer', function() {
     assert.throws(function() {
-      unpadBuffer('0000000006600')
+      unpadBuffer((<unknown>'0000000006600') as Buffer)
     })
   })
 })

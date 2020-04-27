@@ -64,7 +64,7 @@ const setLength = function(msg: Buffer, length: number, right: boolean) {
  * @param a (Buffer)
  * @return (Buffer)
  */
-export const unpadBuffer = function(a: any): Buffer {
+export const unpadBuffer = function(a: Buffer): Buffer {
   assertIsBuffer(a)
   return stripZeros(a) as Buffer
 }
