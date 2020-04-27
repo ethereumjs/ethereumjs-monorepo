@@ -3,10 +3,10 @@ import * as rlp from 'rlp'
 import { KECCAK256_NULL } from 'ethereumjs-util'
 import { CheckpointTrie } from '../src'
 
-tape('simple save and retrive', function (tester) {
+tape('simple save and retrieve', function (tester) {
   const it = tester.test
 
-  it('should not crash if given a non-existant root', async function (t) {
+  it('should not crash if given a non-existent root', async function (t) {
     const root = Buffer.from(
       '3f4399b08efe68945c1cf90ffe85bbe3ce978959da753f9e649f034015b8817d',
       'hex',
@@ -90,13 +90,13 @@ tape('simple save and retrive', function (tester) {
       t.end()
     })
 
-    it('should retreive a longer value', async function (t) {
+    it('should retrieve a longer value', async function (t) {
       const value = await trie.get(Buffer.from('done'))
       t.equal(value!.toString(), longString)
       t.end()
     })
 
-    it('should when being modiefied delete the old value', async function (t) {
+    it('should when being modified delete the old value', async function (t) {
       await trie.put(Buffer.from('done'), Buffer.from('test'))
       t.end()
     })
@@ -217,10 +217,10 @@ tape('it should create the genesis state root from ethereum', function (tester) 
   const v = Buffer.from('1e12515ce3e0f817a4ddef9ca55788a1d66bd2df', 'hex')
   const a = Buffer.from('1a26338f0d905e295fccb71fa9ea849ffa12aaf4', 'hex')
 
-  let stateRoot = Buffer.alloc(32)
+  const stateRoot = Buffer.alloc(32)
   stateRoot.fill(0)
 
-  let startAmount = Buffer.alloc(26)
+  const startAmount = Buffer.alloc(26)
   startAmount.fill(0)
   startAmount[0] = 1
 

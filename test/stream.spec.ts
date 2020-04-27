@@ -92,8 +92,8 @@ tape('kv stream test', function (tester) {
     },
   ] as BatchDBOp[]
 
-  let valObj = {} as any
-  for (let op of ops) {
+  const valObj = {} as any
+  for (const op of ops) {
     if (op.type === 'put') {
       valObj[op.key.toString()] = op.value.toString()
     }
@@ -113,7 +113,7 @@ tape('kv stream test', function (tester) {
       delete valObj[key]
     })
     stream.on('end', () => {
-      let keys = Object.keys(valObj)
+      const keys = Object.keys(valObj)
       t.equal(keys.length, 0)
       t.end()
     })
@@ -178,7 +178,7 @@ tape('db stream test', function (tester) {
       delete expectedNodes[key]
     })
     stream.on('end', () => {
-      let keys = Object.keys(expectedNodes)
+      const keys = Object.keys(expectedNodes)
       t.equal(keys.length, 0)
       t.end()
     })

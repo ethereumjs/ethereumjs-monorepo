@@ -4,9 +4,9 @@ import { PrioritizedTaskExecutor } from '../src/prioritizedTaskExecutor'
 const taskExecutor = new PrioritizedTaskExecutor(2)
 
 tape('prioritized task executor test', function (t) {
-  let tasks = [1, 2, 3, 4]
-  let callbacks = [] as any
-  let executionOrder = [] as any
+  const tasks = [1, 2, 3, 4]
+  const callbacks = [] as any
+  const executionOrder = [] as any
   tasks.forEach(function (task) {
     taskExecutor.execute(task, function (cb: Function) {
       executionOrder.push(task)
@@ -18,7 +18,7 @@ tape('prioritized task executor test', function (t) {
     callback()
   })
 
-  let expectedExecutionOrder = [1, 2, 4, 3]
+  const expectedExecutionOrder = [1, 2, 4, 3]
   t.deepEqual(executionOrder, expectedExecutionOrder)
   t.end()
 })

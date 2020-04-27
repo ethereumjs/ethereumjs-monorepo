@@ -14,7 +14,7 @@ tape('DB basic functionality', (t) => {
     st.end()
   })
 
-  t.test('dels value', async (st) => {
+  t.test('deletes value', async (st) => {
     await db.del(k)
     const res = await db.get(k)
     st.notOk(res)
