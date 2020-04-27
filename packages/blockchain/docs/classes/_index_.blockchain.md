@@ -50,7 +50,7 @@ This class stores and interacts with blocks.
 
 ### constructor
 
-\+ **new Blockchain**(`opts`: [BlockchainOptions](../interfaces/_index_.blockchainoptions.md)): _[Blockchain](_index_.blockchain.md)_
+\+ **new Blockchain**(`opts`: [BlockchainOptions](../interfaces/_index_.blockchainoptions.md)): _[Blockchain](\_index_.blockchain.md)\_
 
 _Defined in [index.ts:184](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/blockchain/src/index.ts#L184)_
 
@@ -62,7 +62,7 @@ Creates new Blockchain object
 | ------ | --------------------------------------------------------------- | ------- | ---------------------------------------------------------------------------------------------------------------------------- |
 | `opts` | [BlockchainOptions](../interfaces/_index_.blockchainoptions.md) | {}      | An object with the options that this constructor takes. See [BlockchainOptions](../interfaces/_index_.blockchainoptions.md). |
 
-**Returns:** _[Blockchain](_index_.blockchain.md)_
+**Returns:** _[Blockchain](\_index_.blockchain.md)\_
 
 ## Properties
 
@@ -124,7 +124,7 @@ Returns an object with metadata about the Blockchain. It's defined for backwards
 
 ▸ **delBlock**(`blockHash`: Buffer, `cb`: any): _void_
 
-_Implementation of [BlockchainInterface](../interfaces/_index_.blockchaininterface.md)_
+_Implementation of [BlockchainInterface](../interfaces/\_index_.blockchaininterface.md)\_
 
 _Defined in [index.ts:890](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/blockchain/src/index.ts#L890)_
 
@@ -187,7 +187,7 @@ Looks up many blocks relative to blockId
 
 ▸ **getDetails**(`_`: string, `cb`: any): _void_
 
-_Implementation of [BlockchainInterface](../interfaces/_index_.blockchaininterface.md)_
+_Implementation of [BlockchainInterface](../interfaces/\_index_.blockchaininterface.md)\_
 
 _Defined in [index.ts:691](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/blockchain/src/index.ts#L691)_
 
@@ -265,7 +265,7 @@ Returns the latest header in the canonical chain.
 
 ▸ **iterator**(`name`: string, `onBlock`: any, `cb`: any): _void_
 
-_Implementation of [BlockchainInterface](../interfaces/_index_.blockchaininterface.md)_
+_Implementation of [BlockchainInterface](../interfaces/\_index_.blockchaininterface.md)\_
 
 _Defined in [index.ts:1024](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/blockchain/src/index.ts#L1024)_
 

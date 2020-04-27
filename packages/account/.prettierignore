@@ -3,3 +3,4 @@ node_modules
 package.json
 dist
 .nyc_output
+docs

@@ -23,7 +23,7 @@
 
 ### bootstrapNodes
 
-• **bootstrapNodes**: _[BootstrapNode](_types_.bootstrapnode.md)[]_
+• **bootstrapNodes**: _[BootstrapNode](\_types_.bootstrapnode.md)[]\_
 
 _Defined in [types.ts:23](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/types.ts#L23)_
 
@@ -47,7 +47,7 @@ _Defined in [types.ts:19](https://github.com/ethereumjs/ethereumjs-vm/blob/maste
 
 ### genesis
 
-• **genesis**: _[GenesisBlock](_types_.genesisblock.md)_
+• **genesis**: _[GenesisBlock](\_types_.genesisblock.md)\_
 
 _Defined in [types.ts:21](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/types.ts#L21)_
 
@@ -55,7 +55,7 @@ _Defined in [types.ts:21](https://github.com/ethereumjs/ethereumjs-vm/blob/maste
 
 ### hardforks
 
-• **hardforks**: _[Hardfork](_types_.hardfork.md)[]_
+• **hardforks**: _[Hardfork](\_types_.hardfork.md)[]\_
 
 _Defined in [types.ts:22](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/types.ts#L22)_
 

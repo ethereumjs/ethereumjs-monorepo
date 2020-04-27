@@ -33,7 +33,7 @@
 
 ### constructor
 
-\+ **new Account**(`data?`: any): _[Account](_index_.account.md)_
+\+ **new Account**(`data?`: any): _[Account](\_index_.account.md)\_
 
 _Defined in [index.ts:41](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/account/src/index.ts#L41)_
 
@@ -63,7 +63,7 @@ const account = new Account(data)
 | ------- | ---- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `data?` | any  | An account can be initialized with either a `buffer` containing the RLP serialized account. Or an `Array` of buffers relating to each of the account Properties, listed in order below. For `Object` and `Array` each of the elements can either be a `Buffer`, hex `String`, `Number`, or an object with a `toBuffer` method such as `Bignum`. |
 
-**Returns:** _[Account](_index_.account.md)_
+**Returns:** _[Account](\_index_.account.md)\_
 
 ## Properties
 

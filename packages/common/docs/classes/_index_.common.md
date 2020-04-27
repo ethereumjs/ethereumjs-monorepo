@@ -47,7 +47,7 @@ Common class to access chain and hardfork parameters
 
 ### constructor
 
-\+ **new Common**(`chain`: string | number | object, `hardfork?`: string | null, `supportedHardforks?`: Array‹string›): _[Common](_index_.common.md)_
+\+ **new Common**(`chain`: string | number | object, `hardfork?`: string | null, `supportedHardforks?`: Array‹string›): _[Common](\_index_.common.md)\_
 
 _Defined in [index.ts:62](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/index.ts#L62)_
 
@@ -61,7 +61,7 @@ _Defined in [index.ts:62](https://github.com/ethereumjs/ethereumjs-vm/blob/maste
 | `hardfork?`           | string &#124; null                 | String identifier ('byzantium') for hardfork (optional)   |
 | `supportedHardforks?` | Array‹string›                      | Limit parameter returns to the given hardforks (optional) |
 
-**Returns:** _[Common](_index_.common.md)_
+**Returns:** _[Common](\_index_.common.md)\_
 
 ## Methods
 
@@ -534,7 +534,7 @@ Sets the hardfork to get params for
 
 ### `Static` forCustomChain
 
-▸ **forCustomChain**(`baseChain`: string | number, `customChainParams`: Partial‹[Chain](../interfaces/_types_.chain.md)›, `hardfork?`: string | null, `supportedHardforks?`: Array‹string›): _[Common](_index_.common.md)_
+▸ **forCustomChain**(`baseChain`: string | number, `customChainParams`: Partial‹[Chain](../interfaces/_types_.chain.md)›, `hardfork?`: string | null, `supportedHardforks?`: Array‹string›): _[Common](\_index_.common.md)\_
 
 _Defined in [index.ts:30](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/index.ts#L30)_
 
@@ -550,4 +550,4 @@ params from [[baseChain]] except the ones overridden in [[customChainParams]].
 | `hardfork?`           | string &#124; null                               | String identifier ('byzantium') for hardfork (optional)                                       |
 | `supportedHardforks?` | Array‹string›                                    | Limit parameter returns to the given hardforks (optional)                                     |
 
-**Returns:** _[Common](_index_.common.md)_
+**Returns:** _[Common](\_index_.common.md)\_

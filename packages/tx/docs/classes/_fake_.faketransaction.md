@@ -58,9 +58,9 @@ transactions belongs to.
 
 ### constructor
 
-\+ **new FakeTransaction**(`data`: Buffer | [PrefixedHexString](../modules/_index_.md#prefixedhexstring) | [BufferLike](../modules/_index_.md#bufferlike)[] | [FakeTxData](../interfaces/_index_.faketxdata.md), `opts`: [TransactionOptions](../interfaces/_index_.transactionoptions.md)): _[FakeTransaction](_fake_.faketransaction.md)_
+\+ **new FakeTransaction**(`data`: Buffer | [PrefixedHexString](../modules/_index_.md#prefixedhexstring) | [BufferLike](../modules/_index_.md#bufferlike)[] | [FakeTxData](../interfaces/_index_.faketxdata.md), `opts`: [TransactionOptions](../interfaces/_index_.transactionoptions.md)): _[FakeTransaction](\_fake_.faketransaction.md)\_
 
-_Overrides [Transaction](_index_.transaction.md).[constructor](_index_.transaction.md#constructor)_
+_Overrides [Transaction](\_index_.transaction.md).[constructor](_index_.transaction.md#constructor)\_
 
 _Defined in [fake.ts:22](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/fake.ts#L22)_
 
@@ -71,7 +71,7 @@ _Defined in [fake.ts:22](https://github.com/ethereumjs/ethereumjs-vm/blob/master
 | `data` | Buffer &#124; [PrefixedHexString](../modules/_index_.md#prefixedhexstring) &#124; [BufferLike](../modules/_index_.md#bufferlike)[] &#124; [FakeTxData](../interfaces/_index_.faketxdata.md) | {}      |
 | `opts` | [TransactionOptions](../interfaces/_index_.transactionoptions.md)                                                                                                                           | {}      |
 
-**Returns:** _[FakeTransaction](_fake_.faketransaction.md)_
+**Returns:** _[FakeTransaction](\_fake_.faketransaction.md)\_
 
 ## Properties
 
@@ -79,7 +79,7 @@ _Defined in [fake.ts:22](https://github.com/ethereumjs/ethereumjs-vm/blob/master
 
 • **data**: _Buffer_
 
-_Inherited from [FakeTransaction](_fake_.faketransaction.md).[data](_fake_.faketransaction.md#data)_
+_Inherited from [FakeTransaction](\_fake_.faketransaction.md).[data](_fake_.faketransaction.md#data)\_
 
 _Defined in [transaction.ts:30](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/transaction.ts#L30)_
 
@@ -100,7 +100,7 @@ This is not an optional property, as its getter never returns undefined.
 
 • **gasLimit**: _Buffer_
 
-_Inherited from [FakeTransaction](_fake_.faketransaction.md).[gasLimit](_fake_.faketransaction.md#gaslimit)_
+_Inherited from [FakeTransaction](\_fake_.faketransaction.md).[gasLimit](_fake_.faketransaction.md#gaslimit)\_
 
 _Defined in [transaction.ts:26](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/transaction.ts#L26)_
 
@@ -110,7 +110,7 @@ _Defined in [transaction.ts:26](https://github.com/ethereumjs/ethereumjs-vm/blob
 
 • **gasPrice**: _Buffer_
 
-_Inherited from [FakeTransaction](_fake_.faketransaction.md).[gasPrice](_fake_.faketransaction.md#gasprice)_
+_Inherited from [FakeTransaction](\_fake_.faketransaction.md).[gasPrice](_fake_.faketransaction.md#gasprice)\_
 
 _Defined in [transaction.ts:27](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/transaction.ts#L27)_
 
@@ -120,7 +120,7 @@ _Defined in [transaction.ts:27](https://github.com/ethereumjs/ethereumjs-vm/blob
 
 • **nonce**: _Buffer_
 
-_Inherited from [FakeTransaction](_fake_.faketransaction.md).[nonce](_fake_.faketransaction.md#nonce)_
+_Inherited from [FakeTransaction](\_fake_.faketransaction.md).[nonce](_fake_.faketransaction.md#nonce)\_
 
 _Defined in [transaction.ts:25](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/transaction.ts#L25)_
 
@@ -130,7 +130,7 @@ _Defined in [transaction.ts:25](https://github.com/ethereumjs/ethereumjs-vm/blob
 
 • **r**: _Buffer_
 
-_Inherited from [FakeTransaction](_fake_.faketransaction.md).[r](_fake_.faketransaction.md#r)_
+_Inherited from [FakeTransaction](\_fake_.faketransaction.md).[r](_fake_.faketransaction.md#r)\_
 
 _Defined in [transaction.ts:32](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/transaction.ts#L32)_
 
@@ -140,7 +140,7 @@ _Defined in [transaction.ts:32](https://github.com/ethereumjs/ethereumjs-vm/blob
 
 • **raw**: _Buffer[]_
 
-_Inherited from [FakeTransaction](_fake_.faketransaction.md).[raw](_fake_.faketransaction.md#raw)_
+_Inherited from [FakeTransaction](\_fake_.faketransaction.md).[raw](_fake_.faketransaction.md#raw)\_
 
 _Defined in [transaction.ts:24](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/transaction.ts#L24)_
 
@@ -150,7 +150,7 @@ _Defined in [transaction.ts:24](https://github.com/ethereumjs/ethereumjs-vm/blob
 
 • **s**: _Buffer_
 
-_Inherited from [FakeTransaction](_fake_.faketransaction.md).[s](_fake_.faketransaction.md#s)_
+_Inherited from [FakeTransaction](\_fake_.faketransaction.md).[s](_fake_.faketransaction.md#s)\_
 
 _Defined in [transaction.ts:33](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/transaction.ts#L33)_
 
@@ -160,7 +160,7 @@ _Defined in [transaction.ts:33](https://github.com/ethereumjs/ethereumjs-vm/blob
 
 • **to**: _Buffer_
 
-_Inherited from [FakeTransaction](_fake_.faketransaction.md).[to](_fake_.faketransaction.md#to)_
+_Inherited from [FakeTransaction](\_fake_.faketransaction.md).[to](_fake_.faketransaction.md#to)\_
 
 _Defined in [transaction.ts:28](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/transaction.ts#L28)_
 
@@ -170,7 +170,7 @@ _Defined in [transaction.ts:28](https://github.com/ethereumjs/ethereumjs-vm/blob
 
 • **v**: _Buffer_
 
-_Inherited from [FakeTransaction](_fake_.faketransaction.md).[v](_fake_.faketransaction.md#v)_
+_Inherited from [FakeTransaction](\_fake_.faketransaction.md).[v](_fake_.faketransaction.md#v)\_
 
 _Defined in [transaction.ts:31](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/transaction.ts#L31)_
 
@@ -180,7 +180,7 @@ _Defined in [transaction.ts:31](https://github.com/ethereumjs/ethereumjs-vm/blob
 
 • **value**: _Buffer_
 
-_Inherited from [FakeTransaction](_fake_.faketransaction.md).[value](_fake_.faketransaction.md#value)_
+_Inherited from [FakeTransaction](\_fake_.faketransaction.md).[value](_fake_.faketransaction.md#value)\_
 
 _Defined in [transaction.ts:29](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/transaction.ts#L29)_
 
@@ -190,7 +190,7 @@ _Defined in [transaction.ts:29](https://github.com/ethereumjs/ethereumjs-vm/blob
 
 ▸ **getBaseFee**(): _BN_
 
-_Inherited from [FakeTransaction](_fake_.faketransaction.md).[getBaseFee](_fake_.faketransaction.md#getbasefee)_
+_Inherited from [FakeTransaction](\_fake_.faketransaction.md).[getBaseFee](_fake_.faketransaction.md#getbasefee)\_
 
 _Defined in [transaction.ts:296](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/transaction.ts#L296)_
 
@@ -204,7 +204,7 @@ the minimum amount of gas the tx must have (DataFee + TxFee + Creation Fee)
 
 ▸ **getChainId**(): _number_
 
-_Inherited from [FakeTransaction](_fake_.faketransaction.md).[getChainId](_fake_.faketransaction.md#getchainid)_
+_Inherited from [FakeTransaction](\_fake_.faketransaction.md).[getChainId](_fake_.faketransaction.md#getchainid)\_
 
 _Defined in [transaction.ts:202](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/transaction.ts#L202)_
 
@@ -218,7 +218,7 @@ returns chain ID
 
 ▸ **getDataFee**(): _BN_
 
-_Inherited from [FakeTransaction](_fake_.faketransaction.md).[getDataFee](_fake_.faketransaction.md#getdatafee)_
+_Inherited from [FakeTransaction](\_fake_.faketransaction.md).[getDataFee](_fake_.faketransaction.md#getdatafee)\_
 
 _Defined in [transaction.ts:282](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/transaction.ts#L282)_
 
@@ -232,7 +232,7 @@ The amount of gas paid for the data in this tx
 
 ▸ **getSenderAddress**(): _Buffer_
 
-_Inherited from [FakeTransaction](_fake_.faketransaction.md).[getSenderAddress](_fake_.faketransaction.md#getsenderaddress)_
+_Inherited from [FakeTransaction](\_fake_.faketransaction.md).[getSenderAddress](_fake_.faketransaction.md#getsenderaddress)\_
 
 _Defined in [transaction.ts:209](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/transaction.ts#L209)_
 
@@ -246,7 +246,7 @@ returns the sender's address
 
 ▸ **getSenderPublicKey**(): _Buffer_
 
-_Inherited from [FakeTransaction](_fake_.faketransaction.md).[getSenderPublicKey](_fake_.faketransaction.md#getsenderpublickey)_
+_Inherited from [FakeTransaction](\_fake_.faketransaction.md).[getSenderPublicKey](_fake_.faketransaction.md#getsenderpublickey)\_
 
 _Defined in [transaction.ts:221](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/transaction.ts#L221)_
 
@@ -260,7 +260,7 @@ returns the public key of the sender
 
 ▸ **getUpfrontCost**(): _BN_
 
-_Inherited from [FakeTransaction](_fake_.faketransaction.md).[getUpfrontCost](_fake_.faketransaction.md#getupfrontcost)_
+_Inherited from [FakeTransaction](\_fake_.faketransaction.md).[getUpfrontCost](_fake_.faketransaction.md#getupfrontcost)\_
 
 _Defined in [transaction.ts:307](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/transaction.ts#L307)_
 
@@ -274,7 +274,7 @@ the up front amount that an account must have for this transaction to be valid
 
 ▸ **hash**(`includeSignature`: boolean): _Buffer_
 
-_Overrides [Transaction](_index_.transaction.md).[hash](_index_.transaction.md#hash)_
+_Overrides [Transaction](\_index_.transaction.md).[hash](_index_.transaction.md#hash)\_
 
 _Defined in [fake.ts:53](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/fake.ts#L53)_
 
@@ -295,7 +295,7 @@ signature.
 
 ▸ **serialize**(): _Buffer_
 
-_Inherited from [FakeTransaction](_fake_.faketransaction.md).[serialize](_fake_.faketransaction.md#serialize)_
+_Inherited from [FakeTransaction](\_fake_.faketransaction.md).[serialize](_fake_.faketransaction.md#serialize)\_
 
 _Defined in [transaction.ts:337](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/transaction.ts#L337)_
 
@@ -309,7 +309,7 @@ Returns the rlp encoding of the transaction
 
 ▸ **sign**(`privateKey`: Buffer): _void_
 
-_Inherited from [FakeTransaction](_fake_.faketransaction.md).[sign](_fake_.faketransaction.md#sign)_
+_Inherited from [FakeTransaction](\_fake_.faketransaction.md).[sign](_fake_.faketransaction.md#sign)\_
 
 _Defined in [transaction.ts:262](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/transaction.ts#L262)_
 
@@ -329,7 +329,7 @@ sign a transaction with a given private key
 
 ▸ **toCreationAddress**(): _boolean_
 
-_Inherited from [FakeTransaction](_fake_.faketransaction.md).[toCreationAddress](_fake_.faketransaction.md#tocreationaddress)_
+_Inherited from [FakeTransaction](\_fake_.faketransaction.md).[toCreationAddress](_fake_.faketransaction.md#tocreationaddress)\_
 
 _Defined in [transaction.ts:169](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/transaction.ts#L169)_
 
@@ -343,7 +343,7 @@ If the tx's `to` is to the creation address
 
 ▸ **toJSON**(`labels`: boolean): _object | string[]_
 
-_Inherited from [FakeTransaction](_fake_.faketransaction.md).[toJSON](_fake_.faketransaction.md#tojson)_
+_Inherited from [FakeTransaction](\_fake_.faketransaction.md).[toJSON](_fake_.faketransaction.md#tojson)\_
 
 _Defined in [transaction.ts:346](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/transaction.ts#L346)_
 
@@ -365,7 +365,7 @@ Returns the transaction in JSON format
 
 ▸ **validate**(): _boolean_
 
-_Inherited from [FakeTransaction](_fake_.faketransaction.md).[validate](_fake_.faketransaction.md#validate)_
+_Inherited from [FakeTransaction](\_fake_.faketransaction.md).[validate](_fake_.faketransaction.md#validate)\_
 
 _Defined in [transaction.ts:314](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/transaction.ts#L314)_
 
@@ -375,7 +375,7 @@ Validates the signature and checks to see if it has enough gas.
 
 ▸ **validate**(`stringError`: false): _boolean_
 
-_Inherited from [FakeTransaction](_fake_.faketransaction.md).[validate](_fake_.faketransaction.md#validate)_
+_Inherited from [FakeTransaction](\_fake_.faketransaction.md).[validate](_fake_.faketransaction.md#validate)\_
 
 _Defined in [transaction.ts:315](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/transaction.ts#L315)_
 
@@ -389,7 +389,7 @@ _Defined in [transaction.ts:315](https://github.com/ethereumjs/ethereumjs-vm/blo
 
 ▸ **validate**(`stringError`: true): _string_
 
-_Inherited from [FakeTransaction](_fake_.faketransaction.md).[validate](_fake_.faketransaction.md#validate)_
+_Inherited from [FakeTransaction](\_fake_.faketransaction.md).[validate](_fake_.faketransaction.md#validate)\_
 
 _Defined in [transaction.ts:316](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/transaction.ts#L316)_
 
@@ -407,7 +407,7 @@ _Defined in [transaction.ts:316](https://github.com/ethereumjs/ethereumjs-vm/blo
 
 ▸ **verifySignature**(): _boolean_
 
-_Inherited from [FakeTransaction](_fake_.faketransaction.md).[verifySignature](_fake_.faketransaction.md#verifysignature)_
+_Inherited from [FakeTransaction](\_fake_.faketransaction.md).[verifySignature](_fake_.faketransaction.md#verifysignature)\_
 
 _Defined in [transaction.ts:233](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/transaction.ts#L233)_
 

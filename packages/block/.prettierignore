@@ -4,3 +4,4 @@ package.json
 dist
 test-build
 .nyc_output
+docs

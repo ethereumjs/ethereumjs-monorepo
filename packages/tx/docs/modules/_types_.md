@@ -20,7 +20,7 @@
 
 ### BufferLike
 
-Ƭ **BufferLike**: _Buffer | [TransformableToBuffer](../interfaces/_index_.transformabletobuffer.md) | [PrefixedHexString](_types_.md#prefixedhexstring) | number_
+Ƭ **BufferLike**: _Buffer | [TransformableToBuffer](../interfaces/\_index_.transformabletobuffer.md) | [PrefixedHexString](_types_.md#prefixedhexstring) | number\_
 
 _Defined in [types.ts:19](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/types.ts#L19)_
 
