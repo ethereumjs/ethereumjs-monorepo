@@ -1,5 +1,6 @@
 const ethjsUtil = require('ethjs-util')
 import * as BN from 'bn.js'
+import { assertIsBuffer, assertIsArray, assertIsHexString } from './helpers'
 
 /**
  * Returns a buffer filled with 0s.
@@ -10,16 +11,39 @@ export const zeros = function(bytes: number): Buffer {
 }
 
 /**
- * Left Pads an `Array` or `Buffer` with leading zeros till it has `length` bytes.
+ * Left Pads a `Buffer` with leading zeros till it has `length` bytes.
  * Or it truncates the beginning if it exceeds.
- * @param msg the value to pad (Buffer|Array)
+ * @param msg the value to pad (Buffer)
+ * @param length the number of bytes the output should be
+ * @return (Buffer)
+ */
+export const setLengthLeft = function(msg: Buffer, length: number) {
+  assertIsBuffer(msg)
+  return setLength(msg, length, false)
+}
+
+/**
+ * Right Pads a `Buffer` with trailing zeros till it has `length` bytes.
+ * it truncates the end if it exceeds.
+ * @param msg the value to pad (Buffer)
+ * @param length the number of bytes the output should be
+ * @return (Buffer)
+ */
+export const setLengthRight = function(msg: Buffer, length: number) {
+  assertIsBuffer(msg)
+  return setLength(msg, length, true)
+}
+
+/**
+ * Pads a `Buffer` with zeros till it has `length` bytes.
+ * Truncates the beginning or end of input if its length exceeds `length`.
+ * @param msg the value to pad (Buffer)
  * @param length the number of bytes the output should be
  * @param right whether to start padding form the left or right
- * @return (Buffer|Array)
+ * @return (Buffer)
  */
-export const setLengthLeft = function(msg: any, length: number, right: boolean = false) {
+const setLength = function(msg: Buffer, length: number, right: boolean) {
   const buf = zeros(length)
-  msg = toBuffer(msg)
   if (right) {
     if (msg.length < length) {
       msg.copy(buf)
@@ -34,26 +58,44 @@ export const setLengthLeft = function(msg: any, length: number, right: boolean =
     return msg.slice(-length)
   }
 }
-export const setLength = setLengthLeft
 
 /**
- * Right Pads an `Array` or `Buffer` with leading zeros till it has `length` bytes.
- * Or it truncates the beginning if it exceeds.
- * @param msg the value to pad (Buffer|Array)
- * @param length the number of bytes the output should be
- * @return (Buffer|Array)
+ * Trims leading zeros from a `Buffer`.
+ * @param a (Buffer)
+ * @return (Buffer)
  */
-export const setLengthRight = function(msg: any, length: number) {
-  return setLength(msg, length, true)
+export const unpadBuffer = function(a: Buffer): Buffer {
+  assertIsBuffer(a)
+  return stripZeros(a) as Buffer
 }
 
 /**
- * Trims leading zeros from a `Buffer` or an `Array`.
+ * Trims leading zeros from an `Array` (of numbers).
+ * @param a (number[])
+ * @return (number[])
+ */
+export const unpadArray = function(a: number[]): number[] {
+  assertIsArray(a)
+  return stripZeros(a) as number[]
+}
+
+/**
+ * Trims leading zeros from a hex-prefixed `String`.
+ * @param a (String)
+ * @return (String)
+ */
+export const unpadHexString = function(a: string): string {
+  assertIsHexString(a)
+  a = ethjsUtil.stripHexPrefix(a)
+  return stripZeros(a) as string
+}
+
+/**
+ * Trims leading zeros from a `Buffer`, `String` or `Number[]`.
  * @param a (Buffer|Array|String)
  * @return (Buffer|Array|String)
  */
-export const unpad = function(a: any) {
-  a = ethjsUtil.stripHexPrefix(a)
+const stripZeros = function(a: any): Buffer | number[] | string {
   let first = a[0]
   while (a.length > 0 && first.toString() === '0') {
     a = a.slice(1)
@@ -61,7 +103,6 @@ export const unpad = function(a: any) {
   }
   return a
 }
-export const stripZeros = unpad
 
 /**
  * Attempts to turn a value into a `Buffer`. As input it supports `Buffer`, `String`, `Number`, null/undefined, `BN` and other objects with a `toArray()` method.

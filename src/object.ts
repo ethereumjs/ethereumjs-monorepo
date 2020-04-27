@@ -1,7 +1,7 @@
 const ethjsUtil = require('ethjs-util')
 import * as assert from 'assert'
 import * as rlp from 'rlp'
-import { toBuffer, baToJSON, stripZeros } from './bytes'
+import { toBuffer, baToJSON, unpadBuffer } from './bytes'
 
 /**
  * Defines properties on a `Object`. It make the assumption that underlying data is binary.
@@ -48,7 +48,7 @@ export const defineProperties = function(self: any, fields: any, data?: any) {
       }
 
       if (field.allowLess && field.length) {
-        v = stripZeros(v)
+        v = unpadBuffer(v)
         assert(
           field.length >= v.length,
           `The field ${field.name} must not have more ${field.length} bytes`,
