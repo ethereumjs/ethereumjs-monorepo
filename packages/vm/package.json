@@ -115,8 +115,5 @@
       "dist/**",
       "examples/runcode-browserify.js"
     ]
-  },
-  "publishConfig": {
-    "directory": "src"
   }
 }
