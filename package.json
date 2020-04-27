@@ -101,12 +101,11 @@
     "@types/mocha": "^5.2.7",
     "@types/node": "^11.9.0",
     "@types/secp256k1": "^4.0.1",
-    "contributor": "^0.1.25",
     "husky": "^2.1.0",
-    "karma": "^4.0.0",
+    "karma": "^5.0.2",
     "karma-chrome-launcher": "^2.0.0",
     "karma-firefox-launcher": "^1.0.0",
-    "karma-mocha": "^1.3.0",
+    "karma-mocha": "^2.0.0",
     "karma-typescript": "^4.1.1",
     "mocha": "^6.0.0",
     "nyc": "^15.0.0",
@@ -115,7 +114,7 @@
     "tslint": "^5.12.0",
     "typedoc": "next",
     "typedoc-plugin-markdown": "^2.2.16",
-    "typescript": "^3.2.2",
+    "typescript": "^3.8.3",
     "typestrict": "^1.0.2"
   }
 }
