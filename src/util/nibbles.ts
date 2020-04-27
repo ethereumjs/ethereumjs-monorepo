@@ -1,10 +1,12 @@
+import { Nibbles } from '../trieNode'
+
 /**
  * Converts a buffer to a nibble array.
  * @method bufferToNibbles
  * @param {Buffer} key
  * @private
  */
-export function bufferToNibbles(key: Buffer): number[] {
+export function bufferToNibbles(key: Buffer): Nibbles {
   const bkey = Buffer.from(key)
   let nibbles = [] as any
 
@@ -21,10 +23,10 @@ export function bufferToNibbles(key: Buffer): number[] {
 /**
  * Converts a nibble array into a buffer.
  * @method nibblesToBuffer
- * @param {Array} Nibble array
+ * @param {Nibbles} arr - Nibble array
  * @private
  */
-export function nibblesToBuffer(arr: number[]): Buffer {
+export function nibblesToBuffer(arr: Nibbles): Buffer {
   let buf = Buffer.alloc(arr.length / 2)
   for (let i = 0; i < buf.length; i++) {
     let q = i * 2
@@ -36,11 +38,11 @@ export function nibblesToBuffer(arr: number[]): Buffer {
 /**
  * Returns the number of in order matching nibbles of two give nibble arrays.
  * @method matchingNibbleLength
- * @param {Array} nib1
- * @param {Array} nib2
+ * @param {Nibbles} nib1
+ * @param {Nibbles} nib2
  * @private
  */
-export function matchingNibbleLength(nib1: number[], nib2: number[]): number {
+export function matchingNibbleLength(nib1: Nibbles, nib2: Nibbles): number {
   let i = 0
   while (nib1[i] === nib2[i] && nib1.length > i) {
     i++
@@ -50,10 +52,10 @@ export function matchingNibbleLength(nib1: number[], nib2: number[]): number {
 
 /**
  * Compare two nibble array keys.
- * @param {Array} keyA
- * @param {Array} keyB
+ * @param {Nibbles} keyA
+ * @param {Nibbles} keyB
  */
-export function doKeysMatch(keyA: number[], keyB: number[]): boolean {
+export function doKeysMatch(keyA: Nibbles, keyB: Nibbles): boolean {
   const length = matchingNibbleLength(keyA, keyB)
   return length === keyA.length && length === keyB.length
 }
