@@ -37,7 +37,7 @@ tape('SecureTrie', function (t) {
     const jsonTests = require('./fixtures/trietest_secureTrie.json').tests
 
     it.test('empty values', async function (t) {
-      for await (const row of jsonTests.emptyValues.in) {
+      for (const row of jsonTests.emptyValues.in) {
         const val = row[1] ? Buffer.from(row[1]) : ((null as unknown) as Buffer)
         await trie.put(Buffer.from(row[0]), val)
       }
@@ -47,7 +47,7 @@ tape('SecureTrie', function (t) {
 
     it.test('branchingTests', async function (t) {
       trie = new SecureTrie()
-      for await (const row of jsonTests.branchingTests.in) {
+      for (const row of jsonTests.branchingTests.in) {
         const val = row[1] ? Buffer.from(row[1]) : ((null as unknown) as Buffer)
         await trie.put(Buffer.from(row[0]), val)
       }
@@ -56,7 +56,7 @@ tape('SecureTrie', function (t) {
     })
 
     it.test('jeff', async function (t) {
-      for await (const row of jsonTests.jeff.in) {
+      for (const row of jsonTests.jeff.in) {
         let val = row[1]
         if (val) {
           val = Buffer.from(row[1].slice(2), 'hex')
