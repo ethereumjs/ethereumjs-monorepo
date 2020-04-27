@@ -2,7 +2,7 @@ const ethjsUtil = require('ethjs-util')
 import * as assert from 'assert'
 import * as secp256k1 from 'secp256k1'
 import * as BN from 'bn.js'
-import { zeros, bufferToHex } from './bytes'
+import { zeros, bufferToHex, toBuffer } from './bytes'
 import { keccak, keccak256, rlphash } from './hash'
 import { assertIsHexString, assertIsBuffer } from './helpers'
 
@@ -129,6 +129,7 @@ export const isValidPrivate = function(privateKey: Buffer): boolean {
  * @param sanitize Accept public keys in other formats
  */
 export const isValidPublic = function(publicKey: Buffer, sanitize: boolean = false): boolean {
+  assertIsBuffer(publicKey)
   if (publicKey.length === 64) {
     // Convert to SEC1 for secp256k1
     return secp256k1.publicKeyVerify(Buffer.concat([Buffer.from([4]), publicKey]))
