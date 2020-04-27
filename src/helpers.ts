@@ -10,3 +10,14 @@ export const assertIsHexString = function(input: string): void {
     throw new Error(msg)
   }
 }
+
+/**
+ * Throws if input is not a buffer
+ * @param {Buffer} input value to check
+ */
+export const assertIsBuffer = function(input: Buffer): void {
+  const msg = `This method only supports Buffer but input was: ${input}`
+  if (!Buffer.isBuffer(input)) {
+    throw new Error(msg)
+  }
+}
