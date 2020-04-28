@@ -92,11 +92,41 @@ const _sha256 = function(a: any): Buffer {
 }
 
 /**
+ * Creates RIPEMD160 hash of a Buffer input.
+ * @param a The input data (Buffer)
+ * @param padded Whether it should be padded to 256 bits or not
+ */
+export const ripemd160 = function(a: Buffer, padded: boolean): Buffer {
+  assertIsBuffer(a)
+  return _ripemd160(a, padded)
+}
+
+/**
+ * Creates RIPEMD160 hash of a string input.
+ * @param a The input data (String)
+ * @param padded Whether it should be padded to 256 bits or not
+ */
+export const ripemd160FromString = function(a: string, padded: boolean): Buffer {
+  assertIsString(a)
+  return _ripemd160(a, padded)
+}
+
+/**
+ * Creates RIPEMD160 hash of a number[] input.
+ * @param a The input data (number[])
+ * @param padded Whether it should be padded to 256 bits or not
+ */
+export const ripemd160FromArray = function(a: number[], padded: boolean): Buffer {
+  assertIsArray(a)
+  return _ripemd160(a, padded)
+}
+
+/**
  * Creates RIPEMD160 hash of the input.
  * @param a The input data (Buffer|Array|String|Number)
  * @param padded Whether it should be padded to 256 bits or not
  */
-export const ripemd160 = function(a: any, padded: boolean): Buffer {
+const _ripemd160 = function(a: any, padded: boolean): Buffer {
   a = toBuffer(a)
   const hash = createHash('rmd160')
     .update(a)

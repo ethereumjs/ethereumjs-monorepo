@@ -8,6 +8,8 @@ import {
   sha256FromString,
   sha256FromArray,
   ripemd160,
+  ripemd160FromString,
+  ripemd160FromArray,
   rlphash,
   toBuffer,
 } from '../src'
@@ -131,15 +133,68 @@ describe('ripemd160', function() {
   it('should produce a ripemd160', function() {
     const msg = '0x3c9229289a6125f7fdf1885a77bb12c37a8d3b4962d936f7e3084dece32a3ca1'
     const r = '4bb0246cbfdfddbe605a374f1187204c896fabfd'
-    const hash = ripemd160(msg, false)
+    const hash = ripemd160(toBuffer(msg), false)
     assert.equal(hash.toString('hex'), r)
   })
 
   it('should produce a padded ripemd160', function() {
     const msg = '0x3c9229289a6125f7fdf1885a77bb12c37a8d3b4962d936f7e3084dece32a3ca1'
     const r = '0000000000000000000000004bb0246cbfdfddbe605a374f1187204c896fabfd'
-    const hash = ripemd160(msg, true)
+    const hash = ripemd160(toBuffer(msg), true)
     assert.equal(hash.toString('hex'), r)
+  })
+
+  it('should error if input is not Buffer', function() {
+    const msg = '0x3c9229289a6125f7fdf1885a77bb12c37a8d3b4962d936f7e3084dece32a3ca1'
+    assert.throws(function() {
+      ripemd160((<unknown>msg) as Buffer, false)
+    })
+  })
+})
+
+describe('ripemd160FromString', function() {
+  it('should produce a ripemd160', function() {
+    const msg = '0x3c9229289a6125f7fdf1885a77bb12c37a8d3b4962d936f7e3084dece32a3ca1'
+    const r = '4bb0246cbfdfddbe605a374f1187204c896fabfd'
+    const hash = ripemd160FromString(msg, false)
+    assert.equal(hash.toString('hex'), r)
+  })
+
+  it('should produce a padded ripemd160', function() {
+    const msg = '0x3c9229289a6125f7fdf1885a77bb12c37a8d3b4962d936f7e3084dece32a3ca1'
+    const r = '0000000000000000000000004bb0246cbfdfddbe605a374f1187204c896fabfd'
+    const hash = ripemd160FromString(msg, true)
+    assert.equal(hash.toString('hex'), r)
+  })
+
+  it('should error if input is not a string', function() {
+    const msg = '0x3c9229289a6125f7fdf1885a77bb12c37a8d3b4962d936f7e3084dece32a3ca1'
+    assert.throws(function() {
+      ripemd160FromString((<unknown>toBuffer(msg)) as string, false)
+    })
+  })
+})
+
+describe('ripemd160FromArray', function() {
+  it('should produce a ripemd160', function() {
+    const arr = [0, 1, 2, 3, 4, 5, 6, 7, 8, 0]
+    const r = 'ddbb5062318b209e3dbfc389fe61840363050071'
+    const hash = ripemd160FromArray(arr, false)
+    assert.equal(hash.toString('hex'), r)
+  })
+
+  it('should produce a padded ripemd160', function() {
+    const arr = [0, 1, 2, 3, 4, 5, 6, 7, 8, 0]
+    const r = '000000000000000000000000ddbb5062318b209e3dbfc389fe61840363050071'
+    const hash = ripemd160FromArray(arr, true)
+    assert.equal(hash.toString('hex'), r)
+  })
+
+  it('should error if input is not an array', function() {
+    const arr = [0, 1, 2, 3, 4, 5, 6, 7, 8, 0]
+    assert.throws(function() {
+      ripemd160FromArray((<unknown>toBuffer(arr)) as number[], false)
+    })
   })
 })
 
