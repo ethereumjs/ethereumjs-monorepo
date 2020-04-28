@@ -101,24 +101,24 @@ describe('External ethjsUtil export', () => {
 
   it('should use ethjsUtil functions correctly', () => {
     // should convert intToHex
-    assert.equal((src as any).intToHex(new src.BN(0)), '0x0')
+    assert.equal(src.intToHex(new src.BN(0).toNumber()), '0x0')
 
     // should convert intToHex
     const i = 6003400
-    const hex = (src as any).intToHex(i)
+    const hex = src.intToHex(i)
     assert.equal(hex, '0x5b9ac8')
 
     // should convert a int to a buffer
     const j = 6003400
-    const buf = (src as any).intToBuffer(j)
+    const buf = src.intToBuffer(j)
     assert.equal(buf.toString('hex'), '5b9ac8')
   })
 
   it('should handle exceptions and invalid inputs', () => {
     // should throw when invalid abi
-    assert.throws(() => (src as any).getKeys([], 3289), Error)
+    assert.throws(() => src.getKeys([], (<unknown>3289) as string), Error)
 
     // should detect invalid length hex string
-    assert.equal((src as any).isHexString('0x0', 2), false)
+    assert.equal(src.isHexString('0x0', 2), false)
   })
 })
