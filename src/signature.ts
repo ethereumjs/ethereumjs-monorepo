@@ -2,6 +2,7 @@ import * as secp256k1 from 'secp256k1'
 import * as BN from 'bn.js'
 import { toBuffer, setLengthLeft, bufferToHex } from './bytes'
 import { keccak } from './hash'
+import { assertIsBuffer } from './helpers'
 
 export interface ECDSASignature {
   v: number
@@ -134,6 +135,7 @@ export const isValidSignature = function(
  * used to produce the signature.
  */
 export const hashPersonalMessage = function(message: Buffer): Buffer {
+  assertIsBuffer(message)
   const prefix = Buffer.from(
     `\u0019Ethereum Signed Message:\n${message.length.toString()}`,
     'utf-8',
