@@ -1,6 +1,6 @@
 const createKeccakHash = require('keccak')
 const createHash = require('create-hash')
-const ethjsUtil = require('ethjs-util')
+import * as ethjsUtil from 'ethjs-util'
 import * as rlp from 'rlp'
 import { toBuffer, setLengthLeft } from './bytes'
 import { assertIsString, assertIsBuffer, assertIsArray, assertIsHexString } from './helpers'
