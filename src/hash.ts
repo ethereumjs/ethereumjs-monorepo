@@ -54,10 +54,37 @@ export const keccakFromArray = function(a: number[], bits: number = 256) {
 }
 
 /**
- * Creates SHA256 hash of the input.
- * @param a The input data (Buffer|Array|String|Number)
+ * Creates SHA256 hash of a Buffer input.
+ * @param a The input data (Buffer)
  */
-export const sha256 = function(a: any): Buffer {
+export const sha256 = function(a: Buffer): Buffer {
+  assertIsBuffer(a)
+  return _sha256(a)
+}
+
+/**
+ * Creates SHA256 hash of a string input.
+ * @param a The input data (string)
+ */
+export const sha256FromString = function(a: string): Buffer {
+  assertIsString(a)
+  return _sha256(a)
+}
+
+/**
+ * Creates SHA256 hash of a number[] input.
+ * @param a The input data (number[])
+ */
+export const sha256FromArray = function(a: number[]): Buffer {
+  assertIsArray(a)
+  return _sha256(a)
+}
+
+/**
+ * Creates SHA256 hash of an input.
+ * @param  a The input data (Buffer|Array|String)
+ */
+const _sha256 = function(a: any): Buffer {
   a = toBuffer(a)
   return createHash('sha256')
     .update(a)

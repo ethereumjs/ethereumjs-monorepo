@@ -5,6 +5,8 @@ import {
   keccakFromString,
   keccakFromArray,
   sha256,
+  sha256FromString,
+  sha256FromArray,
   ripemd160,
   rlphash,
   toBuffer,
@@ -84,8 +86,44 @@ describe('sha256', function() {
   it('should produce a sha256', function() {
     const msg = '0x3c9229289a6125f7fdf1885a77bb12c37a8d3b4962d936f7e3084dece32a3ca1'
     const r = '58bbda5e10bc11a32d808e40f9da2161a64f00b5557762a161626afe19137445'
-    const hash = sha256(msg)
+    const hash = sha256(toBuffer(msg))
     assert.equal(hash.toString('hex'), r)
+  })
+  it('should error if input is not Buffer', function() {
+    const msg = '0x3c9229289a6125f7fdf1885a77bb12c37a8d3b4962d936f7e3084dece32a3ca1'
+    assert.throws(function() {
+      sha256((<unknown>msg) as Buffer)
+    })
+  })
+})
+
+describe('sha256FromString', function() {
+  it('should produce a sha256', function() {
+    const msg = '0x3c9229289a6125f7fdf1885a77bb12c37a8d3b4962d936f7e3084dece32a3ca1'
+    const r = '58bbda5e10bc11a32d808e40f9da2161a64f00b5557762a161626afe19137445'
+    const hash = sha256FromString(msg)
+    assert.equal(hash.toString('hex'), r)
+  })
+  it('should error if input is not Buffer', function() {
+    const msg = '0x3c9229289a6125f7fdf1885a77bb12c37a8d3b4962d936f7e3084dece32a3ca1'
+    assert.throws(function() {
+      sha256FromString((<unknown>toBuffer(msg)) as string)
+    })
+  })
+})
+
+describe('sha256FromArray', function() {
+  it('should produce a sha256', function() {
+    const arr = [0, 1, 2, 3, 4, 5, 6, 7, 8, 0]
+    const r = '5443c487d45d01c56150d91e7a071c69a97939b1c57874b73989a9ff7875e86b'
+    const hash = sha256FromArray(arr)
+    assert.equal(hash.toString('hex'), r)
+  })
+  it('should error if input is not Buffer', function() {
+    const arr = [0, 1, 2, 3, 4, 5, 6, 7, 8, 0]
+    assert.throws(function() {
+      sha256FromArray((<unknown>toBuffer(arr)) as number[])
+    })
   })
 })
 
