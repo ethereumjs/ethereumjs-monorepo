@@ -32,3 +32,14 @@ export const assertIsArray = function(input: number[]): void {
     throw new Error(msg)
   }
 }
+
+/**
+ * Throws if input is not a string
+ * @param {string} input value to check
+ */
+export const assertIsString = function(input: string): void {
+  const msg = `This method only supports strings but input was: ${input}`
+  if (typeof input !== 'string') {
+    throw new Error(msg)
+  }
+}
