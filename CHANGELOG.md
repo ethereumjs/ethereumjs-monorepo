@@ -6,6 +6,133 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [7.0.0] - 2020-04-30
+
+This release comes with significant changes to the API, updated versions of
+the core crypto libraries and substantial developer improvements in the form
+of a refactored test suite and API documentation.
+
+### API Changes
+
+Changes to the API have been discussed in Issue
+[#172](https://github.com/ethereumjs/ethereumjs-util/issues/172) and are
+guided by the principles of:
+
+- Make the API more typestrict
+- Be less ambiguous regarding accepted values
+- Avoid implicit type conversions
+- Be more explicit on wrong input (just: throw)
+
+While the implemented changes come with some additional need for manual type
+conversions depending on the usage context, they should finally lead to
+cleaner usage patterns on the cosuming side and more a predictable, robust and
+less error-prone control flow.
+
+#### Account Module
+
+##### Enforced Hex Prefixing for Address Strings
+
+PR: [#241](https://github.com/ethereumjs/ethereumjs-util/pull/241)
+
+Hex prefixing is now enforced for all address string inputs and functions
+will throw if a non-hex string is provided:
+
+- `Account.isValidAddress()`
+- `Account.isZeroAddress()`
+- `Account.toChecksumAddress()`
+- `Account.isValidChecksumAddress()`
+
+The `Account.isPrecompile()` method was removed from the code base,
+PR [#242](https://github.com/ethereumjs/ethereumjs-util/pull/242)
+
+##### Enforce Buffer Inputs for Account Methods
+
+PR: [#245](https://github.com/ethereumjs/ethereumjs-util/pull/245)
+
+Implicit `Buffer` conversions for the following methods have been removed
+and `Buffer` inputs are now enforced:
+
+- `Account.generateAddress()`
+- `Account.generateAddress2()`
+- `Account.pubToAddress()`
+- `AccountprivateToPublic()`
+- `AccountimportPublic()`
+
+#### Bytes Module
+
+##### Typestrict Methods and Type-Explicit Method Split-Up
+
+PR: [#244](https://github.com/ethereumjs/ethereumjs-util/pull/244)
+
+- Enforced `Buffer` input for `Bytes.setLengthLeft()`, `Bytes.setLengthRight()`
+- `Bytes.setLength()` has been removed (alias for `Bytes.setLengthLeft()`)
+- `Bytes.stripZeros()` has been removed (alias for `Bytes.unPad()`)
+- `Bytes.unpad` has been split up into:
+  - `Bytes.unpadBuffer()`
+  - `Bytes.unpadHexString()`
+  - `Bytes.unpadArray()`
+
+#### Hash Module
+
+##### Typestrict Methods and Type-Explicit Method Split-Up
+
+PR [#247](https://github.com/ethereumjs/ethereumjs-util/pull/247)
+
+The following methods are now `Buffer`-only:
+
+- `Hash.keccak()`
+- `Hash.keccak256()`
+- `Hash.sha256()`
+- `Hash.ripemd160()`
+
+`Hash.keccak()` gets the following additional convenience methods:
+
+- `Hash.keccakFromString()`
+- `Hash.keccakFromHexString()` (hex string enforced)
+  `Hash.keccakFromArray()`
+
+`Hash.sha256()` gets the following additional convenience methods:
+
+- `Hash.sha256FromString()`
+- `Hash.sha256FromArray()`
+
+`Hash.ripemd160()` gets the following additional convenience methods:
+
+- `Hash.ripemd160FromString()`
+- `Hash.ripemd160FromArray()`
+
+#### Other Breaking Changes
+
+- Dropped support for Node `8` along
+  PR [#228](https://github.com/ethereumjs/ethereumjs-util/pull/228)
+- Removed `secp2561` re-export (use methods provided or import directly),
+  PR [#228](https://github.com/ethereumjs/ethereumjs-util/pull/228)
+
+### Cryto Library Updates: Keccak, secp2561
+
+`Keccak` dependency has been updated from `2.1.0` to `3.0.0`. This version
+comes with prebuilds for Linux, MacOS and Windows so most users won't need
+to have `node-gyp` run on installation.
+
+The version update also brings in feature compatibility with newer Node.js
+versions.
+
+The `secp2561` ECDSA dependency has been updated from `3.0.1` to `4.0.1`.
+
+### Developer Improvements
+
+- Refactored test suite (module split-up, headless Firefox and Chrome),
+  PR [#231](https://github.com/ethereumjs/ethereumjs-util/pull/231)
+- Moved CI from Travis to GitHub Actions,
+  PR [#231](https://github.com/ethereumjs/ethereumjs-util/pull/231)
+- Improved and updated `TypeDoc` API documentation,
+  PR [#232](https://github.com/ethereumjs/ethereumjs-util/pull/232) and
+  PR [#236](https://github.com/ethereumjs/ethereumjs-util/pull/236)
+- Basic API tests for re-exports (BN.js, RLP, ethjsUtil),
+  PR [#235](https://github.com/ethereumjs/ethereumjs-util/pull/235)
+
+[7.0.0]: https://github.com/ethereumjs/ethereumjs-util/compare/v6.2.0...v7.0.0
+
 ## [6.2.0] - 2019-11-06
 
 This release comes with a new file structure, related functionality is now broken

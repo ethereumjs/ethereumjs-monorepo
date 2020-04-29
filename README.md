@@ -46,7 +46,7 @@ assert.equal(new BN('dead', 16).add(new BN('101010', 2)), 57047)
   - Signing, signature validation, conversion, recovery
 - [externals](docs/modules/_externals_.md)
   - Helper methods from `ethjs-util`
-  - Re-exports of `BN`, `rlp`, `secp256k1`
+  - Re-exports of `BN`, `rlp`
 
 ### ethjs-util methods
 
@@ -72,7 +72,6 @@ Additionally `ethereumjs-util` re-exports a few commonly-used libraries. These i
 
 - `BN` ([bn.js](https://github.com/indutny/bn.js))
 - `rlp` ([rlp](https://github.com/ethereumjs/rlp))
-- `secp256k1` ([secp256k1](https://github.com/cryptocoinjs/secp256k1-node/))
 
 # EthereumJS
 
