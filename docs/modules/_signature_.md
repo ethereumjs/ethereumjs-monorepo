@@ -23,7 +23,7 @@
 
 ▸ **ecrecover**(`msgHash`: Buffer, `v`: number, `r`: Buffer, `s`: Buffer, `chainId?`: undefined | number): *Buffer*
 
-*Defined in [signature.ts:36](https://github.com/ethereumjs/ethereumjs-util/blob/master/src/signature.ts#L36)*
+*Defined in [signature.ts:37](https://github.com/ethereumjs/ethereumjs-util/blob/master/src/signature.ts#L37)*
 
 ECDSA public key recovery from signature.
 
@@ -47,7 +47,7 @@ ___
 
 ▸ **ecsign**(`msgHash`: Buffer, `privateKey`: Buffer, `chainId?`: undefined | number): *[ECDSASignature](../interfaces/_signature_.ecdsasignature.md)*
 
-*Defined in [signature.ts:15](https://github.com/ethereumjs/ethereumjs-util/blob/master/src/signature.ts#L15)*
+*Defined in [signature.ts:16](https://github.com/ethereumjs/ethereumjs-util/blob/master/src/signature.ts#L16)*
 
 Returns the ECDSA signature of a message hash.
 
@@ -67,7 +67,7 @@ ___
 
 ▸ **fromRpcSig**(`sig`: string): *[ECDSASignature](../interfaces/_signature_.ecdsasignature.md)*
 
-*Defined in [signature.ts:70](https://github.com/ethereumjs/ethereumjs-util/blob/master/src/signature.ts#L70)*
+*Defined in [signature.ts:71](https://github.com/ethereumjs/ethereumjs-util/blob/master/src/signature.ts#L71)*
 
 Convert signature format of the `eth_sign` RPC method to signature parameters
 NOTE: all because of a bug in geth: https://github.com/ethereum/go-ethereum/issues/2053
@@ -86,7 +86,7 @@ ___
 
 ▸ **hashPersonalMessage**(`message`: Buffer): *Buffer*
 
-*Defined in [signature.ts:136](https://github.com/ethereumjs/ethereumjs-util/blob/master/src/signature.ts#L136)*
+*Defined in [signature.ts:137](https://github.com/ethereumjs/ethereumjs-util/blob/master/src/signature.ts#L137)*
 
 Returns the keccak-256 hash of `message`, prefixed with the header used by the `eth_sign` RPC call.
 The output of this function can be fed into `ecsign` to produce the same signature as the `eth_sign`
@@ -107,7 +107,7 @@ ___
 
 ▸ **isValidSignature**(`v`: number, `r`: Buffer, `s`: Buffer, `homesteadOrLater`: boolean, `chainId?`: undefined | number): *boolean*
 
-*Defined in [signature.ts:95](https://github.com/ethereumjs/ethereumjs-util/blob/master/src/signature.ts#L95)*
+*Defined in [signature.ts:96](https://github.com/ethereumjs/ethereumjs-util/blob/master/src/signature.ts#L96)*
 
 Validate a ECDSA signature.
 
@@ -129,7 +129,7 @@ ___
 
 ▸ **toRpcSig**(`v`: number, `r`: Buffer, `s`: Buffer, `chainId?`: undefined | number): *string*
 
-*Defined in [signature.ts:56](https://github.com/ethereumjs/ethereumjs-util/blob/master/src/signature.ts#L56)*
+*Defined in [signature.ts:57](https://github.com/ethereumjs/ethereumjs-util/blob/master/src/signature.ts#L57)*
 
 Convert signature parameters into the format of `eth_sign` RPC method.
 

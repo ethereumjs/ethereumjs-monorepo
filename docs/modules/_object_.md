@@ -12,7 +12,7 @@
 
 ### `Const` defineProperties
 
-▸ **defineProperties**(`self`: any, `fields`: any, `data`: any): *void*
+▸ **defineProperties**(`self`: any, `fields`: any, `data?`: any): *void*
 
 *Defined in [object.ts:17](https://github.com/ethereumjs/ethereumjs-util/blob/master/src/object.ts#L17)*
 
@@ -24,6 +24,6 @@ Name | Type | Description |
 ------ | ------ | ------ |
 `self` | any | the `Object` to define properties on |
 `fields` | any | an array fields to define. Fields can contain: * `name` - the name of the properties * `length` - the number of bytes the field can have * `allowLess` - if the field can be less than the length * `allowEmpty` |
-`data` | any | data to be validated against the definitions |
+`data?` | any | data to be validated against the definitions |
 
 **Returns:** *void*
