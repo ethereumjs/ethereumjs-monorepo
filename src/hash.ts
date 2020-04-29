@@ -3,22 +3,15 @@ const createHash = require('create-hash')
 const ethjsUtil = require('ethjs-util')
 import * as rlp from 'rlp'
 import { toBuffer, setLengthLeft } from './bytes'
+import { assertIsString, assertIsBuffer, assertIsArray, assertIsHexString } from './helpers'
 
 /**
- * Creates Keccak hash of the input
- * @param a The input data (Buffer|Array|String|Number) If the string is a 0x-prefixed hex value
- * it's interpreted as hexadecimal, otherwise as utf8.
- * @param bits The Keccak width
+ * Creates Keccak hash of a Buffer input
+ * @param a The input data (Buffer)
+ * @param bits (number = 256) The Keccak width
  */
-export const keccak = function(a: any, bits: number = 256): Buffer {
-  if (typeof a === 'string' && !ethjsUtil.isHexString(a)) {
-    a = Buffer.from(a, 'utf8')
-  } else {
-    a = toBuffer(a)
-  }
-
-  if (!bits) bits = 256
-
+export const keccak = function(a: Buffer, bits: number = 256): Buffer {
+  assertIsBuffer(a)
   return createKeccakHash(`keccak${bits}`)
     .update(a)
     .digest()
@@ -26,17 +19,75 @@ export const keccak = function(a: any, bits: number = 256): Buffer {
 
 /**
  * Creates Keccak-256 hash of the input, alias for keccak(a, 256).
- * @param a The input data (Buffer|Array|String|Number)
+ * @param a The input data (Buffer)
  */
-export const keccak256 = function(a: any): Buffer {
+export const keccak256 = function(a: Buffer): Buffer {
   return keccak(a)
 }
 
 /**
- * Creates SHA256 hash of the input.
- * @param a The input data (Buffer|Array|String|Number)
+ * Creates Keccak hash of a utf-8 string input
+ * @param a The input data (String)
+ * @param bits (number = 256) The Keccak width
  */
-export const sha256 = function(a: any): Buffer {
+export const keccakFromString = function(a: string, bits: number = 256) {
+  assertIsString(a)
+  const buf = Buffer.from(a, 'utf8')
+  return keccak(buf, bits)
+}
+
+/**
+ * Creates Keccak hash of an 0x-prefixed string input
+ * @param a The input data (String)
+ * @param bits (number = 256) The Keccak width
+ */
+export const keccakFromHexString = function(a: string, bits: number = 256) {
+  assertIsHexString(a)
+  return keccak(toBuffer(a), bits)
+}
+
+/**
+ * Creates Keccak hash of a number array input
+ * @param a The input data (number[])
+ * @param bits (number = 256) The Keccak width
+ */
+export const keccakFromArray = function(a: number[], bits: number = 256) {
+  assertIsArray(a)
+  return keccak(toBuffer(a), bits)
+}
+
+/**
+ * Creates SHA256 hash of a Buffer input.
+ * @param a The input data (Buffer)
+ */
+export const sha256 = function(a: Buffer): Buffer {
+  assertIsBuffer(a)
+  return _sha256(a)
+}
+
+/**
+ * Creates SHA256 hash of a string input.
+ * @param a The input data (string)
+ */
+export const sha256FromString = function(a: string): Buffer {
+  assertIsString(a)
+  return _sha256(a)
+}
+
+/**
+ * Creates SHA256 hash of a number[] input.
+ * @param a The input data (number[])
+ */
+export const sha256FromArray = function(a: number[]): Buffer {
+  assertIsArray(a)
+  return _sha256(a)
+}
+
+/**
+ * Creates SHA256 hash of an input.
+ * @param  a The input data (Buffer|Array|String)
+ */
+const _sha256 = function(a: any): Buffer {
   a = toBuffer(a)
   return createHash('sha256')
     .update(a)
@@ -44,11 +95,41 @@ export const sha256 = function(a: any): Buffer {
 }
 
 /**
+ * Creates RIPEMD160 hash of a Buffer input.
+ * @param a The input data (Buffer)
+ * @param padded Whether it should be padded to 256 bits or not
+ */
+export const ripemd160 = function(a: Buffer, padded: boolean): Buffer {
+  assertIsBuffer(a)
+  return _ripemd160(a, padded)
+}
+
+/**
+ * Creates RIPEMD160 hash of a string input.
+ * @param a The input data (String)
+ * @param padded Whether it should be padded to 256 bits or not
+ */
+export const ripemd160FromString = function(a: string, padded: boolean): Buffer {
+  assertIsString(a)
+  return _ripemd160(a, padded)
+}
+
+/**
+ * Creates RIPEMD160 hash of a number[] input.
+ * @param a The input data (number[])
+ * @param padded Whether it should be padded to 256 bits or not
+ */
+export const ripemd160FromArray = function(a: number[], padded: boolean): Buffer {
+  assertIsArray(a)
+  return _ripemd160(a, padded)
+}
+
+/**
  * Creates RIPEMD160 hash of the input.
  * @param a The input data (Buffer|Array|String|Number)
  * @param padded Whether it should be padded to 256 bits or not
  */
-export const ripemd160 = function(a: any, padded: boolean): Buffer {
+const _ripemd160 = function(a: any, padded: boolean): Buffer {
   a = toBuffer(a)
   const hash = createHash('rmd160')
     .update(a)

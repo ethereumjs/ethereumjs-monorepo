@@ -94,6 +94,13 @@ describe('hashPersonalMessage', function() {
       Buffer.from('8144a6fa26be252b86456491fbcd43c1de7e022241845ffea1c3df066f7cfede', 'hex'),
     )
   })
+  it('should throw if input is not a buffer', function() {
+    try {
+      hashPersonalMessage((<unknown>[0, 1, 2, 3, 4]) as Buffer)
+    } catch (err) {
+      assert(err.message.includes('This method only supports Buffer'))
+    }
+  })
 })
 
 describe('isValidSignature', function() {

@@ -3,7 +3,7 @@ import * as assert from 'assert'
 import * as secp256k1 from 'secp256k1'
 import * as BN from 'bn.js'
 import { zeros, bufferToHex, toBuffer } from './bytes'
-import { keccak, keccak256, rlphash } from './hash'
+import { keccak, keccak256, keccakFromString, rlphash } from './hash'
 import { assertIsHexString, assertIsBuffer } from './helpers'
 
 /**
@@ -48,7 +48,7 @@ export const toChecksumAddress = function(hexAddress: string, eip1191ChainId?: n
 
   const prefix = eip1191ChainId !== undefined ? eip1191ChainId.toString() + '0x' : ''
 
-  const hash = keccak(prefix + address).toString('hex')
+  const hash = keccakFromString(prefix + address).toString('hex')
   let ret = '0x'
 
   for (let i = 0; i < address.length; i++) {
