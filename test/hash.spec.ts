@@ -3,6 +3,7 @@ import {
   keccak,
   keccak256,
   keccakFromString,
+  keccakFromHexString,
   keccakFromArray,
   sha256,
   sha256FromString,
@@ -39,13 +40,7 @@ describe('keccak256', function() {
 })
 
 describe('keccakFromString', function() {
-  it('with hexprefix should produce a hash', function() {
-    const msg = '0x3c9229289a6125f7fdf1885a77bb12c37a8d3b4962d936f7e3084dece32a3ca1'
-    const r = '82ff40c0a986c6a5cfad4ddf4c3aa6996f1a7837f9c398e17e5de5cbd5a12b28'
-    const hash = keccakFromString(msg)
-    assert.equal(hash.toString('hex'), r)
-  })
-  it('without hexprefix should produce a hash', function() {
+  it('should produce a hash', function() {
     const msg = '3c9229289a6125f7fdf1885a77bb12c37a8d3b4962d936f7e3084dece32a3ca1'
     const r = '22ae1937ff93ec72c4d46ff3e854661e3363440acd6f6e4adf8f1a8978382251'
     const hash = keccakFromString(msg)
@@ -55,6 +50,27 @@ describe('keccakFromString', function() {
     const buf = toBuffer('0x3c9229289a6125f7fdf1885a77bb12c37a8d3b4962d936f7e3084dece32a3ca1')
     assert.throws(function() {
       keccakFromString((<unknown>buf) as string)
+    })
+  })
+})
+
+describe('keccakFromHexString', function() {
+  it('should produce a hash', function() {
+    const msg = '0x3c9229289a6125f7fdf1885a77bb12c37a8d3b4962d936f7e3084dece32a3ca1'
+    const r = '82ff40c0a986c6a5cfad4ddf4c3aa6996f1a7837f9c398e17e5de5cbd5a12b28'
+    const hash = keccakFromHexString(msg)
+    assert.equal(hash.toString('hex'), r)
+  })
+  it('should throw if input is not hex-prefixed', function() {
+    const msg = '3c9229289a6125f7fdf1885a77bb12c37a8d3b4962d936f7e3084dece32a3ca1'
+    assert.throws(function() {
+      keccakFromHexString(msg)
+    })
+  })
+  it('should throw if input is not a string', function() {
+    const buf = toBuffer('0x3c9229289a6125f7fdf1885a77bb12c37a8d3b4962d936f7e3084dece32a3ca1')
+    assert.throws(function() {
+      keccakFromHexString((<unknown>buf) as string)
     })
   })
 })
