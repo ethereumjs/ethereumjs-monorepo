@@ -103,8 +103,12 @@ The following methods are now `Buffer`-only:
 
 #### Other Breaking Changes
 
+- Added support for Node 14,
+  PR [#249](https://github.com/ethereumjs/ethereumjs-util/pull/249)
 - Dropped support for Node `8` along
   PR [#228](https://github.com/ethereumjs/ethereumjs-util/pull/228)
+- Updated `BN.js` library re-export from `4.x` to `5.x`,
+  PR [#249], https://github.com/ethereumjs/ethereumjs-util/pull/249
 - Removed `secp2561` re-export (use methods provided or import directly),
   PR [#228](https://github.com/ethereumjs/ethereumjs-util/pull/228)
 
@@ -121,8 +125,6 @@ The `secp2561` ECDSA dependency has been updated from `3.0.1` to `4.0.1`.
 
 ### Developer Improvements
 
-- Added support for Node 14,
-  PR [#249](https://github.com/ethereumjs/ethereumjs-util/pull/249)
 - Refactored test suite (module split-up, headless Firefox and Chrome),
   PR [#231](https://github.com/ethereumjs/ethereumjs-util/pull/231)
 - Moved CI from Travis to GitHub Actions,
