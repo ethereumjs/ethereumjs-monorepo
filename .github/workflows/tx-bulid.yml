@@ -1,4 +1,4 @@
-name:  Tx Build
+name: Tx
 'on':
   push:
     branches:

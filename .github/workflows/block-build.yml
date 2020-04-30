@@ -1,4 +1,4 @@
-name:  Block Build
+name: Block
 'on':
   push:
     branches:

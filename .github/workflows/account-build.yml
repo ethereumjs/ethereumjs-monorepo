@@ -1,4 +1,4 @@
-name:  Account Build
+name: Account
 'on':
   push:
     branches:

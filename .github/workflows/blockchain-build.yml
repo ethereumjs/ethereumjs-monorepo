@@ -1,4 +1,4 @@
-name:  Blockchain Build
+name: Blockchain
 'on':
   push:
     branches:

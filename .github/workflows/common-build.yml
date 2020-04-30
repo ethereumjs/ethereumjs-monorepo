@@ -1,4 +1,4 @@
-name:  Common Build
+name: Common
 'on':
   push:
     branches:
