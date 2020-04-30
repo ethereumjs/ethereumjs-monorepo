@@ -4,4 +4,6 @@ package.json
 dist
 .nyc_output
 *.json
+coverage
 docs
+
