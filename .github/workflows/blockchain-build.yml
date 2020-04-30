@@ -1,4 +1,4 @@
-name: Common Test
+name:  Blockchain Build
 'on':
   push:
     branches:
@@ -7,12 +7,18 @@ name: Common Test
       - '*'
     paths-ignore:
       - packages/account/**
+      - packages/block/**
+      - packages/common/**
+      - packages/tx/**
   pull_request:
     types: [opened, reopened, synchronize]
     paths-ignore:
       - packages/account/**
+      - packages/block/**
+      - packages/common/**
+      - packages/tx/**
 jobs:
-  test:
+  test-blockchain:
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -23,11 +29,15 @@ jobs:
         with:
           node-version: '${{ matrix.node-version }}'
       - uses: actions/checkout@v1
-      - run: npx lerna bootstrap --scope ethereumjs-common --ignore-scripts --include-dependencies --no-ci
-      - run: npx lerna run --scope ethereumjs-common --include-dependencies build
+      - run: npx lerna bootstrap --scope ethereumjs-blockchain --ignore-scripts --include-dependencies --no-ci
+      - run: npx lerna run --scope ethereumjs-blockchain --include-dependencies build
+      - run: npm run lint
+        env:
+          CI: true
+        working-directory: '${{ env.cwd }}'
       - run: npm test
         env:
           CI: true
         working-directory: '${{ env.cwd }}'
     env:
-      cwd: '${{github.workspace}}/packages/common'
+      cwd: '${{github.workspace}}/packages/blockchain'

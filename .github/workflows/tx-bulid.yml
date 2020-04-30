@@ -1,4 +1,4 @@
-name: Block Test
+name:  Tx Build
 'on':
   push:
     branches:
@@ -8,15 +8,13 @@ name: Block Test
     paths-ignore:
       - packages/account/**
       - packages/common/**
-      - packages/tx/**
   pull_request:
     types: [opened, reopened, synchronize]
     paths-ignore:
       - packages/account/**
       - packages/common/**
-      - packages/tx/**
 jobs:
-  test:
+  test-tx:
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -27,8 +25,12 @@ jobs:
         with:
           node-version: '${{ matrix.node-version }}'
       - uses: actions/checkout@v1
-      - run: npm install
-          working-directory: '${{ env.cwd }}'
+      - run: npx lerna bootstrap --scope ethereumjs-tx --ignore-scripts --include-dependencies --no-ci
+      - run: npx lerna run --scope ethereumjs-tx --include-dependencies build
+      - run: npm run lint
+        env:
+          CI: true
+        working-directory: '${{ env.cwd }}'
       - run: 'npm run test:node'
         env:
           CI: true
@@ -38,4 +40,4 @@ jobs:
           CI: true
         working-directory: '${{ env.cwd }}'
     env:
-      cwd: '${{github.workspace}}/packages/block'
+      cwd: '${{github.workspace}}/packages/tx'
