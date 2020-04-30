@@ -52,9 +52,9 @@
 
 ### constructor
 
-⊕ **new Wallet**(privateKey?: _`Buffer` \| `undefined`_, publicKey?: _`Buffer` \| `undefined`_): [Wallet](wallet.md)
+⊕ **new Wallet**(privateKey: _`Buffer` \| `undefined`_, publicKey?: _`Buffer` \| `undefined`_): [Wallet](wallet.md)
 
-_Defined in [index.ts:230](https://github.com/ethereumjs/ethereumjs-wallet/blob/c748f97/src/index.ts#L230)_
+_Defined in [index.ts:229](https://github.com/ethereumjs/ethereumjs-wallet/blob/13fb20d/src/index.ts#L229)_
 
 **Parameters:**
 
@@ -75,7 +75,7 @@ _Defined in [index.ts:230](https://github.com/ethereumjs/ethereumjs-wallet/blob/
 
 **● privateKey**: _`Buffer` \| `undefined`_
 
-_Defined in [index.ts:232](https://github.com/ethereumjs/ethereumjs-wallet/blob/c748f97/src/index.ts#L232)_
+_Defined in [index.ts:231](https://github.com/ethereumjs/ethereumjs-wallet/blob/13fb20d/src/index.ts#L231)_
 
 ---
 
@@ -85,7 +85,7 @@ _Defined in [index.ts:232](https://github.com/ethereumjs/ethereumjs-wallet/blob/
 
 **● publicKey**: _`Buffer` \| `undefined`_
 
-_Defined in [index.ts:233](https://github.com/ethereumjs/ethereumjs-wallet/blob/c748f97/src/index.ts#L233)_
+_Defined in [index.ts:232](https://github.com/ethereumjs/ethereumjs-wallet/blob/13fb20d/src/index.ts#L232)_
 
 ---
 
@@ -95,13 +95,9 @@ _Defined in [index.ts:233](https://github.com/ethereumjs/ethereumjs-wallet/blob/
 
 ### `<Private>` privKey
 
-**get privKey**(): `Buffer`
+**privKey**:
 
-_Defined in [index.ts:481](https://github.com/ethereumjs/ethereumjs-wallet/blob/c748f97/src/index.ts#L481)_
-
-Returns the wallet's private key.
-
-**Returns:** `Buffer`
+_Defined in [index.ts:480](https://github.com/ethereumjs/ethereumjs-wallet/blob/13fb20d/src/index.ts#L480)_
 
 ---
 
@@ -109,13 +105,9 @@ Returns the wallet's private key.
 
 ### `<Private>` pubKey
 
-**get pubKey**(): `Buffer`
+**pubKey**:
 
-_Defined in [index.ts:471](https://github.com/ethereumjs/ethereumjs-wallet/blob/c748f97/src/index.ts#L471)_
-
-Returns the wallet's public key.
-
-**Returns:** `Buffer`
+_Defined in [index.ts:470](https://github.com/ethereumjs/ethereumjs-wallet/blob/13fb20d/src/index.ts#L470)_
 
 ---
 
@@ -127,9 +119,7 @@ Returns the wallet's public key.
 
 ▸ **getAddress**(): `Buffer`
 
-_Defined in [index.ts:521](https://github.com/ethereumjs/ethereumjs-wallet/blob/c748f97/src/index.ts#L521)_
-
-Returns the wallet's address.
+_Defined in [index.ts:520](https://github.com/ethereumjs/ethereumjs-wallet/blob/13fb20d/src/index.ts#L520)_
 
 **Returns:** `Buffer`
 
@@ -141,9 +131,7 @@ Returns the wallet's address.
 
 ▸ **getAddressString**(): `string`
 
-_Defined in [index.ts:528](https://github.com/ethereumjs/ethereumjs-wallet/blob/c748f97/src/index.ts#L528)_
-
-Returns the wallet's address as a "0x" prefixed hex string
+_Defined in [index.ts:527](https://github.com/ethereumjs/ethereumjs-wallet/blob/13fb20d/src/index.ts#L527)_
 
 **Returns:** `string`
 
@@ -155,9 +143,7 @@ Returns the wallet's address as a "0x" prefixed hex string
 
 ▸ **getChecksumAddressString**(): `string`
 
-_Defined in [index.ts:536](https://github.com/ethereumjs/ethereumjs-wallet/blob/c748f97/src/index.ts#L536)_
-
-Returns the wallet's private key as a "0x" prefixed hex string checksummed according to [EIP 55](https://github.com/ethereum/EIPs/issues/55).
+_Defined in [index.ts:535](https://github.com/ethereumjs/ethereumjs-wallet/blob/13fb20d/src/index.ts#L535)_
 
 **Returns:** `string`
 
@@ -169,9 +155,7 @@ Returns the wallet's private key as a "0x" prefixed hex string checksummed accor
 
 ▸ **getPrivateKey**(): `Buffer`
 
-_Defined in [index.ts:495](https://github.com/ethereumjs/ethereumjs-wallet/blob/c748f97/src/index.ts#L495)_
-
-Returns the wallet's private key.
+_Defined in [index.ts:494](https://github.com/ethereumjs/ethereumjs-wallet/blob/13fb20d/src/index.ts#L494)_
 
 **Returns:** `Buffer`
 
@@ -183,7 +167,7 @@ Returns the wallet's private key.
 
 ▸ **getPrivateKeyString**(): `string`
 
-_Defined in [index.ts:499](https://github.com/ethereumjs/ethereumjs-wallet/blob/c748f97/src/index.ts#L499)_
+_Defined in [index.ts:498](https://github.com/ethereumjs/ethereumjs-wallet/blob/13fb20d/src/index.ts#L498)_
 
 **Returns:** `string`
 
@@ -195,9 +179,7 @@ _Defined in [index.ts:499](https://github.com/ethereumjs/ethereumjs-wallet/blob/
 
 ▸ **getPublicKey**(): `Buffer`
 
-_Defined in [index.ts:507](https://github.com/ethereumjs/ethereumjs-wallet/blob/c748f97/src/index.ts#L507)_
-
-Returns the wallet's public key.
+_Defined in [index.ts:506](https://github.com/ethereumjs/ethereumjs-wallet/blob/13fb20d/src/index.ts#L506)_
 
 **Returns:** `Buffer`
 
@@ -209,9 +191,7 @@ Returns the wallet's public key.
 
 ▸ **getPublicKeyString**(): `string`
 
-_Defined in [index.ts:514](https://github.com/ethereumjs/ethereumjs-wallet/blob/c748f97/src/index.ts#L514)_
-
-Returns the wallet's public key as a "0x" prefixed hex string
+_Defined in [index.ts:513](https://github.com/ethereumjs/ethereumjs-wallet/blob/13fb20d/src/index.ts#L513)_
 
 **Returns:** `string`
 
@@ -221,11 +201,9 @@ Returns the wallet's public key as a "0x" prefixed hex string
 
 ### getV3Filename
 
-▸ **getV3Filename**(timestamp?: _`undefined` \| `number`_): `string`
+▸ **getV3Filename**(timestamp: _`undefined` \| `number`_): `string`
 
-_Defined in [index.ts:618](https://github.com/ethereumjs/ethereumjs-wallet/blob/c748f97/src/index.ts#L618)_
-
-Return the suggested filename for V3 keystores.
+_Defined in [index.ts:617](https://github.com/ethereumjs/ethereumjs-wallet/blob/13fb20d/src/index.ts#L617)_
 
 **Parameters:**
 
@@ -241,11 +219,9 @@ Return the suggested filename for V3 keystores.
 
 ### toV3
 
-▸ **toV3**(password: _`string`_, opts?: _`Partial`<`V3Params`>_): `V3Keystore`
+▸ **toV3**(password: _`string`_, opts: _`Partial`<`V3Params`>_): `V3Keystore`
 
-_Defined in [index.ts:546](https://github.com/ethereumjs/ethereumjs-wallet/blob/c748f97/src/index.ts#L546)_
-
-Returns an Etherem Version 3 Keystore Format object representing the wallet
+_Defined in [index.ts:545](https://github.com/ethereumjs/ethereumjs-wallet/blob/13fb20d/src/index.ts#L545)_
 
 **Parameters:**
 
@@ -262,9 +238,9 @@ Returns an Etherem Version 3 Keystore Format object representing the wallet
 
 ### toV3String
 
-▸ **toV3String**(password: _`string`_, opts?: _`Partial`<`V3Params`>_): `string`
+▸ **toV3String**(password: _`string`_, opts: _`Partial`<`V3Params`>_): `string`
 
-_Defined in [index.ts:636](https://github.com/ethereumjs/ethereumjs-wallet/blob/c748f97/src/index.ts#L636)_
+_Defined in [index.ts:635](https://github.com/ethereumjs/ethereumjs-wallet/blob/13fb20d/src/index.ts#L635)_
 
 **Parameters:**
 
@@ -283,7 +259,7 @@ _Defined in [index.ts:636](https://github.com/ethereumjs/ethereumjs-wallet/blob/
 
 ▸ **fromEthSale**(input: _`string` \| `EthSaleKeystore`_, password: _`string`_): [Wallet](wallet.md)
 
-_Defined in [index.ts:445](https://github.com/ethereumjs/ethereumjs-wallet/blob/c748f97/src/index.ts#L445)_
+_Defined in [index.ts:444](https://github.com/ethereumjs/ethereumjs-wallet/blob/13fb20d/src/index.ts#L444)_
 
 **Parameters:**
 
@@ -302,9 +278,7 @@ _Defined in [index.ts:445](https://github.com/ethereumjs/ethereumjs-wallet/blob/
 
 ▸ **fromExtendedPrivateKey**(extendedPrivateKey: _`string`_): [Wallet](wallet.md)
 
-_Defined in [index.ts:322](https://github.com/ethereumjs/ethereumjs-wallet/blob/c748f97/src/index.ts#L322)_
-
-Create an instance based on a BIP32 extended private key (xprv)
+_Defined in [index.ts:321](https://github.com/ethereumjs/ethereumjs-wallet/blob/13fb20d/src/index.ts#L321)_
 
 **Parameters:**
 
@@ -322,9 +296,7 @@ Create an instance based on a BIP32 extended private key (xprv)
 
 ▸ **fromExtendedPublicKey**(extendedPublicKey: _`string`_): [Wallet](wallet.md)
 
-_Defined in [index.ts:303](https://github.com/ethereumjs/ethereumjs-wallet/blob/c748f97/src/index.ts#L303)_
-
-Create an instance based on a BIP32 extended public key (xpub)
+_Defined in [index.ts:302](https://github.com/ethereumjs/ethereumjs-wallet/blob/13fb20d/src/index.ts#L302)_
 
 **Parameters:**
 
@@ -342,9 +314,7 @@ Create an instance based on a BIP32 extended public key (xpub)
 
 ▸ **fromPrivateKey**(privateKey: _`Buffer`_): [Wallet](wallet.md)
 
-_Defined in [index.ts:315](https://github.com/ethereumjs/ethereumjs-wallet/blob/c748f97/src/index.ts#L315)_
-
-Create an instance based on a raw private key
+_Defined in [index.ts:314](https://github.com/ethereumjs/ethereumjs-wallet/blob/13fb20d/src/index.ts#L314)_
 
 **Parameters:**
 
@@ -362,11 +332,7 @@ Create an instance based on a raw private key
 
 ▸ **fromPublicKey**(publicKey: _`Buffer`_, nonStrict?: _`boolean`_): [Wallet](wallet.md)
 
-_Defined in [index.ts:293](https://github.com/ethereumjs/ethereumjs-wallet/blob/c748f97/src/index.ts#L293)_
-
-Create an instance based on a public key (certain methods will not be available)
-
-This method only accepts uncompressed Ethereum-style public keys, unless the `nonStrict` flag is set to true.
+_Defined in [index.ts:292](https://github.com/ethereumjs/ethereumjs-wallet/blob/13fb20d/src/index.ts#L292)_
 
 **Parameters:**
 
@@ -385,9 +351,7 @@ This method only accepts uncompressed Ethereum-style public keys, unless the `no
 
 ▸ **fromV1**(input: _`string` \| `V1Keystore`_, password: _`string`_): [Wallet](wallet.md)
 
-_Defined in [index.ts:339](https://github.com/ethereumjs/ethereumjs-wallet/blob/c748f97/src/index.ts#L339)_
-
-Import a wallet (Version 1 of the Ethereum wallet format).
+_Defined in [index.ts:338](https://github.com/ethereumjs/ethereumjs-wallet/blob/13fb20d/src/index.ts#L338)_
 
 **Parameters:**
 
@@ -406,9 +370,7 @@ Import a wallet (Version 1 of the Ethereum wallet format).
 
 ▸ **fromV3**(input: _`string` \| `V3Keystore`_, password: _`string`_, nonStrict?: _`boolean`_): [Wallet](wallet.md)
 
-_Defined in [index.ts:379](https://github.com/ethereumjs/ethereumjs-wallet/blob/c748f97/src/index.ts#L379)_
-
-Import a wallet (Version 3 of the Ethereum wallet format). Set `nonStrict` true to accept files with mixed-caps.
+_Defined in [index.ts:378](https://github.com/ethereumjs/ethereumjs-wallet/blob/13fb20d/src/index.ts#L378)_
 
 **Parameters:**
 
@@ -428,9 +390,7 @@ Import a wallet (Version 3 of the Ethereum wallet format). Set `nonStrict` true 
 
 ▸ **generate**(icapDirect?: _`boolean`_): [Wallet](wallet.md)
 
-_Defined in [index.ts:255](https://github.com/ethereumjs/ethereumjs-wallet/blob/c748f97/src/index.ts#L255)_
-
-Create an instance based on a new random key.
+_Defined in [index.ts:254](https://github.com/ethereumjs/ethereumjs-wallet/blob/13fb20d/src/index.ts#L254)_
 
 **Parameters:**
 
@@ -448,9 +408,7 @@ Create an instance based on a new random key.
 
 ▸ **generateVanityAddress**(pattern: _`RegExp` \| `string`_): [Wallet](wallet.md)
 
-_Defined in [index.ts:272](https://github.com/ethereumjs/ethereumjs-wallet/blob/c748f97/src/index.ts#L272)_
-
-Create an instance where the address is valid against the supplied pattern (**this will be very slow**)
+_Defined in [index.ts:271](https://github.com/ethereumjs/ethereumjs-wallet/blob/13fb20d/src/index.ts#L271)_
 
 **Parameters:**
 

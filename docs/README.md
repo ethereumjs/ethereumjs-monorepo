@@ -6,7 +6,6 @@
 
 - [EthereumHDKey](classes/ethereumhdkey.md)
 - [Wallet](classes/wallet.md)
-- [WalletSubprovider](classes/walletsubprovider.md)
 
 ### Interfaces
 
@@ -30,9 +29,7 @@
 
 ▸ **fromEtherCamp**(passphrase: _`string`_): [Wallet](classes/wallet.md)
 
-_Defined in [thirdparty.ts:169](https://github.com/ethereumjs/ethereumjs-wallet/blob/c748f97/src/thirdparty.ts#L169)_
-
-Third Party API: Import a brain wallet used by Ether.Camp
+_Defined in [thirdparty.ts:169](https://github.com/ethereumjs/ethereumjs-wallet/blob/13fb20d/src/thirdparty.ts#L169)_
 
 **Parameters:**
 
@@ -50,7 +47,7 @@ Third Party API: Import a brain wallet used by Ether.Camp
 
 ▸ **fromEtherWallet**(input: _`string` \| [EtherWalletOptions](interfaces/etherwalletoptions.md)_, password: _`string`_): [Wallet](classes/wallet.md)
 
-_Defined in [thirdparty.ts:121](https://github.com/ethereumjs/ethereumjs-wallet/blob/c748f97/src/thirdparty.ts#L121)_
+_Defined in [thirdparty.ts:121](https://github.com/ethereumjs/ethereumjs-wallet/blob/13fb20d/src/thirdparty.ts#L121)_
 
 **Parameters:**
 
@@ -69,9 +66,7 @@ _Defined in [thirdparty.ts:121](https://github.com/ethereumjs/ethereumjs-wallet/
 
 ▸ **fromKryptoKit**(entropy: _`string`_, password: _`string`_): [Wallet](classes/wallet.md)
 
-_Defined in [thirdparty.ts:176](https://github.com/ethereumjs/ethereumjs-wallet/blob/c748f97/src/thirdparty.ts#L176)_
-
-Third Party API: Import a wallet from a KryptoKit seed
+_Defined in [thirdparty.ts:176](https://github.com/ethereumjs/ethereumjs-wallet/blob/13fb20d/src/thirdparty.ts#L176)_
 
 **Parameters:**
 
@@ -90,9 +85,7 @@ Third Party API: Import a wallet from a KryptoKit seed
 
 ▸ **fromQuorumWallet**(passphrase: _`string`_, userid: _`string`_): [Wallet](classes/wallet.md)
 
-_Defined in [thirdparty.ts:265](https://github.com/ethereumjs/ethereumjs-wallet/blob/c748f97/src/thirdparty.ts#L265)_
-
-Third Party API: Import a brain wallet used by Quorum Wallet
+_Defined in [thirdparty.ts:265](https://github.com/ethereumjs/ethereumjs-wallet/blob/13fb20d/src/thirdparty.ts#L265)_
 
 **Parameters:**
 
