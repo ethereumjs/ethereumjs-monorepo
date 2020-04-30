@@ -20,9 +20,9 @@
     "lint": "npm run format && npm run tslint && npm run tsc",
     "lint:fix": "npm run format:fix && npm run tslint:fix && npm run tsc",
     "unitTests": "mocha --reporter spec --require ts-node/register test/*.spec.ts",
-    "test": "npm run lint && npm run build && npm run unitTests",
-    "test:fix": "npm run lint:fix && npm run unitTests",
-    "webtest": "browserify test/max.js | testling -u"
+    "test": "npm run lint && npm run build && npm run unitTests && npm run test:browser",
+    "test:browser": "karma start karma.conf.js",
+    "test:fix": "npm run lint:fix && npm run unitTests"
   },
   "husky": {
     "hooks": {
@@ -61,7 +61,12 @@
     "@types/mocha": "^5.2.5",
     "@types/node": "^10.12.2",
     "husky": "^2.1.0",
-    "mocha": "4.1.0",
+    "karma": "^5.0.2",
+    "karma-chrome-launcher": "^2.0.0",
+    "karma-firefox-launcher": "^1.0.0",
+    "karma-mocha": "^2.0.0",
+    "karma-typescript": "^4.1.1",
+    "mocha": "7.1.2",
     "nyc": "^15.0.1",
     "prettier": "^1.15.2",
     "ts-node": "^8.9.1",
