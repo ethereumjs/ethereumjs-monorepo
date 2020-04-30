@@ -76,18 +76,5 @@
   },
   "bin": {
     "rlp": "./bin/rlp"
-  },
-  "testling": {
-    "files": "test/*.js",
-    "harness": "mocha-bdd",
-    "browsers": [
-      "chrome/22..latest",
-      "firefox/16..latest",
-      "safari/latest",
-      "opera/11.0..latest",
-      "iphone/6",
-      "ipad/6",
-      "android-browser/latest"
-    ]
   }
 }
