@@ -25,8 +25,11 @@ guided by the principles of:
 
 While the implemented changes come with some additional need for manual type
 conversions depending on the usage context, they should finally lead to
-cleaner usage patterns on the cosuming side and more a predictable, robust and
+cleaner usage patterns on the cosuming side and a more predictable, robust and
 less error-prone control flow.
+
+Some note: for methods where `Buffer` usage is now enforced you can use the
+`Bytes.toBuffer()` method for conversion.
 
 #### Account Module
 
