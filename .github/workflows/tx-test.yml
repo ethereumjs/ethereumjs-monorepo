@@ -18,15 +18,15 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [8.x, 10.x, 12.x, 13.x]
+        node-version: [10.x, 12.x, 13.x]
     steps:
       - name: 'Use Node.js ${{ matrix.node-version }}'
         uses: actions/setup-node@v1
         with:
           node-version: '${{ matrix.node-version }}'
       - uses: actions/checkout@v1
-      - run: npm install
-        working-directory: '${{ env.cwd }}'
+      - run: npx lerna bootstrap --scope ethereumjs-tx --ignore-scripts --include-dependencies --no-ci
+      - run: npx lerna run --scope ethereumjs-tx --include-dependencies build
       - run: 'npm run test:node'
         env:
           CI: true
