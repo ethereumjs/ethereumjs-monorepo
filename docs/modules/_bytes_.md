@@ -4,11 +4,6 @@
 
 ## Index
 
-### Variables
-
-* [setLength](_bytes_.md#const-setlength)
-* [stripZeros](_bytes_.md#const-stripzeros)
-
 ### Functions
 
 * [addHexPrefix](_bytes_.md#const-addhexprefix)
@@ -20,24 +15,10 @@
 * [setLengthRight](_bytes_.md#const-setlengthright)
 * [toBuffer](_bytes_.md#const-tobuffer)
 * [toUnsigned](_bytes_.md#const-tounsigned)
-* [unpad](_bytes_.md#const-unpad)
+* [unpadArray](_bytes_.md#const-unpadarray)
+* [unpadBuffer](_bytes_.md#const-unpadbuffer)
+* [unpadHexString](_bytes_.md#const-unpadhexstring)
 * [zeros](_bytes_.md#const-zeros)
-
-## Variables
-
-### `Const` setLength
-
-• **setLength**: *setLengthLeft* = setLengthLeft
-
-*Defined in [bytes.ts:37](https://github.com/ethereumjs/ethereumjs-util/blob/master/src/bytes.ts#L37)*
-
-___
-
-### `Const` stripZeros
-
-• **stripZeros**: *unpad* = unpad
-
-*Defined in [bytes.ts:64](https://github.com/ethereumjs/ethereumjs-util/blob/master/src/bytes.ts#L64)*
 
 ## Functions
 
@@ -45,7 +26,7 @@ ___
 
 ▸ **addHexPrefix**(`str`: string): *string*
 
-*Defined in [bytes.ts:135](https://github.com/ethereumjs/ethereumjs-util/blob/master/src/bytes.ts#L135)*
+*Defined in [bytes.ts:176](https://github.com/ethereumjs/ethereumjs-util/blob/master/src/bytes.ts#L176)*
 
 Adds "0x" to a given `String` if it does not already start with "0x".
 
@@ -63,7 +44,7 @@ ___
 
 ▸ **baToJSON**(`ba`: any): *any*
 
-*Defined in [bytes.ts:148](https://github.com/ethereumjs/ethereumjs-util/blob/master/src/bytes.ts#L148)*
+*Defined in [bytes.ts:189](https://github.com/ethereumjs/ethereumjs-util/blob/master/src/bytes.ts#L189)*
 
 Converts a `Buffer` or `Array` to JSON.
 
@@ -83,7 +64,7 @@ ___
 
 ▸ **bufferToHex**(`buf`: Buffer): *string*
 
-*Defined in [bytes.ts:111](https://github.com/ethereumjs/ethereumjs-util/blob/master/src/bytes.ts#L111)*
+*Defined in [bytes.ts:152](https://github.com/ethereumjs/ethereumjs-util/blob/master/src/bytes.ts#L152)*
 
 Converts a `Buffer` into a `0x`-prefixed hex `String`.
 
@@ -101,7 +82,7 @@ ___
 
 ▸ **bufferToInt**(`buf`: Buffer): *number*
 
-*Defined in [bytes.ts:103](https://github.com/ethereumjs/ethereumjs-util/blob/master/src/bytes.ts#L103)*
+*Defined in [bytes.ts:144](https://github.com/ethereumjs/ethereumjs-util/blob/master/src/bytes.ts#L144)*
 
 Converts a `Buffer` to a `Number`.
 
@@ -119,7 +100,7 @@ ___
 
 ▸ **fromSigned**(`num`: Buffer): *BN*
 
-*Defined in [bytes.ts:120](https://github.com/ethereumjs/ethereumjs-util/blob/master/src/bytes.ts#L120)*
+*Defined in [bytes.ts:161](https://github.com/ethereumjs/ethereumjs-util/blob/master/src/bytes.ts#L161)*
 
 Interprets a `Buffer` as a signed integer and returns a `BN`. Assumes 256-bit numbers.
 
@@ -135,46 +116,45 @@ ___
 
 ### `Const` setLengthLeft
 
-▸ **setLengthLeft**(`msg`: any, `length`: number, `right`: boolean): *any*
+▸ **setLengthLeft**(`msg`: Buffer, `length`: number): *Buffer‹›*
 
 *Defined in [bytes.ts:20](https://github.com/ethereumjs/ethereumjs-util/blob/master/src/bytes.ts#L20)*
 
-Left Pads an `Array` or `Buffer` with leading zeros till it has `length` bytes.
-Or it truncates the beginning if it exceeds.
-
-**Parameters:**
-
-Name | Type | Default | Description |
------- | ------ | ------ | ------ |
-`msg` | any | - | the value to pad (Buffer|Array) |
-`length` | number | - | the number of bytes the output should be |
-`right` | boolean | false | whether to start padding form the left or right |
-
-**Returns:** *any*
-
-(Buffer|Array)
-
-___
-
-### `Const` setLengthRight
-
-▸ **setLengthRight**(`msg`: any, `length`: number): *any*
-
-*Defined in [bytes.ts:46](https://github.com/ethereumjs/ethereumjs-util/blob/master/src/bytes.ts#L46)*
-
-Right Pads an `Array` or `Buffer` with leading zeros till it has `length` bytes.
+Left Pads a `Buffer` with leading zeros till it has `length` bytes.
 Or it truncates the beginning if it exceeds.
 
 **Parameters:**
 
 Name | Type | Description |
 ------ | ------ | ------ |
-`msg` | any | the value to pad (Buffer|Array) |
+`msg` | Buffer | the value to pad (Buffer) |
 `length` | number | the number of bytes the output should be |
 
-**Returns:** *any*
+**Returns:** *Buffer‹›*
 
-(Buffer|Array)
+(Buffer)
+
+___
+
+### `Const` setLengthRight
+
+▸ **setLengthRight**(`msg`: Buffer, `length`: number): *Buffer‹›*
+
+*Defined in [bytes.ts:32](https://github.com/ethereumjs/ethereumjs-util/blob/master/src/bytes.ts#L32)*
+
+Right Pads a `Buffer` with trailing zeros till it has `length` bytes.
+it truncates the end if it exceeds.
+
+**Parameters:**
+
+Name | Type | Description |
+------ | ------ | ------ |
+`msg` | Buffer | the value to pad (Buffer) |
+`length` | number | the number of bytes the output should be |
+
+**Returns:** *Buffer‹›*
+
+(Buffer)
 
 ___
 
@@ -182,7 +162,7 @@ ___
 
 ▸ **toBuffer**(`v`: any): *Buffer*
 
-*Defined in [bytes.ts:70](https://github.com/ethereumjs/ethereumjs-util/blob/master/src/bytes.ts#L70)*
+*Defined in [bytes.ts:111](https://github.com/ethereumjs/ethereumjs-util/blob/master/src/bytes.ts#L111)*
 
 Attempts to turn a value into a `Buffer`. As input it supports `Buffer`, `String`, `Number`, null/undefined, `BN` and other objects with a `toArray()` method.
 
@@ -200,7 +180,7 @@ ___
 
 ▸ **toUnsigned**(`num`: BN): *Buffer*
 
-*Defined in [bytes.ts:128](https://github.com/ethereumjs/ethereumjs-util/blob/master/src/bytes.ts#L128)*
+*Defined in [bytes.ts:169](https://github.com/ethereumjs/ethereumjs-util/blob/master/src/bytes.ts#L169)*
 
 Converts a `BN` to an unsigned integer and returns it as a `Buffer`. Assumes 256-bit numbers.
 
@@ -214,23 +194,63 @@ Name | Type | Description |
 
 ___
 
-### `Const` unpad
+### `Const` unpadArray
 
-▸ **unpad**(`a`: any): *any*
+▸ **unpadArray**(`a`: number[]): *number[]*
 
-*Defined in [bytes.ts:55](https://github.com/ethereumjs/ethereumjs-util/blob/master/src/bytes.ts#L55)*
+*Defined in [bytes.ts:77](https://github.com/ethereumjs/ethereumjs-util/blob/master/src/bytes.ts#L77)*
 
-Trims leading zeros from a `Buffer` or an `Array`.
+Trims leading zeros from an `Array` (of numbers).
 
 **Parameters:**
 
 Name | Type | Description |
 ------ | ------ | ------ |
-`a` | any | (Buffer|Array|String) |
+`a` | number[] | (number[]) |
 
-**Returns:** *any*
+**Returns:** *number[]*
 
-(Buffer|Array|String)
+(number[])
+
+___
+
+### `Const` unpadBuffer
+
+▸ **unpadBuffer**(`a`: Buffer): *Buffer*
+
+*Defined in [bytes.ts:67](https://github.com/ethereumjs/ethereumjs-util/blob/master/src/bytes.ts#L67)*
+
+Trims leading zeros from a `Buffer`.
+
+**Parameters:**
+
+Name | Type | Description |
+------ | ------ | ------ |
+`a` | Buffer | (Buffer) |
+
+**Returns:** *Buffer*
+
+(Buffer)
+
+___
+
+### `Const` unpadHexString
+
+▸ **unpadHexString**(`a`: string): *string*
+
+*Defined in [bytes.ts:87](https://github.com/ethereumjs/ethereumjs-util/blob/master/src/bytes.ts#L87)*
+
+Trims leading zeros from a hex-prefixed `String`.
+
+**Parameters:**
+
+Name | Type | Description |
+------ | ------ | ------ |
+`a` | string | (String) |
+
+**Returns:** *string*
+
+(String)
 
 ___
 
@@ -238,7 +258,7 @@ ___
 
 ▸ **zeros**(`bytes`: number): *Buffer*
 
-*Defined in [bytes.ts:8](https://github.com/ethereumjs/ethereumjs-util/blob/master/src/bytes.ts#L8)*
+*Defined in [bytes.ts:9](https://github.com/ethereumjs/ethereumjs-util/blob/master/src/bytes.ts#L9)*
 
 Returns a buffer filled with 0s.
 

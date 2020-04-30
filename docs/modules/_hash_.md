@@ -8,26 +8,33 @@
 
 * [keccak](_hash_.md#const-keccak)
 * [keccak256](_hash_.md#const-keccak256)
+* [keccakFromArray](_hash_.md#const-keccakfromarray)
+* [keccakFromHexString](_hash_.md#const-keccakfromhexstring)
+* [keccakFromString](_hash_.md#const-keccakfromstring)
 * [ripemd160](_hash_.md#const-ripemd160)
+* [ripemd160FromArray](_hash_.md#const-ripemd160fromarray)
+* [ripemd160FromString](_hash_.md#const-ripemd160fromstring)
 * [rlphash](_hash_.md#const-rlphash)
 * [sha256](_hash_.md#const-sha256)
+* [sha256FromArray](_hash_.md#const-sha256fromarray)
+* [sha256FromString](_hash_.md#const-sha256fromstring)
 
 ## Functions
 
 ### `Const` keccak
 
-▸ **keccak**(`a`: any, `bits`: number): *Buffer*
+▸ **keccak**(`a`: Buffer, `bits`: number): *Buffer*
 
 *Defined in [hash.ts:13](https://github.com/ethereumjs/ethereumjs-util/blob/master/src/hash.ts#L13)*
 
-Creates Keccak hash of the input
+Creates Keccak hash of a Buffer input
 
 **Parameters:**
 
 Name | Type | Default | Description |
 ------ | ------ | ------ | ------ |
-`a` | any | - | The input data (Buffer|Array|String|Number) If the string is a 0x-prefixed hex value it's interpreted as hexadecimal, otherwise as utf8. |
-`bits` | number | 256 | The Keccak width  |
+`a` | Buffer | - | The input data (Buffer) |
+`bits` | number | 256 | (number = 256) The Keccak width  |
 
 **Returns:** *Buffer*
 
@@ -35,9 +42,9 @@ ___
 
 ### `Const` keccak256
 
-▸ **keccak256**(`a`: any): *Buffer*
+▸ **keccak256**(`a`: Buffer): *Buffer*
 
-*Defined in [hash.ts:31](https://github.com/ethereumjs/ethereumjs-util/blob/master/src/hash.ts#L31)*
+*Defined in [hash.ts:24](https://github.com/ethereumjs/ethereumjs-util/blob/master/src/hash.ts#L24)*
 
 Creates Keccak-256 hash of the input, alias for keccak(a, 256).
 
@@ -45,25 +52,120 @@ Creates Keccak-256 hash of the input, alias for keccak(a, 256).
 
 Name | Type | Description |
 ------ | ------ | ------ |
-`a` | any | The input data (Buffer|Array|String|Number)  |
+`a` | Buffer | The input data (Buffer)  |
 
 **Returns:** *Buffer*
 
 ___
 
+### `Const` keccakFromArray
+
+▸ **keccakFromArray**(`a`: number[], `bits`: number): *Buffer‹›*
+
+*Defined in [hash.ts:54](https://github.com/ethereumjs/ethereumjs-util/blob/master/src/hash.ts#L54)*
+
+Creates Keccak hash of a number array input
+
+**Parameters:**
+
+Name | Type | Default | Description |
+------ | ------ | ------ | ------ |
+`a` | number[] | - | The input data (number[]) |
+`bits` | number | 256 | (number = 256) The Keccak width  |
+
+**Returns:** *Buffer‹›*
+
+___
+
+### `Const` keccakFromHexString
+
+▸ **keccakFromHexString**(`a`: string, `bits`: number): *Buffer‹›*
+
+*Defined in [hash.ts:44](https://github.com/ethereumjs/ethereumjs-util/blob/master/src/hash.ts#L44)*
+
+Creates Keccak hash of an 0x-prefixed string input
+
+**Parameters:**
+
+Name | Type | Default | Description |
+------ | ------ | ------ | ------ |
+`a` | string | - | The input data (String) |
+`bits` | number | 256 | (number = 256) The Keccak width  |
+
+**Returns:** *Buffer‹›*
+
+___
+
+### `Const` keccakFromString
+
+▸ **keccakFromString**(`a`: string, `bits`: number): *Buffer‹›*
+
+*Defined in [hash.ts:33](https://github.com/ethereumjs/ethereumjs-util/blob/master/src/hash.ts#L33)*
+
+Creates Keccak hash of a utf-8 string input
+
+**Parameters:**
+
+Name | Type | Default | Description |
+------ | ------ | ------ | ------ |
+`a` | string | - | The input data (String) |
+`bits` | number | 256 | (number = 256) The Keccak width  |
+
+**Returns:** *Buffer‹›*
+
+___
+
 ### `Const` ripemd160
 
-▸ **ripemd160**(`a`: any, `padded`: boolean): *Buffer*
+▸ **ripemd160**(`a`: Buffer, `padded`: boolean): *Buffer*
 
-*Defined in [hash.ts:51](https://github.com/ethereumjs/ethereumjs-util/blob/master/src/hash.ts#L51)*
+*Defined in [hash.ts:102](https://github.com/ethereumjs/ethereumjs-util/blob/master/src/hash.ts#L102)*
 
-Creates RIPEMD160 hash of the input.
+Creates RIPEMD160 hash of a Buffer input.
 
 **Parameters:**
 
 Name | Type | Description |
 ------ | ------ | ------ |
-`a` | any | The input data (Buffer|Array|String|Number) |
+`a` | Buffer | The input data (Buffer) |
+`padded` | boolean | Whether it should be padded to 256 bits or not  |
+
+**Returns:** *Buffer*
+
+___
+
+### `Const` ripemd160FromArray
+
+▸ **ripemd160FromArray**(`a`: number[], `padded`: boolean): *Buffer*
+
+*Defined in [hash.ts:122](https://github.com/ethereumjs/ethereumjs-util/blob/master/src/hash.ts#L122)*
+
+Creates RIPEMD160 hash of a number[] input.
+
+**Parameters:**
+
+Name | Type | Description |
+------ | ------ | ------ |
+`a` | number[] | The input data (number[]) |
+`padded` | boolean | Whether it should be padded to 256 bits or not  |
+
+**Returns:** *Buffer*
+
+___
+
+### `Const` ripemd160FromString
+
+▸ **ripemd160FromString**(`a`: string, `padded`: boolean): *Buffer*
+
+*Defined in [hash.ts:112](https://github.com/ethereumjs/ethereumjs-util/blob/master/src/hash.ts#L112)*
+
+Creates RIPEMD160 hash of a string input.
+
+**Parameters:**
+
+Name | Type | Description |
+------ | ------ | ------ |
+`a` | string | The input data (String) |
 `padded` | boolean | Whether it should be padded to 256 bits or not  |
 
 **Returns:** *Buffer*
@@ -74,7 +176,7 @@ ___
 
 ▸ **rlphash**(`a`: rlp.Input): *Buffer*
 
-*Defined in [hash.ts:67](https://github.com/ethereumjs/ethereumjs-util/blob/master/src/hash.ts#L67)*
+*Defined in [hash.ts:148](https://github.com/ethereumjs/ethereumjs-util/blob/master/src/hash.ts#L148)*
 
 Creates SHA-3 hash of the RLP encoded version of the input.
 
@@ -90,16 +192,52 @@ ___
 
 ### `Const` sha256
 
-▸ **sha256**(`a`: any): *Buffer*
+▸ **sha256**(`a`: Buffer): *Buffer*
 
-*Defined in [hash.ts:39](https://github.com/ethereumjs/ethereumjs-util/blob/master/src/hash.ts#L39)*
+*Defined in [hash.ts:63](https://github.com/ethereumjs/ethereumjs-util/blob/master/src/hash.ts#L63)*
 
-Creates SHA256 hash of the input.
+Creates SHA256 hash of a Buffer input.
 
 **Parameters:**
 
 Name | Type | Description |
 ------ | ------ | ------ |
-`a` | any | The input data (Buffer|Array|String|Number)  |
+`a` | Buffer | The input data (Buffer)  |
+
+**Returns:** *Buffer*
+
+___
+
+### `Const` sha256FromArray
+
+▸ **sha256FromArray**(`a`: number[]): *Buffer*
+
+*Defined in [hash.ts:81](https://github.com/ethereumjs/ethereumjs-util/blob/master/src/hash.ts#L81)*
+
+Creates SHA256 hash of a number[] input.
+
+**Parameters:**
+
+Name | Type | Description |
+------ | ------ | ------ |
+`a` | number[] | The input data (number[])  |
+
+**Returns:** *Buffer*
+
+___
+
+### `Const` sha256FromString
+
+▸ **sha256FromString**(`a`: string): *Buffer*
+
+*Defined in [hash.ts:72](https://github.com/ethereumjs/ethereumjs-util/blob/master/src/hash.ts#L72)*
+
+Creates SHA256 hash of a string input.
+
+**Parameters:**
+
+Name | Type | Description |
+------ | ------ | ------ |
+`a` | string | The input data (string)  |
 
 **Returns:** *Buffer*
