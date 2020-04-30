@@ -25,11 +25,6 @@
     "lint:fix": "ethereumjs-config-lint-fix",
     "test": "npx tape -r ts-node/register test/*.spec.ts"
   },
-  "husky": {
-    "hooks": {
-      "pre-push": "npm run lint"
-    }
-  },
   "keywords": [
     "ethereum",
     "account"
@@ -53,7 +48,6 @@
     "@types/bn.js": "^4.11.3",
     "@types/node": "^11.9.4",
     "@types/tape": "^4.2.33",
-    "husky": "^2.1.0",
     "merkle-patricia-tree": "^3.0.0",
     "nyc": "^13.2.0",
     "prettier": "^1.15.3",
