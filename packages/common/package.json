@@ -73,8 +73,5 @@
       "email": "Holger.Drewes@gmail.com"
     }
   ],
-  "dependencies": {},
-  "publishConfig": {
-    "directory": "src"
-  }
+  "dependencies": {}
 }
