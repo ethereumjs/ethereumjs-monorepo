@@ -32,11 +32,6 @@
     "formatTest": "node ./scripts/formatTest",
     "tsc": "ethereumjs-config-tsc"
   },
-  "husky": {
-    "hooks": {
-      "pre-push": "npm run lint"
-    }
-  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/ethereumjs/ethereumjs-vm.git"
@@ -74,7 +69,6 @@
     "@types/tape": "^4.2.33",
     "browserify": "^16.5.1",
     "ethereumjs-testing": "git+https://github.com/ethereumjs/ethereumjs-testing.git#v1.3.0",
-    "husky": "^2.1.0",
     "karma": "^4.0.1",
     "karma-browserify": "^6.0.0",
     "karma-chrome-launcher": "^2.2.0",

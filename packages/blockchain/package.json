@@ -22,11 +22,6 @@
     "lint:fix": "ethereumjs-config-lint-fix",
     "test": "nyc --reporter=lcov ts-node node_modules/tape/bin/tape ./test/index.ts"
   },
-  "husky": {
-    "hooks": {
-      "pre-push": "npm run lint"
-    }
-  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/ethereumjs/ethereumjs-blockchain.git"
@@ -65,7 +60,6 @@
     "@types/semaphore": "^1.1.0",
     "@types/tape": "^4.2.33",
     "coveralls": "^3.0.2",
-    "husky": "^2.1.0",
     "nyc": "^13.0.1",
     "prettier": "^1.16.4",
     "tape": "^4.9.1",

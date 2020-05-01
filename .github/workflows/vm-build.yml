@@ -1,4 +1,4 @@
-name: VM Test
+name: VM
 'on':
   push:
     branches:
@@ -20,7 +20,7 @@ name: VM Test
       - packages/common/**
       - packages/tx/**
 jobs:
-  test-api:
+  test-vm-api:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/setup-node@v1
@@ -29,6 +29,7 @@ jobs:
       - uses: actions/checkout@v1
       - run: npx lerna bootstrap --scope ethereumjs-vm --ignore-scripts --include-dependencies --no-ci
       - run: npx lerna run --scope ethereumjs-vm --include-dependencies build
+      - run: npx lerna run lint --scope ethereumjs-vm
       - run: 'npm run test:API'
         env:
           CI: true
@@ -39,7 +40,7 @@ jobs:
         working-directory: '${{ env.cwd }}'
     env:
       cwd: '${{github.workspace}}/packages/vm'
-  test-state:
+  test-vm-state:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/setup-node@v1
@@ -54,7 +55,7 @@ jobs:
         working-directory: '${{ env.cwd }}'
     env:
       cwd: '${{github.workspace}}/packages/vm'
-  test-blockchain:
+  test-vm-blockchain:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/setup-node@v1

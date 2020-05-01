@@ -2,7 +2,17 @@
   "name": "root",
   "private": true,
   "devDependencies": {
+    "husky": "^4.2.5",
     "lerna": "^3.20.2"
   },
-  "scripts": {}
+  "husky": {
+    "hooks": {
+      "pre-push": "lerna run lint"
+    }
+  },
+  "scripts": {
+    "bootstrap": "lerna bootstrap --ignore-scripts && lerna exec npm i --scope=ethereumjs-block",
+    "postinstall": "npm run bootstrap",
+    "lint": "lerna run lint"
+  }
 }

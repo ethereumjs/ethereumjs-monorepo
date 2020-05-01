@@ -4,4 +4,6 @@ package.json
 dist
 test-build
 .nyc_output
+coverage
 docs
+

@@ -25,11 +25,6 @@
     "test:browser:build": "tsc && cp ./test/*.json test-build/test/",
     "test:browser": "npm run test:browser:build && karma start karma.conf.js"
   },
-  "husky": {
-    "hooks": {
-      "pre-push": "npm run lint"
-    }
-  },
   "keywords": [
     "ethereum",
     "transactions"
@@ -53,7 +48,6 @@
     "contributor": "^0.1.25",
     "coveralls": "^2.11.4",
     "ethereumjs-testing": "git+https://github.com/ethereumjs/ethereumjs-testing.git#v1.3.0",
-    "husky": "^2.1.0",
     "istanbul": "^0.4.1",
     "karma": "^4.1.0",
     "karma-browserify": "^6.0.0",

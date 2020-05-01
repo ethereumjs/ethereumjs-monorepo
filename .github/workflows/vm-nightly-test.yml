@@ -1,9 +1,9 @@
-name: VM Nightly Test
+name: VM Nightly
 'on':
   schedule:
     - cron: 0 0 * * *
 jobs:
-  test-api:
+  test-vm-api:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/setup-node@v1
@@ -22,7 +22,7 @@ jobs:
         working-directory: '${{ env.cwd }}'
     env:
       cwd: '${{github.workspace}}/packages/vm'
-  test-state:
+  test-vm-state:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/setup-node@v1
@@ -37,7 +37,7 @@ jobs:
         working-directory: '${{ env.cwd }}'
     env:
       cwd: '${{github.workspace}}/packages/vm'
-  test-blockchain:
+  test-vm-blockchain:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/setup-node@v1
@@ -52,7 +52,7 @@ jobs:
         working-directory: '${{ env.cwd }}'
     env:
       cwd: '${{github.workspace}}/packages/vm'
-  slow-tests:
+  test-vm-slow:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/setup-node@v1
