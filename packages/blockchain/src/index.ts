@@ -528,7 +528,7 @@ export default class Blockchain implements BlockchainInterface {
       if (isGenesis) {
         return next()
       }
-      
+
       // calculate the total difficulty of the new block
       self._getTd(header.parentHash, number.subn(1), (err?: any, parentTd?: any) => {
         if (err) {
