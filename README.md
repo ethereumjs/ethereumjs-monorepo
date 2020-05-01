@@ -82,29 +82,15 @@ Please go to [./docs/classes/ethereumhdkey.md](./docs/classes/ethereumhdkey.md) 
 
 ## Provider Engine
 
-The Wallet can be easily plugged into [provider-engine](https://github.com/metamask/provider-engine) to provide signing:
+Provider Engine is
+[not very actively maintained](https://github.com/MetaMask/web3-provider-engine#web3-providerengine)
+and support has been removed along `v1.0.0` release, see
+issue [#115](https://github.com/ethereumjs/ethereumjs-wallet/issues/115) for context.
 
-Node.js / ES5:
+You can use the the old `src/provider-engine.ts` code (see associated PR) as some boilerplate
+for your own integration if needed.
 
-```js
-const { WalletSubprovider } = require('ethereumjs-wallet')
-
-<engine>.addProvider(new WalletSubprovider(<wallet instance>))
-```
-
-ESM / TypeScript:
-
-```js
-import { WalletSubprovider } from 'ethereumjs-wallet'
-
-<engine>.addProvider(new WalletSubprovider(<wallet instance>))
-```
-
-Note it only supports the basic wallet. With a HD Wallet, call `getWallet()` first.
-
-Please go to [./docs/classes/walletsubprovider.md](./docs/README.md) for more info.
-
-### Remarks about `toV3`
+## Remarks about `toV3`
 
 The `options` is an optional object hash, where all the serialization parameters can be fine tuned:
 
