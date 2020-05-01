@@ -28,12 +28,9 @@ jobs:
           node-version: '${{ matrix.node-version }}'
       - uses: actions/checkout@v1
       - run: npm install
-          working-directory: '${{ env.cwd }}'
-      - run: npm run lint
-        env:
-          CI: true
         working-directory: '${{ env.cwd }}'
-      - run: 'npm run test:node'
+      - run: npx lerna run lint --scope ethereumjs-block
+      - run: npm run test:node
         env:
           CI: true
         working-directory: '${{ env.cwd }}'
@@ -43,4 +40,3 @@ jobs:
         working-directory: '${{ env.cwd }}'
     env:
       cwd: '${{github.workspace}}/packages/block'
-  

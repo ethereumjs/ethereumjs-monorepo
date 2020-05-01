@@ -27,10 +27,7 @@ jobs:
       - uses: actions/checkout@v1
       - run: npx lerna bootstrap --scope ethereumjs-tx --ignore-scripts --include-dependencies --no-ci
       - run: npx lerna run --scope ethereumjs-tx --include-dependencies build
-      - run: npm run lint
-        env:
-          CI: true
-        working-directory: '${{ env.cwd }}'
+      - run: npx lerna run lint --scope ethereumjs-tx
       - run: 'npm run test:node'
         env:
           CI: true

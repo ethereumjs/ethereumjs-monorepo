@@ -30,11 +30,8 @@ jobs:
           node-version: '${{ matrix.node-version }}'
       - uses: actions/checkout@v1
       - run: npx lerna bootstrap --scope ethereumjs-account --ignore-scripts --include-dependencies --no-ci
-      - run: npx lerna run --scope ethereumjs-account --include-dependencies build
-      - run: npm run lint
-        env:
-          CI: true
-        working-directory: '${{ env.cwd }}'
+      - run: npx lerna run build --scope ethereumjs-account --include-dependencies
+      - run: npx lerna run lint --scope ethereumjs-account
       - run: npm test
         env:
           CI: true
