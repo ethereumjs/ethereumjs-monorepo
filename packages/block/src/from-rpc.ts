@@ -37,7 +37,6 @@ export default function blockFromRpc(
       const fromAddress = ethUtil.toBuffer(txParams.from)
       delete txParams.from
 
-      
       const tx = new FakeTransaction(txParams, chainOptions as TransactionOptions)
       tx.from = fromAddress
       tx.getSenderAddress = function() {

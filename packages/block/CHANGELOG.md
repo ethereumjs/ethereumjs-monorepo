@@ -65,15 +65,14 @@ try {
 From now on, it's not allowed to initialize `Block` with a `null` value. If for any reason you need to initialize it without defining a value, use the more semantic `undefined` like the examples below:
 
 ```typescript
-  const b = new Block(undefined, options)
+const b = new Block(undefined, options)
 ```
 
 or just:
 
 ```typescript
-  const b = new Block()
+const b = new Block()
 ```
-
 
 ### Change Summary
 
