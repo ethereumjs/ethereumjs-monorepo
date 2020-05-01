@@ -5,14 +5,16 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [
-    "dist/**/*"
+    "dist",
+    "dist.browser"
   ],
+  "browser": "dist.browser/index.js",
   "scripts": {
     "benchmarks": "npm run build && ts-node benchmarks/index.ts",
-    "build": "ethereumjs-config-build",
+    "build": "tsc -p tsconfig.json && tsc -p tsconfig.browser.json",
     "prepublishOnly": "npm run test && npm run build",
     "coverage": "nyc --reporter=lcov npm run test:node",
-    "docs:build": "npx typedoc",
+    "docs:build": "typedoc",
     "lint": "ethereumjs-config-lint",
     "lint:fix": "ethereumjs-config-lint-fix",
     "format": "ethereumjs-config-format",
@@ -21,7 +23,7 @@
     "tsc": "ethereumjs-config-tsc",
     "test": "npm run test:node && npm run test:browser",
     "test:browser": "npm run build && karma start karma.conf.js",
-    "test:node": "npm run build && tape -r ts-node/register test/*.ts | tap-prettify -"
+    "test:node": "npm run build && tape -r ts-node/register test/*.ts"
   },
   "husky": {
     "hooks": {
@@ -70,7 +72,6 @@
     "karma-typescript": "^5.0.1",
     "nyc": "^15.0.0",
     "prettier": "^2.0.2",
-    "tap-prettify": "^0.0.2",
     "tape": "^4.13.2",
     "ts-node": "^8.8.1",
     "tslint": "^5.18.0",
