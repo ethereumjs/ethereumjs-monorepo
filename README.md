@@ -90,7 +90,7 @@ issue [#115](https://github.com/ethereumjs/ethereumjs-wallet/issues/115) for con
 You can use the the old `src/provider-engine.ts` code (see associated PR) as some boilerplate
 for your own integration if needed.
 
-### Remarks about `toV3`
+## Remarks about `toV3`
 
 The `options` is an optional object hash, where all the serialization parameters can be fine tuned:
 
