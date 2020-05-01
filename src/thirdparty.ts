@@ -1,5 +1,5 @@
 import * as crypto from 'crypto'
-import * as ethUtil from 'ethereumjs-util'
+import { keccak256, sha256, toBuffer } from 'ethereumjs-util'
 
 import Wallet from './index'
 
@@ -167,7 +167,7 @@ export function fromEtherWallet(input: string | EtherWalletOptions, password: st
  * Third Party API: Import a brain wallet used by Ether.Camp
  */
 export function fromEtherCamp(passphrase: string): Wallet {
-  return new Wallet(ethUtil.keccak256(Buffer.from(passphrase)))
+  return new Wallet(keccak256(Buffer.from(passphrase)))
 }
 
 /**
@@ -210,13 +210,13 @@ export function fromKryptoKit(entropy: string, password: string): Wallet {
 
   let privateKey: Buffer
   if (type === 'd') {
-    privateKey = ethUtil.sha256(entropy)
+    privateKey = sha256(toBuffer(entropy))
   } else if (type === 'q') {
     if (typeof password !== 'string') {
       throw new Error('Password required')
     }
 
-    const encryptedSeed = ethUtil.sha256(Buffer.from(entropy.slice(0, 30)))
+    const encryptedSeed = sha256(Buffer.from(entropy.slice(0, 30)))
     const checksum = entropy.slice(30, 46)
 
     const salt = kryptoKitBrokenScryptSeed(encryptedSeed)
@@ -244,8 +244,7 @@ export function fromKryptoKit(entropy: string, password: string): Wallet {
     if (checksum.length > 0) {
       if (
         checksum !==
-        ethUtil
-          .sha256(ethUtil.sha256(privateKey))
+        sha256(sha256(privateKey))
           .slice(0, 8)
           .toString('hex')
       ) {
