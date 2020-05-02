@@ -40,9 +40,9 @@ export function removeHexPrefix(val: Nibbles): Nibbles {
 }
 
 /**
- * Returns true if hexprefixed path is for a terminating (leaf) node.
+ * Returns true if hex-prefixed path is for a terminating (leaf) node.
  * @method isTerminator
- * @param {Nibbles} key - an hexprefixed array of nibbles
+ * @param {Nibbles} key - a hex-prefixed array of nibbles
  * @private
  */
 export function isTerminator(key: Nibbles): boolean {
