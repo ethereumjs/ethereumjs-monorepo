@@ -6,6 +6,29 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [4.2.0] - 2020-05-05
+
+This is a maintenance release preceding the v5.
+
+**API**
+
+- Adding optional fields `skipNonce` and `skipBalance` to the [`runBlock`](https://github.com/ethereum-ts/ethereumjs-vm/blob/46a79d7c3e3e38343e285fc1d15cc8b51f378609/lib/runBlock.ts#L81) function
+  PR [#663](https://github.com/ethereumjs/ethereumjs-vm/pull/663)
+- Added `codeAddress` to the `step` event, allowing to have an address disambiguation when running `DELEGATECALL` or `CALLCODE`
+  PR [#651](https://github.com/ethereumjs/ethereumjs-vm/pull/651)
+
+**Fixes**
+- Fixes installation on Node 12, by bumping `level` dependency from `^4.0.0` to `^6.0.0`
+  PR [#662](https://github.com/ethereumjs/ethereumjs-vm/pull/662)
+
+**Internal**
+- StateManager tests are now ran in the browser context as well.
+  PR [#653](https://github.com/ethereumjs/ethereumjs-vm/pull/653)
+- Run tests with `ts-node`
+  PRs [#654](https://github.com/ethereumjs/ethereumjs-vm/pull/654), [#658](https://github.com/ethereumjs/ethereumjs-vm/pull/658)
+
+[4.2.0]: https://github.com/ethereumjs/ethereumjs-vm/compare/%40ethereumjs%2Fvm%404.1.3...%40ethereumjs%2Fvm%404.1.4
+
 ## [4.1.3] - 2020-01-09
 
 This release fixes a critical bug preventing the `MuirGlacier` release `4.1.2`
