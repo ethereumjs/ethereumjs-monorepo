@@ -3,7 +3,7 @@
 # Class: Trie
 
 Use `import { BaseTrie as Trie } from 'merkle-patricia-tree'` for the base interface.
-In Ethereum applications stick with the Secure Trie Overlay `import { SecureTrie } from 'merkle-patricia-tree'`.
+In Ethereum applications stick with the Secure Trie Overlay `import { SecureTrie as Trie } from 'merkle-patricia-tree'`.
 The API for the base and the secure interface are about the same.
 
 **`param`** A [levelup](https://github.com/Level/levelup) instance. By default creates an in-memory [memdown](https://github.com/Level/memdown) instance.
