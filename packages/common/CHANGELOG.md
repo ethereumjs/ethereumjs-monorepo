@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [1.5.1] - 2020-05-04
+
+This is a maintenance release bringing updated bootnode definitions, and more strict checking for their values.
+
+[1.5.1]: https://github.com/ethereumjs/ethereumjs-vm/compare/%40ethereumjs%2Fcommon%401.5.0...%40ethereumjs%2Fcommon%401.5.1
+
 ## [1.5.0] - 2019-12-10
 
 Support for the `MuirGlacier` HF
