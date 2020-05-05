@@ -8,7 +8,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ## [1.5.1] - 2020-05-04
 
-This is a maintenance release bringing updated bootnode definitions, and more strict checking for their values.
+This is a maintenance release.
+
+- Updated bootnode definitions, and more strict checking for their values.
+  PR [#718](https://github.com/ethereumjs/ethereumjs-vm/pull/718)
 
 [1.5.1]: https://github.com/ethereumjs/ethereumjs-vm/compare/%40ethereumjs%2Fcommon%401.5.0...%40ethereumjs%2Fcommon%401.5.1
 
