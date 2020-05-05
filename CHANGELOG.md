@@ -18,10 +18,14 @@ This is a maintenance release preceding the v5.
   PR [#651](https://github.com/ethereumjs/ethereumjs-vm/pull/651)
 
 **Fixes**
+
+- Properly copying BigNumbers on stack.
+  PR [#733](https://github.com/ethereumjs/ethereumjs-vm/pull/733)
 - Fixes installation on Node 12, by bumping `level` dependency from `^4.0.0` to `^6.0.0`
   PR [#662](https://github.com/ethereumjs/ethereumjs-vm/pull/662)
 
 **Internal**
+
 - StateManager tests are now ran in the browser context as well.
   PR [#653](https://github.com/ethereumjs/ethereumjs-vm/pull/653)
 - Run tests with `ts-node`

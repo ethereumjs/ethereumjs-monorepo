@@ -2,6 +2,7 @@ const tape = require('tape')
 const BN = require('bn.js')
 const Stack = require('../../../dist/evm/stack').default
 const VM = require('../../../dist/index').default
+const PStateManager = require('../../../dist/state/promisified').default
 const { createAccount } = require('../utils')
 
 tape('Stack', t => {
@@ -140,8 +141,9 @@ tape('Stack', t => {
           PUSH1 0x00
           RETURN        stack: [0, 0x20] (we thus return the stack item which was originally pushed as 0, and then DUPed)
     */
-    await vm.stateManager.putAccount(addr, account)
-    await vm.stateManager.putContractCode(addr, Buffer.from(code, 'hex'))
+    const state = new PStateManager(vm.stateManager)
+    await state.putAccount(addr, account)
+    await state.putContractCode(addr, Buffer.from(code, 'hex'))
     const runCallArgs = {
       caller: caller,
       gasLimit: new BN(0xffffffffff),
@@ -157,6 +159,4 @@ tape('Stack', t => {
       st.fail(e.message)
     }
   })
-
-
 })
