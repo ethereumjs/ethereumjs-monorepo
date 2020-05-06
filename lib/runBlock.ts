@@ -29,6 +29,14 @@ export interface RunBlockOpts {
    * If true, will skip block validation
    */
   skipBlockValidation?: boolean
+  /**
+   * If true, skips the nonce check
+   */
+  skipNonce?: boolean
+  /**
+   * If true, skips the balance check
+   */
+  skipBalance?: boolean
 }
 
 /**
@@ -100,7 +108,7 @@ export default async function runBlock(this: VM, opts: RunBlockOpts): Promise<Ru
   await state.checkpoint()
   let result
   try {
-    result = await applyBlock.bind(this)(block, opts.skipBlockValidation)
+    result = await applyBlock.bind(this)(block, opts)
   } catch (err) {
     await state.revert()
     throw err
@@ -157,9 +165,9 @@ export default async function runBlock(this: VM, opts: RunBlockOpts): Promise<Ru
  * @param {Block} block
  * @param {Boolean} [skipBlockValidation=false]
  */
-async function applyBlock(this: VM, block: any, skipBlockValidation = false) {
+async function applyBlock(this: VM, block: any, opts: RunBlockOpts) {
   // Validate block
-  if (!skipBlockValidation) {
+  if (!opts.skipBlockValidation) {
     if (new BN(block.header.gasLimit).gte(new BN('8000000000000000', 16))) {
       throw new Error('Invalid block with gas limit greater than (2^63 - 1)')
     } else {
@@ -167,7 +175,7 @@ async function applyBlock(this: VM, block: any, skipBlockValidation = false) {
     }
   }
   // Apply transactions
-  const txResults = await applyTransactions.bind(this)(block)
+  const txResults = await applyTransactions.bind(this)(block, opts)
   // Pay ommers and miners
   await assignBlockRewards.bind(this)(block)
   return txResults
@@ -179,7 +187,7 @@ async function applyBlock(this: VM, block: any, skipBlockValidation = false) {
  * side-effect free (it doesn't modify the block nor the state).
  * @param {Block} block
  */
-async function applyTransactions(this: VM, block: any) {
+async function applyTransactions(this: VM, block: any, opts: RunBlockOpts) {
   const bloom = new Bloom()
   // the total amount of gas used processing these transactions
   let gasUsed = new BN(0)
@@ -203,6 +211,8 @@ async function applyTransactions(this: VM, block: any) {
     const txRes = await this.runTx({
       tx: tx,
       block: block,
+      skipBalance: opts.skipBalance,
+      skipNonce: opts.skipNonce,
     })
     txResults.push(txRes)
 

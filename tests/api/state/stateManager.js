@@ -1,12 +1,14 @@
 const promisify = require('util.promisify')
 const tape = require('tape')
+const { parallel } = require('async')
 const util = require('ethereumjs-util')
 const Common = require('ethereumjs-common').default
 const { StateManager } = require('../../../dist/state')
 const { createAccount } = require('../utils')
+const { isRunningInKarma } = require('../../util')
 
-tape('StateManager', (t) => {
-  t.test('should instantiate', (st) => {
+tape('StateManager', t => {
+  t.test('should instantiate', st => {
     const stateManager = new StateManager()
 
     st.deepEqual(stateManager._trie.root, util.KECCAK256_RLP, 'it has default root')
@@ -18,7 +20,7 @@ tape('StateManager', (t) => {
     })
   })
 
-  t.test('should clear the cache when the state root is set', async (st) => {
+  t.test('should clear the cache when the state root is set', async st => {
     const stateManager = new StateManager()
     const addressBuffer = Buffer.from('a94f5374fce5edbc8e2a8697c15331677e6ebf0b', 'hex')
     const account = createAccount()
@@ -38,15 +40,27 @@ tape('StateManager', (t) => {
     await putAccount(addressBuffer, account)
 
     const account0 = await getAccount(addressBuffer)
-    st.equal(account0.balance.toString('hex'), account.balance.toString('hex'), 'account value is set in the cache')
+    st.equal(
+      account0.balance.toString('hex'),
+      account.balance.toString('hex'),
+      'account value is set in the cache',
+    )
 
     await commit()
     const account1 = await getAccount(addressBuffer)
-    st.equal(account1.balance.toString('hex'), account.balance.toString('hex'), 'account value is set in the state trie')
+    st.equal(
+      account1.balance.toString('hex'),
+      account.balance.toString('hex'),
+      'account value is set in the state trie',
+    )
 
     await setStateRoot(initialStateRoot)
     const account2 = await getAccount(addressBuffer)
-    st.equal(account2.balance.toString('hex'), '', 'account value is set to 0 in original state root')
+    st.equal(
+      account2.balance.toString('hex'),
+      '',
+      'account value is set to 0 in original state root',
+    )
 
     // test contract storage cache
     await checkpoint()
@@ -55,103 +69,168 @@ tape('StateManager', (t) => {
     await putContractStorage(addressBuffer, key, value)
 
     const contract0 = await getContractStorage(addressBuffer, key)
-    st.equal(contract0.toString('hex'), value.toString('hex'), 'contract key\'s value is set in the _storageTries cache')
+    st.equal(
+      contract0.toString('hex'),
+      value.toString('hex'),
+      "contract key's value is set in the _storageTries cache",
+    )
 
     await commit()
     await setStateRoot(initialStateRoot)
     const contract1 = await getContractStorage(addressBuffer, key)
-    st.equal(contract1.toString('hex'), '', 'contract key\'s value is unset in the _storageTries cache')
-
-    st.end()
-  })
-
-  t.test('should put and get account, and add to the underlying cache if the account is not found', async (st) => {
-    const stateManager = new StateManager()
-    const account = createAccount()
-
-    await promisify(stateManager.putAccount.bind(stateManager))(
-      'a94f5374fce5edbc8e2a8697c15331677e6ebf0b',
-      account
+    st.equal(
+      contract1.toString('hex'),
+      '',
+      "contract key's value is unset in the _storageTries cache",
     )
 
-    let res = await promisify(stateManager.getAccount.bind(stateManager))(
-      'a94f5374fce5edbc8e2a8697c15331677e6ebf0b'
-    )
-
-    st.equal(res.balance.toString('hex'), 'fff384')
-
-    stateManager._cache.clear()
-
-    res = await promisify(stateManager.getAccount.bind(stateManager))(
-      'a94f5374fce5edbc8e2a8697c15331677e6ebf0b'
-    )
-
-    st.equal(stateManager._cache._cache.keys[0], 'a94f5374fce5edbc8e2a8697c15331677e6ebf0b')
-
     st.end()
   })
 
-  t.test('should call the callback with a boolean representing emptiness, when the account is empty', async (st) => {
-    const stateManager = new StateManager()
+  t.test(
+    'should put and get account, and add to the underlying cache if the account is not found',
+    async st => {
+      const stateManager = new StateManager()
+      const account = createAccount()
 
-    const promisifiedAccountIsEmpty = promisify(stateManager.accountIsEmpty.bind(stateManager), function (err, result) {
-      return err || result
-    })
-    let res = await promisifiedAccountIsEmpty('a94f5374fce5edbc8e2a8697c15331677e6ebf0b')
+      await promisify(stateManager.putAccount.bind(stateManager))(
+        'a94f5374fce5edbc8e2a8697c15331677e6ebf0b',
+        account,
+      )
 
-    st.ok(res)
+      let res = await promisify(stateManager.getAccount.bind(stateManager))(
+        'a94f5374fce5edbc8e2a8697c15331677e6ebf0b',
+      )
 
-    st.end()
+      st.equal(res.balance.toString('hex'), 'fff384')
+
+      stateManager._cache.clear()
+
+      res = await promisify(stateManager.getAccount.bind(stateManager))(
+        'a94f5374fce5edbc8e2a8697c15331677e6ebf0b',
+      )
+
+      st.equal(stateManager._cache._cache.keys[0], 'a94f5374fce5edbc8e2a8697c15331677e6ebf0b')
+
+      st.end()
+    },
+  )
+
+  t.test(
+    'should call the callback with a boolean representing emptiness, when the account is empty',
+    async st => {
+      const stateManager = new StateManager()
+
+      const promisifiedAccountIsEmpty = promisify(
+        stateManager.accountIsEmpty.bind(stateManager),
+        function(err, result) {
+          return err || result
+        },
+      )
+      let res = await promisifiedAccountIsEmpty('a94f5374fce5edbc8e2a8697c15331677e6ebf0b')
+
+      st.ok(res)
+
+      st.end()
+    },
+  )
+
+  t.test(
+    'should call the callback with a false boolean representing non-emptiness when the account is not empty',
+    async st => {
+      const stateManager = new StateManager()
+      const account = createAccount('0x1', '0x1')
+
+      await promisify(stateManager.putAccount.bind(stateManager))(
+        'a94f5374fce5edbc8e2a8697c15331677e6ebf0b',
+        account,
+      )
+
+      const promisifiedAccountIsEmpty = promisify(
+        stateManager.accountIsEmpty.bind(stateManager),
+        function(err, result) {
+          return err || result
+        },
+      )
+      let res = await promisifiedAccountIsEmpty('a94f5374fce5edbc8e2a8697c15331677e6ebf0b')
+
+      st.notOk(res)
+
+      st.end()
+    },
+  )
+
+  t.test('should generate the genesis state root correctly for mainnet', async st => {
+    if (isRunningInKarma()) {
+      st.skip('skip slow test when running in karma')
+      return st.end()
+    }
+
+    parallel([
+      async () => {
+        // 1. Test generating from ethereum/tests
+        const genesisData = require('ethereumjs-testing').getSingleFile(
+          'BasicTests/genesishashestest.json',
+        )
+        const stateManager = new StateManager()
+
+        const generateCanonicalGenesis = promisify((...args) =>
+          stateManager.generateCanonicalGenesis(...args),
+        )
+        const getStateRoot = promisify((...args) => stateManager.getStateRoot(...args))
+
+        await generateCanonicalGenesis()
+        let stateRoot = await getStateRoot()
+        st.equals(
+          stateRoot.toString('hex'),
+          genesisData.genesis_state_root,
+          'generateCanonicalGenesis should produce correct state root for mainnet from ethereum/tests data',
+        )
+      },
+      async () => {
+        // 2. Test generating from common
+        const common = new Common('mainnet', 'petersburg')
+        const expectedStateRoot = Buffer.from(common.genesis().stateRoot.slice(2), 'hex')
+        const stateManager = new StateManager({ common: common })
+
+        const generateCanonicalGenesis = promisify((...args) =>
+          stateManager.generateCanonicalGenesis(...args),
+        )
+        const getStateRoot = promisify((...args) => stateManager.getStateRoot(...args))
+
+        await generateCanonicalGenesis()
+        let stateRoot = await getStateRoot()
+
+        st.true(
+          stateRoot.equals(expectedStateRoot),
+          `generateCanonicalGenesis should produce correct state root for mainnet from common`,
+        )
+      },
+      () => {
+        st.end()
+      },
+    ])
   })
 
-  t.test('should call the callback with a false boolean representing non-emptiness when the account is not empty', async (st) => {
-    const stateManager = new StateManager()
-    const account = createAccount('0x1', '0x1')
-
-    await promisify(stateManager.putAccount.bind(stateManager))(
-      'a94f5374fce5edbc8e2a8697c15331677e6ebf0b',
-      account
-    )
-
-    const promisifiedAccountIsEmpty = promisify(stateManager.accountIsEmpty.bind(stateManager), function (err, result) {
-      return err || result
-    })
-    let res = await promisifiedAccountIsEmpty('a94f5374fce5edbc8e2a8697c15331677e6ebf0b')
-
-    st.notOk(res)
-
-    st.end()
-  })
-
-  t.test('should generate the genesis state correctly', async (st) => {
-    const genesisData = require('ethereumjs-testing').getSingleFile('BasicTests/genesishashestest.json')
-    const stateManager = new StateManager()
-
-    const generateCanonicalGenesis = promisify((...args) => stateManager.generateCanonicalGenesis(...args))
-    const getStateRoot = promisify((...args) => stateManager.getStateRoot(...args))
-
-    await generateCanonicalGenesis()
-    let stateRoot = await getStateRoot()
-
-    st.equal(stateRoot.toString('hex'), genesisData.genesis_state_root)
-
-    st.end()
-  })
-
-  t.test('should generate correct genesis state root for all chains', async (st) => {
-    const chains = ['mainnet', 'ropsten', 'rinkeby', 'kovan', 'goerli']
+  t.test('should generate the genesis state root correctly for all other chains', async st => {
+    const chains = ['ropsten', 'rinkeby', 'kovan', 'goerli']
     for (const chain of chains) {
       const common = new Common(chain, 'petersburg')
       const expectedStateRoot = Buffer.from(common.genesis().stateRoot.slice(2), 'hex')
       const stateManager = new StateManager({ common: common })
 
-      const generateCanonicalGenesis = promisify((...args) => stateManager.generateCanonicalGenesis(...args))
+      const generateCanonicalGenesis = promisify((...args) =>
+        stateManager.generateCanonicalGenesis(...args),
+      )
       const getStateRoot = promisify((...args) => stateManager.getStateRoot(...args))
 
       await generateCanonicalGenesis()
       let stateRoot = await getStateRoot()
 
-      st.true(stateRoot.equals(expectedStateRoot), `generateCanonicalGenesis should produce correct state root for ${chain}`)
+      st.true(
+        stateRoot.equals(expectedStateRoot),
+        `generateCanonicalGenesis should produce correct state root for ${chain}`,
+      )
     }
 
     st.end()
@@ -166,14 +245,14 @@ tape('StateManager', (t) => {
 
     await promisify(stateManager.putAccount.bind(stateManager))(
       'a94f5374fce5edbc8e2a8697c15331677e6ebf0b',
-      account
+      account,
     )
 
     const key = util.toBuffer('0x1234567890123456789012345678901234567890123456789012345678901234')
     const value = util.toBuffer('0x0a') // We used this value as its RLP encoding is also 0a
     await putContractStorage(addressBuffer, key, value)
 
-    stateManager.dumpStorage(addressBuffer, (data) => {
+    stateManager.dumpStorage(addressBuffer, data => {
       const expect = { [util.keccak256(key).toString('hex')]: '0a' }
       st.deepEqual(data, expect, 'should dump storage value')
 
@@ -183,7 +262,7 @@ tape('StateManager', (t) => {
 
   t.test('should pass Common object when copying the state manager', st => {
     const stateManager = new StateManager({
-      common: new Common('goerli', 'byzantium')
+      common: new Common('goerli', 'byzantium'),
     })
 
     st.equal(stateManager._common.chainName(), 'goerli')
@@ -196,7 +275,7 @@ tape('StateManager', (t) => {
     st.end()
   })
 
-  t.test('should validate the key\'s length when modifying a contract\'s storage', async st => {
+  t.test("should validate the key's length when modifying a contract's storage", async st => {
     const stateManager = new StateManager()
     const addressBuffer = Buffer.from('a94f5374fce5edbc8e2a8697c15331677e6ebf0b', 'hex')
     const putContractStorage = promisify((...args) => stateManager.putContractStorage(...args))
@@ -212,7 +291,7 @@ tape('StateManager', (t) => {
     st.end()
   })
 
-  t.test('should validate the key\'s length when reading a contract\'s storage', async st => {
+  t.test("should validate the key's length when reading a contract's storage", async st => {
     const stateManager = new StateManager()
     const addressBuffer = Buffer.from('a94f5374fce5edbc8e2a8697c15331677e6ebf0b', 'hex')
     const getContractStorage = promisify((...args) => stateManager.getContractStorage(...args))
@@ -235,7 +314,9 @@ tape('Original storage cache', async t => {
   const putAccount = promisify(stateManager.putAccount.bind(stateManager))
   const putContractStorage = promisify(stateManager.putContractStorage.bind(stateManager))
   const getContractStorage = promisify(stateManager.getContractStorage.bind(stateManager))
-  const getOriginalContractStorage = promisify(stateManager.getOriginalContractStorage.bind(stateManager))
+  const getOriginalContractStorage = promisify(
+    stateManager.getOriginalContractStorage.bind(stateManager),
+  )
 
   const address = 'a94f5374fce5edbc8e2a8697c15331677e6ebf0b'
   const addressBuffer = Buffer.from(address, 'hex')
@@ -283,7 +364,10 @@ tape('Original storage cache', async t => {
   })
 
   t.test('should cache keys separately', async st => {
-    const key2 = Buffer.from('0000000000000000000000000000000000000000000000000000000000000012', 'hex')
+    const key2 = Buffer.from(
+      '0000000000000000000000000000000000000000000000000000000000000012',
+      'hex',
+    )
     const value2 = Buffer.from('12', 'hex')
     const value3 = Buffer.from('123', 'hex')
     await putContractStorage(addressBuffer, key2, value2)
@@ -309,7 +393,7 @@ tape('Original storage cache', async t => {
     st.end()
   })
 
-  t.test('getOriginalContractStorage should validate the key\'s length', async st => {
+  t.test("getOriginalContractStorage should validate the key's length", async st => {
     try {
       await getOriginalContractStorage(addressBuffer, Buffer.alloc(12))
     } catch (e) {

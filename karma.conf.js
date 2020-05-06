@@ -8,15 +8,13 @@ module.exports = function(config) {
 
     // frameworks to use
     // available frameworks: https://npmjs.org/browse/keyword/karma-adapter
-    frameworks: ['browserify', 'detectBrowsers', 'tap'],
+    frameworks: ['browserify', 'tap'],
 
     // list of files / patterns to load in the browser
     files: ['./tests/api/**/*.js'],
 
     // list of files / patterns to exclude
-    exclude: [
-      './tests/api/state/stateManager.js', // 4, "# should clear the cache when the state root is set"
-    ],
+    exclude: [],
 
     // preprocess matching files before serving them to the browser
     // available preprocessors: https://npmjs.org/browse/keyword/karma-preprocessor
@@ -44,20 +42,11 @@ module.exports = function(config) {
 
     // start these browsers
     // available browser launchers: https://npmjs.org/browse/keyword/karma-launcher
-    browsers: ['FirefoxHeadless'],
+    browsers: ['FirefoxHeadless', 'ChromeHeadless'],
 
     // Continuous Integration mode
     // if true, Karma captures browsers, runs the tests and exits
     singleRun: true,
-
-    // karma-detect-browsers plugin config
-    detectBrowsers: {
-      enabled: true,
-      usePhantomJS: false,
-      postDetection: function(availableBrowsers) {
-        return ['FirefoxHeadless']
-      },
-    },
 
     // Concurrency level
     // how many browser should be started simultaneous

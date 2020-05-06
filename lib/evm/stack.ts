@@ -85,6 +85,6 @@ export default class Stack {
     }
 
     const i = this._store.length - position
-    this.push(this._store[i])
+    this.push(this._store[i].clone())
   }
 }
