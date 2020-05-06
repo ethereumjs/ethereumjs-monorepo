@@ -11,8 +11,9 @@
     }
   },
   "scripts": {
-    "bootstrap": "lerna bootstrap --ignore-scripts && lerna exec npm i --scope=ethereumjs-block",
+    "bootstrap": "lerna bootstrap --ignore-scripts",
     "postinstall": "npm run bootstrap",
+    "build:all": "lerna run build",
     "lint": "lerna run lint"
   }
 }
