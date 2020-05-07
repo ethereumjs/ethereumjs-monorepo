@@ -283,7 +283,7 @@ export class BlockHeader {
       throw new Error('invalid gas limit')
     }
 
-    if (utils.bufferToInt(parentBlock.header.number) + 1 !== utils.bufferToInt(this.number)) {
+    if (utils.bufferToInt(this.number) - utils.bufferToInt(parentBlock.header.number) !== 1) {
       throw new Error('invalid height')
     }
 

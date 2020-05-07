@@ -1,6 +1,6 @@
 import Common from 'ethereumjs-common'
 import tape = require('tape')
-import { rlp, toBuffer } from 'ethereumjs-util'
+import { rlp } from 'ethereumjs-util'
 
 import { Block } from '../src/block'
 
