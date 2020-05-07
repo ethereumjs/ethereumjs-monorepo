@@ -5,14 +5,16 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [
-    "dist/**/*"
+    "dist",
+    "dist.browser"
   ],
+  "browser": "dist.browser/index.js",
   "scripts": {
     "benchmarks": "npm run build && ts-node benchmarks/index.ts",
-    "build": "ethereumjs-config-build",
+    "build": "tsc -p tsconfig.json && tsc -p tsconfig.browser.json",
     "prepublishOnly": "npm run test && npm run build",
     "coverage": "nyc --reporter=lcov npm run test:node",
-    "docs:build": "npx typedoc",
+    "docs:build": "typedoc",
     "lint": "ethereumjs-config-lint",
     "lint:fix": "ethereumjs-config-lint-fix",
     "format": "ethereumjs-config-format",
