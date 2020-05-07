@@ -614,7 +614,7 @@ test('blockchain test', t => {
     genesisBlock.setGenesisParams()
     genesisBlock.header.gasLimit = toBuffer(8000000)
     blockchain.putGenesis(genesisBlock, (err?: Error) => {
-      st.error(err, 'should validate genesis!!Block')
+      st.error(err, 'should validate genesisBlock')
       const invalidBlock = new Block()
       blockchain.putBlock(invalidBlock, (err?: Error) => {
         t.ok(err, 'should not validate an invalid block')
