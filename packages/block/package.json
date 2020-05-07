@@ -54,7 +54,6 @@
     "@types/node": "^11.13.4",
     "@types/tape": "^4.2.33",
     "browserify": "^16.2.3",
-    "ethereumjs-blockchain": "^4.0.3",
     "istanbul": "^0.4.1",
     "karma": "^4.1.0",
     "karma-browserify": "^6.0.0",
