@@ -35,7 +35,7 @@ describe('.getPrivateKey()', function() {
   it('should fail', function() {
     assert.throws(function() {
       Wallet.fromPrivateKey(Buffer.from('001122', 'hex'))
-    }, /^Error: Private key does not satisfy the curve requirements \(ie. it is invalid\)$/)
+    }, /^Error: Expected private key to be an Uint8Array with length 32$/)
   })
 })
 
