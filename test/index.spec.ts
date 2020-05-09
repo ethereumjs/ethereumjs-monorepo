@@ -24,6 +24,10 @@ const fixturePublicKeyBuffer = Buffer.from(fixturePublicKey, 'hex')
 const fixtureWallet = Wallet.fromPrivateKey(fixturePrivateKeyBuffer)
 const fixtureEthersWallet = new ethersWallet(fixtureWallet.getPrivateKeyString())
 
+const isRunningInKarma = () => {
+  return typeof (global as any).window !== 'undefined' && (global as any).window.__karma__
+}
+
 describe('.getPrivateKey()', function() {
   it('should work', function() {
     assert.strictEqual(fixtureWallet.getPrivateKey().toString('hex'), fixturePrivateKey)
@@ -212,7 +216,7 @@ describe('.toV3()', function() {
   const makePermutations = (...objs: Array<object>): Array<object> => {
     const permus = []
     const keys = Array.from(
-      objs.reduce((acc: Set<string>, curr: object) => {
+      objs.reduce((acc: any, curr: object) => {
         Object.keys(curr).forEach(key => {
           acc.add(key)
         })
@@ -246,7 +250,13 @@ describe('.toV3()', function() {
     return obj
   }
 
-  const permutations = makePermutations(strKdfOptions, buffKdfOptions)
+  let permutations = makePermutations(strKdfOptions, buffKdfOptions)
+
+  if (isRunningInKarma()) {
+    // These tests take a long time in the browser due to
+    // the amount of permutations so we will shorten them.
+    permutations = permutations.slice(1)
+  }
 
   it('should work with PBKDF2', async function() {
     this.timeout(0) // never
@@ -669,6 +679,7 @@ describe('.fromV3()', function() {
   it('should fail with invalid password', function() {
     const w =
       '{"crypto":{"cipher":"aes-128-ctr","cipherparams":{"iv":"6087dab2f9fdbbfaddc31a909735c1e6"},"ciphertext":"5318b4d5bcd28de64ee5559e671353e16f075ecae9f99c7a79a38af5f869aa46","kdf":"pbkdf2","kdfparams":{"c":262144,"dklen":32,"prf":"hmac-sha256","salt":"ae3cd4e7013836a3df6bd7241b12db061dbe2c6785853cce422d148a624ce0bd"},"mac":"517ead924a9d0dc3124507e3393d175ce3ff7c1e96529c6c555ce9e51205e9b2"},"id":"3198bc9c-6672-5ab3-d995-4942343ae5b6","version":3}'
+    this.timeout(0) // never
     assert.throws(function() {
       Wallet.fromV3(w, 'wrongtestpassword')
     }, /^Error: Key derivation failed - possibly wrong passphrase$/)
@@ -676,12 +687,14 @@ describe('.fromV3()', function() {
   it('should work with (broken) mixed-case input files', function() {
     const w =
       '{"Crypto":{"cipher":"aes-128-ctr","cipherparams":{"iv":"6087dab2f9fdbbfaddc31a909735c1e6"},"ciphertext":"5318b4d5bcd28de64ee5559e671353e16f075ecae9f99c7a79a38af5f869aa46","kdf":"pbkdf2","kdfparams":{"c":262144,"dklen":32,"prf":"hmac-sha256","salt":"ae3cd4e7013836a3df6bd7241b12db061dbe2c6785853cce422d148a624ce0bd"},"mac":"517ead924a9d0dc3124507e3393d175ce3ff7c1e96529c6c555ce9e51205e9b2"},"id":"3198bc9c-6672-5ab3-d995-4942343ae5b6","version":3}'
+    this.timeout(0) // never
     const wallet = Wallet.fromV3(w, 'testpassword', true)
     assert.strictEqual(wallet.getAddressString(), '0x008aeeda4d805471df9b2a5b0f38a0c3bcba786b')
   })
   it("shouldn't work with (broken) mixed-case input files in strict mode", function() {
     const w =
       '{"Crypto":{"cipher":"aes-128-ctr","cipherparams":{"iv":"6087dab2f9fdbbfaddc31a909735c1e6"},"ciphertext":"5318b4d5bcd28de64ee5559e671353e16f075ecae9f99c7a79a38af5f869aa46","kdf":"pbkdf2","kdfparams":{"c":262144,"dklen":32,"prf":"hmac-sha256","salt":"ae3cd4e7013836a3df6bd7241b12db061dbe2c6785853cce422d148a624ce0bd"},"mac":"517ead924a9d0dc3124507e3393d175ce3ff7c1e96529c6c555ce9e51205e9b2"},"id":"3198bc9c-6672-5ab3-d995-4942343ae5b6","version":3}'
+    this.timeout(0) // never
     assert.throws(function() {
       Wallet.fromV3(w, 'testpassword')
     }) // FIXME: check for assert message(s)
@@ -760,6 +773,7 @@ describe('.fromKryptoKit()', function() {
       'qhah1VeT0RgTvff1UKrUrxtFViiQuki16dd353d59888c25',
       'testtest',
     )
+    this.timeout(0) // never
     assert.strictEqual(wallet.getAddressString(), '0x3c753e27834db67329d1ec1fab67970ec1e27112')
   })
 })
