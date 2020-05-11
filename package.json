@@ -59,7 +59,7 @@
     "inherits": "^2.0.1",
     "ip": "^1.1.3",
     "k-bucket": "^3.2.1",
-    "keccak": "^1.0.0",
+    "keccak": "^3.0.0",
     "lru-cache": "^5.1.1",
     "ms": "^0.7.1",
     "rlp-encoding": "^3.0.0",
