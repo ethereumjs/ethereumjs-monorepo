@@ -1,5 +1,5 @@
-import * as devp2p from '../index'
-import { LES, Peer } from '../index'
+import * as devp2p from '../src/index'
+import { LES, Peer } from '../src/index'
 import Tx from 'ethereumjs-tx'
 import Block from 'ethereumjs-block'
 import ms from 'ms'
