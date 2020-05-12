@@ -10,8 +10,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 This release introduces a major API upgrade from callbacks to Promises.
 
-See the [docs](https://github.com/ethereumjs/merkle-patricia-tree/tree/master/docs) for the latest method signatures.
-
 Example using async/await syntax:
 
 ```typescript
@@ -21,6 +19,16 @@ const trie = new Trie()
 await trie.put(Buffer.from('test'), Buffer.from('one'))
 const value = await trie.get(Buffer.from('test'))
 ```
+
+### Breaking Changes
+
+#### Trie methods
+
+See the [docs](https://github.com/ethereumjs/merkle-patricia-tree/tree/master/docs) for the latest Promise-based method signatures.
+
+#### Trie raw methods
+
+`getRaw`, `putRaw` and `delRaw` were deprecated in `v3.0.0` and have been removed from this release. Instead, please use `trie.db.get`, `trie.db.put`, and `trie.db.del`. If using a `SecureTrie` or `CheckpointTrie`, use `trie._maindb` to override the checkpointing mechanism and interact directly with the db.
 
 ### Changed
 
@@ -43,7 +51,7 @@ const value = await trie.get(Buffer.from('test'))
 ### Fixed
 
 - Drop ethereumjs-testing dep and fix bug in branch value update ([#69](https://github.com/ethereumjs/merkle-patricia-tree/pull/69))
-- Fix prove and verifyProof in SecureTrie ([#79](https://github.com/ethereumjs/merkle-patricia-tree/pull/70))
+- Fix prove and verifyProof in SecureTrie ([#79](https://github.com/ethereumjs/merkle-patricia-tree/pull/79))
 - Fixed src code links in docs ([#93](https://github.com/ethereumjs/merkle-patricia-tree/pull/93))
 
 ### Dev / Testing / CI
