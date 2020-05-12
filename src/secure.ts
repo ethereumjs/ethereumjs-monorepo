@@ -3,7 +3,7 @@ import { CheckpointTrie } from './checkpointTrie'
 
 /**
  * You can create a secure Trie where the keys are automatically hashed
- * using **keccak256** by using `require('merkle-patricia-tree/secure')`.
+ * using **keccak256** by using `require('merkle-patricia-tree').SecureTrie`.
  * It has the same methods and constructor as `Trie`.
  * @class SecureTrie
  * @extends Trie
