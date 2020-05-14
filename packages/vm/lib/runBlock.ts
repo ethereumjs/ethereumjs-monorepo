@@ -171,7 +171,7 @@ async function applyBlock(this: VM, block: any, opts: RunBlockOpts) {
     if (new BN(block.header.gasLimit).gte(new BN('8000000000000000', 16))) {
       throw new Error('Invalid block with gas limit greater than (2^63 - 1)')
     } else {
-      await promisify(block.validate).bind(block)(this.blockchain)
+      await block.validate(this.blockchain)
     }
   }
   // Apply transactions

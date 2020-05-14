@@ -90,7 +90,7 @@ tape('should fail when block validation fails', async (t) => {
   const suite = setup()
 
   const block = new Block(util.rlp.decode(suite.data.blocks[0].rlp))
-  block.validate = (_, cb) => cb(new Error('test'))
+  block.validate = async () => { throw new Error('test') }
 
   await suite.p
     .runBlock({ block })
