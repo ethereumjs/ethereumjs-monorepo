@@ -83,14 +83,16 @@ export default class DBManager {
       throw new Error('Unknown blockTag type')
     }
 
-    const header = (await this.getHeader(hash, number)).raw
+    const header: any = (await this.getHeader(hash, number)).raw
     let body
     try {
       body = await this.getBody(hash, number)
-      return new Block([header, [body], []], { common: this._common })
     } catch (e) {
-      return new Block([header, [Buffer.from([])], [Buffer.from([])]], { common: this._common })
+      body = [[], []]
     }
+
+    const blockData = [header].concat(body) as [Buffer[], Buffer[], Buffer[]]
+    return new Block(blockData, { common: this._common })
   }
 
   /**
