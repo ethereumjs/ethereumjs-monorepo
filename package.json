@@ -63,7 +63,7 @@
     "lru-cache": "^5.1.1",
     "ms": "^0.7.1",
     "rlp-encoding": "^3.0.0",
-    "secp256k1": "^3.1.0"
+    "secp256k1": "^4.0.1"
   },
   "devDependencies": {
     "@ethereumjs/config-nyc": "^1.1.1",
@@ -78,7 +78,7 @@
     "@types/ip": "^1.1.0",
     "@types/lru-cache": "^5.1.0",
     "@types/ms": "^0.7.30",
-    "@types/secp256k1": "3.5.0",
+    "@types/secp256k1": "^4.0.1",
     "@types/tape": "^4.2.33",
     "async": "^2.6.0",
     "chalk": "^2.4.2",
