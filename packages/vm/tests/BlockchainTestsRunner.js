@@ -36,7 +36,7 @@ module.exports = function runBlockchainTest(options, testData, t, cb) {
     blockchain: blockchain,
     hardfork: options.forkConfigVM,
   })
-  const genesisBlock = new Block({ hardfork: options.forkConfigVM })
+  const genesisBlock = new Block(undefined, { hardfork: options.forkConfigVM })
 
   testData.homestead = true
   if (testData.homestead) {

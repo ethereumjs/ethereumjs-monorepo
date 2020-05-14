@@ -182,6 +182,8 @@ function runTests(name, runnerArgs, cb) {
       const runner = require(`./${name}Runner.js`)
       // Tests for HFs before Istanbul have been moved under `LegacyTests/Constantinople`:
       // https://github.com/ethereum/tests/releases/tag/v7.0.0-beta.1
+
+      // TODO: Replace with Common.lteHardfork('Istanbul')
       if (testGetterArgs.forkConfig !== 'Istanbul') {
         name = 'LegacyTests/Constantinople/'.concat(name)
       }
