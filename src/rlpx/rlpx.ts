@@ -43,7 +43,7 @@ export class RLPx extends EventEmitter {
     super()
 
     this._privateKey = Buffer.from(privateKey)
-    this._id = pk2id(publicKeyCreate(this._privateKey, false))
+    this._id = pk2id(Buffer.from(publicKeyCreate(this._privateKey, false)))
 
     // options
     this._timeout = options.timeout || ms('10s')

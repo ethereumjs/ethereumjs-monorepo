@@ -23,7 +23,7 @@ export class DPT extends EventEmitter {
     super()
 
     this.privateKey = Buffer.from(privateKey)
-    this._id = pk2id(publicKeyCreate(this.privateKey, false))
+    this._id = pk2id(Buffer.from(publicKeyCreate(this.privateKey, false)))
 
     this.banlist = new BanList()
 

@@ -16,8 +16,8 @@ function randomBefore(fn: Function) {
   return (t: Test) => {
     const privateKey1 = util.genPrivateKey()
     const privateKey2 = util.genPrivateKey()
-    const publicKey1 = secp256k1.publicKeyCreate(privateKey1, false)
-    const publicKey2 = secp256k1.publicKeyCreate(privateKey2, false)
+    const publicKey1 = Buffer.from(secp256k1.publicKeyCreate(privateKey1, false))
+    const publicKey2 = Buffer.from(secp256k1.publicKeyCreate(privateKey2, false))
     t.context = {
       a: new ECIES(privateKey1, util.pk2id(publicKey1), util.pk2id(publicKey2)),
       b: new ECIES(privateKey2, util.pk2id(publicKey2), util.pk2id(publicKey1)),

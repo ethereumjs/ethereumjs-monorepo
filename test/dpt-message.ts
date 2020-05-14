@@ -6,7 +6,7 @@ const privateKey = Buffer.from(
   'b71c71a67e1177ad4e901695e1b4b9ee17ae16c6668d313eac2f96dbcda3f291',
   'hex',
 )
-const publicKey = secp256k1.publicKeyCreate(privateKey, false)
+const publicKey = Buffer.from(secp256k1.publicKeyCreate(privateKey, false))
 
 test('ping packet with version 4, additional list elements', t => {
   const buffer = Buffer.from(
