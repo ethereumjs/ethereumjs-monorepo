@@ -20,6 +20,6 @@ Any object that can be transformed into a `Buffer`
 
 ▸ **toBuffer**(): *Buffer*
 
-*Defined in [types.ts:8](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/types.ts#L8)*
+*Defined in [types.ts:7](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/types.ts#L7)*
 
 **Returns:** *Buffer*

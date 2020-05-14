@@ -58,7 +58,7 @@ transactions belongs to.
 
 ###  constructor
 
-\+ **new FakeTransaction**(`data`: Buffer | [PrefixedHexString](../modules/_index_.md#prefixedhexstring) | [BufferLike](../modules/_index_.md#bufferlike)[] | [FakeTxData](../interfaces/_index_.faketxdata.md), `opts`: [ChainOptions](../interfaces/_index_.chainoptions.md)): *[FakeTransaction](_index_.faketransaction.md)*
+\+ **new FakeTransaction**(`data`: Buffer | [PrefixedHexString](../modules/_index_.md#prefixedhexstring) | [BufferLike](../modules/_index_.md#bufferlike)[] | [FakeTxData](../interfaces/_index_.faketxdata.md), `opts`: [TransactionOptions](../interfaces/_index_.transactionoptions.md)): *[FakeTransaction](_index_.faketransaction.md)*
 
 *Overrides [Transaction](_index_.transaction.md).[constructor](_index_.transaction.md#constructor)*
 
@@ -69,7 +69,7 @@ transactions belongs to.
 Name | Type | Default |
 ------ | ------ | ------ |
 `data` | Buffer &#124; [PrefixedHexString](../modules/_index_.md#prefixedhexstring) &#124; [BufferLike](../modules/_index_.md#bufferlike)[] &#124; [FakeTxData](../interfaces/_index_.faketxdata.md) | {} |
-`opts` | [ChainOptions](../interfaces/_index_.chainoptions.md) | {} |
+`opts` | [TransactionOptions](../interfaces/_index_.transactionoptions.md) | {} |
 
 **Returns:** *[FakeTransaction](_index_.faketransaction.md)*
 

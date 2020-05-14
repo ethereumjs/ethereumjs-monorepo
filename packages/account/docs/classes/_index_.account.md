@@ -4,42 +4,42 @@
 
 ## Hierarchy
 
-- **Account**
+* **Account**
 
 ## Index
 
 ### Constructors
 
-- [constructor](_index_.account.md#constructor)
+* [constructor](_index_.account.md#constructor)
 
 ### Properties
 
-- [balance](_index_.account.md#balance)
-- [codeHash](_index_.account.md#codehash)
-- [nonce](_index_.account.md#nonce)
-- [stateRoot](_index_.account.md#stateroot)
+* [balance](_index_.account.md#balance)
+* [codeHash](_index_.account.md#codehash)
+* [nonce](_index_.account.md#nonce)
+* [stateRoot](_index_.account.md#stateroot)
 
 ### Methods
 
-- [getCode](_index_.account.md#getcode)
-- [getStorage](_index_.account.md#getstorage)
-- [isContract](_index_.account.md#iscontract)
-- [isEmpty](_index_.account.md#isempty)
-- [serialize](_index_.account.md#serialize)
-- [setCode](_index_.account.md#setcode)
-- [setStorage](_index_.account.md#setstorage)
+* [getCode](_index_.account.md#getcode)
+* [getStorage](_index_.account.md#getstorage)
+* [isContract](_index_.account.md#iscontract)
+* [isEmpty](_index_.account.md#isempty)
+* [serialize](_index_.account.md#serialize)
+* [setCode](_index_.account.md#setcode)
+* [setStorage](_index_.account.md#setstorage)
 
 ## Constructors
 
-### constructor
+###  constructor
 
-\+ **new Account**(`data?`: any): _[Account](\_index_.account.md)\_
+\+ **new Account**(`data?`: any): *[Account](_index_.account.md)*
 
-_Defined in [index.ts:41](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/account/src/index.ts#L41)_
+*Defined in [index.ts:41](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/account/src/index.ts#L41)*
 
 Creates a new account object
 
-```
+~~~
 var data = [
   '0x02', //nonce
   '0x0384', //balance
@@ -55,142 +55,142 @@ var data = {
 }
 
 const account = new Account(data)
-```
+~~~
 
 **Parameters:**
 
-| Name    | Type | Description                                                                                                                                                                                                                                                                                                                                     |
-| ------- | ---- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `data?` | any  | An account can be initialized with either a `buffer` containing the RLP serialized account. Or an `Array` of buffers relating to each of the account Properties, listed in order below. For `Object` and `Array` each of the elements can either be a `Buffer`, hex `String`, `Number`, or an object with a `toBuffer` method such as `Bignum`. |
+Name | Type | Description |
+------ | ------ | ------ |
+`data?` | any |  An account can be initialized with either a `buffer` containing the RLP serialized account. Or an `Array` of buffers relating to each of the account Properties, listed in order below.  For `Object` and `Array` each of the elements can either be a `Buffer`, hex `String`, `Number`, or an object with a `toBuffer` method such as `Bignum`.  |
 
-**Returns:** _[Account](\_index_.account.md)\_
+**Returns:** *[Account](_index_.account.md)*
 
 ## Properties
 
-### balance
+###  balance
 
-• **balance**: _Buffer_
+• **balance**: *Buffer*
 
-_Defined in [index.ts:31](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/account/src/index.ts#L31)_
+*Defined in [index.ts:31](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/account/src/index.ts#L31)*
 
 The account's balance in wei.
 
----
+___
 
-### codeHash
+###  codeHash
 
-• **codeHash**: _Buffer_
+• **codeHash**: *Buffer*
 
-_Defined in [index.ts:41](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/account/src/index.ts#L41)_
+*Defined in [index.ts:41](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/account/src/index.ts#L41)*
 
 The hash of the code of the contract.
 
----
+___
 
-### nonce
+###  nonce
 
-• **nonce**: _Buffer_
+• **nonce**: *Buffer*
 
-_Defined in [index.ts:26](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/account/src/index.ts#L26)_
+*Defined in [index.ts:26](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/account/src/index.ts#L26)*
 
 The account's nonce.
 
----
+___
 
-### stateRoot
+###  stateRoot
 
-• **stateRoot**: _Buffer_
+• **stateRoot**: *Buffer*
 
-_Defined in [index.ts:36](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/account/src/index.ts#L36)_
+*Defined in [index.ts:36](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/account/src/index.ts#L36)*
 
 The stateRoot for the storage of the contract.
 
 ## Methods
 
-### getCode
+###  getCode
 
-▸ **getCode**(`trie`: Trie, `cb`: TrieGetCb): _void_
+▸ **getCode**(`trie`: Trie, `cb`: TrieGetCb): *void*
 
-_Defined in [index.ts:116](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/account/src/index.ts#L116)_
+*Defined in [index.ts:116](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/account/src/index.ts#L116)*
 
 Fetches the code from the trie.
 
 **Parameters:**
 
-| Name   | Type      | Description                                                                         |
-| ------ | --------- | ----------------------------------------------------------------------------------- |
-| `trie` | Trie      | The [trie](https://github.com/ethereumjs/merkle-patricia-tree) storing the accounts |
-| `cb`   | TrieGetCb | The callback                                                                        |
+Name | Type | Description |
+------ | ------ | ------ |
+`trie` | Trie | The [trie](https://github.com/ethereumjs/merkle-patricia-tree) storing the accounts |
+`cb` | TrieGetCb | The callback  |
 
-**Returns:** _void_
+**Returns:** *void*
 
----
+___
 
-### getStorage
+###  getStorage
 
-▸ **getStorage**(`trie`: Trie, `key`: Buffer | string, `cb`: TrieGetCb): _void_
+▸ **getStorage**(`trie`: Trie, `key`: Buffer | string, `cb`: TrieGetCb): *void*
 
-_Defined in [index.ts:179](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/account/src/index.ts#L179)_
+*Defined in [index.ts:179](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/account/src/index.ts#L179)*
 
 Fetches `key` from the account's storage.
 
 **Parameters:**
 
-| Name   | Type                 | Description |
-| ------ | -------------------- | ----------- |
-| `trie` | Trie                 | -           |
-| `key`  | Buffer &#124; string | -           |
-| `cb`   | TrieGetCb            |             |
+Name | Type | Description |
+------ | ------ | ------ |
+`trie` | Trie | - |
+`key` | Buffer &#124; string | - |
+`cb` | TrieGetCb |   |
 
-**Returns:** _void_
+**Returns:** *void*
 
----
+___
 
-### isContract
+###  isContract
 
-▸ **isContract**(): _boolean_
+▸ **isContract**(): *boolean*
 
-_Defined in [index.ts:107](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/account/src/index.ts#L107)_
+*Defined in [index.ts:107](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/account/src/index.ts#L107)*
 
 Returns a `Boolean` deteremining if the account is a contract.
 
-**Returns:** _boolean_
+**Returns:** *boolean*
 
----
+___
 
-### isEmpty
+###  isEmpty
 
-▸ **isEmpty**(): _boolean_
+▸ **isEmpty**(): *boolean*
 
-_Defined in [index.ts:232](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/account/src/index.ts#L232)_
+*Defined in [index.ts:232](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/account/src/index.ts#L232)*
 
 Returns a `Boolean` determining if the account is empty.
 
-**Returns:** _boolean_
+**Returns:** *boolean*
 
----
+___
 
-### serialize
+###  serialize
 
-▸ **serialize**(): _Buffer_
+▸ **serialize**(): *Buffer*
 
-_Defined in [index.ts:99](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/account/src/index.ts#L99)_
+*Defined in [index.ts:99](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/account/src/index.ts#L99)*
 
 Returns the RLP serialization of the account as a `Buffer`.
 
-**Returns:** _Buffer_
+**Returns:** *Buffer*
 
----
+___
 
-### setCode
+###  setCode
 
-▸ **setCode**(`trie`: Trie, `code`: Buffer, `cb`: function): _void_
+▸ **setCode**(`trie`: Trie, `code`: Buffer, `cb`: function): *void*
 
-_Defined in [index.ts:160](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/account/src/index.ts#L160)_
+*Defined in [index.ts:160](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/account/src/index.ts#L160)*
 
 Stores the code in the trie.
 
-```
+~~~
 // Requires manual merkle-patricia-tree install
 const SecureTrie = require('merkle-patricia-tree/secure')
 const Account = require('./index.js').default
@@ -215,44 +215,44 @@ account.setCode(trie, code, function(err, codeHash) {
     console.log(`Code ${code.toString('hex')} read from trie`)
   })
 })
-```
+~~~
 
 **Parameters:**
 
-▪ **trie**: _Trie_
+▪ **trie**: *Trie*
 
 The [trie](https://github.com/ethereumjs/merkle-patricia-tree) storing the accounts.
 
-▪ **code**: _Buffer_
+▪ **code**: *Buffer*
 
-▪ **cb**: _function_
+▪ **cb**: *function*
 
 The callback.
 
-▸ (`err`: any, `codeHash`: Buffer): _void_
+▸ (`err`: any, `codeHash`: Buffer): *void*
 
 **Parameters:**
 
-| Name       | Type   |
-| ---------- | ------ |
-| `err`      | any    |
-| `codeHash` | Buffer |
+Name | Type |
+------ | ------ |
+`err` | any |
+`codeHash` | Buffer |
 
-**Returns:** _void_
+**Returns:** *void*
 
----
+___
 
-### setStorage
+###  setStorage
 
-▸ **setStorage**(`trie`: Trie, `key`: Buffer | string, `val`: Buffer | string, `cb`: TriePutCb): _void_
+▸ **setStorage**(`trie`: Trie, `key`: Buffer | string, `val`: Buffer | string, `cb`: TriePutCb): *void*
 
-_Defined in [index.ts:218](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/account/src/index.ts#L218)_
+*Defined in [index.ts:218](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/account/src/index.ts#L218)*
 
 Stores a `val` at the `key` in the contract's storage.
 
 Example for `getStorage` and `setStorage`:
 
-```
+~~~
 // Requires manual merkle-patricia-tree install
 const SecureTrie = require('merkle-patricia-tree/secure')
 const Account = require('./index.js').default
@@ -273,15 +273,15 @@ account.setStorage(trie, key, value, function(err) {
     console.log(`Value ${value.toString('hex')} set and retrieved from trie.`)
   })
 })
-```
+~~~
 
 **Parameters:**
 
-| Name   | Type                 | Description |
-| ------ | -------------------- | ----------- |
-| `trie` | Trie                 | -           |
-| `key`  | Buffer &#124; string | -           |
-| `val`  | Buffer &#124; string | -           |
-| `cb`   | TriePutCb            |             |
+Name | Type | Description |
+------ | ------ | ------ |
+`trie` | Trie | - |
+`key` | Buffer &#124; string | - |
+`val` | Buffer &#124; string | - |
+`cb` | TriePutCb |   |
 
-**Returns:** _void_
+**Returns:** *void*

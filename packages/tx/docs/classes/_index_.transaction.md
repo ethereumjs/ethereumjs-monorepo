@@ -51,7 +51,7 @@ An Ethereum transaction.
 
 ###  constructor
 
-\+ **new Transaction**(`data`: Buffer | [PrefixedHexString](../modules/_index_.md#prefixedhexstring) | [BufferLike](../modules/_index_.md#bufferlike)[] | [TxData](../interfaces/_index_.txdata.md), `opts`: [ChainOptions](../interfaces/_index_.chainoptions.md)): *[Transaction](_index_.transaction.md)*
+\+ **new Transaction**(`data`: Buffer | [PrefixedHexString](../modules/_index_.md#prefixedhexstring) | [BufferLike](../modules/_index_.md#bufferlike)[] | [TxData](../interfaces/_index_.txdata.md), `opts`: [TransactionOptions](../interfaces/_index_.transactionoptions.md)): *[Transaction](_index_.transaction.md)*
 
 *Defined in [transaction.ts:37](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/transaction.ts#L37)*
 
@@ -82,7 +82,7 @@ const tx = new Transaction(txData);
 Name | Type | Default | Description |
 ------ | ------ | ------ | ------ |
 `data` | Buffer &#124; [PrefixedHexString](../modules/_index_.md#prefixedhexstring) &#124; [BufferLike](../modules/_index_.md#bufferlike)[] &#124; [TxData](../interfaces/_index_.txdata.md) | {} | A transaction can be initialized with its rlp representation, an array containing the value of its fields in order, or an object containing them by name.  |
-`opts` | [ChainOptions](../interfaces/_index_.chainoptions.md) | {} | The transaction's options, used to indicate the chain and hardfork the transactions belongs to.  |
+`opts` | [TransactionOptions](../interfaces/_index_.transactionoptions.md) | {} | The transaction's options, used to indicate the chain and hardfork the transactions belongs to.  |
 
 **Returns:** *[Transaction](_index_.transaction.md)*
 

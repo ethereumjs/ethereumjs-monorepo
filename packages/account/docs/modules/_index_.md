@@ -6,4 +6,4 @@
 
 ### Classes
 
-- [Account](../classes/_index_.account.md)
+* [Account](../classes/_index_.account.md)

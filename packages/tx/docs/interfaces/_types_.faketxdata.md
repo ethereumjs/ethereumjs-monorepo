@@ -33,7 +33,7 @@ The data of a fake (self-signing) transaction.
 
 *Inherited from [TxData](_index_.txdata.md).[data](_index_.txdata.md#optional-data)*
 
-*Defined in [types.ts:48](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/types.ts#L48)*
+*Defined in [types.ts:47](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/types.ts#L47)*
 
 This will contain the data of the message or the init of a contract
 
@@ -43,7 +43,7 @@ ___
 
 • **from**? : *[BufferLike](../modules/_types_.md#bufferlike)*
 
-*Defined in [types.ts:78](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/types.ts#L78)*
+*Defined in [types.ts:77](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/types.ts#L77)*
 
 The sender of the Tx.
 
@@ -55,7 +55,7 @@ ___
 
 *Inherited from [TxData](_index_.txdata.md).[gasLimit](_index_.txdata.md#optional-gaslimit)*
 
-*Defined in [types.ts:28](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/types.ts#L28)*
+*Defined in [types.ts:27](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/types.ts#L27)*
 
 The transaction's gas limit.
 
@@ -67,7 +67,7 @@ ___
 
 *Inherited from [TxData](_index_.txdata.md).[gasPrice](_index_.txdata.md#optional-gasprice)*
 
-*Defined in [types.ts:33](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/types.ts#L33)*
+*Defined in [types.ts:32](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/types.ts#L32)*
 
 The transaction's gas price.
 
@@ -79,7 +79,7 @@ ___
 
 *Inherited from [TxData](_index_.txdata.md).[nonce](_index_.txdata.md#optional-nonce)*
 
-*Defined in [types.ts:43](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/types.ts#L43)*
+*Defined in [types.ts:42](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/types.ts#L42)*
 
 The transaction's nonce.
 
@@ -91,7 +91,7 @@ ___
 
 *Inherited from [TxData](_index_.txdata.md).[r](_index_.txdata.md#optional-r)*
 
-*Defined in [types.ts:58](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/types.ts#L58)*
+*Defined in [types.ts:57](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/types.ts#L57)*
 
 EC signature parameter.
 
@@ -103,7 +103,7 @@ ___
 
 *Inherited from [TxData](_index_.txdata.md).[s](_index_.txdata.md#optional-s)*
 
-*Defined in [types.ts:63](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/types.ts#L63)*
+*Defined in [types.ts:62](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/types.ts#L62)*
 
 EC signature parameter.
 
@@ -115,7 +115,7 @@ ___
 
 *Inherited from [TxData](_index_.txdata.md).[to](_index_.txdata.md#optional-to)*
 
-*Defined in [types.ts:38](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/types.ts#L38)*
+*Defined in [types.ts:37](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/types.ts#L37)*
 
 The transaction's the address is sent to.
 
@@ -127,7 +127,7 @@ ___
 
 *Inherited from [TxData](_index_.txdata.md).[v](_index_.txdata.md#optional-v)*
 
-*Defined in [types.ts:53](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/types.ts#L53)*
+*Defined in [types.ts:52](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/types.ts#L52)*
 
 EC recovery ID.
 
@@ -139,6 +139,6 @@ ___
 
 *Inherited from [TxData](_index_.txdata.md).[value](_index_.txdata.md#optional-value)*
 
-*Defined in [types.ts:68](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/types.ts#L68)*
+*Defined in [types.ts:67](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/types.ts#L67)*
 
 The amount of Ether sent.
