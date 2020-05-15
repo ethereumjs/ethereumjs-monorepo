@@ -17,7 +17,14 @@ import {
 
 function ecdhX(publicKey: Buffer, privateKey: Buffer) {
   // return (publicKey * privateKey).x
-  return Buffer.from(ecdh(publicKey, privateKey))
+  function hashfn (x: Uint8Array, y: Uint8Array) {
+    const pubKey = new Uint8Array(33)
+    pubKey[0] = (y[31] & 1) === 0 ? 0x02 : 0x03
+    pubKey.set(x, 1)
+    return pubKey
+  }
+  // @ts-ignore
+  return Buffer.from(ecdh(publicKey, privateKey, { hashfn }, Buffer.alloc(33)).slice(1))
 }
 
 // a straigth rip from python interop w/go ecies implementation
