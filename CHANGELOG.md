@@ -6,6 +6,20 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [7.0.1] - 2020-05-15
+
+This patch release downgrades the re-exported `BN.js` version from `v5` to
+`v4` (so a continuation of what has being used within the `v6.x` versions).
+This is due to some unexpected interoperability problems in libraries using
+the older `v4` `BN.js` branch in their some of their respective dependencies.
+
+An upgrade is highly recommended, the `v7.0.0` release will be marked as
+deprecated along this release.
+
+See: Issue [#250](https://github.com/ethereumjs/ethereumjs-util/issues/250)
+
+[7.0.1]: https://github.com/ethereumjs/ethereumjs-util/compare/v7.0.0...v7.0.1
+
 ## [7.0.0] - 2020-04-30
 
 This release comes with significant changes to the API, updated versions of
