@@ -1,6 +1,6 @@
 {
   "name": "ethereumjs-block",
-  "version": "2.2.0",
+  "version": "3.0.0",
   "description": "Provides Block serialization and help functions",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -54,7 +54,6 @@
     "@types/node": "^11.13.4",
     "@types/tape": "^4.2.33",
     "browserify": "^16.2.3",
-    "ethereumjs-blockchain": "^4.0.3",
     "istanbul": "^0.4.1",
     "karma": "^4.1.0",
     "karma-browserify": "^6.0.0",
@@ -70,8 +69,5 @@
     "typedoc-plugin-markdown": "^2.2.17",
     "typescript": "^3.4.3",
     "typestrict": "^1.0.2"
-  },
-  "publishConfig": {
-    "directory": "src"
   }
 }

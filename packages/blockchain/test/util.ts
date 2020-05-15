@@ -1,9 +1,9 @@
 import { rlp, toBuffer, bufferToInt } from 'ethereumjs-util'
 import BN = require('bn.js')
-import Blockchain, { Block } from '../src'
+import Blockchain from '../src'
 
 const util = require('util')
-const Block = require('ethereumjs-block')
+import { Block } from 'ethereumjs-block'
 const level = require('level-mem')
 
 export const generateBlockchain = async (
@@ -43,7 +43,7 @@ export const generateBlocks = (numberOfBlocks: number, existingBlocks?: Block[])
     const block = new Block()
     block.header.number = toBuffer(i)
     block.header.parentHash = blocks[i - 1].hash()
-    block.header.difficulty = block.header.canonicalDifficulty(blocks[i - 1])
+    block.header.difficulty = toBuffer(block.header.canonicalDifficulty(blocks[i - 1]))
     block.header.gasLimit = toBuffer(8000000)
     block.header.timestamp = toBuffer(bufferToInt(blocks[i - 1].header.timestamp) + 1)
     blocks.push(block)

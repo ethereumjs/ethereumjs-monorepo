@@ -16,7 +16,7 @@ import Message from './message'
 import EEI from './eei'
 import { default as Interpreter, InterpreterOpts, RunState } from './interpreter'
 
-const Block = require('ethereumjs-block')
+import { Block } from 'ethereumjs-block'
 
 /**
  * Result of executing a message via the [[EVM]].

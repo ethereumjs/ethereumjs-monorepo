@@ -1,7 +1,7 @@
 import Common from 'ethereumjs-common'
 import * as ethUtil from 'ethereumjs-util'
 import { BN, rlp } from 'ethereumjs-util'
-import { Transaction } from 'ethereumjs-tx'
+import { Transaction, TransactionOptions } from 'ethereumjs-tx'
 
 import { BlockHeader } from './header'
 import { Blockchain, BlockData, ChainOptions } from './types'
@@ -23,25 +23,30 @@ export class Block {
    * Creates a new block object
    *
    * @param data - The block's data.
-   * @param opts - The network options for this block, and its header, uncle headers and txs.
+   * @param chainOptions - The network options for this block, and its header, uncle headers and txs.
    */
   constructor(
     data: Buffer | [Buffer[], Buffer[], Buffer[]] | BlockData = {},
-    opts: ChainOptions = {},
+    chainOptions: ChainOptions = {},
   ) {
-    if (opts.common) {
-      if (opts.chain !== undefined || opts.hardfork !== undefined) {
+    // Checking at runtime, to prevent errors down the path for JavaScript consumers.
+    if (data === null) {
+      data = {}
+    }
+
+    if (chainOptions.common) {
+      if (chainOptions.chain !== undefined || chainOptions.hardfork !== undefined) {
         throw new Error(
-          'Instantiation with both opts.common and opts.chain / opts.hardfork parameter not allowed!',
+          'Instantiation with both chainOptions.common and chainOptions.chain / chainOptions.hardfork parameter not allowed!',
         )
       }
 
-      this._common = opts.common
+      this._common = chainOptions.common
     } else {
-      const chain = opts.chain ? opts.chain : 'mainnet'
+      const chain = chainOptions.chain ? chainOptions.chain : 'mainnet'
       // TODO: Compute the hardfork based on this block's number. It can be implemented right now
       // because the block number is not immutable, so the Common can get out of sync.
-      const hardfork = opts.hardfork ? opts.hardfork : null
+      const hardfork = chainOptions.hardfork ? chainOptions.hardfork : null
       this._common = new Common(chain, hardfork)
     }
 
@@ -67,14 +72,14 @@ export class Block {
 
     // parse uncle headers
     for (let i = 0; i < rawUncleHeaders.length; i++) {
-      this.uncleHeaders.push(new BlockHeader(rawUncleHeaders[i], opts))
+      this.uncleHeaders.push(new BlockHeader(rawUncleHeaders[i], chainOptions))
     }
 
     // parse transactions
     for (let i = 0; i < rawTransactions.length; i++) {
       // TODO: Pass the common object instead of the options. It can't be implemented right now
       // because the hardfork may be `null`. Read the above TODO for more info.
-      const tx = new Transaction(rawTransactions[i], opts)
+      const tx = new Transaction(rawTransactions[i], chainOptions as TransactionOptions)
       this.transactions.push(tx)
     }
   }

@@ -1,6 +1,7 @@
-import { FakeTransaction } from 'ethereumjs-tx'
+import { FakeTransaction, TransactionOptions } from 'ethereumjs-tx'
 import * as ethUtil from 'ethereumjs-util'
-import { Block, ChainOptions } from './index'
+import { Block } from './index'
+import { ChainOptions } from './types'
 
 import blockHeaderFromRpc from './header-from-rpc'
 
@@ -35,7 +36,8 @@ export default function blockFromRpc(
       // override from address
       const fromAddress = ethUtil.toBuffer(txParams.from)
       delete txParams.from
-      const tx = new FakeTransaction(txParams, chainOptions)
+
+      const tx = new FakeTransaction(txParams, chainOptions as TransactionOptions)
       tx.from = fromAddress
       tx.getSenderAddress = function() {
         return fromAddress
@@ -49,7 +51,6 @@ export default function blockFromRpc(
       block.transactions.push(tx)
     }
   }
-
   return block
 }
 
@@ -60,7 +61,12 @@ function normalizeTxParams(_txParams: any) {
   txParams.data = txParams.data === undefined ? txParams.input : txParams.data
   // strict byte length checking
   txParams.to = txParams.to ? ethUtil.setLengthLeft(ethUtil.toBuffer(txParams.to), 20) : null
+
   // v as raw signature value {0,1}
-  txParams.v = txParams.v < 27 ? txParams.v + 27 : txParams.v
+  // v is the recovery bit and can be either {0,1} or {27,28}.
+  // https://ethereum.stackexchange.com/questions/40679/why-the-value-of-v-is-always-either-27-11011-or-28-11100
+  const v: number = txParams.v
+  txParams.v = v < 27 ? v + 27 : v
+
   return txParams
 }

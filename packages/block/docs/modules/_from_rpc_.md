@@ -6,24 +6,24 @@
 
 ### Functions
 
-- [blockFromRpc](_from_rpc_.md#blockfromrpc)
+* [blockFromRpc](_from_rpc_.md#blockfromrpc)
 
 ## Functions
 
-### blockFromRpc
+###  blockFromRpc
 
-▸ **blockFromRpc**(`blockParams`: any, `uncles?`: any[], `chainOptions?`: [ChainOptions](../interfaces/_index_.chainoptions.md)): _[Block](../classes/\_block_.block.md)‹›\_
+▸ **blockFromRpc**(`blockParams`: any, `uncles?`: any[], `chainOptions?`: [ChainOptions](../interfaces/_index_.chainoptions.md)): *[Block](../classes/_block_.block.md)‹›*
 
-_Defined in [from-rpc.ts:14](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/from-rpc.ts#L14)_
+*Defined in [from-rpc.ts:15](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/from-rpc.ts#L15)*
 
 Creates a new block object from Ethereum JSON RPC.
 
 **Parameters:**
 
-| Name            | Type                                                  | Description                                                                    |
-| --------------- | ----------------------------------------------------- | ------------------------------------------------------------------------------ |
-| `blockParams`   | any                                                   | Ethereum JSON RPC of block (eth_getBlockByNumber)                              |
-| `uncles?`       | any[]                                                 | Optional list of Ethereum JSON RPC of uncles (eth_getUncleByBlockHashAndIndex) |
-| `chainOptions?` | [ChainOptions](../interfaces/_index_.chainoptions.md) | An object describing the blockchain                                            |
+Name | Type | Description |
+------ | ------ | ------ |
+`blockParams` | any | Ethereum JSON RPC of block (eth_getBlockByNumber) |
+`uncles?` | any[] | Optional list of Ethereum JSON RPC of uncles (eth_getUncleByBlockHashAndIndex) |
+`chainOptions?` | [ChainOptions](../interfaces/_index_.chainoptions.md) | An object describing the blockchain  |
 
-**Returns:** _[Block](../classes/\_block_.block.md)‹›\_
+**Returns:** *[Block](../classes/_block_.block.md)‹›*
