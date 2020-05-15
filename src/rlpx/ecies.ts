@@ -1,5 +1,5 @@
 import crypto, { Decipher } from 'crypto'
-import { publicKeyCreate, ecdhUnsafe, sign, recover } from 'secp256k1'
+import { publicKeyCreate, ecdh, ecdsaRecover, ecdsaSign } from 'secp256k1'
 import rlp from 'rlp-encoding'
 import { MAC } from './mac'
 
@@ -17,7 +17,14 @@ import {
 
 function ecdhX(publicKey: Buffer, privateKey: Buffer) {
   // return (publicKey * privateKey).x
-  return ecdhUnsafe(publicKey, privateKey, true).slice(1)
+  function hashfn(x: Uint8Array, y: Uint8Array) {
+    const pubKey = new Uint8Array(33)
+    pubKey[0] = (y[31] & 1) === 0 ? 0x02 : 0x03
+    pubKey.set(x, 1)
+    return pubKey
+  }
+  // @ts-ignore
+  return Buffer.from(ecdh(publicKey, privateKey, { hashfn }, Buffer.alloc(33)).slice(1))
 }
 
 // a straigth rip from python interop w/go ecies implementation
@@ -74,7 +81,7 @@ export class ECIES {
 
     this._nonce = crypto.randomBytes(32)
     this._ephemeralPrivateKey = genPrivateKey()
-    this._ephemeralPublicKey = publicKeyCreate(this._ephemeralPrivateKey, false)
+    this._ephemeralPublicKey = Buffer.from(publicKeyCreate(this._ephemeralPrivateKey, false))
   }
 
   _encryptMessage(data: Buffer, sharedMacData: Buffer | null = null): Buffer | undefined {
@@ -171,9 +178,9 @@ export class ECIES {
   createAuthEIP8() {
     if (!this._remotePublicKey) return
     const x = ecdhX(this._remotePublicKey, this._privateKey)
-    const sig = sign(xor(x, this._nonce), this._ephemeralPrivateKey)
+    const sig = ecdsaSign(xor(x, this._nonce), this._ephemeralPrivateKey)
     const data = [
-      Buffer.concat([sig.signature, Buffer.from([sig.recovery])]),
+      Buffer.concat([Buffer.from(sig.signature), Buffer.from([sig.recid])]),
       // keccak256(pk2id(this._ephemeralPublicKey)),
       pk2id(this._publicKey),
       this._nonce,
@@ -194,10 +201,10 @@ export class ECIES {
   createAuthNonEIP8(): Buffer | undefined {
     if (!this._remotePublicKey) return
     const x = ecdhX(this._remotePublicKey, this._privateKey)
-    const sig = sign(xor(x, this._nonce), this._ephemeralPrivateKey)
+    const sig = ecdsaSign(xor(x, this._nonce), this._ephemeralPrivateKey)
     const data = Buffer.concat([
-      sig.signature,
-      Buffer.from([sig.recovery]),
+      Buffer.from(sig.signature),
+      Buffer.from([sig.recid]),
       keccak256(pk2id(this._ephemeralPublicKey)),
       pk2id(this._publicKey),
       this._nonce,
@@ -244,11 +251,8 @@ export class ECIES {
     const x = ecdhX(this._remotePublicKey, this._privateKey)
 
     if (!this._remoteNonce) return
-    this._remoteEphemeralPublicKey = recover(
-      xor(x, this._remoteNonce),
-      signature,
-      recoveryId,
-      false,
+    this._remoteEphemeralPublicKey = Buffer.from(
+      ecdsaRecover(signature, recoveryId, xor(x, this._remoteNonce), false),
     )
 
     if (!this._remoteEphemeralPublicKey) return

@@ -21,7 +21,9 @@ export function genPrivateKey() {
 }
 
 export function pk2id(pk: Buffer): Buffer {
-  if (pk.length === 33) pk = publicKeyConvert(pk, false)
+  if (pk.length === 33) {
+    pk = Buffer.from(publicKeyConvert(pk, false))
+  }
   return pk.slice(1)
 }
 
