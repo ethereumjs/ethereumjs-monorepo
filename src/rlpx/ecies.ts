@@ -17,7 +17,7 @@ import {
 
 function ecdhX(publicKey: Buffer, privateKey: Buffer) {
   // return (publicKey * privateKey).x
-  function hashfn (x: Uint8Array, y: Uint8Array) {
+  function hashfn(x: Uint8Array, y: Uint8Array) {
     const pubKey = new Uint8Array(33)
     pubKey[0] = (y[31] & 1) === 0 ? 0x02 : 0x03
     pubKey.set(x, 1)
@@ -251,12 +251,9 @@ export class ECIES {
     const x = ecdhX(this._remotePublicKey, this._privateKey)
 
     if (!this._remoteNonce) return
-    this._remoteEphemeralPublicKey = Buffer.from(ecdsaRecover(
-      signature,
-      recoveryId,
-      xor(x, this._remoteNonce),
-      false,
-    ))
+    this._remoteEphemeralPublicKey = Buffer.from(
+      ecdsaRecover(signature, recoveryId, xor(x, this._remoteNonce), false),
+    )
 
     if (!this._remoteEphemeralPublicKey) return
     this._ephemeralSharedSecret = ecdhX(this._remoteEphemeralPublicKey, this._ephemeralPrivateKey)
