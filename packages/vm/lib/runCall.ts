@@ -4,7 +4,7 @@ import VM from './index'
 import TxContext from './evm/txContext'
 import Message from './evm/message'
 import { default as EVM, EVMResult } from './evm/evm'
-const Block = require('ethereumjs-block')
+import { Block } from 'ethereumjs-block'
 
 /**
  * Options for running a call (or create) operation

@@ -8,42 +8,42 @@ hardfork.
 
 ## Hierarchy
 
-- **ChainOptions**
+* **ChainOptions**
 
 ## Index
 
 ### Properties
 
-- [chain](_types_.chainoptions.md#optional-chain)
-- [common](_types_.chainoptions.md#optional-common)
-- [hardfork](_types_.chainoptions.md#optional-hardfork)
+* [chain](_types_.chainoptions.md#optional-chain)
+* [common](_types_.chainoptions.md#optional-common)
+* [hardfork](_types_.chainoptions.md#optional-hardfork)
 
 ## Properties
 
 ### `Optional` chain
 
-• **chain**? : _number | string_
+• **chain**? : *number | string*
 
-_Defined in [types.ts:19](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/types.ts#L19)_
+*Defined in [types.ts:19](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/types.ts#L19)*
 
 The chain of the block/block header, default: 'mainnet'
 
----
+___
 
 ### `Optional` common
 
-• **common**? : _Common_
+• **common**? : *Common*
 
-_Defined in [types.ts:14](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/types.ts#L14)_
+*Defined in [types.ts:14](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/types.ts#L14)*
 
 A Common object defining the chain and the hardfork a block/block header belongs to.
 
----
+___
 
 ### `Optional` hardfork
 
-• **hardfork**? : _undefined | string_
+• **hardfork**? : *undefined | string*
 
-_Defined in [types.ts:24](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/types.ts#L24)_
+*Defined in [types.ts:24](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/types.ts#L24)*
 
 The hardfork of the block/block header, default: 'petersburg'

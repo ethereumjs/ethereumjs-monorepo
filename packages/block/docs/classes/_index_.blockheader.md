@@ -6,265 +6,265 @@ An object that represents the block header
 
 ## Hierarchy
 
-- **BlockHeader**
+* **BlockHeader**
 
 ## Index
 
 ### Constructors
 
-- [constructor](_index_.blockheader.md#constructor)
+* [constructor](_index_.blockheader.md#constructor)
 
 ### Properties
 
-- [bloom](_index_.blockheader.md#bloom)
-- [coinbase](_index_.blockheader.md#coinbase)
-- [difficulty](_index_.blockheader.md#difficulty)
-- [extraData](_index_.blockheader.md#extradata)
-- [gasLimit](_index_.blockheader.md#gaslimit)
-- [gasUsed](_index_.blockheader.md#gasused)
-- [mixHash](_index_.blockheader.md#mixhash)
-- [nonce](_index_.blockheader.md#nonce)
-- [number](_index_.blockheader.md#number)
-- [parentHash](_index_.blockheader.md#parenthash)
-- [raw](_index_.blockheader.md#raw)
-- [receiptTrie](_index_.blockheader.md#receipttrie)
-- [stateRoot](_index_.blockheader.md#stateroot)
-- [timestamp](_index_.blockheader.md#timestamp)
-- [transactionsTrie](_index_.blockheader.md#transactionstrie)
-- [uncleHash](_index_.blockheader.md#unclehash)
+* [bloom](_index_.blockheader.md#bloom)
+* [coinbase](_index_.blockheader.md#coinbase)
+* [difficulty](_index_.blockheader.md#difficulty)
+* [extraData](_index_.blockheader.md#extradata)
+* [gasLimit](_index_.blockheader.md#gaslimit)
+* [gasUsed](_index_.blockheader.md#gasused)
+* [mixHash](_index_.blockheader.md#mixhash)
+* [nonce](_index_.blockheader.md#nonce)
+* [number](_index_.blockheader.md#number)
+* [parentHash](_index_.blockheader.md#parenthash)
+* [raw](_index_.blockheader.md#raw)
+* [receiptTrie](_index_.blockheader.md#receipttrie)
+* [stateRoot](_index_.blockheader.md#stateroot)
+* [timestamp](_index_.blockheader.md#timestamp)
+* [transactionsTrie](_index_.blockheader.md#transactionstrie)
+* [uncleHash](_index_.blockheader.md#unclehash)
 
 ### Methods
 
-- [canonicalDifficulty](_index_.blockheader.md#canonicaldifficulty)
-- [hash](_index_.blockheader.md#hash)
-- [isGenesis](_index_.blockheader.md#isgenesis)
-- [serialize](_index_.blockheader.md#serialize)
-- [setGenesisParams](_index_.blockheader.md#setgenesisparams)
-- [toJSON](_index_.blockheader.md#tojson)
-- [validate](_index_.blockheader.md#validate)
-- [validateDifficulty](_index_.blockheader.md#validatedifficulty)
-- [validateGasLimit](_index_.blockheader.md#validategaslimit)
+* [canonicalDifficulty](_index_.blockheader.md#canonicaldifficulty)
+* [hash](_index_.blockheader.md#hash)
+* [isGenesis](_index_.blockheader.md#isgenesis)
+* [serialize](_index_.blockheader.md#serialize)
+* [setGenesisParams](_index_.blockheader.md#setgenesisparams)
+* [toJSON](_index_.blockheader.md#tojson)
+* [validate](_index_.blockheader.md#validate)
+* [validateDifficulty](_index_.blockheader.md#validatedifficulty)
+* [validateGasLimit](_index_.blockheader.md#validategaslimit)
 
 ## Constructors
 
-### constructor
+###  constructor
 
-\+ **new BlockHeader**(`data`: Buffer | [PrefixedHexString](../modules/_index_.md#prefixedhexstring) | [BufferLike](../modules/_index_.md#bufferlike)[] | [BlockHeaderData](../interfaces/_index_.blockheaderdata.md), `opts`: [ChainOptions](../interfaces/_index_.chainoptions.md)): _[BlockHeader](\_index_.blockheader.md)\_
+\+ **new BlockHeader**(`data`: Buffer | [PrefixedHexString](../modules/_index_.md#prefixedhexstring) | [BufferLike](../modules/_index_.md#bufferlike)[] | [BlockHeaderData](../interfaces/_index_.blockheaderdata.md), `opts`: [ChainOptions](../interfaces/_index_.chainoptions.md)): *[BlockHeader](_index_.blockheader.md)*
 
-_Defined in [header.ts:29](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/header.ts#L29)_
+*Defined in [header.ts:29](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/header.ts#L29)*
 
 Creates a new block header.
 
 **Parameters:**
 
-| Name   | Type                                                                                                                                                                                                  | Default | Description                                                                |
-| ------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- | -------------------------------------------------------------------------- |
-| `data` | Buffer &#124; [PrefixedHexString](../modules/_index_.md#prefixedhexstring) &#124; [BufferLike](../modules/_index_.md#bufferlike)[] &#124; [BlockHeaderData](../interfaces/_index_.blockheaderdata.md) | {}      | The data of the block header.                                              |
-| `opts` | [ChainOptions](../interfaces/_index_.chainoptions.md)                                                                                                                                                 | {}      | The network options for this block, and its header, uncle headers and txs. |
+Name | Type | Default | Description |
+------ | ------ | ------ | ------ |
+`data` | Buffer &#124; [PrefixedHexString](../modules/_index_.md#prefixedhexstring) &#124; [BufferLike](../modules/_index_.md#bufferlike)[] &#124; [BlockHeaderData](../interfaces/_index_.blockheaderdata.md) | {} | The data of the block header. |
+`opts` | [ChainOptions](../interfaces/_index_.chainoptions.md) | {} | The network options for this block, and its header, uncle headers and txs.  |
 
-**Returns:** _[BlockHeader](\_index_.blockheader.md)\_
+**Returns:** *[BlockHeader](_index_.blockheader.md)*
 
 ## Properties
 
-### bloom
+###  bloom
 
-• **bloom**: _Buffer_
+• **bloom**: *Buffer*
 
-_Defined in [header.ts:19](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/header.ts#L19)_
+*Defined in [header.ts:19](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/header.ts#L19)*
 
----
+___
 
-### coinbase
+###  coinbase
 
-• **coinbase**: _Buffer_
+• **coinbase**: *Buffer*
 
-_Defined in [header.ts:15](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/header.ts#L15)_
+*Defined in [header.ts:15](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/header.ts#L15)*
 
----
+___
 
-### difficulty
+###  difficulty
 
-• **difficulty**: _Buffer_
+• **difficulty**: *Buffer*
 
-_Defined in [header.ts:20](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/header.ts#L20)_
+*Defined in [header.ts:20](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/header.ts#L20)*
 
----
+___
 
-### extraData
+###  extraData
 
-• **extraData**: _Buffer_
+• **extraData**: *Buffer*
 
-_Defined in [header.ts:25](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/header.ts#L25)_
+*Defined in [header.ts:25](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/header.ts#L25)*
 
----
+___
 
-### gasLimit
+###  gasLimit
 
-• **gasLimit**: _Buffer_
+• **gasLimit**: *Buffer*
 
-_Defined in [header.ts:22](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/header.ts#L22)_
+*Defined in [header.ts:22](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/header.ts#L22)*
 
----
+___
 
-### gasUsed
+###  gasUsed
 
-• **gasUsed**: _Buffer_
+• **gasUsed**: *Buffer*
 
-_Defined in [header.ts:23](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/header.ts#L23)_
+*Defined in [header.ts:23](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/header.ts#L23)*
 
----
+___
 
-### mixHash
+###  mixHash
 
-• **mixHash**: _Buffer_
+• **mixHash**: *Buffer*
 
-_Defined in [header.ts:26](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/header.ts#L26)_
+*Defined in [header.ts:26](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/header.ts#L26)*
 
----
+___
 
-### nonce
+###  nonce
 
-• **nonce**: _Buffer_
+• **nonce**: *Buffer*
 
-_Defined in [header.ts:27](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/header.ts#L27)_
+*Defined in [header.ts:27](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/header.ts#L27)*
 
----
+___
 
-### number
+###  number
 
-• **number**: _Buffer_
+• **number**: *Buffer*
 
-_Defined in [header.ts:21](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/header.ts#L21)_
+*Defined in [header.ts:21](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/header.ts#L21)*
 
----
+___
 
-### parentHash
+###  parentHash
 
-• **parentHash**: _Buffer_
+• **parentHash**: *Buffer*
 
-_Defined in [header.ts:13](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/header.ts#L13)_
+*Defined in [header.ts:13](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/header.ts#L13)*
 
----
+___
 
-### raw
+###  raw
 
-• **raw**: _Buffer[]_
+• **raw**: *Buffer[]*
 
-_Defined in [header.ts:12](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/header.ts#L12)_
+*Defined in [header.ts:12](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/header.ts#L12)*
 
----
+___
 
-### receiptTrie
+###  receiptTrie
 
-• **receiptTrie**: _Buffer_
+• **receiptTrie**: *Buffer*
 
-_Defined in [header.ts:18](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/header.ts#L18)_
+*Defined in [header.ts:18](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/header.ts#L18)*
 
----
+___
 
-### stateRoot
+###  stateRoot
 
-• **stateRoot**: _Buffer_
+• **stateRoot**: *Buffer*
 
-_Defined in [header.ts:16](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/header.ts#L16)_
+*Defined in [header.ts:16](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/header.ts#L16)*
 
----
+___
 
-### timestamp
+###  timestamp
 
-• **timestamp**: _Buffer_
+• **timestamp**: *Buffer*
 
-_Defined in [header.ts:24](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/header.ts#L24)_
+*Defined in [header.ts:24](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/header.ts#L24)*
 
----
+___
 
-### transactionsTrie
+###  transactionsTrie
 
-• **transactionsTrie**: _Buffer_
+• **transactionsTrie**: *Buffer*
 
-_Defined in [header.ts:17](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/header.ts#L17)_
+*Defined in [header.ts:17](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/header.ts#L17)*
 
----
+___
 
-### uncleHash
+###  uncleHash
 
-• **uncleHash**: _Buffer_
+• **uncleHash**: *Buffer*
 
-_Defined in [header.ts:14](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/header.ts#L14)_
+*Defined in [header.ts:14](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/header.ts#L14)*
 
 ## Methods
 
-### canonicalDifficulty
+###  canonicalDifficulty
 
-▸ **canonicalDifficulty**(`parentBlock`: [Block](_block_.block.md)): _BN_
+▸ **canonicalDifficulty**(`parentBlock`: [Block](_block_.block.md)): *BN*
 
-_Defined in [header.ts:134](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/header.ts#L134)_
+*Defined in [header.ts:134](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/header.ts#L134)*
 
 Returns the canonical difficulty for this block.
 
 **Parameters:**
 
-| Name          | Type                      | Description                       |
-| ------------- | ------------------------- | --------------------------------- |
-| `parentBlock` | [Block](_block_.block.md) | the parent `Block` of this header |
+Name | Type | Description |
+------ | ------ | ------ |
+`parentBlock` | [Block](_block_.block.md) | the parent `Block` of this header  |
 
-**Returns:** _BN_
+**Returns:** *BN*
 
----
+___
 
-### hash
+###  hash
 
-▸ **hash**(): _Buffer_
+▸ **hash**(): *Buffer*
 
-_Defined in [header.ts:303](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/header.ts#L303)_
+*Defined in [header.ts:303](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/header.ts#L303)*
 
 Returns the hash of the block header.
 
-**Returns:** _Buffer_
+**Returns:** *Buffer*
 
----
+___
 
-### isGenesis
+###  isGenesis
 
-▸ **isGenesis**(): _boolean_
+▸ **isGenesis**(): *boolean*
 
-_Defined in [header.ts:310](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/header.ts#L310)_
+*Defined in [header.ts:310](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/header.ts#L310)*
 
 Checks if the block header is a genesis header.
 
-**Returns:** _boolean_
+**Returns:** *boolean*
 
----
+___
 
-### serialize
+###  serialize
 
-▸ **serialize**(): _Buffer_
+▸ **serialize**(): *Buffer*
 
-_Defined in [header.ts:330](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/header.ts#L330)_
+*Defined in [header.ts:330](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/header.ts#L330)*
 
 Returns the rlp encoding of the block header
 
-**Returns:** _Buffer_
+**Returns:** *Buffer*
 
----
+___
 
-### setGenesisParams
+###  setGenesisParams
 
-▸ **setGenesisParams**(): _void_
+▸ **setGenesisParams**(): *void*
 
-_Defined in [header.ts:317](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/header.ts#L317)_
+*Defined in [header.ts:317](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/header.ts#L317)*
 
 Turns the header into the canonical genesis block header.
 
-**Returns:** _void_
+**Returns:** *void*
 
----
+___
 
-### toJSON
+###  toJSON
 
-▸ **toJSON**(`_labels`: boolean): _object | string[]_
+▸ **toJSON**(`_labels`: boolean): *object | string[]*
 
-_Defined in [header.ts:340](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/header.ts#L340)_
+*Defined in [header.ts:340](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/header.ts#L340)*
 
 Returns the block header in JSON format
 
@@ -272,63 +272,63 @@ Returns the block header in JSON format
 
 **Parameters:**
 
-| Name      | Type    | Default |
-| --------- | ------- | ------- |
-| `_labels` | boolean | false   |
+Name | Type | Default |
+------ | ------ | ------ |
+`_labels` | boolean | false |
 
-**Returns:** _object | string[]_
+**Returns:** *object | string[]*
 
----
+___
 
-### validate
+###  validate
 
-▸ **validate**(`blockchain`: [Blockchain](../interfaces/_index_.blockchain.md), `height?`: BN): _Promise‹void›_
+▸ **validate**(`blockchain`: [Blockchain](../interfaces/_index_.blockchain.md), `height?`: BN): *Promise‹void›*
 
-_Defined in [header.ts:255](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/header.ts#L255)_
+*Defined in [header.ts:255](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/header.ts#L255)*
 
 Validates the entire block header, throwing if invalid.
 
 **Parameters:**
 
-| Name         | Type                                              | Description                                                                      |
-| ------------ | ------------------------------------------------- | -------------------------------------------------------------------------------- |
-| `blockchain` | [Blockchain](../interfaces/_index_.blockchain.md) | the blockchain that this block is validating against                             |
-| `height?`    | BN                                                | If this is an uncle header, this is the height of the block that is including it |
+Name | Type | Description |
+------ | ------ | ------ |
+`blockchain` | [Blockchain](../interfaces/_index_.blockchain.md) | the blockchain that this block is validating against |
+`height?` | BN | If this is an uncle header, this is the height of the block that is including it  |
 
-**Returns:** _Promise‹void›_
+**Returns:** *Promise‹void›*
 
----
+___
 
-### validateDifficulty
+###  validateDifficulty
 
-▸ **validateDifficulty**(`parentBlock`: [Block](_block_.block.md)): _boolean_
+▸ **validateDifficulty**(`parentBlock`: [Block](_block_.block.md)): *boolean*
 
-_Defined in [header.ts:221](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/header.ts#L221)_
+*Defined in [header.ts:221](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/header.ts#L221)*
 
 Checks that the block's `difficulty` matches the canonical difficulty.
 
 **Parameters:**
 
-| Name          | Type                      | Description         |
-| ------------- | ------------------------- | ------------------- |
-| `parentBlock` | [Block](_block_.block.md) | this block's parent |
+Name | Type | Description |
+------ | ------ | ------ |
+`parentBlock` | [Block](_block_.block.md) | this block's parent  |
 
-**Returns:** _boolean_
+**Returns:** *boolean*
 
----
+___
 
-### validateGasLimit
+###  validateGasLimit
 
-▸ **validateGasLimit**(`parentBlock`: [Block](_block_.block.md)): _boolean_
+▸ **validateGasLimit**(`parentBlock`: [Block](_block_.block.md)): *boolean*
 
-_Defined in [header.ts:231](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/header.ts#L231)_
+*Defined in [header.ts:231](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/header.ts#L231)*
 
 Validates the gasLimit.
 
 **Parameters:**
 
-| Name          | Type                      | Description         |
-| ------------- | ------------------------- | ------------------- |
-| `parentBlock` | [Block](_block_.block.md) | this block's parent |
+Name | Type | Description |
+------ | ------ | ------ |
+`parentBlock` | [Block](_block_.block.md) | this block's parent  |
 
-**Returns:** _boolean_
+**Returns:** *boolean*
