@@ -30,13 +30,9 @@ jobs:
       - run: npx lerna bootstrap --scope ethereumjs-vm --ignore-scripts --include-dependencies --no-ci
       - run: npx lerna run --scope ethereumjs-vm --include-dependencies build
       - run: npx lerna run lint --scope ethereumjs-vm
-      - run: 'npm run test:API'
-        env:
-          CI: true
+      - run: npm run test:API
         working-directory: '${{ env.cwd }}'
-      - run: 'npm run test:API:browser'
-        env:
-          CI: true
+      - run: npm run test:API:browser
         working-directory: '${{ env.cwd }}'
     env:
       cwd: '${{github.workspace}}/packages/vm'
@@ -49,10 +45,13 @@ jobs:
       - uses: actions/checkout@v1
       - run: npx lerna bootstrap --scope ethereumjs-vm --ignore-scripts --include-dependencies --no-ci
       - run: npx lerna run --scope ethereumjs-vm --include-dependencies build
-      - run: 'npm run test:state:selectedForks'
-        env:
-          CI: true
+      - run: npm run test:state:selectedForks
         working-directory: '${{ env.cwd }}'
+      - run: npm run coverage
+        working-directory: '${{ env.cwd }}'
+      - uses: codecov/codecov-action@v1
+        with:
+          file: '${{ env.cwd }}/coverage/lcov.info'
     env:
       cwd: '${{github.workspace}}/packages/vm'
   test-vm-blockchain:
@@ -64,9 +63,7 @@ jobs:
       - uses: actions/checkout@v1
       - run: npx lerna bootstrap --scope ethereumjs-vm --ignore-scripts --include-dependencies --no-ci
       - run: npx lerna run --scope ethereumjs-vm --include-dependencies build
-      - run: 'npm run test:blockchain'
-        env:
-          CI: true
+      - run: npm run test:blockchain
         working-directory: '${{ env.cwd }}'
     env:
       cwd: '${{github.workspace}}/packages/vm'

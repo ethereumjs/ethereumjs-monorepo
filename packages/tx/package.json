@@ -10,8 +10,6 @@
   "scripts": {
     "build": "ethereumjs-config-build",
     "prepublishOnly": "npm run test && npm run build",
-    "coverage": "ethereumjs-config-coverage",
-    "coveralls": "ethereumjs-config-coveralls",
     "docs:build": "typedoc --options typedoc.js",
     "format": "ethereumjs-config-format",
     "format:fix": "ethereumjs-config-format-fix",
@@ -21,7 +19,7 @@
     "lint": "ethereumjs-config-lint",
     "lint:fix": "ethereumjs-config-lint-fix",
     "test": "npm run test:node",
-    "test:node": "ts-node node_modules/tape/bin/tape ./test/index.ts",
+    "test:node": "nyc ts-node node_modules/tape/bin/tape ./test/index.ts",
     "test:browser:build": "tsc && cp ./test/*.json test-build/test/",
     "test:browser": "npm run test:browser:build && karma start karma.conf.js"
   },
@@ -46,7 +44,6 @@
     "@types/tape": "^4.2.33",
     "browserify": "^16.2.3",
     "contributor": "^0.1.25",
-    "coveralls": "^2.11.4",
     "ethereumjs-testing": "git+https://github.com/ethereumjs/ethereumjs-testing.git#v1.3.0",
     "istanbul": "^0.4.1",
     "karma": "^4.1.0",

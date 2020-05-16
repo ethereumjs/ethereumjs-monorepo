@@ -27,8 +27,9 @@ jobs:
       - run: npx lerna run --scope ethereumjs-common --include-dependencies build
       - run: npx lerna run lint --scope ethereumjs-common
       - run: npm test
-        env:
-          CI: true
         working-directory: '${{ env.cwd }}'
+      - uses: codecov/codecov-action@v1
+        with:
+          file: '${{ env.cwd }}/coverage/lcov.info'
     env:
       cwd: '${{github.workspace}}/packages/common'

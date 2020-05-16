@@ -33,8 +33,9 @@ jobs:
       - run: npx lerna run build --scope ethereumjs-account --include-dependencies
       - run: npx lerna run lint --scope ethereumjs-account
       - run: npm test
-        env:
-          CI: true
         working-directory: '${{ env.cwd }}'
+      - uses: codecov/codecov-action@v1
+        with:
+          file: '${{ env.cwd }}/coverage/lcov.info'
     env:
       cwd: '${{github.workspace}}/packages/account'

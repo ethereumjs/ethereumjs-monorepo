@@ -31,12 +31,11 @@ jobs:
         working-directory: '${{ env.cwd }}'
       - run: npx lerna run lint --scope ethereumjs-block
       - run: npm run test:node
-        env:
-          CI: true
         working-directory: '${{ env.cwd }}'
-      - run: 'npm run test:browser'
-        env:
-          CI: true
+      - run: npm run test:browser
         working-directory: '${{ env.cwd }}'
+      - uses: codecov/codecov-action@v1
+        with:
+          file: '${{ env.cwd }}/coverage/lcov.info'
     env:
       cwd: '${{github.workspace}}/packages/block'
