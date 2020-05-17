@@ -37,5 +37,6 @@ jobs:
       - uses: codecov/codecov-action@v1
         with:
           file: '${{ env.cwd }}/coverage/lcov.info'
+          flags: blockchain
     env:
       cwd: '${{github.workspace}}/packages/blockchain'

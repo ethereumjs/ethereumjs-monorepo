@@ -52,6 +52,7 @@ jobs:
       - uses: codecov/codecov-action@v1
         with:
           file: '${{ env.cwd }}/coverage/lcov.info'
+          flags: vm
     env:
       cwd: '${{github.workspace}}/packages/vm'
   test-vm-blockchain:
