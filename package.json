@@ -50,7 +50,7 @@
   "license": "MPL-2.0",
   "dependencies": {
     "@types/levelup": "^3.1.1",
-    "ethereumjs-util": "^7.0.0",
+    "ethereumjs-util": "^7.0.1",
     "level-mem": "^5.0.1",
     "level-ws": "^2.0.0",
     "readable-stream": "^3.6.0",
