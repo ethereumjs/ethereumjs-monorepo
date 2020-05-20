@@ -11,7 +11,7 @@
   "browser": "dist.browser/index.js",
   "scripts": {
     "benchmarks": "npm run build && ts-node benchmarks/index.ts",
-    "build": "tsc -p tsconfig.json && tsc -p tsconfig.browser.json",
+    "build": "tsc -p tsconfig.prod.json && tsc -p tsconfig.browser.json",
     "prepublishOnly": "npm run test && npm run build",
     "coverage": "nyc --reporter=lcov npm run test:node",
     "docs:build": "typedoc",
