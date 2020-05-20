@@ -56,7 +56,7 @@
     "ethereumjs-account": "^3.0.0",
     "ethereumjs-block": "^2.2.0",
     "ethereumjs-blockchain": "^3.4.0",
-    "ethereumjs-common": "^1.1.0",
+    "ethereumjs-common": "^1.5.1",
     "ethereumjs-devp2p": "^2.5.1",
     "ethereumjs-util": "^6.1.0",
     "fs-extra": "^7.0.1",
