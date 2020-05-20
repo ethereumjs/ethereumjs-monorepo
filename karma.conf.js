@@ -9,10 +9,6 @@ module.exports = function(config) {
     karmaTypescriptConfig: {
       bundlerOptions: {
         entrypoints: /\.spec\.ts$/,
-        acornOptions: {
-          ecmaVersion: 8,
-        },
-        transforms: [require('karma-typescript-es6-transform')()],
       },
     },
     colors: true,

@@ -1,6 +1,6 @@
 /* tslint:disable no-invalid-this */
 import * as assert from 'assert'
-import * as ethUtil from 'ethereumjs-util'
+import { BN } from 'ethereumjs-util'
 import { Wallet as ethersWallet } from 'ethers'
 
 const zip = require('lodash.zip')
@@ -35,7 +35,7 @@ describe('.getPrivateKey()', function() {
   it('should fail', function() {
     assert.throws(function() {
       Wallet.fromPrivateKey(Buffer.from('001122', 'hex'))
-    }, /^Error: Private key does not satisfy the curve requirements \(ie. it is invalid\)$/)
+    }, /^Error: Expected private key to be an Uint8Array with length 32$/)
   })
 })
 
@@ -160,10 +160,10 @@ describe('.generate()', function() {
     assert.strictEqual(Wallet.generate().getPrivateKey().length, 32)
   })
   it('should generate an account compatible with ICAP Direct', function() {
-    const max = new ethUtil.BN('088f924eeceeda7fe92e1f5b0fffffffffffffff', 16)
+    const max = new BN('088f924eeceeda7fe92e1f5b0fffffffffffffff', 16)
     const wallet = Wallet.generate(true)
     assert.strictEqual(wallet.getPrivateKey().length, 32)
-    assert.strictEqual(new ethUtil.BN(wallet.getAddress()).lte(max), true)
+    assert.strictEqual(new BN(wallet.getAddress()).lte(max), true)
   })
 })
 

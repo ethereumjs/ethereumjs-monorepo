@@ -255,7 +255,7 @@ export default class Wallet {
     if (icapDirect) {
       const max = new ethUtil.BN('088f924eeceeda7fe92e1f5b0fffffffffffffff', 16)
       while (true) {
-        const privateKey = randomBytes(32)
+        const privateKey = randomBytes(32) as Buffer
         if (new ethUtil.BN(ethUtil.privateToAddress(privateKey)).lte(max)) {
           return new Wallet(privateKey)
         }
@@ -274,7 +274,7 @@ export default class Wallet {
     }
 
     while (true) {
-      const privateKey = randomBytes(32)
+      const privateKey = randomBytes(32) as Buffer
       const address = ethUtil.privateToAddress(privateKey)
 
       if (pattern.test(address.toString('hex'))) {
@@ -352,7 +352,7 @@ export default class Wallet {
       kdfparams.R,
       kdfparams.P,
       kdfparams.DkLen,
-    )
+    ) as Buffer
 
     const ciphertext = Buffer.from(json.Crypto.CipherText, 'hex')
     const mac = ethUtil.keccak256(Buffer.concat([derivedKey.slice(16, 32), ciphertext]))
@@ -399,7 +399,7 @@ export default class Wallet {
         kdfparams.r,
         kdfparams.p,
         kdfparams.dklen,
-      )
+      ) as Buffer
     } else if (json.crypto.kdf === 'pbkdf2') {
       kdfparams = json.crypto.kdfparams
 
@@ -572,7 +572,7 @@ export default class Wallet {
           kdfParams.r,
           kdfParams.p,
           kdfParams.dklen,
-        )
+        ) as Buffer
         break
       default:
         throw new Error('Unsupported kdf')
