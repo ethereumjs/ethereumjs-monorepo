@@ -1,7 +1,7 @@
 'use strict'
 
 const Common = require('ethereumjs-common').default
-const level = require('level-browserify')
+const level = require('level')
 
 // Blockchain
 exports.Chain = require('../lib/blockchain/chain')
