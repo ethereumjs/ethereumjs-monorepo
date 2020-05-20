@@ -33,7 +33,7 @@ npm install ethereumjs-client
 
 For the `ethereumjs` CLI command to work run:
 
-``shell
+```shell
 npm link
 ```
 
