@@ -28,8 +28,16 @@ team and how to contribute/join see [this document](./PROJECT.md).
 **Installing the Client**
 
 ```shell
-npm install -g ethereumjs-client
+npm install ethereumjs-client
 ```
+
+For the `ethereumjs` CLI command to work run:
+
+``shell
+npm link
+```
+
+Note: you can also fallback to invoking the client by using `./bin/cli.js`.
 
 **Running the Client**
 
