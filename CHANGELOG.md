@@ -30,6 +30,10 @@ See the [docs](https://github.com/ethereumjs/merkle-patricia-tree/tree/master/do
 
 `getRaw`, `putRaw` and `delRaw` were deprecated in `v3.0.0` and have been removed from this release. Instead, please use `trie.db.get`, `trie.db.put`, and `trie.db.del`. If using a `SecureTrie` or `CheckpointTrie`, use `trie._maindb` to override the checkpointing mechanism and interact directly with the db.
 
+#### SecureTrie.copy
+
+`SecureTrie.copy` now includes checkpoint metadata by default. To maintain original behavior of _not_ copying checkpoint state, pass `false` to param `includeCheckpoints`.
+
 ### Changed
 
 - Convert trieNode to ES6 class ([#71](https://github.com/ethereumjs/merkle-patricia-tree/pull/71))
@@ -42,6 +46,7 @@ See the [docs](https://github.com/ethereumjs/merkle-patricia-tree/tree/master/do
 - Use `Nibbles` type for `number[]` ([#115](https://github.com/ethereumjs/merkle-patricia-tree/pull/115))
 - Upgrade ethereumjs-util to 7.0.0 / Upgrade level-mem to 5.0.1 ([#116](https://github.com/ethereumjs/merkle-patricia-tree/pull/116))
 - Create dual ES5 and ES2017 builds ([#117](https://github.com/ethereumjs/merkle-patricia-tree/pull/117))
+- Include checkpoints by default in SecureTrie.copy ([#119](https://github.com/ethereumjs/merkle-patricia-tree/pull/119))
 
 ### Added
 
