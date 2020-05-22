@@ -16,7 +16,7 @@
     "format:fix": "ethereumjs-config-format-fix",
     "lint": "ethereumjs-config-lint",
     "lint:fix": "ethereumjs-config-lint-fix",
-    "test": "npm run build && nyc --reporter=lcov mocha ./test/**/*.ts",
+    "test": "npm run build && nyc --reporter=lcov mocha --require ts-node/register --require source-map-support/register ./test/**/*.ts",
     "test:browser": "karma start karma.conf.js",
     "tsc": "ethereumjs-config-tsc",
     "tslint": "ethereumjs-config-tslint",
@@ -43,12 +43,12 @@
   },
   "homepage": "https://github.com/ethereumjs/ethereumjs-wallet",
   "dependencies": {
-    "@web3-js/scrypt-shim": "^0.1.0",
     "aes-js": "^3.1.1",
     "bs58check": "^2.1.2",
     "ethereumjs-util": "^7.0.1",
     "hdkey": "^1.1.1",
     "randombytes": "^2.0.6",
+    "scrypt-js": "^3.0.1",
     "utf8": "^3.0.0",
     "uuid": "^3.3.2"
   },

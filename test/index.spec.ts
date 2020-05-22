@@ -269,7 +269,7 @@ describe('.toV3()', function() {
         iv: string | Buffer
         uuid: string | Buffer
       }>).map(async function({ salt, iv, uuid }) {
-        const encFixtureWallet = fixtureWallet.toV3String(pw, {
+        const encFixtureWallet = await fixtureWallet.toV3String(pw, {
           kdf: 'pbkdf2',
           c: n,
           uuid: uuid,
@@ -297,7 +297,7 @@ describe('.toV3()', function() {
       }>).map(async function({ salt, iv, uuid }) {
         const ethersOpts = makeEthersOptions({ salt, iv, uuid })
 
-        const encFixtureWallet = fixtureWallet.toV3String(pw, {
+        const encFixtureWallet = await fixtureWallet.toV3String(pw, {
           kdf: 'scrypt',
           uuid: uuid,
           salt: salt,
@@ -316,7 +316,7 @@ describe('.toV3()', function() {
           })
         ).toLowerCase()
 
-        const encRandomWallet = wRandom.toV3String(pw, {
+        const encRandomWallet = await wRandom.toV3String(pw, {
           kdf: 'scrypt',
           uuid: uuid,
           salt: salt,
@@ -341,74 +341,75 @@ describe('.toV3()', function() {
       }),
     )
   })
-  it('should work without providing options', function() {
+  it('should work without providing options', async function() {
     this.timeout(0) // never
-    assert.strictEqual(fixtureWallet.toV3('testtest')['version'], 3)
+    const wallet = await fixtureWallet.toV3('testtest')
+    assert.strictEqual(wallet['version'], 3)
   })
   it('should fail for unsupported kdf', function() {
     this.timeout(0) // never
-    assert.throws(function() {
-      fixtureWallet.toV3('testtest', { kdf: 'superkey' })
+    assert.rejects(async function() {
+      await fixtureWallet.toV3('testtest', { kdf: 'superkey' })
     }, /^Error: Unsupported kdf$/)
   })
   it('should fail for bad salt', function() {
     const pw = 'test'
     const errStr = /^Error: Invalid salt, string must be empty or a non-zero even number of hex characters$/
 
-    assert.throws(function() {
-      fixtureWallet.toV3(pw, { salt: 'f' })
+    assert.rejects(async function() {
+      await fixtureWallet.toV3(pw, { salt: 'f' })
     }, errStr)
-    assert.throws(function() {
-      fixtureWallet.toV3(pw, { salt: 'fff' })
+    assert.rejects(async function() {
+      await fixtureWallet.toV3(pw, { salt: 'fff' })
     }, errStr)
-    assert.throws(function() {
-      fixtureWallet.toV3(pw, { salt: 'xfff' })
+    assert.rejects(async function() {
+      await fixtureWallet.toV3(pw, { salt: 'xfff' })
     }, errStr)
-    assert.throws(function() {
-      fixtureWallet.toV3(pw, { salt: 'fffx' })
+    assert.rejects(async function() {
+      await fixtureWallet.toV3(pw, { salt: 'fffx' })
     }, errStr)
-    assert.throws(function() {
-      fixtureWallet.toV3(pw, { salt: 'fffxff' })
+    assert.rejects(async function() {
+      await fixtureWallet.toV3(pw, { salt: 'fffxff' })
     }, errStr)
-    assert.throws(function() {
+    assert.rejects(async function() {
       // @ts-ignore
-      fixtureWallet.toV3(pw, { salt: {} })
+      await fixtureWallet.toV3(pw, { salt: {} })
     }, /^Error: Invalid salt, must be a string \(empty or a non-zero even number of hex characters\) or buffer$/)
   })
   it('should work with empty salt', async function() {
     this.timeout(0) // never
     const pw = 'test'
     let salt: any = ''
-    let w = fixtureWallet.toV3(pw, { salt: salt, kdf: 'pbkdf2' })
+    let w = await fixtureWallet.toV3(pw, { salt: salt, kdf: 'pbkdf2' })
 
     assert.strictEqual(salt, w.crypto.kdfparams.salt)
     assert.strictEqual(
       fixtureWallet.getPrivateKeyString(),
-      Wallet.fromV3(w, pw).getPrivateKeyString(),
+      (await Wallet.fromV3(w, pw)).getPrivateKeyString(),
     )
 
     salt = '0x'
-    w = fixtureWallet.toV3(pw, { salt: salt, kdf: 'pbkdf2' })
+    w = await fixtureWallet.toV3(pw, { salt: salt, kdf: 'pbkdf2' })
 
     assert.strictEqual('', w.crypto.kdfparams.salt)
     assert.strictEqual(
       fixtureWallet.getPrivateKeyString(),
-      Wallet.fromV3(w, pw).getPrivateKeyString(),
+      (await Wallet.fromV3(w, pw)).getPrivateKeyString(),
     )
 
     salt = Buffer.from('', 'hex')
-    w = fixtureWallet.toV3(pw, { salt: salt, kdf: 'pbkdf2' })
+    w = await fixtureWallet.toV3(pw, { salt: salt, kdf: 'pbkdf2' })
 
     assert.strictEqual('', w.crypto.kdfparams.salt)
     assert.strictEqual(
       fixtureWallet.getPrivateKeyString(),
-      Wallet.fromV3(w, pw).getPrivateKeyString(),
+      (await Wallet.fromV3(w, pw)).getPrivateKeyString(),
     )
 
     salt = ''
     let iv = 'ffffffffffffffffffffffffffffffff'
     let uuid = 'ffffffffffffffffffffffffffffffff'
-    let wStr = fixtureWallet.toV3String(pw, {
+    let wStr = await fixtureWallet.toV3String(pw, {
       salt: salt,
       iv: iv,
       uuid: uuid,
@@ -428,7 +429,7 @@ describe('.toV3()', function() {
     assert.deepStrictEqual(JSON.parse(wStr), JSON.parse(wEthersStr.toLowerCase()))
     assert.strictEqual(
       fixtureWallet.getPrivateKeyString(),
-      Wallet.fromV3(JSON.parse(wStr), pw).getPrivateKeyString(),
+      (await Wallet.fromV3(JSON.parse(wStr), pw)).getPrivateKeyString(),
     )
     assert.strictEqual(
       fixtureWallet.getPrivateKeyString(),
@@ -438,7 +439,7 @@ describe('.toV3()', function() {
     salt = '0x'
     iv = '0x' + iv
     uuid = '0x' + uuid
-    wStr = fixtureWallet.toV3String(pw, {
+    wStr = await fixtureWallet.toV3String(pw, {
       salt: salt,
       iv: iv,
       uuid: uuid,
@@ -458,7 +459,7 @@ describe('.toV3()', function() {
     assert.deepStrictEqual(JSON.parse(wStr), JSON.parse(wEthersStr.toLowerCase()))
     assert.strictEqual(
       fixtureWallet.getPrivateKeyString(),
-      Wallet.fromV3(JSON.parse(wStr), pw).getPrivateKeyString(),
+      (await Wallet.fromV3(JSON.parse(wStr), pw)).getPrivateKeyString(),
     )
     assert.strictEqual(
       fixtureWallet.getPrivateKeyString(),
@@ -466,7 +467,7 @@ describe('.toV3()', function() {
     )
 
     salt = Buffer.from('', 'hex')
-    wStr = fixtureWallet.toV3String(pw, {
+    wStr = await fixtureWallet.toV3String(pw, {
       salt: salt,
       iv: iv,
       uuid: uuid,
@@ -486,7 +487,7 @@ describe('.toV3()', function() {
     assert.deepStrictEqual(JSON.parse(wStr), JSON.parse(wEthersStr.toLowerCase()))
     assert.strictEqual(
       fixtureWallet.getPrivateKeyString(),
-      Wallet.fromV3(JSON.parse(wStr), pw).getPrivateKeyString(),
+      (await Wallet.fromV3(JSON.parse(wStr), pw)).getPrivateKeyString(),
     )
     assert.strictEqual(
       fixtureWallet.getPrivateKeyString(),
@@ -498,36 +499,36 @@ describe('.toV3()', function() {
     const errStrLength = /^Error: Invalid iv, string must be 32 hex characters$/
     const errBuffLength = /^Error: Invalid iv, buffer must be 16 bytes$/
 
-    assert.throws(function() {
-      fixtureWallet.toV3(pw, { iv: '' })
+    assert.rejects(async function() {
+      await fixtureWallet.toV3(pw, { iv: '' })
     }, errStrLength)
-    assert.throws(function() {
-      fixtureWallet.toV3(pw, { iv: 'ff' })
+    assert.rejects(async function() {
+      await fixtureWallet.toV3(pw, { iv: 'ff' })
     }, errStrLength)
-    assert.throws(function() {
-      fixtureWallet.toV3(pw, { iv: 'ffffffffffffffffffffffffffffffffff' })
+    assert.rejects(async function() {
+      await fixtureWallet.toV3(pw, { iv: 'ffffffffffffffffffffffffffffffffff' })
     }, errStrLength)
-    assert.throws(function() {
-      fixtureWallet.toV3(pw, { iv: 'xfffffffffffffffffffffffffffffff' })
+    assert.rejects(async function() {
+      await fixtureWallet.toV3(pw, { iv: 'xfffffffffffffffffffffffffffffff' })
     }, errStrLength)
-    assert.throws(function() {
-      fixtureWallet.toV3(pw, { iv: 'fffffffffffffffffffffffffffffffx' })
+    assert.rejects(async function() {
+      await fixtureWallet.toV3(pw, { iv: 'fffffffffffffffffffffffffffffffx' })
     }, errStrLength)
-    assert.throws(function() {
-      fixtureWallet.toV3(pw, { iv: 'fffffffffffffffxffffffffffffffff' })
+    assert.rejects(async function() {
+      await fixtureWallet.toV3(pw, { iv: 'fffffffffffffffxffffffffffffffff' })
     }, errStrLength)
-    assert.throws(function() {
-      fixtureWallet.toV3(pw, { iv: Buffer.from('', 'hex') })
+    assert.rejects(async function() {
+      await fixtureWallet.toV3(pw, { iv: Buffer.from('', 'hex') })
     }, errBuffLength)
-    assert.throws(function() {
-      fixtureWallet.toV3(pw, { iv: Buffer.from('ff', 'hex') })
+    assert.rejects(async function() {
+      await fixtureWallet.toV3(pw, { iv: Buffer.from('ff', 'hex') })
     }, errBuffLength)
-    assert.throws(function() {
-      fixtureWallet.toV3(pw, { iv: Buffer.from('ffffffffffffffffffffffffffffffffff', 'hex') })
+    assert.rejects(async function() {
+      await fixtureWallet.toV3(pw, { iv: Buffer.from('ffffffffffffffffffffffffffffffffff', 'hex') })
     }, errBuffLength)
-    assert.throws(function() {
+    assert.rejects(async function() {
       // @ts-ignore
-      fixtureWallet.toV3(pw, { iv: {} })
+      await fixtureWallet.toV3(pw, { iv: {} })
     }, /^Error: Invalid iv, must be a string \(32 hex characters\) or buffer \(16 bytes\)$/)
   })
   it('should fail for bad uuid', function() {
@@ -535,83 +536,95 @@ describe('.toV3()', function() {
     const errStrLength = /^Error: Invalid uuid, string must be 32 hex characters$/
     const errBuffLength = /^Error: Invalid uuid, buffer must be 16 bytes$/
 
-    assert.throws(function() {
-      fixtureWallet.toV3(pw, { uuid: '' })
+    assert.rejects(async function() {
+      await fixtureWallet.toV3(pw, { uuid: '' })
     }, errStrLength)
-    assert.throws(function() {
-      fixtureWallet.toV3(pw, { uuid: 'ff' })
+    assert.rejects(async function() {
+      await fixtureWallet.toV3(pw, { uuid: 'ff' })
     }, errStrLength)
-    assert.throws(function() {
-      fixtureWallet.toV3(pw, { uuid: 'ffffffffffffffffffffffffffffffffff' })
+    assert.rejects(async function() {
+      await fixtureWallet.toV3(pw, { uuid: 'ffffffffffffffffffffffffffffffffff' })
     }, errStrLength)
-    assert.throws(function() {
-      fixtureWallet.toV3(pw, { uuid: 'xfffffffffffffffffffffffffffffff' })
+    assert.rejects(async function() {
+      await fixtureWallet.toV3(pw, { uuid: 'xfffffffffffffffffffffffffffffff' })
     }, errStrLength)
-    assert.throws(function() {
-      fixtureWallet.toV3(pw, { uuid: 'fffffffffffffffffffffffffffffffx' })
+    assert.rejects(async function() {
+      await fixtureWallet.toV3(pw, { uuid: 'fffffffffffffffffffffffffffffffx' })
     }, errStrLength)
-    assert.throws(function() {
-      fixtureWallet.toV3(pw, { uuid: 'fffffffffffffffxffffffffffffffff' })
+    assert.rejects(async function() {
+      await fixtureWallet.toV3(pw, { uuid: 'fffffffffffffffxffffffffffffffff' })
     }, errStrLength)
-    assert.throws(function() {
-      fixtureWallet.toV3(pw, { uuid: Buffer.from('', 'hex') })
+    assert.rejects(async function() {
+      await fixtureWallet.toV3(pw, { uuid: Buffer.from('', 'hex') })
     }, errBuffLength)
-    assert.throws(function() {
-      fixtureWallet.toV3(pw, { uuid: Buffer.from('ff', 'hex') })
+    assert.rejects(async function() {
+      await fixtureWallet.toV3(pw, { uuid: Buffer.from('ff', 'hex') })
     }, errBuffLength)
-    assert.throws(function() {
-      fixtureWallet.toV3(pw, { uuid: Buffer.from('ffffffffffffffffffffffffffffffffff', 'hex') })
+    assert.rejects(async function() {
+      await fixtureWallet.toV3(pw, {
+        uuid: Buffer.from('ffffffffffffffffffffffffffffffffff', 'hex'),
+      })
     }, errBuffLength)
-    assert.throws(function() {
+    assert.rejects(async function() {
       // @ts-ignore
-      fixtureWallet.toV3(pw, { uuid: {} })
+      await fixtureWallet.toV3(pw, { uuid: {} })
     }, /^Error: Invalid uuid, must be a string \(32 hex characters\) or buffer \(16 bytes\)$/)
   })
-  it('should strip leading "0x" from salt, iv, uuid', function() {
+  it('should strip leading "0x" from salt, iv, uuid', async function() {
     this.timeout(0) // never
     const pw = 'test'
     const salt =
       'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
     const iv = 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb'
     const uuid = 'cccccccccccccccccccccccccccccccc'
-    let w = fixtureWallet.toV3(pw, {
+    let w = await fixtureWallet.toV3(pw, {
       salt: '0x' + salt,
       iv: '0X' + iv,
       uuid: '0x' + uuid,
       kdf: 'pbkdf2',
     })
-    let w2 = fixtureWallet.toV3(pw, { salt: '0x' + salt, iv: '0X' + iv, uuid: uuid, kdf: 'pbkdf2' })
+    let w2 = await fixtureWallet.toV3(pw, {
+      salt: '0x' + salt,
+      iv: '0X' + iv,
+      uuid: uuid,
+      kdf: 'pbkdf2',
+    })
 
     assert.strictEqual(salt, w.crypto.kdfparams.salt)
     assert.strictEqual(iv, w.crypto.cipherparams.iv)
     assert.strictEqual(w.id, w2.id)
     assert.strictEqual(
       fixtureWallet.getPrivateKeyString(),
-      Wallet.fromV3(w, pw).getPrivateKeyString(),
+      (await Wallet.fromV3(w, pw)).getPrivateKeyString(),
     )
     assert.strictEqual(
       fixtureWallet.getPrivateKeyString(),
-      Wallet.fromV3(w2, pw).getPrivateKeyString(),
+      (await Wallet.fromV3(w2, pw)).getPrivateKeyString(),
     )
 
-    w = fixtureWallet.toV3(pw, {
+    w = await fixtureWallet.toV3(pw, {
       salt: '0x' + salt,
       iv: '0X' + iv,
       uuid: '0x' + uuid,
       kdf: 'scrypt',
     })
-    w2 = fixtureWallet.toV3(pw, { salt: '0x' + salt, iv: '0X' + iv, uuid: uuid, kdf: 'scrypt' })
+    w2 = await fixtureWallet.toV3(pw, {
+      salt: '0x' + salt,
+      iv: '0X' + iv,
+      uuid: uuid,
+      kdf: 'scrypt',
+    })
 
     assert.strictEqual(salt, w.crypto.kdfparams.salt)
     assert.strictEqual(iv, w.crypto.cipherparams.iv)
     assert.strictEqual(w.id, w2.id)
     assert.strictEqual(
       fixtureWallet.getPrivateKeyString(),
-      Wallet.fromV3(w, pw).getPrivateKeyString(),
+      (await Wallet.fromV3(w, pw)).getPrivateKeyString(),
     )
     assert.strictEqual(
       fixtureWallet.getPrivateKeyString(),
-      Wallet.fromV3(w2, pw).getPrivateKeyString(),
+      (await Wallet.fromV3(w2, pw)).getPrivateKeyString(),
     )
   })
 })
@@ -635,9 +648,9 @@ describe('.fromV3()', function() {
     wEthersCompat.address = '0x008aeeda4d805471df9b2a5b0f38a0c3bcba786b'
     wEthersCompat = JSON.stringify(wEthersCompat)
     const pw = 'testpassword'
-    const wallet = Wallet.fromV3(w, pw)
-    const wRandom = Wallet.generate().toV3String(pw, { kdf: 'pbkdf2' })
-    const walletRandom = Wallet.fromV3(wRandom, pw)
+    const wallet = await Wallet.fromV3(w, pw)
+    const wRandom = await Wallet.generate().toV3String(pw, { kdf: 'pbkdf2' })
+    const walletRandom = await Wallet.fromV3(wRandom, pw)
 
     this.timeout(0) // never
     assert.strictEqual(wallet.getAddressString(), '0x008aeeda4d805471df9b2a5b0f38a0c3bcba786b')
@@ -651,14 +664,14 @@ describe('.fromV3()', function() {
     )
   })
   it('should work with Scrypt', async function() {
+    this.timeout(0) // never
     const sample =
       '{"address":"2f91eb73a6cd5620d7abb50889f24eea7a6a4feb","crypto":{"cipher":"aes-128-ctr","cipherparams":{"iv":"a2bc4f71e8445d64ceebd1247079fbd8"},"ciphertext":"6b9ab7954c9066fa1e54e04e2c527c7d78a77611d5f84fede1bd61ab13c51e3e","kdf":"scrypt","kdfparams":{"dklen":32,"n":262144,"r":1,"p":8,"salt":"caf551e2b7ec12d93007e528093697a4c68e8a50e663b2a929754a8085d9ede4"},"mac":"506cace9c5c32544d39558025cb3bf23ed94ba2626e5338c82e50726917e1a15"},"id":"1b3cad9b-fa7b-4817-9022-d5e598eb5fe3","version":3}'
     const pw = 'testtest'
-    const wallet = Wallet.fromV3(sample, pw)
-    const sampleRandom = Wallet.generate().toV3String(pw)
-    const walletRandom = Wallet.fromV3(sampleRandom, pw)
+    const wallet = await Wallet.fromV3(sample, pw)
+    const sampleRandom = await Wallet.generate().toV3String(pw)
+    const walletRandom = await Wallet.fromV3(sampleRandom, pw)
 
-    this.timeout(0) // never
     assert.strictEqual(wallet.getAddressString(), '0x2f91eb73a6cd5620d7abb50889f24eea7a6a4feb')
     assert.strictEqual(
       wallet.getAddressString(),
@@ -669,52 +682,52 @@ describe('.fromV3()', function() {
       (await ethersWallet.fromEncryptedJson(sampleRandom, pw)).address.toLowerCase(),
     )
   })
-  it("should work with 'unencrypted' wallets", function() {
+  it("should work with 'unencrypted' wallets", async function() {
+    this.timeout(0) // never
     const w =
       '{"address":"a9886ac7489ecbcbd79268a79ef00d940e5fe1f2","crypto":{"cipher":"aes-128-ctr","cipherparams":{"iv":"c542cf883299b5b0a29155091054028d"},"ciphertext":"0a83c77235840cffcfcc5afe5908f2d7f89d7d54c4a796dfe2f193e90413ee9d","kdf":"scrypt","kdfparams":{"dklen":32,"n":262144,"r":1,"p":8,"salt":"699f7bf5f6985068dfaaff9db3b06aea8fe3dd3140b3addb4e60620ee97a0316"},"mac":"613fed2605240a2ff08b8d93ccc48c5b3d5023b7088189515d70df41d65f44de"},"id":"0edf817a-ee0e-4e25-8314-1f9e88a60811","version":3}'
-    const wallet = Wallet.fromV3(w, '')
-    this.timeout(0) // never
+    const wallet = await Wallet.fromV3(w, '')
     assert.strictEqual(wallet.getAddressString(), '0xa9886ac7489ecbcbd79268a79ef00d940e5fe1f2')
   })
   it('should fail with invalid password', function() {
     const w =
       '{"crypto":{"cipher":"aes-128-ctr","cipherparams":{"iv":"6087dab2f9fdbbfaddc31a909735c1e6"},"ciphertext":"5318b4d5bcd28de64ee5559e671353e16f075ecae9f99c7a79a38af5f869aa46","kdf":"pbkdf2","kdfparams":{"c":262144,"dklen":32,"prf":"hmac-sha256","salt":"ae3cd4e7013836a3df6bd7241b12db061dbe2c6785853cce422d148a624ce0bd"},"mac":"517ead924a9d0dc3124507e3393d175ce3ff7c1e96529c6c555ce9e51205e9b2"},"id":"3198bc9c-6672-5ab3-d995-4942343ae5b6","version":3}'
     this.timeout(0) // never
-    assert.throws(function() {
-      Wallet.fromV3(w, 'wrongtestpassword')
+    assert.rejects(async function() {
+      await Wallet.fromV3(w, 'wrongtestpassword')
     }, /^Error: Key derivation failed - possibly wrong passphrase$/)
   })
-  it('should work with (broken) mixed-case input files', function() {
+  it('should work with (broken) mixed-case input files', async function() {
     const w =
       '{"Crypto":{"cipher":"aes-128-ctr","cipherparams":{"iv":"6087dab2f9fdbbfaddc31a909735c1e6"},"ciphertext":"5318b4d5bcd28de64ee5559e671353e16f075ecae9f99c7a79a38af5f869aa46","kdf":"pbkdf2","kdfparams":{"c":262144,"dklen":32,"prf":"hmac-sha256","salt":"ae3cd4e7013836a3df6bd7241b12db061dbe2c6785853cce422d148a624ce0bd"},"mac":"517ead924a9d0dc3124507e3393d175ce3ff7c1e96529c6c555ce9e51205e9b2"},"id":"3198bc9c-6672-5ab3-d995-4942343ae5b6","version":3}'
     this.timeout(0) // never
-    const wallet = Wallet.fromV3(w, 'testpassword', true)
+    const wallet = await Wallet.fromV3(w, 'testpassword', true)
     assert.strictEqual(wallet.getAddressString(), '0x008aeeda4d805471df9b2a5b0f38a0c3bcba786b')
   })
   it("shouldn't work with (broken) mixed-case input files in strict mode", function() {
     const w =
       '{"Crypto":{"cipher":"aes-128-ctr","cipherparams":{"iv":"6087dab2f9fdbbfaddc31a909735c1e6"},"ciphertext":"5318b4d5bcd28de64ee5559e671353e16f075ecae9f99c7a79a38af5f869aa46","kdf":"pbkdf2","kdfparams":{"c":262144,"dklen":32,"prf":"hmac-sha256","salt":"ae3cd4e7013836a3df6bd7241b12db061dbe2c6785853cce422d148a624ce0bd"},"mac":"517ead924a9d0dc3124507e3393d175ce3ff7c1e96529c6c555ce9e51205e9b2"},"id":"3198bc9c-6672-5ab3-d995-4942343ae5b6","version":3}'
     this.timeout(0) // never
-    assert.throws(function() {
-      Wallet.fromV3(w, 'testpassword')
+    assert.rejects(async function() {
+      await Wallet.fromV3(w, 'testpassword')
     }) // FIXME: check for assert message(s)
   })
   it('should fail for wrong version', function() {
     const w = '{"version":2}'
-    assert.throws(function() {
-      Wallet.fromV3(w, 'testpassword')
+    assert.rejects(async function() {
+      await Wallet.fromV3(w, 'testpassword')
     }, /^Error: Not a V3 wallet$/)
   })
   it('should fail for wrong kdf', function() {
     const w = '{"crypto":{"kdf":"superkey"},"version":3}'
-    assert.throws(function() {
-      Wallet.fromV3(w, 'testpassword')
+    assert.rejects(async function() {
+      await Wallet.fromV3(w, 'testpassword')
     }, /^Error: Unsupported key derivation scheme$/)
   })
   it('should fail for wrong prf in pbkdf2', function() {
     const w = '{"crypto":{"kdf":"pbkdf2","kdfparams":{"prf":"invalid"}},"version":3}'
-    assert.throws(function() {
-      Wallet.fromV3(w, 'testpassword')
+    assert.rejects(async function() {
+      await Wallet.fromV3(w, 'testpassword')
     }, /^Error: Unsupported parameters to PBKDF2$/)
   })
 })
@@ -768,8 +781,8 @@ describe('.fromKryptoKit()', function() {
   //   const wallet = Thirdparty.fromKryptoKit('dBWfH8QZSGbg1sAYHLBhqE5R8VGAoM7')
   //   assert.strictEqual(wallet.getAddressString(), '0x3611981ad2d6fc1d7579d6ce4c6bc37e272c369c')
   // })
-  it('should work with encrypted input (q-type)', function() {
-    const wallet = Thirdparty.fromKryptoKit(
+  it('should work with encrypted input (q-type)', async function() {
+    const wallet = await Thirdparty.fromKryptoKit(
       'qhah1VeT0RgTvff1UKrUrxtFViiQuki16dd353d59888c25',
       'testtest',
     )
