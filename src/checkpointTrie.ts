@@ -81,13 +81,10 @@ export class CheckpointTrie extends BaseTrie {
   }
 
   /**
-   * Returns a copy of the underlying trie with the interface
-   * of CheckpointTrie. If during a checkpoint, the copy will
-   * contain the checkpointing metadata (incl. reference to the same scratch).
-   * @param {boolean} includeCheckpoints - If true and during a checkpoint, the copy will
-   * contain the checkpointing metadata and will use the same scratch as underlying db.
+   * Returns a copy of the underlying trie with the interface of CheckpointTrie.
+   * @param {boolean} includeCheckpoints - If true and during a checkpoint, the copy will contain the checkpointing metadata and will use the same scratch as underlying db.
    */
-  copy(includeCheckpoints: boolean = true): CheckpointTrie {
+  copy(includeCheckpoints = true): CheckpointTrie {
     const db = this._mainDB.copy()
     const trie = new CheckpointTrie(db._leveldb, this.root)
     if (includeCheckpoints && this.isCheckpoint) {

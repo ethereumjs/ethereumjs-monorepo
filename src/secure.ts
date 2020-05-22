@@ -24,8 +24,12 @@ export class SecureTrie extends CheckpointTrie {
     return super.verifyProof(rootHash, hash, proof)
   }
 
-  copy(): SecureTrie {
-    const trie = super.copy(false)
+  /**
+   * Returns a copy of the underlying trie with the interface of SecureTrie.
+   * @param {boolean} includeCheckpoints - If true and during a checkpoint, the copy will contain the checkpointing metadata and will use the same scratch as underlying db.
+   */
+  copy(includeCheckpoints = true): SecureTrie {
+    const trie = super.copy(includeCheckpoints)
     const db = trie.db.copy()
     return new SecureTrie(db._leveldb, this.root)
   }
