@@ -1,4 +1,5 @@
 const async = require('async')
+const util = require('util')
 const utils = require('ethereumjs-util')
 const BN = utils.BN
 const rlp = utils.rlp
@@ -424,23 +425,6 @@ exports.setupPreConditions = function(state, testData, done) {
     },
     done,
   )
-}
-
-/**
- * Returns an alias for specified hardforks to meet test dependencies requirements/assumptions.
- * @param {String} forkConfig - the name of the hardfork for which an alias should be returned
- * @returns {String} Either an alias of the forkConfig param, or the forkConfig param itself
- */
-exports.getRequiredForkConfigAlias = function(forkConfig) {
-  // Run the Istanbul tests for MuirGlacier since there are no dedicated tests
-  if (String(forkConfig).match(/^muirGlacier/i)) {
-    return 'Istanbul'
-  }
-  // Petersburg is named ConstantinopleFix in the client-independent consensus test suite
-  if (String(forkConfig).match(/^petersburg$/i)) {
-    return 'ConstantinopleFix'
-  }
-  return forkConfig
 }
 
 /**
