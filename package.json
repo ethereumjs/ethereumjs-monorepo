@@ -1,6 +1,6 @@
 {
   "name": "ethereumjs-devp2p",
-  "version": "2.5.1",
+  "version": "3.0.0",
   "description": "A JavaScript implementation of ÐΞVp2p",
   "keywords": [
     "ethereum",
@@ -36,7 +36,7 @@
     "url": "https://github.com/ethereumjs/ethereumjs-devp2p.git"
   },
   "engines": {
-    "node": ">=6.0"
+    "node": ">=10.0"
   },
   "scripts": {
     "build": "ethereumjs-config-build",
