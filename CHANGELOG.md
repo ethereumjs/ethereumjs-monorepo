@@ -6,7 +6,27 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [7.0.2] - 2020-05-25
+
+This patch release re-establishes the state of `v7.0.0` release and upgrades
+the `BN.js` re-export version back to `v5` since quick patches for both
+the `v5` ([v5.1.2](https://github.com/indutny/bn.js/releases/tag/v5.1.2)) and
+the `v4` branch ([v4.11.9](https://github.com/indutny/bn.js/releases/tag/v4.11.9))
+have been released to fix interoperability issues between the `BN.js` versions.
+
+This now makes it possible to move to the latest `BN.js` `v5` version and profit
+from future upgrades and patches.
+
+An upgrade is highly recommended, the `v7.0.1` release will be marked as
+deprecated along this release.
+
+See: Issue [#250](https://github.com/ethereumjs/ethereumjs-util/issues/250)
+
+[7.0.2]: https://github.com/ethereumjs/ethereumjs-util/compare/v7.0.1...v7.0.2
+
 ## [7.0.1] - 2020-05-15
+
+[DEPRECATED in favour of v7.0.2]
 
 This patch release downgrades the re-exported `BN.js` version from `v5` to
 `v4` (so a continuation of what has being used within the `v6.x` versions).
@@ -21,6 +41,8 @@ See: Issue [#250](https://github.com/ethereumjs/ethereumjs-util/issues/250)
 [7.0.1]: https://github.com/ethereumjs/ethereumjs-util/compare/v7.0.0...v7.0.1
 
 ## [7.0.0] - 2020-04-30
+
+[DEPRECATED in favour of v7.0.1]
 
 This release comes with significant changes to the API, updated versions of
 the core crypto libraries and substantial developer improvements in the form
