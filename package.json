@@ -50,7 +50,7 @@
   "license": "MPL-2.0",
   "dependencies": {
     "@types/levelup": "^3.1.1",
-    "ethereumjs-util": "^7.0.1",
+    "ethereumjs-util": "^7.0.2",
     "level-mem": "^5.0.1",
     "level-ws": "^2.0.0",
     "readable-stream": "^3.6.0",
@@ -62,7 +62,7 @@
     "@ethereumjs/config-prettier": "^1.1.1",
     "@ethereumjs/config-tsc": "^1.1.1",
     "@ethereumjs/config-tslint": "^1.1.1",
-    "@types/bn.js": "^4.11.5",
+    "@types/bn.js": "^4.11.6",
     "@types/tape": "^4.2.34",
     "husky": "^4.2.3",
     "karma": "^4.4.1",
