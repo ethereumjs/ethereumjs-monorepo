@@ -51,7 +51,7 @@ exports.getEpoc = function (blockNumber) {
  */
 exports.getSeed = function (seed, begin, end) {
   for (var i = begin; i < end; i++) {
-    seed = ethUtil.sha3(seed)
+    seed = ethUtil.keccak256(seed)
   }
   return seed
 }
