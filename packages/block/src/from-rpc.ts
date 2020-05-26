@@ -1,5 +1,5 @@
 import { FakeTransaction, TransactionOptions } from 'ethereumjs-tx'
-import * as ethUtil from 'ethereumjs-util'
+import { toBuffer, setLengthLeft } from 'ethereumjs-util'
 import { Block } from './index'
 import { ChainOptions } from './types'
 
@@ -34,7 +34,7 @@ export default function blockFromRpc(
     for (const _txParams of blockParams.transactions) {
       const txParams = normalizeTxParams(_txParams)
       // override from address
-      const fromAddress = ethUtil.toBuffer(txParams.from)
+      const fromAddress = toBuffer(txParams.from)
       delete txParams.from
 
       const tx = new FakeTransaction(txParams, chainOptions as TransactionOptions)
@@ -43,7 +43,7 @@ export default function blockFromRpc(
         return fromAddress
       }
       // override hash
-      const txHash = ethUtil.toBuffer(txParams.hash)
+      const txHash = toBuffer(txParams.hash)
       tx.hash = function() {
         return txHash
       }
@@ -60,7 +60,7 @@ function normalizeTxParams(_txParams: any) {
   txParams.gasLimit = txParams.gasLimit === undefined ? txParams.gas : txParams.gasLimit
   txParams.data = txParams.data === undefined ? txParams.input : txParams.data
   // strict byte length checking
-  txParams.to = txParams.to ? ethUtil.setLengthLeft(ethUtil.toBuffer(txParams.to), 20) : null
+  txParams.to = txParams.to ? setLengthLeft(toBuffer(txParams.to), 20) : null
 
   // v as raw signature value {0,1}
   // v is the recovery bit and can be either {0,1} or {27,28}.

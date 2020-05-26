@@ -1,7 +1,8 @@
-import * as utils from 'ethereumjs-util'
-import { BN } from 'ethereumjs-util'
+import { toBuffer } from 'ethereumjs-util'
 import { Block } from '../src/block'
 import tape = require('tape')
+
+const { BN } = require('ethereumjs-util')
 
 function isHexPrefixed(str: string) {
   return str.toLowerCase().startsWith('0x')
@@ -10,7 +11,7 @@ function isHexPrefixed(str: string) {
 function normalize(data: any) {
   Object.keys(data).forEach(function(i) {
     if (i !== 'homestead' && typeof data[i] === 'string') {
-      data[i] = isHexPrefixed(data[i]) ? new BN(utils.toBuffer(data[i])) : new BN(data[i])
+      data[i] = isHexPrefixed(data[i]) ? new BN(toBuffer(data[i])) : new BN(data[i])
     }
   })
 }

@@ -8,7 +8,7 @@ import {
   ecsign,
   toBuffer,
   rlp,
-  stripZeros,
+  unpadBuffer,
 } from 'ethereumjs-util'
 import Common from 'ethereumjs-common'
 import { Buffer } from 'buffer'
@@ -183,9 +183,8 @@ export default class Transaction {
         items = [
           ...this.raw.slice(0, 6),
           toBuffer(this.getChainId()),
-          // TODO: stripping zeros should probably be a responsibility of the rlp module
-          stripZeros(toBuffer(0)),
-          stripZeros(toBuffer(0)),
+          unpadBuffer(toBuffer(0)),
+          unpadBuffer(toBuffer(0)),
         ]
       } else {
         items = this.raw.slice(0, 6)

@@ -39,10 +39,10 @@
   },
   "homepage": "https://github.com/ethereumjs/ethereumjs-block#readme",
   "dependencies": {
-    "@types/bn.js": "^4.11.5",
+    "@types/bn.js": "^4.11.6",
     "ethereumjs-common": "^1.5.0",
     "ethereumjs-tx": "^2.1.1",
-    "ethereumjs-util": "^6.1.0",
+    "ethereumjs-util": "^7.0.2",
     "merkle-patricia-tree": "^2.1.2"
   },
   "devDependencies": {
@@ -67,7 +67,7 @@
     "tslint": "^5.15.0",
     "typedoc": "next",
     "typedoc-plugin-markdown": "^2.2.17",
-    "typescript": "^3.4.3",
+    "typescript": "^3.9.2",
     "typestrict": "^1.0.2"
   }
 }

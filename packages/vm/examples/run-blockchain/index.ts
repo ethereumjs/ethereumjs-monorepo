@@ -3,7 +3,7 @@ import VM from '../../'
 import Account from 'ethereumjs-account'
 import { Block, BlockHeader } from 'ethereumjs-block'
 import Blockchain from 'ethereumjs-blockchain'
-import { toBuffer, setLength } from 'ethereumjs-util'
+import { toBuffer, setLengthLeft } from 'ethereumjs-util'
 
 const testData = require('./test-data')
 const level = require('level')
@@ -66,7 +66,7 @@ async function setupPreConditions(vm: VM, testData: any) {
 
     for (const hexStorageKey of Object.keys(acctData.storage)) {
       const val = toBuffer(acctData.storage[hexStorageKey])
-      const storageKey = setLength(toBuffer(hexStorageKey), 32)
+      const storageKey = setLengthLeft(toBuffer(hexStorageKey), 32)
 
       await vm.stateManager.putContractStorage(addressBuf, storageKey, val)
     }
