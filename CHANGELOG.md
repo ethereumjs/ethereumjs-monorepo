@@ -6,6 +6,18 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [v2.2.5] - 2020-05-25
+
+- Added `BigInt` as an accepted encoding type,
+  PR [#85](https://github.com/ethereumjs/rlp/pull/85)
+- Added support/testing for Node 10, 12, 13, 14, moved from Travis to GitHub Actions,
+  PR [#87](https://github.com/ethereumjs/rlp/pull/87)
+- Formatting and config cleanups,
+  PRs [#86](https://github.com/ethereumjs/rlp/pull/86) and
+  [#88](https://github.com/ethereumjs/rlp/pull/88)
+
+[v2.2.5]: https://github.com/ethereumjs/rlp/compare/2.2.4...v2.2.5
+
 ## [v2.2.4] - 2019-11-02
 
 - Removed unused `Dictionary` `Input` type for `RLP.encode()` and `RLP.decode()`,
