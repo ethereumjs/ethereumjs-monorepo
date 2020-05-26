@@ -32,14 +32,14 @@
   "license": "MPL-2.0",
   "dependencies": {
     "ethereumjs-common": "^1.5.0",
-    "ethereumjs-util": "^6.0.0"
+    "ethereumjs-util": "^7.0.2"
   },
   "devDependencies": {
     "@ethereumjs/config-nyc": "^1.1.1",
     "@ethereumjs/config-prettier": "^1.1.1",
     "@ethereumjs/config-tsc": "^1.1.1",
     "@ethereumjs/config-tslint": "^1.1.1",
-    "@types/bn.js": "^4.11.5",
+    "@types/bn.js": "^4.11.6",
     "@types/minimist": "^1.2.0",
     "@types/node": "^11.13.4",
     "@types/tape": "^4.2.33",
@@ -60,7 +60,7 @@
     "tslint": "^5.15.0",
     "typedoc": "next",
     "typedoc-plugin-markdown": "^2.2.17",
-    "typescript": "^3.4.3",
+    "typescript": "^3.9.2",
     "typestrict": "^1.0.2"
   },
   "repository": {

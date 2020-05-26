@@ -1,5 +1,5 @@
 import BN = require('bn.js')
-import * as utils from 'ethereumjs-util'
+import { keccak256, setLengthRight, TWO_POW256, MAX_INTEGER, KECCAK256_NULL } from 'ethereumjs-util'
 import { ERROR, VmError } from '../exceptions'
 import { RunState } from './interpreter'
 
@@ -38,12 +38,12 @@ export const handlers: { [k: string]: OpHandler } = {
   },
   ADD: function (runState: RunState) {
     const [a, b] = runState.stack.popN(2)
-    const r = a.add(b).mod(utils.TWO_POW256)
+    const r = a.add(b).mod(TWO_POW256)
     runState.stack.push(r)
   },
   MUL: function (runState: RunState) {
     const [a, b] = runState.stack.popN(2)
-    const r = a.mul(b).mod(utils.TWO_POW256)
+    const r = a.mul(b).mod(TWO_POW256)
     runState.stack.push(r)
   },
   SUB: function (runState: RunState) {
@@ -137,7 +137,7 @@ export const handlers: { [k: string]: OpHandler } = {
       runState.stack.push(new BN(0))
       return
     }
-    const m = BN.red(utils.TWO_POW256)
+    const m = BN.red(TWO_POW256)
     const redBase = base.toRed(m)
     const r = redBase.redPow(exponent)
     runState.stack.push(r.fromRed())
@@ -229,7 +229,7 @@ export const handlers: { [k: string]: OpHandler } = {
       return
     }
 
-    const r = b.shln(a.toNumber()).iand(utils.MAX_INTEGER)
+    const r = b.shln(a.toNumber()).iand(MAX_INTEGER)
     runState.stack.push(r)
   },
   SHR: function (runState: RunState) {
@@ -255,7 +255,7 @@ export const handlers: { [k: string]: OpHandler } = {
     const isSigned = b.testn(255)
     if (a.gten(256)) {
       if (isSigned) {
-        r = new BN(utils.MAX_INTEGER)
+        r = new BN(MAX_INTEGER)
       } else {
         r = new BN(0)
       }
@@ -266,7 +266,7 @@ export const handlers: { [k: string]: OpHandler } = {
     const c = b.shrn(a.toNumber())
     if (isSigned) {
       const shiftedOutWidth = 255 - a.toNumber()
-      const mask = utils.MAX_INTEGER.shrn(shiftedOutWidth).shln(shiftedOutWidth)
+      const mask = MAX_INTEGER.shrn(shiftedOutWidth).shln(shiftedOutWidth)
       r = c.ior(mask)
     } else {
       r = c
@@ -285,7 +285,7 @@ export const handlers: { [k: string]: OpHandler } = {
     runState.eei.useGas(
       new BN(runState._common.param('gasPrices', 'sha3Word')).imul(divCeil(length, new BN(32))),
     )
-    const r = new BN(utils.keccak256(data))
+    const r = new BN(keccak256(data))
     runState.stack.push(r)
   },
   // 0x30 range - closure state
@@ -317,7 +317,7 @@ export const handlers: { [k: string]: OpHandler } = {
     const i = pos.toNumber()
     let loaded = runState.eei.getCallData().slice(i, i + 32)
     loaded = loaded.length ? loaded : Buffer.from([0])
-    const r = new BN(utils.setLengthRight(loaded, 32))
+    const r = new BN(setLengthRight(loaded, 32))
 
     runState.stack.push(r)
   },
@@ -394,11 +394,11 @@ export const handlers: { [k: string]: OpHandler } = {
 
     const code = await runState.eei.getExternalCode(address)
     if (code.length === 0) {
-      runState.stack.push(new BN(utils.KECCAK256_NULL))
+      runState.stack.push(new BN(KECCAK256_NULL))
       return
     }
 
-    runState.stack.push(new BN(utils.keccak256(code)))
+    runState.stack.push(new BN(keccak256(code)))
   },
   RETURNDATASIZE: function (runState: RunState) {
     runState.stack.push(runState.eei.getReturnDataSize())
@@ -826,7 +826,7 @@ export const handlers: { [k: string]: OpHandler } = {
 }
 
 function describeLocation(runState: RunState) {
-  var hash = utils.keccak256(runState.eei.getCode()).toString('hex')
+  var hash = keccak256(runState.eei.getCode()).toString('hex')
   var address = runState.eei.getAddress().toString('hex')
   var pc = runState.programCounter - 1
   return hash + '/' + address + ':' + pc
@@ -886,7 +886,7 @@ function getDataSlice(data: Buffer, offset: BN, length: BN): Buffer {
 
   data = data.slice(offset.toNumber(), end.toNumber())
   // Right-pad with zeros to fill dataLength bytes
-  data = utils.setLengthRight(data, length.toNumber())
+  data = setLengthRight(data, length.toNumber())
 
   return data
 }
