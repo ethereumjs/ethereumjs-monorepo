@@ -70,7 +70,7 @@ The following methods are available provided by [ethjs-util](https://github.com/
 
 Additionally `ethereumjs-util` re-exports a few commonly-used libraries. These include:
 
-- [BN.js](https://github.com/indutny/bn.js) (version `4.x`)
+- [BN.js](https://github.com/indutny/bn.js) (version `5.x`)
 - [rlp](https://github.com/ethereumjs/rlp) (version `2.x`)
 
 # EthereumJS
