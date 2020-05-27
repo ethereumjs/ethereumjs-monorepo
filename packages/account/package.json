@@ -14,6 +14,7 @@
   "scripts": {
     "build": "ethereumjs-config-build",
     "prepublishOnly": "npm run test && npm run build",
+    "coverage": "ethereumjs-config-coverage",
     "docs:build": "typedoc --options typedoc.js",
     "format": "ethereumjs-config-format",
     "format:fix": "ethereumjs-config-format-fix",
@@ -22,7 +23,7 @@
     "tsc": "ethereumjs-config-tsc",
     "lint": "ethereumjs-config-lint",
     "lint:fix": "ethereumjs-config-lint-fix",
-    "test": "nyc tape -r ts-node/register test/*.spec.ts"
+    "test": "tape -r ts-node/register test/*.spec.ts"
   },
   "keywords": [
     "ethereum",

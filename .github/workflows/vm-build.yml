@@ -1,5 +1,5 @@
 name: VM
-'on':
+on:
   push:
     branches:
       - master
@@ -22,6 +22,8 @@ name: VM
 jobs:
   test-vm-api:
     runs-on: ubuntu-latest
+    env:
+      cwd: '${{github.workspace}}/packages/vm'
     steps:
       - uses: actions/setup-node@v1
         with:
@@ -34,10 +36,10 @@ jobs:
         working-directory: '${{ env.cwd }}'
       - run: npm run test:API:browser
         working-directory: '${{ env.cwd }}'
-    env:
-      cwd: '${{github.workspace}}/packages/vm'
   test-vm-state:
     runs-on: ubuntu-latest
+    env:
+      cwd: '${{github.workspace}}/packages/vm'
     steps:
       - uses: actions/setup-node@v1
         with:
@@ -53,10 +55,10 @@ jobs:
         with:
           file: '${{ env.cwd }}/coverage/lcov.info'
           flags: vm
-    env:
-      cwd: '${{github.workspace}}/packages/vm'
   test-vm-blockchain:
     runs-on: ubuntu-latest
+    env:
+      cwd: '${{github.workspace}}/packages/vm'
     steps:
       - uses: actions/setup-node@v1
         with:
@@ -66,5 +68,3 @@ jobs:
       - run: npx lerna run --scope ethereumjs-vm --include-dependencies build
       - run: npm run test:blockchain
         working-directory: '${{ env.cwd }}'
-    env:
-      cwd: '${{github.workspace}}/packages/vm'

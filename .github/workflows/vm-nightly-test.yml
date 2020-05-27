@@ -1,10 +1,12 @@
 name: VM Nightly
-'on':
+on:
   schedule:
     - cron: 0 0 * * *
 jobs:
   test-vm-api:
     runs-on: ubuntu-latest
+    env:
+      cwd: '${{github.workspace}}/packages/vm'
     steps:
       - uses: actions/setup-node@v1
         with:
@@ -16,10 +18,10 @@ jobs:
         working-directory: '${{ env.cwd }}'
       - run: npm run test:API:browser
         working-directory: '${{ env.cwd }}'
-    env:
-      cwd: '${{github.workspace}}/packages/vm'
   test-vm-state:
     runs-on: ubuntu-latest
+    env:
+      cwd: '${{github.workspace}}/packages/vm'
     steps:
       - uses: actions/setup-node@v1
         with:
@@ -29,10 +31,10 @@ jobs:
       - run: npx lerna run --scope ethereumjs-vm --include-dependencies build
       - run: npm run test:state:allForks
         working-directory: '${{ env.cwd }}'
-    env:
-      cwd: '${{github.workspace}}/packages/vm'
   test-vm-blockchain:
     runs-on: ubuntu-latest
+    env:
+      cwd: '${{github.workspace}}/packages/vm'
     steps:
       - uses: actions/setup-node@v1
         with:
@@ -42,10 +44,10 @@ jobs:
       - run: npx lerna run --scope ethereumjs-vm --include-dependencies build
       - run: npm run test:blockchain
         working-directory: '${{ env.cwd }}'
-    env:
-      cwd: '${{github.workspace}}/packages/vm'
   test-vm-slow:
     runs-on: ubuntu-latest
+    env:
+      cwd: '${{github.workspace}}/packages/vm'
     steps:
       - uses: actions/setup-node@v1
         with:
@@ -55,5 +57,3 @@ jobs:
       - run: npx lerna run --scope ethereumjs-vm --include-dependencies build
       - run: npm run test:state:slow
         working-directory: '${{ env.cwd }}'
-    env:
-      cwd: '${{github.workspace}}/packages/vm'

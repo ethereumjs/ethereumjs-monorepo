@@ -10,6 +10,7 @@
   "scripts": {
     "build": "ethereumjs-config-build",
     "prepublishOnly": "npm run test && npm run build",
+    "coverage": "ethereumjs-config-coverage",
     "docs:build": "typedoc --options typedoc.js",
     "format": "ethereumjs-config-format",
     "format:fix": "ethereumjs-config-format-fix",
@@ -19,7 +20,7 @@
     "lint": "ethereumjs-config-lint",
     "lint:fix": "ethereumjs-config-lint-fix",
     "test": "npm run test:node",
-    "test:node": "nyc ts-node node_modules/tape/bin/tape ./test/index.ts",
+    "test:node": "ts-node node_modules/tape/bin/tape ./test/index.ts",
     "test:browser:build": "tsc && cp ./test/*.json test-build/test/",
     "test:browser": "npm run test:browser:build && karma start karma.conf.js"
   },

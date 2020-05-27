@@ -1,5 +1,5 @@
 name: Block
-'on':
+on:
   push:
     branches:
       - master
@@ -21,6 +21,8 @@ jobs:
     strategy:
       matrix:
         node-version: [10.x, 12.x, 13.x, 14.x]
+    env:
+      cwd: '${{github.workspace}}/packages/block'
     steps:
       - name: 'Use Node.js ${{ matrix.node-version }}'
         uses: actions/setup-node@v1
@@ -34,9 +36,9 @@ jobs:
         working-directory: '${{ env.cwd }}'
       - run: npm run test:browser
         working-directory: '${{ env.cwd }}'
+      - run: npm run coverage
+        working-directory: '${{ env.cwd }}'
       - uses: codecov/codecov-action@v1
         with:
           file: '${{ env.cwd }}/coverage/lcov.info'
           flags: block
-    env:
-      cwd: '${{github.workspace}}/packages/block'
