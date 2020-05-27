@@ -16,8 +16,11 @@ Example using async/await syntax:
 import { BaseTrie as Trie } from 'merkle-patricia-tree'
 
 const trie = new Trie()
-await trie.put(Buffer.from('test'), Buffer.from('one'))
-const value = await trie.get(Buffer.from('test'))
+async function test() {
+    await trie.put(Buffer.from('test'), Buffer.from('one'))
+    const value = await trie.get(Buffer.from('test'))
+    console.log(value) // 'one'
+}
 ```
 
 ### Breaking Changes
