@@ -30,17 +30,25 @@ import { BaseTrie as Trie } from 'merkle-patricia-tree'
 const db = level('./testdb')
 const trie = new Trie(db)
 
-await trie.put(Buffer.from('test'), Buffer.from('one'))
-const value = await trie.get(Buffer.from('test'))
-console.log(value.toString())
+async function test() {
+  await trie.put(Buffer.from('test'), Buffer.from('one'))
+  const value = await trie.get(Buffer.from('test'))
+  console.log(value.toString()) // 'one'
+}
+
+await test()
 ```
 
 ## Merkle Proofs
 
 ```typescript
-const prove = await Trie.prove(trie, Buffer.from('test'))
-const value = await Trie.verifyProof(trie.root, Buffer.from('test'), prove)
-console.log(value.toString())
+async function test() {
+  const prove = await Trie.prove(trie, Buffer.from('test'))
+  const value = await Trie.verifyProof(trie.root, Buffer.from('test'), prove)
+  console.log(value.toString())
+}
+
+await test()
 ```
 
 ## Read stream on Geth DB
@@ -79,28 +87,32 @@ const trie = new Trie(db, stateRoot)
 
 const address = 'AN_ETHEREUM_ACCOUNT_ADDRESS'
 
-const data = await trie.get(address)
-const acc = new Account(data)
+async function test() {
+  const data = await trie.get(address)
+  const acc = new Account(data)
 
-console.log('-------State-------')
-console.log(`nonce: ${new BN(acc.nonce)}`)
-console.log(`balance in wei: ${new BN(acc.balance)}`)
-console.log(`storageRoot: ${bufferToHex(acc.stateRoot)}`)
-console.log(`codeHash: ${bufferToHex(acc.codeHash)}`)
+  console.log('-------State-------')
+  console.log(`nonce: ${new BN(acc.nonce)}`)
+  console.log(`balance in wei: ${new BN(acc.balance)}`)
+  console.log(`storageRoot: ${bufferToHex(acc.stateRoot)}`)
+  console.log(`codeHash: ${bufferToHex(acc.codeHash)}`)
 
-let storageTrie = trie.copy()
-storageTrie.root = acc.stateRoot
+  let storageTrie = trie.copy()
+  storageTrie.root = acc.stateRoot
 
-console.log('------Storage------')
-const stream = storageTrie.createReadStream()
-stream
-  .on('data', (data) => {
-    console.log(`key: ${bufferToHex(data.key)}`)
-    console.log(`Value: ${bufferToHex(rlp.decode(data.value))}`)
-  })
-  .on('end', () => {
-    console.log('Finished reading storage.')
-  })
+  console.log('------Storage------')
+  const stream = storageTrie.createReadStream()
+  stream
+    .on('data', (data) => {
+      console.log(`key: ${bufferToHex(data.key)}`)
+      console.log(`Value: ${bufferToHex(rlp.decode(data.value))}`)
+    })
+    .on('end', () => {
+      console.log('Finished reading storage.')
+    })
+}
+
+await test()
 ```
 
 # API

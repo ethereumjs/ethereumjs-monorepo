@@ -14,13 +14,13 @@ Example using async/await syntax:
 
 ```typescript
 import { BaseTrie as Trie } from 'merkle-patricia-tree'
-
 const trie = new Trie()
 async function test() {
-    await trie.put(Buffer.from('test'), Buffer.from('one'))
-    const value = await trie.get(Buffer.from('test'))
-    console.log(value) // 'one'
+  await trie.put(Buffer.from('test'), Buffer.from('one'))
+  const value = await trie.get(Buffer.from('test'))
+  console.log(value.toString()) // 'one'
 }
+await test()
 ```
 
 ### Breaking Changes
