@@ -36,7 +36,7 @@ async function test() {
   console.log(value.toString()) // 'one'
 }
 
-await test()
+test()
 ```
 
 ## Merkle Proofs
@@ -48,7 +48,7 @@ async function test() {
   console.log(value.toString())
 }
 
-await test()
+test()
 ```
 
 ## Read stream on Geth DB
@@ -112,7 +112,7 @@ async function test() {
     })
 }
 
-await test()
+test()
 ```
 
 # API

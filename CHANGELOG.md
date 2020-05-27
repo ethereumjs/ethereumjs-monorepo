@@ -20,7 +20,7 @@ async function test() {
   const value = await trie.get(Buffer.from('test'))
   console.log(value.toString()) // 'one'
 }
-await test()
+test()
 ```
 
 ### Breaking Changes
