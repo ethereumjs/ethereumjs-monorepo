@@ -86,8 +86,11 @@ module.exports = async function runBlockchainTest(options, testData, t) {
 
   for (const raw of testData.blocks) {
     const paramFork = `expectException${options.forkConfigTestSuite}`
-    const paramAll = 'expectExceptionALL'
-    const expectException = raw[paramFork] ? raw[paramFork] : raw[paramAll]
+    // Two naming conventions in ethereum/tests to indicate "exception occurs on all HFs" semantics
+    // Last checked: ethereumjs-testing v1.3.1 (2020-05-11)
+    const paramAll1 = 'expectExceptionALL'
+    const paramAll2 = 'expectException'
+    const expectException = raw[paramFork] ? raw[paramFork] : (raw[paramAll1] || raw[paramAll2])
 
     try { 
       const block = new Block(Buffer.from(raw.rlp.slice(2), 'hex'), {
