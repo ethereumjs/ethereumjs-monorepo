@@ -181,9 +181,9 @@ const opcodes = {
 
   // '0xb0' range - subroutines
   // Temporary Placement pending Berlin Hardfork updates
-  0xb2: { name: 'BEGINSUB', fee: 2, isAsync: false },
+  0xb2: { name: 'BEGINSUB', fee: 1, isAsync: false },
   0xb3: { name: 'JUMPSUB', fee: 8, isAsync: false },
-  0xb7: { name: 'RETURNSUB', fee: 3, isAsync: false },
+  0xb7: { name: 'RETURNSUB', fee: 2, isAsync: false },
 
   // '0xf0' range - closures
   0xf0: { name: 'CREATE', isAsync: true },
