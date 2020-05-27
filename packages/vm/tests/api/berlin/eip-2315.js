@@ -68,7 +68,7 @@ tape('Berlin: EIP 2315 tests', t => {
   })
 
   // EIP test case 3
-  t.test('should error on invalid jump (location out of code range)', async st => {
+  t.test('should error on invalid jumpsub (location out of code range)', async st => {
     const test = {
       code: "6801000000000000000cb300b26011b3b7b2b7",
       totalSteps: 2,
@@ -79,13 +79,13 @@ tape('Berlin: EIP 2315 tests', t => {
     }
 
     result = await runTest(test, st)
-    st.equal(true, result.exceptionError.error.includes('invalid JUMP at'))
+    st.equal(true, result.exceptionError.error.includes('invalid JUMPSUB at'))
     st.end()
   })
 
   // hyperledger/besu PR 717 test case
   // https://github.com/hyperledger/besu/pull/717/files#diff-5d1330bc567b68d81941896ef2d2ce88R114
-  t.test('should error on invalid jump (dest not BEGINSUB)', async st => {
+  t.test('should error on invalid jumpsub (dest not BEGINSUB)', async st => {
     const test = {
       code: "6005b300b2b7",
       totalSteps: 2,
@@ -96,6 +96,22 @@ tape('Berlin: EIP 2315 tests', t => {
     }
 
     result = await runTest(test, st)
+    st.equal(true, result.exceptionError.error.includes('invalid JUMPSUB at'))
+    st.end()
+  })
+
+  // Code is same as EIP example 1 above, with JUMP substituted for JUMPSUB
+  t.test('BEGINSUB should not be a valid dest for JUMP', async st => {
+    const test = {
+      code: "60045600b2b7",
+      totalSteps: 2,
+      steps: [
+        { expectedPC: 0, expectedOpcode: "PUSH1" },
+        { expectedPC: 2, expectedOpcode: "JUMP" }
+      ]
+    }
+
+    const result = await runTest(test, st)
     st.equal(true, result.exceptionError.error.includes('invalid JUMP at'))
     st.end()
   })
@@ -111,7 +127,7 @@ tape('Berlin: EIP 2315 tests', t => {
     }
 
     result = await runTest(test, st)
-    st.equal(true, result.exceptionError.error.includes('invalid retsub'))
+    st.equal(true, result.exceptionError.error.includes('invalid RETURNSUB'))
     st.end()
   })
 
@@ -172,7 +188,7 @@ tape('Berlin: EIP 2315 tests', t => {
     }
 
     result = await runTest(test, st)
-    st.equal(true, result.exceptionError.error.includes('invalid subroutine entry'))
+    st.equal(true, result.exceptionError.error.includes('invalid BEGINSUB'))
     st.end()
   })
 })

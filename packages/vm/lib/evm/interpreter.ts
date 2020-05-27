@@ -23,6 +23,7 @@ export interface RunState {
   returnStack: Stack
   code: Buffer
   validJumps: number[]
+  validJumpSubs: number[]
   _common: Common
   stateManager: StateManager
   eei: EEI
@@ -52,6 +53,11 @@ export interface InterpreterStep {
   codeAddress: Buffer
 }
 
+interface JumpDests {
+  jumps: number[]
+  jumpSubs: number[]
+}
+
 /**
  * Parses and executes EVM bytecode.
  */
@@ -75,6 +81,7 @@ export default class Interpreter {
       returnStack: new Stack(1023), // 1023 return stack height limit per EIP 2315 spec
       code: Buffer.alloc(0),
       validJumps: [],
+      validJumpSubs: [],
       // TODO: Replace with EEI methods
       _common: this._vm._common,
       stateManager: this._state,
@@ -85,7 +92,10 @@ export default class Interpreter {
   async run(code: Buffer, opts: InterpreterOpts = {}): Promise<InterpreterResult> {
     this._runState.code = code
     this._runState.programCounter = opts.pc || this._runState.programCounter
-    this._runState.validJumps = this._getValidJumpDests(code)
+
+    const valid = this._getValidJumpDests(code)
+    this._runState.validJumps = valid.jumps
+    this._runState.validJumpSubs = valid.jumpSubs
 
     // Check that the programCounter is in range
     const pc = this._runState.programCounter
@@ -198,9 +208,10 @@ export default class Interpreter {
     return this._vm._emit('step', eventObj)
   }
 
-  // Returns all valid jump destinations.
-  _getValidJumpDests(code: Buffer): number[] {
+  // Returns all valid jump and jumpsub destinations.
+  _getValidJumpDests(code: Buffer): JumpDests {
     const jumps = []
+    const jumpSubs = []
 
     for (let i = 0; i < code.length; i++) {
       const curOpCode = this.lookupOpInfo(code[i]).name
@@ -210,11 +221,15 @@ export default class Interpreter {
         i += code[i] - 0x5f
       }
 
-      if (curOpCode === 'JUMPDEST' || curOpCode === 'BEGINSUB') {
+      if (curOpCode === 'JUMPDEST') {
         jumps.push(i)
+      }
+
+      if (curOpCode === 'BEGINSUB') {
+        jumpSubs.push(i)
       }
     }
 
-    return jumps
+    return { jumps, jumpSubs }
   }
 }
