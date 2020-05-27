@@ -45,7 +45,7 @@
   "dependencies": {
     "aes-js": "^3.1.1",
     "bs58check": "^2.1.2",
-    "ethereumjs-util": "^7.0.1",
+    "ethereumjs-util": "^7.0.2",
     "hdkey": "^1.1.1",
     "randombytes": "^2.0.6",
     "scrypt-js": "^3.0.1",
