@@ -1,6 +1,6 @@
 {
   "name": "ethashjs",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "description": "an ethash implementation in JS",
   "main": "index.js",
   "directories": {
