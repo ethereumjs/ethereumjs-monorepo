@@ -10,6 +10,7 @@ const SKIP_BROKEN = [
   'ForkStressTest', // Only BlockchainTest, temporary till fixed (2020-05-23)
   'dynamicAccountOverwriteEmpty', // temporary till fixed (2019-01-30), skipped along constantinopleFix work time constraints
   'ChainAtoChainB', // Only BlockchainTest, temporary, along expectException fixes (2020-05-23)
+  'BLOCK_timestamp_TooLarge', // Only BlockchainTest, temporary, along expectException fixes (2020-05-27)
 ]
 
 /**
