@@ -12,6 +12,8 @@ export enum ERROR {
   STOP = 'stop',
   REFUND_EXHAUSTED = 'refund exhausted',
   VALUE_OVERFLOW = 'value overflow',
+  INVALID_SUBROUTINE_ENTRY = 'invalid subroutine entry',
+  INVALID_SUBROUTINE_RETURN = 'invalid retsub',
 }
 
 export class VmError {

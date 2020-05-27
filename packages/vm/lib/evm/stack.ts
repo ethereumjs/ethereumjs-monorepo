@@ -7,9 +7,11 @@ const { ERROR, VmError } = require('../exceptions')
  */
 export default class Stack {
   _store: BN[]
+  _maxHeight: number
 
-  constructor() {
+  constructor(maxHeight?: number) {
     this._store = []
+    this._maxHeight = maxHeight || 1024
   }
 
   get length() {
@@ -25,7 +27,7 @@ export default class Stack {
       throw new VmError(ERROR.OUT_OF_RANGE)
     }
 
-    if (this._store.length > 1023) {
+    if (this._store.length >= this._maxHeight) {
       throw new VmError(ERROR.STACK_OVERFLOW)
     }
 

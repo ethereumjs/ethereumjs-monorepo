@@ -20,6 +20,7 @@ export interface RunState {
   memoryWordCount: BN
   highestMemCost: BN
   stack: Stack
+  returnStack: Stack
   code: Buffer
   validJumps: number[]
   _common: Common
@@ -36,6 +37,7 @@ export interface InterpreterStep {
   gasLeft: BN
   stateManager: StateManager
   stack: BN[]
+  returnStack: BN[]
   pc: number
   depth: number
   address: Buffer
@@ -70,6 +72,7 @@ export default class Interpreter {
       memoryWordCount: new BN(0),
       highestMemCost: new BN(0),
       stack: new Stack(),
+      returnStack: new Stack(1023), // 1023 return stack height limit per EIP 2315 spec
       code: Buffer.alloc(0),
       validJumps: [],
       // TODO: Replace with EEI methods
@@ -167,6 +170,7 @@ export default class Interpreter {
         isAsync: opcode.isAsync,
       },
       stack: this._runState.stack._store,
+      returnStack: this._runState.returnStack._store,
       depth: this._eei._env.depth,
       address: this._eei._env.address,
       account: this._eei._env.contract,
@@ -206,7 +210,7 @@ export default class Interpreter {
         i += code[i] - 0x5f
       }
 
-      if (curOpCode === 'JUMPDEST') {
+      if (curOpCode === 'JUMPDEST' || curOpCode === 'BEGINSUB') {
         jumps.push(i)
       }
     }

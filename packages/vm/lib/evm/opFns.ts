@@ -546,6 +546,32 @@ export const handlers: { [k: string]: OpHandler } = {
     runState.stack.push(new BN(runState.eei.getGasLeft()))
   },
   JUMPDEST: function (runState: RunState) {},
+  BEGINSUB: function (runState: RunState) {
+    trap(ERROR.INVALID_SUBROUTINE_ENTRY + ' at ' + describeLocation(runState))
+  },
+  JUMPSUB: function (runState: RunState) {
+    const dest = runState.stack.pop()
+    if (dest.gt(runState.eei.getCodeSize())) {
+      trap(ERROR.INVALID_JUMP + ' at ' + describeLocation(runState))
+    }
+
+    const destNum = dest.toNumber()
+
+    if (!jumpIsValid(runState, destNum)) {
+      trap(ERROR.INVALID_JUMP + ' at ' + describeLocation(runState))
+    }
+
+    runState.returnStack.push(new BN(runState.programCounter))
+    runState.programCounter = destNum + 1
+  },
+  RETURNSUB: function (runState: RunState) {
+    if (runState.returnStack.length < 1) {
+      trap(ERROR.INVALID_SUBROUTINE_RETURN)
+    }
+
+    const dest = runState.returnStack.pop()
+    runState.programCounter = dest.toNumber()
+  },
   PUSH: function (runState: RunState) {
     const numToPush = runState.opCode - 0x5f
     const loaded = new BN(

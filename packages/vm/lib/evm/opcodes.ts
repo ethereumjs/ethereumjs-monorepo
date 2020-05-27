@@ -179,6 +179,12 @@ const opcodes = {
   0xa3: { name: 'LOG', isAsync: false },
   0xa4: { name: 'LOG', isAsync: false },
 
+  // '0xb0' range - subroutines
+  // Temporary Placement pending Berlin Hardfork updates
+  0xb2: { name: 'BEGINSUB', fee: 2, isAsync: false },
+  0xb3: { name: 'JUMPSUB', fee: 8, isAsync: false },
+  0xb7: { name: 'RETURNSUB', fee: 3, isAsync: false },
+
   // '0xf0' range - closures
   0xf0: { name: 'CREATE', isAsync: true },
   0xf1: { name: 'CALL', isAsync: true },
