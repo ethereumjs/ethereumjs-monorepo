@@ -1,9 +1,9 @@
 import * as crypto from 'crypto'
 import { keccak256, sha256, toBuffer } from 'ethereumjs-util'
+import { scrypt } from 'scrypt-js'
 
 import Wallet from './index'
 
-const scryptsy = require('@web3-js/scrypt-shim')
 const utf8 = require('utf8')
 const aesjs = require('aes-js')
 
@@ -173,7 +173,7 @@ export function fromEtherCamp(passphrase: string): Wallet {
 /**
  * Third Party API: Import a wallet from a KryptoKit seed
  */
-export function fromKryptoKit(entropy: string, password: string): Wallet {
+export async function fromKryptoKit(entropy: string, password: string): Promise<Wallet> {
   function kryptoKitBrokenScryptSeed(buf: Buffer) {
     // js-scrypt calls `Buffer.from(String(salt), 'utf8')` on the seed even though it is a buffer
     //
@@ -220,7 +220,7 @@ export function fromKryptoKit(entropy: string, password: string): Wallet {
     const checksum = entropy.slice(30, 46)
 
     const salt = kryptoKitBrokenScryptSeed(encryptedSeed)
-    const aesKey = scryptsy(Buffer.from(password, 'utf8'), salt, 16384, 8, 1, 32)
+    const aesKey = await scrypt(Buffer.from(password, 'utf8'), salt, 16384, 8, 1, 32)
 
     /* FIXME: try to use `crypto` instead of `aesjs`
 

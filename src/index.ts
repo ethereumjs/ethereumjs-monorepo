@@ -1,12 +1,23 @@
 import * as crypto from 'crypto'
-import * as ethUtil from 'ethereumjs-util'
+import {
+  BN,
+  keccak256,
+  bufferToHex,
+  privateToAddress,
+  publicToAddress,
+  toChecksumAddress,
+  privateToPublic,
+  importPublic,
+  isValidPrivate,
+  isValidPublic,
+} from 'ethereumjs-util'
+import { scrypt } from 'scrypt-js'
 
 export { default as hdkey } from './hdkey'
 export { default as thirdparty } from './thirdparty'
 
 const bs58check = require('bs58check')
 const randomBytes = require('randombytes')
-const scryptsy = require('@web3-js/scrypt-shim')
 const uuidv4 = require('uuid/v4')
 
 // parameters for the toV3() method
@@ -235,11 +246,11 @@ export default class Wallet {
       throw new Error('Cannot supply both a private and a public key to the constructor')
     }
 
-    if (privateKey && !ethUtil.isValidPrivate(privateKey)) {
+    if (privateKey && !isValidPrivate(privateKey)) {
       throw new Error('Private key does not satisfy the curve requirements (ie. it is invalid)')
     }
 
-    if (publicKey && !ethUtil.isValidPublic(publicKey)) {
+    if (publicKey && !isValidPublic(publicKey)) {
       throw new Error('Invalid public key')
     }
   }
@@ -253,10 +264,10 @@ export default class Wallet {
    */
   public static generate(icapDirect: boolean = false): Wallet {
     if (icapDirect) {
-      const max = new ethUtil.BN('088f924eeceeda7fe92e1f5b0fffffffffffffff', 16)
+      const max = new BN('088f924eeceeda7fe92e1f5b0fffffffffffffff', 16)
       while (true) {
         const privateKey = randomBytes(32) as Buffer
-        if (new ethUtil.BN(ethUtil.privateToAddress(privateKey)).lte(max)) {
+        if (new BN(privateToAddress(privateKey)).lte(max)) {
           return new Wallet(privateKey)
         }
       }
@@ -275,7 +286,7 @@ export default class Wallet {
 
     while (true) {
       const privateKey = randomBytes(32) as Buffer
-      const address = ethUtil.privateToAddress(privateKey)
+      const address = privateToAddress(privateKey)
 
       if (pattern.test(address.toString('hex'))) {
         return new Wallet(privateKey)
@@ -291,7 +302,7 @@ export default class Wallet {
    */
   public static fromPublicKey(publicKey: Buffer, nonStrict: boolean = false): Wallet {
     if (nonStrict) {
-      publicKey = ethUtil.importPublic(publicKey)
+      publicKey = importPublic(publicKey)
     }
     return new Wallet(undefined, publicKey)
   }
@@ -335,7 +346,7 @@ export default class Wallet {
    * @param input A JSON serialized string, or an object representing V1 Keystore.
    * @param password The keystore password.
    */
-  public static fromV1(input: string | V1Keystore, password: string): Wallet {
+  public static async fromV1(input: string | V1Keystore, password: string): Promise<Wallet> {
     const json: V1Keystore = typeof input === 'object' ? input : JSON.parse(input)
     if (json.Version !== '1') {
       throw new Error('Not a V1 Wallet')
@@ -345,24 +356,24 @@ export default class Wallet {
     }
 
     const kdfparams = json.Crypto.KeyHeader.KdfParams
-    const derivedKey = scryptsy(
+    const derivedKey = await scrypt(
       Buffer.from(password),
       Buffer.from(json.Crypto.Salt, 'hex'),
       kdfparams.N,
       kdfparams.R,
       kdfparams.P,
       kdfparams.DkLen,
-    ) as Buffer
+    )
 
     const ciphertext = Buffer.from(json.Crypto.CipherText, 'hex')
-    const mac = ethUtil.keccak256(Buffer.concat([derivedKey.slice(16, 32), ciphertext]))
+    const mac = keccak256(Buffer.concat([derivedKey.slice(16, 32), ciphertext]))
     if (mac.toString('hex') !== json.Crypto.MAC) {
       throw new Error('Key derivation failed - possibly wrong passphrase')
     }
 
     const decipher = crypto.createDecipheriv(
       'aes-128-cbc',
-      ethUtil.keccak256(derivedKey.slice(0, 16)).slice(0, 16),
+      keccak256(derivedKey.slice(0, 16) as Buffer).slice(0, 16),
       Buffer.from(json.Crypto.IV, 'hex'),
     )
     const seed = runCipherBuffer(decipher, ciphertext)
@@ -375,11 +386,11 @@ export default class Wallet {
    * @param input A JSON serialized string, or an object representing V3 Keystore.
    * @param password The keystore password.
    */
-  public static fromV3(
+  public static async fromV3(
     input: string | V3Keystore,
     password: string,
     nonStrict: boolean = false,
-  ): Wallet {
+  ): Promise<Wallet> {
     const json: V3Keystore =
       typeof input === 'object' ? input : JSON.parse(nonStrict ? input.toLowerCase() : input)
 
@@ -387,19 +398,19 @@ export default class Wallet {
       throw new Error('Not a V3 wallet')
     }
 
-    let derivedKey: Buffer, kdfparams: any
+    let derivedKey: Uint8Array, kdfparams: any
     if (json.crypto.kdf === 'scrypt') {
       kdfparams = json.crypto.kdfparams
 
       // FIXME: support progress reporting callback
-      derivedKey = scryptsy(
+      derivedKey = await scrypt(
         Buffer.from(password),
         Buffer.from(kdfparams.salt, 'hex'),
         kdfparams.n,
         kdfparams.r,
         kdfparams.p,
         kdfparams.dklen,
-      ) as Buffer
+      )
     } else if (json.crypto.kdf === 'pbkdf2') {
       kdfparams = json.crypto.kdfparams
 
@@ -419,7 +430,7 @@ export default class Wallet {
     }
 
     const ciphertext = Buffer.from(json.crypto.ciphertext, 'hex')
-    const mac = ethUtil.keccak256(Buffer.concat([derivedKey.slice(16, 32), ciphertext]))
+    const mac = keccak256(Buffer.concat([derivedKey.slice(16, 32), ciphertext]))
     if (mac.toString('hex') !== json.crypto.mac) {
       throw new Error('Key derivation failed - possibly wrong passphrase')
     }
@@ -455,7 +466,7 @@ export default class Wallet {
     const decipher = crypto.createDecipheriv('aes-128-cbc', derivedKey, encseed.slice(0, 16))
     const seed = runCipherBuffer(decipher, encseed.slice(16))
 
-    const wallet = new Wallet(ethUtil.keccak256(seed))
+    const wallet = new Wallet(keccak256(seed))
     if (wallet.getAddress().toString('hex') !== json.ethaddr) {
       throw new Error('Decoded key mismatch - possibly wrong passphrase')
     }
@@ -469,7 +480,7 @@ export default class Wallet {
    */
   private get pubKey(): Buffer {
     if (!keyExists(this.publicKey)) {
-      this.publicKey = ethUtil.privateToPublic(this.privateKey as Buffer)
+      this.publicKey = privateToPublic(this.privateKey as Buffer)
     }
     return this.publicKey
   }
@@ -496,7 +507,7 @@ export default class Wallet {
   }
 
   public getPrivateKeyString(): string {
-    return ethUtil.bufferToHex(this.privKey)
+    return bufferToHex(this.privKey)
   }
 
   /**
@@ -511,21 +522,21 @@ export default class Wallet {
    * Returns the wallet's public key as a "0x" prefixed hex string
    */
   public getPublicKeyString(): string {
-    return ethUtil.bufferToHex(this.getPublicKey())
+    return bufferToHex(this.getPublicKey())
   }
 
   /**
    * Returns the wallet's address.
    */
   public getAddress(): Buffer {
-    return ethUtil.publicToAddress(this.pubKey)
+    return publicToAddress(this.pubKey)
   }
 
   /**
    * Returns the wallet's address as a "0x" prefixed hex string
    */
   public getAddressString(): string {
-    return ethUtil.bufferToHex(this.getAddress())
+    return bufferToHex(this.getAddress())
   }
 
   /**
@@ -533,7 +544,7 @@ export default class Wallet {
    * according to [EIP 55](https://github.com/ethereum/EIPs/issues/55).
    */
   public getChecksumAddressString(): string {
-    return ethUtil.toChecksumAddress(this.getAddressString())
+    return toChecksumAddress(this.getAddressString())
   }
 
   /**
@@ -542,7 +553,7 @@ export default class Wallet {
    * @param password The password used to encrypt the Keystore.
    * @param opts The options for the keystore. See [its spec](https://github.com/ethereum/wiki/wiki/Web3-Secret-Storage-Definition) for more info.
    */
-  public toV3(password: string, opts?: Partial<V3Params>): V3Keystore {
+  public async toV3(password: string, opts?: Partial<V3Params>): Promise<V3Keystore> {
     if (!keyExists(this.privateKey)) {
       throw new Error('This is a public key only wallet')
     }
@@ -550,7 +561,7 @@ export default class Wallet {
     const v3Params: V3ParamsStrict = mergeToV3ParamsWithDefaults(opts)
 
     let kdfParams: KDFParams
-    let derivedKey: Buffer
+    let derivedKey: Uint8Array
     switch (v3Params.kdf) {
       case KDFFunctions.PBKDF:
         kdfParams = kdfParamsForPBKDF(v3Params)
@@ -565,14 +576,14 @@ export default class Wallet {
       case KDFFunctions.Scrypt:
         kdfParams = kdfParamsForScrypt(v3Params)
         // FIXME: support progress reporting callback
-        derivedKey = scryptsy(
+        derivedKey = await scrypt(
           Buffer.from(password),
           kdfParams.salt,
           kdfParams.n,
           kdfParams.r,
           kdfParams.p,
           kdfParams.dklen,
-        ) as Buffer
+        )
         break
       default:
         throw new Error('Unsupported kdf')
@@ -588,9 +599,7 @@ export default class Wallet {
     }
 
     const ciphertext = runCipherBuffer(cipher, this.privKey)
-    const mac = ethUtil.keccak256(
-      Buffer.concat([derivedKey.slice(16, 32), Buffer.from(ciphertext)]),
-    )
+    const mac = keccak256(Buffer.concat([derivedKey.slice(16, 32), Buffer.from(ciphertext)]))
 
     return {
       version: 3,
@@ -632,8 +641,8 @@ export default class Wallet {
     )
   }
 
-  public toV3String(password: string, opts?: Partial<V3Params>): string {
-    return JSON.stringify(this.toV3(password, opts))
+  public async toV3String(password: string, opts?: Partial<V3Params>): Promise<string> {
+    return JSON.stringify(await this.toV3(password, opts))
   }
 }
 
