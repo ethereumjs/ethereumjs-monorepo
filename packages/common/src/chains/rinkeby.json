@@ -67,6 +67,12 @@
       "block": 5435345,
       "consensus": "poa",
       "finality": null
+    },
+    {
+      "name": "berlin",
+      "block": null,
+      "consensus": "poa",
+      "finality": null
     }
   ],
   "bootstrapNodes": [
