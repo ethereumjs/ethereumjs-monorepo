@@ -65,6 +65,15 @@ const SKIP_SLOW = [
     'QuadraticComplexitySolidity_CallDataCopy',
     'CALLBlake2f_MaxRounds',
     'randomStatetest94_Istanbul',
+    // vmPerformance tests
+    'ackermann',
+    'fibonacci',
+    'loop-add-10M',
+    'loop-divadd-10M',
+    'loop-divadd-unr100-10M',
+    'loop-exp',
+    'loop-mul',
+    'manyFunctions100',
   ]
 
 /**
