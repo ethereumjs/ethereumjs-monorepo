@@ -11,6 +11,10 @@ const SKIP_BROKEN = [
   'dynamicAccountOverwriteEmpty', // temporary till fixed (2019-01-30), skipped along constantinopleFix work time constraints
   'ChainAtoChainB', // Only BlockchainTest, temporary, along expectException fixes (2020-05-23)
   'BLOCK_timestamp_TooLarge', // Only BlockchainTest, temporary, along expectException fixes (2020-05-27)
+  'sha3_bigOffset', // SHA3: Only BlockchainTest, unclear SHA3 test situation (2020-05-28)
+  'sha3_memSizeNoQuadraticCost', // SHA3: See also:
+  'sha3_memSizeQuadraticCost', // SHA3: https://github.com/ethereumjs/ethereumjs-vm/pull/743#issuecomment-635116418
+  'sha3_bigSize', // SHA3
 ]
 
 /**
