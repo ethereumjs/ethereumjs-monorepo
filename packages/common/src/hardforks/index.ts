@@ -9,4 +9,5 @@ export const hardforks = [
   ['petersburg', require('./petersburg.json')],
   ['istanbul', require('./istanbul.json')],
   ['muirGlacier', require('./muirGlacier.json')],
+  ['berlin', require('./berlin.json')],
 ]

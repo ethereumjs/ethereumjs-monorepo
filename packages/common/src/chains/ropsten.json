@@ -73,6 +73,12 @@
       "block": 7117117,
       "consensus": "pow",
       "finality": null
+    },
+    {
+      "name": "berlin",
+      "block": null,
+      "consensus": "pow",
+      "finality": null
     }
   ],
   "bootstrapNodes": [
