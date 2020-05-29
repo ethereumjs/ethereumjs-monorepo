@@ -6,7 +6,9 @@ import { Block } from '../src/block'
 import { setupBlockchain } from './util'
 
 tape('[Block]: block functions', function(t) {
-  t.test('should test block initialization', function(st) {
+  const testData = require('./testdata/testdata.json')
+
+  t.test('should test basic block initialization', function(st) {
     const block1 = new Block(undefined, { chain: 'ropsten' })
     const common = new Common('ropsten')
     const block2 = new Block(undefined, { common: common })
@@ -28,7 +30,20 @@ tape('[Block]: block functions', function(t) {
     st.end()
   })
 
-  const testData = require('./testdata/testdata.json')
+  t.test('should test block initialization with transactions', function(st) {
+    let block = new Block(rlp.decode(testData.blocks[0].rlp))
+    st.equal(block.transactions.length, 7, 'should add all txs (no common)')
+
+    let common = new Common('ropsten', 'istanbul')
+    block = new Block(rlp.decode(testData.blocks[0].rlp), { common: common })
+    st.equal(block.transactions.length, 7, 'should add all txs (common with chain and HF)')
+
+    common = new Common('ropsten')
+    block = new Block(rlp.decode(testData.blocks[0].rlp), { common: common })
+    st.equal(block.transactions.length, 7, 'should add all txs (common only with chain)')
+
+    st.end()
+  })
 
   async function testTransactionValidation(st: tape.Test, block: Block) {
     st.equal(block.validateTransactions(), true)
