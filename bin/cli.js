@@ -114,7 +114,10 @@ async function run () {
   const syncDirName = args.syncmode === 'light' ? 'lightchaindata' : 'chaindata'
   const networkDirName = args.network === 'mainnet' ? '' : `${args.network}/`
   const chainParams = args.params ? await parse.params(args.params) : args.network
-  const common = new Common(chainParams)
+  // Initialize Common with an explicit 'chainstart' HF set until
+  // hardfork awareness is implemented within the library
+  // Also a fix for https://github.com/ethereumjs/ethereumjs-vm/issues/757
+  const common = new Common(chainParams, 'chainstart')
   const servers = parse.transports(args.transports).map(t => {
     const Server = serverFromName(t.name)
     if (t.name === 'rlpx') {
