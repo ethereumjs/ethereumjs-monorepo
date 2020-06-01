@@ -7,7 +7,7 @@
 
 [![js-standard-style](https://cdn.rawgit.com/feross/standard/master/badge.svg)](https://github.com/feross/standard)
 
-This is an implementation of the modified merkle patricia tree as specified in the [Ethereum's Yellow Paper](http://gavwood.com/Paper.pdf):
+This is an implementation of the modified merkle patricia tree as specified in the [Ethereum Yellow Paper](http://gavwood.com/Paper.pdf):
 
 > The modified Merkle Patricia tree (trie) provides a persistent data structure to map between arbitrary-length binary data (byte arrays). It is defined in terms of a mutable data structure to map between 256-bit binary fragments and arbitrary-length binary data. The core of the trie, and its sole requirement in terms of the protocol specification is to provide a single 32-byte value that identifies a given set of key-value pairs.
 
@@ -42,10 +42,13 @@ test()
 ## Merkle Proofs
 
 ```typescript
+const trie = new Trie()
+
 async function test() {
-  const prove = await Trie.prove(trie, Buffer.from('test'))
-  const value = await Trie.verifyProof(trie.root, Buffer.from('test'), prove)
-  console.log(value.toString())
+  await trie.put(Buffer.from('test'), Buffer.from('one'))
+  const proof = await Trie.createProof(trie, Buffer.from('test'))
+  const value = await Trie.verifyProof(trie.root, Buffer.from('test'), proof)
+  console.log(value.toString()) // 'one'
 }
 
 test()

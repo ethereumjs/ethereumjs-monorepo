@@ -29,6 +29,10 @@ test()
 
 See the [docs](https://github.com/ethereumjs/merkle-patricia-tree/tree/master/docs) for the latest Promise-based method signatures.
 
+#### Trie.prove renamed to Trie.createProof
+
+To clarify the method's purpose `Trie.prove` has been renamed to `Trie.createProof`. `Trie.prove` has been deprecated but will remain as an alias for `Trie.createProof` until removed.
+
 #### Trie raw methods
 
 `getRaw`, `putRaw` and `delRaw` were deprecated in `v3.0.0` and have been removed from this release. Instead, please use `trie.db.get`, `trie.db.put`, and `trie.db.del`. If using a `SecureTrie` or `CheckpointTrie`, use `trie._maindb` to override the checkpointing mechanism and interact directly with the db.
@@ -50,6 +54,7 @@ See the [docs](https://github.com/ethereumjs/merkle-patricia-tree/tree/master/do
 - Upgrade ethereumjs-util to 7.0.0 / Upgrade level-mem to 5.0.1 ([#116](https://github.com/ethereumjs/merkle-patricia-tree/pull/116))
 - Create dual ES5 and ES2017 builds ([#117](https://github.com/ethereumjs/merkle-patricia-tree/pull/117))
 - Include checkpoints by default in SecureTrie.copy ([#119](https://github.com/ethereumjs/merkle-patricia-tree/pull/119))
+- Rename Trie.prove to Trie.createProof ([#122](https://github.com/ethereumjs/merkle-patricia-tree/pull/122))
 
 ### Added
 

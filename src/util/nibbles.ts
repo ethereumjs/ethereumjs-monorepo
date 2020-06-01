@@ -2,9 +2,8 @@ import { Nibbles } from '../trieNode'
 
 /**
  * Converts a buffer to a nibble array.
- * @method bufferToNibbles
- * @param {Buffer} key
  * @private
+ * @param {Buffer} key
  */
 export function bufferToNibbles(key: Buffer): Nibbles {
   const bkey = Buffer.from(key)
@@ -22,9 +21,8 @@ export function bufferToNibbles(key: Buffer): Nibbles {
 
 /**
  * Converts a nibble array into a buffer.
- * @method nibblesToBuffer
- * @param {Nibbles} arr - Nibble array
  * @private
+ * @param {Nibbles} arr - Nibble array
  */
 export function nibblesToBuffer(arr: Nibbles): Buffer {
   let buf = Buffer.alloc(arr.length / 2)
@@ -37,10 +35,9 @@ export function nibblesToBuffer(arr: Nibbles): Buffer {
 
 /**
  * Returns the number of in order matching nibbles of two give nibble arrays.
- * @method matchingNibbleLength
+ * @private
  * @param {Nibbles} nib1
  * @param {Nibbles} nib2
- * @private
  */
 export function matchingNibbleLength(nib1: Nibbles, nib2: Nibbles): number {
   let i = 0

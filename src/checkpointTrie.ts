@@ -43,10 +43,8 @@ export class CheckpointTrie extends BaseTrie {
   }
 
   /**
-   * Commits a checkpoint to disk, if current checkpoint is not nested. If
-   * nested, only sets the parent checkpoint as current checkpoint.
-   * @method commit
-   * @returns {Promise}
+   * Commits a checkpoint to disk, if current checkpoint is not nested.
+   * If nested, only sets the parent checkpoint as current checkpoint.
    * @throws If not during a checkpoint phase
    */
   async commit(): Promise<void> {
@@ -127,7 +125,6 @@ export class CheckpointTrie extends BaseTrie {
   /**
    * Returns a `ScratchReadStream` based on the state updates
    * since checkpoint.
-   * @method createScratchReadStream
    * @private
    */
   _createScratchReadStream(scratchDb?: ScratchDB) {
@@ -141,14 +138,13 @@ export class CheckpointTrie extends BaseTrie {
   }
 
   /**
-   * Formats node to be saved by levelup.batch.
-   * @method _formatNode
+   * Formats node to be saved by `levelup.batch`.
    * @private
-   * @param {TrieNode} node - the node to format
-   * @param {Boolean} topLevel - if the node is at the top level
-   * @param {BatchDBOp[]} opStack - the opStack to push the node's data
-   * @param {Boolean} remove - whether to remove the node (only used for CheckpointTrie)
-   * @returns {Buffer | (EmbeddedNode | null)[]} - the node's hash used as the key or the rawNode
+   * @param {TrieNode} node - the node to format.
+   * @param {Boolean} topLevel - if the node is at the top level.
+   * @param {BatchDBOp[]} opStack - the opStack to push the node's data.
+   * @param {Boolean} remove - whether to remove the node (only used for CheckpointTrie).
+   * @returns The node's hash used as the key or the rawNode.
    */
   _formatNode(node: TrieNode, topLevel: boolean, opStack: BatchDBOp[], remove: boolean = false) {
     const rlpNode = node.serialize()
