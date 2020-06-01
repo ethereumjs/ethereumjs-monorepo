@@ -11,15 +11,15 @@
     "lib"
   ],
   "scripts": {
-    "coverage": "nyc npm run test && nyc report --reporter=text-lcov > .nyc_output/lcov.info",
-    "coveralls": "npm run coverage && coveralls <.nyc_output/lcov.info",
+    "coverage": "nyc npm run test && nyc report --reporter=lcov",
     "docs": "jsdoc2md --no-cache -c .jsdoc.json lib/*.js > docs/API.md",
     "lint": "standard",
     "lint:fix": "standard --fix",
-    "unit": "tape 'test/!(integration)/**/*.js'",
-    "integration": "tape 'test/integration/**/*.js'",
-    "test": "npm run lint && npm run unit && npm run integration",
-    "build": "npm run test && browserify browser/index.js -s ethereumjs -t babelify --outfile dist/bundle.js"
+    "test": "npm run lint && npm run test:unit && npm run test:integration",
+    "test:unit": "tape 'test/!(integration)/**/*.js'",
+    "test:integration": "tape 'test/integration/**/*.js'",
+    "test:browser": "npm run build && karma start karma.conf.js",
+    "build": "browserify browser/index.js -s ethereumjs -t babelify --outfile dist/bundle.js"
   },
   "husky": {
     "hooks": {
@@ -90,9 +90,13 @@
     "@babel/runtime-corejs2": "^7.1.2",
     "babelify": "^10.0.0",
     "browserify": "^16.2.3",
-    "coveralls": "^3.0.0",
     "husky": "^2.1.0",
     "json-to-markdown": "^1.0.4",
+    "karma": "^5.0.9",
+    "karma-browserify": "^7.0.0",
+    "karma-chrome-launcher": "^3.1.0",
+    "karma-firefox-launcher": "^1.3.0",
+    "karma-tap": "^4.2.0",
     "nyc": "~13.3.0",
     "pino": "^5.8.0",
     "pino-pretty": "^2.2.2",
