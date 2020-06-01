@@ -29,19 +29,17 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
       - uses: actions/checkout@v1
+
       - run: npm install
         working-directory: ${{ env.cwd }}
+
       - run: npx lerna run lint --scope ethereumjs-block
-      - run: npm run test:node
-        working-directory: ${{ env.cwd }}
-      - run: npm run test:browser
-        working-directory: ${{ env.cwd }}
 
       - run: npm run coverage
         working-directory: ${{ env.cwd }}
-        if: ${{ matrix.node-version == 12 }
+
       - uses: codecov/codecov-action@v1
         with:
           file: ${{ env.cwd }}/coverage/lcov.info
           flags: block
-        if: ${{ matrix.node-version == 12 }
+        if: ${{ matrix.node-version == 12 }}

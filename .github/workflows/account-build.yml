@@ -31,15 +31,13 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
       - uses: actions/checkout@v1
+
       - run: npx lerna bootstrap --scope ethereumjs-account --ignore-scripts --include-dependencies --no-ci
       - run: npx lerna run build --scope ethereumjs-account --include-dependencies
       - run: npx lerna run lint --scope ethereumjs-account
-      - run: npm test
-        working-directory: ${{ env.cwd }}
 
-      - run: npm run coverage
-        working-directory: ${{ env.cwd }}
-        if: ${{ matrix.node-version == 12 }}
+      - run: npx lerna run coverage --scope ethereumjs-account
+
       - uses: codecov/codecov-action@v1
         with:
           file: ${{ env.cwd }}/coverage/lcov.info

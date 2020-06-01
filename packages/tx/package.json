@@ -19,7 +19,7 @@
     "tsc": "ethereumjs-config-tsc",
     "lint": "ethereumjs-config-lint",
     "lint:fix": "ethereumjs-config-lint-fix",
-    "test": "npm run test:node",
+    "test": "npm run test:node && npm run test:browser",
     "test:node": "ts-node node_modules/tape/bin/tape ./test/index.ts",
     "test:browser:build": "tsc && cp ./test/*.json test-build/test/",
     "test:browser": "npm run test:browser:build && karma start karma.conf.js"

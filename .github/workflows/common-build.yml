@@ -25,17 +25,15 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
       - uses: actions/checkout@v1
-      - run: npx lerna bootstrap --scope ethereumjs-common --ignore-scripts --include-dependencies --no-ci
-      - run: npx lerna run --scope ethereumjs-common --include-dependencies build
-      - run: npx lerna run lint --scope ethereumjs-common
-      - run: npm test
-        working-directory: ${{ env.cwd }}
 
-      - run: npm run coverage
-        working-directory: ${{ env.cwd }}
-        if: ${{ matrix.node-version == 12
+      - run: npx lerna bootstrap --scope ethereumjs-common --ignore-scripts --include-dependencies --no-ci
+      - run: npx lerna run build --scope ethereumjs-common --include-dependencies
+      - run: npx lerna run lint --scope ethereumjs-common
+
+      - run: npx lerna run coverage --scope ethereumjs-common
+
       - uses: codecov/codecov-action@v1
         with:
           file: ${{ env.cwd }}/coverage/lcov.info
           flags: common
-        if: ${{ matrix.node-version == 12
+        if: ${{ matrix.node-version == 12 }}
