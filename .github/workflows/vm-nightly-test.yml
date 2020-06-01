@@ -6,7 +6,7 @@ jobs:
   test-vm-api:
     runs-on: ubuntu-latest
     env:
-      cwd: '${{github.workspace}}/packages/vm'
+      cwd: ${{github.workspace}}/packages/vm
     steps:
       - uses: actions/setup-node@v1
         with:
@@ -15,13 +15,13 @@ jobs:
       - run: npx lerna bootstrap --scope ethereumjs-vm --ignore-scripts --include-dependencies --no-ci
       - run: npx lerna run --scope ethereumjs-vm --include-dependencies build
       - run: npm run test:API
-        working-directory: '${{ env.cwd }}'
+        working-directory: ${{ env.cwd }}
       - run: npm run test:API:browser
-        working-directory: '${{ env.cwd }}'
+        working-directory: ${{ env.cwd }}
   test-vm-state:
     runs-on: ubuntu-latest
     env:
-      cwd: '${{github.workspace}}/packages/vm'
+      cwd: ${{github.workspace}}/packages/vm
     steps:
       - uses: actions/setup-node@v1
         with:
@@ -30,11 +30,11 @@ jobs:
       - run: npx lerna bootstrap --scope ethereumjs-vm --ignore-scripts --include-dependencies --no-ci
       - run: npx lerna run --scope ethereumjs-vm --include-dependencies build
       - run: npm run test:state:allForks
-        working-directory: '${{ env.cwd }}'
+        working-directory: ${{ env.cwd }}
   test-vm-blockchain:
     runs-on: ubuntu-latest
     env:
-      cwd: '${{github.workspace}}/packages/vm'
+      cwd: ${{github.workspace}}/packages/vm
     steps:
       - uses: actions/setup-node@v1
         with:
@@ -43,11 +43,11 @@ jobs:
       - run: npx lerna bootstrap --scope ethereumjs-vm --ignore-scripts --include-dependencies --no-ci
       - run: npx lerna run --scope ethereumjs-vm --include-dependencies build
       - run: npm run test:blockchain
-        working-directory: '${{ env.cwd }}'
+        working-directory: ${{ env.cwd }}
   test-vm-slow:
     runs-on: ubuntu-latest
     env:
-      cwd: '${{github.workspace}}/packages/vm'
+      cwd: ${{github.workspace}}/packages/vm
     steps:
       - uses: actions/setup-node@v1
         with:
@@ -56,4 +56,4 @@ jobs:
       - run: npx lerna bootstrap --scope ethereumjs-vm --ignore-scripts --include-dependencies --no-ci
       - run: npx lerna run --scope ethereumjs-vm --include-dependencies build
       - run: npm run test:state:slow
-        working-directory: '${{ env.cwd }}'
+        working-directory: ${{ env.cwd }}

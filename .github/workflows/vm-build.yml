@@ -23,7 +23,7 @@ jobs:
   test-vm-api:
     runs-on: ubuntu-latest
     env:
-      cwd: '${{github.workspace}}/packages/vm'
+      cwd: ${{github.workspace}}/packages/vm
     steps:
       - uses: actions/setup-node@v1
         with:
@@ -33,13 +33,13 @@ jobs:
       - run: npx lerna run --scope ethereumjs-vm --include-dependencies build
       - run: npx lerna run lint --scope ethereumjs-vm
       - run: npm run test:API
-        working-directory: '${{ env.cwd }}'
+        working-directory: ${{ env.cwd }}
       - run: npm run test:API:browser
-        working-directory: '${{ env.cwd }}'
+        working-directory: ${{ env.cwd }}
   test-vm-state:
     runs-on: ubuntu-latest
     env:
-      cwd: '${{github.workspace}}/packages/vm'
+      cwd: ${{github.workspace}}/packages/vm
     steps:
       - uses: actions/setup-node@v1
         with:
@@ -48,17 +48,17 @@ jobs:
       - run: npx lerna bootstrap --scope ethereumjs-vm --ignore-scripts --include-dependencies --no-ci
       - run: npx lerna run --scope ethereumjs-vm --include-dependencies build
       - run: npm run test:state:selectedForks
-        working-directory: '${{ env.cwd }}'
+        working-directory: ${{ env.cwd }}
       - run: npm run coverage
-        working-directory: '${{ env.cwd }}'
+        working-directory: ${{ env.cwd }}
       - uses: codecov/codecov-action@v1
         with:
-          file: '${{ env.cwd }}/coverage/lcov.info'
+          file: ${{ env.cwd }}/coverage/lcov.info
           flags: vm
   test-vm-blockchain:
     runs-on: ubuntu-latest
     env:
-      cwd: '${{github.workspace}}/packages/vm'
+      cwd: ${{github.workspace}}/packages/vm
     steps:
       - uses: actions/setup-node@v1
         with:
@@ -67,4 +67,4 @@ jobs:
       - run: npx lerna bootstrap --scope ethereumjs-vm --ignore-scripts --include-dependencies --no-ci
       - run: npx lerna run --scope ethereumjs-vm --include-dependencies build
       - run: npm run test:blockchain
-        working-directory: '${{ env.cwd }}'
+        working-directory: ${{ env.cwd }}
