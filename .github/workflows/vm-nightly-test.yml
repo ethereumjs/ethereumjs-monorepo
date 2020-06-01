@@ -1,69 +1,54 @@
 name: VM Nightly
-'on':
+on:
   schedule:
     - cron: 0 0 * * *
 jobs:
   test-vm-api:
     runs-on: ubuntu-latest
+    env:
+      cwd: ${{github.workspace}}/packages/vm
     steps:
       - uses: actions/setup-node@v1
         with:
           node-version: 12.x
       - uses: actions/checkout@v1
       - run: npx lerna bootstrap --scope ethereumjs-vm --ignore-scripts --include-dependencies --no-ci
-      - run: npx lerna run --scope ethereumjs-vm --include-dependencies build
-      - run: 'npm run test:API'
-        env:
-          CI: true
-        working-directory: '${{ env.cwd }}'
-      - run: 'npm run test:API:browser'
-        env:
-          CI: true
-        working-directory: '${{ env.cwd }}'
-    env:
-      cwd: '${{github.workspace}}/packages/vm'
+      - run: npx lerna run build --scope ethereumjs-vm --include-dependencies
+      - run: npx lerna run test:API --scope ethereumjs-vm
+      - run: npx lerna run test:API:browser --scope ethereumjs-vm
   test-vm-state:
     runs-on: ubuntu-latest
+    env:
+      cwd: ${{github.workspace}}/packages/vm
     steps:
       - uses: actions/setup-node@v1
         with:
           node-version: 12.x
       - uses: actions/checkout@v1
       - run: npx lerna bootstrap --scope ethereumjs-vm --ignore-scripts --include-dependencies --no-ci
-      - run: npx lerna run --scope ethereumjs-vm --include-dependencies build
-      - run: 'npm run test:state:allForks'
-        env:
-          CI: true
-        working-directory: '${{ env.cwd }}'
-    env:
-      cwd: '${{github.workspace}}/packages/vm'
+      - run: npx lerna run build --scope ethereumjs-vm --include-dependencies
+      - run: npx lerna run test:state:allForks --scope ethereumjs-vm
   test-vm-blockchain:
     runs-on: ubuntu-latest
+    env:
+      cwd: ${{github.workspace}}/packages/vm
     steps:
       - uses: actions/setup-node@v1
         with:
           node-version: 12.x
       - uses: actions/checkout@v1
       - run: npx lerna bootstrap --scope ethereumjs-vm --ignore-scripts --include-dependencies --no-ci
-      - run: npx lerna run --scope ethereumjs-vm --include-dependencies build
-      - run: 'npm run test:blockchain'
-        env:
-          CI: true
-        working-directory: '${{ env.cwd }}'
-    env:
-      cwd: '${{github.workspace}}/packages/vm'
+      - run: npx lerna run build --scope ethereumjs-vm --include-dependencies
+      - run: npx lerna run test:blockchain --scope ethereumjs-vm
   test-vm-slow:
     runs-on: ubuntu-latest
+    env:
+      cwd: ${{github.workspace}}/packages/vm
     steps:
       - uses: actions/setup-node@v1
         with:
           node-version: 12.x
       - uses: actions/checkout@v1
       - run: npx lerna bootstrap --scope ethereumjs-vm --ignore-scripts --include-dependencies --no-ci
-      - run: npx lerna run --scope ethereumjs-vm --include-dependencies build
-      - run: 'npm run test:state:slow'
-        env:
-          CI: true
-        working-directory: '${{ env.cwd }}'
-    env:
-      cwd: '${{github.workspace}}/packages/vm'
+      - run: npx lerna run build --scope ethereumjs-vm --include-dependencies
+      - run: npx lerna run test:state:slow --scope ethereumjs-vm

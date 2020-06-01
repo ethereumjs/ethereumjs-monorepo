@@ -11,7 +11,6 @@
     "prepublishOnly": "npm run lint && npm run test && npm run build",
     "build": "ethereumjs-config-build",
     "coverage": "ethereumjs-config-coverage",
-    "coveralls": "ethereumjs-config-coveralls",
     "docs:build": "typedoc --options typedoc.js",
     "format": "ethereumjs-config-format",
     "format:fix": "ethereumjs-config-format-fix",
@@ -20,7 +19,7 @@
     "tsc": "ethereumjs-config-tsc",
     "lint": "ethereumjs-config-lint",
     "lint:fix": "ethereumjs-config-lint-fix",
-    "test": "nyc --reporter=lcov ts-node node_modules/tape/bin/tape ./test/index.ts"
+    "test": "ts-node node_modules/tape/bin/tape ./test/index.ts"
   },
   "repository": {
     "type": "git",
@@ -59,7 +58,6 @@
     "@types/node": "^11.11.4",
     "@types/semaphore": "^1.1.0",
     "@types/tape": "^4.2.33",
-    "coveralls": "^3.0.2",
     "nyc": "^13.0.1",
     "prettier": "^1.16.4",
     "tape": "^4.9.1",

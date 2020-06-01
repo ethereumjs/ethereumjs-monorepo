@@ -11,7 +11,6 @@
     "build": "ethereumjs-config-build",
     "prepublishOnly": "npm run test && npm run build",
     "coverage": "ethereumjs-config-coverage",
-    "coveralls": "ethereumjs-config-coveralls",
     "format": "ethereumjs-config-format",
     "format:fix": "ethereumjs-config-format-fix",
     "tslint": "ethereumjs-config-tslint",
@@ -19,9 +18,7 @@
     "tsc": "ethereumjs-config-tsc",
     "lint": "ethereumjs-config-lint",
     "lint:fix": "ethereumjs-config-lint-fix",
-    "unitTests": "ts-node ./node_modules/tape/bin/tape ./tests/*.ts",
-    "test": "npm run lint && npm run unitTests",
-    "test:fix": "npm run lint:fix && npm run unitTests",
+    "test": "ts-node ./node_modules/tape/bin/tape ./tests/*.ts",
     "docs:build": "typedoc --options typedoc.js"
   },
   "repository": {
@@ -50,7 +47,6 @@
     "@ethereumjs/config-tslint": "^1.1.0",
     "@types/node": "^10.12.2",
     "@types/tape": "^4.2.33",
-    "coveralls": "^3.0.1",
     "nyc": "^11.7.1",
     "prettier": "^1.15.3",
     "tape": "^4.9.2",
