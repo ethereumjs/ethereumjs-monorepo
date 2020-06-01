@@ -1,28 +1,27 @@
 import tape = require('tape')
 import Common from 'ethereumjs-common'
-import * as utils from 'ethereumjs-util'
-import { rlp } from 'ethereumjs-util'
+import { rlp, toBuffer, zeros, KECCAK256_RLP_S, KECCAK256_RLP_ARRAY_S } from 'ethereumjs-util'
 import { BlockHeader } from '../src/header'
 import { Block } from '../src/block'
 
 tape('[Block]: Header functions', function(t) {
   t.test('should create with default constructor', function(st) {
     function compareDefaultHeader(st: tape.Test, header: BlockHeader) {
-      st.deepEqual(header.parentHash, utils.zeros(32))
-      st.equal(header.uncleHash.toString('hex'), utils.KECCAK256_RLP_ARRAY_S)
-      st.deepEqual(header.coinbase, utils.zeros(20))
-      st.deepEqual(header.stateRoot, utils.zeros(32))
-      st.equal(header.transactionsTrie.toString('hex'), utils.KECCAK256_RLP_S)
-      st.equal(header.receiptTrie.toString('hex'), utils.KECCAK256_RLP_S)
-      st.deepEqual(header.bloom, utils.zeros(256))
+      st.deepEqual(header.parentHash, zeros(32))
+      st.equal(header.uncleHash.toString('hex'), KECCAK256_RLP_ARRAY_S)
+      st.deepEqual(header.coinbase, zeros(20))
+      st.deepEqual(header.stateRoot, zeros(32))
+      st.equal(header.transactionsTrie.toString('hex'), KECCAK256_RLP_S)
+      st.equal(header.receiptTrie.toString('hex'), KECCAK256_RLP_S)
+      st.deepEqual(header.bloom, zeros(256))
       st.deepEqual(header.difficulty, Buffer.from([]))
-      st.deepEqual(header.number, utils.toBuffer(1150000))
+      st.deepEqual(header.number, toBuffer(1150000))
       st.deepEqual(header.gasLimit, Buffer.from('ffffffffffffff', 'hex'))
       st.deepEqual(header.gasUsed, Buffer.from([]))
       st.deepEqual(header.timestamp, Buffer.from([]))
       st.deepEqual(header.extraData, Buffer.from([]))
-      st.deepEqual(header.mixHash, utils.zeros(32))
-      st.deepEqual(header.nonce, utils.zeros(8))
+      st.deepEqual(header.mixHash, zeros(32))
+      st.deepEqual(header.nonce, zeros(8))
     }
 
     let header = new BlockHeader()

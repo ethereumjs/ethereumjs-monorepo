@@ -3,7 +3,7 @@ import VM from '../../dist'
 import * as assert from 'assert'
 import * as path from 'path'
 import * as fs from 'fs'
-import * as util from 'ethereumjs-util'
+import { privateToAddress, bufferToHex } from 'ethereumjs-util'
 import Account from 'ethereumjs-account'
 import { Transaction } from 'ethereumjs-tx'
 const abi = require('ethereumjs-abi')
@@ -78,7 +78,7 @@ function getGreeterDeploymentBytecode(solcOutput: any): any {
 
 async function getAccountNonce(vm: VM, accountPrivateKey: Buffer) {
   const account = (await promisify(vm.stateManager.getAccount.bind(vm.stateManager))(
-    util.privateToAddress(accountPrivateKey),
+    privateToAddress(accountPrivateKey),
   )) as Account
 
   return account.nonce
@@ -162,9 +162,9 @@ async function main() {
     'hex',
   )
 
-  const accountAddress = util.privateToAddress(accountPk)
+  const accountAddress = privateToAddress(accountPk)
 
-  console.log('Account:', util.bufferToHex(accountAddress))
+  console.log('Account:', bufferToHex(accountAddress))
 
   const account = new Account({ balance: 1e18 })
 
@@ -188,7 +188,7 @@ async function main() {
 
   const contractAddress = await deployContract(vm, accountPk, bytecode, INITIAL_GREETING)
 
-  console.log('Contract address:', util.bufferToHex(contractAddress))
+  console.log('Contract address:', bufferToHex(contractAddress))
 
   const greeting = await getGreeting(vm, contractAddress, accountAddress)
 

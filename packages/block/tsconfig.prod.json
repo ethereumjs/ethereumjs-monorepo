@@ -1,8 +1,7 @@
 {
   "extends": "@ethereumjs/config-tsc",
   "compilerOptions": {
-    "outDir": "./dist",
-    "esModuleInterop": true
+    "outDir": "./dist"
   },
   "include": ["src/**/*.ts"]
 }
