@@ -5,14 +5,8 @@ on:
       - master
     tags:
       - '*'
-    paths-ignore:
-      - packages/account/**
-      - packages/common/**
   pull_request:
     types: [opened, reopened, synchronize]
-    paths-ignore:
-      - packages/account/**
-      - packages/common/**
 jobs:
   test-tx:
     runs-on: ubuntu-latest

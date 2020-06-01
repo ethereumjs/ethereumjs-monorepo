@@ -5,18 +5,8 @@ on:
       - master
     tags:
       - '*'
-    paths-ignore:
-      - packages/account/**
-      - packages/block/**
-      - packages/common/**
-      - packages/tx/**
   pull_request:
     types: [opened, reopened, synchronize]
-    paths-ignore:
-      - packages/account/**
-      - packages/block/**
-      - packages/common/**
-      - packages/tx/**
 jobs:
   test-blockchain:
     runs-on: ubuntu-latest
