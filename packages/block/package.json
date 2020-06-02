@@ -46,7 +46,6 @@
     "merkle-patricia-tree": "^2.1.2"
   },
   "devDependencies": {
-    "@ethereumjs/blockchain": "^4.0.3",
     "@ethereumjs/config-nyc": "^1.1.1",
     "@ethereumjs/config-prettier": "^1.1.1",
     "@ethereumjs/config-tsc": "^1.1.1",
