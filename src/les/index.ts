@@ -2,10 +2,11 @@ import { EventEmitter } from 'events'
 import rlp from 'rlp-encoding'
 import ms from 'ms'
 import { debug as createDebugLogger } from 'debug'
-import { int2buffer, buffer2int, assertEq } from '../util'
+import { int2buffer, buffer2int, assertEq, formatLogData } from '../util'
 import { Peer, DISCONNECT_REASONS } from '../rlpx/peer'
 
 const debug = createDebugLogger('devp2p:les')
+const verbose = createDebugLogger('verbose').enabled
 
 export const DEFAULT_ANNOUNCE_TYPE = 1
 
@@ -35,11 +36,11 @@ export class LES extends EventEmitter {
   _handleMessage(code: LES.MESSAGE_CODES, data: any) {
     const payload = rlp.decode(data)
     if (code !== LES.MESSAGE_CODES.STATUS) {
-      debug(
-        `Received ${this.getMsgPrefix(code)} message from ${this._peer._socket.remoteAddress}:${
-          this._peer._socket.remotePort
-        }: ${data.toString('hex')}`,
-      )
+      const debugMsg = `Received ${this.getMsgPrefix(code)} message from ${
+        this._peer._socket.remoteAddress
+      }:${this._peer._socket.remotePort}`
+      const logData = formatLogData(data.toString('hex'), verbose)
+      debug(`${debugMsg}: ${logData}`)
     }
     switch (code) {
       case LES.MESSAGE_CODES.STATUS:
@@ -151,11 +152,12 @@ export class LES extends EventEmitter {
   }
 
   sendMessage(code: LES.MESSAGE_CODES, reqId: number, payload: any) {
-    debug(
-      `Send ${this.getMsgPrefix(code)} message to ${this._peer._socket.remoteAddress}:${
-        this._peer._socket.remotePort
-      }: ${rlp.encode(payload).toString('hex')}`,
-    )
+    const debugMsg = `Send ${this.getMsgPrefix(code)} message to ${
+      this._peer._socket.remoteAddress
+    }:${this._peer._socket.remotePort}`
+    const logData = formatLogData(rlp.encode(payload).toString('hex'), verbose)
+    debug(`${debugMsg}: ${logData}`)
+
     switch (code) {
       case LES.MESSAGE_CODES.STATUS:
         throw new Error('Please send status message through .sendStatus')

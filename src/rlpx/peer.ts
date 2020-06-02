@@ -4,12 +4,13 @@ import * as util from '../util'
 import BufferList from 'bl'
 import ms from 'ms'
 import { debug as createDebugLogger } from 'debug'
-import { int2buffer, buffer2int } from '../util'
+import { int2buffer, buffer2int, formatLogData } from '../util'
 import { ECIES } from './ecies'
 import { Socket } from 'net'
 import { ETH, LES } from '../'
 
 const debug = createDebugLogger('devp2p:rlpx:peer')
+const verbose = createDebugLogger('verbose').enabled
 
 export const BASE_PROTOCOL_VERSION = 4
 export const BASE_PROTOCOL_LENGTH = 16
@@ -221,8 +222,9 @@ export class Peer extends EventEmitter {
         }
 
         debug(
-          `Received body ${this._socket.remoteAddress}:${this._socket.remotePort} ${body.toString(
-            'hex',
+          `Received body ${this._socket.remoteAddress}:${this._socket.remotePort} ${formatLogData(
+            body.toString('hex'),
+            verbose,
           )}`,
         )
 
