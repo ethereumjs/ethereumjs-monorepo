@@ -27,16 +27,10 @@ jobs:
         with:
           node-version: '${{ matrix.node-version }}'
       - uses: actions/checkout@v1
-      - run: npm install
-        working-directory: '${{ env.cwd }}'
+      - run: npx lerna bootstrap --scope @ethereumjs/block --ignore-scripts --include-dependencies --no-ci
+      - run: npx lerna run build --scope @ethereumjs/block --include-dependencies
       - run: npx lerna run lint --scope @ethereumjs/block
-      - run: npm run test:node
-        env:
-          CI: true
-        working-directory: '${{ env.cwd }}'
-      - run: 'npm run test:browser'
-        env:
-          CI: true
-        working-directory: '${{ env.cwd }}'
+      - run: npx lerna run test:node --scope @ethereumjs/block
+      - run: npx lerna run test:browser --scope @ethereumjs/block
     env:
       cwd: '${{github.workspace}}/packages/block'
