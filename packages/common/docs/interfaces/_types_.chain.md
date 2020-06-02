@@ -4,81 +4,81 @@
 
 ## Hierarchy
 
-- **Chain**
+* **Chain**
 
 ## Index
 
 ### Properties
 
-- [bootstrapNodes](_types_.chain.md#bootstrapnodes)
-- [chainId](_types_.chain.md#chainid)
-- [comment](_types_.chain.md#comment)
-- [genesis](_types_.chain.md#genesis)
-- [hardforks](_types_.chain.md#hardforks)
-- [name](_types_.chain.md#name)
-- [networkId](_types_.chain.md#networkid)
-- [url](_types_.chain.md#url)
+* [bootstrapNodes](_types_.chain.md#bootstrapnodes)
+* [chainId](_types_.chain.md#chainid)
+* [comment](_types_.chain.md#comment)
+* [genesis](_types_.chain.md#genesis)
+* [hardforks](_types_.chain.md#hardforks)
+* [name](_types_.chain.md#name)
+* [networkId](_types_.chain.md#networkid)
+* [url](_types_.chain.md#url)
 
 ## Properties
 
-### bootstrapNodes
+###  bootstrapNodes
 
-• **bootstrapNodes**: _[BootstrapNode](\_types_.bootstrapnode.md)[]\_
+• **bootstrapNodes**: *[BootstrapNode](_types_.bootstrapnode.md)[]*
 
-_Defined in [types.ts:23](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/types.ts#L23)_
+*Defined in [types.ts:23](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/types.ts#L23)*
 
----
+___
 
-### chainId
+###  chainId
 
-• **chainId**: _number_
+• **chainId**: *number*
 
-_Defined in [types.ts:17](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/types.ts#L17)_
+*Defined in [types.ts:17](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/types.ts#L17)*
 
----
+___
 
-### comment
+###  comment
 
-• **comment**: _string_
+• **comment**: *string*
 
-_Defined in [types.ts:19](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/types.ts#L19)_
+*Defined in [types.ts:19](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/types.ts#L19)*
 
----
+___
 
-### genesis
+###  genesis
 
-• **genesis**: _[GenesisBlock](\_types_.genesisblock.md)\_
+• **genesis**: *[GenesisBlock](_types_.genesisblock.md)*
 
-_Defined in [types.ts:21](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/types.ts#L21)_
+*Defined in [types.ts:21](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/types.ts#L21)*
 
----
+___
 
-### hardforks
+###  hardforks
 
-• **hardforks**: _[Hardfork](\_types_.hardfork.md)[]\_
+• **hardforks**: *[Hardfork](_types_.hardfork.md)[]*
 
-_Defined in [types.ts:22](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/types.ts#L22)_
+*Defined in [types.ts:22](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/types.ts#L22)*
 
----
+___
 
-### name
+###  name
 
-• **name**: _string_
+• **name**: *string*
 
-_Defined in [types.ts:16](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/types.ts#L16)_
+*Defined in [types.ts:16](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/types.ts#L16)*
 
----
+___
 
-### networkId
+###  networkId
 
-• **networkId**: _number_
+• **networkId**: *number*
 
-_Defined in [types.ts:18](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/types.ts#L18)_
+*Defined in [types.ts:18](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/types.ts#L18)*
 
----
+___
 
-### url
+###  url
 
-• **url**: _string_
+• **url**: *string*
 
-_Defined in [types.ts:20](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/types.ts#L20)_
+*Defined in [types.ts:20](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/types.ts#L20)*

@@ -4,26 +4,26 @@
 
 ## Hierarchy
 
-- **genesisStatesType**
+* **genesisStatesType**
 
 ## Indexable
 
-- \[ **key**: _string_\]: object
+* \[ **key**: *string*\]: object
 
 ## Index
 
 ### Properties
 
-- [names](_types_.genesisstatestype.md#names)
+* [names](_types_.genesisstatestype.md#names)
 
 ## Properties
 
-### names
+###  names
 
-• **names**: _object_
+• **names**: *object*
 
-_Defined in [types.ts:2](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/types.ts#L2)_
+*Defined in [types.ts:2](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/types.ts#L2)*
 
 #### Type declaration:
 
-- \[ **key**: _string_\]: string
+* \[ **key**: *string*\]: string
