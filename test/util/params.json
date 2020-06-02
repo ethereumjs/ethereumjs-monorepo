@@ -22,43 +22,27 @@
   "bootstrapNodes": [],
   "hardforks": [{
     "name": "chainstart",
-    "block": 0,
-    "consensus": "poa",
-    "finality": null
+    "block": 0
   }, {
     "name": "homestead",
-    "block": 1,
-    "consensus": "poa",
-    "finality": null
+    "block": 1
   }, {
     "name": "dao",
-    "block": null,
-    "consensus": "poa",
-    "finality": null
+    "block": null
   }, {
     "name": "tangerineWhistle",
-    "block": 2,
-    "consensus": "poa",
-    "finality": null
+    "block": 2
   }, {
     "name": "spuriousDragon",
-    "block": 3,
-    "consensus": "poa",
-    "finality": null
+    "block": 3
   }, {
     "name": "byzantium",
-    "block": 1035301,
-    "consensus": "poa",
-    "finality": null
+    "block": 1035301
   }, {
     "name": "constantinople",
-    "block": null,
-    "consensus": "poa",
-    "finality": null
+    "block": null
   }, {
     "name": "hybridCasper",
-    "block": null,
-    "consensus": "poa",
-    "finality": "pos"
+    "block": null
   }]
 }
