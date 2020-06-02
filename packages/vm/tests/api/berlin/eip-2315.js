@@ -31,7 +31,7 @@ tape('Berlin: EIP 2315 tests', t => {
   // EIP test case 1
   t.test('should jump into a subroutine, back out and stop', async st => {
     const test = {
-      code: "6004b300b2b7",
+      code: "60045e005c5d",
       totalSteps: 4,
       steps: [
         { expectedPC: 0, expectedOpcode: "PUSH1" },
@@ -49,7 +49,7 @@ tape('Berlin: EIP 2315 tests', t => {
   // EIP test case 2
   t.test('should go into two depths of subroutines', async st => {
     const test = {
-      code: "6800000000000000000cb300b26011b3b7b2b7",
+      code: "6800000000000000000c5e005c60115e5d5c5d",
       totalSteps: 7,
       steps: [
         { expectedPC: 0, expectedOpcode: "PUSH9" },
@@ -70,7 +70,7 @@ tape('Berlin: EIP 2315 tests', t => {
   // EIP test case 3
   t.test('should error on invalid jumpsub (location out of code range)', async st => {
     const test = {
-      code: "6801000000000000000cb300b26011b3b7b2b7",
+      code: "6801000000000000000c5e005c60115e5d5c5d",
       totalSteps: 2,
       steps: [
         { expectedPC: 0, expectedOpcode: "PUSH9" },
@@ -87,7 +87,7 @@ tape('Berlin: EIP 2315 tests', t => {
   // https://github.com/hyperledger/besu/pull/717/files#diff-5d1330bc567b68d81941896ef2d2ce88R114
   t.test('should error on invalid jumpsub (dest not BEGINSUB)', async st => {
     const test = {
-      code: "6005b300b2b7",
+      code: "60055e005c5d",
       totalSteps: 2,
       steps: [
         { expectedPC: 0, expectedOpcode: "PUSH1" },
@@ -103,7 +103,7 @@ tape('Berlin: EIP 2315 tests', t => {
   // Code is same as EIP example 1 above, with JUMP substituted for JUMPSUB
   t.test('BEGINSUB should not be a valid dest for JUMP', async st => {
     const test = {
-      code: "60045600b2b7",
+      code: "600456005c5d",
       totalSteps: 2,
       steps: [
         { expectedPC: 0, expectedOpcode: "PUSH1" },
@@ -119,7 +119,7 @@ tape('Berlin: EIP 2315 tests', t => {
   // EIP test case 4
   t.test('should error when the return stack is too shallow', async st => {
     const test = {
-      code: "b75858",
+      code: "5d5858",
       totalSteps: 1,
       steps: [
         { expectedPC: 0, expectedOpcode: "RETURNSUB" }
@@ -135,7 +135,7 @@ tape('Berlin: EIP 2315 tests', t => {
   // Note: this case differs slightly from the EIP spec which expects STOP as the last step.
   t.test('it should hit the `virtual stop` when JUMP is on the last byte of code (EIP)', async st => {
     const test = {
-      code: "600556b2b75b6003b3",
+      code: "6005565c5d5b60035e",
       totalSteps: 6,
       steps: [
         { expectedPC: 0, expectedOpcode: "PUSH1" },
@@ -156,10 +156,10 @@ tape('Berlin: EIP 2315 tests', t => {
   t.test('it should error if the return stack size limit (1023) is hit', async st => {
     const ops = [
       '60', '03', // PUSH1 3   # 1
-      'b3',       // JUMPSUB   # 2
-      'b2',       // BEGINSUB  # 3
+      '5e',       // JUMPSUB   # 2
+      '5c',       // BEGINSUB  # 3
       '60', '03', // PUSH1 3   # 4
-      'b3',       // JUMPSUB   # 5
+      '5e',       // JUMPSUB   # 5
     ]
 
     // Max return stack height is 1023
@@ -180,7 +180,7 @@ tape('Berlin: EIP 2315 tests', t => {
   // EIP test case 6
   t.test('should error when walking into BEGINSUB', async st => {
     const test = {
-      code: "b2",
+      code: "5c",
       totalSteps: 1,
       steps: [
         { expectedPC: 0, expectedOpcode: "BEGINSUB" }

@@ -104,6 +104,9 @@ const opcodes = {
   0x59: { name: 'MSIZE', isAsync: false },
   0x5a: { name: 'GAS', isAsync: false },
   0x5b: { name: 'JUMPDEST', isAsync: false },
+  0x5c: { name: 'BEGINSUB', isAsync: false },
+  0x5d: { name: 'RETURNSUB', isAsync: false },
+  0x5e: { name: 'JUMPSUB', isAsync: false },
 
   // 0x60, range
   0x60: { name: 'PUSH', isAsync: false },
@@ -178,12 +181,6 @@ const opcodes = {
   0xa2: { name: 'LOG', isAsync: false },
   0xa3: { name: 'LOG', isAsync: false },
   0xa4: { name: 'LOG', isAsync: false },
-
-  // '0xb0' range - subroutines
-  // Temporary Placement pending Berlin Hardfork updates
-  0xb2: { name: 'BEGINSUB', fee: 1, isAsync: false },
-  0xb3: { name: 'JUMPSUB', fee: 8, isAsync: false },
-  0xb7: { name: 'RETURNSUB', fee: 2, isAsync: false },
 
   // '0xf0' range - closures
   0xf0: { name: 'CREATE', isAsync: true },
