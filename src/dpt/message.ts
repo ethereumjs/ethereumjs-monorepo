@@ -1,7 +1,10 @@
+import { debug as createDebugLogger } from 'debug'
 import ip from 'ip'
 import rlp from 'rlp-encoding'
 import secp256k1 from 'secp256k1'
 import { keccak256, int2buffer, buffer2int, assertEq } from '../util'
+
+const debug = createDebugLogger('devp2p:dpt:server')
 
 function getTimestamp() {
   return (Date.now() / 1000) | 0
@@ -183,7 +186,7 @@ export function encode<T>(typename: string, data: T, privateKey: Buffer) {
 
 export function decode(buffer: Buffer) {
   const hash = keccak256(buffer.slice(32))
-  assertEq(buffer.slice(0, 32), hash, 'Hash verification failed')
+  assertEq(buffer.slice(0, 32), hash, 'Hash verification failed', debug)
 
   const typedata = buffer.slice(97)
   const type = typedata[0]

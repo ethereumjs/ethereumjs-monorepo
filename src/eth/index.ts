@@ -46,7 +46,7 @@ export class ETH extends EventEmitter {
     }
     switch (code) {
       case ETH.MESSAGE_CODES.STATUS:
-        assertEq(this._peerStatus, null, 'Uncontrolled status message')
+        assertEq(this._peerStatus, null, 'Uncontrolled status message', debug)
         this._peerStatus = payload
         debug(
           `Received ${this.getMsgPrefix(code)} message from ${this._peer._socket.remoteAddress}:${
@@ -84,9 +84,9 @@ export class ETH extends EventEmitter {
     if (this._status === null || this._peerStatus === null) return
     clearTimeout(this._statusTimeoutId)
 
-    assertEq(this._status[0], this._peerStatus[0], 'Protocol version mismatch')
-    assertEq(this._status[1], this._peerStatus[1], 'NetworkId mismatch')
-    assertEq(this._status[4], this._peerStatus[4], 'Genesis block mismatch')
+    assertEq(this._status[0], this._peerStatus[0], 'Protocol version mismatch', debug)
+    assertEq(this._status[1], this._peerStatus[1], 'NetworkId mismatch', debug)
+    assertEq(this._status[4], this._peerStatus[4], 'Genesis block mismatch', debug)
 
     this.emit('status', {
       networkId: this._peerStatus[1],

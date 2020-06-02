@@ -1,10 +1,7 @@
 import { randomBytes } from 'crypto'
 import { privateKeyVerify, publicKeyConvert } from 'secp256k1'
-import { debug as createDebugLogger } from 'debug'
 import createKeccakHash from 'keccak'
 import assert from 'assert'
-
-const debug = createDebugLogger('devp2p:util')
 
 export function keccak256(...buffers: Buffer[]) {
   const buffer = Buffer.concat(buffers)
@@ -59,12 +56,12 @@ export function xor(a: Buffer, b: any): Buffer {
   return buffer
 }
 
-export function assertEq(expected: any, actual: any, msg: string): void {
+export function assertEq(expected: any, actual: any, msg: string, debug: any): void {
   let message
   if (Buffer.isBuffer(expected) && Buffer.isBuffer(actual)) {
     if (expected.equals(actual)) return
     message = `${msg}: ${expected.toString('hex')} / ${actual.toString('hex')}`
-    debug(message)
+    debug(`[ERROR]  ${message}`)
     throw new assert.AssertionError({
       message: message,
     })
