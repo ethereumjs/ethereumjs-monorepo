@@ -1,5 +1,12 @@
 # ETHEREUMJS CLIENT - PROJECT SUMMARY
 
+NOTE:
+**This document is OUTDATED** and will be rewritten at some point in time. For the moment please refer to our communication channels on information on the state of client development.
+
+The EthereumJS Team, 2020-06-01
+
+---
+
 ## MAIN FOCUS
 
 Main goal of this project is to develop an Ethereum main net light client as well 
