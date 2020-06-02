@@ -16,69 +16,47 @@
   "hardforks": [
     {
       "name": "chainstart",
-      "block": 0,
-      "consensus": "pow",
-      "finality": null
+      "block": 0
     },
     {
       "name": "homestead",
-      "block": 0,
-      "consensus": "pow",
-      "finality": null
+      "block": 0
     },
     {
       "name": "dao",
-      "block": null,
-      "consensus": "pow",
-      "finality": null
+      "block": null
     },
     {
       "name": "tangerineWhistle",
-      "block": 0,
-      "consensus": "pow",
-      "finality": null
+      "block": 0
     },
     {
       "name": "spuriousDragon",
-      "block": 10,
-      "consensus": "pow",
-      "finality": null
+      "block": 10
     },
     {
       "name": "byzantium",
-      "block": 1700000,
-      "consensus": "pow",
-      "finality": null
+      "block": 1700000
     },
     {
       "name": "constantinople",
-      "block": 4230000,
-      "consensus": "pow",
-      "finality": null
+      "block": 4230000
     },
     {
       "name": "petersburg",
-      "block": 4939394,
-      "consensus": "pow",
-      "finality": null
+      "block": 4939394
     },
     {
       "name": "istanbul",
-      "block": 6485846,
-      "consensus": "pow",
-      "finality": null
+      "block": 6485846
     },
     {
       "name": "muirGlacier",
-      "block": 7117117,
-      "consensus": "pow",
-      "finality": null
+      "block": 7117117
     },
     {
       "name": "berlin",
-      "block": null,
-      "consensus": "pow",
-      "finality": null
+      "block": null
     }
   ],
   "bootstrapNodes": [
