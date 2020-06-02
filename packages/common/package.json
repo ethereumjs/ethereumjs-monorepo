@@ -20,7 +20,7 @@
     "lint": "ethereumjs-config-lint",
     "lint:fix": "ethereumjs-config-lint-fix",
     "unitTests": "ts-node ./node_modules/tape/bin/tape ./tests/*.ts",
-    "test": "npm run lint && npm run unitTests",
+    "test": "npm run unitTests",
     "test:fix": "npm run lint:fix && npm run unitTests",
     "docs:build": "typedoc --options typedoc.js"
   },

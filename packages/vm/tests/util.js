@@ -1,6 +1,6 @@
 const async = require('async')
 const { BN, rlp, keccak256, stripHexPrefix, setLengthLeft } = require('ethereumjs-util')
-const { Account } = require('@ethereumjs/account')
+const Account = require('@ethereumjs/account').default
 const Transaction = require('@ethereumjs/tx').Transaction
 const Block = require('@ethereumjs/block').Block
 
