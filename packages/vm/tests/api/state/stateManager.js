@@ -1,7 +1,7 @@
 const tape = require('tape')
 const { parallel } = require('async')
 const { toBuffer, keccak256, KECCAK256_RLP } = require('ethereumjs-util')
-const Common = require('ethereumjs-common').default
+const Common = require('@ethereumjs/common').default
 const { DefaultStateManager } = require('../../../dist/state')
 const { createAccount } = require('../utils')
 const { isRunningInKarma } = require('../../util')

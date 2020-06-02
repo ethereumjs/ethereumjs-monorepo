@@ -1,6 +1,6 @@
 const tape = require('tape')
 const BN = require('bn.js')
-const Common = require('ethereumjs-common').default
+const Common = require('@ethereumjs/common').default
 const blake2f = require('../../../dist/evm/precompiles/09-blake2f').default
 const F = require('../../../dist/evm/precompiles/09-blake2f').F
 const { ERROR } = require('../../../dist/exceptions')

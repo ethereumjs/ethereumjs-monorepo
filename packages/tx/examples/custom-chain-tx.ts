@@ -1,5 +1,5 @@
 import { Transaction } from '../src'
-import Common from 'ethereumjs-common'
+import Common from '@ethereumjs/common'
 import { bufferToHex, privateToAddress } from 'ethereumjs-util'
 
 // In this example we create a transaction for a custom network.

@@ -1,7 +1,7 @@
 const tape = require('tape')
 const util = require('ethereumjs-util')
-const { Transaction } = require('ethereumjs-tx')
-const Block = require('ethereumjs-block').Block
+const { Transaction } = require('@ethereumjs/tx')
+const { Block } = require('@ethereumjs/block')
 const VM = require('../../dist/index').default
 
 tape('VM events', t => {

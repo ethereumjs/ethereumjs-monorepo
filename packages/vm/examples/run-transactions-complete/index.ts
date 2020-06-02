@@ -1,7 +1,7 @@
 import VM from '../..'
-import Account from 'ethereumjs-account'
+import Account from '@ethereumjs/account'
 import { toBuffer, pubToAddress, bufferToHex } from 'ethereumjs-util'
-import { Transaction } from 'ethereumjs-tx'
+import { Transaction } from '@ethereumjs/tx'
 
 async function main() {
   const vm = new VM()

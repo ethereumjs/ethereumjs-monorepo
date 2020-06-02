@@ -22,11 +22,10 @@ jobs:
           node-version: ${{ matrix.node-version }}
       - uses: actions/checkout@v1
 
-      - run: npx lerna bootstrap --scope ethereumjs-common --ignore-scripts --include-dependencies --no-ci
-      - run: npx lerna run build --scope ethereumjs-common --include-dependencies
-      - run: npx lerna run lint --scope ethereumjs-common
-
-      - run: npx lerna run coverage --scope ethereumjs-common
+      - run: npx lerna bootstrap --scope @ethereumjs/common --ignore-scripts --include-dependencies --no-ci
+      - run: npx lerna run build --scope @ethereumjs/common --include-dependencies
+      - run: npx lerna run lint --scope @ethereumjs/common
+      - run: npx lerna run coverage --scope @ethereumjs/common
 
       - uses: codecov/codecov-action@v1
         with:

@@ -1,6 +1,6 @@
-import Common from 'ethereumjs-common'
+import Common from '@ethereumjs/common'
 import { rlp, keccak256, KECCAK256_RLP, baToJSON } from 'ethereumjs-util'
-import { Transaction, TransactionOptions } from 'ethereumjs-tx'
+import { Transaction, TransactionOptions } from '@ethereumjs/tx'
 import { BlockHeader } from './header'
 import { Blockchain, BlockData, ChainOptions } from './types'
 

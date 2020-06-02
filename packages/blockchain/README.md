@@ -26,7 +26,7 @@ This module performs write operations. Making a backup of your data before tryin
 
 ```javascript
 const level = require('level')
-const Blockchain = require('ethereumjs-blockchain').default
+const Blockchain = require('@ethereumjs/blockchain').default
 const utils = require('ethereumjs-util')
 
 const gethDbPath = './chaindata' // Add your own path here. It will get modified, see remarks.
@@ -44,7 +44,7 @@ new Blockchain({ db: db }).iterator(
 )
 ```
 
-**WARNING**: Since `ethereumjs-blockchain` is also doing write operations
+**WARNING**: Since `@ethereumjs/blockchain` is also doing write operations
 on the DB for safety reasons only run this on a copy of your database, otherwise this might lead
 to a compromised DB state.
 
@@ -58,8 +58,8 @@ If you want to join for work or do improvements on the libraries have a look at 
 [gitter-link]: https://gitter.im/ethereum/ethereumjs
 [js-standard-style-badge]: https://cdn.rawgit.com/feross/standard/master/badge.svg
 [js-standard-style-link]: https://github.com/feross/standard
-[blockchain-npm-badge]: https://img.shields.io/npm/v/ethereumjs-blockchain.svg
-[blockchain-npm-link]: https://www.npmjs.org/package/ethereumjs-blockchain
+[blockchain-npm-badge]: https://img.shields.io/npm/v/@ethereumjs/blockchain.svg
+[blockchain-npm-link]: https://www.npmjs.org/package/@ethereumjs/blockchain
 [blockchain-issues-badge]: https://img.shields.io/github/issues/ethereumjs/ethereumjs-vm/package:%20blockchain?label=issues
 [blockchain-issues-link]: https://github.com/ethereumjs/ethereumjs-vm/issues?q=is%3Aopen+is%3Aissue+label%3A"package%3A+blockchain"
 [blockchain-actions-badge]: https://github.com/ethereumjs/ethereumjs-vm/workflows/Blockchain%20Test/badge.svg

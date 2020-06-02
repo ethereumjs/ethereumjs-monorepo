@@ -25,7 +25,7 @@ together with a specific `hardfork` provided.
 Here are some simple usage examples:
 
 ```javascript
-const Common = require('ethereumjs-common')
+const Common = require('@ethereumjs/common')
 
 // Instantiate with only the chain
 let c = new Common('ropsten')
@@ -174,8 +174,8 @@ If you want to join for work or do improvements on the libraries have a look at 
 [gitter-link]: https://gitter.im/ethereum/ethereumjs
 [js-standard-style-badge]: https://cdn.rawgit.com/feross/standard/master/badge.svg
 [js-standard-style-link]: https://github.com/feross/standard
-[common-npm-badge]: https://img.shields.io/npm/v/ethereumjs-common.svg
-[common-npm-link]: https://www.npmjs.org/package/ethereumjs-common
+[common-npm-badge]: https://img.shields.io/npm/v/@ethereumjs/common.svg
+[common-npm-link]: https://www.npmjs.org/package/@ethereumjs/common
 [common-issues-badge]: https://img.shields.io/github/issues/ethereumjs/ethereumjs-vm/package:%20common?label=issues
 [common-issues-link]: https://github.com/ethereumjs/ethereumjs-vm/issues?q=is%3Aopen+is%3Aissue+label%3A"package%3A+common"
 [common-actions-badge]: https://github.com/ethereumjs/ethereumjs-vm/workflows/Common%20Test/badge.svg

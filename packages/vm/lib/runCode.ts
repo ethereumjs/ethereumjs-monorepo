@@ -16,7 +16,7 @@ import VM from './index'
 import TxContext from './evm/txContext'
 import Message from './evm/message'
 import { default as EVM, ExecResult } from './evm/evm'
-import { Block } from 'ethereumjs-block'
+import { Block } from '@ethereumjs/block'
 
 /**
  * Options for the [[runCode]] method.

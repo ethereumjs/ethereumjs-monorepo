@@ -1,5 +1,5 @@
 {
-  "name": "ethereumjs-block",
+  "name": "@ethereumjs/block",
   "version": "3.0.0",
   "description": "Provides Block serialization and help functions",
   "main": "dist/index.js",
@@ -26,7 +26,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ethereumjs/ethereumjs-block.git"
+    "url": "git+https://github.com/ethereumjs/ethereumjs-vm.git"
   },
   "keywords": [
     "ethereum",
@@ -35,13 +35,13 @@
   "author": "mjbecze (mb@ethdev.com)",
   "license": "MPL-2.0",
   "bugs": {
-    "url": "https://github.com/ethereumjs/ethereumjs-block/issues"
+    "url": "https://github.com/ethereumjs/ethereumjs-vm/issues?q=is%3Aissue+label%3A\"package%3A+block\""
   },
-  "homepage": "https://github.com/ethereumjs/ethereumjs-block#readme",
+  "homepage": "https://github.com/ethereumjs/ethereumjs-vm/tree/master/packages/block#synopsis",
   "dependencies": {
+    "@ethereumjs/common": "^1.5.0",
+    "@ethereumjs/tx": "^2.1.1",
     "@types/bn.js": "^4.11.6",
-    "ethereumjs-common": "^1.5.0",
-    "ethereumjs-tx": "^2.1.1",
     "ethereumjs-util": "^7.0.2",
     "merkle-patricia-tree": "^2.1.2"
   },
@@ -60,7 +60,7 @@
     "karma-chrome-launcher": "^2.0.0",
     "karma-firefox-launcher": "^1.1.0",
     "karma-tap": "^4.1.4",
-    "nyc": "^15.0.0",
+    "nyc": "^14.0.0",
     "prettier": "^1.17.0",
     "tape": "^4.0.3",
     "ts-node": "^8.0.3",

@@ -1,4 +1,4 @@
-import Blockchain from 'ethereumjs-blockchain'
+import Blockchain from '@ethereumjs/blockchain'
 import VM from './index'
 const async = require('async')
 const callbackify = require('util-callbackify')

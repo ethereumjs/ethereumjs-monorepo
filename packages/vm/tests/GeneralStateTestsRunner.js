@@ -2,7 +2,7 @@ const util = require('util')
 const testUtil = require('./util')
 const Trie = require('merkle-patricia-tree/secure')
 const ethUtil = require('ethereumjs-util')
-const Account = require('ethereumjs-account').default
+const Account = require('@ethereumjs/account').default
 const BN = ethUtil.BN
 
 function parseTestCases(forkConfigTestSuite, testData, data, gasLimit, value) {

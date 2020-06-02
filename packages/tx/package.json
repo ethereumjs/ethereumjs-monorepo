@@ -1,5 +1,5 @@
 {
-  "name": "ethereumjs-tx",
+  "name": "@ethereumjs/tx",
   "version": "2.1.2",
   "description": "A simple module for creating, manipulating and signing Ethereum transactions",
   "main": "dist/index.js",
@@ -31,7 +31,7 @@
   "author": "mjbecze <mb@ethdev.com>",
   "license": "MPL-2.0",
   "dependencies": {
-    "ethereumjs-common": "^1.5.0",
+    "@ethereumjs/common": "^1.5.0",
     "ethereumjs-util": "^7.0.2"
   },
   "devDependencies": {
@@ -65,12 +65,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/ethereumjs/ethereumjs-tx.git"
+    "url": "https://github.com/ethereumjs/ethereumjs-vm.git"
   },
   "bugs": {
-    "url": "https://github.com/ethereumjs/ethereumjs-tx/issues"
+    "url": "https://github.com/ethereumjs/ethereumjs-vm/issues"
   },
-  "homepage": "https://github.com/ethereumjs/ethereumjs-tx",
+  "homepage": "https://github.com/ethereumjs/ethereumjs-vm",
   "contributors": [
     {
       "name": "<-c-g-> ",

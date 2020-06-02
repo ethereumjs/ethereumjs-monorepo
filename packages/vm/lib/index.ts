@@ -1,7 +1,7 @@
 import BN = require('bn.js')
-import Account from 'ethereumjs-account'
-import Blockchain from 'ethereumjs-blockchain'
-import Common from 'ethereumjs-common'
+import Account from '@ethereumjs/account'
+import Blockchain from '@ethereumjs/blockchain'
+import Common from '@ethereumjs/common'
 import { StateManager, DefaultStateManager } from './state/index'
 import { default as runCode, RunCodeOpts } from './runCode'
 import { default as runCall, RunCallOpts } from './runCall'

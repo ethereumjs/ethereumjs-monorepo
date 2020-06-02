@@ -1,7 +1,7 @@
 const tape = require('tape')
 const promisify = require('util.promisify')
-const Block = require('ethereumjs-block').Block
-const Common = require('ethereumjs-common').default
+const { Block } = require('@ethereumjs/block')
+const Common = require('@ethereumjs/common').default
 const util = require('ethereumjs-util')
 const runBlock = require('../../dist/runBlock').default
 const { DefaultStateManager } = require('../../dist/state')

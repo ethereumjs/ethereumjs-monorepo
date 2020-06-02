@@ -4,11 +4,12 @@ import * as assert from 'assert'
 import * as path from 'path'
 import * as fs from 'fs'
 import { privateToAddress, bufferToHex } from 'ethereumjs-util'
-import Account from 'ethereumjs-account'
-import { Transaction } from 'ethereumjs-tx'
+import { promisify } from 'util'
+import Account from '@ethereumjs/account'
+import { Transaction } from '@ethereumjs/tx'
+
 const abi = require('ethereumjs-abi')
 const solc = require('solc')
-const { promisify } = require('util')
 
 const INITIAL_GREETING = 'Hello, World!'
 const SECOND_GREETING = 'Hola, Mundo!'

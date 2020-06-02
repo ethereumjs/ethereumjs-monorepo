@@ -12,10 +12,10 @@ jobs:
         with:
           node-version: 12.x
       - uses: actions/checkout@v1
-      - run: npx lerna bootstrap --scope ethereumjs-vm --ignore-scripts --include-dependencies --no-ci
-      - run: npx lerna run build --scope ethereumjs-vm --include-dependencies
-      - run: npx lerna run test:API --scope ethereumjs-vm
-      - run: npx lerna run test:API:browser --scope ethereumjs-vm
+      - run: npx lerna bootstrap --scope @ethereumjs/vm --ignore-scripts --include-dependencies --no-ci
+      - run: npx lerna run build --scope @ethereumjs/vm --include-dependencies
+      - run: npx lerna run test:API --scope @ethereumjs/vm
+      - run: npx lerna run test:API:browser --scope @ethereumjs/vm
   test-vm-state:
     runs-on: ubuntu-latest
     env:
@@ -25,9 +25,9 @@ jobs:
         with:
           node-version: 12.x
       - uses: actions/checkout@v1
-      - run: npx lerna bootstrap --scope ethereumjs-vm --ignore-scripts --include-dependencies --no-ci
-      - run: npx lerna run build --scope ethereumjs-vm --include-dependencies
-      - run: npx lerna run test:state:allForks --scope ethereumjs-vm
+      - run: npx lerna bootstrap --scope @ethereumjs/vm --ignore-scripts --include-dependencies --no-ci
+      - run: npx lerna run build --scope @ethereumjs/vm --include-dependencies
+      - run: npx lerna run test:state:allForks --scope @ethereumjs/vm
   test-vm-blockchain:
     runs-on: ubuntu-latest
     env:
@@ -37,9 +37,9 @@ jobs:
         with:
           node-version: 12.x
       - uses: actions/checkout@v1
-      - run: npx lerna bootstrap --scope ethereumjs-vm --ignore-scripts --include-dependencies --no-ci
-      - run: npx lerna run build --scope ethereumjs-vm --include-dependencies
-      - run: npx lerna run test:blockchain --scope ethereumjs-vm
+      - run: npx lerna bootstrap --scope @ethereumjs/vm --ignore-scripts --include-dependencies --no-ci
+      - run: npx lerna run build --scope @ethereumjs/vm --include-dependencies
+      - run: npx lerna run test:blockchain --scope @ethereumjs/vm
   test-vm-slow:
     runs-on: ubuntu-latest
     env:
@@ -49,6 +49,6 @@ jobs:
         with:
           node-version: 12.x
       - uses: actions/checkout@v1
-      - run: npx lerna bootstrap --scope ethereumjs-vm --ignore-scripts --include-dependencies --no-ci
-      - run: npx lerna run build --scope ethereumjs-vm --include-dependencies
-      - run: npx lerna run test:state:slow --scope ethereumjs-vm
+      - run: npx lerna bootstrap --scope @ethereumjs/vm --ignore-scripts --include-dependencies --no-ci
+      - run: npx lerna run build --scope @ethereumjs/vm --include-dependencies
+      - run: npx lerna run test:state:slow --scope @ethereumjs/vm

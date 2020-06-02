@@ -1,8 +1,8 @@
 import BN = require('bn.js')
 import { toBuffer } from 'ethereumjs-util'
-import Account from 'ethereumjs-account'
-import Blockchain from 'ethereumjs-blockchain'
-import Common from 'ethereumjs-common'
+import Account from '@ethereumjs/account'
+import Blockchain from '@ethereumjs/blockchain'
+import Common from '@ethereumjs/common'
 import { StateManager } from '../state/index'
 import { VmError, ERROR } from '../exceptions'
 import Message from './message'

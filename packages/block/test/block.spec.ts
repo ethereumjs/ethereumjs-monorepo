@@ -1,4 +1,4 @@
-import Common from 'ethereumjs-common'
+import Common from '@ethereumjs/common'
 import tape = require('tape')
 import { rlp } from 'ethereumjs-util'
 

@@ -1,5 +1,5 @@
-import Common from 'ethereumjs-common'
-import { TxData } from 'ethereumjs-tx'
+import Common from '@ethereumjs/common'
+import { TxData } from '@ethereumjs/tx'
 import { Block } from './block'
 
 /**

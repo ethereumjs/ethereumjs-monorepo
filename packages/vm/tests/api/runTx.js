@@ -1,5 +1,5 @@
 const tape = require('tape')
-const Transaction = require('ethereumjs-tx').Transaction
+const Transaction = require('@ethereumjs/tx').Transaction
 const ethUtil = require('ethereumjs-util')
 const runTx = require('../../dist/runTx').default
 const { DefaultStateManager } = require('../../dist/state')

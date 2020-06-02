@@ -1,9 +1,9 @@
 const tape = require('tape')
 const level = require('level-mem')
 const promisify = require('util.promisify')
-const Blockchain = require('ethereumjs-blockchain').default
-const Block = require('ethereumjs-block').Block
-const Common = require('ethereumjs-common').default
+const Blockchain = require('@ethereumjs/blockchain').default
+const { Block } = require('@ethereumjs/block')
+const Common = require('@ethereumjs/common').default
 const util = require('ethereumjs-util')
 const runBlockchain = require('../../dist/runBlockchain').default
 const { DefaultStateManager } = require('../../dist/state')

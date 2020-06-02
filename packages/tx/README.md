@@ -17,7 +17,7 @@
 - [example](https://github.com/ethereumjs/ethereumjs-tx/blob/master/examples/transactions.ts)
 
 ```javascript
-const EthereumTx = require('ethereumjs-tx').Transaction
+const EthereumTx = require('@ethereumjs/tx').Transaction
 const privateKey = Buffer.from(
   'e331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109',
   'hex',
@@ -46,7 +46,7 @@ to be used. By default, `mainnet` and `petersburg` will be used.
 There are two ways of customizing these. The first one, as shown in the previous section, is by
 using an object with `chain` and `hardfork` names. You can see en example of this in [./examples/ropsten-tx.ts](./examples/ropsten-tx.ts).
 
-The second option is by passing the option `common` set to an instance of [ethereumjs-common](https://github.com/ethereumjs/ethereumjs-common)' Common. This is specially useful for custom networks or chains/hardforks not yet supported by `ethereumjs-common`. You can see en example of this in [./examples/custom-chain-tx.ts](./examples/custom-chain-tx.ts).
+The second option is by passing the option `common` set to an instance of [@ethereumjs/common](https://github.com/ethereumjs/ethereumjs-common)' Common. This is specially useful for custom networks or chains/hardforks not yet supported by `ethereumjs-common`. You can see en example of this in [./examples/custom-chain-tx.ts](./examples/custom-chain-tx.ts).
 
 ## MuirGlacier Support
 
@@ -81,8 +81,8 @@ If you want to join for work or do improvements on the libraries have a look at 
 [gitter-link]: https://gitter.im/ethereum/ethereumjs
 [js-standard-style-badge]: https://cdn.rawgit.com/feross/standard/master/badge.svg
 [js-standard-style-link]: https://github.com/feross/standard
-[tx-npm-badge]: https://img.shields.io/npm/v/ethereumjs-tx.svg
-[tx-npm-link]: https://www.npmjs.org/package/ethereumjs-tx
+[tx-npm-badge]: https://img.shields.io/npm/v/@ethereumjs/tx.svg
+[tx-npm-link]: https://www.npmjs.org/package/@ethereumjs/tx
 [tx-issues-badge]: https://img.shields.io/github/issues/ethereumjs/ethereumjs-vm/package:%20tx?label=issues
 [tx-issues-link]: https://github.com/ethereumjs/ethereumjs-vm/issues?q=is%3Aopen+is%3Aissue+label%3A"package%3A+tx"
 [tx-actions-badge]: https://github.com/ethereumjs/ethereumjs-vm/workflows/Tx%20Test/badge.svg

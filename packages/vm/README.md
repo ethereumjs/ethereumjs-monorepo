@@ -62,7 +62,7 @@ Supported `Istanbul` EIPs:
 
 ```javascript
 const BN = require('bn.js')
-var VM = require('ethereumjs-vm').default
+var VM = require('@ethereumjs/vm').default
 
 // Create a new VM instance
 // For explicity setting the HF use e.g. `new VM({ hardfork: 'petersburg' })`
@@ -207,8 +207,8 @@ If you want to join for work or do improvements on the libraries have a look at 
 [gitter-link]: https://gitter.im/ethereum/ethereumjs
 [js-standard-style-badge]: https://cdn.rawgit.com/feross/standard/master/badge.svg
 [js-standard-style-link]: https://github.com/feross/standard
-[vm-npm-badge]: https://img.shields.io/npm/v/ethereumjs-vm.svg
-[vm-npm-link]: https://www.npmjs.org/package/ethereumjs-vm
+[vm-npm-badge]: https://img.shields.io/npm/v/@ethereumjs/vm.svg
+[vm-npm-link]: https://www.npmjs.org/package/@ethereumjs/vm
 [vm-issues-badge]: https://img.shields.io/github/issues/ethereumjs/ethereumjs-vm/package:%20vm?label=issues
 [vm-issues-link]: https://github.com/ethereumjs/ethereumjs-vm/issues?q=is%3Aopen+is%3Aissue+label%3A"package%3A+vm"
 [vm-actions-badge]: https://github.com/ethereumjs/ethereumjs-vm/workflows/VM%20Test/badge.svg

@@ -2,8 +2,8 @@ const util = require('util')
 const testUtil = require('./util.js')
 const ethUtil = require('ethereumjs-util')
 const Trie = require('merkle-patricia-tree/secure')
-const {Block, BlockHeader} = require('ethereumjs-block')
-const Blockchain = require('ethereumjs-blockchain').default
+const { Block, BlockHeader } = require('@ethereumjs/block')
+const Blockchain = require('@ethereumjs/blockchain').default
 const level = require('level')
 const levelMem = require('level-mem')
 
