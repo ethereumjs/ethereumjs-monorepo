@@ -1,4 +1,5 @@
 import crypto, { Decipher } from 'crypto'
+import { debug as createDebugLogger } from 'debug'
 import { publicKeyCreate, ecdh, ecdsaRecover, ecdsaSign } from 'secp256k1'
 import rlp from 'rlp-encoding'
 import { MAC } from './mac'
@@ -14,6 +15,8 @@ import {
   buffer2int,
   zfill,
 } from '../util'
+
+const debug = createDebugLogger('devp2p:rlpx:peer')
 
 function ecdhX(publicKey: Buffer, privateKey: Buffer) {
   // return (publicKey * privateKey).x
@@ -119,6 +122,7 @@ export class ECIES {
       data.slice(0, 1),
       Buffer.from('04', 'hex'),
       'wrong ecies header (possible cause: EIP8 upgrade)',
+      debug,
     )
 
     const publicKey = data.slice(0, 65)
@@ -142,7 +146,7 @@ export class ECIES {
       .createHmac('sha256', mkey)
       .update(Buffer.concat([dataIV, sharedMacData]))
       .digest()
-    assertEq(_tag, tag, 'should have valid tag')
+    assertEq(_tag, tag, 'should have valid tag', debug)
 
     // decrypt data
     const IV = dataIV.slice(0, 16)
@@ -227,7 +231,7 @@ export class ECIES {
     let nonce = null
 
     if (!this._gotEIP8Auth) {
-      assertEq(decrypted.length, 194, 'invalid packet length')
+      assertEq(decrypted.length, 194, 'invalid packet length', debug)
 
       signature = decrypted.slice(0, 64)
       recoveryId = decrypted[64]
@@ -246,7 +250,7 @@ export class ECIES {
     // parse packet
     this._remotePublicKey = remotePublicKey // 64 bytes
     this._remoteNonce = nonce // 32 bytes
-    // assertEq(decrypted[193], 0, 'invalid postfix')
+    // assertEq(decrypted[193], 0, 'invalid postfix', debug)
 
     const x = ecdhX(this._remotePublicKey, this._privateKey)
 
@@ -262,13 +266,14 @@ export class ECIES {
         keccak256(pk2id(this._remoteEphemeralPublicKey)),
         heid,
         'the hash of the ephemeral key should match',
+        debug,
       )
     }
   }
 
   parseAuthEIP8(data: Buffer): void {
     const size = buffer2int(data.slice(0, 2)) + 2
-    assertEq(data.length, size, 'message length different from specified size (EIP8)')
+    assertEq(data.length, size, 'message length different from specified size (EIP8)', debug)
     this.parseAuthPlain(data.slice(2), data.slice(0, 2))
   }
 
@@ -306,8 +311,8 @@ export class ECIES {
     let remoteNonce = null
 
     if (!this._gotEIP8Ack) {
-      assertEq(decrypted.length, 97, 'invalid packet length')
-      assertEq(decrypted[96], 0, 'invalid postfix')
+      assertEq(decrypted.length, 97, 'invalid packet length', debug)
+      assertEq(decrypted[96], 0, 'invalid postfix', debug)
 
       remoteEphemeralPublicKey = id2pk(decrypted.slice(0, 64))
       remoteNonce = decrypted.slice(64, 96)
@@ -332,7 +337,7 @@ export class ECIES {
   parseAckEIP8(data: Buffer): void {
     // eslint-disable-line
     const size = buffer2int(data.slice(0, 2)) + 2
-    assertEq(data.length, size, 'message length different from specified size (EIP8)')
+    assertEq(data.length, size, 'message length different from specified size (EIP8)', debug)
     this.parseAckPlain(data.slice(2), data.slice(0, 2))
   }
 
@@ -358,7 +363,7 @@ export class ECIES {
     if (!this._ingressMac) return
     this._ingressMac.updateHeader(header)
     const _mac = this._ingressMac.digest()
-    assertEq(_mac, mac, 'Invalid MAC')
+    assertEq(_mac, mac, 'Invalid MAC', debug)
 
     if (!this._ingressAes) return
     header = this._ingressAes.update(header)
@@ -386,7 +391,7 @@ export class ECIES {
     if (!this._ingressMac) return
     this._ingressMac.updateBody(body)
     const _mac = this._ingressMac.digest()
-    assertEq(_mac, mac, 'Invalid MAC')
+    assertEq(_mac, mac, 'Invalid MAC', debug)
 
     const size = this._bodySize
     this._bodySize = null

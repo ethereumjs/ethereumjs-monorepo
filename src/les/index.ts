@@ -44,7 +44,7 @@ export class LES extends EventEmitter {
     }
     switch (code) {
       case LES.MESSAGE_CODES.STATUS:
-        assertEq(this._peerStatus, null, 'Uncontrolled status message')
+        assertEq(this._peerStatus, null, 'Uncontrolled status message', debug)
         let statusArray: any = {}
         payload.forEach(function(value: any) {
           statusArray[value[0].toString()] = value[1]
@@ -96,9 +96,15 @@ export class LES extends EventEmitter {
       this._status['protocolVersion'],
       this._peerStatus['protocolVersion'],
       'Protocol version mismatch',
+      debug,
     )
-    assertEq(this._status['networkId'], this._peerStatus['networkId'], 'NetworkId mismatch')
-    assertEq(this._status['genesisHash'], this._peerStatus['genesisHash'], 'Genesis block mismatch')
+    assertEq(this._status['networkId'], this._peerStatus['networkId'], 'NetworkId mismatch', debug)
+    assertEq(
+      this._status['genesisHash'],
+      this._peerStatus['genesisHash'],
+      'Genesis block mismatch',
+      debug,
+    )
 
     this.emit('status', this._peerStatus)
   }
