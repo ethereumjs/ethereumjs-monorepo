@@ -78,6 +78,24 @@ export function assertEq(expected: any, actual: any, msg: string): void {
   })
 }
 
+export function formatLogId(id: string, verbose: boolean): string {
+  const numChars = 7
+  if (verbose) {
+    return id
+  } else {
+    return `${id.substring(0, numChars)}`
+  }
+}
+
+export function formatLogData(data: string, verbose: boolean): string {
+  const maxChars = 60
+  if (verbose || data.length <= maxChars) {
+    return data
+  } else {
+    return `${data.substring(0, maxChars)}...`
+  }
+}
+
 export class Deferred<T> {
   promise: Promise<T>
   resolve: (...args: any[]) => any = () => {}

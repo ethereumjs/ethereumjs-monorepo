@@ -1,11 +1,12 @@
 import { EventEmitter } from 'events'
 import rlp from 'rlp-encoding'
 import ms from 'ms'
-import { int2buffer, buffer2int, assertEq } from '../util'
+import { int2buffer, buffer2int, assertEq, formatLogId, formatLogData } from '../util'
 import { Peer, DISCONNECT_REASONS } from '../rlpx/peer'
 
 import { debug as createDebugLogger } from 'debug'
 const debug = createDebugLogger('devp2p:eth')
+const verbose = createDebugLogger('verbose').enabled
 
 type SendMethod = (code: ETH.MESSAGE_CODES, data: Buffer) => any
 
@@ -37,11 +38,11 @@ export class ETH extends EventEmitter {
   _handleMessage(code: ETH.MESSAGE_CODES, data: any) {
     const payload = rlp.decode(data)
     if (code !== ETH.MESSAGE_CODES.STATUS) {
-      debug(
-        `Received ${this.getMsgPrefix(code)} message from ${this._peer._socket.remoteAddress}:${
-          this._peer._socket.remotePort
-        }: ${data.toString('hex')}`,
-      )
+      const debugMsg = `Received ${this.getMsgPrefix(code)} message from ${
+        this._peer._socket.remoteAddress
+      }:${this._peer._socket.remotePort}`
+      const logData = formatLogData(data.toString('hex'), verbose)
+      debug(`${debugMsg}: ${logData}`)
     }
     switch (code) {
       case ETH.MESSAGE_CODES.STATUS:
@@ -103,7 +104,10 @@ export class ETH extends EventEmitter {
     let sStr = `[V:${buffer2int(status[0])}, NID:${buffer2int(status[1])}, TD:${buffer2int(
       status[2],
     )}`
-    sStr += `, BestH:${status[3].toString('hex')}, GenH:${status[4].toString('hex')}]`
+    sStr += `, BestH:${formatLogId(status[3].toString('hex'), verbose)}, GenH:${formatLogId(
+      status[4].toString('hex'),
+      verbose,
+    )}]`
     return sStr
   }
 
@@ -127,11 +131,12 @@ export class ETH extends EventEmitter {
   }
 
   sendMessage(code: ETH.MESSAGE_CODES, payload: any) {
-    debug(
-      `Send ${this.getMsgPrefix(code)} message to ${this._peer._socket.remoteAddress}:${
-        this._peer._socket.remotePort
-      }: ${rlp.encode(payload).toString('hex')}`,
-    )
+    const debugMsg = `Send ${this.getMsgPrefix(code)} message to ${
+      this._peer._socket.remoteAddress
+    }:${this._peer._socket.remotePort}`
+    const logData = formatLogData(rlp.encode(payload).toString('hex'), verbose)
+    debug(`${debugMsg}: ${logData}`)
+
     switch (code) {
       case ETH.MESSAGE_CODES.STATUS:
         throw new Error('Please send status message through .sendStatus')

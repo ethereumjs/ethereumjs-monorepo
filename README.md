@@ -55,7 +55,7 @@ Communicate with peers to read new transaction and block information:
 Run an example with:
 
 ```
-DEBUG='*devp2p*' node -r ts-node/register ./examples/peer-communication.ts
+DEBUG=devp2p:* node -r ts-node/register ./examples/peer-communication.ts
 ```
 
 ## Distributed Peer Table (DPT) / Node Discovery
@@ -353,7 +353,16 @@ This library uses [debug](https://github.com/visionmedia/debug) debugging utilit
 For the debugging output to show up, set the `DEBUG` environment variable (e.g. in Linux/Mac OS:
 `export DEBUG=*,-babel`).
 
-You should now see debug output like to following when running one of the examples above (the indented lines):
+Use the `DEBUG` environment variable to active the logger output you are interested in, e.g.:
+
+DEBUG=devp2p:dpt:\*,devp2p:eth node -r ts-node/register [YOUR_SCRIPT_TO_RUN.ts]
+
+For more verbose output on logging (e.g. to output the entire msg payload) use the `verbose` logger
+in addition:
+
+DEBUG=devp2p:dpt:\*,devp2p:eth,verbose node -r ts-node/register [YOUR_SCRIPT_TO_RUN.ts]
+
+Exemplary logging output:
 
 ```
 Add peer: 52.3.158.184:30303 Geth/v1.7.3-unstable-479aa61f/linux-amd64/go1.9 (eth63) (total: 2)

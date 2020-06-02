@@ -7,11 +7,12 @@ import { debug as createDebugLogger } from 'debug'
 import LRUCache from 'lru-cache'
 // note: relative path only valid in .js file in dist
 const { version: pVersion } = require('../../package.json')
-import { pk2id, createDeferred } from '../util'
+import { pk2id, createDeferred, formatLogId } from '../util'
 import { Peer, DISCONNECT_REASONS, Capabilities } from './peer'
 import { DPT, PeerInfo } from '../dpt'
 
 const debug = createDebugLogger('devp2p:rlpx')
+const verbose = createDebugLogger('verbose').enabled
 
 export interface RLPxOptions {
   clientId?: Buffer
@@ -121,7 +122,7 @@ export class RLPx extends EventEmitter {
     if (this._peers.has(peerKey)) throw new Error('Already connected')
     if (this._getOpenSlots() === 0) throw new Error('Too many peers already connected')
 
-    debug(`connect to ${peer.address}:${peer.tcpPort} (id: ${peerKey})`)
+    debug(`connect to ${peer.address}:${peer.tcpPort} (id: ${formatLogId(peerKey, verbose)})`)
     const deferred = createDeferred()
 
     const socket = new net.Socket()

@@ -4,12 +4,14 @@ import ms from 'ms'
 import { debug as createDebugLogger } from 'debug'
 import LRUCache from 'lru-cache'
 import { encode, decode } from './message'
-import { keccak256, pk2id, createDeferred } from '../util'
+import { keccak256, pk2id, createDeferred, formatLogId } from '../util'
 import { DPT } from './dpt'
 import { Socket as DgramSocket, RemoteInfo } from 'dgram'
 import { PeerInfo } from './message'
 
 const debug = createDebugLogger('devp2p:dpt:server')
+const verbose = createDebugLogger('verbose').enabled
+
 const VERSION = 0x04
 
 export interface DptServerOptions {
@@ -94,7 +96,9 @@ export class Server extends EventEmitter {
       timeoutId: setTimeout(() => {
         if (this._requests.get(rkey) !== undefined) {
           debug(
-            `ping timeout: ${peer.address}:${peer.udpPort} ${peer.id && peer.id.toString('hex')}`,
+            `ping timeout: ${peer.address}:${peer.udpPort} ${
+              peer.id ? formatLogId(peer.id.toString('hex'), verbose) : '-'
+            }`,
           )
           this._requests.delete(rkey)
           deferred.reject(new Error(`Timeout error: ping ${peer.address}:${peer.udpPort}`))
@@ -118,8 +122,9 @@ export class Server extends EventEmitter {
 
   _send(peer: PeerInfo, typename: string, data: any) {
     debug(
-      `send ${typename} to ${peer.address}:${peer.udpPort} (peerId: ${peer.id &&
-        peer.id.toString('hex')})`,
+      `send ${typename} to ${peer.address}:${peer.udpPort} (peerId: ${
+        peer.id ? formatLogId(peer.id.toString('hex'), verbose) : '-'
+      })`,
     )
 
     const msg = encode(typename, data, this._privateKey)
@@ -146,8 +151,9 @@ export class Server extends EventEmitter {
     const info = decode(msg)
     const peerId = pk2id(info.publicKey)
     debug(
-      `received ${info.typename} from ${rinfo.address}:${rinfo.port} (peerId: ${peerId.toString(
-        'hex',
+      `received ${info.typename} from ${rinfo.address}:${rinfo.port} (peerId: ${formatLogId(
+        peerId.toString('hex'),
+        verbose,
       )})`,
     )
 
