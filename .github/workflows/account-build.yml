@@ -1,4 +1,7 @@
 name: Account
+branding:
+  icon: 'key'
+  color: 'white'
 on:
   push:
     branches:

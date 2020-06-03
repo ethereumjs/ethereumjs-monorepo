@@ -1,4 +1,7 @@
 name: Common
+branding:
+  icon: 'info'
+  color: 'purple'
 on:
   push:
     branches:

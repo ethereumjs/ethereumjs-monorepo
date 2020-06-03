@@ -1,4 +1,7 @@
 name: Blockchain
+branding:
+  icon: 'database'
+  color: 'blue'
 on:
   push:
     branches:
