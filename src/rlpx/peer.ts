@@ -139,9 +139,9 @@ export class Peer extends EventEmitter {
         try {
           if (this._state === 'Auth') {
             if (!this._eciesSession._gotEIP8Auth) {
-              try {
+              if (parseData.slice(0, 1) === Buffer.from('04', 'hex')) {
                 this._eciesSession.parseAuthPlain(parseData)
-              } catch (err) {
+              } else {
                 this._eciesSession._gotEIP8Auth = true
                 this._nextPacketSize = util.buffer2int(data.slice(0, 2)) + 2
                 continue
@@ -154,12 +154,12 @@ export class Peer extends EventEmitter {
             process.nextTick(() => this._sendAck())
           } else if (this._state === 'Ack') {
             if (!this._eciesSession._gotEIP8Ack) {
-              try {
+              if (parseData.slice(0, 1) === Buffer.from('04', 'hex')) {
                 this._eciesSession.parseAckPlain(parseData)
                 debug(
                   `Received ack (old format) from ${this._socket.remoteAddress}:${this._socket.remotePort}`,
                 )
-              } catch (err) {
+              } else {
                 this._eciesSession._gotEIP8Ack = true
                 this._nextPacketSize = util.buffer2int(data.slice(0, 2)) + 2
                 continue
