@@ -18,7 +18,5 @@
       "d": "Maximum length of contract code"
     }
   },
-  "pow": {},
-  "casper": {},
-  "sharding": {}
+  "pow": {}
 }

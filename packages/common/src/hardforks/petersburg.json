@@ -37,7 +37,5 @@
     }
   },
   "vm": {},
-  "pow": {},
-  "casper": {},
-  "sharding": {}
+  "pow": {}
 }

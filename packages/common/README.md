@@ -93,8 +93,6 @@ you can use the following `topics`:
 - `gasPrices`
 - `vm`
 - `pow`
-- `casper`
-- `sharding`
 
 See one of the hardfork files like `byzantium.json` in the `hardforks` directory
 for an overview. For consistency, the chain start (`chainstart`) is considered an own
