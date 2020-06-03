@@ -85,6 +85,8 @@ dpt.bootstrap(bootnode).catch((err) => console.error('Something went wrong!'))
 
 ### API
 
+See the following [diagram](./devp2p_diagram.png) for a high level overview on the library.
+
 #### `DPT` (extends `EventEmitter`)
 
 Distributed Peer Table. Manages a Kademlia DHT K-bucket (`Kbucket`) for storing peer information
