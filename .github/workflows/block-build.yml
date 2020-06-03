@@ -1,4 +1,7 @@
 name: Block
+branding:
+  icon: 'box'
+  color: 'orange'
 on:
   push:
     branches:

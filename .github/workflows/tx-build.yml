@@ -1,4 +1,7 @@
 name: Tx
+branding:
+  icon: 'zap'
+  color: 'yellow'
 on:
   push:
     branches:

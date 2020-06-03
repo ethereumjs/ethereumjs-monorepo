@@ -1,4 +1,7 @@
 name: VM
+branding:
+  icon: 'cpu'
+  color: 'green'
 on:
   push:
     branches:
