@@ -336,6 +336,11 @@ export class Peer extends EventEmitter {
       case PREFIXES.DISCONNECT:
         this._closed = true
         this._disconnectReason = payload[0].length === 0 ? 0 : payload[0][0]
+        debug(
+          `DISCONNECT reason: ${DISCONNECT_REASONS[this._disconnectReason as number]} ${
+            this._socket.remoteAddress
+          }:${this._socket.remotePort}`,
+        )
         this._disconnectWe = false
         this._socket.end()
         break
