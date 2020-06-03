@@ -36,8 +36,6 @@ export interface GenesisBlock {
 export interface Hardfork {
   name: string
   block: number | null
-  consensus: string
-  finality: any
 }
 
 export interface BootstrapNode {

@@ -222,14 +222,4 @@ tape('[Common]: Hardfork logic', function(t: tape.Test) {
 
     st.end()
   })
-
-  t.test('consensus()/finality()', function(st: tape.Test) {
-    const c = new Common('mainnet')
-    st.equal(c.consensus('byzantium'), 'pow', 'should return pow for byzantium consensus')
-    st.equal(c.consensus('constantinople'), 'pow', 'should return pow for constantinople consensus')
-    st.equal(c.finality('byzantium'), null, 'should return null for byzantium finality')
-
-    st.comment('-----------------------------------------------------------------')
-    st.end()
-  })
 })

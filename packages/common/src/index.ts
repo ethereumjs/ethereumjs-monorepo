@@ -360,26 +360,6 @@ export default class Common {
   }
 
   /**
-   * Provide the consensus type for the hardfork set or provided as param
-   * @param hardfork Hardfork name, optional if hardfork set
-   * @returns Consensus type (e.g. 'pow', 'poa')
-   */
-  consensus(hardfork?: string): string {
-    hardfork = this._chooseHardfork(hardfork)
-    return this._getHardfork(hardfork)['consensus']
-  }
-
-  /**
-   * Provide the finality type for the hardfork set or provided as param
-   * @param {String} hardfork Hardfork name, optional if hardfork set
-   * @returns {String} Finality type (e.g. 'pos', null of no finality)
-   */
-  finality(hardfork?: string): string {
-    hardfork = this._chooseHardfork(hardfork)
-    return this._getHardfork(hardfork)['finality']
-  }
-
-  /**
    * Returns the Genesis parameters of current chain
    * @returns Genesis dictionary
    */
