@@ -14,8 +14,8 @@ export class BanList {
 
   add(obj: any, maxAge?: number) {
     for (const key of KBucket.getKeys(obj)) {
-      debug(`add ${formatLogId(key, verbose)}, size: ${this.lru.length}`)
       this.lru.set(key, true, maxAge)
+      debug(`Added peer ${formatLogId(key, verbose)}, size: ${this.lru.length}`)
     }
   }
 

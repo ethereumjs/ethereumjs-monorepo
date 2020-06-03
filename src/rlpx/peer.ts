@@ -139,9 +139,9 @@ export class Peer extends EventEmitter {
         try {
           if (this._state === 'Auth') {
             if (!this._eciesSession._gotEIP8Auth) {
-              try {
+              if (parseData.slice(0, 1) === Buffer.from('04', 'hex')) {
                 this._eciesSession.parseAuthPlain(parseData)
-              } catch (err) {
+              } else {
                 this._eciesSession._gotEIP8Auth = true
                 this._nextPacketSize = util.buffer2int(data.slice(0, 2)) + 2
                 continue
@@ -154,12 +154,12 @@ export class Peer extends EventEmitter {
             process.nextTick(() => this._sendAck())
           } else if (this._state === 'Ack') {
             if (!this._eciesSession._gotEIP8Ack) {
-              try {
+              if (parseData.slice(0, 1) === Buffer.from('04', 'hex')) {
                 this._eciesSession.parseAckPlain(parseData)
                 debug(
                   `Received ack (old format) from ${this._socket.remoteAddress}:${this._socket.remotePort}`,
                 )
-              } catch (err) {
+              } else {
                 this._eciesSession._gotEIP8Ack = true
                 this._nextPacketSize = util.buffer2int(data.slice(0, 2)) + 2
                 continue
@@ -194,7 +194,9 @@ export class Peer extends EventEmitter {
     this._protocols = []
 
     // send AUTH if outgoing connection
-    if (this._remoteId !== null) this._sendAuth()
+    if (this._remoteId !== null) {
+      this._sendAuth()
+    }
   }
 
   _parseSocketData(data: Buffer) {}
@@ -334,6 +336,11 @@ export class Peer extends EventEmitter {
       case PREFIXES.DISCONNECT:
         this._closed = true
         this._disconnectReason = payload[0].length === 0 ? 0 : payload[0][0]
+        debug(
+          `DISCONNECT reason: ${DISCONNECT_REASONS[this._disconnectReason as number]} ${
+            this._socket.remoteAddress
+          }:${this._socket.remotePort}`,
+        )
         this._disconnectWe = false
         this._socket.end()
         break

@@ -250,8 +250,8 @@ export class RLPx extends EventEmitter {
   _refillConnections() {
     if (!this._isAlive()) return
     debug(
-      `refill connections.. queue size: ${
-        this._peersQueue.length
+      `refill connections.. queue size: ${this._peersQueue.length}, peers: ${
+        this._peers.size
       }, open slots: ${this._getOpenSlots()}`,
     )
 

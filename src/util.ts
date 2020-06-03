@@ -61,7 +61,7 @@ export function assertEq(expected: any, actual: any, msg: string, debug: any): v
   if (Buffer.isBuffer(expected) && Buffer.isBuffer(actual)) {
     if (expected.equals(actual)) return
     message = `${msg}: ${expected.toString('hex')} / ${actual.toString('hex')}`
-    debug(`[ERROR]  ${message}`)
+    debug(`[ERROR] ${message}`)
     throw new assert.AssertionError({
       message: message,
     })
