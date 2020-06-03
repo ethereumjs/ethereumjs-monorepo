@@ -194,7 +194,9 @@ export class Peer extends EventEmitter {
     this._protocols = []
 
     // send AUTH if outgoing connection
-    if (this._remoteId !== null) this._sendAuth()
+    if (this._remoteId !== null) {
+      this._sendAuth()
+    }
   }
 
   _parseSocketData(data: Buffer) {}
