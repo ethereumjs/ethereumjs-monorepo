@@ -2,13 +2,13 @@ const tape = require('tape')
 const Transaction = require('ethereumjs-tx').Transaction
 const ethUtil = require('ethereumjs-util')
 const runTx = require('../../dist/runTx').default
-const { StateManager } = require('../../dist/state')
+const { DefaultStateManager } = require('../../dist/state')
 const VM = require('../../dist/index').default
 const { createAccount } = require('./utils')
 
 function setup(vm = null) {
   if (vm === null) {
-    const stateManager = new StateManager({})
+    const stateManager = new DefaultStateManager({})
     vm = {
       stateManager,
       emit: (e, val, cb) => {

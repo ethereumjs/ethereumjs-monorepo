@@ -6,7 +6,7 @@ const Block = require('ethereumjs-block')
 const Common = require('ethereumjs-common').default
 const util = require('ethereumjs-util')
 const runBlockchain = require('../../dist/runBlockchain').default
-const { StateManager } = require('../../dist/state')
+const { DefaultStateManager } = require('../../dist/state')
 const { createGenesis } = require('./utils')
 
 tape('runBlockchain', (t) => {
@@ -16,7 +16,7 @@ tape('runBlockchain', (t) => {
     chain: 'goerli',
     validate: false,
   })
-  const stateManager = new StateManager({ common: new Common('goerli') })
+  const stateManager = new DefaultStateManager({ common: new Common('goerli') })
   const vm = {
     stateManager,
     blockchain: blockchain,

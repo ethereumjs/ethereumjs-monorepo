@@ -7,6 +7,7 @@ import { encode, decode } from 'rlp'
 import Common from 'ethereumjs-common'
 import { genesisStateByName } from 'ethereumjs-common/dist/genesisStates'
 import Account from 'ethereumjs-account'
+import { StateManager, StorageDump } from './interface'
 import Cache from './cache'
 import { ripemdPrecompileAddress } from '../evm/precompiles'
 
@@ -14,16 +15,9 @@ import { ripemdPrecompileAddress } from '../evm/precompiles'
 type Trie = any
 
 /**
- * Storage values of an account
- */
-export interface StorageDump {
-  [key: string]: string
-}
-
-/**
  * Options for constructing a [[StateManager]].
  */
-export interface StateManagerOpts {
+export interface DefaultStateManagerOpts {
   /**
    * Parameters of the chain ([`Common`](https://github.com/ethereumjs/ethereumjs-common))
    */
@@ -38,7 +32,7 @@ export interface StateManagerOpts {
  * Interface for getting and setting data from an underlying
  * state trie.
  */
-export default class StateManager {
+export default class DefaultStateManager implements StateManager {
   _common: Common
   _trie: Trie
   _storageTries: any
@@ -51,7 +45,7 @@ export default class StateManager {
   /**
    * Instantiate the StateManager interface.
    */
-  constructor(opts: StateManagerOpts = {}) {
+  constructor(opts: DefaultStateManagerOpts = {}) {
     let common = opts.common
     if (!common) {
       common = new Common('mainnet', 'petersburg')
@@ -73,7 +67,7 @@ export default class StateManager {
    * checkpoints were reverted.
    */
   copy(): StateManager {
-    return new StateManager({ trie: this._trie.copy(), common: this._common })
+    return new DefaultStateManager({ trie: this._trie.copy(), common: this._common })
   }
 
   /**

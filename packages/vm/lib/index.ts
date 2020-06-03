@@ -2,7 +2,7 @@ import BN = require('bn.js')
 import Account from 'ethereumjs-account'
 import Blockchain from 'ethereumjs-blockchain'
 import Common from 'ethereumjs-common'
-import { StateManager } from './state/index'
+import { StateManager, DefaultStateManager } from './state/index'
 import { default as runCode, RunCodeOpts } from './runCode'
 import { default as runCall, RunCallOpts } from './runCall'
 import { default as runTx, RunTxOpts, RunTxResult } from './runTx'
@@ -124,7 +124,7 @@ export default class VM extends AsyncEventEmitter {
       this.stateManager = opts.stateManager
     } else {
       const trie = opts.state || new Trie()
-      this.stateManager = new StateManager({ trie, common: this._common })
+      this.stateManager = new DefaultStateManager({ trie, common: this._common })
     }
 
     this.blockchain = opts.blockchain || new Blockchain({ common: this._common })
