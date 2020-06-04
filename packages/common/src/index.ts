@@ -173,7 +173,7 @@ export default class Common {
 
   /**
    * Returns the parameter corresponding to a hardfork
-   * @param topic Parameter topic ('gasConfig', 'gasPrices', 'vm', 'pow', 'casper', 'sharding')
+   * @param topic Parameter topic ('gasConfig', 'gasPrices', 'vm', 'pow')
    * @param name Parameter name (e.g. 'minGasLimit' for 'gasConfig' topic)
    * @param hardfork Hardfork name, optional if hardfork set
    */

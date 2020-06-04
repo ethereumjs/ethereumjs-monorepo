@@ -205,7 +205,5 @@
       "v": "5000000000000000000",
       "d": "the amount a miner get rewarded for mining a block"
     }
-  },
-  "casper": {},
-  "sharding": {}
+  }
 }

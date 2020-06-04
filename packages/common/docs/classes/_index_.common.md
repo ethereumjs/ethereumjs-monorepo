@@ -424,7 +424,7 @@ Returns the parameter corresponding to a hardfork
 
 Name | Type | Description |
 ------ | ------ | ------ |
-`topic` | string | Parameter topic ('gasConfig', 'gasPrices', 'vm', 'pow', 'casper', 'sharding') |
+`topic` | string | Parameter topic ('gasConfig', 'gasPrices', 'vm', 'pow') |
 `name` | string | Parameter name (e.g. 'minGasLimit' for 'gasConfig' topic) |
 `hardfork?` | undefined &#124; string | Hardfork name, optional if hardfork set  |
 

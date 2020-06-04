@@ -8,7 +8,5 @@
   "gasConfig": {},
   "gasPrices": {},
   "vm": {},
-  "pow": {},
-  "casper": {},
-  "sharding": {}
+  "pow": {}
 }
