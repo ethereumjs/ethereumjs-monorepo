@@ -16,6 +16,7 @@ export interface StateManager {
   getContractCode(address: Buffer): Promise<Buffer>
   getContractStorage(address: Buffer, key: Buffer): Promise<Buffer>
   getOriginalContractStorage(address: Buffer, key: Buffer): Promise<Buffer>
+  clearOriginalStorageCache(): void
   putContractStorage(address: Buffer, key: Buffer, value: Buffer): Promise<void>
   clearContractStorage(address: Buffer): Promise<void>
   checkpoint(): Promise<void>

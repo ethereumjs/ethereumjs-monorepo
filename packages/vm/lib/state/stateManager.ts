@@ -217,6 +217,14 @@ export default class DefaultStateManager implements StateManager {
   }
 
   /**
+   * Clears the original storage cache. Refer to [[getOriginalContractStorage]]
+   * for more explanation.
+   */
+  clearOriginalStorageCache(): void {
+    this._originalStorageCache = new Map()
+  }
+
+  /**
    * Modifies the storage trie of an account.
    * @private
    * @param address -  Address of the account whose storage is to be modified
@@ -495,14 +503,5 @@ export default class DefaultStateManager implements StateManager {
       }
     }
     this._touched.clear()
-  }
-
-  /**
-   * Clears the original storage cache. Refer to [[getOriginalContractStorage]]
-   * for more explanation.
-   * @ignore
-   */
-  _clearOriginalStorageCache(): void {
-    this._originalStorageCache = new Map()
   }
 }
