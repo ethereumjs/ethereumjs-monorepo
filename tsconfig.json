@@ -1,4 +1,10 @@
 {
   "extends": "@ethereumjs/config-tsc",
-  "include": ["src/**/*.ts", "test/**/*.ts", "typings/**/*.js"]
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "*": ["src/@types/*"]
+    }
+  },
+  "include": ["src/**/*.ts", "test/**/*.ts"]
 }

@@ -1,6 +1,3 @@
-/// <reference path="../typings/ethjs-util.d.ts"/>
-import * as ethjsUtil from 'ethjs-util'
-
 /**
  * Constants
  */
