@@ -1,8 +1,7 @@
-const ethUtil = require('ethereumjs-util')
+import { BN, keccak256 } from 'ethereumjs-util'
 const MR = require('miller-rabin')
-const BN = ethUtil.BN
 
-exports.params = {
+export const params = {
   DATASET_BYTES_INIT: 1073741824, // 2^30
   DATASET_BYTES_GROWTH: 8388608, // 2 ^ 23
   CACHE_BYTES_INIT: 16777216, // 2**24 number of bytes in dataset at genesis
@@ -17,9 +16,9 @@ exports.params = {
   WORD_BYTES: 4
 }
 
-exports.getCacheSize = function (epoc) {
-  var mr = new MR()
-  var sz =
+export function getCacheSize(epoc: number) {
+  const mr = new MR()
+  let sz =
     exports.params.CACHE_BYTES_INIT + exports.params.CACHE_BYTES_GROWTH * epoc
   sz -= exports.params.HASH_BYTES
   while (!mr.test(new BN(sz / exports.params.HASH_BYTES))) {
@@ -28,9 +27,9 @@ exports.getCacheSize = function (epoc) {
   return sz
 }
 
-exports.getFullSize = function (epoc) {
-  var mr = new MR()
-  var sz =
+export function getFullSize(epoc: number) {
+  const mr = new MR()
+  let sz =
     exports.params.DATASET_BYTES_INIT +
     exports.params.DATASET_BYTES_GROWTH * epoc
   sz -= exports.params.MIX_BYTES
@@ -40,7 +39,7 @@ exports.getFullSize = function (epoc) {
   return sz
 }
 
-exports.getEpoc = function (blockNumber) {
+export function getEpoc(blockNumber: number) {
   return Math.floor(blockNumber / exports.params.EPOCH_LENGTH)
 }
 
@@ -48,33 +47,33 @@ exports.getEpoc = function (blockNumber) {
  * Generates a seed give the end epoc and optional the begining epoc and the
  * begining epoc seed
  * @method getSeed
- * @param end Number
- * @param begin Number
  * @param seed Buffer
+ * @param begin Number
+ * @param end Number
  */
-exports.getSeed = function (seed, begin, end) {
-  for (var i = begin; i < end; i++) {
-    seed = ethUtil.keccak256(seed)
+export function getSeed(seed: Buffer, begin: number, end: number) {
+  for (let i = begin; i < end; i++) {
+    seed = keccak256(seed)
   }
   return seed
 }
 
-var fnv = (exports.fnv = function (x, y) {
+export function fnv(x: number, y: number) {
   return ((((x * 0x01000000) | 0) + ((x * 0x193) | 0)) ^ y) >>> 0
-})
+}
 
-exports.fnvBuffer = function (a, b) {
-  var r = Buffer.alloc(a.length)
-  for (var i = 0; i < a.length; i = i + 4) {
+export function fnvBuffer(a: Buffer, b: Buffer) {
+  const r = Buffer.alloc(a.length)
+  for (let i = 0; i < a.length; i = i + 4) {
     r.writeUInt32LE(fnv(a.readUInt32LE(i), b.readUInt32LE(i)), i)
   }
   return r
 }
 
-exports.bufReverse = function (a) {
+export function bufReverse(a: Buffer) {
   const length = a.length
-  var b = Buffer.alloc(length)
-  for (var i = 0; i < length; i++) {
+  const b = Buffer.alloc(length)
+  for (let i = 0; i < length; i++) {
     b[i] = a[length - i - 1]
   }
   return b

@@ -8,8 +8,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ## [0.0.8] - 2020-05-27
 
-This is a maintenance release with dependency and CI updates together with 
-some coder modernization changes.
+This is a maintenance release with dependency updates, CI improvements, and some code modernization.
 
 Changes from PR [#23](https://github.com/ethereumjs/ethashjs/pull/23):
 
