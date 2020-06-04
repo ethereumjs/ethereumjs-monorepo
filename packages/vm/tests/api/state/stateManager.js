@@ -269,7 +269,7 @@ tape('Original storage cache', async t => {
     const origRes = await stateManager.getOriginalContractStorage(addressBuffer, key)
     st.deepEqual(origRes, Buffer.alloc(0))
 
-    stateManager._clearOriginalStorageCache()
+    stateManager.clearOriginalStorageCache()
 
     st.end()
   })
