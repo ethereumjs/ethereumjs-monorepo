@@ -88,6 +88,7 @@ export class Peer extends EventEmitter {
   _hello: Hello | null
   _nextPacketSize: number
   _socket: Socket
+  _socketData: BufferList
   _pingIntervalId: NodeJS.Timeout | null
   _pingTimeoutId: NodeJS.Timeout | null
   _closed: boolean
@@ -120,68 +121,10 @@ export class Peer extends EventEmitter {
 
     // socket
     this._socket = options.socket
+    this._socketData = new BufferList()
+    this._socket.on('data', this._onSocketData.bind(this))
     this._socket.on('error', (err: Error) => this.emit('error', err))
-    this._socket.once('close', () => {
-      clearInterval(this._pingIntervalId!)
-      clearTimeout(this._pingTimeoutId!)
-
-      this._closed = true
-      if (this._connected) this.emit('close', this._disconnectReason, this._disconnectWe)
-    })
-
-    const bl = new BufferList()
-    this._socket.on('data', (data: Buffer) => {
-      if (this._closed) return
-      bl.append(data)
-      while (bl.length >= this._nextPacketSize) {
-        const bytesCount = this._nextPacketSize
-        const parseData = bl.slice(0, bytesCount)
-        try {
-          if (this._state === 'Auth') {
-            if (!this._eciesSession._gotEIP8Auth) {
-              if (parseData.slice(0, 1) === Buffer.from('04', 'hex')) {
-                this._eciesSession.parseAuthPlain(parseData)
-              } else {
-                this._eciesSession._gotEIP8Auth = true
-                this._nextPacketSize = util.buffer2int(data.slice(0, 2)) + 2
-                continue
-              }
-            } else {
-              this._eciesSession.parseAuthEIP8(parseData)
-            }
-            this._state = 'Header'
-            this._nextPacketSize = 32
-            process.nextTick(() => this._sendAck())
-          } else if (this._state === 'Ack') {
-            if (!this._eciesSession._gotEIP8Ack) {
-              if (parseData.slice(0, 1) === Buffer.from('04', 'hex')) {
-                this._eciesSession.parseAckPlain(parseData)
-                debug(
-                  `Received ack (old format) from ${this._socket.remoteAddress}:${this._socket.remotePort}`,
-                )
-              } else {
-                this._eciesSession._gotEIP8Ack = true
-                this._nextPacketSize = util.buffer2int(data.slice(0, 2)) + 2
-                continue
-              }
-            } else {
-              this._eciesSession.parseAckEIP8(parseData)
-              debug(
-                `Received ack (EIP8) from ${this._socket.remoteAddress}:${this._socket.remotePort}`,
-              )
-            }
-            this._state = 'Header'
-            this._nextPacketSize = 32
-            process.nextTick(() => this._sendHello())
-          } else {
-            this._parsePacketContent(parseData)
-          }
-        } catch (err) {
-          this.emit('error', err)
-        }
-        bl.consume(bytesCount)
-      }
-    })
+    this._socket.once('close', this._onSocketClose.bind(this))
 
     this._connected = false
     this._closed = false
@@ -199,162 +142,9 @@ export class Peer extends EventEmitter {
     }
   }
 
-  _parseSocketData(data: Buffer) {}
-
-  _parsePacketContent(data: Buffer) {
-    switch (this._state) {
-      case 'Header':
-        debug(`Received header ${this._socket.remoteAddress}:${this._socket.remotePort}`)
-        const size = this._eciesSession.parseHeader(data)
-        if (!size) {
-          debug('invalid header size!')
-          return
-        }
-
-        this._state = 'Body'
-        this._nextPacketSize = size + 16
-        if (size % 16 > 0) this._nextPacketSize += 16 - (size % 16)
-        break
-
-      case 'Body':
-        const body = this._eciesSession.parseBody(data)
-        if (!body) {
-          debug('empty body!')
-          return
-        }
-
-        debug(
-          `Received body ${this._socket.remoteAddress}:${this._socket.remotePort} ${formatLogData(
-            body.toString('hex'),
-            verbose,
-          )}`,
-        )
-
-        this._state = 'Header'
-        this._nextPacketSize = 32
-
-        // RLP hack
-        let code = body[0]
-        if (code === 0x80) code = 0
-
-        if (code !== PREFIXES.HELLO && code !== PREFIXES.DISCONNECT && this._hello === null) {
-          return this.disconnect(DISCONNECT_REASONS.PROTOCOL_ERROR)
-        }
-
-        const obj = this._getProtocol(code)
-        if (obj === undefined) return this.disconnect(DISCONNECT_REASONS.PROTOCOL_ERROR)
-
-        const msgCode = code - obj.offset
-        const prefix = this.getMsgPrefix(msgCode)
-        debug(
-          `Received ${prefix} (message code: ${code} - ${obj.offset} = ${msgCode}) ${this._socket.remoteAddress}:${this._socket.remotePort}`,
-        )
-
-        try {
-          obj.protocol._handleMessage(msgCode, body.slice(1))
-        } catch (err) {
-          this.disconnect(DISCONNECT_REASONS.SUBPROTOCOL_ERROR)
-          this.emit('error', err)
-        }
-
-        break
-    }
-  }
-
-  private _getProtocol(code: number): ProtocolDescriptor | undefined {
-    if (code < BASE_PROTOCOL_LENGTH) return { protocol: this, offset: 0 }
-    for (let obj of this._protocols) {
-      if (code >= obj.offset && code < obj.offset + obj.length!) return obj
-    }
-  }
-
-  _handleMessage(code: PREFIXES, msg: Buffer) {
-    const payload = rlp.decode(msg)
-    switch (code) {
-      case PREFIXES.HELLO:
-        this._hello = {
-          protocolVersion: buffer2int(payload[0]),
-          clientId: payload[1].toString(),
-          capabilities: payload[2].map((item: any) => {
-            return { name: item[0].toString(), version: buffer2int(item[1]) }
-          }),
-          port: buffer2int(payload[3]),
-          id: payload[4],
-        }
-
-        if (this._remoteId === null) {
-          this._remoteId = Buffer.from(this._hello.id)
-        } else if (!this._remoteId.equals(this._hello.id)) {
-          return this.disconnect(DISCONNECT_REASONS.INVALID_IDENTITY)
-        }
-
-        if (this._remoteClientIdFilter) {
-          for (let filterStr of this._remoteClientIdFilter) {
-            if (this._hello.clientId.toLowerCase().includes(filterStr.toLowerCase())) {
-              return this.disconnect(DISCONNECT_REASONS.USELESS_PEER)
-            }
-          }
-        }
-
-        const shared: any = {}
-        for (const item of this._hello.capabilities) {
-          for (const obj of this._capabilities!) {
-            if (obj.name !== item.name || obj.version !== item.version) continue
-            if (shared[obj.name] && shared[obj.name].version > obj.version) continue
-            shared[obj.name] = obj
-          }
-        }
-
-        let offset = BASE_PROTOCOL_LENGTH
-        this._protocols = Object.keys(shared)
-          .map(key => shared[key])
-          .sort((obj1, obj2) => (obj1.name < obj2.name ? -1 : 1))
-          .map(obj => {
-            const _offset = offset
-            offset += obj.length
-
-            const SubProtocol = obj.constructor
-            const protocol = new SubProtocol(obj.version, this, (code: number, data: Buffer) => {
-              if (code > obj.length) throw new Error('Code out of range')
-              this._sendMessage(_offset + code, data)
-            })
-
-            return { protocol, offset: _offset, length: obj.length }
-          })
-
-        if (this._protocols.length === 0) {
-          return this.disconnect(DISCONNECT_REASONS.USELESS_PEER)
-        }
-
-        this._connected = true
-        this._pingIntervalId = setInterval(() => this._sendPing(), PING_INTERVAL)
-        if (this._weHello) {
-          this.emit('connect')
-        }
-        break
-
-      case PREFIXES.DISCONNECT:
-        this._closed = true
-        this._disconnectReason = payload[0].length === 0 ? 0 : payload[0][0]
-        debug(
-          `DISCONNECT reason: ${DISCONNECT_REASONS[this._disconnectReason as number]} ${
-            this._socket.remoteAddress
-          }:${this._socket.remotePort}`,
-        )
-        this._disconnectWe = false
-        this._socket.end()
-        break
-
-      case PREFIXES.PING:
-        this._sendPong()
-        break
-
-      case PREFIXES.PONG:
-        clearTimeout(this._pingTimeoutId!)
-        break
-    }
-  }
-
+  /**
+   * Send AUTH message
+   */
   _sendAuth() {
     if (this._closed) return
     debug(
@@ -373,6 +163,9 @@ export class Peer extends EventEmitter {
     this._nextPacketSize = 210
   }
 
+  /**
+   * Send ACK message
+   */
   _sendAck() {
     if (this._closed) return
     debug(
@@ -392,6 +185,12 @@ export class Peer extends EventEmitter {
     this._sendHello()
   }
 
+  /**
+   * Create message HEADER and BODY and send to socket
+   * Also called from SubProtocol context
+   * @param code
+   * @param data
+   */
   _sendMessage(code: number, data: Buffer) {
     if (this._closed) return false
     const msg = Buffer.concat([rlp.encode(code), data])
@@ -405,6 +204,9 @@ export class Peer extends EventEmitter {
     return true
   }
 
+  /**
+   * Send HELLO message
+   */
   _sendHello() {
     debug(`Send HELLO to ${this._socket.remoteAddress}:${this._socket.remotePort}`)
     const payload: HelloMsg = [
@@ -425,23 +227,10 @@ export class Peer extends EventEmitter {
     }
   }
 
-  _sendPing() {
-    debug(`Send PING to ${this._socket.remoteAddress}:${this._socket.remotePort}`)
-    const data = rlp.encode([])
-    if (!this._sendMessage(PREFIXES.PING, data)) return
-
-    clearTimeout(this._pingTimeoutId!)
-    this._pingTimeoutId = setTimeout(() => {
-      this.disconnect(DISCONNECT_REASONS.TIMEOUT)
-    }, this._pingTimeout)
-  }
-
-  _sendPong() {
-    debug(`Send PONG to ${this._socket.remoteAddress}:${this._socket.remotePort}`)
-    const data = rlp.encode([])
-    this._sendMessage(PREFIXES.PONG, data)
-  }
-
+  /**
+   * Send DISCONNECT message
+   * @param reason
+   */
   _sendDisconnect(reason: DISCONNECT_REASONS) {
     debug(
       `Send DISCONNECT to ${this._socket.remoteAddress}:${
@@ -455,6 +244,312 @@ export class Peer extends EventEmitter {
     this._disconnectWe = true
     this._closed = true
     setTimeout(() => this._socket.end(), ms('2s'))
+  }
+
+  /**
+   * Send PING message
+   */
+  _sendPing() {
+    debug(`Send PING to ${this._socket.remoteAddress}:${this._socket.remotePort}`)
+    const data = rlp.encode([])
+    if (!this._sendMessage(PREFIXES.PING, data)) return
+
+    clearTimeout(this._pingTimeoutId!)
+    this._pingTimeoutId = setTimeout(() => {
+      this.disconnect(DISCONNECT_REASONS.TIMEOUT)
+    }, this._pingTimeout)
+  }
+
+  /**
+   * Send PONG message
+   */
+  _sendPong() {
+    debug(`Send PONG to ${this._socket.remoteAddress}:${this._socket.remotePort}`)
+    const data = rlp.encode([])
+    this._sendMessage(PREFIXES.PONG, data)
+  }
+
+  /**
+   * AUTH message received
+   */
+  _handleAuth() {
+    const bytesCount = this._nextPacketSize
+    const parseData = this._socketData.slice(0, bytesCount)
+    if (!this._eciesSession._gotEIP8Auth) {
+      if (parseData.slice(0, 1) === Buffer.from('04', 'hex')) {
+        this._eciesSession.parseAuthPlain(parseData)
+      } else {
+        this._eciesSession._gotEIP8Auth = true
+        this._nextPacketSize = util.buffer2int(this._socketData.slice(0, 2)) + 2
+        return
+      }
+    } else {
+      this._eciesSession.parseAuthEIP8(parseData)
+    }
+    this._state = 'Header'
+    this._nextPacketSize = 32
+    process.nextTick(() => this._sendAck())
+    this._socketData.consume(bytesCount)
+  }
+
+  /**
+   * ACK message received
+   */
+  _handleAck() {
+    const bytesCount = this._nextPacketSize
+    const parseData = this._socketData.slice(0, bytesCount)
+    if (!this._eciesSession._gotEIP8Ack) {
+      if (parseData.slice(0, 1) === Buffer.from('04', 'hex')) {
+        this._eciesSession.parseAckPlain(parseData)
+        debug(
+          `Received ack (old format) from ${this._socket.remoteAddress}:${this._socket.remotePort}`,
+        )
+      } else {
+        this._eciesSession._gotEIP8Ack = true
+        this._nextPacketSize = util.buffer2int(this._socketData.slice(0, 2)) + 2
+        return
+      }
+    } else {
+      this._eciesSession.parseAckEIP8(parseData)
+      debug(`Received ack (EIP8) from ${this._socket.remoteAddress}:${this._socket.remotePort}`)
+    }
+    this._state = 'Header'
+    this._nextPacketSize = 32
+    process.nextTick(() => this._sendHello())
+    this._socketData.consume(bytesCount)
+  }
+
+  /**
+   * HELLO message received
+   */
+  _handleHello(payload: any) {
+    this._hello = {
+      protocolVersion: buffer2int(payload[0]),
+      clientId: payload[1].toString(),
+      capabilities: payload[2].map((item: any) => {
+        return { name: item[0].toString(), version: buffer2int(item[1]) }
+      }),
+      port: buffer2int(payload[3]),
+      id: payload[4],
+    }
+
+    if (this._remoteId === null) {
+      this._remoteId = Buffer.from(this._hello.id)
+    } else if (!this._remoteId.equals(this._hello.id)) {
+      return this.disconnect(DISCONNECT_REASONS.INVALID_IDENTITY)
+    }
+
+    if (this._remoteClientIdFilter) {
+      for (let filterStr of this._remoteClientIdFilter) {
+        if (this._hello.clientId.toLowerCase().includes(filterStr.toLowerCase())) {
+          return this.disconnect(DISCONNECT_REASONS.USELESS_PEER)
+        }
+      }
+    }
+
+    const shared: any = {}
+    for (const item of this._hello.capabilities) {
+      for (const obj of this._capabilities!) {
+        if (obj.name !== item.name || obj.version !== item.version) continue
+        if (shared[obj.name] && shared[obj.name].version > obj.version) continue
+        shared[obj.name] = obj
+      }
+    }
+
+    let offset = BASE_PROTOCOL_LENGTH
+    this._protocols = Object.keys(shared)
+      .map(key => shared[key])
+      .sort((obj1, obj2) => (obj1.name < obj2.name ? -1 : 1))
+      .map(obj => {
+        const _offset = offset
+        offset += obj.length
+
+        const SubProtocol = obj.constructor
+        const protocol = new SubProtocol(obj.version, this, (code: number, data: Buffer) => {
+          if (code > obj.length) throw new Error('Code out of range')
+          this._sendMessage(_offset + code, data)
+        })
+
+        return { protocol, offset: _offset, length: obj.length }
+      })
+
+    if (this._protocols.length === 0) {
+      return this.disconnect(DISCONNECT_REASONS.USELESS_PEER)
+    }
+
+    this._connected = true
+    this._pingIntervalId = setInterval(() => this._sendPing(), PING_INTERVAL)
+    if (this._weHello) {
+      this.emit('connect')
+    }
+  }
+
+  /**
+   * DISCONNECT message received
+   * @param payload
+   */
+  _handleDisconnect(payload: any) {
+    this._closed = true
+    this._disconnectReason = payload[0].length === 0 ? 0 : payload[0][0]
+    debug(
+      `DISCONNECT reason: ${DISCONNECT_REASONS[this._disconnectReason as number]} ${
+        this._socket.remoteAddress
+      }:${this._socket.remotePort}`,
+    )
+    this._disconnectWe = false
+    this._socket.end()
+  }
+
+  /**
+   * PING message received
+   * @param payload
+   */
+  _handlePing(payload: any) {
+    this._sendPong()
+  }
+
+  /**
+   * PONG message received
+   * @param payload
+   */
+  _handlePong(payload: any) {
+    clearTimeout(this._pingTimeoutId!)
+  }
+
+  /**
+   * Message handling, called from a SubProtocol context
+   * @param code
+   * @param msg
+   */
+  _handleMessage(code: PREFIXES, msg: Buffer) {
+    const payload = rlp.decode(msg)
+    switch (code) {
+      case PREFIXES.HELLO:
+        this._handleHello(payload)
+        break
+      case PREFIXES.DISCONNECT:
+        this._handleDisconnect(payload)
+        break
+      case PREFIXES.PING:
+        this._handlePing(payload)
+        break
+      case PREFIXES.PONG:
+        this._handlePong(payload)
+        break
+    }
+  }
+
+  /**
+   * Handle message header
+   */
+  _handleHeader() {
+    const bytesCount = this._nextPacketSize
+    const parseData = this._socketData.slice(0, bytesCount)
+    debug(`Received header ${this._socket.remoteAddress}:${this._socket.remotePort}`)
+    const size = this._eciesSession.parseHeader(parseData)
+    if (!size) {
+      debug('invalid header size!')
+      return
+    }
+
+    this._state = 'Body'
+    this._nextPacketSize = size + 16
+    if (size % 16 > 0) this._nextPacketSize += 16 - (size % 16)
+    this._socketData.consume(bytesCount)
+  }
+
+  /**
+   * Handle message body
+   */
+  _handleBody() {
+    const bytesCount = this._nextPacketSize
+    const parseData = this._socketData.slice(0, bytesCount)
+    const body = this._eciesSession.parseBody(parseData)
+    if (!body) {
+      debug('empty body!')
+      return
+    }
+    debug(
+      `Received body ${this._socket.remoteAddress}:${this._socket.remotePort} ${formatLogData(
+        body.toString('hex'),
+        verbose,
+      )}`,
+    )
+    this._state = 'Header'
+    this._nextPacketSize = 32
+
+    // RLP hack
+    let code = body[0]
+    if (code === 0x80) code = 0
+
+    if (code !== PREFIXES.HELLO && code !== PREFIXES.DISCONNECT && this._hello === null) {
+      return this.disconnect(DISCONNECT_REASONS.PROTOCOL_ERROR)
+    }
+    const obj = this._getProtocol(code)
+    if (obj === undefined) return this.disconnect(DISCONNECT_REASONS.PROTOCOL_ERROR)
+
+    const msgCode = code - obj.offset
+    const prefix = this.getMsgPrefix(msgCode)
+    debug(
+      `Received ${prefix} (message code: ${code} - ${obj.offset} = ${msgCode}) ${this._socket.remoteAddress}:${this._socket.remotePort}`,
+    )
+
+    try {
+      obj.protocol._handleMessage(msgCode, body.slice(1))
+    } catch (err) {
+      this.disconnect(DISCONNECT_REASONS.SUBPROTOCOL_ERROR)
+      debug(`Error on peer subprotocol message handling: ${err}`)
+      this.emit('error', err)
+    }
+    this._socketData.consume(bytesCount)
+  }
+
+  /**
+   * Process socket data
+   * @param data
+   */
+  _onSocketData(data: Buffer) {
+    if (this._closed) return
+    this._socketData.append(data)
+    while (this._socketData.length >= this._nextPacketSize) {
+      try {
+        switch (this._state) {
+          case 'Auth':
+            this._handleAuth()
+            break
+          case 'Ack':
+            this._handleAck()
+            break
+          case 'Header':
+            this._handleHeader()
+            break
+          case 'Body':
+            this._handleBody()
+            break
+        }
+      } catch (err) {
+        debug(`Error on peer socket data handling: ${err}`)
+        this.emit('error', err)
+      }
+    }
+  }
+
+  /**
+   * React to socket being closed
+   */
+  _onSocketClose() {
+    clearInterval(this._pingIntervalId!)
+    clearTimeout(this._pingTimeoutId!)
+
+    this._closed = true
+    if (this._connected) this.emit('close', this._disconnectReason, this._disconnectWe)
+  }
+
+  _getProtocol(code: number): ProtocolDescriptor | undefined {
+    if (code < BASE_PROTOCOL_LENGTH) return { protocol: this, offset: 0 }
+    for (let obj of this._protocols) {
+      if (code >= obj.offset && code < obj.offset + obj.length!) return obj
+    }
   }
 
   getId() {
