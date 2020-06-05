@@ -129,8 +129,7 @@ export default class Common {
    * @param hardfork Hardfork given to function as a parameter
    * @returns Hardfork chosen to be used
    */
-  _chooseHardfork(hardfork?: string | null, onlySupported?: boolean): string {
-    onlySupported = onlySupported === undefined ? true : onlySupported
+  _chooseHardfork(hardfork?: string | null, onlySupported: boolean = true): string {
     if (!hardfork) {
       if (!this._hardfork) {
         throw new Error('Method called with neither a hardfork set nor provided by param')
