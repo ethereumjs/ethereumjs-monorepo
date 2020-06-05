@@ -16,43 +16,53 @@
   "hardforks": [
     {
       "name": "chainstart",
-      "block": 0
+      "block": 0,
+      "forkHash": "0x10ffe56"
     },
     {
       "name": "homestead",
-      "block": 0
+      "block": 0,
+      "forkHash": "0x10ffe56"
     },
     {
       "name": "dao",
-      "block": 0
+      "block": 0,
+      "forkHash": "0x10ffe56"
     },
     {
       "name": "tangerineWhistle",
-      "block": 0
+      "block": 0,
+      "forkHash": "0x10ffe56"
     },
     {
       "name": "spuriousDragon",
-      "block": 0
+      "block": 0,
+      "forkHash": "0x10ffe56"
     },
     {
       "name": "byzantium",
-      "block": 5067000
+      "block": 5067000,
+      "forkHash": "0x7f83c620"
     },
     {
       "name": "constantinople",
-      "block": 9200000
+      "block": 9200000,
+      "forkHash": "0xa94e3dc4"
     },
     {
       "name": "petersburg",
-      "block": 10255201
+      "block": 10255201,
+      "forkHash": "0x186874aa"
     },
     {
       "name": "istanbul",
-      "block": 14111141
+      "block": 14111141,
+      "forkHash": "0x7f6599a6"
     },
     {
       "name": "berlin",
-      "block": null
+      "block": null,
+      "forkHash": null
     }
   ],
   "bootstrapNodes": [

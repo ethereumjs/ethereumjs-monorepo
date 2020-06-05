@@ -63,5 +63,7 @@
       "email": "Holger.Drewes@gmail.com"
     }
   ],
-  "dependencies": {}
+  "dependencies": {
+    "crc-32": "^1.2.0"
+  }
 }
