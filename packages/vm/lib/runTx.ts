@@ -140,7 +140,6 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     value: tx.value,
     data: tx.data,
   })
-  state.clearOriginalStorageCache()
   const evm = new EVM(this, txContext, block)
   const results = (await evm.executeMessage(message)) as RunTxResult
 

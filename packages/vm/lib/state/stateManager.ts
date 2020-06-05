@@ -220,7 +220,7 @@ export default class DefaultStateManager implements StateManager {
    * Clears the original storage cache. Refer to [[getOriginalContractStorage]]
    * for more explanation.
    */
-  clearOriginalStorageCache(): void {
+  _clearOriginalStorageCache(): void {
     this._originalStorageCache = new Map()
   }
 
@@ -320,6 +320,7 @@ export default class DefaultStateManager implements StateManager {
 
     if (this._checkpointCount === 0) {
       await this._cache.flush()
+      this._clearOriginalStorageCache()
     }
   }
 
@@ -349,6 +350,7 @@ export default class DefaultStateManager implements StateManager {
 
     if (this._checkpointCount === 0) {
       await this._cache.flush()
+      this._clearOriginalStorageCache()
     }
   }
 

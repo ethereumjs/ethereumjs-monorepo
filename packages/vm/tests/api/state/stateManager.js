@@ -263,13 +263,14 @@ tape('Original storage cache', async t => {
   const value = Buffer.from('1234', 'hex')
 
   t.test('should initially have empty storage value', async st => {
+    await stateManager.checkpoint()
     const res = await stateManager.getContractStorage(addressBuffer, key)
     st.deepEqual(res, Buffer.alloc(0))
 
     const origRes = await stateManager.getOriginalContractStorage(addressBuffer, key)
     st.deepEqual(origRes, Buffer.alloc(0))
 
-    stateManager.clearOriginalStorageCache()
+    await stateManager.commit()
 
     st.end()
   })
