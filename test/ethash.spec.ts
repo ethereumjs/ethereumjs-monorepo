@@ -3,15 +3,9 @@ import Ethash from '../src'
 import { getEpoc, getCacheSize, getFullSize } from '../src/util'
 import { bufferToInt } from 'ethereumjs-util'
 const Header = require('ethereumjs-block/header.js')
-const levelup = require('levelup')
-const memdown = require('memdown')
 const powTests = require('./ethash_tests.json')
 
-const cacheDB = levelup('', {
-  db: memdown
-})
-
-const ethash = new Ethash(cacheDB)
+const ethash = new Ethash()
 const tests = Object.keys(powTests)
 
 tape('POW tests', function (t) {

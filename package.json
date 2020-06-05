@@ -15,7 +15,7 @@
     "lint": "ethereumjs-config-lint",
     "lint:fix": "ethereumjs-config-lint-fix",
     "coverage": "nyc --reporter=lcov npm run test",
-    "test": "ts-node ./test/"
+    "test": "ts-node test/*.spec.ts"
   },
   "husky": {
     "hooks": {
