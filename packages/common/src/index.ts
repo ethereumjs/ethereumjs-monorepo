@@ -368,10 +368,6 @@ export default class Common {
   _calcForkHash(hardfork: string) {
     const genesis = Buffer.from(this.genesis().hash.substr(2), 'hex')
 
-    function pad(str: string, max: number): string {
-      return str.length < max ? pad('0' + str, max) : str
-    }
-
     let hfBuffer = Buffer.alloc(0)
     let prevBlock = 0
     for (const hf of this.hardforks()) {
@@ -380,7 +376,7 @@ export default class Common {
       // Skip for chainstart (0), not applied HFs (null) and
       // when already applied on same block number HFs
       if (block !== 0 && block !== null && block !== prevBlock) {
-        const hfBlockBuffer = Buffer.from(pad(block.toString(16), 16), 'hex')
+        const hfBlockBuffer = Buffer.from(block.toString(16).padStart(16, '0'), 'hex')
         hfBuffer = Buffer.concat([hfBuffer, hfBlockBuffer])
       }
 
@@ -403,7 +399,7 @@ export default class Common {
     hardfork = this._chooseHardfork(hardfork, false)
     const data = this._getHardfork(hardfork)
     if (data['block'] === null) {
-      let msg = 'No fork hash calculation possible for non-applied or future hardfork'
+      const msg = 'No fork hash calculation possible for non-applied or future hardfork'
       throw new Error(msg)
     }
     if (data['forkHash'] !== undefined) {
