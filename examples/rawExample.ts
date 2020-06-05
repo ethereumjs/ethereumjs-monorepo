@@ -8,15 +8,15 @@ const cacheDB = levelup('', {
 
 const ethash = new Ethash(cacheDB)
 
-function verifySubmit(
+const verifySubmit = (
   ethash: Ethash,
   number: number,
   headerHash: Buffer,
   nonce: Buffer,
   cb: (hash: Buffer) => void
-) {
+) => {
   console.log(number)
-  ethash.loadEpoc(number, function () {
+  ethash.loadEpoc(number, () => {
     console.log('EPOC set')
     console.log(ethash.seed!.toString('hex'))
     const a = ethash.run(headerHash, nonce)
@@ -34,7 +34,7 @@ verifySubmit(
   35414,
   header,
   Buffer.from('e360b6170c229d15', 'hex'),
-  function (result) {
+  (result) => {
     console.log(result.toString('hex'))
   }
 )

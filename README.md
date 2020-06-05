@@ -29,7 +29,7 @@ const validblockRlp =
 
 const validblock = new Block(Buffer.from(validblockRlp, 'hex'))
 
-ethash.verifyPOW(validblock, function (result) {
+ethash.verifyPOW(validblock, (result) => {
   console.log(result)
 })
 ```

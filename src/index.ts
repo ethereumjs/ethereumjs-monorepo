@@ -27,14 +27,14 @@ type BlockHeader = any
 
 export default class Ethash {
   dbOpts: Object
-  cacheDB: LevelUp
+  cacheDB?: LevelUp
   cache: Buffer[]
   epoc?: number
   fullSize?: number
   cacheSize?: number
   seed?: Buffer
 
-  constructor(cacheDB: LevelUp) {
+  constructor(cacheDB?: LevelUp) {
     this.dbOpts = {
       valueEncoding: 'json'
     }
@@ -127,13 +127,9 @@ export default class Ethash {
   }
 
   /**
-   * Loads the seed and the cache given a block nnumber
-   * @method loadEpoc
-   * @param number Number
-   * @param cm function
+   * Loads the seed and cache given a block number.
    */
   loadEpoc(number: number, cb: Function) {
-    const self = this
     const epoc = getEpoc(number)
 
     if (this.epoc === epoc) {
@@ -142,16 +138,17 @@ export default class Ethash {
 
     this.epoc = epoc
 
+    if (!this.cacheDB) {
+      throw new Error('cacheDB needed')
+    }
+
     // gives the seed the first epoc found
-    function findLastSeed(
-      epoc: number,
-      cb2: (seed: Buffer, epoc: number) => void
-    ) {
+    const findLastSeed = (epoc: number, cb2: (seed: Buffer, epoc: number) => void) => {
       if (epoc === 0) {
         return cb2(zeros(32), 0)
       }
 
-      self.cacheDB.get(epoc, self.dbOpts, function (err, data) {
+      this.cacheDB!.get(epoc, this.dbOpts, (err, data) => {
         if (!err) {
           cb2(data.seed, epoc)
         } else {
@@ -160,57 +157,55 @@ export default class Ethash {
       })
     }
 
-    self.cacheDB.get(epoc, self.dbOpts, function (err, data) {
+    this.cacheDB.get(epoc, this.dbOpts, (err, data) => {
       if (!data) {
-        self.cacheSize = getCacheSize(epoc)
-        self.fullSize = getFullSize(epoc)
+        this.cacheSize = getCacheSize(epoc)
+        this.fullSize = getFullSize(epoc)
 
-        findLastSeed(epoc, function (seed, foundEpoc) {
-          self.seed = getSeed(seed, foundEpoc, epoc)
-          const cache = self.mkcache(self.cacheSize!, self.seed!)
+        findLastSeed(epoc, (seed, foundEpoc) => {
+          this.seed = getSeed(seed, foundEpoc, epoc)
+          const cache = this.mkcache(this.cacheSize!, this.seed!)
           // store the generated cache
-          self.cacheDB.put(
+          this.cacheDB!.put(
             epoc,
             {
-              cacheSize: self.cacheSize,
-              fullSize: self.fullSize,
-              seed: self.seed,
+              cacheSize: this.cacheSize,
+              fullSize: this.fullSize,
+              seed: this.seed,
               cache: cache
             },
-            self.dbOpts,
+            this.dbOpts,
             cb as any
           )
         })
       } else {
-        // Object.assign(self, data)
-        self.cache = data.cache.map(function (a: Buffer) {
+        // Object.assign(this, data)
+        this.cache = data.cache.map((a: Buffer) => {
           return Buffer.from(a)
         })
-        self.cacheSize = data.cacheSize
-        self.fullSize = data.fullSize
-        self.seed = Buffer.from(data.seed)
+        this.cacheSize = data.cacheSize
+        this.fullSize = data.fullSize
+        this.seed = Buffer.from(data.seed)
         cb()
       }
     })
   }
 
   _verifyPOW(header: BlockHeader, cb: (valid: boolean) => void) {
-    const self = this
     const headerHash = this.headerHash(header.raw)
     const number = bufferToInt(header.number)
 
-    this.loadEpoc(number, function () {
-      const a = self.run(headerHash, Buffer.from(header.nonce, 'hex'))
+    this.loadEpoc(number, () => {
+      const a = this.run(headerHash, Buffer.from(header.nonce, 'hex'))
       const result = new BN(a.hash)
       cb(
         a.mix.toString('hex') === header.mixHash.toString('hex') &&
-          TWO_POW256.div(new BN(header.difficulty)).cmp(result) === 1
+        TWO_POW256.div(new BN(header.difficulty)).cmp(result) === 1
       )
     })
   }
 
   verifyPOW(block: Block, cb: (valid: boolean) => void) {
-    const self = this
     let valid = true
 
     // don't validate genesis blocks
@@ -219,7 +214,7 @@ export default class Ethash {
       return
     }
 
-    this._verifyPOW(block.header, function (valid2: boolean) {
+    this._verifyPOW(block.header, (valid2) => {
       valid = valid2
 
       if (!valid) {
@@ -228,13 +223,13 @@ export default class Ethash {
 
       async.eachSeries(
         block.uncleHeaders,
-        function (uheader: BlockHeader, cb2: (valid: boolean) => void) {
-          self._verifyPOW(uheader, function (valid3: boolean) {
+        (uheader: BlockHeader, cb2: (valid: boolean) => void) => {
+          this._verifyPOW(uheader, (valid3) => {
             valid = valid3
             cb2(valid)
           })
         },
-        function () {
+        () => {
           cb(valid)
         }
       )

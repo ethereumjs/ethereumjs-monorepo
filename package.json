@@ -1,7 +1,7 @@
 {
   "name": "ethashjs",
   "version": "0.0.8",
-  "description": "an ethash implementation in JS",
+  "description": "An ethash implementation in JS.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [
