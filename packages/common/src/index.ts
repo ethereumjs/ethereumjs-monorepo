@@ -1,3 +1,4 @@
+import { buf as crc32Buffer } from 'crc-32'
 import { chains as chainParams } from './chains'
 import { hardforks as hardforkChanges } from './hardforks'
 import { Chain } from './types'
@@ -128,8 +129,7 @@ export default class Common {
    * @param hardfork Hardfork given to function as a parameter
    * @returns Hardfork chosen to be used
    */
-  _chooseHardfork(hardfork?: string | null, onlySupported?: boolean): string {
-    onlySupported = onlySupported === undefined ? true : onlySupported
+  _chooseHardfork(hardfork?: string | null, onlySupported: boolean = true): string {
     if (!hardfork) {
       if (!this._hardfork) {
         throw new Error('Method called with neither a hardfork set nor provided by param')
@@ -357,6 +357,54 @@ export default class Common {
     } else {
       return false
     }
+  }
+
+  /**
+   * Internal helper function to calculate a fork hash
+   * @param hardfork Hardfork name
+   * @returns Fork hash as hex string
+   */
+  _calcForkHash(hardfork: string) {
+    const genesis = Buffer.from(this.genesis().hash.substr(2), 'hex')
+
+    let hfBuffer = Buffer.alloc(0)
+    let prevBlock = 0
+    for (const hf of this.hardforks()) {
+      const block = hf.block
+
+      // Skip for chainstart (0), not applied HFs (null) and
+      // when already applied on same block number HFs
+      if (block !== 0 && block !== null && block !== prevBlock) {
+        const hfBlockBuffer = Buffer.from(block.toString(16).padStart(16, '0'), 'hex')
+        hfBuffer = Buffer.concat([hfBuffer, hfBlockBuffer])
+      }
+
+      if (hf.name === hardfork) break
+      prevBlock = block
+    }
+    const inputBuffer = Buffer.concat([genesis, hfBuffer])
+
+    // CRC32 delivers result as signed (negative) 32-bit integer,
+    // convert to hex string
+    const forkhash = new Number(crc32Buffer(inputBuffer) >>> 0).toString(16)
+    return `0x${forkhash}`
+  }
+
+  /**
+   * Returns an eth/64 compliant fork hash (EIP-2124)
+   * @param hardfork Hardfork name, optional if HF set
+   */
+  forkHash(hardfork?: string) {
+    hardfork = this._chooseHardfork(hardfork, false)
+    const data = this._getHardfork(hardfork)
+    if (data['block'] === null) {
+      const msg = 'No fork hash calculation possible for non-applied or future hardfork'
+      throw new Error(msg)
+    }
+    if (data['forkHash'] !== undefined) {
+      return data['forkHash']
+    }
+    return this._calcForkHash(hardfork)
   }
 
   /**
