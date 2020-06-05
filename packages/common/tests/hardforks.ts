@@ -223,7 +223,7 @@ tape('[Common]: Hardfork logic', function(t: tape.Test) {
     st.end()
   })
 
-  t.test('_calcForkHash()', function(st: tape.Test) {
+  t.test('_calcForkHash()', function(st: tape.Test) {
     let c = new Common('mainnet')
     let msg = 'should calc correctly for chainstart (only genesis)'
     st.equal(c._calcForkHash('chainstart'), '0xfc64ec04', msg)
@@ -234,14 +234,14 @@ tape('[Common]: Hardfork logic', function(t: tape.Test) {
     msg = 'should calc correctly for in-between applied HF'
     st.equal(c._calcForkHash('byzantium'), '0xa00bc324', msg)
 
-    const chains = [ 'mainnet', 'ropsten', 'rinkeby', 'goerli', 'kovan' ]
+    const chains = ['mainnet', 'ropsten', 'rinkeby', 'goerli', 'kovan']
 
-    chains.forEach((chain) => {
+    chains.forEach(chain => {
       c = new Common(chain)
 
-      for (const hf of c.hardforks()) {
-        if (hf.forkHash && hf.forkHash !== null) {
-          const msg = `Verify forkHash calculation for: ${ chain } -> ${ hf.name }`
+      for (const hf of c.hardforks()) {
+        if (hf.forkHash && hf.forkHash !== null) {
+          const msg = `Verify forkHash calculation for: ${chain} -> ${hf.name}`
           st.equal(c._calcForkHash(hf.name), hf.forkHash, msg)
         }
       }
@@ -252,7 +252,9 @@ tape('[Common]: Hardfork logic', function(t: tape.Test) {
 
   t.test('forkHash()', function(st: tape.Test) {
     let c = new Common('mainnet')
-    let f = () => { c.forkHash() }
+    let f = () => {
+      c.forkHash()
+    }
     let msg = 'should throw when no hardfork set or provided'
     st.throws(f, /neither a hardfork set nor provided by param$/, msg)
 
@@ -264,7 +266,9 @@ tape('[Common]: Hardfork logic', function(t: tape.Test) {
     st.equal(c.forkHash('spuriousDragon'), '0x3edd5b10', msg)
 
     c = new Common('ropsten')
-    f = () => { c.forkHash('dao') }
+    f = () => {
+      c.forkHash('dao')
+    }
     msg = 'should throw when called on non-applied or future HF'
     st.throws(f, /No fork hash calculation possible/, msg)
 

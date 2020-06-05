@@ -368,13 +368,13 @@ export default class Common {
   _calcForkHash(hardfork: string) {
     const genesis = Buffer.from(this.genesis().hash.substr(2), 'hex')
 
-    function pad (str: string, max: number): string {
+    function pad(str: string, max: number): string {
       return str.length < max ? pad('0' + str, max) : str
     }
 
     let hfBuffer = Buffer.alloc(0)
     let prevBlock = 0
-    for (const hf of this.hardforks()) {
+    for (const hf of this.hardforks()) {
       const block = hf.block
 
       // Skip for chainstart (0), not applied HFs (null) and
