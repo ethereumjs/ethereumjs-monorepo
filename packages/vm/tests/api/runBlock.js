@@ -4,7 +4,7 @@ const Block = require('ethereumjs-block')
 const Common = require('ethereumjs-common').default
 const util = require('ethereumjs-util')
 const runBlock = require('../../dist/runBlock').default
-const { StateManager } = require('../../dist/state')
+const { DefaultStateManager } = require('../../dist/state')
 const testData = require('./testdata.json')
 const { setupVM } = require('./utils')
 const { setupPreConditions } = require('../util')
@@ -14,7 +14,7 @@ function setup(vm = null) {
   // The mock includes mocked runTx and runCall which
   // always return an error.
   if (vm === null) {
-    const stateManager = new StateManager()
+    const stateManager = new DefaultStateManager()
     vm = {
       stateManager,
       emit: (e, val, cb) => cb(),

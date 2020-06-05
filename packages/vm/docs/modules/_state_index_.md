@@ -6,4 +6,8 @@
 
 ### Classes
 
-* [StateManager](../classes/_state_index_.statemanager.md)
+* [DefaultStateManager](../classes/_state_index_.defaultstatemanager.md)
+
+### Interfaces
+
+* [StateManager](../interfaces/_state_index_.statemanager.md)

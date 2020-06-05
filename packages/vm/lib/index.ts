@@ -2,13 +2,14 @@ import BN = require('bn.js')
 import Account from 'ethereumjs-account'
 import Blockchain from 'ethereumjs-blockchain'
 import Common from 'ethereumjs-common'
-import { StateManager } from './state/index'
+import { StateManager, DefaultStateManager } from './state/index'
 import { default as runCode, RunCodeOpts } from './runCode'
 import { default as runCall, RunCallOpts } from './runCall'
 import { default as runTx, RunTxOpts, RunTxResult } from './runTx'
 import { default as runBlock, RunBlockOpts, RunBlockResult } from './runBlock'
 import { EVMResult, ExecResult } from './evm/evm'
 import { OpcodeList, getOpcodesForHF } from './evm/opcodes'
+import { precompiles } from './evm/precompiles'
 import runBlockchain from './runBlockchain'
 const AsyncEventEmitter = require('async-eventemitter')
 const Trie = require('merkle-patricia-tree/secure.js')
@@ -72,6 +73,7 @@ export default class VM extends AsyncEventEmitter {
   _opcodes: OpcodeList
   public readonly _emit: (topic: string, data: any) => Promise<void>
   protected isInitialized: boolean = false
+
   /**
    * VM async constructor. Creates engine instance and initializes it.
    *
@@ -82,6 +84,7 @@ export default class VM extends AsyncEventEmitter {
     await vm.init()
     return vm
   }
+
   /**
    * Instantiates a new [[VM]] Object.
    * @param opts - Default values for the options are:
@@ -124,7 +127,7 @@ export default class VM extends AsyncEventEmitter {
       this.stateManager = opts.stateManager
     } else {
       const trie = opts.state || new Trie()
-      this.stateManager = new StateManager({ trie, common: this._common })
+      this.stateManager = new DefaultStateManager({ trie, common: this._common })
     }
 
     this.blockchain = opts.blockchain || new Blockchain({ common: this._common })
@@ -145,11 +148,11 @@ export default class VM extends AsyncEventEmitter {
     const { opts } = this
 
     if (opts.activatePrecompiles && !opts.stateManager) {
-      const trie = this.stateManager._trie
-      const put = promisify(trie.put.bind(trie))
-      for (let i = 1; i <= 8; i++) {
-        await put(new BN(i).toArrayLike(Buffer, 'be', 20), new Account().serialize())
-      }
+      this.stateManager.checkpoint()
+      Object.keys(precompiles)
+        .map((k: string): Buffer => Buffer.from(k, 'hex'))
+        .forEach(async (k: Buffer) => await this.stateManager.putAccount(k, new Account()))
+      await this.stateManager.commit()
     }
 
     this.isInitialized = true

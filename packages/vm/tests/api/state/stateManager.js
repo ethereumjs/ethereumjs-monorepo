@@ -2,13 +2,13 @@ const tape = require('tape')
 const { parallel } = require('async')
 const { toBuffer, keccak256, KECCAK256_RLP } = require('ethereumjs-util')
 const Common = require('ethereumjs-common').default
-const { StateManager } = require('../../../dist/state')
+const { DefaultStateManager } = require('../../../dist/state')
 const { createAccount } = require('../utils')
 const { isRunningInKarma } = require('../../util')
 
 tape('StateManager', t => {
   t.test('should instantiate', async st => {
-    const stateManager = new StateManager()
+    const stateManager = new DefaultStateManager()
 
     st.deepEqual(stateManager._trie.root, KECCAK256_RLP, 'it has default root')
     st.equal(stateManager._common.hardfork(), 'petersburg', 'it has default hardfork')
@@ -18,7 +18,7 @@ tape('StateManager', t => {
   })
 
   t.test('should clear the cache when the state root is set', async st => {
-    const stateManager = new StateManager()
+    const stateManager = new DefaultStateManager()
     const addressBuffer = Buffer.from('a94f5374fce5edbc8e2a8697c15331677e6ebf0b', 'hex')
     const account = createAccount()
 
@@ -78,7 +78,7 @@ tape('StateManager', t => {
   t.test(
     'should put and get account, and add to the underlying cache if the account is not found',
     async st => {
-      const stateManager = new StateManager()
+      const stateManager = new DefaultStateManager()
       const account = createAccount()
 
       await stateManager.putAccount('a94f5374fce5edbc8e2a8697c15331677e6ebf0b', account)
@@ -100,7 +100,7 @@ tape('StateManager', t => {
   t.test(
     'should call the callback with a boolean representing emptiness, when the account is empty',
     async st => {
-      const stateManager = new StateManager()
+      const stateManager = new DefaultStateManager()
 
       let res = await stateManager.accountIsEmpty('a94f5374fce5edbc8e2a8697c15331677e6ebf0b')
 
@@ -113,7 +113,7 @@ tape('StateManager', t => {
   t.test(
     'should call the callback with a false boolean representing non-emptiness when the account is not empty',
     async st => {
-      const stateManager = new StateManager()
+      const stateManager = new DefaultStateManager()
       const account = createAccount('0x1', '0x1')
 
       await stateManager.putAccount('a94f5374fce5edbc8e2a8697c15331677e6ebf0b', account)
@@ -138,7 +138,7 @@ tape('StateManager', t => {
         const genesisData = require('ethereumjs-testing').getSingleFile(
           'BasicTests/genesishashestest.json',
         )
-        const stateManager = new StateManager()
+        const stateManager = new DefaultStateManager()
 
         await stateManager.generateCanonicalGenesis()
         let stateRoot = await stateManager.getStateRoot()
@@ -152,7 +152,7 @@ tape('StateManager', t => {
         // 2. Test generating from common
         const common = new Common('mainnet', 'petersburg')
         const expectedStateRoot = Buffer.from(common.genesis().stateRoot.slice(2), 'hex')
-        const stateManager = new StateManager({ common: common })
+        const stateManager = new DefaultStateManager({ common: common })
 
         await stateManager.generateCanonicalGenesis()
         let stateRoot = await stateManager.getStateRoot()
@@ -174,7 +174,7 @@ tape('StateManager', t => {
     for (const chain of chains) {
       const common = new Common(chain, 'petersburg')
       const expectedStateRoot = Buffer.from(common.genesis().stateRoot.slice(2), 'hex')
-      const stateManager = new StateManager({ common: common })
+      const stateManager = new DefaultStateManager({ common: common })
 
       await stateManager.generateCanonicalGenesis()
       let stateRoot = await stateManager.getStateRoot()
@@ -188,7 +188,7 @@ tape('StateManager', t => {
   })
 
   t.test('should dump storage', async st => {
-    const stateManager = new StateManager()
+    const stateManager = new DefaultStateManager()
     const addressBuffer = Buffer.from('a94f5374fce5edbc8e2a8697c15331677e6ebf0b', 'hex')
     const account = createAccount()
 
@@ -206,7 +206,7 @@ tape('StateManager', t => {
   })
 
   t.test('should pass Common object when copying the state manager', st => {
-    const stateManager = new StateManager({
+    const stateManager = new DefaultStateManager({
       common: new Common('goerli', 'byzantium'),
     })
 
@@ -221,7 +221,7 @@ tape('StateManager', t => {
   })
 
   t.test("should validate the key's length when modifying a contract's storage", async st => {
-    const stateManager = new StateManager()
+    const stateManager = new DefaultStateManager()
     const addressBuffer = Buffer.from('a94f5374fce5edbc8e2a8697c15331677e6ebf0b', 'hex')
     try {
       await stateManager.putContractStorage(addressBuffer, Buffer.alloc(12), toBuffer('0x1231'))
@@ -236,7 +236,7 @@ tape('StateManager', t => {
   })
 
   t.test("should validate the key's length when reading a contract's storage", async st => {
-    const stateManager = new StateManager()
+    const stateManager = new DefaultStateManager()
     const addressBuffer = Buffer.from('a94f5374fce5edbc8e2a8697c15331677e6ebf0b', 'hex')
     try {
       await stateManager.getContractStorage(addressBuffer, Buffer.alloc(12))
@@ -252,7 +252,7 @@ tape('StateManager', t => {
 })
 
 tape('Original storage cache', async t => {
-  const stateManager = new StateManager()
+  const stateManager = new DefaultStateManager()
 
   const address = 'a94f5374fce5edbc8e2a8697c15331677e6ebf0b'
   const addressBuffer = Buffer.from(address, 'hex')
@@ -263,13 +263,14 @@ tape('Original storage cache', async t => {
   const value = Buffer.from('1234', 'hex')
 
   t.test('should initially have empty storage value', async st => {
+    await stateManager.checkpoint()
     const res = await stateManager.getContractStorage(addressBuffer, key)
     st.deepEqual(res, Buffer.alloc(0))
 
     const origRes = await stateManager.getOriginalContractStorage(addressBuffer, key)
     st.deepEqual(origRes, Buffer.alloc(0))
 
-    stateManager._clearOriginalStorageCache()
+    await stateManager.commit()
 
     st.end()
   })

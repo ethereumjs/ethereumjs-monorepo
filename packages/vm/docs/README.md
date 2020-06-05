@@ -15,4 +15,5 @@
 * ["runCode"](modules/_runcode_.md)
 * ["runTx"](modules/_runtx_.md)
 * ["state/index"](modules/_state_index_.md)
+* ["state/interface"](modules/_state_interface_.md)
 * ["state/stateManager"](modules/_state_statemanager_.md)
