@@ -143,7 +143,10 @@ export default class Ethash {
     }
 
     // gives the seed the first epoc found
-    const findLastSeed = (epoc: number, cb2: (seed: Buffer, epoc: number) => void) => {
+    const findLastSeed = (
+      epoc: number,
+      cb2: (seed: Buffer, epoc: number) => void
+    ) => {
       if (epoc === 0) {
         return cb2(zeros(32), 0)
       }
@@ -200,7 +203,7 @@ export default class Ethash {
       const result = new BN(a.hash)
       cb(
         a.mix.toString('hex') === header.mixHash.toString('hex') &&
-        TWO_POW256.div(new BN(header.difficulty)).cmp(result) === 1
+          TWO_POW256.div(new BN(header.difficulty)).cmp(result) === 1
       )
     })
   }
