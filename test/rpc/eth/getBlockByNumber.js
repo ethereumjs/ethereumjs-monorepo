@@ -1,8 +1,8 @@
 const test = require('tape')
-
 const request = require('supertest')
 const { INVALID_PARAMS } = require('../../../lib/rpc/error-code')
 const { startRPC, closeRPC, createManager, createNode } = require('../helpers')
+const { checkError } = require('../util')
 
 function createBlockchain () {
   const transactions = [
@@ -15,20 +15,6 @@ function createBlockchain () {
   }
   return {
     getBlock: () => block
-  }
-}
-
-function checkError (expectedCode, expectedMessage) {
-  return function (res) {
-    if (!res.body.error) {
-      throw new Error('should return an error object')
-    }
-    if (res.body.error.code !== expectedCode) {
-      throw new Error(`should have an error code ${expectedCode}`)
-    }
-    if (expectedMessage && res.body.error.message !== expectedMessage) {
-      throw new Error(`should have an error message "${expectedMessage}"`)
-    }
   }
 }
 
