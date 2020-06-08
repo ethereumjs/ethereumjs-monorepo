@@ -1,9 +1,8 @@
-import { checkError } from '../util'
 const test = require('tape')
-
 const request = require('supertest')
 const { INVALID_PARAMS } = require('../../../lib/rpc/error-code')
 const { startRPC, closeRPC, createManager, createNode } = require('../helpers')
+const { checkError } = require('../util')
 
 function createBlockchain () {
   const transactions = [
