@@ -67,6 +67,105 @@ DEBUG=devp2p:rlpx,devp2p:eth,-babel [CLIENT_START_COMMAND]
 
 See also this [diagram](./client_diagram.png) with an overview of the client structure together with the initialization and message flow.
 
+## JSON-RPC
+
+**Overview**
+
+You can expose a [JSON-RPC](https://github.com/ethereum/wiki/wiki/JSON-RPC) interface along a client run with:
+
+```shell
+ethereumjs --rpc
+```
+
+To run just the server without syncing:
+
+```shell
+ethereumjs --rpc --maxPeers=0
+```
+
+Currently only a small subset of `RPC` methods are implemented.(*) You can have a look at the 
+[./lib/rpc/modules/](./lib/rpc/modules) source folder or the tracking issue 
+[#17](https://github.com/ethereumjs/ethereumjs-client/issues/17) for an overview.
+
+(*) Side note: implementing RPC methods is actually an extremely thankful task for a first-time
+contribution on the project *hint* *hint*. 😄
+
+**API Examples**
+
+You can use `cURL` to request data from an API endpoint. Here is a simple example for
+[web3_clientVersion](https://github.com/ethereum/wiki/wiki/JSON-RPC#web3_clientversion):
+
+```shell
+curl -X POST -H "Content-Type: application/json" --data '{"jsonrpc":"2.0","id":1,"method":"web3_clientVersion", "params": []}' http://localhost:8545
+```
+
+Note that `"params": []` can also be omitted in this case.
+
+Or - somewhat more convenient and with formatted output - with a tool like [httpie](http://httpie.org/):
+
+```shell
+http POST http://localhost:8545 jsonrpc=2.0 id=1 method=web3_clientVersion params:=[]
+```
+
+Note the `:=` separator for the `params` parameter to 
+[indicate](https://httpie.org/docs#non-string-json-fields) raw `JSON` as an input.
+
+This will give you an output like the following:
+
+```json
+{
+    "id": "1",
+    "jsonrpc": "2.0",
+    "result": "EthereumJS/0.0.5/darwin/node12.15.0"
+}
+```
+
+Here an example for a call on an endpoint with the need for parameters. The following call uses
+the [eth_getBlockByNumer](https://github.com/ethereum/wiki/wiki/JSON-RPC#eth_getblockbynumber) endpoint
+to request data for block number 436 (you can use an tool like 
+[RapidTables](https://www.rapidtables.com/convert/number/decimal-to-hex.html) for conversion to `hex`):
+
+
+```shell
+curl -X POST -H "Content-Type: application/json" --data '{"jsonrpc":"2.0","method":"eth_getBlockByNumber","params":["0x1b4", true],"id":1}' http://127.0.0.1:8545
+```
+
+Same with `httpie`:
+
+```shell
+http POST http://localhost:8545 jsonrpc=2.0 id=1 method=eth_getBlockByNumber params:='["0x1b4",true]'
+```
+
+Output:
+
+```json
+{
+    "id": "1",
+    "jsonrpc": "2.0",
+    "result": {
+        "header": {
+            "bloom": "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+            "coinbase": "0xbb7b8287f3f0a933474a79eae42cbca977791171",
+            "difficulty": "0x04ea3f27bc",
+            "extraData": "0x476574682f4c5649562f76312e302e302f6c696e75782f676f312e342e32",
+            "gasLimit": "0x1388",
+            "gasUsed": "0x",
+            "mixHash": "0x4fffe9ae21f1c9e15207b1f472d5bbdd68c9595d461666602f2be20daf5e7843",
+            "nonce": "0x689056015818adbe",
+            "number": "0x01b4",
+            "parentHash": "0xe99e022112df268087ea7eafaf4790497fd21dbeeb6bd7a1721df161a6657a54",
+            "receiptTrie": "0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421",
+            "stateRoot": "0xddc8b0234c2e0cad087c8b389aa7ef01f7d79b2570bccb77ce48648aa61c904d",
+            "timestamp": "0x55ba467c",
+            "transactionsTrie": "0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421",
+            "uncleHash": "0x1dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d49347"
+        },
+        "transactions": [],
+        "uncleHeaders": []
+    }
+}
+```
+
 ## EXAMPLES
 
 ### Example 1: Light sync
