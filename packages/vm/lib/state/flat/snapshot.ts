@@ -2,6 +2,7 @@ import { LevelUp } from 'levelup'
 import { keccak256, KECCAK256_NULL, KECCAK256_RLP } from 'ethereumjs-util'
 import { DB } from './db'
 import { Nibbles, bufferToNibbles } from './util'
+import { EmptyNode } from './stackTrie'
 
 import BN = require('bn.js')
 
@@ -87,33 +88,14 @@ export class Snapshot {
   }
 
   merkleizeList(leaves: Buffer[][]): Buffer {
-    if (leaves.length === 0) {
-      return KECCAK256_RLP
-    }
+    let root = new EmptyNode()
 
-    // Assume sorted list of keys
-    /*const keys = []
-    const values = []
     for (let kv of leaves) {
-      keys.push(kv[0])
-      values.push(keccak256(kv[1]))
-    }*/
-
-    /**
-     * 006814
-     * 015421
-     * 015321
-     * 017231
-     */
-    for (let i = 0; i < leaves.length; i++) {
-      const kv = leaves[i]
-      const next = i < leaves.length - 1 ? leaves[i + 1] : undefined
-      const curKey = bufferToNibbles(kv[0])
-      //const nextKey = bufferToNibbles(next[
+      const key = bufferToNibbles(kv[0])
+      root = root.insert(key, kv[1])
     }
 
-    return Buffer.alloc(0)
-    // Have a kv list
+    return root.hash()
   }
 
   checkpoint(): void {

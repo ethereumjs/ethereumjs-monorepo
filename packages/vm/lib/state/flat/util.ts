@@ -21,6 +21,21 @@ export function bufferToNibbles(key: Buffer): Nibbles {
 }
 
 /**
+ * Converts a nibble array into a buffer.
+ * @method nibblesToBuffer
+ * @param {Nibbles} arr - Nibble array
+ * @private
+ */
+export function nibblesToBuffer(arr: Nibbles): Buffer {
+  let buf = Buffer.alloc(arr.length / 2)
+  for (let i = 0; i < buf.length; i++) {
+    let q = i * 2
+    buf[i] = (arr[q] << 4) + arr[++q]
+  }
+  return buf
+}
+
+/**
  * Returns the number of in order matching nibbles of two give nibble arrays.
  * @method matchingNibbleLength
  * @param {Nibbles} nib1

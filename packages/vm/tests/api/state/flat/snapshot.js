@@ -5,6 +5,7 @@ const Account = require('ethereumjs-account').default
 const { keccak256, KECCAK256_RLP } = require('ethereumjs-util')
 const { Snapshot } = require('../../../../dist/state/flat/snapshot')
 const Trie = require('merkle-patricia-tree/secure')
+const BaseTrie = require('merkle-patricia-tree/baseTrie')
 
 tape('snapshot simple get/put', (t) => {
   t.test('should return null for non-existent key', async (st) => {
@@ -95,12 +96,69 @@ tape('snapshot merkleize list', (t) => {
   t.test('should merkleize single leaf', async (st) => {
     const snapshot = new Snapshot()
     const serializedEmptyAcc = (new Account()).serialize()
-    const leaves = [
+    let leaves = [
       [new BN(1).toArrayLike(Buffer, 'be', 32), serializedEmptyAcc]
     ]
     let expected = await merkleizeViaTrie(leaves)
     const root = snapshot.merkleizeList(leaves)
     st.ok(root.equals(expected), `Merkleized root ${root.toString('hex')} should match ${expected.toString('hex')}`)
+    st.end()
+  })
+
+  t.test('should merkleize two leaves', async (st) => {
+    const snapshot = new Snapshot()
+    const serializedEmptyAcc = (new Account()).serialize()
+    let leaves = [
+      [Buffer.from('01111111111111111111111111111111', 'hex'), serializedEmptyAcc],
+      [Buffer.from('02111111111111111111111111111111', 'hex'), serializedEmptyAcc]
+    ]
+    let expected = await merkleizeViaTrie(leaves)
+    const root = snapshot.merkleizeList(leaves)
+    st.ok(root.equals(expected), `Merkleized root ${root.toString('hex')} should match ${expected.toString('hex')}`)
+    st.end()
+  })
+
+  t.test('should merkleize trie with leaf inserted to branch', async (st) => {
+    const snapshot = new Snapshot()
+    const serializedEmptyAcc = (new Account()).serialize()
+    let leaves = [
+      [Buffer.from('01111111111111111111111111111111', 'hex'), serializedEmptyAcc],
+      [Buffer.from('12111111111111111111111111111111', 'hex'), serializedEmptyAcc],
+      [Buffer.from('13111111111111111111111111111111', 'hex'), serializedEmptyAcc]
+    ]
+    let expected = await merkleizeViaTrie(leaves)
+    const root = snapshot.merkleizeList(leaves)
+    st.ok(root.equals(expected), `Merkleized root ${root.toString('hex')} should match ${expected.toString('hex')}`)
+    st.end()
+  })
+
+  t.test('should merkleize trie with extension insertion', async (st) => {
+    const serializedEmptyAcc = (new Account()).serialize()
+    const testcases = [
+      [
+        [Buffer.from('01111111111111111111111111111111', 'hex'), serializedEmptyAcc],
+        [Buffer.from('02111111111111111111111111111111', 'hex'), serializedEmptyAcc],
+        [Buffer.from('03111111111111111111111111111111', 'hex'), serializedEmptyAcc]
+      ],
+      [
+        [Buffer.from('00001111111111111111111111111111', 'hex'), serializedEmptyAcc],
+        [Buffer.from('00002111111111111111111111111111', 'hex'), serializedEmptyAcc],
+        [Buffer.from('00111111111111111111111111111111', 'hex'), serializedEmptyAcc]
+      ],
+      [
+        [Buffer.from('00001111111111111111111111111111', 'hex'), serializedEmptyAcc],
+        [Buffer.from('00002111111111111111111111111111', 'hex'), serializedEmptyAcc],
+        [Buffer.from('00011111111111111111111111111111', 'hex'), serializedEmptyAcc]
+      ]
+    ]
+
+    for (const leaves of testcases) {
+      const snapshot = new Snapshot()
+      let expected = await merkleizeViaTrie(leaves)
+      const root = snapshot.merkleizeList(leaves)
+      st.ok(root.equals(expected), `Merkleized root ${root.toString('hex')} should match ${expected.toString('hex')}`)
+    }
+
     st.end()
   })
 
@@ -120,7 +178,7 @@ tape('snapshot merkleize list', (t) => {
 })
 
 async function merkleizeViaTrie (leaves) {
-  const trie = new Trie()
+  const trie = new BaseTrie()
   const put = promisify(trie.put.bind(trie))
   for (let leaf of leaves) {
     await put(leaf[0], leaf[1])
