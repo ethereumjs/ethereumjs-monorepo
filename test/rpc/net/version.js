@@ -1,194 +1,88 @@
 const test = require('tape')
 
-const request = require('supertest')
 const Common = require('ethereumjs-common').default
-const { startRPC, closeRPC, createManager, createNode } = require('../helpers')
+const { startRPC, createManager, createNode, baseSetup, params, baseRequest } = require('../helpers')
 
-test('call net_version on ropsten', t => {
+const method = 'net_version'
+
+function compareResult (t, result, chainId) {
+  let msg = 'result should be a string'
+  if (typeof result !== 'string') {
+    throw new Error(msg)
+  } else {
+    t.pass(msg)
+  }
+
+  msg = 'result string should not be empty'
+  if (result.length === 0) {
+    throw new Error(msg)
+  } else {
+    t.pass(msg)
+  }
+
+  msg = `should be the correct chain ID (expected: ${chainId}, received: ${result})`
+  if (result !== chainId) {
+    throw new Error(msg)
+  } else {
+    t.pass(msg)
+  }
+}
+
+test(`${method}: call on ropsten`, t => {
   const manager = createManager(createNode({ opened: true, commonChain: new Common('ropsten') }))
   const server = startRPC(manager.getMethods())
 
-  const req = {
-    jsonrpc: '2.0',
-    method: 'net_version',
-    params: [],
-    id: 1
+  const req = params(method, [])
+  const expectRes = res => {
+    const { result } = res.body
+    compareResult(t, result, '3')
   }
-
-  request(server)
-    .post('/')
-    .set('Content-Type', 'application/json')
-    .send(req)
-    .expect(200)
-    .expect(res => {
-      const { result } = res.body
-
-      if (typeof result !== 'string') {
-        throw new Error('Result should be a string, but is not')
-      }
-
-      if (result.length === 0) {
-        throw new Error('Empty result string')
-      }
-
-      if (result !== '3') {
-        throw new Error(`Incorrect chain ID. Expected: 3, Received: ${result}`)
-      }
-    })
-    .end((err, res) => {
-      closeRPC(server)
-      t.end(err)
-    })
+  baseRequest(t, server, req, 200, expectRes)
 })
 
-test('call net_version on mainnet', t => {
-  const manager = createManager(createNode())
-  const server = startRPC(manager.getMethods())
+test(`${method}: call on mainnet`, t => {
+  const server = baseSetup()
 
-  const req = {
-    jsonrpc: '2.0',
-    method: 'net_version',
-    params: [],
-    id: 1
+  const req = params(method, [])
+  const expectRes = res => {
+    const { result } = res.body
+    compareResult(t, result, '1')
   }
-
-  request(server)
-    .post('/')
-    .set('Content-Type', 'application/json')
-    .send(req)
-    .expect(200)
-    .expect(res => {
-      const { result } = res.body
-
-      if (typeof result !== 'string') {
-        throw new Error('Result should be a string, but is not')
-      }
-
-      if (result.length === 0) {
-        throw new Error('Empty result string')
-      }
-
-      if (result !== '1') {
-        throw new Error(`Incorrect chain ID. Expected: 1, Received: ${result}`)
-      }
-    })
-    .end((err, res) => {
-      closeRPC(server)
-      t.end(err)
-    })
+  baseRequest(t, server, req, 200, expectRes)
 })
 
-test('call net_version on rinkeby', t => {
+test(`${method}: call on rinkeby`, t => {
   const manager = createManager(createNode({ opened: true, commonChain: new Common('rinkeby') }))
   const server = startRPC(manager.getMethods())
 
-  const req = {
-    jsonrpc: '2.0',
-    method: 'net_version',
-    params: [],
-    id: 1
+  const req = params(method, [])
+  const expectRes = res => {
+    const { result } = res.body
+    compareResult(t, result, '4')
   }
-
-  request(server)
-    .post('/')
-    .set('Content-Type', 'application/json')
-    .send(req)
-    .expect(200)
-    .expect(res => {
-      const { result } = res.body
-
-      if (typeof result !== 'string') {
-        throw new Error('Result should be a string, but is not')
-      }
-
-      if (result.length === 0) {
-        throw new Error('Empty result string')
-      }
-
-      if (result !== '4') {
-        throw new Error(`Incorrect chain ID. Expected: 4, Received: ${result}`)
-      }
-    })
-    .end((err, res) => {
-      closeRPC(server)
-      t.end(err)
-    })
+  baseRequest(t, server, req, 200, expectRes)
 })
 
-test('call net_version on kovan', t => {
+test(`${method}: call on kovan`, t => {
   const manager = createManager(createNode({ opened: true, commonChain: new Common('kovan') }))
   const server = startRPC(manager.getMethods())
 
-  const req = {
-    jsonrpc: '2.0',
-    method: 'net_version',
-    params: [],
-    id: 1
+  const req = params(method, [])
+  const expectRes = res => {
+    const { result } = res.body
+    compareResult(t, result, '42')
   }
-
-  request(server)
-    .post('/')
-    .set('Content-Type', 'application/json')
-    .send(req)
-    .expect(200)
-    .expect(res => {
-      const { result } = res.body
-
-      if (typeof result !== 'string') {
-        throw new Error('Result should be a string, but is not')
-      }
-
-      if (result.length === 0) {
-        throw new Error('Empty result string')
-      }
-
-      if (result !== '42') {
-        throw new Error(
-          `Incorrect chain ID. Expected: 42, Received: ${result}`
-        )
-      }
-    })
-    .end((err, res) => {
-      closeRPC(server)
-      t.end(err)
-    })
+  baseRequest(t, server, req, 200, expectRes)
 })
 
-test('call net_version on goerli', t => {
+test(`${method}: call on goerli`, t => {
   const manager = createManager(createNode({ opened: true, commonChain: new Common('goerli') }))
   const server = startRPC(manager.getMethods())
 
-  const req = {
-    jsonrpc: '2.0',
-    method: 'net_version',
-    params: [],
-    id: 1
+  const req = params(method, [])
+  const expectRes = res => {
+    const { result } = res.body
+    compareResult(t, result, '5')
   }
-
-  request(server)
-    .post('/')
-    .set('Content-Type', 'application/json')
-    .send(req)
-    .expect(200)
-    .expect(res => {
-      const { result } = res.body
-
-      if (typeof result !== 'string') {
-        throw new Error('Result should be a string, but is not')
-      }
-
-      if (result.length === 0) {
-        throw new Error('Empty result string')
-      }
-
-      if (result !== '5') {
-        throw new Error(
-          `Incorrect chain ID. Expected: 5, Received: ${result}`
-        )
-      }
-    })
-    .end((err, res) => {
-      closeRPC(server)
-      t.end(err)
-    })
+  baseRequest(t, server, req, 200, expectRes)
 })

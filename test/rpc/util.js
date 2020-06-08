@@ -1,6 +1,6 @@
 module.exports = {
-  checkError (expectedCode, expectedMessage) {
-    return function (res) {
+  checkError (t, expectedCode, expectedMessage) {
+    return (res) => {
       if (!res.body.error) {
         throw new Error('should return an error object')
       }
@@ -10,6 +10,7 @@ module.exports = {
       if (expectedMessage && res.body.error.message !== expectedMessage) {
         throw new Error(`should have an error message "${expectedMessage}"`)
       }
+      t.pass('should return error object with error code and message')
     }
   }
 }
