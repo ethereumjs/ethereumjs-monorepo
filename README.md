@@ -225,6 +225,8 @@ ethereumjs.run({ network: 'rinkeby', syncmode: 'light', bootnodes: '/ip4/127.0.0
 
 That's it! Now, you should start seeing headers being downloaded to the local storage of your browser. Since IndexDB is being used, even if you close and re-open the browser window, the headers you'll already downloaded will be saved.
 
+![EthereumJS Client Libp2p Browser Syncing](./browser_sync.png?raw=true)
+
 ## Design
 
 **Goals**
