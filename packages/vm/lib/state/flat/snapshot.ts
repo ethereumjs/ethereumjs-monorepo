@@ -1,5 +1,7 @@
 import { LevelUp } from 'levelup'
 import { keccak256, KECCAK256_NULL, KECCAK256_RLP } from 'ethereumjs-util'
+import Account from 'ethereumjs-account'
+import * as rlp from 'rlp'
 import { DB } from './db'
 import { Nibbles, bufferToNibbles } from './util'
 import { EmptyNode } from './stackTrie'
@@ -62,29 +64,71 @@ export class Snapshot {
     return this._db.get(key)
   }
 
-  getAccounts(): void {
+  getAccounts(): NodeJS.ReadableStream {
     const prefix = ACCOUNT_PREFIX
-    this._db.byPrefix(prefix)
-      .on('data', (data: any) => { console.log('ondata', data) })
-      .on('error', (err: any) => { console.log('onerr', err) })
-      .on('close', () => { console.log('closed') })
-      .on('end', () => { console.log('stream ended') })
+    return this._db.byPrefix(prefix)
   }
 
-  getStorageSlots(address: Buffer): void {//Promise<StorageSlot[]> {
+  getStorageSlots(address: Buffer): NodeJS.ReadableStream {
     const prefix = Buffer.concat([ STORAGE_PREFIX, keccak256(address) ])
-    this._db.byPrefix(prefix)
-      .on('data', (data: any) => { console.log('ondata', data) })
-      .on('error', (err: any) => { console.log('onerr', err) })
-      .on('close', () => { console.log('closed') })
-      .on('end', () => { console.log('stream ended') })
+    return this._db.byPrefix(prefix)
   }
 
   async merkleize(): Promise<Buffer> {
-    // Iterate all accounts
-    //   Merklize all storage slots of given account
-    //   Hash account
-    return Buffer.alloc(0)
+    // Merkleize all the storage tries in the db
+    const storageRoots: { [k: string]: Buffer } = await this._merkleizeStorageTries()
+
+    return new Promise((resolve, reject) => {
+      let root = new EmptyNode()
+      const stream = this.getAccounts()
+        .on('data', (data: any) => {
+          const key = data.key.slice(ACCOUNT_PREFIX.length)
+          // Update the account's stateRoot field if there exist
+          // storage slots for that account in the db (i.e. not EoA).
+          // TODO: Can probably cache stateRoot and re-compute storage
+          // trie root only if the storage trie has been touched.
+          const storageRoot = storageRoots[key.toString('hex')]
+          let value = data.value
+          if (storageRoot !== undefined) {
+            const acc = new Account(data.value)
+            acc.stateRoot = storageRoot
+            value = acc.serialize()
+          }
+          root = root.insert(bufferToNibbles(key), value)
+        })
+        .on('error', (err: any) => reject(err))
+        .on('end', () => resolve(root.hash()))
+    })
+  }
+
+  /**
+   * Returns the root for all the storage tries stored
+   * in the db. Helper function for ``merkleize``.
+   * @private
+   */
+  async _merkleizeStorageTries(): Promise<{ [k: string]: Buffer }> {
+    return new Promise((resolve, reject) => {
+      const tries: any = {}
+      const prefix = Buffer.concat([ STORAGE_PREFIX ])
+      this._db.byPrefix(prefix)
+        .on('data', (data: any) => {
+          const hashedAddr = data.key.slice(STORAGE_PREFIX.length, STORAGE_PREFIX.length + 32)
+          const hashedAddrS = hashedAddr.toString('hex')
+          if (!tries[hashedAddrS]) {
+            tries[hashedAddrS] = new EmptyNode()
+          }
+          const slotKey = data.key.slice(STORAGE_PREFIX.length + 32)
+          tries[hashedAddrS] = tries[hashedAddrS].insert(bufferToNibbles(slotKey), rlp.encode(data.value))
+        })
+        .on('error', (err: any) => reject(err))
+        .on('end', () => {
+          const roots: any = {}
+          for (let k in tries) {
+            roots[k] = tries[k].hash()
+          }
+          resolve(roots)
+        })
+    })
   }
 
   checkpoint(): void {
