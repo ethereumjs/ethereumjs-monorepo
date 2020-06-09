@@ -1,19 +1,24 @@
 import * as assert from 'assert'
 import { keccak256, KECCAK256_RLP } from 'ethereumjs-util'
 import * as rlp from 'rlp'
-import { Nibbles, addHexPrefix, nibblesToBuffer, matchingNibbleLength } from './util'
+import { Nibbles, addHexPrefix, nibblesToBuffer, bufferToNibbles, matchingNibbleLength } from './util'
 
 /**
+ * Given a list of leaves with keys sorted in the ascending order,
+ * re-creates the trie structure hashing up simultaneously the
+ * branches that won't be visited again.
  * Implementation based on:
  * https://github.com/holiman/go-ethereum/blob/b7e737bdd87ba51631837f337d128282ff066d24/trie/stacktrie.go
  */
+export function merkleizeList(leaves: Buffer[][]): Buffer {
+  let root = new EmptyNode()
 
-export enum NodeType {
-  Empty,
-  Leaf,
-  Extension,
-  Branch,
-  Hash
+  for (let kv of leaves) {
+    const key = bufferToNibbles(kv[0])
+    root = root.insert(key, kv[1])
+  }
+
+  return root.hash()
 }
 
 abstract class BaseNode {

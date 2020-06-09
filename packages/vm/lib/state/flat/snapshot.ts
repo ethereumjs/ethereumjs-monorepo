@@ -87,17 +87,6 @@ export class Snapshot {
     return Buffer.alloc(0)
   }
 
-  merkleizeList(leaves: Buffer[][]): Buffer {
-    let root = new EmptyNode()
-
-    for (let kv of leaves) {
-      const key = bufferToNibbles(kv[0])
-      root = root.insert(key, kv[1])
-    }
-
-    return root.hash()
-  }
-
   checkpoint(): void {
   }
 
