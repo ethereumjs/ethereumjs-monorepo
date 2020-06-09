@@ -1,7 +1,6 @@
 const test = require('tape')
-const request = require('supertest')
 const { INVALID_PARAMS } = require('../../../lib/rpc/error-code')
-const { startRPC, closeRPC, createManager, createNode } = require('../helpers')
+const { startRPC, createManager, createNode, params, baseRequest } = require('../helpers')
 const { checkError } = require('../util')
 
 function createBlockchain () {
@@ -18,139 +17,77 @@ function createBlockchain () {
   }
 }
 
-test('call eth_getBlockByNumber with valid arguments', t => {
+const method = 'eth_getBlockByNumber'
+
+test(`${method}: call with valid arguments`, t => {
   const manager = createManager(createNode({ blockchain: createBlockchain() }))
   const server = startRPC(manager.getMethods())
 
-  const req = {
-    jsonrpc: '2.0',
-    method: 'eth_getBlockByNumber',
-    params: ['0x1', true],
-    id: 1
+  const req = params(method, ['0x1', true])
+  const expectRes = res => {
+    const msg = 'should return the correct number'
+    if (res.body.result.number !== 1) {
+      throw new Error(msg)
+    } else {
+      t.pass(msg)
+    }
   }
-
-  request(server)
-    .post('/')
-    .set('Content-Type', 'application/json')
-    .send(req)
-    .expect(200)
-    .expect(res => {
-      if (res.body.result.number !== 1) {
-        throw new Error('number is not 1')
-      }
-    })
-    .end((err, res) => {
-      closeRPC(server)
-      t.end(err)
-    })
+  baseRequest(t, server, req, 200, expectRes)
 })
 
-test('call eth_getBlockByNumber with false for second argument', t => {
+test(`${method}: call with false for second argument`, t => {
   const manager = createManager(createNode({ blockchain: createBlockchain() }))
   const server = startRPC(manager.getMethods())
 
-  const req = {
-    jsonrpc: '2.0',
-    method: 'eth_getBlockByNumber',
-    params: ['0x1', false],
-    id: 1
+  const req = params(method, ['0x1', false])
+  const expectRes = res => {
+    let msg = 'should return the correct number'
+    if (res.body.result.number !== 1) {
+      throw new Error(msg)
+    } else {
+      t.pass(msg)
+    }
+    msg = 'should return only the hashes of the transactions'
+    if (typeof res.body.result.transactions[0] !== 'string') {
+      throw new Error(msg)
+    } else {
+      t.pass(msg)
+    }
   }
-
-  request(server)
-    .post('/')
-    .set('Content-Type', 'application/json')
-    .send(req)
-    .expect(200)
-    .expect(res => {
-      if (res.body.result.number !== 1) {
-        throw new Error('number is not 1')
-      }
-      if (typeof res.body.result.transactions[0] !== 'string') {
-        throw new Error('only the hashes of the transactions')
-      }
-    })
-    .end((err, res) => {
-      closeRPC(server)
-      t.end(err)
-    })
+  baseRequest(t, server, req, 200, expectRes)
 })
 
-test('call eth_getBlockByNumber with invalid block number', t => {
+test(`${method}: call with invalid block number`, t => {
   const manager = createManager(createNode({ blockchain: createBlockchain() }))
   const server = startRPC(manager.getMethods())
 
-  const req = {
-    jsonrpc: '2.0',
-    method: 'eth_getBlockByNumber',
-    params: ['WRONG BLOCK NUMBER', true],
-    id: 1
-  }
-  const checkInvalidParams = checkError(
+  const req = params(method, ['WRONG BLOCK NUMBER', true])
+  const expectRes = checkError(
+    t,
     INVALID_PARAMS,
     'invalid argument 0: hex string without 0x prefix'
   )
-
-  request(server)
-    .post('/')
-    .set('Content-Type', 'application/json')
-    .send(req)
-    .expect(200)
-    .expect(checkInvalidParams)
-    .end(err => {
-      closeRPC(server)
-      t.end(err)
-    })
+  baseRequest(t, server, req, 200, expectRes)
 })
 
-test('call eth_getBlockByNumber without second parameter', t => {
+test(`${method}: call without second parameter`, t => {
   const manager = createManager(createNode({ blockchain: createBlockchain() }))
   const server = startRPC(manager.getMethods())
 
-  const req = {
-    jsonrpc: '2.0',
-    method: 'eth_getBlockByNumber',
-    params: ['0x0'],
-    id: 1
-  }
-
-  const checkInvalidParams = checkError(
+  const req = params(method, ['0x0'])
+  const expectRes = checkError(
+    t,
     INVALID_PARAMS,
     'missing value for required argument 1'
   )
-
-  request(server)
-    .post('/')
-    .set('Content-Type', 'application/json')
-    .send(req)
-    .expect(200)
-    .expect(checkInvalidParams)
-    .end(err => {
-      closeRPC(server)
-      t.end(err)
-    })
+  baseRequest(t, server, req, 200, expectRes)
 })
 
-test('call eth_getBlockByNumber with invalid second parameter', t => {
+test(`${method}: call with invalid second parameter`, t => {
   const manager = createManager(createNode({ blockchain: createBlockchain() }))
   const server = startRPC(manager.getMethods())
 
-  const req = {
-    jsonrpc: '2.0',
-    method: 'eth_getBlockByNumber',
-    params: ['0x0', 'INVALID PARAMETER'],
-    id: 1
-  }
-
-  const checkInvalidParams = checkError(INVALID_PARAMS)
-
-  request(server)
-    .post('/')
-    .set('Content-Type', 'application/json')
-    .send(req)
-    .expect(200)
-    .expect(checkInvalidParams)
-    .end(err => {
-      closeRPC(server)
-      t.end(err)
-    })
+  const req = params(method, ['0x0', 'INVALID PARAMETER'])
+  const expectRes = checkError(t, INVALID_PARAMS)
+  baseRequest(t, server, req, 200, expectRes)
 })

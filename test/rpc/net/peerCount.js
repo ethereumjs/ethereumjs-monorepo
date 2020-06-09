@@ -1,32 +1,22 @@
 const test = require('tape')
 
-const request = require('supertest')
-const { startRPC, closeRPC, createManager, createNode } = require('../helpers')
+const { startRPC, createManager, createNode, params, baseRequest } = require('../helpers')
 
-test('call net_peerCount', t => {
+const method = 'net_peerCount'
+
+test(`${method}: call`, t => {
   const manager = createManager(createNode({ opened: true }))
   const server = startRPC(manager.getMethods())
 
-  const req = {
-    jsonrpc: '2.0',
-    method: 'net_peerCount',
-    params: [],
-    id: 1
+  const req = params(method, [])
+  const expectRes = res => {
+    const { result } = res.body
+    const msg = 'result should be a hex number'
+    if (result.substring(0, 2) !== '0x') {
+      throw new Error(msg)
+    } else {
+      t.pass(msg)
+    }
   }
-
-  request(server)
-    .post('/')
-    .set('Content-Type', 'application/json')
-    .send(req)
-    .expect(200)
-    .expect(res => {
-      const { result } = res.body
-      if (result.substring(0, 2) !== '0x') {
-        throw new Error('Result should be a hex number, but is not')
-      }
-    })
-    .end((err, res) => {
-      closeRPC(server)
-      t.end(err)
-    })
+  baseRequest(t, server, req, 200, expectRes)
 })
