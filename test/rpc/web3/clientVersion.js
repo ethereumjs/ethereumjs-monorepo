@@ -1,59 +1,60 @@
 const test = require('tape')
 
 const { platform } = require('os')
-const request = require('supertest')
-const { startRPC, closeRPC, createManager, createNode } = require('../helpers')
+const { baseSetup, params, baseRequest } = require('../helpers')
 
-test('call web3_clientVersion', t => {
-  const manager = createManager(createNode())
-  const server = startRPC(manager.getMethods())
+const method = 'web3_clientVersion'
 
-  const req = {
-    jsonrpc: '2.0',
-    method: 'web3_clientVersion',
-    params: [],
-    id: 1
+test(`${method}: call`, t => {
+  const server = baseSetup()
+
+  const req = params(method, [])
+  const expectRes = res => {
+    const { result } = res.body
+    const { version } = require('../../../package.json')
+    const expectedClientTitle = 'EthereumJS'
+    const expectedPackageVersion = version
+    const expectedPlatform = platform()
+    const expectedNodeVersion = `node${process.version.substring(1)}`
+
+    let msg = 'result string should not be empty'
+    if (result.length === 0) {
+      throw new Error(msg)
+    } else {
+      t.pass(msg)
+    }
+
+    const [
+      actualClientTitle,
+      actualPackageVersion,
+      actualPlatform,
+      actualNodeVersion
+    ] = result.split('/')
+
+    msg = 'client title should be correct'
+    if (actualClientTitle !== expectedClientTitle) {
+      throw new Error(msg)
+    } else {
+      t.pass(msg)
+    }
+    msg = 'package version should be correct'
+    if (actualPackageVersion !== expectedPackageVersion) {
+      throw new Error(msg)
+    } else {
+      t.pass(msg)
+    }
+    msg = 'platform should be correct'
+    if (actualPlatform !== expectedPlatform) {
+      throw new Error(msg)
+    } else {
+      t.pass(msg)
+    }
+    msg = 'Node.js version should be correct'
+    if (actualNodeVersion !== expectedNodeVersion) {
+      throw new Error(msg)
+    } else {
+      t.pass(msg)
+    }
   }
-
-  request(server)
-    .post('/')
-    .set('Content-Type', 'application/json')
-    .send(req)
-    .expect(200)
-    .expect(res => {
-      const { result } = res.body
-      const { version } = require('../../../package.json')
-      const expectedClientTitle = 'EthereumJS'
-      const expectedPackageVersion = version
-      const expectedPlatform = platform()
-      const expectedNodeVersion = `node${process.version.substring(1)}`
-
-      if (result.length === 0) {
-        throw new Error('Empty result string')
-      }
-
-      const [
-        actualClientTitle,
-        actualPackageVersion,
-        actualPlatform,
-        actualNodeVersion
-      ] = result.split('/')
-
-      if (actualClientTitle !== expectedClientTitle) {
-        throw new Error('Incorrect client title')
-      }
-      if (actualPackageVersion !== expectedPackageVersion) {
-        throw new Error('Incorrect package version')
-      }
-      if (actualPlatform !== expectedPlatform) {
-        throw new Error('Incorrect platform')
-      }
-      if (actualNodeVersion !== expectedNodeVersion) {
-        throw new Error('Incorrect Node.js version')
-      }
-    })
-    .end((err, res) => {
-      closeRPC(server)
-      t.end(err)
-    })
+  baseRequest(t, server, req, 200, expectRes)
 })

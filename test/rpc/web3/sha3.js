@@ -1,107 +1,81 @@
 const test = require('tape')
 
-const request = require('supertest')
-const { startRPC, closeRPC, createManager, createNode } = require('../helpers')
+const { baseSetup, params, baseRequest } = require('../helpers')
 
-test('call web3_sha3 with one valid parameter', t => {
-  const manager = createManager(createNode())
-  const server = startRPC(manager.getMethods())
+const method = 'web3_sha3'
 
-  const req = {
-    jsonrpc: '2.0',
-    method: 'web3_sha3',
-    params: ['0x68656c6c6f20776f726c64'],
-    id: 1
+function compareErrorCode (t, error, errorCode) {
+  const msg = `should return the correct error code (expected: ${errorCode}, received: ${error.code})`
+  if (error.code !== errorCode) {
+    throw new Error(msg)
+  } else {
+    t.pass(msg)
   }
+}
 
-  request(server)
-    .post('/')
-    .set('Content-Type', 'application/json')
-    .send(req)
-    .expect(200)
-    .expect(res => {
-      const { result } = res.body
-      if (result.length === 0) {
-        throw new Error('Empty result string')
-      }
+function compareErrorMsg (t, error, errorMsg) {
+  const msg = `should return "${errorMsg}" error message`
+  if (
+    error.message !== errorMsg
+  ) {
+    throw new Error(msg)
+  } else {
+    t.pass(msg)
+  }
+}
 
-      if (
-        result !==
-        '0x47173285a8d7341e5e972fc677286384f802f8ef42a5ec5f03bbfa254cb01fad'
-      ) {
-        throw new Error('Hash returns incorrect value')
-      }
-    })
-    .end((err, res) => {
-      closeRPC(server)
-      t.end(err)
-    })
+test(`${method}: call with one valid parameter`, t => {
+  const server = baseSetup()
+
+  const req = params(method, ['0x68656c6c6f20776f726c64'])
+  const expectRes = res => {
+    const { result } = res.body
+    let msg = 'result string should not be empty'
+    if (result.length === 0) {
+      throw new Error(msg)
+    } else {
+      t.pass(msg)
+    }
+
+    msg = 'should return the correct hash value'
+    if (
+      result !==
+      '0x47173285a8d7341e5e972fc677286384f802f8ef42a5ec5f03bbfa254cb01fad'
+    ) {
+      throw new Error(msg)
+    } else {
+      t.pass(msg)
+    }
+  }
+  baseRequest(t, server, req, 200, expectRes)
 })
 
-test('call web3_sha3 with one non-hex parameter', t => {
-  const manager = createManager(createNode())
-  const server = startRPC(manager.getMethods())
+test(`${method}: call with one non-hex parameter`, t => {
+  const server = baseSetup()
 
-  const req = {
-    jsonrpc: '2.0',
-    method: 'web3_sha3',
-    params: ['hello world'],
-    id: 1
+  const req = params(method, ['hello world'])
+  const expectRes = res => {
+    const { error } = res.body
+
+    compareErrorCode(t, error, -32602)
+
+    const errorMsg = 'invalid argument 0: hex string without 0x prefix'
+    compareErrorMsg(t, error, errorMsg)
   }
-
-  request(server)
-    .post('/')
-    .set('Content-Type', 'application/json')
-    .send(req)
-    .expect(200)
-    .expect(res => {
-      const { error } = res.body
-
-      if (error.code !== -32602) {
-        throw new Error('Incorrect error code')
-      }
-
-      if (
-        error.message !== 'invalid argument 0: hex string without 0x prefix'
-      ) {
-        throw new Error('Incorrect error message')
-      }
-    })
-    .end((err, res) => {
-      closeRPC(server)
-      t.end(err)
-    })
+  baseRequest(t, server, req, 200, expectRes)
 })
 
-test('call web3_sha3 with no parameters', t => {
-  const manager = createManager(createNode())
-  const server = startRPC(manager.getMethods())
+test(`${method}: call with no parameters`, t => {
+  const server = baseSetup()
 
-  const req = {
-    jsonrpc: '2.0',
-    method: 'web3_sha3',
-    params: [],
-    id: 1
+  const req = params(method, [])
+  const expectRes = res => {
+    const { error } = res.body
+
+    compareErrorCode(t, error, -32602)
+
+    const errorMsg = 'missing value for required argument 0'
+    compareErrorMsg(t, error, errorMsg)
   }
-
-  request(server)
-    .post('/')
-    .set('Content-Type', 'application/json')
-    .send(req)
-    .expect(200)
-    .expect(res => {
-      const { error } = res.body
-
-      if (error.code !== -32602) {
-        throw new Error('Incorrect error code')
-      }
-
-      if (error.message !== 'missing value for required argument 0') {
-        throw new Error('Incorrect error message')
-      }
-    })
-    .end((err, res) => {
-      closeRPC(server)
-      t.end(err)
-    })
+  baseRequest(t, server, req, 200, expectRes)
 })

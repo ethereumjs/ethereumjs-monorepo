@@ -1,4 +1,5 @@
 const jayson = require('jayson')
+const request = require('supertest')
 const Common = require('ethereumjs-common').default
 
 const Manager = require('../../lib/rpc')
@@ -45,5 +46,34 @@ module.exports = {
       common: trueNodeConfig.commonChain,
       opened: trueNodeConfig.opened
     }
+  },
+
+  baseSetup () {
+    const manager = module.exports.createManager(module.exports.createNode())
+    const server = module.exports.startRPC(manager.getMethods())
+    return server
+  },
+
+  params (method, params) {
+    const req = {
+      jsonrpc: '2.0',
+      method: method,
+      params: params,
+      id: 1
+    }
+    return req
+  },
+
+  baseRequest (t, server, req, expect, expectRes) {
+    request(server)
+      .post('/')
+      .set('Content-Type', 'application/json')
+      .send(req)
+      .expect(expect)
+      .expect(expectRes)
+      .end((err, res) => {
+        module.exports.closeRPC(server)
+        t.end(err)
+      })
   }
 }

@@ -1,68 +1,53 @@
 const test = require('tape')
 
-const request = require('supertest')
-const { startRPC, closeRPC, createManager, createNode } = require('../helpers')
+const { startRPC, createManager, createNode, params, baseRequest } = require('../helpers')
 
-test('call net_listening while listening', t => {
+const method = 'net_listening'
+
+test(`${method}: call while listening`, t => {
   const manager = createManager(createNode({ opened: true }))
   const server = startRPC(manager.getMethods())
 
-  const req = {
-    jsonrpc: '2.0',
-    method: 'net_listening',
-    params: [],
-    id: 1
+  const req = params(method, [])
+  const expectRes = res => {
+    const { result } = res.body
+    let msg = 'result should be a boolean'
+    if (typeof result !== 'boolean') {
+      throw new Error(msg)
+    } else {
+      t.pass(msg)
+    }
+
+    msg = 'should be listening'
+    if (result !== true) {
+      throw new Error(msg)
+    } else {
+      t.pass(msg)
+    }
   }
-
-  request(server)
-    .post('/')
-    .set('Content-Type', 'application/json')
-    .send(req)
-    .expect(200)
-    .expect(res => {
-      const { result } = res.body
-      if (typeof result !== 'boolean') {
-        throw new Error('Result should be a boolean, but is not')
-      }
-
-      if (result !== true) {
-        throw new Error('Not listening, when it should be')
-      }
-    })
-    .end((err, res) => {
-      closeRPC(server)
-      t.end(err)
-    })
+  baseRequest(t, server, req, 200, expectRes)
 })
 
-test('call net_listening while not listening', t => {
+test(`${method}: call while not listening`, t => {
   const manager = createManager(createNode({ opened: false }))
   const server = startRPC(manager.getMethods())
 
-  const req = {
-    jsonrpc: '2.0',
-    method: 'net_listening',
-    params: [],
-    id: 1
+  const req = params(method, [])
+  const expectRes = res => {
+    const { result } = res.body
+    let msg = 'result should be a boolean'
+    if (typeof result !== 'boolean') {
+      throw new Error(msg)
+    } else {
+      t.pass(msg)
+    }
+
+    msg = 'should not be listening'
+    if (result !== false) {
+      throw new Error(msg)
+    } else {
+      t.pass(msg)
+    }
   }
-
-  request(server)
-    .post('/')
-    .set('Content-Type', 'application/json')
-    .send(req)
-    .expect(200)
-    .expect(res => {
-      const { result } = res.body
-      if (typeof result !== 'boolean') {
-        throw new Error('Result should be a boolean, but is not')
-      }
-
-      if (result !== false) {
-        throw new Error('Listening, when it not should be')
-      }
-    })
-    .end((err, res) => {
-      closeRPC(server)
-      t.end(err)
-    })
+  baseRequest(t, server, req, 200, expectRes)
 })
