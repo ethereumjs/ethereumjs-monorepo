@@ -7,7 +7,6 @@
   },
   "husky": {
     "hooks": {
-      "pre-push": "lerna run lint"
     }
   },
   "scripts": {
