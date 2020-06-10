@@ -2,10 +2,10 @@
 
 [![Coverage Status](https://img.shields.io/coveralls/ethereumjs/ethashjs.svg)](https://coveralls.io/r/ethereumjs/ethashjs)
 
-[![NPM Package][vm-npm-badge]][vm-npm-link]
-[![GitHub Issues][vm-issues-badge]][vm-issues-link]
-[![Actions Status][vm-actions-badge]][vm-actions-link]
-[![Code Coverage][vm-coverage-badge]][vm-coverage-link]
+[![NPM Package][ethash-npm-badge]][ethash-npm-link]
+[![GitHub Issues][ethash-issues-badge]][ethash-issues-link]
+[![Actions Status][ethash-actions-badge]][ethash-actions-link]
+[![Code Coverage][ethash-coverage-badge]][ethash-coverage-link]
 [![Gitter][gitter-badge]][gitter-link]
 
 Implements [Ethash](https://github.com/ethereum/wiki/wiki/Ethash).
