@@ -6,6 +6,36 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [3.0.1] - 2020-06-10
+
+This release focuses on improving the [debugging](https://github.com/ethereumjs/ethereumjs-devp2p#debugging)
+capabilities of the library. PR [#72](https://github.com/ethereumjs/ethereumjs-devp2p/pull/72)
+reduces the **verbosity** of the log output to cut on noise on everyday debugging. There is a new `verbose`
+logger to retain the more verbose output (e.g. with full message bodies) which can be used like this:
+
+```shell
+DEBUG=devp2p:*,verbose node -r ts-node/register ./examples/peer-communication.ts
+```
+
+**Other Logging Improvements**
+
+Relevant PRs [#75](https://github.com/ethereumjs/ethereumjs-devp2p/pull/75) and
+[#73](https://github.com/ethereumjs/ethereumjs-devp2p/pull/73):
+
+- Added number of peers to `refillConnections()` debug message
+- Replaced try/catch logic for EIP-8 auth check to avoid side-effects and get rid of misleading _wrong-ecies-header_ debug output
+- Moved debug output in `BanList.add()` after the set operation to get the correct size output
+- Added debug message for `DISCONNECT` reason from peer (this was always some constant re-debug reason, and at the end it's mostly `TOO_MANY_PEERS`)
+- Internalize detached logger output from the `devp2p:util` logger
+
+**Other Changes**
+
+- Refactored `Peer` class for better code readability, PR [#77](https://github.com/ethereumjs/ethereumjs-devp2p/pull/77)
+
+There has also been a new [high-level diagram](https://github.com/ethereumjs/ethereumjs-devp2p#api) added to the `README` which can be used to get an overview on the structure, available loggers and the event flow of the library (PR [#76](https://github.com/ethereumjs/ethereumjs-devp2p/pull/76)).
+
+[3.0.1]: https://github.com/ethereumjs/ethereumjs-devp2p/compare/v3.0.0...v3.0.1
+
 ## [3.0.0] - 2020-05-25
 
 First `TypeScript` release of the library, see PR [#56](https://github.com/ethereumjs/ethereumjs-devp2p/pull/56) for all the changes and associated discussion.
