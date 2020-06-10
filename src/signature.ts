@@ -1,5 +1,5 @@
-const { recover, sign, publicKeyConvert } = require('ethereum-cryptography/shims/hdkey-secp256k1v3')
-import * as secp256k1 from 'secp256k1'
+const { sign, publicKeyConvert } = require('ethereum-cryptography/shims/hdkey-secp256k1v3')
+const { ecdsaRecover } = require('ethereum-cryptography/secp256k1')
 import * as BN from 'bn.js'
 import { toBuffer, setLengthLeft, bufferToHex } from './bytes'
 import { keccak } from './hash'
@@ -47,7 +47,7 @@ export const ecrecover = function(
   if (!isValidSigRecovery(recovery)) {
     throw new Error('Invalid signature v value')
   }
-  const senderPubKey = secp256k1.ecdsaRecover(signature, recovery, msgHash)
+  const senderPubKey = ecdsaRecover(signature, recovery, msgHash)
   return toBuffer(publicKeyConvert(senderPubKey, false).slice(1))
 }
 
