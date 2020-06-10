@@ -37,6 +37,22 @@ tape('snapshot simple get/put', (t) => {
     st.end()
   })
 
+  t.test('should put and get contract code', async (st) => {
+    const snapshot = new Snapshot()
+    const addr = new BN(3).toArrayLike(Buffer, 'be', 20)
+    await snapshot.putAccount(addr, (new Account()).serialize())
+    const code = Buffer.from('6000', 'hex')
+    const codeHash = keccak256(code)
+    await snapshot.putCode(addr, code)
+    const res = await snapshot.getCode(addr)
+    st.ok(res.equals(code))
+
+    // Check that account's codeHash's field has been updated
+    const rawAccount = await snapshot.getAccount(addr)
+    const account = new Account(rawAccount)
+    st.ok(account.codeHash.equals(codeHash))
+    st.end()
+  })
   // TODO: what if we insert slot without having inserted account first?
 })
 

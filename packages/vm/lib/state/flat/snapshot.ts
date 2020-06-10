@@ -45,7 +45,7 @@ export class Snapshot {
     return this._db.get(key)
   }
 
-  async putCode(code: Buffer): Promise<void> {
+  async putCode(address: Buffer, code: Buffer): Promise<void> {
     const codeHash = keccak256(code)
     if (codeHash.equals(KECCAK256_NULL)) {
       return
@@ -53,14 +53,24 @@ export class Snapshot {
 
     const key = Buffer.concat([ CODE_PREFIX, keccak256(code) ])
     await this._db.put(key, code)
+
+    // Update account's codeHash field
+    const rawAccount = await this.getAccount(address)
+    if (!rawAccount) throw new Error('Creating code for inexistent account')
+    const account = new Account(rawAccount)
+    account.codeHash = codeHash
+    await this.putAccount(address, account.serialize())
   }
 
-  async getCode(codeHash: Buffer): Promise<Buffer | null> {
-    if (codeHash.equals(KECCAK256_NULL)) {
+  async getCode(address: Buffer): Promise<Buffer | null> {
+    const rawAccount = await this.getAccount(address)
+    if (!rawAccount) throw new Error('Fetching code from inexistent account')
+    const account = new Account(rawAccount)
+    if (account.codeHash.equals(KECCAK256_NULL)) {
       return Buffer.alloc(0)
     }
 
-    const key = Buffer.concat([ CODE_PREFIX, codeHash ])
+    const key = Buffer.concat([ CODE_PREFIX, account.codeHash ])
     return this._db.get(key)
   }
 
