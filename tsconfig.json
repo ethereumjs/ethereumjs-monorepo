@@ -1,0 +1,7 @@
+{
+  "extends": "@ethereumjs/config-tsc",
+  "include": ["lib", "test"],
+  "compilerOptions": {
+    "allowJs": true
+  }
+}

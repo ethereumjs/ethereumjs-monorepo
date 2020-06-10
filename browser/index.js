@@ -9,7 +9,7 @@ exports.Chain = require('../lib/blockchain/chain')
 // Peer
 exports.Peer = require('../lib/net/peer/peer')
 exports.Libp2pPeer = require('../lib/net/peer/libp2ppeer')
-exports.Libp2pNode = require('../lib/net/peer/libp2pnode')
+exports.Libp2pNode = require('./libp2pnode')
 
 // Peer Pool
 exports.PeerPool = require('../lib/net/peerpool')

@@ -1,0 +1,10 @@
+{
+  "extends": "./tsconfig.prod.json",
+  "include": ["browser/index.js"],
+  "exclude": ["lib/index.js"],
+  "compilerOptions": {
+    "outDir": "dist.browser",
+    "target": "es5",
+    "lib": ["dom", "es5"]
+  }
+}

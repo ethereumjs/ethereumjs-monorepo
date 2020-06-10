@@ -1,29 +1,27 @@
 module.exports = function (config) {
   config.set({
-    frameworks: ['browserify', 'tap'],
+    frameworks: ['karma-typescript', 'browserify', 'tap'],
 
-    files: ['dist/bundle.js', './test/**/*.js'],
-
-    // Exclude [test/node.js, test/net, test/sync, test/service] due to error: `Sorry, but CommonJS module replacement with td.replace() is only supported under Node.js runtimes.`
-    // Exclude [test/rpc] due to error: `TypeError: superCtor is undefined`
-    // Exclude [test/util/parse] due to hanging on `should parse geth params file`
-    // Exclude [test/logging] due to error: `TypeError: logger.format is undefined`
-    exclude: [
-      './test/node.js',
-      './test/net/**/*.js',
-      './test/sync/**/*.js',
-      './test/service/**/*.js',
-      './test/rpc/**/*.js',
-      './test/util/parse.js',
-      './test/logging.js',
-      './test/integration/**/*.js'
-    ],
+    files: ['test/blockchain/chain.js', 'test/**/*.ts'],
 
     preprocessors: {
-      './test/**/*.js': ['browserify']
+      'test/blockchain/chain.js': ['browserify'],
+      'test/**/*.ts': ['karma-typescript']
     },
 
     reporters: ['progress'],
+
+    karmaTypescriptConfig: {
+      tsconfig: './tsconfig.json',
+      bundlerOptions: {
+        entrypoints: /test\/(.*)\.(js|ts)/,
+        transforms: [
+          require('karma-typescript-es6-transform')({
+            plugins: ['@babel/plugin-transform-spread']
+          })
+        ]
+      }
+    },
 
     browsers: ['FirefoxHeadless', 'ChromeHeadless'],
 

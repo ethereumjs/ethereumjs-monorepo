@@ -70,5 +70,6 @@ package-lock.json
 # ChainDB folder
 chaindata
 
-# Build folder
+# Build folders
 dist
+dist.browser
