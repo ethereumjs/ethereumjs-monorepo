@@ -1,6 +1,11 @@
 const ethjsUtil = require('ethjs-util')
+const {
+  privateKeyVerify,
+  publicKeyCreate,
+  publicKeyVerify,
+  publicKeyConvert,
+} = require('ethereum-cryptography/shims/hdkey-secp256k1v3')
 import * as assert from 'assert'
-import * as secp256k1 from 'secp256k1'
 import * as BN from 'bn.js'
 import { zeros, bufferToHex, toBuffer } from './bytes'
 import { keccak, keccak256, keccakFromString, rlphash } from './hash'
@@ -119,7 +124,7 @@ export const generateAddress2 = function(from: Buffer, salt: Buffer, initCode: B
  * Checks if the private key satisfies the rules of the curve secp256k1.
  */
 export const isValidPrivate = function(privateKey: Buffer): boolean {
-  return secp256k1.privateKeyVerify(privateKey)
+  return privateKeyVerify(privateKey)
 }
 
 /**
@@ -132,14 +137,14 @@ export const isValidPublic = function(publicKey: Buffer, sanitize: boolean = fal
   assertIsBuffer(publicKey)
   if (publicKey.length === 64) {
     // Convert to SEC1 for secp256k1
-    return secp256k1.publicKeyVerify(Buffer.concat([Buffer.from([4]), publicKey]))
+    return publicKeyVerify(Buffer.concat([Buffer.from([4]), publicKey]))
   }
 
   if (!sanitize) {
     return false
   }
 
-  return secp256k1.publicKeyVerify(publicKey)
+  return publicKeyVerify(publicKey)
 }
 
 /**
@@ -151,7 +156,7 @@ export const isValidPublic = function(publicKey: Buffer, sanitize: boolean = fal
 export const pubToAddress = function(pubKey: Buffer, sanitize: boolean = false): Buffer {
   assertIsBuffer(pubKey)
   if (sanitize && pubKey.length !== 64) {
-    pubKey = toBuffer(secp256k1.publicKeyConvert(pubKey, false).slice(1))
+    pubKey = toBuffer(publicKeyConvert(pubKey, false).slice(1))
   }
   assert(pubKey.length === 64)
   // Only take the lower 160bits of the hash
@@ -174,7 +179,7 @@ export const privateToAddress = function(privateKey: Buffer): Buffer {
 export const privateToPublic = function(privateKey: Buffer): Buffer {
   assertIsBuffer(privateKey)
   // skip the type flag and use the X, Y points
-  return toBuffer(secp256k1.publicKeyCreate(privateKey, false).slice(1))
+  return toBuffer(publicKeyCreate(privateKey, false).slice(1))
 }
 
 /**
@@ -183,7 +188,7 @@ export const privateToPublic = function(privateKey: Buffer): Buffer {
 export const importPublic = function(publicKey: Buffer): Buffer {
   assertIsBuffer(publicKey)
   if (publicKey.length !== 64) {
-    publicKey = toBuffer(secp256k1.publicKeyConvert(publicKey, false).slice(1))
+    publicKey = toBuffer(publicKeyConvert(publicKey, false).slice(1))
   }
   return publicKey
 }
