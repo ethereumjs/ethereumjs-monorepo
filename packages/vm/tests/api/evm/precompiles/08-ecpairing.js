@@ -1,6 +1,6 @@
 const BN = require('bn.js')
 const tape = require('tape')
-const Common = require('ethereumjs-common').default
+const Common = require('@ethereumjs/common').default
 const util = require('ethereumjs-util')
 const VM = require('../../../../dist/index').default
 const { getPrecompile } = require('../../../../dist/evm/precompiles')

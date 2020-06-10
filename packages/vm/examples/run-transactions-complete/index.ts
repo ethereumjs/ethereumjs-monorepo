@@ -1,7 +1,7 @@
 import VM from '../..'
-import Account from 'ethereumjs-account'
-import * as utils from 'ethereumjs-util'
-import { Transaction } from 'ethereumjs-tx'
+import Account from '@ethereumjs/account'
+import { toBuffer, pubToAddress, bufferToHex } from 'ethereumjs-util'
+import { Transaction } from '@ethereumjs/tx'
 
 async function main() {
   const vm = new VM()
@@ -9,13 +9,13 @@ async function main() {
   // import the key pair
   //   used to sign transactions and generate addresses
   const keyPair = require('./key-pair')
-  const privateKey = utils.toBuffer(keyPair.secretKey)
+  const privateKey = toBuffer(keyPair.secretKey)
 
-  const publicKeyBuf = utils.toBuffer(keyPair.publicKey)
-  const address = utils.pubToAddress(publicKeyBuf, true)
+  const publicKeyBuf = toBuffer(keyPair.publicKey)
+  const address = pubToAddress(publicKeyBuf, true)
 
   console.log('---------------------')
-  console.log('Sender address: ', utils.bufferToHex(address))
+  console.log('Sender address: ', bufferToHex(address))
 
   // create a new account
   const account = new Account({

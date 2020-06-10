@@ -1,5 +1,5 @@
 import BN = require('bn.js')
-import Common from 'ethereumjs-common'
+import Common from '@ethereumjs/common'
 import { ExecResult } from '../evm'
 
 export interface PrecompileFunc {

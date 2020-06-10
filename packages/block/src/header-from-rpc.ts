@@ -1,5 +1,5 @@
 import { BlockHeader } from './header'
-import * as ethUtil from 'ethereumjs-util'
+import { KECCAK256_NULL, toBuffer } from 'ethereumjs-util'
 import { ChainOptions } from './types'
 
 /**
@@ -16,7 +16,7 @@ export default function blockHeaderFromRpc(blockParams: any, chainOptions?: Chai
       coinbase: blockParams.miner,
       stateRoot: blockParams.stateRoot,
       transactionsTrie: blockParams.transactionsRoot,
-      receiptTrie: blockParams.receiptRoot || blockParams.receiptsRoot || ethUtil.KECCAK256_NULL,
+      receiptTrie: blockParams.receiptRoot || blockParams.receiptsRoot || KECCAK256_NULL,
       bloom: blockParams.logsBloom,
       difficulty: blockParams.difficulty,
       number: blockParams.number,
@@ -32,7 +32,7 @@ export default function blockHeaderFromRpc(blockParams: any, chainOptions?: Chai
 
   // override hash in case something was missing
   blockHeader.hash = function() {
-    return ethUtil.toBuffer(blockParams.hash)
+    return toBuffer(blockParams.hash)
   }
 
   return blockHeader

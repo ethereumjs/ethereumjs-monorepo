@@ -1,6 +1,7 @@
 import * as async from 'async'
 import { BN, rlp } from 'ethereumjs-util'
-import Common from 'ethereumjs-common'
+import { Block, BlockHeader } from '@ethereumjs/block'
+import Common from '@ethereumjs/common'
 import { callbackify } from './callbackify'
 import DBManager from './dbManager'
 import {
@@ -14,13 +15,10 @@ import {
   tdKey,
 } from './util'
 
-const Block = require('ethereumjs-block')
 const Ethash = require('ethashjs')
 const Stoplight = require('flow-stoplight')
 const level = require('level-mem')
 const semaphore = require('semaphore')
-
-export type Block = any
 
 export interface BlockchainInterface {
   /**
@@ -314,7 +312,7 @@ export default class Blockchain implements BlockchainInterface {
    * @hidden
    */
   _setCanonicalGenesisBlock(cb: any): void {
-    const genesisBlock = new Block(null, { common: this._common })
+    const genesisBlock = new Block(undefined, { common: this._common })
     genesisBlock.setGenesisParams()
     this._putBlockOrHeader(genesisBlock, cb, true)
   }
@@ -451,7 +449,7 @@ export default class Blockchain implements BlockchainInterface {
    */
   _putBlockOrHeader(item: any, cb: any, isGenesis?: boolean) {
     const self = this
-    const isHeader = item instanceof Block.Header
+    const isHeader = item instanceof BlockHeader
     let block = isHeader ? new Block([item.raw, [], []], { common: item._common }) : item
     const header = block.header
     const hash = block.hash()
@@ -470,27 +468,28 @@ export default class Blockchain implements BlockchainInterface {
 
     async.series(
       [
-        verify,
+        async.asyncify(async function() {
+          if (!self._validateBlocks) {
+            return
+          }
+
+          if (!isGenesis && block.isGenesis()) {
+            throw new Error('already have genesis set')
+          }
+
+          await block.validate(self)
+          return
+        }),
         verifyPOW,
         getCurrentTd,
         getBlockTd,
         rebuildInfo,
-        cb => self._batchDbOps(dbOps.concat(self._saveHeadOps()), cb),
+        cb => {
+          return self._batchDbOps(dbOps.concat(self._saveHeadOps()), cb)
+        },
       ],
       cb,
     )
-
-    function verify(next: any) {
-      if (!self._validateBlocks) {
-        return next()
-      }
-
-      if (!isGenesis && block.isGenesis()) {
-        return next(new Error('already have genesis set'))
-      }
-
-      block.validate(self, next)
-    }
 
     function verifyPOW(next: any) {
       if (!self._validatePow) {
@@ -526,11 +525,11 @@ export default class Blockchain implements BlockchainInterface {
     }
 
     function getBlockTd(next: any) {
-      // calculate the total difficulty of the new block
       if (isGenesis) {
         return next()
       }
 
+      // calculate the total difficulty of the new block
       self._getTd(header.parentHash, number.subn(1), (err?: any, parentTd?: any) => {
         if (err) {
           return next(err)
@@ -900,16 +899,19 @@ export default class Blockchain implements BlockchainInterface {
   /**
    * @hidden
    */
-  _delBlock(blockHash: Buffer | typeof Block, cb: any) {
+  _delBlock(blockHash: Buffer | Block, cb: any) {
     const self = this
     const dbOps: any[] = []
     let blockHeader = null
     let blockNumber: any = null
     let parentHash: any = null
     let inCanonical: any = null
+    let hash: Buffer
 
-    if (!Buffer.isBuffer(blockHash)) {
-      blockHash = blockHash.hash()
+    if (Buffer.isBuffer(blockHash)) {
+      hash = blockHash
+    } else {
+      hash = blockHash.hash()
     }
 
     async.series(
@@ -924,7 +926,7 @@ export default class Blockchain implements BlockchainInterface {
     )
 
     function getHeader(cb2: any) {
-      self._getHeader(blockHash, (err?: any, header?: any) => {
+      self._getHeader(hash, (err?: any, header?: any) => {
         if (err) return cb2(err)
         blockHeader = header
         blockNumber = new BN(blockHeader.number)
@@ -936,7 +938,7 @@ export default class Blockchain implements BlockchainInterface {
     // check if block is in the canonical chain
     function checkCanonical(cb2: any) {
       self._numberToHash(blockNumber, (err?: any, hash?: any) => {
-        inCanonical = !err && hash.equals(blockHash)
+        inCanonical = !err && hash.equals(hash)
         cb2()
       })
     }
@@ -944,7 +946,7 @@ export default class Blockchain implements BlockchainInterface {
     // delete the block, and if block is in the canonical chain, delete all
     // children as well
     function buildDBops(cb2: any) {
-      self._delChild(blockHash, blockNumber, inCanonical ? parentHash : null, dbOps, cb2)
+      self._delChild(hash, blockNumber, inCanonical ? parentHash : null, dbOps, cb2)
     }
 
     // delete all number to hash mappings for deleted block number and above

@@ -6,4 +6,4 @@
 
 ### Classes
 
-- [Block](../classes/_block_.block.md)
+* [Block](../classes/_block_.block.md)

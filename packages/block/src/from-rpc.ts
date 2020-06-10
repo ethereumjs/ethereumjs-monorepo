@@ -1,5 +1,5 @@
-import { FakeTransaction } from 'ethereumjs-tx'
-import * as ethUtil from 'ethereumjs-util'
+import { FakeTransaction, TransactionOptions } from '@ethereumjs/tx'
+import { toBuffer, setLengthLeft } from 'ethereumjs-util'
 import { Block, ChainOptions } from './index'
 
 import blockHeaderFromRpc from './header-from-rpc'
@@ -33,15 +33,16 @@ export default function blockFromRpc(
     for (const _txParams of blockParams.transactions) {
       const txParams = normalizeTxParams(_txParams)
       // override from address
-      const fromAddress = ethUtil.toBuffer(txParams.from)
+      const fromAddress = toBuffer(txParams.from)
       delete txParams.from
-      const tx = new FakeTransaction(txParams, chainOptions)
+
+      const tx = new FakeTransaction(txParams, chainOptions as TransactionOptions)
       tx.from = fromAddress
       tx.getSenderAddress = function() {
         return fromAddress
       }
       // override hash
-      const txHash = ethUtil.toBuffer(txParams.hash)
+      const txHash = toBuffer(txParams.hash)
       tx.hash = function() {
         return txHash
       }
@@ -49,7 +50,6 @@ export default function blockFromRpc(
       block.transactions.push(tx)
     }
   }
-
   return block
 }
 
@@ -59,8 +59,13 @@ function normalizeTxParams(_txParams: any) {
   txParams.gasLimit = txParams.gasLimit === undefined ? txParams.gas : txParams.gasLimit
   txParams.data = txParams.data === undefined ? txParams.input : txParams.data
   // strict byte length checking
-  txParams.to = txParams.to ? ethUtil.setLengthLeft(ethUtil.toBuffer(txParams.to), 20) : null
+  txParams.to = txParams.to ? setLengthLeft(toBuffer(txParams.to), 20) : null
+
   // v as raw signature value {0,1}
-  txParams.v = txParams.v < 27 ? txParams.v + 27 : txParams.v
+  // v is the recovery bit and can be either {0,1} or {27,28}.
+  // https://ethereum.stackexchange.com/questions/40679/why-the-value-of-v-is-always-either-27-11011-or-28-11100
+  const v: number = txParams.v
+  txParams.v = v < 27 ? v + 27 : v
+
   return txParams
 }

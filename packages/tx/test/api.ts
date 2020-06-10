@@ -4,7 +4,7 @@ import { rlp, zeros, privateToPublic, toBuffer } from 'ethereumjs-util'
 
 import Transaction from '../src/transaction'
 import { FakeTxData, TxsJsonEntry, VitaliksTestsDataEntry } from './types'
-import Common from 'ethereumjs-common'
+import Common from '@ethereumjs/common'
 import { TxData } from '../src'
 
 const txFixtures: TxsJsonEntry[] = require('./txs.json')

@@ -1,24 +1,21 @@
 const async = require('async')
-const util = require('util')
-const utils = require('ethereumjs-util')
-const BN = utils.BN
-const rlp = utils.rlp
-const Account = require('ethereumjs-account').default
-const Transaction = require('ethereumjs-tx').Transaction
-const Block = require('ethereumjs-block')
+const { BN, rlp, keccak256, stripHexPrefix, setLengthLeft } = require('ethereumjs-util')
+const Account = require('@ethereumjs/account').default
+const Transaction = require('@ethereumjs/tx').Transaction
+const Block = require('@ethereumjs/block').Block
 
-exports.dumpState = function(state, cb) {
+exports.dumpState = function (state, cb) {
   function readAccounts(state) {
     return new Promise((resolve, reject) => {
       let accounts = []
       var rs = state.createReadStream()
-      rs.on('data', function(data) {
+      rs.on('data', function (data) {
         let account = new Account(data.value)
         account.address = data.key
         accounts.push(account)
       })
 
-      rs.on('end', function() {
+      rs.on('end', function () {
         resolve(accounts)
       })
     })
@@ -31,26 +28,26 @@ exports.dumpState = function(state, cb) {
       storageTrie.root = account.stateRoot
       let storageRS = storageTrie.createReadStream()
 
-      storageRS.on('data', function(data) {
+      storageRS.on('data', function (data) {
         storage[data.key.toString('hex')] = data.value.toString('hex')
       })
 
-      storageRS.on('end', function() {
+      storageRS.on('end', function () {
         resolve(storage)
       })
     })
   }
 
-  readAccounts(state).then(function(accounts) {
+  readAccounts(state).then(function (accounts) {
     async.mapSeries(
       accounts,
-      function(account, cb) {
-        readStorage(state, account).then(storage => {
+      function (account, cb) {
+        readStorage(state, account).then((storage) => {
           account.storage = storage
           cb(null, account)
         })
       },
-      function(err, results) {
+      function (err, results) {
         if (err) {
           cb(err, null)
         }
@@ -70,7 +67,7 @@ exports.dumpState = function(state, cb) {
   })
 }
 
-var format = (exports.format = function(a, toZero, isHex) {
+var format = (exports.format = function (a, toZero, isHex) {
   if (a === '') {
     return Buffer.alloc(0)
   }
@@ -98,7 +95,7 @@ var format = (exports.format = function(a, toZero, isHex) {
  * @param {[type]} txData the transaction object from tests repo
  * @returns {Object}        object that will be passed to VM.runTx function
  */
-exports.makeTx = function(txData, hf) {
+exports.makeTx = function (txData, hf) {
   var tx = new Transaction({}, { hardfork: hf })
   tx.nonce = format(txData.nonce)
   tx.gasPrice = format(txData.gasPrice)
@@ -117,23 +114,23 @@ exports.makeTx = function(txData, hf) {
   return tx
 }
 
-exports.verifyPostConditions = function(state, testData, t, cb) {
+exports.verifyPostConditions = function (state, testData, t, cb) {
   var hashedAccounts = {}
   var keyMap = {}
 
   for (var key in testData) {
-    var hash = utils.keccak256(Buffer.from(utils.stripHexPrefix(key), 'hex')).toString('hex')
+    var hash = keccak256(Buffer.from(stripHexPrefix(key), 'hex')).toString('hex')
     hashedAccounts[hash] = testData[key]
     keyMap[hash] = key
   }
 
-  var q = async.queue(function(task, cb2) {
+  var q = async.queue(function (task, cb2) {
     exports.verifyAccountPostConditions(state, task.address, task.account, task.testData, t, cb2)
   }, 1)
 
   var stream = state.createReadStream()
 
-  stream.on('data', function(data) {
+  stream.on('data', function (data) {
     var acnt = new Account(rlp.decode(data.value))
     var key = data.key.toString('hex')
     var testData = hashedAccounts[key]
@@ -151,7 +148,7 @@ exports.verifyPostConditions = function(state, testData, t, cb) {
     }
   })
 
-  stream.on('end', function() {
+  stream.on('end', function () {
     function onEnd() {
       for (hash in keyMap) {
         t.fail('Missing account!: ' + keyMap[hash])
@@ -175,7 +172,7 @@ exports.verifyPostConditions = function(state, testData, t, cb) {
  * @param {[type]}   acctData postconditions JSON from tests repo
  * @param {Function} cb       completion callback
  */
-exports.verifyAccountPostConditions = function(state, address, account, acctData, t, cb) {
+exports.verifyAccountPostConditions = function (state, address, account, acctData, t, cb) {
   t.comment('Account: ' + address)
   t.equal(
     format(account.balance, true).toString('hex'),
@@ -194,15 +191,14 @@ exports.verifyAccountPostConditions = function(state, address, account, acctData
 
   var hashedStorage = {}
   for (var key in acctData.storage) {
-    hashedStorage[
-      utils.keccak256(utils.setLength(Buffer.from(key.slice(2), 'hex'), 32)).toString('hex')
-    ] = acctData.storage[key]
+    hashedStorage[keccak256(setLengthLeft(Buffer.from(key.slice(2), 'hex'), 32)).toString('hex')] =
+      acctData.storage[key]
   }
 
   if (storageKeys.length > 0) {
     state.root = account.stateRoot
     var rs = state.createReadStream()
-    rs.on('data', function(data) {
+    rs.on('data', function (data) {
       var key = data.key.toString('hex')
       var val = '0x' + rlp.decode(data.value).toString('hex')
 
@@ -218,7 +214,7 @@ exports.verifyAccountPostConditions = function(state, address, account, acctData
       delete hashedStorage[key]
     })
 
-    rs.on('end', function() {
+    rs.on('end', function () {
       for (var key in hashedStorage) {
         if (hashedStorage[key] !== '0x00') {
           t.fail('key: ' + key + ' not found in storage')
@@ -238,7 +234,7 @@ exports.verifyAccountPostConditions = function(state, address, account, acctData
  * @param {Object} results  to verify
  * @param {Object} testData from tests repo
  */
-exports.verifyGas = function(results, testData, t) {
+exports.verifyGas = function (results, testData, t) {
   var coinbaseAddr = testData.env.currentCoinbase
   var preBal = testData.pre[coinbaseAddr] ? testData.pre[coinbaseAddr].balance : 0
 
@@ -261,13 +257,13 @@ exports.verifyGas = function(results, testData, t) {
  * @param {Object} results  to verify
  * @param {Object} testData from tests repo
  */
-exports.verifyLogs = function(logs, testData, t) {
+exports.verifyLogs = function (logs, testData, t) {
   if (testData.logs) {
-    testData.logs.forEach(function(log, i) {
+    testData.logs.forEach(function (log, i) {
       var rlog = logs[i]
       t.equal(rlog[0].toString('hex'), log.address, 'log: valid address')
       t.equal('0x' + rlog[2].toString('hex'), log.data, 'log: valid data')
-      log.topics.forEach(function(topic, i) {
+      log.topics.forEach(function (topic, i) {
         t.equal(rlog[1][i].toString('hex'), topic, 'log: invalid topic')
       })
     })
@@ -279,7 +275,7 @@ exports.verifyLogs = function(logs, testData, t) {
  * @param  {Buffer}
  * @returns {String}
  */
-exports.toDecimal = function(buffer) {
+exports.toDecimal = function (buffer) {
   return new BN(buffer).toString()
 }
 
@@ -288,7 +284,7 @@ exports.toDecimal = function(buffer) {
  * @param {String}
  *  @returns {Buffer}
  */
-exports.fromDecimal = function(string) {
+exports.fromDecimal = function (string) {
   return Buffer.from(new BN(string).toArray())
 }
 
@@ -297,8 +293,8 @@ exports.fromDecimal = function(string) {
  * @param  {String} hexString address for example '0x03'
  * @returns {Buffer}
  */
-exports.fromAddress = function(hexString) {
-  return utils.setLength(Buffer.from(new BN(hexString.slice(2), 16).toArray()), 32)
+exports.fromAddress = function (hexString) {
+  return setLengthLeft(Buffer.from(new BN(hexString.slice(2), 16).toArray()), 32)
 }
 
 /**
@@ -306,18 +302,18 @@ exports.fromAddress = function(hexString) {
  * @param {String} hexCode string from tests repo
  * @returns {Buffer}
  */
-exports.toCodeHash = function(hexCode) {
-  return utils.keccak256(Buffer.from(hexCode.slice(2), 'hex'))
+exports.toCodeHash = function (hexCode) {
+  return keccak256(Buffer.from(hexCode.slice(2), 'hex'))
 }
 
-exports.makeBlockHeader = function(data) {
+exports.makeBlockHeader = function (data) {
   var header = {}
   header.timestamp = format(data.currentTimestamp)
   header.gasLimit = format(data.currentGasLimit)
   if (data.previousHash) {
     header.parentHash = format(data.previousHash, false, true)
   }
-  header.coinbase = utils.setLength(format(data.currentCoinbase, false, true), 20)
+  header.coinbase = setLengthLeft(format(data.currentCoinbase, false, true), 20)
   header.difficulty = format(data.currentDifficulty)
   header.number = format(data.currentNumber)
   return header
@@ -329,7 +325,7 @@ exports.makeBlockHeader = function(data) {
  * @param {Object} transactions transactions for the block
  * @returns {Object} the block
  */
-exports.makeBlockFromEnv = function(env, transactions) {
+exports.makeBlockFromEnv = function (env, transactions) {
   return new Block({
     header: exports.makeBlockHeader(env),
     transactions: transactions || {},
@@ -345,7 +341,7 @@ exports.makeBlockFromEnv = function(env, transactions) {
  * @param {Object} block   that the transaction belongs to
  * @returns {Object}       object that will be passed to VM.runCode function
  */
-exports.makeRunCodeData = function(exec, account, block) {
+exports.makeRunCodeData = function (exec, account, block) {
   return {
     account: account,
     origin: format(exec.origin, false, true),
@@ -366,12 +362,12 @@ exports.makeRunCodeData = function(exec, account, block) {
  * @param {[type]}   testData - JSON from tests repo
  * @param {Function} done     - callback when function is completed
  */
-exports.setupPreConditions = function(state, testData, done) {
+exports.setupPreConditions = function (state, testData, done) {
   const keysOfPre = Object.keys(testData.pre)
 
   async.eachSeries(
     keysOfPre,
-    function(key, callback) {
+    function (key, callback) {
       const acctData = testData.pre[key]
       const account = new Account()
 
@@ -384,40 +380,36 @@ exports.setupPreConditions = function(state, testData, done) {
 
       async.series(
         [
-          function(cb2) {
+          function (cb2) {
             var keys = Object.keys(acctData.storage)
 
             async.forEachSeries(
               keys,
-              function(key, cb3) {
+              function (key, cb3) {
                 const valBN = new BN(acctData.storage[key].slice(2), 16)
                 if (valBN.isZero()) {
                   return cb3()
                 }
                 let val = rlp.encode(valBN.toArrayLike(Buffer, 'be'))
-                key = utils.setLength(Buffer.from(key.slice(2), 'hex'), 32)
+                key = setLengthLeft(Buffer.from(key.slice(2), 'hex'), 32)
 
                 storageTrie.put(key, val, cb3)
               },
               cb2,
             )
           },
-          function(cb2) {
+          function (cb2) {
             account.setCode(state, codeBuf, cb2)
           },
-          function(cb2) {
+          function (cb2) {
             account.stateRoot = storageTrie.root
 
             if (testData.exec && key === testData.exec.address) {
               testData.root = storageTrie.root
             }
-            state.put(
-              Buffer.from(utils.stripHexPrefix(key), 'hex'),
-              account.serialize(),
-              function() {
-                cb2()
-              },
-            )
+            state.put(Buffer.from(stripHexPrefix(key), 'hex'), account.serialize(), function () {
+              cb2()
+            })
           },
         ],
         callback,
@@ -428,6 +420,26 @@ exports.setupPreConditions = function(state, testData, done) {
 }
 
 /**
+<<<<<<< HEAD
+=======
+ * Returns an alias for specified hardforks to meet test dependencies requirements/assumptions.
+ * @param {String} forkConfig - the name of the hardfork for which an alias should be returned
+ * @returns {String} Either an alias of the forkConfig param, or the forkConfig param itself
+ */
+exports.getRequiredForkConfigAlias = function (forkConfig) {
+  // Run the Istanbul tests for MuirGlacier since there are no dedicated tests
+  if (String(forkConfig).match(/^muirGlacier/i)) {
+    return 'Istanbul'
+  }
+  // Petersburg is named ConstantinopleFix in the client-independent consensus test suite
+  if (String(forkConfig).match(/^petersburg$/i)) {
+    return 'ConstantinopleFix'
+  }
+  return forkConfig
+}
+
+/**
+>>>>>>> update to ethereumjs-util 7.0.2
  * Checks if in a karma test runner.
  * @returns {bool} is running in karma
  */

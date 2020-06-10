@@ -14,7 +14,7 @@ import {
 import BN = require('bn.js')
 
 const level = require('level-mem')
-const Block = require('ethereumjs-block')
+import { Block, BlockHeader } from '@ethereumjs/block'
 
 /**
  * Abstraction over a DB to facilitate storing/fetching blockchain-related
@@ -83,7 +83,7 @@ export default class DBManager {
       throw new Error('Unknown blockTag type')
     }
 
-    const header = (await this.getHeader(hash, number)).raw
+    const header: any = (await this.getHeader(hash, number)).raw
     let body
     try {
       body = await this.getBody(hash, number)
@@ -91,7 +91,8 @@ export default class DBManager {
       body = [[], []]
     }
 
-    return new Block([header].concat(body), { common: this._common })
+    const blockData = [header].concat(body) as [Buffer[], Buffer[], Buffer[]]
+    return new Block(blockData, { common: this._common })
   }
 
   /**
@@ -105,10 +106,11 @@ export default class DBManager {
   /**
    * Fetches header of a block given its hash and number.
    */
+
   async getHeader(hash: Buffer, number: BN) {
     const key = headerKey(number, hash)
     const encodedHeader = await this.get(key, { cache: 'header' })
-    return new Block.Header(rlp.decode(encodedHeader), {
+    return new BlockHeader(rlp.decode(encodedHeader), {
       common: this._common,
     })
   }

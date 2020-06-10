@@ -1,5 +1,5 @@
 {
-  "name": "ethereumjs-blockchain",
+  "name": "@ethereumjs/blockchain",
   "version": "4.0.3",
   "description": "A module to store and interact with blocks",
   "main": "dist/index.js",
@@ -23,7 +23,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ethereumjs/ethereumjs-blockchain.git"
+    "url": "git+https://github.com/ethereumjs/ethereumjs-vm.git"
   },
   "keywords": [
     "ethereum",
@@ -32,14 +32,14 @@
   "author": "mjbecze <mjbecze@gmail.com>",
   "license": "MPL-2.0",
   "bugs": {
-    "url": "https://github.com/ethereumjs/ethereumjs-blockchain/issues"
+    "url": "https://github.com/ethereumjs/ethereumjs-vm/issues?q=is%3Aissue+label%3A\"package%3A+blockchain\""
   },
-  "homepage": "https://github.com/ethereumjs/ethereumjs-blockchain#readme",
+  "homepage": "https://github.com/ethereumjs/ethereumjs-vm/tree/master/packages/blockchain#synopsis",
   "dependencies": {
+    "@ethereumjs/block": "~3.0.0",
+    "@ethereumjs/common": "^1.5.0",
     "async": "^2.6.1",
     "ethashjs": "~0.0.7",
-    "ethereumjs-block": "~2.2.2",
-    "ethereumjs-common": "^1.5.0",
     "ethereumjs-util": "~6.1.0",
     "flow-stoplight": "^1.0.0",
     "level-mem": "^3.0.1",
@@ -53,7 +53,7 @@
     "@ethereumjs/config-tsc": "^1.1.1",
     "@ethereumjs/config-tslint": "^1.1.1",
     "@types/async": "^2.4.1",
-    "@types/bn.js": "^4.11.4",
+    "@types/bn.js": "^4.11.6",
     "@types/lru-cache": "^5.1.0",
     "@types/node": "^11.11.4",
     "@types/semaphore": "^1.1.0",
@@ -65,7 +65,7 @@
     "tslint": "^5.13.1",
     "typedoc": "next",
     "typedoc-plugin-markdown": "^2.2.17",
-    "typescript": "^3.3.3333",
+    "typescript": "^3.9.2",
     "typestrict": "^1.0.2"
   }
 }

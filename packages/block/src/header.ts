@@ -1,6 +1,14 @@
-import Common from 'ethereumjs-common'
-import * as utils from 'ethereumjs-util'
-import { BN } from 'ethereumjs-util'
+import Common from '@ethereumjs/common'
+import {
+  BN,
+  zeros,
+  KECCAK256_RLP_ARRAY,
+  KECCAK256_RLP,
+  toBuffer,
+  defineProperties,
+  bufferToInt,
+  rlphash,
+} from 'ethereumjs-util'
 import { Blockchain, BlockHeaderData, BufferLike, ChainOptions, PrefixedHexString } from './types'
 import { Buffer } from 'buffer'
 import { Block } from './block'
@@ -55,35 +63,35 @@ export class BlockHeader {
       {
         name: 'parentHash',
         length: 32,
-        default: utils.zeros(32),
+        default: zeros(32),
       },
       {
         name: 'uncleHash',
-        default: utils.KECCAK256_RLP_ARRAY,
+        default: KECCAK256_RLP_ARRAY,
       },
       {
         name: 'coinbase',
         length: 20,
-        default: utils.zeros(20),
+        default: zeros(20),
       },
       {
         name: 'stateRoot',
         length: 32,
-        default: utils.zeros(32),
+        default: zeros(32),
       },
       {
         name: 'transactionsTrie',
         length: 32,
-        default: utils.KECCAK256_RLP,
+        default: KECCAK256_RLP,
       },
       {
         name: 'receiptTrie',
         length: 32,
-        default: utils.KECCAK256_RLP,
+        default: KECCAK256_RLP,
       },
       {
         name: 'bloom',
-        default: utils.zeros(256),
+        default: zeros(256),
       },
       {
         name: 'difficulty',
@@ -92,7 +100,7 @@ export class BlockHeader {
       {
         name: 'number',
         // TODO: params.homeSteadForkNumber.v left for legacy reasons, replace on future release
-        default: utils.toBuffer(1150000),
+        default: toBuffer(1150000),
       },
       {
         name: 'gasLimit',
@@ -115,15 +123,15 @@ export class BlockHeader {
       },
       {
         name: 'mixHash',
-        default: utils.zeros(32),
+        default: zeros(32),
         // length: 32
       },
       {
         name: 'nonce',
-        default: utils.zeros(8), // sha3(42)
+        default: zeros(8), // sha3(42)
       },
     ]
-    utils.defineProperties(this, fields, data)
+    defineProperties(this, fields, data)
   }
 
   /**
@@ -147,7 +155,7 @@ export class BlockHeader {
 
     if (this._common.hardforkGteHardfork(hardfork, 'byzantium')) {
       // max((2 if len(parent.uncles) else 1) - ((timestamp - parent.timestamp) // 9), -99) (EIP100)
-      const uncleAddend = parentBlock.header.uncleHash.equals(utils.KECCAK256_RLP_ARRAY) ? 1 : 2
+      const uncleAddend = parentBlock.header.uncleHash.equals(KECCAK256_RLP_ARRAY) ? 1 : 2
       let a = blockTs
         .sub(parentTs)
         .idivn(9)
@@ -283,11 +291,11 @@ export class BlockHeader {
       throw new Error('invalid gas limit')
     }
 
-    if (utils.bufferToInt(parentBlock.header.number) + 1 !== utils.bufferToInt(this.number)) {
+    if (bufferToInt(this.number) - bufferToInt(parentBlock.header.number) !== 1) {
       throw new Error('invalid height')
     }
 
-    if (utils.bufferToInt(this.timestamp) <= utils.bufferToInt(parentBlock.header.timestamp)) {
+    if (bufferToInt(this.timestamp) <= bufferToInt(parentBlock.header.timestamp)) {
       throw new Error('invalid timestamp')
     }
 
@@ -301,7 +309,7 @@ export class BlockHeader {
    * Returns the hash of the block header.
    */
   hash(): Buffer {
-    return utils.rlphash(this.raw)
+    return rlphash(this.raw)
   }
 
   /**
@@ -347,7 +355,7 @@ export class BlockHeader {
 
     return commonHardFork !== null
       ? commonHardFork
-      : this._common.activeHardfork(utils.bufferToInt(this.number))
+      : this._common.activeHardfork(bufferToInt(this.number))
   }
 
   private async _getBlockByHash(blockchain: Blockchain, hash: Buffer): Promise<Block | undefined> {

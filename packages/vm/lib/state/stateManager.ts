@@ -4,9 +4,9 @@ const promisify = require('util.promisify')
 import { toBuffer, KECCAK256_NULL_S } from 'ethereumjs-util'
 import BN = require('bn.js')
 import { encode, decode } from 'rlp'
-import Common from 'ethereumjs-common'
-import { genesisStateByName } from 'ethereumjs-common/dist/genesisStates'
-import Account from 'ethereumjs-account'
+import Common from '@ethereumjs/common'
+import { genesisStateByName } from '@ethereumjs/common/dist/genesisStates'
+import Account from '@ethereumjs/account'
 import { StateManager, StorageDump } from './interface'
 import Cache from './cache'
 import { ripemdPrecompileAddress } from '../evm/precompiles'

@@ -6,4 +6,4 @@
 
 ### Classes
 
-- [BlockHeader](../classes/_header_.blockheader.md)
+* [BlockHeader](../classes/_header_.blockheader.md)

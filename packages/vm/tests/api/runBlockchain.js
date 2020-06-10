@@ -1,13 +1,15 @@
 const tape = require('tape')
 const level = require('level-mem')
 const promisify = require('util.promisify')
-const Blockchain = require('ethereumjs-blockchain').default
-const Block = require('ethereumjs-block')
-const Common = require('ethereumjs-common').default
+const Blockchain = require('@ethereumjs/blockchain').default
+const { Block } = require('@ethereumjs/block')
+const Common = require('@ethereumjs/common').default
 const util = require('ethereumjs-util')
 const runBlockchain = require('../../dist/runBlockchain').default
 const { DefaultStateManager } = require('../../dist/state')
 const { createGenesis } = require('./utils')
+
+Error.stackTraceLimit = 100
 
 tape('runBlockchain', (t) => {
   const blockchainDB = level()
@@ -27,16 +29,22 @@ tape('runBlockchain', (t) => {
   const getHeadP = promisify(blockchain.getHead.bind(blockchain))
 
   t.test('should run without a blockchain parameter', async (st) => {
-    await runBlockchain.bind(vm)()
-    st.end()
+    st.doesNotThrow(async function(){
+      await runBlockchain.bind(vm)()
+      st.end()
+    })
   })
 
   t.test('should run without blocks', async (st) => {
-    await runBlockchain.bind(vm)(blockchain)
-    st.end()
+    st.doesNotThrow(async function(){
+      await runBlockchain.bind(vm)(blockchain)
+      st.end()
+    })
   })
 
   t.test('should run with genesis block', async (st) => {
+    try {
+
     const genesis = createGenesis({ chain: 'goerli' })
 
     await putGenesisP(genesis)
@@ -44,6 +52,9 @@ tape('runBlockchain', (t) => {
 
     await runBlockchain.bind(vm)(blockchain)
     st.end()
+  } catch(e) {
+    st.end(e)
+  }
   })
 
   t.test('should run with valid and invalid blocks', async (st) => {
@@ -94,7 +105,7 @@ function createBlock(parent = null, n = 0, opts = {}) {
     return createGenesis(opts)
   }
 
-  const b = new Block(null, opts)
+  const b = new Block(undefined, opts)
   b.header.number = util.toBuffer(n)
   b.header.parentHash = parent.hash()
   b.header.difficulty = '0xfffffff'

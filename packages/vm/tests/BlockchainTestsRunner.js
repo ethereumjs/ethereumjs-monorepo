@@ -2,9 +2,8 @@ const util = require('util')
 const testUtil = require('./util.js')
 const ethUtil = require('ethereumjs-util')
 const Trie = require('merkle-patricia-tree/secure')
-const Block = require('ethereumjs-block')
-const Blockchain = require('ethereumjs-blockchain').default
-const BlockHeader = require('ethereumjs-block/header.js')
+const { Block, BlockHeader } = require('@ethereumjs/block')
+const Blockchain = require('@ethereumjs/blockchain').default
 const level = require('level')
 const levelMem = require('level-mem')
 
@@ -37,7 +36,7 @@ module.exports = async function runBlockchainTest(options, testData, t) {
     blockchain: blockchain,
     hardfork: options.forkConfigVM,
   })
-  const genesisBlock = new Block({ hardfork: options.forkConfigVM })
+  const genesisBlock = new Block(undefined, { hardfork: options.forkConfigVM })
 
   testData.homestead = true
   if (testData.homestead) {

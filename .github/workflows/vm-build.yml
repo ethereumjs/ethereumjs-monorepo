@@ -17,11 +17,11 @@ jobs:
         with:
           node-version: 12.x
       - uses: actions/checkout@v1
-      - run: npx lerna bootstrap --scope ethereumjs-vm --ignore-scripts --include-dependencies --no-ci
-      - run: npx lerna run build --scope ethereumjs-vm --include-dependencies
-      - run: npx lerna run lint --scope ethereumjs-vm
-      - run: npx lerna run test:API --scope ethereumjs-vm
-      - run: npx lerna run test:API:browser --scope ethereumjs-vm
+      - run: npx lerna bootstrap --scope @ethereumjs/vm --ignore-scripts --include-dependencies --no-ci
+      - run: npx lerna run build --scope @ethereumjs/vm --include-dependencies
+      - run: npx lerna run lint --scope @ethereumjs/vm
+      - run: npx lerna run test:API --scope @ethereumjs/vm
+      - run: npx lerna run test:API:browser --scope @ethereumjs/vm
   test-vm-state:
     runs-on: ubuntu-latest
     env:
@@ -31,10 +31,10 @@ jobs:
         with:
           node-version: 12.x
       - uses: actions/checkout@v1
-      - run: npx lerna bootstrap --scope ethereumjs-vm --ignore-scripts --include-dependencies --no-ci
-      - run: npx lerna run build --scope ethereumjs-vm --include-dependencies
-      - run: npx lerna run test:state:selectedForks --scope ethereumjs-vm
-      - run: npx lerna run coverage --scope ethereumjs-vm
+      - run: npx lerna bootstrap --scope @ethereumjs/vm --ignore-scripts --include-dependencies --no-ci
+      - run: npx lerna run build --scope @ethereumjs/vm --include-dependencies
+      - run: npx lerna run test:state:selectedForks --scope @ethereumjs/vm
+      - run: npx lerna run coverage --scope @ethereumjs/vm
       - uses: codecov/codecov-action@v1
         with:
           file: ${{ env.cwd }}/coverage/lcov.info
@@ -48,6 +48,6 @@ jobs:
         with:
           node-version: 12.x
       - uses: actions/checkout@v1
-      - run: npx lerna bootstrap --scope ethereumjs-vm --ignore-scripts --include-dependencies --no-ci
-      - run: npx lerna run build --scope ethereumjs-vm --include-dependencies
-      - run: npx lerna run test:blockchain --scope ethereumjs-vm
+      - run: npx lerna bootstrap --scope @ethereumjs/vm --ignore-scripts --include-dependencies --no-ci
+      - run: npx lerna run build --scope @ethereumjs/vm --include-dependencies
+      - run: npx lerna run test:blockchain --scope @ethereumjs/vm

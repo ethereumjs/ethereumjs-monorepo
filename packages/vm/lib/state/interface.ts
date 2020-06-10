@@ -1,4 +1,4 @@
-import Account from 'ethereumjs-account'
+import Account from '@ethereumjs/account'
 
 /**
  * Storage values of an account
