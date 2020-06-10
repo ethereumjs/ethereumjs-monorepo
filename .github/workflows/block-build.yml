@@ -26,6 +26,7 @@ jobs:
       - run: npx lerna run build --scope @ethereumjs/block --include-dependencies
       - run: npx lerna run lint --scope @ethereumjs/block
       - run: npx lerna run coverage --scope @ethereumjs/block
+      - run: npx lerna run test:browser --scope @ethereumjs/block
 
       - uses: codecov/codecov-action@v1
         with:
