@@ -91,6 +91,19 @@ tape('snapshot merkleize list', (t) => {
     st.ok(root.equals(expected), `Merkleized root ${root.toString('hex')} should match ${expected.toString('hex')}`)
     st.end()
   })
+
+  t.test('should merkleize trie with embedded nodes', async (st) => {
+    const value = Buffer.from('11', 'hex')
+    let leaves = [
+      [new BN(1).toArrayLike(Buffer, 'be', 32), value],
+      [new BN(2).toArrayLike(Buffer, 'be', 32), value],
+      [new BN(3).toArrayLike(Buffer, 'be', 32), value]
+    ]
+    let expected = await merkleizeViaTrie(leaves)
+    const root = merkleizeList(leaves)
+    st.ok(root.equals(expected), `Merkleized root ${root.toString('hex')} should match ${expected.toString('hex')}`)
+    st.end()
+  })
 })
 
 async function merkleizeViaTrie (leaves) {

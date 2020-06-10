@@ -23,12 +23,26 @@ export function merkleizeList(leaves: Buffer[][]): Buffer {
 
 abstract class BaseNode {
   abstract insert(key: Nibbles, value: Buffer): BaseNode;
-  abstract hash(): Buffer;
+  abstract raw(): any;
+  serialize(): Buffer {
+    return rlp.encode(this.raw())
+  }
+  hash(): Buffer {
+    return keccak256(this.serialize())
+  }
 }
 
 export class EmptyNode extends BaseNode {
   insert(key: Nibbles, value: Buffer): BaseNode {
     return new LeafNode(key, value)
+  }
+
+  raw(): any {
+    return null
+  }
+
+  serialize(): Buffer {
+    return Buffer.alloc(0)
   }
 
   hash(): Buffer {
@@ -67,13 +81,9 @@ export class LeafNode extends BaseNode {
     return root
   }
 
-  serialize(): Buffer {
+  raw(): [Buffer, Buffer] {
     const encodedKey = addHexPrefix(this._key.slice(0), true)
-    return rlp.encode([nibblesToBuffer(encodedKey), this._value])
-  }
-
-  hash(): Buffer {
-    return keccak256(this.serialize())
+    return [nibblesToBuffer(encodedKey), this._value]
   }
 }
 
@@ -116,12 +126,12 @@ export class ExtensionNode extends BaseNode {
     return root
   }
 
-  hash(): Buffer {
-    const childHash = this._child.hash()
+  raw(): any {
+    const childRaw = this._child.raw()
+    const childSerialized = rlp.encode(childRaw)
+    let value = childSerialized.length < 32 ? childRaw : keccak256(childSerialized)
     const encodedKey = addHexPrefix(this._key.slice(0), false)
-    const raw = [nibblesToBuffer(encodedKey), childHash]
-    const serialized = rlp.encode(raw)
-    return keccak256(serialized)
+    return [nibblesToBuffer(encodedKey), value]
   }
 }
 
@@ -149,36 +159,64 @@ export class BranchNode extends BaseNode {
     // leaves are being inserted in the ascending key order.
     for (let j = 0; j < i; j++) {
       if (!this._children[j] || this._children[j] instanceof HashNode) continue
-      this._children[j] = new HashNode(this._children[j]!.hash())
+      this._children[j] = new HashNode(this._children[j]!)
     }
     this._children[i] = this._children[i]!.insert(key.slice(1), value)
     return this
   }
 
-  hash(): Buffer {
+  raw(): any {
     const raw = []
     for (let i = 0; i < 16; i++) {
-      raw[i] = this._children[i] ? this._children[i]!.hash() : null
+      const child = this._children[i]
+      if (!child) {
+        raw.push(null)
+      } else if (child instanceof HashNode && (<HashNode> child).embedded) {
+        raw.push(child.raw())
+      } else {
+        const childRaw = child.raw()
+        const childSerialized = rlp.encode(childRaw)
+        if (childSerialized.length < 32) {
+          raw.push(childRaw)
+        } else {
+          raw.push(keccak256(childSerialized))
+        }
+      }
     }
     raw.push(this._value)
-    const serialized = rlp.encode(raw)
-    return keccak256(serialized)
+    return raw
   }
 }
 
+// TODO: Either remove HashNode or precompute hash
+//       to save on iterating already visited sub-tries.
 export class HashNode extends BaseNode {
-  _value: Buffer
+  _ref: BaseNode
+  _serialized: Buffer
 
-  constructor(value: Buffer) {
+  constructor(ref: BaseNode) {
     super()
-    this._value = value
+    this._ref = ref
+    this._serialized = ref.serialize()
+  }
+
+  get embedded(): boolean {
+    return this._serialized.length < 32
   }
 
   insert(key: Nibbles, value: Buffer): BaseNode {
     throw new Error('Can\'t insert into hash node')
   }
 
+  raw(): any {
+    return this._ref.raw()
+  }
+
+  serialize(): Buffer {
+    throw new Error('Cant serialize hashnode')
+  }
+
   hash(): Buffer {
-    return this._value
+    return keccak256(this._serialized)
   }
 }
