@@ -43,7 +43,7 @@ If you want to join for work or do improvements on the libraries have a look at 
 [js-standard-style-badge]: https://cdn.rawgit.com/feross/standard/master/badge.svg
 [js-standard-style-link]: https://github.com/feross/standard
 [block-npm-badge]: https://img.shields.io/npm/v/@ethereumjs/block.svg
-[block-npm-link]: https://www.npmjs.org/package/@ethereumjs/block
+[block-npm-link]: https://www.npmjs.com/package/@ethereumjs/block
 [block-issues-badge]: https://img.shields.io/github/issues/ethereumjs/ethereumjs-vm/package:%20block?label=issues
 [block-issues-link]: https://github.com/ethereumjs/ethereumjs-vm/issues?q=is%3Aopen+is%3Aissue+label%3A"package%3A+block"
 [block-actions-badge]: https://github.com/ethereumjs/ethereumjs-vm/workflows/Block%20Test/badge.svg

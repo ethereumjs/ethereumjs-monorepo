@@ -43,7 +43,7 @@ If you want to join for work or do improvements on the libraries have a look at 
 [js-standard-style-badge]: https://cdn.rawgit.com/feross/standard/master/badge.svg
 [js-standard-style-link]: https://github.com/feross/standard
 [account-npm-badge]: https://img.shields.io/npm/v/@ethereumjs/account.svg
-[account-npm-link]: https://www.npmjs.org/package/@ethereumjs/account
+[account-npm-link]: https://www.npmjs.com/package/@ethereumjs/account
 [account-issues-badge]: https://img.shields.io/github/issues/ethereumjs/ethereumjs-vm/package:%20account?label=issues
 [account-issues-link]: https://github.com/ethereumjs/ethereumjs-vm/issues?q=is%3Aopen+is%3Aissue+label%3A"package%3A+account"
 [account-actions-badge]: https://github.com/ethereumjs/ethereumjs-vm/workflows/Account%20Test/badge.svg
