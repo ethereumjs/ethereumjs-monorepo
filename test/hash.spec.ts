@@ -48,6 +48,12 @@ describe('keccak', function() {
       keccak((<unknown>msg) as Buffer)
     })
   })
+  it('should error if provided incorrect bits', function() {
+    const msg = '0x3c9229289a6125f7fdf1885a77bb12c37a8d3b4962d936f7e3084dece32a3ca1'
+    assert.throws(function() {
+      keccak(toBuffer(msg), 1024)
+    })
+  })
 })
 
 describe('keccak256', function() {
