@@ -22,6 +22,11 @@ jobs:
       - run: npx lerna run lint --scope @ethereumjs/vm
       - run: npx lerna run test:API --scope @ethereumjs/vm
       - run: npx lerna run test:API:browser --scope @ethereumjs/vm
+      - run: npx lerna run coverage --scope @ethereumjs/vm
+      - uses: codecov/codecov-action@v1
+        with:
+          file: ${{ env.cwd }}/coverage/lcov.info
+          flags: vm
   test-vm-state:
     runs-on: ubuntu-latest
     env:
@@ -34,11 +39,6 @@ jobs:
       - run: npx lerna bootstrap --scope @ethereumjs/vm --ignore-scripts --include-dependencies --no-ci
       - run: npx lerna run build --scope @ethereumjs/vm --include-dependencies
       - run: npx lerna run test:state:selectedForks --scope @ethereumjs/vm
-      - run: npx lerna run coverage --scope @ethereumjs/vm
-      - uses: codecov/codecov-action@v1
-        with:
-          file: ${{ env.cwd }}/coverage/lcov.info
-          flags: vm
   test-vm-blockchain:
     runs-on: ubuntu-latest
     env:
