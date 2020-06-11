@@ -16,10 +16,30 @@ import {
 } from '../src'
 
 describe('keccak', function() {
-  it('should produce a hash', function() {
+  it('should produce a keccak224 hash', function() {
+    const msg = '0x3c9229289a6125f7fdf1885a77bb12c37a8d3b4962d936f7e3084dece32a3ca1'
+    const r = '9e66938bd8f32c8610444bb524630db496bd58b689f9733182df63ba'
+    const hash = keccak(toBuffer(msg), 224)
+    assert.equal(hash.toString('hex'), r)
+  })
+  it('should produce a keccak256 hash', function() {
     const msg = '0x3c9229289a6125f7fdf1885a77bb12c37a8d3b4962d936f7e3084dece32a3ca1'
     const r = '82ff40c0a986c6a5cfad4ddf4c3aa6996f1a7837f9c398e17e5de5cbd5a12b28'
     const hash = keccak(toBuffer(msg))
+    assert.equal(hash.toString('hex'), r)
+  })
+  it('should produce a keccak384 hash', function() {
+    const msg = '0x3c9229289a6125f7fdf1885a77bb12c37a8d3b4962d936f7e3084dece32a3ca1'
+    const r =
+      '923e0f6a1c324a698139c3f3abbe88ac70bf2e7c02b26192c6124732555a32cef18e81ac91d5d97ce969745409c5bbc6'
+    const hash = keccak(toBuffer(msg), 384)
+    assert.equal(hash.toString('hex'), r)
+  })
+  it('should produce a keccak512 hash', function() {
+    const msg = '0x3c9229289a6125f7fdf1885a77bb12c37a8d3b4962d936f7e3084dece32a3ca1'
+    const r =
+      '36fdacd0339307068e9ed191773a6f11f6f9f99016bd50f87fd529ab7c87e1385f2b7ef1ac257cc78a12dcb3e5804254c6a7b404a6484966b831eadc721c3d24'
+    const hash = keccak(toBuffer(msg), 512)
     assert.equal(hash.toString('hex'), r)
   })
   it('should error if input is not Buffer', function() {
