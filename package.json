@@ -54,7 +54,7 @@
   "dependencies": {
     "chalk": "^2.4.1",
     "ethereumjs-account": "^3.0.0",
-    "ethereumjs-block": "^2.2.0",
+    "ethereumjs-block": "^2.2.2",
     "ethereumjs-blockchain": "^3.4.0",
     "ethereumjs-common": "^1.5.1",
     "ethereumjs-devp2p": "^2.5.1",

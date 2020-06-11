@@ -54,7 +54,7 @@ module.exports = {
     return server
   },
 
-  params (method, params) {
+  params (method, params = []) {
     const req = {
       jsonrpc: '2.0',
       method: method,
