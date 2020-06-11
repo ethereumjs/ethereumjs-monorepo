@@ -2,7 +2,7 @@ import * as tape from 'tape'
 import Ethash from '../src'
 import { getEpoc, getCacheSize, getFullSize } from '../src/util'
 import { bufferToInt } from 'ethereumjs-util'
-const Header = require('ethereumjs-block/header.js')
+import { BlockHeader } from '@ethereumjs/block'
 const powTests = require('./ethash_tests.json')
 
 const ethash = new Ethash()
@@ -11,7 +11,7 @@ const tests = Object.keys(powTests)
 tape('POW tests', function (t) {
   tests.forEach(function (key) {
     const test = powTests[key]
-    const header = new Header(Buffer.from(test.header, 'hex'))
+    const header = new BlockHeader(Buffer.from(test.header, 'hex'))
 
     const headerHash = ethash.headerHash(header.raw)
     t.equal(

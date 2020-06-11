@@ -1,6 +1,6 @@
 import * as tape from 'tape'
 import Ethash from '../src'
-const Block = require('ethereumjs-block')
+import { Block } from '@ethereumjs/block'
 const levelup = require('levelup')
 const memdown = require('memdown')
 const async = require('async')
