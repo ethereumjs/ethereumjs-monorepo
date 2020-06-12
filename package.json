@@ -6,7 +6,9 @@
     "lerna": "^3.20.2"
   },
   "husky": {
-    "hooks": {}
+    "hooks": {
+      "pre-push": "lerna run lint"
+    }
   },
   "scripts": {
     "bootstrap": "lerna bootstrap --ignore-scripts",
