@@ -195,14 +195,14 @@ export default class Ethash {
     const headerHash = this.headerHash(header.raw)
     const number = bufferToInt(header.number)
     const mixHash = header.mixHash
-    const difficulty = new BN(header.difficulty!)
+    const difficulty = new BN(header.difficulty)
 
     this.loadEpoc(number, () => {
       const nonceBuffer = Buffer.from(header.nonce as any, 'hex')
       const a = this.run(headerHash, nonceBuffer)
       const result = new BN(a.hash)
       cb(
-        a.mix.toString('hex') === mixHash?.toString('hex') &&
+        a.mix.toString('hex') === mixHash.toString('hex') &&
           TWO_POW256.div(difficulty).cmp(result) === 1
       )
     })
