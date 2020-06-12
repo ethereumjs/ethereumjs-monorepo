@@ -24,7 +24,7 @@ const verifySubmit = (
   })
 }
 
-const header = Buffer.from(
+const headerHash = Buffer.from(
   '0e2887aa1a0668bf8254d1a6ae518927de99e3e5d7f30fd1f16096e2608fe05e',
   'hex'
 )
@@ -32,7 +32,7 @@ const header = Buffer.from(
 verifySubmit(
   ethash,
   35414,
-  header,
+  headerHash,
   Buffer.from('e360b6170c229d15', 'hex'),
   (result) => {
     console.log(result.toString('hex'))

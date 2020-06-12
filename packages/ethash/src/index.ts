@@ -18,12 +18,9 @@ import {
   getSeed
 } from './util'
 import type { LevelUp } from 'levelup'
+import type { Block, BlockHeader } from '@ethereumjs/block'
 const async = require('async')
 const xor = require('buffer-xor')
-
-// ethereumjs-block v3 will have types
-type Block = any
-type BlockHeader = any
 
 export default class Ethash {
   dbOpts: Object
@@ -122,8 +119,8 @@ export default class Ethash {
     return keccak256(Buffer.concat(this.cache))
   }
 
-  headerHash(header: BlockHeader) {
-    return rlphash(header.slice(0, -2))
+  headerHash(rawHeader: Buffer[]) {
+    return rlphash(rawHeader.slice(0, -2))
   }
 
   /**
@@ -197,13 +194,16 @@ export default class Ethash {
   _verifyPOW(header: BlockHeader, cb: (valid: boolean) => void) {
     const headerHash = this.headerHash(header.raw)
     const number = bufferToInt(header.number)
+    const mixHash = header.mixHash
+    const difficulty = new BN(header.difficulty!)
 
     this.loadEpoc(number, () => {
-      const a = this.run(headerHash, Buffer.from(header.nonce, 'hex'))
+      const nonceBuffer = Buffer.from(header.nonce as any, 'hex')
+      const a = this.run(headerHash, nonceBuffer)
       const result = new BN(a.hash)
       cb(
-        a.mix.toString('hex') === header.mixHash.toString('hex') &&
-          TWO_POW256.div(new BN(header.difficulty)).cmp(result) === 1
+        a.mix.toString('hex') === mixHash?.toString('hex') &&
+          TWO_POW256.div(difficulty).cmp(result) === 1
       )
     })
   }
