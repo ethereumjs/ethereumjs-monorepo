@@ -43,7 +43,7 @@ tape('[Chain]', t => {
     t.equal(chain.genesis.hash.toString('hex'),
       chain.blocks.latest.hash().toString('hex'),
       'get chain.block.latest')
-    chain.close()
+    await chain.close()
     t.end()
   })
 
@@ -80,6 +80,7 @@ tape('[Chain]', t => {
     await chain.getTd(block.hash())
     t.ok(chain.opened, 'chain should open if getTd() called')
     t.equal(await chain.open(), false, 'skip open if already opened')
+    await chain.close()
     t.end()
   })
 
@@ -89,6 +90,7 @@ tape('[Chain]', t => {
     t.notOk(await chain.putBlocks(), 'add undefined block')
     t.notOk(await chain.putBlocks(null), 'add null block')
     t.notOk(await chain.putBlocks([]), 'add empty block list')
+    await chain.close()
     t.end()
   })
 
@@ -98,6 +100,7 @@ tape('[Chain]', t => {
     t.notOk(await chain.putHeaders(), 'add undefined header')
     t.notOk(await chain.putHeaders(null), 'add null header')
     t.notOk(await chain.putHeaders([]), 'add empty header list')
+    await chain.close()
     t.end()
   })
 
@@ -112,7 +115,7 @@ tape('[Chain]', t => {
     await chain.putBlocks([block])
     t.equal(chain.blocks.td.toString(16), '4abcdffff', 'get chain.td')
     t.equal(chain.blocks.height.toString(10), '1', 'get chain.height')
-    chain.close()
+    await chain.close()
     t.end()
   })
 })

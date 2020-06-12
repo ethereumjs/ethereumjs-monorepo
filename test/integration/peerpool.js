@@ -18,6 +18,7 @@ tape('[Integration:PeerPool]', async (t) => {
 
   async function destroy (server, pool) {
     await server.stop()
+    await pool.close()
   }
 
   t.test('should open', async (t) => {
