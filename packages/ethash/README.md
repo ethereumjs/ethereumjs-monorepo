@@ -1,6 +1,5 @@
 # @ethereumjs/ethash
 
-
 [![NPM Package][ethash-npm-badge]][ethash-npm-link]
 [![GitHub Issues][ethash-issues-badge]][ethash-issues-link]
 [![Actions Status][ethash-actions-badge]][ethash-actions-link]
