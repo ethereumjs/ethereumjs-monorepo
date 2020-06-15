@@ -8,7 +8,7 @@ env:
 
 defaults:
   run:
-    working-directory: ${{github.workspace}}/packages/vm
+    working-directory: ${{env.cwd}}
 
 jobs:
   test-vm-api:
@@ -21,7 +21,7 @@ jobs:
 
       - run: npm run bootstrap
         working-directory: ${{github.workspace}}
-        
+
       - run: npm run build
         working-directory: ${{github.workspace}}
 

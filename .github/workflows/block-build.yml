@@ -13,7 +13,7 @@ env:
 
 defaults:
   run:
-    working-directory: ${{github.workspace}}/packages/block
+    working-directory: ${{env.cwd}}
 
 jobs:
   test-block:
