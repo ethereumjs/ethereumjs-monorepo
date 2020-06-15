@@ -167,6 +167,76 @@ tape('snapshot merkleize', (t) => {
   })
 })
 
+tape('snapshot checkpointing', t => {
+  t.test('should checkpoint and get value from parent', async (st) => {
+    const snapshot = new Snapshot()
+    const addr = new BN(3).toArrayLike(Buffer, 'be', 20)
+    const val = (new Account()).serialize()
+    await snapshot.putAccount(addr, val)
+
+    snapshot.checkpoint()
+
+    const res = await snapshot.getAccount(addr)
+    st.ok(val.equals(res))
+    st.end()
+  })
+
+  t.test('should get recent version after checkpoint update', async (st) => {
+    const snapshot = new Snapshot()
+    const addr = new BN(3).toArrayLike(Buffer, 'be', 20)
+    const acc = new Account()
+    const val = acc.serialize()
+    await snapshot.putAccount(addr, val)
+
+    snapshot.checkpoint()
+
+    acc.codeHash = keccak256(Buffer.from('abab', 'hex'))
+    await snapshot.putAccount(addr, acc.serialize())
+
+    const res = await snapshot.getAccount(addr)
+    st.ok(res.equals(acc.serialize()))
+    st.end()
+  })
+
+  t.test('should revert change after checkpoint', async (st) => {
+    const snapshot = new Snapshot()
+    const addr = new BN(3).toArrayLike(Buffer, 'be', 20)
+    const acc = new Account()
+    const val = acc.serialize()
+    await snapshot.putAccount(addr, val)
+
+    snapshot.checkpoint()
+
+    acc.codeHash = keccak256(Buffer.from('abab', 'hex'))
+    await snapshot.putAccount(addr, acc.serialize())
+
+    await snapshot.revert()
+
+    const res = await snapshot.getAccount(addr)
+    st.ok(res.equals(val))
+    st.end()
+  })
+
+  t.test('should commit change after checkpoint', async (st) => {
+    const snapshot = new Snapshot()
+    const addr = new BN(3).toArrayLike(Buffer, 'be', 20)
+    const acc = new Account()
+    const val = acc.serialize()
+    await snapshot.putAccount(addr, val)
+
+    snapshot.checkpoint()
+
+    acc.codeHash = keccak256(Buffer.from('abab', 'hex'))
+    await snapshot.putAccount(addr, acc.serialize())
+
+    await snapshot.commit()
+
+    const res = await snapshot.getAccount(addr)
+    st.ok(res.equals(acc.serialize()))
+    st.end()
+  })
+})
+
 async function merkleizeViaTrie (leaves) {
   const trie = new Trie()
   const put = promisify(trie.put.bind(trie))

@@ -50,11 +50,12 @@
     "ethereumjs-tx": "^2.1.2",
     "ethereumjs-util": "^6.2.0",
     "functional-red-black-tree": "^1.0.1",
+    "level-ws": "^2.0.0",
     "merkle-patricia-tree": "^2.3.2",
     "rustbn.js": "~0.2.0",
     "safe-buffer": "^5.1.1",
-    "util.promisify": "^1.0.1",
-    "util-callbackify": "^1.0.0"
+    "util-callbackify": "^1.0.0",
+    "util.promisify": "^1.0.1"
   },
   "devDependencies": {
     "@ethereumjs/config-nyc": "^1.1.1",

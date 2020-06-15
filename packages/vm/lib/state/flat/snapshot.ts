@@ -11,6 +11,7 @@ import BN = require('bn.js')
 const ACCOUNT_PREFIX: Buffer = Buffer.from('00', 'hex')
 const STORAGE_PREFIX: Buffer = Buffer.from('11', 'hex')
 const CODE_PREFIX: Buffer = Buffer.from('22', 'hex')
+const CHECKPOINT_PREFIX: Buffer = Buffer.from('33', 'hex')
 
 export interface StorageSlot {
   key: Buffer
@@ -19,9 +20,11 @@ export interface StorageSlot {
 
 export class Snapshot {
   _db: DB
+  _checkpointIndex: number
 
   constructor(db?: LevelUp) {
     this._db = new DB(db)
+    this._checkpointIndex = 0
   }
 
   async putAccount(address: Buffer, value: Buffer): Promise<void> {
@@ -142,11 +145,25 @@ export class Snapshot {
   }
 
   checkpoint(): void {
+    const prefix = Buffer.concat([ CHECKPOINT_PREFIX, new BN(this._checkpointIndex).toArrayLike(Buffer, 'be', 2) ])
+    this._db = new DB(this._db._leveldb, prefix, this._db)
   }
 
-  commit(): void {
+  async commit(): Promise<void> {
+    if (!this._db._parent) {
+      throw new Error('No outstanding checkpoints to revert')
+    }
+    const db = this._db
+    this._db = db._parent as DB
+    await db.merge()
   }
 
-  revert(): void {
+  async revert(): Promise<void> {
+    if (!this._db._parent) {
+      throw new Error('No outstanding checkpoints to revert')
+    }
+    const db = this._db
+    this._db = db._parent as DB
+    await db.clear()
   }
 }
