@@ -7,47 +7,67 @@ on:
       - '*'
   pull_request:
     types: [opened, reopened, synchronize]
+
+env:
+  cwd: ${{github.workspace}}/packages/vm
+
+defaults:
+  run:
+    working-directory: ${{github.workspace}}/packages/vm
+
 jobs:
   test-vm-api:
     runs-on: ubuntu-latest
-    env:
-      cwd: ${{github.workspace}}/packages/vm
     steps:
       - uses: actions/setup-node@v1
         with:
           node-version: 12.x
       - uses: actions/checkout@v1
-      - run: npx lerna bootstrap --scope @ethereumjs/vm --ignore-scripts --include-dependencies --no-ci
-      - run: npx lerna run build --scope @ethereumjs/vm --include-dependencies
-      - run: npx lerna run lint --scope @ethereumjs/vm
-      - run: npx lerna run test:API --scope @ethereumjs/vm
-      - run: npx lerna run test:API:browser --scope @ethereumjs/vm
-      - run: npx lerna run coverage --scope @ethereumjs/vm
+
+      - run: npm run bootstrap
+        working-directory: ${{github.workspace}}
+
+      - run: npm run build
+        working-directory: ${{github.workspace}}
+
+      - run: npm run lint
+      - run: npm run test:API
+      - run: npm run test:API:browser
+      - run: npm run coverage
+      
       - uses: codecov/codecov-action@v1
         with:
           file: ${{ env.cwd }}/coverage/lcov.info
           flags: vm
+  
   test-vm-state:
     runs-on: ubuntu-latest
-    env:
-      cwd: ${{github.workspace}}/packages/vm
     steps:
       - uses: actions/setup-node@v1
         with:
           node-version: 12.x
       - uses: actions/checkout@v1
-      - run: npx lerna bootstrap --scope @ethereumjs/vm --ignore-scripts --include-dependencies --no-ci
-      - run: npx lerna run build --scope @ethereumjs/vm --include-dependencies
-      - run: npx lerna run test:state:selectedForks --scope @ethereumjs/vm
+
+      - run: npm run bootstrap
+        working-directory: ${{github.workspace}}
+      
+      - run: npm run build
+        working-directory: ${{github.workspace}}
+
+      - run: npm run test:state:selectedForks
+
   test-vm-blockchain:
     runs-on: ubuntu-latest
-    env:
-      cwd: ${{github.workspace}}/packages/vm
     steps:
       - uses: actions/setup-node@v1
         with:
           node-version: 12.x
       - uses: actions/checkout@v1
-      - run: npx lerna bootstrap --scope @ethereumjs/vm --ignore-scripts --include-dependencies --no-ci
-      - run: npx lerna run build --scope @ethereumjs/vm --include-dependencies
-      - run: npx lerna run test:blockchain --scope @ethereumjs/vm
+
+      - run: npm run bootstrap
+        working-directory: ${{github.workspace}}
+      
+      - run: npm run build
+        working-directory: ${{github.workspace}}
+
+      - run: npm run test:blockchain

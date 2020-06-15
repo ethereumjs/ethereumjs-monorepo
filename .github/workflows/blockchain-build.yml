@@ -7,14 +7,20 @@ on:
       - '*'
   pull_request:
     types: [opened, reopened, synchronize]
+
+env:
+  cwd: ${{github.workspace}}/packages/blockchain
+
+defaults:
+  run:
+    working-directory: ${{github.workspace}}/packages/blockchain
+
 jobs:
   test-blockchain:
     runs-on: ubuntu-latest
     strategy:
       matrix:
         node-version: [10, 12, 13, 14]
-    env:
-      cwd: ${{github.workspace}}/packages/blockchain
     steps:
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v1
@@ -22,10 +28,14 @@ jobs:
           node-version: ${{ matrix.node-version }}
       - uses: actions/checkout@v1
 
-      - run: npx lerna bootstrap --scope @ethereumjs/blockchain --ignore-scripts --include-dependencies --no-ci
-      - run: npx lerna run build --scope @ethereumjs/blockchain --include-dependencies
-      - run: npx lerna run lint --scope @ethereumjs/blockchain
-      - run: npx lerna run coverage --scope @ethereumjs/blockchain
+      - run: npm run bootstrap
+        working-directory: ${{github.workspace}}
+      
+      - run: npm run build
+        working-directory: ${{github.workspace}}
+
+      - run: npm run lint
+      - run: npm run coverage
 
       - uses: codecov/codecov-action@v1
         with:
