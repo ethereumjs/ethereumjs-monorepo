@@ -28,7 +28,7 @@ jobs:
           node-version: ${{ matrix.node-version }}
       - uses: actions/checkout@v1
 
-      - run: npm run bootstrap
+      - run: npm install
         working-directory: ${{github.workspace}}
         
       - run: npm run build
