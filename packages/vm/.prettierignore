@@ -1,9 +1,7 @@
-node_modules
-.vscode
-package.json
-dist
-.nyc_output
 *.json
+.nyc_output
+.vscode
 coverage
+dist
 docs
-
+node_modules
