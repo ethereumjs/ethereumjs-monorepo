@@ -1,6 +1,5 @@
 # @ethereumjs/ethash
 
-[![Coverage Status](https://img.shields.io/coveralls/ethereumjs/ethashjs.svg)](https://coveralls.io/r/ethereumjs/ethashjs)
 
 [![NPM Package][ethash-npm-badge]][ethash-npm-link]
 [![GitHub Issues][ethash-issues-badge]][ethash-issues-link]
