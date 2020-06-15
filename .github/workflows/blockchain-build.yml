@@ -13,7 +13,7 @@ env:
 
 defaults:
   run:
-    working-directory: ${{env.cwd}}
+    working-directory: packages/blockchain
 
 jobs:
   test-blockchain:

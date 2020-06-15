@@ -8,7 +8,7 @@ env:
 
 defaults:
   run:
-    working-directory: ${{env.cwd}}
+    working-directory: packages/vm
 
 jobs:
   test-vm-api:
