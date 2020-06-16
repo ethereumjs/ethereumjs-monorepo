@@ -1,0 +1,35 @@
+name: Ethash
+on:
+  push:
+    branches:
+      - master
+    tags:
+      - '*'
+  pull_request:
+    types: [opened, reopened, synchronize]
+jobs:
+  test-ethash:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [10, 12, 13, 14]
+    env:
+      cwd: ${{github.workspace}}/packages/ethash
+    steps:
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node-version }}
+      - uses: actions/checkout@v1
+
+      - run: npx lerna bootstrap --scope @ethereumjs/ethash --ignore-scripts --include-dependencies --no-ci
+      - run: npx lerna run build --scope @ethereumjs/ethash --include-dependencies
+      - run: npx lerna run lint --scope @ethereumjs/ethash
+
+      - run: npx lerna run coverage --scope @ethereumjs/ethash
+
+      - uses: codecov/codecov-action@v1
+        with:
+          file: ${{ env.cwd }}/coverage/lcov.info
+          flags: ethash
+        if: ${{ matrix.node-version == 12 }}

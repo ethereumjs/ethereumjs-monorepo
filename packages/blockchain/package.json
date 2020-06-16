@@ -38,8 +38,8 @@
   "dependencies": {
     "@ethereumjs/block": "~3.0.0",
     "@ethereumjs/common": "^1.5.0",
+    "@ethereumjs/ethash": "^1.0.0",
     "async": "^2.6.1",
-    "ethashjs": "~0.0.7",
     "ethereumjs-util": "~6.1.0",
     "flow-stoplight": "^1.0.0",
     "level-mem": "^3.0.1",
