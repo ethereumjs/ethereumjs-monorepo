@@ -43,21 +43,37 @@ function parseTestCases(forkConfigTestSuite, testData, data, gasLimit, value) {
 }
 
 async function runTestCase(options, testData, t) {
-  const state = new Trie()
   let block, vm
   let VM
+  let Snapshot, FlatStateManager
   if (options.dist) {
     VM = require('../dist/index.js').default
+    Snapshot = require('../dist/state/flat/snapshot').Snapshot
+    FlatStateManager = require('../dist/state/flat/stateManager').FlatStateManager
   } else {
     VM = require('../lib/index').default
+    Snapshot = require('../lib/state/flat/snapshot').Snapshot
+    FlatStateManager = require('../lib/state/flat/stateManager').FlatStateManager
   }
-  vm = new VM({
-    state,
-    hardfork: options.forkConfigVM,
-  })
 
+  const trie = new Trie()
   const setupPreconditionsAsync = util.promisify(testUtil.setupPreConditions)
-  await setupPreconditionsAsync(state, testData)
+  await setupPreconditionsAsync(trie, testData)
+  if (options.flat) {
+    const snapshot = new Snapshot()
+    await testUtil.setupFlatPreConditions(snapshot, testData)
+    t.ok(trie._root.equals((await snapshot.merkleize())), 'flat pre condition valid')
+    const stateManager = new FlatStateManager({ snapshot })
+    vm = new VM({
+      stateManager,
+      hardfork: options.forkConfigVM,
+    })
+  } else {
+    vm = new VM({
+      state: trie,
+      hardfork: options.forkConfigVM,
+    })
+  }
 
   let tx = testUtil.makeTx(testData.transaction, options.forkConfigVM)
   block = testUtil.makeBlockFromEnv(testData.env)
@@ -91,15 +107,17 @@ async function runTestCase(options, testData, t) {
       t.comment(JSON.stringify(opTrace))
     })
     vm.on('afterTx', () => {
-      let stateRoot = {
-        stateRoot: vm.stateManager._trie.root.toString('hex'),
+      if (!options.flat) {
+        let stateRoot = {
+          stateRoot: vm.stateManager._trie.root.toString('hex'),
+        }
+        t.comment(JSON.stringify(stateRoot))
       }
-      t.comment(JSON.stringify(stateRoot))
     })
   }
 
   try {
-    await vm.runTx({ tx , block })
+    await vm.runTx({ tx, block })
   } catch(e) {
     // If tx is invalid and coinbase is empty, the test harness
     // expects the coinbase account to be deleted from state.
@@ -108,7 +126,7 @@ async function runTestCase(options, testData, t) {
     if (new BN(account.balance).isZero()) {
       await vm.stateManager.putAccount(block.header.coinbase, new Account())
       await vm.stateManager.cleanupTouchedAccounts()
-      await vm.stateManager._cache.flush()
+      //await vm.stateManager._cache.flush()
     }
   }
 
@@ -116,10 +134,18 @@ async function runTestCase(options, testData, t) {
     testData.postStateRoot = testData.postStateRoot.substr(2)
   }
   t.equal(
-    vm.stateManager._trie.root.toString('hex'),
+    (await vm.stateManager.getStateRoot()).toString('hex'),
     testData.postStateRoot,
     'the state roots should match',
   )
+  if (options.debug) {
+    if (options.flat) {
+      vm.stateManager._snapshot.getAccounts().on('data', (data) => console.log('account', data.key, new Account(data.value).toJSON()))
+    } else {
+      vm.stateManager._trie.createReadStream()
+        .on('data', (data) => console.log('account', data.key, new Account(data.value).toJSON()))
+    }
+  }
 }
 
 module.exports = async function runStateTest(options, testData, t) {

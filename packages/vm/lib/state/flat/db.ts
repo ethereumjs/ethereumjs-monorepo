@@ -29,6 +29,7 @@ export class DB {
   _leveldb: LevelUp
   _prefix: Buffer
   _parent?: DB
+  _deleted: Set<string>
 
   /**
    * Initialize a DB instance. If `leveldb` is not provided, DB
@@ -39,6 +40,8 @@ export class DB {
     this._leveldb = leveldb || level()
     this._parent = _parent
     this._prefix = prefix || Buffer.alloc(0)
+    // Used for committing deleted objects
+    this._deleted = new Set()
   }
 
   /**
@@ -76,7 +79,13 @@ export class DB {
    * @returns {Promise}
    */
   async put(key: Buffer, val: Buffer): Promise<void> {
-    await this._leveldb.put(Buffer.concat([ this._prefix, key ]), val, ENCODING_OPTS)
+    // If item was inserted again after deletion we shouldn't
+    // mark it as deleted.
+    if (this._parent && this._deleted.has(key.toString('hex'))) {
+      this._deleted.delete(key.toString('hex'))
+    }
+    key = Buffer.concat([ this._prefix, key ])
+    await this._leveldb.put(key, val, ENCODING_OPTS)
   }
 
   /**
@@ -85,7 +94,11 @@ export class DB {
    * @returns {Promise}
    */
   async del(key: Buffer): Promise<void> {
-    await this._leveldb.del(Buffer.concat([ this._prefix, key]), ENCODING_OPTS)
+    if (this._parent) {
+      this._deleted.add(key.toString('hex'))
+    }
+    key = Buffer.concat([ this._prefix, key])
+    await this._leveldb.del(key, ENCODING_OPTS)
   }
 
   /**
@@ -93,10 +106,12 @@ export class DB {
    * @param {Array} opStack A stack of levelup operations
    * @returns {Promise}
    */
-  async batch(opStack: BatchDBOp[]): Promise<void> {
+  /*async batch(opStack: BatchDBOp[]): Promise<void> {
     // TODO: Prepend prefix to keys
+    // TODO: Handle marking items as deleted
+    // TODO: probably better not to use batch
     await this._leveldb.batch(opStack, ENCODING_OPTS)
-  }
+  }*/
 
   /**
    * Returns a readable stream for all
@@ -110,15 +125,26 @@ export class DB {
     return this._leveldb.createReadStream({ gt, lt })
   }
 
-  async clear(): Promise<void> {
+  async delByPrefix(prefix: Buffer, prependPrefix: boolean = false): Promise<void> {
     return new Promise((resolve, reject) => {
-      const gt = this._prefix
+      let gt = prefix
+      if (prependPrefix) {
+        gt = Buffer.concat([this._prefix, gt])
+      }
       const lt = new BN(gt).addn(1).toBuffer()
       // TODO: update levelup to get .clear()
       //await this._leveldb.clear({ gt, lt })
       const ws = levelWS(this._leveldb)
       this._leveldb.createKeyStream({ gt, lt })
-        .on('data', (key: Buffer) => ws.write({ type: 'del', key }))
+        .on('data', (key: Buffer) => {
+          // TODO: this should be an inefficient way of handling it
+          // maybe keep track of prefix instead of every individual key?
+          if (this._parent) {
+            // TODO: How to remove prefix
+            this._deleted.add(key.toString('hex'))
+          }
+          ws.write({ type: 'del', key })
+        })
         .on('error', (err: any) => {
           ws.destroy(err)
           reject(err)
@@ -128,6 +154,10 @@ export class DB {
           resolve()
         })
     })
+  }
+
+  async clear(): Promise<void> {
+    return this.delByPrefix(this._prefix, false)
   }
 
   /*
@@ -145,7 +175,8 @@ export class DB {
       this._leveldb.createReadStream({ gt, lt })
         .on('data', (data: any) => {
           const shortKey = data.key.slice(this._prefix.length)
-          ws.write({ type: 'put', key: shortKey, value: data.value })
+          const parentKey = Buffer.concat([this._parent!._prefix, shortKey])
+          ws.write({ type: 'put', key: parentKey, value: data.value })
           ws.write({ type: 'del', key: data.key })
         })
         .on('error', (err: Error) => {
@@ -153,6 +184,10 @@ export class DB {
           reject(err)
         })
         .on('end', () => {
+          // Handle objects marked as deleted
+          for (const hexKey of Array.from(this._deleted)) {
+            ws.write({ type: 'del', key: Buffer.from(hexKey, 'hex') })
+          }
           ws.end()
           resolve()
         })

@@ -38,6 +38,29 @@ export class Snapshot {
     return this._db.get(key)
   }
 
+  async delAccount(address: Buffer): Promise<void> {
+    const key = Buffer.concat([ ACCOUNT_PREFIX, keccak256(address) ])
+    return this._db.del(key)
+  }
+
+  /**
+   * Deletes not only the account itself, but also the code
+   * and any storage items if available.
+   */
+  async clearAccount(address: Buffer): Promise<void> {
+    const rawAccount = await this.getAccount(address)
+    if (!rawAccount) return
+
+    await this.delAccount(address)
+
+    const account = new Account(rawAccount)
+    if (!account.codeHash.equals(KECCAK256_NULL)) {
+      await this.delCode(account.codeHash)
+    }
+
+    await this.clearAccountStorage(address)
+  }
+
   async putStorageSlot(address: Buffer, slot: Buffer, value: Buffer): Promise<void> {
     const key = Buffer.concat([ STORAGE_PREFIX, keccak256(address), keccak256(slot) ])
     await this._db.put(key, value)
@@ -46,6 +69,17 @@ export class Snapshot {
   async getStorageSlot(address: Buffer, slot: Buffer): Promise<Buffer | null> {
     const key = Buffer.concat([ STORAGE_PREFIX, keccak256(address), keccak256(slot) ])
     return this._db.get(key)
+  }
+
+
+  async delStorageSlot(address: Buffer, slot: Buffer): Promise<void> {
+    const key = Buffer.concat([ STORAGE_PREFIX, keccak256(address), keccak256(slot) ])
+    await this._db.del(key)
+  }
+
+  async clearAccountStorage(address: Buffer): Promise<void> {
+    const prefix = Buffer.concat([STORAGE_PREFIX, keccak256(address)])
+    await this._db.delByPrefix(prefix, true)
   }
 
   async putCode(address: Buffer, code: Buffer): Promise<void> {
@@ -67,7 +101,7 @@ export class Snapshot {
 
   async getCode(address: Buffer): Promise<Buffer | null> {
     const rawAccount = await this.getAccount(address)
-    if (!rawAccount) throw new Error('Fetching code from inexistent account')
+    if (!rawAccount) return null
     const account = new Account(rawAccount)
     if (account.codeHash.equals(KECCAK256_NULL)) {
       return Buffer.alloc(0)
@@ -75,6 +109,11 @@ export class Snapshot {
 
     const key = Buffer.concat([ CODE_PREFIX, account.codeHash ])
     return this._db.get(key)
+  }
+
+  async delCode(codeHash: Buffer): Promise<void> {
+    const key = Buffer.concat([ CODE_PREFIX, codeHash ])
+    return this._db.del(key)
   }
 
   getAccounts(): NodeJS.ReadableStream {
@@ -131,7 +170,7 @@ export class Snapshot {
             tries[hashedAddrS] = new EmptyNode()
           }
           const slotKey = data.key.slice(STORAGE_PREFIX.length + 32)
-          tries[hashedAddrS] = tries[hashedAddrS].insert(bufferToNibbles(slotKey), rlp.encode(data.value))
+          tries[hashedAddrS] = tries[hashedAddrS].insert(bufferToNibbles(slotKey), data.value)
         })
         .on('error', (err: any) => reject(err))
         .on('end', () => {
@@ -147,6 +186,7 @@ export class Snapshot {
   checkpoint(): void {
     const prefix = Buffer.concat([ CHECKPOINT_PREFIX, new BN(this._checkpointIndex).toArrayLike(Buffer, 'be', 2) ])
     this._db = new DB(this._db._leveldb, prefix, this._db)
+    this._checkpointIndex++
   }
 
   async commit(): Promise<void> {
@@ -156,6 +196,7 @@ export class Snapshot {
     const db = this._db
     this._db = db._parent as DB
     await db.merge()
+    this._checkpointIndex--
   }
 
   async revert(): Promise<void> {
@@ -165,5 +206,6 @@ export class Snapshot {
     const db = this._db
     this._db = db._parent as DB
     await db.clear()
+    this._checkpointIndex--
   }
 }
