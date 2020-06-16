@@ -1,4 +1,3 @@
-import * as async from 'async'
 import Common from '@ethereumjs/common'
 import { Block, BlockHeader } from '@ethereumjs/block'
 import { toBuffer, bufferToInt } from 'ethereumjs-util'
@@ -20,33 +19,48 @@ test('blockchain test', (t) => {
     })
   })
 
-  t.test('should throw on initialization with chain and common parameter', (st) => {
+  t.test('should throw on initialization with chain and common parameter', async st => {
+    st.plan(5)
     const common = new Common('ropsten')
 
     st.throws(() => {
       new Blockchain({ chain: 'ropsten', common })
-    }, /not allowed!$/)
+    }, 'initializing with both chain/common is not allowed')
 
     const blockchain0 = new Blockchain({ chain: 'ropsten' })
     const blockchain1 = new Blockchain({ common })
 
-    async.parallel(
-      [(cb) => blockchain0.getHead(cb), (cb) => blockchain1.getHead(cb)],
-      (err?: any, heads?: any) => {
+    let heads: any = []
+
+    let p0 = new Promise((resolve, reject) => {
+      blockchain0.getHead(function(err?: any, head?: any) {
         st.error(err, 'no error initializing with one parameter')
-        st.equals(
-          heads[0].hash().toString('hex'),
-          common.genesis().hash.slice(2),
-          'correct genesis hash',
-        )
-        st.equals(
-          heads[0].hash().toString('hex'),
-          heads[1].hash().toString('hex'),
-          'genesis blocks match',
-        )
-        st.end()
-      },
-    )
+        resolve(head)
+      })
+    }).catch(function(err) {
+      st.comment(err.message)
+    })
+
+    let p1 = new Promise((resolve, reject) => {
+      blockchain1.getHead(function(err?: any, head?: any) {
+        st.error(err, 'no error initializing with one parameter')
+        resolve(head)
+      })
+    })
+
+    await Promise.all([p0, p1]).then((heads: any) => {
+      st.equals(
+        heads[0].hash().toString('hex'),
+        common.genesis().hash.slice(2),
+        'correct genesis hash',
+      )
+      st.equals(
+        heads[0].hash().toString('hex'),
+        heads[1].hash().toString('hex'),
+        'genesis blocks match',
+      )
+      st.end()
+    })
   })
 
   t.test('should add a genesis block without errors', (st) => {
@@ -638,47 +652,59 @@ test('blockchain test', (t) => {
     })
   })
 
-  t.test('uncached db ops', (st) => {
-    createTestDB((err?: Error, db?: any, genesis?: Block) => {
+  t.test('uncached db ops', async st => {
+    st.plan(3) // explicitly let tape know we want to run 3 assertions in this test.
+    createTestDB(async (err?: Error, db?: any, genesis?: Block) => {
       if (err) {
         return st.error(err)
       }
+
       if (!genesis) {
         return st.fail('genesis not defined!')
       }
+
       const blockchain = new Blockchain({ db: db })
-      async.series(
-        [
-          (cb) =>
-            blockchain._hashToNumber(genesis.hash(), (err: Error | undefined, number: BN) => {
-              st.equals(number.toString(10), '0', 'should perform _hashToNumber correctly')
-              cb(err)
-            }),
-          (cb) =>
-            blockchain._numberToHash(new BN(0), (err: Error | undefined, hash: Buffer) => {
-              st.equals(
-                genesis.hash().toString('hex'),
-                hash.toString('hex'),
-                'should perform _numberToHash correctly',
-              )
-              cb(err)
-            }),
-          (cb) =>
-            blockchain._getTd(genesis.hash(), new BN(0), (err: Error | undefined, td: BN) => {
-              st.equals(
-                td.toBuffer().toString('hex'),
-                genesis.header.difficulty.toString('hex'),
-                'should perform _getTd correctly',
-              )
-              cb(err)
-            }),
-        ],
-        st.end,
-      )
+
+      let hashToNumberPromise = new Promise((resolve, reject) => {
+        blockchain._hashToNumber(genesis?.hash(), (err: Error | undefined, number: BN) => {
+          st.equals(number.toString(10), '0', 'should perform _hashToNumber correctly')
+          resolve(err)
+        })
+      })
+
+      await hashToNumberPromise
+
+      let numberToHashPromise = new Promise((resolve, reject) => {
+        blockchain._numberToHash(new BN(0), (err: Error | undefined, hash: Buffer) => {
+          st.equals(
+            genesis.hash().toString('hex'),
+            hash.toString('hex'),
+            'should perform _numberToHash correctly',
+          )
+          resolve(err)
+        })
+      })
+
+      await numberToHashPromise
+
+      let getTdPromise = new Promise((resolve, reject) => {
+        blockchain._getTd(genesis.hash(), new BN(0), (err: Error | undefined, td: BN) => {
+          st.equals(
+            td.toBuffer().toString('hex'),
+            genesis.header.difficulty.toString('hex'),
+            'should perform _getTd correctly',
+          )
+          resolve(err)
+        })
+      })
+
+      await getTdPromise
+      st.end()
     })
   })
 
-  t.test('should save headers', (st) => {
+  t.test('should save headers', st => {
+    st.plan(2)
     const db = level()
     let blockchain = new Blockchain({ db: db, validateBlocks: true, validatePow: false })
     const genesisBlock = new Block()
@@ -699,45 +725,55 @@ test('blockchain test', (t) => {
           return st.error(err)
         }
         blockchain = new Blockchain({ db: db, validateBlocks: true, validatePow: false })
-        async.series(
-          [
-            (cb) =>
-              blockchain.getLatestHeader((err?: Error, latest?: any) => {
-                if (err) {
-                  return st.error(err)
-                }
-                st.equals(
-                  latest.hash().toString('hex'),
-                  header.hash().toString('hex'),
-                  'should save headHeader',
-                )
-                cb()
-              }),
-            (cb) =>
-              blockchain.getLatestBlock((err?: Error, latest?: any) => {
-                if (err) {
-                  return st.error(err)
-                }
-                st.equals(
-                  latest.hash().toString('hex'),
-                  genesisBlock.hash().toString('hex'),
-                  'should save headBlock',
-                )
-                cb()
-              }),
-          ],
-          st.end,
-        )
+
+        const seriesFn = async () => {
+          const getLatestHeaderPromise = new Promise((resolve, reject) => {
+            blockchain.getLatestHeader((err?: Error, latest?: any) => {
+              if (err) {
+                return st.error(err)
+              }
+              st.equals(
+                latest.hash().toString('hex'),
+                header.hash().toString('hex'),
+                'should save headHeader',
+              )
+              resolve()
+            })
+          })
+
+          await getLatestHeaderPromise
+
+          const getLatestBlockPromsie = new Promise((resolve, reject) => {
+            blockchain.getLatestBlock((err?: Error, latest?: any) => {
+              if (err) {
+                return st.error(err)
+              }
+              st.equals(
+                latest.hash().toString('hex'),
+                genesisBlock.hash().toString('hex'),
+                'should save headBlock',
+              )
+              resolve()
+            })
+          })
+
+          await getLatestBlockPromsie
+
+          st.end()
+        }
+
+        seriesFn()
       })
     })
   })
 
-  t.test('immutable cached objects', (st) => {
+  t.test('immutable cached objects', st => {
+    st.plan(1)
     const blockchain = new Blockchain({ validateBlocks: true, validatePow: false })
     const genesisBlock = new Block()
     genesisBlock.setGenesisParams()
     genesisBlock.header.gasLimit = toBuffer(8000000)
-    blockchain.putGenesis(genesisBlock, (err?: Error) => {
+    blockchain.putGenesis(genesisBlock, async (err?: Error) => {
       if (err) {
         return st.error(err)
       }
@@ -748,48 +784,48 @@ test('blockchain test', (t) => {
       block.header.gasLimit = toBuffer(8000000)
       block.header.timestamp = toBuffer(bufferToInt(genesisBlock.header.timestamp) + 1)
       let cachedHash: Buffer
-      async.series(
-        [
-          (cb) =>
-            blockchain.putBlock(block, (err?: Error) => {
-              if (err) {
-                return st.error(err)
-              }
-              cachedHash = block.hash()
-              cb()
-            }),
-          (cb) => {
-            // change block's extraData in order to modify its hash
-            block.header.extraData = Buffer.from([1])
-            blockchain.getBlock(1, (err?: Error, block?: Block) => {
-              if (err) {
-                return st.error(err)
-              }
-              if (!block) {
-                return st.fail('block not defined!')
-              }
-              st.equals(
-                cachedHash.toString('hex'),
-                block.hash().toString('hex'),
-                'should not modify cached objects',
-              )
-              cb()
-            })
-          },
-        ],
-        st.end,
-      )
+
+      const putBlockPromise = new Promise((resolve, reject) => {
+        blockchain.putBlock(block, (err?: Error) => {
+          if (err) {
+            return st.error(err)
+          }
+          cachedHash = block.hash()
+          resolve()
+        })
+      })
+
+      await putBlockPromise
+
+      const cacheCheckPromise = new Promise((resolve, reject) => {
+        block.header.extraData = Buffer.from([1])
+        blockchain.getBlock(1, (err?: Error, block?: Block) => {
+          if (err) {
+            return st.error(err)
+          }
+          st.equals(
+            cachedHash.toString('hex'),
+            block?.hash().toString('hex'),
+            'should not modify cached objects',
+          )
+          resolve()
+        })
+      })
+
+      await cacheCheckPromise
+
+      st.end()
     })
   })
 
-  // !!!
-  t.test('should get latest', (st) => {
+  t.test('should get latest', st => {
+    st.plan(4)
     const blockchain = new Blockchain({ validateBlocks: true, validatePow: false })
     const headers = [new BlockHeader(), new BlockHeader()]
     const genesisBlock = new Block()
     genesisBlock.setGenesisParams()
     genesisBlock.header.gasLimit = toBuffer(8000000)
-    blockchain.putGenesis(genesisBlock, (err?: Error) => {
+    blockchain.putGenesis(genesisBlock, async (err?: Error) => {
       if (err) {
         return st.error(err)
       }
@@ -813,90 +849,98 @@ test('blockchain test', (t) => {
       headers[1].gasLimit = toBuffer(8000000)
       headers[1].timestamp = toBuffer(bufferToInt(block.header.timestamp) + 1)
 
-      async.series(
-        [
-          // first, add some headers and make sure the latest block remains the same
-          (cb) =>
-            blockchain.putHeaders(headers, (err?: Error) => {
+      const putHeaderPromise = new Promise((resolve, reject) => {
+        blockchain.putHeaders(headers, async (err?: Error) => {
+          if (err) {
+            resolve(err)
+          }
+
+          const getLatestHeaderPromise = new Promise((resolve, reject) => {
+            blockchain.getLatestHeader((err?: any, header?: any) => {
               if (err) {
-                return cb(err)
+                return st.error(err)
               }
-              async.series(
-                [
-                  (cb) =>
-                    blockchain.getLatestHeader((err?: any, header?: any) => {
-                      if (err) {
-                        return st.error(err)
-                      }
-                      st.equals(
-                        header.hash().toString('hex'),
-                        headers[1].hash().toString('hex'),
-                        'should update latest header',
-                      )
-                      cb()
-                    }),
-                  (cb) =>
-                    blockchain.getLatestBlock((err?: any, block?: any) => {
-                      if (err) {
-                        return st.error(err)
-                      }
-                      t.equals(
-                        block.hash().toString('hex'),
-                        genesisBlock.hash().toString('hex'),
-                        'should not change latest block',
-                      )
-                      cb()
-                    }),
-                ],
-                cb,
+              st.equals(
+                header.hash().toString('hex'),
+                headers[1].hash().toString('hex'),
+                'should update latest header',
               )
-            }),
-          // then, add a full block and make sure the latest header remains the same
-          (cb) =>
-            blockchain.putBlock(block, (err?: Error) => {
+              resolve()
+            })
+          })
+
+          await getLatestHeaderPromise
+
+          const getLatestBlockPromise = new Promise((resolve, reject) => {
+            blockchain.getLatestBlock((err?: any, block?: any) => {
               if (err) {
-                return cb(err)
+                return st.error(err)
               }
-              async.series(
-                [
-                  (cb) =>
-                    blockchain.getLatestHeader((err?: Error, header?: any) => {
-                      if (err) {
-                        return st.error(err)
-                      }
-                      st.equals(
-                        header.hash().toString('hex'),
-                        headers[1].hash().toString('hex'),
-                        'should not change latest header',
-                      )
-                      cb()
-                    }),
-                  (cb) =>
-                    blockchain.getLatestBlock((err?: Error, getBlock?: Block) => {
-                      if (err) {
-                        return st.error(err)
-                      }
-                      if (!getBlock) {
-                        return st.fail('getBlock not defined!')
-                      }
-                      t.equals(
-                        getBlock.hash().toString('hex'),
-                        block.hash().toString('hex'),
-                        'should update latest block',
-                      )
-                      cb()
-                    }),
-                ],
-                cb,
+              st.equals(
+                block.hash().toString('hex'),
+                genesisBlock.hash().toString('hex'),
+                'should not change latest block',
               )
-            }),
-        ],
-        st.end,
-      )
+              resolve()
+            })
+          })
+
+          await getLatestBlockPromise
+
+          resolve()
+        })
+      })
+
+      await putHeaderPromise
+
+      const putBlockPromise = new Promise((resolve, reject) => {
+        blockchain.putBlock(block, async (err?: Error) => {
+          if (err) {
+            resolve(err)
+          }
+
+          const getLatestHeaderPromise = new Promise((resolve, reject) => {
+            blockchain.getLatestHeader((err?: Error, header?: any) => {
+              if (err) {
+                return st.error(err)
+              }
+              st.equals(
+                header.hash().toString('hex'),
+                headers[1].hash().toString('hex'),
+                'should not change latest header',
+              )
+              resolve()
+            })
+          })
+
+          await getLatestHeaderPromise
+
+          const getLatestBlockPromise = new Promise((resolve, reject) => {
+            blockchain.getLatestBlock((err?: Error, getBlock?: Block) => {
+              if (err) {
+                return st.error(err)
+              }
+              st.equals(
+                getBlock?.hash().toString('hex'),
+                block.hash().toString('hex'),
+                'should update latest block',
+              )
+              resolve()
+            })
+          })
+          await getLatestBlockPromise
+
+          resolve()
+        })
+      })
+
+      await putBlockPromise
+      st.end()
     })
   })
 
-  t.test('mismatched chains', (st) => {
+  t.test('mismatched chains', async st => {
+    st.plan(2)
     const common = new Common('mainnet')
     const blockchain = new Blockchain({ common: common, validateBlocks: true, validatePow: false })
     const blocks = [
@@ -920,23 +964,25 @@ test('blockchain test', (t) => {
     blocks[2].header.gasLimit = toBuffer(8000000)
     blocks[2].header.timestamp = toBuffer(bufferToInt(blocks[0].header.timestamp) + 2)
 
-    async.eachOfSeries(
-      blocks,
-      (block, i, cb) => {
-        if (i === 0) {
-          blockchain.putGenesis(block, cb)
-        } else {
-          blockchain.putBlock(block, (err: Error) => {
+    for (let i = 0; i < blocks.length; i++) {
+      if (i === 0) {
+        await new Promise((resolve, reject) => {
+          blockchain.putGenesis(blocks[i], resolve)
+        })
+      } else {
+        await new Promise((resolve, reject) => {
+          blockchain.putBlock(blocks[i], (err: Error) => {
             if (i === 2) {
               st.ok(err.message.match('Chain mismatch'), 'should return chain mismatch error')
             } else {
               st.error(err, 'should not return mismatch error')
             }
-            cb()
+            resolve()
           })
-        }
-      },
-      st.end,
-    )
+        })
+      }
+    }
+
+    st.end()
   })
 })
