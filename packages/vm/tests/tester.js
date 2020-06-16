@@ -44,6 +44,7 @@ function runTests() {
   runnerArgs.gasLimit = argv.gas // GeneralStateTests
   runnerArgs.value = argv.value // GeneralStateTests
   runnerArgs.debug = argv.debug // BlockchainTests
+  runnerArgs.flat = argv.flat
 
   if (argv.customStateTest) {
     const stateTestRunner = require('./GeneralStateTestsRunner.js')

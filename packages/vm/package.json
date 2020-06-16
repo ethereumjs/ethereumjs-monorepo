@@ -14,6 +14,7 @@
     "coverage:test": "npm run build && tape './tests/api/**/*.js' ./tests/tester.js --state --dist",
     "docs:build": "typedoc --options typedoc.js",
     "test:state": "ts-node ./tests/tester --state",
+    "test:state:flat": "ts-node ./tests/tester --state --flat",
     "test:state:allForks": "npm run test:state -- --fork=Byzantium && npm run test:state -- --fork=Constantinople && npm run test:state -- --fork=Petersburg && npm run test:state -- --fork=Istanbul && npm run test:state -- --fork=MuirGlacier",
     "test:state:selectedForks": "npm run test:state -- --fork=Petersburg && npm run test:state -- --fork=Istanbul && npm run test:state -- --fork=MuirGlacier",
     "test:state:slow": "npm run test:state -- --runSkipped=slow",
@@ -50,11 +51,12 @@
     "@ethereumjs/tx": "^2.1.2",
     "ethereumjs-util": "^7.0.2",
     "functional-red-black-tree": "^1.0.1",
+    "level-ws": "^2.0.0",
     "merkle-patricia-tree": "^2.3.2",
     "rustbn.js": "~0.2.0",
     "safe-buffer": "^5.1.1",
-    "util.promisify": "^1.0.1",
-    "util-callbackify": "^1.0.0"
+    "util-callbackify": "^1.0.0",
+    "util.promisify": "^1.0.1"
   },
   "devDependencies": {
     "@ethereumjs/config-nyc": "^1.1.1",
@@ -63,6 +65,7 @@
     "@ethereumjs/config-tslint": "^1.1.1",
     "@types/bn.js": "^4.11.6",
     "@types/core-js": "^2.5.0",
+    "@types/levelup": "^4.3.0",
     "@types/lru-cache": "^5.1.0",
     "@types/node": "^11.13.4",
     "@types/tape": "^4.2.33",

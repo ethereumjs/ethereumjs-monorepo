@@ -419,6 +419,33 @@ exports.setupPreConditions = function (state, testData, done) {
   )
 }
 
+exports.setupFlatPreConditions = async function (snapshot, testData) {
+  for (const sAddress in testData.pre) {
+    const acctData = testData.pre[sAddress]
+    const address = Buffer.from(utils.stripHexPrefix(sAddress), 'hex')
+    const account = new Account()
+
+    account.nonce = format(acctData.nonce)
+    account.balance = format(acctData.balance)
+
+    await snapshot.putAccount(address, account.serialize())
+    const codeBuf = Buffer.from(acctData.code.slice(2), 'hex')
+    await snapshot.putCode(address, codeBuf)
+
+    for (const skey in acctData.storage) {
+      const valBN = new BN(acctData.storage[skey].slice(2), 16)
+      if (valBN.isZero()) {
+        continue
+      }
+      let val = rlp.encode(valBN.toArrayLike(Buffer, 'be'))
+      let slotkey = utils.setLength(Buffer.from(skey.slice(2), 'hex'), 32)
+
+      await snapshot.putStorageSlot(address, slotkey, val)
+    }
+    // account.stateRoot
+  }
+}
+
 /**
 <<<<<<< HEAD
 =======
