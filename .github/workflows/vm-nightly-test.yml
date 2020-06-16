@@ -19,6 +19,10 @@ jobs:
           node-version: 12.x
       - uses: actions/checkout@v1
 
+      # This is important, so the CI runs with a fresh combination of packages
+      - run: rm package-lock.json packages/*/package-lock.json
+        working-directory: ${{github.workspace}}
+
       - run: npm install
         working-directory: ${{github.workspace}}
 
@@ -36,6 +40,10 @@ jobs:
           node-version: 12.x
       - uses: actions/checkout@v1
 
+      # This is important, so the CI runs with a fresh combination of packages
+      - run: rm package-lock.json packages/*/package-lock.json
+        working-directory: ${{github.workspace}}
+
       - run: npm install
         working-directory: ${{github.workspace}}
 
@@ -51,6 +59,10 @@ jobs:
         with:
           node-version: 12.x
       - uses: actions/checkout@v1
+
+      # This is important, so the CI runs with a fresh combination of packages
+      - run: rm package-lock.json packages/*/package-lock.json
+        working-directory: ${{github.workspace}}
 
       - run: npm install
         working-directory: ${{github.workspace}}
@@ -69,6 +81,10 @@ jobs:
           node-version: 12.x
       - uses: actions/checkout@v1
       
+      # This is important, so the CI runs with a fresh combination of packages
+      - run: rm package-lock.json packages/*/package-lock.json
+        working-directory: ${{github.workspace}}
+
       - run: npm install
         working-directory: ${{github.workspace}}
 
