@@ -14,6 +14,7 @@
     "coverage:test": "npm run build && tape './tests/api/**/*.js' ./tests/tester.js --state --dist",
     "docs:build": "typedoc --options typedoc.js",
     "test:state": "ts-node ./tests/tester --state",
+    "test:state:flat": "ts-node ./tests/tester --state --flat",
     "test:state:allForks": "npm run test:state -- --fork=Byzantium && npm run test:state -- --fork=Constantinople && npm run test:state -- --fork=Petersburg && npm run test:state -- --fork=Istanbul && npm run test:state -- --fork=MuirGlacier",
     "test:state:selectedForks": "npm run test:state -- --fork=Petersburg && npm run test:state -- --fork=Istanbul && npm run test:state -- --fork=MuirGlacier",
     "test:state:slow": "npm run test:state -- --runSkipped=slow",

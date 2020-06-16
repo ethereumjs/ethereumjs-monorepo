@@ -39,6 +39,23 @@ jobs:
         with:
           file: ${{ env.cwd }}/coverage/lcov.info
           flags: vm
+  test-vm-state-flat:
+    runs-on: ubuntu-latest
+    env:
+      cwd: ${{github.workspace}}/packages/vm
+    steps:
+      - uses: actions/setup-node@v1
+        with:
+          node-version: 12.x
+      - uses: actions/checkout@v1
+      - run: npx lerna bootstrap --scope ethereumjs-vm --ignore-scripts --include-dependencies --no-ci
+      - run: npx lerna run build --scope ethereumjs-vm --include-dependencies
+      - run: npx lerna run test:state:flat --scope ethereumjs-vm
+      - run: npx lerna run coverage --scope ethereumjs-vm
+      - uses: codecov/codecov-action@v1
+        with:
+          file: ${{ env.cwd }}/coverage/lcov.info
+          flags: vm
   test-vm-blockchain:
     runs-on: ubuntu-latest
     env:
