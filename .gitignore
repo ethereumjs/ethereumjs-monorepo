@@ -1,6 +1,5 @@
 # Vim swap files
 *.swp
-package-lock.json
 .idea
 
 # Created by https://www.toptal.com/developers/gitignore/api/node
