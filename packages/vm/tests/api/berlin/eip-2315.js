@@ -1,15 +1,18 @@
 const tape = require('tape')
 const BN = require('bn.js')
 const VM = require('../../../dist/index').default
+const Common = require('@ethereumjs/common').default
+
 
 tape('Berlin: EIP 2315 tests', t => {
   let callArgs;
   let stepCounter;
   let vm;
+  const common = new Common('mainnet', 'berlin')
 
   const runTest = async function(test, st){
     let i = 0;
-    vm = new VM();
+    vm = new VM({ common: common });
 
     vm.on('step', function(step){
       if (test.steps.length){
