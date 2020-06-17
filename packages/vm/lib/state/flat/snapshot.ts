@@ -79,7 +79,7 @@ export class Snapshot {
 
   async clearAccountStorage(address: Buffer): Promise<void> {
     const prefix = Buffer.concat([STORAGE_PREFIX, keccak256(address)])
-    await this._db.delByPrefix(prefix, true)
+    await this._db.delByPrefix(prefix)
   }
 
   async putCode(address: Buffer, code: Buffer): Promise<void> {

@@ -30,6 +30,7 @@ export class DB {
   _prefix: Buffer
   _parent?: DB
   _deleted: Set<string>
+  _deletedPrefixes: Set<string>
 
   /**
    * Initialize a DB instance. If `leveldb` is not provided, DB
@@ -42,6 +43,8 @@ export class DB {
     this._prefix = prefix || Buffer.alloc(0)
     // Used for committing deleted objects
     this._deleted = new Set()
+    // Same as for above but for when using `.delByPrefix`
+    this._deletedPrefixes = new Set()
   }
 
   /**
@@ -50,8 +53,22 @@ export class DB {
    * @returns {Promise} - Promise resolves with `Buffer` if a value is found or `null` if no value is found.
    */
   async get(key: Buffer): Promise<Buffer | null> {
+    // Try getting value from current layer
     let res = await this._get(Buffer.concat([ this._prefix, key]))
     if (!res && this._parent) {
+      const skey = key.toString('hex')
+      // If key has been deleted don't go to lower layer
+      if (this._deleted.has(skey)) {
+        return null
+      }
+      // Make sure a key prefix matching this key hasn't been
+      // marked as deleted
+      for (const deletedPrefix of Array.from(this._deletedPrefixes)) {
+        if (skey.startsWith(deletedPrefix)) {
+          return null
+        }
+      }
+      // Fetch value from lower layer
       res = await this._parent.get(key)
     }
     return res
@@ -125,26 +142,18 @@ export class DB {
     return this._leveldb.createReadStream({ gt, lt })
   }
 
-  async delByPrefix(prefix: Buffer, prependPrefix: boolean = false): Promise<void> {
+  async delByPrefix(prefix: Buffer): Promise<void> {
     return new Promise((resolve, reject) => {
-      let gt = prefix
-      if (prependPrefix) {
-        gt = Buffer.concat([this._prefix, gt])
+      // If this is a checkpointing layer, mark prefix as deleted
+      // so we can apply on merge
+      if (this._parent) {
+        this._deletedPrefixes.add(prefix.toString('hex'))
       }
+      const gt = Buffer.concat([this._prefix, prefix])
       const lt = new BN(gt).addn(1).toBuffer()
-      // TODO: update levelup to get .clear()
-      //await this._leveldb.clear({ gt, lt })
       const ws = levelWS(this._leveldb)
       this._leveldb.createKeyStream({ gt, lt })
-        .on('data', (key: Buffer) => {
-          // TODO: this should be an inefficient way of handling it
-          // maybe keep track of prefix instead of every individual key?
-          if (this._parent) {
-            // TODO: How to remove prefix
-            this._deleted.add(key.toString('hex'))
-          }
-          ws.write({ type: 'del', key })
-        })
+        .on('data', (key: Buffer) => ws.write({ type: 'del', key }))
         .on('error', (err: any) => {
           ws.destroy(err)
           reject(err)
@@ -157,7 +166,23 @@ export class DB {
   }
 
   async clear(): Promise<void> {
-    return this.delByPrefix(this._prefix, false)
+    return new Promise((resolve, reject) => {
+      let gt = this._prefix
+      const lt = new BN(gt).addn(1).toBuffer()
+      // TODO: update levelup to get .clear()
+      //await this._leveldb.clear({ gt, lt })
+      const ws = levelWS(this._leveldb)
+      this._leveldb.createKeyStream({ gt, lt })
+        .on('data', (key: Buffer) => ws.write({ type: 'del', key }))
+        .on('error', (err: any) => {
+          ws.destroy(err)
+          reject(err)
+        })
+        .on('end', () => {
+          ws.end()
+          resolve()
+        })
+    })
   }
 
   /*
@@ -165,13 +190,28 @@ export class DB {
    * and removes the prefixed versions.
    */
   async merge(): Promise<void> {
-    return new Promise((resolve, reject) => {
+    return new Promise(async (resolve, reject) => {
       if (!this._parent) {
         reject(new Error('DB has no parent to merge into'))
       }
+      const ws = levelWS(this._leveldb)
+
+      // First clear prefixes marked as deleted.
+      // This is done first because new values might
+      // have been inserted into that prefix after `.delByPrefix`
+      // which should correctly be merged into lower layer.
+      for (const deletedPrefix of Array.from(this._deletedPrefixes)) {
+        await this._parent!.delByPrefix(Buffer.from(deletedPrefix, 'hex'))
+      }
+
+      // Handle individual objects marked as deleted
+      for (const hexKey of Array.from(this._deleted)) {
+        ws.write({ type: 'del', key: Buffer.from(hexKey, 'hex') })
+      }
+
+      // We then merge every other change, namely insertions and modifications
       const gt = this._prefix
       const lt = new BN(gt).addn(1).toBuffer()
-      const ws = levelWS(this._leveldb)
       this._leveldb.createReadStream({ gt, lt })
         .on('data', (data: any) => {
           const shortKey = data.key.slice(this._prefix.length)
@@ -184,10 +224,6 @@ export class DB {
           reject(err)
         })
         .on('end', () => {
-          // Handle objects marked as deleted
-          for (const hexKey of Array.from(this._deleted)) {
-            ws.write({ type: 'del', key: Buffer.from(hexKey, 'hex') })
-          }
           ws.end()
           resolve()
         })
