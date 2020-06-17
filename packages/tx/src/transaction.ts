@@ -381,7 +381,7 @@ export default class Transaction {
 
     Object.defineProperty(this, 'v', {
       ...vDescriptor,
-      set: v => {
+      set: (v) => {
         if (v !== undefined) {
           this._validateV(toBuffer(v))
         }

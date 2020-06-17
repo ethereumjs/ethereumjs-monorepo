@@ -257,7 +257,7 @@ export default class Blockchain implements BlockchainInterface {
 
     async.waterfall(
       [(cb: any) => self._numberToHash(new BN(0), cb), callbackify(getHeads.bind(this))],
-      err => {
+      (err) => {
         if (err) {
           // if genesis block doesn't exist, create one
           return self._setCanonicalGenesisBlock((err?: any) => {
@@ -279,7 +279,7 @@ export default class Blockchain implements BlockchainInterface {
       // load verified iterator heads
       try {
         const heads = await self.dbManager.getHeads()
-        Object.keys(heads).forEach(key => {
+        Object.keys(heads).forEach((key) => {
           heads[key] = Buffer.from(heads[key])
         })
         self._heads = heads
@@ -468,7 +468,7 @@ export default class Blockchain implements BlockchainInterface {
 
     async.series(
       [
-        async.asyncify(async function() {
+        async.asyncify(async function () {
           if (!self._validateBlocks) {
             return
           }
@@ -484,7 +484,7 @@ export default class Blockchain implements BlockchainInterface {
         getCurrentTd,
         getBlockTd,
         rebuildInfo,
-        cb => {
+        (cb) => {
           return self._batchDbOps(dbOps.concat(self._saveHeadOps()), cb)
         },
       ],
@@ -509,12 +509,12 @@ export default class Blockchain implements BlockchainInterface {
       }
       async.parallel(
         [
-          cb =>
+          (cb) =>
             self._getTd(self._headHeader, (err?: any, td?: any) => {
               currentTd.header = td
               cb(err)
             }),
-          cb =>
+          (cb) =>
             self._getTd(self._headBlock, (err?: any, td?: any) => {
               currentTd.block = td
               cb(err)
@@ -592,8 +592,8 @@ export default class Blockchain implements BlockchainInterface {
         // delete higher number assignments and overwrite stale canonical chain
         async.parallel(
           [
-            cb => self._deleteStaleAssignments(number.addn(1), hash, dbOps, cb),
-            cb => self._rebuildCanonical(header, dbOps, cb),
+            (cb) => self._deleteStaleAssignments(number.addn(1), hash, dbOps, cb),
+            (cb) => self._rebuildCanonical(header, dbOps, cb),
           ],
           next,
         )
@@ -652,7 +652,7 @@ export default class Blockchain implements BlockchainInterface {
     let i = -1
 
     function nextBlock(blockId: any) {
-      self.getBlock(blockId, function(err?: any, block?: any) {
+      self.getBlock(blockId, function (err?: any, block?: any) {
         i++
 
         if (err) {
@@ -783,7 +783,7 @@ export default class Blockchain implements BlockchainInterface {
       this.dbManager._cache.numberToHash.del(key)
 
       // reset stale iterator heads to current canonical head
-      Object.keys(this._heads).forEach(name => {
+      Object.keys(this._heads).forEach((name) => {
         if (this._heads[name].equals(hash)) {
           this._heads[name] = headHash
         }
@@ -845,7 +845,7 @@ export default class Blockchain implements BlockchainInterface {
         saveLookups(hash, number)
 
         // flag stale head for reset
-        Object.keys(self._heads).forEach(function(name) {
+        Object.keys(self._heads).forEach(function (name) {
           if (staleHash && self._heads[name].equals(staleHash)) {
             self._staleHeads = self._staleHeads || []
             self._staleHeads.push(name)
@@ -920,7 +920,7 @@ export default class Blockchain implements BlockchainInterface {
         checkCanonical,
         buildDBops,
         deleteStaleAssignments,
-        cb => self._batchDbOps(dbOps, cb),
+        (cb) => self._batchDbOps(dbOps, cb),
       ],
       cb,
     )
@@ -1049,14 +1049,14 @@ export default class Blockchain implements BlockchainInterface {
       async.whilst(
         () => blockNumber,
         run,
-        err => (err ? cb(err) : self._saveHeads(cb)),
+        (err) => (err ? cb(err) : self._saveHeads(cb)),
       )
     })
 
     function run(cb2: any) {
       let block: any
 
-      async.series([getBlock, runFunc], function(err?: any) {
+      async.series([getBlock, runFunc], function (err?: any) {
         if (!err) {
           blockNumber.iaddn(1)
         } else {
@@ -1070,7 +1070,7 @@ export default class Blockchain implements BlockchainInterface {
       })
 
       function getBlock(cb3: any) {
-        self.getBlock(blockNumber, function(err?: any, b?: any) {
+        self.getBlock(blockNumber, function (err?: any, b?: any) {
           block = b
           if (block) {
             self._heads[name] = block.hash()

@@ -40,7 +40,7 @@ new Blockchain({ db: db }).iterator(
     console.log(`BLOCK ${blockNumber}: ${blockHash}`)
     cb()
   },
-  err => console.log(err || 'Done.'),
+  (err) => console.log(err || 'Done.'),
 )
 ```
 

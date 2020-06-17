@@ -121,8 +121,8 @@ export class Block {
   serialize(rlpEncode = true) {
     const raw = [
       this.header.raw,
-      this.transactions.map(tx => tx.raw),
-      this.uncleHeaders.map(uh => uh.raw),
+      this.transactions.map((tx) => tx.raw),
+      this.uncleHeaders.map((uh) => uh.raw),
     ]
 
     return rlpEncode ? rlp.encode(raw) : raw
@@ -162,7 +162,7 @@ export class Block {
   validateTransactions(stringError = false) {
     const errors: string[] = []
 
-    this.transactions.forEach(function(tx, i) {
+    this.transactions.forEach(function (tx, i) {
       const error = tx.validate(true)
       if (error) {
         errors.push(`${error} at tx ${i}`)
@@ -206,7 +206,7 @@ export class Block {
    * Validates the uncle's hash
    */
   validateUnclesHash(): boolean {
-    const raw = rlp.encode(this.uncleHeaders.map(uh => uh.raw))
+    const raw = rlp.encode(this.uncleHeaders.map((uh) => uh.raw))
 
     return keccak256(raw).toString('hex') === this.header.uncleHash.toString('hex')
   }
@@ -225,13 +225,15 @@ export class Block {
       throw new Error('too many uncle headers')
     }
 
-    const uncleHashes = this.uncleHeaders.map(header => header.hash().toString('hex'))
+    const uncleHashes = this.uncleHeaders.map((header) => header.hash().toString('hex'))
 
     if (!(new Set(uncleHashes).size === uncleHashes.length)) {
       throw new Error('duplicate uncles')
     }
 
-    await Promise.all(this.uncleHeaders.map(async uh => this._validateUncleHeader(uh, blockchain)))
+    await Promise.all(
+      this.uncleHeaders.map(async (uh) => this._validateUncleHeader(uh, blockchain)),
+    )
   }
 
   /**
@@ -243,8 +245,8 @@ export class Block {
     if (labeled) {
       return {
         header: this.header.toJSON(true),
-        transactions: this.transactions.map(tx => tx.toJSON(true)),
-        uncleHeaders: this.uncleHeaders.forEach(uh => uh.toJSON(true)),
+        transactions: this.transactions.map((tx) => tx.toJSON(true)),
+        uncleHeaders: this.uncleHeaders.forEach((uh) => uh.toJSON(true)),
       }
     } else {
       return baToJSON(this.raw)

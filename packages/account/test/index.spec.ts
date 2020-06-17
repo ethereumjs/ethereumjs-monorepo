@@ -3,9 +3,9 @@ import * as rlp from 'rlp'
 import Account from '../src/index'
 const SecureTrie = require('merkle-patricia-tree/secure')
 
-tape('empty constructor', function(tester) {
+tape('empty constructor', function (tester) {
   const it = tester.test
-  it('should work', function(t) {
+  it('should work', function (t) {
     const account = new Account()
     t.equal(account.nonce.toString('hex'), '')
     t.equal(account.balance.toString('hex'), '')
@@ -21,9 +21,9 @@ tape('empty constructor', function(tester) {
   })
 })
 
-tape('constructor with Array', function(tester) {
+tape('constructor with Array', function (tester) {
   const it = tester.test
-  it('should work', function(t) {
+  it('should work', function (t) {
     const raw = [
       '0x02', // nonce
       '0x0384', // balance
@@ -45,9 +45,9 @@ tape('constructor with Array', function(tester) {
   })
 })
 
-tape('constructor with Object', function(tester) {
+tape('constructor with Object', function (tester) {
   const it = tester.test
-  it('should work', function(t) {
+  it('should work', function (t) {
     const raw = {
       nonce: '0x02',
       balance: '0x0384',
@@ -69,9 +69,9 @@ tape('constructor with Object', function(tester) {
   })
 })
 
-tape('constructor with RLP', function(tester) {
+tape('constructor with RLP', function (tester) {
   const it = tester.test
-  it('should work', function(t) {
+  it('should work', function (t) {
     const account = new Account(
       'f84602820384a056e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421a0c5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470',
     )
@@ -89,9 +89,9 @@ tape('constructor with RLP', function(tester) {
   })
 })
 
-tape('serialize', function(tester) {
+tape('serialize', function (tester) {
   const it = tester.test
-  it('should work', function(t) {
+  it('should work', function (t) {
     const raw = {
       nonce: '0x01',
       balance: '0x0042',
@@ -110,16 +110,16 @@ tape('serialize', function(tester) {
   })
 })
 
-tape('isContract', function(tester) {
+tape('isContract', function (tester) {
   const it = tester.test
-  it('should return false', function(t) {
+  it('should return false', function (t) {
     const account = new Account(
       'f84602820384a056e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421a0c5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470',
     )
     t.equal(account.isContract(), false)
     t.end()
   })
-  it('should return true', function(t) {
+  it('should return true', function (t) {
     const raw = {
       nonce: '0x01',
       balance: '0x0042',
@@ -132,9 +132,9 @@ tape('isContract', function(tester) {
   })
 })
 
-tape('setCode && getCode', tester => {
+tape('setCode && getCode', (tester) => {
   const it = tester.test
-  it('should set and get code', t => {
+  it('should set and get code', (t) => {
     const code = Buffer.from(
       '73095e7baea6a6c7c4c2dfeb977efac326af552d873173095e7baea6a6c7c4c2dfeb977efac326af552d873157',
       'hex',
@@ -149,26 +149,26 @@ tape('setCode && getCode', tester => {
     const account = new Account(raw)
     const trie = new SecureTrie()
 
-    account.setCode(trie, code, function(err, codeHash) {
-      account.getCode(trie, function(err, codeRetrieved) {
+    account.setCode(trie, code, function (err, codeHash) {
+      account.getCode(trie, function (err, codeRetrieved) {
         t.equals(Buffer.compare(code, codeRetrieved!), 0)
         t.end()
       })
     })
   })
-  it('should not get code if is not contract', t => {
+  it('should not get code if is not contract', (t) => {
     const raw = {
       nonce: '0x0',
       balance: '0x03e7',
     }
     const account = new Account(raw)
     const trie = new SecureTrie()
-    account.getCode(trie, function(err, code) {
+    account.getCode(trie, function (err, code) {
       t.equals(Buffer.compare(code!, Buffer.alloc(0)), 0)
       t.end()
     })
   })
-  it('should set empty code', t => {
+  it('should set empty code', (t) => {
     const raw = {
       nonce: '0x0',
       balance: '0x03e7',
@@ -176,16 +176,16 @@ tape('setCode && getCode', tester => {
     const account = new Account(raw)
     const trie = new SecureTrie()
     const code = Buffer.alloc(0)
-    account.setCode(trie, code, function(err, codeHash) {
+    account.setCode(trie, code, function (err, codeHash) {
       t.equals(Buffer.compare(codeHash, Buffer.alloc(0)), 0)
       t.end()
     })
   })
 })
 
-tape('setStorage && getStorage', tester => {
+tape('setStorage && getStorage', (tester) => {
   const it = tester.test
-  it('should set and get storage', t => {
+  it('should set and get storage', (t) => {
     const raw = {
       nonce: '0x0',
       balance: '0x03e7',
@@ -197,7 +197,7 @@ tape('setStorage && getStorage', tester => {
     const key = Buffer.from('0000000000000000000000000000000000000000', 'hex')
     const value = Buffer.from('01', 'hex')
 
-    account.setStorage(trie, key, value, err => {
+    account.setStorage(trie, key, value, (err) => {
       account.getStorage(trie, key, (err, valueRetrieved) => {
         t.equals(Buffer.compare(value, valueRetrieved!), 0)
         t.end()
@@ -206,14 +206,14 @@ tape('setStorage && getStorage', tester => {
   })
 })
 
-tape('isEmpty', tester => {
+tape('isEmpty', (tester) => {
   const it = tester.test
-  it('should return true for an empty account', t => {
+  it('should return true for an empty account', (t) => {
     const account = new Account()
     t.ok(account.isEmpty())
     t.end()
   })
-  it('should return false for a non-empty account', t => {
+  it('should return false for a non-empty account', (t) => {
     const raw = {
       nonce: '0x01',
       balance: '0x0042',
