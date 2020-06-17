@@ -56,19 +56,18 @@ async function runTestCase(options, testData, t) {
     FlatStateManager = require('../lib/state/flat/stateManager').FlatStateManager
   }
 
-  const trie = new Trie()
-  const setupPreconditionsAsync = util.promisify(testUtil.setupPreConditions)
-  await setupPreconditionsAsync(trie, testData)
   if (options.flat) {
     const snapshot = new Snapshot()
     await testUtil.setupFlatPreConditions(snapshot, testData)
-    t.ok(trie._root.equals((await snapshot.merkleize())), 'flat pre condition valid')
     const stateManager = new FlatStateManager({ snapshot })
     vm = new VM({
       stateManager,
       hardfork: options.forkConfigVM,
     })
   } else {
+    const trie = new Trie()
+    const setupPreconditionsAsync = util.promisify(testUtil.setupPreConditions)
+    await setupPreconditionsAsync(trie, testData)
     vm = new VM({
       state: trie,
       hardfork: options.forkConfigVM,
