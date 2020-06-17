@@ -9,7 +9,7 @@ tape('Precompiles: ECMUL', (t) => {
   t.test('ECMUL', (st) => {
     const common = new Common('mainnet', 'petersburg')
     let vm = new VM({ common: common })
-    let ECMUL = getPrecompile('0000000000000000000000000000000000000007')
+    let ECMUL = getPrecompile('0000000000000000000000000000000000000007', common)
 
     let result = ECMUL({
       data: Buffer.alloc(0),
