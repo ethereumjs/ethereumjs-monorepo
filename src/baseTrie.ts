@@ -421,7 +421,7 @@ export class Trie {
    * @private
    * @param {Buffer} root
    * @param {Function} onNode - callback to call when a node is found
-   * @returns Returns when finished walking trie.
+   * @returns Resolves when finished walking trie.
    */
   async _walkTrie(root: Buffer, onNode: FoundNode): Promise<void> {
     return new Promise(async (resolve) => {
