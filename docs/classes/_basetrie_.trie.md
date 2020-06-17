@@ -308,7 +308,7 @@ Name | Type | Description |
 
 **Returns:** *Promise‹void›*
 
-Returns when finished walking trie.
+Resolves when finished walking trie.
 
 ___
 

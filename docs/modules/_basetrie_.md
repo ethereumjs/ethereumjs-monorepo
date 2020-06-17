@@ -18,4 +18,4 @@
 
 Ƭ **Proof**: *Buffer[]*
 
-*Defined in [baseTrie.ts:29](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/baseTrie.ts#L29)*
+*Defined in [baseTrie.ts:21](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/baseTrie.ts#L21)*
