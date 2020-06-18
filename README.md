@@ -38,16 +38,6 @@ Detailed version can be seen on [Codecov.io][coverage-link]
 https://mermaid-js.github.io/mermaid-live-editor/#/edit/eyJjb2RlIjoiZ3JhcGggVERcbiAgdm17Vk19XG4gIGNvbW1vbiAtLT4gYmxvY2tjaGFpblxuICBjb21tb24gLS0-IGJsb2NrXG4gIGNvbW1vbiAtLT4gdm1cbiAgY29tbW9uIC0tPiB0eFxuICBldGhhc2ggLS0-IGJsb2NrY2hhaW5cbiAgYmxvY2sgLS0-IGJsb2NrY2hhaW5cbiAgYmxvY2tjaGFpbiAtLT4gdm1cbiAgYmxvY2sgLS0-IHZtXG4gIHR4IC0tPiB2bVxuICB0eCAtLT4gYmxvY2tcbiAgYWNjb3VudCAtLT4gdm1cbiAgIiwibWVybWFpZCI6eyJ0aGVtZSI6ImRlZmF1bHQifSwidXBkYXRlRWRpdG9yIjpmYWxzZX0
 -->
 
-## Package dependency relationship
-
-<p align="center">
- <img width="409" alt="diagram" src="https://user-images.githubusercontent.com/47108/84323915-b0787980-ab45-11ea-96fd-55a03ba1f3e8.png">
-</p>
-
-<!-- CREATED WITH MERMAID
-https://mermaid-js.github.io/mermaid-live-editor/#/edit/eyJjb2RlIjoiZ3JhcGggVERcbiAgdm17Vk19XG4gIGNvbW1vbiAtLT4gYmxvY2tjaGFpblxuICBjb21tb24gLS0-IGJsb2NrXG4gIGNvbW1vbiAtLT4gdm1cbiAgY29tbW9uIC0tPiB0eFxuICBldGhhc2ggLS0-IGJsb2NrY2hhaW5cbiAgYmxvY2sgLS0-IGJsb2NrY2hhaW5cbiAgYmxvY2tjaGFpbiAtLT4gdm1cbiAgYmxvY2sgLS0-IHZtXG4gIHR4IC0tPiB2bVxuICB0eCAtLT4gYmxvY2tcbiAgYWNjb3VudCAtLT4gdm1cbiAgIiwibWVybWFpZCI6eyJ0aGVtZSI6ImRlZmF1bHQifSwidXBkYXRlRWRpdG9yIjpmYWxzZX0
--->
-
 ## Development quick start
 
 This monorepo uses [Lerna](https://lerna.js.org/). It links the local packages together, making development a lot easier.
@@ -64,9 +54,7 @@ npm run bootstrap
 npm build
 ```
 
-Above is the quickest way to set you up. `npm install` will install the root dependencies, and its `postinstall` script will install dependencies for all sub-packages. The `npm build` makes sure to generate the `dist` files for all packages.
-
-Going down the road, there are two sets of commands: *global* and *package-specific*. You can find them at `./package.json` and `./packages/*/package.json`, respectively. Here's a breakdown:
+Above is the quickest way to set you up. Going down the road, there are two sets of commands: *project* and *package-specific* commands. You can find them at `./package.json` and `./packages/*/package.json`, respectively. Here's a breakdown:
 
 ### Project scripts — run from repository root
 
