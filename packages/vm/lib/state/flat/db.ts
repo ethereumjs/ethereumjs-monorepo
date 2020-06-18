@@ -206,6 +206,7 @@ export class DB {
 
       // Handle individual objects marked as deleted
       for (const hexKey of Array.from(this._deleted)) {
+        this._parent!._deleted.add(hexKey)
         const parentKey = Buffer.concat([this._parent!._prefix, Buffer.from(hexKey, 'hex')])
         ws.write({ type: 'del', key: parentKey })
       }
