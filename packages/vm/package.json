@@ -55,7 +55,8 @@
     "merkle-patricia-tree": "^4.0.0",
     "rustbn.js": "~0.2.0",
     "safe-buffer": "^5.1.1",
-    "util.promisify": "^1.0.1"
+    "util.promisify": "^1.0.1",
+    "mcl-wasm": "^0.3.7"
   },
   "devDependencies": {
     "@ethereumjs/config-nyc": "^1.1.1",

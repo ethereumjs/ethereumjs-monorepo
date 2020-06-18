@@ -16,6 +16,10 @@ export enum ERROR {
   INVALID_BEGINSUB = 'invalid BEGINSUB',
   INVALID_RETURNSUB = 'invalid RETURNSUB',
   INVALID_JUMPSUB = 'invalid JUMPSUB',
+
+  // BLS errors
+  BLS_12_381_INVALID_INPUT_LENGTH = 'invalid input length',
+  BLS_12_381_POINT_NOT_ON_CURVE = 'point not on curve',
 }
 
 export class VmError {
