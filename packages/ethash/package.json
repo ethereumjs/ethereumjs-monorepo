@@ -15,7 +15,7 @@
     "lint": "ethereumjs-config-lint",
     "lint:fix": "ethereumjs-config-lint-fix",
     "coverage": "ethereumjs-config-coverage",
-    "test": "ts-node node_modules/tape/bin/tape test/*.spec.ts"
+    "test": "tape -r ts-node/register test/*.spec.ts"
   },
   "repository": {
     "type": "git",
