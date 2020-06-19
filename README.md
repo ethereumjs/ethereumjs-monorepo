@@ -85,7 +85,7 @@ dpt.bootstrap(bootnode).catch((err) => console.error('Something went wrong!'))
 
 ### API
 
-See the following [diagram](./devp2p_diagram.jpg) for a high level overview on the library.
+See the following [diagram](./diagram/devp2p.svg) for a high level overview on the library.
 
 #### `DPT` (extends `EventEmitter`)
 
