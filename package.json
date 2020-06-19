@@ -11,9 +11,13 @@
     }
   },
   "scripts": {
-    "bootstrap": "lerna bootstrap --ignore-scripts",
     "postinstall": "npm run bootstrap",
-    "build:all": "lerna run build",
-    "lint": "lerna run lint"
+    "bootstrap": "lerna bootstrap --ignore-scripts --no-ci",
+    "build": "lerna run build --stream",
+    "build:tree": "lerna run build --stream --include-dependencies",
+    "lint": "lerna run lint --stream --parallel",
+    "lint:fix": "lerna run lint:fix --stream --parallel",
+    "test": "lerna exec npm run test --parallel",
+    "coverage": "lerna run coverage --stream"
   }
 }

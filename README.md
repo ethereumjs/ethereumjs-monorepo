@@ -12,6 +12,8 @@
 
 This was originally the EthereumJS VM repository. On Q1 2020 we brought some of its building blocks together to simplify development. Below you can find the packages included in this repository.
 
+🚧 Please note that the `master` branch is updated on a daily basis, and to inspect code related to a specific package version, refer to the [tags](https://github.com/ethereumjs/ethereumjs-vm/tags).
+
 | package                                     | npm                                                         | issues                                                                  | tests                                                                  | coverage                                                                |
 | ------------------------------------------- | ----------------------------------------------------------- | ----------------------------------------------------------------------- | ---------------------------------------------------------------------- | ----------------------------------------------------------------------- |
 | [@ethereumjs/account][account-package]       | [![NPM Package][account-npm-badge]][account-npm-link]       | [![Account Issues][account-issues-badge]][account-issues-link]          | [![Actions Status][account-actions-badge]][account-actions-link]       | [![Code Coverage][account-coverage-badge]][account-coverage-link]       |
@@ -38,9 +40,81 @@ Detailed version can be seen on [Codecov.io][coverage-link]
 https://mermaid-js.github.io/mermaid-live-editor/#/edit/eyJjb2RlIjoiZ3JhcGggVERcbiAgdm17Vk19XG4gIGNvbW1vbiAtLT4gYmxvY2tjaGFpblxuICBjb21tb24gLS0-IGJsb2NrXG4gIGNvbW1vbiAtLT4gdm1cbiAgY29tbW9uIC0tPiB0eFxuICBldGhhc2ggLS0-IGJsb2NrY2hhaW5cbiAgYmxvY2sgLS0-IGJsb2NrY2hhaW5cbiAgYmxvY2tjaGFpbiAtLT4gdm1cbiAgYmxvY2sgLS0-IHZtXG4gIHR4IC0tPiB2bVxuICB0eCAtLT4gYmxvY2tcbiAgYWNjb3VudCAtLT4gdm1cbiAgIiwibWVybWFpZCI6eyJ0aGVtZSI6ImRlZmF1bHQifSwidXBkYXRlRWRpdG9yIjpmYWxzZX0
 -->
 
-## Developing in a monorepo
+## Development quick start
 
-`lerna bootstrap` links the packages contained in this repository, but only if they comply with the specified version range.
+This monorepo uses [Lerna](https://lerna.js.org/). It links the local packages together, making development a lot easier.
+
+TLDR: Setup
+```sh
+npm install
+npm build
+```
+
+TLDR: To update dependencies and (re-)link packages
+```sh
+npm run bootstrap
+npm build
+```
+
+Above is the quickest way to set you up. Going down the road, there are two sets of commands: *project* and *package-specific* commands. You can find them at `./package.json` and `./packages/*/package.json`, respectively. Here's a breakdown:
+
+### Project scripts — run from repository root
+
+#### `npm install`
+Adds dependencies listed in the root package. Also, it executes the `bootstrap` script described below, installing all sub-packages dependencies.
+
+#### `npm run bootstrap`
+
+Installs dependencies for all sub-packages, and links them to create an integrated development environment.
+
+#### `npm run build`
+
+Produces `dist` files for all sub-packages. This command can be scoped
+
+#### `npm run build:tree -- --scope @ethereumjs/blockchain`
+
+Builds all local packages that the provided package (eg: @ethereumjs/blockchain) depends on, and itself. This unusual syntax just means: pass whatever arguments are after `--` to the underlying script. 
+
+If no scope is provided, `npm run build:tree`, will build all sub-packages.
+
+### Package scripts — run from `./packages/<name>`
+
+ **⚠️ Important: if you run `npm install` from the package directory, it will remove all links to the local packages, pulling all dependencies from npm.**
+ 
+There's a set of rather standardized commands you will find in each package of this repository.
+
+#### `npm run build`
+
+Uses TypeScript compiler to build files from `src` or `lib`. Files can be found at `packages/<name>/dist`.
+
+#### `npm run coverage`
+
+Runs whatever is on `npm run test` script, capturing coverage information. By the end, it displays a coverage table. Additional reports can be found at `packages/<name>/coverage`.
+
+#### `npm run docs:build`
+
+Generates package documentation and outputs it to `./packages/<name>/docs`.
+
+#### `npm run lint`
+
+Checks code style, according to the rules defined in [ethereumjs-config](https://github.com/ethereumjs/ethereumjs-config).
+
+#### `npm run lint:fix`
+
+Fixes code style, according to the rules 
+
+#### `npm run test`
+
+Runs all package tests. Note that the VM have several test scopes. Refer to their package.json for more info.
+
+### Going further
+
+As this project is powered by Lerna, you can install it globally to enjoy lots more options. Refer to [Lerna docs](https://github.com/lerna/lerna/tree/master/commands/run) for additional commands.
+
+- `npm install -g lerna`
+- `lerna run`
+- `lerna exec`
+- `lerna clean`
 
 # EthereumJS
 
