@@ -25,7 +25,7 @@ tape('SecureTrie', function (t) {
       const trie = new SecureTrie()
       await trie.put(Buffer.from('key1aa'), Buffer.from('01234'))
 
-      const proof = await SecureTrie.prove(trie, Buffer.from('key1aa'))
+      const proof = await SecureTrie.createProof(trie, Buffer.from('key1aa'))
       const val = await SecureTrie.verifyProof(trie.root, Buffer.from('key1aa'), proof)
       st.equal(val!.toString('utf8'), '01234')
       st.end()
@@ -123,4 +123,30 @@ tape('secure tests should not crash', async function (t) {
   await trie.commit()
   await trie.put(gk, g)
   t.end()
+})
+
+tape('SecureTrie.copy', function (it) {
+  it.test('created copy includes values added after checkpoint', async function (t) {
+    const trie = new SecureTrie()
+
+    await trie.put(Buffer.from('key1'), Buffer.from('value1'))
+    trie.checkpoint()
+    await trie.put(Buffer.from('key2'), Buffer.from('value2'))
+    const trieCopy = trie.copy()
+    const value = await trieCopy.get(Buffer.from('key2'))
+    t.equal(value!.toString(), 'value2')
+    t.end()
+  })
+
+  it.test('created copy includes values added before checkpoint', async function (t) {
+    const trie = new SecureTrie()
+
+    await trie.put(Buffer.from('key1'), Buffer.from('value1'))
+    trie.checkpoint()
+    await trie.put(Buffer.from('key2'), Buffer.from('value2'))
+    const trieCopy = trie.copy()
+    const value = await trieCopy.get(Buffer.from('key1'))
+    t.equal(value!.toString(), 'value1')
+    t.end()
+  })
 })

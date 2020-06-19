@@ -5,7 +5,7 @@
   "plugin": "typedoc-plugin-markdown",
   "readme": "none",
   "gitRevision": "master",
-  "exclude": "src/**/!(secure|checkpointTrie|baseTrie).ts",
+  "exclude": ["src/**/!(secure|checkpointTrie|baseTrie).ts", "test/**/*.ts"],
   "excludeNotExported": true,
   "excludeExternals": true,
   "excludePrivate": true,

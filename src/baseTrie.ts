@@ -18,6 +18,8 @@ import {
 } from './trieNode'
 const assert = require('assert')
 
+export type Proof = Buffer[]
+
 interface Path {
   node: TrieNode | null
   remaining: Nibbles
@@ -28,7 +30,7 @@ type FoundNode = (nodeRef: Buffer, node: TrieNode, key: Nibbles, walkController:
 
 /**
  * Use `import { BaseTrie as Trie } from 'merkle-patricia-tree'` for the base interface.
- * In Ethereum applications stick with the Secure Trie Overlay `import { SecureTrie } from 'merkle-patricia-tree'`.
+ * In Ethereum applications stick with the Secure Trie Overlay `import { SecureTrie as Trie } from 'merkle-patricia-tree'`.
  * The API for the base and the secure interface are about the same.
  * @param {Object} [db] - A [levelup](https://github.com/Level/levelup) instance. By default creates an in-memory [memdown](https://github.com/Level/memdown) instance.
  * If the db is `null` or left undefined, then the trie will be stored in memory via [memdown](https://github.com/Level/memdown)
@@ -52,8 +54,13 @@ export class Trie {
     }
   }
 
-  static async fromProof(proofNodes: Buffer[], proofTrie?: Trie): Promise<Trie> {
-    let opStack = proofNodes.map((nodeValue) => {
+  /**
+   * Saves the nodes from a proof into the trie. If no trie is provided a new one wil be instantiated.
+   * @param {Proof} proof
+   * @param {Trie} trie
+   */
+  static async fromProof(proof: Proof, trie?: Trie): Promise<Trie> {
+    let opStack = proof.map((nodeValue) => {
       return {
         type: 'put',
         key: keccak(nodeValue),
@@ -61,18 +68,33 @@ export class Trie {
       } as PutBatch
     })
 
-    if (!proofTrie) {
-      proofTrie = new Trie()
+    if (!trie) {
+      trie = new Trie()
       if (opStack[0]) {
-        proofTrie.root = opStack[0].key
+        trie.root = opStack[0].key
       }
     }
 
-    await proofTrie.db.batch(opStack)
-    return proofTrie
+    await trie.db.batch(opStack)
+    return trie
   }
 
-  static async prove(trie: Trie, key: Buffer): Promise<Buffer[]> {
+  /**
+   * prove has been renamed to [[Trie.createProof]].
+   * @deprecated
+   * @param {Trie} trie
+   * @param {Buffer} key
+   */
+  static async prove(trie: Trie, key: Buffer): Promise<Proof> {
+    return this.createProof(trie, key)
+  }
+
+  /**
+   * Creates a proof from a trie and key that can be verified using [[Trie.verifyProof]].
+   * @param {Trie} trie
+   * @param {Buffer} key
+   */
+  static async createProof(trie: Trie, key: Buffer): Promise<Proof> {
     const { stack } = await trie.findPath(key)
     const p = stack.map((stackElem) => {
       return stackElem.serialize()
@@ -80,14 +102,18 @@ export class Trie {
     return p
   }
 
-  static async verifyProof(
-    rootHash: Buffer,
-    key: Buffer,
-    proofNodes: Buffer[],
-  ): Promise<Buffer | null> {
+  /**
+   * Verifies a proof.
+   * @param {Buffer} rootHash
+   * @param {Buffer} key
+   * @param {Proof} proof
+   * @throws If proof is found to be invalid.
+   * @returns The value from the key.
+   */
+  static async verifyProof(rootHash: Buffer, key: Buffer, proof: Proof): Promise<Buffer | null> {
     let proofTrie = new Trie(null, rootHash)
     try {
-      proofTrie = await Trie.fromProof(proofNodes, proofTrie)
+      proofTrie = await Trie.fromProof(proof, proofTrie)
     } catch (e) {
       throw new Error('Invalid proof nodes given')
     }
@@ -112,10 +138,8 @@ export class Trie {
 
   /**
    * Gets a value given a `key`
-   * @method get
-   * @memberof Trie
    * @param {Buffer} key - the key to search for
-   * @returns {Promise} - Returns a promise that resolves to `Buffer` if a value was found or `null` if no value was found.
+   * @returns A Promise that resolves to `Buffer` if a value was found or `null` if no value was found.
    */
   async get(key: Buffer): Promise<Buffer | null> {
     const { node, remaining } = await this.findPath(key)
@@ -127,12 +151,9 @@ export class Trie {
   }
 
   /**
-   * Stores a given `value` at the given `key`
-   * @method put
-   * @memberof Trie
+   * Stores a given `value` at the given `key`.
    * @param {Buffer} key
    * @param {Buffer} value
-   * @returns {Promise}
    */
   async put(key: Buffer, value: Buffer): Promise<void> {
     // If value is empty, delete
@@ -154,11 +175,8 @@ export class Trie {
   }
 
   /**
-   * deletes a value given a `key`
-   * @method del
-   * @memberof Trie
+   * Deletes a value given a `key`.
    * @param {Buffer} key
-   * @returns {Promise}
    */
   async del(key: Buffer): Promise<void> {
     await this.lock.wait()
@@ -169,7 +187,10 @@ export class Trie {
     this.lock.signal()
   }
 
-  // retrieves a node from dbs by hash
+  /**
+   * Retrieves a node from db by hash.
+   * @private
+   */
   async _lookupNode(node: Buffer | Buffer[]): Promise<TrieNode | null> {
     if (isRawNode(node)) {
       return decodeRawNode(node as Buffer[])
@@ -187,7 +208,10 @@ export class Trie {
     return foundNode
   }
 
-  // writes a single node to dbs
+  /**
+   * Writes a single node to db.
+   * @private
+   */
   async _putNode(node: TrieNode): Promise<void> {
     const hash = node.hash()
     const serialized = node.serialize()
@@ -197,10 +221,7 @@ export class Trie {
   /**
    * Tries to find a path to the node for the given key.
    * It returns a `stack` of nodes to the closet node.
-   * @method findPath
-   * @memberof Trie
    * @param {Buffer} key - the search key
-   * @returns {Promise}
    */
   async findPath(key: Buffer): Promise<Path> {
     return new Promise(async (resolve) => {
@@ -252,8 +273,9 @@ export class Trie {
     })
   }
 
-  /*
-   * Finds all nodes that store k,v values
+  /**
+   * Finds all nodes that store k,v values.
+   * @private
    */
   async _findValueNodes(onFound: FoundNode): Promise<void> {
     await this._walkTrie(this.root, async (nodeRef, node, key, walkController) => {
@@ -288,14 +310,12 @@ export class Trie {
   }
 
   /**
-   * Updates a node
-   * @method _updateNode
+   * Updates a node.
    * @private
    * @param {Buffer} key
    * @param {Buffer} value
    * @param {Nibbles} keyRemainder
    * @param {TrieNode[]} stack
-   * @returns {Promise}
    */
   async _updateNode(
     k: Buffer,
@@ -398,11 +418,10 @@ export class Trie {
 
   /**
    * Walks a trie until finished.
-   * @method _walkTrie
    * @private
    * @param {Buffer} root
    * @param {Function} onNode - callback to call when a node is found
-   * @returns {Promise} - returns when finished walking trie
+   * @returns Resolves when finished walking trie.
    */
   async _walkTrie(root: Buffer, onNode: FoundNode): Promise<void> {
     return new Promise(async (resolve) => {
@@ -497,13 +516,11 @@ export class Trie {
   }
 
   /**
-   * saves a stack
-   * @method _saveStack
+   * Saves a stack.
    * @private
    * @param {Nibbles} key - the key. Should follow the stack
    * @param {Array} stack - a stack of nodes to the value given by the key
    * @param {Array} opStack - a stack of levelup operations to commit at the end of this funciton
-   * @returns {Promise}
    */
   async _saveStack(key: Nibbles, stack: TrieNode[], opStack: BatchDBOp[]): Promise<void> {
     let lastRoot
@@ -534,6 +551,10 @@ export class Trie {
     await this.db.batch(opStack)
   }
 
+  /**
+   * Deletes a node.
+   * @private
+   */
   async _deleteNode(k: Buffer, stack: TrieNode[]): Promise<void> {
     const processBranchNode = (
       key: Nibbles,
@@ -655,7 +676,10 @@ export class Trie {
     }
   }
 
-  // Creates the initial node from an empty tree
+  /**
+   * Creates the initial node from an empty tree.
+   * @private
+   */
   async _createInitialNode(key: Buffer, value: Buffer): Promise<void> {
     const newNode = new LeafNode(bufferToNibbles(key), value)
     this.root = newNode.hash()
@@ -663,14 +687,13 @@ export class Trie {
   }
 
   /**
-   * Formats node to be saved by levelup.batch.
-   * @method _formatNode
+   * Formats node to be saved by `levelup.batch`.
    * @private
-   * @param {TrieNode} node - the node to format
-   * @param {Boolean} topLevel - if the node is at the top level
-   * @param {BatchDBOp[]} opStack - the opStack to push the node's data
-   * @param {Boolean} remove - whether to remove the node (only used for CheckpointTrie)
-   * @returns {Buffer | (EmbeddedNode | null)[]} - the node's hash used as the key or the rawNode
+   * @param {TrieNode} node - the node to format.
+   * @param {Boolean} topLevel - if the node is at the top level.
+   * @param {BatchDBOp[]} opStack - the opStack to push the node's data.
+   * @param {Boolean} remove - whether to remove the node (only used for CheckpointTrie).
+   * @returns The node's hash used as the key or the rawNode.
    */
   _formatNode(
     node: TrieNode,
@@ -695,16 +718,15 @@ export class Trie {
 
   /**
    * The `data` event is given an `Object` that has two properties; the `key` and the `value`. Both should be Buffers.
-   * @method createReadStream
-   * @memberof Trie
-   * @return {stream.Readable} Returns a [stream](https://nodejs.org/dist/latest-v5.x/docs/api/stream.html#stream_class_stream_readable) of the contents of the `trie`
+   * @return {stream.Readable} Returns a [stream](https://nodejs.org/dist/latest-v12.x/docs/api/stream.html#stream_class_stream_readable) of the contents of the `trie`
    */
   createReadStream(): ReadStream {
     return new ReadStream(this)
   }
 
-  // creates a new trie backed by the same db
-  // and starting at the same root
+  /**
+   * Creates a new trie backed by the same db.
+   */
   copy(): Trie {
     const db = this.db.copy()
     return new Trie(db._leveldb, this.root)
@@ -712,8 +734,6 @@ export class Trie {
 
   /**
    * The given hash of operations (key additions or deletions) are executed on the DB
-   * @method batch
-   * @memberof Trie
    * @example
    * const ops = [
    *    { type: 'del', key: Buffer.from('father') }
@@ -724,7 +744,6 @@ export class Trie {
    * ]
    * await trie.batch(ops)
    * @param {Array} ops
-   * @returns {Promise}
    */
   async batch(ops: BatchDBOp[]): Promise<void> {
     for (const op of ops) {

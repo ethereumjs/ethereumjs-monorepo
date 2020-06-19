@@ -1,6 +1,6 @@
 {
   "name": "merkle-patricia-tree",
-  "version": "3.0.0",
+  "version": "4.0.0",
   "description": "This is an implementation of the modified merkle patricia tree as specified in the Ethereum's yellow paper.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -11,7 +11,7 @@
   "browser": "dist.browser/index.js",
   "scripts": {
     "benchmarks": "npm run build && ts-node benchmarks/index.ts",
-    "build": "tsc -p tsconfig.json && tsc -p tsconfig.browser.json",
+    "build": "tsc -p tsconfig.prod.json && tsc -p tsconfig.browser.json",
     "prepublishOnly": "npm run test && npm run build",
     "coverage": "nyc --reporter=lcov npm run test:node",
     "docs:build": "typedoc",
@@ -49,7 +49,8 @@
   ],
   "license": "MPL-2.0",
   "dependencies": {
-    "ethereumjs-util": "^7.0.0",
+    "@types/levelup": "^3.1.1",
+    "ethereumjs-util": "^7.0.2",
     "level-mem": "^5.0.1",
     "level-ws": "^2.0.0",
     "readable-stream": "^3.6.0",
@@ -61,8 +62,7 @@
     "@ethereumjs/config-prettier": "^1.1.1",
     "@ethereumjs/config-tsc": "^1.1.1",
     "@ethereumjs/config-tslint": "^1.1.1",
-    "@types/bn.js": "^4.11.5",
-    "@types/levelup": "^3.1.1",
+    "@types/bn.js": "^4.11.6",
     "@types/tape": "^4.2.34",
     "husky": "^4.2.3",
     "karma": "^4.4.1",
@@ -76,7 +76,7 @@
     "ts-node": "^8.8.1",
     "tslint": "^5.18.0",
     "typedoc": "next",
-    "typedoc-plugin-markdown": "^2.2.16",
+    "typedoc-plugin-markdown": "^2.2.17",
     "typescript": "^3.7.5",
     "typestrict": "^1.0.2"
   },

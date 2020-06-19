@@ -33,7 +33,7 @@ export class DB {
   /**
    * Retrieves a raw value from leveldb.
    * @param {Buffer} key
-   * @returns {Promise} - Promise resolves with `Buffer` if a value is found or `null` if no value is found.
+   * @returns A Promise that resolves to `Buffer` if a value is found or `null` if no value is found.
    */
   async get(key: Buffer): Promise<Buffer | null> {
     let value = null

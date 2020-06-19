@@ -6,6 +6,84 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [4.0.0] - 2020-04-17
+
+This release introduces a major API upgrade from callbacks to Promises.
+
+Example using async/await syntax:
+
+```typescript
+import { BaseTrie as Trie } from 'merkle-patricia-tree'
+const trie = new Trie()
+async function test() {
+  await trie.put(Buffer.from('test'), Buffer.from('one'))
+  const value = await trie.get(Buffer.from('test'))
+  console.log(value.toString()) // 'one'
+}
+test()
+```
+
+### Breaking Changes
+
+#### Trie methods
+
+See the [docs](https://github.com/ethereumjs/merkle-patricia-tree/tree/master/docs) for the latest Promise-based method signatures.
+
+#### Trie.prove renamed to Trie.createProof
+
+To clarify the method's purpose `Trie.prove` has been renamed to `Trie.createProof`. `Trie.prove` has been deprecated but will remain as an alias for `Trie.createProof` until removed.
+
+#### Trie raw methods
+
+`getRaw`, `putRaw` and `delRaw` were deprecated in `v3.0.0` and have been removed from this release. Instead, please use `trie.db.get`, `trie.db.put`, and `trie.db.del`. If using a `SecureTrie` or `CheckpointTrie`, use `trie._maindb` to override the checkpointing mechanism and interact directly with the db.
+
+#### SecureTrie.copy
+
+`SecureTrie.copy` now includes checkpoint metadata by default. To maintain original behavior of _not_ copying checkpoint state, pass `false` to param `includeCheckpoints`.
+
+### Changed
+
+- Convert trieNode to ES6 class ([#71](https://github.com/ethereumjs/merkle-patricia-tree/pull/71))
+- Merge checkpoint and secure interface with their ES6 classes ([#73](https://github.com/ethereumjs/merkle-patricia-tree/pull/73))
+- Extract db-related methods from baseTrie ([#74](https://github.com/ethereumjs/merkle-patricia-tree/pull/74))
+- \_lookupNode callback to use standard error, response pattern ([#83](https://github.com/ethereumjs/merkle-patricia-tree/pull/83))
+- Accept leveldb in constructor, minor fixes ([#92](https://github.com/ethereumjs/merkle-patricia-tree/pull/92))
+- Refactor TrieNode, add levelup types ([#98](https://github.com/ethereumjs/merkle-patricia-tree/pull/98))
+- Promisify rest of library ([#107](https://github.com/ethereumjs/merkle-patricia-tree/pull/107))
+- Use `Nibbles` type for `number[]` ([#115](https://github.com/ethereumjs/merkle-patricia-tree/pull/115))
+- Upgrade ethereumjs-util to 7.0.0 / Upgrade level-mem to 5.0.1 ([#116](https://github.com/ethereumjs/merkle-patricia-tree/pull/116))
+- Create dual ES5 and ES2017 builds ([#117](https://github.com/ethereumjs/merkle-patricia-tree/pull/117))
+- Include checkpoints by default in SecureTrie.copy ([#119](https://github.com/ethereumjs/merkle-patricia-tree/pull/119))
+- Rename Trie.prove to Trie.createProof ([#122](https://github.com/ethereumjs/merkle-patricia-tree/pull/122))
+
+### Added
+
+- Support for proofs of null/absence. Dried up prove/verify. ([#82](https://github.com/ethereumjs/merkle-patricia-tree/pull/82))
+- Add more Ethereum state DB focused example accessing account values ([#89](https://github.com/ethereumjs/merkle-patricia-tree/pull/89))
+
+### Fixed
+
+- Drop ethereumjs-testing dep and fix bug in branch value update ([#69](https://github.com/ethereumjs/merkle-patricia-tree/pull/69))
+- Fix prove and verifyProof in SecureTrie ([#79](https://github.com/ethereumjs/merkle-patricia-tree/pull/79))
+- Fixed src code links in docs ([#93](https://github.com/ethereumjs/merkle-patricia-tree/pull/93))
+
+### Dev / Testing / CI
+
+- Update tape to v4.10.1 ([#81](https://github.com/ethereumjs/merkle-patricia-tree/pull/81))
+- Org links and git hooks ([#87](https://github.com/ethereumjs/merkle-patricia-tree/pull/87))
+- Use module.exports syntax in util files ([#90](https://github.com/ethereumjs/merkle-patricia-tree/pull/90))
+- Rename deprecated sha3 consts and func to keccak256 ([#91](https://github.com/ethereumjs/merkle-patricia-tree/pull/91))
+- Migrate to Typescript ([#96](https://github.com/ethereumjs/merkle-patricia-tree/pull/96))
+- Fix Travis's xvfb service ([#97](https://github.com/ethereumjs/merkle-patricia-tree/pull/97))
+- Fix test cases and docs ([#104](https://github.com/ethereumjs/merkle-patricia-tree/pull/104))
+- Upgrade CI Provider from Travis to GH Actions ([#105](https://github.com/ethereumjs/merkle-patricia-tree/pull/105))
+- Upgrade test suite to TS ([#106](https://github.com/ethereumjs/merkle-patricia-tree/pull/106))
+- Better document `_formatNode` ([#109](https://github.com/ethereumjs/merkle-patricia-tree/pull/109))
+- Move `failingRefactorTests` to `secure.spec.ts` ([#110](https://github.com/ethereumjs/merkle-patricia-tree/pull/110))
+- Fix test suite typos ([#114](https://github.com/ethereumjs/merkle-patricia-tree/pull/110))
+
+[4.0.0]: https://github.com/ethereumjs/merkle-patricia-tree/compare/v3.0.0...v4.0.0
+
 ## [3.0.0] - 2019-01-03
 
 This release comes along with some major version bump of the underlying `level`

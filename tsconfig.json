@@ -1,8 +1,5 @@
 {
-  "extends": "@ethereumjs/config-tsc",
-  "compilerOptions": {
-    "outDir": "./dist"
-  },
-  "include": ["src/**/*.ts"],
-  "target": "ES2017"
+    "extends": "@ethereumjs/config-tsc",
+    "include": ["src/**/*.ts", "test/*.spec.ts"]
 }
+  
