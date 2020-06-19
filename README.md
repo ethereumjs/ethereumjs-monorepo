@@ -44,7 +44,14 @@ You can run the current state of the client with:
 ethereumjs --network=mainnet [--loglevel=debug]
 ```
 
-Or show the help with
+For development you might want to connect to `rinkeby` as the network with the currently 
+most reliable connection:
+
+```shell
+ethereumjs --network rinkeby
+```
+
+The help can be shown with:
 ```shell
 ethereumjs --help
 ```
@@ -304,6 +311,12 @@ also make use of subclasses of the ``Fetcher`` class that help fetch headers and
     - ``WhisperService`` [**Not Started**] Implementation of an ethereum whisper node.    
 - ``Node`` [**In Progress**] Represents the top-level ethereum node, and is responsible for managing the lifecycle of included services.
 - ``RPCManager`` [**In Progress**] Implements an embedded JSON-RPC server to handle incoming RPC requests.
+
+## Develper
+
+### Diagram Updates
+
+To update the structure diagram files in the root folder open the `client.drawio` file in [draw.io](https://draw.io/), make your changes, and open a PR with the updated files. Export `svg` and `png` with `border` `width=20` and `transparency=false`. For `png` go to "Advanced" and select `300 DPI`.
 
 ## Environment / Ecosystem
 

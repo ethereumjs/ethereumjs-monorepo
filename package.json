@@ -1,6 +1,6 @@
 {
   "name": "ethereumjs-client",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "EthereumJS client implementation",
   "main": "./lib/index.js",
   "bin": {

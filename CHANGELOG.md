@@ -5,6 +5,58 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.0.6] - 2020-06-19
+
+### Revival Release 🌻
+
+After a longer period of stalled development this release brings the `EthereumJS` client back
+to life respectively a usable state by doing necessary dependency updates and modernizing CI.
+It also comes with an updated documentation and user-facing improvements like a more reliable
+and better communicated sync mechanism.
+
+Most notable for development is the upgrade of the `ethereumjs-devp2p` dependency to `v3.0.1`.
+The devp2p library is now `TypeScript` based and comes with an improved debugging experience
+which will be helpful when working on further improving the sync reliability of the client and
+hunting for networking bugs.
+
+To ease jumping into the code base there is now a new structure
+[diagram](https://github.com/ethereumjs/ethereumjs-client/blob/master/diagram/client.svg)
+showing the relations between the main components as well as the initialization and message flow.
+
+## Changes
+
+**Dependencies, CI and Docs**
+- Added Node 12, removed Node 8 on CI runs, updated `level` and `ethereumjs-common` dependency,
+  PR [#111](https://github.com/ethereumjs/ethereumjs-client/pull/111)
+- Upgraded CI provider to GitHub actions,
+  PR [#119](https://github.com/ethereumjs/ethereumjs-client/pull/119)
+- Updated `ethereumjs-util` to `v7.0.2`,
+  PR [#129](https://github.com/ethereumjs/ethereumjs-client/pull/129)
+- Added up-to-date version of the `README`, `Outdated` notice for the project summary,
+  PR [#114](https://github.com/ethereumjs/ethereumjs-client/pull/114)
+- Added `JSON-RPC` documentation to `README`,
+  PR [#124](https://github.com/ethereumjs/ethereumjs-client/pull/124)
+- New high-level structure diagram,
+  PR [#134](https://github.com/ethereumjs/ethereumjs-client/pull/134)
+
+**Bug Fixes and Maintenance**
+- Fixed tx initialization bug, PR [#113](https://github.com/ethereumjs/ethereumjs-client/pull/113)
+- fix(rpc): Handle rpc request with empty params,
+  PR [#122](https://github.com/ethereumjs/ethereumjs-client/pull/122)
+- Fixed light sync block init bug,
+  PR [#127](https://github.com/ethereumjs/ethereumjs-client/pull/127)
+- `RPC` test method cleanup,
+  PR [#126](https://github.com/ethereumjs/ethereumjs-client/pull/126)
+- Removed old fields `consensus` and `finality`, 
+  PR [#120](https://github.com/ethereumjs/ethereumjs-client/pull/120)
+
+**New Features**
+- Improved sync reliability,
+  PR [#133](https://github.com/ethereumjs/ethereumjs-client/pull/133)
+- Added `eth_getBlockTransactionCountByHash` RPC method,
+  PR [#125](https://github.com/ethereumjs/ethereumjs-client/pull/125)
+
+[0.0.6]: https://github.com/ethereumjs/ethereumjs-client/compare/v0.0.5...v0.0.6
 
 ## [0.0.5] - 2019-02-12
 - Add support for final [Goerli](https://github.com/goerli/testnet) testnet,
