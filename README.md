@@ -375,6 +375,12 @@ Add peer: 52.3.158.184:30303 Geth/v1.7.3-unstable-479aa61f/linux-amd64/go1.9 (et
 Remove peer: 52.169.42.101:30303 (peer disconnect, reason code: 16) (total: 1)
 ```
 
+## Developer
+
+### Diagram Updates
+
+To update the structure diagram files in the root folder open the `devp2p.drawio` file in [draw.io](https://draw.io/), make your changes, and open a PR with the updated files. Export `svg` and `png` with `border` `width=20` and `transparency=false`. For `png` go to "Advanced" and select `300 DPI`.
+
 ## General References
 
 ### Other Implementations
