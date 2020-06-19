@@ -52,7 +52,7 @@
     "@ethereumjs/config-tslint": "^1.1.1",
     "@types/lru-cache": "^5.1.0",
     "@types/node": "^11.13.4",
-    "@types/tape": "^4.2.33",
+    "@types/tape": "^4.13.0",
     "browserify": "^16.5.1",
     "istanbul": "^0.4.1",
     "karma": "^4.1.0",

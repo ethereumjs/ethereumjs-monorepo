@@ -57,7 +57,7 @@
     "@types/lru-cache": "^5.1.0",
     "@types/node": "^11.13.4",
     "@types/semaphore": "^1.1.0",
-    "@types/tape": "^4.2.33",
+    "@types/tape": "^4.13.0",
     "nyc": "^14.0.0",
     "prettier": "^2.0.5",
     "tape": "^4.10.1",

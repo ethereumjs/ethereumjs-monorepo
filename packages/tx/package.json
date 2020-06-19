@@ -42,7 +42,7 @@
     "@types/bn.js": "^4.11.6",
     "@types/minimist": "^1.2.0",
     "@types/node": "^11.13.4",
-    "@types/tape": "^4.2.33",
+    "@types/tape": "^4.13.0",
     "browserify": "^16.5.1",
     "contributor": "^0.1.25",
     "ethereumjs-testing": "git+https://github.com/ethereumjs/ethereumjs-testing.git#v1.3.1",

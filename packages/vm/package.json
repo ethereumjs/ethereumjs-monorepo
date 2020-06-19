@@ -65,7 +65,7 @@
     "@types/core-js": "^2.5.0",
     "@types/lru-cache": "^5.1.0",
     "@types/node": "^11.13.4",
-    "@types/tape": "^4.2.33",
+    "@types/tape": "^4.13.0",
     "browserify": "^16.5.1",
     "ethereumjs-testing": "git+https://github.com/ethereumjs/ethereumjs-testing.git#v1.3.1",
     "karma": "^4.1.0",
