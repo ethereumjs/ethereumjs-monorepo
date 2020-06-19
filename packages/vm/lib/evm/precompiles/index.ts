@@ -8,9 +8,14 @@ import { default as p6 } from './06-ecadd'
 import { default as p7 } from './07-ecmul'
 import { default as p8 } from './08-ecpairing'
 import { default as p9 } from './09-blake2f'
+import Common from '@ethereumjs/common'
 
 interface Precompiles {
   [key: string]: PrecompileFunc
+}
+
+interface PrecompileAvailability {
+  [key: string]: string
 }
 
 const ripemdPrecompileAddress = '0000000000000000000000000000000000000003'
@@ -26,8 +31,26 @@ const precompiles: Precompiles = {
   '0000000000000000000000000000000000000009': p9,
 }
 
-function getPrecompile(address: string): PrecompileFunc {
-  return precompiles[address]
+const precompileAvailability: PrecompileAvailability = {
+  '0000000000000000000000000000000000000001': 'homestead',
+  '0000000000000000000000000000000000000002': 'homestead',
+  [ripemdPrecompileAddress]: 'homestead',
+  '0000000000000000000000000000000000000004': 'homestead',
+  '0000000000000000000000000000000000000005': 'byzantium',
+  '0000000000000000000000000000000000000006': 'byzantium',
+  '0000000000000000000000000000000000000007': 'byzantium',
+  '0000000000000000000000000000000000000008': 'byzantium',
+  '0000000000000000000000000000000000000009': 'istanbul',
+}
+
+function getPrecompile(address: string, common: Common): PrecompileFunc {
+  if (precompiles[address]) {
+    const availability = precompileAvailability[address]
+    if (common.gteHardfork(availability)) {
+      return precompiles[address]
+    }
+  }
+  return precompiles['']
 }
 
 export { precompiles, getPrecompile, PrecompileFunc, PrecompileInput, ripemdPrecompileAddress }

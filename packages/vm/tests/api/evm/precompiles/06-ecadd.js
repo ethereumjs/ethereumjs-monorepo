@@ -9,7 +9,7 @@ tape('Precompiles: ECADD', (t) => {
   t.test('ECADD', (st) => {
     const common = new Common('mainnet', 'petersburg')
     let vm = new VM({ common: common })
-    let ECADD = getPrecompile('0000000000000000000000000000000000000006')
+    let ECADD = getPrecompile('0000000000000000000000000000000000000006', common)
 
     let result = ECADD({
       data: Buffer.alloc(0),
