@@ -40,7 +40,7 @@
   "homepage": "https://github.com/ethereumjs/ethereumjs-vm/tree/master/packages/block#synopsis",
   "dependencies": {
     "@ethereumjs/common": "^1.5.0",
-    "@ethereumjs/tx": "^2.1.1",
+    "@ethereumjs/tx": "^2.1.2",
     "@types/bn.js": "^4.11.6",
     "ethereumjs-util": "^7.0.2",
     "merkle-patricia-tree": "^2.3.2"
