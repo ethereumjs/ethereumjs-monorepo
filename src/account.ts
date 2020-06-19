@@ -4,7 +4,7 @@ const {
   publicKeyCreate,
   publicKeyVerify,
   publicKeyConvert,
-} = require('ethereum-cryptography/shims/hdkey-secp256k1v3')
+} = require('ethereum-cryptography/secp256k1')
 import * as assert from 'assert'
 import * as BN from 'bn.js'
 import { zeros, bufferToHex, toBuffer } from './bytes'
@@ -156,7 +156,7 @@ export const isValidPublic = function(publicKey: Buffer, sanitize: boolean = fal
 export const pubToAddress = function(pubKey: Buffer, sanitize: boolean = false): Buffer {
   assertIsBuffer(pubKey)
   if (sanitize && pubKey.length !== 64) {
-    pubKey = toBuffer(publicKeyConvert(pubKey, false).slice(1))
+    pubKey = Buffer.from(publicKeyConvert(pubKey, false).slice(1))
   }
   assert(pubKey.length === 64)
   // Only take the lower 160bits of the hash
@@ -179,7 +179,7 @@ export const privateToAddress = function(privateKey: Buffer): Buffer {
 export const privateToPublic = function(privateKey: Buffer): Buffer {
   assertIsBuffer(privateKey)
   // skip the type flag and use the X, Y points
-  return toBuffer(publicKeyCreate(privateKey, false).slice(1))
+  return Buffer.from(publicKeyCreate(privateKey, false)).slice(1)
 }
 
 /**
@@ -188,7 +188,7 @@ export const privateToPublic = function(privateKey: Buffer): Buffer {
 export const importPublic = function(publicKey: Buffer): Buffer {
   assertIsBuffer(publicKey)
   if (publicKey.length !== 64) {
-    publicKey = toBuffer(publicKeyConvert(publicKey, false).slice(1))
+    publicKey = Buffer.from(publicKeyConvert(publicKey, false).slice(1))
   }
   return publicKey
 }
