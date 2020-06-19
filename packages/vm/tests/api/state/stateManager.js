@@ -2,12 +2,13 @@ const tape = require('tape')
 const { parallel } = require('async')
 const { toBuffer, keccak256, KECCAK256_RLP } = require('ethereumjs-util')
 const Common = require('@ethereumjs/common').default
+const Account = require('@ethereumjs/account').default
 const { DefaultStateManager } = require('../../../dist/state')
 const { createAccount } = require('../utils')
 const { isRunningInKarma } = require('../../util')
 
-tape('StateManager', t => {
-  t.test('should instantiate', async st => {
+tape('StateManager', (t) => {
+  t.test('should instantiate', async (st) => {
     const stateManager = new DefaultStateManager()
 
     st.deepEqual(stateManager._trie.root, KECCAK256_RLP, 'it has default root')
@@ -17,7 +18,7 @@ tape('StateManager', t => {
     st.end()
   })
 
-  t.test('should clear the cache when the state root is set', async st => {
+  t.test('should clear the cache when the state root is set', async (st) => {
     const stateManager = new DefaultStateManager()
     const addressBuffer = Buffer.from('a94f5374fce5edbc8e2a8697c15331677e6ebf0b', 'hex')
     const account = createAccount()
@@ -77,21 +78,22 @@ tape('StateManager', t => {
 
   t.test(
     'should put and get account, and add to the underlying cache if the account is not found',
-    async st => {
+    async (st) => {
       const stateManager = new DefaultStateManager()
       const account = createAccount()
+      const address = Buffer.from('a94f5374fce5edbc8e2a8697c15331677e6ebf0b', 'hex')
 
-      await stateManager.putAccount('a94f5374fce5edbc8e2a8697c15331677e6ebf0b', account)
+      await stateManager.putAccount(address, account)
 
-      let res = await stateManager.getAccount('a94f5374fce5edbc8e2a8697c15331677e6ebf0b')
+      let res = await stateManager.getAccount(address)
 
       st.equal(res.balance.toString('hex'), 'fff384')
 
       stateManager._cache.clear()
 
-      res = await stateManager.getAccount('a94f5374fce5edbc8e2a8697c15331677e6ebf0b')
+      res = await stateManager.getAccount(address)
 
-      st.equal(stateManager._cache._cache.keys[0], 'a94f5374fce5edbc8e2a8697c15331677e6ebf0b')
+      st.equal(stateManager._cache._cache.keys[0], address.toString('hex'))
 
       st.end()
     },
@@ -99,10 +101,11 @@ tape('StateManager', t => {
 
   t.test(
     'should call the callback with a boolean representing emptiness, when the account is empty',
-    async st => {
+    async (st) => {
       const stateManager = new DefaultStateManager()
+      const address = Buffer.from('a94f5374fce5edbc8e2a8697c15331677e6ebf0b', 'hex')
 
-      let res = await stateManager.accountIsEmpty('a94f5374fce5edbc8e2a8697c15331677e6ebf0b')
+      let res = await stateManager.accountIsEmpty(address)
 
       st.ok(res)
 
@@ -112,13 +115,14 @@ tape('StateManager', t => {
 
   t.test(
     'should call the callback with a false boolean representing non-emptiness when the account is not empty',
-    async st => {
+    async (st) => {
       const stateManager = new DefaultStateManager()
       const account = createAccount('0x1', '0x1')
+      const address = Buffer.from('a94f5374fce5edbc8e2a8697c15331677e6ebf0b', 'hex')
 
-      await stateManager.putAccount('a94f5374fce5edbc8e2a8697c15331677e6ebf0b', account)
+      await stateManager.putAccount(address, account)
 
-      let res = await stateManager.accountIsEmpty('a94f5374fce5edbc8e2a8697c15331677e6ebf0b')
+      let res = await stateManager.accountIsEmpty(address)
 
       st.notOk(res)
 
@@ -126,7 +130,7 @@ tape('StateManager', t => {
     },
   )
 
-  t.test('should generate the genesis state root correctly for mainnet', async st => {
+  t.test('should generate the genesis state root correctly for mainnet', async (st) => {
     if (isRunningInKarma()) {
       st.skip('skip slow test when running in karma')
       return st.end()
@@ -168,7 +172,7 @@ tape('StateManager', t => {
     ])
   })
 
-  t.test('should generate the genesis state root correctly for all other chains', async st => {
+  t.test('should generate the genesis state root correctly for all other chains', async (st) => {
     const chains = ['ropsten', 'rinkeby', 'kovan', 'goerli']
 
     for (const chain of chains) {
@@ -187,7 +191,7 @@ tape('StateManager', t => {
     st.end()
   })
 
-  t.test('should dump storage', async st => {
+  t.test('should dump storage', async (st) => {
     const stateManager = new DefaultStateManager()
     const addressBuffer = Buffer.from('a94f5374fce5edbc8e2a8697c15331677e6ebf0b', 'hex')
     const account = createAccount()
@@ -205,7 +209,7 @@ tape('StateManager', t => {
     st.end()
   })
 
-  t.test('should pass Common object when copying the state manager', st => {
+  t.test('should pass Common object when copying the state manager', (st) => {
     const stateManager = new DefaultStateManager({
       common: new Common('goerli', 'byzantium'),
     })
@@ -220,7 +224,7 @@ tape('StateManager', t => {
     st.end()
   })
 
-  t.test("should validate the key's length when modifying a contract's storage", async st => {
+  t.test("should validate the key's length when modifying a contract's storage", async (st) => {
     const stateManager = new DefaultStateManager()
     const addressBuffer = Buffer.from('a94f5374fce5edbc8e2a8697c15331677e6ebf0b', 'hex')
     try {
@@ -235,7 +239,7 @@ tape('StateManager', t => {
     st.end()
   })
 
-  t.test("should validate the key's length when reading a contract's storage", async st => {
+  t.test("should validate the key's length when reading a contract's storage", async (st) => {
     const stateManager = new DefaultStateManager()
     const addressBuffer = Buffer.from('a94f5374fce5edbc8e2a8697c15331677e6ebf0b', 'hex')
     try {
@@ -251,7 +255,7 @@ tape('StateManager', t => {
   })
 })
 
-tape('Original storage cache', async t => {
+tape('Original storage cache', async (t) => {
   const stateManager = new DefaultStateManager()
 
   const address = 'a94f5374fce5edbc8e2a8697c15331677e6ebf0b'
@@ -262,7 +266,7 @@ tape('Original storage cache', async t => {
   const key = Buffer.from('1234567890123456789012345678901234567890123456789012345678901234', 'hex')
   const value = Buffer.from('1234', 'hex')
 
-  t.test('should initially have empty storage value', async st => {
+  t.test('should initially have empty storage value', async (st) => {
     await stateManager.checkpoint()
     const res = await stateManager.getContractStorage(addressBuffer, key)
     st.deepEqual(res, Buffer.alloc(0))
@@ -275,7 +279,7 @@ tape('Original storage cache', async t => {
     st.end()
   })
 
-  t.test('should set original storage value', async st => {
+  t.test('should set original storage value', async (st) => {
     await stateManager.putContractStorage(addressBuffer, key, value)
     const res = await stateManager.getContractStorage(addressBuffer, key)
     st.deepEqual(res, value)
@@ -283,13 +287,13 @@ tape('Original storage cache', async t => {
     st.end()
   })
 
-  t.test('should get original storage value', async st => {
+  t.test('should get original storage value', async (st) => {
     const res = await stateManager.getOriginalContractStorage(addressBuffer, key)
     st.deepEqual(res, value)
     st.end()
   })
 
-  t.test('should return correct original value after modification', async st => {
+  t.test('should return correct original value after modification', async (st) => {
     const newValue = Buffer.from('1235', 'hex')
     await stateManager.putContractStorage(addressBuffer, key, newValue)
     const res = await stateManager.getContractStorage(addressBuffer, key)
@@ -300,7 +304,7 @@ tape('Original storage cache', async t => {
     st.end()
   })
 
-  t.test('should cache keys separately', async st => {
+  t.test('should cache keys separately', async (st) => {
     const key2 = Buffer.from(
       '0000000000000000000000000000000000000000000000000000000000000012',
       'hex',
@@ -330,7 +334,7 @@ tape('Original storage cache', async t => {
     st.end()
   })
 
-  t.test("getOriginalContractStorage should validate the key's length", async st => {
+  t.test("getOriginalContractStorage should validate the key's length", async (st) => {
     try {
       await stateManager.getOriginalContractStorage(addressBuffer, Buffer.alloc(12))
     } catch (e) {
@@ -341,5 +345,60 @@ tape('Original storage cache', async t => {
 
     st.fail('Should have failed')
     st.end()
+  })
+})
+
+tape('StateManager - Contract code', (tester) => {
+  const it = tester.test
+
+  it('should set and get code', async (t) => {
+    const stateManager = new DefaultStateManager()
+    const address = Buffer.from('a94f5374fce5edbc8e2a8697c15331677e6ebf0b', 'hex')
+    const code = Buffer.from(
+      '73095e7baea6a6c7c4c2dfeb977efac326af552d873173095e7baea6a6c7c4c2dfeb977efac326af552d873157',
+      'hex',
+    )
+    const raw = {
+      nonce: '0x0',
+      balance: '0x03e7',
+      stateRoot: '0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421',
+      codeHash: '0xb30fb32201fe0486606ad451e1a61e2ae1748343cd3d411ed992ffcc0774edd4',
+    }
+    const account = new Account(raw)
+    await stateManager.putAccount(address, account)
+    await stateManager.putContractCode(address, code)
+    const codeRetrieved = await stateManager.getContractCode(address)
+    t.equals(Buffer.compare(code, codeRetrieved), 0)
+    t.end()
+  })
+
+  it('should not get code if is not contract', async (t) => {
+    const stateManager = new DefaultStateManager()
+    const address = Buffer.from('a94f5374fce5edbc8e2a8697c15331677e6ebf0b', 'hex')
+    const raw = {
+      nonce: '0x0',
+      balance: '0x03e7',
+    }
+    const account = new Account(raw)
+    await stateManager.putAccount(address, account)
+    const code = await stateManager.getContractCode(address)
+    t.equals(Buffer.compare(code, Buffer.alloc(0)), 0)
+    t.end()
+  })
+
+  it('should set empty code', async (t) => {
+    const stateManager = new DefaultStateManager()
+    const address = Buffer.from('a94f5374fce5edbc8e2a8697c15331677e6ebf0b', 'hex')
+    const raw = {
+      nonce: '0x0',
+      balance: '0x03e7',
+    }
+    const account = new Account(raw)
+    const code = Buffer.alloc(0)
+    await stateManager.putAccount(address, account)
+    await stateManager.putContractCode(address, code)
+    const codeRetrieved = await stateManager.getContractCode(address)
+    t.equals(Buffer.compare(codeRetrieved, Buffer.alloc(0)), 0)
+    t.end()
   })
 })

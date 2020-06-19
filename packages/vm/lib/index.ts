@@ -1,4 +1,5 @@
 import BN = require('bn.js')
+import { SecureTrie as Trie } from 'merkle-patricia-tree'
 import Account from '@ethereumjs/account'
 import Blockchain from '@ethereumjs/blockchain'
 import Common from '@ethereumjs/common'
@@ -12,7 +13,6 @@ import { OpcodeList, getOpcodesForHF } from './evm/opcodes'
 import { precompiles } from './evm/precompiles'
 import runBlockchain from './runBlockchain'
 const AsyncEventEmitter = require('async-eventemitter')
-const Trie = require('merkle-patricia-tree/secure.js')
 const promisify = require('util.promisify')
 
 /**

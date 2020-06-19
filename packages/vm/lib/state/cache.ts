@@ -1,4 +1,3 @@
-const promisify = require('util.promisify')
 const Tree = require('functional-red-black-tree')
 import Account from '@ethereumjs/account'
 
@@ -14,10 +13,6 @@ export default class Cache {
     this._cache = Tree()
     this._checkpoints = []
     this._trie = trie
-    // Temporary promisifed methods until new release of `merkle-patricia-tree`
-    this._trie.p_get = promisify(this._trie.get.bind(this._trie))
-    this._trie.p_put = promisify(this._trie.put.bind(this._trie))
-    this._trie.p_del = promisify(this._trie.del.bind(this._trie))
   }
 
   /**
@@ -61,7 +56,7 @@ export default class Cache {
    * @param address - Address of account
    */
   async _lookupAccount(address: Buffer): Promise<Account> {
-    const raw = await this._trie.p_get(address)
+    const raw = await this._trie.get(address)
     const account = new Account(raw)
     return account
   }
@@ -108,14 +103,14 @@ export default class Cache {
       if (it.value && it.value.modified) {
         it.value.modified = false
         it.value.val = it.value.val.serialize()
-        await this._trie.p_put(Buffer.from(it.key, 'hex'), it.value.val)
+        await this._trie.put(Buffer.from(it.key, 'hex'), it.value.val)
         next = it.hasNext
         it.next()
       } else if (it.value && it.value.deleted) {
         it.value.modified = false
         it.value.deleted = false
         it.value.val = new Account().serialize()
-        await this._trie.p_del(Buffer.from(it.key, 'hex'))
+        await this._trie.del(Buffer.from(it.key, 'hex'))
         next = it.hasNext
         it.next()
       } else {

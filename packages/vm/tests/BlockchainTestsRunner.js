@@ -1,7 +1,7 @@
-const util = require('util')
-const testUtil = require('./util.js')
-const ethUtil = require('ethereumjs-util')
-const Trie = require('merkle-patricia-tree/secure')
+const { promisify } = require('util')
+const { setupPreConditions, verifyPostConditions } = require('./util.js')
+const { addHexPrefix } = require('ethereumjs-util')
+const Trie = require('merkle-patricia-tree').SecureTrie
 const { Block, BlockHeader } = require('@ethereumjs/block')
 const Blockchain = require('@ethereumjs/blockchain').default
 const level = require('level')
@@ -51,7 +51,7 @@ module.exports = async function runBlockchainTest(options, testData, t) {
   }
 
   // set up pre-state
-  await testUtil.setupPreConditions(state, testData)
+  await setupPreConditions(vm.stateManager._trie, testData)
 
   // create and add genesis block
   genesisBlock.header = new BlockHeader(formatBlockHeader(testData.genesisBlockHeader), {
@@ -69,10 +69,10 @@ module.exports = async function runBlockchainTest(options, testData, t) {
       'correct genesis RLP',
     )
   }
-  const putGenesisAsync = util.promisify(blockchain.putGenesis).bind(blockchain)
+  const putGenesisAsync = promisify(blockchain.putGenesis).bind(blockchain)
   await putGenesisAsync(genesisBlock)
 
-  async function handleError(error, expectException, cacheDB) {
+  async function handleError(error, expectException, cacheDB) {
     if (expectException) {
       t.pass(`Expected exception ${expectException}`)
     } else {
@@ -88,9 +88,9 @@ module.exports = async function runBlockchainTest(options, testData, t) {
     // Last checked: ethereumjs-testing v1.3.1 (2020-05-11)
     const paramAll1 = 'expectExceptionALL'
     const paramAll2 = 'expectException'
-    const expectException = raw[paramFork] ? raw[paramFork] : (raw[paramAll1] || raw[paramAll2])
+    const expectException = raw[paramFork] ? raw[paramFork] : raw[paramAll1] || raw[paramAll2]
 
-    try { 
+    try {
       const block = new Block(Buffer.from(raw.rlp.slice(2), 'hex'), {
         hardfork: options.forkConfigVM,
       })
@@ -105,7 +105,7 @@ module.exports = async function runBlockchainTest(options, testData, t) {
           }
         })
       }
-      const putBlockAsync = util.promisify(blockchain.putBlock).bind(blockchain)
+      const putBlockAsync = promisify(blockchain.putBlock).bind(blockchain)
       try {
         await putBlockAsync(block)
       } catch (error) {
@@ -121,7 +121,7 @@ module.exports = async function runBlockchainTest(options, testData, t) {
 
       await vm.runBlockchain()
 
-      const getHeadAsync = util.promisify(vm.blockchain.getHead).bind(vm.blockchain)  
+      const getHeadAsync = promisify(vm.blockchain.getHead).bind(vm.blockchain)
       const headBlock = await getHeadAsync()
 
       if (testData.lastblockhash.substr(0, 2) === '0x') {
@@ -138,11 +138,11 @@ module.exports = async function runBlockchainTest(options, testData, t) {
       // testData.postState to the actual postState, rather than to the preState.
       if (!options.debug) {
         // make sure the state is set before checking post conditions
-          vm.stateManager._trie.root = headBlock.header.stateRoot
+        vm.stateManager._trie.root = headBlock.header.stateRoot
       }
 
       if (options.debug) {
-        const verifyPostConditionsAsync = util.promisify(testUtil.verifyPostConditions)
+        const verifyPostConditionsAsync = promisify(verifyPostConditions)
         await verifyPostConditionsAsync(state, testData.postState, t)
       }
       if (expectException !== undefined) {
@@ -164,7 +164,7 @@ function formatBlockHeader(data) {
   const r = {}
   const keys = Object.keys(data)
   keys.forEach(function (key) {
-    r[key] = ethUtil.addHexPrefix(data[key])
+    r[key] = addHexPrefix(data[key])
   })
   return r
 }

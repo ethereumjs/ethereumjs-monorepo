@@ -1,11 +1,9 @@
+import { BaseTrie as Trie } from 'merkle-patricia-tree'
 import Common from '@ethereumjs/common'
-import { rlp, keccak256, KECCAK256_RLP, baToJSON } from 'ethereumjs-util'
+import { BN, rlp, keccak256, KECCAK256_RLP, baToJSON } from 'ethereumjs-util'
 import { Transaction, TransactionOptions } from '@ethereumjs/tx'
 import { BlockHeader } from './header'
 import { Blockchain, BlockData, ChainOptions } from './types'
-
-const Trie = require('merkle-patricia-tree')
-const { BN } = require('ethereumjs-util')
 
 /**
  * An object that represents the block
@@ -254,15 +252,7 @@ export class Block {
   }
 
   private async _putTxInTrie(txIndex: number, tx: Transaction) {
-    await new Promise((resolve, reject) => {
-      this.txTrie.put(rlp.encode(txIndex), tx.serialize(), (err: any) => {
-        if (err) {
-          reject(err)
-        } else {
-          resolve()
-        }
-      })
-    })
+    await this.txTrie.put(rlp.encode(txIndex), tx.serialize())
   }
 
   private _validateUncleHeader(uncleHeader: BlockHeader, blockchain: Blockchain) {

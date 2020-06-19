@@ -1,6 +1,5 @@
 const tape = require('tape')
-const promisify = require('util.promisify')
-const Trie = require('merkle-patricia-tree/secure.js')
+const Trie = require('merkle-patricia-tree').SecureTrie
 const Account = require('@ethereumjs/account').default
 const Cache = require('../../../dist/state/cache').default
 const utils = require('../utils')
@@ -17,7 +16,6 @@ tape('cache initialization', (t) => {
 tape('cache put and get account', (t) => {
   const trie = new Trie()
   const cache = new Cache(trie)
-  const trieGetP = promisify(trie.get.bind(trie))
 
   const addr = Buffer.from('cd2a3d9f938e13cd947ec05abc7fe734df8dd826', 'hex')
   const acc = utils.createAccount('0x00', '0xff11')
@@ -36,7 +34,7 @@ tape('cache put and get account', (t) => {
   })
 
   t.test('should not have flushed to trie', async (st) => {
-    const res = await trieGetP(addr)
+    const res = await trie.get(addr)
     st.notOk(res)
     st.end()
   })
@@ -47,7 +45,7 @@ tape('cache put and get account', (t) => {
   })
 
   t.test('trie should contain flushed account', async (st) => {
-    const raw = await trieGetP(addr)
+    const raw = await trie.get(addr)
     const res = new Account(raw)
     st.ok(res.balance.equals(acc.balance))
     st.end()
@@ -74,7 +72,7 @@ tape('cache put and get account', (t) => {
     cache.put(addr, updatedAcc)
     await cache.flush()
 
-    const raw = await trieGetP(addr)
+    const raw = await trie.get(addr)
     const res = new Account(raw)
     st.ok(res.balance.equals(updatedAcc.balance))
     st.end()

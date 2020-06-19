@@ -1,7 +1,6 @@
 import * as tape from 'tape'
 import * as rlp from 'rlp'
 import Account from '../src/index'
-const SecureTrie = require('merkle-patricia-tree/secure')
 
 tape('empty constructor', function (tester) {
   const it = tester.test
@@ -129,80 +128,6 @@ tape('isContract', function (tester) {
     const account = new Account(raw)
     t.equal(account.isContract(), true)
     t.end()
-  })
-})
-
-tape('setCode && getCode', (tester) => {
-  const it = tester.test
-  it('should set and get code', (t) => {
-    const code = Buffer.from(
-      '73095e7baea6a6c7c4c2dfeb977efac326af552d873173095e7baea6a6c7c4c2dfeb977efac326af552d873157',
-      'hex',
-    )
-
-    const raw = {
-      nonce: '0x0',
-      balance: '0x03e7',
-      stateRoot: '0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421',
-      codeHash: '0xb30fb32201fe0486606ad451e1a61e2ae1748343cd3d411ed992ffcc0774edd4',
-    }
-    const account = new Account(raw)
-    const trie = new SecureTrie()
-
-    account.setCode(trie, code, function (err, codeHash) {
-      account.getCode(trie, function (err, codeRetrieved) {
-        t.equals(Buffer.compare(code, codeRetrieved!), 0)
-        t.end()
-      })
-    })
-  })
-  it('should not get code if is not contract', (t) => {
-    const raw = {
-      nonce: '0x0',
-      balance: '0x03e7',
-    }
-    const account = new Account(raw)
-    const trie = new SecureTrie()
-    account.getCode(trie, function (err, code) {
-      t.equals(Buffer.compare(code!, Buffer.alloc(0)), 0)
-      t.end()
-    })
-  })
-  it('should set empty code', (t) => {
-    const raw = {
-      nonce: '0x0',
-      balance: '0x03e7',
-    }
-    const account = new Account(raw)
-    const trie = new SecureTrie()
-    const code = Buffer.alloc(0)
-    account.setCode(trie, code, function (err, codeHash) {
-      t.equals(Buffer.compare(codeHash, Buffer.alloc(0)), 0)
-      t.end()
-    })
-  })
-})
-
-tape('setStorage && getStorage', (tester) => {
-  const it = tester.test
-  it('should set and get storage', (t) => {
-    const raw = {
-      nonce: '0x0',
-      balance: '0x03e7',
-      stateRoot: '0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421',
-      codeHash: '0xb30fb32201fe0486606ad451e1a61e2ae1748343cd3d411ed992ffcc0774edd4',
-    }
-    const account = new Account(raw)
-    const trie = new SecureTrie()
-    const key = Buffer.from('0000000000000000000000000000000000000000', 'hex')
-    const value = Buffer.from('01', 'hex')
-
-    account.setStorage(trie, key, value, (err) => {
-      account.getStorage(trie, key, (err, valueRetrieved) => {
-        t.equals(Buffer.compare(value, valueRetrieved!), 0)
-        t.end()
-      })
-    })
   })
 })
 

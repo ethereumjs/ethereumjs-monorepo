@@ -1,8 +1,6 @@
 const Set = require('core-js-pure/es/set')
-const Trie = require('merkle-patricia-tree/secure.js')
-const promisify = require('util.promisify')
-import { toBuffer, KECCAK256_NULL_S } from 'ethereumjs-util'
-import BN = require('bn.js')
+import { SecureTrie as Trie } from 'merkle-patricia-tree'
+import { BN, toBuffer, keccak256, KECCAK256_NULL } from 'ethereumjs-util'
 import { encode, decode } from 'rlp'
 import Common from '@ethereumjs/common'
 import { genesisStateByName } from '@ethereumjs/common/dist/genesisStates'
@@ -10,9 +8,6 @@ import Account from '@ethereumjs/account'
 import { StateManager, StorageDump } from './interface'
 import Cache from './cache'
 import { ripemdPrecompileAddress } from '../evm/precompiles'
-
-// Temporary type until new `merkle-patricia-tree` release with types
-type Trie = any
 
 /**
  * Options for constructing a [[StateManager]].
@@ -67,11 +62,11 @@ export default class DefaultStateManager implements StateManager {
    * checkpoints were reverted.
    */
   copy(): StateManager {
-    return new DefaultStateManager({ trie: this._trie.copy(), common: this._common })
+    return new DefaultStateManager({ trie: this._trie.copy(false), common: this._common })
   }
 
   /**
-   * Gets the [`ethereumjs-account`](https://github.com/ethereumjs/ethereumjs-account)
+   * Gets the [`@ethereumjs/account`](https://github.com/ethereumjs/ethereumjs-vm/tree/master/packages/account)
    * associated with `address`. Returns an empty account if the account does not exist.
    * @param address - Address of the `account` to get
    */
@@ -81,10 +76,10 @@ export default class DefaultStateManager implements StateManager {
   }
 
   /**
-   * Saves an [`ethereumjs-account`](https://github.com/ethereumjs/ethereumjs-account)
+   * Saves an [`@ethereumjs/account`](https://github.com/ethereumjs/ethereumjs-vm/tree/master/packages/account)
    * into state under the provided `address`.
    * @param address - Address under which to store `account`
-   * @param account - The [`ethereumjs-account`](https://github.com/ethereumjs/ethereumjs-account) to store
+   * @param account - The [`@ethereumjs/account`](https://github.com/ethereumjs/ethereumjs-vm/tree/master/packages/account) to store
    */
   async putAccount(address: Buffer, account: Account): Promise<void> {
     // TODO: dont save newly created accounts that have no balance
@@ -113,10 +108,16 @@ export default class DefaultStateManager implements StateManager {
    * @param value - The value of the `code`
    */
   async putContractCode(address: Buffer, value: Buffer): Promise<void> {
+    const codeHash = keccak256(value)
+
+    if (codeHash.equals(KECCAK256_NULL)) {
+      return
+    }
+
     const account = await this.getAccount(address)
-    // TODO: setCode use trie.setRaw which creates a storage leak
-    const setCode = promisify(account.setCode.bind(account))
-    await setCode(this._trie, value)
+    account.codeHash = codeHash
+
+    await this._trie._mainDB.put(codeHash, value)
     await this.putAccount(address, account)
   }
 
@@ -128,9 +129,11 @@ export default class DefaultStateManager implements StateManager {
    */
   async getContractCode(address: Buffer): Promise<Buffer> {
     const account = await this.getAccount(address)
-    const getCode = promisify(account.getCode.bind(account))
-    const code = await getCode(this._trie)
-    return code
+    if (!account.isContract()) {
+      return Buffer.alloc(0)
+    }
+    const code = await this._trie._mainDB.get(account.codeHash)
+    return code || Buffer.alloc(0)
   }
 
   /**
@@ -141,7 +144,7 @@ export default class DefaultStateManager implements StateManager {
   async _lookupStorageTrie(address: Buffer): Promise<Trie> {
     // from state trie
     const account = await this.getAccount(address)
-    const storageTrie = this._trie.copy()
+    const storageTrie = this._trie.copy(false)
     storageTrie.root = account.stateRoot
     storageTrie._checkpoints = []
     return storageTrie
@@ -169,7 +172,7 @@ export default class DefaultStateManager implements StateManager {
    * @param key - Key in the account's storage to get the value for. Must be 32 bytes long.
    * @returns {Promise<Buffer>} - The storage value for the account
    * corresponding to the provided address at the provided key.
-   * If this does not exists an empty `Buffer` is returned
+   * If this does not exist an empty `Buffer` is returned.
    */
   async getContractStorage(address: Buffer, key: Buffer): Promise<Buffer> {
     if (key.length !== 32) {
@@ -177,10 +180,9 @@ export default class DefaultStateManager implements StateManager {
     }
 
     const trie = await this._getStorageTrie(address)
-    const trieGet = promisify(trie.get.bind(trie))
-    const value = await trieGet(key)
+    const value = await trie.get(key)
     const decoded = decode(value)
-    return decoded
+    return decoded as Buffer
   }
 
   /**
@@ -268,17 +270,12 @@ export default class DefaultStateManager implements StateManager {
       if (value && value.length) {
         // format input
         const encodedValue = encode(value)
-        storageTrie.put(key, encodedValue, (err: Error) => {
-          if (err) throw err
-          done()
-        })
+        await storageTrie.put(key, encodedValue)
       } else {
         // deleting a value
-        storageTrie.del(key, (err: Error) => {
-          if (err) throw err
-          done()
-        })
+        await storageTrie.del(key)
       }
+      done()
     })
   }
 
@@ -311,8 +308,7 @@ export default class DefaultStateManager implements StateManager {
    */
   async commit(): Promise<void> {
     // setup trie checkpointing
-    const trieCommit = promisify(this._trie.commit.bind(this._trie))
-    await trieCommit()
+    await this._trie.commit()
     // setup cache checkpointing
     this._cache.commit()
     this._touchedStack.pop()
@@ -390,8 +386,7 @@ export default class DefaultStateManager implements StateManager {
       return
     }
 
-    const checkRoot = promisify(this._trie.checkRoot.bind(this._trie))
-    const hasRoot = await checkRoot(stateRoot)
+    const hasRoot = await this._trie.checkRoot(stateRoot)
     if (!hasRoot) {
       throw new Error('State trie does not contain state root')
     }
@@ -431,8 +426,7 @@ export default class DefaultStateManager implements StateManager {
    */
   async hasGenesisState(): Promise<boolean> {
     const root = this._common.genesis().stateRoot
-    const checkRoot = promisify(this._trie.checkRoot.bind(this._trie))
-    return await checkRoot(root)
+    return await this._trie.checkRoot(root)
   }
 
   /**
@@ -460,8 +454,6 @@ export default class DefaultStateManager implements StateManager {
       throw new Error('Cannot create genesis state with uncommitted checkpoints')
     }
 
-    const triePut = promisify(this._trie.put.bind(this._trie))
-
     const addresses = Object.keys(initState)
     for (const address of addresses) {
       const account = new Account()
@@ -471,7 +463,7 @@ export default class DefaultStateManager implements StateManager {
         account.balance = new BN(initState[address]).toArrayLike(Buffer)
       }
       const addressBuffer = toBuffer(address)
-      await triePut(addressBuffer, account.serialize())
+      await this._trie.put(addressBuffer, account.serialize())
     }
   }
 
@@ -482,13 +474,7 @@ export default class DefaultStateManager implements StateManager {
    */
   async accountIsEmpty(address: Buffer): Promise<boolean> {
     const account = await this.getAccount(address)
-
-    // should be replaced by account.isEmpty() once updated
-    return (
-      account.nonce.toString('hex') === '' &&
-      account.balance.toString('hex') === '' &&
-      account.codeHash.toString('hex') === KECCAK256_NULL_S
-    )
+    return account.isEmpty()
   }
 
   /**

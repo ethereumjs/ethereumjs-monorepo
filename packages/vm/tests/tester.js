@@ -2,7 +2,6 @@
 
 const argv = require('minimist')(process.argv.slice(2))
 const tape = require('tape')
-const util = require('util')
 const testing = require('ethereumjs-testing')
 const config = require('./config')
 

@@ -1,5 +1,4 @@
 const async = require('async')
-const promisify = require('util.promisify')
 const { BN, rlp, keccak256, stripHexPrefix, setLengthLeft } = require('ethereumjs-util')
 const Account = require('@ethereumjs/account').default
 const Transaction = require('@ethereumjs/tx').Transaction
@@ -23,9 +22,9 @@ exports.dumpState = function (state, cb) {
   }
 
   function readStorage(state, account) {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
       let storage = {}
-      let storageTrie = state.copy()
+      let storageTrie = state.copy(false)
       storageTrie.root = account.stateRoot
       let storageRS = storageTrie.createReadStream()
 
@@ -363,41 +362,40 @@ exports.makeRunCodeData = function (exec, account, block) {
  * @param testData - JSON from tests repo
  */
 exports.setupPreConditions = async function (state, testData) {
-  const keysOfPre = Object.keys(testData.pre)
-
-  for (const address of keysOfPre) {
+  await state.checkpoint()
+  for (const address of Object.keys(testData.pre)) {
     const { nonce, balance, code, storage } = testData.pre[address]
-    const account = new Account({ nonce, balance })
 
     const addressBuf = format(address)
     const codeBuf = format(code)
+    const codeHash = keccak256(codeBuf)
 
-    const storageTrie = state.copy()
+    const storageTrie = state.copy(false)
     storageTrie.root = null
 
     // Set contract storage
-    const storageKeys = Object.keys(storage)
-    for (const key of storageKeys) {
-      const valBN = new BN(format(storage[key]), 16)
+    for (const storageKey of Object.keys(storage)) {
+      const valBN = new BN(format(storage[storageKey]), 16)
       if (valBN.isZero()) {
         continue
       }
       const val = rlp.encode(valBN.toArrayLike(Buffer, 'be'))
-      const storageKey = setLengthLeft(format(key), 32)
+      const key = setLengthLeft(format(storageKey), 32)
 
-      await promisify(storageTrie.put.bind(storageTrie))(storageKey, val)
+      await storageTrie.put(key, val)
     }
 
-    await promisify(account.setCode.bind(account))(state, codeBuf)
-
-    account.stateRoot = storageTrie.root
+    const stateRoot = storageTrie.root
 
     if (testData.exec && testData.exec.address === address) {
       testData.root = storageTrie.root
     }
 
-    await promisify(state.put.bind(state))(addressBuf, account.serialize())
+    const account = new Account({ nonce, balance, codeHash, stateRoot })
+    await state._mainDB.put(codeHash, codeBuf)
+    await state.put(addressBuf, account.serialize())
   }
+  await state.commit()
 }
 
 /**

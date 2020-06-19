@@ -48,7 +48,6 @@
     "@types/bn.js": "^4.11.6",
     "@types/node": "^11.13.4",
     "@types/tape": "^4.13.0",
-    "merkle-patricia-tree": "^3.0.0",
     "nyc": "^14.0.0",
     "prettier": "^2.0.5",
     "tape": "^4.10.1",

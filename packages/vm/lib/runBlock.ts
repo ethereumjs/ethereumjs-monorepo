@@ -1,12 +1,10 @@
-import BN = require('bn.js')
-import { toBuffer, bufferToInt } from 'ethereumjs-util'
+import { BaseTrie as Trie } from 'merkle-patricia-tree'
+import { BN, toBuffer, bufferToInt } from 'ethereumjs-util'
 import { encode } from 'rlp'
 import VM from './index'
 import Bloom from './bloom'
 import { RunTxResult } from './runTx'
 import { StateManager } from './state/index'
-const Trie = require('merkle-patricia-tree')
-const promisify = require('util.promisify')
 
 /**
  * Options for running a block.
@@ -230,10 +228,7 @@ async function applyTransactions(this: VM, block: any, opts: RunBlockOpts) {
     receipts.push(txReceipt)
 
     // Add receipt to trie to later calculate receipt root
-    await promisify(receiptTrie.put).bind(receiptTrie)(
-      encode(txIdx),
-      encode(Object.values(txReceipt)),
-    )
+    await receiptTrie.put(encode(txIdx), encode(Object.values(txReceipt)))
   }
 
   return {
