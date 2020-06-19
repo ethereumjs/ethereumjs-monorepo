@@ -68,6 +68,9 @@ jobs:
         if: steps.cache.outputs.cache-hit != 'true'
         working-directory: ${{github.workspace}}
 
+      - run: npm run build
+        working-directory: ${{github.workspace}}
+
       - run: npm run test:state:selectedForks
 
   test-vm-blockchain:
@@ -87,6 +90,9 @@ jobs:
 
       - run: npm install
         if: steps.cache.outputs.cache-hit != 'true'
+        working-directory: ${{github.workspace}}
+
+      - run: npm run build
         working-directory: ${{github.workspace}}
 
       - run: npm run test:blockchain
