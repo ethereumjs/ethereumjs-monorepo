@@ -1,6 +1,6 @@
 import Wallet from './index'
 
-const { HDKey } = require('ethereum-cryptography/hdkey')
+import { HDKey } from 'ethereum-cryptography/hdkey'
 
 export default class EthereumHDKey {
   /**
