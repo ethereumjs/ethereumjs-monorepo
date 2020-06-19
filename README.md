@@ -312,7 +312,7 @@ also make use of subclasses of the ``Fetcher`` class that help fetch headers and
 - ``Node`` [**In Progress**] Represents the top-level ethereum node, and is responsible for managing the lifecycle of included services.
 - ``RPCManager`` [**In Progress**] Implements an embedded JSON-RPC server to handle incoming RPC requests.
 
-## Develper
+## Developer
 
 ### Diagram Updates
 
