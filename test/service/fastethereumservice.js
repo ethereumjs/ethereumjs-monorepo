@@ -57,6 +57,7 @@ tape('[FastEthereumService]', t => {
     service.pool.emit('added', 'peer0')
     service.pool.emit('removed', 'peer0')
     service.pool.emit('error', 'error1')
+    await service.close()
   })
 
   t.test('should start/stop', async (t) => {
@@ -69,6 +70,7 @@ tape('[FastEthereumService]', t => {
     td.verify(service.synchronizer.stop())
     td.verify(server.start())
     t.notOk(await service.stop(), 'already stopped')
+    await server.stop()
     t.end()
   })
 
