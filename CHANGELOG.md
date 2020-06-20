@@ -53,6 +53,8 @@ showing the relations between the main components as well as the initialization 
 **New Features**
 - Improved sync reliability,
   PR [#133](https://github.com/ethereumjs/ethereumjs-client/pull/133)
+- Added `eth_blockNumber` RPC method,
+  PR [#131](https://github.com/ethereumjs/ethereumjs-client/pull/131)
 - Added `eth_getBlockTransactionCountByHash` RPC method,
   PR [#125](https://github.com/ethereumjs/ethereumjs-client/pull/125)
 
