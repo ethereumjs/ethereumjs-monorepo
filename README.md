@@ -72,7 +72,7 @@ DEBUG=devp2p:rlpx,devp2p:eth,-babel [CLIENT_START_COMMAND]
 
 [API Reference](./docs/API.md)
 
-See also this [diagram](./client_diagram.png) with an overview of the client structure together with the initialization and message flow.
+See also this [diagram](./diagram/client.svg) for an overview of the client structure with the initialization and message flow.
 
 ## JSON-RPC
 
