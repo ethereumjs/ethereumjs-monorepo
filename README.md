@@ -131,9 +131,10 @@ test()
 - Wiki
   - [Ethereum Trie Specification](https://github.com/ethereum/wiki/wiki/Patricia-Tree)
 - Blog posts
+  - [Ethereum's Merkle Patricia Trees - An Interactive JavaScript Tutorial](https://rockwaterweb.com/ethereum-merkle-patricia-trees-javascript-tutorial/)
   - [Exploring Ethereum's State Trie with Node.js](https://wanderer.github.io/ethereum/nodejs/code/2014/05/21/using-ethereums-tries-with-node/)
   - [Merkling in Ethereum](https://blog.ethereum.org/2015/11/15/merkling-in-ethereum/)
-  - [Understanding the Ethereum Trie](https://easythereentropy.wordpress.com/2014/06/04/understanding-the-ethereum-trie/)
+  - [Understanding the Ethereum Trie (worth a read, but the code is outdated)](https://easythereentropy.wordpress.com/2014/06/04/understanding-the-ethereum-trie/)
 - Videos
   - [Trie and Patricia Trie Overview](https://www.youtube.com/watch?v=jXAHLqQthKw&t=26s)
 
