@@ -9,6 +9,7 @@ import { default as p7 } from './07-ecmul'
 import { default as p8 } from './08-ecpairing'
 import { default as p9 } from './09-blake2f'
 import { default as pa } from './0a-bls12-g1add'
+import { default as pd } from './0d-bls12-g2add'
 import Common from '@ethereumjs/common'
 
 interface Precompiles {
@@ -31,6 +32,7 @@ const precompiles: Precompiles = {
   '0000000000000000000000000000000000000008': p8,
   '0000000000000000000000000000000000000009': p9,
   '000000000000000000000000000000000000000a': pa,
+  '000000000000000000000000000000000000000d': pd,
 }
 
 const precompileAvailability: PrecompileAvailability = {
@@ -44,6 +46,7 @@ const precompileAvailability: PrecompileAvailability = {
   '0000000000000000000000000000000000000008': 'byzantium',
   '0000000000000000000000000000000000000009': 'istanbul',
   '000000000000000000000000000000000000000a': 'berlin',
+  '000000000000000000000000000000000000000d': 'berlin',
 }
 
 function getPrecompile(address: string, common: Common): PrecompileFunc {

@@ -18,19 +18,58 @@ function BLS12_381_ToG1Point(input: Buffer, mcl: any): any {
 // output: a 128-byte Buffer
 function BLS12_381_FromG1Point(input: any): Buffer {
   // TODO: figure out if there is a better way to decode these values.
-  let decodeStr = input.getStr(16) //return a string of pattern "1 <x_coord> <y_coord>"
-  let decoded = decodeStr.match(/"?[0-9a-f]+"?/g) // match above pattern.
+  const decodeStr = input.getStr(16) //return a string of pattern "1 <x_coord> <y_coord>"
+  const decoded = decodeStr.match(/"?[0-9a-f]+"?/g) // match above pattern.
 
   // note: decoded[0] == 1
-  let xval = padToEven(decoded[1])
-  let yval = padToEven(decoded[2])
+  const xval = padToEven(decoded[1])
+  const yval = padToEven(decoded[2])
 
   // convert to buffers.
 
-  let xBuffer = Buffer.concat([Buffer.alloc(64 - xval.length / 2, 0), Buffer.from(xval, 'hex')])
-  let yBuffer = Buffer.concat([Buffer.alloc(64 - yval.length / 2, 0), Buffer.from(yval, 'hex')])
+  const xBuffer = Buffer.concat([Buffer.alloc(64 - xval.length / 2, 0), Buffer.from(xval, 'hex')])
+  const yBuffer = Buffer.concat([Buffer.alloc(64 - yval.length / 2, 0), Buffer.from(yval, 'hex')])
 
   return Buffer.concat([xBuffer, yBuffer])
 }
 
-export { BLS12_381_ToG1Point, BLS12_381_FromG1Point }
+// convert an input Buffer to a mcl G2 point
+// this does /NOT/ do any input checks. the input Buffer needs to be of length 256
+function BLS12_381_ToG2Point(input: Buffer, mcl: any): any {
+  const p_x_1 = input.slice(16, 64).toString('hex')
+  const p_x_2 = input.slice(80, 128).toString('hex')
+  const p_y_1 = input.slice(144, 192).toString('hex')
+  const p_y_2 = input.slice(208, 256).toString('hex')
+
+  const pstr = '1 ' + p_x_1 + ' ' + p_x_2 + ' ' + p_y_1 + ' ' + p_y_2
+  const mclPoint = new mcl.G2()
+
+  mclPoint.setStr(pstr, 16)
+
+  return mclPoint
+}
+
+// input: a mcl G2 point
+// output: a 256-byte Buffer
+function BLS12_381_FromG2Point(input: any): Buffer {
+  // TODO: figure out if there is a better way to decode these values.
+  const decodeStr = input.getStr(16) //return a string of pattern "1 <x_coord_1> <x_coord_2> <y_coord_1> <y_coord_2>"
+  const decoded = decodeStr.match(/"?[0-9a-f]+"?/g) // match above pattern.
+
+  // note: decoded[0] == 1
+  const x_1 = padToEven(decoded[1])
+  const x_2 = padToEven(decoded[2])
+  const y_1 = padToEven(decoded[3])
+  const y_2 = padToEven(decoded[4])
+
+  // convert to buffers.
+
+  const xBuffer1 = Buffer.concat([Buffer.alloc(64 - x_1.length / 2, 0), Buffer.from(x_1, 'hex')])
+  const xBuffer2 = Buffer.concat([Buffer.alloc(64 - x_2.length / 2, 0), Buffer.from(x_2, 'hex')])
+  const yBuffer1 = Buffer.concat([Buffer.alloc(64 - y_1.length / 2, 0), Buffer.from(y_1, 'hex')])
+  const yBuffer2 = Buffer.concat([Buffer.alloc(64 - y_2.length / 2, 0), Buffer.from(y_2, 'hex')])
+
+  return Buffer.concat([xBuffer1, xBuffer2, yBuffer1, yBuffer2])
+}
+
+export { BLS12_381_ToG1Point, BLS12_381_FromG1Point, BLS12_381_ToG2Point, BLS12_381_FromG2Point }
