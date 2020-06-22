@@ -118,6 +118,8 @@ async function test() {
 test()
 ```
 
+Additional examples with detailed explanations are available [here](https://github.com/gabrocheleau/merkle-patricia-trees-examples).
+
 # API
 
 [Documentation](./docs/README.md)
@@ -131,9 +133,9 @@ test()
 - Wiki
   - [Ethereum Trie Specification](https://github.com/ethereum/wiki/wiki/Patricia-Tree)
 - Blog posts
-  - [Exploring Ethereum's State Trie with Node.js](https://wanderer.github.io/ethereum/nodejs/code/2014/05/21/using-ethereums-tries-with-node/)
+  - [Ethereum's Merkle Patricia Trees - An Interactive JavaScript Tutorial](https://rockwaterweb.com/ethereum-merkle-patricia-trees-javascript-tutorial/)
   - [Merkling in Ethereum](https://blog.ethereum.org/2015/11/15/merkling-in-ethereum/)
-  - [Understanding the Ethereum Trie](https://easythereentropy.wordpress.com/2014/06/04/understanding-the-ethereum-trie/)
+  - [Understanding the Ethereum Trie](https://easythereentropy.wordpress.com/2014/06/04/understanding-the-ethereum-trie/). Worth a read, but the Python libraries are outdated.
 - Videos
   - [Trie and Patricia Trie Overview](https://www.youtube.com/watch?v=jXAHLqQthKw&t=26s)
 
