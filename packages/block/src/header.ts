@@ -156,11 +156,7 @@ export class BlockHeader {
     if (this._common.hardforkGteHardfork(hardfork, 'byzantium')) {
       // max((2 if len(parent.uncles) else 1) - ((timestamp - parent.timestamp) // 9), -99) (EIP100)
       const uncleAddend = parentBlock.header.uncleHash.equals(KECCAK256_RLP_ARRAY) ? 1 : 2
-      let a = blockTs
-        .sub(parentTs)
-        .idivn(9)
-        .ineg()
-        .iaddn(uncleAddend)
+      let a = blockTs.sub(parentTs).idivn(9).ineg().iaddn(uncleAddend)
       const cutoff = new BN(-99)
       // MAX(cutoff, a)
       if (cutoff.cmp(a) === 1) {
@@ -189,11 +185,7 @@ export class BlockHeader {
       }
     } else if (this._common.hardforkGteHardfork(hardfork, 'homestead')) {
       // 1 - (block_timestamp - parent_timestamp) // 10
-      let a = blockTs
-        .sub(parentTs)
-        .idivn(10)
-        .ineg()
-        .iaddn(1)
+      let a = blockTs.sub(parentTs).idivn(10).ineg().iaddn(1)
       const cutoff = new BN(-99)
       // MAX(cutoff, a)
       if (cutoff.cmp(a) === 1) {

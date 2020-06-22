@@ -31,7 +31,7 @@ export default class FakeTransaction extends Transaction {
       enumerable: true,
       configurable: true,
       get: () => this.getSenderAddress(),
-      set: val => {
+      set: (val) => {
         if (val) {
           this._from = toBuffer(val)
         }

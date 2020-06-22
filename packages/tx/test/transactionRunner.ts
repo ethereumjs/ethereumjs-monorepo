@@ -30,15 +30,15 @@ const forkNameMap: ForkNamesMap = {
   Homestead: 'homestead',
 }
 
-tape('TransactionTests', t => {
+tape('TransactionTests', (t) => {
   const fileFilterRegex = file ? new RegExp(file + '[^\\w]') : undefined
 
   testing
     .getTests(
       'TransactionTests',
       (_filename: string, testName: string, testData: OfficialTransactionTestData) => {
-        t.test(testName, st => {
-          forkNames.forEach(forkName => {
+        t.test(testName, (st) => {
+          forkNames.forEach((forkName) => {
             const forkTestData = testData[forkName]
             const shouldBeInvalid = Object.keys(forkTestData).length === 0
             try {

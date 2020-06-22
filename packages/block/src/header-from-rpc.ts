@@ -31,7 +31,7 @@ export default function blockHeaderFromRpc(blockParams: any, chainOptions?: Chai
   )
 
   // override hash in case something was missing
-  blockHeader.hash = function() {
+  blockHeader.hash = function () {
     return toBuffer(blockParams.hash)
   }
 

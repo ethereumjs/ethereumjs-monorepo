@@ -1,8 +1,8 @@
 import * as tape from 'tape'
 import Common from '../src/'
 
-tape('[Common]: Hardfork logic', function(t: tape.Test) {
-  t.test('Hardfork access', function(st: tape.Test) {
+tape('[Common]: Hardfork logic', function (t: tape.Test) {
+  t.test('Hardfork access', function (st: tape.Test) {
     const supportedHardforks = [
       'chainstart',
       'homestead',
@@ -25,7 +25,7 @@ tape('[Common]: Hardfork logic', function(t: tape.Test) {
     st.end()
   })
 
-  t.test('hardforkBlock()', function(st: tape.Test) {
+  t.test('hardforkBlock()', function (st: tape.Test) {
     let c = new Common('ropsten')
     let msg = 'should return the correct HF change block for byzantium (provided)'
     st.equal(c.hardforkBlock('byzantium'), 1700000, msg)
@@ -41,7 +41,7 @@ tape('[Common]: Hardfork logic', function(t: tape.Test) {
     st.end()
   })
 
-  t.test('isHardforkBlock()', function(st: tape.Test) {
+  t.test('isHardforkBlock()', function (st: tape.Test) {
     let c = new Common('ropsten')
     let msg = 'should return true for HF change block for byzantium (provided)'
     st.equal(c.isHardforkBlock(1700000, 'byzantium'), true, msg)
@@ -59,7 +59,7 @@ tape('[Common]: Hardfork logic', function(t: tape.Test) {
     st.end()
   })
 
-  t.test('activeHardforks()', function(st: tape.Test) {
+  t.test('activeHardforks()', function (st: tape.Test) {
     let c = new Common('ropsten')
     let msg = 'should return 9 active hardforks for Ropsten'
     st.equal(c.activeHardforks().length, 9, msg)
@@ -96,7 +96,7 @@ tape('[Common]: Hardfork logic', function(t: tape.Test) {
     st.end()
   })
 
-  t.test('activeHardfork()', function(st: tape.Test) {
+  t.test('activeHardfork()', function (st: tape.Test) {
     let c = new Common('ropsten')
     let msg = 'should return muirGlacier as latest active HF for Ropsten'
     st.equal(c.activeHardfork(), 'muirGlacier', msg)
@@ -115,7 +115,7 @@ tape('[Common]: Hardfork logic', function(t: tape.Test) {
     st.end()
   })
 
-  t.test('hardforkIsActiveOnBlock() / activeOnBlock()', function(st: tape.Test) {
+  t.test('hardforkIsActiveOnBlock() / activeOnBlock()', function (st: tape.Test) {
     let c = new Common('ropsten')
     let msg = 'Ropsten, byzantium (provided), 1700000 -> true'
     st.equal(c.hardforkIsActiveOnBlock('byzantium', 1700000), true, msg)
@@ -142,7 +142,7 @@ tape('[Common]: Hardfork logic', function(t: tape.Test) {
     st.end()
   })
 
-  t.test('hardforkGteHardfork()', function(st: tape.Test) {
+  t.test('hardforkGteHardfork()', function (st: tape.Test) {
     let c = new Common('ropsten')
     let msg = 'Ropsten, constantinople >= byzantium (provided) -> true'
     st.equal(c.hardforkGteHardfork('constantinople', 'byzantium'), true, msg)
@@ -181,7 +181,7 @@ tape('[Common]: Hardfork logic', function(t: tape.Test) {
     st.end()
   })
 
-  t.test('hardforkGteHardfork() ropsten', function(st: tape.Test) {
+  t.test('hardforkGteHardfork() ropsten', function (st: tape.Test) {
     const c = new Common('ropsten')
     const msg = 'ropsten, spuriousDragon >= muirGlacier (provided) -> false'
     st.equal(c.hardforkGteHardfork('spuriousDragon', 'muirGlacier'), false, msg)
@@ -189,7 +189,7 @@ tape('[Common]: Hardfork logic', function(t: tape.Test) {
     st.end()
   })
 
-  t.test('hardforkIsActiveOnChain()', function(st: tape.Test) {
+  t.test('hardforkIsActiveOnChain()', function (st: tape.Test) {
     let c = new Common('ropsten')
     let msg = 'should return true for byzantium (provided) on Ropsten'
     st.equal(c.hardforkIsActiveOnChain('byzantium'), true, msg)
@@ -203,7 +203,7 @@ tape('[Common]: Hardfork logic', function(t: tape.Test) {
     msg = 'should return false for a non-existing HF (provided) on Ropsten'
     st.equal(c.hardforkIsActiveOnChain('notexistinghardfork'), false, msg)
 
-    let f = function() {
+    let f = function () {
       c.hardforkIsActiveOnChain('spuriousDragon', { onlySupported: true })
     }
     msg = 'should not throw with unsupported Hf (provided) and onlySupported set to false'
@@ -214,7 +214,7 @@ tape('[Common]: Hardfork logic', function(t: tape.Test) {
     st.equal(c.hardforkIsActiveOnChain(), true, msg)
 
     c = new Common('ropsten', null, ['byzantium', 'constantinople'])
-    f = function() {
+    f = function () {
       c.hardforkIsActiveOnChain('spuriousDragon', { onlySupported: true })
     }
     msg = 'should throw with unsupported Hf and onlySupported set to true'
@@ -223,7 +223,7 @@ tape('[Common]: Hardfork logic', function(t: tape.Test) {
     st.end()
   })
 
-  t.test('_calcForkHash()', function(st: tape.Test) {
+  t.test('_calcForkHash()', function (st: tape.Test) {
     let c = new Common('mainnet')
     let msg = 'should calc correctly for chainstart (only genesis)'
     st.equal(c._calcForkHash('chainstart'), '0xfc64ec04', msg)
@@ -236,7 +236,7 @@ tape('[Common]: Hardfork logic', function(t: tape.Test) {
 
     const chains = ['mainnet', 'ropsten', 'rinkeby', 'goerli', 'kovan']
 
-    chains.forEach(chain => {
+    chains.forEach((chain) => {
       c = new Common(chain)
 
       for (const hf of c.hardforks()) {
@@ -250,7 +250,7 @@ tape('[Common]: Hardfork logic', function(t: tape.Test) {
     st.end()
   })
 
-  t.test('forkHash()', function(st: tape.Test) {
+  t.test('forkHash()', function (st: tape.Test) {
     let c = new Common('mainnet')
     let f = () => {
       c.forkHash()

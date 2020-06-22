@@ -53,7 +53,7 @@ export function callbackify(original: any): any {
 
     //tslint:disable-next-line no-invalid-this
     const self = this
-    const cb = function() {
+    const cb = function () {
       return maybeCb.apply(self, arguments)
     }
 
@@ -61,10 +61,10 @@ export function callbackify(original: any): any {
     // implications (stack, `uncaughtException`, `async_hooks`)
     //tslint:disable-next-line no-invalid-this
     original.apply(this, args).then(
-      function(ret: any) {
+      function (ret: any) {
         process.nextTick(cb.bind(null, null, ret))
       },
-      function(rej: any) {
+      function (rej: any) {
         process.nextTick(callbackifyOnRejected.bind(null, rej, cb))
       },
     )

@@ -10,11 +10,11 @@ import { TxData } from '../src'
 const txFixtures: TxsJsonEntry[] = require('./txs.json')
 const txFixturesEip155: VitaliksTestsDataEntry[] = require('./ttTransactionTestEip155VitaliksTests.json')
 
-tape('[Transaction]: Basic functions', function(t) {
+tape('[Transaction]: Basic functions', function (t) {
   const transactions: Transaction[] = []
 
-  t.test('should decode transactions', function(st) {
-    txFixtures.slice(0, 4).forEach(function(tx: any) {
+  t.test('should decode transactions', function (st) {
+    txFixtures.slice(0, 4).forEach(function (tx: any) {
       const pt = new Transaction(tx.raw)
       st.equal('0x' + pt.nonce.toString('hex'), tx.raw[0])
       st.equal('0x' + pt.gasPrice.toString('hex'), tx.raw[1])
@@ -30,14 +30,14 @@ tape('[Transaction]: Basic functions', function(t) {
     st.end()
   })
 
-  t.test('should serialize', function(st) {
-    transactions.forEach(function(tx) {
+  t.test('should serialize', function (st) {
+    transactions.forEach(function (tx) {
       st.deepEqual(tx.serialize(), rlp.encode(tx.raw))
     })
     st.end()
   })
 
-  t.test('should hash', function(st) {
+  t.test('should hash', function (st) {
     const tx = new Transaction(txFixtures[3].raw)
     st.deepEqual(
       tx.hash(),
@@ -54,7 +54,7 @@ tape('[Transaction]: Basic functions', function(t) {
     st.end()
   })
 
-  t.test('should hash with defined chainId', function(st) {
+  t.test('should hash with defined chainId', function (st) {
     const tx = new Transaction(txFixtures[4].raw)
     st.equal(
       tx.hash().toString('hex'),
@@ -71,23 +71,23 @@ tape('[Transaction]: Basic functions', function(t) {
     st.end()
   })
 
-  t.test('should verify Signatures', function(st) {
-    transactions.forEach(function(tx) {
+  t.test('should verify Signatures', function (st) {
+    transactions.forEach(function (tx) {
       st.equals(tx.verifySignature(), true)
     })
     st.end()
   })
 
-  t.test('should not verify Signatures', function(st) {
-    transactions.forEach(function(tx) {
+  t.test('should not verify Signatures', function (st) {
+    transactions.forEach(function (tx) {
       tx.s = zeros(32)
       st.equals(tx.verifySignature(), false)
     })
     st.end()
   })
 
-  t.test('should give a string about not verifing Signatures', function(st) {
-    transactions.forEach(function(tx) {
+  t.test('should give a string about not verifing Signatures', function (st) {
+    transactions.forEach(function (tx) {
       st.equals(
         tx.validate(true).slice(0, 54),
         'Invalid Signature gas limit is too low. Need at least ',
@@ -96,15 +96,15 @@ tape('[Transaction]: Basic functions', function(t) {
     st.end()
   })
 
-  t.test('should validate', function(st) {
-    transactions.forEach(function(tx) {
+  t.test('should validate', function (st) {
+    transactions.forEach(function (tx) {
       st.equals(tx.validate(), false)
     })
     st.end()
   })
 
-  t.test('should sign tx', function(st) {
-    transactions.forEach(function(tx, i) {
+  t.test('should sign tx', function (st) {
+    transactions.forEach(function (tx, i) {
       if (txFixtures[i].privateKey) {
         const privKey = Buffer.from(txFixtures[i].privateKey, 'hex')
         tx.sign(privKey)
@@ -113,8 +113,8 @@ tape('[Transaction]: Basic functions', function(t) {
     st.end()
   })
 
-  t.test("should get sender's address after signing it", function(st) {
-    transactions.forEach(function(tx, i) {
+  t.test("should get sender's address after signing it", function (st) {
+    transactions.forEach(function (tx, i) {
       if (txFixtures[i].privateKey) {
         st.equals(tx.getSenderAddress().toString('hex'), txFixtures[i].sendersAddress)
       }
@@ -122,8 +122,8 @@ tape('[Transaction]: Basic functions', function(t) {
     st.end()
   })
 
-  t.test("should get sender's public key after signing it", function(st) {
-    transactions.forEach(function(tx, i) {
+  t.test("should get sender's public key after signing it", function (st) {
+    transactions.forEach(function (tx, i) {
       if (txFixtures[i].privateKey) {
         st.equals(
           tx.getSenderPublicKey().toString('hex'),
@@ -134,10 +134,10 @@ tape('[Transaction]: Basic functions', function(t) {
     st.end()
   })
 
-  t.test("should get sender's address after signing it (second call should be cached)", function(
+  t.test("should get sender's address after signing it (second call should be cached)", function (
     st,
   ) {
-    transactions.forEach(function(tx, i) {
+    transactions.forEach(function (tx, i) {
       if (txFixtures[i].privateKey) {
         st.equals(tx.getSenderAddress().toString('hex'), txFixtures[i].sendersAddress)
         st.equals(tx.getSenderAddress().toString('hex'), txFixtures[i].sendersAddress)
@@ -146,8 +146,8 @@ tape('[Transaction]: Basic functions', function(t) {
     st.end()
   })
 
-  t.test('should verify signing it', function(st) {
-    transactions.forEach(function(tx, i) {
+  t.test('should verify signing it', function (st) {
+    transactions.forEach(function (tx, i) {
       if (txFixtures[i].privateKey) {
         st.equals(tx.verifySignature(), true)
       }
@@ -155,15 +155,15 @@ tape('[Transaction]: Basic functions', function(t) {
     st.end()
   })
 
-  t.test('should validate with string option', function(st) {
-    transactions.forEach(function(tx) {
+  t.test('should validate with string option', function (st) {
+    transactions.forEach(function (tx) {
       tx.gasLimit = toBuffer(30000)
       st.equals(tx.validate(true), '')
     })
     st.end()
   })
 
-  t.test('should round trip decode a tx', function(st) {
+  t.test('should round trip decode a tx', function (st) {
     const tx = new Transaction()
     tx.value = toBuffer(5000)
     const s1 = tx.serialize().toString('hex')
@@ -173,14 +173,14 @@ tape('[Transaction]: Basic functions', function(t) {
     st.end()
   })
 
-  t.test('should accept lesser r values', function(st) {
+  t.test('should accept lesser r values', function (st) {
     const tx = new Transaction()
     tx.r = toBuffer('0x0005')
     st.equals(tx.r.toString('hex'), '05')
     st.end()
   })
 
-  t.test('should return data fee', function(st) {
+  t.test('should return data fee', function (st) {
     let tx = new Transaction()
     st.equals(tx.getDataFee().toNumber(), 0)
 
@@ -190,13 +190,13 @@ tape('[Transaction]: Basic functions', function(t) {
     st.end()
   })
 
-  t.test('should return base fee', function(st) {
+  t.test('should return base fee', function (st) {
     const tx = new Transaction()
     st.equals(tx.getBaseFee().toNumber(), 53000)
     st.end()
   })
 
-  t.test('should return upfront cost', function(st) {
+  t.test('should return upfront cost', function (st) {
     const tx = new Transaction({
       gasPrice: 1000,
       gasLimit: 10000000,
@@ -206,8 +206,8 @@ tape('[Transaction]: Basic functions', function(t) {
     st.end()
   })
 
-  t.test("Verify EIP155 Signature based on Vitalik's tests", function(st) {
-    txFixturesEip155.forEach(function(tx) {
+  t.test("Verify EIP155 Signature based on Vitalik's tests", function (st) {
+    txFixturesEip155.forEach(function (tx) {
       const pt = new Transaction(tx.rlp)
       st.equal(pt.hash(false).toString('hex'), tx.hash)
       st.equal('0x' + pt.serialize().toString('hex'), tx.rlp)
@@ -216,7 +216,7 @@ tape('[Transaction]: Basic functions', function(t) {
     st.end()
   })
 
-  t.test('Verify EIP155 Signature before and after signing with private key', function(st) {
+  t.test('Verify EIP155 Signature before and after signing with private key', function (st) {
     // Inputs and expected results for this test are taken directly from the example in https://eips.ethereum.org/EIPS/eip-155
     const txRaw = [
       '0x09',
@@ -253,7 +253,7 @@ tape('[Transaction]: Basic functions', function(t) {
 
   t.test(
     'Serialize correctly after being signed with EIP155 Signature for tx created on ropsten',
-    function(st) {
+    function (st) {
       const txRaw = [
         '0x1',
         '0x02540be400',
@@ -277,7 +277,7 @@ tape('[Transaction]: Basic functions', function(t) {
     },
   )
 
-  t.test('sign tx with chainId specified in params', function(st) {
+  t.test('sign tx with chainId specified in params', function (st) {
     const tx = new Transaction({}, { chain: 42 })
     st.equal(tx.getChainId(), 42)
     const privKey = Buffer.from(txFixtures[0].privateKey, 'hex')
@@ -289,7 +289,7 @@ tape('[Transaction]: Basic functions', function(t) {
     st.end()
   })
 
-  t.test('throws when creating a a transaction with incompatible chainid and v value', function(
+  t.test('throws when creating a a transaction with incompatible chainid and v value', function (
     st,
   ) {
     const tx = new Transaction({}, { chain: 42 })
@@ -301,7 +301,7 @@ tape('[Transaction]: Basic functions', function(t) {
     st.end()
   })
 
-  t.test('Throws if chain/hardfork and commmon options are given', function(st) {
+  t.test('Throws if chain/hardfork and commmon options are given', function (st) {
     st.throws(
       () => new Transaction({}, { common: new Common('mainnet', 'petersburg'), chain: 'mainnet' }),
     )
@@ -318,7 +318,7 @@ tape('[Transaction]: Basic functions', function(t) {
     st.end()
   })
 
-  t.test('Throws if v is set to an EIP155-encoded value incompatible with the chain id', function(
+  t.test('Throws if v is set to an EIP155-encoded value incompatible with the chain id', function (
     st,
   ) {
     const tx = new Transaction({}, { chain: 42 })
@@ -333,8 +333,8 @@ tape('[Transaction]: Basic functions', function(t) {
     st.end()
   })
 
-  t.test('EIP155 hashing when singing', function(st) {
-    txFixtures.slice(0, 3).forEach(function(txData) {
+  t.test('EIP155 hashing when singing', function (st) {
+    txFixtures.slice(0, 3).forEach(function (txData) {
       const tx = new Transaction(txData.raw.slice(0, 6), { chain: 1 })
 
       const privKey = Buffer.from(txData.privateKey, 'hex')
@@ -352,7 +352,7 @@ tape('[Transaction]: Basic functions', function(t) {
 
   t.test(
     'Should ignore any previous signature when decided if EIP155 should be used in a new one',
-    function(st) {
+    function (st) {
       const privateKey = Buffer.from(
         '4646464646464646464646464646464646464646464646464646464646464646',
         'hex',
@@ -411,7 +411,7 @@ tape('[Transaction]: Basic functions', function(t) {
     },
   )
 
-  t.test('should return correct data fee for istanbul', function(st) {
+  t.test('should return correct data fee for istanbul', function (st) {
     let tx = new Transaction({}, { hardfork: 'istanbul' })
     st.equals(tx.getDataFee().toNumber(), 0)
 

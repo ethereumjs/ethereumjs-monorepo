@@ -19,8 +19,8 @@ const txData: FakeTxData = {
   s: '0x5d0904b8f9cfc092805df0cde2574d25e2c5fc28907a9a4741b3e857b68b0778',
 }
 
-tape('[FakeTransaction]: Basic functions', function(t) {
-  t.test('instantiate with from / create a hash', function(st) {
+tape('[FakeTransaction]: Basic functions', function (t) {
+  t.test('instantiate with from / create a hash', function (st) {
     st.plan(3)
     // This test doesn't use EIP155
     const tx = new FakeTransaction(txData, { chain: 'mainnet', hardfork: 'homestead' })
@@ -39,7 +39,7 @@ tape('[FakeTransaction]: Basic functions', function(t) {
     st.notDeepEqual(hash, hash2, 'previous hashes should be different')
   })
 
-  t.test('instantiate without from / create a hash', function(st) {
+  t.test('instantiate without from / create a hash', function (st) {
     const txDataNoFrom = Object.assign({}, txData)
     delete txDataNoFrom['from']
     st.plan(3)
@@ -59,7 +59,7 @@ tape('[FakeTransaction]: Basic functions', function(t) {
     st.notDeepEqual(hash, hash2, 'previous hashes should be different')
   })
 
-  t.test('should not produce hash collsions for different senders', function(st) {
+  t.test('should not produce hash collsions for different senders', function (st) {
     st.plan(1)
     const txDataModFrom = Object.assign({}, txData, {
       from: '0x2222222222222222222222222222222222222222',
@@ -75,7 +75,7 @@ tape('[FakeTransaction]: Basic functions', function(t) {
     )
   })
 
-  t.test('should retrieve "from" from signature if transaction is signed', function(st) {
+  t.test('should retrieve "from" from signature if transaction is signed', function (st) {
     const txDataNoFrom = Object.assign({}, txData)
     delete txDataNoFrom['from']
     st.plan(1)
@@ -84,7 +84,7 @@ tape('[FakeTransaction]: Basic functions', function(t) {
     st.equal(bufferToHex(tx.from), txData.from)
   })
 
-  t.test('should throw if common and chain options are passed to constructor', function(st) {
+  t.test('should throw if common and chain options are passed to constructor', function (st) {
     const txOptsInvalid = {
       chain: 'mainnet',
       common: new Common('mainnet', 'chainstart'),
@@ -93,7 +93,7 @@ tape('[FakeTransaction]: Basic functions', function(t) {
     st.throws(() => new FakeTransaction(txData, txOptsInvalid))
   })
 
-  t.test('should return toCreationAddress', st => {
+  t.test('should return toCreationAddress', (st) => {
     const tx = new FakeTransaction(txData)
     const txNoTo = new FakeTransaction({ ...txData, to: undefined })
     st.plan(2)
@@ -101,7 +101,7 @@ tape('[FakeTransaction]: Basic functions', function(t) {
     st.equal(txNoTo.toCreationAddress(), true, 'tx is "to" creation address')
   })
 
-  t.test('should return getChainId', st => {
+  t.test('should return getChainId', (st) => {
     const tx = new FakeTransaction(txData)
     const txWithChain = new FakeTransaction(txData, { chain: 3 })
     st.plan(2)
@@ -109,7 +109,7 @@ tape('[FakeTransaction]: Basic functions', function(t) {
     st.equal(txWithChain.getChainId(), 3, 'should return correct chainId')
   })
 
-  t.test('should getSenderAddress and getSenderPublicKey', st => {
+  t.test('should getSenderAddress and getSenderPublicKey', (st) => {
     const tx = new FakeTransaction(txData)
     st.plan(2)
     st.equal(
@@ -124,7 +124,7 @@ tape('[FakeTransaction]: Basic functions', function(t) {
     )
   })
 
-  t.test('should verifySignature', st => {
+  t.test('should verifySignature', (st) => {
     const tx = new FakeTransaction(txData)
     const txWithWrongSignature = new FakeTransaction({
       ...txData,
@@ -135,7 +135,7 @@ tape('[FakeTransaction]: Basic functions', function(t) {
     st.false(txWithWrongSignature.verifySignature(), 'signature is not valid')
   })
 
-  t.test('should sign', st => {
+  t.test('should sign', (st) => {
     const tx = new FakeTransaction(txData, { hardfork: 'tangerineWhistle' })
     tx.sign(Buffer.from('164122e5d39e9814ca723a749253663bafb07f6af91704d9754c361eb315f0c1', 'hex'))
     st.plan(3)
@@ -152,25 +152,25 @@ tape('[FakeTransaction]: Basic functions', function(t) {
     st.equal(tx.v.toString('hex'), '1c', 'v should be valid')
   })
 
-  t.test('should getDataFee', st => {
+  t.test('should getDataFee', (st) => {
     const tx = new FakeTransaction({ ...txData, data: '0x00000001' })
     st.plan(1)
     st.equal(tx.getDataFee().toString(), '80', 'data fee should be correct')
   })
 
-  t.test('should getBaseFee', st => {
+  t.test('should getBaseFee', (st) => {
     const tx = new FakeTransaction({ ...txData, data: '0x00000001' })
     st.plan(1)
     st.equal(tx.getBaseFee().toString(), '21080', 'base fee should be correct')
   })
 
-  t.test('should getUpfrontCost', st => {
+  t.test('should getUpfrontCost', (st) => {
     const tx = new FakeTransaction({ ...txData, gasLimit: '0x6464', gasPrice: '0x2' })
     st.plan(1)
     st.equal(tx.getUpfrontCost().toString(), '51400', 'base fee should be correct')
   })
 
-  t.test('should validate', st => {
+  t.test('should validate', (st) => {
     const tx = new FakeTransaction(txData)
     const txWithWrongSignature = new FakeTransaction({
       ...txData,
