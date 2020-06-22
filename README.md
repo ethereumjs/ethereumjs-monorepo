@@ -118,7 +118,7 @@ async function test() {
 test()
 ```
 
-Additional examples with detailed explanations are available in [this repository](https://github.com/gabrocheleau/merkle-patricia-trees-examples).
+Additional examples with detailed explanations are available [here](https://github.com/gabrocheleau/merkle-patricia-trees-examples).
 
 # API
 
