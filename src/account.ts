@@ -7,7 +7,7 @@ const {
 } = require('ethereum-cryptography/secp256k1')
 import * as assert from 'assert'
 import * as BN from 'bn.js'
-import { zeros, bufferToHex, toBuffer } from './bytes'
+import { zeros, bufferToHex } from './bytes'
 import { keccak, keccak256, keccakFromString, rlphash } from './hash'
 import { assertIsHexString, assertIsBuffer } from './helpers'
 
