@@ -1,6 +1,7 @@
 module.exports = function(config) {
   config.set({
     frameworks: ['mocha', 'karma-typescript'],
+    exclude: ["src/@types/**"],  // ref: https://github.com/monounity/karma-typescript/issues/254
     files: ['src/**/*.ts', 'test/**/*.ts'],
     preprocessors: {
       '**/*.ts': ['karma-typescript'],
