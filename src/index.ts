@@ -29,6 +29,11 @@ export * from './bytes'
 export * from './object'
 
 /**
- * External exports (ethjsUtil, BN, rlp, secp256k1)
+ * External exports (BN, rlp, secp256k1)
  */
 export * from './externals'
+
+/**
+ * Export ethjs-util methods
+ */
+export * from 'ethjs-util'

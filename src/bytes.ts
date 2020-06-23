@@ -1,4 +1,4 @@
-const ethjsUtil = require('ethjs-util')
+import * as ethjsUtil from 'ethjs-util'
 import * as BN from 'bn.js'
 import { assertIsBuffer, assertIsArray, assertIsHexString } from './helpers'
 

@@ -1,4 +1,4 @@
-const ethjsUtil = require('ethjs-util')
+import * as ethjsUtil from 'ethjs-util'
 import * as assert from 'assert'
 import * as secp256k1 from 'secp256k1'
 import * as BN from 'bn.js'

@@ -1,4 +1,4 @@
-const ethjsUtil = require('ethjs-util')
+import * as ethjsUtil from 'ethjs-util'
 
 /**
  * Throws if a string is not hex prefixed
