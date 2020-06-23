@@ -1,4 +1,4 @@
-const ethjsUtil = require('ethjs-util')
+import * as ethjsUtil from 'ethjs-util'
 import * as assert from 'assert'
 import * as rlp from 'rlp'
 import { toBuffer, baToJSON, unpadBuffer } from './bytes'

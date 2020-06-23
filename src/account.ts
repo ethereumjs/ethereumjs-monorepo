@@ -1,4 +1,4 @@
-const ethjsUtil = require('ethjs-util')
+import * as ethjsUtil from 'ethjs-util'
 const {
   privateKeyVerify,
   publicKeyCreate,
