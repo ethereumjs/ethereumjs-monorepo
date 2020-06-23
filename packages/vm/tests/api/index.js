@@ -114,8 +114,7 @@ tape('VM with blockchain', t => {
     const head = await getHeadP(vm.blockchain)
     st.equal(head.hash().toString('hex'), testData.blocks[0].blockHeader.hash.slice(2))
 
-    const setupPreP = promisify(setupPreConditions)
-    await setupPreP(vm.stateManager._trie, testData)
+    await setupPreConditions(vm.stateManager._trie, testData)
 
     vm.runBlock = block => new Promise((resolve, reject) => reject(new Error('test')))
     vm.runBlockchain()
@@ -143,8 +142,7 @@ tape('VM with blockchain', t => {
     const head = await getHeadP(vm.blockchain)
     st.equal(head.hash().toString('hex'), testData.blocks[0].blockHeader.hash.slice(2))
 
-    const setupPreP = promisify(setupPreConditions)
-    await setupPreP(vm.stateManager._trie, testData)
+    await setupPreConditions(vm.stateManager._trie, testData)
 
     await vm.runBlockchain()
 

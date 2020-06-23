@@ -56,8 +56,7 @@ async function runTestCase(options, testData, t) {
     hardfork: options.forkConfigVM,
   })
 
-  const setupPreconditionsAsync = util.promisify(testUtil.setupPreConditions)
-  await setupPreconditionsAsync(state, testData)
+  await testUtil.setupPreConditions(state, testData)
 
   let tx = testUtil.makeTx(testData.transaction, options.forkConfigVM)
   block = testUtil.makeBlockFromEnv(testData.env)
