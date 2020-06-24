@@ -46,7 +46,7 @@
     "@ethereumjs/account": "^3.0.0",
     "@ethereumjs/block": "^3.0.0",
     "@ethereumjs/blockchain": "^4.0.3",
-    "@ethereumjs/common": "^1.5.0",
+    "@ethereumjs/common": "^1.5.1",
     "@ethereumjs/tx": "^2.1.2",
     "ethereumjs-util": "^7.0.2",
     "functional-red-black-tree": "^1.0.1",

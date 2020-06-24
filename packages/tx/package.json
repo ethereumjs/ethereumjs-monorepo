@@ -31,7 +31,7 @@
   "author": "mjbecze <mb@ethdev.com>",
   "license": "MPL-2.0",
   "dependencies": {
-    "@ethereumjs/common": "^1.5.0",
+    "@ethereumjs/common": "^1.5.1",
     "ethereumjs-util": "^7.0.2"
   },
   "devDependencies": {
