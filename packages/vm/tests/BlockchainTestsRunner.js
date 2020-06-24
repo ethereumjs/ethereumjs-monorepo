@@ -51,8 +51,7 @@ module.exports = async function runBlockchainTest(options, testData, t) {
   }
 
   // set up pre-state
-  const setupPreConditionsAsync = util.promisify(testUtil.setupPreConditions)
-  await setupPreConditionsAsync(state, testData)
+  await testUtil.setupPreConditions(state, testData)
 
   // create and add genesis block
   genesisBlock.header = new BlockHeader(formatBlockHeader(testData.genesisBlockHeader), {
