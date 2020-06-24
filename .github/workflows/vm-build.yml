@@ -28,7 +28,7 @@ jobs:
         uses: actions/cache@v2
         id: cache
         with:
-          key: ${{ name }}-${{ runner.os }}-${{ matrix.node-version }}-${{ hashFiles('**/package-lock.json') }}
+          key: VM-${{ runner.os }}-${{ matrix.node-version }}-${{ hashFiles('**/package-lock.json') }}
           path: '**/node_modules'
 
       # Installs root dependencies, ignoring Bootstrap All script.
@@ -64,7 +64,7 @@ jobs:
         uses: actions/cache@v2
         id: cache
         with:
-          key: ${{ name }}-${{ runner.os }}-${{ matrix.node-version }}-${{ hashFiles('**/package-lock.json') }}
+          key: VM-${{ runner.os }}-${{ matrix.node-version }}-${{ hashFiles('**/package-lock.json') }}
           path: '**/node_modules'
 
       # Installs root dependencies, ignoring Bootstrap All script.
@@ -91,7 +91,7 @@ jobs:
         uses: actions/cache@v2
         id: cache
         with:
-          key: ${{ name }}-${{ runner.os }}-${{ matrix.node-version }}-${{ hashFiles('**/package-lock.json') }}
+          key: VM-${{ runner.os }}-${{ matrix.node-version }}-${{ hashFiles('**/package-lock.json') }}
           path: '**/node_modules'
 
       # Installs root dependencies, ignoring Bootstrap All script.
