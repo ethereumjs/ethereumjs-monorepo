@@ -1,4 +1,5 @@
 const async = require('async')
+const promisify = require('util.promisify')
 const { BN, rlp, keccak256, stripHexPrefix, setLengthLeft } = require('ethereumjs-util')
 const Account = require('@ethereumjs/account').default
 const Transaction = require('@ethereumjs/tx').Transaction
@@ -358,70 +359,48 @@ exports.makeRunCodeData = function (exec, account, block) {
 
 /**
  * setupPreConditions given JSON testData
- * @param {[type]}   state    - the state DB/trie
- * @param {[type]}   testData - JSON from tests repo
- * @param {Function} done     - callback when function is completed
+ * @param state - the state DB/trie
+ * @param testData - JSON from tests repo
  */
-exports.setupPreConditions = function (state, testData, done) {
+exports.setupPreConditions = async function (state, testData) {
   const keysOfPre = Object.keys(testData.pre)
 
-  async.eachSeries(
-    keysOfPre,
-    function (key, callback) {
-      const acctData = testData.pre[key]
-      const account = new Account()
+  for (const address of keysOfPre) {
+    const { nonce, balance, code, storage } = testData.pre[address]
+    const account = new Account({ nonce, balance })
 
-      account.nonce = format(acctData.nonce)
-      account.balance = format(acctData.balance)
+    const addressBuf = format(address)
+    const codeBuf = format(code)
 
-      const codeBuf = Buffer.from(acctData.code.slice(2), 'hex')
-      const storageTrie = state.copy()
-      storageTrie.root = null
+    const storageTrie = state.copy()
+    storageTrie.root = null
 
-      async.series(
-        [
-          function (cb2) {
-            var keys = Object.keys(acctData.storage)
+    // Set contract storage
+    const storageKeys = Object.keys(storage)
+    for (const key of storageKeys) {
+      const valBN = new BN(format(storage[key]), 16)
+      if (valBN.isZero()) {
+        continue
+      }
+      const val = rlp.encode(valBN.toArrayLike(Buffer, 'be'))
+      const storageKey = setLengthLeft(format(key), 32)
 
-            async.forEachSeries(
-              keys,
-              function (key, cb3) {
-                const valBN = new BN(acctData.storage[key].slice(2), 16)
-                if (valBN.isZero()) {
-                  return cb3()
-                }
-                let val = rlp.encode(valBN.toArrayLike(Buffer, 'be'))
-                key = setLengthLeft(Buffer.from(key.slice(2), 'hex'), 32)
+      await promisify(storageTrie.put.bind(storageTrie))(storageKey, val)
+    }
 
-                storageTrie.put(key, val, cb3)
-              },
-              cb2,
-            )
-          },
-          function (cb2) {
-            account.setCode(state, codeBuf, cb2)
-          },
-          function (cb2) {
-            account.stateRoot = storageTrie.root
+    await promisify(account.setCode.bind(account))(state, codeBuf)
 
-            if (testData.exec && key === testData.exec.address) {
-              testData.root = storageTrie.root
-            }
-            state.put(Buffer.from(stripHexPrefix(key), 'hex'), account.serialize(), function () {
-              cb2()
-            })
-          },
-        ],
-        callback,
-      )
-    },
-    done,
-  )
+    account.stateRoot = storageTrie.root
+
+    if (testData.exec && testData.exec.address === address) {
+      testData.root = storageTrie.root
+    }
+
+    await promisify(state.put.bind(state))(addressBuf, account.serialize())
+  }
 }
 
 /**
-<<<<<<< HEAD
-=======
  * Returns an alias for specified hardforks to meet test dependencies requirements/assumptions.
  * @param {String} forkConfig - the name of the hardfork for which an alias should be returned
  * @returns {String} Either an alias of the forkConfig param, or the forkConfig param itself
@@ -439,7 +418,6 @@ exports.getRequiredForkConfigAlias = function (forkConfig) {
 }
 
 /**
->>>>>>> update to ethereumjs-util 7.0.2
  * Checks if in a karma test runner.
  * @returns {bool} is running in karma
  */
