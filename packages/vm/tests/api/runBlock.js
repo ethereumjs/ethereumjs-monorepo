@@ -121,8 +121,7 @@ tape('should run valid block', async (t) => {
   const genesis = new Block(util.rlp.decode(suite.data.genesisRLP))
   const block = new Block(util.rlp.decode(suite.data.blocks[0].rlp))
 
-  const setupPreP = promisify(setupPreConditions)
-  await setupPreP(suite.vm.stateManager._trie, suite.data)
+  await setupPreConditions(suite.vm.stateManager._trie, suite.data)
 
   t.equal(
     suite.vm.stateManager._trie.root.toString('hex'),
