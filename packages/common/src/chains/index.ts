@@ -6,7 +6,7 @@ export const chains: chainsType = {
     '3': 'ropsten',
     '4': 'rinkeby',
     '42': 'kovan',
-    '6284': 'goerli',
+    '5': 'goerli',
   },
   mainnet: require('./mainnet.json'),
   ropsten: require('./ropsten.json'),
