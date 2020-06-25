@@ -775,6 +775,9 @@ export const handlers: { [k: string]: OpHandler } = {
     runState.stack.push(ret)
   },
   STATICCALL: async function (runState: RunState) {
+    if (!runState._common.gteHardfork('byzantium')) {
+      trap(ERROR.INVALID_OPCODE)
+    }
     const value = new BN(0)
     let [gasLimit, toAddress, inOffset, inLength, outOffset, outLength] = runState.stack.popN(6)
     const toAddressBuf = addressToBuffer(toAddress)
@@ -803,6 +806,9 @@ export const handlers: { [k: string]: OpHandler } = {
     runState.eei.finish(returnData)
   },
   REVERT: function (runState: RunState) {
+    if (!runState._common.gteHardfork('byzantium')) {
+      trap(ERROR.INVALID_OPCODE)
+    }
     const [offset, length] = runState.stack.popN(2)
     subMemUsage(runState, offset, length)
     let returnData = Buffer.alloc(0)
