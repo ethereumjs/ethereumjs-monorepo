@@ -121,9 +121,49 @@ tape('Berlin BLS tests', (t) => {
             }
         }
 
-        st.pass("BLS G1ADD output is correct")
+        st.pass("BLS G2ADD output is correct")
 
         st.end()
     })
+
+    t.test('G2MUL precompile', async (st) => {
+        const fileStr = fs.readFileSync("g2_mul.csv", 'utf8')   // read test file csv (https://raw.githubusercontent.com/matter-labs/eip1962/master/src/test/test_vectors/eip2537/g2_mul.csv)
+        const remFirstLine = fileStr.slice(13)                  // remove the first line 
+        const results = remFirstLine.match(/[0-9A-Fa-f]+/g)     // very simple splitter
+
+        const BLS_G2MUL_Address = "000000000000000000000000000000000000000e"
+        const common = new Common('mainnet', 'berlin')
+
+        const vm = new VM({ common: common })
+
+        if (results.length != 200) {
+            st.fail('amount of tests not the expected test amount')
+        }
+
+        for (let i = 0; i < results.length; i+=2) {
+            const input = results[i]
+            const output = results[i + 1]
+            const result = await vm.runCall({
+                caller: Buffer.from('0000000000000000000000000000000000000000', 'hex'),
+                gasLimit: new BN(0xffffffffff),
+                to: Buffer.from(BLS_G2MUL_Address, 'hex'),
+                value: new BN(0),
+                data: Buffer.from(input, 'hex')
+            })
+          
+            if (result.execResult.returnValue.toString('hex') != output) {
+                st.fail("BLS G2MUL return value is not the expected value")
+            }
+
+            if (!result.execResult.gasUsed.eq(new BN(55000))) {
+                st.fail("BLS G2MUL gas used is incorrect")
+            }
+        }
+
+        st.pass("BLS G2MUL output is correct")
+
+        st.end()
+    })
+
   })
 

@@ -11,6 +11,7 @@ import { default as p9 } from './09-blake2f'
 import { default as pa } from './0a-bls12-g1add'
 import { default as pb } from './0b-bls12-g1mul'
 import { default as pd } from './0d-bls12-g2add'
+import { default as pe } from './0e-bls12-g2mul'
 import Common from '@ethereumjs/common'
 
 interface Precompiles {
@@ -35,6 +36,7 @@ const precompiles: Precompiles = {
   '000000000000000000000000000000000000000a': pa,
   '000000000000000000000000000000000000000b': pb,
   '000000000000000000000000000000000000000d': pd,
+  '000000000000000000000000000000000000000e': pe,
 }
 
 const precompileAvailability: PrecompileAvailability = {
@@ -50,6 +52,7 @@ const precompileAvailability: PrecompileAvailability = {
   '000000000000000000000000000000000000000a': 'berlin',
   '000000000000000000000000000000000000000b': 'berlin',
   '000000000000000000000000000000000000000d': 'berlin',
+  '000000000000000000000000000000000000000e': 'berlin',
 }
 
 function getPrecompile(address: string, common: Common): PrecompileFunc {
