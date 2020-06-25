@@ -401,9 +401,15 @@ export const handlers: { [k: string]: OpHandler } = {
     runState.stack.push(new BN(keccak256(code)))
   },
   RETURNDATASIZE: function (runState: RunState) {
+    if (!runState._common.gteHardfork('byzantium')) {
+      trap(ERROR.INVALID_OPCODE)
+    }
     runState.stack.push(runState.eei.getReturnDataSize())
   },
   RETURNDATACOPY: function (runState: RunState) {
+    if (!runState._common.gteHardfork('byzantium')) {
+      trap(ERROR.INVALID_OPCODE)
+    }
     let [memOffset, returnDataOffset, length] = runState.stack.popN(3)
 
     if (returnDataOffset.add(length).gt(runState.eei.getReturnDataSize())) {
