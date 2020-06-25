@@ -79,7 +79,7 @@ If no scope is provided, `npm run build:tree`, will build all sub-packages.
 
 ### Package scripts — run from `./packages/<name>`
 
- **⚠️ Important: if you run `npm install` from the package directory, it will remove all links to the local packages, pulling all dependencies from npm.**
+ **⚠️ Important: if you run `npm install` from the package directory, it will remove all links to the local packages, pulling all dependencies from npm. Run `npm install` from the root only.**
  
 There's a set of rather standardized commands you will find in each package of this repository.
 

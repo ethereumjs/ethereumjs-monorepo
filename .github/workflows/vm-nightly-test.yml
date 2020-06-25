@@ -2,53 +2,125 @@ name: VM Nightly
 on:
   schedule:
     - cron: 0 0 * * *
+
+env:
+  cwd: ${{github.workspace}}/packages/vm
+
+defaults:
+  run:
+    working-directory: packages/vm
+
 jobs:
   test-vm-api:
     runs-on: ubuntu-latest
-    env:
-      cwd: ${{github.workspace}}/packages/vm
     steps:
       - uses: actions/setup-node@v1
         with:
           node-version: 12.x
       - uses: actions/checkout@v1
-      - run: npx lerna bootstrap --scope @ethereumjs/vm --ignore-scripts --include-dependencies --no-ci
-      - run: npx lerna run build --scope @ethereumjs/vm --include-dependencies
-      - run: npx lerna run test:API --scope @ethereumjs/vm
-      - run: npx lerna run test:API:browser --scope @ethereumjs/vm
+
+      # This is important, so the CI runs with a fresh combination of packages
+      - run: rm package-lock.json packages/*/package-lock.json
+        working-directory: ${{github.workspace}}
+
+      - name: Dependency cache
+        uses: actions/cache@v2
+        id: cache
+        with:
+          key: VM-${{ runner.os }}-${{ matrix.node-version }}-${{ hashFiles('**/package-lock.json') }}
+          path: '**/node_modules'
+
+      - run: npm install
+        if: steps.cache.outputs.cache-hit != 'true'
+        working-directory: ${{github.workspace}}
+
+      - run: npm run build
+        working-directory: ${{github.workspace}}
+
+      - run: npm run test:API
+      - run: npm run test:API:browser
+
   test-vm-state:
     runs-on: ubuntu-latest
-    env:
-      cwd: ${{github.workspace}}/packages/vm
     steps:
       - uses: actions/setup-node@v1
         with:
           node-version: 12.x
       - uses: actions/checkout@v1
-      - run: npx lerna bootstrap --scope @ethereumjs/vm --ignore-scripts --include-dependencies --no-ci
-      - run: npx lerna run build --scope @ethereumjs/vm --include-dependencies
-      - run: npx lerna run test:state:allForks --scope @ethereumjs/vm
+
+      # This is important, so the CI runs with a fresh combination of packages
+      - run: rm package-lock.json packages/*/package-lock.json
+        working-directory: ${{github.workspace}}
+
+      - name: Dependency cache
+        uses: actions/cache@v2
+        id: cache
+        with:
+          key: VM-${{ runner.os }}-${{ matrix.node-version }}-${{ hashFiles('**/package-lock.json') }}
+          path: '**/node_modules'
+
+      - run: npm install
+        if: steps.cache.outputs.cache-hit != 'true'
+        working-directory: ${{github.workspace}}
+
+      - run: npm run build
+        working-directory: ${{github.workspace}}
+
+      - run: npm run test:state:allForks
+
   test-vm-blockchain:
     runs-on: ubuntu-latest
-    env:
-      cwd: ${{github.workspace}}/packages/vm
     steps:
       - uses: actions/setup-node@v1
         with:
           node-version: 12.x
       - uses: actions/checkout@v1
-      - run: npx lerna bootstrap --scope @ethereumjs/vm --ignore-scripts --include-dependencies --no-ci
-      - run: npx lerna run build --scope @ethereumjs/vm --include-dependencies
-      - run: npx lerna run test:blockchain --scope @ethereumjs/vm
+
+      # This is important, so the CI runs with a fresh combination of packages
+      - run: rm package-lock.json packages/*/package-lock.json
+        working-directory: ${{github.workspace}}
+
+      - name: Dependency cache
+        uses: actions/cache@v2
+        id: cache
+        with:
+          key: VM-${{ runner.os }}-${{ matrix.node-version }}-${{ hashFiles('**/package-lock.json') }}
+          path: '**/node_modules'
+
+      - run: npm install
+        if: steps.cache.outputs.cache-hit != 'true'
+        working-directory: ${{github.workspace}}
+
+      - run: npm run build
+        working-directory: ${{github.workspace}}
+
+      - run: npm run test:blockchain
+        working-directory: '${{ env.cwd }}'
+
   test-vm-slow:
     runs-on: ubuntu-latest
-    env:
-      cwd: ${{github.workspace}}/packages/vm
     steps:
       - uses: actions/setup-node@v1
         with:
           node-version: 12.x
       - uses: actions/checkout@v1
-      - run: npx lerna bootstrap --scope @ethereumjs/vm --ignore-scripts --include-dependencies --no-ci
-      - run: npx lerna run build --scope @ethereumjs/vm --include-dependencies
-      - run: npx lerna run test:state:slow --scope @ethereumjs/vm
+      
+      # This is important, so the CI runs with a fresh combination of packages
+      - run: rm package-lock.json packages/*/package-lock.json
+        working-directory: ${{github.workspace}}
+
+      - name: Dependency cache
+        uses: actions/cache@v2
+        id: cache
+        with:
+          key: VM-${{ runner.os }}-${{ matrix.node-version }}-${{ hashFiles('**/package-lock.json') }}
+          path: '**/node_modules'
+
+      - run: npm install
+        if: steps.cache.outputs.cache-hit != 'true'
+        working-directory: ${{github.workspace}}
+
+      - run: npm run build
+        working-directory: ${{github.workspace}}
+      
+      - run: run test:state:slow
