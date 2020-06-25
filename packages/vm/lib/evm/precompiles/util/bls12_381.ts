@@ -72,4 +72,19 @@ function BLS12_381_FromG2Point(input: any): Buffer {
   return Buffer.concat([xBuffer1, xBuffer2, yBuffer1, yBuffer2])
 }
 
-export { BLS12_381_ToG1Point, BLS12_381_FromG1Point, BLS12_381_ToG2Point, BLS12_381_FromG2Point }
+// input: a 32-byte hex scalar Buffer
+// output: a mcl Fr point
+
+function BLS12_381_ToFrPoint(input: Buffer, mcl: any): any {
+  const mclHex = mcl.fromHexStr(input.toString('hex'))
+  const Fr = new mcl.Fr()
+  Fr.setBigEndianMod(mclHex)
+  return Fr
+}
+export {
+  BLS12_381_ToG1Point,
+  BLS12_381_FromG1Point,
+  BLS12_381_ToG2Point,
+  BLS12_381_FromG2Point,
+  BLS12_381_ToFrPoint,
+}
