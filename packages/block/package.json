@@ -43,7 +43,7 @@
     "@ethereumjs/tx": "^2.1.2",
     "@types/bn.js": "^4.11.6",
     "ethereumjs-util": "^7.0.2",
-    "merkle-patricia-tree": "^2.3.2"
+    "merkle-patricia-tree": "^4.0.0"
   },
   "devDependencies": {
     "@ethereumjs/config-nyc": "^1.1.1",

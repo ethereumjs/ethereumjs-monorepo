@@ -38,7 +38,9 @@ async function main() {
 
   await vm.runBlockchain(blockchain)
 
-  const blockchainHead = await promisify(vm.blockchain.getHead.bind(vm.blockchain))()
+  const blockchainHead = (await promisify(
+    vm.blockchain.getHead.bind(vm.blockchain),
+  )()) as BlockHeader
 
   console.log('--- Finished processing the BlockChain ---')
   console.log('New head:', '0x' + blockchainHead.hash().toString('hex'))
@@ -55,24 +57,23 @@ async function setupPreConditions(vm: VM, testData: any) {
   await vm.stateManager.checkpoint()
 
   for (const address of Object.keys(testData.pre)) {
-    const addressBuf = toBuffer(address)
-
     const acctData = testData.pre[address]
     const account = new Account({
       nonce: acctData.nonce,
       balance: acctData.balance,
     })
 
+    const addressBuf = Buffer.from(address.slice(2), 'hex')
     await vm.stateManager.putAccount(addressBuf, account)
 
     for (const hexStorageKey of Object.keys(acctData.storage)) {
-      const val = toBuffer(acctData.storage[hexStorageKey])
-      const storageKey = setLengthLeft(toBuffer(hexStorageKey), 32)
+      const val = Buffer.from(acctData.storage[hexStorageKey], 'hex')
+      const storageKey = setLengthLeft(Buffer.from(hexStorageKey, 'hex'), 32)
 
       await vm.stateManager.putContractStorage(addressBuf, storageKey, val)
     }
 
-    const codeBuf = toBuffer(acctData.code)
+    const codeBuf = Buffer.from(acctData.code.slice(2), 'hex')
 
     await vm.stateManager.putContractCode(addressBuf, codeBuf)
   }
@@ -81,9 +82,8 @@ async function setupPreConditions(vm: VM, testData: any) {
 }
 
 async function setGenesisBlock(blockchain: any, hardfork: string) {
-  const genesisBlock = new Block({ hardfork })
-  genesisBlock.header = new BlockHeader(testData.genesisBlockHeader, { hardfork })
-
+  const header = new BlockHeader(testData.genesisBlockHeader, { hardfork })
+  const genesisBlock = new Block([header.raw, [], []], { hardfork })
   await promisify(blockchain.putGenesis.bind(blockchain))(genesisBlock)
 }
 

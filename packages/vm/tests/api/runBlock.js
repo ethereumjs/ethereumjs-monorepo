@@ -1,5 +1,4 @@
 const tape = require('tape')
-const promisify = require('util.promisify')
 const { Block } = require('@ethereumjs/block')
 const Common = require('@ethereumjs/common').default
 const util = require('ethereumjs-util')
@@ -90,7 +89,9 @@ tape('should fail when block validation fails', async (t) => {
   const suite = setup()
 
   const block = new Block(util.rlp.decode(suite.data.blocks[0].rlp))
-  block.validate = async () => { throw new Error('test') }
+  block.validate = async () => {
+    throw new Error('test')
+  }
 
   await suite.p
     .runBlock({ block })

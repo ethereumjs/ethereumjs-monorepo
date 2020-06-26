@@ -4,7 +4,6 @@ import * as assert from 'assert'
 import * as path from 'path'
 import * as fs from 'fs'
 import { privateToAddress, bufferToHex } from 'ethereumjs-util'
-import { promisify } from 'util'
 import Account from '@ethereumjs/account'
 import { Transaction } from '@ethereumjs/tx'
 
@@ -78,10 +77,7 @@ function getGreeterDeploymentBytecode(solcOutput: any): any {
 }
 
 async function getAccountNonce(vm: VM, accountPrivateKey: Buffer) {
-  const account = (await promisify(vm.stateManager.getAccount.bind(vm.stateManager))(
-    privateToAddress(accountPrivateKey),
-  )) as Account
-
+  const account = await vm.stateManager.getAccount(privateToAddress(accountPrivateKey))
   return account.nonce
 }
 
@@ -170,7 +166,7 @@ async function main() {
   const account = new Account({ balance: 1e18 })
 
   const vm = new VM()
-  await promisify(vm.stateManager.putAccount.bind(vm.stateManager))(accountAddress, account)
+  await vm.stateManager.putAccount(accountAddress, account)
 
   console.log('Set account a balance of 1 ETH')
 

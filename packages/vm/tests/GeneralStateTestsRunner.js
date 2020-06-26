@@ -1,9 +1,7 @@
-const util = require('util')
-const testUtil = require('./util')
-const Trie = require('merkle-patricia-tree/secure')
-const ethUtil = require('ethereumjs-util')
+const { setupPreConditions, makeTx, makeBlockFromEnv } = require('./util')
+const Trie = require('merkle-patricia-tree').SecureTrie
+const { BN } = require('ethereumjs-util')
 const Account = require('@ethereumjs/account').default
-const BN = ethUtil.BN
 
 function parseTestCases(forkConfigTestSuite, testData, data, gasLimit, value) {
   let testCases = []
@@ -56,10 +54,10 @@ async function runTestCase(options, testData, t) {
     hardfork: options.forkConfigVM,
   })
 
-  await testUtil.setupPreConditions(state, testData)
+  await setupPreConditions(vm.stateManager._trie, testData)
 
-  let tx = testUtil.makeTx(testData.transaction, options.forkConfigVM)
-  block = testUtil.makeBlockFromEnv(testData.env)
+  let tx = makeTx(testData.transaction, options.forkConfigVM)
+  block = makeBlockFromEnv(testData.env)
   tx._homestead = true
   tx.enableHomestead = true
   block.isHomestead = function () {
@@ -98,8 +96,8 @@ async function runTestCase(options, testData, t) {
   }
 
   try {
-    await vm.runTx({ tx , block })
-  } catch(e) {
+    await vm.runTx({ tx, block })
+  } catch (e) {
     // If tx is invalid and coinbase is empty, the test harness
     // expects the coinbase account to be deleted from state.
     // Without this ecmul_0-3_5616_28000_96 would fail.
