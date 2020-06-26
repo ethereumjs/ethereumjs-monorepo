@@ -145,3 +145,32 @@ tape('should run valid block', async (t) => {
 
   t.end()
 })
+
+async function runWithHf(hardfork) {
+  const vm = setupVM({ hardfork: hardfork })
+  const suite = setup(vm)
+
+  const block = new Block(util.rlp.decode(suite.data.blocks[0].rlp))
+
+  await setupPreConditions(suite.vm.stateManager._trie, suite.data)
+
+  let res = await suite.p.runBlock({
+    block,
+    generate: true,
+    skipBlockValidation: true,
+  })
+  return res
+}
+
+tape('should return correct HF receipts', async (t) => {
+  let res = await runWithHf('byzantium')
+  t.equal(res.receipts[0].status, 1, 'should return correct post-Byzantium receipt format')
+  
+  res = await runWithHf('spuriousDragon')
+  t.deepEqual(
+    res.receipts[0].stateRoot,
+    Buffer.alloc(32),
+    'should return correct pre-Byzantium receipt format')
+
+  t.end()
+})

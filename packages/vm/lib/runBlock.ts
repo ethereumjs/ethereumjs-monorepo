@@ -44,7 +44,7 @@ export interface RunBlockResult {
   /**
    * Receipts generated for transactions in the block
    */
-  receipts: TxReceipt[]
+  receipts: (PreByzantiumTxReceipt | PostByzantiumTxReceipt)[]
   /**
    * Results of executing the transactions in the block
    */
@@ -52,13 +52,9 @@ export interface RunBlockResult {
 }
 
 /**
- * Receipt generated for a transaction
+ * Abstract interface with common transaction receipt fields
  */
-export interface TxReceipt {
-  /**
-   * Status of transaction, `1` if successful, `0` if an exception occured
-   */
-  status: 0 | 1
+interface TxReceipt {
   /**
    * Gas used
    */
@@ -71,6 +67,28 @@ export interface TxReceipt {
    * Logs emitted
    */
   logs: any[]
+}
+
+/**
+ * Pre-Byzantium receipt type with a field
+ * for the intermediary state root
+ */
+export interface PreByzantiumTxReceipt extends TxReceipt {
+  /**
+   * Intermediary state root
+   */
+  stateRoot: Buffer
+}
+
+/**
+ * Receipt type for Byzantium and beyond replacing the intermediary
+ * state root field with a status code field (EIP-658)
+ */
+export interface PostByzantiumTxReceipt extends TxReceipt {
+  /**
+   * Status of transaction, `1` if successful, `0` if an exception occured
+   */
+  status: 0 | 1
 }
 
 /**
@@ -219,12 +237,28 @@ async function applyTransactions(this: VM, block: any, opts: RunBlockOpts) {
     // Combine blooms via bitwise OR
     bloom.or(txRes.bloom)
 
-    const txReceipt: TxReceipt = {
-      status: txRes.execResult.exceptionError ? 0 : 1, // Receipts have a 0 as status on error
+    const abstractTxReceipt: TxReceipt = {
       gasUsed: gasUsed.toArrayLike(Buffer),
       bitvector: txRes.bloom.bitvector,
       logs: txRes.execResult.logs || [],
     }
+    let txReceipt
+    if (this._common.gteHardfork('byzantium')) {
+      txReceipt = {
+        status: txRes.execResult.exceptionError ? 0 : 1, // Receipts have a 0 as status on error
+        ...abstractTxReceipt,
+      } as PostByzantiumTxReceipt
+    } else {
+      // This is just using a dummy place holder for the state root right now.
+      // Giving the correct intermediary state root would need a too depp intervention
+      // into the current checkpointing mechanism which hasn't been considered
+      // to be worth it on a HF backport, 2020-06-26
+      txReceipt = {
+        stateRoot: Buffer.alloc(32),
+        ...abstractTxReceipt,
+      } as PreByzantiumTxReceipt
+    }
+
     receipts.push(txReceipt)
 
     // Add receipt to trie to later calculate receipt root
