@@ -1,0 +1,100 @@
+import BN = require('bn.js')
+import { PrecompileInput } from './types'
+import { VmErrorResult, ExecResult, OOGResult } from '../evm'
+import { ERROR, VmError } from '../../exceptions'
+const assert = require('assert')
+const { BLS12_381_ToG1Point, BLS12_381_ToG2Point } = require('./util/bls12_381')
+
+const zeroBuffer = Buffer.alloc(32, 0)
+const oneBuffer = Buffer.concat([Buffer.alloc(31, 0), Buffer.from('01', 'hex')])
+
+export default async function (opts: PrecompileInput): Promise<ExecResult> {
+  assert(opts.data)
+
+  const mcl = opts._VM._mcl
+
+  let inputData = opts.data
+
+  let baseGas = new BN(opts._common.param('gasPrices', 'Bls12381PairingBaseGas'))
+
+  if (inputData.length == 0) {
+    return VmErrorResult(new VmError(ERROR.BLS_12_381_PAIRING_EMPTY), baseGas)
+  }
+
+  if (inputData.length % 384 != 0) {
+    return VmErrorResult(new VmError(ERROR.BLS_12_381_INVALID_INPUT_LENGTH), baseGas)
+  }
+
+  let gasUsedPerPair = new BN(opts._common.param('gasPrices', 'Bls12381PairingPerPairGas'))
+  let gasUsed = baseGas.iadd(gasUsedPerPair.imul(new BN(inputData.length / 384)))
+
+  if (opts.gasLimit.lt(gasUsed)) {
+    return OOGResult(opts.gasLimit)
+  }
+
+  // prepare pairing list and check for mandatory zero bytes
+
+  let pairs = []
+
+  const zeroBytes16 = Buffer.alloc(16, 0)
+  const zeroByteCheck = [
+    [0, 16],
+    [64, 80],
+    [128, 144],
+    [192, 208],
+    [256, 272],
+    [320, 336],
+  ]
+
+  for (let k = 0; k < inputData.length / 384; k++) {
+    // zero bytes check
+    let pairStart = 384 * k
+    for (let index in zeroByteCheck) {
+      let slicedBuffer = opts.data.slice(
+        zeroByteCheck[index][0] + pairStart,
+        zeroByteCheck[index][1] + pairStart,
+      )
+      if (!slicedBuffer.equals(zeroBytes16)) {
+        return VmErrorResult(new VmError(ERROR.BLS_12_381_POINT_NOT_ON_CURVE), gasUsed)
+      }
+    }
+    let G1 = BLS12_381_ToG1Point(opts.data.slice(pairStart, pairStart + 128), mcl)
+
+    let g2start = pairStart + 128
+    let G2 = BLS12_381_ToG2Point(opts.data.slice(g2start, g2start + 256), mcl)
+
+    pairs.push([G1, G2])
+  }
+
+  // run the pairing check
+  // reference (Nethermind): https://github.com/NethermindEth/nethermind/blob/374b036414722b9c8ad27e93d64840b8f63931b9/src/Nethermind/Nethermind.Evm/Precompiles/Bls/Mcl/PairingPrecompile.cs#L93
+
+  let GT
+
+  for (let index = 0; index < pairs.length; index++) {
+    let pair = pairs[index]
+    let G1 = pair[0]
+    let G2 = pair[1]
+
+    if (index == 0) {
+      GT = mcl.millerLoop(G1, G2)
+    } else {
+      GT = mcl.mul(GT, mcl.millerLoop(G1, G2))
+    }
+  }
+
+  GT = mcl.finalExp(GT)
+
+  let returnValue
+
+  if (GT.isOne()) {
+    returnValue = oneBuffer
+  } else {
+    returnValue = zeroBuffer
+  }
+
+  return {
+    gasUsed,
+    returnValue: returnValue,
+  }
+}

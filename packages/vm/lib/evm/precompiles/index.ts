@@ -12,6 +12,7 @@ import { default as pa } from './0a-bls12-g1add'
 import { default as pb } from './0b-bls12-g1mul'
 import { default as pd } from './0d-bls12-g2add'
 import { default as pe } from './0e-bls12-g2mul'
+import { default as p10 } from './10-bls12-pairing'
 import { default as p12 } from './12-bls12-map-fp2-to-g2'
 import Common from '@ethereumjs/common'
 
@@ -38,6 +39,7 @@ const precompiles: Precompiles = {
   '000000000000000000000000000000000000000b': pb,
   '000000000000000000000000000000000000000d': pd,
   '000000000000000000000000000000000000000e': pe,
+  '0000000000000000000000000000000000000010': p10,
   '0000000000000000000000000000000000000012': p12,
 }
 
@@ -55,6 +57,7 @@ const precompileAvailability: PrecompileAvailability = {
   '000000000000000000000000000000000000000b': 'berlin',
   '000000000000000000000000000000000000000d': 'berlin',
   '000000000000000000000000000000000000000e': 'berlin',
+  '0000000000000000000000000000000000000010': 'berlin',
   '0000000000000000000000000000000000000012': 'berlin',
 }
 

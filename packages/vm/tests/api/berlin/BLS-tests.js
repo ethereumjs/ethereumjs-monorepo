@@ -10,6 +10,7 @@ const BLS_G1ADD_Address = "000000000000000000000000000000000000000a"
 const BLS_G1MUL_ADDRESS = "000000000000000000000000000000000000000b"
 const BLS_G2ADD_Address = "000000000000000000000000000000000000000d"
 const BLS_G2MUL_Address = "000000000000000000000000000000000000000e"
+const BLS_Pairing_Address = "0000000000000000000000000000000000000010"
 const BLS_MapToG2_Address = "0000000000000000000000000000000000000012"
 
 // TODO: add out of gas checks
@@ -165,6 +166,62 @@ tape('Berlin BLS tests', (t) => {
         }
 
         st.pass("BLS G2MUL output is correct")
+
+        st.end()
+    })
+
+    // TODO: add error cases for the pairing precompile.
+    /*
+        Invalid encoding of any boolean variable must result in error
+        Any of G1 or G2 points being not on the curve must result in error
+        Any of G1 or G2 points are not in the correct subgroup
+        Field elements encoding rules apply (obviously)
+        Input has invalid length
+        Input is empty
+    */
+
+    t.test('Pairing precompile', async (st) => {
+        const fileStr = fs.readFileSync("pairing.csv", 'utf8')   // read test file csv (https://raw.githubusercontent.com/matter-labs/eip1962/master/src/test/test_vectors/eip2537/pairing.csv)
+        const remFirstLine = fileStr.slice(13)                  // remove the first line 
+        const results = remFirstLine.match(/[0-9A-Fa-f]+/g)     // very simple splitter
+
+        const common = new Common('mainnet', 'berlin')
+
+        const vm = new VM({ common: common })
+
+        if (results.length != 192) {
+            st.fail('amount of tests not the expected test amount')
+        }
+
+        for (let i = 0; i < results.length; i+=2) {
+            const input = results[i]
+            const output = results[i + 1]
+            const result = await vm.runCall({
+                caller: Buffer.from('0000000000000000000000000000000000000000', 'hex'),
+                gasLimit: new BN(0xffffffff),
+                to: Buffer.from(BLS_Pairing_Address, 'hex'),
+                value: new BN(0),
+                data: Buffer.from(input, 'hex')
+            })
+          
+            if (result.execResult.returnValue.toString('hex') != output) {
+                console.log(i)
+                st.fail("BLS Pairing return value is not the expected value")
+            }
+
+            // calculate expected gas;
+            let baseFee = new BN(115000)
+            let feePerPair = new BN(23000)
+            let pairs = new BN(input.length / 384)
+
+            let fee = baseFee.iadd(feePerPair.imul(pairs))
+
+            if (!result.execResult.gasUsed.eq(fee) {
+                st.fail("BLS Pairing gas used is incorrect")
+            }
+        }
+
+        st.pass("BLS Pairing output is correct")
 
         st.end()
     })
