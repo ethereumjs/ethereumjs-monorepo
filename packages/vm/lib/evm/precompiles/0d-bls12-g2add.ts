@@ -1,6 +1,6 @@
 import BN = require('bn.js')
 import { PrecompileInput } from './types'
-import { VmErrorResult, ExecResult } from '../evm'
+import { VmErrorResult, ExecResult, OOGResult } from '../evm'
 import { ERROR, VmError } from '../../exceptions'
 const assert = require('assert')
 const { BLS12_381_ToG2Point, BLS12_381_FromG2Point } = require('./util/bls12_381')
@@ -14,6 +14,10 @@ export default async function (opts: PrecompileInput): Promise<ExecResult> {
 
   // note: the gas used is constant; even if the input is incorrect.
   let gasUsed = new BN(opts._common.param('gasPrices', 'Bls12381G2AddGas'))
+
+  if (opts.gasLimit.lt(gasUsed)) {
+    return OOGResult(opts.gasLimit)
+  }
 
   if (inputData.length != 512) {
     return VmErrorResult(new VmError(ERROR.BLS_12_381_INVALID_INPUT_LENGTH), gasUsed)

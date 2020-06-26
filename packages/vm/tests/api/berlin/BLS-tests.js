@@ -6,13 +6,20 @@ const VM = require('../../../dist/index').default
 const { getPrecompile } = require('../../../dist/evm/precompiles')
 const fs = require('fs')
 
+const BLS_G1ADD_Address = "000000000000000000000000000000000000000a"
+const BLS_G1MUL_ADDRESS = "000000000000000000000000000000000000000b"
+const BLS_G2ADD_Address = "000000000000000000000000000000000000000d"
+const BLS_G2MUL_Address = "000000000000000000000000000000000000000e"
+const BLS_MapToG2_Address = "0000000000000000000000000000000000000012"
+
+// TODO: add out of gas checks
+
 tape('Berlin BLS tests', (t) => {
     t.test('G1ADD precompile', async (st) => {
         const fileStr = fs.readFileSync("g1_add.csv", 'utf8')   // read test file csv (https://raw.githubusercontent.com/matter-labs/eip1962/master/src/test/test_vectors/eip2537/g1_add.csv)
         const remFirstLine = fileStr.slice(13)                  // remove the first line 
         const results = remFirstLine.match(/[0-9A-Fa-f]+/g)     // very simple splitter
 
-        const BLS_G1ADD_Address = "000000000000000000000000000000000000000a"
         const common = new Common('mainnet', 'berlin')
 
         const vm = new VM({ common: common })
@@ -53,7 +60,6 @@ tape('Berlin BLS tests', (t) => {
         const remFirstLine = fileStr.slice(13)                  // remove the first line 
         const results = remFirstLine.match(/[0-9A-Fa-f]+/g)     // very simple splitter
 
-        const BLS_G1MUL_ADDRESS = "000000000000000000000000000000000000000b"
         const common = new Common('mainnet', 'berlin')
 
         const vm = new VM({ common: common })
@@ -92,7 +98,6 @@ tape('Berlin BLS tests', (t) => {
         const remFirstLine = fileStr.slice(13)                  // remove the first line 
         const results = remFirstLine.match(/[0-9A-Fa-f]+/g)     // very simple splitter
 
-        const BLS_G2ADD_Address = "000000000000000000000000000000000000000d"
         const common = new Common('mainnet', 'berlin')
 
         const vm = new VM({ common: common })
@@ -131,7 +136,6 @@ tape('Berlin BLS tests', (t) => {
         const remFirstLine = fileStr.slice(13)                  // remove the first line 
         const results = remFirstLine.match(/[0-9A-Fa-f]+/g)     // very simple splitter
 
-        const BLS_G2MUL_Address = "000000000000000000000000000000000000000e"
         const common = new Common('mainnet', 'berlin')
 
         const vm = new VM({ common: common })
@@ -170,7 +174,6 @@ tape('Berlin BLS tests', (t) => {
         const remFirstLine = fileStr.slice(13)                  // remove the first line 
         const results = remFirstLine.match(/[0-9A-Fa-f]+/g)     // very simple splitter
 
-        const BLS_MapToG2_Address = "0000000000000000000000000000000000000012"
         const common = new Common('mainnet', 'berlin')
 
         const vm = new VM({ common: common })
@@ -184,7 +187,7 @@ tape('Berlin BLS tests', (t) => {
             const output = results[i + 1]
             const result = await vm.runCall({
                 caller: Buffer.from('0000000000000000000000000000000000000000', 'hex'),
-                gasLimit: new BN(0xffffffffff),
+                gasLimit: new BN(0xffffffff),
                 to: Buffer.from(BLS_MapToG2_Address, 'hex'),
                 value: new BN(0),
                 data: Buffer.from(input, 'hex')
