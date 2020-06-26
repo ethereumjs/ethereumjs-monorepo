@@ -132,8 +132,13 @@ module.exports = async function runStateTest(options, testData, t) {
       t.comment(`No ${options.forkConfigTestSuite} post state defined, skip test`)
       return
     }
-    for (let testCase of testCases) {
-      await runTestCase(options, testCase, t)
+    if (options.testCaseIndex !== undefined) {
+      const i = parseInt(options.testCaseIndex, 10)
+      await runTestCase(options, testCases[i], t)
+    } else {
+      for (let testCase of testCases) {
+        await runTestCase(options, testCase, t)
+      }
     }
   } catch (e) {
     console.log(e)
