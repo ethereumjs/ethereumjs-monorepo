@@ -205,6 +205,7 @@ export default class VM extends AsyncEventEmitter {
     }
 
     await mclInitPromise // ensure that mcl is initialized.
+    mcl.setMapToMode(mcl.IRTF) // set the right map mode; otherwise mapToG2 will return wrong values.
 
     this.isInitialized = true
   }
