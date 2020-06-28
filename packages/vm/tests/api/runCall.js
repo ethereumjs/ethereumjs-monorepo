@@ -3,6 +3,7 @@ const BN = require('bn.js')
 const VM = require('../../dist/index').default
 const { createAccount } = require('./utils')
 const { keccak256, padToEven } = require('ethereumjs-util')
+const Common = require('@ethereumjs/common').default
 
 // Non-protected Create2Address generator. Does not check if buffers have the right padding. Returns a 32-byte buffer which contains the address.
 function create2address(sourceAddress, codeHash, salt) {
@@ -76,4 +77,48 @@ tape('Constantinople: EIP-1014 CREATE2 creates the right contract address', asyn
     t.end()
 })
 
+tape('Ensure that precompile activation creates non-empty accounts', async (t) => {
+    // setup the accounts for this test
+    const caller =          Buffer.from('00000000000000000000000000000000000000ee', 'hex')                   // caller addres
+    const contractAddress = Buffer.from('00000000000000000000000000000000000000ff', 'hex')          // contract address 
+    // setup the vm
+    const common = new Common('mainnet', 'istanbul')
+    const vmNotActivated = new VM({ common: common})   
+    const vmActivated = new VM({ common: common, activatePrecompiles: true})                                   
+    const code = "6000808080347300000000000000000000000000000000000000045AF100"
+    /*
+      idea: call the Identity precompile with nonzero value in order to trigger "callNewAccount" for the non-activated VM and do not deduct this
+            when calling from the activated VM. Explicitly check that the difference in gas cost is equal to the common callNewAccount gas.
+      code:             remarks: (top of the stack is at the zero index)       
+        PUSH1 0x00
+        DUP1
+        DUP1
+        DUP1
+        CALLVALUE
+        PUSH20 0000000000000000000000000000000000000004
+        GAS
+        CALL            [gas, 0x00..04, 0, 0, 0, 0, 0]
+        STOP
+    */
 
+    await vmNotActivated.stateManager.putContractCode(contractAddress, Buffer.from(code, 'hex'))                // setup the contract code
+    await vmActivated.stateManager.putContractCode(contractAddress, Buffer.from(code, 'hex'))                // setup the contract code
+
+    // setup the call arguments
+    let runCallArgs = {
+        caller: caller,                     // call address
+        gasLimit: new BN(0xffffffffff),     // ensure we pass a lot of gas, so we do not run out of gas
+        to: contractAddress,                // call to the contract address,
+        value: new BN(1)
+    }
+
+    const resultNotActivated = await vmNotActivated.runCall(runCallArgs)
+    const resultActivated = await vmActivated.runCall(runCallArgs)
+
+    const diff = resultNotActivated.gasUsed.sub(resultActivated.gasUsed)
+    const expected = common.param('gasPrices', 'callNewAccount')
+    
+    t.assert(diff.eq(new BN(expected)), "precompiles are activated")
+
+    t.end()
+})

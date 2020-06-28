@@ -149,9 +149,18 @@ export default class VM extends AsyncEventEmitter {
 
     if (opts.activatePrecompiles && !opts.stateManager) {
       this.stateManager.checkpoint()
+      // put 1 wei in each of the precompiles in order to make the accounts non-empty and thus not have them deduct `callNewAccount` gas.
       Object.keys(precompiles)
         .map((k: string): Buffer => Buffer.from(k, 'hex'))
-        .forEach(async (k: Buffer) => await this.stateManager.putAccount(k, new Account()))
+        .forEach(
+          async (k: Buffer) =>
+            await this.stateManager.putAccount(
+              k,
+              new Account({
+                balance: '0x01',
+              }),
+            ),
+        )
       await this.stateManager.commit()
     }
 
