@@ -6,8 +6,10 @@ const { DefaultStateManager } = require('../../../dist/state')
 const { createAccount } = require('../utils')
 const { isRunningInKarma } = require('../../util')
 
-tape('StateManager', (t) => {
-  t.test('should instantiate', async (st) => {
+const StateManager = DefaultStateManager
+
+tape('StateManager', t => {
+  t.test('should instantiate', async st => {
     const stateManager = new DefaultStateManager()
 
     st.deepEqual(stateManager._trie.root, KECCAK256_RLP, 'it has default root')

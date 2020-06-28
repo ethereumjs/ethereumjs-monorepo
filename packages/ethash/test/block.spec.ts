@@ -3,19 +3,15 @@ import Ethash from '../src'
 import { Block } from '@ethereumjs/block'
 const levelup = require('levelup')
 const memdown = require('memdown')
-const async = require('async')
 
 const cacheDB = levelup('', {
   db: memdown
 })
 
-tape('testing good block', function (t) {
+tape('testing good block', async function (t) {
   t.plan(3)
 
   const e = new Ethash(cacheDB)
-
-  // run tests
-  async.series([genesisBlock, validBlockTest, invalidblockTest])
 
   function genesisBlock(cb: Function) {
     const genesis = new Block()
@@ -49,4 +45,13 @@ tape('testing good block', function (t) {
       cb()
     })
   }
+
+  // run tests
+  await new Promise((resolve) => genesisBlock(resolve))
+    .then(function () {
+      return new Promise((resolve) => validBlockTest(resolve))
+    })
+    .then(function () {
+      return new Promise((resolve) => invalidblockTest(resolve))
+    })
 })
