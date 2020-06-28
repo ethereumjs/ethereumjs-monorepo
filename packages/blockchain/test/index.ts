@@ -19,7 +19,7 @@ test('blockchain test', (t) => {
     })
   })
 
-  t.test('should throw on initialization with chain and common parameter', async st => {
+  t.test('should throw on initialization with chain and common parameter', async (st) => {
     st.plan(5)
     const common = new Common('ropsten')
 
@@ -33,16 +33,16 @@ test('blockchain test', (t) => {
     let heads: any = []
 
     let p0 = new Promise((resolve, reject) => {
-      blockchain0.getHead(function(err?: any, head?: any) {
+      blockchain0.getHead(function (err?: any, head?: any) {
         st.error(err, 'no error initializing with one parameter')
         resolve(head)
       })
-    }).catch(function(err) {
+    }).catch(function (err) {
       st.comment(err.message)
     })
 
     let p1 = new Promise((resolve, reject) => {
-      blockchain1.getHead(function(err?: any, head?: any) {
+      blockchain1.getHead(function (err?: any, head?: any) {
         st.error(err, 'no error initializing with one parameter')
         resolve(head)
       })
@@ -652,7 +652,7 @@ test('blockchain test', (t) => {
     })
   })
 
-  t.test('uncached db ops', async st => {
+  t.test('uncached db ops', async (st) => {
     st.plan(3) // explicitly let tape know we want to run 3 assertions in this test.
     createTestDB(async (err?: Error, db?: any, genesis?: Block) => {
       if (err) {
@@ -703,7 +703,7 @@ test('blockchain test', (t) => {
     })
   })
 
-  t.test('should save headers', st => {
+  t.test('should save headers', (st) => {
     st.plan(2)
     const db = level()
     let blockchain = new Blockchain({ db: db, validateBlocks: true, validatePow: false })
@@ -767,7 +767,7 @@ test('blockchain test', (t) => {
     })
   })
 
-  t.test('immutable cached objects', st => {
+  t.test('immutable cached objects', (st) => {
     st.plan(1)
     const blockchain = new Blockchain({ validateBlocks: true, validatePow: false })
     const genesisBlock = new Block()
@@ -818,7 +818,7 @@ test('blockchain test', (t) => {
     })
   })
 
-  t.test('should get latest', st => {
+  t.test('should get latest', (st) => {
     st.plan(4)
     const blockchain = new Blockchain({ validateBlocks: true, validatePow: false })
     const headers = [new BlockHeader(), new BlockHeader()]
@@ -939,7 +939,7 @@ test('blockchain test', (t) => {
     })
   })
 
-  t.test('mismatched chains', async st => {
+  t.test('mismatched chains', async (st) => {
     st.plan(2)
     const common = new Common('mainnet')
     const blockchain = new Blockchain({ common: common, validateBlocks: true, validatePow: false })

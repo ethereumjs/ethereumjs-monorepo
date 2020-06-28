@@ -21,9 +21,9 @@ const semaphore = require('semaphore')
 
 // promisify a function: resolves this promise if callback is called
 function promisify(func: Function) {
-  return function() {
+  return function () {
     return new Promise((resolve, reject) => {
-      func(function(err: any, value: any) {
+      func(function (err: any, value: any) {
         if (err) {
           reject(err)
         } else {
@@ -269,7 +269,7 @@ export default class Blockchain implements BlockchainInterface {
   _init(cb: any): void {
     const self = this
     new Promise((resolve, reject) => {
-      self._numberToHash(new BN(0), function(error: any, hash: any) {
+      self._numberToHash(new BN(0), function (error: any, hash: any) {
         if (error) {
           reject(error)
         } else {
@@ -277,11 +277,11 @@ export default class Blockchain implements BlockchainInterface {
         }
       })
     })
-      .then(async function(hash) {
+      .then(async function (hash) {
         await getHeads(hash)
         cb()
       })
-      .catch(function(err) {
+      .catch(function (err) {
         self._setCanonicalGenesisBlock((err?: any) => {
           if (err) {
             return cb(err)
@@ -409,7 +409,7 @@ export default class Blockchain implements BlockchainInterface {
     const self = this
     async function _putBlock(block: any): Promise<any> {
       return await new Promise((resolve, reject) => {
-        self.putBlock(block, function(err: any, block: any) {
+        self.putBlock(block, function (err: any, block: any) {
           resolve([err, block])
         })
       })
@@ -456,7 +456,7 @@ export default class Blockchain implements BlockchainInterface {
     const self = this
     async function _putHeader(block: any): Promise<any> {
       return await new Promise((resolve, reject) => {
-        self.putHeader(block, function(err: any, block: any) {
+        self.putHeader(block, function (err: any, block: any) {
           resolve([err, block])
         })
       })
@@ -533,9 +533,9 @@ export default class Blockchain implements BlockchainInterface {
       .then(promisify(getCurrentTd))
       .then(promisify(getBlockTd))
       .then(promisify(rebuildInfo))
-      .then(function() {
+      .then(function () {
         return new Promise((resolve, reject) => {
-          self._batchDbOps(dbOps.concat(self._saveHeadOps()), function(err: any) {
+          self._batchDbOps(dbOps.concat(self._saveHeadOps()), function (err: any) {
             if (err) {
               reject(err)
             } else {
@@ -544,10 +544,10 @@ export default class Blockchain implements BlockchainInterface {
           })
         })
       })
-      .then(function() {
+      .then(function () {
         cb()
       })
-      .catch(function(err: any) {
+      .catch(function (err: any) {
         cb(err)
       })
 
@@ -584,10 +584,10 @@ export default class Blockchain implements BlockchainInterface {
       }
 
       Promise.all([setTD(self._headHeader, 'header'), setTD(self._headBlock, 'block')])
-        .then(function() {
+        .then(function () {
           next()
         })
-        .catch(function(err: any) {
+        .catch(function (err: any) {
           next(err)
         })
     }
@@ -660,7 +660,7 @@ export default class Blockchain implements BlockchainInterface {
         // delete higher number assignments and overwrite stale canonical chain
         Promise.all([
           new Promise((resolve, reject) => {
-            self._deleteStaleAssignments(number.iaddn(1), hash, dbOps, function(
+            self._deleteStaleAssignments(number.iaddn(1), hash, dbOps, function (
               error: any,
               value: any,
             ) {
@@ -672,7 +672,7 @@ export default class Blockchain implements BlockchainInterface {
             })
           }),
           new Promise((resolve, reject) => {
-            self._rebuildCanonical(header, dbOps, function(error: any, value: any) {
+            self._rebuildCanonical(header, dbOps, function (error: any, value: any) {
               if (error) {
                 reject(error)
               } else {
@@ -681,10 +681,10 @@ export default class Blockchain implements BlockchainInterface {
             })
           }),
         ])
-          .then(function(value) {
+          .then(function (value) {
             next(undefined, value)
           })
-          .catch(function(error) {
+          .catch(function (error) {
             next(error)
           })
       } else {
@@ -1005,9 +1005,9 @@ export default class Blockchain implements BlockchainInterface {
       .then(promisify(checkCanonical))
       .then(promisify(buildDBops))
       .then(promisify(deleteStaleAssignments))
-      .then(function() {
+      .then(function () {
         return new Promise((resolve, reject) => {
-          self._batchDbOps(dbOps, function(err: any) {
+          self._batchDbOps(dbOps, function (err: any) {
             if (err) {
               reject(err)
             } else {
@@ -1016,10 +1016,10 @@ export default class Blockchain implements BlockchainInterface {
           })
         })
       })
-      .then(function() {
+      .then(function () {
         cb()
       })
-      .catch(function(err: any) {
+      .catch(function (err: any) {
         cb(err)
       })
 
@@ -1146,7 +1146,7 @@ export default class Blockchain implements BlockchainInterface {
       blockNumber = number.addn(1)
       let error = false
       while (blockNumber && !error) {
-        await run().catch(function(err: any) {
+        await run().catch(function (err: any) {
           error = true
           cb(err)
         })
@@ -1162,10 +1162,10 @@ export default class Blockchain implements BlockchainInterface {
 
       await promisify(getBlock)()
         .then(promisify(runFunc))
-        .then(function() {
+        .then(function () {
           blockNumber.iaddn(1)
         })
-        .catch(function(error) {
+        .catch(function (error) {
           blockNumber = false
           if (error.type !== 'NotFoundError') {
             throw error

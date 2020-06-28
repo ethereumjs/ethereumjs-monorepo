@@ -1,6 +1,5 @@
 import Blockchain from '@ethereumjs/blockchain'
 import VM from './index'
-const async = require('async')
 const callbackify = require('util-callbackify')
 
 /**
@@ -25,7 +24,6 @@ export default function runBlockchain(this: VM, blockchain: Blockchain): Promise
 
     function processBlock(block: any, reorg: boolean, cb: any) {
       async function _processBlock() {
-
         // determine starting state for block run
         function getStartingState(cb: any) {
           // if we are just starting or if a chain re-org has happened
@@ -68,32 +66,35 @@ export default function runBlockchain(this: VM, blockchain: Blockchain): Promise
               })
             })
         }
-          
 
-        await new Promise((resolve, reject) => getStartingState(function(error: any) {
-          if (error) {
-            reject(error)
-          } else {
-            resolve()
-          }
-        }))
-        .then(function () {
-          return new Promise((resolve) => runBlock(function(error: any) {
+        await new Promise((resolve, reject) =>
+          getStartingState(function (error: any) {
             if (error) {
               reject(error)
             } else {
               resolve()
             }
-          }))
-        })
-        .then(function() {
-          cb()
-        }).catch(function(error: any) {
-          cb(error)
-        })
+          }),
+        )
+          .then(function () {
+            return new Promise((resolve) =>
+              runBlock(function (error: any) {
+                if (error) {
+                  reject(error)
+                } else {
+                  resolve()
+                }
+              }),
+            )
+          })
+          .then(function () {
+            cb()
+          })
+          .catch(function (error: any) {
+            cb(error)
+          })
       }
       _processBlock()
     }
-   
   })
 }
