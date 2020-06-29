@@ -54,7 +54,7 @@ export default function runCall(this: VM, opts: RunCallOpts): Promise<EVMResult>
     salt: opts.salt || null,
     selfdestruct: opts.selfdestruct || {},
     delegatecall: opts.delegatecall || false,
-    nonce: opts.nonce
+    nonce: opts.nonce,
   })
 
   const evm = new EVM(this, txContext, block)
