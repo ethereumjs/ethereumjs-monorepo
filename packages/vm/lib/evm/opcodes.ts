@@ -35,6 +35,7 @@ export interface OpcodeList {
   [code: number]: Opcode
 }
 
+// Base opcode list. The opcode list is extended in future hardforks
 const opcodes: OpcodeList = createOpcodes({
   // 0x0 range - arithmetic ops
   // name, baseCost, async
@@ -63,9 +64,6 @@ const opcodes: OpcodeList = createOpcodes({
   0x18: { name: 'XOR', fee: 3, isAsync: false },
   0x19: { name: 'NOT', fee: 3, isAsync: false },
   0x1a: { name: 'BYTE', fee: 3, isAsync: false },
-  0x1b: { name: 'SHL', fee: 3, isAsync: false },
-  0x1c: { name: 'SHR', fee: 3, isAsync: false },
-  0x1d: { name: 'SAR', fee: 3, isAsync: false },
 
   // 0x20 range - crypto
   0x20: { name: 'SHA3', fee: 30, isAsync: false },
@@ -84,9 +82,6 @@ const opcodes: OpcodeList = createOpcodes({
   0x3a: { name: 'GASPRICE', fee: 2, isAsync: false },
   0x3b: { name: 'EXTCODESIZE', fee: 700, isAsync: true },
   0x3c: { name: 'EXTCODECOPY', fee: 700, isAsync: true },
-  0x3d: { name: 'RETURNDATASIZE', fee: 2, isAsync: true },
-  0x3e: { name: 'RETURNDATACOPY', fee: 3, isAsync: true },
-  0x3f: { name: 'EXTCODEHASH', fee: 400, isAsync: true },
 
   // '0x40' range - block operations
   0x40: { name: 'BLOCKHASH', fee: 20, isAsync: true },
@@ -189,23 +184,52 @@ const opcodes: OpcodeList = createOpcodes({
   0xf1: { name: 'CALL', fee: 700, isAsync: true },
   0xf2: { name: 'CALLCODE', fee: 700, isAsync: true },
   0xf3: { name: 'RETURN', fee: 0, isAsync: false },
-  0xf4: { name: 'DELEGATECALL', fee: 700, isAsync: true },
-  0xf5: { name: 'CREATE2', fee: 32000, isAsync: true },
   0xfa: { name: 'STATICCALL', fee: 700, isAsync: true },
-  0xfd: { name: 'REVERT', fee: 0, isAsync: false },
 
   // '0x70', range - other
   0xfe: { name: 'INVALID', fee: 0, isAsync: false },
   0xff: { name: 'SELFDESTRUCT', fee: 5000, isAsync: true },
 })
 
-const istanbulOpcodes: OpcodeList = createOpcodes({
-  0x31: { name: 'BALANCE', fee: 700, isAsync: true },
-  0x3f: { name: 'EXTCODEHASH', fee: 700, isAsync: true },
-  0x46: { name: 'CHAINID', fee: 2, isAsync: false },
-  0x47: { name: 'SELFBALANCE', fee: 5, isAsync: false },
-  0x54: { name: 'SLOAD', fee: 800, isAsync: true },
-})
+// Array of hard forks in order. These changes are repeatedly applied to `opcodes` until the hard fork is in the future based upon the common
+// TODO: All gas price changes should be moved to common
+const hardforkOpcodes = [
+  {
+    hardforkName: 'homestead',
+    opcodes: createOpcodes({
+      0xf4: { name: 'DELEGATECALL', fee: 700, isAsync: true }, // EIP 7
+    }),
+  },
+  {
+    hardforkName: 'byzantium',
+    opcodes: createOpcodes({
+      0xfd: { name: 'REVERT', fee: 0, isAsync: false }, // EIP 140
+      0xfa: { name: 'STATICCALL', fee: 700, isAsync: true }, // EIP 214
+      0x3d: { name: 'RETURNDATASIZE', fee: 2, isAsync: true }, // EIP 211
+      0x3e: { name: 'RETURNDATACOPY', fee: 3, isAsync: true }, // EIP 211
+    }),
+  },
+  {
+    hardforkName: 'constantinople',
+    opcodes: createOpcodes({
+      0x1b: { name: 'SHL', fee: 3, isAsync: false }, // EIP 145
+      0x1c: { name: 'SHR', fee: 3, isAsync: false }, // EIP 145
+      0x1d: { name: 'SAR', fee: 3, isAsync: false }, // EIP 145
+      0x3f: { name: 'EXTCODEHASH', fee: 400, isAsync: true }, // EIP 1052
+      0xf5: { name: 'CREATE2', fee: 32000, isAsync: true }, // EIP 1014
+    }),
+  },
+  {
+    hardforkName: 'istanbul',
+    opcodes: createOpcodes({
+      0x31: { name: 'BALANCE', fee: 700, isAsync: true }, // gas price change, EIP 1884
+      0x3f: { name: 'EXTCODEHASH', fee: 700, isAsync: true }, // gas price change, EIP 1884
+      0x46: { name: 'CHAINID', fee: 2, isAsync: false }, // EIP 1344
+      0x47: { name: 'SELFBALANCE', fee: 5, isAsync: false }, // EIP 1884
+      0x54: { name: 'SLOAD', fee: 800, isAsync: true }, // gas price change, EIP 1884
+    }),
+  },
+]
 
 /**
  * Convert basic opcode info dictonary into complete OpcodeList instance.
@@ -260,9 +284,13 @@ function getFullname(code: number, name: string): string {
  * @returns {OpcodeList} Opcodes dictionary object.
  */
 export function getOpcodesForHF(common: Common): OpcodeList {
-  if (common.gteHardfork('istanbul')) {
-    return { ...opcodes, ...istanbulOpcodes }
-  } else {
-    return { ...opcodes }
+  let opcodeBuilder = { ...opcodes }
+
+  for (let fork = 0; fork < hardforkOpcodes.length; fork++) {
+    if (common.gteHardfork(hardforkOpcodes[fork].hardforkName)) {
+      opcodeBuilder = { ...opcodeBuilder, ...hardforkOpcodes[fork].opcodes }
+    }
   }
+
+  return opcodeBuilder
 }
