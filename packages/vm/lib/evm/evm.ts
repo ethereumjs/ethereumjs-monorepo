@@ -380,9 +380,7 @@ export default class EVM {
     if (message.salt) {
       addr = generateAddress2(message.caller, message.salt, message.code as Buffer)
     } else {
-      const acc = await this._state.getAccount(message.caller)
-      const newNonce = new BN(acc.nonce).subn(1)
-      addr = generateAddress(message.caller, newNonce.toArrayLike(Buffer))
+      addr = generateAddress(message.caller, message.nonce.toArrayLike(Buffer))
     }
     return addr
   }

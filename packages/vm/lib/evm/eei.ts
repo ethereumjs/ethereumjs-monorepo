@@ -402,6 +402,7 @@ export default class EEI {
       data: data,
       isStatic: this._env.isStatic,
       depth: this._env.depth + 1,
+      nonce: new BN(this._env.contract.nonce)
     })
 
     return this._baseCall(msg)
@@ -420,6 +421,7 @@ export default class EEI {
       data: data,
       isStatic: this._env.isStatic,
       depth: this._env.depth + 1,
+      nonce: new BN(this._env.contract.nonce)
     })
 
     return this._baseCall(msg)
@@ -439,6 +441,7 @@ export default class EEI {
       data: data,
       isStatic: true,
       depth: this._env.depth + 1,
+      nonce: new BN(this._env.contract.nonce)
     })
 
     return this._baseCall(msg)
@@ -459,6 +462,7 @@ export default class EEI {
       isStatic: this._env.isStatic,
       delegatecall: true,
       depth: this._env.depth + 1,
+      nonce: new BN(this._env.contract.nonce)
     })
 
     return this._baseCall(msg)
@@ -520,6 +524,7 @@ export default class EEI {
       salt: salt,
       depth: this._env.depth + 1,
       selfdestruct: selfdestruct,
+      nonce: new BN(this._env.contract.nonce)
     })
 
     // empty the return data buffer

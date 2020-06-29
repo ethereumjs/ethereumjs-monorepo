@@ -7,6 +7,7 @@ export default class Message {
   caller: Buffer
   gasLimit: BN
   data: Buffer
+  nonce: BN
   depth: number
   code: Buffer | PrecompileFunc
   _codeAddress: Buffer
@@ -30,6 +31,7 @@ export default class Message {
     this.salt = opts.salt // For CREATE2, TODO: Move from here
     this.selfdestruct = opts.selfdestruct // TODO: Move from here
     this.delegatecall = opts.delegatecall || false
+    this.nonce = opts.nonce ? new BN(opts.nonce) : new BN(0)
   }
 
   get codeAddress(): Buffer {

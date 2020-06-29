@@ -2,7 +2,7 @@ const tape = require('tape')
 const BN = require('bn.js')
 const VM = require('../../dist/index').default
 const { createAccount } = require('./utils')
-const { keccak256, padToEven } = require('ethereumjs-util')
+const { keccak256, padToEven, generateAddress } = require('ethereumjs-util')
 
 // Non-protected Create2Address generator. Does not check if buffers have the right padding. Returns a 32-byte buffer which contains the address.
 function create2address(sourceAddress, codeHash, salt) {
@@ -76,4 +76,42 @@ tape('Constantinople: EIP-1014 CREATE2 creates the right contract address', asyn
     t.end()
 })
 
+tape('runCall: create contracts based upon nonce', async (t) => {
+    t.plan(2)
+    const vm = new VM({ chain: 'mainnet', hardfork: 'istanbul'})  
+    const caller = Buffer.from('00000000000000000000000000000000000000ee', 'hex')                   // caller addres
 
+    for (let nonce = 0; nonce < 10; nonce++) {
+        let runCallArgs = {
+            caller: caller,                     // call address
+            gasLimit: new BN(0xffffffffff),     // ensure we pass a lot of gas, so we do not run out of gas
+            to: null,                           // explicitly call to null (i.e. create a contract)
+            nonce: new BN(nonce)
+        }
+        let result = await vm.runCall(runCallArgs)
+        let expected = generateAddress(caller, runCallArgs.nonce.toArrayLike(Buffer)) 
+        if (!expected.equals(result.createdAddress)) {
+            t.fail('runCall did not generate the right address')
+        }
+    }
+
+    t.pass('runCall created the right addresses')
+
+    // create collissions (runCall actually stores the contracts in the state!)
+    for (let nonce = 0; nonce < 10; nonce++) {
+        let runCallArgs = {
+            caller: caller,                     // call address
+            gasLimit: new BN(0xffffffffff),     // ensure we pass a lot of gas, so we do not run out of gas
+            to: null,                           // explicitly call to null (i.e. create a contract)
+            nonce: new BN(nonce)
+        }
+        let result = await vm.runCall(runCallArgs)
+        if (!result.execResult.exceptionError.error === 'create collision') {
+            t.fail('runCall did not generate a collision')
+        }
+    }
+
+    t.pass('vm reported collisions as expected')
+
+    t.end()
+})

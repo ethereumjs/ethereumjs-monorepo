@@ -18,6 +18,7 @@ export interface RunCallOpts {
   to?: Buffer
   value?: Buffer
   data?: Buffer
+  nonce?: BN
   /**
    * This is for CALLCODE where the code to load is different than the code from the to account
    */
@@ -53,6 +54,7 @@ export default function runCall(this: VM, opts: RunCallOpts): Promise<EVMResult>
     salt: opts.salt || null,
     selfdestruct: opts.selfdestruct || {},
     delegatecall: opts.delegatecall || false,
+    nonce: opts.nonce
   })
 
   const evm = new EVM(this, txContext, block)
