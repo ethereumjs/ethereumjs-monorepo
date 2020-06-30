@@ -1,4 +1,4 @@
-[ethereumjs-block](../README.md) › ["index"](../modules/_index_.md) › [BlockHeaderData](_index_.blockheaderdata.md)
+[@ethereumjs/block](../README.md) › ["index"](../modules/_index_.md) › [BlockHeaderData](_index_.blockheaderdata.md)
 
 # Interface: BlockHeaderData
 

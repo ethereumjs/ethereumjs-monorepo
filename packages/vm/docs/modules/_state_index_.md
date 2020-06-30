@@ -1,4 +1,4 @@
-[ethereumjs-vm](../README.md) › ["state/index"](_state_index_.md)
+[@ethereumjs/vm](../README.md) › ["state/index"](_state_index_.md)
 
 # Module: "state/index"
 

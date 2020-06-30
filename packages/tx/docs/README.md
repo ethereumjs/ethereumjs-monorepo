@@ -1,6 +1,6 @@
-[ethereumjs-tx](README.md)
+[@ethereumjs/tx](README.md)
 
-# ethereumjs-tx
+# @ethereumjs/tx
 
 ## Index
 

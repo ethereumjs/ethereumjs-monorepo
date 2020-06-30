@@ -1,4 +1,4 @@
-[ethereumjs-block](../README.md) › ["header"](../modules/_header_.md) › [BlockHeader](_header_.blockheader.md)
+[@ethereumjs/block](../README.md) › ["header"](../modules/_header_.md) › [BlockHeader](_header_.blockheader.md)
 
 # Class: BlockHeader
 
@@ -51,7 +51,7 @@ An object that represents the block header
 
 \+ **new BlockHeader**(`data`: Buffer | [PrefixedHexString](../modules/_index_.md#prefixedhexstring) | [BufferLike](../modules/_index_.md#bufferlike)[] | [BlockHeaderData](../interfaces/_index_.blockheaderdata.md), `opts`: [ChainOptions](../interfaces/_index_.chainoptions.md)): *[BlockHeader](_header_.blockheader.md)*
 
-*Defined in [header.ts:29](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/header.ts#L29)*
+*Defined in [header.ts:37](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/header.ts#L37)*
 
 Creates a new block header.
 
@@ -70,7 +70,7 @@ Name | Type | Default | Description |
 
 • **bloom**: *Buffer*
 
-*Defined in [header.ts:19](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/header.ts#L19)*
+*Defined in [header.ts:27](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/header.ts#L27)*
 
 ___
 
@@ -78,7 +78,7 @@ ___
 
 • **coinbase**: *Buffer*
 
-*Defined in [header.ts:15](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/header.ts#L15)*
+*Defined in [header.ts:23](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/header.ts#L23)*
 
 ___
 
@@ -86,7 +86,7 @@ ___
 
 • **difficulty**: *Buffer*
 
-*Defined in [header.ts:20](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/header.ts#L20)*
+*Defined in [header.ts:28](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/header.ts#L28)*
 
 ___
 
@@ -94,7 +94,7 @@ ___
 
 • **extraData**: *Buffer*
 
-*Defined in [header.ts:25](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/header.ts#L25)*
+*Defined in [header.ts:33](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/header.ts#L33)*
 
 ___
 
@@ -102,7 +102,7 @@ ___
 
 • **gasLimit**: *Buffer*
 
-*Defined in [header.ts:22](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/header.ts#L22)*
+*Defined in [header.ts:30](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/header.ts#L30)*
 
 ___
 
@@ -110,7 +110,7 @@ ___
 
 • **gasUsed**: *Buffer*
 
-*Defined in [header.ts:23](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/header.ts#L23)*
+*Defined in [header.ts:31](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/header.ts#L31)*
 
 ___
 
@@ -118,7 +118,7 @@ ___
 
 • **mixHash**: *Buffer*
 
-*Defined in [header.ts:26](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/header.ts#L26)*
+*Defined in [header.ts:34](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/header.ts#L34)*
 
 ___
 
@@ -126,7 +126,7 @@ ___
 
 • **nonce**: *Buffer*
 
-*Defined in [header.ts:27](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/header.ts#L27)*
+*Defined in [header.ts:35](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/header.ts#L35)*
 
 ___
 
@@ -134,7 +134,7 @@ ___
 
 • **number**: *Buffer*
 
-*Defined in [header.ts:21](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/header.ts#L21)*
+*Defined in [header.ts:29](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/header.ts#L29)*
 
 ___
 
@@ -142,7 +142,7 @@ ___
 
 • **parentHash**: *Buffer*
 
-*Defined in [header.ts:13](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/header.ts#L13)*
+*Defined in [header.ts:21](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/header.ts#L21)*
 
 ___
 
@@ -150,7 +150,7 @@ ___
 
 • **raw**: *Buffer[]*
 
-*Defined in [header.ts:12](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/header.ts#L12)*
+*Defined in [header.ts:20](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/header.ts#L20)*
 
 ___
 
@@ -158,7 +158,7 @@ ___
 
 • **receiptTrie**: *Buffer*
 
-*Defined in [header.ts:18](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/header.ts#L18)*
+*Defined in [header.ts:26](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/header.ts#L26)*
 
 ___
 
@@ -166,7 +166,7 @@ ___
 
 • **stateRoot**: *Buffer*
 
-*Defined in [header.ts:16](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/header.ts#L16)*
+*Defined in [header.ts:24](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/header.ts#L24)*
 
 ___
 
@@ -174,7 +174,7 @@ ___
 
 • **timestamp**: *Buffer*
 
-*Defined in [header.ts:24](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/header.ts#L24)*
+*Defined in [header.ts:32](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/header.ts#L32)*
 
 ___
 
@@ -182,7 +182,7 @@ ___
 
 • **transactionsTrie**: *Buffer*
 
-*Defined in [header.ts:17](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/header.ts#L17)*
+*Defined in [header.ts:25](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/header.ts#L25)*
 
 ___
 
@@ -190,7 +190,7 @@ ___
 
 • **uncleHash**: *Buffer*
 
-*Defined in [header.ts:14](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/header.ts#L14)*
+*Defined in [header.ts:22](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/header.ts#L22)*
 
 ## Methods
 
@@ -198,7 +198,7 @@ ___
 
 ▸ **canonicalDifficulty**(`parentBlock`: [Block](_block_.block.md)): *BN*
 
-*Defined in [header.ts:134](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/header.ts#L134)*
+*Defined in [header.ts:142](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/header.ts#L142)*
 
 Returns the canonical difficulty for this block.
 

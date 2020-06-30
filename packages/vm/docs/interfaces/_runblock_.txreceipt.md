@@ -1,4 +1,4 @@
-[ethereumjs-vm](../README.md) › ["runBlock"](../modules/_runblock_.md) › [TxReceipt](_runblock_.txreceipt.md)
+[@ethereumjs/vm](../README.md) › ["runBlock"](../modules/_runblock_.md) › [TxReceipt](_runblock_.txreceipt.md)
 
 # Interface: TxReceipt
 
@@ -23,7 +23,7 @@ Receipt generated for a transaction
 
 • **bitvector**: *Buffer*
 
-*Defined in [runBlock.ts:71](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/runBlock.ts#L71)*
+*Defined in [runBlock.ts:69](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/runBlock.ts#L69)*
 
 Bloom bitvector
 
@@ -33,7 +33,7 @@ ___
 
 • **gasUsed**: *Buffer*
 
-*Defined in [runBlock.ts:67](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/runBlock.ts#L67)*
+*Defined in [runBlock.ts:65](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/runBlock.ts#L65)*
 
 Gas used
 
@@ -43,7 +43,7 @@ ___
 
 • **logs**: *any[]*
 
-*Defined in [runBlock.ts:75](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/runBlock.ts#L75)*
+*Defined in [runBlock.ts:73](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/runBlock.ts#L73)*
 
 Logs emitted
 
@@ -53,6 +53,6 @@ ___
 
 • **status**: *0 | 1*
 
-*Defined in [runBlock.ts:63](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/runBlock.ts#L63)*
+*Defined in [runBlock.ts:61](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/runBlock.ts#L61)*
 
 Status of transaction, `1` if successful, `0` if an exception occured

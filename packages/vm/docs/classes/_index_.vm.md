@@ -1,4 +1,4 @@
-[ethereumjs-vm](../README.md) › ["index"](../modules/_index_.md) › [VM](_index_.vm.md)
+[@ethereumjs/vm](../README.md) › ["index"](../modules/_index_.md) › [VM](_index_.vm.md)
 
 # Class: VM
 

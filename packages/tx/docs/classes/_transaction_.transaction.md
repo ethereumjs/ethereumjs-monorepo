@@ -1,4 +1,4 @@
-[ethereumjs-tx](../README.md) › ["transaction"](../modules/_transaction_.md) › [Transaction](_transaction_.transaction.md)
+[@ethereumjs/tx](../README.md) › ["transaction"](../modules/_transaction_.md) › [Transaction](_transaction_.transaction.md)
 
 # Class: Transaction
 
@@ -168,7 +168,7 @@ ___
 
 ▸ **getBaseFee**(): *BN*
 
-*Defined in [transaction.ts:296](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/transaction.ts#L296)*
+*Defined in [transaction.ts:295](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/transaction.ts#L295)*
 
 the minimum amount of gas the tx must have (DataFee + TxFee + Creation Fee)
 
@@ -180,7 +180,7 @@ ___
 
 ▸ **getChainId**(): *number*
 
-*Defined in [transaction.ts:202](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/transaction.ts#L202)*
+*Defined in [transaction.ts:201](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/transaction.ts#L201)*
 
 returns chain ID
 
@@ -192,7 +192,7 @@ ___
 
 ▸ **getDataFee**(): *BN*
 
-*Defined in [transaction.ts:282](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/transaction.ts#L282)*
+*Defined in [transaction.ts:281](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/transaction.ts#L281)*
 
 The amount of gas paid for the data in this tx
 
@@ -204,7 +204,7 @@ ___
 
 ▸ **getSenderAddress**(): *Buffer*
 
-*Defined in [transaction.ts:209](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/transaction.ts#L209)*
+*Defined in [transaction.ts:208](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/transaction.ts#L208)*
 
 returns the sender's address
 
@@ -216,7 +216,7 @@ ___
 
 ▸ **getSenderPublicKey**(): *Buffer*
 
-*Defined in [transaction.ts:221](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/transaction.ts#L221)*
+*Defined in [transaction.ts:220](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/transaction.ts#L220)*
 
 returns the public key of the sender
 
@@ -228,7 +228,7 @@ ___
 
 ▸ **getUpfrontCost**(): *BN*
 
-*Defined in [transaction.ts:307](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/transaction.ts#L307)*
+*Defined in [transaction.ts:306](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/transaction.ts#L306)*
 
 the up front amount that an account must have for this transaction to be valid
 
@@ -258,7 +258,7 @@ ___
 
 ▸ **serialize**(): *Buffer*
 
-*Defined in [transaction.ts:337](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/transaction.ts#L337)*
+*Defined in [transaction.ts:336](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/transaction.ts#L336)*
 
 Returns the rlp encoding of the transaction
 
@@ -270,7 +270,7 @@ ___
 
 ▸ **sign**(`privateKey`: Buffer): *void*
 
-*Defined in [transaction.ts:262](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/transaction.ts#L262)*
+*Defined in [transaction.ts:261](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/transaction.ts#L261)*
 
 sign a transaction with a given private key
 
@@ -300,7 +300,7 @@ ___
 
 ▸ **toJSON**(`labels`: boolean): *object | string[]*
 
-*Defined in [transaction.ts:346](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/transaction.ts#L346)*
+*Defined in [transaction.ts:345](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/transaction.ts#L345)*
 
 Returns the transaction in JSON format
 
@@ -320,7 +320,7 @@ ___
 
 ▸ **validate**(): *boolean*
 
-*Defined in [transaction.ts:314](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/transaction.ts#L314)*
+*Defined in [transaction.ts:313](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/transaction.ts#L313)*
 
 Validates the signature and checks to see if it has enough gas.
 
@@ -328,7 +328,7 @@ Validates the signature and checks to see if it has enough gas.
 
 ▸ **validate**(`stringError`: false): *boolean*
 
-*Defined in [transaction.ts:315](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/transaction.ts#L315)*
+*Defined in [transaction.ts:314](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/transaction.ts#L314)*
 
 **Parameters:**
 
@@ -340,7 +340,7 @@ Name | Type |
 
 ▸ **validate**(`stringError`: true): *string*
 
-*Defined in [transaction.ts:316](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/transaction.ts#L316)*
+*Defined in [transaction.ts:315](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/transaction.ts#L315)*
 
 **Parameters:**
 
@@ -356,7 +356,7 @@ ___
 
 ▸ **verifySignature**(): *boolean*
 
-*Defined in [transaction.ts:233](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/transaction.ts#L233)*
+*Defined in [transaction.ts:232](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/transaction.ts#L232)*
 
 Determines if the signature is valid
 

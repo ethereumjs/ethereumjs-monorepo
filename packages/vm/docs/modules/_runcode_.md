@@ -1,4 +1,4 @@
-[ethereumjs-vm](../README.md) › ["runCode"](_runcode_.md)
+[@ethereumjs/vm](../README.md) › ["runCode"](_runcode_.md)
 
 # Module: "runCode"
 

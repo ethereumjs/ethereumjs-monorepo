@@ -1,4 +1,4 @@
-[ethereumjs-tx](../README.md) › ["fake"](_fake_.md)
+[@ethereumjs/tx](../README.md) › ["fake"](_fake_.md)
 
 # Module: "fake"
 

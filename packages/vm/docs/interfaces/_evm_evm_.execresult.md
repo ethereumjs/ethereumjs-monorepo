@@ -1,4 +1,4 @@
-[ethereumjs-vm](../README.md) › ["evm/evm"](../modules/_evm_evm_.md) › [ExecResult](_evm_evm_.execresult.md)
+[@ethereumjs/vm](../README.md) › ["evm/evm"](../modules/_evm_evm_.md) › [ExecResult](_evm_evm_.execresult.md)
 
 # Interface: ExecResult
 
@@ -27,7 +27,7 @@ Result of executing a call via the [[EVM]].
 
 • **exceptionError**? : *[VmError](../classes/_exceptions_.vmerror.md)*
 
-*Defined in [evm/evm.ts:47](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/evm/evm.ts#L47)*
+*Defined in [evm/evm.ts:46](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/evm/evm.ts#L46)*
 
 Description of the exception, if any occured
 
@@ -37,7 +37,7 @@ ___
 
 • **gas**? : *BN*
 
-*Defined in [evm/evm.ts:51](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/evm/evm.ts#L51)*
+*Defined in [evm/evm.ts:50](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/evm/evm.ts#L50)*
 
 Amount of gas left
 
@@ -47,7 +47,7 @@ ___
 
 • **gasRefund**? : *BN*
 
-*Defined in [evm/evm.ts:71](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/evm/evm.ts#L71)*
+*Defined in [evm/evm.ts:70](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/evm/evm.ts#L70)*
 
 Total amount of gas to be refunded from all nested calls.
 
@@ -57,7 +57,7 @@ ___
 
 • **gasUsed**: *BN*
 
-*Defined in [evm/evm.ts:55](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/evm/evm.ts#L55)*
+*Defined in [evm/evm.ts:54](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/evm/evm.ts#L54)*
 
 Amount of gas the code used to run
 
@@ -67,7 +67,7 @@ ___
 
 • **logs**? : *any[]*
 
-*Defined in [evm/evm.ts:63](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/evm/evm.ts#L63)*
+*Defined in [evm/evm.ts:62](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/evm/evm.ts#L62)*
 
 Array of logs that the contract emitted
 
@@ -77,7 +77,7 @@ ___
 
 • **returnValue**: *Buffer*
 
-*Defined in [evm/evm.ts:59](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/evm/evm.ts#L59)*
+*Defined in [evm/evm.ts:58](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/evm/evm.ts#L58)*
 
 Return value from the contract
 
@@ -87,7 +87,7 @@ ___
 
 • **runState**? : *RunState*
 
-*Defined in [evm/evm.ts:43](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/evm/evm.ts#L43)*
+*Defined in [evm/evm.ts:42](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/evm/evm.ts#L42)*
 
 ___
 
@@ -95,6 +95,6 @@ ___
 
 • **selfdestruct**? : *undefined | object*
 
-*Defined in [evm/evm.ts:67](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/evm/evm.ts#L67)*
+*Defined in [evm/evm.ts:66](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/evm/evm.ts#L66)*
 
 A map from the accounts that have self-destructed to the addresses to send their funds to

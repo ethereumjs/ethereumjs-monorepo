@@ -1,4 +1,4 @@
-[ethereumjs-tx](../README.md) › ["types"](../modules/_types_.md) › [FakeTxData](_types_.faketxdata.md)
+[@ethereumjs/tx](../README.md) › ["types"](../modules/_types_.md) › [FakeTxData](_types_.faketxdata.md)
 
 # Interface: FakeTxData
 

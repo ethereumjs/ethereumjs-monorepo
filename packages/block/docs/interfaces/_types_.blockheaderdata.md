@@ -1,4 +1,4 @@
-[ethereumjs-block](../README.md) › ["types"](../modules/_types_.md) › [BlockHeaderData](_types_.blockheaderdata.md)
+[@ethereumjs/block](../README.md) › ["types"](../modules/_types_.md) › [BlockHeaderData](_types_.blockheaderdata.md)
 
 # Interface: BlockHeaderData
 

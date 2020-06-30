@@ -1,4 +1,4 @@
-[ethereumjs-vm](../README.md) › ["exceptions"](../modules/_exceptions_.md) › [VmError](_exceptions_.vmerror.md)
+[@ethereumjs/vm](../README.md) › ["exceptions"](../modules/_exceptions_.md) › [VmError](_exceptions_.vmerror.md)
 
 # Class: VmError
 

@@ -1,4 +1,4 @@
-[ethereumjs-block](../README.md) › ["index"](../modules/_index_.md) › [ChainOptions](_index_.chainoptions.md)
+[@ethereumjs/block](../README.md) › ["index"](../modules/_index_.md) › [ChainOptions](_index_.chainoptions.md)
 
 # Interface: ChainOptions
 

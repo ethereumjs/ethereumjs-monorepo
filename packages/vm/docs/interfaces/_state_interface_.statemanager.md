@@ -1,4 +1,4 @@
-[ethereumjs-vm](../README.md) › ["state/interface"](../modules/_state_interface_.md) › [StateManager](_state_interface_.statemanager.md)
+[@ethereumjs/vm](../README.md) › ["state/interface"](../modules/_state_interface_.md) › [StateManager](_state_interface_.statemanager.md)
 
 # Interface: StateManager
 

@@ -1,4 +1,4 @@
-[ethereumjs-common](../README.md) › ["types"](../modules/_types_.md) › [GenesisBlock](_types_.genesisblock.md)
+[@ethereumjs/common](../README.md) › ["types"](../modules/_types_.md) › [GenesisBlock](_types_.genesisblock.md)
 
 # Interface: GenesisBlock
 

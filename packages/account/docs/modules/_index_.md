@@ -1,4 +1,4 @@
-[ethereumjs-account](../README.md) › ["index"](_index_.md)
+[@ethereumjs/account](../README.md) › ["index"](_index_.md)
 
 # Module: "index"
 

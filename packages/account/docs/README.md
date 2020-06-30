@@ -1,6 +1,6 @@
-[ethereumjs-account](README.md)
+[@ethereumjs/account](README.md)
 
-# ethereumjs-account
+# @ethereumjs/account
 
 ## Index
 

@@ -1,4 +1,4 @@
-[ethereumjs-vm](../README.md) › ["runTx"](_runtx_.md)
+[@ethereumjs/vm](../README.md) › ["runTx"](_runtx_.md)
 
 # Module: "runTx"
 

@@ -1,4 +1,4 @@
-[ethereumjs-blockchain](../README.md) › ["index"](../modules/_index_.md) › [Blockchain](_index_.blockchain.md)
+[@ethereumjs/blockchain](../README.md) › ["index"](../modules/_index_.md) › [Blockchain](_index_.blockchain.md)
 
 # Class: Blockchain
 

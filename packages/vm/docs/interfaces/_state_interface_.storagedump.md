@@ -1,4 +1,4 @@
-[ethereumjs-vm](../README.md) › ["state/interface"](../modules/_state_interface_.md) › [StorageDump](_state_interface_.storagedump.md)
+[@ethereumjs/vm](../README.md) › ["state/interface"](../modules/_state_interface_.md) › [StorageDump](_state_interface_.storagedump.md)
 
 # Interface: StorageDump
 

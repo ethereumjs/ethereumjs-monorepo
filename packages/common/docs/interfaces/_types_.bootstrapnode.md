@@ -1,4 +1,4 @@
-[ethereumjs-common](../README.md) › ["types"](../modules/_types_.md) › [BootstrapNode](_types_.bootstrapnode.md)
+[@ethereumjs/common](../README.md) › ["types"](../modules/_types_.md) › [BootstrapNode](_types_.bootstrapnode.md)
 
 # Interface: BootstrapNode
 

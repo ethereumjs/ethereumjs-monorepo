@@ -1,4 +1,4 @@
-[ethereumjs-common](../README.md) › ["types"](../modules/_types_.md) › [chainsType](_types_.chainstype.md)
+[@ethereumjs/common](../README.md) › ["types"](../modules/_types_.md) › [chainsType](_types_.chainstype.md)
 
 # Interface: chainsType
 

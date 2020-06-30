@@ -1,4 +1,4 @@
-[ethereumjs-blockchain](../README.md) › ["index"](../modules/_index_.md) › [BlockchainInterface](_index_.blockchaininterface.md)
+[@ethereumjs/blockchain](../README.md) › ["index"](../modules/_index_.md) › [BlockchainInterface](_index_.blockchaininterface.md)
 
 # Interface: BlockchainInterface
 

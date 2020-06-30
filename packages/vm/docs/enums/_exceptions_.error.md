@@ -1,4 +1,4 @@
-[ethereumjs-vm](../README.md) › ["exceptions"](../modules/_exceptions_.md) › [ERROR](_exceptions_.error.md)
+[@ethereumjs/vm](../README.md) › ["exceptions"](../modules/_exceptions_.md) › [ERROR](_exceptions_.error.md)
 
 # Enumeration: ERROR
 

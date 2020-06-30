@@ -1,4 +1,4 @@
-[ethereumjs-blockchain](../README.md) › ["index"](_index_.md)
+[@ethereumjs/blockchain](../README.md) › ["index"](_index_.md)
 
 # Module: "index"
 

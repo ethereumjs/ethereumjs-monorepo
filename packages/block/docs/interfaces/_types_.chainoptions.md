@@ -1,4 +1,4 @@
-[ethereumjs-block](../README.md) › ["types"](../modules/_types_.md) › [ChainOptions](_types_.chainoptions.md)
+[@ethereumjs/block](../README.md) › ["types"](../modules/_types_.md) › [ChainOptions](_types_.chainoptions.md)
 
 # Interface: ChainOptions
 

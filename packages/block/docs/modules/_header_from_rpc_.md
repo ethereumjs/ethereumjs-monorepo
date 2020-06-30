@@ -1,4 +1,4 @@
-[ethereumjs-block](../README.md) › ["header-from-rpc"](_header_from_rpc_.md)
+[@ethereumjs/block](../README.md) › ["header-from-rpc"](_header_from_rpc_.md)
 
 # Module: "header-from-rpc"
 

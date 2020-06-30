@@ -1,4 +1,4 @@
-[ethereumjs-block](../README.md) › ["types"](../modules/_types_.md) › [Blockchain](_types_.blockchain.md)
+[@ethereumjs/block](../README.md) › ["types"](../modules/_types_.md) › [Blockchain](_types_.blockchain.md)
 
 # Interface: Blockchain
 

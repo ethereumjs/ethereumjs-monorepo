@@ -1,4 +1,4 @@
-[ethereumjs-tx](../README.md) › ["types"](../modules/_types_.md) › [TransformableToBuffer](_types_.transformabletobuffer.md)
+[@ethereumjs/tx](../README.md) › ["types"](../modules/_types_.md) › [TransformableToBuffer](_types_.transformabletobuffer.md)
 
 # Interface: TransformableToBuffer
 
