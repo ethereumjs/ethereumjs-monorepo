@@ -80,6 +80,11 @@ jobs:
 
   test-vm-blockchain:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        # This is the most fair division among 1 directory vs. everything else
+        args: ['--excludeDir=GeneralStateTests/stTimeConsuming', '--dir=GeneralStateTests/stTimeConsuming']
+      fail-fast: false
     steps:
       - uses: actions/setup-node@v1
         with:
@@ -103,4 +108,4 @@ jobs:
       - run: npm run build:vm
         working-directory: ${{github.workspace}}
 
-      - run: npm run test:blockchain
+      - run: npm run test:blockchain -- ${{ matrix.args }}
