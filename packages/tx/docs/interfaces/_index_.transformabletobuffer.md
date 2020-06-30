@@ -1,4 +1,4 @@
-[ethereumjs-tx](../README.md) › ["index"](../modules/_index_.md) › [TransformableToBuffer](_index_.transformabletobuffer.md)
+[@ethereumjs/tx](../README.md) › ["index"](../modules/_index_.md) › [TransformableToBuffer](_index_.transformabletobuffer.md)
 
 # Interface: TransformableToBuffer
 

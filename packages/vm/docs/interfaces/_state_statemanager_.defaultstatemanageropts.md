@@ -1,4 +1,4 @@
-[ethereumjs-vm](../README.md) › ["state/stateManager"](../modules/_state_statemanager_.md) › [DefaultStateManagerOpts](_state_statemanager_.defaultstatemanageropts.md)
+[@ethereumjs/vm](../README.md) › ["state/stateManager"](../modules/_state_statemanager_.md) › [DefaultStateManagerOpts](_state_statemanager_.defaultstatemanageropts.md)
 
 # Interface: DefaultStateManagerOpts
 
@@ -21,7 +21,7 @@ Options for constructing a [StateManager](_state_index_.statemanager.md).
 
 • **common**? : *Common*
 
-*Defined in [state/stateManager.ts:24](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/state/stateManager.ts#L24)*
+*Defined in [state/stateManager.ts:19](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/state/stateManager.ts#L19)*
 
 Parameters of the chain ([`Common`](https://github.com/ethereumjs/ethereumjs-common))
 
@@ -31,6 +31,6 @@ ___
 
 • **trie**? : *Trie*
 
-*Defined in [state/stateManager.ts:28](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/state/stateManager.ts#L28)*
+*Defined in [state/stateManager.ts:23](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/state/stateManager.ts#L23)*
 
 A [`merkle-patricia-tree`](https://github.com/ethereumjs/merkle-patricia-tree) instance

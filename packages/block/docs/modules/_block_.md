@@ -1,4 +1,4 @@
-[ethereumjs-block](../README.md) › ["block"](_block_.md)
+[@ethereumjs/block](../README.md) › ["block"](_block_.md)
 
 # Module: "block"
 

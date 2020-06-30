@@ -1,4 +1,4 @@
-[ethereumjs-tx](../README.md) › ["index"](../modules/_index_.md) › [TransactionOptions](_index_.transactionoptions.md)
+[@ethereumjs/tx](../README.md) › ["index"](../modules/_index_.md) › [TransactionOptions](_index_.transactionoptions.md)
 
 # Interface: TransactionOptions
 

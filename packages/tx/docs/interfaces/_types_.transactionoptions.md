@@ -1,4 +1,4 @@
-[ethereumjs-tx](../README.md) › ["types"](../modules/_types_.md) › [TransactionOptions](_types_.transactionoptions.md)
+[@ethereumjs/tx](../README.md) › ["types"](../modules/_types_.md) › [TransactionOptions](_types_.transactionoptions.md)
 
 # Interface: TransactionOptions
 

@@ -1,4 +1,4 @@
-[ethereumjs-vm](../README.md) › ["runBlock"](../modules/_runblock_.md) › [RunBlockOpts](_runblock_.runblockopts.md)
+[@ethereumjs/vm](../README.md) › ["runBlock"](../modules/_runblock_.md) › [RunBlockOpts](_runblock_.runblockopts.md)
 
 # Interface: RunBlockOpts
 
@@ -25,7 +25,7 @@ Options for running a block.
 
 • **block**: *any*
 
-*Defined in [runBlock.ts:18](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/runBlock.ts#L18)*
+*Defined in [runBlock.ts:16](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/runBlock.ts#L16)*
 
 The [`Block`](https://github.com/ethereumjs/ethereumjs-block) to process
 
@@ -35,7 +35,7 @@ ___
 
 • **generate**? : *undefined | false | true*
 
-*Defined in [runBlock.ts:27](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/runBlock.ts#L27)*
+*Defined in [runBlock.ts:25](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/runBlock.ts#L25)*
 
 Whether to generate the stateRoot. If false `runBlock` will check the
 stateRoot of the block against the Trie
@@ -46,7 +46,7 @@ ___
 
 • **root**? : *Buffer*
 
-*Defined in [runBlock.ts:22](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/runBlock.ts#L22)*
+*Defined in [runBlock.ts:20](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/runBlock.ts#L20)*
 
 Root of the state trie
 
@@ -56,7 +56,7 @@ ___
 
 • **skipBalance**? : *undefined | false | true*
 
-*Defined in [runBlock.ts:39](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/runBlock.ts#L39)*
+*Defined in [runBlock.ts:37](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/runBlock.ts#L37)*
 
 If true, skips the balance check
 
@@ -66,7 +66,7 @@ ___
 
 • **skipBlockValidation**? : *undefined | false | true*
 
-*Defined in [runBlock.ts:31](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/runBlock.ts#L31)*
+*Defined in [runBlock.ts:29](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/runBlock.ts#L29)*
 
 If true, will skip block validation
 
@@ -76,6 +76,6 @@ ___
 
 • **skipNonce**? : *undefined | false | true*
 
-*Defined in [runBlock.ts:35](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/runBlock.ts#L35)*
+*Defined in [runBlock.ts:33](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/runBlock.ts#L33)*
 
 If true, skips the nonce check

@@ -1,4 +1,4 @@
-[ethereumjs-common](../README.md) › ["index"](../modules/_index_.md) › [Common](_index_.common.md)
+[@ethereumjs/common](../README.md) › ["index"](../modules/_index_.md) › [Common](_index_.common.md)
 
 # Class: Common
 

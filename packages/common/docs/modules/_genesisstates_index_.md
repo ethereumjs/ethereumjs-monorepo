@@ -1,4 +1,4 @@
-[ethereumjs-common](../README.md) › ["genesisStates/index"](_genesisstates_index_.md)
+[@ethereumjs/common](../README.md) › ["genesisStates/index"](_genesisstates_index_.md)
 
 # Module: "genesisStates/index"
 

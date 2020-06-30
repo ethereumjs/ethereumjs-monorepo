@@ -1,6 +1,6 @@
-[ethereumjs-vm](README.md)
+[@ethereumjs/vm](README.md)
 
-# ethereumjs-vm
+# @ethereumjs/vm
 
 ## Index
 

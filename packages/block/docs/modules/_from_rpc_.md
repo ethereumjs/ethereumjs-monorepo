@@ -1,4 +1,4 @@
-[ethereumjs-block](../README.md) › ["from-rpc"](_from_rpc_.md)
+[@ethereumjs/block](../README.md) › ["from-rpc"](_from_rpc_.md)
 
 # Module: "from-rpc"
 
@@ -14,7 +14,7 @@
 
 ▸ **blockFromRpc**(`blockParams`: any, `uncles?`: any[], `chainOptions?`: [ChainOptions](../interfaces/_index_.chainoptions.md)): *[Block](../classes/_block_.block.md)‹›*
 
-*Defined in [from-rpc.ts:15](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/from-rpc.ts#L15)*
+*Defined in [from-rpc.ts:14](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/from-rpc.ts#L14)*
 
 Creates a new block object from Ethereum JSON RPC.
 

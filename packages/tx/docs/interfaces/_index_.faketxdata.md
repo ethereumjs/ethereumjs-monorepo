@@ -1,4 +1,4 @@
-[ethereumjs-tx](../README.md) › ["index"](../modules/_index_.md) › [FakeTxData](_index_.faketxdata.md)
+[@ethereumjs/tx](../README.md) › ["index"](../modules/_index_.md) › [FakeTxData](_index_.faketxdata.md)
 
 # Interface: FakeTxData
 

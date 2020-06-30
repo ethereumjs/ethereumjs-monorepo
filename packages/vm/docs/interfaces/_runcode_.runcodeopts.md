@@ -1,4 +1,4 @@
-[ethereumjs-vm](../README.md) › ["runCode"](../modules/_runcode_.md) › [RunCodeOpts](_runcode_.runcodeopts.md)
+[@ethereumjs/vm](../README.md) › ["runCode"](../modules/_runcode_.md) › [RunCodeOpts](_runcode_.runcodeopts.md)
 
 # Interface: RunCodeOpts
 

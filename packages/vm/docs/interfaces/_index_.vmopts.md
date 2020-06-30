@@ -1,4 +1,4 @@
-[ethereumjs-vm](../README.md) › ["index"](../modules/_index_.md) › [VMOpts](_index_.vmopts.md)
+[@ethereumjs/vm](../README.md) › ["index"](../modules/_index_.md) › [VMOpts](_index_.vmopts.md)
 
 # Interface: VMOpts
 

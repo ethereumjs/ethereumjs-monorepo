@@ -1,4 +1,4 @@
-[ethereumjs-vm](../README.md) › ["runBlock"](_runblock_.md)
+[@ethereumjs/vm](../README.md) › ["runBlock"](_runblock_.md)
 
 # Module: "runBlock"
 

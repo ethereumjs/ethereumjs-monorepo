@@ -1,4 +1,4 @@
-[ethereumjs-tx](../README.md) › ["index"](../modules/_index_.md) › [TxData](_index_.txdata.md)
+[@ethereumjs/tx](../README.md) › ["index"](../modules/_index_.md) › [TxData](_index_.txdata.md)
 
 # Interface: TxData
 

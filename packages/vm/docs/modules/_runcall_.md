@@ -1,4 +1,4 @@
-[ethereumjs-vm](../README.md) › ["runCall"](_runcall_.md)
+[@ethereumjs/vm](../README.md) › ["runCall"](_runcall_.md)
 
 # Module: "runCall"
 

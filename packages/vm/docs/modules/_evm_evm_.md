@@ -1,4 +1,4 @@
-[ethereumjs-vm](../README.md) › ["evm/evm"](_evm_evm_.md)
+[@ethereumjs/vm](../README.md) › ["evm/evm"](_evm_evm_.md)
 
 # Module: "evm/evm"
 
@@ -20,7 +20,7 @@
 
 ▸ **OOGResult**(`gasLimit`: BN): *[ExecResult](../interfaces/_evm_evm_.execresult.md)*
 
-*Defined in [evm/evm.ts:80](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/evm/evm.ts#L80)*
+*Defined in [evm/evm.ts:79](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/evm/evm.ts#L79)*
 
 **Parameters:**
 

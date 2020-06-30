@@ -1,4 +1,4 @@
-[ethereumjs-vm](../README.md) › ["runBlockchain"](_runblockchain_.md)
+[@ethereumjs/vm](../README.md) › ["runBlockchain"](_runblockchain_.md)
 
 # Module: "runBlockchain"
 

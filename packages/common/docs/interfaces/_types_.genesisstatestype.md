@@ -1,4 +1,4 @@
-[ethereumjs-common](../README.md) › ["types"](../modules/_types_.md) › [genesisStatesType](_types_.genesisstatestype.md)
+[@ethereumjs/common](../README.md) › ["types"](../modules/_types_.md) › [genesisStatesType](_types_.genesisstatestype.md)
 
 # Interface: genesisStatesType
 

@@ -1,4 +1,4 @@
-[ethereumjs-common](../README.md) › ["types"](../modules/_types_.md) › [Hardfork](_types_.hardfork.md)
+[@ethereumjs/common](../README.md) › ["types"](../modules/_types_.md) › [Hardfork](_types_.hardfork.md)
 
 # Interface: Hardfork
 

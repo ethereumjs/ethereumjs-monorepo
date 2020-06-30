@@ -1,4 +1,4 @@
-[ethereumjs-vm](../README.md) › ["state/stateManager"](_state_statemanager_.md)
+[@ethereumjs/vm](../README.md) › ["state/stateManager"](_state_statemanager_.md)
 
 # Module: "state/stateManager"
 
