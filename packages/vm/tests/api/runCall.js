@@ -77,6 +77,41 @@ tape('Constantinople: EIP-1014 CREATE2 creates the right contract address', asyn
     t.end()
 })
 
+tape('Byzantium cannot access Constantinople opcodes', async (t) => {
+    t.plan(2)
+    // setup the accounts for this test
+    const caller =          Buffer.from('00000000000000000000000000000000000000ee', 'hex')                   // caller addres
+    const contractAddress = Buffer.from('00000000000000000000000000000000000000ff', 'hex')          // contract address 
+    // setup the vm
+    const vmByzantium = new VM({ chain: 'mainnet', hardfork: 'byzantium'})      
+    const vmConstantinople = new VM({ chain: 'mainnet', hardfork: 'constantinople'})                                   
+    const code = "600160011B00"
+    /*
+      code:             remarks: (top of the stack is at the zero index)
+        PUSH1 0x01  
+        PUSH1 0x01
+        SHL
+        STOP
+    */
+
+    await vmByzantium.stateManager.putContractCode(contractAddress, Buffer.from(code, 'hex'))                // setup the contract code
+    await vmConstantinople.stateManager.putContractCode(contractAddress, Buffer.from(code, 'hex'))                // setup the contract code
+
+    const runCallArgs = {
+        caller: caller,                     // call address
+        gasLimit: new BN(0xffffffffff),     // ensure we pass a lot of gas, so we do not run out of gas
+        to: contractAddress,                // call to the contract address
+    }
+
+    const byzantiumResult = await vmByzantium.runCall(runCallArgs)
+    const constantinopleResult = await vmConstantinople.runCall(runCallArgs)
+
+    t.assert(byzantiumResult.execResult.exceptionError && byzantiumResult.execResult.exceptionError.error === 'invalid opcode', 'byzantium cannot accept constantinople opcodes (SHL)')
+    t.assert(!constantinopleResult.execResult.exceptionError, 'constantinople can access the SHL opcode')
+
+    t.end()
+})
+
 tape('Ensure that precompile activation creates non-empty accounts', async (t) => {
     // setup the accounts for this test
     const caller =          Buffer.from('00000000000000000000000000000000000000ee', 'hex')                   // caller addres
