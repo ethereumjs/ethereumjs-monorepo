@@ -1,6 +1,6 @@
 import { Test } from 'tape'
 import { DPT, ETH, RLPx, genPrivateKey } from '../../src'
-import Common from 'ethereumjs-common'
+import Common from '@ethereumjs/common'
 
 export const localhost = '127.0.0.1'
 export const basePort = 30306
@@ -42,7 +42,7 @@ export function getTestRLPXs(
 ) {
   const rlpxs = []
   if (!capabilities) {
-    capabilities = [ETH.eth63, ETH.eth62]
+    capabilities = [ETH.eth64, ETH.eth63, ETH.eth62]
   }
   if (!common) {
     common = new Common('mainnet')

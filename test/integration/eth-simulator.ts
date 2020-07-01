@@ -1,7 +1,7 @@
 import test from 'tape'
 import * as devp2p from '../../src'
 import * as util from './util'
-import Common from 'ethereumjs-common'
+import Common from '@ethereumjs/common'
 
 const GENESIS_TD = 17179869184
 const GENESIS_HASH = Buffer.from(
@@ -64,12 +64,17 @@ test('ETH: send status message (Genesis block mismatch)', async t => {
   util.twoPeerMsgExchange(t, opts, capabilities)
 })
 
+<<<<<<< HEAD
 test('ETH: send allowed eth63', async t => {
   const opts: any = {}
+=======
+function sendWithProtocolVersion(t: test.Test, version: number, cap?: Object) {
+  let opts: any = {}
+>>>>>>> Added support for Eth64 protocol version
   opts.status0 = Object.assign({}, status)
   opts.status1 = Object.assign({}, status)
   opts.onOnceStatus0 = function(rlpxs: any, eth: any) {
-    t.equal(eth.getVersion(), 63, 'should use eth63 as protocol version')
+    t.equal(eth.getVersion(), version, `should use eth${version} as protocol version`)
     eth.sendMessage(devp2p.ETH.MESSAGE_CODES.NEW_BLOCK_HASHES, [437000, 1, 0, 0])
     t.pass('should send NEW_BLOCK_HASHES message')
   }
@@ -80,9 +85,14 @@ test('ETH: send allowed eth63', async t => {
       t.end()
     }
   }
-  util.twoPeerMsgExchange(t, opts, capabilities)
+  util.twoPeerMsgExchange(t, opts, cap)
+}
+
+test('ETH: should use latest protocol version on default', async t => {
+  sendWithProtocolVersion(t, 64)
 })
 
+<<<<<<< HEAD
 test('ETH: send allowed eth62', async t => {
   const cap = [devp2p.ETH.eth62]
   const opts: any = {}
@@ -98,8 +108,62 @@ test('ETH: send allowed eth62', async t => {
       util.destroyRLPXs(rlpxs)
       t.end()
     }
+=======
+test('ETH: should work with allowed eth64', async t => {
+  sendWithProtocolVersion(t, 64)
+})
+
+test('ETH -> Eth64 -> sendStatus(): should throw on non-matching latest block provided', async t => {
+  const cap = [devp2p.ETH.eth64]
+  const common = new Common('mainnet', 'byzantium')
+  let status0: any = Object.assign({}, status)
+  status0['latestBlock'] = 100000 // lower than Byzantium fork block 4370000
+
+  const rlpxs = util.initTwoPeerRLPXSetup(null, cap, common)
+  rlpxs[0].on('peer:added', function(peer: any) {
+    const protocol = peer.getProtocols()[0]
+    t.throws(() => {
+      protocol.sendStatus(status0)
+    }, /latest block provided is not matching the HF setting/)
+    util.destroyRLPXs(rlpxs)
+    t.end()
+  })
+})
+
+test('ETH -> Eth64 -> ForkId validation 1a)', async t => {
+  let opts: any = {}
+  const cap = [devp2p.ETH.eth64]
+  const common = new Common('mainnet', 'byzantium')
+  let status0: any = Object.assign({}, status)
+  // Take a latest block > next mainnet fork block (constantinople)
+  // to trigger validation condition
+  status0['latestBlock'] = 9069000
+  opts.status0 = status0
+  opts.status1 = Object.assign({}, status)
+  opts.onPeerError0 = function(err: Error, rlpxs: any) {
+    const msg = 'Remote is advertising a future fork that passed locally'
+    t.equal(err.message, msg, `should emit error: ${msg}`)
+    util.destroyRLPXs(rlpxs)
+    t.end()
+>>>>>>> Added support for Eth64 protocol version
   }
-  util.twoPeerMsgExchange(t, opts, cap)
+
+  util.twoPeerMsgExchange(t, opts, cap, common)
+})
+
+test('ETH: should work with allowed eth63', async t => {
+  let cap = [devp2p.ETH.eth63]
+  sendWithProtocolVersion(t, 63, cap)
+})
+
+test('ETH: should work with allowed eth63', async t => {
+  let cap = [devp2p.ETH.eth63]
+  sendWithProtocolVersion(t, 63, cap)
+})
+
+test('ETH: work with allowed eth62', async t => {
+  let cap = [devp2p.ETH.eth62]
+  sendWithProtocolVersion(t, 62, cap)
 })
 
 test('ETH: send not-allowed eth62', async t => {
