@@ -18,7 +18,7 @@ export default async function (opts: PrecompileInput): Promise<ExecResult> {
   let baseGas = new BN(opts._common.param('gasPrices', 'Bls12381PairingBaseGas'))
 
   if (inputData.length == 0) {
-    return VmErrorResult(new VmError(ERROR.BLS_12_381_PAIRING_EMPTY), baseGas)
+    return VmErrorResult(new VmError(ERROR.BLS_12_381_INPUT_EMPTY), baseGas)
   }
 
   if (inputData.length % 384 != 0) {

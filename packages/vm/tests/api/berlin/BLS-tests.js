@@ -8,8 +8,10 @@ const fs = require('fs')
 
 const BLS_G1ADD_Address = "000000000000000000000000000000000000000a"
 const BLS_G1MUL_ADDRESS = "000000000000000000000000000000000000000b"
+const BLS_G1MULTIEXP_ADDRESS = "000000000000000000000000000000000000000c"
 const BLS_G2ADD_Address = "000000000000000000000000000000000000000d"
 const BLS_G2MUL_Address = "000000000000000000000000000000000000000e"
+const BLS_G2MULTIEXP_ADDRESS = "000000000000000000000000000000000000000f"
 const BLS_Pairing_Address = "0000000000000000000000000000000000000010"
 const BLS_MapToG2_Address = "0000000000000000000000000000000000000012"
 
@@ -94,6 +96,42 @@ tape('Berlin BLS tests', (t) => {
         st.end()
     })
 
+    t.test('G1MULTIEXP precompile', async (st) => {
+        const fileStr = fs.readFileSync("g1_multiexp.csv", 'utf8')   // read test file csv (https://raw.githubusercontent.com/matter-labs/eip1962/master/src/test/test_vectors/eip2537/g1_multiexp.csv)
+        const remFirstLine = fileStr.slice(13)                  // remove the first line 
+        const results = remFirstLine.match(/[0-9A-Fa-f]+/g)     // very simple splitter
+
+        const common = new Common('mainnet', 'berlin')
+
+        const vm = new VM({ common: common })
+
+        if (results.length != 200) {
+            st.fail('amount of tests not the expected test amount')
+        }
+
+        for (let i = 0; i < results.length; i+=2) {
+            const input = results[i]
+            const output = results[i + 1]
+            const result = await vm.runCall({
+                caller: Buffer.from('0000000000000000000000000000000000000000', 'hex'),
+                gasLimit: new BN(0xffffffffff),
+                to: Buffer.from(BLS_G1MULTIEXP_ADDRESS, 'hex'),
+                value: new BN(0),
+                data: Buffer.from(input, 'hex')
+            })
+
+            // todo: add a gas check
+
+            if (result.execResult.returnValue.toString('hex') != output) {
+                st.fail("BLS G1MULTIEXP return value is not the expected value")
+            }
+        }
+
+        st.pass("BLS G1MULTIEXP output is correct")
+
+        st.end()
+    })
+
     t.test('G2ADD precompile', async (st) => {
         const fileStr = fs.readFileSync("g2_add.csv", 'utf8')   // read test file csv (https://raw.githubusercontent.com/matter-labs/eip1962/master/src/test/test_vectors/eip2537/g2_add.csv)
         const remFirstLine = fileStr.slice(13)                  // remove the first line 
@@ -170,6 +208,41 @@ tape('Berlin BLS tests', (t) => {
         st.end()
     })
 
+    t.test('G2MULTIEXP precompile', async (st) => {
+        const fileStr = fs.readFileSync("g2_multiexp.csv", 'utf8')   // read test file csv (https://raw.githubusercontent.com/matter-labs/eip1962/master/src/test/test_vectors/eip2537/g2_multiexp.csv)
+        const remFirstLine = fileStr.slice(13)                  // remove the first line 
+        const results = remFirstLine.match(/[0-9A-Fa-f]+/g)     // very simple splitter
+
+        const common = new Common('mainnet', 'berlin')
+
+        const vm = new VM({ common: common })
+
+        if (results.length != 200) {
+            st.fail('amount of tests not the expected test amount')
+        }
+
+        for (let i = 0; i < results.length; i+=2) {
+            const input = results[i]
+            const output = results[i + 1]
+            const result = await vm.runCall({
+                caller: Buffer.from('0000000000000000000000000000000000000000', 'hex'),
+                gasLimit: new BN(0xffffffffff),
+                to: Buffer.from(BLS_G2MULTIEXP_ADDRESS, 'hex'),
+                value: new BN(0),
+                data: Buffer.from(input, 'hex')
+            })
+
+            // todo: add a gas check
+
+            if (result.execResult.returnValue.toString('hex') != output) {
+                st.fail("BLS G2MULTIEXP return value is not the expected value")
+            }
+        }
+
+        st.pass("BLS G2MULTIEXP output is correct")
+
+        st.end()
+    })
     // TODO: add error cases for the pairing precompile.
     /*
         Invalid encoding of any boolean variable must result in error
@@ -212,12 +285,16 @@ tape('Berlin BLS tests', (t) => {
             // calculate expected gas;
             let baseFee = new BN(115000)
             let feePerPair = new BN(23000)
-            let pairs = new BN(input.length / 384)
+            let pairs = new BN(input.length / (384*2))
 
             let fee = baseFee.iadd(feePerPair.imul(pairs))
 
-            if (!result.execResult.gasUsed.eq(fee) {
+            if (!result.execResult.gasUsed.eq(fee)) {
                 st.fail("BLS Pairing gas used is incorrect")
+            }
+
+            if (result.execResult.returnValue.toString('hex') != output) {
+                st.fail("BLS Pairing output is incorrect")
             }
         }
 

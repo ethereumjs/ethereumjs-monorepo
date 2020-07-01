@@ -20,7 +20,7 @@ export enum ERROR {
   // BLS errors
   BLS_12_381_INVALID_INPUT_LENGTH = 'invalid input length',
   BLS_12_381_POINT_NOT_ON_CURVE = 'point not on curve',
-  BLS_12_381_PAIRING_EMPTY = 'input is empty',
+  BLS_12_381_INPUT_EMPTY = 'input is empty',
 }
 
 export class VmError {
