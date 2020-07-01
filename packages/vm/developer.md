@@ -142,3 +142,26 @@ An extremely rich and powerful toolbox is the [evmlab](https://github.com/holima
 ```sh
 NODE_OPTIONS="--max-old-space-size=4096" clinic flame -- node ./tests/tester.js --blockchain --excludeDir='GeneralStateTests'
 ```
+
+## Benchmarks
+
+This helps us see how the VM performs when running mainnet blocks.
+
+We want to use the compiled JS so `ts-node` does not show up in the profile. So run:
+
+`npm run build:benchmarks`
+
+Then:
+
+`node ./scripts/benchmarks/mainnetBlocks.js scripts/benchmarks/fixture/blocks-prestate.json`
+
+If you want to get a more detailed look to find bottlenecks we can use `0x`.
+
+So run:
+
+```
+npm i -g 0x
+0x scripts/benchmarks/mainnetBlocks.js scripts/benchmarks/fixture/blocks-prestate.json
+```
+
+and open the link it generates.

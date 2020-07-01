@@ -1,13 +1,11 @@
 import * as fs from 'fs'
-import * as path from 'path'
-import * as assert from 'assert'
 import { merge } from 'lodash'
 import Account from '@ethereumjs/account'
 import { toBuffer, setLengthLeft } from 'ethereumjs-util'
 import { encode } from 'rlp'
 import blockFromRPC from '@ethereumjs/block/dist/from-rpc'
-import VM from '../'
-import { StateManager, DefaultStateManager } from '../state'
+import VM from '../../dist'
+import { StateManager, DefaultStateManager } from '../../dist/state'
 import BN = require('bn.js')
 
 async function main() {
@@ -41,7 +39,7 @@ async function main() {
           throw new Error('Unavailable blockhash requested')
         }
         return cb(null, { hash: () => toBuffer(bh) })
-      }
+      },
     }
     vm.blockchain = blockchain as any
 
@@ -57,7 +55,11 @@ async function main() {
       //console.log(`Running tx ${tx.hash()} took ${process.hrtime(start)[0]} s, ${txElapsed.toFixed(3)} ms`)
     }
     const elapsed = process.hrtime(start)[1] / 1000000
-    console.log(`Running block ${block.header.number} took ${process.hrtime(start)[0]} s, ${elapsed.toFixed(3)} ms`)
+    console.log(
+      `Running block ${block.header.number} took ${process.hrtime(start)[0]} s, ${elapsed.toFixed(
+        3,
+      )} ms`,
+    )
   }
 }
 
@@ -65,10 +67,12 @@ export interface StateTestPreAccount {
   balance: string
   code: string
   nonce: string
-  storage: {[k: string]: string}
+  storage: { [k: string]: string }
 }
 
-export async function getPreState(pre: {[k: string]: StateTestPreAccount}): Promise<StateManager> {
+export async function getPreState(pre: {
+  [k: string]: StateTestPreAccount
+}): Promise<StateManager> {
   const state = new DefaultStateManager()
   for (const k in pre) {
     const kBuf = toBuffer(k)
@@ -88,10 +92,7 @@ export async function getPreState(pre: {[k: string]: StateTestPreAccount}): Prom
       await storageTrie.put(key, val)
     }
     acc.stateRoot = storageTrie.root
-    await state.putAccount(
-      kBuf,
-      acc
-    )
+    await state.putAccount(kBuf, acc)
     await state.putContractCode(kBuf, code)
   }
   return state
@@ -105,4 +106,8 @@ const hexToBuffer = (h: string, allowZero: boolean = false): Buffer => {
   return buf
 }
 
-main().then().catch((e: Error) => { throw e })
+main()
+  .then()
+  .catch((e: Error) => {
+    throw e
+  })

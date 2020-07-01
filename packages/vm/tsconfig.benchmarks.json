@@ -1,0 +1,9 @@
+{
+  "extends": "@ethereumjs/config-tsc",
+  "compilerOptions": {
+    "target": "ES6",
+    "sourceMap": false,
+    "declaration": false
+  },
+  "include": ["scripts/benchmarks/**.ts"]
+}
