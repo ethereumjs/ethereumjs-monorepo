@@ -111,11 +111,11 @@ export class ETH extends EventEmitter {
     return sStr
   }
 
-  sendStatus(status: ETH.Status) {
+  sendStatus(status: ETH.StatusOpts) {
     if (this._status !== null) return
     this._status = [
       int2buffer(this._version),
-      int2buffer(status.networkId),
+      int2buffer(this._peer._common.chainId()),
       status.td,
       status.bestHash,
       status.genesisHash
@@ -180,9 +180,9 @@ export namespace ETH {
     length: 5
   }
 
-  export type Status = {
+  export type StatusOpts = {
     version: number
-    networkId: number
+    // networkId: number
     td: Buffer
     bestHash: Buffer
     genesisHash: Buffer

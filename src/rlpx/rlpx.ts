@@ -4,7 +4,8 @@ import ms from 'ms'
 import { publicKeyCreate } from 'secp256k1'
 import { EventEmitter } from 'events'
 import { debug as createDebugLogger } from 'debug'
-import LRUCache = require('lru-cache')
+import LRUCache from 'lru-cache'
+import Common from '@ethereumjs/common'
 // note: relative path only valid in .js file in dist
 const { version: pVersion } = require('../../package.json')
 import { pk2id, createDeferred, formatLogId } from '../util'
@@ -21,6 +22,7 @@ export interface RLPxOptions {
   maxPeers: number
   remoteClientIdFilter?: string[]
   capabilities: Capabilities[]
+  common: Common
   listenPort: number | null
 }
 
@@ -32,6 +34,7 @@ export class RLPx extends EventEmitter {
   _clientId: Buffer
   _remoteClientIdFilter?: string[]
   _capabilities: Capabilities[]
+  _common: Common
   _listenPort: number | null
   _dpt: DPT
   _peersLRU: LRUCache<string, boolean>
@@ -56,6 +59,7 @@ export class RLPx extends EventEmitter {
 
     this._remoteClientIdFilter = options.remoteClientIdFilter
     this._capabilities = options.capabilities
+    this._common = options.common
     this._listenPort = options.listenPort
 
     // DPT
@@ -182,7 +186,12 @@ export class RLPx extends EventEmitter {
       clientId: this._clientId,
       remoteClientIdFilter: this._remoteClientIdFilter,
       capabilities: this._capabilities,
+<<<<<<< HEAD
       port: this._listenPort
+=======
+      common: this._common,
+      port: this._listenPort,
+>>>>>>> Use Common for networkId in ETH and LES protocols, init Rlpx with Common instance
     })
     peer.on('error', err => this.emit('peer:error', peer, err))
 
