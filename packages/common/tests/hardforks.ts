@@ -59,6 +59,52 @@ tape('[Common]: Hardfork logic', function (t: tape.Test) {
     st.end()
   })
 
+  t.test('nextHardforkBlock()', function (st: tape.Test) {
+    let c = new Common('rinkeby', 'chainstart')
+    let msg =
+      'should work with HF set / return correct next HF block for chainstart (rinkeby: chainstart -> homestead)'
+    st.equal(c.nextHardforkBlock(), 1, msg)
+
+    msg =
+      'should correctly skip a HF where block is set to null (rinkeby: homestead -> (dao) -> tangerineWhistle)'
+    st.equal(c.nextHardforkBlock('homestead'), 2, msg)
+
+    msg = 'should return correct next HF (rinkeby: byzantium -> constantinople)'
+    st.equal(c.nextHardforkBlock('byzantium'), 3660663, msg)
+
+    msg = 'should return null if next HF is not available (rinkeby: istanbul -> berlin)'
+    st.equal(c.nextHardforkBlock('istanbul'), null, msg)
+
+    msg =
+      'should work correctly along the need to skip several forks (ropsten: chainstart -> (homestead) -> (dao) -> (tangerineWhistle) -> spuriousDragon)'
+    c = new Common('ropsten', 'chainstart')
+    st.equal(c.nextHardforkBlock(), 10, msg)
+
+    st.end()
+  })
+
+  t.test('isNextHardforkBlock()', function (st: tape.Test) {
+    let c = new Common('rinkeby', 'chainstart')
+    let msg =
+      'should work with HF set / return true fro correct next HF block for chainstart (rinkeby: chainstart -> homestead)'
+    st.equal(c.isNextHardforkBlock(1), true, msg)
+
+    msg =
+      'should correctly skip a HF where block is set to null (rinkeby: homestead -> (dao) -> tangerineWhistle)'
+    st.equal(c.isNextHardforkBlock(2, 'homestead'), true, msg)
+
+    msg = 'should return true for correct next HF (rinkeby: byzantium -> constantinople)'
+    st.equal(c.isNextHardforkBlock(3660663, 'byzantium'), true, msg)
+
+    msg = 'should return false for a block number too low (rinkeby: byzantium -> constantinople)'
+    st.equal(c.isNextHardforkBlock(124, 'byzantium'), false, msg)
+
+    msg = 'should return false for a block number too hight (rinkeby: byzantium -> constantinople)'
+    st.equal(c.isNextHardforkBlock(605948938, 'byzantium'), false, msg)
+
+    st.end()
+  })
+
   t.test('activeHardforks()', function (st: tape.Test) {
     let c = new Common('ropsten')
     let msg = 'should return 9 active hardforks for Ropsten'
@@ -271,6 +317,19 @@ tape('[Common]: Hardfork logic', function (t: tape.Test) {
     }
     msg = 'should throw when called on non-applied or future HF'
     st.throws(f, /No fork hash calculation possible/, msg)
+
+    st.end()
+  })
+
+  t.test('hardforkForForkHash()', function (st: tape.Test) {
+    let c = new Common('mainnet')
+
+    let msg = 'should return the correct HF array for a matching forkHash'
+    const res = c.hardforkForForkHash('0x3edd5b10')
+    st.equal(res.name, 'spuriousDragon', msg)
+
+    msg = 'should return null for a forkHash not matching any HF'
+    st.equal(c.hardforkForForkHash('0x12345'), null, msg)
 
     st.end()
   })
