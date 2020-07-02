@@ -15,7 +15,7 @@ function runTests() {
 
   const FORK_CONFIG = (argv.fork || config.DEFAULT_FORK_CONFIG)
   const FORK_CONFIG_TEST_SUITE = config.getRequiredForkConfigAlias(FORK_CONFIG)
-  // Istanbul -> istanbul, MuirGlacier -> muirGlacier
+  // Examples: Istanbul -> istanbul, MuirGlacier -> muirGlacier
   const FORK_CONFIG_VM = FORK_CONFIG.charAt(0).toLowerCase() + FORK_CONFIG.substring(1)
 
   /**

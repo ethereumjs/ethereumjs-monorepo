@@ -255,10 +255,18 @@ export default class EVM {
       totalGas = totalGas.add(returnFee)
     }
 
-    // if not enough gas
+    // Check for SpuriousDragon EIP-170 code size limit
+    let allowedCodeSize = true
+    if (
+      this._vm._common.gteHardfork('spuriousDragon') &&
+      result.returnValue.length > this._vm._common.param('vm', 'maxCodeSize')
+    ) {
+      allowedCodeSize = false
+    }
+    // If enough gas and allowed code size
     if (
       totalGas.lte(message.gasLimit) &&
-      (this._vm.allowUnlimitedContractSize || result.returnValue.length <= 24576)
+      (this._vm.allowUnlimitedContractSize || allowedCodeSize)
     ) {
       result.gasUsed = totalGas
     } else {

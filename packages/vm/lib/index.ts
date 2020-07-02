@@ -110,6 +110,7 @@ export default class VM extends AsyncEventEmitter {
       const chain = opts.chain ? opts.chain : 'mainnet'
       const hardfork = opts.hardfork ? opts.hardfork : 'petersburg'
       const supportedHardforks = [
+        'spuriousDragon',
         'byzantium',
         'constantinople',
         'petersburg',
