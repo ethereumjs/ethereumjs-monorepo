@@ -96,6 +96,46 @@ tape('Berlin BLS tests', (t) => {
         st.end()
     })
 
+    t.test('G1MUL: tests if G1 input points are not on the curve', async (st) => {
+        const fileStr = fs.readFileSync("g1_not_on_curve.csv", 'utf8')   // read test file csv (https://raw.githubusercontent.com/matter-labs/eip1962/master/src/test/test_vectors/eip2537/g1_mul.csv)
+        const remFirstLine = fileStr.slice(13)                  // remove the first line 
+        const lineResults = remFirstLine.split(/\r?\n/)    // very simple splitter
+        let results = []
+
+        for (let key = 0; key < lineResults.length; key++) {
+            results[key] = lineResults[key].substring(0, 320)
+        }
+
+        const common = new Common('mainnet', 'berlin')
+
+        const vm = new VM({ common: common })
+
+        if (results.length != 100) {
+            st.fail('amount of tests not the expected test amount')
+        }
+
+        for (let i = 0; i < results.length; i+=2) {
+            const input = results[i]
+            const output = results[i + 1]
+            const result = await vm.runCall({
+                caller: Buffer.from('0000000000000000000000000000000000000000', 'hex'),
+                gasLimit: new BN(0xffffffffff),
+                to: Buffer.from(BLS_G1MUL_ADDRESS, 'hex'),
+                value: new BN(0),
+                data: Buffer.from(input, 'hex')
+            })
+
+            if (result.execResult.exceptionError.error != "point not on curve") {
+                st.fail("Precompile failed to reject point not on curve")
+            }
+
+        }
+
+        st.pass("BLS precompiles reject G1 points not on curve")
+
+        st.end()
+    })
+
     t.test('G1MULTIEXP precompile', async (st) => {
         const fileStr = fs.readFileSync("g1_multiexp.csv", 'utf8')   // read test file csv (https://raw.githubusercontent.com/matter-labs/eip1962/master/src/test/test_vectors/eip2537/g1_multiexp.csv)
         const remFirstLine = fileStr.slice(13)                  // remove the first line 
@@ -276,9 +316,8 @@ tape('Berlin BLS tests', (t) => {
                 value: new BN(0),
                 data: Buffer.from(input, 'hex')
             })
-          
+
             if (result.execResult.returnValue.toString('hex') != output) {
-                console.log(i)
                 st.fail("BLS Pairing return value is not the expected value")
             }
 

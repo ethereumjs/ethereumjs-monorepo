@@ -58,7 +58,12 @@ export default async function (opts: PrecompileInput): Promise<ExecResult> {
         return VmErrorResult(new VmError(ERROR.BLS_12_381_POINT_NOT_ON_CURVE), gasUsed)
       }
     }
-    let G1 = BLS12_381_ToG1Point(opts.data.slice(pairStart, pairStart + 128), mcl)
+    let G1
+    try {
+      G1 = BLS12_381_ToG1Point(opts.data.slice(pairStart, pairStart + 128), mcl)
+    } catch (e) {
+      return VmErrorResult(e, gasUsed)
+    }
 
     let g2start = pairStart + 128
     let G2 = BLS12_381_ToG2Point(opts.data.slice(g2start, g2start + 256), mcl)

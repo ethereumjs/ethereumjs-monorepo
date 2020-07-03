@@ -1,17 +1,33 @@
 const { padToEven } = require('ethereumjs-util')
+import { VmError, ERROR } from '../../../exceptions'
 
 // convert an input Buffer to a mcl G1 point
 // this does /NOT/ do any input checks. the input Buffer needs to be of length 128
+// it does raise an error if the point is not on the curve.
 function BLS12_381_ToG1Point(input: Buffer, mcl: any): any {
   const p_x = input.slice(16, 64).toString('hex')
   const p_y = input.slice(80, 128).toString('hex')
 
-  const pstr = '1 ' + p_x + ' ' + p_y
-  const mclPoint = new mcl.G1()
+  const Fp_X = new mcl.Fp()
+  const Fp_Y = new mcl.Fp()
+  const One = new mcl.Fp()
 
-  mclPoint.setStr(pstr, 16)
+  Fp_X.setStr(p_x, 16)
+  Fp_Y.setStr(p_y, 16)
+  One.setStr('1', 16)
 
-  return mclPoint
+  const G1 = new mcl.G1()
+
+  G1.setX(Fp_X)
+  G1.setY(Fp_Y)
+  G1.setZ(One)
+
+  // Check if these coordinates are actually on the curve.
+  if (!G1.isValid()) {
+    throw new VmError(ERROR.BLS_12_381_POINT_NOT_ON_CURVE)
+  }
+
+  return G1
 }
 
 // input: a mcl G1 point

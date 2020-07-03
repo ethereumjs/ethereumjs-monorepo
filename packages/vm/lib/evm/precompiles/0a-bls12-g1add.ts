@@ -39,12 +39,15 @@ export default async function (opts: PrecompileInput): Promise<ExecResult> {
     }
   }
 
-  // TODO: verify that point is on G1
-
   // convert input to mcl G1 points, add them, and convert the output to a Buffer.
-
-  let mclPoint1 = BLS12_381_ToG1Point(opts.data.slice(0, 128), mcl)
-  let mclPoint2 = BLS12_381_ToG1Point(opts.data.slice(128, 256), mcl)
+  let mclPoint1
+  let mclPoint2
+  try {
+    mclPoint1 = BLS12_381_ToG1Point(opts.data.slice(0, 128), mcl)
+    mclPoint2 = BLS12_381_ToG1Point(opts.data.slice(128, 256), mcl)
+  } catch (e) {
+    return VmErrorResult(e, gasUsed)
+  }
 
   const result = mcl.add(mclPoint1, mclPoint2)
 
