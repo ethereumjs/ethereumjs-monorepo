@@ -62,6 +62,26 @@
     "sstoreClearRefundEIP2200": {
       "v": 15000,
       "d": "Once per SSTORE operation for clearing an originally existing storage slot"
+    },
+    "balance": {
+      "v": 700,
+      "d": "Base fee of the BALANCE opcode"
+    },
+    "extcodehash": {
+      "v": 700,
+      "d": "Base fee of the EXTCODEHASH opcode"
+    },
+    "chainid": {
+      "v": 2,
+      "d": "Base fee of the CHAINID opcode"
+    },
+    "selfbalance": {
+      "v": 5,
+      "d": "Base fee of the SELFBALANCE opcode"
+    },
+    "sload": {
+      "v": 800,
+      "d": "Base fee of the SLOAD opcode"
     }
   },
   "vm": {},
