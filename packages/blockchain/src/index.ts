@@ -14,25 +14,11 @@ import {
   numberToHashKey,
   tdKey,
 } from './util'
+const promisify = require('util.promisify')
 
 const Stoplight = require('flow-stoplight')
 const level = require('level-mem')
 const semaphore = require('semaphore')
-
-// promisify a function: resolves this promise if callback is called
-function promisify(func: Function) {
-  return function () {
-    return new Promise((resolve, reject) => {
-      func(function (err: any, value: any) {
-        if (err) {
-          reject(err)
-        } else {
-          resolve(value)
-        }
-      })
-    })
-  }
-}
 
 export interface BlockchainInterface {
   /**
@@ -551,7 +537,7 @@ export default class Blockchain implements BlockchainInterface {
         cb(err)
       })
 
-    function verifyPOW(next: any) {
+    function verifyPOW(value: any, next: any) {
       if (!self._validatePow) {
         return next()
       }
@@ -561,7 +547,7 @@ export default class Blockchain implements BlockchainInterface {
       })
     }
 
-    function getCurrentTd(next: any) {
+    function getCurrentTd(value: any, next: any) {
       if (isGenesis) {
         currentTd.header = new BN(0)
         currentTd.block = new BN(0)
@@ -592,7 +578,7 @@ export default class Blockchain implements BlockchainInterface {
         })
     }
 
-    function getBlockTd(next: any) {
+    function getBlockTd(value: any, next: any) {
       if (isGenesis) {
         return next()
       }
@@ -607,7 +593,7 @@ export default class Blockchain implements BlockchainInterface {
       })
     }
 
-    function rebuildInfo(next: any) {
+    function rebuildInfo(prevValue: any, next: any) {
       // save block and total difficulty to the database
       let key = tdKey(number, hash)
       let value = rlp.encode(td)
@@ -1034,7 +1020,7 @@ export default class Blockchain implements BlockchainInterface {
     }
 
     // check if block is in the canonical chain
-    function checkCanonical(cb2: any) {
+    function checkCanonical(value: any, cb2: any) {
       self._numberToHash(blockNumber, (err?: any, hash?: any) => {
         inCanonical = !err && hash.equals(hash)
         cb2()
@@ -1043,12 +1029,12 @@ export default class Blockchain implements BlockchainInterface {
 
     // delete the block, and if block is in the canonical chain, delete all
     // children as well
-    function buildDBops(cb2: any) {
+    function buildDBops(value: any, cb2: any) {
       self._delChild(hash, blockNumber, inCanonical ? parentHash : null, dbOps, cb2)
     }
 
     // delete all number to hash mappings for deleted block number and above
-    function deleteStaleAssignments(cb2: any) {
+    function deleteStaleAssignments(value: any, cb2: any) {
       if (inCanonical) {
         self._deleteStaleAssignments(blockNumber, parentHash, dbOps, cb2)
       } else {
@@ -1165,7 +1151,7 @@ export default class Blockchain implements BlockchainInterface {
         .then(function () {
           blockNumber.iaddn(1)
         })
-        .catch(function (error) {
+        .catch(function (error: any) {
           blockNumber = false
           if (error.type !== 'NotFoundError') {
             throw error
@@ -1182,7 +1168,7 @@ export default class Blockchain implements BlockchainInterface {
         })
       }
 
-      function runFunc(cb3: any) {
+      function runFunc(value: any, cb3: any) {
         const reorg = lastBlock ? lastBlock.hash().equals(block.header.parentHash) : false
         lastBlock = block
         func(block, reorg, cb3)

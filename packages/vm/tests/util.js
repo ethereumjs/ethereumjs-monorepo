@@ -1,4 +1,3 @@
-const async = require('async')
 const { BN, rlp, keccak256, stripHexPrefix, setLengthLeft } = require('ethereumjs-util')
 const Account = require('@ethereumjs/account').default
 const Transaction = require('@ethereumjs/tx').Transaction
@@ -38,32 +37,23 @@ exports.dumpState = function (state, cb) {
     })
   }
 
-  readAccounts(state).then(function (accounts) {
-    async.mapSeries(
-      accounts,
-      function (account, cb) {
-        readStorage(state, account).then((storage) => {
-          account.storage = storage
-          cb(null, account)
-        })
-      },
-      function (err, results) {
-        if (err) {
-          cb(err, null)
-        }
-        for (let i = 0; i < results.length; i++) {
-          console.log("SHA3'd address: " + results[i].address.toString('hex'))
-          console.log('\tstate root: ' + results[i].stateRoot.toString('hex'))
-          console.log('\tstorage: ')
-          for (let storageKey in results[i].storage) {
-            console.log('\t\t' + storageKey + ': ' + results[i].storage[storageKey])
-          }
-          console.log('\tnonce: ' + new BN(results[i].nonce).toString())
-          console.log('\tbalance: ' + new BN(results[i].balance).toString())
-        }
-        return cb()
-      },
-    )
+  readAccounts(state).then(async function (accounts) {
+    let results = []
+    for (let key = 0; key < accounts.length; key++) {
+      let result = await readStorage(state, accounts[key])
+      results.push(result)
+    }
+    for (let i = 0; i < results.length; i++) {
+      console.log("SHA3'd address: " + results[i].address.toString('hex'))
+      console.log('\tstate root: ' + results[i].stateRoot.toString('hex'))
+      console.log('\tstorage: ')
+      for (let storageKey in results[i].storage) {
+        console.log('\t\t' + storageKey + ': ' + results[i].storage[storageKey])
+      }
+      console.log('\tnonce: ' + new BN(results[i].nonce).toString())
+      console.log('\tbalance: ' + new BN(results[i].balance).toString())
+    }
+    cb()
   })
 }
 
@@ -124,9 +114,7 @@ exports.verifyPostConditions = function (state, testData, t, cb) {
     keyMap[hash] = key
   }
 
-  var q = async.queue(function (task, cb2) {
-    exports.verifyAccountPostConditions(state, task.address, task.account, task.testData, t, cb2)
-  }, 1)
+  var q = []
 
   var stream = state.createReadStream()
 
@@ -138,17 +126,17 @@ exports.verifyPostConditions = function (state, testData, t, cb) {
     delete keyMap[key]
 
     if (testData) {
-      q.push({
-        address: address,
-        account: acnt,
-        testData: testData,
-      })
+      q.push(new Promise((resolve, reject) => {
+        exports.verifyAccountPostConditions(state, address, account, testData, t, function() {
+          resolve()
+        })
+      }))
     } else {
       t.fail('invalid account in the trie: ' + key)
     }
   })
 
-  stream.on('end', function () {
+  stream.on('end', async function () {
     function onEnd() {
       for (hash in keyMap) {
         t.fail('Missing account!: ' + keyMap[hash])
@@ -156,11 +144,8 @@ exports.verifyPostConditions = function (state, testData, t, cb) {
       cb()
     }
 
-    if (q.length()) {
-      q.drain = onEnd
-    } else {
-      onEnd()
-    }
+    await Promise.all(q)
+    onEnd()
   })
 }
 

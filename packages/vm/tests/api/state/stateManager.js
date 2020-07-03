@@ -178,6 +178,10 @@ tape('StateManager', t => {
   })
 
   t.test('should generate the genesis state root correctly for mainnet from common', async st => {
+    if (isRunningInKarma()) {
+      st.skip('skip slow test when running in karma')
+      return st.end()
+    }
     const common = new Common('mainnet', 'petersburg')
     const expectedStateRoot = Buffer.from(common.genesis().stateRoot.slice(2), 'hex')
     const stateManager = new StateManager({ common: common })
