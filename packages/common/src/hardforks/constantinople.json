@@ -34,6 +34,26 @@
     "netSstoreResetClearRefund": {
       "v": 19800,
       "d": "Once per SSTORE operation for resetting to the original zero value"
+    },
+    "shl": {
+      "v": 3,
+      "d": "Base fee of the SHL opcode"
+    },
+    "shr": {
+      "v": 3,
+      "d": "Base fee of the SHR opcode"
+    },
+    "sar": {
+      "v": 3,
+      "d": "Base fee of the SAR opcode"
+    },
+    "extcodehash": {
+      "v": 400,
+      "d": "Base fee of the EXTCODEHASH opcode"
+    },
+    "create2": {
+      "v": 32000,
+      "d": "Base fee of the CREATE2 opcode"
     }
   },
   "vm": {},

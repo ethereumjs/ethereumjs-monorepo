@@ -221,9 +221,6 @@ export const handlers: { [k: string]: OpHandler } = {
   },
   SHL: function (runState: RunState) {
     const [a, b] = runState.stack.popN(2)
-    if (!runState._common.gteHardfork('constantinople')) {
-      trap(ERROR.INVALID_OPCODE)
-    }
     if (a.gten(256)) {
       runState.stack.push(new BN(0))
       return
@@ -234,9 +231,6 @@ export const handlers: { [k: string]: OpHandler } = {
   },
   SHR: function (runState: RunState) {
     const [a, b] = runState.stack.popN(2)
-    if (!runState._common.gteHardfork('constantinople')) {
-      trap(ERROR.INVALID_OPCODE)
-    }
     if (a.gten(256)) {
       runState.stack.push(new BN(0))
       return
@@ -247,9 +241,6 @@ export const handlers: { [k: string]: OpHandler } = {
   },
   SAR: function (runState: RunState) {
     const [a, b] = runState.stack.popN(2)
-    if (!runState._common.gteHardfork('constantinople')) {
-      trap(ERROR.INVALID_OPCODE)
-    }
 
     let r
     const isSigned = b.testn(255)
@@ -381,9 +372,6 @@ export const handlers: { [k: string]: OpHandler } = {
   },
   EXTCODEHASH: async function (runState: RunState) {
     let address = runState.stack.pop()
-    if (!runState._common.gteHardfork('constantinople')) {
-      trap(ERROR.INVALID_OPCODE)
-    }
 
     const addressBuf = addressToBuffer(address)
     const empty = await runState.eei.isAccountEmpty(addressBuf)
@@ -401,15 +389,9 @@ export const handlers: { [k: string]: OpHandler } = {
     runState.stack.push(new BN(keccak256(code)))
   },
   RETURNDATASIZE: function (runState: RunState) {
-    if (!runState._common.gteHardfork('byzantium')) {
-      trap(ERROR.INVALID_OPCODE)
-    }
     runState.stack.push(runState.eei.getReturnDataSize())
   },
   RETURNDATACOPY: function (runState: RunState) {
-    if (!runState._common.gteHardfork('byzantium')) {
-      trap(ERROR.INVALID_OPCODE)
-    }
     let [memOffset, returnDataOffset, length] = runState.stack.popN(3)
 
     if (returnDataOffset.add(length).gt(runState.eei.getReturnDataSize())) {
@@ -460,17 +442,9 @@ export const handlers: { [k: string]: OpHandler } = {
     runState.stack.push(runState.eei.getBlockGasLimit())
   },
   CHAINID: function (runState: RunState) {
-    if (!runState._common.gteHardfork('istanbul')) {
-      trap(ERROR.INVALID_OPCODE)
-    }
-
     runState.stack.push(runState.eei.getChainId())
   },
   SELFBALANCE: function (runState: RunState) {
-    if (!runState._common.gteHardfork('istanbul')) {
-      trap(ERROR.INVALID_OPCODE)
-    }
-
     runState.stack.push(runState.eei.getSelfBalance())
   },
   // 0x50 range - 'storage' and execution
@@ -644,10 +618,6 @@ export const handlers: { [k: string]: OpHandler } = {
     runState.stack.push(ret)
   },
   CREATE2: async function (runState: RunState) {
-    if (!runState._common.gteHardfork('constantinople')) {
-      trap(ERROR.INVALID_OPCODE)
-    }
-
     if (runState.eei.isStatic()) {
       trap(ERROR.STATIC_STATE_CHANGE)
     }
@@ -775,9 +745,6 @@ export const handlers: { [k: string]: OpHandler } = {
     runState.stack.push(ret)
   },
   STATICCALL: async function (runState: RunState) {
-    if (!runState._common.gteHardfork('byzantium')) {
-      trap(ERROR.INVALID_OPCODE)
-    }
     const value = new BN(0)
     let [gasLimit, toAddress, inOffset, inLength, outOffset, outLength] = runState.stack.popN(6)
     const toAddressBuf = addressToBuffer(toAddress)
@@ -806,9 +773,6 @@ export const handlers: { [k: string]: OpHandler } = {
     runState.eei.finish(returnData)
   },
   REVERT: function (runState: RunState) {
-    if (!runState._common.gteHardfork('byzantium')) {
-      trap(ERROR.INVALID_OPCODE)
-    }
     const [offset, length] = runState.stack.popN(2)
     subMemUsage(runState, offset, length)
     let returnData = Buffer.alloc(0)
