@@ -345,18 +345,43 @@ export default class Common {
   }
 
   /**
-   * True if block number provided is the hardfork (given or set) change block of the current chain
+   * True if block number provided is the hardfork (given or set) change block
    * @param blockNumber Number of the block to check
    * @param hardfork Hardfork name, optional if HF set
    * @returns True if blockNumber is HF block
    */
   isHardforkBlock(blockNumber: number, hardfork?: string): boolean {
     hardfork = this._chooseHardfork(hardfork, false)
-    if (this.hardforkBlock(hardfork) === blockNumber) {
-      return true
-    } else {
-      return false
-    }
+    return this.hardforkBlock(hardfork) === blockNumber
+  }
+
+  /**
+   * Returns the change block for the next hardfork after the hardfork provided or set
+   * @param hardfork Hardfork name, optional if HF set
+   * @returns Block number or null if not available
+   */
+  nextHardforkBlock(hardfork?: string): number | null {
+    hardfork = this._chooseHardfork(hardfork, false)
+    const hfBlock = this.hardforkBlock(hardfork)
+    // Next fork block number or null if none available
+    // Logic: if accumulator is still null and on the first occurence of
+    // a block greater than the current hfBlock set the accumulator,
+    // pass on the accumulator as the final result from this time on
+    const nextHfBlock = this.hardforks().reduce((acc: number, hf: any) => {
+      return hf.block > hfBlock && acc === null ? hf.block : acc
+    }, null)
+    return nextHfBlock
+  }
+
+  /**
+   * True if block number provided is the hardfork change block following the hardfork given or set
+   * @param blockNumber Number of the block to check
+   * @param hardfork Hardfork name, optional if HF set
+   * @returns True if blockNumber is HF block
+   */
+  isNextHardforkBlock(blockNumber: number, hardfork?: string): boolean {
+    hardfork = this._chooseHardfork(hardfork, false)
+    return this.nextHardforkBlock(hardfork) === blockNumber
   }
 
   /**
@@ -405,6 +430,18 @@ export default class Common {
       return data['forkHash']
     }
     return this._calcForkHash(hardfork)
+  }
+
+  /**
+   *
+   * @param forkHash Fork hash as a hex string
+   * @returns Array with hardfork data (name, block, forkHash)
+   */
+  hardforkForForkHash(forkHash: string): any | null {
+    const resArray = this.hardforks().filter((hf: any) => {
+      return hf.forkHash === forkHash
+    })
+    return resArray.length === 1 ? resArray[0] : null
   }
 
   /**
