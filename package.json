@@ -92,10 +92,9 @@
     "@types/bn.js": "^4.11.3",
     "bn.js": "^5.1.2",
     "create-hash": "^1.1.2",
+    "ethereum-cryptography": "^0.1.3",
     "ethjs-util": "0.1.6",
-    "keccak": "^3.0.0",
-    "rlp": "^2.2.4",
-    "secp256k1": "^4.0.1"
+    "rlp": "^2.2.4"
   },
   "devDependencies": {
     "@ethereumjs/config-prettier": "^1.1.0",
