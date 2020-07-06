@@ -15,7 +15,7 @@
     "docs:build": "typedoc --options typedoc.js",
     "test:state": "ts-node ./tests/tester --state",
     "test:state:allForks": "npm run test:state -- --fork=SpuriousDragon && npm run test:state -- --fork=Byzantium && npm run test:state -- --fork=Constantinople && npm run test:state -- --fork=Petersburg && npm run test:state -- --fork=Istanbul && npm run test:state -- --fork=MuirGlacier",
-    "test:state:selectedForks": "npm run test:state -- --fork=Petersburg && npm run test:state -- --fork=SpuriousDragon",
+    "test:state:selectedForks": "npm run test:state -- --fork=Petersburg && npm run test:state -- --fork=TangerineWhistle",
     "test:state:slow": "npm run test:state -- --runSkipped=slow",
     "test:buildIntegrity": "npm run test:state -- --test='stackOverflow'",
     "test:blockchain": "node -r ts-node/register --stack-size=1500 ./tests/tester --blockchain",
