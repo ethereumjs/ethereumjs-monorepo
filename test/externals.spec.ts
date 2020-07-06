@@ -2,7 +2,6 @@ import * as assert from 'assert'
 
 import * as BN_export from 'bn.js'
 import * as rlp_export from 'rlp'
-import * as secp256k1_export from 'secp256k1'
 
 import * as src from '../src'
 

@@ -1,4 +1,4 @@
-import * as secp256k1 from 'secp256k1'
+const { ecdsaSign, ecdsaRecover, publicKeyConvert } = require('ethereum-cryptography/secp256k1')
 import * as BN from 'bn.js'
 import { toBuffer, setLengthLeft, bufferToHex } from './bytes'
 import { keccak } from './hash'
@@ -18,12 +18,12 @@ export const ecsign = function(
   privateKey: Buffer,
   chainId?: number,
 ): ECDSASignature {
-  const sig = secp256k1.ecdsaSign(msgHash, privateKey)
+  const sig = ecdsaSign(msgHash, privateKey)
   const recovery: number = sig.recid
 
   const ret = {
-    r: toBuffer(sig.signature.slice(0, 32)),
-    s: toBuffer(sig.signature.slice(32, 64)),
+    r: Buffer.from(sig.signature.slice(0, 32)),
+    s: Buffer.from(sig.signature.slice(32, 64)),
     v: chainId ? recovery + (chainId * 2 + 35) : recovery + 27,
   }
 
@@ -46,8 +46,8 @@ export const ecrecover = function(
   if (!isValidSigRecovery(recovery)) {
     throw new Error('Invalid signature v value')
   }
-  const senderPubKey = secp256k1.ecdsaRecover(signature, recovery, msgHash)
-  return toBuffer(secp256k1.publicKeyConvert(senderPubKey, false).slice(1))
+  const senderPubKey = ecdsaRecover(signature, recovery, msgHash)
+  return Buffer.from(publicKeyConvert(senderPubKey, false).slice(1))
 }
 
 /**

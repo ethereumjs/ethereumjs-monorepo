@@ -1,4 +1,4 @@
-const createKeccakHash = require('keccak')
+const { keccak224, keccak384, keccak256: k256, keccak512 } = require('ethereum-cryptography/keccak')
 const createHash = require('create-hash')
 import * as ethjsUtil from 'ethjs-util'
 import * as rlp from 'rlp'
@@ -12,9 +12,23 @@ import { assertIsString, assertIsBuffer, assertIsArray, assertIsHexString } from
  */
 export const keccak = function(a: Buffer, bits: number = 256): Buffer {
   assertIsBuffer(a)
-  return createKeccakHash(`keccak${bits}`)
-    .update(a)
-    .digest()
+  switch (bits) {
+    case 224: {
+      return keccak224(a)
+    }
+    case 256: {
+      return k256(a)
+    }
+    case 384: {
+      return keccak384(a)
+    }
+    case 512: {
+      return keccak512(a)
+    }
+    default: {
+      throw new Error(`Invald algorithm: keccak${bits}`)
+    }
+  }
 }
 
 /**
