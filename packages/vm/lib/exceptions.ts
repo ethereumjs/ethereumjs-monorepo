@@ -21,6 +21,7 @@ export enum ERROR {
   BLS_12_381_INVALID_INPUT_LENGTH = 'invalid input length',
   BLS_12_381_POINT_NOT_ON_CURVE = 'point not on curve',
   BLS_12_381_INPUT_EMPTY = 'input is empty',
+  BLS_12_381_FP_NOT_IN_FIELD = 'fp point not in field',
 }
 
 export class VmError {

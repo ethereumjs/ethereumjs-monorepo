@@ -3,7 +3,7 @@ import { PrecompileInput } from './types'
 import { VmErrorResult, ExecResult, OOGResult } from '../evm'
 import { ERROR, VmError } from '../../exceptions'
 const assert = require('assert')
-const { BLS12_381_ToFp2Point, BLS12_381_FromG2Point } = require('./util/bls12_381')
+const { BLS12_381_ToFpPoint, BLS12_381_FromG1Point } = require('./util/bls12_381')
 
 export default async function (opts: PrecompileInput): Promise<ExecResult> {
   assert(opts.data)
@@ -13,42 +13,35 @@ export default async function (opts: PrecompileInput): Promise<ExecResult> {
   let inputData = opts.data
 
   // note: the gas used is constant; even if the input is incorrect.
-  let gasUsed = new BN(opts._common.param('gasPrices', 'Bls12381MapG2Gas'))
+  let gasUsed = new BN(opts._common.param('gasPrices', 'Bls12381MapG1Gas'))
 
   if (opts.gasLimit.lt(gasUsed)) {
     return OOGResult(opts.gasLimit)
   }
 
-  if (inputData.length != 128) {
+  if (inputData.length != 64) {
     return VmErrorResult(new VmError(ERROR.BLS_12_381_INVALID_INPUT_LENGTH), gasUsed)
   }
 
   // check if some parts of input are zero bytes.
   const zeroBytes16 = Buffer.alloc(16, 0)
-  const zeroByteCheck = [
-    [0, 16],
-    [64, 80],
-  ]
-
-  for (let index in zeroByteCheck) {
-    let slicedBuffer = opts.data.slice(zeroByteCheck[index][0], zeroByteCheck[index][1])
-    if (!slicedBuffer.equals(zeroBytes16)) {
-      return VmErrorResult(new VmError(ERROR.BLS_12_381_POINT_NOT_ON_CURVE), gasUsed)
-    }
+  if (!opts.data.slice(0, 16).equals(zeroBytes16)) {
+    return VmErrorResult(new VmError(ERROR.BLS_12_381_POINT_NOT_ON_CURVE), gasUsed)
   }
 
-  // convert input to mcl Fp2 point
+  // convert input to mcl Fp1 point
 
-  let Fp2Point
+  let Fp1Point
   try {
-    Fp2Point = BLS12_381_ToFp2Point(opts.data.slice(0, 64), opts.data.slice(64, 128), mcl)
+    Fp1Point = BLS12_381_ToFpPoint(opts.data.slice(0, 64), mcl)
   } catch (e) {
     return VmErrorResult(e, gasUsed)
   }
-  // map it to G2
-  const result = Fp2Point.mapToG2()
 
-  const returnValue = BLS12_381_FromG2Point(result)
+  // map it to G1
+  const result = Fp1Point.mapToG1()
+
+  const returnValue = BLS12_381_FromG1Point(result)
 
   return {
     gasUsed,

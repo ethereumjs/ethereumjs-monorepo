@@ -1,5 +1,12 @@
 const { padToEven } = require('ethereumjs-util')
 import { VmError, ERROR } from '../../../exceptions'
+import { BN } from 'ethereumjs-util'
+
+// base field modulus as described in the EIP
+const fieldModulus = new BN(
+  '1a0111ea397fe69a4b1ba7b6434bacd764774b84f38512bf6730d2a0f6b0f6241eabfffeb153ffffb9feffffffffaaab',
+  16,
+)
 
 // convert an input Buffer to a mcl G1 point
 // this does /NOT/ do any input checks. the input Buffer needs to be of length 128
@@ -52,15 +59,34 @@ function BLS12_381_FromG1Point(input: any): Buffer {
 // convert an input Buffer to a mcl G2 point
 // this does /NOT/ do any input checks. the input Buffer needs to be of length 256
 function BLS12_381_ToG2Point(input: Buffer, mcl: any): any {
-  const p_x_1 = input.slice(16, 64).toString('hex')
-  const p_x_2 = input.slice(80, 128).toString('hex')
-  const p_y_1 = input.slice(144, 192).toString('hex')
-  const p_y_2 = input.slice(208, 256).toString('hex')
+  const p_x_1 = input.slice(0, 64)
+  const p_x_2 = input.slice(64, 128)
+  const p_y_1 = input.slice(128, 192)
+  const p_y_2 = input.slice(192, 256)
 
-  const pstr = '1 ' + p_x_1 + ' ' + p_x_2 + ' ' + p_y_1 + ' ' + p_y_2
+  const Fp2X = BLS12_381_ToFp2Point(p_x_1, p_x_2, mcl)
+  const Fp2Y = BLS12_381_ToFp2Point(p_y_1, p_y_2, mcl)
+
+  const FpOne = new mcl.Fp()
+  FpOne.setStr('1', 16)
+
+  const FpZero = new mcl.Fp()
+  FpZero.setStr('0', 16)
+
+  const Fp2One = new mcl.Fp2()
+
+  Fp2One.set_a(FpOne)
+  Fp2One.set_b(FpZero)
+
   const mclPoint = new mcl.G2()
 
-  mclPoint.setStr(pstr, 16)
+  mclPoint.setX(Fp2X)
+  mclPoint.setY(Fp2Y)
+  mclPoint.setZ(Fp2One)
+
+  if (!mclPoint.isValid()) {
+    throw new VmError(ERROR.BLS_12_381_POINT_NOT_ON_CURVE)
+  }
 
   return mclPoint
 }
@@ -98,10 +124,34 @@ function BLS12_381_ToFrPoint(input: Buffer, mcl: any): any {
   return Fr
 }
 
+// input: a 64-byte buffer
+// output: a mcl Fp point
+
+function BLS12_381_ToFpPoint(fpCoordinate: Buffer, mcl: any): any {
+  // check if point is in field
+  if (new BN(fpCoordinate).gte(fieldModulus)) {
+    throw new VmError(ERROR.BLS_12_381_FP_NOT_IN_FIELD)
+  }
+
+  const fp = new mcl.Fp()
+
+  fp.setBigEndianMod(mcl.fromHexStr(fpCoordinate.toString('hex')))
+
+  return fp
+}
+
 // input: two 64-byte buffers
 // output: a mcl Fp2 point
 
 function BLS12_381_ToFp2Point(fpXCoordinate: Buffer, fpYCoordinate: Buffer, mcl: any): any {
+  // check if the coordinates are in the field
+  if (new BN(fpXCoordinate).gte(fieldModulus)) {
+    throw new VmError(ERROR.BLS_12_381_FP_NOT_IN_FIELD)
+  }
+  if (new BN(fpYCoordinate).gte(fieldModulus)) {
+    throw new VmError(ERROR.BLS_12_381_FP_NOT_IN_FIELD)
+  }
+
   const fp_x = new mcl.Fp()
   const fp_y = new mcl.Fp()
 
@@ -121,5 +171,6 @@ export {
   BLS12_381_ToG2Point,
   BLS12_381_FromG2Point,
   BLS12_381_ToFrPoint,
+  BLS12_381_ToFpPoint,
   BLS12_381_ToFp2Point,
 }
