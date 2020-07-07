@@ -482,12 +482,14 @@ export default class DefaultStateManager implements StateManager {
    * as defined in EIP-161 (https://eips.ethereum.org/EIPS/eip-161).
    */
   async cleanupTouchedAccounts(): Promise<void> {
-    const touchedArray = Array.from(this._touched)
-    for (const addressHex of touchedArray) {
-      const address = Buffer.from(addressHex, 'hex')
-      const empty = await this.accountIsEmpty(address)
-      if (empty) {
-        this._cache.del(address)
+    if (this._common.gteHardfork('spuriousDragon')) {
+      const touchedArray = Array.from(this._touched)
+      for (const addressHex of touchedArray) {
+        const address = Buffer.from(addressHex, 'hex')
+        const empty = await this.accountIsEmpty(address)
+        if (empty) {
+          this._cache.del(address)
+        }
       }
     }
     this._touched.clear()
