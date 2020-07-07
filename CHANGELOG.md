@@ -6,6 +6,28 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [7.0.3] - 2020-07-07
+
+This release replaces the `keccak` and `secp256k1` dependencies
+(PR [#257](https://github.com/ethereumjs/ethereumjs-util/pull/257))
+and instead uses the
+[ethereum-cryptography](https://github.com/ethereum/js-ethereum-cryptography)
+package that uses native JS implementations for cryptographic primitives
+and makes use of modern and forward-compatible N-API implementations in Node
+wherever possible.
+
+This is part of a larger initiative led by Nomic Labs to improve the developer
+experience within the Ethereum developer ecosystem,
+see https://github.com/ethereum/js-organization/issues/18 for context.
+
+**Other Changes:**
+
+- Added `TypeScript` definitions for `ethjs-util` methods,
+  PR [#248](https://github.com/ethereumjs/ethereumjs-util/pull/248) and
+  PR [#260](https://github.com/ethereumjs/ethereumjs-util/pull/260)
+
+[7.0.3]: https://github.com/ethereumjs/ethereumjs-util/compare/v7.0.2...v7.0.3
+
 ## [7.0.2] - 2020-05-25
 
 This patch release re-establishes the state of `v7.0.0` release and upgrades
