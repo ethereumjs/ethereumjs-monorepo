@@ -1,3 +1,4 @@
+/// <reference path="./@types/ethjs-util/index.ts"/>
 /**
  * Constants
  */
