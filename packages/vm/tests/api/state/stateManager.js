@@ -114,6 +114,37 @@ tape('StateManager', (t) => {
   )
 
   t.test(
+    'should return false for a non-existent account',
+    async (st) => {
+      const stateManager = new DefaultStateManager()
+      const address = Buffer.from('a94f5374fce5edbc8e2a8697c15331677e6ebf0b', 'hex')
+
+      let res = await stateManager.accountExists(address)
+
+      st.notOk(res)
+
+      st.end()
+    },
+  )
+
+  t.test(
+    'should return true for an existent account',
+    async (st) => {
+      const stateManager = new DefaultStateManager()
+      const account = createAccount('0x1', '0x1')
+      const address = Buffer.from('a94f5374fce5edbc8e2a8697c15331677e6ebf0b', 'hex')
+
+      await stateManager.putAccount(address, account)
+
+      let res = await stateManager.accountExists(address)
+
+      st.ok(res)
+
+      st.end()
+    },
+  )
+
+  t.test(
     'should call the callback with a false boolean representing non-emptiness when the account is not empty',
     async (st) => {
       const stateManager = new DefaultStateManager()

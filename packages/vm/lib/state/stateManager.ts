@@ -71,7 +71,7 @@ export default class DefaultStateManager implements StateManager {
    * @param address - Address of the `account` to get
    */
   async getAccount(address: Buffer): Promise<Account> {
-    const account = await this._cache.getOrLoad(address)
+    const account = (await this._cache.getOrLoad(address)) as Account
     return account
   }
 
@@ -468,13 +468,24 @@ export default class DefaultStateManager implements StateManager {
   }
 
   /**
-   * Checks if the `account` corresponding to `address` is empty as defined in
+   * Checks if the `account` corresponding to `address`
+   * is empty or non-existent as defined in
    * EIP-161 (https://eips.ethereum.org/EIPS/eip-161).
    * @param address - Address to check
    */
   async accountIsEmpty(address: Buffer): Promise<boolean> {
     const account = await this.getAccount(address)
     return account.isEmpty()
+  }
+
+  /**
+   * Checks if the `account` corresponding to `address`
+   * exists
+   * @param address - Address of the `account` to check
+   */
+  async accountExists(address: Buffer): Promise<boolean> {
+    const account = await this._cache.getOrLoad(address, false)
+    return account ? true : false
   }
 
   /**

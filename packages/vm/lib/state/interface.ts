@@ -28,5 +28,6 @@ export interface StateManager {
   generateCanonicalGenesis(): Promise<void>
   generateGenesis(initState: any): Promise<void>
   accountIsEmpty(address: Buffer): Promise<boolean>
+  accountExists(address: Buffer): Promise<boolean>
   cleanupTouchedAccounts(): Promise<void>
 }

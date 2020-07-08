@@ -576,7 +576,7 @@ export default class EEI {
   }
 
   /**
-   * Returns true if account is empty (according to EIP-161).
+   * Returns true if account is empty or non-existent (according to EIP-161).
    * @param address - Address of account
    */
   async isAccountEmpty(address: Buffer): Promise<boolean> {
