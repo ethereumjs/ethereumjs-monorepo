@@ -15,12 +15,12 @@ A collection of utility functions for Ethereum. It can be used in Node.js and in
 
 ```js
 import assert from 'assert'
-import { isValidChecksumAddress, unpad, BN } from 'ethereumjs-util'
+import { isValidChecksumAddress, unpadBuffer, BN } from 'ethereumjs-util'
 
 const address = '0x2F015C60E0be116B1f0CD534704Db9c92118FB6A'
 assert.ok(isValidChecksumAddress(address))
 
-assert.equal(unpad('0000000006600'), '6600')
+assert.equal(unpadBuffer(Buffer.from('000000006600', 'hex')), Buffer.from('6600', 'hex'))
 
 assert.equal(new BN('dead', 16).add(new BN('101010', 2)), 57047)
 ```
@@ -65,6 +65,12 @@ The following methods are available provided by [ethjs-util](https://github.com/
 - toUtf8
 - toAscii
 - getKeys
+
+Import can be done directly by function name analogous to the build-in function import:
+
+```js
+import { intToHex, stripHexPrefix } from 'ethereumjs-util'
+```
 
 ### Re-Exports
 
