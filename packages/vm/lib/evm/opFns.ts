@@ -663,19 +663,24 @@ export const handlers: { [k: string]: OpHandler } = {
 
     subMemUsage(runState, inOffset, inLength)
     subMemUsage(runState, outOffset, outLength)
-    if (!value.isZero()) {
+    
+    if (!value.isZero()){
       runState.eei.useGas(new BN(runState._common.param('gasPrices', 'callValueTransfer')))
     }
     gasLimit = maxCallGas(gasLimit, runState.eei.getGasLeft())
-
+    
     let data = Buffer.alloc(0)
     if (!inLength.isZero()) {
       data = runState.memory.read(inOffset.toNumber(), inLength.toNumber())
     }
 
     const empty = await runState.eei.isAccountEmpty(toAddressBuf)
+    const forkGteSpuriousDragon = runState._common.gteHardfork('spuriousDragon')
+
     if (empty) {
-      if (!value.isZero()) {
+      if (!forkGteSpuriousDragon) {
+        runState.eei.useGas(new BN(runState._common.param('gasPrices', 'callNewAccount')))
+      } else if (!value.isZero()) {
         runState.eei.useGas(new BN(runState._common.param('gasPrices', 'callNewAccount')))
       }
     }

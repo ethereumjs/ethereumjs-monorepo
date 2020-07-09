@@ -87,7 +87,11 @@ export default class DefaultStateManager implements StateManager {
     // if they have money or a non-zero nonce or code, then write to tree
     this._cache.put(address, account)
     this.touchAccount(address)
-    // this._trie.put(addressHex, account.serialize(), cb)
+  }
+  
+  async deleteAccount(address: Buffer) {
+    this._cache.del(address)
+    this.touchAccount(address)
   }
 
   /**
@@ -475,6 +479,7 @@ export default class DefaultStateManager implements StateManager {
    */
   async accountIsEmpty(address: Buffer): Promise<boolean> {
     const account = await this.getAccount(address)
+    console.log(account.isEmpty())
     return account.isEmpty()
   }
 
@@ -484,7 +489,7 @@ export default class DefaultStateManager implements StateManager {
    * @param address - Address of the `account` to check
    */
   async accountExists(address: Buffer): Promise<boolean> {
-    const account = await this._cache.getOrLoad(address, false)
+    const account = await this._trie.get(address)
     return account ? true : false
   }
 

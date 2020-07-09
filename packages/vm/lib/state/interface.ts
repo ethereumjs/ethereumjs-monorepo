@@ -10,7 +10,8 @@ export interface StorageDump {
 export interface StateManager {
   copy(): StateManager
   getAccount(address: Buffer): Promise<Account>
-  putAccount(address: Buffer, account: Account): Promise<void>
+  putAccount(address: Buffer, account: Account | null): Promise<void>
+  deleteAccount(address: Buffer): Promise<void>
   touchAccount(address: Buffer): void
   putContractCode(address: Buffer, value: Buffer): Promise<void>
   getContractCode(address: Buffer): Promise<Buffer>

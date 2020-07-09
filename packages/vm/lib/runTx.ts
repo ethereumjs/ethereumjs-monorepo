@@ -184,7 +184,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   if (results.execResult.selfdestruct) {
     const keys = Object.keys(results.execResult.selfdestruct)
     for (const k of keys) {
-      await state.putAccount(Buffer.from(k, 'hex'), new Account())
+      await state.deleteAccount(Buffer.from(k, 'hex'))
     }
   }
   await state.cleanupTouchedAccounts()
