@@ -39,6 +39,7 @@ function runTests() {
   runnerArgs.forkConfigVM = FORK_CONFIG_VM
   runnerArgs.forkConfigTestSuite = FORK_CONFIG_TEST_SUITE
   runnerArgs.jsontrace = argv.jsontrace
+  runnerArgs.dist = argv.dist
   runnerArgs.data = argv.data // GeneralStateTests
   runnerArgs.gasLimit = argv.gas // GeneralStateTests
   runnerArgs.value = argv.value // GeneralStateTests
