@@ -115,7 +115,7 @@ export default class DefaultStateManager implements StateManager {
     const codeHash = keccak256(value)
 
     if (codeHash.equals(KECCAK256_NULL)) {
-      return
+      //return
     }
 
     const account = await this.getAccount(address)
@@ -479,7 +479,6 @@ export default class DefaultStateManager implements StateManager {
    */
   async accountIsEmpty(address: Buffer): Promise<boolean> {
     const account = await this.getAccount(address)
-    console.log(account.isEmpty())
     return account.isEmpty()
   }
 
@@ -489,8 +488,14 @@ export default class DefaultStateManager implements StateManager {
    * @param address - Address of the `account` to check
    */
   async accountExists(address: Buffer): Promise<boolean> {
-    const account = await this._trie.get(address)
-    return account ? true : false
+    const account = await this._cache.lookup(address)
+    if (account) {
+      return true;
+    }
+    if (await this._cache._trie.get(address)) {
+      return true;
+    }
+    return false
   }
 
   /**
