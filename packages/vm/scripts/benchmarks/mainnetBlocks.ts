@@ -1,7 +1,7 @@
 import * as fs from 'fs'
 import { merge } from 'lodash'
 import Account from '@ethereumjs/account'
-import { toBuffer, setLengthLeft } from 'ethereumjs-util'
+import { bufferToInt, toBuffer, setLengthLeft } from 'ethereumjs-util'
 import { encode } from 'rlp'
 import blockFromRPC from '@ethereumjs/block/dist/from-rpc'
 import VM from '../../dist'
@@ -10,12 +10,22 @@ import BN = require('bn.js')
 
 async function main() {
   const args = process.argv
-  if (args.length < 3) {
-    throw new Error('Insufficient arguments')
+  if (args.length < 3 || args.length > 4) {
+    console.log('Insufficient arguments')
+    console.log('Usage: node BENCHMARK_SCRIPT BLOCK_FIXTURE [NUM_SAMPLES]')
+    process.exit(1)
   }
 
   let data = JSON.parse(fs.readFileSync(args[2], 'utf8'))
   if (!Array.isArray(data)) data = [data]
+  console.log(`Total number of blocks: ${data.length}`)
+
+  let numSamples = data.length
+  if (args.length === 4) {
+    numSamples = Number(args[3])
+  }
+  console.log(`Blocks to proceed: ${numSamples}`)
+  data = data.slice(0, numSamples)
 
   let preState = {}
   // Merge block prestates
@@ -43,7 +53,7 @@ async function main() {
     }
     vm.blockchain = blockchain as any
 
-    console.log('running block', block.header.number)
+    console.log('running block', bufferToInt(block.header.number))
 
     const start = process.hrtime()
     // TODO: use `runBlock` instead of running individual txes via `runTx`
@@ -56,9 +66,9 @@ async function main() {
     }
     const elapsed = process.hrtime(start)[1] / 1000000
     console.log(
-      `Running block ${block.header.number} took ${process.hrtime(start)[0]} s, ${elapsed.toFixed(
-        3,
-      )} ms`,
+      `Running block ${bufferToInt(block.header.number)} took ${
+        process.hrtime(start)[0]
+      } s, ${elapsed.toFixed(3)} ms`,
     )
   }
 }

@@ -155,7 +155,7 @@ Then:
 
 `node ./scripts/benchmarks/mainnetBlocks.js scripts/benchmarks/fixture/blocks-prestate.json`
 
-If you want to get a more detailed look to find bottlenecks we can use `0x`.
+If you want to get a more detailed look to find bottlenecks we can use [0x](https://github.com/davidmarkclements/0x).
 
 So run:
 
@@ -164,4 +164,4 @@ npm i -g 0x
 0x scripts/benchmarks/mainnetBlocks.js scripts/benchmarks/fixture/blocks-prestate.json
 ```
 
-and open the link it generates.
+and open the link it generates. For a high-level introduction on flamen graphs see e.g. [this](https://blog.codecentric.de/en/2017/09/jvm-fire-using-flame-graphs-analyse-performance/) blog article (the non-Java part).
