@@ -19,7 +19,7 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
 
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
       
       - run: npm install
       - run: npm run test
@@ -31,7 +31,7 @@ jobs:
         with:
           node-version: 12.x
 
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
       
       - run: npm install
       - run: npm run coverage
