@@ -1,10 +1,11 @@
 const { setupPreConditions, makeTx, makeBlockFromEnv } = require('./util')
 const Trie = require('merkle-patricia-tree').SecureTrie
-const { BN } = require('ethereumjs-util')
+const { BN, toBuffer } = require('ethereumjs-util')
 const Account = require('@ethereumjs/account').default
 
 function parseTestCases(forkConfigTestSuite, testData, data, gasLimit, value) {
   let testCases = []
+
   if (testData['post'][forkConfigTestSuite]) {
     testCases = testData['post'][forkConfigTestSuite].map((testCase) => {
       let testIndexes = testCase['indexes']
@@ -24,6 +25,7 @@ function parseTestCases(forkConfigTestSuite, testData, data, gasLimit, value) {
       tx.data = testData.transaction.data[testIndexes['data']]
       tx.gasLimit = testData.transaction.gasLimit[testIndexes['gas']]
       tx.value = testData.transaction.value[testIndexes['value']]
+
       return {
         transaction: tx,
         postStateRoot: testCase['hash'],
@@ -41,37 +43,29 @@ function parseTestCases(forkConfigTestSuite, testData, data, gasLimit, value) {
 }
 
 async function runTestCase(options, testData, t) {
+  const VM = options.dist ? require('../dist/index.js').default : require('../lib/index').default
+
   const state = new Trie()
-  let block, vm
-  let VM
-  if (options.dist) {
-    VM = require('../dist/index.js').default
-  } else {
-    VM = require('../lib/index').default
-  }
-  vm = new VM({
+  const hardfork = options.forkConfigVM
+
+  const vm = new VM({
     state,
-    hardfork: options.forkConfigVM,
+    hardfork,
   })
 
   await setupPreConditions(vm.stateManager._trie, testData)
 
-  let tx = makeTx(testData.transaction, options.forkConfigVM)
-  block = makeBlockFromEnv(testData.env)
-  tx._homestead = true
-  tx.enableHomestead = true
-  block.isHomestead = function () {
-    return true
-  }
+  const tx = makeTx(testData.transaction, hardfork)
 
   if (!tx.validate()) {
-    return
+    throw new Error('Transaction is invalid')
   }
+
+  const block = makeBlockFromEnv(testData.env)
 
   if (options.jsontrace) {
     vm.on('step', function (e) {
-      let hexStack = []
-      hexStack = e.stack.map((item) => {
+      const hexStack = e.stack.map((item) => {
         return '0x' + new BN(item).toString(16, 0)
       })
 
@@ -87,8 +81,8 @@ async function runTestCase(options, testData, t) {
 
       t.comment(JSON.stringify(opTrace))
     })
-    vm.on('afterTx', () => {
-      let stateRoot = {
+    vm.on('afterTx', async () => {
+      const stateRoot = {
         stateRoot: vm.stateManager._trie.root.toString('hex'),
       }
       t.comment(JSON.stringify(stateRoot))
@@ -109,14 +103,10 @@ async function runTestCase(options, testData, t) {
     }
   }
 
-  if (testData.postStateRoot.substr(0, 2) === '0x') {
-    testData.postStateRoot = testData.postStateRoot.substr(2)
-  }
-  t.equal(
-    vm.stateManager._trie.root.toString('hex'),
-    testData.postStateRoot,
-    'the state roots should match',
-  )
+  const stateManagerStateRoot = vm.stateManager._trie.root
+  const testDataPostStateRoot = toBuffer(testData.postStateRoot)
+
+  t.ok(stateManagerStateRoot.equals(testDataPostStateRoot), 'the state roots should match')
 }
 
 module.exports = async function runStateTest(options, testData, t) {
@@ -132,11 +122,10 @@ module.exports = async function runStateTest(options, testData, t) {
       t.comment(`No ${options.forkConfigTestSuite} post state defined, skip test`)
       return
     }
-    for (let testCase of testCases) {
+    for (const testCase of testCases) {
       await runTestCase(options, testCase, t)
     }
   } catch (e) {
-    console.log(e)
     t.fail('error running test case for fork: ' + options.forkConfigTestSuite)
   }
 }

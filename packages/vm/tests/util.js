@@ -1,5 +1,6 @@
 const async = require('async')
-const { BN, rlp, keccak256, stripHexPrefix, setLengthLeft } = require('ethereumjs-util')
+const { BN, rlp, keccak256, stripHexPrefix, setLengthLeft, toBuffer } = require('ethereumjs-util')
+const Common = require('@ethereumjs/common').default
 const Account = require('@ethereumjs/account').default
 const Transaction = require('@ethereumjs/tx').Transaction
 const Block = require('@ethereumjs/block').Block
@@ -92,25 +93,18 @@ var format = (exports.format = function (a, toZero, isHex) {
 
 /**
  * makeTx using JSON from tests repo
- * @param {[type]} txData the transaction object from tests repo
- * @returns {Object}        object that will be passed to VM.runTx function
+ * @param {Object} txData the transaction object from tests repo
+ * @returns {Transaction} transaction to be passed to VM.runTx function
  */
 exports.makeTx = function (txData, hf) {
-  var tx = new Transaction({}, { hardfork: hf })
-  tx.nonce = format(txData.nonce)
-  tx.gasPrice = format(txData.gasPrice)
-  tx.gasLimit = format(txData.gasLimit)
-  tx.to = format(txData.to, true, true)
-  tx.value = format(txData.value)
-  tx.data = format(txData.data, false, true) // slice off 0x
+  const common = new Common('mainnet', hf)
+  const tx = Transaction.fromTxData(txData, common)
+
   if (txData.secretKey) {
-    var privKey = format(txData.secretKey, false, true)
-    tx.sign(privKey)
-  } else {
-    tx.v = Buffer.from(txData.v.slice(2), 'hex')
-    tx.r = Buffer.from(txData.r.slice(2), 'hex')
-    tx.s = Buffer.from(txData.s.slice(2), 'hex')
+    const privKey = toBuffer(txData.secretKey)
+    return tx.sign(privKey)
   }
+
   return tx
 }
 

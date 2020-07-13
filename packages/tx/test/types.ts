@@ -22,10 +22,6 @@ export interface TxData {
   s: string
 }
 
-export interface FakeTxData extends TxData {
-  from: string
-}
-
 // The type of each entry from ./ttTransactionTestEip155VitaliksTests.json
 export interface VitaliksTestsDataEntry {
   blocknumber: string

@@ -1,7 +1,7 @@
 import { BaseTrie as Trie } from 'merkle-patricia-tree'
 import Common from '@ethereumjs/common'
 import { BN, rlp, keccak256, KECCAK256_RLP, baToJSON } from 'ethereumjs-util'
-import { Transaction, TransactionOptions } from '@ethereumjs/tx'
+import { Transaction } from '@ethereumjs/tx'
 import { BlockHeader } from './header'
 import { Blockchain, BlockData, ChainOptions } from './types'
 
@@ -41,7 +41,7 @@ export class Block {
       this._common = chainOptions.common
     } else {
       const chain = chainOptions.chain ? chainOptions.chain : 'mainnet'
-      // TODO: Compute the hardfork based on this block's number. It can be implemented right now
+      // TODO: Compute the hardfork based on this block's number. It can't be implemented right now
       // because the block number is not immutable, so the Common can get out of sync.
       const hardfork = chainOptions.hardfork ? chainOptions.hardfork : null
       this._common = new Common(chain, hardfork)
@@ -73,10 +73,29 @@ export class Block {
     }
 
     // parse transactions
+
+    // get common based on block's number
+    // since hardfork param may not be set
+    // (see TODO above)
+    let common = this._common
+    if (!common.hardfork()) {
+      const blockNumber = parseInt(this.header.number.toString('hex'), 16)
+      const chainId = this._common.chainId()
+      if (blockNumber) {
+        const hfs = this._common.activeHardforks(blockNumber)
+        const hf = hfs[hfs.length - 1].name
+        common = new Common(chainId, hf)
+      } else {
+        // fall back to default hf
+        common = new Common(chainId, 'petersburg')
+      }
+    }
+
     for (let i = 0; i < rawTransactions.length; i++) {
-      // TODO: Pass the common object instead of the options. It can't be implemented right now
-      // because the hardfork may be `null`. Read the above TODO for more info.
-      const tx = new Transaction(rawTransactions[i], chainOptions as TransactionOptions)
+      const txData = rawTransactions[i]
+      const tx = Array.isArray(txData)
+        ? Transaction.fromValuesArray(txData as Buffer[], common)
+        : Transaction.fromRlpSerializedTx(txData as Buffer, common)
       this.transactions.push(tx)
     }
   }
@@ -119,7 +138,7 @@ export class Block {
   serialize(rlpEncode = true) {
     const raw = [
       this.header.raw,
-      this.transactions.map((tx) => tx.raw),
+      this.transactions.map((tx) => tx.serialize()),
       this.uncleHeaders.map((uh) => uh.raw),
     ]
 
@@ -141,11 +160,11 @@ export class Block {
    * Validates the transaction trie
    */
   validateTransactionsTrie(): boolean {
-    const txT = this.header.transactionsTrie.toString('hex')
+    const txT = this.header.transactionsTrie
     if (this.transactions.length) {
-      return txT === this.txTrie.root.toString('hex')
+      return txT.equals(this.txTrie.root)
     } else {
-      return txT === KECCAK256_RLP.toString('hex')
+      return txT.equals(KECCAK256_RLP)
     }
   }
 
@@ -243,7 +262,7 @@ export class Block {
     if (labeled) {
       return {
         header: this.header.toJSON(true),
-        transactions: this.transactions.map((tx) => tx.toJSON(true)),
+        transactions: this.transactions.map((tx) => tx.toJSON()),
         uncleHeaders: this.uncleHeaders.forEach((uh) => uh.toJSON(true)),
       }
     } else {

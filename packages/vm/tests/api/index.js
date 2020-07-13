@@ -128,10 +128,10 @@ tape('VM with blockchain', (t) => {
   t.test('should run blockchain with blocks', async (st) => {
     const vm = setupVM({ chain: 'goerli' })
     await vm.init()
-    const genesis = new Block(Buffer.from(testData.genesisRLP.slice(2), 'hex'), {
+    const genesis = new Block(util.toBuffer(testData.genesisRLP), {
       common: vm._common,
     })
-    const block = new Block(Buffer.from(testData.blocks[0].rlp.slice(2), 'hex'), {
+    const block = new Block(util.toBuffer(testData.blocks[0].rlp), {
       common: vm._common,
     })
 

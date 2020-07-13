@@ -1,5 +1,5 @@
 import { BaseTrie as Trie } from 'merkle-patricia-tree'
-import { BN, toBuffer, bufferToInt } from 'ethereumjs-util'
+import { BN, toBuffer } from 'ethereumjs-util'
 import { encode } from 'rlp'
 import VM from './index'
 import Bloom from './bloom'
@@ -141,20 +141,17 @@ export default async function runBlock(this: VM, opts: RunBlockOpts): Promise<Ru
     block.header.stateRoot = stateRoot
     block.header.bloom = result.bloom.bitvector
   } else {
-    if (
-      result.receiptRoot &&
-      result.receiptRoot.toString('hex') !== block.header.receiptTrie.toString('hex')
-    ) {
-      throw new Error('invalid receiptTrie ')
+    if (result.receiptRoot && !result.receiptRoot.equals(block.header.receiptTrie)) {
+      throw new Error('invalid receiptTrie')
     }
-    if (result.bloom.bitvector.toString('hex') !== block.header.bloom.toString('hex')) {
-      throw new Error('invalid bloom ')
+    if (!result.bloom.bitvector.equals(block.header.bloom)) {
+      throw new Error('invalid bloom')
     }
-    if (bufferToInt(block.header.gasUsed) !== Number(result.gasUsed)) {
-      throw new Error('invalid gasUsed ')
+    if (!result.gasUsed.eq(new BN(block.header.gasUsed))) {
+      throw new Error('invalid gasUsed')
     }
-    if (stateRoot.toString('hex') !== block.header.stateRoot.toString('hex')) {
-      throw new Error('invalid block stateRoot ')
+    if (!stateRoot.equals(block.header.stateRoot)) {
+      throw new Error('invalid block stateRoot')
     }
   }
 
@@ -216,19 +213,19 @@ async function applyTransactions(this: VM, block: any, opts: RunBlockOpts) {
    */
   for (let txIdx = 0; txIdx < block.transactions.length; txIdx++) {
     const tx = block.transactions[txIdx]
-    const gasLimitIsHigherThanBlock = new BN(block.header.gasLimit).lt(
-      new BN(tx.gasLimit).add(gasUsed),
-    )
+
+    const gasLimitIsHigherThanBlock = new BN(block.header.gasLimit).lt(tx.gasLimit.add(gasUsed))
     if (gasLimitIsHigherThanBlock) {
       throw new Error('tx has a higher gas limit than the block')
     }
 
     // Run the tx through the VM
+    const { skipBalance, skipNonce } = opts
     const txRes = await this.runTx({
-      tx: tx,
-      block: block,
-      skipBalance: opts.skipBalance,
-      skipNonce: opts.skipNonce,
+      tx,
+      block,
+      skipBalance,
+      skipNonce,
     })
     txResults.push(txRes)
 
@@ -250,7 +247,7 @@ async function applyTransactions(this: VM, block: any, opts: RunBlockOpts) {
       } as PostByzantiumTxReceipt
     } else {
       // This is just using a dummy place holder for the state root right now.
-      // Giving the correct intermediary state root would need a too depp intervention
+      // Giving the correct intermediary state root would need a too deep intervention
       // into the current checkpointing mechanism which hasn't been considered
       // to be worth it on a HF backport, 2020-06-26
       txReceipt = {

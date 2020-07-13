@@ -1,4 +1,5 @@
-import { FakeTransaction, TransactionOptions } from '@ethereumjs/tx'
+import { Transaction, TxData, Address } from '@ethereumjs/tx'
+import Common from '@ethereumjs/common'
 import { toBuffer, setLengthLeft } from 'ethereumjs-util'
 import { Block, ChainOptions } from './index'
 
@@ -32,19 +33,30 @@ export default function blockFromRpc(
   if (blockParams.transactions) {
     for (const _txParams of blockParams.transactions) {
       const txParams = normalizeTxParams(_txParams)
+
       // override from address
-      const fromAddress = toBuffer(txParams.from)
+      const fromAddress = new Address(toBuffer(txParams.from))
       delete txParams.from
 
-      const tx = new FakeTransaction(txParams, chainOptions as TransactionOptions)
-      tx.from = fromAddress
+      // get common based on block's number
+      // since hardfork param may not be set
+      // (see TODO in block.constructor)
+      const blockNumber = parseInt(block.header.number.toString('hex'), 16)
+      const hfs = (block as any)._common.activeHardforks(blockNumber)
+      const hf = hfs[hfs.length - 1].name
+      const common = new Common((block as any)._common.chainId(), hf)
+
+      const frozenTx = Transaction.fromTxData(txParams as TxData, common)
+      const tx = Object.create(frozenTx)
+
+      // override getSenderAddress
       tx.getSenderAddress = function () {
         return fromAddress
       }
+
       // override hash
-      const txHash = toBuffer(txParams.hash)
       tx.hash = function () {
-        return txHash
+        return toBuffer(txParams.hash)
       }
 
       block.transactions.push(tx)
@@ -55,9 +67,10 @@ export default function blockFromRpc(
 
 function normalizeTxParams(_txParams: any) {
   const txParams = Object.assign({}, _txParams)
-  // hot fix for https://github.com/ethereumjs/ethereumjs-util/issues/40
+
   txParams.gasLimit = txParams.gasLimit === undefined ? txParams.gas : txParams.gasLimit
   txParams.data = txParams.data === undefined ? txParams.input : txParams.data
+
   // strict byte length checking
   txParams.to = txParams.to ? setLengthLeft(toBuffer(txParams.to), 20) : null
 

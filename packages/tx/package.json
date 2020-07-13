@@ -21,7 +21,7 @@
     "lint:fix": "ethereumjs-config-lint-fix",
     "test": "npm run test:node && npm run test:browser",
     "test:node": "tape -r ts-node/register ./test/index.ts",
-    "test:browser:build": "tsc && cp ./test/*.json test-build/test/",
+    "test:browser:build": "tsc && cp -r ./test/json test-build/test",
     "test:browser": "npm run test:browser:build && karma start karma.conf.js"
   },
   "keywords": [
@@ -49,7 +49,7 @@
     "istanbul": "^0.4.1",
     "karma": "^4.1.0",
     "karma-browserify": "^6.0.0",
-    "karma-detect-browsers": "^2.3.3",
+    "karma-chrome-launcher": "^2.2.0",
     "karma-firefox-launcher": "^1.1.0",
     "karma-tap": "^4.1.4",
     "minimist": "^1.2.0",

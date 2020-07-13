@@ -1,74 +1,64 @@
+const level = require('level')
+const levelMem = require('level-mem')
 const { promisify } = require('util')
-const { setupPreConditions, verifyPostConditions } = require('./util.js')
-const { addHexPrefix } = require('ethereumjs-util')
+const { addHexPrefix, toBuffer } = require('ethereumjs-util')
 const Trie = require('merkle-patricia-tree').SecureTrie
 const { Block, BlockHeader } = require('@ethereumjs/block')
 const Blockchain = require('@ethereumjs/blockchain').default
-const level = require('level')
-const levelMem = require('level-mem')
+const Common = require('@ethereumjs/common').default
+const { setupPreConditions, verifyPostConditions } = require('./util.js')
 
 module.exports = async function runBlockchainTest(options, testData, t) {
+  const state = new Trie()
   const blockchainDB = levelMem()
   const cacheDB = level('./.cachedb')
-  const state = new Trie()
+
   let validate = false
   // Only run with block validation when sealEngine present in test file
   // and being set to Ethash PoW validation
   if (testData.sealEngine && testData.sealEngine === 'Ethash') {
     validate = true
   }
+
+  const hardfork = options.forkConfigVM
+  const common = new Common('mainnet', hardfork)
+
   const blockchain = new Blockchain({
     db: blockchainDB,
-    hardfork: options.forkConfigVM,
-    validate: validate,
+    common,
+    validate,
   })
+
   if (validate) {
     blockchain.ethash.cacheDB = cacheDB
   }
-  let VM
-  if (options.dist) {
-    VM = require('../dist/index.js').default
-  } else {
-    VM = require('../lib/index').default
-  }
+
+  const VM = options.dist ? require('../dist/index.js').default : require('../lib/index').default
+
   const vm = new VM({
     state,
-    blockchain: blockchain,
-    hardfork: options.forkConfigVM,
+    blockchain,
+    hardfork,
   })
-  const genesisBlock = new Block(undefined, { hardfork: options.forkConfigVM })
 
-  testData.homestead = true
-  if (testData.homestead) {
-    vm.on('beforeTx', function (tx) {
-      tx._homestead = true
-    })
-    vm.on('beforeBlock', function (block) {
-      block.header.isHomestead = function () {
-        return true
-      }
-    })
-  }
+  const genesisBlock = new Block(undefined, { common })
 
   // set up pre-state
   await setupPreConditions(vm.stateManager._trie, testData)
 
   // create and add genesis block
-  genesisBlock.header = new BlockHeader(formatBlockHeader(testData.genesisBlockHeader), {
-    hardfork: options.forkConfigVM,
-  })
-  t.equal(
-    vm.stateManager._trie.root.toString('hex'),
-    genesisBlock.header.stateRoot.toString('hex'),
-    'correct pre stateRoot',
-  )
+  const formattedBlockHeaderData = formatBlockHeader(testData.genesisBlockHeader)
+  genesisBlock.header = new BlockHeader(formattedBlockHeaderData, { common })
+
+  const stateManagerStateRoot = vm.stateManager._trie.root
+
+  t.ok(stateManagerStateRoot.equals(genesisBlock.header.stateRoot), 'correct pre stateRoot')
+
   if (testData.genesisRLP) {
-    t.equal(
-      genesisBlock.serialize().toString('hex'),
-      testData.genesisRLP.slice(2),
-      'correct genesis RLP',
-    )
+    const rlp = toBuffer(testData.genesisRLP)
+    t.ok(genesisBlock.serialize().equals(rlp), 'correct genesis RLP')
   }
+
   const putGenesisAsync = promisify(blockchain.putGenesis).bind(blockchain)
   await putGenesisAsync(genesisBlock)
 
@@ -91,20 +81,7 @@ module.exports = async function runBlockchainTest(options, testData, t) {
     const expectException = raw[paramFork] ? raw[paramFork] : raw[paramAll1] || raw[paramAll2]
 
     try {
-      const block = new Block(Buffer.from(raw.rlp.slice(2), 'hex'), {
-        hardfork: options.forkConfigVM,
-      })
-      // forces the block into thinking they are homestead
-      if (testData.homestead) {
-        block.header.isHomestead = function () {
-          return true
-        }
-        block.uncleHeaders.forEach(function (uncle) {
-          uncle.isHomestead = function () {
-            return true
-          }
-        })
-      }
+      const block = new Block(toBuffer(raw.rlp), { common })
       const putBlockAsync = promisify(blockchain.putBlock).bind(blockchain)
       try {
         await putBlockAsync(block)
@@ -124,13 +101,12 @@ module.exports = async function runBlockchainTest(options, testData, t) {
       const getHeadAsync = promisify(vm.blockchain.getHead).bind(vm.blockchain)
       const headBlock = await getHeadAsync()
 
-      if (testData.lastblockhash.substr(0, 2) === '0x') {
-        // fix for BlockchainTests/GeneralStateTests/stRandom/*
-        testData.lastblockhash = testData.lastblockhash.substr(2)
-      }
+      const lastblockhash = toBuffer(testData.lastblockhash)
+
       if (expectException !== undefined) {
-        t.equal(headBlock.hash().toString('hex'), testData.lastblockhash, 'last block hash')
+        t.ok(headBlock.hash().equals(lastblockhash), 'correct last block hash')
       }
+
       // if the test fails, then block.header is the prej because
       // vm.runBlock has a check that prevents the actual postState from being
       // imported if it is not equal to the expected postState. it is useful
@@ -145,13 +121,12 @@ module.exports = async function runBlockchainTest(options, testData, t) {
         const verifyPostConditionsAsync = promisify(verifyPostConditions)
         await verifyPostConditionsAsync(state, testData.postState, t)
       }
+
       if (expectException !== undefined) {
-        t.equal(
-          blockchain.meta.rawHead.toString('hex'),
-          testData.lastblockhash,
-          'correct header block',
-        )
+        const rawHead = toBuffer(blockchain.meta.rawHead)
+        t.ok(rawHead.equals(lastblockhash), 'correct header block')
       }
+
       await cacheDB.close()
     } catch (error) {
       await handleError(error, expectException, cacheDB)

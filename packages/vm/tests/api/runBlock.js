@@ -1,6 +1,7 @@
 const tape = require('tape')
 const { Block } = require('@ethereumjs/block')
 const Common = require('@ethereumjs/common').default
+const { Transaction } = require('@ethereumjs/tx')
 const util = require('ethereumjs-util')
 const runBlock = require('../../dist/runBlock').default
 const { DefaultStateManager } = require('../../dist/state')
@@ -105,7 +106,22 @@ tape('should fail when tx gas limit higher than block gas limit', async (t) => {
   const suite = setup()
 
   const block = new Block(util.rlp.decode(suite.data.blocks[0].rlp))
-  block.transactions[0].gasLimit = Buffer.from('3fefba', 'hex')
+
+  // modify first tx's gasLimit
+  const { nonce, gasPrice, to, value, data, v, r, s } = block.transactions[0]
+  const gasLimit = new util.BN(Buffer.from('3fefba', 'hex'))
+  block.transactions[0] = new Transaction(
+    undefined,
+    nonce,
+    gasPrice,
+    gasLimit,
+    to,
+    value,
+    data,
+    v,
+    r,
+    s,
+  )
 
   await suite.p
     .runBlock({ block, skipBlockValidation: true })
@@ -165,12 +181,13 @@ async function runWithHf(hardfork) {
 tape('should return correct HF receipts', async (t) => {
   let res = await runWithHf('byzantium')
   t.equal(res.receipts[0].status, 1, 'should return correct post-Byzantium receipt format')
-  
+
   res = await runWithHf('spuriousDragon')
   t.deepEqual(
     res.receipts[0].stateRoot,
     Buffer.alloc(32),
-    'should return correct pre-Byzantium receipt format')
+    'should return correct pre-Byzantium receipt format',
+  )
 
   t.end()
 })

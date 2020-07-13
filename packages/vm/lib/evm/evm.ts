@@ -4,7 +4,6 @@ import {
   generateAddress2,
   KECCAK256_NULL,
   MAX_INTEGER,
-  toBuffer,
   zeros,
 } from 'ethereumjs-util'
 import Account from '@ethereumjs/account'
@@ -198,7 +197,7 @@ export default class EVM {
     // Check for collision
     if (
       (toAccount.nonce && new BN(toAccount.nonce).gtn(0)) ||
-      toAccount.codeHash.compare(KECCAK256_NULL) !== 0
+      !toAccount.codeHash.equals(KECCAK256_NULL)
     ) {
       return {
         gasUsed: message.gasLimit,
@@ -400,8 +399,8 @@ export default class EVM {
 
   async _reduceSenderBalance(account: Account, message: Message): Promise<void> {
     const newBalance = new BN(account.balance).sub(message.value)
-    account.balance = toBuffer(newBalance)
-    return this._state.putAccount(toBuffer(message.caller), account)
+    account.balance = newBalance.toArrayLike(Buffer)
+    return this._state.putAccount(message.caller, account)
   }
 
   async _addToBalance(toAccount: Account, message: Message): Promise<void> {
@@ -409,9 +408,9 @@ export default class EVM {
     if (newBalance.gt(MAX_INTEGER)) {
       throw new VmError(ERROR.VALUE_OVERFLOW)
     }
-    toAccount.balance = toBuffer(newBalance)
+    toAccount.balance = newBalance.toArrayLike(Buffer)
     // putAccount as the nonce may have changed for contract creation
-    return this._state.putAccount(toBuffer(message.to), toAccount)
+    return this._state.putAccount(message.to, toAccount)
   }
 
   async _touchAccount(address: Buffer): Promise<void> {

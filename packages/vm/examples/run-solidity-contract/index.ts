@@ -3,7 +3,7 @@ import VM from '../../dist'
 import * as assert from 'assert'
 import * as path from 'path'
 import * as fs from 'fs'
-import { privateToAddress, bufferToHex } from 'ethereumjs-util'
+import { BN, privateToAddress, bufferToHex } from 'ethereumjs-util'
 import Account from '@ethereumjs/account'
 import { Transaction } from '@ethereumjs/tx'
 
@@ -90,16 +90,15 @@ async function deployContract(
   // Contracts are deployed by sending their deployment bytecode to the address 0
   // The contract params should be abi-encoded and appended to the deployment bytecode.
   const params = abi.rawEncode(['string'], [greeting])
-
-  const tx = new Transaction({
+  const txData = {
     value: 0,
     gasLimit: 2000000, // We assume that 2M is enough,
     gasPrice: 1,
     data: '0x' + deploymentBytecode + params.toString('hex'),
-    nonce: await getAccountNonce(vm, senderPrivateKey),
-  })
+    nonce: new BN(await getAccountNonce(vm, senderPrivateKey)),
+  }
 
-  tx.sign(senderPrivateKey)
+  const tx = Transaction.fromTxData(txData).sign(senderPrivateKey)
 
   const deploymentResult = await vm.runTx({ tx })
 
@@ -117,17 +116,16 @@ async function setGreeting(
   greeting: string,
 ) {
   const params = abi.rawEncode(['string'], [greeting])
-
-  const tx = new Transaction({
+  const txData = {
     to: contractAddress,
     value: 0,
     gasLimit: 2000000, // We assume that 2M is enough,
     gasPrice: 1,
     data: '0x' + abi.methodID('setGreeting', ['string']).toString('hex') + params.toString('hex'),
-    nonce: await getAccountNonce(vm, senderPrivateKey),
-  })
+    nonce: new BN(await getAccountNonce(vm, senderPrivateKey)),
+  }
 
-  tx.sign(senderPrivateKey)
+  const tx = Transaction.fromTxData(txData).sign(senderPrivateKey)
 
   const setGreetingResult = await vm.runTx({ tx })
 

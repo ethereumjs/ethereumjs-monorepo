@@ -89,7 +89,7 @@ export default class VM extends AsyncEventEmitter {
    * Instantiates a new [[VM]] Object.
    * @param opts - Default values for the options are:
    *  - `chain`: 'mainnet'
-   *  - `hardfork`: 'petersburg' [supported: 'byzantium', 'constantinople', 'petersburg', 'istanbul' (DRAFT) (will throw on unsupported)]
+   *  - `hardfork`: 'petersburg'
    *  - `activatePrecompiles`: false
    *  - `allowUnlimitedContractSize`: false [ONLY set to `true` during debugging]
    */
