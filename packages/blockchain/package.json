@@ -44,7 +44,8 @@
     "level-mem": "^3.0.1",
     "lru-cache": "^5.1.1",
     "rlp": "^2.2.3",
-    "semaphore": "^1.1.0"
+    "semaphore": "^1.1.0",
+    "util.promisify": "^1.0.1"
   },
   "devDependencies": {
     "@ethereumjs/config-nyc": "^1.1.1",

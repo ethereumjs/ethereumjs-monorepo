@@ -2,6 +2,7 @@ const { BN, rlp, keccak256, stripHexPrefix, setLengthLeft } = require('ethereumj
 const Account = require('@ethereumjs/account').default
 const Transaction = require('@ethereumjs/tx').Transaction
 const Block = require('@ethereumjs/block').Block
+const promisify = require('util.promisify')
 
 exports.dumpState = function (state, cb) {
   function readAccounts(state) {
@@ -126,11 +127,9 @@ exports.verifyPostConditions = function (state, testData, t, cb) {
     delete keyMap[key]
 
     if (testData) {
-      q.push(new Promise((resolve, reject) => {
-        exports.verifyAccountPostConditions(state, address, account, testData, t, function() {
-          resolve()
-        })
-      }))
+      q.push(
+        promisify(exports.verifyAccountPostConditions)(state, address, account, testData, t)
+      )
     } else {
       t.fail('invalid account in the trie: ' + key)
     }

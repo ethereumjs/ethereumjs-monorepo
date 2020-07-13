@@ -162,11 +162,14 @@ tape('StateManager', t => {
     },
   )
   t.test('should generate the genesis state root correctly for mainnet from ethereum/tests data', async st => {
+    if (isRunningInKarma()) {
+      st.skip('skip slow test when running in karma')
+      return st.end()
+    }
     const genesisData = require('ethereumjs-testing').getSingleFile(
       'BasicTests/genesishashestest.json',
-    )
+    ) 
     const stateManager = new StateManager()
-
     await stateManager.generateCanonicalGenesis()
     let stateRoot = await stateManager.getStateRoot()
     st.equals(
