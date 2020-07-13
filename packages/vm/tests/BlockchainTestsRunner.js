@@ -8,6 +8,12 @@ const level = require('level')
 const levelMem = require('level-mem')
 
 module.exports = async function runBlockchainTest(options, testData, t) {
+  // ensure that the test data is the right fork data
+  if (testData.network != options.forkConfigTestSuite) {
+    t.comment("skipping test: no data available for " + options.forkConfigTestSuite)
+    return
+  }
+
   const blockchainDB = levelMem()
   const cacheDB = level('./.cachedb')
   const state = new Trie()
