@@ -174,9 +174,12 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   const minerAccount = await state.getAccount(block.header.coinbase)
   // add the amount spent on gas to the miner's account
   minerAccount.balance = toBuffer(new BN(minerAccount.balance).add(results.amountSpent))
-  if (!new BN(minerAccount.balance).isZero()) {
-    await state.putAccount(block.header.coinbase, minerAccount)
-  }
+
+  // Put the miner account into the state. If the balance of the miner account remains zero, note that
+  // the state.putAccount function puts this into the "touched" accounts. This will thus be removed when
+  // we clean the touched accounts below in case we are in a fork >= SpuriousDragon
+  await state.putAccount(block.header.coinbase, minerAccount)
+  
 
   /*
    * Cleanup accounts
