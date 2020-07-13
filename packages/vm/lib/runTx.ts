@@ -179,7 +179,6 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   // the state.putAccount function puts this into the "touched" accounts. This will thus be removed when
   // we clean the touched accounts below in case we are in a fork >= SpuriousDragon
   await state.putAccount(block.header.coinbase, minerAccount)
-  
 
   /*
    * Cleanup accounts

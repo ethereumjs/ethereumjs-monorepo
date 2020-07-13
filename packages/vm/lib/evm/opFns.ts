@@ -662,12 +662,12 @@ export const handlers: { [k: string]: OpHandler } = {
     }
     subMemUsage(runState, inOffset, inLength)
     subMemUsage(runState, outOffset, outLength)
-    
-    if (!value.isZero()){
+
+    if (!value.isZero()) {
       runState.eei.useGas(new BN(runState._common.param('gasPrices', 'callValueTransfer')))
     }
     gasLimit = maxCallGas(gasLimit, runState.eei.getGasLeft())
-    
+
     let data = Buffer.alloc(0)
     if (!inLength.isZero()) {
       data = runState.memory.read(inOffset.toNumber(), inLength.toNumber())
@@ -676,10 +676,10 @@ export const handlers: { [k: string]: OpHandler } = {
     if (runState._common.gteHardfork('spuriousDragon')) {
       // We are at or after Spurious Dragon
       // Call new account gas: account is DEAD and we transfer nonzero value
-      if (runState.stateManager.accountIsEmpty(toAddressBuf) && !value.isZero()) {
+      if ((await runState.stateManager.accountIsEmpty(toAddressBuf)) && !value.isZero()) {
         runState.eei.useGas(new BN(runState._common.param('gasPrices', 'callNewAccount')))
       }
-    } else if ( !(await runState.stateManager.accountExists(toAddressBuf))){
+    } else if (!(await runState.stateManager.accountExists(toAddressBuf))) {
       // We are before Spurious Dragon
       // Call new account gas: account does not exist (it is not in the state trie, not even as an "empty" account)
       const accountDoesNotExist = !(await runState.stateManager.accountExists(toAddressBuf))

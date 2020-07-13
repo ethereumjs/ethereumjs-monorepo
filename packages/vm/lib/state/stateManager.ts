@@ -88,7 +88,7 @@ export default class DefaultStateManager implements StateManager {
     this._cache.put(address, account)
     this.touchAccount(address)
   }
-  
+
   async deleteAccount(address: Buffer) {
     this._cache.del(address)
     this.touchAccount(address)
@@ -490,10 +490,10 @@ export default class DefaultStateManager implements StateManager {
   async accountExists(address: Buffer): Promise<boolean> {
     const account = await this._cache.lookup(address)
     if (account) {
-      return true;
+      return true
     }
     if (await this._cache._trie.get(address)) {
-      return true;
+      return true
     }
     return false
   }
