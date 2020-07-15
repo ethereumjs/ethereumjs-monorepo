@@ -676,10 +676,10 @@ export const handlers: { [k: string]: OpHandler } = {
     if (runState._common.gteHardfork('spuriousDragon')) {
       // We are at or after Spurious Dragon
       // Call new account gas: account is DEAD and we transfer nonzero value
-      if ((await runState.stateManager.accountIsEmpty(toAddressBuf)) && !value.isZero()) {
+      if ((await runState.eei.isAccountEmpty(toAddressBuf)) && !value.isZero()) {
         runState.eei.useGas(new BN(runState._common.param('gasPrices', 'callNewAccount')))
       }
-    } else if (!(await runState.stateManager.accountExists(toAddressBuf))) {
+    } else if (!(await runState.eei.accountExists(toAddressBuf))) {
       // We are before Spurious Dragon and the account does not exist.
       // Call new account gas: account does not exist (it is not in the state trie, not even as an "empty" account)
       runState.eei.useGas(new BN(runState._common.param('gasPrices', 'callNewAccount')))
