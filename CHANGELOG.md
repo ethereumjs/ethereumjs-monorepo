@@ -6,6 +6,16 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [v2.2.6] - 2020-07-17
+
+- Fixed a few edge-cases in decoding long strings that previously could cause
+  OOM (Out of Memory) crash,
+  PR [#91](https://github.com/ethereumjs/rlp/pull/91)
+- Updated GitHub `actions/checkout` to v2,
+  PR [#92](https://github.com/ethereumjs/rlp/pull/92)
+
+[v2.2.6]: https://github.com/ethereumjs/rlp/compare/2.2.5...v2.2.6
+
 ## [v2.2.5] - 2020-05-25
 
 - Added `BigInt` as an accepted encoding type,
