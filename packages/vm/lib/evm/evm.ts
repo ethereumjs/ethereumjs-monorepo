@@ -221,7 +221,10 @@ export default class EVM {
     await this._vm._emit('newContract', newContractEvent)
 
     toAccount = await this._state.getAccount(message.to)
-    toAccount.nonce = new BN(toAccount.nonce).addn(1).toArrayLike(Buffer)
+    // EIP-161 on account creation and CREATE execution
+    if (this._vm._common.gteHardfork('spuriousDragon')) {
+      toAccount.nonce = new BN(toAccount.nonce).addn(1).toArrayLike(Buffer)
+    }
 
     // Add tx value to the `to` account
     let errorMessage

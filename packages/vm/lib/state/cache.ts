@@ -54,24 +54,30 @@ export default class Cache {
   /**
    * Looks up address in underlying trie.
    * @param address - Address of account
+   * @param create - Create emtpy account if non-existent
    */
-  async _lookupAccount(address: Buffer): Promise<Account> {
+  async _lookupAccount(address: Buffer, create: boolean = true): Promise<Account | undefined> {
     const raw = await this._trie.get(address)
-    const account = new Account(raw)
-    return account
+    if (raw || create) {
+      const account = new Account(raw)
+      return account
+    }
   }
 
   /**
    * Looks up address in cache, if not found, looks it up
    * in the underlying trie.
    * @param key - Address of account
+   * @param create - Create emtpy account if non-existent
    */
-  async getOrLoad(key: Buffer): Promise<Account> {
+  async getOrLoad(key: Buffer, create: boolean = true): Promise<Account | undefined> {
     let account = this.lookup(key)
 
     if (!account) {
-      account = await this._lookupAccount(key)
-      this._update(key, account, false, false)
+      account = await this._lookupAccount(key, create)
+      if (account) {
+        this._update(key, account as Account, false, false)
+      }
     }
 
     return account
@@ -87,7 +93,7 @@ export default class Cache {
       if (addressHex) {
         const address = Buffer.from(addressHex, 'hex')
         const account = await this._lookupAccount(address)
-        this._update(address, account, false, false)
+        this._update(address, account as Account, false, false)
       }
     }
   }

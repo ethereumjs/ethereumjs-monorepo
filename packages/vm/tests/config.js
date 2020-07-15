@@ -119,6 +119,11 @@ const SKIP_VM = [
  * @returns {String} Either an alias of the forkConfig param, or the forkConfig param itself
  */
 function getRequiredForkConfigAlias(forkConfig) {
+  // TangerineWhistle is named EIP150 (attention: misleading name)
+  // in the client-independent consensus test suite
+  if (String(forkConfig).match(/^tangerineWhistle$/i)) {
+    return 'EIP150'
+  }
   // SpuriousDragon is named EIP158 (attention: misleading name)
   // in the client-independent consensus test suite
   if (String(forkConfig).match(/^spuriousDragon$/i)) {
