@@ -583,6 +583,14 @@ export default class EEI {
     return this._state.accountIsEmpty(address)
   }
 
+  /**
+   * Returns true if account exists in the state trie (it can be empty). Returns false if the account is `null`.
+   * @param address - Address of account
+   */
+  async accountExists(address: Buffer): Promise<boolean> {
+    return this._state.accountExists(address)
+  }
+
   private _getReturnCode(results: EVMResult) {
     // This preserves the previous logic, but seems to contradict the EEI spec
     // https://github.com/ewasm/design/blob/38eeded28765f3e193e12881ea72a6ab807a3371/eth_interface.md
