@@ -89,6 +89,11 @@ export default class DefaultStateManager implements StateManager {
     this.touchAccount(address)
   }
 
+  /**
+   * Deletes an [`@ethereumjs/account`](https://github.com/ethereumjs/ethereumjs-vm/tree/master/packages/account)
+   * from state under the provided `address`. The account will also be removed from the state trie.
+   * @param address - Address of the account which should be deleted
+   */
   async deleteAccount(address: Buffer) {
     this._cache.del(address)
     this.touchAccount(address)
@@ -115,7 +120,7 @@ export default class DefaultStateManager implements StateManager {
     const codeHash = keccak256(value)
 
     if (codeHash.equals(KECCAK256_NULL)) {
-      //return
+      return
     }
 
     const account = await this.getAccount(address)

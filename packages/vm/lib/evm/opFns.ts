@@ -680,12 +680,9 @@ export const handlers: { [k: string]: OpHandler } = {
         runState.eei.useGas(new BN(runState._common.param('gasPrices', 'callNewAccount')))
       }
     } else if (!(await runState.stateManager.accountExists(toAddressBuf))) {
-      // We are before Spurious Dragon
+      // We are before Spurious Dragon and the account does not exist.
       // Call new account gas: account does not exist (it is not in the state trie, not even as an "empty" account)
-      const accountDoesNotExist = !(await runState.stateManager.accountExists(toAddressBuf))
-      if (accountDoesNotExist) {
-        runState.eei.useGas(new BN(runState._common.param('gasPrices', 'callNewAccount')))
-      }
+      runState.eei.useGas(new BN(runState._common.param('gasPrices', 'callNewAccount')))
     }
 
     if (!value.isZero()) {
