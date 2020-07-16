@@ -1,6 +1,6 @@
 {
   "name": "ethereumjs-blockchain",
-  "version": "4.0.3",
+  "version": "4.0.4",
   "description": "A module to store and interact with blocks",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -46,7 +46,7 @@
     "ethashjs": "~0.0.7",
     "ethereumjs-block": "~2.2.2",
     "ethereumjs-common": "^1.5.0",
-    "ethereumjs-util": "~6.1.0",
+    "ethereumjs-util": "^6.1.0",
     "flow-stoplight": "^1.0.0",
     "level-mem": "^3.0.1",
     "lru-cache": "^5.1.1",

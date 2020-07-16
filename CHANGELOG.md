@@ -6,6 +6,14 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [4.0.4] - 2020-07-16
+
+This release replaces the tiled (`~`) dependency from `ethereumjs-util` for a
+caret (`^`) one, meaning that any update to `ethereumjs-util` v6 will also be
+available for this library.
+
+[4.0.4]: https://github.com/ethereumjs/ethereumjs-vm/compare/@ethereumjs/blockchain@4.0.3...@ethereumjs/blockchain@4.0.4
+
 ## [4.0.3] - 2019-12-19
 
 Supports `MuirGlacier` by updating `ethereumjs-block` to
