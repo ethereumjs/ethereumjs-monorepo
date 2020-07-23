@@ -1,6 +1,7 @@
 import { middleware, validators } from '../validation'
 import { addHexPrefix, keccak, toBuffer } from 'ethereumjs-util'
 import { platform } from 'os'
+import { getClientVersion } from '../../util'
 
 /**
  * web3_* RPC module
@@ -29,9 +30,7 @@ export class Web3 {
    * client version as the second argument
    */
   clientVersion(_params = [], cb: (err: null, version: string) => void) {
-    const packageVersion = require('../../../package.json').version
-    const { version } = process
-    const ethJsVersion = `EthereumJS/${packageVersion}/${platform()}/node${version.substring(1)}`
+    const ethJsVersion = getClientVersion()
     cb(null, ethJsVersion)
   }
 
