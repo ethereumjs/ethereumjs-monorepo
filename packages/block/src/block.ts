@@ -178,17 +178,13 @@ export class Block {
     const errors: string[] = []
 
     this.transactions.forEach(function (tx, i) {
-      const error = tx.validate(true)
-      if (error) {
-        errors.push(`${error} at tx ${i}`)
+      const errs = tx.validate(true)
+      if (errs.length !== 0) {
+        errors.push(`errors at tx ${i}: ${errs.join(', ')}`)
       }
     })
 
-    if (!stringError) {
-      return errors.length === 0
-    }
-
-    return errors.join(' ')
+    return stringError ? errors.join(' ') : errors.length === 0
   }
 
   /**

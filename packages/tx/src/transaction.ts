@@ -275,8 +275,8 @@ export default class Transaction {
    */
   validate(): boolean
   validate(stringError: false): boolean
-  validate(stringError: true): string
-  validate(stringError: boolean = false): boolean | string {
+  validate(stringError: true): string[]
+  validate(stringError: boolean = false): boolean | string[] {
     const errors = []
 
     if (!this.verifySignature()) {
@@ -287,11 +287,7 @@ export default class Transaction {
       errors.push(`gasLimit is too low. given ${this.gasLimit}, need at least ${this.getBaseFee()}`)
     }
 
-    if (stringError) {
-      return errors.join(' ')
-    } else {
-      return errors.length === 0
-    }
+    return stringError ? errors : errors.length === 0
   }
 
   /**

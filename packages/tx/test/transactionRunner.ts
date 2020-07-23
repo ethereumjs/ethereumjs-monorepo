@@ -51,7 +51,7 @@ tape('TransactionTests', (t) => {
               const sender = tx.getSenderAddress().toString()
               const hash = tx.hash().toString('hex')
 
-              const transactionIsValid = tx.validate(false)
+              const txIsValid = tx.validate()
 
               const senderIsCorrect = sender === '0x' + forkTestData.sender
               const hashIsCorrect = hash === forkTestData.hash
@@ -59,10 +59,10 @@ tape('TransactionTests', (t) => {
               const hashAndSenderAreCorrect = forkTestData && senderIsCorrect && hashIsCorrect
 
               if (shouldBeInvalid) {
-                st.assert(!transactionIsValid, `Transaction should be invalid on ${forkName}`)
+                st.assert(!txIsValid, `Transaction should be invalid on ${forkName}`)
               } else {
                 st.assert(
-                  hashAndSenderAreCorrect && transactionIsValid,
+                  hashAndSenderAreCorrect && txIsValid,
                   `Transaction should be valid on ${forkName}`,
                 )
               }
