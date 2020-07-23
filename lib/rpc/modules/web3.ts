@@ -1,6 +1,5 @@
 import { middleware, validators } from '../validation'
 import { addHexPrefix, keccak, toBuffer } from 'ethereumjs-util'
-import { platform } from 'os'
 import { getClientVersion } from '../../util'
 
 /**

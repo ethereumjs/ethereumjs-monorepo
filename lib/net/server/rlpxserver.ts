@@ -97,7 +97,7 @@ export class RlpxServer extends Server {
         id: undefined,
         ip: this.ip,
         listenAddr: `[${this.ip}]:${this.port}`,
-        ports: { 'discovery': this.port, 'listener': this.port }
+        ports: { discovery: this.port, listener: this.port },
       }
     }
     const id = this.rlpx._id.toString('hex')
@@ -106,7 +106,7 @@ export class RlpxServer extends Server {
       id: id,
       ip: this.ip,
       listenAddr: `[${this.ip}]:${this.port}`,
-      ports: { 'discovery': this.port, 'listener': this.port }
+      ports: { discovery: this.port, listener: this.port },
     }
   }
 
@@ -147,8 +147,8 @@ export class RlpxServer extends Server {
    */
   async stop(): Promise<boolean> {
     if (this.started) {
-      ; (this.rlpx as Devp2pRLPx).destroy() // eslint-disable-line no-extra-semi
-        ; (this.dpt as Devp2pDPT).destroy()
+      ;(this.rlpx as Devp2pRLPx).destroy() // eslint-disable-line no-extra-semi
+      ;(this.dpt as Devp2pDPT).destroy()
       await super.stop()
       this.started = false
     }
@@ -165,7 +165,7 @@ export class RlpxServer extends Server {
     if (!this.started) {
       return false
     }
-    ; (this.dpt as Devp2pDPT).banPeer(peerId, maxAge) // eslint-disable-line no-extra-semi
+    ;(this.dpt as Devp2pDPT).banPeer(peerId, maxAge) // eslint-disable-line no-extra-semi
     return true
   }
 
