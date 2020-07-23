@@ -60,7 +60,9 @@ export default class Transaction {
 
   public static fromValuesArray(values: Buffer[], common?: Common) {
     if (values.length !== 6 && values.length !== 9) {
-      throw new Error('Invalid transaction. Only expecting 6 values (for unsigned tx) or 9 values (for signed tx).')
+      throw new Error(
+        'Invalid transaction. Only expecting 6 values (for unsigned tx) or 9 values (for signed tx).',
+      )
     }
 
     const [nonce, gasPrice, gasLimit, to, value, data, v, r, s] = values
@@ -245,9 +247,7 @@ export default class Transaction {
 
     let cost = 0
     for (let i = 0; i < this.data.length; i++) {
-      this.data[i] === 0
-        ? cost += txDataZero
-        : cost += txDataNonZero
+      this.data[i] === 0 ? (cost += txDataZero) : (cost += txDataNonZero)
     }
     return new BN(cost)
   }

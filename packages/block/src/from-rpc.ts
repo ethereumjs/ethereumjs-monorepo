@@ -49,9 +49,13 @@ export default function blockFromRpc(
 
       const fakeTx = Object.create(tx)
       // override getSenderAddress
-      fakeTx.getSenderAddress = () => { return fromAddress }
+      fakeTx.getSenderAddress = () => {
+        return fromAddress
+      }
       // override hash
-      fakeTx.hash = () => { return toBuffer(txParams.hash) }
+      fakeTx.hash = () => {
+        return toBuffer(txParams.hash)
+      }
 
       block.transactions.push(fakeTx)
     }

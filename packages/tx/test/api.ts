@@ -387,7 +387,7 @@ tape('[Transaction]: Basic functions', function (t) {
       st.true(signedWithoutEIP155.verifySignature())
       st.true(
         signedWithoutEIP155.v?.toString('hex') == '1c' ||
-        signedWithoutEIP155.v?.toString('hex') == '1b',
+          signedWithoutEIP155.v?.toString('hex') == '1b',
         "v shouldn't be EIP155 encoded",
       )
 
@@ -399,7 +399,7 @@ tape('[Transaction]: Basic functions', function (t) {
       st.true(signedWithoutEIP155.verifySignature())
       st.true(
         signedWithoutEIP155.v?.toString('hex') == '1c' ||
-        signedWithoutEIP155.v?.toString('hex') == '1b',
+          signedWithoutEIP155.v?.toString('hex') == '1b',
         "v shouldn' be EIP155 encoded",
       )
 
