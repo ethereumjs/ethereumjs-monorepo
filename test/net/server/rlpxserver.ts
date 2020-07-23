@@ -6,13 +6,13 @@ const { defaultLogger } = require('../../../lib/logging')
 defaultLogger.silent = true
 
 tape('[RlpxServer]', (t) => {
-  class RlpxPeer extends EventEmitter {}
+  class RlpxPeer extends EventEmitter { }
   RlpxPeer.capabilities = td.func()
   RlpxPeer.prototype.accept = td.func()
   td.replace('../../../lib/net/peer/rlpxpeer', RlpxPeer)
-  class RLPx extends EventEmitter {}
+  class RLPx extends EventEmitter { }
   RLPx.prototype.listen = td.func()
-  class DPT extends EventEmitter {}
+  class DPT extends EventEmitter { }
   DPT.prototype.bind = td.func()
   td.replace('ethereumjs-devp2p', { DPT, RLPx })
   td.when(
@@ -72,7 +72,35 @@ tape('[RlpxServer]', (t) => {
     t.end()
   })
 
-  t.test('should handle errors', (t) => {
+  t.test('should return rlpx server info', async (t) => {
+    const mockId = '123'
+    const server = new RlpxServer({
+      bootnodes: '10.0.0.1:1234,10.0.0.2:1234'
+    })
+    server.initDpt = td.func()
+    server.initRlpx = td.func()
+    server.dpt = td.object()
+    server.rlpx = td.object({
+      _id: mockId,
+      destroy: td.func()
+    })
+    td.when(server.dpt.bootstrap({ address: '10.0.0.1', udpPort: '1234', tcpPort: '1234' })).thenResolve()
+    td.when(server.dpt.bootstrap({ address: '10.0.0.2', udpPort: '1234', tcpPort: '1234' })).thenReject('err0')
+    server.on('error', err => t.equals(err, 'err0', 'got error'))
+    await server.start()
+    const nodeInfo = server.getRlpxInfo()
+    t.deepEqual(nodeInfo, {
+      enode: `enode://${mockId}@[::]:30303`,
+      id: mockId,
+      ip: '::',
+      listenAddr: '[::]:30303',
+      ports: { discovery: 30303, listener: 30303 }
+    }, 'get nodeInfo')
+    await server.stop()
+    t.end()
+  })
+
+  t.test('should handle errors', t => {
     t.plan(3)
     let count = 0
     const server = new RlpxServer()

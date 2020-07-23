@@ -42,6 +42,7 @@ export class RlpxServer extends Server {
 
   public rlpx: Devp2pRLPx | null = null
   public dpt: Devp2pDPT | null = null
+  public ip: string = '::'
 
   /**
    * Create new DevP2P/RLPx server
@@ -59,6 +60,8 @@ export class RlpxServer extends Server {
     super(options)
     options = { ...defaultOptions, ...options }
 
+    // TODO: get the external ip from the upnp service
+    this.ip = '::'
     this.port = options.port
     this.key = options.key
     this.clientFilter = options.clientFilter
@@ -80,6 +83,30 @@ export class RlpxServer extends Server {
     }
     if (typeof this.key === 'string') {
       this.key = Buffer.from(this.key, 'hex')
+    }
+  }
+
+  /**
+   * Return Rlpx info
+   */
+  getRlpxInfo() {
+    // TODO: return undefined? note that this.rlpx might be undefined if called before initRlpx
+    if (!this.rlpx) {
+      return {
+        enode: undefined,
+        id: undefined,
+        ip: this.ip,
+        listenAddr: `[${this.ip}]:${this.port}`,
+        ports: { 'discovery': this.port, 'listener': this.port }
+      }
+    }
+    const id = this.rlpx._id.toString('hex')
+    return {
+      enode: `enode://${id}@[${this.ip}]:${this.port}`,
+      id: id,
+      ip: this.ip,
+      listenAddr: `[${this.ip}]:${this.port}`,
+      ports: { 'discovery': this.port, 'listener': this.port }
     }
   }
 
@@ -120,8 +147,8 @@ export class RlpxServer extends Server {
    */
   async stop(): Promise<boolean> {
     if (this.started) {
-      ;(this.rlpx as Devp2pRLPx).destroy() // eslint-disable-line no-extra-semi
-      ;(this.dpt as Devp2pDPT).destroy()
+      ; (this.rlpx as Devp2pRLPx).destroy() // eslint-disable-line no-extra-semi
+        ; (this.dpt as Devp2pDPT).destroy()
       await super.stop()
       this.started = false
     }
@@ -138,7 +165,7 @@ export class RlpxServer extends Server {
     if (!this.started) {
       return false
     }
-    ;(this.dpt as Devp2pDPT).banPeer(peerId, maxAge) // eslint-disable-line no-extra-semi
+    ; (this.dpt as Devp2pDPT).banPeer(peerId, maxAge) // eslint-disable-line no-extra-semi
     return true
   }
 
@@ -239,7 +266,7 @@ export class RlpxServer extends Server {
     this.rlpx.on('listening', () => {
       this.emit('listening', {
         transport: this.name,
-        url: `enode://${(this.rlpx as Devp2pRLPx)._id.toString('hex')}@[::]:${this.port}`,
+        url: this.getRlpxInfo().enode,
       })
     })
 
