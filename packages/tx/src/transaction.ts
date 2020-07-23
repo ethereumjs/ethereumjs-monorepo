@@ -59,8 +59,8 @@ export default class Transaction {
   }
 
   public static fromValuesArray(values: Buffer[], common?: Common) {
-    if (values.length > 9) {
-      throw new Error('Invalid transaction. More values than expected were received')
+    if (values.length !== 6 && values.length !== 9) {
+      throw new Error('Invalid transaction. Only expecting 6 values (for unsigned tx) or 9 values (for signed tx).')
     }
 
     const [nonce, gasPrice, gasLimit, to, value, data, v, r, s] = values
@@ -73,9 +73,9 @@ export default class Transaction {
       to ? new Address(to) : undefined,
       new BN(value),
       data || Buffer.from([]),
-      new BN(v),
-      new BN(r),
-      new BN(s),
+      v ? new BN(v) : undefined,
+      r ? new BN(r) : undefined,
+      s ? new BN(s) : undefined,
     )
   }
 
