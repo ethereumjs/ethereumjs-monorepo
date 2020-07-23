@@ -46,6 +46,25 @@ export default class Common {
     )
   }
 
+  /**
+   * Creates a Common object for a chain at a specified block number.
+   *
+   * @param {string | number} chain The name (`mainnet`) or id (`1`) of a chain
+   * @param {Number} blockNumber The block number
+   */
+  static forBlockNumber(
+    chain: string | number,
+    blockNumber: number
+  ): Common {
+    const chainParams = Common._getChainParams(chain)
+    const { hardforks } = chainParams
+    const activeHardforks = hardforks.filter(hf => {
+      return hf.block && hf.block >= blockNumber
+    })
+    const hardfork = activeHardforks[activeHardforks.length - 1].name
+    return new Common(chainParams, hardfork)
+  }
+
   private static _getChainParams(chain: string | number): Chain {
     if (typeof chain === 'number') {
       if (chainParams['names'][chain]) {

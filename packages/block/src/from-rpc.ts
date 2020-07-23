@@ -42,9 +42,8 @@ export default function blockFromRpc(
       // since hardfork param may not be set
       // (see TODO in block.constructor)
       const blockNumber = parseInt(block.header.number.toString('hex'), 16)
-      const hfs = (block as any)._common.activeHardforks(blockNumber)
-      const hf = hfs[hfs.length - 1].name
-      const common = new Common((block as any)._common.chainId(), hf)
+      const chainId = (<any>block)._common.chainId()
+      const common = Common.forBlockNumber(chainId, blockNumber)
 
       const frozenTx = Transaction.fromTxData(txParams as TxData, common)
       const tx = Object.create(frozenTx)

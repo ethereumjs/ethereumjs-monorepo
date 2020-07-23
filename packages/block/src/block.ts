@@ -80,11 +80,9 @@ export class Block {
     let common = this._common
     if (!common.hardfork()) {
       const blockNumber = parseInt(this.header.number.toString('hex'), 16)
-      const chainId = this._common.chainId()
+      const chainId = common.chainId()
       if (blockNumber) {
-        const hfs = this._common.activeHardforks(blockNumber)
-        const hf = hfs[hfs.length - 1].name
-        common = new Common(chainId, hf)
+        common = Common.forBlockNumber(chainId, blockNumber)
       } else {
         // fall back to default hf
         common = new Common(chainId, 'petersburg')
