@@ -45,22 +45,18 @@ export default function blockFromRpc(
       const chainId = (<any>block)._common.chainId()
       const common = Common.forBlockNumber(chainId, blockNumber)
 
-      const frozenTx = Transaction.fromTxData(txParams as TxData, common)
-      const tx = Object.create(frozenTx)
+      const tx = Transaction.fromTxData(txParams as TxData, common)
 
+      const fakeTx = Object.create(tx)
       // override getSenderAddress
-      tx.getSenderAddress = function () {
-        return fromAddress
-      }
-
+      fakeTx.getSenderAddress = () => { return fromAddress }
       // override hash
-      tx.hash = function () {
-        return toBuffer(txParams.hash)
-      }
+      fakeTx.hash = () => { return toBuffer(txParams.hash) }
 
-      block.transactions.push(tx)
+      block.transactions.push(fakeTx)
     }
   }
+
   return block
 }
 

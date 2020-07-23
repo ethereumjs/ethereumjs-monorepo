@@ -16,7 +16,7 @@
 
 - [Example](./examples/transactions.ts)
 
-```javascript
+```typescript
 import Transaction from '@ethereumjs/tx'
 
 const txParams = {
@@ -39,6 +39,26 @@ const privateKey = Buffer.from(
 const signedTx = tx.sign(privateKey)
 
 const serializedTx = signedTx.serialize()
+```
+
+## Fake Transaction
+
+Creating a fake tansaction for use in e.g. `VM.runTx()` is simple, just overwrite `getSenderAddress` with your own custom `Address` like so:
+
+```typescript
+import { Transaction, Address } from '@ethereumjs/tx'
+
+_getFakeTransaction(txParams: TxParams): Transaction {
+  const from = new Address(txParams.from)
+  delete txParams.from
+
+  const tx = Transaction.fromTxData(txParams, this._common)
+
+  const fakeTx = Object.create(tx)
+  // override getSenderAddress
+  fakeTx.getSenderAddress = () => { return from }
+  return fakeTx
+}
 ```
 
 # Chain and Hardfork Support
