@@ -96,10 +96,6 @@ export default class Transaction {
     r?: BN,
     s?: BN,
   ) {
-    if (!(data instanceof Buffer)) {
-      throw new Error("Data should be a buffer. Please see ethereumjs-util's toBuffer function")
-    }
-
     const validateCannotExceedMaxInteger = { nonce, gasPrice, gasLimit, value, r, s }
     for (const [key, value] of Object.entries(validateCannotExceedMaxInteger)) {
       if (value && value.gt(MAX_INTEGER)) {
