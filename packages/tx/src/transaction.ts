@@ -8,7 +8,6 @@ import {
   toBuffer,
   rlp,
   unpadBuffer,
-  bufferToHex,
   MAX_INTEGER,
 } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
@@ -323,7 +322,7 @@ export default class Transaction {
       gasLimit: bnToHex(this.gasLimit),
       to: this.to !== undefined ? this.to.toString() : undefined,
       value: bnToHex(this.value),
-      data: bufferToHex(this.data),
+      data: '0x' + this.data.toString('hex'),
       v: this.v !== undefined ? bnToHex(this.v) : undefined,
       r: this.r !== undefined ? bnToHex(this.r) : undefined,
       s: this.s !== undefined ? bnToHex(this.s) : undefined,
