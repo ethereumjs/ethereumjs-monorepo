@@ -29,7 +29,7 @@ export class Admin {
 
   /**
    * Returns information about the currently running node.
-   * see for reference: https://geth.ethereum.org/docs/rpc/ns-admin#admin_nodeinfo 
+   * see for reference: https://geth.ethereum.org/docs/rpc/ns-admin#admin_nodeinfo
    * @param {*} [params] An empty array
    * @param {*} [cb] A function with an error object as the first argument and the
    */
