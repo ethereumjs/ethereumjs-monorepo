@@ -240,13 +240,16 @@ export default class Transaction {
    * The amount of gas paid for the data in this tx
    */
   getDataFee(): BN {
-    const cost = new BN(0)
+    const txDataZero = this.common.param('gasPrices', 'txDataZero')
+    const txDataNonZero = this.common.param('gasPrices', 'txDataNonZero')
+
+    let cost = 0
     for (let i = 0; i < this.data.length; i++) {
       this.data[i] === 0
-        ? cost.iaddn(this.common.param('gasPrices', 'txDataZero'))
-        : cost.iaddn(this.common.param('gasPrices', 'txDataNonZero'))
+        ? cost += txDataZero
+        : cost += txDataNonZero
     }
-    return cost
+    return new BN(cost)
   }
 
   /**
