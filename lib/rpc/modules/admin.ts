@@ -1,4 +1,7 @@
 import { bufferToHex } from 'ethereumjs-util'
+import { Chain } from '../../blockchain'
+import { EthProtocol } from '../../net/protocol'
+import Node from '../../node'
 import { getClientVersion } from '../../util'
 import { middleware } from '../validation'
 
@@ -6,12 +9,16 @@ import { middleware } from '../validation'
  * admin_* RPC module
  * @memberof module:rpc/modules
  */
-class Admin {
+export class Admin {
+  readonly _chain: Chain
+  readonly _node: Node
+  readonly _ethProtocol: EthProtocol
+
   /**
    * Create admin_* RPC module
    * @param {Node} Node to which the module binds
    */
-  constructor(node) {
+  constructor(node: Node) {
     const service = node.services.find(s => s.name === 'eth')
     this._chain = service.chain
     this._node = node
@@ -27,7 +34,6 @@ class Admin {
    * @param {*} [cb] A function with an error object as the first argument and the
    */
   async nodeInfo(params, cb) {
-    console.log('this._node', this._node)
     const rlpxInfo = this._node.server('rlpx').getRlpxInfo()
     const { enode, id, ip, listenAddr, ports } = rlpxInfo
     const { discovery, listener } = ports
@@ -64,5 +70,3 @@ class Admin {
     return cb(null, nodeInfo)
   }
 }
-
-module.exports = Admin
