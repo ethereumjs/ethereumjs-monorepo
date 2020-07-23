@@ -61,8 +61,8 @@ export default class Common {
     const activeHardforks = hardforks.filter(hf => {
       return hf.block && hf.block >= blockNumber
     })
-    const hardfork = activeHardforks[activeHardforks.length - 1].name
-    return new Common(chainParams, hardfork)
+    const hardfork = activeHardforks[activeHardforks.length - 1]
+    return new Common(chainParams, hardfork ? hardfork.name : undefined)
   }
 
   private static _getChainParams(chain: string | number): Chain {
