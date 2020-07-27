@@ -52,6 +52,19 @@ export default class Cache {
   }
 
   /**
+   * Returns true if the key was deleted and thus existed in the cache earlier
+   * @param key - trie key to lookup
+   */
+  keyIsDeleted(key: Buffer): boolean {
+    const keyStr = key.toString('hex')
+    const it = this._cache.find(keyStr)
+    if (it.node) {
+      return it.value.deleted
+    }
+    return false
+  }
+
+  /**
    * Looks up address in underlying trie.
    * @param address - Address of account
    */

@@ -494,7 +494,7 @@ export default class DefaultStateManager implements StateManager {
    */
   async accountExists(address: Buffer): Promise<boolean> {
     const account = await this._cache.lookup(address)
-    if (account) {
+    if (account && !this._cache.keyIsDeleted(address)) {
       return true
     }
     if (await this._cache._trie.get(address)) {
