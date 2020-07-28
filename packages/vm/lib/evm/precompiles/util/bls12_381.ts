@@ -1,6 +1,7 @@
 const { padToEven } = require('ethereumjs-util')
 import { VmError, ERROR } from '../../../exceptions'
 import { BN } from 'ethereumjs-util'
+import { decode } from 'punycode'
 
 // base field modulus as described in the EIP
 const fieldModulus = new BN(
@@ -14,6 +15,11 @@ const fieldModulus = new BN(
 function BLS12_381_ToG1Point(input: Buffer, mcl: any): any {
   const p_x = input.slice(16, 64).toString('hex')
   const p_y = input.slice(80, 128).toString('hex')
+
+  const ZeroString48Bytes = '0'.repeat(96)
+  if (p_x == p_y && p_x == ZeroString48Bytes) {
+    return new mcl.G1()
+  }
 
   const Fp_X = new mcl.Fp()
   const Fp_Y = new mcl.Fp()
@@ -29,6 +35,10 @@ function BLS12_381_ToG1Point(input: Buffer, mcl: any): any {
   G1.setY(Fp_Y)
   G1.setZ(One)
 
+  if (!G1.isValidOrder()) {
+    throw new VmError(ERROR.BLS_12_381_POINT_NOT_ON_CURVE)
+  }
+
   // Check if these coordinates are actually on the curve.
   if (!G1.isValid()) {
     throw new VmError(ERROR.BLS_12_381_POINT_NOT_ON_CURVE)
@@ -43,6 +53,10 @@ function BLS12_381_FromG1Point(input: any): Buffer {
   // TODO: figure out if there is a better way to decode these values.
   const decodeStr = input.getStr(16) //return a string of pattern "1 <x_coord> <y_coord>"
   const decoded = decodeStr.match(/"?[0-9a-f]+"?/g) // match above pattern.
+
+  if (decodeStr == '0') {
+    return Buffer.alloc(128, 0)
+  }
 
   // note: decoded[0] == 1
   const xval = padToEven(decoded[1])
@@ -64,6 +78,17 @@ function BLS12_381_ToG2Point(input: Buffer, mcl: any): any {
   const p_y_1 = input.slice(128, 192)
   const p_y_2 = input.slice(192, 256)
 
+  const ZeroBytes64 = Buffer.alloc(64, 0)
+  // check if we have to do with a zero point
+  if (
+    p_x_1.equals(p_x_2) &&
+    p_x_1.equals(p_y_1) &&
+    p_x_1.equals(p_y_2) &&
+    p_x_1.equals(ZeroBytes64)
+  ) {
+    return new mcl.G2()
+  }
+
   const Fp2X = BLS12_381_ToFp2Point(p_x_1, p_x_2, mcl)
   const Fp2Y = BLS12_381_ToFp2Point(p_y_1, p_y_2, mcl)
 
@@ -84,6 +109,10 @@ function BLS12_381_ToG2Point(input: Buffer, mcl: any): any {
   mclPoint.setY(Fp2Y)
   mclPoint.setZ(Fp2One)
 
+  if (!mclPoint.isValidOrder()) {
+    throw new VmError(ERROR.BLS_12_381_POINT_NOT_ON_CURVE)
+  }
+
   if (!mclPoint.isValid()) {
     throw new VmError(ERROR.BLS_12_381_POINT_NOT_ON_CURVE)
   }
@@ -96,6 +125,9 @@ function BLS12_381_ToG2Point(input: Buffer, mcl: any): any {
 function BLS12_381_FromG2Point(input: any): Buffer {
   // TODO: figure out if there is a better way to decode these values.
   const decodeStr = input.getStr(16) //return a string of pattern "1 <x_coord_1> <x_coord_2> <y_coord_1> <y_coord_2>"
+  if (decodeStr == '0') {
+    return Buffer.alloc(256, 0)
+  }
   const decoded = decodeStr.match(/"?[0-9a-f]+"?/g) // match above pattern.
 
   // note: decoded[0] == 1

@@ -206,8 +206,8 @@ export default class VM extends AsyncEventEmitter {
 
     await mclInitPromise // ensure that mcl is initialized.
     mcl.setMapToMode(mcl.IRTF) // set the right map mode; otherwise mapToG2 will return wrong values.
-    console.log(mcl.verifyOrderG1(1)) // subgroup checks for G1
-    console.log(mcl.verifyOrderG2(1)) // subgroup checks for G2
+    mcl.verifyOrderG1(1) // subgroup checks for G1
+    mcl.verifyOrderG2(1) // subgroup checks for G2
 
     this.isInitialized = true
   }
