@@ -10,7 +10,8 @@ export interface StorageDump {
 export interface StateManager {
   copy(): StateManager
   getAccount(address: Buffer): Promise<Account>
-  putAccount(address: Buffer, account: Account): Promise<void>
+  putAccount(address: Buffer, account: Account | null): Promise<void>
+  deleteAccount(address: Buffer): Promise<void>
   touchAccount(address: Buffer): void
   putContractCode(address: Buffer, value: Buffer): Promise<void>
   getContractCode(address: Buffer): Promise<Buffer>
@@ -28,5 +29,6 @@ export interface StateManager {
   generateCanonicalGenesis(): Promise<void>
   generateGenesis(initState: any): Promise<void>
   accountIsEmpty(address: Buffer): Promise<boolean>
+  accountExists(address: Buffer): Promise<boolean>
   cleanupTouchedAccounts(): Promise<void>
 }

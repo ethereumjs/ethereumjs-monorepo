@@ -123,4 +123,5 @@ jobs:
       - run: npm run build
         working-directory: ${{github.workspace}}
       
-      - run: run test:state:slow
+      - run: npm run test:state:slow
+        working-directory: ${{github.workspace}}
