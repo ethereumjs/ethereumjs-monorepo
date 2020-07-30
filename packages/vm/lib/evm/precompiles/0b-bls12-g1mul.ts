@@ -24,7 +24,7 @@ export default async function (opts: PrecompileInput): Promise<ExecResult> {
   }
 
   if (inputData.length != 160) {
-    return VmErrorResult(new VmError(ERROR.BLS_12_381_INVALID_INPUT_LENGTH), gasUsed)
+    return VmErrorResult(new VmError(ERROR.BLS_12_381_INVALID_INPUT_LENGTH), opts.gasLimit)
   }
 
   // check if some parts of input are zero bytes.
@@ -37,7 +37,7 @@ export default async function (opts: PrecompileInput): Promise<ExecResult> {
   for (let index in zeroByteCheck) {
     let slicedBuffer = opts.data.slice(zeroByteCheck[index][0], zeroByteCheck[index][1])
     if (!slicedBuffer.equals(zeroBytes16)) {
-      return VmErrorResult(new VmError(ERROR.BLS_12_381_POINT_NOT_ON_CURVE), gasUsed)
+      return VmErrorResult(new VmError(ERROR.BLS_12_381_POINT_NOT_ON_CURVE), opts.gasLimit)
     }
   }
 
@@ -47,7 +47,7 @@ export default async function (opts: PrecompileInput): Promise<ExecResult> {
   try {
     mclPoint = BLS12_381_ToG1Point(opts.data.slice(0, 128), mcl)
   } catch (e) {
-    return VmErrorResult(e, gasUsed)
+    return VmErrorResult(e, opts.gasLimit)
   }
 
   let frPoint = BLS12_381_ToFrPoint(opts.data.slice(128, 160), mcl)

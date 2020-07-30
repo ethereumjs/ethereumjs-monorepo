@@ -18,15 +18,15 @@ export default async function (opts: PrecompileInput): Promise<ExecResult> {
   let baseGas = new BN(opts._common.param('gasPrices', 'Bls12381PairingBaseGas'))
 
   if (inputData.length == 0) {
-    return VmErrorResult(new VmError(ERROR.BLS_12_381_INPUT_EMPTY), baseGas)
-  }
-
-  if (inputData.length % 384 != 0) {
-    return VmErrorResult(new VmError(ERROR.BLS_12_381_INVALID_INPUT_LENGTH), baseGas)
+    return VmErrorResult(new VmError(ERROR.BLS_12_381_INPUT_EMPTY), opts.gasLimit)
   }
 
   let gasUsedPerPair = new BN(opts._common.param('gasPrices', 'Bls12381PairingPerPairGas'))
-  let gasUsed = baseGas.iadd(gasUsedPerPair.imul(new BN(inputData.length / 384)))
+  let gasUsed = baseGas.iadd(gasUsedPerPair.imul(new BN(Math.floor(inputData.length / 384))))
+
+  if (inputData.length % 384 != 0) {
+    return VmErrorResult(new VmError(ERROR.BLS_12_381_INVALID_INPUT_LENGTH), opts.gasLimit)
+  }
 
   if (opts.gasLimit.lt(gasUsed)) {
     return OOGResult(opts.gasLimit)
@@ -55,14 +55,14 @@ export default async function (opts: PrecompileInput): Promise<ExecResult> {
         zeroByteCheck[index][1] + pairStart,
       )
       if (!slicedBuffer.equals(zeroBytes16)) {
-        return VmErrorResult(new VmError(ERROR.BLS_12_381_POINT_NOT_ON_CURVE), gasUsed)
+        return VmErrorResult(new VmError(ERROR.BLS_12_381_POINT_NOT_ON_CURVE), opts.gasLimit)
       }
     }
     let G1
     try {
       G1 = BLS12_381_ToG1Point(opts.data.slice(pairStart, pairStart + 128), mcl)
     } catch (e) {
-      return VmErrorResult(e, gasUsed)
+      return VmErrorResult(e, opts.gasLimit)
     }
 
     let g2start = pairStart + 128
@@ -70,7 +70,7 @@ export default async function (opts: PrecompileInput): Promise<ExecResult> {
     try {
       G2 = BLS12_381_ToG2Point(opts.data.slice(g2start, g2start + 256), mcl)
     } catch (e) {
-      return VmErrorResult(e, gasUsed)
+      return VmErrorResult(e, opts.gasLimit)
     }
 
     pairs.push([G1, G2])

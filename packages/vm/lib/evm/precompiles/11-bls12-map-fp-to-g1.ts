@@ -20,13 +20,13 @@ export default async function (opts: PrecompileInput): Promise<ExecResult> {
   }
 
   if (inputData.length != 64) {
-    return VmErrorResult(new VmError(ERROR.BLS_12_381_INVALID_INPUT_LENGTH), gasUsed)
+    return VmErrorResult(new VmError(ERROR.BLS_12_381_INVALID_INPUT_LENGTH), opts.gasLimit)
   }
 
   // check if some parts of input are zero bytes.
   const zeroBytes16 = Buffer.alloc(16, 0)
   if (!opts.data.slice(0, 16).equals(zeroBytes16)) {
-    return VmErrorResult(new VmError(ERROR.BLS_12_381_POINT_NOT_ON_CURVE), gasUsed)
+    return VmErrorResult(new VmError(ERROR.BLS_12_381_POINT_NOT_ON_CURVE), opts.gasLimit)
   }
 
   // convert input to mcl Fp1 point
@@ -35,7 +35,7 @@ export default async function (opts: PrecompileInput): Promise<ExecResult> {
   try {
     Fp1Point = BLS12_381_ToFpPoint(opts.data.slice(0, 64), mcl)
   } catch (e) {
-    return VmErrorResult(e, gasUsed)
+    return VmErrorResult(e, opts.gasLimit)
   }
 
   // map it to G1

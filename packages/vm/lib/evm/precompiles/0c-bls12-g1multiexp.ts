@@ -20,21 +20,31 @@ export default async function (opts: PrecompileInput): Promise<ExecResult> {
     return VmErrorResult(new VmError(ERROR.BLS_12_381_INPUT_EMPTY), new BN(0)) // follow Geths implementation
   }
 
-  const numPairs = inputData.length / 160
+  const numPairs = Math.floor(inputData.length / 160)
 
   let gasUsedPerPair = new BN(opts._common.param('gasPrices', 'Bls12381G1MulGas'))
   let gasDiscountArray = opts._common.param('gasPrices', 'Bls12381MultiExpGasDiscount')
   let gasDiscountMax = gasDiscountArray[gasDiscountArray.length - 1][1]
-  let gasDiscountMultiplier = new BN(gasDiscountArray[numPairs - 1] || gasDiscountMax)
+  let gasDiscountMultiplier
 
-  let gasUsed = gasUsedPerPair.imul(new BN(numPairs)).imul(gasDiscountMultiplier).idivn(1000)
+  if (numPairs <= gasDiscountArray.length) {
+    if (numPairs == 0) {
+      gasDiscountMultiplier = 0 // this implicitly sets gasUsed to 0 as per the EIP.
+    } else {
+      gasDiscountMultiplier = gasDiscountArray[numPairs - 1][1]
+    }
+  } else {
+    gasDiscountMultiplier = gasDiscountMax
+  }
+
+  let gasUsed = gasUsedPerPair.imuln(numPairs).imuln(gasDiscountMultiplier).idivn(1000)
 
   if (opts.gasLimit.lt(gasUsed)) {
     return OOGResult(opts.gasLimit)
   }
 
   if (inputData.length % 160 != 0) {
-    return VmErrorResult(new VmError(ERROR.BLS_12_381_INVALID_INPUT_LENGTH), gasUsed)
+    return VmErrorResult(new VmError(ERROR.BLS_12_381_INVALID_INPUT_LENGTH), opts.gasLimit)
   }
 
   // prepare pairing list and check for mandatory zero bytes
@@ -57,14 +67,14 @@ export default async function (opts: PrecompileInput): Promise<ExecResult> {
         zeroByteCheck[index][1] + pairStart,
       )
       if (!slicedBuffer.equals(zeroBytes16)) {
-        return VmErrorResult(new VmError(ERROR.BLS_12_381_POINT_NOT_ON_CURVE), gasUsed)
+        return VmErrorResult(new VmError(ERROR.BLS_12_381_POINT_NOT_ON_CURVE), opts.gasLimit)
       }
     }
     let G1
     try {
       G1 = BLS12_381_ToG1Point(opts.data.slice(pairStart, pairStart + 128), mcl)
     } catch (e) {
-      return VmErrorResult(e, gasUsed)
+      return VmErrorResult(e, opts.gasLimit)
     }
     let Fr = BLS12_381_ToFrPoint(opts.data.slice(pairStart + 128, pairStart + 160), mcl)
 

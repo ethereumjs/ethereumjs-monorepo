@@ -20,7 +20,7 @@ export default async function (opts: PrecompileInput): Promise<ExecResult> {
   }
 
   if (inputData.length != 128) {
-    return VmErrorResult(new VmError(ERROR.BLS_12_381_INVALID_INPUT_LENGTH), gasUsed)
+    return VmErrorResult(new VmError(ERROR.BLS_12_381_INVALID_INPUT_LENGTH), opts.gasLimit)
   }
 
   // check if some parts of input are zero bytes.
@@ -33,7 +33,7 @@ export default async function (opts: PrecompileInput): Promise<ExecResult> {
   for (let index in zeroByteCheck) {
     let slicedBuffer = opts.data.slice(zeroByteCheck[index][0], zeroByteCheck[index][1])
     if (!slicedBuffer.equals(zeroBytes16)) {
-      return VmErrorResult(new VmError(ERROR.BLS_12_381_POINT_NOT_ON_CURVE), gasUsed)
+      return VmErrorResult(new VmError(ERROR.BLS_12_381_POINT_NOT_ON_CURVE), opts.gasLimit)
     }
   }
 
@@ -43,7 +43,7 @@ export default async function (opts: PrecompileInput): Promise<ExecResult> {
   try {
     Fp2Point = BLS12_381_ToFp2Point(opts.data.slice(0, 64), opts.data.slice(64, 128), mcl)
   } catch (e) {
-    return VmErrorResult(e, gasUsed)
+    return VmErrorResult(e, opts.gasLimit)
   }
   // map it to G2
   const result = Fp2Point.mapToG2()
