@@ -123,7 +123,7 @@ export default class Cache {
         it.next()
       } else if (it.value && it.value.deleted) {
         it.value.modified = false
-        it.value.deleted = false
+        it.value.deleted = true
         it.value.val = new Account().serialize()
         await this._trie.del(Buffer.from(it.key, 'hex'))
         next = it.hasNext
