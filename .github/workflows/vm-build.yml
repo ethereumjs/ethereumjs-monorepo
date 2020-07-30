@@ -102,7 +102,6 @@ jobs:
       - run: npm run build:vm
         working-directory: ${{github.workspace}}
 
-<<<<<<< HEAD
       - run: npm run test:blockchain
 
   vm-benchmarks:
@@ -162,6 +161,3 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           # Push and deploy to GitHub pages branch automatically (if on master)
           auto-push: ${{ steps.auto_push.outputs.auto_push }}
-=======
-      - run: npm run test:blockchain:allForks
->>>>>>> [VM] fix blockchain tests
