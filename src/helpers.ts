@@ -5,8 +5,8 @@ import * as ethjsUtil from 'ethjs-util'
  * @param {string} input string to check hex prefix of
  */
 export const assertIsHexString = function(input: string): void {
-  const msg = `This method only supports 0x-prefixed hex strings but input was: ${input}`
   if (!ethjsUtil.isHexString(input)) {
+    const msg = `This method only supports 0x-prefixed hex strings but input was: ${input}`
     throw new Error(msg)
   }
 }
@@ -16,8 +16,8 @@ export const assertIsHexString = function(input: string): void {
  * @param {Buffer} input value to check
  */
 export const assertIsBuffer = function(input: Buffer): void {
-  const msg = `This method only supports Buffer but input was: ${input}`
   if (!Buffer.isBuffer(input)) {
+    const msg = `This method only supports Buffer but input was: ${input}`
     throw new Error(msg)
   }
 }
@@ -27,8 +27,8 @@ export const assertIsBuffer = function(input: Buffer): void {
  * @param {number[]} input value to check
  */
 export const assertIsArray = function(input: number[]): void {
-  const msg = `This method only supports number arrays but input was: ${input}`
   if (!Array.isArray(input)) {
+    const msg = `This method only supports number arrays but input was: ${input}`
     throw new Error(msg)
   }
 }
@@ -38,8 +38,8 @@ export const assertIsArray = function(input: number[]): void {
  * @param {string} input value to check
  */
 export const assertIsString = function(input: string): void {
-  const msg = `This method only supports strings but input was: ${input}`
   if (typeof input !== 'string') {
+    const msg = `This method only supports strings but input was: ${input}`
     throw new Error(msg)
   }
 }
