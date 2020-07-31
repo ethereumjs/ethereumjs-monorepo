@@ -71,7 +71,7 @@ export default class DefaultStateManager implements StateManager {
    * @param address - Address of the `account` to get
    */
   async getAccount(address: Buffer): Promise<Account> {
-    const account = (await this._cache.getOrLoad(address)) as Account
+    const account = await this._cache.getOrLoad(address)
     return account
   }
 
