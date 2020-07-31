@@ -67,6 +67,7 @@ export default class Memory {
 
     return returnBuffer
   }
+
 }
 
 const ceil = (value: number, ceiling: number): number => {
