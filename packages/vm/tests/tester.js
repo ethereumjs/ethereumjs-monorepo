@@ -4,6 +4,7 @@ const argv = require('minimist')(process.argv.slice(2))
 const tape = require('tape')
 const config = require('./config')
 const testLoader = require('./testLoader')
+const Common = require('@ethereumjs/common').default
 
 function runTests() {
   let name
@@ -96,8 +97,8 @@ function runTests() {
       // Tests for HFs before Istanbul have been moved under `LegacyTests/Constantinople`:
       // https://github.com/ethereum/tests/releases/tag/v7.0.0-beta.1
 
-      // TODO: Replace with Common.lteHardfork('Istanbul')
-      if (testGetterArgs.forkConfig !== 'Istanbul') {
+      const common = new Common('mainnet', FORK_CONFIG_VM)
+      if (!common.gteHardfork('istanbul')) {
         name = 'LegacyTests/Constantinople/'.concat(name)
       }
       testLoader.getTestsFromArgs(
