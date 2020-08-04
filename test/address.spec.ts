@@ -69,13 +69,11 @@ describe('Address', () => {
   })
 
   it('should generate address for CREATE2', () => {
-    for (let i = 0; i <= 6; i++) {
-      let e = eip1014Testdata[i]
-      it(`${e['comment']}: should generate the addresses provided`, function() {
-        const from = Address.fromString(e['address'])
-        const addr = Address.generate2(from, toBuffer(e['salt']), toBuffer(e['initCode']))
-        assert.equal(addr.toString(), e['result'])
-      })
+    for (const testdata of eip1014Testdata) {
+      const { address, salt, initCode, result } = testdata
+      const from = Address.fromString(address)
+      const addr = Address.generate2(from, toBuffer(salt), toBuffer(initCode))
+      assert.equal(addr.toString(), result)
     }
   })
 })
