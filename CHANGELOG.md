@@ -6,6 +6,17 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [7.0.4] - 2020-08-04
+
+- Fixed `BN.js` and `RLP` re-export failures from TypeScript,
+  PR [#270](https://github.com/ethereumjs/ethereumjs-util/pull/270)
+- Fixed an issue along large-value input due to a string copy inconsistency
+  within the `assertIs*` helper functions, issue affects most methods of the
+  library,
+  PR [#269](https://github.com/ethereumjs/ethereumjs-util/pull/269)
+
+[7.0.4]: https://github.com/ethereumjs/ethereumjs-util/compare/v7.0.3...v7.0.4
+
 ## [7.0.3] - 2020-07-07
 
 This release replaces the `keccak` and `secp256k1` dependencies
