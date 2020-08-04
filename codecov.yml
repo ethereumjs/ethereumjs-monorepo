@@ -5,4 +5,5 @@ coverage:
         target: auto
         threshold: 2%
         base: auto 
-        
+comment:
+  layout: 'reach, flags'        
