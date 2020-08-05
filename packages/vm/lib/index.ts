@@ -14,7 +14,11 @@ import { precompiles } from './evm/precompiles'
 import runBlockchain from './runBlockchain'
 const AsyncEventEmitter = require('async-eventemitter')
 const promisify = require('util.promisify')
-const mcl = require('mcl-wasm')
+let mcl = require('mcl-wasm')
+if (Object.keys(mcl).length == 0) {
+  mcl = (<any>globalThis).window.mcl
+}
+
 const mclInitPromise = mcl.init(mcl.BLS12_381) // We can use the same instance of mcl for all VMs. The methods are static.
 
 /**
