@@ -10,7 +10,7 @@ export * from './constants'
 export * from './account'
 
 /**
- * Address typeß
+ * Address type
  */
 export * from './address'
 
