@@ -22,6 +22,11 @@ const args = require('yargs')
       choices: networks.map(n => n[1]),
       default: networks[0][1]
     },
+    'network-id': {
+      describe: `Network ID`,
+      choices: networks.map(n => parseInt(n[0])),
+      default: false
+    },
     'syncmode': {
       describe: 'Blockchain sync mode',
       choices: [ 'light', 'fast' ],
@@ -112,6 +117,13 @@ function runRpcServer (node, options) {
 
 async function run () {
   const syncDirName = args.syncmode === 'light' ? 'lightchaindata' : 'chaindata'
+  // give network id precedence over network name
+  if (args.networkId) {
+    const network = networks.find(n => n[0] === `${args.networkId}`)
+    if (network) {
+      args.network = network[1]
+    }
+  }
   const networkDirName = args.network === 'mainnet' ? '' : `${args.network}/`
   const chainParams = args.params ? await parse.params(args.params) : args.network
   // Initialize Common with an explicit 'chainstart' HF set until
