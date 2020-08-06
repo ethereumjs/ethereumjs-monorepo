@@ -25,7 +25,7 @@ const args = require('yargs')
     'network-id': {
       describe: `Network ID`,
       choices: networks.map(n => parseInt(n[0])),
-      default: false
+      default: undefined
     },
     'syncmode': {
       describe: 'Blockchain sync mode',
