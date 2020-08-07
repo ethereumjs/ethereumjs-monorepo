@@ -1,4 +1,3 @@
-import * as async from 'async'
 import { BN, rlp } from 'ethereumjs-util'
 import { Block, BlockHeader } from '@ethereumjs/block'
 import Ethash from '@ethereumjs/ethash'
@@ -15,6 +14,7 @@ import {
   numberToHashKey,
   tdKey,
 } from './util'
+const promisify = require('util.promisify')
 
 const Stoplight = require('flow-stoplight')
 const level = require('level-mem')
@@ -254,25 +254,30 @@ export default class Blockchain implements BlockchainInterface {
    */
   _init(cb: any): void {
     const self = this
-
-    async.waterfall(
-      [(cb: any) => self._numberToHash(new BN(0), cb), callbackify(getHeads.bind(this))],
-      (err) => {
-        if (err) {
-          // if genesis block doesn't exist, create one
-          return self._setCanonicalGenesisBlock((err?: any) => {
-            if (err) {
-              return cb(err)
-            }
-            self._heads = {}
-            self._headHeader = self._genesis
-            self._headBlock = self._genesis
-            cb()
-          })
+    new Promise((resolve, reject) => {
+      self._numberToHash(new BN(0), function (error: any, hash: any) {
+        if (error) {
+          reject(error)
+        } else {
+          resolve(hash)
         }
+      })
+    })
+      .then(async function (hash) {
+        await getHeads(hash)
         cb()
-      },
-    )
+      })
+      .catch(function (err) {
+        self._setCanonicalGenesisBlock((err?: any) => {
+          if (err) {
+            return cb(err)
+          }
+          self._heads = {}
+          self._headHeader = self._genesis
+          self._headBlock = self._genesis
+          cb()
+        })
+      })
 
     async function getHeads(genesisHash: any) {
       self._genesis = genesisHash
@@ -387,13 +392,28 @@ export default class Blockchain implements BlockchainInterface {
    * @param cb - The callback. It is given two parameters `err` and the last of the saved `blocks`
    */
   putBlocks(blocks: Array<any>, cb: any) {
-    async.eachSeries(
-      blocks,
-      (block, done) => {
-        this.putBlock(block, done)
-      },
-      cb,
-    )
+    const self = this
+    async function _putBlock(block: any): Promise<any> {
+      return await new Promise((resolve, reject) => {
+        self.putBlock(block, function (err: any, block: any) {
+          resolve([err, block])
+        })
+      })
+    }
+
+    async function _putArray() {
+      let retVal = []
+      for (let i = 0; i < blocks.length; i++) {
+        retVal = await _putBlock(blocks[i])
+        if (retVal[0]) {
+          // this is not undefined if there's an error
+          break
+        }
+      }
+      cb(retVal[0], retVal[1])
+    }
+
+    _putArray()
   }
 
   /**
@@ -419,13 +439,28 @@ export default class Blockchain implements BlockchainInterface {
    * @param cb - The callback. It is given two parameters `err` and the last of the saved `headers`
    */
   putHeaders(headers: Array<any>, cb: any) {
-    async.eachSeries(
-      headers,
-      (header, done) => {
-        this.putHeader(header, done)
-      },
-      cb,
-    )
+    const self = this
+    async function _putHeader(block: any): Promise<any> {
+      return await new Promise((resolve, reject) => {
+        self.putHeader(block, function (err: any, block: any) {
+          resolve([err, block])
+        })
+      })
+    }
+
+    async function _putArray() {
+      let retVal = []
+      for (let i = 0; i < headers.length; i++) {
+        retVal = await _putHeader(headers[i])
+        if (retVal[0]) {
+          // this is not undefined if there's an error
+          break
+        }
+      }
+      cb(retVal[0], retVal[1])
+    }
+
+    _putArray()
   }
 
   /**
@@ -466,32 +501,43 @@ export default class Blockchain implements BlockchainInterface {
       return cb(new Error('Chain mismatch while trying to put block or header'))
     }
 
-    async.series(
-      [
-        async.asyncify(async function () {
-          if (!self._validateBlocks) {
-            return
-          }
+    async function validateBlock() {
+      if (!self._validateBlocks) {
+        return
+      }
 
-          if (!isGenesis && block.isGenesis()) {
-            throw new Error('already have genesis set')
-          }
+      if (!isGenesis && block.isGenesis()) {
+        throw new Error('already have genesis set')
+      }
 
-          await block.validate(self)
-          return
-        }),
-        verifyPOW,
-        getCurrentTd,
-        getBlockTd,
-        rebuildInfo,
-        (cb) => {
-          return self._batchDbOps(dbOps.concat(self._saveHeadOps()), cb)
-        },
-      ],
-      cb,
-    )
+      await block.validate(self)
+      return
+    }
 
-    function verifyPOW(next: any) {
+    validateBlock()
+      .then(promisify(verifyPOW))
+      .then(promisify(getCurrentTd))
+      .then(promisify(getBlockTd))
+      .then(promisify(rebuildInfo))
+      .then(function () {
+        return new Promise((resolve, reject) => {
+          self._batchDbOps(dbOps.concat(self._saveHeadOps()), function (err: any) {
+            if (err) {
+              reject(err)
+            } else {
+              resolve()
+            }
+          })
+        })
+      })
+      .then(function () {
+        cb()
+      })
+      .catch(function (err: any) {
+        cb(err)
+      })
+
+    function verifyPOW(value: any, next: any) {
       if (!self._validatePow) {
         return next()
       }
@@ -501,30 +547,38 @@ export default class Blockchain implements BlockchainInterface {
       })
     }
 
-    function getCurrentTd(next: any) {
+    function getCurrentTd(value: any, next: any) {
       if (isGenesis) {
         currentTd.header = new BN(0)
         currentTd.block = new BN(0)
         return next()
       }
-      async.parallel(
-        [
-          (cb) =>
-            self._getTd(self._headHeader, (err?: any, td?: any) => {
-              currentTd.header = td
-              cb(err)
-            }),
-          (cb) =>
-            self._getTd(self._headBlock, (err?: any, td?: any) => {
-              currentTd.block = td
-              cb(err)
-            }),
-        ],
-        next,
-      )
+
+      // set total difficulty in the current context scope.
+      // tdArgument: argument to pass to _getTd
+      // attribute: the attribute of currentTd to write the returned data to.
+      function setTD(tdArgument: any, attribute: string) {
+        return new Promise((resolve, reject) => {
+          self._getTd(tdArgument, (err?: any, td?: any) => {
+            currentTd[attribute] = td
+            if (err) {
+              reject(err)
+            }
+            resolve()
+          })
+        })
+      }
+
+      Promise.all([setTD(self._headHeader, 'header'), setTD(self._headBlock, 'block')])
+        .then(function () {
+          next()
+        })
+        .catch(function (err: any) {
+          next(err)
+        })
     }
 
-    function getBlockTd(next: any) {
+    function getBlockTd(value: any, next: any) {
       if (isGenesis) {
         return next()
       }
@@ -539,7 +593,7 @@ export default class Blockchain implements BlockchainInterface {
       })
     }
 
-    function rebuildInfo(next: any) {
+    function rebuildInfo(prevValue: any, next: any) {
       // save block and total difficulty to the database
       let key = tdKey(number, hash)
       let value = rlp.encode(td)
@@ -590,13 +644,35 @@ export default class Blockchain implements BlockchainInterface {
         }
 
         // delete higher number assignments and overwrite stale canonical chain
-        async.parallel(
-          [
-            (cb) => self._deleteStaleAssignments(number.addn(1), hash, dbOps, cb),
-            (cb) => self._rebuildCanonical(header, dbOps, cb),
-          ],
-          next,
-        )
+        Promise.all([
+          new Promise((resolve, reject) => {
+            self._deleteStaleAssignments(number.iaddn(1), hash, dbOps, function (
+              error: any,
+              value: any,
+            ) {
+              if (error) {
+                reject(error)
+              } else {
+                resolve(value)
+              }
+            })
+          }),
+          new Promise((resolve, reject) => {
+            self._rebuildCanonical(header, dbOps, function (error: any, value: any) {
+              if (error) {
+                reject(error)
+              } else {
+                resolve(value)
+              }
+            })
+          }),
+        ])
+          .then(function (value) {
+            next(undefined, value)
+          })
+          .catch(function (error) {
+            next(error)
+          })
       } else {
         if (td.gt(currentTd.block) && !isHeader) {
           self._headBlock = hash
@@ -699,32 +775,29 @@ export default class Blockchain implements BlockchainInterface {
    */
   selectNeededHashes(hashes: Array<any>, cb: any) {
     const self = this
-    let max: number, mid: number, min: number
+    async function _selectNeededHashes() {
+      let max: number, mid: number, min: number
 
-    max = hashes.length - 1
-    mid = min = 0
+      max = hashes.length - 1
+      mid = min = 0
 
-    async.whilst(
-      function test() {
-        return max >= min
-      },
-      function iterate(cb2) {
-        self._hashToNumber(hashes[mid], (err?: any, number?: any) => {
-          if (!err && number) {
-            min = mid + 1
-          } else {
-            max = mid - 1
-          }
+      while (max >= min) {
+        await new Promise((resolve, reject) => {
+          self._hashToNumber(hashes[mid], (err?: any, number?: any) => {
+            if (!err && number) {
+              min = mid + 1
+            } else {
+              max = mid - 1
+            }
 
-          mid = Math.floor((min + max) / 2)
-          cb2()
+            mid = Math.floor((min + max) / 2)
+            resolve()
+          })
         })
-      },
-      function onDone(err) {
-        if (err) return cb(err)
-        cb(null, hashes.slice(min))
-      },
-    )
+      }
+      cb(null, hashes.slice(min))
+    }
+    _selectNeededHashes()
   }
 
   /**
@@ -914,16 +987,27 @@ export default class Blockchain implements BlockchainInterface {
       hash = blockHash.hash()
     }
 
-    async.series(
-      [
-        getHeader,
-        checkCanonical,
-        buildDBops,
-        deleteStaleAssignments,
-        (cb) => self._batchDbOps(dbOps, cb),
-      ],
-      cb,
-    )
+    promisify(getHeader)()
+      .then(promisify(checkCanonical))
+      .then(promisify(buildDBops))
+      .then(promisify(deleteStaleAssignments))
+      .then(function () {
+        return new Promise((resolve, reject) => {
+          self._batchDbOps(dbOps, function (err: any) {
+            if (err) {
+              reject(err)
+            } else {
+              resolve()
+            }
+          })
+        })
+      })
+      .then(function () {
+        cb()
+      })
+      .catch(function (err: any) {
+        cb(err)
+      })
 
     function getHeader(cb2: any) {
       self._getHeader(hash, (err?: any, header?: any) => {
@@ -936,7 +1020,7 @@ export default class Blockchain implements BlockchainInterface {
     }
 
     // check if block is in the canonical chain
-    function checkCanonical(cb2: any) {
+    function checkCanonical(value: any, cb2: any) {
       self._numberToHash(blockNumber, (err?: any, hash?: any) => {
         inCanonical = !err && hash.equals(hash)
         cb2()
@@ -945,12 +1029,12 @@ export default class Blockchain implements BlockchainInterface {
 
     // delete the block, and if block is in the canonical chain, delete all
     // children as well
-    function buildDBops(cb2: any) {
+    function buildDBops(value: any, cb2: any) {
       self._delChild(hash, blockNumber, inCanonical ? parentHash : null, dbOps, cb2)
     }
 
     // delete all number to hash mappings for deleted block number and above
-    function deleteStaleAssignments(cb2: any) {
+    function deleteStaleAssignments(value: any, cb2: any) {
       if (inCanonical) {
         self._deleteStaleAssignments(blockNumber, parentHash, dbOps, cb2)
       } else {
@@ -1043,31 +1127,36 @@ export default class Blockchain implements BlockchainInterface {
       return cb()
     }
 
-    self._hashToNumber(blockHash, (err?: any, number?: any) => {
+    self._hashToNumber(blockHash, async (err?: any, number?: any) => {
       if (err) return cb(err)
       blockNumber = number.addn(1)
-      async.whilst(
-        () => blockNumber,
-        run,
-        (err) => (err ? cb(err) : self._saveHeads(cb)),
-      )
+      let error = false
+      while (blockNumber && !error) {
+        await run().catch(function (err: any) {
+          error = true
+          cb(err)
+        })
+      }
+
+      if (!error) {
+        self._saveHeads(cb)
+      }
     })
 
-    function run(cb2: any) {
+    async function run() {
       let block: any
 
-      async.series([getBlock, runFunc], function (err?: any) {
-        if (!err) {
+      await promisify(getBlock)()
+        .then(promisify(runFunc))
+        .then(function () {
           blockNumber.iaddn(1)
-        } else {
+        })
+        .catch(function (error: any) {
           blockNumber = false
-          // No more blocks, return
-          if (err.type === 'NotFoundError') {
-            return cb2()
+          if (error.type !== 'NotFoundError') {
+            throw error
           }
-        }
-        cb2(err)
-      })
+        })
 
       function getBlock(cb3: any) {
         self.getBlock(blockNumber, function (err?: any, b?: any) {
@@ -1079,7 +1168,7 @@ export default class Blockchain implements BlockchainInterface {
         })
       }
 
-      function runFunc(cb3: any) {
+      function runFunc(value: any, cb3: any) {
         const reorg = lastBlock ? lastBlock.hash().equals(block.header.parentHash) : false
         lastBlock = block
         func(block, reorg, cb3)

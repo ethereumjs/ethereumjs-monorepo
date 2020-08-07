@@ -19,7 +19,6 @@ import {
 } from './util'
 import type { LevelUp } from 'levelup'
 import type { Block, BlockHeader } from '@ethereumjs/block'
-const async = require('async')
 const xor = require('buffer-xor')
 
 export default class Ethash {
@@ -224,18 +223,31 @@ export default class Ethash {
         return cb(valid)
       }
 
-      async.eachSeries(
-        block.uncleHeaders,
-        (uheader: BlockHeader, cb2: (valid: boolean) => void) => {
-          this._verifyPOW(uheader, (valid3) => {
-            valid = valid3
-            cb2(valid)
+      const self = this
+
+      async function _verifyPowAsync() {
+        let error = false
+        for (let index = 0; index < block.uncleHeaders.length; index++) {
+          if (error) {
+            cb(false)
+          }
+          await new Promise((resolve, reject) => {
+            self._verifyPOW(block.uncleHeaders[index], function (valid3: any) {
+              if (!valid3) {
+                error = true
+                reject()
+              } else {
+                resolve()
+              }
+            })
           })
-        },
-        () => {
-          cb(valid)
         }
-      )
+        if (!error) {
+          cb(true)
+        }
+      }
+
+      _verifyPowAsync()
     })
   }
 }

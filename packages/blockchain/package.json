@@ -39,13 +39,13 @@
     "@ethereumjs/block": "^3.0.0",
     "@ethereumjs/common": "^1.5.1",
     "@ethereumjs/ethash": "^1.0.0",
-    "async": "^2.6.1",
     "ethereumjs-util": "^7.0.2",
     "flow-stoplight": "^1.0.0",
     "level-mem": "^3.0.1",
     "lru-cache": "^5.1.1",
     "rlp": "^2.2.3",
-    "semaphore": "^1.1.0"
+    "semaphore": "^1.1.0",
+    "util.promisify": "^1.0.1"
   },
   "devDependencies": {
     "@ethereumjs/config-nyc": "^1.1.1",
