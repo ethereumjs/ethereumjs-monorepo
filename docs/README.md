@@ -7,6 +7,7 @@
 ### Modules
 
 * ["account"](modules/_account_.md)
+* ["address"](modules/_address_.md)
 * ["bytes"](modules/_bytes_.md)
 * ["constants"](modules/_constants_.md)
 * ["externals"](modules/_externals_.md)
