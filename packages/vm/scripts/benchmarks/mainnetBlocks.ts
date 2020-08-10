@@ -12,7 +12,7 @@ const suite = new Benchmark.Suite()
 
 async function main() {
   const args = process.argv
-  if (args.length !== 3 && args.length !== 4) {
+  if (args.length < 3 || args.length > 4) {
     console.log('Insufficient arguments')
     console.log('Usage: node BENCHMARK_SCRIPT BLOCK_FIXTURE [NUM_SAMPLES]')
     return process.exit(1)
@@ -48,10 +48,9 @@ async function main() {
 
   suite
     .on('cycle', function (event: any) {
-      console.log(event)
       console.log(String(event.target))
     })
-    .run({ async: true })
+    .run()
 }
 
 export interface StateTestPreAccount {
