@@ -153,7 +153,9 @@ We want to use the compiled JS so `ts-node` does not show up in the profile. So 
 
 Then:
 
-`node ./scripts/benchmarks/mainnetBlocks.js scripts/benchmarks/fixture/blocks-prestate.json`
+`npm run benchmarks`
+
+To define the number of samples to be run pass in a number like so: `npm run benchmarks -- 10`
 
 If you want to get a more detailed look to find bottlenecks we can use [0x](https://github.com/davidmarkclements/0x).
 
@@ -164,4 +166,6 @@ npm i -g 0x
 0x scripts/benchmarks/mainnetBlocks.js scripts/benchmarks/fixture/blocks-prestate.json
 ```
 
-and open the link it generates. For a high-level introduction on flamen graphs see e.g. [this](https://blog.codecentric.de/en/2017/09/jvm-fire-using-flame-graphs-analyse-performance/) blog article (the non-Java part).
+and open the link it generates.
+
+For a high-level introduction on flame graphs see e.g. [this](https://blog.codecentric.de/en/2017/09/jvm-fire-using-flame-graphs-analyse-performance/) blog article (the non-Java part).

@@ -105,3 +105,27 @@ jobs:
         working-directory: ${{github.workspace}}
 
       - run: npm run test:blockchain
+
+  vm-benchmarks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/setup-node@v1
+        with:
+          node-version: 12.x
+      - uses: actions/checkout@v2
+
+      - run: npm run build:benchmarks
+      - run: npm run benchmarks -- 5 | tee output.txt
+
+      - name: Store benchmark result
+        uses: rhysd/github-action-benchmark@v1
+        with:
+          tool: 'benchmarkjs'
+          # Where the output from the benchmark tool is stored
+          output-file-path: output.txt
+          # GitHub API token to make a commit comment
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          # Enable alert commit comment
+          comment-on-alert: true
+          # Push and deploy GitHub pages branch automatically
+          auto-push: true
