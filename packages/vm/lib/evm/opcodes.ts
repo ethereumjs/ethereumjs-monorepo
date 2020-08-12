@@ -104,9 +104,6 @@ const opcodes = {
   0x59: { name: 'MSIZE', isAsync: false },
   0x5a: { name: 'GAS', isAsync: false },
   0x5b: { name: 'JUMPDEST', isAsync: false },
-  0x5c: { name: 'BEGINSUB', isAsync: false },
-  0x5d: { name: 'RETURNSUB', isAsync: false },
-  0x5e: { name: 'JUMPSUB', isAsync: false },
 
   // 0x60, range
   0x60: { name: 'PUSH', isAsync: false },
@@ -226,6 +223,14 @@ const hardforkOpcodes = [
     opcodes: {
       0x46: { name: 'CHAINID', isAsync: false }, // EIP 1344
       0x47: { name: 'SELFBALANCE', isAsync: false }, // EIP 1884
+    },
+  },
+  {
+    hardforkName: 'berlin',
+    opcodes: {
+      0x5c: { name: 'BEGINSUB', isAsync: false }, // EIP 2315
+      0x5d: { name: 'RETURNSUB', isAsync: false }, // EIP 2315
+      0x5e: { name: 'JUMPSUB', isAsync: false }, // EIP 2315
     },
   },
 ]
