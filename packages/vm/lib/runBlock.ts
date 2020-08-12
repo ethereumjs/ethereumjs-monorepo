@@ -132,7 +132,7 @@ export default async function runBlock(this: VM, opts: RunBlockOpts): Promise<Ru
 
   // Persist state
   await state.commit()
-  const stateRoot = await state.getStateRoot()
+  const stateRoot = await state.getStateRoot(false)
 
   // Given the generate option, either set resulting header
   // values to the current block, or validate the resulting
@@ -253,8 +253,10 @@ async function applyTransactions(this: VM, block: any, opts: RunBlockOpts) {
       // Giving the correct intermediary state root would need a too depp intervention
       // into the current checkpointing mechanism which hasn't been considered
       // to be worth it on a HF backport, 2020-06-26
+
+      const stateRoot = await this.stateManager.getStateRoot(true)
       txReceipt = {
-        stateRoot: Buffer.alloc(32),
+        stateRoot: stateRoot,
         ...abstractTxReceipt,
       } as PreByzantiumTxReceipt
     }

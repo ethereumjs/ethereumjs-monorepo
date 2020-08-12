@@ -22,7 +22,7 @@ export interface StateManager {
   checkpoint(): Promise<void>
   commit(): Promise<void>
   revert(): Promise<void>
-  getStateRoot(): Promise<Buffer>
+  getStateRoot(force?: boolean): Promise<Buffer>
   setStateRoot(stateRoot: Buffer): Promise<void>
   dumpStorage(address: Buffer): Promise<StorageDump>
   hasGenesisState(): Promise<boolean>

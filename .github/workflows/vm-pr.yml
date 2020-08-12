@@ -51,7 +51,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        fork: ['Petersburg', 'Istanbul', 'MuirGlacier']
+        fork: ['Petersburg', 'Istanbul', 'MuirGlacier', 'Homestead', 'SpuriousDragon', 'TangerineWhistle', 'Byzantium']
       fail-fast: false
     steps:
       - uses: actions/setup-node@v1
@@ -84,6 +84,8 @@ jobs:
       matrix:
         # This is the most fair division among 1 directory vs. everything else
         args: ['--excludeDir=stTimeConsuming', '--dir=GeneralStateTests/stTimeConsuming']
+        # Run specific fork tests
+        fork: ['Homestead', 'Istanbul']
       fail-fast: false
     steps:
       - uses: actions/setup-node@v1
@@ -108,4 +110,4 @@ jobs:
       - run: npm run build:vm
         working-directory: ${{github.workspace}}
 
-      - run: npm run test:blockchain -- ${{ matrix.args }}
+      - run: npm run test:blockchain -- ${{ matrix.args }} --fork=${{ matrix.fork }}

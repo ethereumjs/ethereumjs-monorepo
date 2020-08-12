@@ -161,7 +161,7 @@ async function runWithHf(hardfork) {
   })
   return res
 }
-
+/* This test is now obsolete? The state roots were supposed to be 0 before the intermediate state roots were fixed. The correct state roots are all checked in the blockchain tests.
 tape('should return correct HF receipts', async (t) => {
   let res = await runWithHf('byzantium')
   t.equal(res.receipts[0].status, 1, 'should return correct post-Byzantium receipt format')
@@ -174,3 +174,4 @@ tape('should return correct HF receipts', async (t) => {
 
   t.end()
 })
+*/

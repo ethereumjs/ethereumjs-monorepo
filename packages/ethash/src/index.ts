@@ -240,6 +240,8 @@ export default class Ethash {
                 resolve()
               }
             })
+          }).catch(function (e) {
+            cb(e)
           })
         }
         if (!error) {
