@@ -607,11 +607,7 @@ export const handlers: { [k: string]: OpHandler } = {
 
     subMemUsage(runState, offset, length)
     let gasLimit = new BN(runState.eei.getGasLeft())
-    gasLimit = maxCallGas(
-      gasLimit,
-      runState.eei.getGasLeft(),
-      runState._common.gteHardfork('tangerineWhistle'),
-    )
+    gasLimit = maxCallGas(gasLimit, runState.eei.getGasLeft(), runState)
 
     let data = Buffer.alloc(0)
     if (!length.isZero()) {
@@ -634,7 +630,7 @@ export const handlers: { [k: string]: OpHandler } = {
       new BN(runState._common.param('gasPrices', 'sha3Word')).imul(divCeil(length, new BN(32))),
     )
     let gasLimit = new BN(runState.eei.getGasLeft())
-    gasLimit = maxCallGas(gasLimit, runState.eei.getGasLeft(), true) // CREATE2 is only available after TW (Constantinople introduced this opcode)
+    gasLimit = maxCallGas(gasLimit, runState.eei.getGasLeft(), runState) // CREATE2 is only available after TW (Constantinople introduced this opcode)
 
     let data = Buffer.alloc(0)
     if (!length.isZero()) {
@@ -688,11 +684,7 @@ export const handlers: { [k: string]: OpHandler } = {
       runState.eei.useGas(new BN(runState._common.param('gasPrices', 'callNewAccount')))
     }
 
-    gasLimit = maxCallGas(
-      gasLimit,
-      runState.eei.getGasLeft(),
-      runState._common.gteHardfork('tangerineWhistle'),
-    )
+    gasLimit = maxCallGas(gasLimit, runState.eei.getGasLeft(), runState)
     // note that TW or later this cannot happen (it could have ran out of gas prior to getting here though)
     if (gasLimit.gt(runState.eei.getGasLeft())) {
       trap(ERROR.OUT_OF_GAS)
@@ -726,11 +718,7 @@ export const handlers: { [k: string]: OpHandler } = {
     if (!value.isZero()) {
       runState.eei.useGas(new BN(runState._common.param('gasPrices', 'callValueTransfer')))
     }
-    gasLimit = maxCallGas(
-      gasLimit,
-      runState.eei.getGasLeft(),
-      runState._common.gteHardfork('tangerineWhistle'),
-    )
+    gasLimit = maxCallGas(gasLimit, runState.eei.getGasLeft(), runState)
     // note that TW or later this cannot happen (it could have ran out of gas prior to getting here though)
     if (gasLimit.gt(runState.eei.getGasLeft())) {
       trap(ERROR.OUT_OF_GAS)
@@ -758,11 +746,7 @@ export const handlers: { [k: string]: OpHandler } = {
 
     subMemUsage(runState, inOffset, inLength)
     subMemUsage(runState, outOffset, outLength)
-    gasLimit = maxCallGas(
-      gasLimit,
-      runState.eei.getGasLeft(),
-      runState._common.gteHardfork('tangerineWhistle'),
-    )
+    gasLimit = maxCallGas(gasLimit, runState.eei.getGasLeft(), runState)
     // note that TW or later this cannot happen (it could have ran out of gas prior to getting here though)
     if (gasLimit.gt(runState.eei.getGasLeft())) {
       trap(ERROR.OUT_OF_GAS)
@@ -785,7 +769,7 @@ export const handlers: { [k: string]: OpHandler } = {
 
     subMemUsage(runState, inOffset, inLength)
     subMemUsage(runState, outOffset, outLength)
-    gasLimit = maxCallGas(gasLimit, runState.eei.getGasLeft(), true) // we set TW or later to true here, as STATICCALL was available from Byzantium (which is after TW)
+    gasLimit = maxCallGas(gasLimit, runState.eei.getGasLeft(), runState) // we set TW or later to true here, as STATICCALL was available from Byzantium (which is after TW)
 
     let data = Buffer.alloc(0)
     if (!inLength.isZero()) {
@@ -931,9 +915,10 @@ function jumpIsValid(runState: RunState, dest: number): boolean {
  * the data with zeros to `length`.
  * @param {BN} gasLimit - requested gas Limit
  * @param {BN} gasLeft - current gas left
- * @param {boolean} isTangerineWhistleOrLater - set to true if we are on TW or later (this converts this to the identify function if it is false)
+ * @param {RunState} runState - the current runState
  */
-function maxCallGas(gasLimit: BN, gasLeft: BN, isTangerineWhistleOrLater: boolean): BN {
+function maxCallGas(gasLimit: BN, gasLeft: BN, runState: RunState): BN {
+  const isTangerineWhistleOrLater = runState._common.gteHardfork('tangerineWhistle')
   if (isTangerineWhistleOrLater) {
     const gasAllowed = gasLeft.sub(gasLeft.divn(64))
     return gasLimit.gt(gasAllowed) ? gasAllowed : gasLimit
