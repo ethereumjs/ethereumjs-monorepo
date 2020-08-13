@@ -177,9 +177,9 @@ export default class VM extends AsyncEventEmitter {
    *
    * This method modifies the state.
    *
-   * @param blockchain -  A [blockchain](https://github.com/ethereum/ethereumjs-blockchain) object to process
+   * @param blockchain -  An [@ethereumjs/blockchain](https://github.com/ethereumjs/ethereumjs-vm/tree/master/packages/blockchain) object to process
    */
-  async runBlockchain(blockchain: any): Promise<void> {
+  async runBlockchain(blockchain: Blockchain): Promise<void> {
     await this.init()
     return runBlockchain.bind(this)(blockchain)
   }

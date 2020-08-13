@@ -72,5 +72,5 @@ export interface BlockData {
 }
 
 export interface Blockchain {
-  getBlock(hash: Buffer, callback: (err: Error | null, block?: Block) => void): void
+  getBlock(hash: Buffer): Promise<Block>
 }

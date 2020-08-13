@@ -58,11 +58,6 @@ async function runTestCase(options, testData, t) {
 
   let tx = makeTx(testData.transaction, options.forkConfigVM)
   block = makeBlockFromEnv(testData.env)
-  tx._homestead = true
-  tx.enableHomestead = true
-  block.isHomestead = function () {
-    return true
-  }
 
   if (!tx.validate()) {
     return

@@ -23,7 +23,9 @@ function createAccount (nonce, balance) {
 
 function setupVM (opts = {}) {
   const db = level()
-  opts.blockchain = opts.blockchain ? opts.blockchain : new Blockchain({ db, validate: false })
+  opts.blockchain = opts.blockchain
+    ? opts.blockchain
+    : new Blockchain({ db, validateBlocks: false, validatePow: false })
   const vm = new VM(opts)
   vm.blockchain._common = vm._common
   vm.blockchain.dbManager._common = vm._common

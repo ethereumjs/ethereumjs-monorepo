@@ -39,14 +39,11 @@
     "@ethereumjs/block": "^3.0.0",
     "@ethereumjs/common": "^1.5.1",
     "@ethereumjs/ethash": "^1.0.0",
-    "async": "^2.6.1",
     "ethereumjs-util": "^7.0.4",
-    "flow-stoplight": "^1.0.0",
-    "level-mem": "^3.0.1",
+    "level-mem": "^5.0.1",
     "lru-cache": "^5.1.1",
     "rlp": "^2.2.3",
-    "semaphore": "^1.1.0",
-    "util.promisify": "^1.0.1"
+    "semaphore-async-await": "^1.5.1"
   },
   "devDependencies": {
     "@ethereumjs/config-nyc": "^1.1.1",
@@ -57,7 +54,6 @@
     "@types/bn.js": "^4.11.6",
     "@types/lru-cache": "^5.1.0",
     "@types/node": "^11.13.4",
-    "@types/semaphore": "^1.1.0",
     "@types/tape": "^4.13.0",
     "nyc": "^14.0.0",
     "prettier": "^2.0.5",
