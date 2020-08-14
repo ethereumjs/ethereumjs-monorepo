@@ -546,6 +546,33 @@ export const handlers: { [k: string]: OpHandler } = {
     runState.stack.push(new BN(runState.eei.getGasLeft()))
   },
   JUMPDEST: function (runState: RunState) {},
+  BEGINSUB: function (runState: RunState) {
+    trap(ERROR.INVALID_BEGINSUB + ' at ' + describeLocation(runState))
+  },
+  JUMPSUB: function (runState: RunState) {
+    const dest = runState.stack.pop()
+
+    if (dest.gt(runState.eei.getCodeSize())) {
+      trap(ERROR.INVALID_JUMPSUB + ' at ' + describeLocation(runState))
+    }
+
+    const destNum = dest.toNumber()
+
+    if (!jumpSubIsValid(runState, destNum)) {
+      trap(ERROR.INVALID_JUMPSUB + ' at ' + describeLocation(runState))
+    }
+
+    runState.returnStack.push(new BN(runState.programCounter))
+    runState.programCounter = destNum + 1
+  },
+  RETURNSUB: function (runState: RunState) {
+    if (runState.returnStack.length < 1) {
+      trap(ERROR.INVALID_RETURNSUB)
+    }
+
+    const dest = runState.returnStack.pop()
+    runState.programCounter = dest.toNumber()
+  },
   PUSH: function (runState: RunState) {
     const numToPush = runState.opCode - 0x5f
     const loaded = new BN(
@@ -925,6 +952,11 @@ function maxCallGas(gasLimit: BN, gasLeft: BN, runState: RunState): BN {
   } else {
     return gasLimit
   }
+}
+
+// checks if a jumpsub is valid given a destination
+function jumpSubIsValid(runState: RunState, dest: number): boolean {
+  return runState.validJumpSubs.indexOf(dest) !== -1
 }
 
 async function getContractStorage(runState: RunState, address: Buffer, key: Buffer) {

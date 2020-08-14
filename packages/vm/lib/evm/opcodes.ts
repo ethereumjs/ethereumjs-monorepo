@@ -225,6 +225,14 @@ const hardforkOpcodes = [
       0x47: { name: 'SELFBALANCE', isAsync: false }, // EIP 1884
     },
   },
+  {
+    hardforkName: 'berlin',
+    opcodes: {
+      0x5c: { name: 'BEGINSUB', isAsync: false }, // EIP 2315
+      0x5d: { name: 'RETURNSUB', isAsync: false }, // EIP 2315
+      0x5e: { name: 'JUMPSUB', isAsync: false }, // EIP 2315
+    },
+  },
 ]
 
 /**
