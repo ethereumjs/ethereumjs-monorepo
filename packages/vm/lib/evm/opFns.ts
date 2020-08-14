@@ -547,17 +547,10 @@ export const handlers: { [k: string]: OpHandler } = {
   },
   JUMPDEST: function (runState: RunState) {},
   BEGINSUB: function (runState: RunState) {
-    if (!runState._common.gteHardfork('berlin')) {
-      trap(ERROR.INVALID_OPCODE)
-    }
-
     trap(ERROR.INVALID_BEGINSUB + ' at ' + describeLocation(runState))
   },
   JUMPSUB: function (runState: RunState) {
     const dest = runState.stack.pop()
-    if (!runState._common.gteHardfork('berlin')) {
-      trap(ERROR.INVALID_OPCODE)
-    }
 
     if (dest.gt(runState.eei.getCodeSize())) {
       trap(ERROR.INVALID_JUMPSUB + ' at ' + describeLocation(runState))
@@ -573,10 +566,6 @@ export const handlers: { [k: string]: OpHandler } = {
     runState.programCounter = destNum + 1
   },
   RETURNSUB: function (runState: RunState) {
-    if (!runState._common.gteHardfork('berlin')) {
-      trap(ERROR.INVALID_OPCODE)
-    }
-
     if (runState.returnStack.length < 1) {
       trap(ERROR.INVALID_RETURNSUB)
     }
