@@ -98,12 +98,16 @@ function runTests() {
   } else if (name === 'Stateless') {
     tape(name, t => {
       const stateTestRunner = require('./StatelessRunner.js')
-      testing.getTestsFromArgs('GeneralStateTests', async (fileName, testName, test) => {
+      let count = 0
+      testLoader.getTestsFromArgs('GeneralStateTests', async (fileName, testName, test) => {
         let runSkipped = testGetterArgs.runSkipped
         let inRunSkipped = runSkipped.includes(fileName)
         if (runSkipped.length === 0 || inRunSkipped) {
-          t.comment(`file: ${fileName} test: ${testName}`)
-          return stateTestRunner(runnerArgs, test, t)
+          count += 1
+          if (count < 2) {
+            t.comment(`file: ${fileName} test: ${testName}`)
+            return stateTestRunner(runnerArgs, test, t)
+          }
         }
       }, testGetterArgs).then(() => {
         t.end()

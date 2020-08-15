@@ -1,14 +1,11 @@
-const testUtil = require('./util')
-const { promisify } = require('util')
 const ethUtil = require('ethereumjs-util')
-const Account = require('ethereumjs-account').default
-const Trie = require('merkle-patricia-tree/secure')
 const BN = ethUtil.BN
-const { getRequiredForkConfigAlias } = require('./util')
-const StateManager = require('../dist/state/stateManager').default
-
-const VM = require('../dist/index.js').default
-const PStateManager = require('../dist/state/promisified').default
+const { getRequiredForkConfigAlias, setupPreConditions, makeTx, makeBlockFromEnv } = require('./util')
+const Account = require('@ethereumjs/account').default
+const Trie = require('merkle-patricia-tree').SecureTrie
+const { default: Common } = require('@ethereumjs/common')
+const { default: VM } = require('../dist/index.js')
+const { default: DefaultStateManager } = require('../dist/state/stateManager')
 
 async function runTestCase (options, testData, t) {
   let expectedPostStateRoot = testData.postStateRoot
@@ -17,8 +14,8 @@ async function runTestCase (options, testData, t) {
   }
 
   // Prepare tx and block
-  let tx = testUtil.makeTx(testData.transaction)
-  let block = testUtil.makeBlockFromEnv(testData.env)
+  let tx = makeTx(testData.transaction)
+  let block = makeBlockFromEnv(testData.env)
   tx._homestead = true
   tx.enableHomestead = true
   block.isHomestead = function () {
@@ -28,14 +25,15 @@ async function runTestCase (options, testData, t) {
     return
   }
 
-  let stateManager = new StateManager()
-  await promisify(testUtil.setupPreConditions)(stateManager._trie, testData)
+  const common = new Common('mainnet', options.forkConfigVM.toLowerCase())
+  const stateManager = new DefaultStateManager({ common: common })
+  await setupPreConditions(stateManager._trie, testData)
   const preStateRoot = stateManager._trie.root
 
   // Set up VM
   let vm = new VM({
     stateManager: stateManager,
-    hardfork: options.forkConfig.toLowerCase()
+    common: common
   })
   if (options.jsontrace) {
     hookVM(vm, t)
@@ -94,7 +92,7 @@ async function runTestCase (options, testData, t) {
   try {
     await vm.runTx({ tx: tx, block: block })
   } catch (err) {
-    await deleteCoinbase(new PStateManager(stateManager), block.header.coinbase)
+    await deleteCoinbase(stateManager, block.header.coinbase)
   }
   t.equal(stateManager._trie.root.toString('hex'), expectedPostStateRoot, 'the state roots should match')
 }
@@ -104,12 +102,12 @@ async function runTestCase (options, testData, t) {
  * expects the coinbase account to be deleted from state.
  * Without this ecmul_0-3_5616_28000_96 would fail.
  */
-async function deleteCoinbase (pstate, coinbaseAddr) {
-  const account = await pstate.getAccount(coinbaseAddr)
+async function deleteCoinbase (stateManager, coinbaseAddr) {
+  const account = await stateManager.getAccount(coinbaseAddr)
   if (new BN(account.balance).isZero()) {
-    await pstate.putAccount(coinbaseAddr, new Account())
-    await pstate.cleanupTouchedAccounts()
-    await promisify(pstate._wrapped._cache.flush.bind(pstate._wrapped._cache))()
+    await stateManager.putAccount(coinbaseAddr, new Account())
+    await stateManager.cleanupTouchedAccounts()
+    await stateManager._wrapped._cache.flush()
   }
 }
 
@@ -178,7 +176,7 @@ function parseTestCases (forkConfig, testData, data, gasLimit, value) {
 }
 
 module.exports = async function runStateTest (options, testData, t) {
-  const forkConfig = getRequiredForkConfigAlias(options.forkConfig)
+  const forkConfig = getRequiredForkConfigAlias(options.forkConfigTestSuite)
   try {
     const testCases = parseTestCases(forkConfig, testData, options.data, options.gasLimit, options.value)
     if (testCases.length > 0) {
