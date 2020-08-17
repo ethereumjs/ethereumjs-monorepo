@@ -202,7 +202,7 @@ export class DBManager {
   /**
    * Performs a batch operation on db.
    */
-  batch(ops: DBOp[]) {
+  async batch(ops: DBOp[]) {
     return this._db.batch(ops as any)
   }
 }
