@@ -289,7 +289,7 @@ export default class Blockchain implements BlockchainInterface {
    *
    * @param blocks - The blocks to be added to the blockchain
    */
-  async putBlocks(blocks: Array<any>) {
+  async putBlocks(blocks: Block[]) {
     for (let i = 0; i < blocks.length; i++) {
       await this.putBlock(blocks[i])
     }
