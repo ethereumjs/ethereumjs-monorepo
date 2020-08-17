@@ -41,7 +41,7 @@ export interface BlockchainInterface {
   /**
    * Returns a block by its hash or number.
    */
-  getBlock(blockTag: Buffer | number | BN): Promise<Block | null>
+  getBlock(blockId: Buffer | number | BN): Promise<Block | null>
 
   /**
    * Iterates through blocks starting at the specified iterator head and calls the onBlock function
@@ -444,33 +444,33 @@ export default class Blockchain implements BlockchainInterface {
   /**
    * Gets a block by its hash.
    *
-   * @param blockTag - The block's hash or number
+   * @param blockId - The block's hash or number
    */
-  async getBlock(blockTag: Buffer | number | BN): Promise<Block> {
+  async getBlock(blockId: Buffer | number | BN): Promise<Block> {
     if (!this._initDone) {
       await this._init()
     }
 
-    return this._getBlock(blockTag)
+    return this._getBlock(blockId)
   }
 
   /**
    * @hidden
    */
-  async _getBlock(blockTag: Buffer | number | BN) {
-    return this.dbManager.getBlock(blockTag)
+  async _getBlock(blockId: Buffer | number | BN) {
+    return this.dbManager.getBlock(blockId)
   }
 
   /**
-   * Looks up many blocks relative to blockTag
+   * Looks up many blocks relative to blockId
    *
-   * @param blockTag - The block's hash or number
+   * @param blockId - The block's hash or number
    * @param maxBlocks - Max number of blocks to return
    * @param skip - Number of blocks to skip apart
    * @param reverse - Fetch blocks in reverse
    */
   async getBlocks(
-    blockTag: Buffer | BN | number,
+    blockId: Buffer | BN | number,
     maxBlocks: number,
     skip: number,
     reverse: boolean,
@@ -478,10 +478,10 @@ export default class Blockchain implements BlockchainInterface {
     const blocks: Block[] = []
     let i = -1
 
-    const nextBlock = async (blockTag: Buffer | BN | number): Promise<any> => {
+    const nextBlock = async (blockId: Buffer | BN | number): Promise<any> => {
       let block
       try {
-        block = await this.getBlock(blockTag)
+        block = await this.getBlock(blockId)
       } catch (error) {
         if (error.type !== 'NotFoundError') {
           throw error
@@ -499,7 +499,7 @@ export default class Blockchain implements BlockchainInterface {
       }
     }
 
-    await nextBlock(blockTag)
+    await nextBlock(blockId)
     return blocks
   }
 

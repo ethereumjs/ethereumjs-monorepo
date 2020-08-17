@@ -86,25 +86,25 @@ export class DBManager {
   }
 
   /**
-   * Fetches a block (header and body), given a block tag
+   * Fetches a block (header and body) given a block id,
    * which can be either its hash or its number.
    */
-  async getBlock(blockTag: Buffer | BN | number): Promise<Block> {
-    // determine BlockTag type
-    if (typeof blockTag === 'number' && Number.isInteger(blockTag)) {
-      blockTag = new BN(blockTag)
+  async getBlock(blockId: Buffer | BN | number): Promise<Block> {
+    // determine blockId type
+    if (typeof blockId === 'number' && Number.isInteger(blockId)) {
+      blockId = new BN(blockId)
     }
 
     let number
     let hash
-    if (Buffer.isBuffer(blockTag)) {
-      hash = blockTag
-      number = await this.hashToNumber(blockTag)
-    } else if (BN.isBN(blockTag)) {
-      number = blockTag
-      hash = await this.numberToHash(blockTag)
+    if (Buffer.isBuffer(blockId)) {
+      hash = blockId
+      number = await this.hashToNumber(blockId)
+    } else if (BN.isBN(blockId)) {
+      number = blockId
+      hash = await this.numberToHash(blockId)
     } else {
-      throw new Error('Unknown blockTag type')
+      throw new Error('Unknown blockId type')
     }
 
     const header = (await this.getHeader(hash, number)).raw
