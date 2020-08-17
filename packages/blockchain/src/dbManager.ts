@@ -3,9 +3,9 @@ import { Block, BlockHeader } from '@ethereumjs/block'
 import Common from '@ethereumjs/common'
 import Cache from './cache'
 import {
-  headsKey,
-  headHeaderKey,
-  headBlockKey,
+  HEADS_KEY,
+  HEAD_HEADER_KEY,
+  HEAD_BLOCK_KEY,
   hashToNumberKey,
   numberToHashKey,
   tdKey,
@@ -64,7 +64,7 @@ export class DBManager {
    * Fetches iterator heads from the db.
    */
   async getHeads(): Promise<{ [key: string]: Buffer }> {
-    const heads = await this.get(headsKey, { valueEncoding: 'json' })
+    const heads = await this.get(HEADS_KEY, { valueEncoding: 'json' })
     Object.keys(heads).forEach((key) => {
       heads[key] = Buffer.from(heads[key])
     })
@@ -75,14 +75,14 @@ export class DBManager {
    * Fetches header of the head block.
    */
   async getHeadHeader(): Promise<Buffer> {
-    return this.get(headHeaderKey)
+    return this.get(HEAD_HEADER_KEY)
   }
 
   /**
    * Fetches head block.
    */
   async getHeadBlock(): Promise<Buffer> {
-    return this.get(headBlockKey)
+    return this.get(HEAD_BLOCK_KEY)
   }
 
   /**

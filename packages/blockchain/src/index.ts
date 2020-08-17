@@ -5,12 +5,12 @@ import Ethash from '@ethereumjs/ethash'
 import Common from '@ethereumjs/common'
 import { DBManager, DBOp } from './dbManager'
 import {
-  bodyKey,
+  HEAD_BLOCK_KEY,
+  HEAD_HEADER_KEY,
   bufBE8,
   hashToNumberKey,
-  headBlockKey,
-  headHeaderKey,
   headerKey,
+  bodyKey,
   numberToHashKey,
   tdKey,
 } from './util'
@@ -549,14 +549,14 @@ export default class Blockchain implements BlockchainInterface {
       },
       {
         type: 'put',
-        key: headHeaderKey,
+        key: HEAD_HEADER_KEY,
         keyEncoding: 'binary',
         valueEncoding: 'binary',
         value: this._headHeader!,
       },
       {
         type: 'put',
-        key: headBlockKey,
+        key: HEAD_BLOCK_KEY,
         keyEncoding: 'binary',
         valueEncoding: 'binary',
         value: this._headBlock!,
