@@ -109,7 +109,7 @@ export default class Blockchain implements BlockchainInterface {
   private _initDone: boolean
   private _lock: Semaphore
 
-  private readonly _common: Common
+  private _common: Common
   private readonly _validatePow: boolean
   private readonly _validateBlocks: boolean
 
