@@ -23,7 +23,7 @@
 
 \+ **new VmError**(`error`: [ERROR](../enums/_exceptions_.error.md)): *[VmError](_exceptions_.vmerror.md)*
 
-*Defined in [exceptions.ts:19](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/exceptions.ts#L19)*
+*Defined in [exceptions.ts:22](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/exceptions.ts#L22)*
 
 **Parameters:**
 
@@ -39,7 +39,7 @@ Name | Type |
 
 • **error**: *[ERROR](../enums/_exceptions_.error.md)*
 
-*Defined in [exceptions.ts:18](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/exceptions.ts#L18)*
+*Defined in [exceptions.ts:21](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/exceptions.ts#L21)*
 
 ___
 
@@ -47,4 +47,4 @@ ___
 
 • **errorType**: *string*
 
-*Defined in [exceptions.ts:19](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/exceptions.ts#L19)*
+*Defined in [exceptions.ts:22](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/exceptions.ts#L22)*
