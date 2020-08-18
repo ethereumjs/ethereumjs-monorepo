@@ -16,11 +16,6 @@ async function runTestCase (options, testData, t) {
   // Prepare tx and block
   let tx = makeTx(testData.transaction)
   let block = makeBlockFromEnv(testData.env)
-  tx._homestead = true
-  tx.enableHomestead = true
-  block.isHomestead = function () {
-    return true
-  }
   if (!tx.validate()) {
     return
   }
