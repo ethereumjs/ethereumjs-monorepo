@@ -34,6 +34,6 @@
     "test": "lerna exec npm run test --parallel",
     "coverage": "lerna run coverage --stream",
     "docs:build": "lerna run docs:build --ignore @ethereumjs/ethash",
-    "clean": "lerna exec -- rm -rf node_modules && rm -rf node_modules"
+    "clean": "rm -rf node_modules packages/*/node_modules packages/*/test-build packages/*/dist packages/*/dist.browser"
   }
 }
