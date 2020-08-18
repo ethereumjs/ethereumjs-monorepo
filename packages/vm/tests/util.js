@@ -3,6 +3,7 @@ const Account = require('@ethereumjs/account').default
 const Transaction = require('@ethereumjs/tx').Transaction
 const Block = require('@ethereumjs/block').Block
 const promisify = require('util.promisify')
+const { resolve } = require('core-js/fn/promise')
 
 exports.dumpState = function (state, cb) {
   function readAccounts(state) {
@@ -105,46 +106,45 @@ exports.makeTx = function (txData, hf) {
   return tx
 }
 
-exports.verifyPostConditions = function (state, testData, t, cb) {
-  var hashedAccounts = {}
-  var keyMap = {}
+exports.verifyPostConditions = async function (state, testData, t) {
+  return new Promise((resolve) => {
+    const hashedAccounts = {}
+    const keyMap = {}
 
-  for (var key in testData) {
-    var hash = keccak256(Buffer.from(stripHexPrefix(key), 'hex')).toString('hex')
-    hashedAccounts[hash] = testData[key]
-    keyMap[hash] = key
-  }
-
-  var q = []
-
-  var stream = state.createReadStream()
-
-  stream.on('data', function (data) {
-    var acnt = new Account(rlp.decode(data.value))
-    var key = data.key.toString('hex')
-    var testData = hashedAccounts[key]
-    var address = keyMap[key]
-    delete keyMap[key]
-
-    if (testData) {
-      q.push(
-        promisify(exports.verifyAccountPostConditions)(state, address, account, testData, t)
-      )
-    } else {
-      t.fail('invalid account in the trie: ' + key)
+    for (const key in testData) {
+      const hash = keccak256(Buffer.from(stripHexPrefix(key), 'hex')).toString('hex')
+      hashedAccounts[hash] = testData[key]
+      keyMap[hash] = key
     }
-  })
 
-  stream.on('end', async function () {
-    function onEnd() {
+    const queue = []
+
+    const stream = state.createReadStream()
+
+    stream.on('data', function (data) {
+      const account = new Account(rlp.decode(data.value))
+      const key = data.key.toString('hex')
+      const testData = hashedAccounts[key]
+      const address = keyMap[key]
+      delete keyMap[key]
+
+      if (testData) {
+        const promise = exports.verifyAccountPostConditions(state, address, account, testData, t)
+        queue.push(promise)
+      } else {
+        t.fail('invalid account in the trie: ' + key)
+      }
+    })
+
+    stream.on('end', async function () {
+      await Promise.all(queue)
+
       for (hash in keyMap) {
         t.fail('Missing account!: ' + keyMap[hash])
       }
-      cb()
-    }
 
-    await Promise.all(q)
-    onEnd()
+      resolve()
+    })
   })
 }
 
@@ -154,63 +154,65 @@ exports.verifyPostConditions = function (state, testData, t, cb) {
  * @param {[type]}   string   Account Address
  * @param {[type]}   account  to verify
  * @param {[type]}   acctData postconditions JSON from tests repo
- * @param {Function} cb       completion callback
  */
-exports.verifyAccountPostConditions = function (state, address, account, acctData, t, cb) {
-  t.comment('Account: ' + address)
-  t.equal(
-    format(account.balance, true).toString('hex'),
-    format(acctData.balance, true).toString('hex'),
-    'correct balance',
-  )
-  t.equal(
-    format(account.nonce, true).toString('hex'),
-    format(acctData.nonce, true).toString('hex'),
-    'correct nonce',
-  )
+exports.verifyAccountPostConditions = function (state, address, account, acctData, t) {
+  return new Promise((resolve) => {
+    t.comment('Account: ' + address)
+    t.equal(
+      format(account.balance, true).toString('hex'),
+      format(acctData.balance, true).toString('hex'),
+      'correct balance',
+    )
+    t.equal(
+      format(account.nonce, true).toString('hex'),
+      format(acctData.nonce, true).toString('hex'),
+      'correct nonce',
+    )
 
-  // validate storage
-  var origRoot = state.root
-  var storageKeys = Object.keys(acctData.storage)
+    // validate storage
+    const origRoot = state.root
+    const storageKeys = Object.keys(acctData.storage)
 
-  var hashedStorage = {}
-  for (var key in acctData.storage) {
-    hashedStorage[keccak256(setLengthLeft(Buffer.from(key.slice(2), 'hex'), 32)).toString('hex')] =
-      acctData.storage[key]
-  }
+    const hashedStorage = {}
+    for (var key in acctData.storage) {
+      hashedStorage[
+        keccak256(setLengthLeft(Buffer.from(key.slice(2), 'hex'), 32)).toString('hex')
+      ] = acctData.storage[key]
+    }
 
-  if (storageKeys.length > 0) {
-    state.root = account.stateRoot
-    var rs = state.createReadStream()
-    rs.on('data', function (data) {
-      var key = data.key.toString('hex')
-      var val = '0x' + rlp.decode(data.value).toString('hex')
+    if (storageKeys.length > 0) {
+      state.root = account.stateRoot
+      const rs = state.createReadStream()
+      rs.on('data', function (data) {
+        const key = data.key.toString('hex')
+        const val = '0x' + rlp.decode(data.value).toString('hex')
 
-      if (key === '0x') {
-        key = '0x00'
-        acctData.storage['0x00'] = acctData.storage['0x00']
-          ? acctData.storage['0x00']
-          : acctData.storage['0x']
-        delete acctData.storage['0x']
-      }
-
-      t.equal(val, hashedStorage[key], 'correct storage value')
-      delete hashedStorage[key]
-    })
-
-    rs.on('end', function () {
-      for (var key in hashedStorage) {
-        if (hashedStorage[key] !== '0x00') {
-          t.fail('key: ' + key + ' not found in storage')
+        if (key === '0x') {
+          key = '0x00'
+          acctData.storage['0x00'] = acctData.storage['0x00']
+            ? acctData.storage['0x00']
+            : acctData.storage['0x']
+          delete acctData.storage['0x']
         }
-      }
 
-      state.root = origRoot
-      cb()
-    })
-  } else {
-    cb()
-  }
+        t.equal(val, hashedStorage[key], 'correct storage value')
+        delete hashedStorage[key]
+      })
+
+      rs.on('end', function () {
+        for (const key in hashedStorage) {
+          if (hashedStorage[key] !== '0x00') {
+            t.fail('key: ' + key + ' not found in storage')
+          }
+        }
+
+        state.root = origRoot
+        resolve()
+      })
+    } else {
+      resolve()
+    }
+  })
 }
 
 /**
