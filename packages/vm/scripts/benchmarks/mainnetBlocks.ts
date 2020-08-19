@@ -1,5 +1,4 @@
 import * as fs from 'fs'
-import { merge } from 'lodash'
 import Account from '@ethereumjs/account'
 import { bufferToInt, toBuffer, setLengthLeft } from 'ethereumjs-util'
 import { encode } from 'rlp'
@@ -7,70 +6,51 @@ import blockFromRPC from '@ethereumjs/block/dist/from-rpc'
 import VM from '../../dist'
 import { StateManager, DefaultStateManager } from '../../dist/state'
 import BN = require('bn.js')
+import Benchmark = require('benchmark')
+
+const suite = new Benchmark.Suite()
 
 async function main() {
   const args = process.argv
   if (args.length < 3 || args.length > 4) {
     console.log('Insufficient arguments')
     console.log('Usage: node BENCHMARK_SCRIPT BLOCK_FIXTURE [NUM_SAMPLES]')
-    process.exit(1)
+    return process.exit(1)
   }
 
   let data = JSON.parse(fs.readFileSync(args[2], 'utf8'))
   if (!Array.isArray(data)) data = [data]
-  console.log(`Total number of blocks: ${data.length}`)
+  console.log(`Total number of blocks in data set: ${data.length}`)
 
   let numSamples = data.length
   if (args.length === 4) {
     numSamples = Number(args[3])
   }
-  console.log(`Blocks to proceed: ${numSamples}`)
+  console.log(`Number of blocks to sample: ${numSamples}`)
   data = data.slice(0, numSamples)
-
-  let preState = {}
-  // Merge block prestates
-  for (const blockPreState of data) {
-    // Merge with block's pre state prioritizing pre state
-    // of previous txes in block
-    preState = merge(Object.assign({}, blockPreState.preState), preState)
-  }
-
-  let state = await getPreState(preState)
-  let vm = new VM({ stateManager: state, hardfork: 'muirGlacier' })
 
   for (const blockData of data) {
     const block = blockFromRPC(blockData.block)
+    const blockNumber = bufferToInt(block.header.number)
 
-    // Mock blockchain for BLOCKHASH opcode
-    const blockchain = {
-      getBlock: (n: BN, cb: any) => {
-        const bh = blockData.blockhashes['0x' + n.toString('hex')]
-        if (!bh) {
-          throw new Error('Unavailable blockhash requested')
-        }
-        return cb(null, { hash: () => toBuffer(bh) })
-      },
-    }
-    vm.blockchain = blockchain as any
+    const stateManager = await getPreState(blockData.preState)
+    const vm = new VM({ stateManager, hardfork: 'muirGlacier' })
 
-    console.log('running block', bufferToInt(block.header.number))
-
-    const start = process.hrtime()
-    // TODO: use `runBlock` instead of running individual txes via `runTx`
-    // TODO: validate tx, add receipt and gas usage checks
-    for (const tx of block.transactions) {
-      const txstart = process.hrtime()
-      let res = await vm.runTx({ block, tx })
-      const txElapsed = process.hrtime(start)[1] / 1000000
-      //console.log(`Running tx ${tx.hash()} took ${process.hrtime(start)[0]} s, ${txElapsed.toFixed(3)} ms`)
-    }
-    const elapsed = process.hrtime(start)[1] / 1000000
-    console.log(
-      `Running block ${bufferToInt(block.header.number)} took ${
-        process.hrtime(start)[0]
-      } s, ${elapsed.toFixed(3)} ms`,
-    )
+    suite.add(`Block ${blockNumber}`, async () => {
+      // TODO: validate tx, add receipt and gas usage checks
+      await vm.copy().runBlock({
+        block,
+        generate: true,
+        skipBlockValidation: true,
+      })
+    })
   }
+
+  suite
+    .on('cycle', function (event: any) {
+      console.log(String(event.target))
+    })
+    .run()
 }
 
 export interface StateTestPreAccount {
@@ -84,6 +64,7 @@ export async function getPreState(pre: {
   [k: string]: StateTestPreAccount
 }): Promise<StateManager> {
   const state = new DefaultStateManager()
+  await state.checkpoint()
   for (const k in pre) {
     const kBuf = toBuffer(k)
     const obj = pre[k]
@@ -105,6 +86,7 @@ export async function getPreState(pre: {
     await state.putAccount(kBuf, acc)
     await state.putContractCode(kBuf, code)
   }
+  await state.commit()
   return state
 }
 
