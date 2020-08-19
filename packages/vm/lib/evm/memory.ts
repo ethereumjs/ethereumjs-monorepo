@@ -54,12 +54,18 @@ export default class Memory {
    * @param size - How many bytes to read
    */
   read(offset: number, size: number): Buffer {
-    const loaded = this._store.slice(offset, offset + size)
-    // Fill the remaining length with zeros
-    for (let i = loaded.length; i < size; i++) {
-      loaded[i] = 0
+    const returnBuffer = Buffer.allocUnsafe(size)
+    // Copy the stored "buffer" from memory into the return Buffer
+
+    const loaded = Buffer.from(this._store.slice(offset, offset + size))
+    returnBuffer.fill(loaded, 0, loaded.length)
+
+    if (loaded.length < size) {
+      // fill the remaining part of the Buffer with zeros
+      returnBuffer.fill(0, loaded.length, size)
     }
-    return Buffer.from(loaded)
+
+    return returnBuffer
   }
 }
 

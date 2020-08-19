@@ -64,6 +64,15 @@ tape('Stack', t => {
     st.end()
   })
 
+  t.test('overflow limit should be configurable', st => {
+    const s = new Stack(1023)
+    for (let i = 0; i < 1023; i++) {
+      s.push(new BN(i))
+    }
+    st.throws(() => s.push(new BN(1023)))
+    st.end()
+  })
+
   t.test('should swap top with itself', st => {
     const s = new Stack()
     s.push(new BN(5))
@@ -130,11 +139,11 @@ tape('Stack', t => {
           DUP1
           DUP1
           PUSH1 0x01
-          CALLER 
+          CALLER
           DUP3
           CALL          stack: [0, CALLER, 1, 0, 0, 0, 0, 0]
           POP           pop the call result (1)
-          PUSH1 0x00      
+          PUSH1 0x00
           MSTORE        we now expect that the stack (prior to MSTORE) is [0, 0]
           PUSH1 0x20
           PUSH1 0x00
@@ -150,7 +159,7 @@ tape('Stack', t => {
     }
     try {
       const res = await vm.runCall(runCallArgs)
-      const executionReturnValue = res.execResult.returnValue 
+      const executionReturnValue = res.execResult.returnValue
       st.assert(executionReturnValue.equals(expectedReturnValue))
       st.end()
     } catch(e) {

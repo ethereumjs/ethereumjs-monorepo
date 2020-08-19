@@ -52,6 +52,19 @@ export default class Cache {
   }
 
   /**
+   * Returns true if the key was deleted and thus existed in the cache earlier
+   * @param key - trie key to lookup
+   */
+  keyIsDeleted(key: Buffer): boolean {
+    const keyStr = key.toString('hex')
+    const it = this._cache.find(keyStr)
+    if (it.node) {
+      return it.value.deleted
+    }
+    return false
+  }
+
+  /**
    * Looks up address in underlying trie.
    * @param address - Address of account
    */
@@ -71,7 +84,9 @@ export default class Cache {
 
     if (!account) {
       account = await this._lookupAccount(key)
-      this._update(key, account, false, false)
+      if (account) {
+        this._update(key, account as Account, false, false)
+      }
     }
 
     return account
@@ -87,7 +102,7 @@ export default class Cache {
       if (addressHex) {
         const address = Buffer.from(addressHex, 'hex')
         const account = await this._lookupAccount(address)
-        this._update(address, account, false, false)
+        this._update(address, account as Account, false, false)
       }
     }
   }
@@ -108,7 +123,7 @@ export default class Cache {
         it.next()
       } else if (it.value && it.value.deleted) {
         it.value.modified = false
-        it.value.deleted = false
+        it.value.deleted = true
         it.value.val = new Account().serialize()
         await this._trie.del(Buffer.from(it.key, 'hex'))
         next = it.hasNext

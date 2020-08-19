@@ -1,10 +1,7 @@
 name: VM
 on:
-  push:
-    branches:
-      - master
-    tags:
-      - '*'
+  pull_request:
+    types: [opened, reopened, synchronize]
 
 env:
   cwd: ${{github.workspace}}/packages/vm
@@ -26,7 +23,7 @@ jobs:
         uses: actions/cache@v2
         id: cache
         with:
-          key: VM-${{ runner.os }}-${{ matrix.node-version }}-${{ hashFiles('**/package-lock.json') }}
+          key: VM-${{ runner.os }}-12-${{ hashFiles('**/package-lock.json') }}
           path: '**/node_modules'
 
       # Installs root dependencies, ignoring Bootstrap All script.
@@ -52,6 +49,10 @@ jobs:
   
   test-vm-state:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        fork: ['Petersburg', 'Istanbul', 'MuirGlacier', 'Homestead', 'SpuriousDragon', 'TangerineWhistle', 'Byzantium']
+      fail-fast: false
     steps:
       - uses: actions/setup-node@v1
         with:
@@ -62,7 +63,7 @@ jobs:
         uses: actions/cache@v2
         id: cache
         with:
-          key: VM-${{ runner.os }}-${{ matrix.node-version }}-${{ hashFiles('**/package-lock.json') }}
+          key: VM-${{ runner.os }}-12-${{ hashFiles('**/package-lock.json') }}
           path: '**/node_modules'
 
       # Installs root dependencies, ignoring Bootstrap All script.
@@ -75,10 +76,17 @@ jobs:
       - run: npm run build:vm
         working-directory: ${{github.workspace}}
 
-      - run: npm run test:state:selectedForks
+      - run: npm run test:state -- --fork=${{ matrix.fork }}
 
   test-vm-blockchain:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        # This is the most fair division among 1 directory vs. everything else
+        args: ['--excludeDir=stTimeConsuming', '--dir=GeneralStateTests/stTimeConsuming']
+        # Run specific fork tests
+        fork: ['Homestead', 'Istanbul']
+      fail-fast: false
     steps:
       - uses: actions/setup-node@v1
         with:
@@ -89,7 +97,7 @@ jobs:
         uses: actions/cache@v2
         id: cache
         with:
-          key: VM-${{ runner.os }}-${{ matrix.node-version }}-${{ hashFiles('**/package-lock.json') }}
+          key: VM-${{ runner.os }}-12-${{ hashFiles('**/package-lock.json') }}
           path: '**/node_modules'
 
       # Installs root dependencies, ignoring Bootstrap All script.
@@ -102,62 +110,4 @@ jobs:
       - run: npm run build:vm
         working-directory: ${{github.workspace}}
 
-      - run: npm run test:blockchain
-
-  vm-benchmarks:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/setup-node@v1
-        with:
-          node-version: 12.x
-      - uses: actions/checkout@v2
-
-      - name: Dependency cache
-        uses: actions/cache@v2
-        id: cache
-        with:
-          key: VM-${{ runner.os }}-${{ matrix.node-version }}-${{ hashFiles('**/package-lock.json') }}
-          path: '**/node_modules'
-
-      # Installs root dependencies, ignoring Bootstrap All script.
-      # Bootstraps the current package only
-      - run: npm install --ignore-scripts && npm run bootstrap:vm
-        if: steps.cache.outputs.cache-hit != 'true'
-        working-directory: ${{github.workspace}}
-
-      # Builds current package and the ones it depends from.
-      - run: npm run build:vm
-        working-directory: ${{github.workspace}}
-
-      - run: npm run build:benchmarks
-        working-directory: ${{ env.cwd }}
-
-      - run: npm run benchmarks -- 10 | tee output.txt
-        working-directory: ${{ env.cwd }}
-
-      - name: Set auto-push for benchmarks to true if on master
-        id: auto_push
-        run: |
-          if [$REF == 'refs/heads/master']
-          then
-              echo "::set-output name=auto_push::true"
-          else
-              echo "::set-output name=auto_push::false"
-          fi
-        env:
-          REF: ${{ github.ref }}
-
-      - name: Compare benchmarks
-        uses: rhysd/github-action-benchmark@v1
-        with:
-          tool: 'benchmarkjs'
-          # Where the output from the benchmark tool is stored
-          output-file-path: ${{ env.cwd }}/output.txt
-          # Enable alert commit comment
-          comment-on-alert: true
-          # Always leave a commit comment comparing the current benchmark with previous
-          comment-always: true
-          # GitHub API token to make a commit comment
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          # Push and deploy to GitHub pages branch automatically (if on master)
-          auto-push: ${{ steps.auto_push.outputs.auto_push }}
+      - run: npm run test:blockchain -- ${{ matrix.args }} --fork=${{ matrix.fork }}

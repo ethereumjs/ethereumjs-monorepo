@@ -1,5 +1,4 @@
 const tape = require('tape')
-const { parallel } = require('async')
 const { toBuffer, keccak256, KECCAK256_RLP } = require('ethereumjs-util')
 const Common = require('@ethereumjs/common').default
 const Account = require('@ethereumjs/account').default
@@ -7,8 +6,10 @@ const { DefaultStateManager } = require('../../../dist/state')
 const { createAccount } = require('../utils')
 const { isRunningInKarma } = require('../../util')
 
-tape('StateManager', (t) => {
-  t.test('should instantiate', async (st) => {
+const StateManager = DefaultStateManager
+
+tape('StateManager', t => {
+  t.test('should instantiate', async st => {
     const stateManager = new DefaultStateManager()
 
     st.deepEqual(stateManager._trie.root, KECCAK256_RLP, 'it has default root')
@@ -114,6 +115,37 @@ tape('StateManager', (t) => {
   )
 
   t.test(
+    'should return false for a non-existent account',
+    async (st) => {
+      const stateManager = new DefaultStateManager()
+      const address = Buffer.from('a94f5374fce5edbc8e2a8697c15331677e6ebf0b', 'hex')
+
+      let res = await stateManager.accountExists(address)
+
+      st.notOk(res)
+
+      st.end()
+    },
+  )
+
+  t.test(
+    'should return true for an existent account',
+    async (st) => {
+      const stateManager = new DefaultStateManager()
+      const account = createAccount('0x1', '0x1')
+      const address = Buffer.from('a94f5374fce5edbc8e2a8697c15331677e6ebf0b', 'hex')
+
+      await stateManager.putAccount(address, account)
+
+      let res = await stateManager.accountExists(address)
+
+      st.ok(res)
+
+      st.end()
+    },
+  )
+
+  t.test(
     'should call the callback with a false boolean representing non-emptiness when the account is not empty',
     async (st) => {
       const stateManager = new DefaultStateManager()
@@ -129,47 +161,42 @@ tape('StateManager', (t) => {
       st.end()
     },
   )
-
-  t.test('should generate the genesis state root correctly for mainnet', async (st) => {
+  t.test('should generate the genesis state root correctly for mainnet from ethereum/tests data', async st => {
     if (isRunningInKarma()) {
       st.skip('skip slow test when running in karma')
       return st.end()
     }
+    const genesisData = require('ethereumjs-testing').getSingleFile(
+      'BasicTests/genesishashestest.json',
+    ) 
+    const stateManager = new StateManager()
+    await stateManager.generateCanonicalGenesis()
+    let stateRoot = await stateManager.getStateRoot()
+    st.equals(
+      stateRoot.toString('hex'),
+      genesisData.genesis_state_root,
+      'generateCanonicalGenesis should produce correct state root for mainnet from ethereum/tests data',
+    )
+    st.end()
+  })
 
-    parallel([
-      async () => {
-        // 1. Test generating from ethereum/tests
-        const genesisData = require('ethereumjs-testing').getSingleFile(
-          'BasicTests/genesishashestest.json',
-        )
-        const stateManager = new DefaultStateManager()
+  t.test('should generate the genesis state root correctly for mainnet from common', async st => {
+    if (isRunningInKarma()) {
+      st.skip('skip slow test when running in karma')
+      return st.end()
+    }
+    const common = new Common('mainnet', 'petersburg')
+    const expectedStateRoot = Buffer.from(common.genesis().stateRoot.slice(2), 'hex')
+    const stateManager = new StateManager({ common: common })
 
-        await stateManager.generateCanonicalGenesis()
-        let stateRoot = await stateManager.getStateRoot()
-        st.equals(
-          stateRoot.toString('hex'),
-          genesisData.genesis_state_root,
-          'generateCanonicalGenesis should produce correct state root for mainnet from ethereum/tests data',
-        )
-      },
-      async () => {
-        // 2. Test generating from common
-        const common = new Common('mainnet', 'petersburg')
-        const expectedStateRoot = Buffer.from(common.genesis().stateRoot.slice(2), 'hex')
-        const stateManager = new DefaultStateManager({ common: common })
+    await stateManager.generateCanonicalGenesis()
+    let stateRoot = await stateManager.getStateRoot()
 
-        await stateManager.generateCanonicalGenesis()
-        let stateRoot = await stateManager.getStateRoot()
-
-        st.true(
-          stateRoot.equals(expectedStateRoot),
-          `generateCanonicalGenesis should produce correct state root for mainnet from common`,
-        )
-      },
-      () => {
-        st.end()
-      },
-    ])
+    st.true(
+      stateRoot.equals(expectedStateRoot),
+      `generateCanonicalGenesis should produce correct state root for mainnet from common`,
+    )
+    st.end()
   })
 
   t.test('should generate the genesis state root correctly for all other chains', async (st) => {

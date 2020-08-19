@@ -1,67 +1,56 @@
-import * as async from 'async'
+import Semaphore from 'semaphore-async-await'
 import { BN, rlp } from 'ethereumjs-util'
 import { Block, BlockHeader } from '@ethereumjs/block'
 import Ethash from '@ethereumjs/ethash'
 import Common from '@ethereumjs/common'
-import { callbackify } from './callbackify'
-import DBManager from './dbManager'
+import { DBManager, DBOp } from './dbManager'
 import {
-  bodyKey,
+  HEAD_BLOCK_KEY,
+  HEAD_HEADER_KEY,
   bufBE8,
   hashToNumberKey,
-  headBlockKey,
-  headHeaderKey,
   headerKey,
+  bodyKey,
   numberToHashKey,
   tdKey,
 } from './util'
 
-const Stoplight = require('flow-stoplight')
+import type { LevelUp } from 'levelup'
+
 const level = require('level-mem')
-const semaphore = require('semaphore')
+
+type OnBlock = (block: Block, reorg: boolean) => Promise<void> | void
 
 export interface BlockchainInterface {
   /**
    * Adds a block to the blockchain.
    *
    * @param block - The block to be added to the blockchain.
-   * @param cb - The callback. It is given two parameters `err` and the saved `block`
    * @param isGenesis - True if block is the genesis block.
    */
-  putBlock(block: Block, cb: any, isGenesis?: boolean): void
+  putBlock(block: Block, isGenesis?: boolean): Promise<void>
 
   /**
    * Deletes a block from the blockchain. All child blocks in the chain are deleted and any
    * encountered heads are set to the parent block.
    *
    * @param blockHash - The hash of the block to be deleted
-   * @param cb - A callback.
    */
-  delBlock(blockHash: Buffer, cb: any): void
+  delBlock(blockHash: Buffer): Promise<void>
 
   /**
    * Returns a block by its hash or number.
    */
-  getBlock(blockTag: Buffer | number | BN, cb: (err: Error | null, block?: Block) => void): void
+  getBlock(blockId: Buffer | number | BN): Promise<Block | null>
 
   /**
    * Iterates through blocks starting at the specified iterator head and calls the onBlock function
    * on each block.
    *
    * @param name - Name of the state root head
-   * @param onBlock - Function called on each block with params (block, reorg, cb)
-   * @param cb - A callback function
+   * @param onBlock - Function called on each block with params (block: Block, reorg: boolean)
    */
-  iterator(name: string, onBlock: any, cb: any): void
-
-  /**
-   * This method is only here for backwards compatibility. It can be removed once
-   * [this PR](https://github.com/ethereumjs/ethereumjs-block/pull/72/files) gets merged, released,
-   * and ethereumjs-block is updated here.
-   *
-   * The method should just call `cb` with `null` as first argument.
-   */
-  getDetails(_: string, cb: any): void
+  iterator(name: string, onBlock: OnBlock): Promise<void>
 }
 
 /**
@@ -85,23 +74,12 @@ export interface BlockchainOptions {
   common?: Common
 
   /**
-   * Database to store blocks and metadata. Should be a
-   * [levelup](https://github.com/rvagg/node-levelup) instance.
+   * Database to store blocks and metadata. Should be an abstract-leveldown compliant store.
    */
-  db?: any
+  db?: LevelUp
 
   /**
-   * This the flag indicates if blocks and Proof-of-Work should be validated.
-   * This option can't be used in conjunction with `validatePow` nor `validateBlocks`.
-   *
-   * @deprecated
-   */
-  validate?: boolean
-
-  /**
-   * This flags indicates if Proof-of-work should be validated. If `validate` is provided, this
-   * option takes its value. If neither `validate` nor this option are provided, it defaults to
-   * `true`.
+   * This flags indicates if Proof-of-work should be validated. Defaults to `true`.
    */
   validatePow?: boolean
 
@@ -117,67 +95,21 @@ export interface BlockchainOptions {
  * This class stores and interacts with blocks.
  */
 export default class Blockchain implements BlockchainInterface {
-  /**
-   * @hidden
-   */
-  _common: Common
-
-  /**
-   * @hidden
-   */
-  _genesis: any
-
-  /**
-   * @hidden
-   */
-  _headBlock: any
-
-  /**
-   * @hidden
-   */
-  _headHeader: any
-
-  /**
-   * @hidden
-   */
-  _heads: any
-
-  /**
-   * @hidden
-   */
-  _initDone: boolean
-
-  /**
-   * @hidden
-   */
-  _initLock: any
-
-  /**
-   * @hidden
-   */
-  _putSemaphore: any
-
-  /**
-   * @hidden
-   */
-  _staleHeadBlock: any
-
-  /**
-   * @hidden
-   */
-  _staleHeads: any
-
-  db: any
+  db: LevelUp
   dbManager: DBManager
-  ethash: any
+  ethash?: Ethash
 
-  /**
-   * This field is always `true`. It's here only for backwards compatibility.
-   *
-   * @deprecated
-   */
-  public readonly validate: boolean = true
+  private _genesis?: Buffer
+  private _headBlock?: Buffer
+  private _headHeader?: Buffer
+  private _heads: { [key: string]: Buffer }
+  private _staleHeadBlock: boolean
+  private _staleHeads: string[]
 
+  private _initDone: boolean
+  private _lock: Semaphore
+
+  private _common: Common
   private readonly _validatePow: boolean
   private readonly _validateBlocks: boolean
 
@@ -198,40 +130,22 @@ export default class Blockchain implements BlockchainInterface {
       this._common = new Common(chain, hardfork)
     }
 
-    if (opts.validate !== undefined) {
-      if (opts.validatePow !== undefined || opts.validateBlocks !== undefined) {
-        throw new Error(
-          "opts.validate can't be used at the same time than opts.validatePow nor opts.validateBlocks",
-        )
-      }
-    }
-
-    // defaults
-
-    if (opts.validate !== undefined) {
-      this._validatePow = opts.validate
-      this._validateBlocks = opts.validate
-    } else {
-      this._validatePow = opts.validatePow !== undefined ? opts.validatePow : true
-      this._validateBlocks = opts.validateBlocks !== undefined ? opts.validateBlocks : true
-    }
+    this._validatePow = opts.validatePow !== undefined ? opts.validatePow : true
+    this._validateBlocks = opts.validateBlocks !== undefined ? opts.validateBlocks : true
 
     this.db = opts.db ? opts.db : level()
     this.dbManager = new DBManager(this.db, this._common)
-    this.ethash = this._validatePow ? new Ethash(this.db) : null
+
+    if (this._validatePow) {
+      this.ethash = new Ethash(this.db)
+    }
+
     this._heads = {}
-    this._genesis = null
-    this._headHeader = null
-    this._headBlock = null
+    this._staleHeadBlock = false
+    this._staleHeads = []
+
+    this._lock = new Semaphore(1)
     this._initDone = false
-    this._putSemaphore = semaphore(1)
-    this._initLock = new Stoplight()
-    this._init((err?: any) => {
-      if (err) {
-        throw err
-      }
-      this._initLock.go()
-    })
   }
 
   /**
@@ -252,58 +166,52 @@ export default class Blockchain implements BlockchainInterface {
    *
    * @hidden
    */
-  _init(cb: any): void {
-    const self = this
-
-    async.waterfall(
-      [(cb: any) => self._numberToHash(new BN(0), cb), callbackify(getHeads.bind(this))],
-      (err) => {
-        if (err) {
-          // if genesis block doesn't exist, create one
-          return self._setCanonicalGenesisBlock((err?: any) => {
-            if (err) {
-              return cb(err)
-            }
-            self._heads = {}
-            self._headHeader = self._genesis
-            self._headBlock = self._genesis
-            cb()
-          })
-        }
-        cb()
-      },
-    )
-
-    async function getHeads(genesisHash: any) {
-      self._genesis = genesisHash
-      // load verified iterator heads
-      try {
-        const heads = await self.dbManager.getHeads()
-        Object.keys(heads).forEach((key) => {
-          heads[key] = Buffer.from(heads[key])
-        })
-        self._heads = heads
-      } catch (e) {
-        self._heads = {}
-      }
-
-      // load headerchain head
-      let hash
-      try {
-        hash = await self.dbManager.getHeadHeader()
-        self._headHeader = hash
-      } catch (e) {
-        self._headHeader = genesisHash
-      }
-
-      // load blockchain head
-      try {
-        hash = await self.dbManager.getHeadBlock()
-        self._headBlock = hash
-      } catch (e) {
-        self._headBlock = genesisHash
+  async _init() {
+    let genesisHash
+    try {
+      genesisHash = await this.dbManager.numberToHash(new BN(0))
+    } catch (error) {
+      await this._setCanonicalGenesisBlock()
+      genesisHash = this._genesis
+      if (error.type !== 'NotFoundError') {
+        throw error
       }
     }
+
+    // load verified iterator heads
+    try {
+      const heads = await this.dbManager.getHeads()
+      this._heads = heads
+    } catch (error) {
+      this._heads = {}
+      if (error.type !== 'NotFoundError') {
+        throw error
+      }
+    }
+
+    // load headerchain head
+    try {
+      const hash = await this.dbManager.getHeadHeader()
+      this._headHeader = hash
+    } catch (error) {
+      this._headHeader = genesisHash
+      if (error.type !== 'NotFoundError') {
+        throw error
+      }
+    }
+
+    // load blockchain head
+    try {
+      const hash = await this.dbManager.getHeadBlock()
+      this._headBlock = hash
+    } catch (error) {
+      this._headBlock = genesisHash
+      if (error.type !== 'NotFoundError') {
+        throw error
+      }
+    }
+
+    this._initDone = true
   }
 
   /**
@@ -311,330 +219,246 @@ export default class Blockchain implements BlockchainInterface {
    *
    * @hidden
    */
-  _setCanonicalGenesisBlock(cb: any): void {
+  async _setCanonicalGenesisBlock() {
     const genesisBlock = new Block(undefined, { common: this._common })
     genesisBlock.setGenesisParams()
-    this._putBlockOrHeader(genesisBlock, cb, true)
+    await this._putBlockOrHeader(genesisBlock, true)
   }
 
   /**
    * Puts the genesis block in the database
    *
    * @param genesis - The genesis block to be added
-   * @param cb - The callback. It is given two parameters `err` and the saved `block`
    */
-  putGenesis(genesis: any, cb: any): void {
-    this.putBlock(genesis, cb, true)
+  async putGenesis(genesis: Block) {
+    await this.putBlock(genesis, true)
   }
 
   /**
    * Returns the specified iterator head.
    *
    * @param name - Optional name of the state root head (default: 'vm')
-   * @param cb - The callback. It is given two parameters `err` and the returned `block`
    */
-  getHead(name: any, cb?: any): void {
-    // handle optional args
-    if (typeof name === 'function') {
-      cb = name
-      name = 'vm'
+  async getHead(name = 'vm'): Promise<Block> {
+    if (!this._initDone) {
+      await this._init()
     }
 
-    // ensure init completed
-    this._initLock.await(() => {
-      // if the head is not found return the headHeader
-      const hash = this._heads[name] || this._headBlock
-      if (!hash) {
-        return cb(new Error('No head found.'))
-      }
-      this.getBlock(hash, cb)
-    })
+    // if the head is not found return the headHeader
+    const hash = this._heads[name] || this._headBlock
+    if (!hash) {
+      throw new Error('No head found.')
+    }
+
+    return this.getBlock(hash)
   }
 
   /**
    * Returns the latest header in the canonical chain.
-   *
-   * @param cb - The callback. It is given two parameters `err` and the returned `header`
    */
-  getLatestHeader(cb: any): void {
-    // ensure init completed
-    this._initLock.await(() => {
-      this.getBlock(this._headHeader, (err?: any, block?: any) => {
-        if (err) {
-          return cb(err)
-        }
-        cb(null, block.header)
-      })
-    })
+  async getLatestHeader(): Promise<BlockHeader> {
+    if (!this._initDone) {
+      await this._init()
+    }
+
+    if (!this._headHeader) {
+      throw new Error('No head header set')
+    }
+
+    const block = await this.getBlock(this._headHeader)
+    return block.header
   }
 
   /**
    * Returns the latest full block in the canonical chain.
-   *
-   * @param cb - The callback. It is given two parameters `err` and the returned `block`
    */
-  getLatestBlock(cb: any) {
-    // ensure init completed
-    this._initLock.await(() => {
-      this.getBlock(this._headBlock, cb)
-    })
+  async getLatestBlock() {
+    if (!this._initDone) {
+      await this._init()
+    }
+
+    if (!this._headBlock) {
+      throw new Error('No head block set')
+    }
+
+    return this.getBlock(this._headBlock)
   }
 
   /**
    * Adds many blocks to the blockchain.
    *
    * @param blocks - The blocks to be added to the blockchain
-   * @param cb - The callback. It is given two parameters `err` and the last of the saved `blocks`
    */
-  putBlocks(blocks: Array<any>, cb: any) {
-    async.eachSeries(
-      blocks,
-      (block, done) => {
-        this.putBlock(block, done)
-      },
-      cb,
-    )
+  async putBlocks(blocks: Block[]) {
+    for (let i = 0; i < blocks.length; i++) {
+      await this.putBlock(blocks[i])
+    }
   }
 
   /**
    * Adds a block to the blockchain.
    *
    * @param block - The block to be added to the blockchain
-   * @param cb - The callback. It is given two parameters `err` and the saved `block`
    */
-  putBlock(block: object, cb: any, isGenesis?: boolean) {
-    // make sure init has completed
-    this._initLock.await(() => {
-      // perform put with mutex dance
-      this._lockUnlock((done: any) => {
-        this._putBlockOrHeader(block, done, isGenesis)
-      }, cb)
-    })
+  async putBlock(block: Block, isGenesis?: boolean) {
+    if (!this._initDone) {
+      await this._init()
+    }
+
+    await this._lock.wait()
+    await this._putBlockOrHeader(block, isGenesis)
+    this._lock.release()
   }
 
   /**
    * Adds many headers to the blockchain.
    *
    * @param headers - The headers to be added to the blockchain
-   * @param cb - The callback. It is given two parameters `err` and the last of the saved `headers`
    */
-  putHeaders(headers: Array<any>, cb: any) {
-    async.eachSeries(
-      headers,
-      (header, done) => {
-        this.putHeader(header, done)
-      },
-      cb,
-    )
+  async putHeaders(headers: Array<any>) {
+    for (let i = 0; i < headers.length; i++) {
+      await this.putHeader(headers[i])
+    }
   }
 
   /**
    * Adds a header to the blockchain.
    *
    * @param header - The header to be added to the blockchain
-   * @param cb - The callback. It is given two parameters `err` and the saved `header`
    */
-  putHeader(header: object, cb: any) {
-    // make sure init has completed
-    this._initLock.await(() => {
-      // perform put with mutex dance
-      this._lockUnlock((done: any) => {
-        this._putBlockOrHeader(header, done)
-      }, cb)
-    })
+  async putHeader(header: BlockHeader) {
+    if (!this._initDone) {
+      await this._init()
+    }
+
+    await this._lock.wait()
+    await this._putBlockOrHeader(header)
+    this._lock.release()
   }
 
   /**
    * @hidden
    */
-  _putBlockOrHeader(item: any, cb: any, isGenesis?: boolean) {
-    const self = this
-    const isHeader = item instanceof BlockHeader
-    let block = isHeader ? new Block([item.raw, [], []], { common: item._common }) : item
+  async _putBlockOrHeader(item: Block | BlockHeader, isGenesis?: boolean) {
+    let block =
+      item instanceof BlockHeader
+        ? new Block([item.raw, [], []], { common: (item as any)._common })
+        : item
     const header = block.header
     const hash = block.hash()
     const number = new BN(header.number)
     const td = new BN(header.difficulty)
-    const currentTd: any = { header: null, block: null }
-    const dbOps: any[] = []
+    const currentTd: { [key: string]: BN } = { header: new BN(0), block: new BN(0) }
+    const dbOps: DBOp[] = []
 
     if (block.constructor !== Block) {
-      block = new Block(block, { common: self._common })
+      block = new Block(block, { common: this._common })
     }
 
-    if (block._common.chainId() !== self._common.chainId()) {
-      return cb(new Error('Chain mismatch while trying to put block or header'))
+    if ((block as any)._common.chainId() !== this._common.chainId()) {
+      throw new Error('Chain mismatch while trying to put block or header')
     }
 
-    async.series(
-      [
-        async.asyncify(async function () {
-          if (!self._validateBlocks) {
-            return
-          }
+    if (this._validateBlocks && !isGenesis && !block.isGenesis()) {
+      await block.validate(this)
+    }
 
-          if (!isGenesis && block.isGenesis()) {
-            throw new Error('already have genesis set')
-          }
-
-          await block.validate(self)
-          return
-        }),
-        verifyPOW,
-        getCurrentTd,
-        getBlockTd,
-        rebuildInfo,
-        (cb) => {
-          return self._batchDbOps(dbOps.concat(self._saveHeadOps()), cb)
-        },
-      ],
-      cb,
-    )
-
-    function verifyPOW(next: any) {
-      if (!self._validatePow) {
-        return next()
+    if (this._validatePow && this.ethash) {
+      const valid = await this.ethash.verifyPOW(block)
+      if (!valid) {
+        throw new Error('invalid POW')
       }
-
-      self.ethash.verifyPOW(block, (valid: boolean) => {
-        next(valid ? null : new Error('invalid POW'))
-      })
     }
 
-    function getCurrentTd(next: any) {
-      if (isGenesis) {
-        currentTd.header = new BN(0)
-        currentTd.block = new BN(0)
-        return next()
+    if (!isGenesis) {
+      // set total difficulty in the current context scope
+      if (this._headHeader) {
+        currentTd.header = await this._getTd(this._headHeader)
       }
-      async.parallel(
-        [
-          (cb) =>
-            self._getTd(self._headHeader, (err?: any, td?: any) => {
-              currentTd.header = td
-              cb(err)
-            }),
-          (cb) =>
-            self._getTd(self._headBlock, (err?: any, td?: any) => {
-              currentTd.block = td
-              cb(err)
-            }),
-        ],
-        next,
-      )
-    }
-
-    function getBlockTd(next: any) {
-      if (isGenesis) {
-        return next()
+      if (this._headBlock) {
+        currentTd.block = await this._getTd(this._headBlock)
       }
 
       // calculate the total difficulty of the new block
-      self._getTd(header.parentHash, number.subn(1), (err?: any, parentTd?: any) => {
-        if (err) {
-          return next(err)
-        }
-        td.iadd(parentTd)
-        next()
-      })
+      const parentTd = await this._getTd(header.parentHash, number.subn(1))
+      td.iadd(parentTd)
     }
 
-    function rebuildInfo(next: any) {
+    const rebuildInfo = async () => {
+      const type = 'put'
+      const keyEncoding = 'binary'
+      const valueEncoding = 'binary'
+
       // save block and total difficulty to the database
       let key = tdKey(number, hash)
       let value = rlp.encode(td)
-      dbOps.push({
-        type: 'put',
-        key: key,
-        keyEncoding: 'binary',
-        valueEncoding: 'binary',
-        value: value,
-      })
-      self.dbManager._cache.td.set(key, value)
+      dbOps.push({ type, key, value, keyEncoding, valueEncoding })
+      this.dbManager._cache.td.set(key, value)
 
       // save header
       key = headerKey(number, hash)
       value = rlp.encode(header.raw)
-      dbOps.push({
-        type: 'put',
-        key: key,
-        keyEncoding: 'binary',
-        valueEncoding: 'binary',
-        value: value,
-      })
-      self.dbManager._cache.header.set(key, value)
+      dbOps.push({ type, key, value, keyEncoding, valueEncoding })
+      this.dbManager._cache.header.set(key, value)
 
       // store body if it exists
       if (isGenesis || block.transactions.length || block.uncleHeaders.length) {
         const body = block.serialize(false).slice(1)
         key = bodyKey(number, hash)
         value = rlp.encode(body)
-        dbOps.push({
-          type: 'put',
-          key: key,
-          keyEncoding: 'binary',
-          valueEncoding: 'binary',
-          value: value,
-        })
-        self.dbManager._cache.body.set(key, value)
+        dbOps.push({ type, key, value, keyEncoding, valueEncoding })
+        this.dbManager._cache.body.set(key, value)
       }
 
       // if total difficulty is higher than current, add it to canonical chain
       if (block.isGenesis() || td.gt(currentTd.header)) {
-        self._headHeader = hash
-        if (!isHeader) {
-          self._headBlock = hash
+        this._headHeader = hash
+        if (item instanceof Block) {
+          this._headBlock = hash
         }
         if (block.isGenesis()) {
-          self._genesis = hash
+          this._genesis = hash
         }
 
         // delete higher number assignments and overwrite stale canonical chain
-        async.parallel(
-          [
-            (cb) => self._deleteStaleAssignments(number.addn(1), hash, dbOps, cb),
-            (cb) => self._rebuildCanonical(header, dbOps, cb),
-          ],
-          next,
-        )
+        await this._deleteStaleAssignments(number.iaddn(1), hash, dbOps)
+        await this._rebuildCanonical(header, dbOps)
       } else {
-        if (td.gt(currentTd.block) && !isHeader) {
-          self._headBlock = hash
+        if (td.gt(currentTd.block) && item instanceof Block) {
+          this._headBlock = hash
         }
         // save hash to number lookup info even if rebuild not needed
         key = hashToNumberKey(hash)
         value = bufBE8(number)
-        dbOps.push({
-          type: 'put',
-          key: key,
-          keyEncoding: 'binary',
-          valueEncoding: 'binary',
-          value: value,
-        })
-        self.dbManager._cache.hashToNumber.set(key, value)
-        next()
+        dbOps.push({ type: 'put', key, keyEncoding, valueEncoding, value })
+        this.dbManager._cache.hashToNumber.set(key, value)
       }
     }
+
+    await rebuildInfo()
+
+    const ops = dbOps.concat(this._saveHeadOps())
+    await this.dbManager.batch(ops)
   }
 
   /**
    * Gets a block by its hash.
    *
-   * @param blockTag - The block's hash or number
-   * @param cb - The callback. It is given two parameters `err` and the found `block` (an instance of https://github.com/ethereumjs/ethereumjs-block) if any.
+   * @param blockId - The block's hash or number
    */
-  getBlock(blockTag: Buffer | number | BN, cb: any) {
-    // ensure init completed
-    this._initLock.await(() => {
-      this._getBlock(blockTag, cb)
-    })
+  async getBlock(blockId: Buffer | number | BN): Promise<Block> {
+    if (!this._initDone) {
+      await this._init()
+    }
+
+    return this._getBlock(blockId)
   }
 
   /**
    * @hidden
    */
-  _getBlock(blockTag: Buffer | number | BN, cb: any) {
-    callbackify(this.dbManager.getBlock.bind(this.dbManager))(blockTag, cb)
+  async _getBlock(blockId: Buffer | number | BN) {
+    return this.dbManager.getBlock(blockId)
   }
 
   /**
@@ -644,93 +468,77 @@ export default class Blockchain implements BlockchainInterface {
    * @param maxBlocks - Max number of blocks to return
    * @param skip - Number of blocks to skip apart
    * @param reverse - Fetch blocks in reverse
-   * @param cb - The callback. It is given two parameters `err` and the found `blocks` if any.
    */
-  getBlocks(blockId: Buffer | number, maxBlocks: number, skip: number, reverse: boolean, cb: any) {
-    const self = this
-    const blocks: any[] = []
+  async getBlocks(
+    blockId: Buffer | BN | number,
+    maxBlocks: number,
+    skip: number,
+    reverse: boolean,
+  ): Promise<Block[]> {
+    const blocks: Block[] = []
     let i = -1
 
-    function nextBlock(blockId: any) {
-      self.getBlock(blockId, function (err?: any, block?: any) {
-        i++
-
-        if (err) {
-          if (err.notFound) {
-            return cb(null, blocks)
-          } else {
-            return cb(err)
-          }
+    const nextBlock = async (blockId: Buffer | BN | number): Promise<any> => {
+      let block
+      try {
+        block = await this.getBlock(blockId)
+      } catch (error) {
+        if (error.type !== 'NotFoundError') {
+          throw error
         }
-
-        const nextBlockNumber = new BN(block.header.number).addn(reverse ? -1 : 1)
-
-        if (i !== 0 && skip && i % (skip + 1) !== 0) {
-          return nextBlock(nextBlockNumber)
-        }
-
-        blocks.push(block)
-
-        if (blocks.length === maxBlocks) {
-          return cb(null, blocks)
-        }
-
-        nextBlock(nextBlockNumber)
-      })
+        return
+      }
+      i++
+      const nextBlockNumber = new BN(block.header.number).addn(reverse ? -1 : 1)
+      if (i !== 0 && skip && i % (skip + 1) !== 0) {
+        return await nextBlock(nextBlockNumber)
+      }
+      blocks.push(block)
+      if (blocks.length < maxBlocks) {
+        await nextBlock(nextBlockNumber)
+      }
     }
 
-    nextBlock(blockId)
+    await nextBlock(blockId)
+    return blocks
   }
 
   /**
-   * This method used to return block details by its hash. It's only here for backwards compatibility.
-   *
-   * @deprecated
-   */
-  getDetails(_: string, cb: any) {
-    cb(null, {})
-  }
-
-  /**
-   * Given an ordered array, returns to the callback an array of hashes that are not in the blockchain yet.
+   * Given an ordered array, returns an array of hashes that are not in the blockchain yet.
    *
    * @param hashes - Ordered array of hashes
-   * @param cb - The callback. It is given two parameters `err` and hashes found.
    */
-  selectNeededHashes(hashes: Array<any>, cb: any) {
-    const self = this
-    let max: number, mid: number, min: number
+  async selectNeededHashes(hashes: Array<Buffer>) {
+    let max: number
+    let mid: number
+    let min: number
 
     max = hashes.length - 1
     mid = min = 0
 
-    async.whilst(
-      function test() {
-        return max >= min
-      },
-      function iterate(cb2) {
-        self._hashToNumber(hashes[mid], (err?: any, number?: any) => {
-          if (!err && number) {
-            min = mid + 1
-          } else {
-            max = mid - 1
-          }
-
-          mid = Math.floor((min + max) / 2)
-          cb2()
-        })
-      },
-      function onDone(err) {
-        if (err) return cb(err)
-        cb(null, hashes.slice(min))
-      },
-    )
+    while (max >= min) {
+      let number
+      try {
+        number = await this.dbManager.hashToNumber(hashes[mid])
+      } catch (error) {
+        if (error.type !== 'NotFoundError') {
+          throw error
+        }
+      }
+      if (number) {
+        min = mid + 1
+      } else {
+        max = mid - 1
+      }
+      mid = Math.floor((min + max) / 2)
+    }
+    return hashes.slice(min)
   }
 
   /**
    * @hidden
    */
-  _saveHeadOps() {
+  _saveHeadOps(): DBOp[] {
     return [
       {
         type: 'put',
@@ -741,17 +549,17 @@ export default class Blockchain implements BlockchainInterface {
       },
       {
         type: 'put',
-        key: headHeaderKey,
+        key: HEAD_HEADER_KEY,
         keyEncoding: 'binary',
         valueEncoding: 'binary',
-        value: this._headHeader,
+        value: this._headHeader!,
       },
       {
         type: 'put',
-        key: headBlockKey,
+        key: HEAD_BLOCK_KEY,
         keyEncoding: 'binary',
         valueEncoding: 'binary',
-        value: this._headBlock,
+        value: this._headBlock!,
       },
     ]
   }
@@ -759,8 +567,8 @@ export default class Blockchain implements BlockchainInterface {
   /**
    * @hidden
    */
-  _saveHeads(cb: any) {
-    this._batchDbOps(this._saveHeadOps(), cb)
+  async _saveHeads() {
+    return this.dbManager.batch(this._saveHeadOps())
   }
 
   /**
@@ -768,33 +576,40 @@ export default class Blockchain implements BlockchainInterface {
    *
    * @hidden
    */
-  _deleteStaleAssignments(number: BN, headHash: Buffer, ops: any, cb: any) {
+  async _deleteStaleAssignments(number: BN, headHash: Buffer, ops: DBOp[]) {
+    let hash: Buffer
+    try {
+      hash = await this.dbManager.numberToHash(number)
+    } catch (error) {
+      if (error.type !== 'NotFoundError') {
+        throw error
+      }
+      return
+    }
+
     const key = numberToHashKey(number)
 
-    this._numberToHash(number, (err?: any, hash?: Buffer) => {
-      if (err) {
-        return cb()
-      }
-      ops.push({
-        type: 'del',
-        key: key,
-        keyEncoding: 'binary',
-      })
-      this.dbManager._cache.numberToHash.del(key)
-
-      // reset stale iterator heads to current canonical head
-      Object.keys(this._heads).forEach((name) => {
-        if (this._heads[name].equals(hash)) {
-          this._heads[name] = headHash
-        }
-      })
-      // reset stale headBlock to current canonical
-      if (this._headBlock.equals(hash)) {
-        this._headBlock = headHash
-      }
-
-      this._deleteStaleAssignments(number.addn(1), headHash, ops, cb)
+    ops.push({
+      type: 'del',
+      key,
+      keyEncoding: 'binary',
     })
+
+    this.dbManager._cache.numberToHash.del(key)
+
+    // reset stale iterator heads to current canonical head
+    Object.keys(this._heads).forEach((name) => {
+      if (this._heads[name].equals(hash)) {
+        this._heads[name] = headHash
+      }
+    })
+
+    // reset stale headBlock to current canonical
+    if (this._headBlock?.equals(hash)) {
+      this._headBlock = headHash
+    }
+
+    await this._deleteStaleAssignments(number.addn(1), headHash, ops)
   }
 
   /**
@@ -802,12 +617,11 @@ export default class Blockchain implements BlockchainInterface {
    *
    * @hidden
    */
-  _rebuildCanonical(header: any, ops: any, cb: any) {
-    const self = this
+  async _rebuildCanonical(header: BlockHeader, ops: DBOp[]) {
     const hash = header.hash()
     const number = new BN(header.number)
 
-    function saveLookups(hash: Buffer, number: BN) {
+    const saveLookups = async (hash: Buffer, number: BN) => {
       let key = numberToHashKey(number)
       let value
       ops.push({
@@ -817,7 +631,7 @@ export default class Blockchain implements BlockchainInterface {
         valueEncoding: 'binary',
         value: hash,
       })
-      self.dbManager._cache.numberToHash.set(key, hash)
+      this.dbManager._cache.numberToHash.set(key, hash)
 
       key = hashToNumberKey(hash)
       value = bufBE8(number)
@@ -828,55 +642,60 @@ export default class Blockchain implements BlockchainInterface {
         valueEncoding: 'binary',
         value: value,
       })
-      self.dbManager._cache.hashToNumber.set(key, value)
+      this.dbManager._cache.hashToNumber.set(key, value)
     }
 
     // handle genesis block
     if (number.cmpn(0) === 0) {
-      saveLookups(hash, number)
-      return cb()
+      await saveLookups(hash, number)
+      return
     }
 
-    self._numberToHash(number, (err?: any, staleHash?: Buffer | null) => {
-      if (err) {
-        staleHash = null
+    let staleHash: Buffer | null = null
+    try {
+      staleHash = await this.dbManager.numberToHash(number)
+    } catch (error) {
+      if (error.type !== 'NotFoundError') {
+        throw error
       }
-      if (!staleHash || !hash.equals(staleHash)) {
-        saveLookups(hash, number)
+    }
 
-        // flag stale head for reset
-        Object.keys(self._heads).forEach(function (name) {
-          if (staleHash && self._heads[name].equals(staleHash)) {
-            self._staleHeads = self._staleHeads || []
-            self._staleHeads.push(name)
-          }
-        })
-        // flag stale headBlock for reset
-        if (staleHash && self._headBlock.equals(staleHash)) {
-          self._staleHeadBlock = true
-        }
+    if (!staleHash || !hash.equals(staleHash)) {
+      await saveLookups(hash, number)
 
-        self._getHeader(header.parentHash, number.subn(1), (err?: any, header?: any) => {
-          if (err) {
-            delete self._staleHeads
-            return cb(err)
-          }
-          self._rebuildCanonical(header, ops, cb)
-        })
-      } else {
-        // set stale heads to last previously valid canonical block
-        ;(self._staleHeads || []).forEach((name: string) => {
-          self._heads[name] = hash
-        })
-        delete self._staleHeads
-        // set stale headBlock to last previously valid canonical block
-        if (self._staleHeadBlock) {
-          self._headBlock = hash
-          delete self._staleHeadBlock
+      // flag stale head for reset
+      Object.keys(this._heads).forEach((name) => {
+        if (staleHash && this._heads[name].equals(staleHash)) {
+          this._staleHeads = this._staleHeads || []
+          this._staleHeads.push(name)
         }
-        cb()
+      })
+      // flag stale headBlock for reset
+      if (staleHash && this._headBlock?.equals(staleHash)) {
+        this._staleHeadBlock = true
       }
-    })
+
+      try {
+        const parentHeader = await this._getHeader(header.parentHash, number.subn(1))
+        await this._rebuildCanonical(parentHeader, ops)
+      } catch (error) {
+        this._staleHeads = []
+        if (error.type !== 'NotFoundError') {
+          throw error
+        }
+      }
+    } else {
+      // set stale heads to last previously valid canonical block
+      this._staleHeads.forEach((name: string) => {
+        this._heads[name] = hash
+      })
+      this._staleHeads = []
+      // set stale headBlock to last previously valid canonical block
+      if (this._staleHeadBlock) {
+        this._headBlock = hash
+        this._staleHeadBlock = false
+      }
+    }
   }
 
   /**
@@ -884,134 +703,109 @@ export default class Blockchain implements BlockchainInterface {
    * encountered heads are set to the parent block.
    *
    * @param blockHash - The hash of the block to be deleted
-   * @param cb - A callback.
    */
-  delBlock(blockHash: Buffer, cb: any) {
-    // make sure init has completed
-    this._initLock.await(() => {
-      // perform put with mutex dance
-      this._lockUnlock((done: boolean) => {
-        this._delBlock(blockHash, done)
-      }, cb)
-    })
+  async delBlock(blockHash: Buffer) {
+    if (!this._initDone) {
+      await this._init()
+    }
+
+    await this._lock.wait()
+    await this._delBlock(blockHash)
+    this._lock.release()
   }
 
   /**
    * @hidden
    */
-  _delBlock(blockHash: Buffer | Block, cb: any) {
-    const self = this
-    const dbOps: any[] = []
+  async _delBlock(blockHash: Buffer) {
+    const dbOps: DBOp[] = []
     let blockHeader = null
-    let blockNumber: any = null
-    let parentHash: any = null
-    let inCanonical: any = null
-    let hash: Buffer
+    let blockNumber: BN
+    let parentHash: Buffer
+    let inCanonical: boolean
 
-    if (Buffer.isBuffer(blockHash)) {
-      hash = blockHash
-    } else {
-      hash = blockHash.hash()
-    }
-
-    async.series(
-      [
-        getHeader,
-        checkCanonical,
-        buildDBops,
-        deleteStaleAssignments,
-        (cb) => self._batchDbOps(dbOps, cb),
-      ],
-      cb,
-    )
-
-    function getHeader(cb2: any) {
-      self._getHeader(hash, (err?: any, header?: any) => {
-        if (err) return cb2(err)
-        blockHeader = header
-        blockNumber = new BN(blockHeader.number)
-        parentHash = blockHeader.parentHash
-        cb2()
-      })
-    }
+    // get header
+    const header = await this._getHeader(blockHash)
+    blockHeader = header
+    blockNumber = new BN(blockHeader.number)
+    parentHash = blockHeader.parentHash
 
     // check if block is in the canonical chain
-    function checkCanonical(cb2: any) {
-      self._numberToHash(blockNumber, (err?: any, hash?: any) => {
-        inCanonical = !err && hash.equals(hash)
-        cb2()
-      })
+    let canonicalHash = null
+    try {
+      canonicalHash = await this.dbManager.numberToHash(blockNumber)
+    } catch (error) {
+      if (error.type !== 'NotFoundError') {
+        throw error
+      }
     }
+    inCanonical = !!canonicalHash && canonicalHash.equals(blockHash)
 
     // delete the block, and if block is in the canonical chain, delete all
     // children as well
-    function buildDBops(cb2: any) {
-      self._delChild(hash, blockNumber, inCanonical ? parentHash : null, dbOps, cb2)
-    }
+    await this._delChild(blockHash, blockNumber, inCanonical ? parentHash : null, dbOps)
 
     // delete all number to hash mappings for deleted block number and above
-    function deleteStaleAssignments(cb2: any) {
-      if (inCanonical) {
-        self._deleteStaleAssignments(blockNumber, parentHash, dbOps, cb2)
-      } else {
-        cb2()
-      }
+    if (inCanonical) {
+      await this._deleteStaleAssignments(blockNumber, parentHash, dbOps)
     }
+
+    await this.dbManager.batch(dbOps)
   }
 
   /**
    * @hidden
    */
-  _delChild(hash: Buffer, number: BN, headHash: Buffer, ops: any, cb: any) {
-    const self = this
-
+  async _delChild(hash: Buffer, number: BN, headHash: Buffer | null, ops: DBOp[]) {
     // delete header, body, hash to number mapping and td
     ops.push({
       type: 'del',
       key: headerKey(number, hash),
       keyEncoding: 'binary',
     })
-    self.dbManager._cache.header.del(headerKey(number, hash))
+    this.dbManager._cache.header.del(headerKey(number, hash))
 
     ops.push({
       type: 'del',
       key: bodyKey(number, hash),
       keyEncoding: 'binary',
     })
-    self.dbManager._cache.body.del(bodyKey(number, hash))
+    this.dbManager._cache.body.del(bodyKey(number, hash))
 
     ops.push({
       type: 'del',
       key: hashToNumberKey(hash),
       keyEncoding: 'binary',
     })
-    self.dbManager._cache.hashToNumber.del(hashToNumberKey(hash))
+    this.dbManager._cache.hashToNumber.del(hashToNumberKey(hash))
 
     ops.push({
       type: 'del',
       key: tdKey(number, hash),
       keyEncoding: 'binary',
     })
-    self.dbManager._cache.td.del(tdKey(number, hash))
+    this.dbManager._cache.td.del(tdKey(number, hash))
 
     if (!headHash) {
-      return cb()
+      return
     }
 
-    if (hash.equals(self._headHeader)) {
-      self._headHeader = headHash
+    if (this._headHeader?.equals(hash)) {
+      this._headHeader = headHash
     }
 
-    if (hash.equals(self._headBlock)) {
-      self._headBlock = headHash
+    if (this._headBlock?.equals(hash)) {
+      this._headBlock = headHash
     }
 
-    self._getCanonicalHeader(number.addn(1), (err?: any, childHeader?: any) => {
-      if (err) {
-        return cb()
+    try {
+      const childHeader = await this._getCanonicalHeader(number.addn(1))
+      await this._delChild(childHeader.hash(), new BN(childHeader.number), headHash, ops)
+    } catch (error) {
+      if (error.type !== 'NotFoundError') {
+        throw error
       }
-      self._delChild(childHeader.hash(), new BN(childHeader.number), headHash, ops, cb)
-    })
+    }
   }
 
   /**
@@ -1020,116 +814,53 @@ export default class Blockchain implements BlockchainInterface {
    * method.
    *
    * @param name - Name of the state root head
-   * @param onBlock - Function called on each block with params (block, reorg, cb)
-   * @param cb - A callback function
+   * @param onBlock - Function called on each block with params (block, reorg)
    */
-  iterator(name: string, onBlock: any, cb: any): void {
-    // ensure init completed
-    this._initLock.await(() => {
-      this._iterator(name, onBlock, cb)
-    })
+  async iterator(name: string, onBlock: OnBlock) {
+    if (!this._initDone) {
+      await this._init()
+    }
+
+    return this._iterator(name, onBlock)
   }
 
   /**
    * @hidden
    */
-  _iterator(name: string, func: any, cb: any) {
-    const self = this
-    const blockHash = self._heads[name] || self._genesis
-    let blockNumber: any
-    let lastBlock: any
+  async _iterator(name: string, onBlock: OnBlock) {
+    const blockHash = this._heads[name] || this._genesis
+    let blockNumber: BN
+    let lastBlock: Block | undefined
 
     if (!blockHash) {
-      return cb()
+      return
     }
 
-    self._hashToNumber(blockHash, (err?: any, number?: any) => {
-      if (err) return cb(err)
-      blockNumber = number.addn(1)
-      async.whilst(
-        () => blockNumber,
-        run,
-        (err) => (err ? cb(err) : self._saveHeads(cb)),
-      )
-    })
+    const number = await this.dbManager.hashToNumber(blockHash)
+    blockNumber = number.addn(1)
 
-    function run(cb2: any) {
-      let block: any
+    while (blockNumber) {
+      try {
+        const block = await this.getBlock(blockNumber)
 
-      async.series([getBlock, runFunc], function (err?: any) {
-        if (!err) {
-          blockNumber.iaddn(1)
-        } else {
-          blockNumber = false
-          // No more blocks, return
-          if (err.type === 'NotFoundError') {
-            return cb2()
-          }
+        if (!block) {
+          break
         }
-        cb2(err)
-      })
 
-      function getBlock(cb3: any) {
-        self.getBlock(blockNumber, function (err?: any, b?: any) {
-          block = b
-          if (block) {
-            self._heads[name] = block.hash()
-          }
-          cb3(err)
-        })
-      }
-
-      function runFunc(cb3: any) {
+        this._heads[name] = block.hash()
         const reorg = lastBlock ? lastBlock.hash().equals(block.header.parentHash) : false
         lastBlock = block
-        func(block, reorg, cb3)
+        await onBlock(block, reorg)
+        blockNumber.iaddn(1)
+      } catch (error) {
+        if (error.type !== 'NotFoundError') {
+          throw error
+        }
+        break
       }
     }
-  }
 
-  /**
-   * Executes multiple db operations in a single batch call
-   *
-   * @hidden
-   */
-  _batchDbOps(dbOps: any, cb: any): void {
-    callbackify(this.dbManager.batch.bind(this.dbManager))(dbOps, cb)
-  }
-
-  /**
-   * Performs a block hash to block number lookup
-   *
-   * @hidden
-   */
-  _hashToNumber(hash: Buffer, cb: any): void {
-    callbackify(this.dbManager.hashToNumber.bind(this.dbManager))(hash, cb)
-  }
-
-  /**
-   * Performs a block number to block hash lookup
-   *
-   * @hidden
-   */
-  _numberToHash(number: BN, cb: any): void {
-    callbackify(this.dbManager.numberToHash.bind(this.dbManager))(number, cb)
-  }
-
-  /**
-   * Helper function to lookup a block by either hash only or a hash and number
-   *
-   * @hidden
-   */
-  _lookupByHashNumber(hash: Buffer, number: BN, cb: any, next: any): void {
-    if (typeof number === 'function') {
-      cb = number
-      return this._hashToNumber(hash, (err?: any, number?: BN) => {
-        if (err) {
-          return next(err, hash, null, cb)
-        }
-        next(null, hash, number, cb)
-      })
-    }
-    next(null, hash, number, cb)
+    await this._saveHeads()
   }
 
   /**
@@ -1137,18 +868,11 @@ export default class Blockchain implements BlockchainInterface {
    *
    * @hidden
    */
-  _getHeader(hash: Buffer, number: any, cb?: any): void {
-    this._lookupByHashNumber(
-      hash,
-      number,
-      cb,
-      (err: Error | undefined, hash: Buffer, number: BN, cb: any) => {
-        if (err) {
-          return cb(err)
-        }
-        callbackify(this.dbManager.getHeader.bind(this.dbManager))(hash, number, cb)
-      },
-    )
+  async _getHeader(hash: Buffer, number?: BN) {
+    if (!number) {
+      number = await this.dbManager.hashToNumber(hash)
+    }
+    return this.dbManager.getHeader(hash, number)
   }
 
   /**
@@ -1156,13 +880,9 @@ export default class Blockchain implements BlockchainInterface {
    *
    * @hidden
    */
-  _getCanonicalHeader(number: BN, cb: any): void {
-    this._numberToHash(number, (err: Error | undefined, hash: Buffer) => {
-      if (err) {
-        return cb(err)
-      }
-      this._getHeader(hash, number, cb)
-    })
+  async _getCanonicalHeader(number: BN) {
+    const hash = await this.dbManager.numberToHash(number)
+    return this._getHeader(hash, number)
   }
 
   /**
@@ -1170,32 +890,10 @@ export default class Blockchain implements BlockchainInterface {
    *
    * @hidden
    */
-  _getTd(hash: any, number: any, cb?: any): void {
-    this._lookupByHashNumber(
-      hash,
-      number,
-      cb,
-      (err: Error | undefined, hash: Buffer, number: BN, cb: any) => {
-        if (err) {
-          return cb(err)
-        }
-        callbackify(this.dbManager.getTd.bind(this.dbManager))(hash, number, cb)
-      },
-    )
-  }
-
-  /**
-   * @hidden
-   */
-  _lockUnlock(fn: any, cb: any): void {
-    const self = this
-    this._putSemaphore.take(() => {
-      fn(after)
-
-      function after() {
-        self._putSemaphore.leave()
-        cb.apply(null, arguments)
-      }
-    })
+  async _getTd(hash: Buffer, number?: BN) {
+    if (!number) {
+      number = await this.dbManager.hashToNumber(hash)
+    }
+    return this.dbManager.getTd(hash, number)
   }
 }

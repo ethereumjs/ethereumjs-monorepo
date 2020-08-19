@@ -1,4 +1,3 @@
-const { promisify } = require('util')
 const { setupPreConditions, verifyPostConditions } = require('./util.js')
 const { addHexPrefix } = require('ethereumjs-util')
 const Trie = require('merkle-patricia-tree').SecureTrie
@@ -8,23 +7,36 @@ const level = require('level')
 const levelMem = require('level-mem')
 
 module.exports = async function runBlockchainTest(options, testData, t) {
+  // ensure that the test data is the right fork data
+  if (testData.network != options.forkConfigTestSuite) {
+    t.comment('skipping test: no data available for ' + options.forkConfigTestSuite)
+    return
+  }
+
   const blockchainDB = levelMem()
   const cacheDB = level('./.cachedb')
   const state = new Trie()
+
   let validate = false
   // Only run with block validation when sealEngine present in test file
   // and being set to Ethash PoW validation
   if (testData.sealEngine && testData.sealEngine === 'Ethash') {
     validate = true
   }
+
+  const hardfork = options.forkConfigVM
+
   const blockchain = new Blockchain({
     db: blockchainDB,
-    hardfork: options.forkConfigVM,
-    validate: validate,
+    hardfork,
+    validateBlocks: validate,
+    validatePow: validate,
   })
+
   if (validate) {
     blockchain.ethash.cacheDB = cacheDB
   }
+
   let VM
   if (options.dist) {
     VM = require('../dist/index.js').default
@@ -33,35 +45,22 @@ module.exports = async function runBlockchainTest(options, testData, t) {
   }
   const vm = new VM({
     state,
-    blockchain: blockchain,
-    hardfork: options.forkConfigVM,
+    blockchain,
+    hardfork,
   })
-  const genesisBlock = new Block(undefined, { hardfork: options.forkConfigVM })
 
-  testData.homestead = true
-  if (testData.homestead) {
-    vm.on('beforeTx', function (tx) {
-      tx._homestead = true
-    })
-    vm.on('beforeBlock', function (block) {
-      block.header.isHomestead = function () {
-        return true
-      }
-    })
-  }
+  const genesisBlock = new Block(undefined, { hardfork })
 
   // set up pre-state
   await setupPreConditions(vm.stateManager._trie, testData)
 
   // create and add genesis block
   genesisBlock.header = new BlockHeader(formatBlockHeader(testData.genesisBlockHeader), {
-    hardfork: options.forkConfigVM,
+    hardfork,
   })
-  t.equal(
-    vm.stateManager._trie.root.toString('hex'),
-    genesisBlock.header.stateRoot.toString('hex'),
-    'correct pre stateRoot',
-  )
+
+  t.ok(vm.stateManager._trie.root.equals(genesisBlock.header.stateRoot), 'correct pre stateRoot')
+
   if (testData.genesisRLP) {
     t.equal(
       genesisBlock.serialize().toString('hex'),
@@ -69,8 +68,8 @@ module.exports = async function runBlockchainTest(options, testData, t) {
       'correct genesis RLP',
     )
   }
-  const putGenesisAsync = promisify(blockchain.putGenesis).bind(blockchain)
-  await putGenesisAsync(genesisBlock)
+
+  await blockchain.putGenesis(genesisBlock)
 
   async function handleError(error, expectException, cacheDB) {
     if (expectException) {
@@ -92,22 +91,11 @@ module.exports = async function runBlockchainTest(options, testData, t) {
 
     try {
       const block = new Block(Buffer.from(raw.rlp.slice(2), 'hex'), {
-        hardfork: options.forkConfigVM,
+        hardfork,
       })
-      // forces the block into thinking they are homestead
-      if (testData.homestead) {
-        block.header.isHomestead = function () {
-          return true
-        }
-        block.uncleHeaders.forEach(function (uncle) {
-          uncle.isHomestead = function () {
-            return true
-          }
-        })
-      }
-      const putBlockAsync = promisify(blockchain.putBlock).bind(blockchain)
+
       try {
-        await putBlockAsync(block)
+        await blockchain.putBlock(block)
       } catch (error) {
         await handleError(error, expectException, cacheDB)
         return
@@ -121,8 +109,7 @@ module.exports = async function runBlockchainTest(options, testData, t) {
 
       await vm.runBlockchain()
 
-      const getHeadAsync = promisify(vm.blockchain.getHead).bind(vm.blockchain)
-      const headBlock = await getHeadAsync()
+      const headBlock = await vm.blockchain.getHead()
 
       if (testData.lastblockhash.substr(0, 2) === '0x') {
         // fix for BlockchainTests/GeneralStateTests/stRandom/*
@@ -142,8 +129,7 @@ module.exports = async function runBlockchainTest(options, testData, t) {
       }
 
       if (options.debug) {
-        const verifyPostConditionsAsync = promisify(verifyPostConditions)
-        await verifyPostConditionsAsync(state, testData.postState, t)
+        await verifyPostConditions(state, testData.postState, t)
       }
       if (expectException !== undefined) {
         t.equal(

@@ -94,7 +94,7 @@ jobs:
       - run: npm run build
         working-directory: ${{github.workspace}}
 
-      - run: npm run test:blockchain
+      - run: npm run test:blockchain:allForks
         working-directory: '${{ env.cwd }}'
 
   test-vm-slow:
@@ -123,4 +123,4 @@ jobs:
       - run: npm run build
         working-directory: ${{github.workspace}}
       
-      - run: run test:state:slow
+      - run: npm run test:state:slow

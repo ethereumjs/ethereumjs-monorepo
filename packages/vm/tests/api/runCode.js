@@ -1,5 +1,4 @@
 const tape = require('tape')
-const async = require('async')
 const BN = require('bn.js')
 const VM = require('../../dist/index').default
 

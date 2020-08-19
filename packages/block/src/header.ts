@@ -351,15 +351,10 @@ export class BlockHeader {
   }
 
   private async _getBlockByHash(blockchain: Blockchain, hash: Buffer): Promise<Block | undefined> {
-    return new Promise((resolve, reject) => {
-      blockchain.getBlock(hash, (err, block) => {
-        if (err) {
-          reject(err)
-          return
-        }
-
-        resolve(block)
-      })
-    })
+    try {
+      return blockchain.getBlock(hash)
+    } catch (e) {
+      return undefined
+    }
   }
 }

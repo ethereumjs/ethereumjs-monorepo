@@ -1,9 +1,11 @@
 import * as rlp from 'rlp'
+import { Block, BlockHeader } from '@ethereumjs/block'
+import Common from '@ethereumjs/common'
 import Cache from './cache'
 import {
-  headsKey,
-  headHeaderKey,
-  headBlockKey,
+  HEADS_KEY,
+  HEAD_HEADER_KEY,
+  HEAD_BLOCK_KEY,
   hashToNumberKey,
   numberToHashKey,
   tdKey,
@@ -12,23 +14,41 @@ import {
 } from './util'
 
 import BN = require('bn.js')
+import type { LevelUp } from 'levelup'
 
 const level = require('level-mem')
-import { Block, BlockHeader } from '@ethereumjs/block'
+
+/**
+ * @hidden
+ */
+export interface DBOp {
+  type: String
+  key: Buffer | String
+  keyEncoding: String
+  valueEncoding?: String
+  value?: Buffer | object
+}
+
+/**
+ * @hidden
+ */
+export interface GetOpts {
+  keyEncoding?: string
+  valueEncoding?: string
+  cache?: string
+}
 
 /**
  * Abstraction over a DB to facilitate storing/fetching blockchain-related
  * data, such as blocks and headers, indices, and the head block.
  * @hidden
  */
-export default class DBManager {
+export class DBManager {
   _cache: { [k: string]: Cache<Buffer> }
+  _common: Common
+  _db: LevelUp
 
-  _common: any
-
-  _db: any
-
-  constructor(db: any, common: any) {
+  constructor(db: LevelUp, common: Common) {
     this._db = db
     this._common = common
     this._cache = {
@@ -43,51 +63,58 @@ export default class DBManager {
   /**
    * Fetches iterator heads from the db.
    */
-  getHeads(): Promise<any> {
-    return this.get(headsKey, { valueEncoding: 'json' })
+  async getHeads(): Promise<{ [key: string]: Buffer }> {
+    const heads = await this.get(HEADS_KEY, { valueEncoding: 'json' })
+    Object.keys(heads).forEach((key) => {
+      heads[key] = Buffer.from(heads[key])
+    })
+    return heads
   }
 
   /**
    * Fetches header of the head block.
    */
-  getHeadHeader(): Promise<any> {
-    return this.get(headHeaderKey)
+  async getHeadHeader(): Promise<Buffer> {
+    return this.get(HEAD_HEADER_KEY)
   }
 
   /**
    * Fetches head block.
    */
-  getHeadBlock(): Promise<any> {
-    return this.get(headBlockKey)
+  async getHeadBlock(): Promise<Buffer> {
+    return this.get(HEAD_BLOCK_KEY)
   }
 
   /**
-   * Fetches a block (header and body), given a block tag
+   * Fetches a block (header and body) given a block id,
    * which can be either its hash or its number.
    */
-  async getBlock(blockTag: Buffer | BN | number): Promise<any> {
-    // determine BlockTag type
-    if (typeof blockTag === 'number' && Number.isInteger(blockTag)) {
-      blockTag = new BN(blockTag)
+  async getBlock(blockId: Buffer | BN | number): Promise<Block> {
+    // determine blockId type
+    if (typeof blockId === 'number' && Number.isInteger(blockId)) {
+      blockId = new BN(blockId)
     }
 
     let number
     let hash
-    if (Buffer.isBuffer(blockTag)) {
-      hash = blockTag
-      number = await this.hashToNumber(blockTag)
-    } else if (BN.isBN(blockTag)) {
-      number = blockTag
-      hash = await this.numberToHash(blockTag)
+    if (Buffer.isBuffer(blockId)) {
+      hash = blockId
+      number = await this.hashToNumber(blockId)
+    } else if (BN.isBN(blockId)) {
+      number = blockId
+      hash = await this.numberToHash(blockId)
     } else {
-      throw new Error('Unknown blockTag type')
+      throw new Error('Unknown blockId type')
     }
 
-    const header: any = (await this.getHeader(hash, number)).raw
-    let body
+    const header = (await this.getHeader(hash, number)).raw
+    let body: any
     try {
       body = await this.getBody(hash, number)
-    } catch (e) {
+    } catch (error) {
+      if (error.type !== 'NotFoundError') {
+        throw error
+      }
       body = [[], []]
     }
 
@@ -149,7 +176,7 @@ export default class DBManager {
    * it first tries to load from cache, and on cache miss will
    * try to put the fetched item on cache afterwards.
    */
-  async get(key: string | Buffer, opts: any = {}): Promise<any> {
+  async get(key: string | Buffer, opts: GetOpts = {}): Promise<any> {
     const dbOpts = {
       keyEncoding: opts.keyEncoding || 'binary',
       valueEncoding: opts.valueEncoding || 'binary',
@@ -175,7 +202,7 @@ export default class DBManager {
   /**
    * Performs a batch operation on db.
    */
-  batch(ops: Array<any>): Promise<any> {
-    return this._db.batch(ops)
+  async batch(ops: DBOp[]) {
+    return this._db.batch(ops as any)
   }
 }

@@ -26,6 +26,22 @@
     "ecPairingWord": {
       "v": 80000,
       "d": "Gas costs regarding curve pairing precompile input length"
+    },
+    "revert": {
+      "v": 0,
+      "d": "Base fee of the REVERT opcode"
+    },
+    "staticcall": {
+      "v": 700,
+      "d": "Base fee of the STATICCALL opcode"
+    },
+    "returndatasize": {
+      "v": 2,
+      "d": "Base fee of the RETURNDATASIZE opcode"
+    },
+    "returndatacopy": {
+      "v": 3,
+      "d": "Base fee of the RETURNDATACOPY opcode"
     }
   },
   "vm": {},
