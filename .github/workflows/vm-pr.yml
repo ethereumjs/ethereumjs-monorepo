@@ -51,7 +51,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        fork: ['Petersburg', 'Istanbul', 'MuirGlacier', 'Homestead', 'SpuriousDragon', 'TangerineWhistle', 'Byzantium']
+        fork: ['MuirGlacier', 'Petersburg', 'Istanbul', 'Byzantium', 'SpuriousDragon', 'TangerineWhistle', 'Homestead', 'Chainstart']
       fail-fast: false
     steps:
       - uses: actions/setup-node@v1
@@ -85,7 +85,7 @@ jobs:
         # This is the most fair division among 1 directory vs. everything else
         args: ['--excludeDir=stTimeConsuming', '--dir=GeneralStateTests/stTimeConsuming']
         # Run specific fork tests
-        fork: ['Homestead', 'Istanbul']
+        fork: ['MuirGlacier', 'Istanbul', 'Homestead', 'Chainstart']
       fail-fast: false
     steps:
       - uses: actions/setup-node@v1

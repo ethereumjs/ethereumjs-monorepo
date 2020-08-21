@@ -119,6 +119,10 @@ const SKIP_VM = [
  * @returns {String} Either an alias of the forkConfig param, or the forkConfig param itself
  */
 function getRequiredForkConfigAlias(forkConfig) {
+  // Chainstart is also called Frontier and is called as such in the tests
+  if (String(forkConfig).match(/^chainstart$/i)) {
+    return 'Frontier'
+  }
   // TangerineWhistle is named EIP150 (attention: misleading name)
   // in the client-independent consensus test suite
   if (String(forkConfig).match(/^tangerineWhistle$/i)) {
