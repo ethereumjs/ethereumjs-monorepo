@@ -112,7 +112,7 @@ To build the VM for standalone use in the browser, see: [Running the VM in a bro
 
 For documentation on `VM` instantiation, exposed API and emitted `events` see generated [API docs](./docs/README.md).
 
-## StateManger
+## StateManager
 
 The API for the `StateManager` is currently in `Beta`, separate documentation can be found [here](./docs/classes/statemanager.md), see also [release notes](https://github.com/ethereumjs/ethereumjs-vm/releases/tag/v2.5.0) from the `v2.5.0` VM release for details on the `StateManager` rewrite.
 
