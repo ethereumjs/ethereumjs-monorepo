@@ -164,3 +164,6 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           # Push and deploy to GitHub pages branch automatically (if on master)
           auto-push: ${{ steps.auto_push.outputs.auto_push }}
+
+      # Re-apply git stash to prepare for saving back to cache
+      - run: git stash apply
