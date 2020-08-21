@@ -24,29 +24,24 @@ The following is an example to iterate through an existing Geth DB (needs `level
 
 This module performs write operations. Making a backup of your data before trying it is recommended. Otherwise, you can end up with a compromised DB state.
 
-```javascript
-const level = require('level')
-const Blockchain = require('@ethereumjs/blockchain').default
-const utils = require('ethereumjs-util')
+```typescript
+import Blockchain from '@ethereumjs/blockchain'
+import { bufferToInt } from 'ethereumjs-util'
+import level from 'level'
 
 const gethDbPath = './chaindata' // Add your own path here. It will get modified, see remarks.
-const db = level(gethDbPath)
 
-new Blockchain({ db: db }).iterator(
-  'i',
-  (block, reorg, cb) => {
-    const blockNumber = utils.bufferToInt(block.header.number)
-    const blockHash = block.hash().toString('hex')
-    console.log(`BLOCK ${blockNumber}: ${blockHash}`)
-    cb()
-  },
-  (err) => console.log(err || 'Done.'),
-)
+const db = level(gethDbPath)
+const blockchain = new Blockchain({ db })
+
+blockchain.iterator('i', (block) => {
+  const blockNumber = bufferToInt(block.header.number)
+  const blockHash = block.hash().toString('hex')
+  console.log(`Block ${blockNumber}: ${blockHash}`)
+})
 ```
 
-**WARNING**: Since `@ethereumjs/blockchain` is also doing write operations
-on the DB for safety reasons only run this on a copy of your database, otherwise this might lead
-to a compromised DB state.
+**WARNING**: Since `@ethereumjs/blockchain` is also doing write operations on the DB for safety reasons only run this on a copy of your database, otherwise this might lead to a compromised DB state.
 
 # EthereumJS
 
