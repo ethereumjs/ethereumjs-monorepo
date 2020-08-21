@@ -31,12 +31,15 @@ Common class to access chain and hardfork parameters
 * [gteHardfork](_index_.common.md#gtehardfork)
 * [hardfork](_index_.common.md#hardfork)
 * [hardforkBlock](_index_.common.md#hardforkblock)
+* [hardforkForForkHash](_index_.common.md#hardforkforforkhash)
 * [hardforkGteHardfork](_index_.common.md#hardforkgtehardfork)
 * [hardforkIsActiveOnBlock](_index_.common.md#hardforkisactiveonblock)
 * [hardforkIsActiveOnChain](_index_.common.md#hardforkisactiveonchain)
 * [hardforks](_index_.common.md#hardforks)
 * [isHardforkBlock](_index_.common.md#ishardforkblock)
+* [isNextHardforkBlock](_index_.common.md#isnexthardforkblock)
 * [networkId](_index_.common.md#networkid)
+* [nextHardforkBlock](_index_.common.md#nexthardforkblock)
 * [param](_index_.common.md#param)
 * [paramByBlock](_index_.common.md#parambyblock)
 * [setChain](_index_.common.md#setchain)
@@ -69,7 +72,7 @@ Name | Type | Description |
 
 ▸ **_calcForkHash**(`hardfork`: string): *string*
 
-*Defined in [index.ts:367](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/index.ts#L367)*
+*Defined in [index.ts:392](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/index.ts#L392)*
 
 Internal helper function to calculate a fork hash
 
@@ -213,7 +216,7 @@ ___
 
 ▸ **bootstrapNodes**(): *any*
 
-*Defined in [index.ts:430](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/index.ts#L430)*
+*Defined in [index.ts:467](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/index.ts#L467)*
 
 Returns bootstrap nodes for the current chain
 
@@ -227,7 +230,7 @@ ___
 
 ▸ **chainId**(): *number*
 
-*Defined in [index.ts:446](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/index.ts#L446)*
+*Defined in [index.ts:483](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/index.ts#L483)*
 
 Returns the Id of current chain
 
@@ -241,7 +244,7 @@ ___
 
 ▸ **chainName**(): *string*
 
-*Defined in [index.ts:454](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/index.ts#L454)*
+*Defined in [index.ts:491](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/index.ts#L491)*
 
 Returns the name of current chain
 
@@ -255,7 +258,7 @@ ___
 
 ▸ **forkHash**(`hardfork?`: undefined | string): *any*
 
-*Defined in [index.ts:397](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/index.ts#L397)*
+*Defined in [index.ts:422](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/index.ts#L422)*
 
 Returns an eth/64 compliant fork hash (EIP-2124)
 
@@ -273,7 +276,7 @@ ___
 
 ▸ **genesis**(): *any*
 
-*Defined in [index.ts:414](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/index.ts#L414)*
+*Defined in [index.ts:451](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/index.ts#L451)*
 
 Returns the Genesis parameters of current chain
 
@@ -308,7 +311,7 @@ ___
 
 ▸ **hardfork**(): *string | null*
 
-*Defined in [index.ts:438](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/index.ts#L438)*
+*Defined in [index.ts:475](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/index.ts#L475)*
 
 Returns the hardfork set
 
@@ -335,6 +338,24 @@ Name | Type | Description |
 **Returns:** *number*
 
 Block number
+
+___
+
+###  hardforkForForkHash
+
+▸ **hardforkForForkHash**(`forkHash`: string): *any | null*
+
+*Defined in [index.ts:440](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/index.ts#L440)*
+
+**Parameters:**
+
+Name | Type | Description |
+------ | ------ | ------ |
+`forkHash` | string | Fork hash as a hex string |
+
+**Returns:** *any | null*
+
+Array with hardfork data (name, block, forkHash)
 
 ___
 
@@ -407,7 +428,7 @@ ___
 
 ▸ **hardforks**(): *any*
 
-*Defined in [index.ts:422](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/index.ts#L422)*
+*Defined in [index.ts:459](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/index.ts#L459)*
 
 Returns the hardforks for current chain
 
@@ -423,7 +444,28 @@ ___
 
 *Defined in [index.ts:353](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/index.ts#L353)*
 
-True if block number provided is the hardfork (given or set) change block of the current chain
+True if block number provided is the hardfork (given or set) change block
+
+**Parameters:**
+
+Name | Type | Description |
+------ | ------ | ------ |
+`blockNumber` | number | Number of the block to check |
+`hardfork?` | undefined &#124; string | Hardfork name, optional if HF set |
+
+**Returns:** *boolean*
+
+True if blockNumber is HF block
+
+___
+
+###  isNextHardforkBlock
+
+▸ **isNextHardforkBlock**(`blockNumber`: number, `hardfork?`: undefined | string): *boolean*
+
+*Defined in [index.ts:382](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/index.ts#L382)*
+
+True if block number provided is the hardfork change block following the hardfork given or set
 
 **Parameters:**
 
@@ -442,13 +484,33 @@ ___
 
 ▸ **networkId**(): *number*
 
-*Defined in [index.ts:462](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/index.ts#L462)*
+*Defined in [index.ts:499](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/index.ts#L499)*
 
 Returns the Id of current network
 
 **Returns:** *number*
 
 network Id
+
+___
+
+###  nextHardforkBlock
+
+▸ **nextHardforkBlock**(`hardfork?`: undefined | string): *number | null*
+
+*Defined in [index.ts:363](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/index.ts#L363)*
+
+Returns the change block for the next hardfork after the hardfork provided or set
+
+**Parameters:**
+
+Name | Type | Description |
+------ | ------ | ------ |
+`hardfork?` | undefined &#124; string | Hardfork name, optional if HF set |
+
+**Returns:** *number | null*
+
+Block number or null if not available
 
 ___
 

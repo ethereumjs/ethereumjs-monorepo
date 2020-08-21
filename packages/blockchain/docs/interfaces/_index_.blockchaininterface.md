@@ -16,7 +16,6 @@
 
 * [delBlock](_index_.blockchaininterface.md#delblock)
 * [getBlock](_index_.blockchaininterface.md#getblock)
-* [getDetails](_index_.blockchaininterface.md#getdetails)
 * [iterator](_index_.blockchaininterface.md#iterator)
 * [putBlock](_index_.blockchaininterface.md#putblock)
 
@@ -24,9 +23,9 @@
 
 ###  delBlock
 
-▸ **delBlock**(`blockHash`: Buffer, `cb`: any): *void*
+▸ **delBlock**(`blockHash`: Buffer): *Promise‹void›*
 
-*Defined in [index.ts:40](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/blockchain/src/index.ts#L40)*
+*Defined in [index.ts:39](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/blockchain/src/index.ts#L39)*
 
 Deletes a block from the blockchain. All child blocks in the chain are deleted and any
 encountered heads are set to the parent block.
@@ -35,68 +34,35 @@ encountered heads are set to the parent block.
 
 Name | Type | Description |
 ------ | ------ | ------ |
-`blockHash` | Buffer | The hash of the block to be deleted |
-`cb` | any | A callback.  |
+`blockHash` | Buffer | The hash of the block to be deleted  |
 
-**Returns:** *void*
+**Returns:** *Promise‹void›*
 
 ___
 
 ###  getBlock
 
-▸ **getBlock**(`blockTag`: Buffer | number | BN, `cb`: function): *void*
+▸ **getBlock**(`blockId`: Buffer | number | BN): *Promise‹Block | null›*
 
-*Defined in [index.ts:45](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/blockchain/src/index.ts#L45)*
+*Defined in [index.ts:44](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/blockchain/src/index.ts#L44)*
 
 Returns a block by its hash or number.
 
 **Parameters:**
 
-▪ **blockTag**: *Buffer | number | BN*
-
-▪ **cb**: *function*
-
-▸ (`err`: Error | null, `block?`: Block): *void*
-
-**Parameters:**
-
 Name | Type |
 ------ | ------ |
-`err` | Error &#124; null |
-`block?` | Block |
+`blockId` | Buffer &#124; number &#124; BN |
 
-**Returns:** *void*
-
-___
-
-###  getDetails
-
-▸ **getDetails**(`_`: string, `cb`: any): *void*
-
-*Defined in [index.ts:64](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/blockchain/src/index.ts#L64)*
-
-This method is only here for backwards compatibility. It can be removed once
-[this PR](https://github.com/ethereumjs/ethereumjs-block/pull/72/files) gets merged, released,
-and ethereumjs-block is updated here.
-
-The method should just call `cb` with `null` as first argument.
-
-**Parameters:**
-
-Name | Type |
------- | ------ |
-`_` | string |
-`cb` | any |
-
-**Returns:** *void*
+**Returns:** *Promise‹Block | null›*
 
 ___
 
 ###  iterator
 
-▸ **iterator**(`name`: string, `onBlock`: any, `cb`: any): *void*
+▸ **iterator**(`name`: string, `onBlock`: OnBlock): *Promise‹void›*
 
-*Defined in [index.ts:55](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/blockchain/src/index.ts#L55)*
+*Defined in [index.ts:53](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/blockchain/src/index.ts#L53)*
 
 Iterates through blocks starting at the specified iterator head and calls the onBlock function
 on each block.
@@ -106,16 +72,15 @@ on each block.
 Name | Type | Description |
 ------ | ------ | ------ |
 `name` | string | Name of the state root head |
-`onBlock` | any | Function called on each block with params (block, reorg, cb) |
-`cb` | any | A callback function  |
+`onBlock` | OnBlock | Function called on each block with params (block: Block, reorg: boolean)  |
 
-**Returns:** *void*
+**Returns:** *Promise‹void›*
 
 ___
 
 ###  putBlock
 
-▸ **putBlock**(`block`: Block, `cb`: any, `isGenesis?`: undefined | false | true): *void*
+▸ **putBlock**(`block`: Block, `isGenesis?`: undefined | false | true): *Promise‹void›*
 
 *Defined in [index.ts:31](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/blockchain/src/index.ts#L31)*
 
@@ -126,7 +91,6 @@ Adds a block to the blockchain.
 Name | Type | Description |
 ------ | ------ | ------ |
 `block` | Block | The block to be added to the blockchain. |
-`cb` | any | The callback. It is given two parameters `err` and the saved `block` |
 `isGenesis?` | undefined &#124; false &#124; true | True if block is the genesis block.  |
 
-**Returns:** *void*
+**Returns:** *Promise‹void›*
