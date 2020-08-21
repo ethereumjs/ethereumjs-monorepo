@@ -19,7 +19,7 @@ Result of [runBlock](../classes/_index_.vm.md#runblock)
 
 ###  receipts
 
-• **receipts**: *[TxReceipt](_runblock_.txreceipt.md)[]*
+• **receipts**: *([PreByzantiumTxReceipt](_runblock_.prebyzantiumtxreceipt.md) | [PostByzantiumTxReceipt](_runblock_.postbyzantiumtxreceipt.md))[]*
 
 *Defined in [runBlock.ts:47](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/runBlock.ts#L47)*
 

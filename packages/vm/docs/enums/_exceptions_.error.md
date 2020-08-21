@@ -8,8 +8,11 @@
 
 * [CREATE_COLLISION](_exceptions_.error.md#create_collision)
 * [INTERNAL_ERROR](_exceptions_.error.md#internal_error)
+* [INVALID_BEGINSUB](_exceptions_.error.md#invalid_beginsub)
 * [INVALID_JUMP](_exceptions_.error.md#invalid_jump)
+* [INVALID_JUMPSUB](_exceptions_.error.md#invalid_jumpsub)
 * [INVALID_OPCODE](_exceptions_.error.md#invalid_opcode)
+* [INVALID_RETURNSUB](_exceptions_.error.md#invalid_returnsub)
 * [OUT_OF_GAS](_exceptions_.error.md#out_of_gas)
 * [OUT_OF_RANGE](_exceptions_.error.md#out_of_range)
 * [REFUND_EXHAUSTED](_exceptions_.error.md#refund_exhausted)
@@ -38,6 +41,14 @@ ___
 
 ___
 
+###  INVALID_BEGINSUB
+
+• **INVALID_BEGINSUB**: = "invalid BEGINSUB"
+
+*Defined in [exceptions.ts:15](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/exceptions.ts#L15)*
+
+___
+
 ###  INVALID_JUMP
 
 • **INVALID_JUMP**: = "invalid JUMP"
@@ -46,11 +57,27 @@ ___
 
 ___
 
+###  INVALID_JUMPSUB
+
+• **INVALID_JUMPSUB**: = "invalid JUMPSUB"
+
+*Defined in [exceptions.ts:17](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/exceptions.ts#L17)*
+
+___
+
 ###  INVALID_OPCODE
 
 • **INVALID_OPCODE**: = "invalid opcode"
 
 *Defined in [exceptions.ts:6](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/exceptions.ts#L6)*
+
+___
+
+###  INVALID_RETURNSUB
+
+• **INVALID_RETURNSUB**: = "invalid RETURNSUB"
+
+*Defined in [exceptions.ts:16](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/exceptions.ts#L16)*
 
 ___
 
