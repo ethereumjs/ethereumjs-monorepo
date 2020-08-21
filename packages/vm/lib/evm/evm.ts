@@ -144,7 +144,7 @@ export default class EVM {
       } else {
         // we are in chainstart and the error was the code deposit error
         // we do like nothing happened.
-        this._state.commit()
+        await this._state.commit()
       }
     } else {
       await this._state.commit()

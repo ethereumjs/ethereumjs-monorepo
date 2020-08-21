@@ -81,13 +81,19 @@ module.exports = async function runBlockchainTest(options, testData, t) {
     await cacheDB.close()
   }
 
+  //console.log(testData)
+  const numBlocks = testData.blocks.length
+  let currentBlock = 0
+  let lastBlock = false
   for (const raw of testData.blocks) {
+    currentBlock++
+    lastBlock = (currentBlock == numBlocks)
     const paramFork = `expectException${options.forkConfigTestSuite}`
     // Two naming conventions in ethereum/tests to indicate "exception occurs on all HFs" semantics
     // Last checked: ethereumjs-testing v1.3.1 (2020-05-11)
     const paramAll1 = 'expectExceptionALL'
     const paramAll2 = 'expectException'
-    const expectException = raw[paramFork] ? raw[paramFork] : raw[paramAll1] || raw[paramAll2]
+    const expectException = raw[paramFork] ? raw[paramFork] : raw[paramAll1] || raw[paramAll2] || raw.blockHeader == undefined
 
     try {
       const block = new Block(Buffer.from(raw.rlp.slice(2), 'hex'), {
@@ -115,9 +121,10 @@ module.exports = async function runBlockchainTest(options, testData, t) {
         // fix for BlockchainTests/GeneralStateTests/stRandom/*
         testData.lastblockhash = testData.lastblockhash.substr(2)
       }
-      if (expectException !== undefined) {
+      if (expectException !== undefined && lastBlock) { // only check last block hash on last block
         t.equal(headBlock.hash().toString('hex'), testData.lastblockhash, 'last block hash')
       }
+
       // if the test fails, then block.header is the prej because
       // vm.runBlock has a check that prevents the actual postState from being
       // imported if it is not equal to the expected postState. it is useful
@@ -131,7 +138,7 @@ module.exports = async function runBlockchainTest(options, testData, t) {
       if (options.debug) {
         await verifyPostConditions(state, testData.postState, t)
       }
-      if (expectException !== undefined) {
+      if (expectException !== undefined && lastBlock) {
         t.equal(
           blockchain.meta.rawHead.toString('hex'),
           testData.lastblockhash,
