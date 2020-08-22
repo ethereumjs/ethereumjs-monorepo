@@ -85,7 +85,7 @@ jobs:
         # This is the most fair division among 1 directory vs. everything else
         args: ['--excludeDir=stTimeConsuming', '--dir=GeneralStateTests/stTimeConsuming']
         # Run specific fork tests
-        fork: ['MuirGlacier', 'Istanbul', 'Homestead', 'Chainstart']
+        fork: ['MuirGlacier', 'Istanbul', 'Homestead', 'Chainstart', 'DAO']
       fail-fast: false
     steps:
       - uses: actions/setup-node@v1

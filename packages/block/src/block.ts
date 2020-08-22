@@ -58,11 +58,11 @@ export class Block {
     }
 
     if (Array.isArray(data)) {
-      this.header = new BlockHeader(data[0], { common: this._common })
+      this.header = new BlockHeader(data[0], { common: this._common, DAOSupport: chainOptions.DAOSupport, DAOActivationBlock: chainOptions.DAOActivationBlock})
       rawTransactions = data[1]
       rawUncleHeaders = data[2]
     } else {
-      this.header = new BlockHeader(data.header, { common: this._common })
+      this.header = new BlockHeader(data.header, { common: this._common, DAOSupport: chainOptions.DAOSupport, DAOActivationBlock: chainOptions.DAOActivationBlock})
       rawTransactions = data.transactions || []
       rawUncleHeaders = data.uncleHeaders || []
     }

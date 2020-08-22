@@ -123,6 +123,10 @@ function getRequiredForkConfigAlias(forkConfig) {
   if (String(forkConfig).match(/^chainstart$/i)) {
     return 'Frontier'
   }
+  // DAO fork is named HomesteadToDaoAt5 in the tests.
+  if (String(forkConfig).toLowerCase().match(/^dao$/i)) {
+    return 'HomesteadToDaoAt5'
+  }
   // TangerineWhistle is named EIP150 (attention: misleading name)
   // in the client-independent consensus test suite
   if (String(forkConfig).match(/^tangerineWhistle$/i)) {

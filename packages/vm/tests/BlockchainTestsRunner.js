@@ -8,6 +8,7 @@ const levelMem = require('level-mem')
 
 module.exports = async function runBlockchainTest(options, testData, t) {
   // ensure that the test data is the right fork data
+
   if (testData.network != options.forkConfigTestSuite) {
     t.comment('skipping test: no data available for ' + options.forkConfigTestSuite)
     return
@@ -25,12 +26,20 @@ module.exports = async function runBlockchainTest(options, testData, t) {
   }
 
   const hardfork = options.forkConfigVM
+  let extraOptions = {}
+  if (options.forkConfigTestSuite == "HomesteadToDaoAt5") {
+    extraOptions = {
+      DAOSupport: true,
+      DAOActivationBlock: 5
+    }
+  }
 
   const blockchain = new Blockchain({
     db: blockchainDB,
     hardfork,
     validateBlocks: validate,
     validatePow: validate,
+    ...extraOptions
   })
 
   if (validate) {
@@ -43,13 +52,15 @@ module.exports = async function runBlockchainTest(options, testData, t) {
   } else {
     VM = require('../lib/index').default
   }
+
   const vm = new VM({
     state,
     blockchain,
     hardfork,
+    ...extraOptions
   })
 
-  const genesisBlock = new Block(undefined, { hardfork })
+  const genesisBlock = new Block(undefined, { hardfork, ...extraOptions })
 
   // set up pre-state
   await setupPreConditions(vm.stateManager._trie, testData)
@@ -57,6 +68,7 @@ module.exports = async function runBlockchainTest(options, testData, t) {
   // create and add genesis block
   genesisBlock.header = new BlockHeader(formatBlockHeader(testData.genesisBlockHeader), {
     hardfork,
+    ...extraOptions
   })
 
   t.ok(vm.stateManager._trie.root.equals(genesisBlock.header.stateRoot), 'correct pre stateRoot')
@@ -81,7 +93,6 @@ module.exports = async function runBlockchainTest(options, testData, t) {
     await cacheDB.close()
   }
 
-  //console.log(testData)
   const numBlocks = testData.blocks.length
   let currentBlock = 0
   let lastBlock = false
@@ -98,7 +109,8 @@ module.exports = async function runBlockchainTest(options, testData, t) {
     try {
       const block = new Block(Buffer.from(raw.rlp.slice(2), 'hex'), {
         hardfork,
-      })
+        ...extraOptions
+      }) 
 
       try {
         await blockchain.putBlock(block)
