@@ -63,8 +63,8 @@ export interface VMOpts {
    * DAOActivationBlock: the block where to activate the DAO (defaults to 1920000, the DAO activation block number on mainnet)
    */
 
-   DAOSupport?: boolean 
-   DAOActivationBlock?: BN | number
+  DAOSupport?: boolean
+  DAOActivationBlock?: BN | number
 }
 
 /**
@@ -146,7 +146,13 @@ export default class VM extends AsyncEventEmitter {
       this.stateManager = new DefaultStateManager({ trie, common: this._common })
     }
 
-    this.blockchain = opts.blockchain || new Blockchain({ common: this._common, DAOSupport: opts.DAOSupport, DAOActivationBlock: opts.DAOActivationBlock })
+    this.blockchain =
+      opts.blockchain ||
+      new Blockchain({
+        common: this._common,
+        DAOSupport: opts.DAOSupport,
+        DAOActivationBlock: opts.DAOActivationBlock,
+      })
 
     this.allowUnlimitedContractSize =
       opts.allowUnlimitedContractSize === undefined ? false : opts.allowUnlimitedContractSize

@@ -30,7 +30,7 @@ export interface ChainOptions {
    * DAOActivationBlock: the block where to activate the DAO (defaults to 1920000, the DAO activation block number on mainnet)
    */
 
-  DAOSupport?: boolean 
+  DAOSupport?: boolean
   DAOActivationBlock?: BN | number
 }
 

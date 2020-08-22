@@ -13,7 +13,7 @@ import { Blockchain, BlockHeaderData, BufferLike, ChainOptions, PrefixedHexStrin
 import { Buffer } from 'buffer'
 import { Block } from './block'
 
-const DAO_ExtraData = Buffer.from("64616f2d686172642d666f726b", 'hex')
+const DAO_ExtraData = Buffer.from('64616f2d686172642d666f726b', 'hex')
 const DAO_ForceExtraDataRange = 10 // force extra data be DAO_ExtraData for X blocks after DAO activation block
 
 /**
@@ -139,12 +139,12 @@ export class BlockHeader {
     if (opts.DAOSupport) {
       // verify the extraData field.
       const blockNumber = new BN(this.number)
-      const DAOActivationBlock = new BN(opts.DAOActivationBlock || "1920000")
-      if (blockNumber.gte(new BN(opts.DAOActivationBlock || "1920000"))) {
+      const DAOActivationBlock = new BN(opts.DAOActivationBlock || '1920000')
+      if (blockNumber.gte(new BN(opts.DAOActivationBlock || '1920000'))) {
         const drift = blockNumber.sub(DAOActivationBlock)
         if (drift.lten(DAO_ForceExtraDataRange)) {
           if (this.extraData != DAO_ExtraData) {
-            throw(new Error("extraData should be 'dao-hard-fork'"))
+            throw new Error("extraData should be 'dao-hard-fork'")
           }
         }
       }
