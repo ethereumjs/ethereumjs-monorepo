@@ -19,12 +19,17 @@ export interface RunBlockOpts {
    */
   root?: Buffer
   /**
-   * Whether to generate the stateRoot. If false `runBlock` will check the
-   * stateRoot of the block against the Trie
+   * Whether to generate the stateRoot. If `true` `runBlock` will check the
+   * `stateRoot` of the block against the current Trie, check the `receiptsTrie`,
+   * the `gasUsed` and the `logsBloom` after running. If any does not match,
+   * `runBlock` throws.
+   * Defaults to `false`.
    */
   generate?: boolean
   /**
-   * If true, will skip block validation
+   * If true, will skip "Block validation":
+   * Block validation validates the header (with respect to the blockchain),
+   * the transactions, the transaction trie and the uncle hash.
    */
   skipBlockValidation?: boolean
   /**
@@ -250,11 +255,6 @@ async function applyTransactions(this: VM, block: any, opts: RunBlockOpts) {
         ...abstractTxReceipt,
       } as PostByzantiumTxReceipt
     } else {
-      // This is just using a dummy place holder for the state root right now.
-      // Giving the correct intermediary state root would need a too depp intervention
-      // into the current checkpointing mechanism which hasn't been considered
-      // to be worth it on a HF backport, 2020-06-26
-
       const stateRoot = await this.stateManager.getStateRoot(true)
       txReceipt = {
         stateRoot: stateRoot,
