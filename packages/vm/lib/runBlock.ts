@@ -179,7 +179,7 @@ export default async function runBlock(this: VM, opts: RunBlockOpts): Promise<Ru
  * block itself. It computes the block rewards and puts
  * them on state (but doesn't persist the changes).
  * @param {Block} block
- * @param {Boolean} [skipBlockValidation=false]
+ * @param {RunBlockOpts} opts
  */
 async function applyBlock(this: VM, block: any, opts: RunBlockOpts) {
   // Validate block
@@ -202,6 +202,7 @@ async function applyBlock(this: VM, block: any, opts: RunBlockOpts) {
  * as well as gas usage and some relevant data. This method is
  * side-effect free (it doesn't modify the block nor the state).
  * @param {Block} block
+ * @param {RunBlockOpts} opts
  */
 async function applyTransactions(this: VM, block: any, opts: RunBlockOpts) {
   const bloom = new Bloom()

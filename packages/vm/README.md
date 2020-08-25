@@ -14,13 +14,15 @@ Implements Ethereum's VM in Javascript.
 
 The VM currently supports the following hardfork rules:
 
+- `Chainstart` (a.k.a. Frontier)
+- `Homestead`
+- `TangerineWhistle`
+- `SpuriousDragon`
 - `Byzantium`
 - `Constantinople`
 - `Petersburg` (default)
 - `Istanbul`
 - `MuirGlacier` (only `mainnet` and `ropsten`)
-
-If you are still looking for a [Spurious Dragon](https://eips.ethereum.org/EIPS/eip-607) compatible version of this library install the latest of the `2.2.x` series (see [Changelog](./CHANGELOG.md)).
 
 ##### MuirGlacier Hardfork Support
 

@@ -145,6 +145,10 @@ export default class VM extends AsyncEventEmitter {
     this._emit = promisify(this.emit.bind(this))
   }
 
+  /**
+   * Initializes the VM and ensures any asynchronous calls are resolved
+   * */
+
   async init(): Promise<void> {
     if (this.isInitialized) {
       return
