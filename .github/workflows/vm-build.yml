@@ -147,6 +147,9 @@ jobs:
         env:
           REF: ${{ github.ref }}
 
+      # Run git stash in case github-action-benchmark has trouble switching to gh-pages branch due to differing package-locks
+      - run: git stash
+
       - name: Compare benchmarks
         uses: rhysd/github-action-benchmark@v1
         with:
@@ -161,3 +164,9 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           # Push and deploy to GitHub pages branch automatically (if on master)
           auto-push: ${{ steps.auto_push.outputs.auto_push }}
+
+      # Re-apply git stash to prepare for saving back to cache.
+      # Avoids exit code 1 by checking if there are changes to be stashed first
+      - run: STASH_LIST=`git stash list` && [ ! -z $STASH_LIST ] && git stash apply || echo "No files to stash-apply. Skipping…"
+
+
