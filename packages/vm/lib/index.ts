@@ -56,15 +56,6 @@ export interface VMOpts {
    */
   allowUnlimitedContractSize?: boolean
   common?: Common
-
-  /**
-   * DAO support parameters
-   * DAOSupport: if true, activate the DAO fork support
-   * DAOActivationBlock: the block where to activate the DAO (defaults to 1920000, the DAO activation block number on mainnet)
-   */
-
-  DAOSupport?: boolean
-  DAOActivationBlock?: BN | number
 }
 
 /**
@@ -82,8 +73,6 @@ export default class VM extends AsyncEventEmitter {
   _opcodes: OpcodeList
   public readonly _emit: (topic: string, data: any) => Promise<void>
   protected isInitialized: boolean = false
-  readonly DAOSupport?: boolean
-  readonly DAOActivationBlock?: BN | number
 
   /**
    * VM async constructor. Creates engine instance and initializes it.
@@ -146,19 +135,10 @@ export default class VM extends AsyncEventEmitter {
       this.stateManager = new DefaultStateManager({ trie, common: this._common })
     }
 
-    this.blockchain =
-      opts.blockchain ||
-      new Blockchain({
-        common: this._common,
-        DAOSupport: opts.DAOSupport,
-        DAOActivationBlock: opts.DAOActivationBlock,
-      })
+    this.blockchain = opts.blockchain || new Blockchain({ common: this._common })
 
     this.allowUnlimitedContractSize =
       opts.allowUnlimitedContractSize === undefined ? false : opts.allowUnlimitedContractSize
-
-    this.DAOSupport = opts.DAOSupport
-    this.DAOActivationBlock = opts.DAOActivationBlock
 
     // We cache this promisified function as it's called from the main execution loop, and
     // promisifying each time has a huge performance impact.

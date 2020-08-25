@@ -1,7 +1,6 @@
 import Common from '@ethereumjs/common'
 import { TxData } from '@ethereumjs/tx'
 import { Block } from './block'
-import { BN } from 'ethereumjs-util'
 
 /**
  * An object to set to which blockchain the blocks and their headers belong. This could be specified
@@ -23,15 +22,6 @@ export interface ChainOptions {
    * The hardfork of the block/block header, default: 'petersburg'
    */
   hardfork?: string
-
-  /**
-   * DAO support parameters
-   * DAOSupport: if true, activate the DAO fork support
-   * DAOActivationBlock: the block where to activate the DAO (defaults to 1920000, the DAO activation block number on mainnet)
-   */
-
-  DAOSupport?: boolean
-  DAOActivationBlock?: BN | number
 }
 
 /**

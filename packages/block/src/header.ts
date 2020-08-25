@@ -136,14 +136,14 @@ export class BlockHeader {
     ]
     defineProperties(this, fields, data)
 
-    if (opts.DAOSupport) {
+    if (this._common.hardforkIsActiveOnChain('dao')) {
       // verify the extraData field.
       const blockNumber = new BN(this.number)
-      const DAOActivationBlock = new BN(opts.DAOActivationBlock || '1920000')
-      if (blockNumber.gte(new BN(opts.DAOActivationBlock || '1920000'))) {
+      const DAOActivationBlock = new BN(this._common.hardforkBlock('dao'))
+      if (blockNumber.gte(new BN(DAOActivationBlock))) {
         const drift = blockNumber.sub(DAOActivationBlock)
         if (drift.lten(DAO_ForceExtraDataRange)) {
-          if (this.extraData != DAO_ExtraData) {
+          if (!this.extraData.equals(DAO_ExtraData)) {
             throw new Error("extraData should be 'dao-hard-fork'")
           }
         }

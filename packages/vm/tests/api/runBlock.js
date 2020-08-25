@@ -148,12 +148,35 @@ tape('should run valid block', async (t) => {
 
 // this test actually checks if the DAO fork works. This is not checked in ethereum/tests
 tape('should transfer balance from DAO children to the Refund DAO account in the DAO fork', async (t) => {
-  const vm = setupVM({DAOSupport: true, DAOActivationBlock: 1})
+// here: get the default fork list of mainnet and only edit the DAO fork block (thus copy the rest of the "default" hardfork settings)
+  const defaultCommon = new Common('mainnet', "dao")
+  // retrieve the hard forks list from defaultCommon...
+  let forks = defaultCommon.hardforks()
+  let editedForks = []
+  // explicitly edit the "dao" block number:
+  for (let fork of forks) {
+    if (fork.name == "dao") {
+      editedForks.push({
+        name: "dao",
+        forkHash: fork.forkHash,
+        block: 1
+      })
+    } else {
+      editedForks.push(fork)
+    }
+  }
+  let common = Common.forCustomChain('mainnet', {
+    hardforks: editedForks
+  }, 'homestead') // we should be on the "homestead" fork
+
+  const vm = setupVM({ common })
   const suite = setup(vm)
 
   const genesis = new Block(util.rlp.decode(suite.data.genesisRLP))
-  const block = new Block(util.rlp.decode(suite.data.blocks[0].rlp))
-
+  let block1 = util.rlp.decode(suite.data.blocks[0].rlp)
+  // edit extra data of this block to "dao-hard-fork"
+  block1[0][12] = Buffer.from('dao-hard-fork')
+  const block = new Block(block1)
   await setupPreConditions(suite.vm.stateManager._trie, suite.data)
 
   // fill two original DAO child-contracts with funds and the recovery account with funds in order to verify that the balance gets summed correctly

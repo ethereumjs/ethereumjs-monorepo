@@ -89,15 +89,6 @@ export interface BlockchainOptions {
    * provided, it defaults to `true`.
    */
   validateBlocks?: boolean
-
-  /**
-   * DAO support parameters
-   * DAOSupport: if true, activate the DAO fork support
-   * DAOActivationBlock: the block where to activate the DAO (defaults to 1920000, the DAO activation block number on mainnet)
-   */
-
-  DAOSupport?: boolean
-  DAOActivationBlock?: BN | number
 }
 
 /**

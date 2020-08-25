@@ -3,6 +3,7 @@ const { addHexPrefix } = require('ethereumjs-util')
 const Trie = require('merkle-patricia-tree').SecureTrie
 const { Block, BlockHeader } = require('@ethereumjs/block')
 const Blockchain = require('@ethereumjs/blockchain').default
+const Common = require('@ethereumjs/common').default
 const level = require('level')
 const levelMem = require('level-mem')
 
@@ -25,21 +26,38 @@ module.exports = async function runBlockchainTest(options, testData, t) {
     validate = true
   }
 
-  const hardfork = options.forkConfigVM
-  let extraOptions = {}
+  let common 
+  
   if (options.forkConfigTestSuite == "HomesteadToDaoAt5") {
-    extraOptions = {
-      DAOSupport: true,
-      DAOActivationBlock: 5
+    // here: get the default fork list of mainnet and only edit the DAO fork block (thus copy the rest of the "default" hardfork settings)
+    const defaultCommon = new Common('mainnet', "dao")
+    // retrieve the hard forks list from defaultCommon...
+    let forks = defaultCommon.hardforks()
+    let editedForks = []
+    // explicitly edit the "dao" block number:
+    for (let fork of forks) {
+      if (fork.name == "dao") {
+        editedForks.push({
+          name: "dao",
+          forkHash: fork.forkHash,
+          block: 5
+        })
+      } else {
+        editedForks.push(fork)
+      }
     }
+    common = Common.forCustomChain('mainnet', {
+      hardforks: editedForks
+    }, 'homestead') // we should be on the "homestead" fork
+  } else {
+    common = new Common('mainnet', options.forkConfigVM)
   }
 
   const blockchain = new Blockchain({
     db: blockchainDB,
-    hardfork,
+    common,
     validateBlocks: validate,
     validatePow: validate,
-    ...extraOptions
   })
 
   if (validate) {
@@ -56,19 +74,17 @@ module.exports = async function runBlockchainTest(options, testData, t) {
   const vm = new VM({
     state,
     blockchain,
-    hardfork,
-    ...extraOptions
+    common,
   })
 
-  const genesisBlock = new Block(undefined, { hardfork, ...extraOptions })
+  const genesisBlock = new Block(undefined, { common })
 
   // set up pre-state
   await setupPreConditions(vm.stateManager._trie, testData)
 
   // create and add genesis block
   genesisBlock.header = new BlockHeader(formatBlockHeader(testData.genesisBlockHeader), {
-    hardfork,
-    ...extraOptions
+    common,
   })
 
   t.ok(vm.stateManager._trie.root.equals(genesisBlock.header.stateRoot), 'correct pre stateRoot')
@@ -108,8 +124,7 @@ module.exports = async function runBlockchainTest(options, testData, t) {
 
     try {
       const block = new Block(Buffer.from(raw.rlp.slice(2), 'hex'), {
-        hardfork,
-        ...extraOptions
+        common
       }) 
 
       try {
