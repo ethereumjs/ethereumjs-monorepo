@@ -129,28 +129,11 @@ export default async function runBlock(this: VM, opts: RunBlockOpts): Promise<Ru
   }
 
   // check for DAO support and if we should apply the DAO fork
-  if (this._common.hardforkIsActiveOnChain('dao')) {
-    if (new BN(opts.block.header.number).eq(new BN(this._common.hardforkBlock('dao')))) {
-      const DAORefundContractAddress = Buffer.from(DAORefundContract, 'hex')
-      if (!this.stateManager.accountExists(DAORefundContractAddress)) {
-        await this.stateManager.putAccount(DAORefundContractAddress, new Account())
-      }
-      const DAORefundAccount = await this.stateManager.getAccount(DAORefundContractAddress)
-      let DAOBalance = new BN(DAORefundAccount.balance)
-
-      for (let address of DAOAccountList) {
-        // retrieve the account and add it to the DAO's Refund accounts' balance.
-        let account = await this.stateManager.getAccount(Buffer.from(address, 'hex'))
-        DAOBalance.iadd(new BN(account.balance))
-        // clear the accounts' balance
-        account.balance = Buffer.alloc(0)
-        await this.stateManager.putAccount(Buffer.from(address, 'hex'), account)
-      }
-
-      // finally, put the Refund Account
-      DAORefundAccount.balance = toBuffer(DAOBalance)
-      await this.stateManager.putAccount(DAORefundContractAddress, DAORefundAccount)
-    }
+  if (
+    this._common.hardforkIsActiveOnChain('dao') &&
+    new BN(opts.block.header.number).eq(new BN(this._common.hardforkBlock('dao')))
+  ) {
+    await _applyDAOHardfork(state)
   }
 
   // Checkpoint state
@@ -352,4 +335,27 @@ async function rewardAccount(state: StateManager, address: Buffer, reward: BN): 
   const account = await state.getAccount(address)
   account.balance = toBuffer(new BN(account.balance).add(reward))
   await state.putAccount(address, account)
+}
+
+// apply the DAO fork changes to the VM
+async function _applyDAOHardfork(state: StateManager) {
+  const DAORefundContractAddress = Buffer.from(DAORefundContract, 'hex')
+  if (!state.accountExists(DAORefundContractAddress)) {
+    await state.putAccount(DAORefundContractAddress, new Account())
+  }
+  const DAORefundAccount = await state.getAccount(DAORefundContractAddress)
+  let DAOBalance = new BN(DAORefundAccount.balance)
+
+  for (let address of DAOAccountList) {
+    // retrieve the account and add it to the DAO's Refund accounts' balance.
+    let account = await state.getAccount(Buffer.from(address, 'hex'))
+    DAOBalance.iadd(new BN(account.balance))
+    // clear the accounts' balance
+    account.balance = Buffer.alloc(0)
+    await state.putAccount(Buffer.from(address, 'hex'), account)
+  }
+
+  // finally, put the Refund Account
+  DAORefundAccount.balance = toBuffer(DAOBalance)
+  await state.putAccount(DAORefundContractAddress, DAORefundAccount)
 }

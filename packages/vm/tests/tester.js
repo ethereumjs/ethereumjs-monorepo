@@ -17,13 +17,8 @@ function runTests() {
   const FORK_CONFIG = (argv.fork || config.DEFAULT_FORK_CONFIG)
   const FORK_CONFIG_TEST_SUITE = config.getRequiredForkConfigAlias(FORK_CONFIG)
 
-  let FORK_CONFIG_VM
-  if (FORK_CONFIG.toLowerCase() == "dao") {
-    FORK_CONFIG_VM = "homestead"
-  } else {
-    // Examples: Istanbul -> istanbul, MuirGlacier -> muirGlacier
-    FORK_CONFIG_VM = FORK_CONFIG.charAt(0).toLowerCase() + FORK_CONFIG.substring(1)
-  }
+  // Examples: Istanbul -> istanbul, MuirGlacier -> muirGlacier
+  const FORK_CONFIG_VM = FORK_CONFIG.charAt(0).toLowerCase() + FORK_CONFIG.substring(1)
 
   /**
    * Configuration for getting the tests from the ethereum/tests repository

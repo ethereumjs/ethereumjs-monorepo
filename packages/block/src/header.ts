@@ -14,7 +14,7 @@ import { Buffer } from 'buffer'
 import { Block } from './block'
 
 const DAO_ExtraData = Buffer.from('64616f2d686172642d666f726b', 'hex')
-const DAO_ForceExtraDataRange = 10 // force extra data be DAO_ExtraData for X blocks after DAO activation block
+const DAO_ForceExtraDataRange = 9 // force extra data be DAO_ExtraData for X blocks after DAO activation block (see: https://blog.slock.it/hard-fork-specification-24b889e70703)
 
 /**
  * An object that represents the block header
@@ -140,7 +140,7 @@ export class BlockHeader {
       // verify the extraData field.
       const blockNumber = new BN(this.number)
       const DAOActivationBlock = new BN(this._common.hardforkBlock('dao'))
-      if (blockNumber.gte(new BN(DAOActivationBlock))) {
+      if (blockNumber.gte(DAOActivationBlock)) {
         const drift = blockNumber.sub(DAOActivationBlock)
         if (drift.lten(DAO_ForceExtraDataRange)) {
           if (!this.extraData.equals(DAO_ExtraData)) {

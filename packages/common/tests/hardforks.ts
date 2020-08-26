@@ -136,7 +136,7 @@ tape('[Common]: Hardfork logic', function (t: tape.Test) {
     st.equal(c.activeHardforks().length, 8, msg)
 
     c = new Common('goerli')
-    msg = 'should return 8 active HFs for goerli' // `geth --goerli` gives `DAOSupport: true` but `DAO: <nil>` (i.e. do not apply DAO state transition at any block)
+    msg = 'should return 8 active HFs for goerli'
     st.equal(c.activeHardforks().length, 8, msg)
 
     st.end()

@@ -6,7 +6,7 @@ const runBlock = require('../../dist/runBlock').default
 const { DefaultStateManager } = require('../../dist/state')
 const testData = require('./testdata.json')
 const { setupVM, createAccount} = require('./utils')
-const { setupPreConditions } = require('../util')
+const { setupPreConditions,getDAOCommon } = require('../util')
 
 function setup(vm = null) {
   // Create a mock, if no real VM object provided.
@@ -148,26 +148,7 @@ tape('should run valid block', async (t) => {
 
 // this test actually checks if the DAO fork works. This is not checked in ethereum/tests
 tape('should transfer balance from DAO children to the Refund DAO account in the DAO fork', async (t) => {
-// here: get the default fork list of mainnet and only edit the DAO fork block (thus copy the rest of the "default" hardfork settings)
-  const defaultCommon = new Common('mainnet', "dao")
-  // retrieve the hard forks list from defaultCommon...
-  let forks = defaultCommon.hardforks()
-  let editedForks = []
-  // explicitly edit the "dao" block number:
-  for (let fork of forks) {
-    if (fork.name == "dao") {
-      editedForks.push({
-        name: "dao",
-        forkHash: fork.forkHash,
-        block: 1
-      })
-    } else {
-      editedForks.push(fork)
-    }
-  }
-  let common = Common.forCustomChain('mainnet', {
-    hardforks: editedForks
-  }, 'homestead') // we should be on the "homestead" fork
+  const common = getDAOCommon(1)
 
   const vm = setupVM({ common })
   const suite = setup(vm)
@@ -204,9 +185,9 @@ tape('should transfer balance from DAO children to the Refund DAO account in the
   t.error(res.error, "runBlock shouldn't have returned error")
 
   let DAOFundedContractAccount1 = await suite.vm.stateManager.getAccount(DAOFundedContractAddress1)
-  t.true(DAOFundedContractAccount1.balance.equals(Buffer.from('', 'hex'))) // verify our funded account is now has 0 balance
+  t.true(DAOFundedContractAccount1.balance.equals(Buffer.from('', 'hex'))) // verify our funded account now has 0 balance
   let DAOFundedContractAccount2 = await suite.vm.stateManager.getAccount(DAOFundedContractAddress2)
-  t.true(DAOFundedContractAccount2.balance.equals(Buffer.from('', 'hex'))) // verify our funded account is now has 0 balance
+  t.true(DAOFundedContractAccount2.balance.equals(Buffer.from('', 'hex'))) // verify our funded account now has 0 balance
 
   let DAORefundAccount = await suite.vm.stateManager.getAccount(DAORefundAddress)
   t.true(DAORefundAccount.balance.equals(Buffer.from('7777', 'hex'))) // verify that the refund account gets the summed balance of the original refund account + two child DAO accounts

@@ -1,4 +1,4 @@
-const { setupPreConditions, verifyPostConditions } = require('./util.js')
+const { setupPreConditions, verifyPostConditions, getDAOCommon } = require('./util.js')
 const { addHexPrefix } = require('ethereumjs-util')
 const Trie = require('merkle-patricia-tree').SecureTrie
 const { Block, BlockHeader } = require('@ethereumjs/block')
@@ -26,33 +26,8 @@ module.exports = async function runBlockchainTest(options, testData, t) {
     validate = true
   }
 
-  let common 
+  const common = (options.forkConfigTestSuite == "HomesteadToDaoAt5") ? getDAOCommon(5) : new Common('mainnet', options.forkConfigVM)
   
-  if (options.forkConfigTestSuite == "HomesteadToDaoAt5") {
-    // here: get the default fork list of mainnet and only edit the DAO fork block (thus copy the rest of the "default" hardfork settings)
-    const defaultCommon = new Common('mainnet', "dao")
-    // retrieve the hard forks list from defaultCommon...
-    let forks = defaultCommon.hardforks()
-    let editedForks = []
-    // explicitly edit the "dao" block number:
-    for (let fork of forks) {
-      if (fork.name == "dao") {
-        editedForks.push({
-          name: "dao",
-          forkHash: fork.forkHash,
-          block: 5
-        })
-      } else {
-        editedForks.push(fork)
-      }
-    }
-    common = Common.forCustomChain('mainnet', {
-      hardforks: editedForks
-    }, 'homestead') // we should be on the "homestead" fork
-  } else {
-    common = new Common('mainnet', options.forkConfigVM)
-  }
-
   const blockchain = new Blockchain({
     db: blockchainDB,
     common,
