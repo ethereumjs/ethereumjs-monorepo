@@ -40,6 +40,7 @@ function runTests() {
   let runnerArgs = {}
   runnerArgs.forkConfigVM = FORK_CONFIG_VM
   runnerArgs.forkConfigTestSuite = FORK_CONFIG_TEST_SUITE
+  runnerArgs.common = config.getCommon(FORK_CONFIG_TEST_SUITE)
   runnerArgs.jsontrace = argv.jsontrace
   runnerArgs.dist = argv.dist
   runnerArgs.data = argv.data // GeneralStateTests
@@ -74,7 +75,12 @@ function runTests() {
   console.log(delimiter)
   console.log(`| RunnerArgs`.padEnd(fillWidth) + ' |')
   for (const [key, value] of Object.entries(formattedRunnerArgs)) {
-    console.log(`| ${key.padEnd(fillParam)}: ${value}`.padEnd(fillWidth) + ' |')
+    if (key == "common") {
+      const hf = value.hardfork()
+      console.log(`| ${key.padEnd(fillParam)}: ${hf}`.padEnd(fillWidth) + ' |')
+    } else {
+      console.log(`| ${key.padEnd(fillParam)}: ${value}`.padEnd(fillWidth) + ' |')
+    }
   }
   console.log(`+${'-'.repeat(width)}+`)
   console.log()

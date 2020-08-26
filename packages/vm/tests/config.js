@@ -1,3 +1,7 @@
+const { Err } = require('typedoc/dist/lib/utils/result')
+
+const Common = require('@ethereumjs/common').default
+
 /**
  * Default hardfork rules to run tests against
  */
@@ -8,10 +12,8 @@ const DEFAULT_FORK_CONFIG = 'Istanbul'
  */
 const SKIP_BROKEN = [
   'ForkStressTest', // Only BlockchainTest, temporary till fixed (2020-05-23)
-  'dynamicAccountOverwriteEmpty', // temporary till fixed (2019-01-30), skipped along constantinopleFix work time constraints
   'ChainAtoChainB', // Only BlockchainTest, temporary, along expectException fixes (2020-05-23)
-  'BLOCK_timestamp_TooLarge', // Only BlockchainTest, temporary, along expectException fixes (2020-05-27)
-  'sha3_bigOffset', // SHA3: Only BlockchainTest, unclear SHA3 test situation (2020-05-28)
+  'sha3_bigOffset', // SHA3: Only BlockchainTest, unclear SHA3 test situation (2020-05-28) (https://github.com/ethereumjs/ethereumjs-vm/pull/743#issuecomment-635116418)
   'sha3_memSizeNoQuadraticCost', // SHA3: See also:
   'sha3_memSizeQuadraticCost', // SHA3: https://github.com/ethereumjs/ethereumjs-vm/pull/743#issuecomment-635116418
   'sha3_bigSize', // SHA3
@@ -148,7 +150,131 @@ function getRequiredForkConfigAlias(forkConfig) {
   }
   return forkConfig
 }
+
+const normalHardforks = [
+  'chainstart',
+  'homestead',
+  'tangerineWhistle',
+  'spuriousDragon',
+  'byzantium',
+  'constantinople',
+  'petersburg',
+  'istanbul',
+  'muirGlacier',
+  'berlin',
+]
+
+const transitionNetworks = {
+  ByzantiumToConstantinopleFixAt5: {
+    byzantium: 0, 
+    constantinople: 5,
+    petersburg: 5,
+    dao: null,
+    finalSupportedFork: 'petersburg',
+    startFork: 'byzantium'
+  },
+  EIP158ToByzantiumAt5: {
+    spuriousDragon: 0,
+    byzantium: 5,
+    dao: null,
+    finalSupportedFork: 'byzantium',
+    startFork: 'spuriousDragon'
+  },
+  FrontierToHomesteadAt5: {
+    frontier: 0,
+    homestead: 5,
+    dao: null,
+    finalSupportedFork: 'homestead',
+    startFork: 'frontier'
+  },
+  HomesteadToDaoAt5: {
+    homestead: 0,
+    dao: 5,
+    finalSupportedFork: 'dao',
+    startFork: 'homestead'
+  },
+  HomesteadToEIP150At5 : {
+    homestead: 0,
+    tangerineWhistle: 5,
+    dao: null,
+    finalSupportedFork: 'tangerineWhistle',
+    startFork: 'homestead'
+  }
+}
   
+/**
+ * Returns a Common for the given network (a test parameter)
+ * @param {String} network - the network field of a test
+ * @returns {Common} the Common which should be used
+ */
+function getCommon(network) {
+  const networkLowercase = network.toLowerCase()
+  if (normalHardforks.map((str) => str.toLowerCase()).includes(networkLowercase)) {
+    // normal hard fork, return the common with this hard fork
+    // find the right upper/lowercased version
+    const hfName = normalHardforks.reduce((previousValue, currentValue) => (currentValue.toLowerCase() == networkLowercase) ? currentValue : previousValue)
+    const mainnetCommon = new Common('mainnet', hfName)
+    const hardforks = mainnetCommon.hardforks()
+    const testHardforks = []
+    for (const hf of hardforks) {
+      // check if we enable this hf 
+      // disable dao hf by default (if enabled at block 0 forces the first 10 blocks to have dao-hard-fork in extraData of block header)
+      if (mainnetCommon.gteHardfork(hf.name) && hf.name != "dao") {
+        // this hardfork should be activated at block 0
+        testHardforks.push({
+          name: hf.name,
+          forkHash: hf.forkHash,
+          block: 0
+        })
+      } else {
+        // disable hardforks newer than the test hardfork (but do add "support" for it, it just never gets activated)
+        testHardforks.push({
+          name: hf.name,
+          forkHash: hf.forkHash,
+          block: null
+        })
+      }
+    }
+    return Common.forCustomChain('mainnet', {
+      hardforks: testHardforks
+    }, hfName)
+  } else {
+    // this is not a "default fork" network, but it is a "transition" network. we will test the VM if it transitions the right way
+    const transitionForks = transitionNetworks[network]
+    if (!transitionForks) {
+      throw(new Error("network not supported: " + network))
+    }
+    const mainnetCommon = new Common('mainnet', transitionForks.finalSupportedFork)
+    const hardforks = mainnetCommon.hardforks()
+    const testHardforks = []
+    for (const hf of hardforks) {
+      if (mainnetCommon.gteHardfork(hf.name)) {
+        // this hardfork should be activated at block 0
+        const forkBlockNumber = transitionForks[hf.name]
+        testHardforks.push({
+          name: hf.name,
+          forkHash: hf.forkHash,
+          block: (forkBlockNumber === null) ? null : forkBlockNumber || 0 // if forkBlockNumber is defined as null, disable it, otherwise use block number or 0 (if its undefined)
+        })
+      } else {
+        // disable the hardfork
+        testHardforks.push({
+          name: hf.name,
+          forkHash: hf.forkHash,
+          block: null
+        })
+      }
+    }
+    return Common.forCustomChain('mainnet', {
+      hardforks: testHardforks
+    }, transitionForks.startFork)
+  }
+
+
+
+}
+
+
 /**
  * Returns an aggregated array with the tests to skip
  * @param {String} choices comma-separated list with skip options, e.g. BROKEN,PERMANENT
@@ -184,4 +310,5 @@ module.exports = {
   SKIP_SLOW: SKIP_SLOW,
   getRequiredForkConfigAlias: getRequiredForkConfigAlias,
   getSkipTests: getSkipTests,
+  getCommon: getCommon
 }
