@@ -52,7 +52,7 @@ const getTests = exports.getTests = (
       const testsByName = JSON.parse(content)
       const testNames = Object.keys(testsByName)
       for (const testName of testNames) {
-        if (!skipPredicate(testName)) {
+        if (!skipPredicate(testName, testsByName[testName])) {
           await onFile(parsedFileName, testName, testsByName[testName])
         }
       }
@@ -104,11 +104,10 @@ exports.getTestsFromArgs = function (testType, onFile, args = {}) {
   skipFn = (name) => {
     return skipTest(name, args.skipTests)
   }
-
-  if (testType === 'BlockchainTests') {
+  if (new RegExp(`BlockchainTests`).test(testType)) {
     const forkFilter = new RegExp(`${args.forkConfig}$`)
-    skipFn = (name) => {
-      return ((forkFilter.test(name) === false) || skipTest(name, args.skipTests))
+    skipFn = (name, test) => {
+      return ((forkFilter.test(test.network) === false) || skipTest(name, args.skipTests))
     }
   }
 

@@ -160,9 +160,12 @@ module.exports = async function runBlockchainTest(options, testData, t) {
         )
       }
       await cacheDB.close()
+
+      if (expectException) {
+        t.fail("expected exception but test did not throw an exception")
+      }
     } catch (error) {
       await handleError(error, expectException, cacheDB)
-      return
     }
   }
 }
