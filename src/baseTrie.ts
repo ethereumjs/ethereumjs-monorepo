@@ -26,7 +26,12 @@ interface Path {
   stack: TrieNode[]
 }
 
-type FoundNode = (nodeRef: Buffer, node: TrieNode, key: Nibbles, walkController: any) => void
+type FoundNodeFunction = (
+  nodeRef: Buffer,
+  node: TrieNode,
+  key: Nibbles,
+  walkController: any,
+) => void
 
 /**
  * The basic trie interface, use with `import { BaseTrie as Trie } from 'merkle-patricia-tree'`.
@@ -146,8 +151,7 @@ export class Trie {
       let stack: TrieNode[] = []
       let targetKey = bufferToNibbles(key)
 
-      // walk trie and process nodes
-      await this._walkTrie(this.root, async (nodeRef, node, keyProgress, walkController) => {
+      const onFound: FoundNodeFunction = async (nodeRef, node, keyProgress, walkController) => {
         const keyRemainder = targetKey.slice(matchingNibbleLength(keyProgress, targetKey))
         stack.push(node)
 
@@ -184,7 +188,10 @@ export class Trie {
             await walkController.next()
           }
         }
-      })
+      }
+
+      // walk trie and process nodes
+      await this._walkTrie(this.root, onFound)
 
       // Resolve if _walkTrie finishes without finding any nodes
       resolve({ node: null, remaining: [], stack })
@@ -195,10 +202,10 @@ export class Trie {
    * Walks a trie until finished.
    * @private
    * @param root
-   * @param onNode - callback to call when a node is found
+   * @param onFound - callback to call when a node is found
    * @returns Resolves when finished walking trie.
    */
-  async _walkTrie(root: Buffer, onNode: FoundNode): Promise<void> {
+  async _walkTrie(root: Buffer, onFound: FoundNodeFunction): Promise<void> {
     return new Promise(async (resolve) => {
       const self = this
       root = root || this.root
@@ -275,7 +282,7 @@ export class Trie {
         }
 
         if (node) {
-          onNode(nodeRef, node, key, walkController)
+          onFound(nodeRef, node, key, walkController)
         } else {
           resolve()
         }
@@ -730,14 +737,15 @@ export class Trie {
    * called by {@link ScratchReadStream}
    * @private
    */
-  async _findDbNodes(onFound: FoundNode): Promise<void> {
-    await this._walkTrie(this.root, async (nodeRef, node, key, walkController) => {
+  async _findDbNodes(onFound: FoundNodeFunction): Promise<void> {
+    const outerOnFound: FoundNodeFunction = async (nodeRef, node, key, walkController) => {
       if (isRawNode(nodeRef)) {
         await walkController.next()
       } else {
         onFound(nodeRef, node, key, walkController)
       }
-    })
+    }
+    await this._walkTrie(this.root, outerOnFound)
   }
 
   /**
@@ -745,8 +753,8 @@ export class Trie {
    * called by {@link TrieReadStream}
    * @private
    */
-  async _findValueNodes(onFound: FoundNode): Promise<void> {
-    await this._walkTrie(this.root, async (nodeRef, node, key, walkController) => {
+  async _findValueNodes(onFound: FoundNodeFunction): Promise<void> {
+    const outerOnFound: FoundNodeFunction = async (nodeRef, node, key, walkController) => {
       let fullKey = key
 
       if (node instanceof LeafNode) {
@@ -760,6 +768,7 @@ export class Trie {
         // keep looking for value nodes
         await walkController.next()
       }
-    })
+    }
+    await this._walkTrie(this.root, outerOnFound)
   }
 }
