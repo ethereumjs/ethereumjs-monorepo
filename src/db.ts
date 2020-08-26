@@ -24,7 +24,7 @@ export class DB {
   /**
    * Initialize a DB instance. If `leveldb` is not provided, DB
    * defaults to an [in-memory store](https://github.com/Level/memdown).
-   * @param {Object} [leveldb] - An abstract-leveldown compliant store
+   * @param leveldb - An abstract-leveldown compliant store
    */
   constructor(leveldb?: LevelUp) {
     this._leveldb = leveldb || level()
@@ -32,7 +32,7 @@ export class DB {
 
   /**
    * Retrieves a raw value from leveldb.
-   * @param {Buffer} key
+   * @param key
    * @returns A Promise that resolves to `Buffer` if a value is found or `null` if no value is found.
    */
   async get(key: Buffer): Promise<Buffer | null> {
@@ -52,9 +52,8 @@ export class DB {
 
   /**
    * Writes a value directly to leveldb.
-   * @param {Buffer} key The key as a `Buffer`
-   * @param {Buffer} value The value to be stored
-   * @returns {Promise}
+   * @param key The key as a `Buffer`
+   * @param value The value to be stored
    */
   async put(key: Buffer, val: Buffer): Promise<void> {
     await this._leveldb.put(key, val, ENCODING_OPTS)
@@ -62,8 +61,7 @@ export class DB {
 
   /**
    * Removes a raw value in the underlying leveldb.
-   * @param {Buffer} key
-   * @returns {Promise}
+   * @param keys
    */
   async del(key: Buffer): Promise<void> {
     await this._leveldb.del(key, ENCODING_OPTS)
@@ -71,8 +69,7 @@ export class DB {
 
   /**
    * Performs a batch operation on db.
-   * @param {Array} opStack A stack of levelup operations
-   * @returns {Promise}
+   * @param opStack A stack of levelup operations
    */
   async batch(opStack: BatchDBOp[]): Promise<void> {
     await this._leveldb.batch(opStack, ENCODING_OPTS)

@@ -5,6 +5,9 @@ import { DB, BatchDBOp } from './db'
 import { TrieNode } from './trieNode'
 const WriteStream = require('level-ws')
 
+/**
+ * Adds checkpointing to the {@link BaseTrie}
+ */
 export class CheckpointTrie extends BaseTrie {
   _mainDB: DB
   _scratch: ScratchDB | null
@@ -80,7 +83,7 @@ export class CheckpointTrie extends BaseTrie {
 
   /**
    * Returns a copy of the underlying trie with the interface of CheckpointTrie.
-   * @param {boolean} includeCheckpoints - If true and during a checkpoint, the copy will contain the checkpointing metadata and will use the same scratch as underlying db.
+   * @param includeCheckpoints - If true and during a checkpoint, the copy will contain the checkpointing metadata and will use the same scratch as underlying db.
    */
   copy(includeCheckpoints = true): CheckpointTrie {
     const db = this._mainDB.copy()
@@ -140,10 +143,10 @@ export class CheckpointTrie extends BaseTrie {
   /**
    * Formats node to be saved by `levelup.batch`.
    * @private
-   * @param {TrieNode} node - the node to format.
-   * @param {Boolean} topLevel - if the node is at the top level.
-   * @param {BatchDBOp[]} opStack - the opStack to push the node's data.
-   * @param {Boolean} remove - whether to remove the node (only used for CheckpointTrie).
+   * @param node - the node to format.
+   * @param topLevel - if the node is at the top level.
+   * @param opStack - the opStack to push the node's data.
+   * @param remove - whether to remove the node (only used for CheckpointTrie).
    * @returns The node's hash used as the key or the rawNode.
    */
   _formatNode(node: TrieNode, topLevel: boolean, opStack: BatchDBOp[], remove: boolean = false) {
