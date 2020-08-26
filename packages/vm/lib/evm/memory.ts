@@ -5,10 +5,10 @@ import * as assert from 'assert'
  * for the ethereum virtual machine.
  */
 export default class Memory {
-  _store: number[]
+  _store: Buffer
 
   constructor() {
-    this._store = []
+    this._store = Buffer.alloc(0)
   }
 
   /**
@@ -23,7 +23,7 @@ export default class Memory {
     const newSize = ceil(offset + size, 32)
     const sizeDiff = newSize - this._store.length
     if (sizeDiff > 0) {
-      this._store = this._store.concat(new Array(sizeDiff).fill(0))
+      this._store = Buffer.concat([this._store, Buffer.alloc(sizeDiff)])
     }
   }
 
