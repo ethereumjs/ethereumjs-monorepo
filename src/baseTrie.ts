@@ -29,106 +29,44 @@ interface Path {
 type FoundNode = (nodeRef: Buffer, node: TrieNode, key: Nibbles, walkController: any) => void
 
 /**
- * Use `import { BaseTrie as Trie } from 'merkle-patricia-tree'` for the base interface.
- * In Ethereum applications stick with the Secure Trie Overlay `import { SecureTrie as Trie } from 'merkle-patricia-tree'`.
+ * The basic trie interface you can use with `import { BaseTrie as Trie } from 'merkle-patricia-tree'`.
+ * In Ethereum applications stick with the {@link SecureTrie} overlay.
  * The API for the base and the secure interface are about the same.
- * @param {Object} [db] - A [levelup](https://github.com/Level/levelup) instance. By default creates an in-memory [memdown](https://github.com/Level/memdown) instance.
- * If the db is `null` or left undefined, then the trie will be stored in memory via [memdown](https://github.com/Level/memdown)
- * @param {Buffer} [root] - A `Buffer` for the root of a previously stored trie
- * @prop {Buffer} root - The current root of the `trie`
- * @prop {Buffer} EMPTY_TRIE_ROOT - The root for an empty trie
  */
 export class Trie {
+  /** The root for an empty trie */
   EMPTY_TRIE_ROOT: Buffer
   db: DB
   protected lock: Semaphore
   private _root: Buffer
 
+  /**
+   * test
+   * @param db - A [levelup](https://github.com/Level/levelup) instance. By default (if the db is `null` or
+   * left undefined) creates an in-memory [memdown](https://github.com/Level/memdown) instance.
+   * @param root - A `Buffer` for the root of a previously stored trie
+   */
   constructor(db?: LevelUp | null, root?: Buffer) {
     this.EMPTY_TRIE_ROOT = KECCAK256_RLP
     this.lock = new Semaphore(1)
     this.db = db ? new DB(db) : new DB()
     this._root = this.EMPTY_TRIE_ROOT
     if (root) {
-      this.setRoot(root)
+      this._setRoot(root)
     }
   }
 
-  /**
-   * Saves the nodes from a proof into the trie. If no trie is provided a new one wil be instantiated.
-   * @param {Proof} proof
-   * @param {Trie} trie
-   */
-  static async fromProof(proof: Proof, trie?: Trie): Promise<Trie> {
-    let opStack = proof.map((nodeValue) => {
-      return {
-        type: 'put',
-        key: keccak(nodeValue),
-        value: nodeValue,
-      } as PutBatch
-    })
-
-    if (!trie) {
-      trie = new Trie()
-      if (opStack[0]) {
-        trie.root = opStack[0].key
-      }
-    }
-
-    await trie.db.batch(opStack)
-    return trie
-  }
-
-  /**
-   * prove has been renamed to [[Trie.createProof]].
-   * @deprecated
-   * @param {Trie} trie
-   * @param {Buffer} key
-   */
-  static async prove(trie: Trie, key: Buffer): Promise<Proof> {
-    return this.createProof(trie, key)
-  }
-
-  /**
-   * Creates a proof from a trie and key that can be verified using [[Trie.verifyProof]].
-   * @param {Trie} trie
-   * @param {Buffer} key
-   */
-  static async createProof(trie: Trie, key: Buffer): Promise<Proof> {
-    const { stack } = await trie.findPath(key)
-    const p = stack.map((stackElem) => {
-      return stackElem.serialize()
-    })
-    return p
-  }
-
-  /**
-   * Verifies a proof.
-   * @param {Buffer} rootHash
-   * @param {Buffer} key
-   * @param {Proof} proof
-   * @throws If proof is found to be invalid.
-   * @returns The value from the key.
-   */
-  static async verifyProof(rootHash: Buffer, key: Buffer, proof: Proof): Promise<Buffer | null> {
-    let proofTrie = new Trie(null, rootHash)
-    try {
-      proofTrie = await Trie.fromProof(proof, proofTrie)
-    } catch (e) {
-      throw new Error('Invalid proof nodes given')
-    }
-    return proofTrie.get(key)
-  }
-
+  /** Sets the current root of the `trie` */
   set root(value: Buffer) {
-    this.setRoot(value)
+    this._setRoot(value)
   }
 
+  /** Gets the current root of the `trie` */
   get root(): Buffer {
     return this._root
   }
 
-  setRoot(value?: Buffer) {
+  _setRoot(value?: Buffer) {
     if (!value) {
       value = this.EMPTY_TRIE_ROOT
     }
@@ -138,7 +76,7 @@ export class Trie {
 
   /**
    * Gets a value given a `key`
-   * @param {Buffer} key - the key to search for
+   * @param key - the key to search for
    * @returns A Promise that resolves to `Buffer` if a value was found or `null` if no value was found.
    */
   async get(key: Buffer): Promise<Buffer | null> {
@@ -152,8 +90,9 @@ export class Trie {
 
   /**
    * Stores a given `value` at the given `key`.
-   * @param {Buffer} key
-   * @param {Buffer} value
+   * @param key
+   * @param value
+   * @returns A Promise that resolves once value is stored.
    */
   async put(key: Buffer, value: Buffer): Promise<void> {
     // If value is empty, delete
@@ -176,7 +115,8 @@ export class Trie {
 
   /**
    * Deletes a value given a `key`.
-   * @param {Buffer} key
+   * @param key
+   * @returns A Promise that resolves once value is deleted.
    */
   async del(key: Buffer): Promise<void> {
     await this.lock.wait()
@@ -221,7 +161,7 @@ export class Trie {
   /**
    * Tries to find a path to the node for the given key.
    * It returns a `stack` of nodes to the closet node.
-   * @param {Buffer} key - the search key
+   * @param key - the search key
    */
   async findPath(key: Buffer): Promise<Path> {
     return new Promise(async (resolve) => {
@@ -312,10 +252,10 @@ export class Trie {
   /**
    * Updates a node.
    * @private
-   * @param {Buffer} key
-   * @param {Buffer} value
-   * @param {Nibbles} keyRemainder
-   * @param {TrieNode[]} stack
+   * @param key
+   * @param value
+   * @param keyRemainder
+   * @param stack
    */
   async _updateNode(
     k: Buffer,
@@ -419,8 +359,8 @@ export class Trie {
   /**
    * Walks a trie until finished.
    * @private
-   * @param {Buffer} root
-   * @param {Function} onNode - callback to call when a node is found
+   * @param root
+   * @param onNode - callback to call when a node is found
    * @returns Resolves when finished walking trie.
    */
   async _walkTrie(root: Buffer, onNode: FoundNode): Promise<void> {
@@ -518,9 +458,9 @@ export class Trie {
   /**
    * Saves a stack.
    * @private
-   * @param {Nibbles} key - the key. Should follow the stack
-   * @param {Array} stack - a stack of nodes to the value given by the key
-   * @param {Array} opStack - a stack of levelup operations to commit at the end of this funciton
+   * @param key - the key. Should follow the stack
+   * @param stack - a stack of nodes to the value given by the key
+   * @param opStack - a stack of levelup operations to commit at the end of this funciton
    */
   async _saveStack(key: Nibbles, stack: TrieNode[], opStack: BatchDBOp[]): Promise<void> {
     let lastRoot
@@ -689,10 +629,10 @@ export class Trie {
   /**
    * Formats node to be saved by `levelup.batch`.
    * @private
-   * @param {TrieNode} node - the node to format.
-   * @param {Boolean} topLevel - if the node is at the top level.
-   * @param {BatchDBOp[]} opStack - the opStack to push the node's data.
-   * @param {Boolean} remove - whether to remove the node (only used for CheckpointTrie).
+   * @param node - the node to format.
+   * @param topLevel - if the node is at the top level.
+   * @param opStack - the opStack to push the node's data.
+   * @param remove - whether to remove the node (only used for CheckpointTrie).
    * @returns The node's hash used as the key or the rawNode.
    */
   _formatNode(
@@ -718,7 +658,7 @@ export class Trie {
 
   /**
    * The `data` event is given an `Object` that has two properties; the `key` and the `value`. Both should be Buffers.
-   * @return {stream.Readable} Returns a [stream](https://nodejs.org/dist/latest-v12.x/docs/api/stream.html#stream_class_stream_readable) of the contents of the `trie`
+   * @return Returns a [stream](https://nodejs.org/dist/latest-v12.x/docs/api/stream.html#stream_class_stream_readable) of the contents of the `trie`
    */
   createReadStream(): ReadStream {
     return new ReadStream(this)
@@ -743,7 +683,7 @@ export class Trie {
    *  , { type: 'put', key: Buffer.from('occupation'), value: Buffer.from('Clown') }
    * ]
    * await trie.batch(ops)
-   * @param {Array} ops
+   * @param ops
    */
   async batch(ops: BatchDBOp[]): Promise<void> {
     for (const op of ops) {
@@ -764,5 +704,71 @@ export class Trie {
   async checkRoot(root: Buffer): Promise<boolean> {
     const value = await this._lookupNode(root)
     return !!value
+  }
+
+    /**
+   * Saves the nodes from a proof into the trie. If no trie is provided a new one wil be instantiated.
+   * @param proof
+   * @param trie
+   */
+  static async fromProof(proof: Proof, trie?: Trie): Promise<Trie> {
+    let opStack = proof.map((nodeValue) => {
+      return {
+        type: 'put',
+        key: keccak(nodeValue),
+        value: nodeValue,
+      } as PutBatch
+    })
+
+    if (!trie) {
+      trie = new Trie()
+      if (opStack[0]) {
+        trie.root = opStack[0].key
+      }
+    }
+
+    await trie.db.batch(opStack)
+    return trie
+  }
+
+  /**
+   * prove has been renamed to [[Trie.createProof]].
+   * @deprecated
+   * @param trie
+   * @param key
+   */
+  static async prove(trie: Trie, key: Buffer): Promise<Proof> {
+    return this.createProof(trie, key)
+  }
+
+  /**
+   * Creates a proof from a trie and key that can be verified using [[Trie.verifyProof]].
+   * @param trie
+   * @param key
+   */
+  static async createProof(trie: Trie, key: Buffer): Promise<Proof> {
+    const { stack } = await trie.findPath(key)
+    const p = stack.map((stackElem) => {
+      return stackElem.serialize()
+    })
+    return p
+  }
+
+  /**
+   * Verifies a proof.
+   * @param rootHash
+   * @param key
+   * @param proof
+   * @throws If proof is found to be invalid.
+   * @returns The value from the key.
+   */
+  static async verifyProof(rootHash: Buffer, key: Buffer, proof: Proof): Promise<Buffer | null> {
+    let proofTrie = new Trie(null, rootHash)
+    try {
+      proofTrie = await Trie.fromProof(proof, proofTrie)
+    } catch (e) {
+      throw new Error('Invalid proof nodes given')
+    }
+    return proofTrie.get(key)
   }
 }

@@ -4,18 +4,18 @@ interface Task {
 }
 
 export class PrioritizedTaskExecutor {
+  /** The maximum size of the pool */
   private maxPoolSize: number
+  /** The current size of the pool */
   private currentPoolSize: number
+  /** The task queue */
   private queue: Task[]
 
   /**
    * Executes tasks up to maxPoolSize at a time, other items are put in a priority queue.
    * @class PrioritizedTaskExecutor
    * @private
-   * @param {Number} maxPoolSize The maximum size of the pool
-   * @prop {Number} maxPoolSize The maximum size of the pool
-   * @prop {Number} currentPoolSize The current size of the pool
-   * @prop {Array} queue The task queue
+   * @param maxPoolSize The maximum size of the pool
    */
   constructor(maxPoolSize: number) {
     this.maxPoolSize = maxPoolSize
@@ -26,8 +26,8 @@ export class PrioritizedTaskExecutor {
   /**
    * Executes the task.
    * @private
-   * @param {Number} priority The priority of the task
-   * @param {Function} fn The function that accepts the callback, which must be called upon the task completion.
+   * @param priority The priority of the task
+   * @param fn The function that accepts the callback, which must be called upon the task completion.
    */
   execute(priority: number, fn: Function) {
     if (this.currentPoolSize < this.maxPoolSize) {
@@ -48,7 +48,7 @@ export class PrioritizedTaskExecutor {
   /**
    * Checks if the taskExecutor is finished.
    * @private
-   * @returns {Boolean} - Returns `true` if the taskExecutor is finished, otherwise returns `false`.
+   * @returns Returns `true` if the taskExecutor is finished, otherwise returns `false`.
    */
   finished(): boolean {
     return this.currentPoolSize === 0
