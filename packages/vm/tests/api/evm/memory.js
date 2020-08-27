@@ -10,7 +10,7 @@ tape('Memory', t => {
   })
 
   t.test('should return zeros from empty memory', st => {
-    st.deepEqual(m.read(0, 3), Buffer.from([0, 0, 0]))
+    st.ok(m.read(0, 3).equals(Buffer.from([0, 0, 0])))
     st.end()
   })
 
@@ -21,7 +21,7 @@ tape('Memory', t => {
   })
 
   t.test('should return zeros before writing', st => {
-    st.deepEqual(m.read(0, 2), Buffer.from([0, 0]))
+    st.ok(m.read(0, 2).equals(Buffer.from([0, 0])))
     st.end()
   })
 
@@ -32,7 +32,7 @@ tape('Memory', t => {
 
   t.test('should write value', st => {
     m.write(29, 3, Buffer.from([1, 2, 3]))
-    st.deepEqual(m.read(29, 5), Buffer.from([1, 2, 3, 0, 0]))
+    st.ok(m.read(29, 5).equals(Buffer.from([1, 2, 3, 0, 0])))
     st.end()
   })
 

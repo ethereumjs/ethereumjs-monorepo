@@ -42,7 +42,7 @@ export interface InterpreterStep {
   pc: number
   depth: number
   address: Buffer
-  memory: number[]
+  memory: Buffer
   memoryWordCount: BN
   opcode: {
     name: string
