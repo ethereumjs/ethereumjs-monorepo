@@ -1,7 +1,7 @@
 {
-  "extends": "@ethereumjs/config-tsc",
+  "extends": "@ethereumjs/config-typescript/tsconfig.prod.json",
+  "include": ["src/**/*.ts"],
   "compilerOptions": {
     "outDir": "./dist"
-  },
-  "include": ["src/**/*.ts"]
+  }
 }

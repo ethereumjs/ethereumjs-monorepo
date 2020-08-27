@@ -12,15 +12,13 @@
     "url": "git+https://github.com/ethereumjs/ethereumjs-vm.git"
   },
   "scripts": {
-    "build": "ethereumjs-config-build",
+    "build": "ethereumjs-config-ts-build",
     "prepublishOnly": "npm run test && npm run build",
     "coverage": "ethereumjs-config-coverage",
     "docs:build": "typedoc --options typedoc.js",
     "format": "ethereumjs-config-format",
     "format:fix": "ethereumjs-config-format-fix",
-    "tslint": "ethereumjs-config-tslint",
-    "tslint:fix": "ethereumjs-config-tslint-fix",
-    "tsc": "ethereumjs-config-tsc",
+    "tsc": "ethereumjs-config-ts-compile",
     "lint": "ethereumjs-config-lint",
     "lint:fix": "ethereumjs-config-lint-fix",
     "test": "tape -r ts-node/register test/*.spec.ts"
@@ -36,6 +34,7 @@
   },
   "homepage": "https://github.com/ethereumjs/ethereumjs-vm/tree/master/packages/account#synopsis",
   "dependencies": {
+    "eslint": "^7.0.0",
     "ethereumjs-util": "^7.0.5",
     "rlp": "^2.2.3",
     "safe-buffer": "^5.1.1"
