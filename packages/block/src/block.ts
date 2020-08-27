@@ -141,11 +141,10 @@ export class Block {
    * Validates the transaction trie
    */
   validateTransactionsTrie(): boolean {
-    const txT = this.header.transactionsTrie.toString('hex')
     if (this.transactions.length) {
-      return txT === this.txTrie.root.toString('hex')
+      return this.header.transactionsTrie.equals(this.txTrie.root)
     } else {
-      return txT === KECCAK256_RLP.toString('hex')
+      return this.header.transactionsTrie.equals(KECCAK256_RLP)
     }
   }
 
@@ -177,13 +176,13 @@ export class Block {
   /**
    * Validates the entire block, throwing if invalid.
    *
-   * @param blockChain - the blockchain that this block wants to be part of
+   * @param blockchain - the blockchain that this block wants to be part of
    */
-  async validate(blockChain: Blockchain): Promise<void> {
+  async validate(blockchain: Blockchain): Promise<void> {
     await Promise.all([
-      this.validateUncles(blockChain),
+      this.validateUncles(blockchain),
       this.genTxTrie(),
-      this.header.validate(blockChain),
+      this.header.validate(blockchain),
     ])
 
     if (!this.validateTransactionsTrie()) {
@@ -206,13 +205,13 @@ export class Block {
   validateUnclesHash(): boolean {
     const raw = rlp.encode(this.uncleHeaders.map((uh) => uh.raw))
 
-    return keccak256(raw).toString('hex') === this.header.uncleHash.toString('hex')
+    return keccak256(raw).equals(this.header.uncleHash)
   }
 
   /**
    * Validates the uncles that are in the block, if any. This method throws if they are invalid.
    *
-   * @param blockChain - the blockchain that this block wants to be part of
+   * @param blockchain - the blockchain that this block wants to be part of
    */
   async validateUncles(blockchain: Blockchain): Promise<void> {
     if (this.isGenesis()) {

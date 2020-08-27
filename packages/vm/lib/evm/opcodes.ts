@@ -284,7 +284,7 @@ function getFullname(code: number, name: string): string {
 /**
  * Get suitable opcodes for the required hardfork.
  *
- * @param common {Common} Ethereumjs Common metadaata object.
+ * @param common {Common} Ethereumjs Common metadata object.
  * @returns {OpcodeList} Opcodes dictionary object.
  */
 export function getOpcodesForHF(common: Common): OpcodeList {

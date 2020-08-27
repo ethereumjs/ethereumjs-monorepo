@@ -11,11 +11,7 @@ tape('[Block]: block functions', function (t) {
     const block2 = new Block(undefined, { common: common })
     block1.setGenesisParams()
     block2.setGenesisParams()
-    st.strictEqual(
-      block1.hash().toString('hex'),
-      block2.hash().toString('hex'),
-      'block hashes match',
-    )
+    st.ok(block1.hash().equals(block2.hash()), 'block hashes match')
 
     st.throws(
       function () {

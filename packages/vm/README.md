@@ -64,7 +64,7 @@ Supported `Istanbul` EIPs:
 
 ```javascript
 const BN = require('bn.js')
-var VM = require('@ethereumjs/vm').default
+const VM = require('@ethereumjs/vm').default
 
 // Create a new VM instance
 // For explicity setting the HF use e.g. `new VM({ hardfork: 'petersburg' })`

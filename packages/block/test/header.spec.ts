@@ -1,6 +1,6 @@
 import tape = require('tape')
 import Common from '@ethereumjs/common'
-import { rlp, toBuffer, zeros, KECCAK256_RLP_S, KECCAK256_RLP_ARRAY_S } from 'ethereumjs-util'
+import { rlp, toBuffer, zeros, KECCAK256_RLP, KECCAK256_RLP_ARRAY } from 'ethereumjs-util'
 import { BlockHeader } from '../src/header'
 import { Block } from '../src/block'
 
@@ -8,11 +8,11 @@ tape('[Block]: Header functions', function (t) {
   t.test('should create with default constructor', function (st) {
     function compareDefaultHeader(st: tape.Test, header: BlockHeader) {
       st.deepEqual(header.parentHash, zeros(32))
-      st.equal(header.uncleHash.toString('hex'), KECCAK256_RLP_ARRAY_S)
+      st.ok(header.uncleHash.equals(KECCAK256_RLP_ARRAY))
       st.deepEqual(header.coinbase, zeros(20))
       st.deepEqual(header.stateRoot, zeros(32))
-      st.equal(header.transactionsTrie.toString('hex'), KECCAK256_RLP_S)
-      st.equal(header.receiptTrie.toString('hex'), KECCAK256_RLP_S)
+      st.ok(header.transactionsTrie.equals(KECCAK256_RLP))
+      st.ok(header.receiptTrie.equals(KECCAK256_RLP))
       st.deepEqual(header.bloom, zeros(256))
       st.deepEqual(header.difficulty, Buffer.from([]))
       st.deepEqual(header.number, toBuffer(1150000))
@@ -40,11 +40,7 @@ tape('[Block]: Header functions', function (t) {
     const header2 = new BlockHeader(undefined, { common: common })
     header1.setGenesisParams()
     header2.setGenesisParams()
-    st.strictEqual(
-      header1.hash().toString('hex'),
-      header2.hash().toString('hex'),
-      'header hashes match',
-    )
+    st.ok(header1.hash().equals(header2.hash()), 'header hashes match')
 
     st.throws(
       function () {
