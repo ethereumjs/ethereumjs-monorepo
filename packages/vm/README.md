@@ -14,10 +14,10 @@ Implements Ethereum's VM in Javascript.
 
 The VM currently supports the following hardfork rules:
 
-- `Chainstart` (a.k.a. Frontier)
-- `Homestead`
-- `TangerineWhistle`
-- `SpuriousDragon`
+- `Chainstart` (a.k.a. Frontier) (v5, UNRELEASED)
+- `Homestead` (v5, UNRELEASED)
+- `TangerineWhistle` (v5, UNRELEASED)
+- `SpuriousDragon` (v5, UNRELEASED)
 - `Byzantium`
 - `Constantinople`
 - `Petersburg` (default)
