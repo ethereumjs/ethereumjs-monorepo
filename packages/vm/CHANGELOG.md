@@ -6,6 +6,66 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [5.0.0] - [UNRELEASED]
+
+This major release implements EIP-2315 (subroutines) which is part of the `Berlin`
+fork and adds hardfork support for older hard forks.
+
+**Additions**
+
+- Add EIP-2315 (subroutines),
+  PR [#754](https://github.com/ethereumjs/ethereumjs-vm/pull/754)
+- Add StateManager interface,
+  PR [#763](https://github.com/ethereumjs/ethereumjs-vm/pull/763)
+- Add Frontier hardfork support,
+  PR [#828](https://github.com/ethereumjs/ethereumjs-vm/pull/828)
+- Add Homestead hardfork support,
+  PR [#815](https://github.com/ethereumjs/ethereumjs-vm/pull/815)
+- Add Spurious Dragon hardfork support,
+  PR [#791](https://github.com/ethereumjs/ethereumjs-vm/pull/791)
+- Add Tangerine Whistle hardfork support,
+  PR [#807](https://github.com/ethereumjs/ethereumjs-vm/pull/807)
+
+**Changes**
+
+- Update to MPT v4, move `Account` trie-related operations to `StateManager`,
+  PR [#787](https://github.com/ethereumjs/ethereumjs-vm/pull/787)
+- Group opcodes based upon hardfork,
+  PR [#798](https://github.com/ethereumjs/ethereumjs-vm/pull/798)
+- Group precompiles based upon hardfork,
+  PR [#783](https://github.com/ethereumjs/ethereumjs-vm/pull/783)
+
+**Bug Fixes**
+
+- Fix `activatePrecompiles`,
+  PR [#797](https://github.com/ethereumjs/ethereumjs-vm/pull/797)
+
+## [4.2.0] - 2020-05-06
+
+**Additions**
+
+- Add `codeAddress` to VMs `step` event,
+  PR [#651](https://github.com/ethereumjs/ethereumjs-vm/pull/651)
+- Support for `skipNonce` and `skipBalance` tx options in `runBlock`,
+  PR [#663](https://github.com/ethereumjs/ethereumjs-vm/pull/663)
+- Add `init()` method to prevent race conditions,
+  PR [#665](https://github.com/ethereumjs/ethereumjs-vm/pull/665)
+
+**Removals**
+
+- Remove `PStateManager` (`StateManager` now uses Promises by default),
+  PR [#719](https://github.com/ethereumjs/ethereumjs-vm/pull/719)
+
+**Bug Fixes**
+
+- Explicitly duplicate EVMs stack items to ensure these do not get accidentally modified interally,
+  PR [#733](https://github.com/ethereumjs/ethereumjs-vm/pull/733)
+
+**Other changes**
+
+- Refactor opcodes,
+  PR [#664](https://github.com/ethereumjs/ethereumjs-vm/pull/664)
+
 ## [4.1.3] - 2020-01-09
 
 This release fixes a critical bug preventing the `MuirGlacier` release `4.1.2`
