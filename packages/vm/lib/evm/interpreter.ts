@@ -42,7 +42,7 @@ export interface InterpreterStep {
   pc: number
   depth: number
   address: Buffer
-  memory: number[]
+  memory: Buffer
   memoryWordCount: BN
   opcode: {
     name: string
@@ -204,6 +204,7 @@ export default class Interpreter {
      * @property {Buffer} memory the memory of the VM as a `buffer`
      * @property {BN} memoryWordCount current size of memory in words
      * @property {StateManager} stateManager a [`StateManager`](stateManager.md) instance (Beta API)
+     * @property {Buffer} codeAddress the address of the code which is currently being ran (this differs from `address` in a `DELEGATECALL` and `CALLCODE` call)
      */
     return this._vm._emit('step', eventObj)
   }

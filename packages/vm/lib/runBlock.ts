@@ -27,12 +27,17 @@ export interface RunBlockOpts {
    */
   root?: Buffer
   /**
-   * Whether to generate the stateRoot. If false `runBlock` will check the
-   * stateRoot of the block against the Trie
+   * Whether to generate the stateRoot. If `true` `runBlock` will check the
+   * `stateRoot` of the block against the current Trie, check the `receiptsTrie`,
+   * the `gasUsed` and the `logsBloom` after running. If any does not match,
+   * `runBlock` throws.
+   * Defaults to `false`.
    */
   generate?: boolean
   /**
-   * If true, will skip block validation
+   * If true, will skip "Block validation":
+   * Block validation validates the header (with respect to the blockchain),
+   * the transactions, the transaction trie and the uncle hash.
    */
   skipBlockValidation?: boolean
   /**
@@ -195,7 +200,7 @@ export default async function runBlock(this: VM, opts: RunBlockOpts): Promise<Ru
  * block itself. It computes the block rewards and puts
  * them on state (but doesn't persist the changes).
  * @param {Block} block
- * @param {Boolean} [skipBlockValidation=false]
+ * @param {RunBlockOpts} opts
  */
 async function applyBlock(this: VM, block: any, opts: RunBlockOpts) {
   // Validate block
@@ -218,6 +223,7 @@ async function applyBlock(this: VM, block: any, opts: RunBlockOpts) {
  * as well as gas usage and some relevant data. This method is
  * side-effect free (it doesn't modify the block nor the state).
  * @param {Block} block
+ * @param {RunBlockOpts} opts
  */
 async function applyTransactions(this: VM, block: any, opts: RunBlockOpts) {
   const bloom = new Bloom()
@@ -265,11 +271,6 @@ async function applyTransactions(this: VM, block: any, opts: RunBlockOpts) {
         ...abstractTxReceipt,
       } as PostByzantiumTxReceipt
     } else {
-      // This is just using a dummy place holder for the state root right now.
-      // Giving the correct intermediary state root would need a too depp intervention
-      // into the current checkpointing mechanism which hasn't been considered
-      // to be worth it on a HF backport, 2020-06-26
-
       const stateRoot = await this.stateManager.getStateRoot(true)
       txReceipt = {
         stateRoot: stateRoot,

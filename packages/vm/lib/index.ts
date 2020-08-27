@@ -193,7 +193,7 @@ export default class VM extends AsyncEventEmitter {
    * reverted if an exception is raised. If it's `false`, it won't revert if the block's header is
    * invalid. If an error is thrown from an event handler, the state may or may not be reverted.
    *
-   * @param opts - Default values for options:
+   * @param {RunBlockOpts} opts - Default values for options:
    *  - `generate`: false
    */
   async runBlock(opts: RunBlockOpts): Promise<RunBlockResult> {
@@ -207,6 +207,8 @@ export default class VM extends AsyncEventEmitter {
    * This method modifies the state. If an error is thrown, the modifications are reverted, except
    * when the error is thrown from an event handler. In the latter case the state may or may not be
    * reverted.
+   *
+   * @param {RunTxOpts} opts
    */
   async runTx(opts: RunTxOpts): Promise<RunTxResult> {
     await this.init()
@@ -217,6 +219,8 @@ export default class VM extends AsyncEventEmitter {
    * runs a call (or create) operation.
    *
    * This method modifies the state.
+   *
+   * @param {RunCallOpts} opts
    */
   async runCall(opts: RunCallOpts): Promise<EVMResult> {
     await this.init()
@@ -227,6 +231,8 @@ export default class VM extends AsyncEventEmitter {
    * Runs EVM code.
    *
    * This method modifies the state.
+   *
+   * @param {RunCodeOpts} opts
    */
   async runCode(opts: RunCodeOpts): Promise<ExecResult> {
     await this.init()
