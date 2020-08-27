@@ -1,13 +1,15 @@
-const { setupPreConditions, verifyPostConditions } = require('./util.js')
+const { setupPreConditions, verifyPostConditions, getDAOCommon } = require('./util.js')
 const { addHexPrefix } = require('ethereumjs-util')
 const Trie = require('merkle-patricia-tree').SecureTrie
 const { Block, BlockHeader } = require('@ethereumjs/block')
 const Blockchain = require('@ethereumjs/blockchain').default
+const Common = require('@ethereumjs/common').default
 const level = require('level')
 const levelMem = require('level-mem')
 
 module.exports = async function runBlockchainTest(options, testData, t) {
   // ensure that the test data is the right fork data
+
   if (testData.network != options.forkConfigTestSuite) {
     t.comment('skipping test: no data available for ' + options.forkConfigTestSuite)
     return
@@ -24,11 +26,11 @@ module.exports = async function runBlockchainTest(options, testData, t) {
     validate = true
   }
 
-  const hardfork = options.forkConfigVM
-
+  const common = (options.forkConfigTestSuite == "HomesteadToDaoAt5") ? getDAOCommon(5) : new Common('mainnet', options.forkConfigVM)
+  
   const blockchain = new Blockchain({
     db: blockchainDB,
-    hardfork,
+    common,
     validateBlocks: validate,
     validatePow: validate,
   })
@@ -43,20 +45,21 @@ module.exports = async function runBlockchainTest(options, testData, t) {
   } else {
     VM = require('../lib/index').default
   }
+
   const vm = new VM({
     state,
     blockchain,
-    hardfork,
+    common,
   })
 
-  const genesisBlock = new Block(undefined, { hardfork })
+  const genesisBlock = new Block(undefined, { common })
 
   // set up pre-state
   await setupPreConditions(vm.stateManager._trie, testData)
 
   // create and add genesis block
   genesisBlock.header = new BlockHeader(formatBlockHeader(testData.genesisBlockHeader), {
-    hardfork,
+    common,
   })
 
   t.ok(vm.stateManager._trie.root.equals(genesisBlock.header.stateRoot), 'correct pre stateRoot')
@@ -81,7 +84,6 @@ module.exports = async function runBlockchainTest(options, testData, t) {
     await cacheDB.close()
   }
 
-  //console.log(testData)
   const numBlocks = testData.blocks.length
   let currentBlock = 0
   let lastBlock = false
@@ -97,8 +99,8 @@ module.exports = async function runBlockchainTest(options, testData, t) {
 
     try {
       const block = new Block(Buffer.from(raw.rlp.slice(2), 'hex'), {
-        hardfork,
-      })
+        common
+      }) 
 
       try {
         await blockchain.putBlock(block)

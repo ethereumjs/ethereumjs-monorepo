@@ -5,6 +5,14 @@ import VM from './index'
 import Bloom from './bloom'
 import { RunTxResult } from './runTx'
 import { StateManager } from './state/index'
+import Account from '@ethereumjs/account'
+
+import * as DAOConfig from './config/dao_fork_accounts_config.json'
+
+/* DAO account list */
+
+const DAOAccountList = DAOConfig.DAOAccounts
+const DAORefundContract = DAOConfig.DAORefundContract
 
 /**
  * Options for running a block.
@@ -123,6 +131,14 @@ export default async function runBlock(this: VM, opts: RunBlockOpts): Promise<Ru
   // Set state root if provided
   if (opts.root) {
     await state.setStateRoot(opts.root)
+  }
+
+  // check for DAO support and if we should apply the DAO fork
+  if (
+    this._common.hardforkIsActiveOnChain('dao') &&
+    new BN(opts.block.header.number).eq(new BN(this._common.hardforkBlock('dao')))
+  ) {
+    await _applyDAOHardfork(state)
   }
 
   // Checkpoint state
@@ -320,4 +336,27 @@ async function rewardAccount(state: StateManager, address: Buffer, reward: BN): 
   const account = await state.getAccount(address)
   account.balance = toBuffer(new BN(account.balance).add(reward))
   await state.putAccount(address, account)
+}
+
+// apply the DAO fork changes to the VM
+async function _applyDAOHardfork(state: StateManager) {
+  const DAORefundContractAddress = Buffer.from(DAORefundContract, 'hex')
+  if (!state.accountExists(DAORefundContractAddress)) {
+    await state.putAccount(DAORefundContractAddress, new Account())
+  }
+  const DAORefundAccount = await state.getAccount(DAORefundContractAddress)
+  let DAOBalance = new BN(DAORefundAccount.balance)
+
+  for (let address of DAOAccountList) {
+    // retrieve the account and add it to the DAO's Refund accounts' balance.
+    let account = await state.getAccount(Buffer.from(address, 'hex'))
+    DAOBalance.iadd(new BN(account.balance))
+    // clear the accounts' balance
+    account.balance = Buffer.alloc(0)
+    await state.putAccount(Buffer.from(address, 'hex'), account)
+  }
+
+  // finally, put the Refund Account
+  DAORefundAccount.balance = toBuffer(DAOBalance)
+  await state.putAccount(DAORefundContractAddress, DAORefundAccount)
 }

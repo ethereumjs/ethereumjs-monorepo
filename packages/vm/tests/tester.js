@@ -16,6 +16,7 @@ function runTests() {
 
   const FORK_CONFIG = (argv.fork || config.DEFAULT_FORK_CONFIG)
   const FORK_CONFIG_TEST_SUITE = config.getRequiredForkConfigAlias(FORK_CONFIG)
+
   // Examples: Istanbul -> istanbul, MuirGlacier -> muirGlacier
   const FORK_CONFIG_VM = FORK_CONFIG.charAt(0).toLowerCase() + FORK_CONFIG.substring(1)
 
@@ -98,7 +99,7 @@ function runTests() {
       // https://github.com/ethereum/tests/releases/tag/v7.0.0-beta.1
 
       const common = new Common('mainnet', FORK_CONFIG_VM)
-      if (!common.gteHardfork('istanbul')) {
+      if (!common.gteHardfork('istanbul') && FORK_CONFIG_TEST_SUITE != "HomesteadToDaoAt5") {
         name = 'LegacyTests/Constantinople/'.concat(name)
       }
       testLoader.getTestsFromArgs(

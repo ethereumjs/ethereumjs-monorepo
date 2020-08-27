@@ -112,6 +112,7 @@ export default class VM extends AsyncEventEmitter {
       const supportedHardforks = [
         'chainstart',
         'homestead',
+        'dao',
         'tangerineWhistle',
         'spuriousDragon',
         'byzantium',

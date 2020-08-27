@@ -132,6 +132,8 @@ export class BlockHeader {
       },
     ]
     defineProperties(this, fields, data)
+
+    this._checkDAOExtraData()
   }
 
   /**
@@ -355,6 +357,29 @@ export class BlockHeader {
       return blockchain.getBlock(hash)
     } catch (e) {
       return undefined
+    }
+  }
+
+  /**
+   * Force extra data be DAO_ExtraData for DAO_ForceExtraDataRange blocks after DAO
+   * activation block (see: https://blog.slock.it/hard-fork-specification-24b889e70703)
+   */
+  private _checkDAOExtraData() {
+    const DAO_ExtraData = Buffer.from('64616f2d686172642d666f726b', 'hex')
+    const DAO_ForceExtraDataRange = 9
+
+    if (this._common.hardforkIsActiveOnChain('dao')) {
+      // verify the extraData field.
+      const blockNumber = new BN(this.number)
+      const DAOActivationBlock = new BN(this._common.hardforkBlock('dao'))
+      if (blockNumber.gte(DAOActivationBlock)) {
+        const drift = blockNumber.sub(DAOActivationBlock)
+        if (drift.lten(DAO_ForceExtraDataRange)) {
+          if (!this.extraData.equals(DAO_ExtraData)) {
+            throw new Error("extraData should be 'dao-hard-fork'")
+          }
+        }
+      }
     }
   }
 }

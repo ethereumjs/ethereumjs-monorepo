@@ -4,6 +4,7 @@ const Transaction = require('@ethereumjs/tx').Transaction
 const Block = require('@ethereumjs/block').Block
 const promisify = require('util.promisify')
 const { resolve } = require('core-js/fn/promise')
+const Common = require('@ethereumjs/common').default
 
 exports.dumpState = function (state, cb) {
   function readAccounts(state) {
@@ -407,4 +408,32 @@ exports.getRequiredForkConfigAlias = function (forkConfig) {
  */
 exports.isRunningInKarma = () => {
   return typeof window !== 'undefined' && window.__karma__
+}
+
+/**
+ * Returns a DAO common which has a different activation block than the default block
+ */
+exports.getDAOCommon = function(activationBlock) {
+  // here: get the default fork list of mainnet and only edit the DAO fork block (thus copy the rest of the "default" hardfork settings)
+  const defaultDAOCommon = new Common('mainnet', "dao")
+  // retrieve the hard forks list from defaultCommon...
+  let forks = defaultDAOCommon.hardforks()
+  let editedForks = []
+  // explicitly edit the "dao" block number:
+  for (let fork of forks) {
+    if (fork.name == "dao") {
+      editedForks.push({
+        name: "dao",
+        forkHash: fork.forkHash,
+        block: activationBlock
+      })
+    } else {
+      editedForks.push(fork)
+    }
+  }
+  const DAOCommon = Common.forCustomChain('mainnet', {
+    hardforks: editedForks
+  }, 'dao') 
+  return DAOCommon
+
 }
