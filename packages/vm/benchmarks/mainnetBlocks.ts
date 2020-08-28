@@ -2,8 +2,8 @@ import * as fs from 'fs'
 import { Account, Address, toBuffer, setLengthLeft } from 'ethereumjs-util'
 import { encode } from 'rlp'
 import blockFromRPC from '@ethereumjs/block/dist/from-rpc'
-import VM from '../../dist'
-import { StateManager, DefaultStateManager } from '../../dist/state'
+import VM from '../dist'
+import { StateManager, DefaultStateManager } from '../dist/state'
 import BN = require('bn.js')
 import Benchmark = require('benchmark')
 import Common from '@ethereumjs/common'
