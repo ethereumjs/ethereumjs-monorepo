@@ -3,7 +3,7 @@
 [![NPM Package](https://img.shields.io/npm/v/ethereumjs-util.svg)](https://www.npmjs.org/package/ethereumjs-util)
 [![Actions Status](https://github.com/ethereumjs/ethereumjs-util/workflows/Build/badge.svg)](https://github.com/ethereumjs/ethereumjs-util/actions)
 [![Coverage Status](https://img.shields.io/coveralls/ethereumjs/ethereumjs-util.svg)](https://coveralls.io/r/ethereumjs/ethereumjs-util)
-[![Gitter](https://img.shields.io/gitter/room/ethereum/ethereumjs-lib.svg)](https://gitter.im/ethereum/ethereumjs-lib)
+[![Discord][discord-badge]][discord-link]
 
 A collection of utility functions for Ethereum. It can be used in Node.js and in the browser with [browserify](http://browserify.org/).
 
@@ -90,3 +90,6 @@ If you want to join for work or do improvements on the libraries have a look at 
 # LICENSE
 
 MPL-2.0
+
+[discord-badge]: https://img.shields.io/static/v1?logo=discord&label=discord&message=Join&color=blue
+[discord-link]: https://discord.gg/TNwARpR
