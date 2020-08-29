@@ -5,6 +5,8 @@ import VM from '../dist'
 import { getPreState } from './util'
 import Common from '@ethereumjs/common'
 
+const BLOCK_FIXTURE = 'benchmarks/fixture/blocks-prestate.json'
+
 const onAdd = async (vm: VM, block: Block) => {
   // TODO: validate tx, add receipt and gas usage checks
   await vm.copy().runBlock({
@@ -14,12 +16,8 @@ const onAdd = async (vm: VM, block: Block) => {
   })
 }
 
-const onCycle = (event: any) => {
-  console.log(String(event.target))
-}
-
-export async function mainnetBlocks(suite: any, blockFixture: string, numSamples?: number) {
-  let data = JSON.parse(fs.readFileSync(blockFixture, 'utf8'))
+export async function mainnetBlocks(suite: any, numSamples?: number) {
+  let data = JSON.parse(fs.readFileSync(BLOCK_FIXTURE, 'utf8'))
   if (!Array.isArray(data)) data = [data]
   console.log(`Total number of blocks in data set: ${data.length}`)
 
@@ -41,19 +39,4 @@ export async function mainnetBlocks(suite: any, blockFixture: string, numSamples
       onAdd(vm, block)
     }
   }
-
-  if (suite) {
-    suite
-      .on('cycle', onCycle)
-      .run()
-  }
-}
-
-const args = process.argv
-if (args[2] !== 'mainnetBlocks') {
-  mainnetBlocks(undefined, args[2], args[3] ? Number(args[3]) : undefined)
-    .then()
-    .catch((e: Error) => {
-      throw e
-    })
 }

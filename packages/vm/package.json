@@ -12,7 +12,8 @@
   "scripts": {
     "build": "ethereumjs-config-ts-build",
     "build:benchmarks": "npm run build && tsc -p tsconfig.benchmarks.json",
-    "benchmarks": "node --max-old-space-size=4096 ./benchmarks/mainnetBlocks.js benchmarks/fixture/blocks-prestate.json",
+    "benchmarks": "node --max-old-space-size=4096 ./benchmarks/run.js benchmarks",
+    "profiling": "0x ./benchmarks/run.js profiling",
     "prepublishOnly": "npm run build && npm run test:buildIntegrity",
     "coverage": "nyc npm run coverage:test && nyc report --reporter=lcov",
     "coverage:test": "tape -r ts-node/register './tests/api/**/*.ts' ./tests/tester.ts --state",
@@ -58,9 +59,17 @@
     "util.promisify": "^1.0.1"
   },
   "devDependencies": {
+<<<<<<< HEAD
     "@ethereumjs/config-coverage": "^2.0.0",
     "@ethereumjs/config-typescript": "^2.0.0",
     "@ethereumjs/eslint-config-defaults": "^2.0.0",
+=======
+    "0x": "^4.7.5",
+    "@ethereumjs/config-nyc": "^1.1.1",
+    "@ethereumjs/config-prettier": "^1.1.1",
+    "@ethereumjs/config-tsc": "^1.1.1",
+    "@ethereumjs/config-tslint": "^1.1.1",
+>>>>>>> d7aee6b3... vm: integrate profiling into package.json scripts, add finalized benchmarks and profliling CL API
     "@types/benchmark": "^1.0.33",
     "@types/bn.js": "^4.11.6",
     "@types/core-js": "^2.5.0",

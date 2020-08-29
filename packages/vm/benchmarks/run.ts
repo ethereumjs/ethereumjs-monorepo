@@ -1,40 +1,51 @@
 import Benchmark = require('benchmark')
 import { mainnetBlocks } from './mainnetBlocks'
 
+const onCycle = (event: any) => {
+  console.log(String(event.target))
+}
+
 async function main() {
-  const suite = new Benchmark.Suite()
-
   const args = process.argv
-  const commandUsageStrg = 'Usage: node benchmarks/run.ts BENCHMARK_NAME'
+  let suite = null
+  // Choose between benchmarking or profiling (with 0x)
+  if (args[2] === 'benchmarks') {
+    console.log('Benchmarking started...')
+    suite = new Benchmark.Suite()
+  } else {
+    console.log('Profiling started...')
+  }
 
-  if (args.length < 3) {
-    console.log('Please provide a benchmark name when running a benchmark')
-    console.log(`${commandUsageStrg} [ BENCHMARK_SPECIFIC_ARGUMENTS ]`)
+  const commandUsageStrg =
+    'Usage: npm run benchmarks|profiling -- BENCHMARK_NAME[:NUM_SAMPLES][,BENCHMARK_NAME[:NUM_SAMPLES]]'
+
+  if (args.length < 4) {
+    console.log('Please provide at least one benchmark name when running a benchmark')
     return process.exit(1)
   }
 
-  const name = args[2]
-  const argErrorStrg = `Insufficient arguments for benchmark ${name}`
+  const benchmarks = args[3].split(',')
 
-  // Benchmark: mainnetBlocks
-  if (name === 'mainnetBlocks') {
-    if (args.length < 4 || args.length > 5) {
-      console.log(argErrorStrg)
-      console.log(`${commandUsageStrg} BLOCK_FIXTURE [NUM_SAMPLES]`)
-      return process.exit(1)
+  for (const benchmark of benchmarks) {
+    const [name, numSamples] = benchmark.split(':')
+    console.log(`Running '${name}':`)
+    // Benchmark: mainnetBlocks
+    if (name === 'mainnetBlocks') {
+      await mainnetBlocks(suite, Number(numSamples))
+    } else {
+      console.log(`Benchmark with name ${name} doesn't exist, skipping...`)
     }
+  }
 
-    const blockFixture = args[3]
-    const numSamples = args.length === 4 ? Number(args[4]) : undefined
-    await mainnetBlocks(suite, blockFixture, numSamples)
-  } else {
-    console.log(`Benchmark with name ${name} doesn\'t exist`)
+  if (suite) {
+    suite.on('cycle', onCycle).run()
   }
 }
 
 main()
   .then(() => {
     console.log('Benchmark run finished.')
+    process.exit(0)
   })
   .catch((e: Error) => {
     throw e
