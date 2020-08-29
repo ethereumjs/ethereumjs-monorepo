@@ -3,7 +3,7 @@
 [![Actions Status](https://github.com/ethereumjs/ethereumjs-client/workflows/Build/badge.svg)](https://github.com/ethereumjs/ethereumjs-client/actions)
 [![Coverage Status](https://img.shields.io/coveralls/ethereumjs/ethereumjs-client.svg?style=flat-square)](https://coveralls.io/r/ethereumjs/ethereumjs-client)
 [![JavaScript Style Guide](https://img.shields.io/badge/code_style-standard-brightgreen.svg)](https://standardjs.com)
-[![Gitter](https://img.shields.io/gitter/room/ethereum/ethereumjs.svg?style=flat-square)](https://gitter.im/ethereum/ethereumjs)
+[![Discord][discord-badge]][discord-link]
 
 This is the work repository for the EthereumJS client project targetting both Node.js and the browser as a platform.
 
@@ -334,3 +334,6 @@ Related issues are labelled with the ``ethereumjs-client`` label, see [here](htt
 See our organizational [documentation](https://ethereumjs.readthedocs.io) for an introduction to `EthereumJS` as well as information on current standards and best practices.
 
 If you want to join for work or do improvements on the libraries have a look at our [contribution guidelines](https://ethereumjs.readthedocs.io/en/latest/contributing.html).
+
+[discord-badge]: https://img.shields.io/static/v1?logo=discord&label=discord&message=Join&color=blue
+[discord-link]: https://discord.gg/TNwARpR
