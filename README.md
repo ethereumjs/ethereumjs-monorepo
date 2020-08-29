@@ -3,7 +3,7 @@
 [![NPM Package](https://img.shields.io/npm/v/merkle-patricia-tree)](https://www.npmjs.org/package/merkle-patricia-tree)
 [![Actions Status](https://github.com/ethereumjs/merkle-patricia-tree/workflows/Build/badge.svg)](https://github.com/ethereumjs/merkle-patricia-tree/actions)
 [![Coverage Status](https://img.shields.io/coveralls/ethereumjs/merkle-patricia-tree.svg)](https://coveralls.io/r/ethereumjs/merkle-patricia-tree)
-[![Gitter](https://img.shields.io/gitter/room/ethereum/ethereumjs.svg)](https://gitter.im/ethereum/ethereumjs)
+[![Discord][discord-badge]][discord-link]
 
 [![js-standard-style](https://cdn.rawgit.com/feross/standard/master/badge.svg)](https://github.com/feross/standard)
 
@@ -148,3 +148,6 @@ If you want to join for work or do improvements on the libraries have a look at 
 # LICENSE
 
 MPL-2.0
+
+[discord-badge]: https://img.shields.io/static/v1?logo=discord&label=discord&message=Join&color=blue
+[discord-link]: https://discord.gg/TNwARpR
