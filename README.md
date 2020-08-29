@@ -3,7 +3,7 @@
 [![NPM Package](https://img.shields.io/npm/v/ethereumjs-wallet.svg)](https://www.npmjs.org/package/ethereumjs-wallet)
 [![Actions Status](https://github.com/ethereumjs/ethereumjs-wallet/workflows/Build/badge.svg)](https://github.com/ethereumjs/ethereumjs-wallet/actions)
 [![Coverage Status](https://img.shields.io/coveralls/ethereumjs/ethereumjs-wallet.svg)](https://coveralls.io/r/ethereumjs/ethereumjs-wallet)
-[![Gitter](https://img.shields.io/gitter/room/ethereum/ethereumjs-lib.svg)](https://gitter.im/ethereum/ethereumjs-lib)
+[![Discord][discord-badge]][discord-link]
 
 A lightweight wallet implementation. At the moment it supports key creation and conversion between various formats.
 
@@ -134,3 +134,6 @@ If you want to join for work or do improvements on the libraries have a look at 
 MIT License
 
 Copyright (C) 2016 Alex Beregszaszi
+
+[discord-badge]: https://img.shields.io/static/v1?logo=discord&label=discord&message=Join&color=blue
+[discord-link]: https://discord.gg/TNwARpR
