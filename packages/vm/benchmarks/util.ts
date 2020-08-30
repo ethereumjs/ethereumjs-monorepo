@@ -23,19 +23,12 @@ export async function getPreState(pre: {
     const acc = new Account()
     acc.nonce = hexToBuffer(obj.nonce)
     acc.balance = hexToBuffer(obj.balance)
-    const storageTrie = state._trie.copy()
-    storageTrie.root = null!
-    for (const sk in obj.storage) {
-      const sv = obj.storage[sk]
-      const valBN = new BN(sv.slice(2), 16)
-      if (valBN.isZero()) continue
-      const val = encode(valBN.toBuffer('be'))
-      const key = setLengthLeft(Buffer.from(sk.slice(2), 'hex'), 32)
-      await storageTrie.put(key, val)
-    }
-    acc.stateRoot = storageTrie.root
     await state.putAccount(kBuf, acc)
     await state.putContractCode(kBuf, code)
+    for (const sk in obj.storage) {
+      const sv = obj.storage[sk]
+      await state.putContractStorage(kBuf, toBuffer(sk), toBuffer(sv))
+    }
   }
   await state.commit()
   return state
