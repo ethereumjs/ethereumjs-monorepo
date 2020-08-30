@@ -503,7 +503,7 @@ export const handlers: { [k: string]: OpHandler } = {
 
     // TODO: Replace getContractStorage with EEI method
     const found = await getContractStorage(runState, runState.eei.getAddress(), keyBuf)
-    updateSstoreGas(runState, found, value)
+    updateSstoreGas(runState, found, padStorageSlotLength(value))
     await runState.eei.storageStore(keyBuf, value)
   },
   JUMP: function (runState: RunState) {
@@ -955,13 +955,36 @@ function jumpSubIsValid(runState: RunState, dest: number): boolean {
   return runState.validJumpSubs.indexOf(dest) !== -1
 }
 
+/**
+ * Ensures that we correctly use a storage slot value:
+ * If the value is a buffer full of zeros, return the empty buffer (0 bytes)
+ * If this is not the case, either left-pad the buffer with zeros or remove the leftmost bytes in order to get a Buffer of 32 bytes length.
+ * @param value value to pad
+ */
+function padStorageSlotLength(value: Buffer): Buffer {
+  const zeroBufferEquivalent = Buffer.alloc(value.length, 0)
+  if (value.equals(zeroBufferEquivalent)) {
+    return Buffer.alloc(0)
+  } else {
+    if (value.length < 32) {
+      return Buffer.concat([Buffer.alloc(32 - value.length, 0), value])
+    } else if (value.length > 32) {
+      // strip lefmost bytes?
+      return value.slice(value.length - 32)
+    }
+  }
+  return value
+}
+
 async function getContractStorage(runState: RunState, address: Buffer, key: Buffer) {
-  const current = await runState.stateManager.getContractStorage(address, key)
+  const current = padStorageSlotLength(await runState.stateManager.getContractStorage(address, key))
   if (
     runState._common.hardfork() === 'constantinople' ||
     runState._common.gteHardfork('istanbul')
   ) {
-    const original = await runState.stateManager.getOriginalContractStorage(address, key)
+    const original = padStorageSlotLength(
+      await runState.stateManager.getOriginalContractStorage(address, key),
+    )
     return { current, original }
   } else {
     return current
