@@ -4,7 +4,7 @@
 [![GitHub Issues][ethash-issues-badge]][ethash-issues-link]
 [![Actions Status][ethash-actions-badge]][ethash-actions-link]
 [![Code Coverage][ethash-coverage-badge]][ethash-coverage-link]
-[![Gitter][gitter-badge]][gitter-link]
+[![Discord][discord-badge]][discord-link]
 
 Implements [Ethash](https://github.com/ethereum/wiki/wiki/Ethash).
 
@@ -94,7 +94,8 @@ An `Object` containing:
 
 [MPL-2.0](https://www.mozilla.org/MPL/2.0/)
 
-[gitter-link]: https://gitter.im/ethereum/ethereumjs
+[discord-badge]: https://img.shields.io/static/v1?logo=discord&label=discord&message=Join&color=blue
+[discord-link]: https://discord.gg/TNwARpR
 [ethash-npm-badge]: https://img.shields.io/npm/v/@ethereumjs/ethash.svg
 [ethash-npm-link]: https://www.npmjs.org/package/@ethereumjs/ethash
 [ethash-issues-badge]: https://img.shields.io/github/issues/ethereumjs/ethereumjs-vm/package:%20ethash?label=issues

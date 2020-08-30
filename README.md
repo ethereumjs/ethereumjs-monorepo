@@ -5,9 +5,7 @@
 # EthereumJS Monorepo
 
 [![Code Coverage][coverage-badge]][coverage-link]
-[![Gitter][gitter-badge]][gitter-link]
-[![StackExchange][stackexchange-badge]][stackexchange-link]
-
+[![Discord][discord-badge]][discord-link]
 [![JS Standard Style][js-standard-style-badge]][js-standard-style-link]
 
 This was originally the EthereumJS VM repository. On Q1 2020 we brought some of its building blocks together to simplify development. Below you can find the packages included in this repository.
@@ -128,8 +126,8 @@ If you want to join for work or do improvements on the libraries have a look at 
 
 [coverage-badge]: https://codecov.io/gh/ethereumjs/ethereumjs-vm/branch/master/graph/badge.svg
 [coverage-link]: https://codecov.io/gh/ethereumjs/ethereumjs-vm
-[gitter-badge]: https://img.shields.io/gitter/room/ethereum/ethereumjs.svg
-[gitter-link]: https://gitter.im/ethereum/ethereumjs
+[discord-badge]: https://img.shields.io/static/v1?logo=discord&label=discord&message=Join&color=blue
+[discord-link]: https://discord.gg/TNwARpR[![StackExchange][stackexchange-badge]][stackexchange-link]
 [stackexchange-badge]: https://img.shields.io/badge/ethereumjs-stackexchange-brightgreen
 [stackexchange-link]: https://ethereum.stackexchange.com/questions/tagged/ethereumjs
 [js-standard-style-badge]: https://cdn.rawgit.com/feross/standard/master/badge.svg
