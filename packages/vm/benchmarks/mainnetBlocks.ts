@@ -7,8 +7,9 @@ import Common from '@ethereumjs/common'
 
 const BLOCK_FIXTURE = 'benchmarks/fixture/blocks-prestate.json'
 
-const onAdd = async (vm: VM, block: Block) => {
+const onAdd = async (vm: VM, block: Block, receipts: any) => {
   const vmCopy = vm.copy()
+
   let result = await vmCopy.runBlock({
     block,
     generate: true,
@@ -20,6 +21,25 @@ const onAdd = async (vm: VM, block: Block) => {
     result.receiptRoot &&
     result.receiptRoot.toString('hex') !== block.header.receiptTrie.toString('hex')
   ) {
+    // there's something wrong here with the receipts trie. if block has receipt data we can check against the expected result of the block and the 
+    // reported data of the VM in order to isolate the problem
+
+    // check if there are receipts
+    if (receipts) {
+      let cumGasUsed = 0
+      for (let index = 0; index < receipts.length; index++) {
+        let gasUsedExpected = parseInt(receipts[index].gasUsed.substr(2), 16)
+        let cumGasUsedActual = parseInt(result.receipts[index].gasUsed.toString('hex'), 16)
+        let gasUsed = cumGasUsedActual - cumGasUsed
+        if (gasUsed != gasUsedExpected) {
+          console.log("[DEBUG] Transaction at index " + index + " of block " + bufferToInt(block.header.number) + " did not yield expected gas. Hash: " + receipts[index].transactionHash)
+          console.log("[DEBUG] Gas used expected: " + gasUsedExpected + ", actual: " + gasUsed + ", difference: " + (gasUsed - gasUsedExpected))
+        }
+        cumGasUsed = cumGasUsedActual
+      }
+    }
+
+
     throw new Error('invalid receiptTrie ')
   }
   if (result.logsBloom.toString('hex') !== block.header.bloom.toString('hex')) {
@@ -42,7 +62,7 @@ export async function mainnetBlocks(suite: any, numSamples?: number) {
   const common = new Common({ chain: 'mainnet', hardfork: 'muirGlacier' })
 
   for (const blockData of data) {
-    const block = blockFromRPC(blockData.block)
+    const block = blockFromRPC(blockData.block, [], { common: common })
     const blockNumber = block.header.number.toString()
 
     const stateManager = await getPreState(blockData.preState, common)
@@ -51,7 +71,7 @@ export async function mainnetBlocks(suite: any, numSamples?: number) {
     if (suite) {
       suite.add(`Block ${blockNumber}`, onAdd)
     } else {
-      onAdd(vm, block)
+      await onAdd(vm, block, blockData.receipts)
     }
   }
 }
