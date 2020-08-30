@@ -2,7 +2,7 @@ import * as fs from 'fs'
 import blockFromRPC from '@ethereumjs/block/dist/from-rpc'
 import { Block } from '@ethereumjs/block'
 import VM from '../dist'
-import { getPreState } from './util'
+import { getPreState, getBlockchain } from './util'
 import Common from '@ethereumjs/common'
 
 const BLOCK_FIXTURE = 'benchmarks/fixture/blocks-prestate.json'
@@ -66,7 +66,8 @@ export async function mainnetBlocks(suite: any, numSamples?: number) {
     const blockNumber = block.header.number.toString()
 
     const stateManager = await getPreState(blockData.preState, common)
-    const vm = new VM({ stateManager, common })
+    const blockchain = getBlockchain(blockData.blockhashes) as any
+    const vm = new VM({ stateManager, common, blockchain })
 
     if (suite) {
       suite.add(`Block ${blockNumber}`, onAdd)

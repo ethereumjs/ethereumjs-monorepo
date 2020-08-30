@@ -4,6 +4,7 @@ import Account from '@ethereumjs/account'
 import { encode } from 'rlp'
 import { StateManager, DefaultStateManager } from '../dist/state'
 import Common from '@ethereumjs/common'
+import Mockchain from './mockchain'
 
 interface StateTestPreAccount {
   balance: string
@@ -41,6 +42,17 @@ export async function getPreState(
   }
   await state.commit()
   return state
+}
+
+export function getBlockchain(blockhashes: any): Mockchain {
+  let mockchain = new Mockchain()
+  for (let hashStr in blockhashes) {
+    const bn = new BN(hashStr.substr(2), 'hex')
+    const hash = blockhashes[hashStr]
+    const hashBuffer = Buffer.from(hash.substr(2), 'hex')
+    mockchain.putBlockHash(bn, hashBuffer)
+  }
+  return mockchain
 }
 
 const hexToBuffer = (h: string, allowZero: boolean = false): Buffer => {
