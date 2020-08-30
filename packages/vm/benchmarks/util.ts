@@ -3,6 +3,7 @@ import { toBuffer, setLengthLeft } from 'ethereumjs-util'
 import Account from '@ethereumjs/account'
 import { encode } from 'rlp'
 import { StateManager, DefaultStateManager } from '../dist/state'
+import Common from '@ethereumjs/common'
 
 interface StateTestPreAccount {
   balance: string
@@ -11,10 +12,13 @@ interface StateTestPreAccount {
   storage: { [k: string]: string }
 }
 
-export async function getPreState(pre: {
-  [k: string]: StateTestPreAccount
-}): Promise<StateManager> {
-  const state = new DefaultStateManager()
+export async function getPreState(
+  pre: {
+    [k: string]: StateTestPreAccount
+  },
+  common: Common,
+): Promise<StateManager> {
+  const state = new DefaultStateManager({ common })
   await state.checkpoint()
   for (const k in pre) {
     const kBuf = toBuffer(k)

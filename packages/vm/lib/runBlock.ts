@@ -66,6 +66,22 @@ export interface RunBlockResult {
    * Results of executing the transactions in the block
    */
   results: RunTxResult[]
+  /**
+   * The stateRoot after executing the block
+   */
+  stateRoot: Buffer
+  /**
+   * The gas used after executing the block
+   */
+  gasUsed: BN
+  /**
+   * The bloom filter of the LOGs (events) after executing the block
+   */
+  logsBloom: Buffer
+  /**
+   * The receipt root after executing the block
+   */
+  receiptRoot: Buffer
 }
 
 /**
@@ -169,10 +185,8 @@ export default async function runBlock(this: VM, opts: RunBlockOpts): Promise<Ru
   try {
     result = await applyBlock.bind(this)(block, opts)
     debug(
-      `Received block results gasUsed=${result.gasUsed} bloom=${short(result.bloom.bitvector)} (${
-        result.bloom.bitvector.length
-      } bytes) receiptRoot=${result.receiptRoot.toString('hex')} receipts=${
-        result.receipts.length
+      `Received block results gasUsed=${result.gasUsed} bloom=${short(result.bloom.bitvector)} (${result.bloom.bitvector.length
+      } bytes) receiptRoot=${result.receiptRoot.toString('hex')} receipts=${result.receipts.length
       } txResults=${result.results.length}`
     )
   } catch (err) {
