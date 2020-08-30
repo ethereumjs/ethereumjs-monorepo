@@ -31,7 +31,12 @@ export async function getPreState(
     await state.putContractCode(kBuf, code)
     for (const sk in obj.storage) {
       const sv = obj.storage[sk]
-      await state.putContractStorage(kBuf, toBuffer(sk), toBuffer(sv))
+      const valueBuffer = toBuffer(sv)
+      // verify if this value buffer is not a zero buffer. if so, we should not write it...
+      const zeroBufferEquivalent = Buffer.alloc(valueBuffer.length, 0)
+      if (!zeroBufferEquivalent.equals(valueBuffer)) {
+        await state.putContractStorage(kBuf, toBuffer(sk), toBuffer(sv))
+      }
     }
   }
   await state.commit()
