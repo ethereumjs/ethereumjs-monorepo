@@ -206,7 +206,7 @@ export default class Interpreter {
      * @property {StateManager} stateManager a [`StateManager`](stateManager.md) instance (Beta API)
      * @property {Buffer} codeAddress the address of the code which is currently being ran (this differs from `address` in a `DELEGATECALL` and `CALLCODE` call)
      */
-    return this._vm._emit('step', eventObj)
+    return this._vm.emit('step', eventObj)
   }
 
   // Returns all valid jump and jumpsub destinations.

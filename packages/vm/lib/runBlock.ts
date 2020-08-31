@@ -126,7 +126,7 @@ export default async function runBlock(this: VM, opts: RunBlockOpts): Promise<Ru
    * @type {Object}
    * @property {Block} block emits the block that is about to be processed
    */
-  await this._emit('beforeBlock', opts.block)
+  this.emit('beforeBlock', opts.block)
 
   // Set state root if provided
   if (opts.root) {
@@ -186,7 +186,7 @@ export default async function runBlock(this: VM, opts: RunBlockOpts): Promise<Ru
    * @type {Object}
    * @property {Object} result emits the results of processing a block
    */
-  await this._emit('afterBlock', {
+  this.emit('afterBlock', {
     receipts: result.receipts,
     results: result.results,
   })

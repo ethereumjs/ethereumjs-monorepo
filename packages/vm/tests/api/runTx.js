@@ -14,7 +14,6 @@ function setup(vm = null) {
       emit: (e, val, cb) => {
         cb()
       },
-      _emit: (e, val) => new Promise((resolve, reject) => resolve()),
     }
   }
 

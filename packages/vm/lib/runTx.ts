@@ -96,7 +96,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
    * @type {Object}
    * @property {Transaction} tx emits the Transaction that is about to be processed
    */
-  await this._emit('beforeTx', tx)
+  this.emit('beforeTx', tx)
 
   // Validate gas limit against base fee
   const basefee = tx.getBaseFee()
@@ -113,7 +113,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
       `sender doesn't have enough funds to send tx. The upfront cost is: ${tx
         .getUpfrontCost()
         .toString()}` +
-        ` and the sender's account only has: ${new BN(fromAccount.balance).toString()}`,
+      ` and the sender's account only has: ${new BN(fromAccount.balance).toString()}`,
     )
   } else if (!opts.skipNonce && !new BN(fromAccount.nonce).eq(new BN(tx.nonce))) {
     throw new Error(
@@ -198,7 +198,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
    * @type {Object}
    * @property {Object} result result of the transaction
    */
-  await this._emit('afterTx', results)
+  this.emit('afterTx', results)
 
   return results
 }

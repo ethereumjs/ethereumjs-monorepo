@@ -1,4 +1,5 @@
 import BN = require('bn.js')
+import { EventEmitter } from 'events'
 import { SecureTrie as Trie } from 'merkle-patricia-tree'
 import Account from '@ethereumjs/account'
 import Blockchain from '@ethereumjs/blockchain'
@@ -12,8 +13,6 @@ import { EVMResult, ExecResult } from './evm/evm'
 import { OpcodeList, getOpcodesForHF } from './evm/opcodes'
 import { precompiles } from './evm/precompiles'
 import runBlockchain from './runBlockchain'
-const AsyncEventEmitter = require('async-eventemitter')
-const promisify = require('util.promisify')
 
 /**
  * Options for instantiating a [[VM]].
@@ -61,17 +60,14 @@ export interface VMOpts {
 /**
  * Execution engine which can be used to run a blockchain, individual
  * blocks, individual transactions, or snippets of EVM bytecode.
- *
- * This class is an AsyncEventEmitter, please consult the README to learn how to use it.
  */
-export default class VM extends AsyncEventEmitter {
+export default class VM extends EventEmitter {
   opts: VMOpts
   _common: Common
   stateManager: StateManager
   blockchain: Blockchain
   allowUnlimitedContractSize: boolean
   _opcodes: OpcodeList
-  public readonly _emit: (topic: string, data: any) => Promise<void>
   protected isInitialized: boolean = false
 
   /**
@@ -140,10 +136,6 @@ export default class VM extends AsyncEventEmitter {
 
     this.allowUnlimitedContractSize =
       opts.allowUnlimitedContractSize === undefined ? false : opts.allowUnlimitedContractSize
-
-    // We cache this promisified function as it's called from the main execution loop, and
-    // promisifying each time has a huge performance impact.
-    this._emit = promisify(this.emit.bind(this))
   }
 
   async init(): Promise<void> {

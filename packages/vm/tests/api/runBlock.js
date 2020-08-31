@@ -17,7 +17,6 @@ function setup(vm = null) {
     vm = {
       stateManager,
       emit: (e, val, cb) => cb(),
-      _emit: (e, val) => new Promise((resolve, reject) => resolve()),
       runTx: (opts) => new Promise((resolve, reject) => reject(new Error('test'))),
       _common: new Common('mainnet', 'byzantium'),
     }

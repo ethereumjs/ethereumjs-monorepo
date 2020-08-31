@@ -122,7 +122,7 @@ export default class EVM {
    * if an exception happens during the message execution.
    */
   async executeMessage(message: Message): Promise<EVMResult> {
-    await this._vm._emit('beforeMessage', message)
+    this._vm.emit('beforeMessage', message)
 
     await this._state.checkpoint()
 
@@ -150,7 +150,7 @@ export default class EVM {
       await this._state.commit()
     }
 
-    await this._vm._emit('afterMessage', result)
+    this._vm.emit('afterMessage', result)
 
     return result
   }
@@ -232,7 +232,7 @@ export default class EVM {
       code: message.code,
     }
 
-    await this._vm._emit('newContract', newContractEvent)
+    this._vm.emit('newContract', newContractEvent)
 
     toAccount = await this._state.getAccount(message.to)
     // EIP-161 on account creation and CREATE execution
