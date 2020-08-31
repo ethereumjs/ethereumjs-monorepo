@@ -11,9 +11,7 @@ function setup(vm = null) {
     const stateManager = new DefaultStateManager({})
     vm = {
       stateManager,
-      emit: (e, val, cb) => {
-        cb()
-      },
+      emit: () => {},
     }
   }
 
