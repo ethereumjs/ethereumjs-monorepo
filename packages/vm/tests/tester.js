@@ -6,7 +6,29 @@ const config = require('./config')
 const testLoader = require('./testLoader')
 const Common = require('@ethereumjs/common').default
 
-function runTests() {
+/**
+ * Test runner 
+ * CLI arguments:
+ * --state: run state tests
+ * --blockchain: run blockchain tests
+ * --fork: fork to use for these tests
+ * --skip: comma seperated list of tests to skip. choices of: all,broken,permanent,slow. Defaults to all
+ * --runSkipped: comma seperated list of tests to skip if --skip is not set. choices of: all,broken,permanent,slow. Defaults to none
+ * --file: test file to run
+ * --test: test name to run
+ * --dir: test directory to look for tests
+ * --excludeDir: test directory to exlude from testing
+ * --testsPath: root directory of tests to look
+ * --customStateTest: run a file with a custom state test (not in test directory)
+ * --jsontrace: enable json step tracing in state tests
+ * --dist: use the compiled version of the VM
+ * --data: only run this state test if the transaction has this calldata
+ * --gas: only run this state test if the transaction has this gasLimit
+ * --value: only run this state test if the transaction has this call value
+ * --debug: enable BlockchainTests debugger (compares post state against the expected post state)
+ */
+
+async function runTests() {
   let name
   if (argv.state) {
     name = 'GeneralStateTests'
@@ -40,7 +62,7 @@ function runTests() {
   let runnerArgs = {}
   runnerArgs.forkConfigVM = FORK_CONFIG_VM
   runnerArgs.forkConfigTestSuite = FORK_CONFIG_TEST_SUITE
-  runnerArgs.common = config.getCommon(FORK_CONFIG_TEST_SUITE)
+  runnerArgs.common = config.getCommon(FORK_CONFIG_VM)
   runnerArgs.jsontrace = argv.jsontrace
   runnerArgs.dist = argv.dist
   runnerArgs.data = argv.data // GeneralStateTests
@@ -99,33 +121,58 @@ function runTests() {
       })
     })
   } else {
-    tape(name, t => {
+    tape(name, async t => {
+      let testIdentifier
+      let failingTests = {}
+      t.on('result', (o) => {
+        if ((o.ok != undefined) && !o.ok) {
+          if (failingTests[testIdentifier]) {
+            failingTests[testIdentifier].push(o.name)
+          } else {
+            failingTests[testIdentifier] = [o.name]
+          }
+        }
+      })
       const runner = require(`./${name}Runner.js`)
       // Tests for HFs before Istanbul have been moved under `LegacyTests/Constantinople`:
       // https://github.com/ethereum/tests/releases/tag/v7.0.0-beta.1
 
-      const common = new Common({ chain: 'mainnet', hardfork: FORK_CONFIG_VM })
-      if (!common.gteHardfork('istanbul') && FORK_CONFIG_TEST_SUITE != "HomesteadToDaoAt5") {
-        name = 'LegacyTests/Constantinople/'.concat(name)
+      const dirs = config.getTestDirs(FORK_CONFIG_VM, name)
+      for (let dir of dirs) {
+        await new Promise((resolve, reject) => {
+          testLoader.getTestsFromArgs(
+            dir,
+            async (fileName, testName, test) => {
+              let runSkipped = testGetterArgs.runSkipped
+              let inRunSkipped = runSkipped.includes(fileName)
+              if (runSkipped.length === 0 || inRunSkipped) {
+                testIdentifier = `file: ${fileName} test: ${testName}`
+                t.comment(testIdentifier)
+                await runner(runnerArgs, test, t)
+              }
+            },
+            testGetterArgs,
+          )
+          .then(() => {
+            resolve()
+          })
+          .catch((error) => {
+            t.fail(error)
+            reject()
+          })
+        })
       }
-      testLoader.getTestsFromArgs(
-        name,
-        async (fileName, testName, test) => {
-          let runSkipped = testGetterArgs.runSkipped
-          let inRunSkipped = runSkipped.includes(fileName)
-          if (runSkipped.length === 0 || inRunSkipped) {
-            t.comment(`file: ${fileName} test: ${testName}`)
-            await runner(runnerArgs, test, t)
-          }
-        },
-        testGetterArgs,
-      )
-      .then(() => {
-        t.end()
-      })
-      .catch((error) => {
-        t.comment(error)
-      })
+
+      for (let failingTestIdentifier in failingTests) {
+        console.log("Errors thrown in " + failingTestIdentifier + ":")
+        const errors = failingTests[failingTestIdentifier]
+        for (let i = 0; i < errors.length; i++) {
+          console.log("\t" + errors[i])
+        }
+      }
+
+      t.end()
+
     })
   }
 }

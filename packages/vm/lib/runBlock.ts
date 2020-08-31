@@ -119,19 +119,6 @@ export default async function runBlock(this: VM, opts: RunBlockOpts): Promise<Ru
   const block = opts.block
   const generateStateRoot = !!opts.generate
 
-  // check if we should update the Common / opcodes of VM
-  const nextForkBlock = this._common.nextHardforkBlock()
-  // check if there's a future fork (if not, nextForkBlock is `null`) and if current block number is the fork number
-  if (nextForkBlock && new BN(block.header.number).eqn(nextForkBlock)) {
-    // if yes, update the hardfork of the Common
-    // the active hardfork is the final hardfork active at this block
-    const activeHardforks = this._common.activeHardforks(nextForkBlock)
-    const hardforkName = activeHardforks[activeHardforks.length - 1].name
-    this._common.setHardfork(hardforkName)
-    // update the vms opcodes based upon the current fork
-    this._updateOpcodes()
-  }
-
   /**
    * The `beforeBlock` event.
    *

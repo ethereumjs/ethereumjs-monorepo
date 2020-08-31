@@ -15,17 +15,22 @@ module.exports = async function runBlockchainTest(options, testData, t) {
     return
   }
 
+  if (testData.lastblockhash.substr(0, 2) === '0x') {
+    // fix for BlockchainTests/GeneralStateTests/stRandom/*
+    testData.lastblockhash = testData.lastblockhash.substr(2)
+  }
+
   const blockchainDB = levelMem()
   const cacheDB = level('./.cachedb')
   const state = new Trie()
 
-  let validate = false
+  let validatePow = false
   // Only run with block validation when sealEngine present in test file
   // and being set to Ethash PoW validation
   if (testData.sealEngine && testData.sealEngine === 'Ethash') {
-    validate = true
+    validatePow = true
   }
-
+  
   let eips = []
   if (options.forkConfigVM == 'berlin') {
     // currently, the BLS tests run on the Berlin network, but our VM does not activate EIP2537 
@@ -33,21 +38,16 @@ module.exports = async function runBlockchainTest(options, testData, t) {
     eips = [2537]
   }
 
-  let common
-  if (options.forkConfigTestSuite == "HomesteadToDaoAt5") {
-    common = getDAOCommon(5)
-  } else {
-    common = new Common({ chain: 'mainnet', hardfork: options.forkConfigVM, eips })
-  }
+  const { common } = options
 
   const blockchain = new Blockchain({
     db: blockchainDB,
     common,
-    validateBlocks: validate,
-    validatePow: validate,
+    validateBlocks: true,
+    validatePow
   })
 
-  if (validate) {
+  if (validatePow) {
     blockchain.ethash.cacheDB = cacheDB
   }
 
@@ -93,7 +93,6 @@ module.exports = async function runBlockchainTest(options, testData, t) {
       console.log(error)
       t.fail(error)
     }
-    await cacheDB.close()
   }
 
   const numBlocks = testData.blocks.length
@@ -108,33 +107,31 @@ module.exports = async function runBlockchainTest(options, testData, t) {
     const paramAll1 = 'expectExceptionALL'
     const paramAll2 = 'expectException'
     const expectException = raw[paramFork] ? raw[paramFork] : raw[paramAll1] || raw[paramAll2] || raw.blockHeader == undefined
-
     try {
+      // check if we should update common.
+      if (common.isNextHardforkBlock(currentBlock)) {
+        const activeHardforks = common.activeHardforks(currentBlock)
+        const hardforkName = activeHardforks[activeHardforks.length - 1].name
+        common.setHardfork(hardforkName)
+        // create a new VM (need access to new opcodes)
+        vm._updateOpcodes()
+      }
+
       const block = new Block(Buffer.from(raw.rlp.slice(2), 'hex'), {
         common
       }) 
-
-      try {
-        await blockchain.putBlock(block)
-      } catch (error) {
-        await handleError(error, expectException, cacheDB)
-        return
-      }
+      await blockchain.putBlock(block)
 
       // This is a trick to avoid generating the canonical genesis
       // state. Generating the genesis state is not needed because
       // blockchain tests come with their own `pre` world state.
       // TODO: Add option to `runBlockchain` not to generate genesis state.
       vm._common.genesis().stateRoot = vm.stateManager._trie.root
-      
+
       await vm.runBlockchain()
 
       const headBlock = await vm.blockchain.getHead()
 
-      if (testData.lastblockhash.substr(0, 2) === '0x') {
-        // fix for BlockchainTests/GeneralStateTests/stRandom/*
-        testData.lastblockhash = testData.lastblockhash.substr(2)
-      }
       if (expectException !== undefined && lastBlock) { // only check last block hash on last block
         t.equal(headBlock.hash().toString('hex'), testData.lastblockhash, 'last block hash')
       }
@@ -152,22 +149,25 @@ module.exports = async function runBlockchainTest(options, testData, t) {
       if (options.debug) {
         await verifyPostConditions(state, testData.postState, t)
       }
-      if (expectException !== undefined && lastBlock) {
-        t.equal(
-          blockchain.meta.rawHead.toString('hex'),
-          testData.lastblockhash,
-          'correct header block',
-        )
-      }
+
       await cacheDB.close()
 
       if (expectException) {
-        t.fail("expected exception but test did not throw an exception")
+        t.fail("expected exception but test did not throw an exception: " + expectException)
+        return
       }
     } catch (error) {
+      // caught an error, reduce block number
+      currentBlock--
       await handleError(error, expectException, cacheDB)
     }
   }
+  t.equal(
+    blockchain.meta.rawHead.toString('hex'),
+    testData.lastblockhash,
+    'correct header block',
+  )
+  await cacheDB.close()
 }
 
 function formatBlockHeader(data) {

@@ -17,6 +17,8 @@ const SKIP_BROKEN = [
   'sha3_memSizeNoQuadraticCost', // SHA3: See also:
   'sha3_memSizeQuadraticCost', // SHA3: https://github.com/ethereumjs/ethereumjs-vm/pull/743#issuecomment-635116418
   'sha3_bigSize', // SHA3
+
+  'BLOCK_difficulty_GivenAsList', // Block header does try very hard (via `defineProperties`) to convert any fed data into Buffers. Test should throw because difficulty is a list of Buffers, but fails to throw
 ]
 
 /**
@@ -201,6 +203,41 @@ const transitionNetworks = {
     startFork: 'homestead'
   }
 }
+
+const testLegacy = {
+  chainstart: true, 
+  homestead: true, 
+  tangerineWhistle: true,
+  spuriousDragon: true,
+  byzantium: true, 
+  constantinople: true,
+  petersburg: true,
+  istanbul: false,
+  muirGlacier: false,
+  berlin: false,
+  ByzantiumToConstantinopleFixAt5: false,
+  EIP158ToByzantiumAt5: false,
+  FrontierToHomesteadAt5: false,
+  HomesteadToDaoAt5: false, 
+  HomesteadToEIP150At5: false 
+} 
+/**
+ * Returns an array of dirs to run tests on
+ * @param {string} network (fork identifier)
+ * @param {string} Test type (BlockchainTests/StateTests)
+ */
+function getTestDirs(network, testType) {
+  let testDirs = [testType]
+  for (let key in testLegacy) {
+    if (key.toLowerCase() == network.toLowerCase() && testLegacy[key]) {
+      // Tests for HFs before Istanbul have been moved under `LegacyTests/Constantinople`:
+      // https://github.com/ethereum/tests/releases/tag/v7.0.0-beta.1
+      testDirs.push("LegacyTests/Constantinople/" + testType)
+      break
+    }
+  }
+  return testDirs
+}
   
 /**
  * Returns a Common for the given network (a test parameter)
@@ -213,7 +250,7 @@ function getCommon(network) {
     // normal hard fork, return the common with this hard fork
     // find the right upper/lowercased version
     const hfName = normalHardforks.reduce((previousValue, currentValue) => (currentValue.toLowerCase() == networkLowercase) ? currentValue : previousValue)
-    const mainnetCommon = new Common('mainnet', hfName)
+    const mainnetCommon = new Common({chain: 'mainnet', hardfork: hfName})
     const hardforks = mainnetCommon.hardforks()
     const testHardforks = []
     for (const hf of hardforks) {
@@ -240,11 +277,11 @@ function getCommon(network) {
     }, hfName)
   } else {
     // this is not a "default fork" network, but it is a "transition" network. we will test the VM if it transitions the right way
-    const transitionForks = transitionNetworks[network]
+    const transitionForks = transitionNetworks[network] || transitionNetworks[network.substring(0,1).toUpperCase()+network.substr(1)]
     if (!transitionForks) {
       throw(new Error("network not supported: " + network))
     }
-    const mainnetCommon = new Common('mainnet', transitionForks.finalSupportedFork)
+    const mainnetCommon = new Common({chain: 'mainnet', hardfork: transitionForks.finalSupportedFork})
     const hardforks = mainnetCommon.hardforks()
     const testHardforks = []
     for (const hf of hardforks) {
@@ -310,5 +347,6 @@ module.exports = {
   SKIP_SLOW: SKIP_SLOW,
   getRequiredForkConfigAlias: getRequiredForkConfigAlias,
   getSkipTests: getSkipTests,
-  getCommon: getCommon
+  getCommon: getCommon,
+  getTestDirs: getTestDirs
 }
