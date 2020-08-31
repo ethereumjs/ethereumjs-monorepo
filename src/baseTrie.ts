@@ -89,6 +89,13 @@ export class Trie {
   }
 
   /**
+   * BaseTrie has no checkpointing so return false
+   */
+  get isCheckpoint() {
+    return false
+  }
+
+  /**
    * Gets a value given a `key`
    * @param key - the key to search for
    * @returns A Promise that resolves to `Buffer` if a value was found or `null` if no value was found.
@@ -611,12 +618,23 @@ export class Trie {
     const rlpNode = node.serialize()
 
     if (rlpNode.length >= 32 || topLevel) {
-      const hashRoot = node.hash()
-      opStack.push({
-        type: 'put',
-        key: hashRoot,
-        value: rlpNode,
-      })
+      // Do not use TrieNode.hash() here otherwise serialize()
+      // is applied twice (performance)
+      const hashRoot = keccak(rlpNode)
+
+      if (remove && this.isCheckpoint) {
+        opStack.push({
+          type: 'del',
+          key: hashRoot,
+        })
+      } else {
+        opStack.push({
+          type: 'put',
+          key: hashRoot,
+          value: rlpNode,
+        })
+      }
+
       return hashRoot
     }
 
