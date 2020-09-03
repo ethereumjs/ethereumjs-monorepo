@@ -74,6 +74,23 @@ tape('VM with default blockchain', (t) => {
     st.end()
   })
 
+  t.test('should accept a supported EIP', async (st) => {
+    st.doesNotThrow(() => { new VM({ eips: [ 'EIP2537', ] }) })
+    st.end()
+  })
+
+  t.test('should correctly set _activatedEIPs', async (st) => {
+    const vm = new VM({ eips: [ 'EIP2537', ] })
+
+    st.deepEqual(vm._activatedEIPs, [ 'EIP2537', ])
+    st.end()
+  })
+
+  t.test('should not accept a not supported EIP', async (st) => {
+    st.throws(() => { new VM({ eips: [ 'NOT_SUPPORTED_EIP', ] }) })
+    st.end()
+  })
+
   t.test('should run blockchain without blocks', async (st) => {
     const vm = new VM()
     await vm.runBlockchain()

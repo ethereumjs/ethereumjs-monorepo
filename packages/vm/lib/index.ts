@@ -37,7 +37,7 @@ export interface VMOpts {
    */
   state?: any // TODO
   /**
-   * A [blockchain](https://github.com/ethereumjs/ethereumjs-blockchain) object for storing/retrieving blocks
+   * A [blockchain](https://github.com/ethereumjs/ethereumjs-vm/packages/blockchain) object for storing/retrieving blocks
    */
   blockchain?: Blockchain
   /**
@@ -55,7 +55,21 @@ export interface VMOpts {
    * Allows unlimited contract sizes while debugging. By setting this to `true`, the check for contract size limit of 24KB (see [EIP-170](https://git.io/vxZkK)) is bypassed
    */
   allowUnlimitedContractSize?: boolean
+  /**
+   * Use a [common](https://github.com/ethereumjs/ethereumjs-vm/packages/common) instance or a combination
+   * on the `chain` and `hardfork` options if you want to change the network setup
+   */
   common?: Common
+  /**
+   * Selected EIPs which can be activated on the VM, please use an array for instantiation
+   * (e.g. `eips: [ 'EIP2537', ])
+   *
+   * Currently supported:
+   * `EIP2537` (`beta`) - BLS12-381 precompiles ([specification](https://eips.ethereum.org/EIPS/eip-2537))
+   *
+   * Note: EIPs annotated with `beta` can change its behaviour or can be removed on minor version bumps of the VM
+   */
+  eips?: string[]
 }
 
 /**
@@ -67,6 +81,7 @@ export interface VMOpts {
 export default class VM extends AsyncEventEmitter {
   opts: VMOpts
   _common: Common
+  _activatedEIPs: string[] = []
   stateManager: StateManager
   blockchain: Blockchain
   allowUnlimitedContractSize: boolean
@@ -126,7 +141,20 @@ export default class VM extends AsyncEventEmitter {
       this._common = new Common(chain, hardfork, supportedHardforks)
     }
 
+    // EIPs
+    if (opts.eips) {
+      const supportedEIPs = ['EIP2537']
+      for (const eip of opts.eips) {
+        if (supportedEIPs.includes(eip)) {
+          this._activatedEIPs.push(eip)
+        } else {
+          throw new Error(`${eip} is not supported by the VM`)
+        }
+      }
+    }
+
     // Set list of opcodes based on HF
+    // TODO: make this EIP-friendly
     this._opcodes = getOpcodesForHF(this._common)
 
     if (opts.stateManager) {
