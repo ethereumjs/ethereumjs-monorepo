@@ -6,6 +6,47 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [1.0.0] - [UNRELEASED]
+
+### New Package Name
+
+**Attention!** This new version is part of a series of EthereumJS releases all moving to a
+new scoped package name format. In this case the library is renamed as follows:
+
+- `ethashjs` -> `@ethereumjs/ethash`
+
+Please update your library references accordingly or install with:
+
+```shell
+npm i @ethereumjs/ethash
+```
+
+### Library Promisification
+
+The `Ethash` library has been promisified and callbacks have been removed along
+PR [#833](https://github.com/ethereumjs/ethereumjs-vm/pull/833) and preceeding PR
+[#779](https://github.com/ethereumjs/ethereumjs-vm/pull/779).
+
+Old API:
+
+```typescript
+ethash.verifyPOW(validblock, (result) => {
+  console.log(result)
+})
+```
+
+New API:
+
+```typescript
+const result = await ethash.verifyPOW(validBlock)
+console.log(result) // => true
+```
+
+See `Ethash` [README](https://github.com/ethereumjs/ethereumjs-vm/tree/master/packages/ethash#usage)
+for a complete example.
+
+[1.0.0]: https://github.com/ethereumjs/ethereumjs-vm/releases/tag/%40ethereumjs%2Fethash%401.0.0
+
 ## [0.0.8] - 2020-05-27
 
 This is a maintenance release with dependency updates, CI improvements, and some code modernization.
