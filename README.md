@@ -128,6 +128,24 @@ Additional examples with detailed explanations are available [here](https://gith
 
 `npm test`
 
+# BENCHMARKS
+
+There are two simple **benchmarks** for random `PUT` operations on the tree (`random.ts`) as well as checkpointing (`checkpointing.ts`)
+in the `benchmarks` folder.
+
+Benchmarks can be run with:
+
+```shell
+npm run benchmarks
+```
+
+For running a **profiler** on the `random.ts` benchmark and generate a flamegraph with [0x](https://github.com/davidmarkclements/0x)
+you can use:
+
+```shell
+npm run profiling
+```
+
 # REFERENCES
 
 - Wiki

@@ -1,32 +1,32 @@
 // https://github.com/ethereum/wiki/wiki/Benchmarks
-'use strict'
-import { keccak256 } from 'ethereumjs-util'
-import { BaseTrie } from '../dist'
+const crypto = require('crypto')
+import { CheckpointTrie } from '../dist'
 
-const ROUNDS = 1000
+const ROUNDS = 50000
 const SYMMETRIC = true
-const ERA_SIZE = 1000
+const ERA_SIZE = 10000
 
-const trie = new BaseTrie()
-let seed = Buffer.alloc(32).fill(0)
+const trie = new CheckpointTrie()
 
 const run = async (): Promise<void> => {
+  console.log(`Benchmark 'random' starting...`)
   let i = 0
   while (i <= ROUNDS) {
-    seed = keccak256(seed)
+    let key = crypto.randomBytes(32)
 
     const genRoot = () => {
       if (i % ERA_SIZE === 0) {
-        seed = trie.root
+        key = trie.root
+        console.log(`${i} rounds.`)
       }
     }
 
     if (SYMMETRIC) {
-      await trie.put(seed, seed)
+      await trie.put(key, key)
       genRoot()
     } else {
-      const val = keccak256(seed)
-      await trie.put(seed, val)
+      const value = crypto.randomBytes(32)
+      await trie.put(key, value)
       genRoot()
     }
 

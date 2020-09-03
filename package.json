@@ -10,7 +10,8 @@
   ],
   "browser": "dist.browser/index.js",
   "scripts": {
-    "benchmarks": "npm run build && ts-node benchmarks/index.ts",
+    "benchmarks": "npm run build && ts-node benchmarks/checkpointing.ts && ts-node benchmarks/random.ts",
+    "profiling": "npm run build && tsc --target ES5 benchmarks/random.ts && 0x benchmarks/random.js",
     "build": "tsc -p tsconfig.prod.json && tsc -p tsconfig.browser.json",
     "prepublishOnly": "npm run test && npm run build",
     "coverage": "nyc --reporter=lcov npm run test:node",
@@ -58,6 +59,7 @@
     "semaphore-async-await": "^1.5.1"
   },
   "devDependencies": {
+    "0x": "^4.9.1",
     "@ethereumjs/config-nyc": "^1.1.1",
     "@ethereumjs/config-prettier": "^1.1.1",
     "@ethereumjs/config-tsc": "^1.1.1",
