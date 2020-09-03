@@ -25,6 +25,8 @@ fork and adds hardfork support for older hard forks.
   PR [#791](https://github.com/ethereumjs/ethereumjs-vm/pull/791)
 - Add Tangerine Whistle hardfork support,
   PR [#807](https://github.com/ethereumjs/ethereumjs-vm/pull/807)
+- Add DAO hardfork support,
+  PR [#843](https://github.com/ethereumjs/ethereumjs-vm/pull/843)
 
 **Changes**
 
@@ -34,6 +36,8 @@ fork and adds hardfork support for older hard forks.
   PR [#798](https://github.com/ethereumjs/ethereumjs-vm/pull/798)
 - Group precompiles based upon hardfork,
   PR [#783](https://github.com/ethereumjs/ethereumjs-vm/pull/783)
+- Make `memory.ts` use Buffers instead of Arrays,
+  PR [#850](https://github.com/ethereumjs/ethereumjs-vm/pull/850)
 
 **Bug Fixes**
 
