@@ -6,6 +6,49 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [5.0.0] - UNRELEASED
+
+### New Package Name
+
+**Attention!** This new version is part of a series of EthereumJS releases all moving to a new scoped package name format. In this case the library is renamed as follows:
+
+- `ethereumjs-blockchain` -> `@ethereumjs/blockchain`
+
+Please update your library references accordingly or install with:
+
+```shell
+npm i @ethereumjs/blockchain
+```
+
+### Library Promisification
+
+The `Blockchain` library has been promisified and callbacks have been removed along
+PR [#833](https://github.com/ethereumjs/ethereumjs-vm/pull/833) and preceeding PR
+[#779](https://github.com/ethereumjs/ethereumjs-vm/pull/779).
+
+Old API example:
+
+```typescript
+blockchain.getBlock(blockId, (block) => {
+  console.log(block)
+})
+```
+
+New API example:
+
+```typescript
+const block = await blockchain.getBlock(blockId)
+console.log(block)
+```
+
+See `Blockchain` [README](https://github.com/ethereumjs/ethereumjs-vm/tree/master/packages/blockchain#example) for a complete example.
+
+### Deprecated `validate` option
+
+The deprecated `validate` option has been removed, please use `valdiateBlock` and `validatePow` for options when instantiating a new `Blockchain`.
+
+[5.0.0]: https://github.com/ethereumjs/ethereumjs-vm/compare/%40ethereumjs%2Fblockchain%404.0.2...%40ethereumjs%2Fblockchain%405.0.0
+
 ## [4.0.3] - 2019-12-19
 
 Supports `MuirGlacier` by updating `ethereumjs-block` to
