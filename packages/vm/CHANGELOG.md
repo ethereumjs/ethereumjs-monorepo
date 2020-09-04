@@ -8,30 +8,97 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ## [5.0.0] - [UNRELEASED]
 
-This major release implements EIP-2315 (subroutines) which is part of the `Berlin`
-fork and adds hardfork support for older hard forks.
+### New Package Name
 
-**Additions**
+**Attention!** This new version is part of a series of EthereumJS releases all moving to a new scoped package name format. In this case the library is renamed as follows:
 
-- Add EIP-2315 (subroutines),
-  PR [#754](https://github.com/ethereumjs/ethereumjs-vm/pull/754)
-- Add StateManager interface,
-  PR [#763](https://github.com/ethereumjs/ethereumjs-vm/pull/763)
-- Add Frontier hardfork support,
-  PR [#828](https://github.com/ethereumjs/ethereumjs-vm/pull/828)
-- Add Homestead hardfork support,
-  PR [#815](https://github.com/ethereumjs/ethereumjs-vm/pull/815)
-- Add Spurious Dragon hardfork support,
+- `ethereumjs-vm` -> `@ethereumjs/vm`
+
+Please update your library references accordingly or install with:
+
+```shell
+npm i @ethereumjs/vm
+```
+
+### Support for all current Hardforks
+
+This is the first release of the VM which supports all hardforks
+currently applied on mainnet starting with the support of the
+Frontier HF rules all along up to MuirGlacier. 🎉
+
+The following HFs have been added:
+
+- **Spurious Dragon**,
   PR [#791](https://github.com/ethereumjs/ethereumjs-vm/pull/791)
-- Add Tangerine Whistle hardfork support,
+- **Tangerine Whistle**,
   PR [#807](https://github.com/ethereumjs/ethereumjs-vm/pull/807)
-- Add DAO hardfork support,
+- **DAO**,
   PR [#843](https://github.com/ethereumjs/ethereumjs-vm/pull/843)
+- **Homestead**,
+  PR [#815](https://github.com/ethereumjs/ethereumjs-vm/pull/815)
+- **Frontier**,
+  PR [#828](https://github.com/ethereumjs/ethereumjs-vm/pull/828)
 
-**Changes**
+A VM with the specific HF rules (on the chain provided) can be instantiated
+by passing in a `Common` instance or by setting HF and chain directly with:
 
-- Update to MPT v4, move `Account` trie-related operations to `StateManager`,
+```typescript
+import VM from 'ethereumjs-vm'
+const vm = new VM({ chain: 'mainnet', hardfork: 'spuriousDragon' })
+```
+
+### Berlin HF Support / HF-independent EIPs
+
+This releases adds support for subroutines (`EIP-2315`) which gets
+activated under the `berlin` HF setting which can now be used
+as a `hardfork` instantiation option, see
+PR [#754](https://github.com/ethereumjs/ethereumjs-vm/pull/754).
+
+**Attention!** Berlin HF support is still considered experimental
+and implementations can change on non-major VM releases!
+
+[TODO: FINALIZE THIS SECTION ONCE #785 OR FOLLOW-UP PR IS MERGED ]
+
+Support for BLS12-381 precompiles (`EIP-2537`) is added as an independent EIP
+implementation - see PR [#785](https://github.com/ethereumjs/ethereumjs-vm/pull/785) -
+since there is still an ongoing discussion on taking this EIP in for Berlin or
+using a more generalized approach on curve computation with the Ethereum EVM
+(`evm384` by the eWASM team).
+
+The integration comes along with an API addition to the VM to support the activation
+of specific EIPs, PR [#856](https://github.com/ethereumjs/ethereumjs-vm/pull/856).
+
+This API can be used as follows:
+
+```typescript
+import VM from 'ethereumjs-vm'
+const vm = new VM({ eips: ['EIP2537'] })
+```
+
+### API Change: New Major Library Versions
+
+The following `EthereumJS` libraries which are used within the VM internally
+and can be passed in on instantiation have been updated to new major versions.
+
+- `merkle-patricia-tree` `v3` (VM option `state`) -> `merkle-patricia-tree` `v4`,
   PR [#787](https://github.com/ethereumjs/ethereumjs-vm/pull/787)
+- `ethereumjs-blockchain` `v4`-> `@ethereumjs/blockchain` `v5`,
+  PR [#833](https://github.com/ethereumjs/ethereumjs-vm/pull/833)
+- `ethereumjs-common` `v1` -> `@ethereumjs/common` `v2`
+
+If you pass in instances of these libraries to the VM please make sure to
+update these library versions as stated. Please also take a note on the
+package name changes!
+
+All these libraries are now written in `TypeScript` and use promises instead of
+callbacks for accessing their APIs.
+
+### Other Additions/Changes
+
+- Add `StateManager` interface,
+  PR [#763](https://github.com/ethereumjs/ethereumjs-vm/pull/763)
+- New benchmarking tool for the VM, CI integration on GitHub actions,
+  PR [#830](https://github.com/ethereumjs/ethereumjs-vm/pull/830)
 - Group opcodes based upon hardfork,
   PR [#798](https://github.com/ethereumjs/ethereumjs-vm/pull/798)
 - Group precompiles based upon hardfork,
@@ -62,7 +129,7 @@ fork and adds hardfork support for older hard forks.
 
 **Bug Fixes**
 
-- Explicitly duplicate EVMs stack items to ensure these do not get accidentally modified interally,
+- Explicitly duplicate EVMs stack items to ensure these do not get accidentally modified internally,
   PR [#733](https://github.com/ethereumjs/ethereumjs-vm/pull/733)
 
 **Other changes**
