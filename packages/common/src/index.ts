@@ -1,6 +1,7 @@
 import { buf as crc32Buffer } from 'crc-32'
 import { chains as chainParams } from './chains'
 import { hardforks as hardforkChanges } from './hardforks'
+import { EIPs } from './eips'
 import { Chain } from './types'
 
 interface hardforkOptions {
@@ -193,6 +194,28 @@ export default class Common {
     if (value === undefined) {
       throw new Error(`${topic} value for ${name} not found`)
     }
+    return value
+  }
+
+  /**
+   * Returns a parameter corresponding to an EIP
+   * @param topic Parameter topic ('gasConfig', 'gasPrices', 'vm', 'pow')
+   * @param name Parameter name (e.g. 'minGasLimit' for 'gasConfig' topic)
+   * @param eip Name of the EIP (e.g. 'EIP2537')
+   */
+  paramByEIP(topic: string, name: string, eip: string): any {
+    if (!(eip in EIPs)) {
+      throw new Error(`${eip} not supported`)
+    }
+
+    const eipParams = EIPs[eip]
+    if (!(topic in eipParams)) {
+      throw new Error(`Topic ${topic} not defined`)
+    }
+    if (eipParams[topic][name] === undefined) {
+      throw new Error(`${topic} value for ${name} not found`)
+    }
+    let value = eipParams[topic][name].v
     return value
   }
 
