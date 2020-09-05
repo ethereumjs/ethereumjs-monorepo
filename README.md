@@ -67,7 +67,7 @@ Installs dependencies for all sub-packages, and links them to create an integrat
 
 #### `npm run build`
 
-Produces `dist` files for all sub-packages. This command can be scoped
+Produces `dist` files for all sub-packages. This command can be scoped.
 
 #### `npm run build:tree -- --scope @ethereumjs/blockchain`
 
@@ -95,15 +95,15 @@ Generates package documentation and outputs it to `./packages/<name>/docs`.
 
 #### `npm run lint`
 
-Checks code style, according to the rules defined in [ethereumjs-config](https://github.com/ethereumjs/ethereumjs-config).
+Checks code style according to the rules defined in [ethereumjs-config](https://github.com/ethereumjs/ethereumjs-config).
 
 #### `npm run lint:fix`
 
-Fixes code style, according to the rules 
+Fixes code style according to the rules.
 
 #### `npm run test`
 
-Runs all package tests. Note that the VM have several test scopes. Refer to their package.json for more info.
+Runs all package tests. Note that the VM has several test scopes - refer to [packages/vm/package.json](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/package.json) for more info.
 
 #### `npm run clean`
 
