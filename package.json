@@ -33,7 +33,6 @@
     "lint:fix": "lerna run lint:fix --stream --parallel",
     "test": "lerna exec npm run test --parallel",
     "coverage": "lerna run coverage --stream",
-    "docs:build": "lerna run docs:build --ignore @ethereumjs/ethash",
-    "clean": "git clean -fXd packages"
+    "docs:build": "lerna run docs:build --ignore @ethereumjs/ethash"
   }
 }
