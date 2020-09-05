@@ -105,6 +105,10 @@ Fixes code style, according to the rules
 
 Runs all package tests. Note that the VM have several test scopes. Refer to their package.json for more info.
 
+#### `npm run clean`
+
+Removes root and package `node_modules` directories. Useful to run before `npm i` for a fresh install.
+
 ### Going further
 
 As this project is powered by Lerna, you can install it globally to enjoy lots more options. Refer to [Lerna docs](https://github.com/lerna/lerna/tree/master/commands/run) for additional commands.
@@ -112,7 +116,10 @@ As this project is powered by Lerna, you can install it globally to enjoy lots m
 - `npm install -g lerna`
 - `lerna run`
 - `lerna exec`
-- `lerna clean`
+
+#### Cleaning `node_modules`
+
+Hoisting is enabled so shared dependencies across packages are symlinked to the root `node_modules`. `lerna clean` [does not remove the root `node_modules`](https://github.com/lerna/lerna/issues/1304) so for convenience you can use the project script `npm run clean`.
 
 # EthereumJS
 
