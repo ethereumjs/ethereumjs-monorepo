@@ -14,12 +14,15 @@ import { precompiles } from './evm/precompiles'
 import runBlockchain from './runBlockchain'
 const AsyncEventEmitter = require('async-eventemitter')
 const promisify = require('util.promisify')
-let mcl = require('mcl-wasm')
-if (Object.keys(mcl).length == 0) {
-  mcl = (<any>globalThis).window.mcl
-}
 
-const mclInitPromise = mcl.init(mcl.BLS12_381) // We can use the same instance of mcl for all VMs. The methods are static.
+const IS_BROWSER = typeof (<any>globalThis).window === 'object' // very ugly way to detect if we are running in a browser
+let mcl: any
+let mclInitPromise: any
+
+if (!IS_BROWSER) {
+  mcl = require('mcl-wasm')
+  mclInitPromise = mcl.init(mcl.BLS12_381)
+}
 
 /**
  * Options for instantiating a [[VM]].
@@ -176,7 +179,13 @@ export default class VM extends AsyncEventEmitter {
     this.allowUnlimitedContractSize =
       opts.allowUnlimitedContractSize === undefined ? false : opts.allowUnlimitedContractSize
 
-    this._mcl = mcl
+    if (this._activatedEIPs.includes('EIP2537')) {
+      if (IS_BROWSER) {
+        throw new Error('EIP 2537 is currently not supported in browsers')
+      } else {
+        this._mcl = mcl
+      }
+    }
 
     // We cache this promisified function as it's called from the main execution loop, and
     // promisifying each time has a huge performance impact.
@@ -208,11 +217,17 @@ export default class VM extends AsyncEventEmitter {
       await this.stateManager.commit()
     }
 
-    await mclInitPromise // ensure that mcl is initialized.
-    mcl.setMapToMode(mcl.IRTF) // set the right map mode; otherwise mapToG2 will return wrong values.
-    mcl.verifyOrderG1(1) // subgroup checks for G1
-    mcl.verifyOrderG2(1) // subgroup checks for G2
-
+    if (this._activatedEIPs.includes('EIP2537')) {
+      if (IS_BROWSER) {
+        throw new Error('EIP 2537 is currently not supported in browsers')
+      } else {
+        let mcl = this._mcl
+        await mclInitPromise // ensure that mcl is initialized.
+        mcl.setMapToMode(mcl.IRTF) // set the right map mode; otherwise mapToG2 will return wrong values.
+        mcl.verifyOrderG1(1) // subgroup checks for G1
+        mcl.verifyOrderG2(1) // subgroup checks for G2
+      }
+    }
     this.isInitialized = true
   }
 

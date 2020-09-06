@@ -28,6 +28,11 @@ module.exports = async function runBlockchainTest(options, testData, t) {
 
   const common = (options.forkConfigTestSuite == "HomesteadToDaoAt5") ? getDAOCommon(5) : new Common('mainnet', options.forkConfigVM)
   
+  let eips = []
+  if (options.forkConfigVM == 'berlin') {
+    eips = ['EIP2537'] // currently, the BLS tests run on the Berlin network, but our VM does not activate EIP2537 if you run the Berlin HF
+  }
+
   const blockchain = new Blockchain({
     db: blockchainDB,
     common,
@@ -50,6 +55,7 @@ module.exports = async function runBlockchainTest(options, testData, t) {
     state,
     blockchain,
     common,
+    eips
   })
 
   const genesisBlock = new Block(undefined, { common })

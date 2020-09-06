@@ -2,6 +2,7 @@ const BN = require('bn.js')
 const tape = require('tape')
 const Common = require('@ethereumjs/common').default
 const VM = require('../../../dist/index').default
+const { isRunningInKarma } = require('../../util')
 
 const precompileAddressStart = 0x0a
 const precompileAddressEnd = 0x12
@@ -15,7 +16,11 @@ for (let address = precompileAddressStart; address <= precompileAddressEnd; addr
 const dir = "./tests/api/berlin/"
 
 tape('Berlin BLS tests', (t) => {
-    t.test('Berlin precompiles not available pre-Berlin', async (st) => {
+    t.test('Berlin precompiles not available if EIP2537 is not activated', async (st) => {
+        if (isRunningInKarma()) {
+            st.skip('BLS does not work in karma')
+            return st.end()
+        }
         const common = new Common('mainnet', 'muirGlacier')
         const vm = new VM({ common: common })
 
@@ -42,8 +47,12 @@ tape('Berlin BLS tests', (t) => {
     })
 
     t.test('Berlin precompiles should throw on empty inputs', async (st) => {
+        if (isRunningInKarma()) {
+            st.skip('BLS does not work in karma')
+            return st.end()
+        }
         const common = new Common('mainnet', 'berlin')
-        const vm = new VM({ common: common })
+        const vm = new VM({ common: common, eips: ['EIP2537'] })
         const gasLimit = new BN(0xffffffffff)
 
         for (let address of precompiles) {
