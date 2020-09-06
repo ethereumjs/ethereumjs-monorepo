@@ -5,7 +5,7 @@ const Common = require('@ethereumjs/common').default
 const Trie = require('merkle-patricia-tree').SecureTrie
 const VM = require('../../dist/index').default
 const { setupVM } = require('./utils')
-const { setupPreConditions } = require('../util')
+const { setupPreConditions, isRunningInKarma } = require('../util')
 const testData = require('./testdata.json')
 
 tape('VM with default blockchain', (t) => {
@@ -75,11 +75,19 @@ tape('VM with default blockchain', (t) => {
   })
 
   t.test('should accept a supported EIP', async (st) => {
+    if (isRunningInKarma()) {
+      st.skip('BLS does not work in karma')
+      return st.end()
+  }
     st.doesNotThrow(() => { new VM({ eips: [ 'EIP2537', ] }) })
     st.end()
   })
 
   t.test('should correctly set _activatedEIPs', async (st) => {
+    if (isRunningInKarma()) {
+      st.skip('BLS does not work in karma')
+      return st.end()
+  }
     const vm = new VM({ eips: [ 'EIP2537', ] })
 
     st.deepEqual(vm._activatedEIPs, [ 'EIP2537', ])
