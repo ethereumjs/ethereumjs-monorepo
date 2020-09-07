@@ -7,7 +7,7 @@ const { getPrecompile } = require('../../../../dist/evm/precompiles')
 
 tape('Precompiles: ECMUL', (t) => {
   t.test('ECMUL', (st) => {
-    const common = new Common('mainnet', 'petersburg')
+    const common = new Common({ chain: 'mainnet', hardfork: 'petersburg' })
     let vm = new VM({ common: common })
     let ECMUL = getPrecompile('0000000000000000000000000000000000000007', common)
 

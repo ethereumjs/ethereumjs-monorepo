@@ -176,7 +176,7 @@ tape('StateManager', t => {
       st.skip('skip slow test when running in karma')
       return st.end()
     }
-    const common = new Common('mainnet', 'petersburg')
+    const common = new Common({ chain: 'mainnet', hardfork: 'petersburg' })
     const expectedStateRoot = Buffer.from(common.genesis().stateRoot.slice(2), 'hex')
     const stateManager = new StateManager({ common: common })
 
@@ -194,7 +194,7 @@ tape('StateManager', t => {
     const chains = ['ropsten', 'rinkeby', 'kovan', 'goerli']
 
     for (const chain of chains) {
-      const common = new Common(chain, 'petersburg')
+      const common = new Common({ chain: chain, hardfork: 'petersburg' })
       const expectedStateRoot = Buffer.from(common.genesis().stateRoot.slice(2), 'hex')
       const stateManager = new DefaultStateManager({ common: common })
 
@@ -229,7 +229,7 @@ tape('StateManager', t => {
 
   t.test('should pass Common object when copying the state manager', (st) => {
     const stateManager = new DefaultStateManager({
-      common: new Common('goerli', 'byzantium'),
+      common: new Common({ chain: 'goerli', hardfork: 'byzantium' }),
     })
 
     st.equal(stateManager._common.chainName(), 'goerli')

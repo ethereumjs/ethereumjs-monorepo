@@ -36,7 +36,7 @@ tape('[Block]: Header functions', function (t) {
 
   t.test('should test header initialization', function (st) {
     const header1 = new BlockHeader(undefined, { chain: 'ropsten' })
-    const common = new Common('ropsten')
+    const common = new Common({ chain: 'ropsten' })
     const header2 = new BlockHeader(undefined, { common: common })
     header1.setGenesisParams()
     header2.setGenesisParams()

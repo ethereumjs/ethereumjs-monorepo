@@ -7,7 +7,7 @@ import { Block } from '../src/block'
 tape('[Block]: block functions', function (t) {
   t.test('should test block initialization', function (st) {
     const block1 = new Block(undefined, { chain: 'ropsten' })
-    const common = new Common('ropsten')
+    const common = new Common({ chain: 'ropsten' })
     const block2 = new Block(undefined, { common: common })
     block1.setGenesisParams()
     block2.setGenesisParams()
@@ -99,7 +99,7 @@ tape('[Block]: block functions', function (t) {
   })
 
   t.test('should test genesis hashes (ropsten)', function (st) {
-    const common = new Common('ropsten')
+    const common = new Common({ chain: 'ropsten' })
     const genesisBlock = new Block(undefined, { common: common })
     genesisBlock.setGenesisParams()
     st.strictEqual(
@@ -111,7 +111,7 @@ tape('[Block]: block functions', function (t) {
   })
 
   t.test('should test genesis hashes (rinkeby)', function (st) {
-    const common = new Common('rinkeby')
+    const common = new Common({ chain: 'rinkeby' })
     const genesisBlock = new Block(undefined, { common: common })
     genesisBlock.setGenesisParams()
     st.strictEqual(
@@ -146,7 +146,7 @@ tape('[Block]: block functions', function (t) {
     // Set block number from test block to mainnet DAO fork block 1920000
     blockData[0][8] = Buffer.from('1D4C00', 'hex')
 
-    const common = new Common('mainnet', 'dao')
+    const common = new Common({ chain: 'mainnet', hardfork: 'dao' })
     st.throws(
       function () {
         new Block(blockData, { common: common })

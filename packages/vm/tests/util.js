@@ -407,7 +407,7 @@ exports.isRunningInKarma = () => {
  */
 exports.getDAOCommon = function(activationBlock) {
   // here: get the default fork list of mainnet and only edit the DAO fork block (thus copy the rest of the "default" hardfork settings)
-  const defaultDAOCommon = new Common('mainnet', "dao")
+  const defaultDAOCommon = new Common({ chain: 'mainnet', hardfork: 'dao' })
   // retrieve the hard forks list from defaultCommon...
   let forks = defaultDAOCommon.hardforks()
   let editedForks = []

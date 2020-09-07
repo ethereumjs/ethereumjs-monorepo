@@ -82,7 +82,7 @@ export default class Transaction {
       const chain = opts.chain ? opts.chain : 'mainnet'
       const hardfork = opts.hardfork ? opts.hardfork : 'petersburg'
 
-      this._common = new Common(chain, hardfork)
+      this._common = new Common({ chain, hardfork })
     }
 
     // Define Properties

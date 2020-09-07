@@ -28,11 +28,11 @@ Here are some simple usage examples:
 const Common = require('@ethereumjs/common')
 
 // Instantiate with only the chain
-let c = new Common('ropsten')
+let c = new Common({ chain: 'ropsten' })
 c.param('gasPrices', 'ecAddGas', 'byzantium') // 500
 
 // Chain and hardfork provided
-c = new Common('ropsten', 'byzantium')
+c = new Common({ chain: 'ropsten', hardfork: 'byzantium' })
 c.param('pow', 'minerReward') // 3000000000000000000
 
 // Access genesis data for Ropsten network
@@ -46,7 +46,10 @@ It is encouraged to also explicitly set the `supportedHardforks` if the initiali
 only supports a certain range of `hardforks`:
 
 ```javascript
-let c = new Common('ropsten', null, ['byzantium', 'constantinople', 'petersburg'])
+let c = new Common({
+  chain: 'ropsten',
+  supportedHardforks: ['byzantium', 'constantinople', 'petersburg'],
+})
 ```
 
 This will e.g. throw an error when a param is requested for an unsupported hardfork and

@@ -303,16 +303,27 @@ tape('[Transaction]: Basic functions', function (t) {
 
   t.test('Throws if chain/hardfork and commmon options are given', function (st) {
     st.throws(
-      () => new Transaction({}, { common: new Common('mainnet', 'petersburg'), chain: 'mainnet' }),
-    )
-    st.throws(
-      () => new Transaction({}, { common: new Common('mainnet', 'petersburg'), chain: 'ropsten' }),
+      () =>
+        new Transaction(
+          {},
+          { common: new Common({ chain: 'mainnet', hardfork: 'petersburg' }), chain: 'mainnet' },
+        ),
     )
     st.throws(
       () =>
         new Transaction(
           {},
-          { common: new Common('mainnet', 'petersburg'), hardfork: 'petersburg' },
+          { common: new Common({ chain: 'mainnet', hardfork: 'petersburg' }), chain: 'ropsten' },
+        ),
+    )
+    st.throws(
+      () =>
+        new Transaction(
+          {},
+          {
+            common: new Common({ chain: 'mainnet', hardfork: 'petersburg' }),
+            hardfork: 'petersburg',
+          },
         ),
     )
     st.end()

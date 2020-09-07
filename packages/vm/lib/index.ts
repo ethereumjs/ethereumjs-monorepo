@@ -148,7 +148,7 @@ export default class VM extends AsyncEventEmitter {
         'berlin',
       ]
 
-      this._common = new Common(chain, hardfork, supportedHardforks)
+      this._common = new Common({ chain, hardfork, supportedHardforks })
     }
 
     // EIPs

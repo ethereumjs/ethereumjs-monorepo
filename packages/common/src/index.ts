@@ -4,6 +4,24 @@ import { hardforks as hardforkChanges } from './hardforks'
 import { EIPs } from './eips'
 import { Chain } from './types'
 
+/**
+ * Options for instantiating a [[Common]] instance.
+ */
+export interface CommonOpts {
+  /**
+   * String ('mainnet') or Number (1) chain
+   */
+  chain: string | number | object
+  /**
+   * String identifier ('byzantium') for hardfork
+   */
+  hardfork?: string | null
+  /**
+   * Limit parameter returns to the given hardforks
+   */
+  supportedHardforks?: Array<string>
+}
+
 interface hardforkOptions {
   /** optional, only allow supported HFs (default: false) */
   onlySupported?: boolean
@@ -37,14 +55,14 @@ export default class Common {
   ): Common {
     const standardChainParams = Common._getChainParams(baseChain)
 
-    return new Common(
-      {
+    return new Common({
+      chain: {
         ...standardChainParams,
         ...customChainParams,
       },
-      hardfork,
-      supportedHardforks,
-    )
+      hardfork: hardfork,
+      supportedHardforks: supportedHardforks,
+    })
   }
 
   private static _getChainParams(chain: string | number): Chain {
@@ -65,20 +83,13 @@ export default class Common {
 
   /**
    * @constructor
-   * @param chain String ('mainnet') or Number (1) chain
-   * @param hardfork String identifier ('byzantium') for hardfork (optional)
-   * @param supportedHardforks Limit parameter returns to the given hardforks (optional)
    */
-  constructor(
-    chain: string | number | object,
-    hardfork?: string | null,
-    supportedHardforks?: Array<string>,
-  ) {
-    this._chainParams = this.setChain(chain)
+  constructor(opts: CommonOpts) {
+    this._chainParams = this.setChain(opts.chain)
     this._hardfork = null
-    this._supportedHardforks = supportedHardforks === undefined ? [] : supportedHardforks
-    if (hardfork) {
-      this.setHardfork(hardfork)
+    this._supportedHardforks = opts.supportedHardforks === undefined ? [] : opts.supportedHardforks
+    if (opts.hardfork) {
+      this.setHardfork(opts.hardfork)
     }
   }
 

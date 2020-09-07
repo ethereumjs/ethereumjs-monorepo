@@ -18,7 +18,7 @@ test('blockchain test', (t) => {
   })
 
   t.test('should throw on initialization with chain and common parameter', async (st) => {
-    const common = new Common('ropsten')
+    const common = new Common({ chain: 'ropsten' })
 
     st.throws(() => {
       new Blockchain({ chain: 'ropsten', common })
@@ -586,7 +586,7 @@ test('blockchain test', (t) => {
   })
 
   t.test('mismatched chains', async (st) => {
-    const common = new Common('mainnet')
+    const common = new Common({ chain: 'mainnet' })
     const blockchain = new Blockchain({ common: common, validateBlocks: true, validatePow: false })
     const blocks = [
       new Block(undefined, { common: common }),

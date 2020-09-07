@@ -40,7 +40,7 @@ tape('VM with default blockchain', (t) => {
   })
 
   t.test('should only accept common or chain and fork', (st) => {
-    const common = new Common('mainnet')
+    const common = new Common({ chain: 'mainnet' })
 
     st.throws(() => new VM({ chain: 'a', common }))
     st.throws(() => new VM({ hardfork: 'a', common }))
@@ -50,7 +50,7 @@ tape('VM with default blockchain', (t) => {
   })
 
   t.test('should accept a common object as option', async (st) => {
-    const common = new Common('mainnet', 'istanbul')
+    const common = new Common({ chain: 'mainnet', hardfork: 'istanbul' })
 
     const vm = new VM({ common })
     await vm.init()

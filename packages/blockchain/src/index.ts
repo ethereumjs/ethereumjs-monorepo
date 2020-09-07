@@ -127,7 +127,7 @@ export default class Blockchain implements BlockchainInterface {
     } else {
       const chain = opts.chain ? opts.chain : 'mainnet'
       const hardfork = opts.hardfork ? opts.hardfork : null
-      this._common = new Common(chain, hardfork)
+      this._common = new Common({ chain, hardfork })
     }
 
     this._validatePow = opts.validatePow !== undefined ? opts.validatePow : true

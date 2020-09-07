@@ -87,7 +87,7 @@ tape('[FakeTransaction]: Basic functions', function (t) {
   t.test('should throw if common and chain options are passed to constructor', function (st) {
     const txOptsInvalid = {
       chain: 'mainnet',
-      common: new Common('mainnet', 'chainstart'),
+      common: new Common({ chain: 'mainnet', hardfork: 'chainstart' }),
     }
     st.plan(1)
     st.throws(() => new FakeTransaction(txData, txOptsInvalid))

@@ -18,7 +18,7 @@ tape('runBlockchain', (t) => {
     validateBlocks: false,
     validatePow: false,
   })
-  const stateManager = new DefaultStateManager({ common: new Common('goerli') })
+  const stateManager = new DefaultStateManager({ common: new Common({ chain: 'goerli' }) })
   const vm = {
     stateManager,
     blockchain: blockchain,

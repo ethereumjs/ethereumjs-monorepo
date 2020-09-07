@@ -44,7 +44,7 @@ export class Block {
       // TODO: Compute the hardfork based on this block's number. It can be implemented right now
       // because the block number is not immutable, so the Common can get out of sync.
       const hardfork = chainOptions.hardfork ? chainOptions.hardfork : null
-      this._common = new Common(chain, hardfork)
+      this._common = new Common({ chain, hardfork })
     }
 
     let rawTransactions
