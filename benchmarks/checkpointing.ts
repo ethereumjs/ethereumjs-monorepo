@@ -1,8 +1,8 @@
 import { pseudoRandomBytes } from 'crypto'
 import { CheckpointTrie } from '../dist'
 
-const iterations = 500
-const samples = 20
+const iterations = 5000
+const samples = 5
 
 const iterTest = async (numOfIter: number): Promise<Array<number>> => {
   return new Promise(async (resolve) => {
@@ -17,25 +17,27 @@ const iterTest = async (numOfIter: number): Promise<Array<number>> => {
     let hrstart = process.hrtime()
     let numOfOps = 0
     let trie = new CheckpointTrie()
-
     for (let i = 0; i < numOfIter; i++) {
-      await trie.put(vals[i], keys[i])
       trie.checkpoint()
+      await trie.put(vals[i], keys[i])
       await trie.get(Buffer.from('test'))
       numOfOps++
       if (numOfOps === numOfIter) {
         const hrend = process.hrtime(hrstart)
         resolve(hrend)
       }
+      trie.commit()
     }
   })
 }
 
 const go = async () => {
-  let i = 0
+  let i = 1
   let avg = [0, 0]
 
+  console.log(`Benchmark 'checkpointing' starting...`)
   while (i <= samples) {
+    console.log(`Sample ${i} with ${iterations} iterations.`)
     const hrend = await iterTest(iterations)
     avg[0] += hrend[0]
     avg[1] += hrend[1]
