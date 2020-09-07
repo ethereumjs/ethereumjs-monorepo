@@ -127,7 +127,6 @@ export default class VM extends AsyncEventEmitter {
       this._common = opts.common
     } else {
       const DEFAULT_CHAIN = 'mainnet'
-      const DEFAULT_HARDFORK = 'petersburg'
       const supportedHardforks = [
         'chainstart',
         'homestead',
@@ -144,7 +143,6 @@ export default class VM extends AsyncEventEmitter {
 
       this._common = new Common({
         chain: DEFAULT_CHAIN,
-        hardfork: DEFAULT_HARDFORK,
         supportedHardforks,
       })
     }

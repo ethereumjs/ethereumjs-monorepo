@@ -300,22 +300,15 @@ tape('[Common]: Hardfork logic', function (t: tape.Test) {
   })
 
   t.test('forkHash()', function (st: tape.Test) {
-    let c = new Common({ chain: 'mainnet' })
-    let f = () => {
-      c.forkHash()
-    }
-    let msg = 'should throw when no hardfork set or provided'
-    st.throws(f, /neither a hardfork set nor provided by param$/, msg)
-
-    c = new Common({ chain: 'mainnet', hardfork: 'byzantium' })
-    msg = 'should provide correct forkHash for HF set'
+    let c = new Common({ chain: 'mainnet', hardfork: 'byzantium' })
+    let msg = 'should provide correct forkHash for HF set'
     st.equal(c.forkHash(), '0xa00bc324', msg)
 
     msg = 'should provide correct forkHash for HF provided'
     st.equal(c.forkHash('spuriousDragon'), '0x3edd5b10', msg)
 
     c = new Common({ chain: 'ropsten' })
-    f = () => {
+    let f = () => {
       c.forkHash('dao')
     }
     msg = 'should throw when called on non-applied or future HF'

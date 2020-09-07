@@ -16,16 +16,11 @@ tape('[Common]: Parameter access', function (t: tape.Test) {
 
   t.test('Error cases', function (st: tape.Test) {
     let c = new Common({ chain: 'mainnet' })
-    let f = function () {
-      c.param('gasPrices', 'ecAdd')
-    }
-    let msg = 'Should throw when no hardfork set or provided'
-    st.throws(f, /neither a hardfork set nor provided by param$/, msg)
 
-    f = function () {
+    let f = function () {
       c.param('gasPrizes', 'ecAdd', 'byzantium')
     }
-    msg = 'Should throw when called with non-existing topic'
+    let msg = 'Should throw when called with non-existing topic'
     st.throws(f, /Topic gasPrizes not defined$/, msg)
 
     f = function () {

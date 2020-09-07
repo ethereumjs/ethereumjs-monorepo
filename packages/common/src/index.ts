@@ -4,6 +4,8 @@ import { hardforks as hardforkChanges } from './hardforks'
 import { EIPs } from './eips'
 import { Chain } from './types'
 
+const DEFAULT_HARDFORK = 'petersburg'
+
 /**
  * Options for instantiating a [[Common]] instance.
  */
@@ -14,8 +16,10 @@ export interface CommonOpts {
   chain: string | number | object
   /**
    * String identifier ('byzantium') for hardfork
+   *
+   * Default: `petersburg`
    */
-  hardfork?: string | null
+  hardfork?: string
   /**
    * Limit parameter returns to the given hardforks
    */
@@ -33,7 +37,7 @@ interface hardforkOptions {
  * Common class to access chain and hardfork parameters
  */
 export default class Common {
-  private _hardfork: string | null
+  private _hardfork: string
   private _supportedHardforks: Array<string>
   private _chainParams: Chain
 
@@ -50,7 +54,7 @@ export default class Common {
   static forCustomChain(
     baseChain: string | number,
     customChainParams: Partial<Chain>,
-    hardfork?: string | null,
+    hardfork?: string,
     supportedHardforks?: Array<string>,
   ): Common {
     const standardChainParams = Common._getChainParams(baseChain)
@@ -86,7 +90,7 @@ export default class Common {
    */
   constructor(opts: CommonOpts) {
     this._chainParams = this.setChain(opts.chain)
-    this._hardfork = null
+    this._hardfork = DEFAULT_HARDFORK
     this._supportedHardforks = opts.supportedHardforks === undefined ? [] : opts.supportedHardforks
     if (opts.hardfork) {
       this.setHardfork(opts.hardfork)
@@ -118,9 +122,9 @@ export default class Common {
 
   /**
    * Sets the hardfork to get params for
-   * @param hardfork String identifier ('byzantium')
+   * @param hardfork String identifier (e.g. 'byzantium')
    */
-  setHardfork(hardfork: string | null): void {
+  setHardfork(hardfork: string): void {
     if (!this._isSupportedHardfork(hardfork)) {
       throw new Error(`Hardfork ${hardfork} not set as supported in supportedHardforks`)
     }
@@ -143,11 +147,7 @@ export default class Common {
    */
   _chooseHardfork(hardfork?: string | null, onlySupported: boolean = true): string {
     if (!hardfork) {
-      if (!this._hardfork) {
-        throw new Error('Method called with neither a hardfork set nor provided by param')
-      } else {
-        hardfork = this._hardfork
-      }
+      hardfork = this._hardfork
     } else if (onlySupported && !this._isSupportedHardfork(hardfork)) {
       throw new Error(`Hardfork ${hardfork} not set as supported in supportedHardforks`)
     }
