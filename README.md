@@ -130,8 +130,12 @@ Additional examples with detailed explanations are available [here](https://gith
 
 # BENCHMARKS
 
-There are two simple **benchmarks** for random `PUT` operations on the tree (`random.ts`) as well as checkpointing (`checkpointing.ts`)
-in the `benchmarks` folder.
+There are two simple **benchmarks** in the `benchmarks` folder:
+
+- `random.ts` runs random `PUT` operations on the tree.
+- `checkpointing.ts` runs checkpoints and commits between `PUT` operations.
+
+A third benchmark using mainnet data to simulate real load is also under consideration.
 
 Benchmarks can be run with:
 
@@ -139,12 +143,13 @@ Benchmarks can be run with:
 npm run benchmarks
 ```
 
-For running a **profiler** on the `random.ts` benchmark and generate a flamegraph with [0x](https://github.com/davidmarkclements/0x)
-you can use:
+To run a **profiler** on the `random.ts` benchmark and generate a flamegraph with [0x](https://github.com/davidmarkclements/0x) you can use:
 
 ```shell
 npm run profiling
 ```
+
+0x processes the stacks and generates a profile folder (`<pid>.0x`) containing [`flamegraph.html`](https://github.com/davidmarkclements/0x/blob/master/docs/ui.md).
 
 # REFERENCES
 
