@@ -9,7 +9,7 @@ import {
   bufferToInt,
   rlphash,
 } from 'ethereumjs-util'
-import { Blockchain, BlockHeaderData, BufferLike, ChainOptions, PrefixedHexString } from './types'
+import { Blockchain, BlockHeaderData, BufferLike, BlockOptions, PrefixedHexString } from './types'
 import { Buffer } from 'buffer'
 import { Block } from './block'
 
@@ -43,22 +43,14 @@ export class BlockHeader {
    */
   constructor(
     data: Buffer | PrefixedHexString | BufferLike[] | BlockHeaderData = {},
-    opts: ChainOptions = {},
+    options: BlockOptions = {},
   ) {
-    if (opts.common !== undefined) {
-      if (opts.chain !== undefined || opts.hardfork !== undefined) {
-        throw new Error(
-          'Instantiation with both opts.common and opts.chain / opts.hardfork parameter not allowed!',
-        )
-      }
-
-      this._common = opts.common
+    if (options.common) {
+      this._common = options.common
     } else {
-      const chain = opts.chain ? opts.chain : 'mainnet'
-      const hardfork = opts.hardfork ? opts.hardfork : null
-      this._common = new Common({ chain, hardfork })
+      const DEFAULT_CHAIN = 'mainnet'
+      this._common = new Common({ chain: DEFAULT_CHAIN })
     }
-
     const fields = [
       {
         name: 'parentHash',
@@ -132,6 +124,9 @@ export class BlockHeader {
       },
     ]
     defineProperties(this, fields, data)
+    if (options.hardforkByBlockNumer) {
+      this._common.setHardforkByBlockNumber(bufferToInt(this.number))
+    }
 
     this._checkDAOExtraData()
   }

@@ -141,6 +141,29 @@ export default class Common {
   }
 
   /**
+   * Sets a new hardfork based on the block number provided
+   * @param blockNumber
+   * @returns The name of the HF set
+   */
+  setHardforkByBlockNumber(blockNumber: number): string {
+    let hardfork = 'chainstart'
+    for (const hf of this.hardforks()) {
+      const hardforkBlock = hf.block
+
+      // Skip comparison for not applied HFs
+      if (hardforkBlock === null) {
+        continue
+      }
+
+      if (blockNumber >= hardforkBlock) {
+        hardfork = hf.name
+      }
+    }
+    this.setHardfork(hardfork)
+    return hardfork
+  }
+
+  /**
    * Internal helper function to choose between hardfork set and hardfork provided as param
    * @param hardfork Hardfork given to function as a parameter
    * @returns Hardfork chosen to be used

@@ -6,20 +6,10 @@ import { Block } from '../src/block'
 
 tape('[Block]: block functions', function (t) {
   t.test('should test block initialization', function (st) {
-    const block1 = new Block(undefined, { chain: 'ropsten' })
     const common = new Common({ chain: 'ropsten' })
-    const block2 = new Block(undefined, { common: common })
+    const block1 = new Block(undefined, { common: common })
     block1.setGenesisParams()
-    block2.setGenesisParams()
-    st.ok(block1.hash().equals(block2.hash()), 'block hashes match')
-
-    st.throws(
-      function () {
-        new Block(undefined, { chain: 'ropsten', common: common })
-      },
-      /not allowed!$/,
-      'should throw on initialization with chain and common parameter',
-    ) // eslint-disable-line
+    st.ok(block1.hash().toString('hex'), 'block should initialize')
     st.end()
   })
 
@@ -32,7 +22,8 @@ tape('[Block]: block functions', function (t) {
 
   t.test('should initialize with null parameters without throwing', function (st) {
     st.doesNotThrow(function () {
-      const opts = { chain: 'mainnet' }
+      const common = new Common({ chain: 'ropsten' })
+      const opts = { common }
       new Block(undefined, opts)
       st.end()
     })
@@ -77,7 +68,8 @@ tape('[Block]: block functions', function (t) {
   })
 
   t.test('should test isGenesis (ropsten)', function (st) {
-    const block = new Block(undefined, { chain: 'ropsten' })
+    const common = new Common({ chain: 'ropsten' })
+    const block = new Block(undefined, { common })
     st.notEqual(block.isGenesis(), true)
     block.header.number = Buffer.from([])
     st.equal(block.isGenesis(), true)
@@ -123,7 +115,8 @@ tape('[Block]: block functions', function (t) {
   })
 
   t.test('should test genesis parameters (ropsten)', function (st) {
-    const genesisBlock = new Block(undefined, { chain: 'ropsten' })
+    const common = new Common({ chain: 'ropsten' })
+    const genesisBlock = new Block(undefined, { common })
     genesisBlock.setGenesisParams()
     const ropstenStateRoot = '217b0bbcfb72e2d57e28f33cb361b9983513177755dc3f33ce3e7022ed62b77b'
     st.strictEqual(
