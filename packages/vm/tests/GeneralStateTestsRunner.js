@@ -1,6 +1,7 @@
 const { setupPreConditions, makeTx, makeBlockFromEnv } = require('./util')
 const Trie = require('merkle-patricia-tree').SecureTrie
 const { BN } = require('ethereumjs-util')
+const { default: Common } = require('@ethereumjs/common')
 const Account = require('@ethereumjs/account').default
 
 function parseTestCases(forkConfigTestSuite, testData, data, gasLimit, value) {
@@ -49,15 +50,16 @@ async function runTestCase(options, testData, t) {
   } else {
     VM = require('../lib/index').default
   }
-  
+
   let eips = []
   if (options.forkConfigVM == 'berlin') {
     eips = ['EIP2537'] // currently, the BLS tests run on the Berlin network, but our VM does not activate EIP2537 if you run the Berlin HF
   }
 
+  const common = new Common({ chain: 'mainnet', hardfork: options.forkConfigVM })
   vm = new VM({
     state,
-    hardfork: options.forkConfigVM,
+    common: common,
     eips
   })
 

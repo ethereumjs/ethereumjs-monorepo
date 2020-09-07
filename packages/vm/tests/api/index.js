@@ -39,16 +39,6 @@ tape('VM with default blockchain', (t) => {
     st.end()
   })
 
-  t.test('should only accept common or chain and fork', (st) => {
-    const common = new Common({ chain: 'mainnet' })
-
-    st.throws(() => new VM({ chain: 'a', common }))
-    st.throws(() => new VM({ hardfork: 'a', common }))
-    st.throws(() => new VM({ chain: 'a', hardfork: 'a', common }))
-
-    st.end()
-  })
-
   t.test('should accept a common object as option', async (st) => {
     const common = new Common({ chain: 'mainnet', hardfork: 'istanbul' })
 
@@ -60,12 +50,14 @@ tape('VM with default blockchain', (t) => {
   })
 
   t.test('should only accept valid chain and fork', async (st) => {
-    let vm = new VM({ chain: 'ropsten', hardfork: 'byzantium' })
+    let common = new Common({ chain: 'ropsten', hardfork: 'byzantium' })
+    let vm = new VM({ common })
     await vm.init()
     st.equal(vm.stateManager._common.param('gasPrices', 'ecAdd'), 500)
 
     try {
-      vm = new VM({ chain: 'mainchain', hardfork: 'homestead' })
+      common = new Common({ chain: 'mainchain', hardfork: 'homestead' })
+      vm = new VM({ common })
       st.fail('should have failed for invalid chain')
     } catch (e) {
       st.ok(e.message.includes('not supported'))
