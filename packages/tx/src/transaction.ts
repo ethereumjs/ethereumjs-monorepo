@@ -46,8 +46,8 @@ export default class Transaction {
    * transactions belongs to.
    *
    * @note Transaction objects implement EIP155 by default. To disable it, use the constructor's
-   * second parameter to set a chain and hardfork before EIP155 activation (i.e. before Spurious
-   * Dragon.)
+   * second parameter to set a Common instance with a chain and hardfork before EIP155 activation
+   * (i.e. before Spurious Dragon.)
    *
    * @example
    * ```js
@@ -71,16 +71,10 @@ export default class Transaction {
   ) {
     // instantiate Common class instance based on passed options
     if (opts.common) {
-      if (opts.chain || opts.hardfork) {
-        throw new Error(
-          'Instantiation with both opts.common, and opts.chain and opts.hardfork parameter not allowed!',
-        )
-      }
-
       this._common = opts.common
     } else {
-      const chain = opts.chain ? opts.chain : 'mainnet'
-      this._common = new Common({ chain })
+      const DEFAULT_CHAIN = 'mainnet'
+      this._common = new Common({ chain: DEFAULT_CHAIN })
     }
 
     // Define Properties

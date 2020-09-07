@@ -79,22 +79,13 @@ export interface FakeTxData extends TxData {
 
 /**
  * An object to set to which blockchain the blocks and their headers belong. This could be specified
- * using a Common object, or `chain` and `hardfork`. Defaults to mainnet without specifying a
- * hardfork.
+ * using a Common object.
+ *
+ * Defaults to `mainnet` and the current default hardfork from Common
  */
 export interface TransactionOptions {
   /**
    * A Common object defining the chain and the hardfork a transaction belongs to.
    */
   common?: Common
-
-  /**
-   * The chain of the transaction, default: 'mainnet'
-   */
-  chain?: number | string
-
-  /**
-   * The hardfork of the transaction, default: 'petersburg'
-   */
-  hardfork?: string
 }
