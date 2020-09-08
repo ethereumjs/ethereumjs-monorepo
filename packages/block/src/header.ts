@@ -140,7 +140,7 @@ export class BlockHeader {
     ]
     defineProperties(this, fields, data)
 
-    if (options.hardforkByBlockNumer) {
+    if (options.hardforkByBlockNumber) {
       this._common.setHardforkByBlockNumber(bufferToInt(this.number))
     }
 

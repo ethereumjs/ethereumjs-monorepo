@@ -20,7 +20,7 @@ export interface BlockOptions {
    *
    * Default: `false` (HF is set to whatever default HF is set by the Common instance)
    */
-  hardforkByBlockNumer?: boolean
+  hardforkByBlockNumber?: boolean
   /**
    * Turns the block header into the canonical genesis block header
    *

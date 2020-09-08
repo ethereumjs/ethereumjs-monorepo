@@ -65,7 +65,7 @@ async function runTestCase(options, testData, t) {
 
   await setupPreConditions(vm.stateManager._trie, testData)
 
-  let tx = makeTx(testData.transaction, options.forkConfigVM)
+  let tx = makeTx(testData.transaction, { common })
   block = makeBlockFromEnv(testData.env)
 
   if (!tx.validate()) {

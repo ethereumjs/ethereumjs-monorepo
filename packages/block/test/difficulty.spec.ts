@@ -78,7 +78,7 @@ tape('[Header]: difficulty tests', (t) => {
           uncleHash: test.parentUncles,
         },
       }
-      const parentBlock = new Block(parentData, { common, hardforkByBlockNumer: true })
+      const parentBlock = new Block(parentData, { common, hardforkByBlockNumber: true })
 
       const blockData = {
         header: {
@@ -87,7 +87,7 @@ tape('[Header]: difficulty tests', (t) => {
           number: test.currentBlockNumber,
         },
       }
-      const block = new Block(blockData, { common, hardforkByBlockNumer: true })
+      const block = new Block(blockData, { common, hardforkByBlockNumber: true })
 
       runDifficultyTests(
         test,

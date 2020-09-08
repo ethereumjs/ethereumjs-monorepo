@@ -94,7 +94,6 @@ tape('runBlockchain', (t) => {
 })
 
 function createBlock(parent = null, n = 0, opts = {}) {
-  opts.chain = opts.chain ? opts.chain : 'mainnet'
   if (parent === null) {
     return createGenesis(opts)
   }
