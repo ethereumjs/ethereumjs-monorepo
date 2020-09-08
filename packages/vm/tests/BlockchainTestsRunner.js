@@ -1,6 +1,6 @@
 const level = require('level')
 const levelMem = require('level-mem')
-const { addHexPrefix } = require('ethereumjs-util')
+const { addHexPrefix, toBuffer } = require('ethereumjs-util')
 const Trie = require('merkle-patricia-tree').SecureTrie
 const { Block, BlockHeader } = require('@ethereumjs/block')
 const Blockchain = require('@ethereumjs/blockchain').default
