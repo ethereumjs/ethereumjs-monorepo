@@ -126,6 +126,7 @@ module.exports = async function runStateTest(options, testData, t) {
       await runTestCase(options, testCase, t)
     }
   } catch (e) {
+    console.log(e)
     t.fail('error running test case for fork: ' + options.forkConfigTestSuite)
   }
 }
