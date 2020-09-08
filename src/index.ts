@@ -430,7 +430,7 @@ export default class Wallet {
     }
 
     const ciphertext = Buffer.from(json.crypto.ciphertext, 'hex')
-    const mac = keccak256(Buffer.concat([derivedKey.slice(16, 32), ciphertext]))
+    const mac = keccak256(Buffer.concat([Buffer.from(derivedKey.slice(16, 32)), ciphertext]))
     if (mac.toString('hex') !== json.crypto.mac) {
       throw new Error('Key derivation failed - possibly wrong passphrase')
     }
