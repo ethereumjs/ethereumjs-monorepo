@@ -19,6 +19,10 @@ export class Block {
   /**
    * Creates a new block object
    *
+   * Please solely use this constructor to pass in block header data
+   * and don't modfiy header data after initialization since this can lead to
+   * undefined behavior regarding HF rule implemenations within the class.
+   *
    * @param data - The block's data.
    * @param options - The options for this block (like the chain setup)
    */
@@ -26,18 +30,6 @@ export class Block {
     data: Buffer | [Buffer[], Buffer[], Buffer[]] | BlockData = {},
     options: BlockOptions = {},
   ) {
-    // Checking at runtime, to prevent errors down the path for JavaScript consumers.
-    if (data === null) {
-      data = {}
-    }
-
-    if (options.common) {
-      this._common = options.common
-    } else {
-      const DEFAULT_CHAIN = 'mainnet'
-      this._common = new Common({ chain: DEFAULT_CHAIN })
-    }
-
     let rawTransactions
     let rawUncleHeaders
 
@@ -48,18 +40,17 @@ export class Block {
       data = dataAsAny as [Buffer[], Buffer[], Buffer[]]
     }
 
+    // Initialize the block header
     if (Array.isArray(data)) {
-      this.header = new BlockHeader(data[0], { common: this._common })
+      this.header = new BlockHeader(data[0], options)
       rawTransactions = data[1]
       rawUncleHeaders = data[2]
     } else {
-      this.header = new BlockHeader(data.header, { common: this._common })
+      this.header = new BlockHeader(data.header, options)
       rawTransactions = data.transactions || []
       rawUncleHeaders = data.uncleHeaders || []
     }
-    if (options.hardforkByBlockNumer) {
-      this._common.setHardforkByBlockNumber(bufferToInt(this.header.number))
-    }
+    this._common = this.header._common
 
     // parse uncle headers
     for (let i = 0; i < rawUncleHeaders.length; i++) {
@@ -89,13 +80,6 @@ export class Block {
    */
   isGenesis(): boolean {
     return this.header.isGenesis()
-  }
-
-  /**
-   * Turns the block into the canonical genesis block
-   */
-  setGenesisParams(): void {
-    this.header.setGenesisParams()
   }
 
   /**

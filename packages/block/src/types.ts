@@ -10,6 +10,9 @@ import { Block } from './block'
 export interface BlockOptions {
   /**
    * A Common object defining the chain and the hardfork a block/block header belongs to.
+   *
+   * Default: `Common` object set to `mainnet` and the HF currently defined as the default
+   * hardfork in the `Common` class
    */
   common?: Common
   /**
@@ -18,6 +21,17 @@ export interface BlockOptions {
    * Default: `false` (HF is set to whatever default HF is set by the Common instance)
    */
   hardforkByBlockNumer?: boolean
+  /**
+   * Turns the block header into the canonical genesis block header
+   *
+   * If set to `true` all other header data is ignored.
+   *
+   * If a Common instance is passed the instance need to be set to `chainstart` as a HF,
+   * otherwise usage of this option will throw
+   *
+   * Default: `false`
+   */
+  initWithGenesisHeader?: boolean
 }
 
 /**

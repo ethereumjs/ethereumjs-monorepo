@@ -6,9 +6,8 @@ import { Block } from '../src/block'
 
 tape('[Block]: block functions', function (t) {
   t.test('should test block initialization', function (st) {
-    const common = new Common({ chain: 'ropsten' })
-    const block1 = new Block(undefined, { common: common })
-    block1.setGenesisParams()
+    const common = new Common({ chain: 'ropsten', hardfork: 'chainstart' })
+    const block1 = new Block(undefined, { common: common, initWithGenesisHeader: true })
     st.ok(block1.hash().toString('hex'), 'block should initialize')
     st.end()
   })
@@ -78,8 +77,7 @@ tape('[Block]: block functions', function (t) {
 
   const testDataGenesis = require('./testdata/genesishashestest.json').test
   t.test('should test genesis hashes (mainnet default)', function (st) {
-    const genesisBlock = new Block()
-    genesisBlock.setGenesisParams()
+    const genesisBlock = new Block(undefined, { initWithGenesisHeader: true })
     const rlp = genesisBlock.serialize()
     st.strictEqual(rlp.toString('hex'), testDataGenesis.genesis_rlp_hex, 'rlp hex match')
     st.strictEqual(
@@ -91,9 +89,8 @@ tape('[Block]: block functions', function (t) {
   })
 
   t.test('should test genesis hashes (ropsten)', function (st) {
-    const common = new Common({ chain: 'ropsten' })
-    const genesisBlock = new Block(undefined, { common: common })
-    genesisBlock.setGenesisParams()
+    const common = new Common({ chain: 'ropsten', hardfork: 'chainstart' })
+    const genesisBlock = new Block(undefined, { common: common, initWithGenesisHeader: true })
     st.strictEqual(
       genesisBlock.hash().toString('hex'),
       common.genesis().hash.slice(2),
@@ -103,9 +100,8 @@ tape('[Block]: block functions', function (t) {
   })
 
   t.test('should test genesis hashes (rinkeby)', function (st) {
-    const common = new Common({ chain: 'rinkeby' })
-    const genesisBlock = new Block(undefined, { common: common })
-    genesisBlock.setGenesisParams()
+    const common = new Common({ chain: 'rinkeby', hardfork: 'chainstart' })
+    const genesisBlock = new Block(undefined, { common: common, initWithGenesisHeader: true })
     st.strictEqual(
       genesisBlock.hash().toString('hex'),
       common.genesis().hash.slice(2),
@@ -115,9 +111,8 @@ tape('[Block]: block functions', function (t) {
   })
 
   t.test('should test genesis parameters (ropsten)', function (st) {
-    const common = new Common({ chain: 'ropsten' })
-    const genesisBlock = new Block(undefined, { common })
-    genesisBlock.setGenesisParams()
+    const common = new Common({ chain: 'ropsten', hardfork: 'chainstart' })
+    const genesisBlock = new Block(undefined, { common, initWithGenesisHeader: true })
     const ropstenStateRoot = '217b0bbcfb72e2d57e28f33cb361b9983513177755dc3f33ce3e7022ed62b77b'
     st.strictEqual(
       genesisBlock.header.stateRoot.toString('hex'),

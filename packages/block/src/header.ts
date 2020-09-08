@@ -34,10 +34,15 @@ export class BlockHeader {
   public mixHash!: Buffer
   public nonce!: Buffer
 
-  private readonly _common: Common
+  readonly _common: Common
 
   /**
    * Creates a new block header.
+   *
+   * Please solely use this constructor to pass in block header data
+   * and don't modfiy header data after initialization since this can lead to
+   * undefined behavior regarding HF rule implemenations within the class.
+   *
    * @param data - The data of the block header.
    * @param opts - The network options for this block, and its header, uncle headers and txs.
    */
@@ -49,7 +54,11 @@ export class BlockHeader {
       this._common = options.common
     } else {
       const DEFAULT_CHAIN = 'mainnet'
-      this._common = new Common({ chain: DEFAULT_CHAIN })
+      if (options.initWithGenesisHeader) {
+        this._common = new Common({ chain: DEFAULT_CHAIN, hardfork: 'chainstart' })
+      } else {
+        this._common = new Common({ chain: DEFAULT_CHAIN })
+      }
     }
     const fields = [
       {
@@ -124,8 +133,13 @@ export class BlockHeader {
       },
     ]
     defineProperties(this, fields, data)
+
     if (options.hardforkByBlockNumer) {
       this._common.setHardforkByBlockNumber(bufferToInt(this.number))
+    }
+
+    if (options.initWithGenesisHeader) {
+      this._setGenesisParams()
     }
 
     this._checkDAOExtraData()
@@ -311,7 +325,10 @@ export class BlockHeader {
   /**
    * Turns the header into the canonical genesis block header.
    */
-  setGenesisParams(): void {
+  _setGenesisParams(): void {
+    if (this._common.hardfork() !== 'chainstart') {
+      throw new Error('Genesis parameters can only be set with a Common instance set to chainstart')
+    }
     this.timestamp = this._common.genesis().timestamp
     this.gasLimit = this._common.genesis().gasLimit
     this.difficulty = this._common.genesis().difficulty
