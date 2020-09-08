@@ -1,5 +1,4 @@
 const tape = require('tape')
-const promisify = require('util.promisify')
 const util = require('ethereumjs-util')
 const { Block } = require('@ethereumjs/block')
 const Common = require('@ethereumjs/common').default
@@ -75,6 +74,23 @@ tape('VM with default blockchain', (t) => {
     st.end()
   })
 
+  t.test('should accept a supported EIP', async (st) => {
+    st.doesNotThrow(() => { new VM({ eips: [ 'EIP2537', ] }) })
+    st.end()
+  })
+
+  t.test('should correctly set _activatedEIPs', async (st) => {
+    const vm = new VM({ eips: [ 'EIP2537', ] })
+
+    st.deepEqual(vm._activatedEIPs, [ 'EIP2537', ])
+    st.end()
+  })
+
+  t.test('should not accept a not supported EIP', async (st) => {
+    st.throws(() => { new VM({ eips: [ 'NOT_SUPPORTED_EIP', ] }) })
+    st.end()
+  })
+
   t.test('should run blockchain without blocks', async (st) => {
     const vm = new VM()
     await vm.runBlockchain()
@@ -107,22 +123,24 @@ tape('VM with blockchain', (t) => {
       common: vm._common,
     })
 
-    await putGenesisP(vm.blockchain, genesis)
+    await vm.blockchain.putGenesis(genesis)
     st.equal(vm.blockchain.meta.genesis.toString('hex'), testData.genesisBlockHeader.hash.slice(2))
 
-    await putBlockP(vm.blockchain, block)
-    const head = await getHeadP(vm.blockchain)
+    await vm.blockchain.putBlock(block)
+    const head = await vm.blockchain.getHead()
     st.equal(head.hash().toString('hex'), testData.blocks[0].blockHeader.hash.slice(2))
 
     await setupPreConditions(vm.stateManager._trie, testData)
 
-    vm.runBlock = (block) => new Promise((resolve, reject) => reject(new Error('test')))
-    vm.runBlockchain()
-      .then(() => st.fail("it hasn't returned any errors"))
-      .catch((e) => {
-        st.equal(e.message, 'test', "it has correctly propagated runBlock's error")
-        st.end()
-      })
+    vm.runBlock = async () => new Promise((resolve, reject) => reject(new Error('test')))
+
+    try {
+      await vm.runBlockchain()
+      st.fail("it hasn't returned any errors")
+    } catch (e) {
+      st.equal(e.message, 'test', "it has correctly propagated runBlock's error")
+      st.end()
+    }
   })
 
   t.test('should run blockchain with blocks', async (st) => {
@@ -135,11 +153,11 @@ tape('VM with blockchain', (t) => {
       common: vm._common,
     })
 
-    await putGenesisP(vm.blockchain, genesis)
+    await vm.blockchain.putGenesis(genesis)
     st.equal(vm.blockchain.meta.genesis.toString('hex'), testData.genesisBlockHeader.hash.slice(2))
 
-    await putBlockP(vm.blockchain, block)
-    const head = await getHeadP(vm.blockchain)
+    await vm.blockchain.putBlock(block)
+    const head = await vm.blockchain.getHead()
     st.equal(head.hash().toString('hex'), testData.blocks[0].blockHeader.hash.slice(2))
 
     await setupPreConditions(vm.stateManager._trie, testData)
@@ -163,8 +181,3 @@ tape('VM with blockchain', (t) => {
     st.end()
   })
 })
-
-const putGenesisP = (blockchain, genesis) =>
-  promisify(blockchain.putGenesis.bind(blockchain))(genesis)
-const putBlockP = (blockchain, block) => promisify(blockchain.putBlock.bind(blockchain))(block)
-const getHeadP = (blockchain) => promisify(blockchain.getHead.bind(blockchain))()

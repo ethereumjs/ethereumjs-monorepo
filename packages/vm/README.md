@@ -4,7 +4,7 @@
 [![GitHub Issues][vm-issues-badge]][vm-issues-link]
 [![Actions Status][vm-actions-badge]][vm-actions-link]
 [![Code Coverage][vm-coverage-badge]][vm-coverage-link]
-[![Gitter][gitter-badge]][gitter-link]
+[![Discord][discord-badge]][discord-link]
 
 [![js-standard-style][js-standard-style-badge]][js-standard-style-link]
 
@@ -14,13 +14,15 @@ Implements Ethereum's VM in Javascript.
 
 The VM currently supports the following hardfork rules:
 
+- `Chainstart` (a.k.a. Frontier) (v5, UNRELEASED)
+- `Homestead` (v5, UNRELEASED)
+- `TangerineWhistle` (v5, UNRELEASED)
+- `SpuriousDragon` (v5, UNRELEASED)
 - `Byzantium`
 - `Constantinople`
 - `Petersburg` (default)
 - `Istanbul`
 - `MuirGlacier` (only `mainnet` and `ropsten`)
-
-If you are still looking for a [Spurious Dragon](https://eips.ethereum.org/EIPS/eip-607) compatible version of this library install the latest of the `2.2.x` series (see [Changelog](./CHANGELOG.md)).
 
 ##### MuirGlacier Hardfork Support
 
@@ -112,7 +114,7 @@ To build the VM for standalone use in the browser, see: [Running the VM in a bro
 
 For documentation on `VM` instantiation, exposed API and emitted `events` see generated [API docs](./docs/README.md).
 
-## StateManger
+## StateManager
 
 The API for the `StateManager` is currently in `Beta`, separate documentation can be found [here](./docs/classes/statemanager.md), see also [release notes](https://github.com/ethereumjs/ethereumjs-vm/releases/tag/v2.5.0) from the `v2.5.0` VM release for details on the `StateManager` rewrite.
 
@@ -203,8 +205,8 @@ If you want to join for work or do improvements on the libraries have a look at 
 
 [MPL-2.0](https://www.mozilla.org/MPL/2.0/)
 
-[gitter-badge]: https://img.shields.io/gitter/room/ethereum/ethereumjs.svg
-[gitter-link]: https://gitter.im/ethereum/ethereumjs
+[discord-badge]: https://img.shields.io/static/v1?logo=discord&label=discord&message=Join&color=blue
+[discord-link]: https://discord.gg/TNwARpR
 [js-standard-style-badge]: https://cdn.rawgit.com/feross/standard/master/badge.svg
 [js-standard-style-link]: https://github.com/feross/standard
 [vm-npm-badge]: https://img.shields.io/npm/v/@ethereumjs/vm.svg

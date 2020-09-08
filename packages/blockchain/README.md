@@ -4,7 +4,7 @@
 [![GitHub Issues][blockchain-issues-badge]][blockchain-issues-link]
 [![Actions Status][blockchain-actions-badge]][blockchain-actions-link]
 [![Code Coverage][blockchain-coverage-badge]][blockchain-coverage-link]
-[![Gitter][gitter-badge]][gitter-link]
+[![Discord][discord-badge]][discord-link]
 
 [![js-standard-style][js-standard-style-badge]][js-standard-style-link]
 
@@ -24,29 +24,24 @@ The following is an example to iterate through an existing Geth DB (needs `level
 
 This module performs write operations. Making a backup of your data before trying it is recommended. Otherwise, you can end up with a compromised DB state.
 
-```javascript
-const level = require('level')
-const Blockchain = require('@ethereumjs/blockchain').default
-const utils = require('ethereumjs-util')
+```typescript
+import Blockchain from '@ethereumjs/blockchain'
+import { bufferToInt } from 'ethereumjs-util'
+import level from 'level'
 
 const gethDbPath = './chaindata' // Add your own path here. It will get modified, see remarks.
-const db = level(gethDbPath)
 
-new Blockchain({ db: db }).iterator(
-  'i',
-  (block, reorg, cb) => {
-    const blockNumber = utils.bufferToInt(block.header.number)
-    const blockHash = block.hash().toString('hex')
-    console.log(`BLOCK ${blockNumber}: ${blockHash}`)
-    cb()
-  },
-  (err) => console.log(err || 'Done.'),
-)
+const db = level(gethDbPath)
+const blockchain = new Blockchain({ db })
+
+blockchain.iterator('i', (block) => {
+  const blockNumber = bufferToInt(block.header.number)
+  const blockHash = block.hash().toString('hex')
+  console.log(`Block ${blockNumber}: ${blockHash}`)
+})
 ```
 
-**WARNING**: Since `@ethereumjs/blockchain` is also doing write operations
-on the DB for safety reasons only run this on a copy of your database, otherwise this might lead
-to a compromised DB state.
+**WARNING**: Since `@ethereumjs/blockchain` is also doing write operations on the DB for safety reasons only run this on a copy of your database, otherwise this might lead to a compromised DB state.
 
 # EthereumJS
 
@@ -54,8 +49,8 @@ See our organizational [documentation](https://ethereumjs.readthedocs.io) for an
 
 If you want to join for work or do improvements on the libraries have a look at our [contribution guidelines](https://ethereumjs.readthedocs.io/en/latest/contributing.html).
 
-[gitter-badge]: https://img.shields.io/gitter/room/ethereum/ethereumjs.svg
-[gitter-link]: https://gitter.im/ethereum/ethereumjs
+[discord-badge]: https://img.shields.io/static/v1?logo=discord&label=discord&message=Join&color=blue
+[discord-link]: https://discord.gg/TNwARpR
 [js-standard-style-badge]: https://cdn.rawgit.com/feross/standard/master/badge.svg
 [js-standard-style-link]: https://github.com/feross/standard
 [blockchain-npm-badge]: https://img.shields.io/npm/v/@ethereumjs/blockchain.svg

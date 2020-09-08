@@ -82,6 +82,14 @@ export function OOGResult(gasLimit: BN): ExecResult {
     exceptionError: new VmError(ERROR.OUT_OF_GAS),
   }
 }
+// CodeDeposit OOG Result
+export function COOGResult(gasUsedCreateCode: BN): ExecResult {
+  return {
+    returnValue: Buffer.alloc(0),
+    gasUsed: gasUsedCreateCode,
+    exceptionError: new VmError(ERROR.CODESTORE_OUT_OF_GAS),
+  }
+}
 
 /**
  * EVM is responsible for executing an EVM message fully
@@ -129,8 +137,14 @@ export default class EVM {
 
     const err = result.execResult.exceptionError
     if (err) {
-      result.execResult.logs = []
-      await this._state.revert()
+      if (this._vm._common.gteHardfork('homestead') || err.error != ERROR.CODESTORE_OUT_OF_GAS) {
+        result.execResult.logs = []
+        await this._state.revert()
+      } else {
+        // we are in chainstart and the error was the code deposit error
+        // we do like nothing happened.
+        await this._state.commit()
+      }
     } else {
       await this._state.commit()
     }
@@ -250,9 +264,10 @@ export default class EVM {
 
     // fee for size of the return value
     let totalGas = result.gasUsed
+    let returnFee = new BN(0)
     if (!result.exceptionError) {
-      const returnFee = new BN(
-        result.returnValue.length * this._vm._common.param('gasPrices', 'createData'),
+      returnFee = new BN(result.returnValue.length).imuln(
+        this._vm._common.param('gasPrices', 'createData'),
       )
       totalGas = totalGas.add(returnFee)
     }
@@ -272,7 +287,17 @@ export default class EVM {
     ) {
       result.gasUsed = totalGas
     } else {
-      result = { ...result, ...OOGResult(message.gasLimit) }
+      if (this._vm._common.gteHardfork('homestead')) {
+        result = { ...result, ...OOGResult(message.gasLimit) }
+      } else {
+        // we are in Frontier
+        if (totalGas.sub(returnFee).lte(message.gasLimit)) {
+          // we cannot pay the code deposit fee (but the deposit code actually did run)
+          result = { ...result, ...COOGResult(totalGas.sub(returnFee)) }
+        } else {
+          result = { ...result, ...OOGResult(message.gasLimit) }
+        }
+      }
     }
 
     // Save code if a new contract was created

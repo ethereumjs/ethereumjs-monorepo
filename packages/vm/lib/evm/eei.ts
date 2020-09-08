@@ -7,7 +7,6 @@ import { StateManager } from '../state/index'
 import { VmError, ERROR } from '../exceptions'
 import Message from './message'
 import EVM, { EVMResult } from './evm'
-const promisify = require('util.promisify')
 
 /**
  * Environment data which is made available to EVM bytecode.
@@ -290,7 +289,7 @@ export default class EEI {
    * @param num - Number of block
    */
   async getBlockHash(num: BN): Promise<BN> {
-    const block = await promisify(this._env.blockchain.getBlock).bind(this._env.blockchain)(num)
+    const block = await this._env.blockchain.getBlock(num)
     return new BN(block.hash())
   }
 
@@ -581,6 +580,14 @@ export default class EEI {
    */
   async isAccountEmpty(address: Buffer): Promise<boolean> {
     return this._state.accountIsEmpty(address)
+  }
+
+  /**
+   * Returns true if account exists in the state trie (it can be empty). Returns false if the account is `null`.
+   * @param address - Address of account
+   */
+  async accountExists(address: Buffer): Promise<boolean> {
+    return this._state.accountExists(address)
   }
 
   private _getReturnCode(results: EVMResult) {

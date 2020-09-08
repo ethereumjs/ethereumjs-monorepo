@@ -4,7 +4,7 @@
 [![GitHub Issues][tx-issues-badge]][tx-issues-link]
 [![Actions Status][tx-actions-badge]][tx-actions-link]
 [![Code Coverage][tx-coverage-badge]][tx-coverage-link]
-[![Gitter][gitter-badge]][gitter-link]
+[![Discord][discord-badge]][discord-link]
 
 [![js-standard-style][js-standard-style-badge]][js-standard-style-link]
 
@@ -93,8 +93,8 @@ If you want to join for work or do improvements on the libraries have a look at 
 
 [MPL-2.0](<https://tldrlegal.com/license/mozilla-public-license-2.0-(mpl-2)>)
 
-[gitter-badge]: https://img.shields.io/gitter/room/ethereum/ethereumjs.svg
-[gitter-link]: https://gitter.im/ethereum/ethereumjs
+[discord-badge]: https://img.shields.io/static/v1?logo=discord&label=discord&message=Join&color=blue
+[discord-link]: https://discord.gg/TNwARpR
 [js-standard-style-badge]: https://cdn.rawgit.com/feross/standard/master/badge.svg
 [js-standard-style-link]: https://github.com/feross/standard
 [tx-npm-badge]: https://img.shields.io/npm/v/@ethereumjs/tx.svg

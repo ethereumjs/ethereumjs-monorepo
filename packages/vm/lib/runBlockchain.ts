@@ -1,73 +1,40 @@
+import { Block } from '@ethereumjs/block'
 import Blockchain from '@ethereumjs/blockchain'
 import VM from './index'
-const async = require('async')
-const callbackify = require('util-callbackify')
 
 /**
  * @ignore
  */
-export default function runBlockchain(this: VM, blockchain: Blockchain): Promise<void> {
-  return new Promise((resolve, reject) => {
-    const self = this
-    let headBlock: any
-    let parentState: Buffer
+export default async function runBlockchain(this: VM, blockchain: Blockchain) {
+  let headBlock: Block
+  let parentState: Buffer
 
-    blockchain = blockchain || this.blockchain
+  blockchain = blockchain || this.blockchain
 
-    // setup blockchain iterator
-    blockchain.iterator('vm', processBlock, (err: Error) => {
-      if (err) {
-        reject(err)
+  await blockchain.iterator('vm', async (block: Block, reorg: boolean) => {
+    // determine starting state for block run
+    // if we are just starting or if a chain re-org has happened
+    if (!headBlock || reorg) {
+      const parentBlock = await blockchain.getBlock(block.header.parentHash)
+      parentState = parentBlock.header.stateRoot
+      // generate genesis state if we are at the genesis block
+      // we don't have the genesis state
+      if (!headBlock) {
+        await this.stateManager.generateCanonicalGenesis()
       } else {
-        resolve()
+        parentState = headBlock.header.stateRoot
       }
-    })
+    }
 
-    function processBlock(block: any, reorg: boolean, cb: any) {
-      async.series([getStartingState, runBlock], cb)
-
-      // determine starting state for block run
-      function getStartingState(cb: any) {
-        // if we are just starting or if a chain re-org has happened
-        if (!headBlock || reorg) {
-          blockchain.getBlock(block.header.parentHash, function (err: any, parentBlock: any) {
-            parentState = parentBlock.header.stateRoot
-            // generate genesis state if we are at the genesis block
-            // we don't have the genesis state
-            if (!headBlock) {
-              const generateCanonicalGenesis = callbackify(
-                self.stateManager.generateCanonicalGenesis.bind(self.stateManager),
-              )
-              return generateCanonicalGenesis(cb)
-            } else {
-              cb(err)
-            }
-          })
-        } else {
-          parentState = headBlock.header.stateRoot
-          cb()
-        }
-      }
-
-      // run block, update head if valid
-      function runBlock(cb: any) {
-        self
-          .runBlock({
-            block: block,
-            root: parentState,
-          })
-          .then(() => {
-            // set as new head block
-            headBlock = block
-            cb()
-          })
-          .catch((err) => {
-            // remove invalid block
-            blockchain.delBlock(block.header.hash(), function () {
-              cb(err)
-            })
-          })
-      }
+    // run block, update head if valid
+    try {
+      await this.runBlock({ block, root: parentState })
+      // set as new head block
+      headBlock = block
+    } catch (error) {
+      // remove invalid block
+      await blockchain.delBlock(block.header.hash())
+      throw error
     }
   })
 }

@@ -546,6 +546,33 @@ export const handlers: { [k: string]: OpHandler } = {
     runState.stack.push(new BN(runState.eei.getGasLeft()))
   },
   JUMPDEST: function (runState: RunState) {},
+  BEGINSUB: function (runState: RunState) {
+    trap(ERROR.INVALID_BEGINSUB + ' at ' + describeLocation(runState))
+  },
+  JUMPSUB: function (runState: RunState) {
+    const dest = runState.stack.pop()
+
+    if (dest.gt(runState.eei.getCodeSize())) {
+      trap(ERROR.INVALID_JUMPSUB + ' at ' + describeLocation(runState))
+    }
+
+    const destNum = dest.toNumber()
+
+    if (!jumpSubIsValid(runState, destNum)) {
+      trap(ERROR.INVALID_JUMPSUB + ' at ' + describeLocation(runState))
+    }
+
+    runState.returnStack.push(new BN(runState.programCounter))
+    runState.programCounter = destNum + 1
+  },
+  RETURNSUB: function (runState: RunState) {
+    if (runState.returnStack.length < 1) {
+      trap(ERROR.INVALID_RETURNSUB)
+    }
+
+    const dest = runState.returnStack.pop()
+    runState.programCounter = dest.toNumber()
+  },
   PUSH: function (runState: RunState) {
     const numToPush = runState.opCode - 0x5f
     const loaded = new BN(
@@ -607,7 +634,7 @@ export const handlers: { [k: string]: OpHandler } = {
 
     subMemUsage(runState, offset, length)
     let gasLimit = new BN(runState.eei.getGasLeft())
-    gasLimit = maxCallGas(gasLimit, runState.eei.getGasLeft())
+    gasLimit = maxCallGas(gasLimit, runState.eei.getGasLeft(), runState)
 
     let data = Buffer.alloc(0)
     if (!length.isZero()) {
@@ -630,7 +657,7 @@ export const handlers: { [k: string]: OpHandler } = {
       new BN(runState._common.param('gasPrices', 'sha3Word')).imul(divCeil(length, new BN(32))),
     )
     let gasLimit = new BN(runState.eei.getGasLeft())
-    gasLimit = maxCallGas(gasLimit, runState.eei.getGasLeft())
+    gasLimit = maxCallGas(gasLimit, runState.eei.getGasLeft(), runState) // CREATE2 is only available after TangerineWhistle (Constantinople introduced this opcode)
 
     let data = Buffer.alloc(0)
     if (!length.isZero()) {
@@ -666,7 +693,6 @@ export const handlers: { [k: string]: OpHandler } = {
     if (!value.isZero()) {
       runState.eei.useGas(new BN(runState._common.param('gasPrices', 'callValueTransfer')))
     }
-    gasLimit = maxCallGas(gasLimit, runState.eei.getGasLeft())
 
     let data = Buffer.alloc(0)
     if (!inLength.isZero()) {
@@ -676,16 +702,19 @@ export const handlers: { [k: string]: OpHandler } = {
     if (runState._common.gteHardfork('spuriousDragon')) {
       // We are at or after Spurious Dragon
       // Call new account gas: account is DEAD and we transfer nonzero value
-      if ((await runState.stateManager.accountIsEmpty(toAddressBuf)) && !value.isZero()) {
+      if ((await runState.eei.isAccountEmpty(toAddressBuf)) && !value.isZero()) {
         runState.eei.useGas(new BN(runState._common.param('gasPrices', 'callNewAccount')))
       }
-    } else if (!(await runState.stateManager.accountExists(toAddressBuf))) {
-      // We are before Spurious Dragon
+    } else if (!(await runState.eei.accountExists(toAddressBuf))) {
+      // We are before Spurious Dragon and the account does not exist.
       // Call new account gas: account does not exist (it is not in the state trie, not even as an "empty" account)
-      const accountDoesNotExist = !(await runState.stateManager.accountExists(toAddressBuf))
-      if (accountDoesNotExist) {
-        runState.eei.useGas(new BN(runState._common.param('gasPrices', 'callNewAccount')))
-      }
+      runState.eei.useGas(new BN(runState._common.param('gasPrices', 'callNewAccount')))
+    }
+
+    gasLimit = maxCallGas(gasLimit, runState.eei.getGasLeft(), runState)
+    // note that TangerineWhistle or later this cannot happen (it could have ran out of gas prior to getting here though)
+    if (gasLimit.gt(runState.eei.getGasLeft())) {
+      trap(ERROR.OUT_OF_GAS)
     }
 
     if (!value.isZero()) {
@@ -716,7 +745,11 @@ export const handlers: { [k: string]: OpHandler } = {
     if (!value.isZero()) {
       runState.eei.useGas(new BN(runState._common.param('gasPrices', 'callValueTransfer')))
     }
-    gasLimit = maxCallGas(gasLimit, runState.eei.getGasLeft())
+    gasLimit = maxCallGas(gasLimit, runState.eei.getGasLeft(), runState)
+    // note that TangerineWhistle or later this cannot happen (it could have ran out of gas prior to getting here though)
+    if (gasLimit.gt(runState.eei.getGasLeft())) {
+      trap(ERROR.OUT_OF_GAS)
+    }
     if (!value.isZero()) {
       // TODO: Don't use private attr directly
       runState.eei._gasLeft.iaddn(runState._common.param('gasPrices', 'callStipend'))
@@ -740,7 +773,11 @@ export const handlers: { [k: string]: OpHandler } = {
 
     subMemUsage(runState, inOffset, inLength)
     subMemUsage(runState, outOffset, outLength)
-    gasLimit = maxCallGas(gasLimit, runState.eei.getGasLeft())
+    gasLimit = maxCallGas(gasLimit, runState.eei.getGasLeft(), runState)
+    // note that TangerineWhistle or later this cannot happen (it could have ran out of gas prior to getting here though)
+    if (gasLimit.gt(runState.eei.getGasLeft())) {
+      trap(ERROR.OUT_OF_GAS)
+    }
 
     let data = Buffer.alloc(0)
     if (!inLength.isZero()) {
@@ -759,7 +796,7 @@ export const handlers: { [k: string]: OpHandler } = {
 
     subMemUsage(runState, inOffset, inLength)
     subMemUsage(runState, outOffset, outLength)
-    gasLimit = maxCallGas(gasLimit, runState.eei.getGasLeft())
+    gasLimit = maxCallGas(gasLimit, runState.eei.getGasLeft(), runState) // we set TangerineWhistle or later to true here, as STATICCALL was available from Byzantium (which is after TangerineWhistle)
 
     let data = Buffer.alloc(0)
     if (!inLength.isZero()) {
@@ -810,8 +847,8 @@ export const handlers: { [k: string]: OpHandler } = {
           deductGas = true
         }
       }
-    } else {
-      // Pre EIP-161 (Spurious Dragon) gas semantics
+    } else if (runState._common.gteHardfork('tangerineWhistle')) {
+      // Pre EIP-150 (Tangerine Whistle) gas semantics
       const exists = await runState.stateManager.accountExists(selfdestructToAddressBuf)
       if (!exists) {
         deductGas = true
@@ -896,9 +933,30 @@ function jumpIsValid(runState: RunState, dest: number): boolean {
   return runState.validJumps.indexOf(dest) !== -1
 }
 
-function maxCallGas(gasLimit: BN, gasLeft: BN): BN {
-  const gasAllowed = gasLeft.sub(gasLeft.divn(64))
-  return gasLimit.gt(gasAllowed) ? gasAllowed : gasLimit
+// returns the max call gas which we want to use for the gas limit
+// note that pre-TangerineWhistle there was no hard limit. if you tried sending more gas, your CALLs (or equivalent) went OOG
+//
+
+/**
+ * Returns an overflow-safe slice of an array. It right-pads
+ * the data with zeros to `length`.
+ * @param {BN} gasLimit - requested gas Limit
+ * @param {BN} gasLeft - current gas left
+ * @param {RunState} runState - the current runState
+ */
+function maxCallGas(gasLimit: BN, gasLeft: BN, runState: RunState): BN {
+  const isTangerineWhistleOrLater = runState._common.gteHardfork('tangerineWhistle')
+  if (isTangerineWhistleOrLater) {
+    const gasAllowed = gasLeft.sub(gasLeft.divn(64))
+    return gasLimit.gt(gasAllowed) ? gasAllowed : gasLimit
+  } else {
+    return gasLimit
+  }
+}
+
+// checks if a jumpsub is valid given a destination
+function jumpSubIsValid(runState: RunState, dest: number): boolean {
+  return runState.validJumpSubs.indexOf(dest) !== -1
 }
 
 async function getContractStorage(runState: RunState, address: Buffer, key: Buffer) {

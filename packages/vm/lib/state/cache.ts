@@ -52,29 +52,38 @@ export default class Cache {
   }
 
   /**
+   * Returns true if the key was deleted and thus existed in the cache earlier
+   * @param key - trie key to lookup
+   */
+  keyIsDeleted(key: Buffer): boolean {
+    const keyStr = key.toString('hex')
+    const it = this._cache.find(keyStr)
+    if (it.node) {
+      return it.value.deleted
+    }
+    return false
+  }
+
+  /**
    * Looks up address in underlying trie.
    * @param address - Address of account
-   * @param create - Create emtpy account if non-existent
    */
-  async _lookupAccount(address: Buffer, create: boolean = true): Promise<Account | undefined> {
+  async _lookupAccount(address: Buffer): Promise<Account> {
     const raw = await this._trie.get(address)
-    if (raw || create) {
-      const account = new Account(raw)
-      return account
-    }
+    const account = new Account(raw)
+    return account
   }
 
   /**
    * Looks up address in cache, if not found, looks it up
    * in the underlying trie.
    * @param key - Address of account
-   * @param create - Create emtpy account if non-existent
    */
-  async getOrLoad(key: Buffer, create: boolean = true): Promise<Account | undefined> {
+  async getOrLoad(key: Buffer): Promise<Account> {
     let account = this.lookup(key)
 
     if (!account) {
-      account = await this._lookupAccount(key, create)
+      account = await this._lookupAccount(key)
       if (account) {
         this._update(key, account as Account, false, false)
       }
@@ -114,7 +123,7 @@ export default class Cache {
         it.next()
       } else if (it.value && it.value.deleted) {
         it.value.modified = false
-        it.value.deleted = false
+        it.value.deleted = true
         it.value.val = new Account().serialize()
         await this._trie.del(Buffer.from(it.key, 'hex'))
         next = it.hasNext

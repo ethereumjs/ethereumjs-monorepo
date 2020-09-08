@@ -32,7 +32,7 @@
   "license": "MPL-2.0",
   "dependencies": {
     "@ethereumjs/common": "^1.5.1",
-    "ethereumjs-util": "^7.0.2"
+    "ethereumjs-util": "^7.0.4"
   },
   "devDependencies": {
     "@ethereumjs/config-nyc": "^1.1.1",
@@ -45,7 +45,7 @@
     "@types/tape": "^4.13.0",
     "browserify": "^16.5.1",
     "contributor": "^0.1.25",
-    "ethereumjs-testing": "git+https://github.com/ethereumjs/ethereumjs-testing.git#v1.3.1",
+    "ethereumjs-testing": "git+https://github.com/ethereumjs/ethereumjs-testing.git#v1.3.3",
     "istanbul": "^0.4.1",
     "karma": "^4.1.0",
     "karma-browserify": "^6.0.0",

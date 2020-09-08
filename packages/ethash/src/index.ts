@@ -19,7 +19,6 @@ import {
 } from './util'
 import type { LevelUp } from 'levelup'
 import type { Block, BlockHeader } from '@ethereumjs/block'
-const async = require('async')
 const xor = require('buffer-xor')
 
 export default class Ethash {
@@ -126,11 +125,11 @@ export default class Ethash {
   /**
    * Loads the seed and cache given a block number.
    */
-  loadEpoc(number: number, cb: Function) {
+  async loadEpoc(number: number) {
     const epoc = getEpoc(number)
 
     if (this.epoc === epoc) {
-      return cb()
+      return
     }
 
     this.epoc = epoc
@@ -140,102 +139,95 @@ export default class Ethash {
     }
 
     // gives the seed the first epoc found
-    const findLastSeed = (
-      epoc: number,
-      cb2: (seed: Buffer, epoc: number) => void
-    ) => {
+    const findLastSeed = async (epoc: number): Promise<[Buffer, number]> => {
       if (epoc === 0) {
-        return cb2(zeros(32), 0)
+        return [zeros(32), 0]
       }
-
-      this.cacheDB!.get(epoc, this.dbOpts, (err, data) => {
-        if (!err) {
-          cb2(data.seed, epoc)
-        } else {
-          findLastSeed(epoc - 1, cb2)
+      let data
+      try {
+        data = await this.cacheDB!.get(epoc, this.dbOpts)
+      } catch (error) {
+        if (error.type !== 'NotFoundError') {
+          throw error
         }
-      })
+      }
+      if (data) {
+        return [data.seed, epoc]
+      } else {
+        return findLastSeed(epoc - 1)
+      }
     }
 
-    this.cacheDB.get(epoc, this.dbOpts, (err, data) => {
-      if (!data) {
-        this.cacheSize = getCacheSize(epoc)
-        this.fullSize = getFullSize(epoc)
-
-        findLastSeed(epoc, (seed, foundEpoc) => {
-          this.seed = getSeed(seed, foundEpoc, epoc)
-          const cache = this.mkcache(this.cacheSize!, this.seed!)
-          // store the generated cache
-          this.cacheDB!.put(
-            epoc,
-            {
-              cacheSize: this.cacheSize,
-              fullSize: this.fullSize,
-              seed: this.seed,
-              cache: cache
-            },
-            this.dbOpts,
-            cb as any
-          )
-        })
-      } else {
-        // Object.assign(this, data)
-        this.cache = data.cache.map((a: Buffer) => {
-          return Buffer.from(a)
-        })
-        this.cacheSize = data.cacheSize
-        this.fullSize = data.fullSize
-        this.seed = Buffer.from(data.seed)
-        cb()
+    let data
+    try {
+      data = await this.cacheDB!.get(epoc, this.dbOpts)
+    } catch (error) {
+      if (error.type !== 'NotFoundError') {
+        throw error
       }
-    })
+    }
+
+    if (!data) {
+      this.cacheSize = getCacheSize(epoc)
+      this.fullSize = getFullSize(epoc)
+
+      const [seed, foundEpoc] = await findLastSeed(epoc)
+      this.seed = getSeed(seed, foundEpoc, epoc)
+      const cache = this.mkcache(this.cacheSize!, this.seed!)
+      // store the generated cache
+      await this.cacheDB!.put(
+        epoc,
+        {
+          cacheSize: this.cacheSize,
+          fullSize: this.fullSize,
+          seed: this.seed,
+          cache: cache
+        },
+        this.dbOpts
+      )
+    } else {
+      // Object.assign(this, data)
+      this.cache = data.cache.map((a: Buffer) => {
+        return Buffer.from(a)
+      })
+      this.cacheSize = data.cacheSize
+      this.fullSize = data.fullSize
+      this.seed = Buffer.from(data.seed)
+    }
   }
 
-  _verifyPOW(header: BlockHeader, cb: (valid: boolean) => void) {
+  async _verifyPOW(header: BlockHeader) {
     const headerHash = this.headerHash(header.raw)
     const number = bufferToInt(header.number)
     const mixHash = header.mixHash
     const difficulty = new BN(header.difficulty)
 
-    this.loadEpoc(number, () => {
-      const nonceBuffer = Buffer.from(header.nonce as any, 'hex')
-      const a = this.run(headerHash, nonceBuffer)
-      const result = new BN(a.hash)
-      cb(
-        a.mix.toString('hex') === mixHash.toString('hex') &&
-          TWO_POW256.div(difficulty).cmp(result) === 1
-      )
-    })
+    await this.loadEpoc(number)
+    const nonceBuffer = Buffer.from(header.nonce as any, 'hex')
+    const a = this.run(headerHash, nonceBuffer)
+    const result = new BN(a.hash)
+
+    return a.mix.equals(mixHash) && TWO_POW256.div(difficulty).cmp(result) === 1
   }
 
-  verifyPOW(block: Block, cb: (valid: boolean) => void) {
-    let valid = true
-
+  async verifyPOW(block: Block) {
     // don't validate genesis blocks
     if (block.header.isGenesis()) {
-      cb(true)
-      return
+      return true
     }
 
-    this._verifyPOW(block.header, (valid2) => {
-      valid = valid2
+    const valid = await this._verifyPOW(block.header)
+    if (!valid) {
+      return false
+    }
 
+    for (let index = 0; index < block.uncleHeaders.length; index++) {
+      const valid = await this._verifyPOW(block.uncleHeaders[index])
       if (!valid) {
-        return cb(valid)
+        return false
       }
+    }
 
-      async.eachSeries(
-        block.uncleHeaders,
-        (uheader: BlockHeader, cb2: (valid: boolean) => void) => {
-          this._verifyPOW(uheader, (valid3) => {
-            valid = valid3
-            cb2(valid)
-          })
-        },
-        () => {
-          cb(valid)
-        }
-      )
-    })
+    return true
   }
 }

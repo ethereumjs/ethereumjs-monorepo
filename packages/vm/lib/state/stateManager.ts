@@ -71,7 +71,7 @@ export default class DefaultStateManager implements StateManager {
    * @param address - Address of the `account` to get
    */
   async getAccount(address: Buffer): Promise<Account> {
-    const account = (await this._cache.getOrLoad(address)) as Account
+    const account = await this._cache.getOrLoad(address)
     return account
   }
 
@@ -89,6 +89,11 @@ export default class DefaultStateManager implements StateManager {
     this.touchAccount(address)
   }
 
+  /**
+   * Deletes an [`@ethereumjs/account`](https://github.com/ethereumjs/ethereumjs-vm/tree/master/packages/account)
+   * from state under the provided `address`. The account will also be removed from the state trie.
+   * @param address - Address of the account which should be deleted
+   */
   async deleteAccount(address: Buffer) {
     this._cache.del(address)
     this.touchAccount(address)
@@ -115,7 +120,7 @@ export default class DefaultStateManager implements StateManager {
     const codeHash = keccak256(value)
 
     if (codeHash.equals(KECCAK256_NULL)) {
-      //return
+      return
     }
 
     const account = await this.getAccount(address)
@@ -358,10 +363,11 @@ export default class DefaultStateManager implements StateManager {
    * Gets the state-root of the Merkle-Patricia trie representation
    * of the state of this StateManager. Will error if there are uncommitted
    * checkpoints on the instance.
+   * @param force - If set to `true`, force a cache flush even if there are uncommited checkpoints (this is set to `true` pre-Byzantium in order to get intermediate state roots for the receipts)
    * @returns {Promise<Buffer>} - Returns the state-root of the `StateManager`
    */
-  async getStateRoot(): Promise<Buffer> {
-    if (this._checkpointCount !== 0) {
+  async getStateRoot(force: boolean = false): Promise<Buffer> {
+    if (!force && this._checkpointCount !== 0) {
       throw new Error('Cannot get state root with uncommitted checkpoints')
     }
     await this._cache.flush()
@@ -489,7 +495,7 @@ export default class DefaultStateManager implements StateManager {
    */
   async accountExists(address: Buffer): Promise<boolean> {
     const account = await this._cache.lookup(address)
-    if (account) {
+    if (account && !this._cache.keyIsDeleted(address)) {
       return true
     }
     if (await this._cache._trie.get(address)) {

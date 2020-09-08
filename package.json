@@ -12,7 +12,7 @@
   },
   "scripts": {
     "postinstall": "npm run bootstrap",
-    "bootstrap": "lerna bootstrap --ignore-scripts --include-dependencies --no-ci --hoist",
+    "bootstrap": "lerna bootstrap --ignore-scripts --include-dependencies --no-ci --hoist && npm run build",
     "bootstrap:account": "npm run bootstrap -- --scope @ethereumjs/account",
     "bootstrap:block": "npm run bootstrap -- --scope @ethereumjs/block",
     "bootstrap:blockchain": "npm run bootstrap -- --scope @ethereumjs/blockchain",
@@ -32,6 +32,8 @@
     "lint": "lerna run lint --stream --parallel",
     "lint:fix": "lerna run lint:fix --stream --parallel",
     "test": "lerna exec npm run test --parallel",
-    "coverage": "lerna run coverage --stream"
+    "coverage": "lerna run coverage --stream",
+    "docs:build": "lerna run docs:build --ignore @ethereumjs/ethash",
+    "clean": "lerna exec -- rm -rf node_modules && rm -rf node_modules"
   }
 }

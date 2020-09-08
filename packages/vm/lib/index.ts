@@ -37,7 +37,7 @@ export interface VMOpts {
    */
   state?: any // TODO
   /**
-   * A [blockchain](https://github.com/ethereumjs/ethereumjs-blockchain) object for storing/retrieving blocks
+   * A [blockchain](https://github.com/ethereumjs/ethereumjs-vm/packages/blockchain) object for storing/retrieving blocks
    */
   blockchain?: Blockchain
   /**
@@ -55,7 +55,21 @@ export interface VMOpts {
    * Allows unlimited contract sizes while debugging. By setting this to `true`, the check for contract size limit of 24KB (see [EIP-170](https://git.io/vxZkK)) is bypassed
    */
   allowUnlimitedContractSize?: boolean
+  /**
+   * Use a [common](https://github.com/ethereumjs/ethereumjs-vm/packages/common) instance or a combination
+   * on the `chain` and `hardfork` options if you want to change the network setup
+   */
   common?: Common
+  /**
+   * Selected EIPs which can be activated on the VM, please use an array for instantiation
+   * (e.g. `eips: [ 'EIP2537', ])
+   *
+   * Currently supported:
+   * `EIP2537` (`beta`) - BLS12-381 precompiles ([specification](https://eips.ethereum.org/EIPS/eip-2537))
+   *
+   * Note: EIPs annotated with `beta` can change its behaviour or can be removed on minor version bumps of the VM
+   */
+  eips?: string[]
 }
 
 /**
@@ -67,6 +81,7 @@ export interface VMOpts {
 export default class VM extends AsyncEventEmitter {
   opts: VMOpts
   _common: Common
+  _activatedEIPs: string[] = []
   stateManager: StateManager
   blockchain: Blockchain
   allowUnlimitedContractSize: boolean
@@ -110,6 +125,9 @@ export default class VM extends AsyncEventEmitter {
       const chain = opts.chain ? opts.chain : 'mainnet'
       const hardfork = opts.hardfork ? opts.hardfork : 'petersburg'
       const supportedHardforks = [
+        'chainstart',
+        'homestead',
+        'dao',
         'tangerineWhistle',
         'spuriousDragon',
         'byzantium',
@@ -117,12 +135,26 @@ export default class VM extends AsyncEventEmitter {
         'petersburg',
         'istanbul',
         'muirGlacier',
+        'berlin',
       ]
 
       this._common = new Common(chain, hardfork, supportedHardforks)
     }
 
+    // EIPs
+    if (opts.eips) {
+      const supportedEIPs = ['EIP2537']
+      for (const eip of opts.eips) {
+        if (supportedEIPs.includes(eip)) {
+          this._activatedEIPs.push(eip)
+        } else {
+          throw new Error(`${eip} is not supported by the VM`)
+        }
+      }
+    }
+
     // Set list of opcodes based on HF
+    // TODO: make this EIP-friendly
     this._opcodes = getOpcodesForHF(this._common)
 
     if (opts.stateManager) {
@@ -175,9 +207,9 @@ export default class VM extends AsyncEventEmitter {
    *
    * This method modifies the state.
    *
-   * @param blockchain -  A [blockchain](https://github.com/ethereum/ethereumjs-blockchain) object to process
+   * @param blockchain -  An [@ethereumjs/blockchain](https://github.com/ethereumjs/ethereumjs-vm/tree/master/packages/blockchain) object to process
    */
-  async runBlockchain(blockchain: any): Promise<void> {
+  async runBlockchain(blockchain: Blockchain): Promise<void> {
     await this.init()
     return runBlockchain.bind(this)(blockchain)
   }
@@ -189,7 +221,7 @@ export default class VM extends AsyncEventEmitter {
    * reverted if an exception is raised. If it's `false`, it won't revert if the block's header is
    * invalid. If an error is thrown from an event handler, the state may or may not be reverted.
    *
-   * @param opts - Default values for options:
+   * @param {RunBlockOpts} opts - Default values for options:
    *  - `generate`: false
    */
   async runBlock(opts: RunBlockOpts): Promise<RunBlockResult> {
@@ -203,6 +235,8 @@ export default class VM extends AsyncEventEmitter {
    * This method modifies the state. If an error is thrown, the modifications are reverted, except
    * when the error is thrown from an event handler. In the latter case the state may or may not be
    * reverted.
+   *
+   * @param {RunTxOpts} opts
    */
   async runTx(opts: RunTxOpts): Promise<RunTxResult> {
     await this.init()
@@ -213,6 +247,8 @@ export default class VM extends AsyncEventEmitter {
    * runs a call (or create) operation.
    *
    * This method modifies the state.
+   *
+   * @param {RunCallOpts} opts
    */
   async runCall(opts: RunCallOpts): Promise<EVMResult> {
     await this.init()
@@ -223,6 +259,8 @@ export default class VM extends AsyncEventEmitter {
    * Runs EVM code.
    *
    * This method modifies the state.
+   *
+   * @param {RunCodeOpts} opts
    */
   async runCode(opts: RunCodeOpts): Promise<ExecResult> {
     await this.init()

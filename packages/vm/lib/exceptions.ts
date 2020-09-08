@@ -1,5 +1,6 @@
 export enum ERROR {
   OUT_OF_GAS = 'out of gas',
+  CODESTORE_OUT_OF_GAS = 'code store out of gas',
   STACK_UNDERFLOW = 'stack underflow',
   STACK_OVERFLOW = 'stack overflow',
   INVALID_JUMP = 'invalid JUMP',
@@ -12,6 +13,9 @@ export enum ERROR {
   STOP = 'stop',
   REFUND_EXHAUSTED = 'refund exhausted',
   VALUE_OVERFLOW = 'value overflow',
+  INVALID_BEGINSUB = 'invalid BEGINSUB',
+  INVALID_RETURNSUB = 'invalid RETURNSUB',
+  INVALID_JUMPSUB = 'invalid JUMPSUB',
 }
 
 export class VmError {

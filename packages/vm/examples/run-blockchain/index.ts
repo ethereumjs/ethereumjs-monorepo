@@ -5,30 +5,27 @@ import { Block, BlockHeader } from '@ethereumjs/block'
 import Blockchain from '@ethereumjs/blockchain'
 import { toBuffer, setLengthLeft } from 'ethereumjs-util'
 
-import { promisify } from 'util'
-
 const testData = require('./test-data')
 const level = require('level')
 
 async function main() {
   const hardfork = testData.network.toLowerCase()
+  const validatePow = true
+  const validateBlocks = true
 
   const blockchain = new Blockchain({
     hardfork,
-    // This flag can be control whether the blocks are validated. This includes:
-    //    * Verifying PoW
-    //    * Validating each blocks's difficulty, uncles, tries, header and uncles.
-    validate: true,
+    validatePow,
+    validateBlocks,
   })
 
-  // When verifying PoW, setting this cache improves the performance of subsequent runs of this
-  // script. It has no effect if the blockchain is initialized with `validate: false`.
-  setEthashCache(blockchain)
+  // When verifying PoW, setting this cache improves the
+  // performance of subsequent runs of this script.
+  if (validatePow) {
+    blockchain.ethash!.cacheDB = level('./.cachedb')
+  }
 
-  const vm = new VM({
-    blockchain: blockchain,
-    hardfork,
-  })
+  const vm = new VM({ blockchain, hardfork })
 
   await setupPreConditions(vm, testData)
 
@@ -38,19 +35,11 @@ async function main() {
 
   await vm.runBlockchain(blockchain)
 
-  const blockchainHead = (await promisify(
-    vm.blockchain.getHead.bind(vm.blockchain),
-  )()) as BlockHeader
+  const blockchainHead = await vm.blockchain.getHead()
 
   console.log('--- Finished processing the BlockChain ---')
   console.log('New head:', '0x' + blockchainHead.hash().toString('hex'))
   console.log('Expected:', testData.lastblockhash)
-}
-
-function setEthashCache(blockchain: any) {
-  if (blockchain.validate) {
-    blockchain.ethash.cacheDB = level('./.cachedb')
-  }
 }
 
 async function setupPreConditions(vm: VM, testData: any) {
@@ -84,13 +73,13 @@ async function setupPreConditions(vm: VM, testData: any) {
 async function setGenesisBlock(blockchain: any, hardfork: string) {
   const header = new BlockHeader(testData.genesisBlockHeader, { hardfork })
   const genesisBlock = new Block([header.raw, [], []], { hardfork })
-  await promisify(blockchain.putGenesis.bind(blockchain))(genesisBlock)
+  await blockchain.putGenesis(genesisBlock)
 }
 
 async function putBlocks(blockchain: any, hardfork: string, testData: any) {
   for (const blockData of testData.blocks) {
     const block = new Block(toBuffer(blockData.rlp), { hardfork })
-    await promisify(blockchain.putBlock.bind(blockchain))(block)
+    await blockchain.putBlock(block)
   }
 }
 

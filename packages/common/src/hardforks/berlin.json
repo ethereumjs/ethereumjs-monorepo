@@ -6,7 +6,20 @@
     "status": "Draft"
   },
   "gasConfig": {},
-  "gasPrices": {},
+  "gasPrices": {
+    "beginsub": {
+      "v": 2,
+      "d": "Base fee of the BEGINSUB opcode"
+    },
+    "returnsub": {
+      "v": 5,
+      "d": "Base fee of the RETURNSUB opcode"
+    },
+    "jumpsub": {
+      "v": 10,
+      "d": "Base fee of the JUMPSUB opcode"
+    }
+  },
   "vm": {},
   "pow": {}
 }

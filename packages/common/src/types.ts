@@ -23,6 +23,10 @@ export interface Chain {
   bootstrapNodes: BootstrapNode[]
 }
 
+export interface eipsType {
+  [key: string]: any
+}
+
 export interface GenesisBlock {
   hash: string
   timestamp: string | null

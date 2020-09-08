@@ -144,4 +144,26 @@ tape('[Block]: block functions', function (t) {
     st.equal(typeof block.toJSON(true), 'object')
     st.end()
   })
+
+  t.test('DAO hardfork', function (st) {
+    const blockData: any = rlp.decode(testData2.blocks[0].rlp)
+    // Set block number from test block to mainnet DAO fork block 1920000
+    blockData[0][8] = Buffer.from('1D4C00', 'hex')
+
+    const common = new Common('mainnet', 'dao')
+    st.throws(
+      function () {
+        new Block(blockData, { common: common })
+      },
+      /Error: extraData should be 'dao-hard-fork'$/,
+      'should throw on DAO HF block with wrong extra data',
+    ) // eslint-disable-line
+
+    // Set extraData to dao-hard-fork
+    blockData[0][12] = Buffer.from('64616f2d686172642d666f726b', 'hex')
+    st.doesNotThrow(function () {
+      new Block(blockData, { common: common })
+    }, 'should not throw on DAO HF block with correct extra data')
+    st.end()
+  })
 })
