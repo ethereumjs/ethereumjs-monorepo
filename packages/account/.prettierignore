@@ -2,6 +2,6 @@
 .nyc_output
 .vscode
 coverage
-dist
+dist*
 docs
 node_modules
