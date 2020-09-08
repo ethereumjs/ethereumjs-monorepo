@@ -195,7 +195,7 @@ tape('should transfer balance from DAO children to the Refund DAO account in the
 })
 
 async function runWithHf(hardfork) {
-  const vm = setupVM({ hardfork: hardfork })
+  const vm = setupVM({ common: new Common({ chain: 'mainnet', hardfork: hardfork }) })
   const suite = setup(vm)
 
   const block = new Block(util.rlp.decode(suite.data.blocks[0].rlp))

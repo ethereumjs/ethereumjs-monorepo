@@ -113,7 +113,7 @@ tape('VM with blockchain', (t) => {
   })
 
   t.test('should run blockchain with mocked runBlock', async (st) => {
-    const vm = setupVM({ chain: 'goerli' })
+    const vm = setupVM({ common: new Common({ chain: 'goerli' }) })
     await vm.init()
 
     const genesis = new Block(Buffer.from(testData.genesisRLP.slice(2), 'hex'), {
@@ -144,7 +144,7 @@ tape('VM with blockchain', (t) => {
   })
 
   t.test('should run blockchain with blocks', async (st) => {
-    const vm = setupVM({ chain: 'goerli' })
+    const vm = setupVM({ common: new Common({ chain: 'goerli' }) })
     await vm.init()
     const genesis = new Block(Buffer.from(testData.genesisRLP.slice(2), 'hex'), {
       common: vm._common,
@@ -168,7 +168,7 @@ tape('VM with blockchain', (t) => {
   })
 
   t.test('should pass the correct Common object when copying the VM', async (st) => {
-    const vm = setupVM({ chain: 'goerli', hardfork: 'byzantium' })
+    const vm = setupVM({ common: new Common({ chain: 'goerli', hardfork: 'byzantium' }) })
     await vm.init()
 
     st.equal(vm._common.chainName(), 'goerli')

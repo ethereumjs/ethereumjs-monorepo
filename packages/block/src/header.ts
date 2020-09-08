@@ -50,6 +50,12 @@ export class BlockHeader {
     data: Buffer | PrefixedHexString | BufferLike[] | BlockHeaderData = {},
     options: BlockOptions = {},
   ) {
+    // Throw on chain or hardfork options removed in latest major release
+    // to prevent implicit chain setup on a wrong chain
+    if ('chain' in options || 'hardfork' in options) {
+      throw new Error('Chain/hardfork options are not allowed any more on initialization')
+    }
+
     if (options.common) {
       this._common = options.common
     } else {

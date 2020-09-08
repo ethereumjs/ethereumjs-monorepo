@@ -69,6 +69,12 @@ export default class Transaction {
     data: Buffer | PrefixedHexString | BufferLike[] | TxData = {},
     opts: TransactionOptions = {},
   ) {
+    // Throw on chain or hardfork options removed in latest major release
+    // to prevent implicit chain setup on a wrong chain
+    if ('chain' in opts || 'hardfork' in opts) {
+      throw new Error('Chain/hardfork options are not allowed any more on initialization')
+    }
+
     // instantiate Common class instance based on passed options
     if (opts.common) {
       this._common = opts.common
