@@ -119,7 +119,7 @@ As this project is powered by Lerna, you can install it globally to enjoy lots m
 
 #### Cleaning `node_modules`
 
-Hoisting is enabled so shared dependencies across packages are symlinked to the root `node_modules`. `lerna clean` [does not remove the root `node_modules`](https://github.com/lerna/lerna/issues/1304) so for convenience you can use the project script `npm run clean`.
+Hoisting is enabled so dependencies are moved to the root `node_modules`. `lerna clean` [does not remove the root `node_modules`](https://github.com/lerna/lerna/issues/1304) so for convenience you can use the project script `npm run clean`.
 
 # EthereumJS
 
