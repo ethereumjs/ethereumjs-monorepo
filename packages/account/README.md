@@ -4,7 +4,7 @@
 [![GitHub Issues][account-issues-badge]][account-issues-link]
 [![Actions Status][account-actions-badge]][account-actions-link]
 [![Code Coverage][account-coverage-badge]][account-coverage-link]
-[![Gitter][gitter-badge]][gitter-link]
+[![Discord][discord-badge]][discord-link]
 
 [![js-standard-style][js-standard-style-badge]][js-standard-style-link]
 
@@ -38,8 +38,8 @@ See our organizational [documentation](https://ethereumjs.readthedocs.io) for an
 
 If you want to join for work or do improvements on the libraries have a look at our [contribution guidelines](https://ethereumjs.readthedocs.io/en/latest/contributing.html).
 
-[gitter-badge]: https://img.shields.io/gitter/room/ethereum/ethereumjs.svg
-[gitter-link]: https://gitter.im/ethereum/ethereumjs
+[discord-badge]: https://img.shields.io/static/v1?logo=discord&label=discord&message=Join&color=blue
+[discord-link]: https://discord.gg/TNwARpR
 [js-standard-style-badge]: https://cdn.rawgit.com/feross/standard/master/badge.svg
 [js-standard-style-link]: https://github.com/feross/standard
 [account-npm-badge]: https://img.shields.io/npm/v/@ethereumjs/account.svg

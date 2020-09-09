@@ -6,6 +6,39 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [4.0.0] - [UNRELEASED]
+
+### New Package Name
+
+**Attention!** This new version is part of a series of EthereumJS releases all moving to a new scoped package name format. In this case the library is renamed as follows:
+
+- `ethereumjs-account` -> `@ethereumjs/account`
+
+Please update your library references accordingly or install with:
+
+```shell
+npm i @ethereumjs/account
+```
+
+## Removal of Trie-Related Methods
+
+This release removes the dependency on the `merkle-patricia-tree` along PR
+[#787](https://github.com/ethereumjs/ethereumjs-vm/pull/787) together with the following trie-related methods:
+
+- `Account.getCode()`
+- `Account.setCode()`
+- `Account.getStorage()`
+- `Account.setStorage()`
+
+The associated functionality has been moved over to the
+[StateManager](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/state/stateManager.ts)
+of the VM.
+
+## Other Changes
+
+- Updated `ethereumjs-util` dependency from v6 to v7, PR
+  [#748](https://github.com/ethereumjs/ethereumjs-vm/pull/748)
+
 ## [3.0.0] - 2019-01-14
 
 First **TypeScript** based release of the library together with a switch to an `ES6`

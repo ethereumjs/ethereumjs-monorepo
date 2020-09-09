@@ -4,7 +4,7 @@
 [![GitHub Issues][vm-issues-badge]][vm-issues-link]
 [![Actions Status][vm-actions-badge]][vm-actions-link]
 [![Code Coverage][vm-coverage-badge]][vm-coverage-link]
-[![Gitter][gitter-badge]][gitter-link]
+[![Discord][discord-badge]][discord-link]
 
 [![js-standard-style][js-standard-style-badge]][js-standard-style-link]
 
@@ -55,6 +55,14 @@ Supported `Istanbul` EIPs:
 - [EIP-2200](https://eips.ethereum.org/EIPS/eip-2200): Rebalance net-metered
   SSTORE gas costs,
   PR [#590](https://github.com/ethereumjs/ethereumjs-vm/pull/590)
+
+#### EIP Support
+
+It is possible to individually activate EIP support in the VM. In order to do so, pass an array to the `eips` field of the VMs options, such as `new VM({eips: ['EIP2537']})`.
+
+Currently supported EIPs are:
+
+- [EIP-2537](https://eips.ethereum.org/EIPS/eip-2537): BLS precompiles
 
 # INSTALL
 
@@ -205,8 +213,8 @@ If you want to join for work or do improvements on the libraries have a look at 
 
 [MPL-2.0](https://www.mozilla.org/MPL/2.0/)
 
-[gitter-badge]: https://img.shields.io/gitter/room/ethereum/ethereumjs.svg
-[gitter-link]: https://gitter.im/ethereum/ethereumjs
+[discord-badge]: https://img.shields.io/static/v1?logo=discord&label=discord&message=Join&color=blue
+[discord-link]: https://discord.gg/TNwARpR
 [js-standard-style-badge]: https://cdn.rawgit.com/feross/standard/master/badge.svg
 [js-standard-style-link]: https://github.com/feross/standard
 [vm-npm-badge]: https://img.shields.io/npm/v/@ethereumjs/vm.svg

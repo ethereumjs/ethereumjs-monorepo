@@ -88,6 +88,31 @@ tape('[Common]: Parameter access', function (t: tape.Test) {
     st.end()
   })
 
+  t.test('EIP param access, paramByEIP()', function (st: tape.Test) {
+    const c = new Common('mainnet')
+    let f = function () {
+      c.paramByEIP('gasPrices', 'Bls12381G1AddGas', 'NOT_SUPPORTED_EIP')
+    }
+    let msg = 'Should throw for using paramByEIP() with a not supported EIP'
+    st.throws(f, /not supported$/, msg)
+
+    f = function () {
+      c.paramByEIP('notExistingTopic', 'Bls12381G1AddGas', 'EIP2537')
+    }
+    msg = 'Should throw for using paramByEIP() with a not existing topic'
+    st.throws(f, /not defined$/, msg)
+
+    f = function () {
+      c.paramByEIP('gasPrices', 'Bls12381G1AddGas_WITH_SPELLING_MISTAKE', 'EIP2537')
+    }
+    msg = 'Should throw for using paramByEIP() if value was not found'
+    st.throws(f, /not found$/, msg)
+
+    msg = 'Should return Bls12381G1AddGas gas price for EIP2537'
+    st.equal(c.paramByEIP('gasPrices', 'Bls12381G1AddGas', 'EIP2537'), 600, msg)
+    st.end()
+  })
+
   t.test('Custom chain usage', function (st: tape.Test) {
     const mainnetCommon = new Common('mainnet')
 
