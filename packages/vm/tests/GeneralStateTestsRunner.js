@@ -49,9 +49,16 @@ async function runTestCase(options, testData, t) {
   } else {
     VM = require('../lib/index').default
   }
+  
+  let eips = []
+  if (options.forkConfigVM == 'berlin') {
+    eips = ['EIP2537'] // currently, the BLS tests run on the Berlin network, but our VM does not activate EIP2537 if you run the Berlin HF
+  }
+
   vm = new VM({
     state,
     hardfork: options.forkConfigVM,
+    eips
   })
 
   await setupPreConditions(vm.stateManager._trie, testData)
