@@ -125,6 +125,36 @@ As this project is powered by Lerna, you can install it globally to enjoy lots m
 
 Hoisting is enabled so dependencies are moved to the root `node_modules`. `lerna clean` [does not remove the root `node_modules`](https://github.com/lerna/lerna/issues/1304) so for convenience you can use the project script `npm run clean`.
 
+### Testing packages locally on other projects
+
+There are some ways you can link this repository packages to other projects before publishing. You can symlink dependencies with [`npm link <package>`](https://docs.npmjs.com/cli/link), or install packages from the filesystem using [`npm install <folder>`](https://docs.npmjs.com/cli/install). But they are subject to some externalities and most importantly with how your package manager handles the lifecycle of packages during installs. 
+
+_Note: Git references do not work with monorepo setups out of the box due to the lack of directory traversal on the syntax. E.g.:_
+
+  npm install git@github.com:ethereumjs/ethereumjs-vm.git
+
+_One way to fetch packages remotely from GitHub before publishing is using [gitpkg.now.sh](https://gitpkg.now.sh/)._
+
+But there's a cleaner way to manage your dependencies using Verdaccio. 
+
+#### Install Verdaccio
+
+Verdaccio is an npm registry and proxy that can be of great help to test packages locally. Check out their [Getting Started guide](https://github.com/verdaccio/verdaccio#get-started).
+
+#### Installs, hoists dependencies and builds packages
+npm install
+
+#### Publish monorepo packages to Verdaccio
+lerna exec "npm publish --registry http://localhost:4873 --ignore-scripts"
+
+#### Unpublish all monorepo packages from Verdaccio
+lerna exec "npm unpublish \$LERNA_PACKAGE_NAME --registry http://localhost:4873 --force"
+
+#### Associate @ethereumjs scope to local Verdaccio server
+npm config set @ethereumjs:registry http://localhost:4873
+
+
+
 # EthereumJS
 
 See our organizational [documentation](https://ethereumjs.readthedocs.io) for an introduction to `EthereumJS` as well as information on current standards and best practices.
