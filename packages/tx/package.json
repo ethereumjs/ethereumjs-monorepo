@@ -45,6 +45,7 @@
     "@types/tape": "^4.13.0",
     "browserify": "^16.5.1",
     "contributor": "^0.1.25",
+    "eslint": "^7.0.0",
     "ethereumjs-testing": "git+https://github.com/ethereumjs/ethereumjs-testing.git#v1.3.3",
     "istanbul": "^0.4.1",
     "karma": "^5.2.1",
