@@ -6,6 +6,36 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [7.0.6] - [UNRELEASED]
+
+[ ADD REFERENCES TO YOUR WORK HERE UPON PRs. PLEASE ADOPT THE VERSION IF YOUR PR REQUIRES. ]
+
+## [7.0.5] - 2020-09-09
+
+This release adds a new module `address` - see [README](https://github.com/ethereumjs/ethereumjs-util#modules) -
+with a new `Address` class and type which can be used for creating and representing Ethereum addresses.
+
+Example usage:
+
+```typescript
+import { Address } from 'ethereumjs-util'
+
+const pubKey = Buffer.from(
+  '3a443d8381a6798a70c6ff9304bdc8cb0163c23211d11628fae52ef9e0dca11a001cf066d56a8156fc201cd5df8a36ef694eecd258903fca7086c1fae7441e1d',
+  'hex',
+)
+const address = Address.fromPublicKey(pubKey)
+```
+
+In `TypeScript` the associated `Address` type can be used to more strictly enforce type checks
+(e.g. on the length of an address) on function parameters expecting an address input.
+So you can declare a function like the following: `myAddressRelatedFunction(Address: address)`
+to get more assurance that the address input is correct.
+
+See PR [#186](https://github.com/ethereumjs/ethereumjs-util/pull/186)
+
+[7.0.5]: https://github.com/ethereumjs/ethereumjs-util/compare/v7.0.4...v7.0.5
+
 ## [7.0.4] - 2020-08-04
 
 - Fixed `BN.js` and `RLP` re-export failures from TypeScript,
