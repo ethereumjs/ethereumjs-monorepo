@@ -52,10 +52,7 @@ export default class Account {
    */
   constructor(data?: any) {
     const fields = [
-      {
-        name: 'nonce',
-        default: Buffer.alloc(0),
-      },
+      { name: 'nonce', default: Buffer.alloc(0) },
       {
         name: 'balance',
         default: Buffer.alloc(0),
