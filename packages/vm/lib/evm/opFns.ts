@@ -576,11 +576,7 @@ export const handlers: { [k: string]: OpHandler } = {
   PUSH: function (runState: RunState) {
     const numToPush = runState.opCode - 0x5f
     const loaded = new BN(
-      runState.eei
-        .getCode()
-        .slice(runState.programCounter, runState.programCounter + numToPush)
-        .toString('hex'),
-      16,
+      runState.eei.getCode().slice(runState.programCounter, runState.programCounter + numToPush),
     )
     runState.programCounter += numToPush
     runState.stack.push(loaded)
@@ -863,9 +859,9 @@ export const handlers: { [k: string]: OpHandler } = {
 }
 
 function describeLocation(runState: RunState) {
-  var hash = keccak256(runState.eei.getCode()).toString('hex')
-  var address = runState.eei.getAddress().toString('hex')
-  var pc = runState.programCounter - 1
+  const hash = keccak256(runState.eei.getCode()).toString('hex')
+  const address = runState.eei.getAddress().toString('hex')
+  const pc = runState.programCounter - 1
   return hash + '/' + address + ':' + pc
 }
 
@@ -974,8 +970,8 @@ async function getContractStorage(runState: RunState, address: Buffer, key: Buff
 
 function updateSstoreGas(runState: RunState, found: any, value: Buffer) {
   if (runState._common.hardfork() === 'constantinople') {
-    var original = found.original
-    var current = found.current
+    const original = found.original
+    const current = found.current
     if (current.equals(value)) {
       // If current value equals new value (this is a no-op), 200 gas is deducted.
       runState.eei.useGas(new BN(runState._common.param('gasPrices', 'netSstoreNoopGas')))

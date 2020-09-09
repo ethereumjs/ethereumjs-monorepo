@@ -10,7 +10,7 @@ exports.dumpState = function (state, cb) {
   function readAccounts(state) {
     return new Promise((resolve, reject) => {
       let accounts = []
-      var rs = state.createReadStream()
+      const rs = state.createReadStream()
       rs.on('data', function (data) {
         let account = new Account(data.value)
         account.address = data.key
@@ -60,7 +60,7 @@ exports.dumpState = function (state, cb) {
   })
 }
 
-var format = (exports.format = function (a, toZero, isHex) {
+const format = (exports.format = function (a, toZero, isHex) {
   if (a === '') {
     return Buffer.alloc(0)
   }
@@ -89,7 +89,7 @@ var format = (exports.format = function (a, toZero, isHex) {
  * @returns {Object}        object that will be passed to VM.runTx function
  */
 exports.makeTx = function (txData, hf) {
-  var tx = new Transaction({}, { hardfork: hf })
+  const tx = new Transaction({}, { hardfork: hf })
   tx.nonce = format(txData.nonce)
   tx.gasPrice = format(txData.gasPrice)
   tx.gasLimit = format(txData.gasLimit)
@@ -97,7 +97,7 @@ exports.makeTx = function (txData, hf) {
   tx.value = format(txData.value)
   tx.data = format(txData.data, false, true) // slice off 0x
   if (txData.secretKey) {
-    var privKey = format(txData.secretKey, false, true)
+    const privKey = format(txData.secretKey, false, true)
     tx.sign(privKey)
   } else {
     tx.v = Buffer.from(txData.v.slice(2), 'hex')
@@ -159,23 +159,15 @@ exports.verifyPostConditions = async function (state, testData, t) {
 exports.verifyAccountPostConditions = function (state, address, account, acctData, t) {
   return new Promise((resolve) => {
     t.comment('Account: ' + address)
-    t.equal(
-      format(account.balance, true).toString('hex'),
-      format(acctData.balance, true).toString('hex'),
-      'correct balance',
-    )
-    t.equal(
-      format(account.nonce, true).toString('hex'),
-      format(acctData.nonce, true).toString('hex'),
-      'correct nonce',
-    )
+    t.ok(format(account.balance, true).equals(format(acctData.balance, true)), 'correct balance')
+    t.ok(format(account.nonce, true).equals(format(acctData.nonce, true)), 'correct nonce')
 
     // validate storage
     const origRoot = state.root
     const storageKeys = Object.keys(acctData.storage)
 
     const hashedStorage = {}
-    for (var key in acctData.storage) {
+    for (const key in acctData.storage) {
       hashedStorage[
         keccak256(setLengthLeft(Buffer.from(key.slice(2), 'hex'), 32)).toString('hex')
       ] = acctData.storage[key]
@@ -222,17 +214,17 @@ exports.verifyAccountPostConditions = function (state, address, account, acctDat
  * @param {Object} testData from tests repo
  */
 exports.verifyGas = function (results, testData, t) {
-  var coinbaseAddr = testData.env.currentCoinbase
-  var preBal = testData.pre[coinbaseAddr] ? testData.pre[coinbaseAddr].balance : 0
+  const coinbaseAddr = testData.env.currentCoinbase
+  const preBal = testData.pre[coinbaseAddr] ? testData.pre[coinbaseAddr].balance : 0
 
   if (!testData.post[coinbaseAddr]) {
     return
   }
 
-  var postBal = new BN(testData.post[coinbaseAddr].balance)
-  var balance = postBal.sub(preBal).toString()
+  const postBal = new BN(testData.post[coinbaseAddr].balance)
+  const balance = postBal.sub(preBal).toString()
   if (balance !== '0') {
-    var amountSpent = results.gasUsed.mul(testData.transaction.gasPrice)
+    const amountSpent = results.gasUsed.mul(testData.transaction.gasPrice)
     t.equal(amountSpent.toString(), balance, 'correct gas')
   } else {
     t.equal(results, undefined)
@@ -247,7 +239,7 @@ exports.verifyGas = function (results, testData, t) {
 exports.verifyLogs = function (logs, testData, t) {
   if (testData.logs) {
     testData.logs.forEach(function (log, i) {
-      var rlog = logs[i]
+      const rlog = logs[i]
       t.equal(rlog[0].toString('hex'), log.address, 'log: valid address')
       t.equal('0x' + rlog[2].toString('hex'), log.data, 'log: valid data')
       log.topics.forEach(function (topic, i) {
@@ -294,7 +286,7 @@ exports.toCodeHash = function (hexCode) {
 }
 
 exports.makeBlockHeader = function (data) {
-  var header = {}
+  const header = {}
   header.timestamp = format(data.currentTimestamp)
   header.gasLimit = format(data.currentGasLimit)
   if (data.previousHash) {

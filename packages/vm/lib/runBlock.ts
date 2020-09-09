@@ -162,19 +162,16 @@ export default async function runBlock(this: VM, opts: RunBlockOpts): Promise<Ru
     block.header.stateRoot = stateRoot
     block.header.bloom = result.bloom.bitvector
   } else {
-    if (
-      result.receiptRoot &&
-      result.receiptRoot.toString('hex') !== block.header.receiptTrie.toString('hex')
-    ) {
+    if (result.receiptRoot && !result.receiptRoot.equals(block.header.receiptTrie)) {
       throw new Error('invalid receiptTrie ')
     }
-    if (result.bloom.bitvector.toString('hex') !== block.header.bloom.toString('hex')) {
+    if (!result.bloom.bitvector.equals(block.header.bloom)) {
       throw new Error('invalid bloom ')
     }
     if (bufferToInt(block.header.gasUsed) !== Number(result.gasUsed)) {
       throw new Error('invalid gasUsed ')
     }
-    if (stateRoot.toString('hex') !== block.header.stateRoot.toString('hex')) {
+    if (!stateRoot.equals(block.header.stateRoot)) {
       throw new Error('invalid block stateRoot ')
     }
   }

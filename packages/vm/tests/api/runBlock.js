@@ -124,9 +124,8 @@ tape('should run valid block', async (t) => {
 
   await setupPreConditions(suite.vm.stateManager._trie, suite.data)
 
-  t.equal(
-    suite.vm.stateManager._trie.root.toString('hex'),
-    genesis.header.stateRoot.toString('hex'),
+  t.ok(
+    suite.vm.stateManager._trie.root.equals(genesis.header.stateRoot),
     'genesis state root should match calculated state root',
   )
 

@@ -30,25 +30,17 @@ tape('StateManager', t => {
     await stateManager.putAccount(addressBuffer, account)
 
     const account0 = await stateManager.getAccount(addressBuffer)
-    st.equal(
-      account0.balance.toString('hex'),
-      account.balance.toString('hex'),
-      'account value is set in the cache',
-    )
+    st.ok(account0.balance.equals(account.balance), 'account value is set in the cache')
 
     await stateManager.commit()
     const account1 = await stateManager.getAccount(addressBuffer)
-    st.equal(
-      account1.balance.toString('hex'),
-      account.balance.toString('hex'),
-      'account value is set in the state trie',
-    )
+    st.ok(account1.balance.equals(account.balance), 'account value is set in the state trie')
 
     await stateManager.setStateRoot(initialStateRoot)
     const account2 = await stateManager.getAccount(addressBuffer)
     st.equal(
-      account2.balance.toString('hex'),
-      '',
+      account2.balance.length,
+      0,
       'account value is set to 0 in original state root',
     )
 
@@ -59,9 +51,8 @@ tape('StateManager', t => {
     await stateManager.putContractStorage(addressBuffer, key, value)
 
     const contract0 = await stateManager.getContractStorage(addressBuffer, key)
-    st.equal(
-      contract0.toString('hex'),
-      value.toString('hex'),
+    st.ok(
+      contract0.equals(value),
       "contract key's value is set in the _storageTries cache",
     )
 
@@ -69,8 +60,8 @@ tape('StateManager', t => {
     await stateManager.setStateRoot(initialStateRoot)
     const contract1 = await stateManager.getContractStorage(addressBuffer, key)
     st.equal(
-      contract1.toString('hex'),
-      '',
+      contract1.length,
+      0,
       "contract key's value is unset in the _storageTries cache",
     )
 

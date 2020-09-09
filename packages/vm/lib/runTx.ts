@@ -136,7 +136,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   const message = new Message({
     caller: tx.getSenderAddress(),
     gasLimit: gasLimit,
-    to: tx.to.toString('hex') !== '' ? tx.to : undefined,
+    to: tx.to && tx.to.length !== 0 ? tx.to : undefined,
     value: tx.value,
     data: tx.data,
   })
