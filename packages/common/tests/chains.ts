@@ -3,28 +3,32 @@ import Common from '../src/'
 
 tape('[Common]: Initialization / Chain params', function (t: tape.Test) {
   t.test('Should initialize with chain provided', function (st: tape.Test) {
-    let c = new Common('mainnet')
+    let c = new Common({ chain: 'mainnet' })
     st.equal(c.chainName(), 'mainnet', 'should initialize with chain name')
     st.equal(c.chainId(), 1, 'should return correct chain Id')
     st.equal(c.networkId(), 1, 'should return correct network Id')
-    st.equal(c.hardfork(), null, 'should set hardfork to null')
+    st.equal(c.hardfork(), 'petersburg', 'should set hardfork to the default hardfork')
     st.equal(c._isSupportedHardfork('constantinople'), true, 'should not restrict supported HFs')
 
-    c = new Common(1)
+    c = new Common({ chain: 1 })
     st.equal(c.chainName(), 'mainnet', 'should initialize with chain Id')
 
     st.end()
   })
 
   t.test('Should initialize with chain and hardfork provided', function (st: tape.Test) {
-    const c = new Common('mainnet', 'byzantium')
+    const c = new Common({ chain: 'mainnet', hardfork: 'byzantium' })
     st.equal(c.hardfork(), 'byzantium', 'should return correct hardfork name')
 
     st.end()
   })
 
   t.test('Should initialize with supportedHardforks provided', function (st: tape.Test) {
-    const c = new Common('mainnet', 'byzantium', ['byzantium', 'constantinople'])
+    const c = new Common({
+      chain: 'mainnet',
+      hardfork: 'byzantium',
+      supportedHardforks: ['byzantium', 'constantinople'],
+    })
     st.equal(c._isSupportedHardfork('byzantium'), true, 'should return true for supported HF')
     const msg = 'should return false for unsupported HF'
     st.equal(c._isSupportedHardfork('spuriousDragon'), false, msg)
@@ -34,19 +38,23 @@ tape('[Common]: Initialization / Chain params', function (t: tape.Test) {
 
   t.test('Should handle initialization errors', function (st: tape.Test) {
     let f = function () {
-      new Common('chainnotexisting')
+      new Common({ chain: 'chainnotexisting' })
     }
     let msg = 'should throw an exception on non-existing chain'
     st.throws(f, /not supported$/, msg) // eslint-disable-line no-new
 
     f = function () {
-      new Common('mainnet', 'hardforknotexisting')
+      new Common({ chain: 'mainnet', hardfork: 'hardforknotexisting' })
     }
     msg = 'should throw an exception on non-existing hardfork'
     st.throws(f, /not supported$/, msg) // eslint-disable-line no-new
 
     f = function () {
-      new Common('mainnet', 'spuriousDragon', ['byzantium', 'constantinople'])
+      new Common({
+        chain: 'mainnet',
+        hardfork: 'spuriousDragon',
+        supportedHardforks: ['byzantium', 'constantinople'],
+      })
     }
     msg = 'should throw an exception on conflicting active/supported HF params'
     st.throws(f, /supportedHardforks$/, msg) // eslint-disable-line no-new
@@ -55,7 +63,7 @@ tape('[Common]: Initialization / Chain params', function (t: tape.Test) {
   })
 
   t.test('Should provide correct access to chain parameters', function (st: tape.Test) {
-    const c = new Common('mainnet')
+    const c = new Common({ chain: 'mainnet' })
     const hash = '0xd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3'
     st.equal(c.genesis().hash, hash, 'should return correct genesis hash')
     st.equal(c.hardforks()[3]['block'], 2463000, 'should return correct hardfork data')
@@ -66,7 +74,7 @@ tape('[Common]: Initialization / Chain params', function (t: tape.Test) {
   t.test('Should provide the bootnode information in a uniform way', function (st: tape.Test) {
     const configs = ['mainnet', 'ropsten', 'rinkeby', 'goerli']
     for (const network of configs) {
-      const c = new Common(network)
+      const c = new Common({ chain: network })
       const bootnode = c.bootstrapNodes()[0]
       st.equal(typeof bootnode.ip, 'string', 'returns the ip as string')
       st.equal(typeof bootnode.port, 'number', 'returns the port as number')
@@ -86,7 +94,7 @@ tape('[Common]: Initialization / Chain params', function (t: tape.Test) {
   })
 
   t.test('Should be able to access data for all chains provided', function (st: tape.Test) {
-    const c = new Common('mainnet')
+    const c = new Common({ chain: 'mainnet' })
     let hash = '0xd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3'
     st.equal(c.genesis().hash, hash, 'mainnet')
     c.setChain('ropsten')
@@ -109,7 +117,7 @@ tape('[Common]: Initialization / Chain params', function (t: tape.Test) {
     st: tape.Test,
   ) {
     const chainParams = require('./testnet.json')
-    const c = new Common(chainParams, 'byzantium')
+    const c = new Common({ chain: chainParams, hardfork: 'byzantium' })
     st.equal(c.chainName(), 'testnet', 'should initialize with chain name')
     st.equal(c.chainId(), 12345, 'should return correct chain Id')
     st.equal(c.networkId(), 12345, 'should return correct network Id')
@@ -129,7 +137,7 @@ tape('[Common]: Initialization / Chain params', function (t: tape.Test) {
     delete chainParams['hardforks']
     st.throws(
       function () {
-        new Common(chainParams)
+        new Common({ chain: chainParams })
       },
       /Missing required/,
       'should throw an exception on missing parameter',

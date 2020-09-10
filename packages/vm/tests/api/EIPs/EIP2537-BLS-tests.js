@@ -21,7 +21,7 @@ tape('Berlin BLS tests', (t) => {
             st.skip('BLS does not work in karma')
             return st.end()
         }
-        const common = new Common('mainnet', 'muirGlacier')
+        const common = new Common({ chain: 'mainnet', hardfork: 'muirGlacier' })
         const vm = new VM({ common: common })
 
         for (let address of precompiles) {
@@ -51,7 +51,7 @@ tape('Berlin BLS tests', (t) => {
             st.skip('BLS does not work in karma')
             return st.end()
         }
-        const common = new Common('mainnet', 'berlin')
+        const common = new Common({ chain: 'mainnet', hardfork: 'berlin' })
         const vm = new VM({ common: common, eips: ['EIP2537'] })
         const gasLimit = new BN(0xffffffffff)
 

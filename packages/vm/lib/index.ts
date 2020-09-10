@@ -29,13 +29,17 @@ if (!IS_BROWSER) {
  */
 export interface VMOpts {
   /**
-   * The chain the VM operates on
+   * Use a [common](https://github.com/ethereumjs/ethereumjs-vm/packages/common) instance
+   * if you want to change the network setup
+   *
+   * If no common instance is provided the VM defaults to the following chain setup:
+   *
+   * Chain: `mainnet`
+   * Hardfork: `petersburg`
+   *
+   * Hardfork rules are implemented up to the 'muirGlacier' hardfork.
    */
-  chain?: string
-  /**
-   * Hardfork rules to be used
-   */
-  hardfork?: string
+  common?: Common
   /**
    * A [[StateManager]] instance to use as the state store (Beta API)
    */
@@ -58,17 +62,17 @@ export interface VMOpts {
    *
    * Setting this to true has the effect of precompiled contracts' gas costs matching mainnet's from
    * the very first call, which is intended for testing networks.
+   *
+   * Default: `false`
    */
   activatePrecompiles?: boolean
   /**
-   * Allows unlimited contract sizes while debugging. By setting this to `true`, the check for contract size limit of 24KB (see [EIP-170](https://git.io/vxZkK)) is bypassed
+   * Allows unlimited contract sizes while debugging. By setting this to `true`, the check for
+   * contract size limit of 24KB (see [EIP-170](https://git.io/vxZkK)) is bypassed.
+   *
+   * Default: `false` [ONLY set to `true` during debugging]
    */
   allowUnlimitedContractSize?: boolean
-  /**
-   * Use a [common](https://github.com/ethereumjs/ethereumjs-vm/packages/common) instance or a combination
-   * on the `chain` and `hardfork` options if you want to change the network setup
-   */
-  common?: Common
   /**
    * Selected EIPs which can be activated on the VM, please use an array for instantiation
    * (e.g. `eips: [ 'EIP2537', ])
@@ -112,28 +116,23 @@ export default class VM extends AsyncEventEmitter {
 
   /**
    * Instantiates a new [[VM]] Object.
-   * @param opts - Default values for the options are:
-   *  - `chain`: 'mainnet'
-   *  - `hardfork`: 'petersburg' [supported: 'byzantium', 'constantinople', 'petersburg', 'istanbul' (DRAFT) (will throw on unsupported)]
-   *  - `activatePrecompiles`: false
-   *  - `allowUnlimitedContractSize`: false [ONLY set to `true` during debugging]
+   * @param opts
    */
   constructor(opts: VMOpts = {}) {
     super()
 
     this.opts = opts
 
-    if (opts.common) {
-      if (opts.chain || opts.hardfork) {
-        throw new Error(
-          'You can only instantiate the VM class with one of: opts.common, or opts.chain and opts.hardfork',
-        )
-      }
+    // Throw on chain or hardfork options removed in latest major release
+    // to prevent implicit chain setup on a wrong chain
+    if ('chain' in opts || 'hardfork' in opts) {
+      throw new Error('Chain/hardfork options are not allowed any more on initialization')
+    }
 
+    if (opts.common) {
       this._common = opts.common
     } else {
-      const chain = opts.chain ? opts.chain : 'mainnet'
-      const hardfork = opts.hardfork ? opts.hardfork : 'petersburg'
+      const DEFAULT_CHAIN = 'mainnet'
       const supportedHardforks = [
         'chainstart',
         'homestead',
@@ -148,7 +147,10 @@ export default class VM extends AsyncEventEmitter {
         'berlin',
       ]
 
-      this._common = new Common(chain, hardfork, supportedHardforks)
+      this._common = new Common({
+        chain: DEFAULT_CHAIN,
+        supportedHardforks,
+      })
     }
 
     // EIPs

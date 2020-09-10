@@ -19,7 +19,7 @@ function setup(vm = null) {
       emit: (e, val, cb) => cb(),
       _emit: (e, val) => new Promise((resolve, reject) => resolve()),
       runTx: (opts) => new Promise((resolve, reject) => reject(new Error('test'))),
-      _common: new Common('mainnet', 'byzantium'),
+      _common: new Common({ chain: 'mainnet', hardfork: 'byzantium' }),
     }
   }
 
@@ -195,7 +195,7 @@ tape('should transfer balance from DAO children to the Refund DAO account in the
 })
 
 async function runWithHf(hardfork) {
-  const vm = setupVM({ hardfork: hardfork })
+  const vm = setupVM({ common: new Common({ chain: 'mainnet', hardfork: hardfork }) })
   const suite = setup(vm)
 
   const block = new Block(util.rlp.decode(suite.data.blocks[0].rlp))

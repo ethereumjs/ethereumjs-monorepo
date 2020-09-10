@@ -7,7 +7,7 @@ const { getPrecompile } = require('../../../../dist/evm/precompiles')
 
 tape('Precompiles: ECADD', (t) => {
   t.test('ECADD', (st) => {
-    const common = new Common('mainnet', 'petersburg')
+    const common = new Common({ chain: 'mainnet', hardfork: 'petersburg' })
     let vm = new VM({ common: common })
     let ECADD = getPrecompile('0000000000000000000000000000000000000006', common)
 

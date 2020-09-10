@@ -25,7 +25,8 @@ tape('Constantinople: EIP-1014 CREATE2 creates the right contract address', asyn
     const caller =          Buffer.from('00000000000000000000000000000000000000ee', 'hex')                   // caller addres
     const contractAddress = Buffer.from('00000000000000000000000000000000000000ff', 'hex')          // contract address 
     // setup the vm
-    const vm = new VM({ chain: 'mainnet', hardfork: 'constantinople'})                                   
+    const common = new Common({ chain: 'mainnet', hardfork: 'constantinople'})
+    const vm = new VM({ common })                                   
     const code = "3460008080F560005260206000F3"
     /*
       code:             remarks: (top of the stack is at the zero index)
@@ -83,8 +84,8 @@ tape('Byzantium cannot access Constantinople opcodes', async (t) => {
     const caller =          Buffer.from('00000000000000000000000000000000000000ee', 'hex')                   // caller addres
     const contractAddress = Buffer.from('00000000000000000000000000000000000000ff', 'hex')          // contract address 
     // setup the vm
-    const vmByzantium = new VM({ chain: 'mainnet', hardfork: 'byzantium'})      
-    const vmConstantinople = new VM({ chain: 'mainnet', hardfork: 'constantinople'})                                   
+    const vmByzantium = new VM({ common: new Common({ chain: 'mainnet', hardfork: 'byzantium'}) })      
+    const vmConstantinople = new VM({ common: new Common({ chain: 'mainnet', hardfork: 'constantinople'}) })                                   
     const code = "600160011B00"
     /*
       code:             remarks: (top of the stack is at the zero index)
@@ -117,7 +118,7 @@ tape('Ensure that precompile activation creates non-empty accounts', async (t) =
     const caller =          Buffer.from('00000000000000000000000000000000000000ee', 'hex')                   // caller addres
     const contractAddress = Buffer.from('00000000000000000000000000000000000000ff', 'hex')          // contract address 
     // setup the vm
-    const common = new Common('mainnet', 'istanbul')
+    const common = new Common({ chain: 'mainnet', hardfork: 'istanbul' })
     const vmNotActivated = new VM({ common: common})   
     const vmActivated = new VM({ common: common, activatePrecompiles: true})                                   
     const code = "6000808080347300000000000000000000000000000000000000045AF100"

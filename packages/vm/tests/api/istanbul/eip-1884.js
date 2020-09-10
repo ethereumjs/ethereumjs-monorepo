@@ -21,7 +21,7 @@ tape('Istanbul: EIP-1884: SELFBALANCE', async t => {
   }
 
   for (const testCase of testCases) {
-    const common = new Common(testCase.chain, testCase.hardfork)
+    const common = new Common({ chain: testCase.chain, hardfork: testCase.hardfork })
     const vm = new VM({ common })
     const account = createAccount('0x00', testCase.selfbalance)
     await vm.stateManager.putAccount(addr, account)

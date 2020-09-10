@@ -6,18 +6,18 @@ const CHAINID = 0x46
 
 tape('getOpcodesForHF', (t) => {
   t.test('shouldnt apply istanbul opcode changes for petersburg', (st) => {
-    const c = new Common('mainnet', 'petersburg')
+    const c = new Common({ chain: 'mainnet', hardfork: 'petersburg' })
     const opcodes = getOpcodesForHF(c)
     st.assert(opcodes[CHAINID] === undefined)
     st.end()
   })
 
   t.test('should correctly apply istanbul opcode when hf >= istanbul', (st) => {
-    let c = new Common('mainnet', 'istanbul')
+    let c = new Common({ chain: 'mainnet', hardfork: 'istanbul' })
     let opcodes = getOpcodesForHF(c)
     st.equal(opcodes[CHAINID].name, 'CHAINID')
 
-    c = new Common('mainnet', 'muirGlacier')
+    c = new Common({ chain: 'mainnet', hardfork: 'muirGlacier' })
     opcodes = getOpcodesForHF(c)
     st.equal(opcodes[CHAINID].name, 'CHAINID')
 

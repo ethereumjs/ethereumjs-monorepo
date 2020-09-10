@@ -43,7 +43,19 @@ console.log(block)
 
 See `Blockchain` [README](https://github.com/ethereumjs/ethereumjs-vm/tree/master/packages/blockchain#example) for a complete example.
 
-### Deprecated `validate` option
+### Constructor API Changes
+
+Constructor options for chain setup on all VM monorepo libraries have been simplified and the plain `chain` and `hardfork` options have been removed. Passing in a `Common` instance is now the single way to switch to a non-default chain (`mainnet`) or start a blockchain with a higher than `chainstart` hardfork, see PR [#863](https://github.com/ethereumjs/ethereumjs-vm/pull/863).
+
+Example:
+
+```typescript
+import Blockchain from '@ethereumjs/blockchain'
+const common = new Common({ chain: 'ropsten', hardfork: 'byzantium' })
+const blockchain = new Blockchain({ common })
+```
+
+### Removed deprecated `validate` option
 
 The deprecated `validate` option has been removed, please use `valdiateBlock` and `validatePow` for options when instantiating a new `Blockchain`.
 

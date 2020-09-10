@@ -39,7 +39,7 @@ tape('Istanbul: EIP-2200: net-metering SSTORE', async t => {
   const addr = Buffer.from('00000000000000000000000000000000000000ff', 'hex')
   const key = new BN(0).toArrayLike(Buffer, 'be', 32)
   for (const testCase of testCases) {
-    const common = new Common('mainnet', 'istanbul')
+    const common = new Common({ chain: 'mainnet', hardfork: 'istanbul' })
     const vm = new VM({ common })
 
     const account = createAccount('0x00', '0x00')

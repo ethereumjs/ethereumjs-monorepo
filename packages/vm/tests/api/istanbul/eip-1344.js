@@ -19,7 +19,7 @@ tape('Istanbul: EIP-1344 CHAINID', async (t) => {
   }
 
   for (const testCase of testCases) {
-    const common = new Common(testCase.chain, testCase.hardfork)
+    const common = new Common({ chain: testCase.chain, hardfork: testCase.hardfork })
     const vm = new VM({ common })
     try {
       const res = await vm.runCode(runCodeArgs)

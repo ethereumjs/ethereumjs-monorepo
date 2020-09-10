@@ -43,7 +43,7 @@ export default class DefaultStateManager implements StateManager {
   constructor(opts: DefaultStateManagerOpts = {}) {
     let common = opts.common
     if (!common) {
-      common = new Common('mainnet', 'petersburg')
+      common = new Common({ chain: 'mainnet', hardfork: 'petersburg' })
     }
     this._common = common
 

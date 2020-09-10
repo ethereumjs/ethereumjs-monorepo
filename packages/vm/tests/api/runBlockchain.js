@@ -14,11 +14,11 @@ tape('runBlockchain', (t) => {
   const blockchainDB = level()
   const blockchain = new Blockchain({
     db: blockchainDB,
-    chain: 'goerli',
+    common: new Common({ chain: 'goerli', hardfork: 'chainstart' }),
     validateBlocks: false,
     validatePow: false,
   })
-  const stateManager = new DefaultStateManager({ common: new Common('goerli') })
+  const stateManager = new DefaultStateManager({ common: new Common({ chain: 'goerli' }) })
   const vm = {
     stateManager,
     blockchain: blockchain,
@@ -40,7 +40,7 @@ tape('runBlockchain', (t) => {
 
   t.test('should run with genesis block', async (st) => {
     try {
-      const genesis = createGenesis({ chain: 'goerli' })
+      const genesis = createGenesis(new Common({ chain: 'goerli', hardfork: 'chainstart' }))
 
       await blockchain.putGenesis(genesis)
       st.ok(blockchain.meta.genesis, 'genesis should be set for blockchain')
@@ -64,12 +64,13 @@ tape('runBlockchain', (t) => {
         resolve({})
       })
 
-    const genesis = createGenesis({ chain: 'goerli' })
+    const common = new Common({ chain: 'goerli', hardfork: 'chainstart' })
+    const genesis = createGenesis(common)
     await blockchain.putGenesis(genesis)
 
-    const b1 = createBlock(genesis, 1, { chain: 'goerli' })
-    const b2 = createBlock(b1, 2, { chain: 'goerli' })
-    const b3 = createBlock(b2, 3, { chain: 'goerli' })
+    const b1 = createBlock(genesis, 1, { common })
+    const b2 = createBlock(b1, 2, { common })
+    const b3 = createBlock(b2, 3, { common })
 
     await blockchain.putBlock(b1)
     await blockchain.putBlock(b2)
@@ -93,7 +94,6 @@ tape('runBlockchain', (t) => {
 })
 
 function createBlock(parent = null, n = 0, opts = {}) {
-  opts.chain = opts.chain ? opts.chain : 'mainnet'
   if (parent === null) {
     return createGenesis(opts)
   }

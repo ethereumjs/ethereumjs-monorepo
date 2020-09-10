@@ -26,7 +26,7 @@ module.exports = async function runBlockchainTest(options, testData, t) {
     validate = true
   }
 
-  const common = (options.forkConfigTestSuite == "HomesteadToDaoAt5") ? getDAOCommon(5) : new Common('mainnet', options.forkConfigVM)
+  const common = (options.forkConfigTestSuite == "HomesteadToDaoAt5") ? getDAOCommon(5) : new Common({ chain: 'mainnet', hardfork: options.forkConfigVM })
   
   let eips = []
   if (options.forkConfigVM == 'berlin') {

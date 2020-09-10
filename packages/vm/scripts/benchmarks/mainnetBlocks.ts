@@ -7,6 +7,7 @@ import VM from '../../dist'
 import { StateManager, DefaultStateManager } from '../../dist/state'
 import BN = require('bn.js')
 import Benchmark = require('benchmark')
+import Common from '@ethereumjs/common'
 
 const suite = new Benchmark.Suite()
 
@@ -34,7 +35,10 @@ async function main() {
     const blockNumber = bufferToInt(block.header.number)
 
     const stateManager = await getPreState(blockData.preState)
-    const vm = new VM({ stateManager, hardfork: 'muirGlacier' })
+    const vm = new VM({
+      stateManager,
+      common: new Common({ chain: 'mainnet', hardfork: 'muirGlacier' }),
+    })
 
     suite.add(`Block ${blockNumber}`, async () => {
       // TODO: validate tx, add receipt and gas usage checks

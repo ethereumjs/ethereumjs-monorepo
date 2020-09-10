@@ -23,7 +23,9 @@ tape('[FakeTransaction]: Basic functions', function (t) {
   t.test('instantiate with from / create a hash', function (st) {
     st.plan(3)
     // This test doesn't use EIP155
-    const tx = new FakeTransaction(txData, { chain: 'mainnet', hardfork: 'homestead' })
+    const tx = new FakeTransaction(txData, {
+      common: new Common({ chain: 'mainnet', hardfork: 'homestead' }),
+    })
     const hash = tx.hash()
     const cmpHash = Buffer.from(
       'f74b039f6361c4351a99a7c6a10867369fe6701731d85dc07c15671ac1c1b648',
@@ -84,15 +86,6 @@ tape('[FakeTransaction]: Basic functions', function (t) {
     st.equal(bufferToHex(tx.from), txData.from)
   })
 
-  t.test('should throw if common and chain options are passed to constructor', function (st) {
-    const txOptsInvalid = {
-      chain: 'mainnet',
-      common: new Common('mainnet', 'chainstart'),
-    }
-    st.plan(1)
-    st.throws(() => new FakeTransaction(txData, txOptsInvalid))
-  })
-
   t.test('should return toCreationAddress', (st) => {
     const tx = new FakeTransaction(txData)
     const txNoTo = new FakeTransaction({ ...txData, to: undefined })
@@ -103,7 +96,7 @@ tape('[FakeTransaction]: Basic functions', function (t) {
 
   t.test('should return getChainId', (st) => {
     const tx = new FakeTransaction(txData)
-    const txWithChain = new FakeTransaction(txData, { chain: 3 })
+    const txWithChain = new FakeTransaction(txData, { common: new Common({ chain: 3 }) })
     st.plan(2)
     st.equal(tx.getChainId(), 1, 'should return correct chainId')
     st.equal(txWithChain.getChainId(), 3, 'should return correct chainId')
@@ -136,7 +129,9 @@ tape('[FakeTransaction]: Basic functions', function (t) {
   })
 
   t.test('should sign', (st) => {
-    const tx = new FakeTransaction(txData, { hardfork: 'tangerineWhistle' })
+    const tx = new FakeTransaction(txData, {
+      common: new Common({ chain: 'mainnet', hardfork: 'tangerineWhistle' }),
+    })
     tx.sign(Buffer.from('164122e5d39e9814ca723a749253663bafb07f6af91704d9754c361eb315f0c1', 'hex'))
     st.plan(3)
     st.equal(

@@ -7,7 +7,7 @@ const { getPrecompile } = require('../../../../dist/evm/precompiles')
 
 tape('Precompiles: ECPAIRING', (t) => {
   t.test('ECPAIRING', (st) => {
-    const common = new Common('mainnet', 'petersburg')
+    const common = new Common({ chain: 'mainnet', hardfork: 'petersburg' })
     let vm = new VM({ common: common })
     let ECPAIRING = getPrecompile('0000000000000000000000000000000000000008', common)
 
