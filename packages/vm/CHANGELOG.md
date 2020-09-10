@@ -51,7 +51,7 @@ const vm = new VM({ common })
 ```
 
 **Breaking**: Please note that the options to directly pass in
-`chain` and `hardfork` strings have been removed to simpify the API.
+`chain` and `hardfork` strings have been removed to simplify the API.
 Providing a `Common` instance is now the only way to change
 the chain setup, see PR [#863](https://github.com/ethereumjs/ethereumjs-vm/pull/863)
 
