@@ -4,8 +4,6 @@ import { hardforks as hardforkChanges } from './hardforks'
 import { EIPs } from './eips'
 import { Chain } from './types'
 
-const DEFAULT_HARDFORK = 'petersburg'
-
 /**
  * Options for instantiating a [[Common]] instance.
  */
@@ -37,6 +35,8 @@ interface hardforkOptions {
  * Common class to access chain and hardfork parameters
  */
 export default class Common {
+  readonly DEFAULT_HARDFORK: string = 'petersburg'
+
   private _hardfork: string
   private _supportedHardforks: Array<string>
   private _chainParams: Chain
@@ -90,7 +90,7 @@ export default class Common {
    */
   constructor(opts: CommonOpts) {
     this._chainParams = this.setChain(opts.chain)
-    this._hardfork = DEFAULT_HARDFORK
+    this._hardfork = this.DEFAULT_HARDFORK
     this._supportedHardforks = opts.supportedHardforks === undefined ? [] : opts.supportedHardforks
     if (opts.hardfork) {
       this.setHardfork(opts.hardfork)

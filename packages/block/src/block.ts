@@ -30,6 +30,11 @@ export class Block {
     data: Buffer | [Buffer[], Buffer[], Buffer[]] | BlockData = {},
     options: BlockOptions = {},
   ) {
+    // Checking at runtime, to prevent errors down the path for JavaScript consumers.
+    if (data === null) {
+      data = {}
+    }
+
     let rawTransactions
     let rawUncleHeaders
 

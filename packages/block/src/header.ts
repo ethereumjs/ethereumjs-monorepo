@@ -63,6 +63,7 @@ export class BlockHeader {
       if (options.initWithGenesisHeader) {
         this._common = new Common({ chain: DEFAULT_CHAIN, hardfork: 'chainstart' })
       } else {
+        // This initializes on the Common default hardfork
         this._common = new Common({ chain: DEFAULT_CHAIN })
       }
     }

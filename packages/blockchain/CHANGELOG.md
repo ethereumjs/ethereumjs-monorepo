@@ -55,7 +55,7 @@ const common = new Common({ chain: 'ropsten', hardfork: 'byzantium' })
 const blockchain = new Blockchain({ common })
 ```
 
-### Deprecated `validate` option
+### Removed deprecated `validate` option
 
 The deprecated `validate` option has been removed, please use `valdiateBlock` and `validatePow` for options when instantiating a new `Blockchain`.
 
