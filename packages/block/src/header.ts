@@ -162,9 +162,11 @@ export class BlockHeader {
     const blockTs = new BN(this.timestamp)
     const parentTs = new BN(parentBlock.header.timestamp)
     const parentDif = new BN(parentBlock.header.difficulty)
-    const minimumDifficulty = new BN(this._common.param('pow', 'minimumDifficulty', hardfork))
+    const minimumDifficulty = new BN(
+      this._common.paramByHardfork('pow', 'minimumDifficulty', hardfork),
+    )
     const offset = parentDif.div(
-      new BN(this._common.param('pow', 'difficultyBoundDivisor', hardfork)),
+      new BN(this._common.paramByHardfork('pow', 'difficultyBoundDivisor', hardfork)),
     )
     let num = new BN(this.number)
 
@@ -212,7 +214,11 @@ export class BlockHeader {
       dif = parentDif.add(offset.mul(a))
     } else {
       // pre-homestead
-      if (parentTs.addn(this._common.param('pow', 'durationLimit', hardfork)).cmp(blockTs) === 1) {
+      if (
+        parentTs
+          .addn(this._common.paramByHardfork('pow', 'durationLimit', hardfork))
+          .cmp(blockTs) === 1
+      ) {
         dif = offset.add(parentDif)
       } else {
         dif = parentDif.sub(offset)
@@ -252,7 +258,7 @@ export class BlockHeader {
     const hardfork = this._getHardfork()
 
     const a = pGasLimit.div(
-      new BN(this._common.param('gasConfig', 'gasLimitBoundDivisor', hardfork)),
+      new BN(this._common.paramByHardfork('gasConfig', 'gasLimitBoundDivisor', hardfork)),
     )
     const maxGasLimit = pGasLimit.add(a)
     const minGasLimit = pGasLimit.sub(a)
@@ -260,7 +266,7 @@ export class BlockHeader {
     return (
       gasLimit.lt(maxGasLimit) &&
       gasLimit.gt(minGasLimit) &&
-      gasLimit.gte(this._common.param('gasConfig', 'minGasLimit', hardfork))
+      gasLimit.gte(this._common.paramByHardfork('gasConfig', 'minGasLimit', hardfork))
     )
   }
 
@@ -310,7 +316,7 @@ export class BlockHeader {
     }
 
     const hardfork = this._getHardfork()
-    if (this.extraData.length > this._common.param('vm', 'maxExtraDataSize', hardfork)) {
+    if (this.extraData.length > this._common.paramByHardfork('vm', 'maxExtraDataSize', hardfork)) {
       throw new Error('invalid amount of extra data')
     }
   }

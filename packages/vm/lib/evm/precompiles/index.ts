@@ -132,7 +132,7 @@ const precompileAvailability: PrecompileAvailability = {
   },
 }
 
-function getPrecompile(address: string, common: Common, vm: VM): PrecompileFunc {
+function getPrecompile(address: string, common: Common): PrecompileFunc {
   if (precompiles[address]) {
     const availability = precompileAvailability[address]
     if (
@@ -142,7 +142,7 @@ function getPrecompile(address: string, common: Common, vm: VM): PrecompileFunc 
       return precompiles[address]
     } else if (
       availability.type == PrecompileAvailabilityCheck.EIP &&
-      vm._activatedEIPs.includes(availability.param)
+      common.eips().includes(availability.param)
     ) {
       return precompiles[address]
     }
