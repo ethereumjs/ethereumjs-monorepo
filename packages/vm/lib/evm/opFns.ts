@@ -510,7 +510,7 @@ export const handlers: { [k: string]: OpHandler } = {
 
     // TODO: Replace getContractStorage with EEI method
     const found = await getContractStorage(runState, runState.eei.getAddress(), keyBuf)
-    updateSstoreGas(runState, found, setLengthLeft(value, 32))
+    updateSstoreGas(runState, found, setLengthLeftStorage(value))
     await runState.eei.storageStore(keyBuf, value)
   },
   JUMP: function (runState: RunState) {
@@ -963,14 +963,13 @@ function jumpSubIsValid(runState: RunState, dest: number): boolean {
 }
 
 async function getContractStorage(runState: RunState, address: Buffer, key: Buffer) {
-  const current = setLengthLeft(await runState.stateManager.getContractStorage(address, key), 32)
+  const current = setLengthLeftStorage(await runState.stateManager.getContractStorage(address, key))
   if (
     runState._common.hardfork() === 'constantinople' ||
     runState._common.gteHardfork('istanbul')
   ) {
-    const original = setLengthLeft(
+    const original = setLengthLeftStorage(
       await runState.stateManager.getOriginalContractStorage(address, key),
-      32,
     )
     return { current, original }
   } else {
@@ -1113,5 +1112,20 @@ function writeCallOutput(runState: RunState, outOffset: BN, outLength: BN) {
     const data = getDataSlice(returnData, new BN(0), new BN(dataLength))
     runState.memory.extend(memOffset, dataLength)
     runState.memory.write(memOffset, dataLength, data)
+  }
+}
+
+/**
+  setLengthLeftStorage
+  @param value: Buffer which we want to pad
+  This is just a proxy function to ethereumjs-util's setLengthLeft, except it returns a zero length buffer in case the buffer is full of zeros.
+*/
+
+function setLengthLeftStorage(value: Buffer) {
+  if (value.equals(Buffer.alloc(value.length, 0))) {
+    // return the empty buffer (the value is zero)
+    return Buffer.alloc(0)
+  } else {
+    return setLengthLeft(value, 32)
   }
 }

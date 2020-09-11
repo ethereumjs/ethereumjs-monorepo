@@ -123,9 +123,9 @@ tape('should clear storage cache after every transaction', async(t) => {
     PUSH1 01
     PUSH1 00
     SSTORE
-    STOP
+    INVALID
   */
-  const code = "600160005500"
+  const code = "6001600055FE"
   const address = Buffer.from("00000000000000000000000000000000000000ff", 'hex')
   await vm.stateManager.putContractCode(Buffer.from(address, 'hex'), Buffer.from(code, 'hex'))
   await vm.stateManager.putContractStorage(address, Buffer.from(("00").repeat(32), 'hex'), Buffer.from(("00").repeat(31) + "01", 'hex'))
@@ -140,7 +140,7 @@ tape('should clear storage cache after every transaction', async(t) => {
 
   await vm.stateManager.putAccount(tx.from, createAccount())
 
-  await vm.runTx({tx})
+  await vm.runTx({tx}) // this tx will fail, but we have to ensure that the cache is cleared
 
   t.equal(vm.stateManager._originalStorageCache.size, 0, 'storage cache should be cleared')
   t.end()
