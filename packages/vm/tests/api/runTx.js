@@ -5,6 +5,7 @@ const runTx = require('../../dist/runTx').default
 const { DefaultStateManager } = require('../../dist/state')
 const VM = require('../../dist/index').default
 const { createAccount } = require('./utils')
+const Common = require('@ethereumjs/common').default
 
 function setup(vm = null) {
   if (vm === null) {
@@ -108,6 +109,40 @@ tape('should fail when account balance overflows (create)', async (t) => {
 
   t.equal(res.execResult.exceptionError.error, 'value overflow')
   t.equal(vm.stateManager._checkpointCount, 0)
+  t.end()
+})
+
+tape('should clear storage cache after every transaction', async(t) => {
+  const vm = new VM({common: new Common({ chain: 'mainnet', hardfork: "istanbul" })})
+  const suite = setup(vm)
+  const privateKey = Buffer.from(
+    'e331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109',
+    'hex',
+  )
+  /* Code which is deployed here: 
+    PUSH1 01
+    PUSH1 00
+    SSTORE
+    STOP
+  */
+  const code = "600160005500"
+  const address = Buffer.from("00000000000000000000000000000000000000ff", 'hex')
+  await vm.stateManager.putContractCode(Buffer.from(address, 'hex'), Buffer.from(code, 'hex'))
+  await vm.stateManager.putContractStorage(address, Buffer.from(("00").repeat(32), 'hex'), Buffer.from(("00").repeat(31) + "01", 'hex'))
+  const tx = new Transaction ({
+    nonce: '0x00',
+    gasPrice: 1,
+    gasLimit: 100000,
+    to: address,
+    chainId: 3,
+  })
+  tx.sign(privateKey)
+
+  await vm.stateManager.putAccount(tx.from, createAccount())
+
+  await vm.runTx({tx})
+
+  t.equal(vm.stateManager._originalStorageCache.size, 0, 'storage cache should be cleared')
   t.end()
 })
 
