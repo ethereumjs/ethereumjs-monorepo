@@ -17,11 +17,8 @@ const onAdd = async (vm: VM, block: Block, receipts: any) => {
   })
 
   // verify the receipt root, the logs bloom and the gas used after block execution, throw if any of these is not the expected value
-  if (
-    result.receiptRoot &&
-    result.receiptRoot.toString('hex') !== block.header.receiptTrie.toString('hex')
-  ) {
-    // there's something wrong here with the receipts trie. if block has receipt data we can check against the expected result of the block and the 
+  if (result.receiptRoot && !result.receiptRoot.equals(block.header.receiptTrie)) {
+    // there's something wrong here with the receipts trie. if block has receipt data we can check against the expected result of the block and the
     // reported data of the VM in order to isolate the problem
 
     // check if there are receipts
@@ -32,17 +29,30 @@ const onAdd = async (vm: VM, block: Block, receipts: any) => {
         let cumGasUsedActual = parseInt(result.receipts[index].gasUsed.toString('hex'), 16)
         let gasUsed = cumGasUsedActual - cumGasUsed
         if (gasUsed != gasUsedExpected) {
-          console.log("[DEBUG] Transaction at index " + index + " of block " + bufferToInt(block.header.number) + " did not yield expected gas. Hash: " + receipts[index].transactionHash)
-          console.log("[DEBUG] Gas used expected: " + gasUsedExpected + ", actual: " + gasUsed + ", difference: " + (gasUsed - gasUsedExpected))
+          console.log(
+            '[DEBUG] Transaction at index ' +
+            index +
+            ' of block ' +
+            bufferToInt(block.header.number) +
+            ' did not yield expected gas. Hash: ' +
+            receipts[index].transactionHash,
+          )
+          console.log(
+            '[DEBUG] Gas used expected: ' +
+            gasUsedExpected +
+            ', actual: ' +
+            gasUsed +
+            ', difference: ' +
+            (gasUsed - gasUsedExpected),
+          )
         }
         cumGasUsed = cumGasUsedActual
       }
     }
 
-
     throw new Error('invalid receiptTrie ')
   }
-  if (result.logsBloom.toString('hex') !== block.header.bloom.toString('hex')) {
+  if (result.logsBloom.equals(block.header.bloom)) {
     throw new Error('invalid bloom ')
   }
   if (bufferToInt(block.header.gasUsed) !== Number(result.gasUsed)) {

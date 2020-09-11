@@ -6,6 +6,14 @@ import { StateManager, DefaultStateManager } from '../dist/state'
 import Common from '@ethereumjs/common'
 import Mockchain from './mockchain'
 
+export interface BenchmarkType {
+  [key: string]: Function
+}
+
+export interface BenchmarksType {
+  [key: string]: BenchmarkType
+}
+
 interface StateTestPreAccount {
   balance: string
   code: string
