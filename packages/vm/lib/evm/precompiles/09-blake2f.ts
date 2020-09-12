@@ -102,7 +102,7 @@ function B2B_G(
 }
 
 // Initialization Vector
-var BLAKE2B_IV32 = new Uint32Array([
+const BLAKE2B_IV32 = new Uint32Array([
   0xf3bcc908,
   0x6a09e667,
   0x84caa73b,

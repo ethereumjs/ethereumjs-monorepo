@@ -1,9 +1,9 @@
 import { BaseTrie as Trie } from 'merkle-patricia-tree'
 import Common from '@ethereumjs/common'
-import { BN, rlp, keccak256, KECCAK256_RLP, baToJSON } from 'ethereumjs-util'
+import { BN, rlp, keccak256, KECCAK256_RLP, baToJSON, bufferToInt } from 'ethereumjs-util'
 import { Transaction, TransactionOptions } from '@ethereumjs/tx'
 import { BlockHeader } from './header'
-import { Blockchain, BlockData, ChainOptions } from './types'
+import { Blockchain, BlockData, BlockOptions } from './types'
 
 /**
  * An object that represents the block
@@ -19,32 +19,20 @@ export class Block {
   /**
    * Creates a new block object
    *
+   * Please solely use this constructor to pass in block header data
+   * and don't modfiy header data after initialization since this can lead to
+   * undefined behavior regarding HF rule implemenations within the class.
+   *
    * @param data - The block's data.
-   * @param chainOptions - The network options for this block, and its header, uncle headers and txs.
+   * @param options - The options for this block (like the chain setup)
    */
   constructor(
     data: Buffer | [Buffer[], Buffer[], Buffer[]] | BlockData = {},
-    chainOptions: ChainOptions = {},
+    options: BlockOptions = {},
   ) {
     // Checking at runtime, to prevent errors down the path for JavaScript consumers.
     if (data === null) {
       data = {}
-    }
-
-    if (chainOptions.common) {
-      if (chainOptions.chain !== undefined || chainOptions.hardfork !== undefined) {
-        throw new Error(
-          'Instantiation with both chainOptions.common and chainOptions.chain / chainOptions.hardfork parameter not allowed!',
-        )
-      }
-
-      this._common = chainOptions.common
-    } else {
-      const chain = chainOptions.chain ? chainOptions.chain : 'mainnet'
-      // TODO: Compute the hardfork based on this block's number. It can be implemented right now
-      // because the block number is not immutable, so the Common can get out of sync.
-      const hardfork = chainOptions.hardfork ? chainOptions.hardfork : null
-      this._common = new Common(chain, hardfork)
     }
 
     let rawTransactions
@@ -57,26 +45,26 @@ export class Block {
       data = dataAsAny as [Buffer[], Buffer[], Buffer[]]
     }
 
+    // Initialize the block header
     if (Array.isArray(data)) {
-      this.header = new BlockHeader(data[0], { common: this._common })
+      this.header = new BlockHeader(data[0], options)
       rawTransactions = data[1]
       rawUncleHeaders = data[2]
     } else {
-      this.header = new BlockHeader(data.header, { common: this._common })
+      this.header = new BlockHeader(data.header, options)
       rawTransactions = data.transactions || []
       rawUncleHeaders = data.uncleHeaders || []
     }
+    this._common = this.header._common
 
     // parse uncle headers
     for (let i = 0; i < rawUncleHeaders.length; i++) {
-      this.uncleHeaders.push(new BlockHeader(rawUncleHeaders[i], chainOptions))
+      this.uncleHeaders.push(new BlockHeader(rawUncleHeaders[i], options))
     }
 
     // parse transactions
     for (let i = 0; i < rawTransactions.length; i++) {
-      // TODO: Pass the common object instead of the options. It can't be implemented right now
-      // because the hardfork may be `null`. Read the above TODO for more info.
-      const tx = new Transaction(rawTransactions[i], chainOptions as TransactionOptions)
+      const tx = new Transaction(rawTransactions[i], { common: this._common })
       this.transactions.push(tx)
     }
   }
@@ -97,13 +85,6 @@ export class Block {
    */
   isGenesis(): boolean {
     return this.header.isGenesis()
-  }
-
-  /**
-   * Turns the block into the canonical genesis block
-   */
-  setGenesisParams(): void {
-    this.header.setGenesisParams()
   }
 
   /**
@@ -141,11 +122,10 @@ export class Block {
    * Validates the transaction trie
    */
   validateTransactionsTrie(): boolean {
-    const txT = this.header.transactionsTrie.toString('hex')
     if (this.transactions.length) {
-      return txT === this.txTrie.root.toString('hex')
+      return this.header.transactionsTrie.equals(this.txTrie.root)
     } else {
-      return txT === KECCAK256_RLP.toString('hex')
+      return this.header.transactionsTrie.equals(KECCAK256_RLP)
     }
   }
 
@@ -177,13 +157,13 @@ export class Block {
   /**
    * Validates the entire block, throwing if invalid.
    *
-   * @param blockChain - the blockchain that this block wants to be part of
+   * @param blockchain - the blockchain that this block wants to be part of
    */
-  async validate(blockChain: Blockchain): Promise<void> {
+  async validate(blockchain: Blockchain): Promise<void> {
     await Promise.all([
-      this.validateUncles(blockChain),
+      this.validateUncles(blockchain),
       this.genTxTrie(),
-      this.header.validate(blockChain),
+      this.header.validate(blockchain),
     ])
 
     if (!this.validateTransactionsTrie()) {
@@ -206,13 +186,13 @@ export class Block {
   validateUnclesHash(): boolean {
     const raw = rlp.encode(this.uncleHeaders.map((uh) => uh.raw))
 
-    return keccak256(raw).toString('hex') === this.header.uncleHash.toString('hex')
+    return keccak256(raw).equals(this.header.uncleHash)
   }
 
   /**
    * Validates the uncles that are in the block, if any. This method throws if they are invalid.
    *
-   * @param blockChain - the blockchain that this block wants to be part of
+   * @param blockchain - the blockchain that this block wants to be part of
    */
   async validateUncles(blockchain: Blockchain): Promise<void> {
     if (this.isGenesis()) {

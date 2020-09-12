@@ -1,6 +1,6 @@
 import { BlockHeader } from './header'
 import { KECCAK256_NULL, toBuffer } from 'ethereumjs-util'
-import { ChainOptions } from './types'
+import { BlockOptions } from './types'
 
 /**
  * Creates a new block header object from Ethereum JSON RPC.
@@ -8,7 +8,7 @@ import { ChainOptions } from './types'
  * @param blockParams - Ethereum JSON RPC of block (eth_getBlockByNumber)
  * @param chainOptions - An object describing the blockchain
  */
-export default function blockHeaderFromRpc(blockParams: any, chainOptions?: ChainOptions) {
+export default function blockHeaderFromRpc(blockParams: any, options?: BlockOptions) {
   const blockHeader = new BlockHeader(
     {
       parentHash: blockParams.parentHash,
@@ -27,7 +27,7 @@ export default function blockHeaderFromRpc(blockParams: any, chainOptions?: Chai
       mixHash: blockParams.mixHash,
       nonce: blockParams.nonce,
     },
-    chainOptions,
+    options,
   )
 
   // override hash in case something was missing

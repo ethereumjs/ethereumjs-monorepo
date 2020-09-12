@@ -15,18 +15,31 @@ import runBlockchain from './runBlockchain'
 const AsyncEventEmitter = require('async-eventemitter')
 const promisify = require('util.promisify')
 
+const IS_BROWSER = typeof (<any>globalThis).window === 'object' // very ugly way to detect if we are running in a browser
+let mcl: any
+let mclInitPromise: any
+
+if (!IS_BROWSER) {
+  mcl = require('mcl-wasm')
+  mclInitPromise = mcl.init(mcl.BLS12_381)
+}
+
 /**
  * Options for instantiating a [[VM]].
  */
 export interface VMOpts {
   /**
-   * The chain the VM operates on
+   * Use a [common](https://github.com/ethereumjs/ethereumjs-vm/packages/common) instance
+   * if you want to change the network setup
+   *
+   * If no common instance is provided the VM defaults to the following chain setup:
+   *
+   * Chain: `mainnet`
+   * Hardfork: `petersburg`
+   *
+   * Hardfork rules are implemented up to the 'muirGlacier' hardfork.
    */
-  chain?: string
-  /**
-   * Hardfork rules to be used
-   */
-  hardfork?: string
+  common?: Common
   /**
    * A [[StateManager]] instance to use as the state store (Beta API)
    */
@@ -37,7 +50,7 @@ export interface VMOpts {
    */
   state?: any // TODO
   /**
-   * A [blockchain](https://github.com/ethereumjs/ethereumjs-blockchain) object for storing/retrieving blocks
+   * A [blockchain](https://github.com/ethereumjs/ethereumjs-vm/packages/blockchain) object for storing/retrieving blocks
    */
   blockchain?: Blockchain
   /**
@@ -49,13 +62,27 @@ export interface VMOpts {
    *
    * Setting this to true has the effect of precompiled contracts' gas costs matching mainnet's from
    * the very first call, which is intended for testing networks.
+   *
+   * Default: `false`
    */
   activatePrecompiles?: boolean
   /**
-   * Allows unlimited contract sizes while debugging. By setting this to `true`, the check for contract size limit of 24KB (see [EIP-170](https://git.io/vxZkK)) is bypassed
+   * Allows unlimited contract sizes while debugging. By setting this to `true`, the check for
+   * contract size limit of 24KB (see [EIP-170](https://git.io/vxZkK)) is bypassed.
+   *
+   * Default: `false` [ONLY set to `true` during debugging]
    */
   allowUnlimitedContractSize?: boolean
-  common?: Common
+  /**
+   * Selected EIPs which can be activated on the VM, please use an array for instantiation
+   * (e.g. `eips: [ 'EIP2537', ])
+   *
+   * Currently supported:
+   * `EIP2537` (`beta`) - BLS12-381 precompiles ([specification](https://eips.ethereum.org/EIPS/eip-2537))
+   *
+   * Note: EIPs annotated with `beta` can change its behaviour or can be removed on minor version bumps of the VM
+   */
+  eips?: string[]
 }
 
 /**
@@ -67,12 +94,14 @@ export interface VMOpts {
 export default class VM extends AsyncEventEmitter {
   opts: VMOpts
   _common: Common
+  _activatedEIPs: string[] = []
   stateManager: StateManager
   blockchain: Blockchain
   allowUnlimitedContractSize: boolean
   _opcodes: OpcodeList
   public readonly _emit: (topic: string, data: any) => Promise<void>
   protected isInitialized: boolean = false
+  public readonly _mcl: any // pointer to the mcl package
 
   /**
    * VM async constructor. Creates engine instance and initializes it.
@@ -87,28 +116,23 @@ export default class VM extends AsyncEventEmitter {
 
   /**
    * Instantiates a new [[VM]] Object.
-   * @param opts - Default values for the options are:
-   *  - `chain`: 'mainnet'
-   *  - `hardfork`: 'petersburg' [supported: 'byzantium', 'constantinople', 'petersburg', 'istanbul' (DRAFT) (will throw on unsupported)]
-   *  - `activatePrecompiles`: false
-   *  - `allowUnlimitedContractSize`: false [ONLY set to `true` during debugging]
+   * @param opts
    */
   constructor(opts: VMOpts = {}) {
     super()
 
     this.opts = opts
 
-    if (opts.common) {
-      if (opts.chain || opts.hardfork) {
-        throw new Error(
-          'You can only instantiate the VM class with one of: opts.common, or opts.chain and opts.hardfork',
-        )
-      }
+    // Throw on chain or hardfork options removed in latest major release
+    // to prevent implicit chain setup on a wrong chain
+    if ('chain' in opts || 'hardfork' in opts) {
+      throw new Error('Chain/hardfork options are not allowed any more on initialization')
+    }
 
+    if (opts.common) {
       this._common = opts.common
     } else {
-      const chain = opts.chain ? opts.chain : 'mainnet'
-      const hardfork = opts.hardfork ? opts.hardfork : 'petersburg'
+      const DEFAULT_CHAIN = 'mainnet'
       const supportedHardforks = [
         'chainstart',
         'homestead',
@@ -123,10 +147,26 @@ export default class VM extends AsyncEventEmitter {
         'berlin',
       ]
 
-      this._common = new Common(chain, hardfork, supportedHardforks)
+      this._common = new Common({
+        chain: DEFAULT_CHAIN,
+        supportedHardforks,
+      })
+    }
+
+    // EIPs
+    if (opts.eips) {
+      const supportedEIPs = ['EIP2537']
+      for (const eip of opts.eips) {
+        if (supportedEIPs.includes(eip)) {
+          this._activatedEIPs.push(eip)
+        } else {
+          throw new Error(`${eip} is not supported by the VM`)
+        }
+      }
     }
 
     // Set list of opcodes based on HF
+    // TODO: make this EIP-friendly
     this._opcodes = getOpcodesForHF(this._common)
 
     if (opts.stateManager) {
@@ -140,6 +180,14 @@ export default class VM extends AsyncEventEmitter {
 
     this.allowUnlimitedContractSize =
       opts.allowUnlimitedContractSize === undefined ? false : opts.allowUnlimitedContractSize
+
+    if (this._activatedEIPs.includes('EIP2537')) {
+      if (IS_BROWSER) {
+        throw new Error('EIP 2537 is currently not supported in browsers')
+      } else {
+        this._mcl = mcl
+      }
+    }
 
     // We cache this promisified function as it's called from the main execution loop, and
     // promisifying each time has a huge performance impact.
@@ -171,6 +219,17 @@ export default class VM extends AsyncEventEmitter {
       await this.stateManager.commit()
     }
 
+    if (this._activatedEIPs.includes('EIP2537')) {
+      if (IS_BROWSER) {
+        throw new Error('EIP 2537 is currently not supported in browsers')
+      } else {
+        let mcl = this._mcl
+        await mclInitPromise // ensure that mcl is initialized.
+        mcl.setMapToMode(mcl.IRTF) // set the right map mode; otherwise mapToG2 will return wrong values.
+        mcl.verifyOrderG1(1) // subgroup checks for G1
+        mcl.verifyOrderG2(1) // subgroup checks for G2
+      }
+    }
     this.isInitialized = true
   }
 

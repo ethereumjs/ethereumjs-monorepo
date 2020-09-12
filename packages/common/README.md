@@ -4,7 +4,7 @@
 [![GitHub Issues][common-issues-badge]][common-issues-link]
 [![Actions Status][common-actions-badge]][common-actions-link]
 [![Code Coverage][common-coverage-badge]][common-coverage-link]
-[![Gitter][gitter-badge]][gitter-link]
+[![Discord][discord-badge]][discord-link]
 
 [![js-standard-style][js-standard-style-badge]][js-standard-style-link]
 
@@ -28,11 +28,11 @@ Here are some simple usage examples:
 const Common = require('@ethereumjs/common')
 
 // Instantiate with only the chain
-let c = new Common('ropsten')
+let c = new Common({ chain: 'ropsten' })
 c.param('gasPrices', 'ecAddGas', 'byzantium') // 500
 
 // Chain and hardfork provided
-c = new Common('ropsten', 'byzantium')
+c = new Common({ chain: 'ropsten', hardfork: 'byzantium' })
 c.param('pow', 'minerReward') // 3000000000000000000
 
 // Access genesis data for Ropsten network
@@ -46,7 +46,10 @@ It is encouraged to also explicitly set the `supportedHardforks` if the initiali
 only supports a certain range of `hardforks`:
 
 ```javascript
-let c = new Common('ropsten', null, ['byzantium', 'constantinople', 'petersburg'])
+let c = new Common({
+  chain: 'ropsten',
+  supportedHardforks: ['byzantium', 'constantinople', 'petersburg'],
+})
 ```
 
 This will e.g. throw an error when a param is requested for an unsupported hardfork and
@@ -170,8 +173,8 @@ If you want to join for work or do improvements on the libraries have a look at 
 
 [MIT](https://opensource.org/licenses/MIT)
 
-[gitter-badge]: https://img.shields.io/gitter/room/ethereum/ethereumjs.svg
-[gitter-link]: https://gitter.im/ethereum/ethereumjs
+[discord-badge]: https://img.shields.io/static/v1?logo=discord&label=discord&message=Join&color=blue
+[discord-link]: https://discord.gg/TNwARpR
 [js-standard-style-badge]: https://cdn.rawgit.com/feross/standard/master/badge.svg
 [js-standard-style-link]: https://github.com/feross/standard
 [common-npm-badge]: https://img.shields.io/npm/v/@ethereumjs/common.svg

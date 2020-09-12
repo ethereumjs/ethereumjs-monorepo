@@ -59,7 +59,7 @@ const testCases = [
 ]
 
 tape('Istanbul: EIP-152 Blake2f', async (t) => {
-  const common = new Common('mainnet', 'istanbul')
+  const common = new Common({ chain: 'mainnet', hardfork: 'istanbul' })
   for (const testCase of failingtestCases) {
     t.comment(testCase.name)
     const res = blake2f({ data: Buffer.from(testCase.input, 'hex'), gasLimit: new BN(20), _common: common })

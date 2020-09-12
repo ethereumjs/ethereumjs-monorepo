@@ -5,9 +5,7 @@
 # EthereumJS Monorepo
 
 [![Code Coverage][coverage-badge]][coverage-link]
-[![Gitter][gitter-badge]][gitter-link]
-[![StackExchange][stackexchange-badge]][stackexchange-link]
-
+[![Discord][discord-badge]][discord-link]
 [![JS Standard Style][js-standard-style-badge]][js-standard-style-link]
 
 This was originally the EthereumJS VM repository. On Q1 2020 we brought some of its building blocks together to simplify development. Below you can find the packages included in this repository.
@@ -69,7 +67,7 @@ Installs dependencies for all sub-packages, and links them to create an integrat
 
 #### `npm run build`
 
-Produces `dist` files for all sub-packages. This command can be scoped
+Produces `dist` files for all sub-packages. This command can be scoped.
 
 #### `npm run build:tree -- --scope @ethereumjs/blockchain`
 
@@ -97,15 +95,19 @@ Generates package documentation and outputs it to `./packages/<name>/docs`.
 
 #### `npm run lint`
 
-Checks code style, according to the rules defined in [ethereumjs-config](https://github.com/ethereumjs/ethereumjs-config).
+Checks code style according to the rules defined in [ethereumjs-config](https://github.com/ethereumjs/ethereumjs-config).
 
 #### `npm run lint:fix`
 
-Fixes code style, according to the rules 
+Fixes code style according to the rules.
 
 #### `npm run test`
 
-Runs all package tests. Note that the VM have several test scopes. Refer to their package.json for more info.
+Runs all package tests. Note that the VM has several test scopes - refer to [packages/vm/package.json](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/package.json) for more info.
+
+#### `npm run clean`
+
+Removes root and package `node_modules` directories. Useful to run before `npm i` for a fresh install.
 
 ### Going further
 
@@ -114,7 +116,10 @@ As this project is powered by Lerna, you can install it globally to enjoy lots m
 - `npm install -g lerna`
 - `lerna run`
 - `lerna exec`
-- `lerna clean`
+
+#### Cleaning `node_modules`
+
+Hoisting is enabled so dependencies are moved to the root `node_modules`. `lerna clean` [does not remove the root `node_modules`](https://github.com/lerna/lerna/issues/1304) so for convenience you can use the project script `npm run clean`.
 
 # EthereumJS
 
@@ -128,8 +133,8 @@ If you want to join for work or do improvements on the libraries have a look at 
 
 [coverage-badge]: https://codecov.io/gh/ethereumjs/ethereumjs-vm/branch/master/graph/badge.svg
 [coverage-link]: https://codecov.io/gh/ethereumjs/ethereumjs-vm
-[gitter-badge]: https://img.shields.io/gitter/room/ethereum/ethereumjs.svg
-[gitter-link]: https://gitter.im/ethereum/ethereumjs
+[discord-badge]: https://img.shields.io/static/v1?logo=discord&label=discord&message=Join&color=blue
+[discord-link]: https://discord.gg/TNwARpR[![StackExchange][stackexchange-badge]][stackexchange-link]
 [stackexchange-badge]: https://img.shields.io/badge/ethereumjs-stackexchange-brightgreen
 [stackexchange-link]: https://ethereum.stackexchange.com/questions/tagged/ethereumjs
 [js-standard-style-badge]: https://cdn.rawgit.com/feross/standard/master/badge.svg

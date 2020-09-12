@@ -3,6 +3,7 @@ import * as tape from 'tape'
 import { toBuffer } from 'ethereumjs-util'
 import * as minimist from 'minimist'
 import { ForkName, ForkNamesMap, OfficialTransactionTestData } from './types'
+import Common from '@ethereumjs/common'
 
 // We use require here because this module doesn't have types and this works better with ts-node.
 const testing = require('ethereumjs-testing')
@@ -44,8 +45,10 @@ tape('TransactionTests', (t) => {
             try {
               const rawTx = toBuffer(testData.rlp)
               const tx = new Tx(rawTx, {
-                hardfork: forkNameMap[forkName],
-                chain: 1,
+                common: new Common({
+                  hardfork: forkNameMap[forkName],
+                  chain: 1,
+                }),
               })
 
               const sender = tx.getSenderAddress().toString('hex')

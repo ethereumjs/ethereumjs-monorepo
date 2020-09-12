@@ -1,6 +1,7 @@
-import { toBuffer } from 'ethereumjs-util'
+import { toBuffer, bufferToInt, intToBuffer } from 'ethereumjs-util'
 import { Block } from '../src/block'
 import tape = require('tape')
+import Common from '@ethereumjs/common'
 
 const { BN } = require('ethereumjs-util')
 
@@ -40,12 +41,13 @@ tape('[Header]: difficulty tests', (t) => {
     const testData = hardforkTestData[hardfork]
     for (const testName in testData) {
       const test = testData[testName]
-      const parentBlock = new Block(undefined, { chain: 'mainnet', hardfork: hardfork })
+      const common = new Common({ chain: 'mainnet', hardfork: hardfork })
+      const parentBlock = new Block(undefined, { common })
       parentBlock.header.timestamp = test.parentTimestamp
       parentBlock.header.difficulty = test.parentDifficulty
       parentBlock.header.uncleHash = test.parentUncles
 
-      const block = new Block(undefined, { chain: 'mainnet', hardfork: hardfork })
+      const block = new Block(undefined, { common })
       block.header.timestamp = test.currentTimestamp
       block.header.difficulty = test.currentDifficulty
       block.header.number = test.currentBlockNumber
@@ -67,15 +69,25 @@ tape('[Header]: difficulty tests', (t) => {
     const testData = chainTestData[chain]
     for (const testName in testData) {
       const test = testData[testName]
-      const parentBlock = new Block(undefined, { chain: chain })
-      parentBlock.header.timestamp = test.parentTimestamp
-      parentBlock.header.difficulty = test.parentDifficulty
-      parentBlock.header.uncleHash = test.parentUncles
+      const common = new Common({ chain })
+      const parentData = {
+        header: {
+          timestamp: test.parentTimestamp,
+          difficulty: test.parentDifficulty,
+          number: intToBuffer(bufferToInt(test.currentBlockNumber) - 1),
+          uncleHash: test.parentUncles,
+        },
+      }
+      const parentBlock = new Block(parentData, { common, hardforkByBlockNumber: true })
 
-      const block = new Block(undefined, { chain: chain })
-      block.header.timestamp = test.currentTimestamp
-      block.header.difficulty = test.currentDifficulty
-      block.header.number = test.currentBlockNumber
+      const blockData = {
+        header: {
+          timestamp: test.currentTimestamp,
+          difficulty: test.currentDifficulty,
+          number: test.currentBlockNumber,
+        },
+      }
+      const block = new Block(blockData, { common, hardforkByBlockNumber: true })
 
       runDifficultyTests(
         test,

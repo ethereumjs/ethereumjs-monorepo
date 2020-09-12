@@ -92,6 +92,14 @@ export function COOGResult(gasUsedCreateCode: BN): ExecResult {
   }
 }
 
+export function VmErrorResult(error: VmError, gasUsed: BN): ExecResult {
+  return {
+    returnValue: Buffer.alloc(0),
+    gasUsed: gasUsed,
+    exceptionError: error,
+  }
+}
+
 /**
  * EVM is responsible for executing an EVM message fully
  * (including any nested calls and creates), processing the results
@@ -189,7 +197,11 @@ export default class EVM {
 
     let result: ExecResult
     if (message.isCompiled) {
-      result = this.runPrecompile(message.code as PrecompileFunc, message.data, message.gasLimit)
+      result = await this.runPrecompile(
+        message.code as PrecompileFunc,
+        message.data,
+        message.gasLimit,
+      )
     } else {
       result = await this.runInterpreter(message)
     }
@@ -378,13 +390,17 @@ export default class EVM {
    * if no such precompile exists.
    */
   getPrecompile(address: Buffer): PrecompileFunc {
-    return getPrecompile(address.toString('hex'), this._vm._common)
+    return getPrecompile(address.toString('hex'), this._vm._common, this._vm)
   }
 
   /**
    * Executes a precompiled contract with given data and gas limit.
    */
-  runPrecompile(code: PrecompileFunc, data: Buffer, gasLimit: BN): ExecResult {
+  runPrecompile(
+    code: PrecompileFunc,
+    data: Buffer,
+    gasLimit: BN,
+  ): Promise<ExecResult> | ExecResult {
     if (typeof code !== 'function') {
       throw new Error('Invalid precompile')
     }
@@ -393,6 +409,7 @@ export default class EVM {
       data,
       gasLimit,
       _common: this._vm._common,
+      _VM: this._vm,
     }
 
     return code(opts)

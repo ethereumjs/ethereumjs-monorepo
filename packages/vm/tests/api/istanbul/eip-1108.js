@@ -7,7 +7,7 @@ const { getPrecompile } = require('../../../dist/evm/precompiles')
 
 tape('Istanbul: EIP-1108 tests', (t) => {
   t.test('ECADD', (st) => {
-    const common = new Common('mainnet', 'istanbul')
+    const common = new Common({ chain: 'mainnet', hardfork: 'istanbul' })
     let vm = new VM({ common: common })
     let ECADD = getPrecompile('0000000000000000000000000000000000000006', common)
 
@@ -21,7 +21,7 @@ tape('Istanbul: EIP-1108 tests', (t) => {
   })
 
   t.test('ECMUL', (st) => {
-    const common = new Common('mainnet', 'istanbul')
+    const common = new Common({ chain: 'mainnet', hardfork: 'istanbul' })
     let vm = new VM({ common: common })
     let ECMUL = getPrecompile('0000000000000000000000000000000000000007', common)
 
@@ -35,7 +35,7 @@ tape('Istanbul: EIP-1108 tests', (t) => {
   })
 
   t.test('ECPAIRING', (st) => {
-    const common = new Common('mainnet', 'istanbul')
+    const common = new Common({ chain: 'mainnet', hardfork: 'istanbul' })
     let vm = new VM({ common: common })
     let ECPAIRING = getPrecompile('0000000000000000000000000000000000000008', common)
 

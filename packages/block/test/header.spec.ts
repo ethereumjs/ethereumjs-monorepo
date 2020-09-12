@@ -1,6 +1,6 @@
 import tape = require('tape')
 import Common from '@ethereumjs/common'
-import { rlp, toBuffer, zeros, KECCAK256_RLP_S, KECCAK256_RLP_ARRAY_S } from 'ethereumjs-util'
+import { rlp, toBuffer, zeros, KECCAK256_RLP, KECCAK256_RLP_ARRAY } from 'ethereumjs-util'
 import { BlockHeader } from '../src/header'
 import { Block } from '../src/block'
 
@@ -8,11 +8,11 @@ tape('[Block]: Header functions', function (t) {
   t.test('should create with default constructor', function (st) {
     function compareDefaultHeader(st: tape.Test, header: BlockHeader) {
       st.deepEqual(header.parentHash, zeros(32))
-      st.equal(header.uncleHash.toString('hex'), KECCAK256_RLP_ARRAY_S)
+      st.ok(header.uncleHash.equals(KECCAK256_RLP_ARRAY))
       st.deepEqual(header.coinbase, zeros(20))
       st.deepEqual(header.stateRoot, zeros(32))
-      st.equal(header.transactionsTrie.toString('hex'), KECCAK256_RLP_S)
-      st.equal(header.receiptTrie.toString('hex'), KECCAK256_RLP_S)
+      st.ok(header.transactionsTrie.equals(KECCAK256_RLP))
+      st.ok(header.receiptTrie.equals(KECCAK256_RLP))
       st.deepEqual(header.bloom, zeros(256))
       st.deepEqual(header.difficulty, Buffer.from([]))
       st.deepEqual(header.number, toBuffer(1150000))
@@ -35,24 +35,9 @@ tape('[Block]: Header functions', function (t) {
   })
 
   t.test('should test header initialization', function (st) {
-    const header1 = new BlockHeader(undefined, { chain: 'ropsten' })
-    const common = new Common('ropsten')
-    const header2 = new BlockHeader(undefined, { common: common })
-    header1.setGenesisParams()
-    header2.setGenesisParams()
-    st.strictEqual(
-      header1.hash().toString('hex'),
-      header2.hash().toString('hex'),
-      'header hashes match',
-    )
-
-    st.throws(
-      function () {
-        new BlockHeader(undefined, { chain: 'ropsten', common: common })
-      },
-      /not allowed!$/,
-      'should throw on initialization with chain and common parameter',
-    ) // eslint-disable-line
+    const common = new Common({ chain: 'ropsten', hardfork: 'chainstart' })
+    const block1 = new Block(undefined, { common: common, initWithGenesisHeader: true })
+    st.ok(block1.hash().toString('hex'), 'block should initialize')
     st.end()
   })
 
@@ -79,8 +64,7 @@ tape('[Block]: Header functions', function (t) {
 
   const testDataGenesis = require('./testdata/genesishashestest.json').test
   t.test('should test genesis hashes (mainnet default)', function (st) {
-    const header = new BlockHeader()
-    header.setGenesisParams()
+    const header = new BlockHeader(undefined, { initWithGenesisHeader: true })
     st.strictEqual(
       header.hash().toString('hex'),
       testDataGenesis.genesis_hash,
@@ -90,8 +74,8 @@ tape('[Block]: Header functions', function (t) {
   })
 
   t.test('should test genesis parameters (ropsten)', function (st) {
-    const genesisHeader = new BlockHeader(undefined, { chain: 'ropsten' })
-    genesisHeader.setGenesisParams()
+    const common = new Common({ chain: 'ropsten', hardfork: 'chainstart' })
+    const genesisHeader = new BlockHeader(undefined, { common, initWithGenesisHeader: true })
     const ropstenStateRoot = '217b0bbcfb72e2d57e28f33cb361b9983513177755dc3f33ce3e7022ed62b77b'
     st.strictEqual(
       genesisHeader.stateRoot.toString('hex'),

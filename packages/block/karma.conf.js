@@ -7,7 +7,7 @@ module.exports = function(config) {
       './test-build/**/*.js': ['browserify'],
     },
     reporters: ['dots'],
-    browsers: ['FirefoxHeadless', 'ChromeHeadless'],
+    browsers: ['ChromeHeadless'],
     singleRun: true,
   })
 }

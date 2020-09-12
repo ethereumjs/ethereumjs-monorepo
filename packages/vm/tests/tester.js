@@ -98,7 +98,7 @@ function runTests() {
       // Tests for HFs before Istanbul have been moved under `LegacyTests/Constantinople`:
       // https://github.com/ethereum/tests/releases/tag/v7.0.0-beta.1
 
-      const common = new Common('mainnet', FORK_CONFIG_VM)
+      const common = new Common({ chain: 'mainnet', hardfork: FORK_CONFIG_VM })
       if (!common.gteHardfork('istanbul') && FORK_CONFIG_TEST_SUITE != "HomesteadToDaoAt5") {
         name = 'LegacyTests/Constantinople/'.concat(name)
       }
