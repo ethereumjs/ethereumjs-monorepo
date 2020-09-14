@@ -158,3 +158,50 @@ tape('Ensure that precompile activation creates non-empty accounts', async (t) =
 
     t.end()
 })
+
+tape('Ensure that Istanbul sstoreCleanRefundEIP2200 gas is applied correctly', async (t) => {
+    // setup the accounts for this test
+    const caller =          Buffer.from('00000000000000000000000000000000000000ee', 'hex')                   // caller addres
+    const address =         Buffer.from('00000000000000000000000000000000000000ff', 'hex')
+    // setup the vm
+    const common = new Common({ chain: 'mainnet', hardfork: 'istanbul' })
+    const vm = new VM({ common: common})                               
+    const code = "61000260005561000160005500"
+    /*
+      idea: store the original value in the storage slot, except it is now a 1-length buffer instead of a 32-length buffer
+      code:             
+        PUSH2 0x0002
+        PUSH1 0x00
+        SSTORE              -> make storage slot 0 "dirty"
+        PUSH2 0x0001
+        PUSH1 0x00          
+        SSTORE              -> -> restore it to the original storage value (refund sstoreCleanRefundEIP2200)
+        STOP
+      gas cost: 
+        4x PUSH                                         12
+        2x SSTORE (slot is nonzero, so charge 5000): 10000
+        net                                          10012
+      gas refund 
+        sstoreCleanRefundEIP2200                      4200
+      gas used
+                                                     10012 - 4200 = 5812
+
+    */
+
+    await vm.stateManager.putContractCode(address, Buffer.from(code, 'hex'))  
+    await vm.stateManager.putContractStorage(address, Buffer.alloc(32, 0), Buffer.from(("00").repeat(31) + "01", 'hex'))
+
+    // setup the call arguments
+    let runCallArgs = {
+        caller: caller,                     // call address
+        to: address,
+        gasLimit: new BN(0xffffffffff),     // ensure we pass a lot of gas, so we do not run out of gas
+    }
+
+    const result = await vm.runCall(runCallArgs)
+    console.log(result.gasUsed, result.execResult.gasRefund)
+    t.equal(result.gasUsed.toNumber(), 5812, "gas used incorrect")
+    t.equal(result.execResult.gasRefund.toNumber(), 4200, "gas refund incorrect")
+
+    t.end()
+})
