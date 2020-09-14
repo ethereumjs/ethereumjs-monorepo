@@ -599,7 +599,7 @@ export default class Wallet {
     }
 
     const ciphertext = runCipherBuffer(cipher, this.privKey)
-    const mac = keccak256(Buffer.concat([derivedKey.slice(16, 32), Buffer.from(ciphertext)]))
+    const mac = keccak256(Buffer.concat([Buffer.from(derivedKey.slice(16, 32)), Buffer.from(ciphertext)]))
 
     return {
       version: 3,
