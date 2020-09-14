@@ -30,14 +30,29 @@ if (!IS_BROWSER) {
 export interface VMOpts {
   /**
    * Use a [common](https://github.com/ethereumjs/ethereumjs-vm/packages/common) instance
-   * if you want to change the network setup
+   * if you want to change the chain setup.
    *
-   * If no common instance is provided the VM defaults to the following chain setup:
+   * ### Possible Values
    *
-   * Chain: `mainnet`
-   * Hardfork: `petersburg`
+   * - `chain`: all chains supported by `Common` or a custom chain
+   * - `hardfork`: `mainnet` hardforks up to the `MuirGlacier` hardfork
+   * - `eips`: `EIP2537` (usage e.g. `eips: ['EIP2537',]`)
    *
-   * Hardfork rules are implemented up to the 'muirGlacier' hardfork.
+   * ### Supported EIPs
+   *
+   * - [EIP2537](https://eips.ethereum.org/EIPS/eip-2537) (`experimental`) - BLS12-381 precompiles
+   *
+   * *Annotations:*
+   *
+   * - `experimental`: behaviour can change on patch versions
+   *
+   * ### Default Setup
+   *
+   * Default setup if no `Common` instance is provided:
+   *
+   * - `chain`: `mainnet`
+   * - `hardfork`: `petersburg`
+   * - `eips`: `[]`
    */
   common?: Common
   /**
@@ -73,16 +88,6 @@ export interface VMOpts {
    * Default: `false` [ONLY set to `true` during debugging]
    */
   allowUnlimitedContractSize?: boolean
-  /**
-   * Selected EIPs which can be activated on the VM, please use an array for instantiation
-   * (e.g. `eips: [ 'EIP2537', ])
-   *
-   * Currently supported:
-   * `EIP2537` (`beta`) - BLS12-381 precompiles ([specification](https://eips.ethereum.org/EIPS/eip-2537))
-   *
-   * Note: EIPs annotated with `beta` can change its behaviour or can be removed on minor version bumps of the VM
-   */
-  eips?: string[]
 }
 
 /**
@@ -94,7 +99,6 @@ export interface VMOpts {
 export default class VM extends AsyncEventEmitter {
   opts: VMOpts
   _common: Common
-  _activatedEIPs: string[] = []
   stateManager: StateManager
   blockchain: Blockchain
   allowUnlimitedContractSize: boolean
@@ -130,6 +134,14 @@ export default class VM extends AsyncEventEmitter {
     }
 
     if (opts.common) {
+      //EIPs
+      const supportedEIPs = ['EIP2537']
+      for (const eip of opts.common.eips()) {
+        if (!supportedEIPs.includes(eip)) {
+          throw new Error(`${eip} is not supported by the VM`)
+        }
+      }
+
       this._common = opts.common
     } else {
       const DEFAULT_CHAIN = 'mainnet'
@@ -153,18 +165,6 @@ export default class VM extends AsyncEventEmitter {
       })
     }
 
-    // EIPs
-    if (opts.eips) {
-      const supportedEIPs = ['EIP2537']
-      for (const eip of opts.eips) {
-        if (supportedEIPs.includes(eip)) {
-          this._activatedEIPs.push(eip)
-        } else {
-          throw new Error(`${eip} is not supported by the VM`)
-        }
-      }
-    }
-
     // Set list of opcodes based on HF
     // TODO: make this EIP-friendly
     this._opcodes = getOpcodesForHF(this._common)
@@ -181,7 +181,7 @@ export default class VM extends AsyncEventEmitter {
     this.allowUnlimitedContractSize =
       opts.allowUnlimitedContractSize === undefined ? false : opts.allowUnlimitedContractSize
 
-    if (this._activatedEIPs.includes('EIP2537')) {
+    if (this._common.eips().includes('EIP2537')) {
       if (IS_BROWSER) {
         throw new Error('EIP 2537 is currently not supported in browsers')
       } else {
@@ -219,7 +219,7 @@ export default class VM extends AsyncEventEmitter {
       await this.stateManager.commit()
     }
 
-    if (this._activatedEIPs.includes('EIP2537')) {
+    if (this._common.eips().includes('EIP2537')) {
       if (IS_BROWSER) {
         throw new Error('EIP 2537 is currently not supported in browsers')
       } else {

@@ -1,33 +1,40 @@
 import * as tape from 'tape'
 import Common from '../src/'
 
-tape('[Common]: Parameter access', function (t: tape.Test) {
+tape('[Common]: Parameter access for param(), paramByHardfork()', function (t: tape.Test) {
   t.test('Basic usage', function (st: tape.Test) {
-    const c = new Common({ chain: 'mainnet' })
+    const c = new Common({ chain: 'mainnet', eips: ['EIP2537'] })
     let msg = 'Should return correct value when HF directly provided'
-    st.equal(c.param('gasPrices', 'ecAdd', 'byzantium'), 500, msg)
+    st.equal(c.paramByHardfork('gasPrices', 'ecAdd', 'byzantium'), 500, msg)
 
     c.setHardfork('byzantium')
     msg = 'Should return correct value for HF set in class'
     st.equal(c.param('gasPrices', 'ecAdd'), 500, msg)
 
+    msg = 'Should return null for non-existing value'
+    st.equal(c.param('gasPrices', 'notexistingvalue'), null, msg)
+    st.equal(c.paramByHardfork('gasPrices', 'notexistingvalue', 'byzantium'), null, msg)
+
+    /*
+    // Manual test since no test triggering EIP config available
+    // TODO: recheck on addition of new EIP configs
+    // To run please manually add an "ecAdd" entry with value 12345 to EIP2537 config
+    // and uncomment the test
+    msg = 'EIP config should take precedence over HF config'
+    st.equal(c.param('gasPrices', 'ecAdd'), 12345, msg)
+    */
+
     st.end()
   })
 
-  t.test('Error cases', function (st: tape.Test) {
+  t.test('Error cases for param(), paramByHardfork()', function (st: tape.Test) {
     let c = new Common({ chain: 'mainnet' })
 
     let f = function () {
-      c.param('gasPrizes', 'ecAdd', 'byzantium')
+      c.paramByHardfork('gasPrizes', 'ecAdd', 'byzantium')
     }
     let msg = 'Should throw when called with non-existing topic'
     st.throws(f, /Topic gasPrizes not defined$/, msg)
-
-    f = function () {
-      c.param('gasPrices', 'notexistingvalue', 'byzantium')
-    }
-    msg = 'Should throw when called with non-existing value'
-    st.throws(f, /value for notexistingvalue not found$/, msg)
 
     c.setHardfork('byzantium')
     st.equal(c.param('gasPrices', 'ecAdd'), 500, 'Should return correct value for HF set in class')
@@ -38,7 +45,7 @@ tape('[Common]: Parameter access', function (t: tape.Test) {
       supportedHardforks: ['byzantium', 'constantinople'],
     })
     f = function () {
-      c.param('gasPrices', 'expByte', 'spuriousDragon')
+      c.paramByHardfork('gasPrices', 'expByte', 'spuriousDragon')
     }
     msg = 'Should throw when calling param() with an unsupported hardfork'
     st.throws(f, /supportedHardforks$/, msg)
@@ -54,23 +61,18 @@ tape('[Common]: Parameter access', function (t: tape.Test) {
 
   t.test('Parameter updates', function (st: tape.Test) {
     const c = new Common({ chain: 'mainnet' })
-    const f = function () {
-      c.param('gasPrices', 'ecAdd', 'spuriousDragon')
-    }
-    let msg = 'Should throw for a value set on a later HF'
-    st.throws(f, /value for ecAdd not found$/, msg)
 
-    msg = 'Should return correct value for chain start'
-    st.equal(c.param('pow', 'minerReward', 'chainstart'), '5000000000000000000', msg)
+    let msg = 'Should return correct value for chain start'
+    st.equal(c.paramByHardfork('pow', 'minerReward', 'chainstart'), '5000000000000000000', msg)
 
     msg = 'Should reflect HF update changes'
-    st.equal(c.param('pow', 'minerReward', 'byzantium'), '3000000000000000000', msg)
+    st.equal(c.paramByHardfork('pow', 'minerReward', 'byzantium'), '3000000000000000000', msg)
 
     msg = 'Should return updated sstore gas prices for constantinople'
-    st.equal(c.param('gasPrices', 'netSstoreNoopGas', 'constantinople'), 200, msg)
+    st.equal(c.paramByHardfork('gasPrices', 'netSstoreNoopGas', 'constantinople'), 200, msg)
 
     msg = 'Should nullify SSTORE related values for petersburg'
-    st.equal(c.param('gasPrices', 'netSstoreNoopGas', 'petersburg'), null, msg)
+    st.equal(c.paramByHardfork('gasPrices', 'netSstoreNoopGas', 'petersburg'), null, msg)
 
     st.end()
   })
@@ -89,10 +91,14 @@ tape('[Common]: Parameter access', function (t: tape.Test) {
 
   t.test('EIP param access, paramByEIP()', function (st: tape.Test) {
     const c = new Common({ chain: 'mainnet' })
+
+    let msg = 'Should return null for non-existing value'
+    st.equal(c.paramByEIP('gasPrices', 'notexistingvalue', 'EIP2537'), null, msg)
+
     let f = function () {
       c.paramByEIP('gasPrices', 'Bls12381G1AddGas', 'NOT_SUPPORTED_EIP')
     }
-    let msg = 'Should throw for using paramByEIP() with a not supported EIP'
+    msg = 'Should throw for using paramByEIP() with a not supported EIP'
     st.throws(f, /not supported$/, msg)
 
     f = function () {
@@ -100,12 +106,6 @@ tape('[Common]: Parameter access', function (t: tape.Test) {
     }
     msg = 'Should throw for using paramByEIP() with a not existing topic'
     st.throws(f, /not defined$/, msg)
-
-    f = function () {
-      c.paramByEIP('gasPrices', 'Bls12381G1AddGas_WITH_SPELLING_MISTAKE', 'EIP2537')
-    }
-    msg = 'Should throw for using paramByEIP() if value was not found'
-    st.throws(f, /not found$/, msg)
 
     msg = 'Should return Bls12381G1AddGas gas price for EIP2537'
     st.equal(c.paramByEIP('gasPrices', 'Bls12381G1AddGas', 'EIP2537'), 600, msg)

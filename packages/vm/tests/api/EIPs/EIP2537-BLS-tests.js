@@ -15,8 +15,8 @@ for (let address = precompileAddressStart; address <= precompileAddressEnd; addr
 
 const dir = "./tests/api/berlin/"
 
-tape('Berlin BLS tests', (t) => {
-    t.test('Berlin precompiles not available if EIP2537 is not activated', async (st) => {
+tape('EIP2537 BLS tests', (t) => {
+    t.test('BLS precompiles should not be available if EIP not activated', async (st) => {
         if (isRunningInKarma()) {
             st.skip('BLS does not work in karma')
             return st.end()
@@ -34,25 +34,25 @@ tape('Berlin BLS tests', (t) => {
             })
           
             if (!result.execResult.gasUsed.eq(new BN(0))) {
-                st.fail("BLS precompiles should not use any gas pre-Berlin")
+                st.fail("BLS precompiles should not use any gas if EIP not activated")
             }
 
             if (result.execResult.exceptionError) {
-                st.fail('BLS precompiles should not throw pre-Berlin')
+                st.fail('BLS precompiles should not throw if EIP not activated')
             }
         }
 
-        st.pass("Berlin precompiles unreachable pre-Berlin")
+        st.pass("BLS precompiles unreachable if EIP not activated")
         st.end()
     })
 
-    t.test('Berlin precompiles should throw on empty inputs', async (st) => {
+    t.test('BLS precompiles should throw on empty inputs', async (st) => {
         if (isRunningInKarma()) {
             st.skip('BLS does not work in karma')
             return st.end()
         }
-        const common = new Common({ chain: 'mainnet', hardfork: 'berlin' })
-        const vm = new VM({ common: common, eips: ['EIP2537'] })
+        const common = new Common({ chain: 'mainnet', hardfork: 'byzantium', eips: ['EIP2537'] })
+        const vm = new VM({ common: common })
         const gasLimit = new BN(0xffffffffff)
 
         for (let address of precompiles) {
@@ -73,7 +73,7 @@ tape('Berlin BLS tests', (t) => {
             }
         }
 
-        st.pass("Berlin precompiles throw correctly on empty inputs")
+        st.pass("BLS precompiles throw correctly on empty inputs")
         st.end()
     })
 

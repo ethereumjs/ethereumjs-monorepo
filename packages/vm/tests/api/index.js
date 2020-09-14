@@ -70,24 +70,9 @@ tape('VM with default blockchain', (t) => {
     if (isRunningInKarma()) {
       st.skip('BLS does not work in karma')
       return st.end()
-  }
-    st.doesNotThrow(() => { new VM({ eips: [ 'EIP2537', ] }) })
-    st.end()
-  })
-
-  t.test('should correctly set _activatedEIPs', async (st) => {
-    if (isRunningInKarma()) {
-      st.skip('BLS does not work in karma')
-      return st.end()
-  }
-    const vm = new VM({ eips: [ 'EIP2537', ] })
-
-    st.deepEqual(vm._activatedEIPs, [ 'EIP2537', ])
-    st.end()
-  })
-
-  t.test('should not accept a not supported EIP', async (st) => {
-    st.throws(() => { new VM({ eips: [ 'NOT_SUPPORTED_EIP', ] }) })
+    }
+    const common = new Common({ chain: 'mainnet', eips: [ 'EIP2537', ] })
+    st.doesNotThrow(() => { new VM({ common }) })
     st.end()
   })
 

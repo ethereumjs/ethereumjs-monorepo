@@ -22,6 +22,15 @@ export interface CommonOpts {
    * Limit parameter returns to the given hardforks
    */
   supportedHardforks?: Array<string>
+  /**
+   * Selected EIPs which can be activated, please use an array for instantiation
+   * (e.g. `eips: [ 'EIP2537', ]`)
+   *
+   * Currently supported:
+   *
+   * - [EIP2537](https://eips.ethereum.org/EIPS/eip-2537) - BLS12-381 precompiles
+   */
+  eips?: string[]
 }
 
 interface hardforkOptions {
@@ -37,9 +46,10 @@ interface hardforkOptions {
 export default class Common {
   readonly DEFAULT_HARDFORK: string = 'petersburg'
 
-  private _hardfork: string
-  private _supportedHardforks: Array<string>
   private _chainParams: Chain
+  private _hardfork: string
+  private _supportedHardforks: Array<string> = []
+  private _eips: string[] = []
 
   /**
    * Creates a Common object for a custom chain, based on a standard one. It uses all the [[Chain]]
@@ -91,9 +101,14 @@ export default class Common {
   constructor(opts: CommonOpts) {
     this._chainParams = this.setChain(opts.chain)
     this._hardfork = this.DEFAULT_HARDFORK
-    this._supportedHardforks = opts.supportedHardforks === undefined ? [] : opts.supportedHardforks
+    if (opts.supportedHardforks) {
+      this._supportedHardforks = opts.supportedHardforks
+    }
     if (opts.hardfork) {
       this.setHardfork(opts.hardfork)
+    }
+    if (opts.eips) {
+      this.setEIPs(opts.eips)
     }
   }
 
@@ -207,15 +222,59 @@ export default class Common {
   }
 
   /**
+   * Sets the active EIPs
+   * @param eips
+   */
+  setEIPs(eips: string[] = []) {
+    for (const eip of eips) {
+      if (!(eip in EIPs)) {
+        throw new Error(`${eip} not supported`)
+      }
+      const minHF = this.gteHardfork(EIPs[eip]['minimumHardfork'])
+      if (!minHF) {
+        throw new Error(
+          `${eip} cannot be activated on hardfork ${this.hardfork()}, minimumHardfork: ${minHF}`,
+        )
+      }
+    }
+    this._eips = eips
+  }
+
+  /**
+   * Returns a parameter for the current chain setup
+   *
+   * If the parameter is present in an EIP, the EIP always takes precendence.
+   * Otherwise the parameter if taken from the latest applied HF with
+   * a change on the respective parameter.
+   *
+   * @param topic Parameter topic ('gasConfig', 'gasPrices', 'vm', 'pow')
+   * @param name Parameter name (e.g. 'minGasLimit' for 'gasConfig' topic)
+   * @returns The value requested or `null` if not found
+   */
+  param(topic: string, name: string): any {
+    // TODO: consider the case that different active EIPs
+    // can change the same parameter
+    let value = null
+    for (const eip of this._eips) {
+      value = this.paramByEIP(topic, name, eip)
+      if (value !== null) {
+        return value
+      }
+    }
+    return this.paramByHardfork(topic, name, this._hardfork)
+  }
+
+  /**
    * Returns the parameter corresponding to a hardfork
    * @param topic Parameter topic ('gasConfig', 'gasPrices', 'vm', 'pow')
    * @param name Parameter name (e.g. 'minGasLimit' for 'gasConfig' topic)
-   * @param hardfork Hardfork name, optional if hardfork set
+   * @param hardfork Hardfork name
+   * @returns The value requested or `null` if not found
    */
-  param(topic: string, name: string, hardfork?: string): any {
+  paramByHardfork(topic: string, name: string, hardfork: string): any {
     hardfork = this._chooseHardfork(hardfork)
 
-    let value
+    let value = null
     for (const hfChanges of hardforkChanges) {
       if (!hfChanges[1][topic]) {
         throw new Error(`Topic ${topic} not defined`)
@@ -225,9 +284,6 @@ export default class Common {
       }
       if (hfChanges[0] === hardfork) break
     }
-    if (value === undefined) {
-      throw new Error(`${topic} value for ${name} not found`)
-    }
     return value
   }
 
@@ -236,6 +292,7 @@ export default class Common {
    * @param topic Parameter topic ('gasConfig', 'gasPrices', 'vm', 'pow')
    * @param name Parameter name (e.g. 'minGasLimit' for 'gasConfig' topic)
    * @param eip Name of the EIP (e.g. 'EIP2537')
+   * @returns The value requested or `null` if not found
    */
   paramByEIP(topic: string, name: string, eip: string): any {
     if (!(eip in EIPs)) {
@@ -247,7 +304,7 @@ export default class Common {
       throw new Error(`Topic ${topic} not defined`)
     }
     if (eipParams[topic][name] === undefined) {
-      throw new Error(`${topic} value for ${name} not found`)
+      return null
     }
     let value = eipParams[topic][name].v
     return value
@@ -262,7 +319,7 @@ export default class Common {
   paramByBlock(topic: string, name: string, blockNumber: number): any {
     const activeHfs = this.activeHardforks(blockNumber)
     const hardfork = activeHfs[activeHfs.length - 1]['name']
-    return this.param(topic, name, hardfork)
+    return this.paramByHardfork(topic, name, hardfork)
   }
 
   /**
@@ -555,5 +612,13 @@ export default class Common {
    */
   networkId(): number {
     return (<any>this._chainParams)['networkId']
+  }
+
+  /**
+   * Returns the active EIPs
+   * @returns List of EIPs
+   */
+  eips(): string[] {
+    return this._eips
   }
 }
