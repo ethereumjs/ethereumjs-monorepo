@@ -24,7 +24,7 @@ export interface CommonOpts {
   supportedHardforks?: Array<string>
   /**
    * Selected EIPs which can be activated, please use an array for instantiation
-   * (e.g. `eips: [ 'EIP2537', ])
+   * (e.g. `eips: [ 'EIP2537', ]`)
    *
    * Currently supported:
    *
