@@ -157,16 +157,15 @@ export default class Interpreter {
    * Get the handler function for an opcode.
    */
   getOpHandler(opInfo: Opcode): OpHandler {
-    return opHandlers[opInfo.name]
+    return opHandlers.get(opInfo.code)!
   }
 
   /**
    * Get info for an opcode from VM's list of opcodes.
    */
   lookupOpInfo(op: number): Opcode {
-    const opcode = this._vm._opcodes[op] ? this._vm._opcodes[op] : this._vm._opcodes[0xfe]
-
-    return opcode
+    // if not found, return 0xfe: INVALID
+    return this._vm._opcodes.get(op) || this._vm._opcodes.get(0xfe)
   }
 
   async _runStepHook(): Promise<void> {
