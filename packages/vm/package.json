@@ -22,7 +22,7 @@
     "test:buildIntegrity": "npm run test:state -- --test='stackOverflow'",
     "test:blockchain": "node -r ts-node/register --stack-size=1500 ./tests/tester --blockchain",
     "test:blockchain:allForks": "echo 'Chainstart Homestead dao TangerineWhistle SpuriousDragon Byzantium Constantinople Petersburg Istanbul MuirGlacier Berlin' | xargs -n1 | xargs -I v1 node -r ts-node/register --stack-size=1500 ./tests/tester --blockchain --fork=v1",
-    "test:API": "tape -r ts-node/register --stack-size=1500 ./tests/api/**/*.js",
+    "test:API": "tape -r ts-node/register --stack-size=1500 './tests/api/**/*.js'",
     "test:API:browser": "npm run build && karma start karma.conf.js",
     "test": "echo \"[INFO] Generic test cmd not used. See package.json for more specific test run cmds.\"",
     "tslint": "ethereumjs-config-tslint",
