@@ -3,7 +3,7 @@ import Common from '../src/'
 
 tape('[Common]: Parameter access for param(), paramByHardfork()', function (t: tape.Test) {
   t.test('Basic usage', function (st: tape.Test) {
-    const c = new Common({ chain: 'mainnet', eips: ['EIP2537'] })
+    const c = new Common({ chain: 'mainnet', eips: [2537] })
     let msg = 'Should return correct value when HF directly provided'
     st.equal(c.paramByHardfork('gasPrices', 'ecAdd', 'byzantium'), 500, msg)
 
@@ -93,22 +93,23 @@ tape('[Common]: Parameter access for param(), paramByHardfork()', function (t: t
     const c = new Common({ chain: 'mainnet' })
 
     let msg = 'Should return null for non-existing value'
-    st.equal(c.paramByEIP('gasPrices', 'notexistingvalue', 'EIP2537'), null, msg)
+    st.equal(c.paramByEIP('gasPrices', 'notexistingvalue', 2537), null, msg)
 
+    const UNSUPPORTED_EIP = 1000000
     let f = function () {
-      c.paramByEIP('gasPrices', 'Bls12381G1AddGas', 'NOT_SUPPORTED_EIP')
+      c.paramByEIP('gasPrices', 'Bls12381G1AddGas', UNSUPPORTED_EIP)
     }
-    msg = 'Should throw for using paramByEIP() with a not supported EIP'
+    msg = 'Should throw for using paramByEIP() with an unsupported EIP'
     st.throws(f, /not supported$/, msg)
 
     f = function () {
-      c.paramByEIP('notExistingTopic', 'Bls12381G1AddGas', 'EIP2537')
+      c.paramByEIP('notExistingTopic', 'Bls12381G1AddGas', 2537)
     }
     msg = 'Should throw for using paramByEIP() with a not existing topic'
     st.throws(f, /not defined$/, msg)
 
     msg = 'Should return Bls12381G1AddGas gas price for EIP2537'
-    st.equal(c.paramByEIP('gasPrices', 'Bls12381G1AddGas', 'EIP2537'), 600, msg)
+    st.equal(c.paramByEIP('gasPrices', 'Bls12381G1AddGas', 2537), 600, msg)
     st.end()
   })
 

@@ -24,13 +24,13 @@ export interface CommonOpts {
   supportedHardforks?: Array<string>
   /**
    * Selected EIPs which can be activated, please use an array for instantiation
-   * (e.g. `eips: [ 'EIP2537', ]`)
+   * (e.g. `eips: [ 2537, ]`)
    *
    * Currently supported:
    *
-   * - [EIP2537](https://eips.ethereum.org/EIPS/eip-2537) - BLS12-381 precompiles
+   * - [EIP-2537](https://eips.ethereum.org/EIPS/eip-2537) - BLS12-381 precompiles
    */
-  eips?: string[]
+  eips?: number[]
 }
 
 interface hardforkOptions {
@@ -49,7 +49,7 @@ export default class Common {
   private _chainParams: Chain
   private _hardfork: string
   private _supportedHardforks: Array<string> = []
-  private _eips: string[] = []
+  private _eips: number[] = []
 
   /**
    * Creates a Common object for a custom chain, based on a standard one. It uses all the [[Chain]]
@@ -225,7 +225,7 @@ export default class Common {
    * Sets the active EIPs
    * @param eips
    */
-  setEIPs(eips: string[] = []) {
+  setEIPs(eips: number[] = []) {
     for (const eip of eips) {
       if (!(eip in EIPs)) {
         throw new Error(`${eip} not supported`)
@@ -291,10 +291,10 @@ export default class Common {
    * Returns a parameter corresponding to an EIP
    * @param topic Parameter topic ('gasConfig', 'gasPrices', 'vm', 'pow')
    * @param name Parameter name (e.g. 'minGasLimit' for 'gasConfig' topic)
-   * @param eip Name of the EIP (e.g. 'EIP2537')
+   * @param eip Number of the EIP
    * @returns The value requested or `null` if not found
    */
-  paramByEIP(topic: string, name: string, eip: string): any {
+  paramByEIP(topic: string, name: string, eip: number): any {
     if (!(eip in EIPs)) {
       throw new Error(`${eip} not supported`)
     }
@@ -618,7 +618,7 @@ export default class Common {
    * Returns the active EIPs
    * @returns List of EIPs
    */
-  eips(): string[] {
+  eips(): number[] {
     return this._eips
   }
 }
