@@ -43,7 +43,7 @@ export default class DefaultStateManager implements StateManager {
   constructor(opts: DefaultStateManagerOpts = {}) {
     let common = opts.common
     if (!common) {
-      common = new Common('mainnet', 'petersburg')
+      common = new Common({ chain: 'mainnet', hardfork: 'petersburg' })
     }
     this._common = common
 
@@ -233,6 +233,14 @@ export default class DefaultStateManager implements StateManager {
    */
   _clearOriginalStorageCache(): void {
     this._originalStorageCache = new Map()
+  }
+
+  /**
+   * Clears the original storage cache. Refer to [[getOriginalContractStorage]]
+   * for more explanation. Alias of the internal _clearOriginalStorageCache
+   */
+  clearOriginalStorageCache(): void {
+    this._clearOriginalStorageCache()
   }
 
   /**

@@ -13,8 +13,7 @@ const {
 tape('Verify POW for valid and invalid blocks', async function (t) {
   const e = new Ethash(cacheDB)
 
-  const genesis = new Block()
-  genesis.setGenesisParams()
+  const genesis = new Block(undefined, { initWithGenesisHeader: true })
   const genesisBlockResult = await e.verifyPOW(genesis)
   t.ok(genesisBlockResult, 'genesis block should be valid')
 

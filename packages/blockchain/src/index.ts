@@ -58,18 +58,10 @@ export interface BlockchainInterface {
  */
 export interface BlockchainOptions {
   /**
-   * The chain id or name. Default: `"mainnet"`.
-   */
-  chain?: string | number
-
-  /**
-   * Hardfork for the blocks. If `undefined` or `null` is passed, it gets computed based on block
-   * numbers.
-   */
-  hardfork?: string | null
-
-  /**
-   * An alternative way to specify the chain and hardfork is by passing a Common instance.
+   * Specify the chain and hardfork by passing a Common instance.
+   *
+   * If not provided this defaults to chain `mainnet` and hardfork `chainstart`
+   *
    */
   common?: Common
 
@@ -119,15 +111,18 @@ export default class Blockchain implements BlockchainInterface {
    * @param opts - An object with the options that this constructor takes. See [[BlockchainOptions]].
    */
   constructor(opts: BlockchainOptions = {}) {
+    // Throw on chain or hardfork options removed in latest major release
+    // to prevent implicit chain setup on a wrong chain
+    if ('chain' in opts || 'hardfork' in opts) {
+      throw new Error('Chain/hardfork options are not allowed any more on initialization')
+    }
+
     if (opts.common) {
-      if (opts.chain) {
-        throw new Error('Instantiation with both opts.common and opts.chain parameter not allowed!')
-      }
       this._common = opts.common
     } else {
-      const chain = opts.chain ? opts.chain : 'mainnet'
-      const hardfork = opts.hardfork ? opts.hardfork : null
-      this._common = new Common(chain, hardfork)
+      const DEFAULT_CHAIN = 'mainnet'
+      const DEFAULT_HARDFORK = 'chainstart'
+      this._common = new Common({ chain: DEFAULT_CHAIN, hardfork: DEFAULT_HARDFORK })
     }
 
     this._validatePow = opts.validatePow !== undefined ? opts.validatePow : true
@@ -220,8 +215,8 @@ export default class Blockchain implements BlockchainInterface {
    * @hidden
    */
   async _setCanonicalGenesisBlock() {
-    const genesisBlock = new Block(undefined, { common: this._common })
-    genesisBlock.setGenesisParams()
+    const common = new Common({ chain: this._common.chainId(), hardfork: 'chainstart' })
+    const genesisBlock = new Block(undefined, { common, initWithGenesisHeader: true })
     await this._putBlockOrHeader(genesisBlock, true)
   }
 

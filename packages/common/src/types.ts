@@ -24,7 +24,7 @@ export interface Chain {
 }
 
 export interface eipsType {
-  [key: string]: any
+  [key: number]: any
 }
 
 export interface GenesisBlock {

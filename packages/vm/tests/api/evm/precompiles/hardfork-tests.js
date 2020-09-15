@@ -10,7 +10,7 @@ tape('Precompiles: hardfork availability', (t) => {
       const ECPAIR_Address = "0000000000000000000000000000000000000008"
 
       // ECPAIR was introduced in Byzantium; check if available from Byzantium.
-      const commonByzantium = new Common('mainnet', 'byzantium')
+      const commonByzantium = new Common({ chain: 'mainnet', hardfork: 'byzantium' })
       let ECPAIRING = getPrecompile(ECPAIR_Address, commonByzantium)
         
       if (!ECPAIRING) {
@@ -30,7 +30,7 @@ tape('Precompiles: hardfork availability', (t) => {
 
 
       // Check if ECPAIR is available in future hard forks.
-      const commonPetersburg = new Common('mainnet', 'petersburg')
+      const commonPetersburg = new Common({ chain: 'mainnet', hardfork: 'petersburg' })
       ECPAIRING = getPrecompile(ECPAIR_Address, commonPetersburg)
         
       if (!ECPAIRING) {
@@ -50,7 +50,7 @@ tape('Precompiles: hardfork availability', (t) => {
         
 
       // Check if ECPAIR is not available in Homestead.
-      const commonHomestead = new Common('mainnet', 'homestead')
+      const commonHomestead = new Common({ chain: 'mainnet', hardfork: 'homestead' })
       ECPAIRING = getPrecompile(ECPAIR_Address, commonHomestead)
 
       if (ECPAIRING) {

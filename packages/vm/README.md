@@ -56,6 +56,14 @@ Supported `Istanbul` EIPs:
   SSTORE gas costs,
   PR [#590](https://github.com/ethereumjs/ethereumjs-vm/pull/590)
 
+#### EIP Support
+
+It is possible to individually activate EIP support in the VM. In order to do so, pass an array to the `eips` field of the VMs options, such as `new VM({ eips: [ 2537 ]})`.
+
+Currently supported EIPs are:
+
+- [EIP-2537](https://eips.ethereum.org/EIPS/eip-2537): BLS precompiles
+
 # INSTALL
 
 `npm install ethereumjs-vm`
@@ -64,7 +72,7 @@ Supported `Istanbul` EIPs:
 
 ```javascript
 const BN = require('bn.js')
-var VM = require('@ethereumjs/vm').default
+const VM = require('@ethereumjs/vm').default
 
 // Create a new VM instance
 // For explicity setting the HF use e.g. `new VM({ hardfork: 'petersburg' })`

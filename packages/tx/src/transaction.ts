@@ -105,7 +105,12 @@ export default class Transaction {
       }
     }
 
-    this.common = common !== undefined ? common : new Common('mainnet', 'petersburg')
+    if (common) {
+      this.common = common
+    } else {
+      const DEFAULT_CHAIN = 'mainnet'
+      this.common = new Common({ chain: DEFAULT_CHAIN })
+    }
 
     this._validateTxV(v)
 
@@ -392,7 +397,7 @@ export default class Transaction {
 
     if (!isValidEIP155V) {
       throw new Error(
-        `Incompatible EIP155-based V ${vInt} and chain id ${this.getChainId()}. See the second parameter of the Transaction constructor to set the chain id.`,
+        `Incompatible EIP155-based V ${vInt} and chain id ${this.getChainId()}. See the Common parameter of the Transaction constructor to set the chain id.`,
       )
     }
   }

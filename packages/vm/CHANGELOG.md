@@ -20,7 +20,7 @@ Please update your library references accordingly or install with:
 npm i @ethereumjs/vm
 ```
 
-### Support for all current Hardforks
+### Support for all current Hardforks / HF API Changes
 
 This is the first release of the VM which supports all hardforks
 currently applied on mainnet starting with the support of the
@@ -40,12 +40,20 @@ The following HFs have been added:
   PR [#828](https://github.com/ethereumjs/ethereumjs-vm/pull/828)
 
 A VM with the specific HF rules (on the chain provided) can be instantiated
-by passing in a `Common` instance or by setting HF and chain directly with:
+by passing in a `Common` instance:
 
 ```typescript
-import VM from 'ethereumjs-vm'
-const vm = new VM({ chain: 'mainnet', hardfork: 'spuriousDragon' })
+import VM from '@ethereumjs/vm'
+import Common from '@ethereumjs/common'
+
+const common = new Common({ chain: 'mainnet', hardfork: 'spuriousDragon' })
+const vm = new VM({ common })
 ```
+
+**Breaking**: Please note that the options to directly pass in
+`chain` and `hardfork` strings have been removed to simplify the API.
+Providing a `Common` instance is now the only way to change
+the chain setup, see PR [#863](https://github.com/ethereumjs/ethereumjs-vm/pull/863)
 
 ### Berlin HF Support / HF-independent EIPs
 
@@ -72,7 +80,7 @@ This API can be used as follows:
 
 ```typescript
 import VM from 'ethereumjs-vm'
-const vm = new VM({ eips: ['EIP2537'] })
+const vm = new VM({ eips: [2537] })
 ```
 
 ### API Change: New Major Library Versions

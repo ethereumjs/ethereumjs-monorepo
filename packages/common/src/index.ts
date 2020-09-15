@@ -4,6 +4,35 @@ import { hardforks as hardforkChanges } from './hardforks'
 import { EIPs } from './eips'
 import { Chain } from './types'
 
+/**
+ * Options for instantiating a [[Common]] instance.
+ */
+export interface CommonOpts {
+  /**
+   * String ('mainnet') or Number (1) chain
+   */
+  chain: string | number | object
+  /**
+   * String identifier ('byzantium') for hardfork
+   *
+   * Default: `petersburg`
+   */
+  hardfork?: string
+  /**
+   * Limit parameter returns to the given hardforks
+   */
+  supportedHardforks?: Array<string>
+  /**
+   * Selected EIPs which can be activated, please use an array for instantiation
+   * (e.g. `eips: [ 2537, ]`)
+   *
+   * Currently supported:
+   *
+   * - [EIP-2537](https://eips.ethereum.org/EIPS/eip-2537) - BLS12-381 precompiles
+   */
+  eips?: number[]
+}
+
 interface hardforkOptions {
   /** optional, only allow supported HFs (default: false) */
   onlySupported?: boolean
@@ -15,9 +44,12 @@ interface hardforkOptions {
  * Common class to access chain and hardfork parameters
  */
 export default class Common {
-  private _hardfork: string | null
-  private _supportedHardforks: Array<string>
+  readonly DEFAULT_HARDFORK: string = 'petersburg'
+
   private _chainParams: Chain
+  private _hardfork: string
+  private _supportedHardforks: Array<string> = []
+  private _eips: number[] = []
 
   /**
    * Creates a Common object for a custom chain, based on a standard one. It uses all the [[Chain]]
@@ -32,19 +64,19 @@ export default class Common {
   static forCustomChain(
     baseChain: string | number,
     customChainParams: Partial<Chain>,
-    hardfork?: string | null,
+    hardfork?: string,
     supportedHardforks?: Array<string>,
   ): Common {
     const standardChainParams = Common._getChainParams(baseChain)
 
-    return new Common(
-      {
+    return new Common({
+      chain: {
         ...standardChainParams,
         ...customChainParams,
       },
-      hardfork,
-      supportedHardforks,
-    )
+      hardfork: hardfork,
+      supportedHardforks: supportedHardforks,
+    })
   }
 
   /**
@@ -81,20 +113,18 @@ export default class Common {
 
   /**
    * @constructor
-   * @param chain String ('mainnet') or Number (1) chain
-   * @param hardfork String identifier ('byzantium') for hardfork (optional)
-   * @param supportedHardforks Limit parameter returns to the given hardforks (optional)
    */
-  constructor(
-    chain: string | number | object,
-    hardfork?: string | null,
-    supportedHardforks?: Array<string>,
-  ) {
-    this._chainParams = this.setChain(chain)
-    this._hardfork = null
-    this._supportedHardforks = supportedHardforks === undefined ? [] : supportedHardforks
-    if (hardfork) {
-      this.setHardfork(hardfork)
+  constructor(opts: CommonOpts) {
+    this._chainParams = this.setChain(opts.chain)
+    this._hardfork = this.DEFAULT_HARDFORK
+    if (opts.supportedHardforks) {
+      this._supportedHardforks = opts.supportedHardforks
+    }
+    if (opts.hardfork) {
+      this.setHardfork(opts.hardfork)
+    }
+    if (opts.eips) {
+      this.setEIPs(opts.eips)
     }
   }
 
@@ -123,9 +153,9 @@ export default class Common {
 
   /**
    * Sets the hardfork to get params for
-   * @param hardfork String identifier ('byzantium')
+   * @param hardfork String identifier (e.g. 'byzantium')
    */
-  setHardfork(hardfork: string | null): void {
+  setHardfork(hardfork: string): void {
     if (!this._isSupportedHardfork(hardfork)) {
       throw new Error(`Hardfork ${hardfork} not set as supported in supportedHardforks`)
     }
@@ -142,17 +172,36 @@ export default class Common {
   }
 
   /**
+   * Sets a new hardfork based on the block number provided
+   * @param blockNumber
+   * @returns The name of the HF set
+   */
+  setHardforkByBlockNumber(blockNumber: number): string {
+    let hardfork = 'chainstart'
+    for (const hf of this.hardforks()) {
+      const hardforkBlock = hf.block
+
+      // Skip comparison for not applied HFs
+      if (hardforkBlock === null) {
+        continue
+      }
+
+      if (blockNumber >= hardforkBlock) {
+        hardfork = hf.name
+      }
+    }
+    this.setHardfork(hardfork)
+    return hardfork
+  }
+
+  /**
    * Internal helper function to choose between hardfork set and hardfork provided as param
    * @param hardfork Hardfork given to function as a parameter
    * @returns Hardfork chosen to be used
    */
   _chooseHardfork(hardfork?: string | null, onlySupported: boolean = true): string {
     if (!hardfork) {
-      if (!this._hardfork) {
-        throw new Error('Method called with neither a hardfork set nor provided by param')
-      } else {
-        hardfork = this._hardfork
-      }
+      hardfork = this._hardfork
     } else if (onlySupported && !this._isSupportedHardfork(hardfork)) {
       throw new Error(`Hardfork ${hardfork} not set as supported in supportedHardforks`)
     }
@@ -189,15 +238,59 @@ export default class Common {
   }
 
   /**
+   * Sets the active EIPs
+   * @param eips
+   */
+  setEIPs(eips: number[] = []) {
+    for (const eip of eips) {
+      if (!(eip in EIPs)) {
+        throw new Error(`${eip} not supported`)
+      }
+      const minHF = this.gteHardfork(EIPs[eip]['minimumHardfork'])
+      if (!minHF) {
+        throw new Error(
+          `${eip} cannot be activated on hardfork ${this.hardfork()}, minimumHardfork: ${minHF}`,
+        )
+      }
+    }
+    this._eips = eips
+  }
+
+  /**
+   * Returns a parameter for the current chain setup
+   *
+   * If the parameter is present in an EIP, the EIP always takes precendence.
+   * Otherwise the parameter if taken from the latest applied HF with
+   * a change on the respective parameter.
+   *
+   * @param topic Parameter topic ('gasConfig', 'gasPrices', 'vm', 'pow')
+   * @param name Parameter name (e.g. 'minGasLimit' for 'gasConfig' topic)
+   * @returns The value requested or `null` if not found
+   */
+  param(topic: string, name: string): any {
+    // TODO: consider the case that different active EIPs
+    // can change the same parameter
+    let value = null
+    for (const eip of this._eips) {
+      value = this.paramByEIP(topic, name, eip)
+      if (value !== null) {
+        return value
+      }
+    }
+    return this.paramByHardfork(topic, name, this._hardfork)
+  }
+
+  /**
    * Returns the parameter corresponding to a hardfork
    * @param topic Parameter topic ('gasConfig', 'gasPrices', 'vm', 'pow')
    * @param name Parameter name (e.g. 'minGasLimit' for 'gasConfig' topic)
-   * @param hardfork Hardfork name, optional if hardfork set
+   * @param hardfork Hardfork name
+   * @returns The value requested or `null` if not found
    */
-  param(topic: string, name: string, hardfork?: string): any {
+  paramByHardfork(topic: string, name: string, hardfork: string): any {
     hardfork = this._chooseHardfork(hardfork)
 
-    let value
+    let value = null
     for (const hfChanges of hardforkChanges) {
       if (!hfChanges[1][topic]) {
         throw new Error(`Topic ${topic} not defined`)
@@ -207,9 +300,6 @@ export default class Common {
       }
       if (hfChanges[0] === hardfork) break
     }
-    if (value === undefined) {
-      throw new Error(`${topic} value for ${name} not found`)
-    }
     return value
   }
 
@@ -217,9 +307,10 @@ export default class Common {
    * Returns a parameter corresponding to an EIP
    * @param topic Parameter topic ('gasConfig', 'gasPrices', 'vm', 'pow')
    * @param name Parameter name (e.g. 'minGasLimit' for 'gasConfig' topic)
-   * @param eip Name of the EIP (e.g. 'EIP2537')
+   * @param eip Number of the EIP
+   * @returns The value requested or `null` if not found
    */
-  paramByEIP(topic: string, name: string, eip: string): any {
+  paramByEIP(topic: string, name: string, eip: number): any {
     if (!(eip in EIPs)) {
       throw new Error(`${eip} not supported`)
     }
@@ -229,7 +320,7 @@ export default class Common {
       throw new Error(`Topic ${topic} not defined`)
     }
     if (eipParams[topic][name] === undefined) {
-      throw new Error(`${topic} value for ${name} not found`)
+      return null
     }
     let value = eipParams[topic][name].v
     return value
@@ -244,7 +335,7 @@ export default class Common {
   paramByBlock(topic: string, name: string, blockNumber: number): any {
     const activeHfs = this.activeHardforks(blockNumber)
     const hardfork = activeHfs[activeHfs.length - 1]['name']
-    return this.param(topic, name, hardfork)
+    return this.paramByHardfork(topic, name, hardfork)
   }
 
   /**
@@ -537,5 +628,13 @@ export default class Common {
    */
   networkId(): number {
     return (<any>this._chainParams)['networkId']
+  }
+
+  /**
+   * Returns the active EIPs
+   * @returns List of EIPs
+   */
+  eips(): number[] {
+    return this._eips
   }
 }

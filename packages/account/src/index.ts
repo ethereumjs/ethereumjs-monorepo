@@ -1,5 +1,5 @@
 import * as rlp from 'rlp'
-import { KECCAK256_NULL, KECCAK256_NULL_S, KECCAK256_RLP, defineProperties } from 'ethereumjs-util'
+import { KECCAK256_NULL, KECCAK256_RLP, defineProperties } from 'ethereumjs-util'
 const Buffer = require('safe-buffer').Buffer
 
 export default class Account {
@@ -27,21 +27,21 @@ export default class Account {
    * Creates a new account object
    *
    * ~~~
-   * var data = [
+   * const data = [
    *   '0x02', //nonce
    *   '0x0384', //balance
    *   '0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421', //stateRoot
    *   '0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470', //codeHash
    * ]
+   * const account = new Account(data)
    *
-   * var data = {
+   * const data2 = {
    *   nonce: '0x0',
    *   balance: '0x03e7',
    *   stateRoot: '0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421',
    *   codeHash: '0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470',
    * }
-   *
-   * const account = new Account(data)
+   * const account2 = new Account(data2)
    * ~~~
    *
    * @param data
@@ -86,7 +86,7 @@ export default class Account {
    * Returns a `Boolean` deteremining if the account is a contract.
    */
   isContract(): boolean {
-    return this.codeHash.toString('hex') !== KECCAK256_NULL_S
+    return !this.codeHash.equals(KECCAK256_NULL)
   }
 
   /**
@@ -94,9 +94,7 @@ export default class Account {
    */
   isEmpty(): boolean {
     return (
-      this.balance.toString('hex') === '' &&
-      this.nonce.toString('hex') === '' &&
-      this.codeHash.toString('hex') === KECCAK256_NULL_S
+      this.balance.length === 0 && this.nonce.length === 0 && this.codeHash.equals(KECCAK256_NULL)
     )
   }
 }

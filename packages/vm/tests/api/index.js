@@ -5,7 +5,7 @@ const Common = require('@ethereumjs/common').default
 const Trie = require('merkle-patricia-tree').SecureTrie
 const VM = require('../../dist/index').default
 const { setupVM } = require('./utils')
-const { setupPreConditions } = require('../util')
+const { setupPreConditions, isRunningInKarma } = require('../util')
 const testData = require('./testdata.json')
 
 tape('VM with default blockchain', (t) => {
@@ -39,18 +39,8 @@ tape('VM with default blockchain', (t) => {
     st.end()
   })
 
-  t.test('should only accept common or chain and fork', (st) => {
-    const common = new Common('mainnet')
-
-    st.throws(() => new VM({ chain: 'a', common }))
-    st.throws(() => new VM({ hardfork: 'a', common }))
-    st.throws(() => new VM({ chain: 'a', hardfork: 'a', common }))
-
-    st.end()
-  })
-
   t.test('should accept a common object as option', async (st) => {
-    const common = new Common('mainnet', 'istanbul')
+    const common = new Common({ chain: 'mainnet', hardfork: 'istanbul' })
 
     const vm = new VM({ common })
     await vm.init()
@@ -60,12 +50,14 @@ tape('VM with default blockchain', (t) => {
   })
 
   t.test('should only accept valid chain and fork', async (st) => {
-    let vm = new VM({ chain: 'ropsten', hardfork: 'byzantium' })
+    let common = new Common({ chain: 'ropsten', hardfork: 'byzantium' })
+    let vm = new VM({ common })
     await vm.init()
     st.equal(vm.stateManager._common.param('gasPrices', 'ecAdd'), 500)
 
     try {
-      vm = new VM({ chain: 'mainchain', hardfork: 'homestead' })
+      common = new Common({ chain: 'mainchain', hardfork: 'homestead' })
+      vm = new VM({ common })
       st.fail('should have failed for invalid chain')
     } catch (e) {
       st.ok(e.message.includes('not supported'))
@@ -75,19 +67,12 @@ tape('VM with default blockchain', (t) => {
   })
 
   t.test('should accept a supported EIP', async (st) => {
-    st.doesNotThrow(() => { new VM({ eips: [ 'EIP2537', ] }) })
-    st.end()
-  })
-
-  t.test('should correctly set _activatedEIPs', async (st) => {
-    const vm = new VM({ eips: [ 'EIP2537', ] })
-
-    st.deepEqual(vm._activatedEIPs, [ 'EIP2537', ])
-    st.end()
-  })
-
-  t.test('should not accept a not supported EIP', async (st) => {
-    st.throws(() => { new VM({ eips: [ 'NOT_SUPPORTED_EIP', ] }) })
+    if (isRunningInKarma()) {
+      st.skip('BLS does not work in karma')
+      return st.end()
+    }
+    const common = new Common({ chain: 'mainnet', eips: [ 2537, ] })
+    st.doesNotThrow(() => { new VM({ common }) })
     st.end()
   })
 
@@ -113,7 +98,7 @@ tape('VM with blockchain', (t) => {
   })
 
   t.test('should run blockchain with mocked runBlock', async (st) => {
-    const vm = setupVM({ chain: 'goerli' })
+    const vm = setupVM({ common: new Common({ chain: 'goerli' }) })
     await vm.init()
 
     const genesis = new Block(Buffer.from(testData.genesisRLP.slice(2), 'hex'), {
@@ -144,7 +129,7 @@ tape('VM with blockchain', (t) => {
   })
 
   t.test('should run blockchain with blocks', async (st) => {
-    const vm = setupVM({ chain: 'goerli' })
+    const vm = setupVM({ common: new Common({ chain: 'goerli' }) })
     await vm.init()
     const genesis = new Block(util.toBuffer(testData.genesisRLP), {
       common: vm._common,
@@ -168,7 +153,7 @@ tape('VM with blockchain', (t) => {
   })
 
   t.test('should pass the correct Common object when copying the VM', async (st) => {
-    const vm = setupVM({ chain: 'goerli', hardfork: 'byzantium' })
+    const vm = setupVM({ common: new Common({ chain: 'goerli', hardfork: 'byzantium' }) })
     await vm.init()
 
     st.equal(vm._common.chainName(), 'goerli')

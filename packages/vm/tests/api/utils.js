@@ -4,10 +4,8 @@ const Blockchain = require('@ethereumjs/blockchain').default
 const level = require('level-mem')
 const VM = require('../../dist/index').default
 
-function createGenesis (opts = {}) {
-  opts.chain = opts.chain ? opts.chain : 'mainnet'
-  const genesis = new Block(undefined, opts)
-  genesis.setGenesisParams()
+function createGenesis (common) {
+  const genesis = new Block(undefined, { common, initWithGenesisHeader: true })
 
   return genesis
 }

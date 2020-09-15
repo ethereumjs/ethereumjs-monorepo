@@ -31,9 +31,7 @@ export class Opcode {
   }
 }
 
-export interface OpcodeList {
-  [code: number]: Opcode
-}
+export type OpcodeList = Map<number, Opcode>
 
 // Base opcode list. The opcode list is extended in future hardforks
 const opcodes = {
@@ -242,16 +240,19 @@ const hardforkOpcodes = [
  * @returns {OpcodeList} Complete Opcode list
  */
 function createOpcodes(opcodes: {
-  [key: string]: { name: string; fee: number; isAsync: boolean }
+  [key: number]: { name: string; fee: number; isAsync: boolean }
 }): OpcodeList {
-  const result: OpcodeList = {}
+  const result: OpcodeList = new Map()
   for (const [key, value] of Object.entries(opcodes)) {
     const code = parseInt(key, 10)
-    result[<any>key] = new Opcode({
+    result.set(
       code,
-      fullName: getFullname(code, value.name),
-      ...value,
-    })
+      new Opcode({
+        code,
+        fullName: getFullname(code, value.name),
+        ...value,
+      }),
+    )
   }
   return result
 }
@@ -284,7 +285,7 @@ function getFullname(code: number, name: string): string {
 /**
  * Get suitable opcodes for the required hardfork.
  *
- * @param common {Common} Ethereumjs Common metadaata object.
+ * @param common {Common} Ethereumjs Common metadata object.
  * @returns {OpcodeList} Opcodes dictionary object.
  */
 export function getOpcodesForHF(common: Common): OpcodeList {

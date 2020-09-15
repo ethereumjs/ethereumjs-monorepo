@@ -1,7 +1,6 @@
 import { Transaction, TxData, Address } from '@ethereumjs/tx'
-import Common from '@ethereumjs/common'
 import { toBuffer, setLengthLeft } from 'ethereumjs-util'
-import { Block, ChainOptions } from './index'
+import { Block, BlockOptions } from './index'
 
 import blockHeaderFromRpc from './header-from-rpc'
 
@@ -12,22 +11,18 @@ import blockHeaderFromRpc from './header-from-rpc'
  * @param uncles - Optional list of Ethereum JSON RPC of uncles (eth_getUncleByBlockHashAndIndex)
  * @param chainOptions - An object describing the blockchain
  */
-export default function blockFromRpc(
-  blockParams: any,
-  uncles?: any[],
-  chainOptions?: ChainOptions,
-) {
+export default function blockFromRpc(blockParams: any, uncles?: any[], options?: BlockOptions) {
   uncles = uncles || []
 
-  const header = blockHeaderFromRpc(blockParams, chainOptions)
+  const header = blockHeaderFromRpc(blockParams, options)
 
   const block = new Block(
     {
       header: header.toJSON(true),
       transactions: [],
-      uncleHeaders: uncles.map((uh) => blockHeaderFromRpc(uh, chainOptions).toJSON(true)),
+      uncleHeaders: uncles.map((uh) => blockHeaderFromRpc(uh, options).toJSON(true)),
     },
-    chainOptions,
+    options,
   )
 
   if (blockParams.transactions) {
@@ -38,13 +33,8 @@ export default function blockFromRpc(
       const fromAddress = new Address(toBuffer(txParams.from))
       delete txParams.from
 
-      // get common based on block's number
-      // since hardfork param may not be set
-      // (see TODO in block.constructor)
       const blockNumber = parseInt(block.header.number.toString('hex'), 16)
-      const chainId = (<any>block)._common.chainId()
-      const common = Common.forBlockNumber(chainId, blockNumber)
-
+      const common = (<any>block)._common.setHardforkForBlockNumber(blockNumber)
       const tx = Transaction.fromTxData(txParams as TxData, common)
 
       const fakeTx = Object.create(tx)

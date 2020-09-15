@@ -20,7 +20,7 @@ function setup(vm = null) {
       emit: (e, val, cb) => cb(),
       _emit: (e, val) => new Promise((resolve, reject) => resolve()),
       runTx: (opts) => new Promise((resolve, reject) => reject(new Error('test'))),
-      _common: new Common('mainnet', 'byzantium'),
+      _common: new Common({ chain: 'mainnet', hardfork: 'byzantium' }),
     }
   }
 
@@ -140,9 +140,8 @@ tape('should run valid block', async (t) => {
 
   await setupPreConditions(suite.vm.stateManager._trie, suite.data)
 
-  t.equal(
-    suite.vm.stateManager._trie.root.toString('hex'),
-    genesis.header.stateRoot.toString('hex'),
+  t.ok(
+    suite.vm.stateManager._trie.root.equals(genesis.header.stateRoot),
     'genesis state root should match calculated state root',
   )
 
@@ -219,7 +218,7 @@ tape(
 )
 
 async function runWithHf(hardfork) {
-  const vm = setupVM({ hardfork: hardfork })
+  const vm = setupVM({ common: new Common({ chain: 'mainnet', hardfork: hardfork }) })
   const suite = setup(vm)
 
   const block = new Block(util.rlp.decode(suite.data.blocks[0].rlp))

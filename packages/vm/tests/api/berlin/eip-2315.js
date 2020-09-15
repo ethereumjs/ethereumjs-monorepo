@@ -8,7 +8,7 @@ tape('Berlin: EIP 2315 tests', t => {
   let callArgs;
   let stepCounter;
   let vm;
-  const common = new Common('mainnet', 'berlin')
+  const common = new Common({ chain: 'mainnet', hardfork: 'berlin' })
 
   const runTest = async function(test, st){
     let i = 0;

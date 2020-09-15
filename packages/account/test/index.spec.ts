@@ -6,8 +6,8 @@ tape('empty constructor', function (tester) {
   const it = tester.test
   it('should work', function (t) {
     const account = new Account()
-    t.equal(account.nonce.toString('hex'), '')
-    t.equal(account.balance.toString('hex'), '')
+    t.equal(account.nonce.length, 0)
+    t.equal(account.balance.length, 0)
     t.equal(
       account.stateRoot.toString('hex'),
       '56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421',

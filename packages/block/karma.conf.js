@@ -6,6 +6,7 @@ module.exports = function(config) {
     preprocessors: {
       './test-build/**/*.js': ['browserify'],
     },
+    concurrency: 1,
     reporters: ['dots'],
     browsers: ['FirefoxHeadless', 'ChromeHeadless'],
     singleRun: true,

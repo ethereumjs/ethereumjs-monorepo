@@ -31,4 +31,5 @@ export interface StateManager {
   accountIsEmpty(address: Buffer): Promise<boolean>
   accountExists(address: Buffer): Promise<boolean>
   cleanupTouchedAccounts(): Promise<void>
+  clearOriginalStorageCache(): void
 }

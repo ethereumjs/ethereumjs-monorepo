@@ -4,6 +4,7 @@ import Blockchain from '../src'
 
 const util = require('util')
 import { Block } from '@ethereumjs/block'
+import Common from '@ethereumjs/common'
 const level = require('level-mem')
 
 export const generateBlockchain = async (
@@ -31,13 +32,13 @@ export const generateBlockchain = async (
 export const generateBlocks = (numberOfBlocks: number, existingBlocks?: Block[]): Block[] => {
   const blocks = existingBlocks ? existingBlocks : []
   if (blocks.length === 0) {
-    const genesisBlock = new Block()
-    genesisBlock.setGenesisParams()
+    const genesisBlock = new Block(undefined, { initWithGenesisHeader: true })
     genesisBlock.header.gasLimit = toBuffer(8000000)
     blocks.push(genesisBlock)
   }
+  const common = new Common({ chain: 'mainnet', hardfork: 'chainstart' })
   for (let i = blocks.length; i < numberOfBlocks; i++) {
-    const block = new Block()
+    const block = new Block(undefined, { common })
     block.header.number = toBuffer(i)
     block.header.parentHash = blocks[i - 1].hash()
     block.header.difficulty = toBuffer(block.header.canonicalDifficulty(blocks[i - 1]))
@@ -60,8 +61,7 @@ export const isConsecutive = (blocks: Block[]) => {
 }
 
 export const createTestDB = async () => {
-  const genesis = new Block()
-  genesis.setGenesisParams()
+  const genesis = new Block(undefined, { initWithGenesisHeader: true })
   const db = level()
   await db.batch([
     {

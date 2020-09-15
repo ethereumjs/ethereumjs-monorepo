@@ -1,6 +1,7 @@
 const { setupPreConditions, makeTx, makeBlockFromEnv } = require('./util')
 const Trie = require('merkle-patricia-tree').SecureTrie
-const { BN, toBuffer } = require('ethereumjs-util')
+const { BN } = require('ethereumjs-util')
+const { default: Common } = require('@ethereumjs/common')
 const Account = require('@ethereumjs/account').default
 
 function parseTestCases(forkConfigTestSuite, testData, data, gasLimit, value) {
@@ -43,20 +44,24 @@ function parseTestCases(forkConfigTestSuite, testData, data, gasLimit, value) {
 }
 
 async function runTestCase(options, testData, t) {
-  const VM = options.dist ? require('../dist/index.js').default : require('../lib/index').default
-
   const state = new Trie()
   const hardfork = options.forkConfigVM
 
-  const vm = new VM({
-    state,
-    hardfork,
-  })
+  const VM = options.dist ? require('../dist/index.js').default : require('../lib/index').default
+
+  let eips = []
+  if (hardfork == 'berlin') {
+    // currently, the BLS tests run on the Berlin network, but our VM does not activate EIP2537
+    // if you run the Berlin HF
+    eips = [2537]
+  }
+
+  const common = new Common({ chain: 'mainnet', hardfork, eips })
+  const vm = new VM({ state, common })
 
   await setupPreConditions(vm.stateManager._trie, testData)
 
-  const tx = makeTx(testData.transaction, hardfork)
-
+  const tx = makeTx(testData.transaction, { common })
   if (!tx.validate()) {
     throw new Error('Transaction is invalid')
   }

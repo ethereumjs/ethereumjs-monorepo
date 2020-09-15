@@ -9,7 +9,7 @@ import {
   bufferToInt,
   rlphash,
 } from 'ethereumjs-util'
-import { Blockchain, BlockHeaderData, BufferLike, ChainOptions, PrefixedHexString } from './types'
+import { Blockchain, BlockHeaderData, BufferLike, BlockOptions, PrefixedHexString } from './types'
 import { Buffer } from 'buffer'
 import { Block } from './block'
 
@@ -34,31 +34,39 @@ export class BlockHeader {
   public mixHash!: Buffer
   public nonce!: Buffer
 
-  private readonly _common: Common
+  readonly _common: Common
 
   /**
    * Creates a new block header.
+   *
+   * Please solely use this constructor to pass in block header data
+   * and don't modfiy header data after initialization since this can lead to
+   * undefined behavior regarding HF rule implemenations within the class.
+   *
    * @param data - The data of the block header.
    * @param opts - The network options for this block, and its header, uncle headers and txs.
    */
   constructor(
     data: Buffer | PrefixedHexString | BufferLike[] | BlockHeaderData = {},
-    opts: ChainOptions = {},
+    options: BlockOptions = {},
   ) {
-    if (opts.common !== undefined) {
-      if (opts.chain !== undefined || opts.hardfork !== undefined) {
-        throw new Error(
-          'Instantiation with both opts.common and opts.chain / opts.hardfork parameter not allowed!',
-        )
-      }
-
-      this._common = opts.common
-    } else {
-      const chain = opts.chain ? opts.chain : 'mainnet'
-      const hardfork = opts.hardfork ? opts.hardfork : null
-      this._common = new Common(chain, hardfork)
+    // Throw on chain or hardfork options removed in latest major release
+    // to prevent implicit chain setup on a wrong chain
+    if ('chain' in options || 'hardfork' in options) {
+      throw new Error('Chain/hardfork options are not allowed any more on initialization')
     }
 
+    if (options.common) {
+      this._common = options.common
+    } else {
+      const DEFAULT_CHAIN = 'mainnet'
+      if (options.initWithGenesisHeader) {
+        this._common = new Common({ chain: DEFAULT_CHAIN, hardfork: 'chainstart' })
+      } else {
+        // This initializes on the Common default hardfork
+        this._common = new Common({ chain: DEFAULT_CHAIN })
+      }
+    }
     const fields = [
       {
         name: 'parentHash',
@@ -133,6 +141,14 @@ export class BlockHeader {
     ]
     defineProperties(this, fields, data)
 
+    if (options.hardforkByBlockNumber) {
+      this._common.setHardforkByBlockNumber(bufferToInt(this.number))
+    }
+
+    if (options.initWithGenesisHeader) {
+      this._setGenesisParams()
+    }
+
     this._checkDAOExtraData()
   }
 
@@ -146,9 +162,11 @@ export class BlockHeader {
     const blockTs = new BN(this.timestamp)
     const parentTs = new BN(parentBlock.header.timestamp)
     const parentDif = new BN(parentBlock.header.difficulty)
-    const minimumDifficulty = new BN(this._common.param('pow', 'minimumDifficulty', hardfork))
+    const minimumDifficulty = new BN(
+      this._common.paramByHardfork('pow', 'minimumDifficulty', hardfork),
+    )
     const offset = parentDif.div(
-      new BN(this._common.param('pow', 'difficultyBoundDivisor', hardfork)),
+      new BN(this._common.paramByHardfork('pow', 'difficultyBoundDivisor', hardfork)),
     )
     let num = new BN(this.number)
 
@@ -196,7 +214,11 @@ export class BlockHeader {
       dif = parentDif.add(offset.mul(a))
     } else {
       // pre-homestead
-      if (parentTs.addn(this._common.param('pow', 'durationLimit', hardfork)).cmp(blockTs) === 1) {
+      if (
+        parentTs
+          .addn(this._common.paramByHardfork('pow', 'durationLimit', hardfork))
+          .cmp(blockTs) === 1
+      ) {
         dif = offset.add(parentDif)
       } else {
         dif = parentDif.sub(offset)
@@ -236,7 +258,7 @@ export class BlockHeader {
     const hardfork = this._getHardfork()
 
     const a = pGasLimit.div(
-      new BN(this._common.param('gasConfig', 'gasLimitBoundDivisor', hardfork)),
+      new BN(this._common.paramByHardfork('gasConfig', 'gasLimitBoundDivisor', hardfork)),
     )
     const maxGasLimit = pGasLimit.add(a)
     const minGasLimit = pGasLimit.sub(a)
@@ -244,7 +266,7 @@ export class BlockHeader {
     return (
       gasLimit.lt(maxGasLimit) &&
       gasLimit.gt(minGasLimit) &&
-      gasLimit.gte(this._common.param('gasConfig', 'minGasLimit', hardfork))
+      gasLimit.gte(this._common.paramByHardfork('gasConfig', 'minGasLimit', hardfork))
     )
   }
 
@@ -294,7 +316,7 @@ export class BlockHeader {
     }
 
     const hardfork = this._getHardfork()
-    if (this.extraData.length > this._common.param('vm', 'maxExtraDataSize', hardfork)) {
+    if (this.extraData.length > this._common.paramByHardfork('vm', 'maxExtraDataSize', hardfork)) {
       throw new Error('invalid amount of extra data')
     }
   }
@@ -316,7 +338,10 @@ export class BlockHeader {
   /**
    * Turns the header into the canonical genesis block header.
    */
-  setGenesisParams(): void {
+  _setGenesisParams(): void {
+    if (this._common.hardfork() !== 'chainstart') {
+      throw new Error('Genesis parameters can only be set with a Common instance set to chainstart')
+    }
     this.timestamp = this._common.genesis().timestamp
     this.gasLimit = this._common.genesis().gasLimit
     this.difficulty = this._common.genesis().difficulty

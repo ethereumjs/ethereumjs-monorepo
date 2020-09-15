@@ -6,24 +6,9 @@ import { Block } from '../src/block'
 
 tape('[Block]: block functions', function (t) {
   t.test('should test block initialization', function (st) {
-    const block1 = new Block(undefined, { chain: 'ropsten' })
-    const common = new Common('ropsten')
-    const block2 = new Block(undefined, { common: common })
-    block1.setGenesisParams()
-    block2.setGenesisParams()
-    st.strictEqual(
-      block1.hash().toString('hex'),
-      block2.hash().toString('hex'),
-      'block hashes match',
-    )
-
-    st.throws(
-      function () {
-        new Block(undefined, { chain: 'ropsten', common: common })
-      },
-      /not allowed!$/,
-      'should throw on initialization with chain and common parameter',
-    ) // eslint-disable-line
+    const common = new Common({ chain: 'ropsten', hardfork: 'chainstart' })
+    const block1 = new Block(undefined, { common: common, initWithGenesisHeader: true })
+    st.ok(block1.hash().toString('hex'), 'block should initialize')
     st.end()
   })
 
@@ -36,7 +21,8 @@ tape('[Block]: block functions', function (t) {
 
   t.test('should initialize with null parameters without throwing', function (st) {
     st.doesNotThrow(function () {
-      const opts = { chain: 'mainnet' }
+      const common = new Common({ chain: 'ropsten' })
+      const opts = { common }
       new Block(undefined, opts)
       st.end()
     })
@@ -81,7 +67,8 @@ tape('[Block]: block functions', function (t) {
   })
 
   t.test('should test isGenesis (ropsten)', function (st) {
-    const block = new Block(undefined, { chain: 'ropsten' })
+    const common = new Common({ chain: 'ropsten' })
+    const block = new Block(undefined, { common })
     st.notEqual(block.isGenesis(), true)
     block.header.number = Buffer.from([])
     st.equal(block.isGenesis(), true)
@@ -90,8 +77,7 @@ tape('[Block]: block functions', function (t) {
 
   const testDataGenesis = require('./testdata/genesishashestest.json').test
   t.test('should test genesis hashes (mainnet default)', function (st) {
-    const genesisBlock = new Block()
-    genesisBlock.setGenesisParams()
+    const genesisBlock = new Block(undefined, { initWithGenesisHeader: true })
     const rlp = genesisBlock.serialize()
     st.strictEqual(rlp.toString('hex'), testDataGenesis.genesis_rlp_hex, 'rlp hex match')
     st.strictEqual(
@@ -103,9 +89,8 @@ tape('[Block]: block functions', function (t) {
   })
 
   t.test('should test genesis hashes (ropsten)', function (st) {
-    const common = new Common('ropsten')
-    const genesisBlock = new Block(undefined, { common: common })
-    genesisBlock.setGenesisParams()
+    const common = new Common({ chain: 'ropsten', hardfork: 'chainstart' })
+    const genesisBlock = new Block(undefined, { common: common, initWithGenesisHeader: true })
     st.strictEqual(
       genesisBlock.hash().toString('hex'),
       common.genesis().hash.slice(2),
@@ -115,9 +100,8 @@ tape('[Block]: block functions', function (t) {
   })
 
   t.test('should test genesis hashes (rinkeby)', function (st) {
-    const common = new Common('rinkeby')
-    const genesisBlock = new Block(undefined, { common: common })
-    genesisBlock.setGenesisParams()
+    const common = new Common({ chain: 'rinkeby', hardfork: 'chainstart' })
+    const genesisBlock = new Block(undefined, { common: common, initWithGenesisHeader: true })
     st.strictEqual(
       genesisBlock.hash().toString('hex'),
       common.genesis().hash.slice(2),
@@ -127,8 +111,8 @@ tape('[Block]: block functions', function (t) {
   })
 
   t.test('should test genesis parameters (ropsten)', function (st) {
-    const genesisBlock = new Block(undefined, { chain: 'ropsten' })
-    genesisBlock.setGenesisParams()
+    const common = new Common({ chain: 'ropsten', hardfork: 'chainstart' })
+    const genesisBlock = new Block(undefined, { common, initWithGenesisHeader: true })
     const ropstenStateRoot = '217b0bbcfb72e2d57e28f33cb361b9983513177755dc3f33ce3e7022ed62b77b'
     st.strictEqual(
       genesisBlock.header.stateRoot.toString('hex'),
@@ -150,7 +134,7 @@ tape('[Block]: block functions', function (t) {
     // Set block number from test block to mainnet DAO fork block 1920000
     blockData[0][8] = Buffer.from('1D4C00', 'hex')
 
-    const common = new Common('mainnet', 'dao')
+    const common = new Common({ chain: 'mainnet', hardfork: 'dao' })
     st.throws(
       function () {
         new Block(blockData, { common: common })
