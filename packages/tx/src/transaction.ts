@@ -9,7 +9,7 @@ import {
   rlp,
   unpadBuffer,
   MAX_INTEGER,
-  Address
+  Address,
 } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
 import { TxData, JsonTx, bnToRlp, bnToHex } from './types'
@@ -84,8 +84,8 @@ export default class Transaction {
 
   /**
    * This constructor takes the values, validates them, assigns them and freezes the object.
-   * Use the public static factory methods to assist in creating a Transaction object from varying data types.
-   * @note Transaction objects implement EIP155 by default. To disable it, pass in an `@ethereumjs/common` object set before EIP155 activation (i.e. before Spurious Dragon.)
+   * Use the static factory methods to assist in creating a Transaction object from varying data types.
+   * @note Transaction objects implement EIP155 by default. To disable it, pass in an `@ethereumjs/common` object set before EIP155 activation (i.e. before Spurious Dragon).
    */
   constructor(
     common: Common | undefined,

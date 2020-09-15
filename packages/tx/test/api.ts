@@ -293,7 +293,10 @@ tape('[Transaction]: Basic functions', function (t) {
 
     const serialized = tx.serialize()
 
-    const reTx = Transaction.fromRlpSerializedTx(serialized, new Common({ chain: 42, hardfork: 'petersburg' }))
+    const reTx = Transaction.fromRlpSerializedTx(
+      serialized,
+      new Common({ chain: 42, hardfork: 'petersburg' }),
+    )
     st.equal(reTx.verifySignature(), true)
     st.equal(reTx.getChainId(), 42)
 
@@ -315,7 +318,9 @@ tape('[Transaction]: Basic functions', function (t) {
   t.test('Throws if v is set to an EIP155-encoded value incompatible with the chain id', function (
     st,
   ) {
-    st.throws(() => Transaction.fromTxData({ v: new BN(1) }, new Common({ chain: 42, hardfork: 'petersburg' })))
+    st.throws(() =>
+      Transaction.fromTxData({ v: new BN(1) }, new Common({ chain: 42, hardfork: 'petersburg' })),
+    )
     st.end()
   })
 
@@ -387,7 +392,7 @@ tape('[Transaction]: Basic functions', function (t) {
       st.true(signedWithoutEIP155.verifySignature())
       st.true(
         signedWithoutEIP155.v?.toString('hex') == '1c' ||
-        signedWithoutEIP155.v?.toString('hex') == '1b',
+          signedWithoutEIP155.v?.toString('hex') == '1b',
         "v shouldn't be EIP155 encoded",
       )
 
@@ -399,7 +404,7 @@ tape('[Transaction]: Basic functions', function (t) {
       st.true(signedWithoutEIP155.verifySignature())
       st.true(
         signedWithoutEIP155.v?.toString('hex') == '1c' ||
-        signedWithoutEIP155.v?.toString('hex') == '1b',
+          signedWithoutEIP155.v?.toString('hex') == '1b',
         "v shouldn' be EIP155 encoded",
       )
 
