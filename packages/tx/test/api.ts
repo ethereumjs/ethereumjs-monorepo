@@ -92,7 +92,7 @@ tape('[Transaction]: Basic functions', function (t) {
     st.end()
   })
 
-  t.test('should not verify Signatures', function (st) {
+  t.test('should not verify invalid signatures', function (st) {
     const txs: Transaction[] = []
 
     txFixtures.slice(0, 4).forEach(function (txFixture: any) {
