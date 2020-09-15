@@ -1,7 +1,7 @@
 const { setupPreConditions, makeTx, makeBlockFromEnv } = require('./util')
 const Trie = require('merkle-patricia-tree').SecureTrie
 const { BN } = require('ethereumjs-util')
-const { default: Common } = require('@ethereumjs/common')
+const Common = require('@ethereumjs/common').default
 const Account = require('@ethereumjs/account').default
 
 function parseTestCases(forkConfigTestSuite, testData, data, gasLimit, value) {

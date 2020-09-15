@@ -1,6 +1,6 @@
 const tape = require('tape')
 const util = require('ethereumjs-util')
-const { default: Common } = require('@ethereumjs/common')
+const Common = require('@ethereumjs/common').default
 const VM = require('../../../dist/index').default
 
 tape('General MuirGlacier VM tests', (t) => {
