@@ -120,9 +120,9 @@ tape('should fail when account balance overflows (create)', async (t) => {
   t.end()
 })
 
-tape('should clear storage cache after every transaction', async(t) => {
-  const vm = new VM({common: new Common({ chain: 'mainnet', hardfork: "istanbul" })})
-  const suite = setup(vm)
+tape('should clear storage cache after every transaction', async (t) => {
+  const common = new Common({ chain: 'mainnet', hardfork: 'istanbul' })
+  const vm = new VM({ common })
   const privateKey = Buffer.from(
     'e331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109',
     'hex',
@@ -133,22 +133,28 @@ tape('should clear storage cache after every transaction', async(t) => {
     SSTORE
     INVALID
   */
-  const code = "6001600055FE"
-  const address = Buffer.from("00000000000000000000000000000000000000ff", 'hex')
+  const code = '6001600055FE'
+  const address = Buffer.from('00000000000000000000000000000000000000ff', 'hex')
   await vm.stateManager.putContractCode(Buffer.from(address, 'hex'), Buffer.from(code, 'hex'))
-  await vm.stateManager.putContractStorage(address, Buffer.from(("00").repeat(32), 'hex'), Buffer.from(("00").repeat(31) + "01", 'hex'))
-  const tx = new Transaction ({
-    nonce: '0x00',
-    gasPrice: 1,
-    gasLimit: 100000,
-    to: address,
-    chainId: 3,
-  })
-  tx.sign(privateKey)
+  await vm.stateManager.putContractStorage(
+    address,
+    Buffer.from('00'.repeat(32), 'hex'),
+    Buffer.from('00'.repeat(31) + '01', 'hex'),
+  )
+  const tx = new Transaction.fromTxData(
+    {
+      nonce: '0x00',
+      gasPrice: 1,
+      gasLimit: 100000,
+      to: address,
+      chainId: 3,
+    },
+    common,
+  ).sign(privateKey)
 
-  await vm.stateManager.putAccount(tx.from, createAccount())
+  await vm.stateManager.putAccount(tx.getSenderAddress(), createAccount())
 
-  await vm.runTx({tx}) // this tx will fail, but we have to ensure that the cache is cleared
+  await vm.runTx({ tx }) // this tx will fail, but we have to ensure that the cache is cleared
 
   t.equal(vm.stateManager._originalStorageCache.size, 0, 'storage cache should be cleared')
   t.end()
