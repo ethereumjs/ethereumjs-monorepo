@@ -1,4 +1,4 @@
-import { BN, toBuffer, unpadBuffer } from 'ethereumjs-util'
+import { BN, unpadBuffer, Address } from 'ethereumjs-util'
 
 /**
  * An object with an optional field with each of the transaction's values.
@@ -63,37 +63,6 @@ export interface JsonTx {
   r?: string
   s?: string
   value?: string
-}
-
-/**
- * A utility class that represents an address.
- */
-export class Address {
-  address: Buffer
-
-  constructor(value: Buffer | string | Address) {
-    if (Buffer.isBuffer(value)) {
-      this.address = value
-    } else if (value instanceof Address) {
-      this.address = value.toBuffer()
-    } else {
-      this.address = toBuffer(value)
-    }
-
-    if (this.address.length !== 20 && this.address.length !== 0) {
-      throw new Error('Address must be 20 bytes in length or be empty.')
-    }
-
-    Object.freeze(this)
-  }
-
-  public toString(): string {
-    return '0x' + this.address.toString('hex')
-  }
-
-  public toBuffer(): Buffer {
-    return this.address
-  }
 }
 
 /**

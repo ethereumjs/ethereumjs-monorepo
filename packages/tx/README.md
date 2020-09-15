@@ -43,13 +43,14 @@ const serializedTx = signedTx.serialize()
 
 ## Fake Transaction
 
-Creating a fake tansaction for use in e.g. `VM.runTx()` is simple, just overwrite `getSenderAddress` with your own custom `Address` like so:
+Creating a fake tansaction for use in e.g. `VM.runTx()` is simple, just overwrite `getSenderAddress()` with a custom [`Address`](https://github.com/ethereumjs/ethereumjs-util/blob/master/docs/classes/_address_.address.md) like so:
 
 ```typescript
-import { Transaction, Address } from '@ethereumjs/tx'
+import { Address } from 'ethereumjs-util'
+import { Transaction } from '@ethereumjs/tx'
 
 _getFakeTransaction(txParams: TxParams): Transaction {
-  const from = new Address(txParams.from)
+  const from = Address.fromString(txParams.from)
   delete txParams.from
 
   const tx = Transaction.fromTxData(txParams, this._common)
@@ -63,7 +64,7 @@ _getFakeTransaction(txParams: TxParams): Transaction {
 
 # Chain and Hardfork Support
 
-The `Transaction` constructor receives a second parameter of an [`@ethereumjs/common`](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common) object that lets you specify the chain and hardfork to be used. By default, `mainnet` and `petersburg` will be used.
+The `Transaction` constructor receives a parameter of an [`@ethereumjs/common`](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common) object that lets you specify the chain and hardfork to be used. By default, `mainnet` and `petersburg` will be used.
 
 ## MuirGlacier Support
 

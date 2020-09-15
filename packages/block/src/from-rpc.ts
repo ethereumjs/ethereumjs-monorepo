@@ -1,5 +1,5 @@
-import { Transaction, TxData, Address } from '@ethereumjs/tx'
-import { toBuffer, setLengthLeft } from 'ethereumjs-util'
+import { Transaction, TxData } from '@ethereumjs/tx'
+import { toBuffer, setLengthLeft, Address } from 'ethereumjs-util'
 import { Block, BlockOptions } from './index'
 
 import blockHeaderFromRpc from './header-from-rpc'
