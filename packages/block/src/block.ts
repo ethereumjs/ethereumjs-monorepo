@@ -63,7 +63,7 @@ export class Block {
     }
 
     // parse transactions
-    const common = this._common
+    const common = Object.create(this._common)
     const blockNumber = parseInt(this.header.number.toString('hex'), 16)
     common.setHardforkByBlockNumber(blockNumber)
 
