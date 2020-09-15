@@ -53,14 +53,15 @@ async function runTestCase(options, testData, t) {
 
   let eips = []
   if (options.forkConfigVM == 'berlin') {
-    eips = ['EIP2537'] // currently, the BLS tests run on the Berlin network, but our VM does not activate EIP2537 if you run the Berlin HF
+    // currently, the BLS tests run on the Berlin network, but our VM does not activate EIP2537 
+    // if you run the Berlin HF
+    eips = [2537] 
   }
 
-  const common = new Common({ chain: 'mainnet', hardfork: options.forkConfigVM })
+  const common = new Common({ chain: 'mainnet', hardfork: options.forkConfigVM, eips })
   vm = new VM({
     state,
-    common: common,
-    eips
+    common: common
   })
 
   await setupPreConditions(vm.stateManager._trie, testData)

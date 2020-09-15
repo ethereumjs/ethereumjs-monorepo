@@ -80,7 +80,7 @@ This API can be used as follows:
 
 ```typescript
 import VM from 'ethereumjs-vm'
-const vm = new VM({ eips: ['EIP2537'] })
+const vm = new VM({ eips: [2537] })
 ```
 
 ### API Change: New Major Library Versions

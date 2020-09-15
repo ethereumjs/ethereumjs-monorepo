@@ -58,7 +58,7 @@ Supported `Istanbul` EIPs:
 
 #### EIP Support
 
-It is possible to individually activate EIP support in the VM. In order to do so, pass an array to the `eips` field of the VMs options, such as `new VM({eips: ['EIP2537']})`.
+It is possible to individually activate EIP support in the VM. In order to do so, pass an array to the `eips` field of the VMs options, such as `new VM({ eips: [ 2537 ]})`.
 
 Currently supported EIPs are:
 

@@ -17,7 +17,7 @@ export default async function (opts: PrecompileInput): Promise<ExecResult> {
   let inputData = opts.data
 
   // note: the gas used is constant; even if the input is incorrect.
-  let gasUsed = new BN(opts._common.paramByEIP('gasPrices', 'Bls12381G2MulGas', 'EIP2537'))
+  let gasUsed = new BN(opts._common.paramByEIP('gasPrices', 'Bls12381G2MulGas', 2537))
 
   if (opts.gasLimit.lt(gasUsed)) {
     return OOGResult(opts.gasLimit)

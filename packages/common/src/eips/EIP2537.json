@@ -3,6 +3,7 @@
   "comment": "BLS12-381 precompiles",
   "url": "https://eips.ethereum.org/EIPS/eip-2537",
   "status": "Draft",
+  "minimumHardfork": "chainstart",
   "gasConfig": {},
   "gasPrices": {
     "Bls12381G1AddGas": {
