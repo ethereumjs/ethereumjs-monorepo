@@ -90,7 +90,7 @@ tape('should fail when account balance overflows (call)', async (t) => {
   await suite.putAccount(caller, from)
 
   const to = createAccount('0x00', ethUtil.MAX_INTEGER)
-  await suite.putAccount(tx.to.toBuffer(), to)
+  await suite.putAccount(tx.to.buf, to)
 
   const res = await suite.runTx({ tx })
 

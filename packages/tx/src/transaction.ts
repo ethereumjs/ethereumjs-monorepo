@@ -73,7 +73,7 @@ export default class Transaction {
       new BN(nonce),
       new BN(gasPrice),
       new BN(gasLimit),
-      to ? new Address(to) : undefined,
+      to && to.length > 0 ? new Address(to) : undefined,
       new BN(value),
       data || Buffer.from([]),
       v ? new BN(v) : undefined,
@@ -132,7 +132,7 @@ export default class Transaction {
    * If the tx's `to` is to the creation address
    */
   toCreationAddress(): boolean {
-    return this.to === undefined || this.to.toBuffer().length === 0
+    return this.to === undefined || this.to.buf.length === 0
   }
 
   /**
@@ -143,7 +143,7 @@ export default class Transaction {
       bnToRlp(this.nonce),
       bnToRlp(this.gasPrice),
       bnToRlp(this.gasLimit),
-      this.to !== undefined ? this.to.toBuffer() : Buffer.from([]),
+      this.to !== undefined ? this.to.buf : Buffer.from([]),
       bnToRlp(this.value),
       this.data,
       bnToRlp(this.v),
@@ -304,7 +304,7 @@ export default class Transaction {
       bnToRlp(this.nonce),
       bnToRlp(this.gasPrice),
       bnToRlp(this.gasLimit),
-      this.to !== undefined ? this.to.toBuffer() : Buffer.from([]),
+      this.to !== undefined ? this.to.buf : Buffer.from([]),
       bnToRlp(this.value),
       this.data,
       this.v !== undefined ? bnToRlp(this.v) : Buffer.from([]),
@@ -361,7 +361,7 @@ export default class Transaction {
       bnToRlp(this.nonce),
       bnToRlp(this.gasPrice),
       bnToRlp(this.gasLimit),
-      this.to !== undefined ? this.to.toBuffer() : Buffer.from([]),
+      this.to !== undefined ? this.to.buf : Buffer.from([]),
       bnToRlp(this.value),
       this.data,
     ]

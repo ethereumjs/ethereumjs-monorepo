@@ -96,7 +96,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
    */
   await this._emit('beforeTx', tx)
 
-  const caller = tx.getSenderAddress().toBuffer()
+  const caller = tx.getSenderAddress().buf
 
   // Validate gas limit against base fee
   const basefee = tx.getBaseFee()
@@ -135,7 +135,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
    * Execute message
    */
   const txContext = new TxContext(tx.gasPrice.toArrayLike(Buffer), caller)
-  const to = tx.to && tx.to.toBuffer().length !== 0 ? tx.to.toBuffer() : undefined
+  const to = tx.to && tx.to.buf.length !== 0 ? tx.to.buf : undefined
   const message = new Message({
     caller,
     gasLimit,
