@@ -71,7 +71,7 @@ tape('VM with default blockchain', (t) => {
       st.skip('BLS does not work in karma')
       return st.end()
     }
-    const common = new Common({ chain: 'mainnet', eips: [ 'EIP2537', ] })
+    const common = new Common({ chain: 'mainnet', eips: [ 2537, ] })
     st.doesNotThrow(() => { new VM({ common }) })
     st.end()
   })

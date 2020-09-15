@@ -55,7 +55,7 @@ async function runTestCase(options, testData, t) {
   if (options.forkConfigVM == 'berlin') {
     // currently, the BLS tests run on the Berlin network, but our VM does not activate EIP2537 
     // if you run the Berlin HF
-    eips = ['EIP2537'] 
+    eips = [2537] 
   }
 
   const common = new Common({ chain: 'mainnet', hardfork: options.forkConfigVM, eips })

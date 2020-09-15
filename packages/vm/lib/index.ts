@@ -36,11 +36,11 @@ export interface VMOpts {
    *
    * - `chain`: all chains supported by `Common` or a custom chain
    * - `hardfork`: `mainnet` hardforks up to the `MuirGlacier` hardfork
-   * - `eips`: `EIP2537` (usage e.g. `eips: ['EIP2537',]`)
+   * - `eips`: `2537` (usage e.g. `eips: [ 2537, ]`)
    *
    * ### Supported EIPs
    *
-   * - [EIP2537](https://eips.ethereum.org/EIPS/eip-2537) (`experimental`) - BLS12-381 precompiles
+   * - [EIP-2537](https://eips.ethereum.org/EIPS/eip-2537) (`experimental`) - BLS12-381 precompiles
    *
    * *Annotations:*
    *
@@ -135,7 +135,7 @@ export default class VM extends AsyncEventEmitter {
 
     if (opts.common) {
       //EIPs
-      const supportedEIPs = ['EIP2537']
+      const supportedEIPs = [2537]
       for (const eip of opts.common.eips()) {
         if (!supportedEIPs.includes(eip)) {
           throw new Error(`${eip} is not supported by the VM`)
@@ -181,9 +181,9 @@ export default class VM extends AsyncEventEmitter {
     this.allowUnlimitedContractSize =
       opts.allowUnlimitedContractSize === undefined ? false : opts.allowUnlimitedContractSize
 
-    if (this._common.eips().includes('EIP2537')) {
+    if (this._common.eips().includes(2537)) {
       if (IS_BROWSER) {
-        throw new Error('EIP 2537 is currently not supported in browsers')
+        throw new Error('EIP-2537 is currently not supported in browsers')
       } else {
         this._mcl = mcl
       }
@@ -219,9 +219,9 @@ export default class VM extends AsyncEventEmitter {
       await this.stateManager.commit()
     }
 
-    if (this._common.eips().includes('EIP2537')) {
+    if (this._common.eips().includes(2537)) {
       if (IS_BROWSER) {
-        throw new Error('EIP 2537 is currently not supported in browsers')
+        throw new Error('EIP-2537 is currently not supported in browsers')
       } else {
         let mcl = this._mcl
         await mclInitPromise // ensure that mcl is initialized.

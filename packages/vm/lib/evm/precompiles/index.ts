@@ -18,7 +18,6 @@ import { default as p10 } from './10-bls12-pairing'
 import { default as p11 } from './11-bls12-map-fp-to-g1'
 import { default as p12 } from './12-bls12-map-fp2-to-g2'
 import Common from '@ethereumjs/common'
-import VM from '../..'
 
 interface Precompiles {
   [key: string]: PrecompileFunc
@@ -28,14 +27,23 @@ interface PrecompileAvailability {
   [key: string]: PrecompileAvailabilityCheckType
 }
 
+type PrecompileAvailabilityCheckType =
+  | PrecompileAvailabilityCheckTypeHardfork
+  | PrecompileAvailabilityCheckTypeEIP
+
 enum PrecompileAvailabilityCheck {
   EIP,
   Hardfork,
 }
 
-interface PrecompileAvailabilityCheckType {
-  type: PrecompileAvailabilityCheck
+interface PrecompileAvailabilityCheckTypeHardfork {
+  type: PrecompileAvailabilityCheck.Hardfork
   param: string
+}
+
+interface PrecompileAvailabilityCheckTypeEIP {
+  type: PrecompileAvailabilityCheck.EIP
+  param: number
 }
 
 const ripemdPrecompileAddress = '0000000000000000000000000000000000000003'
@@ -96,39 +104,39 @@ const precompileAvailability: PrecompileAvailability = {
   },
   '000000000000000000000000000000000000000a': {
     type: PrecompileAvailabilityCheck.EIP,
-    param: 'EIP2537',
+    param: 2537,
   },
   '000000000000000000000000000000000000000b': {
     type: PrecompileAvailabilityCheck.EIP,
-    param: 'EIP2537',
+    param: 2537,
   },
   '000000000000000000000000000000000000000c': {
     type: PrecompileAvailabilityCheck.EIP,
-    param: 'EIP2537',
+    param: 2537,
   },
   '000000000000000000000000000000000000000d': {
     type: PrecompileAvailabilityCheck.EIP,
-    param: 'EIP2537',
+    param: 2537,
   },
   '000000000000000000000000000000000000000f': {
     type: PrecompileAvailabilityCheck.EIP,
-    param: 'EIP2537',
+    param: 2537,
   },
   '000000000000000000000000000000000000000e': {
     type: PrecompileAvailabilityCheck.EIP,
-    param: 'EIP2537',
+    param: 2537,
   },
   '0000000000000000000000000000000000000010': {
     type: PrecompileAvailabilityCheck.EIP,
-    param: 'EIP2537',
+    param: 2537,
   },
   '0000000000000000000000000000000000000011': {
     type: PrecompileAvailabilityCheck.EIP,
-    param: 'EIP2537',
+    param: 2537,
   },
   '0000000000000000000000000000000000000012': {
     type: PrecompileAvailabilityCheck.EIP,
-    param: 'EIP2537',
+    param: 2537,
   },
 }
 
