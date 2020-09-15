@@ -39,6 +39,7 @@ export default function blockFromRpc(blockParams: any, uncles?: any[], options?:
       const tx = Transaction.fromTxData(txParams as TxData, common)
 
       const fakeTx = Object.create(tx)
+
       // override getSenderAddress
       fakeTx.getSenderAddress = () => {
         return fromAddress

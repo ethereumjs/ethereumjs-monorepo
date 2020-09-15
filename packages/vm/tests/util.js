@@ -84,11 +84,10 @@ const format = (exports.format = function (a, toZero, isHex) {
 /**
  * makeTx using JSON from tests repo
  * @param {Object} txData the tx object from tests repo
- * @param {String} hardfork the hardfork to be used for the tx
+ * @param {Common} common a @ethereumjs/common object
  * @returns {Transaction} transaction to be passed to VM.runTx function
  */
-exports.makeTx = function (txData, hardfork) {
-  const common = new Common({ chain: 'mainnet', hardfork })
+exports.makeTx = function (txData, common) {
   const tx = Transaction.fromTxData(txData, common)
 
   if (txData.secretKey) {

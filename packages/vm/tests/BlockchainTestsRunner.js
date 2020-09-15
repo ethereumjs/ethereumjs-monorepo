@@ -9,7 +9,6 @@ const { setupPreConditions, verifyPostConditions, getDAOCommon } = require('./ut
 
 module.exports = async function runBlockchainTest(options, testData, t) {
   // ensure that the test data is the right fork data
-
   if (testData.network != options.forkConfigTestSuite) {
     t.comment('skipping test: no data available for ' + options.forkConfigTestSuite)
     return
@@ -18,6 +17,7 @@ module.exports = async function runBlockchainTest(options, testData, t) {
   const blockchainDB = levelMem()
   const cacheDB = level('./.cachedb')
   const state = new Trie()
+  const hardfork = options.forkConfigVM
 
   let validate = false
   // Only run with block validation when sealEngine present in test file
@@ -27,7 +27,7 @@ module.exports = async function runBlockchainTest(options, testData, t) {
   }
 
   let eips = []
-  if (options.forkConfigVM == 'berlin') {
+  if (hardfork == 'berlin') {
     // currently, the BLS tests run on the Berlin network, but our VM does not activate EIP2537
     // if you run the Berlin HF
     eips = [2537]
@@ -37,7 +37,7 @@ module.exports = async function runBlockchainTest(options, testData, t) {
   if (options.forkConfigTestSuite == 'HomesteadToDaoAt5') {
     common = getDAOCommon(5)
   } else {
-    common = new Common({ chain: 'mainnet', hardfork: options.forkConfigVM, eips })
+    common = new Common({ chain: 'mainnet', hardfork, eips })
   }
 
   const blockchain = new Blockchain({

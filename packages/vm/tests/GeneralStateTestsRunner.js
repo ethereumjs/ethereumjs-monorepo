@@ -1,8 +1,8 @@
-const { setupPreConditions, makeTx, makeBlockFromEnv } = require('./util')
-const Trie = require('merkle-patricia-tree').SecureTrie
-const { BN } = require('ethereumjs-util')
+const { SecureTrie: Trie } = require('merkle-patricia-tree')
+const { BN, toBuffer } = require('ethereumjs-util')
 const Common = require('@ethereumjs/common').default
 const Account = require('@ethereumjs/account').default
+const { setupPreConditions, makeTx, makeBlockFromEnv } = require('./util')
 
 function parseTestCases(forkConfigTestSuite, testData, data, gasLimit, value) {
   let testCases = []
@@ -44,10 +44,15 @@ function parseTestCases(forkConfigTestSuite, testData, data, gasLimit, value) {
 }
 
 async function runTestCase(options, testData, t) {
+  let VM
+  if (options.dist) {
+    VM = require('../dist/index.js').default
+  } else {
+    VM = require('../lib/index').default
+  }
+
   const state = new Trie()
   const hardfork = options.forkConfigVM
-
-  const VM = options.dist ? require('../dist/index.js').default : require('../lib/index').default
 
   let eips = []
   if (hardfork == 'berlin') {
@@ -61,7 +66,7 @@ async function runTestCase(options, testData, t) {
 
   await setupPreConditions(vm.stateManager._trie, testData)
 
-  const tx = makeTx(testData.transaction, { common })
+  const tx = makeTx(testData.transaction, common)
   if (!tx.validate()) {
     throw new Error('Transaction is invalid')
   }
