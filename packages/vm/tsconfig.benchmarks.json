@@ -1,5 +1,5 @@
 {
-  "extends": "@ethereumjs/config-tsc",
+  "extends": "@ethereumjs/config-typescript",
   "compilerOptions": {
     "target": "ES6",
     "sourceMap": false,
