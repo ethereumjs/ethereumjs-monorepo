@@ -110,7 +110,12 @@ exports.getTestsFromArgs = function (testType, onFile, args = {}) {
       return ((forkFilter.test(test.network) === false) || skipTest(name, args.skipTests))
     }
   }
-
+  if (new RegExp(`GeneralStateTests`).test(testType)) {
+    const forkFilter = new RegExp(`${args.forkConfig}$`)
+    skipFn = (name, test) => {
+      return ((Object.keys(test["post"]).map((key) => forkFilter.test(key))).every((e) => !e) || skipTest(name, args.skipTests))
+    }
+  }
   if (testType === 'VMTests') {
     skipFn = (name) => {
       return skipTest(name, args.skipVM)

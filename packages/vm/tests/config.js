@@ -18,7 +18,23 @@ const SKIP_BROKEN = [
   'sha3_memSizeQuadraticCost', // SHA3: https://github.com/ethereumjs/ethereumjs-vm/pull/743#issuecomment-635116418
   'sha3_bigSize', // SHA3
 
-  'BLOCK_difficulty_GivenAsList', // Block header does try very hard (via `defineProperties`) to convert any fed data into Buffers. Test should throw because difficulty is a list of Buffers, but fails to throw
+  'BLOCK_difficulty_GivenAsList', // Block header.ts does try very hard (via `defineProperties`) to convert any fed data into Buffers. Test should throw because difficulty is a list of Buffers, but fails to throw
+
+  // these tests need "re-org" support in blockchain
+  'blockChainFrontierWithLargerTDvsHomesteadBlockchain2_FrontierToHomesteadAt5',
+  'blockChainFrontierWithLargerTDvsHomesteadBlockchain_FrontierToHomesteadAt5',
+  'HomesteadOverrideFrontier_FrontierToHomesteadAt5',
+  'DaoTransactions_HomesteadToDaoAt5',
+  'RPC_API_Test',
+  'lotsOfBranchesOverrideAtTheEnd',
+  'lotsOfBranchesOverrideAtTheMiddle',
+  'newChainFrom4Block',
+  'newChainFrom5Block',
+  'newChainFrom6Block',
+  'sideChainWithMoreTransactions',
+  'sideChainWithMoreTransactions2',
+  'sideChainWithNewMaxDifficultyStartingFromBlock3AfterBlock4',
+  'uncleBlockAtBlock3afterBlock4'
 ]
 
 /**
@@ -127,10 +143,6 @@ function getRequiredForkConfigAlias(forkConfig) {
   if (String(forkConfig).match(/^chainstart$/i)) {
     return 'Frontier'
   }
-  // DAO fork is named HomesteadToDaoAt5 in the tests.
-  if (String(forkConfig).toLowerCase().match(/^dao$/i)) {
-    return 'HomesteadToDaoAt5'
-  }
   // TangerineWhistle is named EIP150 (attention: misleading name)
   // in the client-independent consensus test suite
   if (String(forkConfig).match(/^tangerineWhistle$/i)) {
@@ -156,6 +168,7 @@ function getRequiredForkConfigAlias(forkConfig) {
 const normalHardforks = [
   'chainstart',
   'homestead',
+  'dao',
   'tangerineWhistle',
   'spuriousDragon',
   'byzantium',
@@ -183,11 +196,11 @@ const transitionNetworks = {
     startFork: 'spuriousDragon'
   },
   FrontierToHomesteadAt5: {
-    frontier: 0,
+    chainstart: 0,
     homestead: 5,
     dao: null,
     finalSupportedFork: 'homestead',
-    startFork: 'frontier'
+    startFork: 'chainstart'
   },
   HomesteadToDaoAt5: {
     homestead: 0,
@@ -306,9 +319,58 @@ function getCommon(network) {
       hardforks: testHardforks
     }, transitionForks.startFork)
   }
+}
 
-
-
+const expectedTestsFull = {
+  BlockchainTests: {
+    Chainstart: 4385,
+    Homestead: 6997,
+    Dao: 0,
+    TangerineWhistle: 4255,
+    SpuriousDragon: 4305,
+    Byzantium: 15379,
+    Constantinople: 32750,
+    Petersburg: 32735,
+    Istanbul: 35378,
+    MuirGlacier: 35378,
+    Berlin: 33,
+    ByzantiumToConstantinopleFixAt5: 3,
+    EIP158ToByzantiumAt5: 3,
+    FrontierToHomesteadAt5: 12,
+    HomesteadToDaoAt5: 18,
+    HomesteadToEIP150At5: 3,
+  },
+  GeneralStateTests: {
+    Chainstart: 1024,
+    Homestead: 1975,
+    Dao: 0,
+    TangerineWhistle: 1097,
+    SpuriousDragon: 1222,
+    Byzantium: 4754,
+    Constantinople: 10759,
+    Petersburg: 10525,
+    Istanbul: 10759,
+    MuirGlacier: 10759,
+    Berlin: 1414,
+    ByzantiumToConstantinopleFixAt5: 0,
+    EIP158ToByzantiumAt5: 0,
+    FrontierToHomesteadAt5: 0,
+    HomesteadToDaoAt5: 0,
+    HomesteadToEIP150At5: 3,
+  }
+}
+/** 
+ * Returns the amount of expected tests for a given fork, assuming all tests are ran
+ */
+function getExpectedTests(fork, name) {
+  if (expectedTestsFull[name] == undefined) {
+    return 
+  }
+  for (let key in expectedTestsFull[name]) {
+    if (fork.toLowerCase() == key.toLowerCase()) {
+      return expectedTestsFull[name][key]
+    }
+  }
 }
 
 
@@ -348,5 +410,6 @@ module.exports = {
   getRequiredForkConfigAlias: getRequiredForkConfigAlias,
   getSkipTests: getSkipTests,
   getCommon: getCommon,
-  getTestDirs: getTestDirs
+  getTestDirs: getTestDirs,
+  getExpectedTests
 }

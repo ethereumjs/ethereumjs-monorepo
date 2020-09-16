@@ -26,6 +26,8 @@ const Common = require('@ethereumjs/common').default
  * --gas: only run this state test if the transaction has this gasLimit
  * --value: only run this state test if the transaction has this call value
  * --debug: enable BlockchainTests debugger (compares post state against the expected post state)
+ * --expected-test-amount: (optional) if present, check after tests are ran if at least this amount of tests have passed (inclusive)
+ * --verify-test-amount-alltests: if this is passed, get the expected amount from tests and verify afterwards if this is the count of tests (expects tests are ran with default settings)
  */
 
 async function runTests() {
@@ -69,6 +71,13 @@ async function runTests() {
   runnerArgs.gasLimit = argv.gas // GeneralStateTests
   runnerArgs.value = argv.value // GeneralStateTests
   runnerArgs.debug = argv.debug // BlockchainTests
+
+  let expectedTests
+  if (argv['verify-test-amount-alltests']) {
+    expectedTests = config.getExpectedTests(FORK_CONFIG_VM, name)
+  } else if (argv['expected-test-amount']) {
+    expectedTests = argv['expected-test-amount']
+  }
 
   /**
    * Initialization output to console
@@ -169,6 +178,10 @@ async function runTests() {
         for (let i = 0; i < errors.length; i++) {
           console.log("\t" + errors[i])
         }
+      }
+
+      if (expectedTests) {
+        t.ok(t.assertCount >= expectedTests, "expected " + expectedTests + " checks, got " + t.assertCount)
       }
 
       t.end()

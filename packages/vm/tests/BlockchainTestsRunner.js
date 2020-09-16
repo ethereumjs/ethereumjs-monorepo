@@ -1,5 +1,5 @@
 const { setupPreConditions, verifyPostConditions, getDAOCommon } = require('./util.js')
-const { addHexPrefix } = require('ethereumjs-util')
+const { addHexPrefix, rlp, bufferToInt } = require('ethereumjs-util')
 const Trie = require('merkle-patricia-tree').SecureTrie
 const { Block, BlockHeader } = require('@ethereumjs/block')
 const Blockchain = require('@ethereumjs/blockchain').default
@@ -39,6 +39,7 @@ module.exports = async function runBlockchainTest(options, testData, t) {
   }
 
   const { common } = options
+  common.setHardforkByBlockNumber(0)
 
   const blockchain = new Blockchain({
     db: blockchainDB,
@@ -86,7 +87,7 @@ module.exports = async function runBlockchainTest(options, testData, t) {
 
   await blockchain.putGenesis(genesisBlock)
 
-  async function handleError(error, expectException, cacheDB) {
+  async function handleError(error, expectException) {
     if (expectException) {
       t.pass(`Expected exception ${expectException}`)
     } else {
@@ -95,25 +96,41 @@ module.exports = async function runBlockchainTest(options, testData, t) {
     }
   }
 
-  const numBlocks = testData.blocks.length
-  let currentBlock = 0
-  let lastBlock = false
+  let currentFork = common.hardfork()
+  let currentBlock
+  let lastBlock = 0
   for (const raw of testData.blocks) {
-    currentBlock++
-    lastBlock = (currentBlock == numBlocks)
+    lastBlock = currentBlock
     const paramFork = `expectException${options.forkConfigTestSuite}`
     // Two naming conventions in ethereum/tests to indicate "exception occurs on all HFs" semantics
     // Last checked: ethereumjs-testing v1.3.1 (2020-05-11)
     const paramAll1 = 'expectExceptionALL'
     const paramAll2 = 'expectException'
     const expectException = raw[paramFork] ? raw[paramFork] : raw[paramAll1] || raw[paramAll2] || raw.blockHeader == undefined
+
+    // here we convert the rlp to block only to extract the number
+    // we have to do this again later because the common might run on a new hardfork
     try {
+      let block = new Block(Buffer.from(raw.rlp.slice(2), 'hex'), {
+        common
+      }) 
+      currentBlock = bufferToInt(block.header.number)
+    } catch(e) {
+      handleError(e, expectException)
+      continue
+    }
+
+    if (currentBlock < lastBlock) {
+      // "re-org": rollback the blockchain to currentBlock (i.e. delete that block number in the blockchain plus the children)
+      t.fail("re-orgs are not supported by the test suite")
+      return
+    }
+    try {
+      
       // check if we should update common.
-      if (common.isNextHardforkBlock(currentBlock)) {
-        const activeHardforks = common.activeHardforks(currentBlock)
-        const hardforkName = activeHardforks[activeHardforks.length - 1].name
-        common.setHardfork(hardforkName)
-        // create a new VM (need access to new opcodes)
+      let newFork = common.setHardforkByBlockNumber(currentBlock)
+      if (newFork != currentFork) {
+        currentFork = newFork
         vm._updateOpcodes()
       }
 
@@ -127,14 +144,8 @@ module.exports = async function runBlockchainTest(options, testData, t) {
       // blockchain tests come with their own `pre` world state.
       // TODO: Add option to `runBlockchain` not to generate genesis state.
       vm._common.genesis().stateRoot = vm.stateManager._trie.root
-
       await vm.runBlockchain()
-
       const headBlock = await vm.blockchain.getHead()
-
-      if (expectException !== undefined && lastBlock) { // only check last block hash on last block
-        t.equal(headBlock.hash().toString('hex'), testData.lastblockhash, 'last block hash')
-      }
 
       // if the test fails, then block.header is the prej because
       // vm.runBlock has a check that prevents the actual postState from being
@@ -159,13 +170,13 @@ module.exports = async function runBlockchainTest(options, testData, t) {
     } catch (error) {
       // caught an error, reduce block number
       currentBlock--
-      await handleError(error, expectException, cacheDB)
+      await handleError(error, expectException)
     }
   }
   t.equal(
     blockchain.meta.rawHead.toString('hex'),
     testData.lastblockhash,
-    'correct header block',
+    'correct last header block',
   )
   await cacheDB.close()
 }
