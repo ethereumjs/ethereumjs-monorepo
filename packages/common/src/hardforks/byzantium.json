@@ -1,10 +1,8 @@
 {
   "name": "byzantium",
   "comment": "Hardfork with new precompiles, instructions and other protocol changes",
-  "eip": {
-    "url": "https://eips.ethereum.org/EIPS/eip-609",
-    "status": "Final"
-  },
+  "url": "https://eips.ethereum.org/EIPS/eip-609",
+  "status": "Final",
   "gasConfig": {},
   "gasPrices": {
     "modexpGquaddivisor": {

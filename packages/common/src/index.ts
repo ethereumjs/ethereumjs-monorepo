@@ -1,6 +1,6 @@
 import { buf as crc32Buffer } from 'crc-32'
 import { chains as chainParams } from './chains'
-import { hardforks as hardforkChanges } from './hardforks'
+import { hardforks as HARDFORK_CHANGES } from './hardforks'
 import { EIPs } from './eips'
 import { Chain } from './types'
 
@@ -144,7 +144,7 @@ export default class Common {
       throw new Error(`Hardfork ${hardfork} not set as supported in supportedHardforks`)
     }
     let changed = false
-    for (const hfChanges of hardforkChanges) {
+    for (const hfChanges of HARDFORK_CHANGES) {
       if (hfChanges[0] === hardfork) {
         this._hardfork = hardfork
         changed = true
@@ -275,12 +275,22 @@ export default class Common {
     hardfork = this._chooseHardfork(hardfork)
 
     let value = null
-    for (const hfChanges of hardforkChanges) {
-      if (!hfChanges[1][topic]) {
-        throw new Error(`Topic ${topic} not defined`)
-      }
-      if (hfChanges[1][topic][name] !== undefined) {
-        value = hfChanges[1][topic][name].v
+    for (const hfChanges of HARDFORK_CHANGES) {
+      // EIP-referencing HF file (e.g. berlin.json)
+      if (hfChanges[1].hasOwnProperty('eips')) {
+        const hfEIPs = hfChanges[1]['eips']
+        for (const eip of hfEIPs) {
+          const valueEIP = this.paramByEIP(topic, name, eip)
+          value = valueEIP !== null ? valueEIP : value
+        }
+        // Paramater-inlining HF file (e.g. istanbul.json)
+      } else {
+        if (!hfChanges[1][topic]) {
+          throw new Error(`Topic ${topic} not defined`)
+        }
+        if (hfChanges[1][topic][name] !== undefined) {
+          value = hfChanges[1][topic][name].v
+        }
       }
       if (hfChanges[0] === hardfork) break
     }

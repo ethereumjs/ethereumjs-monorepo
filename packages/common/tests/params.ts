@@ -7,9 +7,15 @@ tape('[Common]: Parameter access for param(), paramByHardfork()', function (t: t
     let msg = 'Should return correct value when HF directly provided'
     st.equal(c.paramByHardfork('gasPrices', 'ecAdd', 'byzantium'), 500, msg)
 
-    c.setHardfork('byzantium')
     msg = 'Should return correct value for HF set in class'
+    c.setHardfork('byzantium')
     st.equal(c.param('gasPrices', 'ecAdd'), 500, msg)
+    c.setHardfork('istanbul')
+    st.equal(c.param('gasPrices', 'ecAdd'), 150, msg)
+    c.setHardfork('muirGlacier')
+    st.equal(c.param('gasPrices', 'ecAdd'), 150, msg)
+    c.setHardfork('berlin')
+    st.equal(c.param('gasPrices', 'beginsub'), 2, msg)
 
     msg = 'Should return null for non-existing value'
     st.equal(c.param('gasPrices', 'notexistingvalue'), null, msg)
