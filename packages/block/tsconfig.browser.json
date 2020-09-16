@@ -1,0 +1,7 @@
+{
+  "extends": "@ethereumjs/config-typescript/tsconfig.browser.json",
+  "include": ["src/**/*.ts"],
+  "compilerOptions": {
+    "outDir": "./dist.browser"
+  }
+}

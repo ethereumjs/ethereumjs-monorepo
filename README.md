@@ -150,9 +150,11 @@ lerna exec "npm publish --registry http://localhost:4873 --ignore-scripts"
 #### Unpublish all monorepo packages from Verdaccio
 lerna exec "npm unpublish \$LERNA_PACKAGE_NAME --registry http://localhost:4873 --force"
 
-#### Associate @ethereumjs scope to local Verdaccio server
-npm config set @ethereumjs:registry http://localhost:4873
+#### Setup @ethereumjs scope to local Verdaccio server
+  npm config set @ethereumjs:registry http://localhost:4873
 
+#### Teardown @ethereumjs scope to local Verdaccio server
+  npm config delete @ethereumjs:registry
 
 
 # EthereumJS
