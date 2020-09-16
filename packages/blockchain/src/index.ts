@@ -302,7 +302,13 @@ export default class Blockchain implements BlockchainInterface {
 
     await this._lock.wait()
     await this._putBlockOrHeader(block, isGenesis)
-    this._lock.release()
+      .then(() => {
+        this._lock.release()
+      })
+      .catch((reason) => {
+        this._lock.release()
+        throw reason
+      })
   }
 
   /**
@@ -328,7 +334,13 @@ export default class Blockchain implements BlockchainInterface {
 
     await this._lock.wait()
     await this._putBlockOrHeader(header)
-    this._lock.release()
+      .then(() => {
+        this._lock.release()
+      })
+      .catch((reason) => {
+        this._lock.release()
+        throw reason
+      })
   }
 
   /**
@@ -706,7 +718,13 @@ export default class Blockchain implements BlockchainInterface {
 
     await this._lock.wait()
     await this._delBlock(blockHash)
-    this._lock.release()
+      .then(() => {
+        this._lock.release()
+      })
+      .catch((reason) => {
+        this._lock.release()
+        throw reason
+      })
   }
 
   /**
