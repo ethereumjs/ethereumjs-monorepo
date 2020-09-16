@@ -1,4 +1,4 @@
-import * as assert from 'assert'
+import assert from 'assert'
 
 /**
  * Memory implements a simple memory model

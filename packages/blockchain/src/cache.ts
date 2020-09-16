@@ -1,14 +1,14 @@
-import * as LRU from 'lru-cache'
+import LRUCache from 'lru-cache'
 
 /**
  * Simple LRU Cache that allows for keys of type Buffer
  * @hidden
  */
 export default class Cache<V> {
-  _cache: LRU<string, V>
+  _cache: LRUCache<string, V>
 
-  constructor(opts: LRU.Options<string, V>) {
-    this._cache = new LRU(opts)
+  constructor(opts: LRUCache.Options<string, V>) {
+    this._cache = new LRUCache(opts)
   }
 
   set(key: string | Buffer, value: V): void {
