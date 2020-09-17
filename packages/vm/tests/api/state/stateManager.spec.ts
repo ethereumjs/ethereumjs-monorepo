@@ -1,5 +1,5 @@
 import * as tape from 'tape'
-import { BN, toBuffer, keccak256, KECCAK256_RLP } from 'ethereumjs-util'
+import { BN, toBuffer, keccak256, KECCAK256_RLP, unpadBuffer, zeros } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
 import Account from '@ethereumjs/account'
 import { DefaultStateManager } from '../../../lib/state'
@@ -406,6 +406,83 @@ tape('StateManager - Contract code', (tester) => {
     await stateManager.putContractCode(address, code)
     const codeRetrieved = await stateManager.getContractCode(address)
     t.ok(codeRetrieved.equals(Buffer.alloc(0)))
+    t.end()
+  })
+})
+
+tape('StateManager - Contract storage', (tester) => {
+  const it = tester.test
+
+  it('should throw on storage values larger than 32 bytes', async(t) => {
+    t.plan(1)
+    const stateManager = new DefaultStateManager()
+    const address = zeros(20)
+    const key = zeros(32)
+    const value = Buffer.from(("aa").repeat(33), 'hex')
+    try {
+      await stateManager.putContractStorage(address, key, value)
+      t.fail("did not throw")
+    } catch (e) {
+      t.pass("threw on trying to set storage values larger than 32 bytes")
+    }
+    t.end()
+  })
+
+  it('should strip storage values lower than 32 bytes', async(t) => {
+    const stateManager = new DefaultStateManager()
+    const address = zeros(20)
+    const key0 = zeros(32)
+    const value0 = Buffer.from(("aa").repeat(31), 'hex') // put a value of 31-bytes length
+    const expect0 = unpadBuffer(value0)
+    const key1 = Buffer.concat([zeros(31), Buffer.from('01', 'hex')])
+    const value1 = Buffer.from(("aa").repeat(1), 'hex') // put a vlaue of 1-byte length
+    const expect1 = unpadBuffer(value1)
+
+    await stateManager.putContractStorage(address, key0, value0)
+    const slot0 = await stateManager.getContractStorage(address, key0)
+    t.ok(slot0.equals(expect0), 'value of 31 bytes padded correctly')
+
+    await stateManager.putContractStorage(address, key1, value1)
+    const slot1 = await stateManager.getContractStorage(address, key1)
+    t.ok(slot1.equals(expect1), 'value of 1 byte padded correctly')
+    t.end()
+  })
+
+  it ('should delete storage values which only consist of zero bytes', async(t) => {
+    const address = zeros(20)
+    const key = zeros(32)
+    const startValue = Buffer.from('01', 'hex')
+
+    const zeroLengths = [0, 1, 31, 32]  // checks for arbitrary-length zeros
+    t.plan(zeroLengths.length)
+
+    for (let length of zeroLengths) {
+      const stateManager = new DefaultStateManager()
+      const value = zeros(length)
+      await stateManager.putContractStorage(address, key, startValue)
+      const currentValue = await stateManager.getContractStorage(address, key)
+      if (!currentValue.equals(startValue)) {
+        // sanity check
+        t.fail("contract value not set correctly")
+      } else {
+        // delete the value 
+        await stateManager.putContractStorage(address, key, value)
+        const deleted = await stateManager.getContractStorage(address, key)
+        t.ok(deleted.equals(zeros(0)), "the storage key should be deleted")
+      }
+    }
+    t.end()
+  })
+
+  it('should not strip trailing zeros', async(t) => {
+    const address = zeros(20)
+    const key = zeros(32)
+    const value = Buffer.from('0000aabb00', 'hex')
+    const expect = Buffer.from('aabb00', 'hex')
+    const stateManager = new DefaultStateManager()
+    await stateManager.putContractStorage(address, key, value)
+    const contractValue = await stateManager.getContractStorage(address, key)
+    t.ok(contractValue.equals(expect), 'trailing zeros are not stripped')
     t.end()
   })
 })

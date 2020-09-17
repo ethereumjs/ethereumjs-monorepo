@@ -1,6 +1,6 @@
 const Set = require('core-js-pure/es/set')
 import { SecureTrie as Trie } from 'merkle-patricia-tree'
-import { BN, toBuffer, keccak256, KECCAK256_NULL } from 'ethereumjs-util'
+import { BN, toBuffer, keccak256, KECCAK256_NULL, unpadBuffer } from 'ethereumjs-util'
 import { encode, decode } from 'rlp'
 import Common from '@ethereumjs/common'
 import { genesisStateByName } from '@ethereumjs/common/dist/genesisStates'
@@ -276,12 +276,18 @@ export default class DefaultStateManager implements StateManager {
    * corresponding to `address` at the provided `key`.
    * @param address -  Address to set a storage value for
    * @param key - Key to set the value at. Must be 32 bytes long.
-   * @param value - Value to set at `key` for account corresponding to `address`
+   * @param value - Value to set at `key` for account corresponding to `address`. Cannot be more than 32 bytes. Will be left-padded with zeros if less than 32 bytes. If it is a empty or filled with zeros, delete the value.
    */
   async putContractStorage(address: Buffer, key: Buffer, value: Buffer): Promise<void> {
     if (key.length !== 32) {
       throw new Error('Storage key must be 32 bytes long')
     }
+
+    if (value.length > 32) {
+      throw new Error('Storage key cannot be longer than 32 bytes')
+    }
+
+    value = unpadBuffer(value)
 
     await this._modifyContractStorage(address, async (storageTrie, done) => {
       if (value && value.length) {
@@ -415,7 +421,7 @@ export default class DefaultStateManager implements StateManager {
   }
 
   /**
-   * Dumps the the storage values for an `account` specified by `address`.
+   * Dumps the the RLP-encoded storage values for an `account` specified by `address`.
    * @param address - The address of the `account` to return storage for
    * @returns {Promise<StorageDump>} - The state of the account as an `Object` map.
    * Keys are are the storage keys, values are the storage values as strings.
