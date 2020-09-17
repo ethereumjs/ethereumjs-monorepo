@@ -33,11 +33,7 @@ export default function blockFromRpc(blockParams: any, uncles?: any[], options?:
       const fromAddress = txParams.from ? Address.fromString(txParams.from) : Address.zero()
       delete txParams.from
 
-      const blockNumber = parseInt(block.header.number.toString('hex'), 16)
-      const common = Object.create((<any>block)._common)
-      common.setHardforkByBlockNumber(blockNumber)
-      const tx = Transaction.fromTxData(txParams as TxData, common)
-
+      const tx = Transaction.fromTxData(txParams as TxData, (<any>block)._common)
       const fakeTx = Object.create(tx)
 
       // override getSenderAddress

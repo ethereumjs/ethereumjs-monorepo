@@ -63,15 +63,11 @@ export class Block {
     }
 
     // parse transactions
-    const common = Object.create(this._common)
-    const blockNumber = parseInt(this.header.number.toString('hex'), 16)
-    common.setHardforkByBlockNumber(blockNumber)
-
     for (let i = 0; i < rawTransactions.length; i++) {
       const txData = rawTransactions[i]
       const tx = Array.isArray(txData)
-        ? Transaction.fromValuesArray(txData as Buffer[], common)
-        : Transaction.fromRlpSerializedTx(txData as Buffer, common)
+        ? Transaction.fromValuesArray(txData as Buffer[], this._common)
+        : Transaction.fromRlpSerializedTx(txData as Buffer, this._common)
       this.transactions.push(tx)
     }
   }
