@@ -1,3 +1,7 @@
+const { Err } = require('typedoc/dist/lib/utils/result')
+
+const Common = require('@ethereumjs/common').default
+
 /**
  * Default hardfork rules to run tests against
  */
@@ -8,13 +12,29 @@ const DEFAULT_FORK_CONFIG = 'Istanbul'
  */
 const SKIP_BROKEN = [
   'ForkStressTest', // Only BlockchainTest, temporary till fixed (2020-05-23)
-  'dynamicAccountOverwriteEmpty', // temporary till fixed (2019-01-30), skipped along constantinopleFix work time constraints
   'ChainAtoChainB', // Only BlockchainTest, temporary, along expectException fixes (2020-05-23)
-  'BLOCK_timestamp_TooLarge', // Only BlockchainTest, temporary, along expectException fixes (2020-05-27)
-  'sha3_bigOffset', // SHA3: Only BlockchainTest, unclear SHA3 test situation (2020-05-28)
+  'sha3_bigOffset', // SHA3: Only BlockchainTest, unclear SHA3 test situation (2020-05-28) (https://github.com/ethereumjs/ethereumjs-vm/pull/743#issuecomment-635116418)
   'sha3_memSizeNoQuadraticCost', // SHA3: See also:
   'sha3_memSizeQuadraticCost', // SHA3: https://github.com/ethereumjs/ethereumjs-vm/pull/743#issuecomment-635116418
   'sha3_bigSize', // SHA3
+
+  'BLOCK_difficulty_GivenAsList', // Block header.ts does try very hard (via `defineProperties`) to convert any fed data into Buffers. Test should throw because difficulty is a list of Buffers, but fails to throw
+
+  // these tests need "re-org" support in blockchain
+  'blockChainFrontierWithLargerTDvsHomesteadBlockchain2_FrontierToHomesteadAt5',
+  'blockChainFrontierWithLargerTDvsHomesteadBlockchain_FrontierToHomesteadAt5',
+  'HomesteadOverrideFrontier_FrontierToHomesteadAt5',
+  'DaoTransactions_HomesteadToDaoAt5',
+  'RPC_API_Test',
+  'lotsOfBranchesOverrideAtTheEnd',
+  'lotsOfBranchesOverrideAtTheMiddle',
+  'newChainFrom4Block',
+  'newChainFrom5Block',
+  'newChainFrom6Block',
+  'sideChainWithMoreTransactions',
+  'sideChainWithMoreTransactions2',
+  'sideChainWithNewMaxDifficultyStartingFromBlock3AfterBlock4',
+  'uncleBlockAtBlock3afterBlock4'
 ]
 
 /**
@@ -123,10 +143,6 @@ function getRequiredForkConfigAlias(forkConfig) {
   if (String(forkConfig).match(/^chainstart$/i)) {
     return 'Frontier'
   }
-  // DAO fork is named HomesteadToDaoAt5 in the tests.
-  if (String(forkConfig).toLowerCase().match(/^dao$/i)) {
-    return 'HomesteadToDaoAt5'
-  }
   // TangerineWhistle is named EIP150 (attention: misleading name)
   // in the client-independent consensus test suite
   if (String(forkConfig).match(/^tangerineWhistle$/i)) {
@@ -148,7 +164,216 @@ function getRequiredForkConfigAlias(forkConfig) {
   }
   return forkConfig
 }
+
+const normalHardforks = [
+  'chainstart',
+  'homestead',
+  'dao',
+  'tangerineWhistle',
+  'spuriousDragon',
+  'byzantium',
+  'constantinople',
+  'petersburg',
+  'istanbul',
+  'muirGlacier',
+  'berlin',
+]
+
+const transitionNetworks = {
+  ByzantiumToConstantinopleFixAt5: {
+    byzantium: 0, 
+    constantinople: 5,
+    petersburg: 5,
+    dao: null,
+    finalSupportedFork: 'petersburg',
+    startFork: 'byzantium'
+  },
+  EIP158ToByzantiumAt5: {
+    spuriousDragon: 0,
+    byzantium: 5,
+    dao: null,
+    finalSupportedFork: 'byzantium',
+    startFork: 'spuriousDragon'
+  },
+  FrontierToHomesteadAt5: {
+    chainstart: 0,
+    homestead: 5,
+    dao: null,
+    finalSupportedFork: 'homestead',
+    startFork: 'chainstart'
+  },
+  HomesteadToDaoAt5: {
+    homestead: 0,
+    dao: 5,
+    finalSupportedFork: 'dao',
+    startFork: 'homestead'
+  },
+  HomesteadToEIP150At5 : {
+    homestead: 0,
+    tangerineWhistle: 5,
+    dao: null,
+    finalSupportedFork: 'tangerineWhistle',
+    startFork: 'homestead'
+  }
+}
+
+const testLegacy = {
+  chainstart: true, 
+  homestead: true, 
+  tangerineWhistle: true,
+  spuriousDragon: true,
+  byzantium: true, 
+  constantinople: true,
+  petersburg: true,
+  istanbul: false,
+  muirGlacier: false,
+  berlin: false,
+  ByzantiumToConstantinopleFixAt5: false,
+  EIP158ToByzantiumAt5: false,
+  FrontierToHomesteadAt5: false,
+  HomesteadToDaoAt5: false, 
+  HomesteadToEIP150At5: false 
+} 
+/**
+ * Returns an array of dirs to run tests on
+ * @param {string} network (fork identifier)
+ * @param {string} Test type (BlockchainTests/StateTests)
+ */
+function getTestDirs(network, testType) {
+  let testDirs = [testType]
+  for (let key in testLegacy) {
+    if (key.toLowerCase() == network.toLowerCase() && testLegacy[key]) {
+      // Tests for HFs before Istanbul have been moved under `LegacyTests/Constantinople`:
+      // https://github.com/ethereum/tests/releases/tag/v7.0.0-beta.1
+      testDirs.push("LegacyTests/Constantinople/" + testType)
+      break
+    }
+  }
+  return testDirs
+}
   
+/**
+ * Returns a Common for the given network (a test parameter)
+ * @param {String} network - the network field of a test
+ * @returns {Common} the Common which should be used
+ */
+function getCommon(network) {
+  const networkLowercase = network.toLowerCase()
+  if (normalHardforks.map((str) => str.toLowerCase()).includes(networkLowercase)) {
+    // normal hard fork, return the common with this hard fork
+    // find the right upper/lowercased version
+    const hfName = normalHardforks.reduce((previousValue, currentValue) => (currentValue.toLowerCase() == networkLowercase) ? currentValue : previousValue)
+    const mainnetCommon = new Common({chain: 'mainnet', hardfork: hfName})
+    const hardforks = mainnetCommon.hardforks()
+    const testHardforks = []
+    for (const hf of hardforks) {
+      // check if we enable this hf 
+      // disable dao hf by default (if enabled at block 0 forces the first 10 blocks to have dao-hard-fork in extraData of block header)
+      if (mainnetCommon.gteHardfork(hf.name) && hf.name != "dao") {
+        // this hardfork should be activated at block 0
+        testHardforks.push({
+          name: hf.name,
+          forkHash: hf.forkHash,
+          block: 0
+        })
+      } else {
+        // disable hardforks newer than the test hardfork (but do add "support" for it, it just never gets activated)
+        testHardforks.push({
+          name: hf.name,
+          forkHash: hf.forkHash,
+          block: null
+        })
+      }
+    }
+    return Common.forCustomChain('mainnet', {
+      hardforks: testHardforks
+    }, hfName)
+  } else {
+    // this is not a "default fork" network, but it is a "transition" network. we will test the VM if it transitions the right way
+    const transitionForks = transitionNetworks[network] || transitionNetworks[network.substring(0,1).toUpperCase()+network.substr(1)]
+    if (!transitionForks) {
+      throw(new Error("network not supported: " + network))
+    }
+    const mainnetCommon = new Common({chain: 'mainnet', hardfork: transitionForks.finalSupportedFork})
+    const hardforks = mainnetCommon.hardforks()
+    const testHardforks = []
+    for (const hf of hardforks) {
+      if (mainnetCommon.gteHardfork(hf.name)) {
+        // this hardfork should be activated at block 0
+        const forkBlockNumber = transitionForks[hf.name]
+        testHardforks.push({
+          name: hf.name,
+          forkHash: hf.forkHash,
+          block: (forkBlockNumber === null) ? null : forkBlockNumber || 0 // if forkBlockNumber is defined as null, disable it, otherwise use block number or 0 (if its undefined)
+        })
+      } else {
+        // disable the hardfork
+        testHardforks.push({
+          name: hf.name,
+          forkHash: hf.forkHash,
+          block: null
+        })
+      }
+    }
+    return Common.forCustomChain('mainnet', {
+      hardforks: testHardforks
+    }, transitionForks.startFork)
+  }
+}
+
+const expectedTestsFull = {
+  BlockchainTests: {
+    Chainstart: 4385,
+    Homestead: 6997,
+    Dao: 0,
+    TangerineWhistle: 4255,
+    SpuriousDragon: 4305,
+    Byzantium: 15379,
+    Constantinople: 32750,
+    Petersburg: 32735,
+    Istanbul: 35378,
+    MuirGlacier: 35378,
+    Berlin: 33,
+    ByzantiumToConstantinopleFixAt5: 3,
+    EIP158ToByzantiumAt5: 3,
+    FrontierToHomesteadAt5: 12,
+    HomesteadToDaoAt5: 18,
+    HomesteadToEIP150At5: 3,
+  },
+  GeneralStateTests: {
+    Chainstart: 1024,
+    Homestead: 1975,
+    Dao: 0,
+    TangerineWhistle: 1097,
+    SpuriousDragon: 1222,
+    Byzantium: 4754,
+    Constantinople: 10759,
+    Petersburg: 10525,
+    Istanbul: 10759,
+    MuirGlacier: 10759,
+    Berlin: 1414,
+    ByzantiumToConstantinopleFixAt5: 0,
+    EIP158ToByzantiumAt5: 0,
+    FrontierToHomesteadAt5: 0,
+    HomesteadToDaoAt5: 0,
+    HomesteadToEIP150At5: 3,
+  }
+}
+/** 
+ * Returns the amount of expected tests for a given fork, assuming all tests are ran
+ */
+function getExpectedTests(fork, name) {
+  if (expectedTestsFull[name] == undefined) {
+    return 
+  }
+  for (let key in expectedTestsFull[name]) {
+    if (fork.toLowerCase() == key.toLowerCase()) {
+      return expectedTestsFull[name][key]
+    }
+  }
+}
+
+
 /**
  * Returns an aggregated array with the tests to skip
  * @param {String} choices comma-separated list with skip options, e.g. BROKEN,PERMANENT
@@ -184,4 +409,7 @@ module.exports = {
   SKIP_SLOW: SKIP_SLOW,
   getRequiredForkConfigAlias: getRequiredForkConfigAlias,
   getSkipTests: getSkipTests,
+  getCommon: getCommon,
+  getTestDirs: getTestDirs,
+  getExpectedTests
 }
