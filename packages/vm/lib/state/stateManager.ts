@@ -276,7 +276,7 @@ export default class DefaultStateManager implements StateManager {
    * corresponding to `address` at the provided `key`.
    * @param address -  Address to set a storage value for
    * @param key - Key to set the value at. Must be 32 bytes long.
-   * @param value - Value to set at `key` for account corresponding to `address`. Cannot be more than 32 bytes. Will be left-padded with zeros if less than 32 bytes. If it is a empty or filled with zeros, delete the value.
+   * @param value - Value to set at `key` for account corresponding to `address`. Cannot be more than 32 bytes. Leading zeros are stripped. If it is a empty or filled with zeros, deletes the value.
    */
   async putContractStorage(address: Buffer, key: Buffer, value: Buffer): Promise<void> {
     if (key.length !== 32) {
@@ -421,7 +421,7 @@ export default class DefaultStateManager implements StateManager {
   }
 
   /**
-   * Dumps the the RLP-encoded storage values for an `account` specified by `address`.
+   * Dumps the RLP-encoded storage values for an `account` specified by `address`.
    * @param address - The address of the `account` to return storage for
    * @returns {Promise<StorageDump>} - The state of the account as an `Object` map.
    * Keys are are the storage keys, values are the storage values as strings.
