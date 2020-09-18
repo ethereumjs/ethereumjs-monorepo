@@ -1,15 +1,15 @@
-const tape = require('tape')
-const { toBuffer, keccak256, KECCAK256_RLP } = require('ethereumjs-util')
-const Common = require('@ethereumjs/common').default
-const Account = require('@ethereumjs/account').default
-const { DefaultStateManager } = require('../../../dist/state')
-const { createAccount } = require('../utils')
-const { isRunningInKarma } = require('../../util')
+import * as tape from 'tape'
+import { BN, toBuffer, keccak256, KECCAK256_RLP } from 'ethereumjs-util'
+import Common from '@ethereumjs/common'
+import Account from '@ethereumjs/account'
+import { DefaultStateManager } from '../../../dist/state'
+import { createAccount } from '../utils'
+import { isRunningInKarma } from '../../util'
 
 const StateManager = DefaultStateManager
 
-tape('StateManager', t => {
-  t.test('should instantiate', async st => {
+tape('StateManager', (t) => {
+  t.test('should instantiate', async (st) => {
     const stateManager = new DefaultStateManager()
 
     st.deepEqual(stateManager._trie.root, KECCAK256_RLP, 'it has default root')
@@ -38,11 +38,7 @@ tape('StateManager', t => {
 
     await stateManager.setStateRoot(initialStateRoot)
     const account2 = await stateManager.getAccount(addressBuffer)
-    st.equal(
-      account2.balance.length,
-      0,
-      'account value is set to 0 in original state root',
-    )
+    st.equal(account2.balance.length, 0, 'account value is set to 0 in original state root')
 
     // test contract storage cache
     await stateManager.checkpoint()
@@ -51,19 +47,12 @@ tape('StateManager', t => {
     await stateManager.putContractStorage(addressBuffer, key, value)
 
     const contract0 = await stateManager.getContractStorage(addressBuffer, key)
-    st.ok(
-      contract0.equals(value),
-      "contract key's value is set in the _storageTries cache",
-    )
+    st.ok(contract0.equals(value), "contract key's value is set in the _storageTries cache")
 
     await stateManager.commit()
     await stateManager.setStateRoot(initialStateRoot)
     const contract1 = await stateManager.getContractStorage(addressBuffer, key)
-    st.equal(
-      contract1.length,
-      0,
-      "contract key's value is unset in the _storageTries cache",
-    )
+    st.equal(contract1.length, 0, "contract key's value is unset in the _storageTries cache")
 
     st.end()
   })
@@ -105,42 +94,36 @@ tape('StateManager', t => {
     },
   )
 
-  t.test(
-    'should return false for a non-existent account',
-    async (st) => {
-      const stateManager = new DefaultStateManager()
-      const address = Buffer.from('a94f5374fce5edbc8e2a8697c15331677e6ebf0b', 'hex')
+  t.test('should return false for a non-existent account', async (st) => {
+    const stateManager = new DefaultStateManager()
+    const address = Buffer.from('a94f5374fce5edbc8e2a8697c15331677e6ebf0b', 'hex')
 
-      let res = await stateManager.accountExists(address)
+    let res = await stateManager.accountExists(address)
 
-      st.notOk(res)
+    st.notOk(res)
 
-      st.end()
-    },
-  )
+    st.end()
+  })
 
-  t.test(
-    'should return true for an existent account',
-    async (st) => {
-      const stateManager = new DefaultStateManager()
-      const account = createAccount('0x1', '0x1')
-      const address = Buffer.from('a94f5374fce5edbc8e2a8697c15331677e6ebf0b', 'hex')
+  t.test('should return true for an existent account', async (st) => {
+    const stateManager = new DefaultStateManager()
+    const account = createAccount(new BN(0x1), new BN(0x1))
+    const address = Buffer.from('a94f5374fce5edbc8e2a8697c15331677e6ebf0b', 'hex')
 
-      await stateManager.putAccount(address, account)
+    await stateManager.putAccount(address, account)
 
-      let res = await stateManager.accountExists(address)
+    let res = await stateManager.accountExists(address)
 
-      st.ok(res)
+    st.ok(res)
 
-      st.end()
-    },
-  )
+    st.end()
+  })
 
   t.test(
     'should call the callback with a false boolean representing non-emptiness when the account is not empty',
     async (st) => {
       const stateManager = new DefaultStateManager()
-      const account = createAccount('0x1', '0x1')
+      const account = createAccount(new BN(0x1), new BN(0x1))
       const address = Buffer.from('a94f5374fce5edbc8e2a8697c15331677e6ebf0b', 'hex')
 
       await stateManager.putAccount(address, account)
@@ -152,26 +135,29 @@ tape('StateManager', t => {
       st.end()
     },
   )
-  t.test('should generate the genesis state root correctly for mainnet from ethereum/tests data', async st => {
-    if (isRunningInKarma()) {
-      st.skip('skip slow test when running in karma')
-      return st.end()
-    }
-    const genesisData = require('ethereumjs-testing').getSingleFile(
-      'BasicTests/genesishashestest.json',
-    ) 
-    const stateManager = new StateManager()
-    await stateManager.generateCanonicalGenesis()
-    let stateRoot = await stateManager.getStateRoot()
-    st.equals(
-      stateRoot.toString('hex'),
-      genesisData.genesis_state_root,
-      'generateCanonicalGenesis should produce correct state root for mainnet from ethereum/tests data',
-    )
-    st.end()
-  })
+  t.test(
+    'should generate the genesis state root correctly for mainnet from ethereum/tests data',
+    async (st) => {
+      if (isRunningInKarma()) {
+        st.skip('skip slow test when running in karma')
+        return st.end()
+      }
+      const genesisData = require('ethereumjs-testing').getSingleFile(
+        'BasicTests/genesishashestest.json',
+      )
+      const stateManager = new StateManager()
+      await stateManager.generateCanonicalGenesis()
+      let stateRoot = await stateManager.getStateRoot()
+      st.equals(
+        stateRoot.toString('hex'),
+        genesisData.genesis_state_root,
+        'generateCanonicalGenesis should produce correct state root for mainnet from ethereum/tests data',
+      )
+      st.end()
+    },
+  )
 
-  t.test('should generate the genesis state root correctly for mainnet from common', async st => {
+  t.test('should generate the genesis state root correctly for mainnet from common', async (st) => {
     if (isRunningInKarma()) {
       st.skip('skip slow test when running in karma')
       return st.end()
@@ -214,7 +200,10 @@ tape('StateManager', t => {
     const addressBuffer = Buffer.from('a94f5374fce5edbc8e2a8697c15331677e6ebf0b', 'hex')
     const account = createAccount()
 
-    await stateManager.putAccount('a94f5374fce5edbc8e2a8697c15331677e6ebf0b', account)
+    await stateManager.putAccount(
+      Buffer.from('a94f5374fce5edbc8e2a8697c15331677e6ebf0b', 'hex'),
+      account,
+    )
 
     const key = toBuffer('0x1234567890123456789012345678901234567890123456789012345678901234')
     const value = toBuffer('0x0a') // We used this value as its RLP encoding is also 0a
@@ -236,8 +225,8 @@ tape('StateManager', t => {
     st.equal(stateManager._common.hardfork(), 'byzantium')
 
     const stateManagerCopy = stateManager.copy()
-    st.equal(stateManagerCopy._common.chainName(), 'goerli')
-    st.equal(stateManagerCopy._common.hardfork(), 'byzantium')
+    st.equal((<any>stateManagerCopy)._common.chainName(), 'goerli')
+    st.equal((<any>stateManagerCopy)._common.hardfork(), 'byzantium')
 
     st.end()
   })
@@ -279,7 +268,7 @@ tape('Original storage cache', async (t) => {
   const address = 'a94f5374fce5edbc8e2a8697c15331677e6ebf0b'
   const addressBuffer = Buffer.from(address, 'hex')
   const account = createAccount()
-  await stateManager.putAccount(address, account)
+  await stateManager.putAccount(addressBuffer, account)
 
   const key = Buffer.from('1234567890123456789012345678901234567890123456789012345678901234', 'hex')
   const value = Buffer.from('1234', 'hex')

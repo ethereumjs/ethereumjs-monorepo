@@ -1,27 +1,31 @@
-const tape = require('tape')
-const level = require('level-mem')
-const Blockchain = require('@ethereumjs/blockchain').default
-const { Block } = require('@ethereumjs/block')
-const Common = require('@ethereumjs/common').default
-const util = require('ethereumjs-util')
-const runBlockchain = require('../../dist/runBlockchain').default
-const { DefaultStateManager } = require('../../dist/state')
-const { createGenesis } = require('./utils')
+import level from 'level-mem'
+import * as tape from 'tape'
+import { BN, toBuffer } from 'ethereumjs-util'
+import { Block } from '@ethereumjs/block'
+import Common from '@ethereumjs/common'
+import Blockchain from '@ethereumjs/blockchain'
+import runBlockchain from '../../dist/runBlockchain'
+import { DefaultStateManager } from '../../dist/state'
+import { createGenesis } from './utils'
 
 Error.stackTraceLimit = 100
 
 tape('runBlockchain', (t) => {
   const blockchainDB = level()
+  const common = new Common({ chain: 'goerli', hardfork: 'chainstart' })
+
   const blockchain = new Blockchain({
     db: blockchainDB,
-    common: new Common({ chain: 'goerli', hardfork: 'chainstart' }),
+    common,
     validateBlocks: false,
     validatePow: false,
   })
-  const stateManager = new DefaultStateManager({ common: new Common({ chain: 'goerli' }) })
+
+  const stateManager = new DefaultStateManager({ common })
+
   const vm = {
     stateManager,
-    blockchain: blockchain,
+    blockchain,
   }
 
   t.test('should run without a blockchain parameter', async (st) => {
@@ -40,7 +44,8 @@ tape('runBlockchain', (t) => {
 
   t.test('should run with genesis block', async (st) => {
     try {
-      const genesis = createGenesis(new Common({ chain: 'goerli', hardfork: 'chainstart' }))
+      const common = new Common({ chain: 'goerli', hardfork: 'chainstart' })
+      const genesis = createGenesis({ common })
 
       await blockchain.putGenesis(genesis)
       st.ok(blockchain.meta.genesis, 'genesis should be set for blockchain')
@@ -55,7 +60,7 @@ tape('runBlockchain', (t) => {
   t.test('should run with valid and invalid blocks', async (st) => {
     // Produce error on the third time runBlock is called
     let runBlockInvocations = 0
-    vm.runBlock = (opts) =>
+    ;(<any>vm).runBlock = (opts) =>
       new Promise((resolve, reject) => {
         runBlockInvocations++
         if (runBlockInvocations === 3) {
@@ -65,7 +70,7 @@ tape('runBlockchain', (t) => {
       })
 
     const common = new Common({ chain: 'goerli', hardfork: 'chainstart' })
-    const genesis = createGenesis(common)
+    const genesis = createGenesis({ common })
     await blockchain.putGenesis(genesis)
 
     const b1 = createBlock(genesis, 1, { common })
@@ -99,9 +104,9 @@ function createBlock(parent = null, n = 0, opts = {}) {
   }
 
   const b = new Block(undefined, opts)
-  b.header.number = util.toBuffer(n)
+  b.header.number = toBuffer(n)
   b.header.parentHash = parent.hash()
-  b.header.difficulty = '0xfffffff'
+  b.header.difficulty = new BN('0xfffffff').toArrayLike(Buffer)
   b.header.stateRoot = parent.header.stateRoot
 
   return b

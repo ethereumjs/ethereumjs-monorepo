@@ -1,4 +1,7 @@
 {
   "extends": "@ethereumjs/config-tsc",
+  "compilerOptions": {
+    "resolveJsonModule": true
+  },
   "include": ["lib/**/*.ts", "tests/**/*.ts"]
 }
