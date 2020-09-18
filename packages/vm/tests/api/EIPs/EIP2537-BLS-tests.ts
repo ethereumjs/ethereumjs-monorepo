@@ -1,19 +1,17 @@
-const BN = require('bn.js')
-const tape = require('tape')
-const Common = require('@ethereumjs/common').default
-const VM = require('../../../dist/index').default
-const { isRunningInKarma } = require('../../util')
+import * as tape from 'tape'
+import { BN } from 'ethereumjs-util'
+import Common from '@ethereumjs/common'
+import VM from '../../../dist'
+import { isRunningInKarma } from '../../util'
 
 const precompileAddressStart = 0x0a
 const precompileAddressEnd = 0x12
 
-const precompiles = []
+const precompiles: string[] = []
 
 for (let address = precompileAddressStart; address <= precompileAddressEnd; address++) {
   precompiles.push(address.toString(16).padStart(40, '0'))
 }
-
-const dir = './tests/api/berlin/'
 
 tape('EIP-2537 BLS tests', (t) => {
   t.test('BLS precompiles should not be available if EIP not activated', async (st) => {
@@ -27,9 +25,9 @@ tape('EIP-2537 BLS tests', (t) => {
     for (let address of precompiles) {
       const result = await vm.runCall({
         caller: Buffer.from('0000000000000000000000000000000000000000', 'hex'),
-        gasLimit: new BN(0xffffffffff),
+        gasLimit: new BN(0xffffffffff).toArrayLike(Buffer),
         to: Buffer.from(address, 'hex'),
-        value: new BN(0),
+        value: new BN(0).toArrayLike(Buffer),
         data: Buffer.alloc(0),
       })
 
@@ -58,9 +56,9 @@ tape('EIP-2537 BLS tests', (t) => {
     for (let address of precompiles) {
       const result = await vm.runCall({
         caller: Buffer.from('0000000000000000000000000000000000000000', 'hex'),
-        gasLimit: gasLimit,
+        gasLimit: gasLimit.toArrayLike(Buffer),
         to: Buffer.from(address, 'hex'),
-        value: new BN(0),
+        value: new BN(0).toArrayLike(Buffer),
         data: Buffer.alloc(0),
       })
 
