@@ -1,6 +1,6 @@
-const tape = require('tape')
-const { getOpcodesForHF } = require('../../dist/evm/opcodes')
-const Common = require('@ethereumjs/common').default
+import * as tape from 'tape'
+import Common from '@ethereumjs/common'
+import { getOpcodesForHF } from '../../dist/evm/opcodes'
 
 const CHAINID = 0x46
 

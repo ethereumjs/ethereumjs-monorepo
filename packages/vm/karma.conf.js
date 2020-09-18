@@ -1,17 +1,17 @@
 // Karma configuration
 // Generated on Fri Mar 01 2019 22:02:29 GMT+0100 (CET)
 
-module.exports = function(config) {
+module.exports = function (config) {
   config.set({
     // base path that will be used to resolve all patterns (eg. files, exclude)
     basePath: '',
 
     // frameworks to use
     // available frameworks: https://www.npmjs.com/browse/keyword/karma-adapter
-    frameworks: ['browserify', 'tap'],
+    frameworks: ['karma-typescript', 'tap'],
 
     // list of files / patterns to load in the browser
-    files: ['./tests/api/**/*.js'],
+    files: ['./tests/api/**/*.ts'],
 
     // list of files / patterns to exclude
     exclude: [],
@@ -19,11 +19,20 @@ module.exports = function(config) {
     // preprocess matching files before serving them to the browser
     // available preprocessors: https://www.npmjs.com/browse/keyword/karma-preprocessor
     preprocessors: {
-      './tests/api/**/*.js': ['browserify'],
+      '**/*.ts': ['karma-typescript'],
+    },
+
+    karmaTypescriptConfig: {
+      compilerOptions: {
+        resolveJsonModule: true,
+      },
+      bundlerOptions: {
+        entrypoints: /\.spec\.ts$/,
+      },
     },
 
     proxies: {
-      '/mcl_c384_256.wasm': '../../node_modules/mcl-wasm/mcl_c384_256.wasm'
+      '/mcl_c384_256.wasm': '../../node_modules/mcl-wasm/mcl_c384_256.wasm',
     },
 
     // test results reporter to use

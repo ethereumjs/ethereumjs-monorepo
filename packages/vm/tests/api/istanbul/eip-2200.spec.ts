@@ -1,9 +1,9 @@
-const tape = require('tape')
-const BN = require('bn.js')
-const Common = require('@ethereumjs/common').default
-const VM = require('../../../dist/index').default
-const { ERROR } = require('../../../dist/exceptions')
-const { createAccount } = require('../utils')
+import * as tape from 'tape'
+import { BN } from 'ethereumjs-util'
+import Common from '@ethereumjs/common'
+import VM from '../../../dist'
+import { ERROR } from '../../../dist/exceptions'
+import { createAccount } from '../utils'
 
 const testCases = [
   { original: new BN(0), code: '60006000556000600055', used: 1612, refund: 0 }, // 0 -> 0 -> 0
@@ -34,7 +34,7 @@ const testCases = [
   { original: new BN(1), gas: new BN(2307), code: '6001600055', used: 806, refund: 0 }, // 1 -> 1 (2301 sentry + 2xPUSH)
 ]
 
-tape('Istanbul: EIP-2200: net-metering SSTORE', async t => {
+tape('Istanbul: EIP-2200: net-metering SSTORE', async (t) => {
   const caller = Buffer.from('0000000000000000000000000000000000000000', 'hex')
   const addr = Buffer.from('00000000000000000000000000000000000000ff', 'hex')
   const key = new BN(0).toArrayLike(Buffer, 'be', 32)
@@ -42,16 +42,18 @@ tape('Istanbul: EIP-2200: net-metering SSTORE', async t => {
     const common = new Common({ chain: 'mainnet', hardfork: 'istanbul' })
     const vm = new VM({ common })
 
-    const account = createAccount('0x00', '0x00')
+    const account = createAccount(new BN(0), new BN(0))
     await vm.stateManager.putAccount(addr, account)
     await vm.stateManager.putContractCode(addr, Buffer.from(testCase.code, 'hex'))
     if (!testCase.original.isZero()) {
-      await vm.stateManager.putContractStorage(addr, key, testCase.original)
+      await vm.stateManager.putContractStorage(addr, key, testCase.original.toArrayLike(Buffer))
     }
 
     const runCallArgs = {
       caller,
-      gasLimit: testCase.gas ? testCase.gas : new BN(0xffffffffff),
+      gasLimit: testCase.gas
+        ? testCase.gas.toArrayLike(Buffer)
+        : new BN(0xffffffffff).toArrayLike(Buffer),
       to: addr,
     }
 

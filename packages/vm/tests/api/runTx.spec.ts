@@ -1,11 +1,11 @@
-const tape = require('tape')
-const Transaction = require('@ethereumjs/tx').Transaction
-const ethUtil = require('ethereumjs-util')
-const runTx = require('../../dist/runTx').default
-const { DefaultStateManager } = require('../../dist/state')
-const VM = require('../../dist/index').default
-const { createAccount } = require('./utils')
-const Common = require('@ethereumjs/common').default
+import * as tape from 'tape'
+import { BN, MAX_INTEGER } from 'ethereumjs-util'
+import Common from '@ethereumjs/common'
+import { Transaction } from '@ethereumjs/tx'
+import { DefaultStateManager } from '../../dist/state'
+import runTx from '../../dist/runTx'
+import VM from '../../dist/index'
+import { createAccount } from './utils'
 
 function setup(vm = null) {
   if (vm === null) {
@@ -69,7 +69,7 @@ tape('should run simple tx without errors', async (t) => {
 
   const tx = getTransaction(true, true)
   const acc = createAccount()
-  await suite.putAccount(tx.from.toString('hex'), acc)
+  await suite.putAccount((<any>tx).from.toString('hex'), acc)
 
   let res = await suite.runTx({ tx, populateCache: true })
   t.true(res.gasUsed.gt(0), 'should have used some gas')
@@ -83,14 +83,14 @@ tape('should fail when account balance overflows (call)', async (t) => {
 
   const tx = getTransaction(true, true, '0x01')
   const from = createAccount()
-  const to = createAccount('0x00', ethUtil.MAX_INTEGER)
-  await suite.putAccount(tx.from.toString('hex'), from)
+  const to = createAccount(new BN(0), MAX_INTEGER)
+  await suite.putAccount((<any>tx).from.toString('hex'), from)
   await suite.putAccount(tx.to, to)
 
   const res = await suite.runTx({ tx })
 
   t.equal(res.execResult.exceptionError.error, 'value overflow')
-  t.equal(vm.stateManager._checkpointCount, 0)
+  t.equal((<any>vm.stateManager)._checkpointCount, 0)
   t.end()
 })
 
@@ -101,19 +101,19 @@ tape('should fail when account balance overflows (create)', async (t) => {
   const contractAddress = Buffer.from('37d6c3cdbc9304cad74eef8e18a85ed54263b4e7', 'hex')
   const tx = getTransaction(true, true, '0x01', true)
   const from = createAccount()
-  const to = createAccount('0x00', ethUtil.MAX_INTEGER)
-  await suite.putAccount(tx.from.toString('hex'), from)
+  const to = createAccount(new BN(0), MAX_INTEGER)
+  await suite.putAccount((<any>tx).from.toString('hex'), from)
   await suite.putAccount(contractAddress, to)
 
   const res = await suite.runTx({ tx })
 
   t.equal(res.execResult.exceptionError.error, 'value overflow')
-  t.equal(vm.stateManager._checkpointCount, 0)
+  t.equal((<any>vm.stateManager)._checkpointCount, 0)
   t.end()
 })
 
-tape('should clear storage cache after every transaction', async(t) => {
-  const vm = new VM({common: new Common({ chain: 'mainnet', hardfork: "istanbul" })})
+tape('should clear storage cache after every transaction', async (t) => {
+  const vm = new VM({ common: new Common({ chain: 'mainnet', hardfork: 'istanbul' }) })
   const suite = setup(vm)
   const privateKey = Buffer.from(
     'e331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109',
@@ -125,24 +125,27 @@ tape('should clear storage cache after every transaction', async(t) => {
     SSTORE
     INVALID
   */
-  const code = "6001600055FE"
-  const address = Buffer.from("00000000000000000000000000000000000000ff", 'hex')
-  await vm.stateManager.putContractCode(Buffer.from(address, 'hex'), Buffer.from(code, 'hex'))
-  await vm.stateManager.putContractStorage(address, Buffer.from(("00").repeat(32), 'hex'), Buffer.from(("00").repeat(31) + "01", 'hex'))
-  const tx = new Transaction ({
+  const code = '6001600055FE'
+  const address = Buffer.from('00000000000000000000000000000000000000ff', 'hex')
+  await vm.stateManager.putContractCode(address, Buffer.from(code, 'hex'))
+  await vm.stateManager.putContractStorage(
+    address,
+    Buffer.from('00'.repeat(32), 'hex'),
+    Buffer.from('00'.repeat(31) + '01', 'hex'),
+  )
+  const tx = new Transaction({
     nonce: '0x00',
     gasPrice: 1,
     gasLimit: 100000,
     to: address,
-    chainId: 3,
   })
   tx.sign(privateKey)
 
-  await vm.stateManager.putAccount(tx.from, createAccount())
+  await vm.stateManager.putAccount((<any>tx).from, createAccount())
 
-  await vm.runTx({tx}) // this tx will fail, but we have to ensure that the cache is cleared
+  await vm.runTx({ tx }) // this tx will fail, but we have to ensure that the cache is cleared
 
-  t.equal(vm.stateManager._originalStorageCache.size, 0, 'storage cache should be cleared')
+  t.equal((<any>vm.stateManager)._originalStorageCache.size, 0, 'storage cache should be cleared')
   t.end()
 })
 
@@ -173,7 +176,7 @@ function shouldFail(st, p, onErr) {
 
 function getTransaction(
   sign = false,
-  calculageGas = false,
+  calculateGas = false,
   value = '0x00',
   createContract = false,
 ) {
@@ -207,8 +210,8 @@ function getTransaction(
     tx.sign(privateKey)
   }
 
-  if (calculageGas) {
-    tx.gas = tx.getUpfrontCost()
+  if (calculateGas) {
+    ;(<any>tx).gas = tx.getUpfrontCost()
   }
 
   return tx

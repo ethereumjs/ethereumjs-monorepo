@@ -1,13 +1,13 @@
 import * as tape from 'tape'
 import * as util from 'ethereumjs-util'
+import { SecureTrie as Trie } from 'merkle-patricia-tree'
 import { Block } from '@ethereumjs/block'
 import Common from '@ethereumjs/common'
-import { SecureTrie as Trie } from 'merkle-patricia-tree'
-import VM from '../../dist/index'
-const { setupVM } = require('./utils')
-import { setupPreConditions, isRunningInKarma } from '../util'
-import * as testData from './testdata.json'
 import { DefaultStateManager } from '../../lib/state'
+import VM from '../../dist'
+import { setupPreConditions, isRunningInKarma } from '../util'
+import { setupVM } from './utils'
+import * as testData from './testdata.json'
 
 tape('VM with default blockchain', (t) => {
   t.test('should instantiate without params', (st) => {
@@ -108,7 +108,7 @@ tape('VM with blockchain', (t) => {
 
   t.test('should run blockchain without blocks', async (st) => {
     const vm = setupVM()
-    await vm.runBlockchain()
+    await vm.runBlockchain(vm.blockchain)
     st.end()
   })
 
@@ -135,7 +135,7 @@ tape('VM with blockchain', (t) => {
     vm.runBlock = async () => new Promise((resolve, reject) => reject(new Error('test')))
 
     try {
-      await vm.runBlockchain()
+      await vm.runBlockchain(vm.blockchain)
       st.fail("it hasn't returned any errors")
     } catch (e) {
       st.equal(e.message, 'test', "it has correctly propagated runBlock's error")
@@ -162,7 +162,7 @@ tape('VM with blockchain', (t) => {
 
     await setupPreConditions((vm.stateManager as DefaultStateManager)._trie, testData)
 
-    await vm.runBlockchain()
+    await vm.runBlockchain(vm.blockchain)
 
     st.end()
   })

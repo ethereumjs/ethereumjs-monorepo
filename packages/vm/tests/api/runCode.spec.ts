@@ -1,6 +1,6 @@
-const tape = require('tape')
-const BN = require('bn.js')
-const VM = require('../../dist/index').default
+import * as tape from 'tape'
+import { BN } from 'ethereumjs-util'
+import VM from '../../dist'
 
 const STOP = '00'
 const JUMP = '56'
@@ -9,20 +9,24 @@ const PUSH1 = '60'
 
 const testCases = [
   { code: [STOP, JUMPDEST, PUSH1, '05', JUMP, JUMPDEST], pc: 1, resultPC: 6 },
-  { code: [STOP, JUMPDEST, PUSH1, '05', JUMP, JUMPDEST], pc: -1, error: 'Internal error: program counter not in range' },
+  {
+    code: [STOP, JUMPDEST, PUSH1, '05', JUMP, JUMPDEST],
+    pc: -1,
+    error: 'Internal error: program counter not in range',
+  },
   { code: [STOP], pc: 3, error: 'Internal error: program counter not in range' },
-  { code: [STOP], resultPC: 1 }
+  { code: [STOP], resultPC: 1 },
 ]
 
-tape('VM.runcode: initial program counter', t => {
+tape('VM.runcode: initial program counter', (t) => {
   const vm = new VM()
 
   testCases.forEach((testData, i) => {
-    t.test('should start the execution at the specified pc or 0 #' + i, async st => {
+    t.test('should start the execution at the specified pc or 0 #' + i, async (st) => {
       const runCodeArgs = {
         code: Buffer.from(testData.code.join(''), 'hex'),
         pc: testData.pc,
-        gasLimit: new BN(0xffff)
+        gasLimit: new BN(0xffff).toArrayLike(Buffer),
       }
 
       let err

@@ -1,8 +1,9 @@
-const tape = require('tape')
-const Trie = require('merkle-patricia-tree').SecureTrie
-const Account = require('@ethereumjs/account').default
-const Cache = require('../../../dist/state/cache').default
-const utils = require('../utils')
+import * as tape from 'tape'
+import { SecureTrie as Trie } from 'merkle-patricia-tree'
+import { BN } from 'ethereumjs-util'
+import Account from '@ethereumjs/account'
+import Cache from '../../../dist/state/cache'
+import { createAccount } from '../utils'
 
 tape('cache initialization', (t) => {
   t.test('should initialize', async (st) => {
@@ -18,7 +19,7 @@ tape('cache put and get account', (t) => {
   const cache = new Cache(trie)
 
   const addr = Buffer.from('cd2a3d9f938e13cd947ec05abc7fe734df8dd826', 'hex')
-  const acc = utils.createAccount('0x00', '0xff11')
+  const acc = createAccount(new BN(0), new BN(0xff11))
 
   t.test('should fail to get non-existent account', async (st) => {
     const res = cache.get(addr)
@@ -60,7 +61,7 @@ tape('cache put and get account', (t) => {
   })
 
   t.test('should warm cache and load account from trie', async (st) => {
-    await cache.warm([addr])
+    await cache.warm(['0x' + addr.toString('hex')])
 
     const res = cache.get(addr)
     st.ok(res.balance.equals(acc.balance))
@@ -68,7 +69,7 @@ tape('cache put and get account', (t) => {
   })
 
   t.test('should update loaded account and flush it', async (st) => {
-    const updatedAcc = utils.createAccount('0x00', '0xff00')
+    const updatedAcc = createAccount(new BN(0), new BN(0xff00))
     cache.put(addr, updatedAcc)
     await cache.flush()
 
@@ -84,8 +85,8 @@ tape('cache checkpointing', (t) => {
   const cache = new Cache(trie)
 
   const addr = Buffer.from('cd2a3d9f938e13cd947ec05abc7fe734df8dd826', 'hex')
-  const acc = utils.createAccount('0x00', '0xff11')
-  const updatedAcc = utils.createAccount('0x00', '0xff00')
+  const acc = createAccount(new BN(0), new BN(0xff11))
+  const updatedAcc = createAccount(new BN(0x00), new BN(0xff00))
 
   t.test('should revert to correct state', async (st) => {
     cache.put(addr, acc)
