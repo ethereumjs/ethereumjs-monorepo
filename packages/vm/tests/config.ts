@@ -1,16 +1,14 @@
-const { Err } = require('typedoc/dist/lib/utils/result')
-
-const Common = require('@ethereumjs/common').default
+import Common from '@ethereumjs/common'
 
 /**
  * Default hardfork rules to run tests against
  */
-const DEFAULT_FORK_CONFIG = 'Istanbul'
+export const DEFAULT_FORK_CONFIG = 'Istanbul'
 
 /**
  * Tests which should be fixed
  */
-const SKIP_BROKEN = [
+export const SKIP_BROKEN = [
   'ForkStressTest', // Only BlockchainTest, temporary till fixed (2020-05-23)
   'ChainAtoChainB', // Only BlockchainTest, temporary, along expectException fixes (2020-05-23)
   'sha3_bigOffset', // SHA3: Only BlockchainTest, unclear SHA3 test situation (2020-05-28) (https://github.com/ethereumjs/ethereumjs-vm/pull/743#issuecomment-635116418)
@@ -34,13 +32,13 @@ const SKIP_BROKEN = [
   'sideChainWithMoreTransactions',
   'sideChainWithMoreTransactions2',
   'sideChainWithNewMaxDifficultyStartingFromBlock3AfterBlock4',
-  'uncleBlockAtBlock3afterBlock4'
+  'uncleBlockAtBlock3afterBlock4',
 ]
 
 /**
  * Tests skipped due to system specifics / design considerations
  */
-const SKIP_PERMANENT = [
+export const SKIP_PERMANENT = [
   'SuicidesMixingCoinbase', // sucides to the coinbase, since we run a blockLevel we create coinbase account.
   'static_SuicidesMixingCoinbase', // sucides to the coinbase, since we run a blockLevel we create coinbase account.
   'ForkUncle', // Only BlockchainTest, correct behaviour unspecified (?)
@@ -50,51 +48,51 @@ const SKIP_PERMANENT = [
 /**
  * tests running slow (run from time to time)
  */
-const SKIP_SLOW = [
-    'Call50000', 
-    'Call50000_ecrec',
-    'Call50000_identity',
-    'Call50000_identity2',
-    'Call50000_sha256',
-    'Call50000_rip160',
-    'Call50000bytesContract50_1',
-    'Call50000bytesContract50_2',
-    'Call1MB1024Calldepth',
-    'static_Call1MB1024Calldepth',
-    'static_Call50000',
-    'static_Call50000_ecrec',
-    'static_Call50000_identity',
-    'static_Call50000_identity2',
-    'static_Call50000_rip160',
-    'static_Return50000_2',
-    'Callcode50000',
-    'Return50000',
-    'Return50000_2',
-    'static_Call50000',
-    'static_Call50000_ecrec',
-    'static_Call50000_identity',
-    'static_Call50000_identity2',
-    'static_Call50000_sha256',
-    'static_Call50000_rip160',
-    'static_Call50000bytesContract50_1',
-    'static_Call50000bytesContract50_2',
-    'static_Call1MB1024Calldepth',
-    'static_Callcode50000',
-    'static_Return50000',
-    'static_Return50000_2',
-    'QuadraticComplexitySolidity_CallDataCopy',
-    'CALLBlake2f_MaxRounds',
-    'randomStatetest94_Istanbul',
-    // vmPerformance tests
-    'ackermann',
-    'fibonacci',
-    'loop-add-10M',
-    'loop-divadd-10M',
-    'loop-divadd-unr100-10M',
-    'loop-exp',
-    'loop-mul',
-    'manyFunctions100',
-  ]
+export const SKIP_SLOW = [
+  'Call50000',
+  'Call50000_ecrec',
+  'Call50000_identity',
+  'Call50000_identity2',
+  'Call50000_sha256',
+  'Call50000_rip160',
+  'Call50000bytesContract50_1',
+  'Call50000bytesContract50_2',
+  'Call1MB1024Calldepth',
+  'static_Call1MB1024Calldepth',
+  'static_Call50000',
+  'static_Call50000_ecrec',
+  'static_Call50000_identity',
+  'static_Call50000_identity2',
+  'static_Call50000_rip160',
+  'static_Return50000_2',
+  'Callcode50000',
+  'Return50000',
+  'Return50000_2',
+  'static_Call50000',
+  'static_Call50000_ecrec',
+  'static_Call50000_identity',
+  'static_Call50000_identity2',
+  'static_Call50000_sha256',
+  'static_Call50000_rip160',
+  'static_Call50000bytesContract50_1',
+  'static_Call50000bytesContract50_2',
+  'static_Call1MB1024Calldepth',
+  'static_Callcode50000',
+  'static_Return50000',
+  'static_Return50000_2',
+  'QuadraticComplexitySolidity_CallDataCopy',
+  'CALLBlake2f_MaxRounds',
+  'randomStatetest94_Istanbul',
+  // vmPerformance tests
+  'ackermann',
+  'fibonacci',
+  'loop-add-10M',
+  'loop-divadd-10M',
+  'loop-divadd-unr100-10M',
+  'loop-exp',
+  'loop-mul',
+  'manyFunctions100',
+]
 
 /**
  * VMTests have been deprecated, see https://github.com/ethereum/tests/issues/593
@@ -138,7 +136,7 @@ const SKIP_VM = [
  * @param {String} forkConfig - the name of the hardfork for which an alias should be returned
  * @returns {String} Either an alias of the forkConfig param, or the forkConfig param itself
  */
-function getRequiredForkConfigAlias(forkConfig) {
+export function getRequiredForkConfigAlias(forkConfig: string) {
   // Chainstart is also called Frontier and is called as such in the tests
   if (String(forkConfig).match(/^chainstart$/i)) {
     return 'Frontier'
@@ -179,50 +177,50 @@ const normalHardforks = [
   'berlin',
 ]
 
-const transitionNetworks = {
+const transitionNetworks: any = {
   ByzantiumToConstantinopleFixAt5: {
-    byzantium: 0, 
+    byzantium: 0,
     constantinople: 5,
     petersburg: 5,
     dao: null,
     finalSupportedFork: 'petersburg',
-    startFork: 'byzantium'
+    startFork: 'byzantium',
   },
   EIP158ToByzantiumAt5: {
     spuriousDragon: 0,
     byzantium: 5,
     dao: null,
     finalSupportedFork: 'byzantium',
-    startFork: 'spuriousDragon'
+    startFork: 'spuriousDragon',
   },
   FrontierToHomesteadAt5: {
     chainstart: 0,
     homestead: 5,
     dao: null,
     finalSupportedFork: 'homestead',
-    startFork: 'chainstart'
+    startFork: 'chainstart',
   },
   HomesteadToDaoAt5: {
     homestead: 0,
     dao: 5,
     finalSupportedFork: 'dao',
-    startFork: 'homestead'
+    startFork: 'homestead',
   },
-  HomesteadToEIP150At5 : {
+  HomesteadToEIP150At5: {
     homestead: 0,
     tangerineWhistle: 5,
     dao: null,
     finalSupportedFork: 'tangerineWhistle',
-    startFork: 'homestead'
-  }
+    startFork: 'homestead',
+  },
 }
 
-const testLegacy = {
-  chainstart: true, 
-  homestead: true, 
+const testLegacy: any = {
+  chainstart: true,
+  homestead: true,
   tangerineWhistle: true,
   spuriousDragon: true,
-  byzantium: true, 
+  byzantium: true,
   constantinople: true,
   petersburg: true,
   istanbul: false,
@@ -231,70 +229,82 @@ const testLegacy = {
   ByzantiumToConstantinopleFixAt5: false,
   EIP158ToByzantiumAt5: false,
   FrontierToHomesteadAt5: false,
-  HomesteadToDaoAt5: false, 
-  HomesteadToEIP150At5: false 
-} 
+  HomesteadToDaoAt5: false,
+  HomesteadToEIP150At5: false,
+}
 /**
  * Returns an array of dirs to run tests on
- * @param {string} network (fork identifier)
+ * @param network (fork identifier)
  * @param {string} Test type (BlockchainTests/StateTests)
  */
-function getTestDirs(network, testType) {
+export function getTestDirs(network: string, testType: string) {
   let testDirs = [testType]
   for (let key in testLegacy) {
     if (key.toLowerCase() == network.toLowerCase() && testLegacy[key]) {
       // Tests for HFs before Istanbul have been moved under `LegacyTests/Constantinople`:
       // https://github.com/ethereum/tests/releases/tag/v7.0.0-beta.1
-      testDirs.push("LegacyTests/Constantinople/" + testType)
+      testDirs.push('LegacyTests/Constantinople/' + testType)
       break
     }
   }
   return testDirs
 }
-  
+
 /**
  * Returns a Common for the given network (a test parameter)
  * @param {String} network - the network field of a test
  * @returns {Common} the Common which should be used
  */
-function getCommon(network) {
+export function getCommon(network: string) {
   const networkLowercase = network.toLowerCase()
   if (normalHardforks.map((str) => str.toLowerCase()).includes(networkLowercase)) {
     // normal hard fork, return the common with this hard fork
     // find the right upper/lowercased version
-    const hfName = normalHardforks.reduce((previousValue, currentValue) => (currentValue.toLowerCase() == networkLowercase) ? currentValue : previousValue)
-    const mainnetCommon = new Common({chain: 'mainnet', hardfork: hfName})
+    const hfName = normalHardforks.reduce((previousValue, currentValue) =>
+      currentValue.toLowerCase() == networkLowercase ? currentValue : previousValue,
+    )
+    const mainnetCommon = new Common({ chain: 'mainnet', hardfork: hfName })
     const hardforks = mainnetCommon.hardforks()
     const testHardforks = []
     for (const hf of hardforks) {
-      // check if we enable this hf 
+      // check if we enable this hf
       // disable dao hf by default (if enabled at block 0 forces the first 10 blocks to have dao-hard-fork in extraData of block header)
-      if (mainnetCommon.gteHardfork(hf.name) && hf.name != "dao") {
+      if (mainnetCommon.gteHardfork(hf.name) && hf.name != 'dao') {
         // this hardfork should be activated at block 0
         testHardforks.push({
           name: hf.name,
-          forkHash: hf.forkHash,
-          block: 0
+          // Current type definition Partial<Chain> in Common is currently not allowing to pass in forkHash
+          // forkHash: hf.forkHash,
+          block: 0,
         })
       } else {
         // disable hardforks newer than the test hardfork (but do add "support" for it, it just never gets activated)
         testHardforks.push({
           name: hf.name,
-          forkHash: hf.forkHash,
-          block: null
+          //forkHash: hf.forkHash,
+          block: null,
         })
       }
     }
-    return Common.forCustomChain('mainnet', {
-      hardforks: testHardforks
-    }, hfName)
+    return Common.forCustomChain(
+      'mainnet',
+      {
+        hardforks: testHardforks,
+      },
+      hfName,
+    )
   } else {
     // this is not a "default fork" network, but it is a "transition" network. we will test the VM if it transitions the right way
-    const transitionForks = transitionNetworks[network] || transitionNetworks[network.substring(0,1).toUpperCase()+network.substr(1)]
+    const transitionForks =
+      transitionNetworks[network] ||
+      transitionNetworks[network.substring(0, 1).toUpperCase() + network.substr(1)]
     if (!transitionForks) {
-      throw(new Error("network not supported: " + network))
+      throw new Error('network not supported: ' + network)
     }
-    const mainnetCommon = new Common({chain: 'mainnet', hardfork: transitionForks.finalSupportedFork})
+    const mainnetCommon = new Common({
+      chain: 'mainnet',
+      hardfork: transitionForks.finalSupportedFork,
+    })
     const hardforks = mainnetCommon.hardforks()
     const testHardforks = []
     for (const hf of hardforks) {
@@ -303,25 +313,29 @@ function getCommon(network) {
         const forkBlockNumber = transitionForks[hf.name]
         testHardforks.push({
           name: hf.name,
-          forkHash: hf.forkHash,
-          block: (forkBlockNumber === null) ? null : forkBlockNumber || 0 // if forkBlockNumber is defined as null, disable it, otherwise use block number or 0 (if its undefined)
+          // forkHash: hf.forkHash,
+          block: forkBlockNumber === null ? null : forkBlockNumber || 0, // if forkBlockNumber is defined as null, disable it, otherwise use block number or 0 (if its undefined)
         })
       } else {
         // disable the hardfork
         testHardforks.push({
           name: hf.name,
-          forkHash: hf.forkHash,
-          block: null
+          // forkHash: hf.forkHash,
+          block: null,
         })
       }
     }
-    return Common.forCustomChain('mainnet', {
-      hardforks: testHardforks
-    }, transitionForks.startFork)
+    return Common.forCustomChain(
+      'mainnet',
+      {
+        hardforks: testHardforks,
+      },
+      transitionForks.startFork,
+    )
   }
 }
 
-const expectedTestsFull = {
+const expectedTestsFull: any = {
   BlockchainTests: {
     Chainstart: 4385,
     Homestead: 6997,
@@ -357,14 +371,14 @@ const expectedTestsFull = {
     FrontierToHomesteadAt5: 0,
     HomesteadToDaoAt5: 0,
     HomesteadToEIP150At5: 3,
-  }
+  },
 }
-/** 
+/**
  * Returns the amount of expected tests for a given fork, assuming all tests are ran
  */
-function getExpectedTests(fork, name) {
+export function getExpectedTests(fork: string, name: string) {
   if (expectedTestsFull[name] == undefined) {
-    return 
+    return
   }
   for (let key in expectedTestsFull[name]) {
     if (fork.toLowerCase() == key.toLowerCase()) {
@@ -373,15 +387,14 @@ function getExpectedTests(fork, name) {
   }
 }
 
-
 /**
  * Returns an aggregated array with the tests to skip
- * @param {String} choices comma-separated list with skip options, e.g. BROKEN,PERMANENT
- * @param {String} defaultChoice if to use `NONE` or `ALL` as default choice
- * @returns {Array} array with test names
+ * @param choices comma-separated list with skip options, e.g. BROKEN,PERMANENT
+ * @param defaultChoice if to use `NONE` or `ALL` as default choice
+ * @returns array with test names
  */
-function getSkipTests(choices, defaultChoice) {
-  let skipTests = []
+export function getSkipTests(choices: string, defaultChoice: string): string[] {
+  let skipTests: string[] = []
   if (!choices) {
     choices = defaultChoice
   }
@@ -400,16 +413,4 @@ function getSkipTests(choices, defaultChoice) {
     }
   }
   return skipTests
-}
-
-module.exports = {
-  DEFAULT_FORK_CONFIG: DEFAULT_FORK_CONFIG,
-  SKIP_BROKEN: SKIP_BROKEN,
-  SKIP_PERMANENT: SKIP_PERMANENT,
-  SKIP_SLOW: SKIP_SLOW,
-  getRequiredForkConfigAlias: getRequiredForkConfigAlias,
-  getSkipTests: getSkipTests,
-  getCommon: getCommon,
-  getTestDirs: getTestDirs,
-  getExpectedTests
 }

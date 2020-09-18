@@ -1,4 +1,4 @@
 {
   "extends": "@ethereumjs/config-tsc",
-  "include": ["lib/**/*.ts"]
+  "include": ["lib/**/*.ts", "tests/**/*.ts"]
 }

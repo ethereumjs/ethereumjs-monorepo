@@ -1,13 +1,14 @@
-const { setupPreConditions, verifyPostConditions, getDAOCommon } = require('./util.js')
-const { addHexPrefix, rlp, bufferToInt } = require('ethereumjs-util')
-const Trie = require('merkle-patricia-tree').SecureTrie
-const { Block, BlockHeader } = require('@ethereumjs/block')
-const Blockchain = require('@ethereumjs/blockchain').default
-const Common = require('@ethereumjs/common').default
 const level = require('level')
 const levelMem = require('level-mem')
 
-module.exports = async function runBlockchainTest(options, testData, t) {
+import { addHexPrefix, rlp, bufferToInt } from 'ethereumjs-util'
+import { SecureTrie as Trie } from 'merkle-patricia-tree'
+import { Block, BlockHeader } from '@ethereumjs/block'
+import Blockchain from '@ethereumjs/blockchain'
+import tape = require('tape')
+import { setupPreConditions, verifyPostConditions, getDAOCommon } from './util'
+
+export default async function runBlockchainTest(options: any, testData: any, t: tape.Test) {
   // ensure that the test data is the right fork data
 
   if (testData.network != options.forkConfigTestSuite) {
@@ -30,10 +31,10 @@ module.exports = async function runBlockchainTest(options, testData, t) {
   if (testData.sealEngine && testData.sealEngine === 'Ethash') {
     validatePow = true
   }
-  
+
   let eips = []
   if (options.forkConfigVM == 'berlin') {
-    // currently, the BLS tests run on the Berlin network, but our VM does not activate EIP2537 
+    // currently, the BLS tests run on the Berlin network, but our VM does not activate EIP2537
     // if you run the Berlin HF
     eips = [2537]
   }
@@ -45,11 +46,11 @@ module.exports = async function runBlockchainTest(options, testData, t) {
     db: blockchainDB,
     common,
     validateBlocks: true,
-    validatePow
+    validatePow,
   })
 
   if (validatePow) {
-    blockchain.ethash.cacheDB = cacheDB
+    ;(blockchain.ethash as any).cacheDB = cacheDB
   }
 
   let VM
@@ -62,18 +63,15 @@ module.exports = async function runBlockchainTest(options, testData, t) {
   const vm = new VM({
     state,
     blockchain,
-    common
+    common,
   })
 
-  const genesisBlock = new Block(undefined, { common })
+  // create and add genesis block
+  const blockData = { header: formatBlockHeader(testData.genesisBlockHeader) }
+  const genesisBlock = new Block(blockData, { common })
 
   // set up pre-state
   await setupPreConditions(vm.stateManager._trie, testData)
-
-  // create and add genesis block
-  genesisBlock.header = new BlockHeader(formatBlockHeader(testData.genesisBlockHeader), {
-    common,
-  })
 
   t.ok(vm.stateManager._trie.root.equals(genesisBlock.header.stateRoot), 'correct pre stateRoot')
 
@@ -87,7 +85,7 @@ module.exports = async function runBlockchainTest(options, testData, t) {
 
   await blockchain.putGenesis(genesisBlock)
 
-  async function handleError(error, expectException) {
+  async function handleError(error: string | undefined, expectException: string) {
     if (expectException) {
       t.pass(`Expected exception ${expectException}`)
     } else {
@@ -97,7 +95,7 @@ module.exports = async function runBlockchainTest(options, testData, t) {
   }
 
   let currentFork = common.hardfork()
-  let currentBlock
+  let currentBlock = 0
   let lastBlock = 0
   for (const raw of testData.blocks) {
     lastBlock = currentBlock
@@ -106,27 +104,28 @@ module.exports = async function runBlockchainTest(options, testData, t) {
     // Last checked: ethereumjs-testing v1.3.1 (2020-05-11)
     const paramAll1 = 'expectExceptionALL'
     const paramAll2 = 'expectException'
-    const expectException = raw[paramFork] ? raw[paramFork] : raw[paramAll1] || raw[paramAll2] || raw.blockHeader == undefined
+    const expectException = raw[paramFork]
+      ? raw[paramFork]
+      : raw[paramAll1] || raw[paramAll2] || raw.blockHeader == undefined
 
     // here we convert the rlp to block only to extract the number
     // we have to do this again later because the common might run on a new hardfork
     try {
       let block = new Block(Buffer.from(raw.rlp.slice(2), 'hex'), {
-        common
-      }) 
+        common,
+      })
       currentBlock = bufferToInt(block.header.number)
-    } catch(e) {
+    } catch (e) {
       handleError(e, expectException)
       continue
     }
 
     if (currentBlock < lastBlock) {
       // "re-org": rollback the blockchain to currentBlock (i.e. delete that block number in the blockchain plus the children)
-      t.fail("re-orgs are not supported by the test suite")
+      t.fail('re-orgs are not supported by the test suite')
       return
     }
     try {
-      
       // check if we should update common.
       let newFork = common.setHardforkByBlockNumber(currentBlock)
       if (newFork != currentFork) {
@@ -135,8 +134,8 @@ module.exports = async function runBlockchainTest(options, testData, t) {
       }
 
       const block = new Block(Buffer.from(raw.rlp.slice(2), 'hex'), {
-        common
-      }) 
+        common,
+      })
       await blockchain.putBlock(block)
 
       // This is a trick to avoid generating the canonical genesis
@@ -164,7 +163,7 @@ module.exports = async function runBlockchainTest(options, testData, t) {
       await cacheDB.close()
 
       if (expectException) {
-        t.fail("expected exception but test did not throw an exception: " + expectException)
+        t.fail('expected exception but test did not throw an exception: ' + expectException)
         return
       }
     } catch (error) {
@@ -174,15 +173,15 @@ module.exports = async function runBlockchainTest(options, testData, t) {
     }
   }
   t.equal(
-    blockchain.meta.rawHead.toString('hex'),
+    (blockchain.meta as any).rawHead.toString('hex'),
     testData.lastblockhash,
     'correct last header block',
   )
   await cacheDB.close()
 }
 
-function formatBlockHeader(data) {
-  const r = {}
+function formatBlockHeader(data: any) {
+  const r: any = {}
   const keys = Object.keys(data)
   keys.forEach(function (key) {
     r[key] = addHexPrefix(data[key])

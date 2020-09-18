@@ -1,13 +1,20 @@
-const { setupPreConditions, makeTx, makeBlockFromEnv } = require('./util')
-const Trie = require('merkle-patricia-tree').SecureTrie
-const { BN } = require('ethereumjs-util')
-const { default: Common } = require('@ethereumjs/common')
-const Account = require('@ethereumjs/account').default
+import { setupPreConditions, makeTx, makeBlockFromEnv } from './util'
+import { SecureTrie as Trie } from 'merkle-patricia-tree'
+import { BN } from 'ethereumjs-util'
+import Common from '@ethereumjs/common'
+import Account from '@ethereumjs/account'
+import tape = require('tape')
 
-function parseTestCases(forkConfigTestSuite, testData, data, gasLimit, value) {
+function parseTestCases(
+  forkConfigTestSuite: string,
+  testData: any,
+  data: string | undefined,
+  gasLimit: string | undefined,
+  value: string | undefined,
+) {
   let testCases = []
   if (testData['post'][forkConfigTestSuite]) {
-    testCases = testData['post'][forkConfigTestSuite].map((testCase) => {
+    testCases = testData['post'][forkConfigTestSuite].map((testCase: any) => {
       let testIndexes = testCase['indexes']
       let tx = { ...testData.transaction }
       if (data !== undefined && testIndexes['data'] !== data) {
@@ -34,16 +41,15 @@ function parseTestCases(forkConfigTestSuite, testData, data, gasLimit, value) {
     })
   }
 
-  testCases = testCases.filter((testCase) => {
+  testCases = testCases.filter((testCase: any) => {
     return testCase != null
   })
 
   return testCases
 }
 
-async function runTestCase(options, testData, t) {
+async function runTestCase(options: any, testData: any, t: tape.Test) {
   const state = new Trie()
-  let block, vm
   let VM
   if (options.dist) {
     VM = require('../dist/index.js').default
@@ -51,32 +57,32 @@ async function runTestCase(options, testData, t) {
     VM = require('../lib/index').default
   }
 
-  let eips = []
+  let eips: number[] = []
   if (options.forkConfigVM == 'berlin') {
-    // currently, the BLS tests run on the Berlin network, but our VM does not activate EIP2537 
+    // currently, the BLS tests run on the Berlin network, but our VM does not activate EIP2537
     // if you run the Berlin HF
-    eips = [2537] 
+    eips = [2537]
   }
 
   const common = new Common({ chain: 'mainnet', hardfork: options.forkConfigVM, eips })
-  vm = new VM({
+  let vm = new VM({
     state,
-    common: common
+    common: common,
   })
 
   await setupPreConditions(vm.stateManager._trie, testData)
 
   let tx = makeTx(testData.transaction, { common })
-  block = makeBlockFromEnv(testData.env)
+  let block = makeBlockFromEnv(testData.env)
 
   if (!tx.validate()) {
     return
   }
 
   if (options.jsontrace) {
-    vm.on('step', function (e) {
+    vm.on('step', function (e: any) {
       let hexStack = []
-      hexStack = e.stack.map((item) => {
+      hexStack = e.stack.map((item: any) => {
         return '0x' + new BN(item).toString(16, 0)
       })
 
@@ -124,7 +130,7 @@ async function runTestCase(options, testData, t) {
   )
 }
 
-module.exports = async function runStateTest(options, testData, t) {
+export default async function runStateTest(options: any, testData: any, t: tape.Test) {
   try {
     const testCases = parseTestCases(
       options.forkConfigTestSuite,

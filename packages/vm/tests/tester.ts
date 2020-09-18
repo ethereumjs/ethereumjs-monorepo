@@ -1,13 +1,18 @@
 #!/usr/bin/env node
 
+import { exit } from 'process'
+import * as tape from 'tape'
+import Common from '@ethereumjs/common'
+import stateTestsRunner from './GeneralStateTestsRunner'
+import blockchainTestsRunner from './BlockchainTestsRunner'
+import * as config from './config'
+
 const argv = require('minimist')(process.argv.slice(2))
-const tape = require('tape')
-const config = require('./config')
+
 const testLoader = require('./testLoader')
-const Common = require('@ethereumjs/common').default
 
 /**
- * Test runner 
+ * Test runner
  * CLI arguments:
  * --state: run state tests
  * --blockchain: run blockchain tests
@@ -31,14 +36,20 @@ const Common = require('@ethereumjs/common').default
  */
 
 async function runTests() {
-  let name
+  let name: string
+  let runner: any
   if (argv.state) {
     name = 'GeneralStateTests'
+    runner = stateTestsRunner
   } else if (argv.blockchain) {
     name = 'BlockchainTests'
+    runner = blockchainTestsRunner
+  } else {
+    console.log(`Test type not supported or provided`)
+    exit(1)
   }
 
-  const FORK_CONFIG = (argv.fork || config.DEFAULT_FORK_CONFIG)
+  const FORK_CONFIG = argv.fork || config.DEFAULT_FORK_CONFIG
   const FORK_CONFIG_TEST_SUITE = config.getRequiredForkConfigAlias(FORK_CONFIG)
 
   // Examples: Istanbul -> istanbul, MuirGlacier -> muirGlacier
@@ -47,7 +58,7 @@ async function runTests() {
   /**
    * Configuration for getting the tests from the ethereum/tests repository
    */
-  let testGetterArgs = {}
+  let testGetterArgs: any = {}
   testGetterArgs.skipTests = config.getSkipTests(argv.skip, argv.runSkipped ? 'NONE' : 'ALL')
   testGetterArgs.runSkipped = config.getSkipTests(argv.runSkipped, 'NONE')
   testGetterArgs.forkConfig = FORK_CONFIG_TEST_SUITE
@@ -61,7 +72,7 @@ async function runTests() {
   /**
    * Run-time configuration
    */
-  let runnerArgs = {}
+  let runnerArgs: any = {}
   runnerArgs.forkConfigVM = FORK_CONFIG_VM
   runnerArgs.forkConfigTestSuite = FORK_CONFIG_TEST_SUITE
   runnerArgs.common = config.getCommon(FORK_CONFIG_VM)
@@ -72,7 +83,7 @@ async function runTests() {
   runnerArgs.value = argv.value // GeneralStateTests
   runnerArgs.debug = argv.debug // BlockchainTests
 
-  let expectedTests
+  let expectedTests: number | undefined
   if (argv['verify-test-amount-alltests']) {
     expectedTests = config.getExpectedTests(FORK_CONFIG_VM, name)
   } else if (argv['expected-test-amount']) {
@@ -86,16 +97,19 @@ async function runTests() {
   const fillWidth = width
   const fillParam = 20
   const delimiter = `| `.padEnd(fillWidth) + ' |'
-  const formatArgs = (args) => {
-    return Object.assign({}, ...
-      Object.entries(args)
-      .filter(([k,v]) => v && v.length !== 0)
-      .map(([k,v]) => ({[k]:typeof(v) !== 'string' && v.length ? v.length : v}))
+  const formatArgs = (args: any) => {
+    return Object.assign(
+      {},
+      ...Object.entries(args)
+        .filter(([k, v]) => v && (v as any).length !== 0)
+        .map(([k, v]) => ({
+          [k]: typeof v !== 'string' && (v as any).length ? (v as any).length : v,
+        })),
     )
   }
   const formattedGetterArgs = formatArgs(testGetterArgs)
   const formattedRunnerArgs = formatArgs(runnerArgs)
-  
+
   console.log(`+${'-'.repeat(width)}+`)
   console.log(`| VM -> ${name} `.padEnd(fillWidth) + ' |')
   console.log(delimiter)
@@ -106,8 +120,8 @@ async function runTests() {
   console.log(delimiter)
   console.log(`| RunnerArgs`.padEnd(fillWidth) + ' |')
   for (const [key, value] of Object.entries(formattedRunnerArgs)) {
-    if (key == "common") {
-      const hf = value.hardfork()
+    if (key == 'common') {
+      const hf = (value as Common).hardfork()
       console.log(`| ${key.padEnd(fillParam)}: ${hf}`.padEnd(fillWidth) + ' |')
     } else {
       console.log(`| ${key.padEnd(fillParam)}: ${value}`.padEnd(fillWidth) + ' |')
@@ -117,24 +131,24 @@ async function runTests() {
   console.log()
 
   if (argv.customStateTest) {
-    const stateTestRunner = require('./GeneralStateTestsRunner.js')
     let fileName = argv.customStateTest
-    tape(name, t => {
-      testLoader.getTestFromSource(fileName, async (err, test) => {
+    tape(name, (t) => {
+      testLoader.getTestFromSource(fileName, async (err: string | undefined, test: any) => {
         if (err) {
           return t.fail(err)
         }
         t.comment(`file: ${fileName} test: ${test.testName}`)
-        await stateTestRunner(runnerArgs, test, t)
+        await stateTestsRunner(runnerArgs, test, t)
         t.end()
       })
     })
   } else {
-    tape(name, async t => {
-      let testIdentifier
-      let failingTests = {}
-      t.on('result', (o) => {
-        if ((o.ok != undefined) && !o.ok) {
+    tape(name, async (t) => {
+      let testIdentifier: string
+      let failingTests: any = {}
+
+      ;(t as any).on('result', (o: any) => {
+        if (o.ok != undefined && !o.ok) {
           if (failingTests[testIdentifier]) {
             failingTests[testIdentifier].push(o.name)
           } else {
@@ -142,50 +156,52 @@ async function runTests() {
           }
         }
       })
-      const runner = require(`./${name}Runner.js`)
       // Tests for HFs before Istanbul have been moved under `LegacyTests/Constantinople`:
       // https://github.com/ethereum/tests/releases/tag/v7.0.0-beta.1
 
       const dirs = config.getTestDirs(FORK_CONFIG_VM, name)
       for (let dir of dirs) {
         await new Promise((resolve, reject) => {
-          testLoader.getTestsFromArgs(
-            dir,
-            async (fileName, testName, test) => {
-              let runSkipped = testGetterArgs.runSkipped
-              let inRunSkipped = runSkipped.includes(fileName)
-              if (runSkipped.length === 0 || inRunSkipped) {
-                testIdentifier = `file: ${fileName} test: ${testName}`
-                t.comment(testIdentifier)
-                await runner(runnerArgs, test, t)
-              }
-            },
-            testGetterArgs,
-          )
-          .then(() => {
-            resolve()
-          })
-          .catch((error) => {
-            t.fail(error)
-            reject()
-          })
+          testLoader
+            .getTestsFromArgs(
+              dir,
+              async (fileName: string, testName: string, test: any) => {
+                let runSkipped = testGetterArgs.runSkipped
+                let inRunSkipped = runSkipped.includes(fileName)
+                if (runSkipped.length === 0 || inRunSkipped) {
+                  testIdentifier = `file: ${fileName} test: ${testName}`
+                  t.comment(testIdentifier)
+                  await runner(runnerArgs, test, t)
+                }
+              },
+              testGetterArgs,
+            )
+            .then(() => {
+              resolve()
+            })
+            .catch((error: string) => {
+              t.fail(error)
+              reject()
+            })
         })
       }
 
       for (let failingTestIdentifier in failingTests) {
-        console.log("Errors thrown in " + failingTestIdentifier + ":")
+        console.log('Errors thrown in ' + failingTestIdentifier + ':')
         const errors = failingTests[failingTestIdentifier]
         for (let i = 0; i < errors.length; i++) {
-          console.log("\t" + errors[i])
+          console.log('\t' + errors[i])
         }
       }
 
       if (expectedTests) {
-        t.ok(t.assertCount >= expectedTests, "expected " + expectedTests + " checks, got " + t.assertCount)
+        t.ok(
+          (t as any).assertCount >= expectedTests,
+          'expected ' + expectedTests + ' checks, got ' + (t as any).assertCount,
+        )
       }
 
       t.end()
-
     })
   }
 }
