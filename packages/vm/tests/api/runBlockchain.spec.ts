@@ -1,4 +1,3 @@
-import level from 'level-mem'
 import * as tape from 'tape'
 import { BN, toBuffer } from 'ethereumjs-util'
 import { Block } from '@ethereumjs/block'
@@ -7,6 +6,8 @@ import Blockchain from '@ethereumjs/blockchain'
 import runBlockchain from '../../dist/runBlockchain'
 import { DefaultStateManager } from '../../dist/state'
 import { createGenesis } from './utils'
+
+const level = require('level-mem')
 
 Error.stackTraceLimit = 100
 
@@ -60,14 +61,14 @@ tape('runBlockchain', (t) => {
   t.test('should run with valid and invalid blocks', async (st) => {
     // Produce error on the third time runBlock is called
     let runBlockInvocations = 0
-    ;(<any>vm).runBlock = (opts) =>
-      new Promise((resolve, reject) => {
-        runBlockInvocations++
-        if (runBlockInvocations === 3) {
-          return reject(new Error('test'))
-        }
-        resolve({})
-      })
+      ; (<any>vm).runBlock = (opts) =>
+        new Promise((resolve, reject) => {
+          runBlockInvocations++
+          if (runBlockInvocations === 3) {
+            return reject(new Error('test'))
+          }
+          resolve({})
+        })
 
     const common = new Common({ chain: 'goerli', hardfork: 'chainstart' })
     const genesis = createGenesis({ common })

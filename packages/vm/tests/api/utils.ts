@@ -1,10 +1,11 @@
-import level from 'level-mem'
 import { BN } from 'ethereumjs-util'
 import { Block, BlockOptions } from '@ethereumjs/block'
 import Account from '@ethereumjs/account'
 import Blockchain from '@ethereumjs/blockchain'
 import VM from '../../dist/index'
 import { VMOpts } from '../../lib'
+
+const level = require('level-mem')
 
 export function createGenesis(opts: BlockOptions) {
   const genesis = new Block(undefined, { ...opts, initWithGenesisHeader: true })

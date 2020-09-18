@@ -27,7 +27,8 @@ This module performs write operations. Making a backup of your data before tryin
 ```typescript
 import Blockchain from '@ethereumjs/blockchain'
 import { bufferToInt } from 'ethereumjs-util'
-import level from 'level'
+
+const level = require('level')
 
 const gethDbPath = './chaindata' // Add your own path here. It will get modified, see remarks.
 
