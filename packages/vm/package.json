@@ -13,7 +13,7 @@
     "benchmarks": "node --max-old-space-size=4096 ./scripts/benchmarks/mainnetBlocks.js scripts/benchmarks/fixture/blocks-prestate.json",
     "prepublishOnly": "npm run lint && npm run build && npm run test:buildIntegrity",
     "coverage": "nyc npm run coverage:test && nyc report --reporter=lcov",
-    "coverage:test": "tape './tests/api/**/*.js' ./tests/tester.js --state --dist",
+    "coverage:test": "tape -r ts-node/register './tests/api/**/*.js' './tests/api/**/*.ts' ./tests/tester.ts --state --dist",
     "docs:build": "typedoc --options typedoc.js",
     "test:state": "ts-node ./tests/tester --state",
     "test:state:allForks": "echo 'Chainstart Homestead dao TangerineWhistle SpuriousDragon Byzantium Constantinople Petersburg Istanbul MuirGlacier Berlin ByzantiumToConstantinopleFixAt5 EIP158ToByzantiumAt5 FrontierToHomesteadAt5 HomesteadToDaoAt5 HomesteadToEIP150At5' | xargs -n1 | xargs -I v1 npm run test:state -- --fork=v1 --verify-test-amount-alltests",
