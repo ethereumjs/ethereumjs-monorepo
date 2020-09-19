@@ -15,7 +15,7 @@ const code = ['46', '60', '00', '53', '60', '01', '60', '00', 'f3']
 tape('Istanbul: EIP-1344 CHAINID', async (t) => {
   const runCodeArgs = {
     code: Buffer.from(code.join(''), 'hex'),
-    gasLimit: new BN(0xffff).toArrayLike(Buffer),
+    gasLimit: new BN(0xffff),
   }
 
   for (const testCase of testCases) {
@@ -24,7 +24,7 @@ tape('Istanbul: EIP-1344 CHAINID', async (t) => {
     try {
       const res = await vm.runCode(runCodeArgs)
       if (testCase.err) {
-        t.equal(res.exceptionError.error, testCase.err)
+        t.equal(res.exceptionError?.error, testCase.err)
       } else {
         t.assert(res.exceptionError === undefined)
         t.assert(testCase.chainId.eq(new BN(res.returnValue)))

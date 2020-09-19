@@ -99,9 +99,9 @@ tape('Stack', (t) => {
 
   t.test('dup should throw on underflow', (st) => {
     const s = new Stack()
-    st.throws(() => s.dup(0))
-    s.push(new BN(5))
     st.throws(() => s.dup(1))
+    s.push(new BN(5))
+    st.throws(() => s.dup(2))
     st.end()
   })
 
@@ -153,9 +153,9 @@ tape('Stack', (t) => {
     await vm.stateManager.putContractCode(addr, Buffer.from(code, 'hex'))
     const runCallArgs = {
       caller: caller,
-      gasLimit: new BN(0xffffffffff).toArrayLike(Buffer),
+      gasLimit: new BN(0xffffffffff),
       to: addr,
-      value: new BN(1).toArrayLike(Buffer),
+      value: new BN(1),
     }
     try {
       const res = await vm.runCall(runCallArgs)

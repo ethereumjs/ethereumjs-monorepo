@@ -7,15 +7,15 @@ import runTx from '../../dist/runTx'
 import VM from '../../dist/index'
 import { createAccount } from './utils'
 
-function setup(vm = null) {
-  if (vm === null) {
+function setup(vm?: any) {
+  if (!vm) {
     const stateManager = new DefaultStateManager({})
     vm = {
       stateManager,
-      emit: (e, val, cb) => {
+      emit: (e: any, val: any, cb: Function) => {
         cb()
       },
-      _emit: (e, val) => new Promise((resolve, reject) => resolve()),
+      _emit: () => new Promise((resolve) => resolve()),
     }
   }
 
@@ -29,23 +29,9 @@ function setup(vm = null) {
 tape('runTx', (t) => {
   const suite = setup()
 
-  t.test('should fail to run without opts', async (st) => {
-    shouldFail(st, suite.runTx(), (e) =>
-      st.ok(e.message.includes('invalid input'), 'should fail with appropriate error'),
-    )
-    st.end()
-  })
-
-  t.test('should fail to run without tx', async (st) => {
-    shouldFail(st, suite.runTx({}), (e) =>
-      st.ok(e.message.includes('invalid input'), 'should fail with appropriate error'),
-    )
-    st.end()
-  })
-
   t.test('should fail to run without signature', async (st) => {
     const tx = getTransaction(false, true)
-    shouldFail(st, suite.runTx({ tx }), (e) =>
+    shouldFail(st, suite.runTx({ tx }), (e: Error) =>
       st.ok(e.message.toLowerCase().includes('signature'), 'should fail with appropriate error'),
     )
     st.end()
@@ -53,7 +39,7 @@ tape('runTx', (t) => {
 
   t.test('should fail without sufficient funds', async (st) => {
     const tx = getTransaction(true, true)
-    shouldFail(st, suite.runTx({ tx }), (e) =>
+    shouldFail(st, suite.runTx({ tx }), (e: Error) =>
       st.ok(
         e.message.toLowerCase().includes('enough funds'),
         'error should include "enough funds"',
@@ -71,8 +57,8 @@ tape('should run simple tx without errors', async (t) => {
   const acc = createAccount()
   await suite.putAccount((<any>tx).from.toString('hex'), acc)
 
-  let res = await suite.runTx({ tx, populateCache: true })
-  t.true(res.gasUsed.gt(0), 'should have used some gas')
+  let res = await suite.runTx({ tx })
+  t.true(res.gasUsed.gt(new BN(0)), 'should have used some gas')
 
   t.end()
 })
@@ -89,7 +75,7 @@ tape('should fail when account balance overflows (call)', async (t) => {
 
   const res = await suite.runTx({ tx })
 
-  t.equal(res.execResult.exceptionError.error, 'value overflow')
+  t.equal(res.execResult!.exceptionError!.error, 'value overflow')
   t.equal((<any>vm.stateManager)._checkpointCount, 0)
   t.end()
 })
@@ -107,7 +93,7 @@ tape('should fail when account balance overflows (create)', async (t) => {
 
   const res = await suite.runTx({ tx })
 
-  t.equal(res.execResult.exceptionError.error, 'value overflow')
+  t.equal(res.execResult!.exceptionError!.error, 'value overflow')
   t.equal((<any>vm.stateManager)._checkpointCount, 0)
   t.end()
 })
@@ -170,7 +156,7 @@ tape('should clear storage cache after every transaction', async (t) => {
   t.end()
 }) */
 
-function shouldFail(st, p, onErr) {
+function shouldFail(st: tape.Test, p: any, onErr: Function) {
   p.then(() => st.fail('runTx didnt return any errors')).catch(onErr)
 }
 
@@ -180,7 +166,7 @@ function getTransaction(
   value = '0x00',
   createContract = false,
 ) {
-  let to = '0x0000000000000000000000000000000000000000'
+  let to: string | undefined = '0x0000000000000000000000000000000000000000'
   let data = '0x7f7465737432000000000000000000000000000000000000000000000000000000600057'
 
   if (createContract) {

@@ -9,17 +9,17 @@ import { setupPreConditions, getDAOCommon } from '../util'
 
 const testData = require('./testdata.json')
 
-function setup(vm = null) {
+function setup(vm?: any) {
   // Create a mock, if no real VM object provided.
   // The mock includes mocked runTx and runCall which
   // always return an error.
-  if (vm === null) {
+  if (!vm) {
     const stateManager = new DefaultStateManager()
     vm = {
       stateManager,
-      emit: (e, val, cb) => cb(),
-      _emit: (e, val) => new Promise((resolve, reject) => resolve()),
-      runTx: (opts) => new Promise((resolve, reject) => reject(new Error('test'))),
+      emit: (e: any, val: any, cb: Function) => cb(),
+      _emit: () => new Promise((resolve) => resolve()),
+      runTx: () => new Promise((resolve, reject) => reject(new Error('test'))),
       _common: new Common({ chain: 'mainnet', hardfork: 'byzantium' }),
     }
   }
@@ -36,24 +36,6 @@ function setup(vm = null) {
 
 tape('runBlock', async (t) => {
   const suite = setup()
-
-  t.test('should fail without params', async (st) => {
-    await suite.p
-      .runBlock()
-      .then(() => st.fail('should have returned error'))
-      .catch((e) => st.ok(e.message.includes('invalid input'), 'correct error'))
-
-    st.end()
-  })
-
-  t.test('should fail without opts', async (st) => {
-    await suite.p
-      .runBlock({})
-      .then(() => st.fail('should have returned error'))
-      .catch((e) => st.ok(e.message.includes('invalid input'), 'correct error'))
-
-    st.end()
-  })
 
   t.test('should fail when runTx fails', async (st) => {
     const block = new Block(rlp.decode(suite.data.blocks[0].rlp))
@@ -136,7 +118,6 @@ tape('should run valid block', async (t) => {
     skipBlockValidation: true,
   })
 
-  t.error(res.error, "runBlock shouldn't have returned error")
   t.equal(
     res.results[0].gasUsed.toString('hex'),
     '5208',
@@ -156,7 +137,7 @@ tape(
     const suite = setup(vm)
 
     const genesis = new Block(rlp.decode(suite.data.genesisRLP))
-    let block1 = rlp.decode(suite.data.blocks[0].rlp)
+    let block1: any = rlp.decode(suite.data.blocks[0].rlp)
     // edit extra data of this block to "dao-hard-fork"
     block1[0][12] = Buffer.from('dao-hard-fork')
     const block = new Block(block1)
@@ -202,8 +183,8 @@ tape(
   },
 )
 
-async function runWithHf(hardfork) {
-  const vm = setupVM({ common: new Common({ chain: 'mainnet', hardfork: hardfork }) })
+async function runWithHf(hardfork: string) {
+  const vm = setupVM({ common: new Common({ chain: 'mainnet', hardfork }) })
   const suite = setup(vm)
 
   const block = new Block(rlp.decode(suite.data.blocks[0].rlp))

@@ -51,21 +51,19 @@ tape('Istanbul: EIP-2200: net-metering SSTORE', async (t) => {
 
     const runCallArgs = {
       caller,
-      gasLimit: testCase.gas
-        ? testCase.gas.toArrayLike(Buffer)
-        : new BN(0xffffffffff).toArrayLike(Buffer),
+      gasLimit: testCase.gas ? testCase.gas : new BN(0xffffffffff),
       to: addr,
     }
 
     try {
       const res = await vm.runCall(runCallArgs)
       if (testCase.err) {
-        t.equal(res.execResult.exceptionError.error, testCase.err)
+        t.equal(res.execResult.exceptionError?.error, testCase.err)
       } else {
         t.assert(res.execResult.exceptionError === undefined)
       }
       t.assert(new BN(testCase.used).eq(res.gasUsed))
-      t.assert(new BN(testCase.refund).eq(res.execResult.gasRefund))
+      t.assert(new BN(testCase.refund).eq(res.execResult.gasRefund!))
     } catch (e) {
       t.fail(e.message)
     }

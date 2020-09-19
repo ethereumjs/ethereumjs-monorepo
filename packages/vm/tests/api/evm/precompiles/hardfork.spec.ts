@@ -22,9 +22,9 @@ tape('Precompiles: hardfork availability', (t) => {
     let vm = new VM({ common: commonByzantium })
     let result = await vm.runCall({
       caller: Buffer.from('0000000000000000000000000000000000000000', 'hex'),
-      gasLimit: new BN(0xffffffffff).toArrayLike(Buffer),
+      gasLimit: new BN(0xffffffffff),
       to: Buffer.from(ECPAIR_Address, 'hex'),
-      value: new BN(0).toArrayLike(Buffer),
+      value: new BN(0),
     })
 
     st.assert(result.gasUsed.toNumber() == 100000) // check that we are using gas (if address would contain no code we use 0 gas)
@@ -42,9 +42,9 @@ tape('Precompiles: hardfork availability', (t) => {
     vm = new VM({ common: commonPetersburg })
     result = await vm.runCall({
       caller: Buffer.from('0000000000000000000000000000000000000000', 'hex'),
-      gasLimit: new BN(0xffffffffff).toArrayLike(Buffer),
+      gasLimit: new BN(0xffffffffff),
       to: Buffer.from(ECPAIR_Address, 'hex'),
-      value: new BN(0).toArrayLike(Buffer),
+      value: new BN(0),
     })
 
     st.assert(result.gasUsed.toNumber() == 100000)
@@ -63,9 +63,9 @@ tape('Precompiles: hardfork availability', (t) => {
 
     result = await vm.runCall({
       caller: Buffer.from('0000000000000000000000000000000000000000', 'hex'),
-      gasLimit: new BN(0xffffffffff).toArrayLike(Buffer),
+      gasLimit: new BN(0xffffffffff),
       to: Buffer.from(ECPAIR_Address, 'hex'),
-      value: new BN(0).toArrayLike(Buffer),
+      value: new BN(0),
     })
 
     st.assert(result.gasUsed.toNumber() == 0) // check that we use no gas, because we are calling into an address without code.

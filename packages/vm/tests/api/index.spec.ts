@@ -108,7 +108,7 @@ tape('VM with blockchain', (t) => {
 
   t.test('should run blockchain without blocks', async (st) => {
     const vm = setupVM()
-    await vm.runBlockchain(vm.blockchain)
+    await vm.runBlockchain()
     st.end()
   })
 
@@ -124,7 +124,7 @@ tape('VM with blockchain', (t) => {
     })
 
     await vm.blockchain.putGenesis(genesis)
-    st.equal(vm.blockchain.meta.genesis.toString('hex'), testData.genesisBlockHeader.hash.slice(2))
+    st.equal(vm.blockchain.meta.genesis?.toString('hex'), testData.genesisBlockHeader.hash.slice(2))
 
     await vm.blockchain.putBlock(block)
     const head = await vm.blockchain.getHead()
@@ -135,7 +135,7 @@ tape('VM with blockchain', (t) => {
     vm.runBlock = async () => new Promise((resolve, reject) => reject(new Error('test')))
 
     try {
-      await vm.runBlockchain(vm.blockchain)
+      await vm.runBlockchain()
       st.fail("it hasn't returned any errors")
     } catch (e) {
       st.equal(e.message, 'test', "it has correctly propagated runBlock's error")
@@ -154,7 +154,7 @@ tape('VM with blockchain', (t) => {
     })
 
     await vm.blockchain.putGenesis(genesis)
-    st.equal(vm.blockchain.meta.genesis.toString('hex'), testData.genesisBlockHeader.hash.slice(2))
+    st.equal(vm.blockchain.meta.genesis?.toString('hex'), testData.genesisBlockHeader.hash.slice(2))
 
     await vm.blockchain.putBlock(block)
     const head = await vm.blockchain.getHead()
@@ -162,7 +162,7 @@ tape('VM with blockchain', (t) => {
 
     await setupPreConditions((vm.stateManager as DefaultStateManager)._trie, testData)
 
-    await vm.runBlockchain(vm.blockchain)
+    await vm.runBlockchain()
 
     st.end()
   })

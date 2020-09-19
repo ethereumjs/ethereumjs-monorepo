@@ -26,14 +26,14 @@ tape('VM.runcode: initial program counter', (t) => {
       const runCodeArgs = {
         code: Buffer.from(testData.code.join(''), 'hex'),
         pc: testData.pc,
-        gasLimit: new BN(0xffff).toArrayLike(Buffer),
+        gasLimit: new BN(0xffff),
       }
 
       let err
       try {
         const result = await vm.runCode(runCodeArgs)
         if (testData.resultPC !== undefined) {
-          t.equals(result.runState.programCounter, testData.resultPC, 'runstate.programCounter')
+          t.equals(result.runState?.programCounter, testData.resultPC, 'runstate.programCounter')
         }
       } catch (e) {
         err = e

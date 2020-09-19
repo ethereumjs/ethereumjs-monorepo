@@ -61,7 +61,7 @@ tape('cache put and get account', (t) => {
   })
 
   t.test('should warm cache and load account from trie', async (st) => {
-    await cache.warm(['0x' + addr.toString('hex')])
+    await cache.warm([addr.toString('hex')])
 
     const res = cache.get(addr)
     st.ok(res.balance.equals(acc.balance))

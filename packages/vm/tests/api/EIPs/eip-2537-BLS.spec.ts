@@ -25,9 +25,9 @@ tape('EIP-2537 BLS tests', (t) => {
     for (let address of precompiles) {
       const result = await vm.runCall({
         caller: Buffer.from('0000000000000000000000000000000000000000', 'hex'),
-        gasLimit: new BN(0xffffffffff).toArrayLike(Buffer),
+        gasLimit: new BN(0xffffffffff),
         to: Buffer.from(address, 'hex'),
-        value: new BN(0).toArrayLike(Buffer),
+        value: new BN(0),
         data: Buffer.alloc(0),
       })
 
@@ -51,18 +51,17 @@ tape('EIP-2537 BLS tests', (t) => {
     }
     const common = new Common({ chain: 'mainnet', hardfork: 'byzantium', eips: [2537] })
     const vm = new VM({ common: common })
-    const gasLimit = new BN(0xffffffffff)
 
     for (let address of precompiles) {
       const result = await vm.runCall({
         caller: Buffer.from('0000000000000000000000000000000000000000', 'hex'),
-        gasLimit: gasLimit.toArrayLike(Buffer),
+        gasLimit: new BN(0xffffffffff),
         to: Buffer.from(address, 'hex'),
-        value: new BN(0).toArrayLike(Buffer),
+        value: new BN(0),
         data: Buffer.alloc(0),
       })
 
-      if (!result.execResult.gasUsed.eq(gasLimit)) {
+      if (!result.execResult.gasUsed.eq(new BN(0xffffffffff))) {
         st.fail('BLS precompiles should use all gas on empty inputs')
       }
 

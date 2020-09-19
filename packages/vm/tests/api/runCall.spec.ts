@@ -4,9 +4,9 @@ import Common from '@ethereumjs/common'
 import VM from '../../dist'
 
 // Non-protected Create2Address generator. Does not check if buffers have the right padding. Returns a 32-byte buffer which contains the address.
-function create2address(sourceAddress, codeHash, salt) {
-  let rlp_proc_buffer = Buffer.from('ff', 'hex')
-  let hashBuffer = Buffer.concat([rlp_proc_buffer, sourceAddress, salt, codeHash])
+function create2address(sourceAddress: Buffer, codeHash: Buffer, salt: Buffer) {
+  const rlp_proc_buffer = Buffer.from('ff', 'hex')
+  const hashBuffer = Buffer.concat([rlp_proc_buffer, sourceAddress, salt, codeHash])
   return keccak256(hashBuffer).slice(12)
 }
 
@@ -47,9 +47,9 @@ tape('Constantinople: EIP-1014 CREATE2 creates the right contract address', asyn
     // setup the call arguments
     let runCallArgs = {
       caller: caller, // call address
-      gasLimit: new BN(0xffffffffff).toArrayLike(Buffer), // ensure we pass a lot of gas, so we do not run out of gas
+      gasLimit: new BN(0xffffffffff), // ensure we pass a lot of gas, so we do not run out of gas
       to: contractAddress, // call to the contract address
-      value: new BN(value).toArrayLike(Buffer), // call with this value (the value is used in the contract as an argument, see above's code)
+      value: new BN(value), // call with this value (the value is used in the contract as an argument, see above's code)
     }
 
     let hexString = padToEven(value.toString(16))
@@ -100,7 +100,7 @@ tape('Byzantium cannot access Constantinople opcodes', async (t) => {
 
   const runCallArgs = {
     caller: caller, // call address
-    gasLimit: new BN(0xffffffffff).toArrayLike(Buffer), // ensure we pass a lot of gas, so we do not run out of gas
+    gasLimit: new BN(0xffffffffff), // ensure we pass a lot of gas, so we do not run out of gas
     to: contractAddress, // call to the contract address
   }
 
@@ -150,9 +150,9 @@ tape('Ensure that precompile activation creates non-empty accounts', async (t) =
   // setup the call arguments
   let runCallArgs = {
     caller: caller, // call address
-    gasLimit: new BN(0xffffffffff).toArrayLike(Buffer), // ensure we pass a lot of gas, so we do not run out of gas
+    gasLimit: new BN(0xffffffffff), // ensure we pass a lot of gas, so we do not run out of gas
     to: contractAddress, // call to the contract address,
-    value: new BN(1).toArrayLike(Buffer),
+    value: new BN(1),
   }
 
   const resultNotActivated = await vmNotActivated.runCall(runCallArgs)
@@ -206,13 +206,13 @@ tape('Ensure that Istanbul sstoreCleanRefundEIP2200 gas is applied correctly', a
   let runCallArgs = {
     caller: caller, // call address
     to: address,
-    gasLimit: new BN(0xffffffffff).toArrayLike(Buffer), // ensure we pass a lot of gas, so we do not run out of gas
+    gasLimit: new BN(0xffffffffff), // ensure we pass a lot of gas, so we do not run out of gas
   }
 
   const result = await vm.runCall(runCallArgs)
   console.log(result.gasUsed, result.execResult.gasRefund)
   t.equal(result.gasUsed.toNumber(), 5812, 'gas used incorrect')
-  t.equal(result.execResult.gasRefund.toNumber(), 4200, 'gas refund incorrect')
+  t.equal(result.execResult.gasRefund!.toNumber(), 4200, 'gas refund incorrect')
 
   t.end()
 })

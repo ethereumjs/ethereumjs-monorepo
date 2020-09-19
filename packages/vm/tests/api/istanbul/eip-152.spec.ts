@@ -84,7 +84,7 @@ tape('Istanbul: EIP-152 Blake2f', async (t) => {
       _common: common,
       _VM: vm,
     })
-    t.equal(res.exceptionError.error, testCase.err)
+    t.equal(res.exceptionError?.error, testCase.err)
   }
 
   for (const testCase of testCases) {

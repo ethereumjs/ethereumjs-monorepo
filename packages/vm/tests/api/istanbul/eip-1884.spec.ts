@@ -16,22 +16,25 @@ tape('Istanbul: EIP-1884: SELFBALANCE', async (t) => {
   const addr = Buffer.from('00000000000000000000000000000000000000ff', 'hex')
   const runCodeArgs = {
     code: Buffer.from(code.join(''), 'hex'),
-    gasLimit: new BN(0xffff).toArrayLike(Buffer),
+    gasLimit: new BN(0xffff),
     address: addr,
   }
 
   for (const testCase of testCases) {
     const common = new Common({ chain: testCase.chain, hardfork: testCase.hardfork })
     const vm = new VM({ common })
-    const account = createAccount(
-      new BN(0),
-      new BN(Buffer.from(testCase.selfbalance.slice(2), 'hex')),
-    )
+
+    const balance = testCase.selfbalance
+      ? new BN(Buffer.from(testCase.selfbalance.slice(2), 'hex'))
+      : undefined
+    const account = createAccount(new BN(0), balance)
+
     await vm.stateManager.putAccount(addr, account)
+
     try {
       const res = await vm.runCode(runCodeArgs)
       if (testCase.err) {
-        t.equal(res.exceptionError.error, testCase.err)
+        t.equal(res.exceptionError?.error, testCase.err)
       } else {
         t.assert(res.exceptionError === undefined)
         t.assert(
