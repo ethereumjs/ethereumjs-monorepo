@@ -34,40 +34,42 @@ const testCases = [
   { original: new BN(1), gas: new BN(2307), code: '6001600055', used: 806, refund: 0 }, // 1 -> 1 (2301 sentry + 2xPUSH)
 ]
 
-tape('Istanbul: EIP-2200: net-metering SSTORE', async (t) => {
-  const caller = Buffer.from('0000000000000000000000000000000000000000', 'hex')
-  const addr = Buffer.from('00000000000000000000000000000000000000ff', 'hex')
-  const key = new BN(0).toArrayLike(Buffer, 'be', 32)
-  for (const testCase of testCases) {
-    const common = new Common({ chain: 'mainnet', hardfork: 'istanbul' })
-    const vm = new VM({ common })
+tape('Istanbul: EIP-2200', async (t) => {
+  t.test('net-metering SSTORE', async (st) => {
+    const caller = Buffer.from('0000000000000000000000000000000000000000', 'hex')
+    const addr = Buffer.from('00000000000000000000000000000000000000ff', 'hex')
+    const key = new BN(0).toArrayLike(Buffer, 'be', 32)
+    for (const testCase of testCases) {
+      const common = new Common({ chain: 'mainnet', hardfork: 'istanbul' })
+      const vm = new VM({ common })
 
-    const account = createAccount(new BN(0), new BN(0))
-    await vm.stateManager.putAccount(addr, account)
-    await vm.stateManager.putContractCode(addr, Buffer.from(testCase.code, 'hex'))
-    if (!testCase.original.isZero()) {
-      await vm.stateManager.putContractStorage(addr, key, testCase.original.toArrayLike(Buffer))
-    }
-
-    const runCallArgs = {
-      caller,
-      gasLimit: testCase.gas ? testCase.gas : new BN(0xffffffffff),
-      to: addr,
-    }
-
-    try {
-      const res = await vm.runCall(runCallArgs)
-      if (testCase.err) {
-        t.equal(res.execResult.exceptionError?.error, testCase.err)
-      } else {
-        t.assert(res.execResult.exceptionError === undefined)
+      const account = createAccount(new BN(0), new BN(0))
+      await vm.stateManager.putAccount(addr, account)
+      await vm.stateManager.putContractCode(addr, Buffer.from(testCase.code, 'hex'))
+      if (!testCase.original.isZero()) {
+        await vm.stateManager.putContractStorage(addr, key, testCase.original.toArrayLike(Buffer))
       }
-      t.assert(new BN(testCase.used).eq(res.gasUsed))
-      t.assert(new BN(testCase.refund).eq(res.execResult.gasRefund!))
-    } catch (e) {
-      t.fail(e.message)
-    }
-  }
 
-  t.end()
+      const runCallArgs = {
+        caller,
+        gasLimit: testCase.gas ? testCase.gas : new BN(0xffffffffff),
+        to: addr,
+      }
+
+      try {
+        const res = await vm.runCall(runCallArgs)
+        if (testCase.err) {
+          st.equal(res.execResult.exceptionError?.error, testCase.err)
+        } else {
+          st.assert(res.execResult.exceptionError === undefined)
+        }
+        st.assert(new BN(testCase.used).eq(res.gasUsed))
+        st.assert(new BN(testCase.refund).eq(res.execResult.gasRefund!))
+      } catch (e) {
+        st.fail(e.message)
+      }
+    }
+
+    st.end()
+  })
 })
