@@ -11,7 +11,7 @@ const BN = require('bn.js')
 const VM = require('../../dist').default
 
 // Create a new VM instance
-// For explicity setting the HF use e.g. `new VM({ hardfork: 'petersburg' })`
+// To explicity set the chain or hardfork use [Common](https://github.com/ethereumjs/ethereumjs-vm/tree/master/packages/common#usage)
 const vm = new VM()
 
 const STOP = '00'
