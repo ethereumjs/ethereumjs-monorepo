@@ -1,7 +1,7 @@
 import * as tape from 'tape'
 import { KECCAK256_RLP } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
-import VM from '../../../dist'
+import VM from '../../../lib'
 
 tape('General MuirGlacier VM tests', (t) => {
   t.test('should accept muirGlacier harfork option for supported chains', (st) => {

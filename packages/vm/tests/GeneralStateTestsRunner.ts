@@ -52,9 +52,9 @@ async function runTestCase(options: any, testData: any, t: tape.Test) {
   const state = new Trie()
   let VM
   if (options.dist) {
-    VM = require('../dist/index.js').default
+    VM = require('../dist').default
   } else {
-    VM = require('../lib/index').default
+    VM = require('../lib').default
   }
 
   let eips: number[] = []

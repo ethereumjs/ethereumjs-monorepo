@@ -2,9 +2,9 @@ import * as tape from 'tape'
 import { BN, MAX_INTEGER } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
 import { Transaction } from '@ethereumjs/tx'
-import { DefaultStateManager } from '../../dist/state'
-import runTx from '../../dist/runTx'
-import VM from '../../dist/index'
+import VM from '../../lib'
+import { DefaultStateManager } from '../../lib/state'
+import runTx from '../../lib/runTx'
 import { createAccount } from './utils'
 
 function setup(vm?: any) {

@@ -3,8 +3,8 @@ import { BN, toBuffer } from 'ethereumjs-util'
 import { Block } from '@ethereumjs/block'
 import Common from '@ethereumjs/common'
 import Blockchain from '@ethereumjs/blockchain'
-import runBlockchain from '../../dist/runBlockchain'
-import { DefaultStateManager } from '../../dist/state'
+import runBlockchain from '../../lib/runBlockchain'
+import { DefaultStateManager } from '../../lib/state'
 import { createGenesis } from './utils'
 
 const level = require('level-mem')

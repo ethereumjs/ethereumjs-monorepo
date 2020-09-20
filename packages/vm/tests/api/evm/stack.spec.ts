@@ -1,7 +1,7 @@
 import * as tape from 'tape'
 import { BN } from 'ethereumjs-util'
-import Stack from '../../../dist/evm/stack'
-import VM from '../../../dist/index'
+import VM from '../../../lib'
+import Stack from '../../../lib/evm/stack'
 import { createAccount } from '../utils'
 
 tape('Stack', (t) => {

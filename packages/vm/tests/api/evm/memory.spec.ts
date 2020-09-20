@@ -1,5 +1,5 @@
 import * as tape from 'tape'
-import Memory from '../../../dist/evm/memory'
+import Memory from '../../../lib/evm/memory'
 
 tape('Memory', (t) => {
   const m = new Memory()

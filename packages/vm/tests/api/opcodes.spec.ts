@@ -1,6 +1,6 @@
 import * as tape from 'tape'
 import Common from '@ethereumjs/common'
-import { getOpcodesForHF } from '../../dist/evm/opcodes'
+import { getOpcodesForHF } from '../../lib/evm/opcodes'
 
 const CHAINID = 0x46
 

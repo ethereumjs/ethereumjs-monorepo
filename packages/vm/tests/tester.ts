@@ -1,5 +1,3 @@
-#!/usr/bin/env node
-
 import { exit } from 'process'
 import * as tape from 'tape'
 import Common from '@ethereumjs/common'

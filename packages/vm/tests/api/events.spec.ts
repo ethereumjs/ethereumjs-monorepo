@@ -2,7 +2,7 @@ import * as tape from 'tape'
 import * as util from 'ethereumjs-util'
 import { Transaction } from '@ethereumjs/tx'
 import { Block } from '@ethereumjs/block'
-import VM from '../../dist/index'
+import VM from '../../lib/index'
 
 tape('VM events', (t) => {
   t.test('should emit the Block before running it', async (st) => {

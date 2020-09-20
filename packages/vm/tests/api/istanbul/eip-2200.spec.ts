@@ -1,8 +1,8 @@
 import * as tape from 'tape'
 import { BN } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
-import VM from '../../../dist'
-import { ERROR } from '../../../dist/exceptions'
+import VM from '../../../lib'
+import { ERROR } from '../../../lib/exceptions'
 import { createAccount } from '../utils'
 
 const testCases = [

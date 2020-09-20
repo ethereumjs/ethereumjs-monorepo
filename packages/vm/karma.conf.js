@@ -5,10 +5,10 @@ module.exports = function (config) {
   config.set({
     // frameworks to use
     // available frameworks: https://www.npmjs.com/browse/keyword/karma-adapter
-    frameworks: ['karma-typescript', 'browserify', 'tap'],
+    frameworks: ['karma-typescript', 'tap'],
 
     // list of files / patterns to load in the browser
-    files: ['./tests/api/**/*.spec.ts', './dist/**/*.js'],
+    files: ['./tests/**/*.ts', './lib/**/*.ts'],
 
     // list of files / patterns to exclude
     exclude: [],
@@ -17,7 +17,6 @@ module.exports = function (config) {
     // available preprocessors: https://www.npmjs.com/browse/keyword/karma-preprocessor
     preprocessors: {
       '**/*.ts': ['karma-typescript'],
-      '**/*.js': ['browserify'],
     },
 
     karmaTypescriptConfig: {

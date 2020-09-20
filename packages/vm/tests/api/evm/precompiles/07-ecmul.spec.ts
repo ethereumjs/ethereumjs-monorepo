@@ -1,8 +1,8 @@
 import * as tape from 'tape'
 import { BN } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
-import VM from '../../../../dist'
-import { getPrecompile } from '../../../../dist/evm/precompiles'
+import VM from '../../../../lib'
+import { getPrecompile } from '../../../../lib/evm/precompiles'
 
 tape('Precompiles: ECMUL', (t) => {
   t.test('ECMUL', async (st) => {

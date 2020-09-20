@@ -1,7 +1,7 @@
 import * as tape from 'tape'
 import { BN, keccak256, padToEven } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
-import VM from '../../dist'
+import VM from '../../lib'
 
 // Non-protected Create2Address generator. Does not check if buffers have the right padding. Returns a 32-byte buffer which contains the address.
 function create2address(sourceAddress: Buffer, codeHash: Buffer, salt: Buffer) {

@@ -1,6 +1,6 @@
 import * as tape from 'tape'
 import { BN } from 'ethereumjs-util'
-import VM from '../../dist'
+import VM from '../../lib'
 
 const STOP = '00'
 const JUMP = '56'

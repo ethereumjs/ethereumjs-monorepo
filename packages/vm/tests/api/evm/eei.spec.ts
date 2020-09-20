@@ -1,6 +1,6 @@
 import * as tape from 'tape'
-import EEI from '../../../dist/evm/eei'
-import StateManager from '../../../dist/state/stateManager'
+import EEI from '../../../lib/evm/eei'
+import StateManager from '../../../lib/state/stateManager'
 import Account from '@ethereumjs/account'
 
 const ZeroAddress = Buffer.from('0000000000000000000000000000000000000000', 'hex')

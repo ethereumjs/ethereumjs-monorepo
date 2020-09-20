@@ -1,10 +1,12 @@
 import * as tape from 'tape'
-import * as util from 'ethereumjs-util'
+import * as util from 'util' // needed for karma-typescript bundling
+import { Buffer } from 'buffer'
+import { KECCAK256_RLP } from 'ethereumjs-util'
 import { SecureTrie as Trie } from 'merkle-patricia-tree'
 import { Block } from '@ethereumjs/block'
 import Common from '@ethereumjs/common'
 import { DefaultStateManager } from '../../lib/state'
-import VM from '../../dist'
+import VM from '../../lib'
 import { setupPreConditions, isRunningInKarma } from '../util'
 import { setupVM } from './utils'
 import * as testData from './testdata.json'
@@ -15,7 +17,7 @@ tape('VM with default blockchain', (t) => {
     st.ok(vm.stateManager)
     st.deepEqual(
       (vm.stateManager as DefaultStateManager)._trie.root,
-      util.KECCAK256_RLP,
+      KECCAK256_RLP,
       'it has default trie',
     )
     st.end()
@@ -26,7 +28,7 @@ tape('VM with default blockchain', (t) => {
     await vm.init()
     st.notDeepEqual(
       (vm.stateManager as DefaultStateManager)._trie.root,
-      util.KECCAK256_RLP,
+      KECCAK256_RLP,
       'it has different root',
     )
     st.end()
@@ -36,7 +38,7 @@ tape('VM with default blockchain', (t) => {
     let vm = await VM.create({ activatePrecompiles: true })
     st.notDeepEqual(
       (vm.stateManager as DefaultStateManager)._trie.root,
-      util.KECCAK256_RLP,
+      KECCAK256_RLP,
       'it has different root',
     )
     st.end()
@@ -48,7 +50,7 @@ tape('VM with default blockchain', (t) => {
     await vm.init()
     st.notDeepEqual(
       (vm.stateManager as DefaultStateManager)._trie.root,
-      util.KECCAK256_RLP,
+      KECCAK256_RLP,
       'it has different root',
     )
     st.end()
@@ -100,7 +102,7 @@ tape('VM with blockchain', (t) => {
     await vm.init()
     st.deepEqual(
       (vm.stateManager as DefaultStateManager)._trie.root,
-      util.KECCAK256_RLP,
+      KECCAK256_RLP,
       'it has default trie',
     )
     st.end()
