@@ -4,12 +4,11 @@ import VM from '../../../lib'
 import Common from '@ethereumjs/common'
 
 tape('Berlin: EIP 2315 tests', (t) => {
-  let vm
   const common = new Common({ chain: 'mainnet', hardfork: 'berlin' })
 
   const runTest = async function (test: any, st: tape.Test) {
     let i = 0
-    vm = new VM({ common })
+    const vm = new VM({ common })
 
     vm.on('step', function (step: any) {
       if (test.steps.length) {

@@ -73,8 +73,8 @@ const testCases = [
 
 tape('Istanbul: EIP-152', (t) => {
   t.test('Blake2f', (st) => {
-    if ((<any>globalThis).navigator.userAgent.includes('Firefox')) {
-      // this test is passing fine in chrome but having trouble in firefox
+    if ((<any>globalThis).navigator?.userAgent.includes('Firefox')) {
+      // TODO: investigate why this test hangs in karma with firefox
       return st.end()
     }
 

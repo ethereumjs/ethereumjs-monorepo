@@ -1,6 +1,4 @@
 import * as tape from 'tape'
-import * as util from 'util' // needed for karma-typescript bundling
-import { Buffer } from 'buffer'
 import { KECCAK256_RLP } from 'ethereumjs-util'
 import { SecureTrie as Trie } from 'merkle-patricia-tree'
 import { Block } from '@ethereumjs/block'
@@ -10,6 +8,11 @@ import VM from '../../lib'
 import { setupPreConditions, isRunningInKarma } from '../util'
 import { setupVM } from './utils'
 import * as testData from './testdata.json'
+
+// explicitly import util and buffer,
+// needed for karma-typescript bundling
+import * as util from 'util'
+import { Buffer } from 'buffer'
 
 tape('VM with default blockchain', (t) => {
   t.test('should instantiate without params', (st) => {
