@@ -1,6 +1,4 @@
-import BN = require('bn.js')
-import { toBuffer } from 'ethereumjs-util'
-import Account from '@ethereumjs/account'
+import { BN, toBuffer } from 'ethereumjs-util'
 import { Transaction } from '@ethereumjs/tx'
 import VM from './index'
 import Bloom from './bloom'
@@ -132,7 +130,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   /*
    * Execute message
    */
-  const txContext = new TxContext(tx.gasPrice, tx.getSenderAddress())
+  const txContext = new TxContext(new BN(tx.gasPrice), tx.getSenderAddress())
   const message = new Message({
     caller: tx.getSenderAddress(),
     gasLimit: gasLimit,

@@ -20,7 +20,7 @@ export interface Env {
   code: Buffer
   isStatic: boolean
   depth: number
-  gasPrice: Buffer // TODO: Set type to BN?
+  gasPrice: BN
   origin: Buffer
   block: any
   contract: Account
