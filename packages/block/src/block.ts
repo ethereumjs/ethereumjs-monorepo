@@ -1,20 +1,86 @@
 import { BaseTrie as Trie } from 'merkle-patricia-tree'
 import { BN, rlp, keccak256, KECCAK256_RLP, baToJSON } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
-import { Transaction } from '@ethereumjs/tx'
-import { BlockHeader } from './header'
-import { Blockchain, BlockData, BlockOptions } from './types'
+import { BN, rlp, keccak256, KECCAK256_RLP, baToJSON, bufferToInt } from 'ethereumjs-util'
+import { Transaction, TransactionOptions } from '@ethereumjs/tx'
+import { Header } from './header'
+import { Blockchain, BlockData, BlockOptions, HeaderData } from './types'
 
 /**
  * An object that represents the block
  */
 export class Block {
-  public readonly header: BlockHeader
+  public readonly header: Header
   public readonly transactions: Transaction[] = []
-  public readonly uncleHeaders: BlockHeader[] = []
+  public readonly uncleHeaders: Header[] = []
   public readonly txTrie = new Trie()
 
   private readonly _common: Common
+
+  public static fromBlockData(blockData: BlockData, opts: BlockOptions = {}) {
+    // Checking at runtime, to prevent errors down the path for JavaScript consumers.
+    if (blockData === null) {
+      blockData = {}
+    }
+
+    const headerData = blockData.header || {}
+    const txsData = blockData.transactions || []
+    const uncleHeadersData = blockData.uncleHeaders || []
+
+    const header = Header.fromHeaderData(headerData, opts)
+
+    // parse transactions
+    let transactions = []
+    for (const txData of txsData) {
+      transactions.push(new Transaction(txData, opts))
+    }
+
+    // parse uncle headers
+    let uncleHeaders = []
+    for (const uncleHeaderData of uncleHeadersData) {
+      uncleHeaders.push(Header.fromHeaderData(uncleHeaderData, opts))
+    }
+
+    return new Block(header, transactions, uncleHeaders, opts)
+  }
+
+  public static fromRLPSerializedBlock(serialized: Buffer, opts: BlockOptions = {}) {
+    // We do this to silence a TS error. We know that after this statement, data is
+    // a [Buffer[], Buffer[], Buffer[]]
+    let values = (rlp.decode(serialized) as any) as [Buffer[], Buffer[], Buffer[]]
+
+    if (!Array.isArray(values)) {
+      throw new Error('Invalid serialized block input. Must be array')
+    }
+
+    return Block.fromValuesArray(values, opts)
+  }
+
+  public static fromValuesArray(values: [Buffer[], Buffer[], Buffer[]], opts: BlockOptions = {}) {
+    if (values.length > 3) {
+      throw new Error('invalid block. More values than expected were received')
+    }
+
+    const headerArray = values[0] || []
+    const txsData = values[1] || []
+    const uncleHeadersData = values[2] || []
+
+    const header = Header.fromValuesArray(headerArray, opts)
+
+    // parse transactions
+    let transactions = []
+    for (const txData of txsData) {
+      transactions.push(new Transaction(txData, opts))
+    }
+
+    // parse uncle headers
+    let uncleHeaders = []
+    for (const uncleHeaderData of uncleHeadersData) {
+      uncleHeaders.push(Header.fromRLPSerializedHeader(uncleHeaderData, opts))
+    }
+
+    return new Block(header, transactions, uncleHeaders, opts)
+  }
 
   /**
    * Creates a new block object
@@ -27,50 +93,16 @@ export class Block {
    * @param options - The options for this block (like the chain setup)
    */
   constructor(
-    data: Buffer | [Buffer[], Buffer[], Buffer[]] | BlockData = {},
-    options: BlockOptions = {},
+    header: Header,
+    transactions: Transaction[],
+    uncleHeaders: Header[],
+    //data: Buffer | [Buffer[], Buffer[], Buffer[]] | BlockData = {},
+    opts: BlockOptions = {},
   ) {
-    // Checking at runtime, to prevent errors down the path for JavaScript consumers.
-    if (data === null) {
-      data = {}
-    }
-
-    let rawTransactions
-    let rawUncleHeaders
-
-    if (Buffer.isBuffer(data)) {
-      // We do this to silence a TS error. We know that after this statement, data is
-      // a [Buffer[], Buffer[], Buffer[]]
-      const dataAsAny = rlp.decode(data) as any
-      data = dataAsAny as [Buffer[], Buffer[], Buffer[]]
-    }
-
-    // Initialize the block header
-    if (Array.isArray(data)) {
-      this.header = new BlockHeader(data[0], options)
-      rawTransactions = data[1]
-      rawUncleHeaders = data[2]
-    } else {
-      this.header = new BlockHeader(data.header, options)
-      rawTransactions = data.transactions || []
-      rawUncleHeaders = data.uncleHeaders || []
-    }
+    this.header = header
+    this.transactions = transactions
+    this.uncleHeaders = uncleHeaders
     this._common = this.header._common
-
-    // parse uncle headers
-    for (let i = 0; i < rawUncleHeaders.length; i++) {
-      this.uncleHeaders.push(new BlockHeader(rawUncleHeaders[i], options))
-    }
-
-    // parse transactions
-    const txOpts = { common: this._common }
-    for (let i = 0; i < rawTransactions.length; i++) {
-      const txData = rawTransactions[i]
-      const tx = Array.isArray(txData)
-        ? Transaction.fromValuesArray(txData as Buffer[], txOpts)
-        : Transaction.fromRlpSerializedTx(txData as Buffer, txOpts)
-      this.transactions.push(tx)
-    }
   }
 
   get raw(): [Buffer[], Buffer[], Buffer[]] {
@@ -235,7 +267,7 @@ export class Block {
     await this.txTrie.put(rlp.encode(txIndex), tx.serialize())
   }
 
-  private _validateUncleHeader(uncleHeader: BlockHeader, blockchain: Blockchain) {
+  private _validateUncleHeader(uncleHeader: Header, blockchain: Blockchain) {
     // TODO: Validate that the uncle header hasn't been included in the blockchain yet.
     // This is not possible in ethereumjs-blockchain since this PR was merged:
     // https://github.com/ethereumjs/ethereumjs-blockchain/pull/47

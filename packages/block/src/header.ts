@@ -22,7 +22,6 @@ import { statSync } from 'fs'
  * An object that represents the block header
  */
 export class Header {
-  public readonly _common: Common
   public readonly parentHash: Buffer
   public readonly uncleHash: Buffer
   public readonly coinbase: Buffer
@@ -38,6 +37,8 @@ export class Header {
   public readonly extraData: Buffer
   public readonly mixHash: Buffer
   public readonly nonce: Buffer
+
+  public readonly _common: Common
 
   public static fromHeaderData(headerData: HeaderData, opts: BlockOptions = {}) {
     const {
@@ -85,7 +86,7 @@ export class Header {
       throw new Error('Invalid serialized header input. Must be array')
     }
 
-    return this.fromValuesArray(values, opts)
+    return Header.fromValuesArray(values, opts)
   }
 
   public static fromValuesArray(values: Buffer[], opts: BlockOptions) {

@@ -76,9 +76,12 @@ export interface HeaderData {
  * A block's data.
  */
 export interface BlockData {
-  header?: Buffer | PrefixedHexString | BufferLike[] | HeaderData
-  transactions?: Array<Buffer | PrefixedHexString | BufferLike[] | TxData>
-  uncleHeaders?: Array<Buffer | PrefixedHexString | BufferLike[] | HeaderData>
+  /**
+   * Header data for the block
+   */
+  header?: HeaderData
+  transactions?: Array<TxData>
+  uncleHeaders?: Array<HeaderData>
 }
 
 export interface Blockchain {
