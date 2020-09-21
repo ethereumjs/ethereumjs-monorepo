@@ -8,6 +8,10 @@ import { VmError, ERROR } from '../exceptions'
 import Message from './message'
 import EVM, { EVMResult } from './evm'
 
+function trap(err: ERROR) {
+  throw new VmError(err)
+}
+
 /**
  * Environment data which is made available to EVM bytecode.
  */
@@ -643,10 +647,6 @@ export default class EEI {
       return new BN(1)
     }
   }
-}
-
-function trap(err: ERROR) {
-  throw new VmError(err)
 }
 
 const MASK_160 = new BN(1).shln(160).subn(1)

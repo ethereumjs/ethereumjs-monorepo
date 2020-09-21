@@ -1,4 +1,4 @@
-import * as tape from 'tape'
+import tape from 'tape'
 import EEI from '../../../lib/evm/eei'
 import StateManager from '../../../lib/state/stateManager'
 import Account from '@ethereumjs/account'

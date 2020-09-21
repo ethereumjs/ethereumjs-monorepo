@@ -1,4 +1,4 @@
-import * as tape from 'tape'
+import tape from 'tape'
 import Common from '@ethereumjs/common'
 import { getOpcodesForHF } from '../../lib/evm/opcodes'
 

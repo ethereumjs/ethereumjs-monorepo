@@ -1,4 +1,4 @@
-import * as tape from 'tape'
+import tape from 'tape'
 import { BN, stripHexPrefix } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
 import VM from '../../../lib'
