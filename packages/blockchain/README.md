@@ -6,8 +6,6 @@
 [![Code Coverage][blockchain-coverage-badge]][blockchain-coverage-link]
 [![Discord][discord-badge]][discord-link]
 
-[![js-standard-style][js-standard-style-badge]][js-standard-style-link]
-
 A module to store and interact with blocks.
 
 # INSTALL
@@ -52,8 +50,6 @@ If you want to join for work or do improvements on the libraries have a look at 
 
 [discord-badge]: https://img.shields.io/static/v1?logo=discord&label=discord&message=Join&color=blue
 [discord-link]: https://discord.gg/TNwARpR
-[js-standard-style-badge]: https://cdn.rawgit.com/feross/standard/master/badge.svg
-[js-standard-style-link]: https://github.com/feross/standard
 [blockchain-npm-badge]: https://img.shields.io/npm/v/@ethereumjs/blockchain.svg
 [blockchain-npm-link]: https://www.npmjs.com/package/@ethereumjs/blockchain
 [blockchain-issues-badge]: https://img.shields.io/github/issues/ethereumjs/ethereumjs-vm/package:%20blockchain?label=issues

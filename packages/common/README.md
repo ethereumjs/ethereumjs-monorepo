@@ -6,8 +6,6 @@
 [![Code Coverage][common-coverage-badge]][common-coverage-link]
 [![Discord][discord-badge]][discord-link]
 
-[![js-standard-style][js-standard-style-badge]][js-standard-style-link]
-
 Resources common to all Ethereum implementations.
 
 Succeeds the old [ethereum/common](https://github.com/ethereumjs/common/) library.
@@ -175,8 +173,6 @@ If you want to join for work or do improvements on the libraries have a look at 
 
 [discord-badge]: https://img.shields.io/static/v1?logo=discord&label=discord&message=Join&color=blue
 [discord-link]: https://discord.gg/TNwARpR
-[js-standard-style-badge]: https://cdn.rawgit.com/feross/standard/master/badge.svg
-[js-standard-style-link]: https://github.com/feross/standard
 [common-npm-badge]: https://img.shields.io/npm/v/@ethereumjs/common.svg
 [common-npm-link]: https://www.npmjs.com/package/@ethereumjs/common
 [common-issues-badge]: https://img.shields.io/github/issues/ethereumjs/ethereumjs-vm/package:%20common?label=issues
