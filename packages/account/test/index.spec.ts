@@ -1,4 +1,4 @@
-import * as tape from 'tape'
+import tape from 'tape'
 import * as rlp from 'rlp'
 import Account from '../src/index'
 

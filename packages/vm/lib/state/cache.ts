@@ -172,7 +172,12 @@ export default class Cache {
     this._update(key, new Account(), false, true)
   }
 
-  _update(key: Buffer, val: Account, modified: boolean, deleted: boolean): void {
+  _update(
+    key: Buffer,
+    val: Account,
+    modified: boolean,
+    deleted: boolean
+  ): void {
     const keyHex = key.toString('hex')
     const it = this._cache.find(keyHex)
     if (it.node) {

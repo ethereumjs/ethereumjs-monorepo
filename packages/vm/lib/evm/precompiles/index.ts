@@ -77,7 +77,10 @@ const precompileAvailability: PrecompileAvailability = {
     type: PrecompileAvailabilityCheck.Hardfork,
     param: 'chainstart',
   },
-  [ripemdPrecompileAddress]: { type: PrecompileAvailabilityCheck.Hardfork, param: 'chainstart' },
+  [ripemdPrecompileAddress]: {
+    type: PrecompileAvailabilityCheck.Hardfork,
+    param: 'chainstart',
+  },
   '0000000000000000000000000000000000000004': {
     type: PrecompileAvailabilityCheck.Hardfork,
     param: 'chainstart',
@@ -158,4 +161,10 @@ function getPrecompile(address: string, common: Common): PrecompileFunc {
   return precompiles['']
 }
 
-export { precompiles, getPrecompile, PrecompileFunc, PrecompileInput, ripemdPrecompileAddress }
+export {
+  precompiles,
+  getPrecompile,
+  PrecompileFunc,
+  PrecompileInput,
+  ripemdPrecompileAddress,
+}
