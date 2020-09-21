@@ -22,7 +22,7 @@ A block's data.
 
 • **header**? : *Buffer | [PrefixedHexString](../modules/_types_.md#prefixedhexstring) | [BufferLike](../modules/_types_.md#bufferlike)[] | [BlockHeaderData](_index_.blockheaderdata.md)*
 
-*Defined in [types.ts:69](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/types.ts#L69)*
+*Defined in [types.ts:83](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/types.ts#L83)*
 
 ___
 
@@ -30,7 +30,7 @@ ___
 
 • **transactions**? : *Array‹Buffer | [PrefixedHexString](../modules/_types_.md#prefixedhexstring) | [BufferLike](../modules/_types_.md#bufferlike)[] | TxData›*
 
-*Defined in [types.ts:70](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/types.ts#L70)*
+*Defined in [types.ts:84](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/types.ts#L84)*
 
 ___
 
@@ -38,4 +38,4 @@ ___
 
 • **uncleHeaders**? : *Array‹Buffer | [PrefixedHexString](../modules/_types_.md#prefixedhexstring) | [BufferLike](../modules/_types_.md#bufferlike)[] | [BlockHeaderData](_index_.blockheaderdata.md)›*
 
-*Defined in [types.ts:71](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/types.ts#L71)*
+*Defined in [types.ts:85](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/types.ts#L85)*

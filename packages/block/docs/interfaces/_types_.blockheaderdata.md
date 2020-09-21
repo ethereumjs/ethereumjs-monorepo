@@ -34,7 +34,7 @@ A block header's data.
 
 • **bloom**? : *[BufferLike](../modules/_types_.md#bufferlike)*
 
-*Defined in [types.ts:54](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/types.ts#L54)*
+*Defined in [types.ts:68](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/types.ts#L68)*
 
 ___
 
@@ -42,7 +42,7 @@ ___
 
 • **coinbase**? : *[BufferLike](../modules/_types_.md#bufferlike)*
 
-*Defined in [types.ts:50](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/types.ts#L50)*
+*Defined in [types.ts:64](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/types.ts#L64)*
 
 ___
 
@@ -50,7 +50,7 @@ ___
 
 • **difficulty**? : *[BufferLike](../modules/_types_.md#bufferlike)*
 
-*Defined in [types.ts:55](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/types.ts#L55)*
+*Defined in [types.ts:69](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/types.ts#L69)*
 
 ___
 
@@ -58,7 +58,7 @@ ___
 
 • **extraData**? : *[BufferLike](../modules/_types_.md#bufferlike)*
 
-*Defined in [types.ts:60](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/types.ts#L60)*
+*Defined in [types.ts:74](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/types.ts#L74)*
 
 ___
 
@@ -66,7 +66,7 @@ ___
 
 • **gasLimit**? : *[BufferLike](../modules/_types_.md#bufferlike)*
 
-*Defined in [types.ts:57](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/types.ts#L57)*
+*Defined in [types.ts:71](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/types.ts#L71)*
 
 ___
 
@@ -74,7 +74,7 @@ ___
 
 • **gasUsed**? : *[BufferLike](../modules/_types_.md#bufferlike)*
 
-*Defined in [types.ts:58](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/types.ts#L58)*
+*Defined in [types.ts:72](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/types.ts#L72)*
 
 ___
 
@@ -82,7 +82,7 @@ ___
 
 • **mixHash**? : *[BufferLike](../modules/_types_.md#bufferlike)*
 
-*Defined in [types.ts:61](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/types.ts#L61)*
+*Defined in [types.ts:75](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/types.ts#L75)*
 
 ___
 
@@ -90,7 +90,7 @@ ___
 
 • **nonce**? : *[BufferLike](../modules/_types_.md#bufferlike)*
 
-*Defined in [types.ts:62](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/types.ts#L62)*
+*Defined in [types.ts:76](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/types.ts#L76)*
 
 ___
 
@@ -98,7 +98,7 @@ ___
 
 • **number**? : *[BufferLike](../modules/_types_.md#bufferlike)*
 
-*Defined in [types.ts:56](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/types.ts#L56)*
+*Defined in [types.ts:70](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/types.ts#L70)*
 
 ___
 
@@ -106,7 +106,7 @@ ___
 
 • **parentHash**? : *[BufferLike](../modules/_types_.md#bufferlike)*
 
-*Defined in [types.ts:48](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/types.ts#L48)*
+*Defined in [types.ts:62](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/types.ts#L62)*
 
 ___
 
@@ -114,7 +114,7 @@ ___
 
 • **receiptTrie**? : *[BufferLike](../modules/_types_.md#bufferlike)*
 
-*Defined in [types.ts:53](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/types.ts#L53)*
+*Defined in [types.ts:67](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/types.ts#L67)*
 
 ___
 
@@ -122,7 +122,7 @@ ___
 
 • **stateRoot**? : *[BufferLike](../modules/_types_.md#bufferlike)*
 
-*Defined in [types.ts:51](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/types.ts#L51)*
+*Defined in [types.ts:65](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/types.ts#L65)*
 
 ___
 
@@ -130,7 +130,7 @@ ___
 
 • **timestamp**? : *[BufferLike](../modules/_types_.md#bufferlike)*
 
-*Defined in [types.ts:59](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/types.ts#L59)*
+*Defined in [types.ts:73](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/types.ts#L73)*
 
 ___
 
@@ -138,7 +138,7 @@ ___
 
 • **transactionsTrie**? : *[BufferLike](../modules/_types_.md#bufferlike)*
 
-*Defined in [types.ts:52](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/types.ts#L52)*
+*Defined in [types.ts:66](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/types.ts#L66)*
 
 ___
 
@@ -146,4 +146,4 @@ ___
 
 • **uncleHash**? : *[BufferLike](../modules/_types_.md#bufferlike)*
 
-*Defined in [types.ts:49](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/types.ts#L49)*
+*Defined in [types.ts:63](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/types.ts#L63)*

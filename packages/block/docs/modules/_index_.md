@@ -13,8 +13,8 @@
 
 * [BlockData](../interfaces/_index_.blockdata.md)
 * [BlockHeaderData](../interfaces/_index_.blockheaderdata.md)
+* [BlockOptions](../interfaces/_index_.blockoptions.md)
 * [Blockchain](../interfaces/_index_.blockchain.md)
-* [ChainOptions](../interfaces/_index_.chainoptions.md)
 * [TransformableToBuffer](../interfaces/_index_.transformabletobuffer.md)
 
 ### Type aliases
@@ -28,7 +28,7 @@
 
 Ƭ **BufferLike**: *Buffer | [TransformableToBuffer](../interfaces/_index_.transformabletobuffer.md) | [PrefixedHexString](_index_.md#prefixedhexstring) | number*
 
-*Defined in [types.ts:42](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/types.ts#L42)*
+*Defined in [types.ts:52](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/types.ts#L52)*
 
 A Buffer, hex string prefixed with `0x`, Number, or an object with a toBuffer method such as BN.
 
@@ -38,6 +38,6 @@ ___
 
 Ƭ **PrefixedHexString**: *string*
 
-*Defined in [types.ts:37](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/types.ts#L37)*
+*Defined in [types.ts:47](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/types.ts#L47)*
 
 A hex string prefixed with `0x`.

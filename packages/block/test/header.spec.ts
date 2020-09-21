@@ -1,6 +1,12 @@
 import * as tape from 'tape'
 import Common from '@ethereumjs/common'
-import { rlp, toBuffer, zeros, KECCAK256_RLP, KECCAK256_RLP_ARRAY } from 'ethereumjs-util'
+import {
+  rlp,
+  toBuffer,
+  zeros,
+  KECCAK256_RLP,
+  KECCAK256_RLP_ARRAY,
+} from 'ethereumjs-util'
 import { BlockHeader } from '../src/header'
 import { Block } from '../src/block'
 
@@ -36,7 +42,10 @@ tape('[Block]: Header functions', function (t) {
 
   t.test('should test header initialization', function (st) {
     const common = new Common({ chain: 'ropsten', hardfork: 'chainstart' })
-    const block1 = new Block(undefined, { common: common, initWithGenesisHeader: true })
+    const block1 = new Block(undefined, {
+      common: common,
+      initWithGenesisHeader: true,
+    })
     st.ok(block1.hash().toString('hex'), 'block should initialize')
     st.end()
   })
@@ -46,8 +55,12 @@ tape('[Block]: Header functions', function (t) {
     const bcBlockGasLimigTestData = testData.BlockGasLimit2p63m1
 
     Object.keys(bcBlockGasLimigTestData).forEach((key) => {
-      const parentBlock = new Block(rlp.decode(bcBlockGasLimigTestData[key].genesisRLP))
-      const block = new Block(rlp.decode(bcBlockGasLimigTestData[key].blocks[0].rlp))
+      const parentBlock = new Block(
+        rlp.decode(bcBlockGasLimigTestData[key].genesisRLP)
+      )
+      const block = new Block(
+        rlp.decode(bcBlockGasLimigTestData[key].blocks[0].rlp)
+      )
       st.equal(block.header.validateGasLimit(parentBlock), true)
     })
 
@@ -68,19 +81,23 @@ tape('[Block]: Header functions', function (t) {
     st.strictEqual(
       header.hash().toString('hex'),
       testDataGenesis.genesis_hash,
-      'genesis hash match',
+      'genesis hash match'
     )
     st.end()
   })
 
   t.test('should test genesis parameters (ropsten)', function (st) {
     const common = new Common({ chain: 'ropsten', hardfork: 'chainstart' })
-    const genesisHeader = new BlockHeader(undefined, { common, initWithGenesisHeader: true })
-    const ropstenStateRoot = '217b0bbcfb72e2d57e28f33cb361b9983513177755dc3f33ce3e7022ed62b77b'
+    const genesisHeader = new BlockHeader(undefined, {
+      common,
+      initWithGenesisHeader: true,
+    })
+    const ropstenStateRoot =
+      '217b0bbcfb72e2d57e28f33cb361b9983513177755dc3f33ce3e7022ed62b77b'
     st.strictEqual(
       genesisHeader.stateRoot.toString('hex'),
       ropstenStateRoot,
-      'genesis stateRoot match',
+      'genesis stateRoot match'
     )
     st.end()
   })

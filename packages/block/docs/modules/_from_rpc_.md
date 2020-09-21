@@ -12,7 +12,7 @@
 
 ###  blockFromRpc
 
-▸ **blockFromRpc**(`blockParams`: any, `uncles?`: any[], `chainOptions?`: [ChainOptions](../interfaces/_index_.chainoptions.md)): *[Block](../classes/_block_.block.md)‹›*
+▸ **blockFromRpc**(`blockParams`: any, `uncles?`: any[], `options?`: [BlockOptions](../interfaces/_index_.blockoptions.md)): *[Block](../classes/_block_.block.md)‹›*
 
 *Defined in [from-rpc.ts:14](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/from-rpc.ts#L14)*
 
@@ -24,6 +24,6 @@ Name | Type | Description |
 ------ | ------ | ------ |
 `blockParams` | any | Ethereum JSON RPC of block (eth_getBlockByNumber) |
 `uncles?` | any[] | Optional list of Ethereum JSON RPC of uncles (eth_getUncleByBlockHashAndIndex) |
-`chainOptions?` | [ChainOptions](../interfaces/_index_.chainoptions.md) | An object describing the blockchain  |
+`options?` | [BlockOptions](../interfaces/_index_.blockoptions.md) | - |
 
 **Returns:** *[Block](../classes/_block_.block.md)‹›*

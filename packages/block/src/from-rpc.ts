@@ -11,7 +11,11 @@ import blockHeaderFromRpc from './header-from-rpc'
  * @param uncles - Optional list of Ethereum JSON RPC of uncles (eth_getUncleByBlockHashAndIndex)
  * @param chainOptions - An object describing the blockchain
  */
-export default function blockFromRpc(blockParams: any, uncles?: any[], options?: BlockOptions) {
+export default function blockFromRpc(
+  blockParams: any,
+  uncles?: any[],
+  options?: BlockOptions
+) {
   uncles = uncles || []
 
   const header = blockHeaderFromRpc(blockParams, options)
@@ -20,9 +24,11 @@ export default function blockFromRpc(blockParams: any, uncles?: any[], options?:
     {
       header: header.toJSON(true),
       transactions: [],
-      uncleHeaders: uncles.map((uh) => blockHeaderFromRpc(uh, options).toJSON(true)),
+      uncleHeaders: uncles.map((uh) =>
+        blockHeaderFromRpc(uh, options).toJSON(true)
+      ),
     },
-    options,
+    options
   )
 
   if (blockParams.transactions) {
