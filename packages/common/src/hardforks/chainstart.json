@@ -1,10 +1,7 @@
 {
   "name": "chainstart",
   "comment": "Start of the Ethereum main chain",
-  "eip": {
-    "url": "",
-    "status": ""
-  },
+  "url": "",
   "status": "",
   "gasConfig": {
     "minGasLimit": {

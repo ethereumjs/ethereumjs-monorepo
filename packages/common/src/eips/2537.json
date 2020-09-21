@@ -1,5 +1,6 @@
 {
-  "name": "EIP2537",
+  "name": "EIP-2537",
+  "number": 2537,
   "comment": "BLS12-381 precompiles",
   "url": "https://eips.ethereum.org/EIPS/eip-2537",
   "status": "Draft",

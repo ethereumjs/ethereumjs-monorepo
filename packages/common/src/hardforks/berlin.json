@@ -1,25 +1,7 @@
 {
   "name": "berlin",
   "comment": "HF targeted for July 2020 following the Muir Glacier HF",
-  "eip": {
-    "url": "https://eips.ethereum.org/EIPS/eip-2070",
-    "status": "Draft"
-  },
-  "gasConfig": {},
-  "gasPrices": {
-    "beginsub": {
-      "v": 2,
-      "d": "Base fee of the BEGINSUB opcode"
-    },
-    "returnsub": {
-      "v": 5,
-      "d": "Base fee of the RETURNSUB opcode"
-    },
-    "jumpsub": {
-      "v": 10,
-      "d": "Base fee of the JUMPSUB opcode"
-    }
-  },
-  "vm": {},
-  "pow": {}
+  "url": "https://eips.ethereum.org/EIPS/eip-2070",
+  "status": "Draft",
+  "eips": [ 2315 ]
 }

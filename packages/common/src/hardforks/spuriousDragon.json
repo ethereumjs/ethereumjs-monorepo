@@ -1,10 +1,8 @@
 {
   "name": "spuriousDragon",
   "comment": "HF with EIPs for simple replay attack protection, EXP cost increase, state trie clearing, contract code size limit",
-  "eip": {
-    "url": "https://eips.ethereum.org/EIPS/eip-607",
-    "status": "Final"
-  },
+  "url": "https://eips.ethereum.org/EIPS/eip-607",
+  "status": "Final",
   "gasConfig": {},
   "gasPrices": {
     "expByte": {
