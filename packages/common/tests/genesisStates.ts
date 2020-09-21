@@ -1,4 +1,4 @@
-import * as tape from 'tape'
+import tape from 'tape'
 import { genesisStateById, genesisStateByName } from '../src/genesisStates/'
 
 tape('[genesisStates]: Genesis state access', function (t: tape.Test) {
