@@ -6,8 +6,6 @@
 [![Code Coverage][account-coverage-badge]][account-coverage-link]
 [![Discord][discord-badge]][discord-link]
 
-[![js-standard-style][js-standard-style-badge]][js-standard-style-link]
-
 This library eases the handling of Ethereum accounts, where accounts can be either external accounts
 or contracts (see
 [Account Types](http://ethdocs.org/en/latest/contracts-and-transactions/account-types-gas-and-transactions.html) docs).
@@ -40,8 +38,6 @@ If you want to join for work or do improvements on the libraries have a look at 
 
 [discord-badge]: https://img.shields.io/static/v1?logo=discord&label=discord&message=Join&color=blue
 [discord-link]: https://discord.gg/TNwARpR
-[js-standard-style-badge]: https://cdn.rawgit.com/feross/standard/master/badge.svg
-[js-standard-style-link]: https://github.com/feross/standard
 [account-npm-badge]: https://img.shields.io/npm/v/@ethereumjs/account.svg
 [account-npm-link]: https://www.npmjs.com/package/@ethereumjs/account
 [account-issues-badge]: https://img.shields.io/github/issues/ethereumjs/ethereumjs-vm/package:%20account?label=issues

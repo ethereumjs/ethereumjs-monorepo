@@ -6,8 +6,6 @@
 [![Code Coverage][tx-coverage-badge]][tx-coverage-link]
 [![Discord][discord-badge]][discord-link]
 
-[![js-standard-style][js-standard-style-badge]][js-standard-style-link]
-
 # INSTALL
 
 `npm install ethereumjs-tx`
@@ -79,8 +77,6 @@ If you want to join for work or do improvements on the libraries have a look at 
 
 [discord-badge]: https://img.shields.io/static/v1?logo=discord&label=discord&message=Join&color=blue
 [discord-link]: https://discord.gg/TNwARpR
-[js-standard-style-badge]: https://cdn.rawgit.com/feross/standard/master/badge.svg
-[js-standard-style-link]: https://github.com/feross/standard
 [tx-npm-badge]: https://img.shields.io/npm/v/@ethereumjs/tx.svg
 [tx-npm-link]: https://www.npmjs.com/package/@ethereumjs/tx
 [tx-issues-badge]: https://img.shields.io/github/issues/ethereumjs/ethereumjs-vm/package:%20tx?label=issues
