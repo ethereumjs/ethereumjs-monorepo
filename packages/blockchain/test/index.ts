@@ -1,14 +1,12 @@
 import Common from '@ethereumjs/common'
 import { Block, BlockHeader } from '@ethereumjs/block'
-import { toBuffer, bufferToInt } from 'ethereumjs-util'
+import { BN, toBuffer, bufferToInt } from 'ethereumjs-util'
 import * as test from 'tape'
 import Blockchain from '../src'
 import { generateBlockchain, generateBlocks, isConsecutive, createTestDB } from './util'
-
-import BN = require('bn.js')
+import * as testData from './testdata.json'
 
 const level = require('level-mem')
-const testData = require('./testdata.json')
 
 test('blockchain test', (t) => {
   t.test('should not crash on getting head of a blockchain without a genesis', async (st) => {

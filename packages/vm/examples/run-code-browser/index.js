@@ -8,10 +8,10 @@
  * using node-static or `python -mSimpleHTTPServer`).
  */
 const BN = require('bn.js')
-const VM = require('../..').default
+const VM = require('../../dist').default
 
 // Create a new VM instance
-// For explicity setting the HF use e.g. `new VM({ hardfork: 'petersburg' })`
+// To explicity set the chain or hardfork use [Common](https://github.com/ethereumjs/ethereumjs-vm/tree/master/packages/common#usage)
 const vm = new VM()
 
 const STOP = '00'
@@ -29,7 +29,7 @@ vm.runCode({
   code: Buffer.from(code.join(''), 'hex'),
   gasLimit: new BN(0xffff),
 })
-  .then(results => {
+  .then((results) => {
     console.log('Returned : ' + results.returnValue.toString('hex'))
     console.log('gasUsed  : ' + results.gasUsed.toString())
   })

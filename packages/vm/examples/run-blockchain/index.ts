@@ -4,17 +4,18 @@ import Account from '@ethereumjs/account'
 import { Block, BlockHeader } from '@ethereumjs/block'
 import Blockchain from '@ethereumjs/blockchain'
 import { toBuffer, setLengthLeft } from 'ethereumjs-util'
+import Common from '@ethereumjs/common'
 
 const testData = require('./test-data')
 const level = require('level')
 
 async function main() {
-  const hardfork = testData.network.toLowerCase()
+  const common = new Common({ chain: testData.network.toLowerCase() })
   const validatePow = true
   const validateBlocks = true
 
   const blockchain = new Blockchain({
-    hardfork,
+    common,
     validatePow,
     validateBlocks,
   })
@@ -25,13 +26,13 @@ async function main() {
     blockchain.ethash!.cacheDB = level('./.cachedb')
   }
 
-  const vm = new VM({ blockchain, hardfork })
+  const vm = new VM({ blockchain, common })
 
   await setupPreConditions(vm, testData)
 
-  await setGenesisBlock(blockchain, hardfork)
+  await setGenesisBlock(blockchain, common)
 
-  await putBlocks(blockchain, hardfork, testData)
+  await putBlocks(blockchain, common, testData)
 
   await vm.runBlockchain(blockchain)
 
@@ -70,15 +71,15 @@ async function setupPreConditions(vm: VM, testData: any) {
   await vm.stateManager.commit()
 }
 
-async function setGenesisBlock(blockchain: any, hardfork: string) {
-  const header = new BlockHeader(testData.genesisBlockHeader, { hardfork })
-  const genesisBlock = new Block([header.raw, [], []], { hardfork })
+async function setGenesisBlock(blockchain: any, common: Common) {
+  const header = new BlockHeader(testData.genesisBlockHeader, { common })
+  const genesisBlock = new Block([header.raw, [], []], { common })
   await blockchain.putGenesis(genesisBlock)
 }
 
-async function putBlocks(blockchain: any, hardfork: string, testData: any) {
+async function putBlocks(blockchain: any, common: Common, testData: any) {
   for (const blockData of testData.blocks) {
-    const block = new Block(toBuffer(blockData.rlp), { hardfork })
+    const block = new Block(toBuffer(blockData.rlp), { common })
     await blockchain.putBlock(block)
   }
 }

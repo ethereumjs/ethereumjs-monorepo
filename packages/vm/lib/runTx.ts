@@ -62,7 +62,8 @@ export default async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxRes
 
   // create a reasonable default if no block is given
   if (!opts.block) {
-    opts.block = new Block(undefined, { common: opts.tx.common })
+    const common = (<any>opts.tx)._common
+    opts.block = new Block(undefined, { common })
   }
 
   if (new BN(opts.block.header.gasLimit).lt(opts.tx.gasLimit)) {
@@ -134,7 +135,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   /*
    * Execute message
    */
-  const txContext = new TxContext(tx.gasPrice.toArrayLike(Buffer), caller)
+  const txContext = new TxContext(tx.gasPrice, caller)
   const to = tx.to && tx.to.buf.length !== 0 ? tx.to.buf : undefined
   const message = new Message({
     caller,

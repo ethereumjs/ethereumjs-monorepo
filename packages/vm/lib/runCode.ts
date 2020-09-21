@@ -11,7 +11,7 @@ instead you should `copy` it first
 not all stack items are 32 bytes, so if the operation relies on the stack
 item length then you must use utils.pad(<item>, 32) first.
 */
-import { zeros } from 'ethereumjs-util'
+import { BN, zeros } from 'ethereumjs-util'
 import VM from './index'
 import TxContext from './evm/txContext'
 import Message from './evm/message'
@@ -28,7 +28,7 @@ export interface RunCodeOpts {
   block?: any
   evm?: EVM
   txContext?: TxContext
-  gasPrice?: Buffer
+  gasPrice?: BN
   /**
    * The address where the call originated from. The address should be a `Buffer` of 20 bits. Defaults to `0`
    */
@@ -49,11 +49,11 @@ export interface RunCodeOpts {
   /**
    * Gas limit
    */
-  gasLimit?: Buffer
+  gasLimit?: BN
   /**
    * The value in ether that is being sent to `opt.address`. Defaults to `0`
    */
-  value?: Buffer
+  value?: BN
   depth?: number
   isStatic?: boolean
   selfdestruct?: { [k: string]: boolean }
@@ -78,7 +78,7 @@ export default function runCode(this: VM, opts: RunCodeOpts): Promise<ExecResult
   // Backwards compatibility
   if (!opts.txContext) {
     opts.txContext = new TxContext(
-      opts.gasPrice || Buffer.alloc(0),
+      opts.gasPrice || new BN(0),
       opts.origin || opts.caller || zeros(32),
     )
   }

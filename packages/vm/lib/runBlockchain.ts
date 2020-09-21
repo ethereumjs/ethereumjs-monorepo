@@ -5,7 +5,7 @@ import VM from './index'
 /**
  * @ignore
  */
-export default async function runBlockchain(this: VM, blockchain: Blockchain) {
+export default async function runBlockchain(this: VM, blockchain?: Blockchain) {
   let headBlock: Block
   let parentState: Buffer
 
@@ -15,7 +15,7 @@ export default async function runBlockchain(this: VM, blockchain: Blockchain) {
     // determine starting state for block run
     // if we are just starting or if a chain re-org has happened
     if (!headBlock || reorg) {
-      const parentBlock = await blockchain.getBlock(block.header.parentHash)
+      const parentBlock = await blockchain!.getBlock(block.header.parentHash)
       parentState = parentBlock.header.stateRoot
       // generate genesis state if we are at the genesis block
       // we don't have the genesis state
@@ -33,7 +33,7 @@ export default async function runBlockchain(this: VM, blockchain: Blockchain) {
       headBlock = block
     } catch (error) {
       // remove invalid block
-      await blockchain.delBlock(block.header.hash())
+      await blockchain!.delBlock(block.header.hash())
       throw error
     }
   })

@@ -108,13 +108,6 @@ export interface PostByzantiumTxReceipt extends TxReceipt {
  * @ignore
  */
 export default async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockResult> {
-  if (opts === undefined) {
-    throw new Error('invalid input, opts must be provided')
-  }
-  if (!opts.block) {
-    throw new Error('invalid input, block must be provided')
-  }
-
   const state = this.stateManager
   const block = opts.block
   const generateStateRoot = !!opts.generate
