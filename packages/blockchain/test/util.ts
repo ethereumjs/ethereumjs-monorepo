@@ -1,17 +1,45 @@
 import { rlp, toBuffer, bufferToInt } from 'ethereumjs-util'
 import BN = require('bn.js')
 import Blockchain from '../src'
-
-const util = require('util')
 import { Block } from '@ethereumjs/block'
 import Common from '@ethereumjs/common'
 const level = require('level-mem')
 
+export const generateBlocks = (
+  numberOfBlocks: number,
+  existingBlocks?: Block[]
+): Block[] => {
+  const blocks = existingBlocks ? existingBlocks : []
+  if (blocks.length === 0) {
+    const genesisBlock = new Block(undefined, { initWithGenesisHeader: true })
+    genesisBlock.header.gasLimit = toBuffer(8000000)
+    blocks.push(genesisBlock)
+  }
+  const common = new Common({ chain: 'mainnet', hardfork: 'chainstart' })
+  for (let i = blocks.length; i < numberOfBlocks; i++) {
+    const block = new Block(undefined, { common })
+    block.header.number = toBuffer(i)
+    block.header.parentHash = blocks[i - 1].hash()
+    block.header.difficulty = toBuffer(
+      block.header.canonicalDifficulty(blocks[i - 1])
+    )
+    block.header.gasLimit = toBuffer(8000000)
+    block.header.timestamp = toBuffer(
+      bufferToInt(blocks[i - 1].header.timestamp) + 1
+    )
+    blocks.push(block)
+  }
+  return blocks
+}
+
 export const generateBlockchain = async (
   numberOfBlocks: number,
-  genesisBlock?: Block,
+  genesisBlock?: Block
 ): Promise<any> => {
-  const blockchain = new Blockchain({ validateBlocks: true, validatePow: false })
+  const blockchain = new Blockchain({
+    validateBlocks: true,
+    validatePow: false,
+  })
   const existingBlocks: Block[] = genesisBlock ? [genesisBlock] : []
   const blocks = generateBlocks(numberOfBlocks, existingBlocks)
 
@@ -27,26 +55,6 @@ export const generateBlockchain = async (
     blocks,
     error: null,
   }
-}
-
-export const generateBlocks = (numberOfBlocks: number, existingBlocks?: Block[]): Block[] => {
-  const blocks = existingBlocks ? existingBlocks : []
-  if (blocks.length === 0) {
-    const genesisBlock = new Block(undefined, { initWithGenesisHeader: true })
-    genesisBlock.header.gasLimit = toBuffer(8000000)
-    blocks.push(genesisBlock)
-  }
-  const common = new Common({ chain: 'mainnet', hardfork: 'chainstart' })
-  for (let i = blocks.length; i < numberOfBlocks; i++) {
-    const block = new Block(undefined, { common })
-    block.header.number = toBuffer(i)
-    block.header.parentHash = blocks[i - 1].hash()
-    block.header.difficulty = toBuffer(block.header.canonicalDifficulty(blocks[i - 1]))
-    block.header.gasLimit = toBuffer(8000000)
-    block.header.timestamp = toBuffer(bufferToInt(blocks[i - 1].header.timestamp) + 1)
-    blocks.push(block)
-  }
-  return blocks
 }
 
 export const isConsecutive = (blocks: Block[]) => {
@@ -73,7 +81,10 @@ export const createTestDB = async () => {
     },
     {
       type: 'put',
-      key: Buffer.from('48d4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3', 'hex'),
+      key: Buffer.from(
+        '48d4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3',
+        'hex'
+      ),
       keyEncoding: 'binary',
       valueEncoding: 'binary',
       value: Buffer.from('00', 'hex'),
@@ -96,7 +107,7 @@ export const createTestDB = async () => {
       type: 'put',
       key: Buffer.from(
         '680000000000000000d4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3',
-        'hex',
+        'hex'
       ),
       keyEncoding: 'binary',
       valueEncoding: 'binary',
@@ -106,7 +117,7 @@ export const createTestDB = async () => {
       type: 'put',
       key: Buffer.from(
         '680000000000000000d4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa374',
-        'hex',
+        'hex'
       ),
       keyEncoding: 'binary',
       valueEncoding: 'binary',
@@ -116,7 +127,7 @@ export const createTestDB = async () => {
       type: 'put',
       key: Buffer.from(
         '620000000000000000d4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3',
-        'hex',
+        'hex'
       ),
       keyEncoding: 'binary',
       valueEncoding: 'binary',
