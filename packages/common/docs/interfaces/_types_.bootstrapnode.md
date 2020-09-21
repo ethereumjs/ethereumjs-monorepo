@@ -24,7 +24,7 @@
 
 • **chainId**? : *undefined | number*
 
-*Defined in [types.ts:45](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/types.ts#L45)*
+*Defined in [types.ts:49](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/types.ts#L49)*
 
 ___
 
@@ -32,7 +32,7 @@ ___
 
 • **comment**: *string*
 
-*Defined in [types.ts:48](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/types.ts#L48)*
+*Defined in [types.ts:52](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/types.ts#L52)*
 
 ___
 
@@ -40,7 +40,7 @@ ___
 
 • **id**: *string*
 
-*Defined in [types.ts:46](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/types.ts#L46)*
+*Defined in [types.ts:50](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/types.ts#L50)*
 
 ___
 
@@ -48,7 +48,7 @@ ___
 
 • **ip**: *string*
 
-*Defined in [types.ts:42](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/types.ts#L42)*
+*Defined in [types.ts:46](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/types.ts#L46)*
 
 ___
 
@@ -56,7 +56,7 @@ ___
 
 • **location**: *string*
 
-*Defined in [types.ts:47](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/types.ts#L47)*
+*Defined in [types.ts:51](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/types.ts#L51)*
 
 ___
 
@@ -64,7 +64,7 @@ ___
 
 • **network**? : *undefined | string*
 
-*Defined in [types.ts:44](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/types.ts#L44)*
+*Defined in [types.ts:48](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/types.ts#L48)*
 
 ___
 
@@ -72,4 +72,4 @@ ___
 
 • **port**: *number | string*
 
-*Defined in [types.ts:43](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/types.ts#L43)*
+*Defined in [types.ts:47](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/types.ts#L47)*

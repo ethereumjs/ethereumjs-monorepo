@@ -24,7 +24,7 @@
 
 • **difficulty**: *number*
 
-*Defined in [types.ts:30](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/types.ts#L30)*
+*Defined in [types.ts:34](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/types.ts#L34)*
 
 ___
 
@@ -32,7 +32,7 @@ ___
 
 • **extraData**: *string*
 
-*Defined in [types.ts:32](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/types.ts#L32)*
+*Defined in [types.ts:36](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/types.ts#L36)*
 
 ___
 
@@ -40,7 +40,7 @@ ___
 
 • **gasLimit**: *number*
 
-*Defined in [types.ts:29](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/types.ts#L29)*
+*Defined in [types.ts:33](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/types.ts#L33)*
 
 ___
 
@@ -48,7 +48,7 @@ ___
 
 • **hash**: *string*
 
-*Defined in [types.ts:27](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/types.ts#L27)*
+*Defined in [types.ts:31](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/types.ts#L31)*
 
 ___
 
@@ -56,7 +56,7 @@ ___
 
 • **nonce**: *string*
 
-*Defined in [types.ts:31](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/types.ts#L31)*
+*Defined in [types.ts:35](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/types.ts#L35)*
 
 ___
 
@@ -64,7 +64,7 @@ ___
 
 • **stateRoot**: *string*
 
-*Defined in [types.ts:33](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/types.ts#L33)*
+*Defined in [types.ts:37](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/types.ts#L37)*
 
 ___
 
@@ -72,4 +72,4 @@ ___
 
 • **timestamp**: *string | null*
 
-*Defined in [types.ts:28](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/types.ts#L28)*
+*Defined in [types.ts:32](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/types.ts#L32)*

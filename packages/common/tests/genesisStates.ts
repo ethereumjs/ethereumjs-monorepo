@@ -7,17 +7,19 @@ tape('[genesisStates]: Genesis state access', function (t: tape.Test) {
     st.equal(
       genesisState['0x0000000000000000000000000000000000000008'],
       '0x1',
-      'Access by id (goerli)',
+      'Access by id (goerli)'
     )
 
     genesisState = genesisStateByName('goerli')
     st.equal(
       genesisState['0x0000000000000000000000000000000000000008'],
       '0x1',
-      'Access by name (goerli)',
+      'Access by name (goerli)'
     )
 
-    st.comment('-----------------------------------------------------------------')
+    st.comment(
+      '-----------------------------------------------------------------'
+    )
     st.end()
   })
 })
