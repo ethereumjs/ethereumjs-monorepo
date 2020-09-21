@@ -1,4 +1,4 @@
-import tape = require('tape')
+import * as tape from 'tape'
 import blockFromRpc from '../src/from-rpc'
 import blockHeaderFromRpc from '../src/header-from-rpc'
 import * as blockData from './testdata/testdata-from-rpc.json'

@@ -1,8 +1,8 @@
+import * as tape from 'tape'
 import { addHexPrefix, bufferToInt, toBuffer } from 'ethereumjs-util'
 import { SecureTrie as Trie } from 'merkle-patricia-tree'
 import { Block } from '@ethereumjs/block'
 import Blockchain from '@ethereumjs/blockchain'
-import tape = require('tape')
 import { setupPreConditions, verifyPostConditions } from './util'
 
 const level = require('level')
@@ -131,9 +131,8 @@ export default async function runBlockchainTest(options: any, testData: any, t: 
         vm._updateOpcodes()
       }
 
-      const block = new Block(Buffer.from(raw.rlp.slice(2), 'hex'), {
-        common,
-      })
+      const blockData = Buffer.from(raw.rlp.slice(2), 'hex')
+      const block = new Block(blockData, { common })
       await blockchain.putBlock(block)
 
       // This is a trick to avoid generating the canonical genesis

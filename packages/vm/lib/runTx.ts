@@ -51,10 +51,6 @@ export interface RunTxResult extends EVMResult {
  * @ignore
  */
 export default async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
-  if (opts === undefined) {
-    throw new Error('invalid input, opts must be provided')
-  }
-
   // tx is required
   if (!opts.tx) {
     throw new Error('invalid input, tx is required')
@@ -137,12 +133,13 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
    */
   const txContext = new TxContext(tx.gasPrice, caller)
   const to = tx.to && tx.to.buf.length !== 0 ? tx.to.buf : undefined
+  const { value, data } = tx
   const message = new Message({
     caller,
     gasLimit,
     to,
-    value: tx.value,
-    data: tx.data,
+    value,
+    data,
   })
   const evm = new EVM(this, txContext, block)
   const results = (await evm.executeMessage(message)) as RunTxResult
@@ -153,7 +150,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   // Generate the bloom for the tx
   results.bloom = txLogsBloom(results.execResult.logs)
   // Caculate the total gas used
-  results.gasUsed = results.gasUsed.add(basefee)
+  results.gasUsed.iadd(basefee)
   // Process any gas refund
   const gasRefund = evm._refund
   if (gasRefund) {
@@ -163,7 +160,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
       results.gasUsed.isub(results.gasUsed.divn(2))
     }
   }
-  results.amountSpent = results.gasUsed.mul(new BN(tx.gasPrice))
+  results.amountSpent = results.gasUsed.mul(tx.gasPrice)
 
   // Update sender's balance
   fromAccount = await state.getAccount(caller)

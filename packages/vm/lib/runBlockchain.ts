@@ -28,7 +28,8 @@ export default async function runBlockchain(this: VM, blockchain?: Blockchain) {
 
     // run block, update head if valid
     try {
-      await this.runBlock({ block, root: parentState, generate: !headBlock })
+      await this.runBlock({ block, root: parentState })
+      console.log()
       // set as new head block
       headBlock = block
     } catch (error) {
