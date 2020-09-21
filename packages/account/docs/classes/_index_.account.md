@@ -31,26 +31,26 @@
 
 \+ **new Account**(`data?`: any): *[Account](_index_.account.md)*
 
-*Defined in [index.ts:24](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/account/src/index.ts#L24)*
+*Defined in [index.ts:28](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/account/src/index.ts#L28)*
 
 Creates a new account object
 
 ~~~
-var data = [
+const data = [
   '0x02', //nonce
   '0x0384', //balance
   '0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421', //stateRoot
   '0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470', //codeHash
 ]
+const account = new Account(data)
 
-var data = {
+const data2 = {
   nonce: '0x0',
   balance: '0x03e7',
   stateRoot: '0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421',
   codeHash: '0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470',
 }
-
-const account = new Account(data)
+const account2 = new Account(data2)
 ~~~
 
 **Parameters:**
@@ -67,7 +67,7 @@ Name | Type | Description |
 
 • **balance**: *Buffer*
 
-*Defined in [index.ts:14](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/account/src/index.ts#L14)*
+*Defined in [index.ts:18](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/account/src/index.ts#L18)*
 
 The account's balance in wei.
 
@@ -77,7 +77,7 @@ ___
 
 • **codeHash**: *Buffer*
 
-*Defined in [index.ts:24](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/account/src/index.ts#L24)*
+*Defined in [index.ts:28](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/account/src/index.ts#L28)*
 
 The hash of the code of the contract.
 
@@ -87,7 +87,7 @@ ___
 
 • **nonce**: *Buffer*
 
-*Defined in [index.ts:9](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/account/src/index.ts#L9)*
+*Defined in [index.ts:13](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/account/src/index.ts#L13)*
 
 The account's nonce.
 
@@ -97,7 +97,7 @@ ___
 
 • **stateRoot**: *Buffer*
 
-*Defined in [index.ts:19](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/account/src/index.ts#L19)*
+*Defined in [index.ts:23](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/account/src/index.ts#L23)*
 
 The stateRoot for the storage of the contract.
 
@@ -107,7 +107,7 @@ The stateRoot for the storage of the contract.
 
 ▸ **isContract**(): *boolean*
 
-*Defined in [index.ts:88](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/account/src/index.ts#L88)*
+*Defined in [index.ts:89](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/account/src/index.ts#L89)*
 
 Returns a `Boolean` deteremining if the account is a contract.
 
@@ -119,7 +119,7 @@ ___
 
 ▸ **isEmpty**(): *boolean*
 
-*Defined in [index.ts:95](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/account/src/index.ts#L95)*
+*Defined in [index.ts:96](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/account/src/index.ts#L96)*
 
 Returns a `Boolean` determining if the account is empty.
 
@@ -131,7 +131,7 @@ ___
 
 ▸ **serialize**(): *Buffer*
 
-*Defined in [index.ts:81](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/account/src/index.ts#L81)*
+*Defined in [index.ts:82](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/account/src/index.ts#L82)*
 
 Returns the RLP serialization of the account as a `Buffer`.
 
