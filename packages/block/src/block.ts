@@ -1,7 +1,7 @@
 import { BaseTrie as Trie } from 'merkle-patricia-tree'
+import { BN, rlp, keccak256, KECCAK256_RLP, baToJSON } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
-import { BN, rlp, keccak256, KECCAK256_RLP, baToJSON, bufferToInt } from 'ethereumjs-util'
-import { Transaction, TransactionOptions } from '@ethereumjs/tx'
+import { Transaction } from '@ethereumjs/tx'
 import { BlockHeader } from './header'
 import { Blockchain, BlockData, BlockOptions } from './types'
 
@@ -64,7 +64,10 @@ export class Block {
 
     // parse transactions
     for (let i = 0; i < rawTransactions.length; i++) {
-      const tx = new Transaction(rawTransactions[i], { common: this._common })
+      const txData = rawTransactions[i]
+      const tx = Array.isArray(txData)
+        ? Transaction.fromValuesArray(txData as Buffer[], this._common)
+        : Transaction.fromRlpSerializedTx(txData as Buffer, this._common)
       this.transactions.push(tx)
     }
   }
@@ -100,7 +103,7 @@ export class Block {
   serialize(rlpEncode = true) {
     const raw = [
       this.header.raw,
-      this.transactions.map((tx) => tx.raw),
+      this.transactions.map((tx) => tx.serialize()),
       this.uncleHeaders.map((uh) => uh.raw),
     ]
 
@@ -141,17 +144,13 @@ export class Block {
     const errors: string[] = []
 
     this.transactions.forEach(function (tx, i) {
-      const error = tx.validate(true)
-      if (error) {
-        errors.push(`${error} at tx ${i}`)
+      const errs = tx.validate(true)
+      if (errs.length !== 0) {
+        errors.push(`errors at tx ${i}: ${errs.join(', ')}`)
       }
     })
 
-    if (!stringError) {
-      return errors.length === 0
-    }
-
-    return errors.join(' ')
+    return stringError ? errors.join(' ') : errors.length === 0
   }
 
   /**
@@ -223,7 +222,7 @@ export class Block {
     if (labeled) {
       return {
         header: this.header.toJSON(true),
-        transactions: this.transactions.map((tx) => tx.toJSON(true)),
+        transactions: this.transactions.map((tx) => tx.toJSON()),
         uncleHeaders: this.uncleHeaders.forEach((uh) => uh.toJSON(true)),
       }
     } else {

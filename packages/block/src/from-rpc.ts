@@ -1,5 +1,5 @@
-import { FakeTransaction, TransactionOptions } from '@ethereumjs/tx'
-import { toBuffer, setLengthLeft } from 'ethereumjs-util'
+import { Transaction, TxData } from '@ethereumjs/tx'
+import { toBuffer, setLengthLeft, Address } from 'ethereumjs-util'
 import { Block, BlockOptions } from './index'
 
 import blockHeaderFromRpc from './header-from-rpc'
@@ -28,32 +28,36 @@ export default function blockFromRpc(blockParams: any, uncles?: any[], options?:
   if (blockParams.transactions) {
     for (const _txParams of blockParams.transactions) {
       const txParams = normalizeTxParams(_txParams)
+
       // override from address
-      const fromAddress = toBuffer(txParams.from)
+      const fromAddress = txParams.from ? Address.fromString(txParams.from) : Address.zero()
       delete txParams.from
 
-      const tx = new FakeTransaction(txParams, options as TransactionOptions)
-      tx.from = fromAddress
-      tx.getSenderAddress = function () {
+      const tx = Transaction.fromTxData(txParams as TxData, (<any>block)._common)
+      const fakeTx = Object.create(tx)
+
+      // override getSenderAddress
+      fakeTx.getSenderAddress = () => {
         return fromAddress
       }
       // override hash
-      const txHash = toBuffer(txParams.hash)
-      tx.hash = function () {
-        return txHash
+      fakeTx.hash = () => {
+        return toBuffer(txParams.hash)
       }
 
-      block.transactions.push(tx)
+      block.transactions.push(fakeTx)
     }
   }
+
   return block
 }
 
 function normalizeTxParams(_txParams: any) {
   const txParams = Object.assign({}, _txParams)
-  // hot fix for https://github.com/ethereumjs/ethereumjs-util/issues/40
+
   txParams.gasLimit = txParams.gasLimit === undefined ? txParams.gas : txParams.gasLimit
   txParams.data = txParams.data === undefined ? txParams.input : txParams.data
+
   // strict byte length checking
   txParams.to = txParams.to ? setLengthLeft(toBuffer(txParams.to), 20) : null
 

@@ -1,6 +1,6 @@
 import { Transaction } from '../src'
 import Common from '@ethereumjs/common'
-import { bufferToHex, privateToAddress } from 'ethereumjs-util'
+import { privateToAddress } from 'ethereumjs-util'
 
 // In this example we create a transaction for a custom network.
 //
@@ -18,14 +18,14 @@ const customCommon = Common.forCustomChain(
 
 // We pass our custom Common object whenever we create a transaction
 
-const tx = new Transaction(
+const tx = Transaction.fromTxData(
   {
     nonce: 0,
     gasPrice: 100,
     gasLimit: 1000000000,
     value: 100000,
   },
-  { common: customCommon },
+  customCommon,
 )
 
 // Once we created the transaction using the custom Common object, we can use it as a normal tx.
@@ -36,15 +36,15 @@ const privateKey = Buffer.from(
   'hex',
 )
 
-tx.sign(privateKey)
+const signedTx = tx.sign(privateKey)
 
 if (
-  tx.validate() &&
-  bufferToHex(tx.getSenderAddress()) === bufferToHex(privateToAddress(privateKey))
+  signedTx.validate() &&
+  signedTx.getSenderAddress().toBuffer().equals(privateToAddress(privateKey))
 ) {
   console.log('Valid signature')
 } else {
   console.log('Invalid signature')
 }
 
-console.log("The transaction's chain id is", tx.getChainId())
+console.log("The transaction's chain id is ", signedTx.getChainId())

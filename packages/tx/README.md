@@ -1,4 +1,4 @@
-# ethereumjs-tx
+# @ethereumjs/tx
 
 [![NPM Package][tx-npm-badge]][tx-npm-link]
 [![GitHub Issues][tx-issues-badge]][tx-issues-link]
@@ -8,18 +8,14 @@
 
 # INSTALL
 
-`npm install ethereumjs-tx`
+`npm install @ethereumjs/tx`
 
 # USAGE
 
-- [example](https://github.com/ethereumjs/ethereumjs-tx/blob/master/examples/transactions.ts)
+- [Example](./examples/transactions.ts)
 
-```javascript
-const EthereumTx = require('@ethereumjs/tx').Transaction
-const privateKey = Buffer.from(
-  'e331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109',
-  'hex',
-)
+```typescript
+import Transaction from '@ethereumjs/tx'
 
 const txParams = {
   nonce: '0x00',
@@ -30,21 +26,43 @@ const txParams = {
   data: '0x7f7465737432000000000000000000000000000000000000000000000000000000600057',
 }
 
-// The second parameter is not necessary if these values are used
-const tx = new EthereumTx(txParams, { chain: 'mainnet', hardfork: 'petersburg' })
-tx.sign(privateKey)
-const serializedTx = tx.serialize()
+const common = new Common({ chain: 'mainnet', hardfork: 'petersburg' })
+const tx = Transaction.fromTxData(txParams, common)
+
+const privateKey = Buffer.from(
+  'e331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109',
+  'hex',
+)
+
+const signedTx = tx.sign(privateKey)
+
+const serializedTx = signedTx.serialize()
+```
+
+## Fake Transaction
+
+Creating a fake tansaction for use in e.g. `VM.runTx()` is simple, just overwrite `getSenderAddress()` with a custom [`Address`](https://github.com/ethereumjs/ethereumjs-util/blob/master/docs/classes/_address_.address.md) like so:
+
+```typescript
+import { Address } from 'ethereumjs-util'
+import { Transaction } from '@ethereumjs/tx'
+
+_getFakeTransaction(txParams: TxParams): Transaction {
+  const from = Address.fromString(txParams.from)
+  delete txParams.from
+
+  const tx = Transaction.fromTxData(txParams, this._common)
+
+  const fakeTx = Object.create(tx)
+  // override getSenderAddress
+  fakeTx.getSenderAddress = () => { return from }
+  return fakeTx
+}
 ```
 
 # Chain and Hardfork Support
 
-The `Transaction` and `FakeTransaction` constructors receives a second parameter that lets you specify the chain and hardfork
-to be used. By default, `mainnet` and `petersburg` will be used.
-
-There are two ways of customizing these. The first one, as shown in the previous section, is by
-using an object with `chain` and `hardfork` names. You can see en example of this in [./examples/ropsten-tx.ts](./examples/ropsten-tx.ts).
-
-The second option is by passing the option `common` set to an instance of [@ethereumjs/common](https://github.com/ethereumjs/ethereumjs-common)' Common. This is specially useful for custom networks or chains/hardforks not yet supported by `ethereumjs-common`. You can see en example of this in [./examples/custom-chain-tx.ts](./examples/custom-chain-tx.ts).
+The `Transaction` constructor receives a parameter of an [`@ethereumjs/common`](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common) object that lets you specify the chain and hardfork to be used. By default, `mainnet` and `petersburg` will be used.
 
 ## MuirGlacier Support
 
@@ -58,8 +76,7 @@ along with the `v2.1.1` release.
 
 # EIP-155 support
 
-`EIP-155` replay protection is activated since the `spuriousDragon` hardfork. To disable it, set the
-hardfork in the `Transaction`'s constructor.
+`EIP-155` replay protection is activated since the `spuriousDragon` hardfork. To disable it, set the hardfork to one earlier than `spuriousDragon`.
 
 # API
 

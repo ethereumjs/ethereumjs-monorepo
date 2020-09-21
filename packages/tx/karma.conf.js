@@ -5,7 +5,7 @@ module.exports = function (config) {
     browserNoActivityTimeout: 60000,
     frameworks: ['browserify', 'tap'],
     // the official transaction's test suite is disabled for now, see https://github.com/ethereumjs/ethereumjs-testing/issues/40
-    files: ['./test-build/test/api.js', './test-build/test/fake.js'],
+    files: ['./test-build/test/api.js'],
     preprocessors: {
       './test-build/**/*.js': ['browserify'],
     },

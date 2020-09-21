@@ -1,10 +1,12 @@
 import * as tape from 'tape'
-import * as util from 'ethereumjs-util'
+import { toBuffer, bufferToHex } from 'ethereumjs-util'
 import { Transaction } from '@ethereumjs/tx'
 import { Block } from '@ethereumjs/block'
 import VM from '../../lib/index'
 
 tape('VM events', (t) => {
+  const privKey = toBuffer('0xa5737ecdc1b89ca0091647e727ba082ed8953f29182e94adc397210dda643b07')
+
   t.test('should emit the Block before running it', async (st) => {
     const vm = new VM()
 
@@ -48,7 +50,7 @@ tape('VM events', (t) => {
     st.end()
   })
 
-  t.test('should the Transaction before running it', async (st) => {
+  t.test('should emit the Transaction before running it', async (st) => {
     const vm = new VM()
 
     let emitted
@@ -56,11 +58,12 @@ tape('VM events', (t) => {
       emitted = val
     })
 
-    const tx = new Transaction({
-      gasLimit: 200000,
+    const tx = Transaction.fromTxData({
+      gasPrice: 40000,
+      gasLimit: 90000,
       to: '0x1111111111111111111111111111111111111111',
-    })
-    tx.sign(util.toBuffer('0xa5737ecdc1b89ca0091647e727ba082ed8953f29182e94adc397210dda643b07'))
+    }).sign(privKey)
+
     await vm.runTx({ tx, skipBalance: true })
 
     st.equal(emitted, tx)
@@ -76,15 +79,16 @@ tape('VM events', (t) => {
       emitted = val
     })
 
-    const tx = new Transaction({
-      gasLimit: 200000,
+    const tx = Transaction.fromTxData({
+      gasPrice: 40000,
+      gasLimit: 90000,
       to: '0x1111111111111111111111111111111111111111',
       value: 1,
-    })
-    tx.sign(util.toBuffer('0xa5737ecdc1b89ca0091647e727ba082ed8953f29182e94adc397210dda643b07'))
+    }).sign(privKey)
+
     await vm.runTx({ tx, skipBalance: true })
 
-    st.equal(util.bufferToHex(emitted.execResult.returnValue), '0x')
+    st.equal(bufferToHex(emitted.execResult.returnValue), '0x')
 
     st.end()
   })
@@ -97,16 +101,17 @@ tape('VM events', (t) => {
       emitted = val
     })
 
-    const tx = new Transaction({
-      gasLimit: 200000,
+    const tx = Transaction.fromTxData({
+      gasPrice: 40000,
+      gasLimit: 90000,
       to: '0x1111111111111111111111111111111111111111',
       value: 1,
-    })
-    tx.sign(util.toBuffer('0xa5737ecdc1b89ca0091647e727ba082ed8953f29182e94adc397210dda643b07'))
+    }).sign(privKey)
+
     await vm.runTx({ tx, skipBalance: true })
 
-    st.equal(util.bufferToHex(emitted.to), '0x1111111111111111111111111111111111111111')
-    st.equal(util.bufferToHex(emitted.code), '0x')
+    st.equal(bufferToHex(emitted.to), '0x1111111111111111111111111111111111111111')
+    st.equal(bufferToHex(emitted.code), '0x')
 
     st.end()
   })
@@ -119,15 +124,16 @@ tape('VM events', (t) => {
       emitted = val
     })
 
-    const tx = new Transaction({
-      gasLimit: 200000,
+    const tx = Transaction.fromTxData({
+      gasPrice: 40000,
+      gasLimit: 90000,
       to: '0x1111111111111111111111111111111111111111',
       value: 1,
-    })
-    tx.sign(util.toBuffer('0xa5737ecdc1b89ca0091647e727ba082ed8953f29182e94adc397210dda643b07'))
+    }).sign(privKey)
+
     await vm.runTx({ tx, skipBalance: true })
 
-    st.equal(util.bufferToHex(emitted.createdAddress), '0x')
+    st.equal(bufferToHex(emitted.createdAddress), '0x')
 
     st.end()
   })
@@ -143,11 +149,12 @@ tape('VM events', (t) => {
     // This a deployment transaction that pushes 0x41 (i.e. ascii A) followed by 31 0s to
     // the stack, stores that in memory, and then returns the first byte from memory.
     // This deploys a contract which a single byte of code, 0x41.
-    const tx = new Transaction({
-      gasLimit: 200000,
+    const tx = Transaction.fromTxData({
+      gasPrice: 40000,
+      gasLimit: 90000,
       data: '0x7f410000000000000000000000000000000000000000000000000000000000000060005260016000f3',
-    })
-    tx.sign(util.toBuffer('0xa5737ecdc1b89ca0091647e727ba082ed8953f29182e94adc397210dda643b07'))
+    }).sign(privKey)
+
     await vm.runTx({ tx, skipBalance: true })
 
     st.equal(lastEmitted.opcode.name, 'RETURN')
@@ -166,15 +173,16 @@ tape('VM events', (t) => {
     // This a deployment transaction that pushes 0x41 (i.e. ascii A) followed by 31 0s to
     // the stack, stores that in memory, and then returns the first byte from memory.
     // This deploys a contract which a single byte of code, 0x41.
-    const tx = new Transaction({
-      gasLimit: 200000,
+    const tx = Transaction.fromTxData({
+      gasPrice: 40000,
+      gasLimit: 90000,
       data: '0x7f410000000000000000000000000000000000000000000000000000000000000060005260016000f3',
-    })
-    tx.sign(util.toBuffer('0xa5737ecdc1b89ca0091647e727ba082ed8953f29182e94adc397210dda643b07'))
+    }).sign(privKey)
+
     await vm.runTx({ tx, skipBalance: true })
 
     st.equal(
-      util.bufferToHex(emitted.code),
+      bufferToHex(emitted.code),
       '0x7f410000000000000000000000000000000000000000000000000000000000000060005260016000f3',
     )
 

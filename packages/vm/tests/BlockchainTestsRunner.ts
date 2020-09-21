@@ -1,16 +1,15 @@
+import * as tape from 'tape'
+import { addHexPrefix, bufferToInt, toBuffer } from 'ethereumjs-util'
+import { SecureTrie as Trie } from 'merkle-patricia-tree'
+import { Block } from '@ethereumjs/block'
+import Blockchain from '@ethereumjs/blockchain'
+import { setupPreConditions, verifyPostConditions } from './util'
+
 const level = require('level')
 const levelMem = require('level-mem')
 
-import { addHexPrefix, rlp, bufferToInt } from 'ethereumjs-util'
-import { SecureTrie as Trie } from 'merkle-patricia-tree'
-import { Block, BlockHeader } from '@ethereumjs/block'
-import Blockchain from '@ethereumjs/blockchain'
-import tape = require('tape')
-import { setupPreConditions, verifyPostConditions, getDAOCommon } from './util'
-
 export default async function runBlockchainTest(options: any, testData: any, t: tape.Test) {
   // ensure that the test data is the right fork data
-
   if (testData.network != options.forkConfigTestSuite) {
     t.comment('skipping test: no data available for ' + options.forkConfigTestSuite)
     return
@@ -24,6 +23,7 @@ export default async function runBlockchainTest(options: any, testData: any, t: 
   const blockchainDB = levelMem()
   const cacheDB = level('./.cachedb')
   const state = new Trie()
+  const hardfork = options.forkConfigVM
 
   let validatePow = false
   // Only run with block validation when sealEngine present in test file
@@ -33,7 +33,7 @@ export default async function runBlockchainTest(options: any, testData: any, t: 
   }
 
   let eips = []
-  if (options.forkConfigVM == 'berlin') {
+  if (hardfork == 'berlin') {
     // currently, the BLS tests run on the Berlin network, but our VM does not activate EIP2537
     // if you run the Berlin HF
     eips = [2537]
@@ -76,11 +76,8 @@ export default async function runBlockchainTest(options: any, testData: any, t: 
   t.ok(vm.stateManager._trie.root.equals(genesisBlock.header.stateRoot), 'correct pre stateRoot')
 
   if (testData.genesisRLP) {
-    t.equal(
-      genesisBlock.serialize().toString('hex'),
-      testData.genesisRLP.slice(2),
-      'correct genesis RLP',
-    )
+    const rlp = toBuffer(testData.genesisRLP)
+    t.ok(genesisBlock.serialize().equals(rlp), 'correct genesis RLP')
   }
 
   await blockchain.putGenesis(genesisBlock)
@@ -111,7 +108,7 @@ export default async function runBlockchainTest(options: any, testData: any, t: 
     // here we convert the rlp to block only to extract the number
     // we have to do this again later because the common might run on a new hardfork
     try {
-      let block = new Block(Buffer.from(raw.rlp.slice(2), 'hex'), {
+      const block = new Block(Buffer.from(raw.rlp.slice(2), 'hex'), {
         common,
       })
       currentBlock = bufferToInt(block.header.number)
@@ -125,6 +122,7 @@ export default async function runBlockchainTest(options: any, testData: any, t: 
       t.fail('re-orgs are not supported by the test suite')
       return
     }
+
     try {
       // check if we should update common.
       let newFork = common.setHardforkByBlockNumber(currentBlock)
@@ -133,9 +131,8 @@ export default async function runBlockchainTest(options: any, testData: any, t: 
         vm._updateOpcodes()
       }
 
-      const block = new Block(Buffer.from(raw.rlp.slice(2), 'hex'), {
-        common,
-      })
+      const blockData = Buffer.from(raw.rlp.slice(2), 'hex')
+      const block = new Block(blockData, { common })
       await blockchain.putBlock(block)
 
       // This is a trick to avoid generating the canonical genesis

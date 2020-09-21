@@ -1,4 +1,4 @@
-import tape = require('tape')
+import * as tape from 'tape'
 import blockFromRpc from '../src/from-rpc'
 import blockHeaderFromRpc from '../src/header-from-rpc'
 import * as blockData from './testdata/testdata-from-rpc.json'
@@ -15,7 +15,8 @@ tape('[fromRPC]: block #2924874', function (t) {
 
   t.test('should create a block header with the correct hash', function (st) {
     const block = blockHeaderFromRpc(blockData)
-    st.ok(block.hash().compare(Buffer.from(blockData.hash)))
+    const hash = Buffer.from(blockData.hash.slice(2), 'hex')
+    st.ok(block.hash().equals(hash))
     st.end()
   })
 

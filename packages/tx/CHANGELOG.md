@@ -6,6 +6,84 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [3.0.0] - [UNRELEASED]
+
+### New Package Name
+
+**Attention!** This new version is part of a series of EthereumJS releases all moving to a new scoped package name format. In this case the library is renamed as follows:
+
+- `ethereumjs-tx` -> `@ethereumjs/tx`
+
+Please update your library references accordingly or install with:
+
+```shell
+npm i @ethereumjs/tx
+```
+
+### Major Refactoring - Breaking Changes
+
+This release is a major refactoring of the transaction library to simplify and strengthen its code base.
+
+#### New Constructor Params
+
+The constructor used to accept a varying amount of options but now has the following shape:
+
+```typescript
+  Transaction(
+    common: Common | undefined,
+    nonce: BN,
+    gasPrice: BN,
+    gasLimit: BN,
+    to: Address | undefined,
+    value: BN,
+    data: Buffer,
+    v?: BN,
+    r?: BN,
+    s?: BN,
+  )
+```
+
+Initializing from other data types is assisted with new static factory helpers `fromTxData`, `fromRlpSerializedTx`, and `fromValuesArray`.
+
+Examples:
+
+```typescript
+// Initializing from serialized data
+const s1 = tx1.serialize().toString('hex')
+const tx = Transaction.fromRlpSerializedTx(toBuffer('0x' + s1))
+
+// Initializing with object
+const txData = {
+  gasPrice: 1000,
+  gasLimit: 10000000,
+  value: 42,
+}
+const tx = Transaction.fromTxData(txData)
+
+// Initializing from array of 0x-prefixed strings.
+// First, convert to array of Buffers.
+const arr = txFixture.raw.map(toBuffer)
+const tx = Transaction.fromValuesArray(arr)
+```
+
+Learn more about the full API in the [docs](./docs/README.md).
+
+#### Immutability
+
+The returned transaction is now frozen and immutable. To work with a maliable transaction, copy it with `const fakeTx = Object.create(tx)`.
+
+#### from
+
+The `tx.from` alias was removed, please use `const from = tx.getSenderAddress()`.
+
+#### Message to sign
+
+Getting a message to sign has been changed from calling `tx.hash(false)` to `tx.getMessageToSign()`.
+
+#### Fake Transaction
+
+The `FakeTransaction` class was removed since its functionality can now be implemented with less code. To create a fake tansaction for use in e.g. `VM.runTx()` overwrite `getSenderAddress` with your own `Address`. See a full example in the section in the [README](./README.md#fake-transaction).
+
 ## [2.1.2] - 2019-12-19
 
 - Added support for the `MuirGlacier` HF by updating the `ethereumjs-common` dependency

@@ -375,7 +375,7 @@ tape('StateManager - Contract code', (tester) => {
     await stateManager.putAccount(address, account)
     await stateManager.putContractCode(address, code)
     const codeRetrieved = await stateManager.getContractCode(address)
-    t.equals(Buffer.compare(code, codeRetrieved), 0)
+    t.ok(code.equals(codeRetrieved))
     t.end()
   })
 
@@ -389,7 +389,7 @@ tape('StateManager - Contract code', (tester) => {
     const account = new Account(raw)
     await stateManager.putAccount(address, account)
     const code = await stateManager.getContractCode(address)
-    t.equals(Buffer.compare(code, Buffer.alloc(0)), 0)
+    t.ok(code.equals(Buffer.alloc(0)))
     t.end()
   })
 
@@ -405,7 +405,7 @@ tape('StateManager - Contract code', (tester) => {
     await stateManager.putAccount(address, account)
     await stateManager.putContractCode(address, code)
     const codeRetrieved = await stateManager.getContractCode(address)
-    t.equals(Buffer.compare(codeRetrieved, Buffer.alloc(0)), 0)
+    t.ok(codeRetrieved.equals(Buffer.alloc(0)))
     t.end()
   })
 })

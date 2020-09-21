@@ -1,5 +1,5 @@
 import * as tape from 'tape'
-import { KECCAK256_RLP } from 'ethereumjs-util'
+import { KECCAK256_RLP, toBuffer } from 'ethereumjs-util'
 import { SecureTrie as Trie } from 'merkle-patricia-tree'
 import { Block } from '@ethereumjs/block'
 import Common from '@ethereumjs/common'
@@ -151,10 +151,10 @@ tape('VM with blockchain', (t) => {
   t.test('should run blockchain with blocks', async (st) => {
     const vm = setupVM({ common: new Common({ chain: 'goerli' }) })
     await vm.init()
-    const genesis = new Block(Buffer.from(testData.genesisRLP.slice(2), 'hex'), {
+    const genesis = new Block(toBuffer(testData.genesisRLP), {
       common: vm._common,
     })
-    const block = new Block(Buffer.from(testData.blocks[0].rlp.slice(2), 'hex'), {
+    const block = new Block(toBuffer(testData.blocks[0].rlp), {
       common: vm._common,
     })
 

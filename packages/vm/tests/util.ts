@@ -1,12 +1,9 @@
-const promisify = require('util.promisify')
-const { resolve } = require('core-js/fn/promise')
-
-import { BN, rlp, keccak256, stripHexPrefix, setLengthLeft } from 'ethereumjs-util'
+import * as tape from 'tape'
+import { BN, rlp, keccak256, stripHexPrefix, setLengthLeft, toBuffer } from 'ethereumjs-util'
 import Account from '@ethereumjs/account'
 import { Transaction } from '@ethereumjs/tx'
 import { Block } from '@ethereumjs/block'
 import Common from '@ethereumjs/common'
-import tape = require('tape')
 
 export function dumpState(state: any, cb: Function) {
   function readAccounts(state: any) {
@@ -92,26 +89,19 @@ const format = (exports.format = function (
 })
 
 /**
- * makeTx using JSON from tests repo
- * @param {[type]} txData the transaction object from tests repo
- * @returns {Object}        object that will be passed to VM.runTx function
+ * Make a tx using JSON from tests repo
+ * @param {Object} txData The tx object from tests repo
+ * @param {Common} common An @ethereumjs/common object
+ * @returns {Transaction} Transaction to be passed to VM.runTx function
  */
-export function makeTx(txData: any, options: any) {
-  const tx = new Transaction({}, options)
-  tx.nonce = format(txData.nonce)
-  tx.gasPrice = format(txData.gasPrice)
-  tx.gasLimit = format(txData.gasLimit)
-  tx.to = format(txData.to, true, true)
-  tx.value = format(txData.value)
-  tx.data = format(txData.data, false, true) // slice off 0x
+export function makeTx(txData: any, common: Common) {
+  const tx = Transaction.fromTxData(txData, common)
+
   if (txData.secretKey) {
-    const privKey = format(txData.secretKey, false, true)
-    tx.sign(privKey)
-  } else {
-    tx.v = Buffer.from(txData.v.slice(2), 'hex')
-    tx.r = Buffer.from(txData.r.slice(2), 'hex')
-    tx.s = Buffer.from(txData.s.slice(2), 'hex')
+    const privKey = toBuffer(txData.secretKey)
+    return tx.sign(privKey)
   }
+
   return tx
 }
 

@@ -6,6 +6,27 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [2.0.0] - [UNRELEASED]
+
+### New constructor
+
+The constructor has been changed to accept a dict, PR [#863](https://github.com/ethereumjs/ethereumjs-vm/pull/863)
+
+Example:
+
+```typescript
+import Common from '@ethereumjs/common'
+const common = new Common({ chain: 'mainnet', hardfork: 'muirGlacier' })
+```
+
+### Hardfork by block number
+
+A new function `setHardforkByBlockNumber()` has been added, PR [#863](https://github.com/ethereumjs/ethereumjs-vm/pull/863)
+
+### Default hardfork
+
+The default hardfork has been added as an accessible readonly property `DEFAULT_HARDFORK`, PR [#863](https://github.com/ethereumjs/ethereumjs-vm/pull/863)
+
 ## [1.5.1] - 2020-05-04
 
 This is a maintenance release.

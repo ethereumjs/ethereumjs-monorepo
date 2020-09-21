@@ -1,9 +1,9 @@
-import { setupPreConditions, makeTx, makeBlockFromEnv } from './util'
+import * as tape from 'tape'
 import { SecureTrie as Trie } from 'merkle-patricia-tree'
-import { BN } from 'ethereumjs-util'
+import { BN, toBuffer } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
 import Account from '@ethereumjs/account'
-import tape = require('tape')
+import { setupPreConditions, makeTx, makeBlockFromEnv } from './util'
 
 function parseTestCases(
   forkConfigTestSuite: string,
@@ -13,6 +13,7 @@ function parseTestCases(
   value: string | undefined,
 ) {
   let testCases = []
+
   if (testData['post'][forkConfigTestSuite]) {
     testCases = testData['post'][forkConfigTestSuite].map((testCase: any) => {
       let testIndexes = testCase['indexes']
@@ -32,6 +33,7 @@ function parseTestCases(
       tx.data = testData.transaction.data[testIndexes['data']]
       tx.gasLimit = testData.transaction.gasLimit[testIndexes['gas']]
       tx.value = testData.transaction.value[testIndexes['value']]
+
       return {
         transaction: tx,
         postStateRoot: testCase['hash'],
@@ -49,7 +51,6 @@ function parseTestCases(
 }
 
 async function runTestCase(options: any, testData: any, t: tape.Test) {
-  const state = new Trie()
   let VM
   if (options.dist) {
     VM = require('../dist').default
@@ -57,27 +58,32 @@ async function runTestCase(options: any, testData: any, t: tape.Test) {
     VM = require('../lib').default
   }
 
+  const state = new Trie()
+  const hardfork = options.forkConfigVM
+
   let eips: number[] = []
-  if (options.forkConfigVM == 'berlin') {
+  if (hardfork == 'berlin') {
     // currently, the BLS tests run on the Berlin network, but our VM does not activate EIP2537
     // if you run the Berlin HF
     eips = [2537]
   }
 
-  const common = new Common({ chain: 'mainnet', hardfork: options.forkConfigVM, eips })
-  let vm = new VM({
+  const common = new Common({ chain: 'mainnet', hardfork, eips })
+
+  const vm = new VM({
     state,
     common: common,
   })
 
   await setupPreConditions(vm.stateManager._trie, testData)
 
-  let tx = makeTx(testData.transaction, { common })
-  let block = makeBlockFromEnv(testData.env)
+  const tx = makeTx(testData.transaction, common)
 
   if (!tx.validate()) {
-    return
+    throw new Error('Transaction is invalid')
   }
+
+  const block = makeBlockFromEnv(testData.env)
 
   if (options.jsontrace) {
     vm.on('step', function (e: any) {
@@ -98,8 +104,8 @@ async function runTestCase(options: any, testData: any, t: tape.Test) {
 
       t.comment(JSON.stringify(opTrace))
     })
-    vm.on('afterTx', () => {
-      let stateRoot = {
+    vm.on('afterTx', async () => {
+      const stateRoot = {
         stateRoot: vm.stateManager._trie.root.toString('hex'),
       }
       t.comment(JSON.stringify(stateRoot))
@@ -120,14 +126,10 @@ async function runTestCase(options: any, testData: any, t: tape.Test) {
     }
   }
 
-  if (testData.postStateRoot.substr(0, 2) === '0x') {
-    testData.postStateRoot = testData.postStateRoot.substr(2)
-  }
-  t.equal(
-    vm.stateManager._trie.root.toString('hex'),
-    testData.postStateRoot,
-    'the state roots should match',
-  )
+  const stateManagerStateRoot = vm.stateManager._trie.root
+  const testDataPostStateRoot = toBuffer(testData.postStateRoot)
+
+  t.ok(stateManagerStateRoot.equals(testDataPostStateRoot), 'the state roots should match')
 }
 
 export default async function runStateTest(options: any, testData: any, t: tape.Test) {
@@ -143,7 +145,7 @@ export default async function runStateTest(options: any, testData: any, t: tape.
       t.comment(`No ${options.forkConfigTestSuite} post state defined, skip test`)
       return
     }
-    for (let testCase of testCases) {
+    for (const testCase of testCases) {
       await runTestCase(options, testCase, t)
     }
   } catch (e) {

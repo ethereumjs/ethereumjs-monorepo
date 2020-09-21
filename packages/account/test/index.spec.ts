@@ -98,13 +98,8 @@ tape('serialize', function (tester) {
       codeHash: '0xc5d2461236f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470',
     }
     const account = new Account(raw)
-    t.equals(
-      Buffer.compare(
-        account.serialize(),
-        rlp.encode([raw.nonce, raw.balance, raw.stateRoot, raw.codeHash]),
-      ),
-      0,
-    )
+    const accountRlp = rlp.encode([raw.nonce, raw.balance, raw.stateRoot, raw.codeHash])
+    t.ok(account.serialize().equals(accountRlp))
     t.end()
   })
 })

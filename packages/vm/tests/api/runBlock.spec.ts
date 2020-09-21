@@ -1,7 +1,8 @@
 import * as tape from 'tape'
+import { BN, rlp } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
 import { Block } from '@ethereumjs/block'
-import { BN, rlp } from 'ethereumjs-util'
+import { Transaction } from '@ethereumjs/tx'
 import { DefaultStateManager } from '../../lib/state'
 import runBlock from '../../lib/runBlock'
 import { setupVM, createAccount } from './utils'
@@ -88,7 +89,22 @@ tape('should fail when tx gas limit higher than block gas limit', async (t) => {
   const suite = setup()
 
   const block = new Block(rlp.decode(suite.data.blocks[0].rlp))
-  block.transactions[0].gasLimit = Buffer.from('3fefba', 'hex')
+  // modify first tx's gasLimit
+  const { nonce, gasPrice, to, value, data, v, r, s } = block.transactions[0]
+
+  const gasLimit = new BN(Buffer.from('3fefba', 'hex'))
+  block.transactions[0] = new Transaction(
+    (<any>block)._common,
+    nonce,
+    gasPrice,
+    gasLimit,
+    to,
+    value,
+    data,
+    v,
+    r,
+    s,
+  )
 
   await suite.p
     .runBlock({ block, skipBlockValidation: true })

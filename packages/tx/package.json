@@ -21,7 +21,7 @@
     "lint:fix": "ethereumjs-config-lint-fix",
     "test": "npm run test:node && npm run test:browser",
     "test:node": "tape -r ts-node/register ./test/index.ts",
-    "test:browser:build": "tsc && cp ./test/*.json test-build/test/",
+    "test:browser:build": "tsc && cp -r ./test/json test-build/test",
     "test:browser": "npm run test:browser:build && karma start karma.conf.js"
   },
   "keywords": [
@@ -32,7 +32,7 @@
   "license": "MPL-2.0",
   "dependencies": {
     "@ethereumjs/common": "^1.5.1",
-    "ethereumjs-util": "^7.0.4"
+    "ethereumjs-util": "^7.0.5"
   },
   "devDependencies": {
     "@ethereumjs/config-nyc": "^1.1.1",
