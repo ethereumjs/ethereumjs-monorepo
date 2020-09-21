@@ -6,7 +6,6 @@
 
 [![Code Coverage][coverage-badge]][coverage-link]
 [![Discord][discord-badge]][discord-link]
-[![JS Standard Style][js-standard-style-badge]][js-standard-style-link]
 
 This was originally the EthereumJS VM repository. On Q1 2020 we brought some of its building blocks together to simplify development. Below you can find the packages included in this repository.
 
@@ -137,8 +136,6 @@ If you want to join for work or do improvements on the libraries have a look at 
 [discord-link]: https://discord.gg/TNwARpR[![StackExchange][stackexchange-badge]][stackexchange-link]
 [stackexchange-badge]: https://img.shields.io/badge/ethereumjs-stackexchange-brightgreen
 [stackexchange-link]: https://ethereum.stackexchange.com/questions/tagged/ethereumjs
-[js-standard-style-badge]: https://cdn.rawgit.com/feross/standard/master/badge.svg
-[js-standard-style-link]: https://github.com/feross/standard
 [account-package]: ./packages/account
 [account-npm-badge]: https://img.shields.io/npm/v/@ethereumjs/account.svg
 [account-npm-link]: https://www.npmjs.com/package/@ethereumjs/account
