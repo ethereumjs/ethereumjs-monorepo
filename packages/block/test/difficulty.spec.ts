@@ -1,6 +1,6 @@
+import * as tape from 'tape'
 import { toBuffer, bufferToInt, intToBuffer } from 'ethereumjs-util'
 import { Block } from '../src/block'
-import tape = require('tape')
 import Common from '@ethereumjs/common'
 
 const { BN } = require('ethereumjs-util')

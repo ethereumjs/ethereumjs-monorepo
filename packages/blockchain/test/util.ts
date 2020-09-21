@@ -54,7 +54,9 @@ export const isConsecutive = (blocks: Block[]) => {
     if (index === 0) {
       return false
     }
-    return Buffer.compare(block.header.parentHash, blocks[index - 1].hash()) !== 0
+    const { parentHash } = block.header
+    const lastBlockHash = blocks[index - 1].hash()
+    return !parentHash.equals(lastBlockHash)
   })
 }
 

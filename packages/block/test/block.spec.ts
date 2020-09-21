@@ -1,7 +1,6 @@
+import * as tape from 'tape'
 import Common from '@ethereumjs/common'
-import tape = require('tape')
 import { rlp } from 'ethereumjs-util'
-
 import { Block } from '../src/block'
 
 tape('[Block]: block functions', function (t) {

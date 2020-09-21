@@ -1,4 +1,4 @@
-import tape = require('tape')
+import * as tape from 'tape'
 import Common from '@ethereumjs/common'
 import { rlp, toBuffer, zeros, KECCAK256_RLP, KECCAK256_RLP_ARRAY } from 'ethereumjs-util'
 import { BlockHeader } from '../src/header'

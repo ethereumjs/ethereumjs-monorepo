@@ -7,7 +7,7 @@ async function main() {
   const vm = new VM()
 
   // import the key pair
-  //   used to sign transactions and generate addresses
+  // used to sign transactions and generate addresses
   const keyPair = require('./key-pair')
   const privateKey = toBuffer(keyPair.secretKey)
 
@@ -34,9 +34,9 @@ async function main() {
   // The second transaction calls that contract
   await runTx(vm, rawTx2, privateKey)
 
-  // Now lets look at what we created. The transaction
+  // Now let's look at what we created. The transaction
   // should have created a new account for the contract
-  // in the state. Lets test to see if it did.
+  // in the state. Let's test to see if it did.
 
   const createdAccount = await vm.stateManager.getAccount(createdAddress)
 
@@ -49,14 +49,10 @@ async function main() {
 }
 
 async function runTx(vm: VM, rawTx: any, privateKey: Buffer) {
-  const tx = new Transaction(rawTx)
-
-  tx.sign(privateKey)
+  const tx = Transaction.fromTxData(rawTx).sign(privateKey)
 
   console.log('----running tx-------')
-  const results = await vm.runTx({
-    tx: tx,
-  })
+  const results = await vm.runTx({ tx })
 
   console.log('gas used: ' + results.gasUsed.toString())
   console.log('returned: ' + results.execResult.returnValue.toString('hex'))
@@ -64,7 +60,7 @@ async function runTx(vm: VM, rawTx: any, privateKey: Buffer) {
   const createdAddress = results.createdAddress
 
   if (createdAddress) {
-    console.log('address created: ' + createdAddress.toString('hex'))
+    console.log('address created: 0x' + createdAddress.toString('hex'))
     return createdAddress
   }
 }

@@ -1,5 +1,4 @@
-import BN = require('bn.js')
-import { zeros } from 'ethereumjs-util'
+import { BN, zeros } from 'ethereumjs-util'
 import VM from './index'
 import TxContext from './evm/txContext'
 import Message from './evm/message'
@@ -11,12 +10,12 @@ import { Block } from '@ethereumjs/block'
  */
 export interface RunCallOpts {
   block?: any
-  gasPrice?: Buffer
+  gasPrice?: BN
   origin?: Buffer
   caller?: Buffer
-  gasLimit?: Buffer
+  gasLimit?: BN
   to?: Buffer
-  value?: Buffer
+  value?: BN
   data?: Buffer
   /**
    * This is for CALLCODE where the code to load is different than the code from the to account
@@ -37,7 +36,7 @@ export default function runCall(this: VM, opts: RunCallOpts): Promise<EVMResult>
   const block = opts.block || new Block()
 
   const txContext = new TxContext(
-    opts.gasPrice || Buffer.alloc(0),
+    opts.gasPrice || new BN(0),
     opts.origin || opts.caller || zeros(32),
   )
   const message = new Message({

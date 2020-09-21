@@ -194,6 +194,10 @@ export default class VM extends AsyncEventEmitter {
     this._emit = promisify(this.emit.bind(this))
   }
 
+  _updateOpcodes() {
+    this._opcodes = getOpcodesForHF(this._common)
+  }
+
   async init(): Promise<void> {
     if (this.isInitialized) {
       return
@@ -240,7 +244,7 @@ export default class VM extends AsyncEventEmitter {
    *
    * @param blockchain -  An [@ethereumjs/blockchain](https://github.com/ethereumjs/ethereumjs-vm/tree/master/packages/blockchain) object to process
    */
-  async runBlockchain(blockchain: Blockchain): Promise<void> {
+  async runBlockchain(blockchain?: Blockchain): Promise<void> {
     await this.init()
     return runBlockchain.bind(this)(blockchain)
   }
