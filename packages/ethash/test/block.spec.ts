@@ -7,7 +7,7 @@ const cacheDB = level()
 
 const {
   validBlockRlp,
-  invalidBlockRlp
+  invalidBlockRlp,
 } = require('./ethash_block_rlp_tests.json')
 
 tape('Verify POW for valid and invalid blocks', async function (t) {

@@ -13,7 +13,7 @@ export const params = {
   DATASET_PARENTS: 256, // number of parents of each dataset element
   CACHE_ROUNDS: 3, // number of rounds in cache production
   ACCESSES: 64,
-  WORD_BYTES: 4
+  WORD_BYTES: 4,
 }
 
 export function getCacheSize(epoc: number) {
