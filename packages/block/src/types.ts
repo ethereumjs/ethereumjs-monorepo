@@ -54,7 +54,7 @@ export type BufferLike = Buffer | TransformableToBuffer | PrefixedHexString | nu
 /**
  * A block header's data.
  */
-export interface BlockHeaderData {
+export interface HeaderData {
   parentHash?: BufferLike
   uncleHash?: BufferLike
   coinbase?: BufferLike
@@ -76,9 +76,9 @@ export interface BlockHeaderData {
  * A block's data.
  */
 export interface BlockData {
-  header?: Buffer | PrefixedHexString | BufferLike[] | BlockHeaderData
+  header?: Buffer | PrefixedHexString | BufferLike[] | HeaderData
   transactions?: Array<Buffer | PrefixedHexString | BufferLike[] | TxData>
-  uncleHeaders?: Array<Buffer | PrefixedHexString | BufferLike[] | BlockHeaderData>
+  uncleHeaders?: Array<Buffer | PrefixedHexString | BufferLike[] | HeaderData>
 }
 
 export interface Blockchain {

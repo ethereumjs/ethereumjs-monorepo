@@ -4,58 +4,156 @@ import {
   zeros,
   KECCAK256_RLP_ARRAY,
   KECCAK256_RLP,
+  rlp,
   toBuffer,
-  defineProperties,
+  unpadBuffer,
   bufferToInt,
   rlphash,
+  unpadArray,
 } from 'ethereumjs-util'
-import { Blockchain, BlockHeaderData, BufferLike, BlockOptions, PrefixedHexString } from './types'
+import { Blockchain, HeaderData, BufferLike, BlockOptions, PrefixedHexString } from './types'
 import { Buffer } from 'buffer'
 import { Block } from './block'
+import { checkBufferLength } from './util'
+import { Options } from 'lru-cache'
+import { statSync } from 'fs'
 
 /**
  * An object that represents the block header
  */
-export class BlockHeader {
-  public raw!: Buffer[]
-  public parentHash!: Buffer
-  public uncleHash!: Buffer
-  public coinbase!: Buffer
-  public stateRoot!: Buffer
-  public transactionsTrie!: Buffer
-  public receiptTrie!: Buffer
-  public bloom!: Buffer
-  public difficulty!: Buffer
-  public number!: Buffer
-  public gasLimit!: Buffer
-  public gasUsed!: Buffer
-  public timestamp!: Buffer
-  public extraData!: Buffer
-  public mixHash!: Buffer
-  public nonce!: Buffer
+export class Header {
+  public readonly _common: Common
+  public readonly parentHash: Buffer
+  public readonly uncleHash: Buffer
+  public readonly coinbase: Buffer
+  public readonly stateRoot: Buffer
+  public readonly transactionsTrie: Buffer
+  public readonly receiptTrie: Buffer
+  public readonly bloom: Buffer
+  public readonly difficulty: Buffer
+  public readonly number: Buffer
+  public readonly gasLimit: Buffer
+  public readonly gasUsed: Buffer
+  public readonly timestamp: Buffer
+  public readonly extraData: Buffer
+  public readonly mixHash: Buffer
+  public readonly nonce: Buffer
 
-  readonly _common: Common
+  public static fromHeaderData(headerData: HeaderData, opts: BlockOptions = {}) {
+    const {
+      parentHash,
+      uncleHash,
+      coinbase,
+      stateRoot,
+      transactionsTrie,
+      receiptTrie,
+      bloom,
+      difficulty,
+      number,
+      gasLimit,
+      gasUsed,
+      timestamp,
+      extraData,
+      mixHash,
+      nonce,
+    } = headerData
 
-  /**
-   * Creates a new block header.
-   *
-   * Please solely use this constructor to pass in block header data
-   * and don't modfiy header data after initialization since this can lead to
-   * undefined behavior regarding HF rule implemenations within the class.
-   *
-   * @param data - The data of the block header.
-   * @param opts - The network options for this block, and its header, uncle headers and txs.
-   */
-  constructor(
-    data: Buffer | PrefixedHexString | BufferLike[] | BlockHeaderData = {},
-    options: BlockOptions = {},
-  ) {
-    // Throw on chain or hardfork options removed in latest major release
-    // to prevent implicit chain setup on a wrong chain
-    if ('chain' in options || 'hardfork' in options) {
-      throw new Error('Chain/hardfork options are not allowed any more on initialization')
+    return new Header(
+      parentHash ? checkBufferLength(toBuffer(parentHash), 32) : zeros(32),
+      uncleHash ? toBuffer(uncleHash) : KECCAK256_RLP_ARRAY,
+      coinbase ? checkBufferLength(toBuffer(coinbase), 20) : zeros(20),
+      stateRoot ? checkBufferLength(toBuffer(stateRoot), 32) : zeros(32),
+      transactionsTrie ? checkBufferLength(toBuffer(transactionsTrie), 32) : KECCAK256_RLP,
+      receiptTrie ? checkBufferLength(toBuffer(receiptTrie), 32) : KECCAK256_RLP,
+      bloom ? toBuffer(bloom) : zeros(256),
+      difficulty ? toBuffer(difficulty) : Buffer.from([]),
+      number ? toBuffer(number) : Buffer.from([]),
+      gasLimit ? toBuffer(gasLimit) : Buffer.from('ffffffffffffff', 'hex'),
+      gasUsed ? toBuffer(gasUsed) : Buffer.from([]),
+      timestamp ? toBuffer(timestamp) : Buffer.from([]),
+      extraData ? toBuffer(extraData) : Buffer.from([]),
+      mixHash ? toBuffer(mixHash) : zeros(32),
+      nonce ? toBuffer(nonce) : zeros(8),
+      opts,
+    )
+  }
+
+  public static fromRLPSerializedHeader(serialized: Buffer, opts: BlockOptions) {
+    const values = rlp.decode(serialized)
+
+    if (!Array.isArray(values)) {
+      throw new Error('Invalid serialized header input. Must be array')
     }
 
+    return this.fromValuesArray(values, opts)
+  }
+
+  public static fromValuesArray(values: Buffer[], opts: BlockOptions) {
+    if (values.length > 15) {
+      throw new Error('invalid header. More values than expected were received')
+    }
+
+    const [
+      parentHash,
+      uncleHash,
+      coinbase,
+      stateRoot,
+      transactionsTrie,
+      receiptTrie,
+      bloom,
+      difficulty,
+      number,
+      gasLimit,
+      gasUsed,
+      timestamp,
+      extraData,
+      mixHash,
+      nonce,
+    ] = values
+    return new Header(
+      parentHash,
+      uncleHash,
+      coinbase,
+      stateRoot,
+      transactionsTrie,
+      receiptTrie,
+      bloom,
+      difficulty,
+      number,
+      gasLimit,
+      gasUsed,
+      timestamp,
+      extraData,
+      mixHash,
+      nonce,
+      opts,
+    )
+  }
+
+  /**
+   * This constructor takes the values, validates them, assigns them and freezes the object.
+   * Use the public static factory methods to assist in creating a Header object from
+   * varying data types.
+   */
+  constructor(
+    parentHash: Buffer,
+    uncleHash: Buffer,
+    coinbase: Buffer,
+    stateRoot: Buffer,
+    transactionsTrie: Buffer,
+    receiptTrie: Buffer,
+    bloom: Buffer,
+    difficulty: Buffer,
+    number: Buffer,
+    gasLimit: Buffer,
+    gasUsed: Buffer,
+    timestamp: Buffer,
+    extraData: Buffer,
+    mixHash: Buffer,
+    nonce: Buffer,
+    //data: Buffer | PrefixedHexString | BufferLike[] | HeaderData = {},
+    options: BlockOptions = {},
+  ) {
     if (options.common) {
       this._common = options.common
     } else {
@@ -67,89 +165,43 @@ export class BlockHeader {
         this._common = new Common({ chain: DEFAULT_CHAIN })
       }
     }
-    const fields = [
-      {
-        name: 'parentHash',
-        length: 32,
-        default: zeros(32),
-      },
-      {
-        name: 'uncleHash',
-        default: KECCAK256_RLP_ARRAY,
-      },
-      {
-        name: 'coinbase',
-        length: 20,
-        default: zeros(20),
-      },
-      {
-        name: 'stateRoot',
-        length: 32,
-        default: zeros(32),
-      },
-      {
-        name: 'transactionsTrie',
-        length: 32,
-        default: KECCAK256_RLP,
-      },
-      {
-        name: 'receiptTrie',
-        length: 32,
-        default: KECCAK256_RLP,
-      },
-      {
-        name: 'bloom',
-        default: zeros(256),
-      },
-      {
-        name: 'difficulty',
-        default: Buffer.from([]),
-      },
-      {
-        name: 'number',
-        // TODO: params.homeSteadForkNumber.v left for legacy reasons, replace on future release
-        default: toBuffer(1150000),
-      },
-      {
-        name: 'gasLimit',
-        default: Buffer.from('ffffffffffffff', 'hex'),
-      },
-      {
-        name: 'gasUsed',
-        empty: true,
-        default: Buffer.from([]),
-      },
-      {
-        name: 'timestamp',
-        default: Buffer.from([]),
-      },
-      {
-        name: 'extraData',
-        allowZero: true,
-        empty: true,
-        default: Buffer.from([]),
-      },
-      {
-        name: 'mixHash',
-        default: zeros(32),
-        // length: 32
-      },
-      {
-        name: 'nonce',
-        default: zeros(8), // sha3(42)
-      },
-    ]
-    defineProperties(this, fields, data)
+
+    this.parentHash = parentHash
+    this.uncleHash = uncleHash
+    this.coinbase = coinbase
+    this.stateRoot = stateRoot
+    this.transactionsTrie = transactionsTrie
+    this.receiptTrie = receiptTrie
+    this.bloom = bloom
+    this.difficulty = difficulty
+    this.number = number
+    this.gasLimit = gasLimit
+    this.gasUsed = gasUsed
+    this.timestamp = timestamp
+    this.extraData = extraData
+    this.mixHash = mixHash
+    this.nonce = nonce
 
     if (options.hardforkByBlockNumber) {
       this._common.setHardforkByBlockNumber(bufferToInt(this.number))
     }
-
     if (options.initWithGenesisHeader) {
-      this._setGenesisParams()
+      if (this._common.hardfork() !== 'chainstart') {
+        throw new Error(
+          'Genesis parameters can only be set with a Common instance set to chainstart',
+        )
+      }
+      this.timestamp = this._common.genesis().timestamp
+      this.gasLimit = this._common.genesis().gasLimit
+      this.difficulty = this._common.genesis().difficulty
+      this.extraData = this._common.genesis().extraData
+      this.nonce = this._common.genesis().nonce
+      this.stateRoot = this._common.genesis().stateRoot
+      this.number = toBuffer(0)
     }
-
     this._checkDAOExtraData()
+
+    Object.freeze(this)
   }
 
   /**
@@ -325,30 +377,31 @@ export class BlockHeader {
    * Returns the hash of the block header.
    */
   hash(): Buffer {
-    return rlphash(this.raw)
+    const values: Buffer[] = [
+      this.parentHash,
+      this.uncleHash,
+      this.coinbase,
+      this.stateRoot,
+      this.transactionsTrie,
+      this.receiptTrie,
+      this.bloom,
+      this.difficulty,
+      unpadBuffer(this.number),
+      this.gasLimit,
+      this.gasUsed,
+      this.timestamp,
+      this.extraData,
+      this.mixHash,
+      this.nonce,
+    ]
+    return rlphash(values)
   }
 
   /**
    * Checks if the block header is a genesis header.
    */
   isGenesis(): boolean {
-    return this.number.length === 0
-  }
-
-  /**
-   * Turns the header into the canonical genesis block header.
-   */
-  _setGenesisParams(): void {
-    if (this._common.hardfork() !== 'chainstart') {
-      throw new Error('Genesis parameters can only be set with a Common instance set to chainstart')
-    }
-    this.timestamp = this._common.genesis().timestamp
-    this.gasLimit = this._common.genesis().gasLimit
-    this.difficulty = this._common.genesis().difficulty
-    this.extraData = this._common.genesis().extraData
-    this.nonce = this._common.genesis().nonce
-    this.stateRoot = this._common.genesis().stateRoot
-    this.number = Buffer.from([])
+    return this.number.equals(toBuffer(0))
   }
 
   /**
