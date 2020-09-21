@@ -1,4 +1,4 @@
-import * as tape from 'tape'
+import tape from 'tape'
 import { SecureTrie as Trie } from 'merkle-patricia-tree'
 import { Account, BN } from 'ethereumjs-util'
 import Cache from '../../../lib/state/cache'

@@ -1,4 +1,4 @@
-import * as tape from 'tape'
+import tape from 'tape'
 import { KECCAK256_RLP, toBuffer } from 'ethereumjs-util'
 import { SecureTrie as Trie } from 'merkle-patricia-tree'
 import { Block } from '@ethereumjs/block'

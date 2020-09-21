@@ -1,4 +1,4 @@
-import * as tape from 'tape'
+import tape from 'tape'
 import { BN, MAX_INTEGER } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
 import { Transaction } from '@ethereumjs/tx'
