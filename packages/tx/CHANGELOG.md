@@ -30,7 +30,6 @@ The constructor used to accept a varying amount of options but now has the follo
 
 ```typescript
   Transaction(
-    common: Common | undefined,
     nonce: BN,
     gasPrice: BN,
     gasLimit: BN,
@@ -40,6 +39,7 @@ The constructor used to accept a varying amount of options but now has the follo
     v?: BN,
     r?: BN,
     s?: BN,
+    opts?: TxOptions
   )
 ```
 

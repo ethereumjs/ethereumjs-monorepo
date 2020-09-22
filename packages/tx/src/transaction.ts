@@ -12,7 +12,7 @@ import {
   Address,
 } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
-import { TxData, JsonTx, bnToRlp, bnToHex } from './types'
+import { TxOptions, TxData, JsonTx, bnToRlp, bnToHex } from './types'
 
 // secp256k1n/2
 const N_DIV_2 = new BN('7fffffffffffffffffffffffffffffff5d576e7357a4501ddfe92f46681b20a0', 16)
@@ -32,11 +32,10 @@ export default class Transaction {
   public readonly r?: BN
   public readonly s?: BN
 
-  public static fromTxData(txData: TxData, common?: Common) {
+  public static fromTxData(txData: TxData, opts?: TxOptions) {
     const { nonce, gasLimit, gasPrice, to, value, data, v, r, s } = txData
 
     return new Transaction(
-      common,
       new BN(toBuffer(nonce || '0x')),
       new BN(toBuffer(gasPrice || '0x')),
       new BN(toBuffer(gasLimit || '0x')),
@@ -46,20 +45,21 @@ export default class Transaction {
       new BN(toBuffer(v || '0x')),
       new BN(toBuffer(r || '0x')),
       new BN(toBuffer(s || '0x')),
+      opts,
     )
   }
 
-  public static fromRlpSerializedTx(serialized: Buffer, common?: Common) {
+  public static fromRlpSerializedTx(serialized: Buffer, opts?: TxOptions) {
     const values = rlp.decode(serialized)
 
     if (!Array.isArray(values)) {
       throw new Error('Invalid serialized tx input. Must be array')
     }
 
-    return this.fromValuesArray(values, common)
+    return this.fromValuesArray(values, opts)
   }
 
-  public static fromValuesArray(values: Buffer[], common?: Common) {
+  public static fromValuesArray(values: Buffer[], opts?: TxOptions) {
     if (values.length !== 6 && values.length !== 9) {
       throw new Error(
         'Invalid transaction. Only expecting 6 values (for unsigned tx) or 9 values (for signed tx).',
@@ -69,7 +69,6 @@ export default class Transaction {
     const [nonce, gasPrice, gasLimit, to, value, data, v, r, s] = values
 
     return new Transaction(
-      common,
       new BN(nonce),
       new BN(gasPrice),
       new BN(gasLimit),
@@ -79,6 +78,7 @@ export default class Transaction {
       v ? new BN(v) : undefined,
       r ? new BN(r) : undefined,
       s ? new BN(s) : undefined,
+      opts,
     )
   }
 
@@ -88,7 +88,6 @@ export default class Transaction {
    * @note Transaction objects implement EIP155 by default. To disable it, pass in an `@ethereumjs/common` object set before EIP155 activation (i.e. before Spurious Dragon).
    */
   constructor(
-    common: Common | undefined,
     nonce: BN,
     gasPrice: BN,
     gasLimit: BN,
@@ -98,6 +97,7 @@ export default class Transaction {
     v?: BN,
     r?: BN,
     s?: BN,
+    opts?: TxOptions,
   ) {
     const validateCannotExceedMaxInteger = { nonce, gasPrice, gasLimit, value, r, s }
     for (const [key, value] of Object.entries(validateCannotExceedMaxInteger)) {
@@ -106,8 +106,8 @@ export default class Transaction {
       }
     }
 
-    if (common) {
-      this.common = common
+    if (opts?.common) {
+      this.common = opts.common
     } else {
       const DEFAULT_CHAIN = 'mainnet'
       this.common = new Common({ chain: DEFAULT_CHAIN })
@@ -214,8 +214,14 @@ export default class Transaction {
   }
 
   /**
-   * Sign a transaction with a given private key
-   * @param privateKey - Must be 32 bytes in length
+   * Sign a transaction with a given private key.
+   * Returns a new Transaction object (the original tx will not be modified).
+   * Example:
+   * ```typescript
+   * const unsignedTx = Transaction.fromTxData(txData)
+   * const signedTx = unsignedTx.sign(privKey)
+   * ```
+   * @param privateKey Must be 32 bytes in length.
    */
   sign(privateKey: Buffer) {
     if (privateKey.length !== 32) {
@@ -230,8 +236,11 @@ export default class Transaction {
       v += this.getChainId() * 2 + 8
     }
 
+    const opts = {
+      common: this.common,
+    }
+
     return new Transaction(
-      this.common,
       this.nonce,
       this.gasPrice,
       this.gasLimit,
@@ -241,6 +250,7 @@ export default class Transaction {
       new BN(v),
       new BN(r),
       new BN(s),
+      opts,
     )
   }
 
