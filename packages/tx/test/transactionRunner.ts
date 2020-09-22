@@ -47,7 +47,7 @@ tape('TransactionTests', (t) => {
               const rawTx = toBuffer(testData.rlp)
               const hardfork = forkNameMap[forkName]
               const common = new Common({ chain: 1, hardfork })
-              const tx = Transaction.fromRlpSerializedTx(rawTx, common)
+              const tx = Transaction.fromRlpSerializedTx(rawTx, { common })
 
               const sender = tx.getSenderAddress().toString()
               const hash = tx.hash().toString('hex')

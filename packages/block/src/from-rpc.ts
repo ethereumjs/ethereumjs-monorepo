@@ -26,6 +26,8 @@ export default function blockFromRpc(blockParams: any, uncles?: any[], options?:
   )
 
   if (blockParams.transactions) {
+    const txOpts = { common: (<any>block)._common }
+
     for (const _txParams of blockParams.transactions) {
       const txParams = normalizeTxParams(_txParams)
 
@@ -33,7 +35,7 @@ export default function blockFromRpc(blockParams: any, uncles?: any[], options?:
       const fromAddress = txParams.from ? Address.fromString(txParams.from) : Address.zero()
       delete txParams.from
 
-      const tx = Transaction.fromTxData(txParams as TxData, (<any>block)._common)
+      const tx = Transaction.fromTxData(txParams as TxData, txOpts)
       const fakeTx = Object.create(tx)
 
       // override getSenderAddress

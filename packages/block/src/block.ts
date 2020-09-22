@@ -63,11 +63,12 @@ export class Block {
     }
 
     // parse transactions
+    const txOpts = { common: this._common }
     for (let i = 0; i < rawTransactions.length; i++) {
       const txData = rawTransactions[i]
       const tx = Array.isArray(txData)
-        ? Transaction.fromValuesArray(txData as Buffer[], this._common)
-        : Transaction.fromRlpSerializedTx(txData as Buffer, this._common)
+        ? Transaction.fromValuesArray(txData as Buffer[], txOpts)
+        : Transaction.fromRlpSerializedTx(txData as Buffer, txOpts)
       this.transactions.push(tx)
     }
   }

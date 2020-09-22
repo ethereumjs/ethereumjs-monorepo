@@ -95,7 +95,7 @@ const format = (exports.format = function (
  * @returns {Transaction} Transaction to be passed to VM.runTx function
  */
 export function makeTx(txData: any, common: Common) {
-  const tx = Transaction.fromTxData(txData, common)
+  const tx = Transaction.fromTxData(txData, { common })
 
   if (txData.secretKey) {
     const privKey = toBuffer(txData.secretKey)

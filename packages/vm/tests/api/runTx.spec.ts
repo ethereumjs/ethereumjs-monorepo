@@ -134,7 +134,7 @@ tape('should clear storage cache after every transaction', async (t) => {
       gasLimit: 100000,
       to: address,
     },
-    common,
+    { common },
   ).sign(privateKey)
 
   await vm.stateManager.putAccount(tx.getSenderAddress().buf, createAccount())

@@ -4,8 +4,7 @@ import { privateToAddress } from 'ethereumjs-util'
 
 // In this example we create a transaction for a custom network.
 //
-// All of these network's params are the same than mainnets', except for name, chainId, and
-// networkId, so we use the Common.forCustomChain method.
+// All of these network's params are the same than mainnets', except for name, chainId, and networkId, so we use the `Common.forCustomChain` method.
 const customCommon = Common.forCustomChain(
   'mainnet',
   {
@@ -17,7 +16,7 @@ const customCommon = Common.forCustomChain(
 )
 
 // We pass our custom Common object whenever we create a transaction
-
+const txOpts = { common: customCommon }
 const tx = Transaction.fromTxData(
   {
     nonce: 0,
@@ -25,7 +24,7 @@ const tx = Transaction.fromTxData(
     gasLimit: 1000000000,
     value: 100000,
   },
-  customCommon,
+  txOpts
 )
 
 // Once we created the transaction using the custom Common object, we can use it as a normal tx.
@@ -40,7 +39,7 @@ const signedTx = tx.sign(privateKey)
 
 if (
   signedTx.validate() &&
-  signedTx.getSenderAddress().toBuffer().equals(privateToAddress(privateKey))
+  signedTx.getSenderAddress().buf.equals(privateToAddress(privateKey))
 ) {
   console.log('Valid signature')
 } else {

@@ -26,8 +26,8 @@ const txParams = {
   data: '0x7f7465737432000000000000000000000000000000000000000000000000000000600057',
 }
 
-const common = new Common({ chain: 'mainnet', hardfork: 'petersburg' })
-const tx = Transaction.fromTxData(txParams, common)
+const commmon = new Common({ chain: 'mainnet', hardfork: 'petersburg' }
+const tx = Transaction.fromTxData(txParams, { common })
 
 const privateKey = Buffer.from(
   'e331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109',
@@ -51,7 +51,8 @@ _getFakeTransaction(txParams: TxParams): Transaction {
   const from = Address.fromString(txParams.from)
   delete txParams.from
 
-  const tx = Transaction.fromTxData(txParams, this._common)
+  const opts = { common: this._common }
+  const tx = Transaction.fromTxData(txParams, opts)
 
   const fakeTx = Object.create(tx)
   // override getSenderAddress

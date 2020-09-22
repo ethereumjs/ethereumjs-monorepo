@@ -1,4 +1,12 @@
+import Common from '@ethereumjs/common'
 import { BN, unpadBuffer, Address } from 'ethereumjs-util'
+
+/**
+ * The options for initializing a Transaction.
+ */
+export interface TxOptions {
+  common?: Common
+}
 
 /**
  * An object with an optional field with each of the transaction's values.

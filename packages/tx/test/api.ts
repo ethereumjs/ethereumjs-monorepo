@@ -49,9 +49,10 @@ tape('[Transaction]: Basic functions', function (t) {
   })
 
   t.test('should hash', function (st) {
+    const common = new Common({ chain: 'mainnet', hardfork: 'tangerineWhistle' })
     const tx = Transaction.fromValuesArray(
       txFixtures[3].raw.map(toBuffer),
-      new Common({ chain: 'mainnet', hardfork: 'tangerineWhistle' }),
+      { common },
     )
     st.deepEqual(
       tx.hash(),
@@ -273,7 +274,8 @@ tape('[Transaction]: Basic functions', function (t) {
         'DE3128752F183E8930D7F00A2AAA302DCB5E700B2CBA2D8CA5795660F07DEFD5',
         'hex',
       )
-      const tx = Transaction.fromValuesArray(txRaw.map(toBuffer), new Common({ chain: 3 }))
+      const common = new Common({ chain: 3 })
+      const tx = Transaction.fromValuesArray(txRaw.map(toBuffer), { common })
       const signedTx = tx.sign(privateKey)
       st.equal(
         signedTx.serialize().toString('hex'),
@@ -285,7 +287,8 @@ tape('[Transaction]: Basic functions', function (t) {
   )
 
   t.test('sign tx with chainId specified in params', function (st) {
-    let tx = Transaction.fromTxData({}, new Common({ chain: 42, hardfork: 'petersburg' }))
+    const common = new Common({ chain: 42, hardfork: 'petersburg' })
+    let tx = Transaction.fromTxData({}, { common })
     st.equal(tx.getChainId(), 42)
 
     const privKey = Buffer.from(txFixtures[0].privateKey, 'hex')
@@ -295,7 +298,7 @@ tape('[Transaction]: Basic functions', function (t) {
 
     const reTx = Transaction.fromRlpSerializedTx(
       serialized,
-      new Common({ chain: 42, hardfork: 'petersburg' }),
+      { common },
     )
     st.equal(reTx.verifySignature(), true)
     st.equal(reTx.getChainId(), 42)
@@ -306,7 +309,8 @@ tape('[Transaction]: Basic functions', function (t) {
   t.test('throws when creating a a transaction with incompatible chainid and v value', function (
     st,
   ) {
-    let tx = Transaction.fromTxData({}, new Common({ chain: 42, hardfork: 'petersburg' }))
+    const common = new Common({ chain: 42, hardfork: 'petersburg' })
+    let tx = Transaction.fromTxData({}, { common })
     st.equal(tx.getChainId(), 42)
     const privKey = Buffer.from(txFixtures[0].privateKey, 'hex')
     tx = tx.sign(privKey)
@@ -318,17 +322,19 @@ tape('[Transaction]: Basic functions', function (t) {
   t.test('Throws if v is set to an EIP155-encoded value incompatible with the chain id', function (
     st,
   ) {
-    st.throws(() =>
-      Transaction.fromTxData({ v: new BN(1) }, new Common({ chain: 42, hardfork: 'petersburg' })),
-    )
+    st.throws(() => {
+      const common = new Common({ chain: 42, hardfork: 'petersburg' })
+      Transaction.fromTxData({ v: new BN(1) }, { common })
+    })
     st.end()
   })
 
   t.test('EIP155 hashing when singing', function (st) {
+    const common = new Common({ chain: 1, hardfork: 'petersburg' })
     txFixtures.slice(0, 3).forEach(function (txData) {
       let tx = Transaction.fromValuesArray(
         txData.raw.slice(0, 6).map(toBuffer),
-        new Common({ chain: 1, hardfork: 'petersburg' }),
+        { common },
       )
 
       const privKey = Buffer.from(txData.privateKey, 'hex')
@@ -363,9 +369,11 @@ tape('[Transaction]: Basic functions', function (t) {
 
       const fixtureTxSignedWithEIP155 = Transaction.fromTxData(txData).sign(privateKey)
 
+      const common = new Common({ chain: 'mainnet', hardfork: 'tangerineWhistle' })
+
       const fixtureTxSignedWithoutEIP155 = Transaction.fromTxData(
         txData,
-        new Common({ chain: 'mainnet', hardfork: 'tangerineWhistle' }),
+        { common },
       ).sign(privateKey)
 
       let signedWithEIP155 = Transaction.fromTxData(fixtureTxSignedWithEIP155.toJSON()).sign(
@@ -386,25 +394,25 @@ tape('[Transaction]: Basic functions', function (t) {
 
       let signedWithoutEIP155 = Transaction.fromTxData(
         fixtureTxSignedWithEIP155.toJSON(),
-        new Common({ chain: 'mainnet', hardfork: 'tangerineWhistle' }),
+        { common }
       ).sign(privateKey)
 
       st.true(signedWithoutEIP155.verifySignature())
       st.true(
         signedWithoutEIP155.v?.toString('hex') == '1c' ||
-          signedWithoutEIP155.v?.toString('hex') == '1b',
+        signedWithoutEIP155.v?.toString('hex') == '1b',
         "v shouldn't be EIP155 encoded",
       )
 
       signedWithoutEIP155 = Transaction.fromTxData(
         fixtureTxSignedWithoutEIP155.toJSON(),
-        new Common({ chain: 'mainnet', hardfork: 'tangerineWhistle' }),
-      ).sign(privateKey)
+        { common })
+        .sign(privateKey)
 
       st.true(signedWithoutEIP155.verifySignature())
       st.true(
         signedWithoutEIP155.v?.toString('hex') == '1c' ||
-          signedWithoutEIP155.v?.toString('hex') == '1b',
+        signedWithoutEIP155.v?.toString('hex') == '1b',
         "v shouldn' be EIP155 encoded",
       )
 
@@ -413,13 +421,13 @@ tape('[Transaction]: Basic functions', function (t) {
   )
 
   t.test('should return correct data fee for istanbul', function (st) {
-    let tx = Transaction.fromTxData({}, new Common({ chain: 'mainnet', hardfork: 'istanbul' }))
+    const common = new Common({ chain: 'mainnet', hardfork: 'istanbul' })
+    let tx = Transaction.fromTxData({}, { common })
     st.equals(tx.getDataFee().toNumber(), 0)
 
     tx = Transaction.fromValuesArray(
       txFixtures[3].raw.map(toBuffer),
-      new Common({ chain: 'mainnet', hardfork: 'istanbul' }),
-    )
+      { common })
     st.equals(tx.getDataFee().toNumber(), 1716)
 
     st.end()

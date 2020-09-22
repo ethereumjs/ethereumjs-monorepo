@@ -93,8 +93,8 @@ tape('should fail when tx gas limit higher than block gas limit', async (t) => {
   const { nonce, gasPrice, to, value, data, v, r, s } = block.transactions[0]
 
   const gasLimit = new BN(Buffer.from('3fefba', 'hex'))
+  const opts = { common: (<any>block)._common }
   block.transactions[0] = new Transaction(
-    (<any>block)._common,
     nonce,
     gasPrice,
     gasLimit,
@@ -104,6 +104,7 @@ tape('should fail when tx gas limit higher than block gas limit', async (t) => {
     v,
     r,
     s,
+    opts
   )
 
   await suite.p
