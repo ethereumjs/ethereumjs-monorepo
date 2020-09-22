@@ -18,29 +18,26 @@ export const params = {
 
 export function getCacheSize(epoc: number) {
   const mr = new MR()
-  let sz =
-    exports.params.CACHE_BYTES_INIT + exports.params.CACHE_BYTES_GROWTH * epoc
-  sz -= exports.params.HASH_BYTES
-  while (!mr.test(new BN(sz / exports.params.HASH_BYTES))) {
-    sz -= 2 * exports.params.HASH_BYTES
+  let sz = params.CACHE_BYTES_INIT + params.CACHE_BYTES_GROWTH * epoc
+  sz -= params.HASH_BYTES
+  while (!mr.test(new BN(sz / params.HASH_BYTES))) {
+    sz -= 2 * params.HASH_BYTES
   }
   return sz
 }
 
 export function getFullSize(epoc: number) {
   const mr = new MR()
-  let sz =
-    exports.params.DATASET_BYTES_INIT +
-    exports.params.DATASET_BYTES_GROWTH * epoc
-  sz -= exports.params.MIX_BYTES
-  while (!mr.test(new BN(sz / exports.params.MIX_BYTES))) {
-    sz -= 2 * exports.params.MIX_BYTES
+  let sz = params.DATASET_BYTES_INIT + params.DATASET_BYTES_GROWTH * epoc
+  sz -= params.MIX_BYTES
+  while (!mr.test(new BN(sz / params.MIX_BYTES))) {
+    sz -= 2 * params.MIX_BYTES
   }
   return sz
 }
 
 export function getEpoc(blockNumber: number) {
-  return Math.floor(blockNumber / exports.params.EPOCH_LENGTH)
+  return Math.floor(blockNumber / params.EPOCH_LENGTH)
 }
 
 /**
