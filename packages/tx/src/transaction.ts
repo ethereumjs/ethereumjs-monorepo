@@ -214,8 +214,14 @@ export default class Transaction {
   }
 
   /**
-   * Sign a transaction with a given private key
-   * @param privateKey - Must be 32 bytes in length
+   * Sign a transaction with a given private key.
+   * Returns a new Transaction object (your original tx will not be modified).
+   * Example:
+   * ```typescript
+   * const unsignedTx = Transaction.fromTxData(txData)
+   * const signedTx = unsignedTx.sign(privKey)
+   * ```
+   * @param privateKey Must be 32 bytes in length.
    */
   sign(privateKey: Buffer) {
     if (privateKey.length !== 32) {
