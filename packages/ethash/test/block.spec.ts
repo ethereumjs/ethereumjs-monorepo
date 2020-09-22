@@ -1,4 +1,4 @@
-import * as tape from 'tape'
+import tape from 'tape'
 import { Block } from '@ethereumjs/block'
 import Ethash from '../src'
 const level = require('level-mem')

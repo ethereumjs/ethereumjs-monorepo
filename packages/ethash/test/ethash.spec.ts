@@ -1,4 +1,4 @@
-import * as tape from 'tape'
+import tape from 'tape'
 import Ethash from '../src'
 import { getEpoc, getCacheSize, getFullSize } from '../src/util'
 import { BlockHeader } from '@ethereumjs/block'
