@@ -45,7 +45,7 @@ export default class Transaction {
       new BN(toBuffer(v || '0x')),
       new BN(toBuffer(r || '0x')),
       new BN(toBuffer(s || '0x')),
-      opts
+      opts,
     )
   }
 
@@ -78,7 +78,7 @@ export default class Transaction {
       v ? new BN(v) : undefined,
       r ? new BN(r) : undefined,
       s ? new BN(s) : undefined,
-      opts
+      opts,
     )
   }
 
@@ -97,7 +97,7 @@ export default class Transaction {
     v?: BN,
     r?: BN,
     s?: BN,
-    opts?: TxOptions
+    opts?: TxOptions,
   ) {
     const validateCannotExceedMaxInteger = { nonce, gasPrice, gasLimit, value, r, s }
     for (const [key, value] of Object.entries(validateCannotExceedMaxInteger)) {
@@ -215,7 +215,7 @@ export default class Transaction {
 
   /**
    * Sign a transaction with a given private key.
-   * Returns a new Transaction object (your original tx will not be modified).
+   * Returns a new Transaction object (the original tx will not be modified).
    * Example:
    * ```typescript
    * const unsignedTx = Transaction.fromTxData(txData)
@@ -237,7 +237,7 @@ export default class Transaction {
     }
 
     const opts = {
-      common: this.common
+      common: this.common,
     }
 
     return new Transaction(
@@ -250,7 +250,7 @@ export default class Transaction {
       new BN(v),
       new BN(r),
       new BN(s),
-      opts
+      opts,
     )
   }
 

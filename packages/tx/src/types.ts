@@ -1,5 +1,5 @@
-import Common from '@ethereumjs/common'
 import { BN, unpadBuffer, Address } from 'ethereumjs-util'
+import Common from '@ethereumjs/common'
 
 /**
  * The options for initializing a Transaction.

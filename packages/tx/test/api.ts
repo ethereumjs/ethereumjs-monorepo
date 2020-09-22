@@ -50,10 +50,7 @@ tape('[Transaction]: Basic functions', function (t) {
 
   t.test('should hash', function (st) {
     const common = new Common({ chain: 'mainnet', hardfork: 'tangerineWhistle' })
-    const tx = Transaction.fromValuesArray(
-      txFixtures[3].raw.map(toBuffer),
-      { common },
-    )
+    const tx = Transaction.fromValuesArray(txFixtures[3].raw.map(toBuffer), { common })
     st.deepEqual(
       tx.hash(),
       Buffer.from('375a8983c9fc56d7cfd118254a80a8d7403d590a6c9e105532b67aca1efb97aa', 'hex'),
@@ -296,10 +293,7 @@ tape('[Transaction]: Basic functions', function (t) {
 
     const serialized = tx.serialize()
 
-    const reTx = Transaction.fromRlpSerializedTx(
-      serialized,
-      { common },
-    )
+    const reTx = Transaction.fromRlpSerializedTx(serialized, { common })
     st.equal(reTx.verifySignature(), true)
     st.equal(reTx.getChainId(), 42)
 
@@ -332,10 +326,7 @@ tape('[Transaction]: Basic functions', function (t) {
   t.test('EIP155 hashing when singing', function (st) {
     const common = new Common({ chain: 1, hardfork: 'petersburg' })
     txFixtures.slice(0, 3).forEach(function (txData) {
-      let tx = Transaction.fromValuesArray(
-        txData.raw.slice(0, 6).map(toBuffer),
-        { common },
-      )
+      let tx = Transaction.fromValuesArray(txData.raw.slice(0, 6).map(toBuffer), { common })
 
       const privKey = Buffer.from(txData.privateKey, 'hex')
       tx = tx.sign(privKey)
@@ -371,10 +362,9 @@ tape('[Transaction]: Basic functions', function (t) {
 
       const common = new Common({ chain: 'mainnet', hardfork: 'tangerineWhistle' })
 
-      const fixtureTxSignedWithoutEIP155 = Transaction.fromTxData(
-        txData,
-        { common },
-      ).sign(privateKey)
+      const fixtureTxSignedWithoutEIP155 = Transaction.fromTxData(txData, { common }).sign(
+        privateKey,
+      )
 
       let signedWithEIP155 = Transaction.fromTxData(fixtureTxSignedWithEIP155.toJSON()).sign(
         privateKey,
@@ -392,27 +382,25 @@ tape('[Transaction]: Basic functions', function (t) {
       st.notEqual(signedWithEIP155.v?.toString('hex'), '1c')
       st.notEqual(signedWithEIP155.v?.toString('hex'), '1b')
 
-      let signedWithoutEIP155 = Transaction.fromTxData(
-        fixtureTxSignedWithEIP155.toJSON(),
-        { common }
-      ).sign(privateKey)
+      let signedWithoutEIP155 = Transaction.fromTxData(fixtureTxSignedWithEIP155.toJSON(), {
+        common,
+      }).sign(privateKey)
 
       st.true(signedWithoutEIP155.verifySignature())
       st.true(
         signedWithoutEIP155.v?.toString('hex') == '1c' ||
-        signedWithoutEIP155.v?.toString('hex') == '1b',
+          signedWithoutEIP155.v?.toString('hex') == '1b',
         "v shouldn't be EIP155 encoded",
       )
 
-      signedWithoutEIP155 = Transaction.fromTxData(
-        fixtureTxSignedWithoutEIP155.toJSON(),
-        { common })
-        .sign(privateKey)
+      signedWithoutEIP155 = Transaction.fromTxData(fixtureTxSignedWithoutEIP155.toJSON(), {
+        common,
+      }).sign(privateKey)
 
       st.true(signedWithoutEIP155.verifySignature())
       st.true(
         signedWithoutEIP155.v?.toString('hex') == '1c' ||
-        signedWithoutEIP155.v?.toString('hex') == '1b',
+          signedWithoutEIP155.v?.toString('hex') == '1b',
         "v shouldn' be EIP155 encoded",
       )
 
@@ -425,9 +413,7 @@ tape('[Transaction]: Basic functions', function (t) {
     let tx = Transaction.fromTxData({}, { common })
     st.equals(tx.getDataFee().toNumber(), 0)
 
-    tx = Transaction.fromValuesArray(
-      txFixtures[3].raw.map(toBuffer),
-      { common })
+    tx = Transaction.fromValuesArray(txFixtures[3].raw.map(toBuffer), { common })
     st.equals(tx.getDataFee().toNumber(), 1716)
 
     st.end()
