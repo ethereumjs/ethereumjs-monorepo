@@ -192,7 +192,7 @@ ___
 
 *Inherited from [FakeTransaction](_fake_.faketransaction.md).[getBaseFee](_fake_.faketransaction.md#getbasefee)*
 
-*Defined in [transaction.ts:295](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/transaction.ts#L295)*
+*Defined in [transaction.ts:293](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/transaction.ts#L293)*
 
 the minimum amount of gas the tx must have (DataFee + TxFee + Creation Fee)
 
@@ -206,7 +206,7 @@ ___
 
 *Inherited from [FakeTransaction](_fake_.faketransaction.md).[getChainId](_fake_.faketransaction.md#getchainid)*
 
-*Defined in [transaction.ts:201](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/transaction.ts#L201)*
+*Defined in [transaction.ts:199](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/transaction.ts#L199)*
 
 returns chain ID
 
@@ -220,7 +220,7 @@ ___
 
 *Inherited from [FakeTransaction](_fake_.faketransaction.md).[getDataFee](_fake_.faketransaction.md#getdatafee)*
 
-*Defined in [transaction.ts:281](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/transaction.ts#L281)*
+*Defined in [transaction.ts:279](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/transaction.ts#L279)*
 
 The amount of gas paid for the data in this tx
 
@@ -234,7 +234,7 @@ ___
 
 *Inherited from [FakeTransaction](_fake_.faketransaction.md).[getSenderAddress](_fake_.faketransaction.md#getsenderaddress)*
 
-*Defined in [transaction.ts:208](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/transaction.ts#L208)*
+*Defined in [transaction.ts:206](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/transaction.ts#L206)*
 
 returns the sender's address
 
@@ -248,7 +248,7 @@ ___
 
 *Inherited from [FakeTransaction](_fake_.faketransaction.md).[getSenderPublicKey](_fake_.faketransaction.md#getsenderpublickey)*
 
-*Defined in [transaction.ts:220](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/transaction.ts#L220)*
+*Defined in [transaction.ts:218](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/transaction.ts#L218)*
 
 returns the public key of the sender
 
@@ -262,7 +262,7 @@ ___
 
 *Inherited from [FakeTransaction](_fake_.faketransaction.md).[getUpfrontCost](_fake_.faketransaction.md#getupfrontcost)*
 
-*Defined in [transaction.ts:306](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/transaction.ts#L306)*
+*Defined in [transaction.ts:304](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/transaction.ts#L304)*
 
 the up front amount that an account must have for this transaction to be valid
 
@@ -297,7 +297,7 @@ ___
 
 *Inherited from [FakeTransaction](_fake_.faketransaction.md).[serialize](_fake_.faketransaction.md#serialize)*
 
-*Defined in [transaction.ts:336](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/transaction.ts#L336)*
+*Defined in [transaction.ts:334](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/transaction.ts#L334)*
 
 Returns the rlp encoding of the transaction
 
@@ -311,7 +311,7 @@ ___
 
 *Inherited from [FakeTransaction](_fake_.faketransaction.md).[sign](_fake_.faketransaction.md#sign)*
 
-*Defined in [transaction.ts:261](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/transaction.ts#L261)*
+*Defined in [transaction.ts:259](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/transaction.ts#L259)*
 
 sign a transaction with a given private key
 
@@ -331,7 +331,7 @@ ___
 
 *Inherited from [FakeTransaction](_fake_.faketransaction.md).[toCreationAddress](_fake_.faketransaction.md#tocreationaddress)*
 
-*Defined in [transaction.ts:169](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/transaction.ts#L169)*
+*Defined in [transaction.ts:167](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/transaction.ts#L167)*
 
 If the tx's `to` is to the creation address
 
@@ -345,7 +345,7 @@ ___
 
 *Inherited from [FakeTransaction](_fake_.faketransaction.md).[toJSON](_fake_.faketransaction.md#tojson)*
 
-*Defined in [transaction.ts:345](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/transaction.ts#L345)*
+*Defined in [transaction.ts:343](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/transaction.ts#L343)*
 
 Returns the transaction in JSON format
 
@@ -367,7 +367,7 @@ ___
 
 *Inherited from [FakeTransaction](_fake_.faketransaction.md).[validate](_fake_.faketransaction.md#validate)*
 
-*Defined in [transaction.ts:313](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/transaction.ts#L313)*
+*Defined in [transaction.ts:311](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/transaction.ts#L311)*
 
 Validates the signature and checks to see if it has enough gas.
 
@@ -377,7 +377,7 @@ Validates the signature and checks to see if it has enough gas.
 
 *Inherited from [FakeTransaction](_fake_.faketransaction.md).[validate](_fake_.faketransaction.md#validate)*
 
-*Defined in [transaction.ts:314](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/transaction.ts#L314)*
+*Defined in [transaction.ts:312](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/transaction.ts#L312)*
 
 **Parameters:**
 
@@ -391,7 +391,7 @@ Name | Type |
 
 *Inherited from [FakeTransaction](_fake_.faketransaction.md).[validate](_fake_.faketransaction.md#validate)*
 
-*Defined in [transaction.ts:315](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/transaction.ts#L315)*
+*Defined in [transaction.ts:313](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/transaction.ts#L313)*
 
 **Parameters:**
 
@@ -409,7 +409,7 @@ ___
 
 *Inherited from [FakeTransaction](_fake_.faketransaction.md).[verifySignature](_fake_.faketransaction.md#verifysignature)*
 
-*Defined in [transaction.ts:232](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/transaction.ts#L232)*
+*Defined in [transaction.ts:230](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/transaction.ts#L230)*
 
 Determines if the signature is valid
 
