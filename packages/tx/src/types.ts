@@ -95,7 +95,11 @@ export type PrefixedHexString = string
 /**
  * A Buffer, hex string prefixed with `0x`, Number, or an object with a `toBuffer()` method such as BN.
  */
-export type BufferLike = Buffer | TransformableToBuffer | PrefixedHexString | number
+export type BufferLike =
+  | Buffer
+  | TransformableToBuffer
+  | PrefixedHexString
+  | number
 
 export type AddressLike = Address | Buffer | string
 

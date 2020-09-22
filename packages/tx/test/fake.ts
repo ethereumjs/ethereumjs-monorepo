@@ -7,7 +7,8 @@ import { FakeTxData } from './types'
 
 // Use private key 0x0000000000000000000000000000000000000000000000000000000000000001 as 'from' Account
 const txData: FakeTxData = {
-  data: '0x7cf5dab00000000000000000000000000000000000000000000000000000000000000005',
+  data:
+    '0x7cf5dab00000000000000000000000000000000000000000000000000000000000000005',
   gasLimit: '0x15f90',
   gasPrice: '0x1',
   nonce: '0x01',
@@ -29,15 +30,23 @@ tape('[FakeTransaction]: Basic functions', function (t) {
     const hash = tx.hash()
     const cmpHash = Buffer.from(
       'f74b039f6361c4351a99a7c6a10867369fe6701731d85dc07c15671ac1c1b648',
-      'hex',
+      'hex'
     )
-    st.deepEqual(hash, cmpHash, 'should create hash with includeSignature=true (default)')
+    st.deepEqual(
+      hash,
+      cmpHash,
+      'should create hash with includeSignature=true (default)'
+    )
     const hash2 = tx.hash(false)
     const cmpHash2 = Buffer.from(
       '0401bf740d698674be321d0064f92cd6ebba5d73d1e5e5189c0bebbda33a85fe',
-      'hex',
+      'hex'
     )
-    st.deepEqual(hash2, cmpHash2, 'should create hash with includeSignature=false')
+    st.deepEqual(
+      hash2,
+      cmpHash2,
+      'should create hash with includeSignature=false'
+    )
     st.notDeepEqual(hash, hash2, 'previous hashes should be different')
   })
 
@@ -49,19 +58,29 @@ tape('[FakeTransaction]: Basic functions', function (t) {
     const hash = tx.hash()
     const cmpHash = Buffer.from(
       '80a2ca70509414908881f718502e6bbb3bc67f416abdf972ea7c0888579be7b9',
-      'hex',
+      'hex'
     )
-    st.deepEqual(hash, cmpHash, 'should create hash with includeSignature=true (default)')
+    st.deepEqual(
+      hash,
+      cmpHash,
+      'should create hash with includeSignature=true (default)'
+    )
     const hash2 = tx.hash(false)
     const cmpHash2 = Buffer.from(
       '0401bf740d698674be321d0064f92cd6ebba5d73d1e5e5189c0bebbda33a85fe',
-      'hex',
+      'hex'
     )
-    st.deepEqual(hash2, cmpHash2, 'should create hash with includeSignature=false')
+    st.deepEqual(
+      hash2,
+      cmpHash2,
+      'should create hash with includeSignature=false'
+    )
     st.notDeepEqual(hash, hash2, 'previous hashes should be different')
   })
 
-  t.test('should not produce hash collsions for different senders', function (st) {
+  t.test('should not produce hash collsions for different senders', function (
+    st
+  ) {
     st.plan(1)
     const txDataModFrom = Object.assign({}, txData, {
       from: '0x2222222222222222222222222222222222222222',
@@ -73,18 +92,21 @@ tape('[FakeTransaction]: Basic functions', function (t) {
     st.notEqual(
       hash,
       hashModFrom,
-      'FakeTransactions with different `from` addresses but otherwise identical data should have different hashes',
+      'FakeTransactions with different `from` addresses but otherwise identical data should have different hashes'
     )
   })
 
-  t.test('should retrieve "from" from signature if transaction is signed', function (st) {
-    const txDataNoFrom = Object.assign({}, txData)
-    delete txDataNoFrom['from']
-    st.plan(1)
+  t.test(
+    'should retrieve "from" from signature if transaction is signed',
+    function (st) {
+      const txDataNoFrom = Object.assign({}, txData)
+      delete txDataNoFrom['from']
+      st.plan(1)
 
-    const tx = new FakeTransaction(txDataNoFrom)
-    st.equal(bufferToHex(tx.from), txData.from)
-  })
+      const tx = new FakeTransaction(txDataNoFrom)
+      st.equal(bufferToHex(tx.from), txData.from)
+    }
+  )
 
   t.test('should return toCreationAddress', (st) => {
     const tx = new FakeTransaction(txData)
@@ -96,7 +118,9 @@ tape('[FakeTransaction]: Basic functions', function (t) {
 
   t.test('should return getChainId', (st) => {
     const tx = new FakeTransaction(txData)
-    const txWithChain = new FakeTransaction(txData, { common: new Common({ chain: 3 }) })
+    const txWithChain = new FakeTransaction(txData, {
+      common: new Common({ chain: 3 }),
+    })
     st.plan(2)
     st.equal(tx.getChainId(), 1, 'should return correct chainId')
     st.equal(txWithChain.getChainId(), 3, 'should return correct chainId')
@@ -108,12 +132,12 @@ tape('[FakeTransaction]: Basic functions', function (t) {
     st.equal(
       tx.from.toString('hex'),
       '7e5f4552091a69125d5dfcb7b8c2659029395bdf',
-      'this._from is set in FakeTransaction',
+      'this._from is set in FakeTransaction'
     )
     st.equal(
       tx.getSenderAddress().toString('hex'),
       '7e5f4552091a69125d5dfcb7b8c2659029395bdf',
-      'should return correct address',
+      'should return correct address'
     )
   })
 
@@ -121,7 +145,10 @@ tape('[FakeTransaction]: Basic functions', function (t) {
     const tx = new FakeTransaction(txData)
     const txWithWrongSignature = new FakeTransaction({
       ...txData,
-      r: Buffer.from('abcd1558260ac737ea6d800906c6d085a801e5e0f0952bf93978d6fa468fbdff', 'hex'),
+      r: Buffer.from(
+        'abcd1558260ac737ea6d800906c6d085a801e5e0f0952bf93978d6fa468fbdff',
+        'hex'
+      ),
     })
     st.plan(2)
     st.true(tx.verifySignature(), 'signature is valid')
@@ -132,17 +159,22 @@ tape('[FakeTransaction]: Basic functions', function (t) {
     const tx = new FakeTransaction(txData, {
       common: new Common({ chain: 'mainnet', hardfork: 'tangerineWhistle' }),
     })
-    tx.sign(Buffer.from('164122e5d39e9814ca723a749253663bafb07f6af91704d9754c361eb315f0c1', 'hex'))
+    tx.sign(
+      Buffer.from(
+        '164122e5d39e9814ca723a749253663bafb07f6af91704d9754c361eb315f0c1',
+        'hex'
+      )
+    )
     st.plan(3)
     st.equal(
       tx.r.toString('hex'),
       'c10062450d68caa5a688e2b6930f34f8302064afe6e1ba7f6ca459115a31d3b8',
-      'r should be valid',
+      'r should be valid'
     )
     st.equal(
       tx.s.toString('hex'),
       '31718e6bf821a98d35b0d9cd66ea86f91f420c3c4658f60c607222de925d222a',
-      's should be valid',
+      's should be valid'
     )
     st.equal(tx.v.toString('hex'), '1c', 'v should be valid')
   })
@@ -160,16 +192,27 @@ tape('[FakeTransaction]: Basic functions', function (t) {
   })
 
   t.test('should getUpfrontCost', (st) => {
-    const tx = new FakeTransaction({ ...txData, gasLimit: '0x6464', gasPrice: '0x2' })
+    const tx = new FakeTransaction({
+      ...txData,
+      gasLimit: '0x6464',
+      gasPrice: '0x2',
+    })
     st.plan(1)
-    st.equal(tx.getUpfrontCost().toString(), '51400', 'base fee should be correct')
+    st.equal(
+      tx.getUpfrontCost().toString(),
+      '51400',
+      'base fee should be correct'
+    )
   })
 
   t.test('should validate', (st) => {
     const tx = new FakeTransaction(txData)
     const txWithWrongSignature = new FakeTransaction({
       ...txData,
-      r: Buffer.from('abcd1558260ac737ea6d800906c6d085a801e5e0f0952bf93978d6fa468fbdff', 'hex'),
+      r: Buffer.from(
+        'abcd1558260ac737ea6d800906c6d085a801e5e0f0952bf93978d6fa468fbdff',
+        'hex'
+      ),
     })
     const txWithLowLimit = new FakeTransaction({
       ...txData,
@@ -183,12 +226,12 @@ tape('[FakeTransaction]: Basic functions', function (t) {
     st.equal(
       txWithWrongSignature.validate(true),
       'Invalid Signature',
-      'tx should return correct error',
+      'tx should return correct error'
     )
     st.equal(
       txWithLowLimit.validate(true),
       'gas limit is too low. Need at least 21464',
-      'tx should return correct error',
+      'tx should return correct error'
     )
   })
 })
