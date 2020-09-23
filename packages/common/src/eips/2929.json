@@ -1,0 +1,24 @@
+{
+  "name": "EIP-2929",
+  "comment": "Gas cost increases for state access opcodes",
+  "url": "https://eips.ethereum.org/EIPS/eip-2929",
+  "status": "Draft",
+  "minimumHardfork": "chainstart",
+  "gasConfig": {},
+  "gasPrices": {
+    "coldsload": {
+      "v": 2100,
+      "d": "Gas cost of the first read of storage from a given location (per transaction)"
+    },
+    "coldaccountaccess": {
+      "v": 2600,
+      "d": "Gas cost of the first read of a given address (per transaction)"
+    },
+    "warmstorageread": {
+      "v": 100,
+      "d": "Gas cost of reading storage locations which have already loaded 'cold'"
+    }
+  },
+  "vm": {},
+  "pow": {}
+}

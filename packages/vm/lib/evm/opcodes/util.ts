@@ -35,8 +35,101 @@ export function trap(err: string) {
  * @param  {BN}     address
  * @return {Buffer}
  */
-export function addressToBuffer(address: BN): Buffer {
+function addressToBuffer(address: BN | Buffer) {
+  if (Buffer.isBuffer(address)) return address
   return address.and(MASK_160).toArrayLike(Buffer, 'be', 20)
+}
+
+/**
+ * Adds address to accessedAddresses set if not already included.
+ * Adjusts cost incurred for executing opcode based on whether address read
+ * is warm/cold. (EIP 2929)
+ * @param {RunState} runState
+ * @param {BN}       address
+ */
+function accessAddressEIP2929(runState: RunState, address: BN | Buffer, baseFee?: number) {
+  if (!runState._common.eips().includes(2929)) return
+
+  const addressStr = addressToBuffer(address).toString('hex')
+
+  // Cold
+  if (!runState.accessedAddresses.has(addressStr)) {
+    runState.accessedAddresses.add(addressStr)
+
+    // CREATE, CREATE2 opcodes have the address warmed for free.
+    if (baseFee) {
+      runState.eei.useGas(
+        new BN(runState._common.param('gasPrices', 'coldaccountaccess') - baseFee),
+      )
+    }
+    // Warm
+  } else if (baseFee) {
+    runState.eei.useGas(new BN(runState._common.param('gasPrices', 'warmstorageread') - baseFee))
+  }
+}
+
+/**
+ * Adds (address, key) to accessedStorage tuple set if not already included.
+ * Adjusts cost incurred for executing opcode based on whether storage read
+ * is warm/cold. (EIP 2929)
+ * @param {RunState} runState
+ * @param {Buffer} key (to storage slot)
+ */
+function accessStorageEIP2929(runState: RunState, key: Buffer, isSstore: boolean) {
+  if (!runState._common.eips().includes(2929)) return
+
+  const keyStr = key.toString('hex')
+  const baseFee = !isSstore ? runState._common.param('gasPrices', 'sload') : 0
+  const address = runState.eei.getAddress().toString('hex')
+  const keysAtAddress = runState.accessedStorage.get(address)
+
+  // Cold (SLOAD and SSTORE)
+  if (!keysAtAddress) {
+    runState.accessedStorage.set(address, new Set())
+    // @ts-ignore Set Object is possibly 'undefined'
+    runState.accessedStorage.get(address).add(keyStr)
+    runState.eei.useGas(new BN(runState._common.param('gasPrices', 'coldsload') - baseFee))
+  } else if (keysAtAddress && !keysAtAddress.has(keyStr)) {
+    keysAtAddress.add(keyStr)
+    runState.eei.useGas(new BN(runState._common.param('gasPrices', 'coldsload') - baseFee))
+    // Warm (SLOAD only)
+  } else if (!isSstore) {
+    runState.eei.useGas(new BN(runState._common.param('gasPrices', 'warmstorageread') - baseFee))
+  }
+}
+
+/**
+ * Adjusts cost of SSTORE_RESET_GAS or SLOAD (aka sstorenoop) (EIP-2200) downward when storage
+ * location is already warm
+ * @param  {RunState} runState
+ * @param  {Buffer}   key          storage slot
+ * @param  {number}   defaultCost  SSTORE_RESET_GAS / SLOAD
+ * @param  {string}   costName     parameter name ('reset' or 'noop')
+ * @return {number}                adjusted cost
+ */
+function adjustSstoreGasEIP2929(
+  runState: RunState,
+  key: Buffer,
+  defaultCost: number,
+  costName: string,
+): number {
+  if (!runState._common.eips().includes(2929)) return defaultCost
+
+  const keyStr = key.toString('hex')
+  const address = runState.eei.getAddress().toString('hex')
+
+  // @ts-ignore Set Object is possibly 'undefined'
+  if (runState.accessedStorage.has(address) && runState.accessedStorage.get(address).has(keyStr)) {
+    if (costName === 'reset') {
+      return defaultCost - runState._common.param('gasPrices', 'coldsload')
+    }
+
+    if (costName === 'noop') {
+      return runState._common.param('gasPrices', 'warmstorageread')
+    }
+  }
+
+  return defaultCost
 }
 
 /**
@@ -225,7 +318,7 @@ export function subMemUsage(runState: RunState, offset: BN, length: BN) {
  * @param {any}      found
  * @param {Buffer}   value
  */
-export function updateSstoreGas(runState: RunState, found: any, value: Buffer) {
+function updateSstoreGas(runState: RunState, found: any, value: Buffer, key: Buffer) {
   if (runState._common.hardfork() === 'constantinople') {
     const original = found.original
     const current = found.current
@@ -285,8 +378,9 @@ export function updateSstoreGas(runState: RunState, found: any, value: Buffer) {
 
     // Noop
     if (current.equals(value)) {
+      const sstoreNoopCost = runState._common.param('gasPrices', 'sstoreNoopGasEIP2200')
       return runState.eei.useGas(
-        new BN(runState._common.param('gasPrices', 'sstoreNoopGasEIP2200'))
+        new BN(adjustSstoreGasEIP2929(runState, key, sstoreNoopCost, 'noop')),
       )
     }
     if (original.equals(current)) {
@@ -336,16 +430,17 @@ export function updateSstoreGas(runState: RunState, found: any, value: Buffer) {
     // Dirty update
     return runState.eei.useGas(new BN(runState._common.param('gasPrices', 'sstoreDirtyGasEIP2200')))
   } else {
+    const sstoreResetCost = runState._common.param('gasPrices', 'sstoreReset')
     if (value.length === 0 && !found.length) {
-      runState.eei.useGas(new BN(runState._common.param('gasPrices', 'sstoreReset')))
+      runState.eei.useGas(new BN(adjustSstoreGasEIP2929(runState, key, sstoreResetCost, 'reset')))
     } else if (value.length === 0 && found.length) {
-      runState.eei.useGas(new BN(runState._common.param('gasPrices', 'sstoreReset')))
+      runState.eei.useGas(new BN(adjustSstoreGasEIP2929(runState, key, sstoreResetCost, 'reset')))
       runState.eei.refundGas(new BN(runState._common.param('gasPrices', 'sstoreRefund')))
     } else if (value.length !== 0 && !found.length) {
       runState.eei.useGas(new BN(runState._common.param('gasPrices', 'sstoreSet')))
       /* eslint-disable-next-line sonarjs/no-duplicated-branches */
     } else if (value.length !== 0 && found.length) {
-      runState.eei.useGas(new BN(runState._common.param('gasPrices', 'sstoreReset')))
+      runState.eei.useGas(new BN(adjustSstoreGasEIP2929(runState, key, sstoreResetCost, 'reset')))
     }
   }
 }
