@@ -38,7 +38,9 @@ export default function blockFromRpc(
       const txParams = normalizeTxParams(_txParams)
 
       // override from address
-      const fromAddress = txParams.from ? Address.fromString(txParams.from) : Address.zero()
+      const fromAddress = txParams.from
+        ? Address.fromString(txParams.from)
+        : Address.zero()
       delete txParams.from
 
       const tx = Transaction.fromTxData(txParams as TxData, txOpts)
@@ -63,7 +65,8 @@ export default function blockFromRpc(
 function normalizeTxParams(_txParams: any) {
   const txParams = Object.assign({}, _txParams)
 
-  txParams.gasLimit = txParams.gasLimit === undefined ? txParams.gas : txParams.gasLimit
+  txParams.gasLimit =
+    txParams.gasLimit === undefined ? txParams.gas : txParams.gasLimit
   txParams.data = txParams.data === undefined ? txParams.input : txParams.data
 
   // strict byte length checking

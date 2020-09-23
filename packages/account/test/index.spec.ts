@@ -102,7 +102,12 @@ tape('serialize', function (tester) {
         '0xc5d2461236f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470',
     }
     const account = new Account(raw)
-    const accountRlp = rlp.encode([raw.nonce, raw.balance, raw.stateRoot, raw.codeHash])
+    const accountRlp = rlp.encode([
+      raw.nonce,
+      raw.balance,
+      raw.stateRoot,
+      raw.codeHash,
+    ])
     t.ok(account.serialize().equals(accountRlp))
     t.end()
   })
