@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [1.0.1] - 2020-09-25
+
+- Fixed a browser issue in `Wallet.fromV3()` and `Wallet.toV3()` triggered when using web bundlers using Buffer v4 shim (Webpack 4),
+  see PR [#135](https://github.com/ethereumjs/ethereumjs-wallet/pull/135)
+
+[1.0.1]: https://github.com/ethereumjs/ethereumjs-wallet/compare/v1.0.0...v1.0.1
+
 ## [1.0.0] - 2020-06-23
 
 This is the first `TypeScript` release on the library (thanks @the-jackalope for the rewrite! ❤️), see PR [#93](https://github.com/ethereumjs/ethereumjs-wallet/pull/93) for the main PR here. The release comes with various breaking changes.
