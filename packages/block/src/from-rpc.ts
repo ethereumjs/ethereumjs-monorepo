@@ -16,17 +16,10 @@ export default function blockFromRpc(blockParams: any, uncles?: any[], options?:
 
   const header = blockHeaderFromRpc(blockParams, options)
 
-  const block = new Block(
-    {
-      header: header.toJSON(true),
-      transactions: [],
-      uncleHeaders: uncles.map((uh) => blockHeaderFromRpc(uh, options).toJSON(true)),
-    },
-    options,
-  )
+  const transactions: TxData[] = []
 
   if (blockParams.transactions) {
-    const txOpts = { common: (<any>block)._common }
+    const txOpts = { common: header._common }
 
     for (const _txParams of blockParams.transactions) {
       const txParams = normalizeTxParams(_txParams)
@@ -47,9 +40,15 @@ export default function blockFromRpc(blockParams: any, uncles?: any[], options?:
         return toBuffer(txParams.hash)
       }
 
-      block.transactions.push(fakeTx)
+      transactions.push(fakeTx)
     }
   }
+
+  const block = Block.fromBlockData({
+    header,
+    transactions,
+    uncleHeaders: uncles.map((uh) => blockHeaderFromRpc(uh, options)),
+  })
 
   return block
 }

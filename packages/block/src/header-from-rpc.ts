@@ -1,4 +1,4 @@
-import { BlockHeader } from './header'
+import { Header } from './header'
 import { KECCAK256_NULL, toBuffer } from 'ethereumjs-util'
 import { BlockOptions } from './types'
 
@@ -9,7 +9,7 @@ import { BlockOptions } from './types'
  * @param chainOptions - An object describing the blockchain
  */
 export default function blockHeaderFromRpc(blockParams: any, options?: BlockOptions) {
-  const blockHeader = new BlockHeader(
+  const blockHeader = Header.fromHeaderData(
     {
       parentHash: blockParams.parentHash,
       uncleHash: blockParams.sha3Uncles,

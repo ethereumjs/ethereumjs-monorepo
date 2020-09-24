@@ -1,10 +1,9 @@
 import { BaseTrie as Trie } from 'merkle-patricia-tree'
 import { BN, rlp, keccak256, KECCAK256_RLP, baToJSON } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
-import { BN, rlp, keccak256, KECCAK256_RLP, baToJSON, bufferToInt } from 'ethereumjs-util'
-import { Transaction, TransactionOptions } from '@ethereumjs/tx'
+import { Transaction, TxOptions } from '@ethereumjs/tx'
 import { Header } from './header'
-import { Blockchain, BlockData, BlockOptions, HeaderData } from './types'
+import { Blockchain, BlockData, BlockOptions } from './types'
 
 /**
  * An object that represents the block
@@ -32,7 +31,7 @@ export class Block {
     // parse transactions
     let transactions = []
     for (const txData of txsData) {
-      transactions.push(new Transaction(txData, opts))
+      transactions.push(Transaction.fromTxData(txData, opts as TxOptions))
     }
 
     // parse uncle headers
@@ -70,7 +69,7 @@ export class Block {
     // parse transactions
     let transactions = []
     for (const txData of txsData) {
-      transactions.push(new Transaction(txData, opts))
+      transactions.push(Transaction.fromRlpSerializedTx(txData, opts as TxOptions))
     }
 
     // parse uncle headers
@@ -135,9 +134,9 @@ export class Block {
   serialize(rlpEncode: false): [Buffer[], Buffer[], Buffer[]]
   serialize(rlpEncode = true) {
     const raw = [
-      this.header.raw,
+      this.header.raw(),
       this.transactions.map((tx) => tx.serialize()),
-      this.uncleHeaders.map((uh) => uh.raw),
+      this.uncleHeaders.map((uh) => uh.raw()),
     ]
 
     return rlpEncode ? rlp.encode(raw) : raw
@@ -216,7 +215,7 @@ export class Block {
    * Validates the uncle's hash
    */
   validateUnclesHash(): boolean {
-    const raw = rlp.encode(this.uncleHeaders.map((uh) => uh.raw))
+    const raw = rlp.encode(this.uncleHeaders.map((uh) => uh.raw()))
 
     return keccak256(raw).equals(this.header.uncleHash)
   }

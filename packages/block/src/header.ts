@@ -9,14 +9,11 @@ import {
   unpadBuffer,
   bufferToInt,
   rlphash,
-  unpadArray,
 } from 'ethereumjs-util'
-import { Blockchain, HeaderData, BufferLike, BlockOptions, PrefixedHexString } from './types'
+import { Blockchain, HeaderData, BlockOptions } from './types'
 import { Buffer } from 'buffer'
 import { Block } from './block'
 import { checkBufferLength } from './util'
-import { Options } from 'lru-cache'
-import { statSync } from 'fs'
 
 /**
  * An object that represents the block header
@@ -200,6 +197,14 @@ export class Header {
       this.stateRoot = this._common.genesis().stateRoot
       this.number = toBuffer(0)
     }
+
+    // Unpad all fields which should be interpreted as numbers
+    this.timestamp = unpadBuffer(this.timestamp)
+    this.difficulty = unpadBuffer(this.difficulty)
+    this.gasLimit = unpadBuffer(this.gasLimit)
+    this.number = unpadBuffer(this.number)
+    this.timestamp = unpadBuffer(this.timestamp)
+
     this._checkDAOExtraData()
 
     Object.freeze(this)
@@ -378,7 +383,15 @@ export class Header {
    * Returns the hash of the block header.
    */
   hash(): Buffer {
-    const values: Buffer[] = [
+    const values: Buffer[] = this.raw()
+    return rlphash(values)
+  }
+
+  /**
+   * Returns a Buffer Array of the raw Buffers in this header, in order
+   */
+  raw(): Buffer[] {
+    return [
       this.parentHash,
       this.uncleHash,
       this.coinbase,
@@ -387,7 +400,7 @@ export class Header {
       this.receiptTrie,
       this.bloom,
       this.difficulty,
-      unpadBuffer(this.number),
+      this.number,
       this.gasLimit,
       this.gasUsed,
       this.timestamp,
@@ -395,7 +408,6 @@ export class Header {
       this.mixHash,
       this.nonce,
     ]
-    return rlphash(values)
   }
 
   /**
@@ -415,12 +427,27 @@ export class Header {
 
   /**
    * Returns the block header in JSON format
-   *
-   * @see {@link https://github.com/ethereumjs/ethereumjs-util/blob/master/docs/index.md#defineproperties|ethereumjs-util}
    */
   toJSON(_labels: boolean = false): { [key: string]: string } | string[] {
     // Note: This never gets executed, defineProperties overwrites it.
-    return {}
+    /*return Object.create({
+      parentHash: this.parentHash,
+      uncleHash: this.uncleHash,
+      coinbase: this.coinbase,
+      stateRoot: this.stateRoot,
+      transactionsTrie: this.transactionsTrie,
+      receiptTrie: this.receiptTrie,
+      bloom: this.bloom,
+      difficulty: this.difficulty,
+      number: this.number,
+      gasLimit: this.gasLimit,
+      gasUsed: this.gasUsed,
+      timestamp: this.timestamp,
+      extraData: this.extraData,
+      mixHash: this.mixHash,
+      nonce: this.nonce,
+    })*/
+    return {} //TODO: FIXME
   }
 
   private _getHardfork(): string {
