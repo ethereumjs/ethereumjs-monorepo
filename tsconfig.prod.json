@@ -1,0 +1,9 @@
+{
+  "extends": "./tsconfig.json",
+  "include": ["lib"],
+  "compilerOptions": {
+    "outDir": "dist",
+    "target": "ES2017",
+    "lib": ["es2018"]
+  }
+}

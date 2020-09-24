@@ -1,0 +1,21 @@
+{
+  "inputFiles": ["lib"],
+  "out": "docs",
+  "plugin": "typedoc-plugin-markdown",
+  "readme": "none",
+  "gitRevision": "master",
+  "exclude": [
+    "lib/blockchain/index.js",
+    "lib/index.js",
+    "lib/net/peer/index.js",
+    "lib/net/protocol/index.js",
+    "lib/rpc/error-code.js",
+    "lib/service/index.js",
+    "lib/sync/index.js",
+    "lib/util/index.js"
+  ],
+  "excludeNotExported": true,
+  "excludeExternals": true,
+  "excludePrivate": true,
+  "excludeProtected": true
+}

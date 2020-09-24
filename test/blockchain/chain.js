@@ -1,6 +1,6 @@
 const tape = require('tape')
 const Block = require('ethereumjs-block')
-const util = require('ethereumjs-util')
+const { toBuffer } = require('ethereumjs-util')
 const { Chain } = require('../../lib/blockchain')
 const { defaultLogger } = require('../../lib/logging')
 defaultLogger.silent = true
@@ -50,7 +50,7 @@ tape('[Chain]', t => {
   t.test('should detect unopened chain', async (t) => {
     const chain = new Chain() // eslint-disable-line no-new
     const block = new Block()
-    block.header.number = util.toBuffer(1)
+    block.header.number = toBuffer(1)
     block.header.difficulty = '0xabcdffff'
     block.header.parentHash = chain.genesis.hash
 
@@ -109,7 +109,7 @@ tape('[Chain]', t => {
     await chain.open()
 
     const block = new Block()
-    block.header.number = util.toBuffer(1)
+    block.header.number = toBuffer(1)
     block.header.difficulty = '0xabcdffff'
     block.header.parentHash = chain.genesis.hash
     await chain.putBlocks([block])
