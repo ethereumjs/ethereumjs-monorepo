@@ -43,7 +43,14 @@ You can run the current state of the client with:
 ethereumjs --network=mainnet [--loglevel=debug]
 ```
 
-Or show the help with
+For development you might want to connect to `rinkeby` as the network with the currently 
+most reliable connection:
+
+```shell
+ethereumjs --network rinkeby
+```
+
+The help can be shown with:
 
 ```shell
 ethereumjs --help
@@ -65,7 +72,7 @@ DEBUG=devp2p:rlpx,devp2p:eth,-babel [CLIENT_START_COMMAND]
 
 [API Reference](./docs/README.md)
 
-See also this [diagram](./client_diagram.png) with an overview of the client structure together with the initialization and message flow.
+See also this [diagram](./diagram/client.svg) for an overview of the client structure with the initialization and message flow.
 
 ## JSON-RPC
 
@@ -300,6 +307,12 @@ to help contributors better understand how the project is organized.
 - `Node` [**In Progress**] Represents the top-level ethereum node, and is responsible for managing the lifecycle of included services.
 - `RPCManager` [**In Progress**] Implements an embedded JSON-RPC server to handle incoming RPC requests.
 
+## Developer
+
+### Diagram Updates
+
+To update the structure diagram files in the root folder open the `client.drawio` file in [draw.io](https://draw.io/), make your changes, and open a PR with the updated files. Export `svg` and `png` with `border` `width=20` and `transparency=false`. For `png` go to "Advanced" and select `300 DPI`.
+
 ## Environment / Ecosystem
 
 **EthereumJS Ecosystem**
@@ -325,3 +338,5 @@ If you want to join for work or do improvements on the libraries have a look at 
 [discord-link]: https://discord.gg/TNwARpR
 [style-badge]: https://img.shields.io/badge/code_style-standard-brightgreen.svg
 [style-link]: https://standardjs.com
+[discord-badge]: https://img.shields.io/static/v1?logo=discord&label=discord&message=Join&color=blue
+[discord-link]: https://discord.gg/TNwARpR
