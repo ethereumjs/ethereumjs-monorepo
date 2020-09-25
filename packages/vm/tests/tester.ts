@@ -192,7 +192,7 @@ async function runTests() {
         }
       }
 
-      if (expectedTests) {
+      if (expectedTests != undefined) {
         t.ok(
           (t as any).assertCount >= expectedTests,
           'expected ' + expectedTests + ' checks, got ' + (t as any).assertCount,
