@@ -1,5 +1,5 @@
 import { EventEmitter } from 'events'
-import _KBucket from 'k-bucket'
+import _KBucket = require('k-bucket')
 
 const KBUCKET_SIZE = 16
 const KBUCKET_CONCURRENCY = 3
@@ -17,7 +17,7 @@ export class KBucket extends EventEmitter {
     super()
 
     this._kbucket = new _KBucket({
-      localNodeId: id,
+      localNodeId: typeof id === 'string' ? Buffer.from(id) : id,
       numberOfNodesPerKBucket: KBUCKET_SIZE,
       numberOfNodesToPing: KBUCKET_CONCURRENCY,
     })
@@ -59,12 +59,12 @@ export class KBucket extends EventEmitter {
     return null
   }
 
-  getAll() {
+  getAll(): Array<any> {
     return this._kbucket.toArray()
   }
 
   closest(id: string): any {
-    return this._kbucket.closest(id, KBUCKET_SIZE)
+    return this._kbucket.closest(Buffer.from(id), KBUCKET_SIZE)
   }
 
   remove(obj: Buffer | string | KObj) {
