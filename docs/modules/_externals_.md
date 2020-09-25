@@ -3,5 +3,4 @@
 # Module: "externals"
 
 Re-exports commonly used modules:
-* Adds [`ethjs-util`](https://github.com/ethjs/ethjs-util) methods.
 * Exports [`BN`](https://github.com/indutny/bn.js), [`rlp`](https://github.com/ethereumjs/rlp).

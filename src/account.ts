@@ -1,23 +1,124 @@
-import * as ethjsUtil from 'ethjs-util'
+import * as assert from 'assert'
+import * as BN from 'bn.js'
+import * as rlp from 'rlp'
+import { stripHexPrefix } from 'ethjs-util'
+import { KECCAK256_RLP, KECCAK256_NULL } from './constants'
+import { zeros, bufferToHex, toBuffer, unpadBuffer } from './bytes'
+import { keccak, keccak256, keccakFromString, rlphash } from './hash'
+import { assertIsHexString, assertIsBuffer } from './helpers'
+
 const {
   privateKeyVerify,
   publicKeyCreate,
   publicKeyVerify,
   publicKeyConvert,
 } = require('ethereum-cryptography/secp256k1')
-import * as assert from 'assert'
-import * as BN from 'bn.js'
-import { zeros, bufferToHex } from './bytes'
-import { keccak, keccak256, keccakFromString, rlphash } from './hash'
-import { assertIsHexString, assertIsBuffer } from './helpers'
 
-/**
- * Returns a zero address.
- */
-export const zeroAddress = function(): string {
-  const addressLength = 20
-  const addr = zeros(addressLength)
-  return bufferToHex(addr)
+export interface AccountData {
+  nonce?: BNLike
+  balance?: BNLike
+  stateRoot?: BufferLike
+  codeHash?: BufferLike
+}
+
+type BNLike = BN | string | number
+
+type BufferLike = Buffer | TransformableToBuffer | PrefixedHexString | number
+
+type PrefixedHexString = string
+
+interface TransformableToBuffer {
+  toBuffer(): Buffer
+}
+
+/* Helper for Account.serialize() */
+function bnToRlp(value: BN): Buffer {
+  // using `bn.toArrayLike(Buffer)` instead of `bn.toBuffer()`
+  // for compatibility with browserify and similar tools
+  return unpadBuffer(value.toArrayLike(Buffer))
+}
+
+export class Account {
+  nonce: BN
+  balance: BN
+  stateRoot: Buffer
+  codeHash: Buffer
+
+  static fromAccountData(accountData: AccountData) {
+    const { nonce, balance, stateRoot, codeHash } = accountData
+
+    return new Account(
+      nonce ? new BN(toBuffer(nonce)) : undefined,
+      balance ? new BN(toBuffer(balance)) : undefined,
+      stateRoot ? toBuffer(stateRoot) : undefined,
+      codeHash ? toBuffer(codeHash) : undefined,
+    )
+  }
+
+  public static fromRlpSerializedAccount(serialized: Buffer) {
+    const values = rlp.decode(serialized)
+
+    if (!Array.isArray(values)) {
+      throw new Error('Invalid serialized account input. Must be array')
+    }
+
+    return this.fromValuesArray(values)
+  }
+
+  public static fromValuesArray(values: Buffer[]) {
+    const [nonce, balance, stateRoot, codeHash] = values
+
+    return new Account(
+      nonce ? new BN(nonce) : undefined,
+      balance ? new BN(balance) : undefined,
+      stateRoot,
+      codeHash,
+    )
+  }
+
+  /**
+   * This constructor takes the values, validates and assigns them.
+   * Use the static factory methods to assist in creating an Account from varying data types.
+   */
+  constructor(
+    nonce = new BN(0),
+    balance = new BN(0),
+    stateRoot = KECCAK256_RLP,
+    codeHash = KECCAK256_NULL,
+  ) {
+    if (stateRoot.length !== 32) {
+      throw new Error('stateRoot must have a length of 32')
+    }
+    if (codeHash.length !== 32) {
+      throw new Error('codeHash must have a length of 32')
+    }
+
+    this.nonce = nonce
+    this.balance = balance
+    this.stateRoot = stateRoot
+    this.codeHash = codeHash
+  }
+
+  /**
+   * Returns the RLP serialization of the account as a `Buffer`.
+   */
+  serialize(): Buffer {
+    return rlp.encode([bnToRlp(this.nonce), bnToRlp(this.balance), this.stateRoot, this.codeHash])
+  }
+
+  /**
+   * Returns a `Boolean` deteremining if the account is a contract.
+   */
+  isContract(): boolean {
+    return !this.codeHash.equals(KECCAK256_NULL)
+  }
+
+  /**
+   * Returns a `Boolean` determining if the account is empty.
+   */
+  isEmpty(): boolean {
+    return this.balance.isZero() && this.nonce.isZero() && this.codeHash.equals(KECCAK256_NULL)
+  }
 }
 
 /**
@@ -26,15 +127,6 @@ export const zeroAddress = function(): string {
 export const isValidAddress = function(hexAddress: string): boolean {
   assertIsHexString(hexAddress)
   return /^0x[0-9a-fA-F]{40}$/.test(hexAddress)
-}
-
-/**
- * Checks if a given address is a zero address.
- */
-export const isZeroAddress = function(hexAddress: string): boolean {
-  assertIsHexString(hexAddress)
-  const zeroAddr = zeroAddress()
-  return zeroAddr === hexAddress
 }
 
 /**
@@ -49,7 +141,7 @@ export const isZeroAddress = function(hexAddress: string): boolean {
  */
 export const toChecksumAddress = function(hexAddress: string, eip1191ChainId?: number): string {
   assertIsHexString(hexAddress)
-  const address = ethjsUtil.stripHexPrefix(hexAddress).toLowerCase()
+  const address = stripHexPrefix(hexAddress).toLowerCase()
 
   const prefix = eip1191ChainId !== undefined ? eip1191ChainId.toString() + '0x' : ''
 
@@ -191,4 +283,22 @@ export const importPublic = function(publicKey: Buffer): Buffer {
     publicKey = Buffer.from(publicKeyConvert(publicKey, false).slice(1))
   }
   return publicKey
+}
+
+/**
+ * Returns a zero address.
+ */
+export const zeroAddress = function(): string {
+  const addressLength = 20
+  const addr = zeros(addressLength)
+  return bufferToHex(addr)
+}
+
+/**
+ * Checks if a given address is a zero address.
+ */
+export const isZeroAddress = function(hexAddress: string): boolean {
+  assertIsHexString(hexAddress)
+  const zeroAddr = zeroAddress()
+  return zeroAddr === hexAddress
 }

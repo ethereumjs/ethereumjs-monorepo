@@ -5,7 +5,7 @@
 export * from './constants'
 
 /**
- * Public-key cryptography (secp256k1) and addresses
+ * Account class and helper functions
  */
 export * from './account'
 

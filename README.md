@@ -32,6 +32,7 @@ assert.equal(new BN('dead', 16).add(new BN('101010', 2)), 57047)
 ### Modules
 
 - [account](docs/modules/_account_.md)
+  - Account class
   - Private/public key and address-related functionality (creation, validation, conversion)
 - [address](docs/modules/_address_.md)
   - Address class and type

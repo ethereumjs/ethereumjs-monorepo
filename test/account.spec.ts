@@ -1,6 +1,8 @@
 import * as assert from 'assert'
 import * as BN from 'bn.js'
+import * as rlp from 'rlp'
 import {
+  Account,
   isValidPrivate,
   isValidPublic,
   importPublic,
@@ -15,6 +17,187 @@ import {
   toChecksumAddress,
 } from '../src'
 const eip1014Testdata = require('./testdata/eip1014Examples.json')
+
+describe('Account', function() {
+  describe('empty constructor', function() {
+    const account = new Account()
+    it('should have zero nonce', function() {
+      assert.ok(account.nonce.isZero())
+    })
+    it('should have zero balance', function() {
+      assert.ok(account.balance.isZero())
+    })
+    it('should have stateRoot equal to KECCAK256_RLP', function() {
+      assert.ok(
+        account.stateRoot.toString('hex'),
+        '56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421',
+      )
+    })
+    it('should have codeHash equal to KECCAK256_NULL', function() {
+      assert.equal(
+        account.codeHash.toString('hex'),
+        'c5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470',
+      )
+    })
+  })
+
+  describe('from Array data', function() {
+    const raw = [
+      '0x02', // nonce
+      '0x0384', // balance
+      '0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421', // stateRoot
+      '0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470', // codeHash
+    ]
+    const account = Account.fromValuesArray(raw.map(toBuffer))
+    it('should have correct nonce', function() {
+      assert.ok(account.nonce.eqn(2))
+    })
+    it('should have correct balance', function() {
+      assert.ok(account.balance.eqn(900))
+    })
+    it('should have correct stateRoot', function() {
+      assert.equal(
+        account.stateRoot.toString('hex'),
+        '56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421',
+      )
+    })
+    it('should have correct codeHash', function() {
+      assert.equal(
+        account.codeHash.toString('hex'),
+        'c5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470',
+      )
+    })
+  })
+
+  describe('from Object data', function() {
+    const raw = {
+      nonce: '0x02',
+      balance: '0x0384',
+      stateRoot: '0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421',
+      codeHash: '0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470',
+    }
+    const account = Account.fromAccountData(raw)
+    it('should have correct nonce', function() {
+      assert.ok(account.nonce.eqn(2))
+    })
+    it('should have correct balance', function() {
+      assert.ok(account.balance.eqn(900))
+    })
+    it('should have correct stateRoot', function() {
+      assert.equal(
+        account.stateRoot.toString('hex'),
+        '56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421',
+      )
+    })
+    it('should have correct codeHash', function() {
+      assert.equal(
+        account.codeHash.toString('hex'),
+        'c5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470',
+      )
+    })
+  })
+
+  describe('from RLP data', function() {
+    const accountRlp = Buffer.from(
+      'f84602820384a056e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421a0c5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470',
+      'hex',
+    )
+    const account = Account.fromRlpSerializedAccount(accountRlp)
+    it('should have correct nonce', function() {
+      assert.ok(account.nonce.eqn(2))
+    })
+    it('should have correct balance', function() {
+      assert.ok(account.balance.eqn(900))
+    })
+    it('should have correct stateRoot', function() {
+      assert.equal(
+        account.stateRoot.toString('hex'),
+        '56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421',
+      )
+    })
+    it('should have correct codeHash', function() {
+      assert.equal(
+        account.codeHash.toString('hex'),
+        'c5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470',
+      )
+    })
+  })
+
+  describe('serialize', function() {
+    const raw = {
+      nonce: '0x01',
+      balance: '0x42',
+      stateRoot: '0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421',
+      codeHash: '0xc5d2461236f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470',
+    }
+    const account = Account.fromAccountData(raw)
+    const accountRlp = rlp.encode([raw.nonce, raw.balance, raw.stateRoot, raw.codeHash])
+    it('should serialize correctly', function() {
+      assert.ok(account.serialize().equals(accountRlp))
+    })
+  })
+
+  describe('isContract', function() {
+    it('should return false for a non-contract account', function() {
+      const accountRlp = Buffer.from(
+        'f84602820384a056e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421a0c5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470',
+        'hex',
+      )
+      const account = Account.fromRlpSerializedAccount(accountRlp)
+      assert.equal(account.isContract(), false)
+    })
+
+    it('should return true for a contract account', function() {
+      const raw = {
+        nonce: '0x01',
+        balance: '0x0042',
+        stateRoot: '0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421',
+        codeHash: '0xc5d2461236f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470',
+      }
+      const account = Account.fromAccountData(raw)
+      assert.ok(account.isContract())
+    })
+  })
+
+  describe('isEmpty', function() {
+    it('should return true for an empty account', function() {
+      const account = new Account()
+      assert.ok(account.isEmpty())
+    })
+
+    it('should return false for a non-empty account', function() {
+      const raw = {
+        nonce: '0x01',
+        balance: '0x0042',
+        stateRoot: '0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421',
+        codeHash: '0xc5d2461236f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470',
+      }
+      const account = Account.fromAccountData(raw)
+      assert.equal(account.isEmpty(), false)
+    })
+  })
+
+  describe('validation', function() {
+    it('should only accept length 32 buffer for stateRoot', function() {
+      assert.throws(() => {
+        new Account(undefined, undefined, Buffer.from('hey'), undefined)
+      })
+    })
+
+    it('should only accept length 32 buffer for codeHash', function() {
+      assert.throws(() => {
+        new Account(undefined, undefined, undefined, Buffer.from('hey'))
+      })
+    })
+
+    it('should only accept an array in fromRlpSerializedAccount', function() {
+      const data = { balance: new BN(5) }
+      assert.throws(() => {
+        Account.fromRlpSerializedAccount(data as any)
+      })
+    })
+  })
+})
 
 describe('isValidPrivate', function() {
   const SECP256K1_N = new BN('fffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141', 16)
@@ -196,112 +379,16 @@ describe('privateToPublic', function() {
   it('should produce a public key given a private key', function() {
     const pubKey =
       '3a443d8381a6798a70c6ff9304bdc8cb0163c23211d11628fae52ef9e0dca11a001cf066d56a8156fc201cd5df8a36ef694eecd258903fca7086c1fae7441e1d'
-    const privateKey = Buffer.from([
-      234,
-      84,
-      189,
-      197,
-      45,
-      22,
-      63,
-      136,
-      201,
-      58,
-      176,
-      97,
-      87,
-      130,
-      207,
-      113,
-      138,
-      46,
-      251,
-      158,
-      81,
-      167,
-      152,
-      154,
-      171,
-      27,
-      8,
-      6,
-      126,
-      156,
-      28,
-      95,
-    ])
+    // prettier-ignore
+    const privateKey = Buffer.from([234, 84, 189, 197, 45, 22, 63, 136, 201, 58, 176, 97, 87, 130, 207, 113, 138, 46, 251, 158, 81, 167, 152, 154, 171, 27, 8, 6, 126, 156, 28, 95,])
     const r: any = privateToPublic(privateKey).toString('hex')
     assert.equal(r.toString('hex'), pubKey)
   })
   it("shouldn't produce a public key given an invalid private key", function() {
-    const privateKey1 = Buffer.from([
-      234,
-      84,
-      189,
-      197,
-      45,
-      22,
-      63,
-      136,
-      201,
-      58,
-      176,
-      97,
-      87,
-      130,
-      207,
-      113,
-      138,
-      46,
-      251,
-      158,
-      81,
-      167,
-      152,
-      154,
-      171,
-      27,
-      8,
-      6,
-      126,
-      156,
-      28,
-      95,
-      42,
-    ])
-    const privateKey2 = Buffer.from([
-      234,
-      84,
-      189,
-      197,
-      45,
-      22,
-      63,
-      136,
-      201,
-      58,
-      176,
-      97,
-      87,
-      130,
-      207,
-      113,
-      138,
-      46,
-      251,
-      158,
-      81,
-      167,
-      152,
-      154,
-      171,
-      27,
-      8,
-      6,
-      126,
-      156,
-      28,
-    ])
+    // prettier-ignore
+    const privateKey1 = Buffer.from([234, 84, 189, 197, 45, 22, 63, 136, 201, 58, 176, 97, 87, 130, 207, 113, 138, 46, 251, 158, 81, 167, 152, 154, 171, 27, 8, 6, 126, 156, 28, 95, 42,])
+    // prettier-ignore
+    const privateKey2 = Buffer.from([234, 84, 189, 197, 45, 22, 63, 136, 201, 58, 176, 97, 87, 130, 207, 113, 138, 46, 251, 158, 81, 167, 152, 154, 171, 27, 8, 6, 126, 156, 28,])
     assert.throws(function() {
       privateToPublic(privateKey1)
     })
@@ -325,40 +412,8 @@ describe('privateToAddress', function() {
   it('should produce an address given a private key', function() {
     const address = '2f015c60e0be116b1f0cd534704db9c92118fb6a'
     // Our private key
-    const privateKey = Buffer.from([
-      234,
-      84,
-      189,
-      197,
-      45,
-      22,
-      63,
-      136,
-      201,
-      58,
-      176,
-      97,
-      87,
-      130,
-      207,
-      113,
-      138,
-      46,
-      251,
-      158,
-      81,
-      167,
-      152,
-      154,
-      171,
-      27,
-      8,
-      6,
-      126,
-      156,
-      28,
-      95,
-    ])
+    // prettier-ignore
+    const privateKey = Buffer.from([234, 84, 189, 197, 45, 22, 63, 136, 201, 58, 176, 97, 87, 130, 207, 113, 138, 46, 251, 158, 81, 167, 152, 154, 171, 27, 8, 6, 126, 156, 28, 95,])
     const r: any = privateToAddress(privateKey).toString('hex')
     assert.equal(r.toString('hex'), address)
   })
