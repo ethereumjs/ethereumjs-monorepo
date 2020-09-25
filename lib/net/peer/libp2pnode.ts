@@ -1,5 +1,3 @@
-'use strict'
-
 /**
 * Libp2p Bundle
 * @memberof module:net/peer
@@ -14,8 +12,8 @@ const SECIO = require('libp2p-secio')
 const libp2p = require('libp2p')
 const promisify = require('util-promisify')
 
-class Libp2pNode extends libp2p {
-  constructor (options) {
+export default class Libp2pNode extends libp2p {
+  constructor (options: any) {
     super({
       peerInfo: options.peerInfo,
       modules: {
@@ -59,4 +57,3 @@ class Libp2pNode extends libp2p {
   }
 }
 
-module.exports = Libp2pNode

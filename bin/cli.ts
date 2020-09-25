@@ -1,13 +1,12 @@
 #!/usr/bin/env node
-'use strict'
 
 const Common = require('ethereumjs-common').default
 const chains = require('ethereumjs-common/dist/chains').chains
 const { getLogger } = require('../lib/logging')
 const { parse } = require('../lib/util')
 const { fromName: serverFromName } = require('../lib/net/server')
-const Node = require('../lib/node')
-const jayson = require('jayson')
+const EthereumNode = require('../lib/node')
+import { Server as RPCServer } from 'jayson'
 const RPCManager = require('../lib/rpc')
 const level = require('level')
 const os = require('os')
@@ -84,14 +83,14 @@ const args = require('yargs')
   .argv
 const logger = getLogger({ loglevel: args.loglevel })
 
-async function runNode (options) {
+async function runNode (options: any) {
   logger.info('Initializing Ethereumjs client...')
   if (options.lightserv) {
     logger.info(`Serving light peer requests`)
   }
-  const node = new Node(options)
-  node.on('error', err => logger.error(err))
-  node.on('listening', details => {
+  const node = new EthereumNode(options)
+  node.on('error', (err: any) => logger.error(err))
+  node.on('listening', (details: any) => {
     logger.info(`Listener up transport=${details.transport} url=${details.url}`)
   })
   node.on('synchronized', () => {
@@ -105,10 +104,10 @@ async function runNode (options) {
   return node
 }
 
-function runRpcServer (node, options) {
+function runRpcServer (node: any, options: any) {
   const { rpcport, rpcaddr } = options
   const manager = new RPCManager(node, options)
-  const server = jayson.server(manager.getMethods())
+  const server = new RPCServer(manager.getMethods())
   logger.info(`RPC HTTP endpoint opened: http://${rpcaddr}:${rpcport}`)
   server.http().listen(rpcport)
 
@@ -130,7 +129,7 @@ async function run () {
   // hardfork awareness is implemented within the library
   // Also a fix for https://github.com/ethereumjs/ethereumjs-vm/issues/757
   const common = new Common(chainParams, 'chainstart')
-  const servers = parse.transports(args.transports).map(t => {
+  const servers = parse.transports(args.transports).map((t: any) => {
     const Server = serverFromName(t.name)
     if (t.name === 'rlpx') {
       t.options.bootnodes = t.options.bootnodes || common.bootstrapNodes()

@@ -6,7 +6,7 @@
   "types": "dist/lib/index.d.ts",
   "browser": "dist/bundle.js",
   "bin": {
-    "ethereumjs": "bin/cli.js"
+    "ethereumjs": "ts-node bin/cli.ts"
   },
   "files": [
     "bin",
@@ -85,6 +85,7 @@
   "devDependencies": {
     "@babel/plugin-transform-spread": "^7.10.1",
     "@ethereumjs/config-tsc": "^1.1.0",
+    "@types/node": "^12.12.6",
     "browserify": "^16.5.1",
     "file-replace-loader": "^1.2.0",
     "husky": "^2.1.0",
