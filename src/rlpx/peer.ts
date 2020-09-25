@@ -1,7 +1,7 @@
 import { EventEmitter } from 'events'
 import rlp from 'rlp-encoding'
 import * as util from '../util'
-import BufferList from 'bl'
+import BufferList = require('bl')
 import ms from 'ms'
 import { debug as createDebugLogger } from 'debug'
 import { int2buffer, buffer2int, formatLogData } from '../util'

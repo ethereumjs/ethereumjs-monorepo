@@ -2,7 +2,7 @@ import { EventEmitter } from 'events'
 import * as dgram from 'dgram'
 import ms from 'ms'
 import { debug as createDebugLogger } from 'debug'
-import LRUCache from 'lru-cache'
+import LRUCache = require('lru-cache')
 import { encode, decode } from './message'
 import { keccak256, pk2id, createDeferred, formatLogId } from '../util'
 import { DPT } from './dpt'
