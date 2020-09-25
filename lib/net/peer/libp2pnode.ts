@@ -12,7 +12,7 @@ const SECIO = require('libp2p-secio')
 const libp2p = require('libp2p')
 const promisify = require('util-promisify')
 
-export default class Libp2pNode extends libp2p {
+module.exports = class Libp2pNode extends libp2p {
   constructor (options: any) {
     super({
       peerInfo: options.peerInfo,

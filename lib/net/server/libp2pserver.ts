@@ -3,7 +3,7 @@
 const Server = require('./server')
 const PeerId = require('peer-id')
 const PeerInfo = require('peer-info')
-import Libp2pNode from '../peer/libp2pnode'
+const Libp2pNode = require('../peer/libp2pnode')
 const Libp2pPeer = require('../peer/libp2ppeer')
 
 const defaultOptions = {

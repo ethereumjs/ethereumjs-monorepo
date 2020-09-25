@@ -1,8 +1,8 @@
 import { EventEmitter } from 'events'
-const Common = require('ethereumjs-common').default
+import Common from 'ethereumjs-common'
 const Block = require('ethereumjs-block')
 const Blockchain = require('ethereumjs-blockchain')
-const { BN } = require('ethereumjs-util')
+import { BN } from 'ethereumjs-util'
 const { defaultLogger } = require('../logging')
 const promisify = require('util-promisify')
 
@@ -16,6 +16,25 @@ const defaultOptions = {
  * @memberof module:blockchain
  */
 class Chain extends EventEmitter {
+
+  private logger: any
+  private common: Common
+  private db: any
+  private blockchain: any
+
+  private opened = false
+
+  private _headers = {}
+  private _blocks = {}
+
+  private _getBlocks: Function | undefined
+  private _getBlock: Function | undefined
+  private _putBlocks: Function | undefined
+  private _putHeaders: Function | undefined
+  private _getLatestHeader: Function | undefined
+  private _getLatestBlock: Function | undefined
+  private _getTd: Function | undefined
+
   /**
    * Create new chain
    * @param {Object}  options constructor parameters
@@ -23,7 +42,7 @@ class Chain extends EventEmitter {
    * @param {Common}  [options.common] common parameters
    * @param {Logger}  [options.logger] Logger instance
    */
-  constructor (options) {
+  constructor (options: any) {
     super()
     options = { ...defaultOptions, ...options }
 
@@ -77,7 +96,7 @@ class Chain extends EventEmitter {
    */
   get genesis () {
     const genesis = this.common.genesis()
-    Object.entries(genesis).forEach(([k, v]) => { genesis[k] = hexToBuffer(v) })
+    Object.entries(genesis).forEach(([k, v]) => { genesis[k] = hexToBuffer(v as string) })
     return genesis
   }
 
@@ -136,8 +155,8 @@ class Chain extends EventEmitter {
     if (!this.opened) {
       return false
     }
-    const headers = {}
-    const blocks = {}
+    const headers: any = {}
+    const blocks: any = {}
     await Promise.all([
       this.getLatestHeader(),
       this.getLatestBlock()
@@ -155,28 +174,28 @@ class Chain extends EventEmitter {
 
   /**
    * Get blocks from blockchain
-   * @param {Buffer|BN} block block hash or number to start from
-   * @param {number} max maximum number of blocks to get
-   * @param {number} skip number of blocks to skip
-   * @param {boolean} reverse get blocks in reverse
+   * @param block block hash or number to start from
+   * @param max maximum number of blocks to get
+   * @param skip number of blocks to skip
+   * @param reverse get blocks in reverse
    * @return {Promise}
    */
-  async getBlocks (block, max, skip, reverse) {
+  async getBlocks (block: Buffer | BN, max: number, skip: number, reverse: boolean) {
     if (!this.opened) {
       await this.open()
     }
     if (!this._getBlocks) {
       this._getBlocks = promisify(this.blockchain.getBlocks.bind(this.blockchain))
     }
-    return this._getBlocks(block, max, skip, reverse)
+    return (this._getBlocks as Function)(block, max, skip, reverse)
   }
 
   /**
    * Gets a block by its hash or number
-   * @param {Buffer|BN} blocks block hash or number
+   * @param blocks block hash or number
    * @return {Promise}
    */
-  async getBlock (block) {
+  async getBlock (block: Buffer | BN) {
     if (!this.opened) {
       await this.open()
     }
@@ -184,7 +203,7 @@ class Chain extends EventEmitter {
       this._getBlock = promisify(this.blockchain.getBlock.bind(this.blockchain))
     }
 
-    return this._getBlock(block)
+    return (this._getBlock as Function)(block)
   }
 
   /**
@@ -193,7 +212,7 @@ class Chain extends EventEmitter {
    * @param {Block[]} blocks list of blocks to add
    * @return {Promise}
    */
-  async putBlocks (blocks) {
+  async putBlocks (blocks: object[]) {
     if (!this.opened) {
       await this.open()
     }
@@ -203,31 +222,31 @@ class Chain extends EventEmitter {
     if (!blocks) {
       return
     }
-    blocks = blocks.map(b => new Block(b.raw, { common: this.common }))
-    await this._putBlocks(blocks)
+    blocks = blocks.map((b: any) => new Block(b.raw, { common: this.common }))
+    await (this._putBlocks as Function)(blocks)
     await this.update()
   }
 
   /**
    * Get headers from blockchain
-   * @param {Buffer|BN} block block hash or number to start from
-   * @param {number} max maximum number of headers to get
-   * @param {number} skip number of headers to skip
-   * @param {boolean} reverse get headers in reverse
+   * @param block block hash or number to start from
+   * @param max maximum number of headers to get
+   * @param skip number of headers to skip
+   * @param reverse get headers in reverse
    * @return {Promise}
    */
-  async getHeaders (block, max, skip, reverse) {
+  async getHeaders (block: Buffer | BN, max: number, skip: number, reverse: boolean) {
     const blocks = await this.getBlocks(block, max, skip, reverse)
-    return blocks.map(b => b.header)
+    return blocks.map((b: any) => b.header)
   }
 
   /**
    * Insert new headers into blockchain
    * @method putHeaders
-   * @param {Block.Header[]} headers list of headers to add
+   * @param headers list of headers to add
    * @return {Promise}
    */
-  async putHeaders (headers) {
+  async putHeaders (headers: object[]) {
     if (!this.opened) {
       await this.open()
     }
@@ -237,8 +256,8 @@ class Chain extends EventEmitter {
     if (!headers) {
       return
     }
-    headers = headers.map(h => new Block.Header(h.raw, { common: this.common }))
-    await this._putHeaders(headers)
+    headers = headers.map((h: any) => new Block.Header(h.raw, { common: this.common }))
+    await (this._putHeaders as Function)(headers)
     await this.update()
   }
 
@@ -253,7 +272,7 @@ class Chain extends EventEmitter {
     if (!this._getLatestHeader) {
       this._getLatestHeader = promisify(this.blockchain.getLatestHeader.bind(this.blockchain))
     }
-    return this._getLatestHeader()
+    return (this._getLatestHeader as Function)()
   }
 
   /**
@@ -267,26 +286,26 @@ class Chain extends EventEmitter {
     if (!this._getLatestBlock) {
       this._getLatestBlock = promisify(this.blockchain.getLatestBlock.bind(this.blockchain))
     }
-    return this._getLatestBlock()
+    return (this._getLatestBlock as Function)()
   }
 
   /**
    * Gets total difficulty for a block
-   * @param {Buffer} hash block hash
+   * @param hash block hash
    * @return {Promise}
    */
-  async getTd (hash) {
+  async getTd (hash: Buffer) {
     if (!this.opened) {
       await this.open()
     }
     if (!this._getTd) {
       this._getTd = promisify(this.blockchain._getTd.bind(this.blockchain))
     }
-    return this._getTd(hash)
+    return (this._getTd as Function)(hash)
   }
 }
 
-function hexToBuffer (hexString) {
+function hexToBuffer (hexString: string) {
   if (typeof (hexString) === 'string' && hexString.startsWith('0x')) {
     return Buffer.from(hexString.slice(2), 'hex')
   }

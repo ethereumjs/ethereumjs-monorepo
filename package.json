@@ -6,14 +6,15 @@
   "types": "dist/lib/index.d.ts",
   "browser": "dist/bundle.js",
   "bin": {
-    "ethereumjs": "ts-node bin/cli.ts"
+    "ethereumjs": "node bin/cli.js"
   },
   "files": [
     "bin",
     "dist"
   ],
   "scripts": {
-    "build": "tsc -p ./tsconfig.prod.json && npm run build:browser",
+    "build": "npm run build:node && npm run build:browser",
+    "build:node": "tsc -p ./tsconfig.prod.json",
     "build:browser": "tsc -p ./tsconfig.browser.json && npm run bundle && rm -rf dist.browser",
     "bundle": "webpack",
     "coverage": "nyc npm run test && nyc report --reporter=lcov",

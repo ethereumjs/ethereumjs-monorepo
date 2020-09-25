@@ -31,7 +31,8 @@ For the `ethereumjs` CLI command to work run:
 npm link
 ```
 
-Note: you can also fallback to invoking the client by using `./bin/cli.js`.
+Note: for development purposes you can invoke the client by build with `npm run build:node` and 
+then run `node ./dist/bin/cli.js`.
 
 **Running the Client**
 

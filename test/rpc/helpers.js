@@ -5,7 +5,7 @@ const Common = require('ethereumjs-common').default
 const Manager = require('../../lib/rpc')
 const Logger = require('../../lib/logging')
 const blockChain = require('./blockChainStub.js')
-const Chain = require('../../lib/blockchain/chain.js')
+const Chain = require('../../lib/blockchain/chain')
 
 const config = { loglevel: 'error' }
 config.logger = Logger.getLogger(config)
