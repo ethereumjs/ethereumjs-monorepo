@@ -54,6 +54,34 @@ export const generateBlockchain = async (numberOfBlocks: number, genesis?: Block
     blocks,
     error: null,
   }
+/**
+ *
+ * @param parentBlock parent block to generate the consecutive block on top of
+ * @param difficultyChangeFactor this integer can be any value, but will only return unique blocks between [-99, 1] (this is due to difficulty calculation). 1 will increase the difficulty, 0 will keep the difficulty constant any any negative number will decrease the difficulty
+ */
+
+export const generateConsecutiveBlock = (
+  parentBlock: Block,
+  difficultyChangeFactor: number,
+): Block => {
+  const common = new Common({ chain: 'mainnet', hardfork: 'muirGlacier' })
+  const block = new Block(undefined, { common })
+  block.header.number = toBuffer(new BN(parentBlock.header.number).add(new BN(1)))
+  block.header.parentHash = parentBlock.hash()
+  block.header.gasLimit = toBuffer(8000000)
+  if (difficultyChangeFactor > 1) {
+    difficultyChangeFactor = 1
+  }
+  block.header.timestamp = toBuffer(
+    bufferToInt(parentBlock.header.timestamp) + (10 + -difficultyChangeFactor * 9),
+  )
+  block.header.difficulty = toBuffer(block.header.canonicalDifficulty(parentBlock))
+  return new Block(
+    {
+      header: block.header,
+    },
+    { common },
+  )
 }
 
 export const isConsecutive = (blocks: Block[]) => {
