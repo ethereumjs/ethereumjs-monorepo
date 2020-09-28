@@ -1,4 +1,5 @@
 import Common from '@ethereumjs/common'
+import { getFullname } from './util'
 
 export class Opcode {
   readonly code: number
@@ -255,31 +256,6 @@ function createOpcodes(opcodes: {
     )
   }
   return result
-}
-
-/**
- * Get full opcode name from its name and code.
- *
- * @param code {number} Integer code of opcode.
- * @param name {string} Short name of the opcode.
- * @returns {string} Full opcode name
- */
-function getFullname(code: number, name: string): string {
-  switch (name) {
-    case 'LOG':
-      name += code - 0xa0
-      break
-    case 'PUSH':
-      name += code - 0x5f
-      break
-    case 'DUP':
-      name += code - 0x7f
-      break
-    case 'SWAP':
-      name += code - 0x8f
-      break
-  }
-  return name
 }
 
 /**
