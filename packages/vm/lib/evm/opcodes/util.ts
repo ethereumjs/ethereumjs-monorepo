@@ -57,13 +57,14 @@ function accessAddressEIP2929(runState: RunState, address: BN | Buffer, baseFee?
     runState.accessedAddresses.add(addressStr)
 
     // CREATE, CREATE2 opcodes have the address warmed for free.
-    if (baseFee) {
+    // selfdestruct beneficiary address reads are charged an *additional* cold access
+    if (baseFee !== undefined) {
       runState.eei.useGas(
         new BN(runState._common.param('gasPrices', 'coldaccountaccess') - baseFee),
       )
     }
-    // Warm
-  } else if (baseFee) {
+    // Warm: (selfdestruct beneficiary address reads are not charged when warm)
+  } else if (baseFee !== undefined && baseFee > 0) {
     runState.eei.useGas(new BN(runState._common.param('gasPrices', 'warmstorageread') - baseFee))
   }
 }
