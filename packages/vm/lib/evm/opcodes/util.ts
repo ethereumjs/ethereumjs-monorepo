@@ -117,15 +117,20 @@ function adjustSstoreGasEIP2929(
 
   const keyStr = key.toString('hex')
   const address = runState.eei.getAddress().toString('hex')
+  const warmRead = runState._common.param('gasPrices', 'warmstorageread')
+  const coldSload = runState._common.param('gasPrices', 'coldsload')
 
   // @ts-ignore Set Object is possibly 'undefined'
   if (runState.accessedStorage.has(address) && runState.accessedStorage.get(address).has(keyStr)) {
-    if (costName === 'reset') {
-      return defaultCost - runState._common.param('gasPrices', 'coldsload')
-    }
-
-    if (costName === 'noop') {
-      return runState._common.param('gasPrices', 'warmstorageread')
+    switch (costName) {
+      case 'reset':
+        return defaultCost - coldSload
+      case 'noop':
+        return warmRead
+      case 'initRefund':
+        return runState._common.param('gasPrices', 'sstoreInitGasEIP2200') - warmRead
+      case 'cleanRefund':
+        return runState._common.param('gasPrices', 'sstoreReset') - coldSload - warmRead
     }
   }
 
@@ -417,13 +422,15 @@ function updateSstoreGas(runState: RunState, found: any, value: Buffer, key: Buf
     if (original.equals(value)) {
       if (original.length === 0) {
         // Reset to original non-existent slot
+        const sstoreInitRefund = runState._common.param('gasPrices', 'sstoreInitRefundEIP2200')
         runState.eei.refundGas(
-          new BN(runState._common.param('gasPrices', 'sstoreInitRefundEIP2200'))
+          new BN(adjustSstoreGasEIP2929(runState, key, sstoreInitRefund, 'initRefund')),
         )
       } else {
         // Reset to original existing slot
+        const sstoreCleanRefund = runState._common.param('gasPrices', 'sstoreCleanRefundEIP2200')
         runState.eei.refundGas(
-          new BN(runState._common.param('gasPrices', 'sstoreCleanRefundEIP2200'))
+          new BN(adjustSstoreGasEIP2929(runState, key, sstoreCleanRefund, 'cleanRefund')),
         )
       }
     }
