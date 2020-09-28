@@ -101,7 +101,7 @@ export class Account {
    * Returns a `Boolean` determining if the account is empty.
    */
   isEmpty(): boolean {
-    return this.balance.isZero() && this.nonce.isZero() && this.codeHash.equals(KECCAK256_NULL)
+    return this.balance.isZero() && this.nonce.isZero() && this.stateRoot.equals(KECCAK256_RLP) && this.codeHash.equals(KECCAK256_NULL)
   }
 }
 
