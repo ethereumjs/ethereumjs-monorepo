@@ -170,7 +170,7 @@ describe('Account', function() {
         nonce: '0x01',
         balance: '0x0042',
         stateRoot: '0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421',
-        codeHash: '0xc5d2461236f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470',
+        codeHash: '0xd748bf26ab37599c944babfdbeecf6690801bd61bf2670efb0a34adfc6dca10b',
       }
       const account = Account.fromAccountData(raw)
       assert.equal(account.isEmpty(), false)
