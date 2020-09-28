@@ -6,6 +6,15 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [3.0.2] - 2020-09-28
+
+- Fixed `TypeScript` import issue causing problems when integrating the library in a
+  `TypeScript` project, PR [#88](https://github.com/ethereumjs/ethereumjs-devp2p/pull/88)
+- Updated `k-bucket` library to `v5`, added types from new `@types/k-bucket` package from
+  @tomonari-t, PR [#88](https://github.com/ethereumjs/ethereumjs-devp2p/pull/88)
+
+[3.0.2]: https://github.com/ethereumjs/ethereumjs-devp2p/compare/v3.0.1...v3.0.2
+
 ## [3.0.1] - 2020-06-10
 
 This release focuses on improving the [debugging](https://github.com/ethereumjs/ethereumjs-devp2p#debugging)
