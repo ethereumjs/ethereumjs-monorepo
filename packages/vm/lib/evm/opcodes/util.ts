@@ -35,7 +35,7 @@ export function trap(err: string) {
  * @param  {BN}     address
  * @return {Buffer}
  */
-function addressToBuffer(address: BN | Buffer) {
+export function addressToBuffer(address: BN | Buffer) {
   if (Buffer.isBuffer(address)) return address
   return address.and(MASK_160).toArrayLike(Buffer, 'be', 20)
 }
@@ -47,7 +47,7 @@ function addressToBuffer(address: BN | Buffer) {
  * @param {RunState} runState
  * @param {BN}       address
  */
-function accessAddressEIP2929(runState: RunState, address: BN | Buffer, baseFee?: number) {
+export function accessAddressEIP2929(runState: RunState, address: BN | Buffer, baseFee?: number) {
   if (!runState._common.eips().includes(2929)) return
 
   const addressStr = addressToBuffer(address).toString('hex')
@@ -76,7 +76,7 @@ function accessAddressEIP2929(runState: RunState, address: BN | Buffer, baseFee?
  * @param {RunState} runState
  * @param {Buffer} key (to storage slot)
  */
-function accessStorageEIP2929(runState: RunState, key: Buffer, isSstore: boolean) {
+export function accessStorageEIP2929(runState: RunState, key: Buffer, isSstore: boolean) {
   if (!runState._common.eips().includes(2929)) return
 
   const keyStr = key.toString('hex')
@@ -108,7 +108,7 @@ function accessStorageEIP2929(runState: RunState, key: Buffer, isSstore: boolean
  * @param  {string}   costName     parameter name ('reset' or 'noop')
  * @return {number}                adjusted cost
  */
-function adjustSstoreGasEIP2929(
+export function adjustSstoreGasEIP2929(
   runState: RunState,
   key: Buffer,
   defaultCost: number,
@@ -324,7 +324,7 @@ export function subMemUsage(runState: RunState, offset: BN, length: BN) {
  * @param {any}      found
  * @param {Buffer}   value
  */
-function updateSstoreGas(runState: RunState, found: any, value: Buffer, key: Buffer) {
+export function updateSstoreGas(runState: RunState, found: any, value: Buffer, key: Buffer) {
   if (runState._common.hardfork() === 'constantinople') {
     const original = found.original
     const current = found.current

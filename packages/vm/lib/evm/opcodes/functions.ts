@@ -8,6 +8,9 @@ import {
   KECCAK256_NULL,
 } from 'ethereumjs-util'
 import {
+  accessAddressEIP2929,
+  accessStorageEIP2929,
+  adjustSstoreGasEIP2929,
   addressToBuffer,
   describeLocation,
   divCeil,
