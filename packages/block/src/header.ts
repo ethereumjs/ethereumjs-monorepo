@@ -7,13 +7,12 @@ import {
   rlp,
   toBuffer,
   unpadBuffer,
-  bufferToInt,
   rlphash,
 } from 'ethereumjs-util'
 import { Blockchain, HeaderData, BlockOptions } from './types'
 import { Buffer } from 'buffer'
 import { Block } from './block'
-import { checkBufferLength } from './util'
+import { checkBufferLength, toBN } from './util'
 
 /**
  * An object that represents the block header
@@ -26,11 +25,11 @@ export class BlockHeader {
   public readonly transactionsTrie: Buffer
   public readonly receiptTrie: Buffer
   public readonly bloom: Buffer
-  public readonly difficulty: Buffer
-  public readonly number: Buffer
-  public readonly gasLimit: Buffer
-  public readonly gasUsed: Buffer
-  public readonly timestamp: Buffer
+  public readonly difficulty: BN
+  public readonly number: BN
+  public readonly gasLimit: BN
+  public readonly gasUsed: BN
+  public readonly timestamp: BN
   public readonly extraData: Buffer
   public readonly mixHash: Buffer
   public readonly nonce: Buffer
@@ -64,11 +63,11 @@ export class BlockHeader {
       transactionsTrie ? checkBufferLength(toBuffer(transactionsTrie), 32) : KECCAK256_RLP,
       receiptTrie ? checkBufferLength(toBuffer(receiptTrie), 32) : KECCAK256_RLP,
       bloom ? toBuffer(bloom) : zeros(256),
-      difficulty ? toBuffer(difficulty) : Buffer.from([]),
-      number ? toBuffer(number) : Buffer.from([]),
-      gasLimit ? toBuffer(gasLimit) : Buffer.from('ffffffffffffff', 'hex'),
-      gasUsed ? toBuffer(gasUsed) : Buffer.from([]),
-      timestamp ? toBuffer(timestamp) : Buffer.from([]),
+      difficulty ? toBN(difficulty) : new BN(0),
+      number ? toBN(number) : new BN(0),
+      gasLimit ? toBN(gasLimit) : new BN(Buffer.from('ffffffffffffff', 'hex')),
+      gasUsed ? toBN(gasUsed) : new BN(0),
+      timestamp ? toBN(timestamp) : new BN(0),
       extraData ? toBuffer(extraData) : Buffer.from([]),
       mixHash ? toBuffer(mixHash) : zeros(32),
       nonce ? toBuffer(nonce) : zeros(8),
@@ -109,21 +108,21 @@ export class BlockHeader {
       nonce,
     ] = values
     return new BlockHeader(
-      parentHash,
-      uncleHash,
-      coinbase,
-      stateRoot,
-      transactionsTrie,
-      receiptTrie,
-      bloom,
-      difficulty,
-      number,
-      gasLimit,
-      gasUsed,
-      timestamp,
-      extraData,
-      mixHash,
-      nonce,
+      toBuffer(parentHash),
+      toBuffer(uncleHash),
+      toBuffer(coinbase),
+      toBuffer(stateRoot),
+      toBuffer(transactionsTrie),
+      toBuffer(receiptTrie),
+      toBuffer(bloom),
+      toBN(difficulty),
+      toBN(number),
+      toBN(gasLimit),
+      toBN(gasUsed),
+      toBN(timestamp),
+      toBuffer(extraData),
+      toBuffer(mixHash),
+      toBuffer(nonce),
       opts,
     )
   }
@@ -141,11 +140,11 @@ export class BlockHeader {
     transactionsTrie: Buffer,
     receiptTrie: Buffer,
     bloom: Buffer,
-    difficulty: Buffer,
-    number: Buffer,
-    gasLimit: Buffer,
-    gasUsed: Buffer,
-    timestamp: Buffer,
+    difficulty: BN,
+    number: BN,
+    gasLimit: BN,
+    gasUsed: BN,
+    timestamp: BN,
     extraData: Buffer,
     mixHash: Buffer,
     nonce: Buffer,
@@ -181,7 +180,7 @@ export class BlockHeader {
     this.nonce = nonce
 
     if (options.hardforkByBlockNumber) {
-      this._common.setHardforkByBlockNumber(bufferToInt(this.number))
+      this._common.setHardforkByBlockNumber(this.number.toNumber())
     }
     if (options.initWithGenesisHeader) {
       if (this._common.hardfork() !== 'chainstart') {
@@ -189,21 +188,14 @@ export class BlockHeader {
           'Genesis parameters can only be set with a Common instance set to chainstart',
         )
       }
-      this.timestamp = toBuffer(this._common.genesis().timestamp || this.timestamp)
-      this.gasLimit = toBuffer(this._common.genesis().gasLimit || this.gasLimit)
-      this.difficulty = toBuffer(this._common.genesis().difficulty || this.difficulty)
+      this.timestamp = toBN(this._common.genesis().timestamp || this.timestamp)
+      this.gasLimit = toBN(this._common.genesis().gasLimit || this.gasLimit)
+      this.difficulty = toBN(this._common.genesis().difficulty || this.difficulty)
       this.extraData = toBuffer(this._common.genesis().extraData || this.extraData)
       this.nonce = toBuffer(this._common.genesis().nonce || this.nonce)
       this.stateRoot = toBuffer(this._common.genesis().stateRoot || this.stateRoot)
-      this.number = toBuffer(0)
+      this.number = new BN(0)
     }
-
-    // Unpad all fields which should be interpreted as numbers
-    this.timestamp = unpadBuffer(this.timestamp)
-    this.difficulty = unpadBuffer(this.difficulty)
-    this.gasLimit = unpadBuffer(this.gasLimit)
-    this.number = unpadBuffer(this.number)
-    this.timestamp = unpadBuffer(this.timestamp)
 
     this._checkDAOExtraData()
 
@@ -217,9 +209,9 @@ export class BlockHeader {
    */
   canonicalDifficulty(parentBlock: Block): BN {
     const hardfork = this._getHardfork()
-    const blockTs = new BN(this.timestamp)
-    const parentTs = new BN(parentBlock.header.timestamp)
-    const parentDif = new BN(parentBlock.header.difficulty)
+    const blockTs = toBN(this.timestamp)
+    const parentTs = toBN(parentBlock.header.timestamp)
+    const parentDif = toBN(parentBlock.header.difficulty)
     const minimumDifficulty = new BN(
       this._common.paramByHardfork('pow', 'minimumDifficulty', hardfork),
     )
@@ -365,11 +357,11 @@ export class BlockHeader {
       throw new Error('invalid gas limit')
     }
 
-    if (bufferToInt(this.number) - bufferToInt(parentBlock.header.number) !== 1) {
+    if (!this.number.sub(parentBlock.header.number).eqn(1)) {
       throw new Error('invalid height')
     }
 
-    if (bufferToInt(this.timestamp) <= bufferToInt(parentBlock.header.timestamp)) {
+    if (this.timestamp.cmp(parentBlock.header.timestamp) <= 0) {
       throw new Error('invalid timestamp')
     }
 
@@ -399,11 +391,11 @@ export class BlockHeader {
       this.transactionsTrie,
       this.receiptTrie,
       this.bloom,
-      this.difficulty,
-      this.number,
-      this.gasLimit,
-      this.gasUsed,
-      this.timestamp,
+      unpadBuffer(toBuffer(this.difficulty)), // we unpadBuffer, because toBuffer(new BN(0)) == <Buffer 00>
+      unpadBuffer(toBuffer(this.number)),
+      unpadBuffer(toBuffer(this.gasLimit)),
+      unpadBuffer(toBuffer(this.gasUsed)),
+      unpadBuffer(toBuffer(this.timestamp)),
       this.extraData,
       this.mixHash,
       this.nonce,
@@ -414,7 +406,7 @@ export class BlockHeader {
    * Checks if the block header is a genesis header.
    */
   isGenesis(): boolean {
-    return this.number.equals(zeros(0))
+    return this.number.isZero()
   }
 
   /**
@@ -455,7 +447,7 @@ export class BlockHeader {
 
     return commonHardFork !== null
       ? commonHardFork
-      : this._common.activeHardfork(bufferToInt(this.number))
+      : this._common.activeHardfork(this.number.toNumber())
   }
 
   private async _getBlockByHash(blockchain: Blockchain, hash: Buffer): Promise<Block | undefined> {

@@ -1,6 +1,7 @@
 import Common from '@ethereumjs/common'
 import { TxData } from '@ethereumjs/tx'
 import { Block } from './block'
+import { BN } from 'ethereumjs-util'
 
 /**
  * An object to set to which blockchain the blocks and their headers belong. This could be specified
@@ -51,6 +52,8 @@ export type PrefixedHexString = string
  */
 export type BufferLike = Buffer | TransformableToBuffer | PrefixedHexString | number
 
+export type BNLike = BN | string | number
+
 /**
  * A block header's data.
  */
@@ -62,11 +65,11 @@ export interface HeaderData {
   transactionsTrie?: BufferLike
   receiptTrie?: BufferLike
   bloom?: BufferLike
-  difficulty?: BufferLike
-  number?: BufferLike
-  gasLimit?: BufferLike
-  gasUsed?: BufferLike
-  timestamp?: BufferLike
+  difficulty?: BNLike
+  number?: BNLike
+  gasLimit?: BNLike
+  gasUsed?: BNLike
+  timestamp?: BNLike
   extraData?: BufferLike
   mixHash?: BufferLike
   nonce?: BufferLike

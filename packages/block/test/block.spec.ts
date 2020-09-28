@@ -1,6 +1,6 @@
 import * as tape from 'tape'
 import Common from '@ethereumjs/common'
-import { rlp } from 'ethereumjs-util'
+import { rlp, BN } from 'ethereumjs-util'
 import { Block } from '../src/block'
 
 tape('[Block]: block functions', function (t) {
@@ -58,18 +58,18 @@ tape('[Block]: block functions', function (t) {
   })
 
   t.test('should test isGenesis (mainnet default)', function (st) {
-    const block = Block.fromBlockData({ header: { number: Buffer.from('01', 'hex') } })
+    const block = Block.fromBlockData({ header: { number: 1 } })
     st.notEqual(block.isGenesis(), true)
-    const genesisBlock = Block.fromBlockData({ header: { number: Buffer.from([]) } })
+    const genesisBlock = Block.fromBlockData({ header: { number: 0 } })
     st.equal(genesisBlock.isGenesis(), true)
     st.end()
   })
 
   t.test('should test isGenesis (ropsten)', function (st) {
     const common = new Common({ chain: 'ropsten' })
-    const block = Block.fromBlockData({ header: { number: Buffer.from('01', 'hex') } }, { common })
+    const block = Block.fromBlockData({ header: { number: 1 } }, { common })
     st.notEqual(block.isGenesis(), true)
-    const genesisBlock = Block.fromBlockData({ header: { number: Buffer.from([]) } }, { common })
+    const genesisBlock = Block.fromBlockData({ header: { number: 0 } }, { common })
     st.equal(genesisBlock.isGenesis(), true)
     st.end()
   })

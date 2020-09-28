@@ -56,7 +56,7 @@ tape('[Block]: Header functions', function (t) {
   })*/
 
   t.test('should test isGenesis', function (st) {
-    let header = BlockHeader.fromHeaderData({ number: Buffer.from('01', 'hex') })
+    let header = BlockHeader.fromHeaderData({ number: 1 })
     st.equal(header.isGenesis(), false)
     header = BlockHeader.fromHeaderData({}, { initWithGenesisHeader: true })
     st.equal(header.isGenesis(), true)
