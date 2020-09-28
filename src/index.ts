@@ -40,6 +40,11 @@ export * from './object'
 export * from './externals'
 
 /**
+ * Helpful TypeScript types
+ */
+export * from './types'
+
+/**
  * Export ethjs-util methods
  */
 export * from 'ethjs-util'
