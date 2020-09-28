@@ -91,7 +91,7 @@ export class Account {
   }
 
   /**
-   * Returns a `Boolean` deteremining if the account is a contract.
+   * Returns a `Boolean` determining if the account is a contract.
    */
   isContract(): boolean {
     return !this.codeHash.equals(KECCAK256_NULL)
