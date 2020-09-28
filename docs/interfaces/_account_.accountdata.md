@@ -19,30 +19,30 @@
 
 ### `Optional` balance
 
-• **balance**? : *BNLike*
+• **balance**? : *[BNLike](../modules/_types_.md#bnlike)*
 
-*Defined in [account.ts:19](https://github.com/ethereumjs/ethereumjs-util/blob/master/src/account.ts#L19)*
+*Defined in [account.ts:20](https://github.com/ethereumjs/ethereumjs-util/blob/master/src/account.ts#L20)*
 
 ___
 
 ### `Optional` codeHash
 
-• **codeHash**? : *BufferLike*
+• **codeHash**? : *[BufferLike](../modules/_types_.md#bufferlike)*
 
-*Defined in [account.ts:21](https://github.com/ethereumjs/ethereumjs-util/blob/master/src/account.ts#L21)*
+*Defined in [account.ts:22](https://github.com/ethereumjs/ethereumjs-util/blob/master/src/account.ts#L22)*
 
 ___
 
 ### `Optional` nonce
 
-• **nonce**? : *BNLike*
+• **nonce**? : *[BNLike](../modules/_types_.md#bnlike)*
 
-*Defined in [account.ts:18](https://github.com/ethereumjs/ethereumjs-util/blob/master/src/account.ts#L18)*
+*Defined in [account.ts:19](https://github.com/ethereumjs/ethereumjs-util/blob/master/src/account.ts#L19)*
 
 ___
 
 ### `Optional` stateRoot
 
-• **stateRoot**? : *BufferLike*
+• **stateRoot**? : *[BufferLike](../modules/_types_.md#bufferlike)*
 
-*Defined in [account.ts:20](https://github.com/ethereumjs/ethereumjs-util/blob/master/src/account.ts#L20)*
+*Defined in [account.ts:21](https://github.com/ethereumjs/ethereumjs-util/blob/master/src/account.ts#L21)*

@@ -47,6 +47,8 @@ assert.equal(new BN('dead', 16).add(new BN('101010', 2)), 57047)
   - Helper function for creating a binary object (`DEPRECATED`)
 - [signature](docs/modules/_signature_.md)
   - Signing, signature validation, conversion, recovery
+- [types](docs/modules/_types_.md)
+  - Helpful TypeScript types
 - [externals](docs/modules/_externals_.md)
   - Helper methods from `ethjs-util`
   - Re-exports of `BN`, `rlp`

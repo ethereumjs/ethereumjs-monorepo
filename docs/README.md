@@ -16,3 +16,4 @@
 * ["helpers"](modules/_helpers_.md)
 * ["object"](modules/_object_.md)
 * ["signature"](modules/_signature_.md)
+* ["types"](modules/_types_.md)

@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ## [7.0.6] - [UNRELEASED]
 
+### New `Account` class
+
 This release adds a new `Account` class intended as a modern replacement for `ethereumjs-account`. It has a shape of `Account(nonce?: BN, balance?: BN, stateRoot?: Buffer, codeHash?: Buffer)`.
 
 **Instantiation**
@@ -30,6 +32,12 @@ const account = new Account(
 ```
 
 For more info see the documentation or examples of usage in `test/account.spec.ts`.
+
+### New export: TypeScript types
+
+A new file with helpful TypeScript types has been added to the exports of this project.
+
+In this release it contains `BNLike`, `BufferLike`, and `TransformableToBuffer`.
 
 ## [7.0.5] - 2020-09-09
 

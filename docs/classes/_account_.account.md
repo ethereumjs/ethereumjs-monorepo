@@ -34,7 +34,7 @@
 
 \+ **new Account**(`nonce`: BN‹›, `balance`: BN‹›, `stateRoot`: Buffer‹›, `codeHash`: Buffer‹›): *[Account](_account_.account.md)*
 
-*Defined in [account.ts:77](https://github.com/ethereumjs/ethereumjs-util/blob/master/src/account.ts#L77)*
+*Defined in [account.ts:61](https://github.com/ethereumjs/ethereumjs-util/blob/master/src/account.ts#L61)*
 
 This constructor takes the values, validates and assigns them.
 Use the static factory methods to assist in creating an Account from varying data types.
@@ -56,7 +56,7 @@ Name | Type | Default |
 
 • **balance**: *BN*
 
-*Defined in [account.ts:43](https://github.com/ethereumjs/ethereumjs-util/blob/master/src/account.ts#L43)*
+*Defined in [account.ts:27](https://github.com/ethereumjs/ethereumjs-util/blob/master/src/account.ts#L27)*
 
 ___
 
@@ -64,7 +64,7 @@ ___
 
 • **codeHash**: *Buffer*
 
-*Defined in [account.ts:45](https://github.com/ethereumjs/ethereumjs-util/blob/master/src/account.ts#L45)*
+*Defined in [account.ts:29](https://github.com/ethereumjs/ethereumjs-util/blob/master/src/account.ts#L29)*
 
 ___
 
@@ -72,7 +72,7 @@ ___
 
 • **nonce**: *BN*
 
-*Defined in [account.ts:42](https://github.com/ethereumjs/ethereumjs-util/blob/master/src/account.ts#L42)*
+*Defined in [account.ts:26](https://github.com/ethereumjs/ethereumjs-util/blob/master/src/account.ts#L26)*
 
 ___
 
@@ -80,7 +80,7 @@ ___
 
 • **stateRoot**: *Buffer*
 
-*Defined in [account.ts:44](https://github.com/ethereumjs/ethereumjs-util/blob/master/src/account.ts#L44)*
+*Defined in [account.ts:28](https://github.com/ethereumjs/ethereumjs-util/blob/master/src/account.ts#L28)*
 
 ## Methods
 
@@ -88,7 +88,7 @@ ___
 
 ▸ **isContract**(): *boolean*
 
-*Defined in [account.ts:112](https://github.com/ethereumjs/ethereumjs-util/blob/master/src/account.ts#L112)*
+*Defined in [account.ts:96](https://github.com/ethereumjs/ethereumjs-util/blob/master/src/account.ts#L96)*
 
 Returns a `Boolean` deteremining if the account is a contract.
 
@@ -100,7 +100,7 @@ ___
 
 ▸ **isEmpty**(): *boolean*
 
-*Defined in [account.ts:119](https://github.com/ethereumjs/ethereumjs-util/blob/master/src/account.ts#L119)*
+*Defined in [account.ts:103](https://github.com/ethereumjs/ethereumjs-util/blob/master/src/account.ts#L103)*
 
 Returns a `Boolean` determining if the account is empty.
 
@@ -112,7 +112,7 @@ ___
 
 ▸ **serialize**(): *Buffer*
 
-*Defined in [account.ts:105](https://github.com/ethereumjs/ethereumjs-util/blob/master/src/account.ts#L105)*
+*Defined in [account.ts:89](https://github.com/ethereumjs/ethereumjs-util/blob/master/src/account.ts#L89)*
 
 Returns the RLP serialization of the account as a `Buffer`.
 
@@ -124,7 +124,7 @@ ___
 
 ▸ **fromAccountData**(`accountData`: [AccountData](../interfaces/_account_.accountdata.md)): *[Account](_account_.account.md)‹›*
 
-*Defined in [account.ts:47](https://github.com/ethereumjs/ethereumjs-util/blob/master/src/account.ts#L47)*
+*Defined in [account.ts:31](https://github.com/ethereumjs/ethereumjs-util/blob/master/src/account.ts#L31)*
 
 **Parameters:**
 
@@ -140,7 +140,7 @@ ___
 
 ▸ **fromRlpSerializedAccount**(`serialized`: Buffer): *[Account](_account_.account.md)‹›*
 
-*Defined in [account.ts:58](https://github.com/ethereumjs/ethereumjs-util/blob/master/src/account.ts#L58)*
+*Defined in [account.ts:42](https://github.com/ethereumjs/ethereumjs-util/blob/master/src/account.ts#L42)*
 
 **Parameters:**
 
@@ -156,7 +156,7 @@ ___
 
 ▸ **fromValuesArray**(`values`: Buffer[]): *[Account](_account_.account.md)‹›*
 
-*Defined in [account.ts:68](https://github.com/ethereumjs/ethereumjs-util/blob/master/src/account.ts#L68)*
+*Defined in [account.ts:52](https://github.com/ethereumjs/ethereumjs-util/blob/master/src/account.ts#L52)*
 
 **Parameters:**
 
