@@ -7,5 +7,5 @@ export type BufferLike = Buffer | TransformableToBuffer | PrefixedHexString | nu
 export type PrefixedHexString = string
 
 export interface TransformableToBuffer {
-    toBuffer(): Buffer
+  toBuffer(): Buffer
 }
