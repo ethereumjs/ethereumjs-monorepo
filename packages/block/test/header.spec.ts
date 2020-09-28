@@ -1,7 +1,7 @@
 import * as tape from 'tape'
 import Common from '@ethereumjs/common'
 import { rlp, toBuffer, zeros, KECCAK256_RLP, KECCAK256_RLP_ARRAY } from 'ethereumjs-util'
-import { Header } from '../src/header'
+import { BlockHeader } from '../src/header'
 //import { Block } from '../src/block'
 
 tape('[Block]: Header functions', function (t) {
@@ -24,7 +24,7 @@ tape('[Block]: Header functions', function (t) {
       st.deepEqual(header.nonce, zeros(8))
     }
 
-    let header = Header.fromHeaderData({})
+    let header = BlockHeader.fromHeaderData({})
     compareDefaultHeader(st, header)
 
     /*const block = new Block()
@@ -55,16 +55,16 @@ tape('[Block]: Header functions', function (t) {
   })*/
 
   t.test('should test isGenesis', function (st) {
-    let header = Header.fromHeaderData({})
+    let header = BlockHeader.fromHeaderData({})
     st.equal(header.isGenesis(), false)
-    header = Header.fromHeaderData({}, { initWithGenesisHeader: true })
+    header = BlockHeader.fromHeaderData({}, { initWithGenesisHeader: true })
     st.equal(header.isGenesis(), true)
     st.end()
   })
 
   const testDataGenesis = require('./testdata/genesishashestest.json').test
   t.test('should test genesis hashes (mainnet default)', function (st) {
-    const header = Header.fromHeaderData({}, { initWithGenesisHeader: true })
+    const header = BlockHeader.fromHeaderData({}, { initWithGenesisHeader: true })
     st.strictEqual(
       header.hash().toString('hex'),
       testDataGenesis.genesis_hash,
@@ -75,7 +75,7 @@ tape('[Block]: Header functions', function (t) {
 
   t.test('should test genesis parameters (ropsten)', function (st) {
     const common = new Common({ chain: 'ropsten', hardfork: 'chainstart' })
-    const genesisHeader = Header.fromHeaderData({}, { common, initWithGenesisHeader: true })
+    const genesisHeader = BlockHeader.fromHeaderData({}, { common, initWithGenesisHeader: true })
     const ropstenStateRoot = '0x217b0bbcfb72e2d57e28f33cb361b9983513177755dc3f33ce3e7022ed62b77b'
     st.strictEqual(
       genesisHeader.stateRoot.toString('hex'),

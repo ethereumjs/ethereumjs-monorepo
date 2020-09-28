@@ -2,16 +2,16 @@ import { BaseTrie as Trie } from 'merkle-patricia-tree'
 import { BN, rlp, keccak256, KECCAK256_RLP, baToJSON } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
 import { Transaction, TxOptions } from '@ethereumjs/tx'
-import { Header } from './header'
+import { BlockHeader } from './header'
 import { Blockchain, BlockData, BlockOptions } from './types'
 
 /**
  * An object that represents the block
  */
 export class Block {
-  public readonly header: Header
+  public readonly header: BlockHeader
   public readonly transactions: Transaction[] = []
-  public readonly uncleHeaders: Header[] = []
+  public readonly uncleHeaders: BlockHeader[] = []
   public readonly txTrie = new Trie()
 
   private readonly _common: Common
@@ -26,7 +26,7 @@ export class Block {
     const txsData = blockData.transactions || []
     const uncleHeadersData = blockData.uncleHeaders || []
 
-    const header = Header.fromHeaderData(headerData, opts)
+    const header = BlockHeader.fromHeaderData(headerData, opts)
 
     // parse transactions
     let transactions = []
@@ -37,7 +37,7 @@ export class Block {
     // parse uncle headers
     let uncleHeaders = []
     for (const uncleHeaderData of uncleHeadersData) {
-      uncleHeaders.push(Header.fromHeaderData(uncleHeaderData, opts))
+      uncleHeaders.push(BlockHeader.fromHeaderData(uncleHeaderData, opts))
     }
 
     return new Block(header, transactions, uncleHeaders, opts)
@@ -64,7 +64,7 @@ export class Block {
     const txsData = values[1] || []
     const uncleHeadersData = values[2] || []
 
-    const header = Header.fromValuesArray(headerArray, opts)
+    const header = BlockHeader.fromValuesArray(headerArray, opts)
 
     // parse transactions
     let transactions = []
@@ -75,7 +75,7 @@ export class Block {
     // parse uncle headers
     let uncleHeaders = []
     for (const uncleHeaderData of uncleHeadersData) {
-      uncleHeaders.push(Header.fromRLPSerializedHeader(uncleHeaderData, opts))
+      uncleHeaders.push(BlockHeader.fromRLPSerializedHeader(uncleHeaderData, opts))
     }
 
     return new Block(header, transactions, uncleHeaders, opts)
@@ -92,9 +92,9 @@ export class Block {
    * @param options - The options for this block (like the chain setup)
    */
   constructor(
-    header: Header,
+    header: BlockHeader,
     transactions: Transaction[],
-    uncleHeaders: Header[],
+    uncleHeaders: BlockHeader[],
     //data: Buffer | [Buffer[], Buffer[], Buffer[]] | BlockData = {},
     opts: BlockOptions = {},
   ) {
@@ -266,7 +266,7 @@ export class Block {
     await this.txTrie.put(rlp.encode(txIndex), tx.serialize())
   }
 
-  private _validateUncleHeader(uncleHeader: Header, blockchain: Blockchain) {
+  private _validateUncleHeader(uncleHeader: BlockHeader, blockchain: Blockchain) {
     // TODO: Validate that the uncle header hasn't been included in the blockchain yet.
     // This is not possible in ethereumjs-blockchain since this PR was merged:
     // https://github.com/ethereumjs/ethereumjs-blockchain/pull/47

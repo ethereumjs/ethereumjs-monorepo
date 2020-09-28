@@ -18,7 +18,7 @@ import { checkBufferLength } from './util'
 /**
  * An object that represents the block header
  */
-export class Header {
+export class BlockHeader {
   public readonly parentHash: Buffer
   public readonly uncleHash: Buffer
   public readonly coinbase: Buffer
@@ -56,7 +56,7 @@ export class Header {
       nonce,
     } = headerData
 
-    return new Header(
+    return new BlockHeader(
       parentHash ? checkBufferLength(toBuffer(parentHash), 32) : zeros(32),
       uncleHash ? toBuffer(uncleHash) : KECCAK256_RLP_ARRAY,
       coinbase ? checkBufferLength(toBuffer(coinbase), 20) : zeros(20),
@@ -83,7 +83,7 @@ export class Header {
       throw new Error('Invalid serialized header input. Must be array')
     }
 
-    return Header.fromValuesArray(values, opts)
+    return BlockHeader.fromValuesArray(values, opts)
   }
 
   public static fromValuesArray(values: Buffer[], opts: BlockOptions) {
@@ -108,7 +108,7 @@ export class Header {
       mixHash,
       nonce,
     ] = values
-    return new Header(
+    return new BlockHeader(
       parentHash,
       uncleHash,
       coinbase,
