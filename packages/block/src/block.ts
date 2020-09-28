@@ -45,9 +45,8 @@ export class Block {
 
   public static fromRLPSerializedBlock(serialized: Buffer, opts: BlockOptions = {}) {
     // We do this to silence a TS error. We know that after this statement, data is
-    // a [Buffer[], Buffer[], Buffer[]]
-    let values = (rlp.decode(serialized) as any) as [Buffer[], Buffer[], Buffer[]]
-
+    // a [Buffer[], Buffer[][], Buffer[][]]
+    let values = (rlp.decode(serialized) as any) as [Buffer[], Buffer[][], Buffer[][]]
     if (!Array.isArray(values)) {
       throw new Error('Invalid serialized block input. Must be array')
     }
@@ -55,7 +54,10 @@ export class Block {
     return Block.fromValuesArray(values, opts)
   }
 
-  public static fromValuesArray(values: [Buffer[], Buffer[], Buffer[]], opts: BlockOptions = {}) {
+  public static fromValuesArray(
+    values: [Buffer[], Buffer[][], Buffer[][]],
+    opts: BlockOptions = {},
+  ) {
     if (values.length > 3) {
       throw new Error('invalid block. More values than expected were received')
     }
@@ -69,13 +71,13 @@ export class Block {
     // parse transactions
     let transactions = []
     for (const txData of txsData) {
-      transactions.push(Transaction.fromRlpSerializedTx(txData, opts as TxOptions))
+      transactions.push(Transaction.fromValuesArray(txData as Buffer[], opts as TxOptions))
     }
 
     // parse uncle headers
     let uncleHeaders = []
     for (const uncleHeaderData of uncleHeadersData) {
-      uncleHeaders.push(BlockHeader.fromRLPSerializedHeader(uncleHeaderData, opts))
+      uncleHeaders.push(BlockHeader.fromValuesArray(uncleHeaderData as Buffer[], opts))
     }
 
     return new Block(header, transactions, uncleHeaders, opts)

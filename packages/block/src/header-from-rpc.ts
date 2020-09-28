@@ -30,10 +30,10 @@ export default function blockHeaderFromRpc(blockParams: any, options?: BlockOpti
     options,
   )
 
-  // override hash in case something was missing
-  blockHeader.hash = function () {
-    return toBuffer(blockParams.hash)
-  }
+  // override hash in case something was missing TODO: why do we need this?
+  //blockHeader.hash = function () {
+  //  return toBuffer(blockParams.hash)
+  //}
 
   return blockHeader
 }

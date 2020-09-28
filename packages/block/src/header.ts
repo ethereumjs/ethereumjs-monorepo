@@ -189,12 +189,12 @@ export class BlockHeader {
           'Genesis parameters can only be set with a Common instance set to chainstart',
         )
       }
-      this.timestamp = this._common.genesis().timestamp
-      this.gasLimit = this._common.genesis().gasLimit
-      this.difficulty = this._common.genesis().difficulty
-      this.extraData = this._common.genesis().extraData
-      this.nonce = this._common.genesis().nonce
-      this.stateRoot = this._common.genesis().stateRoot
+      this.timestamp = toBuffer(this._common.genesis().timestamp || this.timestamp)
+      this.gasLimit = toBuffer(this._common.genesis().gasLimit || this.gasLimit)
+      this.difficulty = toBuffer(this._common.genesis().difficulty || this.difficulty)
+      this.extraData = toBuffer(this._common.genesis().extraData || this.extraData)
+      this.nonce = toBuffer(this._common.genesis().nonce || this.nonce)
+      this.stateRoot = toBuffer(this._common.genesis().stateRoot || this.stateRoot)
       this.number = toBuffer(0)
     }
 
@@ -414,7 +414,7 @@ export class BlockHeader {
    * Checks if the block header is a genesis header.
    */
   isGenesis(): boolean {
-    return this.number.equals(toBuffer(0))
+    return this.number.equals(zeros(0))
   }
 
   /**

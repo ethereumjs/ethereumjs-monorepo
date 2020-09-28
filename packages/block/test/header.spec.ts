@@ -2,11 +2,12 @@ import * as tape from 'tape'
 import Common from '@ethereumjs/common'
 import { rlp, toBuffer, zeros, KECCAK256_RLP, KECCAK256_RLP_ARRAY } from 'ethereumjs-util'
 import { BlockHeader } from '../src/header'
+import { Block } from '../src'
 //import { Block } from '../src/block'
 
 tape('[Block]: Header functions', function (t) {
   t.test('should create with default constructor', function (st) {
-    function compareDefaultHeader(st: tape.Test, header: Header) {
+    function compareDefaultHeader(st: tape.Test, header: BlockHeader) {
       st.deepEqual(header.parentHash, zeros(32))
       st.ok(header.uncleHash.equals(KECCAK256_RLP_ARRAY))
       st.deepEqual(header.coinbase, zeros(20))
@@ -55,7 +56,7 @@ tape('[Block]: Header functions', function (t) {
   })*/
 
   t.test('should test isGenesis', function (st) {
-    let header = BlockHeader.fromHeaderData({})
+    let header = BlockHeader.fromHeaderData({ number: Buffer.from('01', 'hex') })
     st.equal(header.isGenesis(), false)
     header = BlockHeader.fromHeaderData({}, { initWithGenesisHeader: true })
     st.equal(header.isGenesis(), true)
@@ -76,7 +77,7 @@ tape('[Block]: Header functions', function (t) {
   t.test('should test genesis parameters (ropsten)', function (st) {
     const common = new Common({ chain: 'ropsten', hardfork: 'chainstart' })
     const genesisHeader = BlockHeader.fromHeaderData({}, { common, initWithGenesisHeader: true })
-    const ropstenStateRoot = '0x217b0bbcfb72e2d57e28f33cb361b9983513177755dc3f33ce3e7022ed62b77b'
+    const ropstenStateRoot = '217b0bbcfb72e2d57e28f33cb361b9983513177755dc3f33ce3e7022ed62b77b'
     st.strictEqual(
       genesisHeader.stateRoot.toString('hex'),
       ropstenStateRoot,

@@ -33,8 +33,11 @@ export default class Transaction {
   public readonly s?: BN
 
   public static fromTxData(txData: TxData, opts?: TxOptions) {
-    const { nonce, gasLimit, gasPrice, to, value, data, v, r, s } = txData
-
+    const { nonce, gasLimit, gasPrice, value, data, v, r, s } = txData
+    let to = txData.to
+    if (to instanceof Address) {
+      to = to.buf
+    }
     return new Transaction(
       new BN(toBuffer(nonce || '0x')),
       new BN(toBuffer(gasPrice || '0x')),
