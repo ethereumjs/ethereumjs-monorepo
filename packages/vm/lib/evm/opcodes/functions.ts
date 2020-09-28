@@ -8,9 +8,6 @@ import {
   KECCAK256_NULL,
 } from 'ethereumjs-util'
 import {
-  accessAddressEIP2929,
-  accessStorageEIP2929,
-  adjustSstoreGasEIP2929,
   addressToBuffer,
   describeLocation,
   divCeil,
@@ -21,10 +18,12 @@ import {
   maxCallGas,
   setLengthLeftStorage,
   subMemUsage,
-  updateSstoreGas,
   trap,
   writeCallOutput,
 } from './util'
+import { updateSstoreGasEIP1283 } from './EIP1283'
+import { updateSstoreGasEIP2200 } from './EIP2200'
+import { accessAddressEIP2929, accessStorageEIP2929 } from './EIP2929'
 import { ERROR } from '../../exceptions'
 import { RunState } from './../interpreter'
 
@@ -745,7 +744,8 @@ export const handlers: Map<number, OpHandler> = new Map([
       // TODO: Replace getContractStorage with EEI method
       const found = await getContractStorage(runState, runState.eei.getAddress(), keyBuf)
       accessStorageEIP2929(runState, keyBuf, true)
-      updateSstoreGas(runState, found, setLengthLeftStorage(value), keyBuf)
+      updateSstoreGasEIP1283(runState, found, setLengthLeftStorage(value), keyBuf)
+      updateSstoreGasEIP2200(runState, found, setLengthLeftStorage(value), keyBuf)
       await runState.eei.storageStore(keyBuf, value)
     },
   ],
