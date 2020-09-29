@@ -129,6 +129,8 @@ export const toBuffer = function(v: any): Buffer {
     } else if (v.toArray) {
       // converts a BN to a Buffer
       v = Buffer.from(v.toArray())
+    } else if (v.toBuffer) {
+      v = Buffer.from(v.toBuffer())
     } else {
       throw new Error('invalid type')
     }

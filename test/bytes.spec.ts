@@ -1,6 +1,7 @@
 import * as assert from 'assert'
 import * as BN from 'bn.js'
 import {
+  Address,
   zeros,
   zeroAddress,
   isZeroAddress,
@@ -232,6 +233,13 @@ describe('toBuffer', function() {
     assert.throws(() => toBuffer('11'), '11')
     assert.throws(() => toBuffer(''))
     assert.throws(() => toBuffer('0xR'), '0xR')
+  })
+
+  it('should convert a TransformableToBuffer like the Address class (i.e. provides a toBuffer method)', function() {
+    const str = '0x2f015c60e0be116b1f0cd534704db9c92118fb6a'
+    const address = Address.fromString(str)
+    const addressBuf = toBuffer(address)
+    assert.ok(addressBuf.equals(address.toBuffer()))
   })
 })
 
