@@ -88,4 +88,11 @@ export class Address {
   toString(): string {
     return '0x' + this.buf.toString('hex')
   }
+
+  /**
+   * Returns Buffer representation of address.
+   */
+  toBuffer(): Buffer {
+    return Buffer.from(this.buf)
+  }
 }

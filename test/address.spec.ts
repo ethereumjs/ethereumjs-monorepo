@@ -76,4 +76,12 @@ describe('Address', () => {
       assert.equal(addr.toString(), result)
     }
   })
+
+  it('should provide a buffer that does not mutate the original address', () => {
+    const str = '0x2f015c60e0be116b1f0cd534704db9c92118fb6a'
+    const address = Address.fromString(str)
+    let addressBuf = address.toBuffer()
+    addressBuf = Buffer.from('test')
+    assert.equal(address.toString(), str)
+  })
 })
