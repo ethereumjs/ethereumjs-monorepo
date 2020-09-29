@@ -54,3 +54,11 @@ jobs:
         if: ${{ matrix.node-version == 12 }}
 
       - run: npm run lint
+
+      - run: npm run pack 
+
+      - name: Uploads package as a github artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: package
+          path: ethereumjs-account.tgz
