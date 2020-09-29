@@ -5,8 +5,8 @@ import { stripHexPrefix } from 'ethjs-util'
 import { KECCAK256_RLP, KECCAK256_NULL } from './constants'
 import { zeros, bufferToHex, toBuffer } from './bytes'
 import { keccak, keccak256, keccakFromString, rlphash } from './hash'
-import { assertIsHexString, assertIsBuffer, bnToRlp } from './helpers'
-import { BNLike, BufferLike } from './types'
+import { assertIsHexString, assertIsBuffer } from './helpers'
+import { BNLike, BufferLike, bnToRlp } from './types'
 
 const {
   privateKeyVerify,

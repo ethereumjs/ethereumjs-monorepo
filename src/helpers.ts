@@ -1,6 +1,4 @@
-import * as BN from 'bn.js'
 import { isHexString } from 'ethjs-util'
-import { unpadBuffer } from './bytes'
 
 /**
  * Throws if a string is not hex prefixed
@@ -44,14 +42,4 @@ export const assertIsString = function(input: string): void {
     const msg = `This method only supports strings but input was: ${input}`
     throw new Error(msg)
   }
-}
-
-/**
- * Convert value from BN to RLP (unpadded buffer)
- * @param value value to convert
- */
-export function bnToRlp(value: BN): Buffer {
-  // Using `bn.toArrayLike(Buffer)` instead of `bn.toBuffer()`
-  // for compatibility with browserify and similar tools
-  return unpadBuffer(value.toArrayLike(Buffer))
 }
