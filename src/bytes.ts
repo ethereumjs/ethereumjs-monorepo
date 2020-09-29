@@ -1,5 +1,5 @@
-import * as ethjsUtil from 'ethjs-util'
 import * as BN from 'bn.js'
+import { intToBuffer, stripHexPrefix, padToEven, isHexString, isHexPrefixed } from 'ethjs-util'
 import { assertIsBuffer, assertIsArray, assertIsHexString } from './helpers'
 
 /**
@@ -86,7 +86,7 @@ export const unpadArray = function(a: number[]): number[] {
  */
 export const unpadHexString = function(a: string): string {
   assertIsHexString(a)
-  a = ethjsUtil.stripHexPrefix(a)
+  a = stripHexPrefix(a)
   return stripZeros(a) as string
 }
 
@@ -113,15 +113,15 @@ export const toBuffer = function(v: any): Buffer {
     if (Array.isArray(v) || v instanceof Uint8Array) {
       v = Buffer.from(v as Uint8Array)
     } else if (typeof v === 'string') {
-      if (ethjsUtil.isHexString(v)) {
-        v = Buffer.from(ethjsUtil.padToEven(ethjsUtil.stripHexPrefix(v)), 'hex')
+      if (isHexString(v)) {
+        v = Buffer.from(padToEven(stripHexPrefix(v)), 'hex')
       } else {
         throw new Error(
           `Cannot convert string to buffer. toBuffer only supports 0x-prefixed hex strings and this string was given: ${v}`,
         )
       }
     } else if (typeof v === 'number') {
-      v = ethjsUtil.intToBuffer(v)
+      v = intToBuffer(v)
     } else if (v === null || v === undefined) {
       v = Buffer.allocUnsafe(0)
     } else if (BN.isBN(v)) {
@@ -180,7 +180,7 @@ export const addHexPrefix = function(str: string): string {
     return str
   }
 
-  return ethjsUtil.isHexPrefixed(str) ? str : '0x' + str
+  return isHexPrefixed(str) ? str : '0x' + str
 }
 
 /**
