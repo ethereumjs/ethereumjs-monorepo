@@ -6,7 +6,7 @@ const PeerInfo = require('peer-info')
 const Libp2pNode = require('../peer/libp2pnode')
 const Libp2pPeer = require('../peer/libp2ppeer')
 
-const LIBP2PSERVER_DEFAULT_OPTIONS = {
+const defaultOptions = {
   multiaddrs: [ '/ip4/127.0.0.1/tcp/50580/ws' ],
   key: null,
   bootnodes: []
@@ -19,7 +19,7 @@ const LIBP2PSERVER_DEFAULT_OPTIONS = {
  * @emits error
  * @memberof module:net/server
  */
-class Libp2pServer extends Server {
+export = module.exports = class Libp2pServer extends Server {
   /**
    * Create new DevP2P/RLPx server
    * @param {Object}   options constructor parameters
@@ -34,7 +34,7 @@ class Libp2pServer extends Server {
    */
   constructor (options: any) {
     super(options)
-    options = { ...LIBP2PSERVER_DEFAULT_OPTIONS, ...options }
+    options = { ...defaultOptions, ...options }
     this.multiaddrs = options.multiaddrs
     this.key = options.key
     this.bootnodes = options.bootnodes
@@ -222,4 +222,4 @@ class Libp2pServer extends Server {
   }
 }
 
-module.exports = Libp2pServer
+

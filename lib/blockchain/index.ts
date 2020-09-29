@@ -3,3 +3,4 @@
  */
 
 exports.Chain = require('./chain')
+export = exports

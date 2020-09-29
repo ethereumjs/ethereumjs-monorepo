@@ -1,4 +1,4 @@
-import { EventEmitter } from 'events'
+const { EventEmitter } = require('events')
 import Common from 'ethereumjs-common'
 const Block = require('ethereumjs-block')
 const Blockchain = require('ethereumjs-blockchain')
@@ -15,7 +15,7 @@ const defaultOptions = {
  * Blockchain
  * @memberof module:blockchain
  */
-class Chain extends EventEmitter {
+export = module.exports = class Chain extends EventEmitter {
 
   private logger: any
   private common: Common
@@ -312,4 +312,3 @@ function hexToBuffer (hexString: string) {
   return hexString
 }
 
-module.exports = Chain

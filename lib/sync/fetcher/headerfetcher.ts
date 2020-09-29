@@ -1,7 +1,7 @@
 
-const HF_BlockFetcher = require('./blockfetcher')
+const BlockFetcher = require('./blockfetcher')
 
-const HEADER_FETCHER_DEFAULT_OPTIONS = {
+const defaultOptions = {
   maxPerRequest: 192
 }
 
@@ -9,7 +9,7 @@ const HEADER_FETCHER_DEFAULT_OPTIONS = {
  * Implements an les/1 based header fetcher
  * @memberof module:sync/fetcher
  */
-class HeaderFetcher extends HF_BlockFetcher {
+export = module.exports = class HeaderFetcher extends BlockFetcher {
   /**
    * Create new header fetcher
    * @param {Object}       options constructor parameters
@@ -25,7 +25,7 @@ class HeaderFetcher extends HF_BlockFetcher {
    */
   constructor (options: any) {
     super(options)
-    options = { ...HEADER_FETCHER_DEFAULT_OPTIONS, ...options }
+    options = { ...defaultOptions, ...options }
     this.flow = options.flow
   }
 
@@ -74,6 +74,4 @@ class HeaderFetcher extends HF_BlockFetcher {
     return this.pool.idle((p: any) => p.les && p.les.status.serveHeaders)
   }
 }
-
-module.exports = HeaderFetcher
 

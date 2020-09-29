@@ -12,7 +12,7 @@ const SECIO = require('libp2p-secio')
 const libp2p = require('libp2p')
 const promisify = require('util-promisify')
 
-module.exports = class Libp2pNode extends libp2p {
+export = module.exports = class Libp2pNode extends libp2p {
   constructor (options: any) {
     super({
       peerInfo: options.peerInfo,
@@ -56,4 +56,5 @@ module.exports = class Libp2pNode extends libp2p {
     this.asyncDialProtocol = promisify(this.dialProtocol.bind(this))
   }
 }
+
 

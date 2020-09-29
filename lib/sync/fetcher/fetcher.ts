@@ -1,10 +1,10 @@
 
-const { Readable, Writable } = require('stream')
+import { Readable, Writable } from 'stream'
 const Heap = require('qheap')
 const Common = require('ethereumjs-common').default
 const { defaultLogger } = require('../../logging')
 
-const FETCHER_DEFAULT_OPTIONS = {
+const defaultOptions = {
   common: new Common('mainnet', 'chainstart'),
   logger: defaultLogger,
   timeout: 8000,
@@ -22,6 +22,24 @@ const FETCHER_DEFAULT_OPTIONS = {
  * @memberof module:sync/fetcher
  */
 class Fetcher extends Readable {
+
+  private common: any
+  private pool: any
+  private logger: any
+  private timeout: any
+  private interval: any
+  private banTime: any
+  private maxQueue: any
+  private maxPerRequest: any
+  private in: any
+  private out: any
+  private total: any
+  private processed: any
+  private running: any
+  private reading: any
+  private _readableState: any
+
+
   /**
    * Create new fetcher
    * @param {Object}   options constructor parameters
@@ -36,7 +54,7 @@ class Fetcher extends Readable {
    */
   constructor (options: any) {
     super({ ...options, objectMode: true })
-    options = { ...FETCHER_DEFAULT_OPTIONS, ...options }
+    options = { ...defaultOptions, ...options }
 
     this.common = options.common
     this.pool = options.pool
@@ -307,4 +325,4 @@ class Fetcher extends Readable {
   }
 }
 
-module.exports = Fetcher
+export = module.exports = Fetcher

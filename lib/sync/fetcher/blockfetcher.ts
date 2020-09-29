@@ -1,9 +1,9 @@
 
-const BF_Fetcher = require('./fetcher')
+const Fetcher = require('./fetcher')
 const Block = require('ethereumjs-block')
 const BN = require('bn.js')
 
-const BLOCK_FETCHER_DEFAULT_OPTIONS = {
+const defaultOptions = {
   maxPerRequest: 128
 }
 
@@ -11,7 +11,7 @@ const BLOCK_FETCHER_DEFAULT_OPTIONS = {
  * Implements an eth/62 based block fetcher
  * @memberof module:sync/fetcher
  */
-class BlockFetcher extends BF_Fetcher {
+export = module.exports = class BlockFetcher extends Fetcher {
   /**
    * Create new block fetcher
    * @param {Object}       options constructor parameters
@@ -27,7 +27,7 @@ class BlockFetcher extends BF_Fetcher {
    */
   constructor (options: any) {
     super(options)
-    options = { ...BLOCK_FETCHER_DEFAULT_OPTIONS, ...options }
+    options = { ...defaultOptions, ...options }
     this.maxPerRequest = options.maxPerRequest
     this.chain = options.chain
     this.first = options.first
@@ -96,5 +96,3 @@ class BlockFetcher extends BF_Fetcher {
     return this.pool.idle((p: any) => p.eth)
   }
 }
-
-module.exports = BlockFetcher
