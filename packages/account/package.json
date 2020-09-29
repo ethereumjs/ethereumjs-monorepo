@@ -23,7 +23,8 @@
     "tsc": "ethereumjs-config-tsc",
     "lint": "ethereumjs-config-lint",
     "lint:fix": "ethereumjs-config-lint-fix",
-    "test": "tape -r ts-node/register test/*.spec.ts"
+    "test": "tape -r ts-node/register test/*.spec.ts",
+    "pack": "npm pack && mv ethereumjs-account*.tgz ethereumjs-account.tgz"
   },
   "keywords": [
     "ethereum",
