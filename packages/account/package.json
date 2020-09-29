@@ -24,7 +24,7 @@
     "lint": "ethereumjs-config-lint",
     "lint:fix": "ethereumjs-config-lint-fix",
     "test": "tape -r ts-node/register test/*.spec.ts",
-    "pack": "npm pack && mv ethereumjs-account*.tgz ethereumjs-account.tgz"
+    "pack": "npm pack && mv ethereumjs-account*.tgz ethereumjs-account.tgz; ls *.tgz"
   },
   "keywords": [
     "ethereum",
