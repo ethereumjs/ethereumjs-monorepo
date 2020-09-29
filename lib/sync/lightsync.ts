@@ -8,7 +8,7 @@ const { short } = require('../util')
  * Implements an ethereum light sync synchronizer
  * @memberof module:sync
  */
-class LightSynchronizer extends Synchronizer {
+export = module.exports = class LightSynchronizer extends Synchronizer {
   /**
    * Returns synchronizer type
    * @return {string} type
@@ -21,7 +21,7 @@ class LightSynchronizer extends Synchronizer {
    * Returns true if peer can be used for syncing
    * @return {boolean}
    */
-  syncable (peer) {
+  syncable (peer: any) {
     return peer.les && peer.les.status.serveHeaders
   }
 
@@ -49,7 +49,7 @@ class LightSynchronizer extends Synchronizer {
    * @param  {Peer} peer remote peer to sync with
    * @return {Promise} Resolves when sync completed
    */
-  async syncWithPeer (peer) {
+  async syncWithPeer (peer: any) {
     if (!peer) return false
     const height = new BN(peer.les.status.headNum)
     const first = this.chain.headers.height.addn(1)
@@ -69,10 +69,10 @@ class LightSynchronizer extends Synchronizer {
       count
     })
     this.headerFetcher
-      .on('error', (error) => {
+      .on('error', (error: Error) => {
         this.emit('error', error)
       })
-      .on('fetched', headers => {
+      .on('fetched', (headers: any[]) => {
         const first = new BN(headers[0].number)
         const hash = short(headers[0].hash())
         this.logger.info(`Imported headers count=${headers.length} number=${first.toString(10)} hash=${hash} peers=${this.pool.size}`)
@@ -120,4 +120,3 @@ class LightSynchronizer extends Synchronizer {
   }
 }
 
-module.exports = LightSynchronizer

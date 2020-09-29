@@ -8,7 +8,7 @@ const { short } = require('../util')
  * Implements an ethereum fast sync synchronizer
  * @memberof module:sync
  */
-class FastSynchronizer extends Synchronizer {
+export = module.exports = class FastSynchronizer extends Synchronizer {
   /**
    * Returns synchronizer type
    * @return {string} type
@@ -21,7 +21,7 @@ class FastSynchronizer extends Synchronizer {
    * Returns true if peer can be used for syncing
    * @return {boolean}
    */
-  syncable (peer) {
+  syncable (peer: any) {
     return peer.eth
   }
 
@@ -49,7 +49,7 @@ class FastSynchronizer extends Synchronizer {
    * Get latest header of peer
    * @return {Promise} Resolves with header
    */
-  async latest (peer) {
+  async latest (peer: any) {
     const headers = await peer.eth.getBlockHeaders({
       block: peer.eth.status.bestHash, max: 1
     })
@@ -61,7 +61,7 @@ class FastSynchronizer extends Synchronizer {
    * @param  {Peer} peer remote peer to sync with
    * @return {Promise} Resolves when sync completed
    */
-  async syncWithPeer (peer) {
+  async syncWithPeer (peer: any) {
     if (!peer) return false
     const latest = await this.latest(peer)
     const height = new BN(latest.number)
@@ -81,10 +81,10 @@ class FastSynchronizer extends Synchronizer {
       count
     })
     this.blockFetcher
-      .on('error', (error) => {
+      .on('error', (error: Error) => {
         this.emit('error', error)
       })
-      .on('fetched', blocks => {
+      .on('fetched', (blocks: any[]) => {
         const first = new BN(blocks[0].header.number)
         const hash = short(blocks[0].hash())
         this.logger.info(`Imported blocks count=${blocks.length} number=${first.toString(10)} hash=${hash} peers=${this.pool.size}`)
@@ -112,7 +112,7 @@ class FastSynchronizer extends Synchronizer {
    * @param  {Peer}     peer peer
    * @return {Promise}
    */
-  async announced (announcements, peer) {
+  async announced (announcements: any[], peer: any) {
     if (announcements.length) {
       const [hash, height] = announcements[announcements.length - 1]
       this.logger.debug(`New height: number=${height.toString(10)} hash=${short(hash)}`)
@@ -149,4 +149,3 @@ class FastSynchronizer extends Synchronizer {
   }
 }
 
-module.exports = FastSynchronizer

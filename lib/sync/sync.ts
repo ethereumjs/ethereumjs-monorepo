@@ -1,6 +1,4 @@
-'use strict'
-
-import { EventEmitter } from 'events'
+const { EventEmitter } = require('events')
 const Common = require('ethereumjs-common').default
 const { defaultLogger } = require('../logging')
 
@@ -15,7 +13,7 @@ const defaultOptions = {
  * Base class for blockchain synchronizers
  * @memberof module:sync
  */
-class Synchronizer extends EventEmitter {
+export = module.exports = class Synchronizer extends EventEmitter {
   /**
    * Create new node
    * @param {Object}      options constructor parameters
@@ -27,7 +25,7 @@ class Synchronizer extends EventEmitter {
    * @param {number}      [options.interval] refresh interval
    * @param {Logger}      [options.logger] Logger instance
    */
-  constructor (options) {
+  constructor (options: any) {
     super()
     options = { ...defaultOptions, ...options }
 
@@ -40,7 +38,7 @@ class Synchronizer extends EventEmitter {
     this.interval = options.interval
     this.running = false
     this.forceSync = false
-    this.pool.on('added', peer => {
+    this.pool.on('added', (peer: any) => {
       if (this.syncable(peer)) {
         this.logger.debug(`Found ${this.type} peer: ${peer}`)
       }
@@ -52,6 +50,7 @@ class Synchronizer extends EventEmitter {
    * @return {string} type
    */
   get type () {
+    return 'sync'
   }
 
   /**
@@ -65,7 +64,7 @@ class Synchronizer extends EventEmitter {
    * Returns true if peer can be used for syncing
    * @return {boolean}
    */
-  syncable (peer) {
+  syncable (peer: any) {
     return true
   }
 
@@ -103,5 +102,3 @@ class Synchronizer extends EventEmitter {
     this.running = false
   }
 }
-
-module.exports = Synchronizer
