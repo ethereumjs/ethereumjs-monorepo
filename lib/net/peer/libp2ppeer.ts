@@ -31,7 +31,7 @@ const defaultOptions = {
  *   .on('disconnected', (reason) => console.log('Disconnected:', reason))
  *   .connect()
  */
-class Libp2pPeer extends Peer {
+export = module.exports = class Libp2pPeer extends Peer {
   /**
    * Create new libp2p peer
    * @param {Object}      options constructor parameters
@@ -41,7 +41,7 @@ class Libp2pPeer extends Peer {
    * @param {Protocols[]} [options.protocols=[]] supported protocols
    * @param {Logger}      [options.logger] Logger instance
    */
-  constructor (options) {
+  constructor (options: any) {
     super({ ...options, transport: 'libp2p' })
     options = { ...defaultOptions, ...options }
 
@@ -55,7 +55,7 @@ class Libp2pPeer extends Peer {
     if (typeof this.multiaddrs === 'string') {
       this.multiaddrs = this.multiaddrs.split(',')
     }
-    this.address = this.multiaddrs.map(ma => ma.split('/ipfs')[0]).join(',')
+    this.address = this.multiaddrs.map((ma: string) => ma.split('/ipfs')[0]).join(',')
   }
 
   /**
@@ -67,7 +67,7 @@ class Libp2pPeer extends Peer {
       return
     }
     const nodeInfo = await this.createPeerInfo({ multiaddrs: ['/ip4/0.0.0.0/tcp/0'] })
-    const peerInfo = await this.createPeerInfo(this)
+    const peerInfo = await this.createPeerInfo({ multiaddrs: [] })
     const node = new Libp2pNode({ peerInfo: nodeInfo })
     await node.asyncStart()
     await node.asyncDial(peerInfo)
@@ -80,7 +80,7 @@ class Libp2pPeer extends Peer {
    * @private
    * @return {Promise}
    */
-  async accept (protocol, connection, server) {
+  async accept (protocol: any, connection: any, server: any) {
     await this.bindProtocol(protocol, new Libp2pSender(connection))
     this.inbound = true
     this.server = server
@@ -94,8 +94,8 @@ class Libp2pPeer extends Peer {
    * @param  {Server}     [server] optional server that initiated connection
    * @return {Promise}
    */
-  async bindProtocols (node, peerInfo, server = null) {
-    await Promise.all(this.protocols.map(async (p) => {
+  async bindProtocols (node: any, peerInfo: any, server = null) {
+    await Promise.all(this.protocols.map(async (p: any) => {
       await p.open()
       const protocol = `/${p.name}/${p.versions[0]}`
       try {
@@ -110,9 +110,9 @@ class Libp2pPeer extends Peer {
     this.connected = true
   }
 
-  async createPeerInfo ({ multiaddrs, id }) {
+  async createPeerInfo ({ multiaddrs, id }: { multiaddrs: string[], id?: string }) {
     return new Promise((resolve, reject) => {
-      const handler = (err, peerInfo) => {
+      const handler = (err: Error | undefined, peerInfo: any) => {
         if (err) {
           return reject(err)
         }
@@ -127,5 +127,3 @@ class Libp2pPeer extends Peer {
     })
   }
 }
-
-module.exports = Libp2pPeer

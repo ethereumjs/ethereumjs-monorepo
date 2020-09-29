@@ -1,4 +1,4 @@
-import { EventEmitter } from 'events'
+const { EventEmitter } = require('events')
 const { defaultLogger } = require('../../logging')
 
 const defaultOptions = {
@@ -12,7 +12,7 @@ const defaultOptions = {
  * Network peer
  * @memberof module:net/peer
  */
-class Peer extends EventEmitter {
+export = module.exports = class Peer extends EventEmitter {
   /**
    * Create new peer
    * @param {Object}      options constructor parameters
@@ -23,7 +23,7 @@ class Peer extends EventEmitter {
    * @param {Protocols[]} [options.protocols=[]] supported protocols
    * @param {Logger}      [options.logger] logger instance
    */
-  constructor (options) {
+  constructor (options: any) {
     super()
     options = { ...defaultOptions, ...options }
 
@@ -79,12 +79,12 @@ class Peer extends EventEmitter {
    * peer.eth.send('getBlockHeaders', 1, 100, 0, 0)
    * peer.eth.on('message', ({ data }) => console.log(`Received ${data.length} headers`))
    */
-  async bindProtocol (protocol, sender) {
+  async bindProtocol (protocol: any, sender: any) {
     const bound = await protocol.bind(this, sender)
-    bound.on('message', message => {
+    bound.on('message', (message: any) => {
       this.emit('message', message, protocol.name)
     })
-    bound.on('error', error => {
+    bound.on('error', (error: Error) => {
       this.emit('error', error, protocol.name)
     })
     this.bound.set(bound.name, bound)
@@ -92,15 +92,15 @@ class Peer extends EventEmitter {
 
   /**
    * Return true if peer understand the specified protocol name
-   * @param {string} protocolName
+   * @param protocolName
    */
-  understands (protocolName) {
+  understands (protocolName: string) {
     return !!this.bound.get(protocolName)
   }
 
-  toString (fullId) {
+  toString (withFullId = false) {
     const properties = {
-      id: fullId ? this.id : this.id.substr(0, 8),
+      id: withFullId ? this.id : this.id.substr(0, 8),
       address: this.address,
       transport: this.transport,
       protocols: Array.from(this.bound.keys()),
@@ -113,4 +113,3 @@ class Peer extends EventEmitter {
   }
 }
 
-module.exports = Peer
