@@ -4,7 +4,7 @@ const Heap = require('qheap')
 const Common = require('ethereumjs-common').default
 const { defaultLogger } = require('../../logging')
 
-const defaultOptions = {
+const FETCHER_DEFAULT_OPTIONS = {
   common: new Common('mainnet', 'chainstart'),
   logger: defaultLogger,
   timeout: 8000,
@@ -34,9 +34,9 @@ class Fetcher extends Readable {
    * @param {number}   [options.interval] retry interval
    * @param {Logger}   [options.logger] Logger instance
    */
-  constructor (options) {
+  constructor (options: any) {
     super({ ...options, objectMode: true })
-    options = { ...defaultOptions, ...options }
+    options = { ...FETCHER_DEFAULT_OPTIONS, ...options }
 
     this.common = options.common
     this.pool = options.pool
@@ -46,8 +46,8 @@ class Fetcher extends Readable {
     this.banTime = options.banTime
     this.maxQueue = options.maxQueue
     this.maxPerRequest = options.maxPerRequest
-    this.in = new Heap({ comparBefore: (a, b) => a.index < b.index })
-    this.out = new Heap({ comparBefore: (a, b) => a.index < b.index })
+    this.in = new Heap({ comparBefore: (a: any, b: any) => a.index < b.index })
+    this.out = new Heap({ comparBefore: (a: any, b: any) => a.index < b.index })
     this.total = 0
     this.processed = 0
     this.running = false
@@ -64,9 +64,9 @@ class Fetcher extends Readable {
 
   /**
    * Enqueue job
-   * @param {Object} job
+   * @param job
    */
-  enqueue (job) {
+  enqueue (job: any) {
     if (this.running) {
       this.in.insert({
         ...job,
@@ -101,10 +101,10 @@ class Fetcher extends Readable {
   /**
    * handle successful job completion
    * @private
-   * @param  {Object} job successful job
-   * @param  {Object} result job result
+   * @param  job successful job
+   * @param  result job result
    */
-  success (job, result) {
+  success (job: any, result: any) {
     if (job.state !== 'active') return
     if (result === undefined) {
       this.enqueue(job)
@@ -127,10 +127,10 @@ class Fetcher extends Readable {
   /**
    * handle failed job completion
    * @private
-   * @param  {Object} job failed job
-   * @param  {Error}  [error] error
+   * @param  job failed job
+   * @param  [error] error
    */
-  failure (job, error) {
+  failure (job: any, error?: Error) {
     if (job.state !== 'active') return
     job.peer.idle = true
     this.pool.ban(job.peer, this.banTime)
@@ -164,8 +164,8 @@ class Fetcher extends Readable {
         this.expire(job)
       }, this.timeout)
       this.request(job, peer)
-        .then(result => this.success(job, result))
-        .catch(error => this.failure(job, error))
+        .then((result: any) => this.success(job, result))
+        .catch((error: Error) => this.failure(job, error))
         .finally(() => clearTimeout(timeout))
       return job
     }
@@ -174,10 +174,9 @@ class Fetcher extends Readable {
   /**
    * Handle error
    * @param  {Error}  error error object
-   * @param  {Object} task  task
-   * @param  {Peer}   peer  peer
+   * @param  {Object} job  task
    */
-  error (error, job) {
+  error (error: Error, job?: any) {
     if (this.running) {
       this.emit('error', error, job && job.task, job && job.peer)
     }
@@ -188,7 +187,7 @@ class Fetcher extends Readable {
    * to support backpressure from storing results.
    */
   write () {
-    const _write = async (result, encoding, cb) => {
+    const _write = async (result: any, encoding: any, cb: Function) => {
       try {
         await this.store(result)
         this.emit('fetched', result)
@@ -200,7 +199,7 @@ class Fetcher extends Readable {
     const writer = new Writable({
       objectMode: true,
       write: _write,
-      writev: (many, cb) => _write([].concat(...many.map(x => x.chunk)), null, cb)
+      writev: (many: any, cb: Function) => _write([].concat(...many.map((x: any) => x.chunk)), null, cb)
     })
     this
       .on('close', () => {
@@ -211,7 +210,7 @@ class Fetcher extends Readable {
       .on('finish', () => {
         this.running = false
       })
-      .on('error', (error) => {
+      .on('error', (error: any) => {
         this.error(error)
         this.running = false
         writer.destroy()
@@ -252,29 +251,30 @@ class Fetcher extends Readable {
 
   /**
    * Returns a peer that can process the given job
-   * @param  {Object} job job
+   * @param  job job
    * @return {Peer}
    */
-  peer (job) {
+  peer (job?: any) {
     return this.pool.idle()
   }
 
   /**
    * Request results from peer for the given job. Resolves with the raw result.
-   * @param  {Object} job
+   * @param  job
+   * @param  peer
    * @return {Promise}
    */
-  request (job) {
+  request (job?: any, peer?: any): Promise<any> {
     throw new Error('Unimplemented')
   }
 
   /**
    * Process the reply for the given job
-   * @param  {Object} job fetch job
+   * @param  job fetch job
    * @param  {Peer}   peer peer that handled task
-   * @param  {Object} reply reply data
+   * @param  result result data
    */
-  process (job, result) {
+  process (job?: any, peer?: any, result?: any) {
     throw new Error('Unimplemented')
   }
 
@@ -282,7 +282,7 @@ class Fetcher extends Readable {
    * Expire job that has timed out and ban associated peer. Timed out tasks will
    * be re-inserted into the queue.
    */
-  expire (job) {
+  expire (job: any) {
     job.state = 'expired'
     if (this.pool.contains(job.peer)) {
       this.logger.debug(`Task timed out for peer (banning) ${JSON.stringify(job.task)} ${job.peer}`)
@@ -295,14 +295,14 @@ class Fetcher extends Readable {
 
   /**
    * Store fetch result. Resolves once store operation is complete.
-   * @param {Object} result fetch result
+   * @param result fetch result
    * @return {Promise}
    */
-  async store (result) {
+  async store (result?: any) {
     throw new Error('Unimplemented')
   }
 
-  async wait (delay) {
+  async wait (delay?: number) {
     await new Promise(resolve => setTimeout(resolve, delay || this.interval))
   }
 }

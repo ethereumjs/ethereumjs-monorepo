@@ -6,7 +6,7 @@ const PeerInfo = require('peer-info')
 const Libp2pNode = require('../peer/libp2pnode')
 const Libp2pPeer = require('../peer/libp2ppeer')
 
-const defaultOptions = {
+const LIBP2PSERVER_DEFAULT_OPTIONS = {
   multiaddrs: [ '/ip4/127.0.0.1/tcp/50580/ws' ],
   key: null,
   bootnodes: []
@@ -34,7 +34,7 @@ class Libp2pServer extends Server {
    */
   constructor (options: any) {
     super(options)
-    options = { ...defaultOptions, ...options }
+    options = { ...LIBP2PSERVER_DEFAULT_OPTIONS, ...options }
     this.multiaddrs = options.multiaddrs
     this.key = options.key
     this.bootnodes = options.bootnodes

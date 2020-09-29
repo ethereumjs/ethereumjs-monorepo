@@ -1,9 +1,9 @@
 
-const Fetcher = require('./fetcher')
+const BF_Fetcher = require('./fetcher')
 const Block = require('ethereumjs-block')
 const BN = require('bn.js')
 
-const defaultOptions = {
+const BLOCK_FETCHER_DEFAULT_OPTIONS = {
   maxPerRequest: 128
 }
 
@@ -11,7 +11,7 @@ const defaultOptions = {
  * Implements an eth/62 based block fetcher
  * @memberof module:sync/fetcher
  */
-class BlockFetcher extends Fetcher {
+class BlockFetcher extends BF_Fetcher {
   /**
    * Create new block fetcher
    * @param {Object}       options constructor parameters
@@ -25,9 +25,9 @@ class BlockFetcher extends Fetcher {
    * @param {number}       [options.maxPerRequest=128] max items per request
    * @param {Logger}       [options.logger] Logger instance
    */
-  constructor (options) {
+  constructor (options: any) {
     super(options)
-    options = { ...defaultOptions, ...options }
+    options = { ...BLOCK_FETCHER_DEFAULT_OPTIONS, ...options }
     this.maxPerRequest = options.maxPerRequest
     this.chain = options.chain
     this.first = options.first
@@ -55,25 +55,24 @@ class BlockFetcher extends Fetcher {
 
   /**
    * Requests blocks associated with this job
-   * @param  {Object} job
-   * @return {Promise}
+   * @param  job
    */
-  async request (job) {
+  async request (job: any): Promise<any> {
     const { task, peer } = job
     let { first, count } = task
     const headers = await peer.eth.getBlockHeaders({ block: first, max: count })
-    const bodies = await peer.eth.getBlockBodies(headers.map(h => h.hash()))
-    const blocks = bodies.map((body, i) => new Block([headers[i]].concat(body), { common: this.common }))
+    const bodies = await peer.eth.getBlockBodies(headers.map((h: any) => h.hash()))
+    const blocks = bodies.map((body: any, i: number) => new Block([headers[i]].concat(body), { common: this.common }))
     return { blocks }
   }
 
   /**
    * Process fetch result
-   * @param  {Object} job fetch job
-   * @param  {Object} result fetch result
+   * @param  job fetch job
+   * @param  result fetch result
    * @return {*} results of processing job or undefined if job not finished
    */
-  process (job, result) {
+  process (job: any, result: any) {
     if (result.blocks && result.blocks.length === job.task.count) {
       return result.blocks
     }
@@ -84,17 +83,17 @@ class BlockFetcher extends Fetcher {
    * @param {Block[]} blocks fetch result
    * @return {Promise}
    */
-  async store (blocks) {
+  async store (blocks: Array<any>) {
     await this.chain.putBlocks(blocks)
   }
 
   /**
    * Returns a peer that can process the given job
-   * @param  {Object} job job
+   * @param  job job
    * @return {Peer}
    */
-  peer (job) {
-    return this.pool.idle(p => p.eth)
+  peer (job: any) {
+    return this.pool.idle((p: any) => p.eth)
   }
 }
 

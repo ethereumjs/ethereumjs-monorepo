@@ -1,7 +1,7 @@
 
-const BlockFetcher = require('./blockfetcher')
+const HF_BlockFetcher = require('./blockfetcher')
 
-const defaultOptions = {
+const HEADER_FETCHER_DEFAULT_OPTIONS = {
   maxPerRequest: 192
 }
 
@@ -9,7 +9,7 @@ const defaultOptions = {
  * Implements an les/1 based header fetcher
  * @memberof module:sync/fetcher
  */
-class HeaderFetcher extends BlockFetcher {
+class HeaderFetcher extends HF_BlockFetcher {
   /**
    * Create new header fetcher
    * @param {Object}       options constructor parameters
@@ -23,18 +23,18 @@ class HeaderFetcher extends BlockFetcher {
    * @param {number}       [options.maxPerRequest=192] max items per request
    * @param {Logger}       [options.logger] Logger instance
    */
-  constructor (options) {
+  constructor (options: any) {
     super(options)
-    options = { ...defaultOptions, ...options }
+    options = { ...HEADER_FETCHER_DEFAULT_OPTIONS, ...options }
     this.flow = options.flow
   }
 
   /**
    * Requests block headers for the given task
-   * @param  {Object} job
+   * @param  job
    * @return {Promise}
    */
-  async request (job) {
+  async request (job: any): Promise<any[] | boolean> {
     const { task, peer } = job
     if (this.flow.maxRequestCount(peer, 'GetBlockHeaders') < this.maxPerRequest) {
       // we reached our request limit. try with a different peer.
@@ -45,11 +45,11 @@ class HeaderFetcher extends BlockFetcher {
 
   /**
    * Process fetch result
-   * @param  {Object} job fetch job
-   * @param  {Object} result fetch result
+   * @param  job fetch job
+   * @param  result fetch result
    * @return {*} results of processing job or undefined if job not finished
    */
-  process (job, result) {
+  process (job: any, result: any) {
     this.flow.handleReply(job.peer, result.bv)
     if (result.headers && result.headers.length === job.task.count) {
       return result.headers
@@ -61,18 +61,19 @@ class HeaderFetcher extends BlockFetcher {
    * @param {Header[]} headers fetch result
    * @return {Promise}
    */
-  async store (headers) {
+  async store (headers: any[]) {
     await this.chain.putHeaders(headers)
   }
 
   /**
    * Returns a peer that can process the given job
-   * @param  {Object} job job
+   * @param  job job
    * @return {Peer}
    */
-  peer (job) {
-    return this.pool.idle(p => p.les && p.les.status.serveHeaders)
+  peer (job: any) {
+    return this.pool.idle((p: any) => p.les && p.les.status.serveHeaders)
   }
 }
 
 module.exports = HeaderFetcher
+
