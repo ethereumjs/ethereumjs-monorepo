@@ -1,6 +1,6 @@
 import * as tape from 'tape'
 import Common from '@ethereumjs/common'
-import { rlp, toBuffer, zeros, KECCAK256_RLP, KECCAK256_RLP_ARRAY } from 'ethereumjs-util'
+import { rlp, toBuffer, zeros, KECCAK256_RLP, KECCAK256_RLP_ARRAY, BN } from 'ethereumjs-util'
 import { BlockHeader } from '../src/header'
 import { Block } from '../src'
 //import { Block } from '../src/block'
@@ -15,11 +15,11 @@ tape('[Block]: Header functions', function (t) {
       st.ok(header.transactionsTrie.equals(KECCAK256_RLP))
       st.ok(header.receiptTrie.equals(KECCAK256_RLP))
       st.deepEqual(header.bloom, zeros(256))
-      st.deepEqual(header.difficulty, Buffer.from([]))
-      st.deepEqual(header.number, Buffer.from([]))
-      st.deepEqual(header.gasLimit, Buffer.from('ffffffffffffff', 'hex'))
-      st.deepEqual(header.gasUsed, Buffer.from([]))
-      st.deepEqual(header.timestamp, Buffer.from([]))
+      st.deepEqual(header.difficulty, new BN(0))
+      st.deepEqual(header.number, new BN(0))
+      st.deepEqual(header.gasLimit, new BN(Buffer.from('ffffffffffffff', 'hex')))
+      st.deepEqual(header.gasUsed, new BN(0))
+      st.deepEqual(header.timestamp, new BN(0))
       st.deepEqual(header.extraData, Buffer.from([]))
       st.deepEqual(header.mixHash, zeros(32))
       st.deepEqual(header.nonce, zeros(8))

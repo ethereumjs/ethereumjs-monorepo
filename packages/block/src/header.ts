@@ -218,7 +218,7 @@ export class BlockHeader {
     const offset = parentDif.div(
       new BN(this._common.paramByHardfork('pow', 'difficultyBoundDivisor', hardfork)),
     )
-    let num = new BN(this.number)
+    let num = toBN(this.number)
 
     // We use a ! here as TS can follow this hardforks-dependent logic, but it always gets assigned
     let dif!: BN
