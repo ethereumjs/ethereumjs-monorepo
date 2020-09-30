@@ -4,8 +4,8 @@
  * @param  {string} name
  * @param  {string} path
  */
-exports.define = function define (name, path) {
-  let cache = null
+exports.define = function define (name: string, path: string) {
+  let cache: any = null
   Object.defineProperty(exports, name, {
     enumerable: true,
     get () {
@@ -71,3 +71,5 @@ exports.define('util', './util')
 
 // Logging
 exports.define('logging', './logging')
+
+export = exports

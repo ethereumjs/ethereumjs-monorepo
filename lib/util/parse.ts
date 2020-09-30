@@ -6,11 +6,11 @@ const util = require('ethereumjs-util')
 const url = require('url')
 const path = require('path')
 
-function toBuffer (string) {
+function toBuffer (string: string) {
   return Buffer.from(util.stripHexPrefix(string), 'hex')
 }
 
-function parseBootnodes (string) {
+function parseBootnodes (string: string) {
   if (!string) {
     return
   }
@@ -28,12 +28,12 @@ function parseBootnodes (string) {
   }
 }
 
-function parseTransports (transports) {
+function parseTransports (transports: any[]) {
   return transports.map(t => {
-    const options = {}
+    const options: any = {}
     const [ name, ...pairs ] = t.split(':')
     if (pairs.length) {
-      pairs.join(':').split(',').forEach(p => {
+      pairs.join(':').split(',').forEach((p: any) => {
         const [ key, value ] = p.split('=')
         options[key] = value
       })
@@ -42,14 +42,13 @@ function parseTransports (transports) {
   })
 }
 
-async function parseStorage (storage) {
+async function parseStorage (storage: any) {
   const trie = new Trie()
   const promises = []
   for (let [address, value] of Object.entries(storage)) {
-    address = toBuffer(address)
-    value = util.rlp.encode(util.unpadBuffer(toBuffer(value)))
+    value = util.rlp.encode(util.unpadBuffer(toBuffer(value as string)))
     promises.push(new Promise((resolve, reject) => {
-      trie.put(address, value, (err) => {
+      trie.put(toBuffer(address), value, (err: Error) => {
         if (err) return reject(err)
         resolve()
       })
@@ -59,23 +58,23 @@ async function parseStorage (storage) {
   return trie
 }
 
-async function parseGethState (alloc) {
+async function parseGethState (alloc: any) {
   const trie = new Trie()
   const promises = []
   for (let [key, value] of Object.entries(alloc)) {
     const address = toBuffer(key)
     const account = new Account()
-    if (value.balance) {
-      account.balance = new util.BN(value.balance.slice(2), 16)
+    if ((value as any).balance) {
+      account.balance = new util.BN((value as any).balance.slice(2), 16)
     }
-    if (value.code) {
-      account.codeHash = util.keccak(util.toBuffer(value.code))
+    if ((value as any).code) {
+      account.codeHash = util.keccak(util.toBuffer((value as any).code))
     }
-    if (value.storage) {
-      account.stateRoot = (await parseStorage(value.storage)).root
+    if ((value as any).storage) {
+      account.stateRoot = (await parseStorage((value as any).storage)).root
     }
     promises.push(new Promise((resolve, reject) => {
-      trie.put(address, account.serialize(), (err) => {
+      trie.put(address, account.serialize(), (err: Error) => {
         if (err) return reject(err)
         resolve()
       })
@@ -85,7 +84,7 @@ async function parseGethState (alloc) {
   return trie
 }
 
-async function parseGethHeader (json) {
+async function parseGethHeader (json: any) {
   const header = new Block.Header()
   header.gasLimit = json.gasLimit
   header.difficulty = json.difficulty
@@ -98,9 +97,9 @@ async function parseGethHeader (json) {
   return header
 }
 
-async function parseGethParams (json) {
+async function parseGethParams (json: any) {
   const header = await parseGethHeader(json)
-  const params = {
+  const params: any = {
     name: json.name,
     chainId: json.config.chainId,
     networkId: json.config.chainId,
@@ -127,7 +126,7 @@ async function parseGethParams (json) {
     'constantinople',
     'hybridCasper'
   ]
-  const forkMap = {
+  const forkMap: any = {
     homestead: 'homesteadBlock',
     dao: 'daoForkBlock',
     tangerineWhistle: 'eip150Block',
@@ -141,7 +140,7 @@ async function parseGethParams (json) {
   return params
 }
 
-async function parseParams (jsonFilePath) {
+async function parseParams (jsonFilePath: string) {
   try {
     const json = require(jsonFilePath)
     if (json.config && json.difficulty && json.gasLimit && json.alloc) {

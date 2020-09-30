@@ -3,14 +3,14 @@ const winston = require('winston')
 const { createLogger, format, transports } = winston
 const { combine, timestamp, label, printf } = format
 
-const levelColors = {
+const levelColors: any = {
   error: 'red',
   warn: 'yellow',
   info: 'green',
   debug: 'white'
 }
 
-const errorFormat = format(info => {
+const errorFormat = format((info: any) => {
   if (info.message instanceof Error && info.message.stack) {
     info.message = info.message.stack
   }
@@ -21,11 +21,11 @@ const errorFormat = format(info => {
 })
 
 function logFormat () {
-  return printf(info => {
+  return printf((info: any) => {
     const color = chalk[levelColors[info.level]].bind(chalk)
     const level = color(info.level.toUpperCase())
     const re = /(\w+)=(.+?)(?:\s|$)/g
-    info.message = info.message.replace(re, (_, tag, char) => `${color(tag)}=${char} `)
+    info.message = info.message.replace(re, (_: any, tag: string, char: string) => `${color(tag)}=${char} `)
     return `${level} [${info.timestamp}] ${info.message}`
   })
 }
@@ -52,3 +52,5 @@ function getLogger (options = { loglevel: 'info' }) {
 
 exports.defaultLogger = getLogger({ loglevel: 'debug' })
 exports.getLogger = getLogger
+
+export = exports

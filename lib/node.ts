@@ -1,4 +1,4 @@
-import { EventEmitter } from 'events'
+const { EventEmitter } = require('events')
 const { FastEthereumService, LightEthereumService } = require('./service')
 const { defaultLogger } = require('./logging')
 
@@ -14,7 +14,7 @@ const defaultOptions = {
  * lifecycle of included services.
  * @memberof module:node
  */
-class Node extends EventEmitter {
+export = module.exports = class Node extends EventEmitter {
   /**
    * Create new node
    * @param {Object}   options constructor parameters
@@ -30,7 +30,7 @@ class Node extends EventEmitter {
    * @param {string[]} [options.clientFilter] list of supported clients
    * @param {number}   [options.refreshInterval] how often to discover new peers
    */
-  constructor (options) {
+  constructor (options: any) {
     super()
     options = { ...defaultOptions, ...options }
 
@@ -70,23 +70,23 @@ class Node extends EventEmitter {
     if (this.opened) {
       return false
     }
-    this.servers.map(s => {
-      s.on('error', error => {
+    this.servers.map((s: any) => {
+      s.on('error', (error: Error) => {
         this.emit('error', error)
       })
-      s.on('listening', details => {
+      s.on('listening', (details: any) => {
         this.emit('listening', details)
       })
     })
-    this.services.map(s => {
-      s.on('error', error => {
+    this.services.map((s: any) => {
+      s.on('error', (error: any) => {
         this.emit('error', error)
       })
       s.on('synchronized', () => {
         this.emit('synchronized')
       })
     })
-    await Promise.all(this.services.map(s => s.open()))
+    await Promise.all(this.services.map((s: any) => s.open()))
     this.opened = true
   }
 
@@ -98,8 +98,8 @@ class Node extends EventEmitter {
     if (this.started) {
       return false
     }
-    await Promise.all(this.servers.map(s => s.start()))
-    await Promise.all(this.services.map(s => s.start()))
+    await Promise.all(this.servers.map((s: any) => s.start()))
+    await Promise.all(this.services.map((s: any) => s.start()))
     this.started = true
   }
 
@@ -111,8 +111,8 @@ class Node extends EventEmitter {
     if (!this.started) {
       return false
     }
-    await Promise.all(this.services.map(s => s.stop()))
-    await Promise.all(this.servers.map(s => s.stop()))
+    await Promise.all(this.services.map((s: any) => s.stop()))
+    await Promise.all(this.servers.map((s: any) => s.stop()))
     this.started = false
   }
 
@@ -121,8 +121,8 @@ class Node extends EventEmitter {
    * @param {string} name name of service
    * @return {Service}
    */
-  service (name) {
-    return this.services.find(s => s.name === name)
+  service (name: string) {
+    return this.services.find((s: any) => s.name === name)
   }
 
   /**
@@ -130,9 +130,8 @@ class Node extends EventEmitter {
    * @param {string} name name of server
    * @return {Server}
    */
-  server (name) {
-    return this.servers.find(s => s.name === name)
+  server (name: string) {
+    return this.servers.find((s: any) => s.name === name)
   }
 }
 
-module.exports = Node
