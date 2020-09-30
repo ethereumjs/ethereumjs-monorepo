@@ -8,11 +8,11 @@ exports.Libp2pServer = require('./libp2pserver')
  * @module net/server
  */
 
-const servers = {
+const servers: any = {
   'rlpx': exports.RlpxServer,
   'libp2p': exports.Libp2pServer
 }
 
-exports.fromName = function (name) {
+exports.fromName = function (name: string) {
   return servers[name]
 }

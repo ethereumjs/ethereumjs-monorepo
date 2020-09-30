@@ -1,6 +1,4 @@
-'use strict'
-
-import { EventEmitter } from 'events'
+const { EventEmitter } = require('events')
 const { defaultLogger } = require('../../logging')
 
 const defaultOptions = {
@@ -13,8 +11,8 @@ const defaultOptions = {
  * Base class for transport specific server implementations.
  * @memberof module:net/server
  */
-class Server extends EventEmitter {
-  constructor (options) {
+export = module.exports = class Server extends EventEmitter {
+  constructor (options: any) {
     super()
     options = { ...defaultOptions, ...options }
 
@@ -46,7 +44,7 @@ class Server extends EventEmitter {
       return
     }
     const protocols = Array.from(this.protocols)
-    await Promise.all(protocols.map(p => p.open()))
+    await Promise.all(protocols.map((p: any) => p.open()))
     this.started = true
     this.logger.info(`Started ${this.name} server.`)
   }
@@ -64,7 +62,7 @@ class Server extends EventEmitter {
    * Specify which protocols the server must support
    * @param {Protocol[]} protocols protocol classes
    */
-  addProtocols (protocols) {
+  addProtocols (protocols: any[]) {
     if (this.started) {
       this.logger.error('Cannot require protocols after server has been started')
       return false
@@ -75,13 +73,11 @@ class Server extends EventEmitter {
   /**
    * Ban peer for a specified time
    * @protected
-   * @param  {string} peerId id of peer
-   * @param  {number} [maxAge] how long to ban peer
+   * @param  peerId id of peer
+   * @param  maxAge how long to ban peer
    * @return {Promise}
    */
-  ban (peerId, maxAge) {
+  ban (peerId: string, maxAge: number) {
     // don't do anything by default
   }
 }
-
-module.exports = Server

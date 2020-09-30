@@ -33,7 +33,7 @@ const ignoredErrors = new RegExp([
  * @emits error
  * @memberof module:net/server
  */
-class RlpxServer extends Server {
+export = module.exports = class RlpxServer extends Server {
   /**
    * Create new DevP2P/RLPx server
    * @param {Object}   options constructor parameters
@@ -46,7 +46,7 @@ class RlpxServer extends Server {
    * @param {number}   [options.refreshInterval=30000] how often (in ms) to discover new peers
    * @param {Logger}   [options.logger] Logger instance
    */
-  constructor (options) {
+  constructor (options: any) {
     super(options)
     options = { ...defaultOptions, ...options }
 
@@ -100,13 +100,13 @@ class RlpxServer extends Server {
    * @return {Promise}
    */
   async bootstrap () {
-    const promises = this.bootnodes.map(node => {
+    const promises = this.bootnodes.map((node: any) => {
       const bootnode = {
         address: node.ip,
         udpPort: node.port,
         tcpPort: node.port
       }
-      return this.dpt.bootstrap(bootnode).catch(e => this.error(e))
+      return this.dpt.bootstrap(bootnode).catch((e: Error) => this.error(e))
     })
     await Promise.all(promises)
   }
@@ -126,11 +126,11 @@ class RlpxServer extends Server {
 
   /**
    * Ban peer for a specified time
-   * @param  {string} peerId id of peer
-   * @param  {number} [maxAge] how long to ban peer
+   * @param  peerId id of peer
+   * @param  [maxAge] how long to ban peer
    * @return {Promise}
    */
-  ban (peerId, maxAge = 60000) {
+  ban (peerId: string, maxAge = 60000) {
     if (!this.started) {
       return false
     }
@@ -140,11 +140,11 @@ class RlpxServer extends Server {
   /**
    * Handles errors from server and peers
    * @private
-   * @param  {Error} error
+   * @param  error
    * @param  {Peer} peer
    * @emits  error
    */
-  error (error, peer) {
+  error (error: Error, peer?: any) {
     if (ignoredErrors.test(error.message)) {
       return
     }
@@ -169,7 +169,7 @@ class RlpxServer extends Server {
       }
     })
 
-    this.dpt.on('error', e => this.error(e))
+    this.dpt.on('error', (e: Error) => this.error(e))
 
     if (this.port) {
       this.dpt.bind(this.port, '0.0.0.0')
@@ -189,7 +189,7 @@ class RlpxServer extends Server {
       listenPort: this.port
     })
 
-    this.rlpx.on('peer:added', async (rlpxPeer) => {
+    this.rlpx.on('peer:added', async (rlpxPeer: any) => {
       const peer = new RlpxPeer({
         id: rlpxPeer.getId().toString('hex'),
         host: rlpxPeer._socket.remoteAddress,
@@ -207,7 +207,7 @@ class RlpxServer extends Server {
       }
     })
 
-    this.rlpx.on('peer:removed', (rlpxPeer, reason) => {
+    this.rlpx.on('peer:removed', (rlpxPeer: any, reason: string) => {
       const id = rlpxPeer.getId().toString('hex')
       const peer = this.peers.get(id)
       if (peer) {
@@ -217,7 +217,7 @@ class RlpxServer extends Server {
       }
     })
 
-    this.rlpx.on('peer:error', (rlpxPeer, error) => {
+    this.rlpx.on('peer:error', (rlpxPeer: any, error: Error) => {
       const peerId = rlpxPeer && rlpxPeer.getId()
       if (!peerId) {
         return this.error(error)
@@ -227,7 +227,7 @@ class RlpxServer extends Server {
       this.error(error, peer)
     })
 
-    this.rlpx.on('error', e => this.error(e))
+    this.rlpx.on('error', (e: Error) => this.error(e))
 
     this.rlpx.on('listening', () => {
       this.emit('listening', {
@@ -241,5 +241,3 @@ class RlpxServer extends Server {
     }
   }
 }
-
-module.exports = RlpxServer
