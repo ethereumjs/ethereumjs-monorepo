@@ -7,13 +7,15 @@ const { platform } = require('os')
  * web3_* RPC module
  * @memberof module:rpc/modules
  */
-class Web3 {
+export = module.exports = class Web3 {
+  private _chain: any
+
   /**
    * Create web3_* RPC module
    * @param {Node} Node to which the module binds
    */
-  constructor (node) {
-    const service = node.services.find(s => s.name === 'eth')
+  constructor (node: any) {
+    const service = node.services.find((s: any) => s.name === 'eth')
     this._chain = service.chain
 
     this.clientVersion = middleware(this.clientVersion.bind(this), 0, [])
@@ -27,7 +29,7 @@ class Web3 {
    * @param  {Function} [cb] A function with an error object as the first argument and the
    * client version as the second argument
    */
-  clientVersion (params, cb) {
+  clientVersion (params = [], cb: (err: null, version: string) => void) {
     const packageVersion = require('../../../package.json').version
     const { version } = process
     const ethJsVersion = `EthereumJS/${packageVersion}/${platform()}/node${version.substring(
@@ -42,7 +44,7 @@ class Web3 {
    * @param  {Function} [cb] A function with an error object as the first argument and the
    * Keccak-256 hash of the given data as the second argument
    */
-  sha3 (params, cb) {
+  sha3 (params: string[], cb: (err: Error | null, hash?: string) => void) {
     try {
       const rawDigest = keccak(toBuffer(params[0]))
       const hexEncodedDigest = addHexPrefix(rawDigest.toString('hex'))
@@ -52,5 +54,3 @@ class Web3 {
     }
   }
 }
-
-module.exports = Web3

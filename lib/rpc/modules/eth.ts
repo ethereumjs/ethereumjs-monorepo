@@ -6,15 +6,18 @@ const { toBuffer, bufferToHex } = require('ethereumjs-util')
  * eth_* RPC module
  * @memberof module:rpc/modules
  */
-class Eth {
+export = module.exports = class Eth {
+  private _chain: any
+  public ethVersion: any
+
   /**
    * Create eth_* RPC module
    * @param {Node} Node to which the module binds
    */
-  constructor (node) {
-    const service = node.services.find(s => s.name === 'eth')
+  constructor (node: any) {
+    const service = node.services.find((s: any) => s.name === 'eth')
     this._chain = service.chain
-    const ethProtocol = service.protocols.find(p => p.name === 'eth')
+    const ethProtocol = service.protocols.find((p: any) => p.name === 'eth')
     this.ethVersion = Math.max.apply(Math, ethProtocol.versions)
 
     this.blockNumber = middleware(this.blockNumber.bind(this), 0)
@@ -38,7 +41,7 @@ class Eth {
    * as the second argument
    * @return {Promise}
    */
-  async blockNumber (params, cb) {
+  async blockNumber (params=[], cb: (err: Error | null, val?: string) => void ) {
     try {
       const latestHeader = await this._chain.getLatestHeader()
       const latestBlockNumber = bufferToHex(latestHeader.number)
@@ -56,7 +59,7 @@ class Eth {
    * as the second argument
    * @return {Promise}
    */
-  async getBlockByNumber (params, cb) {
+  async getBlockByNumber (params: any[] | boolean[], cb: (err: Error | null, val?: any) => void) {
     let [blockNumber, includeTransactions] = params
 
     blockNumber = Number.parseInt(blockNumber, 16)
@@ -64,7 +67,7 @@ class Eth {
       const block = await this._chain.getBlock(blockNumber)
       const json = block.toJSON(true)
       if (!includeTransactions) {
-        json.transactions = json.transactions.map(tx => tx.hash)
+        json.transactions = json.transactions.map((tx: any) => tx.hash)
       }
       cb(null, json)
     } catch (err) {
@@ -80,7 +83,7 @@ class Eth {
    * as the second argument
    * @return {Promise}
    */
-  async getBlockByHash (params, cb) {
+  async getBlockByHash (params: string[] | boolean[], cb: (err: Error | null, val?: any) => void) {
     let [blockHash, includeTransactions] = params
 
     try {
@@ -89,7 +92,7 @@ class Eth {
       const json = block.toJSON(true)
 
       if (!includeTransactions) {
-        json.transactions = json.transactions.map(tx => tx.hash)
+        json.transactions = json.transactions.map((tx: any) => tx.hash)
       }
       cb(null, json)
     } catch (err) {
@@ -104,7 +107,7 @@ class Eth {
    * as the second argument
    * @return {Promise}
    */
-  async getBlockTransactionCountByHash (params, cb) {
+  async getBlockTransactionCountByHash (params: string[], cb: (err: Error | null, val?: any) => void) {
     let [blockHash] = params
 
     try {
@@ -123,9 +126,7 @@ class Eth {
    * @param  {Function} [cb] A function with an error object as the first argument and a
    * hex-encoded string of the current protocol version as the second argument
    */
-  protocolVersion (params, cb) {
+  protocolVersion (params = [], cb: (err: null, val: string) => void) {
     cb(null, `0x${this.ethVersion.toString(16)}`)
   }
 }
-
-module.exports = Eth
