@@ -58,7 +58,7 @@
     "ethereumjs-block": "^2.2.2",
     "ethereumjs-blockchain": "^3.4.0",
     "ethereumjs-common": "^1.5.2",
-    "ethereumjs-devp2p": "^3.0.1",
+    "ethereumjs-devp2p": "^3.0.3",
     "ethereumjs-util": "^7.0.2",
     "fs-extra": "^7.0.1",
     "jayson": "^2.0.6",
