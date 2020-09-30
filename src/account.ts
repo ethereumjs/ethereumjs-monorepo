@@ -61,7 +61,7 @@ export class Account {
   }
 
   /**
-   * This constructor takes the values, validates and assigns them.
+   * This constructor assigns and validates the values.
    * Use the static factory methods to assist in creating an Account from varying data types.
    */
   constructor(
@@ -70,17 +70,27 @@ export class Account {
     stateRoot = KECCAK256_RLP,
     codeHash = KECCAK256_NULL,
   ) {
-    if (stateRoot.length !== 32) {
-      throw new Error('stateRoot must have a length of 32')
-    }
-    if (codeHash.length !== 32) {
-      throw new Error('codeHash must have a length of 32')
-    }
-
     this.nonce = nonce
     this.balance = balance
     this.stateRoot = stateRoot
     this.codeHash = codeHash
+
+    this._validate()
+  }
+
+  private _validate() {
+    if (this.nonce.lt(new BN(0))) {
+      throw new Error('nonce must be greater than zero')
+    }
+    if (this.balance.lt(new BN(0))) {
+      throw new Error('balance must be greater than zero')
+    }
+    if (this.stateRoot.length !== 32) {
+      throw new Error('stateRoot must have a length of 32')
+    }
+    if (this.codeHash.length !== 32) {
+      throw new Error('codeHash must have a length of 32')
+    }
   }
 
   /**

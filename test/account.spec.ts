@@ -196,6 +196,18 @@ describe('Account', function() {
         Account.fromRlpSerializedAccount(data as any)
       })
     })
+
+    it('should not accept nonce less than 0', function() {
+      assert.throws(() => {
+        new Account(new BN(-5))
+      })
+    })
+
+    it('should not accept balance less than 0', function() {
+      assert.throws(() => {
+        new Account(undefined, new BN(-5))
+      })
+    })
   })
 })
 
