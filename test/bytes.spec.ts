@@ -216,7 +216,7 @@ describe('toBuffer', function() {
     // 'toArray'
     assert.deepEqual(
       toBuffer({
-        toArray: function() {
+        toArray: function(): any {
           return [1]
         },
       }),
@@ -225,6 +225,7 @@ describe('toBuffer', function() {
   })
   it('should fail', function() {
     assert.throws(function() {
+      // @ts-ignore
       toBuffer({ test: 1 })
     })
   })
