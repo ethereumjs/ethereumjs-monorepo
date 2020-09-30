@@ -2,7 +2,7 @@ const test = require('tape')
 const request = require('supertest')
 
 const { startRPC, closeRPC } = require('./helpers')
-const { METHOD_NOT_FOUND } = require('../../lib/rpc/error-code.js')
+const { METHOD_NOT_FOUND } = require('../../lib/rpc/error-code')
 
 test('call JSON-RPC without Content-Type header', t => {
   const server = startRPC({})

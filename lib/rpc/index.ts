@@ -10,7 +10,7 @@ const modules = require('./modules')
  * @param  {Object}   mod
  * @return {string[]}
  */
-function getMethodNames (mod) {
+function getMethodNames (mod: any) : string[] {
   return Object.getOwnPropertyNames(mod.prototype)
 }
 
@@ -18,8 +18,12 @@ function getMethodNames (mod) {
  * RPC server manager
  * @memberof module:rpc
  */
-class RPCManager {
-  constructor (node, config) {
+export = module.exports = class RPCManager {
+  private _config: any
+  private _node: any
+  private _logger: any
+
+  constructor (node: any, config: any) {
     this._config = config
     this._node = node
     this._logger = config.logger
@@ -30,16 +34,16 @@ class RPCManager {
    * e.g. convert getBlockByNumber() in eth module to { eth_getBlockByNumber }
    * @return {Object} methods
    */
-  getMethods () {
-    const methods = {}
+  getMethods () : any {
+    const methods: any = {}
 
-    modules.list.forEach(modName => {
+    modules.list.forEach((modName: string) => {
       this._logger.debug(`Initialize ${modName} module`)
       const mod = new modules[modName](this._node)
 
       getMethodNames(modules[modName])
-        .filter(methodName => methodName !== 'constructor')
-        .forEach(methodName => {
+        .filter((methodName: string) => methodName !== 'constructor')
+        .forEach((methodName: string) => {
           const concatedMethodName = `${modName}_${methodName}`
 
           this._logger.debug(`Setup module method '${concatedMethodName}' to RPC`)
@@ -50,5 +54,3 @@ class RPCManager {
     return methods
   }
 }
-
-module.exports = RPCManager

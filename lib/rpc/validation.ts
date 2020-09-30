@@ -1,5 +1,5 @@
 const { INVALID_PARAMS } = require('./error-code')
-module.exports = {
+export = module.exports = {
   /**
    * middleware for parameters validation
    * @memberof module:rpc
@@ -7,8 +7,8 @@ module.exports = {
    * @param {number} requiredParamsCount required parameters count
    * @param {Function[]} validators      array of validator
    */
-  middleware (method, requiredParamsCount, validators = []) {
-    return function (params = [], cb) {
+  middleware (method: any, requiredParamsCount: number, validators: any[] = []): any {
+    return function (params: any[] = [], cb: (err: any, val?: any) => void) {
       if (params.length < requiredParamsCount) {
         const err = {
           code: INVALID_PARAMS,
@@ -41,7 +41,7 @@ module.exports = {
      * @param {any[]} params parameters of method
      * @param {number} index index of parameter
      */
-    hex (params, index) {
+    hex (params: any[], index: number) : any {
       let err
       if (typeof params[index] !== 'string') {
         return {
@@ -65,7 +65,7 @@ module.exports = {
      * @param {any[]} params parameters of method
      * @param {number} index index of parameter
      */
-    blockHash (params, index) {
+    blockHash (params: any[], index: number): any {
       let err
 
       if (typeof params[index] !== 'string') {
@@ -77,7 +77,7 @@ module.exports = {
 
       let blockHash = params[index].substring(2)
 
-      if (!/^[0-9a-fA-F]+$/.test(blockHash) | blockHash.length !== 64) {
+      if (!/^[0-9a-fA-F]+$/.test(blockHash) || blockHash.length !== 64) {
         err = {
           code: INVALID_PARAMS,
           message: `invalid argument ${index}: invalid block hash`
@@ -92,7 +92,7 @@ module.exports = {
      * @param {any[]} params parameters of method
      * @param {number} index index of parameter
      */
-    bool (params, index) {
+    bool (params: any[], index: number): any {
       let err
       if (typeof (params[index]) !== 'boolean') {
         err = {
