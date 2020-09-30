@@ -7,7 +7,7 @@ const LesProtocol = require('../net/protocol/lesprotocol')
  * Ethereum service
  * @memberof module:service
  */
-class LightEthereumService extends EthereumService {
+export = module.exports = class LightEthereumService extends EthereumService {
   /**
    * Create new ETH service
    * @param {Object}   options constructor parameters
@@ -19,7 +19,7 @@ class LightEthereumService extends EthereumService {
    * @param {number}   [options.interval] sync retry interval
    * @param {Logger}   [options.logger] logger instance
    */
-  constructor (options) {
+  constructor (options: any) {
     super(options)
     this.init()
   }
@@ -52,8 +52,6 @@ class LightEthereumService extends EthereumService {
    * @param  {Peer}    peer peer
    * @return {Promise}
    */
-  async handle (message, protocol, peer) {
+  async handle (message: any, protocol: string, peer: any) {
   }
 }
-
-module.exports = LightEthereumService

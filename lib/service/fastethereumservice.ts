@@ -12,7 +12,7 @@ const defaultOptions = {
  * Ethereum service
  * @memberof module:service
  */
-class FastEthereumService extends EthereumService {
+export = module.exports = class FastEthereumService extends EthereumService {
   /**
    * Create new ETH service
    * @param {Object}   options constructor parameters
@@ -25,7 +25,7 @@ class FastEthereumService extends EthereumService {
    * @param {number}   [options.interval] sync retry interval
    * @param {Logger}   [options.logger] logger instance
    */
-  constructor (options) {
+  constructor (options: any) {
     super(options)
     options = { ...defaultOptions, ...options }
     this.lightserv = options.lightserv
@@ -70,7 +70,7 @@ class FastEthereumService extends EthereumService {
    * @param  {Peer}    peer peer
    * @return {Promise}
    */
-  async handle (message, protocol, peer) {
+  async handle (message: any, protocol: string, peer: any) {
     if (protocol === 'eth') {
       return this.handleEth(message, peer)
     } else {
@@ -84,15 +84,15 @@ class FastEthereumService extends EthereumService {
    * @param  {Peer}    peer peer
    * @return {Promise}
    */
-  async handleEth (message, peer) {
+  async handleEth (message: any, peer: any) {
     if (message.name === 'GetBlockHeaders') {
       const { block, max, skip, reverse } = message.data
       const headers = await this.chain.getHeaders(block, max, skip, reverse)
       peer.eth.send('BlockHeaders', headers)
     } else if (message.name === 'GetBlockBodies') {
       const hashes = message.data
-      const blocks = await Promise.all(hashes.map(hash => this.chain.getBlock(hash)))
-      const bodies = blocks.map(block => block.raw.slice(1))
+      const blocks = await Promise.all(hashes.map((hash: any) => this.chain.getBlock(hash)))
+      const bodies = blocks.map((block: any) => block.raw.slice(1))
       peer.eth.send('BlockBodies', bodies)
     } else if (message.name === 'NewBlockHashes') {
       this.synchronizer.announced(message.data, peer)
@@ -105,7 +105,7 @@ class FastEthereumService extends EthereumService {
    * @param  {Peer}    peer peer
    * @return {Promise}
    */
-  async handleLes (message, peer) {
+  async handleLes (message: any, peer: any) {
     if (message.name === 'GetBlockHeaders' && this.lightserv) {
       const { reqId, block, max, skip, reverse } = message.data
       const bv = this.flow.handleRequest(peer, message.name, max)
@@ -120,4 +120,3 @@ class FastEthereumService extends EthereumService {
   }
 }
 
-module.exports = FastEthereumService

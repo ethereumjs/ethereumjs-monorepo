@@ -16,7 +16,7 @@ const defaultOptions = {
  * Ethereum service
  * @memberof module:service
  */
-class EthereumService extends Service {
+export = module.exports = class EthereumService extends Service {
   /**
    * Create new ETH service
    * @param {Object}   options constructor parameters
@@ -30,7 +30,7 @@ class EthereumService extends Service {
    * @param {number}   [options.interval] sync retry interval
    * @param {Logger}   [options.logger] logger instance
    */
-  constructor (options) {
+  constructor (options: any) {
     options = { ...defaultOptions, ...options }
     super(options)
 
@@ -62,7 +62,7 @@ class EthereumService extends Service {
     }
     super.open()
     this.synchronizer.on('synchronized', () => this.emit('synchronized'))
-    this.synchronizer.on('error', error => this.emit('error', error))
+    this.synchronizer.on('error', (error: Error) => this.emit('error', error))
     await this.chain.open()
     await this.synchronizer.open()
   }
@@ -92,5 +92,3 @@ class EthereumService extends Service {
     await super.stop()
   }
 }
-
-module.exports = EthereumService
