@@ -109,6 +109,8 @@ export class Account {
 
   /**
    * Returns a `Boolean` determining if the account is empty.
+   * For more details about account emptiness see [EIP-161](https://eips.ethereum.org/EIPS/eip-161).
+   * Note: The stateRoot is also checked to be empty since in Frontier it was possible to create a contract with no code where nonce remained 0 but some values were written to storage in the constructor (thus stateRoot is not KECCAK256_RLP).
    */
   isEmpty(): boolean {
     return (
@@ -133,7 +135,7 @@ export const isValidAddress = function(hexAddress: string): boolean {
  *
  * If a eip1191ChainId is provided, the chainId will be included in the checksum calculation. This
  * has the effect of checksummed addresses for one chain having invalid checksums for others.
- * For more details, consult EIP-1191.
+ * For more details see [EIP-1191](https://eips.ethereum.org/EIPS/eip-1191).
  *
  * WARNING: Checksums with and without the chainId will differ. As of 2019-06-26, the most commonly
  * used variation in Ethereum was without the chainId. This may change in the future.
@@ -285,7 +287,7 @@ export const importPublic = function(publicKey: Buffer): Buffer {
 }
 
 /**
- * Returns a zero address.
+ * Returns the zero address.
  */
 export const zeroAddress = function(): string {
   const addressLength = 20
@@ -294,7 +296,7 @@ export const zeroAddress = function(): string {
 }
 
 /**
- * Checks if a given address is a zero address.
+ * Checks if a given address is the zero address.
  */
 export const isZeroAddress = function(hexAddress: string): boolean {
   assertIsHexString(hexAddress)

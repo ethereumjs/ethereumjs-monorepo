@@ -1,12 +1,31 @@
 import * as BN from 'bn.js'
 import { unpadBuffer } from './bytes'
 
+/*
+ * A type that represents a BNLike input that can be converted to a BN.
+ */
 export type BNLike = BN | string | number
 
-export type BufferLike = Buffer | TransformableToBuffer | PrefixedHexString | number
+/*
+ * A type that represents a BufferLike input that can be converted to a Buffer.
+ */
+export type BufferLike =
+  | Buffer
+  | Uint8Array
+  | number[]
+  | number
+  | BN
+  | TransformableToBuffer
+  | PrefixedHexString
 
+/*
+ * A type that represents a `0x`-prefixed hex string.
+ */
 export type PrefixedHexString = string
 
+/*
+ * A type that represents an object that has a `toBuffer()` method.
+ */
 export interface TransformableToBuffer {
   toBuffer(): Buffer
 }
