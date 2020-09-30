@@ -9,14 +9,14 @@ let id = new BN(0)
 const messages = [{
   name: 'Announce',
   code: 0x01,
-  encode: ({ headHash, headNumber, headTd, reorgDepth }) => [
+  encode: ({ headHash, headNumber, headTd, reorgDepth }: any) => [
     // TO DO: handle state changes
     headHash,
     headNumber.toArrayLike(Buffer),
     headTd.toArrayLike(Buffer),
     new BN(reorgDepth).toArrayLike(Buffer)
   ],
-  decode: ([headHash, headNumber, headTd, reorgDepth]) => ({
+  decode: ([headHash, headNumber, headTd, reorgDepth]: any) => ({
     // TO DO: handle state changes
     headHash: headHash,
     headNumber: new BN(headNumber),
@@ -27,11 +27,11 @@ const messages = [{
   name: 'GetBlockHeaders',
   code: 0x02,
   response: 0x03,
-  encode: ({ reqId, block, max, skip = 0, reverse = 0 }) => [
+  encode: ({ reqId, block, max, skip = 0, reverse = 0 }: any) => [
     (reqId === undefined ? id.iaddn(1) : new BN(reqId)).toArrayLike(Buffer),
     [ BN.isBN(block) ? block.toArrayLike(Buffer) : block, max, skip, reverse ]
   ],
-  decode: ([reqId, [block, max, skip, reverse]]) => ({
+  decode: ([reqId, [block, max, skip, reverse]]: any) => ({
     reqId: new BN(reqId),
     block: block.length === 32 ? block : new BN(block),
     max: util.bufferToInt(max),
@@ -41,15 +41,15 @@ const messages = [{
 }, {
   name: 'BlockHeaders',
   code: 0x03,
-  encode: ({ reqId, bv, headers }) => [
+  encode: ({ reqId, bv, headers }: any) => [
     new BN(reqId).toArrayLike(Buffer),
     new BN(bv).toArrayLike(Buffer),
-    headers.map(h => h.raw)
+    headers.map((h: any) => h.raw)
   ],
-  decode: ([reqId, bv, headers]) => ({
+  decode: ([reqId, bv, headers]: any) => ({
     reqId: new BN(reqId),
     bv: new BN(bv),
-    headers: headers.map(raw => new Block.Header(raw))
+    headers: headers.map((raw: Buffer[]) => new Block.Header(raw))
   })
 }]
 
@@ -57,7 +57,7 @@ const messages = [{
  * Implements les/1 and les/2 protocols
  * @memberof module:net/protocol
  */
-class LesProtocol extends Protocol {
+export = module.exports = class LesProtocol extends Protocol {
   /**
    * Create les protocol
    * @param {Object}      options constructor parameters
@@ -67,7 +67,7 @@ class LesProtocol extends Protocol {
    * @param {number}      [options.timeout=8000] handshake timeout in ms
    * @param {Logger}      [options.logger] logger instance
    */
-  constructor (options) {
+  constructor (options: any) {
     super(options)
 
     this.chain = options.chain
@@ -122,8 +122,8 @@ class LesProtocol extends Protocol {
       txRelay: 1,
       'flowControl/BL': new BN(this.flow.bl).toArrayLike(Buffer),
       'flowControl/MRR': new BN(this.flow.mrr).toArrayLike(Buffer),
-      'flowControl/MRC': Object.entries(this.flow.mrc).map(([name, { base, req }]) => {
-        const { code } = messages.find(m => m.name === name)
+      'flowControl/MRC': Object.entries(this.flow.mrc).map(([name, { base, req }]: any) => {
+        const { code }: any = messages.find(m => m.name === name)
         return [code, base, req]
       })
     } : {}
@@ -143,12 +143,12 @@ class LesProtocol extends Protocol {
    * @param {Object} status status message payload
    * @return {Object}
    */
-  decodeStatus (status) {
+  decodeStatus (status: any) {
     this.isServer = !!status.serveHeaders
-    const mrc = {}
+    const mrc: any = {}
     if (status['flowControl/MRC']) {
       for (let entry of status['flowControl/MRC']) {
-        entry = entry.map(e => new BN(e).toNumber())
+        entry = entry.map((e: any) => new BN(e).toNumber())
         mrc[entry[0]] = { base: entry[1], req: entry[2] }
         const message = messages.find(m => m.code === entry[0])
         if (message) {
@@ -173,4 +173,3 @@ class LesProtocol extends Protocol {
   }
 }
 
-module.exports = LesProtocol

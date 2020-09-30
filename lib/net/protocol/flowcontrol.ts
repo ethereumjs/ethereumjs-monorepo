@@ -11,8 +11,14 @@ const defaultOptions = {
  * LES flow control manager
  * @memberof module:net/protocol
  */
-class FlowControl {
-  constructor (options) {
+export = module.exports = class FlowControl {
+  private bl: any
+  private mrc: any
+  private mrr: any
+  private out: any
+  private in: any
+  
+  constructor (options: any) {
     options = { ...defaultOptions, ...options }
 
     this.bl = options.bl
@@ -27,7 +33,7 @@ class FlowControl {
    * @param  {Peer}   peer LES peer
    * @param  {number} bv latest buffer value
    */
-  handleReply (peer, bv) {
+  handleReply (peer: any, bv: number) {
     const params = this.in.get(peer.id) || {}
     params.ble = bv
     params.last = Date.now()
@@ -37,10 +43,10 @@ class FlowControl {
   /**
    * Calculate maximum items that can be requested from an LES peer
    * @param  {Peer}   peer LES peer
-   * @param  {string} messageName message name
-   * @return {number} maximum count
+   * @param  messageName message name
+   * @return maximum count
    */
-  maxRequestCount (peer, messageName) {
+  maxRequestCount (peer: any, messageName: string): number {
     const now = Date.now()
     const mrcBase = peer.les.status.mrc[messageName].base
     const mrcReq = peer.les.status.mrc[messageName].req
@@ -62,11 +68,11 @@ class FlowControl {
    * processed. If the new value is negative, the peer should be dropped by the
    * caller.
    * @param  {Peer}   peer LES peer
-   * @param  {string} messageName message name
-   * @param  {number} count number of items to request from peer
-   * @return {number} new buffer value after request is sent (if negative, drop peer)
+   * @param  messageName message name
+   * @param  count number of items to request from peer
+   * @return new buffer value after request is sent (if negative, drop peer)
    */
-  handleRequest (peer, messageName, count) {
+  handleRequest (peer: any, messageName: string, count: number): number {
     const now = Date.now()
     const params = this.out.get(peer.id) || {}
     if (params.bv && params.last) {
@@ -84,5 +90,3 @@ class FlowControl {
     return params.bv
   }
 }
-
-module.exports = FlowControl

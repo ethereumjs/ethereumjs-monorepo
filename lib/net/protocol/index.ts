@@ -10,3 +10,5 @@ exports.Sender = require('./sender')
 exports.RlpxSender = require('./rlpxsender')
 exports.Libp2pSender = require('./libp2psender')
 exports.FlowControl = require('./flowcontrol')
+
+export = exports

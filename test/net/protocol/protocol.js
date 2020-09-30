@@ -22,7 +22,6 @@ tape('[Protocol]', t => {
 
   t.test('should throw if missing abstract methods', t => {
     const p = new Protocol()
-    t.throws(() => p.name, /Unimplemented/)
     t.throws(() => p.versions, /Unimplemented/)
     t.throws(() => p.messages, /Unimplemented/)
     t.throws(() => p.encodeStatus(), /Unimplemented/)

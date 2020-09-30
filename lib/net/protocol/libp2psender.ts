@@ -1,10 +1,9 @@
 
 const Sender = require('./sender')
-const util = require('ethereumjs-util')
+import { bufferToInt, rlp } from 'ethereumjs-util'
 const pull = require('pull-stream')
 const catcher = require('pull-catch')
 const Pushable = require('pull-pushable')
-const rlp = util.rlp
 
 /**
  * Libp2p protocol sender
@@ -12,12 +11,12 @@ const rlp = util.rlp
  * @emits status
  * @memberof module:net/protocol
  */
-class Libp2pSender extends Sender {
+export = module.exports = class Libp2pSender extends Sender {
   /**
    * Creates a new Libp2p protocol sender
    * @param {Connection} connection  connection to libp2p peer
    */
-  constructor (connection) {
+  constructor (connection: any) {
     super()
 
     this.connection = connection
@@ -29,20 +28,20 @@ class Libp2pSender extends Sender {
     // outgoing stream
     pull(
       this.pushable,
-      catcher(e => this.error(e)),
+      catcher((e: Error) => this.error(e)),
       this.connection
     )
 
     // incoming stream
     pull(
       this.connection,
-      catcher(e => this.error(e)),
-      pull.drain(message => {
-        let [code, payload] = rlp.decode(message)
-        code = util.bufferToInt(code)
+      catcher((e: Error) => this.error(e)),
+      pull.drain((message: any) => {
+        let [code, payload]: any = rlp.decode(message)
+        code = bufferToInt(code)
         if (code === 0) {
-          const status = {}
-          payload.forEach(([k, v]) => {
+          const status: any = {}
+          payload.forEach(([k, v]: any) => {
             status[k.toString()] = v
           })
           this.status = status
@@ -57,8 +56,8 @@ class Libp2pSender extends Sender {
    * Send a status to peer
    * @param  {Object} status
    */
-  sendStatus (status) {
-    const payload = Object.entries(status).map(([k, v]) => [k, v])
+  sendStatus (status: any) {
+    const payload: any = Object.entries(status).map(([k, v]) => [k, v])
     this.pushable.push(rlp.encode([ 0, payload ]))
   }
 
@@ -67,17 +66,15 @@ class Libp2pSender extends Sender {
    * @param  {number} code message code
    * @param  {*}      data message payload
    */
-  sendMessage (code, data) {
+  sendMessage (code: number, data: any) {
     this.pushable.push(rlp.encode([ code, data ]))
   }
 
   /**
    * Handle pull stream errors
-   * @param  {Error} error error
+   * @param  error error
    */
-  error (error) {
+  error (error: Error) {
     this.emit('error', error)
   }
 }
-
-module.exports = Libp2pSender

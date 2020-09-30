@@ -1,10 +1,10 @@
-import { EventEmitter } from 'events'
+const { EventEmitter } = require('events')
 
 /**
  * Binds a protocol implementation to the specified peer
  * @memberof module:net/protocol
  */
-class BoundProtocol extends EventEmitter {
+export = module.exports = class BoundProtocol extends EventEmitter {
   /**
    * Create bound protocol
    * @param {Object}   options constructor parameters
@@ -12,7 +12,7 @@ class BoundProtocol extends EventEmitter {
    * @param {Peer}     options.peer peer that protocol is bound to
    * @param {Sender}   options.sender message sender
    */
-  constructor (options) {
+  constructor (options: any) {
     super()
 
     this.protocol = options.protocol
@@ -24,14 +24,14 @@ class BoundProtocol extends EventEmitter {
     this.logger = this.protocol.logger
     this._status = {}
     this.resolvers = new Map()
-    this.sender.on('message', message => {
+    this.sender.on('message', (message: any) => {
       try {
         this.handle(message)
       } catch (error) {
         this.emit('error', error)
       }
     })
-    this.sender.on('error', error => this.emit('error', error))
+    this.sender.on('error', (error: Error) => this.emit('error', error))
     this.addMethods()
   }
 
@@ -43,7 +43,7 @@ class BoundProtocol extends EventEmitter {
     Object.assign(this._status, status)
   }
 
-  async handshake (sender) {
+  async handshake (sender: any) {
     this._status = await this.protocol.handshake(sender)
   }
 
@@ -53,9 +53,9 @@ class BoundProtocol extends EventEmitter {
    * @param  {Object} message message object
    * @emits  message
    */
-  handle (incoming) {
+  handle (incoming: any) {
     const messages = this.protocol.messages
-    const message = messages.find(m => m.code === incoming.code)
+    const message = messages.find((m: any) => m.code === incoming.code)
     if (!message) {
       return
     }
@@ -87,12 +87,12 @@ class BoundProtocol extends EventEmitter {
 
   /**
    * Send message with name and the specified args
-   * @param  {string} name message name
-   * @param  {object} args message arguments
+   * @param  name message name
+   * @param  args message arguments
    */
-  send (name, args) {
+  send (name: string, args: any[]) {
     const messages = this.protocol.messages
-    const message = messages.find(m => m.name === name)
+    const message = messages.find((m: any) => m.name === name)
     if (message) {
       const encoded = this.protocol.encode(message, args)
       this.sender.sendMessage(message.code, encoded)
@@ -105,13 +105,13 @@ class BoundProtocol extends EventEmitter {
   /**
    * Returns a promise that resolves with the message payload when a response
    * to the specified message is received
-   * @param  {string}  name message to wait for
-   * @param  {object}  args message arguments
+   * @param  name message to wait for
+   * @param  args message arguments
    * @return {Promise}
    */
-  async request (name, args) {
+  async request (name: string, args: any[]) {
     const message = this.send(name, args)
-    const resolver = {
+    const resolver: any = {
       timeout: null,
       resolve: null,
       reject: null
@@ -136,13 +136,12 @@ class BoundProtocol extends EventEmitter {
    * corresponding response message
    */
   addMethods () {
-    const messages = this.protocol.messages.filter(m => m.response)
+    const messages = this.protocol.messages.filter((m: any) => m.response)
     for (let message of messages) {
       const name = message.name
       const camel = name[0].toLowerCase() + name.slice(1)
-      this[name] = this[camel] = async (args) => this.request(name, args)
+      this[name] = this[camel] = async (args: any[]) => this.request(name, args)
     }
   }
 }
 
-module.exports = BoundProtocol

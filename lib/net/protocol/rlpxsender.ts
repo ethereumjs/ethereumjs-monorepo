@@ -1,6 +1,6 @@
 
 const Sender = require('./sender')
-const rlp = require('ethereumjs-util').rlp
+import { rlp } from'ethereumjs-util'
 
 /**
  * DevP2P/RLPx protocol sender
@@ -8,19 +8,19 @@ const rlp = require('ethereumjs-util').rlp
  * @emits status
  * @memberof module:net/protocol
  */
-class RlpxSender extends Sender {
+export = module.exports = class RlpxSender extends Sender {
   /**
    * Creates a new DevP2P/Rlpx protocol sender
    * @param {Object} rlpxProtocol protocol object from ethereumjs-devp2p
    */
-  constructor (rlpxProtocol) {
+  constructor (rlpxProtocol: any) {
     super()
 
     this.sender = rlpxProtocol
-    this.sender.on('status', (status) => {
+    this.sender.on('status', (status: any) => {
       this.status = status
     })
-    this.sender.on('message', (code, payload) => {
+    this.sender.on('message', (code: number, payload: any) => {
       this.emit('message', { code, payload })
     })
   }
@@ -29,7 +29,7 @@ class RlpxSender extends Sender {
    * Send a status to peer
    * @param  {Object} status
    */
-  sendStatus (status) {
+  sendStatus (status: any) {
     try {
       this.sender.sendStatus(status)
     } catch (err) {
@@ -42,7 +42,7 @@ class RlpxSender extends Sender {
    * @param  {number} code message code
    * @param  {*}      data message payload
    */
-  sendMessage (code, data) {
+  sendMessage (code: number, data: any) {
     try {
       this.sender._send(code, rlp.encode(data))
     } catch (err) {
@@ -50,5 +50,3 @@ class RlpxSender extends Sender {
     }
   }
 }
-
-module.exports = RlpxSender

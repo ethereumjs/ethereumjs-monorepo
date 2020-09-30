@@ -1,4 +1,3 @@
-
 const Protocol = require('./protocol')
 const util = require('ethereumjs-util')
 const Block = require('ethereumjs-block')
@@ -7,16 +6,16 @@ const BN = util.BN
 const messages = [{
   name: 'NewBlockHashes',
   code: 0x01,
-  encode: (hashes) => hashes.map(hn => [hn[0], hn[1].toArrayLike(Buffer)]),
-  decode: (hashes) => hashes.map(hn => [hn[0], new BN(hn[1])])
+  encode: (hashes: any[]) => hashes.map(hn => [hn[0], hn[1].toArrayLike(Buffer)]),
+  decode: (hashes: any[]) => hashes.map(hn => [hn[0], new BN(hn[1])])
 }, {
   name: 'GetBlockHeaders',
   code: 0x03,
   response: 0x04,
-  encode: ({ block, max, skip = 0, reverse = 0 }) => [
+  encode: ({ block, max, skip = 0, reverse = 0 }: any) => [
     BN.isBN(block) ? block.toArrayLike(Buffer) : block, max, skip, reverse
   ],
-  decode: ([block, max, skip, reverse]) => ({
+  decode: ([block, max, skip, reverse]: any) => ({
     block: block.length === 32 ? block : new BN(block),
     max: util.bufferToInt(max),
     skip: util.bufferToInt(skip),
@@ -25,8 +24,8 @@ const messages = [{
 }, {
   name: 'BlockHeaders',
   code: 0x04,
-  encode: (headers) => headers.map(h => h.raw),
-  decode: (headers) => headers.map(raw => new Block.Header(raw))
+  encode: (headers: any[]) => headers.map(h => h.raw),
+  decode: (headers: any[]) => headers.map(raw => new Block.Header(raw))
 }, {
   name: 'GetBlockBodies',
   code: 0x05,
@@ -40,7 +39,7 @@ const messages = [{
  * Implements eth/62 and eth/63 protocols
  * @memberof module:net/protocol
  */
-class EthProtocol extends Protocol {
+export = module.exports = class EthProtocol extends Protocol {
   /**
    * Create eth protocol
    * @param {Object}   options constructor parameters
@@ -48,7 +47,7 @@ class EthProtocol extends Protocol {
    * @param {number}   [options.timeout=8000] handshake timeout in ms
    * @param {Logger}   [options.logger] logger instance
    */
-  constructor (options) {
+  constructor (options: any) {
     super(options)
 
     this.chain = options.chain
@@ -108,7 +107,7 @@ class EthProtocol extends Protocol {
    * @param {Object} status status message payload
    * @return {Object}
    */
-  decodeStatus (status) {
+  decodeStatus (status: any) {
     return {
       networkId: util.bufferToInt(status.networkId),
       td: new BN(status.td),
@@ -117,5 +116,3 @@ class EthProtocol extends Protocol {
     }
   }
 }
-
-module.exports = EthProtocol

@@ -1,6 +1,4 @@
-'use strict'
-
-import { EventEmitter } from 'events'
+const { EventEmitter } = require('events')
 
 /**
  * Base class for transport specific message sender/receiver. Subclasses should
@@ -10,7 +8,7 @@ import { EventEmitter } from 'events'
  * @emits status
  * @memberof module:net/protocol
  */
-class Sender extends EventEmitter {
+export = module.exports = class Sender extends EventEmitter {
   constructor () {
     super()
     this._status = null
@@ -30,7 +28,7 @@ class Sender extends EventEmitter {
    * @protected
    * @param  {Object} status
    */
-  sendStatus (status) {
+  sendStatus (status: any) {
     throw new Error('Unimplemented')
   }
 
@@ -40,9 +38,7 @@ class Sender extends EventEmitter {
    * @param  {number} code message code
    * @param  {Array|Buffer} rlpEncodedData rlp encoded message payload
    */
-  sendMessage (code, rlpEncodedData) {
+  sendMessage (code: number, rlpEncodedData: any[] | Buffer) {
     throw new Error('Unimplemented')
   }
 }
-
-module.exports = Sender
