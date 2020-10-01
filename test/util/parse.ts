@@ -1,4 +1,8 @@
-const tape = require('tape-catch')
+// Suppresses "Cannot redeclare block-scoped variable" errors
+// TODO: remove when import becomes possible
+export = {}
+
+import * as tape from 'tape-catch'
 const path = require('path')
 const { parse } = require('../../lib/util')
 

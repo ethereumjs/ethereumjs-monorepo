@@ -1,4 +1,8 @@
-const tape = require('tape-catch')
+// Suppresses "Cannot redeclare block-scoped variable" errors
+// TODO: remove when import becomes possible
+export = {}
+
+import * as tape from 'tape-catch'
 const td = require('testdouble')
 const EventEmitter = require('events')
 const { defaultLogger } = require('../lib/logging')
@@ -32,11 +36,11 @@ tape('[Node]', t => {
     t.plan(6)
     const servers = [ new Server() ]
     const node = new Node({ servers })
-    node.on('error', err => {
+    node.on('error', (err: string) => {
       if (err === 'err0') t.pass('got err0')
       if (err === 'err1') t.pass('got err1')
     })
-    node.on('listening', details => t.equals(details, 'details0', 'got listening'))
+    node.on('listening', (details: string) => t.equals(details, 'details0', 'got listening'))
     node.on('synchronized', () => t.ok('got synchronized'))
     await node.open()
     servers[0].emit('error', 'err0')
