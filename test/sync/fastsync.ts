@@ -1,4 +1,8 @@
-const tape = require('tape-catch')
+// Suppresses "Cannot redeclare block-scoped variable" errors
+// TODO: remove when import becomes possible
+export = {}
+
+import * as tape from 'tape-catch'
 const td = require('testdouble')
 const BN = require('bn.js')
 const EventEmitter = require('events')
@@ -61,8 +65,8 @@ tape('[FastSynchronizer]', t => {
     ]
     sync.pool = { peers }
     sync.forceSync = true
-    td.when(sync.height(peers[0])).thenDo(peer => Promise.resolve(peer.eth.status.td))
-    td.when(sync.height(peers[1])).thenDo(peer => Promise.resolve(peer.eth.status.td))
+    td.when(sync.height(peers[0])).thenDo((peer: any) => Promise.resolve(peer.eth.status.td))
+    td.when(sync.height(peers[1])).thenDo((peer: any) => Promise.resolve(peer.eth.status.td))
     t.equals(sync.best(), peers[1], 'found best')
     t.end()
   })

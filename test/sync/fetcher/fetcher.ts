@@ -1,4 +1,8 @@
-const tape = require('tape-catch')
+// Suppresses "Cannot redeclare block-scoped variable" errors
+// TODO: remove when import becomes possible
+export = {}
+
+import * as tape from 'tape-catch'
 const td = require('testdouble')
 const { defaultLogger } = require('../../../lib/logging')
 defaultLogger.silent = true
@@ -9,7 +13,7 @@ tape('[Fetcher]', t => {
   t.test('should handle bad result', t => {
     t.plan(2)
     const fetcher = new Fetcher({ pool: td.object() })
-    const job = { peer: {}, state: 'active' }
+    const job: any = { peer: {}, state: 'active' }
     fetcher.running = true
     fetcher.next = td.func()
     fetcher.wait = td.func()
@@ -25,7 +29,7 @@ tape('[Fetcher]', t => {
     const job = { peer: {}, state: 'active' }
     fetcher.running = true
     fetcher.next = td.func()
-    fetcher.on('error', (err) => t.equals(err, 'err0', 'got error'))
+    fetcher.on('error', (err: any) => t.equals(err, 'err0', 'got error'))
     fetcher.failure(job, 'err0')
     t.equals(fetcher.in.size(), 1, 'enqueued job')
   })

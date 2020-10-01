@@ -1,11 +1,15 @@
-const tape = require('tape-catch')
+// Suppresses "Cannot redeclare block-scoped variable" errors
+// TODO: remove when import becomes possible
+export = {}
+
+import * as tape from 'tape-catch'
 const td = require('testdouble')
 const BN = require('bn.js')
 const EventEmitter = require('events')
 const { defaultLogger } = require('../../../lib/logging')
 defaultLogger.silent = true
 
-async function wait (delay) {
+async function wait (delay?: number) {
   await new Promise(resolve => setTimeout(resolve, delay || 10))
 }
 
