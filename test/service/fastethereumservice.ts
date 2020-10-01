@@ -11,6 +11,7 @@ defaultLogger.silent = true
 tape('[FastEthereumService]', t => {
   class PeerPool extends EventEmitter { }
   PeerPool.prototype.open = td.func()
+  PeerPool.prototype.close = td.func()
   td.replace('../../lib/net/peerpool', PeerPool)
   td.replace('../../lib/net/protocol/flowcontrol')
   const Chain = td.constructor()
