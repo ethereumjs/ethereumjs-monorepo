@@ -1,4 +1,8 @@
-const tape = require('tape-catch')
+// Suppresses "Cannot redeclare block-scoped variable" errors
+// TODO: remove when import becomes possible
+export = {}
+
+import * as tape from 'tape-catch'
 const td = require('testdouble')
 const { Peer } = require('../../../lib/net/peer')
 const EventEmitter = require('events')
@@ -29,10 +33,10 @@ tape('[Peer]', t => {
     td.when(protocol.bind(peer, sender)).thenResolve(bound)
     await peer.bindProtocol(protocol, sender)
     t.equals(peer.bound.get('bound0'), bound, 'protocol bound')
-    peer.on('message', (msg, name) => {
+    peer.on('message', (msg: any, name: any) => {
       t.ok(msg === 'msg0' && name === 'proto0', 'on message')
     })
-    peer.on('error', (err, name) => {
+    peer.on('error', (err: any, name: any) => {
       t.ok(err === 'err0' && name === 'proto0', 'on error')
     })
     bound.emit('message', 'msg0')

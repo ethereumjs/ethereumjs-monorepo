@@ -1,4 +1,8 @@
-const tape = require('tape-catch')
+// Suppresses "Cannot redeclare block-scoped variable" errors
+// TODO: remove when import becomes possible
+export = {}
+
+import * as tape from 'tape-catch'
 const td = require('testdouble')
 const EventEmitter = require('events')
 const { defaultLogger } = require('../../../lib/logging')
@@ -21,7 +25,8 @@ tape('[RlpxPeer]', t => {
 
   t.test('should compute capabilities', t => {
     const protocols = [ { name: 'eth', versions: [62, 63] }, { name: 'les', versions: [2] } ]
-    const caps = RlpxPeer.capabilities(protocols).map(({ name, version, length }) => ({ name, version, length }))
+    const caps = RlpxPeer.capabilities(protocols).map(
+      ({ name, version, length } : any) => ({ name, version, length }))
     t.deepEquals(caps, [
       { name: 'eth', version: 62, length: 8 },
       { name: 'eth', version: 63, length: 17 },
@@ -31,7 +36,7 @@ tape('[RlpxPeer]', t => {
   })
 
   t.test('should connect to peer', async (t) => {
-    const proto0 = { name: 'les', versions: [2] }
+    const proto0: any = { name: 'les', versions: [2] }
     const peer = new RlpxPeer({ id: 'abcdef0123', protocols: [proto0] })
     proto0.open = td.func()
     td.when(proto0.open()).thenResolve()
@@ -49,9 +54,9 @@ tape('[RlpxPeer]', t => {
     td.when(peer.bindProtocols(rlpxPeer)).thenResolve()
     td.when(rlpxPeer.getDisconnectPrefix('reason')).thenReturn('reason')
     await peer.connect()
-    peer.on('error', (err) => t.equals(err, 'err0', 'got err0'))
+    peer.on('error', (err: any) => t.equals(err, 'err0', 'got err0'))
     peer.on('connected', () => t.pass('got connected'))
-    peer.on('disconnected', (reason) => t.equals(reason, 'reason', 'got disconnected'))
+    peer.on('disconnected', (reason: any) => t.equals(reason, 'reason', 'got disconnected'))
     peer.rlpx.emit('peer:error', rlpxPeer, 'err0')
     peer.rlpx.emit('peer:added', rlpxPeer)
     peer.rlpx.emit('peer:removed', rlpxPeer, 'reason')
@@ -61,7 +66,7 @@ tape('[RlpxPeer]', t => {
     await peer.connect()
     td.when(peer.bindProtocols(rlpxPeer)).thenReject('err1')
     td.when(rlpxPeer.getDisconnectPrefix('reason')).thenThrow('err2')
-    peer.on('error', (err) => {
+    peer.on('error', (err: any) => {
       if (err === 'err1') t.pass('got err1')
       if (err === 'err2') t.pass('got err2')
     })
