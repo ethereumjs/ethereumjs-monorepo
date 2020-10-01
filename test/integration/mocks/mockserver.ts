@@ -4,8 +4,12 @@ const { Server } = require('../../../lib/net/server')
 const MockPeer = require('./mockpeer')
 const network = require('./network')
 
-class MockServer extends Server {
-  constructor (options = {}) {
+export = module.exports = class MockServer extends Server {
+  public location: string
+  public server: any
+  public peers: any
+
+  constructor (options: any = {}) {
     super(options)
     this.location = options.location || '127.0.0.1'
     this.server = null
@@ -31,7 +35,7 @@ class MockServer extends Server {
         })
       })
     }
-    this.server.on('connection', connection => {
+    this.server.on('connection', (connection: any) => {
       this.connect(connection)
     })
   }
@@ -46,7 +50,7 @@ class MockServer extends Server {
     await super.stop()
   }
 
-  async discover (id, location) {
+  async discover (id: any, location: any) {
     const peer = new MockPeer({ id, location, protocols: Array.from(this.protocols) })
     await peer.connect()
     this.peers[id] = peer
@@ -54,13 +58,13 @@ class MockServer extends Server {
     return peer
   }
 
-  async accept (id) {
+  async accept (id: any) {
     const peer = new MockPeer({ id, protocols: Array.from(this.protocols) })
     await peer.accept(this)
     return peer
   }
 
-  async connect (connection) {
+  async connect (connection: any) {
     const id = connection.remoteId
     const peer = new MockPeer({ id, inbound: true, server: this, protocols: Array.from(this.protocols) })
     await peer.bindProtocols(connection)
@@ -68,14 +72,12 @@ class MockServer extends Server {
     this.emit('connected', peer)
   }
 
-  disconnect (id) {
+  disconnect (id: any) {
     const peer = this.peers[id]
     if (peer) this.emit('disconnected', peer)
   }
 
-  async wait (delay) {
+  async wait (delay: any) {
     await new Promise(resolve => setTimeout(resolve, delay || 100))
   }
 }
-
-module.exports = MockServer

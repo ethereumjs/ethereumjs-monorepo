@@ -1,28 +1,33 @@
-const tape = require('tape')
+"use strict"
+// Suppresses "Cannot redeclare block-scoped variable" errors
+// TODO: remove when import becomes possible
+export = {}
+
+import * as tape from 'tape'
 const Block = require('ethereumjs-block')
 const { toBuffer } = require('ethereumjs-util')
 const { Chain } = require('../../lib/blockchain')
 const { defaultLogger } = require('../../lib/logging')
 defaultLogger.silent = true
 
-tape('[Chain]', t => {
-  t.test('should test object creation without logger', t => {
+tape('[Chain]', (t: any) => {
+  t.test('should test object creation without logger', (t: any) => {
     t.equal(new Chain().logger, defaultLogger)
 
     t.end()
   })
 
-  t.test('should test blockchain DB is initialized', t => {
+  t.test('should test blockchain DB is initialized', (t: any) => {
     const chain = new Chain() // eslint-disable-line no-new
 
     const db = chain.db
     const testKey = 'name'
     const testValue = 'test'
 
-    db.put(testKey, testValue, function (err) {
+    db.put(testKey, testValue, function (err: Error) {
       if (err) t.fail('could not write key to db')
 
-      db.get(testKey, function (err, value) {
+      db.get(testKey, function (err: Error, value: any) {
         if (err) t.fail('could not read key to db')
 
         t.equal(testValue, value, 'read value matches written value')
@@ -31,7 +36,7 @@ tape('[Chain]', t => {
     })
   })
 
-  t.test('should retrieve chain properties', async (t) => {
+  t.test('should retrieve chain properties', async (t: any) => {
     const chain = new Chain() // eslint-disable-line no-new
     await chain.open()
     t.equal(chain.networkId, 1, 'get chain.networkId')
@@ -47,7 +52,7 @@ tape('[Chain]', t => {
     t.end()
   })
 
-  t.test('should detect unopened chain', async (t) => {
+  t.test('should detect unopened chain', async (t: any) => {
     const chain = new Chain() // eslint-disable-line no-new
     const block = new Block()
     block.header.number = toBuffer(1)
@@ -84,7 +89,7 @@ tape('[Chain]', t => {
     t.end()
   })
 
-  t.test('should handle bad arguments to putBlocks()', async (t) => {
+  t.test('should handle bad arguments to putBlocks()', async (t: any) => {
     const chain = new Chain() // eslint-disable-line no-new
     await chain.open()
     t.notOk(await chain.putBlocks(), 'add undefined block')
@@ -94,7 +99,7 @@ tape('[Chain]', t => {
     t.end()
   })
 
-  t.test('should handle bad arguments to putHeaders()', async (t) => {
+  t.test('should handle bad arguments to putHeaders()', async (t: any) => {
     const chain = new Chain() // eslint-disable-line no-new
     await chain.open()
     t.notOk(await chain.putHeaders(), 'add undefined header')
@@ -104,7 +109,7 @@ tape('[Chain]', t => {
     t.end()
   })
 
-  t.test('should add block to chain', async (t) => {
+  t.test('should add block to chain', async (t: any) => {
     const chain = new Chain() // eslint-disable-line no-new
     await chain.open()
 

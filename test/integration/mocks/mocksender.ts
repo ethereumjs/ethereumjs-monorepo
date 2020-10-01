@@ -2,8 +2,12 @@
 
 const { Sender } = require('../../../lib/net/protocol')
 
-class MockSender extends Sender {
-  constructor (protocol, pushable, receiver) {
+export = module.exports = class MockSender extends Sender {
+  public protocol: any
+  public pushable: any
+  public receiver: any
+
+  constructor (protocol: any, pushable: any, receiver: any) {
     super()
 
     this.protocol = protocol
@@ -13,7 +17,7 @@ class MockSender extends Sender {
   }
 
   init () {
-    this.receiver.on('data', ([protocol, code, payload]) => {
+    this.receiver.on('data', ([protocol, code, payload]: any[]) => {
       if (protocol !== this.protocol) return
       if (code === 0) {
         this.status = payload
@@ -23,13 +27,11 @@ class MockSender extends Sender {
     })
   }
 
-  sendStatus (status) {
+  sendStatus (status: any) {
     this.pushable.push([ this.protocol, 0, status ])
   }
 
-  sendMessage (code, data) {
+  sendMessage (code: any, data: any) {
     this.pushable.push([ this.protocol, code, data ])
   }
 }
-
-module.exports = MockSender

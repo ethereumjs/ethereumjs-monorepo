@@ -7,8 +7,10 @@ const defaultOptions = {
   height: 10
 }
 
-class MockChain extends Chain {
-  constructor (options = {}) {
+export = module.exports = class MockChain extends Chain {
+  public height: any
+
+  constructor (options: any = {}) {
     super(options)
     options = { ...defaultOptions, ...options }
     this.height = options.height
@@ -23,7 +25,7 @@ class MockChain extends Chain {
   }
 
   async build () {
-    const blocks = []
+    const blocks: any[] = []
     for (let number = 0; number < this.height; number++) {
       blocks.push(new Block({
         header: {
@@ -36,5 +38,3 @@ class MockChain extends Chain {
     await this.putBlocks(blocks)
   }
 }
-
-module.exports = MockChain

@@ -2,12 +2,12 @@
 
 const EventEmitter = require('events')
 
-const Pipe = function (id) {
-  const buffer = []
+const Pipe = function (id: any) {
+  const buffer: any[] = []
   let closed = false
 
   return {
-    source: (end, cb) => {
+    source: (end: any, cb: any) => {
       if (closed) end = true
       if (end) return cb(end)
       const next = function () {
@@ -23,8 +23,8 @@ const Pipe = function (id) {
       }
       next()
     },
-    sink: (read) => {
-      read(null, function next (end, data) {
+    sink: (read: any) => {
+      read(null, function next (end: any, data: any) {
         if (end === true || closed === true) return
         if (end) throw end
         buffer.push(data)
@@ -35,20 +35,20 @@ const Pipe = function (id) {
       closed = true
     }
   }
-}
+} as any
 
-const Connection = function (protocols) {
+const Connection = function (protocols: any) {
   const outgoing = new Pipe('OUT')
   const incoming = new Pipe('IN')
 
   return {
-    local: (remoteId) => ({
+    local: (remoteId: any) => ({
       source: incoming.source,
       sink: outgoing.sink,
       remoteId,
       protocols
     }),
-    remote: (location) => ({
+    remote: (location: any) => ({
       source: outgoing.source,
       sink: incoming.sink,
       location,
@@ -59,11 +59,11 @@ const Connection = function (protocols) {
       outgoing.close()
     }
   }
-}
+} as any
 
-const servers = {}
+const servers: any = {}
 
-function createServer (location) {
+function createServer (location: any) {
   if (servers[location]) {
     throw new Error(`Already running a server at ${location}`)
   }
@@ -75,7 +75,7 @@ function createServer (location) {
   return servers[location].server
 }
 
-function destroyServer (location) {
+function destroyServer (location: any) {
   if (servers[location]) {
     for (const id of Object.keys(servers[location].connections)) {
       destroyConnection(id, location)
@@ -84,7 +84,7 @@ function destroyServer (location) {
   delete servers[location]
 }
 
-function createConnection (id, location, protocols) {
+function createConnection (id: any, location: any, protocols: any) {
   if (!servers[location]) {
     throw new Error(`There is no server at ${location}`)
   }
@@ -94,7 +94,7 @@ function createConnection (id, location, protocols) {
   return connection.remote(location)
 }
 
-function destroyConnection (id, location) {
+function destroyConnection (id: any, location: any) {
   if (servers[location]) {
     const conn = servers[location].connections[id]
     if (conn) {
@@ -104,8 +104,10 @@ function destroyConnection (id, location) {
   }
 }
 
-exports.createServer = createServer
-exports.destroyServer = destroyServer
-exports.createConnection = createConnection
-exports.destroyConnection = destroyConnection
-exports.servers = servers
+module.exports.createServer = createServer
+module.exports.destroyServer = destroyServer
+module.exports.createConnection = createConnection
+module.exports.destroyConnection = destroyConnection
+module.exports.servers = servers
+
+export = module.exports

@@ -1,18 +1,23 @@
 'use strict'
 
-const tape = require('tape')
+// Suppresses "Cannot redeclare block-scoped variable" errors
+// TODO: remove when import becomes possible
+export = {}
+
+import * as tape from 'tape'
 const { FastEthereumService } = require('../../lib/service')
-const MockServer = require('./mocks/mockserver.js')
-const MockChain = require('./mocks/mockchain.js')
+const MockServer = require('./mocks/mockserver')
+const MockChain = require('./mocks/mockchain')
 const { defaultLogger } = require('../../lib/logging')
 defaultLogger.silent = true
 
-async function wait (delay) {
+async function wait (delay: number) {
   await new Promise(resolve => setTimeout(resolve, delay))
 }
 
-tape('[Integration:FastSync]', async (t) => {
-  async function setup (options = {}) {
+tape('[Integration:FastSync]', async t => {
+
+  async function setup (options: any = {}) : Promise<any[]> {
     const server = new MockServer({ location: options.location })
     const chain = new MockChain({ height: options.height })
     const service = new FastEthereumService({
@@ -28,13 +33,13 @@ tape('[Integration:FastSync]', async (t) => {
     return [server, service]
   }
 
-  async function destroy (server, service) {
+  async function destroy (server: any, service: any) : Promise<void>{
     await service.stop()
     await server.stop()
     await service.close()
   }
 
-  t.test('should sync blocks', async (t) => {
+  t.test('should sync blocks', async t => {
     const [remoteServer, remoteService] = await setup({ location: '127.0.0.2', height: 200 })
     const [localServer, localService] = await setup({ location: '127.0.0.1', height: 0 })
     localService.on('synchronized', async () => {
@@ -46,7 +51,7 @@ tape('[Integration:FastSync]', async (t) => {
     localServer.discover('remotePeer', '127.0.0.2')
   })
 
-  t.test('should not sync with stale peers', async (t) => {
+  t.test('should not sync with stale peers', async t => {
     const [remoteServer, remoteService] = await setup({ location: '127.0.0.2', height: 9 })
     const [localServer, localService] = await setup({ location: '127.0.0.1', height: 10 })
     localService.on('synchronized', async () => {
@@ -60,7 +65,7 @@ tape('[Integration:FastSync]', async (t) => {
     t.end()
   })
 
-  t.test('should sync with best peer', async (t) => {
+  t.test('should sync with best peer', async t => {
     const [remoteServer1, remoteService1] = await setup({ location: '127.0.0.2', height: 9 })
     const [remoteServer2, remoteService2] = await setup({ location: '127.0.0.3', height: 10 })
     const [localServer, localService] = await setup({ location: '127.0.0.1', height: 0 })

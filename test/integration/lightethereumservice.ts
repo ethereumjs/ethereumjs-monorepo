@@ -1,13 +1,17 @@
 'use strict'
 
-const tape = require('tape')
+// Suppresses "Cannot redeclare block-scoped variable" errors
+// TODO: remove when import becomes possible
+export = {}
+
+import * as tape from 'tape'
 const { LightEthereumService } = require('../../lib/service')
-const MockServer = require('./mocks/mockserver.js')
-const MockChain = require('./mocks/mockchain.js')
+const MockServer = require('./mocks/mockserver')
+const MockChain = require('./mocks/mockchain')
 const { defaultLogger } = require('../../lib/logging')
 defaultLogger.silent = true
 
-tape('[Integration:LightEthereumService]', async (t) => {
+tape('[Integration:LightEthereumService]', async t => {
   async function setup () {
     const server = new MockServer()
     const chain = new MockChain()
@@ -21,12 +25,12 @@ tape('[Integration:LightEthereumService]', async (t) => {
     return [server, service]
   }
 
-  async function destroy (server, service) {
+  async function destroy (server: any, service: any) {
     await service.stop()
     await server.stop()
   }
 
-  t.test('should handle LES requests', async (t) => {
+  t.test('should handle LES requests', async t => {
     const [server, service] = await setup()
     // TO DO: test handlers once they are implemented
     await destroy(server, service)

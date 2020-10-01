@@ -1,13 +1,17 @@
-const tape = require('tape')
+// Suppresses "Cannot redeclare block-scoped variable" errors
+// TODO: remove when import becomes possible
+export = {}
+
+import * as tape from 'tape'
 const { EthProtocol } = require('../../lib/net/protocol')
 const PeerPool = require('../../lib/net/peerpool')
-const MockServer = require('./mocks/mockserver.js')
-const MockChain = require('./mocks/mockchain.js')
+const MockServer = require('./mocks/mockserver')
+const MockChain = require('./mocks/mockchain')
 const { defaultLogger } = require('../../lib/logging')
 defaultLogger.silent = true
 
-tape('[Integration:PeerPool]', async (t) => {
-  async function setup (protocols = []) {
+tape('[Integration:PeerPool]', async t => {
+  async function setup (protocols: any[] = []) : Promise<any[]> {
     const server = new MockServer()
     server.addProtocols(protocols)
     await server.start()
@@ -16,23 +20,23 @@ tape('[Integration:PeerPool]', async (t) => {
     return [server, pool]
   }
 
-  async function destroy (server, pool) {
+  async function destroy (server: any, pool: any) {
     await server.stop()
     await pool.close()
   }
 
-  t.test('should open', async (t) => {
+  t.test('should open', async t => {
     const [server, pool] = await setup()
     t.ok(pool.opened, 'opened')
     await destroy(server, pool)
     t.end()
   })
 
-  t.test('should add/remove peer', async (t) => {
+  t.test('should add/remove peer', async t => {
     t.plan(3)
     const [server, pool] = await setup()
-    pool.on('added', peer => t.equal(peer.id, 'peer0', 'added peer'))
-    pool.on('removed', peer => t.equal(peer.id, 'peer0', 'removed peer'))
+    pool.on('added', (peer: any) => t.equal(peer.id, 'peer0', 'added peer'))
+    pool.on('removed', (peer: any) => t.equal(peer.id, 'peer0', 'removed peer'))
     await server.accept('peer0')
     setTimeout(async () => {
       server.disconnect('peer0')
@@ -41,11 +45,11 @@ tape('[Integration:PeerPool]', async (t) => {
     }, 100)
   })
 
-  t.test('should ban peer', async (t) => {
+  t.test('should ban peer', async t => {
     t.plan(3)
     const [server, pool] = await setup()
-    pool.on('added', peer => t.equal(peer.id, 'peer0', 'added peer'))
-    pool.on('banned', peer => t.equal(peer.id, 'peer0', 'banned peer'))
+    pool.on('added', (peer: any) => t.equal(peer.id, 'peer0', 'added peer'))
+    pool.on('banned', (peer: any) => t.equal(peer.id, 'peer0', 'banned peer'))
     await server.accept('peer0')
     setTimeout(async () => {
       pool.ban(pool.peers[0])
@@ -54,14 +58,14 @@ tape('[Integration:PeerPool]', async (t) => {
     }, 100)
   })
 
-  t.test('should handle peer messages', async (t) => {
+  t.test('should handle peer messages', async t => {
     t.plan(3)
     const chain = new MockChain()
     await chain.open()
     const protocols = [ new EthProtocol({ chain }) ]
     const [server, pool] = await setup(protocols)
-    pool.on('added', peer => t.equal(peer.id, 'peer0', 'added peer'))
-    pool.on('message', (msg, proto, peer) => {
+    pool.on('added', (peer: any) => t.equal(peer.id, 'peer0', 'added peer'))
+    pool.on('message', (msg: any, proto: any, peer: any) => {
       t.deepEqual([msg, proto, peer.id], ['msg0', 'proto0', 'peer0'], 'got message')
     })
     await server.accept('peer0')
