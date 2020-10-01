@@ -428,22 +428,23 @@ tape('StateManager - Contract storage', (tester) => {
     t.end()
   })
 
-  it('should strip storage values lower than 32 bytes', async (t) => {
+  it('should strip zeros of storage values', async (t) => {
     const stateManager = new DefaultStateManager()
     const address = zeros(20)
-    const key0 = zeros(32)
-    const value0 = Buffer.from('aa'.repeat(31), 'hex') // put a value of 31-bytes length
-    const expect0 = unpadBuffer(value0)
-    const key1 = Buffer.concat([zeros(31), Buffer.from('01', 'hex')])
-    const value1 = Buffer.from('aa'.repeat(1), 'hex') // put a vlaue of 1-byte length
-    const expect1 = unpadBuffer(value1)
 
+    const key0 = zeros(32)
+    const value0 = Buffer.from('00' + 'aa'.repeat(30), 'hex') // put a value of 31-bytes length with a leading zero byte
+    const expect0 = unpadBuffer(value0)
     await stateManager.putContractStorage(address, key0, value0)
     const slot0 = await stateManager.getContractStorage(address, key0)
     t.ok(slot0.equals(expect0), 'value of 31 bytes padded correctly')
 
+    const key1 = Buffer.concat([zeros(31), Buffer.from('01', 'hex')])
+    const value1 = Buffer.from('0000' + 'aa'.repeat(1), 'hex') // put a value of 1-byte length with two leading zero bytes
+    const expect1 = unpadBuffer(value1)
     await stateManager.putContractStorage(address, key1, value1)
     const slot1 = await stateManager.getContractStorage(address, key1)
+
     t.ok(slot1.equals(expect1), 'value of 1 byte padded correctly')
     t.end()
   })

@@ -284,7 +284,7 @@ export default class DefaultStateManager implements StateManager {
     }
 
     if (value.length > 32) {
-      throw new Error('Storage key cannot be longer than 32 bytes')
+      throw new Error('Storage value cannot be longer than 32 bytes')
     }
 
     value = unpadBuffer(value)
