@@ -150,9 +150,7 @@ jobs:
           tool: 'benchmarkjs'
           # Where the output from the benchmark tool is stored
           output-file-path: ${{ env.cwd }}/output.txt
-          # Set alert threshold (default: 200%)
-          alert-threshold: '150%'
-          # Enable alert commit comment
+          # Enable alert commit comment (default alert threshold: 200%)
           comment-on-alert: true
           # GitHub API token to make a commit comment
           github-token: ${{ secrets.GITHUB_TOKEN }}
