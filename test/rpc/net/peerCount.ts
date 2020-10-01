@@ -1,4 +1,8 @@
-const test = require('tape')
+// Suppresses "Cannot redeclare block-scoped variable" errors
+// TODO: remove when import becomes possible
+export = {}
+
+import * as test from 'tape'
 
 const { startRPC, createManager, createNode, params, baseRequest } = require('../helpers')
 
@@ -9,7 +13,7 @@ test(`${method}: call`, t => {
   const server = startRPC(manager.getMethods())
 
   const req = params(method, [])
-  const expectRes = res => {
+  const expectRes = (res: any) => {
     const { result } = res.body
     const msg = 'result should be a hex number'
     if (result.substring(0, 2) !== '0x') {

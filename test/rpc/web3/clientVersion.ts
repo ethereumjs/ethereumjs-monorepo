@@ -1,4 +1,8 @@
-const test = require('tape')
+// Suppresses "Cannot redeclare block-scoped variable" errors
+// TODO: remove when import becomes possible
+export = {}
+
+import * as test from 'tape'
 
 const { platform } = require('os')
 const { baseSetup, params, baseRequest } = require('../helpers')
@@ -9,7 +13,7 @@ test(`${method}: call`, t => {
   const server = baseSetup()
 
   const req = params(method, [])
-  const expectRes = res => {
+  const expectRes = (res: any) => {
     const { result } = res.body
     const { version } = require('../../../package.json')
     const expectedClientTitle = 'EthereumJS'

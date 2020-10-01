@@ -1,6 +1,8 @@
-module.exports = {
-  checkError (t, expectedCode, expectedMessage) {
-    return (res) => {
+import * as tape from 'tape'
+
+export = module.exports = {
+  checkError (t: tape.Test, expectedCode: any, expectedMessage: any) {
+    return (res: any) => {
       if (!res.body.error) {
         throw new Error('should return an error object')
       }

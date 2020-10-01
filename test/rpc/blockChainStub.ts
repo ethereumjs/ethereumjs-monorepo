@@ -1,4 +1,4 @@
-module.exports = function (options) {
+export = module.exports = function (options: any) {
   const block = {
     toJSON: () => ({
       number: options.number || 444444,
@@ -7,7 +7,7 @@ module.exports = function (options) {
     })
   }
   return {
-    getBlock: (data, cb) => {
+    getBlock: (data: any, cb: (err: null, val: any) => void) => {
       return cb(null, block)
     }
 

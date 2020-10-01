@@ -1,4 +1,8 @@
-const test = require('tape')
+// Suppresses "Cannot redeclare block-scoped variable" errors
+// TODO: remove when import becomes possible
+export = {}
+
+import * as test from 'tape'
 const { INVALID_PARAMS } = require('../../../lib/rpc/error-code')
 const { startRPC, createManager, createNode, params, baseRequest } = require('../helpers')
 const { checkError } = require('../util')
@@ -24,7 +28,7 @@ test(`${method}: call with valid arguments`, t => {
   const server = startRPC(manager.getMethods())
 
   const req = params(method, ['0x1', true])
-  const expectRes = res => {
+  const expectRes = (res: any) => {
     const msg = 'should return the correct number'
     if (res.body.result.number !== 1) {
       throw new Error(msg)
@@ -40,7 +44,7 @@ test(`${method}: call with false for second argument`, t => {
   const server = startRPC(manager.getMethods())
 
   const req = params(method, ['0x1', false])
-  const expectRes = res => {
+  const expectRes = (res: any) => {
     let msg = 'should return the correct number'
     if (res.body.result.number !== 1) {
       throw new Error(msg)

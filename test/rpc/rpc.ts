@@ -1,4 +1,8 @@
-const test = require('tape')
+// Suppresses "Cannot redeclare block-scoped variable" errors
+// TODO: remove when import becomes possible
+export = {}
+
+import * as test from 'tape'
 const request = require('supertest')
 
 const { startRPC, closeRPC } = require('./helpers')
@@ -13,7 +17,7 @@ test('call JSON-RPC without Content-Type header', t => {
     .post('/')
     .send(req)
     .expect(415)
-    .end(err => {
+    .end((err: any) => {
       closeRPC(server)
       t.end(err)
     })
@@ -32,7 +36,7 @@ test('call JSON RPC with non-exist method', t => {
     .post('/')
     .set('Content-Type', 'application/json')
     .send(req)
-    .expect(res => {
+    .expect((res: any) => {
       if (!res.body.error) {
         throw new Error('should return an error object')
       }
@@ -40,7 +44,7 @@ test('call JSON RPC with non-exist method', t => {
         throw new Error(`should have an error code ${METHOD_NOT_FOUND}`)
       }
     })
-    .end(err => {
+    .end((err: any) => {
       closeRPC(server)
       t.end(err)
     })

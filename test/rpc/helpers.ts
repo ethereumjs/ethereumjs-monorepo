@@ -1,32 +1,33 @@
+import * as tape from 'tape'
 const jayson = require('jayson')
 const request = require('supertest')
 const Common = require('ethereumjs-common').default
 
 const Manager = require('../../lib/rpc')
 const Logger = require('../../lib/logging')
-const blockChain = require('./blockChainStub.js')
+const blockChain = require('./blockChainStub')
 const Chain = require('../../lib/blockchain/chain')
 
-const config = { loglevel: 'error' }
+const config : any = { loglevel: 'error' }
 config.logger = Logger.getLogger(config)
 
-module.exports = {
-  startRPC (methods, port = 3000) {
+export = module.exports = {
+  startRPC (methods: any, port: number = 3000) {
     const server = jayson.server(methods)
     const httpServer = server.http()
     httpServer.listen(port)
     return httpServer
   },
 
-  closeRPC (server) {
+  closeRPC (server: any) {
     server.close()
   },
 
-  createManager (node) {
+  createManager (node: any) {
     return new Manager(node, config)
   },
 
-  createNode (nodeConfig) {
+  createNode (nodeConfig: any) {
     const chain = new Chain({ blockchain: blockChain({}) })
     chain.opened = true
     const defaultNodeConfig = { blockchain: chain, opened: true, commonChain: new Common('mainnet'), ethProtocolVersions: [63] }
@@ -54,7 +55,7 @@ module.exports = {
     return server
   },
 
-  params (method, params = []) {
+  params (method: any, params: any[] = []) {
     const req = {
       jsonrpc: '2.0',
       method: method,
@@ -64,14 +65,14 @@ module.exports = {
     return req
   },
 
-  baseRequest (t, server, req, expect, expectRes) {
+  baseRequest (t: tape.Test, server: any, req: any, expect: any, expectRes: any) {
     request(server)
       .post('/')
       .set('Content-Type', 'application/json')
       .send(req)
       .expect(expect)
       .expect(expectRes)
-      .end((err, res) => {
+      .end((err: any, res: any) => {
         module.exports.closeRPC(server)
         t.end(err)
       })

@@ -1,4 +1,8 @@
-const test = require('tape')
+// Suppresses "Cannot redeclare block-scoped variable" errors
+// TODO: remove when import becomes possible
+export = {}
+
+import * as test from 'tape'
 
 const { baseSetup, params, baseRequest } = require('../helpers')
 
@@ -8,7 +12,7 @@ test(`${method}: call`, t => {
   const server = baseSetup()
 
   const req = params(method, [])
-  const expectRes = res => {
+  const expectRes = (res: any) => {
     const responseBlob = res.body
     const msg = 'protocol version should be a string'
     if (typeof responseBlob.result !== 'string') {

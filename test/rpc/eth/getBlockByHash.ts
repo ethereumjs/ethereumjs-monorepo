@@ -1,4 +1,8 @@
-const test = require('tape')
+// Suppresses "Cannot redeclare block-scoped variable" errors
+// TODO: remove when import becomes possible
+export = {}
+
+import * as test from 'tape'
 
 const { INVALID_PARAMS } = require('../../../lib/rpc/error-code')
 const { baseSetup, params, baseRequest } = require('../helpers')
@@ -13,7 +17,7 @@ test(`${method}: call with valid arguments`, t => {
     '0x910abca1728c53e8d6df870dd7af5352e974357dc58205dea1676be17ba6becf',
     true
   ])
-  const expectRes = res => {
+  const expectRes = (res: any) => {
     let msg = 'should return the correct number'
     t.equal(res.body.result.number, 444444, msg)
   }
@@ -27,7 +31,7 @@ test(`${method}: call with false for second argument`, t => {
     '0xdc0818cf78f21a8e70579cb46a43643f78291264dda342ae31049421c82d21ae',
     false
   ])
-  const expectRes = res => {
+  const expectRes = (res: any) => {
     let msg = 'should return the correct number'
     t.equal(res.body.result.number, 444444, msg)
     msg = 'should return only the hashes of the transactions'

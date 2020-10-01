@@ -1,11 +1,15 @@
-const test = require('tape')
+// Suppresses "Cannot redeclare block-scoped variable" errors
+// TODO: remove when import becomes possible
+export = {}
+
+import * as test from 'tape'
 
 const Common = require('ethereumjs-common').default
 const { startRPC, createManager, createNode, baseSetup, params, baseRequest } = require('../helpers')
 
 const method = 'net_version'
 
-function compareResult (t, result, chainId) {
+function compareResult (t: any, result: any, chainId: any) {
   let msg = 'result should be a string'
   if (typeof result !== 'string') {
     throw new Error(msg)
@@ -33,7 +37,7 @@ test(`${method}: call on ropsten`, t => {
   const server = startRPC(manager.getMethods())
 
   const req = params(method, [])
-  const expectRes = res => {
+  const expectRes = (res: any) => {
     const { result } = res.body
     compareResult(t, result, '3')
   }
@@ -44,7 +48,7 @@ test(`${method}: call on mainnet`, t => {
   const server = baseSetup()
 
   const req = params(method, [])
-  const expectRes = res => {
+  const expectRes = (res: any) => {
     const { result } = res.body
     compareResult(t, result, '1')
   }
@@ -56,7 +60,7 @@ test(`${method}: call on rinkeby`, t => {
   const server = startRPC(manager.getMethods())
 
   const req = params(method, [])
-  const expectRes = res => {
+  const expectRes = (res: any) => {
     const { result } = res.body
     compareResult(t, result, '4')
   }
@@ -68,7 +72,7 @@ test(`${method}: call on kovan`, t => {
   const server = startRPC(manager.getMethods())
 
   const req = params(method, [])
-  const expectRes = res => {
+  const expectRes = (res: any) => {
     const { result } = res.body
     compareResult(t, result, '42')
   }
@@ -80,7 +84,7 @@ test(`${method}: call on goerli`, t => {
   const server = startRPC(manager.getMethods())
 
   const req = params(method, [])
-  const expectRes = res => {
+  const expectRes = (res: any) => {
     const { result } = res.body
     compareResult(t, result, '5')
   }

@@ -1,10 +1,14 @@
-const test = require('tape')
+// Suppresses "Cannot redeclare block-scoped variable" errors
+// TODO: remove when import becomes possible
+export = {}
+
+import * as test from 'tape'
 
 const { baseSetup, params, baseRequest } = require('../helpers')
 
 const method = 'web3_sha3'
 
-function compareErrorCode (t, error, errorCode) {
+function compareErrorCode (t: any, error: any, errorCode: any) {
   const msg = `should return the correct error code (expected: ${errorCode}, received: ${error.code})`
   if (error.code !== errorCode) {
     throw new Error(msg)
@@ -13,7 +17,7 @@ function compareErrorCode (t, error, errorCode) {
   }
 }
 
-function compareErrorMsg (t, error, errorMsg) {
+function compareErrorMsg (t: any, error: any, errorMsg: any) {
   const msg = `should return "${errorMsg}" error message`
   if (
     error.message !== errorMsg
@@ -28,7 +32,7 @@ test(`${method}: call with one valid parameter`, t => {
   const server = baseSetup()
 
   const req = params(method, ['0x68656c6c6f20776f726c64'])
-  const expectRes = res => {
+  const expectRes = (res: any) => {
     const { result } = res.body
     let msg = 'result string should not be empty'
     if (result.length === 0) {
@@ -54,7 +58,7 @@ test(`${method}: call with one non-hex parameter`, t => {
   const server = baseSetup()
 
   const req = params(method, ['hello world'])
-  const expectRes = res => {
+  const expectRes = (res: any) => {
     const { error } = res.body
 
     compareErrorCode(t, error, -32602)
@@ -69,7 +73,7 @@ test(`${method}: call with no parameters`, t => {
   const server = baseSetup()
 
   const req = params(method, [])
-  const expectRes = res => {
+  const expectRes = (res: any) => {
     const { error } = res.body
 
     compareErrorCode(t, error, -32602)
