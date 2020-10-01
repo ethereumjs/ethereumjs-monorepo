@@ -1,4 +1,8 @@
-const tape = require('tape-catch')
+// Suppresses "Cannot redeclare block-scoped variable" errors
+// TODO: remove when import becomes possible
+export = {}
+
+import * as tape from 'tape-catch'
 const td = require('testdouble')
 const EventEmitter = require('events')
 
@@ -9,15 +13,15 @@ tape('[Protocol]', t => {
   const testMessage = {
     name: 'TestMessage',
     code: 0x01,
-    encode: value => value.toString(),
-    decode: value => parseInt(value)
+    encode: (value: any) => value.toString(),
+    decode: (value: any) => parseInt(value)
   }
   class TestProtocol extends Protocol {
     get name () { return 'test' }
     get versions () { return [1] }
     get messages () { return [ testMessage ] }
     encodeStatus () { return [1] }
-    decodeStatus (status) { return { id: status[0] } }
+    decodeStatus (status: any) { return { id: status[0] } }
   }
 
   t.test('should throw if missing abstract methods', t => {

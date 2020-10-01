@@ -1,4 +1,8 @@
-const tape = require('tape-catch')
+// Suppresses "Cannot redeclare block-scoped variable" errors
+// TODO: remove when import becomes possible
+export = {}
+
+import * as tape from 'tape-catch'
 const td = require('testdouble')
 const EventEmitter = require('events')
 const { defaultLogger } = require('../../../lib/logging')
@@ -42,7 +46,7 @@ tape('[RlpxServer]', t => {
     server.rlpx = td.object()
     td.when(server.dpt.bootstrap({ address: '10.0.0.1', udpPort: '1234', tcpPort: '1234' })).thenResolve()
     td.when(server.dpt.bootstrap({ address: '10.0.0.2', udpPort: '1234', tcpPort: '1234' })).thenReject('err0')
-    server.on('error', err => t.equals(err, 'err0', 'got error'))
+    server.on('error', (err: any) => t.equals(err, 'err0', 'got error'))
     await server.start()
     td.verify(server.initDpt())
     td.verify(server.initRlpx())
@@ -61,7 +65,7 @@ tape('[RlpxServer]', t => {
     let count = 0
     const server = new RlpxServer()
     const peer = new EventEmitter()
-    server.on('error', (err) => {
+    server.on('error', (err: any) => {
       count = count + 1
       t.equals(err.message, 'err0', 'got error')
     })
@@ -70,7 +74,7 @@ tape('[RlpxServer]', t => {
     setTimeout(() => {
       t.equals(count, 1, 'ignored error')
     }, 100)
-    peer.on('error', (err) => t.equals(err, 'err1', 'got peer error'))
+    peer.on('error', (err: any) => t.equals(err, 'err1', 'got peer error'))
     server.error('err1', peer)
   })
 
@@ -89,7 +93,7 @@ tape('[RlpxServer]', t => {
     const server = new RlpxServer()
     server.initDpt()
     td.verify(server.dpt.bind(server.port, '0.0.0.0'))
-    server.on('error', err => t.equals(err, 'err0', 'got error'))
+    server.on('error', (err: any) => t.equals(err, 'err0', 'got error'))
     server.dpt.emit('error', 'err0')
   })
 
@@ -102,10 +106,10 @@ tape('[RlpxServer]', t => {
     server.initRlpx()
     td.verify(RlpxPeer.capabilities(server.protocols))
     td.verify(server.rlpx.listen(server.port, '0.0.0.0'))
-    server.on('connected', peer => t.ok(peer instanceof RlpxPeer, 'connected'))
-    server.on('disconnected', peer => t.equals(peer.id, '01', 'disconnected'))
-    server.on('error', err => t.equals(err, 'err0', 'got error'))
-    server.on('listening', info => t.deepEquals(info, { transport: 'rlpx', url: 'enode://ff@[::]:30303' }, 'listening'))
+    server.on('connected', (peer: any) => t.ok(peer instanceof RlpxPeer, 'connected'))
+    server.on('disconnected', (peer: any) => t.equals(peer.id, '01', 'disconnected'))
+    server.on('error', (err: any) => t.equals(err, 'err0', 'got error'))
+    server.on('listening', (info: any) => t.deepEquals(info, { transport: 'rlpx', url: 'enode://ff@[::]:30303' }, 'listening'))
     server.rlpx.emit('peer:added', rlpxPeer)
     server.peers.set('01', { id: '01' })
     server.rlpx.emit('peer:removed', rlpxPeer)
@@ -121,7 +125,7 @@ tape('[RlpxServer]', t => {
     td.when(rlpxPeer.getId()).thenReturn(null)
     td.when(RlpxPeer.prototype.accept(rlpxPeer, td.matchers.isA(RlpxServer))).thenResolve()
     server.initRlpx()
-    server.on('error', err => t.equals(err, 'err0', 'got error'))
+    server.on('error', (err: any) => t.equals(err, 'err0', 'got error'))
     server.rlpx.emit('peer:error', rlpxPeer, 'err0')
   })
 

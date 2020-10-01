@@ -1,4 +1,8 @@
-const tape = require('tape-catch')
+// Suppresses "Cannot redeclare block-scoped variable" errors
+// TODO: remove when import becomes possible
+export = {}
+
+import * as tape from 'tape-catch'
 const td = require('testdouble')
 const EventEmitter = require('events')
 const BoundProtocol = require('../../../lib/net/protocol/boundprotocol')
@@ -10,14 +14,14 @@ tape('[BoundProtocol]', t => {
     name: 'TestMessage',
     code: 0x01,
     response: 0x02,
-    encode: value => value.toString(),
-    decode: value => parseInt(value)
+    encode: (value: any) => value.toString(),
+    decode: (value: any) => parseInt(value)
   }
   const testResponse = {
     name: 'TestResponse',
     code: 0x02,
-    encode: value => value.toString(),
-    decode: value => parseInt(value)
+    encode: (value: any) => value.toString(),
+    decode: (value: any) => parseInt(value)
   }
   protocol.timeout = 100
   protocol.messages = [ testMessage, testResponse ]
@@ -52,12 +56,12 @@ tape('[BoundProtocol]', t => {
     const sender = new EventEmitter()
     const bound = new BoundProtocol({ protocol, peer, sender })
     t.notOk(bound.handle({}), 'missing message.code')
-    bound.once('error', (err) => {
+    bound.once('error', (err: any) => {
       t.ok(/error0/.test(err.message), 'decode error')
     })
     td.when(protocol.decode(testMessage, '1')).thenThrow(new Error('error0'))
     bound.handle({ code: 0x01, payload: '1' })
-    bound.once('message', (message) => {
+    bound.once('message', (message: any) => {
       t.deepEquals(message, { name: 'TestMessage', data: 2 }, 'correct message')
     })
     td.when(protocol.decode(testMessage, '2')).thenReturn(2)

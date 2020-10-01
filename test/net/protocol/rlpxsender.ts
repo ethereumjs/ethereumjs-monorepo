@@ -1,4 +1,8 @@
-const tape = require('tape-catch')
+// Suppresses "Cannot redeclare block-scoped variable" errors
+// TODO: remove when import becomes possible
+export = {}
+
+import * as tape from 'tape-catch'
 const td = require('testdouble')
 const { RlpxSender } = require('../../../lib/net/protocol')
 const EventEmitter = require('events')
@@ -29,7 +33,7 @@ tape('[RlpxSender]', t => {
   t.test('should receive status', t => {
     const rlpxProtocol = new EventEmitter()
     const sender = new RlpxSender(rlpxProtocol)
-    sender.on('status', status => {
+    sender.on('status', (status: any) => {
       t.equal(status.id, 5, 'status received')
       t.equal(sender.status.id, 5, 'status getter')
       t.end()
@@ -40,7 +44,7 @@ tape('[RlpxSender]', t => {
   t.test('should receive message', t => {
     const rlpxProtocol = new EventEmitter()
     const sender = new RlpxSender(rlpxProtocol)
-    sender.on('message', message => {
+    sender.on('message', (message: any) => {
       t.equal(message.code, 1, 'message received (code)')
       t.equal(message.payload, 5, 'message received (payload)')
       t.end()

@@ -1,4 +1,8 @@
-const tape = require('tape-catch')
+// Suppresses "Cannot redeclare block-scoped variable" errors
+// TODO: remove when import becomes possible
+export = {}
+
+import * as tape from 'tape-catch'
 const pull = require('pull-stream')
 const DuplexPair = require('pull-pair/duplex')
 const { Libp2pSender } = require('../../../lib/net/protocol')
@@ -8,7 +12,7 @@ tape('[Libp2pSender]', t => {
     const conn = DuplexPair()
     const sender = new Libp2pSender(conn[0])
     const receiver = new Libp2pSender(conn[1])
-    receiver.on('status', status => {
+    receiver.on('status', (status: any) => {
       t.equal(status.id.toString('hex'), '05', 'status received')
       t.equal(receiver.status.id.toString('hex'), '05', 'status getter')
       t.end()
@@ -20,7 +24,7 @@ tape('[Libp2pSender]', t => {
     const conn = DuplexPair()
     const sender = new Libp2pSender(conn[0])
     const receiver = new Libp2pSender(conn[1])
-    receiver.on('message', message => {
+    receiver.on('message', (message: any) => {
       t.equal(message.code, 1, 'message received (code)')
       t.equal(message.payload.toString('hex'), '05', 'message received (payload)')
       t.end()

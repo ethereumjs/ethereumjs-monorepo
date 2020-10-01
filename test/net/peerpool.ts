@@ -1,11 +1,15 @@
-const tape = require('tape-catch')
+// Suppresses "Cannot redeclare block-scoped variable" errors
+// TODO: remove when import becomes possible
+export = {}
+
+import * as tape from 'tape-catch'
 const td = require('testdouble')
 const EventEmitter = require('events')
 const { defaultLogger } = require('../../lib/logging')
 defaultLogger.silent = true
 
 tape('[PeerPool]', t => {
-  const Peer = td.replace('../../lib/net/peer/peer', function (id) { this.id = id })
+  const Peer = td.replace('../../lib/net/peer/peer', function (this: any, id: any) { this.id = id })
   const PeerPool = require('../../lib/net/peerpool')
 
   t.test('should initialize', t => {
@@ -40,10 +44,10 @@ tape('[PeerPool]', t => {
     peer.id = 'abc'
     pool.ban = td.func()
     pool.connected(peer)
-    pool.on('message', (msg, proto, p) => {
+    pool.on('message', (msg: any, proto: any, p: any) => {
       t.ok(msg === 'msg0' && proto === 'proto0' && p === peer, 'got message')
     })
-    pool.on('message:proto0', (msg, p) => {
+    pool.on('message:proto0', (msg: any, p: any) => {
       t.ok(msg === 'msg0' && p === peer, 'got message:protocol')
     })
     peer.emit('message', 'msg0', 'proto0')
@@ -68,19 +72,19 @@ tape('[PeerPool]', t => {
     const peers = [new Peer(1), new Peer(2), new Peer(3)]
     const pool = new PeerPool()
     peers[1].idle = true
-    peers.forEach(p => pool.add(p))
+    peers.forEach((p: any) => pool.add(p))
     t.equals(pool.idle(), peers[1], 'correct idle peer')
-    t.equals(pool.idle((p) => p.id > 1), peers[1], 'correct idle peer with filter')
+    t.equals(pool.idle((p: any) => p.id > 1), peers[1], 'correct idle peer with filter')
     t.end()
   })
 
   t.test('should ban peer', t => {
     const peers = [{ id: 1 }, { id: 2, server: { ban: td.func() } }]
     const pool = new PeerPool()
-    peers.forEach(p => pool.add(p))
-    peers.forEach(p => pool.ban(p, 1000))
-    pool.on('banned', peer => td.equals(peer, peers[1], 'banned peer'))
-    pool.on('removed', peer => td.equals(peer, peers[1], 'removed peer'))
+    peers.forEach((p: any) => pool.add(p))
+    peers.forEach((p: any) => pool.ban(p, 1000))
+    pool.on('banned', (peer: any) => td.equals(peer, peers[1], 'banned peer'))
+    pool.on('removed', (peer: any) => td.equals(peer, peers[1], 'removed peer'))
     t.equals(pool.peers[0], peers[0], 'outbound peer not banned')
     t.end()
   })
