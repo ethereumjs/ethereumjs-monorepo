@@ -2,7 +2,6 @@
   "extends": "@ethereumjs/config-tsc",
   "include": ["bin", "lib", "test"],
   "compilerOptions": {
-    "allowJs": true,
     "target": "ES2017",
   }
 }

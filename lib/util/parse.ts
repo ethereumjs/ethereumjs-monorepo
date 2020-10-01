@@ -4,7 +4,7 @@ const Block = require('ethereumjs-block')
 const Trie = require('merkle-patricia-tree/secure')
 const util = require('ethereumjs-util')
 const url = require('url')
-const path = require('path')
+import path = require('path')
 
 function toBuffer (string: string) {
   return Buffer.from(util.stripHexPrefix(string), 'hex')
@@ -140,11 +140,10 @@ async function parseGethParams (json: any) {
   return params
 }
 
-async function parseParams (jsonFilePath: string) {
+async function parseParams (json: any, name?: string) {
   try {
-    const json = require(jsonFilePath)
     if (json.config && json.difficulty && json.gasLimit && json.alloc) {
-      json.name = json.name || path.parse(jsonFilePath).base
+      json.name = json.name || name
       if (json.nonce === undefined || json.nonce === '0x0') {
         json.nonce = '0x0000000000000000'
       }
