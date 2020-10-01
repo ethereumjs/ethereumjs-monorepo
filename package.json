@@ -6,7 +6,8 @@
   "types": "./dist/index.d.ts",
   "files": [
     "dist/**",
-    "bin/**"
+    "bin/**",
+    "src/**"
   ],
   "scripts": {
     "build": "tsc -p ./tsconfig.prod.json",
