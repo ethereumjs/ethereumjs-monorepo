@@ -150,10 +150,10 @@ jobs:
           tool: 'benchmarkjs'
           # Where the output from the benchmark tool is stored
           output-file-path: ${{ env.cwd }}/output.txt
+          # Set alert threshold (default: 200%)
+          alert-threshold: '150%'
           # Enable alert commit comment
           comment-on-alert: true
-          # Always leave a commit comment comparing the current benchmark with previous
-          comment-always: true
           # GitHub API token to make a commit comment
           github-token: ${{ secrets.GITHUB_TOKEN }}
           # Push and deploy to GitHub pages branch automatically (if on master)
