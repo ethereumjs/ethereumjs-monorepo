@@ -245,7 +245,7 @@ jobs:
       - run: npm run build:benchmarks
         working-directory: ${{ env.cwd }}
 
-      - run: npm run benchmarks -- 10 | tee output.txt
+      - run: npm run benchmarks -- mainnetBlocks:10 | tee output.txt
         working-directory: ${{ env.cwd }}
 
       # Run git stash in case github-action-benchmark has trouble switching to gh-pages branch due to differing package-locks

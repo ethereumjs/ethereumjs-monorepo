@@ -9,7 +9,7 @@ const BENCHMARKS: BenchmarksType = {
   },
 }
 
-const onCycle = (event: any) => {
+const onCycle = (event: Benchmark.Event) => {
   console.log(String(event.target))
 }
 
@@ -17,14 +17,9 @@ async function main() {
   const args = process.argv
 
   // Input validation
-  const commandUsageStrg =
-    'Usage: npm run benchmarks|profiling -- BENCHMARK_NAME[:NUM_SAMPLES][,BENCHMARK_NAME[:NUM_SAMPLES]]'
-
   if (args.length < 4) {
-    console.log(
-      'Please provide at least one benchmark name when running a benchmark or doing profiling',
-    )
-    console.log(commandUsageStrg)
+    console.log('Please provide at least one benchmark name when running a benchmark or doing profiling.')
+    console.log('Usage: npm run benchmarks|profiling -- BENCHMARK_NAME[:NUM_SAMPLES][,BENCHMARK_NAME[:NUM_SAMPLES]]')
     console.log(`Benchmarks available: ${Object.keys(BENCHMARKS).join(', ')}`)
     return process.exit(1)
   }

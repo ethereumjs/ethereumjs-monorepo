@@ -1,9 +1,10 @@
 import BN = require('bn.js')
-import { toBuffer, setLengthLeft } from 'ethereumjs-util'
+import { toBuffer, bufferToInt } from 'ethereumjs-util'
 import Account from '@ethereumjs/account'
-import { encode } from 'rlp'
-import { StateManager, DefaultStateManager } from '../dist/state'
 import Common from '@ethereumjs/common'
+import { Block } from '@ethereumjs/block'
+import { StateManager, DefaultStateManager } from '../dist/state'
+import { RunBlockResult } from '../dist/runBlock'
 import Mockchain from './mockchain'
 
 export interface BenchmarkType {
@@ -69,4 +70,41 @@ const hexToBuffer = (h: string, allowZero: boolean = false): Buffer => {
     return Buffer.alloc(0)
   }
   return buf
+}
+
+export const verifyResult = (block: Block, result: RunBlockResult) => {
+  // verify the receipt root, the logs bloom and the gas used after block execution, throw if any of these is not the expected value
+  if (result.receiptRoot && !result.receiptRoot.equals(block.header.receiptTrie)) {
+    // there's something wrong here with the receipts trie. if block has receipt data we can check against the expected result of the block and the
+    // reported data of the VM in order to isolate the problem
+
+    // check if there are receipts
+    const { receipts } = result
+    if (receipts) {
+      let cumGasUsed = 0
+      for (let index = 0; index < receipts.length; index++) {
+        let gasUsedExpected = parseInt(receipts[index].gasUsed.toString('hex'), 16)
+        let cumGasUsedActual = parseInt(receipts[index].gasUsed.toString('hex'), 16)
+        let gasUsed = cumGasUsedActual - cumGasUsed
+        if (gasUsed !== gasUsedExpected) {
+          const blockNumber = bufferToInt(block.header.number)
+          console.log(`[DEBUG]
+            Transaction at index ${index} of block ${blockNumber}
+            did not yield expected gas.
+            Gas used expected: ${gasUsedExpected},
+            actual: ${gasUsed},
+            difference: ${gasUsed - gasUsedExpected}`)
+        }
+        cumGasUsed = cumGasUsedActual
+      }
+    }
+
+    throw new Error('invalid receiptTrie')
+  }
+  if (result.logsBloom.equals(block.header.bloom)) {
+    throw new Error('invalid bloom')
+  }
+  if (bufferToInt(block.header.gasUsed) !== Number(result.gasUsed)) {
+    throw new Error('invalid gasUsed')
+  }
 }
