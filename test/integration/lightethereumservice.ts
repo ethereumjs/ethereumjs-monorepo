@@ -2,13 +2,13 @@
 
 // Suppresses "Cannot redeclare block-scoped variable" errors
 // TODO: remove when import becomes possible
-export = {}
+//export = {}
 
 import * as tape from 'tape'
-const { LightEthereumService } = require('../../lib/service')
-const MockServer = require('./mocks/mockserver')
-const MockChain = require('./mocks/mockchain')
-const { defaultLogger } = require('../../lib/logging')
+import { LightEthereumService } from '../../lib/service'
+import MockServer from './mocks/mockserver'
+import MockChain from './mocks/mockchain'
+import { defaultLogger } from '../../lib/logging'
 defaultLogger.silent = true
 
 tape('[Integration:LightEthereumService]', async t => {

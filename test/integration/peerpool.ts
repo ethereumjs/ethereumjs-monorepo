@@ -1,13 +1,13 @@
 // Suppresses "Cannot redeclare block-scoped variable" errors
 // TODO: remove when import becomes possible
-export = {}
+/*export = {}
 
 import * as tape from 'tape'
 const { EthProtocol } = require('../../lib/net/protocol')
 const PeerPool = require('../../lib/net/peerpool')
-const MockServer = require('./mocks/mockserver')
-const MockChain = require('./mocks/mockchain')
-const { defaultLogger } = require('../../lib/logging')
+import { MockServer } from './mocks/mockserver'
+import { MockChain } from './mocks/mockchain'
+import { defaultLogger } from '../../lib/logging'
 defaultLogger.silent = true
 
 tape('[Integration:PeerPool]', async t => {
@@ -75,4 +75,4 @@ tape('[Integration:PeerPool]', async t => {
       t.pass('destroyed')
     }, 100)
   })
-})
+})*/

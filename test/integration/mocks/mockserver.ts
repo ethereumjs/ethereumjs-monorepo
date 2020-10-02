@@ -1,10 +1,10 @@
 'use strict'
 
 const { Server } = require('../../../lib/net/server')
-const MockPeer = require('./mockpeer')
+import MockPeer from './mockpeer'
 const network = require('./network')
 
-export = module.exports = class MockServer extends Server {
+export default class MockServer extends Server {
   public location: string
   public server: any
   public peers: any

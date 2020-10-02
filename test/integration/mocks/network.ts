@@ -61,9 +61,9 @@ const Connection = function (protocols: any) {
   }
 } as any
 
-const servers: any = {}
+export const servers: any = {}
 
-function createServer (location: any) {
+export function createServer (location: any) {
   if (servers[location]) {
     throw new Error(`Already running a server at ${location}`)
   }
@@ -75,7 +75,7 @@ function createServer (location: any) {
   return servers[location].server
 }
 
-function destroyServer (location: any) {
+export function destroyServer (location: any) {
   if (servers[location]) {
     for (const id of Object.keys(servers[location].connections)) {
       destroyConnection(id, location)
@@ -84,7 +84,7 @@ function destroyServer (location: any) {
   delete servers[location]
 }
 
-function createConnection (id: any, location: any, protocols: any) {
+export function createConnection (id: any, location: any, protocols: any) {
   if (!servers[location]) {
     throw new Error(`There is no server at ${location}`)
   }
@@ -94,7 +94,7 @@ function createConnection (id: any, location: any, protocols: any) {
   return connection.remote(location)
 }
 
-function destroyConnection (id: any, location: any) {
+export function destroyConnection (id: any, location: any) {
   if (servers[location]) {
     const conn = servers[location].connections[id]
     if (conn) {
@@ -103,11 +103,3 @@ function destroyConnection (id: any, location: any) {
     }
   }
 }
-
-module.exports.createServer = createServer
-module.exports.destroyServer = destroyServer
-module.exports.createConnection = createConnection
-module.exports.destroyConnection = destroyConnection
-module.exports.servers = servers
-
-export = module.exports

@@ -2,7 +2,7 @@
 
 const { Sender } = require('../../../lib/net/protocol')
 
-export = module.exports = class MockSender extends Sender {
+export default class MockSender extends Sender {
   public protocol: any
   public pushable: any
   public receiver: any

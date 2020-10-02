@@ -1,6 +1,6 @@
-const { EventEmitter } = require('events')
+import * as events from 'events'
 const PeerPool = require('../net/peerpool')
-const { defaultLogger } = require('../logging')
+import { defaultLogger } from '../logging'
 
 const defaultOptions = {
   maxPeers: 25,
@@ -12,7 +12,13 @@ const defaultOptions = {
  * Base class for all services
  * @memberof module:service
  */
-export = module.exports = class Service extends EventEmitter {
+export class Service extends events.EventEmitter {
+  public logger: any
+  public opened: boolean
+  public running: boolean
+  public servers: any
+  public pool: any
+
   /**
    * Create new service and associated peer pool
    * @param {Object}     options constructor parameters
@@ -20,7 +26,7 @@ export = module.exports = class Service extends EventEmitter {
    * @param {number}     [options.maxPeers=25] maximum peers allowed
    * @param {Logger}     [options.logger] logger instance
    */
-  constructor (options: any) {
+  constructor (options?: any) {
     super()
     options = { ...defaultOptions, ...options }
 
@@ -49,15 +55,16 @@ export = module.exports = class Service extends EventEmitter {
    * @protected
    * @type {string}
    */
-  get name () {
-    throw new Error('Unimplemented')
+  get name () : any {
+    return ''
+    //throw new Error('Unimplemented')
   }
 
   /**
    * Returns all protocols required by this service
    * @type {Protocol[]} required protocols
    */
-  get protocols () {
+  get protocols () : any {
     return []
   }
 
@@ -97,7 +104,7 @@ export = module.exports = class Service extends EventEmitter {
    * Start service
    * @return {Promise}
    */
-  async start () {
+  async start (): Promise<void | boolean> {
     if (this.running) {
       return false
     }
@@ -110,7 +117,7 @@ export = module.exports = class Service extends EventEmitter {
    * Stop service
    * @return {Promise}
    */
-  async stop () {
+  async stop (): Promise<void | boolean> {
     if (this.opened) {
       await this.close()
     }
@@ -125,7 +132,7 @@ export = module.exports = class Service extends EventEmitter {
    * @param  {Peer}    peer peer
    * @return {Promise}
    */
-  async handle (message: any, protocol: string, peer: any) {
+  async handle (message: any, protocol: string, peer: any): Promise<any> {
   }
 }
 

@@ -1,13 +1,13 @@
 'use strict'
 
 const { Peer } = require('../../../lib/net/peer')
-const MockSender = require('./mocksender')
+import MockSender from './mocksender'
 const network = require('./network')
 const EventEmitter = require('events')
 const Pushable = require('pull-pushable')
 const pull = require('pull-stream')
 
-export = module.exports = class MockPeer extends Peer {
+export default class MockPeer extends Peer {
   public location: any
   public connected: boolean
 

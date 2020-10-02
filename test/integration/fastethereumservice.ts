@@ -1,15 +1,13 @@
-'use strict'
-
 // Suppresses "Cannot redeclare block-scoped variable" errors
 // TODO: remove when import becomes possible
-export = {}
+//export = {}
 
 import * as tape from 'tape'
-const { FastEthereumService } = require('../../lib/service')
-const MockServer = require('./mocks/mockserver')
-const MockChain = require('./mocks/mockchain')
+import { FastEthereumService } from '../../lib/service'
+import MockServer from './mocks/mockserver'
+import MockChain from './mocks/mockchain'
 const BN = require('bn.js')
-const { defaultLogger } = require('../../lib/logging')
+import { defaultLogger } from '../../lib/logging'
 defaultLogger.silent = true
 
 tape('[Integration:FastEthereumService]', async t => {
@@ -34,7 +32,7 @@ tape('[Integration:FastEthereumService]', async t => {
 
   t.test('should handle ETH requests', async t => {
     const [server, service] = await setup()
-    const peer = await server.accept('peer0')
+    const peer = await (server as MockServer).accept('peer0')
     const headers = await peer.eth.getBlockHeaders({ block: 1, max: 2 })
     const hash = Buffer.from('a321d27cd2743617c1c1b0d7ecb607dd14febcdfca8f01b79c3f0249505ea069', 'hex')
     t.equals(headers[1].hash().toString('hex'), hash.toString('hex'), 'handled GetBlockHeaders')
@@ -48,7 +46,7 @@ tape('[Integration:FastEthereumService]', async t => {
 
   t.test('should handle LES requests', async t => {
     const [server, service] = await setup()
-    const peer = await server.accept('peer0')
+    const peer = await (server as MockServer).accept('peer0')
     const { headers } = await peer.les.getBlockHeaders({ block: 1, max: 2 })
     t.equals(
       headers[1].hash().toString('hex'),

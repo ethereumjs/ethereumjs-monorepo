@@ -1,14 +1,14 @@
-'use strict'
+
 
 // Suppresses "Cannot redeclare block-scoped variable" errors
 // TODO: remove when import becomes possible
-export = {}
+//export = {}
 
 import * as tape from 'tape'
-const { FastEthereumService } = require('../../lib/service')
-const MockServer = require('./mocks/mockserver')
-const MockChain = require('./mocks/mockchain')
-const { defaultLogger } = require('../../lib/logging')
+import { FastEthereumService } from '../../lib/service'
+import MockServer from './mocks/mockserver'
+import MockChain from './mocks/mockchain'
+import { defaultLogger } from '../../lib/logging'
 defaultLogger.silent = true
 
 async function wait (delay: number) {

@@ -1,13 +1,13 @@
 'use strict'
 
-const { Chain } = require('../../../lib/blockchain')
 const Block = require('ethereumjs-block')
+const { Chain } = require('../../../lib/blockchain')
 
 const defaultOptions = {
   height: 10
 }
 
-export = module.exports = class MockChain extends Chain {
+export default class MockChain extends Chain {
   public height: any
 
   constructor (options: any = {}) {

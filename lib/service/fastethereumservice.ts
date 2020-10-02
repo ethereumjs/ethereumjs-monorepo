@@ -1,5 +1,5 @@
 
-const EthereumService = require('./ethereumservice')
+import { EthereumService } from './ethereumservice'
 const FastSynchronizer = require('../sync/fastsync')
 const EthProtocol = require('../net/protocol/ethprotocol')
 const LesProtocol = require('../net/protocol/lesprotocol')
@@ -12,7 +12,8 @@ const defaultOptions = {
  * Ethereum service
  * @memberof module:service
  */
-export = module.exports = class FastEthereumService extends EthereumService {
+export class FastEthereumService extends EthereumService {
+  public lightserv: any
   /**
    * Create new ETH service
    * @param {Object}   options constructor parameters
@@ -25,7 +26,7 @@ export = module.exports = class FastEthereumService extends EthereumService {
    * @param {number}   [options.interval] sync retry interval
    * @param {Logger}   [options.logger] logger instance
    */
-  constructor (options: any) {
+  constructor (options?: any) {
     super(options)
     options = { ...defaultOptions, ...options }
     this.lightserv = options.lightserv
@@ -48,7 +49,7 @@ export = module.exports = class FastEthereumService extends EthereumService {
    * Returns all protocols required by this service
    * @type {Protocol[]} required protocols
    */
-  get protocols () {
+  get protocols () : any[] {
     const protocols = [ new EthProtocol({
       chain: this.chain,
       timeout: this.timeout
@@ -70,7 +71,7 @@ export = module.exports = class FastEthereumService extends EthereumService {
    * @param  {Peer}    peer peer
    * @return {Promise}
    */
-  async handle (message: any, protocol: string, peer: any) {
+  async handle (message: any, protocol: string, peer: any): Promise<any> {
     if (protocol === 'eth') {
       return this.handleEth(message, peer)
     } else {

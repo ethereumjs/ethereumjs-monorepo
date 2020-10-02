@@ -1,6 +1,5 @@
-const chalk = require('chalk')
-const winston = require('winston')
-const { createLogger, format, transports } = winston
+import chalk, { ColorSupport } from 'chalk'
+import { createLogger, format, transports } from 'winston'
 const { combine, timestamp, label, printf } = format
 
 const levelColors: any = {
@@ -22,7 +21,8 @@ const errorFormat = format((info: any) => {
 
 function logFormat () {
   return printf((info: any) => {
-    const color = chalk[levelColors[info.level]].bind(chalk)
+    // @ts-ignore: implicitly has an 'any' TODO
+    const color = (chalk[levelColors[info.level]]).bind(chalk)
     const level = color(info.level.toUpperCase())
     const re = /(\w+)=(.+?)(?:\s|$)/g
     info.message = info.message.replace(re, (_: any, tag: string, char: string) => `${color(tag)}=${char} `)
@@ -30,7 +30,7 @@ function logFormat () {
   })
 }
 
-function getLogger (options = { loglevel: 'info' }) {
+export function getLogger (options = { loglevel: 'info' }) {
   const logger = createLogger({
     format: combine(
       errorFormat(),
@@ -50,7 +50,4 @@ function getLogger (options = { loglevel: 'info' }) {
   return logger
 }
 
-exports.defaultLogger = getLogger({ loglevel: 'debug' })
-exports.getLogger = getLogger
-
-export = exports
+export const defaultLogger = getLogger({ loglevel: 'debug' });
