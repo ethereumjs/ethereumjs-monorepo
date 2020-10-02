@@ -11,6 +11,11 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 - Fixes for [EIP2929](https://eips.ethereum.org/EIPS/eip-2929) (Gas cost increases for state access opcodes), PR [#1124](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1124)
 - Integration of [EIP2718](https://eips.ethereum.org/EIPS/eip-2718) (Typed Transactions) and [EIP2930](https://eips.ethereum.org/EIPS/eip-2930) (Access List Transaction), PR [#1048](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1048). VM now has support for access list transactions.
 
+**CI and Test Improvements**
+
+- The `afterBlock` event has been changed from emitting an Object of shape `{ receipts, results }` to `RunBlockResult`, PR [#853](https://github.com/ethereumjs/ethereumjs-vm/pull/853)
+- Benchmark improvements and fixes, PR [#853](https://github.com/ethereumjs/ethereumjs-vm/pull/853)
+
 ### 5.1.0 - 2021-02-22
 
 ### Clique/PoA Support
