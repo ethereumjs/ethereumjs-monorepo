@@ -1,8 +1,7 @@
-
-const Peer = require('./peer')
-const PeerId = require('peer-id')
-const PeerInfo = require('peer-info')
-const Libp2pNode = require('./libp2pnode')
+import { Peer } from './peer'
+import PeerId from 'peer-id'
+import PeerInfo  from 'peer-info'
+import { Libp2pNode } from './libp2pnode'
 const Libp2pSender = require('../protocol/libp2psender')
 
 const defaultOptions = {
@@ -31,7 +30,10 @@ const defaultOptions = {
  *   .on('disconnected', (reason) => console.log('Disconnected:', reason))
  *   .connect()
  */
-export = module.exports = class Libp2pPeer extends Peer {
+export class Libp2pPeer extends Peer {
+  private multiaddrs: string | string[]
+  private connected: boolean
+
   /**
    * Create new libp2p peer
    * @param {Object}      options constructor parameters
@@ -62,7 +64,7 @@ export = module.exports = class Libp2pPeer extends Peer {
    * Initiate peer connection
    * @return {Promise}
    */
-  async connect () {
+  async connect () : Promise<void>{
     if (this.connected) {
       return
     }
@@ -80,7 +82,7 @@ export = module.exports = class Libp2pPeer extends Peer {
    * @private
    * @return {Promise}
    */
-  async accept (protocol: any, connection: any, server: any) {
+  async accept (protocol: any, connection: any, server: any) : Promise<void> {
     await this.bindProtocol(protocol, new Libp2pSender(connection))
     this.inbound = true
     this.server = server
@@ -94,7 +96,7 @@ export = module.exports = class Libp2pPeer extends Peer {
    * @param  {Server}     [server] optional server that initiated connection
    * @return {Promise}
    */
-  async bindProtocols (node: any, peerInfo: any, server = null) {
+  async bindProtocols (node: any, peerInfo: any, server = null): Promise<void> {
     await Promise.all(this.protocols.map(async (p: any) => {
       await p.open()
       const protocol = `/${p.name}/${p.versions[0]}`
@@ -110,17 +112,25 @@ export = module.exports = class Libp2pPeer extends Peer {
     this.connected = true
   }
 
-  async createPeerInfo ({ multiaddrs, id }: { multiaddrs: string[], id?: string }) {
-    return new Promise((resolve, reject) => {
-      const handler = (err: Error | undefined, peerInfo: any) => {
+  async createPeerInfo ({ multiaddrs, id }: { multiaddrs: string[], id?: string }): Promise<PeerInfo> {
+    return new Promise<PeerInfo>((resolve, reject) => {
+      const handler = (err: Error | null, peerInfo?: PeerInfo) : any => {
         if (err) {
           return reject(err)
         }
-        multiaddrs.forEach(ma => peerInfo.multiaddrs.add(ma))
+        multiaddrs.forEach(ma => {
+          if (peerInfo){
+            peerInfo.multiaddrs.add(ma)
+          }
+        })
         resolve(peerInfo)
       }
       if (id) {
-        PeerInfo.create(PeerId.createFromB58String(id), handler)
+        // TODO: PeerInfo types are wrong...
+        PeerInfo.create(
+          (<unknown>PeerId.createFromB58String(id) as PeerInfo.CreateOptions),
+          handler
+        )
       } else {
         PeerInfo.create(handler)
       }

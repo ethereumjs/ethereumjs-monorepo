@@ -4,15 +4,15 @@ export = {}
 
 import * as tape from 'tape-catch'
 const td = require('testdouble')
-const { Peer } = require('../../../lib/net/peer')
-const EventEmitter = require('events')
+import { Peer } from '../../../lib/net/peer'
+import * as events from 'events'
 
 tape('[Peer]', t => {
   const peer = new Peer({
     id: '0123456789abcdef',
     address: 'address0',
     transport: 'transport0',
-    inbound: true
+    inbound: true,
   })
 
   t.test('should get/set idle state', t => {
@@ -23,7 +23,7 @@ tape('[Peer]', t => {
   })
 
   t.test('should bind protocol', async (t) => {
-    const bound = new EventEmitter()
+    const bound = (new events.EventEmitter() as any)
     const sender = 'sender'
     const protocol = td.object('Protocol')
     bound.name = 'bound0'
