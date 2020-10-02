@@ -5,7 +5,7 @@ const chains = require('ethereumjs-common/dist/chains').chains
 const { getLogger } = require('../lib/logging')
 const { parse } = require('../lib/util')
 const { fromName: serverFromName } = require('../lib/net/server')
-const EthereumNode = require('../lib/node')
+import Node from '../lib/node'
 import { Server as RPCServer } from 'jayson'
 const RPCManager = require('../lib/rpc')
 const level = require('level')
@@ -88,7 +88,7 @@ async function runNode (options: any) {
   if (options.lightserv) {
     logger.info(`Serving light peer requests`)
   }
-  const node = new EthereumNode(options)
+  const node = new Node(options)
   node.on('error', (err: any) => logger.error(err))
   node.on('listening', (details: any) => {
     logger.info(`Listener up transport=${details.transport} url=${details.url}`)

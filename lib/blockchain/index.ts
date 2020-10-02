@@ -2,5 +2,4 @@
  * @module blockchain
  */
 
-exports.Chain = require('./chain')
-export = exports
+export * from './chain'

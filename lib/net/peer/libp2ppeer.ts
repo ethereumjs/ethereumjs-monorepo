@@ -17,7 +17,7 @@ const defaultOptions = {
  * @example
  *
  * const { Libp2pPeer } = require('./lib/net/peer')
- * const { Chain } = require('./lib/blockchain')
+ * import { Chain } from './lib/blockchain'
  * const { EthProtocol } = require('./lib/net/protocol')
  *
  * const chain = new Chain()

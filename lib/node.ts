@@ -1,4 +1,4 @@
-import EventEmitter from 'events'
+import * as events from 'events'
 import { FastEthereumService, LightEthereumService } from './service'
 import { defaultLogger } from './logging'
 
@@ -14,7 +14,17 @@ const defaultOptions = {
  * lifecycle of included services.
  * @memberof module:node
  */
-export default class Node extends EventEmitter {
+export default class Node extends events.EventEmitter {
+  
+  public logger: any
+  public common: any
+  public servers: any
+  public syncmode: any
+  public services: any
+
+  public opened: boolean
+  public started: boolean
+  
   /**
    * Create new node
    * @param {Object}   options constructor parameters

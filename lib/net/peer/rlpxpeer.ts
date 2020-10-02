@@ -16,7 +16,7 @@ const devp2pCapabilities: any = {
  * @example
  *
  * const { RlpxPeer } = require('./lib/net/peer')
- * const { Chain } = require('./lib/blockchain')
+ * import { Chain } from './lib/blockchain'
  * const { EthProtocol } = require('./lib/net/protocol')
  *
  * const chain = new Chain()
