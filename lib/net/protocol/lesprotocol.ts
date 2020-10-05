@@ -1,8 +1,6 @@
-
-const Protocol = require('./protocol')
-const util = require('ethereumjs-util')
+import { Protocol } from './protocol'
+import { BN, bufferToInt } from 'ethereumjs-util'
 const Block = require('ethereumjs-block')
-const BN = util.BN
 
 let id = new BN(0)
 
@@ -21,7 +19,7 @@ const messages = [{
     headHash: headHash,
     headNumber: new BN(headNumber),
     headTd: new BN(headTd),
-    reorgDepth: util.bufferToInt(reorgDepth)
+    reorgDepth: bufferToInt(reorgDepth)
   })
 }, {
   name: 'GetBlockHeaders',
@@ -34,9 +32,9 @@ const messages = [{
   decode: ([reqId, [block, max, skip, reverse]]: any) => ({
     reqId: new BN(reqId),
     block: block.length === 32 ? block : new BN(block),
-    max: util.bufferToInt(max),
-    skip: util.bufferToInt(skip),
-    reverse: util.bufferToInt(reverse)
+    max: bufferToInt(max),
+    skip: bufferToInt(skip),
+    reverse: bufferToInt(reverse)
   })
 }, {
   name: 'BlockHeaders',
@@ -57,7 +55,11 @@ const messages = [{
  * Implements les/1 and les/2 protocols
  * @memberof module:net/protocol
  */
-export = module.exports = class LesProtocol extends Protocol {
+export class LesProtocol extends Protocol {
+  private chain: any
+  private flow: any
+  private isServer: boolean
+
   /**
    * Create les protocol
    * @param {Object}      options constructor parameters
@@ -72,13 +74,16 @@ export = module.exports = class LesProtocol extends Protocol {
 
     this.chain = options.chain
     this.flow = options.flow
+
+    // TODO: "no init value" error was caught by TS compiler. Is `false` the correct default?
+    this.isServer = false;
   }
 
   /**
    * Name of protocol
    * @type {string}
    */
-  get name () {
+  get name (): string {
     return 'les'
   }
 
@@ -86,7 +91,7 @@ export = module.exports = class LesProtocol extends Protocol {
    * Protocol versions supported
    * @type {number[]}
    */
-  get versions () {
+  get versions (): number[] {
     return [2, 1]
   }
 
@@ -94,7 +99,7 @@ export = module.exports = class LesProtocol extends Protocol {
    * Messages defined by this protocol
    * @type {Protocol~Message[]}
    */
-  get messages () {
+  get messages (): any {
     return messages
   }
 
@@ -102,7 +107,7 @@ export = module.exports = class LesProtocol extends Protocol {
    * Opens protocol and any associated dependencies
    * @return {Promise}
    */
-  async open () {
+  async open (): Promise<boolean|void> {
     if (this.opened) {
       return false
     }
@@ -114,7 +119,7 @@ export = module.exports = class LesProtocol extends Protocol {
    * Encodes status into LES status message payload
    * @return {Object}
    */
-  encodeStatus () {
+  encodeStatus () : any {
     const serveOptions = this.flow ? {
       serveHeaders: 1,
       serveChainSince: 0,
@@ -143,7 +148,7 @@ export = module.exports = class LesProtocol extends Protocol {
    * @param {Object} status status message payload
    * @return {Object}
    */
-  decodeStatus (status: any) {
+  decodeStatus (status: any) : any {
     this.isServer = !!status.serveHeaders
     const mrc: any = {}
     if (status['flowControl/MRC']) {
@@ -157,7 +162,7 @@ export = module.exports = class LesProtocol extends Protocol {
       }
     }
     return {
-      networkId: util.bufferToInt(status.networkId),
+      networkId: bufferToInt(status.networkId),
       headTd: new BN(status.headTd),
       headHash: status.headHash,
       headNum: new BN(status.headNum),

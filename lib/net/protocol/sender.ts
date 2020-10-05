@@ -1,4 +1,4 @@
-const { EventEmitter } = require('events')
+import {EventEmitter} from 'events'
 
 /**
  * Base class for transport specific message sender/receiver. Subclasses should
@@ -8,17 +8,19 @@ const { EventEmitter } = require('events')
  * @emits status
  * @memberof module:net/protocol
  */
-export = module.exports = class Sender extends EventEmitter {
+export class Sender extends EventEmitter {
+  private _status: any
+
   constructor () {
     super()
     this._status = null
   }
 
-  get status () {
+  get status () : any {
     return this._status
   }
 
-  set status (status) {
+  set status (status: any) {
     this._status = status
     this.emit('status', status)
   }

@@ -3,12 +3,11 @@
  * @module net/protocol
  */
 
-exports.Protocol = require('./protocol')
-exports.EthProtocol = require('./ethprotocol')
-exports.LesProtocol = require('./lesprotocol')
-exports.Sender = require('./sender')
-exports.RlpxSender = require('./rlpxsender')
-exports.Libp2pSender = require('./libp2psender')
-exports.FlowControl = require('./flowcontrol')
-
-export = exports
+export * from './boundprotocol'
+export * from './protocol'
+export * from './ethprotocol'
+export * from './lesprotocol'
+export * from './sender'
+export * from './rlpxsender'
+export * from './libp2psender'
+export * from './flowcontrol'

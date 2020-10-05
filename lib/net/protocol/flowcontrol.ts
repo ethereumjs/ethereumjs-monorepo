@@ -11,13 +11,13 @@ const defaultOptions = {
  * LES flow control manager
  * @memberof module:net/protocol
  */
-export = module.exports = class FlowControl {
+export class FlowControl {
   private bl: any
   private mrc: any
   private mrr: any
   private out: any
   private in: any
-  
+
   constructor (options: any) {
     options = { ...defaultOptions, ...options }
 

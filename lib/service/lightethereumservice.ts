@@ -1,6 +1,6 @@
 import { EthereumService } from './ethereumservice'
 const LightSynchronizer = require('../sync/lightsync')
-const LesProtocol = require('../net/protocol/lesprotocol')
+import { LesProtocol } from '../net/protocol/lesprotocol'
 
 /**
  * Ethereum service

@@ -1,8 +1,8 @@
 
 import { EthereumService } from './ethereumservice'
 const FastSynchronizer = require('../sync/fastsync')
-const EthProtocol = require('../net/protocol/ethprotocol')
-const LesProtocol = require('../net/protocol/lesprotocol')
+import { EthProtocol } from '../net/protocol/ethprotocol'
+import { LesProtocol } from '../net/protocol/lesprotocol'
 
 const defaultOptions = {
   lightserv: false
@@ -50,7 +50,7 @@ export class FastEthereumService extends EthereumService {
    * @type {Protocol[]} required protocols
    */
   get protocols () : any[] {
-    const protocols = [ new EthProtocol({
+    const protocols : any[] = [ new EthProtocol({
       chain: this.chain,
       timeout: this.timeout
     }) ]

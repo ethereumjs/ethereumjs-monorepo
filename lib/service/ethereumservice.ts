@@ -1,7 +1,6 @@
-
 import { Service } from './service'
-const FlowControl = require('../net/protocol/flowcontrol')
-const { Chain } = require('../blockchain')
+import { FlowControl } from '../net/protocol/flowcontrol'
+import { Chain } from '../blockchain'
 import Common from 'ethereumjs-common'
 
 const defaultOptions = {
