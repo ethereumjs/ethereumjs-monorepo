@@ -13,7 +13,7 @@ const defaultOptions = {
  * @memberof module:net/peer
  */
 export class Peer extends events.EventEmitter {
-  protected id: string
+  public id: string
   protected transport: string
   protected protocols: any[]
   protected logger: any

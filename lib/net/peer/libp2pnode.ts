@@ -2,12 +2,12 @@
 * Libp2p Bundle
 * @memberof module:net/peer
 */
-import LibP2pTcp from 'libp2p-tcp'
-import LibP2pWebsockets from 'libp2p-websockets'
-import LibP2pBootstrap from 'libp2p-bootstrap'
-import LibP2pKadDht from 'libp2p-kad-dht'
-import mplex from  'libp2p-mplex'
-import secio from 'libp2p-secio'
+const LibP2pTcp = require('libp2p-tcp')
+const LibP2pWebsockets = require('libp2p-websockets')
+const LibP2pBootstrap = require('libp2p-bootstrap')
+const LibP2pKadDht = require('libp2p-kad-dht')
+const mplex = require('libp2p-mplex')
+const secio = require('libp2p-secio')
 
 // TODO: Import errors with "class extends value undefined is not a constructor or null"
 //       but LibP2p *is* default export and has a constructor

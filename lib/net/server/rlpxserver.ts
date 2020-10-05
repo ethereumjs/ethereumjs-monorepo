@@ -2,7 +2,7 @@
 const Server = require('./server')
 const { randomBytes } = require('crypto')
 const devp2p = require('ethereumjs-devp2p')
-const RlpxPeer = require('../peer/rlpxpeer')
+import { RlpxPeer } from '../peer/rlpxpeer'
 const { parse } = require('../../util')
 
 const defaultOptions = {
