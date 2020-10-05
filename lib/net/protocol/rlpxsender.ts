@@ -1,4 +1,3 @@
-
 import { Sender } from './sender'
 import { rlp } from 'ethereumjs-util'
 

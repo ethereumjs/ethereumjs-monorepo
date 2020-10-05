@@ -14,15 +14,14 @@ const defaultOptions = {
  */
 export class Peer extends events.EventEmitter {
   protected id: string
-  protected address: string
   protected transport: string
   protected protocols: any[]
   protected logger: any
-  protected server: any
   private _idle: boolean
-
+  public address: string
   public inbound: boolean
   public bound: Map<string, any>
+  public server: any
 
   /**
    * Create new peer

@@ -1,6 +1,6 @@
 
 import { Peer } from './peer'
-const RlpxSender = require('../protocol/rlpxsender')
+import { RlpxSender } from '../protocol/rlpxsender'
 import { ETH, LES, RLPx, Capabilities, DPT } from 'ethereumjs-devp2p'
 import { randomBytes } from'crypto'
 
@@ -34,9 +34,9 @@ const devp2pCapabilities: any = {
 export class RlpxPeer extends Peer {
   private host: string
   private port: number
-  private rlpx: any
-  private rlpxPeer: any
-  private connected: boolean
+  public rlpx: any
+  public rlpxPeer: any
+  public connected: boolean
 
   /**
    * Create new devp2p/rlpx peer

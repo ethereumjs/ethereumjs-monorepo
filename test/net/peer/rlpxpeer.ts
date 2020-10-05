@@ -1,23 +1,19 @@
-// Suppresses "Cannot redeclare block-scoped variable" errors
-// TODO: remove when import becomes possible
-export = {}
-
 import * as tape from 'tape-catch'
 const td = require('testdouble')
-import * as events from 'events'
+import { EventEmitter } from 'events'
+import { RlpxPeer } from '../../../lib/net/peer/rlpxpeer'
 import { defaultLogger } from '../../../lib/logging'
 defaultLogger.silent = true
 
-// TODO
-// Test deactivated along TypeScript transition
+// Many tests pass but it looks like this suite still needs to be skipped because
+// importing RlpxPeer above (instead of `require`ing it within the Tape test below
+// as originally) causes td.reset to hang (?). Suite will not exit
 tape.skip('[RlpxPeer]', t => {
-  /*
   const { DPT, ETH, LES } = require('ethereumjs-devp2p')
-  //class RLPx extends EventEmitter {}
-  RLPx.prototype.connect = td.func()
+  class RLPx extends EventEmitter {}
+  (<unknown>RLPx.prototype as any).connect = td.func()
   td.replace('ethereumjs-devp2p', { DPT, ETH, LES, RLPx })
   const RlpxSender = td.replace('../../../lib/net/protocol/rlpxsender')
-  const RlpxPeer = require('../../../lib/net/peer/rlpxpeer')
 
   t.test('should initialize correctly', async (t) => {
     const peer = new RlpxPeer({ id: 'abcdef0123', host: '10.0.0.1', port: 1234 })
@@ -38,15 +34,17 @@ tape.skip('[RlpxPeer]', t => {
     t.end()
   })
 
+  // TODO: disabled for typescript transition. td.verify failing...
+  /*
   t.test('should connect to peer', async (t) => {
     const proto0: any = { name: 'les', versions: [2] }
     const peer = new RlpxPeer({ id: 'abcdef0123', protocols: [proto0] })
     proto0.open = td.func()
     td.when(proto0.open()).thenResolve()
     await peer.connect()
-    td.verify(RLPx.prototype.connect(td.matchers.anything()))
+    td.verify((<unknown>RLPx.prototype as any).connect(td.matchers.anything()))
     t.end()
-  })
+  })*/
 
   t.test('should handle peer events', async (t) => {
     t.plan(5)
@@ -96,7 +94,8 @@ tape.skip('[RlpxPeer]', t => {
     t.end()
   })
 
-  t.test('should bind protocols', async (t) => {
+  // TODO: disabled for typescript transition. `RlpxSender.on` is not a function
+  /*t.test('should bind protocols', async (t) => {
     const protocols = [{ name: 'proto0' }]
     const peer = new RlpxPeer({ id: 'abcdef0123', protocols })
     const proto0 = new (class Proto0 {})()
@@ -107,11 +106,10 @@ tape.skip('[RlpxPeer]', t => {
     td.verify(peer.bindProtocol({ name: 'proto0' }, td.matchers.isA(RlpxSender)))
     t.ok(peer.connected, 'connected set to true')
     t.end()
-  })
+  })*/
 
   t.test('should reset td', t => {
     td.reset()
     t.end()
   })
-  */
 })
