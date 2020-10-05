@@ -1,6 +1,6 @@
 const { EventEmitter } = require('events')
 const { defaultLogger } = require('../logging')
-const Peer = require('./peer/peer')
+import { Peer } from './peer/peer'
 
 const defaultOptions = {
   logger: defaultLogger,
@@ -40,7 +40,7 @@ export = module.exports = class PeerPool extends EventEmitter {
     this.servers = options.servers
     this.logger = options.logger
     this.maxPeers = options.maxPeers
-    this.pool = new Map()
+    this.pool = new Map<string, Peer>()
     this.noPeerPeriods = 0
     this.init()
   }
@@ -58,8 +58,8 @@ export = module.exports = class PeerPool extends EventEmitter {
       return false
     }
     this.servers.map((server: any) => {
-      server.on('connected', (peer: any) => { this.connected(peer) })
-      server.on('disconnected', (peer: any) => { this.disconnected(peer) })
+      server.on('connected', (peer: Peer) => { this.connected(peer) })
+      server.on('disconnected', (peer: Peer) => { this.disconnected(peer) })
     })
     this.opened = true
     this._statusCheckInterval = setInterval(await this._statusCheck.bind(this), 20000)
@@ -77,10 +77,10 @@ export = module.exports = class PeerPool extends EventEmitter {
 
   /**
    * Connected peers
-   * @type {Peer[]}
    */
   get peers () {
-    return Array.from(this.pool.values())
+    const connectedPeers: Peer[] = Array.from(this.pool.values())
+    return connectedPeers
   }
 
   /**
@@ -93,13 +93,13 @@ export = module.exports = class PeerPool extends EventEmitter {
 
   /**
    * Return true if pool contains the specified peer
-   * @param {Peer|string} peer object or peer id
+   * @param peer object or peer id
    */
-  contains (peer: any): boolean {
+  contains (peer: Peer | string): boolean {
     if (peer instanceof Peer) {
       peer = peer.id
     }
-    return !!this.pool.get(peer)
+    return !!this.pool.get(peer as string)
   }
 
   /**
@@ -107,7 +107,7 @@ export = module.exports = class PeerPool extends EventEmitter {
    * @param [filterFn] filter function to apply before finding idle peers
    * @return {Peer}
    */
-  idle (filterFn = (peer: any) => true) {
+  idle (filterFn = (peer: Peer) => true) {
     const idle = this.peers.filter((p: any) => p.idle && filterFn(p))
     const index = Math.floor(Math.random() * idle.length)
     return idle[index]
@@ -118,7 +118,7 @@ export = module.exports = class PeerPool extends EventEmitter {
    * @private
    * @param  {Peer} peer
    */
-  connected (peer: any) {
+  connected (peer: Peer) {
     if (this.size >= this.maxPeers) return
     peer.on('message', (message: any, protocol: string) => {
       if (this.pool.get(peer.id)) {
@@ -140,7 +140,7 @@ export = module.exports = class PeerPool extends EventEmitter {
    * @private
    * @param  {Peer} peer
    */
-  disconnected (peer: any) {
+  disconnected (peer: Peer) {
     this.remove(peer)
   }
 
@@ -150,7 +150,7 @@ export = module.exports = class PeerPool extends EventEmitter {
    * @param  maxAge ban period in milliseconds
    * @emits  banned
    */
-  ban (peer: any, maxAge?: number) {
+  ban (peer: Peer, maxAge?: number) {
     if (!peer.server) {
       return
     }
@@ -166,7 +166,7 @@ export = module.exports = class PeerPool extends EventEmitter {
    * @emits message
    * @emits message:{protocol}
    */
-  add (peer: any) {
+  add (peer?: Peer) {
     if (peer && peer.id && !this.pool.get(peer.id)) {
       this.pool.set(peer.id, peer)
       this.emit('added', peer)
@@ -178,7 +178,7 @@ export = module.exports = class PeerPool extends EventEmitter {
    * @param  {Peer} peer
    * @emits removed
    */
-  remove (peer: any) {
+  remove (peer?: Peer) {
     if (peer && peer.id) {
       if (this.pool.delete(peer.id)) {
         this.emit('removed', peer)

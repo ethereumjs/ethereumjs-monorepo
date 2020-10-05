@@ -1,7 +1,7 @@
 
 const Server = require('./server')
 const { randomBytes } = require('crypto')
-const devp2p = require('ethereumjs-devp2p')
+import { RLPx as Devp2pRLPx, Peer as Devp2pRLPxPeer, DPT as Devp2pDPT} from 'ethereumjs-devp2p'
 import { RlpxPeer } from '../peer/rlpxpeer'
 const { parse } = require('../../util')
 
@@ -34,6 +34,12 @@ const ignoredErrors = new RegExp([
  * @memberof module:net/server
  */
 export = module.exports = class RlpxServer extends Server {
+  
+  private peers: Map<string, RlpxPeer> = new Map()
+
+  private rlpx: Devp2pRLPx | null = null
+  private dpt: Devp2pDPT | null = null
+  
   /**
    * Create new DevP2P/RLPx server
    * @param {Object}   options constructor parameters
@@ -66,9 +72,6 @@ export = module.exports = class RlpxServer extends Server {
   }
 
   init () {
-    this.dpt = null
-    this.rlpx = null
-    this.peers = new Map()
     if (typeof this.bootnodes === 'string') {
       this.bootnodes = parse.bootnodes(this.bootnodes)
     }
@@ -106,7 +109,7 @@ export = module.exports = class RlpxServer extends Server {
         udpPort: node.port,
         tcpPort: node.port
       }
-      return this.dpt.bootstrap(bootnode).catch((e: Error) => this.error(e))
+      return (this.dpt as Devp2pDPT).bootstrap(bootnode).catch((e: Error) => this.error(e))
     })
     await Promise.all(promises)
   }
@@ -119,8 +122,8 @@ export = module.exports = class RlpxServer extends Server {
     if (!this.started) {
       return false
     }
-    this.rlpx.destroy()
-    this.dpt.destroy()
+    (this.rlpx as Devp2pRLPx).destroy();
+    (this.dpt as Devp2pDPT).destroy()
     await super.stop()
   }
 
@@ -134,7 +137,7 @@ export = module.exports = class RlpxServer extends Server {
     if (!this.started) {
       return false
     }
-    this.dpt.banPeer(peerId, maxAge)
+    (this.dpt as Devp2pDPT).banPeer(peerId, maxAge)
   }
 
   /**
@@ -144,7 +147,7 @@ export = module.exports = class RlpxServer extends Server {
    * @param  {Peer} peer
    * @emits  error
    */
-  error (error: Error, peer?: any) {
+  error (error: Error, peer?: RlpxPeer) {
     if (ignoredErrors.test(error.message)) {
       return
     }
@@ -160,7 +163,7 @@ export = module.exports = class RlpxServer extends Server {
    * @private
    */
   initDpt () {
-    this.dpt = new devp2p.DPT(this.key, {
+    this.dpt = new Devp2pDPT(this.key, {
       refreshInterval: this.refreshInterval,
       endpoint: {
         address: '0.0.0.0',
@@ -181,20 +184,22 @@ export = module.exports = class RlpxServer extends Server {
    * @private
    */
   initRlpx () {
-    this.rlpx = new devp2p.RLPx(this.key, {
-      dpt: this.dpt,
+    this.rlpx = new Devp2pRLPx(this.key, {
+      dpt: (this.dpt as Devp2pDPT),
       maxPeers: this.maxPeers,
       capabilities: RlpxPeer.capabilities(this.protocols),
       remoteClientIdFilter: this.clientFilter,
       listenPort: this.port
     })
 
-    this.rlpx.on('peer:added', async (rlpxPeer: any) => {
+    this.rlpx.on('peer:added', async (rlpxPeer: Devp2pRLPxPeer) => {
       const peer = new RlpxPeer({
-        id: rlpxPeer.getId().toString('hex'),
+        id: (rlpxPeer.getId() as Buffer).toString('hex'),
         host: rlpxPeer._socket.remoteAddress,
         port: rlpxPeer._socket.remotePort,
         protocols: Array.from(this.protocols),
+        // @ts-ignore: Property 'server' does not exist on type 'Socket'.
+        // TODO: check this error
         inbound: !!rlpxPeer._socket.server
       })
       try {
@@ -232,7 +237,7 @@ export = module.exports = class RlpxServer extends Server {
     this.rlpx.on('listening', () => {
       this.emit('listening', {
         transport: this.name,
-        url: `enode://${this.rlpx._id.toString('hex')}@[::]:${this.port}`
+        url: `enode://${(this.rlpx as Devp2pRLPx)._id.toString('hex')}@[::]:${this.port}`
       })
     })
 

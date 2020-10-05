@@ -3,8 +3,8 @@
 const Server = require('./server')
 const PeerId = require('peer-id')
 const PeerInfo = require('peer-info')
+import { Libp2pPeer } from '../peer'
 import { Libp2pNode } from '../peer/libp2pnode'
-const Libp2pPeer = require('../peer/libp2ppeer')
 
 const defaultOptions = {
   multiaddrs: [ '/ip4/127.0.0.1/tcp/50580/ws' ],
@@ -20,6 +20,9 @@ const defaultOptions = {
  * @memberof module:net/server
  */
 export = module.exports = class Libp2pServer extends Server {
+  
+  private peers: Map<string, Libp2pPeer> = new Map()
+  
   /**
    * Create new DevP2P/RLPx server
    * @param {Object}   options constructor parameters
@@ -40,7 +43,6 @@ export = module.exports = class Libp2pServer extends Server {
     this.bootnodes = options.bootnodes
     this.node = null
     this.banned = new Map()
-    this.peers = new Map()
     this.init()
   }
 
@@ -85,8 +87,10 @@ export = module.exports = class Libp2pServer extends Server {
             const peerInfo = await this.getPeerInfo(connection)
             const id = (peerInfo as any).id.toB58String()
             const peer = this.peers.get(id)
-            await peer.accept(p, connection, this)
-            this.emit('connected', peer)
+            if (peer) {
+              await peer.accept(p, connection, this)
+              this.emit('connected', peer)
+            }
           } catch (e) {
             this.error(e)
           }

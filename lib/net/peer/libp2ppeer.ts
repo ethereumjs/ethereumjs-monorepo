@@ -2,7 +2,7 @@ import { Peer } from './peer'
 import PeerId from 'peer-id'
 import PeerInfo  from 'peer-info'
 import { Libp2pNode } from './libp2pnode'
-const Libp2pSender = require('../protocol/libp2psender')
+import { Libp2pSender } from '../protocol/libp2psender'
 
 const defaultOptions = {
   multiaddrs: [ '/ip4/0.0.0.0/tcp/0' ],
@@ -96,7 +96,7 @@ export class Libp2pPeer extends Peer {
    * @param  {Server}     [server] optional server that initiated connection
    * @return {Promise}
    */
-  async bindProtocols (node: any, peerInfo: any, server = null): Promise<void> {
+  async bindProtocols (node: any, peerInfo: any, server: any = null): Promise<void> {
     await Promise.all(this.protocols.map(async (p: any) => {
       await p.open()
       const protocol = `/${p.name}/${p.versions[0]}`

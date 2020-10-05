@@ -1,4 +1,5 @@
 import { EventEmitter } from 'events'
+import { Peer } from '../peer/peer'
 
 /**
  * Binds a protocol implementation to the specified peer
@@ -6,7 +7,7 @@ import { EventEmitter } from 'events'
  */
 export class BoundProtocol extends EventEmitter {
   private protocol: any
-  private peer: any
+  private peer: Peer
   private sender: any
   private name: string
   private versions: any

@@ -1,5 +1,6 @@
 const { EventEmitter } = require('events')
 const { defaultLogger } = require('../../logging')
+import { Protocol } from '../protocol/protocol'
 
 const defaultOptions = {
   logger: defaultLogger,
@@ -19,7 +20,7 @@ export = module.exports = class Server extends EventEmitter {
     this.logger = options.logger
     this.maxPeers = options.maxPeers
     this.refreshInterval = options.refreshInterval
-    this.protocols = new Set()
+    this.protocols = new Set<Protocol>()
     this.started = false
   }
 
@@ -43,8 +44,8 @@ export = module.exports = class Server extends EventEmitter {
     if (this.started) {
       return
     }
-    const protocols = Array.from(this.protocols)
-    await Promise.all(protocols.map((p: any) => p.open()))
+    const protocols: Protocol[] = Array.from(this.protocols)
+    await Promise.all(protocols.map(p => p.open()))
     this.started = true
     this.logger.info(`Started ${this.name} server.`)
   }
@@ -62,7 +63,7 @@ export = module.exports = class Server extends EventEmitter {
    * Specify which protocols the server must support
    * @param {Protocol[]} protocols protocol classes
    */
-  addProtocols (protocols: any[]) {
+  addProtocols (protocols: Protocol[]) {
     if (this.started) {
       this.logger.error('Cannot require protocols after server has been started')
       return false
