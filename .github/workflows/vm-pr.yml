@@ -30,24 +30,24 @@ jobs:
 
       # Installs root dependencies, ignoring Bootstrap All script.
       # Bootstraps the current package only
-      - run: npm install --ignore-scripts && npm run bootstrap:vm
+      - run: yarn --ignore-scripts && yarn run bootstrap:vm
         if: steps.cache.outputs.cache-hit != 'true'
         working-directory: ${{github.workspace}}
 
       # Builds current package and the ones it depends from.
-      - run: npm run build:vm
+      - run: yarn run build:vm
         working-directory: ${{github.workspace}}
 
-      - run: npm run coverage
+      - run: yarn run coverage
       
       - uses: codecov/codecov-action@v1
         with:
           file: ${{ env.cwd }}/coverage/lcov.info
           flags: vm
 
-      - run: npm run test:API
-      - run: npm run test:API:browser
-      - run: npm run lint
+      - run: yarn run test:API
+      - run: yarn run test:API:browser
+      - run: yarn run lint
   
   test-vm-state:
     runs-on: ubuntu-latest
@@ -83,15 +83,15 @@ jobs:
 
       # Installs root dependencies, ignoring Bootstrap All script.
       # Bootstraps the current package only
-      - run: npm install --ignore-scripts && npm run bootstrap:vm
+      - run: yarn --ignore-scripts && yarn run bootstrap:vm
         if: steps.cache.outputs.cache-hit != 'true'
         working-directory: ${{github.workspace}}
 
       # Builds current package and the ones it depends from.
-      - run: npm run build:vm
+      - run: yarn run build:vm
         working-directory: ${{github.workspace}}
 
-      - run: npm run test:state -- --fork=${{ matrix.fork }} --verify-test-amount-alltests
+      - run: yarn run test:state -- --fork=${{ matrix.fork }} --verify-test-amount-alltests
 
   test-vm-blockchain:
     runs-on: ubuntu-latest
@@ -130,15 +130,15 @@ jobs:
 
       # Installs root dependencies, ignoring Bootstrap All script.
       # Bootstraps the current package only
-      - run: npm install --ignore-scripts && npm run bootstrap:vm
+      - run: yarn --ignore-scripts && yarn run bootstrap:vm
         if: steps.cache.outputs.cache-hit != 'true'
         working-directory: ${{github.workspace}}
 
       # Builds current package and the ones it depends from.
-      - run: npm run build:vm
+      - run: yarn run build:vm
         working-directory: ${{github.workspace}}
 
-      - run: npm run test:blockchain -- ${{ matrix.args }}
+      - run: yarn run test:blockchain -- ${{ matrix.args }}
 
   vm-benchmarks:
     runs-on: ubuntu-latest
@@ -159,18 +159,18 @@ jobs:
 
       # Installs root dependencies, ignoring Bootstrap All script.
       # Bootstraps the current package only
-      - run: npm install --ignore-scripts && npm run bootstrap:vm
+      - run: yarn --ignore-scripts && yarn run bootstrap:vm
         if: steps.cache.outputs.cache-hit != 'true'
         working-directory: ${{github.workspace}}
 
       # Builds current package and the ones it depends from.
-      - run: npm run build:vm
+      - run: yarn run build:vm
         working-directory: ${{github.workspace}}
 
-      - run: npm run build:benchmarks
+      - run: yarn run build:benchmarks
         working-directory: ${{ env.cwd }}
 
-      - run: npm run benchmarks -- 10 | tee output.txt
+      - run: yarn run benchmarks -- 10 | tee output.txt
         working-directory: ${{ env.cwd }}
 
       # Run git stash in case github-action-benchmark has trouble switching to gh-pages branch due to differing package-locks

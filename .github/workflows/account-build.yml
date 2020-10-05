@@ -37,15 +37,15 @@ jobs:
 
       # Installs root dependencies, ignoring Bootstrap All script.
       # Bootstraps the current package only
-      - run: npm install --ignore-scripts && npm run bootstrap:account
+      - run: yarn --ignore-scripts && yarn run bootstrap:account
         if: steps.cache.outputs.cache-hit != 'true'
         working-directory: ${{github.workspace}}
       
       # Builds current package and the ones it depends from.
-      - run: npm run build:account
+      - run: yarn run build:account
         working-directory: ${{github.workspace}}
 
-      - run: npm run coverage
+      - run: yarn run coverage
 
       - uses: codecov/codecov-action@v1
         with:
@@ -53,4 +53,4 @@ jobs:
           flags: account
         if: ${{ matrix.node-version == 12 }}
 
-      - run: npm run lint
+      - run: yarn run lint

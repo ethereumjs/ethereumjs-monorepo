@@ -32,11 +32,11 @@ jobs:
       - run: npm install
         working-directory: ${{github.workspace}}
 
-      - run: npm run build
+      - run: yarn run build
         working-directory: ${{github.workspace}}
 
-      - run: npm run test:API
-      - run: npm run test:API:browser
+      - run: yarn run test:API
+      - run: yarn run test:API:browser
 
   test-vm-state:
     runs-on: ubuntu-latest
@@ -59,10 +59,10 @@ jobs:
       - run: npm install
         working-directory: ${{github.workspace}}
 
-      - run: npm run build
+      - run: yarn run build
         working-directory: ${{github.workspace}}
 
-      - run: npm run test:state:allForks
+      - run: yarn run test:state:allForks
 
   test-vm-blockchain:
     runs-on: ubuntu-latest
@@ -95,10 +95,10 @@ jobs:
           key: VM-${{ runner.os }}-${{ matrix.node-version }}-${{ hashFiles('../../yarn.lock') }}
           path: '**/node_modules'
 
-      - run: npm run build
+      - run: yarn run build
         working-directory: ${{github.workspace}}
 
-      - run: npm run test:blockchain:allForks
+      - run: yarn run test:blockchain:allForks
         working-directory: '${{ env.cwd }}'
 
   test-vm-slow:
@@ -122,7 +122,7 @@ jobs:
       - run: npm install
         working-directory: ${{github.workspace}}
 
-      - run: npm run build
+      - run: yarn run build
         working-directory: ${{github.workspace}}
       
-      - run: npm run test:state:slow
+      - run: yarn run test:state:slow
