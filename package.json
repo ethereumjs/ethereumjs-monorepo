@@ -12,7 +12,8 @@
   },
   "scripts": {
     "postinstall": "yarn run build",
-    "bootstrap": "lerna bootstrap --ignore-scripts --include-dependencies --no-ci --hoist && yarn run build",
+    "bootstrap": "lerna bootstrap --ignore-scripts --include-dependencies --no-ci && yarn run build",
+    "bootstrap:account": "yarn run bootstrap --scope @ethereumjs/account",
     "bootstrap:block": "yarn run bootstrap --scope @ethereumjs/block",
     "bootstrap:blockchain": "yarn run bootstrap --scope @ethereumjs/blockchain",
     "bootstrap:common": "yarn run bootstrap --scope @ethereumjs/common",
