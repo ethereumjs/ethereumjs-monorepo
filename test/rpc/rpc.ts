@@ -1,12 +1,7 @@
-// Suppresses "Cannot redeclare block-scoped variable" errors
-// TODO: remove when import becomes possible
-export = {}
-
 import * as test from 'tape'
 const request = require('supertest')
-
-const { startRPC, closeRPC } = require('./helpers')
-const { METHOD_NOT_FOUND } = require('../../lib/rpc/error-code')
+import { startRPC, closeRPC } from './helpers'
+import { METHOD_NOT_FOUND } from '../../lib/rpc/error-code'
 
 test('call JSON-RPC without Content-Type header', t => {
   const server = startRPC({})

@@ -1,11 +1,6 @@
-// Suppresses "Cannot redeclare block-scoped variable" errors
-// TODO: remove when import becomes possible
-export = {}
-
 import * as test from 'tape'
-
-const Common = require('ethereumjs-common').default
-const { startRPC, createManager, createNode, baseSetup, params, baseRequest } = require('../helpers')
+import Common from 'ethereumjs-common'
+import { startRPC, createManager, createNode, baseSetup, params, baseRequest } from '../helpers'
 
 const method = 'net_version'
 

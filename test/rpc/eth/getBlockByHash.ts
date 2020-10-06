@@ -1,12 +1,7 @@
-// Suppresses "Cannot redeclare block-scoped variable" errors
-// TODO: remove when import becomes possible
-export = {}
-
 import * as test from 'tape'
-
-const { INVALID_PARAMS } = require('../../../lib/rpc/error-code')
-const { baseSetup, params, baseRequest } = require('../helpers')
-const { checkError } = require('../util')
+import { INVALID_PARAMS } from '../../../lib/rpc/error-code'
+import { baseSetup, params, baseRequest } from '../helpers'
+import { checkError } from '../util'
 
 const method = 'eth_getBlockByHash'
 

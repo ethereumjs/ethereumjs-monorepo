@@ -1,11 +1,7 @@
-// Suppresses "Cannot redeclare block-scoped variable" errors
-// TODO: remove when import becomes possible
-export = {}
-
 import * as test from 'tape'
-const { INVALID_PARAMS } = require('../../../lib/rpc/error-code')
-const { startRPC, createManager, createNode, params, baseRequest } = require('../helpers')
-const { checkError } = require('../util')
+import { INVALID_PARAMS } from '../../../lib/rpc/error-code'
+import { startRPC, createManager, createNode, params, baseRequest } from '../helpers'
+import { checkError } from '../util'
 
 function createBlockchain () {
   const transactions = [

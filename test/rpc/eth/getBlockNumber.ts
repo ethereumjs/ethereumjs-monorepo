@@ -1,10 +1,6 @@
-// Suppresses "Cannot redeclare block-scoped variable" errors
-// TODO: remove when import becomes possible
-export = {}
-
 import * as test from 'tape'
-const { toBuffer, intToHex } = require('ethereumjs-util')
-const { startRPC, createManager, createNode, params, baseRequest } = require('../helpers')
+import { toBuffer, intToHex } from 'ethereumjs-util'
+import { startRPC, createManager, createNode, params, baseRequest } from '../helpers'
 
 const method = 'eth_blockNumber'
 

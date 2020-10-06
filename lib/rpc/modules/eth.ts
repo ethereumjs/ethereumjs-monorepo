@@ -1,12 +1,11 @@
-
-const { middleware, validators } = require('../validation')
-const { toBuffer, bufferToHex } = require('ethereumjs-util')
+import { middleware, validators } from '../validation'
+import { toBuffer, bufferToHex } from 'ethereumjs-util'
 
 /**
  * eth_* RPC module
  * @memberof module:rpc/modules
  */
-export = module.exports = class Eth {
+export class Eth {
   private _chain: any
   public ethVersion: any
 

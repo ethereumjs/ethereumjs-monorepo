@@ -1,12 +1,12 @@
 import { EthereumService } from '../../service/ethereumservice'
-const { middleware } = require('../validation')
-const { addHexPrefix } = require('ethereumjs-util')
+import { middleware } from '../validation'
+import { addHexPrefix } from 'ethereumjs-util'
 
 /**
  * net_* RPC module
  * @memberof module:rpc/modules
  */
-export = module.exports = class Net {
+export class Net {
   private _chain: any
   private _node: any
   private _peerPool: any

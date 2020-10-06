@@ -1,4 +1,4 @@
-const modules = require('./modules')
+import * as modules from './modules'
 
 /**
  * @module rpc
@@ -18,7 +18,7 @@ function getMethodNames (mod: any) : string[] {
  * RPC server manager
  * @memberof module:rpc
  */
-export = module.exports = class RPCManager {
+export class RPCManager {
   private _config: any
   private _node: any
   private _logger: any
@@ -39,12 +39,12 @@ export = module.exports = class RPCManager {
 
     modules.list.forEach((modName: string) => {
       this._logger.debug(`Initialize ${modName} module`)
-      const mod = new modules[modName](this._node)
+      const mod = new (modules as any)[modName](this._node)
 
-      getMethodNames(modules[modName])
+      getMethodNames((modules as any)[modName])
         .filter((methodName: string) => methodName !== 'constructor')
         .forEach((methodName: string) => {
-          const concatedMethodName = `${modName}_${methodName}`
+          const concatedMethodName = `${modName.toLowerCase()}_${methodName}`
 
           this._logger.debug(`Setup module method '${concatedMethodName}' to RPC`)
           methods[concatedMethodName] = mod[methodName].bind(mod)
