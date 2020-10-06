@@ -1,5 +1,5 @@
-const { EventEmitter } = require('events')
-const { defaultLogger } = require('../logging')
+import { EventEmitter } from 'events'
+import { defaultLogger } from '../logging'
 import { Peer } from './peer/peer'
 
 const defaultOptions = {
@@ -24,7 +24,15 @@ const defaultOptions = {
  * @emits message:{protocol}
  * @emits error
  */
-export = module.exports = class PeerPool extends EventEmitter {
+export class PeerPool extends EventEmitter {
+  private servers: any[]
+  private logger: any
+  private maxPeers: number
+  private pool: Map<string, Peer>
+  private noPeerPeriods: number
+  private opened: boolean
+  private _statusCheckInterval: NodeJS.Timeout|null
+
   /**
    * Create new peer pool
    * @param {Object}   options constructor parameters
@@ -42,6 +50,9 @@ export = module.exports = class PeerPool extends EventEmitter {
     this.maxPeers = options.maxPeers
     this.pool = new Map<string, Peer>()
     this.noPeerPeriods = 0
+    this.opened = false
+    this._statusCheckInterval = null
+
     this.init()
   }
 
@@ -53,7 +64,7 @@ export = module.exports = class PeerPool extends EventEmitter {
    * Open pool
    * @return {Promise}
    */
-  async open () {
+  async open (): Promise<boolean|void> {
     if (this.opened) {
       return false
     }
@@ -72,13 +83,13 @@ export = module.exports = class PeerPool extends EventEmitter {
   async close () {
     this.pool.clear()
     this.opened = false
-    clearInterval(this._statusCheckInterval)
+    clearInterval(this._statusCheckInterval as NodeJS.Timeout)
   }
 
   /**
    * Connected peers
    */
-  get peers () {
+  get peers (): Peer[] {
     const connectedPeers: Peer[] = Array.from(this.pool.values())
     return connectedPeers
   }
@@ -87,7 +98,7 @@ export = module.exports = class PeerPool extends EventEmitter {
    * Number of peers in pool
    * @type {number}
    */
-  get size () {
+  get size (): number {
     return this.peers.length
   }
 
@@ -107,7 +118,7 @@ export = module.exports = class PeerPool extends EventEmitter {
    * @param [filterFn] filter function to apply before finding idle peers
    * @return {Peer}
    */
-  idle (filterFn = (peer: Peer) => true) {
+  idle (filterFn = (peer: Peer) => true): Peer {
     const idle = this.peers.filter((p: any) => p.idle && filterFn(p))
     const index = Math.floor(Math.random() * idle.length)
     return idle[index]
@@ -189,7 +200,7 @@ export = module.exports = class PeerPool extends EventEmitter {
   /**
    * Peer pool status check on a repeated interval
    */
-  async _statusCheck () {
+  async _statusCheck (){
     if (this.size === 0) {
       this.noPeerPeriods += 1
       if (this.noPeerPeriods >= 3) {

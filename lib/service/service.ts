@@ -1,5 +1,5 @@
 import * as events from 'events'
-import PeerPool = require('../net/peerpool')
+import { PeerPool } from '../net/peerpool'
 import { defaultLogger } from '../logging'
 import { Peer } from '../net/peer/peer'
 
