@@ -87,7 +87,7 @@
     "@babel/plugin-transform-spread": "^7.10.1",
     "@ethereumjs/config-tsc": "^1.1.0",
     "@polkadot/ts": "^0.3.48",
-    "@types/node": "^12.12.6",
+    "@types/node": "^14.11.5",
     "@types/tape": "^4.13.0",
     "@types/tape-catch": "^1.0.0",
     "browserify": "^16.5.1",
