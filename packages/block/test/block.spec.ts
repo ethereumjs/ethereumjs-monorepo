@@ -1,4 +1,4 @@
-import * as tape from 'tape'
+import tape from 'tape'
 import { rlp } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
 import { Block } from '../src'
