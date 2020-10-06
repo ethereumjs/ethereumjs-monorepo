@@ -1,7 +1,3 @@
-// Suppresses "Cannot redeclare block-scoped variable" errors
-// TODO: remove when import becomes possible
-export = {}
-
 import * as tape from 'tape-catch'
 import { Chain } from '../../../lib/blockchain/chain'
 const { EthProtocol } = require('../../../lib/net/protocol')

@@ -1,7 +1,3 @@
-// Suppresses "Cannot redeclare block-scoped variable" errors
-// TODO: remove when import becomes possible
-export = {}
-
 import * as tape from 'tape-catch'
 import { Chain } from '../../../lib/blockchain'
 const { LesProtocol } = require('../../../lib/net/protocol')
@@ -17,7 +13,7 @@ tape('[LesProtocol]', t => {
     t.end()
   })
 
-  
+
   // Test deactivated along TypeScript transition due to
   // deadlock in Blockchain library along initLock.await()
   // calls on versions still using the flow-stoplight dependency
@@ -26,7 +22,7 @@ tape('[LesProtocol]', t => {
   // https://github.com/ethereumjs/ethereumjs-vm/pull/833
   // and test should be reactivated once PR makes it into
   // a next blockchain release
-  // 
+  //
   // 2020-10-02
   /*t.test('should open correctly', async (t) => {
     const chain = new Chain()
@@ -37,7 +33,7 @@ tape('[LesProtocol]', t => {
     t.end()
   })*/
 
-  // Test deactivated along TypeScript transition due to 
+  // Test deactivated along TypeScript transition due to
   // chain properties networkId, headers, genesis not accessible
   // any more along ES6 transition
   // TODO: Fix e.g. with appropriate chain mocking solution

@@ -1,7 +1,4 @@
-// Suppresses "Cannot redeclare block-scoped variable" errors
-// TODO: remove when import becomes possible
-/*export = {}
-
+/*
 import * as tape from 'tape'
 const { EthProtocol } = require('../../lib/net/protocol')
 const PeerPool = require('../../lib/net/peerpool')

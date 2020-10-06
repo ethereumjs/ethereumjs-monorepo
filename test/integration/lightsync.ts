@@ -1,9 +1,3 @@
-//'use strict'
-
-// Suppresses "Cannot redeclare block-scoped variable" errors
-// TODO: remove when import becomes possible
-//export = {}
-
 import * as tape from 'tape'
 //import { FastEthereumService, LightEthereumService } from '../../lib/service'
 //import MockServer from './mocks/mockserver'

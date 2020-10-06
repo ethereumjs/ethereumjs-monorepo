@@ -1,5 +1,3 @@
-'use strict'
-
 const Block = require('ethereumjs-block')
 const { Chain } = require('../../../lib/blockchain')
 

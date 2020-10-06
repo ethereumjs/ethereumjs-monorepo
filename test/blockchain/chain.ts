@@ -1,8 +1,3 @@
-"use strict"
-// Suppresses "Cannot redeclare block-scoped variable" errors
-// TODO: remove when import becomes possible
-export = {}
-
 import * as tape from 'tape'
 const Block = require('ethereumjs-block')
 const { toBuffer } = require('ethereumjs-util')
