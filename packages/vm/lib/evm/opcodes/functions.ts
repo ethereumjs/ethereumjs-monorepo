@@ -2,7 +2,6 @@ import BN = require('bn.js')
 import {
   keccak256,
   setLengthRight,
-  setLengthLeft,
   TWO_POW256,
   MAX_INTEGER,
   KECCAK256_NULL,
@@ -40,6 +39,7 @@ export const handlers: Map<number, OpHandler> = new Map([
   // 0x00: STOP
   [
     0x00,
+    /* eslint-disable-next-line no-unused-vars */
     function (runState: RunState) {
       trap(ERROR.STOP)
     },
@@ -194,6 +194,7 @@ export const handlers: Map<number, OpHandler> = new Map([
   [
     0x0b,
     function (runState: RunState) {
+      /* eslint-disable-next-line prefer-const */
       let [k, val] = runState.stack.popN(2)
       if (k.ltn(31)) {
         const signBit = k.muln(8).iaddn(7).toNumber()
@@ -820,6 +821,7 @@ export const handlers: Map<number, OpHandler> = new Map([
     },
   ],
   // 0x5b: JUMPDEST
+  /* eslint-disable-next-line no-unused-vars */
   [0x5b, function (runState: RunState) {}],
   // 0x5c: BEGINSUB
   [

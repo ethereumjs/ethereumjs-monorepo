@@ -1,5 +1,14 @@
 import assert from 'assert'
 
+const ceil = (value: number, ceiling: number): number => {
+  const r = value % ceiling
+  if (r === 0) {
+    return value
+  } else {
+    return value + ceiling - r
+  }
+}
+
 /**
  * Memory implements a simple memory model
  * for the ethereum virtual machine.
@@ -66,14 +75,5 @@ export default class Memory {
     }
 
     return returnBuffer
-  }
-}
-
-const ceil = (value: number, ceiling: number): number => {
-  const r = value % ceiling
-  if (r === 0) {
-    return value
-  } else {
-    return value + ceiling - r
   }
 }
