@@ -49,8 +49,11 @@ tape('[Header]: difficulty tests', (t) => {
       require('./testdata/difficultyEIP2384_random_to20M.json').tests
     ),
   }
+
+  /* eslint-disable-next-line no-restricted-syntax */
   for (const hardfork in hardforkTestData) {
     const testData = hardforkTestData[hardfork]
+    /* eslint-disable-next-line no-restricted-syntax */
     for (const testName in testData) {
       const test = testData[testName]
       const common = new Common({ chain: 'mainnet', hardfork: hardfork })
@@ -89,8 +92,10 @@ tape('[Header]: difficulty tests', (t) => {
     mainnet: require('./testdata/difficultyMainNetwork.json').tests,
     ropsten: require('./testdata/difficultyRopstenConstantinople.json').tests,
   }
+  /* eslint-disable-next-line no-restricted-syntax */
   for (const chain in chainTestData) {
     const testData = chainTestData[chain]
+    /* eslint-disable-next-line no-restricted-syntax */
     for (const testName in testData) {
       const test = testData[testName]
       const common = new Common({ chain })
