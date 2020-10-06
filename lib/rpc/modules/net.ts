@@ -1,4 +1,4 @@
-
+import { EthereumService } from '../../service/ethereumservice'
 const { middleware } = require('../validation')
 const { addHexPrefix } = require('ethereumjs-util')
 
@@ -16,7 +16,7 @@ export = module.exports = class Net {
    * @param {Node} Node to which the module binds
    */
   constructor (node: any) {
-    const service = node.services.find((s: any) => s.name === 'eth')
+    const service: EthereumService = node.services.find((s: any) => s.name === 'eth')
     this._chain = service.chain
     this._node = node
     this._peerPool = service.pool

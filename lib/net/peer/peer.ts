@@ -1,5 +1,8 @@
 import * as events from 'events'
+import { Protocol } from '../protocol/protocol'
+import { Sender } from '../protocol'
 import { defaultLogger } from '../../logging'
+
 
 const defaultOptions = {
   logger: defaultLogger,
@@ -22,6 +25,10 @@ export class Peer extends events.EventEmitter {
   public inbound: boolean
   public bound: Map<string, any>
   public server: any
+
+  // Added to avoid TypeScript errors, heavily used in FlowControl class
+  // TODO: figure out where property is set and if well positioned here
+  public les: any
 
   /**
    * Create new peer
@@ -89,7 +96,7 @@ export class Peer extends events.EventEmitter {
    * peer.eth.send('getBlockHeaders', 1, 100, 0, 0)
    * peer.eth.on('message', ({ data }) => console.log(`Received ${data.length} headers`))
    */
-  async bindProtocol (protocol: any, sender: any): Promise<void> {
+  async bindProtocol (protocol: Protocol, sender: Sender): Promise<void> {
     const bound = await protocol.bind(this, sender)
     bound.on('message', (message: any) => {
       this.emit('message', message, protocol.name)

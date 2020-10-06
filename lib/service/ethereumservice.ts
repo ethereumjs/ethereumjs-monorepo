@@ -16,12 +16,12 @@ const defaultOptions = {
  * @memberof module:service
  */
 export class EthereumService extends Service {
-  public flow: any
-  public chain: any
-  public common: any
-  public minPeers: any
-  public interval: any
-  public timeout: any
+  public flow: FlowControl
+  public chain: Chain
+  public common: Common
+  public minPeers: number
+  public interval: number
+  public timeout: number
   public synchronizer: any
 
 

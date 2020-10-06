@@ -1,5 +1,5 @@
 import * as events from 'events'
-const PeerPool = require('../net/peerpool')
+import PeerPool = require('../net/peerpool')
 import { defaultLogger } from '../logging'
 
 const defaultOptions = {
