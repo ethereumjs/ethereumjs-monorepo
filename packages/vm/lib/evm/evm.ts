@@ -10,10 +10,7 @@ import Account from '@ethereumjs/account'
 import { Block } from '@ethereumjs/block'
 import { ERROR, VmError } from '../exceptions'
 import { StateManager } from '../state/index'
-import {
-  getPrecompile,
-  PrecompileFunc,
-} from './precompiles'
+import { getPrecompile, PrecompileFunc } from './precompiles'
 import TxContext from './txContext'
 import Message from './message'
 import EEI from './eei'
