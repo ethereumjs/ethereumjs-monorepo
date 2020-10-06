@@ -1,4 +1,4 @@
-import * as tape from 'tape'
+import tape from 'tape'
 import { toBuffer, bufferToInt, intToBuffer } from 'ethereumjs-util'
 import { Block } from '../src/block'
 import Common from '@ethereumjs/common'
