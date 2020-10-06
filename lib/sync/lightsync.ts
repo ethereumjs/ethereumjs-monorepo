@@ -1,21 +1,27 @@
 import { Peer } from "../net/peer/peer"
 import { BoundProtocol } from "../net/protocol"
-
-const Synchronizer = require('./sync')
-const { HeaderFetcher } = require('./fetcher')
-const BN = require('ethereumjs-util').BN
+import { Synchronizer } from './sync'
+import { HeaderFetcher } from './fetcher'
+import { BN } from 'ethereumjs-util'
 const { short } = require('../util')
 
 /**
  * Implements an ethereum light sync synchronizer
  * @memberof module:sync
  */
-export = module.exports = class LightSynchronizer extends Synchronizer {
+export class LightSynchronizer extends Synchronizer {
+  private headerFetcher: HeaderFetcher | null
+
+  constructor(options: any){
+    super(options)
+    this.headerFetcher = null
+  }
+
   /**
    * Returns synchronizer type
    * @return {string} type
    */
-  get type () {
+  get type (): string {
     return 'light'
   }
 
@@ -23,7 +29,7 @@ export = module.exports = class LightSynchronizer extends Synchronizer {
    * Returns true if peer can be used for syncing
    * @return {boolean}
    */
-  syncable (peer: Peer) {
+  syncable (peer: Peer): boolean {
     return peer.les && peer.les.status.serveHeaders
   }
 
@@ -36,10 +42,12 @@ export = module.exports = class LightSynchronizer extends Synchronizer {
     const peers = this.pool.peers.filter(this.syncable.bind(this))
     if (peers.length < this.minPeers && !this.forceSync) return
     for (let peer of peers) {
-      const td = peer.les.status.headTd
-      if ((!best && td.gte(this.chain.headers.td)) ||
-          (best && best.les.status.headTd.lt(td))) {
-        best = peer
+      if (peer.les){
+        const td = peer.les.status.headTd
+        if ((!best && td.gte((this.chain.headers as any).td)) ||
+            (best && best.les && best.les.status.headTd.lt(td))) {
+          best = peer
+        }
       }
     }
     return best
@@ -53,7 +61,7 @@ export = module.exports = class LightSynchronizer extends Synchronizer {
   async syncWithPeer (peer?: Peer): Promise<boolean> {
     if (!peer) return false
     const height = new BN((peer.les as BoundProtocol).status.headNum)
-    const first = this.chain.headers.height.addn(1)
+    const first = ((this.chain.headers as any).height as BN).addn(1)
     const count = height.sub(first).addn(1)
     if (count.lten(0)) return false
 
@@ -98,9 +106,9 @@ export = module.exports = class LightSynchronizer extends Synchronizer {
   async open (): Promise<void> {
     await this.chain.open()
     await this.pool.open()
-    const number = this.chain.headers.height.toString(10)
-    const td = this.chain.headers.td.toString(10)
-    const hash = this.chain.blocks.latest.hash()
+    const number = ((this.chain.headers as any).height as number).toString(10)
+    const td = ((this.chain.headers as any).td as number).toString(10)
+    const hash = ((this.chain.blocks as any).latest as any).hash()
     this.logger.info(`Latest local header: number=${number} td=${td} hash=${short(hash)}`)
   }
 

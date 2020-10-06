@@ -1,21 +1,27 @@
 import { Peer } from "../net/peer/peer"
 import { BoundProtocol } from "../net/protocol"
-
-const Synchronizer = require('./sync')
-const { BlockFetcher } = require('./fetcher')
-const BN = require('ethereumjs-util').BN
+import { Synchronizer } from './sync'
+import { BlockFetcher } from './fetcher'
+import { BN } from 'ethereumjs-util'
 const { short } = require('../util')
 
 /**
  * Implements an ethereum fast sync synchronizer
  * @memberof module:sync
  */
-export = module.exports = class FastSynchronizer extends Synchronizer {
+export class FastSynchronizer extends Synchronizer {
+  private blockFetcher: BlockFetcher | null
+
+  constructor(options: any){
+    super(options)
+    this.blockFetcher = null;
+  }
+
   /**
    * Returns synchronizer type
    * @return {string} type
    */
-  get type () {
+  get type (): string {
     return 'fast'
   }
 
@@ -23,8 +29,10 @@ export = module.exports = class FastSynchronizer extends Synchronizer {
    * Returns true if peer can be used for syncing
    * @return {boolean}
    */
-  syncable (peer: Peer) {
-    return peer.eth
+  // TODO: Correct logic for return type (b/c peer.eth is not boolean)
+  // "Type 'BoundProtocol | undefined' is not assignable to type 'boolean'"
+  syncable (peer: Peer): boolean {
+    return peer.eth !== undefined
   }
 
   /**
@@ -36,10 +44,12 @@ export = module.exports = class FastSynchronizer extends Synchronizer {
     const peers = this.pool.peers.filter(this.syncable.bind(this))
     if (peers.length < this.minPeers && !this.forceSync) return
     for (let peer of peers) {
-      const td = peer.eth.status.td
-      if ((!best && td.gte(this.chain.blocks.td)) ||
-          (best && best.eth.status.td.lt(td))) {
-        best = peer
+      if (peer.eth && peer.eth.status){
+        const td = peer.eth.status.td
+        if ((!best && td.gte((this.chain.blocks as any).td)) ||
+            (best && best.eth && best.eth.status.td.lt(td))) {
+          best = peer
+        }
       }
     }
     return best
@@ -66,7 +76,7 @@ export = module.exports = class FastSynchronizer extends Synchronizer {
     if (!peer) return false
     const latest = await this.latest(peer)
     const height = new BN(latest.number)
-    const first = this.chain.blocks.height.addn(1)
+    const first = ((this.chain.blocks as any).height as BN).addn(1)
     const count = height.sub(first).addn(1)
     if (count.lten(0)) return false
 
@@ -127,9 +137,9 @@ export = module.exports = class FastSynchronizer extends Synchronizer {
   async open (): Promise<void> {
     await this.chain.open()
     await this.pool.open()
-    const number = this.chain.blocks.height.toString(10)
-    const td = this.chain.blocks.td.toString(10)
-    const hash = this.chain.blocks.latest.hash()
+    const number = ((this.chain.blocks as any).height as number).toString(10)
+    const td = ((this.chain.blocks as any).td as number).toString(10)
+    const hash = ((this.chain.blocks as any).latest as any).hash()
     this.logger.info(`Latest local block: number=${number} td=${td} hash=${short(hash)}`)
   }
 

@@ -1,6 +1,6 @@
 
 import { EthereumService } from './ethereumservice'
-const FastSynchronizer = require('../sync/fastsync')
+import { FastSynchronizer } from '../sync/fastsync'
 import { EthProtocol } from '../net/protocol/ethprotocol'
 import { LesProtocol } from '../net/protocol/lesprotocol'
 import { Peer } from '../net/peer/peer'

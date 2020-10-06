@@ -1,10 +1,6 @@
-
 /**
  * @module sync
  */
-
-exports.Synchronizer = require('./sync')
-exports.LightSynchronizer = require('./lightsync')
-exports.FastSynchronizer = require('./fastsync')
-
-export = exports
+export * from './sync'
+export * from './lightsync'
+export * from './fastsync'

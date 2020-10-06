@@ -1,7 +1,8 @@
-
-const Fetcher = require('./fetcher')
+import { Fetcher }  from './fetcher'
 const Block = require('ethereumjs-block')
-const BN = require('bn.js')
+import { BN } from 'ethereumjs-util'
+import { Peer } from '../../net/peer'
+import { Chain } from '../../blockchain'
 
 const defaultOptions = {
   maxPerRequest: 128
@@ -11,7 +12,11 @@ const defaultOptions = {
  * Implements an eth/62 based block fetcher
  * @memberof module:sync/fetcher
  */
-export = module.exports = class BlockFetcher extends Fetcher {
+export class BlockFetcher extends Fetcher {
+  protected chain: Chain
+  protected first: BN
+  protected count: BN
+
   /**
    * Create new block fetcher
    * @param {Object}       options constructor parameters
@@ -30,7 +35,7 @@ export = module.exports = class BlockFetcher extends Fetcher {
     options = { ...defaultOptions, ...options }
     this.maxPerRequest = options.maxPerRequest
     this.chain = options.chain
-    this.first = options.first
+    this.first = BN.isBN(options.first) ? options.first : new BN(options.first)
     this.count = BN.isBN(options.count) ? options.count : new BN(options.count)
   }
 
@@ -38,7 +43,7 @@ export = module.exports = class BlockFetcher extends Fetcher {
    * Generate list of tasks to fetch
    * @return {Object[]} tasks
    */
-  tasks () {
+  tasks (): object[] {
     let { first, count } = this
     const max = this.maxPerRequest
     const tasks = []
@@ -92,7 +97,7 @@ export = module.exports = class BlockFetcher extends Fetcher {
    * @param  job job
    * @return {Peer}
    */
-  peer (job: any) {
+  peer (job: any): Peer {
     return this.pool.idle((p: any) => p.eth)
   }
 }

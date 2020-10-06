@@ -1,19 +1,15 @@
-// Suppresses "Cannot redeclare block-scoped variable" errors
-// TODO: remove when import becomes possible
-export = {}
-
 import * as tape from 'tape-catch'
 const td = require('testdouble')
-const EventEmitter = require('events')
-const { defaultLogger } = require('../../../lib/logging')
+import { EventEmitter } from 'events'
+import { defaultLogger } from '../../../lib/logging'
 defaultLogger.silent = true
 
 tape('[HeaderFetcher]', t => {
   class PeerPool extends EventEmitter {}
-  PeerPool.prototype.idle = td.func()
-  PeerPool.prototype.ban = td.func()
+  (PeerPool.prototype as any).idle = td.func(); // Need semi-colon to separate statements
+  (PeerPool.prototype as any).ban = td.func()
   td.replace('../../../lib/net/peerpool', PeerPool)
-  const HeaderFetcher = require('../../../lib/sync/fetcher/headerfetcher')
+  const HeaderFetcher = require('../../../lib/sync/fetcher/headerfetcher').HeaderFetcher
 
   t.test('should process', t => {
     const fetcher = new HeaderFetcher({ pool: new PeerPool(), flow: td.object() })

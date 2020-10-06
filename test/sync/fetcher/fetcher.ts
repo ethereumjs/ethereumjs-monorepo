@@ -1,14 +1,10 @@
-// Suppresses "Cannot redeclare block-scoped variable" errors
-// TODO: remove when import becomes possible
-export = {}
-
 import * as tape from 'tape-catch'
 const td = require('testdouble')
-const { defaultLogger } = require('../../../lib/logging')
+import { defaultLogger } from '../../../lib/logging'
 defaultLogger.silent = true
 
 tape('[Fetcher]', t => {
-  const Fetcher = require('../../../lib/sync/fetcher/fetcher')
+  const Fetcher = require('../../../lib/sync/fetcher/fetcher').Fetcher
 
   t.test('should handle bad result', t => {
     t.plan(2)

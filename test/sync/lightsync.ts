@@ -1,21 +1,17 @@
-// Suppresses "Cannot redeclare block-scoped variable" errors
-// TODO: remove when import becomes possible
-export = {}
-
 import * as tape from 'tape-catch'
 const td = require('testdouble')
-const BN = require('bn.js')
-const EventEmitter = require('events')
-const { defaultLogger } = require('../../lib/logging')
+import { BN } from 'ethereumjs-util'
+import { EventEmitter } from 'events'
+import { defaultLogger } from '../../lib/logging'
 defaultLogger.silent = true
 
 tape('[LightSynchronizer]', t => {
   class PeerPool extends EventEmitter {}
   td.replace('../../lib/net/peerpool', PeerPool)
   class HeaderFetcher extends EventEmitter {}
-  HeaderFetcher.prototype.fetch = td.func()
+  (HeaderFetcher.prototype as any).fetch = td.func()
   td.replace('../../lib/sync/fetcher', { HeaderFetcher })
-  const LightSynchronizer = require('../../lib/sync/lightsync')
+  const LightSynchronizer = require('../../lib/sync/lightsync').LightSynchronizer
 
   t.test('should initialize correctly', async (t) => {
     const pool = new PeerPool()
@@ -45,12 +41,12 @@ tape('[LightSynchronizer]', t => {
     sync.best = td.func()
     sync.latest = td.func()
     td.when(sync.best()).thenReturn({ les: { status: { headNum: new BN(2) } } })
-    td.when(HeaderFetcher.prototype.fetch(), { delay: 20 }).thenResolve()
+    td.when((HeaderFetcher.prototype as any).fetch(), { delay: 20 }).thenResolve()
     sync.chain = { headers: { height: new BN(3) } }
     t.notOk(await sync.sync(), 'local height > remote height')
     sync.chain = { headers: { height: new BN(0) } }
     t.ok(await sync.sync(), 'local height < remote height')
-    td.when(HeaderFetcher.prototype.fetch()).thenReject('err0')
+    td.when((HeaderFetcher.prototype as any).fetch()).thenReject('err0')
     try {
       await sync.sync()
     } catch (err) {
