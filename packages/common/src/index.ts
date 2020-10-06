@@ -286,7 +286,8 @@ export default class Common {
     let value = null
     for (const hfChanges of HARDFORK_CHANGES) {
       // EIP-referencing HF file (e.g. berlin.json)
-      if (hfChanges[1].hasOwnProperty('eips')) { // eslint-disable-line
+      /* eslint-disable-next-line no-prototype-builtins */
+      if (hfChanges[1].hasOwnProperty('eips')) {
         const hfEIPs = hfChanges[1]['eips']
         for (const eip of hfEIPs) {
           const valueEIP = this.paramByEIP(topic, name, eip)
