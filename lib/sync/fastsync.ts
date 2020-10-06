@@ -1,3 +1,5 @@
+import { Peer } from "../net/peer/peer"
+import { BoundProtocol } from "../net/protocol"
 
 const Synchronizer = require('./sync')
 const { BlockFetcher } = require('./fetcher')
@@ -21,17 +23,15 @@ export = module.exports = class FastSynchronizer extends Synchronizer {
    * Returns true if peer can be used for syncing
    * @return {boolean}
    */
-  syncable (peer: any) {
+  syncable (peer: Peer) {
     return peer.eth
   }
 
   /**
    * Finds the best peer to sync with. We will synchronize to this peer's
    * blockchain. Returns null if no valid peer is found
-   * @param  {number} min minimum numbers of peers to search
-   * @return {Peer}
    */
-  best () {
+  best (): Peer | undefined {
     let best
     const peers = this.pool.peers.filter(this.syncable.bind(this))
     if (peers.length < this.minPeers && !this.forceSync) return
@@ -49,19 +49,20 @@ export = module.exports = class FastSynchronizer extends Synchronizer {
    * Get latest header of peer
    * @return {Promise} Resolves with header
    */
-  async latest (peer: any) {
-    const headers = await peer.eth.getBlockHeaders({
-      block: peer.eth.status.bestHash, max: 1
+  async latest (peer: Peer) {
+    // @ts-ignore
+    const headers = await (peer.eth as BoundProtocol).getBlockHeaders({
+      block: (peer.eth as BoundProtocol).status.bestHash, max: 1
     })
     return headers[0]
   }
 
   /**
    * Sync all blocks and state from peer starting from current height.
-   * @param  {Peer} peer remote peer to sync with
-   * @return {Promise} Resolves when sync completed
+   * @param  peer remote peer to sync with
+   * @return Resolves when sync completed
    */
-  async syncWithPeer (peer: any) {
+  async syncWithPeer (peer?: Peer): Promise<boolean> {
     if (!peer) return false
     const latest = await this.latest(peer)
     const height = new BN(latest.number)
@@ -99,9 +100,9 @@ export = module.exports = class FastSynchronizer extends Synchronizer {
   /**
    * Fetch all blocks from current height up to highest found amongst peers and
    * fetch entire recent state trie
-   * @return {Promise} Resolves with true if sync successful
+   * @return Resolves with true if sync successful
    */
-  async sync () {
+  async sync (): Promise<boolean> {
     const peer = this.best()
     return this.syncWithPeer(peer)
   }
@@ -112,7 +113,7 @@ export = module.exports = class FastSynchronizer extends Synchronizer {
    * @param  {Peer}     peer peer
    * @return {Promise}
    */
-  async announced (announcements: any[], peer: any) {
+  async announced (announcements: any[], peer: Peer) {
     if (announcements.length) {
       const [hash, height] = announcements[announcements.length - 1]
       this.logger.debug(`New height: number=${height.toString(10)} hash=${short(hash)}`)
@@ -122,9 +123,8 @@ export = module.exports = class FastSynchronizer extends Synchronizer {
 
   /**
    * Open synchronizer. Must be called before sync() is called
-   * @return {Promise}
    */
-  async open () {
+  async open (): Promise<void> {
     await this.chain.open()
     await this.pool.open()
     const number = this.chain.blocks.height.toString(10)
@@ -137,7 +137,7 @@ export = module.exports = class FastSynchronizer extends Synchronizer {
    * Stop synchronization. Returns a promise that resolves once its stopped.
    * @return {Promise}
    */
-  async stop () {
+  async stop (): Promise<boolean> {
     if (!this.running) {
       return false
     }
@@ -146,6 +146,7 @@ export = module.exports = class FastSynchronizer extends Synchronizer {
       delete this.blockFetcher
     }
     await super.stop()
+    return true
   }
 }
 

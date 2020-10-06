@@ -3,6 +3,8 @@ import { EthereumService } from './ethereumservice'
 const FastSynchronizer = require('../sync/fastsync')
 import { EthProtocol } from '../net/protocol/ethprotocol'
 import { LesProtocol } from '../net/protocol/lesprotocol'
+import { Peer } from '../net/peer/peer'
+import { BoundProtocol } from '../net/protocol'
 
 const defaultOptions = {
   lightserv: false
@@ -67,11 +69,10 @@ export class FastEthereumService extends EthereumService {
   /**
    * Handles incoming message from connected peer
    * @param  {Object}  message message object
-   * @param  {string}  protocol protocol name
-   * @param  {Peer}    peer peer
-   * @return {Promise}
+   * @param  protocol protocol name
+   * @param  peer peer
    */
-  async handle (message: any, protocol: string, peer: any): Promise<any> {
+  async handle (message: any, protocol: string, peer: Peer): Promise<any> {
     if (protocol === 'eth') {
       return this.handleEth(message, peer)
     } else {
@@ -82,19 +83,18 @@ export class FastEthereumService extends EthereumService {
   /**
    * Handles incoming ETH message from connected peer
    * @param  {Object}  message message object
-   * @param  {Peer}    peer peer
-   * @return {Promise}
+   * @param  peer peer
    */
-  async handleEth (message: any, peer: any) {
+  async handleEth (message: any, peer: Peer): Promise<void> {
     if (message.name === 'GetBlockHeaders') {
       const { block, max, skip, reverse } = message.data
-      const headers = await this.chain.getHeaders(block, max, skip, reverse)
-      peer.eth.send('BlockHeaders', headers)
+      const headers: any = await this.chain.getHeaders(block, max, skip, reverse);
+      (peer.eth as BoundProtocol).send('BlockHeaders', headers)
     } else if (message.name === 'GetBlockBodies') {
       const hashes = message.data
       const blocks = await Promise.all(hashes.map((hash: any) => this.chain.getBlock(hash)))
-      const bodies = blocks.map((block: any) => block.raw.slice(1))
-      peer.eth.send('BlockBodies', bodies)
+      const bodies: any = blocks.map((block: any) => block.raw.slice(1));
+      (peer.eth as BoundProtocol).send('BlockBodies', bodies)
     } else if (message.name === 'NewBlockHashes') {
       this.synchronizer.announced(message.data, peer)
     }
@@ -103,10 +103,9 @@ export class FastEthereumService extends EthereumService {
   /**
    * Handles incoming LES message from connected peer
    * @param  {Object}  message message object
-   * @param  {Peer}    peer peer
-   * @return {Promise}
+   * @param  peer peer
    */
-  async handleLes (message: any, peer: any) {
+  async handleLes (message: any, peer: Peer): Promise<void> {
     if (message.name === 'GetBlockHeaders' && this.lightserv) {
       const { reqId, block, max, skip, reverse } = message.data
       const bv = this.flow.handleRequest(peer, message.name, max)
@@ -114,8 +113,8 @@ export class FastEthereumService extends EthereumService {
         this.pool.ban(peer, 300000)
         this.logger.debug(`Dropping peer for violating flow control ${peer}`)
       } else {
-        const headers = await this.chain.getHeaders(block, max, skip, reverse)
-        peer.les.send('BlockHeaders', { reqId, bv, headers })
+        const headers: any = await this.chain.getHeaders(block, max, skip, reverse);
+        (peer.les as BoundProtocol).send('BlockHeaders', { reqId, bv, headers })
       }
     }
   }

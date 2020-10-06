@@ -1,4 +1,5 @@
 import { EthereumService } from './ethereumservice'
+import { Peer } from '../net/peer/peer'
 const LightSynchronizer = require('../sync/lightsync')
 import { LesProtocol } from '../net/protocol/lesprotocol'
 
@@ -38,9 +39,8 @@ export class LightEthereumService extends EthereumService {
 
   /**
    * Returns all protocols required by this service
-   * @type {Protocol[]} required protocols
    */
-  get protocols () : any[] {
+  get protocols () : LesProtocol[] {
     return [ new LesProtocol({ chain: this.chain, timeout: this.timeout }) ]
   }
 
@@ -51,6 +51,6 @@ export class LightEthereumService extends EthereumService {
    * @param  {Peer}    peer peer
    * @return {Promise}
    */
-  async handle (message: any, protocol: string, peer: any) {
+  async handle (message: any, protocol: string, peer: Peer) {
   }
 }

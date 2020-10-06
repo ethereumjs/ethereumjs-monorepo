@@ -1,3 +1,5 @@
+import { Peer } from "../net/peer/peer"
+import { BoundProtocol } from "../net/protocol"
 
 const Synchronizer = require('./sync')
 const { HeaderFetcher } = require('./fetcher')
@@ -21,16 +23,15 @@ export = module.exports = class LightSynchronizer extends Synchronizer {
    * Returns true if peer can be used for syncing
    * @return {boolean}
    */
-  syncable (peer: any) {
+  syncable (peer: Peer) {
     return peer.les && peer.les.status.serveHeaders
   }
 
   /**
    * Finds the best peer to sync with. We will synchronize to this peer's
    * blockchain. Returns null if no valid peer is found
-   * @return {Peer}
    */
-  best () {
+  best (): Peer | undefined {
     let best
     const peers = this.pool.peers.filter(this.syncable.bind(this))
     if (peers.length < this.minPeers && !this.forceSync) return
@@ -46,12 +47,12 @@ export = module.exports = class LightSynchronizer extends Synchronizer {
 
   /**
    * Sync all headers and state from peer starting from current height.
-   * @param  {Peer} peer remote peer to sync with
-   * @return {Promise} Resolves when sync completed
+   * @param  peer remote peer to sync with
+   * @return Resolves when sync completed
    */
-  async syncWithPeer (peer: any) {
+  async syncWithPeer (peer?: Peer): Promise<boolean> {
     if (!peer) return false
-    const height = new BN(peer.les.status.headNum)
+    const height = new BN((peer.les as BoundProtocol).status.headNum)
     const first = this.chain.headers.height.addn(1)
     const count = height.sub(first).addn(1)
     if (count.lten(0)) return false
@@ -84,18 +85,17 @@ export = module.exports = class LightSynchronizer extends Synchronizer {
 
   /**
    * Fetch all headers from current height up to highest found amongst peers
-   * @return {Promise} Resolves with true if sync successful
+   * @return Resolves with true if sync successful
    */
-  async sync () {
+  async sync (): Promise<boolean> {
     const peer = this.best()
     return this.syncWithPeer(peer)
   }
 
   /**
    * Open synchronizer. Must be called before sync() is called
-   * @return {Promise}
    */
-  async open () {
+  async open (): Promise<void> {
     await this.chain.open()
     await this.pool.open()
     const number = this.chain.headers.height.toString(10)
@@ -108,7 +108,7 @@ export = module.exports = class LightSynchronizer extends Synchronizer {
    * Stop synchronization. Returns a promise that resolves once its stopped.
    * @return {Promise}
    */
-  async stop () {
+  async stop (): Promise<boolean> {
     if (!this.running) {
       return false
     }
@@ -117,6 +117,7 @@ export = module.exports = class LightSynchronizer extends Synchronizer {
       delete this.headerFetcher
     }
     await super.stop()
+    return true
   }
 }
 

@@ -1,6 +1,6 @@
 import * as events from 'events'
 import { Protocol } from '../protocol/protocol'
-import { Sender } from '../protocol'
+import { BoundProtocol, Sender } from '../protocol'
 import { defaultLogger } from '../../logging'
 
 
@@ -26,9 +26,9 @@ export class Peer extends events.EventEmitter {
   public bound: Map<string, any>
   public server: any
 
-  // Added to avoid TypeScript errors, heavily used in FlowControl class
-  // TODO: figure out where property is set and if well positioned here
-  public les: any
+  // Dynamically bound protocol properties
+  public les: BoundProtocol | undefined
+  public eth: BoundProtocol | undefined
 
   /**
    * Create new peer

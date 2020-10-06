@@ -1,6 +1,7 @@
 import * as events from 'events'
 import PeerPool = require('../net/peerpool')
 import { defaultLogger } from '../logging'
+import { Peer } from '../net/peer/peer'
 
 const defaultOptions = {
   maxPeers: 25,
@@ -39,7 +40,7 @@ export class Service extends events.EventEmitter {
       servers: this.servers,
       maxPeers: options.maxPeers
     })
-    this.pool.on('message', async (message: any, protocol: string, peer: any) => {
+    this.pool.on('message', async (message: any, protocol: string, peer: Peer) => {
       if (this.running) {
         try {
           await this.handle(message, protocol, peer)
@@ -79,10 +80,10 @@ export class Service extends events.EventEmitter {
     const protocols = this.protocols
     this.servers.map((s: any) => s.addProtocols(protocols))
     if (this.pool) {
-      this.pool.on('banned', (peer: any) => this.logger.debug(`Peer banned: ${peer}`))
+      this.pool.on('banned', (peer: Peer) => this.logger.debug(`Peer banned: ${peer}`))
       this.pool.on('error', (error: Error) => this.emit('error', error))
-      this.pool.on('added', (peer: any) => this.logger.debug(`Peer added: ${peer}`))
-      this.pool.on('removed', (peer: any) => this.logger.debug(`Peer removed: ${peer}`))
+      this.pool.on('added', (peer: Peer) => this.logger.debug(`Peer added: ${peer}`))
+      this.pool.on('removed', (peer: Peer) => this.logger.debug(`Peer removed: ${peer}`))
       await this.pool.open()
     }
     this.opened = true
@@ -132,7 +133,7 @@ export class Service extends events.EventEmitter {
    * @param  {Peer}    peer peer
    * @return {Promise}
    */
-  async handle (message: any, protocol: string, peer: any): Promise<any> {
+  async handle (message: any, protocol: string, peer: Peer): Promise<any> {
   }
 }
 
