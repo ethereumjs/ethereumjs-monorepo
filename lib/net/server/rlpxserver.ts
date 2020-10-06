@@ -4,7 +4,7 @@ import { Protocol } from './../protocol/protocol'
 const { randomBytes } = require('crypto')
 import { RLPx as Devp2pRLPx, Peer as Devp2pRLPxPeer, DPT as Devp2pDPT} from 'ethereumjs-devp2p'
 import { RlpxPeer } from '../peer/rlpxpeer'
-const { parse } = require('../../util')
+import { parseBootnodes } from '../../util'
 
 const defaultOptions = {
   port: 30303,
@@ -35,7 +35,7 @@ const ignoredErrors = new RegExp([
  * @memberof module:net/server
  */
 export class RlpxServer extends Server {
-  
+
   private peers: Map<string, RlpxPeer> = new Map()
 
   public port: number
@@ -43,7 +43,7 @@ export class RlpxServer extends Server {
 
   public rlpx: Devp2pRLPx | null = null
   public dpt: Devp2pDPT | null = null
-  
+
   /**
    * Create new DevP2P/RLPx server
    * @param {Object}   options constructor parameters
@@ -77,7 +77,7 @@ export class RlpxServer extends Server {
 
   init () {
     if (typeof this.bootnodes === 'string') {
-      this.bootnodes = parse.bootnodes(this.bootnodes)
+      this.bootnodes = parseBootnodes(this.bootnodes)
     }
     if (typeof this.key === 'string') {
       this.key = Buffer.from(this.key, 'hex')

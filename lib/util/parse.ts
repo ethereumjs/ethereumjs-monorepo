@@ -1,16 +1,15 @@
-
-const Account = require('ethereumjs-account').default
+import Account from 'ethereumjs-account'
 const Block = require('ethereumjs-block')
 const Trie = require('merkle-patricia-tree/secure')
-const util = require('ethereumjs-util')
-const url = require('url')
-import path = require('path')
+import * as util from 'ethereumjs-util'
+import * as url from 'url'
+import * as path from 'path'
 
 function toBuffer (string: string) {
   return Buffer.from(util.stripHexPrefix(string), 'hex')
 }
 
-function parseBootnodes (string: string) {
+export function parseBootnodes (string: string) {
   if (!string) {
     return
   }
@@ -28,7 +27,7 @@ function parseBootnodes (string: string) {
   }
 }
 
-function parseTransports (transports: any[]) {
+export function parseTransports (transports: any[]) {
   return transports.map(t => {
     const options: any = {}
     const [ name, ...pairs ] = t.split(':')
@@ -65,6 +64,8 @@ async function parseGethState (alloc: any) {
     const address = toBuffer(key)
     const account = new Account()
     if ((value as any).balance) {
+      // TODO: convert to buffer w/ util.toBuffer()?
+      // @ts-ignore: account.balance is type Buffer, not BN
       account.balance = new util.BN((value as any).balance.slice(2), 16)
     }
     if ((value as any).code) {
@@ -140,7 +141,7 @@ async function parseGethParams (json: any) {
   return params
 }
 
-async function parseParams (json: any, name?: string) {
+export async function parseParams (json: any, name?: string) {
   try {
     if (json.config && json.difficulty && json.gasLimit && json.alloc) {
       json.name = json.name || name
@@ -155,7 +156,3 @@ async function parseParams (json: any, name?: string) {
     throw new Error(`Error parsing parameters file: ${e.message}`)
   }
 }
-
-exports.bootnodes = parseBootnodes
-exports.transports = parseTransports
-exports.params = parseParams

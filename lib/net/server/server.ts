@@ -13,17 +13,17 @@ const defaultOptions = {
  * @memberof module:net/server
  */
 export class Server extends EventEmitter {
-  
+
   public key: Buffer | string = ''
-  public bootnodes: any[] | string = ''
-  
+  public bootnodes: any | string = ''
+
   protected maxPeers: number
   protected refreshInterval: number
   protected protocols: Set<Protocol>
   protected logger: any
 
   public started: boolean
-  
+
   constructor (options: any) {
     super()
     options = { ...defaultOptions, ...options }
@@ -58,7 +58,7 @@ export class Server extends EventEmitter {
     await Promise.all(protocols.map(p => p.open()))
     this.started = true
     this.logger.info(`Started ${this.name} server.`)
-    
+
     return true
   }
 

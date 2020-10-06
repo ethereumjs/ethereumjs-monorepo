@@ -3,7 +3,7 @@ import { BoundProtocol } from "../net/protocol"
 import { Synchronizer } from './sync'
 import { BlockFetcher } from './fetcher'
 import { BN } from 'ethereumjs-util'
-const { short } = require('../util')
+import { short } from '../util'
 
 /**
  * Implements an ethereum fast sync synchronizer
