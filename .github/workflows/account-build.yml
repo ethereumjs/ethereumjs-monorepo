@@ -37,7 +37,7 @@ jobs:
 
       # Installs root dependencies, ignoring Bootstrap All script.
       # Bootstraps the current package only
-      - run: yarn --ignore-scripts && yarn run bootstrap:account
+      - run: npx lerna bootstrap --scope @ethereumjs/account
         if: steps.cache.outputs.cache-hit != 'true'
         working-directory: ${{github.workspace}}
       
