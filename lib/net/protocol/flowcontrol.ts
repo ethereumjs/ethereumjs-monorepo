@@ -1,3 +1,4 @@
+import { Peer } from '../peer/peer'
 
 const defaultOptions = {
   bl: 300000000,
@@ -33,7 +34,7 @@ export class FlowControl {
    * @param  {Peer}   peer LES peer
    * @param  {number} bv latest buffer value
    */
-  handleReply (peer: any, bv: number) {
+  handleReply (peer: Peer, bv: number) {
     const params = this.in.get(peer.id) || {}
     params.ble = bv
     params.last = Date.now()
@@ -46,7 +47,7 @@ export class FlowControl {
    * @param  messageName message name
    * @return maximum count
    */
-  maxRequestCount (peer: any, messageName: string): number {
+  maxRequestCount (peer: Peer, messageName: string): number {
     const now = Date.now()
     const mrcBase = peer.les.status.mrc[messageName].base
     const mrcReq = peer.les.status.mrc[messageName].req
@@ -72,7 +73,7 @@ export class FlowControl {
    * @param  count number of items to request from peer
    * @return new buffer value after request is sent (if negative, drop peer)
    */
-  handleRequest (peer: any, messageName: string, count: number): number {
+  handleRequest (peer: Peer, messageName: string, count: number): number {
     const now = Date.now()
     const params = this.out.get(peer.id) || {}
     if (params.bv && params.last) {

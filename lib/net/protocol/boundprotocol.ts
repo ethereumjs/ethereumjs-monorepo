@@ -1,17 +1,19 @@
 import { EventEmitter } from 'events'
+import { Message, Protocol } from '../protocol/protocol'
 import { Peer } from '../peer/peer'
+import { Sender } from './sender'
 
 /**
  * Binds a protocol implementation to the specified peer
  * @memberof module:net/protocol
  */
 export class BoundProtocol extends EventEmitter {
-  private protocol: any
+  private protocol: Protocol
   private peer: Peer
-  private sender: any
-  private name: string
-  private versions: any
-  private timeout: any
+  private sender: Sender
+  public name: string
+  private versions: number[]
+  private timeout: number
   private logger: any
   private _status: any
   private resolvers: Map<string, any>;
@@ -55,7 +57,7 @@ export class BoundProtocol extends EventEmitter {
     Object.assign(this._status, status)
   }
 
-  async handshake (sender: any) {
+  async handshake (sender: Sender) {
     this._status = await this.protocol.handshake(sender)
   }
 
