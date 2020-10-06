@@ -5,6 +5,7 @@ export = {}
 import * as tape from 'tape-catch'
 const td = require('testdouble')
 import { EventEmitter } from 'events'
+import { Sender } from '../../../lib/net/protocol/sender'
 import { BoundProtocol } from '../../../lib/net/protocol'
 
 tape('[BoundProtocol]', t => {
@@ -44,7 +45,7 @@ tape('[BoundProtocol]', t => {
   })
 
   t.test('should do handshake', async (t) => {
-    const sender = new EventEmitter()
+    const sender = new EventEmitter() as Sender
     const bound = new BoundProtocol({ protocol, peer, sender })
     td.when(protocol.handshake(td.matchers.isA(EventEmitter))).thenResolve({ id: 1 })
     await bound.handshake(sender)
