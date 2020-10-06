@@ -1,10 +1,10 @@
-import { Protocol } from './protocol'
+import { Message, Protocol } from './protocol'
 import { BN, bufferToInt } from 'ethereumjs-util'
 const Block = require('ethereumjs-block')
 
 let id = new BN(0)
 
-const messages = [{
+const messages: Message[] = [{
   name: 'Announce',
   code: 0x01,
   encode: ({ headHash, headNumber, headTd, reorgDepth }: any) => [

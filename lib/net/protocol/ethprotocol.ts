@@ -1,8 +1,8 @@
-import { Protocol } from './protocol'
+import { Message, Protocol } from './protocol'
 import { BN, bufferToInt } from 'ethereumjs-util'
 const Block = require('ethereumjs-block')
 
-const messages = [{
+const messages: Message[] = [{
   name: 'NewBlockHashes',
   code: 0x01,
   encode: (hashes: any[]) => hashes.map(hn => [hn[0], hn[1].toArrayLike(Buffer)]),
@@ -74,7 +74,7 @@ export class EthProtocol extends Protocol {
    * Messages defined by this protocol
    * @type {Protocol~Message[]}
    */
-  get messages () : any {
+  get messages () : Message[] {
     return messages
   }
 
