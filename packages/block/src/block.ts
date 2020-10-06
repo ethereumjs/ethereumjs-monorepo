@@ -1,13 +1,8 @@
+/* eslint-disable no-dupe-class-members */
+
 import { BaseTrie as Trie } from 'merkle-patricia-tree'
 import Common from '@ethereumjs/common'
-import {
-  BN,
-  rlp,
-  keccak256,
-  KECCAK256_RLP,
-  baToJSON,
-  bufferToInt,
-} from 'ethereumjs-util'
+import { BN, rlp, keccak256, KECCAK256_RLP, baToJSON } from 'ethereumjs-util'
 import { Transaction } from '@ethereumjs/tx'
 import { BlockHeader } from './header'
 import { Blockchain, BlockData, BlockOptions } from './types'

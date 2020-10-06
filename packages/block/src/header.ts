@@ -399,6 +399,7 @@ export class BlockHeader {
    *
    * @see {@link https://github.com/ethereumjs/ethereumjs-util/blob/master/docs/index.md#defineproperties|ethereumjs-util}
    */
+  /* eslint-disable-next-line no-unused-vars */
   toJSON(_labels: boolean = false): { [key: string]: string } | string[] {
     // Note: This never gets executed, defineProperties overwrites it.
     return {}
