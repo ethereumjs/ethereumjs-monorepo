@@ -13,7 +13,6 @@ import { StateManager } from '../state/index'
 import {
   getPrecompile,
   PrecompileFunc,
-  ripemdPrecompileAddress,
 } from './precompiles'
 import TxContext from './txContext'
 import Message from './message'

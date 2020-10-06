@@ -273,6 +273,7 @@ export function getOpcodesForHF(common: Common): OpcodeList {
     }
   }
 
+  /* eslint-disable-next-line no-restricted-syntax */
   for (const key in opcodeBuilder) {
     const baseFee = common.param(
       'gasPrices',
@@ -280,7 +281,7 @@ export function getOpcodesForHF(common: Common): OpcodeList {
     )
     // explicitly verify that we have defined a base fee
     if (baseFee === undefined) {
-      throw new Error('base fee not defined for: ' + opcodeBuilder[key].name)
+      throw new Error(`base fee not defined for: ${opcodeBuilder[key].name}`)
     }
     opcodeBuilder[key].fee = common.param(
       'gasPrices',

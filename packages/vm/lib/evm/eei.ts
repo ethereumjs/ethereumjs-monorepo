@@ -12,6 +12,12 @@ function trap(err: ERROR) {
   throw new VmError(err)
 }
 
+const MASK_160 = new BN(1).shln(160).subn(1)
+function addressToBuffer(address: BN) {
+  if (Buffer.isBuffer(address)) return address
+  return address.and(MASK_160).toArrayLike(Buffer, 'be', 20)
+}
+
 /**
  * Environment data which is made available to EVM bytecode.
  */
@@ -649,8 +655,3 @@ export default class EEI {
   }
 }
 
-const MASK_160 = new BN(1).shln(160).subn(1)
-function addressToBuffer(address: BN) {
-  if (Buffer.isBuffer(address)) return address
-  return address.and(MASK_160).toArrayLike(Buffer, 'be', 20)
-}
