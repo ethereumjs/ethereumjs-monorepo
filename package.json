@@ -20,7 +20,7 @@
     "lint:fix": "ethereumjs-config-lint-fix",
     "test": "npm run lint && npm run test:node && npm run test:browser",
     "test:browser": "karma start karma.conf.js",
-    "test:node": "nyc --reporter=lcov mocha 'test/*.spec.ts' -- --require ts-node/register",
+    "test:node": "nyc --reporter=lcov mocha --require ts-node/register 'test/*.spec.ts'",
     "tsc": "ethereumjs-config-tsc",
     "tslint": "ethereumjs-config-tslint",
     "tslint:fix": "ethereumjs-config-tslint-fix"

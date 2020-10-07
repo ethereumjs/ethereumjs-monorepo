@@ -1,11 +1,11 @@
-import * as ethjsUtil from 'ethjs-util'
+import { isHexString } from 'ethjs-util'
 
 /**
  * Throws if a string is not hex prefixed
  * @param {string} input string to check hex prefix of
  */
 export const assertIsHexString = function(input: string): void {
-  if (!ethjsUtil.isHexString(input)) {
+  if (!isHexString(input)) {
     const msg = `This method only supports 0x-prefixed hex strings but input was: ${input}`
     throw new Error(msg)
   }

@@ -5,8 +5,8 @@ module.exports = {
   plugin: 'typedoc-plugin-markdown',
   readme: 'none',
   gitRevision: 'master',
-  exclude: '**/*+(index|.spec|.e2e).ts',
+  exclude: ['src/index.ts', 'test/*.ts'],
   excludeNotExported: true,
-  // excludePrivate: true,
-  // excludeProtected: true,
+  excludePrivate: true,
+  excludeProtected: true,
 }

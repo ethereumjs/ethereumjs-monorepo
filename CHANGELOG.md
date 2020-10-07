@@ -8,7 +8,36 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ## [7.0.6] - [UNRELEASED]
 
-[ ADD REFERENCES TO YOUR WORK HERE UPON PRs. PLEASE ADOPT THE VERSION IF YOUR PR REQUIRES. ]
+### New `Account` class
+
+This release adds a new `Account` class intended as a modern replacement for `ethereumjs-account`. It has a shape of `Account(nonce?: BN, balance?: BN, stateRoot?: Buffer, codeHash?: Buffer)`.
+
+**Instantiation**
+
+The static factory methods assist in creating an `Account` object from varying data types: `Object: fromAccountData`, `RLP: fromRlpSerializedAccount`, and `Array: fromValuesArray`.
+
+**Methods**: `isEmpty(): boolean`, `isContract(): boolean`, `serialize(): Buffer`
+
+Example usage:
+
+```typescript
+import { Account, BN } from 'ethereumjs-util'
+
+const account = new Account(
+  new BN(0), // nonce, default: 0
+  new BN(10).pow(new BN(18)), // balance, default: 0
+  undefined, // stateRoot, default: KECCAK256_RLP (hash of RLP of null)
+  undefined, // codeHash, default: KECCAK256_NULL (hash of null)
+)
+```
+
+For more info see the documentation or examples of usage in `test/account.spec.ts`.
+
+### New export: TypeScript types
+
+A new file with helpful TypeScript types has been added to the exports of this project.
+
+In this release it contains `BNLike`, `BufferLike`, and `TransformableToBuffer`.
 
 ## [7.0.5] - 2020-09-09
 

@@ -1,23 +1,125 @@
-import * as ethjsUtil from 'ethjs-util'
+import * as assert from 'assert'
+import * as BN from 'bn.js'
+import * as rlp from 'rlp'
+import { stripHexPrefix } from 'ethjs-util'
+import { KECCAK256_RLP, KECCAK256_NULL } from './constants'
+import { zeros, bufferToHex, toBuffer } from './bytes'
+import { keccak, keccak256, keccakFromString, rlphash } from './hash'
+import { assertIsHexString, assertIsBuffer } from './helpers'
+import { BNLike, BufferLike, bnToRlp } from './types'
+
 const {
   privateKeyVerify,
   publicKeyCreate,
   publicKeyVerify,
   publicKeyConvert,
 } = require('ethereum-cryptography/secp256k1')
-import * as assert from 'assert'
-import * as BN from 'bn.js'
-import { zeros, bufferToHex } from './bytes'
-import { keccak, keccak256, keccakFromString, rlphash } from './hash'
-import { assertIsHexString, assertIsBuffer } from './helpers'
 
-/**
- * Returns a zero address.
- */
-export const zeroAddress = function(): string {
-  const addressLength = 20
-  const addr = zeros(addressLength)
-  return bufferToHex(addr)
+export interface AccountData {
+  nonce?: BNLike
+  balance?: BNLike
+  stateRoot?: BufferLike
+  codeHash?: BufferLike
+}
+
+export class Account {
+  nonce: BN
+  balance: BN
+  stateRoot: Buffer
+  codeHash: Buffer
+
+  static fromAccountData(accountData: AccountData) {
+    const { nonce, balance, stateRoot, codeHash } = accountData
+
+    return new Account(
+      nonce ? new BN(toBuffer(nonce)) : undefined,
+      balance ? new BN(toBuffer(balance)) : undefined,
+      stateRoot ? toBuffer(stateRoot) : undefined,
+      codeHash ? toBuffer(codeHash) : undefined,
+    )
+  }
+
+  public static fromRlpSerializedAccount(serialized: Buffer) {
+    const values = rlp.decode(serialized)
+
+    if (!Array.isArray(values)) {
+      throw new Error('Invalid serialized account input. Must be array')
+    }
+
+    return this.fromValuesArray(values)
+  }
+
+  public static fromValuesArray(values: Buffer[]) {
+    const [nonce, balance, stateRoot, codeHash] = values
+
+    return new Account(
+      nonce ? new BN(nonce) : undefined,
+      balance ? new BN(balance) : undefined,
+      stateRoot,
+      codeHash,
+    )
+  }
+
+  /**
+   * This constructor assigns and validates the values.
+   * Use the static factory methods to assist in creating an Account from varying data types.
+   */
+  constructor(
+    nonce = new BN(0),
+    balance = new BN(0),
+    stateRoot = KECCAK256_RLP,
+    codeHash = KECCAK256_NULL,
+  ) {
+    this.nonce = nonce
+    this.balance = balance
+    this.stateRoot = stateRoot
+    this.codeHash = codeHash
+
+    this._validate()
+  }
+
+  private _validate() {
+    if (this.nonce.lt(new BN(0))) {
+      throw new Error('nonce must be greater than zero')
+    }
+    if (this.balance.lt(new BN(0))) {
+      throw new Error('balance must be greater than zero')
+    }
+    if (this.stateRoot.length !== 32) {
+      throw new Error('stateRoot must have a length of 32')
+    }
+    if (this.codeHash.length !== 32) {
+      throw new Error('codeHash must have a length of 32')
+    }
+  }
+
+  /**
+   * Returns the RLP serialization of the account as a `Buffer`.
+   */
+  serialize(): Buffer {
+    return rlp.encode([bnToRlp(this.nonce), bnToRlp(this.balance), this.stateRoot, this.codeHash])
+  }
+
+  /**
+   * Returns a `Boolean` determining if the account is a contract.
+   */
+  isContract(): boolean {
+    return !this.codeHash.equals(KECCAK256_NULL)
+  }
+
+  /**
+   * Returns a `Boolean` determining if the account is empty.
+   * For more details about account emptiness see [EIP-161](https://eips.ethereum.org/EIPS/eip-161).
+   * Note: The stateRoot is also checked to be empty since in Frontier it was possible to create a contract with no code where nonce remained 0 but some values were written to storage in the constructor (thus stateRoot is not KECCAK256_RLP).
+   */
+  isEmpty(): boolean {
+    return (
+      this.balance.isZero() &&
+      this.nonce.isZero() &&
+      this.stateRoot.equals(KECCAK256_RLP) &&
+      this.codeHash.equals(KECCAK256_NULL)
+    )
+  }
 }
 
 /**
@@ -29,27 +131,18 @@ export const isValidAddress = function(hexAddress: string): boolean {
 }
 
 /**
- * Checks if a given address is a zero address.
- */
-export const isZeroAddress = function(hexAddress: string): boolean {
-  assertIsHexString(hexAddress)
-  const zeroAddr = zeroAddress()
-  return zeroAddr === hexAddress
-}
-
-/**
  * Returns a checksummed address.
  *
  * If a eip1191ChainId is provided, the chainId will be included in the checksum calculation. This
  * has the effect of checksummed addresses for one chain having invalid checksums for others.
- * For more details, consult EIP-1191.
+ * For more details see [EIP-1191](https://eips.ethereum.org/EIPS/eip-1191).
  *
  * WARNING: Checksums with and without the chainId will differ. As of 2019-06-26, the most commonly
  * used variation in Ethereum was without the chainId. This may change in the future.
  */
 export const toChecksumAddress = function(hexAddress: string, eip1191ChainId?: number): string {
   assertIsHexString(hexAddress)
-  const address = ethjsUtil.stripHexPrefix(hexAddress).toLowerCase()
+  const address = stripHexPrefix(hexAddress).toLowerCase()
 
   const prefix = eip1191ChainId !== undefined ? eip1191ChainId.toString() + '0x' : ''
 
@@ -191,4 +284,22 @@ export const importPublic = function(publicKey: Buffer): Buffer {
     publicKey = Buffer.from(publicKeyConvert(publicKey, false).slice(1))
   }
   return publicKey
+}
+
+/**
+ * Returns the zero address.
+ */
+export const zeroAddress = function(): string {
+  const addressLength = 20
+  const addr = zeros(addressLength)
+  return bufferToHex(addr)
+}
+
+/**
+ * Checks if a given address is the zero address.
+ */
+export const isZeroAddress = function(hexAddress: string): boolean {
+  assertIsHexString(hexAddress)
+  const zeroAddr = zeroAddress()
+  return zeroAddr === hexAddress
 }

@@ -5,7 +5,7 @@
 export * from './constants'
 
 /**
- * Public-key cryptography (secp256k1) and addresses
+ * Account class and helper functions
  */
 export * from './account'
 
@@ -38,6 +38,11 @@ export * from './object'
  * External exports (BN, rlp, secp256k1)
  */
 export * from './externals'
+
+/**
+ * Helpful TypeScript types
+ */
+export * from './types'
 
 /**
  * Export ethjs-util methods
