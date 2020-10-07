@@ -87,6 +87,8 @@ export class LightSynchronizer extends Synchronizer {
         this.logger.info(`Imported headers count=${headers.length} number=${first.toString(10)} hash=${hash} peers=${this.pool.size}`)
       })
     await this.headerFetcher.fetch()
+    // TODO: Should this be deleted?
+    // @ts-ignore: error: The operand of a 'delete' operator must be optional
     delete this.headerFetcher
     return true
   }
@@ -122,6 +124,8 @@ export class LightSynchronizer extends Synchronizer {
     }
     if (this.headerFetcher) {
       this.headerFetcher.destroy()
+      // TODO: Should this be deleted?
+      // @ts-ignore: error: The operand of a 'delete' operator must be optional
       delete this.headerFetcher
     }
     await super.stop()

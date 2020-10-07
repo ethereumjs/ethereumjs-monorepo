@@ -101,6 +101,8 @@ export class FastSynchronizer extends Synchronizer {
         this.logger.info(`Imported blocks count=${blocks.length} number=${first.toString(10)} hash=${hash} peers=${this.pool.size}`)
       })
     await this.blockFetcher.fetch()
+    // TODO: Should this be deleted?
+    // @ts-ignore: error: The operand of a 'delete' operator must be optional
     delete this.blockFetcher
     return true
 
@@ -153,6 +155,8 @@ export class FastSynchronizer extends Synchronizer {
     }
     if (this.blockFetcher) {
       this.blockFetcher.destroy()
+      // TODO: Should this be deleted?
+      // @ts-ignore: error: The operand of a 'delete' operator must be optional
       delete this.blockFetcher
     }
     await super.stop()

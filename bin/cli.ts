@@ -3,7 +3,7 @@
 const Common = require('ethereumjs-common').default
 const chains = require('ethereumjs-common/dist/chains').chains
 const { getLogger } = require('../lib/logging')
-const { parse } = require('../lib/util')
+const { parseParams, parseTransports } = require('../lib/util')
 const { fromName: serverFromName } = require('../lib/net/server')
 import Node from '../lib/node'
 import { Server as RPCServer } from 'jayson'
@@ -124,12 +124,12 @@ async function run () {
     }
   }
   const networkDirName = args.network === 'mainnet' ? '' : `${args.network}/`
-  const chainParams = args.params ? await parse.params(args.params) : args.network
+  const chainParams = args.params ? await parseParams(args.params) : args.network
   // Initialize Common with an explicit 'chainstart' HF set until
   // hardfork awareness is implemented within the library
   // Also a fix for https://github.com/ethereumjs/ethereumjs-vm/issues/757
   const common = new Common(chainParams, 'chainstart')
-  const servers = parse.transports(args.transports).map((t: any) => {
+  const servers = parseTransports(args.transports).map((t: any) => {
     const Server = serverFromName(t.name)
     if (t.name === 'rlpx') {
       t.options.bootnodes = t.options.bootnodes || common.bootstrapNodes()

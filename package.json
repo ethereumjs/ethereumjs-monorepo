@@ -17,6 +17,7 @@
     "build:node": "tsc -p ./tsconfig.prod.json",
     "build:browser": "tsc -p ./tsconfig.browser.json && npm run bundle && rm -rf dist.browser",
     "bundle": "webpack",
+    "client:start": "tsc -p tsconfig.prod.json && node dist/bin/cli.js",
     "coverage": "nyc npm run coverage:test && nyc report --reporter=lcov",
     "coverage:test": "tape -r ts-node/register 'test/!(integration)/**/*.ts' 'test/integration/**/*.ts'",
     "docs:build": "typedoc --tsconfig tsconfig.prod.json",
