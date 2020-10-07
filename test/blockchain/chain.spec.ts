@@ -5,8 +5,9 @@ const { Chain } = require('../../lib/blockchain')
 const { defaultLogger } = require('../../lib/logging')
 defaultLogger.silent = true
 
-// explicitly import buffer,
+// explicitly import util and buffer,
 // needed for karma-typescript bundling
+import * as util from 'util'
 import { Buffer } from 'buffer'
 
 tape('[Chain]', (t) => {
