@@ -19,6 +19,7 @@
 ### Methods
 
 * [isZero](_address_.address.md#iszero)
+* [toBuffer](_address_.address.md#tobuffer)
 * [toString](_address_.address.md#tostring)
 * [fromPrivateKey](_address_.address.md#static-fromprivatekey)
 * [fromPublicKey](_address_.address.md#static-frompublickey)
@@ -62,6 +63,18 @@ Name | Type |
 Is address zero.
 
 **Returns:** *boolean*
+
+___
+
+###  toBuffer
+
+▸ **toBuffer**(): *Buffer*
+
+*Defined in [address.ts:95](https://github.com/ethereumjs/ethereumjs-util/blob/master/src/address.ts#L95)*
+
+Returns Buffer representation of address.
+
+**Returns:** *Buffer*
 
 ___
 

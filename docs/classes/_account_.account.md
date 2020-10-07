@@ -36,7 +36,7 @@
 
 *Defined in [account.ts:61](https://github.com/ethereumjs/ethereumjs-util/blob/master/src/account.ts#L61)*
 
-This constructor takes the values, validates and assigns them.
+This constructor assigns and validates the values.
 Use the static factory methods to assist in creating an Account from varying data types.
 
 **Parameters:**
@@ -88,9 +88,9 @@ ___
 
 ▸ **isContract**(): *boolean*
 
-*Defined in [account.ts:96](https://github.com/ethereumjs/ethereumjs-util/blob/master/src/account.ts#L96)*
+*Defined in [account.ts:106](https://github.com/ethereumjs/ethereumjs-util/blob/master/src/account.ts#L106)*
 
-Returns a `Boolean` deteremining if the account is a contract.
+Returns a `Boolean` determining if the account is a contract.
 
 **Returns:** *boolean*
 
@@ -100,9 +100,11 @@ ___
 
 ▸ **isEmpty**(): *boolean*
 
-*Defined in [account.ts:103](https://github.com/ethereumjs/ethereumjs-util/blob/master/src/account.ts#L103)*
+*Defined in [account.ts:115](https://github.com/ethereumjs/ethereumjs-util/blob/master/src/account.ts#L115)*
 
 Returns a `Boolean` determining if the account is empty.
+For more details about account emptiness see [EIP-161](https://eips.ethereum.org/EIPS/eip-161).
+Note: The stateRoot is also checked to be empty since in Frontier it was possible to create a contract with no code where nonce remained 0 but some values were written to storage in the constructor (thus stateRoot is not KECCAK256_RLP).
 
 **Returns:** *boolean*
 
@@ -112,7 +114,7 @@ ___
 
 ▸ **serialize**(): *Buffer*
 
-*Defined in [account.ts:89](https://github.com/ethereumjs/ethereumjs-util/blob/master/src/account.ts#L89)*
+*Defined in [account.ts:99](https://github.com/ethereumjs/ethereumjs-util/blob/master/src/account.ts#L99)*
 
 Returns the RLP serialization of the account as a `Buffer`.
 
