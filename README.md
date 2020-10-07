@@ -133,7 +133,7 @@ If you want to join for work or do improvements on the libraries have a look at 
 [coverage-badge]: https://codecov.io/gh/ethereumjs/ethereumjs-vm/branch/master/graph/badge.svg
 [coverage-link]: https://codecov.io/gh/ethereumjs/ethereumjs-vm
 [discord-badge]: https://img.shields.io/static/v1?logo=discord&label=discord&message=Join&color=blue
-[discord-link]: https://discord.gg/TNwARpR[![StackExchange][stackexchange-badge]][stackexchange-link]
+[discord-link]: https://discord.gg/TNwARpR
 [stackexchange-badge]: https://img.shields.io/badge/ethereumjs-stackexchange-brightgreen
 [stackexchange-link]: https://ethereum.stackexchange.com/questions/tagged/ethereumjs
 [account-package]: ./packages/account

@@ -361,7 +361,7 @@ const expectedTestsFull: any = {
     TangerineWhistle: 1097,
     SpuriousDragon: 1222,
     Byzantium: 4754,
-    Constantinople: 10759,
+    Constantinople: 10530,
     Petersburg: 10525,
     Istanbul: 10759,
     MuirGlacier: 10759,
@@ -370,7 +370,7 @@ const expectedTestsFull: any = {
     EIP158ToByzantiumAt5: 0,
     FrontierToHomesteadAt5: 0,
     HomesteadToDaoAt5: 0,
-    HomesteadToEIP150At5: 3,
+    HomesteadToEIP150At5: 0,
   },
 }
 /**

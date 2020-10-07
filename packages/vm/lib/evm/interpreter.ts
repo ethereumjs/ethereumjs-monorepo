@@ -6,8 +6,7 @@ import { ERROR, VmError } from '../exceptions'
 import Memory from './memory'
 import Stack from './stack'
 import EEI from './eei'
-import { Opcode } from './opcodes'
-import { handlers as opHandlers, OpHandler } from './opFns'
+import { Opcode, handlers as opHandlers, OpHandler } from './opcodes'
 
 export interface InterpreterOpts {
   pc?: number
