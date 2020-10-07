@@ -29,13 +29,13 @@ export class Block {
     const header = BlockHeader.fromHeaderData(headerData, opts)
 
     // parse transactions
-    let transactions = []
+    const transactions = []
     for (const txData of txsData) {
       transactions.push(Transaction.fromTxData(txData, opts as TxOptions))
     }
 
     // parse uncle headers
-    let uncleHeaders = []
+    const uncleHeaders = []
     for (const uncleHeaderData of uncleHeadersData) {
       uncleHeaders.push(BlockHeader.fromHeaderData(uncleHeaderData, opts))
     }
@@ -44,9 +44,10 @@ export class Block {
   }
 
   public static fromRLPSerializedBlock(serialized: Buffer, opts: BlockOptions = {}) {
-    // We do this to silence a TS error. We know that after this statement, data is
-    // a [Buffer[], Buffer[][], Buffer[][]]
-    let values = (rlp.decode(serialized) as any) as [Buffer[], Buffer[][], Buffer[][]]
+    const values = (rlp.decode(serialized) as any) as [Buffer[], Buffer[][], Buffer[][]]
+    // We cast above to silence a TS error since we know that
+    // values is a [Buffer[], Buffer[][], Buffer[][]]
+
     if (!Array.isArray(values)) {
       throw new Error('Invalid serialized block input. Must be array')
     }
@@ -69,13 +70,13 @@ export class Block {
     const header = BlockHeader.fromValuesArray(headerArray, opts)
 
     // parse transactions
-    let transactions = []
+    const transactions = []
     for (const txData of txsData) {
       transactions.push(Transaction.fromValuesArray(txData as Buffer[], opts as TxOptions))
     }
 
     // parse uncle headers
-    let uncleHeaders = []
+    const uncleHeaders = []
     for (const uncleHeaderData of uncleHeadersData) {
       uncleHeaders.push(BlockHeader.fromValuesArray(uncleHeaderData as Buffer[], opts))
     }
