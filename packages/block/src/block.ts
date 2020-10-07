@@ -173,7 +173,7 @@ export class Block {
    */
   validateTransactions(): boolean
   validateTransactions(stringError: false): boolean
-  validateTransactions(stringError: true): string
+  validateTransactions(stringError: true): string[]
   validateTransactions(stringError = false) {
     const errors: string[] = []
 
@@ -184,7 +184,7 @@ export class Block {
       }
     })
 
-    return stringError ? errors.join(' ') : errors.length === 0
+    return stringError ? errors : errors.length === 0
   }
 
   /**
@@ -204,8 +204,8 @@ export class Block {
     }
 
     const txErrors = this.validateTransactions(true)
-    if (txErrors !== '') {
-      throw new Error(txErrors)
+    if (txErrors.length > 0) {
+      throw new Error(`invalid transactions: ${txErrors.join(' ')}`)
     }
 
     if (!this.validateUnclesHash()) {
