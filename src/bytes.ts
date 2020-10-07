@@ -1,16 +1,7 @@
 import * as BN from 'bn.js'
 import { intToBuffer, stripHexPrefix, padToEven, isHexString, isHexPrefixed } from 'ethjs-util'
+import { TransformableToArray, TransformableToBuffer } from './types'
 import { assertIsBuffer, assertIsArray, assertIsHexString } from './helpers'
-
-// These can be moved to './types' when PR#275 is merged.
-export interface TransformableToArray {
-  toArray(): Uint8Array
-  toBuffer?(): Buffer
-}
-export interface TransformableToBuffer {
-  toBuffer(): Buffer
-  toArray?(): Uint8Array
-}
 
 /**
  * Returns a buffer filled with 0s.

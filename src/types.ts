@@ -24,10 +24,19 @@ export type BufferLike =
 export type PrefixedHexString = string
 
 /*
+ * A type that represents an object that has a `toArray()` method.
+ */
+export interface TransformableToArray {
+  toArray(): Uint8Array
+  toBuffer?(): Buffer
+}
+
+/*
  * A type that represents an object that has a `toBuffer()` method.
  */
 export interface TransformableToBuffer {
   toBuffer(): Buffer
+  toArray?(): Uint8Array
 }
 
 /**

@@ -38,6 +38,7 @@ For more info see the documentation or examples of usage in `test/account.spec.t
 A new file with helpful TypeScript types has been added to the exports of this project.
 
 In this release it contains `BNLike`, `BufferLike`, and `TransformableToBuffer`.
+
 ### Address.toBuffer()
 
 The Address class has as a new method `address.toBuffer()` that will give you a copy of the underlying `address.buf`.
