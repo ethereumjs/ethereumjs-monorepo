@@ -1,5 +1,5 @@
 const Block = require('ethereumjs-block')
-const { Chain } = require('../../../lib/blockchain')
+import { Chain } from '../../../lib/blockchain'
 
 const defaultOptions = {
   height: 10
@@ -29,7 +29,7 @@ export default class MockChain extends Chain {
         header: {
           number: number + 1,
           difficulty: 1,
-          parentHash: number ? blocks[number - 1].hash() : this.genesis.hash
+          parentHash: number ? blocks[number - 1].hash() : (this.genesis as any).hash
         }
       }))
     }

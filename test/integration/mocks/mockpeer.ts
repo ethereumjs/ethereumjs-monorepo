@@ -1,9 +1,10 @@
-'use strict'
-
-const { Peer } = require('../../../lib/net/peer')
+import { Peer } from '../../../lib/net/peer'
 import MockSender from './mocksender'
-const network = require('./network')
-const EventEmitter = require('events')
+import * as network from './network'
+import { EventEmitter } from 'events'
+
+// TODO: polkadot/ts types seem wrong (?)
+// "pull_pushable_1.default is not a function"
 const Pushable = require('pull-pushable')
 const pull = require('pull-stream')
 

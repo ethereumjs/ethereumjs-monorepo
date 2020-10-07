@@ -3,7 +3,7 @@ import Node from '../../lib/node'
 import MockServer from './mocks/mockserver'
 import { defaultLogger } from '../../lib/logging'
 defaultLogger.silent = true
-/*
+
 tape('[Integration:Node]', t => {
   const node = new Node({
     servers: [ new MockServer() ],
@@ -25,4 +25,4 @@ tape('[Integration:Node]', t => {
     await node.stop()
     t.pass('node stopped')
   })
-})*/
+})

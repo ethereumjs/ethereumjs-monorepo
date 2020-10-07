@@ -1,9 +1,8 @@
-/*
 import * as tape from 'tape'
-const { EthProtocol } = require('../../lib/net/protocol')
-const PeerPool = require('../../lib/net/peerpool')
-import { MockServer } from './mocks/mockserver'
-import { MockChain } from './mocks/mockchain'
+import { EthProtocol } from '../../lib/net/protocol'
+import { PeerPool } from '../../lib/net/peerpool'
+import MockServer from './mocks/mockserver'
+import MockChain from './mocks/mockchain'
 import { defaultLogger } from '../../lib/logging'
 defaultLogger.silent = true
 
@@ -72,4 +71,4 @@ tape('[Integration:PeerPool]', async t => {
       t.pass('destroyed')
     }, 100)
   })
-})*/
+})

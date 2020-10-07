@@ -1,6 +1,4 @@
-'use strict'
-
-const { Sender } = require('../../../lib/net/protocol')
+import { Sender } from '../../../lib/net/protocol'
 
 export default class MockSender extends Sender {
   public protocol: any

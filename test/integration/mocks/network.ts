@@ -1,6 +1,4 @@
-'use strict'
-
-const EventEmitter = require('events')
+import { EventEmitter } from 'events'
 
 const Pipe = function (id: any) {
   const buffer: any[] = []
