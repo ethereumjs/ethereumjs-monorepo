@@ -16,12 +16,7 @@ export class Block {
 
   private readonly _common: Common
 
-  public static fromBlockData(blockData: BlockData, opts: BlockOptions = {}) {
-    // Checking at runtime, to prevent errors down the path for JavaScript consumers.
-    if (blockData === null) {
-      blockData = {}
-    }
-
+  public static fromBlockData(blockData: BlockData = {}, opts: BlockOptions = {}) {
     const headerData = blockData.header || {}
     const txsData = blockData.transactions || []
     const uncleHeadersData = blockData.uncleHeaders || []
