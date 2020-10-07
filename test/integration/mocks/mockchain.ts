@@ -1,13 +1,11 @@
-'use strict'
-
-const { Chain } = require('../../../lib/blockchain')
 const Block = require('ethereumjs-block')
+import { Chain } from '../../../lib/blockchain'
 
 const defaultOptions = {
   height: 10
 }
 
-export = module.exports = class MockChain extends Chain {
+export default class MockChain extends Chain {
   public height: any
 
   constructor (options: any = {}) {
@@ -31,7 +29,7 @@ export = module.exports = class MockChain extends Chain {
         header: {
           number: number + 1,
           difficulty: 1,
-          parentHash: number ? blocks[number - 1].hash() : this.genesis.hash
+          parentHash: number ? blocks[number - 1].hash() : (this.genesis as any).hash
         }
       }))
     }

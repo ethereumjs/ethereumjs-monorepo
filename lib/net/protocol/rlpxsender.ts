@@ -1,6 +1,5 @@
-
-const Sender = require('./sender')
-import { rlp } from'ethereumjs-util'
+import { Sender } from './sender'
+import { rlp } from 'ethereumjs-util'
 
 /**
  * DevP2P/RLPx protocol sender
@@ -8,7 +7,8 @@ import { rlp } from'ethereumjs-util'
  * @emits status
  * @memberof module:net/protocol
  */
-export = module.exports = class RlpxSender extends Sender {
+export class RlpxSender extends Sender {
+  private sender: any
   /**
    * Creates a new DevP2P/Rlpx protocol sender
    * @param {Object} rlpxProtocol protocol object from ethereumjs-devp2p

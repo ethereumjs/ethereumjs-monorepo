@@ -1,5 +1,8 @@
-const { EventEmitter } = require('events')
-const { defaultLogger } = require('../../logging')
+import * as events from 'events'
+import { Protocol } from '../protocol/protocol'
+import { BoundProtocol, Sender } from '../protocol'
+import { defaultLogger } from '../../logging'
+
 
 const defaultOptions = {
   logger: defaultLogger,
@@ -12,7 +15,21 @@ const defaultOptions = {
  * Network peer
  * @memberof module:net/peer
  */
-export = module.exports = class Peer extends EventEmitter {
+export class Peer extends events.EventEmitter {
+  public id: string
+  protected transport: string
+  protected protocols: any[]
+  protected logger: any
+  private _idle: boolean
+  public address: string
+  public inbound: boolean
+  public bound: Map<string, any>
+  public server: any
+
+  // Dynamically bound protocol properties
+  public les: BoundProtocol | undefined
+  public eth: BoundProtocol | undefined
+
   /**
    * Create new peer
    * @param {Object}      options constructor parameters
@@ -79,7 +96,7 @@ export = module.exports = class Peer extends EventEmitter {
    * peer.eth.send('getBlockHeaders', 1, 100, 0, 0)
    * peer.eth.on('message', ({ data }) => console.log(`Received ${data.length} headers`))
    */
-  async bindProtocol (protocol: any, sender: any) {
+  async bindProtocol (protocol: Protocol, sender: Sender): Promise<void> {
     const bound = await protocol.bind(this, sender)
     bound.on('message', (message: any) => {
       this.emit('message', message, protocol.name)
@@ -94,11 +111,11 @@ export = module.exports = class Peer extends EventEmitter {
    * Return true if peer understand the specified protocol name
    * @param protocolName
    */
-  understands (protocolName: string) {
+  understands (protocolName: string): boolean {
     return !!this.bound.get(protocolName)
   }
 
-  toString (withFullId = false) {
+  toString (withFullId = false): string {
     const properties = {
       id: withFullId ? this.id : this.id.substr(0, 8),
       address: this.address,

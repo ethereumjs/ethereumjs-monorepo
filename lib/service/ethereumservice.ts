@@ -1,8 +1,7 @@
-
-const Service = require('./service')
-const FlowControl = require('../net/protocol/flowcontrol')
-const { Chain } = require('../blockchain')
-const Common = require('ethereumjs-common').default
+import { Service } from './service'
+import { FlowControl } from '../net/protocol/flowcontrol'
+import { Chain } from '../blockchain'
+import Common from 'ethereumjs-common'
 
 const defaultOptions = {
   lightserv: false,
@@ -16,7 +15,16 @@ const defaultOptions = {
  * Ethereum service
  * @memberof module:service
  */
-export = module.exports = class EthereumService extends Service {
+export class EthereumService extends Service {
+  public flow: FlowControl
+  public chain: Chain
+  public common: Common
+  public minPeers: number
+  public interval: number
+  public timeout: number
+  public synchronizer: any
+
+
   /**
    * Create new ETH service
    * @param {Object}   options constructor parameters
@@ -30,7 +38,7 @@ export = module.exports = class EthereumService extends Service {
    * @param {number}   [options.interval] sync retry interval
    * @param {Logger}   [options.logger] logger instance
    */
-  constructor (options: any) {
+  constructor (options?: any) {
     options = { ...defaultOptions, ...options }
     super(options)
 
@@ -72,7 +80,7 @@ export = module.exports = class EthereumService extends Service {
    * that resolves once the service is started and blockchain is in sync.
    * @return {Promise}
    */
-  async start () {
+  async start (): Promise<void | boolean> {
     if (this.running) {
       return false
     }
@@ -84,7 +92,7 @@ export = module.exports = class EthereumService extends Service {
    * Stop service. Interrupts blockchain synchronization if its in progress.
    * @return {Promise}
    */
-  async stop () {
+  async stop (): Promise<void | boolean> {
     if (!this.running) {
       return false
     }

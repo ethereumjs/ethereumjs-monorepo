@@ -1,6 +1,6 @@
-const { EventEmitter } = require('events')
-const { FastEthereumService, LightEthereumService } = require('./service')
-const { defaultLogger } = require('./logging')
+import * as events from 'events'
+import { FastEthereumService, LightEthereumService } from './service'
+import { defaultLogger } from './logging'
 
 const defaultOptions = {
   minPeers: 3,
@@ -14,7 +14,17 @@ const defaultOptions = {
  * lifecycle of included services.
  * @memberof module:node
  */
-export = module.exports = class Node extends EventEmitter {
+export default class Node extends events.EventEmitter {
+  
+  public logger: any
+  public common: any
+  public servers: any
+  public syncmode: any
+  public services: any
+
+  public opened: boolean
+  public started: boolean
+  
   /**
    * Create new node
    * @param {Object}   options constructor parameters

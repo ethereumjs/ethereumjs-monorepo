@@ -1,5 +1,6 @@
-const { EventEmitter } = require('events')
-const { defaultLogger } = require('../../logging')
+import { EventEmitter } from 'events'
+import { Protocol } from '../protocol/protocol'
+import { defaultLogger } from '../../logging'
 
 const defaultOptions = {
   logger: defaultLogger,
@@ -11,7 +12,18 @@ const defaultOptions = {
  * Base class for transport specific server implementations.
  * @memberof module:net/server
  */
-export = module.exports = class Server extends EventEmitter {
+export class Server extends EventEmitter {
+
+  public key: Buffer | string = ''
+  public bootnodes: any | string = ''
+
+  protected maxPeers: number
+  protected refreshInterval: number
+  protected protocols: Set<Protocol>
+  protected logger: any
+
+  public started: boolean
+
   constructor (options: any) {
     super()
     options = { ...defaultOptions, ...options }
@@ -23,51 +35,54 @@ export = module.exports = class Server extends EventEmitter {
     this.started = false
   }
 
-  get name () {
+  get name (): string {
     return this.constructor.name
   }
 
   /**
    * Check if server is running
-   * @return {boolean} true if server is running
    */
-  get running () {
+  get running (): boolean {
     return this.started
   }
 
   /**
    * Start server. Returns a promise that resolves once server has been started.
-   * @return {Promise}
+   * @return Resolves with true if server successfully started
    */
-  async start () {
+  async start (): Promise<boolean> {
     if (this.started) {
-      return
+      return false
     }
-    const protocols = Array.from(this.protocols)
-    await Promise.all(protocols.map((p: any) => p.open()))
+    const protocols: Protocol[] = Array.from(this.protocols)
+    await Promise.all(protocols.map(p => p.open()))
     this.started = true
     this.logger.info(`Started ${this.name} server.`)
+
+    return true
   }
 
   /**
    * Stop server. Returns a promise that resolves once server has been stopped.
-   * @return {Promise}
    */
-  async stop () {
+  async stop (): Promise<boolean> {
     this.started = false
     this.logger.info(`Stopped ${this.name} server.`)
+    return this.started
   }
 
   /**
    * Specify which protocols the server must support
-   * @param {Protocol[]} protocols protocol classes
+   * @param protocols protocol classes
+   * @return True if protocol added successfully
    */
-  addProtocols (protocols: any[]) {
+  addProtocols (protocols: Protocol[]): boolean {
     if (this.started) {
       this.logger.error('Cannot require protocols after server has been started')
       return false
     }
     protocols.forEach(p => this.protocols.add(p))
+    return true
   }
 
   /**

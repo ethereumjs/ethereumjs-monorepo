@@ -1,13 +1,13 @@
 
-const { middleware, validators } = require('../validation')
-const { addHexPrefix, keccak, toBuffer } = require('ethereumjs-util')
-const { platform } = require('os')
+import { middleware, validators } from '../validation'
+import { addHexPrefix, keccak, toBuffer } from 'ethereumjs-util'
+import { platform } from 'os'
 
 /**
  * web3_* RPC module
  * @memberof module:rpc/modules
  */
-export = module.exports = class Web3 {
+export class Web3 {
   private _chain: any
 
   /**

@@ -1,12 +1,8 @@
-// Suppresses "Cannot redeclare block-scoped variable" errors
-// TODO: remove when import becomes possible
-export = {}
-
 import * as tape from 'tape-catch'
 const td = require('testdouble')
-const BN = require('bn.js')
-const EventEmitter = require('events')
-const { defaultLogger } = require('../../../lib/logging')
+import { BN } from 'ethereumjs-util'
+import { EventEmitter } from 'events'
+import { defaultLogger } from '../../../lib/logging'
 defaultLogger.silent = true
 
 async function wait (delay?: number) {
@@ -15,10 +11,10 @@ async function wait (delay?: number) {
 
 tape('[BlockFetcher]', t => {
   class PeerPool extends EventEmitter {}
-  PeerPool.prototype.idle = td.func()
-  PeerPool.prototype.ban = td.func()
+  (PeerPool.prototype as any).idle = td.func(); // Need semi-colon to separate statements
+  (PeerPool.prototype as any).ban = td.func()
   td.replace('../../../lib/net/peerpool', PeerPool)
-  const BlockFetcher = require('../../../lib/sync/fetcher/blockfetcher')
+  const BlockFetcher = require('../../../lib/sync/fetcher/blockfetcher').BlockFetcher
 
   t.test('should start/stop', async (t) => {
     const fetcher = new BlockFetcher({

@@ -1,11 +1,6 @@
-// Suppresses "Cannot redeclare block-scoped variable" errors
-// TODO: remove when import becomes possible
-export = {}
-
 import * as test from 'tape'
-
-const { platform } = require('os')
-const { baseSetup, params, baseRequest } = require('../helpers')
+import { platform } from 'os'
+import { baseSetup, params, baseRequest } from '../helpers'
 
 const method = 'web3_clientVersion'
 

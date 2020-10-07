@@ -5,7 +5,7 @@
   "compilerOptions": {
     "outDir": "dist.browser",
     "target": "es5",
-    "lib": ["dom", "es5"],
+    "lib": ["es5"],
     "alwaysStrict": true
   }
 }

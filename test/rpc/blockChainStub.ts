@@ -1,4 +1,4 @@
-export = module.exports = function (options: any) {
+export function blockChain(options: any) {
   const block = {
     toJSON: () => ({
       number: options.number || 444444,

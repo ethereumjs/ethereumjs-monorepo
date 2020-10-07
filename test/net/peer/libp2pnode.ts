@@ -1,7 +1,3 @@
-// Suppresses "Cannot redeclare block-scoped variable" errors
-// TODO: remove when import becomes possible
-export = {}
-
 import * as tape from 'tape-catch'
 const td = require('testdouble')
 // const Libp2pNode = require('../../../lib/net/peer/libp2pnode')

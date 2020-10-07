@@ -1,10 +1,8 @@
-'use strict'
+import { Server } from '../../../lib/net/server'
+import MockPeer from './mockpeer'
+import * as network from './network'
 
-const { Server } = require('../../../lib/net/server')
-const MockPeer = require('./mockpeer')
-const network = require('./network')
-
-export = module.exports = class MockServer extends Server {
+export default class MockServer extends Server {
   public location: string
   public server: any
   public peers: any
@@ -20,9 +18,9 @@ export = module.exports = class MockServer extends Server {
     return 'mock'
   }
 
-  async start () {
+  async start (): Promise<boolean> {
     if (this.started) {
-      return
+      return false
     }
     super.start()
     await this.wait(1)
@@ -38,9 +36,10 @@ export = module.exports = class MockServer extends Server {
     this.server.on('connection', (connection: any) => {
       this.connect(connection)
     })
+    return true
   }
 
-  async stop () {
+  async stop (): Promise<boolean> {
     await new Promise(resolve => {
       setTimeout(() => {
         network.destroyServer(this.location)
@@ -48,6 +47,7 @@ export = module.exports = class MockServer extends Server {
       }, 20)
     })
     await super.stop()
+    return this.started
   }
 
   async discover (id: any, location: any) {

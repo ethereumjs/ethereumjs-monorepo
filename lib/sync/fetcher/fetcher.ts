@@ -1,8 +1,8 @@
-
 import { Readable, Writable } from 'stream'
 const Heap = require('qheap')
-const Common = require('ethereumjs-common').default
-const { defaultLogger } = require('../../logging')
+import Common from 'ethereumjs-common'
+import { defaultLogger } from '../../logging'
+import { PeerPool } from '../../net/peerpool'
 
 const defaultOptions = {
   common: new Common('mainnet', 'chainstart'),
@@ -21,24 +21,22 @@ const defaultOptions = {
  * inorder.
  * @memberof module:sync/fetcher
  */
-class Fetcher extends Readable {
-
-  private common: any
-  private pool: any
-  private logger: any
-  private timeout: any
-  private interval: any
-  private banTime: any
-  private maxQueue: any
-  private maxPerRequest: any
-  private in: any
-  private out: any
-  private total: any
-  private processed: any
-  private running: any
-  private reading: any
+export class Fetcher extends Readable {
+  protected common: Common
+  protected pool: PeerPool
+  protected logger: any
+  protected timeout: number
+  protected interval: number
+  protected banTime: number
+  protected maxQueue: number
+  protected maxPerRequest: number
+  protected in: any
+  protected out: any
+  protected total: number
+  protected processed: number
+  protected running: boolean
+  protected reading: boolean
   private _readableState: any
-
 
   /**
    * Create new fetcher
@@ -76,7 +74,7 @@ class Fetcher extends Readable {
    * Generate list of tasks to fetch
    * @return {Object[]} tasks
    */
-  tasks () {
+  tasks () : object[] {
     return []
   }
 
@@ -324,5 +322,3 @@ class Fetcher extends Readable {
     await new Promise(resolve => setTimeout(resolve, delay || this.interval))
   }
 }
-
-export = module.exports = Fetcher

@@ -1,8 +1,4 @@
-const moduleList = ['eth', 'web3', 'net']
-
-moduleList.forEach((mod: string) => {
-  module.exports[mod] = require(`./${mod}`)
-})
-
-module.exports.list = moduleList
-export = module.exports
+export const list = ['Eth', 'Web3', 'Net']
+export * from './eth'
+export * from './web3'
+export * from './net'

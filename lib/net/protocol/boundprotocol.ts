@@ -1,10 +1,23 @@
-const { EventEmitter } = require('events')
+import { EventEmitter } from 'events'
+import { Message, Protocol } from '../protocol/protocol'
+import { Peer } from '../peer/peer'
+import { Sender } from './sender'
 
 /**
  * Binds a protocol implementation to the specified peer
  * @memberof module:net/protocol
  */
-export = module.exports = class BoundProtocol extends EventEmitter {
+export class BoundProtocol extends EventEmitter {
+  private protocol: Protocol
+  private peer: Peer
+  private sender: Sender
+  public name: string
+  private versions: number[]
+  private timeout: number
+  private logger: any
+  private _status: any
+  private resolvers: Map<string, any>;
+
   /**
    * Create bound protocol
    * @param {Object}   options constructor parameters
@@ -12,6 +25,7 @@ export = module.exports = class BoundProtocol extends EventEmitter {
    * @param {Peer}     options.peer peer that protocol is bound to
    * @param {Sender}   options.sender message sender
    */
+
   constructor (options: any) {
     super()
 
@@ -35,15 +49,15 @@ export = module.exports = class BoundProtocol extends EventEmitter {
     this.addMethods()
   }
 
-  get status () {
+  get status () : any {
     return this._status
   }
 
-  set status (status) {
+  set status (status: any) {
     Object.assign(this._status, status)
   }
 
-  async handshake (sender: any) {
+  async handshake (sender: Sender) {
     this._status = await this.protocol.handshake(sender)
   }
 
@@ -90,7 +104,7 @@ export = module.exports = class BoundProtocol extends EventEmitter {
    * @param  name message name
    * @param  args message arguments
    */
-  send (name: string, args: any[]) {
+  send (name: string, args?: any) : any {
     const messages = this.protocol.messages
     const message = messages.find((m: any) => m.name === name)
     if (message) {
@@ -109,7 +123,7 @@ export = module.exports = class BoundProtocol extends EventEmitter {
    * @param  args message arguments
    * @return {Promise}
    */
-  async request (name: string, args: any[]) {
+  async request (name: string, args: any[]): Promise<any> {
     const message = this.send(name, args)
     const resolver: any = {
       timeout: null,
@@ -138,8 +152,12 @@ export = module.exports = class BoundProtocol extends EventEmitter {
   addMethods () {
     const messages = this.protocol.messages.filter((m: any) => m.response)
     for (let message of messages) {
-      const name = message.name
-      const camel = name[0].toLowerCase() + name.slice(1)
+      const name = message.name as string
+      const camel= name[0].toLowerCase() + name.slice(1)
+
+      // Problem: How to dynamically add class properties in TS
+      // https://stackoverflow.com/questions/41038812
+      // @ts-ignore: implicit 'any'
       this[name] = this[camel] = async (args: any[]) => this.request(name, args)
     }
   }

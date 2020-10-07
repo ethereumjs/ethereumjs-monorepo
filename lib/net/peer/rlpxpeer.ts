@@ -1,13 +1,13 @@
-
-const Peer = require('./peer')
-const RlpxSender = require('../protocol/rlpxsender')
-const { ETH, LES, RLPx } = require('ethereumjs-devp2p')
-const { randomBytes } = require('crypto')
+import { randomBytes } from'crypto'
+import { Peer } from './peer'
+import { Protocol } from '../protocol/protocol'
+import { RlpxSender } from '../protocol/rlpxsender'
+import { Capabilities as Devp2pCapabilities, DPT as Devp2pDPT, ETH as Devp2pETH, LES as Devp2pLES, Peer as Devp2pRlpxPeer, RLPx as Devp2pRLPx } from 'ethereumjs-devp2p'
 
 const devp2pCapabilities: any = {
-  eth62: ETH.eth62,
-  eth63: ETH.eth63,
-  les2: LES.les2
+  eth62: Devp2pETH.eth62,
+  eth63: Devp2pETH.eth63,
+  les2: Devp2pLES.les2
 }
 
 /**
@@ -16,7 +16,7 @@ const devp2pCapabilities: any = {
  * @example
  *
  * const { RlpxPeer } = require('./lib/net/peer')
- * const { Chain } = require('./lib/blockchain')
+ * import { Chain } from './lib/blockchain'
  * const { EthProtocol } = require('./lib/net/protocol')
  *
  * const chain = new Chain()
@@ -31,7 +31,13 @@ const devp2pCapabilities: any = {
  *   .on('disconnected', (reason) => console.log('Disconnected:', reason))
  *   .connect()
  */
-export = module.exports = class RlpxPeer extends Peer {
+export class RlpxPeer extends Peer {
+  private host: string
+  private port: number
+  public rlpx: Devp2pRLPx | null
+  public rlpxPeer: Devp2pRlpxPeer | null
+  public connected: boolean
+
   /**
    * Create new devp2p/rlpx peer
    * @param {Object} options constructor parameters
@@ -61,11 +67,11 @@ export = module.exports = class RlpxPeer extends Peer {
    * @param  {Protocols[]} protocols protocol instances
    * @return {Object[]} capabilities
    */
-  static capabilities (protocols: any[]) {
-    const capabilities: any = []
+  static capabilities (protocols: Protocol[]): Devp2pCapabilities[] {
+    const capabilities: Devp2pCapabilities[] = []
     protocols.forEach(protocol => {
       const { name, versions } = protocol
-      const keys = versions.map((v: string) => name + v)
+      const keys = versions.map((v: number) => name + String(v))
       keys.forEach((key: any) => {
         const capability = devp2pCapabilities[key]
         if (capability) {
@@ -80,25 +86,29 @@ export = module.exports = class RlpxPeer extends Peer {
    * Initiate peer connection
    * @return {Promise}
    */
-  async connect () {
+  async connect (): Promise<void> {
     if (this.connected) {
       return
     }
     const key = randomBytes(32)
     await Promise.all(this.protocols.map((p: any) => p.open()))
-    this.rlpx = new RLPx(key, {
-      capabilities: RlpxPeer.capabilities(this.protocols),
-      listenPort: null }
+    this.rlpx = new Devp2pRLPx(key, {
+        capabilities: RlpxPeer.capabilities(this.protocols),
+        listenPort: null,
+        dpt: (<unknown>null as Devp2pDPT), // TODO: required option
+        maxPeers: (<unknown>null as number) // TODO: required option
+
+      }
     )
     await this.rlpx.connect({
       id: Buffer.from(this.id, 'hex'),
       address: this.host,
-      port: this.port
+      tcpPort: this.port
     })
-    this.rlpx.on('peer:error', (rlpxPeer: any, error: Error) => {
+    this.rlpx.on('peer:error', (rlpxPeer: Devp2pRlpxPeer, error: Error) => {
       this.emit('error', error)
     })
-    this.rlpx.once('peer:added', async (rlpxPeer: any) => {
+    this.rlpx.once('peer:added', async (rlpxPeer: Devp2pRlpxPeer) => {
       try {
         await this.bindProtocols(rlpxPeer)
         this.emit('connected')
@@ -106,7 +116,7 @@ export = module.exports = class RlpxPeer extends Peer {
         this.emit('error', error)
       }
     })
-    this.rlpx.once('peer:removed', (rlpxPeer: any, reason: string) => {
+    this.rlpx.once('peer:removed', (rlpxPeer: Devp2pRlpxPeer, reason: any) => {
       try {
         if (rlpxPeer !== this.rlpxPeer) {
           return
@@ -114,7 +124,7 @@ export = module.exports = class RlpxPeer extends Peer {
         reason = rlpxPeer.getDisconnectPrefix(reason)
         this.rlpxPeer = null
         this.connected = false
-        this.emit('disconnected', reason)
+        this.emit('disconnected', reason as string)
       } catch (error) {
         this.emit('error', error)
       }
@@ -126,7 +136,7 @@ export = module.exports = class RlpxPeer extends Peer {
    * @private
    * @return {Promise}
    */
-  async accept (rlpxPeer: any, server: any) {
+  async accept (rlpxPeer: Devp2pRlpxPeer, server: any): Promise<void> {
     if (this.connected) {
       return
     }
@@ -140,7 +150,7 @@ export = module.exports = class RlpxPeer extends Peer {
    * @param  {Object}  rlpxPeer rlpx native peer
    * @return {Promise}
    */
-  async bindProtocols (rlpxPeer: any) {
+  async bindProtocols (rlpxPeer: Devp2pRlpxPeer): Promise<void> {
     this.rlpxPeer = rlpxPeer
     await Promise.all(rlpxPeer.getProtocols().map((rlpxProtocol: any) => {
       const name = rlpxProtocol.constructor.name.toLowerCase()

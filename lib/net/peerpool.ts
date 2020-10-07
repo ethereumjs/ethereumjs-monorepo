@@ -1,6 +1,6 @@
-const { EventEmitter } = require('events')
-const { defaultLogger } = require('../logging')
-const Peer = require('./peer/peer')
+import { EventEmitter } from 'events'
+import { defaultLogger } from '../logging'
+import { Peer } from './peer/peer'
 
 const defaultOptions = {
   logger: defaultLogger,
@@ -24,7 +24,15 @@ const defaultOptions = {
  * @emits message:{protocol}
  * @emits error
  */
-export = module.exports = class PeerPool extends EventEmitter {
+export class PeerPool extends EventEmitter {
+  private servers: any[]
+  private logger: any
+  private maxPeers: number
+  private pool: Map<string, Peer>
+  private noPeerPeriods: number
+  private opened: boolean
+  private _statusCheckInterval: NodeJS.Timeout|null
+
   /**
    * Create new peer pool
    * @param {Object}   options constructor parameters
@@ -40,8 +48,11 @@ export = module.exports = class PeerPool extends EventEmitter {
     this.servers = options.servers
     this.logger = options.logger
     this.maxPeers = options.maxPeers
-    this.pool = new Map()
+    this.pool = new Map<string, Peer>()
     this.noPeerPeriods = 0
+    this.opened = false
+    this._statusCheckInterval = null
+
     this.init()
   }
 
@@ -53,13 +64,13 @@ export = module.exports = class PeerPool extends EventEmitter {
    * Open pool
    * @return {Promise}
    */
-  async open () {
+  async open (): Promise<boolean|void> {
     if (this.opened) {
       return false
     }
     this.servers.map((server: any) => {
-      server.on('connected', (peer: any) => { this.connected(peer) })
-      server.on('disconnected', (peer: any) => { this.disconnected(peer) })
+      server.on('connected', (peer: Peer) => { this.connected(peer) })
+      server.on('disconnected', (peer: Peer) => { this.disconnected(peer) })
     })
     this.opened = true
     this._statusCheckInterval = setInterval(await this._statusCheck.bind(this), 20000)
@@ -72,34 +83,34 @@ export = module.exports = class PeerPool extends EventEmitter {
   async close () {
     this.pool.clear()
     this.opened = false
-    clearInterval(this._statusCheckInterval)
+    clearInterval(this._statusCheckInterval as NodeJS.Timeout)
   }
 
   /**
    * Connected peers
-   * @type {Peer[]}
    */
-  get peers () {
-    return Array.from(this.pool.values())
+  get peers (): Peer[] {
+    const connectedPeers: Peer[] = Array.from(this.pool.values())
+    return connectedPeers
   }
 
   /**
    * Number of peers in pool
    * @type {number}
    */
-  get size () {
+  get size (): number {
     return this.peers.length
   }
 
   /**
    * Return true if pool contains the specified peer
-   * @param {Peer|string} peer object or peer id
+   * @param peer object or peer id
    */
-  contains (peer: any): boolean {
+  contains (peer: Peer | string): boolean {
     if (peer instanceof Peer) {
       peer = peer.id
     }
-    return !!this.pool.get(peer)
+    return !!this.pool.get(peer as string)
   }
 
   /**
@@ -107,7 +118,7 @@ export = module.exports = class PeerPool extends EventEmitter {
    * @param [filterFn] filter function to apply before finding idle peers
    * @return {Peer}
    */
-  idle (filterFn = (peer: any) => true) {
+  idle (filterFn = (peer: Peer) => true): Peer {
     const idle = this.peers.filter((p: any) => p.idle && filterFn(p))
     const index = Math.floor(Math.random() * idle.length)
     return idle[index]
@@ -118,7 +129,7 @@ export = module.exports = class PeerPool extends EventEmitter {
    * @private
    * @param  {Peer} peer
    */
-  connected (peer: any) {
+  connected (peer: Peer) {
     if (this.size >= this.maxPeers) return
     peer.on('message', (message: any, protocol: string) => {
       if (this.pool.get(peer.id)) {
@@ -140,7 +151,7 @@ export = module.exports = class PeerPool extends EventEmitter {
    * @private
    * @param  {Peer} peer
    */
-  disconnected (peer: any) {
+  disconnected (peer: Peer) {
     this.remove(peer)
   }
 
@@ -150,7 +161,7 @@ export = module.exports = class PeerPool extends EventEmitter {
    * @param  maxAge ban period in milliseconds
    * @emits  banned
    */
-  ban (peer: any, maxAge?: number) {
+  ban (peer: Peer, maxAge?: number) {
     if (!peer.server) {
       return
     }
@@ -166,7 +177,7 @@ export = module.exports = class PeerPool extends EventEmitter {
    * @emits message
    * @emits message:{protocol}
    */
-  add (peer: any) {
+  add (peer?: Peer) {
     if (peer && peer.id && !this.pool.get(peer.id)) {
       this.pool.set(peer.id, peer)
       this.emit('added', peer)
@@ -178,7 +189,7 @@ export = module.exports = class PeerPool extends EventEmitter {
    * @param  {Peer} peer
    * @emits removed
    */
-  remove (peer: any) {
+  remove (peer?: Peer) {
     if (peer && peer.id) {
       if (this.pool.delete(peer.id)) {
         this.emit('removed', peer)
@@ -189,7 +200,7 @@ export = module.exports = class PeerPool extends EventEmitter {
   /**
    * Peer pool status check on a repeated interval
    */
-  async _statusCheck () {
+  async _statusCheck (){
     if (this.size === 0) {
       this.noPeerPeriods += 1
       if (this.noPeerPeriods >= 3) {

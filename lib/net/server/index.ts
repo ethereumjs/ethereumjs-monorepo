@@ -1,18 +1,20 @@
-'use strict'
+export { Server } from './server'
+export { RlpxServer } from './rlpxserver'
+export { Libp2pServer } from './libp2pserver'
 
-exports.Server = require('./server')
-exports.RlpxServer = require('./rlpxserver')
-exports.Libp2pServer = require('./libp2pserver')
+import { RlpxServer } from './rlpxserver'
+import { Libp2pServer } from './libp2pserver'
 
 /**
  * @module net/server
  */
 
 const servers: any = {
-  'rlpx': exports.RlpxServer,
-  'libp2p': exports.Libp2pServer
+  'rlpx': RlpxServer,
+  'libp2p': Libp2pServer
 }
 
-exports.fromName = function (name: string) {
+export const fromName = function (name: string) {
   return servers[name]
 }
+

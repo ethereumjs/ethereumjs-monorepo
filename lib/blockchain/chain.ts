@@ -1,9 +1,9 @@
-const { EventEmitter } = require('events')
+import * as events from 'events'
 import Common from 'ethereumjs-common'
 const Block = require('ethereumjs-block')
-const Blockchain = require('ethereumjs-blockchain')
+import Blockchain from 'ethereumjs-blockchain'
 import { BN } from 'ethereumjs-util'
-const { defaultLogger } = require('../logging')
+import { defaultLogger } from '../logging'
 const promisify = require('util-promisify')
 
 const defaultOptions = {
@@ -15,14 +15,14 @@ const defaultOptions = {
  * Blockchain
  * @memberof module:blockchain
  */
-export = module.exports = class Chain extends EventEmitter {
+export class Chain extends events.EventEmitter {
 
-  private logger: any
-  private common: Common
-  private db: any
-  private blockchain: any
+  public logger: any
+  public common: Common
+  public db: any
+  public blockchain: Blockchain
 
-  private opened = false
+  public opened = false
 
   private _headers = {}
   private _blocks = {}
@@ -42,7 +42,7 @@ export = module.exports = class Chain extends EventEmitter {
    * @param {Common}  [options.common] common parameters
    * @param {Logger}  [options.logger] Logger instance
    */
-  constructor (options: any) {
+  constructor (options?: any) {
     super()
     options = { ...defaultOptions, ...options }
 
@@ -84,17 +84,15 @@ export = module.exports = class Chain extends EventEmitter {
 
   /**
    * Network ID
-   * @type {number}
    */
-  get networkId () {
+  get networkId (): number {
     return this.common.networkId()
   }
 
   /**
    * Genesis block parameters
-   * @type {Object}
    */
-  get genesis () {
+  get genesis (): object {
     const genesis = this.common.genesis()
     Object.entries(genesis).forEach(([k, v]) => { genesis[k] = hexToBuffer(v as string) })
     return genesis
@@ -104,9 +102,8 @@ export = module.exports = class Chain extends EventEmitter {
    * Returns properties of the canonical headerchain. The ``latest`` property is
    * the latest header in the chain, the ``td`` property is the total difficulty of
    * headerchain, and the ``height`` is the height of the headerchain.
-   * @type {Object}
    */
-  get headers () {
+  get headers (): object {
     return { ...this._headers }
   }
 
@@ -114,17 +111,15 @@ export = module.exports = class Chain extends EventEmitter {
    * Returns properties of the canonical blockchain. The ``latest`` property is
    * the latest block in the chain, the ``td`` property is the total difficulty of
    * blockchain, and the ``height`` is the height of the blockchain.
-   * @type {Object}
    */
-  get blocks () {
+  get blocks (): object {
     return { ...this._blocks }
   }
 
   /**
    * Open blockchain and wait for database to load
-   * @return {Promise}
    */
-  async open () {
+  async open (): Promise<boolean | void> {
     if (this.opened) {
       return false
     }
@@ -136,9 +131,8 @@ export = module.exports = class Chain extends EventEmitter {
 
   /**
    * Close blockchain and database
-   * @return {Promise}
    */
-  async close () {
+  async close (): Promise<boolean | void> {
     if (!this.opened) {
       return false
     }
@@ -151,20 +145,18 @@ export = module.exports = class Chain extends EventEmitter {
    * Update blockchain properties (latest block, td, height, etc...)
    * @return {Promise}
    */
-  async update () {
+  async update (): Promise<boolean | void> {
     if (!this.opened) {
       return false
     }
     const headers: any = {}
     const blocks: any = {}
-    await Promise.all([
-      this.getLatestHeader(),
-      this.getLatestBlock()
-    ]).then(latest => { [headers.latest, blocks.latest] = latest })
-    await Promise.all([
-      this.getTd(headers.latest.hash()),
-      this.getTd(blocks.latest.hash())
-    ]).then(td => { [headers.td, blocks.td] = td })
+    headers.latest = await this.getLatestHeader()
+    blocks.latest = await this.getLatestBlock()
+
+    headers.td = await this.getTd(headers.latest.hash())
+    blocks.td = await this.getTd(blocks.latest.hash())
+
     headers.height = new BN(headers.latest.number)
     blocks.height = new BN(blocks.latest.header.number)
     this._headers = headers
@@ -178,24 +170,22 @@ export = module.exports = class Chain extends EventEmitter {
    * @param max maximum number of blocks to get
    * @param skip number of blocks to skip
    * @param reverse get blocks in reverse
-   * @return {Promise}
    */
-  async getBlocks (block: Buffer | BN, max: number, skip: number, reverse: boolean) {
+  async getBlocks (block: Buffer | BN, max: number, skip: number, reverse: boolean): Promise<any[]> {
     if (!this.opened) {
       await this.open()
     }
     if (!this._getBlocks) {
       this._getBlocks = promisify(this.blockchain.getBlocks.bind(this.blockchain))
     }
-    return (this._getBlocks as Function)(block, max, skip, reverse)
+    return await (this._getBlocks as Function)(block, max, skip, reverse)
   }
 
   /**
    * Gets a block by its hash or number
    * @param blocks block hash or number
-   * @return {Promise}
    */
-  async getBlock (block: Buffer | BN) {
+  async getBlock (block: Buffer | BN): Promise<any> {
     if (!this.opened) {
       await this.open()
     }
@@ -203,16 +193,15 @@ export = module.exports = class Chain extends EventEmitter {
       this._getBlock = promisify(this.blockchain.getBlock.bind(this.blockchain))
     }
 
-    return (this._getBlock as Function)(block)
+    return await (this._getBlock as Function)(block)
   }
 
   /**
    * Insert new blocks into blockchain
    * @method putBlocks
    * @param {Block[]} blocks list of blocks to add
-   * @return {Promise}
    */
-  async putBlocks (blocks: object[]) {
+  async putBlocks (blocks: object[]): Promise<void> {
     if (!this.opened) {
       await this.open()
     }
@@ -233,9 +222,8 @@ export = module.exports = class Chain extends EventEmitter {
    * @param max maximum number of headers to get
    * @param skip number of headers to skip
    * @param reverse get headers in reverse
-   * @return {Promise}
    */
-  async getHeaders (block: Buffer | BN, max: number, skip: number, reverse: boolean) {
+  async getHeaders (block: Buffer | BN, max: number, skip: number, reverse: boolean): Promise<any[]> {
     const blocks = await this.getBlocks(block, max, skip, reverse)
     return blocks.map((b: any) => b.header)
   }
@@ -244,9 +232,8 @@ export = module.exports = class Chain extends EventEmitter {
    * Insert new headers into blockchain
    * @method putHeaders
    * @param headers list of headers to add
-   * @return {Promise}
    */
-  async putHeaders (headers: object[]) {
+  async putHeaders (headers: object[]): Promise<void> {
     if (!this.opened) {
       await this.open()
     }
@@ -263,49 +250,48 @@ export = module.exports = class Chain extends EventEmitter {
 
   /**
    * Gets the latest header in the canonical chain
-   * @return {Promise}
    */
-  async getLatestHeader () {
+  async getLatestHeader (): Promise<any> {
     if (!this.opened) {
       await this.open()
     }
     if (!this._getLatestHeader) {
       this._getLatestHeader = promisify(this.blockchain.getLatestHeader.bind(this.blockchain))
     }
-    return (this._getLatestHeader as Function)()
+    const result: any = await (this._getLatestHeader as Function)()
+    return result
   }
 
   /**
    * Gets the latest block in the canonical chain
-   * @return {Promise}
    */
-  async getLatestBlock () {
+  async getLatestBlock (): Promise<any> {
     if (!this.opened) {
       await this.open()
     }
     if (!this._getLatestBlock) {
       this._getLatestBlock = promisify(this.blockchain.getLatestBlock.bind(this.blockchain))
     }
-    return (this._getLatestBlock as Function)()
+    const result: any = await (this._getLatestBlock as Function)()
+    return result
   }
 
   /**
    * Gets total difficulty for a block
    * @param hash block hash
-   * @return {Promise}
    */
-  async getTd (hash: Buffer) {
+  async getTd (hash: Buffer): Promise<any> {
     if (!this.opened) {
       await this.open()
     }
     if (!this._getTd) {
       this._getTd = promisify(this.blockchain._getTd.bind(this.blockchain))
     }
-    return (this._getTd as Function)(hash)
+    return await (this._getTd as Function)(hash)
   }
 }
 
-function hexToBuffer (hexString: string) {
+function hexToBuffer (hexString: string): Buffer | string {
   if (typeof (hexString) === 'string' && hexString.startsWith('0x')) {
     return Buffer.from(hexString.slice(2), 'hex')
   }

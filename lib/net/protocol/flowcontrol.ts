@@ -1,3 +1,5 @@
+import { Peer } from '../peer/peer'
+import { BoundProtocol } from './boundprotocol'
 
 const defaultOptions = {
   bl: 300000000,
@@ -11,13 +13,13 @@ const defaultOptions = {
  * LES flow control manager
  * @memberof module:net/protocol
  */
-export = module.exports = class FlowControl {
+export class FlowControl {
   private bl: any
   private mrc: any
   private mrr: any
   private out: any
   private in: any
-  
+
   constructor (options: any) {
     options = { ...defaultOptions, ...options }
 
@@ -33,7 +35,7 @@ export = module.exports = class FlowControl {
    * @param  {Peer}   peer LES peer
    * @param  {number} bv latest buffer value
    */
-  handleReply (peer: any, bv: number) {
+  handleReply (peer: Peer, bv: number) {
     const params = this.in.get(peer.id) || {}
     params.ble = bv
     params.last = Date.now()
@@ -46,12 +48,12 @@ export = module.exports = class FlowControl {
    * @param  messageName message name
    * @return maximum count
    */
-  maxRequestCount (peer: any, messageName: string): number {
+  maxRequestCount (peer: Peer, messageName: string): number {
     const now = Date.now()
-    const mrcBase = peer.les.status.mrc[messageName].base
-    const mrcReq = peer.les.status.mrc[messageName].req
-    const mrr = peer.les.status.mrr
-    const bl = peer.les.status.bl
+    const mrcBase = (peer.les as BoundProtocol).status.mrc[messageName].base
+    const mrcReq = (peer.les as BoundProtocol).status.mrc[messageName].req
+    const mrr = (peer.les as BoundProtocol).status.mrr
+    const bl = (peer.les as BoundProtocol).status.bl
     const params = this.in.get(peer.id) || { ble: bl }
     if (params.last) {
       // recharge BLE at rate of MRR when less than BL
@@ -72,7 +74,7 @@ export = module.exports = class FlowControl {
    * @param  count number of items to request from peer
    * @return new buffer value after request is sent (if negative, drop peer)
    */
-  handleRequest (peer: any, messageName: string, count: number): number {
+  handleRequest (peer: Peer, messageName: string, count: number): number {
     const now = Date.now()
     const params = this.out.get(peer.id) || {}
     if (params.bv && params.last) {

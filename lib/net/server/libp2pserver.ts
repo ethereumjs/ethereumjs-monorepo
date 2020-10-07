@@ -1,10 +1,8 @@
-
-
-const Server = require('./server')
 const PeerId = require('peer-id')
 const PeerInfo = require('peer-info')
-const Libp2pNode = require('../peer/libp2pnode')
-const Libp2pPeer = require('../peer/libp2ppeer')
+import { Server } from './server'
+import { Libp2pPeer } from '../peer'
+import { Libp2pNode } from '../peer/libp2pnode'
 
 const defaultOptions = {
   multiaddrs: [ '/ip4/127.0.0.1/tcp/50580/ws' ],
@@ -19,7 +17,13 @@ const defaultOptions = {
  * @emits error
  * @memberof module:net/server
  */
-export = module.exports = class Libp2pServer extends Server {
+export class Libp2pServer extends Server {
+  
+  private peers: Map<string, Libp2pPeer> = new Map()
+  private banned: Map<string, number> = new Map()
+  private multiaddrs: string[] | string
+  private node: Libp2pNode | null
+  
   /**
    * Create new DevP2P/RLPx server
    * @param {Object}   options constructor parameters
@@ -40,7 +44,6 @@ export = module.exports = class Libp2pServer extends Server {
     this.bootnodes = options.bootnodes
     this.node = null
     this.banned = new Map()
-    this.peers = new Map()
     this.init()
   }
 
@@ -66,9 +69,9 @@ export = module.exports = class Libp2pServer extends Server {
 
   /**
    * Start Libp2p server. Returns a promise that resolves once server has been started.
-   * @return {Promise}
+   * @return Resolves with true if server successfully started
    */
-  async start () {
+  async start (): Promise<boolean> {
     if (this.started) {
       return false
     }
@@ -79,21 +82,24 @@ export = module.exports = class Libp2pServer extends Server {
         bootnodes: this.bootnodes
       })
       this.protocols.forEach(async (p: any) => {
-        const protocol = `/${p.name}/${p.versions[0]}`
-        this.node.handle(protocol, async (_: any, connection: any) => {
+        //@ts-ignore
+        const protocol: any = `/${p.name}/${p.versions[0]}`;
+        (this.node as Libp2pNode).handle(protocol, async (_: any, connection: any) => {
           try {
             const peerInfo = await this.getPeerInfo(connection)
             const id = (peerInfo as any).id.toB58String()
             const peer = this.peers.get(id)
-            await peer.accept(p, connection, this)
-            this.emit('connected', peer)
+            if (peer) {
+              await peer.accept(p, connection, this)
+              this.emit('connected', peer)
+            }
           } catch (e) {
             this.error(e)
           }
         })
       })
     }
-    this.node.on('peer:discovery', async (peerInfo: any) => {
+    (this.node as Libp2pNode).on('peer:discovery', async (peerInfo: any) => {
       try {
         const id = peerInfo.id.toB58String()
         if (this.peers.get(id) || this.isBanned(id)) {
@@ -115,7 +121,7 @@ export = module.exports = class Libp2pServer extends Server {
         this.error(e)
       }
     })
-    await new Promise((resolve, reject) => this.node.start((err: any) => {
+    await new Promise((resolve, reject) => (this.node as Libp2pNode).start((err: any) => {
       if (err) reject(err)
       resolve()
     }))
@@ -126,34 +132,35 @@ export = module.exports = class Libp2pServer extends Server {
       })
     })
     this.started = true
+    return true
   }
 
   /**
    * Stop Libp2p server. Returns a promise that resolves once server has been stopped.
-   * @return {Promise}
    */
-  async stop () {
-    if (!this.started) {
-      return false
+  async stop (): Promise<boolean> {
+    if (this.started) {
+      await new Promise((resolve, reject) => (this.node as Libp2pNode).stop((err: any) => {
+        if (err) reject(err)
+        resolve()
+      }))
+      await super.stop()
+      this.started = false
     }
-    await new Promise((resolve, reject) => this.node.stop((err: any) => {
-      if (err) reject(err)
-      resolve()
-    }))
-    await super.stop()
+    return this.started
   }
 
   /**
    * Ban peer for a specified time
    * @param  peerId id of peer
    * @param  [maxAge] how long to ban peer
-   * @return {Promise}
    */
-  ban (peerId: string, maxAge = 60000) {
+  ban (peerId: string, maxAge = 60000): boolean {
     if (!this.started) {
       return false
     }
     this.banned.set(peerId, Date.now() + maxAge)
+    return true
   }
 
   /**
@@ -186,7 +193,7 @@ export = module.exports = class Libp2pServer extends Server {
         if (err) {
           return reject(err)
         }
-        this.multiaddrs.forEach((ma: any) => peerInfo.multiaddrs.add(ma))
+        (this.multiaddrs as string[]).forEach((ma: any) => peerInfo.multiaddrs.add(ma))
         resolve(peerInfo)
       }
       if (this.key) {

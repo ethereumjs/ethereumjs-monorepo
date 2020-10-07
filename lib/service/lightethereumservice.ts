@@ -1,13 +1,13 @@
-
-const EthereumService = require('./ethereumservice')
-const LightSynchronizer = require('../sync/lightsync')
-const LesProtocol = require('../net/protocol/lesprotocol')
+import { EthereumService } from './ethereumservice'
+import { Peer } from '../net/peer/peer'
+import { LightSynchronizer } from '../sync/lightsync'
+import { LesProtocol } from '../net/protocol/lesprotocol'
 
 /**
  * Ethereum service
  * @memberof module:service
  */
-export = module.exports = class LightEthereumService extends EthereumService {
+export class LightEthereumService extends EthereumService {
   /**
    * Create new ETH service
    * @param {Object}   options constructor parameters
@@ -19,7 +19,7 @@ export = module.exports = class LightEthereumService extends EthereumService {
    * @param {number}   [options.interval] sync retry interval
    * @param {Logger}   [options.logger] logger instance
    */
-  constructor (options: any) {
+  constructor (options?: any) {
     super(options)
     this.init()
   }
@@ -39,9 +39,8 @@ export = module.exports = class LightEthereumService extends EthereumService {
 
   /**
    * Returns all protocols required by this service
-   * @type {Protocol[]} required protocols
    */
-  get protocols () {
+  get protocols () : LesProtocol[] {
     return [ new LesProtocol({ chain: this.chain, timeout: this.timeout }) ]
   }
 
@@ -52,6 +51,6 @@ export = module.exports = class LightEthereumService extends EthereumService {
    * @param  {Peer}    peer peer
    * @return {Promise}
    */
-  async handle (message: any, protocol: string, peer: any) {
+  async handle (message: any, protocol: string, peer: Peer) {
   }
 }

@@ -1,11 +1,7 @@
-// Suppresses "Cannot redeclare block-scoped variable" errors
-// TODO: remove when import becomes possible
-export = {}
-
 import * as tape from 'tape'
-const Node = require('../../lib/node')
-const MockServer = require('./mocks/mockserver')
-const { defaultLogger } = require('../../lib/logging')
+import Node from '../../lib/node'
+import MockServer from './mocks/mockserver'
+import { defaultLogger } from '../../lib/logging'
 defaultLogger.silent = true
 
 tape('[Integration:Node]', t => {

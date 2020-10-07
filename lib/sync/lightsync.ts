@@ -1,19 +1,27 @@
-
-const Synchronizer = require('./sync')
-const { HeaderFetcher } = require('./fetcher')
-const BN = require('ethereumjs-util').BN
-const { short } = require('../util')
+import { Peer } from "../net/peer/peer"
+import { BoundProtocol } from "../net/protocol"
+import { Synchronizer } from './sync'
+import { HeaderFetcher } from './fetcher'
+import { BN } from 'ethereumjs-util'
+import { short } from '../util'
 
 /**
  * Implements an ethereum light sync synchronizer
  * @memberof module:sync
  */
-export = module.exports = class LightSynchronizer extends Synchronizer {
+export class LightSynchronizer extends Synchronizer {
+  private headerFetcher: HeaderFetcher | null
+
+  constructor(options: any){
+    super(options)
+    this.headerFetcher = null
+  }
+
   /**
    * Returns synchronizer type
    * @return {string} type
    */
-  get type () {
+  get type (): string {
     return 'light'
   }
 
@@ -21,24 +29,25 @@ export = module.exports = class LightSynchronizer extends Synchronizer {
    * Returns true if peer can be used for syncing
    * @return {boolean}
    */
-  syncable (peer: any) {
+  syncable (peer: Peer): boolean {
     return peer.les && peer.les.status.serveHeaders
   }
 
   /**
    * Finds the best peer to sync with. We will synchronize to this peer's
    * blockchain. Returns null if no valid peer is found
-   * @return {Peer}
    */
-  best () {
+  best (): Peer | undefined {
     let best
     const peers = this.pool.peers.filter(this.syncable.bind(this))
     if (peers.length < this.minPeers && !this.forceSync) return
     for (let peer of peers) {
-      const td = peer.les.status.headTd
-      if ((!best && td.gte(this.chain.headers.td)) ||
-          (best && best.les.status.headTd.lt(td))) {
-        best = peer
+      if (peer.les){
+        const td = peer.les.status.headTd
+        if ((!best && td.gte((this.chain.headers as any).td)) ||
+            (best && best.les && best.les.status.headTd.lt(td))) {
+          best = peer
+        }
       }
     }
     return best
@@ -46,13 +55,13 @@ export = module.exports = class LightSynchronizer extends Synchronizer {
 
   /**
    * Sync all headers and state from peer starting from current height.
-   * @param  {Peer} peer remote peer to sync with
-   * @return {Promise} Resolves when sync completed
+   * @param  peer remote peer to sync with
+   * @return Resolves when sync completed
    */
-  async syncWithPeer (peer: any) {
+  async syncWithPeer (peer?: Peer): Promise<boolean> {
     if (!peer) return false
-    const height = new BN(peer.les.status.headNum)
-    const first = this.chain.headers.height.addn(1)
+    const height = new BN((peer.les as BoundProtocol).status.headNum)
+    const first = ((this.chain.headers as any).height as BN).addn(1)
     const count = height.sub(first).addn(1)
     if (count.lten(0)) return false
 
@@ -78,29 +87,30 @@ export = module.exports = class LightSynchronizer extends Synchronizer {
         this.logger.info(`Imported headers count=${headers.length} number=${first.toString(10)} hash=${hash} peers=${this.pool.size}`)
       })
     await this.headerFetcher.fetch()
+    // TODO: Should this be deleted?
+    // @ts-ignore: error: The operand of a 'delete' operator must be optional
     delete this.headerFetcher
     return true
   }
 
   /**
    * Fetch all headers from current height up to highest found amongst peers
-   * @return {Promise} Resolves with true if sync successful
+   * @return Resolves with true if sync successful
    */
-  async sync () {
+  async sync (): Promise<boolean> {
     const peer = this.best()
     return this.syncWithPeer(peer)
   }
 
   /**
    * Open synchronizer. Must be called before sync() is called
-   * @return {Promise}
    */
-  async open () {
+  async open (): Promise<void> {
     await this.chain.open()
     await this.pool.open()
-    const number = this.chain.headers.height.toString(10)
-    const td = this.chain.headers.td.toString(10)
-    const hash = this.chain.blocks.latest.hash()
+    const number = ((this.chain.headers as any).height as number).toString(10)
+    const td = ((this.chain.headers as any).td as number).toString(10)
+    const hash = ((this.chain.blocks as any).latest as any).hash()
     this.logger.info(`Latest local header: number=${number} td=${td} hash=${short(hash)}`)
   }
 
@@ -108,15 +118,18 @@ export = module.exports = class LightSynchronizer extends Synchronizer {
    * Stop synchronization. Returns a promise that resolves once its stopped.
    * @return {Promise}
    */
-  async stop () {
+  async stop (): Promise<boolean> {
     if (!this.running) {
       return false
     }
     if (this.headerFetcher) {
       this.headerFetcher.destroy()
+      // TODO: Should this be deleted?
+      // @ts-ignore: error: The operand of a 'delete' operator must be optional
       delete this.headerFetcher
     }
     await super.stop()
+    return true
   }
 }
 

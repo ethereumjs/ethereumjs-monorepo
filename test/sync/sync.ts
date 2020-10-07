@@ -1,11 +1,7 @@
-// Suppresses "Cannot redeclare block-scoped variable" errors
-// TODO: remove when import becomes possible
-export = {}
-
 import * as tape from 'tape-catch'
 const td = require('testdouble')
-const EventEmitter = require('events')
-const { defaultLogger } = require('../../lib/logging')
+import { EventEmitter } from 'events'
+import { defaultLogger } from '../../lib/logging'
 defaultLogger.silent = true
 
 tape('[Synchronizer]', t => {

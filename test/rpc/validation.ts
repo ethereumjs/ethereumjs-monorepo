@@ -1,14 +1,9 @@
-// Suppresses "Cannot redeclare block-scoped variable" errors
-// TODO: remove when import becomes possible
-export = {}
-
 import * as test from 'tape'
-
-const { startRPC } = require('./helpers')
-const { middleware } = require('../../lib/rpc/validation')
-const { baseRequest } = require('./helpers')
-const { checkError } = require('./util')
-const { INVALID_PARAMS } = require('../../lib/rpc/error-code')
+import { startRPC } from './helpers'
+import { middleware } from '../../lib/rpc/validation'
+import { baseRequest } from './helpers'
+import { checkError } from './util'
+import { INVALID_PARAMS } from '../../lib/rpc/error-code'
 
 const prefix = 'rpc/validation:'
 

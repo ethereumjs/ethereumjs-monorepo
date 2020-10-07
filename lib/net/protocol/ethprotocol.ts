@@ -1,9 +1,8 @@
-const Protocol = require('./protocol')
-const util = require('ethereumjs-util')
+import { Message, Protocol } from './protocol'
+import { BN, bufferToInt } from 'ethereumjs-util'
 const Block = require('ethereumjs-block')
-const BN = util.BN
 
-const messages = [{
+const messages: Message[] = [{
   name: 'NewBlockHashes',
   code: 0x01,
   encode: (hashes: any[]) => hashes.map(hn => [hn[0], hn[1].toArrayLike(Buffer)]),
@@ -17,9 +16,9 @@ const messages = [{
   ],
   decode: ([block, max, skip, reverse]: any) => ({
     block: block.length === 32 ? block : new BN(block),
-    max: util.bufferToInt(max),
-    skip: util.bufferToInt(skip),
-    reverse: util.bufferToInt(reverse)
+    max: bufferToInt(max),
+    skip: bufferToInt(skip),
+    reverse: bufferToInt(reverse)
   })
 }, {
   name: 'BlockHeaders',
@@ -39,7 +38,9 @@ const messages = [{
  * Implements eth/62 and eth/63 protocols
  * @memberof module:net/protocol
  */
-export = module.exports = class EthProtocol extends Protocol {
+export class EthProtocol extends Protocol {
+  private chain: any
+
   /**
    * Create eth protocol
    * @param {Object}   options constructor parameters
@@ -57,7 +58,7 @@ export = module.exports = class EthProtocol extends Protocol {
    * Name of protocol
    * @type {string}
    */
-  get name () {
+  get name () : string {
     return 'eth'
   }
 
@@ -65,7 +66,7 @@ export = module.exports = class EthProtocol extends Protocol {
    * Protocol versions supported
    * @type {number[]}
    */
-  get versions () {
+  get versions (): number[] {
     return [63, 62]
   }
 
@@ -73,7 +74,7 @@ export = module.exports = class EthProtocol extends Protocol {
    * Messages defined by this protocol
    * @type {Protocol~Message[]}
    */
-  get messages () {
+  get messages () : Message[] {
     return messages
   }
 
@@ -81,7 +82,7 @@ export = module.exports = class EthProtocol extends Protocol {
    * Opens protocol and any associated dependencies
    * @return {Promise}
    */
-  async open () {
+  async open (): Promise<boolean|void> {
     if (this.opened) {
       return false
     }
@@ -93,7 +94,7 @@ export = module.exports = class EthProtocol extends Protocol {
    * Encodes status into ETH status message payload
    * @return {Object}
    */
-  encodeStatus () {
+  encodeStatus (): any {
     return {
       networkId: this.chain.networkId,
       td: this.chain.blocks.td.toArrayLike(Buffer),
@@ -107,9 +108,9 @@ export = module.exports = class EthProtocol extends Protocol {
    * @param {Object} status status message payload
    * @return {Object}
    */
-  decodeStatus (status: any) {
+  decodeStatus (status: any): any {
     return {
-      networkId: util.bufferToInt(status.networkId),
+      networkId: bufferToInt(status.networkId),
       td: new BN(status.td),
       bestHash: status.bestHash,
       genesisHash: status.genesisHash

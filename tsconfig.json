@@ -3,5 +3,8 @@
   "include": ["bin", "lib", "test"],
   "compilerOptions": {
     "target": "ES2017",
+    "typeRoots": [
+      "node_modules/@polkadot/ts"
+    ]
   }
 }

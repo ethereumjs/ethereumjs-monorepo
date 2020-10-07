@@ -1,10 +1,23 @@
-const { EventEmitter } = require('events')
-const BoundProtocol = require('./boundprotocol')
-const { defaultLogger } = require('../../logging')
+import { EventEmitter } from 'events'
+import { BoundProtocol } from './boundprotocol'
+import { Sender } from './sender'
+import { Peer } from '../peer/peer'
+import { defaultLogger } from '../../logging'
 
 const defaultOptions = {
   logger: defaultLogger,
   timeout: 8000
+}
+
+export type Message = {
+  name: string
+  code: number
+  // TODO: check semantics of this field
+  response?: number
+  // TODO: check if this should be optional
+  encode?: Function
+  // TODO: check if this should be optional
+  decode?: Function
 }
 
 /**
@@ -22,15 +35,18 @@ const defaultOptions = {
  * Base class for all wire protocols
  * @memberof module:net/protocol
  */
-export = module.exports = class Protocol extends EventEmitter {
-  
+export class Protocol extends EventEmitter {
+  public timeout: number
+  public opened: boolean
+  public logger: any
+
   /**
    * Create new protocol
    * @param {Object}   options constructor parameters
    * @param {number}   [options.timeout=8000] handshake timeout in ms
    * @param {Logger}   [options.logger] logger instance
    */
-  constructor (options: any) {
+  constructor (options?: any) {
     super()
     options = { ...defaultOptions, ...options }
     this.logger = options.logger
@@ -42,7 +58,7 @@ export = module.exports = class Protocol extends EventEmitter {
    * Opens protocol and any associated dependencies
    * @return {Promise}
    */
-  async open () {
+  async open (): Promise<boolean|void> {
     this.opened = true
   }
 
@@ -51,7 +67,7 @@ export = module.exports = class Protocol extends EventEmitter {
    * @private
    * @return {Promise}
    */
-  async handshake (sender: any) {
+  async handshake (sender: Sender) {
     const status = this.encodeStatus()
     sender.sendStatus(status)
     return new Promise((resolve, reject) => {
@@ -77,7 +93,7 @@ export = module.exports = class Protocol extends EventEmitter {
    * Abstract getter for name of protocol
    * @type {string}
    */
-  get name () {
+  get name () : string {
     return 'protocol'
   }
 
@@ -85,7 +101,7 @@ export = module.exports = class Protocol extends EventEmitter {
    * Protocol versions supported
    * @type {number[]}
    */
-  get versions () {
+  get versions (): number[] {
     throw new Error('Unimplemented')
   }
 
@@ -93,7 +109,7 @@ export = module.exports = class Protocol extends EventEmitter {
    * Messages defined by this protocol
    * @type {Protocol~Message[]}
    */
-  get messages () {
+  get messages () : Message[] {
     throw new Error('Unimplemented')
   }
 
@@ -101,7 +117,7 @@ export = module.exports = class Protocol extends EventEmitter {
    * Encodes status into status message payload. Must be implemented by subclass.
    * @return {Object}
    */
-  encodeStatus () {
+  encodeStatus () : any  {
     throw new Error('Unimplemented')
   }
 
@@ -111,18 +127,18 @@ export = module.exports = class Protocol extends EventEmitter {
    * @param {Object} status status message payload
    * @return {Object}
    */
-  decodeStatus (status: any) {
+  decodeStatus (status: any) : any {
     throw new Error('Unimplemented')
   }
 
   /**
    * Encodes message into proper format before sending
    * @protected
-   * @param {Protocol~Message} message message definition
+   * @param message message definition
    * @param {*} args message arguments
    * @return {*}
    */
-  encode (message: any, args: any) {
+  encode (message: Message, args: any): any {
     if (message.encode) {
       return message.encode(args)
     }
@@ -132,12 +148,12 @@ export = module.exports = class Protocol extends EventEmitter {
   /**
    * Decodes message payload
    * @protected
-   * @param {Protocol~Message} message message definition
+   * @param message message definition
    * @param {*} payload message payload
    * @param {BoundProtocol} bound reference to bound protocol
    * @return {*}
    */
-  decode (message: any, payload: any) {
+  decode (message: Message, payload: any): any {
     if (message.decode) {
       return message.decode(payload)
     }
@@ -151,13 +167,14 @@ export = module.exports = class Protocol extends EventEmitter {
    * @param  {Sender}  sender sender
    * @return {Promise}
    */
-  async bind (peer: any, sender: any) {
+  async bind (peer: Peer, sender: Sender) : Promise<BoundProtocol> {
     const bound = new BoundProtocol({
       protocol: this,
       peer: peer,
       sender: sender
     })
     await bound.handshake(sender)
+    //@ts-ignore TODO: evaluate this line
     peer[this.name] = bound
     return bound
   }

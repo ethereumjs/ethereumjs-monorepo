@@ -1,5 +1,6 @@
-
-const BlockFetcher = require('./blockfetcher')
+import { BlockFetcher } from './blockfetcher'
+import { Peer } from '../../net/peer'
+import { FlowControl } from '../../net/protocol'
 
 const defaultOptions = {
   maxPerRequest: 192
@@ -9,7 +10,8 @@ const defaultOptions = {
  * Implements an les/1 based header fetcher
  * @memberof module:sync/fetcher
  */
-export = module.exports = class HeaderFetcher extends BlockFetcher {
+export class HeaderFetcher extends BlockFetcher {
+  private flow: FlowControl
   /**
    * Create new header fetcher
    * @param {Object}       options constructor parameters
@@ -70,8 +72,7 @@ export = module.exports = class HeaderFetcher extends BlockFetcher {
    * @param  job job
    * @return {Peer}
    */
-  peer (job: any) {
+  peer (job: any): Peer {
     return this.pool.idle((p: any) => p.les && p.les.status.serveHeaders)
   }
 }
-

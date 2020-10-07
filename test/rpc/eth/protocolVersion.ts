@@ -1,10 +1,5 @@
-// Suppresses "Cannot redeclare block-scoped variable" errors
-// TODO: remove when import becomes possible
-export = {}
-
 import * as test from 'tape'
-
-const { baseSetup, params, baseRequest } = require('../helpers')
+import { baseSetup, params, baseRequest } from '../helpers'
 
 const method = 'eth_protocolVersion'
 

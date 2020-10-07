@@ -1,9 +1,9 @@
-
 /**
  * @module util
  */
 
-exports.parse = require('./parse')
-exports.short = (buffer: Buffer) => buffer.toString('hex').slice(0, 8) + '...'
+export * from './parse'
 
-export = exports
+export function short(buffer: Buffer): string {
+  return buffer.toString('hex').slice(0, 8) + '...'
+}

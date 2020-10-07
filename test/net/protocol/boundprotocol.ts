@@ -1,11 +1,8 @@
-// Suppresses "Cannot redeclare block-scoped variable" errors
-// TODO: remove when import becomes possible
-export = {}
-
 import * as tape from 'tape-catch'
 const td = require('testdouble')
-const EventEmitter = require('events')
-const BoundProtocol = require('../../../lib/net/protocol/boundprotocol')
+import { EventEmitter } from 'events'
+import { Sender } from '../../../lib/net/protocol/sender'
+import { BoundProtocol } from '../../../lib/net/protocol'
 
 tape('[BoundProtocol]', t => {
   const peer = td.object('Peer')
@@ -29,8 +26,8 @@ tape('[BoundProtocol]', t => {
   t.test('should add methods for messages with a response', t => {
     const sender = new EventEmitter()
     const bound = new BoundProtocol({ protocol, peer, sender })
-    t.ok(/this.request/.test(bound.testMessage.toString()), 'added testMessage')
-    t.ok(/this.request/.test(bound.TestMessage.toString()), 'added TestMessage')
+    t.ok(/this.request/.test((bound as any).testMessage.toString()), 'added testMessage')
+    t.ok(/this.request/.test((bound as any).TestMessage.toString()), 'added TestMessage')
     t.end()
   })
 
@@ -44,7 +41,7 @@ tape('[BoundProtocol]', t => {
   })
 
   t.test('should do handshake', async (t) => {
-    const sender = new EventEmitter()
+    const sender = new EventEmitter() as Sender
     const bound = new BoundProtocol({ protocol, peer, sender })
     td.when(protocol.handshake(td.matchers.isA(EventEmitter))).thenResolve({ id: 1 })
     await bound.handshake(sender)
@@ -70,32 +67,32 @@ tape('[BoundProtocol]', t => {
   })
 
   t.test('should perform send', t => {
-    const sender = new EventEmitter()
-    sender.sendMessage = td.func()
+    const sender = new EventEmitter(); // semi-colon required to separate statements
+    (<unknown>sender as any).sendMessage = td.func()
     const bound = new BoundProtocol({ protocol, peer, sender })
     td.when(protocol.encode(testMessage, 3)).thenReturn('3')
     t.deepEquals(bound.send('TestMessage', 3), testMessage, 'message returned')
-    td.verify(sender.sendMessage(0x01, '3'))
+    td.verify((<unknown>sender as any).sendMessage(0x01, '3'))
     t.throws(() => bound.send('UnknownMessage'), /Unknown message/, 'unknown message')
     t.end()
   })
 
   t.test('should perform request', async (t) => {
     const sender = new EventEmitter()
-    const bound = new BoundProtocol({ protocol, peer, sender })
-    sender.sendMessage = td.func()
+    const bound = new BoundProtocol({ protocol, peer, sender });
+    (<unknown>sender as any).sendMessage = td.func()
     td.when(protocol.encode(testMessage, 1)).thenReturn('1')
     td.when(protocol.decode(testResponse, '2')).thenReturn(2)
-    td.when(sender.sendMessage(0x01, '1')).thenDo(() => {
+    td.when((<unknown>sender as any).sendMessage(0x01, '1')).thenDo(() => {
       setTimeout(() => {
         sender.emit('message', { code: 0x02, payload: '2' })
       }, 100)
     })
-    const response = await bound.testMessage(1)
+    const response = await (<unknown>bound as any).testMessage(1)
     t.equals(response, 2, 'got response')
     td.when(protocol.decode(testResponse, '2')).thenThrow(new Error('error1'))
     try {
-      await bound.testMessage(1)
+      await (<unknown>bound as any).testMessage(1)
     } catch (err) {
       t.ok(/error1/.test(err.message), 'got error')
     }
@@ -106,7 +103,7 @@ tape('[BoundProtocol]', t => {
     const sender = td.object('Sender')
     const bound = new BoundProtocol({ protocol, peer, sender })
     try {
-      await bound.testMessage(1)
+      await (<unknown>bound as any).testMessage(1)
     } catch (err) {
       t.ok(/timed out/.test(err.message), 'got error')
     }
