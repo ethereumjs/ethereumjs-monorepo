@@ -12,7 +12,9 @@ export interface BlockOptions {
    * A Common object defining the chain and the hardfork a block/block header belongs to.
    *
    * Default: `Common` object set to `mainnet` and the HF currently defined as the default
-   * hardfork in the `Common` class
+   * hardfork in the `Common` class.
+   *
+   * Current default hardfork: `istanbul`
    */
   common?: Common
   /**

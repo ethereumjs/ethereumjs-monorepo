@@ -34,7 +34,7 @@ export class BlockHeader {
   public mixHash!: Buffer
   public nonce!: Buffer
 
-  readonly _common: Common
+  public readonly _common: Common
 
   /**
    * Creates a new block header.

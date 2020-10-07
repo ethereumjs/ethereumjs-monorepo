@@ -19,6 +19,12 @@ const txFixturesEip155: VitaliksTestsDataEntry[] = require('./json/ttTransaction
 tape('[Transaction]: Basic functions', function (t) {
   const transactions: Transaction[] = []
 
+  t.test('should initialize correctly', function (st) {
+    const tx = Transaction.fromTxData({})
+    st.equal(tx.common.hardfork(), 'istanbul', 'should initialize with correct default HF')
+    st.end()
+  })
+
   t.test('should decode transactions', function (st) {
     txFixtures.slice(0, 4).forEach(function (tx: any) {
       const txData = tx.raw.map(toBuffer)
@@ -190,7 +196,7 @@ tape('[Transaction]: Basic functions', function (t) {
     st.equals(tx.getDataFee().toNumber(), 0)
 
     tx = Transaction.fromValuesArray(txFixtures[3].raw.map(toBuffer))
-    st.equals(tx.getDataFee().toNumber(), 2496)
+    st.equals(tx.getDataFee().toNumber(), 1716)
 
     st.end()
   })

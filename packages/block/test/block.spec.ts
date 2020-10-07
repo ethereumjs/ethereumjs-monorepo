@@ -13,7 +13,12 @@ tape('[Block]: block functions', function (t) {
 
   t.test('should initialize with undefined parameters without throwing', function (st) {
     st.doesNotThrow(function () {
-      new Block()
+      const block = new Block()
+      st.equal(
+        block._common.hardfork(),
+        'istanbul',
+        'should initialize with the current default HF',
+      )
       st.end()
     })
   })

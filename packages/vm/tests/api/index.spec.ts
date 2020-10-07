@@ -23,6 +23,7 @@ tape('VM with default blockchain', (t) => {
       KECCAK256_RLP,
       'it has default trie',
     )
+    st.equal(vm._common.hardfork(), 'istanbul', 'it has correct default HF')
     st.end()
   })
 

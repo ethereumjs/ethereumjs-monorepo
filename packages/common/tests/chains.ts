@@ -7,7 +7,12 @@ tape('[Common]: Initialization / Chain params', function (t: tape.Test) {
     st.equal(c.chainName(), 'mainnet', 'should initialize with chain name')
     st.equal(c.chainId(), 1, 'should return correct chain Id')
     st.equal(c.networkId(), 1, 'should return correct network Id')
-    st.equal(c.hardfork(), 'petersburg', 'should set hardfork to the default hardfork')
+    st.equal(c.hardfork(), 'istanbul', 'should set hardfork to current default hardfork')
+    st.equal(
+      c.hardfork(),
+      c.DEFAULT_HARDFORK,
+      'should set hardfork to hardfork set as DEFAULT_HARDFORK',
+    )
     st.equal(c._isSupportedHardfork('constantinople'), true, 'should not restrict supported HFs')
 
     c = new Common({ chain: 1 })
