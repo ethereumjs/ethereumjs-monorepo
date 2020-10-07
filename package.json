@@ -17,7 +17,8 @@
     "build:node": "tsc -p ./tsconfig.prod.json",
     "build:browser": "tsc -p ./tsconfig.browser.json && npm run bundle && rm -rf dist.browser",
     "bundle": "webpack",
-    "coverage": "nyc npm run test && nyc report --reporter=lcov",
+    "coverage": "nyc npm run coverage:test && nyc report --reporter=lcov",
+    "coverage:test": "tape -r ts-node/register 'test/!(integration)/**/*.ts' 'test/integration/**/*.ts'",
     "docs:build": "typedoc --tsconfig tsconfig.prod.json",
     "lint": "standard",
     "lint:fix": "standard --fix",
@@ -85,6 +86,7 @@
   },
   "devDependencies": {
     "@babel/plugin-transform-spread": "^7.10.1",
+    "@ethereumjs/config-nyc": "^1.1.1",
     "@ethereumjs/config-tsc": "^1.1.0",
     "@polkadot/ts": "^0.3.48",
     "@types/node": "^14.11.5",
