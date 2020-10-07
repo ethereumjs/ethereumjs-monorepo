@@ -39,6 +39,14 @@ A new file with helpful TypeScript types has been added to the exports of this p
 
 In this release it contains `BNLike`, `BufferLike`, and `TransformableToBuffer`.
 
+### Address.toBuffer()
+
+The Address class has as a new method `address.toBuffer()` that will give you a copy of the underlying `address.buf`.
+
+### `toBuffer()` now converts TransformableToBuffer
+
+The `toBuffer()` exported function now additionally converts any object with a `toBuffer()` method.
+
 ## [7.0.5] - 2020-09-09
 
 This release adds a new module `address` - see [README](https://github.com/ethereumjs/ethereumjs-util#modules) -

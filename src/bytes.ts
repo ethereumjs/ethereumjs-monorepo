@@ -1,5 +1,6 @@
-import * as ethjsUtil from 'ethjs-util'
 import * as BN from 'bn.js'
+import { intToBuffer, stripHexPrefix, padToEven, isHexString, isHexPrefixed } from 'ethjs-util'
+import { TransformableToArray, TransformableToBuffer } from './types'
 import { assertIsBuffer, assertIsArray, assertIsHexString } from './helpers'
 
 /**
@@ -86,7 +87,7 @@ export const unpadArray = function(a: number[]): number[] {
  */
 export const unpadHexString = function(a: string): string {
   assertIsHexString(a)
-  a = ethjsUtil.stripHexPrefix(a)
+  a = stripHexPrefix(a)
   return stripZeros(a) as string
 }
 
@@ -105,35 +106,62 @@ const stripZeros = function(a: any): Buffer | number[] | string {
 }
 
 /**
- * Attempts to turn a value into a `Buffer`. As input it supports `Buffer`, `String`, `Number`, null/undefined, `BN` and other objects with a `toArray()` method.
+ * Attempts to turn a value into a `Buffer`.
+ * Inputs supported: `Buffer`, `String`, `Number`, null/undefined, `BN` and other objects with a `toArray()` or `toBuffer()` method.
  * @param v the value
  */
-export const toBuffer = function(v: any): Buffer {
-  if (!Buffer.isBuffer(v)) {
-    if (Array.isArray(v) || v instanceof Uint8Array) {
-      v = Buffer.from(v as Uint8Array)
-    } else if (typeof v === 'string') {
-      if (ethjsUtil.isHexString(v)) {
-        v = Buffer.from(ethjsUtil.padToEven(ethjsUtil.stripHexPrefix(v)), 'hex')
-      } else {
-        throw new Error(
-          `Cannot convert string to buffer. toBuffer only supports 0x-prefixed hex strings and this string was given: ${v}`,
-        )
-      }
-    } else if (typeof v === 'number') {
-      v = ethjsUtil.intToBuffer(v)
-    } else if (v === null || v === undefined) {
-      v = Buffer.allocUnsafe(0)
-    } else if (BN.isBN(v)) {
-      v = v.toArrayLike(Buffer)
-    } else if (v.toArray) {
-      // converts a BN to a Buffer
-      v = Buffer.from(v.toArray())
-    } else {
-      throw new Error('invalid type')
-    }
+export const toBuffer = function(
+  v:
+    | string
+    | number
+    | BN
+    | Buffer
+    | Uint8Array
+    | number[]
+    | TransformableToArray
+    | TransformableToBuffer
+    | null
+    | undefined,
+): Buffer {
+  if (v === null || v === undefined) {
+    return Buffer.allocUnsafe(0)
   }
-  return v
+
+  if (Buffer.isBuffer(v)) {
+    return Buffer.from(v)
+  }
+
+  if (Array.isArray(v) || v instanceof Uint8Array) {
+    return Buffer.from(v as Uint8Array)
+  }
+
+  if (typeof v === 'string') {
+    if (!isHexString(v)) {
+      throw new Error(
+        `Cannot convert string to buffer. toBuffer only supports 0x-prefixed hex strings and this string was given: ${v}`,
+      )
+    }
+    return Buffer.from(padToEven(stripHexPrefix(v)), 'hex')
+  }
+
+  if (typeof v === 'number') {
+    return intToBuffer(v)
+  }
+
+  if (BN.isBN(v)) {
+    return v.toArrayLike(Buffer)
+  }
+
+  if (v.toArray) {
+    // converts a BN to a Buffer
+    return Buffer.from(v.toArray())
+  }
+
+  if (v.toBuffer) {
+    return Buffer.from(v.toBuffer())
+  }
+
+  throw new Error('invalid type')
 }
 
 /**
@@ -178,7 +206,7 @@ export const addHexPrefix = function(str: string): string {
     return str
   }
 
-  return ethjsUtil.isHexPrefixed(str) ? str : '0x' + str
+  return isHexPrefixed(str) ? str : '0x' + str
 }
 
 /**
