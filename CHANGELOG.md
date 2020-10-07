@@ -6,7 +6,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## [7.0.6] - [UNRELEASED]
+## [7.0.6] - 2020-10-07
 
 ### New `Account` class
 
@@ -31,21 +31,27 @@ const account = new Account(
 )
 ```
 
-For more info see the documentation or examples of usage in `test/account.spec.ts`.
+For more info see the documentation, examples of usage in `test/account.spec.ts` or
+PR [#275](https://github.com/ethereumjs/ethereumjs-util/pull/275).
 
 ### New export: TypeScript types
 
-A new file with helpful TypeScript types has been added to the exports of this project.
+A new file with helpful TypeScript types has been added to the exports of this project,
+see PR [#275](https://github.com/ethereumjs/ethereumjs-util/pull/275).
 
 In this release it contains `BNLike`, `BufferLike`, and `TransformableToBuffer`.
 
 ### Address.toBuffer()
 
-The Address class has as a new method `address.toBuffer()` that will give you a copy of the underlying `address.buf`.
+The Address class has as a new method `address.toBuffer()` that will give you a copy of the underlying `address.buf`
+(PR [#277](https://github.com/ethereumjs/ethereumjs-util/pull/277)).
 
 ### `toBuffer()` now converts TransformableToBuffer
 
-The `toBuffer()` exported function now additionally converts any object with a `toBuffer()` method.
+The `toBuffer()` exported function now additionally converts any object with a `toBuffer()` method
+(PR [#277](https://github.com/ethereumjs/ethereumjs-util/pull/277)).
+
+[7.0.6]: https://github.com/ethereumjs/ethereumjs-util/compare/v7.0.5...v7.0.6
 
 ## [7.0.5] - 2020-09-09
 
