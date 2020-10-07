@@ -5,14 +5,18 @@ const { Chain } = require('../../lib/blockchain')
 const { defaultLogger } = require('../../lib/logging')
 defaultLogger.silent = true
 
-tape('[Chain]', (t: any) => {
-  t.test('should test object creation without logger', (t: any) => {
+// explicitly import buffer,
+// needed for karma-typescript bundling
+import { Buffer } from 'buffer'
+
+tape('[Chain]', (t) => {
+  t.test('should test object creation without logger', (t) => {
     t.equal(new Chain().logger, defaultLogger)
 
     t.end()
   })
 
-  t.test('should test blockchain DB is initialized', (t: any) => {
+  t.test('should test blockchain DB is initialized', (t) => {
     const chain = new Chain() // eslint-disable-line no-new
 
     const db = chain.db
@@ -31,7 +35,7 @@ tape('[Chain]', (t: any) => {
     })
   })
 
-  t.test('should retrieve chain properties', async (t: any) => {
+  t.test('should retrieve chain properties', async (t) => {
     const chain = new Chain() // eslint-disable-line no-new
     await chain.open()
     t.equal(chain.networkId, 1, 'get chain.networkId')
@@ -40,14 +44,13 @@ tape('[Chain]', (t: any) => {
     t.equal(chain.genesis.hash.toString('hex'),
       'd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3',
       'get chain.genesis')
-    t.equal(chain.genesis.hash.toString('hex'),
-      chain.blocks.latest.hash().toString('hex'),
+    t.ok(chain.genesis.hash.equals(chain.blocks.latest.hash()),
       'get chain.block.latest')
     await chain.close()
     t.end()
   })
 
-  t.test('should detect unopened chain', async (t: any) => {
+  t.test('should detect unopened chain', async (t) => {
     const chain = new Chain() // eslint-disable-line no-new
     const block = new Block()
     block.header.number = toBuffer(1)
@@ -84,7 +87,7 @@ tape('[Chain]', (t: any) => {
     t.end()
   })
 
-  t.test('should handle bad arguments to putBlocks()', async (t: any) => {
+  t.test('should handle bad arguments to putBlocks()', async (t) => {
     const chain = new Chain() // eslint-disable-line no-new
     await chain.open()
     t.notOk(await chain.putBlocks(), 'add undefined block')
@@ -94,7 +97,7 @@ tape('[Chain]', (t: any) => {
     t.end()
   })
 
-  t.test('should handle bad arguments to putHeaders()', async (t: any) => {
+  t.test('should handle bad arguments to putHeaders()', async (t) => {
     const chain = new Chain() // eslint-disable-line no-new
     await chain.open()
     t.notOk(await chain.putHeaders(), 'add undefined header')
@@ -104,7 +107,7 @@ tape('[Chain]', (t: any) => {
     t.end()
   })
 
-  t.test('should add block to chain', async (t: any) => {
+  t.test('should add block to chain', async (t) => {
     const chain = new Chain() // eslint-disable-line no-new
     await chain.open()
 

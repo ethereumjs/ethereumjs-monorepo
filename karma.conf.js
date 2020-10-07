@@ -11,14 +11,8 @@ module.exports = function (config) {
     reporters: ['progress'],
 
     karmaTypescriptConfig: {
-      tsconfig: './tsconfig.json',
       bundlerOptions: {
-        entrypoints: /test\/(.*)\.(js|ts)/,
-        transforms: [
-          require('karma-typescript-es6-transform')({
-            plugins: ['@babel/plugin-transform-spread']
-          })
-        ]
+        entrypoints: /\.spec\.ts$/
       }
     },
 
