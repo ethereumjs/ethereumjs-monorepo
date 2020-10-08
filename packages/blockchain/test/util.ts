@@ -120,7 +120,7 @@ export const createTestDB = async () => {
       ),
       keyEncoding: 'binary',
       valueEncoding: 'binary',
-      value: rlp.encode(genesis.serialize(false).slice(1)),
+      value: genesis.serialize(),
     },
     {
       type: 'put',

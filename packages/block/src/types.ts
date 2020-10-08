@@ -1,7 +1,7 @@
 import Common from '@ethereumjs/common'
 import { TxData } from '@ethereumjs/tx'
 import { Block } from './block'
-import { BN } from 'ethereumjs-util'
+import { Address, BN } from 'ethereumjs-util'
 
 /**
  * An object to set to which blockchain the blocks and their headers belong. This could be specified
@@ -54,13 +54,15 @@ export type BufferLike = Buffer | TransformableToBuffer | PrefixedHexString | nu
 
 export type BNLike = BN | string | number
 
+export type AddressLike = Address | Buffer | string
+
 /**
  * A block header's data.
  */
 export interface HeaderData {
   parentHash?: BufferLike
   uncleHash?: BufferLike
-  coinbase?: BufferLike
+  coinbase?: AddressLike
   stateRoot?: BufferLike
   transactionsTrie?: BufferLike
   receiptTrie?: BufferLike
@@ -87,6 +89,46 @@ export interface BlockData {
   uncleHeaders?: Array<HeaderData>
 }
 
+/**
+ * An object with the block's data represented as strings.
+ */
+export interface JsonBlock {
+  /**
+   * Header data for the block
+   */
+  header?: string
+  transactions?: string
+  uncleHeaders?: string
+}
+
+/**
+ * An object with the block header's data represented as strings.
+ */
+export interface JsonHeader {
+  parentHash?: string
+  uncleHash?: string
+  coinbase?: string
+  stateRoot?: string
+  transactionsTrie?: string
+  receiptTrie?: string
+  bloom?: string
+  difficulty?: string
+  number?: string
+  gasLimit?: string
+  gasUsed?: string
+  timestamp?: string
+  extraData?: string
+  mixHash?: string
+  nonce?: string
+}
+
 export interface Blockchain {
   getBlock(hash: Buffer): Promise<Block>
+}
+
+/**
+ * Convert BN to hex.
+ */
+export function bnToHex(value: BN): string {
+  return `0x${value.toString(16)}`
 }

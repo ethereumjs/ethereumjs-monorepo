@@ -40,8 +40,12 @@ export class Block {
 
   public static fromRLPSerializedBlock(serialized: Buffer, opts: BlockOptions = {}) {
     const values = (rlp.decode(serialized) as any) as [Buffer[], Buffer[][], Buffer[][]]
-    // We cast above to silence a TS error since we know that
-    // values is a [Buffer[], Buffer[][], Buffer[][]]
+    // Here we cast to silence TS errors,
+    // we know that values is
+    // [ Header: Buffer[],
+    //   Transactions: Buffer[][],
+    //   UncleHeaders: Buffer[][]
+    // ]
 
     if (!Array.isArray(values)) {
       throw new Error('Invalid serialized block input. Must be array')
@@ -80,11 +84,9 @@ export class Block {
   }
 
   /**
-   * Creates a new block object
+   * Creates a new block object.
    *
-   * Please solely use this constructor to pass in block header data
-   * and don't modfiy header data after initialization since this can lead to
-   * undefined behavior regarding HF rule implemenations within the class.
+   * The object is frozen since modifications can lead to undefined behavior regarding HF rule implemenations.
    *
    * @param data - The block's data.
    * @param options - The options for this block (like the chain setup)
@@ -93,17 +95,22 @@ export class Block {
     header: BlockHeader,
     transactions: Transaction[],
     uncleHeaders: BlockHeader[],
-    //data: Buffer | [Buffer[], Buffer[], Buffer[]] | BlockData = {},
     opts: BlockOptions = {},
   ) {
     this.header = header
     this.transactions = transactions
     this.uncleHeaders = uncleHeaders
     this._common = this.header._common
+
+    Object.freeze(this)
   }
 
-  get raw(): [Buffer[], Buffer[], Buffer[]] {
-    return this.serialize(false)
+  get raw() {
+    return [
+      this.header.raw(),
+      this.transactions.map((tx) => tx.serialize()),
+      this.uncleHeaders.map((uh) => uh.raw()),
+    ]
   }
 
   /**
@@ -121,23 +128,10 @@ export class Block {
   }
 
   /**
-   * Produces a serialization of the block.
-   *
-   * @param rlpEncode - If `true`, the returned object is the RLP encoded data as seen by the
-   * Ethereum wire protocol. If `false`, a tuple with the raw data of the header, the txs and the
-   * uncle headers is returned.
+   * Returns the rlp encoding of the block.
    */
-  serialize(): Buffer
-  serialize(rlpEncode: true): Buffer
-  serialize(rlpEncode: false): [Buffer[], Buffer[], Buffer[]]
-  serialize(rlpEncode = true) {
-    const raw = [
-      this.header.raw(),
-      this.transactions.map((tx) => tx.serialize()),
-      this.uncleHeaders.map((uh) => uh.raw()),
-    ]
-
-    return rlpEncode ? rlp.encode(raw) : raw
+  serialize(): Buffer {
+    return rlp.encode(this.raw)
   }
 
   /**
@@ -244,19 +238,13 @@ export class Block {
   }
 
   /**
-   * Returns the block in JSON format
-   *
-   * @see {@link https://github.com/ethereumjs/ethereumjs-util/blob/master/docs/index.md#defineproperties|ethereumjs-util}
+   * Returns the block in JSON format.
    */
-  toJSON(labeled: boolean = false) {
-    if (labeled) {
-      return {
-        header: this.header.toJSON(true),
-        transactions: this.transactions.map((tx) => tx.toJSON()),
-        uncleHeaders: this.uncleHeaders.forEach((uh) => uh.toJSON(true)),
-      }
-    } else {
-      return baToJSON(this.raw)
+  toJSON() {
+    return {
+      header: this.header.toJSON(),
+      transactions: this.transactions.map((tx) => tx.toJSON()),
+      uncleHeaders: this.uncleHeaders.forEach((uh) => uh.toJSON()),
     }
   }
 

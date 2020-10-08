@@ -118,8 +118,9 @@ export class DBManager {
       body = [[], []]
     }
 
-    const blockData = [header].concat(body) as [Buffer[], Buffer[], Buffer[]]
-    return new Block(blockData, { common: this._common })
+    const blockData = ([header].concat(body) as any) as [Buffer[], Buffer[][], Buffer[][]]
+    const opts = { common: this._common }
+    return Block.fromValuesArray(blockData, opts)
   }
 
   /**
@@ -137,9 +138,8 @@ export class DBManager {
   async getHeader(hash: Buffer, number: BN) {
     const key = headerKey(number, hash)
     const encodedHeader = await this.get(key, { cache: 'header' })
-    return new BlockHeader(rlp.decode(encodedHeader), {
-      common: this._common,
-    })
+    const opts = { common: this._common }
+    return BlockHeader.fromRLPSerializedHeader(encodedHeader, opts)
   }
 
   /**

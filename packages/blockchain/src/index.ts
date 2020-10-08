@@ -216,7 +216,7 @@ export default class Blockchain implements BlockchainInterface {
    */
   async _setCanonicalGenesisBlock() {
     const common = new Common({ chain: this._common.chainId(), hardfork: 'chainstart' })
-    const genesisBlock = new Block(undefined, { common, initWithGenesisHeader: true })
+    const genesisBlock = Block.fromBlockData({}, { common, initWithGenesisHeader: true })
     await this._putBlockOrHeader(genesisBlock, true)
   }
 
@@ -347,20 +347,17 @@ export default class Blockchain implements BlockchainInterface {
    * @hidden
    */
   async _putBlockOrHeader(item: Block | BlockHeader, isGenesis?: boolean) {
-    let block =
+    const block =
       item instanceof BlockHeader
-        ? new Block([item.raw, [], []], { common: (item as any)._common })
+        ? new Block(item, [], [], { common: (item as any)._common })
         : item
+
     const header = block.header
     const hash = block.hash()
     const number = new BN(header.number)
     const td = new BN(header.difficulty)
-    const currentTd: { [key: string]: BN } = { header: new BN(0), block: new BN(0) }
+    const currentTd = { header: new BN(0), block: new BN(0) }
     const dbOps: DBOp[] = []
-
-    if (block.constructor !== Block) {
-      block = new Block(block, { common: this._common })
-    }
 
     if ((block as any)._common.chainId() !== this._common.chainId()) {
       throw new Error('Chain mismatch while trying to put block or header')
@@ -404,15 +401,14 @@ export default class Blockchain implements BlockchainInterface {
 
       // save header
       key = headerKey(number, hash)
-      value = rlp.encode(header.raw)
+      value = header.serialize()
       dbOps.push({ type, key, value, keyEncoding, valueEncoding })
       this.dbManager._cache.header.set(key, value)
 
       // store body if it exists
       if (isGenesis || block.transactions.length || block.uncleHeaders.length) {
-        const body = block.serialize(false).slice(1)
         key = bodyKey(number, hash)
-        value = rlp.encode(body)
+        value = block.serialize()
         dbOps.push({ type, key, value, keyEncoding, valueEncoding })
         this.dbManager._cache.body.set(key, value)
       }

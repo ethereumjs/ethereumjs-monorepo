@@ -1,5 +1,6 @@
 import Common from '@ethereumjs/common'
 import {
+  Address,
   BN,
   zeros,
   KECCAK256_RLP_ARRAY,
@@ -9,8 +10,7 @@ import {
   unpadBuffer,
   rlphash,
 } from 'ethereumjs-util'
-import { Blockchain, HeaderData, BlockOptions } from './types'
-import { Buffer } from 'buffer'
+import { HeaderData, JsonHeader, Blockchain, BlockOptions, bnToHex } from './types'
 import { Block } from './block'
 import { checkBufferLength, toBN } from './util'
 
@@ -20,7 +20,7 @@ import { checkBufferLength, toBN } from './util'
 export class BlockHeader {
   public readonly parentHash: Buffer
   public readonly uncleHash: Buffer
-  public readonly coinbase: Buffer
+  public readonly coinbase: Address
   public readonly stateRoot: Buffer
   public readonly transactionsTrie: Buffer
   public readonly receiptTrie: Buffer
@@ -56,12 +56,12 @@ export class BlockHeader {
     } = headerData
 
     return new BlockHeader(
-      parentHash ? checkBufferLength(toBuffer(parentHash), 32) : zeros(32),
+      parentHash ? toBuffer(parentHash) : zeros(32),
       uncleHash ? toBuffer(uncleHash) : KECCAK256_RLP_ARRAY,
-      coinbase ? checkBufferLength(toBuffer(coinbase), 20) : zeros(20),
-      stateRoot ? checkBufferLength(toBuffer(stateRoot), 32) : zeros(32),
-      transactionsTrie ? checkBufferLength(toBuffer(transactionsTrie), 32) : KECCAK256_RLP,
-      receiptTrie ? checkBufferLength(toBuffer(receiptTrie), 32) : KECCAK256_RLP,
+      coinbase ? new Address(toBuffer(coinbase)) : Address.zero(),
+      stateRoot ? toBuffer(stateRoot) : zeros(32),
+      transactionsTrie ? toBuffer(transactionsTrie) : KECCAK256_RLP,
+      receiptTrie ? toBuffer(receiptTrie) : KECCAK256_RLP,
       bloom ? toBuffer(bloom) : zeros(256),
       difficulty ? toBN(difficulty) : new BN(0),
       number ? toBN(number) : new BN(0),
@@ -107,10 +107,11 @@ export class BlockHeader {
       mixHash,
       nonce,
     ] = values
+
     return new BlockHeader(
       toBuffer(parentHash),
       toBuffer(uncleHash),
-      toBuffer(coinbase),
+      new Address(toBuffer(coinbase)),
       toBuffer(stateRoot),
       toBuffer(transactionsTrie),
       toBuffer(receiptTrie),
@@ -135,7 +136,7 @@ export class BlockHeader {
   constructor(
     parentHash: Buffer,
     uncleHash: Buffer,
-    coinbase: Buffer,
+    coinbase: Address,
     stateRoot: Buffer,
     transactionsTrie: Buffer,
     receiptTrie: Buffer,
@@ -148,7 +149,6 @@ export class BlockHeader {
     extraData: Buffer,
     mixHash: Buffer,
     nonce: Buffer,
-    //data: Buffer | PrefixedHexString | BufferLike[] | HeaderData = {},
     options: BlockOptions = {},
   ) {
     if (options.common) {
@@ -197,9 +197,20 @@ export class BlockHeader {
       this.number = new BN(0)
     }
 
+    this._validateBufferLengths()
     this._checkDAOExtraData()
 
     Object.freeze(this)
+  }
+
+  /**
+   * Validates correct buffer lengths, throws if invalid.
+   */
+  _validateBufferLengths() {
+    checkBufferLength(this.parentHash, 32)
+    checkBufferLength(this.stateRoot, 32)
+    checkBufferLength(this.transactionsTrie, 32)
+    checkBufferLength(this.receiptTrie, 32)
   }
 
   /**
@@ -386,7 +397,7 @@ export class BlockHeader {
     return [
       this.parentHash,
       this.uncleHash,
-      this.coinbase,
+      this.coinbase.buf,
       this.stateRoot,
       this.transactionsTrie,
       this.receiptTrie,
@@ -398,7 +409,7 @@ export class BlockHeader {
       unpadBuffer(toBuffer(this.timestamp)),
       this.extraData,
       this.mixHash,
-      this.nonce,
+      unpadBuffer(toBuffer(this.nonce)),
     ]
   }
 
@@ -420,26 +431,24 @@ export class BlockHeader {
   /**
    * Returns the block header in JSON format
    */
-  toJSON(_labels: boolean = false): { [key: string]: string } | string[] {
-    // Note: This never gets executed, defineProperties overwrites it.
-    /*return Object.create({
-      parentHash: this.parentHash,
-      uncleHash: this.uncleHash,
-      coinbase: this.coinbase,
-      stateRoot: this.stateRoot,
-      transactionsTrie: this.transactionsTrie,
-      receiptTrie: this.receiptTrie,
-      bloom: this.bloom,
-      difficulty: this.difficulty,
-      number: this.number,
-      gasLimit: this.gasLimit,
-      gasUsed: this.gasUsed,
-      timestamp: this.timestamp,
-      extraData: this.extraData,
-      mixHash: this.mixHash,
-      nonce: this.nonce,
-    })*/
-    return {} //TODO: FIXME
+  toJSON(): JsonHeader {
+    return {
+      parentHash: '0x' + this.parentHash.toString('hex'),
+      uncleHash: '0x' + this.uncleHash.toString('hex'),
+      coinbase: this.coinbase.toString(),
+      stateRoot: '0x' + this.stateRoot.toString('hex'),
+      transactionsTrie: '0x' + this.transactionsTrie.toString('hex'),
+      receiptTrie: '0x' + this.receiptTrie.toString('hex'),
+      bloom: '0x' + this.bloom.toString('hex'),
+      difficulty: bnToHex(this.difficulty),
+      number: bnToHex(this.number),
+      gasLimit: bnToHex(this.gasLimit),
+      gasUsed: bnToHex(this.gasUsed),
+      timestamp: bnToHex(this.timestamp),
+      extraData: '0x' + this.extraData.toString('hex'),
+      mixHash: '0x' + this.mixHash.toString('hex'),
+      nonce: '0x' + this.nonce.toString('hex'),
+    }
   }
 
   private _getHardfork(): string {
