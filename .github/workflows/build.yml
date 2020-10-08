@@ -18,7 +18,7 @@ jobs:
         uses: actions/setup-node@v1
         with:
           node-version: ${{ matrix.node-version }}
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
       - run: npm install
       - run: npm run lint
       - run: npm run coverage
@@ -31,6 +31,6 @@ jobs:
       - uses: actions/setup-node@v1
         with:
           node-version: 12.x
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
       - run: npm install
       - run: npm run test:browser

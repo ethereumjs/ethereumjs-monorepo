@@ -1,5 +1,5 @@
 {
-  "name": "rinkeby.json",
+  "name": "rinkeby",
   "chainId": 4,
   "networkId": 4,
   "genesis": {

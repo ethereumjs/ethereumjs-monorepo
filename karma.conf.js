@@ -1,25 +1,18 @@
 module.exports = function (config) {
   config.set({
-    frameworks: ['karma-typescript', 'browserify', 'tap'],
+    frameworks: ['karma-typescript', 'tap'],
 
-    files: ['test/blockchain/chain.js', 'test/**/*.ts'],
+    files: ['test/**/*.ts', 'lib/**/*.ts'],
 
     preprocessors: {
-      'test/blockchain/chain.js': ['browserify'],
-      'test/**/*.ts': ['karma-typescript']
+      '**/*.ts': ['karma-typescript']
     },
 
     reporters: ['progress'],
 
     karmaTypescriptConfig: {
-      tsconfig: './tsconfig.json',
       bundlerOptions: {
-        entrypoints: /test\/(.*)\.(js|ts)/,
-        transforms: [
-          require('karma-typescript-es6-transform')({
-            plugins: ['@babel/plugin-transform-spread']
-          })
-        ]
+        entrypoints: /\.spec\.ts$/
       }
     },
 
