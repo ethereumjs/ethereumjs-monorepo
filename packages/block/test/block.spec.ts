@@ -13,7 +13,7 @@ tape('[Block]: block functions', function (t) {
 
   t.test('should initialize with undefined parameters without throwing', function (st) {
     st.doesNotThrow(function () {
-      Block.fromBlockData({})
+      Block.fromBlockData()
       st.end()
     })
   })

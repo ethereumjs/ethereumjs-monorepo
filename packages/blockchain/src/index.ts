@@ -347,10 +347,7 @@ export default class Blockchain implements BlockchainInterface {
    * @hidden
    */
   async _putBlockOrHeader(item: Block | BlockHeader, isGenesis?: boolean) {
-    const block =
-      item instanceof BlockHeader
-        ? new Block(item, [], [], { common: (item as any)._common })
-        : item
+    const block = item instanceof BlockHeader ? new Block(item, [], []) : item
 
     const header = block.header
     const hash = block.hash()
@@ -359,7 +356,7 @@ export default class Blockchain implements BlockchainInterface {
     const currentTd = { header: new BN(0), block: new BN(0) }
     const dbOps: DBOp[] = []
 
-    if ((block as any)._common.chainId() !== this._common.chainId()) {
+    if (block._common.chainId() !== this._common.chainId()) {
       throw new Error('Chain mismatch while trying to put block or header')
     }
 

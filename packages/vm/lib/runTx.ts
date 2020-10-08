@@ -59,7 +59,7 @@ export default async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxRes
   // create a reasonable default if no block is given
   if (!opts.block) {
     const common = (<any>opts.tx)._common
-    opts.block = new Block(undefined, { common })
+    opts.block = Block.fromBlockData({}, { common })
   }
 
   if (new BN(opts.block.header.gasLimit).lt(opts.tx.gasLimit)) {

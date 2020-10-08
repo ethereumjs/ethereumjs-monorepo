@@ -13,8 +13,7 @@ export class Block {
   public readonly transactions: Transaction[] = []
   public readonly uncleHeaders: BlockHeader[] = []
   public readonly txTrie = new Trie()
-
-  private readonly _common: Common
+  public readonly _common: Common
 
   public static fromBlockData(blockData: BlockData = {}, opts: BlockOptions = {}) {
     const headerData = blockData.header || {}
@@ -35,7 +34,7 @@ export class Block {
       uncleHeaders.push(BlockHeader.fromHeaderData(uncleHeaderData, opts))
     }
 
-    return new Block(header, transactions, uncleHeaders, opts)
+    return new Block(header, transactions, uncleHeaders)
   }
 
   public static fromRLPSerializedBlock(serialized: Buffer, opts: BlockOptions = {}) {
@@ -80,26 +79,18 @@ export class Block {
       uncleHeaders.push(BlockHeader.fromValuesArray(uncleHeaderData as Buffer[], opts))
     }
 
-    return new Block(header, transactions, uncleHeaders, opts)
+    return new Block(header, transactions, uncleHeaders)
   }
 
   /**
-   * Creates a new block object.
-   *
-   * The object is frozen since modifications can lead to undefined behavior regarding HF rule implemenations.
-   *
-   * @param data - The block's data.
-   * @param options - The options for this block (like the chain setup)
+   * This constructor takes the values, validates them, assigns them and freezes the object.
+   * Use the static factory methods to assist in creating a Block object from varying data types and options.
    */
-  constructor(
-    header: BlockHeader,
-    transactions: Transaction[],
-    uncleHeaders: BlockHeader[],
-    opts: BlockOptions = {},
-  ) {
+  constructor(header: BlockHeader, transactions: Transaction[], uncleHeaders: BlockHeader[]) {
     this.header = header
     this.transactions = transactions
     this.uncleHeaders = uncleHeaders
+
     this._common = this.header._common
 
     Object.freeze(this)

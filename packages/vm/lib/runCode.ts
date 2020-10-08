@@ -25,7 +25,7 @@ export interface RunCodeOpts {
   /**
    * The [`Block`](https://github.com/ethereumjs/ethereumjs-block) the `tx` belongs to. If omitted a blank block will be used
    */
-  block?: any
+  block?: Block
   evm?: EVM
   txContext?: TxContext
   gasPrice?: BN
@@ -72,7 +72,7 @@ export interface RunCodeOpts {
  */
 export default function runCode(this: VM, opts: RunCodeOpts): Promise<ExecResult> {
   if (!opts.block) {
-    opts.block = new Block()
+    opts.block = Block.fromBlockData()
   }
 
   // Backwards compatibility

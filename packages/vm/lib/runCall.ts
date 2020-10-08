@@ -9,7 +9,7 @@ import { Block } from '@ethereumjs/block'
  * Options for running a call (or create) operation
  */
 export interface RunCallOpts {
-  block?: any
+  block?: Block
   gasPrice?: BN
   origin?: Buffer
   caller?: Buffer
@@ -33,7 +33,7 @@ export interface RunCallOpts {
  * @ignore
  */
 export default function runCall(this: VM, opts: RunCallOpts): Promise<EVMResult> {
-  const block = opts.block || new Block()
+  const block = opts.block || Block.fromBlockData()
 
   const txContext = new TxContext(
     opts.gasPrice || new BN(0),
