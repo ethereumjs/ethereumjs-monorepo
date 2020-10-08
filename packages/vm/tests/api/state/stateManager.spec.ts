@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 import tape from 'tape'
 import { BN, toBuffer, keccak256, KECCAK256_RLP, unpadBuffer, zeros } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
