@@ -14,7 +14,7 @@ export class Block {
   public readonly uncleHeaders: BlockHeader[] = []
   public readonly txTrie = new Trie()
 
-  private readonly _common: Common
+  public readonly _common: Common
 
   /**
    * Creates a new block object

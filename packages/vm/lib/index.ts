@@ -51,7 +51,7 @@ export interface VMOpts {
    * Default setup if no `Common` instance is provided:
    *
    * - `chain`: `mainnet`
-   * - `hardfork`: `petersburg`
+   * - `hardfork`: `istanbul`
    * - `eips`: `[]`
    */
   common?: Common

@@ -68,6 +68,12 @@ const tx = Transaction.fromValuesArray(arr)
 
 Learn more about the full API in the [docs](./docs/README.md).
 
+#### New Default Hardfork
+
+The default HF on the library has been updated from `petersburg` to `instanbul`.
+The HF setting is now automatically taken from the HF set for `Common.DEAULT_HARDFORK`,
+see PR [#906](https://github.com/ethereumjs/ethereumjs-vm/pull/906).
+
 #### Immutability
 
 The returned transaction is now frozen and immutable. To work with a maliable transaction, copy it with `const fakeTx = Object.create(tx)`.
