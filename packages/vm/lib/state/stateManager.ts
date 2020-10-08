@@ -1,6 +1,12 @@
 const Set = require('core-js-pure/es/set')
 import { SecureTrie as Trie } from 'merkle-patricia-tree'
-import { BN, toBuffer, keccak256, KECCAK256_NULL, unpadBuffer } from 'ethereumjs-util'
+import {
+  BN,
+  toBuffer,
+  keccak256,
+  KECCAK256_NULL,
+  unpadBuffer,
+} from 'ethereumjs-util'
 import { encode, decode } from 'rlp'
 import Common from '@ethereumjs/common'
 import { genesisStateByName } from '@ethereumjs/common/dist/genesisStates'

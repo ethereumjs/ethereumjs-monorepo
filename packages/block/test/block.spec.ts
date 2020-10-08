@@ -14,19 +14,24 @@ tape('[Block]: block functions', function (t) {
     st.end()
   })
 
-  t.test('should initialize with undefined parameters without throwing', function (st) {
-    st.doesNotThrow(function () {
-      const block = new Block()
-      st.equal(
-        block._common.hardfork(),
-        'istanbul',
-        'should initialize with the current default HF',
-      )
-      st.end()
-    })
-  })
+  t.test(
+    'should initialize with undefined parameters without throwing',
+    function (st) {
+      st.doesNotThrow(function () {
+        const block = new Block()
+        st.equal(
+          block._common.hardfork(),
+          'istanbul',
+          'should initialize with the current default HF'
+        )
+        st.end()
+      })
+    }
+  )
 
-  t.test('should initialize with null parameters without throwing', function (st) {
+  t.test('should initialize with null parameters without throwing', function (
+    st
+  ) {
     st.doesNotThrow(function () {
       const common = new Common({ chain: 'ropsten' })
       const opts = { common }

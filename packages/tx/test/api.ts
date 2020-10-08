@@ -21,7 +21,11 @@ tape('[Transaction]: Basic functions', function (t) {
 
   t.test('should initialize correctly', function (st) {
     const tx = Transaction.fromTxData({})
-    st.equal(tx.common.hardfork(), 'istanbul', 'should initialize with correct default HF')
+    st.equal(
+      tx.common.hardfork(),
+      'istanbul',
+      'should initialize with correct default HF'
+    )
     st.end()
   })
 
