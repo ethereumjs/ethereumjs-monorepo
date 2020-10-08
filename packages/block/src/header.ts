@@ -12,7 +12,7 @@ import {
 } from 'ethereumjs-util'
 import { HeaderData, JsonHeader, Blockchain, BlockOptions, bnToHex } from './types'
 import { Block } from './block'
-import { checkBufferLength, toBN } from './util'
+import { toBN } from './util'
 
 /**
  * An object that represents the block header
@@ -209,10 +209,27 @@ export class BlockHeader {
    * Validates correct buffer lengths, throws if invalid.
    */
   _validateBufferLengths() {
-    checkBufferLength(this.parentHash, 32)
-    checkBufferLength(this.stateRoot, 32)
-    checkBufferLength(this.transactionsTrie, 32)
-    checkBufferLength(this.receiptTrie, 32)
+    if (this.parentHash.length !== 32) {
+      throw new Error('parentHash must be 32 bytes')
+    }
+    if (this.stateRoot.length !== 32) {
+      throw new Error('stateRoot must be 32 bytes')
+    }
+    if (this.transactionsTrie.length !== 32) {
+      throw new Error('transactionsTrie must be 32 bytes')
+    }
+    if (this.receiptTrie.length !== 32) {
+      throw new Error('receiptTrie must be 32 bytes')
+    }
+    if (this.mixHash.length !== 32) {
+      throw new Error('mixHash must be 32 bytes')
+    }
+    if (this.extraData.length > 32) {
+      throw new Error('extraData cannot exceed 32 bytes')
+    }
+    if (this.nonce.length !== 8) {
+      throw new Error('nonce must be 8 bytes')
+    }
   }
 
   /**
