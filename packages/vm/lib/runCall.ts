@@ -32,10 +32,7 @@ export interface RunCallOpts {
 /**
  * @ignore
  */
-export default function runCall(
-  this: VM,
-  opts: RunCallOpts
-): Promise<EVMResult> {
+export default function runCall(this: VM, opts: RunCallOpts): Promise<EVMResult> {
   const block = opts.block || new Block()
 
   const txContext = new TxContext(

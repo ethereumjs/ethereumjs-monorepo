@@ -50,10 +50,7 @@ export interface RunTxResult extends EVMResult {
 /**
  * @ignore
  */
-export default async function runTx(
-  this: VM,
-  opts: RunTxOpts
-): Promise<RunTxResult> {
+export default async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   // tx is required
   if (!opts.tx) {
     throw new Error('invalid input, tx is required')
@@ -128,9 +125,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
 
   // Update from account's nonce and balance
   fromAccount.nonce = nonce.addn(1).toArrayLike(Buffer)
-  fromAccount.balance = balance
-    .sub(tx.gasLimit.mul(tx.gasPrice))
-    .toArrayLike(Buffer)
+  fromAccount.balance = balance.sub(tx.gasLimit.mul(tx.gasPrice)).toArrayLike(Buffer)
   await state.putAccount(caller, fromAccount)
 
   /*
@@ -179,9 +174,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   // Update miner's balance
   const minerAccount = await state.getAccount(block.header.coinbase)
   // add the amount spent on gas to the miner's account
-  minerAccount.balance = new BN(minerAccount.balance)
-    .add(results.amountSpent)
-    .toArrayLike(Buffer)
+  minerAccount.balance = new BN(minerAccount.balance).add(results.amountSpent).toArrayLike(Buffer)
 
   // Put the miner account into the state. If the balance of the miner account remains zero, note that
   // the state.putAccount function puts this into the "touched" accounts. This will thus be removed when

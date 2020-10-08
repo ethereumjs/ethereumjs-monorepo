@@ -16,10 +16,7 @@ import Common from '@ethereumjs/common'
 import { TxOptions, TxData, JsonTx, bnToRlp, bnToHex } from './types'
 
 // secp256k1n/2
-const N_DIV_2 = new BN(
-  '7fffffffffffffffffffffffffffffff5d576e7357a4501ddfe92f46681b20a0',
-  16
-)
+const N_DIV_2 = new BN('7fffffffffffffffffffffffffffffff5d576e7357a4501ddfe92f46681b20a0', 16)
 
 /**
  * An Ethereum transaction.
@@ -313,11 +310,7 @@ export default class Transaction {
     }
 
     if (this.getBaseFee().gt(this.gasLimit)) {
-      errors.push(
-        `gasLimit is too low. given ${
-          this.gasLimit
-        }, need at least ${this.getBaseFee()}`
-      )
+      errors.push(`gasLimit is too low. given ${this.gasLimit}, need at least ${this.getBaseFee()}`)
     }
 
     return stringError ? errors : errors.length === 0

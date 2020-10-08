@@ -1,12 +1,6 @@
 const Set = require('core-js-pure/es/set')
 import { SecureTrie as Trie } from 'merkle-patricia-tree'
-import {
-  BN,
-  toBuffer,
-  keccak256,
-  KECCAK256_NULL,
-  unpadBuffer,
-} from 'ethereumjs-util'
+import { BN, toBuffer, keccak256, KECCAK256_NULL, unpadBuffer } from 'ethereumjs-util'
 import { encode, decode } from 'rlp'
 import Common from '@ethereumjs/common'
 import { genesisStateByName } from '@ethereumjs/common/dist/genesisStates'
@@ -211,10 +205,7 @@ export default class DefaultStateManager implements StateManager {
    * @param address - Address of the account to get the storage for
    * @param key - Key in the account's storage to get the value for. Must be 32 bytes long.
    */
-  async getOriginalContractStorage(
-    address: Buffer,
-    key: Buffer
-  ): Promise<Buffer> {
+  async getOriginalContractStorage(address: Buffer, key: Buffer): Promise<Buffer> {
     if (key.length !== 32) {
       throw new Error('Storage key must be 32 bytes long')
     }
@@ -290,11 +281,7 @@ export default class DefaultStateManager implements StateManager {
    * @param key - Key to set the value at. Must be 32 bytes long.
    * @param value - Value to set at `key` for account corresponding to `address`. Cannot be more than 32 bytes. Leading zeros are stripped. If it is a empty or filled with zeros, deletes the value.
    */
-  async putContractStorage(
-    address: Buffer,
-    key: Buffer,
-    value: Buffer
-  ): Promise<void> {
+  async putContractStorage(address: Buffer, key: Buffer, value: Buffer): Promise<void> {
     if (key.length !== 32) {
       throw new Error('Storage key must be 32 bytes long')
     }
@@ -476,9 +463,7 @@ export default class DefaultStateManager implements StateManager {
    */
   async generateCanonicalGenesis(): Promise<void> {
     if (this._checkpointCount !== 0) {
-      throw new Error(
-        'Cannot create genesis state with uncommitted checkpoints'
-      )
+      throw new Error('Cannot create genesis state with uncommitted checkpoints')
     }
 
     const genesis = await this.hasGenesisState()
@@ -493,18 +478,14 @@ export default class DefaultStateManager implements StateManager {
    */
   async generateGenesis(initState: any): Promise<void> {
     if (this._checkpointCount !== 0) {
-      throw new Error(
-        'Cannot create genesis state with uncommitted checkpoints'
-      )
+      throw new Error('Cannot create genesis state with uncommitted checkpoints')
     }
 
     const addresses = Object.keys(initState)
     for (const address of addresses) {
       const account = new Account()
       if (initState[address].slice(0, 2) === '0x') {
-        account.balance = new BN(initState[address].slice(2), 16).toArrayLike(
-          Buffer
-        )
+        account.balance = new BN(initState[address].slice(2), 16).toArrayLike(Buffer)
       } else {
         account.balance = new BN(initState[address]).toArrayLike(Buffer)
       }

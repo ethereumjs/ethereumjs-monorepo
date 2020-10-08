@@ -14,24 +14,19 @@ tape('[Block]: block functions', function (t) {
     st.end()
   })
 
-  t.test(
-    'should initialize with undefined parameters without throwing',
-    function (st) {
-      st.doesNotThrow(function () {
-        const block = new Block()
-        st.equal(
-          block._common.hardfork(),
-          'istanbul',
-          'should initialize with the current default HF'
-        )
-        st.end()
-      })
-    }
-  )
+  t.test('should initialize with undefined parameters without throwing', function (st) {
+    st.doesNotThrow(function () {
+      const block = new Block()
+      st.equal(
+        block._common.hardfork(),
+        'istanbul',
+        'should initialize with the current default HF'
+      )
+      st.end()
+    })
+  })
 
-  t.test('should initialize with null parameters without throwing', function (
-    st
-  ) {
+  t.test('should initialize with null parameters without throwing', function (st) {
     st.doesNotThrow(function () {
       const common = new Common({ chain: 'ropsten' })
       const opts = { common }
@@ -57,14 +52,11 @@ tape('[Block]: block functions', function (t) {
     await testTransactionValidation(st, block)
   })
 
-  t.test(
-    'should test transaction validation with empty transaction list',
-    async function (st) {
-      const block = new Block()
-      st.plan(2)
-      await testTransactionValidation(st, block)
-    }
-  )
+  t.test('should test transaction validation with empty transaction list', async function (st) {
+    const block = new Block()
+    st.plan(2)
+    await testTransactionValidation(st, block)
+  })
 
   const testData2 = require('./testdata/testdata2.json')
   t.test('should test uncles hash validation', function (st) {
@@ -94,11 +86,7 @@ tape('[Block]: block functions', function (t) {
   t.test('should test genesis hashes (mainnet default)', function (st) {
     const genesisBlock = new Block(undefined, { initWithGenesisHeader: true })
     const rlp = genesisBlock.serialize()
-    st.strictEqual(
-      rlp.toString('hex'),
-      testDataGenesis.genesis_rlp_hex,
-      'rlp hex match'
-    )
+    st.strictEqual(rlp.toString('hex'), testDataGenesis.genesis_rlp_hex, 'rlp hex match')
     st.strictEqual(
       genesisBlock.hash().toString('hex'),
       testDataGenesis.genesis_hash,
@@ -141,8 +129,7 @@ tape('[Block]: block functions', function (t) {
       common,
       initWithGenesisHeader: true,
     })
-    const ropstenStateRoot =
-      '217b0bbcfb72e2d57e28f33cb361b9983513177755dc3f33ce3e7022ed62b77b'
+    const ropstenStateRoot = '217b0bbcfb72e2d57e28f33cb361b9983513177755dc3f33ce3e7022ed62b77b'
     st.strictEqual(
       genesisBlock.header.stateRoot.toString('hex'),
       ropstenStateRoot,

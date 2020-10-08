@@ -15,29 +15,19 @@ export default async function (opts: PrecompileInput): Promise<ExecResult> {
 
   const inputData = opts.data
 
-  const baseGas = new BN(
-    opts._common.paramByEIP('gasPrices', 'Bls12381PairingBaseGas', 2537)
-  )
+  const baseGas = new BN(opts._common.paramByEIP('gasPrices', 'Bls12381PairingBaseGas', 2537))
 
   if (inputData.length == 0) {
-    return VmErrorResult(
-      new VmError(ERROR.BLS_12_381_INPUT_EMPTY),
-      opts.gasLimit
-    )
+    return VmErrorResult(new VmError(ERROR.BLS_12_381_INPUT_EMPTY), opts.gasLimit)
   }
 
   const gasUsedPerPair = new BN(
     opts._common.paramByEIP('gasPrices', 'Bls12381PairingPerPairGas', 2537)
   )
-  const gasUsed = baseGas.iadd(
-    gasUsedPerPair.imul(new BN(Math.floor(inputData.length / 384)))
-  )
+  const gasUsed = baseGas.iadd(gasUsedPerPair.imul(new BN(Math.floor(inputData.length / 384))))
 
   if (inputData.length % 384 != 0) {
-    return VmErrorResult(
-      new VmError(ERROR.BLS_12_381_INVALID_INPUT_LENGTH),
-      opts.gasLimit
-    )
+    return VmErrorResult(new VmError(ERROR.BLS_12_381_INVALID_INPUT_LENGTH), opts.gasLimit)
   }
 
   if (opts.gasLimit.lt(gasUsed)) {
@@ -67,10 +57,7 @@ export default async function (opts: PrecompileInput): Promise<ExecResult> {
         zeroByteCheck[index][1] + pairStart
       )
       if (!slicedBuffer.equals(zeroBytes16)) {
-        return VmErrorResult(
-          new VmError(ERROR.BLS_12_381_POINT_NOT_ON_CURVE),
-          opts.gasLimit
-        )
+        return VmErrorResult(new VmError(ERROR.BLS_12_381_POINT_NOT_ON_CURVE), opts.gasLimit)
       }
     }
     let G1

@@ -161,10 +161,4 @@ function getPrecompile(address: string, common: Common): PrecompileFunc {
   return precompiles['']
 }
 
-export {
-  precompiles,
-  getPrecompile,
-  PrecompileFunc,
-  PrecompileInput,
-  ripemdPrecompileAddress,
-}
+export { precompiles, getPrecompile, PrecompileFunc, PrecompileInput, ripemdPrecompileAddress }

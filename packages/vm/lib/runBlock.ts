@@ -107,10 +107,7 @@ export interface PostByzantiumTxReceipt extends TxReceipt {
 /**
  * @ignore
  */
-export default async function runBlock(
-  this: VM,
-  opts: RunBlockOpts
-): Promise<RunBlockResult> {
+export default async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockResult> {
   const state = this.stateManager
   const block = opts.block
   const generateStateRoot = !!opts.generate
@@ -132,9 +129,7 @@ export default async function runBlock(
   // check for DAO support and if we should apply the DAO fork
   if (
     this._common.hardforkIsActiveOnChain('dao') &&
-    new BN(opts.block.header.number).eq(
-      new BN(this._common.hardforkBlock('dao'))
-    )
+    new BN(opts.block.header.number).eq(new BN(this._common.hardforkBlock('dao')))
   ) {
     await _applyDAOHardfork(state)
   }
@@ -160,10 +155,7 @@ export default async function runBlock(
     block.header.stateRoot = stateRoot
     block.header.bloom = result.bloom.bitvector
   } else {
-    if (
-      result.receiptRoot &&
-      !result.receiptRoot.equals(block.header.receiptTrie)
-    ) {
+    if (result.receiptRoot && !result.receiptRoot.equals(block.header.receiptTrie)) {
       throw new Error('invalid receiptTrie')
     }
     if (!result.bloom.bitvector.equals(block.header.bloom)) {
@@ -314,11 +306,7 @@ async function assignBlockRewards(this: VM, block: any): Promise<void> {
   await rewardAccount(state, block.header.coinbase, reward)
 }
 
-function calculateOmmerReward(
-  ommerBlockNumber: BN,
-  blockNumber: BN,
-  minerReward: BN
-): BN {
+function calculateOmmerReward(ommerBlockNumber: BN, blockNumber: BN, minerReward: BN): BN {
   const heightDiff = blockNumber.sub(ommerBlockNumber)
   let reward = new BN(8).sub(heightDiff).mul(minerReward.divn(8))
   if (reward.ltn(0)) {
@@ -335,11 +323,7 @@ function calculateMinerReward(minerReward: BN, ommersNum: number): BN {
   return reward
 }
 
-async function rewardAccount(
-  state: StateManager,
-  address: Buffer,
-  reward: BN
-): Promise<void> {
+async function rewardAccount(state: StateManager, address: Buffer, reward: BN): Promise<void> {
   const account = await state.getAccount(address)
   account.balance = toBuffer(new BN(account.balance).add(reward))
   await state.putAccount(address, account)

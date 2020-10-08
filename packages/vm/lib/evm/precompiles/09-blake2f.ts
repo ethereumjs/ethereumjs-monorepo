@@ -116,13 +116,7 @@ const SIGMA82 = new Uint8Array(
   })
 )
 
-export function F(
-  h: Uint32Array,
-  m: Uint32Array,
-  t: Uint32Array,
-  f: boolean,
-  rounds: number
-) {
+export function F(h: Uint32Array, m: Uint32Array, t: Uint32Array, f: boolean, rounds: number) {
   const v = new Uint32Array(32)
   let i = 0
 

@@ -205,18 +205,14 @@ export class Block {
       throw new Error('too many uncle headers')
     }
 
-    const uncleHashes = this.uncleHeaders.map((header) =>
-      header.hash().toString('hex')
-    )
+    const uncleHashes = this.uncleHeaders.map((header) => header.hash().toString('hex'))
 
     if (!(new Set(uncleHashes).size === uncleHashes.length)) {
       throw new Error('duplicate uncles')
     }
 
     await Promise.all(
-      this.uncleHeaders.map(async (uh) =>
-        this._validateUncleHeader(uh, blockchain)
-      )
+      this.uncleHeaders.map(async (uh) => this._validateUncleHeader(uh, blockchain))
     )
   }
 
@@ -241,10 +237,7 @@ export class Block {
     await this.txTrie.put(rlp.encode(txIndex), tx.serialize())
   }
 
-  private _validateUncleHeader(
-    uncleHeader: BlockHeader,
-    blockchain: Blockchain
-  ) {
+  private _validateUncleHeader(uncleHeader: BlockHeader, blockchain: Blockchain) {
     // TODO: Validate that the uncle header hasn't been included in the blockchain yet.
     // This is not possible in ethereumjs-blockchain since this PR was merged:
     // https://github.com/ethereumjs/ethereumjs-blockchain/pull/47

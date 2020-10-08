@@ -51,11 +51,7 @@ export type PrefixedHexString = string
 /**
  * A Buffer, hex string prefixed with `0x`, Number, or an object with a toBuffer method such as BN.
  */
-export type BufferLike =
-  | Buffer
-  | TransformableToBuffer
-  | PrefixedHexString
-  | number
+export type BufferLike = Buffer | TransformableToBuffer | PrefixedHexString | number
 
 /**
  * A block header's data.
@@ -84,9 +80,7 @@ export interface BlockHeaderData {
 export interface BlockData {
   header?: Buffer | PrefixedHexString | BufferLike[] | BlockHeaderData
   transactions?: Array<Buffer | PrefixedHexString | BufferLike[] | TxData>
-  uncleHeaders?: Array<
-    Buffer | PrefixedHexString | BufferLike[] | BlockHeaderData
-  >
+  uncleHeaders?: Array<Buffer | PrefixedHexString | BufferLike[] | BlockHeaderData>
 }
 
 export interface Blockchain {

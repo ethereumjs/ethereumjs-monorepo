@@ -8,10 +8,7 @@ import { BlockOptions } from './types'
  * @param blockParams - Ethereum JSON RPC of block (eth_getBlockByNumber)
  * @param chainOptions - An object describing the blockchain
  */
-export default function blockHeaderFromRpc(
-  blockParams: any,
-  options?: BlockOptions
-) {
+export default function blockHeaderFromRpc(blockParams: any, options?: BlockOptions) {
   const blockHeader = new BlockHeader(
     {
       parentHash: blockParams.parentHash,
@@ -19,8 +16,7 @@ export default function blockHeaderFromRpc(
       coinbase: blockParams.miner,
       stateRoot: blockParams.stateRoot,
       transactionsTrie: blockParams.transactionsRoot,
-      receiptTrie:
-        blockParams.receiptRoot || blockParams.receiptsRoot || KECCAK256_NULL,
+      receiptTrie: blockParams.receiptRoot || blockParams.receiptsRoot || KECCAK256_NULL,
       bloom: blockParams.logsBloom,
       difficulty: blockParams.difficulty,
       number: blockParams.number,

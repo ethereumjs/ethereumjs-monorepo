@@ -1,9 +1,5 @@
 import * as rlp from 'rlp'
-import {
-  KECCAK256_NULL,
-  KECCAK256_RLP,
-  defineProperties,
-} from 'ethereumjs-util'
+import { KECCAK256_NULL, KECCAK256_RLP, defineProperties } from 'ethereumjs-util'
 const Buffer = require('safe-buffer').Buffer
 
 export default class Account {
@@ -95,9 +91,7 @@ export default class Account {
    */
   isEmpty(): boolean {
     return (
-      this.balance.length === 0 &&
-      this.nonce.length === 0 &&
-      this.codeHash.equals(KECCAK256_NULL)
+      this.balance.length === 0 && this.nonce.length === 0 && this.codeHash.equals(KECCAK256_NULL)
     )
   }
 }

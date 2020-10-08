@@ -50,10 +50,8 @@ tape('constructor with Object', function (tester) {
     const raw = {
       nonce: '0x02',
       balance: '0x0384',
-      stateRoot:
-        '0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421',
-      codeHash:
-        '0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470',
+      stateRoot: '0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421',
+      codeHash: '0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470',
     }
     const account = new Account(raw)
     t.equal(account.nonce.toString('hex'), '02')
@@ -96,18 +94,11 @@ tape('serialize', function (tester) {
     const raw = {
       nonce: '0x01',
       balance: '0x0042',
-      stateRoot:
-        '0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421',
-      codeHash:
-        '0xc5d2461236f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470',
+      stateRoot: '0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421',
+      codeHash: '0xc5d2461236f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470',
     }
     const account = new Account(raw)
-    const accountRlp = rlp.encode([
-      raw.nonce,
-      raw.balance,
-      raw.stateRoot,
-      raw.codeHash,
-    ])
+    const accountRlp = rlp.encode([raw.nonce, raw.balance, raw.stateRoot, raw.codeHash])
     t.ok(account.serialize().equals(accountRlp))
     t.end()
   })
@@ -126,10 +117,8 @@ tape('isContract', function (tester) {
     const raw = {
       nonce: '0x01',
       balance: '0x0042',
-      stateRoot:
-        '0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421',
-      codeHash:
-        '0xc5d2461236f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470',
+      stateRoot: '0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421',
+      codeHash: '0xc5d2461236f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470',
     }
     const account = new Account(raw)
     t.equal(account.isContract(), true)
@@ -148,10 +137,8 @@ tape('isEmpty', (tester) => {
     const raw = {
       nonce: '0x01',
       balance: '0x0042',
-      stateRoot:
-        '0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421',
-      codeHash:
-        '0xc5d2461236f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470',
+      stateRoot: '0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421',
+      codeHash: '0xc5d2461236f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470',
     }
     const account = new Account(raw)
     t.notOk(account.isEmpty())

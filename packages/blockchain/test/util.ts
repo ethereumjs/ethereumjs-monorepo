@@ -5,10 +5,7 @@ import { Block } from '@ethereumjs/block'
 import Common from '@ethereumjs/common'
 const level = require('level-mem')
 
-export const generateBlocks = (
-  numberOfBlocks: number,
-  existingBlocks?: Block[]
-): Block[] => {
+export const generateBlocks = (numberOfBlocks: number, existingBlocks?: Block[]): Block[] => {
   const blocks = existingBlocks ? existingBlocks : []
   if (blocks.length === 0) {
     const genesisBlock = new Block(undefined, { initWithGenesisHeader: true })
@@ -20,13 +17,9 @@ export const generateBlocks = (
     const block = new Block(undefined, { common })
     block.header.number = toBuffer(i)
     block.header.parentHash = blocks[i - 1].hash()
-    block.header.difficulty = toBuffer(
-      block.header.canonicalDifficulty(blocks[i - 1])
-    )
+    block.header.difficulty = toBuffer(block.header.canonicalDifficulty(blocks[i - 1]))
     block.header.gasLimit = toBuffer(8000000)
-    block.header.timestamp = toBuffer(
-      bufferToInt(blocks[i - 1].header.timestamp) + 1
-    )
+    block.header.timestamp = toBuffer(bufferToInt(blocks[i - 1].header.timestamp) + 1)
     blocks.push(block)
   }
   return blocks
@@ -81,10 +74,7 @@ export const createTestDB = async () => {
     },
     {
       type: 'put',
-      key: Buffer.from(
-        '48d4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3',
-        'hex'
-      ),
+      key: Buffer.from('48d4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3', 'hex'),
       keyEncoding: 'binary',
       valueEncoding: 'binary',
       value: Buffer.from('00', 'hex'),
