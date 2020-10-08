@@ -124,7 +124,6 @@ tape('[Block]: block functions', function (t) {
   t.test('should test toJSON', function (st) {
     const block = Block.fromRLPSerializedBlock(testData2.blocks[2].rlp)
     st.equal(typeof block.toJSON(), 'object')
-    st.equal(typeof block.toJSON(true), 'object')
     st.end()
   })
 

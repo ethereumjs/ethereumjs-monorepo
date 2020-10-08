@@ -347,12 +347,12 @@ export default class Blockchain implements BlockchainInterface {
    * @hidden
    */
   async _putBlockOrHeader(item: Block | BlockHeader, isGenesis?: boolean) {
-    const block = item instanceof BlockHeader ? new Block(item, [], []) : item
+    const block = item instanceof BlockHeader ? new Block(item) : item
 
     const header = block.header
     const hash = block.hash()
-    const number = new BN(header.number)
-    const td = new BN(header.difficulty)
+    const number = header.number
+    const td = header.difficulty
     const currentTd = { header: new BN(0), block: new BN(0) }
     const dbOps: DBOp[] = []
 

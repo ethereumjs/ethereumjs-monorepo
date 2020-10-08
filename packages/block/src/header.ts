@@ -36,7 +36,7 @@ export class BlockHeader {
 
   public readonly _common: Common
 
-  public static fromHeaderData(headerData: HeaderData, opts: BlockOptions = {}) {
+  public static fromHeaderData(headerData: HeaderData = {}, opts: BlockOptions = {}) {
     const {
       parentHash,
       uncleHash,
@@ -132,6 +132,7 @@ export class BlockHeader {
    * This constructor takes the values, validates them, assigns them and freezes the object.
    * Use the public static factory methods to assist in creating a Header object from
    * varying data types.
+   * For a default empty header, use `BlockHeader.fromHeaderData()`.
    */
   constructor(
     parentHash: Buffer,
@@ -182,6 +183,7 @@ export class BlockHeader {
     if (options.hardforkByBlockNumber) {
       this._common.setHardforkByBlockNumber(this.number.toNumber())
     }
+
     if (options.initWithGenesisHeader) {
       if (this._common.hardfork() !== 'chainstart') {
         throw new Error(
@@ -231,7 +233,7 @@ export class BlockHeader {
     )
     let num = toBN(this.number)
 
-    // We use a ! here as TS can follow this hardforks-dependent logic, but it always gets assigned
+    // We use a ! here as TS cannot follow this hardfork-dependent logic, but it always gets assigned
     let dif!: BN
 
     if (this._common.hardforkGteHardfork(hardfork, 'byzantium')) {

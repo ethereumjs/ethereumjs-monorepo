@@ -1,9 +1,9 @@
 import { BaseTrie as Trie } from 'merkle-patricia-tree'
-import { BN, rlp, keccak256, KECCAK256_RLP, baToJSON } from 'ethereumjs-util'
+import { BN, rlp, keccak256, KECCAK256_RLP } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
 import { Transaction, TxOptions } from '@ethereumjs/tx'
 import { BlockHeader } from './header'
-import { Blockchain, BlockData, BlockOptions } from './types'
+import { BlockData, BlockOptions, JsonBlock, Blockchain } from './types'
 
 /**
  * An object that represents the block
@@ -86,11 +86,15 @@ export class Block {
    * This constructor takes the values, validates them, assigns them and freezes the object.
    * Use the static factory methods to assist in creating a Block object from varying data types and options.
    */
-  constructor(header: BlockHeader, transactions: Transaction[], uncleHeaders: BlockHeader[]) {
-    this.header = header
+  constructor(
+    header?: BlockHeader,
+    transactions: Transaction[] = [],
+    uncleHeaders: BlockHeader[] = [],
+    opts: BlockOptions = {},
+  ) {
+    this.header = header || BlockHeader.fromHeaderData({}, opts)
     this.transactions = transactions
     this.uncleHeaders = uncleHeaders
-
     this._common = this.header._common
 
     Object.freeze(this)
@@ -231,11 +235,11 @@ export class Block {
   /**
    * Returns the block in JSON format.
    */
-  toJSON() {
+  toJSON(): JsonBlock {
     return {
       header: this.header.toJSON(),
       transactions: this.transactions.map((tx) => tx.toJSON()),
-      uncleHeaders: this.uncleHeaders.forEach((uh) => uh.toJSON()),
+      uncleHeaders: this.uncleHeaders.map((uh) => uh.toJSON()),
     }
   }
 

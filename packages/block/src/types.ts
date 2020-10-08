@@ -1,5 +1,5 @@
 import Common from '@ethereumjs/common'
-import { TxData } from '@ethereumjs/tx'
+import { TxData, JsonTx } from '@ethereumjs/tx'
 import { Block } from './block'
 import { Address, BN } from 'ethereumjs-util'
 
@@ -96,9 +96,9 @@ export interface JsonBlock {
   /**
    * Header data for the block
    */
-  header?: string
-  transactions?: string
-  uncleHeaders?: string
+  header?: JsonHeader
+  transactions?: JsonTx[]
+  uncleHeaders?: JsonHeader[]
 }
 
 /**
