@@ -39,9 +39,9 @@
   },
   "devDependencies": {
     "@ethereumjs/block": "^3.0.0",
-    "@ethereumjs/config-coverage": "https://gitpkg.now.sh/ethereumjs/ethereumjs-config/packages/coverage?master",
-    "@ethereumjs/config-typescript": "https://gitpkg.now.sh/ethereumjs/ethereumjs-config/packages/typescript?master",
-    "@ethereumjs/eslint-config-defaults": "https://gitpkg.now.sh/ethereumjs/ethereumjs-config/packages/lint?master",
+    "@ethereumjs/config-coverage": "https://gitpkg.now.sh/ethereumjs/ethereumjs-config/packages/coverage?lint-return-value",
+    "@ethereumjs/config-typescript": "https://gitpkg.now.sh/ethereumjs/ethereumjs-config/packages/typescript?lint-return-value",
+    "@ethereumjs/eslint-config-defaults": "https://gitpkg.now.sh/ethereumjs/ethereumjs-config/packages/lint?lint-return-value",
     "@types/tape": "^4.13.0",
     "@typescript-eslint/eslint-plugin": "^4.1.1",
     "eslint": "^6.8.0",

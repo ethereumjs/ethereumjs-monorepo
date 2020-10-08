@@ -55,9 +55,9 @@
     "mcl-wasm": "^0.4.5"
   },
   "devDependencies": {
-    "@ethereumjs/config-coverage": "https://gitpkg.now.sh/ethereumjs/ethereumjs-config/packages/coverage?master",
-    "@ethereumjs/config-typescript": "https://gitpkg.now.sh/ethereumjs/ethereumjs-config/packages/typescript?master",
-    "@ethereumjs/eslint-config-defaults": "https://gitpkg.now.sh/ethereumjs/ethereumjs-config/packages/lint?master",
+    "@ethereumjs/config-coverage": "https://gitpkg.now.sh/ethereumjs/ethereumjs-config/packages/coverage?lint-return-value",
+    "@ethereumjs/config-typescript": "https://gitpkg.now.sh/ethereumjs/ethereumjs-config/packages/typescript?lint-return-value",
+    "@ethereumjs/eslint-config-defaults": "https://gitpkg.now.sh/ethereumjs/ethereumjs-config/packages/lint?lint-return-value",
     "@types/benchmark": "^1.0.33",
     "@types/bn.js": "^4.11.6",
     "@types/core-js": "^2.5.0",

@@ -44,9 +44,9 @@
     "merkle-patricia-tree": "^4.0.0"
   },
   "devDependencies": {
-    "@ethereumjs/config-coverage": "https://gitpkg.now.sh/ethereumjs/ethereumjs-config/packages/coverage?master",
-    "@ethereumjs/config-typescript": "https://gitpkg.now.sh/ethereumjs/ethereumjs-config/packages/typescript?master",
-    "@ethereumjs/eslint-config-defaults": "https://gitpkg.now.sh/ethereumjs/ethereumjs-config/packages/lint?master",
+    "@ethereumjs/config-coverage": "https://gitpkg.now.sh/ethereumjs/ethereumjs-config/packages/coverage?lint-return-value",
+    "@ethereumjs/config-typescript": "https://gitpkg.now.sh/ethereumjs/ethereumjs-config/packages/typescript?lint-return-value",
+    "@ethereumjs/eslint-config-defaults": "https://gitpkg.now.sh/ethereumjs/ethereumjs-config/packages/lint?lint-return-value",
     "@types/lru-cache": "^5.1.0",
     "@types/node": "^11.13.4",
     "@types/tape": "^4.13.0",
