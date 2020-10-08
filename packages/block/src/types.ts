@@ -1,7 +1,7 @@
+import { Address, BN } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
 import { TxData, JsonTx } from '@ethereumjs/tx'
 import { Block } from './block'
-import { Address, BN } from 'ethereumjs-util'
 
 /**
  * An object to set to which blockchain the blocks and their headers belong. This could be specified
@@ -124,11 +124,4 @@ export interface JsonHeader {
 
 export interface Blockchain {
   getBlock(hash: Buffer): Promise<Block>
-}
-
-/**
- * Convert BN to hex.
- */
-export function bnToHex(value: BN): string {
-  return `0x${value.toString(16)}`
 }

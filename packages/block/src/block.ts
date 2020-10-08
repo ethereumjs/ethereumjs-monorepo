@@ -16,22 +16,22 @@ export class Block {
   public readonly _common: Common
 
   public static fromBlockData(blockData: BlockData = {}, opts: BlockOptions = {}) {
-    const headerData = blockData.header || {}
-    const txsData = blockData.transactions || []
-    const uncleHeadersData = blockData.uncleHeaders || []
+    const { header: headerData, transactions: txsData, uncleHeaders: uhsData } = blockData
 
     const header = BlockHeader.fromHeaderData(headerData, opts)
 
     // parse transactions
     const transactions = []
-    for (const txData of txsData) {
-      transactions.push(Transaction.fromTxData(txData, opts as TxOptions))
+    for (const txData of txsData || []) {
+      const tx = Transaction.fromTxData(txData, opts as TxOptions)
+      transactions.push(tx)
     }
 
     // parse uncle headers
     const uncleHeaders = []
-    for (const uncleHeaderData of uncleHeadersData) {
-      uncleHeaders.push(BlockHeader.fromHeaderData(uncleHeaderData, opts))
+    for (const uhData of uhsData || []) {
+      const uh = BlockHeader.fromHeaderData(uhData, opts)
+      uncleHeaders.push(uh)
     }
 
     return new Block(header, transactions, uncleHeaders)
@@ -144,7 +144,7 @@ export class Block {
    * Validates the transaction trie
    */
   validateTransactionsTrie(): boolean {
-    if (this.transactions.length) {
+    if (this.transactions.length > 0) {
       return this.header.transactionsTrie.equals(this.txTrie.root)
     } else {
       return this.header.transactionsTrie.equals(KECCAK256_RLP)
@@ -164,7 +164,7 @@ export class Block {
 
     this.transactions.forEach(function (tx, i) {
       const errs = tx.validate(true)
-      if (errs.length !== 0) {
+      if (errs.length > 0) {
         errors.push(`errors at tx ${i}: ${errs.join(', ')}`)
       }
     })
@@ -203,7 +203,6 @@ export class Block {
    */
   validateUnclesHash(): boolean {
     const raw = rlp.encode(this.uncleHeaders.map((uh) => uh.raw()))
-
     return keccak256(raw).equals(this.header.uncleHash)
   }
 

@@ -17,16 +17,17 @@ tape('Verify POW for valid and invalid blocks', async function (t) {
   const genesisBlockResult = await e.verifyPOW(genesis)
   t.ok(genesisBlockResult, 'genesis block should be valid')
 
-  const validBlock = Block.fromRLPSerializedBlock(
-    Buffer.from(validBlockRlp, 'hex')
-  )
+  const validRlp = Buffer.from(validBlockRlp, 'hex')
+  const validBlock = Block.fromRLPSerializedBlock(validRlp)
   const validBlockResult = await e.verifyPOW(validBlock)
   t.ok(validBlockResult, 'should be valid')
 
-  const invalidBlock = Block.fromRLPSerializedBlock(
-    Buffer.from(invalidBlockRlp, 'hex')
-  )
-  const invalidBlockResult = await e.verifyPOW(invalidBlock)
-  t.ok(!invalidBlockResult, 'should be invalid')
+  const invalidRlp = Buffer.from(invalidBlockRlp, 'hex')
+  t.throws(() => {
+    const invalidBlock = Block.fromRLPSerializedBlock(invalidRlp)
+    // const invalidBlockResult = await e.verifyPOW(invalidBlock)
+    // t.ok(!invalidBlockResult, 'should be invalid')
+  })
+
   t.end()
 })

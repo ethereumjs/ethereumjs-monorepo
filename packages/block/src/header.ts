@@ -10,12 +10,12 @@ import {
   unpadBuffer,
   rlphash,
 } from 'ethereumjs-util'
-import { HeaderData, JsonHeader, Blockchain, BlockOptions, bnToHex } from './types'
+import { HeaderData, JsonHeader, Blockchain, BlockOptions } from './types'
 import { Block } from './block'
-import { toBN } from './util'
+import { toBN, bnToHex } from './util'
 
 /**
- * An object that represents the block header
+ * An object that represents the block header.
  */
 export class BlockHeader {
   public readonly parentHash: Buffer
@@ -239,16 +239,15 @@ export class BlockHeader {
    */
   canonicalDifficulty(parentBlock: Block): BN {
     const hardfork = this._getHardfork()
-    const blockTs = toBN(this.timestamp)
-    const parentTs = toBN(parentBlock.header.timestamp)
-    const parentDif = toBN(parentBlock.header.difficulty)
+    const blockTs = this.timestamp
+    const { timestamp: parentTs, difficulty: parentDif } = parentBlock.header
     const minimumDifficulty = new BN(
       this._common.paramByHardfork('pow', 'minimumDifficulty', hardfork),
     )
     const offset = parentDif.div(
       new BN(this._common.paramByHardfork('pow', 'difficultyBoundDivisor', hardfork)),
     )
-    let num = toBN(this.number)
+    let num = this.number.clone()
 
     // We use a ! here as TS cannot follow this hardfork-dependent logic, but it always gets assigned
     let dif!: BN
@@ -305,7 +304,7 @@ export class BlockHeader {
       }
     }
 
-    const exp = num.idivn(100000).isubn(2)
+    const exp = num.divn(100000).isubn(2)
     if (!exp.isNeg()) {
       dif.iadd(new BN(2).pow(exp))
     }
@@ -323,8 +322,7 @@ export class BlockHeader {
    * @param parentBlock - this block's parent
    */
   validateDifficulty(parentBlock: Block): boolean {
-    const dif = this.canonicalDifficulty(parentBlock)
-    return dif.cmp(new BN(this.difficulty)) === 0
+    return this.canonicalDifficulty(parentBlock).eq(this.difficulty)
   }
 
   /**
@@ -380,7 +378,7 @@ export class BlockHeader {
     }
 
     if (!this.validateDifficulty(parentBlock)) {
-      throw new Error('invalid Difficulty')
+      throw new Error('invalid difficulty')
     }
 
     if (!this.validateGasLimit(parentBlock)) {
@@ -405,8 +403,7 @@ export class BlockHeader {
    * Returns the hash of the block header.
    */
   hash(): Buffer {
-    const values: Buffer[] = this.raw()
-    return rlphash(values)
+    return rlphash(this.raw())
   }
 
   /**
@@ -428,7 +425,7 @@ export class BlockHeader {
       unpadBuffer(toBuffer(this.timestamp)),
       this.extraData,
       this.mixHash,
-      unpadBuffer(toBuffer(this.nonce)),
+      this.nonce,
     ]
   }
 
@@ -440,15 +437,14 @@ export class BlockHeader {
   }
 
   /**
-   * Returns the rlp encoding of the block header
+   * Returns the rlp encoding of the block header.
    */
   serialize(): Buffer {
-    // Note: This never gets executed, defineProperties overwrites it.
-    return Buffer.from([])
+    return rlp.encode(this.raw())
   }
 
   /**
-   * Returns the block header in JSON format
+   * Returns the block header in JSON format.
    */
   toJSON(): JsonHeader {
     return {
@@ -496,7 +492,7 @@ export class BlockHeader {
 
     if (this._common.hardforkIsActiveOnChain('dao')) {
       // verify the extraData field.
-      const blockNumber = new BN(this.number)
+      const blockNumber = this.number
       const DAOActivationBlock = new BN(this._common.hardforkBlock('dao'))
       if (blockNumber.gte(DAOActivationBlock)) {
         const drift = blockNumber.sub(DAOActivationBlock)

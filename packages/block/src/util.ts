@@ -1,7 +1,16 @@
-import { BNLike } from './types'
 import { BN } from 'ethereumjs-util'
+import { BNLike } from './types'
 
-// This utility function returns a new BigNumber (always a clone) of a BNLike or Buffer object.
+/**
+ * Convert BN to 0x-prefixed hex string.
+ */
+export function bnToHex(value: BN): string {
+  return `0x${value.toString(16)}`
+}
+
+/**
+ * This utility function returns a new (cloned) BN from a Buffer or BNLike object.
+ */
 export function toBN(value: BNLike | Buffer) {
   if (typeof value == 'string') {
     if (value.substr(0, 2) == '0x') {
