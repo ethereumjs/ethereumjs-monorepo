@@ -10,6 +10,7 @@ module.exports = function (config) {
       './test-build/**/*.js': ['browserify'],
     },
     browsers: ['FirefoxHeadless', 'ChromeHeadless'],
+    concurrency: 1,
     singleRun: true,
   })
 }
