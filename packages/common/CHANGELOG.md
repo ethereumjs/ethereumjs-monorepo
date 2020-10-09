@@ -27,6 +27,12 @@ A new function `setHardforkByBlockNumber()` has been added, PR [#863](https://gi
 
 The default hardfork has been added as an accessible readonly property `DEFAULT_HARDFORK`, PR [#863](https://github.com/ethereumjs/ethereumjs-vm/pull/863). Current default hardfork is set to `istanbul`, PR [#906](https://github.com/ethereumjs/ethereumjs-vm/pull/906).
 
+## [1.5.2] - 2020-07-26
+
+This is a maintenance release.
+
+- Updates Goerli chain ID, PR [#792](https://github.com/ethereumjs/ethereumjs-vm/pull/792).
+
 ## [1.5.1] - 2020-05-04
 
 This is a maintenance release.

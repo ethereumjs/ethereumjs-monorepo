@@ -75,6 +75,10 @@ The deprecated `validate` option has been removed, please use `valdiateBlock` an
 - Fixed blockchain hanging forever in case code throws between a semaphore `lock`/`unlock`,
   Issue [#877](https://github.com/ethereumjs/ethereumjs-vm/issues/877)
 
+## [4.0.4] - 2020-07-27
+
+This release replaces the tiled (`~`) dependency from `ethereumjs-util` for a caret (`^`) one, meaning that any update to `ethereumjs-util` v6 will also be available for this library.
+
 ## [4.0.3] - 2019-12-19
 
 Supports `MuirGlacier` by updating `ethereumjs-block` to
