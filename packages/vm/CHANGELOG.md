@@ -50,7 +50,7 @@ const common = new Common({ chain: 'mainnet', hardfork: 'spuriousDragon' })
 const vm = new VM({ common })
 ```
 
-The default HF from the VM has been updated from `petersburg` to `instanbul`.
+**Breaking**: The default HF from the VM has been updated from `petersburg` to `instanbul`.
 The HF setting is now automatically taken from the HF set for `Common.DEAULT_HARDFORK`,
 see PR [#906](https://github.com/ethereumjs/ethereumjs-vm/pull/906).
 
@@ -69,8 +69,6 @@ PR [#754](https://github.com/ethereumjs/ethereumjs-vm/pull/754).
 **Attention!** Berlin HF support is still considered experimental
 and implementations can change on non-major VM releases!
 
-[TODO: FINALIZE THIS SECTION ONCE #785 OR FOLLOW-UP PR IS MERGED ]
-
 Support for BLS12-381 precompiles (`EIP-2537`) is added as an independent EIP
 implementation - see PR [#785](https://github.com/ethereumjs/ethereumjs-vm/pull/785) -
 since there is still an ongoing discussion on taking this EIP in for Berlin or
@@ -78,7 +76,9 @@ using a more generalized approach on curve computation with the Ethereum EVM
 (`evm384` by the eWASM team).
 
 The integration comes along with an API addition to the VM to support the activation
-of specific EIPs, PR [#856](https://github.com/ethereumjs/ethereumjs-vm/pull/856).
+of specific EIPs, see PR [#856](https://github.com/ethereumjs/ethereumjs-vm/pull/856),
+PR [#869](https://github.com/ethereumjs/ethereumjs-vm/pull/869) and
+PR [#872](https://github.com/ethereumjs/ethereumjs-vm/pull/872).
 
 This API can be used as follows:
 
@@ -98,30 +98,69 @@ and can be passed in on instantiation have been updated to new major versions.
   PR [#833](https://github.com/ethereumjs/ethereumjs-vm/pull/833)
 - `ethereumjs-common` `v1` -> `@ethereumjs/common` `v2`
 
-If you pass in instances of these libraries to the VM please make sure to
+**Breaking**: If you pass in instances of these libraries to the VM please make sure to
 update these library versions as stated. Please also take a note on the
 package name changes!
 
 All these libraries are now written in `TypeScript` and use promises instead of
 callbacks for accessing their APIs.
 
-### Other Additions/Changes
+### New StateManager Interface
 
-- Add `StateManager` interface,
-  PR [#763](https://github.com/ethereumjs/ethereumjs-vm/pull/763)
-- New benchmarking tool for the VM, CI integration on GitHub actions,
-  PR [#830](https://github.com/ethereumjs/ethereumjs-vm/pull/830)
+There is now a new `TypeScript` interface for the `StateManager`, see
+PR [#763](https://github.com/ethereumjs/ethereumjs-vm/pull/763). If you are
+using a custom `StateManager` you can use this interface to get better
+assurance that you are using a `StateManager` going conform with the current
+`StateManager` API and therefore running in the VM without problems.
+
+### Other Changes
+
+**Changes and Refactoring**
+
 - Group opcodes based upon hardfork,
   PR [#798](https://github.com/ethereumjs/ethereumjs-vm/pull/798)
+- Split opcodes logic into codes, fns, and utils files,
+  PR [#896](https://github.com/ethereumjs/ethereumjs-vm/pull/896)
 - Group precompiles based upon hardfork,
   PR [#783](https://github.com/ethereumjs/ethereumjs-vm/pull/783)
 - Make `memory.ts` use Buffers instead of Arrays,
   PR [#850](https://github.com/ethereumjs/ethereumjs-vm/pull/850)
+- Use `Map` for `OpcodeList` and `opcode` handlers,
+  PR [#852](https://github.com/ethereumjs/ethereumjs-vm/pull/852)
+- Compare buffers directly,
+  PR [#851](https://github.com/ethereumjs/ethereumjs-vm/pull/851)
+- Moved gas base fees from VM to Common,
+  PR [#806](https://github.com/ethereumjs/ethereumjs-vm/pull/806)
+- Return precompiles on `getPrecompile()` based on hardfork,
+  PR [#783](https://github.com/ethereumjs/ethereumjs-vm/pull/783)
+- Removed `async` dependency,
+  PR [#779](https://github.com/ethereumjs/ethereumjs-vm/pull/779)
+- Updated `ethereumjs-util` to v7,
+  PR [#748](https://github.com/ethereumjs/ethereumjs-vm/pull/748)
+
+**CI and Test Improvements**
+
+- New benchmarking tool for the VM, CI integration on GitHub actions,
+  PR [#794](https://github.com/ethereumjs/ethereumjs-vm/pull/794) and
+  PR [#830](https://github.com/ethereumjs/ethereumjs-vm/pull/830)
+- Various updates, fixes and refactoring work on the test runner,
+  PR [#752](https://github.com/ethereumjs/ethereumjs-vm/pull/752) and
+  PR [#849](https://github.com/ethereumjs/ethereumjs-vm/pull/849)
+- Integrated `ethereumjs-testing` code logic into VM for more
+  flexible future test load optimizations,
+  PR [#808](https://github.com/ethereumjs/ethereumjs-vm/pull/808)
+- Transition VM tests to TypeScript,
+  PR [#881](https://github.com/ethereumjs/ethereumjs-vm/pull/881) and
+  PR [#882](https://github.com/ethereumjs/ethereumjs-vm/pull/882)
 
 **Bug Fixes**
 
 - Fix `activatePrecompiles`,
   PR [#797](https://github.com/ethereumjs/ethereumjs-vm/pull/797)
+- Strip zeros when putting contract storage in StateManager,
+  PR [#880](https://github.com/ethereumjs/ethereumjs-vm/pull/880)
+- Two bug fixes along `istanbul` `SSTORE` gas calculation,
+  PR [#870](https://github.com/ethereumjs/ethereumjs-vm/pull/870)
 
 ## [4.2.0] - 2020-05-06
 
