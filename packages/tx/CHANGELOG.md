@@ -22,7 +22,7 @@ npm i @ethereumjs/tx
 
 ### Major Refactoring - Breaking Changes
 
-This release is a major refactoring of the transaction library to simplify and strengthen its code base.
+This release is a major refactoring of the transaction library to simplify and strengthen its code base. Refactoring work has been done along PR [#812](https://github.com/ethereumjs/ethereumjs-vm/pull/812) and PR [#887](https://github.com/ethereumjs/ethereumjs-vm/pull/887).
 
 #### New Constructor Params
 
@@ -68,12 +68,6 @@ const tx = Transaction.fromValuesArray(arr)
 
 Learn more about the full API in the [docs](./docs/README.md).
 
-#### New Default Hardfork
-
-The default HF on the library has been updated from `petersburg` to `instanbul`.
-The HF setting is now automatically taken from the HF set for `Common.DEAULT_HARDFORK`,
-see PR [#906](https://github.com/ethereumjs/ethereumjs-vm/pull/906).
-
 #### Immutability
 
 The returned transaction is now frozen and immutable. To work with a maliable transaction, copy it with `const fakeTx = Object.create(tx)`.
@@ -89,6 +83,21 @@ Getting a message to sign has been changed from calling `tx.hash(false)` to `tx.
 #### Fake Transaction
 
 The `FakeTransaction` class was removed since its functionality can now be implemented with less code. To create a fake tansaction for use in e.g. `VM.runTx()` overwrite `getSenderAddress` with your own `Address`. See a full example in the section in the [README](./README.md#fake-transaction).
+
+### New Default Hardfork
+
+**Breaking:** The default HF on the library has been updated from `petersburg` to `instanbul`, see PR [#906](https://github.com/ethereumjs/ethereumjs-vm/pull/906).
+The HF setting is now automatically taken from the HF set for `Common.DEAULT_HARDFORK`,
+see PR [#863](https://github.com/ethereumjs/ethereumjs-vm/pull/863).
+
+### Other Changes
+
+**Changes and Refactoring**
+
+- Updated `ethereumjs-util` to v7,
+  PR [#748](https://github.com/ethereumjs/ethereumjs-vm/pull/748)
+- Replaced `new Buffer()` (deprecated) statements with `Buffer.from()`,
+  PR [#721](https://github.com/ethereumjs/ethereumjs-vm/pull/721)
 
 ## [2.1.2] - 2019-12-19
 
