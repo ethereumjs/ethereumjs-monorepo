@@ -61,6 +61,20 @@ The deprecated `validate` option has been removed, please use `valdiateBlock` an
 
 [5.0.0]: https://github.com/ethereumjs/ethereumjs-vm/compare/%40ethereumjs%2Fblockchain%404.0.2...%40ethereumjs%2Fblockchain%405.0.0
 
+### Other Changes
+
+**Changes and Refactoring**
+
+- Removed `async` dependency,
+  PR [#779](https://github.com/ethereumjs/ethereumjs-vm/pull/779)
+- Updated `ethereumjs-util` to v7,
+  PR [#748](https://github.com/ethereumjs/ethereumjs-vm/pull/748)
+
+**Bug Fixes**
+
+- Fixed blockchain hanging forever in case code throws between a semaphore `lock`/`unlock`,
+  Issue [#877](https://github.com/ethereumjs/ethereumjs-vm/issues/877)
+
 ## [4.0.3] - 2019-12-19
 
 Supports `MuirGlacier` by updating `ethereumjs-block` to

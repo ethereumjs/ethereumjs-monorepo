@@ -47,6 +47,11 @@ for a complete example.
 
 [1.0.0]: https://github.com/ethereumjs/ethereumjs-vm/releases/tag/%40ethereumjs%2Fethash%401.0.0
 
+### Other Changes
+
+- Removed `async` dependency,
+  PR [#779](https://github.com/ethereumjs/ethereumjs-vm/pull/779)
+
 ## [0.0.8] - 2020-05-27
 
 This is a maintenance release with dependency updates, CI improvements, and some code modernization.
