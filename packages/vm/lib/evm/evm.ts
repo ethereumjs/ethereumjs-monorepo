@@ -340,7 +340,7 @@ export default class EVM {
       depth: message.depth || 0,
       gasPrice: this._tx.gasPrice,
       origin: this._tx.origin || message.caller || zeros(32),
-      block: this._block || Block.fromBlockData(),
+      block: this._block || new Block(),
       contract: await this._state.getAccount(message.to || zeros(32)),
       codeAddress: message.codeAddress,
     }

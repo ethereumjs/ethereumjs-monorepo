@@ -81,7 +81,7 @@ export default async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxRes
 
 async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   const state = this.stateManager
-  const { block, tx } = opts
+  const { tx, block } = opts
 
   /**
    * The `beforeTx` event
@@ -152,7 +152,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   results.gasUsed.iadd(basefee)
   // Process any gas refund
   const gasRefund = evm._refund
-  if (gasRefund) {
+  if (gasRefund.gtn(0)) {
     if (gasRefund.lt(results.gasUsed.divn(2))) {
       results.gasUsed.isub(gasRefund)
     } else {
@@ -171,14 +171,15 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   await state.putAccount(caller, fromAccount)
 
   // Update miner's balance
-  const minerAccount = await state.getAccount(block!.header.coinbase.buf)
+  const minerBuf = block!.header.coinbase.buf
+  const minerAccount = await state.getAccount(minerBuf)
   // add the amount spent on gas to the miner's account
   minerAccount.balance = new BN(minerAccount.balance).add(results.amountSpent).toArrayLike(Buffer)
 
   // Put the miner account into the state. If the balance of the miner account remains zero, note that
   // the state.putAccount function puts this into the "touched" accounts. This will thus be removed when
   // we clean the touched accounts below in case we are in a fork >= SpuriousDragon
-  await state.putAccount(block!.header.coinbase.buf, minerAccount)
+  await state.putAccount(minerBuf, minerAccount)
 
   /*
    * Cleanup accounts

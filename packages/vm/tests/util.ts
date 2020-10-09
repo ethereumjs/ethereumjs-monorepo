@@ -1,8 +1,8 @@
 import * as tape from 'tape'
 import { BN, rlp, keccak256, stripHexPrefix, setLengthLeft, toBuffer } from 'ethereumjs-util'
 import Account from '@ethereumjs/account'
-import { Transaction } from '@ethereumjs/tx'
-import { Block, BlockHeader } from '@ethereumjs/block'
+import { Transaction, TxOptions } from '@ethereumjs/tx'
+import { Block, BlockHeader, BlockOptions } from '@ethereumjs/block'
 import Common from '@ethereumjs/common'
 
 export function dumpState(state: any, cb: Function) {
@@ -87,11 +87,11 @@ const format = (exports.format = function (
 /**
  * Make a tx using JSON from tests repo
  * @param {Object} txData The tx object from tests repo
- * @param {Common} common An @ethereumjs/common object
+ * @param {TxOptions} opts Tx opts that can include an @ethereumjs/common object
  * @returns {Transaction} Transaction to be passed to VM.runTx function
  */
-export function makeTx(txData: any, common: Common) {
-  const tx = Transaction.fromTxData(txData, { common })
+export function makeTx(txData: any, opts: TxOptions = {}) {
+  const tx = Transaction.fromTxData(txData, opts)
 
   if (txData.secretKey) {
     const privKey = toBuffer(txData.secretKey)
@@ -249,7 +249,7 @@ export function verifyLogs(logs: any, testData: any, t: tape.Test) {
   }
 }
 
-export function makeBlockHeader(data: any) {
+export function makeBlockHeader(data: any, opts: BlockOptions = {}) {
   const {
     currentTimestamp,
     currentGasLimit,
@@ -266,15 +266,7 @@ export function makeBlockHeader(data: any) {
     gasLimit: currentGasLimit,
     timestamp: currentTimestamp,
   }
-  return BlockHeader.fromHeaderData(headerData)
-  // const headerData = {
-  //   number: format(currentNumber),
-  //   coinbase: setLengthLeft(format(currentCoinbase, false, true), 20),
-  //   parentHash: format(previousHash),
-  //   difficulty: format(currentDifficulty),
-  //   gasLimit: format(currentGasLimit),
-  //   timestamp: format(currentTimestamp),
-  // }
+  return BlockHeader.fromHeaderData(headerData, opts)
 }
 
 /**
@@ -284,13 +276,9 @@ export function makeBlockHeader(data: any) {
  * @param uncleHeaders uncle headers for the block (optional)
  * @returns the block
  */
-export function makeBlockFromEnv(
-  env: any,
-  transactions: Transaction[] = [],
-  uncleHeaders: BlockHeader[] = [],
-): Block {
-  const header = makeBlockHeader(env)
-  return new Block(header, transactions, uncleHeaders)
+export function makeBlockFromEnv(env: any, opts: BlockOptions = {}): Block {
+  const header = makeBlockHeader(env, opts)
+  return new Block(header)
 }
 
 /**

@@ -70,20 +70,17 @@ async function runTestCase(options: any, testData: any, t: tape.Test) {
 
   const common = new Common({ chain: 'mainnet', hardfork, eips })
 
-  const vm = new VM({
-    state,
-    common: common,
-  })
+  const vm = new VM({ state, common })
 
   await setupPreConditions(vm.stateManager._trie, testData)
 
-  const tx = makeTx(testData.transaction, common)
+  const tx = makeTx(testData.transaction, { common })
 
   if (!tx.validate()) {
     throw new Error('Transaction is invalid')
   }
 
-  const block = makeBlockFromEnv(testData.env)
+  const block = makeBlockFromEnv(testData.env, { common })
 
   if (options.jsontrace) {
     vm.on('step', function (e: any) {

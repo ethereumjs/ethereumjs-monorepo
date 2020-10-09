@@ -72,7 +72,7 @@ export interface RunCodeOpts {
  */
 export default function runCode(this: VM, opts: RunCodeOpts): Promise<ExecResult> {
   if (!opts.block) {
-    opts.block = Block.fromBlockData()
+    opts.block = new Block()
   }
 
   // Backwards compatibility
