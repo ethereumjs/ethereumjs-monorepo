@@ -29,10 +29,7 @@ test('blockchain test', (t) => {
     const blockchain = new Blockchain({ validateBlocks: true, validatePow: false })
     const genesis = Block.genesis()
     await blockchain.putGenesis(genesis)
-    st.ok(
-      genesis.hash().equals(blockchain.meta.genesis!),
-      'genesis block hash should be correct',
-    )
+    st.ok(genesis.hash().equals(blockchain.meta.genesis!), 'genesis block hash should be correct')
     st.end()
   })
 
@@ -165,10 +162,7 @@ test('blockchain test', (t) => {
     // start: genesisHash, max: 4, skip: 2, reverse: false
     const getBlocks = await blockchain.getBlocks(blocks[0].hash(), 4, 2, false)
     st.equal(getBlocks!.length, 4, 'should get 4 blocks')
-    st.ok(
-      getBlocks![1].header.number.eq(blocks[3].header.number),
-      'should skip two blocks apart',
-    )
+    st.ok(getBlocks![1].header.number.eq(blocks[3].header.number), 'should skip two blocks apart')
     st.ok(!isConsecutive(getBlocks!), 'blocks should not be consecutive')
     st.end()
   })
@@ -356,7 +350,13 @@ test('blockchain test', (t) => {
     await blockchain.putBlocks(blocks.slice(1))
 
     const common = new Common({ chain: 'mainnet', hardfork: 'chainstart' })
-    const headerData = { number: 15, parentHash: blocks[14].hash(), difficulty: blocks[14].header.canonicalDifficulty(blocks[14]), gasLimit: 8000000, timestamp: blocks[14].header.timestamp.addn(1) }
+    const headerData = {
+      number: 15,
+      parentHash: blocks[14].hash(),
+      difficulty: blocks[14].header.canonicalDifficulty(blocks[14]),
+      gasLimit: 8000000,
+      timestamp: blocks[14].header.timestamp.addn(1),
+    }
     const forkHeader = BlockHeader.fromHeaderData(headerData, { common })
 
     blockchain._heads['staletest'] = blockchain._headHeader
@@ -373,7 +373,13 @@ test('blockchain test', (t) => {
     st.error(error, 'no error')
 
     const common = new Common({ chain: 'mainnet', hardfork: 'chainstart' })
-    const headerData = { number: 15, parentHash: blocks[14].hash(), difficulty: blocks[14].header.canonicalDifficulty(blocks[14]), gasLimit: 8000000, timestamp: blocks[14].header.timestamp.addn(1) }
+    const headerData = {
+      number: 15,
+      parentHash: blocks[14].hash(),
+      difficulty: blocks[14].header.canonicalDifficulty(blocks[14]),
+      gasLimit: 8000000,
+      timestamp: blocks[14].header.timestamp.addn(1),
+    }
     const forkHeader = BlockHeader.fromHeaderData(headerData, { common })
 
     blockchain._heads['staletest'] = blockchain._headHeader
@@ -507,7 +513,13 @@ test('blockchain test', (t) => {
     const genesis = Block.genesis({ header: { gasLimit } })
     await blockchain.putGenesis(genesis)
 
-    const headerData = { number: 1, parentHash: genesis.hash(), difficulty: genesis.header.canonicalDifficulty(genesis), gasLimit, timestamp: genesis.header.timestamp.addn(1) }
+    const headerData = {
+      number: 1,
+      parentHash: genesis.hash(),
+      difficulty: genesis.header.canonicalDifficulty(genesis),
+      gasLimit,
+      timestamp: genesis.header.timestamp.addn(1),
+    }
     const header = BlockHeader.fromHeaderData(headerData)
     await blockchain.putHeader(header)
 
@@ -551,7 +563,13 @@ test('blockchain test', (t) => {
     const header1 = BlockHeader.fromHeaderData(headerData1, opts)
     const headers = [header1]
 
-    const headerData2 = { number: 2, parentHash: header1.hash(), difficulty: header1.canonicalDifficulty(block), timestamp: header1.timestamp.addn(1), gasLimit }
+    const headerData2 = {
+      number: 2,
+      parentHash: header1.hash(),
+      difficulty: header1.canonicalDifficulty(block),
+      timestamp: header1.timestamp.addn(1),
+      gasLimit,
+    }
     const header2 = BlockHeader.fromHeaderData(headerData2, opts)
     headers.push(header2)
 

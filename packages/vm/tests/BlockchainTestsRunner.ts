@@ -50,7 +50,7 @@ export default async function runBlockchainTest(options: any, testData: any, t: 
   })
 
   if (validatePow) {
-    ; (blockchain.ethash as any).cacheDB = cacheDB
+    ;(blockchain.ethash as any).cacheDB = cacheDB
   }
 
   let VM

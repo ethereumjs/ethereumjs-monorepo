@@ -14,8 +14,7 @@ export function setupVM(opts: VMOpts = {}) {
   const db = level()
   const common = opts.common
   if (!opts.blockchain) {
-    opts.blockchain = new Blockchain(
-      { db, validateBlocks: false, validatePow: false, common })
+    opts.blockchain = new Blockchain({ db, validateBlocks: false, validatePow: false, common })
   }
   return new VM(opts)
 }

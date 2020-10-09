@@ -454,7 +454,6 @@ export class BlockHeader {
     return rlphash(this.raw())
   }
 
-
   /**
    * Checks if the block header is a genesis header.
    */

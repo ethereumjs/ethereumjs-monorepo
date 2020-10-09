@@ -79,11 +79,7 @@ tape('[Block]: Header functions', function (t) {
     const common = new Common({ chain: 'ropsten', hardfork: 'chainstart' })
     const genesis = BlockHeader.genesis({}, { common })
     const ropstenStateRoot = '217b0bbcfb72e2d57e28f33cb361b9983513177755dc3f33ce3e7022ed62b77b'
-    st.strictEqual(
-      genesis.stateRoot.toString('hex'),
-      ropstenStateRoot,
-      'genesis stateRoot match',
-    )
+    st.strictEqual(genesis.stateRoot.toString('hex'), ropstenStateRoot, 'genesis stateRoot match')
     st.end()
   })
 })

@@ -4,10 +4,7 @@ import Common from '@ethereumjs/common'
 import Blockchain from '../src'
 const level = require('level-mem')
 
-export const generateBlockchain = async (
-  numberOfBlocks: number,
-  genesis?: Block,
-): Promise<any> => {
+export const generateBlockchain = async (numberOfBlocks: number, genesis?: Block): Promise<any> => {
   const blockchain = new Blockchain({ validateBlocks: true, validatePow: false })
   const existingBlocks: Block[] = genesis ? [genesis] : []
   const blocks = generateBlocks(numberOfBlocks, existingBlocks)
@@ -40,7 +37,15 @@ export const generateBlocks = (numberOfBlocks: number, existingBlocks?: Block[])
 
   for (let i = blocks.length; i < numberOfBlocks; i++) {
     const lastBlock = blocks[i - 1]
-    const blockData = { header: { number: i, parentHash: lastBlock.hash(), difficulty: lastBlock.header.canonicalDifficulty(lastBlock), gasLimit, timestamp: lastBlock.header.timestamp.addn(1) } }
+    const blockData = {
+      header: {
+        number: i,
+        parentHash: lastBlock.hash(),
+        difficulty: lastBlock.header.canonicalDifficulty(lastBlock),
+        gasLimit,
+        timestamp: lastBlock.header.timestamp.addn(1),
+      },
+    }
     const block = Block.fromBlockData(blockData, opts)
     blocks.push(block)
   }

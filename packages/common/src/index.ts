@@ -15,7 +15,7 @@ export interface CommonOpts {
   /**
    * String identifier ('byzantium') for hardfork
    *
-   * Default: `petersburg`
+   * Default: `istanbul`
    */
   hardfork?: string
   /**
@@ -44,7 +44,7 @@ interface hardforkOptions {
  * Common class to access chain and hardfork parameters
  */
 export default class Common {
-  readonly DEFAULT_HARDFORK: string = 'petersburg'
+  readonly DEFAULT_HARDFORK: string = 'istanbul'
 
   private _chainParams: Chain
   private _hardfork: string

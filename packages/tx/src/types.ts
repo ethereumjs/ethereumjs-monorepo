@@ -9,6 +9,8 @@ export interface TxOptions {
    * A Common object defining the chain and hardfork for the transaction.
    *
    * Default: `Common` object set to `mainnet` and the default hardfork as defined in the `Common` class.
+   *
+   * Current default hardfork: `istanbul`
    */
   common?: Common
 }

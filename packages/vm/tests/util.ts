@@ -250,7 +250,14 @@ export function verifyLogs(logs: any, testData: any, t: tape.Test) {
 }
 
 export function makeBlockHeader(data: any) {
-  const { currentTimestamp, currentGasLimit, previousHash, currentCoinbase, currentDifficulty, currentNumber } = data
+  const {
+    currentTimestamp,
+    currentGasLimit,
+    previousHash,
+    currentCoinbase,
+    currentDifficulty,
+    currentNumber,
+  } = data
   const headerData = {
     number: currentNumber,
     coinbase: currentCoinbase,
@@ -277,7 +284,11 @@ export function makeBlockHeader(data: any) {
  * @param uncleHeaders uncle headers for the block (optional)
  * @returns the block
  */
-export function makeBlockFromEnv(env: any, transactions: Transaction[] = [], uncleHeaders: BlockHeader[] = []): Block {
+export function makeBlockFromEnv(
+  env: any,
+  transactions: Transaction[] = [],
+  uncleHeaders: BlockHeader[] = [],
+): Block {
   const header = makeBlockHeader(env)
   return new Block(header, transactions, uncleHeaders)
 }
