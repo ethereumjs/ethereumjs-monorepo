@@ -194,6 +194,9 @@ export class BlockHeader {
       if (gasLimit.eq(DEFAULT_GAS_LIMIT)) {
         gasLimit = new BN(toBuffer(this._common.genesis().gasLimit))
       }
+      if (timestamp.isZero()) {
+        timestamp = new BN(toBuffer(this._common.genesis().timestamp))
+      }
       if (difficulty.isZero()) {
         difficulty = new BN(toBuffer(this._common.genesis().difficulty))
       }
