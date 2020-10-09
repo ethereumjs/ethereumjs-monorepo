@@ -6,16 +6,16 @@ import { Block } from '../src'
 tape('[Block]: block functions', function (t) {
   t.test('should test block initialization', function (st) {
     const common = new Common({ chain: 'ropsten', hardfork: 'chainstart' })
-    const block1 = Block.fromBlockData({}, { common: common, initWithGenesisHeader: true })
-    st.ok(block1.hash().toString('hex'), 'block should initialize')
+    const genesis = Block.genesis({}, { common })
+    st.ok(genesis.hash().toString('hex'), 'block should initialize')
     st.end()
   })
 
   t.test('should initialize with undefined parameters without throwing', function (st) {
     st.doesNotThrow(function () {
       Block.fromBlockData()
-      st.end()
     })
+    st.end()
   })
 
   t.test('should initialize with null parameters without throwing', function (st) {
@@ -76,11 +76,11 @@ tape('[Block]: block functions', function (t) {
 
   const testDataGenesis = require('./testdata/genesishashestest.json').test
   t.test('should test genesis hashes (mainnet default)', function (st) {
-    const genesisBlock = Block.fromBlockData({}, { initWithGenesisHeader: true })
-    const rlp = genesisBlock.serialize()
-    st.strictEqual(rlp.toString('hex'), testDataGenesis.genesis_rlp_hex, 'rlp hex match')
+    const genesis = Block.genesis()
+    const genesisRlp = genesis.serialize()
+    st.strictEqual(genesisRlp.toString('hex'), testDataGenesis.genesis_rlp_hex, 'rlp hex match')
     st.strictEqual(
-      genesisBlock.hash().toString('hex'),
+      genesis.hash().toString('hex'),
       testDataGenesis.genesis_hash,
       'genesis hash match',
     )
@@ -89,9 +89,9 @@ tape('[Block]: block functions', function (t) {
 
   t.test('should test genesis hashes (ropsten)', function (st) {
     const common = new Common({ chain: 'ropsten', hardfork: 'chainstart' })
-    const genesisBlock = Block.fromBlockData({}, { common: common, initWithGenesisHeader: true })
+    const genesis = Block.genesis({}, { common })
     st.strictEqual(
-      genesisBlock.hash().toString('hex'),
+      genesis.hash().toString('hex'),
       common.genesis().hash.slice(2),
       'genesis hash match',
     )
@@ -100,9 +100,9 @@ tape('[Block]: block functions', function (t) {
 
   t.test('should test genesis hashes (rinkeby)', function (st) {
     const common = new Common({ chain: 'rinkeby', hardfork: 'chainstart' })
-    const genesisBlock = Block.fromBlockData({}, { common: common, initWithGenesisHeader: true })
+    const genesis = Block.genesis({}, { common })
     st.strictEqual(
-      genesisBlock.hash().toString('hex'),
+      genesis.hash().toString('hex'),
       common.genesis().hash.slice(2),
       'genesis hash match',
     )
@@ -111,10 +111,10 @@ tape('[Block]: block functions', function (t) {
 
   t.test('should test genesis parameters (ropsten)', function (st) {
     const common = new Common({ chain: 'ropsten', hardfork: 'chainstart' })
-    const genesisBlock = Block.fromBlockData({}, { common, initWithGenesisHeader: true })
+    const genesis = Block.genesis({}, { common })
     const ropstenStateRoot = '217b0bbcfb72e2d57e28f33cb361b9983513177755dc3f33ce3e7022ed62b77b'
     st.strictEqual(
-      genesisBlock.header.stateRoot.toString('hex'),
+      genesis.header.stateRoot.toString('hex'),
       ropstenStateRoot,
       'genesis stateRoot match',
     )
@@ -135,7 +135,7 @@ tape('[Block]: block functions', function (t) {
     const common = new Common({ chain: 'mainnet', hardfork: 'dao' })
     st.throws(
       function () {
-        Block.fromValuesArray(blockData, { common: common })
+        Block.fromValuesArray(blockData, { common })
       },
       /Error: extraData should be 'dao-hard-fork'$/,
       'should throw on DAO HF block with wrong extra data',
@@ -145,7 +145,7 @@ tape('[Block]: block functions', function (t) {
     blockData[0][12] = Buffer.from('64616f2d686172642d666f726b', 'hex')
 
     st.doesNotThrow(function () {
-      Block.fromValuesArray(blockData, { common: common })
+      Block.fromValuesArray(blockData, { common })
     }, 'should not throw on DAO HF block with correct extra data')
     st.end()
   })

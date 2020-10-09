@@ -5,8 +5,8 @@ import { Block } from '@ethereumjs/block'
 import { Transaction } from '@ethereumjs/tx'
 import { DefaultStateManager } from '../../lib/state'
 import runBlock from '../../lib/runBlock'
-import { setupVM, createAccount } from './utils'
 import { setupPreConditions, getDAOCommon } from '../util'
+import { setupVM, createAccount } from './utils'
 
 const testData = require('./testdata.json')
 
@@ -39,7 +39,8 @@ tape('runBlock', async (t) => {
   const suite = setup()
 
   t.test('should fail when runTx fails', async (st) => {
-    const block = new Block(rlp.decode(suite.data.blocks[0].rlp))
+    const blockRlp = suite.data.blocks[0].rlp
+    const block = Block.fromRLPSerializedBlock(blockRlp)
 
     // The mocked VM uses a mocked runTx
     // which always returns an error.
@@ -55,7 +56,7 @@ tape('runBlock', async (t) => {
 tape('should fail when block gas limit higher than 2^63-1', async (t) => {
   const suite = setup()
 
-  const block = new Block({
+  const block = Block.fromBlockData({
     header: {
       ...suite.data.blocks[0].header,
       gasLimit: Buffer.from('8000000000000000', 16),
@@ -72,7 +73,8 @@ tape('should fail when block gas limit higher than 2^63-1', async (t) => {
 tape('should fail when block validation fails', async (t) => {
   const suite = setup()
 
-  const block = new Block(rlp.decode(suite.data.blocks[0].rlp))
+  const blockRlp = suite.data.blocks[0].rlp
+  const block = Object.create(Block.fromRLPSerializedBlock(blockRlp))
   block.validate = async () => {
     throw new Error('test')
   }
@@ -88,12 +90,13 @@ tape('should fail when block validation fails', async (t) => {
 tape('should fail when tx gas limit higher than block gas limit', async (t) => {
   const suite = setup()
 
-  const block = new Block(rlp.decode(suite.data.blocks[0].rlp))
+  const blockRlp = suite.data.blocks[0].rlp
+  const block = Object.create(Block.fromRLPSerializedBlock(blockRlp))
   // modify first tx's gasLimit
   const { nonce, gasPrice, to, value, data, v, r, s } = block.transactions[0]
 
   const gasLimit = new BN(Buffer.from('3fefba', 'hex'))
-  const opts = { common: (<any>block)._common }
+  const opts = { common: block._common }
   block.transactions[0] = new Transaction(nonce, gasPrice, gasLimit, to, value, data, v, r, s, opts)
 
   await suite.p
@@ -108,8 +111,11 @@ tape('should run valid block', async (t) => {
   const vm = setupVM()
   const suite = setup(vm)
 
-  const genesis = new Block(rlp.decode(suite.data.genesisRLP))
-  const block = new Block(rlp.decode(suite.data.blocks[0].rlp))
+  const genesisRlp = suite.data.genesisRLP
+  const genesis = Block.fromRLPSerializedBlock(genesisRlp)
+
+  const blockRlp = suite.data.blocks[0].rlp
+  const block = Block.fromRLPSerializedBlock(blockRlp)
 
   await setupPreConditions(suite.vm.stateManager._trie, suite.data)
 
@@ -118,7 +124,7 @@ tape('should run valid block', async (t) => {
     'genesis state root should match calculated state root',
   )
 
-  let res = await suite.p.runBlock({
+  const res = await suite.p.runBlock({
     block,
     root: suite.vm.stateManager._trie.root,
     skipBlockValidation: true,
@@ -142,30 +148,29 @@ tape(
     const vm = setupVM({ common })
     const suite = setup(vm)
 
-    const genesis = new Block(rlp.decode(suite.data.genesisRLP))
     let block1: any = rlp.decode(suite.data.blocks[0].rlp)
     // edit extra data of this block to "dao-hard-fork"
     block1[0][12] = Buffer.from('dao-hard-fork')
-    const block = new Block(block1)
+    const block = Block.fromValuesArray(block1)
     await setupPreConditions(suite.vm.stateManager._trie, suite.data)
 
     // fill two original DAO child-contracts with funds and the recovery account with funds in order to verify that the balance gets summed correctly
-    let fundBalance1 = new BN(Buffer.from('1111', 'hex'))
-    let accountFunded1 = createAccount(new BN(0), fundBalance1)
-    let DAOFundedContractAddress1 = Buffer.from('d4fe7bc31cedb7bfb8a345f31e668033056b2728', 'hex')
+    const fundBalance1 = new BN(Buffer.from('1111', 'hex'))
+    const accountFunded1 = createAccount(new BN(0), fundBalance1)
+    const DAOFundedContractAddress1 = Buffer.from('d4fe7bc31cedb7bfb8a345f31e668033056b2728', 'hex')
     await suite.vm.stateManager.putAccount(DAOFundedContractAddress1, accountFunded1)
 
-    let fundBalance2 = new BN(Buffer.from('2222', 'hex'))
-    let accountFunded2 = createAccount(new BN(0), fundBalance2)
-    let DAOFundedContractAddress2 = Buffer.from('b3fb0e5aba0e20e5c49d252dfd30e102b171a425', 'hex')
+    const fundBalance2 = new BN(Buffer.from('2222', 'hex'))
+    const accountFunded2 = createAccount(new BN(0), fundBalance2)
+    const DAOFundedContractAddress2 = Buffer.from('b3fb0e5aba0e20e5c49d252dfd30e102b171a425', 'hex')
     await suite.vm.stateManager.putAccount(DAOFundedContractAddress2, accountFunded2)
 
-    let DAORefundAddress = Buffer.from('bf4ed7b27f1d666546e30d74d50d173d20bca754', 'hex')
-    let fundBalanceRefund = new BN(Buffer.from('4444', 'hex'))
-    let accountRefund = createAccount(new BN(0), fundBalanceRefund)
+    const DAORefundAddress = Buffer.from('bf4ed7b27f1d666546e30d74d50d173d20bca754', 'hex')
+    const fundBalanceRefund = new BN(Buffer.from('4444', 'hex'))
+    const accountRefund = createAccount(new BN(0), fundBalanceRefund)
     await suite.vm.stateManager.putAccount(DAORefundAddress, accountRefund)
 
-    let res = await suite.vm.runBlock({
+    const res = await suite.vm.runBlock({
       block,
       skipBlockValidation: true,
       generate: true,
@@ -173,16 +178,16 @@ tape(
 
     t.error(res.error, "runBlock shouldn't have returned error")
 
-    let DAOFundedContractAccount1 = await suite.vm.stateManager.getAccount(
+    const DAOFundedContractAccount1 = await suite.vm.stateManager.getAccount(
       DAOFundedContractAddress1,
     )
     t.true(DAOFundedContractAccount1.balance.equals(Buffer.from('', 'hex'))) // verify our funded account now has 0 balance
-    let DAOFundedContractAccount2 = await suite.vm.stateManager.getAccount(
+    const DAOFundedContractAccount2 = await suite.vm.stateManager.getAccount(
       DAOFundedContractAddress2,
     )
     t.true(DAOFundedContractAccount2.balance.equals(Buffer.from('', 'hex'))) // verify our funded account now has 0 balance
 
-    let DAORefundAccount = await suite.vm.stateManager.getAccount(DAORefundAddress)
+    const DAORefundAccount = await suite.vm.stateManager.getAccount(DAORefundAddress)
     t.true(DAORefundAccount.balance.equals(Buffer.from('7777', 'hex'))) // verify that the refund account gets the summed balance of the original refund account + two child DAO accounts
 
     t.end()
@@ -193,11 +198,12 @@ async function runWithHf(hardfork: string) {
   const vm = setupVM({ common: new Common({ chain: 'mainnet', hardfork }) })
   const suite = setup(vm)
 
-  const block = new Block(rlp.decode(suite.data.blocks[0].rlp))
+  const blockRlp = suite.data.blocks[0].rlp
+  const block = Block.fromRLPSerializedBlock(blockRlp)
 
   await setupPreConditions(suite.vm.stateManager._trie, suite.data)
 
-  let res = await suite.p.runBlock({
+  const res = await suite.p.runBlock({
     block,
     generate: true,
     skipBlockValidation: true,

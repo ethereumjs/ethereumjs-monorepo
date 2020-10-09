@@ -137,6 +137,14 @@ export class BlockHeader {
   }
 
   /**
+   * Alias for Header.fromHeaderData() with initWithGenesisHeader set to true.
+   */
+  public static genesis(headerData: HeaderData = {}, opts: BlockOptions = {}) {
+    opts = { ...opts, initWithGenesisHeader: true }
+    return BlockHeader.fromHeaderData(headerData, opts)
+  }
+
+  /**
    * This constructor takes the values, validates them, assigns them and freezes the object.
    * Use the public static factory methods to assist in creating a Header object from
    * varying data types.
@@ -183,9 +191,6 @@ export class BlockHeader {
         )
       }
       number = new BN(0)
-      if (timestamp.isZero()) {
-        timestamp = new BN(Date.now())
-      }
       if (gasLimit.eq(DEFAULT_GAS_LIMIT)) {
         gasLimit = new BN(toBuffer(this._common.genesis().gasLimit))
       }
@@ -246,9 +251,6 @@ export class BlockHeader {
     }
     if (mixHash.length !== 32) {
       throw new Error(`mixHash must be 32 bytes, received ${mixHash.length} bytes`)
-    }
-    if (extraData.length > 32) {
-      throw new Error(`extraData cannot exceed 32 bytes, received ${extraData.length} bytes`)
     }
     if (nonce.length !== 8) {
       throw new Error(`nonce must be 8 bytes, received ${nonce.length} bytes`)
@@ -423,13 +425,6 @@ export class BlockHeader {
   }
 
   /**
-   * Returns the hash of the block header.
-   */
-  hash(): Buffer {
-    return rlphash(this.raw())
-  }
-
-  /**
    * Returns a Buffer Array of the raw Buffers in this header, in order.
    */
   raw(): BlockHeaderBuffer {
@@ -451,6 +446,14 @@ export class BlockHeader {
       this.nonce,
     ]
   }
+
+  /**
+   * Returns the hash of the block header.
+   */
+  hash(): Buffer {
+    return rlphash(this.raw())
+  }
+
 
   /**
    * Checks if the block header is a genesis header.

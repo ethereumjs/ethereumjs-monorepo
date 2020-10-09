@@ -216,8 +216,8 @@ export default class Blockchain implements BlockchainInterface {
    */
   async _setCanonicalGenesisBlock() {
     const common = new Common({ chain: this._common.chainId(), hardfork: 'chainstart' })
-    const genesisBlock = Block.fromBlockData({}, { common, initWithGenesisHeader: true })
-    await this._putBlockOrHeader(genesisBlock, true)
+    const genesis = Block.genesis({}, { common })
+    await this._putBlockOrHeader(genesis, true)
   }
 
   /**
@@ -350,7 +350,8 @@ export default class Blockchain implements BlockchainInterface {
 
     const hash = block.hash()
     const { header } = block
-    const { number, difficulty: td } = header
+    const { number } = header
+    const td = header.difficulty.clone()
     const currentTd = { header: new BN(0), block: new BN(0) }
     const dbOps: DBOp[] = []
 

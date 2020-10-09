@@ -72,6 +72,14 @@ export class Block {
   }
 
   /**
+   * Alias for Block.fromBlockData() with initWithGenesisHeader set to true.
+   */
+  public static genesis(blockData: BlockData = {}, opts: BlockOptions = {}) {
+    opts = { ...opts, initWithGenesisHeader: true }
+    return Block.fromBlockData(blockData, opts)
+  }
+
+  /**
    * This constructor takes the values, validates them, assigns them and freezes the object.
    * Use the static factory methods to assist in creating a Block object from varying data types and options.
    */

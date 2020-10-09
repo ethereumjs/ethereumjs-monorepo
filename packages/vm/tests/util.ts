@@ -2,22 +2,18 @@ import * as tape from 'tape'
 import { BN, rlp, keccak256, stripHexPrefix, setLengthLeft, toBuffer } from 'ethereumjs-util'
 import Account from '@ethereumjs/account'
 import { Transaction } from '@ethereumjs/tx'
-import { Block } from '@ethereumjs/block'
+import { Block, BlockHeader } from '@ethereumjs/block'
 import Common from '@ethereumjs/common'
 
 export function dumpState(state: any, cb: Function) {
   function readAccounts(state: any) {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
       let accounts: Account[] = []
       const rs = state.createReadStream()
       rs.on('data', function (data: any) {
-        let account = new Account(data.value)
-        // Commented out along TypeScript transition:
-        // Account has no property address
-        //account.address = data.key
+        const account = new Account(data.value)
         accounts.push(account)
       })
-
       rs.on('end', function () {
         resolve(accounts)
       })
@@ -254,30 +250,36 @@ export function verifyLogs(logs: any, testData: any, t: tape.Test) {
 }
 
 export function makeBlockHeader(data: any) {
-  const header: any = {}
-  header.timestamp = format(data.currentTimestamp)
-  header.gasLimit = format(data.currentGasLimit)
-  if (data.previousHash) {
-    header.parentHash = format(data.previousHash, false, true)
+  const { currentTimestamp, currentGasLimit, previousHash, currentCoinbase, currentDifficulty, currentNumber } = data
+  const headerData = {
+    number: currentNumber,
+    coinbase: currentCoinbase,
+    parentHash: previousHash,
+    difficulty: currentDifficulty,
+    gasLimit: currentGasLimit,
+    timestamp: currentTimestamp,
   }
-  header.coinbase = setLengthLeft(format(data.currentCoinbase, false, true), 20)
-  header.difficulty = format(data.currentDifficulty)
-  header.number = format(data.currentNumber)
-  return header
+  return BlockHeader.fromHeaderData(headerData)
+  // const headerData = {
+  //   number: format(currentNumber),
+  //   coinbase: setLengthLeft(format(currentCoinbase, false, true), 20),
+  //   parentHash: format(previousHash),
+  //   difficulty: format(currentDifficulty),
+  //   gasLimit: format(currentGasLimit),
+  //   timestamp: format(currentTimestamp),
+  // }
 }
 
 /**
  * makeBlockFromEnv - helper to create a block from the env object in tests repo
  * @param env object from tests repo
- * @param transactions transactions for the block
+ * @param transactions transactions for the block (optional)
+ * @param uncleHeaders uncle headers for the block (optional)
  * @returns the block
  */
-export function makeBlockFromEnv(env: any, transactions: Transaction[] = []): Block {
-  return new Block({
-    header: exports.makeBlockHeader(env),
-    transactions: transactions,
-    uncleHeaders: [],
-  })
+export function makeBlockFromEnv(env: any, transactions: Transaction[] = [], uncleHeaders: BlockHeader[] = []): Block {
+  const header = makeBlockHeader(env)
+  return new Block(header, transactions, uncleHeaders)
 }
 
 /**

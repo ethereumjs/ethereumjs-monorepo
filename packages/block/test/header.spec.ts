@@ -35,8 +35,8 @@ tape('[Block]: Header functions', function (t) {
 
   t.test('should test header initialization', function (st) {
     const common = new Common({ chain: 'ropsten', hardfork: 'chainstart' })
-    const block1 = Block.fromBlockData(undefined, { common, initWithGenesisHeader: true })
-    st.ok(block1.hash().toString('hex'), 'block should initialize')
+    const header = BlockHeader.genesis(undefined, { common })
+    st.ok(header.hash().toString('hex'), 'block should initialize')
     st.end()
   })
 
@@ -56,16 +56,17 @@ tape('[Block]: Header functions', function (t) {
   })
 
   t.test('should test isGenesis', function (st) {
-    let header = BlockHeader.fromHeaderData({ number: 1 })
-    st.equal(header.isGenesis(), false)
-    header = BlockHeader.fromHeaderData({}, { initWithGenesisHeader: true })
-    st.equal(header.isGenesis(), true)
+    const header1 = BlockHeader.fromHeaderData({ number: 1 })
+    st.equal(header1.isGenesis(), false)
+
+    const header2 = BlockHeader.genesis()
+    st.equal(header2.isGenesis(), true)
     st.end()
   })
 
   t.test('should test genesis hashes (mainnet default)', function (st) {
     const testDataGenesis = require('./testdata/genesishashestest.json').test
-    const header = BlockHeader.fromHeaderData({}, { initWithGenesisHeader: true })
+    const header = BlockHeader.genesis()
     st.strictEqual(
       header.hash().toString('hex'),
       testDataGenesis.genesis_hash,
@@ -76,10 +77,10 @@ tape('[Block]: Header functions', function (t) {
 
   t.test('should test genesis parameters (ropsten)', function (st) {
     const common = new Common({ chain: 'ropsten', hardfork: 'chainstart' })
-    const genesisHeader = BlockHeader.fromHeaderData({}, { common, initWithGenesisHeader: true })
+    const genesis = BlockHeader.genesis({}, { common })
     const ropstenStateRoot = '217b0bbcfb72e2d57e28f33cb361b9983513177755dc3f33ce3e7022ed62b77b'
     st.strictEqual(
-      genesisHeader.stateRoot.toString('hex'),
+      genesis.stateRoot.toString('hex'),
       ropstenStateRoot,
       'genesis stateRoot match',
     )
