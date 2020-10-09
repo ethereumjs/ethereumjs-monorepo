@@ -1,16 +1,15 @@
 import * as tape from 'tape'
+import { Address, BN, zeros, KECCAK256_RLP, KECCAK256_RLP_ARRAY } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
-import { rlp, toBuffer, zeros, KECCAK256_RLP, KECCAK256_RLP_ARRAY, BN } from 'ethereumjs-util'
 import { BlockHeader } from '../src/header'
 import { Block } from '../src'
-//import { Block } from '../src/block'
 
 tape('[Block]: Header functions', function (t) {
   t.test('should create with default constructor', function (st) {
     function compareDefaultHeader(st: tape.Test, header: BlockHeader) {
       st.deepEqual(header.parentHash, zeros(32))
       st.ok(header.uncleHash.equals(KECCAK256_RLP_ARRAY))
-      st.deepEqual(header.coinbase, zeros(20))
+      st.ok(header.coinbase.buf.equals(Address.zero().buf))
       st.deepEqual(header.stateRoot, zeros(32))
       st.ok(header.transactionsTrie.equals(KECCAK256_RLP))
       st.ok(header.receiptTrie.equals(KECCAK256_RLP))
@@ -25,35 +24,36 @@ tape('[Block]: Header functions', function (t) {
       st.deepEqual(header.nonce, zeros(8))
     }
 
-    let header = BlockHeader.fromHeaderData({})
+    const header = BlockHeader.fromHeaderData()
     compareDefaultHeader(st, header)
 
-    /*const block = new Block()
-    header = block.header
-    compareDefaultHeader(st, header)*/
+    const block = new Block()
+    compareDefaultHeader(st, block.header)
 
     st.end()
   })
 
-  /*t.test('should test header initialization', function (st) {
+  t.test('should test header initialization', function (st) {
     const common = new Common({ chain: 'ropsten', hardfork: 'chainstart' })
-    const block1 = new Block(undefined, { common: common, initWithGenesisHeader: true })
+    const block1 = Block.fromBlockData(undefined, { common, initWithGenesisHeader: true })
     st.ok(block1.hash().toString('hex'), 'block should initialize')
     st.end()
   })
 
   t.test('should test validateGasLimit', function (st) {
     const testData = require('./testdata/bcBlockGasLimitTest.json').tests
-    const bcBlockGasLimigTestData = testData.BlockGasLimit2p63m1
+    const bcBlockGasLimitTestData = testData.BlockGasLimit2p63m1
 
-    Object.keys(bcBlockGasLimigTestData).forEach((key) => {
-      const parentBlock = new Block(rlp.decode(bcBlockGasLimigTestData[key].genesisRLP))
-      const block = new Block(rlp.decode(bcBlockGasLimigTestData[key].blocks[0].rlp))
+    Object.keys(bcBlockGasLimitTestData).forEach((key) => {
+      const genesisRlp = bcBlockGasLimitTestData[key].genesisRLP
+      const parentBlock = Block.fromRLPSerializedBlock(genesisRlp)
+      const blockRlp = bcBlockGasLimitTestData[key].blocks[0].rlp
+      const block = Block.fromRLPSerializedBlock(blockRlp)
       st.equal(block.header.validateGasLimit(parentBlock), true)
     })
 
     st.end()
-  })*/
+  })
 
   t.test('should test isGenesis', function (st) {
     let header = BlockHeader.fromHeaderData({ number: 1 })
@@ -63,8 +63,8 @@ tape('[Block]: Header functions', function (t) {
     st.end()
   })
 
-  const testDataGenesis = require('./testdata/genesishashestest.json').test
   t.test('should test genesis hashes (mainnet default)', function (st) {
+    const testDataGenesis = require('./testdata/genesishashestest.json').test
     const header = BlockHeader.fromHeaderData({}, { initWithGenesisHeader: true })
     st.strictEqual(
       header.hash().toString('hex'),

@@ -1,7 +1,7 @@
 import * as tape from 'tape'
+import { rlp } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
-import { rlp, BN } from 'ethereumjs-util'
-import { Block } from '../src/block'
+import { Block } from '../src'
 
 tape('[Block]: block functions', function (t) {
   t.test('should test block initialization', function (st) {

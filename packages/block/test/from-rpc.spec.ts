@@ -16,7 +16,6 @@ tape('[fromRPC]: block #2924874', function (t) {
   t.test('should create a block header with the correct hash', function (st) {
     const block = blockHeaderFromRpc(blockData)
     const hash = Buffer.from(blockData.hash.slice(2), 'hex')
-    console.log(hash, block.hash())
     st.ok(block.hash().equals(hash))
     st.end()
   })

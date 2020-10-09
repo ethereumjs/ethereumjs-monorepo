@@ -36,7 +36,7 @@
   },
   "homepage": "https://github.com/ethereumjs/ethereumjs-vm/tree/master/packages/account#synopsis",
   "dependencies": {
-    "ethereumjs-util": "^7.0.5",
+    "ethereumjs-util": "^7.0.6",
     "rlp": "^2.2.3",
     "safe-buffer": "^5.1.1"
   },

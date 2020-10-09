@@ -1,7 +1,7 @@
+import * as test from 'tape'
+import { BN, toBuffer, bufferToInt } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
 import { Block, BlockHeader } from '@ethereumjs/block'
-import { BN, toBuffer, bufferToInt } from 'ethereumjs-util'
-import * as test from 'tape'
 import Blockchain from '../src'
 import { generateBlockchain, generateBlocks, isConsecutive, createTestDB } from './util'
 import * as testData from './testdata.json'
@@ -38,9 +38,7 @@ test('blockchain test', (t) => {
 
   t.test('should not validate a block incorrectly flagged as genesis', async (st) => {
     const blockchain = new Blockchain({ validateBlocks: true, validatePow: false })
-    const badBlock = Object.create(Block.fromBlockData())
-    badBlock.header.number = Buffer.from([])
-
+    const badBlock = Block.fromBlockData({ header: { number: new BN(8) } })
     try {
       await blockchain.putBlock(badBlock, false)
     } catch (error) {
@@ -59,21 +57,30 @@ test('blockchain test', (t) => {
   t.test('should add 10 blocks, one at a time', async (st) => {
     const blockchain = new Blockchain({ validateBlocks: true, validatePow: false })
     const blocks: Block[] = []
+    const gasLimit = 8000000
+
     const genesisBlock = Block.fromBlockData(
-      { header: { gasLimit: 8000000 } },
+      { header: { gasLimit } },
       { initWithGenesisHeader: true },
     )
     blocks.push(genesisBlock)
 
     const addNextBlock = async (blockNumber: number) => {
-      const block = Object.create(Block.fromBlockData())
-      block.header.number = new BN(blockNumber)
-      block.header.parentHash = blocks[blockNumber - 1].hash()
-      block.header.difficulty = block.header.canonicalDifficulty(blocks[blockNumber - 1])
-      block.header.gasLimit = new BN(8000000)
-      block.header.timestamp = blocks[blockNumber - 1].header.timestamp.addn(1)
+      const lastBlock = blocks[blockNumber - 1]
+      const blockData = {
+        header: {
+          number: blockNumber,
+          parentHash: lastBlock.hash(),
+          difficulty: lastBlock.header.canonicalDifficulty(lastBlock),
+          timestamp: lastBlock.header.timestamp.addn(1),
+          gasLimit,
+        },
+      }
+      const block = Block.fromBlockData(blockData)
+
       await blockchain.putBlock(block)
       blocks.push(block)
+
       if (blocks.length < 10) {
         addNextBlock(blockNumber + 1)
       } else {

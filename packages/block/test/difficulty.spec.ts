@@ -1,10 +1,7 @@
 import * as tape from 'tape'
-import { toBuffer, bufferToInt, intToBuffer } from 'ethereumjs-util'
-import { Block } from '../src/block'
+import { BN, toBuffer, bufferToInt } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
-import blockFromRpc from '../src/from-rpc'
-
-const { BN } = require('ethereumjs-util')
+import { Block } from '../src'
 
 function isHexPrefixed(str: string) {
   return str.toLowerCase().startsWith('0x')

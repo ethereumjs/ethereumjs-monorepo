@@ -1,4 +1,4 @@
-import { Address, BN } from 'ethereumjs-util'
+import { Address, BN, BNLike, BufferLike } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
 import { TxData, JsonTx } from '@ethereumjs/tx'
 import { Block } from './block'
@@ -36,27 +36,6 @@ export interface BlockOptions {
 }
 
 /**
- * Any object that can be transformed into a `Buffer`
- */
-export interface TransformableToBuffer {
-  toBuffer(): Buffer
-}
-
-/**
- * A hex string prefixed with `0x`.
- */
-export type PrefixedHexString = string
-
-/**
- * A Buffer, hex string prefixed with `0x`, Number, or an object with a toBuffer method such as BN.
- */
-export type BufferLike = Buffer | TransformableToBuffer | PrefixedHexString | number
-
-export type BNLike = BN | string | number
-
-export type AddressLike = Address | Buffer | string
-
-/**
  * A block header's data.
  */
 export interface HeaderData {
@@ -88,6 +67,12 @@ export interface BlockData {
   transactions?: Array<TxData>
   uncleHeaders?: Array<HeaderData>
 }
+
+export type BlockBuffer = [BlockHeaderBuffer, TransactionsBuffer, UncleHeadersBuffer]
+export type BlockHeaderBuffer = Buffer[]
+export type BlockBodyBuffer = [TransactionsBuffer, UncleHeadersBuffer]
+export type TransactionsBuffer = Buffer[][]
+export type UncleHeadersBuffer = Buffer[][]
 
 /**
  * An object with the block's data represented as strings.
@@ -124,4 +109,19 @@ export interface JsonHeader {
 
 export interface Blockchain {
   getBlock(hash: Buffer): Promise<Block>
+}
+
+/**
+ * A type that represents an Address-like value.
+ * To convert to address, use `new Address(toBuffer(value))
+ * TODO: Move to ethereumjs-util
+ */
+export type AddressLike = Address | Buffer | string
+
+/**
+ * Convert BN to 0x-prefixed hex string.
+ * TODO: Move to ethereumjs-util
+ */
+export function bnToHex(value: BN): string {
+  return `0x${value.toString(16)}`
 }

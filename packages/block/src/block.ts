@@ -1,12 +1,12 @@
 import { BaseTrie as Trie } from 'merkle-patricia-tree'
-import { BN, rlp, keccak256, KECCAK256_RLP } from 'ethereumjs-util'
+import { rlp, keccak256, KECCAK256_RLP } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
 import { Transaction, TxOptions } from '@ethereumjs/tx'
 import { BlockHeader } from './header'
-import { BlockData, BlockOptions, JsonBlock, Blockchain } from './types'
+import { BlockData, BlockOptions, JsonBlock, BlockBuffer, Blockchain } from './types'
 
 /**
- * An object that represents the block
+ * An object that represents the block.
  */
 export class Block {
   public readonly header: BlockHeader
@@ -38,13 +38,7 @@ export class Block {
   }
 
   public static fromRLPSerializedBlock(serialized: Buffer, opts: BlockOptions = {}) {
-    const values = (rlp.decode(serialized) as any) as [Buffer[], Buffer[][], Buffer[][]]
-    // Here we cast to silence TS errors,
-    // we know that values is
-    // [ Header: Buffer[],
-    //   Transactions: Buffer[][],
-    //   UncleHeaders: Buffer[][]
-    // ]
+    const values = (rlp.decode(serialized) as any) as BlockBuffer
 
     if (!Array.isArray(values)) {
       throw new Error('Invalid serialized block input. Must be array')
@@ -53,30 +47,25 @@ export class Block {
     return Block.fromValuesArray(values, opts)
   }
 
-  public static fromValuesArray(
-    values: [Buffer[], Buffer[][], Buffer[][]],
-    opts: BlockOptions = {},
-  ) {
+  public static fromValuesArray(values: BlockBuffer, opts: BlockOptions = {}) {
     if (values.length > 3) {
       throw new Error('invalid block. More values than expected were received')
     }
 
-    const headerArray = values[0] || []
-    const txsData = values[1] || []
-    const uncleHeadersData = values[2] || []
+    const [headerData, txsData, uhsData] = values
 
-    const header = BlockHeader.fromValuesArray(headerArray, opts)
+    const header = BlockHeader.fromValuesArray(headerData, opts)
 
     // parse transactions
     const transactions = []
-    for (const txData of txsData) {
-      transactions.push(Transaction.fromValuesArray(txData as Buffer[], opts as TxOptions))
+    for (const txData of txsData || []) {
+      transactions.push(Transaction.fromValuesArray(txData, opts))
     }
 
     // parse uncle headers
     const uncleHeaders = []
-    for (const uncleHeaderData of uncleHeadersData) {
-      uncleHeaders.push(BlockHeader.fromValuesArray(uncleHeaderData as Buffer[], opts))
+    for (const uncleHeaderData of uhsData || []) {
+      uncleHeaders.push(BlockHeader.fromValuesArray(uncleHeaderData, opts))
     }
 
     return new Block(header, transactions, uncleHeaders)
@@ -100,23 +89,26 @@ export class Block {
     Object.freeze(this)
   }
 
-  get raw() {
+  /**
+   *  Returns a Buffer Array of the raw Buffers of this block, in order.
+   */
+  raw(): BlockBuffer {
     return [
       this.header.raw(),
-      this.transactions.map((tx) => tx.serialize()),
+      this.transactions.map((tx) => tx.raw()),
       this.uncleHeaders.map((uh) => uh.raw()),
     ]
   }
 
   /**
-   * Produces a hash the RLP of the block
+   * Produces a hash the RLP of the block.
    */
   hash(): Buffer {
     return this.header.hash()
   }
 
   /**
-   * Determines if this block is the genesis block
+   * Determines if this block is the genesis block.
    */
   isGenesis(): boolean {
     return this.header.isGenesis()
@@ -126,7 +118,7 @@ export class Block {
    * Returns the rlp encoding of the block.
    */
   serialize(): Buffer {
-    return rlp.encode(this.raw)
+    return rlp.encode(this.raw())
   }
 
   /**
@@ -141,7 +133,7 @@ export class Block {
   }
 
   /**
-   * Validates the transaction trie
+   * Validates the transaction trie.
    */
   validateTransactionsTrie(): boolean {
     if (this.transactions.length > 0) {
@@ -152,7 +144,7 @@ export class Block {
   }
 
   /**
-   * Validates the transactions
+   * Validates the transactions.
    *
    * @param stringError - If `true`, a string with the indices of the invalid txs is returned.
    */
@@ -199,7 +191,7 @@ export class Block {
   }
 
   /**
-   * Validates the uncle's hash
+   * Validates the uncle's hash.
    */
   validateUnclesHash(): boolean {
     const raw = rlp.encode(this.uncleHeaders.map((uh) => uh.raw()))
@@ -251,7 +243,7 @@ export class Block {
     // This is not possible in ethereumjs-blockchain since this PR was merged:
     // https://github.com/ethereumjs/ethereumjs-blockchain/pull/47
 
-    const height = new BN(this.header.number)
+    const height = this.header.number
     return uncleHeader.validate(blockchain, height)
   }
 }
