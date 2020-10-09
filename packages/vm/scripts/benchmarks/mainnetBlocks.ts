@@ -1,6 +1,6 @@
 import * as fs from 'fs'
 import Account from '@ethereumjs/account'
-import { bufferToInt, toBuffer, setLengthLeft } from 'ethereumjs-util'
+import { toBuffer, setLengthLeft } from 'ethereumjs-util'
 import { encode } from 'rlp'
 import blockFromRPC from '@ethereumjs/block/dist/from-rpc'
 import VM from '../../dist'
@@ -32,7 +32,7 @@ async function main() {
 
   for (const blockData of data) {
     const block = blockFromRPC(blockData.block)
-    const blockNumber = bufferToInt(block.header.number)
+    const blockNumber = block.header.number.toString()
 
     const stateManager = await getPreState(blockData.preState)
     const vm = new VM({

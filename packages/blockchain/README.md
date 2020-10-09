@@ -24,7 +24,6 @@ This module performs write operations. Making a backup of your data before tryin
 
 ```typescript
 import Blockchain from '@ethereumjs/blockchain'
-import { bufferToInt } from 'ethereumjs-util'
 
 const level = require('level')
 
@@ -34,7 +33,7 @@ const db = level(gethDbPath)
 const blockchain = new Blockchain({ db })
 
 blockchain.iterator('i', (block) => {
-  const blockNumber = bufferToInt(block.header.number)
+  const blockNumber = block.header.number.toString()
   const blockHash = block.hash().toString('hex')
   console.log(`Block ${blockNumber}: ${blockHash}`)
 })
