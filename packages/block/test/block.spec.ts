@@ -29,17 +29,24 @@ tape('[Block]: block functions', function (t) {
 
   const testData = require('./testdata/testdata.json')
 
+  t.test('should test block validation', async function (st) {
+    const blockRlp = testData.blocks[0].rlp
+    const block = Block.fromRLPSerializedBlock(blockRlp)
+    st.doesNotThrow(async () => {
+      await block.validate()
+      st.end()
+    })
+  })
+
   async function testTransactionValidation(st: tape.Test, block: Block) {
-    st.equal(block.validateTransactions(), true)
-
-    await block.genTxTrie()
-
-    st.equal(block.validateTransactionsTrie(), true)
+    st.ok(block.validateTransactions())
+    st.ok(await block.validateTransactionsTrie())
     st.end()
   }
 
   t.test('should test transaction validation', async function (st) {
-    const block = Block.fromRLPSerializedBlock(testData.blocks[0].rlp)
+    const blockRlp = testData.blocks[0].rlp
+    const block = Block.fromRLPSerializedBlock(blockRlp)
     st.plan(2)
     await testTransactionValidation(st, block)
   })
@@ -52,7 +59,8 @@ tape('[Block]: block functions', function (t) {
 
   const testData2 = require('./testdata/testdata2.json')
   t.test('should test uncles hash validation', function (st) {
-    const block = Block.fromRLPSerializedBlock(testData2.blocks[2].rlp)
+    const blockRlp = testData2.blocks[2].rlp
+    const block = Block.fromRLPSerializedBlock(blockRlp)
     st.equal(block.validateUnclesHash(), true)
     st.end()
   })

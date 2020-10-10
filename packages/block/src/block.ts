@@ -130,25 +130,31 @@ export class Block {
   }
 
   /**
-   * Generate transaction trie. The tx trie must be generated before the transaction trie can
-   * be validated with `validateTransactionTrie`
+   * Generates transaction trie for validation.
    */
   async genTxTrie(): Promise<void> {
-    for (let i = 0; i < this.transactions.length; i++) {
-      const tx = this.transactions[i]
-      await this._putTxInTrie(i, tx)
+    const { transactions, txTrie } = this
+    for (let i = 0; i < transactions.length; i++) {
+      const tx = transactions[i]
+      const key = rlp.encode(i)
+      const value = tx.serialize()
+      await txTrie.put(key, value)
     }
   }
 
   /**
    * Validates the transaction trie.
    */
-  validateTransactionsTrie(): boolean {
-    if (this.transactions.length > 0) {
-      return this.header.transactionsTrie.equals(this.txTrie.root)
-    } else {
+  async validateTransactionsTrie(): Promise<boolean> {
+    if (this.transactions.length === 0) {
       return this.header.transactionsTrie.equals(KECCAK256_RLP)
     }
+
+    if (this.txTrie.root.equals(KECCAK256_RLP)) {
+      await this.genTxTrie()
+    }
+
+    return this.txTrie.root.equals(this.header.transactionsTrie)
   }
 
   /**
@@ -173,23 +179,24 @@ export class Block {
   }
 
   /**
-   * Validates the entire block, throwing if invalid.
+   * Validates the block, throwing if invalid.
    *
-   * @param blockchain - the blockchain that this block wants to be part of
+   * @param blockchain - additionally validate against a @ethereumjs/blockchain
    */
-  async validate(blockchain: Blockchain): Promise<void> {
+  async validate(blockchain?: Blockchain): Promise<void> {
     await this.header.validate(blockchain)
-    await this.validateUncles(blockchain)
-    await this.genTxTrie()
-
-    if (!this.validateTransactionsTrie()) {
-      throw new Error('invalid transaction trie')
-    }
 
     const txErrors = this.validateTransactions(true)
     if (txErrors.length > 0) {
       throw new Error(`invalid transactions: ${txErrors.join(' ')}`)
     }
+
+    const validateTxTrie = await this.validateTransactionsTrie()
+    if (!validateTxTrie) {
+      throw new Error('invalid transaction trie')
+    }
+
+    await this.validateUncles(blockchain)
 
     if (!this.validateUnclesHash()) {
       throw new Error('invalid uncle hash')
@@ -207,9 +214,9 @@ export class Block {
   /**
    * Validates the uncles that are in the block, if any. This method throws if they are invalid.
    *
-   * @param blockchain - the blockchain that this block wants to be part of
+   * @param blockchain - additionally validate against a @ethereumjs/blockchain
    */
-  async validateUncles(blockchain: Blockchain): Promise<void> {
+  async validateUncles(blockchain?: Blockchain): Promise<void> {
     if (this.isGenesis()) {
       return
     }
@@ -219,14 +226,13 @@ export class Block {
     }
 
     const uncleHashes = this.uncleHeaders.map((header) => header.hash().toString('hex'))
-
     if (!(new Set(uncleHashes).size === uncleHashes.length)) {
       throw new Error('duplicate uncles')
     }
 
-    await Promise.all(
-      this.uncleHeaders.map(async (uh) => this._validateUncleHeader(uh, blockchain)),
-    )
+    this.uncleHeaders.forEach(async (uh) => {
+      await this._validateUncleHeader(uh, blockchain)
+    })
   }
 
   /**
@@ -240,15 +246,10 @@ export class Block {
     }
   }
 
-  private async _putTxInTrie(txIndex: number, tx: Transaction) {
-    await this.txTrie.put(rlp.encode(txIndex), tx.serialize())
-  }
-
-  private _validateUncleHeader(uncleHeader: BlockHeader, blockchain: Blockchain) {
+  private _validateUncleHeader(uncleHeader: BlockHeader, blockchain?: Blockchain) {
     // TODO: Validate that the uncle header hasn't been included in the blockchain yet.
     // This is not possible in ethereumjs-blockchain since this PR was merged:
     // https://github.com/ethereumjs/ethereumjs-blockchain/pull/47
-
     const height = this.header.number
     return uncleHeader.validate(blockchain, height)
   }

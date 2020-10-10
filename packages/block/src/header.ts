@@ -237,7 +237,7 @@ export class BlockHeader {
    * Validates correct buffer lengths, throws if invalid.
    */
   _validateBufferLengths() {
-    const { parentHash, stateRoot, transactionsTrie, receiptTrie, mixHash, extraData, nonce } = this
+    const { parentHash, stateRoot, transactionsTrie, receiptTrie, mixHash, nonce } = this
     if (parentHash.length !== 32) {
       throw new Error(`parentHash must be 32 bytes, received ${parentHash.length} bytes`)
     }
@@ -377,53 +377,55 @@ export class BlockHeader {
   }
 
   /**
-   * Validates the entire block header, throwing if invalid.
+   * Validates the block header, throwing if invalid.
    *
-   * @param blockchain - the blockchain that this block is validating against
+   * @param blockchain - additionally validate against a @ethereumjs/blockchain
    * @param height - If this is an uncle header, this is the height of the block that is including it
    */
-  async validate(blockchain: Blockchain, height?: BN): Promise<void> {
+  async validate(blockchain?: Blockchain, height?: BN): Promise<void> {
     if (this.isGenesis()) {
       return
-    }
-
-    const parentBlock = await this._getBlockByHash(blockchain, this.parentHash)
-
-    if (parentBlock === undefined) {
-      throw new Error('could not find parent block')
-    }
-
-    const { number } = this
-    if (!number.eq(parentBlock.header.number.addn(1))) {
-      throw new Error('invalid number')
-    }
-
-    if (height) {
-      const dif = height.sub(parentBlock.header.number)
-      if (!(dif.cmpn(8) === -1 && dif.cmpn(1) === 1)) {
-        throw new Error('uncle block has a parent that is too old or too young')
-      }
-    }
-
-    if (!this.validateDifficulty(parentBlock)) {
-      throw new Error('invalid difficulty')
-    }
-
-    if (!this.validateGasLimit(parentBlock)) {
-      throw new Error('invalid gas limit')
-    }
-
-    if (!this.number.eq(parentBlock.header.number.addn(1))) {
-      throw new Error('invalid height')
-    }
-
-    if (this.timestamp.lte(parentBlock.header.timestamp)) {
-      throw new Error('invalid timestamp')
     }
 
     const hardfork = this._getHardfork()
     if (this.extraData.length > this._common.paramByHardfork('vm', 'maxExtraDataSize', hardfork)) {
       throw new Error('invalid amount of extra data')
+    }
+
+    if (blockchain) {
+      const parentBlock = await this._getBlockByHash(blockchain, this.parentHash)
+
+      if (!parentBlock) {
+        throw new Error('could not find parent block')
+      }
+
+      const { number } = this
+      if (!number.eq(parentBlock.header.number.addn(1))) {
+        throw new Error('invalid number')
+      }
+
+      if (height) {
+        const dif = height.sub(parentBlock.header.number)
+        if (!(dif.cmpn(8) === -1 && dif.cmpn(1) === 1)) {
+          throw new Error('uncle block has a parent that is too old or too young')
+        }
+      }
+
+      if (!this.validateDifficulty(parentBlock)) {
+        throw new Error('invalid difficulty')
+      }
+
+      if (!this.validateGasLimit(parentBlock)) {
+        throw new Error('invalid gas limit')
+      }
+
+      if (!this.number.eq(parentBlock.header.number.addn(1))) {
+        throw new Error('invalid height')
+      }
+
+      if (this.timestamp.lte(parentBlock.header.timestamp)) {
+        throw new Error('invalid timestamp')
+      }
     }
   }
 
@@ -495,18 +497,18 @@ export class BlockHeader {
   }
 
   private _getHardfork(): string {
-    const commonHardFork = this._common.hardfork()
-
-    return commonHardFork !== null
-      ? commonHardFork
-      : this._common.activeHardfork(this.number.toNumber())
+    return this._common.hardfork() || this._common.activeHardfork(this.number.toNumber())
   }
 
   private async _getBlockByHash(blockchain: Blockchain, hash: Buffer): Promise<Block | undefined> {
     try {
       return blockchain.getBlock(hash)
-    } catch (e) {
-      return undefined
+    } catch (error) {
+      if (error.type === 'NotFoundError') {
+        return undefined
+      } else {
+        throw error
+      }
     }
   }
 
@@ -516,7 +518,7 @@ export class BlockHeader {
    */
   private _checkDAOExtraData() {
     const DAO_ExtraData = Buffer.from('64616f2d686172642d666f726b', 'hex')
-    const DAO_ForceExtraDataRange = 9
+    const DAO_ForceExtraDataRange = new BN(9)
 
     if (this._common.hardforkIsActiveOnChain('dao')) {
       // verify the extraData field.
@@ -524,7 +526,7 @@ export class BlockHeader {
       const DAOActivationBlock = new BN(this._common.hardforkBlock('dao'))
       if (blockNumber.gte(DAOActivationBlock)) {
         const drift = blockNumber.sub(DAOActivationBlock)
-        if (drift.lten(DAO_ForceExtraDataRange)) {
+        if (drift.lte(DAO_ForceExtraDataRange)) {
           if (!this.extraData.equals(DAO_ExtraData)) {
             throw new Error("extraData should be 'dao-hard-fork'")
           }
