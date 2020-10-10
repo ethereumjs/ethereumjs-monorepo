@@ -30,7 +30,7 @@ vm.runCode({
   gasLimit: new BN(0xffff),
 })
   .then((results) => {
-    console.log('Returned : ' + results.returnValue.toString('hex'))
-    console.log('gasUsed  : ' + results.gasUsed.toString())
+    console.log(`Returned: ${results.returnValue.toString('hex')}`)
+    console.log(`gasUsed : ${results.gasUsed.toString()}`)
   })
   .catch(console.error)

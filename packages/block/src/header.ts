@@ -398,7 +398,7 @@ export class BlockHeader {
       throw new Error('invalid number')
     }
 
-    if (height !== undefined && BN.isBN(height)) {
+    if (height) {
       const dif = height.sub(parentBlock.header.number)
       if (!(dif.cmpn(8) === -1 && dif.cmpn(1) === 1)) {
         throw new Error('uncle block has a parent that is too old or too young')
@@ -413,11 +413,11 @@ export class BlockHeader {
       throw new Error('invalid gas limit')
     }
 
-    if (!this.number.sub(parentBlock.header.number).eqn(1)) {
+    if (!this.number.eq(parentBlock.header.number.addn(1))) {
       throw new Error('invalid height')
     }
 
-    if (this.timestamp.cmp(parentBlock.header.timestamp) <= 0) {
+    if (this.timestamp.lt(parentBlock.header.timestamp)) {
       throw new Error('invalid timestamp')
     }
 

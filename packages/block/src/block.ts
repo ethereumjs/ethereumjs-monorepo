@@ -178,11 +178,9 @@ export class Block {
    * @param blockchain - the blockchain that this block wants to be part of
    */
   async validate(blockchain: Blockchain): Promise<void> {
-    await Promise.all([
-      this.validateUncles(blockchain),
-      this.genTxTrie(),
-      this.header.validate(blockchain),
-    ])
+    await this.header.validate(blockchain)
+    await this.validateUncles(blockchain)
+    await this.genTxTrie()
 
     if (!this.validateTransactionsTrie()) {
       throw new Error('invalid transaction trie')

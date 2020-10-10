@@ -69,12 +69,12 @@ Currently supported EIPs are:
 # USAGE
 
 ```javascript
-const BN = require('bn.js')
-const VM = require('@ethereumjs/vm').default
+import { BN } from 'ethereumjs-util'
+import Common from '@ethereumjs/common'
+import VM from '@ethereumjs/vm'
 
-// Create a new VM instance
-// For explicity setting the HF use e.g. `new VM({ hardfork: 'petersburg' })`
-const vm = new VM()
+const common = new Common({ chain: 'mainnet', hardfork: 'istanbul' })
+const vm = new VM({ common })
 
 const STOP = '00'
 const ADD = '01'
@@ -92,10 +92,10 @@ vm.runCode({
   gasLimit: new BN(0xffff),
 })
   .then((results) => {
-    console.log('Returned : ' + results.returnValue.toString('hex'))
-    console.log('gasUsed  : ' + results.gasUsed.toString())
+    console.log(`Returned: ${results.returnValue.toString('hex')}`)
+    console.log(`gasUsed : ${results.gasUsed.toString()}`)
   })
-  .catch((err) => console.log('Error    : ' + err))
+  .catch(console.error)
 ```
 
 ## Example
