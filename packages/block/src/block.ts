@@ -230,9 +230,9 @@ export class Block {
       throw new Error('duplicate uncles')
     }
 
-    this.uncleHeaders.forEach(async (uh) => {
+    for (const uh of this.uncleHeaders) {
       await this._validateUncleHeader(uh, blockchain)
-    })
+    }
   }
 
   /**

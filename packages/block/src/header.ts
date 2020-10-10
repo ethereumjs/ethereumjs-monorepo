@@ -404,11 +404,8 @@ export class BlockHeader {
         throw new Error('invalid number')
       }
 
-      if (height) {
-        const dif = height.sub(parentBlock.header.number)
-        if (!(dif.cmpn(8) === -1 && dif.cmpn(1) === 1)) {
-          throw new Error('uncle block has a parent that is too old or too young')
-        }
+      if (this.timestamp.lte(parentBlock.header.timestamp)) {
+        throw new Error('invalid timestamp')
       }
 
       if (!this.validateDifficulty(parentBlock)) {
@@ -419,12 +416,11 @@ export class BlockHeader {
         throw new Error('invalid gas limit')
       }
 
-      if (!this.number.eq(parentBlock.header.number.addn(1))) {
-        throw new Error('invalid height')
-      }
-
-      if (this.timestamp.lte(parentBlock.header.timestamp)) {
-        throw new Error('invalid timestamp')
+      if (height) {
+        const dif = height.sub(parentBlock.header.number)
+        if (!(dif.cmpn(8) === -1 && dif.cmpn(1) === 1)) {
+          throw new Error('uncle block has a parent that is too old or too young')
+        }
       }
     }
   }
