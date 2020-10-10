@@ -417,7 +417,7 @@ export class BlockHeader {
       throw new Error('invalid height')
     }
 
-    if (this.timestamp.lt(parentBlock.header.timestamp)) {
+    if (this.timestamp.lte(parentBlock.header.timestamp)) {
       throw new Error('invalid timestamp')
     }
 
