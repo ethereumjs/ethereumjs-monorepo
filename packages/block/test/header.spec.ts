@@ -7,21 +7,21 @@ import { Block } from '../src'
 tape('[Block]: Header functions', function (t) {
   t.test('should create with default constructor', function (st) {
     function compareDefaultHeader(st: tape.Test, header: BlockHeader) {
-      st.deepEqual(header.parentHash, zeros(32))
+      st.ok(header.parentHash.equals(zeros(32)))
       st.ok(header.uncleHash.equals(KECCAK256_RLP_ARRAY))
       st.ok(header.coinbase.buf.equals(Address.zero().buf))
-      st.deepEqual(header.stateRoot, zeros(32))
+      st.ok(header.stateRoot.equals(zeros(32)))
       st.ok(header.transactionsTrie.equals(KECCAK256_RLP))
       st.ok(header.receiptTrie.equals(KECCAK256_RLP))
-      st.deepEqual(header.bloom, zeros(256))
-      st.deepEqual(header.difficulty, new BN(0))
-      st.deepEqual(header.number, new BN(0))
-      st.deepEqual(header.gasLimit, new BN(Buffer.from('ffffffffffffff', 'hex')))
-      st.deepEqual(header.gasUsed, new BN(0))
-      st.deepEqual(header.timestamp, new BN(0))
-      st.deepEqual(header.extraData, Buffer.from([]))
-      st.deepEqual(header.mixHash, zeros(32))
-      st.deepEqual(header.nonce, zeros(8))
+      st.ok(header.bloom.equals(zeros(256)))
+      st.ok(header.difficulty.isZero())
+      st.ok(header.number.isZero())
+      st.ok(header.gasLimit.eq(new BN(Buffer.from('ffffffffffffff', 'hex'))))
+      st.ok(header.gasUsed.isZero())
+      st.ok(header.timestamp.isZero())
+      st.ok(header.extraData.equals(Buffer.from([])))
+      st.ok(header.mixHash.equals(zeros(32)))
+      st.ok(header.nonce.equals(zeros(8)))
     }
 
     const header = BlockHeader.fromHeaderData()
