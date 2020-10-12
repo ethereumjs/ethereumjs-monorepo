@@ -1,6 +1,6 @@
 import * as tape from 'tape'
-import Ethash from '../src'
 import { Block } from '@ethereumjs/block'
+import Ethash from '../src'
 const level = require('level-mem')
 
 const cacheDB = level()
@@ -13,16 +13,19 @@ const {
 tape('Verify POW for valid and invalid blocks', async function (t) {
   const e = new Ethash(cacheDB)
 
-  const genesis = new Block(undefined, { initWithGenesisHeader: true })
-  const genesisBlockResult = await e.verifyPOW(genesis)
-  t.ok(genesisBlockResult, 'genesis block should be valid')
+  const genesis = Block.genesis()
+  const genesisResult = await e.verifyPOW(genesis)
+  t.ok(genesisResult, 'genesis block should be valid')
 
-  const validBlock = new Block(Buffer.from(validBlockRlp, 'hex'))
+  const validRlp = Buffer.from(validBlockRlp, 'hex')
+  const validBlock = Block.fromRLPSerializedBlock(validRlp)
   const validBlockResult = await e.verifyPOW(validBlock)
   t.ok(validBlockResult, 'should be valid')
 
-  const invalidBlock = new Block(Buffer.from(invalidBlockRlp, 'hex'))
+  const invalidRlp = Buffer.from(invalidBlockRlp, 'hex')
+  const invalidBlock = Block.fromRLPSerializedBlock(invalidRlp)
   const invalidBlockResult = await e.verifyPOW(invalidBlock)
   t.ok(!invalidBlockResult, 'should be invalid')
+
   t.end()
 })

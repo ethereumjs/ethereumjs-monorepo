@@ -16,8 +16,6 @@ export const SKIP_BROKEN = [
   'sha3_memSizeQuadraticCost', // SHA3: https://github.com/ethereumjs/ethereumjs-vm/pull/743#issuecomment-635116418
   'sha3_bigSize', // SHA3
 
-  'BLOCK_difficulty_GivenAsList', // Block header.ts does try very hard (via `defineProperties`) to convert any fed data into Buffers. Test should throw because difficulty is a list of Buffers, but fails to throw
-
   // these tests need "re-org" support in blockchain
   'blockChainFrontierWithLargerTDvsHomesteadBlockchain2_FrontierToHomesteadAt5',
   'blockChainFrontierWithLargerTDvsHomesteadBlockchain_FrontierToHomesteadAt5',

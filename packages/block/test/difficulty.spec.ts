@@ -1,9 +1,7 @@
 import * as tape from 'tape'
-import { toBuffer, bufferToInt, intToBuffer } from 'ethereumjs-util'
-import { Block } from '../src/block'
+import { BN, toBuffer, bufferToInt } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
-
-const { BN } = require('ethereumjs-util')
+import { Block } from '../src'
 
 function isHexPrefixed(str: string) {
   return str.toLowerCase().startsWith('0x')
@@ -42,15 +40,27 @@ tape('[Header]: difficulty tests', (t) => {
     for (const testName in testData) {
       const test = testData[testName]
       const common = new Common({ chain: 'mainnet', hardfork: hardfork })
-      const parentBlock = new Block(undefined, { common })
-      parentBlock.header.timestamp = test.parentTimestamp
-      parentBlock.header.difficulty = test.parentDifficulty
-      parentBlock.header.uncleHash = test.parentUncles
+      const parentBlock = Block.fromBlockData(
+        {
+          header: {
+            timestamp: test.parentTimestamp,
+            difficulty: test.parentDifficulty,
+            uncleHash: test.parentUncles,
+          },
+        },
+        { common },
+      )
 
-      const block = new Block(undefined, { common })
-      block.header.timestamp = test.currentTimestamp
-      block.header.difficulty = test.currentDifficulty
-      block.header.number = test.currentBlockNumber
+      const block = Block.fromBlockData(
+        {
+          header: {
+            timestamp: test.currentTimestamp,
+            difficulty: test.currentDifficulty,
+            number: test.currentBlockNumber,
+          },
+        },
+        { common },
+      )
 
       runDifficultyTests(
         test,
@@ -74,11 +84,11 @@ tape('[Header]: difficulty tests', (t) => {
         header: {
           timestamp: test.parentTimestamp,
           difficulty: test.parentDifficulty,
-          number: intToBuffer(bufferToInt(test.currentBlockNumber) - 1),
+          number: bufferToInt(test.currentBlockNumber) - 1,
           uncleHash: test.parentUncles,
         },
       }
-      const parentBlock = new Block(parentData, { common, hardforkByBlockNumber: true })
+      const parentBlock = Block.fromBlockData(parentData, { common, hardforkByBlockNumber: true })
 
       const blockData = {
         header: {
@@ -87,7 +97,7 @@ tape('[Header]: difficulty tests', (t) => {
           number: test.currentBlockNumber,
         },
       }
-      const block = new Block(blockData, { common, hardforkByBlockNumber: true })
+      const block = Block.fromBlockData(blockData, { common, hardforkByBlockNumber: true })
 
       runDifficultyTests(
         test,

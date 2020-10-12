@@ -1,5 +1,6 @@
+import { Address, BN, BNLike, BufferLike } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
-import { TxData } from '@ethereumjs/tx'
+import { TxData, JsonTx } from '@ethereumjs/tx'
 import { Block } from './block'
 
 /**
@@ -37,38 +38,21 @@ export interface BlockOptions {
 }
 
 /**
- * Any object that can be transformed into a `Buffer`
- */
-export interface TransformableToBuffer {
-  toBuffer(): Buffer
-}
-
-/**
- * A hex string prefixed with `0x`.
- */
-export type PrefixedHexString = string
-
-/**
- * A Buffer, hex string prefixed with `0x`, Number, or an object with a toBuffer method such as BN.
- */
-export type BufferLike = Buffer | TransformableToBuffer | PrefixedHexString | number
-
-/**
  * A block header's data.
  */
-export interface BlockHeaderData {
+export interface HeaderData {
   parentHash?: BufferLike
   uncleHash?: BufferLike
-  coinbase?: BufferLike
+  coinbase?: AddressLike
   stateRoot?: BufferLike
   transactionsTrie?: BufferLike
   receiptTrie?: BufferLike
   bloom?: BufferLike
-  difficulty?: BufferLike
-  number?: BufferLike
-  gasLimit?: BufferLike
-  gasUsed?: BufferLike
-  timestamp?: BufferLike
+  difficulty?: BNLike
+  number?: BNLike
+  gasLimit?: BNLike
+  gasUsed?: BNLike
+  timestamp?: BNLike
   extraData?: BufferLike
   mixHash?: BufferLike
   nonce?: BufferLike
@@ -78,11 +62,68 @@ export interface BlockHeaderData {
  * A block's data.
  */
 export interface BlockData {
-  header?: Buffer | PrefixedHexString | BufferLike[] | BlockHeaderData
-  transactions?: Array<Buffer | PrefixedHexString | BufferLike[] | TxData>
-  uncleHeaders?: Array<Buffer | PrefixedHexString | BufferLike[] | BlockHeaderData>
+  /**
+   * Header data for the block
+   */
+  header?: HeaderData
+  transactions?: Array<TxData>
+  uncleHeaders?: Array<HeaderData>
+}
+
+export type BlockBuffer = [BlockHeaderBuffer, TransactionsBuffer, UncleHeadersBuffer]
+export type BlockHeaderBuffer = Buffer[]
+export type BlockBodyBuffer = [TransactionsBuffer, UncleHeadersBuffer]
+export type TransactionsBuffer = Buffer[][]
+export type UncleHeadersBuffer = Buffer[][]
+
+/**
+ * An object with the block's data represented as strings.
+ */
+export interface JsonBlock {
+  /**
+   * Header data for the block
+   */
+  header?: JsonHeader
+  transactions?: JsonTx[]
+  uncleHeaders?: JsonHeader[]
+}
+
+/**
+ * An object with the block header's data represented as strings.
+ */
+export interface JsonHeader {
+  parentHash?: string
+  uncleHash?: string
+  coinbase?: string
+  stateRoot?: string
+  transactionsTrie?: string
+  receiptTrie?: string
+  bloom?: string
+  difficulty?: string
+  number?: string
+  gasLimit?: string
+  gasUsed?: string
+  timestamp?: string
+  extraData?: string
+  mixHash?: string
+  nonce?: string
 }
 
 export interface Blockchain {
   getBlock(hash: Buffer): Promise<Block>
+}
+
+/**
+ * A type that represents an Address-like value.
+ * To convert to address, use `new Address(toBuffer(value))
+ * TODO: Move to ethereumjs-util
+ */
+export type AddressLike = Address | Buffer | string
+
+/**
+ * Convert BN to 0x-prefixed hex string.
+ * TODO: Move to ethereumjs-util
+ */
+export function bnToHex(value: BN): string {
+  return `0x${value.toString(16)}`
 }

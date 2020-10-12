@@ -1,5 +1,4 @@
 import { BlockHeader } from './header'
-import { KECCAK256_NULL, toBuffer } from 'ethereumjs-util'
 import { BlockOptions } from './types'
 
 /**
@@ -9,31 +8,45 @@ import { BlockOptions } from './types'
  * @param chainOptions - An object describing the blockchain
  */
 export default function blockHeaderFromRpc(blockParams: any, options?: BlockOptions) {
-  const blockHeader = new BlockHeader(
+  const {
+    parentHash,
+    sha3Uncles,
+    miner,
+    stateRoot,
+    transactionsRoot,
+    receiptRoot,
+    receiptsRoot,
+    logsBloom,
+    difficulty,
+    number,
+    gasLimit,
+    gasUsed,
+    timestamp,
+    extraData,
+    mixHash,
+    nonce,
+  } = blockParams
+
+  const blockHeader = BlockHeader.fromHeaderData(
     {
-      parentHash: blockParams.parentHash,
-      uncleHash: blockParams.sha3Uncles,
-      coinbase: blockParams.miner,
-      stateRoot: blockParams.stateRoot,
-      transactionsTrie: blockParams.transactionsRoot,
-      receiptTrie: blockParams.receiptRoot || blockParams.receiptsRoot || KECCAK256_NULL,
-      bloom: blockParams.logsBloom,
-      difficulty: blockParams.difficulty,
-      number: blockParams.number,
-      gasLimit: blockParams.gasLimit,
-      gasUsed: blockParams.gasUsed,
-      timestamp: blockParams.timestamp,
-      extraData: blockParams.extraData,
-      mixHash: blockParams.mixHash,
-      nonce: blockParams.nonce,
+      parentHash,
+      uncleHash: sha3Uncles,
+      coinbase: miner,
+      stateRoot,
+      transactionsTrie: transactionsRoot,
+      receiptTrie: receiptRoot || receiptsRoot,
+      bloom: logsBloom,
+      difficulty,
+      number,
+      gasLimit,
+      gasUsed,
+      timestamp,
+      extraData,
+      mixHash,
+      nonce,
     },
     options,
   )
-
-  // override hash in case something was missing
-  blockHeader.hash = function () {
-    return toBuffer(blockParams.hash)
-  }
 
   return blockHeader
 }

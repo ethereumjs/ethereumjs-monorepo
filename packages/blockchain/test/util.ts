@@ -1,18 +1,12 @@
-import { rlp, toBuffer, bufferToInt } from 'ethereumjs-util'
-import BN = require('bn.js')
-import Blockchain from '../src'
-
-const util = require('util')
+import { BN, rlp } from 'ethereumjs-util'
 import { Block } from '@ethereumjs/block'
 import Common from '@ethereumjs/common'
+import Blockchain from '../src'
 const level = require('level-mem')
 
-export const generateBlockchain = async (
-  numberOfBlocks: number,
-  genesisBlock?: Block,
-): Promise<any> => {
+export const generateBlockchain = async (numberOfBlocks: number, genesis?: Block): Promise<any> => {
   const blockchain = new Blockchain({ validateBlocks: true, validatePow: false })
-  const existingBlocks: Block[] = genesisBlock ? [genesisBlock] : []
+  const existingBlocks: Block[] = genesis ? [genesis] : []
   const blocks = generateBlocks(numberOfBlocks, existingBlocks)
 
   try {
@@ -31,21 +25,31 @@ export const generateBlockchain = async (
 
 export const generateBlocks = (numberOfBlocks: number, existingBlocks?: Block[]): Block[] => {
   const blocks = existingBlocks ? existingBlocks : []
-  if (blocks.length === 0) {
-    const genesisBlock = new Block(undefined, { initWithGenesisHeader: true })
-    genesisBlock.header.gasLimit = toBuffer(8000000)
-    blocks.push(genesisBlock)
-  }
+
+  const gasLimit = 8000000
   const common = new Common({ chain: 'mainnet', hardfork: 'chainstart' })
+  const opts = { common }
+
+  if (blocks.length === 0) {
+    const genesis = Block.genesis({ header: { gasLimit } }, opts)
+    blocks.push(genesis)
+  }
+
   for (let i = blocks.length; i < numberOfBlocks; i++) {
-    const block = new Block(undefined, { common })
-    block.header.number = toBuffer(i)
-    block.header.parentHash = blocks[i - 1].hash()
-    block.header.difficulty = toBuffer(block.header.canonicalDifficulty(blocks[i - 1]))
-    block.header.gasLimit = toBuffer(8000000)
-    block.header.timestamp = toBuffer(bufferToInt(blocks[i - 1].header.timestamp) + 1)
+    const lastBlock = blocks[i - 1]
+    const blockData = {
+      header: {
+        number: i,
+        parentHash: lastBlock.hash(),
+        difficulty: lastBlock.header.canonicalDifficulty(lastBlock),
+        gasLimit,
+        timestamp: lastBlock.header.timestamp.addn(1),
+      },
+    }
+    const block = Block.fromBlockData(blockData, opts)
     blocks.push(block)
   }
+
   return blocks
 }
 
@@ -61,7 +65,7 @@ export const isConsecutive = (blocks: Block[]) => {
 }
 
 export const createTestDB = async () => {
-  const genesis = new Block(undefined, { initWithGenesisHeader: true })
+  const genesis = Block.genesis()
   const db = level()
   await db.batch([
     {
@@ -100,7 +104,7 @@ export const createTestDB = async () => {
       ),
       keyEncoding: 'binary',
       valueEncoding: 'binary',
-      value: rlp.encode(genesis.header.raw),
+      value: genesis.header.serialize(),
     },
     {
       type: 'put',
@@ -120,7 +124,7 @@ export const createTestDB = async () => {
       ),
       keyEncoding: 'binary',
       valueEncoding: 'binary',
-      value: rlp.encode(genesis.serialize(false).slice(1)),
+      value: rlp.encode(genesis.raw().slice(1)),
     },
     {
       type: 'put',

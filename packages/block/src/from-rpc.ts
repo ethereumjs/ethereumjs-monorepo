@@ -1,5 +1,5 @@
 import { Transaction, TxData } from '@ethereumjs/tx'
-import { toBuffer, setLengthLeft, Address } from 'ethereumjs-util'
+import { toBuffer, setLengthLeft } from 'ethereumjs-util'
 import { Block, BlockOptions } from './index'
 
 import blockHeaderFromRpc from './header-from-rpc'
@@ -11,47 +11,22 @@ import blockHeaderFromRpc from './header-from-rpc'
  * @param uncles - Optional list of Ethereum JSON RPC of uncles (eth_getUncleByBlockHashAndIndex)
  * @param chainOptions - An object describing the blockchain
  */
-export default function blockFromRpc(blockParams: any, uncles?: any[], options?: BlockOptions) {
-  uncles = uncles || []
-
+export default function blockFromRpc(blockParams: any, uncles: any[] = [], options?: BlockOptions) {
   const header = blockHeaderFromRpc(blockParams, options)
 
-  const block = new Block(
-    {
-      header: header.toJSON(true),
-      transactions: [],
-      uncleHeaders: uncles.map((uh) => blockHeaderFromRpc(uh, options).toJSON(true)),
-    },
-    options,
-  )
-
+  const transactions: Transaction[] = []
   if (blockParams.transactions) {
-    const txOpts = { common: (<any>block)._common }
-
+    const opts = { common: header._common }
     for (const _txParams of blockParams.transactions) {
       const txParams = normalizeTxParams(_txParams)
-
-      // override from address
-      const fromAddress = txParams.from ? Address.fromString(txParams.from) : Address.zero()
-      delete txParams.from
-
-      const tx = Transaction.fromTxData(txParams as TxData, txOpts)
-      const fakeTx = Object.create(tx)
-
-      // override getSenderAddress
-      fakeTx.getSenderAddress = () => {
-        return fromAddress
-      }
-      // override hash
-      fakeTx.hash = () => {
-        return toBuffer(txParams.hash)
-      }
-
-      block.transactions.push(fakeTx)
+      const tx = Transaction.fromTxData(txParams as TxData, opts)
+      transactions.push(tx)
     }
   }
 
-  return block
+  const uncleHeaders = uncles.map((uh) => blockHeaderFromRpc(uh, options))
+
+  return Block.fromBlockData({ header, transactions, uncleHeaders })
 }
 
 function normalizeTxParams(_txParams: any) {

@@ -1,7 +1,7 @@
+import * as test from 'tape'
+import { BN } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
 import { Block, BlockHeader } from '@ethereumjs/block'
-import { BN, toBuffer, bufferToInt } from 'ethereumjs-util'
-import * as test from 'tape'
 import Blockchain from '../src'
 import { generateBlockchain, generateBlocks, isConsecutive, createTestDB } from './util'
 import * as testData from './testdata.json'
@@ -27,20 +27,15 @@ test('blockchain test', (t) => {
 
   t.test('should add a genesis block without errors', async (st) => {
     const blockchain = new Blockchain({ validateBlocks: true, validatePow: false })
-    const genesisBlock = new Block(undefined, { initWithGenesisHeader: true })
-    await blockchain.putGenesis(genesisBlock)
-    st.ok(
-      genesisBlock.hash().equals(blockchain.meta.genesis!),
-      'genesis block hash should be correct',
-    )
+    const genesis = Block.genesis()
+    await blockchain.putGenesis(genesis)
+    st.ok(genesis.hash().equals(blockchain.meta.genesis!), 'genesis block hash should be correct')
     st.end()
   })
 
   t.test('should not validate a block incorrectly flagged as genesis', async (st) => {
     const blockchain = new Blockchain({ validateBlocks: true, validatePow: false })
-    const badBlock = new Block()
-    badBlock.header.number = Buffer.from([])
-
+    const badBlock = Block.fromBlockData({ header: { number: new BN(8) } })
     try {
       await blockchain.putBlock(badBlock, false)
     } catch (error) {
@@ -59,21 +54,29 @@ test('blockchain test', (t) => {
   t.test('should add 10 blocks, one at a time', async (st) => {
     const blockchain = new Blockchain({ validateBlocks: true, validatePow: false })
     const blocks: Block[] = []
-    const genesisBlock = new Block(undefined, { initWithGenesisHeader: true })
-    genesisBlock.header.gasLimit = toBuffer(8000000)
-    blocks.push(genesisBlock)
+    const gasLimit = 8000000
 
-    const addNextBlock = async (blockNumber: number) => {
-      const block = new Block()
-      block.header.number = toBuffer(blockNumber)
-      block.header.parentHash = blocks[blockNumber - 1].hash()
-      block.header.difficulty = toBuffer(block.header.canonicalDifficulty(blocks[blockNumber - 1]))
-      block.header.gasLimit = toBuffer(8000000)
-      block.header.timestamp = toBuffer(bufferToInt(blocks[blockNumber - 1].header.timestamp) + 1)
+    const genesis = Block.genesis({ header: { gasLimit } })
+    blocks.push(genesis)
+    await blockchain.putGenesis(genesis)
+
+    const addNextBlock = async (number: number) => {
+      const lastBlock = blocks[number - 1]
+      const blockData = {
+        header: {
+          number,
+          parentHash: lastBlock.hash(),
+          difficulty: lastBlock.header.canonicalDifficulty(lastBlock),
+          timestamp: lastBlock.header.timestamp.addn(1),
+          gasLimit,
+        },
+      }
+      const block = Block.fromBlockData(blockData)
       await blockchain.putBlock(block)
       blocks.push(block)
+
       if (blocks.length < 10) {
-        addNextBlock(blockNumber + 1)
+        addNextBlock(number + 1)
       } else {
         const getBlocks = await blockchain.getBlocks(blocks[0].hash(), 10, 0, false)
         st.equal(getBlocks.length, 10)
@@ -81,46 +84,54 @@ test('blockchain test', (t) => {
       }
     }
 
-    await blockchain.putGenesis(genesisBlock)
     await addNextBlock(1)
   })
 
   t.test('should get block by number', async (st) => {
     const blockchain = new Blockchain({ validateBlocks: true, validatePow: false })
     const blocks: Block[] = []
-    const genesisBlock = new Block(undefined, { initWithGenesisHeader: true })
-    genesisBlock.header.gasLimit = toBuffer(8000000)
-    blocks.push(genesisBlock)
-    const block = new Block()
-    block.header.number = toBuffer(1)
-    block.header.parentHash = blocks[0].hash()
-    block.header.difficulty = toBuffer(block.header.canonicalDifficulty(blocks[0]))
-    block.header.gasLimit = toBuffer(8000000)
-    block.header.timestamp = toBuffer(bufferToInt(blocks[0].header.timestamp) + 1)
+    const gasLimit = 8000000
+
+    const genesis = Block.genesis({ header: { gasLimit } })
+    blocks.push(genesis)
+    await blockchain.putGenesis(genesis)
+
+    const blockData = {
+      header: {
+        number: 1,
+        parentHash: genesis.hash(),
+        difficulty: genesis.header.canonicalDifficulty(genesis),
+        timestamp: genesis.header.timestamp.addn(1),
+        gasLimit,
+      },
+    }
+    const block = Block.fromBlockData(blockData)
     blocks.push(block)
-    await blockchain.putGenesis(genesisBlock)
     await blockchain.putBlock(block)
+
     const returnedBlock = await blockchain.getBlock(1)
     if (returnedBlock) {
       st.ok(returnedBlock.hash().equals(blocks[1].hash()))
-      st.end()
     } else {
       st.fail('block is not defined!')
     }
+    st.end()
   })
 
   t.test('should get block by hash', async (st) => {
     const blockchain = new Blockchain({ validateBlocks: true, validatePow: false })
-    const genesisBlock = new Block(undefined, { initWithGenesisHeader: true })
-    genesisBlock.header.gasLimit = toBuffer(8000000)
-    await blockchain.putGenesis(genesisBlock)
-    const block = await blockchain.getBlock(genesisBlock.hash())
+    const gasLimit = 8000000
+
+    const genesis = Block.genesis({ header: { gasLimit } })
+    await blockchain.putGenesis(genesis)
+
+    const block = await blockchain.getBlock(genesis.hash())
     if (block) {
-      st.ok(block.hash().equals(genesisBlock.hash()))
-      st.end()
+      st.ok(block.hash().equals(genesis.hash()))
     } else {
       st.fail('block is not defined!')
     }
+    st.end()
   })
 
   t.test('should get 5 consecutive blocks, starting from genesis hash', async (st) => {
@@ -129,7 +140,7 @@ test('blockchain test', (t) => {
     // start: genesisHash, max: 5, skip: 0, reverse: false
     const getBlocks = await blockchain.getBlocks(blocks[0].hash(), 5, 0, false)
     st.equal(getBlocks!.length, 5)
-    st.ok(getBlocks![0].header.number.equals(getBlocks[0].header.number))
+    st.ok(blocks[0].header.number.eq(getBlocks[0].header.number))
     st.ok(isConsecutive(getBlocks!), 'blocks should be consecutive')
     st.end()
   })
@@ -140,7 +151,7 @@ test('blockchain test', (t) => {
     // start: genesisHash, max: 5, skip: 1, reverse: false
     const getBlocks = await blockchain.getBlocks(blocks[0].hash(), 5, 1, false)
     st.equal(getBlocks!.length, 5, 'should get 5 blocks')
-    st.ok(getBlocks![1].header.number.equals(blocks[2].header.number), 'should skip second block')
+    st.ok(getBlocks![1].header.number.eq(blocks[2].header.number), 'should skip second block')
     st.ok(!isConsecutive(getBlocks!), 'blocks should not be consecutive')
     st.end()
   })
@@ -151,10 +162,7 @@ test('blockchain test', (t) => {
     // start: genesisHash, max: 4, skip: 2, reverse: false
     const getBlocks = await blockchain.getBlocks(blocks[0].hash(), 4, 2, false)
     st.equal(getBlocks!.length, 4, 'should get 4 blocks')
-    st.ok(
-      getBlocks![1].header.number.equals(blocks[3].header.number),
-      'should skip two blocks apart',
-    )
+    st.ok(getBlocks![1].header.number.eq(blocks[3].header.number), 'should skip two blocks apart')
     st.ok(!isConsecutive(getBlocks!), 'blocks should not be consecutive')
     st.end()
   })
@@ -165,7 +173,7 @@ test('blockchain test', (t) => {
     // start: genesisHash, max: 17, skip: 0, reverse: false
     const getBlocks = await blockchain.getBlocks(blocks[0].hash(), 17, 0, false)
     st.equal(getBlocks!.length, 15)
-    st.ok(getBlocks![0].header.number.equals(blocks[0].header.number))
+    st.ok(getBlocks![0].header.number.eq(blocks[0].header.number))
     st.ok(isConsecutive(getBlocks!), 'blocks should be consecutive')
     st.end()
   })
@@ -176,7 +184,7 @@ test('blockchain test', (t) => {
     // start: 0, max: 5, skip: 0, reverse: false
     const getBlocks = await blockchain.getBlocks(0, 5, 0, false)
     st.equal(getBlocks!.length, 5)
-    st.ok(getBlocks![0].header.number.equals(blocks[0].header.number))
+    st.ok(getBlocks![0].header.number.eq(blocks[0].header.number))
     st.ok(isConsecutive(getBlocks!), 'blocks should be consecutive')
     st.end()
   })
@@ -187,7 +195,7 @@ test('blockchain test', (t) => {
     // start: 1, max: 5, skip: 1, reverse: false
     const getBlocks = await blockchain.getBlocks(1, 5, 1, false)
     st.equal(getBlocks!.length, 5)
-    st.ok(getBlocks![1].header.number.equals(blocks[3].header.number), 'should skip one block')
+    st.ok(getBlocks![1].header.number.eq(blocks[3].header.number), 'should skip one block')
     st.ok(!isConsecutive(getBlocks!), 'blocks should not be consecutive')
     st.end()
   })
@@ -198,7 +206,7 @@ test('blockchain test', (t) => {
     // start: 0, max: 5, skip: 2, reverse: false
     const getBlocks = await blockchain.getBlocks(0, 5, 2, false)
     st.equal(getBlocks!.length, 5)
-    st.ok(getBlocks![1].header.number.equals(blocks[3].header.number), 'should skip two blocks')
+    st.ok(getBlocks![1].header.number.eq(blocks[3].header.number), 'should skip two blocks')
     st.ok(!isConsecutive(getBlocks!), 'blocks should not be consecutive')
     st.end()
   })
@@ -209,7 +217,7 @@ test('blockchain test', (t) => {
     // start: 0, max: 17, skip: 0, reverse: false
     const getBlocks = await blockchain.getBlocks(0, 17, 0, false)
     st.equal(getBlocks!.length, 15)
-    st.ok(getBlocks![0].header.number.equals(blocks[0].header.number))
+    st.ok(getBlocks![0].header.number.eq(blocks[0].header.number))
     st.ok(isConsecutive(getBlocks!), 'blocks should be consecutive')
     st.end()
   })
@@ -220,7 +228,7 @@ test('blockchain test', (t) => {
     // start: 1, max: 5, skip: 0, reverse: false
     const getBlocks = await blockchain.getBlocks(1, 5, 0, false)
     st.equal(getBlocks!.length, 5)
-    st.ok(getBlocks![0].header.number.equals(blocks[1].header.number))
+    st.ok(getBlocks![0].header.number.eq(blocks[1].header.number))
     st.ok(isConsecutive(getBlocks!), 'blocks should be consecutive')
     st.end()
   })
@@ -231,7 +239,7 @@ test('blockchain test', (t) => {
     // start: 5, max: 5, skip: 0, reverse: false
     const getBlocks = await blockchain.getBlocks(5, 5, 0, false)
     st.equal(getBlocks!.length, 5)
-    st.ok(getBlocks![0].header.number.equals(blocks[5].header.number))
+    st.ok(getBlocks![0].header.number.eq(blocks[5].header.number))
     st.ok(isConsecutive(getBlocks!), 'blocks should be consecutive')
     st.end()
   })
@@ -242,7 +250,7 @@ test('blockchain test', (t) => {
     // start: 5, max: 5, skip: 0, reverse: true
     const getBlocks = await blockchain.getBlocks(5, 5, 0, true)
     st.equal(getBlocks!.length, 5)
-    st.ok(getBlocks![0].header.number.equals(blocks[5].header.number))
+    st.ok(getBlocks![0].header.number.eq(blocks[5].header.number))
     st.ok(isConsecutive(getBlocks!.reverse()), 'blocks should be consecutive')
     st.end()
   })
@@ -253,7 +261,7 @@ test('blockchain test', (t) => {
     // start: 5, max: 15, skip: 0, reverse: true
     const getBlocks = await blockchain.getBlocks(5, 15, 0, true)
     st.equal(getBlocks!.length, 6)
-    st.ok(getBlocks![0].header.number.equals(blocks[5].header.number))
+    st.ok(getBlocks![0].header.number.eq(blocks[5].header.number))
     st.ok(isConsecutive(getBlocks!.reverse()), 'blocks should be consecutive')
     st.end()
   })
@@ -264,7 +272,7 @@ test('blockchain test', (t) => {
     // start: 10, max: 10, skip: 1, reverse: true
     const getBlocks = await blockchain.getBlocks(10, 10, 1, true)
     st.equal(getBlocks!.length, 6)
-    st.ok(getBlocks![1].header.number.equals(blocks[8].header.number), 'should skip one block')
+    st.ok(getBlocks![1].header.number.eq(blocks[8].header.number), 'should skip one block')
     st.ok(!isConsecutive(getBlocks!.reverse()), 'blocks should not be consecutive')
     st.end()
   })
@@ -338,16 +346,23 @@ test('blockchain test', (t) => {
   t.test('should add fork header and reset stale heads', async (st) => {
     const { blockchain, blocks, error } = await generateBlockchain(15)
     st.error(error, 'no error')
+
     await blockchain.putBlocks(blocks.slice(1))
+
     const common = new Common({ chain: 'mainnet', hardfork: 'chainstart' })
-    const forkHeader = new BlockHeader(undefined, { common })
-    forkHeader.number = toBuffer(15)
-    forkHeader.parentHash = blocks[14].hash()
-    forkHeader.difficulty = toBuffer(forkHeader.canonicalDifficulty(blocks[14]))
-    forkHeader.gasLimit = toBuffer(8000000)
-    forkHeader.timestamp = toBuffer(bufferToInt(blocks[14].header.timestamp) + 1)
+    const headerData = {
+      number: 15,
+      parentHash: blocks[14].hash(),
+      difficulty: blocks[14].header.canonicalDifficulty(blocks[14]),
+      gasLimit: 8000000,
+      timestamp: blocks[14].header.timestamp.addn(1),
+    }
+    const forkHeader = BlockHeader.fromHeaderData(headerData, { common })
+
     blockchain._heads['staletest'] = blockchain._headHeader
+
     await blockchain.putHeader(forkHeader)
+
     st.ok(blockchain._heads['staletest'].equals(blocks[14].hash()), 'should update stale head')
     st.ok(blockchain._headBlock.equals(blocks[14].hash()), 'should update stale headBlock')
     st.end()
@@ -356,19 +371,26 @@ test('blockchain test', (t) => {
   t.test('should delete fork header', async (st) => {
     const { blockchain, blocks, error } = await generateBlockchain(15)
     st.error(error, 'no error')
+
     const common = new Common({ chain: 'mainnet', hardfork: 'chainstart' })
-    const forkHeader = new BlockHeader(undefined, { common })
-    forkHeader.number = toBuffer(15)
-    forkHeader.parentHash = blocks[14].hash()
-    forkHeader.difficulty = toBuffer(forkHeader.canonicalDifficulty(blocks[14]))
-    forkHeader.gasLimit = toBuffer(8000000)
-    forkHeader.timestamp = toBuffer(bufferToInt(blocks[14].header.timestamp) + 1)
+    const headerData = {
+      number: 15,
+      parentHash: blocks[14].hash(),
+      difficulty: blocks[14].header.canonicalDifficulty(blocks[14]),
+      gasLimit: 8000000,
+      timestamp: blocks[14].header.timestamp.addn(1),
+    }
+    const forkHeader = BlockHeader.fromHeaderData(headerData, { common })
+
     blockchain._heads['staletest'] = blockchain._headHeader
+
     await blockchain.putHeader(forkHeader)
+
     st.ok(blockchain._heads['staletest'].equals(blocks[14].hash()), 'should update stale head')
     st.ok(blockchain._headBlock.equals(blocks[14].hash()), 'should update stale headBlock')
 
     await blockchain.delBlock(forkHeader.hash())
+
     st.ok(blockchain._headHeader.equals(blocks[14].hash()), 'should reset headHeader')
     st.ok(blockchain._headBlock.equals(blocks[14].hash()), 'should not change headBlock')
     st.end()
@@ -412,10 +434,9 @@ test('blockchain test', (t) => {
   t.test('should put multiple blocks at once', async (st) => {
     const blockchain = new Blockchain({ validateBlocks: true, validatePow: false })
     const blocks: Block[] = []
-    const genesisBlock = new Block(undefined, { initWithGenesisHeader: true })
-    genesisBlock.header.gasLimit = toBuffer(8000000)
-    blocks.push(...generateBlocks(15, [genesisBlock]))
-    await blockchain.putGenesis(genesisBlock)
+    const genesis = Block.genesis({ header: { gasLimit: 8000000 } })
+    blocks.push(...generateBlocks(15, [genesis]))
+    await blockchain.putGenesis(genesis)
     await blockchain.putBlocks(blocks.slice(1))
     st.end()
   })
@@ -439,23 +460,28 @@ test('blockchain test', (t) => {
 
   t.test('should validate', async (st) => {
     const blockchain = new Blockchain({ validateBlocks: true, validatePow: false })
-    const genesisBlock = new Block(undefined, { initWithGenesisHeader: true })
-    genesisBlock.header.gasLimit = toBuffer(8000000)
-    await blockchain.putGenesis(genesisBlock)
-    const invalidBlock = new Block()
+    const genesis = Block.genesis({ header: { gasLimit: 8000000 } })
+    await blockchain.putGenesis(genesis)
+
+    const invalidBlock = Block.fromBlockData({ header: { number: 50 } })
     try {
       await blockchain.putBlock(invalidBlock)
+      st.fail('should not validate an invalid block')
     } catch (error) {
       t.ok(error, 'should not validate an invalid block')
-      st.end()
     }
+    st.end()
   })
 
   t.test('should add block with body', async (st) => {
     const blockchain = new Blockchain({ validateBlocks: true, validatePow: false })
-    const genesisBlock = new Block(Buffer.from(testData.genesisRLP.slice(2), 'hex'))
-    await blockchain.putGenesis(genesisBlock)
-    const block = new Block(Buffer.from(testData.blocks[0].rlp.slice(2), 'hex'))
+
+    const genesisRlp = Buffer.from(testData.genesisRLP.slice(2), 'hex')
+    const genesis = Block.fromRLPSerializedBlock(genesisRlp, { initWithGenesisHeader: true })
+    await blockchain.putGenesis(genesis)
+
+    const blockRlp = Buffer.from(testData.blocks[0].rlp.slice(2), 'hex')
+    const block = Block.fromRLPSerializedBlock(blockRlp)
     await blockchain.putBlock(block)
     st.end()
   })
@@ -465,7 +491,7 @@ test('blockchain test', (t) => {
     if (!genesis) {
       return st.fail('genesis not defined!')
     }
-    const blockchain = new Blockchain({ db: db })
+    const blockchain = new Blockchain({ db })
 
     const number = await blockchain.dbManager.hashToNumber(genesis?.hash())
     st.ok(number.isZero(), 'should perform _hashToNumber correctly')
@@ -474,83 +500,78 @@ test('blockchain test', (t) => {
     st.ok(genesis.hash().equals(hash), 'should perform _numberToHash correctly')
 
     const td = await blockchain._getTd(genesis.hash(), new BN(0))
-    st.ok(td.toBuffer().equals(genesis.header.difficulty), 'should perform _getTd correctly')
+    st.ok(td.eq(genesis.header.difficulty), 'should perform _getTd correctly')
     st.end()
   })
 
   t.test('should save headers', async (st) => {
     const db = level()
-    let blockchain = new Blockchain({ db: db, validateBlocks: true, validatePow: false })
-    const genesisBlock = new Block(undefined, { initWithGenesisHeader: true })
-    genesisBlock.header.gasLimit = toBuffer(8000000)
-    await blockchain.putGenesis(genesisBlock)
-    const header = new BlockHeader()
-    header.number = toBuffer(1)
-    header.parentHash = genesisBlock.hash()
-    header.difficulty = toBuffer(header.canonicalDifficulty(genesisBlock))
-    header.gasLimit = toBuffer(8000000)
-    header.timestamp = toBuffer(bufferToInt(genesisBlock.header.timestamp) + 1)
+    const gasLimit = 8000000
 
+    let blockchain = new Blockchain({ db, validateBlocks: true, validatePow: false })
+
+    const genesis = Block.genesis({ header: { gasLimit } })
+    await blockchain.putGenesis(genesis)
+
+    const headerData = {
+      number: 1,
+      parentHash: genesis.hash(),
+      difficulty: genesis.header.canonicalDifficulty(genesis),
+      gasLimit,
+      timestamp: genesis.header.timestamp.addn(1),
+    }
+    const header = BlockHeader.fromHeaderData(headerData)
     await blockchain.putHeader(header)
-    blockchain = new Blockchain({ db: db, validateBlocks: true, validatePow: false })
+
+    blockchain = new Blockchain({ db, validateBlocks: true, validatePow: false })
 
     const latestHeader = await blockchain.getLatestHeader()
     st.ok(latestHeader.hash().equals(header.hash()), 'should save headHeader')
 
     const latestBlock = await blockchain.getLatestBlock()
-    st.ok(latestBlock.hash().equals(genesisBlock.hash()), 'should save headBlock')
-    st.end()
-  })
-
-  t.test('immutable cached objects', async (st) => {
-    const blockchain = new Blockchain({ validateBlocks: true, validatePow: false })
-    const genesisBlock = new Block(undefined, { initWithGenesisHeader: true })
-    genesisBlock.header.gasLimit = toBuffer(8000000)
-    await blockchain.putGenesis(genesisBlock)
-
-    const block = new Block()
-    block.header.number = toBuffer(1)
-    block.header.parentHash = genesisBlock.hash()
-    block.header.difficulty = toBuffer(block.header.canonicalDifficulty(genesisBlock))
-    block.header.gasLimit = toBuffer(8000000)
-    block.header.timestamp = toBuffer(bufferToInt(genesisBlock.header.timestamp) + 1)
-    let cachedHash: Buffer
-
-    await blockchain.putBlock(block)
-    cachedHash = block.hash()
-
-    block.header.extraData = Buffer.from([1])
-    const getBlock = await blockchain.getBlock(1)
-    st.ok(cachedHash.equals(getBlock.hash()), 'should not modify cached objects')
+    st.ok(latestBlock.hash().equals(genesis.hash()), 'should save headBlock')
     st.end()
   })
 
   t.test('should get latest', async (st) => {
     const blockchain = new Blockchain({ validateBlocks: true, validatePow: false })
+    const gasLimit = 8000000
     const common = new Common({ chain: 'mainnet', hardfork: 'chainstart' })
-    const headers = [new BlockHeader(undefined, { common }), new BlockHeader(undefined, { common })]
-    const genesisBlock = new Block(undefined, { initWithGenesisHeader: true })
-    genesisBlock.header.gasLimit = toBuffer(8000000)
-    await blockchain.putGenesis(genesisBlock)
+    const opts = { common }
 
-    const block = new Block(undefined, { common })
-    block.header.number = toBuffer(1)
-    block.header.parentHash = genesisBlock.hash()
-    block.header.difficulty = toBuffer(block.header.canonicalDifficulty(genesisBlock))
-    block.header.gasLimit = toBuffer(8000000)
-    block.header.timestamp = toBuffer(bufferToInt(genesisBlock.header.timestamp) + 1)
+    const genesis = Block.genesis({ header: { gasLimit } }, opts)
+    await blockchain.putGenesis(genesis)
 
-    headers[0].number = toBuffer(1)
-    headers[0].parentHash = genesisBlock.hash()
-    headers[0].difficulty = toBuffer(headers[0].canonicalDifficulty(genesisBlock))
-    headers[0].gasLimit = toBuffer(8000000)
-    headers[0].timestamp = toBuffer(bufferToInt(genesisBlock.header.timestamp) + 1)
+    const blockData = {
+      header: {
+        number: 1,
+        parentHash: genesis.hash(),
+        difficulty: genesis.header.canonicalDifficulty(genesis),
+        timestamp: genesis.header.timestamp.addn(3),
+        gasLimit,
+      },
+    }
+    const block = Block.fromBlockData(blockData, opts)
 
-    headers[1].number = toBuffer(2)
-    headers[1].parentHash = headers[0].hash()
-    headers[1].difficulty = toBuffer(headers[1].canonicalDifficulty(block))
-    headers[1].gasLimit = toBuffer(8000000)
-    headers[1].timestamp = toBuffer(bufferToInt(block.header.timestamp) + 1)
+    const headerData1 = {
+      number: 1,
+      parentHash: genesis.hash(),
+      difficulty: genesis.header.canonicalDifficulty(genesis),
+      timestamp: genesis.header.timestamp.addn(1),
+      gasLimit,
+    }
+    const header1 = BlockHeader.fromHeaderData(headerData1, opts)
+    const headers = [header1]
+
+    const headerData2 = {
+      number: 2,
+      parentHash: header1.hash(),
+      difficulty: header1.canonicalDifficulty(block),
+      timestamp: header1.timestamp.addn(1),
+      gasLimit,
+    }
+    const header2 = BlockHeader.fromHeaderData(headerData2, opts)
+    headers.push(header2)
 
     await blockchain.putHeaders(headers)
 
@@ -558,9 +579,10 @@ test('blockchain test', (t) => {
     st.ok(latestHeader.hash().equals(headers[1].hash()), 'should update latest header')
 
     const latestBlock = await blockchain.getLatestBlock()
-    st.ok(latestBlock.hash().equals(genesisBlock.hash()), 'should not change latest block')
+    st.ok(latestBlock.hash().equals(genesis.hash()), 'should not change latest block')
 
     await blockchain.putBlock(block)
+
     const latestHeader2 = await blockchain.getLatestHeader()
     st.ok(latestHeader2.hash().equals(headers[1].hash()), 'should not change latest header')
 
@@ -571,26 +593,29 @@ test('blockchain test', (t) => {
 
   t.test('mismatched chains', async (st) => {
     const common = new Common({ chain: 'mainnet', hardfork: 'chainstart' })
-    const blockchain = new Blockchain({ common: common, validateBlocks: true, validatePow: false })
+    const blockchain = new Blockchain({ common, validateBlocks: true, validatePow: false })
+    const gasLimit = 8000000
+
+    const genesis = Block.genesis({ header: { gasLimit } }, { common })
+
+    const blockData1 = {
+      header: {
+        number: 1,
+        parentHash: genesis.hash(),
+        difficulty: genesis.header.canonicalDifficulty(genesis),
+        timestamp: genesis.header.timestamp.addn(1),
+        gasLimit,
+      },
+    }
+    const blockData2 = { ...blockData1, number: 2, timestamp: genesis.header.timestamp.addn(2) }
+
     const blocks = [
-      new Block(undefined, { common: common, initWithGenesisHeader: true }),
-      new Block(undefined, { common: new Common({ chain: 'mainnet', hardfork: 'chainstart' }) }),
-      new Block(undefined, { common: new Common({ chain: 'ropsten', hardfork: 'chainstart' }) }),
+      genesis,
+      Block.fromBlockData(blockData1, { common }),
+      Block.fromBlockData(blockData2, {
+        common: new Common({ chain: 'ropsten', hardfork: 'chainstart' }),
+      }),
     ]
-
-    blocks[0].header.gasLimit = toBuffer(8000000)
-
-    blocks[1].header.number = toBuffer(1)
-    blocks[1].header.parentHash = blocks[0].hash()
-    blocks[1].header.difficulty = toBuffer(blocks[1].header.canonicalDifficulty(blocks[0]))
-    blocks[1].header.gasLimit = toBuffer(8000000)
-    blocks[1].header.timestamp = toBuffer(bufferToInt(blocks[0].header.timestamp) + 1)
-
-    blocks[2].header.number = toBuffer(2)
-    blocks[2].header.parentHash = blocks[1].hash()
-    blocks[2].header.difficulty = toBuffer(blocks[2].header.canonicalDifficulty(blocks[0]))
-    blocks[2].header.gasLimit = toBuffer(8000000)
-    blocks[2].header.timestamp = toBuffer(bufferToInt(blocks[0].header.timestamp) + 2)
 
     for (let i = 0; i < blocks.length; i++) {
       if (i === 0) {

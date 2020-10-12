@@ -119,15 +119,15 @@ tape('VM with blockchain', (t) => {
   })
 
   t.test('should run blockchain with mocked runBlock', async (st) => {
-    const vm = setupVM({ common: new Common({ chain: 'goerli' }) })
+    const common = new Common({ chain: 'goerli' })
+    const vm = setupVM({ common })
     await vm.init()
 
-    const genesis = new Block(Buffer.from(testData.genesisRLP.slice(2), 'hex'), {
-      common: vm._common,
-    })
-    const block = new Block(Buffer.from(testData.blocks[0].rlp.slice(2), 'hex'), {
-      common: vm._common,
-    })
+    const genesisRlp = Buffer.from(testData.genesisRLP.slice(2), 'hex')
+    const genesis = Block.fromRLPSerializedBlock(genesisRlp, { common })
+
+    const blockRlp = Buffer.from(testData.blocks[0].rlp.slice(2), 'hex')
+    const block = Block.fromRLPSerializedBlock(blockRlp, { common })
 
     await vm.blockchain.putGenesis(genesis)
     st.equal(vm.blockchain.meta.genesis?.toString('hex'), testData.genesisBlockHeader.hash.slice(2))
@@ -150,14 +150,15 @@ tape('VM with blockchain', (t) => {
   })
 
   t.test('should run blockchain with blocks', async (st) => {
-    const vm = setupVM({ common: new Common({ chain: 'goerli' }) })
+    const common = new Common({ chain: 'goerli' })
+    const vm = setupVM({ common })
     await vm.init()
-    const genesis = new Block(toBuffer(testData.genesisRLP), {
-      common: vm._common,
-    })
-    const block = new Block(toBuffer(testData.blocks[0].rlp), {
-      common: vm._common,
-    })
+
+    const genesisRlp = toBuffer(testData.genesisRLP)
+    const genesis = Block.fromRLPSerializedBlock(genesisRlp, { common })
+
+    const blockRlp = toBuffer(testData.blocks[0].rlp)
+    const block = Block.fromRLPSerializedBlock(blockRlp, { common })
 
     await vm.blockchain.putGenesis(genesis)
     st.equal(vm.blockchain.meta.genesis?.toString('hex'), testData.genesisBlockHeader.hash.slice(2))

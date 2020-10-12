@@ -1,23 +1,19 @@
 import * as tape from 'tape'
 import { BN, rlp, keccak256, stripHexPrefix, setLengthLeft, toBuffer } from 'ethereumjs-util'
 import Account from '@ethereumjs/account'
-import { Transaction } from '@ethereumjs/tx'
-import { Block } from '@ethereumjs/block'
+import { Transaction, TxOptions } from '@ethereumjs/tx'
+import { Block, BlockHeader, BlockOptions } from '@ethereumjs/block'
 import Common from '@ethereumjs/common'
 
 export function dumpState(state: any, cb: Function) {
   function readAccounts(state: any) {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
       let accounts: Account[] = []
       const rs = state.createReadStream()
       rs.on('data', function (data: any) {
-        let account = new Account(data.value)
-        // Commented out along TypeScript transition:
-        // Account has no property address
-        //account.address = data.key
+        const account = new Account(data.value)
         accounts.push(account)
       })
-
       rs.on('end', function () {
         resolve(accounts)
       })
@@ -91,11 +87,11 @@ const format = (exports.format = function (
 /**
  * Make a tx using JSON from tests repo
  * @param {Object} txData The tx object from tests repo
- * @param {Common} common An @ethereumjs/common object
+ * @param {TxOptions} opts Tx opts that can include an @ethereumjs/common object
  * @returns {Transaction} Transaction to be passed to VM.runTx function
  */
-export function makeTx(txData: any, common: Common) {
-  const tx = Transaction.fromTxData(txData, { common })
+export function makeTx(txData: any, opts: TxOptions = {}) {
+  const tx = Transaction.fromTxData(txData, opts)
 
   if (txData.secretKey) {
     const privKey = toBuffer(txData.secretKey)
@@ -253,31 +249,36 @@ export function verifyLogs(logs: any, testData: any, t: tape.Test) {
   }
 }
 
-export function makeBlockHeader(data: any) {
-  const header: any = {}
-  header.timestamp = format(data.currentTimestamp)
-  header.gasLimit = format(data.currentGasLimit)
-  if (data.previousHash) {
-    header.parentHash = format(data.previousHash, false, true)
+export function makeBlockHeader(data: any, opts: BlockOptions = {}) {
+  const {
+    currentTimestamp,
+    currentGasLimit,
+    previousHash,
+    currentCoinbase,
+    currentDifficulty,
+    currentNumber,
+  } = data
+  const headerData = {
+    number: currentNumber,
+    coinbase: currentCoinbase,
+    parentHash: previousHash,
+    difficulty: currentDifficulty,
+    gasLimit: currentGasLimit,
+    timestamp: currentTimestamp,
   }
-  header.coinbase = setLengthLeft(format(data.currentCoinbase, false, true), 20)
-  header.difficulty = format(data.currentDifficulty)
-  header.number = format(data.currentNumber)
-  return header
+  return BlockHeader.fromHeaderData(headerData, opts)
 }
 
 /**
  * makeBlockFromEnv - helper to create a block from the env object in tests repo
  * @param env object from tests repo
- * @param transactions transactions for the block
+ * @param transactions transactions for the block (optional)
+ * @param uncleHeaders uncle headers for the block (optional)
  * @returns the block
  */
-export function makeBlockFromEnv(env: any, transactions: Transaction[] = []): Block {
-  return new Block({
-    header: exports.makeBlockHeader(env),
-    transactions: transactions,
-    uncleHeaders: [],
-  })
+export function makeBlockFromEnv(env: any, opts: BlockOptions = {}): Block {
+  const header = makeBlockHeader(env, opts)
+  return new Block(header)
 }
 
 /**

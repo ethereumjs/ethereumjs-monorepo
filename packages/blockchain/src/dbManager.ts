@@ -1,5 +1,12 @@
 import * as rlp from 'rlp'
-import { Block, BlockHeader } from '@ethereumjs/block'
+import { BN } from 'ethereumjs-util'
+import {
+  Block,
+  BlockHeader,
+  BlockBuffer,
+  BlockHeaderBuffer,
+  BlockBodyBuffer,
+} from '@ethereumjs/block'
 import Common from '@ethereumjs/common'
 import Cache from './cache'
 import {
@@ -13,7 +20,6 @@ import {
   headerKey,
 } from './util'
 
-import BN = require('bn.js')
 import type { LevelUp } from 'levelup'
 
 const level = require('level-mem')
@@ -90,7 +96,6 @@ export class DBManager {
    * which can be either its hash or its number.
    */
   async getBlock(blockId: Buffer | BN | number): Promise<Block> {
-    // determine blockId type
     if (typeof blockId === 'number' && Number.isInteger(blockId)) {
       blockId = new BN(blockId)
     }
@@ -107,39 +112,37 @@ export class DBManager {
       throw new Error('Unknown blockId type')
     }
 
-    const header = (await this.getHeader(hash, number)).raw
-    let body: any
+    const header: BlockHeaderBuffer = (await this.getHeader(hash, number)).raw()
+    let body: BlockBodyBuffer = [[], []]
     try {
       body = await this.getBody(hash, number)
     } catch (error) {
       if (error.type !== 'NotFoundError') {
         throw error
       }
-      body = [[], []]
     }
-
-    const blockData = [header].concat(body) as [Buffer[], Buffer[], Buffer[]]
-    return new Block(blockData, { common: this._common })
+    const blockData = [header, ...body] as BlockBuffer
+    const opts = { common: this._common }
+    return Block.fromValuesArray(blockData, opts)
   }
 
   /**
    * Fetches body of a block given its hash and number.
    */
-  async getBody(hash: Buffer, number: BN): Promise<Buffer> {
+  async getBody(hash: Buffer, number: BN): Promise<BlockBodyBuffer> {
     const key = bodyKey(number, hash)
-    return rlp.decode(await this.get(key, { cache: 'body' }))
+    const body = await this.get(key, { cache: 'body' })
+    return (rlp.decode(body) as any) as BlockBodyBuffer
   }
 
   /**
    * Fetches header of a block given its hash and number.
    */
-
   async getHeader(hash: Buffer, number: BN) {
     const key = headerKey(number, hash)
     const encodedHeader = await this.get(key, { cache: 'header' })
-    return new BlockHeader(rlp.decode(encodedHeader), {
-      common: this._common,
-    })
+    const opts = { common: this._common }
+    return BlockHeader.fromRLPSerializedHeader(encodedHeader, opts)
   }
 
   /**
@@ -156,7 +159,8 @@ export class DBManager {
    */
   async hashToNumber(hash: Buffer): Promise<BN> {
     const key = hashToNumberKey(hash)
-    return new BN(await this.get(key, { cache: 'hashToNumber' }))
+    const value = await this.get(key, { cache: 'hashToNumber' })
+    return new BN(value)
   }
 
   /**

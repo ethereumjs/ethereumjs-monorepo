@@ -1,10 +1,9 @@
-import VM from '../../'
-
 import Account from '@ethereumjs/account'
 import { Block, BlockHeader } from '@ethereumjs/block'
 import Blockchain from '@ethereumjs/blockchain'
 import { toBuffer, setLengthLeft } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
+import VM from '../../'
 
 const testData = require('./test-data')
 const level = require('level')
@@ -72,14 +71,15 @@ async function setupPreConditions(vm: VM, testData: any) {
 }
 
 async function setGenesisBlock(blockchain: any, common: Common) {
-  const header = new BlockHeader(testData.genesisBlockHeader, { common })
-  const genesisBlock = new Block([header.raw, [], []], { common })
-  await blockchain.putGenesis(genesisBlock)
+  const header = testData.genesisBlockHeader
+  const genesis = Block.genesis({ header }, { common })
+  await blockchain.putGenesis(genesis)
 }
 
 async function putBlocks(blockchain: any, common: Common, testData: any) {
   for (const blockData of testData.blocks) {
-    const block = new Block(toBuffer(blockData.rlp), { common })
+    const blockRlp = toBuffer(blockData.rlp)
+    const block = Block.fromRLPSerializedBlock(blockRlp, { common })
     await blockchain.putBlock(block)
   }
 }

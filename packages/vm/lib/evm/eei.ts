@@ -245,35 +245,35 @@ export default class EEI {
    * Returns the block’s number.
    */
   getBlockNumber(): BN {
-    return new BN(this._env.block.header.number)
+    return this._env.block.header.number
   }
 
   /**
    * Returns the block's beneficiary address.
    */
   getBlockCoinbase(): BN {
-    return new BN(this._env.block.header.coinbase)
+    return new BN(this._env.block.header.coinbase.buf)
   }
 
   /**
    * Returns the block's timestamp.
    */
   getBlockTimestamp(): BN {
-    return new BN(this._env.block.header.timestamp)
+    return this._env.block.header.timestamp
   }
 
   /**
    * Returns the block's difficulty.
    */
   getBlockDifficulty(): BN {
-    return new BN(this._env.block.header.difficulty)
+    return this._env.block.header.difficulty
   }
 
   /**
    * Returns the block's gas limit.
    */
   getBlockGasLimit(): BN {
-    return new BN(this._env.block.header.gasLimit)
+    return this._env.block.header.gasLimit
   }
 
   /**

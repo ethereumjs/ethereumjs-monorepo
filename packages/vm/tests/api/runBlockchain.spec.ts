@@ -1,11 +1,10 @@
 import * as tape from 'tape'
-import { BN, toBuffer } from 'ethereumjs-util'
+import { BN } from 'ethereumjs-util'
 import { Block } from '@ethereumjs/block'
 import Common from '@ethereumjs/common'
 import Blockchain from '@ethereumjs/blockchain'
 import runBlockchain from '../../lib/runBlockchain'
 import { DefaultStateManager } from '../../lib/state'
-import { createGenesis } from './utils'
 
 const level = require('level-mem')
 
@@ -48,7 +47,7 @@ tape('runBlockchain', (t) => {
   t.test('should run with genesis block', async (st) => {
     try {
       const common = new Common({ chain: 'goerli', hardfork: 'chainstart' })
-      const genesis = createGenesis({ common })
+      const genesis = Block.genesis(undefined, { common })
 
       await blockchain.putGenesis(genesis)
       st.ok(blockchain.meta.genesis, 'genesis should be set for blockchain')
@@ -74,7 +73,7 @@ tape('runBlockchain', (t) => {
       })
 
     const common = new Common({ chain: 'goerli', hardfork: 'chainstart' })
-    const genesis = createGenesis({ common })
+    const genesis = Block.genesis(undefined, { common })
     await blockchain.putGenesis(genesis)
 
     const b1 = createBlock(genesis, 1, { common })
@@ -105,14 +104,16 @@ tape('runBlockchain', (t) => {
 
 function createBlock(parent: Block | undefined, n = 0, opts = {}) {
   if (!parent) {
-    return createGenesis(opts)
+    return Block.genesis(undefined, opts)
   }
 
-  const b = new Block(undefined, opts)
-  b.header.number = toBuffer(n)
-  b.header.parentHash = parent.hash()
-  b.header.difficulty = new BN(0xfffffff).toArrayLike(Buffer)
-  b.header.stateRoot = parent.header.stateRoot
-
-  return b
+  const blockData = {
+    header: {
+      number: n,
+      parentHash: parent.hash(),
+      difficulty: new BN(0xfffffff),
+      stateRoot: parent.header.stateRoot,
+    },
+  }
+  return Block.fromBlockData(blockData, opts)
 }

@@ -1,15 +1,15 @@
 import { BN, zeros } from 'ethereumjs-util'
+import { Block } from '@ethereumjs/block'
 import VM from './index'
 import TxContext from './evm/txContext'
 import Message from './evm/message'
 import { default as EVM, EVMResult } from './evm/evm'
-import { Block } from '@ethereumjs/block'
 
 /**
  * Options for running a call (or create) operation
  */
 export interface RunCallOpts {
-  block?: any
+  block?: Block
   gasPrice?: BN
   origin?: Buffer
   caller?: Buffer

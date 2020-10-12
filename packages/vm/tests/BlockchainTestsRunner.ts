@@ -1,5 +1,5 @@
 import * as tape from 'tape'
-import { addHexPrefix, bufferToInt, toBuffer } from 'ethereumjs-util'
+import { addHexPrefix, BN, toBuffer } from 'ethereumjs-util'
 import { SecureTrie as Trie } from 'merkle-patricia-tree'
 import { Block } from '@ethereumjs/block'
 import Blockchain from '@ethereumjs/blockchain'
@@ -67,20 +67,21 @@ export default async function runBlockchainTest(options: any, testData: any, t: 
   })
 
   // create and add genesis block
-  const blockData = { header: formatBlockHeader(testData.genesisBlockHeader) }
-  const genesisBlock = new Block(blockData, { common })
+  const header = formatBlockHeader(testData.genesisBlockHeader)
+  const blockData = { header }
+  const genesis = Block.fromBlockData(blockData, { common })
 
   // set up pre-state
   await setupPreConditions(vm.stateManager._trie, testData)
 
-  t.ok(vm.stateManager._trie.root.equals(genesisBlock.header.stateRoot), 'correct pre stateRoot')
+  t.ok(vm.stateManager._trie.root.equals(genesis.header.stateRoot), 'correct pre stateRoot')
 
   if (testData.genesisRLP) {
     const rlp = toBuffer(testData.genesisRLP)
-    t.ok(genesisBlock.serialize().equals(rlp), 'correct genesis RLP')
+    t.ok(genesis.serialize().equals(rlp), 'correct genesis RLP')
   }
 
-  await blockchain.putGenesis(genesisBlock)
+  await blockchain.putGenesis(genesis)
 
   async function handleError(error: string | undefined, expectException: string) {
     if (expectException) {
@@ -92,8 +93,8 @@ export default async function runBlockchainTest(options: any, testData: any, t: 
   }
 
   let currentFork = common.hardfork()
-  let currentBlock = 0
-  let lastBlock = 0
+  let currentBlock = new BN(0)
+  let lastBlock = new BN(0)
   for (const raw of testData.blocks) {
     lastBlock = currentBlock
     const paramFork = `expectException${options.forkConfigTestSuite}`
@@ -108,16 +109,15 @@ export default async function runBlockchainTest(options: any, testData: any, t: 
     // here we convert the rlp to block only to extract the number
     // we have to do this again later because the common might run on a new hardfork
     try {
-      const block = new Block(Buffer.from(raw.rlp.slice(2), 'hex'), {
-        common,
-      })
-      currentBlock = bufferToInt(block.header.number)
+      const blockRlp = Buffer.from(raw.rlp.slice(2), 'hex')
+      const block = Block.fromRLPSerializedBlock(blockRlp, { common })
+      currentBlock = block.header.number
     } catch (e) {
       handleError(e, expectException)
       continue
     }
 
-    if (currentBlock < lastBlock) {
+    if (currentBlock.lt(lastBlock)) {
       // "re-org": rollback the blockchain to currentBlock (i.e. delete that block number in the blockchain plus the children)
       t.fail('re-orgs are not supported by the test suite')
       return
@@ -131,8 +131,8 @@ export default async function runBlockchainTest(options: any, testData: any, t: 
         vm._updateOpcodes()
       }
 
-      const blockData = Buffer.from(raw.rlp.slice(2), 'hex')
-      const block = new Block(blockData, { common })
+      const blockRlp = Buffer.from(raw.rlp.slice(2), 'hex')
+      const block = Block.fromRLPSerializedBlock(blockRlp, { common })
       await blockchain.putBlock(block)
 
       // This is a trick to avoid generating the canonical genesis
@@ -165,7 +165,7 @@ export default async function runBlockchainTest(options: any, testData: any, t: 
       }
     } catch (error) {
       // caught an error, reduce block number
-      currentBlock--
+      currentBlock.isubn(1)
       await handleError(error, expectException)
     }
   }

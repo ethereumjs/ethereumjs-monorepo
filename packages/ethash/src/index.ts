@@ -197,8 +197,8 @@ export default class Ethash {
   }
 
   async _verifyPOW(header: BlockHeader) {
-    const headerHash = this.headerHash(header.raw)
-    const number = bufferToInt(header.number)
+    const headerHash = this.headerHash(header.raw())
+    const number = header.number.toNumber()
     const mixHash = header.mixHash
     const difficulty = new BN(header.difficulty)
 

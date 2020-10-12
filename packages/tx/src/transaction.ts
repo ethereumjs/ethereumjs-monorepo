@@ -1,18 +1,19 @@
 import { Buffer } from 'buffer'
 import {
-  BN,
-  ecrecover,
-  rlphash,
-  publicToAddress,
-  ecsign,
-  toBuffer,
-  rlp,
-  unpadBuffer,
-  MAX_INTEGER,
   Address,
+  BN,
+  bnToRlp,
+  ecrecover,
+  ecsign,
+  rlp,
+  rlphash,
+  toBuffer,
+  unpadBuffer,
+  publicToAddress,
+  MAX_INTEGER,
 } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
-import { TxOptions, TxData, JsonTx, bnToRlp, bnToHex } from './types'
+import { TxOptions, TxData, JsonTx, bnToHex } from './types'
 
 // secp256k1n/2
 const N_DIV_2 = new BN('7fffffffffffffffffffffffffffffff5d576e7357a4501ddfe92f46681b20a0', 16)
@@ -36,15 +37,15 @@ export default class Transaction {
     const { nonce, gasLimit, gasPrice, to, value, data, v, r, s } = txData
 
     return new Transaction(
-      new BN(toBuffer(nonce || '0x')),
-      new BN(toBuffer(gasPrice || '0x')),
-      new BN(toBuffer(gasLimit || '0x')),
+      new BN(toBuffer(nonce)),
+      new BN(toBuffer(gasPrice)),
+      new BN(toBuffer(gasLimit)),
       to ? new Address(toBuffer(to)) : undefined,
-      new BN(toBuffer(value || '0x')),
-      toBuffer(data || '0x'),
-      new BN(toBuffer(v || '0x')),
-      new BN(toBuffer(r || '0x')),
-      new BN(toBuffer(s || '0x')),
+      new BN(toBuffer(value)),
+      toBuffer(data),
+      new BN(toBuffer(v)),
+      new BN(toBuffer(r)),
+      new BN(toBuffer(s)),
       opts,
     )
   }
@@ -146,9 +147,9 @@ export default class Transaction {
       this.to !== undefined ? this.to.buf : Buffer.from([]),
       bnToRlp(this.value),
       this.data,
-      bnToRlp(this.v),
-      bnToRlp(this.r),
-      bnToRlp(this.s),
+      this.v ? bnToRlp(this.v) : Buffer.from([]),
+      this.r ? bnToRlp(this.r) : Buffer.from([]),
+      this.s ? bnToRlp(this.s) : Buffer.from([]),
     ]
 
     return rlphash(values)
@@ -189,12 +190,17 @@ export default class Transaction {
       )
     }
 
+    const { v, r, s } = this
+    if (!v || !r || !s) {
+      throw new Error('Missing values to derive sender public key from signed tx')
+    }
+
     try {
       return ecrecover(
         msgHash,
-        this.v!.toNumber(),
-        bnToRlp(this.r),
-        bnToRlp(this.s),
+        v.toNumber(),
+        bnToRlp(r),
+        bnToRlp(s),
         this._signedTxImplementsEIP155() ? this.getChainId() : undefined,
       )
     } catch (e) {
@@ -307,10 +313,10 @@ export default class Transaction {
   }
 
   /**
-   * Returns the rlp encoding of the transaction
+   * Returns a Buffer Array of the raw Buffers of this transaction, in order.
    */
-  serialize(): Buffer {
-    return rlp.encode([
+  raw(): Buffer[] {
+    return [
       bnToRlp(this.nonce),
       bnToRlp(this.gasPrice),
       bnToRlp(this.gasLimit),
@@ -320,7 +326,14 @@ export default class Transaction {
       this.v !== undefined ? bnToRlp(this.v) : Buffer.from([]),
       this.r !== undefined ? bnToRlp(this.r) : Buffer.from([]),
       this.s !== undefined ? bnToRlp(this.s) : Buffer.from([]),
-    ])
+    ]
+  }
+
+  /**
+   * Returns the rlp encoding of the transaction.
+   */
+  serialize(): Buffer {
+    return rlp.encode(this.raw())
   }
 
   /**

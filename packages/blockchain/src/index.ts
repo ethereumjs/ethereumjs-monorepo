@@ -216,8 +216,8 @@ export default class Blockchain implements BlockchainInterface {
    */
   async _setCanonicalGenesisBlock() {
     const common = new Common({ chain: this._common.chainId(), hardfork: 'chainstart' })
-    const genesisBlock = new Block(undefined, { common, initWithGenesisHeader: true })
-    await this._putBlockOrHeader(genesisBlock, true)
+    const genesis = Block.genesis({}, { common })
+    await this._putBlockOrHeader(genesis, true)
   }
 
   /**
@@ -301,14 +301,14 @@ export default class Blockchain implements BlockchainInterface {
     }
 
     await this._lock.wait()
-    await this._putBlockOrHeader(block, isGenesis)
-      .then(() => {
-        this._lock.release()
-      })
-      .catch((reason) => {
-        this._lock.release()
-        throw reason
-      })
+
+    try {
+      await this._putBlockOrHeader(block, isGenesis)
+      this._lock.release()
+    } catch (error) {
+      this._lock.release()
+      throw error
+    }
   }
 
   /**
@@ -333,36 +333,29 @@ export default class Blockchain implements BlockchainInterface {
     }
 
     await this._lock.wait()
-    await this._putBlockOrHeader(header)
-      .then(() => {
-        this._lock.release()
-      })
-      .catch((reason) => {
-        this._lock.release()
-        throw reason
-      })
+    try {
+      await this._putBlockOrHeader(header)
+      this._lock.release()
+    } catch (error) {
+      this._lock.release()
+      throw error
+    }
   }
 
   /**
    * @hidden
    */
   async _putBlockOrHeader(item: Block | BlockHeader, isGenesis?: boolean) {
-    let block =
-      item instanceof BlockHeader
-        ? new Block([item.raw, [], []], { common: (item as any)._common })
-        : item
-    const header = block.header
+    const block = item instanceof BlockHeader ? new Block(item) : item
+
     const hash = block.hash()
-    const number = new BN(header.number)
-    const td = new BN(header.difficulty)
-    const currentTd: { [key: string]: BN } = { header: new BN(0), block: new BN(0) }
+    const { header } = block
+    const { number } = header
+    const td = header.difficulty.clone()
+    const currentTd = { header: new BN(0), block: new BN(0) }
     const dbOps: DBOp[] = []
 
-    if (block.constructor !== Block) {
-      block = new Block(block, { common: this._common })
-    }
-
-    if ((block as any)._common.chainId() !== this._common.chainId()) {
+    if (block._common.chainId() !== this._common.chainId()) {
       throw new Error('Chain mismatch while trying to put block or header')
     }
 
@@ -404,15 +397,14 @@ export default class Blockchain implements BlockchainInterface {
 
       // save header
       key = headerKey(number, hash)
-      value = rlp.encode(header.raw)
+      value = header.serialize()
       dbOps.push({ type, key, value, keyEncoding, valueEncoding })
       this.dbManager._cache.header.set(key, value)
 
       // store body if it exists
       if (isGenesis || block.transactions.length || block.uncleHeaders.length) {
-        const body = block.serialize(false).slice(1)
         key = bodyKey(number, hash)
-        value = rlp.encode(body)
+        value = rlp.encode(block.raw().slice(1))
         dbOps.push({ type, key, value, keyEncoding, valueEncoding })
         this.dbManager._cache.body.set(key, value)
       }
@@ -428,7 +420,7 @@ export default class Blockchain implements BlockchainInterface {
         }
 
         // delete higher number assignments and overwrite stale canonical chain
-        await this._deleteStaleAssignments(number.iaddn(1), hash, dbOps)
+        await this._deleteStaleAssignments(number.addn(1), hash, dbOps)
         await this._rebuildCanonical(header, dbOps)
       } else {
         if (td.gt(currentTd.block) && item instanceof Block) {
@@ -437,7 +429,7 @@ export default class Blockchain implements BlockchainInterface {
         // save hash to number lookup info even if rebuild not needed
         key = hashToNumberKey(hash)
         value = bufBE8(number)
-        dbOps.push({ type: 'put', key, keyEncoding, valueEncoding, value })
+        dbOps.push({ type, key, keyEncoding, valueEncoding, value })
         this.dbManager._cache.hashToNumber.set(key, value)
       }
     }
@@ -594,14 +586,11 @@ export default class Blockchain implements BlockchainInterface {
       return
     }
 
+    const type = 'del'
     const key = numberToHashKey(number)
+    const keyEncoding = 'binary'
 
-    ops.push({
-      type: 'del',
-      key,
-      keyEncoding: 'binary',
-    })
-
+    ops.push({ type, key, keyEncoding })
     this.dbManager._cache.numberToHash.del(key)
 
     // reset stale iterator heads to current canonical head
@@ -626,34 +615,26 @@ export default class Blockchain implements BlockchainInterface {
    */
   async _rebuildCanonical(header: BlockHeader, ops: DBOp[]) {
     const hash = header.hash()
-    const number = new BN(header.number)
+    const { number } = header
 
     const saveLookups = async (hash: Buffer, number: BN) => {
+      const type = 'put'
+      const keyEncoding = 'binary'
+      const valueEncoding = 'binary'
+
       let key = numberToHashKey(number)
-      let value
-      ops.push({
-        type: 'put',
-        key: key,
-        keyEncoding: 'binary',
-        valueEncoding: 'binary',
-        value: hash,
-      })
-      this.dbManager._cache.numberToHash.set(key, hash)
+      let value = hash
+      ops.push({ type, key, keyEncoding, valueEncoding, value })
+      this.dbManager._cache.numberToHash.set(key, value)
 
       key = hashToNumberKey(hash)
       value = bufBE8(number)
-      ops.push({
-        type: 'put',
-        key: key,
-        keyEncoding: 'binary',
-        valueEncoding: 'binary',
-        value: value,
-      })
+      ops.push({ type, key, keyEncoding, valueEncoding, value })
       this.dbManager._cache.hashToNumber.set(key, value)
     }
 
     // handle genesis block
-    if (number.cmpn(0) === 0) {
+    if (number.isZero()) {
       await saveLookups(hash, number)
       return
     }
@@ -717,14 +698,13 @@ export default class Blockchain implements BlockchainInterface {
     }
 
     await this._lock.wait()
-    await this._delBlock(blockHash)
-      .then(() => {
-        this._lock.release()
-      })
-      .catch((reason) => {
-        this._lock.release()
-        throw reason
-      })
+    try {
+      await this._delBlock(blockHash)
+      this._lock.release()
+    } catch (error) {
+      this._lock.release()
+      throw error
+    }
   }
 
   /**
