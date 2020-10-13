@@ -1,8 +1,7 @@
 import * as tape from 'tape'
 import { SecureTrie as Trie } from 'merkle-patricia-tree'
-import { BN, toBuffer } from 'ethereumjs-util'
+import { Account, BN, toBuffer } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
-import Account from '@ethereumjs/account'
 import { setupPreConditions, makeTx, makeBlockFromEnv } from './util'
 
 function parseTestCases(
@@ -116,8 +115,8 @@ async function runTestCase(options: any, testData: any, t: tape.Test) {
     // expects the coinbase account to be deleted from state.
     // Without this ecmul_0-3_5616_28000_96 would fail.
     const account = await vm.stateManager.getAccount(block.header.coinbase)
-    if (new BN(account.balance).isZero()) {
-      await vm.stateManager.putAccount(block.header.coinbase, new Account())
+    if (account.balance.isZero()) {
+      await vm.stateManager.putAccount(block.header.coinbase.buf, new Account())
       await vm.stateManager.cleanupTouchedAccounts()
       await vm.stateManager._cache.flush()
     }

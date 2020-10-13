@@ -18,7 +18,7 @@ export default class Message {
 
   constructor(opts: any) {
     this.to = opts.to
-    this.value = opts.value ? new BN(opts.value) : new BN(0)
+    this.value = opts.value ? opts.value : new BN(0)
     this.caller = opts.caller
     this.gasLimit = opts.gasLimit
     this.data = opts.data || Buffer.alloc(0)

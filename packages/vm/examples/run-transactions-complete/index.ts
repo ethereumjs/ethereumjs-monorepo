@@ -1,7 +1,6 @@
+import { Account, BN, toBuffer, pubToAddress, bufferToHex } from 'ethereumjs-util'
+import { Transaction, TxData } from '@ethereumjs/tx'
 import VM from '../..'
-import Account from '@ethereumjs/account'
-import { toBuffer, pubToAddress, bufferToHex } from 'ethereumjs-util'
-import { Transaction } from '@ethereumjs/tx'
 
 async function main() {
   const vm = new VM()
@@ -18,21 +17,19 @@ async function main() {
   console.log('Sender address: ', bufferToHex(address))
 
   // create a new account
-  const account = new Account({
-    balance: 100e18,
-  })
+  const account = new Account(new BN(0), new BN(100).pow(new BN(18)))
 
   // Save the account
   await vm.stateManager.putAccount(address, account)
 
-  const rawTx1 = require('./raw-tx1')
-  const rawTx2 = require('./raw-tx2')
+  const txData1 = require('./raw-tx1')
+  const txData2 = require('./raw-tx2')
 
   // The first transaction deploys a contract
-  const createdAddress = (await runTx(vm, rawTx1, privateKey))!
+  const createdAddress = (await runTx(vm, txData1, privateKey))!
 
   // The second transaction calls that contract
-  await runTx(vm, rawTx2, privateKey)
+  await runTx(vm, txData2, privateKey)
 
   // Now let's look at what we created. The transaction
   // should have created a new account for the contract
@@ -41,15 +38,15 @@ async function main() {
   const createdAccount = await vm.stateManager.getAccount(createdAddress)
 
   console.log('-------results-------')
-  console.log('nonce: ' + createdAccount.nonce.toString('hex'))
-  console.log('balance in wei: ', createdAccount.balance.toString('hex') || 0)
-  console.log('stateRoot: ' + createdAccount.stateRoot.toString('hex'))
-  console.log('codeHash: ' + createdAccount.codeHash.toString('hex'))
+  console.log('nonce: ' + createdAccount.nonce.toString())
+  console.log('balance in wei: ', createdAccount.balance.toString())
+  console.log('stateRoot: 0x' + createdAccount.stateRoot.toString('hex'))
+  console.log('codeHash: 0x' + createdAccount.codeHash.toString('hex'))
   console.log('---------------------')
 }
 
-async function runTx(vm: VM, rawTx: any, privateKey: Buffer) {
-  const tx = Transaction.fromTxData(rawTx).sign(privateKey)
+async function runTx(vm: VM, txData: TxData, privateKey: Buffer) {
+  const tx = Transaction.fromTxData(txData).sign(privateKey)
 
   console.log('----running tx-------')
   const results = await vm.runTx({ tx })

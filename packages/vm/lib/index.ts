@@ -1,6 +1,5 @@
-import BN = require('bn.js')
 import { SecureTrie as Trie } from 'merkle-patricia-tree'
-import Account from '@ethereumjs/account'
+import { Account, BN } from 'ethereumjs-util'
 import Blockchain from '@ethereumjs/blockchain'
 import Common from '@ethereumjs/common'
 import { StateManager, DefaultStateManager } from './state/index'
@@ -212,12 +211,7 @@ export default class VM extends AsyncEventEmitter {
         Object.keys(precompiles)
           .map((k: string): Buffer => Buffer.from(k, 'hex'))
           .map((address: Buffer) =>
-            this.stateManager.putAccount(
-              address,
-              new Account({
-                balance: '0x01',
-              }),
-            ),
+            this.stateManager.putAccount(address, new Account(new BN(0), new BN(1))),
           ),
       )
       await this.stateManager.commit()

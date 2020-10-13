@@ -181,14 +181,14 @@ tape(
     const DAOFundedContractAccount1 = await suite.vm.stateManager.getAccount(
       DAOFundedContractAddress1,
     )
-    t.true(DAOFundedContractAccount1.balance.equals(Buffer.from('', 'hex'))) // verify our funded account now has 0 balance
+    t.ok(DAOFundedContractAccount1.balance.isZero()) // verify our funded account now has 0 balance
     const DAOFundedContractAccount2 = await suite.vm.stateManager.getAccount(
       DAOFundedContractAddress2,
     )
-    t.true(DAOFundedContractAccount2.balance.equals(Buffer.from('', 'hex'))) // verify our funded account now has 0 balance
+    t.ok(DAOFundedContractAccount2.balance.isZero()) // verify our funded account now has 0 balance
 
     const DAORefundAccount = await suite.vm.stateManager.getAccount(DAORefundAddress)
-    t.true(DAORefundAccount.balance.equals(Buffer.from('7777', 'hex'))) // verify that the refund account gets the summed balance of the original refund account + two child DAO accounts
+    t.ok(DAORefundAccount.balance.eq(new BN(Buffer.from('7777', 'hex')))) // verify that the refund account gets the summed balance of the original refund account + two child DAO accounts
 
     t.end()
   },

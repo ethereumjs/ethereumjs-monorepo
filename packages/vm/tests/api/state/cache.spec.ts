@@ -1,7 +1,6 @@
 import * as tape from 'tape'
 import { SecureTrie as Trie } from 'merkle-patricia-tree'
-import { BN } from 'ethereumjs-util'
-import Account from '@ethereumjs/account'
+import { Account, BN } from 'ethereumjs-util'
 import Cache from '../../../lib/state/cache'
 import { createAccount } from '../utils'
 
@@ -23,14 +22,14 @@ tape('cache put and get account', (t) => {
 
   t.test('should fail to get non-existent account', async (st) => {
     const res = cache.get(addr)
-    st.notOk(res.balance.equals(acc.balance))
+    st.notOk(res.balance.eq(acc.balance))
     st.end()
   })
 
   t.test('should put account', async (st) => {
     cache.put(addr, acc)
     const res = cache.get(addr)
-    st.ok(res.balance.equals(acc.balance))
+    st.ok(res.balance.eq(acc.balance))
     st.end()
   })
 
@@ -47,8 +46,8 @@ tape('cache put and get account', (t) => {
 
   t.test('trie should contain flushed account', async (st) => {
     const raw = await trie.get(addr)
-    const res = new Account(raw)
-    st.ok(res.balance.equals(acc.balance))
+    const res = Account.fromRlpSerializedAccount(raw!)
+    st.ok(res.balance.eq(acc.balance))
     st.end()
   })
 
@@ -56,7 +55,7 @@ tape('cache put and get account', (t) => {
     cache.del(addr)
 
     const res = cache.get(addr)
-    st.notOk(res.balance.equals(acc.balance))
+    st.notOk(res.balance.eq(acc.balance))
     st.end()
   })
 
@@ -64,7 +63,7 @@ tape('cache put and get account', (t) => {
     await cache.warm([addr.toString('hex')])
 
     const res = cache.get(addr)
-    st.ok(res.balance.equals(acc.balance))
+    st.ok(res.balance.eq(acc.balance))
     st.end()
   })
 
@@ -74,8 +73,8 @@ tape('cache put and get account', (t) => {
     await cache.flush()
 
     const raw = await trie.get(addr)
-    const res = new Account(raw)
-    st.ok(res.balance.equals(updatedAcc.balance))
+    const res = Account.fromRlpSerializedAccount(raw!)
+    st.ok(res.balance.eq(updatedAcc.balance))
     st.end()
   })
 })
@@ -94,12 +93,12 @@ tape('cache checkpointing', (t) => {
     cache.put(addr, updatedAcc)
 
     let res = cache.get(addr)
-    st.ok(res.balance.equals(updatedAcc.balance))
+    st.ok(res.balance.eq(updatedAcc.balance))
 
     cache.revert()
 
     res = cache.get(addr)
-    st.ok(res.balance.equals(acc.balance))
+    st.ok(res.balance.eq(acc.balance))
 
     st.end()
   })

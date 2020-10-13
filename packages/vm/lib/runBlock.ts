@@ -1,12 +1,11 @@
 import { encode } from 'rlp'
 import { BaseTrie as Trie } from 'merkle-patricia-tree'
-import { Address, BN, toBuffer } from 'ethereumjs-util'
+import { Account, Address, BN } from 'ethereumjs-util'
 import { Block } from '@ethereumjs/block'
-import Account from '@ethereumjs/account'
 import VM from './index'
 import Bloom from './bloom'
 import { RunTxResult } from './runTx'
-import { StateManager } from './state/index'
+import { StateManager } from './state'
 
 import * as DAOConfig from './config/dao_fork_accounts_config.json'
 
@@ -20,9 +19,9 @@ const DAORefundContract = DAOConfig.DAORefundContract
  */
 export interface RunBlockOpts {
   /**
-   * The [`Block`](https://github.com/ethereumjs/ethereumjs-block) to process
+   * The @ethereumjs/block to process
    */
-  block: any
+  block: Block
   /**
    * Root of the state trie
    */
@@ -193,7 +192,7 @@ export default async function runBlock(this: VM, opts: RunBlockOpts): Promise<Ru
  * @param {Block} block
  * @param {RunBlockOpts} opts
  */
-async function applyBlock(this: VM, block: any, opts: RunBlockOpts) {
+async function applyBlock(this: VM, block: Block, opts: RunBlockOpts) {
   // Validate block
   if (!opts.skipBlockValidation) {
     if (block.header.gasLimit.gte(new BN('8000000000000000', 16))) {
@@ -216,7 +215,7 @@ async function applyBlock(this: VM, block: any, opts: RunBlockOpts) {
  * @param {Block} block
  * @param {RunBlockOpts} opts
  */
-async function applyTransactions(this: VM, block: any, opts: RunBlockOpts) {
+async function applyTransactions(this: VM, block: Block, opts: RunBlockOpts) {
   const bloom = new Bloom()
   // the total amount of gas used processing these transactions
   let gasUsed = new BN(0)
@@ -230,7 +229,7 @@ async function applyTransactions(this: VM, block: any, opts: RunBlockOpts) {
   for (let txIdx = 0; txIdx < block.transactions.length; txIdx++) {
     const tx = block.transactions[txIdx]
 
-    const gasLimitIsHigherThanBlock = new BN(block.header.gasLimit).lt(tx.gasLimit.add(gasUsed))
+    const gasLimitIsHigherThanBlock = block.header.gasLimit.lt(tx.gasLimit.add(gasUsed))
     if (gasLimitIsHigherThanBlock) {
       throw new Error('tx has a higher gas limit than the block')
     }
@@ -294,11 +293,7 @@ async function assignBlockRewards(this: VM, block: Block): Promise<void> {
   const ommers = block.uncleHeaders
   // Reward ommers
   for (const ommer of ommers) {
-    const reward = calculateOmmerReward(
-      new BN(ommer.number),
-      new BN(block.header.number),
-      minerReward,
-    )
+    const reward = calculateOmmerReward(ommer.number, block.header.number, minerReward)
     await rewardAccount(state, ommer.coinbase, reward)
   }
   // Reward miner
@@ -325,7 +320,7 @@ function calculateMinerReward(minerReward: BN, ommersNum: number): BN {
 
 async function rewardAccount(state: StateManager, address: Address, reward: BN): Promise<void> {
   const account = await state.getAccount(address.buf)
-  account.balance = toBuffer(new BN(account.balance).add(reward))
+  account.balance.iadd(reward)
   await state.putAccount(address.buf, account)
 }
 
@@ -336,18 +331,16 @@ async function _applyDAOHardfork(state: StateManager) {
     await state.putAccount(DAORefundContractAddress, new Account())
   }
   const DAORefundAccount = await state.getAccount(DAORefundContractAddress)
-  let DAOBalance = new BN(DAORefundAccount.balance)
 
-  for (let address of DAOAccountList) {
+  for (const address of DAOAccountList) {
     // retrieve the account and add it to the DAO's Refund accounts' balance.
-    let account = await state.getAccount(Buffer.from(address, 'hex'))
-    DAOBalance.iadd(new BN(account.balance))
+    const account = await state.getAccount(Buffer.from(address, 'hex'))
+    DAORefundAccount.balance.iadd(account.balance)
     // clear the accounts' balance
-    account.balance = Buffer.alloc(0)
+    account.balance = new BN(0)
     await state.putAccount(Buffer.from(address, 'hex'), account)
   }
 
   // finally, put the Refund Account
-  DAORefundAccount.balance = toBuffer(DAOBalance)
   await state.putAccount(DAORefundContractAddress, DAORefundAccount)
 }

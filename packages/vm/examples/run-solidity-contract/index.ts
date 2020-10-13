@@ -1,11 +1,9 @@
-import VM from '../../dist'
-
 import * as assert from 'assert'
 import * as path from 'path'
 import * as fs from 'fs'
-import { BN, privateToAddress, bufferToHex } from 'ethereumjs-util'
-import Account from '@ethereumjs/account'
+import { Account, BN, privateToAddress, bufferToHex } from 'ethereumjs-util'
 import { Transaction } from '@ethereumjs/tx'
+import VM from '../../dist'
 
 const abi = require('ethereumjs-abi')
 const solc = require('solc')
@@ -77,7 +75,8 @@ function getGreeterDeploymentBytecode(solcOutput: any): any {
 }
 
 async function getAccountNonce(vm: VM, accountPrivateKey: Buffer) {
-  const account = await vm.stateManager.getAccount(privateToAddress(accountPrivateKey))
+  const address = privateToAddress(accountPrivateKey)
+  const account = await vm.stateManager.getAccount(address)
   return account.nonce
 }
 
@@ -95,7 +94,7 @@ async function deployContract(
     gasLimit: 2000000, // We assume that 2M is enough,
     gasPrice: 1,
     data: '0x' + deploymentBytecode + params.toString('hex'),
-    nonce: new BN(await getAccountNonce(vm, senderPrivateKey)),
+    nonce: await getAccountNonce(vm, senderPrivateKey),
   }
 
   const tx = Transaction.fromTxData(txData).sign(senderPrivateKey)
@@ -122,7 +121,7 @@ async function setGreeting(
     gasLimit: 2000000, // We assume that 2M is enough,
     gasPrice: 1,
     data: '0x' + abi.methodID('setGreeting', ['string']).toString('hex') + params.toString('hex'),
-    nonce: new BN(await getAccountNonce(vm, senderPrivateKey)),
+    nonce: await getAccountNonce(vm, senderPrivateKey),
   }
 
   const tx = Transaction.fromTxData(txData).sign(senderPrivateKey)
@@ -161,7 +160,7 @@ async function main() {
 
   console.log('Account:', bufferToHex(accountAddress))
 
-  const account = new Account({ balance: 1e18 })
+  const account = new Account(new BN(0), new BN(10).pow(new BN(18)))
 
   const vm = new VM()
   await vm.stateManager.putAccount(accountAddress, account)

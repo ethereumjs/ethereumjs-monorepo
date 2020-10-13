@@ -83,6 +83,10 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   const state = this.stateManager
   const { tx, block } = opts
 
+  if (!block) {
+    throw new Error('block required')
+  }
+
   /**
    * The `beforeTx` event
    *
@@ -104,8 +108,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
 
   // Check from account's balance and nonce
   let fromAccount = await state.getAccount(caller)
-  const balance = new BN(fromAccount.balance)
-  const nonce = new BN(fromAccount.nonce)
+  const { nonce, balance } = fromAccount
 
   if (!opts.skipBalance) {
     const cost = tx.getUpfrontCost()
@@ -123,8 +126,9 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   }
 
   // Update from account's nonce and balance
-  fromAccount.nonce = nonce.addn(1).toArrayLike(Buffer)
-  fromAccount.balance = balance.sub(tx.gasLimit.mul(tx.gasPrice)).toArrayLike(Buffer)
+  fromAccount.nonce.iaddn(1)
+  const txCost = tx.gasLimit.mul(tx.gasPrice)
+  fromAccount.balance.isub(txCost)
   await state.putAccount(caller, fromAccount)
 
   /*
@@ -163,18 +167,16 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
 
   // Update sender's balance
   fromAccount = await state.getAccount(caller)
-  const finalFromBalance = tx.gasLimit
-    .sub(results.gasUsed)
-    .mul(tx.gasPrice)
-    .add(new BN(fromAccount.balance))
-  fromAccount.balance = finalFromBalance.toArrayLike(Buffer)
+  const actualTxCost = results.gasUsed.mul(tx.gasPrice)
+  const txCostDiff = txCost.sub(actualTxCost)
+  fromAccount.balance.iadd(txCostDiff)
   await state.putAccount(caller, fromAccount)
 
   // Update miner's balance
-  const minerBuf = block!.header.coinbase.buf
+  const minerBuf = block.header.coinbase.buf
   const minerAccount = await state.getAccount(minerBuf)
   // add the amount spent on gas to the miner's account
-  minerAccount.balance = new BN(minerAccount.balance).add(results.amountSpent).toArrayLike(Buffer)
+  minerAccount.balance.iadd(results.amountSpent)
 
   // Put the miner account into the state. If the balance of the miner account remains zero, note that
   // the state.putAccount function puts this into the "touched" accounts. This will thus be removed when

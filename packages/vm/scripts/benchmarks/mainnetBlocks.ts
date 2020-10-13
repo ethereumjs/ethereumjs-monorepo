@@ -1,6 +1,5 @@
 import * as fs from 'fs'
-import Account from '@ethereumjs/account'
-import { toBuffer, setLengthLeft } from 'ethereumjs-util'
+import { Account, toBuffer, setLengthLeft } from 'ethereumjs-util'
 import { encode } from 'rlp'
 import blockFromRPC from '@ethereumjs/block/dist/from-rpc'
 import VM from '../../dist'
@@ -72,10 +71,8 @@ export async function getPreState(pre: {
   for (const k in pre) {
     const kBuf = toBuffer(k)
     const obj = pre[k]
-    const code = toBuffer(obj.code)
-    const acc = new Account()
-    acc.nonce = hexToBuffer(obj.nonce)
-    acc.balance = hexToBuffer(obj.balance)
+    const { nonce, balance, code } = obj
+    const acc = Account.fromAccountData({ nonce, balance })
     const storageTrie = state._trie.copy()
     storageTrie.root = null!
     for (const sk in obj.storage) {
@@ -88,7 +85,7 @@ export async function getPreState(pre: {
     }
     acc.stateRoot = storageTrie.root
     await state.putAccount(kBuf, acc)
-    await state.putContractCode(kBuf, code)
+    await state.putContractCode(kBuf, toBuffer(code))
   }
   await state.commit()
   return state

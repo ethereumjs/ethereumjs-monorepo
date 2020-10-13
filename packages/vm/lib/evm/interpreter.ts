@@ -1,5 +1,4 @@
-import BN = require('bn.js')
-import Account from '@ethereumjs/account'
+import { Account, BN } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
 import { StateManager } from '../state/index'
 import { ERROR, VmError } from '../exceptions'

@@ -198,13 +198,10 @@ export default class Ethash {
 
   async _verifyPOW(header: BlockHeader) {
     const headerHash = this.headerHash(header.raw())
-    const number = header.number.toNumber()
-    const mixHash = header.mixHash
-    const difficulty = new BN(header.difficulty)
+    const { number, difficulty, mixHash, nonce } = header
 
-    await this.loadEpoc(number)
-    const nonceBuffer = Buffer.from(header.nonce as any, 'hex')
-    const a = this.run(headerHash, nonceBuffer)
+    await this.loadEpoc(number.toNumber())
+    const a = this.run(headerHash, nonce)
     const result = new BN(a.hash)
 
     return a.mix.equals(mixHash) && TWO_POW256.div(difficulty).cmp(result) === 1

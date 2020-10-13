@@ -45,7 +45,6 @@
   "dependencies": {
     "async-eventemitter": "^0.2.4",
     "core-js-pure": "^3.0.1",
-    "@ethereumjs/account": "^3.0.0",
     "@ethereumjs/block": "^3.0.0",
     "@ethereumjs/blockchain": "^4.0.3",
     "@ethereumjs/common": "^1.5.1",

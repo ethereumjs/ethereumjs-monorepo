@@ -1,7 +1,14 @@
 import * as tape from 'tape'
-import { BN, toBuffer, keccak256, KECCAK256_RLP, unpadBuffer, zeros } from 'ethereumjs-util'
+import {
+  Account,
+  BN,
+  toBuffer,
+  keccak256,
+  KECCAK256_RLP,
+  unpadBuffer,
+  zeros,
+} from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
-import Account from '@ethereumjs/account'
 import { DefaultStateManager } from '../../../lib/state'
 import { createAccount } from '../utils'
 import { isRunningInKarma } from '../../util'
@@ -30,15 +37,15 @@ tape('StateManager', (t) => {
     await stateManager.putAccount(addressBuffer, account)
 
     const account0 = await stateManager.getAccount(addressBuffer)
-    st.ok(account0.balance.equals(account.balance), 'account value is set in the cache')
+    st.ok(account0.balance.eq(account.balance), 'account value is set in the cache')
 
     await stateManager.commit()
     const account1 = await stateManager.getAccount(addressBuffer)
-    st.ok(account1.balance.equals(account.balance), 'account value is set in the state trie')
+    st.ok(account1.balance.eq(account.balance), 'account value is set in the state trie')
 
     await stateManager.setStateRoot(initialStateRoot)
     const account2 = await stateManager.getAccount(addressBuffer)
-    st.equal(account2.balance.length, 0, 'account value is set to 0 in original state root')
+    st.ok(account2.balance.isZero(), 'account value is set to 0 in original state root')
 
     // test contract storage cache
     await stateManager.checkpoint()
@@ -66,15 +73,17 @@ tape('StateManager', (t) => {
 
       await stateManager.putAccount(address, account)
 
-      let res = await stateManager.getAccount(address)
+      const res1 = await stateManager.getAccount(address)
 
-      st.equal(res.balance.toString('hex'), 'fff384')
+      st.equal(res1.balance.toString('hex'), 'fff384')
 
+      await stateManager._cache.flush()
       stateManager._cache.clear()
 
-      res = await stateManager.getAccount(address)
+      const res2 = await stateManager.getAccount(address)
 
       st.equal(stateManager._cache._cache.keys[0], address.toString('hex'))
+      st.ok(res1.serialize().equals(res2.serialize()))
 
       st.end()
     },
@@ -371,7 +380,7 @@ tape('StateManager - Contract code', (tester) => {
       stateRoot: '0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421',
       codeHash: '0xb30fb32201fe0486606ad451e1a61e2ae1748343cd3d411ed992ffcc0774edd4',
     }
-    const account = new Account(raw)
+    const account = Account.fromAccountData(raw)
     await stateManager.putAccount(address, account)
     await stateManager.putContractCode(address, code)
     const codeRetrieved = await stateManager.getContractCode(address)
@@ -386,7 +395,7 @@ tape('StateManager - Contract code', (tester) => {
       nonce: '0x0',
       balance: '0x03e7',
     }
-    const account = new Account(raw)
+    const account = Account.fromAccountData(raw)
     await stateManager.putAccount(address, account)
     const code = await stateManager.getContractCode(address)
     t.ok(code.equals(Buffer.alloc(0)))
@@ -400,7 +409,7 @@ tape('StateManager - Contract code', (tester) => {
       nonce: '0x0',
       balance: '0x03e7',
     }
-    const account = new Account(raw)
+    const account = Account.fromAccountData(raw)
     const code = Buffer.alloc(0)
     await stateManager.putAccount(address, account)
     await stateManager.putContractCode(address, code)
