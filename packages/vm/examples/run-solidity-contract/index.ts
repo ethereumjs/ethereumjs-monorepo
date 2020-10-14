@@ -158,9 +158,13 @@ async function main() {
 
   const accountAddress = privateToAddress(accountPk)
 
-  console.log('Account:', bufferToHex(accountAddress))
+  console.log('Account: ', bufferToHex(accountAddress))
 
-  const account = new Account(new BN(0), new BN(10).pow(new BN(18)))
+  const acctData = {
+    nonce: 0,
+    balance: new BN(10).pow(new BN(18)), // 1 eth
+  }
+  const account = Account.fromAccountData(acctData)
 
   const vm = new VM()
   await vm.stateManager.putAccount(accountAddress, account)

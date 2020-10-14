@@ -474,7 +474,7 @@ export default class DefaultStateManager implements StateManager {
     const addresses = Object.keys(initState)
     for (const address of addresses) {
       const balance = new BN(toBuffer(initState[address]))
-      const account = new Account(new BN(0), balance)
+      const account = Account.fromAccountData({ balance })
       const addressBuffer = toBuffer(address)
       await this._trie.put(addressBuffer, account.serialize())
     }

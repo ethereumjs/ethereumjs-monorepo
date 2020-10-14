@@ -22,7 +22,8 @@ tape('EEI', (t) => {
       st.ok(await eei.accountExists(ZeroAddress))
       st.ok(await eei.isAccountEmpty(ZeroAddress))
       // now put a non-empty account
-      await eei._state.putAccount(ZeroAddress, new Account(new BN(1), new BN(1)))
+      const nonEmptyAccount = Account.fromAccountData({ nonce: 1 })
+      await eei._state.putAccount(ZeroAddress, nonEmptyAccount)
       st.ok(await eei.accountExists(ZeroAddress))
       st.notOk(await eei.isAccountEmpty(ZeroAddress))
       st.end()
