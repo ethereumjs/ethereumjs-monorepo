@@ -210,9 +210,10 @@ export default class VM extends AsyncEventEmitter {
       await Promise.all(
         Object.keys(precompiles)
           .map((k: string): Buffer => Buffer.from(k, 'hex'))
-          .map((address: Buffer) =>
-            this.stateManager.putAccount(address, new Account(new BN(0), new BN(1))),
-          ),
+          .map((address: Buffer) => {
+            const account = Account.fromAccountData({ balance: 1 })
+            this.stateManager.putAccount(address, account)
+          }),
       )
       await this.stateManager.commit()
     }

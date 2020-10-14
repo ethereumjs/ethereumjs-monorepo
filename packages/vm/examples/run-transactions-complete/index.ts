@@ -5,7 +5,7 @@ import VM from '../..'
 async function main() {
   const vm = new VM()
 
-  // import the key pair
+  // Import the key pair,
   // used to sign transactions and generate addresses
   const keyPair = require('./key-pair')
   const privateKey = toBuffer(keyPair.secretKey)
@@ -16,8 +16,12 @@ async function main() {
   console.log('---------------------')
   console.log('Sender address: ', bufferToHex(address))
 
-  // create a new account
-  const account = new Account(new BN(0), new BN(100).pow(new BN(18)))
+  // Create a new account
+  const acctData = {
+    nonce: 0,
+    balance: new BN(10).pow(new BN(19)), // 10 eth
+  }
+  const account = Account.fromAccountData(acctData)
 
   // Save the account
   await vm.stateManager.putAccount(address, account)
