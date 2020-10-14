@@ -195,12 +195,12 @@ export default class Interpreter {
      * @property {String} opcode the next opcode to be ran
      * @property {BN} gasLeft amount of gasLeft
      * @property {Array} stack an `Array` of `Buffers` containing the stack
-     * @property {Account} account the [`Account`](https://github.com/ethereum/ethereumjs-account) which owns the code running
+     * @property {Account} account the Account which owns the code running
      * @property {Buffer} address the address of the `account`
      * @property {Number} depth the current number of calls deep the contract is
      * @property {Buffer} memory the memory of the VM as a `buffer`
      * @property {BN} memoryWordCount current size of memory in words
-     * @property {StateManager} stateManager a [`StateManager`](stateManager.md) instance (Beta API)
+     * @property {StateManager} stateManager a [[StateManager]] instance
      * @property {Buffer} codeAddress the address of the code which is currently being ran (this differs from `address` in a `DELEGATECALL` and `CALLCODE` call)
      */
     return this._vm._emit('step', eventObj)
