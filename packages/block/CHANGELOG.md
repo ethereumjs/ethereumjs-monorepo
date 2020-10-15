@@ -6,13 +6,24 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## [3.0.0] - 2020-04-01
+## 3.0.0 - UNRELEASED
 
-Verion 3.0.0 brings modernizations to the code and some **breaking changes** you should be aware of.
+### New Package Name
+
+**Attention!** This new version is part of a series of EthereumJS releases all moving to a new scoped package name format. In this case the library is renamed as follows:
+
+- `ethereumjs-block` -> `@ethereumjs/block`
+
+Please update your library references accordingly or install with:
+
+```shell
+npm i @ethereumjs/block
+```
 
 ### TypeScript/Library Import
 
-First TypeScript based release of the library. The import structure has slightly changed along:
+This is the first TypeScript based release of the library, see PR [#72](https://github.com/ethereumjs/ethereumjs-block/pull/72).
+The import structure has slightly changed along:
 
 **TypeScript**
 
@@ -31,10 +42,80 @@ const Block = require('ethereumjs-block').Block
 The library now also comes with a **type declaration file** distributed
 along with the package published.
 
-### Promise-based API
+### Major Refactoring - Breaking Changes
 
-The API of this library is now completely promise-based, the old callback-style
-interface has been dropped.
+This release is a major refactoring of the block library to simplify and strengthen its code base.
+Refactoring work has been done along PR [#72](https://github.com/ethereumjs/ethereumjs-block/pull/72)
+(Promises) and PR [#883](https://github.com/ethereumjs/ethereumjs-vm/pull/883) (refactoring of API
+and internal code structure).
+
+#### New Constructor Params
+
+The way to instantiate a new `BlockHeader` or `Block` object has been completely reworked and is
+now more explicit, less error prone and produces more `TypeScript` friendly and readable code.
+
+The old direct constructor usage is now discouraged in favor of different dedicated static
+factory methods to create new objects.
+
+**Breaking**: While the main constructors can still be called, signatures changed significantly and
+your old `new Block(...)`, `new BlockHeader(...)` instantiations won't work any more and needs to be
+adopted.
+
+**BlockHeader Class**
+
+There are three new factory methods to create a new `BlockHeader`:
+
+1. Pass in a Header-attribute named dictionary to `BlockHeader.fromHeaderData(headerData: HeaderData = {}, opts: BlockOptions = {})`:
+
+```typescript
+const headerData = {
+  number: 15,
+  parentHash: '0x6bfee7294bf44572b7266358e627f3c35105e1c3851f3de09e6d646f955725a7',
+  difficulty: 131072,
+  gasLimit: 8000000,
+  timestamp: 1562422144,
+}
+const header = BlockHeader.fromHeaderData(headerData, {})
+```
+
+2. Create a `BlockHeader` from an RLP-serialized header `Buffer` with `BlockHeader.fromRLPSerializedHeader(serialized: Buffer, opts: BlockOptions)`.
+
+```typescript
+const serialized = Buffer.from(
+  'f901f7a06bfee7294bf44572b7266358e627f3c35105e1c3851f3de09e6d646f955725a7a01dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d49347940000000000000000000000000000000000000000a00000000000000000000000000000000000000000000000000000000000000000a056e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421a056e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421b9010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000830200000f837a120080845d20ab8080a00000000000000000000000000000000000000000000000000000000000000000880000000000000000',
+  'hex',
+)
+const header = BlockHeader.fromRLPSerializedHeader(serialized, {})
+```
+
+3. Create a `BlockHeader` from an array of `Buffer` values, you can do a first short roundtrip test with:
+
+```typescript
+const valuesArray = header.raw()
+BlockHeader.fromValuesArray(valuesArray, {})
+```
+
+Generally internal types representing block header values are now closer to their domain representation
+(number, difficulty, gasLimit) instead of having everthing represented as a `Buffer`.
+
+**Block Class**
+
+There are analogue new static factories for the `Block` class:
+
+- `Block.fromBlockData(blockData: BlockData = {}, opts: BlockOptions = {})`
+- `Block.fromRLPSerializedBlock(serialized: Buffer, opts: BlockOptions = {})`
+- `Block.fromValuesArray(values: BlockBuffer, opts: BlockOptions = {})`
+
+Learn more about the full API in the [docs](./docs/README.md).
+
+#### Immutability
+
+The returned block is now frozen and immutable. To work with a maliable block, copy it with `const fakeBlock = Object.create(block)`.
+
+#### Promise-based API
+
+The API of this library is now completely promise-based and the old callback-style interface
+has been dropped.
 
 This affects the following methods of the API now being defined as `async` and
 returning a `Promise`:
@@ -60,37 +141,34 @@ try {
 }
 ```
 
-### Different signature for constructor
+### Other Changes
 
-From now on, it's not allowed to initialize `Block` with a `null` value. If for any reason you need to initialize it without defining a value, use the more semantic `undefined` like the examples below:
+**Changes and Refactoring**
 
-```typescript
-const b = new Block(undefined, options)
-```
+- Added Node `10`, `12` support, dropped Node `7` support,
+  PR [#72](https://github.com/ethereumjs/ethereumjs-block/pull/72)
+- Removal of the `async` dependency,
+  PR [#72](https://github.com/ethereumjs/ethereumjs-block/pull/72)
+- Update `ethereumjs-common` dependency from `v1.1.0` to `v1.5.0`,
+  PR [#72](https://github.com/ethereumjs/ethereumjs-block/pull/72)
+- Update `ethereumjs-tx` dependency from `v1.2.2` to `v2.1.1`,
+  PR [#72](https://github.com/ethereumjs/ethereumjs-block/pull/72)
+- Update `ethereumjs-util` dependency from `v5.0.0` to `v6.1.0`,
+  PR [#72](https://github.com/ethereumjs/ethereumjs-block/pull/72)
 
-or just:
+**CI and Testing**
 
-```typescript
-const b = new Block()
-```
-
-### Change Summary
-
-Other changes along with the `TypeScript` transition PR
-[#72](https://github.com/ethereumjs/ethereumjs-block/pull/72)
-
-- Added Node `10`, `12` support, dropped Node `7` support
-- Browser test run on CI
+- Browser test run on CI,
+  PR [#72](https://github.com/ethereumjs/ethereumjs-block/pull/72)
 - Karma browser test run config modernization and simplification
-- Removal of the `async` dependency
-- Update `ethereumjs-common` dependency from `v1.1.0` to `v1.5.0`
-- Update `ethereumjs-tx` dependency from `v1.2.2` to `v2.1.1`
-- Update `ethereumjs-util` dependency from `v5.0.0` to `v6.1.0`
-- Updated test source files to `TypeScript`
-- Signature fix for pre-homestead blocks, see
-  [#67](https://github.com/ethereumjs/ethereumjs-block/issues/67)
+  PR [#72](https://github.com/ethereumjs/ethereumjs-block/pull/72)
+- Updated test source files to `TypeScript`,
+  PR [#72](https://github.com/ethereumjs/ethereumjs-block/pull/72)
 
-[3.0.0]: https://github.com/ethereumjs/ethereumjs-vm/compare/%40ethereumjs%2Fblock%402.2.0...%40ethereumjs%2Fblock%403.0.0
+**Bug Fixes**
+
+- Signature fix for pre-homestead blocks,
+  PR [#67](https://github.com/ethereumjs/ethereumjs-block/issues/67)
 
 ## [2.2.2] - 2019-12-17
 
