@@ -8,8 +8,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ## [7.0.7] - 2020-10-15
 
-- Removed `stateRoot` check for `Account.isEmpty()` to make emptiness check `EIP-161` compliant,
-  PR [#279](https://github.com/ethereumjs/ethereumjs-util/pull/279)
+- Removed `stateRoot` check for `Account.isEmpty()` to make emptiness check `EIP-161` compliant, PR [#279](https://github.com/ethereumjs/ethereumjs-util/pull/279)
+- Added type `AddressLike` and helper `bnToHex()`, PR [#279](https://github.com/ethereumjs/ethereumjs-util/pull/279)
+- Added `account.raw()` which returns a Buffer Array of the raw Buffers for the account in order, PR [#279](https://github.com/ethereumjs/ethereumjs-util/pull/279)
 
 [7.0.7]: https://github.com/ethereumjs/ethereumjs-util/compare/v7.0.6...v7.0.7
 
