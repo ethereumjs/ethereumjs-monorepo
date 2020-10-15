@@ -390,10 +390,10 @@ export function getSkipTests(choices: string, defaultChoice: string): string[] {
       skipTests = skipTests.concat(SKIP_BROKEN)
     }
     if (all || choicesList.includes('permanent')) {
-      //skipTests = skipTests.concat(SKIP_PERMANENT)
+      skipTests = skipTests.concat(SKIP_PERMANENT)
     }
     if (all || choicesList.includes('slow')) {
-      //skipTests = skipTests.concat(SKIP_SLOW)
+      skipTests = skipTests.concat(SKIP_SLOW)
     }
   }
   return skipTests

@@ -1,5 +1,5 @@
-import { BN, rlp } from 'ethereumjs-util'
-import { Block } from '@ethereumjs/block'
+import { BN, rlp, toBuffer } from 'ethereumjs-util'
+import { Block, BlockHeader } from '@ethereumjs/block'
 import Common from '@ethereumjs/common'
 import Blockchain from '../src'
 const level = require('level-mem')
@@ -64,24 +64,30 @@ export const generateConsecutiveBlock = (
   parentBlock: Block,
   difficultyChangeFactor: number,
 ): Block => {
-  const common = new Common({ chain: 'mainnet', hardfork: 'muirGlacier' })
-  const block = new Block(undefined, { common })
-  block.header.number = toBuffer(new BN(parentBlock.header.number).add(new BN(1)))
-  block.header.parentHash = parentBlock.hash()
-  block.header.gasLimit = toBuffer(8000000)
   if (difficultyChangeFactor > 1) {
     difficultyChangeFactor = 1
   }
-  block.header.timestamp = toBuffer(
-    bufferToInt(parentBlock.header.timestamp) + (10 + -difficultyChangeFactor * 9),
-  )
-  block.header.difficulty = toBuffer(block.header.canonicalDifficulty(parentBlock))
-  return new Block(
+  const common = new Common({ chain: 'mainnet', hardfork: 'muirGlacier' })
+  const tmpHeader = BlockHeader.fromHeaderData({
+    number: new BN(parentBlock.header.number).add(new BN(1)),
+    timestamp: parentBlock.header.timestamp.addn(10 + -difficultyChangeFactor * 9),
+  })
+  const header = BlockHeader.fromHeaderData(
     {
-      header: block.header,
+      number: new BN(parentBlock.header.number).add(new BN(1)),
+      parentHash: parentBlock.hash(),
+      gasLimit: new BN(8000000),
+      timestamp: parentBlock.header.timestamp.addn(10 + -difficultyChangeFactor * 9),
+      difficulty: new BN(tmpHeader.canonicalDifficulty(parentBlock)),
     },
-    { common },
+    {
+      common,
+    },
   )
+
+  const block = new Block(header, undefined, undefined, { common })
+
+  return block
 }
 
 export const isConsecutive = (blocks: Block[]) => {
