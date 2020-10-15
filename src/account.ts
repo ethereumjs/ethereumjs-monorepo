@@ -94,10 +94,17 @@ export class Account {
   }
 
   /**
+   * Returns a Buffer Array of the raw Buffers for the account, in order.
+   */
+  raw(): Buffer[] {
+    return [bnToRlp(this.nonce), bnToRlp(this.balance), this.stateRoot, this.codeHash]
+  }
+
+  /**
    * Returns the RLP serialization of the account as a `Buffer`.
    */
   serialize(): Buffer {
-    return rlp.encode([bnToRlp(this.nonce), bnToRlp(this.balance), this.stateRoot, this.codeHash])
+    return rlp.encode(this.raw())
   }
 
   /**
