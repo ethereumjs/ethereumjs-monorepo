@@ -59,7 +59,7 @@ factory methods to create new objects.
 
 **Breaking**: While the main constructors can still be called, signatures changed significantly and
 your old `new Block(...)`, `new BlockHeader(...)` instantiations won't work any more and needs to be
-adopted.
+updated.
 
 **BlockHeader Class**
 
@@ -141,19 +141,42 @@ try {
 }
 ```
 
+### New Default Hardfork
+
+**Breaking:** The default HF on the library has been updated from `petersburg` to `instanbul`, see PR [#906](https://github.com/ethereumjs/ethereumjs-vm/pull/906).
+The HF setting is now automatically taken from the HF set for `Common.DEAULT_HARDFORK`,
+see PR [#863](https://github.com/ethereumjs/ethereumjs-vm/pull/863).
+
 ### Other Changes
+
+**Features**
+
+- Added `Block.genesis()` and `BlockHeader.genesis()` aliases to create
+  a genesis block or header,
+  PR [#883](https://github.com/ethereumjs/ethereumjs-vm/pull/883)
+- Added `DAO` hardfork support (check for `extraData` attribute if `DAO` HF is active),
+  PR [#843](https://github.com/ethereumjs/ethereumjs-vm/pull/843)
 
 **Changes and Refactoring**
 
 - Added Node `10`, `12` support, dropped Node `7` support,
   PR [#72](https://github.com/ethereumjs/ethereumjs-block/pull/72)
+- Passing in a blockchain is now optional on `Block.validate()`,
+  PR [#883](https://github.com/ethereumjs/ethereumjs-vm/pull/883)
+- **Breaking**: `Block.validateTransactions(stringError: true)` now returns a `string[]`,
+  PR [#883](https://github.com/ethereumjs/ethereumjs-vm/pull/883)
+- **Breaking**: Decoupling of the `Block.serialize()` and `Block.raw()` methods,
+  `Block.serialize()` now always returns the RLP-encoded block (signature change!),
+  `Block.raw()` always returns the pure `Buffer` array,
+  PR [#883](https://github.com/ethereumjs/ethereumjs-vm/pull/883)
+- **Breaking**: `Block.toJSON()` now always returns the labeled `JSON` representation,
+  removal of the `labeled` function parameter,
+  PR [#883](https://github.com/ethereumjs/ethereumjs-vm/pull/883)
+- Updated `merkle-patricia-tree` dependency to `v4`,
+  PR [#787](https://github.com/ethereumjs/ethereumjs-vm/pull/787)
+- Updated `ethereumjs-util` dependency to `v7`,
+  PR [#748](https://github.com/ethereumjs/ethereumjs-vm/pull/748)
 - Removal of the `async` dependency,
-  PR [#72](https://github.com/ethereumjs/ethereumjs-block/pull/72)
-- Update `ethereumjs-common` dependency from `v1.1.0` to `v1.5.0`,
-  PR [#72](https://github.com/ethereumjs/ethereumjs-block/pull/72)
-- Update `ethereumjs-tx` dependency from `v1.2.2` to `v2.1.1`,
-  PR [#72](https://github.com/ethereumjs/ethereumjs-block/pull/72)
-- Update `ethereumjs-util` dependency from `v5.0.0` to `v6.1.0`,
   PR [#72](https://github.com/ethereumjs/ethereumjs-block/pull/72)
 
 **CI and Testing**

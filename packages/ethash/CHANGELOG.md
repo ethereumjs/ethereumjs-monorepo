@@ -49,6 +49,8 @@ for a complete example.
 
 ### Other Changes
 
+- Updated Block dependency to `@ethereumjs/block` `v3.0.0`,
+  PR [#883](https://github.com/ethereumjs/ethereumjs-vm/pull/883)
 - Removed `async` dependency,
   PR [#779](https://github.com/ethereumjs/ethereumjs-vm/pull/779)
 

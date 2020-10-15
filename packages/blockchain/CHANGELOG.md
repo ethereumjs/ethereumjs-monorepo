@@ -65,6 +65,8 @@ The deprecated `validate` option has been removed, please use `valdiateBlock` an
 
 **Changes and Refactoring**
 
+- Use `@ethereumjs/block` `v3.0.0` block library version,
+  PR [#883](https://github.com/ethereumjs/ethereumjs-vm/pull/883)
 - Removed `async` dependency,
   PR [#779](https://github.com/ethereumjs/ethereumjs-vm/pull/779)
 - Updated `ethereumjs-util` to v7,
