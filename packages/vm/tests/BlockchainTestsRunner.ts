@@ -109,12 +109,6 @@ export default async function runBlockchainTest(options: any, testData: any, t: 
       continue
     }
 
-    if (currentBlock.lt(lastBlock)) {
-      // "re-org": rollback the blockchain to currentBlock (i.e. delete that block number in the blockchain plus the children)
-      t.fail('re-orgs are not supported by the test suite')
-      return
-    }
-
     try {
       // check if we should update common.
       const newFork = common.setHardforkByBlockNumber(currentBlock)
