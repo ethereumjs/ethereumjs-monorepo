@@ -108,17 +108,12 @@ export class Account {
   }
 
   /**
-   * Returns a `Boolean` determining if the account is empty.
-   * For more details about account emptiness see [EIP-161](https://eips.ethereum.org/EIPS/eip-161).
-   * Note: The stateRoot is also checked to be empty since in Frontier it was possible to create a contract with no code where nonce remained 0 but some values were written to storage in the constructor (thus stateRoot is not KECCAK256_RLP).
+   * Returns a `Boolean` determining if the account is empty complying to the definition of
+   * account emptiness in [EIP-161](https://eips.ethereum.org/EIPS/eip-161):
+   * "An account is considered empty when it has no code and zero nonce and zero balance."
    */
   isEmpty(): boolean {
-    return (
-      this.balance.isZero() &&
-      this.nonce.isZero() &&
-      this.stateRoot.equals(KECCAK256_RLP) &&
-      this.codeHash.equals(KECCAK256_NULL)
-    )
+    return this.balance.isZero() && this.nonce.isZero() && this.codeHash.equals(KECCAK256_NULL)
   }
 }
 
