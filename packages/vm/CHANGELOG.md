@@ -110,8 +110,8 @@ callbacks for accessing their APIs.
 There is now a new `TypeScript` interface for the `StateManager`, see
 PR [#763](https://github.com/ethereumjs/ethereumjs-vm/pull/763). If you are
 using a custom `StateManager` you can use this interface to get better
-assurance that you are using a `StateManager` going conform with the current
-`StateManager` API and therefore running in the VM without problems.
+assurance that you are using a `StateManager` which conforms with the current
+`StateManager` API and will run in the VM without problems.
 
 ### Other Changes
 

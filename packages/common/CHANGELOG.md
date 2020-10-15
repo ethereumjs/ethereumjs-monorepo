@@ -46,7 +46,7 @@ The following EIPs are initially supported within this release:
 
 EIPs provided are then activated and parameters requested with `Common.param()` being present in these EIPs take precedence over the setting from the latest hardfork.
 
-There are two new utility functions which dedicatedly return the hardfork respectively EIP values:
+There are two new utility functions which return hardfork and EIP values respectively:
 
 - `Common.paramByHardfork()`
 - `Common.paramByEIP()`
@@ -55,7 +55,7 @@ There are two new utility functions which dedicatedly return the hardfork respec
 
 For setting and requesting active EIPs there is `Common.setEIPs()` and `Common.eips()` added to the mix.
 
-Along there is a new EIP-based hardfork file format which allows to just reference EIPs (pointing to the EIP files which then contain the parameters) instead of containing parameters directly, see PR [#876](https://github.com/ethereumjs/ethereumjs-vm/pull/876). This is in preparation for an upcoming `Yolo v2` testnet integration.
+There is also a new EIP-based hardfork file format which delegates parameter definition to dedicated EIP files (see PR [#876](https://github.com/ethereumjs/ethereumjs-vm/pull/876)). This is in preparation for an upcoming `Yolo v2` testnet integration.
 
 Side note: with this new structural setup it gets now possible for all EIPs still implicitly contained within the hardfork files to be extracted as an EIP parameter set within its own dedicated EIP file (which can then be activated via the `eip` parameter on initialization) without loosing on functionality. If you have a need there feel free to open a PR!
 
@@ -72,7 +72,7 @@ Forkhashes are used to uniquely identify a set of hardforks passed to be able to
 
 ### New Block/Hardfork related Utility Functions
 
-The following block respectively hardfork related utility functions have been added along PR [#863](https://github.com/ethereumjs/ethereumjs-vm/pull/863) and PR [#805](https://github.com/ethereumjs/ethereumjs-vm/pull/805):
+The following block and hardfork related utility functions have been added with PRs [#863](https://github.com/ethereumjs/ethereumjs-vm/pull/863) and [#805](https://github.com/ethereumjs/ethereumjs-vm/pull/805) respectively:
 
 - `setHardforkByBlockNumber()` - Sets the hardfork determined by the block number passed
 - `nextHardforkBlock()` - Returns the next HF block for a HF provided or set
