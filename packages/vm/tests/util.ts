@@ -1,6 +1,13 @@
 import * as tape from 'tape'
-import { BN, rlp, keccak256, stripHexPrefix, setLengthLeft, toBuffer } from 'ethereumjs-util'
-import Account from '@ethereumjs/account'
+import {
+  Account,
+  BN,
+  rlp,
+  keccak256,
+  stripHexPrefix,
+  setLengthLeft,
+  toBuffer,
+} from 'ethereumjs-util'
 import { Transaction, TxOptions } from '@ethereumjs/tx'
 import { Block, BlockHeader, BlockOptions } from '@ethereumjs/block'
 import Common from '@ethereumjs/common'
@@ -11,7 +18,8 @@ export function dumpState(state: any, cb: Function) {
       let accounts: Account[] = []
       const rs = state.createReadStream()
       rs.on('data', function (data: any) {
-        const account = new Account(data.value)
+        const rlp = data.value
+        const account = Account.fromRlpSerializedAccount(rlp)
         accounts.push(account)
       })
       rs.on('end', function () {
@@ -117,7 +125,8 @@ export async function verifyPostConditions(state: any, testData: any, t: tape.Te
     const stream = state.createReadStream()
 
     stream.on('data', function (data: any) {
-      const account = new Account(rlp.decode(data.value))
+      const rlp = data.value
+      const account = Account.fromRlpSerializedAccount(rlp)
       const key = data.key.toString('hex')
       const testData = hashedAccounts[key]
       const address = keyMap[key]
@@ -222,10 +231,10 @@ export function verifyGas(results: any, testData: any, t: tape.Test) {
   }
 
   const postBal = new BN(testData.post[coinbaseAddr].balance)
-  const balance = postBal.sub(preBal).toString()
-  if (balance !== '0') {
+  const balance = postBal.sub(preBal)
+  if (!balance.isZero()) {
     const amountSpent = results.gasUsed.mul(testData.transaction.gasPrice)
-    t.equal(amountSpent.toString(), balance, 'correct gas')
+    t.ok(amountSpent.eq(balance), 'correct gas')
   } else {
     t.equal(results, undefined)
   }
@@ -316,8 +325,11 @@ export async function setupPreConditions(state: any, testData: any) {
       testData.root = storageTrie.root
     }
 
-    const account = new Account({ nonce, balance, codeHash, stateRoot })
+    // Put contract code
     await state._mainDB.put(codeHash, codeBuf)
+
+    // Put account data
+    const account = Account.fromAccountData({ nonce, balance, codeHash, stateRoot })
     await state.put(addressBuf, account.serialize())
   }
   await state.commit()

@@ -1,6 +1,6 @@
 import BN = require('bn.js')
-import { toBuffer } from 'ethereumjs-util'
-import Account from '@ethereumjs/account'
+import { Account } from 'ethereumjs-util'
+import { Block } from '@ethereumjs/block'
 import Blockchain from '@ethereumjs/blockchain'
 import Common from '@ethereumjs/common'
 import { StateManager } from '../state/index'
@@ -22,7 +22,7 @@ export interface Env {
   depth: number
   gasPrice: BN
   origin: Buffer
-  block: any
+  block: Block
   contract: Account
   // Different than address for DELEGATECALL and CALLCODE
   codeAddress: Buffer
@@ -118,19 +118,19 @@ export default class EEI {
   async getExternalBalance(address: Buffer): Promise<BN> {
     // shortcut if current account
     if (address.equals(this._env.address)) {
-      return new BN(this._env.contract.balance)
+      return this._env.contract.balance
     }
 
     // otherwise load account then return balance
     const account = await this._state.getAccount(address)
-    return new BN(account.balance)
+    return account.balance
   }
 
   /**
    * Returns balance of self.
    */
   getSelfBalance(): BN {
-    return new BN(this._env.contract.balance)
+    return this._env.contract.balance
   }
 
   /**
@@ -229,7 +229,7 @@ export default class EEI {
    * Returns price of gas in current environment.
    */
   getTxGasPrice(): BN {
-    return new BN(this._env.gasPrice)
+    return this._env.gasPrice
   }
 
   /**
@@ -356,13 +356,12 @@ export default class EEI {
 
     // Add to beneficiary balance
     const toAccount = await this._state.getAccount(toAddress)
-    const newBalance = new BN(this._env.contract.balance).add(new BN(toAccount.balance))
-    toAccount.balance = toBuffer(newBalance)
+    toAccount.balance.iadd(this._env.contract.balance)
     await this._state.putAccount(toAddress, toAccount)
 
     // Subtract from contract balance
     const account = await this._state.getAccount(this._env.address)
-    account.balance = toBuffer(new BN(0))
+    account.balance = new BN(0)
     await this._state.putAccount(this._env.address, account)
 
     trap(ERROR.STOP)
@@ -395,10 +394,10 @@ export default class EEI {
   async call(gasLimit: BN, address: Buffer, value: BN, data: Buffer): Promise<BN> {
     const msg = new Message({
       caller: this._env.address,
-      gasLimit: gasLimit,
+      gasLimit,
       to: address,
-      value: value,
-      data: data,
+      value,
+      data,
       isStatic: this._env.isStatic,
       depth: this._env.depth + 1,
     })
@@ -412,11 +411,11 @@ export default class EEI {
   async callCode(gasLimit: BN, address: Buffer, value: BN, data: Buffer): Promise<BN> {
     const msg = new Message({
       caller: this._env.address,
-      gasLimit: gasLimit,
+      gasLimit,
       to: this._env.address,
       codeAddress: address,
-      value: value,
-      data: data,
+      value,
+      data,
       isStatic: this._env.isStatic,
       depth: this._env.depth + 1,
     })
@@ -432,10 +431,10 @@ export default class EEI {
   async callStatic(gasLimit: BN, address: Buffer, value: BN, data: Buffer): Promise<BN> {
     const msg = new Message({
       caller: this._env.address,
-      gasLimit: gasLimit,
+      gasLimit,
       to: address,
-      value: value,
-      data: data,
+      value,
+      data,
       isStatic: true,
       depth: this._env.depth + 1,
     })
@@ -450,11 +449,11 @@ export default class EEI {
   async callDelegate(gasLimit: BN, address: Buffer, value: BN, data: Buffer): Promise<BN> {
     const msg = new Message({
       caller: this._env.caller,
-      gasLimit: gasLimit,
+      gasLimit,
       to: this._env.address,
       codeAddress: address,
-      value: value,
-      data: data,
+      value,
+      data,
       isStatic: this._env.isStatic,
       delegatecall: true,
       depth: this._env.depth + 1,
@@ -473,7 +472,7 @@ export default class EEI {
     // Check if account has enough ether and max depth not exceeded
     if (
       this._env.depth >= this._common.param('vm', 'stackLimit') ||
-      (msg.delegatecall !== true && new BN(this._env.contract.balance).lt(msg.value))
+      (msg.delegatecall !== true && this._env.contract.balance.lt(msg.value))
     ) {
       return new BN(0)
     }
@@ -513,12 +512,12 @@ export default class EEI {
     const selfdestruct = { ...this._result.selfdestruct }
     const msg = new Message({
       caller: this._env.address,
-      gasLimit: gasLimit,
-      value: value,
-      data: data,
-      salt: salt,
+      gasLimit,
+      value,
+      data,
+      salt,
       depth: this._env.depth + 1,
-      selfdestruct: selfdestruct,
+      selfdestruct,
     })
 
     // empty the return data buffer
@@ -527,12 +526,12 @@ export default class EEI {
     // Check if account has enough ether and max depth not exceeded
     if (
       this._env.depth >= this._common.param('vm', 'stackLimit') ||
-      (msg.delegatecall !== true && new BN(this._env.contract.balance).lt(msg.value))
+      (msg.delegatecall !== true && this._env.contract.balance.lt(msg.value))
     ) {
       return new BN(0)
     }
 
-    this._env.contract.nonce = toBuffer(new BN(this._env.contract.nonce).addn(1))
+    this._env.contract.nonce.iaddn(1)
     await this._state.putAccount(this._env.address, this._env.contract)
 
     const results = await this._evm.executeMessage(msg)

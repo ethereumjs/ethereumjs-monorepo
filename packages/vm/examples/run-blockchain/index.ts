@@ -1,7 +1,6 @@
-import Account from '@ethereumjs/account'
-import { Block, BlockHeader } from '@ethereumjs/block'
+import { Account, toBuffer, setLengthLeft } from 'ethereumjs-util'
+import { Block } from '@ethereumjs/block'
 import Blockchain from '@ethereumjs/blockchain'
-import { toBuffer, setLengthLeft } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
 import VM from '../../'
 
@@ -46,23 +45,20 @@ async function setupPreConditions(vm: VM, testData: any) {
   await vm.stateManager.checkpoint()
 
   for (const address of Object.keys(testData.pre)) {
-    const acctData = testData.pre[address]
-    const account = new Account({
-      nonce: acctData.nonce,
-      balance: acctData.balance,
-    })
+    const { nonce, balance, storage, code } = testData.pre[address]
 
     const addressBuf = Buffer.from(address.slice(2), 'hex')
+    const account = Account.fromAccountData({ nonce, balance })
     await vm.stateManager.putAccount(addressBuf, account)
 
-    for (const hexStorageKey of Object.keys(acctData.storage)) {
-      const val = Buffer.from(acctData.storage[hexStorageKey], 'hex')
+    for (const hexStorageKey of Object.keys(storage)) {
+      const val = Buffer.from(storage[hexStorageKey], 'hex')
       const storageKey = setLengthLeft(Buffer.from(hexStorageKey, 'hex'), 32)
 
       await vm.stateManager.putContractStorage(addressBuf, storageKey, val)
     }
 
-    const codeBuf = Buffer.from(acctData.code.slice(2), 'hex')
+    const codeBuf = Buffer.from(code.slice(2), 'hex')
 
     await vm.stateManager.putContractCode(addressBuf, codeBuf)
   }

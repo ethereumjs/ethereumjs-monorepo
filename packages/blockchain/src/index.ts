@@ -488,7 +488,7 @@ export default class Blockchain implements BlockchainInterface {
         return
       }
       i++
-      const nextBlockNumber = new BN(block.header.number).addn(reverse ? -1 : 1)
+      const nextBlockNumber = block.header.number.addn(reverse ? -1 : 1)
       if (i !== 0 && skip && i % (skip + 1) !== 0) {
         return await nextBlock(nextBlockNumber)
       }
@@ -720,7 +720,7 @@ export default class Blockchain implements BlockchainInterface {
     // get header
     const header = await this._getHeader(blockHash)
     blockHeader = header
-    blockNumber = new BN(blockHeader.number)
+    blockNumber = blockHeader.number
     parentHash = blockHeader.parentHash
 
     // check if block is in the canonical chain
@@ -793,7 +793,7 @@ export default class Blockchain implements BlockchainInterface {
 
     try {
       const childHeader = await this._getCanonicalHeader(number.addn(1))
-      await this._delChild(childHeader.hash(), new BN(childHeader.number), headHash, ops)
+      await this._delChild(childHeader.hash(), childHeader.number, headHash, ops)
     } catch (error) {
       if (error.type !== 'NotFoundError') {
         throw error
