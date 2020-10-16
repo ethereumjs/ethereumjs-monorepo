@@ -114,7 +114,9 @@ export default class Blockchain implements BlockchainInterface {
     // Throw on chain or hardfork options removed in latest major release
     // to prevent implicit chain setup on a wrong chain
     if ('chain' in opts || 'hardfork' in opts) {
-      throw new Error('Chain/hardfork options are not allowed any more on initialization')
+      throw new Error(
+        'Chain/hardfork options are not allowed any more on initialization'
+      )
     }
 
     if (opts.common) {
@@ -122,11 +124,15 @@ export default class Blockchain implements BlockchainInterface {
     } else {
       const DEFAULT_CHAIN = 'mainnet'
       const DEFAULT_HARDFORK = 'chainstart'
-      this._common = new Common({ chain: DEFAULT_CHAIN, hardfork: DEFAULT_HARDFORK })
+      this._common = new Common({
+        chain: DEFAULT_CHAIN,
+        hardfork: DEFAULT_HARDFORK,
+      })
     }
 
     this._validatePow = opts.validatePow !== undefined ? opts.validatePow : true
-    this._validateBlocks = opts.validateBlocks !== undefined ? opts.validateBlocks : true
+    this._validateBlocks =
+      opts.validateBlocks !== undefined ? opts.validateBlocks : true
 
     this.db = opts.db ? opts.db : level()
     this.dbManager = new DBManager(this.db, this._common)
@@ -215,7 +221,10 @@ export default class Blockchain implements BlockchainInterface {
    * @hidden
    */
   async _setCanonicalGenesisBlock() {
-    const common = new Common({ chain: this._common.chainId(), hardfork: 'chainstart' })
+    const common = new Common({
+      chain: this._common.chainId(),
+      hardfork: 'chainstart',
+    })
     const genesis = Block.genesis({}, { common })
     await this._putBlockOrHeader(genesis, true)
   }
@@ -472,7 +481,7 @@ export default class Blockchain implements BlockchainInterface {
     blockId: Buffer | BN | number,
     maxBlocks: number,
     skip: number,
-    reverse: boolean,
+    reverse: boolean
   ): Promise<Block[]> {
     const blocks: Block[] = []
     let i = -1
@@ -664,7 +673,10 @@ export default class Blockchain implements BlockchainInterface {
       }
 
       try {
-        const parentHeader = await this._getHeader(header.parentHash, number.subn(1))
+        const parentHeader = await this._getHeader(
+          header.parentHash,
+          number.subn(1)
+        )
         await this._rebuildCanonical(parentHeader, ops)
       } catch (error) {
         this._staleHeads = []
@@ -712,16 +724,12 @@ export default class Blockchain implements BlockchainInterface {
    */
   async _delBlock(blockHash: Buffer) {
     const dbOps: DBOp[] = []
-    let blockHeader = null
-    let blockNumber: BN
-    let parentHash: Buffer
-    let inCanonical: boolean
 
     // get header
     const header = await this._getHeader(blockHash)
-    blockHeader = header
-    blockNumber = blockHeader.number
-    parentHash = blockHeader.parentHash
+    const blockHeader = header
+    const blockNumber = blockHeader.number
+    const parentHash = blockHeader.parentHash
 
     // check if block is in the canonical chain
     let canonicalHash = null
@@ -732,11 +740,16 @@ export default class Blockchain implements BlockchainInterface {
         throw error
       }
     }
-    inCanonical = !!canonicalHash && canonicalHash.equals(blockHash)
+    const inCanonical = !!canonicalHash && canonicalHash.equals(blockHash)
 
     // delete the block, and if block is in the canonical chain, delete all
     // children as well
-    await this._delChild(blockHash, blockNumber, inCanonical ? parentHash : null, dbOps)
+    await this._delChild(
+      blockHash,
+      blockNumber,
+      inCanonical ? parentHash : null,
+      dbOps
+    )
 
     // delete all number to hash mappings for deleted block number and above
     if (inCanonical) {
@@ -749,7 +762,12 @@ export default class Blockchain implements BlockchainInterface {
   /**
    * @hidden
    */
-  async _delChild(hash: Buffer, number: BN, headHash: Buffer | null, ops: DBOp[]) {
+  async _delChild(
+    hash: Buffer,
+    number: BN,
+    headHash: Buffer | null,
+    ops: DBOp[]
+  ) {
     // delete header, body, hash to number mapping and td
     ops.push({
       type: 'del',
@@ -793,7 +811,12 @@ export default class Blockchain implements BlockchainInterface {
 
     try {
       const childHeader = await this._getCanonicalHeader(number.addn(1))
-      await this._delChild(childHeader.hash(), childHeader.number, headHash, ops)
+      await this._delChild(
+        childHeader.hash(),
+        childHeader.number,
+        headHash,
+        ops
+      )
     } catch (error) {
       if (error.type !== 'NotFoundError') {
         throw error
@@ -822,7 +845,6 @@ export default class Blockchain implements BlockchainInterface {
    */
   async _iterator(name: string, onBlock: OnBlock) {
     const blockHash = this._heads[name] || this._genesis
-    let blockNumber: BN
     let lastBlock: Block | undefined
 
     if (!blockHash) {
@@ -830,7 +852,7 @@ export default class Blockchain implements BlockchainInterface {
     }
 
     const number = await this.dbManager.hashToNumber(blockHash)
-    blockNumber = number.addn(1)
+    const blockNumber = number.addn(1)
 
     while (blockNumber) {
       try {
@@ -841,7 +863,9 @@ export default class Blockchain implements BlockchainInterface {
         }
 
         this._heads[name] = block.hash()
-        const reorg = lastBlock ? lastBlock.hash().equals(block.header.parentHash) : false
+        const reorg = lastBlock
+          ? lastBlock.hash().equals(block.header.parentHash)
+          : false
         lastBlock = block
         await onBlock(block, reorg)
         blockNumber.iaddn(1)

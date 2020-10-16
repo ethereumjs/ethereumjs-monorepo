@@ -4,26 +4,10 @@ import Common from '@ethereumjs/common'
 import Blockchain from '../src'
 const level = require('level-mem')
 
-export const generateBlockchain = async (numberOfBlocks: number, genesis?: Block): Promise<any> => {
-  const blockchain = new Blockchain({ validateBlocks: true, validatePow: false })
-  const existingBlocks: Block[] = genesis ? [genesis] : []
-  const blocks = generateBlocks(numberOfBlocks, existingBlocks)
-
-  try {
-    await blockchain.putGenesis(blocks[0])
-    await blockchain.putBlocks(blocks.slice(1))
-  } catch (error) {
-    return { error }
-  }
-
-  return {
-    blockchain,
-    blocks,
-    error: null,
-  }
-}
-
-export const generateBlocks = (numberOfBlocks: number, existingBlocks?: Block[]): Block[] => {
+export const generateBlocks = (
+  numberOfBlocks: number,
+  existingBlocks?: Block[]
+): Block[] => {
   const blocks = existingBlocks ? existingBlocks : []
 
   const gasLimit = 8000000
@@ -53,6 +37,31 @@ export const generateBlocks = (numberOfBlocks: number, existingBlocks?: Block[])
   return blocks
 }
 
+export const generateBlockchain = async (
+  numberOfBlocks: number,
+  genesis?: Block
+): Promise<any> => {
+  const blockchain = new Blockchain({
+    validateBlocks: true,
+    validatePow: false,
+  })
+  const existingBlocks: Block[] = genesis ? [genesis] : []
+  const blocks = generateBlocks(numberOfBlocks, existingBlocks)
+
+  try {
+    await blockchain.putGenesis(blocks[0])
+    await blockchain.putBlocks(blocks.slice(1))
+  } catch (error) {
+    return { error }
+  }
+
+  return {
+    blockchain,
+    blocks,
+    error: null,
+  }
+}
+
 export const isConsecutive = (blocks: Block[]) => {
   return !blocks.some((block: Block, index: number) => {
     if (index === 0) {
@@ -77,7 +86,10 @@ export const createTestDB = async () => {
     },
     {
       type: 'put',
-      key: Buffer.from('48d4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3', 'hex'),
+      key: Buffer.from(
+        '48d4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3',
+        'hex'
+      ),
       keyEncoding: 'binary',
       valueEncoding: 'binary',
       value: Buffer.from('00', 'hex'),
@@ -100,7 +112,7 @@ export const createTestDB = async () => {
       type: 'put',
       key: Buffer.from(
         '680000000000000000d4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3',
-        'hex',
+        'hex'
       ),
       keyEncoding: 'binary',
       valueEncoding: 'binary',
@@ -110,7 +122,7 @@ export const createTestDB = async () => {
       type: 'put',
       key: Buffer.from(
         '680000000000000000d4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa374',
-        'hex',
+        'hex'
       ),
       keyEncoding: 'binary',
       valueEncoding: 'binary',
@@ -120,7 +132,7 @@ export const createTestDB = async () => {
       type: 'put',
       key: Buffer.from(
         '620000000000000000d4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3',
-        'hex',
+        'hex'
       ),
       keyEncoding: 'binary',
       valueEncoding: 'binary',
