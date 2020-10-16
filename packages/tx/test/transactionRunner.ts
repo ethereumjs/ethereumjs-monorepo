@@ -37,7 +37,11 @@ tape('TransactionTests', (t) => {
   testing
     .getTests(
       'TransactionTests',
-      (_filename: string, testName: string, testData: OfficialTransactionTestData) => {
+      (
+        _filename: string,
+        testName: string,
+        testData: OfficialTransactionTestData
+      ) => {
         t.test(testName, (st) => {
           forkNames.forEach((forkName) => {
             const forkTestData = testData[forkName]
@@ -54,22 +58,29 @@ tape('TransactionTests', (t) => {
 
               const txIsValid = tx.validate()
 
-              const senderIsCorrect = sender === '0x' + forkTestData.sender
+              const senderIsCorrect = sender === `0x${forkTestData.sender}`
               const hashIsCorrect = hash === forkTestData.hash
 
-              const hashAndSenderAreCorrect = forkTestData && senderIsCorrect && hashIsCorrect
+              const hashAndSenderAreCorrect =
+                forkTestData && senderIsCorrect && hashIsCorrect
 
               if (shouldBeInvalid) {
-                st.assert(!txIsValid, `Transaction should be invalid on ${forkName}`)
+                st.assert(
+                  !txIsValid,
+                  `Transaction should be invalid on ${forkName}`
+                )
               } else {
                 st.assert(
                   hashAndSenderAreCorrect && txIsValid,
-                  `Transaction should be valid on ${forkName}`,
+                  `Transaction should be valid on ${forkName}`
                 )
               }
             } catch (e) {
               if (shouldBeInvalid) {
-                st.assert(shouldBeInvalid, `Transaction should be invalid on ${forkName}`)
+                st.assert(
+                  shouldBeInvalid,
+                  `Transaction should be invalid on ${forkName}`
+                )
               } else {
                 st.fail(`Transaction should be valid on ${forkName}`)
               }
@@ -78,7 +89,7 @@ tape('TransactionTests', (t) => {
           st.end()
         })
       },
-      fileFilterRegex,
+      fileFilterRegex
     )
     .then(() => {
       t.end()

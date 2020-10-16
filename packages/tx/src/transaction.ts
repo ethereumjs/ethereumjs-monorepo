@@ -1,3 +1,5 @@
+/* eslint-disable no-dupe-class-members */
+
 import { Buffer } from 'buffer'
 import {
   Address,
@@ -16,7 +18,10 @@ import Common from '@ethereumjs/common'
 import { TxOptions, TxData, JsonTx, bnToHex } from './types'
 
 // secp256k1n/2
-const N_DIV_2 = new BN('7fffffffffffffffffffffffffffffff5d576e7357a4501ddfe92f46681b20a0', 16)
+const N_DIV_2 = new BN(
+  '7fffffffffffffffffffffffffffffff5d576e7357a4501ddfe92f46681b20a0',
+  16
+)
 
 /**
  * An Ethereum transaction.
@@ -46,7 +51,7 @@ export default class Transaction {
       new BN(toBuffer(v)),
       new BN(toBuffer(r)),
       new BN(toBuffer(s)),
-      opts,
+      opts
     )
   }
 
@@ -63,7 +68,7 @@ export default class Transaction {
   public static fromValuesArray(values: Buffer[], opts?: TxOptions) {
     if (values.length !== 6 && values.length !== 9) {
       throw new Error(
-        'Invalid transaction. Only expecting 6 values (for unsigned tx) or 9 values (for signed tx).',
+        'Invalid transaction. Only expecting 6 values (for unsigned tx) or 9 values (for signed tx).'
       )
     }
 
@@ -79,7 +84,7 @@ export default class Transaction {
       v ? new BN(v) : undefined,
       r ? new BN(r) : undefined,
       s ? new BN(s) : undefined,
-      opts,
+      opts
     )
   }
 
@@ -98,9 +103,16 @@ export default class Transaction {
     v?: BN,
     r?: BN,
     s?: BN,
-    opts?: TxOptions,
+    opts?: TxOptions
   ) {
-    const validateCannotExceedMaxInteger = { nonce, gasPrice, gasLimit, value, r, s }
+    const validateCannotExceedMaxInteger = {
+      nonce,
+      gasPrice,
+      gasLimit,
+      value,
+      r,
+      s,
+    }
     for (const [key, value] of Object.entries(validateCannotExceedMaxInteger)) {
       if (value && value.gt(MAX_INTEGER)) {
         throw new Error(`${key} cannot exceed MAX_INTEGER, given ${value}`)
@@ -186,13 +198,15 @@ export default class Transaction {
     // All transaction signatures whose s-value is greater than secp256k1n/2 are considered invalid.
     if (this.common.gteHardfork('homestead') && this.s && this.s.gt(N_DIV_2)) {
       throw new Error(
-        'Invalid Signature: s-values greater than secp256k1n/2 are considered invalid',
+        'Invalid Signature: s-values greater than secp256k1n/2 are considered invalid'
       )
     }
 
     const { v, r, s } = this
     if (!v || !r || !s) {
-      throw new Error('Missing values to derive sender public key from signed tx')
+      throw new Error(
+        'Missing values to derive sender public key from signed tx'
+      )
     }
 
     try {
@@ -201,7 +215,7 @@ export default class Transaction {
         v.toNumber(),
         bnToRlp(r),
         bnToRlp(s),
-        this._signedTxImplementsEIP155() ? this.getChainId() : undefined,
+        this._signedTxImplementsEIP155() ? this.getChainId() : undefined
       )
     } catch (e) {
       throw new Error('Invalid Signature')
@@ -236,6 +250,8 @@ export default class Transaction {
 
     const msgHash = this.getMessageToSign()
 
+    // Only `v` is reassigned.
+    /* eslint-disable-next-line prefer-const */
     let { v, r, s } = ecsign(msgHash, privateKey)
 
     if (this._unsignedTxImplementsEIP155()) {
@@ -256,7 +272,7 @@ export default class Transaction {
       new BN(v),
       new BN(r),
       new BN(s),
-      opts,
+      opts
     )
   }
 
@@ -306,7 +322,11 @@ export default class Transaction {
     }
 
     if (this.getBaseFee().gt(this.gasLimit)) {
-      errors.push(`gasLimit is too low. given ${this.gasLimit}, need at least ${this.getBaseFee()}`)
+      errors.push(
+        `gasLimit is too low. given ${
+          this.gasLimit
+        }, need at least ${this.getBaseFee()}`
+      )
     }
 
     return stringError ? errors : errors.length === 0
@@ -421,7 +441,7 @@ export default class Transaction {
 
     if (!isValidEIP155V) {
       throw new Error(
-        `Incompatible EIP155-based V ${vInt} and chain id ${this.getChainId()}. See the Common parameter of the Transaction constructor to set the chain id.`,
+        `Incompatible EIP155-based V ${vInt} and chain id ${this.getChainId()}. See the Common parameter of the Transaction constructor to set the chain id.`
       )
     }
   }
