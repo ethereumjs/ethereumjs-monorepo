@@ -1,5 +1,11 @@
 import * as tape from 'tape'
-import { Address, BN, zeros, KECCAK256_RLP, KECCAK256_RLP_ARRAY } from 'ethereumjs-util'
+import {
+  Address,
+  BN,
+  zeros,
+  KECCAK256_RLP,
+  KECCAK256_RLP_ARRAY,
+} from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
 import { BlockHeader } from '../src/header'
 import { Block } from '../src'
@@ -70,7 +76,7 @@ tape('[Block]: Header functions', function (t) {
     st.strictEqual(
       header.hash().toString('hex'),
       testDataGenesis.genesis_hash,
-      'genesis hash match',
+      'genesis hash match'
     )
     st.end()
   })
@@ -78,8 +84,13 @@ tape('[Block]: Header functions', function (t) {
   t.test('should test genesis parameters (ropsten)', function (st) {
     const common = new Common({ chain: 'ropsten', hardfork: 'chainstart' })
     const genesis = BlockHeader.genesis({}, { common })
-    const ropstenStateRoot = '217b0bbcfb72e2d57e28f33cb361b9983513177755dc3f33ce3e7022ed62b77b'
-    st.strictEqual(genesis.stateRoot.toString('hex'), ropstenStateRoot, 'genesis stateRoot match')
+    const ropstenStateRoot =
+      '217b0bbcfb72e2d57e28f33cb361b9983513177755dc3f33ce3e7022ed62b77b'
+    st.strictEqual(
+      genesis.stateRoot.toString('hex'),
+      ropstenStateRoot,
+      'genesis stateRoot match'
+    )
     st.end()
   })
 })

@@ -7,7 +7,10 @@ import { BlockOptions } from './types'
  * @param blockParams - Ethereum JSON RPC of block (eth_getBlockByNumber)
  * @param chainOptions - An object describing the blockchain
  */
-export default function blockHeaderFromRpc(blockParams: any, options?: BlockOptions) {
+export default function blockHeaderFromRpc(
+  blockParams: any,
+  options?: BlockOptions
+) {
   const {
     parentHash,
     sha3Uncles,
@@ -45,7 +48,7 @@ export default function blockHeaderFromRpc(blockParams: any, options?: BlockOpti
       mixHash,
       nonce,
     },
-    options,
+    options
   )
 
   return blockHeader

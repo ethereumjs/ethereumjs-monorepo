@@ -70,7 +70,11 @@ export interface BlockData {
   uncleHeaders?: Array<HeaderData>
 }
 
-export type BlockBuffer = [BlockHeaderBuffer, TransactionsBuffer, UncleHeadersBuffer]
+export type BlockBuffer = [
+  BlockHeaderBuffer,
+  TransactionsBuffer,
+  UncleHeadersBuffer
+]
 export type BlockHeaderBuffer = Buffer[]
 export type BlockBodyBuffer = [TransactionsBuffer, UncleHeadersBuffer]
 export type TransactionsBuffer = Buffer[][]

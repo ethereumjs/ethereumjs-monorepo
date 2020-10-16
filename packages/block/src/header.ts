@@ -44,7 +44,10 @@ export class BlockHeader {
 
   public readonly _common: Common
 
-  public static fromHeaderData(headerData: HeaderData = {}, opts: BlockOptions = {}) {
+  public static fromHeaderData(
+    headerData: HeaderData = {},
+    opts: BlockOptions = {}
+  ) {
     const {
       parentHash,
       uncleHash,
@@ -79,11 +82,14 @@ export class BlockHeader {
       extraData ? toBuffer(extraData) : Buffer.from([]),
       mixHash ? toBuffer(mixHash) : zeros(32),
       nonce ? toBuffer(nonce) : zeros(8),
-      opts,
+      opts
     )
   }
 
-  public static fromRLPSerializedHeader(serialized: Buffer, opts: BlockOptions) {
+  public static fromRLPSerializedHeader(
+    serialized: Buffer,
+    opts: BlockOptions
+  ) {
     const values = rlp.decode(serialized)
 
     if (!Array.isArray(values)) {
@@ -132,7 +138,7 @@ export class BlockHeader {
       toBuffer(extraData),
       toBuffer(mixHash),
       toBuffer(nonce),
-      opts,
+      opts
     )
   }
 
@@ -166,7 +172,7 @@ export class BlockHeader {
     extraData: Buffer,
     mixHash: Buffer,
     nonce: Buffer,
-    options: BlockOptions = {},
+    options: BlockOptions = {}
   ) {
     if (options.common) {
       this._common = options.common
@@ -187,7 +193,7 @@ export class BlockHeader {
     if (options.initWithGenesisHeader) {
       if (this._common.hardfork() !== 'chainstart') {
         throw new Error(
-          'Genesis parameters can only be set with a Common instance set to chainstart',
+          'Genesis parameters can only be set with a Common instance set to chainstart'
         )
       }
       number = new BN(0)
@@ -237,23 +243,38 @@ export class BlockHeader {
    * Validates correct buffer lengths, throws if invalid.
    */
   _validateBufferLengths() {
-    const { parentHash, stateRoot, transactionsTrie, receiptTrie, mixHash, nonce } = this
+    const {
+      parentHash,
+      stateRoot,
+      transactionsTrie,
+      receiptTrie,
+      mixHash,
+      nonce,
+    } = this
     if (parentHash.length !== 32) {
-      throw new Error(`parentHash must be 32 bytes, received ${parentHash.length} bytes`)
+      throw new Error(
+        `parentHash must be 32 bytes, received ${parentHash.length} bytes`
+      )
     }
     if (stateRoot.length !== 32) {
-      throw new Error(`stateRoot must be 32 bytes, received ${stateRoot.length} bytes`)
+      throw new Error(
+        `stateRoot must be 32 bytes, received ${stateRoot.length} bytes`
+      )
     }
     if (transactionsTrie.length !== 32) {
       throw new Error(
-        `transactionsTrie must be 32 bytes, received ${transactionsTrie.length} bytes`,
+        `transactionsTrie must be 32 bytes, received ${transactionsTrie.length} bytes`
       )
     }
     if (receiptTrie.length !== 32) {
-      throw new Error(`receiptTrie must be 32 bytes, received ${receiptTrie.length} bytes`)
+      throw new Error(
+        `receiptTrie must be 32 bytes, received ${receiptTrie.length} bytes`
+      )
     }
     if (mixHash.length !== 32) {
-      throw new Error(`mixHash must be 32 bytes, received ${mixHash.length} bytes`)
+      throw new Error(
+        `mixHash must be 32 bytes, received ${mixHash.length} bytes`
+      )
     }
     if (nonce.length !== 8) {
       throw new Error(`nonce must be 8 bytes, received ${nonce.length} bytes`)
@@ -270,10 +291,12 @@ export class BlockHeader {
     const blockTs = this.timestamp
     const { timestamp: parentTs, difficulty: parentDif } = parentBlock.header
     const minimumDifficulty = new BN(
-      this._common.paramByHardfork('pow', 'minimumDifficulty', hardfork),
+      this._common.paramByHardfork('pow', 'minimumDifficulty', hardfork)
     )
     const offset = parentDif.div(
-      new BN(this._common.paramByHardfork('pow', 'difficultyBoundDivisor', hardfork)),
+      new BN(
+        this._common.paramByHardfork('pow', 'difficultyBoundDivisor', hardfork)
+      )
     )
     let num = this.number.clone()
 
@@ -282,7 +305,11 @@ export class BlockHeader {
 
     if (this._common.hardforkGteHardfork(hardfork, 'byzantium')) {
       // max((2 if len(parent.uncles) else 1) - ((timestamp - parent.timestamp) // 9), -99) (EIP100)
-      const uncleAddend = parentBlock.header.uncleHash.equals(KECCAK256_RLP_ARRAY) ? 1 : 2
+      const uncleAddend = parentBlock.header.uncleHash.equals(
+        KECCAK256_RLP_ARRAY
+      )
+        ? 1
+        : 2
       let a = blockTs.sub(parentTs).idivn(9).ineg().iaddn(uncleAddend)
       const cutoff = new BN(-99)
       // MAX(cutoff, a)
@@ -364,7 +391,13 @@ export class BlockHeader {
     const hardfork = this._getHardfork()
 
     const a = parentGasLimit.div(
-      new BN(this._common.paramByHardfork('gasConfig', 'gasLimitBoundDivisor', hardfork)),
+      new BN(
+        this._common.paramByHardfork(
+          'gasConfig',
+          'gasLimitBoundDivisor',
+          hardfork
+        )
+      )
     )
     const maxGasLimit = parentGasLimit.add(a)
     const minGasLimit = parentGasLimit.sub(a)
@@ -372,7 +405,9 @@ export class BlockHeader {
     return (
       gasLimit.lt(maxGasLimit) &&
       gasLimit.gt(minGasLimit) &&
-      gasLimit.gte(this._common.paramByHardfork('gasConfig', 'minGasLimit', hardfork))
+      gasLimit.gte(
+        this._common.paramByHardfork('gasConfig', 'minGasLimit', hardfork)
+      )
     )
   }
 
@@ -388,12 +423,18 @@ export class BlockHeader {
     }
 
     const hardfork = this._getHardfork()
-    if (this.extraData.length > this._common.paramByHardfork('vm', 'maxExtraDataSize', hardfork)) {
+    if (
+      this.extraData.length >
+      this._common.paramByHardfork('vm', 'maxExtraDataSize', hardfork)
+    ) {
       throw new Error('invalid amount of extra data')
     }
 
     if (blockchain) {
-      const parentBlock = await this._getBlockByHash(blockchain, this.parentHash)
+      const parentBlock = await this._getBlockByHash(
+        blockchain,
+        this.parentHash
+      )
 
       if (!parentBlock) {
         throw new Error('could not find parent block')
@@ -419,7 +460,9 @@ export class BlockHeader {
       if (height) {
         const dif = height.sub(parentBlock.header.number)
         if (!(dif.cmpn(8) === -1 && dif.cmpn(1) === 1)) {
-          throw new Error('uncle block has a parent that is too old or too young')
+          throw new Error(
+            'uncle block has a parent that is too old or too young'
+          )
         }
       }
     }
@@ -493,10 +536,16 @@ export class BlockHeader {
   }
 
   private _getHardfork(): string {
-    return this._common.hardfork() || this._common.activeHardfork(this.number.toNumber())
+    return (
+      this._common.hardfork() ||
+      this._common.activeHardfork(this.number.toNumber())
+    )
   }
 
-  private async _getBlockByHash(blockchain: Blockchain, hash: Buffer): Promise<Block | undefined> {
+  private async _getBlockByHash(
+    blockchain: Blockchain,
+    hash: Buffer
+  ): Promise<Block | undefined> {
     try {
       return blockchain.getBlock(hash)
     } catch (error) {

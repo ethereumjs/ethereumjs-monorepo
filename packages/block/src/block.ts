@@ -3,7 +3,13 @@ import { rlp, keccak256, KECCAK256_RLP } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
 import { Transaction, TxOptions } from '@ethereumjs/tx'
 import { BlockHeader } from './header'
-import { BlockData, BlockOptions, JsonBlock, BlockBuffer, Blockchain } from './types'
+import {
+  BlockData,
+  BlockOptions,
+  JsonBlock,
+  BlockBuffer,
+  Blockchain,
+} from './types'
 
 /**
  * An object that represents the block.
@@ -15,8 +21,15 @@ export class Block {
   public readonly txTrie = new Trie()
   public readonly _common: Common
 
-  public static fromBlockData(blockData: BlockData = {}, opts: BlockOptions = {}) {
-    const { header: headerData, transactions: txsData, uncleHeaders: uhsData } = blockData
+  public static fromBlockData(
+    blockData: BlockData = {},
+    opts: BlockOptions = {}
+  ) {
+    const {
+      header: headerData,
+      transactions: txsData,
+      uncleHeaders: uhsData,
+    } = blockData
 
     const header = BlockHeader.fromHeaderData(headerData, opts)
 
@@ -37,7 +50,10 @@ export class Block {
     return new Block(header, transactions, uncleHeaders)
   }
 
-  public static fromRLPSerializedBlock(serialized: Buffer, opts: BlockOptions = {}) {
+  public static fromRLPSerializedBlock(
+    serialized: Buffer,
+    opts: BlockOptions = {}
+  ) {
     const values = (rlp.decode(serialized) as any) as BlockBuffer
 
     if (!Array.isArray(values)) {
@@ -87,7 +103,7 @@ export class Block {
     header?: BlockHeader,
     transactions: Transaction[] = [],
     uncleHeaders: BlockHeader[] = [],
-    opts: BlockOptions = {},
+    opts: BlockOptions = {}
   ) {
     this.header = header || BlockHeader.fromHeaderData({}, opts)
     this.transactions = transactions
@@ -225,7 +241,9 @@ export class Block {
       throw new Error('too many uncle headers')
     }
 
-    const uncleHashes = this.uncleHeaders.map((header) => header.hash().toString('hex'))
+    const uncleHashes = this.uncleHeaders.map((header) =>
+      header.hash().toString('hex')
+    )
     if (!(new Set(uncleHashes).size === uncleHashes.length)) {
       throw new Error('duplicate uncles')
     }
@@ -246,7 +264,10 @@ export class Block {
     }
   }
 
-  private _validateUncleHeader(uncleHeader: BlockHeader, blockchain?: Blockchain) {
+  private _validateUncleHeader(
+    uncleHeader: BlockHeader,
+    blockchain?: Blockchain
+  ) {
     // TODO: Validate that the uncle header hasn't been included in the blockchain yet.
     // This is not possible in ethereumjs-blockchain since this PR was merged:
     // https://github.com/ethereumjs/ethereumjs-blockchain/pull/47

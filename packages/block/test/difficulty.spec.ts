@@ -10,18 +10,32 @@ function isHexPrefixed(str: string) {
 function normalize(data: any) {
   Object.keys(data).forEach(function (i) {
     if (i !== 'homestead' && typeof data[i] === 'string') {
-      data[i] = isHexPrefixed(data[i]) ? new BN(toBuffer(data[i])) : new BN(data[i])
+      data[i] = isHexPrefixed(data[i])
+        ? new BN(toBuffer(data[i]))
+        : new BN(data[i])
     }
   })
 }
 
 tape('[Header]: difficulty tests', (t) => {
-  function runDifficultyTests(test: any, parentBlock: Block, block: Block, msg: string) {
+  function runDifficultyTests(
+    test: any,
+    parentBlock: Block,
+    block: Block,
+    msg: string
+  ) {
     normalize(test)
 
     const dif = block.header.canonicalDifficulty(parentBlock)
-    t.equal(dif.toString(), test.currentDifficulty.toString(), `test canonicalDifficulty (${msg})`)
-    t.assert(block.header.validateDifficulty(parentBlock), `test validateDifficulty (${msg})`)
+    t.equal(
+      dif.toString(),
+      test.currentDifficulty.toString(),
+      `test canonicalDifficulty (${msg})`
+    )
+    t.assert(
+      block.header.validateDifficulty(parentBlock),
+      `test validateDifficulty (${msg})`
+    )
   }
 
   const hardforkTestData: any = {
@@ -32,7 +46,7 @@ tape('[Header]: difficulty tests', (t) => {
     muirGlacier: Object.assign(
       require('./testdata/difficultyEIP2384.json').tests,
       require('./testdata/difficultyEIP2384_random.json').tests,
-      require('./testdata/difficultyEIP2384_random_to20M.json').tests,
+      require('./testdata/difficultyEIP2384_random_to20M.json').tests
     ),
   }
   for (const hardfork in hardforkTestData) {
@@ -48,7 +62,7 @@ tape('[Header]: difficulty tests', (t) => {
             uncleHash: test.parentUncles,
           },
         },
-        { common },
+        { common }
       )
 
       const block = Block.fromBlockData(
@@ -59,14 +73,14 @@ tape('[Header]: difficulty tests', (t) => {
             number: test.currentBlockNumber,
           },
         },
-        { common },
+        { common }
       )
 
       runDifficultyTests(
         test,
         parentBlock,
         block,
-        `fork determination by hardfork param (${hardfork})`,
+        `fork determination by hardfork param (${hardfork})`
       )
     }
   }
@@ -88,7 +102,10 @@ tape('[Header]: difficulty tests', (t) => {
           uncleHash: test.parentUncles,
         },
       }
-      const parentBlock = Block.fromBlockData(parentData, { common, hardforkByBlockNumber: true })
+      const parentBlock = Block.fromBlockData(parentData, {
+        common,
+        hardforkByBlockNumber: true,
+      })
 
       const blockData = {
         header: {
@@ -97,13 +114,16 @@ tape('[Header]: difficulty tests', (t) => {
           number: test.currentBlockNumber,
         },
       }
-      const block = Block.fromBlockData(blockData, { common, hardforkByBlockNumber: true })
+      const block = Block.fromBlockData(blockData, {
+        common,
+        hardforkByBlockNumber: true,
+      })
 
       runDifficultyTests(
         test,
         parentBlock,
         block,
-        `fork determination by block number (${test.currentBlockNumber})`,
+        `fork determination by block number (${test.currentBlockNumber})`
       )
     }
   }

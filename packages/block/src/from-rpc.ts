@@ -11,7 +11,11 @@ import blockHeaderFromRpc from './header-from-rpc'
  * @param uncles - Optional list of Ethereum JSON RPC of uncles (eth_getUncleByBlockHashAndIndex)
  * @param chainOptions - An object describing the blockchain
  */
-export default function blockFromRpc(blockParams: any, uncles: any[] = [], options?: BlockOptions) {
+export default function blockFromRpc(
+  blockParams: any,
+  uncles: any[] = [],
+  options?: BlockOptions
+) {
   const header = blockHeaderFromRpc(blockParams, options)
 
   const transactions: Transaction[] = []
@@ -32,7 +36,8 @@ export default function blockFromRpc(blockParams: any, uncles: any[] = [], optio
 function normalizeTxParams(_txParams: any) {
   const txParams = Object.assign({}, _txParams)
 
-  txParams.gasLimit = txParams.gasLimit === undefined ? txParams.gas : txParams.gasLimit
+  txParams.gasLimit =
+    txParams.gasLimit === undefined ? txParams.gas : txParams.gasLimit
   txParams.data = txParams.data === undefined ? txParams.input : txParams.data
 
   // strict byte length checking
