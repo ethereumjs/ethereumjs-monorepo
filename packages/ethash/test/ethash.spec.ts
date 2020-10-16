@@ -1,7 +1,6 @@
 import * as tape from 'tape'
 import Ethash from '../src'
 import { getEpoc, getCacheSize, getFullSize } from '../src/util'
-import { bufferToInt } from 'ethereumjs-util'
 import { BlockHeader } from '@ethereumjs/block'
 const powTests = require('./ethash_tests.json')
 

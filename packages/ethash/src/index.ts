@@ -4,8 +4,7 @@ import {
   keccak256,
   rlphash,
   zeros,
-  bufferToInt,
-  TWO_POW256
+  TWO_POW256,
 } from 'ethereumjs-util'
 import {
   params,
@@ -15,7 +14,7 @@ import {
   getEpoc,
   getCacheSize,
   getFullSize,
-  getSeed
+  getSeed,
 } from './util'
 import type { LevelUp } from 'levelup'
 import type { Block, BlockHeader } from '@ethereumjs/block'
@@ -32,7 +31,7 @@ export default class Ethash {
 
   constructor(cacheDB?: LevelUp) {
     this.dbOpts = {
-      valueEncoding: 'json'
+      valueEncoding: 'json',
     }
     this.cacheDB = cacheDB
     this.cache = []
@@ -93,7 +92,7 @@ export default class Ethash {
         (fnv(i ^ s.readUInt32LE(0), mix.readUInt32LE((i % w) * 4)) %
           Math.floor(n / mixhashes)) *
         mixhashes
-      let newdata = []
+      const newdata = []
       for (let j = 0; j < mixhashes; j++) {
         newdata.push(this.calcDatasetItem(p + j))
       }
@@ -110,7 +109,7 @@ export default class Ethash {
 
     return {
       mix: cmix,
-      hash: keccak256(Buffer.concat([s, cmix]))
+      hash: keccak256(Buffer.concat([s, cmix])),
     }
   }
 
@@ -181,7 +180,7 @@ export default class Ethash {
           cacheSize: this.cacheSize,
           fullSize: this.fullSize,
           seed: this.seed,
-          cache: cache
+          cache: cache,
         },
         this.dbOpts
       )
