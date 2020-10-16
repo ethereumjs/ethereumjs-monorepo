@@ -1,5 +1,5 @@
-import * as tape from 'tape'
-import * as minimist from 'minimist'
+import tape from 'tape'
+import minimist from 'minimist'
 import { toBuffer } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
 import Transaction from '../src/transaction'
