@@ -14,7 +14,11 @@ import { getPrecompile, PrecompileFunc } from './precompiles'
 import TxContext from './txContext'
 import Message from './message'
 import EEI from './eei'
-import { default as Interpreter, InterpreterOpts, RunState } from './interpreter'
+import {
+  default as Interpreter,
+  InterpreterOpts,
+  RunState,
+} from './interpreter'
 
 /**
  * Result of executing a message via the [[EVM]].
@@ -145,7 +149,10 @@ export default class EVM {
 
     const err = result.execResult.exceptionError
     if (err) {
-      if (this._vm._common.gteHardfork('homestead') || err.error != ERROR.CODESTORE_OUT_OF_GAS) {
+      if (
+        this._vm._common.gteHardfork('homestead') ||
+        err.error != ERROR.CODESTORE_OUT_OF_GAS
+      ) {
         result.execResult.logs = []
         await this._state.revert()
       } else {
@@ -199,7 +206,7 @@ export default class EVM {
       result = await this.runPrecompile(
         message.code as PrecompileFunc,
         message.data,
-        message.gasLimit,
+        message.gasLimit
       )
     } else {
       result = await this.runInterpreter(message)
@@ -221,7 +228,10 @@ export default class EVM {
     message.to = await this._generateAddress(message)
     let toAccount = await this._state.getAccount(message.to)
     // Check for collision
-    if ((toAccount.nonce && toAccount.nonce.gtn(0)) || !toAccount.codeHash.equals(KECCAK256_NULL)) {
+    if (
+      (toAccount.nonce && toAccount.nonce.gtn(0)) ||
+      !toAccount.codeHash.equals(KECCAK256_NULL)
+    ) {
       return {
         gasUsed: message.gasLimit,
         createdAddress: message.to,
@@ -276,7 +286,7 @@ export default class EVM {
     let returnFee = new BN(0)
     if (!result.exceptionError) {
       returnFee = new BN(result.returnValue.length).imuln(
-        this._vm._common.param('gasPrices', 'createData'),
+        this._vm._common.param('gasPrices', 'createData')
       )
       totalGas = totalGas.add(returnFee)
     }
@@ -310,7 +320,11 @@ export default class EVM {
     }
 
     // Save code if a new contract was created
-    if (!result.exceptionError && result.returnValue && result.returnValue.toString() !== '') {
+    if (
+      !result.exceptionError &&
+      result.returnValue &&
+      result.returnValue.toString() !== ''
+    ) {
       await this._state.putContractCode(message.to, result.returnValue)
     }
 
@@ -325,7 +339,10 @@ export default class EVM {
    * Starts the actual bytecode processing for a CALL or CREATE, providing
    * it with the [[EEI]].
    */
-  async runInterpreter(message: Message, opts: InterpreterOpts = {}): Promise<ExecResult> {
+  async runInterpreter(
+    message: Message,
+    opts: InterpreterOpts = {}
+  ): Promise<ExecResult> {
     const env = {
       blockchain: this._vm.blockchain, // Only used in BLOCKHASH
       address: message.to || zeros(32),
@@ -341,7 +358,13 @@ export default class EVM {
       contract: await this._state.getAccount(message.to || zeros(32)),
       codeAddress: message.codeAddress,
     }
-    const eei = new EEI(env, this._state, this, this._vm._common, message.gasLimit.clone())
+    const eei = new EEI(
+      env,
+      this._state,
+      this,
+      this._vm._common,
+      message.gasLimit.clone()
+    )
     if (message.selfdestruct) {
       eei._result.selfdestruct = message.selfdestruct
     }
@@ -395,7 +418,7 @@ export default class EVM {
   runPrecompile(
     code: PrecompileFunc,
     data: Buffer,
-    gasLimit: BN,
+    gasLimit: BN
   ): Promise<ExecResult> | ExecResult {
     if (typeof code !== 'function') {
       throw new Error('Invalid precompile')
@@ -427,7 +450,11 @@ export default class EVM {
   async _generateAddress(message: Message): Promise<Buffer> {
     let addr
     if (message.salt) {
-      addr = generateAddress2(message.caller, message.salt, message.code as Buffer)
+      addr = generateAddress2(
+        message.caller,
+        message.salt,
+        message.code as Buffer
+      )
     } else {
       const acc = await this._state.getAccount(message.caller)
       const newNonce = acc.nonce.subn(1)
@@ -436,7 +463,10 @@ export default class EVM {
     return addr
   }
 
-  async _reduceSenderBalance(account: Account, message: Message): Promise<void> {
+  async _reduceSenderBalance(
+    account: Account,
+    message: Message
+  ): Promise<void> {
     account.balance.isub(message.value)
     return this._state.putAccount(message.caller, account)
   }

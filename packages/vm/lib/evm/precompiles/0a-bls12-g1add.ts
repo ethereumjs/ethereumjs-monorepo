@@ -3,24 +3,32 @@ import { PrecompileInput } from './types'
 import { VmErrorResult, ExecResult, OOGResult } from '../evm'
 import { ERROR, VmError } from '../../exceptions'
 const assert = require('assert')
-const { BLS12_381_ToG1Point, BLS12_381_FromG1Point } = require('./util/bls12_381')
+const {
+  BLS12_381_ToG1Point,
+  BLS12_381_FromG1Point,
+} = require('./util/bls12_381')
 
 export default async function (opts: PrecompileInput): Promise<ExecResult> {
   assert(opts.data)
 
   const mcl = opts._VM._mcl
 
-  let inputData = opts.data
+  const inputData = opts.data
 
   // note: the gas used is constant; even if the input is incorrect.
-  let gasUsed = new BN(opts._common.paramByEIP('gasPrices', 'Bls12381G1AddGas', 2537))
+  const gasUsed = new BN(
+    opts._common.paramByEIP('gasPrices', 'Bls12381G1AddGas', 2537)
+  )
 
   if (opts.gasLimit.lt(gasUsed)) {
     return OOGResult(opts.gasLimit)
   }
 
   if (inputData.length != 256) {
-    return VmErrorResult(new VmError(ERROR.BLS_12_381_INVALID_INPUT_LENGTH), opts.gasLimit)
+    return VmErrorResult(
+      new VmError(ERROR.BLS_12_381_INVALID_INPUT_LENGTH),
+      opts.gasLimit
+    )
   }
 
   // check if some parts of input are zero bytes.
@@ -32,10 +40,16 @@ export default async function (opts: PrecompileInput): Promise<ExecResult> {
     [192, 208],
   ]
 
-  for (let index in zeroByteCheck) {
-    let slicedBuffer = opts.data.slice(zeroByteCheck[index][0], zeroByteCheck[index][1])
+  for (const index in zeroByteCheck) {
+    const slicedBuffer = opts.data.slice(
+      zeroByteCheck[index][0],
+      zeroByteCheck[index][1]
+    )
     if (!slicedBuffer.equals(zeroBytes16)) {
-      return VmErrorResult(new VmError(ERROR.BLS_12_381_POINT_NOT_ON_CURVE), opts.gasLimit)
+      return VmErrorResult(
+        new VmError(ERROR.BLS_12_381_POINT_NOT_ON_CURVE),
+        opts.gasLimit
+      )
     }
   }
 

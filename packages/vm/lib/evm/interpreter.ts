@@ -87,7 +87,10 @@ export default class Interpreter {
     }
   }
 
-  async run(code: Buffer, opts: InterpreterOpts = {}): Promise<InterpreterResult> {
+  async run(
+    code: Buffer,
+    opts: InterpreterOpts = {}
+  ): Promise<InterpreterResult> {
     this._runState.code = code
     this._runState.programCounter = opts.pc || this._runState.programCounter
 

@@ -14,7 +14,7 @@ export default function (opts: PrecompileInput): ExecResult {
     return OOGResult(opts.gasLimit)
   }
 
-  let returnData = bn128.mul(inputData)
+  const returnData = bn128.mul(inputData)
   // check ecmul success or failure by comparing the output length
   if (returnData.length !== 64) {
     return OOGResult(opts.gasLimit)

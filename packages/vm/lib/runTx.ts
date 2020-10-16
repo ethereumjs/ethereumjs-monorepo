@@ -50,7 +50,10 @@ export interface RunTxResult extends EVMResult {
 /**
  * @ignore
  */
-export default async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
+export default async function runTx(
+  this: VM,
+  opts: RunTxOpts
+): Promise<RunTxResult> {
   // tx is required
   if (!opts.tx) {
     throw new Error('invalid input, tx is required')
@@ -114,13 +117,13 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     const cost = tx.getUpfrontCost()
     if (balance.lt(cost)) {
       throw new Error(
-        `sender doesn't have enough funds to send tx. The upfront cost is: ${cost.toString()} and the sender's account only has: ${balance.toString()}`,
+        `sender doesn't have enough funds to send tx. The upfront cost is: ${cost.toString()} and the sender's account only has: ${balance.toString()}`
       )
     }
   } else if (!opts.skipNonce) {
     if (!nonce.eq(tx.nonce)) {
       throw new Error(
-        `the tx doesn't have the correct nonce. account has nonce of: ${nonce.toString()} tx has nonce of: ${tx.nonce.toString()}`,
+        `the tx doesn't have the correct nonce. account has nonce of: ${nonce.toString()} tx has nonce of: ${tx.nonce.toString()}`
       )
     }
   }
