@@ -491,11 +491,7 @@ export default class DefaultStateManager implements StateManager {
    */
   async accountIsEmpty(address: Buffer): Promise<boolean> {
     const account = await this.getAccount(address)
-    // Note: ethereumjs-util account.isEmpty() additionally checks for empty stateRoot which differs here.
-    // EIP-161: "An account is considered empty when it has no code and zero nonce and zero balance."
-    return (
-      account.nonce.isZero() && account.balance.isZero() && account.codeHash.equals(KECCAK256_NULL)
-    )
+    return account.isEmpty()
   }
 
   /**
