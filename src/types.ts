@@ -1,4 +1,5 @@
 import * as BN from 'bn.js'
+import { Address } from './address'
 import { unpadBuffer } from './bytes'
 
 /*
@@ -23,6 +24,12 @@ export type BufferLike =
  */
 export type PrefixedHexString = string
 
+/**
+ * A type that represents an Address-like value.
+ * To convert to address, use `new Address(toBuffer(value))`
+ */
+export type AddressLike = Address | Buffer | string
+
 /*
  * A type that represents an object that has a `toArray()` method.
  */
@@ -37,6 +44,13 @@ export interface TransformableToArray {
 export interface TransformableToBuffer {
   toBuffer(): Buffer
   toArray?(): Uint8Array
+}
+
+/**
+ * Convert BN to 0x-prefixed hex string.
+ */
+export function bnToHex(value: BN): PrefixedHexString {
+  return `0x${value.toString(16)}`
 }
 
 /**
