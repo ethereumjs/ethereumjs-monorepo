@@ -6,15 +6,12 @@ import * as blockDataWithUncles from './testdata/testdata-from-rpc-with-uncles.j
 import * as uncleBlockData from './testdata/testdata-from-rpc-with-uncles_uncle-block-data.json'
 
 tape('[fromRPC]: block #2924874', function (t) {
-  t.test(
-    'should create a block with transactions with valid signatures',
-    function (st) {
-      const block = blockFromRpc(blockData)
-      const allValid = block.transactions.every((tx) => tx.verifySignature())
-      st.equal(allValid, true, 'all transaction signatures are valid')
-      st.end()
-    }
-  )
+  t.test('should create a block with transactions with valid signatures', function (st) {
+    const block = blockFromRpc(blockData)
+    const allValid = block.transactions.every((tx) => tx.verifySignature())
+    st.equal(allValid, true, 'all transaction signatures are valid')
+    st.end()
+  })
 
   t.test('should create a block header with the correct hash', function (st) {
     const block = blockHeaderFromRpc(blockData)

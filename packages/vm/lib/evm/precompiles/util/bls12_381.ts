@@ -64,14 +64,8 @@ function BLS12_381_FromG1Point(input: any): Buffer {
 
   // convert to buffers.
 
-  const xBuffer = Buffer.concat([
-    Buffer.alloc(64 - xval.length / 2, 0),
-    Buffer.from(xval, 'hex'),
-  ])
-  const yBuffer = Buffer.concat([
-    Buffer.alloc(64 - yval.length / 2, 0),
-    Buffer.from(yval, 'hex'),
-  ])
+  const xBuffer = Buffer.concat([Buffer.alloc(64 - xval.length / 2, 0), Buffer.from(xval, 'hex')])
+  const yBuffer = Buffer.concat([Buffer.alloc(64 - yval.length / 2, 0), Buffer.from(yval, 'hex')])
 
   return Buffer.concat([xBuffer, yBuffer])
 }
@@ -144,22 +138,10 @@ function BLS12_381_FromG2Point(input: any): Buffer {
 
   // convert to buffers.
 
-  const xBuffer1 = Buffer.concat([
-    Buffer.alloc(64 - x_1.length / 2, 0),
-    Buffer.from(x_1, 'hex'),
-  ])
-  const xBuffer2 = Buffer.concat([
-    Buffer.alloc(64 - x_2.length / 2, 0),
-    Buffer.from(x_2, 'hex'),
-  ])
-  const yBuffer1 = Buffer.concat([
-    Buffer.alloc(64 - y_1.length / 2, 0),
-    Buffer.from(y_1, 'hex'),
-  ])
-  const yBuffer2 = Buffer.concat([
-    Buffer.alloc(64 - y_2.length / 2, 0),
-    Buffer.from(y_2, 'hex'),
-  ])
+  const xBuffer1 = Buffer.concat([Buffer.alloc(64 - x_1.length / 2, 0), Buffer.from(x_1, 'hex')])
+  const xBuffer2 = Buffer.concat([Buffer.alloc(64 - x_2.length / 2, 0), Buffer.from(x_2, 'hex')])
+  const yBuffer1 = Buffer.concat([Buffer.alloc(64 - y_1.length / 2, 0), Buffer.from(y_1, 'hex')])
+  const yBuffer2 = Buffer.concat([Buffer.alloc(64 - y_2.length / 2, 0), Buffer.from(y_2, 'hex')])
 
   return Buffer.concat([xBuffer1, xBuffer2, yBuffer1, yBuffer2])
 }
@@ -193,11 +175,7 @@ function BLS12_381_ToFpPoint(fpCoordinate: Buffer, mcl: any): any {
 // input: two 64-byte buffers
 // output: a mcl Fp2 point
 
-function BLS12_381_ToFp2Point(
-  fpXCoordinate: Buffer,
-  fpYCoordinate: Buffer,
-  mcl: any
-): any {
+function BLS12_381_ToFp2Point(fpXCoordinate: Buffer, fpYCoordinate: Buffer, mcl: any): any {
   // check if the coordinates are in the field
   if (new BN(fpXCoordinate).gte(fieldModulus)) {
     throw new VmError(ERROR.BLS_12_381_FP_NOT_IN_FIELD)

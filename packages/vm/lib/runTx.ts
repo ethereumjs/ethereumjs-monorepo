@@ -50,10 +50,7 @@ export interface RunTxResult extends EVMResult {
 /**
  * @ignore
  */
-export default async function runTx(
-  this: VM,
-  opts: RunTxOpts
-): Promise<RunTxResult> {
+export default async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   // tx is required
   if (!opts.tx) {
     throw new Error('invalid input, tx is required')

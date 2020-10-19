@@ -11,19 +11,14 @@ tape('[Block]: block functions', function (t) {
     st.end()
   })
 
-  t.test(
-    'should initialize with undefined parameters without throwing',
-    function (st) {
-      st.doesNotThrow(function () {
-        Block.fromBlockData()
-      })
-      st.end()
-    }
-  )
+  t.test('should initialize with undefined parameters without throwing', function (st) {
+    st.doesNotThrow(function () {
+      Block.fromBlockData()
+    })
+    st.end()
+  })
 
-  t.test('should initialize with null parameters without throwing', function (
-    st
-  ) {
+  t.test('should initialize with null parameters without throwing', function (st) {
     st.doesNotThrow(function () {
       const common = new Common({ chain: 'ropsten' })
       const opts = { common }
@@ -56,14 +51,11 @@ tape('[Block]: block functions', function (t) {
     await testTransactionValidation(st, block)
   })
 
-  t.test(
-    'should test transaction validation with empty transaction list',
-    async function (st) {
-      const block = Block.fromBlockData({})
-      st.plan(2)
-      await testTransactionValidation(st, block)
-    }
-  )
+  t.test('should test transaction validation with empty transaction list', async function (st) {
+    const block = Block.fromBlockData({})
+    st.plan(2)
+    await testTransactionValidation(st, block)
+  })
 
   const testData2 = require('./testdata/testdata2.json')
   t.test('should test uncles hash validation', function (st) {
@@ -85,10 +77,7 @@ tape('[Block]: block functions', function (t) {
     const common = new Common({ chain: 'ropsten' })
     const block = Block.fromBlockData({ header: { number: 1 } }, { common })
     st.notEqual(block.isGenesis(), true)
-    const genesisBlock = Block.fromBlockData(
-      { header: { number: 0 } },
-      { common }
-    )
+    const genesisBlock = Block.fromBlockData({ header: { number: 0 } }, { common })
     st.equal(genesisBlock.isGenesis(), true)
     st.end()
   })
@@ -97,11 +86,7 @@ tape('[Block]: block functions', function (t) {
   t.test('should test genesis hashes (mainnet default)', function (st) {
     const genesis = Block.genesis()
     const genesisRlp = genesis.serialize()
-    st.strictEqual(
-      genesisRlp.toString('hex'),
-      testDataGenesis.genesis_rlp_hex,
-      'rlp hex match'
-    )
+    st.strictEqual(genesisRlp.toString('hex'), testDataGenesis.genesis_rlp_hex, 'rlp hex match')
     st.strictEqual(
       genesis.hash().toString('hex'),
       testDataGenesis.genesis_hash,
@@ -135,8 +120,7 @@ tape('[Block]: block functions', function (t) {
   t.test('should test genesis parameters (ropsten)', function (st) {
     const common = new Common({ chain: 'ropsten', hardfork: 'chainstart' })
     const genesis = Block.genesis({}, { common })
-    const ropstenStateRoot =
-      '217b0bbcfb72e2d57e28f33cb361b9983513177755dc3f33ce3e7022ed62b77b'
+    const ropstenStateRoot = '217b0bbcfb72e2d57e28f33cb361b9983513177755dc3f33ce3e7022ed62b77b'
     st.strictEqual(
       genesis.header.stateRoot.toString('hex'),
       ropstenStateRoot,

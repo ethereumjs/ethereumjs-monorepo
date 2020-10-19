@@ -107,10 +107,7 @@ export interface PostByzantiumTxReceipt extends TxReceipt {
 /**
  * @ignore
  */
-export default async function runBlock(
-  this: VM,
-  opts: RunBlockOpts
-): Promise<RunBlockResult> {
+export default async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockResult> {
   const state = this.stateManager
   const { root } = opts
   let { block } = opts
@@ -162,10 +159,7 @@ export default async function runBlock(
       header: { ...block.header, stateRoot, bloom },
     })
   } else {
-    if (
-      result.receiptRoot &&
-      !result.receiptRoot.equals(block.header.receiptTrie)
-    ) {
+    if (result.receiptRoot && !result.receiptRoot.equals(block.header.receiptTrie)) {
       throw new Error('invalid receiptTrie')
     }
     if (!result.bloom.bitvector.equals(block.header.bloom)) {
@@ -238,9 +232,7 @@ async function applyTransactions(this: VM, block: Block, opts: RunBlockOpts) {
   for (let txIdx = 0; txIdx < block.transactions.length; txIdx++) {
     const tx = block.transactions[txIdx]
 
-    const gasLimitIsHigherThanBlock = block.header.gasLimit.lt(
-      tx.gasLimit.add(gasUsed)
-    )
+    const gasLimitIsHigherThanBlock = block.header.gasLimit.lt(tx.gasLimit.add(gasUsed))
     if (gasLimitIsHigherThanBlock) {
       throw new Error('tx has a higher gas limit than the block')
     }
@@ -304,11 +296,7 @@ async function assignBlockRewards(this: VM, block: Block): Promise<void> {
   const ommers = block.uncleHeaders
   // Reward ommers
   for (const ommer of ommers) {
-    const reward = calculateOmmerReward(
-      ommer.number,
-      block.header.number,
-      minerReward
-    )
+    const reward = calculateOmmerReward(ommer.number, block.header.number, minerReward)
     await rewardAccount(state, ommer.coinbase, reward)
   }
   // Reward miner
@@ -316,11 +304,7 @@ async function assignBlockRewards(this: VM, block: Block): Promise<void> {
   await rewardAccount(state, block.header.coinbase, reward)
 }
 
-function calculateOmmerReward(
-  ommerBlockNumber: BN,
-  blockNumber: BN,
-  minerReward: BN
-): BN {
+function calculateOmmerReward(ommerBlockNumber: BN, blockNumber: BN, minerReward: BN): BN {
   const heightDiff = blockNumber.sub(ommerBlockNumber)
   let reward = new BN(8).sub(heightDiff).mul(minerReward.divn(8))
   if (reward.ltn(0)) {
@@ -337,11 +321,7 @@ function calculateMinerReward(minerReward: BN, ommersNum: number): BN {
   return reward
 }
 
-async function rewardAccount(
-  state: StateManager,
-  address: Address,
-  reward: BN
-): Promise<void> {
+async function rewardAccount(state: StateManager, address: Address, reward: BN): Promise<void> {
   const account = await state.getAccount(address.buf)
   account.balance.iadd(reward)
   await state.putAccount(address.buf, account)

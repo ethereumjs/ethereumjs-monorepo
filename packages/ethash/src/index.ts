@@ -1,11 +1,4 @@
-import {
-  BN,
-  keccak,
-  keccak256,
-  rlphash,
-  zeros,
-  TWO_POW256,
-} from 'ethereumjs-util'
+import { BN, keccak, keccak256, rlphash, zeros, TWO_POW256 } from 'ethereumjs-util'
 import {
   params,
   fnv,
@@ -89,8 +82,7 @@ export default class Ethash {
     let i
     for (i = 0; i < params.ACCESSES; i++) {
       const p =
-        (fnv(i ^ s.readUInt32LE(0), mix.readUInt32LE((i % w) * 4)) %
-          Math.floor(n / mixhashes)) *
+        (fnv(i ^ s.readUInt32LE(0), mix.readUInt32LE((i % w) * 4)) % Math.floor(n / mixhashes)) *
         mixhashes
       const newdata = []
       for (let j = 0; j < mixhashes; j++) {

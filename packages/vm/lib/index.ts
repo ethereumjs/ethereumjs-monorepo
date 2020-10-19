@@ -129,9 +129,7 @@ export default class VM extends AsyncEventEmitter {
     // Throw on chain or hardfork options removed in latest major release
     // to prevent implicit chain setup on a wrong chain
     if ('chain' in opts || 'hardfork' in opts) {
-      throw new Error(
-        'Chain/hardfork options are not allowed any more on initialization'
-      )
+      throw new Error('Chain/hardfork options are not allowed any more on initialization')
     }
 
     if (opts.common) {
@@ -180,13 +178,10 @@ export default class VM extends AsyncEventEmitter {
       })
     }
 
-    this.blockchain =
-      opts.blockchain || new Blockchain({ common: this._common })
+    this.blockchain = opts.blockchain || new Blockchain({ common: this._common })
 
     this.allowUnlimitedContractSize =
-      opts.allowUnlimitedContractSize === undefined
-        ? false
-        : opts.allowUnlimitedContractSize
+      opts.allowUnlimitedContractSize === undefined ? false : opts.allowUnlimitedContractSize
 
     if (this._common.eips().includes(2537)) {
       if (IS_BROWSER) {

@@ -17,9 +17,7 @@ tape('[genesisStates]: Genesis state access', function (t: tape.Test) {
       'Access by name (goerli)'
     )
 
-    st.comment(
-      '-----------------------------------------------------------------'
-    )
+    st.comment('-----------------------------------------------------------------')
     st.end()
   })
 })

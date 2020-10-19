@@ -4,10 +4,7 @@ import Common from '@ethereumjs/common'
 import Blockchain from '../src'
 const level = require('level-mem')
 
-export const generateBlocks = (
-  numberOfBlocks: number,
-  existingBlocks?: Block[]
-): Block[] => {
+export const generateBlocks = (numberOfBlocks: number, existingBlocks?: Block[]): Block[] => {
   const blocks = existingBlocks ? existingBlocks : []
 
   const gasLimit = 8000000
@@ -37,10 +34,7 @@ export const generateBlocks = (
   return blocks
 }
 
-export const generateBlockchain = async (
-  numberOfBlocks: number,
-  genesis?: Block
-): Promise<any> => {
+export const generateBlockchain = async (numberOfBlocks: number, genesis?: Block): Promise<any> => {
   const blockchain = new Blockchain({
     validateBlocks: true,
     validatePow: false,
@@ -86,10 +80,7 @@ export const createTestDB = async () => {
     },
     {
       type: 'put',
-      key: Buffer.from(
-        '48d4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3',
-        'hex'
-      ),
+      key: Buffer.from('48d4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3', 'hex'),
       keyEncoding: 'binary',
       valueEncoding: 'binary',
       value: Buffer.from('00', 'hex'),

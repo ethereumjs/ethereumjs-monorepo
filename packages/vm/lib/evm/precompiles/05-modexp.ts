@@ -124,24 +124,9 @@ export default function (opts: PrecompileInput): ExecResult {
     return OOGResult(opts.gasLimit)
   }
 
-  const B = new BN(
-    setLengthRight(
-      data.slice(bStart.toNumber(), bEnd.toNumber()),
-      bLen.toNumber()
-    )
-  )
-  const E = new BN(
-    setLengthRight(
-      data.slice(eStart.toNumber(), eEnd.toNumber()),
-      eLen.toNumber()
-    )
-  )
-  const M = new BN(
-    setLengthRight(
-      data.slice(mStart.toNumber(), mEnd.toNumber()),
-      mLen.toNumber()
-    )
-  )
+  const B = new BN(setLengthRight(data.slice(bStart.toNumber(), bEnd.toNumber()), bLen.toNumber()))
+  const E = new BN(setLengthRight(data.slice(eStart.toNumber(), eEnd.toNumber()), eLen.toNumber()))
+  const M = new BN(setLengthRight(data.slice(mStart.toNumber(), mEnd.toNumber()), mLen.toNumber()))
 
   let R
   if (M.isZero()) {

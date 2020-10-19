@@ -70,10 +70,7 @@ export interface RunCodeOpts {
 /**
  * @ignore
  */
-export default function runCode(
-  this: VM,
-  opts: RunCodeOpts
-): Promise<ExecResult> {
+export default function runCode(this: VM, opts: RunCodeOpts): Promise<ExecResult> {
   if (!opts.block) {
     opts.block = new Block()
   }

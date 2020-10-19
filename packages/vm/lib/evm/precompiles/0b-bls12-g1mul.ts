@@ -17,19 +17,14 @@ export default async function (opts: PrecompileInput): Promise<ExecResult> {
   const inputData = opts.data
 
   // note: the gas used is constant; even if the input is incorrect.
-  const gasUsed = new BN(
-    opts._common.paramByEIP('gasPrices', 'Bls12381G1MulGas', 2537)
-  )
+  const gasUsed = new BN(opts._common.paramByEIP('gasPrices', 'Bls12381G1MulGas', 2537))
 
   if (opts.gasLimit.lt(gasUsed)) {
     return OOGResult(opts.gasLimit)
   }
 
   if (inputData.length != 160) {
-    return VmErrorResult(
-      new VmError(ERROR.BLS_12_381_INVALID_INPUT_LENGTH),
-      opts.gasLimit
-    )
+    return VmErrorResult(new VmError(ERROR.BLS_12_381_INVALID_INPUT_LENGTH), opts.gasLimit)
   }
 
   // check if some parts of input are zero bytes.
@@ -40,15 +35,9 @@ export default async function (opts: PrecompileInput): Promise<ExecResult> {
   ]
 
   for (const index in zeroByteCheck) {
-    const slicedBuffer = opts.data.slice(
-      zeroByteCheck[index][0],
-      zeroByteCheck[index][1]
-    )
+    const slicedBuffer = opts.data.slice(zeroByteCheck[index][0], zeroByteCheck[index][1])
     if (!slicedBuffer.equals(zeroBytes16)) {
-      return VmErrorResult(
-        new VmError(ERROR.BLS_12_381_POINT_NOT_ON_CURVE),
-        opts.gasLimit
-      )
+      return VmErrorResult(new VmError(ERROR.BLS_12_381_POINT_NOT_ON_CURVE), opts.gasLimit)
     }
   }
 

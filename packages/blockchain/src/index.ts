@@ -114,9 +114,7 @@ export default class Blockchain implements BlockchainInterface {
     // Throw on chain or hardfork options removed in latest major release
     // to prevent implicit chain setup on a wrong chain
     if ('chain' in opts || 'hardfork' in opts) {
-      throw new Error(
-        'Chain/hardfork options are not allowed any more on initialization'
-      )
+      throw new Error('Chain/hardfork options are not allowed any more on initialization')
     }
 
     if (opts.common) {
@@ -131,8 +129,7 @@ export default class Blockchain implements BlockchainInterface {
     }
 
     this._validatePow = opts.validatePow !== undefined ? opts.validatePow : true
-    this._validateBlocks =
-      opts.validateBlocks !== undefined ? opts.validateBlocks : true
+    this._validateBlocks = opts.validateBlocks !== undefined ? opts.validateBlocks : true
 
     this.db = opts.db ? opts.db : level()
     this.dbManager = new DBManager(this.db, this._common)
@@ -673,10 +670,7 @@ export default class Blockchain implements BlockchainInterface {
       }
 
       try {
-        const parentHeader = await this._getHeader(
-          header.parentHash,
-          number.subn(1)
-        )
+        const parentHeader = await this._getHeader(header.parentHash, number.subn(1))
         await this._rebuildCanonical(parentHeader, ops)
       } catch (error) {
         this._staleHeads = []
@@ -744,12 +738,7 @@ export default class Blockchain implements BlockchainInterface {
 
     // delete the block, and if block is in the canonical chain, delete all
     // children as well
-    await this._delChild(
-      blockHash,
-      blockNumber,
-      inCanonical ? parentHash : null,
-      dbOps
-    )
+    await this._delChild(blockHash, blockNumber, inCanonical ? parentHash : null, dbOps)
 
     // delete all number to hash mappings for deleted block number and above
     if (inCanonical) {
@@ -762,12 +751,7 @@ export default class Blockchain implements BlockchainInterface {
   /**
    * @hidden
    */
-  async _delChild(
-    hash: Buffer,
-    number: BN,
-    headHash: Buffer | null,
-    ops: DBOp[]
-  ) {
+  async _delChild(hash: Buffer, number: BN, headHash: Buffer | null, ops: DBOp[]) {
     // delete header, body, hash to number mapping and td
     ops.push({
       type: 'del',
@@ -811,12 +795,7 @@ export default class Blockchain implements BlockchainInterface {
 
     try {
       const childHeader = await this._getCanonicalHeader(number.addn(1))
-      await this._delChild(
-        childHeader.hash(),
-        childHeader.number,
-        headHash,
-        ops
-      )
+      await this._delChild(childHeader.hash(), childHeader.number, headHash, ops)
     } catch (error) {
       if (error.type !== 'NotFoundError') {
         throw error
@@ -863,9 +842,7 @@ export default class Blockchain implements BlockchainInterface {
         }
 
         this._heads[name] = block.hash()
-        const reorg = lastBlock
-          ? lastBlock.hash().equals(block.header.parentHash)
-          : false
+        const reorg = lastBlock ? lastBlock.hash().equals(block.header.parentHash) : false
         lastBlock = block
         await onBlock(block, reorg)
         blockNumber.iaddn(1)

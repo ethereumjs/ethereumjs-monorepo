@@ -37,11 +37,7 @@ tape('TransactionTests', (t) => {
   testing
     .getTests(
       'TransactionTests',
-      (
-        _filename: string,
-        testName: string,
-        testData: OfficialTransactionTestData
-      ) => {
+      (_filename: string, testName: string, testData: OfficialTransactionTestData) => {
         t.test(testName, (st) => {
           forkNames.forEach((forkName) => {
             const forkTestData = testData[forkName]
@@ -61,14 +57,10 @@ tape('TransactionTests', (t) => {
               const senderIsCorrect = sender === `0x${forkTestData.sender}`
               const hashIsCorrect = hash === forkTestData.hash
 
-              const hashAndSenderAreCorrect =
-                forkTestData && senderIsCorrect && hashIsCorrect
+              const hashAndSenderAreCorrect = forkTestData && senderIsCorrect && hashIsCorrect
 
               if (shouldBeInvalid) {
-                st.assert(
-                  !txIsValid,
-                  `Transaction should be invalid on ${forkName}`
-                )
+                st.assert(!txIsValid, `Transaction should be invalid on ${forkName}`)
               } else {
                 st.assert(
                   hashAndSenderAreCorrect && txIsValid,
@@ -77,10 +69,7 @@ tape('TransactionTests', (t) => {
               }
             } catch (e) {
               if (shouldBeInvalid) {
-                st.assert(
-                  shouldBeInvalid,
-                  `Transaction should be invalid on ${forkName}`
-                )
+                st.assert(shouldBeInvalid, `Transaction should be invalid on ${forkName}`)
               } else {
                 st.fail(`Transaction should be valid on ${forkName}`)
               }

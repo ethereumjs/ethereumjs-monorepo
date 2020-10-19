@@ -141,9 +141,7 @@ export default class Common {
    */
   setHardfork(hardfork: string): void {
     if (!this._isSupportedHardfork(hardfork)) {
-      throw new Error(
-        `Hardfork ${hardfork} not set as supported in supportedHardforks`
-      )
+      throw new Error(`Hardfork ${hardfork} not set as supported in supportedHardforks`)
     }
     let changed = false
     for (const hfChanges of HARDFORK_CHANGES) {
@@ -185,16 +183,11 @@ export default class Common {
    * @param hardfork Hardfork given to function as a parameter
    * @returns Hardfork chosen to be used
    */
-  _chooseHardfork(
-    hardfork?: string | null,
-    onlySupported: boolean = true
-  ): string {
+  _chooseHardfork(hardfork?: string | null, onlySupported: boolean = true): string {
     if (!hardfork) {
       hardfork = this._hardfork
     } else if (onlySupported && !this._isSupportedHardfork(hardfork)) {
-      throw new Error(
-        `Hardfork ${hardfork} not set as supported in supportedHardforks`
-      )
+      throw new Error(`Hardfork ${hardfork} not set as supported in supportedHardforks`)
     }
     return hardfork
   }
@@ -209,9 +202,7 @@ export default class Common {
     for (const hf of hfs) {
       if (hf['name'] === hardfork) return hf
     }
-    throw new Error(
-      `Hardfork ${hardfork} not defined for chain ${this.chainName()}`
-    )
+    throw new Error(`Hardfork ${hardfork} not defined for chain ${this.chainName()}`)
   }
 
   /**
@@ -354,8 +345,7 @@ export default class Common {
     opts?: hardforkOptions
   ): boolean {
     opts = opts !== undefined ? opts : {}
-    const onlySupported =
-      opts.onlySupported === undefined ? false : opts.onlySupported
+    const onlySupported = opts.onlySupported === undefined ? false : opts.onlySupported
     hardfork = this._chooseHardfork(hardfork, onlySupported)
     const hfBlock = this.hardforkBlock(hardfork)
     if (hfBlock !== null && blockNumber >= hfBlock) return true
@@ -422,13 +412,9 @@ export default class Common {
    * @param opts Hardfork options (onlyActive unused)
    * @returns True if hardfork is active on the chain
    */
-  hardforkIsActiveOnChain(
-    hardfork?: string | null,
-    opts?: hardforkOptions
-  ): boolean {
+  hardforkIsActiveOnChain(hardfork?: string | null, opts?: hardforkOptions): boolean {
     opts = opts !== undefined ? opts : {}
-    const onlySupported =
-      opts.onlySupported === undefined ? false : opts.onlySupported
+    const onlySupported = opts.onlySupported === undefined ? false : opts.onlySupported
     hardfork = this._chooseHardfork(hardfork, onlySupported)
     for (const hf of this.hardforks()) {
       if (hf['name'] === hardfork && hf['block'] !== null) return true
@@ -442,21 +428,13 @@ export default class Common {
    * @param opts Hardfork options (onlyActive unused)
    * @return Array with hardfork arrays
    */
-  activeHardforks(
-    blockNumber?: number | null,
-    opts?: hardforkOptions
-  ): Array<any> {
+  activeHardforks(blockNumber?: number | null, opts?: hardforkOptions): Array<any> {
     opts = opts !== undefined ? opts : {}
     const activeHardforks = []
     const hfs = this.hardforks()
     for (const hf of hfs) {
       if (hf['block'] === null) continue
-      if (
-        blockNumber !== undefined &&
-        blockNumber !== null &&
-        blockNumber < hf['block']
-      )
-        break
+      if (blockNumber !== undefined && blockNumber !== null && blockNumber < hf['block']) break
       if (opts.onlySupported && !this._isSupportedHardfork(hf['name'])) continue
 
       activeHardforks.push(hf)
@@ -546,10 +524,7 @@ export default class Common {
       // Skip for chainstart (0), not applied HFs (null) and
       // when already applied on same block number HFs
       if (block !== 0 && block !== null && block !== prevBlock) {
-        const hfBlockBuffer = Buffer.from(
-          block.toString(16).padStart(16, '0'),
-          'hex'
-        )
+        const hfBlockBuffer = Buffer.from(block.toString(16).padStart(16, '0'), 'hex')
         hfBuffer = Buffer.concat([hfBuffer, hfBlockBuffer])
       }
 
@@ -572,8 +547,7 @@ export default class Common {
     hardfork = this._chooseHardfork(hardfork, false)
     const data = this._getHardfork(hardfork)
     if (data['block'] === null) {
-      const msg =
-        'No fork hash calculation possible for non-applied or future hardfork'
+      const msg = 'No fork hash calculation possible for non-applied or future hardfork'
       throw new Error(msg)
     }
     if (data['forkHash'] !== undefined) {
@@ -639,9 +613,7 @@ export default class Common {
    * @returns chain name (lower case)
    */
   chainName(): string {
-    return (
-      chainParams['names'][this.chainId()] || (<any>this._chainParams)['name']
-    )
+    return chainParams['names'][this.chainId()] || (<any>this._chainParams)['name']
   }
 
   /**
