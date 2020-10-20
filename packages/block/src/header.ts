@@ -257,12 +257,12 @@ export class BlockHeader {
   /**
    * Returns the canonical difficulty for this block.
    *
-   * @param parentBlock - the parent `Block` of this header
+   * @param parentBlockHeader - the header from the parent `Block` of this header
    */
-  canonicalDifficulty(parentBlock: Block): BN {
+  canonicalDifficulty(parentBlockHeader: BlockHeader): BN {
     const hardfork = this._getHardfork()
     const blockTs = this.timestamp
-    const { timestamp: parentTs, difficulty: parentDif } = parentBlock.header
+    const { timestamp: parentTs, difficulty: parentDif } = parentBlockHeader
     const minimumDifficulty = new BN(
       this._common.paramByHardfork('pow', 'minimumDifficulty', hardfork)
     )
@@ -276,7 +276,7 @@ export class BlockHeader {
 
     if (this._common.hardforkGteHardfork(hardfork, 'byzantium')) {
       // max((2 if len(parent.uncles) else 1) - ((timestamp - parent.timestamp) // 9), -99) (EIP100)
-      const uncleAddend = parentBlock.header.uncleHash.equals(KECCAK256_RLP_ARRAY) ? 1 : 2
+      const uncleAddend = parentBlockHeader.uncleHash.equals(KECCAK256_RLP_ARRAY) ? 1 : 2
       let a = blockTs.sub(parentTs).idivn(9).ineg().iaddn(uncleAddend)
       const cutoff = new BN(-99)
       // MAX(cutoff, a)
@@ -341,19 +341,19 @@ export class BlockHeader {
   /**
    * Checks that the block's `difficulty` matches the canonical difficulty.
    *
-   * @param parentBlock - this block's parent
+   * @param parentBlockHeader - the header from the parent `Block` of this header
    */
-  validateDifficulty(parentBlock: Block): boolean {
-    return this.canonicalDifficulty(parentBlock).eq(this.difficulty)
+  validateDifficulty(parentBlockHeader: BlockHeader): boolean {
+    return this.canonicalDifficulty(parentBlockHeader).eq(this.difficulty)
   }
 
   /**
    * Validates the gasLimit.
    *
-   * @param parentBlock - this block's parent
+   * @param parentBlockHeader - the header from the parent `Block` of this header
    */
-  validateGasLimit(parentBlock: Block): boolean {
-    const parentGasLimit = parentBlock.header.gasLimit
+  validateGasLimit(parentBlockHeader: BlockHeader): boolean {
+    const parentGasLimit = parentBlockHeader.gasLimit
     const gasLimit = this.gasLimit
     const hardfork = this._getHardfork()
 
@@ -394,24 +394,25 @@ export class BlockHeader {
       }
 
       const { number } = this
-      if (!number.eq(parentBlock.header.number.addn(1))) {
+      const header = parentBlock.header
+      if (!number.eq(header.number.addn(1))) {
         throw new Error('invalid number')
       }
 
-      if (this.timestamp.lte(parentBlock.header.timestamp)) {
+      if (this.timestamp.lte(header.timestamp)) {
         throw new Error('invalid timestamp')
       }
 
-      if (!this.validateDifficulty(parentBlock)) {
+      if (!this.validateDifficulty(header)) {
         throw new Error('invalid difficulty')
       }
 
-      if (!this.validateGasLimit(parentBlock)) {
+      if (!this.validateGasLimit(header)) {
         throw new Error('invalid gas limit')
       }
 
       if (height) {
-        const dif = height.sub(parentBlock.header.number)
+        const dif = height.sub(header.number)
         if (!(dif.cmpn(8) === -1 && dif.cmpn(1) === 1)) {
           throw new Error('uncle block has a parent that is too old or too young')
         }

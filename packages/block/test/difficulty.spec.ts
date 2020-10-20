@@ -19,9 +19,9 @@ tape('[Header]: difficulty tests', (t) => {
   function runDifficultyTests(test: any, parentBlock: Block, block: Block, msg: string) {
     normalize(test)
 
-    const dif = block.header.canonicalDifficulty(parentBlock)
+    const dif = block.canonicalDifficulty(parentBlock)
     t.equal(dif.toString(), test.currentDifficulty.toString(), `test canonicalDifficulty (${msg})`)
-    t.assert(block.header.validateDifficulty(parentBlock), `test validateDifficulty (${msg})`)
+    t.assert(block.validateDifficulty(parentBlock), `test validateDifficulty (${msg})`)
   }
 
   const hardforkTestData: any = {
