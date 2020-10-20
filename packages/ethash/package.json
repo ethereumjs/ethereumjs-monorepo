@@ -7,6 +7,7 @@
   "files": [
     "dist"
   ],
+  "browser": "dist.browser/index.js",
   "scripts": {
     "build": "ethereumjs-config-ts-build",
     "tsc": "ethereumjs-config-tsc",
