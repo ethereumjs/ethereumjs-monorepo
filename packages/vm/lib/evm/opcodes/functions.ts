@@ -43,7 +43,7 @@ export const handlers: Map<number, OpHandler> = new Map([
   [
     0x00,
     /* eslint-disable-next-line no-unused-vars */
-    function (runState: RunState) {
+    function (/*runState: RunState*/) {
       trap(ERROR.STOP)
     },
   ],
@@ -812,7 +812,7 @@ export const handlers: Map<number, OpHandler> = new Map([
   ],
   // 0x5b: JUMPDEST
   /* eslint-disable-next-line no-unused-vars */
-  [0x5b, function (runState: RunState) {}],
+  [0x5b, function (/*runState: RunState*/) {}],
   // 0x5c: BEGINSUB
   [
     0x5c,
@@ -1166,7 +1166,6 @@ export const handlers: Map<number, OpHandler> = new Map([
           // TODO: improve on the API here (EEI and StateManager)
           const empty = await runState.eei.isAccountEmpty(selfdestructToAddress)
           if (empty) {
-            const account = await runState.stateManager.getAccount(selfdestructToAddress)
             deductGas = true
           }
         }
