@@ -2,6 +2,7 @@ import Common from '@ethereumjs/common'
 import {
   Address,
   BN,
+  bnToHex,
   KECCAK256_RLP_ARRAY,
   KECCAK256_RLP,
   rlp,
@@ -10,14 +11,7 @@ import {
   unpadBuffer,
   zeros,
 } from 'ethereumjs-util'
-import {
-  HeaderData,
-  JsonHeader,
-  BlockHeaderBuffer,
-  Blockchain,
-  BlockOptions,
-  bnToHex,
-} from './types'
+import { HeaderData, JsonHeader, BlockHeaderBuffer, Blockchain, BlockOptions } from './types'
 import { Block } from './block'
 
 const DEFAULT_GAS_LIMIT = new BN(Buffer.from('ffffffffffffff', 'hex'))

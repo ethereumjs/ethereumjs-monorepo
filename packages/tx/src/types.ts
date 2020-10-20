@@ -1,4 +1,4 @@
-import { Address, BN, BNLike, BufferLike } from 'ethereumjs-util'
+import { AddressLike, BNLike, BufferLike } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
 
 /**
@@ -79,18 +79,3 @@ export interface JsonTx {
   s?: string
   value?: string
 }
-
-/**
- * Convert BN to 0x-prefixed hex string.
- * TODO: Move to ethereumjs-util
- */
-export function bnToHex(value: BN): string {
-  return `0x${value.toString(16)}`
-}
-
-/**
- * A type that represents an Address-like value.
- * To convert to address, use `new Address(toBuffer(value))
- * TODO: Move to ethereumjs-util
- */
-export type AddressLike = Address | Buffer | string
