@@ -161,11 +161,11 @@ export default class Blockchain implements BlockchainInterface {
     try {
       genesisHash = await this.dbManager.numberToHash(new BN(0))
     } catch (error) {
-      await this._setCanonicalGenesisBlock()
-      genesisHash = this._genesis
       if (error.type !== 'NotFoundError') {
         throw error
       }
+      await this._setCanonicalGenesisBlock()
+      genesisHash = this._genesis
     }
 
     // load verified iterator heads
@@ -173,10 +173,10 @@ export default class Blockchain implements BlockchainInterface {
       const heads = await this.dbManager.getHeads()
       this._heads = heads
     } catch (error) {
-      this._heads = {}
       if (error.type !== 'NotFoundError') {
         throw error
       }
+      this._heads = {}
     }
 
     // load headerchain head
@@ -184,10 +184,10 @@ export default class Blockchain implements BlockchainInterface {
       const hash = await this.dbManager.getHeadHeader()
       this._headHeader = hash
     } catch (error) {
-      this._headHeader = genesisHash
       if (error.type !== 'NotFoundError') {
         throw error
       }
+      this._headHeader = genesisHash
     }
 
     // load blockchain head
@@ -195,10 +195,10 @@ export default class Blockchain implements BlockchainInterface {
       const hash = await this.dbManager.getHeadBlock()
       this._headBlock = hash
     } catch (error) {
-      this._headBlock = genesisHash
       if (error.type !== 'NotFoundError') {
         throw error
       }
+      this._headBlock = genesisHash
     }
 
     this._initDone = true
