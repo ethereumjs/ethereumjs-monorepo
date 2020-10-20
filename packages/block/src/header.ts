@@ -12,7 +12,6 @@ import {
   zeros,
 } from 'ethereumjs-util'
 import { HeaderData, JsonHeader, BlockHeaderBuffer, Blockchain, BlockOptions } from './types'
-import { Block } from './block'
 
 const DEFAULT_GAS_LIMIT = new BN(Buffer.from('ffffffffffffff', 'hex'))
 
@@ -387,14 +386,13 @@ export class BlockHeader {
     }
 
     if (blockchain) {
-      const parentBlock = await this._getBlockByHash(blockchain, this.parentHash)
+      const header = await this._getHeaderByHash(blockchain, this.parentHash)
 
-      if (!parentBlock) {
-        throw new Error('could not find parent block')
+      if (!header) {
+        throw new Error('could not find parent header')
       }
 
       const { number } = this
-      const header = parentBlock.header
       if (!number.eq(header.number.addn(1))) {
         throw new Error('invalid number')
       }
@@ -491,9 +489,12 @@ export class BlockHeader {
     return this._common.hardfork() || this._common.activeHardfork(this.number.toNumber())
   }
 
-  private async _getBlockByHash(blockchain: Blockchain, hash: Buffer): Promise<Block | undefined> {
+  private async _getHeaderByHash(blockchain: Blockchain, hash: Buffer): Promise<BlockHeader | undefined> {
     try {
-      return blockchain.getBlock(hash)
+      return new Promise(async (resolve) => {
+        let header = (await blockchain.getBlock(hash)).header 
+        resolve(header)
+      })
     } catch (error) {
       if (error.type === 'NotFoundError') {
         return undefined
