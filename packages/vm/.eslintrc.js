@@ -8,8 +8,5 @@ module.exports = {
     'no-invalid-this': 'off',
     'no-restricted-syntax': 'off',
     'no-undef': 'off',
-    'no-unused-vars': 'off',
-    'prefer-const': 'off',
-    'sonarjs/no-duplicated-branches': 'off',
   }
 }
