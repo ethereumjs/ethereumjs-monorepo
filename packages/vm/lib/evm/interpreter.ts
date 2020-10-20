@@ -5,8 +5,8 @@ import { ERROR, VmError } from '../exceptions'
 import Memory from './memory'
 import Stack from './stack'
 import EEI from './eei'
-import { Opcode, handlers as opHandlers, OpHandler } from './opcodes'
 import { precompiles } from './precompiles'
+import { Opcode, handlers as opHandlers, OpHandler, AsyncOpHandler } from './opcodes'
 
 export interface InterpreterOpts {
   pc?: number
@@ -152,7 +152,7 @@ export default class Interpreter {
     // Execute opcode handler
     const opFn = this.getOpHandler(opInfo)
     if (opInfo.isAsync) {
-      await opFn.apply(null, [this._runState])
+      await (<AsyncOpHandler>opFn).apply(null, [this._runState])
     } else {
       opFn.apply(null, [this._runState])
     }

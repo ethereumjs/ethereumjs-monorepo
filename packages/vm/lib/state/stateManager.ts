@@ -512,7 +512,7 @@ export default class DefaultStateManager implements StateManager {
    * @param address - Address of the `account` to check
    */
   async accountExists(address: Address): Promise<boolean> {
-    const account = await this._cache.lookup(address)
+    const account = this._cache.lookup(address)
     if (account && !this._cache.keyIsDeleted(address)) {
       return true
     }
