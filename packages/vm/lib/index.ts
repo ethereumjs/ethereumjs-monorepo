@@ -40,6 +40,7 @@ export interface VMOpts {
    * ### Supported EIPs
    *
    * - [EIP-2537](https://eips.ethereum.org/EIPS/eip-2537) (`experimental`) - BLS12-381 precompiles
+   * - [EIP-2929](https://eips.ethereum.org/EIPS/eip-2929) (`experimental`) - Gas cost increases for state access opcodes
    *
    * *Annotations:*
    *
