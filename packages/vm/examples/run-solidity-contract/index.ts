@@ -1,7 +1,7 @@
 import assert from 'assert'
 import * as path from 'path'
 import * as fs from 'fs'
-import { Account, BN, privateToAddress, bufferToHex } from 'ethereumjs-util'
+import { Account, Address, BN, privateToAddress, bufferToHex } from 'ethereumjs-util'
 import { Transaction } from '@ethereumjs/tx'
 import VM from '../../dist'
 
@@ -85,7 +85,7 @@ async function deployContract(
   senderPrivateKey: Buffer,
   deploymentBytecode: Buffer,
   greeting: string,
-): Promise<Buffer> {
+): Promise<Address> {
   // Contracts are deployed by sending their deployment bytecode to the address 0
   // The contract params should be abi-encoded and appended to the deployment bytecode.
   const params = abi.rawEncode(['string'], [greeting])
@@ -111,7 +111,7 @@ async function deployContract(
 async function setGreeting(
   vm: VM,
   senderPrivateKey: Buffer,
-  contractAddress: Buffer,
+  contractAddress: Address,
   greeting: string,
 ) {
   const params = abi.rawEncode(['string'], [greeting])
@@ -133,7 +133,7 @@ async function setGreeting(
   }
 }
 
-async function getGreeting(vm: VM, contractAddress: Buffer, caller: Buffer) {
+async function getGreeting(vm: VM, contractAddress: Address, caller: Address) {
   const greetResult = await vm.runCall({
     to: contractAddress,
     caller: caller,
@@ -156,9 +156,9 @@ async function main() {
     'hex',
   )
 
-  const accountAddress = privateToAddress(accountPk)
+  const accountAddress = new Address(privateToAddress(accountPk))
 
-  console.log('Account: ', bufferToHex(accountAddress))
+  console.log('Account: ', accountAddress.toString())
 
   const acctData = {
     nonce: 0,
@@ -186,7 +186,7 @@ async function main() {
 
   const contractAddress = await deployContract(vm, accountPk, bytecode, INITIAL_GREETING)
 
-  console.log('Contract address:', bufferToHex(contractAddress))
+  console.log('Contract address:', contractAddress.toString())
 
   const greeting = await getGreeting(vm, contractAddress, accountAddress)
 

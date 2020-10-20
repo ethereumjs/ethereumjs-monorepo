@@ -1,6 +1,6 @@
 import tape from 'tape'
 import { SecureTrie as Trie } from 'merkle-patricia-tree'
-import { Account, BN } from 'ethereumjs-util'
+import { Account, Address, BN } from 'ethereumjs-util'
 import Cache from '../../../lib/state/cache'
 import { createAccount } from '../utils'
 
@@ -17,7 +17,7 @@ tape('cache put and get account', (t) => {
   const trie = new Trie()
   const cache = new Cache(trie)
 
-  const addr = Buffer.from('cd2a3d9f938e13cd947ec05abc7fe734df8dd826', 'hex')
+  const addr = new Address(Buffer.from('cd2a3d9f938e13cd947ec05abc7fe734df8dd826', 'hex'))
   const acc = createAccount(new BN(0), new BN(0xff11))
 
   t.test('should fail to get non-existent account', async (st) => {
@@ -34,7 +34,7 @@ tape('cache put and get account', (t) => {
   })
 
   t.test('should not have flushed to trie', async (st) => {
-    const res = await trie.get(addr)
+    const res = await trie.get(addr.buf)
     st.notOk(res)
     st.end()
   })
@@ -45,7 +45,7 @@ tape('cache put and get account', (t) => {
   })
 
   t.test('trie should contain flushed account', async (st) => {
-    const raw = await trie.get(addr)
+    const raw = await trie.get(addr.buf)
     const res = Account.fromRlpSerializedAccount(raw!)
     st.ok(res.balance.eq(acc.balance))
     st.end()
@@ -60,7 +60,7 @@ tape('cache put and get account', (t) => {
   })
 
   t.test('should warm cache and load account from trie', async (st) => {
-    await cache.warm([addr.toString('hex')])
+    await cache.warm([addr.buf.toString('hex')])
 
     const res = cache.get(addr)
     st.ok(res.balance.eq(acc.balance))
@@ -72,7 +72,7 @@ tape('cache put and get account', (t) => {
     cache.put(addr, updatedAcc)
     await cache.flush()
 
-    const raw = await trie.get(addr)
+    const raw = await trie.get(addr.buf)
     const res = Account.fromRlpSerializedAccount(raw!)
     st.ok(res.balance.eq(updatedAcc.balance))
     st.end()
@@ -83,7 +83,7 @@ tape('cache checkpointing', (t) => {
   const trie = new Trie()
   const cache = new Cache(trie)
 
-  const addr = Buffer.from('cd2a3d9f938e13cd947ec05abc7fe734df8dd826', 'hex')
+  const addr = new Address(Buffer.from('cd2a3d9f938e13cd947ec05abc7fe734df8dd826', 'hex'))
   const acc = createAccount(new BN(0), new BN(0xff11))
   const updatedAcc = createAccount(new BN(0x00), new BN(0xff00))
 

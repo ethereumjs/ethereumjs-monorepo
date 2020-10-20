@@ -1,4 +1,4 @@
-import { BN } from 'ethereumjs-util'
+import { Address, BN } from 'ethereumjs-util'
 import { Block } from '@ethereumjs/block'
 import { Transaction } from '@ethereumjs/tx'
 import VM from './index'
@@ -96,7 +96,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
    */
   await this._emit('beforeTx', tx)
 
-  const caller = tx.getSenderAddress().buf
+  const caller = tx.getSenderAddress()
 
   // Validate gas limit against base fee
   const basefee = tx.getBaseFee()
@@ -135,8 +135,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
    * Execute message
    */
   const txContext = new TxContext(tx.gasPrice, caller)
-  const to = tx.to && tx.to.buf.length > 0 ? tx.to.buf : undefined
-  const { value, data } = tx
+  const { value, data, to } = tx
   const message = new Message({
     caller,
     gasLimit,
@@ -173,15 +172,15 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   await state.putAccount(caller, fromAccount)
 
   // Update miner's balance
-  const minerBuf = block.header.coinbase.buf
-  const minerAccount = await state.getAccount(minerBuf)
+  const miner = block.header.coinbase
+  const minerAccount = await state.getAccount(miner)
   // add the amount spent on gas to the miner's account
   minerAccount.balance.iadd(results.amountSpent)
 
   // Put the miner account into the state. If the balance of the miner account remains zero, note that
   // the state.putAccount function puts this into the "touched" accounts. This will thus be removed when
   // we clean the touched accounts below in case we are in a fork >= SpuriousDragon
-  await state.putAccount(minerBuf, minerAccount)
+  await state.putAccount(miner, minerAccount)
 
   /*
    * Cleanup accounts
@@ -189,7 +188,8 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   if (results.execResult.selfdestruct) {
     const keys = Object.keys(results.execResult.selfdestruct)
     for (const k of keys) {
-      await state.deleteAccount(Buffer.from(k, 'hex'))
+      const address = new Address(Buffer.from(k, 'hex'))
+      await state.deleteAccount(address)
     }
   }
   await state.cleanupTouchedAccounts()

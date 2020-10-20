@@ -1,5 +1,5 @@
 import tape from 'tape'
-import { BN } from 'ethereumjs-util'
+import { Address, BN } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
 import VM from '../../../lib'
 import { ERROR } from '../../../lib/exceptions'
@@ -14,7 +14,7 @@ const testCases = [
 const code = ['47', '60', '00', '53', '60', '01', '60', '00', 'f3']
 tape('Istanbul: EIP-1884', async (t) => {
   t.test('SELFBALANCE', async (st) => {
-    const addr = Buffer.from('00000000000000000000000000000000000000ff', 'hex')
+    const addr = new Address(Buffer.from('00000000000000000000000000000000000000ff', 'hex'))
     const runCodeArgs = {
       code: Buffer.from(code.join(''), 'hex'),
       gasLimit: new BN(0xffff),

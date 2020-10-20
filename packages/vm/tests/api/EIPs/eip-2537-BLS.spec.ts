@@ -1,5 +1,5 @@
 import tape from 'tape'
-import { BN } from 'ethereumjs-util'
+import { Address, BN } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
 import VM from '../../../lib'
 import { isRunningInKarma } from '../../util'
@@ -23,10 +23,11 @@ tape('EIP-2537 BLS tests', (t) => {
     const vm = new VM({ common: common })
 
     for (let address of precompiles) {
+      const to = new Address(Buffer.from(address, 'hex'))
       const result = await vm.runCall({
-        caller: Buffer.from('0000000000000000000000000000000000000000', 'hex'),
+        caller: Address.zero(),
         gasLimit: new BN(0xffffffffff),
-        to: Buffer.from(address, 'hex'),
+        to,
         value: new BN(0),
         data: Buffer.alloc(0),
       })
@@ -53,10 +54,11 @@ tape('EIP-2537 BLS tests', (t) => {
     const vm = new VM({ common: common })
 
     for (let address of precompiles) {
+      const to = new Address(Buffer.from(address, 'hex'))
       const result = await vm.runCall({
-        caller: Buffer.from('0000000000000000000000000000000000000000', 'hex'),
+        caller: Address.zero(),
         gasLimit: new BN(0xffffffffff),
-        to: Buffer.from(address, 'hex'),
+        to,
         value: new BN(0),
         data: Buffer.alloc(0),
       })

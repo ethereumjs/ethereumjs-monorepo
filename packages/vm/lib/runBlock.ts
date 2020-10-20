@@ -322,26 +322,27 @@ function calculateMinerReward(minerReward: BN, ommersNum: number): BN {
 }
 
 async function rewardAccount(state: StateManager, address: Address, reward: BN): Promise<void> {
-  const account = await state.getAccount(address.buf)
+  const account = await state.getAccount(address)
   account.balance.iadd(reward)
-  await state.putAccount(address.buf, account)
+  await state.putAccount(address, account)
 }
 
 // apply the DAO fork changes to the VM
 async function _applyDAOHardfork(state: StateManager) {
-  const DAORefundContractAddress = Buffer.from(DAORefundContract, 'hex')
+  const DAORefundContractAddress = new Address(Buffer.from(DAORefundContract, 'hex'))
   if (!state.accountExists(DAORefundContractAddress)) {
     await state.putAccount(DAORefundContractAddress, new Account())
   }
   const DAORefundAccount = await state.getAccount(DAORefundContractAddress)
 
-  for (const address of DAOAccountList) {
+  for (const addr of DAOAccountList) {
     // retrieve the account and add it to the DAO's Refund accounts' balance.
-    const account = await state.getAccount(Buffer.from(address, 'hex'))
+    const address = new Address(Buffer.from(addr, 'hex'))
+    const account = await state.getAccount(address)
     DAORefundAccount.balance.iadd(account.balance)
     // clear the accounts' balance
     account.balance = new BN(0)
-    await state.putAccount(Buffer.from(address, 'hex'), account)
+    await state.putAccount(address, account)
   }
 
   // finally, put the Refund Account

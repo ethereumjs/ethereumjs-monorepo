@@ -1,5 +1,6 @@
 import {
   Account,
+  Address,
   BN,
   generateAddress,
   generateAddress2,
@@ -27,7 +28,7 @@ export interface EVMResult {
   /**
    * Address of created account durint transaction, if any
    */
-  createdAddress?: Buffer
+  createdAddress?: Address
   /**
    * Contains the results from running the code, if any, as described in [[runCode]]
    */
@@ -70,7 +71,7 @@ export interface ExecResult {
 }
 
 export interface NewContractEvent {
-  address: Buffer
+  address: Address
   // The deployment code
   code: Buffer
 }
@@ -328,17 +329,17 @@ export default class EVM {
   async runInterpreter(message: Message, opts: InterpreterOpts = {}): Promise<ExecResult> {
     const env = {
       blockchain: this._vm.blockchain, // Only used in BLOCKHASH
-      address: message.to || zeros(32),
-      caller: message.caller || zeros(32),
+      address: message.to || Address.zero(),
+      caller: message.caller || Address.zero(),
       callData: message.data || Buffer.from([0]),
       callValue: message.value || new BN(0),
       code: message.code as Buffer,
       isStatic: message.isStatic || false,
       depth: message.depth || 0,
       gasPrice: this._tx.gasPrice,
-      origin: this._tx.origin || message.caller || zeros(32),
+      origin: this._tx.origin || message.caller || Address.zero(),
       block: this._block || new Block(),
-      contract: await this._state.getAccount(message.to || zeros(32)),
+      contract: await this._state.getAccount(message.to || Address.zero()),
       codeAddress: message.codeAddress,
     }
     const eei = new EEI(env, this._state, this, this._vm._common, message.gasLimit.clone())
@@ -385,8 +386,8 @@ export default class EVM {
    * Returns code for precompile at the given address, or undefined
    * if no such precompile exists.
    */
-  getPrecompile(address: Buffer): PrecompileFunc {
-    return getPrecompile(address.toString('hex'), this._vm._common)
+  getPrecompile(address: Address): PrecompileFunc {
+    return getPrecompile(address.buf.toString('hex'), this._vm._common)
   }
 
   /**
@@ -424,16 +425,16 @@ export default class EVM {
     }
   }
 
-  async _generateAddress(message: Message): Promise<Buffer> {
+  async _generateAddress(message: Message): Promise<Address> {
     let addr
     if (message.salt) {
-      addr = generateAddress2(message.caller, message.salt, message.code as Buffer)
+      addr = generateAddress2(message.caller.buf, message.salt, message.code as Buffer)
     } else {
       const acc = await this._state.getAccount(message.caller)
       const newNonce = acc.nonce.subn(1)
-      addr = generateAddress(message.caller, newNonce.toArrayLike(Buffer))
+      addr = generateAddress(message.caller.buf, newNonce.toArrayLike(Buffer))
     }
-    return addr
+    return new Address(addr)
   }
 
   async _reduceSenderBalance(account: Account, message: Message): Promise<void> {
@@ -451,7 +452,7 @@ export default class EVM {
     return this._state.putAccount(message.to, toAccount)
   }
 
-  async _touchAccount(address: Buffer): Promise<void> {
+  async _touchAccount(address: Address): Promise<void> {
     const acc = await this._state.getAccount(address)
     return this._state.putAccount(address, acc)
   }

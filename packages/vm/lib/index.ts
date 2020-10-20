@@ -1,5 +1,5 @@
 import { SecureTrie as Trie } from 'merkle-patricia-tree'
-import { Account, BN } from 'ethereumjs-util'
+import { Account, Address, BN } from 'ethereumjs-util'
 import Blockchain from '@ethereumjs/blockchain'
 import Common from '@ethereumjs/common'
 import { StateManager, DefaultStateManager } from './state/index'
@@ -212,8 +212,8 @@ export default class VM extends AsyncEventEmitter {
       // put 1 wei in each of the precompiles in order to make the accounts non-empty and thus not have them deduct `callNewAccount` gas.
       await Promise.all(
         Object.keys(precompiles)
-          .map((k: string): Buffer => Buffer.from(k, 'hex'))
-          .map((address: Buffer) => {
+          .map((k: string): Address => new Address(Buffer.from(k, 'hex')))
+          .map((address: Address) => {
             const account = Account.fromAccountData({ balance: 1 })
             this.stateManager.putAccount(address, account)
           })

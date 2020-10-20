@@ -1,4 +1,4 @@
-import { Account } from 'ethereumjs-util'
+import { Account, Address } from 'ethereumjs-util'
 
 /**
  * Storage values of an account
@@ -9,27 +9,27 @@ export interface StorageDump {
 
 export interface StateManager {
   copy(): StateManager
-  getAccount(address: Buffer): Promise<Account>
-  putAccount(address: Buffer, account: Account): Promise<void>
-  deleteAccount(address: Buffer): Promise<void>
-  touchAccount(address: Buffer): void
-  putContractCode(address: Buffer, value: Buffer): Promise<void>
-  getContractCode(address: Buffer): Promise<Buffer>
-  getContractStorage(address: Buffer, key: Buffer): Promise<Buffer>
-  getOriginalContractStorage(address: Buffer, key: Buffer): Promise<Buffer>
-  putContractStorage(address: Buffer, key: Buffer, value: Buffer): Promise<void>
-  clearContractStorage(address: Buffer): Promise<void>
+  getAccount(address: Address): Promise<Account>
+  putAccount(address: Address, account: Account): Promise<void>
+  deleteAccount(address: Address): Promise<void>
+  touchAccount(address: Address): void
+  putContractCode(address: Address, value: Buffer): Promise<void>
+  getContractCode(address: Address): Promise<Buffer>
+  getContractStorage(address: Address, key: Buffer): Promise<Buffer>
+  getOriginalContractStorage(address: Address, key: Buffer): Promise<Buffer>
+  putContractStorage(address: Address, key: Buffer, value: Buffer): Promise<void>
+  clearContractStorage(address: Address): Promise<void>
   checkpoint(): Promise<void>
   commit(): Promise<void>
   revert(): Promise<void>
   getStateRoot(force?: boolean): Promise<Buffer>
   setStateRoot(stateRoot: Buffer): Promise<void>
-  dumpStorage(address: Buffer): Promise<StorageDump>
+  dumpStorage(address: Address): Promise<StorageDump>
   hasGenesisState(): Promise<boolean>
   generateCanonicalGenesis(): Promise<void>
   generateGenesis(initState: any): Promise<void>
-  accountIsEmpty(address: Buffer): Promise<boolean>
-  accountExists(address: Buffer): Promise<boolean>
+  accountIsEmpty(address: Address): Promise<boolean>
+  accountExists(address: Address): Promise<boolean>
   cleanupTouchedAccounts(): Promise<void>
   clearOriginalStorageCache(): void
 }

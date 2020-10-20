@@ -116,7 +116,7 @@ async function runTestCase(options: any, testData: any, t: tape.Test) {
     // Without this ecmul_0-3_5616_28000_96 would fail.
     const account = await vm.stateManager.getAccount(block.header.coinbase)
     if (account.balance.isZero()) {
-      await vm.stateManager.putAccount(block.header.coinbase.buf, new Account())
+      await vm.stateManager.putAccount(block.header.coinbase, new Account())
       await vm.stateManager.cleanupTouchedAccounts()
       await vm.stateManager._cache.flush()
     }

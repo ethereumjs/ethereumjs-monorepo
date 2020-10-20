@@ -1,5 +1,4 @@
-import BN = require('bn.js')
-import { MAX_INTEGER } from 'ethereumjs-util'
+import { BN, MAX_INTEGER } from 'ethereumjs-util'
 const { ERROR, VmError } = require('../exceptions')
 
 /**
