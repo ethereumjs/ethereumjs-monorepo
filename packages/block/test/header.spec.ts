@@ -1,4 +1,4 @@
-import * as tape from 'tape'
+import tape from 'tape'
 import { Address, BN, zeros, KECCAK256_RLP, KECCAK256_RLP_ARRAY } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
 import { BlockHeader } from '../src/header'
@@ -70,7 +70,7 @@ tape('[Block]: Header functions', function (t) {
     st.strictEqual(
       header.hash().toString('hex'),
       testDataGenesis.genesis_hash,
-      'genesis hash match',
+      'genesis hash match'
     )
     st.end()
   })

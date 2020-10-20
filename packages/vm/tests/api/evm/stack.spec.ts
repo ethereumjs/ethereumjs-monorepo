@@ -1,4 +1,4 @@
-import * as tape from 'tape'
+import tape from 'tape'
 import { BN } from 'ethereumjs-util'
 import VM from '../../../lib'
 import Stack from '../../../lib/evm/stack'

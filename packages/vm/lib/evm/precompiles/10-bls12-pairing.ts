@@ -13,18 +13,18 @@ export default async function (opts: PrecompileInput): Promise<ExecResult> {
 
   const mcl = opts._VM._mcl
 
-  let inputData = opts.data
+  const inputData = opts.data
 
-  let baseGas = new BN(opts._common.paramByEIP('gasPrices', 'Bls12381PairingBaseGas', 2537))
+  const baseGas = new BN(opts._common.paramByEIP('gasPrices', 'Bls12381PairingBaseGas', 2537))
 
   if (inputData.length == 0) {
     return VmErrorResult(new VmError(ERROR.BLS_12_381_INPUT_EMPTY), opts.gasLimit)
   }
 
-  let gasUsedPerPair = new BN(
-    opts._common.paramByEIP('gasPrices', 'Bls12381PairingPerPairGas', 2537),
+  const gasUsedPerPair = new BN(
+    opts._common.paramByEIP('gasPrices', 'Bls12381PairingPerPairGas', 2537)
   )
-  let gasUsed = baseGas.iadd(gasUsedPerPair.imul(new BN(Math.floor(inputData.length / 384))))
+  const gasUsed = baseGas.iadd(gasUsedPerPair.imul(new BN(Math.floor(inputData.length / 384))))
 
   if (inputData.length % 384 != 0) {
     return VmErrorResult(new VmError(ERROR.BLS_12_381_INVALID_INPUT_LENGTH), opts.gasLimit)
@@ -36,7 +36,7 @@ export default async function (opts: PrecompileInput): Promise<ExecResult> {
 
   // prepare pairing list and check for mandatory zero bytes
 
-  let pairs = []
+  const pairs = []
 
   const zeroBytes16 = Buffer.alloc(16, 0)
   const zeroByteCheck = [
@@ -50,11 +50,11 @@ export default async function (opts: PrecompileInput): Promise<ExecResult> {
 
   for (let k = 0; k < inputData.length / 384; k++) {
     // zero bytes check
-    let pairStart = 384 * k
-    for (let index in zeroByteCheck) {
-      let slicedBuffer = opts.data.slice(
+    const pairStart = 384 * k
+    for (const index in zeroByteCheck) {
+      const slicedBuffer = opts.data.slice(
         zeroByteCheck[index][0] + pairStart,
-        zeroByteCheck[index][1] + pairStart,
+        zeroByteCheck[index][1] + pairStart
       )
       if (!slicedBuffer.equals(zeroBytes16)) {
         return VmErrorResult(new VmError(ERROR.BLS_12_381_POINT_NOT_ON_CURVE), opts.gasLimit)
@@ -67,7 +67,7 @@ export default async function (opts: PrecompileInput): Promise<ExecResult> {
       return VmErrorResult(e, opts.gasLimit)
     }
 
-    let g2start = pairStart + 128
+    const g2start = pairStart + 128
     let G2
     try {
       G2 = BLS12_381_ToG2Point(opts.data.slice(g2start, g2start + 256), mcl)
@@ -84,9 +84,9 @@ export default async function (opts: PrecompileInput): Promise<ExecResult> {
   let GT
 
   for (let index = 0; index < pairs.length; index++) {
-    let pair = pairs[index]
-    let G1 = pair[0]
-    let G2 = pair[1]
+    const pair = pairs[index]
+    const G1 = pair[0]
+    const G2 = pair[1]
 
     if (index == 0) {
       GT = mcl.millerLoop(G1, G2)

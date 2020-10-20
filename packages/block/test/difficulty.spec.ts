@@ -1,4 +1,4 @@
-import * as tape from 'tape'
+import tape from 'tape'
 import { BN, toBuffer, bufferToInt } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
 import { Block } from '../src'
@@ -32,11 +32,14 @@ tape('[Header]: difficulty tests', (t) => {
     muirGlacier: Object.assign(
       require('./testdata/difficultyEIP2384.json').tests,
       require('./testdata/difficultyEIP2384_random.json').tests,
-      require('./testdata/difficultyEIP2384_random_to20M.json').tests,
+      require('./testdata/difficultyEIP2384_random_to20M.json').tests
     ),
   }
+
+  /* eslint-disable-next-line no-restricted-syntax */
   for (const hardfork in hardforkTestData) {
     const testData = hardforkTestData[hardfork]
+    /* eslint-disable-next-line no-restricted-syntax */
     for (const testName in testData) {
       const test = testData[testName]
       const common = new Common({ chain: 'mainnet', hardfork: hardfork })
@@ -48,7 +51,7 @@ tape('[Header]: difficulty tests', (t) => {
             uncleHash: test.parentUncles,
           },
         },
-        { common },
+        { common }
       )
 
       const block = Block.fromBlockData(
@@ -59,14 +62,14 @@ tape('[Header]: difficulty tests', (t) => {
             number: test.currentBlockNumber,
           },
         },
-        { common },
+        { common }
       )
 
       runDifficultyTests(
         test,
         parentBlock,
         block,
-        `fork determination by hardfork param (${hardfork})`,
+        `fork determination by hardfork param (${hardfork})`
       )
     }
   }
@@ -75,8 +78,10 @@ tape('[Header]: difficulty tests', (t) => {
     mainnet: require('./testdata/difficultyMainNetwork.json').tests,
     ropsten: require('./testdata/difficultyRopstenConstantinople.json').tests,
   }
+  /* eslint-disable-next-line no-restricted-syntax */
   for (const chain in chainTestData) {
     const testData = chainTestData[chain]
+    /* eslint-disable-next-line no-restricted-syntax */
     for (const testName in testData) {
       const test = testData[testName]
       const common = new Common({ chain })
@@ -88,7 +93,10 @@ tape('[Header]: difficulty tests', (t) => {
           uncleHash: test.parentUncles,
         },
       }
-      const parentBlock = Block.fromBlockData(parentData, { common, hardforkByBlockNumber: true })
+      const parentBlock = Block.fromBlockData(parentData, {
+        common,
+        hardforkByBlockNumber: true,
+      })
 
       const blockData = {
         header: {
@@ -97,13 +105,16 @@ tape('[Header]: difficulty tests', (t) => {
           number: test.currentBlockNumber,
         },
       }
-      const block = Block.fromBlockData(blockData, { common, hardforkByBlockNumber: true })
+      const block = Block.fromBlockData(blockData, {
+        common,
+        hardforkByBlockNumber: true,
+      })
 
       runDifficultyTests(
         test,
         parentBlock,
         block,
-        `fork determination by block number (${test.currentBlockNumber})`,
+        `fork determination by block number (${test.currentBlockNumber})`
       )
     }
   }

@@ -1,4 +1,4 @@
-import * as tape from 'tape'
+import tape from 'tape'
 import { rlp } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
 import { Block } from '../src'
@@ -90,7 +90,7 @@ tape('[Block]: block functions', function (t) {
     st.strictEqual(
       genesis.hash().toString('hex'),
       testDataGenesis.genesis_hash,
-      'genesis hash match',
+      'genesis hash match'
     )
     st.end()
   })
@@ -101,7 +101,7 @@ tape('[Block]: block functions', function (t) {
     st.strictEqual(
       genesis.hash().toString('hex'),
       common.genesis().hash.slice(2),
-      'genesis hash match',
+      'genesis hash match'
     )
     st.end()
   })
@@ -112,7 +112,7 @@ tape('[Block]: block functions', function (t) {
     st.strictEqual(
       genesis.hash().toString('hex'),
       common.genesis().hash.slice(2),
-      'genesis hash match',
+      'genesis hash match'
     )
     st.end()
   })
@@ -124,7 +124,7 @@ tape('[Block]: block functions', function (t) {
     st.strictEqual(
       genesis.header.stateRoot.toString('hex'),
       ropstenStateRoot,
-      'genesis stateRoot match',
+      'genesis stateRoot match'
     )
     st.end()
   })
@@ -146,7 +146,7 @@ tape('[Block]: block functions', function (t) {
         Block.fromValuesArray(blockData, { common })
       },
       /Error: extraData should be 'dao-hard-fork'$/,
-      'should throw on DAO HF block with wrong extra data',
+      'should throw on DAO HF block with wrong extra data'
     ) // eslint-disable-line
 
     // Set extraData to dao-hard-fork

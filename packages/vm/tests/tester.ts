@@ -1,5 +1,5 @@
 import { exit } from 'process'
-import * as tape from 'tape'
+import tape from 'tape'
 import Common from '@ethereumjs/common'
 import stateTestsRunner from './GeneralStateTestsRunner'
 import blockchainTestsRunner from './BlockchainTestsRunner'

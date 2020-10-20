@@ -122,7 +122,10 @@ export default class Blockchain implements BlockchainInterface {
     } else {
       const DEFAULT_CHAIN = 'mainnet'
       const DEFAULT_HARDFORK = 'chainstart'
-      this._common = new Common({ chain: DEFAULT_CHAIN, hardfork: DEFAULT_HARDFORK })
+      this._common = new Common({
+        chain: DEFAULT_CHAIN,
+        hardfork: DEFAULT_HARDFORK,
+      })
     }
 
     this._validatePow = opts.validatePow !== undefined ? opts.validatePow : true
@@ -215,7 +218,10 @@ export default class Blockchain implements BlockchainInterface {
    * @hidden
    */
   async _setCanonicalGenesisBlock() {
-    const common = new Common({ chain: this._common.chainId(), hardfork: 'chainstart' })
+    const common = new Common({
+      chain: this._common.chainId(),
+      hardfork: 'chainstart',
+    })
     const genesis = Block.genesis({}, { common })
     await this._putBlockOrHeader(genesis, true)
   }
@@ -472,7 +478,7 @@ export default class Blockchain implements BlockchainInterface {
     blockId: Buffer | BN | number,
     maxBlocks: number,
     skip: number,
-    reverse: boolean,
+    reverse: boolean
   ): Promise<Block[]> {
     const blocks: Block[] = []
     let i = -1
@@ -712,16 +718,12 @@ export default class Blockchain implements BlockchainInterface {
    */
   async _delBlock(blockHash: Buffer) {
     const dbOps: DBOp[] = []
-    let blockHeader = null
-    let blockNumber: BN
-    let parentHash: Buffer
-    let inCanonical: boolean
 
     // get header
     const header = await this._getHeader(blockHash)
-    blockHeader = header
-    blockNumber = blockHeader.number
-    parentHash = blockHeader.parentHash
+    const blockHeader = header
+    const blockNumber = blockHeader.number
+    const parentHash = blockHeader.parentHash
 
     // check if block is in the canonical chain
     let canonicalHash = null
@@ -732,7 +734,7 @@ export default class Blockchain implements BlockchainInterface {
         throw error
       }
     }
-    inCanonical = !!canonicalHash && canonicalHash.equals(blockHash)
+    const inCanonical = !!canonicalHash && canonicalHash.equals(blockHash)
 
     // delete the block, and if block is in the canonical chain, delete all
     // children as well
@@ -822,7 +824,6 @@ export default class Blockchain implements BlockchainInterface {
    */
   async _iterator(name: string, onBlock: OnBlock) {
     const blockHash = this._heads[name] || this._genesis
-    let blockNumber: BN
     let lastBlock: Block | undefined
 
     if (!blockHash) {
@@ -830,7 +831,7 @@ export default class Blockchain implements BlockchainInterface {
     }
 
     const number = await this.dbManager.hashToNumber(blockHash)
-    blockNumber = number.addn(1)
+    const blockNumber = number.addn(1)
 
     while (blockNumber) {
       try {

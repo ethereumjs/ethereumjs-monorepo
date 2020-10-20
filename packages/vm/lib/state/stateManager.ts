@@ -61,7 +61,10 @@ export default class DefaultStateManager implements StateManager {
    * checkpoints were reverted.
    */
   copy(): StateManager {
-    return new DefaultStateManager({ trie: this._trie.copy(false), common: this._common })
+    return new DefaultStateManager({
+      trie: this._trie.copy(false),
+      common: this._common,
+    })
   }
 
   /**
@@ -244,7 +247,7 @@ export default class DefaultStateManager implements StateManager {
    */
   async _modifyContractStorage(
     address: Buffer,
-    modifyTrie: (storageTrie: Trie, done: Function) => void,
+    modifyTrie: (storageTrie: Trie, done: Function) => void
   ): Promise<void> {
     return new Promise(async (resolve) => {
       const storageTrie = await this._getStorageTrie(address)

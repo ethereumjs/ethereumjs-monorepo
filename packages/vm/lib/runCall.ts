@@ -37,7 +37,7 @@ export default function runCall(this: VM, opts: RunCallOpts): Promise<EVMResult>
 
   const txContext = new TxContext(
     opts.gasPrice || new BN(0),
-    opts.origin || opts.caller || zeros(32),
+    opts.origin || opts.caller || zeros(32)
   )
   const message = new Message({
     caller: opts.caller,

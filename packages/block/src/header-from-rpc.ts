@@ -45,7 +45,7 @@ export default function blockHeaderFromRpc(blockParams: any, options?: BlockOpti
       mixHash,
       nonce,
     },
-    options,
+    options
   )
 
   return blockHeader

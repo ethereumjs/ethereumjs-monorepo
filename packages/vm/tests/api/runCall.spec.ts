@@ -1,4 +1,4 @@
-import * as tape from 'tape'
+import tape from 'tape'
 import { BN, keccak256, padToEven } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
 import VM from '../../lib'

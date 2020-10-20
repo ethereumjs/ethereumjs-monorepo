@@ -154,7 +154,10 @@ export default async function runBlock(this: VM, opts: RunBlockOpts): Promise<Ru
   // header values against the current block.
   if (generateStateRoot) {
     const bloom = result.bloom.bitvector
-    block = Block.fromBlockData({ ...block, header: { ...block.header, stateRoot, bloom } })
+    block = Block.fromBlockData({
+      ...block,
+      header: { ...block.header, stateRoot, bloom },
+    })
   } else {
     if (result.receiptRoot && !result.receiptRoot.equals(block.header.receiptTrie)) {
       throw new Error('invalid receiptTrie')

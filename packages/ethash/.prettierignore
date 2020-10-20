@@ -3,5 +3,6 @@
 .vscode
 coverage
 dist
+dist.browser
 docs
 node_modules

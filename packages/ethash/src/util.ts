@@ -13,13 +13,14 @@ export const params = {
   DATASET_PARENTS: 256, // number of parents of each dataset element
   CACHE_ROUNDS: 3, // number of rounds in cache production
   ACCESSES: 64,
-  WORD_BYTES: 4
+  WORD_BYTES: 4,
 }
 
 export function getCacheSize(epoc: number) {
   const mr = new MR()
   let sz =
-    exports.params.CACHE_BYTES_INIT + exports.params.CACHE_BYTES_GROWTH * epoc
+    (exports.params.CACHE_BYTES_INIT as number) +
+    (exports.params.CACHE_BYTES_GROWTH as number) * epoc
   sz -= exports.params.HASH_BYTES
   while (!mr.test(new BN(sz / exports.params.HASH_BYTES))) {
     sz -= 2 * exports.params.HASH_BYTES
@@ -30,8 +31,8 @@ export function getCacheSize(epoc: number) {
 export function getFullSize(epoc: number) {
   const mr = new MR()
   let sz =
-    exports.params.DATASET_BYTES_INIT +
-    exports.params.DATASET_BYTES_GROWTH * epoc
+    (exports.params.DATASET_BYTES_INIT as number) +
+    (exports.params.DATASET_BYTES_GROWTH as number) * epoc
   sz -= exports.params.MIX_BYTES
   while (!mr.test(new BN(sz / exports.params.MIX_BYTES))) {
     sz -= 2 * exports.params.MIX_BYTES

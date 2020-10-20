@@ -199,7 +199,7 @@ export default class EVM {
       result = await this.runPrecompile(
         message.code as PrecompileFunc,
         message.data,
-        message.gasLimit,
+        message.gasLimit
       )
     } else {
       result = await this.runInterpreter(message)
@@ -276,7 +276,7 @@ export default class EVM {
     let returnFee = new BN(0)
     if (!result.exceptionError) {
       returnFee = new BN(result.returnValue.length).imuln(
-        this._vm._common.param('gasPrices', 'createData'),
+        this._vm._common.param('gasPrices', 'createData')
       )
       totalGas = totalGas.add(returnFee)
     }
@@ -395,7 +395,7 @@ export default class EVM {
   runPrecompile(
     code: PrecompileFunc,
     data: Buffer,
-    gasLimit: BN,
+    gasLimit: BN
   ): Promise<ExecResult> | ExecResult {
     if (typeof code !== 'function') {
       throw new Error('Invalid precompile')

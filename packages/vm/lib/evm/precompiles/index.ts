@@ -77,7 +77,10 @@ const precompileAvailability: PrecompileAvailability = {
     type: PrecompileAvailabilityCheck.Hardfork,
     param: 'chainstart',
   },
-  [ripemdPrecompileAddress]: { type: PrecompileAvailabilityCheck.Hardfork, param: 'chainstart' },
+  [ripemdPrecompileAddress]: {
+    type: PrecompileAvailabilityCheck.Hardfork,
+    param: 'chainstart',
+  },
   '0000000000000000000000000000000000000004': {
     type: PrecompileAvailabilityCheck.Hardfork,
     param: 'chainstart',

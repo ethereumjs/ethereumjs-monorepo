@@ -65,11 +65,15 @@ Installs dependencies for all sub-packages, and links them to create an integrat
 
 #### `npm run build`
 
-Produces `dist` files for all sub-packages. This command can be scoped.
+Builds all monorepo packages by default. If a scope is provided, it will only build that particular package.
+
+Scoped example, that will only build the VM package: 
+  npm run build -- --scope @ethereumjs/vm
+
 
 #### `npm run build:tree -- --scope @ethereumjs/blockchain`
 
-Builds all local packages that the provided package (eg: @ethereumjs/blockchain) depends on, and itself. This unusual syntax just means: pass whatever arguments are after `--` to the underlying script. 
+Builds all local packages that the provided package depends on (e.g.: @ethereumjs/blockchain), and builds itself. 
 
 If no scope is provided, `npm run build:tree`, will build all sub-packages.
 
@@ -81,15 +85,15 @@ There's a set of rather standardized commands you will find in each package of t
 
 #### `npm run build`
 
-Uses TypeScript compiler to build files from `src` or `lib`. Files can be found at `packages/<name>/dist`.
+Uses TypeScript compiler to build source files. The resulting files can be found at `packages/<name>/dist`.
 
 #### `npm run coverage`
 
-Runs whatever is on `npm run test` script, capturing coverage information. By the end, it displays a coverage table. Additional reports can be found at `packages/<name>/coverage`.
+Runs whatever is on `npm run test` script, capturing testing coverage information. By the end, it displays a coverage table. Additional reports can be found at `packages/<name>/coverage/`.
 
 #### `npm run docs:build`
 
-Generates package documentation and outputs it to `./packages/<name>/docs`.
+Generates package documentation and saves them to `./packages/<name>/docs`.
 
 #### `npm run lint`
 
@@ -97,15 +101,17 @@ Checks code style according to the rules defined in [ethereumjs-config](https://
 
 #### `npm run lint:fix`
 
-Fixes code style according to the rules.
+Fixes code style according to the rules. Differently from `npm run lint`, this command actually writes to files.
 
 #### `npm run test`
 
-Runs all package tests. Note that the VM has several test scopes - refer to [packages/vm/package.json](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/package.json) for more info.
+Runs the package tests. 
+
+_Note that the VM has several test scopes - refer to [packages/vm/package.json](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/package.json) for more info._
 
 #### `npm run clean`
 
-Removes root and package `node_modules` directories. Useful to run before `npm i` for a fresh install.
+Removes root and package `node_modules` directories, and other generated files, like `coverage`, `dist` and others. This is useful to run after changing branches, to have a clean slate to work with.
 
 ### Going further
 
@@ -118,6 +124,38 @@ As this project is powered by Lerna, you can install it globally to enjoy lots m
 #### Cleaning `node_modules`
 
 Hoisting is enabled so dependencies are moved to the root `node_modules`. `lerna clean` [does not remove the root `node_modules`](https://github.com/lerna/lerna/issues/1304) so for convenience you can use the project script `npm run clean`.
+
+### Testing packages locally on other projects
+
+There are some ways you can link this repository packages to other projects before publishing. You can symlink dependencies with [`npm link <package>`](https://docs.npmjs.com/cli/link), or install packages from the filesystem using [`npm install <folder>`](https://docs.npmjs.com/cli/install). But they are subject to some externalities and most importantly with how your package manager handles the lifecycle of packages during installs. 
+
+_Note: Git references do not work with monorepo setups out of the box due to the lack of directory traversal on the syntax. E.g.:_
+
+  npm install git@github.com:ethereumjs/ethereumjs-vm.git
+
+_One way to fetch packages remotely from GitHub before publishing is using [gitpkg.now.sh](https://gitpkg.now.sh/)._
+
+But there's a cleaner way to manage your dependencies using Verdaccio. 
+
+#### Install Verdaccio
+
+Verdaccio is an npm registry and proxy that can be of great help to test packages locally. Check out their [Getting Started guide](https://github.com/verdaccio/verdaccio#get-started).
+
+#### Installs, hoists dependencies and builds packages
+npm install
+
+#### Publish monorepo packages to Verdaccio
+lerna exec "npm publish --registry http://localhost:4873 --ignore-scripts"
+
+#### Unpublish all monorepo packages from Verdaccio
+lerna exec "npm unpublish \$LERNA_PACKAGE_NAME --registry http://localhost:4873 --force"
+
+#### Setup @ethereumjs scope to local Verdaccio server
+  npm config set @ethereumjs:registry http://localhost:4873
+
+#### Teardown @ethereumjs scope to local Verdaccio server
+  npm config delete @ethereumjs:registry
+
 
 # EthereumJS
 

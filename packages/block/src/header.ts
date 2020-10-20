@@ -79,7 +79,7 @@ export class BlockHeader {
       extraData ? toBuffer(extraData) : Buffer.from([]),
       mixHash ? toBuffer(mixHash) : zeros(32),
       nonce ? toBuffer(nonce) : zeros(8),
-      opts,
+      opts
     )
   }
 
@@ -132,7 +132,7 @@ export class BlockHeader {
       toBuffer(extraData),
       toBuffer(mixHash),
       toBuffer(nonce),
-      opts,
+      opts
     )
   }
 
@@ -166,7 +166,7 @@ export class BlockHeader {
     extraData: Buffer,
     mixHash: Buffer,
     nonce: Buffer,
-    options: BlockOptions = {},
+    options: BlockOptions = {}
   ) {
     if (options.common) {
       this._common = options.common
@@ -187,7 +187,7 @@ export class BlockHeader {
     if (options.initWithGenesisHeader) {
       if (this._common.hardfork() !== 'chainstart') {
         throw new Error(
-          'Genesis parameters can only be set with a Common instance set to chainstart',
+          'Genesis parameters can only be set with a Common instance set to chainstart'
         )
       }
       number = new BN(0)
@@ -246,7 +246,7 @@ export class BlockHeader {
     }
     if (transactionsTrie.length !== 32) {
       throw new Error(
-        `transactionsTrie must be 32 bytes, received ${transactionsTrie.length} bytes`,
+        `transactionsTrie must be 32 bytes, received ${transactionsTrie.length} bytes`
       )
     }
     if (receiptTrie.length !== 32) {
@@ -270,10 +270,10 @@ export class BlockHeader {
     const blockTs = this.timestamp
     const { timestamp: parentTs, difficulty: parentDif } = parentBlock.header
     const minimumDifficulty = new BN(
-      this._common.paramByHardfork('pow', 'minimumDifficulty', hardfork),
+      this._common.paramByHardfork('pow', 'minimumDifficulty', hardfork)
     )
     const offset = parentDif.div(
-      new BN(this._common.paramByHardfork('pow', 'difficultyBoundDivisor', hardfork)),
+      new BN(this._common.paramByHardfork('pow', 'difficultyBoundDivisor', hardfork))
     )
     let num = this.number.clone()
 
@@ -364,7 +364,7 @@ export class BlockHeader {
     const hardfork = this._getHardfork()
 
     const a = parentGasLimit.div(
-      new BN(this._common.paramByHardfork('gasConfig', 'gasLimitBoundDivisor', hardfork)),
+      new BN(this._common.paramByHardfork('gasConfig', 'gasLimitBoundDivisor', hardfork))
     )
     const maxGasLimit = parentGasLimit.add(a)
     const minGasLimit = parentGasLimit.sub(a)

@@ -1,4 +1,4 @@
-import * as tape from 'tape'
+import tape from 'tape'
 import Common from '../src/'
 
 tape('[Common]: Initialization / Chain params', function (t: tape.Test) {
@@ -11,7 +11,7 @@ tape('[Common]: Initialization / Chain params', function (t: tape.Test) {
     st.equal(
       c.hardfork(),
       c.DEFAULT_HARDFORK,
-      'should set hardfork to hardfork set as DEFAULT_HARDFORK',
+      'should set hardfork to hardfork set as DEFAULT_HARDFORK'
     )
     st.equal(c._isSupportedHardfork('constantinople'), true, 'should not restrict supported HFs')
 
@@ -87,12 +87,12 @@ tape('[Common]: Initialization / Chain params', function (t: tape.Test) {
       st.equal(
         typeof bootnode.location,
         'string',
-        'returns the location as string (empty string if unavailable)',
+        'returns the location as string (empty string if unavailable)'
       )
       st.equal(
         typeof bootnode.comment,
         'string',
-        'returns a comment as string (empty string if unavailable)',
+        'returns a comment as string (empty string if unavailable)'
       )
     }
     st.end()
@@ -119,7 +119,7 @@ tape('[Common]: Initialization / Chain params', function (t: tape.Test) {
   })
 
   t.test('Should provide correct access to private network chain parameters', function (
-    st: tape.Test,
+    st: tape.Test
   ) {
     const chainParams = require('./testnet.json')
     const c = new Common({ chain: chainParams, hardfork: 'byzantium' })
@@ -129,7 +129,7 @@ tape('[Common]: Initialization / Chain params', function (t: tape.Test) {
     st.equal(
       c.genesis().hash,
       '0xaa00000000000000000000000000000000000000000000000000000000000000',
-      'should return correct genesis hash',
+      'should return correct genesis hash'
     )
     st.equal(c.hardforks()[3]['block'], 3, 'should return correct hardfork data')
     st.equal(c.bootstrapNodes()[1].ip, '10.0.0.2', 'should return a bootstrap node array')
@@ -145,7 +145,7 @@ tape('[Common]: Initialization / Chain params', function (t: tape.Test) {
         new Common({ chain: chainParams })
       },
       /Missing required/,
-      'should throw an exception on missing parameter',
+      'should throw an exception on missing parameter'
     ) // eslint-disable-line no-new
 
     st.comment('-----------------------------------------------------------------')

@@ -172,7 +172,10 @@ export default class VM extends AsyncEventEmitter {
       this.stateManager = opts.stateManager
     } else {
       const trie = opts.state || new Trie()
-      this.stateManager = new DefaultStateManager({ trie, common: this._common })
+      this.stateManager = new DefaultStateManager({
+        trie,
+        common: this._common,
+      })
     }
 
     this.blockchain = opts.blockchain || new Blockchain({ common: this._common })
@@ -213,7 +216,7 @@ export default class VM extends AsyncEventEmitter {
           .map((address: Buffer) => {
             const account = Account.fromAccountData({ balance: 1 })
             this.stateManager.putAccount(address, account)
-          }),
+          })
       )
       await this.stateManager.commit()
     }
@@ -222,7 +225,7 @@ export default class VM extends AsyncEventEmitter {
       if (IS_BROWSER) {
         throw new Error('EIP-2537 is currently not supported in browsers')
       } else {
-        let mcl = this._mcl
+        const mcl = this._mcl
         await mclInitPromise // ensure that mcl is initialized.
         mcl.setMapToMode(mcl.IRTF) // set the right map mode; otherwise mapToG2 will return wrong values.
         mcl.verifyOrderG1(1) // subgroup checks for G1

@@ -1,6 +1,0 @@
-{
-  "extends": "@ethereumjs/config-tslint",
-  "rules": {
-    "prefer-const": true
-  }
-}

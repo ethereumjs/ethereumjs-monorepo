@@ -1,4 +1,4 @@
-import * as tape from 'tape'
+import tape from 'tape'
 import Common from '../src/'
 
 tape('[Common]: Initialization / Chain params', function (t: tape.Test) {
@@ -11,9 +11,9 @@ tape('[Common]: Initialization / Chain params', function (t: tape.Test) {
 
   t.test('Initialization errors', function (st: tape.Test) {
     const UNSUPPORTED_EIP = 1000000
-    let eips = [UNSUPPORTED_EIP]
-    let msg = 'should throw on an unsupported EIP'
-    let f = () => {
+    const eips = [UNSUPPORTED_EIP]
+    const msg = 'should throw on an unsupported EIP'
+    const f = () => {
       new Common({ chain: 'mainnet', eips })
     }
     st.throws(f, /not supported$/, msg)

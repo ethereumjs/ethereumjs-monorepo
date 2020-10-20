@@ -1,4 +1,4 @@
-import * as tape from 'tape'
+import tape from 'tape'
 import Common from '../src/'
 
 tape('[Common]: Parameter access for param(), paramByHardfork()', function (t: tape.Test) {

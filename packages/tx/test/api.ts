@@ -1,4 +1,4 @@
-import * as tape from 'tape'
+import tape from 'tape'
 import { Buffer } from 'buffer'
 import {
   BN,
@@ -55,19 +55,24 @@ tape('[Transaction]: Basic functions', function (t) {
   })
 
   t.test('should hash', function (st) {
-    const common = new Common({ chain: 'mainnet', hardfork: 'tangerineWhistle' })
-    const tx = Transaction.fromValuesArray(txFixtures[3].raw.map(toBuffer), { common })
+    const common = new Common({
+      chain: 'mainnet',
+      hardfork: 'tangerineWhistle',
+    })
+    const tx = Transaction.fromValuesArray(txFixtures[3].raw.map(toBuffer), {
+      common,
+    })
     st.deepEqual(
       tx.hash(),
-      Buffer.from('375a8983c9fc56d7cfd118254a80a8d7403d590a6c9e105532b67aca1efb97aa', 'hex'),
+      Buffer.from('375a8983c9fc56d7cfd118254a80a8d7403d590a6c9e105532b67aca1efb97aa', 'hex')
     )
     st.deepEqual(
       tx.getMessageToSign(),
-      Buffer.from('61e1ec33764304dddb55348e7883d4437426f44ab3ef65e6da1e025734c03ff0', 'hex'),
+      Buffer.from('61e1ec33764304dddb55348e7883d4437426f44ab3ef65e6da1e025734c03ff0', 'hex')
     )
     st.deepEqual(
       tx.hash(),
-      Buffer.from('375a8983c9fc56d7cfd118254a80a8d7403d590a6c9e105532b67aca1efb97aa', 'hex'),
+      Buffer.from('375a8983c9fc56d7cfd118254a80a8d7403d590a6c9e105532b67aca1efb97aa', 'hex')
     )
     st.end()
   })
@@ -76,15 +81,15 @@ tape('[Transaction]: Basic functions', function (t) {
     const tx = Transaction.fromValuesArray(txFixtures[4].raw.map(toBuffer))
     st.equal(
       tx.hash().toString('hex'),
-      '0f09dc98ea85b7872f4409131a790b91e7540953992886fc268b7ba5c96820e4',
+      '0f09dc98ea85b7872f4409131a790b91e7540953992886fc268b7ba5c96820e4'
     )
     st.equal(
       tx.hash().toString('hex'),
-      '0f09dc98ea85b7872f4409131a790b91e7540953992886fc268b7ba5c96820e4',
+      '0f09dc98ea85b7872f4409131a790b91e7540953992886fc268b7ba5c96820e4'
     )
     st.equal(
       tx.getMessageToSign().toString('hex'),
-      'f97c73fdca079da7652dbc61a46cd5aeef804008e057be3e712c43eac389aaf0',
+      'f97c73fdca079da7652dbc61a46cd5aeef804008e057be3e712c43eac389aaf0'
     )
     st.end()
   })
@@ -112,7 +117,7 @@ tape('[Transaction]: Basic functions', function (t) {
 
       st.ok(
         tx.validate(true).includes('Invalid Signature'),
-        'should give a string about not verifying signatures',
+        'should give a string about not verifying signatures'
       )
 
       st.notOk(tx.validate(), 'should validate correctly')
@@ -239,7 +244,7 @@ tape('[Transaction]: Basic functions', function (t) {
     ]
     const privateKey = Buffer.from(
       '4646464646464646464646464646464646464646464646464646464646464646',
-      'hex',
+      'hex'
     )
     const pt = Transaction.fromValuesArray(txRaw.map(toBuffer))
 
@@ -248,16 +253,16 @@ tape('[Transaction]: Basic functions', function (t) {
     // We don't have a getter for such a value in Transaction.
     st.equal(
       pt.serialize().toString('hex'),
-      'ec098504a817c800825208943535353535353535353535353535353535353535880de0b6b3a764000080808080',
+      'ec098504a817c800825208943535353535353535353535353535353535353535880de0b6b3a764000080808080'
     )
     const signedTx = pt.sign(privateKey)
     st.equal(
       signedTx.getMessageToSign().toString('hex'),
-      'daf5a779ae972f972197303d7b574746c7ef83eadac0f2791ad23db92e4c8e53',
+      'daf5a779ae972f972197303d7b574746c7ef83eadac0f2791ad23db92e4c8e53'
     )
     st.equal(
       signedTx.serialize().toString('hex'),
-      'f86c098504a817c800825208943535353535353535353535353535353535353535880de0b6b3a76400008025a028ef61340bd939bc2195fe537567866003e1a15d3c71ff63e1590620aa636276a067cbe9d8997f761aecb703304b3800ccf555c9f3dc64214b297fb1966a3b6d83',
+      'f86c098504a817c800825208943535353535353535353535353535353535353535880de0b6b3a76400008025a028ef61340bd939bc2195fe537567866003e1a15d3c71ff63e1590620aa636276a067cbe9d8997f761aecb703304b3800ccf555c9f3dc64214b297fb1966a3b6d83'
     )
     st.end()
   })
@@ -275,18 +280,18 @@ tape('[Transaction]: Basic functions', function (t) {
       ]
       const privateKey = Buffer.from(
         'DE3128752F183E8930D7F00A2AAA302DCB5E700B2CBA2D8CA5795660F07DEFD5',
-        'hex',
+        'hex'
       )
       const common = new Common({ chain: 3 })
       const tx = Transaction.fromValuesArray(txRaw.map(toBuffer), { common })
       const signedTx = tx.sign(privateKey)
       st.equal(
         signedTx.serialize().toString('hex'),
-        'f86c018502540be40082520894d7250824390ec5c8b71d856b5de895e271170d9d880de0b6b3a76400008029a0d3512c68099d184ccf54f44d9d6905bff303128574b663dcf10b4c726ddd8133a0628acc8f481dea593f13309dfc5f0340f83fdd40cf9fbe47f782668f6f3aec74',
+        'f86c018502540be40082520894d7250824390ec5c8b71d856b5de895e271170d9d880de0b6b3a76400008029a0d3512c68099d184ccf54f44d9d6905bff303128574b663dcf10b4c726ddd8133a0628acc8f481dea593f13309dfc5f0340f83fdd40cf9fbe47f782668f6f3aec74'
       )
 
       st.end()
-    },
+    }
   )
 
   t.test('sign tx with chainId specified in params', function (st) {
@@ -307,7 +312,7 @@ tape('[Transaction]: Basic functions', function (t) {
   })
 
   t.test('throws when creating a a transaction with incompatible chainid and v value', function (
-    st,
+    st
   ) {
     const common = new Common({ chain: 42, hardfork: 'petersburg' })
     let tx = Transaction.fromTxData({}, { common })
@@ -320,7 +325,7 @@ tape('[Transaction]: Basic functions', function (t) {
   })
 
   t.test('Throws if v is set to an EIP155-encoded value incompatible with the chain id', function (
-    st,
+    st
   ) {
     st.throws(() => {
       const common = new Common({ chain: 42, hardfork: 'petersburg' })
@@ -340,7 +345,7 @@ tape('[Transaction]: Basic functions', function (t) {
       st.equal(
         tx.getSenderAddress().toString(),
         '0x' + txData.sendersAddress,
-        "computed sender address should equal the fixture's one",
+        "computed sender address should equal the fixture's one"
       )
     })
 
@@ -361,19 +366,22 @@ tape('[Transaction]: Basic functions', function (t) {
 
       const privateKey = Buffer.from(
         '4646464646464646464646464646464646464646464646464646464646464646',
-        'hex',
+        'hex'
       )
 
       const fixtureTxSignedWithEIP155 = Transaction.fromTxData(txData).sign(privateKey)
 
-      const common = new Common({ chain: 'mainnet', hardfork: 'tangerineWhistle' })
+      const common = new Common({
+        chain: 'mainnet',
+        hardfork: 'tangerineWhistle',
+      })
 
-      const fixtureTxSignedWithoutEIP155 = Transaction.fromTxData(txData, { common }).sign(
-        privateKey,
-      )
+      const fixtureTxSignedWithoutEIP155 = Transaction.fromTxData(txData, {
+        common,
+      }).sign(privateKey)
 
       let signedWithEIP155 = Transaction.fromTxData(fixtureTxSignedWithEIP155.toJSON()).sign(
-        privateKey,
+        privateKey
       )
 
       st.true(signedWithEIP155.verifySignature())
@@ -381,7 +389,7 @@ tape('[Transaction]: Basic functions', function (t) {
       st.notEqual(signedWithEIP155.v?.toString('hex'), '1b')
 
       signedWithEIP155 = Transaction.fromTxData(fixtureTxSignedWithoutEIP155.toJSON()).sign(
-        privateKey,
+        privateKey
       )
 
       st.true(signedWithEIP155.verifySignature())
@@ -396,7 +404,7 @@ tape('[Transaction]: Basic functions', function (t) {
       st.true(
         signedWithoutEIP155.v?.toString('hex') == '1c' ||
           signedWithoutEIP155.v?.toString('hex') == '1b',
-        "v shouldn't be EIP155 encoded",
+        "v shouldn't be EIP155 encoded"
       )
 
       signedWithoutEIP155 = Transaction.fromTxData(fixtureTxSignedWithoutEIP155.toJSON(), {
@@ -407,11 +415,11 @@ tape('[Transaction]: Basic functions', function (t) {
       st.true(
         signedWithoutEIP155.v?.toString('hex') == '1c' ||
           signedWithoutEIP155.v?.toString('hex') == '1b',
-        "v shouldn' be EIP155 encoded",
+        "v shouldn' be EIP155 encoded"
       )
 
       st.end()
-    },
+    }
   )
 
   t.test('should return correct data fee for istanbul', function (st) {
@@ -419,7 +427,9 @@ tape('[Transaction]: Basic functions', function (t) {
     let tx = Transaction.fromTxData({}, { common })
     st.equals(tx.getDataFee().toNumber(), 0)
 
-    tx = Transaction.fromValuesArray(txFixtures[3].raw.map(toBuffer), { common })
+    tx = Transaction.fromValuesArray(txFixtures[3].raw.map(toBuffer), {
+      common,
+    })
     st.equals(tx.getDataFee().toNumber(), 1716)
 
     st.end()

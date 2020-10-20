@@ -2,6 +2,7 @@
 *.swp
 .idea
 *.lerna_backup
+.tmp
 
 # Created by https://www.toptal.com/developers/gitignore/api/node
 # Edit at https://www.toptal.com/developers/gitignore?templates=node
@@ -68,6 +69,7 @@ jspm_packages/
 
 # generate output
 dist
+dist.browser
 
 # Gatsby files
 .cache/

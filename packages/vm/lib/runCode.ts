@@ -79,7 +79,7 @@ export default function runCode(this: VM, opts: RunCodeOpts): Promise<ExecResult
   if (!opts.txContext) {
     opts.txContext = new TxContext(
       opts.gasPrice || new BN(0),
-      opts.origin || opts.caller || zeros(32),
+      opts.origin || opts.caller || zeros(32)
     )
   }
   if (!opts.message) {

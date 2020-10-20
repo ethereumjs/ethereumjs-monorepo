@@ -1,4 +1,4 @@
-import * as tape from 'tape'
+import tape from 'tape'
 
 import Bloom from '../../lib/bloom'
 import * as utils from 'ethereumjs-util'

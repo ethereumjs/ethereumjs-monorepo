@@ -1,14 +1,11 @@
-import * as tape from 'tape'
+import tape from 'tape'
 import { Block } from '@ethereumjs/block'
 import Ethash from '../src'
 const level = require('level-mem')
 
 const cacheDB = level()
 
-const {
-  validBlockRlp,
-  invalidBlockRlp
-} = require('./ethash_block_rlp_tests.json')
+const { validBlockRlp, invalidBlockRlp } = require('./ethash_block_rlp_tests.json')
 
 tape('Verify POW for valid and invalid blocks', async function (t) {
   const e = new Ethash(cacheDB)

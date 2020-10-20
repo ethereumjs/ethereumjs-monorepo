@@ -40,7 +40,9 @@ export type TxsJsonEntry = {
   raw: string[]
 }
 
-export type ForksData = { [forkName in ForkName]: { hash?: string; sender?: string } }
+export type ForksData = {
+  [forkName in ForkName]: { hash?: string; sender?: string }
+}
 
 export type OfficialTransactionTestData = ForksData & {
   _info: {

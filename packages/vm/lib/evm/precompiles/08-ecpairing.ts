@@ -12,7 +12,7 @@ export default function (opts: PrecompileInput): ExecResult {
   const inputDataSize = Math.floor(inputData.length / 192)
   const gasUsed = new BN(
     opts._common.param('gasPrices', 'ecPairing') +
-      inputDataSize * opts._common.param('gasPrices', 'ecPairingWord'),
+      inputDataSize * opts._common.param('gasPrices', 'ecPairingWord')
   )
 
   if (opts.gasLimit.lt(gasUsed)) {

@@ -14,7 +14,7 @@ export default async function (opts: PrecompileInput): Promise<ExecResult> {
 
   const mcl = opts._VM._mcl
 
-  let inputData = opts.data
+  const inputData = opts.data
 
   if (inputData.length == 0) {
     return VmErrorResult(new VmError(ERROR.BLS_12_381_INPUT_EMPTY), opts.gasLimit) // follow Geths implementation
@@ -22,9 +22,9 @@ export default async function (opts: PrecompileInput): Promise<ExecResult> {
 
   const numPairs = Math.floor(inputData.length / 288)
 
-  let gasUsedPerPair = new BN(opts._common.paramByEIP('gasPrices', 'Bls12381G2MulGas', 2537))
-  let gasDiscountArray = opts._common.paramByEIP('gasPrices', 'Bls12381MultiExpGasDiscount', 2537)
-  let gasDiscountMax = gasDiscountArray[gasDiscountArray.length - 1][1]
+  const gasUsedPerPair = new BN(opts._common.paramByEIP('gasPrices', 'Bls12381G2MulGas', 2537))
+  const gasDiscountArray = opts._common.paramByEIP('gasPrices', 'Bls12381MultiExpGasDiscount', 2537)
+  const gasDiscountMax = gasDiscountArray[gasDiscountArray.length - 1][1]
   let gasDiscountMultiplier
 
   if (numPairs <= gasDiscountArray.length) {
@@ -37,7 +37,7 @@ export default async function (opts: PrecompileInput): Promise<ExecResult> {
     gasDiscountMultiplier = gasDiscountMax
   }
 
-  let gasUsed = gasUsedPerPair.imuln(numPairs).imuln(gasDiscountMultiplier).idivn(1000)
+  const gasUsed = gasUsedPerPair.imuln(numPairs).imuln(gasDiscountMultiplier).idivn(1000)
 
   if (opts.gasLimit.lt(gasUsed)) {
     return OOGResult(opts.gasLimit)
@@ -57,16 +57,16 @@ export default async function (opts: PrecompileInput): Promise<ExecResult> {
     [192, 208],
   ]
 
-  let G2Array = []
-  let FrArray = []
+  const G2Array = []
+  const FrArray = []
 
   for (let k = 0; k < inputData.length / 288; k++) {
     // zero bytes check
-    let pairStart = 288 * k
-    for (let index in zeroByteCheck) {
-      let slicedBuffer = opts.data.slice(
+    const pairStart = 288 * k
+    for (const index in zeroByteCheck) {
+      const slicedBuffer = opts.data.slice(
         zeroByteCheck[index][0] + pairStart,
-        zeroByteCheck[index][1] + pairStart,
+        zeroByteCheck[index][1] + pairStart
       )
       if (!slicedBuffer.equals(zeroBytes16)) {
         return VmErrorResult(new VmError(ERROR.BLS_12_381_POINT_NOT_ON_CURVE), opts.gasLimit)
@@ -78,7 +78,7 @@ export default async function (opts: PrecompileInput): Promise<ExecResult> {
     } catch (e) {
       return VmErrorResult(e, opts.gasLimit)
     }
-    let Fr = BLS12_381_ToFrPoint(opts.data.slice(pairStart + 256, pairStart + 288), mcl)
+    const Fr = BLS12_381_ToFrPoint(opts.data.slice(pairStart + 256, pairStart + 288), mcl)
 
     G2Array.push(G2)
     FrArray.push(Fr)
