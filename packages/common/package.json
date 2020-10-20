@@ -39,9 +39,9 @@
   },
   "homepage": "https://github.com/ethereumjs-ethereumjs/common",
   "devDependencies": {
-    "@ethereumjs/config-coverage": "https://gitpkg.now.sh/ethereumjs/ethereumjs-config/packages/coverage?use-positional-path-selection-in-lint-scripts",
-    "@ethereumjs/config-typescript": "https://gitpkg.now.sh/ethereumjs/ethereumjs-config/packages/typescript?use-positional-path-selection-in-lint-scripts",
-    "@ethereumjs/eslint-config-defaults": "https://gitpkg.now.sh/ethereumjs/ethereumjs-config/packages/lint?use-positional-path-selection-in-lint-scripts",
+    "@ethereumjs/config-coverage": "^2.0.0",
+    "@ethereumjs/config-typescript": "^2.0.0",
+    "@ethereumjs/eslint-config-defaults": "^2.0.0",
     "@types/node": "^11.13.4",
     "@types/tape": "^4.13.0",
     "@typescript-eslint/eslint-plugin": "^4.1.1",
