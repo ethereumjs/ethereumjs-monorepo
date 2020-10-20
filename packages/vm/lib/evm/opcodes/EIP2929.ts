@@ -22,7 +22,7 @@ export function accessAddressEIP2929(runState: RunState, address: BN | Buffer, b
     // selfdestruct beneficiary address reads are charged an *additional* cold access
     if (baseFee !== undefined) {
       runState.eei.useGas(
-        new BN(runState._common.param('gasPrices', 'coldaccountaccess') - baseFee),
+        new BN(runState._common.param('gasPrices', 'coldaccountaccess') - baseFee)
       )
     }
     // Warm: (selfdestruct beneficiary address reads are not charged when warm)
@@ -74,7 +74,7 @@ export function adjustSstoreGasEIP2929(
   runState: RunState,
   key: Buffer,
   defaultCost: number,
-  costName: string,
+  costName: string
 ): number {
   if (!runState._common.eips().includes(2929)) return defaultCost
 

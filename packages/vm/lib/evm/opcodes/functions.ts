@@ -1078,7 +1078,7 @@ export const handlers: Map<number, OpHandler> = new Map([
       accessAddressEIP2929(
         runState,
         toAddressBuf,
-        runState._common.param('gasPrices', 'delegatecall'),
+        runState._common.param('gasPrices', 'delegatecall')
       )
 
       gasLimit = maxCallGas(gasLimit, runState.eei.getGasLeft(), runState)
@@ -1111,7 +1111,7 @@ export const handlers: Map<number, OpHandler> = new Map([
       accessAddressEIP2929(
         runState,
         toAddressBuf,
-        runState._common.param('gasPrices', 'staticcall'),
+        runState._common.param('gasPrices', 'staticcall')
       )
       gasLimit = maxCallGas(gasLimit, runState.eei.getGasLeft(), runState) // we set TangerineWhistle or later to true here, as STATICCALL was available from Byzantium (which is after TangerineWhistle)
 

@@ -47,7 +47,7 @@ export function updateSstoreGasEIP1283(runState: RunState, found: any, value: Bu
       if (original.length === 0) {
         // If original value is 0, add 19800 gas to refund counter.
         runState.eei.refundGas(
-          new BN(runState._common.param('gasPrices', 'netSstoreResetClearRefund')),
+          new BN(runState._common.param('gasPrices', 'netSstoreResetClearRefund'))
         )
       } else {
         // Otherwise, add 4800 gas to refund counter.
