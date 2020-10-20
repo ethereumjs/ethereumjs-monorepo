@@ -489,12 +489,13 @@ export class BlockHeader {
     return this._common.hardfork() || this._common.activeHardfork(this.number.toNumber())
   }
 
-  private async _getHeaderByHash(blockchain: Blockchain, hash: Buffer): Promise<BlockHeader | undefined> {
+  private async _getHeaderByHash(
+    blockchain: Blockchain,
+    hash: Buffer
+  ): Promise<BlockHeader | undefined> {
     try {
-      return new Promise(async (resolve) => {
-        let header = (await blockchain.getBlock(hash)).header 
-        resolve(header)
-      })
+      const header = (await blockchain.getBlock(hash)).header
+      return header
     } catch (error) {
       if (error.type === 'NotFoundError') {
         return undefined
