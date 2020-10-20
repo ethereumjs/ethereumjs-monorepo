@@ -3,7 +3,6 @@ module.exports = {
   ignorePatterns: ["tests", "scripts", "examples", "karma.conf.js"],
   rules: {
     '@typescript-eslint/await-thenable': 'off',
-    '@typescript-eslint/no-floating-promises': 'off',
     '@typescript-eslint/no-unused-vars': 'off',
     '@typescript-eslint/no-use-before-define': 'off',
     '@typescript-eslint/restrict-plus-operands': 'off',

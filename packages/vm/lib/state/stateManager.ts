@@ -357,7 +357,7 @@ export default class DefaultStateManager implements StateManager {
    */
   async revert(): Promise<void> {
     // setup trie checkpointing
-    this._trie.revert()
+    await this._trie.revert()
     // setup cache checkpointing
     this._cache.revert()
     this._storageTries = {}
