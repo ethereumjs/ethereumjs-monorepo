@@ -1,5 +1,5 @@
 import tape from 'tape'
-import { BN, stripHexPrefix } from 'ethereumjs-util'
+import { BN } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
 import VM from '../../../lib'
 import { default as blake2f, F } from '../../../lib/evm/precompiles/09-blake2f'
@@ -73,6 +73,7 @@ const testCases = [
 
 tape('Istanbul: EIP-152', (t) => {
   t.test('Blake2f', (st) => {
+    // eslint-disable-next-line no-undef
     if ((<any>globalThis).navigator?.userAgent.includes('Firefox')) {
       // TODO: investigate why this test hangs in karma with firefox
       return st.end()

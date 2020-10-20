@@ -11,7 +11,7 @@ export default function (opts: PrecompileInput): ExecResult {
   // no need to care about non-divisible-by-192, because bn128.pairing will properly fail in that case
   const inputDataSize = Math.floor(inputData.length / 192)
   const gasUsed = new BN(
-    opts._common.param('gasPrices', 'ecPairing') +
+    <number>opts._common.param('gasPrices', 'ecPairing') +
       inputDataSize * opts._common.param('gasPrices', 'ecPairingWord')
   )
 

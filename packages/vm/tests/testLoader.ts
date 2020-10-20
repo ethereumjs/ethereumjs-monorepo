@@ -6,7 +6,7 @@ const falsePredicate = () => false
 // package.json -> always take the package root, remove filename, go to submodule
 const defaultTestsPath = path.join(
   path.dirname(require.resolve('ethereumjs-testing/package.json')),
-  'tests',
+  'tests'
 )
 
 /**
@@ -27,7 +27,7 @@ const getTests = (exports.getTests = (
   skipPredicate: Function = falsePredicate,
   testDir: string = '',
   excludeDir: RegExp | string[] = [],
-  testsPath: string = defaultTestsPath,
+  testsPath: string = defaultTestsPath
 ): Promise<string[]> => {
   const directory = path.join(testsPath, testType, testDir)
   const options = {
@@ -49,7 +49,7 @@ const getTests = (exports.getTests = (
       err: Error | undefined,
       content: string,
       fileName: string,
-      next: Function,
+      next: Function
     ) => {
       if (err) {
         reject(err)
@@ -85,7 +85,7 @@ function skipTest(testName: string, skipList = []) {
  * @param Callback function which is invoked, and passed the contents of the specified file (or an error message)
  */
 const getTestFromSource = (exports.getTestFromSource = function (file: string, onFile: Function) {
-  let stream = fs.createReadStream(file)
+  const stream = fs.createReadStream(file)
   let contents = ''
   let test: any = null
 
@@ -103,8 +103,8 @@ const getTestFromSource = (exports.getTestFromSource = function (file: string, o
         onFile(e)
       }
 
-      let testName = Object.keys(test)[0]
-      let testData = test[testName]
+      const testName = Object.keys(test)[0]
+      const testData = test[testName]
       testData.testName = testName
 
       onFile(null, testData)

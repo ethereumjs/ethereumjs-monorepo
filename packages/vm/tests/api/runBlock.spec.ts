@@ -121,7 +121,7 @@ tape('should run valid block', async (t) => {
 
   t.ok(
     suite.vm.stateManager._trie.root.equals(genesis.header.stateRoot),
-    'genesis state root should match calculated state root',
+    'genesis state root should match calculated state root'
   )
 
   const res = await suite.p.runBlock({
@@ -133,7 +133,7 @@ tape('should run valid block', async (t) => {
   t.equal(
     res.results[0].gasUsed.toString('hex'),
     '5208',
-    'actual gas used should equal blockHeader gasUsed',
+    'actual gas used should equal blockHeader gasUsed'
   )
 
   t.end()
@@ -148,7 +148,7 @@ tape(
     const vm = setupVM({ common })
     const suite = setup(vm)
 
-    let block1: any = rlp.decode(suite.data.blocks[0].rlp)
+    const block1: any = rlp.decode(suite.data.blocks[0].rlp)
     // edit extra data of this block to "dao-hard-fork"
     block1[0][12] = Buffer.from('dao-hard-fork')
     const block = Block.fromValuesArray(block1)
@@ -179,11 +179,11 @@ tape(
     t.error(res.error, "runBlock shouldn't have returned error")
 
     const DAOFundedContractAccount1 = await suite.vm.stateManager.getAccount(
-      DAOFundedContractAddress1,
+      DAOFundedContractAddress1
     )
     t.ok(DAOFundedContractAccount1.balance.isZero()) // verify our funded account now has 0 balance
     const DAOFundedContractAccount2 = await suite.vm.stateManager.getAccount(
-      DAOFundedContractAddress2,
+      DAOFundedContractAddress2
     )
     t.ok(DAOFundedContractAccount2.balance.isZero()) // verify our funded account now has 0 balance
 
@@ -191,9 +191,9 @@ tape(
     t.ok(DAORefundAccount.balance.eq(new BN(Buffer.from('7777', 'hex')))) // verify that the refund account gets the summed balance of the original refund account + two child DAO accounts
 
     t.end()
-  },
+  }
 )
-
+/*
 async function runWithHf(hardfork: string) {
   const vm = setupVM({ common: new Common({ chain: 'mainnet', hardfork }) })
   const suite = setup(vm)
@@ -209,7 +209,7 @@ async function runWithHf(hardfork: string) {
     skipBlockValidation: true,
   })
   return res
-}
+}*/
 /* This test is now obsolete? The state roots were supposed to be 0 before the intermediate state roots were fixed. The correct state roots are all checked in the blockchain tests.
 tape('should return correct HF receipts', async (t) => {
   let res = await runWithHf('byzantium')

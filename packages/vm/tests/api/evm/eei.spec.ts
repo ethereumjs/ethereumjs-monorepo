@@ -27,7 +27,7 @@ tape('EEI', (t) => {
       st.ok(await eei.accountExists(ZeroAddress))
       st.notOk(await eei.isAccountEmpty(ZeroAddress))
       st.end()
-    },
+    }
   )
 
   t.test('should return true on existing accounts', async (st) => {

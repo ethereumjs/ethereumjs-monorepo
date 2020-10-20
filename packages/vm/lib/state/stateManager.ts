@@ -260,6 +260,7 @@ export default class DefaultStateManager implements StateManager {
     address: Address,
     modifyTrie: (storageTrie: Trie, done: Function) => void
   ): Promise<void> {
+    // eslint-disable-next-line no-async-promise-executor
     return new Promise(async (resolve) => {
       const storageTrie = await this._getStorageTrie(address)
 

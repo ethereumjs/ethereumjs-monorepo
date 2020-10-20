@@ -14,6 +14,7 @@ import runBlockchain from './runBlockchain'
 const AsyncEventEmitter = require('async-eventemitter')
 const promisify = require('util.promisify')
 
+// eslint-disable-next-line no-undef
 const IS_BROWSER = typeof (<any>globalThis).window === 'object' // very ugly way to detect if we are running in a browser
 let mcl: any
 let mclInitPromise: any

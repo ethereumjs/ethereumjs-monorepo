@@ -32,7 +32,7 @@ tape('runTx', (t) => {
   t.test('should fail to run without signature', async (st) => {
     const tx = getTransaction(false)
     shouldFail(st, suite.runTx({ tx }), (e: Error) =>
-      st.ok(e.message.includes('Invalid Signature'), 'should fail with appropriate error'),
+      st.ok(e.message.includes('Invalid Signature'), 'should fail with appropriate error')
     )
     st.end()
   })
@@ -40,17 +40,14 @@ tape('runTx', (t) => {
   t.test('should fail without sufficient funds', async (st) => {
     const tx = getTransaction(true)
     shouldFail(st, suite.runTx({ tx }), (e: Error) =>
-      st.ok(
-        e.message.toLowerCase().includes('enough funds'),
-        'error should include "enough funds"',
-      ),
+      st.ok(e.message.toLowerCase().includes('enough funds'), 'error should include "enough funds"')
     )
     st.end()
   })
 })
 
 tape('should run simple tx without errors', async (t) => {
-  let vm = new VM()
+  const vm = new VM()
   const suite = setup(vm)
 
   const tx = getTransaction(true)
@@ -59,7 +56,7 @@ tape('should run simple tx without errors', async (t) => {
 
   await suite.putAccount(caller, acc)
 
-  let res = await suite.runTx({ tx })
+  const res = await suite.runTx({ tx })
   t.true(res.gasUsed.gt(new BN(0)), 'should have used some gas')
 
   t.end()
@@ -111,7 +108,7 @@ tape('should clear storage cache after every transaction', async (t) => {
   const vm = new VM({ common })
   const privateKey = Buffer.from(
     'e331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109',
-    'hex',
+    'hex'
   )
   /* Code which is deployed here: 
     PUSH1 01
@@ -125,7 +122,7 @@ tape('should clear storage cache after every transaction', async (t) => {
   await vm.stateManager.putContractStorage(
     address,
     Buffer.from('00'.repeat(32), 'hex'),
-    Buffer.from('00'.repeat(31) + '01', 'hex'),
+    Buffer.from('00'.repeat(31) + '01', 'hex')
   )
   const tx = Transaction.fromTxData(
     {
@@ -134,7 +131,7 @@ tape('should clear storage cache after every transaction', async (t) => {
       gasLimit: 100000,
       to: address,
     },
-    { common },
+    { common }
   ).sign(privateKey)
 
   await vm.stateManager.putAccount(tx.getSenderAddress(), createAccount())
@@ -195,7 +192,7 @@ function getTransaction(sign = false, value = '0x00', createContract = false) {
   if (sign) {
     const privateKey = Buffer.from(
       'e331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109',
-      'hex',
+      'hex'
     )
     return tx.sign(privateKey)
   }

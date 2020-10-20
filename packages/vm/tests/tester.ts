@@ -47,7 +47,7 @@ async function runTests() {
     exit(1)
   }
 
-  const FORK_CONFIG = argv.fork || config.DEFAULT_FORK_CONFIG
+  const FORK_CONFIG: string = argv.fork || config.DEFAULT_FORK_CONFIG
   const FORK_CONFIG_TEST_SUITE = config.getRequiredForkConfigAlias(FORK_CONFIG)
 
   // Examples: Istanbul -> istanbul, MuirGlacier -> muirGlacier
@@ -56,7 +56,7 @@ async function runTests() {
   /**
    * Configuration for getting the tests from the ethereum/tests repository
    */
-  let testGetterArgs: any = {}
+  const testGetterArgs: any = {}
   testGetterArgs.skipTests = config.getSkipTests(argv.skip, argv.runSkipped ? 'NONE' : 'ALL')
   testGetterArgs.runSkipped = config.getSkipTests(argv.runSkipped, 'NONE')
   testGetterArgs.forkConfig = FORK_CONFIG_TEST_SUITE
@@ -70,7 +70,7 @@ async function runTests() {
   /**
    * Run-time configuration
    */
-  let runnerArgs: any = {}
+  const runnerArgs: any = {}
   runnerArgs.forkConfigVM = FORK_CONFIG_VM
   runnerArgs.forkConfigTestSuite = FORK_CONFIG_TEST_SUITE
   runnerArgs.common = config.getCommon(FORK_CONFIG_VM)
@@ -99,10 +99,10 @@ async function runTests() {
     return Object.assign(
       {},
       ...Object.entries(args)
-        .filter(([k, v]) => v && (v as any).length !== 0)
+        .filter(([k, v]) => v && (v as any).length !== 0) // eslint-disable-line no-unused-vars, @typescript-eslint/no-unused-vars
         .map(([k, v]) => ({
           [k]: typeof v !== 'string' && (v as any).length ? (v as any).length : v,
-        })),
+        }))
     )
   }
   const formattedGetterArgs = formatArgs(testGetterArgs)
@@ -129,7 +129,7 @@ async function runTests() {
   console.log()
 
   if (argv.customStateTest) {
-    let fileName = argv.customStateTest
+    const fileName = argv.customStateTest
     tape(name, (t) => {
       testLoader.getTestFromSource(fileName, async (err: string | undefined, test: any) => {
         if (err) {
@@ -143,7 +143,7 @@ async function runTests() {
   } else {
     tape(name, async (t) => {
       let testIdentifier: string
-      let failingTests: any = {}
+      const failingTests: any = {}
 
       ;(t as any).on('result', (o: any) => {
         if (o.ok != undefined && !o.ok) {
@@ -158,21 +158,21 @@ async function runTests() {
       // https://github.com/ethereum/tests/releases/tag/v7.0.0-beta.1
 
       const dirs = config.getTestDirs(FORK_CONFIG_VM, name)
-      for (let dir of dirs) {
+      for (const dir of dirs) {
         await new Promise((resolve, reject) => {
           testLoader
             .getTestsFromArgs(
               dir,
               async (fileName: string, testName: string, test: any) => {
-                let runSkipped = testGetterArgs.runSkipped
-                let inRunSkipped = runSkipped.includes(fileName)
+                const runSkipped = testGetterArgs.runSkipped
+                const inRunSkipped = runSkipped.includes(fileName)
                 if (runSkipped.length === 0 || inRunSkipped) {
                   testIdentifier = `file: ${fileName} test: ${testName}`
                   t.comment(testIdentifier)
                   await runner(runnerArgs, test, t)
                 }
               },
-              testGetterArgs,
+              testGetterArgs
             )
             .then(() => {
               resolve()
@@ -184,18 +184,18 @@ async function runTests() {
         })
       }
 
-      for (let failingTestIdentifier in failingTests) {
+      for (const failingTestIdentifier in failingTests) {
         console.log('Errors thrown in ' + failingTestIdentifier + ':')
         const errors = failingTests[failingTestIdentifier]
         for (let i = 0; i < errors.length; i++) {
-          console.log('\t' + errors[i])
+          console.log('\t' + <string>errors[i])
         }
       }
 
       if (expectedTests != undefined) {
         t.ok(
           (t as any).assertCount >= expectedTests,
-          'expected ' + expectedTests + ' checks, got ' + (t as any).assertCount,
+          'expected ' + expectedTests.toString() + ' checks, got ' + <string>(t as any).assertCount
         )
       }
 
@@ -204,4 +204,4 @@ async function runTests() {
   }
 }
 
-runTests()
+runTests() // eslint-disable-line @typescript-eslint/no-floating-promises
