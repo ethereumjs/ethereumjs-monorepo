@@ -1,4 +1,4 @@
-import * as tape from 'tape'
+import tape from 'tape'
 const { getLogger } = require('../lib/logging')
 
 tape('[Logging]', t => {

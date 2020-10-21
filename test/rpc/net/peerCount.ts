@@ -1,9 +1,9 @@
-import * as test from 'tape'
+import tape from 'tape'
 import { startRPC, createManager, createNode, params, baseRequest } from '../helpers'
 
 const method = 'net_peerCount'
 
-test(`${method}: call`, t => {
+tape(`${method}: call`, t => {
   const manager = createManager(createNode({ opened: true }))
   const server = startRPC(manager.getMethods())
 

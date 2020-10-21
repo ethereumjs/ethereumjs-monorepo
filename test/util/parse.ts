@@ -1,4 +1,4 @@
-import * as tape from 'tape-catch'
+import tape from 'tape-catch'
 import * as path from 'path'
 import { parseBootnodes, parseTransports, parseParams } from '../../lib/util'
 

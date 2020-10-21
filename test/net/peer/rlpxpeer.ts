@@ -1,4 +1,4 @@
-import * as tape from 'tape-catch'
+import tape from 'tape-catch'
 const td = require('testdouble')
 import { EventEmitter } from 'events'
 import { RlpxPeer } from '../../../lib/net/peer/rlpxpeer'
@@ -23,7 +23,7 @@ tape.skip('[RlpxPeer]', t => {
   })
 
   // TODO: disabled for typescript transition. Test case not reproduceable with
-  // necessary Protocol instantiations due to protocol type addition to RlpxPeer.capabilities() 
+  // necessary Protocol instantiations due to protocol type addition to RlpxPeer.capabilities()
   /*t.test('should compute capabilities', t => {
     const protocols = [ { name: 'eth', versions: [62, 63] }, { name: 'les', versions: [2] } ]
     const caps = RlpxPeer.capabilities(protocols).map(

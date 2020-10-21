@@ -1,4 +1,4 @@
-import * as tape from 'tape-catch'
+import tape from 'tape-catch'
 const td = require('testdouble')
 const timers = require('testdouble-timers').default
 const { FlowControl } = require('../../../lib/net/protocol')

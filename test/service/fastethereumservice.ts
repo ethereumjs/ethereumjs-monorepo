@@ -1,4 +1,4 @@
-import * as tape from 'tape-catch'
+import tape from 'tape-catch'
 const td = require('testdouble')
 const EventEmitter = require('events')
 import { defaultLogger } from '../../lib/logging'

@@ -1,9 +1,9 @@
-import * as test from 'tape'
+import tape from 'tape'
 import { startRPC, createManager, createNode, params, baseRequest } from '../helpers'
 
 const method = 'net_listening'
 
-test(`${method}: call while listening`, t => {
+tape(`${method}: call while listening`, t => {
   const manager = createManager(createNode({ opened: true }))
   const server = startRPC(manager.getMethods())
 
@@ -27,7 +27,7 @@ test(`${method}: call while listening`, t => {
   baseRequest(t, server, req, 200, expectRes)
 })
 
-test(`${method}: call while not listening`, t => {
+tape(`${method}: call while not listening`, t => {
   const manager = createManager(createNode({ opened: false }))
   const server = startRPC(manager.getMethods())
 

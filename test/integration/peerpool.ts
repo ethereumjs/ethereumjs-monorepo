@@ -1,4 +1,4 @@
-import * as tape from 'tape'
+import tape from 'tape'
 import { EthProtocol } from '../../lib/net/protocol'
 import { PeerPool } from '../../lib/net/peerpool'
 import MockServer from './mocks/mockserver'

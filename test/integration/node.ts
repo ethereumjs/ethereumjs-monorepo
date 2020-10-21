@@ -1,4 +1,4 @@
-import * as tape from 'tape'
+import tape from 'tape'
 import Node from '../../lib/node'
 import MockServer from './mocks/mockserver'
 import { defaultLogger } from '../../lib/logging'

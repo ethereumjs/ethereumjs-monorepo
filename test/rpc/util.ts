@@ -1,4 +1,4 @@
-import * as tape from 'tape'
+import tape from 'tape'
 
 export function checkError (t: tape.Test, expectedCode: any, expectedMessage?: any) {
   return (res: any) => {

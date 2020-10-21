@@ -1,4 +1,4 @@
-import * as tape from 'tape'
+import tape from 'tape'
 const Block = require('ethereumjs-block')
 const { toBuffer } = require('ethereumjs-util')
 const { Chain } = require('../../lib/blockchain')

@@ -1,11 +1,11 @@
-import * as test from 'tape'
+import tape from 'tape'
 import { INVALID_PARAMS } from '../../../lib/rpc/error-code'
 import { baseSetup, params, baseRequest } from '../helpers'
 import { checkError } from '../util'
 
 const method = 'eth_getBlockTransactionCountByHash'
 
-test(`${method}: call with valid arguments`, t => {
+tape(`${method}: call with valid arguments`, t => {
   const server = baseSetup()
 
   const req = params(method, [
@@ -22,7 +22,7 @@ test(`${method}: call with valid arguments`, t => {
   baseRequest(t, server, req, 200, expectRes)
 })
 
-test(`${method}: call with invalid block hash without 0x`, t => {
+tape(`${method}: call with invalid block hash without 0x`, t => {
   const server = baseSetup()
 
   const req = params(method, ['WRONG BLOCK NUMBER'])
@@ -34,7 +34,7 @@ test(`${method}: call with invalid block hash without 0x`, t => {
   baseRequest(t, server, req, 200, expectRes)
 })
 
-test(`${method}: call with invalid hex string as block hash`, t => {
+tape(`${method}: call with invalid hex string as block hash`, t => {
   const server = baseSetup()
 
   const req = params(method, ['0xWRONG BLOCK NUMBER', true])
@@ -46,7 +46,7 @@ test(`${method}: call with invalid hex string as block hash`, t => {
   baseRequest(t, server, req, 200, expectRes)
 })
 
-test(`${method}: call without first parameter`, t => {
+tape(`${method}: call without first parameter`, t => {
   const server = baseSetup()
 
   const req = params(method, [])
@@ -58,7 +58,7 @@ test(`${method}: call without first parameter`, t => {
   baseRequest(t, server, req, 200, expectRes)
 })
 
-test(`${method}: call with invalid second parameter`, t => {
+tape(`${method}: call with invalid second parameter`, t => {
   const server = baseSetup()
 
   const req = params(method, ['INVALID PARAMETER'])

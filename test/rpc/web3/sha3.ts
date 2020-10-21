@@ -1,4 +1,4 @@
-import * as test from 'tape'
+import tape from 'tape'
 import { baseSetup, params, baseRequest } from '../helpers'
 
 const method = 'web3_sha3'
@@ -23,7 +23,7 @@ function compareErrorMsg (t: any, error: any, errorMsg: any) {
   }
 }
 
-test(`${method}: call with one valid parameter`, t => {
+tape(`${method}: call with one valid parameter`, t => {
   const server = baseSetup()
 
   const req = params(method, ['0x68656c6c6f20776f726c64'])
@@ -49,7 +49,7 @@ test(`${method}: call with one valid parameter`, t => {
   baseRequest(t, server, req, 200, expectRes)
 })
 
-test(`${method}: call with one non-hex parameter`, t => {
+tape(`${method}: call with one non-hex parameter`, t => {
   const server = baseSetup()
 
   const req = params(method, ['hello world'])
@@ -64,7 +64,7 @@ test(`${method}: call with one non-hex parameter`, t => {
   baseRequest(t, server, req, 200, expectRes)
 })
 
-test(`${method}: call with no parameters`, t => {
+tape(`${method}: call with no parameters`, t => {
   const server = baseSetup()
 
   const req = params(method, [])

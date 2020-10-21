@@ -1,10 +1,10 @@
-import * as test from 'tape'
+import tape from 'tape'
 import { platform } from 'os'
 import { baseSetup, params, baseRequest } from '../helpers'
 
 const method = 'web3_clientVersion'
 
-test(`${method}: call`, t => {
+tape(`${method}: call`, t => {
   const server = baseSetup()
 
   const req = params(method, [])

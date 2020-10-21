@@ -1,4 +1,4 @@
-import * as tape from 'tape-catch'
+import tape from 'tape-catch'
 import { Chain } from '../../../lib/blockchain'
 const { LesProtocol } = require('../../../lib/net/protocol')
 const BN = require('bn.js')

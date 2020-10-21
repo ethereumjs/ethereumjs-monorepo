@@ -1,4 +1,4 @@
-import * as test from 'tape'
+import tape from 'tape'
 import { startRPC } from './helpers'
 import { middleware } from '../../lib/rpc/validation'
 import { baseRequest } from './helpers'
@@ -7,7 +7,7 @@ import { INVALID_PARAMS } from '../../lib/rpc/error-code'
 
 const prefix = 'rpc/validation:'
 
-test(`${prefix} should work without \`params\` when it's optional`, t => {
+tape(`${prefix} should work without \`params\` when it's optional`, t => {
   const mockMethodName = 'mock'
   const server = startRPC({
     [mockMethodName]: middleware((params: any, cb: any) => {
@@ -26,7 +26,7 @@ test(`${prefix} should work without \`params\` when it's optional`, t => {
   baseRequest(t, server, req, 200, expectRes)
 })
 
-test(`${prefix} should return error without \`params\` when it's required`, t => {
+tape(`${prefix} should return error without \`params\` when it's required`, t => {
   const mockMethodName = 'mock'
   const server = startRPC({
     [mockMethodName]: middleware((params: any, cb: any) => {
