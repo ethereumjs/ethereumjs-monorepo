@@ -5,7 +5,7 @@ import { EventEmitter } from 'events'
 import { defaultLogger } from '../../lib/logging'
 defaultLogger.silent = true
 
-tape('[FastSynchronizer]', t => {
+tape('[FastSynchronizer]', (t) => {
   class PeerPool extends EventEmitter {}
   td.replace('../../lib/net/peerpool', PeerPool)
   class BlockFetcher extends EventEmitter {}
@@ -28,8 +28,8 @@ tape('[FastSynchronizer]', t => {
       blocks: {
         height: '1',
         td: '10',
-        latest: { hash: () => '1234567890' }
-      }
+        latest: { hash: () => '1234567890' },
+      },
     }
     sync.pool.open = td.func()
     td.when(sync.chain.open()).thenResolve()
@@ -57,7 +57,7 @@ tape('[FastSynchronizer]', t => {
     sync.chain = { blocks: { td: new BN(1) } }
     const peers = [
       { eth: { status: { td: new BN(1) } }, inbound: false },
-      { eth: { status: { td: new BN(2) } }, inbound: false }
+      { eth: { status: { td: new BN(2) } }, inbound: false },
     ]
     sync.pool = { peers }
     sync.forceSync = true
@@ -87,7 +87,7 @@ tape('[FastSynchronizer]', t => {
     }
   })
 
-  t.test('should reset td', t => {
+  t.test('should reset td', (t) => {
     td.reset()
     t.end()
   })

@@ -1,18 +1,16 @@
 import tape from 'tape-catch'
-import { Chain } from '../../../lib/blockchain'
+import { Chain } from '../../../lib/blockchain'
 const { LesProtocol } = require('../../../lib/net/protocol')
 const BN = require('bn.js')
 
-tape('[LesProtocol]', t => {
-
-  t.test('should get properties', t => {
+tape('[LesProtocol]', (t) => {
+  t.test('should get properties', (t) => {
     const p = new LesProtocol({})
     t.ok(typeof p.name === 'string', 'get name')
     t.ok(Array.isArray(p.versions), 'get versions')
     t.ok(Array.isArray(p.messages), 'get messages')
     t.end()
   })
-
 
   // Test deactivated along TypeScript transition due to
   // deadlock in Blockchain library along initLock.await()

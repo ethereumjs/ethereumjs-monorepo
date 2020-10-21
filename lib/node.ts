@@ -6,7 +6,7 @@ const defaultOptions = {
   minPeers: 3,
   maxPeers: 25,
   logger: defaultLogger,
-  servers: []
+  servers: [],
 }
 
 /**
@@ -15,7 +15,6 @@ const defaultOptions = {
  * @memberof module:node
  */
 export default class Node extends events.EventEmitter {
-  
   public logger: any
   public common: any
   public servers: any
@@ -24,7 +23,7 @@ export default class Node extends events.EventEmitter {
 
   public opened: boolean
   public started: boolean
-  
+
   /**
    * Create new node
    * @param {Object}   options constructor parameters
@@ -40,7 +39,7 @@ export default class Node extends events.EventEmitter {
    * @param {string[]} [options.clientFilter] list of supported clients
    * @param {number}   [options.refreshInterval] how often to discover new peers
    */
-  constructor (options: any) {
+  constructor(options: any) {
     super()
     options = { ...defaultOptions, ...options }
 
@@ -51,22 +50,22 @@ export default class Node extends events.EventEmitter {
     this.services = [
       this.syncmode === 'fast'
         ? new FastEthereumService({
-          servers: this.servers,
-          logger: this.logger,
-          lightserv: options.lightserv,
-          common: options.common,
-          minPeers: options.minPeers,
-          maxPeers: options.maxPeers,
-          db: options.db
-        })
+            servers: this.servers,
+            logger: this.logger,
+            lightserv: options.lightserv,
+            common: options.common,
+            minPeers: options.minPeers,
+            maxPeers: options.maxPeers,
+            db: options.db,
+          })
         : new LightEthereumService({
-          servers: this.servers,
-          logger: this.logger,
-          common: options.common,
-          minPeers: options.minPeers,
-          maxPeers: options.maxPeers,
-          db: options.db
-        })
+            servers: this.servers,
+            logger: this.logger,
+            common: options.common,
+            minPeers: options.minPeers,
+            maxPeers: options.maxPeers,
+            db: options.db,
+          }),
     ]
     this.opened = false
     this.started = false
@@ -76,7 +75,7 @@ export default class Node extends events.EventEmitter {
    * Open node. Must be called before node is started
    * @return {Promise}
    */
-  async open () {
+  async open() {
     if (this.opened) {
       return false
     }
@@ -104,7 +103,7 @@ export default class Node extends events.EventEmitter {
    * Starts node and all services and network servers.
    * @return {Promise}
    */
-  async start () {
+  async start() {
     if (this.started) {
       return false
     }
@@ -117,7 +116,7 @@ export default class Node extends events.EventEmitter {
    * Stops node and all services and network servers.
    * @return {Promise}
    */
-  async stop () {
+  async stop() {
     if (!this.started) {
       return false
     }
@@ -131,7 +130,7 @@ export default class Node extends events.EventEmitter {
    * @param {string} name name of service
    * @return {Service}
    */
-  service (name: string) {
+  service(name: string) {
     return this.services.find((s: any) => s.name === name)
   }
 
@@ -140,8 +139,7 @@ export default class Node extends events.EventEmitter {
    * @param {string} name name of server
    * @return {Server}
    */
-  server (name: string) {
+  server(name: string) {
     return this.servers.find((s: any) => s.name === name)
   }
 }
-

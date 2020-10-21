@@ -3,10 +3,10 @@ const td = require('testdouble')
 import { defaultLogger } from '../../../lib/logging'
 defaultLogger.silent = true
 
-tape('[Fetcher]', t => {
+tape('[Fetcher]', (t) => {
   const Fetcher = require('../../../lib/sync/fetcher/fetcher').Fetcher
 
-  t.test('should handle bad result', t => {
+  t.test('should handle bad result', (t) => {
     t.plan(2)
     const fetcher = new Fetcher({ pool: td.object() })
     const job: any = { peer: {}, state: 'active' }
@@ -19,7 +19,7 @@ tape('[Fetcher]', t => {
     setTimeout(() => t.ok(job.peer.idle, 'peer idled'), 10)
   })
 
-  t.test('should handle failure', t => {
+  t.test('should handle failure', (t) => {
     t.plan(2)
     const fetcher = new Fetcher({ pool: td.object() })
     const job = { peer: {}, state: 'active' }
@@ -30,7 +30,7 @@ tape('[Fetcher]', t => {
     t.equals(fetcher.in.size(), 1, 'enqueued job')
   })
 
-  t.test('should handle expiration', t => {
+  t.test('should handle expiration', (t) => {
     t.plan(2)
     const fetcher = new Fetcher({ pool: td.object(), timeout: 5 })
     const job = { index: 0 }
@@ -38,7 +38,9 @@ tape('[Fetcher]', t => {
     fetcher.peer = td.func()
     fetcher.request = td.func()
     td.when(fetcher.peer()).thenReturn(peer)
-    td.when(fetcher.request(td.matchers.anything(), { idle: false }), { delay: 10 }).thenReject('err0')
+    td.when(fetcher.request(td.matchers.anything(), { idle: false }), { delay: 10 }).thenReject(
+      'err0'
+    )
     td.when(fetcher.pool.contains({ idle: false })).thenReturn(true)
     fetcher.in.insert(job)
     fetcher._readableState = []
@@ -51,7 +53,7 @@ tape('[Fetcher]', t => {
     }, 20)
   })
 
-  t.test('should reset td', t => {
+  t.test('should reset td', (t) => {
     td.reset()
     t.end()
   })

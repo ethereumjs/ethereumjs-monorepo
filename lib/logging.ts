@@ -6,7 +6,7 @@ const levelColors: any = {
   error: 'red',
   warn: 'yellow',
   info: 'green',
-  debug: 'white'
+  debug: 'white',
 }
 
 const errorFormat = format((info: any) => {
@@ -19,18 +19,21 @@ const errorFormat = format((info: any) => {
   return info
 })
 
-function logFormat () {
+function logFormat() {
   return printf((info: any) => {
     // @ts-ignore: implicitly has an 'any' TODO
-    const color = (chalk[levelColors[info.level]]).bind(chalk)
+    const color = chalk[levelColors[info.level]].bind(chalk)
     const level = color(info.level.toUpperCase())
     const re = /(\w+)=(.+?)(?:\s|$)/g
-    info.message = info.message.replace(re, (_: any, tag: string, char: string) => `${color(tag)}=${char} `)
+    info.message = info.message.replace(
+      re,
+      (_: any, tag: string, char: string) => `${color(tag)}=${char} `
+    )
     return `${level} [${info.timestamp}] ${info.message}`
   })
 }
 
-export function getLogger (options = { loglevel: 'info' }) {
+export function getLogger(options = { loglevel: 'info' }) {
   const logger = createLogger({
     format: combine(
       errorFormat(),
@@ -40,14 +43,10 @@ export function getLogger (options = { loglevel: 'info' }) {
       logFormat()
     ),
     level: options.loglevel,
-    transports: [
-      new transports.Console()
-    ],
-    exceptionHandlers: [
-      new transports.Console()
-    ]
+    transports: [new transports.Console()],
+    exceptionHandlers: [new transports.Console()],
   })
   return logger
 }
 
-export const defaultLogger = getLogger({ loglevel: 'debug' });
+export const defaultLogger = getLogger({ loglevel: 'debug' })

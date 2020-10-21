@@ -16,74 +16,73 @@ const fs = require('fs-extra')
 const networks = Object.entries(chains.names)
 const args = require('yargs')
   .options({
-    'network': {
+    network: {
       describe: `Network`,
-      choices: networks.map(n => n[1]),
-      default: networks[0][1]
+      choices: networks.map((n) => n[1]),
+      default: networks[0][1],
     },
     'network-id': {
       describe: `Network ID`,
-      choices: networks.map(n => parseInt(n[0])),
-      default: undefined
+      choices: networks.map((n) => parseInt(n[0])),
+      default: undefined,
     },
-    'syncmode': {
+    syncmode: {
       describe: 'Blockchain sync mode',
-      choices: [ 'light', 'fast' ],
-      default: 'fast'
+      choices: ['light', 'fast'],
+      default: 'fast',
     },
-    'lightserv': {
+    lightserv: {
       describe: 'Serve light peer requests',
       boolean: true,
-      default: false
+      default: false,
     },
-    'datadir': {
+    datadir: {
       describe: 'Data directory for the blockchain',
-      default: `${os.homedir()}/Library/Ethereum`
+      default: `${os.homedir()}/Library/Ethereum`,
     },
-    'transports': {
+    transports: {
       describe: 'Network transports',
       default: ['rlpx:port=30303', 'libp2p'],
-      array: true
+      array: true,
     },
-    'rpc': {
+    rpc: {
       describe: 'Enable the JSON-RPC server',
       boolean: true,
-      default: false
+      default: false,
     },
-    'rpcport': {
+    rpcport: {
       describe: 'HTTP-RPC server listening port',
       number: true,
-      default: 8545
+      default: 8545,
     },
-    'rpcaddr': {
+    rpcaddr: {
       describe: 'HTTP-RPC server listening interface',
-      default: 'localhost'
+      default: 'localhost',
     },
-    'loglevel': {
+    loglevel: {
       describe: 'Logging verbosity',
-      choices: [ 'error', 'warn', 'info', 'debug' ],
-      default: 'info'
+      choices: ['error', 'warn', 'info', 'debug'],
+      default: 'info',
     },
-    'minPeers': {
+    minPeers: {
       describe: 'Peers needed before syncing',
       number: true,
-      default: 2
+      default: 2,
     },
-    'maxPeers': {
+    maxPeers: {
       describe: 'Maximum peers to sync with',
       number: true,
-      default: 25
+      default: 25,
     },
-    'params': {
+    params: {
       describe: 'Path to chain parameters json file',
-      coerce: path.resolve
-    }
+      coerce: path.resolve,
+    },
   })
-  .locale('en_EN')
-  .argv
+  .locale('en_EN').argv
 const logger = getLogger({ loglevel: args.loglevel })
 
-async function runNode (options: any) {
+async function runNode(options: any) {
   logger.info('Initializing Ethereumjs client...')
   if (options.lightserv) {
     logger.info(`Serving light peer requests`)
@@ -104,7 +103,7 @@ async function runNode (options: any) {
   return node
 }
 
-function runRpcServer (node: any, options: any) {
+function runRpcServer(node: any, options: any) {
   const { rpcport, rpcaddr } = options
   const manager = new RPCManager(node, options)
   const server = new RPCServer(manager.getMethods())
@@ -114,11 +113,11 @@ function runRpcServer (node: any, options: any) {
   return server
 }
 
-async function run () {
+async function run() {
   const syncDirName = args.syncmode === 'light' ? 'lightchaindata' : 'chaindata'
   // give network id precedence over network name
   if (args.networkId) {
-    const network = networks.find(n => n[0] === `${args.networkId}`)
+    const network = networks.find((n) => n[0] === `${args.networkId}`)
     if (network) {
       args.network = network[1]
     }
@@ -151,7 +150,7 @@ async function run () {
     rpcport: args.rpcport,
     rpcaddr: args.rpcaddr,
     minPeers: args.minPeers,
-    maxPeers: args.maxPeers
+    maxPeers: args.maxPeers,
   }
   const node = await runNode(options)
   const server = args.rpc ? runRpcServer(node, options) : null
@@ -165,4 +164,4 @@ async function run () {
   })
 }
 
-run().catch(err => logger.error(err))
+run().catch((err) => logger.error(err))

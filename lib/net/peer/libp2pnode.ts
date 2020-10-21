@@ -1,7 +1,7 @@
 /**
-* Libp2p Bundle
-* @memberof module:net/peer
-*/
+ * Libp2p Bundle
+ * @memberof module:net/peer
+ */
 const LibP2pTcp = require('libp2p-tcp')
 const LibP2pWebsockets = require('libp2p-websockets')
 const LibP2pBootstrap = require('libp2p-bootstrap')
@@ -20,42 +20,33 @@ export class Libp2pNode extends LibP2p {
   public asyncDial: any
   public asyncDialProtocol: any
 
-  constructor (options: any) {
+  constructor(options: any) {
     super({
       peerInfo: options.peerInfo,
       modules: {
-        transport: [
-          LibP2pTcp,
-          LibP2pWebsockets
-        ],
-        streamMuxer: [
-          mplex
-        ],
-        connEncryption: [
-          secio
-        ],
-        peerDiscovery: [
-          LibP2pBootstrap
-        ],
-        dht: LibP2pKadDht
+        transport: [LibP2pTcp, LibP2pWebsockets],
+        streamMuxer: [mplex],
+        connEncryption: [secio],
+        peerDiscovery: [LibP2pBootstrap],
+        dht: LibP2pKadDht,
       },
       config: {
         peerDiscovery: {
           bootstrap: {
             interval: 2000,
             enabled: options.bootnodes !== undefined,
-            list: options.bootnodes || []
-          }
+            list: options.bootnodes || [],
+          },
         },
         dht: {
-          kBucketSize: 20
+          kBucketSize: 20,
         },
         // @ts-ignore: 'EXPERIMENTAL' does not exist in type 'OptionsConfig'
         EXPERIMENTAL: {
           dht: false,
-          pubsub: false
-        }
-      }
+          pubsub: false,
+        },
+      },
     })
 
     this.asyncStart = promisify(this.start.bind(this))
@@ -64,5 +55,3 @@ export class Libp2pNode extends LibP2p {
     this.asyncDialProtocol = promisify(this.dialProtocol.bind(this))
   }
 }
-
-

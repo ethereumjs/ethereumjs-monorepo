@@ -7,18 +7,18 @@ export default class MockServer extends Server {
   public server: any
   public peers: any
 
-  constructor (options: any = {}) {
+  constructor(options: any = {}) {
     super(options)
     this.location = options.location || '127.0.0.1'
     this.server = null
     this.peers = {}
   }
 
-  get name () {
+  get name() {
     return 'mock'
   }
 
-  async start (): Promise<boolean> {
+  async start(): Promise<boolean> {
     if (this.started) {
       return false
     }
@@ -29,7 +29,7 @@ export default class MockServer extends Server {
       this.server.on('listening', () => {
         this.emit('listening', {
           transport: this.name,
-          url: `mock://${this.location}`
+          url: `mock://${this.location}`,
         })
       })
     }
@@ -39,8 +39,8 @@ export default class MockServer extends Server {
     return true
   }
 
-  async stop (): Promise<boolean> {
-    await new Promise(resolve => {
+  async stop(): Promise<boolean> {
+    await new Promise((resolve) => {
       setTimeout(() => {
         network.destroyServer(this.location)
         resolve()
@@ -50,7 +50,7 @@ export default class MockServer extends Server {
     return this.started
   }
 
-  async discover (id: any, location: any) {
+  async discover(id: any, location: any) {
     const peer = new MockPeer({ id, location, protocols: Array.from(this.protocols) })
     await peer.connect()
     this.peers[id] = peer
@@ -58,26 +58,31 @@ export default class MockServer extends Server {
     return peer
   }
 
-  async accept (id: any) {
+  async accept(id: any) {
     const peer = new MockPeer({ id, protocols: Array.from(this.protocols) })
     await peer.accept(this)
     return peer
   }
 
-  async connect (connection: any) {
+  async connect(connection: any) {
     const id = connection.remoteId
-    const peer = new MockPeer({ id, inbound: true, server: this, protocols: Array.from(this.protocols) })
+    const peer = new MockPeer({
+      id,
+      inbound: true,
+      server: this,
+      protocols: Array.from(this.protocols),
+    })
     await peer.bindProtocols(connection)
     this.peers[id] = peer
     this.emit('connected', peer)
   }
 
-  disconnect (id: any) {
+  disconnect(id: any) {
     const peer = this.peers[id]
     if (peer) this.emit('disconnected', peer)
   }
 
-  async wait (delay: any) {
-    await new Promise(resolve => setTimeout(resolve, delay || 100))
+  async wait(delay: any) {
+    await new Promise((resolve) => setTimeout(resolve, delay || 100))
   }
 }

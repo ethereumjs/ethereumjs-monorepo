@@ -4,24 +4,34 @@ import { EventEmitter } from 'events'
 import { Sender } from '../../../lib/net/protocol/sender'
 import { Protocol } from '../../../lib/net/protocol/protocol'
 
-tape('[Protocol]', t => {
+tape('[Protocol]', (t) => {
   const BoundProtocol = td.replace('../../../lib/net/protocol/boundprotocol')
   const Sender = td.replace('../../../lib/net/protocol/sender')
   const testMessage = {
     name: 'TestMessage',
     code: 0x01,
     encode: (value: any) => value.toString(),
-    decode: (value: any) => parseInt(value)
+    decode: (value: any) => parseInt(value),
   }
   class TestProtocol extends Protocol {
-    get name () : string { return 'test' }
-    get versions() : number[] { return [1] }
-    get messages () : any[]{ return [ testMessage ] }
-    encodeStatus () : number[] { return [1] }
-    decodeStatus (status: any) : any { return { id: status[0] } }
+    get name(): string {
+      return 'test'
+    }
+    get versions(): number[] {
+      return [1]
+    }
+    get messages(): any[] {
+      return [testMessage]
+    }
+    encodeStatus(): number[] {
+      return [1]
+    }
+    decodeStatus(status: any): any {
+      return { id: status[0] }
+    }
   }
 
-  t.test('should throw if missing abstract methods', t => {
+  t.test('should throw if missing abstract methods', (t) => {
     const p = new Protocol()
     t.throws(() => p.versions, /Unimplemented/)
     t.throws(() => p.messages, /Unimplemented/)
@@ -39,30 +49,30 @@ tape('[Protocol]', t => {
 
   t.test('should perform handshake (status now)', async (t) => {
     const p = new TestProtocol()
-    const sender = new EventEmitter(); // need semi-colon as statement separator
-    (<unknown>sender as any).sendStatus = td.func();
-    (<unknown>sender as any).status = [1]
+    const sender = new EventEmitter() // need semi-colon as statement separator
+    ;((<unknown>sender) as any).sendStatus = td.func()
+    ;((<unknown>sender) as any).status = [1]
     t.deepEquals(await p.handshake(sender as Sender), { id: 1 }, 'got status now')
     t.end()
   })
 
   t.test('should perform handshake (status later)', async (t) => {
     const p = new TestProtocol()
-    const sender = new EventEmitter(); // need semi-colon as statement separator
-    (<unknown>sender as any).sendStatus = td.func()
+    const sender = new EventEmitter() // need semi-colon as statement separator
+    ;((<unknown>sender) as any).sendStatus = td.func()
     setTimeout(() => {
       sender.emit('status', [1])
     }, 100)
     const status = await p.handshake(sender as Sender)
-    td.verify((<unknown>sender as any).sendStatus([1]))
+    td.verify(((<unknown>sender) as any).sendStatus([1]))
     t.deepEquals(status, { id: 1 }, 'got status later')
     t.end()
   })
 
   t.test('should handle handshake timeout', async (t) => {
     const p = new TestProtocol()
-    const sender = new EventEmitter(); // need semi-colon as statement separator
-    (<unknown>sender as any).sendStatus = td.func()
+    const sender = new EventEmitter() // need semi-colon as statement separator
+    ;((<unknown>sender) as any).sendStatus = td.func()
     p.timeout = 100
     setTimeout(() => {
       sender.emit('status', [1])
@@ -75,7 +85,7 @@ tape('[Protocol]', t => {
     t.end()
   })
 
-  t.test('should encode message', t => {
+  t.test('should encode message', (t) => {
     const p = new TestProtocol()
     t.equals(p.encode(testMessage, 1234), '1234', 'encoded')
     // Deactivated along TypeScript transition, wrong Message type
@@ -83,7 +93,7 @@ tape('[Protocol]', t => {
     t.end()
   })
 
-  t.test('should decode message', t => {
+  t.test('should decode message', (t) => {
     const p = new TestProtocol()
     t.equals(p.decode(testMessage, '1234'), 1234, 'decoded')
     // Deactivated along TypeScript transition, wrong Message type

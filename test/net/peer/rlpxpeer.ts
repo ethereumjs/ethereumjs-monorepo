@@ -8,10 +8,10 @@ defaultLogger.silent = true
 // Many tests pass but it looks like this suite still needs to be skipped because
 // importing RlpxPeer above (instead of `require`ing it within the Tape test below
 // as originally) causes td.reset to hang (?). Suite will not exit
-tape.skip('[RlpxPeer]', t => {
+tape.skip('[RlpxPeer]', (t) => {
   const { DPT, ETH, LES } = require('ethereumjs-devp2p')
   class RLPx extends EventEmitter {}
-  (<unknown>RLPx.prototype as any).connect = td.func()
+  ((<unknown>RLPx.prototype) as any).connect = td.func()
   td.replace('ethereumjs-devp2p', { DPT, ETH, LES, RLPx })
   const RlpxSender = td.replace('../../../lib/net/protocol/rlpxsender')
 
@@ -114,7 +114,7 @@ tape.skip('[RlpxPeer]', t => {
     t.end()
   })*/
 
-  t.test('should reset td', t => {
+  t.test('should reset td', (t) => {
     td.reset()
     t.end()
   })

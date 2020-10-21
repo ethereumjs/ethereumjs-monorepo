@@ -1,14 +1,12 @@
-
 import { Sender } from './sender'
-import { bufferToInt, rlp } from 'ethereumjs-util'
+import { bufferToInt, rlp } from 'ethereumjs-util'
 import { Pushable } from 'pull-pushable'
 
 // TODO: polkadot/ts types seem wrong (?)
 // "pull_pushable_1.default is not a function"
-const pushable = require('pull-pushable');
+const pushable = require('pull-pushable')
 const catcher = require('pull-catch')
 const pull = require('pull-stream')
-
 
 /**
  * Libp2p protocol sender
@@ -23,7 +21,7 @@ export class Libp2pSender extends Sender {
    * Creates a new Libp2p protocol sender
    * @param {Connection} connection  connection to libp2p peer
    */
-  constructor (connection: any) {
+  constructor(connection: any) {
     super()
 
     this.connection = connection
@@ -31,7 +29,7 @@ export class Libp2pSender extends Sender {
     this.init()
   }
 
-  init () {
+  init() {
     // outgoing stream
     pull(
       this.pushableStream,
@@ -63,9 +61,9 @@ export class Libp2pSender extends Sender {
    * Send a status to peer
    * @param  {Object} status
    */
-  sendStatus (status: any) {
+  sendStatus(status: any) {
     const payload: any = Object.entries(status).map(([k, v]) => [k, v])
-    this.pushableStream.push(rlp.encode([ 0, payload ]))
+    this.pushableStream.push(rlp.encode([0, payload]))
   }
 
   /**
@@ -73,15 +71,15 @@ export class Libp2pSender extends Sender {
    * @param  {number} code message code
    * @param  {*}      data message payload
    */
-  sendMessage (code: number, data: any) {
-    this.pushableStream.push(rlp.encode([ code, data ]))
+  sendMessage(code: number, data: any) {
+    this.pushableStream.push(rlp.encode([code, data]))
   }
 
   /**
    * Handle pull stream errors
    * @param  error error
    */
-  error (error: Error) {
+  error(error: Error) {
     this.emit('error', error)
   }
 }

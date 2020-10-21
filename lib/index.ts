@@ -4,16 +4,16 @@
  * @param  {string} name
  * @param  {string} path
  */
-exports.define = function define (name: string, path: string) {
+exports.define = function define(name: string, path: string) {
   let cache: any = null
   Object.defineProperty(exports, name, {
     enumerable: true,
-    get () {
+    get() {
       if (!cache) {
         cache = require(path)
       }
       return cache
-    }
+    },
   })
 }
 

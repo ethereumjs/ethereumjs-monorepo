@@ -5,8 +5,8 @@ import { defaultLogger } from '../../lib/logging'
 defaultLogger.silent = true
 
 // TESTS FAILING: replace testdouble w/ something TS friendly?
-tape.skip('[LightEthereumService]', t => {
-  class PeerPool extends EventEmitter { }
+tape.skip('[LightEthereumService]', (t) => {
+  class PeerPool extends EventEmitter {}
   PeerPool.prototype.open = td.func()
   td.replace('../../lib/net/peerpool', PeerPool)
   td.replace('../../lib/net/protocol/flowcontrol')
@@ -17,7 +17,7 @@ tape.skip('[LightEthereumService]', t => {
   const LesProtocol = td.constructor()
   td.replace('../../lib/net/protocol/lesprotocol', LesProtocol)
 
-  class LightSynchronizer extends EventEmitter { }
+  class LightSynchronizer extends EventEmitter {}
   LightSynchronizer.prototype.start = td.func()
   LightSynchronizer.prototype.stop = td.func()
   LightSynchronizer.prototype.open = td.func()
@@ -25,14 +25,14 @@ tape.skip('[LightEthereumService]', t => {
   const { LightEthereumService } = require('../../lib/service')
 
   t.test('should initialize correctly', async (t) => {
-    let service = new LightEthereumService()
+    const service = new LightEthereumService()
     t.ok(service.synchronizer instanceof LightSynchronizer, 'light sync')
     t.equals(service.name, 'eth', 'got name')
     t.end()
   })
 
   t.test('should get protocols', async (t) => {
-    let service = new LightEthereumService()
+    const service = new LightEthereumService()
     t.ok(service.protocols[0] instanceof LesProtocol, 'light protocols')
     t.end()
   })
@@ -40,7 +40,7 @@ tape.skip('[LightEthereumService]', t => {
   t.test('should open', async (t) => {
     t.plan(3)
     const server = td.object()
-    let service = new LightEthereumService({ servers: [server] })
+    const service = new LightEthereumService({ servers: [server] })
     await service.open()
     td.verify(service.chain.open())
     td.verify(service.synchronizer.open())
@@ -58,7 +58,7 @@ tape.skip('[LightEthereumService]', t => {
 
   t.test('should start/stop', async (t) => {
     const server = td.object()
-    let service = new LightEthereumService({ servers: [server] })
+    const service = new LightEthereumService({ servers: [server] })
     await service.start()
     td.verify(service.synchronizer.start())
     t.notOk(await service.start(), 'already started')
@@ -69,7 +69,7 @@ tape.skip('[LightEthereumService]', t => {
     t.end()
   })
 
-  t.test('should reset td', t => {
+  t.test('should reset td', (t) => {
     td.reset()
     t.end()
   })

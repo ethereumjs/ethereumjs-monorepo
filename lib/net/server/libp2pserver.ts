@@ -5,9 +5,9 @@ import { Libp2pPeer } from '../peer'
 import { Libp2pNode } from '../peer/libp2pnode'
 
 const defaultOptions = {
-  multiaddrs: [ '/ip4/127.0.0.1/tcp/50580/ws' ],
+  multiaddrs: ['/ip4/127.0.0.1/tcp/50580/ws'],
   key: null,
-  bootnodes: []
+  bootnodes: [],
 }
 
 /**
@@ -18,12 +18,11 @@ const defaultOptions = {
  * @memberof module:net/server
  */
 export class Libp2pServer extends Server {
-  
   private peers: Map<string, Libp2pPeer> = new Map()
   private banned: Map<string, number> = new Map()
   private multiaddrs: string[] | string
-  private node: Libp2pNode | null
-  
+  private node: Libp2pNode | null
+
   /**
    * Create new DevP2P/RLPx server
    * @param {Object}   options constructor parameters
@@ -36,7 +35,7 @@ export class Libp2pServer extends Server {
    * @param {number}   [options.refreshInterval=30000] how often (in ms) to discover new peers
    * @param {Logger}   [options.logger] Logger instance
    */
-  constructor (options: any) {
+  constructor(options: any) {
     super(options)
     options = { ...defaultOptions, ...options }
     this.multiaddrs = options.multiaddrs
@@ -51,11 +50,11 @@ export class Libp2pServer extends Server {
    * Server name
    * @type {string}
    */
-  get name () {
+  get name() {
     return 'libp2p'
   }
 
-  init () {
+  init() {
     if (typeof this.key === 'string') {
       this.key = Buffer.from(this.key, 'base64')
     }
@@ -71,7 +70,7 @@ export class Libp2pServer extends Server {
    * Start Libp2p server. Returns a promise that resolves once server has been started.
    * @return Resolves with true if server successfully started
    */
-  async start (): Promise<boolean> {
+  async start(): Promise<boolean> {
     if (this.started) {
       return false
     }
@@ -79,17 +78,17 @@ export class Libp2pServer extends Server {
     if (!this.node) {
       this.node = new Libp2pNode({
         peerInfo: await this.createPeerInfo(),
-        bootnodes: this.bootnodes
+        bootnodes: this.bootnodes,
       })
       this.protocols.forEach(async (p: any) => {
         //@ts-ignore
-        const protocol: any = `/${p.name}/${p.versions[0]}`;
-        (this.node as Libp2pNode).handle(protocol, async (_: any, connection: any) => {
+        const protocol: any = `/${p.name}/${p.versions[0]}`
+        ;(this.node as Libp2pNode).handle(protocol, async (_: any, connection: any) => {
           try {
             const peerInfo = await this.getPeerInfo(connection)
             const id = (peerInfo as any).id.toB58String()
             const peer = this.peers.get(id)
-            if (peer) {
+            if (peer) {
               await peer.accept(p, connection, this)
               this.emit('connected', peer)
             }
@@ -121,14 +120,16 @@ export class Libp2pServer extends Server {
         this.error(e)
       }
     })
-    await new Promise((resolve, reject) => (this.node as Libp2pNode).start((err: any) => {
-      if (err) reject(err)
-      resolve()
-    }))
+    await new Promise((resolve, reject) =>
+      (this.node as Libp2pNode).start((err: any) => {
+        if (err) reject(err)
+        resolve()
+      })
+    )
     this.node.peerInfo.multiaddrs.toArray().map((ma: any) => {
       this.emit('listening', {
         transport: this.name,
-        url: ma.toString()
+        url: ma.toString(),
       })
     })
     this.started = true
@@ -138,12 +139,14 @@ export class Libp2pServer extends Server {
   /**
    * Stop Libp2p server. Returns a promise that resolves once server has been stopped.
    */
-  async stop (): Promise<boolean> {
+  async stop(): Promise<boolean> {
     if (this.started) {
-      await new Promise((resolve, reject) => (this.node as Libp2pNode).stop((err: any) => {
-        if (err) reject(err)
-        resolve()
-      }))
+      await new Promise((resolve, reject) =>
+        (this.node as Libp2pNode).stop((err: any) => {
+          if (err) reject(err)
+          resolve()
+        })
+      )
       await super.stop()
       this.started = false
     }
@@ -155,7 +158,7 @@ export class Libp2pServer extends Server {
    * @param  peerId id of peer
    * @param  [maxAge] how long to ban peer
    */
-  ban (peerId: string, maxAge = 60000): boolean {
+  ban(peerId: string, maxAge = 60000): boolean {
     if (!this.started) {
       return false
     }
@@ -168,7 +171,7 @@ export class Libp2pServer extends Server {
    * @param  peerId id of peer
    * @return true if banned
    */
-  isBanned (peerId: string): boolean {
+  isBanned(peerId: string): boolean {
     const expireTime = this.banned.get(peerId)
     if (expireTime && expireTime > Date.now()) {
       return true
@@ -183,11 +186,11 @@ export class Libp2pServer extends Server {
    * @param  error
    * @emits  error
    */
-  error (error: Error) {
+  error(error: Error) {
     this.emit('error', error)
   }
 
-  async createPeerInfo () {
+  async createPeerInfo() {
     return new Promise((resolve, reject) => {
       const handler = (err: any, peerInfo: any) => {
         if (err) {
@@ -209,24 +212,24 @@ export class Libp2pServer extends Server {
     })
   }
 
-  async getPeerInfo (connection: any) {
+  async getPeerInfo(connection: any) {
     return new Promise((resolve, reject) => {
       connection.getPeerInfo((err: any, info: any) => {
-        if (err) { return reject(err) }
+        if (err) {
+          return reject(err)
+        }
         resolve(info)
       })
     })
   }
 
-  createPeer (peerInfo: any) {
+  createPeer(peerInfo: any) {
     const peer = new Libp2pPeer({
       id: peerInfo.id.toB58String(),
       multiaddrs: peerInfo.multiaddrs.toArray().map((ma: any) => ma.toString()),
-      protocols: Array.from(this.protocols)
+      protocols: Array.from(this.protocols),
     })
     this.peers.set(peer.id, peer)
     return peer
   }
 }
-
-

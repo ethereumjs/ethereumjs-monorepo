@@ -7,35 +7,36 @@ defaultLogger.silent = true
 
 // TODO: There is a syntax or TS compilation error somewhere in this file (??)
 // ...uncommenting the tests causes integration suite to exit silently / prematurely
-tape('[Integration:LightSync]', async t => {
-  async function wait (delay: number) {
-    await new Promise(resolve => setTimeout(resolve, delay))
+tape('[Integration:LightSync]', async (t) => {
+  async function wait(delay: number) {
+    await new Promise((resolve) => setTimeout(resolve, delay))
   }
 
-  async function setup (options: any = {}) {
+  async function setup(options: any = {}) {
     const server = new MockServer({ location: options.location })
     const chain = new MockChain({ height: options.height })
-    const service = options.syncmode === 'fast'
-      ? new FastEthereumService({
-        servers: [ server ],
-        lightserv: true,
-        minPeers: 1,
-        interval: options.interval || 10,
-        chain
-      })
-      : new LightEthereumService({
-        servers: [ server ],
-        minPeers: 1,
-        interval: options.interval || 10,
-        chain
-      })
+    const service =
+      options.syncmode === 'fast'
+        ? new FastEthereumService({
+            servers: [server],
+            lightserv: true,
+            minPeers: 1,
+            interval: options.interval || 10,
+            chain,
+          })
+        : new LightEthereumService({
+            servers: [server],
+            minPeers: 1,
+            interval: options.interval || 10,
+            chain,
+          })
     await service.open()
     await server.start()
     await service.start()
     return [server, service]
   }
 
-  async function destroy (server: any, service: any) {
+  async function destroy(server: any, service: any) {
     await service.stop()
     await server.stop()
     await service.close()
@@ -85,7 +86,7 @@ tape('[Integration:LightSync]', async t => {
   })*/
 
   // TODO: Delete when bug fixed here
-  t.test('end', t => {
+  t.test('end', (t) => {
     t.end()
   })
 })

@@ -2,29 +2,47 @@ import tape from 'tape-catch'
 import * as path from 'path'
 import { parseBootnodes, parseTransports, parseParams } from '../../lib/util'
 
-tape('[Util/Parse]', t => {
-  t.test('should parse bootnodes', t => {
+tape('[Util/Parse]', (t) => {
+  t.test('should parse bootnodes', (t) => {
     t.notOk(parseBootnodes(''), 'handle empty')
-    t.deepEquals(parseBootnodes('10.0.0.1:1234'), [
-      { ip: '10.0.0.1', port: '1234' }
-    ], 'parse ip:port')
-    t.deepEquals(parseBootnodes('enode://abc@10.0.0.1:1234'), [
-      { id: 'abc', ip: '10.0.0.1', port: '1234' }
-    ], 'parse url')
-    t.deepEquals(parseBootnodes('10.0.0.1:1234,enode://abc@127.0.0.1:2345'), [
-      { ip: '10.0.0.1', port: '1234' },
-      { id: 'abc', ip: '127.0.0.1', port: '2345' }
-    ], 'parse multiple')
-    t.throws(() => parseBootnodes((<unknown>10 as string)), /not a function/, 'throws error')
+    t.deepEquals(
+      parseBootnodes('10.0.0.1:1234'),
+      [{ ip: '10.0.0.1', port: '1234' }],
+      'parse ip:port'
+    )
+    t.deepEquals(
+      parseBootnodes('enode://abc@10.0.0.1:1234'),
+      [{ id: 'abc', ip: '10.0.0.1', port: '1234' }],
+      'parse url'
+    )
+    t.deepEquals(
+      parseBootnodes('10.0.0.1:1234,enode://abc@127.0.0.1:2345'),
+      [
+        { ip: '10.0.0.1', port: '1234' },
+        { id: 'abc', ip: '127.0.0.1', port: '2345' },
+      ],
+      'parse multiple'
+    )
+    t.throws(() => parseBootnodes((<unknown>10) as string), /not a function/, 'throws error')
     t.end()
   })
 
-  t.test('should parse transports', t => {
-    t.deepEquals(parseTransports(['t1']), [{ name: 't1', options: {} }], 'parsed transport without options')
-    t.deepEquals(parseTransports(['t2:k1=v1,k:k=v2,k3="v3",k4,k5=']), [{
-      name: 't2',
-      options: { k1: 'v1', 'k:k': 'v2', k3: '"v3"', k4: undefined, k5: '' }
-    }], 'parsed transport with options')
+  t.test('should parse transports', (t) => {
+    t.deepEquals(
+      parseTransports(['t1']),
+      [{ name: 't1', options: {} }],
+      'parsed transport without options'
+    )
+    t.deepEquals(
+      parseTransports(['t2:k1=v1,k:k=v2,k3="v3",k4,k5=']),
+      [
+        {
+          name: 't2',
+          options: { k1: 'v1', 'k:k': 'v2', k3: '"v3"', k4: undefined, k5: '' },
+        },
+      ],
+      'parsed transport with options'
+    )
     t.end()
   })
 

@@ -4,14 +4,14 @@ import { startRPC, createManager, createNode, params, baseRequest } from '../hel
 
 const method = 'eth_blockNumber'
 
-tape(`${method}: call with valid arguments`, t => {
+tape(`${method}: call with valid arguments`, (t) => {
   const mockBlockNumber = 123
   const mockBlockChain = {
     getLatestHeader: () => {
       return Promise.resolve({
-        number: toBuffer(mockBlockNumber)
+        number: toBuffer(mockBlockNumber),
       })
-    }
+    },
   }
   const manager = createManager(createNode({ blockchain: mockBlockChain }))
   const server = startRPC(manager.getMethods())

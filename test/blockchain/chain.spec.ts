@@ -42,11 +42,12 @@ tape('[Chain]', (t) => {
     t.equal(chain.networkId, 1, 'get chain.networkId')
     t.equal(chain.blocks.td.toString(10), '17179869184', 'get chain.blocks.td')
     t.equal(chain.blocks.height.toString(10), '0', 'get chain.blocks.height')
-    t.equal(chain.genesis.hash.toString('hex'),
+    t.equal(
+      chain.genesis.hash.toString('hex'),
       'd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3',
-      'get chain.genesis')
-    t.ok(chain.genesis.hash.equals(chain.blocks.latest.hash()),
-      'get chain.block.latest')
+      'get chain.genesis'
+    )
+    t.ok(chain.genesis.hash.equals(chain.blocks.latest.hash()), 'get chain.block.latest')
     await chain.close()
     t.end()
   })

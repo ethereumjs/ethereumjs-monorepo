@@ -3,7 +3,7 @@ const td = require('testdouble')
 import { Peer } from '../../../lib/net/peer'
 import * as events from 'events'
 
-tape('[Peer]', t => {
+tape('[Peer]', (t) => {
   const peer = new Peer({
     id: '0123456789abcdef',
     address: 'address0',
@@ -11,7 +11,7 @@ tape('[Peer]', t => {
     inbound: true,
   })
 
-  t.test('should get/set idle state', t => {
+  t.test('should get/set idle state', (t) => {
     t.ok(peer.idle, 'is initially idle')
     peer.idle = false
     t.notOk(peer.idle, 'idle set to false')

@@ -8,7 +8,7 @@ const defaultOptions = {
   common: new Common('mainnet', 'chainstart'),
   minPeers: 3,
   timeout: 8000,
-  interval: 1000
+  interval: 1000,
 }
 
 /**
@@ -24,7 +24,6 @@ export class EthereumService extends Service {
   public timeout: number
   public synchronizer: any
 
-
   /**
    * Create new ETH service
    * @param {Object}   options constructor parameters
@@ -38,7 +37,7 @@ export class EthereumService extends Service {
    * @param {number}   [options.interval] sync retry interval
    * @param {Logger}   [options.logger] logger instance
    */
-  constructor (options?: any) {
+  constructor(options?: any) {
     options = { ...defaultOptions, ...options }
     super(options)
 
@@ -56,7 +55,7 @@ export class EthereumService extends Service {
    * @protected
    * @type {string}
    */
-  get name () {
+  get name() {
     return 'eth'
   }
 
@@ -64,7 +63,7 @@ export class EthereumService extends Service {
    * Open eth service. Must be called before service is started
    * @return {Promise}
    */
-  async open () {
+  async open() {
     if (this.opened) {
       return false
     }
@@ -80,7 +79,7 @@ export class EthereumService extends Service {
    * that resolves once the service is started and blockchain is in sync.
    * @return {Promise}
    */
-  async start (): Promise<void | boolean> {
+  async start(): Promise<void | boolean> {
     if (this.running) {
       return false
     }
@@ -92,7 +91,7 @@ export class EthereumService extends Service {
    * Stop service. Interrupts blockchain synchronization if its in progress.
    * @return {Promise}
    */
-  async stop (): Promise<void | boolean> {
+  async stop(): Promise<void | boolean> {
     if (!this.running) {
       return false
     }

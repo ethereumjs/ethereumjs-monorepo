@@ -5,7 +5,7 @@ export default class MockSender extends Sender {
   public pushable: any
   public receiver: any
 
-  constructor (protocol: any, pushable: any, receiver: any) {
+  constructor(protocol: any, pushable: any, receiver: any) {
     super()
 
     this.protocol = protocol
@@ -14,7 +14,7 @@ export default class MockSender extends Sender {
     this.init()
   }
 
-  init () {
+  init() {
     this.receiver.on('data', ([protocol, code, payload]: any[]) => {
       if (protocol !== this.protocol) return
       if (code === 0) {
@@ -25,11 +25,11 @@ export default class MockSender extends Sender {
     })
   }
 
-  sendStatus (status: any) {
-    this.pushable.push([ this.protocol, 0, status ])
+  sendStatus(status: any) {
+    this.pushable.push([this.protocol, 0, status])
   }
 
-  sendMessage (code: any, data: any) {
-    this.pushable.push([ this.protocol, code, data ])
+  sendMessage(code: any, data: any) {
+    this.pushable.push([this.protocol, code, data])
   }
 }

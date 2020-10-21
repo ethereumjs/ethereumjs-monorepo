@@ -11,7 +11,7 @@ const defaultOptions = {
   interval: 1000,
   banTime: 60000,
   maxQueue: 16,
-  maxPerRequest: 128
+  maxPerRequest: 128,
 }
 
 /**
@@ -50,7 +50,7 @@ export class Fetcher extends Readable {
    * @param {number}   [options.interval] retry interval
    * @param {Logger}   [options.logger] Logger instance
    */
-  constructor (options: any) {
+  constructor(options: any) {
     super({ ...options, objectMode: true })
     options = { ...defaultOptions, ...options }
 
@@ -74,7 +74,7 @@ export class Fetcher extends Readable {
    * Generate list of tasks to fetch
    * @return {Object[]} tasks
    */
-  tasks () : object[] {
+  tasks(): object[] {
     return []
   }
 
@@ -82,13 +82,13 @@ export class Fetcher extends Readable {
    * Enqueue job
    * @param job
    */
-  enqueue (job: any) {
+  enqueue(job: any) {
     if (this.running) {
       this.in.insert({
         ...job,
         time: Date.now(),
         state: 'idle',
-        result: null
+        result: null,
       })
     }
   }
@@ -96,8 +96,8 @@ export class Fetcher extends Readable {
   /**
    * Dequeue all done tasks that completed in order
    */
-  dequeue () {
-    for (let f = this.out.peek(); f && f.index === this.processed;) {
+  dequeue() {
+    for (let f = this.out.peek(); f && f.index === this.processed; ) {
       this.processed++
       const { result } = this.out.remove()
       if (!this.push(result)) {
@@ -110,7 +110,7 @@ export class Fetcher extends Readable {
   /**
    * Implements Readable._read() by pushing completed tasks to the read queue
    */
-  _read () {
+  _read() {
     this.dequeue()
   }
 
@@ -120,7 +120,7 @@ export class Fetcher extends Readable {
    * @param  job successful job
    * @param  result job result
    */
-  success (job: any, result: any) {
+  success(job: any, result: any) {
     if (job.state !== 'active') return
     if (result === undefined) {
       this.enqueue(job)
@@ -146,7 +146,7 @@ export class Fetcher extends Readable {
    * @param  job failed job
    * @param  [error] error
    */
-  failure (job: any, error?: Error) {
+  failure(job: any, error?: Error) {
     if (job.state !== 'active') return
     job.peer.idle = true
     this.pool.ban(job.peer, this.banTime)
@@ -160,7 +160,7 @@ export class Fetcher extends Readable {
   /**
    * Process next task
    */
-  next () {
+  next() {
     const job = this.in.peek()
     if (
       !job ||
@@ -192,7 +192,7 @@ export class Fetcher extends Readable {
    * @param  {Error}  error error object
    * @param  {Object} job  task
    */
-  error (error: Error, job?: any) {
+  error(error: Error, job?: any) {
     if (this.running) {
       this.emit('error', error, job && job.task, job && job.peer)
     }
@@ -202,7 +202,7 @@ export class Fetcher extends Readable {
    * Setup writer pipe and start writing fetch results. A pipe is used in order
    * to support backpressure from storing results.
    */
-  write () {
+  write() {
     const _write = async (result: any, encoding: any, cb: Function) => {
       try {
         await this.store(result)
@@ -215,13 +215,13 @@ export class Fetcher extends Readable {
     const writer = new Writable({
       objectMode: true,
       write: _write,
-      writev: (many: any, cb: Function) => _write([].concat(...many.map((x: any) => x.chunk)), null, cb)
+      writev: (many: any, cb: Function) =>
+        _write([].concat(...many.map((x: any) => x.chunk)), null, cb),
     })
-    this
-      .on('close', () => {
-        this.running = false
-        writer.destroy()
-      })
+    this.on('close', () => {
+      this.running = false
+      writer.destroy()
+    })
       .pipe(writer)
       .on('finish', () => {
         this.running = false
@@ -237,19 +237,19 @@ export class Fetcher extends Readable {
    * Run the fetcher. Returns a promise that resolves once all tasks are completed.
    * @return {Promise}
    */
-  async fetch () {
+  async fetch() {
     if (this.running) {
       return false
     }
     this.write()
-    this.tasks().forEach(task => {
+    this.tasks().forEach((task) => {
       const job = {
         task,
         time: Date.now(),
         index: this.total++,
         result: null,
         state: 'idle',
-        peer: null
+        peer: null,
       }
       this.in.insert(job)
     })
@@ -270,7 +270,7 @@ export class Fetcher extends Readable {
    * @param  job job
    * @return {Peer}
    */
-  peer (job?: any) {
+  peer(job?: any) {
     return this.pool.idle()
   }
 
@@ -280,7 +280,7 @@ export class Fetcher extends Readable {
    * @param  peer
    * @return {Promise}
    */
-  request (job?: any, peer?: any): Promise<any> {
+  request(job?: any, peer?: any): Promise<any> {
     throw new Error('Unimplemented')
   }
 
@@ -290,7 +290,7 @@ export class Fetcher extends Readable {
    * @param  {Peer}   peer peer that handled task
    * @param  result result data
    */
-  process (job?: any, peer?: any, result?: any) {
+  process(job?: any, peer?: any, result?: any) {
     throw new Error('Unimplemented')
   }
 
@@ -298,13 +298,15 @@ export class Fetcher extends Readable {
    * Expire job that has timed out and ban associated peer. Timed out tasks will
    * be re-inserted into the queue.
    */
-  expire (job: any) {
+  expire(job: any) {
     job.state = 'expired'
     if (this.pool.contains(job.peer)) {
       this.logger.debug(`Task timed out for peer (banning) ${JSON.stringify(job.task)} ${job.peer}`)
       this.pool.ban(job.peer, 300000)
     } else {
-      this.logger.debug(`Peer disconnected while performing task ${JSON.stringify(job.task)} ${job.peer}`)
+      this.logger.debug(
+        `Peer disconnected while performing task ${JSON.stringify(job.task)} ${job.peer}`
+      )
     }
     this.enqueue(job)
   }
@@ -314,11 +316,11 @@ export class Fetcher extends Readable {
    * @param result fetch result
    * @return {Promise}
    */
-  async store (result?: any) {
+  async store(result?: any) {
     throw new Error('Unimplemented')
   }
 
-  async wait (delay?: number) {
-    await new Promise(resolve => setTimeout(resolve, delay || this.interval))
+  async wait(delay?: number) {
+    await new Promise((resolve) => setTimeout(resolve, delay || this.interval))
   }
 }

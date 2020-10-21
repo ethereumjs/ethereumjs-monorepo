@@ -1,4 +1,4 @@
-import { EthereumService } from '../../service/ethereumservice'
+import { EthereumService } from '../../service/ethereumservice'
 import { middleware } from '../validation'
 import { addHexPrefix } from 'ethereumjs-util'
 
@@ -15,7 +15,7 @@ export class Net {
    * Create net_* RPC module
    * @param {Node} Node to which the module binds
    */
-  constructor (node: any) {
+  constructor(node: any) {
     const service: EthereumService = node.services.find((s: any) => s.name === 'eth')
     this._chain = service.chain
     this._node = node
@@ -32,7 +32,7 @@ export class Net {
    * @param  {Function} [cb] A function with an error object as the first argument and the network
    * id as the second argument
    */
-  version (params = [], cb: (err: Error | null, id: string) => void ) {
+  version(params = [], cb: (err: Error | null, id: string) => void) {
     cb(null, `${this._node.common.chainId()}`)
   }
 
@@ -42,7 +42,7 @@ export class Net {
    * @param  {Function} [cb] A function with an error object as the first argument and a boolean
    * that's true when the client is listening and false when it's not as the second argument
    */
-  listening (params = [], cb: (err: Error | null, isListening: boolean) => void) {
+  listening(params = [], cb: (err: Error | null, isListening: boolean) => void) {
     cb(null, this._node.opened)
   }
 
@@ -52,7 +52,7 @@ export class Net {
    * @param  {Function} [cb] A function with an error object as the first argument and the
    * number of peers connected to the client as the second argument
    */
-  peerCount (params = [], cb: (err: Error | null, numberOfPeers: string) => void) {
+  peerCount(params = [], cb: (err: Error | null, numberOfPeers: string) => void) {
     cb(null, addHexPrefix(this._peerPool.peers.length.toString(16)))
   }
 }

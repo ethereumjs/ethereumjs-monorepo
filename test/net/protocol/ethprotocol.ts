@@ -1,12 +1,11 @@
 import tape from 'tape-catch'
-import { Chain } from '../../../lib/blockchain/chain'
+import { Chain } from '../../../lib/blockchain/chain'
 const { EthProtocol } = require('../../../lib/net/protocol')
 
 const BN = require('bn.js')
 
-tape('[EthProtocol]', t => {
-
-  t.test('should get properties', t => {
+tape('[EthProtocol]', (t) => {
+  t.test('should get properties', (t) => {
     const p = new EthProtocol({})
     t.ok(typeof p.name === 'string', 'get name')
     t.ok(Array.isArray(p.versions), 'get versions')

@@ -1,6 +1,6 @@
 import tape from 'tape'
 
-export function checkError (t: tape.Test, expectedCode: any, expectedMessage?: any) {
+export function checkError(t: tape.Test, expectedCode: any, expectedMessage?: any) {
   return (res: any) => {
     if (!res.body.error) {
       throw new Error('should return an error object')

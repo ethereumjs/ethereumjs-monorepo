@@ -5,7 +5,7 @@ import { EventEmitter } from 'events'
 import { defaultLogger } from '../../lib/logging'
 defaultLogger.silent = true
 
-tape('[LightSynchronizer]', t => {
+tape('[LightSynchronizer]', (t) => {
   class PeerPool extends EventEmitter {}
   td.replace('../../lib/net/peerpool', PeerPool)
   class HeaderFetcher extends EventEmitter {}
@@ -26,8 +26,14 @@ tape('[LightSynchronizer]', t => {
     sync.running = true
     sync.chain = { headers: { td: new BN(1) } }
     const peers = [
-      { les: { status: { headTd: new BN(1), headNum: new BN(1), serveHeaders: 1 } }, inbound: false },
-      { les: { status: { headTd: new BN(2), headNum: new BN(2), serveHeaders: 1 } }, inbound: false }
+      {
+        les: { status: { headTd: new BN(1), headNum: new BN(1), serveHeaders: 1 } },
+        inbound: false,
+      },
+      {
+        les: { status: { headTd: new BN(2), headNum: new BN(2), serveHeaders: 1 } },
+        inbound: false,
+      },
     ]
     sync.pool = { peers }
     sync.forceSync = true
@@ -54,7 +60,7 @@ tape('[LightSynchronizer]', t => {
     }
   })
 
-  t.test('should reset td', t => {
+  t.test('should reset td', (t) => {
     td.reset()
     t.end()
   })

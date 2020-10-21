@@ -6,7 +6,7 @@ defaultLogger.silent = true
 
 // TODO
 // Test deactivated along TypeScript transition
-tape.skip('[Libp2pServer]', t => {
+tape.skip('[Libp2pServer]', (t) => {
   const PeerInfo = td.replace('peer-info')
   const PeerId = td.replace('peer-id')
   const Libp2pPeer = td.replace('../../../lib/net/peer/libp2ppeer')
@@ -26,7 +26,10 @@ tape.skip('[Libp2pServer]', t => {
   td.when(Libp2pNode.prototype.stop()).thenCallback()
   td.replace('../../../lib/net/peer/libp2pnode', Libp2pNode) */
   const Libp2pServer = require('../../../lib/net/server/libp2pserver')
-  const peerInfo = { multiaddrs: { add: td.func(), toArray: td.func() }, id: { toB58String: td.func() } }
+  const peerInfo = {
+    multiaddrs: { add: td.func(), toArray: td.func() },
+    id: { toB58String: td.func() },
+  }
   const peerInfo0 = { multiaddrs: { add: td.func() } }
   td.when(PeerId.createFromPrivKey(1)).thenCallback(null, 'id0')
   td.when(PeerId.createFromPrivKey(2)).thenCallback(null, 'id1')
@@ -40,10 +43,10 @@ tape.skip('[Libp2pServer]', t => {
     const server = new Libp2pServer({
       multiaddrs: 'ma0,ma1',
       bootnodes: 'boot0,boot1',
-      key: 'abcd'
+      key: 'abcd',
     })
-    t.deepEquals(server.multiaddrs, [ 'ma0', 'ma1' ], 'multiaddrs split')
-    t.deepEquals(server.bootnodes, [ 'boot0', 'boot1' ], 'bootnodes split')
+    t.deepEquals(server.multiaddrs, ['ma0', 'ma1'], 'multiaddrs split')
+    t.deepEquals(server.bootnodes, ['boot0', 'boot1'], 'bootnodes split')
     t.equals(server.key.toString('base64'), 'abcd', 'key is correct')
     t.equals(server.name, 'libp2p', 'get name')
     t.end()
@@ -135,7 +138,7 @@ tape.skip('[Libp2pServer]', t => {
     t.notOk(server.running, 'stopped')
   }) */
 
-  t.test('should reset td', t => {
+  t.test('should reset td', (t) => {
     td.reset()
     t.end()
   })

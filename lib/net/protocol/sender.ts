@@ -1,4 +1,4 @@
-import {EventEmitter} from 'events'
+import { EventEmitter } from 'events'
 
 /**
  * Base class for transport specific message sender/receiver. Subclasses should
@@ -11,16 +11,16 @@ import {EventEmitter} from 'events'
 export class Sender extends EventEmitter {
   private _status: any
 
-  constructor () {
+  constructor() {
     super()
     this._status = null
   }
 
-  get status () : any {
+  get status(): any {
     return this._status
   }
 
-  set status (status: any) {
+  set status(status: any) {
     this._status = status
     this.emit('status', status)
   }
@@ -30,7 +30,7 @@ export class Sender extends EventEmitter {
    * @protected
    * @param  {Object} status
    */
-  sendStatus (status: any) {
+  sendStatus(status: any) {
     throw new Error('Unimplemented')
   }
 
@@ -40,7 +40,7 @@ export class Sender extends EventEmitter {
    * @param  {number} code message code
    * @param  {Array|Buffer} rlpEncodedData rlp encoded message payload
    */
-  sendMessage (code: number, rlpEncodedData: any[] | Buffer) {
+  sendMessage(code: number, rlpEncodedData: any[] | Buffer) {
     throw new Error('Unimplemented')
   }
 }

@@ -19,12 +19,12 @@ export class LightEthereumService extends EthereumService {
    * @param {number}   [options.interval] sync retry interval
    * @param {Logger}   [options.logger] logger instance
    */
-  constructor (options?: any) {
+  constructor(options?: any) {
     super(options)
     this.init()
   }
 
-  init () {
+  init() {
     this.logger.info('Light sync mode')
     this.synchronizer = new LightSynchronizer({
       logger: this.logger,
@@ -33,15 +33,15 @@ export class LightEthereumService extends EthereumService {
       common: this.common,
       minPeers: this.minPeers,
       flow: this.flow,
-      interval: this.interval
+      interval: this.interval,
     })
   }
 
   /**
    * Returns all protocols required by this service
    */
-  get protocols () : LesProtocol[] {
-    return [ new LesProtocol({ chain: this.chain, timeout: this.timeout }) ]
+  get protocols(): LesProtocol[] {
+    return [new LesProtocol({ chain: this.chain, timeout: this.timeout })]
   }
 
   /**
@@ -51,6 +51,5 @@ export class LightEthereumService extends EthereumService {
    * @param  {Peer}    peer peer
    * @return {Promise}
    */
-  async handle (message: any, protocol: string, peer: Peer) {
-  }
+  async handle(message: any, protocol: string, peer: Peer) {}
 }
