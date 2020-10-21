@@ -1,5 +1,5 @@
 import tape from 'tape'
-import { BN } from 'ethereumjs-util'
+import { Address, BN } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
 import VM from '../../../lib'
 import { getPrecompile } from '../../../lib/evm/precompiles'
@@ -8,7 +8,8 @@ tape('Istanbul: EIP-1108 tests', (t) => {
   t.test('ECADD', async (st) => {
     const common = new Common({ chain: 'mainnet', hardfork: 'istanbul' })
     const vm = new VM({ common })
-    const ECADD = getPrecompile('0000000000000000000000000000000000000006', common)
+    const address = new Address(Buffer.from('0000000000000000000000000000000000000006', 'hex'))
+    const ECADD = getPrecompile(address, common)
 
     const result = await ECADD({
       data: Buffer.alloc(0),
@@ -23,8 +24,9 @@ tape('Istanbul: EIP-1108 tests', (t) => {
 
   t.test('ECMUL', async (st) => {
     const common = new Common({ chain: 'mainnet', hardfork: 'istanbul' })
-    let vm = new VM({ common })
-    let ECMUL = getPrecompile('0000000000000000000000000000000000000007', common)
+    const vm = new VM({ common })
+    const address = new Address(Buffer.from('0000000000000000000000000000000000000007', 'hex'))
+    const ECMUL = getPrecompile(address, common)
 
     const result = await ECMUL({
       data: Buffer.alloc(0),
@@ -40,7 +42,8 @@ tape('Istanbul: EIP-1108 tests', (t) => {
   t.test('ECPAIRING', async (st) => {
     const common = new Common({ chain: 'mainnet', hardfork: 'istanbul' })
     const vm = new VM({ common })
-    const ECPAIRING = getPrecompile('0000000000000000000000000000000000000008', common)
+    const address = new Address(Buffer.from('0000000000000000000000000000000000000008', 'hex'))
+    const ECPAIRING = getPrecompile(address, common)
 
     const result = await ECPAIRING({
       data: Buffer.from(

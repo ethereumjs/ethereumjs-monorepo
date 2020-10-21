@@ -1,3 +1,5 @@
+import { Address } from 'ethereumjs-util'
+import Common from '@ethereumjs/common'
 import { PrecompileInput, PrecompileFunc } from './types'
 import { default as p1 } from './01-ecrecover'
 import { default as p2 } from './02-sha256'
@@ -17,7 +19,6 @@ import { default as pf } from './0f-bls12-g2multiexp'
 import { default as p10 } from './10-bls12-pairing'
 import { default as p11 } from './11-bls12-map-fp-to-g1'
 import { default as p12 } from './12-bls12-map-fp2-to-g2'
-import Common from '@ethereumjs/common'
 
 interface Precompiles {
   [key: string]: PrecompileFunc
@@ -143,19 +144,20 @@ const precompileAvailability: PrecompileAvailability = {
   },
 }
 
-function getPrecompile(address: string, common: Common): PrecompileFunc {
-  if (precompiles[address]) {
-    const availability = precompileAvailability[address]
+function getPrecompile(address: Address, common: Common): PrecompileFunc {
+  const addr = address.buf.toString('hex')
+  if (precompiles[addr]) {
+    const availability = precompileAvailability[addr]
     if (
       availability.type == PrecompileAvailabilityCheck.Hardfork &&
       common.gteHardfork(availability.param)
     ) {
-      return precompiles[address]
+      return precompiles[addr]
     } else if (
       availability.type == PrecompileAvailabilityCheck.EIP &&
       common.eips().includes(availability.param)
     ) {
-      return precompiles[address]
+      return precompiles[addr]
     }
   }
   return precompiles['']

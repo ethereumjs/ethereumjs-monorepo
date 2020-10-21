@@ -6,7 +6,7 @@ import { getPrecompile } from '../../../../lib/evm/precompiles'
 
 tape('Precompiles: hardfork availability', (t) => {
   t.test('Test ECPAIRING availability', async (st) => {
-    const ECPAIR_Address = '0000000000000000000000000000000000000008'
+    const ECPAIR_Address = new Address(Buffer.from('0000000000000000000000000000000000000008', 'hex'))
 
     // ECPAIR was introduced in Byzantium; check if available from Byzantium.
     const commonByzantium = new Common({ chain: 'mainnet', hardfork: 'byzantium' })
@@ -23,7 +23,7 @@ tape('Precompiles: hardfork availability', (t) => {
     let result = await vm.runCall({
       caller: Address.zero(),
       gasLimit: new BN(0xffffffffff),
-      to: new Address(Buffer.from(ECPAIR_Address, 'hex')),
+      to: ECPAIR_Address,
       value: new BN(0),
     })
 
@@ -43,7 +43,7 @@ tape('Precompiles: hardfork availability', (t) => {
     result = await vm.runCall({
       caller: Address.zero(),
       gasLimit: new BN(0xffffffffff),
-      to: new Address(Buffer.from(ECPAIR_Address, 'hex')),
+      to: ECPAIR_Address,
       value: new BN(0),
     })
 
@@ -64,7 +64,7 @@ tape('Precompiles: hardfork availability', (t) => {
     result = await vm.runCall({
       caller: Address.zero(),
       gasLimit: new BN(0xffffffffff),
-      to: new Address(Buffer.from(ECPAIR_Address, 'hex')),
+      to: ECPAIR_Address,
       value: new BN(0),
     })
 

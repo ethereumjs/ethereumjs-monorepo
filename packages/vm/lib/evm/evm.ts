@@ -387,7 +387,7 @@ export default class EVM {
    * if no such precompile exists.
    */
   getPrecompile(address: Address): PrecompileFunc {
-    return getPrecompile(address.buf.toString('hex'), this._vm._common)
+    return getPrecompile(address, this._vm._common)
   }
 
   /**
