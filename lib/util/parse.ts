@@ -3,7 +3,6 @@ const Block = require('ethereumjs-block')
 const Trie = require('merkle-patricia-tree/secure')
 import * as util from 'ethereumjs-util'
 import * as url from 'url'
-import * as path from 'path'
 
 function toBuffer(string: string) {
   return Buffer.from(util.stripHexPrefix(string), 'hex')
@@ -47,6 +46,7 @@ export function parseTransports(transports: any[]) {
 async function parseStorage(storage: any) {
   const trie = new Trie()
   const promises = []
+  // eslint-disable-next-line prefer-const
   for (let [address, value] of Object.entries(storage)) {
     value = util.rlp.encode(util.unpadBuffer(toBuffer(value as string)))
     promises.push(
