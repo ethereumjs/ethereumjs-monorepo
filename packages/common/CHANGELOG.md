@@ -6,7 +6,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## [2.0.0] - [UNRELEASED]
+## 2.0.0-beta.1 - 2020-10-22
 
 ### New Package Name
 
@@ -84,6 +84,17 @@ The following block and hardfork related utility functions have been added with 
 The default hardfork has been added as an accessible readonly property `DEFAULT_HARDFORK`, PR [#863](https://github.com/ethereumjs/ethereumjs-vm/pull/863). This setting is used starting with the latest major releases of the monorepo libraries like the VM to keep the HF setting in sync across the different libraries.
 
 Current default hardfork is set to `istanbul`, PR [#906](https://github.com/ethereumjs/ethereumjs-vm/pull/906).
+
+### Dual ES5 and ES2017 Builds
+
+We significantly updated our internal tool and CI setup along the work on 
+PR [#913](https://github.com/ethereumjs/ethereumjs-vm/pull/913) with an update to `ESLint` from `TSLint` 
+for code linting and formatting and the introduction of a new build setup.
+
+Packages now target `ES2017` for Node.js builds (the `main` entrypoint from `package.json`) and introduce
+a separate `ES5` build distributed along using the `browser` directive as an entrypoint, see
+PR [#921](https://github.com/ethereumjs/ethereumjs-vm/pull/921). This will result
+in performance benefits for Node.js consumers, see [here](https://github.com/ethereumjs/merkle-patricia-tree/pull/117) for a releated discussion.
 
 ### Other Changes
 

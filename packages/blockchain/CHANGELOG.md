@@ -61,6 +61,17 @@ The deprecated `validate` option has been removed, please use `valdiateBlock` an
 
 [5.0.0]: https://github.com/ethereumjs/ethereumjs-vm/compare/%40ethereumjs%2Fblockchain%404.0.2...%40ethereumjs%2Fblockchain%405.0.0
 
+### Dual ES5 and ES2017 Builds
+
+We significantly updated our internal tool and CI setup along the work on 
+PR [#913](https://github.com/ethereumjs/ethereumjs-vm/pull/913) with an update to `ESLint` from `TSLint` 
+for code linting and formatting and the introduction of a new build setup.
+
+Packages now target `ES2017` for Node.js builds (the `main` entrypoint from `package.json`) and introduce
+a separate `ES5` build distributed along using the `browser` directive as an entrypoint, see
+PR [#921](https://github.com/ethereumjs/ethereumjs-vm/pull/921). This will result
+in performance benefits for Node.js consumers, see [here](https://github.com/ethereumjs/merkle-patricia-tree/pull/117) for a releated discussion.
+
 ### Other Changes
 
 **Changes and Refactoring**

@@ -75,7 +75,10 @@ since there is still an ongoing discussion on taking this EIP in for Berlin or
 using a more generalized approach on curve computation with the Ethereum EVM
 (`evm384` by the eWASM team).
 
-The integration comes along with an API addition to the VM to support the activation
+Another new EIP added is the `EIP-2929` with gas cost increases for state access
+opcodes, see PR [#889](https://github.com/ethereumjs/ethereumjs-vm/pull/889).
+
+These integrations come along with an API addition to the VM to support the activation
 of specific EIPs, see PR [#856](https://github.com/ethereumjs/ethereumjs-vm/pull/856),
 PR [#869](https://github.com/ethereumjs/ethereumjs-vm/pull/869) and
 PR [#872](https://github.com/ethereumjs/ethereumjs-vm/pull/872).
@@ -105,13 +108,36 @@ package name changes!
 All these libraries are now written in `TypeScript` and use promises instead of
 callbacks for accessing their APIs.
 
-### New StateManager Interface
+### New StateManager Interface / StateManager API Changes
 
 There is now a new `TypeScript` interface for the `StateManager`, see
 PR [#763](https://github.com/ethereumjs/ethereumjs-vm/pull/763). If you are
 using a custom `StateManager` you can use this interface to get better
 assurance that you are using a `StateManager` which conforms with the current
 `StateManager` API and will run in the VM without problems.
+
+The integration of this new interface is highly encouraged since this release
+also comes with `StateManager` API changes. Usage of the old
+[ethereumjs-account](https://github.com/ethereumjs/ethereumjs-account) package
+(this package will be retired) has been replaced by the new
+[Account class](https://github.com/ethereumjs/ethereumjs-util/blob/master/docs/modules/_account_.md)
+from the `ethereumjs-util` package. This affects all `Account` related
+`StateManager` methods, see PR [#911](https://github.com/ethereumjs/ethereumjs-vm/pull/911).
+
+The Util package also introduces a new 
+[Address class](https://github.com/ethereumjs/ethereumjs-util/blob/master/docs/modules/_address_.md).
+This class replaces all current `Buffer` inputs on `StateManager` methods representing an address.
+
+### Dual ES5 and ES2017 Builds
+
+We significantly updated our internal tool and CI setup along the work on 
+PR [#913](https://github.com/ethereumjs/ethereumjs-vm/pull/913) with an update to `ESLint` from `TSLint` 
+for code linting and formatting and the introduction of a new build setup.
+
+Packages now target `ES2017` for Node.js builds (the `main` entrypoint from `package.json`) and introduce
+a separate `ES5` build distributed along using the `browser` directive as an entrypoint, see
+PR [#921](https://github.com/ethereumjs/ethereumjs-vm/pull/921). This will result
+in performance benefits for Node.js consumers, see [here](https://github.com/ethereumjs/merkle-patricia-tree/pull/117) for a releated discussion.
 
 ### Other Changes
 
@@ -123,6 +149,27 @@ assurance that you are using a `StateManager` which conforms with the current
   PR [#896](https://github.com/ethereumjs/ethereumjs-vm/pull/896)
 - Group precompiles based upon hardfork,
   PR [#783](https://github.com/ethereumjs/ethereumjs-vm/pull/783)
+- **Breaking:** the `step` event now emits an `ethereumjs-util`
+[Account](https://github.com/ethereumjs/ethereumjs-util/blob/master/docs/modules/_account_.md)
+object instead of an [ethereumjs-account](https://github.com/ethereumjs/ethereumjs-account)
+(package retired) object
+- **Breaking:** `NewContractEvent` now emits an `address` of 
+  type `Address` (see `ethereumjs-util`) instead of a `Buffer`,
+  PR [#919](https://github.com/ethereumjs/ethereumjs-vm/pull/919)
+- **Breaking:** `EVMResult` now returns a `createdAddress` of
+  type `Address` (see `ethereumjs-util`) instead of a `Buffer`,
+  PR [#919](https://github.com/ethereumjs/ethereumjs-vm/pull/919)
+- **Breaking:** `RunTxResult` now returns a `createdAddress` of
+  type `Address` (see `ethereumjs-util`) instead of a `Buffer`,
+  PR [#919](https://github.com/ethereumjs/ethereumjs-vm/pull/919)
+- **Breaking:** `RunCallOpts` now expects `origin`, `caller` and
+  `to` inputs to be of
+  type `Address` (see `ethereumjs-util`) instead of a `Buffer`,
+  PR [#919](https://github.com/ethereumjs/ethereumjs-vm/pull/919)
+- **Breaking:** `RunCodeOpts` now expects `origin`, `caller` and
+  `address` inputs to be of
+  type `Address` (see `ethereumjs-util`) instead of a `Buffer`,
+  PR [#919](https://github.com/ethereumjs/ethereumjs-vm/pull/919)
 - Make `memory.ts` use Buffers instead of Arrays,
   PR [#850](https://github.com/ethereumjs/ethereumjs-vm/pull/850)
 - Use `Map` for `OpcodeList` and `opcode` handlers,
