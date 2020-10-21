@@ -2,10 +2,10 @@
 
 const pino = require('pino')
 
-function getLogger (options = { loglevel: 'info' }) {
+function getLogger(options = { loglevel: 'info' }) {
   return pino({
     level: options.loglevel,
-    base: null
+    base: null,
   })
 }
 
