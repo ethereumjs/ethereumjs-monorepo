@@ -1,6 +1,8 @@
 import tape from 'tape-catch'
 const td = require('testdouble')
 import { EventEmitter } from 'events'
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import { Sender } from '../../../lib/net/protocol/sender'
 import { Protocol } from '../../../lib/net/protocol/protocol'
 
 tape('[Protocol]', (t) => {
