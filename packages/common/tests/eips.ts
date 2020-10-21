@@ -3,7 +3,7 @@ import Common from '../src/'
 
 tape('[Common]: Initialization / Chain params', function (t: tape.Test) {
   t.test('Correct initialization', function (st: tape.Test) {
-    const eips = [2537]
+    const eips = [2537, 2929]
     const c = new Common({ chain: 'mainnet', eips })
     st.equal(c.eips(), eips, 'should initialize with supported EIP')
     st.end()
