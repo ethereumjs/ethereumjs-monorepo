@@ -11,6 +11,13 @@ const defaultOptions = {
   common: new Common('mainnet', 'chainstart'),
 }
 
+function hexToBuffer(hexString: string): Buffer | string {
+  if (typeof hexString === 'string' && hexString.startsWith('0x')) {
+    return Buffer.from(hexString.slice(2), 'hex')
+  }
+  return hexString
+}
+
 /**
  * Blockchain
  * @memberof module:blockchain
@@ -295,11 +302,4 @@ export class Chain extends events.EventEmitter {
     }
     return await (this._getTd as Function)(hash)
   }
-}
-
-function hexToBuffer(hexString: string): Buffer | string {
-  if (typeof hexString === 'string' && hexString.startsWith('0x')) {
-    return Buffer.from(hexString.slice(2), 'hex')
-  }
-  return hexString
 }
