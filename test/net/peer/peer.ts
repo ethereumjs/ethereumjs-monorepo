@@ -1,3 +1,6 @@
+/* eslint-disable */
+// TODO: re-enable linting. Disabled because much of test is commented out
+// resulting in unused variable false positives
 import tape from 'tape-catch'
 const td = require('testdouble')
 import { Peer } from '../../../lib/net/peer'

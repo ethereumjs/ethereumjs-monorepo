@@ -1,7 +1,10 @@
+/* eslint-disable */
+// TODO: re-enable linting. Disabled because much of test is commented out
+// resulting in unused variable false positives
 import tape from 'tape-catch'
+import { BN } from 'ethereumjs-util'
 import { Chain } from '../../../lib/blockchain'
 const { LesProtocol } = require('../../../lib/net/protocol')
-const BN = require('bn.js')
 
 tape('[LesProtocol]', (t) => {
   t.test('should get properties', (t) => {

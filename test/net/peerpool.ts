@@ -6,7 +6,7 @@ defaultLogger.silent = true
 
 tape('[PeerPool]', (t) => {
   const Peer = td.replace('../../lib/net/peer/peer', function (this: any, id: any) {
-    this.id = id
+    this.id = id // eslint-disable-line no-invalid-this
   })
   const PeerPool = require('../../lib/net/peerpool').PeerPool
 

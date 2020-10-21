@@ -1,11 +1,13 @@
 import tape from 'tape-catch'
 const td = require('testdouble')
 import { EventEmitter } from 'events'
-import { Sender } from '../../../lib/net/protocol/sender'
 import { Protocol } from '../../../lib/net/protocol/protocol'
 
 tape('[Protocol]', (t) => {
+  // TODO: remove lint ignores when disabled tests are uncommented
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const BoundProtocol = td.replace('../../../lib/net/protocol/boundprotocol')
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const Sender = td.replace('../../../lib/net/protocol/sender')
   const testMessage = {
     name: 'TestMessage',

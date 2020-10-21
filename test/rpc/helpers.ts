@@ -77,7 +77,7 @@ export function baseRequest(t: tape.Test, server: any, req: any, expect: any, ex
     .send(req)
     .expect(expect)
     .expect(expectRes)
-    .end((err: any, res: any) => {
+    .end((err: any) => {
       closeRPC(server)
       t.end(err)
     })

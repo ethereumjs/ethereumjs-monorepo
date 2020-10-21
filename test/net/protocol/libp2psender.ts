@@ -1,5 +1,7 @@
 import tape from 'tape-catch'
 const pull = require('pull-stream')
+// TODO: investigate pull-pair implicit dependency...
+// eslint-disable-next-line implicit-dependencies/no-implicit
 const DuplexPair = require('pull-pair/duplex')
 const { Libp2pSender } = require('../../../lib/net/protocol')
 
