@@ -28,7 +28,7 @@ export class Web3 {
    * @param  {Function} [cb] A function with an error object as the first argument and the
    * client version as the second argument
    */
-  clientVersion(params = [], cb: (err: null, version: string) => void) {
+  clientVersion(_params = [], cb: (err: null, version: string) => void) {
     const packageVersion = require('../../../package.json').version
     const { version } = process
     const ethJsVersion = `EthereumJS/${packageVersion}/${platform()}/node${version.substring(1)}`

@@ -47,7 +47,7 @@ export class Eth {
    * as the second argument
    * @return {Promise}
    */
-  async blockNumber(params = [], cb: (err: Error | null, val?: string) => void) {
+  async blockNumber(_params = [], cb: (err: Error | null, val?: string) => void) {
     try {
       const latestHeader = await this._chain.getLatestHeader()
       const latestBlockNumber = bufferToHex(latestHeader.number)
@@ -66,6 +66,7 @@ export class Eth {
    * @return {Promise}
    */
   async getBlockByNumber(params: any[] | boolean[], cb: (err: Error | null, val?: any) => void) {
+    // eslint-disable-next-line prefer-const
     let [blockNumber, includeTransactions] = params
 
     blockNumber = Number.parseInt(blockNumber, 16)
@@ -135,7 +136,7 @@ export class Eth {
    * @param  {Function} [cb] A function with an error object as the first argument and a
    * hex-encoded string of the current protocol version as the second argument
    */
-  protocolVersion(params = [], cb: (err: null, val: string) => void) {
+  protocolVersion(_params = [], cb: (err: null, val: string) => void) {
     cb(null, `0x${this.ethVersion.toString(16)}`)
   }
 }
