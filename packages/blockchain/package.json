@@ -1,6 +1,6 @@
 {
   "name": "@ethereumjs/blockchain",
-  "version": "4.0.3",
+  "version": "5.0.0-beta.1",
   "description": "A module to store and interact with blocks",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -36,9 +36,9 @@
   },
   "homepage": "https://github.com/ethereumjs/ethereumjs-vm/tree/master/packages/blockchain#synopsis",
   "dependencies": {
-    "@ethereumjs/block": "^3.0.0",
-    "@ethereumjs/common": "^1.5.1",
-    "@ethereumjs/ethash": "^1.0.0",
+    "@ethereumjs/block": "3.0.0-beta.1",
+    "@ethereumjs/common": "2.0.0-beta.1",
+    "@ethereumjs/ethash": "1.0.0-beta.1",
     "ethereumjs-util": "^7.0.7",
     "level-mem": "^5.0.1",
     "lru-cache": "^5.1.1",
