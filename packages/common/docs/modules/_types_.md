@@ -11,4 +11,5 @@
 * [GenesisBlock](../interfaces/_types_.genesisblock.md)
 * [Hardfork](../interfaces/_types_.hardfork.md)
 * [chainsType](../interfaces/_types_.chainstype.md)
+* [eipsType](../interfaces/_types_.eipstype.md)
 * [genesisStatesType](../interfaces/_types_.genesisstatestype.md)

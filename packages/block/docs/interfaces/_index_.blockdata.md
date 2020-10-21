@@ -20,22 +20,24 @@ A block's data.
 
 ### `Optional` header
 
-• **header**? : *Buffer | [PrefixedHexString](../modules/_index_.md#prefixedhexstring) | [BufferLike](../modules/_index_.md#bufferlike)[] | [BlockHeaderData](_index_.blockheaderdata.md)*
+• **header**? : *[HeaderData](_index_.headerdata.md)*
 
-*Defined in [types.ts:69](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/types.ts#L69)*
+*Defined in [types.ts:68](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/types.ts#L68)*
+
+Header data for the block
 
 ___
 
 ### `Optional` transactions
 
-• **transactions**? : *Array‹Buffer | [PrefixedHexString](../modules/_index_.md#prefixedhexstring) | [BufferLike](../modules/_index_.md#bufferlike)[] | TxData›*
+• **transactions**? : *Array‹TxData›*
 
-*Defined in [types.ts:70](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/types.ts#L70)*
+*Defined in [types.ts:69](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/types.ts#L69)*
 
 ___
 
 ### `Optional` uncleHeaders
 
-• **uncleHeaders**? : *Array‹Buffer | [PrefixedHexString](../modules/_index_.md#prefixedhexstring) | [BufferLike](../modules/_index_.md#bufferlike)[] | [BlockHeaderData](_index_.blockheaderdata.md)›*
+• **uncleHeaders**? : *Array‹[HeaderData](_index_.headerdata.md)›*
 
-*Defined in [types.ts:71](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/types.ts#L71)*
+*Defined in [types.ts:70](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/types.ts#L70)*

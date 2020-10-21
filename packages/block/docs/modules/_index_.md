@@ -12,32 +12,56 @@
 ### Interfaces
 
 * [BlockData](../interfaces/_index_.blockdata.md)
-* [BlockHeaderData](../interfaces/_index_.blockheaderdata.md)
+* [BlockOptions](../interfaces/_index_.blockoptions.md)
 * [Blockchain](../interfaces/_index_.blockchain.md)
-* [ChainOptions](../interfaces/_index_.chainoptions.md)
-* [TransformableToBuffer](../interfaces/_index_.transformabletobuffer.md)
+* [HeaderData](../interfaces/_index_.headerdata.md)
+* [JsonBlock](../interfaces/_index_.jsonblock.md)
+* [JsonHeader](../interfaces/_index_.jsonheader.md)
 
 ### Type aliases
 
-* [BufferLike](_index_.md#bufferlike)
-* [PrefixedHexString](_index_.md#prefixedhexstring)
+* [BlockBodyBuffer](_index_.md#blockbodybuffer)
+* [BlockBuffer](_index_.md#blockbuffer)
+* [BlockHeaderBuffer](_index_.md#blockheaderbuffer)
+* [TransactionsBuffer](_index_.md#transactionsbuffer)
+* [UncleHeadersBuffer](_index_.md#uncleheadersbuffer)
 
 ## Type aliases
 
-###  BufferLike
+###  BlockBodyBuffer
 
-Ƭ **BufferLike**: *Buffer | [TransformableToBuffer](../interfaces/_index_.transformabletobuffer.md) | [PrefixedHexString](_index_.md#prefixedhexstring) | number*
+Ƭ **BlockBodyBuffer**: *[[TransactionsBuffer](_index_.md#transactionsbuffer), [UncleHeadersBuffer](_index_.md#uncleheadersbuffer)]*
 
-*Defined in [types.ts:42](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/types.ts#L42)*
-
-A Buffer, hex string prefixed with `0x`, Number, or an object with a toBuffer method such as BN.
+*Defined in [types.ts:75](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/types.ts#L75)*
 
 ___
 
-###  PrefixedHexString
+###  BlockBuffer
 
-Ƭ **PrefixedHexString**: *string*
+Ƭ **BlockBuffer**: *[[BlockHeaderBuffer](_index_.md#blockheaderbuffer), [TransactionsBuffer](_index_.md#transactionsbuffer), [UncleHeadersBuffer](_index_.md#uncleheadersbuffer)]*
 
-*Defined in [types.ts:37](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/types.ts#L37)*
+*Defined in [types.ts:73](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/types.ts#L73)*
 
-A hex string prefixed with `0x`.
+___
+
+###  BlockHeaderBuffer
+
+Ƭ **BlockHeaderBuffer**: *Buffer[]*
+
+*Defined in [types.ts:74](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/types.ts#L74)*
+
+___
+
+###  TransactionsBuffer
+
+Ƭ **TransactionsBuffer**: *Buffer[][]*
+
+*Defined in [types.ts:76](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/types.ts#L76)*
+
+___
+
+###  UncleHeadersBuffer
+
+Ƭ **UncleHeadersBuffer**: *Buffer[][]*
+
+*Defined in [types.ts:77](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/types.ts#L77)*
