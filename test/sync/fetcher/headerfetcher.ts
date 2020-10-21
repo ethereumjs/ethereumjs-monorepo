@@ -6,7 +6,7 @@ defaultLogger.silent = true
 
 tape('[HeaderFetcher]', (t) => {
   class PeerPool extends EventEmitter {}
-  (PeerPool.prototype as any).idle = td.func() // Need semi-colon to separate statements
+  ;(PeerPool.prototype as any).idle = td.func() // eslint-disable-line no-extra-semi
   ;(PeerPool.prototype as any).ban = td.func()
   td.replace('../../../lib/net/peerpool', PeerPool)
   const HeaderFetcher = require('../../../lib/sync/fetcher/headerfetcher').HeaderFetcher

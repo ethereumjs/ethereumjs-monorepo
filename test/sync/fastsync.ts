@@ -9,7 +9,7 @@ tape('[FastSynchronizer]', (t) => {
   class PeerPool extends EventEmitter {}
   td.replace('../../lib/net/peerpool', PeerPool)
   class BlockFetcher extends EventEmitter {}
-  (BlockFetcher.prototype as any).fetch = td.func()
+  ;(BlockFetcher.prototype as any).fetch = td.func() // eslint-disable-line no-extra-semi
   td.replace('../../lib/sync/fetcher', { BlockFetcher })
   const FastSynchronizer = require('../../lib/sync/fastsync').FastSynchronizer
 

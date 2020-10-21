@@ -11,7 +11,7 @@ async function wait(delay?: number) {
 
 tape('[BlockFetcher]', (t) => {
   class PeerPool extends EventEmitter {}
-  (PeerPool.prototype as any).idle = td.func() // Need semi-colon to separate statements
+  ;(PeerPool.prototype as any).idle = td.func() // eslint-disable-line no-extra-semi
   ;(PeerPool.prototype as any).ban = td.func()
   td.replace('../../../lib/net/peerpool', PeerPool)
   const BlockFetcher = require('../../../lib/sync/fetcher/blockfetcher').BlockFetcher

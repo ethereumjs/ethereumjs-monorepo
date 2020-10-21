@@ -98,7 +98,8 @@ export class Libp2pServer extends Server {
         })
       })
     }
-    (this.node as Libp2pNode).on('peer:discovery', async (peerInfo: any) => {
+    // eslint-disable-next-line no-extra-semi
+    ;(this.node as Libp2pNode).on('peer:discovery', async (peerInfo: any) => {
       try {
         const id = peerInfo.id.toB58String()
         if (this.peers.get(id) || this.isBanned(id)) {
@@ -196,7 +197,8 @@ export class Libp2pServer extends Server {
         if (err) {
           return reject(err)
         }
-        (this.multiaddrs as string[]).forEach((ma: any) => peerInfo.multiaddrs.add(ma))
+        // eslint-disable-next-line no-extra-semi
+        ;(this.multiaddrs as string[]).forEach((ma: any) => peerInfo.multiaddrs.add(ma))
         resolve(peerInfo)
       }
       if (this.key) {

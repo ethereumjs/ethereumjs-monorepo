@@ -9,7 +9,7 @@ tape('[LightSynchronizer]', (t) => {
   class PeerPool extends EventEmitter {}
   td.replace('../../lib/net/peerpool', PeerPool)
   class HeaderFetcher extends EventEmitter {}
-  (HeaderFetcher.prototype as any).fetch = td.func()
+  ;(HeaderFetcher.prototype as any).fetch = td.func() // eslint-disable-line no-extra-semi
   td.replace('../../lib/sync/fetcher', { HeaderFetcher })
   const LightSynchronizer = require('../../lib/sync/lightsync').LightSynchronizer
 
