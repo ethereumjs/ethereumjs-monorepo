@@ -17,9 +17,11 @@ module.exports = {
           condition: 'always',
           replacement(resourcePath) {
             const mapping = {
-              [resolve('./dist.browser/lib/logging.js')]: resolve('./browser/logging.js'),
+              [resolve('./dist.browser/lib/logging.js')]: resolve(
+                './dist.browser/browser/logging.js'
+              ),
               [resolve('./dist.browser/lib/net/peer/libp2pnode.js')]: resolve(
-                './browser/libp2pnode.js'
+                './dist.browser/browser/libp2pnode.js'
               ),
             }
             return mapping[resourcePath]
@@ -36,5 +38,12 @@ module.exports = {
     filename: 'bundle.js',
     path: resolve(__dirname, 'dist'),
     library: 'ethereumjs',
+  },
+  node: {
+    dgram: 'empty', // used by: rlpxpeer via ethereumjs-devp2p
+    net: 'empty', // used by: rlpxpeer
+  },
+  performance: {
+    hints: false, // suppress maxAssetSize warnings etc..
   },
 }
