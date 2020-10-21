@@ -7,8 +7,8 @@ defaultLogger.silent = true
 
 // explicitly import util and buffer,
 // needed for karma-typescript bundling
-import * as util from 'util'
-import { Buffer } from 'buffer'
+import * as util from 'util' //eslint-disable-line @typescript-eslint/no-unused-vars
+import { Buffer } from 'buffer' //eslint-disable-line @typescript-eslint/no-unused-vars
 
 tape('[Chain]', (t) => {
   t.test('should test object creation without logger', (t) => {

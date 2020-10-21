@@ -1,6 +1,6 @@
 import { EventEmitter } from 'events'
 
-const Pipe = function (id: any) {
+const Pipe = function () {
   const buffer: any[] = []
   let closed = false
 
@@ -36,8 +36,8 @@ const Pipe = function (id: any) {
 } as any
 
 const Connection = function (protocols: any) {
-  const outgoing = new Pipe('OUT')
-  const incoming = new Pipe('IN')
+  const outgoing = new Pipe()
+  const incoming = new Pipe()
 
   return {
     local: (remoteId: any) => ({
@@ -73,6 +73,16 @@ export function createServer(location: any) {
   return servers[location].server
 }
 
+export function destroyConnection(id: any, location: any) {
+  if (servers[location]) {
+    const conn = servers[location].connections[id]
+    if (conn) {
+      conn.close()
+      delete servers[location].connections[id]
+    }
+  }
+}
+
 export function destroyServer(location: any) {
   if (servers[location]) {
     for (const id of Object.keys(servers[location].connections)) {
@@ -90,14 +100,4 @@ export function createConnection(id: any, location: any, protocols: any) {
   servers[location].connections[id] = connection
   setTimeout(() => servers[location].server.emit('connection', connection.local(id)), 10)
   return connection.remote(location)
-}
-
-export function destroyConnection(id: any, location: any) {
-  if (servers[location]) {
-    const conn = servers[location].connections[id]
-    if (conn) {
-      conn.close()
-      delete servers[location].connections[id]
-    }
-  }
 }

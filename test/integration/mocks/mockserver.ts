@@ -22,7 +22,7 @@ export default class MockServer extends Server {
     if (this.started) {
       return false
     }
-    super.start()
+    await super.start()
     await this.wait(1)
     if (this.location) {
       this.server = network.createServer(this.location)
@@ -33,8 +33,8 @@ export default class MockServer extends Server {
         })
       })
     }
-    this.server.on('connection', (connection: any) => {
-      this.connect(connection)
+    this.server.on('connection', async (connection: any) => {
+      await this.connect(connection)
     })
     return true
   }
