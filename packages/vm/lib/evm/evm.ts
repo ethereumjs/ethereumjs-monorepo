@@ -453,7 +453,7 @@ export default class EVM {
   }
 
   async _touchAccount(address: Address): Promise<void> {
-    const acc = await this._state.getAccount(address)
-    return this._state.putAccount(address, acc)
+    const account = await this._state.getAccount(address)
+    return this._state.putAccount(address, account)
   }
 }

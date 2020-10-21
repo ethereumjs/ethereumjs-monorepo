@@ -92,14 +92,6 @@ export async function getPreState(pre: {
   return state
 }
 
-const hexToBuffer = (h: string, allowZero: boolean = false): Buffer => {
-  const buf = toBuffer(h)
-  if (!allowZero && buf.toString('hex') === '00') {
-    return Buffer.alloc(0)
-  }
-  return buf
-}
-
 main()
   .then()
   .catch((e: Error) => {
