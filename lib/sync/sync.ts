@@ -76,7 +76,8 @@ export class Synchronizer extends EventEmitter {
    * Returns true if peer can be used for syncing
    * @return {boolean}
    */
-  syncable(peer: any): boolean {
+  // TODO: evaluate syncability of peer
+  syncable(_peer: any): boolean {
     return true
   }
 

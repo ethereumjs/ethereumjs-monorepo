@@ -72,7 +72,8 @@ export class HeaderFetcher extends BlockFetcher {
    * @param  job job
    * @return {Peer}
    */
-  peer(job: any): Peer {
+  // TODO: what is job supposed to be?
+  peer(_job: any): Peer {
     return this.pool.idle((p: any) => p.les && p.les.status.serveHeaders)
   }
 }

@@ -124,6 +124,8 @@ export class Fetcher extends Readable {
     if (job.state !== 'active') return
     if (result === undefined) {
       this.enqueue(job)
+      // TODO: should this promise actually float?
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
       this.wait().then(() => {
         job.peer.idle = true
       })
@@ -270,7 +272,8 @@ export class Fetcher extends Readable {
    * @param  job job
    * @return {Peer}
    */
-  peer(job?: any) {
+  // TODO: what is job supposed to be?
+  peer(_job?: any) {
     return this.pool.idle()
   }
 
@@ -280,7 +283,7 @@ export class Fetcher extends Readable {
    * @param  peer
    * @return {Promise}
    */
-  request(job?: any, peer?: any): Promise<any> {
+  request(_job?: any, _peer?: any): Promise<any> {
     throw new Error('Unimplemented')
   }
 
@@ -290,7 +293,7 @@ export class Fetcher extends Readable {
    * @param  {Peer}   peer peer that handled task
    * @param  result result data
    */
-  process(job?: any, peer?: any, result?: any) {
+  process(_job?: any, _peer?: any, _result?: any) {
     throw new Error('Unimplemented')
   }
 
@@ -316,7 +319,7 @@ export class Fetcher extends Readable {
    * @param result fetch result
    * @return {Promise}
    */
-  async store(result?: any) {
+  async store(_result?: any) {
     throw new Error('Unimplemented')
   }
 

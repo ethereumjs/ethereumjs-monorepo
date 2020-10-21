@@ -99,7 +99,8 @@ export class BlockFetcher extends Fetcher {
    * @param  job job
    * @return {Peer}
    */
-  peer(job: any): Peer {
+  // TODO: find out what _job is supposed to be doing here...
+  peer(_job: any): Peer {
     return this.pool.idle((p: any) => p.eth)
   }
 }

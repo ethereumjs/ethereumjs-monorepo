@@ -132,7 +132,7 @@ export class FastSynchronizer extends Synchronizer {
    * @param  {Peer}     peer peer
    * @return {Promise}
    */
-  async announced(announcements: any[], peer: Peer) {
+  async announced(announcements: any[], _peer: Peer) {
     if (announcements.length) {
       const [hash, height] = announcements[announcements.length - 1]
       this.logger.debug(`New height: number=${height.toString(10)} hash=${short(hash)}`)
