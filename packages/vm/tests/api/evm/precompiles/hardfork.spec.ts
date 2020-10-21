@@ -53,7 +53,7 @@ tape('Precompiles: hardfork availability', (t) => {
     const commonHomestead = new Common({ chain: 'mainnet', hardfork: 'homestead' })
     ECPAIRING = getPrecompile(ECPAIR_Address, commonHomestead)
 
-    if (ECPAIRING) {
+    if (ECPAIRING != undefined) {
       st.fail('ECPAIRING is available in homestead while it should not be available')
     } else {
       st.pass('ECPAIRING not available in homestead')
