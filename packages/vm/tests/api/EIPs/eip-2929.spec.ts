@@ -1,5 +1,5 @@
 import tape from 'tape'
-import { BN } from 'ethereumjs-util'
+import { Address, BN } from 'ethereumjs-util'
 import VM from '../../../lib'
 import Common from '@ethereumjs/common'
 import { inspect } from 'util'
@@ -7,7 +7,7 @@ import { inspect } from 'util'
 // Test cases source: https://gist.github.com/holiman/174548cad102096858583c6fbbb0649a
 tape('EIP 2929: gas cost tests', (t) => {
   const initialGas = new BN(0xffffffffff)
-  const address = Buffer.from('000000000000000000000000636F6E7472616374', 'hex')
+  const address = new Address(Buffer.from('000000000000000000000000636F6E7472616374', 'hex'))
   const common = new Common({ chain: 'mainnet', hardfork: 'berlin', eips: [2929] })
 
   const runTest = async function (test: any, st: tape.Test) {
@@ -20,14 +20,15 @@ tape('EIP 2929: gas cost tests', (t) => {
       currentGas = step.gasLeft
 
       if (test.steps.length) {
-        st.equal(step.opcode.name, test.steps[i].expectedOpcode)
+        st.equal(step.opcode.name, test.steps[i].expectedOpcode, `Expected Opcode: ${test.steps[i].expectedOpcode}`)
 
         // Validates the gas consumption of the (i - 1)th opcode
         // b/c the step event fires before gas is debited.
         // The first opcode of every test should be +/- irrelevant
         // (ex: PUSH) and the last opcode is always STOP
         if (i > 0) {
-          st.equal(true, gasUsed.eq(new BN(test.steps[i - 1].expectedGasUsed)))
+          const expectedGasUsed = new BN(test.steps[i - 1].expectedGasUsed)
+          st.equal(true, gasUsed.eq(expectedGasUsed), `Opcode: ${test.steps[i - 1].expectedOpcode}, Gase Used: ${gasUsed}, Expected: ${expectedGasUsed}`)
         }
       }
       i++

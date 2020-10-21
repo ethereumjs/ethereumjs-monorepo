@@ -243,11 +243,11 @@ export default class Interpreter {
   // all the precompiles. (EIP 2929)
   _initAccessedAddresses() {
     this._runState.accessedAddresses.clear()
-    this._runState.accessedAddresses.add(this._eei._env.origin.toString('hex'))
-    this._runState.accessedAddresses.add(this._eei.getAddress().toString('hex'))
+    this._runState.accessedAddresses.add(this._eei._env.origin.toString())
+    this._runState.accessedAddresses.add(this._eei.getAddress().toString())
 
     for (let address of Object.keys(precompiles)) {
-      this._runState.accessedAddresses.add(address)
+      this._runState.accessedAddresses.add(`0x${address}`)
     }
   }
 }

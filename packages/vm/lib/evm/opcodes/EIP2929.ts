@@ -1,4 +1,5 @@
 import BN = require('bn.js')
+import { Address } from 'ethereumjs-util'
 import { RunState } from './../interpreter'
 import { addressToBuffer } from './util'
 
@@ -9,10 +10,10 @@ import { addressToBuffer } from './util'
  * @param {RunState} runState
  * @param {BN}       address
  */
-export function accessAddressEIP2929(runState: RunState, address: BN | Buffer, baseFee?: number) {
+export function accessAddressEIP2929(runState: RunState, address: Address, baseFee?: number) {
   if (!runState._common.eips().includes(2929)) return
 
-  const addressStr = addressToBuffer(address).toString('hex')
+  const addressStr = address.toString()
 
   // Cold
   if (!runState.accessedAddresses.has(addressStr)) {
@@ -43,7 +44,7 @@ export function accessStorageEIP2929(runState: RunState, key: Buffer, isSstore: 
 
   const keyStr = key.toString('hex')
   const baseFee = !isSstore ? runState._common.param('gasPrices', 'sload') : 0
-  const address = runState.eei.getAddress().toString('hex')
+  const address = runState.eei.getAddress().toString()
   const keysAtAddress = runState.accessedStorage.get(address)
 
   // Cold (SLOAD and SSTORE)
@@ -79,7 +80,7 @@ export function adjustSstoreGasEIP2929(
   if (!runState._common.eips().includes(2929)) return defaultCost
 
   const keyStr = key.toString('hex')
-  const address = runState.eei.getAddress().toString('hex')
+  const address = runState.eei.getAddress().toString()
   const warmRead = runState._common.param('gasPrices', 'warmstorageread')
   const coldSload = runState._common.param('gasPrices', 'coldsload')
 
