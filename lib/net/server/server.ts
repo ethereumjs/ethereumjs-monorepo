@@ -91,7 +91,7 @@ export class Server extends EventEmitter {
    * @param  maxAge how long to ban peer
    * @return {Promise}
    */
-  ban(peerId: string, maxAge: number) {
+  ban(_peerId: string, _maxAge: number) {
     // don't do anything by default
   }
 }

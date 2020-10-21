@@ -1,5 +1,4 @@
 import { Server } from './server'
-import { Protocol } from './../protocol/protocol'
 const { randomBytes } = require('crypto')
 import { RLPx as Devp2pRLPx, Peer as Devp2pRLPxPeer, DPT as Devp2pDPT } from 'ethereumjs-devp2p'
 import { RlpxPeer } from '../peer/rlpxpeer'

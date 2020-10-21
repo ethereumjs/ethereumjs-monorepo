@@ -42,6 +42,7 @@ export class Libp2pSender extends Sender {
       this.connection,
       catcher((e: Error) => this.error(e)),
       pull.drain((message: any) => {
+        // eslint-disable-next-line prefer-const
         let [code, payload]: any = rlp.decode(message)
         code = bufferToInt(code)
         if (code === 0) {

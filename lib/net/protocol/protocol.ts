@@ -127,7 +127,7 @@ export class Protocol extends EventEmitter {
    * @param {Object} status status message payload
    * @return {Object}
    */
-  decodeStatus(status: any): any {
+  decodeStatus(_status: any): any {
     throw new Error('Unimplemented')
   }
 

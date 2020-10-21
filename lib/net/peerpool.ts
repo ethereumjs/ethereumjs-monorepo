@@ -77,6 +77,7 @@ export class PeerPool extends EventEmitter {
       })
     })
     this.opened = true
+    // eslint-disable-next-line @typescript-eslint/await-thenable
     this._statusCheckInterval = setInterval(await this._statusCheck.bind(this), 20000)
   }
 
@@ -122,7 +123,7 @@ export class PeerPool extends EventEmitter {
    * @param [filterFn] filter function to apply before finding idle peers
    * @return {Peer}
    */
-  idle(filterFn = (peer: Peer) => true): Peer {
+  idle(filterFn = (_peer: Peer) => true): Peer {
     const idle = this.peers.filter((p: any) => p.idle && filterFn(p))
     const index = Math.floor(Math.random() * idle.length)
     return idle[index]
@@ -141,7 +142,7 @@ export class PeerPool extends EventEmitter {
         this.emit(`message:${protocol}`, message, peer)
       }
     })
-    peer.on('error', (error: Error, protocol: string) => {
+    peer.on('error', (error: Error) => {
       if (this.pool.get(peer.id)) {
         this.logger.warn(`Peer error: ${error} ${peer}`)
         this.ban(peer)

@@ -1,5 +1,5 @@
 import { EventEmitter } from 'events'
-import { Message, Protocol } from '../protocol/protocol'
+import { Protocol } from '../protocol/protocol'
 import { Peer } from '../peer/peer'
 import { Sender } from './sender'
 

@@ -30,7 +30,7 @@ export class Sender extends EventEmitter {
    * @protected
    * @param  {Object} status
    */
-  sendStatus(status: any) {
+  sendStatus(_status: any) {
     throw new Error('Unimplemented')
   }
 
@@ -40,7 +40,7 @@ export class Sender extends EventEmitter {
    * @param  {number} code message code
    * @param  {Array|Buffer} rlpEncodedData rlp encoded message payload
    */
-  sendMessage(code: number, rlpEncodedData: any[] | Buffer) {
+  sendMessage(_code: number, _rlpEncodedData: any[] | Buffer) {
     throw new Error('Unimplemented')
   }
 }
