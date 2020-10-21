@@ -135,5 +135,5 @@ export class Service extends events.EventEmitter {
    * @param  {Peer}    peer peer
    * @return {Promise}
    */
-  async handle(message: any, protocol: string, peer: Peer): Promise<any> {}
+  async handle(_message: any, _protocol: string, _peer: Peer): Promise<any> {}
 }

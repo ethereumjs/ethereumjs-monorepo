@@ -51,5 +51,5 @@ export class LightEthereumService extends EthereumService {
    * @param  {Peer}    peer peer
    * @return {Promise}
    */
-  async handle(message: any, protocol: string, peer: Peer) {}
+  async handle(_message: any, _protocol: string, _peer: Peer) {}
 }
