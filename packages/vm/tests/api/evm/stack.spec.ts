@@ -1,5 +1,5 @@
 import tape from 'tape'
-import { BN } from 'ethereumjs-util'
+import { Address, BN } from 'ethereumjs-util'
 import VM from '../../../lib'
 import Stack from '../../../lib/evm/stack'
 import { createAccount } from '../utils'
@@ -124,8 +124,8 @@ tape('Stack', (t) => {
   })
 
   t.test('stack items should not change if they are DUPed', async (st) => {
-    const caller = Buffer.from('00000000000000000000000000000000000000ee', 'hex')
-    const addr = Buffer.from('00000000000000000000000000000000000000ff', 'hex')
+    const caller = new Address(Buffer.from('00000000000000000000000000000000000000ee', 'hex'))
+    const addr = new Address(Buffer.from('00000000000000000000000000000000000000ff', 'hex'))
     const key = new BN(0).toArrayLike(Buffer, 'be', 32)
     const vm = new VM()
     const account = createAccount(new BN(0), new BN(0))

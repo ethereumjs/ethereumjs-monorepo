@@ -1,5 +1,5 @@
 import tape from 'tape'
-import { BN } from 'ethereumjs-util'
+import { Address, BN } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
 import VM from '../../../../lib'
 import { getPrecompile } from '../../../../lib/evm/precompiles'
@@ -8,8 +8,8 @@ tape('Precompiles: ECMUL', (t) => {
   t.test('ECMUL', async (st) => {
     const common = new Common({ chain: 'mainnet', hardfork: 'petersburg' })
     const vm = new VM({ common: common })
-
-    const ECMUL = getPrecompile('0000000000000000000000000000000000000007', common)
+    const address = new Address(Buffer.from('0000000000000000000000000000000000000007', 'hex'))
+    const ECMUL = getPrecompile(address, common)
 
     const result = await ECMUL({
       data: Buffer.alloc(0),

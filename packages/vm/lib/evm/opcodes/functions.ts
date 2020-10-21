@@ -1,5 +1,12 @@
-import BN = require('bn.js')
-import { keccak256, setLengthRight, TWO_POW256, MAX_INTEGER, KECCAK256_NULL } from 'ethereumjs-util'
+import {
+  Address,
+  BN,
+  keccak256,
+  setLengthRight,
+  TWO_POW256,
+  MAX_INTEGER,
+  KECCAK256_NULL,
+} from 'ethereumjs-util'
 import {
   addressToBuffer,
   describeLocation,
@@ -391,16 +398,17 @@ export const handlers: Map<number, OpHandler> = new Map([
   [
     0x30,
     function (runState: RunState) {
-      runState.stack.push(new BN(runState.eei.getAddress()))
+      const address = new BN(runState.eei.getAddress().buf)
+      runState.stack.push(address)
     },
   ],
   // 0x31: BALANCE
   [
     0x31,
     async function (runState: RunState) {
-      const address = runState.stack.pop()
-      const addressBuf = addressToBuffer(address)
-      const balance = await runState.eei.getExternalBalance(addressBuf)
+      const addressBN = runState.stack.pop()
+      const address = new Address(addressToBuffer(addressBN))
+      const balance = await runState.eei.getExternalBalance(address)
       runState.stack.push(balance)
     },
   ],
@@ -529,16 +537,15 @@ export const handlers: Map<number, OpHandler> = new Map([
   [
     0x3f,
     async function (runState: RunState) {
-      const address = runState.stack.pop()
-
-      const addressBuf = addressToBuffer(address)
-      const empty = await runState.eei.isAccountEmpty(addressBuf)
+      const addressBN = runState.stack.pop()
+      const address = new Address(addressToBuffer(addressBN))
+      const empty = await runState.eei.isAccountEmpty(address)
       if (empty) {
         runState.stack.push(new BN(0))
         return
       }
 
-      const code = await runState.eei.getExternalCode(address)
+      const code = await runState.eei.getExternalCode(addressBN)
       if (code.length === 0) {
         runState.stack.push(new BN(KECCAK256_NULL))
         return
@@ -957,16 +964,10 @@ export const handlers: Map<number, OpHandler> = new Map([
   [
     0xf1,
     async function (runState: RunState) {
-      let [
-        gasLimit,
-        toAddress,
-        value,
-        inOffset,
-        inLength,
-        outOffset,
-        outLength,
-      ] = runState.stack.popN(7)
-      const toAddressBuf = addressToBuffer(toAddress)
+      let [gasLimit, toAddr, value, inOffset, inLength, outOffset, outLength] = runState.stack.popN(
+        7
+      )
+      const toAddress = new Address(addressToBuffer(toAddr))
 
       if (runState.eei.isStatic() && !value.isZero()) {
         trap(ERROR.STATIC_STATE_CHANGE)
@@ -986,10 +987,10 @@ export const handlers: Map<number, OpHandler> = new Map([
       if (runState._common.gteHardfork('spuriousDragon')) {
         // We are at or after Spurious Dragon
         // Call new account gas: account is DEAD and we transfer nonzero value
-        if ((await runState.eei.isAccountEmpty(toAddressBuf)) && !value.isZero()) {
+        if ((await runState.eei.isAccountEmpty(toAddress)) && !value.isZero()) {
           runState.eei.useGas(new BN(runState._common.param('gasPrices', 'callNewAccount')))
         }
-      } else if (!(await runState.eei.accountExists(toAddressBuf))) {
+      } else if (!(await runState.eei.accountExists(toAddress))) {
         // We are before Spurious Dragon and the account does not exist.
         // Call new account gas: account does not exist (it is not in the state trie, not even as an "empty" account)
         runState.eei.useGas(new BN(runState._common.param('gasPrices', 'callNewAccount')))
@@ -1007,7 +1008,7 @@ export const handlers: Map<number, OpHandler> = new Map([
         gasLimit.iaddn(runState._common.param('gasPrices', 'callStipend'))
       }
 
-      const ret = await runState.eei.call(gasLimit, toAddressBuf, value, data)
+      const ret = await runState.eei.call(gasLimit, toAddress, value, data)
       // Write return data to memory
       writeCallOutput(runState, outOffset, outLength)
       runState.stack.push(ret)
@@ -1017,16 +1018,10 @@ export const handlers: Map<number, OpHandler> = new Map([
   [
     0xf2,
     async function (runState: RunState) {
-      let [
-        gasLimit,
-        toAddress,
-        value,
-        inOffset,
-        inLength,
-        outOffset,
-        outLength,
-      ] = runState.stack.popN(7)
-      const toAddressBuf = addressToBuffer(toAddress)
+      let [gasLimit, toAddr, value, inOffset, inLength, outOffset, outLength] = runState.stack.popN(
+        7
+      )
+      const toAddress = new Address(addressToBuffer(toAddr))
 
       subMemUsage(runState, inOffset, inLength)
       subMemUsage(runState, outOffset, outLength)
@@ -1049,7 +1044,7 @@ export const handlers: Map<number, OpHandler> = new Map([
         data = runState.memory.read(inOffset.toNumber(), inLength.toNumber())
       }
 
-      const ret = await runState.eei.callCode(gasLimit, toAddressBuf, value, data)
+      const ret = await runState.eei.callCode(gasLimit, toAddress, value, data)
       // Write return data to memory
       writeCallOutput(runState, outOffset, outLength)
       runState.stack.push(ret)
@@ -1060,8 +1055,8 @@ export const handlers: Map<number, OpHandler> = new Map([
     0xf4,
     async function (runState: RunState) {
       const value = runState.eei.getCallValue()
-      let [gasLimit, toAddress, inOffset, inLength, outOffset, outLength] = runState.stack.popN(6)
-      const toAddressBuf = addressToBuffer(toAddress)
+      let [gasLimit, toAddr, inOffset, inLength, outOffset, outLength] = runState.stack.popN(6)
+      const toAddress = new Address(addressToBuffer(toAddr))
 
       subMemUsage(runState, inOffset, inLength)
       subMemUsage(runState, outOffset, outLength)
@@ -1076,7 +1071,7 @@ export const handlers: Map<number, OpHandler> = new Map([
         data = runState.memory.read(inOffset.toNumber(), inLength.toNumber())
       }
 
-      const ret = await runState.eei.callDelegate(gasLimit, toAddressBuf, value, data)
+      const ret = await runState.eei.callDelegate(gasLimit, toAddress, value, data)
       // Write return data to memory
       writeCallOutput(runState, outOffset, outLength)
       runState.stack.push(ret)
@@ -1087,8 +1082,8 @@ export const handlers: Map<number, OpHandler> = new Map([
     0xfa,
     async function (runState: RunState) {
       const value = new BN(0)
-      let [gasLimit, toAddress, inOffset, inLength, outOffset, outLength] = runState.stack.popN(6)
-      const toAddressBuf = addressToBuffer(toAddress)
+      let [gasLimit, toAddr, inOffset, inLength, outOffset, outLength] = runState.stack.popN(6)
+      const toAddress = new Address(addressToBuffer(toAddr))
 
       subMemUsage(runState, inOffset, inLength)
       subMemUsage(runState, outOffset, outLength)
@@ -1099,7 +1094,7 @@ export const handlers: Map<number, OpHandler> = new Map([
         data = runState.memory.read(inOffset.toNumber(), inLength.toNumber())
       }
 
-      const ret = await runState.eei.callStatic(gasLimit, toAddressBuf, value, data)
+      const ret = await runState.eei.callStatic(gasLimit, toAddress, value, data)
       // Write return data to memory
       writeCallOutput(runState, outOffset, outLength)
       runState.stack.push(ret)
@@ -1136,12 +1131,12 @@ export const handlers: Map<number, OpHandler> = new Map([
   [
     0xff,
     async function (runState: RunState) {
-      const selfdestructToAddress = runState.stack.pop()
+      const selfdestructToAddressBN = runState.stack.pop()
       if (runState.eei.isStatic()) {
         trap(ERROR.STATIC_STATE_CHANGE)
       }
 
-      const selfdestructToAddressBuf = addressToBuffer(selfdestructToAddress)
+      const selfdestructToAddress = new Address(addressToBuffer(selfdestructToAddressBN))
       let deductGas = false
       if (runState._common.gteHardfork('spuriousDragon')) {
         // EIP-161: State Trie Clearing
@@ -1149,15 +1144,15 @@ export const handlers: Map<number, OpHandler> = new Map([
         if (balance.gtn(0)) {
           // This technically checks if account is empty or non-existent
           // TODO: improve on the API here (EEI and StateManager)
-          const empty = await runState.eei.isAccountEmpty(selfdestructToAddressBuf)
+          const empty = await runState.eei.isAccountEmpty(selfdestructToAddress)
           if (empty) {
-            const account = await runState.stateManager.getAccount(selfdestructToAddressBuf)
+            const account = await runState.stateManager.getAccount(selfdestructToAddress)
             deductGas = true
           }
         }
       } else if (runState._common.gteHardfork('tangerineWhistle')) {
         // Pre EIP-150 (Tangerine Whistle) gas semantics
-        const exists = await runState.stateManager.accountExists(selfdestructToAddressBuf)
+        const exists = await runState.stateManager.accountExists(selfdestructToAddress)
         if (!exists) {
           deductGas = true
         }
@@ -1166,7 +1161,7 @@ export const handlers: Map<number, OpHandler> = new Map([
         runState.eei.useGas(new BN(runState._common.param('gasPrices', 'callNewAccount')))
       }
 
-      return runState.eei.selfDestruct(selfdestructToAddressBuf)
+      return runState.eei.selfDestruct(selfdestructToAddress)
     },
   ],
 ])

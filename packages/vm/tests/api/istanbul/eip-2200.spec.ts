@@ -1,5 +1,5 @@
 import tape from 'tape'
-import { BN } from 'ethereumjs-util'
+import { Address, BN } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
 import VM from '../../../lib'
 import { ERROR } from '../../../lib/exceptions'
@@ -36,8 +36,8 @@ const testCases = [
 
 tape('Istanbul: EIP-2200', async (t) => {
   t.test('net-metering SSTORE', async (st) => {
-    const caller = Buffer.from('0000000000000000000000000000000000000000', 'hex')
-    const addr = Buffer.from('00000000000000000000000000000000000000ff', 'hex')
+    const caller = new Address(Buffer.from('0000000000000000000000000000000000000000', 'hex'))
+    const addr = new Address(Buffer.from('00000000000000000000000000000000000000ff', 'hex'))
     const key = new BN(0).toArrayLike(Buffer, 'be', 32)
     for (const testCase of testCases) {
       const common = new Common({ chain: 'mainnet', hardfork: 'istanbul' })

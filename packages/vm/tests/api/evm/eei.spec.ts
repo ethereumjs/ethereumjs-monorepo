@@ -1,9 +1,9 @@
 import tape from 'tape'
-import { Account, BN } from 'ethereumjs-util'
+import { Account, Address } from 'ethereumjs-util'
 import EEI from '../../../lib/evm/eei'
 import StateManager from '../../../lib/state/stateManager'
 
-const ZeroAddress = Buffer.from('0000000000000000000000000000000000000000', 'hex')
+const ZeroAddress = Address.zero()
 
 tape('EEI', (t) => {
   t.test('should return false on non-existing accounts', async (st) => {

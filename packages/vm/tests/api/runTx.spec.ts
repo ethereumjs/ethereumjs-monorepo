@@ -1,5 +1,5 @@
 import tape from 'tape'
-import { BN, MAX_INTEGER } from 'ethereumjs-util'
+import { Address, BN, MAX_INTEGER } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
 import { Transaction } from '@ethereumjs/tx'
 import VM from '../../lib'
@@ -54,7 +54,7 @@ tape('should run simple tx without errors', async (t) => {
   const suite = setup(vm)
 
   const tx = getTransaction(true)
-  const caller = tx.getSenderAddress().buf
+  const caller = tx.getSenderAddress()
   const acc = createAccount()
 
   await suite.putAccount(caller, acc)
@@ -71,12 +71,12 @@ tape('should fail when account balance overflows (call)', async (t) => {
 
   const tx = getTransaction(true, '0x01')
 
-  const caller = tx.getSenderAddress().buf
+  const caller = tx.getSenderAddress()
   const from = createAccount()
   await suite.putAccount(caller, from)
 
   const to = createAccount(new BN(0), MAX_INTEGER)
-  await suite.putAccount(tx.to!.buf, to)
+  await suite.putAccount(tx.to, to)
 
   const res = await suite.runTx({ tx })
 
@@ -91,11 +91,11 @@ tape('should fail when account balance overflows (create)', async (t) => {
 
   const tx = getTransaction(true, '0x01', true)
 
-  const caller = tx.getSenderAddress().buf
+  const caller = tx.getSenderAddress()
   const from = createAccount()
   await suite.putAccount(caller, from)
 
-  const contractAddress = Buffer.from('61de9dc6f6cff1df2809480882cfd3c2364b28f7', 'hex')
+  const contractAddress = new Address(Buffer.from('61de9dc6f6cff1df2809480882cfd3c2364b28f7', 'hex'))
   const to = createAccount(new BN(0), MAX_INTEGER)
   await suite.putAccount(contractAddress, to)
 
@@ -120,7 +120,7 @@ tape('should clear storage cache after every transaction', async (t) => {
     INVALID
   */
   const code = Buffer.from('6001600055FE', 'hex')
-  const address = Buffer.from('00000000000000000000000000000000000000ff', 'hex')
+  const address = new Address(Buffer.from('00000000000000000000000000000000000000ff', 'hex'))
   await vm.stateManager.putContractCode(address, code)
   await vm.stateManager.putContractStorage(
     address,
@@ -137,7 +137,7 @@ tape('should clear storage cache after every transaction', async (t) => {
     { common },
   ).sign(privateKey)
 
-  await vm.stateManager.putAccount(tx.getSenderAddress().buf, createAccount())
+  await vm.stateManager.putAccount(tx.getSenderAddress(), createAccount())
 
   await vm.runTx({ tx }) // this tx will fail, but we have to ensure that the cache is cleared
 
@@ -154,7 +154,7 @@ tape('should clear storage cache after every transaction', async (t) => {
 
   const tx = getTransaction(true)
   const acc = createAccount()
-  const caller = tx.getSenderAddress().buf
+  const caller = tx.getSenderAddress()
   await suite.putAccount(caller, acc)
   await suite.cacheFlush()
   suite.vm.stateManager.cache.clear()

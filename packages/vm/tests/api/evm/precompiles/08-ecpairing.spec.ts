@@ -1,5 +1,5 @@
 import tape from 'tape'
-import { BN } from 'ethereumjs-util'
+import { Address, BN } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
 import VM from '../../../../lib'
 import { getPrecompile } from '../../../../lib/evm/precompiles'
@@ -8,8 +8,8 @@ tape('Precompiles: ECPAIRING', (t) => {
   t.test('ECPAIRING', async (st) => {
     const common = new Common({ chain: 'mainnet', hardfork: 'petersburg' })
     const vm = new VM({ common: common })
-
-    const ECPAIRING = getPrecompile('0000000000000000000000000000000000000008', common)
+    const address = new Address(Buffer.from('0000000000000000000000000000000000000008', 'hex'))
+    const ECPAIRING = getPrecompile(address, common)
 
     const result = await ECPAIRING({
       data: Buffer.from(

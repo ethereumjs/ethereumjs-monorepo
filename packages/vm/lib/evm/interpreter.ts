@@ -1,4 +1,4 @@
-import { Account, BN } from 'ethereumjs-util'
+import { Account, Address, BN } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
 import { StateManager } from '../state/index'
 import { ERROR, VmError } from '../exceptions'
@@ -39,7 +39,7 @@ export interface InterpreterStep {
   returnStack: BN[]
   pc: number
   depth: number
-  address: Buffer
+  address: Address
   memory: Buffer
   memoryWordCount: BN
   opcode: {
@@ -48,7 +48,7 @@ export interface InterpreterStep {
     isAsync: boolean
   }
   account: Account
-  codeAddress: Buffer
+  codeAddress: Address
 }
 
 interface JumpDests {
@@ -196,12 +196,12 @@ export default class Interpreter {
      * @property {BN} gasLeft amount of gasLeft
      * @property {Array} stack an `Array` of `Buffers` containing the stack
      * @property {Account} account the Account which owns the code running
-     * @property {Buffer} address the address of the `account`
+     * @property {Address} address the address of the `account`
      * @property {Number} depth the current number of calls deep the contract is
      * @property {Buffer} memory the memory of the VM as a `buffer`
      * @property {BN} memoryWordCount current size of memory in words
      * @property {StateManager} stateManager a [[StateManager]] instance
-     * @property {Buffer} codeAddress the address of the code which is currently being ran (this differs from `address` in a `DELEGATECALL` and `CALLCODE` call)
+     * @property {Address} codeAddress the address of the code which is currently being ran (this differs from `address` in a `DELEGATECALL` and `CALLCODE` call)
      */
     return this._vm._emit('step', eventObj)
   }

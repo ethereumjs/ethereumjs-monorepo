@@ -1,15 +1,15 @@
-import BN = require('bn.js')
+import { Address, BN } from 'ethereumjs-util'
 import { PrecompileFunc } from './precompiles'
 
 export default class Message {
-  to: Buffer
+  to: Address
   value: BN
-  caller: Buffer
+  caller: Address
   gasLimit: BN
   data: Buffer
   depth: number
   code: Buffer | PrecompileFunc
-  _codeAddress: Buffer
+  _codeAddress: Address
   isStatic: boolean
   isCompiled: boolean
   salt: Buffer
@@ -32,7 +32,7 @@ export default class Message {
     this.delegatecall = opts.delegatecall || false
   }
 
-  get codeAddress(): Buffer {
+  get codeAddress(): Address {
     return this._codeAddress ? this._codeAddress : this.to
   }
 }

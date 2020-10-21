@@ -1,5 +1,4 @@
-import BN = require('bn.js')
-import { keccak256, setLengthRight, setLengthLeft } from 'ethereumjs-util'
+import { Address, BN, keccak256, setLengthRight, setLengthLeft } from 'ethereumjs-util'
 import { ERROR, VmError } from './../../exceptions'
 import { RunState } from './../interpreter'
 
@@ -48,7 +47,7 @@ export function addressToBuffer(address: BN): Buffer {
  */
 export function describeLocation(runState: RunState): string {
   const hash = keccak256(runState.eei.getCode()).toString('hex')
-  const address = runState.eei.getAddress().toString('hex')
+  const address = runState.eei.getAddress().buf.toString('hex')
   const pc = runState.programCounter - 1
   return `${hash}/${address}:${pc}`
 }
@@ -81,7 +80,7 @@ export function divCeil(a: BN, b: BN): BN {
  */
 export async function getContractStorage(
   runState: RunState,
-  address: Buffer,
+  address: Address,
   key: Buffer
 ): Promise<any> {
   const current = setLengthLeftStorage(await runState.stateManager.getContractStorage(address, key))

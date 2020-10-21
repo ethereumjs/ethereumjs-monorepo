@@ -1,12 +1,12 @@
 import tape from 'tape'
-import { BN } from 'ethereumjs-util'
+import { Address, BN } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
 import VM from '../../../../lib'
 import { getPrecompile } from '../../../../lib/evm/precompiles'
 
 tape('Precompiles: hardfork availability', (t) => {
   t.test('Test ECPAIRING availability', async (st) => {
-    const ECPAIR_Address = '0000000000000000000000000000000000000008'
+    const ECPAIR_Address = new Address(Buffer.from('0000000000000000000000000000000000000008', 'hex'))
 
     // ECPAIR was introduced in Byzantium; check if available from Byzantium.
     const commonByzantium = new Common({ chain: 'mainnet', hardfork: 'byzantium' })
@@ -21,9 +21,9 @@ tape('Precompiles: hardfork availability', (t) => {
 
     let vm = new VM({ common: commonByzantium })
     let result = await vm.runCall({
-      caller: Buffer.from('0000000000000000000000000000000000000000', 'hex'),
+      caller: Address.zero(),
       gasLimit: new BN(0xffffffffff),
-      to: Buffer.from(ECPAIR_Address, 'hex'),
+      to: ECPAIR_Address,
       value: new BN(0),
     })
 
@@ -41,9 +41,9 @@ tape('Precompiles: hardfork availability', (t) => {
 
     vm = new VM({ common: commonPetersburg })
     result = await vm.runCall({
-      caller: Buffer.from('0000000000000000000000000000000000000000', 'hex'),
+      caller: Address.zero(),
       gasLimit: new BN(0xffffffffff),
-      to: Buffer.from(ECPAIR_Address, 'hex'),
+      to: ECPAIR_Address,
       value: new BN(0),
     })
 
@@ -62,9 +62,9 @@ tape('Precompiles: hardfork availability', (t) => {
     vm = new VM({ common: commonHomestead })
 
     result = await vm.runCall({
-      caller: Buffer.from('0000000000000000000000000000000000000000', 'hex'),
+      caller: Address.zero(),
       gasLimit: new BN(0xffffffffff),
-      to: Buffer.from(ECPAIR_Address, 'hex'),
+      to: ECPAIR_Address,
       value: new BN(0),
     })
 
