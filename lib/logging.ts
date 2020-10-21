@@ -1,4 +1,4 @@
-import chalk, { ColorSupport } from 'chalk'
+import chalk from 'chalk'
 import { createLogger, format, transports } from 'winston'
 const { combine, timestamp, label, printf } = format
 
