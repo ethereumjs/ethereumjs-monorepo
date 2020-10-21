@@ -2,7 +2,7 @@ const { resolve } = require('path')
 
 module.exports = {
   mode: 'production',
-  entry: './dist.browser/index.js',
+  entry: './dist.browser/browser/index.js',
   module: {
     rules: [
       {
