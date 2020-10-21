@@ -5,8 +5,10 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [
-    "dist/**/*"
+    "dist",
+    "dist.browser"
   ],
+  "browser": "dist.browser/index.js",
   "scripts": {
     "prepublishOnly": "npm run lint && npm run test && npm run build",
     "build": "ethereumjs-config-ts-build",
