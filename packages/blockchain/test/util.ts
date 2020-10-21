@@ -22,7 +22,7 @@ export const generateBlocks = (numberOfBlocks: number, existingBlocks?: Block[])
       header: {
         number: i,
         parentHash: lastBlock.hash(),
-        difficulty: lastBlock.header.canonicalDifficulty(lastBlock),
+        difficulty: lastBlock.canonicalDifficulty(lastBlock),
         gasLimit,
         timestamp: lastBlock.header.timestamp.addn(1),
       },

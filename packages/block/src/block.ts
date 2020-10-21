@@ -1,7 +1,7 @@
 /* eslint-disable no-dupe-class-members */
 
 import { BaseTrie as Trie } from 'merkle-patricia-tree'
-import { rlp, keccak256, KECCAK256_RLP } from 'ethereumjs-util'
+import { BN, rlp, keccak256, KECCAK256_RLP } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
 import { Transaction, TxOptions } from '@ethereumjs/tx'
 import { BlockHeader } from './header'
@@ -235,6 +235,33 @@ export class Block {
     for (const uh of this.uncleHeaders) {
       await this._validateUncleHeader(uh, blockchain)
     }
+  }
+
+  /**
+   * Returns the canonical difficulty for this block.
+   *
+   * @param parentBlock - the parent of this `Block`
+   */
+  canonicalDifficulty(parentBlock: Block): BN {
+    return this.header.canonicalDifficulty(parentBlock.header)
+  }
+
+  /**
+   * Checks that the block's `difficulty` matches the canonical difficulty.
+   *
+   * @param parentBlock - the parent of this `Block`
+   */
+  validateDifficulty(parentBlock: Block): boolean {
+    return this.header.validateDifficulty(parentBlock.header)
+  }
+
+  /**
+   * Validates the gasLimit.
+   *
+   * @param parentBlock - the parent of this `Block`
+   */
+  validateGasLimit(parentBlock: Block): boolean {
+    return this.header.validateGasLimit(parentBlock.header)
   }
 
   /**

@@ -141,6 +141,18 @@ try {
 }
 ```
 
+### Header Validation Methods > Signature Changes
+
+**Breaking**: The signatures of the following header validation methods have been updated to take a `parentBlockHeader` instead of a 
+`parentBlock` input parameter for consistency and removing a circling dependency with `Block`:
+
+- `BlockHeader.canonicalDifficulty(parentBlockHeader: BlockHeader): BN`
+- `BlockHeader.validateDifficulty(parentBlockHeader: BlockHeader): boolean`
+- `BlockHeader.validateGasLimit(parentBlockHeader: BlockHeader): boolean`
+
+On the `Block` library new corresponding methods have been added which both operate on a block instance and expect a `parentBlock`
+as an input parameter.
+
 ### New Default Hardfork
 
 **Breaking:** The default HF on the library has been updated from `petersburg` to `instanbul`, see PR [#906](https://github.com/ethereumjs/ethereumjs-vm/pull/906).

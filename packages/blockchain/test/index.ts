@@ -81,7 +81,7 @@ tape('blockchain test', (t) => {
         header: {
           number,
           parentHash: lastBlock.hash(),
-          difficulty: lastBlock.header.canonicalDifficulty(lastBlock),
+          difficulty: lastBlock.canonicalDifficulty(lastBlock),
           timestamp: lastBlock.header.timestamp.addn(1),
           gasLimit,
         },
@@ -118,7 +118,7 @@ tape('blockchain test', (t) => {
       header: {
         number: 1,
         parentHash: genesis.hash(),
-        difficulty: genesis.header.canonicalDifficulty(genesis),
+        difficulty: genesis.canonicalDifficulty(genesis),
         timestamp: genesis.header.timestamp.addn(1),
         gasLimit,
       },
@@ -377,7 +377,7 @@ tape('blockchain test', (t) => {
     const headerData = {
       number: 15,
       parentHash: blocks[14].hash(),
-      difficulty: blocks[14].header.canonicalDifficulty(blocks[14]),
+      difficulty: blocks[14].canonicalDifficulty(blocks[14]),
       gasLimit: 8000000,
       timestamp: blocks[14].header.timestamp.addn(1),
     }
@@ -400,7 +400,7 @@ tape('blockchain test', (t) => {
     const headerData = {
       number: 15,
       parentHash: blocks[14].hash(),
-      difficulty: blocks[14].header.canonicalDifficulty(blocks[14]),
+      difficulty: blocks[14].canonicalDifficulty(blocks[14]),
       gasLimit: 8000000,
       timestamp: blocks[14].header.timestamp.addn(1),
     }
@@ -558,7 +558,7 @@ tape('blockchain test', (t) => {
     const headerData = {
       number: 1,
       parentHash: genesis.hash(),
-      difficulty: genesis.header.canonicalDifficulty(genesis),
+      difficulty: genesis.canonicalDifficulty(genesis),
       gasLimit,
       timestamp: genesis.header.timestamp.addn(1),
     }
@@ -595,7 +595,7 @@ tape('blockchain test', (t) => {
       header: {
         number: 1,
         parentHash: genesis.hash(),
-        difficulty: genesis.header.canonicalDifficulty(genesis),
+        difficulty: genesis.canonicalDifficulty(genesis),
         timestamp: genesis.header.timestamp.addn(3),
         gasLimit,
       },
@@ -605,7 +605,7 @@ tape('blockchain test', (t) => {
     const headerData1 = {
       number: 1,
       parentHash: genesis.hash(),
-      difficulty: genesis.header.canonicalDifficulty(genesis),
+      difficulty: genesis.canonicalDifficulty(genesis),
       timestamp: genesis.header.timestamp.addn(1),
       gasLimit,
     }
@@ -615,7 +615,7 @@ tape('blockchain test', (t) => {
     const headerData2 = {
       number: 2,
       parentHash: header1.hash(),
-      difficulty: header1.canonicalDifficulty(block),
+      difficulty: header1.canonicalDifficulty(block.header),
       timestamp: header1.timestamp.addn(1),
       gasLimit,
     }
@@ -655,7 +655,7 @@ tape('blockchain test', (t) => {
       header: {
         number: 1,
         parentHash: genesis.hash(),
-        difficulty: genesis.header.canonicalDifficulty(genesis),
+        difficulty: genesis.canonicalDifficulty(genesis),
         timestamp: genesis.header.timestamp.addn(1),
         gasLimit,
       },
