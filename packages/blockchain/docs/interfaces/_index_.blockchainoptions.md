@@ -12,32 +12,22 @@ This are the options that the Blockchain constructor can receive.
 
 ### Properties
 
-* [chain](_index_.blockchainoptions.md#optional-chain)
 * [common](_index_.blockchainoptions.md#optional-common)
 * [db](_index_.blockchainoptions.md#optional-db)
-* [hardfork](_index_.blockchainoptions.md#optional-hardfork)
 * [validateBlocks](_index_.blockchainoptions.md#optional-validateblocks)
 * [validatePow](_index_.blockchainoptions.md#optional-validatepow)
 
 ## Properties
 
-### `Optional` chain
-
-• **chain**? : *string | number*
-
-*Defined in [index.ts:63](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/blockchain/src/index.ts#L63)*
-
-The chain id or name. Default: `"mainnet"`.
-
-___
-
 ### `Optional` common
 
 • **common**? : *Common*
 
-*Defined in [index.ts:74](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/blockchain/src/index.ts#L74)*
+*Defined in [index.ts:66](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/blockchain/src/index.ts#L66)*
 
-An alternative way to specify the chain and hardfork is by passing a Common instance.
+Specify the chain and hardfork by passing a Common instance.
+
+If not provided this defaults to chain `mainnet` and hardfork `chainstart`
 
 ___
 
@@ -45,20 +35,9 @@ ___
 
 • **db**? : *LevelUp*
 
-*Defined in [index.ts:79](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/blockchain/src/index.ts#L79)*
+*Defined in [index.ts:71](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/blockchain/src/index.ts#L71)*
 
 Database to store blocks and metadata. Should be an abstract-leveldown compliant store.
-
-___
-
-### `Optional` hardfork
-
-• **hardfork**? : *string | null*
-
-*Defined in [index.ts:69](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/blockchain/src/index.ts#L69)*
-
-Hardfork for the blocks. If `undefined` or `null` is passed, it gets computed based on block
-numbers.
 
 ___
 
@@ -66,7 +45,7 @@ ___
 
 • **validateBlocks**? : *undefined | false | true*
 
-*Defined in [index.ts:91](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/blockchain/src/index.ts#L91)*
+*Defined in [index.ts:83](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/blockchain/src/index.ts#L83)*
 
 This flags indicates if blocks should be validated. See Block#validate for details. If
 `validate` is provided, this option takes its value. If neither `validate` nor this option are
@@ -78,6 +57,6 @@ ___
 
 • **validatePow**? : *undefined | false | true*
 
-*Defined in [index.ts:84](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/blockchain/src/index.ts#L84)*
+*Defined in [index.ts:76](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/blockchain/src/index.ts#L76)*
 
 This flags indicates if Proof-of-work should be validated. Defaults to `true`.

@@ -19,7 +19,7 @@
 
 • **block**: *number | null*
 
-*Defined in [types.ts:38](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/types.ts#L38)*
+*Defined in [types.ts:42](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/types.ts#L42)*
 
 ___
 
@@ -27,4 +27,4 @@ ___
 
 • **name**: *string*
 
-*Defined in [types.ts:37](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/types.ts#L37)*
+*Defined in [types.ts:41](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/types.ts#L41)*

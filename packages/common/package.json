@@ -1,6 +1,6 @@
 {
   "name": "@ethereumjs/common",
-  "version": "1.5.1",
+  "version": "2.0.0-beta.1",
   "description": "Resources common to all Ethereum implementations",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -40,6 +40,9 @@
     "url": "https://github.com/ethereumjs/ethereumjs-common/issues"
   },
   "homepage": "https://github.com/ethereumjs-ethereumjs/common",
+  "dependencies": {
+    "crc-32": "^1.2.0"
+  },
   "devDependencies": {
     "@ethereumjs/config-coverage": "^2.0.0",
     "@ethereumjs/config-typescript": "^2.0.0",
@@ -65,8 +68,5 @@
       "name": "Holger Drewes",
       "email": "Holger.Drewes@gmail.com"
     }
-  ],
-  "dependencies": {
-    "crc-32": "^1.2.0"
-  }
+  ]
 }
