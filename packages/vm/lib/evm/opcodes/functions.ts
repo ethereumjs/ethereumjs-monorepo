@@ -42,8 +42,7 @@ export const handlers: Map<number, OpHandler> = new Map([
   // 0x00: STOP
   [
     0x00,
-    /* eslint-disable-next-line no-unused-vars */
-    function (/*runState: RunState*/) {
+    function () {
       trap(ERROR.STOP)
     },
   ],
@@ -811,8 +810,7 @@ export const handlers: Map<number, OpHandler> = new Map([
     },
   ],
   // 0x5b: JUMPDEST
-  /* eslint-disable-next-line no-unused-vars */
-  [0x5b, function (/*runState: RunState*/) {}],
+  [0x5b, function () {}],
   // 0x5c: BEGINSUB
   [
     0x5c,

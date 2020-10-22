@@ -11,6 +11,8 @@ import * as testData from './testdata.json'
 
 // explicitly import util and buffer,
 // needed for karma-typescript bundling
+// eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
+import * as util from 'util'
 import { Buffer } from 'buffer'
 
 tape('VM with default blockchain', (t) => {
