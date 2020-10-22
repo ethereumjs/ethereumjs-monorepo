@@ -40,7 +40,7 @@ tape('Istanbul: EIP-1884', async (t) => {
         } else {
           st.assert(res.exceptionError === undefined)
           st.assert(
-            new BN(Buffer.from(testCase.selfbalance.slice(2), 'hex')).eq(new BN(res.returnValue)),
+            new BN(Buffer.from(testCase.selfbalance.slice(2), 'hex')).eq(new BN(res.returnValue))
           )
         }
       } catch (e) {

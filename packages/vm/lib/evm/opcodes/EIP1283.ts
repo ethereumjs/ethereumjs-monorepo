@@ -8,7 +8,7 @@ import { RunState } from './../interpreter'
  * @param {any}      found
  * @param {Buffer}   value
  */
-export function updateSstoreGasEIP1283(runState: RunState, found: any, value: Buffer, key: Buffer) {
+export function updateSstoreGasEIP1283(runState: RunState, found: any, value: Buffer) {
   if (runState._common.hardfork() === 'constantinople') {
     const original = found.original
     const current = found.current

@@ -21,7 +21,9 @@ function create2address(sourceAddress: Address, codeHash: Buffer, salt: Buffer):
 tape('Constantinople: EIP-1014 CREATE2 creates the right contract address', async (t) => {
   // setup the accounts for this test
   const caller = new Address(Buffer.from('00000000000000000000000000000000000000ee', 'hex')) // caller addres
-  const contractAddress = new Address(Buffer.from('00000000000000000000000000000000000000ff', 'hex')) // contract address
+  const contractAddress = new Address(
+    Buffer.from('00000000000000000000000000000000000000ff', 'hex')
+  ) // contract address
   // setup the vm
   const common = new Common({ chain: 'mainnet', hardfork: 'constantinople' })
   const vm = new VM({ common })
@@ -42,25 +44,25 @@ tape('Constantinople: EIP-1014 CREATE2 creates the right contract address', asyn
 
   await vm.stateManager.putContractCode(contractAddress, Buffer.from(code, 'hex')) // setup the contract code
 
-  let codeHash = keccak256(Buffer.from(''))
+  const codeHash = keccak256(Buffer.from(''))
   for (let value = 0; value <= 1000; value += 20) {
     // setup the call arguments
-    let runCallArgs = {
+    const runCallArgs = {
       caller: caller, // call address
       gasLimit: new BN(0xffffffffff), // ensure we pass a lot of gas, so we do not run out of gas
       to: contractAddress, // call to the contract address
       value: new BN(value), // call with this value (the value is used in the contract as an argument, see above's code)
     }
 
-    let hexString = padToEven(value.toString(16))
+    const hexString = padToEven(value.toString(16))
     let valueBuffer = Buffer.from(hexString, 'hex')
     // pad buffer
     if (valueBuffer.length < 32) {
-      let diff = 32 - valueBuffer.length
+      const diff = 32 - valueBuffer.length
       valueBuffer = Buffer.concat([Buffer.alloc(diff), valueBuffer])
     }
     // calculate expected CREATE2 address
-    let expectedAddress = create2address(contractAddress, codeHash, valueBuffer)
+    const expectedAddress = create2address(contractAddress, codeHash, valueBuffer)
     // run the actual call
     const res = await vm.runCall(runCallArgs)
     // retrieve the return value and convert it to an address (remove the first 12 bytes from the 32-byte return value)
@@ -80,7 +82,9 @@ tape('Byzantium cannot access Constantinople opcodes', async (t) => {
   t.plan(2)
   // setup the accounts for this test
   const caller = new Address(Buffer.from('00000000000000000000000000000000000000ee', 'hex')) // caller addres
-  const contractAddress = new Address(Buffer.from('00000000000000000000000000000000000000ff', 'hex')) // contract address
+  const contractAddress = new Address(
+    Buffer.from('00000000000000000000000000000000000000ff', 'hex')
+  ) // contract address
   // setup the vm
   const vmByzantium = new VM({ common: new Common({ chain: 'mainnet', hardfork: 'byzantium' }) })
   const vmConstantinople = new VM({
@@ -109,12 +113,12 @@ tape('Byzantium cannot access Constantinople opcodes', async (t) => {
 
   t.assert(
     byzantiumResult.execResult.exceptionError &&
-    byzantiumResult.execResult.exceptionError.error === 'invalid opcode',
-    'byzantium cannot accept constantinople opcodes (SHL)',
+      byzantiumResult.execResult.exceptionError.error === 'invalid opcode',
+    'byzantium cannot accept constantinople opcodes (SHL)'
   )
   t.assert(
     !constantinopleResult.execResult.exceptionError,
-    'constantinople can access the SHL opcode',
+    'constantinople can access the SHL opcode'
   )
 
   t.end()
@@ -123,7 +127,9 @@ tape('Byzantium cannot access Constantinople opcodes', async (t) => {
 tape('Ensure that precompile activation creates non-empty accounts', async (t) => {
   // setup the accounts for this test
   const caller = new Address(Buffer.from('00000000000000000000000000000000000000ee', 'hex')) // caller addres
-  const contractAddress = new Address(Buffer.from('00000000000000000000000000000000000000ff', 'hex')) // contract address
+  const contractAddress = new Address(
+    Buffer.from('00000000000000000000000000000000000000ff', 'hex')
+  ) // contract address
   // setup the vm
   const common = new Common({ chain: 'mainnet', hardfork: 'istanbul' })
   const vmNotActivated = new VM({ common: common })
@@ -148,7 +154,7 @@ tape('Ensure that precompile activation creates non-empty accounts', async (t) =
   await vmActivated.stateManager.putContractCode(contractAddress, Buffer.from(code, 'hex')) // setup the contract code
 
   // setup the call arguments
-  let runCallArgs = {
+  const runCallArgs = {
     caller: caller, // call address
     gasLimit: new BN(0xffffffffff), // ensure we pass a lot of gas, so we do not run out of gas
     to: contractAddress, // call to the contract address,
@@ -199,11 +205,11 @@ tape('Ensure that Istanbul sstoreCleanRefundEIP2200 gas is applied correctly', a
   await vm.stateManager.putContractStorage(
     address,
     Buffer.alloc(32, 0),
-    Buffer.from('00'.repeat(31) + '01', 'hex'),
+    Buffer.from('00'.repeat(31) + '01', 'hex')
   )
 
   // setup the call arguments
-  let runCallArgs = {
+  const runCallArgs = {
     caller: caller, // call address
     to: address,
     gasLimit: new BN(0xffffffffff), // ensure we pass a lot of gas, so we do not run out of gas

@@ -1,5 +1,5 @@
 import { SecureTrie as Trie } from 'merkle-patricia-tree'
-import { Account, Address, BN } from 'ethereumjs-util'
+import { Account, Address } from 'ethereumjs-util'
 import Blockchain from '@ethereumjs/blockchain'
 import Common from '@ethereumjs/common'
 import { StateManager, DefaultStateManager } from './state/index'
@@ -14,6 +14,7 @@ import runBlockchain from './runBlockchain'
 const AsyncEventEmitter = require('async-eventemitter')
 const promisify = require('util.promisify')
 
+// eslint-disable-next-line no-undef
 const IS_BROWSER = typeof (<any>globalThis).window === 'object' // very ugly way to detect if we are running in a browser
 let mcl: any
 let mclInitPromise: any
@@ -209,14 +210,14 @@ export default class VM extends AsyncEventEmitter {
     const { opts } = this
 
     if (opts.activatePrecompiles && !opts.stateManager) {
-      this.stateManager.checkpoint()
+      await this.stateManager.checkpoint()
       // put 1 wei in each of the precompiles in order to make the accounts non-empty and thus not have them deduct `callNewAccount` gas.
       await Promise.all(
         Object.keys(precompiles)
           .map((k: string): Address => new Address(Buffer.from(k, 'hex')))
-          .map((address: Address) => {
+          .map(async (address: Address) => {
             const account = Account.fromAccountData({ balance: 1 })
-            this.stateManager.putAccount(address, account)
+            await this.stateManager.putAccount(address, account)
           })
       )
       await this.stateManager.commit()

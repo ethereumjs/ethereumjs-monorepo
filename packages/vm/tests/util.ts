@@ -15,7 +15,7 @@ import Common from '@ethereumjs/common'
 export function dumpState(state: any, cb: Function) {
   function readAccounts(state: any) {
     return new Promise((resolve) => {
-      let accounts: Account[] = []
+      const accounts: Account[] = []
       const rs = state.createReadStream()
       rs.on('data', function (data: any) {
         const rlp = data.value
@@ -30,10 +30,10 @@ export function dumpState(state: any, cb: Function) {
 
   function readStorage(state: any, account: Account) {
     return new Promise((resolve) => {
-      let storage: any = {}
-      let storageTrie = state.copy(false)
+      const storage: any = {}
+      const storageTrie = state.copy(false)
       storageTrie.root = account.stateRoot
-      let storageRS = storageTrie.createReadStream()
+      const storageRS = storageTrie.createReadStream()
 
       storageRS.on('data', function (data: any) {
         storage[data.key.toString('hex')] = data.value.toString('hex')
@@ -44,19 +44,19 @@ export function dumpState(state: any, cb: Function) {
       })
     })
   }
-
+  // eslint-disable-next-line @typescript-eslint/no-floating-promises
   readAccounts(state).then(async function (accounts: any) {
-    let results: any = []
+    const results: any = []
     for (let key = 0; key < accounts.length; key++) {
-      let result = await readStorage(state, accounts[key])
+      const result = await readStorage(state, accounts[key])
       results.push(result)
     }
     for (let i = 0; i < results.length; i++) {
-      console.log("SHA3'd address: " + results[i].address.toString('hex'))
-      console.log('\tstate root: ' + results[i].stateRoot.toString('hex'))
+      console.log("SHA3'd address: " + <string>results[i].address.toString('hex'))
+      console.log('\tstate root: ' + <string>results[i].stateRoot.toString('hex'))
       console.log('\tstorage: ')
-      for (let storageKey in results[i].storage) {
-        console.log('\t\t' + storageKey + ': ' + results[i].storage[storageKey])
+      for (const storageKey in results[i].storage) {
+        console.log('\t\t' + storageKey + ': ' + <string>results[i].storage[storageKey])
       }
       console.log('\tnonce: ' + new BN(results[i].nonce).toString())
       console.log('\tbalance: ' + new BN(results[i].balance).toString())
@@ -68,7 +68,7 @@ export function dumpState(state: any, cb: Function) {
 const format = (exports.format = function (
   a: any,
   toZero: boolean = false,
-  isHex: boolean = false,
+  isHex: boolean = false
 ) {
   if (a === '') {
     return Buffer.alloc(0)
@@ -76,12 +76,12 @@ const format = (exports.format = function (
 
   if (a.slice && a.slice(0, 2) === '0x') {
     a = a.slice(2)
-    if (a.length % 2) a = '0' + a
+    if (a.length % 2) a = '0' + <string>a
     a = Buffer.from(a, 'hex')
   } else if (!isHex) {
     a = Buffer.from(new BN(a).toArray())
   } else {
-    if (a.length % 2) a = '0' + a
+    if (a.length % 2) a = '0' + <string>a
     a = Buffer.from(a, 'hex')
   }
 
@@ -136,7 +136,7 @@ export async function verifyPostConditions(state: any, testData: any, t: tape.Te
         const promise = exports.verifyAccountPostConditions(state, address, account, testData, t)
         queue.push(promise)
       } else {
-        t.fail('invalid account in the trie: ' + key)
+        t.fail('invalid account in the trie: ' + <string>key)
       }
     })
 
@@ -144,7 +144,7 @@ export async function verifyPostConditions(state: any, testData: any, t: tape.Te
       await Promise.all(queue)
 
       for (const hash of keyMap) {
-        t.fail('Missing account!: ' + keyMap[hash])
+        t.fail('Missing account!: ' + <string>keyMap[hash])
       }
 
       resolve()
@@ -164,7 +164,7 @@ export function verifyAccountPostConditions(
   address: string,
   account: Account,
   acctData: any,
-  t: tape.Test,
+  t: tape.Test
 ) {
   return new Promise((resolve) => {
     t.comment('Account: ' + address)
@@ -250,7 +250,7 @@ export function verifyLogs(logs: any, testData: any, t: tape.Test) {
     testData.logs.forEach(function (log: any, i: number) {
       const rlog = logs[i]
       t.equal(rlog[0].toString('hex'), log.address, 'log: valid address')
-      t.equal('0x' + rlog[2].toString('hex'), log.data, 'log: valid data')
+      t.equal('0x' + <string>rlog[2].toString('hex'), log.data, 'log: valid data')
       log.topics.forEach(function (topic: string, i: number) {
         t.equal(rlog[1][i].toString('hex'), topic, 'log: invalid topic')
       })
@@ -357,6 +357,7 @@ export function getRequiredForkConfigAlias(forkConfig: string): string {
  * @returns {bool} is running in karma
  */
 export function isRunningInKarma() {
+  // eslint-disable-next-line no-undef
   return typeof (<any>globalThis).window !== 'undefined' && (<any>globalThis).window.__karma__
 }
 
@@ -367,10 +368,10 @@ export function getDAOCommon(activationBlock: number) {
   // here: get the default fork list of mainnet and only edit the DAO fork block (thus copy the rest of the "default" hardfork settings)
   const defaultDAOCommon = new Common({ chain: 'mainnet', hardfork: 'dao' })
   // retrieve the hard forks list from defaultCommon...
-  let forks = defaultDAOCommon.hardforks()
-  let editedForks = []
+  const forks = defaultDAOCommon.hardforks()
+  const editedForks = []
   // explicitly edit the "dao" block number:
-  for (let fork of forks) {
+  for (const fork of forks) {
     if (fork.name == 'dao') {
       editedForks.push({
         name: 'dao',
@@ -386,7 +387,7 @@ export function getDAOCommon(activationBlock: number) {
     {
       hardforks: editedForks,
     },
-    'dao',
+    'dao'
   )
   return DAOCommon
 }

@@ -11,6 +11,7 @@ import * as testData from './testdata.json'
 
 // explicitly import util and buffer,
 // needed for karma-typescript bundling
+// eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
 import * as util from 'util'
 import { Buffer } from 'buffer'
 
@@ -21,41 +22,41 @@ tape('VM with default blockchain', (t) => {
     st.deepEqual(
       (vm.stateManager as DefaultStateManager)._trie.root,
       KECCAK256_RLP,
-      'it has default trie',
+      'it has default trie'
     )
     st.equal(vm._common.hardfork(), 'istanbul', 'it has correct default HF')
     st.end()
   })
 
   t.test('should be able to activate precompiles', async (st) => {
-    let vm = new VM({ activatePrecompiles: true })
+    const vm = new VM({ activatePrecompiles: true })
     await vm.init()
     st.notDeepEqual(
       (vm.stateManager as DefaultStateManager)._trie.root,
       KECCAK256_RLP,
-      'it has different root',
+      'it has different root'
     )
     st.end()
   })
 
   t.test('should instantiate with async constructor', async (st) => {
-    let vm = await VM.create({ activatePrecompiles: true })
+    const vm = await VM.create({ activatePrecompiles: true })
     st.notDeepEqual(
       (vm.stateManager as DefaultStateManager)._trie.root,
       KECCAK256_RLP,
-      'it has different root',
+      'it has different root'
     )
     st.end()
   })
 
   t.test('should work with trie (state) provided', async (st) => {
-    let trie = new Trie()
-    let vm = new VM({ state: trie, activatePrecompiles: true })
+    const trie = new Trie()
+    const vm = new VM({ state: trie, activatePrecompiles: true })
     await vm.init()
     st.notDeepEqual(
       (vm.stateManager as DefaultStateManager)._trie.root,
       KECCAK256_RLP,
-      'it has different root',
+      'it has different root'
     )
     st.end()
   })
@@ -107,7 +108,7 @@ tape('VM with blockchain', (t) => {
     st.deepEqual(
       (vm.stateManager as DefaultStateManager)._trie.root,
       KECCAK256_RLP,
-      'it has default trie',
+      'it has default trie'
     )
     st.end()
   })

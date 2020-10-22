@@ -3,20 +3,21 @@ import { SecureTrie as Trie } from 'merkle-patricia-tree'
 import { Account, BN, toBuffer } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
 import { setupPreConditions, makeTx, makeBlockFromEnv } from './util'
+import { InterpreterStep } from '../lib/evm/interpreter'
 
 function parseTestCases(
   forkConfigTestSuite: string,
   testData: any,
   data: string | undefined,
   gasLimit: string | undefined,
-  value: string | undefined,
+  value: string | undefined
 ) {
   let testCases = []
 
   if (testData['post'][forkConfigTestSuite]) {
     testCases = testData['post'][forkConfigTestSuite].map((testCase: any) => {
-      let testIndexes = testCase['indexes']
-      let tx = { ...testData.transaction }
+      const testIndexes = testCase['indexes']
+      const tx = { ...testData.transaction }
       if (data !== undefined && testIndexes['data'] !== data) {
         return null
       }
@@ -82,7 +83,7 @@ async function runTestCase(options: any, testData: any, t: tape.Test) {
   const block = makeBlockFromEnv(testData.env, { common })
 
   if (options.jsontrace) {
-    vm.on('step', function (e: any) {
+    vm.on('step', function (e: InterpreterStep) {
       let hexStack = []
       hexStack = e.stack.map((item: any) => {
         return '0x' + new BN(item).toString(16, 0)
@@ -90,7 +91,7 @@ async function runTestCase(options: any, testData: any, t: tape.Test) {
 
       const opTrace = {
         pc: e.pc,
-        op: e.opcode.opcode,
+        op: e.opcode.name,
         gas: '0x' + e.gasLeft.toString('hex'),
         gasCost: '0x' + e.opcode.fee.toString(16),
         stack: hexStack,
@@ -135,7 +136,7 @@ export default async function runStateTest(options: any, testData: any, t: tape.
       testData,
       options.data,
       options.gasLimit,
-      options.value,
+      options.value
     )
     if (testCases.length === 0) {
       t.comment(`No ${options.forkConfigTestSuite} post state defined, skip test`)
@@ -146,6 +147,6 @@ export default async function runStateTest(options: any, testData: any, t: tape.
     }
   } catch (e) {
     console.log(e)
-    t.fail('error running test case for fork: ' + options.forkConfigTestSuite)
+    t.fail('error running test case for fork: ' + <string>options.forkConfigTestSuite)
   }
 }

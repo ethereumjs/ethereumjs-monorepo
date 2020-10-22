@@ -260,6 +260,7 @@ export default class DefaultStateManager implements StateManager {
     address: Address,
     modifyTrie: (storageTrie: Trie, done: Function) => void
   ): Promise<void> {
+    // eslint-disable-next-line no-async-promise-executor
     return new Promise(async (resolve) => {
       const storageTrie = await this._getStorageTrie(address)
 
@@ -357,7 +358,7 @@ export default class DefaultStateManager implements StateManager {
    */
   async revert(): Promise<void> {
     // setup trie checkpointing
-    this._trie.revert()
+    await this._trie.revert()
     // setup cache checkpointing
     this._cache.revert()
     this._storageTries = {}
@@ -436,17 +437,22 @@ export default class DefaultStateManager implements StateManager {
    * Both are represented as hex strings without the `0x` prefix.
    */
   async dumpStorage(address: Address): Promise<StorageDump> {
-    return new Promise(async (resolve) => {
-      const trie = await this._getStorageTrie(address)
-      const storage: StorageDump = {}
-      const stream = trie.createReadStream()
+    return new Promise((resolve, reject) => {
+      this._getStorageTrie(address)
+        .then((trie) => {
+          const storage: StorageDump = {}
+          const stream = trie.createReadStream()
 
-      stream.on('data', (val: any) => {
-        storage[val.key.toString('hex')] = val.value.toString('hex')
-      })
-      stream.on('end', () => {
-        resolve(storage)
-      })
+          stream.on('data', (val: any) => {
+            storage[val.key.toString('hex')] = val.value.toString('hex')
+          })
+          stream.on('end', () => {
+            resolve(storage)
+          })
+        })
+        .catch((e) => {
+          reject(e)
+        })
     })
   }
 
@@ -512,7 +518,7 @@ export default class DefaultStateManager implements StateManager {
    * @param address - Address of the `account` to check
    */
   async accountExists(address: Address): Promise<boolean> {
-    const account = await this._cache.lookup(address)
+    const account = this._cache.lookup(address)
     if (account && !this._cache.keyIsDeleted(address)) {
       return true
     }

@@ -87,7 +87,7 @@ tape('StateManager', (t) => {
       st.ok(res1.serialize().equals(res2.serialize()))
 
       st.end()
-    },
+    }
   )
 
   t.test(
@@ -96,19 +96,19 @@ tape('StateManager', (t) => {
       const stateManager = new DefaultStateManager()
       const address = new Address(Buffer.from('a94f5374fce5edbc8e2a8697c15331677e6ebf0b', 'hex'))
 
-      let res = await stateManager.accountIsEmpty(address)
+      const res = await stateManager.accountIsEmpty(address)
 
       st.ok(res)
 
       st.end()
-    },
+    }
   )
 
   t.test('should return false for a non-existent account', async (st) => {
     const stateManager = new DefaultStateManager()
     const address = new Address(Buffer.from('a94f5374fce5edbc8e2a8697c15331677e6ebf0b', 'hex'))
 
-    let res = await stateManager.accountExists(address)
+    const res = await stateManager.accountExists(address)
 
     st.notOk(res)
 
@@ -122,7 +122,7 @@ tape('StateManager', (t) => {
 
     await stateManager.putAccount(address, account)
 
-    let res = await stateManager.accountExists(address)
+    const res = await stateManager.accountExists(address)
 
     st.ok(res)
 
@@ -138,12 +138,12 @@ tape('StateManager', (t) => {
 
       await stateManager.putAccount(address, account)
 
-      let res = await stateManager.accountIsEmpty(address)
+      const res = await stateManager.accountIsEmpty(address)
 
       st.notOk(res)
 
       st.end()
-    },
+    }
   )
   t.test(
     'should generate the genesis state root correctly for mainnet from ethereum/tests data',
@@ -153,18 +153,18 @@ tape('StateManager', (t) => {
         return st.end()
       }
       const genesisData = require('ethereumjs-testing').getSingleFile(
-        'BasicTests/genesishashestest.json',
+        'BasicTests/genesishashestest.json'
       )
       const stateManager = new StateManager()
       await stateManager.generateCanonicalGenesis()
-      let stateRoot = await stateManager.getStateRoot()
+      const stateRoot = await stateManager.getStateRoot()
       st.equals(
         stateRoot.toString('hex'),
         genesisData.genesis_state_root,
-        'generateCanonicalGenesis should produce correct state root for mainnet from ethereum/tests data',
+        'generateCanonicalGenesis should produce correct state root for mainnet from ethereum/tests data'
       )
       st.end()
-    },
+    }
   )
 
   t.test('should generate the genesis state root correctly for mainnet from common', async (st) => {
@@ -177,11 +177,11 @@ tape('StateManager', (t) => {
     const stateManager = new StateManager({ common: common })
 
     await stateManager.generateCanonicalGenesis()
-    let stateRoot = await stateManager.getStateRoot()
+    const stateRoot = await stateManager.getStateRoot()
 
     st.true(
       stateRoot.equals(expectedStateRoot),
-      `generateCanonicalGenesis should produce correct state root for mainnet from common`,
+      `generateCanonicalGenesis should produce correct state root for mainnet from common`
     )
     st.end()
   })
@@ -195,11 +195,11 @@ tape('StateManager', (t) => {
       const stateManager = new DefaultStateManager({ common: common })
 
       await stateManager.generateCanonicalGenesis()
-      let stateRoot = await stateManager.getStateRoot()
+      const stateRoot = await stateManager.getStateRoot()
 
       st.true(
         stateRoot.equals(expectedStateRoot),
-        `generateCanonicalGenesis should produce correct state root for ${chain}`,
+        `generateCanonicalGenesis should produce correct state root for ${chain}`
       )
     }
     st.end()
@@ -210,10 +210,7 @@ tape('StateManager', (t) => {
     const address = new Address(Buffer.from('a94f5374fce5edbc8e2a8697c15331677e6ebf0b', 'hex'))
     const account = createAccount()
 
-    await stateManager.putAccount(
-      address,
-      account,
-    )
+    await stateManager.putAccount(address, account)
 
     const key = toBuffer('0x1234567890123456789012345678901234567890123456789012345678901234')
     const value = toBuffer('0x0a') // We used this value as its RLP encoding is also 0a
@@ -323,7 +320,7 @@ tape('Original storage cache', async (t) => {
   t.test('should cache keys separately', async (st) => {
     const key2 = Buffer.from(
       '0000000000000000000000000000000000000000000000000000000000000012',
-      'hex',
+      'hex'
     )
     const value2 = Buffer.from('12', 'hex')
     const value3 = Buffer.from('123', 'hex')
@@ -372,7 +369,7 @@ tape('StateManager - Contract code', (tester) => {
     const address = new Address(Buffer.from('a94f5374fce5edbc8e2a8697c15331677e6ebf0b', 'hex'))
     const code = Buffer.from(
       '73095e7baea6a6c7c4c2dfeb977efac326af552d873173095e7baea6a6c7c4c2dfeb977efac326af552d873157',
-      'hex',
+      'hex'
     )
     const raw = {
       nonce: '0x0',
@@ -466,7 +463,7 @@ tape('StateManager - Contract storage', (tester) => {
     const zeroLengths = [0, 1, 31, 32] // checks for arbitrary-length zeros
     t.plan(zeroLengths.length)
 
-    for (let length of zeroLengths) {
+    for (const length of zeroLengths) {
       const stateManager = new DefaultStateManager()
       const value = zeros(length)
       await stateManager.putContractStorage(address, key, startValue)

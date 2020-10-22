@@ -1,7 +1,6 @@
 import BN = require('bn.js')
 import { Address } from 'ethereumjs-util'
 import { RunState } from './../interpreter'
-import { addressToBuffer } from './util'
 
 /**
  * Adds address to accessedAddresses set if not already included.

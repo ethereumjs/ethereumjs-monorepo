@@ -5,8 +5,8 @@ import { ERROR, VmError } from '../exceptions'
 import Memory from './memory'
 import Stack from './stack'
 import EEI from './eei'
-import { Opcode, handlers as opHandlers, OpHandler } from './opcodes'
 import { precompiles } from './precompiles'
+import { Opcode, handlers as opHandlers, OpHandler, AsyncOpHandler } from './opcodes'
 
 export interface InterpreterOpts {
   pc?: number
@@ -152,7 +152,7 @@ export default class Interpreter {
     // Execute opcode handler
     const opFn = this.getOpHandler(opInfo)
     if (opInfo.isAsync) {
-      await opFn.apply(null, [this._runState])
+      await (<AsyncOpHandler>opFn).apply(null, [this._runState])
     } else {
       opFn.apply(null, [this._runState])
     }
@@ -246,7 +246,7 @@ export default class Interpreter {
     this._runState.accessedAddresses.add(this._eei._env.origin.toString())
     this._runState.accessedAddresses.add(this._eei.getAddress().toString())
 
-    for (let address of Object.keys(precompiles)) {
+    for (const address of Object.keys(precompiles)) {
       this._runState.accessedAddresses.add(`0x${address}`)
     }
   }

@@ -126,7 +126,6 @@ tape('Stack', (t) => {
   t.test('stack items should not change if they are DUPed', async (st) => {
     const caller = new Address(Buffer.from('00000000000000000000000000000000000000ee', 'hex'))
     const addr = new Address(Buffer.from('00000000000000000000000000000000000000ff', 'hex'))
-    const key = new BN(0).toArrayLike(Buffer, 'be', 32)
     const vm = new VM()
     const account = createAccount(new BN(0), new BN(0))
     const code = '60008080808060013382F15060005260206000F3'

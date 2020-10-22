@@ -11,7 +11,7 @@ const levelMem = require('level-mem')
 export default async function runBlockchainTest(options: any, testData: any, t: tape.Test) {
   // ensure that the test data is the right fork data
   if (testData.network != options.forkConfigTestSuite) {
-    t.comment('skipping test: no data available for ' + options.forkConfigTestSuite)
+    t.comment('skipping test: no data available for ' + <string>options.forkConfigTestSuite)
     return
   }
 
@@ -23,20 +23,12 @@ export default async function runBlockchainTest(options: any, testData: any, t: 
   const blockchainDB = levelMem()
   const cacheDB = level('./.cachedb')
   const state = new Trie()
-  const hardfork = options.forkConfigVM
 
   let validatePow = false
   // Only run with block validation when sealEngine present in test file
   // and being set to Ethash PoW validation
   if (testData.sealEngine && testData.sealEngine === 'Ethash') {
     validatePow = true
-  }
-
-  let eips = []
-  if (hardfork == 'berlin') {
-    // currently, the BLS tests run on the Berlin network, but our VM does not activate EIP2537
-    // if you run the Berlin HF
-    eips = [2537]
   }
 
   const { common } = options
@@ -50,7 +42,7 @@ export default async function runBlockchainTest(options: any, testData: any, t: 
   })
 
   if (validatePow) {
-    ;(blockchain.ethash as any).cacheDB = cacheDB
+    blockchain.ethash!.cacheDB = cacheDB
   }
 
   let VM
@@ -113,7 +105,7 @@ export default async function runBlockchainTest(options: any, testData: any, t: 
       const block = Block.fromRLPSerializedBlock(blockRlp, { common })
       currentBlock = block.header.number
     } catch (e) {
-      handleError(e, expectException)
+      await handleError(e, expectException)
       continue
     }
 
@@ -125,7 +117,7 @@ export default async function runBlockchainTest(options: any, testData: any, t: 
 
     try {
       // check if we should update common.
-      let newFork = common.setHardforkByBlockNumber(currentBlock)
+      const newFork = common.setHardforkByBlockNumber(currentBlock)
       if (newFork != currentFork) {
         currentFork = newFork
         vm._updateOpcodes()
@@ -160,7 +152,7 @@ export default async function runBlockchainTest(options: any, testData: any, t: 
       await cacheDB.close()
 
       if (expectException) {
-        t.fail('expected exception but test did not throw an exception: ' + expectException)
+        t.fail('expected exception but test did not throw an exception: ' + <string>expectException)
         return
       }
     } catch (error) {
@@ -172,7 +164,7 @@ export default async function runBlockchainTest(options: any, testData: any, t: 
   t.equal(
     (blockchain.meta as any).rawHead.toString('hex'),
     testData.lastblockhash,
-    'correct last header block',
+    'correct last header block'
   )
   await cacheDB.close()
 }

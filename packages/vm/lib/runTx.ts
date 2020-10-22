@@ -193,7 +193,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     }
   }
   await state.cleanupTouchedAccounts()
-  await state.clearOriginalStorageCache()
+  state.clearOriginalStorageCache()
 
   /**
    * The `afterTx` event
