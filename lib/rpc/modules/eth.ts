@@ -82,7 +82,7 @@ export class Eth {
    * as the second argument
    * @return {Promise}
    */
-  async getBlockByHash (params: string[] | boolean[], cb: (err: Error | null, val?: any) => void) {
+  async getBlockByHash (params: [string, boolean], cb: (err: Error | null, val?: any) => void) {
     let [blockHash, includeTransactions] = params
 
     try {
