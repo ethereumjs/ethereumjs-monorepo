@@ -210,10 +210,7 @@ tape('StateManager', (t) => {
     const address = new Address(Buffer.from('a94f5374fce5edbc8e2a8697c15331677e6ebf0b', 'hex'))
     const account = createAccount()
 
-    await stateManager.putAccount(
-      address,
-      account,
-    )
+    await stateManager.putAccount(address, account)
 
     const key = toBuffer('0x1234567890123456789012345678901234567890123456789012345678901234')
     const value = toBuffer('0x0a') // We used this value as its RLP encoding is also 0a

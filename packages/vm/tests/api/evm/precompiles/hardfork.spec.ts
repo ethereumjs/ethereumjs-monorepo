@@ -6,7 +6,9 @@ import { getPrecompile } from '../../../../lib/evm/precompiles'
 
 tape('Precompiles: hardfork availability', (t) => {
   t.test('Test ECPAIRING availability', async (st) => {
-    const ECPAIR_Address = new Address(Buffer.from('0000000000000000000000000000000000000008', 'hex'))
+    const ECPAIR_Address = new Address(
+      Buffer.from('0000000000000000000000000000000000000008', 'hex')
+    )
 
     // ECPAIR was introduced in Byzantium; check if available from Byzantium.
     const commonByzantium = new Common({ chain: 'mainnet', hardfork: 'byzantium' })

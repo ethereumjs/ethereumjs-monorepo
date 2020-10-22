@@ -6,7 +6,6 @@ import {
   generateAddress2,
   KECCAK256_NULL,
   MAX_INTEGER,
-  zeros,
 } from 'ethereumjs-util'
 import { Block } from '@ethereumjs/block'
 import { ERROR, VmError } from '../exceptions'

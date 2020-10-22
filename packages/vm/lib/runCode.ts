@@ -11,7 +11,7 @@ instead you should `copy` it first
 not all stack items are 32 bytes, so if the operation relies on the stack
 item length then you must use utils.pad(<item>, 32) first.
 */
-import { Address, BN, zeros } from 'ethereumjs-util'
+import { Address, BN } from 'ethereumjs-util'
 import { Block } from '@ethereumjs/block'
 import VM from './index'
 import TxContext from './evm/txContext'

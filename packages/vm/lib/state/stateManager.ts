@@ -437,17 +437,22 @@ export default class DefaultStateManager implements StateManager {
    * Both are represented as hex strings without the `0x` prefix.
    */
   async dumpStorage(address: Address): Promise<StorageDump> {
-    return new Promise(async (resolve) => {
-      const trie = await this._getStorageTrie(address)
-      const storage: StorageDump = {}
-      const stream = trie.createReadStream()
+    return new Promise((resolve, reject) => {
+      this._getStorageTrie(address)
+        .then((trie) => {
+          const storage: StorageDump = {}
+          const stream = trie.createReadStream()
 
-      stream.on('data', (val: any) => {
-        storage[val.key.toString('hex')] = val.value.toString('hex')
-      })
-      stream.on('end', () => {
-        resolve(storage)
-      })
+          stream.on('data', (val: any) => {
+            storage[val.key.toString('hex')] = val.value.toString('hex')
+          })
+          stream.on('end', () => {
+            resolve(storage)
+          })
+        })
+        .catch((e) => {
+          reject(e)
+        })
     })
   }
 

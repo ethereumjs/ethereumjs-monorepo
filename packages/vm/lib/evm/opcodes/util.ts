@@ -1,7 +1,6 @@
 import { Address, BN, keccak256, setLengthRight, setLengthLeft } from 'ethereumjs-util'
 import { ERROR, VmError } from './../../exceptions'
 import { RunState } from './../interpreter'
-import { adjustSstoreGasEIP2929 } from './EIP2929'
 
 const MASK_160 = new BN(1).shln(160).subn(1)
 

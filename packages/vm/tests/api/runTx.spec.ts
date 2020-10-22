@@ -92,7 +92,9 @@ tape('should fail when account balance overflows (create)', async (t) => {
   const from = createAccount()
   await suite.putAccount(caller, from)
 
-  const contractAddress = new Address(Buffer.from('61de9dc6f6cff1df2809480882cfd3c2364b28f7', 'hex'))
+  const contractAddress = new Address(
+    Buffer.from('61de9dc6f6cff1df2809480882cfd3c2364b28f7', 'hex')
+  )
   const to = createAccount(new BN(0), MAX_INTEGER)
   await suite.putAccount(contractAddress, to)
 

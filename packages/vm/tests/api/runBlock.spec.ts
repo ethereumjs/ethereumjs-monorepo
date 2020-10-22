@@ -157,15 +157,21 @@ tape(
     // fill two original DAO child-contracts with funds and the recovery account with funds in order to verify that the balance gets summed correctly
     const fundBalance1 = new BN(Buffer.from('1111', 'hex'))
     const accountFunded1 = createAccount(new BN(0), fundBalance1)
-    const DAOFundedContractAddress1 = new Address(Buffer.from('d4fe7bc31cedb7bfb8a345f31e668033056b2728', 'hex'))
+    const DAOFundedContractAddress1 = new Address(
+      Buffer.from('d4fe7bc31cedb7bfb8a345f31e668033056b2728', 'hex')
+    )
     await suite.vm.stateManager.putAccount(DAOFundedContractAddress1, accountFunded1)
 
     const fundBalance2 = new BN(Buffer.from('2222', 'hex'))
     const accountFunded2 = createAccount(new BN(0), fundBalance2)
-    const DAOFundedContractAddress2 = new Address(Buffer.from('b3fb0e5aba0e20e5c49d252dfd30e102b171a425', 'hex'))
+    const DAOFundedContractAddress2 = new Address(
+      Buffer.from('b3fb0e5aba0e20e5c49d252dfd30e102b171a425', 'hex')
+    )
     await suite.vm.stateManager.putAccount(DAOFundedContractAddress2, accountFunded2)
 
-    const DAORefundAddress = new Address(Buffer.from('bf4ed7b27f1d666546e30d74d50d173d20bca754', 'hex'))
+    const DAORefundAddress = new Address(
+      Buffer.from('bf4ed7b27f1d666546e30d74d50d173d20bca754', 'hex')
+    )
     const fundBalanceRefund = new BN(Buffer.from('4444', 'hex'))
     const accountRefund = createAccount(new BN(0), fundBalanceRefund)
     await suite.vm.stateManager.putAccount(DAORefundAddress, accountRefund)

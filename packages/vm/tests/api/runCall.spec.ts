@@ -21,7 +21,9 @@ function create2address(sourceAddress: Address, codeHash: Buffer, salt: Buffer):
 tape('Constantinople: EIP-1014 CREATE2 creates the right contract address', async (t) => {
   // setup the accounts for this test
   const caller = new Address(Buffer.from('00000000000000000000000000000000000000ee', 'hex')) // caller addres
-  const contractAddress = new Address(Buffer.from('00000000000000000000000000000000000000ff', 'hex')) // contract address
+  const contractAddress = new Address(
+    Buffer.from('00000000000000000000000000000000000000ff', 'hex')
+  ) // contract address
   // setup the vm
   const common = new Common({ chain: 'mainnet', hardfork: 'constantinople' })
   const vm = new VM({ common })
@@ -80,7 +82,9 @@ tape('Byzantium cannot access Constantinople opcodes', async (t) => {
   t.plan(2)
   // setup the accounts for this test
   const caller = new Address(Buffer.from('00000000000000000000000000000000000000ee', 'hex')) // caller addres
-  const contractAddress = new Address(Buffer.from('00000000000000000000000000000000000000ff', 'hex')) // contract address
+  const contractAddress = new Address(
+    Buffer.from('00000000000000000000000000000000000000ff', 'hex')
+  ) // contract address
   // setup the vm
   const vmByzantium = new VM({ common: new Common({ chain: 'mainnet', hardfork: 'byzantium' }) })
   const vmConstantinople = new VM({
@@ -109,8 +113,8 @@ tape('Byzantium cannot access Constantinople opcodes', async (t) => {
 
   t.assert(
     byzantiumResult.execResult.exceptionError &&
-    byzantiumResult.execResult.exceptionError.error === 'invalid opcode',
-    'byzantium cannot accept constantinople opcodes (SHL)',
+      byzantiumResult.execResult.exceptionError.error === 'invalid opcode',
+    'byzantium cannot accept constantinople opcodes (SHL)'
   )
   t.assert(
     !constantinopleResult.execResult.exceptionError,
@@ -123,7 +127,9 @@ tape('Byzantium cannot access Constantinople opcodes', async (t) => {
 tape('Ensure that precompile activation creates non-empty accounts', async (t) => {
   // setup the accounts for this test
   const caller = new Address(Buffer.from('00000000000000000000000000000000000000ee', 'hex')) // caller addres
-  const contractAddress = new Address(Buffer.from('00000000000000000000000000000000000000ff', 'hex')) // contract address
+  const contractAddress = new Address(
+    Buffer.from('00000000000000000000000000000000000000ff', 'hex')
+  ) // contract address
   // setup the vm
   const common = new Common({ chain: 'mainnet', hardfork: 'istanbul' })
   const vmNotActivated = new VM({ common: common })

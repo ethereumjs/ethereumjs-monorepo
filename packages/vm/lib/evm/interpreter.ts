@@ -246,7 +246,7 @@ export default class Interpreter {
     this._runState.accessedAddresses.add(this._eei._env.origin.toString())
     this._runState.accessedAddresses.add(this._eei.getAddress().toString())
 
-    for (let address of Object.keys(precompiles)) {
+    for (const address of Object.keys(precompiles)) {
       this._runState.accessedAddresses.add(`0x${address}`)
     }
   }

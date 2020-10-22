@@ -746,7 +746,7 @@ export const handlers: Map<number, OpHandler> = new Map([
       // TODO: Replace getContractStorage with EEI method
       const found = await getContractStorage(runState, runState.eei.getAddress(), keyBuf)
       accessStorageEIP2929(runState, keyBuf, true)
-      updateSstoreGasEIP1283(runState, found, setLengthLeftStorage(value), keyBuf)
+      updateSstoreGasEIP1283(runState, found, setLengthLeftStorage(value))
       updateSstoreGasEIP2200(runState, found, setLengthLeftStorage(value), keyBuf)
       await runState.eei.storageStore(keyBuf, value)
     },
@@ -1039,7 +1039,6 @@ export const handlers: Map<number, OpHandler> = new Map([
   [
     0xf2,
     async function (runState: RunState) {
-      
       const [
         currentGasLimit,
         toAddr,
