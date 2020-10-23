@@ -5,7 +5,7 @@ import { RlpxServer } from '../../../lib/net/server/rlpxserver'
 const { defaultLogger } = require('../../../lib/logging')
 defaultLogger.silent = true
 
-tape('[RlpxServer]', t => {
+tape('[RlpxServer]', (t) => {
   class RlpxPeer extends EventEmitter {}
   RlpxPeer.capabilities = td.func()
   RlpxPeer.prototype.accept = td.func()
@@ -15,33 +15,49 @@ tape('[RlpxServer]', t => {
   class DPT extends EventEmitter {}
   DPT.prototype.bind = td.func()
   td.replace('ethereumjs-devp2p', { DPT, RLPx })
-  td.when(RlpxPeer.prototype.accept(td.matchers.anything(), td.matchers.isA(RlpxServer))).thenResolve()
+  td.when(
+    RlpxPeer.prototype.accept(td.matchers.anything(), td.matchers.isA(RlpxServer))
+  ).thenResolve()
 
   t.test('should initialize correctly', async (t) => {
     const server = new RlpxServer({
       bootnodes: '10.0.0.1:1234,enode://abcd@10.0.0.2:1234',
-      key: 'abcd'
+      key: 'abcd',
     })
     t.equals(server.name, 'rlpx', 'get name')
     t.ok((server.key as Buffer).equals(Buffer.from('abcd', 'hex')), 'key parse')
-    t.deepEquals(server.bootnodes, [{
-      ip: '10.0.0.1', port: '1234'
-    }, {
-      id: 'abcd', ip: '10.0.0.2', port: '1234'
-    }], 'bootnodes split')
+    t.deepEquals(
+      server.bootnodes,
+      [
+        {
+          ip: '10.0.0.1',
+          port: '1234',
+        },
+        {
+          id: 'abcd',
+          ip: '10.0.0.2',
+          port: '1234',
+        },
+      ],
+      'bootnodes split'
+    )
     t.end()
   })
 
   t.test('should start/stop server', async (t) => {
     const server = new RlpxServer({
-      bootnodes: '10.0.0.1:1234,10.0.0.2:1234'
+      bootnodes: '10.0.0.1:1234,10.0.0.2:1234',
     })
     server.initDpt = td.func()
     server.initRlpx = td.func()
     server.dpt = td.object()
     server.rlpx = td.object()
-    td.when((server.dpt as any).bootstrap({ address: '10.0.0.1', udpPort: '1234', tcpPort: '1234' })).thenResolve()
-    td.when((server.dpt as any).bootstrap({ address: '10.0.0.2', udpPort: '1234', tcpPort: '1234' })).thenReject('err0')
+    td.when(
+      (server.dpt as any).bootstrap({ address: '10.0.0.1', udpPort: '1234', tcpPort: '1234' })
+    ).thenResolve()
+    td.when(
+      (server.dpt as any).bootstrap({ address: '10.0.0.2', udpPort: '1234', tcpPort: '1234' })
+    ).thenReject('err0')
     server.on('error', (err: any) => t.equals(err, 'err0', 'got error'))
     await server.start()
     td.verify(server.initDpt())
@@ -56,7 +72,7 @@ tape('[RlpxServer]', t => {
     t.end()
   })
 
-  t.test('should handle errors', t => {
+  t.test('should handle errors', (t) => {
     t.plan(3)
     let count = 0
     const server = new RlpxServer()
@@ -74,7 +90,7 @@ tape('[RlpxServer]', t => {
     server.error(new Error('err1'), peer)
   })
 
-  t.test('should ban peer', t => {
+  t.test('should ban peer', (t) => {
     const server = new RlpxServer()
     t.notOk(server.ban('123'), 'not started')
     server.started = true
@@ -131,7 +147,7 @@ tape('[RlpxServer]', t => {
     server.rlpx.emit('peer:error', rlpxPeer, 'err0')
   })*/
 
-  t.test('should reset td', t => {
+  t.test('should reset td', (t) => {
     td.reset()
     t.end()
   })

@@ -3,12 +3,11 @@ import { Protocol } from '../protocol/protocol'
 import { BoundProtocol, Sender } from '../protocol'
 import { defaultLogger } from '../../logging'
 
-
 const defaultOptions = {
   logger: defaultLogger,
   inbound: false,
   server: null,
-  protocols: []
+  protocols: [],
 }
 
 /**
@@ -27,8 +26,8 @@ export class Peer extends events.EventEmitter {
   public server: any
 
   // Dynamically bound protocol properties
-  public les: BoundProtocol | undefined
-  public eth: BoundProtocol | undefined
+  public les: BoundProtocol | undefined
+  public eth: BoundProtocol | undefined
 
   /**
    * Create new peer
@@ -40,7 +39,7 @@ export class Peer extends events.EventEmitter {
    * @param {Protocols[]} [options.protocols=[]] supported protocols
    * @param {Logger}      [options.logger] logger instance
    */
-  constructor (options: any) {
+  constructor(options: any) {
     super()
     options = { ...defaultOptions, ...options }
 
@@ -60,7 +59,7 @@ export class Peer extends events.EventEmitter {
    * Get idle state of peer
    * @type {boolean}
    */
-  get idle () {
+  get idle() {
     return this._idle
   }
 
@@ -68,7 +67,7 @@ export class Peer extends events.EventEmitter {
    * Set idle state of peer
    * @type {boolean}
    */
-  set idle (value) {
+  set idle(value) {
     this._idle = value
   }
 
@@ -96,7 +95,7 @@ export class Peer extends events.EventEmitter {
    * peer.eth.send('getBlockHeaders', 1, 100, 0, 0)
    * peer.eth.on('message', ({ data }) => console.log(`Received ${data.length} headers`))
    */
-  async bindProtocol (protocol: Protocol, sender: Sender): Promise<void> {
+  async bindProtocol(protocol: Protocol, sender: Sender): Promise<void> {
     const bound = await protocol.bind(this, sender)
     bound.on('message', (message: any) => {
       this.emit('message', message, protocol.name)
@@ -111,22 +110,21 @@ export class Peer extends events.EventEmitter {
    * Return true if peer understand the specified protocol name
    * @param protocolName
    */
-  understands (protocolName: string): boolean {
+  understands(protocolName: string): boolean {
     return !!this.bound.get(protocolName)
   }
 
-  toString (withFullId = false): string {
+  toString(withFullId = false): string {
     const properties = {
       id: withFullId ? this.id : this.id.substr(0, 8),
       address: this.address,
       transport: this.transport,
       protocols: Array.from(this.bound.keys()),
-      inbound: this.inbound || null
+      inbound: this.inbound || null,
     }
     return Object.entries(properties)
       .filter(([, value]) => value !== undefined && value !== null && value.toString() !== '')
-      .map(keyValue => keyValue.join('='))
+      .map((keyValue) => keyValue.join('='))
       .join(' ')
   }
 }
-

@@ -1,8 +1,6 @@
-
 import { Server } from './server'
-import { Protocol } from './../protocol/protocol'
 const { randomBytes } = require('crypto')
-import { RLPx as Devp2pRLPx, Peer as Devp2pRLPxPeer, DPT as Devp2pDPT} from 'ethereumjs-devp2p'
+import { RLPx as Devp2pRLPx, Peer as Devp2pRLPxPeer, DPT as Devp2pDPT } from 'ethereumjs-devp2p'
 import { RlpxPeer } from '../peer/rlpxpeer'
 import { parseBootnodes } from '../../util'
 
@@ -10,22 +8,24 @@ const defaultOptions = {
   port: 30303,
   key: randomBytes(32),
   clientFilter: ['go1.5', 'go1.6', 'go1.7', 'quorum', 'pirl', 'ubiq', 'gmc', 'gwhale', 'prichain'],
-  bootnodes: []
+  bootnodes: [],
 }
 
-const ignoredErrors = new RegExp([
-  'EPIPE',
-  'ECONNRESET',
-  'ETIMEDOUT',
-  'NetworkId mismatch',
-  'Timeout error: ping',
-  'Genesis block mismatch',
-  'Handshake timed out',
-  'Invalid address buffer',
-  'Invalid MAC',
-  'Invalid timestamp buffer',
-  'Hash verification failed'
-].join('|'))
+const ignoredErrors = new RegExp(
+  [
+    'EPIPE',
+    'ECONNRESET',
+    'ETIMEDOUT',
+    'NetworkId mismatch',
+    'Timeout error: ping',
+    'Genesis block mismatch',
+    'Handshake timed out',
+    'Invalid address buffer',
+    'Invalid MAC',
+    'Invalid timestamp buffer',
+    'Hash verification failed',
+  ].join('|')
+)
 
 /**
  * DevP2P/RLPx server
@@ -35,7 +35,6 @@ const ignoredErrors = new RegExp([
  * @memberof module:net/server
  */
 export class RlpxServer extends Server {
-
   private peers: Map<string, RlpxPeer> = new Map()
 
   public port: number
@@ -56,7 +55,7 @@ export class RlpxServer extends Server {
    * @param {number}   [options.refreshInterval=30000] how often (in ms) to discover new peers
    * @param {Logger}   [options.logger] Logger instance
    */
-  constructor (options?: any) {
+  constructor(options?: any) {
     super(options)
     options = { ...defaultOptions, ...options }
 
@@ -71,11 +70,11 @@ export class RlpxServer extends Server {
    * Server name
    * @type {string}
    */
-  get name () {
+  get name() {
     return 'rlpx'
   }
 
-  init () {
+  init() {
     if (typeof this.bootnodes === 'string') {
       this.bootnodes = parseBootnodes(this.bootnodes)
     }
@@ -88,7 +87,7 @@ export class RlpxServer extends Server {
    * Start Devp2p/RLPx server. Returns a promise that resolves once server has been started.
    * @return Resolves with true if server successfully started
    */
-  async start (): Promise<boolean> {
+  async start(): Promise<boolean> {
     if (this.started) {
       return false
     }
@@ -104,12 +103,12 @@ export class RlpxServer extends Server {
   /**
    * Bootstrap bootnode peers from the network
    */
-  async bootstrap (): Promise<void> {
+  async bootstrap(): Promise<void> {
     const promises = (this.bootnodes as any[]).map((node: any) => {
       const bootnode = {
         address: node.ip,
         udpPort: node.port,
-        tcpPort: node.port
+        tcpPort: node.port,
       }
       return (this.dpt as Devp2pDPT).bootstrap(bootnode).catch((e: Error) => this.error(e))
     })
@@ -119,10 +118,10 @@ export class RlpxServer extends Server {
   /**
    * Stop Devp2p/RLPx server. Returns a promise that resolves once server has been stopped.
    */
-  async stop (): Promise<boolean> {
+  async stop(): Promise<boolean> {
     if (this.started) {
-      (this.rlpx as Devp2pRLPx).destroy();
-      (this.dpt as Devp2pDPT).destroy()
+      ;(this.rlpx as Devp2pRLPx).destroy() // eslint-disable-line no-extra-semi
+      ;(this.dpt as Devp2pDPT).destroy()
       await super.stop()
       this.started = false
     }
@@ -135,11 +134,11 @@ export class RlpxServer extends Server {
    * @param  [maxAge] how long to ban peer
    * @return True if ban was successfully executed
    */
-  ban (peerId: string, maxAge = 60000): boolean {
+  ban(peerId: string, maxAge = 60000): boolean {
     if (!this.started) {
       return false
     }
-    (this.dpt as Devp2pDPT).banPeer(peerId, maxAge)
+    ;(this.dpt as Devp2pDPT).banPeer(peerId, maxAge) // eslint-disable-line no-extra-semi
     return true
   }
 
@@ -150,7 +149,7 @@ export class RlpxServer extends Server {
    * @param  {Peer} peer
    * @emits  error
    */
-  error (error: Error, peer?: RlpxPeer) {
+  error(error: Error, peer?: RlpxPeer) {
     if (ignoredErrors.test(error.message)) {
       return
     }
@@ -165,14 +164,14 @@ export class RlpxServer extends Server {
    * Initializes DPT for peer discovery
    * @private
    */
-  initDpt () {
-    this.dpt = new Devp2pDPT((this.key as Buffer), {
+  initDpt() {
+    this.dpt = new Devp2pDPT(this.key as Buffer, {
       refreshInterval: this.refreshInterval,
       endpoint: {
         address: '0.0.0.0',
         udpPort: null,
-        tcpPort: null
-      }
+        tcpPort: null,
+      },
     })
 
     this.dpt.on('error', (e: Error) => this.error(e))
@@ -186,13 +185,13 @@ export class RlpxServer extends Server {
    * Initializes RLPx instance for peer management
    * @private
    */
-  initRlpx () {
-    this.rlpx = new Devp2pRLPx((this.key as Buffer), {
-      dpt: (this.dpt as Devp2pDPT),
+  initRlpx() {
+    this.rlpx = new Devp2pRLPx(this.key as Buffer, {
+      dpt: this.dpt as Devp2pDPT,
       maxPeers: this.maxPeers,
       capabilities: RlpxPeer.capabilities(Array.from(this.protocols)),
       remoteClientIdFilter: this.clientFilter,
-      listenPort: this.port
+      listenPort: this.port,
     })
 
     this.rlpx.on('peer:added', async (rlpxPeer: Devp2pRLPxPeer) => {
@@ -203,7 +202,7 @@ export class RlpxServer extends Server {
         protocols: Array.from(this.protocols),
         // @ts-ignore: Property 'server' does not exist on type 'Socket'.
         // TODO: check this error
-        inbound: !!rlpxPeer._socket.server
+        inbound: !!rlpxPeer._socket.server,
       })
       try {
         await peer.accept(rlpxPeer, this)
@@ -240,7 +239,7 @@ export class RlpxServer extends Server {
     this.rlpx.on('listening', () => {
       this.emit('listening', {
         transport: this.name,
-        url: `enode://${(this.rlpx as Devp2pRLPx)._id.toString('hex')}@[::]:${this.port}`
+        url: `enode://${(this.rlpx as Devp2pRLPx)._id.toString('hex')}@[::]:${this.port}`,
       })
     })
 

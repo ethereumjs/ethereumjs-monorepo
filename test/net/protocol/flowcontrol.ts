@@ -5,18 +5,18 @@ const { FlowControl } = require('../../../lib/net/protocol')
 
 timers.use(td)
 
-tape('[FlowControl]', t => {
+tape('[FlowControl]', (t) => {
   const settings = {
     bl: 1000,
     mrc: {
-      'test': { base: 100, req: 100 }
+      test: { base: 100, req: 100 },
     },
-    mrr: 10
+    mrr: 10,
   }
   const peer = { id: 1, les: { status: settings } }
   const clock = td.timers()
 
-  t.test('should handle incoming flow control', t => {
+  t.test('should handle incoming flow control', (t) => {
     const expected = [700, 700, 410, 120, -170]
     const flow = new FlowControl(settings)
     let correct = 0
@@ -30,7 +30,7 @@ tape('[FlowControl]', t => {
     t.end()
   })
 
-  t.test('should handle outgoing flow control', t => {
+  t.test('should handle outgoing flow control', (t) => {
     const expected = [9, 6, 3, 0, 0]
     const flow = new FlowControl()
     let correct = 0

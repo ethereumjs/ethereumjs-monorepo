@@ -6,7 +6,7 @@ import { defaultLogger } from '../../logging'
 
 const defaultOptions = {
   logger: defaultLogger,
-  timeout: 8000
+  timeout: 8000,
 }
 
 export type Message = {
@@ -46,7 +46,7 @@ export class Protocol extends EventEmitter {
    * @param {number}   [options.timeout=8000] handshake timeout in ms
    * @param {Logger}   [options.logger] logger instance
    */
-  constructor (options?: any) {
+  constructor(options?: any) {
     super()
     options = { ...defaultOptions, ...options }
     this.logger = options.logger
@@ -58,7 +58,7 @@ export class Protocol extends EventEmitter {
    * Opens protocol and any associated dependencies
    * @return {Promise}
    */
-  async open (): Promise<boolean|void> {
+  async open(): Promise<boolean | void> {
     this.opened = true
   }
 
@@ -67,7 +67,7 @@ export class Protocol extends EventEmitter {
    * @private
    * @return {Promise}
    */
-  async handshake (sender: Sender) {
+  async handshake(sender: Sender) {
     const status = this.encodeStatus()
     sender.sendStatus(status)
     return new Promise((resolve, reject) => {
@@ -75,7 +75,7 @@ export class Protocol extends EventEmitter {
         timeout = null
         reject(new Error(`Handshake timed out after ${this.timeout}ms`))
       }, this.timeout)
-      let handleStatus = (status: any) => {
+      const handleStatus = (status: any) => {
         if (timeout) {
           clearTimeout(timeout)
           resolve(this.decodeStatus(status))
@@ -93,7 +93,7 @@ export class Protocol extends EventEmitter {
    * Abstract getter for name of protocol
    * @type {string}
    */
-  get name () : string {
+  get name(): string {
     return 'protocol'
   }
 
@@ -101,7 +101,7 @@ export class Protocol extends EventEmitter {
    * Protocol versions supported
    * @type {number[]}
    */
-  get versions (): number[] {
+  get versions(): number[] {
     throw new Error('Unimplemented')
   }
 
@@ -109,7 +109,7 @@ export class Protocol extends EventEmitter {
    * Messages defined by this protocol
    * @type {Protocol~Message[]}
    */
-  get messages () : Message[] {
+  get messages(): Message[] {
     throw new Error('Unimplemented')
   }
 
@@ -117,7 +117,7 @@ export class Protocol extends EventEmitter {
    * Encodes status into status message payload. Must be implemented by subclass.
    * @return {Object}
    */
-  encodeStatus () : any  {
+  encodeStatus(): any {
     throw new Error('Unimplemented')
   }
 
@@ -127,7 +127,7 @@ export class Protocol extends EventEmitter {
    * @param {Object} status status message payload
    * @return {Object}
    */
-  decodeStatus (status: any) : any {
+  decodeStatus(_status: any): any {
     throw new Error('Unimplemented')
   }
 
@@ -138,7 +138,7 @@ export class Protocol extends EventEmitter {
    * @param {*} args message arguments
    * @return {*}
    */
-  encode (message: Message, args: any): any {
+  encode(message: Message, args: any): any {
     if (message.encode) {
       return message.encode(args)
     }
@@ -153,7 +153,7 @@ export class Protocol extends EventEmitter {
    * @param {BoundProtocol} bound reference to bound protocol
    * @return {*}
    */
-  decode (message: Message, payload: any): any {
+  decode(message: Message, payload: any): any {
     if (message.decode) {
       return message.decode(payload)
     }
@@ -167,11 +167,11 @@ export class Protocol extends EventEmitter {
    * @param  {Sender}  sender sender
    * @return {Promise}
    */
-  async bind (peer: Peer, sender: Sender) : Promise<BoundProtocol> {
+  async bind(peer: Peer, sender: Sender): Promise<BoundProtocol> {
     const bound = new BoundProtocol({
       protocol: this,
       peer: peer,
-      sender: sender
+      sender: sender,
     })
     await bound.handshake(sender)
     //@ts-ignore TODO: evaluate this line

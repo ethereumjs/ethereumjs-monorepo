@@ -3,7 +3,7 @@ import { baseSetup, params, baseRequest } from '../helpers'
 
 const method = 'web3_sha3'
 
-function compareErrorCode (t: any, error: any, errorCode: any) {
+function compareErrorCode(t: any, error: any, errorCode: any) {
   const msg = `should return the correct error code (expected: ${errorCode}, received: ${error.code})`
   if (error.code !== errorCode) {
     throw new Error(msg)
@@ -12,18 +12,16 @@ function compareErrorCode (t: any, error: any, errorCode: any) {
   }
 }
 
-function compareErrorMsg (t: any, error: any, errorMsg: any) {
+function compareErrorMsg(t: any, error: any, errorMsg: any) {
   const msg = `should return "${errorMsg}" error message`
-  if (
-    error.message !== errorMsg
-  ) {
+  if (error.message !== errorMsg) {
     throw new Error(msg)
   } else {
     t.pass(msg)
   }
 }
 
-tape(`${method}: call with one valid parameter`, t => {
+tape(`${method}: call with one valid parameter`, (t) => {
   const server = baseSetup()
 
   const req = params(method, ['0x68656c6c6f20776f726c64'])
@@ -37,10 +35,7 @@ tape(`${method}: call with one valid parameter`, t => {
     }
 
     msg = 'should return the correct hash value'
-    if (
-      result !==
-      '0x47173285a8d7341e5e972fc677286384f802f8ef42a5ec5f03bbfa254cb01fad'
-    ) {
+    if (result !== '0x47173285a8d7341e5e972fc677286384f802f8ef42a5ec5f03bbfa254cb01fad') {
       throw new Error(msg)
     } else {
       t.pass(msg)
@@ -49,7 +44,7 @@ tape(`${method}: call with one valid parameter`, t => {
   baseRequest(t, server, req, 200, expectRes)
 })
 
-tape(`${method}: call with one non-hex parameter`, t => {
+tape(`${method}: call with one non-hex parameter`, (t) => {
   const server = baseSetup()
 
   const req = params(method, ['hello world'])
@@ -64,7 +59,7 @@ tape(`${method}: call with one non-hex parameter`, t => {
   baseRequest(t, server, req, 200, expectRes)
 })
 
-tape(`${method}: call with no parameters`, t => {
+tape(`${method}: call with no parameters`, (t) => {
   const server = baseSetup()
 
   const req = params(method, [])

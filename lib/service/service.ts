@@ -6,7 +6,7 @@ import { Peer } from '../net/peer/peer'
 const defaultOptions = {
   maxPeers: 25,
   logger: defaultLogger,
-  servers: []
+  servers: [],
 }
 
 /**
@@ -27,7 +27,7 @@ export class Service extends events.EventEmitter {
    * @param {number}     [options.maxPeers=25] maximum peers allowed
    * @param {Logger}     [options.logger] logger instance
    */
-  constructor (options?: any) {
+  constructor(options?: any) {
     super()
     options = { ...defaultOptions, ...options }
 
@@ -38,14 +38,16 @@ export class Service extends events.EventEmitter {
     this.pool = new PeerPool({
       logger: this.logger,
       servers: this.servers,
-      maxPeers: options.maxPeers
+      maxPeers: options.maxPeers,
     })
     this.pool.on('message', async (message: any, protocol: string, peer: Peer) => {
       if (this.running) {
         try {
           await this.handle(message, protocol, peer)
         } catch (error) {
-          this.logger.debug(`Error handling message (${protocol}:${message.name}): ${error.message}`)
+          this.logger.debug(
+            `Error handling message (${protocol}:${message.name}): ${error.message}`
+          )
         }
       }
     })
@@ -56,7 +58,7 @@ export class Service extends events.EventEmitter {
    * @protected
    * @type {string}
    */
-  get name () : any {
+  get name(): any {
     return ''
     //throw new Error('Unimplemented')
   }
@@ -65,7 +67,7 @@ export class Service extends events.EventEmitter {
    * Returns all protocols required by this service
    * @type {Protocol[]} required protocols
    */
-  get protocols () : any {
+  get protocols(): any {
     return []
   }
 
@@ -73,7 +75,7 @@ export class Service extends events.EventEmitter {
    * Open service. Must be called before service is running
    * @return {Promise}
    */
-  async open () {
+  async open() {
     if (this.opened) {
       return false
     }
@@ -93,7 +95,7 @@ export class Service extends events.EventEmitter {
    * Close service.
    * @return {Promise}
    */
-  async close () {
+  async close() {
     if (this.pool) {
       this.pool.removeAllListeners()
       await this.pool.close()
@@ -105,7 +107,7 @@ export class Service extends events.EventEmitter {
    * Start service
    * @return {Promise}
    */
-  async start (): Promise<void | boolean> {
+  async start(): Promise<void | boolean> {
     if (this.running) {
       return false
     }
@@ -118,7 +120,7 @@ export class Service extends events.EventEmitter {
    * Stop service
    * @return {Promise}
    */
-  async stop (): Promise<void | boolean> {
+  async stop(): Promise<void | boolean> {
     if (this.opened) {
       await this.close()
     }
@@ -133,7 +135,5 @@ export class Service extends events.EventEmitter {
    * @param  {Peer}    peer peer
    * @return {Promise}
    */
-  async handle (message: any, protocol: string, peer: Peer): Promise<any> {
-  }
+  async handle(_message: any, _protocol: string, _peer: Peer): Promise<any> {}
 }
-

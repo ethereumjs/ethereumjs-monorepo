@@ -4,14 +4,14 @@ import MockServer from './mocks/mockserver'
 import { defaultLogger } from '../../lib/logging'
 defaultLogger.silent = true
 
-tape('[Integration:Node]', t => {
+tape('[Integration:Node]', (t) => {
   const node = new Node({
-    servers: [ new MockServer() ],
+    servers: [new MockServer()],
     syncmode: 'fast',
-    lightserv: false
+    lightserv: false,
   })
 
-  t.test('should start/stop', async t => {
+  t.test('should start/stop', async (t) => {
     t.plan(4)
     node.on('error', (err: any) => t.equal(err, 'err0', 'got error'))
     node.on('listening', (details: any) => {

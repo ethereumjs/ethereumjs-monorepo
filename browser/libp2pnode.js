@@ -1,9 +1,9 @@
 'use strict'
 
 /**
-* Libp2p Bundle
-* @memberof module:net/peer
-*/
+ * Libp2p Bundle
+ * @memberof module:net/peer
+ */
 
 const WS = require('libp2p-websockets')
 const Bootstrap = require('libp2p-bootstrap')
@@ -13,36 +13,28 @@ const libp2p = require('libp2p')
 const promisify = require('util-promisify')
 
 class Libp2pNode extends libp2p {
-  constructor (options) {
+  constructor(options) {
     super({
       peerInfo: options.peerInfo,
       modules: {
-        transport: [
-          WS
-        ],
-        streamMuxer: [
-          Multiplex
-        ],
-        connEncryption: [
-          SECIO
-        ],
-        peerDiscovery: [
-          Bootstrap
-        ]
+        transport: [WS],
+        streamMuxer: [Multiplex],
+        connEncryption: [SECIO],
+        peerDiscovery: [Bootstrap],
       },
       config: {
         peerDiscovery: {
           bootstrap: {
             interval: 2000,
             enabled: options.bootnodes !== undefined,
-            list: options.bootnodes || []
-          }
+            list: options.bootnodes || [],
+          },
         },
         EXPERIMENTAL: {
           dht: false,
-          pubsub: false
-        }
-      }
+          pubsub: false,
+        },
+      },
     })
 
     this.asyncStart = promisify(this.start.bind(this))

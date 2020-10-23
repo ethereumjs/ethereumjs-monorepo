@@ -1,4 +1,3 @@
-
 import { middleware, validators } from '../validation'
 import { addHexPrefix, keccak, toBuffer } from 'ethereumjs-util'
 import { platform } from 'os'
@@ -14,7 +13,7 @@ export class Web3 {
    * Create web3_* RPC module
    * @param {Node} Node to which the module binds
    */
-  constructor (node: any) {
+  constructor(node: any) {
     const service = node.services.find((s: any) => s.name === 'eth')
     this._chain = service.chain
 
@@ -29,12 +28,10 @@ export class Web3 {
    * @param  {Function} [cb] A function with an error object as the first argument and the
    * client version as the second argument
    */
-  clientVersion (params = [], cb: (err: null, version: string) => void) {
+  clientVersion(_params = [], cb: (err: null, version: string) => void) {
     const packageVersion = require('../../../package.json').version
     const { version } = process
-    const ethJsVersion = `EthereumJS/${packageVersion}/${platform()}/node${version.substring(
-      1
-    )}`
+    const ethJsVersion = `EthereumJS/${packageVersion}/${platform()}/node${version.substring(1)}`
     cb(null, ethJsVersion)
   }
 
@@ -44,7 +41,7 @@ export class Web3 {
    * @param  {Function} [cb] A function with an error object as the first argument and the
    * Keccak-256 hash of the given data as the second argument
    */
-  sha3 (params: string[], cb: (err: Error | null, hash?: string) => void) {
+  sha3(params: string[], cb: (err: Error | null, hash?: string) => void) {
     try {
       const rawDigest = keccak(toBuffer(params[0]))
       const hexEncodedDigest = addHexPrefix(rawDigest.toString('hex'))

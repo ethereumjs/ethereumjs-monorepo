@@ -4,7 +4,7 @@ import { EventEmitter } from 'events'
 import { defaultLogger } from '../../lib/logging'
 defaultLogger.silent = true
 
-tape('[Synchronizer]', t => {
+tape('[Synchronizer]', (t) => {
   class PeerPool extends EventEmitter {}
   td.replace('../../lib/net/peerpool', PeerPool)
   // const Synchronizer = require('../../lib/sync/sync')
@@ -39,7 +39,7 @@ tape('[Synchronizer]', t => {
   //   setTimeout(() => sync.stop(), 50)
   // })
 
-  t.test('should reset td', t => {
+  t.test('should reset td', (t) => {
     td.reset()
     t.end()
   })

@@ -3,7 +3,7 @@ import { Peer } from '../../net/peer'
 import { FlowControl } from '../../net/protocol'
 
 const defaultOptions = {
-  maxPerRequest: 192
+  maxPerRequest: 192,
 }
 
 /**
@@ -25,7 +25,7 @@ export class HeaderFetcher extends BlockFetcher {
    * @param {number}       [options.maxPerRequest=192] max items per request
    * @param {Logger}       [options.logger] Logger instance
    */
-  constructor (options: any) {
+  constructor(options: any) {
     super(options)
     options = { ...defaultOptions, ...options }
     this.flow = options.flow
@@ -36,7 +36,7 @@ export class HeaderFetcher extends BlockFetcher {
    * @param  job
    * @return {Promise}
    */
-  async request (job: any): Promise<any[] | boolean> {
+  async request(job: any): Promise<any[] | boolean> {
     const { task, peer } = job
     if (this.flow.maxRequestCount(peer, 'GetBlockHeaders') < this.maxPerRequest) {
       // we reached our request limit. try with a different peer.
@@ -51,7 +51,7 @@ export class HeaderFetcher extends BlockFetcher {
    * @param  result fetch result
    * @return {*} results of processing job or undefined if job not finished
    */
-  process (job: any, result: any) {
+  process(job: any, result: any) {
     this.flow.handleReply(job.peer, result.bv)
     if (result.headers && result.headers.length === job.task.count) {
       return result.headers
@@ -63,7 +63,7 @@ export class HeaderFetcher extends BlockFetcher {
    * @param {Header[]} headers fetch result
    * @return {Promise}
    */
-  async store (headers: any[]) {
+  async store(headers: any[]) {
     await this.chain.putHeaders(headers)
   }
 
@@ -72,7 +72,8 @@ export class HeaderFetcher extends BlockFetcher {
    * @param  job job
    * @return {Peer}
    */
-  peer (job: any): Peer {
+  // TODO: what is job supposed to be?
+  peer(_job: any): Peer {
     return this.pool.idle((p: any) => p.les && p.les.status.serveHeaders)
   }
 }

@@ -2,37 +2,46 @@ import { Message, Protocol } from './protocol'
 import { BN, bufferToInt } from 'ethereumjs-util'
 const Block = require('ethereumjs-block')
 
-const messages: Message[] = [{
-  name: 'NewBlockHashes',
-  code: 0x01,
-  encode: (hashes: any[]) => hashes.map(hn => [hn[0], hn[1].toArrayLike(Buffer)]),
-  decode: (hashes: any[]) => hashes.map(hn => [hn[0], new BN(hn[1])])
-}, {
-  name: 'GetBlockHeaders',
-  code: 0x03,
-  response: 0x04,
-  encode: ({ block, max, skip = 0, reverse = 0 }: any) => [
-    BN.isBN(block) ? block.toArrayLike(Buffer) : block, max, skip, reverse
-  ],
-  decode: ([block, max, skip, reverse]: any) => ({
-    block: block.length === 32 ? block : new BN(block),
-    max: bufferToInt(max),
-    skip: bufferToInt(skip),
-    reverse: bufferToInt(reverse)
-  })
-}, {
-  name: 'BlockHeaders',
-  code: 0x04,
-  encode: (headers: any[]) => headers.map(h => h.raw),
-  decode: (headers: any[]) => headers.map(raw => new Block.Header(raw))
-}, {
-  name: 'GetBlockBodies',
-  code: 0x05,
-  response: 0x06
-}, {
-  name: 'BlockBodies',
-  code: 0x06
-}]
+const messages: Message[] = [
+  {
+    name: 'NewBlockHashes',
+    code: 0x01,
+    encode: (hashes: any[]) => hashes.map((hn) => [hn[0], hn[1].toArrayLike(Buffer)]),
+    decode: (hashes: any[]) => hashes.map((hn) => [hn[0], new BN(hn[1])]),
+  },
+  {
+    name: 'GetBlockHeaders',
+    code: 0x03,
+    response: 0x04,
+    encode: ({ block, max, skip = 0, reverse = 0 }: any) => [
+      BN.isBN(block) ? block.toArrayLike(Buffer) : block,
+      max,
+      skip,
+      reverse,
+    ],
+    decode: ([block, max, skip, reverse]: any) => ({
+      block: block.length === 32 ? block : new BN(block),
+      max: bufferToInt(max),
+      skip: bufferToInt(skip),
+      reverse: bufferToInt(reverse),
+    }),
+  },
+  {
+    name: 'BlockHeaders',
+    code: 0x04,
+    encode: (headers: any[]) => headers.map((h) => h.raw),
+    decode: (headers: any[]) => headers.map((raw) => new Block.Header(raw)),
+  },
+  {
+    name: 'GetBlockBodies',
+    code: 0x05,
+    response: 0x06,
+  },
+  {
+    name: 'BlockBodies',
+    code: 0x06,
+  },
+]
 
 /**
  * Implements eth/62 and eth/63 protocols
@@ -48,7 +57,7 @@ export class EthProtocol extends Protocol {
    * @param {number}   [options.timeout=8000] handshake timeout in ms
    * @param {Logger}   [options.logger] logger instance
    */
-  constructor (options: any) {
+  constructor(options: any) {
     super(options)
 
     this.chain = options.chain
@@ -58,7 +67,7 @@ export class EthProtocol extends Protocol {
    * Name of protocol
    * @type {string}
    */
-  get name () : string {
+  get name(): string {
     return 'eth'
   }
 
@@ -66,7 +75,7 @@ export class EthProtocol extends Protocol {
    * Protocol versions supported
    * @type {number[]}
    */
-  get versions (): number[] {
+  get versions(): number[] {
     return [63, 62]
   }
 
@@ -74,7 +83,7 @@ export class EthProtocol extends Protocol {
    * Messages defined by this protocol
    * @type {Protocol~Message[]}
    */
-  get messages () : Message[] {
+  get messages(): Message[] {
     return messages
   }
 
@@ -82,7 +91,7 @@ export class EthProtocol extends Protocol {
    * Opens protocol and any associated dependencies
    * @return {Promise}
    */
-  async open (): Promise<boolean|void> {
+  async open(): Promise<boolean | void> {
     if (this.opened) {
       return false
     }
@@ -94,12 +103,12 @@ export class EthProtocol extends Protocol {
    * Encodes status into ETH status message payload
    * @return {Object}
    */
-  encodeStatus (): any {
+  encodeStatus(): any {
     return {
       networkId: this.chain.networkId,
       td: this.chain.blocks.td.toArrayLike(Buffer),
       bestHash: this.chain.blocks.latest.hash(),
-      genesisHash: this.chain.genesis.hash
+      genesisHash: this.chain.genesis.hash,
     }
   }
 
@@ -108,12 +117,12 @@ export class EthProtocol extends Protocol {
    * @param {Object} status status message payload
    * @return {Object}
    */
-  decodeStatus (status: any): any {
+  decodeStatus(status: any): any {
     return {
       networkId: bufferToInt(status.networkId),
       td: new BN(status.td),
       bestHash: status.bestHash,
-      genesisHash: status.genesisHash
+      genesisHash: status.genesisHash,
     }
   }
 }

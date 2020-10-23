@@ -50,7 +50,7 @@ exports.createNode = function (args) {
     servers: [new exports.Libp2pServer({ multiaddrs: [], ...args })],
     syncmode: args.syncmode || 'fast',
     db: level(args.db || 'ethereumjs'),
-    logger: logger
+    logger: logger,
   }
   return new exports.Node(options)
 }
@@ -60,8 +60,8 @@ exports.run = function (args) {
   const logger = node.logger
   logger.info('Initializing Ethereumjs client...')
   logger.info(`Connecting to network: ${node.common.chainName()}`)
-  node.on('error', err => logger.error(err))
-  node.on('listening', details => {
+  node.on('error', (err) => logger.error(err))
+  node.on('listening', (details) => {
     logger.info(`Listener up transport=${details.transport} url=${details.url}`)
   })
   node.on('synchronized', () => {

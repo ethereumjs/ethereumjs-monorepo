@@ -6,14 +6,14 @@ import { BN } from 'ethereumjs-util'
 import { defaultLogger } from '../../lib/logging'
 defaultLogger.silent = true
 
-tape('[Integration:FastEthereumService]', async t => {
-  async function setup () {
+tape('[Integration:FastEthereumService]', async (t) => {
+  async function setup() {
     const server = new MockServer()
     const chain = new MockChain()
     const service = new FastEthereumService({
-      servers: [ server ],
+      servers: [server],
       lightserv: true,
-      chain
+      chain,
     })
     await service.open()
     await server.start()
@@ -21,16 +21,19 @@ tape('[Integration:FastEthereumService]', async t => {
     return [server, service]
   }
 
-  async function destroy (server: any, service: any) {
+  async function destroy(server: any, service: any) {
     await service.stop()
     await server.stop()
   }
 
-  t.test('should handle ETH requests', async t => {
+  t.test('should handle ETH requests', async (t) => {
     const [server, service] = await setup()
     const peer = await (server as MockServer).accept('peer0')
     const headers = await (peer.eth as any).getBlockHeaders({ block: 1, max: 2 })
-    const hash = Buffer.from('a321d27cd2743617c1c1b0d7ecb607dd14febcdfca8f01b79c3f0249505ea069', 'hex')
+    const hash = Buffer.from(
+      'a321d27cd2743617c1c1b0d7ecb607dd14febcdfca8f01b79c3f0249505ea069',
+      'hex'
+    )
     t.equals(headers[1].hash().toString('hex'), hash.toString('hex'), 'handled GetBlockHeaders')
     const bodies = await (peer.eth as any).getBlockBodies([hash])
     t.deepEquals(bodies, [[[], []]], 'handled GetBlockBodies')
@@ -40,7 +43,7 @@ tape('[Integration:FastEthereumService]', async t => {
     t.end()
   })
 
-  t.test('should handle LES requests', async t => {
+  t.test('should handle LES requests', async (t) => {
     const [server, service] = await setup()
     const peer = await (server as MockServer).accept('peer0')
     const { headers } = await (peer.les as any).getBlockHeaders({ block: 1, max: 2 })

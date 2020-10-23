@@ -13,7 +13,7 @@ export class RlpxSender extends Sender {
    * Creates a new DevP2P/Rlpx protocol sender
    * @param {Object} rlpxProtocol protocol object from ethereumjs-devp2p
    */
-  constructor (rlpxProtocol: any) {
+  constructor(rlpxProtocol: any) {
     super()
 
     this.sender = rlpxProtocol
@@ -29,7 +29,7 @@ export class RlpxSender extends Sender {
    * Send a status to peer
    * @param  {Object} status
    */
-  sendStatus (status: any) {
+  sendStatus(status: any) {
     try {
       this.sender.sendStatus(status)
     } catch (err) {
@@ -42,7 +42,7 @@ export class RlpxSender extends Sender {
    * @param  {number} code message code
    * @param  {*}      data message payload
    */
-  sendMessage (code: number, data: any) {
+  sendMessage(code: number, data: any) {
     try {
       this.sender._send(code, rlp.encode(data))
     } catch (err) {

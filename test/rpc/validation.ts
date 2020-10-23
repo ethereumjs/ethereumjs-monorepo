@@ -7,18 +7,22 @@ import { INVALID_PARAMS } from '../../lib/rpc/error-code'
 
 const prefix = 'rpc/validation:'
 
-tape(`${prefix} should work without \`params\` when it's optional`, t => {
+tape(`${prefix} should work without \`params\` when it's optional`, (t) => {
   const mockMethodName = 'mock'
   const server = startRPC({
-    [mockMethodName]: middleware((params: any, cb: any) => {
-      cb()
-    }, 0, [])
+    [mockMethodName]: middleware(
+      (params: any, cb: any) => {
+        cb()
+      },
+      0,
+      []
+    ),
   })
 
   const req = {
     jsonrpc: '2.0',
     method: mockMethodName,
-    id: 1
+    id: 1,
   }
   const expectRes = (res: any) => {
     t.equal(res.body.error, undefined, 'should not return an error object')
@@ -26,25 +30,25 @@ tape(`${prefix} should work without \`params\` when it's optional`, t => {
   baseRequest(t, server, req, 200, expectRes)
 })
 
-tape(`${prefix} should return error without \`params\` when it's required`, t => {
+tape(`${prefix} should return error without \`params\` when it's required`, (t) => {
   const mockMethodName = 'mock'
   const server = startRPC({
-    [mockMethodName]: middleware((params: any, cb: any) => {
-      cb()
-    }, 1, [])
+    [mockMethodName]: middleware(
+      (params: any, cb: any) => {
+        cb()
+      },
+      1,
+      []
+    ),
   })
 
   const req = {
     jsonrpc: '2.0',
     method: mockMethodName,
-    id: 1
+    id: 1,
   }
 
-  const expectRes = checkError(
-    t,
-    INVALID_PARAMS,
-    'missing value for required argument 0'
-  )
+  const expectRes = checkError(t, INVALID_PARAMS, 'missing value for required argument 0')
 
   baseRequest(t, server, req, 200, expectRes)
 })

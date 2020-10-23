@@ -3,7 +3,7 @@ import { startRPC, createManager, createNode, params, baseRequest } from '../hel
 
 const method = 'net_peerCount'
 
-tape(`${method}: call`, t => {
+tape(`${method}: call`, (t) => {
   const manager = createManager(createNode({ opened: true }))
   const server = startRPC(manager.getMethods())
 

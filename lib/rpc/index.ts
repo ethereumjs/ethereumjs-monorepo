@@ -10,7 +10,7 @@ import * as modules from './modules'
  * @param  {Object}   mod
  * @return {string[]}
  */
-function getMethodNames (mod: any) : string[] {
+function getMethodNames(mod: any): string[] {
   return Object.getOwnPropertyNames(mod.prototype)
 }
 
@@ -23,7 +23,7 @@ export class RPCManager {
   private _node: any
   private _logger: any
 
-  constructor (node: any, config: any) {
+  constructor(node: any, config: any) {
     this._config = config
     this._node = node
     this._logger = config.logger
@@ -34,7 +34,7 @@ export class RPCManager {
    * e.g. convert getBlockByNumber() in eth module to { eth_getBlockByNumber }
    * @return {Object} methods
    */
-  getMethods () : any {
+  getMethods(): any {
     const methods: any = {}
 
     modules.list.forEach((modName: string) => {

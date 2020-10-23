@@ -7,32 +7,32 @@ import * as Logger from '../../lib/logging'
 import { blockChain } from './blockChainStub'
 import { Chain } from '../../lib/blockchain/chain'
 
-const config : any = { loglevel: 'error' }
+const config: any = { loglevel: 'error' }
 config.logger = Logger.getLogger(config)
 
-export function startRPC (methods: any, port: number = 3000) {
+export function startRPC(methods: any, port: number = 3000) {
   const server = jayson.server(methods)
   const httpServer = server.http()
   httpServer.listen(port)
   return httpServer
 }
 
-export function closeRPC (server: any) {
+export function closeRPC(server: any) {
   server.close()
 }
 
-export function createManager (node: any) {
+export function createManager(node: any) {
   return new Manager(node, config)
 }
 
-export function createNode (nodeConfig?: any) {
+export function createNode(nodeConfig?: any) {
   const chain = new Chain({ blockchain: blockChain({}) })
   chain.opened = true
   const defaultNodeConfig = {
     blockchain: chain,
     opened: true,
     commonChain: new Common('mainnet'),
-    ethProtocolVersions: [63]
+    ethProtocolVersions: [63],
   }
   const trueNodeConfig = { ...defaultNodeConfig, ...nodeConfig }
   return {
@@ -41,43 +41,44 @@ export function createNode (nodeConfig?: any) {
         name: 'eth',
         chain: trueNodeConfig.blockchain,
         pool: { peers: [1, 2, 3] },
-        protocols: [{
-          name: 'eth',
-          versions: trueNodeConfig.ethProtocolVersions
-        }]
-      }
+        protocols: [
+          {
+            name: 'eth',
+            versions: trueNodeConfig.ethProtocolVersions,
+          },
+        ],
+      },
     ],
     common: trueNodeConfig.commonChain,
-    opened: trueNodeConfig.opened
+    opened: trueNodeConfig.opened,
   }
 }
 
-export function baseSetup () {
+export function baseSetup() {
   const manager = createManager(createNode())
   const server = startRPC(manager.getMethods())
   return server
 }
 
-export function params (method: any, params: any[] = []) {
+export function params(method: any, params: any[] = []) {
   const req = {
     jsonrpc: '2.0',
     method: method,
     params: params,
-    id: 1
+    id: 1,
   }
   return req
 }
 
-export function baseRequest (t: tape.Test, server: any, req: any, expect: any, expectRes: any) {
+export function baseRequest(t: tape.Test, server: any, req: any, expect: any, expectRes: any) {
   request(server)
     .post('/')
     .set('Content-Type', 'application/json')
     .send(req)
     .expect(expect)
     .expect(expectRes)
-    .end((err: any, res: any) => {
+    .end((err: any) => {
       closeRPC(server)
       t.end(err)
     })
 }
-

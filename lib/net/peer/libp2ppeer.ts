@@ -1,13 +1,13 @@
 import { Peer } from './peer'
 import PeerId from 'peer-id'
-import PeerInfo  from 'peer-info'
+import PeerInfo from 'peer-info'
 import { Libp2pNode } from './libp2pnode'
 import { Libp2pSender } from '../protocol/libp2psender'
 
 const defaultOptions = {
-  multiaddrs: [ '/ip4/0.0.0.0/tcp/0' ],
+  multiaddrs: ['/ip4/0.0.0.0/tcp/0'],
   key: null,
-  bootnodes: []
+  bootnodes: [],
 }
 
 /**
@@ -43,7 +43,7 @@ export class Libp2pPeer extends Peer {
    * @param {Protocols[]} [options.protocols=[]] supported protocols
    * @param {Logger}      [options.logger] Logger instance
    */
-  constructor (options: any) {
+  constructor(options: any) {
     super({ ...options, transport: 'libp2p' })
     options = { ...defaultOptions, ...options }
 
@@ -53,7 +53,7 @@ export class Libp2pPeer extends Peer {
     this.init()
   }
 
-  init () {
+  init() {
     if (typeof this.multiaddrs === 'string') {
       this.multiaddrs = this.multiaddrs.split(',')
     }
@@ -64,7 +64,7 @@ export class Libp2pPeer extends Peer {
    * Initiate peer connection
    * @return {Promise}
    */
-  async connect () : Promise<void>{
+  async connect(): Promise<void> {
     if (this.connected) {
       return
     }
@@ -82,7 +82,7 @@ export class Libp2pPeer extends Peer {
    * @private
    * @return {Promise}
    */
-  async accept (protocol: any, connection: any, server: any) : Promise<void> {
+  async accept(protocol: any, connection: any, server: any): Promise<void> {
     await this.bindProtocol(protocol, new Libp2pSender(connection))
     this.inbound = true
     this.server = server
@@ -96,30 +96,38 @@ export class Libp2pPeer extends Peer {
    * @param  {Server}     [server] optional server that initiated connection
    * @return {Promise}
    */
-  async bindProtocols (node: any, peerInfo: any, server: any = null): Promise<void> {
-    await Promise.all(this.protocols.map(async (p: any) => {
-      await p.open()
-      const protocol = `/${p.name}/${p.versions[0]}`
-      try {
-        const conn = await node.asyncDialProtocol(peerInfo, protocol)
-        await this.bindProtocol(p, new Libp2pSender(conn))
-      } catch (err) {
-        const id = peerInfo.id.toB58String()
-        this.logger.debug(`Peer doesn't support protocol=${protocol} id=${id} ${err.stack}`)
-      }
-    }))
+  async bindProtocols(node: any, peerInfo: any, server: any = null): Promise<void> {
+    await Promise.all(
+      this.protocols.map(async (p: any) => {
+        await p.open()
+        const protocol = `/${p.name}/${p.versions[0]}`
+        try {
+          const conn = await node.asyncDialProtocol(peerInfo, protocol)
+          await this.bindProtocol(p, new Libp2pSender(conn))
+        } catch (err) {
+          const id = peerInfo.id.toB58String()
+          this.logger.debug(`Peer doesn't support protocol=${protocol} id=${id} ${err.stack}`)
+        }
+      })
+    )
     this.server = server
     this.connected = true
   }
 
-  async createPeerInfo ({ multiaddrs, id }: { multiaddrs: string[], id?: string }): Promise<PeerInfo> {
+  async createPeerInfo({
+    multiaddrs,
+    id,
+  }: {
+    multiaddrs: string[]
+    id?: string
+  }): Promise<PeerInfo> {
     return new Promise<PeerInfo>((resolve, reject) => {
-      const handler = (err: Error | null, peerInfo?: PeerInfo) : any => {
+      const handler = (err: Error | null, peerInfo?: PeerInfo): any => {
         if (err) {
           return reject(err)
         }
-        multiaddrs.forEach(ma => {
-          if (peerInfo){
+        multiaddrs.forEach((ma) => {
+          if (peerInfo) {
             peerInfo.multiaddrs.add(ma)
           }
         })
@@ -128,7 +136,7 @@ export class Libp2pPeer extends Peer {
       if (id) {
         // TODO: PeerInfo types are wrong...
         PeerInfo.create(
-          (<unknown>PeerId.createFromB58String(id) as PeerInfo.CreateOptions),
+          (<unknown>PeerId.createFromB58String(id)) as PeerInfo.CreateOptions,
           handler
         )
       } else {

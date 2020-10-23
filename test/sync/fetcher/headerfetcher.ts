@@ -4,17 +4,21 @@ import { EventEmitter } from 'events'
 import { defaultLogger } from '../../../lib/logging'
 defaultLogger.silent = true
 
-tape('[HeaderFetcher]', t => {
+tape('[HeaderFetcher]', (t) => {
   class PeerPool extends EventEmitter {}
-  (PeerPool.prototype as any).idle = td.func(); // Need semi-colon to separate statements
-  (PeerPool.prototype as any).ban = td.func()
+  ;(PeerPool.prototype as any).idle = td.func() // eslint-disable-line no-extra-semi
+  ;(PeerPool.prototype as any).ban = td.func()
   td.replace('../../../lib/net/peerpool', PeerPool)
   const HeaderFetcher = require('../../../lib/sync/fetcher/headerfetcher').HeaderFetcher
 
-  t.test('should process', t => {
+  t.test('should process', (t) => {
     const fetcher = new HeaderFetcher({ pool: new PeerPool(), flow: td.object() })
     const headers = [{ number: 1 }, { number: 2 }]
-    t.deepEquals(fetcher.process({ task: { count: 2 }, peer: 'peer0' }, { headers, bv: 1 }), headers, 'got results')
+    t.deepEquals(
+      fetcher.process({ task: { count: 2 }, peer: 'peer0' }, { headers, bv: 1 }),
+      headers,
+      'got results'
+    )
     t.notOk(fetcher.process({ task: { count: 2 } }, { headers: [] }), 'bad results')
     td.verify(fetcher.flow.handleReply('peer0', 1))
     t.end()
@@ -28,7 +32,7 @@ tape('[HeaderFetcher]', t => {
     t.end()
   })
 
-  t.test('should reset td', t => {
+  t.test('should reset td', (t) => {
     td.reset()
     t.end()
   })

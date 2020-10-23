@@ -5,14 +5,14 @@ import { EventEmitter } from 'events'
 import { defaultLogger } from '../../../lib/logging'
 defaultLogger.silent = true
 
-async function wait (delay?: number) {
-  await new Promise(resolve => setTimeout(resolve, delay || 10))
+async function wait(delay?: number) {
+  await new Promise((resolve) => setTimeout(resolve, delay || 10))
 }
 
-tape('[BlockFetcher]', t => {
+tape('[BlockFetcher]', (t) => {
   class PeerPool extends EventEmitter {}
-  (PeerPool.prototype as any).idle = td.func(); // Need semi-colon to separate statements
-  (PeerPool.prototype as any).ban = td.func()
+  ;(PeerPool.prototype as any).idle = td.func() // eslint-disable-line no-extra-semi
+  ;(PeerPool.prototype as any).ban = td.func()
   td.replace('../../../lib/net/peerpool', PeerPool)
   const BlockFetcher = require('../../../lib/sync/fetcher/blockfetcher').BlockFetcher
 
@@ -22,7 +22,7 @@ tape('[BlockFetcher]', t => {
       first: new BN(1),
       count: 10,
       maxPerRequest: 5,
-      timeout: 5
+      timeout: 5,
     })
     fetcher.next = () => false
     t.notOk(fetcher.running, 'not started')
@@ -36,7 +36,7 @@ tape('[BlockFetcher]', t => {
     t.end()
   })
 
-  t.test('should process', t => {
+  t.test('should process', (t) => {
     const fetcher = new BlockFetcher({ pool: new PeerPool() })
     const blocks = [{ header: { number: 1 } }, { header: { number: 2 } }]
     t.deepEquals(fetcher.process({ task: { count: 2 } }, { blocks }), blocks, 'got results')
@@ -52,7 +52,7 @@ tape('[BlockFetcher]', t => {
     t.end()
   })
 
-  t.test('should reset td', t => {
+  t.test('should reset td', (t) => {
     td.reset()
     t.end()
   })

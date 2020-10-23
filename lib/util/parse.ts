@@ -3,18 +3,17 @@ const Block = require('ethereumjs-block')
 const Trie = require('merkle-patricia-tree/secure')
 import * as util from 'ethereumjs-util'
 import * as url from 'url'
-import * as path from 'path'
 
-function toBuffer (string: string) {
+function toBuffer(string: string) {
   return Buffer.from(util.stripHexPrefix(string), 'hex')
 }
 
-export function parseBootnodes (string: string) {
+export function parseBootnodes(string: string) {
   if (!string) {
     return
   }
   try {
-    return string.split(',').map(s => {
+    return string.split(',').map((s) => {
       const match = s.match(/^(\d+\.\d+\.\d+\.\d+):([0-9]+)$/)
       if (match) {
         return { ip: match[1], port: match[2] }
@@ -27,40 +26,46 @@ export function parseBootnodes (string: string) {
   }
 }
 
-export function parseTransports (transports: any[]) {
-  return transports.map(t => {
+export function parseTransports(transports: any[]) {
+  return transports.map((t) => {
     const options: any = {}
-    const [ name, ...pairs ] = t.split(':')
+    const [name, ...pairs] = t.split(':')
     if (pairs.length) {
-      pairs.join(':').split(',').forEach((p: any) => {
-        const [ key, value ] = p.split('=')
-        options[key] = value
-      })
+      pairs
+        .join(':')
+        .split(',')
+        .forEach((p: any) => {
+          const [key, value] = p.split('=')
+          options[key] = value
+        })
     }
     return { name, options }
   })
 }
 
-async function parseStorage (storage: any) {
+async function parseStorage(storage: any) {
   const trie = new Trie()
   const promises = []
+  // eslint-disable-next-line prefer-const
   for (let [address, value] of Object.entries(storage)) {
     value = util.rlp.encode(util.unpadBuffer(toBuffer(value as string)))
-    promises.push(new Promise((resolve, reject) => {
-      trie.put(toBuffer(address), value, (err: Error) => {
-        if (err) return reject(err)
-        resolve()
+    promises.push(
+      new Promise((resolve, reject) => {
+        trie.put(toBuffer(address), value, (err: Error) => {
+          if (err) return reject(err)
+          resolve()
+        })
       })
-    }))
+    )
   }
   await Promise.all(promises)
   return trie
 }
 
-async function parseGethState (alloc: any) {
+async function parseGethState(alloc: any) {
   const trie = new Trie()
   const promises = []
-  for (let [key, value] of Object.entries(alloc)) {
+  for (const [key, value] of Object.entries(alloc)) {
     const address = toBuffer(key)
     const account = new Account()
     if ((value as any).balance) {
@@ -74,18 +79,20 @@ async function parseGethState (alloc: any) {
     if ((value as any).storage) {
       account.stateRoot = (await parseStorage((value as any).storage)).root
     }
-    promises.push(new Promise((resolve, reject) => {
-      trie.put(address, account.serialize(), (err: Error) => {
-        if (err) return reject(err)
-        resolve()
+    promises.push(
+      new Promise((resolve, reject) => {
+        trie.put(address, account.serialize(), (err: Error) => {
+          if (err) return reject(err)
+          resolve()
+        })
       })
-    }))
+    )
   }
   await Promise.all(promises)
   return trie
 }
 
-async function parseGethHeader (json: any) {
+async function parseGethHeader(json: any) {
   const header = new Block.Header()
   header.gasLimit = json.gasLimit
   header.difficulty = json.difficulty
@@ -98,7 +105,7 @@ async function parseGethHeader (json: any) {
   return header
 }
 
-async function parseGethParams (json: any) {
+async function parseGethParams(json: any) {
   const header = await parseGethHeader(json)
   const params: any = {
     name: json.name,
@@ -113,9 +120,9 @@ async function parseGethParams (json: any) {
       extraData: json.extraData,
       mixHash: json.mixHash,
       coinbase: json.coinbase,
-      stateRoot: header.stateRoot
+      stateRoot: header.stateRoot,
     },
-    bootstrapNodes: []
+    bootstrapNodes: [],
   }
   const hardforks = [
     'chainstart',
@@ -125,23 +132,23 @@ async function parseGethParams (json: any) {
     'spuriousDragon',
     'byzantium',
     'constantinople',
-    'hybridCasper'
+    'hybridCasper',
   ]
   const forkMap: any = {
     homestead: 'homesteadBlock',
     dao: 'daoForkBlock',
     tangerineWhistle: 'eip150Block',
     spuriousDragon: 'eip155Block',
-    byzantium: 'byzantiumBlock'
+    byzantium: 'byzantiumBlock',
   }
-  params.hardforks = hardforks.map(name => ({
+  params.hardforks = hardforks.map((name) => ({
     name: name,
-    block: name === 'chainstart' ? 0 : json.config[forkMap[name]] || null
+    block: name === 'chainstart' ? 0 : json.config[forkMap[name]] || null,
   }))
   return params
 }
 
-export async function parseParams (json: any, name?: string) {
+export async function parseParams(json: any, name?: string) {
   try {
     if (json.config && json.difficulty && json.gasLimit && json.alloc) {
       json.name = json.name || name

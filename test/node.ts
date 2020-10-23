@@ -4,7 +4,7 @@ const EventEmitter = require('events')
 const { defaultLogger } = require('../lib/logging')
 defaultLogger.silent = true
 
-tape('[Node]', t => {
+tape('[Node]', (t) => {
   class EthereumService extends EventEmitter {}
   EthereumService.prototype.open = td.func()
   EthereumService.prototype.start = td.func()
@@ -22,7 +22,7 @@ tape('[Node]', t => {
   td.replace('../lib/net/server/server', Server)
   const Node = require('../lib/node')
 
-  t.test('should initialize correctly', t => {
+  t.test('should initialize correctly', (t) => {
     const node = new Node()
     t.ok(node.services[0] instanceof EthereumService, 'added service')
     t.end()
@@ -30,7 +30,7 @@ tape('[Node]', t => {
 
   t.test('should open', async (t) => {
     t.plan(6)
-    const servers = [ new Server() ]
+    const servers = [new Server()]
     const node = new Node({ servers })
     node.on('error', (err: string) => {
       if (err === 'err0') t.pass('got err0')
@@ -48,7 +48,7 @@ tape('[Node]', t => {
   })
 
   t.test('should start/stop', async (t) => {
-    const servers = [ new Server() ]
+    const servers = [new Server()]
     const node = new Node({ servers })
     await node.start()
     t.ok(node.started, 'started')
@@ -59,7 +59,7 @@ tape('[Node]', t => {
     t.end()
   })
 
-  t.test('should reset td', t => {
+  t.test('should reset td', (t) => {
     td.reset()
     t.end()
   })

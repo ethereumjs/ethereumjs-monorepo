@@ -4,7 +4,7 @@ import { baseSetup, params, baseRequest } from '../helpers'
 
 const method = 'web3_clientVersion'
 
-tape(`${method}: call`, t => {
+tape(`${method}: call`, (t) => {
   const server = baseSetup()
 
   const req = params(method, [])
@@ -27,7 +27,7 @@ tape(`${method}: call`, t => {
       actualClientTitle,
       actualPackageVersion,
       actualPlatform,
-      actualNodeVersion
+      actualNodeVersion,
     ] = result.split('/')
 
     msg = 'client title should be correct'

@@ -1,4 +1,4 @@
-import { Peer } from "../net/peer/peer"
+import { Peer } from '../net/peer/peer'
 import { EventEmitter } from 'events'
 import Common from 'ethereumjs-common'
 import { defaultLogger } from '../logging'
@@ -10,7 +10,7 @@ const defaultOptions = {
   common: new Common('mainnet', 'chainstart'),
   logger: defaultLogger,
   interval: 1000,
-  minPeers: 3
+  minPeers: 3,
 }
 
 /**
@@ -39,7 +39,7 @@ export class Synchronizer extends EventEmitter {
    * @param {number}      [options.interval] refresh interval
    * @param {Logger}      [options.logger] Logger instance
    */
-  constructor (options?: any) {
+  constructor(options?: any) {
     super()
     options = { ...defaultOptions, ...options }
 
@@ -62,7 +62,7 @@ export class Synchronizer extends EventEmitter {
   /**
    * Returns synchronizer type
    */
-  get type (): string {
+  get type(): string {
     return 'sync'
   }
 
@@ -70,26 +70,28 @@ export class Synchronizer extends EventEmitter {
    * Open synchronizer. Must be called before sync() is called
    * @return {Promise}
    */
-  async open () {
-  }
+  async open() {}
 
   /**
    * Returns true if peer can be used for syncing
    * @return {boolean}
    */
-  syncable (peer: any): boolean {
+  // TODO: evaluate syncability of peer
+  syncable(_peer: any): boolean {
     return true
   }
 
   /**
    * Start synchronization
    */
-  async start (): Promise<void | boolean> {
+  async start(): Promise<void | boolean> {
     if (this.running) {
       return false
     }
     this.running = true
-    const timeout = setTimeout(() => { this.forceSync = true }, this.interval * 30)
+    const timeout = setTimeout(() => {
+      this.forceSync = true
+    }, this.interval * 30)
     while (this.running) {
       try {
         // TODO: `sync` only defined on FastSynchronizer (which extends this class)
@@ -98,7 +100,7 @@ export class Synchronizer extends EventEmitter {
       } catch (error) {
         if (this.running) this.emit('error', error)
       }
-      await new Promise(resolve => setTimeout(resolve, this.interval))
+      await new Promise((resolve) => setTimeout(resolve, this.interval))
     }
     this.running = false
     clearTimeout(timeout)
@@ -107,11 +109,11 @@ export class Synchronizer extends EventEmitter {
   /**
    * Stop synchronization. Returns a promise that resolves once its stopped.
    */
-  async stop (): Promise<boolean> {
+  async stop(): Promise<boolean> {
     if (!this.running) {
       return false
     }
-    await new Promise(resolve => setTimeout(resolve, this.interval))
+    await new Promise((resolve) => setTimeout(resolve, this.interval))
     this.running = false
     return true
   }

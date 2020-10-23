@@ -1,5 +1,5 @@
 import { EventEmitter } from 'events'
-import { Message, Protocol } from '../protocol/protocol'
+import { Protocol } from '../protocol/protocol'
 import { Peer } from '../peer/peer'
 import { Sender } from './sender'
 
@@ -16,7 +16,7 @@ export class BoundProtocol extends EventEmitter {
   private timeout: number
   private logger: any
   private _status: any
-  private resolvers: Map<string, any>;
+  private resolvers: Map<string, any>
 
   /**
    * Create bound protocol
@@ -26,7 +26,7 @@ export class BoundProtocol extends EventEmitter {
    * @param {Sender}   options.sender message sender
    */
 
-  constructor (options: any) {
+  constructor(options: any) {
     super()
 
     this.protocol = options.protocol
@@ -49,15 +49,15 @@ export class BoundProtocol extends EventEmitter {
     this.addMethods()
   }
 
-  get status () : any {
+  get status(): any {
     return this._status
   }
 
-  set status (status: any) {
+  set status(status: any) {
     Object.assign(this._status, status)
   }
 
-  async handshake (sender: Sender) {
+  async handshake(sender: Sender) {
     this._status = await this.protocol.handshake(sender)
   }
 
@@ -67,7 +67,7 @@ export class BoundProtocol extends EventEmitter {
    * @param  {Object} message message object
    * @emits  message
    */
-  handle (incoming: any) {
+  handle(incoming: any) {
     const messages = this.protocol.messages
     const message = messages.find((m: any) => m.code === incoming.code)
     if (!message) {
@@ -104,7 +104,7 @@ export class BoundProtocol extends EventEmitter {
    * @param  name message name
    * @param  args message arguments
    */
-  send (name: string, args?: any) : any {
+  send(name: string, args?: any): any {
     const messages = this.protocol.messages
     const message = messages.find((m: any) => m.name === name)
     if (message) {
@@ -123,12 +123,12 @@ export class BoundProtocol extends EventEmitter {
    * @param  args message arguments
    * @return {Promise}
    */
-  async request (name: string, args: any[]): Promise<any> {
+  async request(name: string, args: any[]): Promise<any> {
     const message = this.send(name, args)
     const resolver: any = {
       timeout: null,
       resolve: null,
-      reject: null
+      reject: null,
     }
     if (this.resolvers.get(message.response)) {
       throw new Error(`Only one active request allowed per message type (${name})`)
@@ -149,11 +149,11 @@ export class BoundProtocol extends EventEmitter {
    * Add a methods to the bound protocol for each protocol message that has a
    * corresponding response message
    */
-  addMethods () {
+  addMethods() {
     const messages = this.protocol.messages.filter((m: any) => m.response)
-    for (let message of messages) {
+    for (const message of messages) {
       const name = message.name as string
-      const camel= name[0].toLowerCase() + name.slice(1)
+      const camel = name[0].toLowerCase() + name.slice(1)
 
       // Problem: How to dynamically add class properties in TS
       // https://stackoverflow.com/questions/41038812
@@ -162,4 +162,3 @@ export class BoundProtocol extends EventEmitter {
     }
   }
 }
-

@@ -10,11 +10,10 @@ import { Libp2pServer } from './libp2pserver'
  */
 
 const servers: any = {
-  'rlpx': RlpxServer,
-  'libp2p': Libp2pServer
+  rlpx: RlpxServer,
+  libp2p: Libp2pServer,
 }
 
 export const fromName = function (name: string) {
   return servers[name]
 }
-

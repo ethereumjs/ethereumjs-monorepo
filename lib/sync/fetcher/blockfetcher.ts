@@ -1,11 +1,11 @@
-import { Fetcher }  from './fetcher'
+import { Fetcher } from './fetcher'
 const Block = require('ethereumjs-block')
 import { BN } from 'ethereumjs-util'
 import { Peer } from '../../net/peer'
 import { Chain } from '../../blockchain'
 
 const defaultOptions = {
-  maxPerRequest: 128
+  maxPerRequest: 128,
 }
 
 /**
@@ -30,7 +30,7 @@ export class BlockFetcher extends Fetcher {
    * @param {number}       [options.maxPerRequest=128] max items per request
    * @param {Logger}       [options.logger] Logger instance
    */
-  constructor (options: any) {
+  constructor(options: any) {
     super(options)
     options = { ...defaultOptions, ...options }
     this.maxPerRequest = options.maxPerRequest
@@ -43,8 +43,8 @@ export class BlockFetcher extends Fetcher {
    * Generate list of tasks to fetch
    * @return {Object[]} tasks
    */
-  tasks (): object[] {
-    let { first, count } = this
+  tasks(): object[] {
+    const { first, count } = this
     const max = this.maxPerRequest
     const tasks = []
     while (count.gten(max)) {
@@ -62,12 +62,14 @@ export class BlockFetcher extends Fetcher {
    * Requests blocks associated with this job
    * @param  job
    */
-  async request (job: any): Promise<any> {
+  async request(job: any): Promise<any> {
     const { task, peer } = job
-    let { first, count } = task
+    const { first, count } = task
     const headers = await peer.eth.getBlockHeaders({ block: first, max: count })
     const bodies = await peer.eth.getBlockBodies(headers.map((h: any) => h.hash()))
-    const blocks = bodies.map((body: any, i: number) => new Block([headers[i]].concat(body), { common: this.common }))
+    const blocks = bodies.map(
+      (body: any, i: number) => new Block([headers[i]].concat(body), { common: this.common })
+    )
     return { blocks }
   }
 
@@ -77,7 +79,7 @@ export class BlockFetcher extends Fetcher {
    * @param  result fetch result
    * @return {*} results of processing job or undefined if job not finished
    */
-  process (job: any, result: any) {
+  process(job: any, result: any) {
     if (result.blocks && result.blocks.length === job.task.count) {
       return result.blocks
     }
@@ -88,7 +90,7 @@ export class BlockFetcher extends Fetcher {
    * @param {Block[]} blocks fetch result
    * @return {Promise}
    */
-  async store (blocks: Array<any>) {
+  async store(blocks: Array<any>) {
     await this.chain.putBlocks(blocks)
   }
 
@@ -97,7 +99,8 @@ export class BlockFetcher extends Fetcher {
    * @param  job job
    * @return {Peer}
    */
-  peer (job: any): Peer {
+  // TODO: find out what _job is supposed to be doing here...
+  peer(_job: any): Peer {
     return this.pool.idle((p: any) => p.eth)
   }
 }

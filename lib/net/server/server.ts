@@ -1,11 +1,11 @@
 import { EventEmitter } from 'events'
-import { Protocol } from '../protocol/protocol'
+import { Protocol } from '../protocol/protocol'
 import { defaultLogger } from '../../logging'
 
 const defaultOptions = {
   logger: defaultLogger,
   maxPeers: 25,
-  refreshInterval: 30000
+  refreshInterval: 30000,
 }
 
 /**
@@ -13,7 +13,6 @@ const defaultOptions = {
  * @memberof module:net/server
  */
 export class Server extends EventEmitter {
-
   public key: Buffer | string = ''
   public bootnodes: any | string = ''
 
@@ -24,7 +23,7 @@ export class Server extends EventEmitter {
 
   public started: boolean
 
-  constructor (options: any) {
+  constructor(options: any) {
     super()
     options = { ...defaultOptions, ...options }
 
@@ -35,14 +34,14 @@ export class Server extends EventEmitter {
     this.started = false
   }
 
-  get name (): string {
+  get name(): string {
     return this.constructor.name
   }
 
   /**
    * Check if server is running
    */
-  get running (): boolean {
+  get running(): boolean {
     return this.started
   }
 
@@ -50,12 +49,12 @@ export class Server extends EventEmitter {
    * Start server. Returns a promise that resolves once server has been started.
    * @return Resolves with true if server successfully started
    */
-  async start (): Promise<boolean> {
+  async start(): Promise<boolean> {
     if (this.started) {
       return false
     }
     const protocols: Protocol[] = Array.from(this.protocols)
-    await Promise.all(protocols.map(p => p.open()))
+    await Promise.all(protocols.map((p) => p.open()))
     this.started = true
     this.logger.info(`Started ${this.name} server.`)
 
@@ -65,7 +64,7 @@ export class Server extends EventEmitter {
   /**
    * Stop server. Returns a promise that resolves once server has been stopped.
    */
-  async stop (): Promise<boolean> {
+  async stop(): Promise<boolean> {
     this.started = false
     this.logger.info(`Stopped ${this.name} server.`)
     return this.started
@@ -76,12 +75,12 @@ export class Server extends EventEmitter {
    * @param protocols protocol classes
    * @return True if protocol added successfully
    */
-  addProtocols (protocols: Protocol[]): boolean {
+  addProtocols(protocols: Protocol[]): boolean {
     if (this.started) {
       this.logger.error('Cannot require protocols after server has been started')
       return false
     }
-    protocols.forEach(p => this.protocols.add(p))
+    protocols.forEach((p) => this.protocols.add(p))
     return true
   }
 
@@ -92,7 +91,7 @@ export class Server extends EventEmitter {
    * @param  maxAge how long to ban peer
    * @return {Promise}
    */
-  ban (peerId: string, maxAge: number) {
+  ban(_peerId: string, _maxAge: number) {
     // don't do anything by default
   }
 }
