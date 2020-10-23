@@ -9,31 +9,11 @@ import {
 } from '@ethereumjs/block'
 import Common from '@ethereumjs/common'
 import Cache from './cache'
-import {
-  HEADS_KEY,
-  HEAD_HEADER_KEY,
-  HEAD_BLOCK_KEY,
-  hashToNumberKey,
-  numberToHashKey,
-  tdKey,
-  bodyKey,
-  headerKey,
-} from './util'
+import { DatabaseKey, DatabaseOperation, DatabaseOperationTarget, DBOp } from './databaseOperation'
 
 import type { LevelUp } from 'levelup'
 
 const level = require('level-mem')
-
-/**
- * @hidden
- */
-export interface DBOp {
-  type: String
-  key: Buffer | String
-  keyEncoding: String
-  valueEncoding?: String
-  value?: Buffer | object
-}
 
 /**
  * @hidden
@@ -44,13 +24,15 @@ export interface GetOpts {
   cache?: string
 }
 
+export type CacheMap = { [key: string]: Cache<Buffer> }
+
 /**
  * Abstraction over a DB to facilitate storing/fetching blockchain-related
  * data, such as blocks and headers, indices, and the head block.
  * @hidden
  */
 export class DBManager {
-  _cache: { [k: string]: Cache<Buffer> }
+  _cache: CacheMap
   _common: Common
   _db: LevelUp
 
@@ -70,7 +52,7 @@ export class DBManager {
    * Fetches iterator heads from the db.
    */
   async getHeads(): Promise<{ [key: string]: Buffer }> {
-    const heads = await this.get(HEADS_KEY, { valueEncoding: 'json' })
+    const heads = await this.get(DatabaseOperationTarget.Heads)
     Object.keys(heads).forEach((key) => {
       heads[key] = Buffer.from(heads[key])
     })
@@ -81,14 +63,14 @@ export class DBManager {
    * Fetches header of the head block.
    */
   async getHeadHeader(): Promise<Buffer> {
-    return this.get(HEAD_HEADER_KEY)
+    return this.get(DatabaseOperationTarget.HeadHeader)
   }
 
   /**
    * Fetches head block.
    */
   async getHeadBlock(): Promise<Buffer> {
-    return this.get(HEAD_BLOCK_KEY)
+    return this.get(DatabaseOperationTarget.HeadBlock)
   }
 
   /**
@@ -129,18 +111,16 @@ export class DBManager {
   /**
    * Fetches body of a block given its hash and number.
    */
-  async getBody(hash: Buffer, number: BN): Promise<BlockBodyBuffer> {
-    const key = bodyKey(number, hash)
-    const body = await this.get(key, { cache: 'body' })
+  async getBody(blockHash: Buffer, blockNumber: BN): Promise<BlockBodyBuffer> {
+    const body = await this.get(DatabaseOperationTarget.Body, { blockHash, blockNumber })
     return (rlp.decode(body) as any) as BlockBodyBuffer
   }
 
   /**
    * Fetches header of a block given its hash and number.
    */
-  async getHeader(hash: Buffer, number: BN) {
-    const key = headerKey(number, hash)
-    const encodedHeader = await this.get(key, { cache: 'header' })
+  async getHeader(blockHash: Buffer, blockNumber: BN) {
+    const encodedHeader = await this.get(DatabaseOperationTarget.Header, { blockHash, blockNumber })
     const opts = { common: this._common }
     return BlockHeader.fromRLPSerializedHeader(encodedHeader, opts)
   }
@@ -148,31 +128,28 @@ export class DBManager {
   /**
    * Fetches total difficulty for a block given its hash and number.
    */
-  async getTd(hash: Buffer, number: BN): Promise<BN> {
-    const key = tdKey(number, hash)
-    const td = await this.get(key, { cache: 'td' })
+  async getTd(blockHash: Buffer, blockNumber: BN): Promise<BN> {
+    const td = await this.get(DatabaseOperationTarget.TotalDifficulty, { blockHash, blockNumber })
     return new BN(rlp.decode(td))
   }
 
   /**
    * Performs a block hash to block number lookup.
    */
-  async hashToNumber(hash: Buffer): Promise<BN> {
-    const key = hashToNumberKey(hash)
-    const value = await this.get(key, { cache: 'hashToNumber' })
+  async hashToNumber(blockHash: Buffer): Promise<BN> {
+    const value = await this.get(DatabaseOperationTarget.HashToNumber, { blockHash })
     return new BN(value)
   }
 
   /**
    * Performs a block number to block hash lookup.
    */
-  async numberToHash(number: BN): Promise<Buffer> {
-    if (number.ltn(0)) {
+  async numberToHash(blockNumber: BN): Promise<Buffer> {
+    if (blockNumber.ltn(0)) {
       throw new level.errors.NotFoundError()
     }
 
-    const key = numberToHashKey(number)
-    return this.get(key, { cache: 'numberToHash' })
+    return this.get(DatabaseOperationTarget.NumberToHash, { blockNumber })
   }
 
   /**
@@ -180,33 +157,38 @@ export class DBManager {
    * it first tries to load from cache, and on cache miss will
    * try to put the fetched item on cache afterwards.
    */
-  async get(key: string | Buffer, opts: GetOpts = {}): Promise<any> {
-    const dbOpts = {
-      keyEncoding: opts.keyEncoding || 'binary',
-      valueEncoding: opts.valueEncoding || 'binary',
-    }
+  async get(databaseOperationTarget: DatabaseOperationTarget, key?: DatabaseKey): Promise<any> {
+    const databaseGetOperation = DatabaseOperation.get(databaseOperationTarget, key)
 
-    if (opts.cache) {
-      if (!this._cache[opts.cache]) {
-        throw new Error(`Invalid cache: ${opts.cache}`)
+    const cacheString = databaseGetOperation.cacheString
+    const dbKey = databaseGetOperation.baseDBOp.key
+    const dbOpts = databaseGetOperation.baseDBOp
+
+    if (cacheString) {
+      if (!this._cache[cacheString]) {
+        throw new Error(`Invalid cache: ${cacheString}`)
       }
 
-      let value = this._cache[opts.cache].get(key)
+      let value = this._cache[cacheString].get(dbKey)
       if (!value) {
-        value = <Buffer>await this._db.get(key, dbOpts)
-        this._cache[opts.cache].set(key, value)
+        value = <Buffer>await this._db.get(dbKey, dbOpts)
+        this._cache[cacheString].set(dbKey, value)
       }
 
       return value
     }
 
-    return this._db.get(key, dbOpts)
+    return this._db.get(dbKey, dbOpts)
   }
 
   /**
    * Performs a batch operation on db.
    */
-  async batch(ops: DBOp[]) {
-    return this._db.batch(ops as any)
+  async batch(ops: DatabaseOperation[]) {
+    const convertedOps: DBOp[] = ops.map((op) => op.baseDBOp)
+    // update the current cache for each operation
+    ops.map((op) => op.updateCache(this._cache))
+
+    return this._db.batch(convertedOps as any)
   }
 }
