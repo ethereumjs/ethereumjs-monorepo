@@ -101,17 +101,17 @@ export default class VM extends AsyncEventEmitter {
   /**
    * The StateManager used by the VM
    */
-  stateManager: StateManager
+  readonly stateManager: StateManager
   /**
    * The blockchain the VM operates on
    */
-  blockchain: Blockchain
+  readonly blockchain: Blockchain
 
-  _common: Common
+  readonly _common: Common
 
-  protected _opts: VMOpts
+  protected readonly _opts: VMOpts
   protected _isInitialized: boolean = false
-  protected _allowUnlimitedContractSize: boolean
+  protected readonly _allowUnlimitedContractSize: boolean
   protected _opcodes: OpcodeList
 
   /**
