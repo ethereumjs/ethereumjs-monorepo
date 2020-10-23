@@ -98,15 +98,34 @@ export interface VMOpts {
  * This class is an AsyncEventEmitter, please consult the README to learn how to use it.
  */
 export default class VM extends AsyncEventEmitter {
-  opts: VMOpts
-  _common: Common
-  stateManager: StateManager
-  blockchain: Blockchain
-  allowUnlimitedContractSize: boolean
-  _opcodes: OpcodeList
+  /**
+   * The StateManager used by the VM
+   */
+  readonly stateManager: StateManager
+  /**
+   * The blockchain the VM operates on
+   */
+  readonly blockchain: Blockchain
+
+  readonly _common: Common
+
+  protected readonly _opts: VMOpts
+  protected _isInitialized: boolean = false
+  protected readonly _allowUnlimitedContractSize: boolean
+  protected _opcodes: OpcodeList
+
+  /**
+   * Cached emit() function, not for public usage
+   * set to public due to implementation internals
+   * @hidden
+   */
   public readonly _emit: (topic: string, data: any) => Promise<void>
-  protected isInitialized: boolean = false
-  public readonly _mcl: any // pointer to the mcl package
+  /**
+   * Pointer to the mcl package, not for public usage
+   * set to public due to implementation internals
+   * @hidden
+   */
+  public readonly _mcl: any //
 
   /**
    * VM async constructor. Creates engine instance and initializes it.
@@ -126,7 +145,7 @@ export default class VM extends AsyncEventEmitter {
   constructor(opts: VMOpts = {}) {
     super()
 
-    this.opts = opts
+    this._opts = opts
 
     // Throw on chain or hardfork options removed in latest major release
     // to prevent implicit chain setup on a wrong chain
@@ -182,8 +201,7 @@ export default class VM extends AsyncEventEmitter {
 
     this.blockchain = opts.blockchain || new Blockchain({ common: this._common })
 
-    this.allowUnlimitedContractSize =
-      opts.allowUnlimitedContractSize === undefined ? false : opts.allowUnlimitedContractSize
+    this._allowUnlimitedContractSize = opts.allowUnlimitedContractSize || false
 
     if (this._common.eips().includes(2537)) {
       if (IS_BROWSER) {
@@ -203,13 +221,11 @@ export default class VM extends AsyncEventEmitter {
   }
 
   async init(): Promise<void> {
-    if (this.isInitialized) {
+    if (this._isInitialized) {
       return
     }
 
-    const { opts } = this
-
-    if (opts.activatePrecompiles && !opts.stateManager) {
+    if (this._opts.activatePrecompiles && !this._opts.stateManager) {
       await this.stateManager.checkpoint()
       // put 1 wei in each of the precompiles in order to make the accounts non-empty and thus not have them deduct `callNewAccount` gas.
       await Promise.all(
@@ -234,7 +250,7 @@ export default class VM extends AsyncEventEmitter {
         mcl.verifyOrderG2(1) // subgroup checks for G2
       }
     }
-    this.isInitialized = true
+    this._isInitialized = true
   }
 
   /**
