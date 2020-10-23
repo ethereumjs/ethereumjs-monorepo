@@ -1,4 +1,4 @@
-import * as test from 'tape'
+import tape from 'tape'
 import { INVALID_PARAMS } from '../../../lib/rpc/error-code'
 import { startRPC, createManager, createNode, params, baseRequest } from '../helpers'
 import { checkError } from '../util'
@@ -19,7 +19,7 @@ function createBlockchain () {
 
 const method = 'eth_getBlockByNumber'
 
-test(`${method}: call with valid arguments`, t => {
+tape(`${method}: call with valid arguments`, t => {
   const manager = createManager(createNode({ blockchain: createBlockchain() }))
   const server = startRPC(manager.getMethods())
 
@@ -35,7 +35,7 @@ test(`${method}: call with valid arguments`, t => {
   baseRequest(t, server, req, 200, expectRes)
 })
 
-test(`${method}: call with false for second argument`, t => {
+tape(`${method}: call with false for second argument`, t => {
   const manager = createManager(createNode({ blockchain: createBlockchain() }))
   const server = startRPC(manager.getMethods())
 
@@ -57,7 +57,7 @@ test(`${method}: call with false for second argument`, t => {
   baseRequest(t, server, req, 200, expectRes)
 })
 
-test(`${method}: call with invalid block number`, t => {
+tape(`${method}: call with invalid block number`, t => {
   const manager = createManager(createNode({ blockchain: createBlockchain() }))
   const server = startRPC(manager.getMethods())
 
@@ -70,7 +70,7 @@ test(`${method}: call with invalid block number`, t => {
   baseRequest(t, server, req, 200, expectRes)
 })
 
-test(`${method}: call without second parameter`, t => {
+tape(`${method}: call without second parameter`, t => {
   const manager = createManager(createNode({ blockchain: createBlockchain() }))
   const server = startRPC(manager.getMethods())
 
@@ -83,7 +83,7 @@ test(`${method}: call without second parameter`, t => {
   baseRequest(t, server, req, 200, expectRes)
 })
 
-test(`${method}: call with invalid second parameter`, t => {
+tape(`${method}: call with invalid second parameter`, t => {
   const manager = createManager(createNode({ blockchain: createBlockchain() }))
   const server = startRPC(manager.getMethods())
 

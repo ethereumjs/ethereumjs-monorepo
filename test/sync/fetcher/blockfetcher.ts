@@ -1,4 +1,4 @@
-import * as tape from 'tape-catch'
+import tape from 'tape-catch'
 const td = require('testdouble')
 import { BN } from 'ethereumjs-util'
 import { EventEmitter } from 'events'

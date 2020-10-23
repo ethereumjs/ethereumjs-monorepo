@@ -1,4 +1,4 @@
-import * as tape from 'tape'
+import tape from 'tape'
 import { FastEthereumService, LightEthereumService } from '../../lib/service'
 import MockServer from './mocks/mockserver'
 import MockChain from './mocks/mockchain'

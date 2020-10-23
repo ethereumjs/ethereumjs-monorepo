@@ -1,9 +1,9 @@
-import * as test from 'tape'
+import tape from 'tape'
 import { baseSetup, params, baseRequest } from '../helpers'
 
 const method = 'eth_protocolVersion'
 
-test(`${method}: call`, t => {
+tape(`${method}: call`, t => {
   const server = baseSetup()
 
   const req = params(method, [])

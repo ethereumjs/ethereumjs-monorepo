@@ -88,7 +88,7 @@
   "devDependencies": {
     "@babel/plugin-transform-spread": "^7.10.1",
     "@ethereumjs/config-coverage": "^2.0.0",
-    "@ethereumjs/config-tsc": "^1.1.0",
+    "@ethereumjs/config-typescript": "^2.0.0",
     "@polkadot/ts": "^0.3.48",
     "@types/node": "^14.11.5",
     "@types/tape": "^4.13.0",

@@ -1,4 +1,4 @@
-import * as tape from 'tape'
+import tape from 'tape'
 const jayson = require('jayson')
 const request = require('supertest')
 import Common from 'ethereumjs-common'

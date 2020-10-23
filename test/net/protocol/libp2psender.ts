@@ -1,4 +1,4 @@
-import * as tape from 'tape-catch'
+import tape from 'tape-catch'
 const pull = require('pull-stream')
 const DuplexPair = require('pull-pair/duplex')
 const { Libp2pSender } = require('../../../lib/net/protocol')

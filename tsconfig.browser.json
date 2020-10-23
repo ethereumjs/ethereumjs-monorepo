@@ -1,11 +1,11 @@
 {
-  "extends": "./tsconfig.prod.json",
+  "extends": "@ethereumjs/config-typescript/tsconfig.browser.json",
   "include": ["browser/index.js"],
   "exclude": ["lib/index.js"],
   "compilerOptions": {
     "outDir": "dist.browser",
-    "target": "es5",
-    "lib": ["es5"],
-    "alwaysStrict": true
+    "typeRoots": [
+      "node_modules/@polkadot/ts"
+    ]
   }
 }

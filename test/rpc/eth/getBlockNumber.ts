@@ -1,10 +1,10 @@
-import * as test from 'tape'
+import tape from 'tape'
 import { toBuffer, intToHex } from 'ethereumjs-util'
 import { startRPC, createManager, createNode, params, baseRequest } from '../helpers'
 
 const method = 'eth_blockNumber'
 
-test(`${method}: call with valid arguments`, t => {
+tape(`${method}: call with valid arguments`, t => {
   const mockBlockNumber = 123
   const mockBlockChain = {
     getLatestHeader: () => {
