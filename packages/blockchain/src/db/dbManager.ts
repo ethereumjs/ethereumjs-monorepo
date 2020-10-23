@@ -160,7 +160,6 @@ export class DBManager {
   async get(databaseOperationTarget: DatabaseOperationTarget, key?: DatabaseKey): Promise<any> {
     const databaseGetOperation = DatabaseOperation.get(databaseOperationTarget, key)
 
-
     const cacheString = databaseGetOperation.cacheString
     const dbKey = databaseGetOperation.baseDBOp.key
     const dbOpts = databaseGetOperation.baseDBOp

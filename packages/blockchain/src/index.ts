@@ -7,7 +7,6 @@ import { DBManager } from './db/dbManager'
 import { DatabaseOperationTarget, DatabaseOperation } from './db/databaseOperation'
 import { bufBE8 } from './db/dbConstants'
 
-
 import type { LevelUp } from 'levelup'
 
 const level = require('level-mem')
@@ -385,23 +384,30 @@ export default class Blockchain implements BlockchainInterface {
     }
 
     const rebuildInfo = async () => {
-      const type = 'put'
-      const keyEncoding = 'binary'
-      const valueEncoding = 'binary'
-
       // save block and total difficulty to the database
       const TDValue = rlp.encode(td)
-      dbOps.push(DatabaseOperation.set(DatabaseOperationTarget.TotalDifficulty, TDValue, { blockNumber, blockHash }))
+      dbOps.push(
+        DatabaseOperation.set(DatabaseOperationTarget.TotalDifficulty, TDValue, {
+          blockNumber,
+          blockHash,
+        })
+      )
 
       // save header
-
       const headerValue = header.serialize()
-      dbOps.push(DatabaseOperation.set(DatabaseOperationTarget.Header, headerValue, { blockNumber, blockHash }))
+      dbOps.push(
+        DatabaseOperation.set(DatabaseOperationTarget.Header, headerValue, {
+          blockNumber,
+          blockHash,
+        })
+      )
 
       // store body if it exists
       if (isGenesis || block.transactions.length || block.uncleHeaders.length) {
         const bodyValue = rlp.encode(block.raw().slice(1))
-        dbOps.push(DatabaseOperation.set(DatabaseOperationTarget.Body, bodyValue, { blockNumber, blockHash }))
+        dbOps.push(
+          DatabaseOperation.set(DatabaseOperationTarget.Body, bodyValue, { blockNumber, blockHash })
+        )
       }
 
       // if total difficulty is higher than current, add it to canonical chain
@@ -423,7 +429,11 @@ export default class Blockchain implements BlockchainInterface {
         }
         // save hash to number lookup info even if rebuild not needed
         const blockNumber8Byte = bufBE8(blockNumber)
-        dbOps.push(DatabaseOperation.set(DatabaseOperationTarget.HashToNumber, blockNumber8Byte, { blockHash }))
+        dbOps.push(
+          DatabaseOperation.set(DatabaseOperationTarget.HashToNumber, blockNumber8Byte, {
+            blockHash,
+          })
+        )
       }
     }
 
@@ -534,7 +544,7 @@ export default class Blockchain implements BlockchainInterface {
     return [
       DatabaseOperation.set(DatabaseOperationTarget.Heads, this._heads),
       DatabaseOperation.set(DatabaseOperationTarget.HeadHeader, this._headHeader!),
-      DatabaseOperation.set(DatabaseOperationTarget.HeadBlock, this._headBlock!)
+      DatabaseOperation.set(DatabaseOperationTarget.HeadBlock, this._headBlock!),
     ]
   }
 
@@ -588,10 +598,16 @@ export default class Blockchain implements BlockchainInterface {
     const blockNumber = header.number
 
     const saveLookups = async (hash: Buffer, number: BN) => {
-      ops.push(DatabaseOperation.set(DatabaseOperationTarget.NumberToHash, blockHash, { blockNumber }))
+      ops.push(
+        DatabaseOperation.set(DatabaseOperationTarget.NumberToHash, blockHash, { blockNumber })
+      )
 
       const blockNumber8Bytes = bufBE8(number)
-      ops.push(DatabaseOperation.set(DatabaseOperationTarget.HashToNumber, blockNumber8Bytes, { blockHash }))
+      ops.push(
+        DatabaseOperation.set(DatabaseOperationTarget.HashToNumber, blockNumber8Bytes, {
+          blockHash,
+        })
+      )
     }
 
     // handle genesis block
@@ -706,12 +722,19 @@ export default class Blockchain implements BlockchainInterface {
   /**
    * @hidden
    */
-  async _delChild(blockHash: Buffer, blockNumber: BN, headHash: Buffer | null, ops: DatabaseOperation[]) {
+  async _delChild(
+    blockHash: Buffer,
+    blockNumber: BN,
+    headHash: Buffer | null,
+    ops: DatabaseOperation[]
+  ) {
     // delete header, body, hash to number mapping and td
     ops.push(DatabaseOperation.del(DatabaseOperationTarget.Header, { blockHash, blockNumber }))
     ops.push(DatabaseOperation.del(DatabaseOperationTarget.Body, { blockHash, blockNumber }))
     ops.push(DatabaseOperation.del(DatabaseOperationTarget.HashToNumber, { blockHash }))
-    ops.push(DatabaseOperation.del(DatabaseOperationTarget.TotalDifficulty, { blockHash, blockNumber }))
+    ops.push(
+      DatabaseOperation.del(DatabaseOperationTarget.TotalDifficulty, { blockHash, blockNumber })
+    )
 
     if (!headHash) {
       return
