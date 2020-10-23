@@ -1,26 +1,25 @@
-'use strict'
-
 /**
  * Libp2p Bundle
  * @memberof module:net/peer
  */
 
-const WS = require('libp2p-websockets')
-const Bootstrap = require('libp2p-bootstrap')
-const Multiplex = require('libp2p-mplex')
-const SECIO = require('libp2p-secio')
+import LibP2pWebsockets from 'libp2p-websockets'
+import LibP2pBootstrap from 'libp2p-bootstrap'
+import mplex from 'libp2p-mplex'
+import secio from 'libp2p-secio'
+
 const libp2p = require('libp2p')
 const promisify = require('util-promisify')
 
-class Libp2pNode extends libp2p {
-  constructor(options) {
+export class Libp2pNode extends libp2p {
+  constructor(options: any) {
     super({
       peerInfo: options.peerInfo,
       modules: {
-        transport: [WS],
-        streamMuxer: [Multiplex],
-        connEncryption: [SECIO],
-        peerDiscovery: [Bootstrap],
+        transport: [LibP2pWebsockets],
+        streamMuxer: [mplex],
+        connEncryption: [secio],
+        peerDiscovery: [LibP2pBootstrap],
       },
       config: {
         peerDiscovery: {
@@ -43,5 +42,3 @@ class Libp2pNode extends libp2p {
     this.asyncDialProtocol = promisify(this.dialProtocol.bind(this))
   }
 }
-
-module.exports = Libp2pNode
