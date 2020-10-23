@@ -98,7 +98,6 @@ export interface VMOpts {
  * This class is an AsyncEventEmitter, please consult the README to learn how to use it.
  */
 export default class VM extends AsyncEventEmitter {
-  
   /**
    * The StateManager used by the VM
    */
@@ -115,18 +114,18 @@ export default class VM extends AsyncEventEmitter {
   protected _allowUnlimitedContractSize: boolean
   protected _opcodes: OpcodeList
 
-  /** 
+  /**
    * Cached emit() function, not for public usage
    * set to public due to implementation internals
    * @hidden
    */
   public readonly _emit: (topic: string, data: any) => Promise<void>
-  /** 
+  /**
    * Pointer to the mcl package, not for public usage
    * set to public due to implementation internals
    * @hidden
    */
-  public readonly _mcl: any // 
+  public readonly _mcl: any //
 
   /**
    * VM async constructor. Creates engine instance and initializes it.
@@ -202,7 +201,7 @@ export default class VM extends AsyncEventEmitter {
 
     this.blockchain = opts.blockchain || new Blockchain({ common: this._common })
 
-    this._allowUnlimitedContractSize = opts.allowUnlimitedContractSize || false
+    this._allowUnlimitedContractSize = opts.allowUnlimitedContractSize || false
 
     if (this._common.eips().includes(2537)) {
       if (IS_BROWSER) {
