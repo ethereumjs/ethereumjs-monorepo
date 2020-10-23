@@ -292,7 +292,7 @@ export default class EVM {
     // If enough gas and allowed code size
     if (
       totalGas.lte(message.gasLimit) &&
-      (this._vm.allowUnlimitedContractSize || allowedCodeSize)
+      (this._vm._allowUnlimitedContractSize || allowedCodeSize)
     ) {
       result.gasUsed = totalGas
     } else {
