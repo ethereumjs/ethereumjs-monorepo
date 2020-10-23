@@ -3,17 +3,8 @@ import { BN, rlp } from 'ethereumjs-util'
 import { Block, BlockHeader } from '@ethereumjs/block'
 import Ethash from '@ethereumjs/ethash'
 import Common from '@ethereumjs/common'
-import { DBManager, DBOp } from './dbManager'
-import {
-  HEAD_BLOCK_KEY,
-  HEAD_HEADER_KEY,
-  bufBE8,
-  hashToNumberKey,
-  headerKey,
-  bodyKey,
-  numberToHashKey,
-  tdKey,
-} from './util'
+import { DBManager } from './dbManager'
+
 
 import type { LevelUp } from 'levelup'
 
