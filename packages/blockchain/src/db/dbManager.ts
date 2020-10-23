@@ -11,18 +11,6 @@ import Common from '@ethereumjs/common'
 import Cache from './cache'
 import { DatabaseKey, DatabaseOperation, DatabaseOperationTarget, DBOp } from './databaseOperation'
 
-import {
-  HEADS_KEY,
-  HEAD_HEADER_KEY,
-  HEAD_BLOCK_KEY,
-
-  tdKey,
-  headerKey,
-  bodyKey,
-  numberToHashKey,
-  hashToNumberKey,
-} from './dbConstants'
-
 import type { LevelUp } from 'levelup'
 
 const level = require('level-mem')
@@ -199,7 +187,7 @@ export class DBManager {
    */
   async batch(ops: DatabaseOperation[]) {
     const convertedOps: DBOp[] = ops.map((op) => op.baseDBOp)
-    // update the cache of each operation
+    // update the current cache for each operation
     ops.map((op) => op.updateCache(this._cache))
 
     return this._db.batch(convertedOps as any)
