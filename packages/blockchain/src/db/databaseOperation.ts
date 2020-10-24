@@ -51,11 +51,13 @@ export class DatabaseOperation {
     this.baseDBOp = {
       key: '',
       keyEncoding: 'binary',
+      valueEncoding: 'binary'
     }
 
     switch (operationTarget) {
       case DatabaseOperationTarget.Heads: {
         this.baseDBOp.key = HEADS_KEY
+        this.baseDBOp.valueEncoding = 'json'
         break
       }
       case DatabaseOperationTarget.HeadHeader: {
