@@ -264,7 +264,7 @@ export class BlockHeader {
     parentHeader: BlockHeader,
     timestamp: BN,
     number?: BN,
-    common?: Common,
+    common?: Common
   ): BN {
     const blockTs = timestamp.clone()
     const { timestamp: parentTs, difficulty: parentDif } = parentHeader
@@ -272,10 +272,10 @@ export class BlockHeader {
     let num = (number || parentHeader.number).clone().addn(1)
     const hardfork = usedCommon.hardfork() || usedCommon.activeHardfork(num.toNumber())
     const minimumDifficulty = new BN(
-      usedCommon.paramByHardfork('pow', 'minimumDifficulty', hardfork),
+      usedCommon.paramByHardfork('pow', 'minimumDifficulty', hardfork)
     )
     const offset = parentDif.div(
-      new BN(usedCommon.paramByHardfork('pow', 'difficultyBoundDivisor', hardfork)),
+      new BN(usedCommon.paramByHardfork('pow', 'difficultyBoundDivisor', hardfork))
     )
 
     // We use a ! here as TS cannot follow this hardfork-dependent logic, but it always gets assigned
@@ -354,7 +354,7 @@ export class BlockHeader {
       parentHeader,
       this.timestamp,
       this.number,
-      this._common,
+      this._common
     )
   }
 

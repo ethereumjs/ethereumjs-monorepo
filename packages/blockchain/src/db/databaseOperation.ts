@@ -51,7 +51,7 @@ export class DatabaseOperation {
     this.baseDBOp = {
       key: '',
       keyEncoding: 'binary',
-      valueEncoding: 'binary'
+      valueEncoding: 'binary',
     }
 
     switch (operationTarget) {
