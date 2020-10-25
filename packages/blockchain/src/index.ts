@@ -93,6 +93,7 @@ export default class Blockchain implements BlockchainInterface {
   private _staleHeads: string[]
 
   private _initDone: boolean
+  private _initPromise: Promise<void> | undefined
   private _lock: Semaphore
 
   private _common: Common
@@ -138,6 +139,9 @@ export default class Blockchain implements BlockchainInterface {
 
     this._lock = new Semaphore(1)
     this._initDone = false
+
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    this._initPromise = this._init()
   }
 
   /**
@@ -239,7 +243,7 @@ export default class Blockchain implements BlockchainInterface {
    */
   async getHead(name = 'vm'): Promise<Block> {
     if (!this._initDone) {
-      await this._init()
+      await this._initPromise
     }
 
     await this._lock.wait()
@@ -264,7 +268,7 @@ export default class Blockchain implements BlockchainInterface {
    */
   async getLatestHeader(): Promise<BlockHeader> {
     if (!this._initDone) {
-      await this._init()
+      await this._initPromise
     }
 
     await this._lock.wait()
@@ -273,7 +277,7 @@ export default class Blockchain implements BlockchainInterface {
         throw new Error('No head header set')
       }
 
-      const block = await this.getBlock(this._headHeaderHash)
+      const block = await this._getBlock(this._headHeaderHash)
       this._lock.release()
       return block.header
     } catch (error) {
@@ -287,7 +291,7 @@ export default class Blockchain implements BlockchainInterface {
    */
   async getLatestBlock(): Promise<Block> {
     if (!this._initDone) {
-      await this._init()
+      await this._initPromise
     }
 
     await this._lock.wait()
@@ -296,7 +300,7 @@ export default class Blockchain implements BlockchainInterface {
         throw new Error('No head block set')
       }
 
-      const block = this.getBlock(this._headBlockHash)
+      const block = this._getBlock(this._headBlockHash)
       this._lock.release()
       return block
     } catch (error) {
@@ -311,15 +315,11 @@ export default class Blockchain implements BlockchainInterface {
    * @param blocks - The blocks to be added to the blockchain
    */
   async putBlocks(blocks: Block[]) {
-    await this._lock.wait()
-    try {
-      for (let i = 0; i < blocks.length; i++) {
-        await this._putBlockOrHeader(blocks[i])
-      }
-      this._lock.release()
-    } catch (error) {
-      this._lock.release()
-      throw error
+    if (!this._initDone) {
+      await this._initPromise
+    }
+    for (let i = 0; i < blocks.length; i++) {
+      await this._putBlockOrHeader(blocks[i])
     }
   }
 
@@ -330,18 +330,10 @@ export default class Blockchain implements BlockchainInterface {
    */
   async putBlock(block: Block) {
     if (!this._initDone) {
-      await this._init()
+      await this._initPromise
     }
 
-    await this._lock.wait()
-
-    try {
-      await this._putBlockOrHeader(block)
-      this._lock.release()
-    } catch (error) {
-      this._lock.release()
-      throw error
-    }
+    await this._putBlockOrHeader(block)
   }
 
   /**
@@ -350,15 +342,8 @@ export default class Blockchain implements BlockchainInterface {
    * @param headers - The headers to be added to the blockchain
    */
   async putHeaders(headers: Array<any>) {
-    await this._lock.wait()
-    try {
-      for (let i = 0; i < headers.length; i++) {
-        await this._putBlockOrHeader(headers[i])
-      }
-      this._lock.release()
-    } catch (error) {
-      this._lock.release()
-      throw error
+    for (let i = 0; i < headers.length; i++) {
+      await this._putBlockOrHeader(headers[i])
     }
   }
 
@@ -369,23 +354,16 @@ export default class Blockchain implements BlockchainInterface {
    */
   async putHeader(header: BlockHeader) {
     if (!this._initDone) {
-      await this._init()
+      await this._initPromise
     }
 
-    await this._lock.wait()
-    try {
-      await this._putBlockOrHeader(header)
-      this._lock.release()
-    } catch (error) {
-      this._lock.release()
-      throw error
-    }
+    await this._putBlockOrHeader(header)
   }
 
   /**
    * @hidden
    */
-  async _putBlockOrHeader(item: Block | BlockHeader) {
+  private async _putBlockOrHeader(item: Block | BlockHeader) {
     const block = item instanceof BlockHeader ? new Block(item) : item
     const isGenesis = block.isGenesis()
 
@@ -395,7 +373,6 @@ export default class Blockchain implements BlockchainInterface {
     const td = header.difficulty.clone()
     const currentTd = { header: new BN(0), block: new BN(0) }
     const dbOps: DatabaseOperation[] = []
-
     if (block._common.chainId() !== this._common.chainId()) {
       throw new Error('Chain mismatch while trying to put block or header')
     }
@@ -411,79 +388,90 @@ export default class Blockchain implements BlockchainInterface {
       }
     }
 
-    if (!isGenesis) {
-      // set total difficulty in the current context scope
-      if (this._headHeaderHash) {
-        currentTd.header = await this._getTd(this._headHeaderHash)
+    try {
+      await this._lock.wait()
+      if (!isGenesis) {
+        // set total difficulty in the current context scope
+        if (this._headHeaderHash) {
+          currentTd.header = await this._getTd(this._headHeaderHash)
+        }
+        if (this._headBlockHash) {
+          currentTd.block = await this._getTd(this._headBlockHash)
+        }
+
+        // calculate the total difficulty of the new block
+        const parentTd = await this._getTd(header.parentHash, blockNumber.subn(1))
+        td.iadd(parentTd)
       }
-      if (this._headBlockHash) {
-        currentTd.block = await this._getTd(this._headBlockHash)
-      }
 
-      // calculate the total difficulty of the new block
-      const parentTd = await this._getTd(header.parentHash, blockNumber.subn(1))
-      td.iadd(parentTd)
-    }
-
-    const rebuildInfo = async () => {
-      // save block and total difficulty to the database
-      const TDValue = rlp.encode(td)
-      dbOps.push(
-        DatabaseOperation.set(DatabaseOperationTarget.TotalDifficulty, TDValue, {
-          blockNumber,
-          blockHash,
-        })
-      )
-
-      // save header
-      const headerValue = header.serialize()
-      dbOps.push(
-        DatabaseOperation.set(DatabaseOperationTarget.Header, headerValue, {
-          blockNumber,
-          blockHash,
-        })
-      )
-
-      // store body if it exists
-      if (isGenesis || block.transactions.length || block.uncleHeaders.length) {
-        const bodyValue = rlp.encode(block.raw().slice(1))
+      const rebuildInfo = async () => {
+        // save block and total difficulty to the database
+        const TDValue = rlp.encode(td)
         dbOps.push(
-          DatabaseOperation.set(DatabaseOperationTarget.Body, bodyValue, { blockNumber, blockHash })
-        )
-      }
-
-      // if total difficulty is higher than current, add it to canonical chain
-      if (block.isGenesis() || td.gt(currentTd.header)) {
-        this._headHeaderHash = blockHash
-        if (item instanceof Block) {
-          this._headBlockHash = blockHash
-        }
-        if (block.isGenesis()) {
-          this._genesis = blockHash
-        }
-
-        // delete higher number assignments and overwrite stale canonical chain
-        await this._deleteCanonicalChainReferences(blockNumber.addn(1), blockHash, dbOps)
-        await this._rebuildCanonical(header, dbOps)
-      } else {
-        // the TD is lower than the current highest TD so we will add the block to the DB, but will not mark it as the canonical chain.
-        if (td.gt(currentTd.block) && item instanceof Block) {
-          this._headBlockHash = blockHash
-        }
-        // save hash to number lookup info even if rebuild not needed
-        const blockNumber8Byte = bufBE8(blockNumber)
-        dbOps.push(
-          DatabaseOperation.set(DatabaseOperationTarget.HashToNumber, blockNumber8Byte, {
+          DatabaseOperation.set(DatabaseOperationTarget.TotalDifficulty, TDValue, {
+            blockNumber,
             blockHash,
           })
         )
+
+        // save header
+        const headerValue = header.serialize()
+        dbOps.push(
+          DatabaseOperation.set(DatabaseOperationTarget.Header, headerValue, {
+            blockNumber,
+            blockHash,
+          })
+        )
+
+        // store body if it exists
+        if (isGenesis || block.transactions.length || block.uncleHeaders.length) {
+          const bodyValue = rlp.encode(block.raw().slice(1))
+          dbOps.push(
+            DatabaseOperation.set(DatabaseOperationTarget.Body, bodyValue, {
+              blockNumber,
+              blockHash,
+            })
+          )
+        }
+
+        // if total difficulty is higher than current, add it to canonical chain
+        if (block.isGenesis() || td.gt(currentTd.header)) {
+          this._headHeaderHash = blockHash
+          if (item instanceof Block) {
+            this._headBlockHash = blockHash
+          }
+          if (block.isGenesis()) {
+            this._genesis = blockHash
+          }
+
+          // delete higher number assignments and overwrite stale canonical chain
+
+          await this._deleteCanonicalChainReferences(blockNumber.addn(1), blockHash, dbOps)
+          await this._rebuildCanonical(header, dbOps)
+        } else {
+          // the TD is lower than the current highest TD so we will add the block to the DB, but will not mark it as the canonical chain.
+          if (td.gt(currentTd.block) && item instanceof Block) {
+            this._headBlockHash = blockHash
+          }
+          // save hash to number lookup info even if rebuild not needed
+          const blockNumber8Byte = bufBE8(blockNumber)
+          dbOps.push(
+            DatabaseOperation.set(DatabaseOperationTarget.HashToNumber, blockNumber8Byte, {
+              blockHash,
+            })
+          )
+        }
       }
+
+      await rebuildInfo()
+
+      const ops = dbOps.concat(this._saveHeadOps())
+      await this.dbManager.batch(ops)
+      this._lock.release()
+    } catch (e) {
+      this._lock.release()
+      throw e
     }
-
-    await rebuildInfo()
-
-    const ops = dbOps.concat(this._saveHeadOps())
-    await this.dbManager.batch(ops)
   }
 
   /**
@@ -493,7 +481,7 @@ export default class Blockchain implements BlockchainInterface {
    */
   async getBlock(blockId: Buffer | number | BN): Promise<Block> {
     if (!this._initDone) {
-      await this._init()
+      await this._initPromise
     }
 
     await this._lock.wait()
@@ -528,6 +516,9 @@ export default class Blockchain implements BlockchainInterface {
     skip: number,
     reverse: boolean
   ): Promise<Block[]> {
+    if (!this._initDone) {
+      await this._initPromise
+    }
     await this._lock.wait()
     try {
       const blocks: Block[] = []
@@ -536,7 +527,7 @@ export default class Blockchain implements BlockchainInterface {
       const nextBlock = async (blockId: Buffer | BN | number): Promise<any> => {
         let block
         try {
-          block = await this.getBlock(blockId)
+          block = await this._getBlock(blockId)
         } catch (error) {
           if (error.type !== 'NotFoundError') {
             throw error
@@ -747,7 +738,7 @@ export default class Blockchain implements BlockchainInterface {
    */
   async delBlock(blockHash: Buffer) {
     if (!this._initDone) {
-      await this._init()
+      await this._initPromise
     }
 
     await this._lock.wait()
@@ -851,7 +842,7 @@ export default class Blockchain implements BlockchainInterface {
    */
   async iterator(name: string, onBlock: OnBlock) {
     if (!this._initDone) {
-      await this._init()
+      await this._initPromise
     }
 
     return this._iterator(name, onBlock)
@@ -876,7 +867,7 @@ export default class Blockchain implements BlockchainInterface {
       // eslint-disable-next-line no-constant-condition
       while (true) {
         try {
-          const block = await this.getBlock(blockNumber)
+          const block = await this._getBlock(blockNumber)
 
           if (!block) {
             break

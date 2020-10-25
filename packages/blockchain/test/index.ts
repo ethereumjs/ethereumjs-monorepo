@@ -46,7 +46,7 @@ tape('blockchain test', (t) => {
     })
     const badBlock = Block.fromBlockData({ header: { number: new BN(8) } })
     try {
-      await blockchain.putBlock(badBlock)
+      await blockchain.putGenesis(badBlock)
     } catch (error) {
       st.ok(error, 'returned with error')
       st.end()
@@ -564,7 +564,6 @@ tape('blockchain test', (t) => {
     }
     const header = BlockHeader.fromHeaderData(headerData)
     await blockchain.putHeader(header)
-
     blockchain = new Blockchain({
       db,
       validateBlocks: true,
