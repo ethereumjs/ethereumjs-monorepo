@@ -267,27 +267,42 @@ export default class Blockchain implements BlockchainInterface {
       await this._init()
     }
 
-    if (!this._headHeaderHash) {
-      throw new Error('No head header set')
-    }
+    await this._lock.wait()
+    try {
+      if (!this._headHeaderHash) {
+        throw new Error('No head header set')
+      }
 
-    const block = await this.getBlock(this._headHeaderHash)
-    return block.header
+      const block = await this.getBlock(this._headHeaderHash)
+      this._lock.release()
+      return block.header
+    } catch (error) {
+      this._lock.release()
+      throw error
+    }
   }
 
   /**
    * Returns the latest full block in the canonical chain.
    */
-  async getLatestBlock() {
+  async getLatestBlock(): Promise<Block> {
     if (!this._initDone) {
       await this._init()
     }
 
-    if (!this._headBlockHash) {
-      throw new Error('No head block set')
-    }
+    await this._lock.wait()
+    try {
+      if (!this._headBlockHash) {
+        throw new Error('No head block set')
+      }
 
-    return this.getBlock(this._headBlockHash)
+      const block = this.getBlock(this._headBlockHash)
+      this._lock.release()
+      return block
+    } catch (error) {
+      this._lock.release()
+      throw error
+    }
   }
 
   /**
@@ -296,8 +311,15 @@ export default class Blockchain implements BlockchainInterface {
    * @param blocks - The blocks to be added to the blockchain
    */
   async putBlocks(blocks: Block[]) {
-    for (let i = 0; i < blocks.length; i++) {
-      await this.putBlock(blocks[i])
+    await this._lock.wait()
+    try {
+      for (let i = 0; i < blocks.length; i++) {
+        await this._putBlockOrHeader(blocks[i])
+      }
+      this._lock.release()
+    } catch (error) {
+      this._lock.release()
+      throw error
     }
   }
 
@@ -328,8 +350,15 @@ export default class Blockchain implements BlockchainInterface {
    * @param headers - The headers to be added to the blockchain
    */
   async putHeaders(headers: Array<any>) {
-    for (let i = 0; i < headers.length; i++) {
-      await this.putHeader(headers[i])
+    await this._lock.wait()
+    try {
+      for (let i = 0; i < headers.length; i++) {
+        await this._putBlockOrHeader(headers[i])
+      }
+      this._lock.release()
+    } catch (error) {
+      this._lock.release()
+      throw error
     }
   }
 
@@ -467,13 +496,21 @@ export default class Blockchain implements BlockchainInterface {
       await this._init()
     }
 
-    return this._getBlock(blockId)
+    await this._lock.wait()
+    try {
+      const block = await this._getBlock(blockId)
+      this._lock.release()
+      return block
+    } catch (error) {
+      this._lock.release()
+      throw error
+    }
   }
 
   /**
    * @hidden
    */
-  async _getBlock(blockId: Buffer | number | BN) {
+  private async _getBlock(blockId: Buffer | number | BN) {
     return this.dbManager.getBlock(blockId)
   }
 
@@ -491,32 +528,39 @@ export default class Blockchain implements BlockchainInterface {
     skip: number,
     reverse: boolean
   ): Promise<Block[]> {
-    const blocks: Block[] = []
-    let i = -1
+    await this._lock.wait()
+    try {
+      const blocks: Block[] = []
+      let i = -1
 
-    const nextBlock = async (blockId: Buffer | BN | number): Promise<any> => {
-      let block
-      try {
-        block = await this.getBlock(blockId)
-      } catch (error) {
-        if (error.type !== 'NotFoundError') {
-          throw error
+      const nextBlock = async (blockId: Buffer | BN | number): Promise<any> => {
+        let block
+        try {
+          block = await this.getBlock(blockId)
+        } catch (error) {
+          if (error.type !== 'NotFoundError') {
+            throw error
+          }
+          return
         }
-        return
+        i++
+        const nextBlockNumber = block.header.number.addn(reverse ? -1 : 1)
+        if (i !== 0 && skip && i % (skip + 1) !== 0) {
+          return await nextBlock(nextBlockNumber)
+        }
+        blocks.push(block)
+        if (blocks.length < maxBlocks) {
+          await nextBlock(nextBlockNumber)
+        }
       }
-      i++
-      const nextBlockNumber = block.header.number.addn(reverse ? -1 : 1)
-      if (i !== 0 && skip && i % (skip + 1) !== 0) {
-        return await nextBlock(nextBlockNumber)
-      }
-      blocks.push(block)
-      if (blocks.length < maxBlocks) {
-        await nextBlock(nextBlockNumber)
-      }
-    }
 
-    await nextBlock(blockId)
-    return blocks
+      await nextBlock(blockId)
+      this._lock.release()
+      return blocks
+    } catch (error) {
+      this._lock.release()
+      throw error
+    }
   }
 
   /**
@@ -524,31 +568,38 @@ export default class Blockchain implements BlockchainInterface {
    * Uses binary search to find out what hashes are missing. Therefore, the array needs to be ordered upon number.
    * @param hashes - Ordered array of hashes (ordered on `number`).
    */
-  async selectNeededHashes(hashes: Array<Buffer>) {
-    let max: number
-    let mid: number
-    let min: number
+  async selectNeededHashes(hashes: Array<Buffer>): Promise<Buffer[]> {
+    await this._lock.wait()
+    try {
+      let max: number
+      let mid: number
+      let min: number
 
-    max = hashes.length - 1
-    mid = min = 0
+      max = hashes.length - 1
+      mid = min = 0
 
-    while (max >= min) {
-      let number
-      try {
-        number = await this.dbManager.hashToNumber(hashes[mid])
-      } catch (error) {
-        if (error.type !== 'NotFoundError') {
-          throw error
+      while (max >= min) {
+        let number
+        try {
+          number = await this.dbManager.hashToNumber(hashes[mid])
+        } catch (error) {
+          if (error.type !== 'NotFoundError') {
+            throw error
+          }
         }
+        if (number) {
+          min = mid + 1
+        } else {
+          max = mid - 1
+        }
+        mid = Math.floor((min + max) / 2)
       }
-      if (number) {
-        min = mid + 1
-      } else {
-        max = mid - 1
-      }
-      mid = Math.floor((min + max) / 2)
+      this._lock.release()
+      return hashes.slice(min)
+    } catch (error) {
+      this._lock.release()
+      throw error
     }
-    return hashes.slice(min)
   }
 
   /**
@@ -754,7 +805,7 @@ export default class Blockchain implements BlockchainInterface {
    * @param ops - the `DatabaseOperation` list to add the delete operations to
    * @hidden
    */
-  async _delChild(
+  private async _delChild(
     blockHash: Buffer,
     blockNumber: BN,
     headHash: Buffer | null,
@@ -810,39 +861,46 @@ export default class Blockchain implements BlockchainInterface {
    * @hidden
    */
   private async _iterator(name: string, onBlock: OnBlock) {
-    const blockHash = this._heads[name] || this._genesis
-    let lastBlock: Block | undefined
+    await this._lock.wait()
+    try {
+      const blockHash = this._heads[name] || this._genesis
+      let lastBlock: Block | undefined
 
-    if (!blockHash) {
-      return
-    }
+      if (!blockHash) {
+        return
+      }
 
-    const number = await this.dbManager.hashToNumber(blockHash)
-    const blockNumber = number.addn(1)
+      const number = await this.dbManager.hashToNumber(blockHash)
+      const blockNumber = number.addn(1)
 
-    // eslint-disable-next-line no-constant-condition
-    while (true) {
-      try {
-        const block = await this.getBlock(blockNumber)
+      // eslint-disable-next-line no-constant-condition
+      while (true) {
+        try {
+          const block = await this.getBlock(blockNumber)
 
-        if (!block) {
+          if (!block) {
+            break
+          }
+
+          this._heads[name] = block.hash()
+          const reorg = lastBlock ? lastBlock.hash().equals(block.header.parentHash) : false
+          lastBlock = block
+          await onBlock(block, reorg)
+          blockNumber.iaddn(1)
+        } catch (error) {
+          if (error.type !== 'NotFoundError') {
+            throw error
+          }
           break
         }
-
-        this._heads[name] = block.hash()
-        const reorg = lastBlock ? lastBlock.hash().equals(block.header.parentHash) : false
-        lastBlock = block
-        await onBlock(block, reorg)
-        blockNumber.iaddn(1)
-      } catch (error) {
-        if (error.type !== 'NotFoundError') {
-          throw error
-        }
-        break
       }
-    }
 
-    await this._saveHeads()
+      await this._saveHeads()
+      this._lock.release()
+    } catch (error) {
+      this._lock.release()
+      throw error
+    }
   }
 
   /* Helper functions */
