@@ -19,7 +19,7 @@ tape('reorg tests', (t) => {
     async (st) => {
       const common = new Common({ chain: 'mainnet', hardfork: 'muirGlacier' })
       const blockchain = new Blockchain({ validateBlocks: true, validatePow: false, common })
-      await blockchain.putBlock(genesis, true)
+      await blockchain.putBlock(genesis)
 
       const blocks_lowTD: Block[] = []
       const blocks_highTD: Block[] = []
