@@ -83,10 +83,12 @@ export default class Blockchain implements BlockchainInterface {
   dbManager: DBManager
   ethash?: Ethash
 
-  private _genesis?: Buffer
-  private _headBlock?: Buffer
-  private _headHeader?: Buffer
-  private _heads: { [key: string]: Buffer }
+  private _genesis?: Buffer // the genesis hash of this blockchain
+  private _headBlockHash?: Buffer // the hash of the current head block
+  private _headHeaderHash?: Buffer // the hash of the current head header
+  private _heads: { [key: string]: Buffer } // a Map which stores the head of each key (for instance the "vm" key)
+
+  // these internal variables are used in _rebuildCanonical and are used in subsequent (recursive) calls to _rebuildCanonical
   private _staleHeadBlock: boolean
   private _staleHeads: string[]
 
@@ -143,7 +145,7 @@ export default class Blockchain implements BlockchainInterface {
    */
   get meta() {
     return {
-      rawHead: this._headHeader,
+      rawHead: this._headHeaderHash,
       heads: this._heads,
       genesis: this._genesis,
     }
@@ -156,7 +158,7 @@ export default class Blockchain implements BlockchainInterface {
    *
    * @hidden
    */
-  async _init() {
+  private async _init() {
     let genesisHash
     try {
       genesisHash = await this.dbManager.numberToHash(new BN(0))
@@ -182,23 +184,23 @@ export default class Blockchain implements BlockchainInterface {
     // load headerchain head
     try {
       const hash = await this.dbManager.getHeadHeader()
-      this._headHeader = hash
+      this._headHeaderHash = hash
     } catch (error) {
       if (error.type !== 'NotFoundError') {
         throw error
       }
-      this._headHeader = genesisHash
+      this._headHeaderHash = genesisHash
     }
 
     // load blockchain head
     try {
       const hash = await this.dbManager.getHeadBlock()
-      this._headBlock = hash
+      this._headBlockHash = hash
     } catch (error) {
       if (error.type !== 'NotFoundError') {
         throw error
       }
-      this._headBlock = genesisHash
+      this._headBlockHash = genesisHash
     }
 
     this._initDone = true
@@ -209,13 +211,13 @@ export default class Blockchain implements BlockchainInterface {
    *
    * @hidden
    */
-  async _setCanonicalGenesisBlock() {
+  private async _setCanonicalGenesisBlock() {
     const common = new Common({
       chain: this._common.chainId(),
       hardfork: 'chainstart',
     })
     const genesis = Block.genesis({}, { common })
-    await this._putBlockOrHeader(genesis, true)
+    await this._putBlockOrHeader(genesis)
   }
 
   /**
@@ -224,7 +226,10 @@ export default class Blockchain implements BlockchainInterface {
    * @param genesis - The genesis block to be added
    */
   async putGenesis(genesis: Block) {
-    await this.putBlock(genesis, true)
+    if (!genesis.isGenesis()) {
+      throw new Error('Supplied block is not a genesis block')
+    }
+    await this.putBlock(genesis)
   }
 
   /**
@@ -237,13 +242,21 @@ export default class Blockchain implements BlockchainInterface {
       await this._init()
     }
 
-    // if the head is not found return the headHeader
-    const hash = this._heads[name] || this._headBlock
-    if (!hash) {
-      throw new Error('No head found.')
-    }
+    await this._lock.wait()
+    try {
+      // if the head is not found return the headHeader
+      const hash = this._heads[name] || this._headBlockHash
+      if (!hash) {
+        throw new Error('No head found.')
+      }
 
-    return this.getBlock(hash)
+      const block = this.getBlock(hash)
+      this._lock.release()
+      return block
+    } catch (error) {
+      this._lock.release()
+      throw error
+    }
   }
 
   /**
@@ -254,11 +267,11 @@ export default class Blockchain implements BlockchainInterface {
       await this._init()
     }
 
-    if (!this._headHeader) {
+    if (!this._headHeaderHash) {
       throw new Error('No head header set')
     }
 
-    const block = await this.getBlock(this._headHeader)
+    const block = await this.getBlock(this._headHeaderHash)
     return block.header
   }
 
@@ -270,11 +283,11 @@ export default class Blockchain implements BlockchainInterface {
       await this._init()
     }
 
-    if (!this._headBlock) {
+    if (!this._headBlockHash) {
       throw new Error('No head block set')
     }
 
-    return this.getBlock(this._headBlock)
+    return this.getBlock(this._headBlockHash)
   }
 
   /**
@@ -293,7 +306,7 @@ export default class Blockchain implements BlockchainInterface {
    *
    * @param block - The block to be added to the blockchain
    */
-  async putBlock(block: Block, isGenesis?: boolean) {
+  async putBlock(block: Block) {
     if (!this._initDone) {
       await this._init()
     }
@@ -301,7 +314,7 @@ export default class Blockchain implements BlockchainInterface {
     await this._lock.wait()
 
     try {
-      await this._putBlockOrHeader(block, isGenesis)
+      await this._putBlockOrHeader(block)
       this._lock.release()
     } catch (error) {
       this._lock.release()
@@ -343,10 +356,10 @@ export default class Blockchain implements BlockchainInterface {
   /**
    * @hidden
    */
-  async _putBlockOrHeader(item: Block | BlockHeader, isGenesis?: boolean) {
+  async _putBlockOrHeader(item: Block | BlockHeader) {
     const block = item instanceof BlockHeader ? new Block(item) : item
+    const isGenesis = block.isGenesis()
 
-    const hash = block.hash()
     const { header } = block
     const blockHash = header.hash()
     const blockNumber = header.number
@@ -358,7 +371,7 @@ export default class Blockchain implements BlockchainInterface {
       throw new Error('Chain mismatch while trying to put block or header')
     }
 
-    if (this._validateBlocks && !isGenesis && !block.isGenesis()) {
+    if (this._validateBlocks && !isGenesis) {
       await block.validate(this)
     }
 
@@ -371,11 +384,11 @@ export default class Blockchain implements BlockchainInterface {
 
     if (!isGenesis) {
       // set total difficulty in the current context scope
-      if (this._headHeader) {
-        currentTd.header = await this._getTd(this._headHeader)
+      if (this._headHeaderHash) {
+        currentTd.header = await this._getTd(this._headHeaderHash)
       }
-      if (this._headBlock) {
-        currentTd.block = await this._getTd(this._headBlock)
+      if (this._headBlockHash) {
+        currentTd.block = await this._getTd(this._headBlockHash)
       }
 
       // calculate the total difficulty of the new block
@@ -410,20 +423,21 @@ export default class Blockchain implements BlockchainInterface {
 
       // if total difficulty is higher than current, add it to canonical chain
       if (block.isGenesis() || td.gt(currentTd.header)) {
-        this._headHeader = hash
+        this._headHeaderHash = blockHash
         if (item instanceof Block) {
-          this._headBlock = hash
+          this._headBlockHash = blockHash
         }
         if (block.isGenesis()) {
-          this._genesis = hash
+          this._genesis = blockHash
         }
 
         // delete higher number assignments and overwrite stale canonical chain
-        await this._deleteStaleAssignments(blockNumber.addn(1), hash, dbOps)
+        await this._deleteCanonicalChainReferences(blockNumber.addn(1), blockHash, dbOps)
         await this._rebuildCanonical(header, dbOps)
       } else {
+        // the TD is lower than the current highest TD so we will add the block to the DB, but will not mark it as the canonical chain.
         if (td.gt(currentTd.block) && item instanceof Block) {
-          this._headBlock = hash
+          this._headBlockHash = blockHash
         }
         // save hash to number lookup info even if rebuild not needed
         const blockNumber8Byte = bufBE8(blockNumber)
@@ -505,8 +519,8 @@ export default class Blockchain implements BlockchainInterface {
 
   /**
    * Given an ordered array, returns an array of hashes that are not in the blockchain yet.
-   *
-   * @param hashes - Ordered array of hashes
+   * Uses binary search to find out what hashes are missing. Therefore, the array needs to be ordered upon number.
+   * @param hashes - Ordered array of hashes (ordered on `number`).
    */
   async selectNeededHashes(hashes: Array<Buffer>) {
     let max: number
@@ -536,29 +550,38 @@ export default class Blockchain implements BlockchainInterface {
   }
 
   /**
+   * Builds the `DatabaseOperation[]` list which describes the DB operations to write the heads, head header hash and the head header block to the DB
    * @hidden
    */
-  _saveHeadOps(): DBOp[] {
+  private _saveHeadOps(): DBOp[] {
     return [
       DBOp.set(DBTarget.Heads, this._heads),
-      DBOp.set(DBTarget.HeadHeader, this._headHeader!),
-      DBOp.set(DBTarget.HeadBlock, this._headBlock!),
+      DBOp.set(DBTarget.HeadHeader, this._headHeaderHash!),
+      DBOp.set(DBTarget.HeadBlock, this._headBlockHash!),
     ]
   }
 
   /**
+   * Gets the `DatabaseOperation[]` list to save `_heads`, `_headHeaderHash` and `_headBlockHash` and writes these to the DB
    * @hidden
    */
-  async _saveHeads() {
+  private async _saveHeads() {
     return this.dbManager.batch(this._saveHeadOps())
   }
 
   /**
-   * Delete canonical number assignments for specified number and above
-   *
+   * Pushes DB operations to delete canonical number assignments for specified block number and above
+   * Also
+   * @param blockNumber - the block number from which we start deleting canonical chain assignments (including this block)
+   * @param headHash - the hash of the current canonical chain head. The _heads reference matching any hash of any of the deleted blocks will be set to this
+   * @param ops - the DatabaseOperation list to write DatabaseOperations to
    * @hidden
    */
-  async _deleteStaleAssignments(blockNumber: BN, headHash: Buffer, ops: DBOp[]) {
+  private async _deleteCanonicalChainReferences(
+    blockNumber: BN,
+    headHash: Buffer,
+    ops: DBOp[]
+  ) {
     let hash: Buffer
     try {
       hash = await this.dbManager.numberToHash(blockNumber)
@@ -579,15 +602,15 @@ export default class Blockchain implements BlockchainInterface {
     })
 
     // reset stale headBlock to current canonical
-    if (this._headBlock?.equals(hash)) {
-      this._headBlock = headHash
+    if (this._headBlockHash?.equals(hash)) {
+      this._headBlockHash = headHash
     }
 
-    await this._deleteStaleAssignments(blockNumber.addn(1), headHash, ops)
+    await this._deleteCanonicalChainReferences(blockNumber.addn(1), headHash, ops)
   }
 
   /**
-   * Overwrites stale canonical number assignments.
+   * Given a `header`, rebuild the canonical chain using this header.
    *
    * @hidden
    */
@@ -598,7 +621,7 @@ export default class Blockchain implements BlockchainInterface {
     const saveLookups = async (hash: Buffer, number: BN) => {
       ops.push(DBOp.set(DBTarget.NumberToHash, blockHash, { blockNumber }))
 
-      const blockNumber8Bytes = bufBE8(number)
+      const blockNumber8Bytes = bufBE8(blockNumber)
       ops.push(
         DBOp.set(DBTarget.HashToNumber, blockNumber8Bytes, {
           blockHash,
@@ -608,10 +631,11 @@ export default class Blockchain implements BlockchainInterface {
 
     // handle genesis block
     if (blockNumber.isZero()) {
-      await saveLookups(blockHash, blockNumber)
+      saveLookups(blockHash, blockNumber)
       return
     }
 
+    // track the staleHash: this is the hash currently in the DB which matches the block number of the provided header.
     let staleHash: Buffer | null = null
     try {
       staleHash = await this.dbManager.numberToHash(blockNumber)
@@ -622,9 +646,9 @@ export default class Blockchain implements BlockchainInterface {
     }
 
     if (!staleHash || !blockHash.equals(staleHash)) {
-      await saveLookups(blockHash, blockNumber)
+      saveLookups(blockHash, blockNumber)
 
-      // flag stale head for reset
+      // mark each key `_heads` which is currently set to the hash in the DB as stale to overwrite this later.
       Object.keys(this._heads).forEach((name) => {
         if (staleHash && this._heads[name].equals(staleHash)) {
           this._staleHeads = this._staleHeads || []
@@ -632,7 +656,7 @@ export default class Blockchain implements BlockchainInterface {
         }
       })
       // flag stale headBlock for reset
-      if (staleHash && this._headBlock?.equals(staleHash)) {
+      if (staleHash && this._headBlockHash?.equals(staleHash)) {
         this._staleHeadBlock = true
       }
 
@@ -646,6 +670,7 @@ export default class Blockchain implements BlockchainInterface {
         }
       }
     } else {
+      // the stale hash is equal to the blockHash
       // set stale heads to last previously valid canonical block
       this._staleHeads.forEach((name: string) => {
         this._heads[name] = blockHash
@@ -653,15 +678,15 @@ export default class Blockchain implements BlockchainInterface {
       this._staleHeads = []
       // set stale headBlock to last previously valid canonical block
       if (this._staleHeadBlock) {
-        this._headBlock = blockHash
+        this._headBlockHash = blockHash
         this._staleHeadBlock = false
       }
     }
   }
 
   /**
-   * Deletes a block from the blockchain. All child blocks in the chain are deleted and any
-   * encountered heads are set to the parent block.
+   * Completely deletes a block from the blockchain including any references to this block. All child blocks in the chain are deleted and any
+   * encountered heads are set to the parent block. If the block was in the canonical chain, also update the canonical chain and set the head of the canonical chain to the parent block.
    *
    * @param blockHash - The hash of the block to be deleted
    */
@@ -709,13 +734,20 @@ export default class Blockchain implements BlockchainInterface {
 
     // delete all number to hash mappings for deleted block number and above
     if (inCanonical) {
-      await this._deleteStaleAssignments(blockNumber, parentHash, dbOps)
+      await this._deleteCanonicalChainReferences(blockNumber, parentHash, dbOps)
     }
 
     await this.dbManager.batch(dbOps)
   }
 
   /**
+   * Updates the `DatabaseOperation` list to delete a block from the DB, identified by `blockHash` and `blockNumber`. Deletes fields from `Header`, `Body`, `HashToNumber` and `TotalDifficulty` tables.
+   * If child blocks of this current block are in the canonical chain, delete these as well. Does not actually commit these changes to the DB.
+   * Sets `_headHeaderHash` and `_headBlockHash` to `headHash` if any of these matches the current child to be deleted.
+   * @param blockHash - the block hash to delete
+   * @param blockNumber - the number corresponding to the block hash
+   * @param headHash - the current head of the chain (if null, do not update `_headHeaderHash` and `_headBlockHash`)
+   * @param ops - the `DatabaseOperation` list to add the delete operations to
    * @hidden
    */
   async _delChild(blockHash: Buffer, blockNumber: BN, headHash: Buffer | null, ops: DBOp[]) {
@@ -729,12 +761,12 @@ export default class Blockchain implements BlockchainInterface {
       return
     }
 
-    if (this._headHeader?.equals(blockHash)) {
-      this._headHeader = headHash
+    if (this._headHeaderHash?.equals(blockHash)) {
+      this._headHeaderHash = headHash
     }
 
-    if (this._headBlock?.equals(blockHash)) {
-      this._headBlock = headHash
+    if (this._headBlockHash?.equals(blockHash)) {
+      this._headBlockHash = headHash
     }
 
     try {
@@ -766,7 +798,7 @@ export default class Blockchain implements BlockchainInterface {
   /**
    * @hidden
    */
-  async _iterator(name: string, onBlock: OnBlock) {
+  private async _iterator(name: string, onBlock: OnBlock) {
     const blockHash = this._heads[name] || this._genesis
     let lastBlock: Block | undefined
 
@@ -777,7 +809,8 @@ export default class Blockchain implements BlockchainInterface {
     const number = await this.dbManager.hashToNumber(blockHash)
     const blockNumber = number.addn(1)
 
-    while (blockNumber) {
+    // eslint-disable-next-line no-constant-condition
+    while (true) {
       try {
         const block = await this.getBlock(blockNumber)
 
@@ -800,6 +833,8 @@ export default class Blockchain implements BlockchainInterface {
 
     await this._saveHeads()
   }
+
+  /* Helper functions */
 
   /**
    * Gets a header by hash and number. Header can exist outside the canonical chain

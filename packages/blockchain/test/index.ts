@@ -46,7 +46,7 @@ tape('blockchain test', (t) => {
     })
     const badBlock = Block.fromBlockData({ header: { number: new BN(8) } })
     try {
-      await blockchain.putBlock(badBlock, false)
+      await blockchain.putBlock(badBlock)
     } catch (error) {
       st.ok(error, 'returned with error')
       st.end()
@@ -385,12 +385,12 @@ tape('blockchain test', (t) => {
       calcDifficultyFromHeader: blocks[14].header,
     })
 
-    blockchain._heads['staletest'] = blockchain._headHeader
+    blockchain._heads['staletest'] = blockchain._headHeaderHash
 
     await blockchain.putHeader(forkHeader)
 
     st.ok(blockchain._heads['staletest'].equals(blocks[14].hash()), 'should update stale head')
-    st.ok(blockchain._headBlock.equals(blocks[14].hash()), 'should update stale headBlock')
+    st.ok(blockchain._headBlockHash.equals(blocks[14].hash()), 'should update stale headBlock')
     st.end()
   })
 
@@ -410,17 +410,17 @@ tape('blockchain test', (t) => {
       calcDifficultyFromHeader: blocks[14].header,
     })
 
-    blockchain._heads['staletest'] = blockchain._headHeader
+    blockchain._heads['staletest'] = blockchain._headHeaderHash
 
     await blockchain.putHeader(forkHeader)
 
     st.ok(blockchain._heads['staletest'].equals(blocks[14].hash()), 'should update stale head')
-    st.ok(blockchain._headBlock.equals(blocks[14].hash()), 'should update stale headBlock')
+    st.ok(blockchain._headBlockHash.equals(blocks[14].hash()), 'should update stale headBlock')
 
     await blockchain.delBlock(forkHeader.hash())
 
-    st.ok(blockchain._headHeader.equals(blocks[14].hash()), 'should reset headHeader')
-    st.ok(blockchain._headBlock.equals(blocks[14].hash()), 'should not change headBlock')
+    st.ok(blockchain._headHeaderHash.equals(blocks[14].hash()), 'should reset headHeader')
+    st.ok(blockchain._headBlockHash.equals(blocks[14].hash()), 'should not change headBlock')
     st.end()
   })
 
@@ -437,7 +437,7 @@ tape('blockchain test', (t) => {
     }
 
     await delNextBlock(9)
-    st.ok(blockchain._headHeader.equals(blocks[5].hash()), 'should have block 5 as head')
+    st.ok(blockchain._headHeaderHash.equals(blocks[5].hash()), 'should have block 5 as head')
     st.end()
   })
 
@@ -445,7 +445,7 @@ tape('blockchain test', (t) => {
     const { blockchain, blocks, error } = await generateBlockchain(25)
     st.error(error, 'no error')
     await blockchain.delBlock(blocks[1].hash())
-    st.ok(blockchain._headHeader.equals(blocks[0].hash()), 'should have genesis as head')
+    st.ok(blockchain._headHeaderHash.equals(blocks[0].hash()), 'should have genesis as head')
     st.end()
   })
 
