@@ -1,5 +1,5 @@
 import tape from 'tape'
-import { toBuffer, intToHex } from 'ethereumjs-util'
+import { intToHex, BN } from 'ethereumjs-util'
 import { startRPC, createManager, createNode, params, baseRequest } from '../helpers'
 
 const method = 'eth_blockNumber'
@@ -7,9 +7,9 @@ const method = 'eth_blockNumber'
 tape(`${method}: call with valid arguments`, (t) => {
   const mockBlockNumber = 123
   const mockBlockChain = {
-    getLatestHeader: () => {
+    getLatestHeader: async function (): Promise<any> {
       return Promise.resolve({
-        number: toBuffer(mockBlockNumber),
+        number: new BN(mockBlockNumber),
       })
     },
   }

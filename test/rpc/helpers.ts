@@ -1,7 +1,7 @@
 import tape from 'tape'
 const jayson = require('jayson')
 const request = require('supertest')
-import Common from 'ethereumjs-common'
+import Common from '@ethereumjs/common'
 import { RPCManager as Manager } from '../../lib/rpc'
 import * as Logger from '../../lib/logging'
 import { blockChain } from './blockChainStub'
@@ -26,12 +26,12 @@ export function createManager(node: any) {
 }
 
 export function createNode(nodeConfig?: any) {
-  const chain = new Chain({ blockchain: blockChain({}) })
+  const chain = new Chain({ blockchain: (<unknown>blockChain({})) as Chain })
   chain.opened = true
   const defaultNodeConfig = {
     blockchain: chain,
     opened: true,
-    commonChain: new Common('mainnet'),
+    commonChain: new Common({ chain: 'mainnet' }),
     ethProtocolVersions: [63],
   }
   const trueNodeConfig = { ...defaultNodeConfig, ...nodeConfig }
