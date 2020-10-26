@@ -13,7 +13,8 @@ module.exports = function (config) {
     karmaTypescriptConfig: {
       bundlerOptions: {
         entrypoints: /\.spec\.ts$/
-      }
+      },
+      tsconfig: "./tsconfig.karma.json",
     },
 
     browsers: ['FirefoxHeadless', 'ChromeHeadless'],
