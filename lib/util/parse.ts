@@ -1,4 +1,3 @@
-import Account from 'ethereumjs-account'
 import { BlockHeader } from '@ethereumjs/block'
 const Trie = require('merkle-patricia-tree/secure')
 import * as util from 'ethereumjs-util'
@@ -67,7 +66,7 @@ async function parseGethState(alloc: any) {
   const promises = []
   for (const [key, value] of Object.entries(alloc)) {
     const address = toBuffer(key)
-    const account = new Account()
+    const account = new util.Account()
     if ((value as any).balance) {
       // TODO: convert to buffer w/ util.toBuffer()?
       // @ts-ignore: account.balance is type Buffer, not BN
