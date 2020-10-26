@@ -1,11 +1,11 @@
 import { Service } from './service'
 import { FlowControl } from '../net/protocol/flowcontrol'
 import { Chain } from '../blockchain'
-import Common from 'ethereumjs-common'
+import Common from '@ethereumjs/common'
 
 const defaultOptions = {
   lightserv: false,
-  common: new Common('mainnet', 'chainstart'),
+  common: new Common({ chain: 'mainnet', hardfork: 'chainstart' }),
   minPeers: 3,
   timeout: 8000,
   interval: 1000,

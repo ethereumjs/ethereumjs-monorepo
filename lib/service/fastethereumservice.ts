@@ -96,7 +96,7 @@ export class FastEthereumService extends EthereumService {
     } else if (message.name === 'GetBlockBodies') {
       const hashes = message.data
       const blocks = await Promise.all(hashes.map((hash: any) => this.chain.getBlock(hash)))
-      const bodies: any = blocks.map((block: any) => block.raw.slice(1))
+      const bodies: any = blocks.map((block: any) => block.raw().slice(1))
       ;(peer.eth as BoundProtocol).send('BlockBodies', bodies)
     } else if (message.name === 'NewBlockHashes') {
       this.synchronizer.announced(message.data, peer)

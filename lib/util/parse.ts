@@ -1,5 +1,5 @@
 import Account from 'ethereumjs-account'
-const Block = require('ethereumjs-block')
+import { BlockHeader } from '@ethereumjs/block'
 const Trie = require('merkle-patricia-tree/secure')
 import * as util from 'ethereumjs-util'
 import * as url from 'url'
@@ -93,16 +93,21 @@ async function parseGethState(alloc: any) {
 }
 
 async function parseGethHeader(json: any) {
-  const header = new Block.Header()
-  header.gasLimit = json.gasLimit
-  header.difficulty = json.difficulty
-  header.extraData = json.extraData
-  header.number = Buffer.from([])
-  header.nonce = json.nonce
-  header.timestamp = json.timestamp
-  header.mixHash = json.mixHash
-  header.stateRoot = (await parseGethState(json.alloc)).root
-  return header
+  return BlockHeader.fromHeaderData(
+    {
+      gasLimit: new util.BN(util.stripHexPrefix(json.gasLimit), 16),
+      difficulty: new util.BN(util.stripHexPrefix(json.difficulty), 16),
+      extraData: toBuffer(json.extraData),
+      number: new util.BN(util.stripHexPrefix(json.number), 16),
+      nonce: toBuffer(json.nonce),
+      timestamp: new util.BN(util.stripHexPrefix(json.timestamp), 16),
+      mixHash: toBuffer(json.mixHash),
+      stateRoot: (await parseGethState(json.alloc)).root,
+    },
+    {
+      // TODO: Add optional Common param here?
+    }
+  )
 }
 
 async function parseGethParams(json: any) {
