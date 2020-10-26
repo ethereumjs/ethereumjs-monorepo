@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
-const Common = require('ethereumjs-common').default
-const chains = require('ethereumjs-common/dist/chains').chains
+const Common = require('@ethereumjs/common').default
+const chains = require('@ethereumjs/common/dist/chains').chains
 const { getLogger } = require('../lib/logging')
 const { parseParams, parseTransports } = require('../lib/util')
 const { fromName: serverFromName } = require('../lib/net/server')
@@ -123,11 +123,17 @@ async function run() {
     }
   }
   const networkDirName = args.network === 'mainnet' ? '' : `${args.network}/`
+
+  // TODO: see todo below wrt resolving chain param parsing
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const chainParams = args.params ? await parseParams(args.params) : args.network
+
   // Initialize Common with an explicit 'chainstart' HF set until
   // hardfork awareness is implemented within the library
   // Also a fix for https://github.com/ethereumjs/ethereumjs-vm/issues/757
-  const common = new Common(chainParams, 'chainstart')
+
+  // TODO: map chainParams (and lib/util.parseParams) to new Common format
+  const common = new Common({ chain: args.network, hardfork: 'chainstart' })
   const servers = parseTransports(args.transports).map((t: any) => {
     const Server = serverFromName(t.name)
     if (t.name === 'rlpx') {
