@@ -162,7 +162,7 @@ export default class Blockchain implements BlockchainInterface {
    *
    * @hidden
    */
-  private async _init() {
+  private async _init(): Promise<void> {
     let genesisHash
     try {
       genesisHash = await this.dbManager.numberToHash(new BN(0))
@@ -206,8 +206,33 @@ export default class Blockchain implements BlockchainInterface {
       }
       this._headBlockHash = genesisHash
     }
-
     this._initDone = true
+  }
+
+  /**
+   * Perform the `action` function after we have initialized this module and have acquired a lock
+   * @param action - the action function to run after initializing and acquiring a lock
+   * @hidden
+   */
+  private async initAndLock<T>(action: () => Promise<T>): Promise<T> {
+    await this._initPromise
+    return await this.runWithLock(action)
+  }
+
+  /**
+   * Run a function after acquiring a lock. It is implied that we have already initialized the module (or we are calling this from the init function, like `_setCanonicalGenesisBlock`)
+   * @param action - function to run after acquiring a lock
+   * @hidden
+   */
+  private async runWithLock<T>(action: () => Promise<T>): Promise<T> {
+    try {
+      await this._lock.acquire()
+      const value = await action()
+      this._lock.release()
+      return value
+    } finally {
+      this._lock.release()
+    }
   }
 
   /**
@@ -242,71 +267,44 @@ export default class Blockchain implements BlockchainInterface {
    * @param name - Optional name of the state root head (default: 'vm')
    */
   async getHead(name = 'vm'): Promise<Block> {
-    if (!this._initDone) {
-      await this._initPromise
-    }
-
-    await this._lock.wait()
-    try {
+    return await this.initAndLock<Block>(async () => {
       // if the head is not found return the headHeader
       const hash = this._heads[name] || this._headBlockHash
       if (!hash) {
         throw new Error('No head found.')
       }
 
-      const block = this.getBlock(hash)
-      this._lock.release()
+      const block = await this._getBlock(hash)
       return block
-    } catch (error) {
-      this._lock.release()
-      throw error
-    }
+    })
   }
 
   /**
    * Returns the latest header in the canonical chain.
    */
   async getLatestHeader(): Promise<BlockHeader> {
-    if (!this._initDone) {
-      await this._initPromise
-    }
-
-    await this._lock.wait()
-    try {
+    return await this.initAndLock<BlockHeader>(async () => {
       if (!this._headHeaderHash) {
         throw new Error('No head header set')
       }
 
       const block = await this._getBlock(this._headHeaderHash)
-      this._lock.release()
       return block.header
-    } catch (error) {
-      this._lock.release()
-      throw error
-    }
+    })
   }
 
   /**
    * Returns the latest full block in the canonical chain.
    */
   async getLatestBlock(): Promise<Block> {
-    if (!this._initDone) {
-      await this._initPromise
-    }
-
-    await this._lock.wait()
-    try {
+    return this.initAndLock<Block>(async () => {
       if (!this._headBlockHash) {
         throw new Error('No head block set')
       }
 
       const block = this._getBlock(this._headBlockHash)
-      this._lock.release()
       return block
-    } catch (error) {
-      this._lock.release()
-      throw error
-    }
+    })
   }
 
   /**
@@ -315,9 +313,7 @@ export default class Blockchain implements BlockchainInterface {
    * @param blocks - The blocks to be added to the blockchain
    */
   async putBlocks(blocks: Block[]) {
-    if (!this._initDone) {
-      await this._initPromise
-    }
+    await this._initPromise
     for (let i = 0; i < blocks.length; i++) {
       await this._putBlockOrHeader(blocks[i])
     }
@@ -329,10 +325,7 @@ export default class Blockchain implements BlockchainInterface {
    * @param block - The block to be added to the blockchain
    */
   async putBlock(block: Block) {
-    if (!this._initDone) {
-      await this._initPromise
-    }
-
+    await this._initPromise
     await this._putBlockOrHeader(block)
   }
 
@@ -342,6 +335,7 @@ export default class Blockchain implements BlockchainInterface {
    * @param headers - The headers to be added to the blockchain
    */
   async putHeaders(headers: Array<any>) {
+    await this._initPromise
     for (let i = 0; i < headers.length; i++) {
       await this._putBlockOrHeader(headers[i])
     }
@@ -353,10 +347,7 @@ export default class Blockchain implements BlockchainInterface {
    * @param header - The header to be added to the blockchain
    */
   async putHeader(header: BlockHeader) {
-    if (!this._initDone) {
-      await this._initPromise
-    }
-
+    await this._initPromise
     await this._putBlockOrHeader(header)
   }
 
@@ -378,6 +369,7 @@ export default class Blockchain implements BlockchainInterface {
     }
 
     if (this._validateBlocks && !isGenesis) {
+      // this calls into `getBlock`, which is why we cannot lock yet
       await block.validate(this)
     }
 
@@ -388,8 +380,7 @@ export default class Blockchain implements BlockchainInterface {
       }
     }
 
-    try {
-      await this._lock.wait()
+    await this.runWithLock<void>(async () => {
       if (!isGenesis) {
         // set total difficulty in the current context scope
         if (this._headHeaderHash) {
@@ -467,11 +458,7 @@ export default class Blockchain implements BlockchainInterface {
 
       const ops = dbOps.concat(this._saveHeadOps())
       await this.dbManager.batch(ops)
-      this._lock.release()
-    } catch (e) {
-      this._lock.release()
-      throw e
-    }
+    })
   }
 
   /**
@@ -480,19 +467,10 @@ export default class Blockchain implements BlockchainInterface {
    * @param blockId - The block's hash or number
    */
   async getBlock(blockId: Buffer | number | BN): Promise<Block> {
-    if (!this._initDone) {
-      await this._initPromise
-    }
-
-    await this._lock.wait()
-    try {
+    return await this.initAndLock<Block>(async () => {
       const block = await this._getBlock(blockId)
-      this._lock.release()
       return block
-    } catch (error) {
-      this._lock.release()
-      throw error
-    }
+    })
   }
 
   /**
@@ -516,11 +494,7 @@ export default class Blockchain implements BlockchainInterface {
     skip: number,
     reverse: boolean
   ): Promise<Block[]> {
-    if (!this._initDone) {
-      await this._initPromise
-    }
-    await this._lock.wait()
-    try {
+    return await this.initAndLock<Block[]>(async () => {
       const blocks: Block[] = []
       let i = -1
 
@@ -546,12 +520,8 @@ export default class Blockchain implements BlockchainInterface {
       }
 
       await nextBlock(blockId)
-      this._lock.release()
       return blocks
-    } catch (error) {
-      this._lock.release()
-      throw error
-    }
+    })
   }
 
   /**
@@ -560,8 +530,7 @@ export default class Blockchain implements BlockchainInterface {
    * @param hashes - Ordered array of hashes (ordered on `number`).
    */
   async selectNeededHashes(hashes: Array<Buffer>): Promise<Buffer[]> {
-    await this._lock.wait()
-    try {
+    return await this.initAndLock<Buffer[]>(async () => {
       let max: number
       let mid: number
       let min: number
@@ -585,12 +554,8 @@ export default class Blockchain implements BlockchainInterface {
         }
         mid = Math.floor((min + max) / 2)
       }
-      this._lock.release()
       return hashes.slice(min)
-    } catch (error) {
-      this._lock.release()
-      throw error
-    }
+    })
   }
 
   /**
@@ -737,18 +702,9 @@ export default class Blockchain implements BlockchainInterface {
    * @param blockHash - The hash of the block to be deleted
    */
   async delBlock(blockHash: Buffer) {
-    if (!this._initDone) {
-      await this._initPromise
-    }
-
-    await this._lock.wait()
-    try {
+    await this.initAndLock<void>(async () => {
       await this._delBlock(blockHash)
-      this._lock.release()
-    } catch (error) {
-      this._lock.release()
-      throw error
-    }
+    })
   }
 
   /**
@@ -841,10 +797,6 @@ export default class Blockchain implements BlockchainInterface {
    * @param onBlock - Function called on each block with params (block, reorg)
    */
   async iterator(name: string, onBlock: OnBlock) {
-    if (!this._initDone) {
-      await this._initPromise
-    }
-
     return this._iterator(name, onBlock)
   }
 
@@ -852,8 +804,7 @@ export default class Blockchain implements BlockchainInterface {
    * @hidden
    */
   private async _iterator(name: string, onBlock: OnBlock) {
-    await this._lock.wait()
-    try {
+    await this.initAndLock<void>(async () => {
       const blockHash = this._heads[name] || this._genesis
       let lastBlock: Block | undefined
 
@@ -887,11 +838,7 @@ export default class Blockchain implements BlockchainInterface {
       }
 
       await this._saveHeads()
-      this._lock.release()
-    } catch (error) {
-      this._lock.release()
-      throw error
-    }
+    })
   }
 
   /* Helper functions */
