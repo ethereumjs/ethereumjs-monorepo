@@ -247,6 +247,22 @@ export class Block {
   }
 
   /**
+   * Returns the canonical difficulty of any new block, given the timestamp of the consecutive block and (optionally) the block number and the common
+   * @param block  - The block to get the canonical difficulty for
+   * @param timestamp - The timestamp of the consecutive block
+   * @param number - Optional, the number of the consecutive block
+   * @param common - Optional, the `common` to use in the difficulty calculation
+   */
+  public static getCanonicalDifficulty(
+    block: Block,
+    timestamp: BN,
+    number?: BN,
+    common?: Common
+  ): BN {
+    return BlockHeader.getCanonicalDifficulty(block.header, timestamp, number, common)
+  }
+
+  /**
    * Checks that the block's `difficulty` matches the canonical difficulty.
    *
    * @param parentBlock - the parent of this `Block`

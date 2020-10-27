@@ -254,36 +254,34 @@ export class BlockHeader {
   }
 
   /**
-   * @param parentBlock - The `parentBlock` where we wish to build upon
+   * @param header - The `header` where we wish to build upon
    * @param timestamp - The `BN` timestamp which we should calculate the difficulty for
    * @param number - The `BN` block number. Defaults to the parent blocks' `number` + 1
    * @param common - The `Common` to use: defaults to the parent blocks` `Common`
    */
 
   public static getCanonicalDifficulty(
-    parentHeader: BlockHeader,
+    header: BlockHeader,
     timestamp: BN,
     number?: BN,
     common?: Common
   ): BN {
     const blockTs = timestamp.clone()
-    const { timestamp: parentTs, difficulty: parentDif } = parentHeader
-    const usedCommon = common || parentHeader._common
-    let num = (number || parentHeader.number).clone().addn(1)
-    const hardfork = usedCommon.hardfork() || usedCommon.activeHardfork(num.toNumber())
-    const minimumDifficulty = new BN(
-      usedCommon.paramByHardfork('pow', 'minimumDifficulty', hardfork)
-    )
+    const { timestamp: parentTs, difficulty: parentDif } = header
+    common = common || header._common
+    let num = (number || header.number).clone().addn(1)
+    const hardfork = common.hardfork() || common.activeHardfork(num.toNumber())
+    const minimumDifficulty = new BN(common.paramByHardfork('pow', 'minimumDifficulty', hardfork))
     const offset = parentDif.div(
-      new BN(usedCommon.paramByHardfork('pow', 'difficultyBoundDivisor', hardfork))
+      new BN(common.paramByHardfork('pow', 'difficultyBoundDivisor', hardfork))
     )
 
     // We use a ! here as TS cannot follow this hardfork-dependent logic, but it always gets assigned
     let dif!: BN
 
-    if (usedCommon.hardforkGteHardfork(hardfork, 'byzantium')) {
+    if (common.hardforkGteHardfork(hardfork, 'byzantium')) {
       // max((2 if len(parent.uncles) else 1) - ((timestamp - parent.timestamp) // 9), -99) (EIP100)
-      const uncleAddend = parentHeader.uncleHash.equals(KECCAK256_RLP_ARRAY) ? 1 : 2
+      const uncleAddend = header.uncleHash.equals(KECCAK256_RLP_ARRAY) ? 1 : 2
       let a = blockTs.sub(parentTs).idivn(9).ineg().iaddn(uncleAddend)
       const cutoff = new BN(-99)
       // MAX(cutoff, a)
@@ -293,25 +291,25 @@ export class BlockHeader {
       dif = parentDif.add(offset.mul(a))
     }
 
-    if (usedCommon.hardforkGteHardfork(hardfork, 'muirGlacier')) {
+    if (common.hardforkGteHardfork(hardfork, 'muirGlacier')) {
       // Istanbul/Berlin difficulty bomb delay (EIP2384)
       num.isubn(9000000)
       if (num.ltn(0)) {
         num = new BN(0)
       }
-    } else if (usedCommon.hardforkGteHardfork(hardfork, 'constantinople')) {
+    } else if (common.hardforkGteHardfork(hardfork, 'constantinople')) {
       // Constantinople difficulty bomb delay (EIP1234)
       num.isubn(5000000)
       if (num.ltn(0)) {
         num = new BN(0)
       }
-    } else if (usedCommon.hardforkGteHardfork(hardfork, 'byzantium')) {
+    } else if (common.hardforkGteHardfork(hardfork, 'byzantium')) {
       // Byzantium difficulty bomb delay (EIP649)
       num.isubn(3000000)
       if (num.ltn(0)) {
         num = new BN(0)
       }
-    } else if (usedCommon.hardforkGteHardfork(hardfork, 'homestead')) {
+    } else if (common.hardforkGteHardfork(hardfork, 'homestead')) {
       // 1 - (block_timestamp - parent_timestamp) // 10
       let a = blockTs.sub(parentTs).idivn(10).ineg().iaddn(1)
       const cutoff = new BN(-99)
@@ -323,8 +321,7 @@ export class BlockHeader {
     } else {
       // pre-homestead
       if (
-        parentTs.addn(usedCommon.paramByHardfork('pow', 'durationLimit', hardfork)).cmp(blockTs) ===
-        1
+        parentTs.addn(common.paramByHardfork('pow', 'durationLimit', hardfork)).cmp(blockTs) === 1
       ) {
         dif = offset.add(parentDif)
       } else {
