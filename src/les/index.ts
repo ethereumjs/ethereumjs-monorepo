@@ -1,5 +1,5 @@
 import { EventEmitter } from 'events'
-import rlp from 'rlp-encoding'
+import * as rlp from 'rlp'
 import ms from 'ms'
 import { debug as createDebugLogger } from 'debug'
 import { int2buffer, buffer2int, assertEq, formatLogData } from '../util'
@@ -43,9 +43,9 @@ export class LES extends EventEmitter {
       debug(`${debugMsg}: ${logData}`)
     }
     switch (code) {
-      case LES.MESSAGE_CODES.STATUS:
+      case LES.MESSAGE_CODES.STATUS: {
         assertEq(this._peerStatus, null, 'Uncontrolled status message', debug)
-        let statusArray: any = {}
+        const statusArray: any = {}
         payload.forEach(function(value: any) {
           statusArray[value[0].toString()] = value[1]
         })
@@ -53,10 +53,11 @@ export class LES extends EventEmitter {
         debug(
           `Received ${this.getMsgPrefix(code)} message from ${this._peer._socket.remoteAddress}:${
             this._peer._socket.remotePort
-          }: : ${this._peerStatus ? this._getStatusString(this._peerStatus) : ''}`,
+          }: : ${this._peerStatus ? this._getStatusString(this._peerStatus) : ''}`
         )
         this._handleStatus()
         break
+      }
 
       case LES.MESSAGE_CODES.ANNOUNCE:
       case LES.MESSAGE_CODES.GET_BLOCK_HEADERS:
@@ -96,14 +97,14 @@ export class LES extends EventEmitter {
       this._status['protocolVersion'],
       this._peerStatus['protocolVersion'],
       'Protocol version mismatch',
-      debug,
+      debug
     )
     assertEq(this._status['networkId'], this._peerStatus['networkId'], 'NetworkId mismatch', debug)
     assertEq(
       this._status['genesisHash'],
       this._peerStatus['genesisHash'],
       'Genesis block mismatch',
-      debug,
+      debug
     )
 
     this.emit('status', this._peerStatus)
@@ -116,7 +117,7 @@ export class LES extends EventEmitter {
   _getStatusString(status: LES.Status) {
     let sStr = `[V:${buffer2int(status['protocolVersion'])}, `
     sStr += `NID:${buffer2int(status['networkId'] as Buffer)}, HTD:${buffer2int(
-      status['headTd'],
+      status['headTd']
     )}, `
     sStr += `HeadH:${status['headHash'].toString('hex')}, HeadN:${buffer2int(status['headNum'])}, `
     sStr += `GenH:${status['genesisHash'].toString('hex')}`
@@ -143,7 +144,7 @@ export class LES extends EventEmitter {
 
     this._status = status
 
-    let statusList: any[][] = []
+    const statusList: any[][] = []
     Object.keys(status).forEach(key => {
       statusList.push([key, status[key]])
     })
@@ -151,7 +152,7 @@ export class LES extends EventEmitter {
     debug(
       `Send STATUS message to ${this._peer._socket.remoteAddress}:${
         this._peer._socket.remotePort
-      } (les${this._version}): ${this._getStatusString(this._status)}`,
+      } (les${this._version}): ${this._getStatusString(this._status)}`
     )
     this._send(LES.MESSAGE_CODES.STATUS, rlp.encode(statusList))
     this._handleStatus()
@@ -248,6 +249,6 @@ export namespace LES {
     HELPER_TRIE_PROOFS = 0x12,
     SEND_TX_V2 = 0x13,
     GET_TX_STATUS = 0x14,
-    TX_STATUS = 0x15,
+    TX_STATUS = 0x15
   }
 }

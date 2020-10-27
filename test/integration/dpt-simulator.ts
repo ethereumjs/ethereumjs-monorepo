@@ -19,7 +19,7 @@ test('DPT: new working node', async t => {
 test('DPT: working node added', async t => {
   const dpts = util.initTwoPeerDPTSetup()
 
-  dpts[0].on('peer:added', function(peer: any) {
+  dpts[0].on('peer:added', function() {
     t.equal(dpts[0].getPeers().length, 1, 'should have added peer to k-bucket on peer:added')
     util.destroyDPTs(dpts)
     t.end()
@@ -38,23 +38,23 @@ test('DPT: remove node', async t => {
         })
       },
       function(cb) {
-        dpts[0].on('peer:removed', function(peer: any) {
+        dpts[0].on('peer:removed', function() {
           t.equal(
             dpts[0].getPeers().length,
             0,
-            'should have removed peer from k-bucket on peer:removed',
+            'should have removed peer from k-bucket on peer:removed'
           )
           cb(null)
         })
-      },
+      }
     ],
-    function(err, results) {
+    function(err) {
       if (err) {
         t.fail('An unexpected error occured.')
       }
       util.destroyDPTs(dpts)
       t.end()
-    },
+    }
   )
 })
 
@@ -75,19 +75,19 @@ test('DPT: ban node', async t => {
           t.equal(
             dpts[0].getPeers().length,
             0,
-            'should have removed peer from k-bucket on peer:removed',
+            'should have removed peer from k-bucket on peer:removed'
           )
           cb(null)
         })
-      },
+      }
     ],
-    function(err, results) {
+    function(err) {
       if (err) {
         t.fail('An unexpected error occured.')
       }
       util.destroyDPTs(dpts)
       t.end()
-    },
+    }
   )
 })
 
@@ -107,15 +107,15 @@ test('DPT: k-bucket ping', async t => {
       function(cb) {
         t.equal(dpts[0].getPeers().length, 1, 'should still have one peer in k-bucket')
         cb(null)
-      },
+      }
     ],
-    function(err, results) {
+    function(err) {
       if (err) {
         t.fail('An unexpected error occured.')
       }
       util.destroyDPTs(dpts)
       t.end()
-    },
+    }
   )
 })
 
@@ -138,11 +138,11 @@ test('DPT: simulate bootstrap', async t => {
   await dpts[0].addPeer({ address: util.localhost, udpPort: util.basePort + 1 })
   await delay(100)
 
-  for (let dpt of dpts.slice(2)) {
+  for (const dpt of dpts.slice(2)) {
     await dpt.bootstrap({ address: util.localhost, udpPort: util.basePort + 1 })
   }
 
-  for (let dpt of dpts) {
+  for (const dpt of dpts) {
     dpt.refresh()
     await delay(400)
   }
@@ -151,7 +151,7 @@ test('DPT: simulate bootstrap', async t => {
   util.destroyDPTs(dpts)
 
   // dpts.forEach((dpt, i) => console.log(`${i}:${dpt.getPeers().length}`))
-  for (let dpt of dpts)
+  for (const dpt of dpts)
     t.equal(dpt.getPeers().length, numDPTs, 'Peers should be distributed to all DPTs')
 
   t.end()

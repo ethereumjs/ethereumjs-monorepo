@@ -19,7 +19,7 @@ export class KBucket extends EventEmitter {
     this._kbucket = new _KBucket({
       localNodeId: typeof id === 'string' ? Buffer.from(id) : id,
       numberOfNodesPerKBucket: KBUCKET_SIZE,
-      numberOfNodesToPing: KBUCKET_CONCURRENCY,
+      numberOfNodesToPing: KBUCKET_CONCURRENCY
     })
 
     this._kbucket.on('added', (peer: any) => {
@@ -51,7 +51,7 @@ export class KBucket extends EventEmitter {
   }
 
   get(obj: Buffer | string | KObj) {
-    for (let key of KBucket.getKeys(obj)) {
+    for (const key of KBucket.getKeys(obj)) {
       const peer = this._peers.get(key)
       if (peer !== undefined) return peer
     }

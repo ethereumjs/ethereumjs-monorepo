@@ -1,5 +1,4 @@
 import { Test } from 'tape'
-
 import { DPT, ETH, RLPx, genPrivateKey } from '../../src'
 
 export const localhost = '127.0.0.1'
@@ -13,9 +12,9 @@ export function getTestDPTs(numDPTs: any) {
       endpoint: {
         address: localhost,
         udpPort: basePort + i,
-        tcpPort: basePort + i,
+        tcpPort: basePort + i
       },
-      timeout: 100,
+      timeout: 100
     })
     dpt.bind(basePort + i)
     dpts.push(dpt)
@@ -31,7 +30,7 @@ export function initTwoPeerDPTSetup() {
 }
 
 export function destroyDPTs(dpts: any) {
-  for (let dpt of dpts) dpt.destroy()
+  for (const dpt of dpts) dpt.destroy()
 }
 
 export function getTestRLPXs(numRLPXs: any, maxPeers: any, capabilities: any) {
@@ -46,7 +45,7 @@ export function getTestRLPXs(numRLPXs: any, maxPeers: any, capabilities: any) {
       dpt: dpts[i],
       maxPeers: maxPeers,
       capabilities: capabilities,
-      listenPort: basePort + i,
+      listenPort: basePort + i
     })
     rlpx.listen(basePort + i)
     rlpxs.push(rlpx)
@@ -89,7 +88,7 @@ export function twoPeerMsgExchange(t: Test, capabilities: any, opts: any) {
       if (opts.onPeerError0) {
         opts.onPeerError0(err, rlpxs)
       } else {
-        console.log(`Unexpected peer 0 error: ${err}`)
+        t.fail(`Unexpected peer 0 error: ${err}`)
       }
     }) // (-> 2)
   })
@@ -111,14 +110,14 @@ export function twoPeerMsgExchange(t: Test, capabilities: any, opts: any) {
       if (opts.onPeerError1) {
         opts.onPeerError1(err, rlpxs)
       } else {
-        console.log(`Unexpected peer 1 error: ${err}`)
+        t.fail(`Unexpected peer 1 error: ${err}`)
       }
     })
   })
 }
 
 export function destroyRLPXs(rlpxs: any) {
-  for (let rlpx of rlpxs) {
+  for (const rlpx of rlpxs) {
     // FIXME: Call destroy() on dpt instance from the rlpx.destroy() method
     rlpx._dpt.destroy()
     rlpx.destroy()

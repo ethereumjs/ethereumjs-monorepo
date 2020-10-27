@@ -1,3 +1,4 @@
+/// <reference path="../@types/rlp-encoding.d.ts"/>
 import { debug as createDebugLogger } from 'debug'
 import ip from 'ip'
 import rlp from 'rlp-encoding'
@@ -27,7 +28,7 @@ const timestamp = {
     if (buffer.length !== 4)
       throw new RangeError(`Invalid timestamp buffer :${buffer.toString('hex')}`)
     return buffer.readUInt32BE(0)
-  },
+  }
 }
 
 const address = {
@@ -45,7 +46,7 @@ const address = {
 
     // also can be host, but skip it right now (because need async function for resolve)
     throw new Error(`Invalid address buffer: ${buffer.toString('hex')}`)
-  },
+  }
 }
 
 const port = {
@@ -58,7 +59,7 @@ const port = {
     if (buffer.length === 0) return null
     // if (buffer.length !== 2) throw new RangeError(`Invalid port buffer: ${buffer.toString('hex')}`)
     return buffer2int(buffer)
-  },
+  }
 }
 
 const endpoint = {
@@ -66,16 +67,16 @@ const endpoint = {
     return [
       address.encode(obj.address!),
       port.encode(obj.udpPort || null),
-      port.encode(obj.tcpPort || null),
+      port.encode(obj.tcpPort || null)
     ]
   },
   decode: function(payload: Buffer[]): PeerInfo {
     return {
       address: address.decode(payload[0]),
       udpPort: port.decode(payload[1]),
-      tcpPort: port.decode(payload[2]),
+      tcpPort: port.decode(payload[2])
     }
-  },
+  }
 }
 
 type InPing = { [0]: Buffer; [1]: Buffer[]; [2]: Buffer[]; [3]: Buffer }
@@ -86,7 +87,7 @@ const ping = {
       int2buffer(obj.version),
       endpoint.encode(obj.from),
       endpoint.encode(obj.to),
-      timestamp.encode(obj.timestamp),
+      timestamp.encode(obj.timestamp)
     ]
   },
   decode: function(payload: InPing): OutPing {
@@ -94,9 +95,9 @@ const ping = {
       version: buffer2int(payload[0]),
       from: endpoint.decode(payload[1]),
       to: endpoint.decode(payload[2]),
-      timestamp: timestamp.decode(payload[3]),
+      timestamp: timestamp.decode(payload[3])
     }
-  },
+  }
 }
 
 type OutPong = { to: PeerInfo; hash: Buffer; timestamp: number }
@@ -109,9 +110,9 @@ const pong = {
     return {
       to: endpoint.decode(payload[0]),
       hash: payload[1],
-      timestamp: timestamp.decode(payload[2]),
+      timestamp: timestamp.decode(payload[2])
     }
-  },
+  }
 }
 
 type OutFindMsg = { id: string; timestamp: number }
@@ -123,9 +124,9 @@ const findneighbours = {
   decode: function(payload: InFindMsg): OutFindMsg {
     return {
       id: payload[0],
-      timestamp: timestamp.decode(payload[1]),
+      timestamp: timestamp.decode(payload[1])
     }
-  },
+  }
 }
 
 type InNeighborMsg = { peers: PeerInfo[]; timestamp: number }
@@ -134,7 +135,7 @@ const neighbours = {
   encode: function(obj: InNeighborMsg): OutNeighborMsg {
     return [
       obj.peers.map((peer: PeerInfo) => endpoint.encode(peer).concat(peer.id!)),
-      timestamp.encode(obj.timestamp),
+      timestamp.encode(obj.timestamp)
     ]
   },
   decode: function(payload: OutNeighborMsg): InNeighborMsg {
@@ -142,9 +143,9 @@ const neighbours = {
       peers: payload[0].map(data => {
         return { endpoint: endpoint.decode(data), id: data[3] } // hack for id
       }),
-      timestamp: timestamp.decode(payload[1]),
+      timestamp: timestamp.decode(payload[1])
     }
-  },
+  }
 }
 
 const messages: any = { ping, pong, findneighbours, neighbours }
@@ -155,14 +156,14 @@ const types: Types = {
     ping: 0x01,
     pong: 0x02,
     findneighbours: 0x03,
-    neighbours: 0x04,
+    neighbours: 0x04
   },
   byType: {
     0x01: 'ping',
     0x02: 'pong',
     0x03: 'findneighbours',
-    0x04: 'neighbours',
-  },
+    0x04: 'neighbours'
+  }
 }
 
 // [0, 32) data hash

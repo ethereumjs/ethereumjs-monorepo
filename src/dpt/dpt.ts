@@ -35,7 +35,7 @@ export class DPT extends EventEmitter {
     this._server = new DPTServer(this, this.privateKey, {
       createSocket: options.createSocket,
       timeout: options.timeout,
-      endpoint: options.endpoint,
+      endpoint: options.endpoint
     })
     this._server.once('listening', () => this.emit('listening'))
     this._server.once('close', () => this.emit('close'))
@@ -60,7 +60,7 @@ export class DPT extends EventEmitter {
 
     let count = 0
     let err: Error | null = null
-    for (let peer of oldPeers) {
+    for (const peer of oldPeers) {
       this._server
         .ping(peer)
         .catch((_err: Error) => {
@@ -78,7 +78,7 @@ export class DPT extends EventEmitter {
   }
 
   _onServerPeers(peers: any[]): void {
-    for (let peer of peers) this.addPeer(peer).catch(() => {})
+    for (const peer of peers) this.addPeer(peer).catch(() => {})
   }
 
   async bootstrap(peer: any): Promise<void> {
@@ -134,6 +134,6 @@ export class DPT extends EventEmitter {
     const peers = this.getPeers()
     debug(`call .refresh (${peers.length} peers in table)`)
 
-    for (let peer of peers) this._server.findneighbours(peer, randomBytes(64))
+    for (const peer of peers) this._server.findneighbours(peer, randomBytes(64))
   }
 }

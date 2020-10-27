@@ -109,7 +109,7 @@ export class RLPx extends EventEmitter {
     if (this._server) this._server.close(...args)
     this._server = null
 
-    for (let peerKey of this._peers.keys()) this.disconnect(Buffer.from(peerKey, 'hex'))
+    for (const peerKey of this._peers.keys()) this.disconnect(Buffer.from(peerKey, 'hex'))
   }
 
   async connect(peer: PeerInfo) {
@@ -182,7 +182,7 @@ export class RLPx extends EventEmitter {
       clientId: this._clientId,
       remoteClientIdFilter: this._remoteClientIdFilter,
       capabilities: this._capabilities,
-      port: this._listenPort,
+      port: this._listenPort
     })
     peer.on('error', err => this.emit('peer:error', peer, err))
 
@@ -220,7 +220,7 @@ export class RLPx extends EventEmitter {
     peer.once('close', (reason, disconnectWe) => {
       if (disconnectWe) {
         debug(
-          `disconnect from ${socket.remoteAddress}:${socket.remotePort}, reason: ${String(reason)}`,
+          `disconnect from ${socket.remoteAddress}:${socket.remotePort}, reason: ${String(reason)}`
         )
       } else {
         debug(`${socket.remoteAddress}:${socket.remotePort} disconnect, reason: ${String(reason)}`)
@@ -232,15 +232,15 @@ export class RLPx extends EventEmitter {
           peer: {
             id: peer.getId()!,
             address: peer._socket.remoteAddress,
-            tcpPort: peer._socket.remotePort,
+            tcpPort: peer._socket.remotePort
           },
-          ts: Date.now() + ms('5m'),
+          ts: Date.now() + ms('5m')
         })
       }
 
       const id = peer.getId()
       if (id) {
-        let peerKey = id.toString('hex')
+        const peerKey = id.toString('hex')
         this._peers.delete(peerKey)
         this.emit('peer:removed', peer, reason, disconnectWe)
       }
@@ -252,7 +252,7 @@ export class RLPx extends EventEmitter {
     debug(
       `refill connections.. queue size: ${this._peersQueue.length}, peers: ${
         this._peers.size
-      }, open slots: ${this._getOpenSlots()}`,
+      }, open slots: ${this._getOpenSlots()}`
     )
 
     this._peersQueue = this._peersQueue.filter((item: any) => {

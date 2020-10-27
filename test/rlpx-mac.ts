@@ -3,7 +3,7 @@ import { MAC } from '../src/rlpx/mac'
 
 const secret = Buffer.from(
   '4caf4671e713d083128973de159d02688dc86f51535a80178264631e193ed2ea',
-  'hex',
+  'hex'
 )
 
 test('digest should work on empty data', t => {

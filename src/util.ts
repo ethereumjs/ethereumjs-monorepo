@@ -10,11 +10,9 @@ export function keccak256(...buffers: Buffer[]) {
     .digest()
 }
 
-export function genPrivateKey() {
-  while (true) {
-    const privateKey = randomBytes(32)
-    if (privateKeyVerify(privateKey)) return privateKey
-  }
+export function genPrivateKey(): Buffer {
+  const privateKey = randomBytes(32)
+  return privateKeyVerify(privateKey) ? privateKey : genPrivateKey()
 }
 
 export function pk2id(pk: Buffer): Buffer {
@@ -63,7 +61,7 @@ export function assertEq(expected: any, actual: any, msg: string, debug: any): v
     message = `${msg}: ${expected.toString('hex')} / ${actual.toString('hex')}`
     debug(`[ERROR] ${message}`)
     throw new assert.AssertionError({
-      message: message,
+      message: message
     })
   }
 
@@ -71,7 +69,7 @@ export function assertEq(expected: any, actual: any, msg: string, debug: any): v
   message = `${msg}: ${expected} / ${actual}`
   debug(message)
   throw new assert.AssertionError({
-    message: message,
+    message: message
   })
 }
 
