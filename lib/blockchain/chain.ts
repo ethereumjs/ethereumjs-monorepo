@@ -25,7 +25,7 @@ export interface ChainOptions {
   /**
    * Specify a blockchain which implements the Chain interface
    */
-  blockchain?: Chain
+  blockchain?: Blockchain
 
   /**
    * Logging provider
@@ -81,14 +81,6 @@ export interface GenesisBlockParams {
 }
 
 /**
- * Default blockchain constructor options
- */
-const defaultOptions = {
-  logger: defaultLogger,
-  common: new Common({ chain: 'mainnet', hardfork: 'chainstart' }),
-}
-
-/**
  * Blockchain
  * @memberof module:blockchain
  */
@@ -97,7 +89,7 @@ export class Chain extends EventEmitter {
   public common: Common
   public db: any
   public blockchain: Blockchain
-  public opened = false
+  public opened: boolean
 
   private _headers: ChainHeaders = {
     latest: null,
@@ -115,35 +107,21 @@ export class Chain extends EventEmitter {
    * Create new chain
    * @param {ChainOptions} options
    */
-  constructor(options?: ChainOptions) {
+  constructor(options: ChainOptions = {}) {
     super()
-    options = { ...defaultOptions, ...options }
-    this.logger = options.logger!
-    this.common = options.common!
-    this.db = options.db
+    this.logger = options.logger || defaultLogger
+    this.common = options.common || new Common({ chain: 'mainnet', hardfork: 'chainstart' })
 
-    //@ts-ignore Blockchain will be set in init
-    this.blockchain = options.blockchain
-    this.init()
-  }
-
-  /**
-   * Initializes blockchain
-   */
-  private init() {
-    if (!this.blockchain) {
-      this.blockchain = new Blockchain({
-        db: this.db,
+    this.blockchain =
+      options.blockchain ||
+      new Blockchain({
+        db: options.db,
         validateBlocks: false,
         validatePow: false,
         common: this.common,
       })
-      if (!this.db) {
-        this.db = this.blockchain.db
-      }
-    }
 
-    this.reset()
+    this.db = this.blockchain.db
     this.opened = false
   }
 

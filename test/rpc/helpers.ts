@@ -6,6 +6,7 @@ import { RPCManager as Manager } from '../../lib/rpc'
 import * as Logger from '../../lib/logging'
 import { blockChain } from './blockChainStub'
 import { Chain } from '../../lib/blockchain/chain'
+import Blockchain from '@ethereumjs/blockchain'
 
 const config: any = { loglevel: 'error' }
 config.logger = Logger.getLogger(config)
@@ -26,7 +27,7 @@ export function createManager(node: any) {
 }
 
 export function createNode(nodeConfig?: any) {
-  const chain = new Chain({ blockchain: (<unknown>blockChain({})) as Chain })
+  const chain = new Chain({ blockchain: (<unknown>blockChain({})) as Blockchain })
   chain.opened = true
   const defaultNodeConfig = {
     blockchain: chain,
