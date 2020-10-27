@@ -1,11 +1,7 @@
 import { BlockHeader } from '@ethereumjs/block'
-const Trie = require('merkle-patricia-tree/secure')
-import * as util from 'ethereumjs-util'
-import * as url from 'url'
-
-function toBuffer(string: string) {
-  return Buffer.from(util.stripHexPrefix(string), 'hex')
-}
+import { SecureTrie as Trie } from 'merkle-patricia-tree'
+import { Account, BN, keccak, rlp, toBuffer, unpadBuffer, isHexPrefixed } from 'ethereumjs-util'
+import { parse } from 'url'
 
 export function parseBootnodes(string: string) {
   if (!string) {
@@ -17,7 +13,7 @@ export function parseBootnodes(string: string) {
       if (match) {
         return { ip: match[1], port: match[2] }
       }
-      const { auth: id, hostname: ip, port } = url.parse(s)
+      const { auth: id, hostname: ip, port } = parse(s)
       return { id, ip, port }
     })
   } catch (e) {
@@ -44,87 +40,83 @@ export function parseTransports(transports: any[]) {
 
 async function parseStorage(storage: any) {
   const trie = new Trie()
-  const promises = []
-  // eslint-disable-next-line prefer-const
-  for (let [address, value] of Object.entries(storage)) {
-    value = util.rlp.encode(util.unpadBuffer(toBuffer(value as string)))
-    promises.push(
-      new Promise((resolve, reject) => {
-        trie.put(toBuffer(address), value, (err: Error) => {
-          if (err) return reject(err)
-          resolve()
-        })
-      })
-    )
+  for (const [address, value] of Object.entries(storage)) {
+    const key = Buffer.from(address, 'hex')
+    const val = rlp.encode(unpadBuffer(Buffer.from(value as string, 'hex')))
+    await trie.put(key, val)
   }
-  await Promise.all(promises)
   return trie
 }
 
 async function parseGethState(alloc: any) {
   const trie = new Trie()
-  const promises = []
   for (const [key, value] of Object.entries(alloc)) {
-    const address = toBuffer(key)
-    const account = new util.Account()
-    if ((value as any).balance) {
-      // TODO: convert to buffer w/ util.toBuffer()?
-      // @ts-ignore: account.balance is type Buffer, not BN
-      account.balance = new util.BN((value as any).balance.slice(2), 16)
+    const address = isHexPrefixed(key) ? toBuffer(key) : Buffer.from(key, 'hex')
+    const { balance, code, storage } = value as any
+    const account = new Account()
+    if (balance) {
+      // note: balance is a Buffer
+      account.balance = new BN(toBuffer(balance))
     }
-    if ((value as any).code) {
-      account.codeHash = util.keccak(util.toBuffer((value as any).code))
+    if (code) {
+      account.codeHash = keccak(toBuffer(code))
     }
-    if ((value as any).storage) {
-      account.stateRoot = (await parseStorage((value as any).storage)).root
+    if (storage) {
+      const storageTrie = await parseStorage(storage)
+      account.stateRoot = storageTrie.root
     }
-    promises.push(
-      new Promise((resolve, reject) => {
-        trie.put(address, account.serialize(), (err: Error) => {
-          if (err) return reject(err)
-          resolve()
-        })
-      })
-    )
+    await trie.put(address, account.serialize())
   }
-  await Promise.all(promises)
   return trie
 }
 
 async function parseGethHeader(json: any) {
-  return BlockHeader.fromHeaderData(
-    {
-      gasLimit: new util.BN(util.stripHexPrefix(json.gasLimit), 16),
-      difficulty: new util.BN(util.stripHexPrefix(json.difficulty), 16),
-      extraData: toBuffer(json.extraData),
-      number: new util.BN(util.stripHexPrefix(json.number), 16),
-      nonce: toBuffer(json.nonce),
-      timestamp: new util.BN(util.stripHexPrefix(json.timestamp), 16),
-      mixHash: toBuffer(json.mixHash),
-      stateRoot: (await parseGethState(json.alloc)).root,
-    },
-    {
-      // TODO: Add optional Common param here?
-    }
-  )
+  const { gasLimit, difficulty, extraData, number, nonce, timestamp, mixHash, alloc } = json
+  const storageTrie = await parseGethState(alloc)
+  const stateRoot = storageTrie.root
+  const headerData = {
+    gasLimit,
+    difficulty,
+    extraData,
+    number,
+    nonce,
+    timestamp,
+    mixHash,
+    stateRoot,
+  }
+  return BlockHeader.fromHeaderData(headerData) // TODO: Pass in common?
 }
 
 async function parseGethParams(json: any) {
+  const {
+    name,
+    config,
+    timestamp,
+    gasLimit,
+    difficulty,
+    nonce,
+    extraData,
+    mixHash,
+    coinbase,
+  } = json
+  const { chainId } = config
   const header = await parseGethHeader(json)
+  const { stateRoot } = header
+  const hash = header.hash()
   const params: any = {
-    name: json.name,
-    chainId: json.config.chainId,
-    networkId: json.config.chainId,
+    name,
+    chainId,
+    networkId: chainId,
     genesis: {
-      hash: header.hash(),
-      timestamp: json.timestamp,
-      gasLimit: json.gasLimit,
-      difficulty: json.difficulty,
-      nonce: json.nonce,
-      extraData: json.extraData,
-      mixHash: json.mixHash,
-      coinbase: json.coinbase,
-      stateRoot: header.stateRoot,
+      hash,
+      timestamp,
+      gasLimit,
+      difficulty,
+      nonce,
+      extraData,
+      mixHash,
+      coinbase,
+      stateRoot,
     },
     bootstrapNodes: [],
   }
@@ -138,7 +130,7 @@ async function parseGethParams(json: any) {
     'constantinople',
     'hybridCasper',
   ]
-  const forkMap: any = {
+  const forkMap: { [key: string]: string } = {
     homestead: 'homesteadBlock',
     dao: 'daoForkBlock',
     tangerineWhistle: 'eip150Block',
@@ -147,7 +139,7 @@ async function parseGethParams(json: any) {
   }
   params.hardforks = hardforks.map((name) => ({
     name: name,
-    block: name === 'chainstart' ? 0 : json.config[forkMap[name]] || null,
+    block: name === 'chainstart' ? 0 : config[forkMap[name]] || null,
   }))
   return params
 }
