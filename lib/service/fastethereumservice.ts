@@ -18,10 +18,10 @@ export class FastEthereumService extends EthereumService {
   /**
    * Create new ETH service
    * @param {Object}   options constructor parameters
+   * @param {Config}   [options.config] Client configuration
    * @param {Server[]} options.servers servers to run service on
    * @param {boolean}  [options.lightserv=false] serve LES requests
    * @param {Chain}    [options.chain] blockchain
-   * @param {Common}   [options.common] ethereum network name
    * @param {number}   [options.minPeers=3] number of peers needed before syncing
    * @param {number}   [options.maxPeers=25] maximum peers allowed
    * @param {number}   [options.interval] sync retry interval
@@ -40,7 +40,7 @@ export class FastEthereumService extends EthereumService {
       logger: this.logger,
       pool: this.pool,
       chain: this.chain,
-      common: this.common,
+      common: this.config.common,
       minPeers: this.minPeers,
       interval: this.interval,
     })

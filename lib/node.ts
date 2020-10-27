@@ -54,7 +54,7 @@ export default class Node extends events.EventEmitter {
             servers: this.servers,
             logger: this.logger,
             lightserv: options.lightserv,
-            common: this.config.common,
+            config: this.config,
             minPeers: options.minPeers,
             maxPeers: options.maxPeers,
             db: options.db,
@@ -62,7 +62,7 @@ export default class Node extends events.EventEmitter {
         : new LightEthereumService({
             servers: this.servers,
             logger: this.logger,
-            common: this.config.common,
+            config: this.config,
             minPeers: options.minPeers,
             maxPeers: options.maxPeers,
             db: options.db,
