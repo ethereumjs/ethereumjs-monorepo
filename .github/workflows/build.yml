@@ -23,9 +23,9 @@ jobs:
       - run: npm run lint
       - run: npm run build
       - run: npm run coverage
-      - uses: coverallsapp/github-action@master
+      - uses: codecov/codecov-action@v1
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+          file: ./coverage/lcov.info
   test-browser:
     runs-on: ubuntu-latest
     steps:
