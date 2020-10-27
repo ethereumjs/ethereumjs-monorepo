@@ -1,12 +1,13 @@
+import { Chain } from '../../blockchain'
 import { middleware, validators } from '../validation'
-import { toBuffer, bufferToHex } from 'ethereumjs-util'
+import { toBuffer, stripHexPrefix, BN } from 'ethereumjs-util'
 
 /**
  * eth_* RPC module
  * @memberof module:rpc/modules
  */
 export class Eth {
-  private _chain: any
+  private _chain: Chain
   public ethVersion: any
 
   /**
@@ -50,8 +51,7 @@ export class Eth {
   async blockNumber(_params = [], cb: (err: Error | null, val?: string) => void) {
     try {
       const latestHeader = await this._chain.getLatestHeader()
-      const latestBlockNumber = bufferToHex(latestHeader.number)
-      cb(null, `${latestBlockNumber}`)
+      cb(null, `0x${latestHeader.number.toString(16)}`)
     } catch (err) {
       cb(err)
     }
@@ -65,16 +65,15 @@ export class Eth {
    * as the second argument
    * @return {Promise}
    */
-  async getBlockByNumber(params: any[] | boolean[], cb: (err: Error | null, val?: any) => void) {
+  async getBlockByNumber(params: [string, boolean], cb: (err: Error | null, val?: any) => void) {
     // eslint-disable-next-line prefer-const
     let [blockNumber, includeTransactions] = params
-
-    blockNumber = Number.parseInt(blockNumber, 16)
+    const blockNumberBN = new BN(stripHexPrefix(blockNumber), 16)
     try {
-      const block = await this._chain.getBlock(blockNumber)
-      const json = block.toJSON(true)
+      const block = await this._chain.getBlock(blockNumberBN)
+      const json = block.toJSON()
       if (!includeTransactions) {
-        json.transactions = json.transactions.map((tx: any) => tx.hash)
+        json.transactions = json.transactions!.map((tx: any) => tx.hash)
       }
       cb(null, json)
     } catch (err) {
@@ -95,11 +94,10 @@ export class Eth {
 
     try {
       const block = await this._chain.getBlock(toBuffer(blockHash))
-
-      const json = block.toJSON(true)
+      const json = block.toJSON()
 
       if (!includeTransactions) {
-        json.transactions = json.transactions.map((tx: any) => tx.hash)
+        json.transactions = json.transactions!.map((tx: any) => tx.hash)
       }
       cb(null, json)
     } catch (err) {
@@ -115,7 +113,7 @@ export class Eth {
    * @return {Promise}
    */
   async getBlockTransactionCountByHash(
-    params: string[],
+    params: [string],
     cb: (err: Error | null, val?: any) => void
   ) {
     const [blockHash] = params
@@ -123,8 +121,8 @@ export class Eth {
     try {
       const block = await this._chain.getBlock(toBuffer(blockHash))
 
-      const json = block.toJSON(true)
-      cb(null, `0x${json.transactions.length.toString(16)}`)
+      const json = block.toJSON()
+      cb(null, `0x${json.transactions!.length.toString(16)}`)
     } catch (err) {
       cb(err)
     }

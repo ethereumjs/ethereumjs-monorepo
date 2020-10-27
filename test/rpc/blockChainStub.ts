@@ -9,8 +9,8 @@ export function blockChain(options: any) {
     }),
   }
   return {
-    getBlock: (data: any, cb: (err: null, val: any) => void) => {
-      return cb(null, block)
+    getBlock: async function (_data: any) {
+      return Promise.resolve(block)
     },
   }
 }

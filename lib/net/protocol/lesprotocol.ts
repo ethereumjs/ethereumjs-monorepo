@@ -1,6 +1,6 @@
 import { Message, Protocol } from './protocol'
 import { BN, bufferToInt } from 'ethereumjs-util'
-const Block = require('ethereumjs-block')
+import { BlockHeader, BlockHeaderBuffer } from '@ethereumjs/block'
 
 const id = new BN(0)
 
@@ -45,12 +45,12 @@ const messages: Message[] = [
     encode: ({ reqId, bv, headers }: any) => [
       new BN(reqId).toArrayLike(Buffer),
       new BN(bv).toArrayLike(Buffer),
-      headers.map((h: any) => h.raw),
+      headers.map((h: any) => h.raw()),
     ],
     decode: ([reqId, bv, headers]: any) => ({
       reqId: new BN(reqId),
       bv: new BN(bv),
-      headers: headers.map((raw: Buffer[]) => new Block.Header(raw)),
+      headers: headers.map((h: BlockHeaderBuffer) => BlockHeader.fromValuesArray(h, {})),
     }),
   },
 ]

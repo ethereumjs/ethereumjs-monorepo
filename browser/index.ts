@@ -1,4 +1,4 @@
-import Common from 'ethereumjs-common'
+import Common from '@ethereumjs/common'
 const level = require('level')
 
 // Blockchain
@@ -45,7 +45,7 @@ import { getLogger } from './logging'
 export function createNode(args: any) {
   const logger = getLogger({ loglevel: args.loglevel })
   const options = {
-    common: new Common(args.network || 'mainnet'),
+    common: new Common({ chain: args.network || 'mainnet' }),
     servers: [new exports.Libp2pServer({ multiaddrs: [], ...args })],
     syncmode: args.syncmode || 'fast',
     db: level(args.db || 'ethereumjs'),

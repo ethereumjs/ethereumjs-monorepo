@@ -1,8 +1,8 @@
 import tape from 'tape'
-const Block = require('ethereumjs-block')
-const { toBuffer } = require('ethereumjs-util')
-const { Chain } = require('../../lib/blockchain')
-const { defaultLogger } = require('../../lib/logging')
+import { Block, BlockHeader, BlockData, HeaderData } from '@ethereumjs/block'
+import { BN } from 'ethereumjs-util'
+import { Chain } from '../../lib/blockchain'
+import { defaultLogger } from '../../lib/logging'
 defaultLogger.silent = true
 
 // explicitly import util and buffer,
@@ -47,17 +47,19 @@ tape('[Chain]', (t) => {
       'd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3',
       'get chain.genesis'
     )
-    t.ok(chain.genesis.hash.equals(chain.blocks.latest.hash()), 'get chain.block.latest')
+    t.ok(chain.genesis.hash.equals(chain.blocks.latest!.hash()), 'get chain.block.latest')
     await chain.close()
     t.end()
   })
 
   t.test('should detect unopened chain', async (t) => {
     const chain = new Chain() // eslint-disable-line no-new
-    const block = new Block()
-    block.header.number = toBuffer(1)
-    block.header.difficulty = '0xabcdffff'
-    block.header.parentHash = chain.genesis.hash
+    const headerData: HeaderData = {
+      number: new BN(1),
+      difficulty: new BN('abcdffff', 16),
+      parentHash: chain.genesis.hash,
+    }
+    const block = Block.fromBlockData({ header: headerData } as BlockData)
 
     t.equal(await chain.update(), false, 'skip update if not opened')
     t.equal(await chain.close(), false, 'skip close if not opened')
@@ -82,7 +84,7 @@ tape('[Chain]', (t) => {
     await chain.getLatestBlock()
     t.ok(chain.opened, 'chain should open if getLatestBlock() called')
     await chain.close()
-    await chain.getTd(block.hash())
+    await chain.getTd(block.hash(), block.header.number)
     t.ok(chain.opened, 'chain should open if getTd() called')
     t.equal(await chain.open(), false, 'skip open if already opened')
     await chain.close()
@@ -92,8 +94,8 @@ tape('[Chain]', (t) => {
   t.test('should handle bad arguments to putBlocks()', async (t) => {
     const chain = new Chain() // eslint-disable-line no-new
     await chain.open()
-    t.notOk(await chain.putBlocks(), 'add undefined block')
-    t.notOk(await chain.putBlocks(null), 'add null block')
+    t.notOk(await chain.putBlocks((<unknown>undefined) as Block[]), 'add undefined block')
+    t.notOk(await chain.putBlocks((<unknown>null) as Block[]), 'add null block')
     t.notOk(await chain.putBlocks([]), 'add empty block list')
     await chain.close()
     t.end()
@@ -102,8 +104,8 @@ tape('[Chain]', (t) => {
   t.test('should handle bad arguments to putHeaders()', async (t) => {
     const chain = new Chain() // eslint-disable-line no-new
     await chain.open()
-    t.notOk(await chain.putHeaders(), 'add undefined header')
-    t.notOk(await chain.putHeaders(null), 'add null header')
+    t.notOk(await chain.putHeaders((<unknown>undefined) as BlockHeader[]), 'add undefined header')
+    t.notOk(await chain.putHeaders((<unknown>null) as BlockHeader[]), 'add null header')
     t.notOk(await chain.putHeaders([]), 'add empty header list')
     await chain.close()
     t.end()
@@ -112,11 +114,12 @@ tape('[Chain]', (t) => {
   t.test('should add block to chain', async (t) => {
     const chain = new Chain() // eslint-disable-line no-new
     await chain.open()
-
-    const block = new Block()
-    block.header.number = toBuffer(1)
-    block.header.difficulty = '0xabcdffff'
-    block.header.parentHash = chain.genesis.hash
+    const headerData: HeaderData = {
+      number: new BN(1),
+      difficulty: new BN('abcdffff', 16),
+      parentHash: chain.genesis.hash,
+    }
+    const block = Block.fromBlockData({ header: headerData } as BlockData)
     await chain.putBlocks([block])
     t.equal(chain.blocks.td.toString(16), '4abcdffff', 'get chain.td')
     t.equal(chain.blocks.height.toString(10), '1', 'get chain.height')

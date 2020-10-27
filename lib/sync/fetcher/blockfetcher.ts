@@ -1,5 +1,5 @@
 import { Fetcher } from './fetcher'
-const Block = require('ethereumjs-block')
+import { Block, BlockBodyBuffer } from '@ethereumjs/block'
 import { BN } from 'ethereumjs-util'
 import { Peer } from '../../net/peer'
 import { Chain } from '../../blockchain'
@@ -67,8 +67,8 @@ export class BlockFetcher extends Fetcher {
     const { first, count } = task
     const headers = await peer.eth.getBlockHeaders({ block: first, max: count })
     const bodies = await peer.eth.getBlockBodies(headers.map((h: any) => h.hash()))
-    const blocks = bodies.map(
-      (body: any, i: number) => new Block([headers[i]].concat(body), { common: this.common })
+    const blocks = bodies.map(([txsData, unclesData]: BlockBodyBuffer, i: number) =>
+      Block.fromValuesArray([headers[i].raw(), txsData, unclesData], { common: this.common })
     )
     return { blocks }
   }

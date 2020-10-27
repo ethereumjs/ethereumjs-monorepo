@@ -1,11 +1,11 @@
 import { Readable, Writable } from 'stream'
 const Heap = require('qheap')
-import Common from 'ethereumjs-common'
+import Common from '@ethereumjs/common'
 import { defaultLogger } from '../../logging'
 import { PeerPool } from '../../net/peerpool'
 
 const defaultOptions = {
-  common: new Common('mainnet', 'chainstart'),
+  common: new Common({ chain: 'mainnet', hardfork: 'chainstart' }),
   logger: defaultLogger,
   timeout: 8000,
   interval: 1000,

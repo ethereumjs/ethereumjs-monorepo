@@ -1,5 +1,5 @@
 import tape from 'tape'
-import Common from 'ethereumjs-common'
+import Common from '@ethereumjs/common'
 import { startRPC, createManager, createNode, baseSetup, params, baseRequest } from '../helpers'
 
 const method = 'net_version'
@@ -28,7 +28,9 @@ function compareResult(t: any, result: any, chainId: any) {
 }
 
 tape(`${method}: call on ropsten`, (t) => {
-  const manager = createManager(createNode({ opened: true, commonChain: new Common('ropsten') }))
+  const manager = createManager(
+    createNode({ opened: true, commonChain: new Common({ chain: 'ropsten' }) })
+  )
   const server = startRPC(manager.getMethods())
 
   const req = params(method, [])
@@ -51,7 +53,9 @@ tape(`${method}: call on mainnet`, (t) => {
 })
 
 tape(`${method}: call on rinkeby`, (t) => {
-  const manager = createManager(createNode({ opened: true, commonChain: new Common('rinkeby') }))
+  const manager = createManager(
+    createNode({ opened: true, commonChain: new Common({ chain: 'rinkeby' }) })
+  )
   const server = startRPC(manager.getMethods())
 
   const req = params(method, [])
@@ -63,7 +67,9 @@ tape(`${method}: call on rinkeby`, (t) => {
 })
 
 tape(`${method}: call on kovan`, (t) => {
-  const manager = createManager(createNode({ opened: true, commonChain: new Common('kovan') }))
+  const manager = createManager(
+    createNode({ opened: true, commonChain: new Common({ chain: 'kovan' }) })
+  )
   const server = startRPC(manager.getMethods())
 
   const req = params(method, [])
@@ -75,7 +81,9 @@ tape(`${method}: call on kovan`, (t) => {
 })
 
 tape(`${method}: call on goerli`, (t) => {
-  const manager = createManager(createNode({ opened: true, commonChain: new Common('goerli') }))
+  const manager = createManager(
+    createNode({ opened: true, commonChain: new Common({ chain: 'goerli' }) })
+  )
   const server = startRPC(manager.getMethods())
 
   const req = params(method, [])

@@ -1,13 +1,13 @@
 import { Peer } from '../net/peer/peer'
 import { EventEmitter } from 'events'
-import Common from 'ethereumjs-common'
+import Common from '@ethereumjs/common'
 import { defaultLogger } from '../logging'
 import { PeerPool } from '../net/peerpool'
 import { Chain } from '../blockchain'
 import { FlowControl } from '../net/protocol'
 
 const defaultOptions = {
-  common: new Common('mainnet', 'chainstart'),
+  common: new Common({ chain: 'mainnet', hardfork: 'chainstart' }),
   logger: defaultLogger,
   interval: 1000,
   minPeers: 3,

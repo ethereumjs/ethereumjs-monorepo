@@ -1,6 +1,7 @@
+import { Chain } from './../../blockchain'
 import { Message, Protocol } from './protocol'
 import { BN, bufferToInt } from 'ethereumjs-util'
-const Block = require('ethereumjs-block')
+import { BlockHeader, BlockHeaderBuffer } from '@ethereumjs/block'
 
 const messages: Message[] = [
   {
@@ -29,8 +30,9 @@ const messages: Message[] = [
   {
     name: 'BlockHeaders',
     code: 0x04,
-    encode: (headers: any[]) => headers.map((h) => h.raw),
-    decode: (headers: any[]) => headers.map((raw) => new Block.Header(raw)),
+    encode: (headers: BlockHeader[]) => headers.map((h) => h.raw()),
+    decode: (headers: BlockHeaderBuffer[]) =>
+      headers.map((h) => BlockHeader.fromValuesArray(h, {})),
   },
   {
     name: 'GetBlockBodies',
@@ -48,7 +50,7 @@ const messages: Message[] = [
  * @memberof module:net/protocol
  */
 export class EthProtocol extends Protocol {
-  private chain: any
+  private chain: Chain
 
   /**
    * Create eth protocol
@@ -107,7 +109,7 @@ export class EthProtocol extends Protocol {
     return {
       networkId: this.chain.networkId,
       td: this.chain.blocks.td.toArrayLike(Buffer),
-      bestHash: this.chain.blocks.latest.hash(),
+      bestHash: this.chain.blocks.latest!.hash(),
       genesisHash: this.chain.genesis.hash,
     }
   }

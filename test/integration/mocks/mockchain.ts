@@ -1,4 +1,5 @@
-const Block = require('ethereumjs-block')
+import { BN } from 'ethereumjs-util'
+import { Block, BlockHeader } from '@ethereumjs/block'
 import { Chain } from '../../../lib/blockchain'
 
 const defaultOptions = {
@@ -26,12 +27,12 @@ export default class MockChain extends Chain {
     const blocks: any[] = []
     for (let number = 0; number < this.height; number++) {
       blocks.push(
-        new Block({
-          header: {
-            number: number + 1,
-            difficulty: 1,
+        Block.fromBlockData({
+          header: BlockHeader.fromHeaderData({
+            number: new BN(number + 1),
+            difficulty: new BN(1),
             parentHash: number ? blocks[number - 1].hash() : (this.genesis as any).hash,
-          },
+          }),
         })
       )
     }
