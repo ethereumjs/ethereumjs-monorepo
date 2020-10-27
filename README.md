@@ -1,5 +1,6 @@
 # SYNOPSIS
 
+[![NPM Status][npm-badge]][npm-link]
 [![Actions Status][actions-badge]][actions-link]
 [![Coverage Status][coverage-badge]][coverage-link]
 [![Discord][discord-badge]][discord-link]
@@ -330,11 +331,11 @@ See our organizational [documentation](https://ethereumjs.readthedocs.io) for an
 
 If you want to join for work or do improvements on the libraries have a look at our [contribution guidelines](https://ethereumjs.readthedocs.io/en/latest/contributing.html).
 
+[npm-badge]: https://img.shields.io/npm/v/ethereumjs-client.svg
+[npm-link]: https://www.npmjs.org/package/ethereumjs-client
 [actions-badge]: https://github.com/ethereumjs/ethereumjs-client/workflows/Build/badge.svg
 [actions-link]: https://github.com/ethereumjs/ethereumjs-client/actions
 [coverage-badge]: https://codecov.io/gh/ethereumjs/ethereumjs-client/branch/master/graph/badge.svg
 [coverage-link]: https://codecov.io/gh/ethereumjs/ethereumjs-client
-[discord-badge]: https://img.shields.io/static/v1?logo=discord&label=discord&message=Join&color=blue
-[discord-link]: https://discord.gg/TNwARpR
 [discord-badge]: https://img.shields.io/static/v1?logo=discord&label=discord&message=Join&color=blue
 [discord-link]: https://discord.gg/TNwARpR
