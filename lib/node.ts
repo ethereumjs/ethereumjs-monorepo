@@ -17,7 +17,7 @@ const defaultOptions = {
  */
 export default class Node extends events.EventEmitter {
   public config: Config
-  
+
   public logger: any
   public servers: any
   public syncmode: any
@@ -44,7 +44,7 @@ export default class Node extends events.EventEmitter {
   constructor(options: any) {
     super()
     options = { ...defaultOptions, ...options }
-    this.config = options.config || new Config()
+    this.config = options.config || new Config()
     this.logger = options.logger
     this.servers = options.servers
     this.syncmode = options.syncmode

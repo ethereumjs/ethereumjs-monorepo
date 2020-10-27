@@ -7,10 +7,9 @@ export interface Options {
    * If not provided this defaults to chain `mainnet` and hardfork `chainstart`
    */
   common?: Common
-} 
+}
 
-export class Config {
-  
+export class Config {
   public common!: Common
 
   static instance: Config
@@ -29,7 +28,4 @@ export class Config {
 
     Config.instance = this
   }
-
-
-
 }

@@ -16,7 +16,7 @@ const defaultOptions = {
  */
 export class EthereumService extends Service {
   public config: Config
-  
+
   public flow: FlowControl
   public chain: Chain
   public minPeers: number
@@ -41,7 +41,7 @@ export class EthereumService extends Service {
     options = { ...defaultOptions, ...options }
     super(options)
 
-    this.config = options.config || new Config()
+    this.config = options.config || new Config()
 
     this.flow = new FlowControl(options)
     this.chain = options.chain || new Chain(options)
