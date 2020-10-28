@@ -73,6 +73,12 @@ export interface BlockchainOptions {
    * provided, it defaults to `true`.
    */
   validateBlocks?: boolean
+
+  /**
+   * If a genesis block is present in the provided `db`, then this genesis block will be used.
+   * If there is no genesis block in the `db`, use this `genesisBlock`: if none is provided, use the standard genesis block.
+   */
+  genesisBlock?: Block
 }
 
 /**
@@ -139,7 +145,9 @@ export default class Blockchain implements BlockchainInterface {
 
     this._lock = new Semaphore(1)
     this._initDone = false
-    this._initPromise = this._init()
+
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    this._initPromise = this._init(opts.genesisBlock)
   }
 
   /**
@@ -160,7 +168,7 @@ export default class Blockchain implements BlockchainInterface {
    *
    * @hidden
    */
-  private async _init(): Promise<void> {
+  private async _init(genesisBlock?: Block): Promise<void> {
     let genesisHash
     try {
       genesisHash = await this.dbManager.numberToHash(new BN(0))
@@ -168,7 +176,11 @@ export default class Blockchain implements BlockchainInterface {
       if (error.type !== 'NotFoundError') {
         throw error
       }
-      await this._setCanonicalGenesisBlock()
+      if (genesisBlock) {
+        await this._putBlockOrHeader(genesisBlock)
+      } else {
+        await this._setCanonicalGenesisBlock()
+      }
       genesisHash = this._genesis
     }
 
@@ -355,6 +367,12 @@ export default class Blockchain implements BlockchainInterface {
   async _putBlockOrHeader(item: Block | BlockHeader) {
     const block = item instanceof BlockHeader ? new Block(item) : item
     const isGenesis = block.isGenesis()
+
+    // we cannot overwrite the Genesis block after initializing the Blockchain
+
+    if (this._initDone && isGenesis) {
+      throw new Error('Cannot put a new Genesis block: create a new Blockchain')
+    }
 
     const { header } = block
     const blockHash = header.hash()

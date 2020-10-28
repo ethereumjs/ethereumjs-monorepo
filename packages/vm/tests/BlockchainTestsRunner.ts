@@ -34,11 +34,22 @@ export default async function runBlockchainTest(options: any, testData: any, t: 
   const { common } = options
   common.setHardforkByBlockNumber(0)
 
+  // create and add genesis block
+  const header = formatBlockHeader(testData.genesisBlockHeader)
+  const blockData = { header }
+  const genesisBlock = Block.fromBlockData(blockData, { common })
+
+  if (testData.genesisRLP) {
+    const rlp = toBuffer(testData.genesisRLP)
+    t.ok(genesisBlock.serialize().equals(rlp), 'correct genesis RLP')
+  }
+
   const blockchain = new Blockchain({
     db: blockchainDB,
     common,
     validateBlocks: true,
     validatePow,
+    genesisBlock,
   })
 
   if (validatePow) {
@@ -58,22 +69,10 @@ export default async function runBlockchainTest(options: any, testData: any, t: 
     common,
   })
 
-  // create and add genesis block
-  const header = formatBlockHeader(testData.genesisBlockHeader)
-  const blockData = { header }
-  const genesis = Block.fromBlockData(blockData, { common })
-
   // set up pre-state
   await setupPreConditions(vm.stateManager._trie, testData)
 
-  t.ok(vm.stateManager._trie.root.equals(genesis.header.stateRoot), 'correct pre stateRoot')
-
-  if (testData.genesisRLP) {
-    const rlp = toBuffer(testData.genesisRLP)
-    t.ok(genesis.serialize().equals(rlp), 'correct genesis RLP')
-  }
-
-  await blockchain.putGenesis(genesis)
+  t.ok(vm.stateManager._trie.root.equals(genesisBlock.header.stateRoot), 'correct pre stateRoot')
 
   async function handleError(error: string | undefined, expectException: string) {
     if (expectException) {
