@@ -67,14 +67,16 @@ export class LightSynchronizer extends Synchronizer {
     const count = height.sub(first).addn(1)
     if (count.lten(0)) return false
 
-    this.logger.debug(`Syncing with peer: ${peer.toString(true)} height=${height.toString(10)}`)
+    this.config.logger.debug(
+      `Syncing with peer: ${peer.toString(true)} height=${height.toString(10)}`
+    )
 
     this.headerFetcher = new HeaderFetcher({
       pool: this.pool,
       chain: this.chain,
       common: this.common,
       flow: this.flow,
-      logger: this.logger,
+      logger: this.config.logger,
       interval: this.interval,
       first,
       count,
@@ -86,7 +88,7 @@ export class LightSynchronizer extends Synchronizer {
       .on('fetched', (headers: any[]) => {
         const first = new BN(headers[0].number)
         const hash = short(headers[0].hash())
-        this.logger.info(
+        this.config.logger.info(
           `Imported headers count=${headers.length} number=${first.toString(
             10
           )} hash=${hash} peers=${this.pool.size}`
@@ -117,7 +119,7 @@ export class LightSynchronizer extends Synchronizer {
     const number = ((this.chain.headers as any).height as number).toString(10)
     const td = ((this.chain.headers as any).td as number).toString(10)
     const hash = ((this.chain.blocks as any).latest as any).hash()
-    this.logger.info(`Latest local header: number=${number} td=${td} hash=${short(hash)}`)
+    this.config.logger.info(`Latest local header: number=${number} td=${td} hash=${short(hash)}`)
   }
 
   /**

@@ -1,9 +1,8 @@
 import { EventEmitter } from 'events'
-import { defaultLogger } from '../logging'
+import { Config } from '../config'
 import { Peer } from './peer/peer'
 
 const defaultOptions = {
-  logger: defaultLogger,
   servers: [],
   maxPeers: 25,
 }
@@ -25,6 +24,8 @@ const defaultOptions = {
  * @emits error
  */
 export class PeerPool extends EventEmitter {
+  public config: Config
+
   private servers: any[]
   private logger: any
   private maxPeers: number
@@ -38,15 +39,15 @@ export class PeerPool extends EventEmitter {
    * @param {Object}   options constructor parameters
    * @param {Server[]} options.servers servers to aggregate peers from
    * @param {number}   [options.maxPeers=25] maximum peers allowed
-   * @param {Logger}   [options.logger] logger instance
    */
   constructor(options: any) {
     super()
 
+    this.config = new Config()
+
     options = { ...defaultOptions, ...options }
 
     this.servers = options.servers
-    this.logger = options.logger
     this.maxPeers = options.maxPeers
     this.pool = new Map<string, Peer>()
     this.noPeerPeriods = 0
@@ -144,7 +145,7 @@ export class PeerPool extends EventEmitter {
     })
     peer.on('error', (error: Error) => {
       if (this.pool.get(peer.id)) {
-        this.logger.warn(`Peer error: ${error} ${peer}`)
+        this.config.logger.warn(`Peer error: ${error} ${peer}`)
         this.ban(peer)
       }
     })
@@ -211,14 +212,14 @@ export class PeerPool extends EventEmitter {
       if (this.noPeerPeriods >= 3) {
         const promises = this.servers.map(async (server: any) => {
           if (server.bootstrap) {
-            this.logger.info('Retriggering bootstrap.')
+            this.config.logger.info('Retriggering bootstrap.')
             await server.bootstrap()
           }
         })
         await Promise.all(promises)
         this.noPeerPeriods = 0
       } else {
-        this.logger.info('Looking for suited peers...')
+        this.config.logger.info('Looking for suited peers...')
       }
     } else {
       this.noPeerPeriods = 0

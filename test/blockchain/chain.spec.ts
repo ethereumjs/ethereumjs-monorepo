@@ -12,7 +12,7 @@ import { Buffer } from 'buffer' //eslint-disable-line @typescript-eslint/no-unus
 
 tape('[Chain]', (t) => {
   t.test('should test object creation without logger', (t) => {
-    t.equal(new Chain().logger, defaultLogger)
+    t.equal(new Chain().config.logger, defaultLogger)
 
     t.end()
   })

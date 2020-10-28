@@ -83,13 +83,14 @@ export class FastSynchronizer extends Synchronizer {
     const count = height.sub(first).addn(1)
     if (count.lten(0)) return false
 
-    this.logger.debug(`Syncing with peer: ${peer.toString(true)} height=${height.toString(10)}`)
+    this.config.logger.debug(
+      `Syncing with peer: ${peer.toString(true)} height=${height.toString(10)}`
+    )
 
     this.blockFetcher = new BlockFetcher({
       pool: this.pool,
       chain: this.chain,
       common: this.common,
-      logger: this.logger,
       interval: this.interval,
       first,
       count,
@@ -101,7 +102,7 @@ export class FastSynchronizer extends Synchronizer {
       .on('fetched', (blocks: any[]) => {
         const first = new BN(blocks[0].header.number)
         const hash = short(blocks[0].hash())
-        this.logger.info(
+        this.config.logger.info(
           `Imported blocks count=${blocks.length} number=${first.toString(10)} hash=${hash} peers=${
             this.pool.size
           }`
@@ -135,7 +136,7 @@ export class FastSynchronizer extends Synchronizer {
   async announced(announcements: any[], _peer: Peer) {
     if (announcements.length) {
       const [hash, height] = announcements[announcements.length - 1]
-      this.logger.debug(`New height: number=${height.toString(10)} hash=${short(hash)}`)
+      this.config.logger.debug(`New height: number=${height.toString(10)} hash=${short(hash)}`)
       // TO DO: download new blocks
     }
   }
@@ -149,7 +150,7 @@ export class FastSynchronizer extends Synchronizer {
     const number = ((this.chain.blocks as any).height as number).toString(10)
     const td = ((this.chain.blocks as any).td as number).toString(10)
     const hash = ((this.chain.blocks as any).latest as any).hash()
-    this.logger.info(`Latest local block: number=${number} td=${td} hash=${short(hash)}`)
+    this.config.logger.info(`Latest local block: number=${number} td=${td} hash=${short(hash)}`)
   }
 
   /**

@@ -1,14 +1,6 @@
 import * as events from 'events'
 import { FastEthereumService, LightEthereumService } from './service'
-import { defaultLogger } from './logging'
 import { Config } from './config'
-
-const defaultOptions = {
-  minPeers: 3,
-  maxPeers: 25,
-  logger: defaultLogger,
-  servers: [],
-}
 
 /**
  * Represents the top-level ethereum node, and is responsible for managing the
@@ -18,9 +10,7 @@ const defaultOptions = {
 export default class Node extends events.EventEmitter {
   public config: Config
 
-  public logger: any
   public servers: any
-  public syncmode: any
   public services: any
 
   public opened: boolean

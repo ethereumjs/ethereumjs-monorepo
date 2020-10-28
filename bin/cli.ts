@@ -114,6 +114,13 @@ function runRpcServer(node: any, options: any) {
 }
 
 async function run() {
+  const config = new Config({
+    logger,
+    syncmode: args.syncmode,
+    minPeers: args.minPeers,
+    maxPeers: args.maxPeers,
+  })
+
   const syncDirName = args.syncmode === 'light' ? 'lightchaindata' : 'chaindata'
   // give network id precedence over network name
   if (args.networkId) {
@@ -128,7 +135,6 @@ async function run() {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const chainParams = args.params ? await parseParams(args.params) : args.network
 
-  const config = new Config()
   const servers = parseTransports(args.transports).map((t: any) => {
     const Server = serverFromName(t.name)
     if (t.name === 'rlpx') {
@@ -142,15 +148,11 @@ async function run() {
   logger.info(`Data directory: ${dataDir}`)
 
   const options = {
-    logger,
     servers,
-    syncmode: args.syncmode,
     lightserv: args.lightserv,
     db: level(dataDir),
     rpcport: args.rpcport,
     rpcaddr: args.rpcaddr,
-    minPeers: args.minPeers,
-    maxPeers: args.maxPeers,
   }
   const node = await runNode(options, config)
   const server = args.rpc ? runRpcServer(node, options) : null

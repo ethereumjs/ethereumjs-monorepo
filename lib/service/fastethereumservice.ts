@@ -18,14 +18,12 @@ export class FastEthereumService extends EthereumService {
   /**
    * Create new ETH service
    * @param {Object}   options constructor parameters
-   * @param {Config}   [options.config] Client configuration
    * @param {Server[]} options.servers servers to run service on
    * @param {boolean}  [options.lightserv=false] serve LES requests
    * @param {Chain}    [options.chain] blockchain
    * @param {number}   [options.minPeers=3] number of peers needed before syncing
    * @param {number}   [options.maxPeers=25] maximum peers allowed
    * @param {number}   [options.interval] sync retry interval
-   * @param {Logger}   [options.logger] logger instance
    */
   constructor(options?: any) {
     super(options)
@@ -35,9 +33,8 @@ export class FastEthereumService extends EthereumService {
   }
 
   init() {
-    this.logger.info('Fast sync mode')
+    this.config.logger.info('Fast sync mode')
     this.synchronizer = new FastSynchronizer({
-      logger: this.logger,
       pool: this.pool,
       chain: this.chain,
       common: this.config.common,
@@ -114,7 +111,7 @@ export class FastEthereumService extends EthereumService {
       const bv = this.flow.handleRequest(peer, message.name, max)
       if (bv < 0) {
         this.pool.ban(peer, 300000)
-        this.logger.debug(`Dropping peer for violating flow control ${peer}`)
+        this.config.logger.debug(`Dropping peer for violating flow control ${peer}`)
       } else {
         const headers: any = await this.chain.getHeaders(block, max, skip, reverse)
         ;(peer.les as BoundProtocol).send('BlockHeaders', { reqId, bv, headers })

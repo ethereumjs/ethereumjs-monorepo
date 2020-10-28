@@ -23,7 +23,6 @@ export class HeaderFetcher extends BlockFetcher {
    * @param {number}       [options.banTime] how long to ban misbehaving peers
    * @param {number}       [options.interval] retry interval
    * @param {number}       [options.maxPerRequest=192] max items per request
-   * @param {Logger}       [options.logger] Logger instance
    */
   constructor(options: any) {
     super(options)

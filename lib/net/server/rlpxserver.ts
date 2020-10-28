@@ -54,7 +54,6 @@ export class RlpxServer extends Server {
    * @param {Buffer}   [options.key] private key to use for server
    * @param {string[]} [options.clientFilter] list of supported clients
    * @param {number}   [options.refreshInterval=30000] how often (in ms) to discover new peers
-   * @param {Logger}   [options.logger] Logger instance
    */
   constructor(options?: any) {
     super(options)
@@ -234,7 +233,7 @@ export class RlpxServer extends Server {
       try {
         await peer.accept(rlpxPeer, this)
         this.peers.set(peer.id, peer)
-        this.logger.debug(`Peer connected: ${peer}`)
+        this.config.logger.debug(`Peer connected: ${peer}`)
         this.emit('connected', peer)
       } catch (error) {
         this.error(error)
@@ -246,7 +245,9 @@ export class RlpxServer extends Server {
       const peer = this.peers.get(id)
       if (peer) {
         this.peers.delete(peer.id)
-        this.logger.debug(`Peer disconnected (${rlpxPeer.getDisconnectPrefix(reason)}): ${peer}`)
+        this.config.logger.debug(
+          `Peer disconnected (${rlpxPeer.getDisconnectPrefix(reason)}): ${peer}`
+        )
         this.emit('disconnected', peer)
       }
     })

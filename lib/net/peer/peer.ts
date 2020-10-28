@@ -1,10 +1,9 @@
 import * as events from 'events'
 import { Protocol } from '../protocol/protocol'
 import { BoundProtocol, Sender } from '../protocol'
-import { defaultLogger } from '../../logging'
+import { Config } from '../../config'
 
 const defaultOptions = {
-  logger: defaultLogger,
   inbound: false,
   server: null,
   protocols: [],
@@ -15,6 +14,8 @@ const defaultOptions = {
  * @memberof module:net/peer
  */
 export class Peer extends events.EventEmitter {
+  public config: Config
+
   public id: string
   protected transport: string
   protected protocols: any[]
@@ -37,17 +38,18 @@ export class Peer extends events.EventEmitter {
    * @param {boolean}     [options.inbound] true if peer initiated connection
    * @param {string}      [options.transport] transport name
    * @param {Protocols[]} [options.protocols=[]] supported protocols
-   * @param {Logger}      [options.logger] logger instance
    */
   constructor(options: any) {
     super()
+
+    this.config = new Config()
+
     options = { ...defaultOptions, ...options }
 
     this.id = options.id
     this.address = options.address
     this.inbound = options.inbound
     this.transport = options.transport
-    this.logger = options.logger
     this.protocols = options.protocols
     this.bound = new Map()
     this.server = options.server

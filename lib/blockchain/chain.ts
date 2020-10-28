@@ -1,36 +1,28 @@
 import { EventEmitter } from 'events'
-import Common from '@ethereumjs/common'
 import { Block, BlockHeader } from '@ethereumjs/block'
 import Blockchain from '@ethereumjs/blockchain'
 import { BN, toBuffer } from 'ethereumjs-util'
-import { defaultLogger } from '../logging'
 import type { LevelUp } from 'levelup'
+import { Config } from '../config'
 
 /**
  * The options that the Blockchain constructor can receive.
  */
 export interface ChainOptions {
   /**
+   * Client configuration instance
+   */
+  config?: Config
+
+  /**
    * Database to store blocks and metadata. Should be an abstract-leveldown compliant store.
    */
   db?: LevelUp
 
   /**
-   * Specify the chain and hardfork by passing a Common instance.
-   *
-   * If not provided this defaults to chain `mainnet` and hardfork `chainstart`
-   */
-  common?: Common
-
-  /**
    * Specify a blockchain which implements the Chain interface
    */
   blockchain?: Blockchain
-
-  /**
-   * Logging provider
-   */
-  logger?: any
 }
 
 /**
@@ -85,8 +77,8 @@ export interface GenesisBlockParams {
  * @memberof module:blockchain
  */
 export class Chain extends EventEmitter {
-  public logger: any
-  public common: Common
+  public config: Config
+
   public db: any
   public blockchain: Blockchain
   public opened: boolean
@@ -109,8 +101,8 @@ export class Chain extends EventEmitter {
    */
   constructor(options: ChainOptions = {}) {
     super()
-    this.logger = options.logger || defaultLogger
-    this.common = options.common || new Common({ chain: 'mainnet', hardfork: 'chainstart' })
+
+    this.config = new Config()
 
     this.blockchain =
       options.blockchain ||
@@ -118,7 +110,7 @@ export class Chain extends EventEmitter {
         db: options.db,
         validateBlocks: false,
         validatePow: false,
-        common: this.common,
+        common: this.config.common,
       })
 
     this.db = this.blockchain.db
@@ -146,14 +138,14 @@ export class Chain extends EventEmitter {
    * @return {number}
    */
   get networkId(): number {
-    return this.common.networkId()
+    return this.config.common.networkId()
   }
 
   /**
    * Genesis block parameters
    */
   get genesis(): GenesisBlockParams {
-    const genesis = this.common.genesis()
+    const genesis = this.config.common.genesis()
     Object.entries(genesis).forEach(([k, v]) => {
       genesis[k] = toBuffer(v as string)
     })
@@ -265,7 +257,9 @@ export class Chain extends EventEmitter {
       return
     }
     await this.open()
-    blocks = blocks.map((b: Block) => Block.fromValuesArray(b.raw(), { common: this.common }))
+    blocks = blocks.map((b: Block) =>
+      Block.fromValuesArray(b.raw(), { common: this.config.common })
+    )
     await this.blockchain.putBlocks(blocks)
     await this.update()
   }
@@ -298,7 +292,9 @@ export class Chain extends EventEmitter {
       return
     }
     await this.open()
-    headers = headers.map((h) => BlockHeader.fromValuesArray(h.raw(), { common: this.common }))
+    headers = headers.map((h) =>
+      BlockHeader.fromValuesArray(h.raw(), { common: this.config.common })
+    )
     await this.blockchain.putHeaders(headers)
     await this.update()
   }

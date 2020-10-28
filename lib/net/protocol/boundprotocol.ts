@@ -2,19 +2,21 @@ import { EventEmitter } from 'events'
 import { Protocol } from '../protocol/protocol'
 import { Peer } from '../peer/peer'
 import { Sender } from './sender'
+import { Config } from '../../config'
 
 /**
  * Binds a protocol implementation to the specified peer
  * @memberof module:net/protocol
  */
 export class BoundProtocol extends EventEmitter {
+  public config: Config
+
   private protocol: Protocol
   private peer: Peer
   private sender: Sender
   public name: string
   private versions: number[]
   private timeout: number
-  private logger: any
   private _status: any
   private resolvers: Map<string, any>
 
@@ -29,13 +31,14 @@ export class BoundProtocol extends EventEmitter {
   constructor(options: any) {
     super()
 
+    this.config = new Config()
+
     this.protocol = options.protocol
     this.peer = options.peer
     this.sender = options.sender
     this.name = this.protocol.name
     this.versions = this.protocol.versions
     this.timeout = this.protocol.timeout
-    this.logger = this.protocol.logger
     this._status = {}
     this.resolvers = new Map()
     this.sender.on('message', (message: any) => {

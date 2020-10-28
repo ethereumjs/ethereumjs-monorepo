@@ -1,12 +1,11 @@
 import { Readable, Writable } from 'stream'
 const Heap = require('qheap')
 import Common from '@ethereumjs/common'
-import { defaultLogger } from '../../logging'
 import { PeerPool } from '../../net/peerpool'
+import { Config } from '../../config'
 
 const defaultOptions = {
   common: new Common({ chain: 'mainnet', hardfork: 'chainstart' }),
-  logger: defaultLogger,
   timeout: 8000,
   interval: 1000,
   banTime: 60000,
@@ -22,6 +21,8 @@ const defaultOptions = {
  * @memberof module:sync/fetcher
  */
 export class Fetcher extends Readable {
+  public config: Config
+
   protected common: Common
   protected pool: PeerPool
   protected logger: any
@@ -48,15 +49,16 @@ export class Fetcher extends Readable {
    * @param {number}   [options.maxQueue] max write queue size
    * @param {number}   [options.maxPerRequest=128] max items per request
    * @param {number}   [options.interval] retry interval
-   * @param {Logger}   [options.logger] Logger instance
    */
   constructor(options: any) {
     super({ ...options, objectMode: true })
+
+    this.config = new Config()
+
     options = { ...defaultOptions, ...options }
 
     this.common = options.common
     this.pool = options.pool
-    this.logger = options.logger
     this.timeout = options.timeout
     this.interval = options.interval
     this.banTime = options.banTime
@@ -304,10 +306,12 @@ export class Fetcher extends Readable {
   expire(job: any) {
     job.state = 'expired'
     if (this.pool.contains(job.peer)) {
-      this.logger.debug(`Task timed out for peer (banning) ${JSON.stringify(job.task)} ${job.peer}`)
+      this.config.logger.debug(
+        `Task timed out for peer (banning) ${JSON.stringify(job.task)} ${job.peer}`
+      )
       this.pool.ban(job.peer, 300000)
     } else {
-      this.logger.debug(
+      this.config.logger.debug(
         `Peer disconnected while performing task ${JSON.stringify(job.task)} ${job.peer}`
       )
     }

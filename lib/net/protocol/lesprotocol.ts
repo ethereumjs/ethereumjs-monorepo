@@ -71,7 +71,6 @@ export class LesProtocol extends Protocol {
    * @param {FlowControl} [options.flow] flow control manager. if undefined,
    * header serving will be disabled
    * @param {number}      [options.timeout=8000] handshake timeout in ms
-   * @param {Logger}      [options.logger] logger instance
    */
   constructor(options: any) {
     super(options)

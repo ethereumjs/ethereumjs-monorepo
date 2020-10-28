@@ -1,14 +1,13 @@
 import { Peer } from '../net/peer/peer'
 import { EventEmitter } from 'events'
 import Common from '@ethereumjs/common'
-import { defaultLogger } from '../logging'
 import { PeerPool } from '../net/peerpool'
 import { Chain } from '../blockchain'
 import { FlowControl } from '../net/protocol'
+import { Config } from '../config'
 
 const defaultOptions = {
   common: new Common({ chain: 'mainnet', hardfork: 'chainstart' }),
-  logger: defaultLogger,
   interval: 1000,
   minPeers: 3,
 }
@@ -18,7 +17,8 @@ const defaultOptions = {
  * @memberof module:sync
  */
 export class Synchronizer extends EventEmitter {
-  protected logger: any
+  public config: Config
+
   protected pool: PeerPool
   protected chain: Chain
   protected common: Common
@@ -37,13 +37,14 @@ export class Synchronizer extends EventEmitter {
    * @param {FlowControl} options.flow flow control manager
    * @param {number}      [options.minPeers=3] number of peers needed before syncing
    * @param {number}      [options.interval] refresh interval
-   * @param {Logger}      [options.logger] Logger instance
    */
   constructor(options?: any) {
     super()
+
+    this.config = new Config()
+
     options = { ...defaultOptions, ...options }
 
-    this.logger = options.logger
     this.pool = options.pool
     this.chain = options.chain
     this.common = options.common
@@ -54,7 +55,7 @@ export class Synchronizer extends EventEmitter {
     this.forceSync = false
     this.pool.on('added', (peer: Peer) => {
       if (this.syncable(peer)) {
-        this.logger.debug(`Found ${this.type} peer: ${peer}`)
+        this.config.logger.debug(`Found ${this.type} peer: ${peer}`)
       }
     })
   }

@@ -33,7 +33,6 @@ export class Libp2pServer extends Server {
    * a comma separated string or list)
    * @param {Buffer}   [options.key] private key to use for server
    * @param {number}   [options.refreshInterval=30000] how often (in ms) to discover new peers
-   * @param {Logger}   [options.logger] Logger instance
    */
   constructor(options: any) {
     super(options)
@@ -107,7 +106,7 @@ export class Libp2pServer extends Server {
         }
         const peer = this.createPeer(peerInfo)
         await peer.bindProtocols(this.node, peerInfo, this)
-        this.logger.debug(`Peer discovered: ${peer}`)
+        this.config.logger.debug(`Peer discovered: ${peer}`)
         this.emit('connected', peer)
       } catch (e) {
         this.error(e)
@@ -116,7 +115,7 @@ export class Libp2pServer extends Server {
     this.node.on('peer:connect', (peerInfo: any) => {
       try {
         const peer = this.createPeer(peerInfo)
-        this.logger.debug(`Peer connected: ${peer}`)
+        this.config.logger.debug(`Peer connected: ${peer}`)
       } catch (e) {
         this.error(e)
       }
