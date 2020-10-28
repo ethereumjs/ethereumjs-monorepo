@@ -49,7 +49,6 @@ export class RlpxServer extends Server {
    * @param {Object}   options constructor parameters
    * @param {Object[]} [options.bootnodes] list of bootnodes to use for discovery (can be
    * a comma separated string or list)
-   * @param {number}   [options.maxPeers=25] maximum peers allowed
    * @param {number}   [options.port=null] local port to listen on
    * @param {Buffer}   [options.key] private key to use for server
    * @param {string[]} [options.clientFilter] list of supported clients
@@ -214,7 +213,7 @@ export class RlpxServer extends Server {
   initRlpx() {
     this.rlpx = new Devp2pRLPx(this.key as Buffer, {
       dpt: this.dpt as Devp2pDPT,
-      maxPeers: this.maxPeers,
+      maxPeers: this.config.maxPeers,
       capabilities: RlpxPeer.capabilities(Array.from(this.protocols)),
       remoteClientIdFilter: this.clientFilter,
       listenPort: this.port,

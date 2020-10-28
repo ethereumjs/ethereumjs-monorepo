@@ -1,11 +1,8 @@
 import { EventEmitter } from 'events'
 import { Protocol } from '../protocol/protocol'
-import { defaultLogger } from '../../logging'
 import { Config } from '../../config'
 
 const defaultOptions = {
-  logger: defaultLogger,
-  maxPeers: 25,
   refreshInterval: 30000,
 }
 
@@ -19,7 +16,6 @@ export class Server extends EventEmitter {
   public key: Buffer | string = ''
   public bootnodes: any | string = ''
 
-  protected maxPeers: number
   protected refreshInterval: number
   protected protocols: Set<Protocol>
 
@@ -32,7 +28,6 @@ export class Server extends EventEmitter {
 
     options = { ...defaultOptions, ...options }
 
-    this.maxPeers = options.maxPeers
     this.refreshInterval = options.refreshInterval
     this.protocols = new Set()
     this.started = false

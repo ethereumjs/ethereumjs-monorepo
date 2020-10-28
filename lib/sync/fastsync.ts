@@ -42,7 +42,7 @@ export class FastSynchronizer extends Synchronizer {
   best(): Peer | undefined {
     let best
     const peers = this.pool.peers.filter(this.syncable.bind(this))
-    if (peers.length < this.minPeers && !this.forceSync) return
+    if (peers.length < this.config.minPeers && !this.forceSync) return
     for (const peer of peers) {
       if (peer.eth && peer.eth.status) {
         const td = peer.eth.status.td

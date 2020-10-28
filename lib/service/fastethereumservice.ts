@@ -21,8 +21,6 @@ export class FastEthereumService extends EthereumService {
    * @param {Server[]} options.servers servers to run service on
    * @param {boolean}  [options.lightserv=false] serve LES requests
    * @param {Chain}    [options.chain] blockchain
-   * @param {number}   [options.minPeers=3] number of peers needed before syncing
-   * @param {number}   [options.maxPeers=25] maximum peers allowed
    * @param {number}   [options.interval] sync retry interval
    */
   constructor(options?: any) {
@@ -37,8 +35,6 @@ export class FastEthereumService extends EthereumService {
     this.synchronizer = new FastSynchronizer({
       pool: this.pool,
       chain: this.chain,
-      common: this.config.common,
-      minPeers: this.minPeers,
       interval: this.interval,
     })
   }

@@ -4,7 +4,6 @@ import { Peer } from '../net/peer/peer'
 import { Config } from '../config'
 
 const defaultOptions = {
-  maxPeers: 25,
   servers: [],
 }
 
@@ -24,7 +23,6 @@ export class Service extends events.EventEmitter {
    * Create new service and associated peer pool
    * @param {Object}     options constructor parameters
    * @param {Server[]}   [options.servers=[]] servers to run service on
-   * @param {number}     [options.maxPeers=25] maximum peers allowed
    */
   constructor(options?: any) {
     super()
@@ -37,7 +35,6 @@ export class Service extends events.EventEmitter {
     this.servers = options.servers
     this.pool = new PeerPool({
       servers: this.servers,
-      maxPeers: options.maxPeers,
     })
     this.pool.on('message', async (message: any, protocol: string, peer: Peer) => {
       if (this.running) {

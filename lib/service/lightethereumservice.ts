@@ -13,8 +13,6 @@ export class LightEthereumService extends EthereumService {
    * @param {Object}   options constructor parameters
    * @param {Server[]} options.servers servers to run service on
    * @param {Chain}    [options.chain] blockchain
-   * @param {number}   [options.minPeers=3] number of peers needed before syncing
-   * @param {number}   [options.maxPeers=25] maximum peers allowed
    * @param {number}   [options.interval] sync retry interval
    */
   constructor(options?: any) {
@@ -27,8 +25,6 @@ export class LightEthereumService extends EthereumService {
     this.synchronizer = new LightSynchronizer({
       pool: this.pool,
       chain: this.chain,
-      common: this.config.common,
-      minPeers: this.minPeers,
       flow: this.flow,
       interval: this.interval,
     })

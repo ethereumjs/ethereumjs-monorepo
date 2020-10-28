@@ -28,7 +28,6 @@ export class Libp2pServer extends Server {
    * @param {Object}   options constructor parameters
    * @param {Object[]} [options.bootnodes] list of bootnodes to use for discovery (can be
    * a comma separated string or list)
-   * @param {number}   [options.maxPeers=25] maximum peers allowed
    * @param {multiaddr[]}   [options.multiaddrs] multiaddrs to listen on (can be
    * a comma separated string or list)
    * @param {Buffer}   [options.key] private key to use for server

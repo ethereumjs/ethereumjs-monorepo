@@ -7,7 +7,6 @@ import { Config } from '../config'
 
 const defaultOptions = {
   interval: 1000,
-  minPeers: 3,
 }
 
 /**
@@ -20,7 +19,6 @@ export class Synchronizer extends EventEmitter {
   protected pool: PeerPool
   protected chain: Chain
   protected flow: FlowControl
-  protected minPeers: number
   protected interval: number
   protected running: boolean
   protected forceSync: boolean
@@ -31,7 +29,6 @@ export class Synchronizer extends EventEmitter {
    * @param {PeerPool}    options.pool peer pool
    * @param {Chain}       options.chain blockchain
    * @param {FlowControl} options.flow flow control manager
-   * @param {number}      [options.minPeers=3] number of peers needed before syncing
    * @param {number}      [options.interval] refresh interval
    */
   constructor(options?: any) {
@@ -44,7 +41,6 @@ export class Synchronizer extends EventEmitter {
     this.pool = options.pool
     this.chain = options.chain
     this.flow = options.flow
-    this.minPeers = options.minPeers
     this.interval = options.interval
     this.running = false
     this.forceSync = false

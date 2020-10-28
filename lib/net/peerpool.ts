@@ -4,7 +4,6 @@ import { Peer } from './peer/peer'
 
 const defaultOptions = {
   servers: [],
-  maxPeers: 25,
 }
 
 /**
@@ -27,8 +26,6 @@ export class PeerPool extends EventEmitter {
   public config: Config
 
   private servers: any[]
-  private logger: any
-  private maxPeers: number
   private pool: Map<string, Peer>
   private noPeerPeriods: number
   private opened: boolean
@@ -38,7 +35,6 @@ export class PeerPool extends EventEmitter {
    * Create new peer pool
    * @param {Object}   options constructor parameters
    * @param {Server[]} options.servers servers to aggregate peers from
-   * @param {number}   [options.maxPeers=25] maximum peers allowed
    */
   constructor(options: any) {
     super()
@@ -48,7 +44,6 @@ export class PeerPool extends EventEmitter {
     options = { ...defaultOptions, ...options }
 
     this.servers = options.servers
-    this.maxPeers = options.maxPeers
     this.pool = new Map<string, Peer>()
     this.noPeerPeriods = 0
     this.opened = false
@@ -136,7 +131,7 @@ export class PeerPool extends EventEmitter {
    * @param  {Peer} peer
    */
   connected(peer: Peer) {
-    if (this.size >= this.maxPeers) return
+    if (this.size >= this.config.maxPeers) return
     peer.on('message', (message: any, protocol: string) => {
       if (this.pool.get(peer.id)) {
         this.emit('message', message, protocol, peer)
