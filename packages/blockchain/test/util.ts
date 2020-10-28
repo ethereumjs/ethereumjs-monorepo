@@ -1,4 +1,4 @@
-import { BN, rlp, toBuffer } from 'ethereumjs-util'
+import { BN, rlp } from 'ethereumjs-util'
 import { Block, BlockHeader } from '@ethereumjs/block'
 import Common from '@ethereumjs/common'
 import Blockchain from '../src'
@@ -54,6 +54,7 @@ export const generateBlockchain = async (numberOfBlocks: number, genesis?: Block
     blocks,
     error: null,
   }
+}
 /**
  *
  * @param parentBlock parent block to generate the consecutive block on top of
@@ -62,7 +63,7 @@ export const generateBlockchain = async (numberOfBlocks: number, genesis?: Block
 
 export const generateConsecutiveBlock = (
   parentBlock: Block,
-  difficultyChangeFactor: number,
+  difficultyChangeFactor: number
 ): Block => {
   if (difficultyChangeFactor > 1) {
     difficultyChangeFactor = 1
@@ -78,11 +79,11 @@ export const generateConsecutiveBlock = (
       parentHash: parentBlock.hash(),
       gasLimit: new BN(8000000),
       timestamp: parentBlock.header.timestamp.addn(10 + -difficultyChangeFactor * 9),
-      difficulty: new BN(tmpHeader.canonicalDifficulty(parentBlock)),
+      difficulty: new BN(tmpHeader.canonicalDifficulty(parentBlock.header)),
     },
     {
       common,
-    },
+    }
   )
 
   const block = new Block(header, undefined, undefined, { common })
