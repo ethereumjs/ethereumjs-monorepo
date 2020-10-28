@@ -7,25 +7,38 @@ export interface Options {
    * If not provided this defaults to chain `mainnet` and hardfork `chainstart`
    */
   common?: Common
+
+  maxPeers?: number
 }
 
 export class Config {
   public common!: Common
+  public maxPeers!: number
 
   static instance: Config
 
   constructor(options: Options = {}) {
-    if (Config.instance) {
-      return Config.instance
+    if (!Config.instance) {
+      Config.instance = this
+
+      // Set default values on first initialization
+
+      // Initialize Common with an explicit 'chainstart' HF set until
+      // hardfork awareness is implemented within the library
+      // Also a fix for https://github.com/ethereumjs/ethereumjs-vm/issues/757
+
+      // TODO: map chainParams (and lib/util.parseParams) to new Common format
+      Config.instance.common = new Common({ chain: 'mainnet', hardfork: 'chainstart' })
+      Config.instance.maxPeers = 25
     }
 
-    // Initialize Common with an explicit 'chainstart' HF set until
-    // hardfork awareness is implemented within the library
-    // Also a fix for https://github.com/ethereumjs/ethereumjs-vm/issues/757
+    if (options.common) {
+      Config.instance.common = options.common
+    }
+    if (options.maxPeers) {
+      Config.instance.maxPeers = options.maxPeers
+    }
 
-    // TODO: map chainParams (and lib/util.parseParams) to new Common format
-    this.common = options.common || new Common({ chain: 'mainnet', hardfork: 'chainstart' })
-
-    Config.instance = this
+    return Config.instance
   }
 }
