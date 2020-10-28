@@ -26,10 +26,8 @@ tape('reorg tests', (t) => {
 
       blocks_lowTD.push(generateConsecutiveBlock(genesis, 0))
 
-      const TD_Low = new BN(genesis.header.difficulty).add(
-        new BN(blocks_lowTD[0].header.difficulty)
-      )
-      const TD_High = new BN(genesis.header.difficulty)
+      const TD_Low = genesis.header.difficulty.add(blocks_lowTD[0].header.difficulty)
+      const TD_High = genesis.header.difficulty.clone()
 
       // Keep generating blocks until the Total Difficulty (TD) of the High TD chain is higher than the TD of the Low TD chain
       // This means that the block number of the high TD chain is 1 lower than the low TD chain
@@ -40,16 +38,16 @@ tape('reorg tests', (t) => {
           generateConsecutiveBlock(blocks_highTD[blocks_highTD.length - 1] || genesis, 1)
         )
 
-        TD_Low.iadd(new BN(blocks_lowTD[blocks_lowTD.length - 1].header.difficulty))
-        TD_High.iadd(new BN(blocks_highTD[blocks_highTD.length - 1].header.difficulty))
+        TD_Low.iadd(blocks_lowTD[blocks_lowTD.length - 1].header.difficulty)
+        TD_High.iadd(blocks_highTD[blocks_highTD.length - 1].header.difficulty)
       }
 
       // sanity check
       const lowTDBlock = blocks_lowTD[blocks_lowTD.length - 1]
       const highTDBlock = blocks_highTD[blocks_highTD.length - 1]
 
-      const number_lowTD = new BN(lowTDBlock.header.number)
-      const number_highTD = new BN(highTDBlock.header.number)
+      const number_lowTD = lowTDBlock.header.number
+      const number_highTD = highTDBlock.header.number
 
       // ensure that the block difficulty is higher on the highTD chain when compared to the low TD chain
       t.ok(

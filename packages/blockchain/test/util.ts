@@ -70,16 +70,16 @@ export const generateConsecutiveBlock = (
   }
   const common = new Common({ chain: 'mainnet', hardfork: 'muirGlacier' })
   const tmpHeader = BlockHeader.fromHeaderData({
-    number: new BN(parentBlock.header.number).add(new BN(1)),
+    number: parentBlock.header.number.addn(1),
     timestamp: parentBlock.header.timestamp.addn(10 + -difficultyChangeFactor * 9),
   })
   const header = BlockHeader.fromHeaderData(
     {
-      number: new BN(parentBlock.header.number).add(new BN(1)),
+      number: parentBlock.header.number.addn(1),
       parentHash: parentBlock.hash(),
       gasLimit: new BN(8000000),
       timestamp: parentBlock.header.timestamp.addn(10 + -difficultyChangeFactor * 9),
-      difficulty: new BN(tmpHeader.canonicalDifficulty(parentBlock.header)),
+      difficulty: tmpHeader.canonicalDifficulty(parentBlock.header),
     },
     {
       common,
