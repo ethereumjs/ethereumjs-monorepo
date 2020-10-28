@@ -6,7 +6,7 @@
   "types": "dist/lib/index.d.ts",
   "browser": "dist/bundle.js",
   "bin": {
-    "ethereumjs": "node bin/cli.js"
+    "ethereumjs": "bin/cli.js"
   },
   "files": [
     "bin",
