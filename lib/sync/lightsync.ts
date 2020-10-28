@@ -75,7 +75,6 @@ export class LightSynchronizer extends Synchronizer {
       pool: this.pool,
       chain: this.chain,
       flow: this.flow,
-      logger: this.config.logger,
       interval: this.interval,
       first,
       count,

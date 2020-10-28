@@ -19,7 +19,6 @@ export class Peer extends events.EventEmitter {
   public id: string
   protected transport: string
   protected protocols: any[]
-  protected logger: any
   private _idle: boolean
   public address: string
   public inbound: boolean

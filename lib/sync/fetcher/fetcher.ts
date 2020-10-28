@@ -22,7 +22,6 @@ export class Fetcher extends Readable {
   public config: Config
 
   protected pool: PeerPool
-  protected logger: any
   protected timeout: number
   protected interval: number
   protected banTime: number

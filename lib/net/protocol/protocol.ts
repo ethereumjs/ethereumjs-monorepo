@@ -2,11 +2,9 @@ import { EventEmitter } from 'events'
 import { BoundProtocol } from './boundprotocol'
 import { Sender } from './sender'
 import { Peer } from '../peer/peer'
-import { defaultLogger } from '../../logging'
 import { Config } from '../../config'
 
 const defaultOptions = {
-  logger: defaultLogger,
   timeout: 8000,
 }
 
