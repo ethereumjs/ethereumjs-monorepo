@@ -100,7 +100,7 @@ jobs:
           '--fork=Petersburg --excludeDir=stTimeConsuming --expected-test-amount=17174',
           '--fork=Petersburg --dir=GeneralStateTests/stTimeConsuming --expected-test-amount=15561',
           '--fork=Constantinople --excludeDir=stTimeConsuming --expected-test-amount=17193',
-          '--fork=Constantinople --dir=GeneralStateTests/stTimeConsuming --expected-test-amount=',
+          '--fork=Constantinople --dir=GeneralStateTests/stTimeConsuming --expected-test-amount=15561',
           '--fork=Istanbul --excludeDir=stTimeConsuming --expected-test-amount=19817',
           '--fork=Istanbul --dir=GeneralStateTests/stTimeConsuming --expected-test-amount=15561',
           '--fork=Berlin --expected-test-amount=33'
