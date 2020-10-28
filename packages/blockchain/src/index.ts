@@ -99,7 +99,7 @@ export default class Blockchain implements BlockchainInterface {
   private _staleHeads: string[]
 
   private _initDone: boolean
-  private _initPromise: Promise<void>
+  public initPromise: Promise<void>
   private _lock: Semaphore
 
   private _common: Common
@@ -146,8 +146,20 @@ export default class Blockchain implements BlockchainInterface {
     this._lock = new Semaphore(1)
     this._initDone = false
 
+    if (opts.genesisBlock && !opts.genesisBlock.isGenesis()) {
+      throw 'supplied block is not a genesis block'
+    }
+
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    this._initPromise = this._init(opts.genesisBlock)
+    this.initPromise = this._init(opts.genesisBlock)
+  }
+
+  public static async create(opts: BlockchainOptions = {}) {
+    const blockchain = new Blockchain(opts)
+    await blockchain.initPromise!.catch((e) => {
+      throw e
+    })
+    return blockchain
   }
 
   /**
@@ -172,6 +184,9 @@ export default class Blockchain implements BlockchainInterface {
     let genesisHash
     try {
       genesisHash = await this.dbManager.numberToHash(new BN(0))
+      const genesisBlock = await this.dbManager.getBlock(genesisHash)
+      await this._putBlockOrHeader(genesisBlock)
+      this._genesis = genesisHash
     } catch (error) {
       if (error.type !== 'NotFoundError') {
         throw error
@@ -183,7 +198,6 @@ export default class Blockchain implements BlockchainInterface {
       }
       genesisHash = this._genesis
     }
-
     // load verified iterator heads
     try {
       const heads = await this.dbManager.getHeads()
@@ -225,7 +239,7 @@ export default class Blockchain implements BlockchainInterface {
    * @hidden
    */
   private async initAndLock<T>(action: () => Promise<T>): Promise<T> {
-    await this._initPromise
+    await this.initPromise
     return await this.runWithLock(action)
   }
 
@@ -323,7 +337,7 @@ export default class Blockchain implements BlockchainInterface {
    * @param blocks - The blocks to be added to the blockchain
    */
   async putBlocks(blocks: Block[]) {
-    await this._initPromise
+    await this.initPromise
     for (let i = 0; i < blocks.length; i++) {
       await this.putBlock(blocks[i])
     }
@@ -335,7 +349,7 @@ export default class Blockchain implements BlockchainInterface {
    * @param block - The block to be added to the blockchain
    */
   async putBlock(block: Block) {
-    await this._initPromise
+    await this.initPromise
     await this._putBlockOrHeader(block)
   }
 
@@ -345,7 +359,7 @@ export default class Blockchain implements BlockchainInterface {
    * @param headers - The headers to be added to the blockchain
    */
   async putHeaders(headers: Array<any>) {
-    await this._initPromise
+    await this.initPromise
     for (let i = 0; i < headers.length; i++) {
       await this.putHeader(headers[i])
     }
@@ -357,7 +371,7 @@ export default class Blockchain implements BlockchainInterface {
    * @param header - The header to be added to the blockchain
    */
   async putHeader(header: BlockHeader) {
-    await this._initPromise
+    await this.initPromise
     await this._putBlockOrHeader(header)
   }
 
