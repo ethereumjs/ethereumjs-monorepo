@@ -74,7 +74,6 @@ export class LightSynchronizer extends Synchronizer {
     this.headerFetcher = new HeaderFetcher({
       pool: this.pool,
       chain: this.chain,
-      common: this.common,
       flow: this.flow,
       logger: this.config.logger,
       interval: this.interval,

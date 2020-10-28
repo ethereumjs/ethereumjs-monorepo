@@ -1,13 +1,11 @@
 import { Peer } from '../net/peer/peer'
 import { EventEmitter } from 'events'
-import Common from '@ethereumjs/common'
 import { PeerPool } from '../net/peerpool'
 import { Chain } from '../blockchain'
 import { FlowControl } from '../net/protocol'
 import { Config } from '../config'
 
 const defaultOptions = {
-  common: new Common({ chain: 'mainnet', hardfork: 'chainstart' }),
   interval: 1000,
   minPeers: 3,
 }
@@ -21,7 +19,6 @@ export class Synchronizer extends EventEmitter {
 
   protected pool: PeerPool
   protected chain: Chain
-  protected common: Common
   protected flow: FlowControl
   protected minPeers: number
   protected interval: number
@@ -33,7 +30,6 @@ export class Synchronizer extends EventEmitter {
    * @param {Object}      options constructor parameters
    * @param {PeerPool}    options.pool peer pool
    * @param {Chain}       options.chain blockchain
-   * @param {Common}      options.common common chain config
    * @param {FlowControl} options.flow flow control manager
    * @param {number}      [options.minPeers=3] number of peers needed before syncing
    * @param {number}      [options.interval] refresh interval
@@ -47,7 +43,6 @@ export class Synchronizer extends EventEmitter {
 
     this.pool = options.pool
     this.chain = options.chain
-    this.common = options.common
     this.flow = options.flow
     this.minPeers = options.minPeers
     this.interval = options.interval

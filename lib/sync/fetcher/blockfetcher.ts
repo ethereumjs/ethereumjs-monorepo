@@ -67,7 +67,7 @@ export class BlockFetcher extends Fetcher {
     const headers = await peer.eth.getBlockHeaders({ block: first, max: count })
     const bodies = await peer.eth.getBlockBodies(headers.map((h: any) => h.hash()))
     const blocks = bodies.map(([txsData, unclesData]: BlockBodyBuffer, i: number) =>
-      Block.fromValuesArray([headers[i].raw(), txsData, unclesData], { common: this.common })
+      Block.fromValuesArray([headers[i].raw(), txsData, unclesData], { common: this.config.common })
     )
     return { blocks }
   }

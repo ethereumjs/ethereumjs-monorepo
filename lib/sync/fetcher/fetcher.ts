@@ -1,11 +1,9 @@
 import { Readable, Writable } from 'stream'
 const Heap = require('qheap')
-import Common from '@ethereumjs/common'
 import { PeerPool } from '../../net/peerpool'
 import { Config } from '../../config'
 
 const defaultOptions = {
-  common: new Common({ chain: 'mainnet', hardfork: 'chainstart' }),
   timeout: 8000,
   interval: 1000,
   banTime: 60000,
@@ -23,7 +21,6 @@ const defaultOptions = {
 export class Fetcher extends Readable {
   public config: Config
 
-  protected common: Common
   protected pool: PeerPool
   protected logger: any
   protected timeout: number
@@ -42,7 +39,6 @@ export class Fetcher extends Readable {
   /**
    * Create new fetcher
    * @param {Object}   options constructor parameters
-   * @param {Common}   options.common common chain config
    * @param {PeerPool} options.pool peer pool
    * @param {number}   [options.timeout] fetch task timeout
    * @param {number}   [options.banTime] how long to ban misbehaving peers
@@ -57,7 +53,6 @@ export class Fetcher extends Readable {
 
     options = { ...defaultOptions, ...options }
 
-    this.common = options.common
     this.pool = options.pool
     this.timeout = options.timeout
     this.interval = options.interval
