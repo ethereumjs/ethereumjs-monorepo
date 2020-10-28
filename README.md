@@ -1,10 +1,9 @@
 # ethereumjs-devp2p
 
-[![NPM Package](https://img.shields.io/npm/v/ethereumjs-devp2p.svg)](https://www.npmjs.org/package/ethereumjs-devp2p)
-[![Actions Status](https://github.com/ethereumjs/ethereumjs-devp2p/workflows/Build/badge.svg)](https://github.com/ethereumjs/ethereumjs-devp2p/actions)
-[![Coverage Status](https://img.shields.io/coveralls/ethereumjs/ethereumjs-devp2p.svg)](https://coveralls.io/r/ethereumjs/ethereumjs-devp2p)
-
-[![js-standard-style](https://cdn.rawgit.com/feross/standard/master/badge.svg)](https://github.com/feross/standard)
+[![NPM Status][npm-badge]][npm-link]
+[![Actions Status][actions-badge]][actions-link]
+[![Coverage Status][coverage-badge]][coverage-link]
+[![Discord][discord-badge]][discord-link]
 
 This library bundles different components for lower-level peer-to-peer connection and message exchange:
 
@@ -401,3 +400,12 @@ The following is a list of major implementations of the `devp2p` stack in other 
 ## License
 
 MIT
+
+[npm-badge]: https://img.shields.io/npm/v/ethereumjs-devp2p.svg
+[npm-link]: https://www.npmjs.org/package/ethereumjs-devp2p
+[actions-badge]: https://github.com/ethereumjs/ethereumjs-devp2p/workflows/Build/badge.svg
+[actions-link]: https://github.com/ethereumjs/ethereumjs-devp2p/actions
+[coverage-badge]: https://codecov.io/gh/ethereumjs/ethereumjs-devp2p/branch/master/graph/badge.svg
+[coverage-link]: https://codecov.io/gh/ethereumjs/ethereumjs-devp2p
+[discord-badge]: https://img.shields.io/static/v1?logo=discord&label=discord&message=Join&color=blue
+[discord-link]: https://discord.gg/TNwARpR
