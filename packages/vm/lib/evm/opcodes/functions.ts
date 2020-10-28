@@ -23,7 +23,7 @@ import {
 } from './util'
 import { updateSstoreGasEIP1283 } from './EIP1283'
 import { updateSstoreGasEIP2200 } from './EIP2200'
-import { accessAddressEIP2929, accessStorageEIP2929 } from './EIP2929'
+import { accessAddressEIP2929, accessStorageEIP2929, adjustSstoreGasEIP2929 } from './EIP2929'
 import { ERROR } from '../../exceptions'
 import { RunState } from './../interpreter'
 
@@ -747,6 +747,23 @@ export const handlers: Map<number, OpHandler> = new Map([
       accessStorageEIP2929(runState, keyBuf, true)
       updateSstoreGasEIP1283(runState, found, setLengthLeftStorage(value))
       updateSstoreGasEIP2200(runState, found, setLengthLeftStorage(value), keyBuf)
+
+      // if we are before Constantinople, then neither SSTORE charges of above have been ran: we charge them here.
+      if (!runState._common.gteHardfork('constantinople')) {
+        const sstoreResetCost = runState._common.param('gasPrices', 'sstoreReset')
+        if ((value.length === 0 && !found.length) || (value.length !== 0 && found.length)) {
+          runState.eei.useGas(
+            new BN(adjustSstoreGasEIP2929(runState, keyBuf, sstoreResetCost, 'reset'))
+          )
+        } else if (value.length === 0 && found.length) {
+          runState.eei.useGas(
+            new BN(adjustSstoreGasEIP2929(runState, keyBuf, sstoreResetCost, 'reset'))
+          )
+          runState.eei.refundGas(new BN(runState._common.param('gasPrices', 'sstoreRefund')))
+        } else if (value.length !== 0 && !found.length) {
+          runState.eei.useGas(new BN(runState._common.param('gasPrices', 'sstoreSet')))
+        }
+      }
       await runState.eei.storageStore(keyBuf, value)
     },
   ],
