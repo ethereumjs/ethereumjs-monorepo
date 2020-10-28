@@ -5,7 +5,7 @@ import tape from 'tape'
 import Blockchain from '../src'
 import { generateConsecutiveBlock } from './util'
 
-const genesis = Block.fromBlockData({
+const genesisBlock = Block.fromBlockData({
   header: {
     number: new BN(0),
     difficulty: new BN(0x020000),
@@ -18,18 +18,22 @@ tape('reorg tests', (t) => {
     'should correctly reorg the chain if the total difficulty is higher on a lower block number than the current head block',
     async (st) => {
       const common = new Common({ chain: 'mainnet', hardfork: 'muirGlacier' })
-      const blockchain = new Blockchain({ validateBlocks: true, validatePow: false, common })
-      await blockchain.putBlock(genesis)
+      const blockchain = new Blockchain({
+        validateBlocks: true,
+        validatePow: false,
+        common,
+        genesisBlock,
+      })
 
       const blocks_lowTD: Block[] = []
       const blocks_highTD: Block[] = []
 
-      blocks_lowTD.push(generateConsecutiveBlock(genesis, 0))
+      blocks_lowTD.push(generateConsecutiveBlock(genesisBlock, 0))
 
-      const TD_Low = new BN(genesis.header.difficulty).add(
+      const TD_Low = new BN(genesisBlock.header.difficulty).add(
         new BN(blocks_lowTD[0].header.difficulty)
       )
-      const TD_High = new BN(genesis.header.difficulty)
+      const TD_High = new BN(genesisBlock.header.difficulty)
 
       // Keep generating blocks until the Total Difficulty (TD) of the High TD chain is higher than the TD of the Low TD chain
       // This means that the block number of the high TD chain is 1 lower than the low TD chain
@@ -37,7 +41,7 @@ tape('reorg tests', (t) => {
       while (TD_High.cmp(TD_Low) == -1) {
         blocks_lowTD.push(generateConsecutiveBlock(blocks_lowTD[blocks_lowTD.length - 1], 0))
         blocks_highTD.push(
-          generateConsecutiveBlock(blocks_highTD[blocks_highTD.length - 1] || genesis, 1)
+          generateConsecutiveBlock(blocks_highTD[blocks_highTD.length - 1] || genesisBlock, 1)
         )
 
         TD_Low.iadd(new BN(blocks_lowTD[blocks_lowTD.length - 1].header.difficulty))

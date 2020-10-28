@@ -146,8 +146,20 @@ export default class Blockchain implements BlockchainInterface {
     this._lock = new Semaphore(1)
     this._initDone = false
 
+    if (opts.genesisBlock && !opts.genesisBlock.isGenesis()) {
+      throw 'supplied block is not a genesis block'
+    }
+
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
     this._initPromise = this._init(opts.genesisBlock)
+  }
+
+  public static async create(opts: BlockchainOptions = {}) {
+    const blockchain = new Blockchain(opts)
+    await blockchain._initPromise!.catch((e) => {
+      throw e
+    })
+    return blockchain
   }
 
   /**
