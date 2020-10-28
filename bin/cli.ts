@@ -82,7 +82,7 @@ const args = require('yargs')
   .locale('en_EN').argv
 const logger = getLogger({ loglevel: args.loglevel })
 
-async function runNode(options: any) {
+async function runNode(options: any, config: Config) {
   logger.info('Initializing Ethereumjs client...')
   if (options.lightserv) {
     logger.info(`Serving light peer requests`)
@@ -95,7 +95,7 @@ async function runNode(options: any) {
   node.on('synchronized', () => {
     logger.info('Synchronized')
   })
-  logger.info(`Connecting to network: ${options.config.common.chainName()}`)
+  logger.info(`Connecting to network: ${config.common.chainName()}`)
   await node.open()
   logger.info('Synchronizing blockchain...')
   await node.start()
@@ -142,7 +142,6 @@ async function run() {
   logger.info(`Data directory: ${dataDir}`)
 
   const options = {
-    config,
     logger,
     servers,
     syncmode: args.syncmode,
@@ -153,7 +152,7 @@ async function run() {
     minPeers: args.minPeers,
     maxPeers: args.maxPeers,
   }
-  const node = await runNode(options)
+  const node = await runNode(options, config)
   const server = args.rpc ? runRpcServer(node, options) : null
 
   process.on('SIGINT', async () => {

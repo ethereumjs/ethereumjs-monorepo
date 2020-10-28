@@ -1,11 +1,8 @@
 import { Service } from './service'
 import { FlowControl } from '../net/protocol/flowcontrol'
 import { Chain } from '../blockchain'
-import { Config } from '../config'
 
 const defaultOptions = {
-  lightserv: false,
-  minPeers: 3,
   timeout: 8000,
   interval: 1000,
 }
@@ -19,37 +16,30 @@ export class EthereumService extends Service {
 
   public flow: FlowControl
   public chain: Chain
-  public minPeers: number
   public interval: number
   public timeout: number
   public synchronizer: any
 
   /**
-   * Create new ETH service
-   * @param {Object}   options constructor parameters
-   * @param {Config}   [options.config] Client configuration
-   * @param {Server[]} options.servers servers to run service on
-   * @param {Chain}    [options.chain] blockchain
-   * @param {LevelDB}  [options.db=null] blockchain database
-   * @param {number}   [options.minPeers=3] number of peers needed before syncing
-   * @param {number}   [options.maxPeers=25] maximum peers allowed
-   * @param {number}   [options.timeout] protocol timeout
-   * @param {number}   [options.interval] sync retry interval
-   * @param {Logger}   [options.logger] logger instance
-   */
+ * Create new ETH service
+ * @param {Object}   options constructor parameters
+ * @param {Config}   [options.config] Client configuration
+ * @param {Chain}    [options.chain] blockchain
+ * @param {LevelDB}  [options.db=null] blockchain database
+ * @param {number}   [options.timeout] protocol timeout
+ * @param {number}   [options.interval] sync retry interval
+ */
   constructor(options?: any) {
     options = { ...defaultOptions, ...options }
     super(options)
 
-    this.config = options.config || new Config()
-
     this.flow = new FlowControl(options)
-    this.chain = options.chain || new Chain(options)
-    this.minPeers = options.minPeers
+    this.chain = options.chain ?? new Chain(options)
     this.interval = options.interval
     this.timeout = options.timeout
     this.synchronizer = null
   }
+
 
   /**
    * Service name

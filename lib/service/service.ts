@@ -2,6 +2,7 @@ import * as events from 'events'
 import { PeerPool } from '../net/peerpool'
 import { defaultLogger } from '../logging'
 import { Peer } from '../net/peer/peer'
+import { Config } from '../config'
 
 const defaultOptions = {
   maxPeers: 25,
@@ -14,6 +15,8 @@ const defaultOptions = {
  * @memberof module:service
  */
 export class Service extends events.EventEmitter {
+  public config: Config
+
   public logger: any
   public opened: boolean
   public running: boolean
@@ -29,8 +32,10 @@ export class Service extends events.EventEmitter {
    */
   constructor(options?: any) {
     super()
-    options = { ...defaultOptions, ...options }
 
+    this.config = new Config()
+
+    options = { ...defaultOptions, ...options }
     this.logger = options.logger
     this.opened = false
     this.running = false
