@@ -5,7 +5,7 @@
     "plugin": "typedoc-plugin-markdown",
     "readme": "none",
     "gitRevision": "master",
-    "exclude": ["test/**/*.ts"],
+    "exclude": ["test/**/*.ts", "examples/*.ts"],
     "excludeNotExported": true,
     "excludeExternals": true,
     "excludePrivate": true,
