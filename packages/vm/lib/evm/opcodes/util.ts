@@ -1,6 +1,7 @@
 import { Address, BN, keccak256, setLengthRight, setLengthLeft } from 'ethereumjs-util'
 import { ERROR, VmError } from './../../exceptions'
 import { RunState } from './../interpreter'
+import { adjustSstoreGasEIP2929 } from './EIP2929'
 
 const MASK_160 = new BN(1).shln(160).subn(1)
 
@@ -237,5 +238,23 @@ export function writeCallOutput(runState: RunState, outOffset: BN, outLength: BN
     const data = getDataSlice(returnData, new BN(0), new BN(dataLength))
     runState.memory.extend(memOffset, dataLength)
     runState.memory.write(memOffset, dataLength, data)
+  }
+}
+
+/** The first rule set of SSTORE rules, which are the rules pre-Constantinople and in Petersburg
+ * @param {RunState} runState
+ * @param {any}      found
+ * @param {Buffer}   value
+ * @param {Buffer}   keyBuf
+ */
+export function updateSstoreGas(runState: RunState, found: any, value: Buffer, keyBuf: Buffer) {
+  const sstoreResetCost = runState._common.param('gasPrices', 'sstoreReset')
+  if ((value.length === 0 && !found.length) || (value.length !== 0 && found.length)) {
+    runState.eei.useGas(new BN(adjustSstoreGasEIP2929(runState, keyBuf, sstoreResetCost, 'reset')))
+  } else if (value.length === 0 && found.length) {
+    runState.eei.useGas(new BN(adjustSstoreGasEIP2929(runState, keyBuf, sstoreResetCost, 'reset')))
+    runState.eei.refundGas(new BN(runState._common.param('gasPrices', 'sstoreRefund')))
+  } else if (value.length !== 0 && !found.length) {
+    runState.eei.useGas(new BN(runState._common.param('gasPrices', 'sstoreSet')))
   }
 }
