@@ -22,14 +22,14 @@ tape('[Integration:LightSync]', async (t) => {
     const service =
       options.syncmode === 'fast'
         ? new FastEthereumService({
-            config: new Config({ lightserv: true, minPeers: 1 }),
-            servers: [server],
+            //@ts-ignore allow Config instantiation with MockServer
+            config: new Config({ servers: [server], lightserv: true, minPeers: 1 }),
             interval: options.interval || 10,
             chain,
           })
         : new LightEthereumService({
-          config: new Config({ minPeers: 1 }),
-            servers: [server],
+          //@ts-ignore allow Config instantiation with MockServer
+          config: new Config({ servers: [server], minPeers: 1 }),
             interval: options.interval || 10,
             chain,
           })

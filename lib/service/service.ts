@@ -3,10 +3,6 @@ import { PeerPool } from '../net/peerpool'
 import { Peer } from '../net/peer/peer'
 import { Config } from '../config'
 
-const defaultOptions = {
-  servers: [],
-}
-
 /**
  * Base class for all services
  * @memberof module:service
@@ -16,27 +12,22 @@ export class Service extends events.EventEmitter {
 
   public opened: boolean
   public running: boolean
-  public servers: any
   public pool: any
 
   /**
    * Create new service and associated peer pool
    * @param {Object}     options constructor parameters
    * @param {Config}   [options.config] Client configuration
-   * @param {Server[]}   [options.servers=[]] servers to run service on
    */
   constructor(options?: any) {
     super()
 
     this.config = options.config
 
-    options = { ...defaultOptions, ...options }
     this.opened = false
     this.running = false
-    this.servers = options.servers
     this.pool = new PeerPool({
       config: this.config,
-      servers: this.servers,
     })
     this.pool.on('message', async (message: any, protocol: string, peer: Peer) => {
       if (this.running) {
@@ -78,7 +69,7 @@ export class Service extends events.EventEmitter {
       return false
     }
     const protocols = this.protocols
-    this.servers.map((s: any) => s.addProtocols(protocols))
+    this.config.servers.map((s) => s.addProtocols(protocols))
     if (this.pool) {
       this.pool.on('banned', (peer: Peer) => this.config.logger.debug(`Peer banned: ${peer}`))
       this.pool.on('error', (error: Error) => this.emit('error', error))
@@ -109,7 +100,7 @@ export class Service extends events.EventEmitter {
     if (this.running) {
       return false
     }
-    await Promise.all(this.servers.map((s: any) => s.start()))
+    await Promise.all(this.config.servers.map((s) => s.start()))
     this.running = true
     this.config.logger.info(`Started ${this.name} service.`)
   }

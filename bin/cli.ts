@@ -147,13 +147,13 @@ async function run() {
     return new Server({ config, ...t.options })
   })
   const dataDir = `${args.datadir}/${networkDirName}ethereumjs/${syncDirName}`
+  config.servers = servers
 
   fs.ensureDirSync(dataDir)
   logger.info(`Data directory: ${dataDir}`)
 
   const options = {
     config,
-    servers,
     db: level(dataDir),
     rpcport: args.rpcport,
     rpcaddr: args.rpcaddr,

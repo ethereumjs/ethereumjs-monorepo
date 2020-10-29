@@ -13,8 +13,8 @@ tape('[Integration:PeerPool]', async (t) => {
     server.addProtocols(protocols)
     await server.start()
     const pool = new PeerPool({
-      config: new Config(),
-      servers: [server],
+      //@ts-ignore allow Config instantiation with MockServer
+      config: new Config({ servers: [server] }),
     })
     await pool.open()
     return [server, pool]

@@ -10,7 +10,6 @@ import { Config } from './config'
 export default class Node extends events.EventEmitter {
   public config: Config
 
-  public servers: any
   public services: any
 
   public opened: boolean
@@ -21,10 +20,6 @@ export default class Node extends events.EventEmitter {
    * @param {Object}   options constructor parameters
    * @param {Config}   [options.config] Client configuration
    * @param {LevelDB}  [options.db=null] blockchain database
-<<<<<<< HEAD
-=======
-   * @param {Server[]} [options.servers=[]] list of servers to use
->>>>>>> Added default members to Config, use defaults for CLI, lightserv -> horizontal integration
    * @param {Object[]} [options.bootnodes] list of bootnodes to use for discovery
    * @param {string[]} [options.clientFilter] list of supported clients
    * @param {number}   [options.refreshInterval] how often to discover new peers
@@ -57,7 +52,7 @@ export default class Node extends events.EventEmitter {
     if (this.opened) {
       return false
     }
-    this.servers.map((s: any) => {
+    this.config.servers.map((s) => {
       s.on('error', (error: Error) => {
         this.emit('error', error)
       })
@@ -85,7 +80,7 @@ export default class Node extends events.EventEmitter {
     if (this.started) {
       return false
     }
-    await Promise.all(this.servers.map((s: any) => s.start()))
+    await Promise.all(this.config.servers.map((s) => s.start()))
     await Promise.all(this.services.map((s: any) => s.start()))
     this.started = true
   }
@@ -99,7 +94,7 @@ export default class Node extends events.EventEmitter {
       return false
     }
     await Promise.all(this.services.map((s: any) => s.stop()))
-    await Promise.all(this.servers.map((s: any) => s.stop()))
+    await Promise.all(this.config.servers.map((s) => s.stop()))
     this.started = false
   }
 
@@ -118,6 +113,6 @@ export default class Node extends events.EventEmitter {
    * @return {Server}
    */
   server(name: string) {
-    return this.servers.find((s: any) => s.name === name)
+    return this.config.servers.find((s) => s.name === name)
   }
 }

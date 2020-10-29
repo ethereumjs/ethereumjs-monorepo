@@ -2,10 +2,6 @@ import { EventEmitter } from 'events'
 import { Config } from '../config'
 import { Peer } from './peer/peer'
 
-const defaultOptions = {
-  servers: [],
-}
-
 /**
  * @module net
  */
@@ -25,7 +21,6 @@ const defaultOptions = {
 export class PeerPool extends EventEmitter {
   public config: Config
 
-  private servers: any[]
   private pool: Map<string, Peer>
   private noPeerPeriods: number
   private opened: boolean
@@ -34,16 +29,12 @@ export class PeerPool extends EventEmitter {
   /**
    * Create new peer pool
    * @param {Object}   options constructor parameters
-   * @param {Server[]} options.servers servers to aggregate peers from
    */
   constructor(options: any) {
     super()
 
     this.config = options.config
 
-    options = { ...defaultOptions, ...options }
-
-    this.servers = options.servers
     this.pool = new Map<string, Peer>()
     this.noPeerPeriods = 0
     this.opened = false
@@ -64,7 +55,7 @@ export class PeerPool extends EventEmitter {
     if (this.opened) {
       return false
     }
-    this.servers.map((server: any) => {
+    this.config.servers.map((server) => {
       server.on('connected', (peer: Peer) => {
         this.connected(peer)
       })
@@ -205,7 +196,7 @@ export class PeerPool extends EventEmitter {
     if (this.size === 0) {
       this.noPeerPeriods += 1
       if (this.noPeerPeriods >= 3) {
-        const promises = this.servers.map(async (server: any) => {
+        const promises = this.config.servers.map(async (server: any) => {
           if (server.bootstrap) {
             this.config.logger.info('Retriggering bootstrap.')
             await server.bootstrap()

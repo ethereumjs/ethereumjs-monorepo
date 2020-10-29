@@ -15,8 +15,8 @@ tape('[Integration:FastSync]', async (t) => {
     const server = new MockServer({ location: options.location })
     const chain = new MockChain({ height: options.height })
     const service = new FastEthereumService({
-      config: new Config({ minPeers: 1 }),
-      servers: [server],
+      //@ts-ignore allow Config instantiation with MockServer
+      config: new Config({ servers: [server], minPeers: 1 }),
       interval: options.interval || 10,
       timeout: 500,
       chain,

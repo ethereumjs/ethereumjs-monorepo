@@ -7,8 +7,8 @@ defaultLogger.silent = true
 
 tape('[Integration:Node]', (t) => {
   const node = new Node({
-    config: new Config({ syncmode: 'fast' }),
-    servers: [new MockServer()],
+    //@ts-ignore allow Config instantiation with MockServer
+    config: new Config({ servers: [new MockServer()], syncmode: 'fast' }),
     lightserv: false,
   })
 

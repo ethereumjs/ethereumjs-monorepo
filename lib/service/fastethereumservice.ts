@@ -10,12 +10,10 @@ import { BoundProtocol } from '../net/protocol'
  * @memberof module:service
  */
 export class FastEthereumService extends EthereumService {
-
   /**
    * Create new ETH service
    * @param {Object}   options constructor parameters
    * @param {Config}   [options.config] Client configuration
-   * @param {Server[]} options.servers servers to run service on
    * @param {Chain}    [options.chain] blockchain
    * @param {number}   [options.interval] sync retry interval
    */

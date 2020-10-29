@@ -20,7 +20,8 @@ tape('[PeerPool]', (t) => {
 
   t.test('should open/close', async (t) => {
     const server = new EventEmitter()
-    const pool = new PeerPool({ config: new Config(), servers: [server] })
+    //@ts-ignore allow Config instantiation with EventEmitter server
+    const pool = new PeerPool({ config: new Config({ servers: [server] }) })
     pool.connected = td.func()
     pool.disconnected = td.func()
     await pool.open()
