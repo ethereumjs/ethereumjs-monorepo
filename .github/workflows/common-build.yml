@@ -37,9 +37,7 @@ jobs:
           key: Common-${{ runner.os }}-${{ matrix.node-version }}-${{ hashFiles('../../yarn.lock') }}
           path: '**/node_modules'
 
-      # Installs root dependencies, ignoring Bootstrap All script.
-      # Bootstraps the current package only
-      - run: npx lerna bootstrap --scope @ethereumjs/common
+      - run: yarn
         if: steps.cache.outputs.cache-hit != 'true'
         working-directory: ${{github.workspace}}
 

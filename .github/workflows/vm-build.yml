@@ -31,9 +31,7 @@ jobs:
           key: VM-${{ runner.os }}-${{ matrix.node-version }}-${{ hashFiles('../../yarn.lock') }}
           path: '**/node_modules'
 
-      # Installs root dependencies, ignoring Bootstrap All script.
-      # Bootstraps the current package only
-      - run: npx lerna bootstrap --scope @ethereumjs/vm
+      - run: yarn
         if: steps.cache.outputs.cache-hit != 'true'
         working-directory: ${{github.workspace}}
 
@@ -69,9 +67,7 @@ jobs:
           key: VM-${{ runner.os }}-${{ matrix.node-version }}-${{ hashFiles('../../yarn.lock') }}
           path: '**/node_modules'
 
-      # Installs root dependencies, ignoring Bootstrap All script.
-      # Bootstraps the current package only
-      - run: npx lerna bootstrap --scope @ethereumjs/vm
+      - run: yarn
         if: steps.cache.outputs.cache-hit != 'true'
         working-directory: ${{github.workspace}}
 
@@ -98,9 +94,7 @@ jobs:
           key: VM-${{ runner.os }}-${{ matrix.node-version }}-${{ hashFiles('../../yarn.lock') }}
           path: '**/node_modules'
 
-      # Installs root dependencies, ignoring Bootstrap All script.
-      # Bootstraps the current package only
-      - run: npx lerna bootstrap --scope @ethereumjs/vm
+      - run: yarn
         if: steps.cache.outputs.cache-hit != 'true'
         working-directory: ${{github.workspace}}
 
@@ -127,9 +121,7 @@ jobs:
           key: VM-${{ runner.os }}-${{ matrix.node-version }}-${{ hashFiles('../../yarn.lock') }}
           path: '**/node_modules'
 
-      # Installs root dependencies, ignoring Bootstrap All script.
-      # Bootstraps the current package only
-      - run: npx lerna bootstrap --scope @ethereumjs/vm
+      - run: yarn
         if: steps.cache.outputs.cache-hit != 'true'
         working-directory: ${{github.workspace}}
 

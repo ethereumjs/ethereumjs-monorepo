@@ -37,9 +37,7 @@ jobs:
           key: Tx-${{ runner.os }}-${{ matrix.node-version }}-${{ hashFiles('../../yarn.lock') }}
           path: '**/node_modules'
 
-      # Installs root dependencies, ignoring Bootstrap All script.
-      # Bootstraps the current package only
-      - run: npx lerna bootstrap --scope @ethereumjs/tx
+      - run: yarn
         if: steps.cache.outputs.cache-hit != 'true'
         working-directory: ${{github.workspace}}
 
