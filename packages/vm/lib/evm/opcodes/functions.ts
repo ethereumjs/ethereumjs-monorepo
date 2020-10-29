@@ -20,6 +20,7 @@ import {
   subMemUsage,
   trap,
   writeCallOutput,
+  updateSstoreGas,
 } from './util'
 import { updateSstoreGasEIP1283 } from './EIP1283'
 import { updateSstoreGasEIP2200 } from './EIP2200'
@@ -745,8 +746,15 @@ export const handlers: Map<number, OpHandler> = new Map([
       // TODO: Replace getContractStorage with EEI method
       const found = await getContractStorage(runState, runState.eei.getAddress(), keyBuf)
       accessStorageEIP2929(runState, keyBuf, true)
-      updateSstoreGasEIP1283(runState, found, setLengthLeftStorage(value))
-      updateSstoreGasEIP2200(runState, found, setLengthLeftStorage(value), keyBuf)
+
+      if (runState._common.hardfork() === 'constantinople') {
+        updateSstoreGasEIP1283(runState, found, setLengthLeftStorage(value))
+      } else if (runState._common.gteHardfork('istanbul')) {
+        updateSstoreGasEIP2200(runState, found, setLengthLeftStorage(value), keyBuf)
+      } else {
+        updateSstoreGas(runState, found, setLengthLeftStorage(value), keyBuf)
+      }
+
       await runState.eei.storageStore(keyBuf, value)
     },
   ],
