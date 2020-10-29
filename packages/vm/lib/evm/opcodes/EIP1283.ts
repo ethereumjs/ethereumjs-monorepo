@@ -9,8 +9,7 @@ import { RunState } from './../interpreter'
  * @param {Buffer}   value
  */
 export function updateSstoreGasEIP1283(runState: RunState, found: any, value: Buffer) {
-  const original = found.original
-  const current = found.current
+  const { original, current } = found
   if (current.equals(value)) {
     // If current value equals new value (this is a no-op), 200 gas is deducted.
     runState.eei.useGas(new BN(runState._common.param('gasPrices', 'netSstoreNoopGas')))
