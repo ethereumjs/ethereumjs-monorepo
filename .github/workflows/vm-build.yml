@@ -28,7 +28,7 @@ jobs:
         uses: actions/cache@v2
         id: cache
         with:
-          key: cache-${{ runner.os }}-${{ matrix.node-version }}-${{ hashFiles('../../yarn.lock') }}
+          key: cache-${{ runner.os }}-${{ matrix.node-version }}-${{ hashFiles('yarn.lock') }}
           path: '**/node_modules'
 
       - run: yarn
@@ -64,7 +64,7 @@ jobs:
         uses: actions/cache@v2
         id: cache
         with:
-          key: cache-${{ runner.os }}-${{ matrix.node-version }}-${{ hashFiles('../../yarn.lock') }}
+          key: cache-${{ runner.os }}-${{ matrix.node-version }}-${{ hashFiles('yarn.lock') }}
           path: '**/node_modules'
 
       - run: yarn
@@ -91,7 +91,7 @@ jobs:
         uses: actions/cache@v2
         id: cache
         with:
-          key: cache-${{ runner.os }}-${{ matrix.node-version }}-${{ hashFiles('../../yarn.lock') }}
+          key: cache-${{ runner.os }}-${{ matrix.node-version }}-${{ hashFiles('yarn.lock') }}
           path: '**/node_modules'
 
       - run: yarn
@@ -118,7 +118,7 @@ jobs:
         uses: actions/cache@v2
         id: cache
         with:
-          key: cache-${{ runner.os }}-${{ matrix.node-version }}-${{ hashFiles('../../yarn.lock') }}
+          key: cache-${{ runner.os }}-${{ matrix.node-version }}-${{ hashFiles('yarn.lock') }}
           path: '**/node_modules'
 
       - run: yarn
