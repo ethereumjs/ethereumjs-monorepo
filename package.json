@@ -104,6 +104,7 @@
     "nyc": "^14.1.1",
     "pino": "^5.8.0",
     "pino-pretty": "^2.2.2",
+    "pull-pair": "^1.1.0",
     "supertest": "^3.1.0",
     "tape": "~4.10.1",
     "tape-catch": "~1.0.6",
