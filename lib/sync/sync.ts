@@ -35,9 +35,8 @@ export class Synchronizer extends EventEmitter {
   constructor(options?: any) {
     super()
 
-    this.config = options.config
-
     options = { ...defaultOptions, ...options }
+    this.config = options.config
 
     this.pool = options.pool
     this.chain = options.chain

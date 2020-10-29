@@ -71,12 +71,12 @@ export class Config {
     // Also a fix for https://github.com/ethereumjs/ethereumjs-vm/issues/757
 
     // TODO: map chainParams (and lib/util.parseParams) to new Common format
-    this.common = options.common ? options.common : Config.COMMON_DEFAULT
-    this.logger = options.logger ? options.logger : Config.LOGGER_DEFAULT
-    this.servers = options.servers ? options.servers : Config.SERVERS_DEFAULT
-    this.syncmode = options.syncmode ? options.syncmode : Config.SYNCMODE_DEFAULT
-    this.lightserv = options.lightserv ? options.lightserv : Config.LIGHTSERV_DEFAULT
-    this.minPeers = options.minPeers ? options.minPeers : Config.MINPEERS_DEFAULT
-    this.maxPeers = options.maxPeers ? options.maxPeers : Config.MAXPEERS_DEFAULT
+    this.common = options.common ?? Config.COMMON_DEFAULT
+    this.logger = options.logger ?? Config.LOGGER_DEFAULT
+    this.servers = options.servers ?? Config.SERVERS_DEFAULT
+    this.syncmode = options.syncmode ?? Config.SYNCMODE_DEFAULT
+    this.lightserv = options.lightserv ?? Config.LIGHTSERV_DEFAULT
+    this.minPeers = options.minPeers ?? Config.MINPEERS_DEFAULT
+    this.maxPeers = options.maxPeers ?? Config.MAXPEERS_DEFAULT
   }
 }

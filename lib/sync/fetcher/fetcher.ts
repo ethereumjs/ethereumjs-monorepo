@@ -48,9 +48,8 @@ export class Fetcher extends Readable {
   constructor(options: any) {
     super({ ...options, objectMode: true })
 
-    this.config = options.config
-
     options = { ...defaultOptions, ...options }
+    this.config = options.config
 
     this.pool = options.pool
     this.timeout = options.timeout

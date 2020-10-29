@@ -41,9 +41,8 @@ export class Peer extends events.EventEmitter {
   constructor(options: any) {
     super()
 
-    this.config = options.config
-
     options = { ...defaultOptions, ...options }
+    this.config = options.config
 
     this.id = options.id
     this.address = options.address

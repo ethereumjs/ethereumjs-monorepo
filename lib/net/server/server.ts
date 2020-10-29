@@ -24,9 +24,8 @@ export class Server extends EventEmitter {
   constructor(options: any) {
     super()
 
-    this.config = options.config
-
     options = { ...defaultOptions, ...options }
+    this.config = options.config
 
     this.refreshInterval = options.refreshInterval
     this.protocols = new Set()

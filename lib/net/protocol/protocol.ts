@@ -49,9 +49,9 @@ export class Protocol extends EventEmitter {
   constructor(options?: any) {
     super()
 
+    options = { ...defaultOptions, ...options }
     this.config = options.config
 
-    options = { ...defaultOptions, ...options }
     this.timeout = options.timeout
     this.opened = false
   }
