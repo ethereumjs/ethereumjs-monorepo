@@ -12,8 +12,7 @@ import { trap } from './util'
  * @param {Buffer}   value
  */
 export function updateSstoreGasEIP2200(runState: RunState, found: any, value: Buffer, key: Buffer) {
-  const original = found.original
-  const current = found.current
+  const { original, current } = found
   // Fail if not enough gas is left
   if (
     runState.eei.getGasLeft().lten(runState._common.param('gasPrices', 'sstoreSentryGasEIP2200'))
