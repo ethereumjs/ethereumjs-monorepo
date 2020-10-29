@@ -65,7 +65,7 @@ updated.
 
 There are three new factory methods to create a new `BlockHeader`:
 
-1. Pass in a Header-attribute named dictionary to `BlockHeader.fromHeaderData(headerData: HeaderData = {}, opts: BlockOptions = {})`:
+1. Pass in a Header-attribute named dictionary to `BlockHeader.fromHeaderData(headerData: HeaderData = {}, opts?: BlockOptions)`:
 
 ```typescript
 const headerData = {
@@ -75,7 +75,7 @@ const headerData = {
   gasLimit: 8000000,
   timestamp: 1562422144,
 }
-const header = BlockHeader.fromHeaderData(headerData, {})
+const header = BlockHeader.fromHeaderData(headerData)
 ```
 
 2. Create a `BlockHeader` from an RLP-serialized header `Buffer` with `BlockHeader.fromRLPSerializedHeader(serialized: Buffer, opts: BlockOptions)`.
@@ -83,16 +83,16 @@ const header = BlockHeader.fromHeaderData(headerData, {})
 ```typescript
 const serialized = Buffer.from(
   'f901f7a06bfee7294bf44572b7266358e627f3c35105e1c3851f3de09e6d646f955725a7a01dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d49347940000000000000000000000000000000000000000a00000000000000000000000000000000000000000000000000000000000000000a056e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421a056e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421b9010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000830200000f837a120080845d20ab8080a00000000000000000000000000000000000000000000000000000000000000000880000000000000000',
-  'hex',
+  'hex'
 )
-const header = BlockHeader.fromRLPSerializedHeader(serialized, {})
+const header = BlockHeader.fromRLPSerializedHeader(serialized)
 ```
 
 3. Create a `BlockHeader` from an array of `Buffer` values, you can do a first short roundtrip test with:
 
 ```typescript
 const valuesArray = header.raw()
-BlockHeader.fromValuesArray(valuesArray, {})
+BlockHeader.fromValuesArray(valuesArray)
 ```
 
 Generally internal types representing block header values are now closer to their domain representation
@@ -102,9 +102,9 @@ Generally internal types representing block header values are now closer to thei
 
 There are analogue new static factories for the `Block` class:
 
-- `Block.fromBlockData(blockData: BlockData = {}, opts: BlockOptions = {})`
-- `Block.fromRLPSerializedBlock(serialized: Buffer, opts: BlockOptions = {})`
-- `Block.fromValuesArray(values: BlockBuffer, opts: BlockOptions = {})`
+- `Block.fromBlockData(blockData: BlockData = {}, opts?: BlockOptions)`
+- `Block.fromRLPSerializedBlock(serialized: Buffer, opts?: BlockOptions)`
+- `Block.fromValuesArray(values: BlockBuffer, opts?: BlockOptions)`
 
 Learn more about the full API in the [docs](./docs/README.md).
 
@@ -143,7 +143,7 @@ try {
 
 ### Header Validation Methods > Signature Changes
 
-**Breaking**: The signatures of the following header validation methods have been updated to take a `parentBlockHeader` instead of a 
+**Breaking**: The signatures of the following header validation methods have been updated to take a `parentBlockHeader` instead of a
 `parentBlock` input parameter for consistency and removing a circling dependency with `Block`:
 
 - `BlockHeader.canonicalDifficulty(parentBlockHeader: BlockHeader): BN`
@@ -161,8 +161,8 @@ see PR [#863](https://github.com/ethereumjs/ethereumjs-vm/pull/863).
 
 ### Dual ES5 and ES2017 Builds
 
-We significantly updated our internal tool and CI setup along the work on 
-PR [#913](https://github.com/ethereumjs/ethereumjs-vm/pull/913) with an update to `ESLint` from `TSLint` 
+We significantly updated our internal tool and CI setup along the work on
+PR [#913](https://github.com/ethereumjs/ethereumjs-vm/pull/913) with an update to `ESLint` from `TSLint`
 for code linting and formatting and the introduction of a new build setup.
 
 Packages now target `ES2017` for Node.js builds (the `main` entrypoint from `package.json`) and introduce

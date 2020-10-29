@@ -17,7 +17,7 @@ export class Block {
   public readonly txTrie = new Trie()
   public readonly _common: Common
 
-  public static fromBlockData(blockData: BlockData = {}, opts: BlockOptions = {}) {
+  public static fromBlockData(blockData: BlockData = {}, opts?: BlockOptions) {
     const { header: headerData, transactions: txsData, uncleHeaders: uhsData } = blockData
 
     const header = BlockHeader.fromHeaderData(headerData, opts)
@@ -39,7 +39,7 @@ export class Block {
     return new Block(header, transactions, uncleHeaders)
   }
 
-  public static fromRLPSerializedBlock(serialized: Buffer, opts: BlockOptions = {}) {
+  public static fromRLPSerializedBlock(serialized: Buffer, opts?: BlockOptions) {
     const values = (rlp.decode(serialized) as any) as BlockBuffer
 
     if (!Array.isArray(values)) {
@@ -49,7 +49,7 @@ export class Block {
     return Block.fromValuesArray(values, opts)
   }
 
-  public static fromValuesArray(values: BlockBuffer, opts: BlockOptions = {}) {
+  public static fromValuesArray(values: BlockBuffer, opts?: BlockOptions) {
     if (values.length > 3) {
       throw new Error('invalid block. More values than expected were received')
     }
@@ -76,7 +76,7 @@ export class Block {
   /**
    * Alias for Block.fromBlockData() with initWithGenesisHeader set to true.
    */
-  public static genesis(blockData: BlockData = {}, opts: BlockOptions = {}) {
+  public static genesis(blockData: BlockData = {}, opts?: BlockOptions) {
     opts = { ...opts, initWithGenesisHeader: true }
     return Block.fromBlockData(blockData, opts)
   }
