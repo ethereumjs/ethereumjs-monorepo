@@ -72,7 +72,7 @@ const args = require('yargs')
     maxPeers: {
       describe: 'Maximum peers to sync with',
       number: true,
-      default: Config.MINPEERS_DEFAULT,
+      default: Config.MAXPEERS_DEFAULT,
     },
     params: {
       describe: 'Path to chain parameters json file',
