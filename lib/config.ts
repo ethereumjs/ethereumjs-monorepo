@@ -1,3 +1,4 @@
+const os = require('os')
 import Common from '@ethereumjs/common'
 import { Logger } from 'winston'
 import { defaultLogger } from './logging'
@@ -35,6 +36,10 @@ export interface Options {
    */
   lightserv?: boolean
   /**
+   * Root data directory for the blockchain
+   */
+  datadir?: string
+  /**
    * Number of peers needed before syncing
    *
    * Default: 2
@@ -54,6 +59,7 @@ export class Config {
   public servers: (RlpxServer | Libp2pServer)[]
   public syncmode: string
   public lightserv: boolean
+  public datadir: string
   public minPeers: number
   public maxPeers: number
 
@@ -62,6 +68,7 @@ export class Config {
   public static readonly SERVERS_DEFAULT = []
   public static readonly SYNCMODE_DEFAULT = 'fast'
   public static readonly LIGHTSERV_DEFAULT = false
+  public static readonly DATADIR_DEFAULT = `${os.homedir()}/Library/Ethereum`
   public static readonly MINPEERS_DEFAULT = 2
   public static readonly MAXPEERS_DEFAULT = 25
 
@@ -76,7 +83,21 @@ export class Config {
     this.servers = options.servers ?? Config.SERVERS_DEFAULT
     this.syncmode = options.syncmode ?? Config.SYNCMODE_DEFAULT
     this.lightserv = options.lightserv ?? Config.LIGHTSERV_DEFAULT
+    this.datadir = options.datadir ?? Config.DATADIR_DEFAULT
     this.minPeers = options.minPeers ?? Config.MINPEERS_DEFAULT
     this.maxPeers = options.maxPeers ?? Config.MAXPEERS_DEFAULT
+  }
+
+  /**
+   * Returns the directory for storing the client sync data
+   * based on syncmode and selected chain (subdirectory of 'datadir')
+   */
+  getSyncDataDirectory(): string {
+    const syncDirName = this.syncmode === 'light' ? 'lightchaindata' : 'chaindata'
+    const chain = this.common.chainName()
+    const networkDirName = chain === 'mainnet' ? '' : `${chain}/`
+
+    const dataDir = `${this.datadir}/${networkDirName}ethereumjs/${syncDirName}`
+    return dataDir
   }
 }

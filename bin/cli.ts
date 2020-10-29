@@ -10,7 +10,6 @@ import { Config } from '../lib/config'
 import Common from '@ethereumjs/common'
 const RPCManager = require('../lib/rpc')
 const level = require('level')
-const os = require('os')
 const path = require('path')
 const fs = require('fs-extra')
 
@@ -39,7 +38,7 @@ const args = require('yargs')
     },
     datadir: {
       describe: 'Data directory for the blockchain',
-      default: `${os.homedir()}/Library/Ethereum`,
+      default: Config.DATADIR_DEFAULT,
     },
     transports: {
       describe: 'Network transports',
@@ -115,7 +114,6 @@ function runRpcServer(node: any, options: any) {
 }
 
 async function run() {
-  const syncDirName = args.syncmode === 'light' ? 'lightchaindata' : 'chaindata'
   // give network id precedence over network name
   if (args.networkId) {
     const network = networks.find((n) => n[0] === `${args.networkId}`)
@@ -123,7 +121,6 @@ async function run() {
       args.network = network[1]
     }
   }
-  const networkDirName = args.network === 'mainnet' ? '' : `${args.network}/`
 
   const common = new Common({ chain: args.network, hardfork: 'chainstart' })
   const config = new Config({
@@ -146,15 +143,16 @@ async function run() {
     }
     return new Server({ config, ...t.options })
   })
-  const dataDir = `${args.datadir}/${networkDirName}ethereumjs/${syncDirName}`
+
   config.servers = servers
 
-  fs.ensureDirSync(dataDir)
-  logger.info(`Data directory: ${dataDir}`)
+  const syncDataDir = config.getSyncDataDirectory()
+  fs.ensureDirSync(syncDataDir)
+  logger.info(`Sync data directory: ${syncDataDir}`)
 
   const options = {
     config,
-    db: level(dataDir),
+    db: level(syncDataDir),
     rpcport: args.rpcport,
     rpcaddr: args.rpcaddr,
   }
