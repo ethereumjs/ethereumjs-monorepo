@@ -26,6 +26,7 @@ export class Synchronizer extends EventEmitter {
   /**
    * Create new node
    * @param {Object}      options constructor parameters
+   * @param {Config}      [options.config] Client configuration
    * @param {PeerPool}    options.pool peer pool
    * @param {Chain}       options.chain blockchain
    * @param {FlowControl} options.flow flow control manager
@@ -34,7 +35,7 @@ export class Synchronizer extends EventEmitter {
   constructor(options?: any) {
     super()
 
-    this.config = new Config()
+    this.config = options.config
 
     options = { ...defaultOptions, ...options }
 

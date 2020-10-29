@@ -8,6 +8,7 @@ import { blockChain } from './blockChainStub'
 import { Chain } from '../../lib/blockchain/chain'
 import { RlpxServer } from '../../lib/net/server/rlpxserver'
 import Blockchain from '@ethereumjs/blockchain'
+import { Config } from '../../lib/config'
 
 const config: any = { loglevel: 'error' }
 config.logger = Logger.getLogger(config)
@@ -28,7 +29,10 @@ export function createManager(node: any) {
 }
 
 export function createNode(nodeConfig?: any) {
-  const chain = new Chain({ blockchain: (<unknown>blockChain({})) as Blockchain })
+  const chain = new Chain({
+    config: new Config(),
+    blockchain: (<unknown>blockChain({})) as Blockchain,
+  })
   chain.opened = true
   const defaultNodeConfig = {
     blockchain: chain,

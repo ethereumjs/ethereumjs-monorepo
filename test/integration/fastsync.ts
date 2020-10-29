@@ -3,6 +3,7 @@ import { FastEthereumService } from '../../lib/service'
 import MockServer from './mocks/mockserver'
 import MockChain from './mocks/mockchain'
 import { defaultLogger } from '../../lib/logging'
+import { Config } from '../../lib/config'
 defaultLogger.silent = true
 
 async function wait(delay: number) {
@@ -14,8 +15,8 @@ tape('[Integration:FastSync]', async (t) => {
     const server = new MockServer({ location: options.location })
     const chain = new MockChain({ height: options.height })
     const service = new FastEthereumService({
+      config: new Config({ minPeers: 1 }),
       servers: [server],
-      minPeers: 1,
       interval: options.interval || 10,
       timeout: 500,
       chain,

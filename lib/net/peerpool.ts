@@ -39,7 +39,7 @@ export class PeerPool extends EventEmitter {
   constructor(options: any) {
     super()
 
-    this.config = new Config()
+    this.config = options.config
 
     options = { ...defaultOptions, ...options }
 

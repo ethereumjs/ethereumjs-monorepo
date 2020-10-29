@@ -67,6 +67,7 @@ export class LesProtocol extends Protocol {
   /**
    * Create les protocol
    * @param {Object}      options constructor parameters
+   * @param {Config}      [options.config] Client configuration
    * @param {Chain}       options.chain blockchain
    * @param {FlowControl} [options.flow] flow control manager. if undefined,
    * header serving will be disabled

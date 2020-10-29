@@ -12,7 +12,7 @@ export interface ChainOptions {
   /**
    * Client configuration instance
    */
-  config?: Config
+  config: Config
 
   /**
    * Database to store blocks and metadata. Should be an abstract-leveldown compliant store.
@@ -99,10 +99,10 @@ export class Chain extends EventEmitter {
    * Create new chain
    * @param {ChainOptions} options
    */
-  constructor(options: ChainOptions = {}) {
+  constructor(options: ChainOptions) {
     super()
 
-    this.config = new Config()
+    this.config = options.config
 
     this.blockchain =
       options.blockchain ||

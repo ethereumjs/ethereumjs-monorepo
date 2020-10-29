@@ -47,6 +47,7 @@ export class RlpxServer extends Server {
   /**
    * Create new DevP2P/RLPx server
    * @param {Object}   options constructor parameters
+   * @param {Config}   [options.config] Client configuration
    * @param {Object[]} [options.bootnodes] list of bootnodes to use for discovery (can be
    * a comma separated string or list)
    * @param {number}   [options.port=null] local port to listen on
@@ -221,6 +222,7 @@ export class RlpxServer extends Server {
 
     this.rlpx.on('peer:added', async (rlpxPeer: Devp2pRLPxPeer) => {
       const peer = new RlpxPeer({
+        config: this.config,
         id: (rlpxPeer.getId() as Buffer).toString('hex'),
         host: rlpxPeer._socket.remoteAddress,
         port: rlpxPeer._socket.remotePort,

@@ -24,7 +24,7 @@ export class Server extends EventEmitter {
   constructor(options: any) {
     super()
 
-    this.config = new Config()
+    this.config = options.config
 
     options = { ...defaultOptions, ...options }
 

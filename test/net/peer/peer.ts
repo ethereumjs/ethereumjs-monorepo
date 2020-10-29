@@ -5,9 +5,11 @@ import tape from 'tape-catch'
 const td = require('testdouble')
 import { Peer } from '../../../lib/net/peer'
 import * as events from 'events'
+import { Config } from '../../../lib/config'
 
 tape('[Peer]', (t) => {
   const peer = new Peer({
+    config: new Config(),
     id: '0123456789abcdef',
     address: 'address0',
     transport: 'transport0',

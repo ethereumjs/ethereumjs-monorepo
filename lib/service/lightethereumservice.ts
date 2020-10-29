@@ -11,6 +11,7 @@ export class LightEthereumService extends EthereumService {
   /**
    * Create new ETH service
    * @param {Object}   options constructor parameters
+   * @param {Config}   [options.config] Client configuration
    * @param {Server[]} options.servers servers to run service on
    * @param {Chain}    [options.chain] blockchain
    * @param {number}   [options.interval] sync retry interval
@@ -23,6 +24,7 @@ export class LightEthereumService extends EthereumService {
   init() {
     this.config.logger.info('Light sync mode')
     this.synchronizer = new LightSynchronizer({
+      config: this.config,
       pool: this.pool,
       chain: this.chain,
       flow: this.flow,

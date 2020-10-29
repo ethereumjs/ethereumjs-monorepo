@@ -1,3 +1,4 @@
+import { Config } from '../../../lib/config'
 import { Server } from '../../../lib/net/server'
 import MockPeer from './mockpeer'
 import * as network from './network'
@@ -8,7 +9,7 @@ export default class MockServer extends Server {
   public peers: any
 
   constructor(options: any = {}) {
-    super(options)
+    super({ config: new Config(), ...options })
     this.location = options.location || '127.0.0.1'
     this.server = null
     this.peers = {}

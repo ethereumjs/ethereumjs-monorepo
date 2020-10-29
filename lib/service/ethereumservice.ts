@@ -33,6 +33,7 @@ export class EthereumService extends Service {
 =======
    * Create new ETH service
    * @param {Object}   options constructor parameters
+   * @param {Config}   [options.config] Client configuration
    * @param {Server[]} options.servers servers to run service on
    * @param {Chain}    [options.chain] blockchain
    * @param {LevelDB}  [options.db=null] blockchain database

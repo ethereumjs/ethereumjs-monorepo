@@ -26,6 +26,7 @@ export class Libp2pServer extends Server {
   /**
    * Create new DevP2P/RLPx server
    * @param {Object}   options constructor parameters
+   * @param {Config}   [options.config] Client configuration
    * @param {Object[]} [options.bootnodes] list of bootnodes to use for discovery (can be
    * a comma separated string or list)
    * @param {multiaddr[]}   [options.multiaddrs] multiaddrs to listen on (can be
@@ -225,6 +226,7 @@ export class Libp2pServer extends Server {
 
   createPeer(peerInfo: any) {
     const peer = new Libp2pPeer({
+      config: this.config,
       id: peerInfo.id.toB58String(),
       multiaddrs: peerInfo.multiaddrs.toArray().map((ma: any) => ma.toString()),
       protocols: Array.from(this.protocols),

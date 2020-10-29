@@ -4,6 +4,7 @@ import { EventEmitter } from 'events'
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { Sender } from '../../../lib/net/protocol/sender'
 import { Protocol } from '../../../lib/net/protocol/protocol'
+import { Config } from '../../../lib/config'
 
 tape('[Protocol]', (t) => {
   // TODO: remove lint ignores when disabled tests are uncommented
@@ -18,6 +19,10 @@ tape('[Protocol]', (t) => {
     decode: (value: any) => parseInt(value),
   }
   class TestProtocol extends Protocol {
+    constructor() {
+      super({ config: new Config() })
+    }
+
     get name(): string {
       return 'test'
     }
@@ -36,7 +41,7 @@ tape('[Protocol]', (t) => {
   }
 
   t.test('should throw if missing abstract methods', (t) => {
-    const p = new Protocol()
+    const p = new Protocol({ config: new Config() })
     t.throws(() => p.versions, /Unimplemented/)
     t.throws(() => p.messages, /Unimplemented/)
     t.throws(() => p.encodeStatus(), /Unimplemented/)
@@ -45,7 +50,7 @@ tape('[Protocol]', (t) => {
   })
 
   t.test('should handle open', async (t) => {
-    const p = new Protocol()
+    const p = new Protocol({ config: new Config() })
     await p.open()
     t.ok(p.opened, 'is open')
     t.end()

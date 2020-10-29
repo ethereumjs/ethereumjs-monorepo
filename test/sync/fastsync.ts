@@ -3,6 +3,7 @@ const td = require('testdouble')
 import { BN } from 'ethereumjs-util'
 import { EventEmitter } from 'events'
 import { defaultLogger } from '../../lib/logging'
+import { Config } from '../../lib/config'
 defaultLogger.silent = true
 
 tape('[FastSynchronizer]', (t) => {
@@ -15,14 +16,14 @@ tape('[FastSynchronizer]', (t) => {
 
   t.test('should initialize correctly', async (t) => {
     const pool = new PeerPool()
-    const sync = new FastSynchronizer({ pool })
+    const sync = new FastSynchronizer({ config: new Config(), pool })
     pool.emit('added', { eth: true })
     t.equals(sync.type, 'fast', 'fast type')
     t.end()
   })
 
   t.test('should open', async (t) => {
-    const sync = new FastSynchronizer({ pool: new PeerPool() })
+    const sync = new FastSynchronizer({ config: new Config(), pool: new PeerPool() })
     sync.chain = {
       open: td.func(),
       blocks: {
@@ -41,7 +42,7 @@ tape('[FastSynchronizer]', (t) => {
 
   t.test('should get height', async (t) => {
     const pool = new PeerPool()
-    const sync = new FastSynchronizer({ pool })
+    const sync = new FastSynchronizer({ config: new Config(), pool })
     const peer = { eth: { getBlockHeaders: td.func(), status: { bestHash: 'hash' } } }
     const headers = [{ number: 5 }]
     td.when(peer.eth.getBlockHeaders({ block: 'hash', max: 1 })).thenResolve(headers)
@@ -51,7 +52,7 @@ tape('[FastSynchronizer]', (t) => {
   })
 
   t.test('should find best', async (t) => {
-    const sync = new FastSynchronizer({ interval: 1, pool: new PeerPool() })
+    const sync = new FastSynchronizer({ config: new Config(), interval: 1, pool: new PeerPool() })
     sync.running = true
     sync.height = td.func()
     sync.chain = { blocks: { td: new BN(1) } }
@@ -69,7 +70,7 @@ tape('[FastSynchronizer]', (t) => {
 
   t.test('should sync', async (t) => {
     t.plan(3)
-    const sync = new FastSynchronizer({ interval: 1, pool: new PeerPool() })
+    const sync = new FastSynchronizer({ config: new Config(), interval: 1, pool: new PeerPool() })
     sync.best = td.func()
     sync.latest = td.func()
     td.when(sync.best()).thenReturn('peer')

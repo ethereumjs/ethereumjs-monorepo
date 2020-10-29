@@ -1,6 +1,7 @@
 import { BN } from 'ethereumjs-util'
 import { Block, BlockHeader } from '@ethereumjs/block'
 import { Chain } from '../../../lib/blockchain'
+import { Config } from '../../../lib/config'
 
 const defaultOptions = {
   height: 10,
@@ -10,7 +11,7 @@ export default class MockChain extends Chain {
   public height: any
 
   constructor(options: any = {}) {
-    super(options)
+    super({ config: new Config(), ...options })
     options = { ...defaultOptions, ...options }
     this.height = options.height
   }

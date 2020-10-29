@@ -18,6 +18,7 @@ export class FastEthereumService extends EthereumService {
   /**
    * Create new ETH service
    * @param {Object}   options constructor parameters
+   * @param {Config}   [options.config] Client configuration
    * @param {Server[]} options.servers servers to run service on
    * @param {boolean}  [options.lightserv=false] serve LES requests
    * @param {Chain}    [options.chain] blockchain
@@ -33,6 +34,7 @@ export class FastEthereumService extends EthereumService {
   init() {
     this.config.logger.info('Fast sync mode')
     this.synchronizer = new FastSynchronizer({
+      config: this.config,
       pool: this.pool,
       chain: this.chain,
       interval: this.interval,
@@ -46,6 +48,7 @@ export class FastEthereumService extends EthereumService {
   get protocols(): any[] {
     const protocols: any[] = [
       new EthProtocol({
+        config: this.config,
         chain: this.chain,
         timeout: this.timeout,
       }),
@@ -53,6 +56,7 @@ export class FastEthereumService extends EthereumService {
     if (this.lightserv) {
       protocols.push(
         new LesProtocol({
+          config: this.config,
           chain: this.chain,
           flow: this.flow,
           timeout: this.timeout,

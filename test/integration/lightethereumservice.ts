@@ -3,6 +3,7 @@ import { LightEthereumService } from '../../lib/service'
 import MockServer from './mocks/mockserver'
 import MockChain from './mocks/mockchain'
 import { defaultLogger } from '../../lib/logging'
+import { Config } from '../../lib/config'
 defaultLogger.silent = true
 
 tape('[Integration:LightEthereumService]', async (t) => {
@@ -10,6 +11,7 @@ tape('[Integration:LightEthereumService]', async (t) => {
     const server = new MockServer()
     const chain = new MockChain()
     const service = new LightEthereumService({
+      config: new Config(),
       servers: [server],
       chain,
     })

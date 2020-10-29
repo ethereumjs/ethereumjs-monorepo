@@ -22,18 +22,20 @@ export class Service extends events.EventEmitter {
   /**
    * Create new service and associated peer pool
    * @param {Object}     options constructor parameters
+   * @param {Config}   [options.config] Client configuration
    * @param {Server[]}   [options.servers=[]] servers to run service on
    */
   constructor(options?: any) {
     super()
 
-    this.config = new Config()
+    this.config = options.config
 
     options = { ...defaultOptions, ...options }
     this.opened = false
     this.running = false
     this.servers = options.servers
     this.pool = new PeerPool({
+      config: this.config,
       servers: this.servers,
     })
     this.pool.on('message', async (message: any, protocol: string, peer: Peer) => {

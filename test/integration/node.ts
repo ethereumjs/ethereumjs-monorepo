@@ -2,12 +2,13 @@ import tape from 'tape'
 import Node from '../../lib/node'
 import MockServer from './mocks/mockserver'
 import { defaultLogger } from '../../lib/logging'
+import { Config } from '../../lib/config'
 defaultLogger.silent = true
 
 tape('[Integration:Node]', (t) => {
   const node = new Node({
+    config: new Config({ syncmode: 'fast' }),
     servers: [new MockServer()],
-    syncmode: 'fast',
     lightserv: false,
   })
 

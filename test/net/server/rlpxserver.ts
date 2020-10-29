@@ -1,4 +1,5 @@
 import tape from 'tape-catch'
+import { Config } from '../../../lib/config'
 const td = require('testdouble')
 const EventEmitter = require('events')
 import { RlpxServer } from '../../../lib/net/server/rlpxserver'
@@ -21,6 +22,7 @@ tape('[RlpxServer]', (t) => {
 
   t.test('should initialize correctly', async (t) => {
     const server = new RlpxServer({
+      config: new Config(),
       bootnodes: '10.0.0.1:1234,enode://abcd@10.0.0.2:1234',
       key: 'abcd',
     })
@@ -46,6 +48,7 @@ tape('[RlpxServer]', (t) => {
 
   t.test('should start/stop server', async (t) => {
     const server = new RlpxServer({
+      config: new Config(),
       bootnodes: '10.0.0.1:1234,10.0.0.2:1234',
     })
     server.initDpt = td.func()
@@ -111,7 +114,7 @@ tape('[RlpxServer]', (t) => {
   t.test('should handle errors', (t) => {
     t.plan(3)
     let count = 0
-    const server = new RlpxServer()
+    const server = new RlpxServer({ config: new Config() })
     const peer = new EventEmitter()
     server.on('error', (err: any) => {
       count = count + 1
@@ -127,7 +130,7 @@ tape('[RlpxServer]', (t) => {
   })
 
   t.test('should ban peer', (t) => {
-    const server = new RlpxServer()
+    const server = new RlpxServer({ config: new Config() })
     t.notOk(server.ban('123'), 'not started')
     server.started = true
     server.dpt = td.object()
@@ -140,7 +143,7 @@ tape('[RlpxServer]', (t) => {
   // TODO: investigate
   /*t.test('should init dpt', t => {
     t.plan(1)
-    const server = new RlpxServer()
+    const server = new RlpxServer({ config: new Config() })
     server.initDpt()
     td.verify((server.dpt as any).bind(server.port, '0.0.0.0'))
     server.on('error', (err: any) => t.equals(err, 'err0', 'got error'));
@@ -151,7 +154,7 @@ tape('[RlpxServer]', (t) => {
   // server.initRlpx() not working with td-modified RlpxPeer class object
   /*t.test('should init rlpx', t => {
     t.plan(4)
-    const server = new RlpxServer()
+    const server = new RlpxServer({ config: new Config() })
     const rlpxPeer = td.object()
     td.when(rlpxPeer.getId()).thenReturn(Buffer.from([1]))
     td.when(RlpxPeer.prototype.accept(rlpxPeer, td.matchers.isA(RlpxServer))).thenResolve()
@@ -174,7 +177,7 @@ tape('[RlpxServer]', (t) => {
   // server.initRlpx() not working with td-modified RlpxPeer class object
   /*t.test('should handles errors from id-less peers', t => {
     t.plan(1)
-    const server = new RlpxServer()
+    const server = new RlpxServer({ config: new Config() })
     const rlpxPeer = td.object()
     td.when(rlpxPeer.getId()).thenReturn(null)
     td.when(RlpxPeer.prototype.accept(rlpxPeer, td.matchers.isA(RlpxServer))).thenResolve()

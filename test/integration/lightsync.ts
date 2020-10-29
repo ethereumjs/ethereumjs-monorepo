@@ -6,6 +6,7 @@ import { FastEthereumService, LightEthereumService } from '../../lib/service'
 import MockServer from './mocks/mockserver'
 import MockChain from './mocks/mockchain'
 import { defaultLogger } from '../../lib/logging'
+import { Config } from '../../lib/config'
 defaultLogger.silent = true
 
 // TODO: There is a syntax or TS compilation error somewhere in this file (??)
@@ -21,15 +22,15 @@ tape('[Integration:LightSync]', async (t) => {
     const service =
       options.syncmode === 'fast'
         ? new FastEthereumService({
+            config: new Config({ minPeers: 1 }),
             servers: [server],
             lightserv: true,
-            minPeers: 1,
             interval: options.interval || 10,
             chain,
           })
         : new LightEthereumService({
+          config: new Config({ minPeers: 1 }),
             servers: [server],
-            minPeers: 1,
             interval: options.interval || 10,
             chain,
           })

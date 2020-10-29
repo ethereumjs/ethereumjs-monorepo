@@ -9,16 +9,17 @@ defaultLogger.silent = true
 // needed for karma-typescript bundling
 import * as util from 'util' //eslint-disable-line @typescript-eslint/no-unused-vars
 import { Buffer } from 'buffer' //eslint-disable-line @typescript-eslint/no-unused-vars
+import { Config } from '../../lib/config'
 
 tape('[Chain]', (t) => {
   t.test('should test object creation without logger', (t) => {
-    t.equal(new Chain().config.logger, defaultLogger)
+    t.equal(new Chain({ config: new Config() }).config.logger, defaultLogger)
 
     t.end()
   })
 
   t.test('should test blockchain DB is initialized', (t) => {
-    const chain = new Chain() // eslint-disable-line no-new
+    const chain = new Chain({ config: new Config() }) // eslint-disable-line no-new
 
     const db = chain.db
     const testKey = 'name'
@@ -37,7 +38,7 @@ tape('[Chain]', (t) => {
   })
 
   t.test('should retrieve chain properties', async (t) => {
-    const chain = new Chain() // eslint-disable-line no-new
+    const chain = new Chain({ config: new Config() }) // eslint-disable-line no-new
     await chain.open()
     t.equal(chain.networkId, 1, 'get chain.networkId')
     t.equal(chain.blocks.td.toString(10), '17179869184', 'get chain.blocks.td')
@@ -53,7 +54,7 @@ tape('[Chain]', (t) => {
   })
 
   t.test('should detect unopened chain', async (t) => {
-    const chain = new Chain() // eslint-disable-line no-new
+    const chain = new Chain({ config: new Config() }) // eslint-disable-line no-new
     const headerData: HeaderData = {
       number: new BN(1),
       difficulty: new BN('abcdffff', 16),
@@ -92,7 +93,7 @@ tape('[Chain]', (t) => {
   })
 
   t.test('should handle bad arguments to putBlocks()', async (t) => {
-    const chain = new Chain() // eslint-disable-line no-new
+    const chain = new Chain({ config: new Config() }) // eslint-disable-line no-new
     await chain.open()
     t.notOk(await chain.putBlocks((<unknown>undefined) as Block[]), 'add undefined block')
     t.notOk(await chain.putBlocks((<unknown>null) as Block[]), 'add null block')
@@ -102,7 +103,7 @@ tape('[Chain]', (t) => {
   })
 
   t.test('should handle bad arguments to putHeaders()', async (t) => {
-    const chain = new Chain() // eslint-disable-line no-new
+    const chain = new Chain({ config: new Config() }) // eslint-disable-line no-new
     await chain.open()
     t.notOk(await chain.putHeaders((<unknown>undefined) as BlockHeader[]), 'add undefined header')
     t.notOk(await chain.putHeaders((<unknown>null) as BlockHeader[]), 'add null header')
@@ -112,7 +113,7 @@ tape('[Chain]', (t) => {
   })
 
   t.test('should add block to chain', async (t) => {
-    const chain = new Chain() // eslint-disable-line no-new
+    const chain = new Chain({ config: new Config() }) // eslint-disable-line no-new
     await chain.open()
     const headerData: HeaderData = {
       number: new BN(1),

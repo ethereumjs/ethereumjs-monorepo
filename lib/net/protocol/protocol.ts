@@ -43,12 +43,13 @@ export class Protocol extends EventEmitter {
   /**
    * Create new protocol
    * @param {Object}   options constructor parameters
+   * @param {Config}   [options.config] Client configuration
    * @param {number}   [options.timeout=8000] handshake timeout in ms
    */
   constructor(options?: any) {
     super()
 
-    this.config = new Config()
+    this.config = options.config
 
     options = { ...defaultOptions, ...options }
     this.timeout = options.timeout
@@ -170,6 +171,7 @@ export class Protocol extends EventEmitter {
    */
   async bind(peer: Peer, sender: Sender): Promise<BoundProtocol> {
     const bound = new BoundProtocol({
+      config: this.config,
       protocol: this,
       peer: peer,
       sender: sender,

@@ -3,6 +3,7 @@ const td = require('testdouble')
 import { BN } from 'ethereumjs-util'
 import { EventEmitter } from 'events'
 import { defaultLogger } from '../../../lib/logging'
+import { Config } from '../../../lib/config'
 defaultLogger.silent = true
 
 async function wait(delay?: number) {
@@ -18,6 +19,7 @@ tape('[BlockFetcher]', (t) => {
 
   t.test('should start/stop', async (t) => {
     const fetcher = new BlockFetcher({
+      config: new Config(),
       pool: new PeerPool(),
       first: new BN(1),
       count: 10,
@@ -37,7 +39,7 @@ tape('[BlockFetcher]', (t) => {
   })
 
   t.test('should process', (t) => {
-    const fetcher = new BlockFetcher({ pool: new PeerPool() })
+    const fetcher = new BlockFetcher({ config: new Config(), pool: new PeerPool() })
     const blocks = [{ header: { number: 1 } }, { header: { number: 2 } }]
     t.deepEquals(fetcher.process({ task: { count: 2 } }, { blocks }), blocks, 'got results')
     t.notOk(fetcher.process({ task: { count: 2 } }, { blocks: [] }), 'bad results')
@@ -46,7 +48,7 @@ tape('[BlockFetcher]', (t) => {
 
   t.test('should find a fetchable peer', async (t) => {
     const pool = new PeerPool()
-    const fetcher = new BlockFetcher({ pool })
+    const fetcher = new BlockFetcher({ config: new Config(), pool })
     td.when(fetcher.pool.idle(td.matchers.anything())).thenReturn('peer0')
     t.equals(fetcher.peer(), 'peer0', 'found peer')
     t.end()

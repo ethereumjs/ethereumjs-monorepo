@@ -48,7 +48,7 @@ export class Fetcher extends Readable {
   constructor(options: any) {
     super({ ...options, objectMode: true })
 
-    this.config = new Config()
+    this.config = options.config
 
     options = { ...defaultOptions, ...options }
 

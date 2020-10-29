@@ -28,48 +28,24 @@ export interface Options {
 }
 
 export class Config {
-  public common!: Common
-  public logger!: Logger
-  public syncmode!: string
-  public minPeers!: number
-  public maxPeers!: number
-
-  static instance: Config
+  public common: Common
+  public logger: Logger
+  public syncmode: string
+  public minPeers: number
+  public maxPeers: number
 
   constructor(options: Options = {}) {
-    if (!Config.instance) {
-      Config.instance = this
+    // Initialize Common with an explicit 'chainstart' HF set until
+    // hardfork awareness is implemented within the library
+    // Also a fix for https://github.com/ethereumjs/ethereumjs-vm/issues/757
 
-      // Set default values on first initialization
-
-      // Initialize Common with an explicit 'chainstart' HF set until
-      // hardfork awareness is implemented within the library
-      // Also a fix for https://github.com/ethereumjs/ethereumjs-vm/issues/757
-
-      // TODO: map chainParams (and lib/util.parseParams) to new Common format
-      Config.instance.common = new Common({ chain: 'mainnet', hardfork: 'chainstart' })
-      Config.instance.logger = defaultLogger
-      Config.instance.syncmode = 'fast'
-      Config.instance.minPeers = 3
-      Config.instance.maxPeers = 25
-    }
-
-    if (options.common) {
-      Config.instance.common = options.common
-    }
-    if (options.logger) {
-      Config.instance.logger = options.logger
-    }
-    if (options.syncmode) {
-      Config.instance.syncmode = options.syncmode
-    }
-    if (options.minPeers) {
-      Config.instance.minPeers = options.minPeers
-    }
-    if (options.maxPeers) {
-      Config.instance.maxPeers = options.maxPeers
-    }
-
-    return Config.instance
+    // TODO: map chainParams (and lib/util.parseParams) to new Common format
+    this.common = options.common
+      ? options.common
+      : new Common({ chain: 'mainnet', hardfork: 'chainstart' })
+    this.logger = options.logger ? options.logger : defaultLogger
+    this.syncmode = options.syncmode ? options.syncmode : 'fast'
+    this.minPeers = options.minPeers ? options.minPeers : 3
+    this.maxPeers = options.maxPeers ? options.maxPeers : 25
   }
 }

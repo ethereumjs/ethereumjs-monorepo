@@ -7,6 +7,7 @@ const { fromName: serverFromName } = require('../lib/net/server')
 import Node from '../lib/node'
 import { Server as RPCServer } from 'jayson'
 import { Config } from '../lib/config'
+import Common from '@ethereumjs/common'
 const RPCManager = require('../lib/rpc')
 const level = require('level')
 const os = require('os')
@@ -82,7 +83,7 @@ const args = require('yargs')
   .locale('en_EN').argv
 const logger = getLogger({ loglevel: args.loglevel })
 
-async function runNode(options: any, config: Config) {
+async function runNode(options: any) {
   logger.info('Initializing Ethereumjs client...')
   if (options.lightserv) {
     logger.info(`Serving light peer requests`)
@@ -95,7 +96,7 @@ async function runNode(options: any, config: Config) {
   node.on('synchronized', () => {
     logger.info('Synchronized')
   })
-  logger.info(`Connecting to network: ${config.common.chainName()}`)
+  logger.info(`Connecting to network: ${options.config.common.chainName()}`)
   await node.open()
   logger.info('Synchronizing blockchain...')
   await node.start()
@@ -114,13 +115,6 @@ function runRpcServer(node: any, options: any) {
 }
 
 async function run() {
-  const config = new Config({
-    logger,
-    syncmode: args.syncmode,
-    minPeers: args.minPeers,
-    maxPeers: args.maxPeers,
-  })
-
   const syncDirName = args.syncmode === 'light' ? 'lightchaindata' : 'chaindata'
   // give network id precedence over network name
   if (args.networkId) {
@@ -131,6 +125,15 @@ async function run() {
   }
   const networkDirName = args.network === 'mainnet' ? '' : `${args.network}/`
 
+  const common = new Common({ chain: args.network, hardfork: 'chainstart' })
+  const config = new Config({
+    common,
+    logger,
+    syncmode: args.syncmode,
+    minPeers: args.minPeers,
+    maxPeers: args.maxPeers,
+  })
+
   // TODO: see todo below wrt resolving chain param parsing
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const chainParams = args.params ? await parseParams(args.params) : args.network
@@ -140,7 +143,7 @@ async function run() {
     if (t.name === 'rlpx') {
       t.options.bootnodes = t.options.bootnodes || config.common.bootstrapNodes()
     }
-    return new Server({ logger, ...t.options })
+    return new Server({ config, ...t.options })
   })
   const dataDir = `${args.datadir}/${networkDirName}ethereumjs/${syncDirName}`
 
@@ -148,13 +151,14 @@ async function run() {
   logger.info(`Data directory: ${dataDir}`)
 
   const options = {
+    config,
     servers,
     lightserv: args.lightserv,
     db: level(dataDir),
     rpcport: args.rpcport,
     rpcaddr: args.rpcaddr,
   }
-  const node = await runNode(options, config)
+  const node = await runNode(options)
   const server = args.rpc ? runRpcServer(node, options) : null
 
   process.on('SIGINT', async () => {

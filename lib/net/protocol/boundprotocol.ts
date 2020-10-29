@@ -23,6 +23,7 @@ export class BoundProtocol extends EventEmitter {
   /**
    * Create bound protocol
    * @param {Object}   options constructor parameters
+   * @param {Config}   [options.config] Client configuration
    * @param {Protocol} options.protocol protocol to bind
    * @param {Peer}     options.peer peer that protocol is bound to
    * @param {Sender}   options.sender message sender
@@ -31,7 +32,7 @@ export class BoundProtocol extends EventEmitter {
   constructor(options: any) {
     super()
 
-    this.config = new Config()
+    this.config = options.config
 
     this.protocol = options.protocol
     this.peer = options.peer

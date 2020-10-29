@@ -4,6 +4,7 @@ import { PeerPool } from '../../lib/net/peerpool'
 import MockServer from './mocks/mockserver'
 import MockChain from './mocks/mockchain'
 import { defaultLogger } from '../../lib/logging'
+import { Config } from '../../lib/config'
 defaultLogger.silent = true
 
 tape('[Integration:PeerPool]', async (t) => {
@@ -11,7 +12,10 @@ tape('[Integration:PeerPool]', async (t) => {
     const server = new MockServer()
     server.addProtocols(protocols)
     await server.start()
-    const pool = new PeerPool({ servers: [server] })
+    const pool = new PeerPool({
+      config: new Config(),
+      servers: [server],
+    })
     await pool.open()
     return [server, pool]
   }
@@ -58,7 +62,12 @@ tape('[Integration:PeerPool]', async (t) => {
     t.plan(3)
     const chain = new MockChain()
     await chain.open()
-    const protocols = [new EthProtocol({ chain })]
+    const protocols = [
+      new EthProtocol({
+        config: new Config(),
+        chain,
+      }),
+    ]
     const [server, pool] = await setup(protocols)
     pool.on('added', (peer: any) => t.equal(peer.id, 'peer0', 'added peer'))
     pool.on('message', (msg: any, proto: any, peer: any) => {

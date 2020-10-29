@@ -15,14 +15,4 @@ tape('[Config]', (t) => {
     t.equal(config.maxPeers, 10)
     t.end()
   })
-
-  t.test('Singleton usage', (t) => {
-    const config = new Config({ maxPeers: 10 })
-    const config2 = new Config()
-
-    t.ok(config === config2, 'should return the same singleton object reference')
-    t.equal(config.maxPeers, 10)
-    t.equal(config2.maxPeers, 10, 'should provide correct access to parameters passed')
-    t.end()
-  })
 })

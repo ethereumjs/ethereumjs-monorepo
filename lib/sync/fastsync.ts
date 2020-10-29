@@ -88,6 +88,7 @@ export class FastSynchronizer extends Synchronizer {
     )
 
     this.blockFetcher = new BlockFetcher({
+      config: this.config,
       pool: this.pool,
       chain: this.chain,
       interval: this.interval,
