@@ -5,29 +5,22 @@ import { LesProtocol } from '../net/protocol/lesprotocol'
 import { Peer } from '../net/peer/peer'
 import { BoundProtocol } from '../net/protocol'
 
-const defaultOptions = {
-  lightserv: false,
-}
-
 /**
  * Ethereum service
  * @memberof module:service
  */
 export class FastEthereumService extends EthereumService {
-  public lightserv: any
+
   /**
    * Create new ETH service
    * @param {Object}   options constructor parameters
    * @param {Config}   [options.config] Client configuration
    * @param {Server[]} options.servers servers to run service on
-   * @param {boolean}  [options.lightserv=false] serve LES requests
    * @param {Chain}    [options.chain] blockchain
    * @param {number}   [options.interval] sync retry interval
    */
   constructor(options?: any) {
     super(options)
-    options = { ...defaultOptions, ...options }
-    this.lightserv = options.lightserv
     this.init()
   }
 
@@ -53,7 +46,7 @@ export class FastEthereumService extends EthereumService {
         timeout: this.timeout,
       }),
     ]
-    if (this.lightserv) {
+    if (this.config.lightserv) {
       protocols.push(
         new LesProtocol({
           config: this.config,
@@ -106,7 +99,7 @@ export class FastEthereumService extends EthereumService {
    * @param  peer peer
    */
   async handleLes(message: any, peer: Peer): Promise<void> {
-    if (message.name === 'GetBlockHeaders' && this.lightserv) {
+    if (message.name === 'GetBlockHeaders' && this.config.lightserv) {
       const { reqId, block, max, skip, reverse } = message.data
       const bv = this.flow.handleRequest(peer, message.name, max)
       if (bv < 0) {

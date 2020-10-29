@@ -22,9 +22,8 @@ tape('[Integration:LightSync]', async (t) => {
     const service =
       options.syncmode === 'fast'
         ? new FastEthereumService({
-            config: new Config({ minPeers: 1 }),
+            config: new Config({ lightserv: true, minPeers: 1 }),
             servers: [server],
-            lightserv: true,
             interval: options.interval || 10,
             chain,
           })

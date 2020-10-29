@@ -21,6 +21,10 @@ export default class Node extends events.EventEmitter {
    * @param {Object}   options constructor parameters
    * @param {Config}   [options.config] Client configuration
    * @param {LevelDB}  [options.db=null] blockchain database
+<<<<<<< HEAD
+=======
+   * @param {Server[]} [options.servers=[]] list of servers to use
+>>>>>>> Added default members to Config, use defaults for CLI, lightserv -> horizontal integration
    * @param {Object[]} [options.bootnodes] list of bootnodes to use for discovery
    * @param {string[]} [options.clientFilter] list of supported clients
    * @param {number}   [options.refreshInterval] how often to discover new peers

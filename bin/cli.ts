@@ -30,12 +30,12 @@ const args = require('yargs')
     syncmode: {
       describe: 'Blockchain sync mode',
       choices: ['light', 'fast'],
-      default: 'fast',
+      default: Config.SYNCMODE_DEFAULT,
     },
     lightserv: {
       describe: 'Serve light peer requests',
       boolean: true,
-      default: false,
+      default: Config.LIGHTSERV_DEFAULT,
     },
     datadir: {
       describe: 'Data directory for the blockchain',
@@ -68,12 +68,12 @@ const args = require('yargs')
     minPeers: {
       describe: 'Peers needed before syncing',
       number: true,
-      default: 2,
+      default: Config.MINPEERS_DEFAULT,
     },
     maxPeers: {
       describe: 'Maximum peers to sync with',
       number: true,
-      default: 25,
+      default: Config.MINPEERS_DEFAULT,
     },
     params: {
       describe: 'Path to chain parameters json file',
@@ -85,7 +85,7 @@ const logger = getLogger({ loglevel: args.loglevel })
 
 async function runNode(options: any) {
   logger.info('Initializing Ethereumjs client...')
-  if (options.lightserv) {
+  if (options.config.lightserv) {
     logger.info(`Serving light peer requests`)
   }
   const node = new Node(options)
@@ -130,6 +130,7 @@ async function run() {
     common,
     logger,
     syncmode: args.syncmode,
+    lightserv: args.lightserv,
     minPeers: args.minPeers,
     maxPeers: args.maxPeers,
   })
@@ -153,7 +154,6 @@ async function run() {
   const options = {
     config,
     servers,
-    lightserv: args.lightserv,
     db: level(dataDir),
     rpcport: args.rpcport,
     rpcaddr: args.rpcaddr,

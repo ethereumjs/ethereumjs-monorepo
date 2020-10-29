@@ -38,7 +38,7 @@ tape.skip('[FastEthereumService]', (t) => {
     let service = new FastEthereumService({ config: new Config() })
     t.ok(service.protocols[0] instanceof EthProtocol, 'fast protocols')
     t.notOk(service.protocols[1], 'no light protocol')
-    service = new FastEthereumService({ lightserv: true })
+    service = new FastEthereumService({ config: new Config({ lightserv: true }) })
     t.ok(service.protocols[0] instanceof EthProtocol, 'fast protocols')
     t.ok(service.protocols[1] instanceof LesProtocol, 'lightserv protocols')
     t.end()

@@ -12,9 +12,8 @@ tape('[Integration:FastEthereumService]', async (t) => {
     const server = new MockServer()
     const chain = new MockChain()
     const service = new FastEthereumService({
-      config: new Config(),
+      config: new Config({ lightserv: true }),
       servers: [server],
-      lightserv: true,
       chain,
     })
     await service.open()
