@@ -37,7 +37,7 @@ export class BlockHeader {
 
   public readonly _common: Common
 
-  public static fromHeaderData(headerData: HeaderData = {}, opts: BlockOptions = {}) {
+  public static fromHeaderData(headerData: HeaderData = {}, opts?: BlockOptions) {
     const {
       parentHash,
       uncleHash,
@@ -76,7 +76,7 @@ export class BlockHeader {
     )
   }
 
-  public static fromRLPSerializedHeader(serialized: Buffer, opts: BlockOptions) {
+  public static fromRLPSerializedHeader(serialized: Buffer, opts?: BlockOptions) {
     const values = rlp.decode(serialized)
 
     if (!Array.isArray(values)) {
@@ -86,7 +86,7 @@ export class BlockHeader {
     return BlockHeader.fromValuesArray(values, opts)
   }
 
-  public static fromValuesArray(values: BlockHeaderBuffer, opts: BlockOptions) {
+  public static fromValuesArray(values: BlockHeaderBuffer, opts?: BlockOptions) {
     if (values.length > 15) {
       throw new Error('invalid header. More values than expected were received')
     }
@@ -132,7 +132,7 @@ export class BlockHeader {
   /**
    * Alias for Header.fromHeaderData() with initWithGenesisHeader set to true.
    */
-  public static genesis(headerData: HeaderData = {}, opts: BlockOptions = {}) {
+  public static genesis(headerData: HeaderData = {}, opts?: BlockOptions) {
     opts = { ...opts, initWithGenesisHeader: true }
     return BlockHeader.fromHeaderData(headerData, opts)
   }

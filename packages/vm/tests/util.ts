@@ -98,7 +98,7 @@ const format = (exports.format = function (
  * @param {TxOptions} opts Tx opts that can include an @ethereumjs/common object
  * @returns {Transaction} Transaction to be passed to VM.runTx function
  */
-export function makeTx(txData: any, opts: TxOptions = {}) {
+export function makeTx(txData: any, opts?: TxOptions) {
   const tx = Transaction.fromTxData(txData, opts)
 
   if (txData.secretKey) {
@@ -258,7 +258,7 @@ export function verifyLogs(logs: any, testData: any, t: tape.Test) {
   }
 }
 
-export function makeBlockHeader(data: any, opts: BlockOptions = {}) {
+export function makeBlockHeader(data: any, opts?: BlockOptions) {
   const {
     currentTimestamp,
     currentGasLimit,
@@ -285,7 +285,7 @@ export function makeBlockHeader(data: any, opts: BlockOptions = {}) {
  * @param uncleHeaders uncle headers for the block (optional)
  * @returns the block
  */
-export function makeBlockFromEnv(env: any, opts: BlockOptions = {}): Block {
+export function makeBlockFromEnv(env: any, opts?: BlockOptions): Block {
   const header = makeBlockHeader(env, opts)
   return new Block(header)
 }
