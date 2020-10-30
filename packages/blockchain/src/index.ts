@@ -586,7 +586,7 @@ export default class Blockchain implements BlockchainInterface {
 
   /**
    * Pushes DB operations to delete canonical number assignments for specified block number and above
-   * Also
+   * This only deletes `NumberToHash` references, and not the blocks themselves. Note: this does not write to the DB but only pushes to a DB operations list.
    * @param blockNumber - the block number from which we start deleting canonical chain assignments (including this block)
    * @param headHash - the hash of the current canonical chain head. The _heads reference matching any hash of any of the deleted blocks will be set to this
    * @param ops - the DatabaseOperation list to write DatabaseOperations to
@@ -597,31 +597,45 @@ export default class Blockchain implements BlockchainInterface {
     headHash: Buffer,
     ops: DBOp[]
   ) {
-    let hash: Buffer
-    try {
-      hash = await this.dbManager.numberToHash(blockNumber)
-    } catch (error) {
-      if (error.type !== 'NotFoundError') {
-        throw error
+    blockNumber = blockNumber.clone()
+    let hash: Buffer | false
+    const self = this
+
+    // return either a Buffer or false, depending on if this exists in the DB.
+    async function numberToHash(number: BN): Promise<Buffer | false> {
+      try {
+        hash = await self.dbManager.numberToHash(number)
+        return hash
+      } catch (error) {
+        if (error.type !== 'NotFoundError') {
+          throw error
+        }
+        return false
       }
-      return
     }
 
-    ops.push(DBOp.del(DBTarget.NumberToHash, { blockNumber }))
+    hash = await numberToHash(blockNumber)
+    while (hash) {
+      ops.push(DBOp.del(DBTarget.NumberToHash, { blockNumber }))
 
-    // reset stale iterator heads to current canonical head
-    Object.keys(this._heads).forEach((name) => {
-      if (this._heads[name].equals(hash)) {
-        this._heads[name] = headHash
+      // reset stale iterator heads to current canonical head
+      // this can, for instance, make the VM run "older" (i.e. lower number blocks than last executed block) blocks to verify the chain up to the current, actual, head.
+      Object.keys(this._heads).forEach((name) => {
+        if (this._heads[name].equals(<Buffer>hash)) {
+          // explicitly cast as Buffer: it is not possible that `hash` is false here, but TypeScript does not understand this.
+          this._heads[name] = headHash
+        }
+      })
+
+      // reset stale headBlock to current canonical
+      if (this._headBlockHash?.equals(hash)) {
+        this._headBlockHash = headHash
       }
-    })
 
-    // reset stale headBlock to current canonical
-    if (this._headBlockHash?.equals(hash)) {
-      this._headBlockHash = headHash
+      blockNumber.iaddn(1)
+
+      hash = await numberToHash(blockNumber)
     }
-
-    await this._deleteCanonicalChainReferences(blockNumber.addn(1), headHash, ops)
   }
 
   /**
