@@ -1,11 +1,17 @@
 import Semaphore from 'semaphore-async-await'
-import { BN, rlp } from 'ethereumjs-util'
+import { BN } from 'ethereumjs-util'
 import { Block, BlockHeader } from '@ethereumjs/block'
 import Ethash from '@ethereumjs/ethash'
 import Common from '@ethereumjs/common'
 import { DBManager } from './db/manager'
-import { DBTarget, DBOp } from './db/operation'
-import { bufBE8 } from './db/constants'
+import {
+  DBOp,
+  DBSetBlockOrHeader,
+  DBSetTD,
+  DBSetHashToNumber,
+  DBSaveLookups,
+} from './db/helpers'
+import { DBTarget } from './db/operation'
 
 import type { LevelUp } from 'levelup'
 
@@ -393,7 +399,7 @@ export default class Blockchain implements BlockchainInterface {
     const blockNumber = header.number
     const td = header.difficulty.clone()
     const currentTd = { header: new BN(0), block: new BN(0) }
-    const dbOps: DBOp[] = []
+    let dbOps: DBOp[] = []
 
     if (block._common.chainId() !== this._common.chainId()) {
       throw new Error('Chain mismatch while trying to put block or header')
@@ -428,33 +434,10 @@ export default class Blockchain implements BlockchainInterface {
 
       const rebuildInfo = async () => {
         // save block and total difficulty to the database
-        const TDValue = rlp.encode(td)
-        dbOps.push(
-          DBOp.set(DBTarget.TotalDifficulty, TDValue, {
-            blockNumber,
-            blockHash,
-          })
-        )
+        dbOps = dbOps.concat(DBSetTD(td, blockNumber, blockHash))
 
-        // save header
-        const headerValue = header.serialize()
-        dbOps.push(
-          DBOp.set(DBTarget.Header, headerValue, {
-            blockNumber,
-            blockHash,
-          })
-        )
-
-        // store body if it exists
-        if (isGenesis || block.transactions.length || block.uncleHeaders.length) {
-          const bodyValue = rlp.encode(block.raw().slice(1))
-          dbOps.push(
-            DBOp.set(DBTarget.Body, bodyValue, {
-              blockNumber,
-              blockHash,
-            })
-          )
-        }
+        // save header/block
+        dbOps = dbOps.concat(DBSetBlockOrHeader(block))
 
         // if total difficulty is higher than current, add it to canonical chain
         if (block.isGenesis() || td.gt(currentTd.header)) {
@@ -462,12 +445,16 @@ export default class Blockchain implements BlockchainInterface {
           if (item instanceof Block) {
             this._headBlockHash = blockHash
           }
+
+          // TODO SET THIS IN CONSTRUCTOR
           if (block.isGenesis()) {
             this._genesis = blockHash
           }
 
           // delete higher number assignments and overwrite stale canonical chain
           await this._deleteCanonicalChainReferences(blockNumber.addn(1), blockHash, dbOps)
+          // from the current header block, check the blockchain in reverse (i.e. traverse `parentHash`) until `numberToHash` matches the current number/hash in the canonical chain
+          // also: overwrite any heads if these heads are stale in `_heads` and `_headBlockHash`
           await this._rebuildCanonical(header, dbOps)
         } else {
           // the TD is lower than the current highest TD so we will add the block to the DB, but will not mark it as the canonical chain.
@@ -475,12 +462,7 @@ export default class Blockchain implements BlockchainInterface {
             this._headBlockHash = blockHash
           }
           // save hash to number lookup info even if rebuild not needed
-          const blockNumber8Byte = bufBE8(blockNumber)
-          dbOps.push(
-            DBOp.set(DBTarget.HashToNumber, blockNumber8Byte, {
-              blockHash,
-            })
-          )
+          dbOps.push(DBSetHashToNumber(blockHash, blockNumber))
         }
       }
 
@@ -512,7 +494,7 @@ export default class Blockchain implements BlockchainInterface {
 
   /**
    * Looks up many blocks relative to blockId
-   *
+   * Note: due to `GetBlockHeaders (0x03)` (ETH wire protocol) we have to support skip/reverse as well.
    * @param blockId - The block's hash or number
    * @param maxBlocks - Max number of blocks to return
    * @param skip - Number of blocks to skip apart
@@ -657,20 +639,11 @@ export default class Blockchain implements BlockchainInterface {
     const blockHash = header.hash()
     const blockNumber = header.number
 
-    const saveLookups = async (hash: Buffer, number: BN) => {
-      ops.push(DBOp.set(DBTarget.NumberToHash, blockHash, { blockNumber }))
-
-      const blockNumber8Bytes = bufBE8(blockNumber)
-      ops.push(
-        DBOp.set(DBTarget.HashToNumber, blockNumber8Bytes, {
-          blockHash,
-        })
-      )
-    }
-
     // handle genesis block
     if (blockNumber.isZero()) {
-      saveLookups(blockHash, blockNumber)
+      DBSaveLookups(blockHash, blockNumber).map((op) => {
+        ops.push(op)
+      })
       return
     }
 
@@ -685,7 +658,9 @@ export default class Blockchain implements BlockchainInterface {
     }
 
     if (!staleHash || !blockHash.equals(staleHash)) {
-      saveLookups(blockHash, blockNumber)
+      DBSaveLookups(blockHash, blockNumber).map((op) => {
+        ops.push(op)
+      })
 
       // mark each key `_heads` which is currently set to the hash in the DB as stale to overwrite this later.
       Object.keys(this._heads).forEach((name) => {
