@@ -11,26 +11,11 @@ export const DEFAULT_FORK_CONFIG = 'Istanbul'
 export const SKIP_BROKEN = [
   'ForkStressTest', // Only BlockchainTest, temporary till fixed (2020-05-23)
   'ChainAtoChainB', // Only BlockchainTest, temporary, along expectException fixes (2020-05-23)
-  'sha3_bigOffset', // SHA3: Only BlockchainTest, unclear SHA3 test situation (2020-05-28) (https://github.com/ethereumjs/ethereumjs-vm/pull/743#issuecomment-635116418)
-  'sha3_memSizeNoQuadraticCost', // SHA3: See also:
-  'sha3_memSizeQuadraticCost', // SHA3: https://github.com/ethereumjs/ethereumjs-vm/pull/743#issuecomment-635116418
-  'sha3_bigSize', // SHA3
 
-  // these tests need "re-org" support in blockchain
+  // In these tests, we have access to two forked chains. Their total difficulty is equal. There are errors in the second chain, but we have no reason to execute this chain if the TD remains equal.
   'blockChainFrontierWithLargerTDvsHomesteadBlockchain2_FrontierToHomesteadAt5',
   'blockChainFrontierWithLargerTDvsHomesteadBlockchain_FrontierToHomesteadAt5',
   'HomesteadOverrideFrontier_FrontierToHomesteadAt5',
-  'DaoTransactions_HomesteadToDaoAt5',
-  'RPC_API_Test',
-  'lotsOfBranchesOverrideAtTheEnd',
-  'lotsOfBranchesOverrideAtTheMiddle',
-  'newChainFrom4Block',
-  'newChainFrom5Block',
-  'newChainFrom6Block',
-  'sideChainWithMoreTransactions',
-  'sideChainWithMoreTransactions2',
-  'sideChainWithNewMaxDifficultyStartingFromBlock3AfterBlock4',
-  'uncleBlockAtBlock3afterBlock4',
 ]
 
 /**

@@ -1,5 +1,5 @@
 import { BN, rlp } from 'ethereumjs-util'
-import { Block } from '@ethereumjs/block'
+import { Block, BlockHeader } from '@ethereumjs/block'
 import Common from '@ethereumjs/common'
 import Blockchain from '../src'
 const level = require('level-mem')
@@ -54,6 +54,41 @@ export const generateBlockchain = async (numberOfBlocks: number, genesis?: Block
     blocks,
     error: null,
   }
+}
+/**
+ *
+ * @param parentBlock parent block to generate the consecutive block on top of
+ * @param difficultyChangeFactor this integer can be any value, but will only return unique blocks between [-99, 1] (this is due to difficulty calculation). 1 will increase the difficulty, 0 will keep the difficulty constant any any negative number will decrease the difficulty
+ */
+
+export const generateConsecutiveBlock = (
+  parentBlock: Block,
+  difficultyChangeFactor: number
+): Block => {
+  if (difficultyChangeFactor > 1) {
+    difficultyChangeFactor = 1
+  }
+  const common = new Common({ chain: 'mainnet', hardfork: 'muirGlacier' })
+  const tmpHeader = BlockHeader.fromHeaderData({
+    number: parentBlock.header.number.addn(1),
+    timestamp: parentBlock.header.timestamp.addn(10 + -difficultyChangeFactor * 9),
+  })
+  const header = BlockHeader.fromHeaderData(
+    {
+      number: parentBlock.header.number.addn(1),
+      parentHash: parentBlock.hash(),
+      gasLimit: new BN(8000000),
+      timestamp: parentBlock.header.timestamp.addn(10 + -difficultyChangeFactor * 9),
+      difficulty: tmpHeader.canonicalDifficulty(parentBlock.header),
+    },
+    {
+      common,
+    }
+  )
+
+  const block = new Block(header, undefined, undefined, { common })
+
+  return block
 }
 
 export const isConsecutive = (blocks: Block[]) => {

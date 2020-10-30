@@ -86,9 +86,7 @@ export default async function runBlockchainTest(options: any, testData: any, t: 
 
   let currentFork = common.hardfork()
   let currentBlock = new BN(0)
-  let lastBlock = new BN(0)
   for (const raw of testData.blocks) {
-    lastBlock = currentBlock
     const paramFork = `expectException${options.forkConfigTestSuite}`
     // Two naming conventions in ethereum/tests to indicate "exception occurs on all HFs" semantics
     // Last checked: ethereumjs-testing v1.3.1 (2020-05-11)
@@ -107,12 +105,6 @@ export default async function runBlockchainTest(options: any, testData: any, t: 
     } catch (e) {
       await handleError(e, expectException)
       continue
-    }
-
-    if (currentBlock.lt(lastBlock)) {
-      // "re-org": rollback the blockchain to currentBlock (i.e. delete that block number in the blockchain plus the children)
-      t.fail('re-orgs are not supported by the test suite')
-      return
     }
 
     try {
