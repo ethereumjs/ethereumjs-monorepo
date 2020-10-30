@@ -599,22 +599,8 @@ export default class Blockchain implements BlockchainInterface {
   ) {
     blockNumber = blockNumber.clone()
     let hash: Buffer | false
-    const self = this
 
-    // return either a Buffer or false, depending on if this exists in the DB.
-    async function numberToHash(number: BN): Promise<Buffer | false> {
-      try {
-        hash = await self.dbManager.numberToHash(number)
-        return hash
-      } catch (error) {
-        if (error.type !== 'NotFoundError') {
-          throw error
-        }
-        return false
-      }
-    }
-
-    hash = await numberToHash(blockNumber)
+    hash = await this.safeNumberToHash(blockNumber)
     while (hash) {
       ops.push(DBOp.del(DBTarget.NumberToHash, { blockNumber }))
 
@@ -634,7 +620,7 @@ export default class Blockchain implements BlockchainInterface {
 
       blockNumber.iaddn(1)
 
-      hash = await numberToHash(blockNumber)
+      hash = await this.safeNumberToHash(blockNumber)
     }
   }
 
@@ -649,7 +635,7 @@ export default class Blockchain implements BlockchainInterface {
     const blockNumber = header.number
 
     // track the staleHash: this is the hash currently in the DB which matches the block number of the provided header.
-    let staleHash: Buffer | null = null
+    let staleHash: Buffer | false = false
     let staleHeads: string[] = []
     let staleHeadBlock = false
 
@@ -662,13 +648,7 @@ export default class Blockchain implements BlockchainInterface {
         break
       }
 
-      try {
-        staleHash = await this.dbManager.numberToHash(blockNumber)
-      } catch (error) {
-        if (error.type !== 'NotFoundError') {
-          throw error
-        }
-      }
+      staleHash = await this.safeNumberToHash(blockNumber)
 
       if (!staleHash || !blockHash.equals(staleHash)) {
         DBSaveLookups(blockHash, blockNumber).map((op) => {
@@ -732,14 +712,8 @@ export default class Blockchain implements BlockchainInterface {
     const parentHash = blockHeader.parentHash
 
     // check if block is in the canonical chain
-    let canonicalHash = null
-    try {
-      canonicalHash = await this.dbManager.numberToHash(blockNumber)
-    } catch (error) {
-      if (error.type !== 'NotFoundError') {
-        throw error
-      }
-    }
+    const canonicalHash = await this.safeNumberToHash(blockNumber)
+
     const inCanonical = !!canonicalHash && canonicalHash.equals(blockHash)
 
     // delete the block, and if block is in the canonical chain, delete all
@@ -880,5 +854,22 @@ export default class Blockchain implements BlockchainInterface {
       number = await this.dbManager.hashToNumber(hash)
     }
     return this.dbManager.getTd(hash, number)
+  }
+
+  /**
+   * This method either returns a Buffer if there exists one in the DB or if it does not exist (DB throws a `NotFoundError`) then return false
+   * If DB throws any other error, this function throws.
+   * @param number
+   */
+  async safeNumberToHash(number: BN): Promise<Buffer | false> {
+    try {
+      const hash = await this.dbManager.numberToHash(number)
+      return hash
+    } catch (error) {
+      if (error.type !== 'NotFoundError') {
+        throw error
+      }
+      return false
+    }
   }
 }
