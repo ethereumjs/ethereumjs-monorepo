@@ -31,7 +31,7 @@ Use `--fork` to pass in the desired hardfork:
 
 or
 
-`yarn run test:state -- --fork='Constantinople'`
+`yarn run test:state --fork='Constantinople'`
 
 By default it is set to use the latest hardfork (`FORK_CONFIG` in `tests/tester.js`).
 

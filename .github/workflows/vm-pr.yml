@@ -85,7 +85,7 @@ jobs:
       - run: yarn run build:vm
         working-directory: ${{github.workspace}}
 
-      - run: yarn run test:state -- --fork=${{ matrix.fork }} --verify-test-amount-alltests
+      - run: yarn run test:state --fork=${{ matrix.fork }} --verify-test-amount-alltests
 
   test-vm-blockchain:
     runs-on: ubuntu-latest
