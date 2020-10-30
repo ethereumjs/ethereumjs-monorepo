@@ -1,7 +1,8 @@
 import crypto, { Decipher } from 'crypto'
 import { debug as createDebugLogger } from 'debug'
 import { publicKeyCreate, ecdh, ecdsaRecover, ecdsaSign } from 'secp256k1'
-import rlp from 'rlp-encoding'
+import * as rlp from 'rlp'
+import { unstrictDecode } from '../util'
 import { MAC } from './mac'
 
 import {
@@ -239,7 +240,7 @@ export class ECIES {
       remotePublicKey = id2pk(decrypted.slice(97, 161))
       nonce = decrypted.slice(161, 193)
     } else {
-      const decoded = rlp.decode(decrypted)
+      const decoded = unstrictDecode(decrypted) as Buffer[]
 
       signature = decoded[0].slice(0, 64)
       recoveryId = decoded[0][64]
@@ -317,7 +318,7 @@ export class ECIES {
       remoteEphemeralPublicKey = id2pk(decrypted.slice(0, 64))
       remoteNonce = decrypted.slice(64, 96)
     } else {
-      const decoded = rlp.decode(decrypted)
+      const decoded = unstrictDecode(decrypted) as Buffer[]
 
       remoteEphemeralPublicKey = id2pk(decoded[0])
       remoteNonce = decoded[1]

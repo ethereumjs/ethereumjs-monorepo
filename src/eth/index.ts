@@ -1,5 +1,5 @@
 import { EventEmitter } from 'events'
-import rlp from 'rlp-encoding'
+import * as rlp from 'rlp'
 import ms from 'ms'
 import { int2buffer, buffer2int, assertEq, formatLogId, formatLogData } from '../util'
 import { Peer, DISCONNECT_REASONS } from '../rlpx/peer'
@@ -36,7 +36,7 @@ export class ETH extends EventEmitter {
   static eth63 = { name: 'eth', version: 63, length: 17, constructor: ETH }
 
   _handleMessage(code: ETH.MESSAGE_CODES, data: any) {
-    const payload = rlp.decode(data)
+    const payload = rlp.decode(data) as unknown
     if (code !== ETH.MESSAGE_CODES.STATUS) {
       const debugMsg = `Received ${this.getMsgPrefix(code)} message from ${
         this._peer._socket.remoteAddress
@@ -47,7 +47,7 @@ export class ETH extends EventEmitter {
     switch (code) {
       case ETH.MESSAGE_CODES.STATUS:
         assertEq(this._peerStatus, null, 'Uncontrolled status message', debug)
-        this._peerStatus = payload
+        this._peerStatus = payload as ETH.StatusMsg
         debug(
           `Received ${this.getMsgPrefix(code)} message from ${this._peer._socket.remoteAddress}:${
             this._peer._socket.remotePort
@@ -126,7 +126,7 @@ export class ETH extends EventEmitter {
         this._peer._socket.remotePort
       } (eth${this._version}): ${this._getStatusString(this._status)}`
     )
-    this._send(ETH.MESSAGE_CODES.STATUS, rlp.encode(this._status))
+    this._send(ETH.MESSAGE_CODES.STATUS, rlp.encode(this._status as any))
     this._handleStatus()
   }
 
