@@ -22,7 +22,7 @@ test('RLPX: ban node with missing tcp port', async t => {
       id: Buffer.from('abcd', 'hex'),
       address: '127.0.0.1',
       udpPort: 30308,
-      tcpPort: null,
+      tcpPort: null
     }
     t.notOk(rlpxs[0]._dpt.banlist.has(peer), 'should not be in ban list before bad peer discovered')
     rlpxs[0]._dpt.emit('peer:new', peer)
@@ -48,12 +48,12 @@ test('RLPX: remove node', async t => {
           t.equal(
             reason,
             DISCONNECT_REASONS.CLIENT_QUITTING,
-            'should close with CLIENT_QUITTING disconnect reason',
+            'should close with CLIENT_QUITTING disconnect reason'
           )
           t.equal(rlpxs[0]._getOpenSlots(), 10, 'should have maxPeers open slots left')
           cb(null)
         })
-      },
+      }
     ],
     function(err) {
       if (err) {
@@ -61,7 +61,7 @@ test('RLPX: remove node', async t => {
       }
       util.destroyRLPXs(rlpxs)
       t.end()
-    },
+    }
   )
 })
 
@@ -79,7 +79,7 @@ test('RLPX: test peer queue / refill connections', async t => {
           const peer2 = {
             address: util.localhost,
             udpPort: util.basePort + 2,
-            tcpPort: util.basePort + 2,
+            tcpPort: util.basePort + 2
           }
           rlpxs[0]._dpt.addPeer(peer2)
           cb(null)
@@ -91,7 +91,7 @@ test('RLPX: test peer queue / refill connections', async t => {
           // t.equal(rlpxs[0]._peersQueue.length, 1, 'peers queue should contain one peer')
           cb(null)
         })
-      },
+      }
     ],
     function(err) {
       if (err) {
@@ -99,6 +99,6 @@ test('RLPX: test peer queue / refill connections', async t => {
       }
       util.destroyRLPXs(rlpxs)
       t.end()
-    },
+    }
   )
 })

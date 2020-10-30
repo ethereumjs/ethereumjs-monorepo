@@ -13,7 +13,7 @@ import {
   xor,
   int2buffer,
   buffer2int,
-  zfill,
+  zfill
 } from '../util'
 
 const debug = createDebugLogger('devp2p:rlpx:peer')
@@ -50,7 +50,7 @@ function concatKDF(keyMaterial: Buffer, keyLength: number) {
         .createHash('sha256')
         .update(tmp)
         .update(keyMaterial)
-        .digest(),
+        .digest()
     )
   }
 
@@ -122,7 +122,7 @@ export class ECIES {
       data.slice(0, 1),
       Buffer.from('04', 'hex'),
       'wrong ecies header (possible cause: EIP8 upgrade)',
-      debug,
+      debug
     )
 
     const publicKey = data.slice(0, 65)
@@ -188,7 +188,7 @@ export class ECIES {
       // keccak256(pk2id(this._ephemeralPublicKey)),
       pk2id(this._publicKey),
       this._nonce,
-      Buffer.from([0x04]),
+      Buffer.from([0x04])
     ]
 
     const dataRLP = rlp.encode(data)
@@ -212,7 +212,7 @@ export class ECIES {
       keccak256(pk2id(this._ephemeralPublicKey)),
       pk2id(this._publicKey),
       this._nonce,
-      Buffer.from([0x00]),
+      Buffer.from([0x00])
     ])
 
     this._initMsg = this._encryptMessage(data)
@@ -256,7 +256,7 @@ export class ECIES {
 
     if (!this._remoteNonce) return
     this._remoteEphemeralPublicKey = Buffer.from(
-      ecdsaRecover(signature, recoveryId, xor(x, this._remoteNonce), false),
+      ecdsaRecover(signature, recoveryId, xor(x, this._remoteNonce), false)
     )
 
     if (!this._remoteEphemeralPublicKey) return
@@ -266,7 +266,7 @@ export class ECIES {
         keccak256(pk2id(this._remoteEphemeralPublicKey)),
         heid,
         'the hash of the ephemeral key should match',
-        debug,
+        debug
       )
     }
   }

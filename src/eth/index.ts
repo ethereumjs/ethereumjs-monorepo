@@ -51,7 +51,7 @@ export class ETH extends EventEmitter {
         debug(
           `Received ${this.getMsgPrefix(code)} message from ${this._peer._socket.remoteAddress}:${
             this._peer._socket.remotePort
-          }: : ${this._peerStatus ? this._getStatusString(this._peerStatus) : ''}`,
+          }: : ${this._peerStatus ? this._getStatusString(this._peerStatus) : ''}`
         )
         this._handleStatus()
         break
@@ -92,7 +92,7 @@ export class ETH extends EventEmitter {
       networkId: this._peerStatus[1],
       td: Buffer.from(this._peerStatus[2]),
       bestHash: Buffer.from(this._peerStatus[3]),
-      genesisHash: Buffer.from(this._peerStatus[4]),
+      genesisHash: Buffer.from(this._peerStatus[4])
     })
   }
 
@@ -102,11 +102,11 @@ export class ETH extends EventEmitter {
 
   _getStatusString(status: ETH.StatusMsg) {
     let sStr = `[V:${buffer2int(status[0])}, NID:${buffer2int(status[1])}, TD:${buffer2int(
-      status[2],
+      status[2]
     )}`
     sStr += `, BestH:${formatLogId(status[3].toString('hex'), verbose)}, GenH:${formatLogId(
       status[4].toString('hex'),
-      verbose,
+      verbose
     )}]`
     return sStr
   }
@@ -118,13 +118,13 @@ export class ETH extends EventEmitter {
       int2buffer(status.networkId),
       status.td,
       status.bestHash,
-      status.genesisHash,
+      status.genesisHash
     ]
 
     debug(
       `Send STATUS message to ${this._peer._socket.remoteAddress}:${
         this._peer._socket.remotePort
-      } (eth${this._version}): ${this._getStatusString(this._status)}`,
+      } (eth${this._version}): ${this._getStatusString(this._status)}`
     )
     this._send(ETH.MESSAGE_CODES.STATUS, rlp.encode(this._status))
     this._handleStatus()
@@ -203,6 +203,6 @@ export namespace ETH {
     GET_NODE_DATA = 0x0d,
     NODE_DATA = 0x0e,
     GET_RECEIPTS = 0x0f,
-    RECEIPTS = 0x10,
+    RECEIPTS = 0x10
   }
 }

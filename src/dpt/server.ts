@@ -85,7 +85,7 @@ export class Server extends EventEmitter {
     const hash = this._send(peer, 'ping', {
       version: VERSION,
       from: this._endpoint,
-      to: peer,
+      to: peer
     })
 
     const deferred = createDeferred()
@@ -98,14 +98,14 @@ export class Server extends EventEmitter {
           debug(
             `ping timeout: ${peer.address}:${peer.udpPort} ${
               peer.id ? formatLogId(peer.id.toString('hex'), verbose) : '-'
-            }`,
+            }`
           )
           this._requests.delete(rkey)
           deferred.reject(new Error(`Timeout error: ping ${peer.address}:${peer.udpPort}`))
         } else {
           return deferred.promise
         }
-      }, this._timeout),
+      }, this._timeout)
     })
     this._requestsCache.set(rckey, deferred.promise)
     return deferred.promise
@@ -124,7 +124,7 @@ export class Server extends EventEmitter {
     debug(
       `send ${typename} to ${peer.address}:${peer.udpPort} (peerId: ${
         peer.id ? formatLogId(peer.id.toString('hex'), verbose) : '-'
-      })`,
+      })`
     )
 
     const msg = encode(typename, data, this._privateKey)
@@ -153,8 +153,8 @@ export class Server extends EventEmitter {
     debug(
       `received ${info.typename} from ${rinfo.address}:${rinfo.port} (peerId: ${formatLogId(
         peerId.toString('hex'),
-        verbose,
-      )})`,
+        verbose
+      )})`
     )
 
     // add peer if not in our table
@@ -168,15 +168,15 @@ export class Server extends EventEmitter {
         const remote: PeerInfo = {
           id: peerId,
           udpPort: rinfo.port,
-          address: rinfo.address,
+          address: rinfo.address
         }
         this._send(remote, 'pong', {
           to: {
             address: rinfo.address,
             udpPort: rinfo.port,
-            tcpPort: info.data.from.tcpPort,
+            tcpPort: info.data.from.tcpPort
           },
-          hash: msg.slice(0, 32),
+          hash: msg.slice(0, 32)
         })
         break
       }
@@ -195,7 +195,7 @@ export class Server extends EventEmitter {
             id: peerId,
             address: request.peer.address,
             udpPort: request.peer.udpPort,
-            tcpPort: request.peer.tcpPort,
+            tcpPort: request.peer.tcpPort
           })
         }
         break
@@ -204,10 +204,10 @@ export class Server extends EventEmitter {
         const remote: PeerInfo = {
           id: peerId,
           udpPort: rinfo.port,
-          address: rinfo.address,
+          address: rinfo.address
         }
         this._send(remote, 'neighbours', {
-          peers: this._dpt.getClosestPeers(info.data.id),
+          peers: this._dpt.getClosestPeers(info.data.id)
         })
         break
       }
@@ -215,7 +215,7 @@ export class Server extends EventEmitter {
       case 'neighbours': {
         this.emit(
           'peers',
-          info.data.peers.map((peer: any) => peer.endpoint),
+          info.data.peers.map((peer: any) => peer.endpoint)
         )
         break
       }

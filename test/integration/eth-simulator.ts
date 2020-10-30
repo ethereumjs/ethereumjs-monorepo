@@ -7,26 +7,26 @@ const CHAIN_ID = 1
 const GENESIS_TD = 17179869184
 const GENESIS_HASH = Buffer.from(
   'd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3',
-  'hex',
+  'hex'
 )
 
-var capabilities = [devp2p.ETH.eth63, devp2p.ETH.eth62]
+const capabilities = [devp2p.ETH.eth63, devp2p.ETH.eth62]
 
 const status = {
   networkId: CHAIN_ID,
   td: devp2p.int2buffer(GENESIS_TD),
   bestHash: GENESIS_HASH,
-  genesisHash: GENESIS_HASH,
+  genesisHash: GENESIS_HASH
 }
 
 // FIXME: Handle unhandled promises directly
-process.on('unhandledRejection', (reason, p) => {})
+process.on('unhandledRejection', () => {})
 
 test('ETH: send status message (successful)', async t => {
-  let opts: any = {}
+  const opts: any = {}
   opts.status0 = Object.assign({}, status)
   opts.status1 = Object.assign({}, status)
-  opts.onOnceStatus0 = function(rlpxs: any, eth: any) {
+  opts.onOnceStatus0 = function(rlpxs: any) {
     t.pass('should receive echoing status message and welcome connection')
     util.destroyRLPXs(rlpxs)
     t.end()
@@ -35,9 +35,9 @@ test('ETH: send status message (successful)', async t => {
 })
 
 test('ETH: send status message (NetworkId mismatch)', async t => {
-  let opts: any = {}
+  const opts: any = {}
   opts.status0 = Object.assign({}, status)
-  let status1 = Object.assign({}, status)
+  const status1 = Object.assign({}, status)
   status1['networkId'] = 2
   opts.status1 = status1
   opts.onPeerError0 = function(err: Error, rlpxs: any) {
@@ -50,9 +50,9 @@ test('ETH: send status message (NetworkId mismatch)', async t => {
 })
 
 test('ETH: send status message (Genesis block mismatch)', async t => {
-  let opts: any = {}
+  const opts: any = {}
   opts.status0 = Object.assign({}, status)
-  let status1 = Object.assign({}, status)
+  const status1 = Object.assign({}, status)
   status1['genesisHash'] = Buffer.alloc(32)
   opts.status1 = status1
   opts.onPeerError0 = function(err: Error, rlpxs: any) {
@@ -66,7 +66,7 @@ test('ETH: send status message (Genesis block mismatch)', async t => {
 })
 
 test('ETH: send allowed eth63', async t => {
-  let opts: any = {}
+  const opts: any = {}
   opts.status0 = Object.assign({}, status)
   opts.status1 = Object.assign({}, status)
   opts.onOnceStatus0 = function(rlpxs: any, eth: any) {
@@ -74,7 +74,7 @@ test('ETH: send allowed eth63', async t => {
     eth.sendMessage(devp2p.ETH.MESSAGE_CODES.NEW_BLOCK_HASHES, [437000, 1, 0, 0])
     t.pass('should send NEW_BLOCK_HASHES message')
   }
-  opts.onOnMsg1 = function(rlpxs: any, eth: any, code: any, payload: any) {
+  opts.onOnMsg1 = function(rlpxs: any, eth: any, code: any) {
     if (code === devp2p.ETH.MESSAGE_CODES.NEW_BLOCK_HASHES) {
       t.pass('should receive NEW_BLOCK_HASHES message')
       util.destroyRLPXs(rlpxs)
@@ -85,15 +85,15 @@ test('ETH: send allowed eth63', async t => {
 })
 
 test('ETH: send allowed eth62', async t => {
-  let cap = [devp2p.ETH.eth62]
-  let opts: any = {}
+  const cap = [devp2p.ETH.eth62]
+  const opts: any = {}
   opts.status0 = Object.assign({}, status)
   opts.status1 = Object.assign({}, status)
   opts.onOnceStatus0 = function(rlpxs: any, eth: any) {
     eth.sendMessage(devp2p.ETH.MESSAGE_CODES.NEW_BLOCK_HASHES, [437000, 1, 0, 0])
     t.pass('should send NEW_BLOCK_HASHES message')
   }
-  opts.onOnMsg1 = function(rlpxs: any, eth: any, code: any, payload: any) {
+  opts.onOnMsg1 = function(rlpxs: any, eth: any, code: any) {
     if (code === devp2p.ETH.MESSAGE_CODES.NEW_BLOCK_HASHES) {
       t.pass('should receive NEW_BLOCK_HASHES message')
       util.destroyRLPXs(rlpxs)
@@ -104,8 +104,8 @@ test('ETH: send allowed eth62', async t => {
 })
 
 test('ETH: send not-allowed eth62', async t => {
-  let cap = [devp2p.ETH.eth62]
-  let opts: any = {}
+  const cap = [devp2p.ETH.eth62]
+  const opts: any = {}
   opts.status0 = Object.assign({}, status)
   opts.status1 = Object.assign({}, status)
   opts.onOnceStatus0 = function(rlpxs: any, eth: any) {
@@ -122,7 +122,7 @@ test('ETH: send not-allowed eth62', async t => {
 })
 
 test('ETH: send unknown message code', async t => {
-  let opts: any = {}
+  const opts: any = {}
   opts.status0 = Object.assign({}, status)
   opts.status1 = Object.assign({}, status)
   opts.onOnceStatus0 = function(rlpxs: any, eth: any) {
@@ -139,7 +139,7 @@ test('ETH: send unknown message code', async t => {
 })
 
 test('ETH: invalid status send', async t => {
-  let opts: any = {}
+  const opts: any = {}
   opts.status0 = Object.assign({}, status)
   opts.status1 = Object.assign({}, status)
   opts.onOnceStatus0 = function(rlpxs: any, eth: any) {
