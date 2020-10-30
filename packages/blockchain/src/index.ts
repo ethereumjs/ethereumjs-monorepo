@@ -565,129 +565,6 @@ export default class Blockchain implements BlockchainInterface {
   }
 
   /**
-   * Builds the `DatabaseOperation[]` list which describes the DB operations to write the heads, head header hash and the head header block to the DB
-   * @hidden
-   */
-  private _saveHeadOps(): DBOp[] {
-    return [
-      DBOp.set(DBTarget.Heads, this._heads),
-      DBOp.set(DBTarget.HeadHeader, this._headHeaderHash!),
-      DBOp.set(DBTarget.HeadBlock, this._headBlockHash!),
-    ]
-  }
-
-  /**
-   * Gets the `DatabaseOperation[]` list to save `_heads`, `_headHeaderHash` and `_headBlockHash` and writes these to the DB
-   * @hidden
-   */
-  private async _saveHeads() {
-    return this.dbManager.batch(this._saveHeadOps())
-  }
-
-  /**
-   * Pushes DB operations to delete canonical number assignments for specified block number and above
-   * This only deletes `NumberToHash` references, and not the blocks themselves. Note: this does not write to the DB but only pushes to a DB operations list.
-   * @param blockNumber - the block number from which we start deleting canonical chain assignments (including this block)
-   * @param headHash - the hash of the current canonical chain head. The _heads reference matching any hash of any of the deleted blocks will be set to this
-   * @param ops - the DatabaseOperation list to write DatabaseOperations to
-   * @hidden
-   */
-  private async _deleteCanonicalChainReferences(
-    blockNumber: BN,
-    headHash: Buffer,
-    ops: DBOp[]
-  ) {
-    blockNumber = blockNumber.clone()
-    let hash: Buffer | false
-
-    hash = await this.safeNumberToHash(blockNumber)
-    while (hash) {
-      ops.push(DBOp.del(DBTarget.NumberToHash, { blockNumber }))
-
-      // reset stale iterator heads to current canonical head
-      // this can, for instance, make the VM run "older" (i.e. lower number blocks than last executed block) blocks to verify the chain up to the current, actual, head.
-      Object.keys(this._heads).forEach((name) => {
-        if (this._heads[name].equals(<Buffer>hash)) {
-          // explicitly cast as Buffer: it is not possible that `hash` is false here, but TypeScript does not understand this.
-          this._heads[name] = headHash
-        }
-      })
-
-      // reset stale headBlock to current canonical
-      if (this._headBlockHash?.equals(hash)) {
-        this._headBlockHash = headHash
-      }
-
-      blockNumber.iaddn(1)
-
-      hash = await this.safeNumberToHash(blockNumber)
-    }
-  }
-
-  /**
-   * Given a `header`, put all operations to change the canonical chain directly into `ops`
-   * @param header - The canonical header.
-   * @param ops - The database operations list.
-   * @hidden
-   */
-  async _rebuildCanonical(header: BlockHeader, ops: DBOp[]) {
-    const blockHash = header.hash()
-    const blockNumber = header.number
-
-    // track the staleHash: this is the hash currently in the DB which matches the block number of the provided header.
-    let staleHash: Buffer | false = false
-    let staleHeads: string[] = []
-    let staleHeadBlock = false
-
-    do {
-      // handle genesis block
-      if (blockNumber.isZero()) {
-        DBSaveLookups(blockHash, blockNumber).map((op) => {
-          ops.push(op)
-        })
-        break
-      }
-
-      staleHash = await this.safeNumberToHash(blockNumber)
-
-      if (!staleHash || !blockHash.equals(staleHash)) {
-        DBSaveLookups(blockHash, blockNumber).map((op) => {
-          ops.push(op)
-        })
-
-        // mark each key `_heads` which is currently set to the hash in the DB as stale to overwrite this later.
-        Object.keys(this._heads).forEach((name) => {
-          if (staleHash && this._heads[name].equals(staleHash)) {
-            staleHeads.push(name)
-          }
-        })
-        // flag stale headBlock for reset
-        if (staleHash && this._headBlockHash?.equals(staleHash)) {
-          staleHeadBlock = true
-        }
-
-        try {
-          header = await this._getHeader(header.parentHash, blockNumber.subn(1))
-        } catch (error) {
-          staleHeads = []
-          if (error.type !== 'NotFoundError') {
-            throw error
-          }
-        }
-      }
-    } while (staleHash)
-    // the stale hash is equal to the blockHash
-    // set stale heads to last previously valid canonical block
-    staleHeads.forEach((name: string) => {
-      this._heads[name] = blockHash
-    })
-    // set stale headBlock to last previously valid canonical block
-    if (staleHeadBlock) {
-      this._headBlockHash = blockHash
-    }
-  }
-
-  /**
    * Completely deletes a block from the blockchain including any references to this block. All child blocks in the chain are deleted and any
    * encountered heads are set to the parent block. If the block was in the canonical chain, also update the canonical chain and set the head of the canonical chain to the parent block.
    *
@@ -820,7 +697,132 @@ export default class Blockchain implements BlockchainInterface {
     })
   }
 
+  /* Methods regarding re-org operations */
+
+  /**
+   * Pushes DB operations to delete canonical number assignments for specified block number and above
+   * This only deletes `NumberToHash` references, and not the blocks themselves. Note: this does not write to the DB but only pushes to a DB operations list.
+   * @param blockNumber - the block number from which we start deleting canonical chain assignments (including this block)
+   * @param headHash - the hash of the current canonical chain head. The _heads reference matching any hash of any of the deleted blocks will be set to this
+   * @param ops - the DatabaseOperation list to write DatabaseOperations to
+   * @hidden
+   */
+  private async _deleteCanonicalChainReferences(
+    blockNumber: BN,
+    headHash: Buffer,
+    ops: DBOp[]
+  ) {
+    blockNumber = blockNumber.clone()
+    let hash: Buffer | false
+
+    hash = await this.safeNumberToHash(blockNumber)
+    while (hash) {
+      ops.push(DBOp.del(DBTarget.NumberToHash, { blockNumber }))
+
+      // reset stale iterator heads to current canonical head
+      // this can, for instance, make the VM run "older" (i.e. lower number blocks than last executed block) blocks to verify the chain up to the current, actual, head.
+      Object.keys(this._heads).forEach((name) => {
+        if (this._heads[name].equals(<Buffer>hash)) {
+          // explicitly cast as Buffer: it is not possible that `hash` is false here, but TypeScript does not understand this.
+          this._heads[name] = headHash
+        }
+      })
+
+      // reset stale headBlock to current canonical
+      if (this._headBlockHash?.equals(hash)) {
+        this._headBlockHash = headHash
+      }
+
+      blockNumber.iaddn(1)
+
+      hash = await this.safeNumberToHash(blockNumber)
+    }
+  }
+
+  /**
+   * Given a `header`, put all operations to change the canonical chain directly into `ops`
+   * @param header - The canonical header.
+   * @param ops - The database operations list.
+   * @hidden
+   */
+  private async _rebuildCanonical(header: BlockHeader, ops: DBOp[]) {
+    const blockHash = header.hash()
+    const blockNumber = header.number
+
+    // track the staleHash: this is the hash currently in the DB which matches the block number of the provided header.
+    let staleHash: Buffer | false = false
+    let staleHeads: string[] = []
+    let staleHeadBlock = false
+
+    do {
+      // handle genesis block
+      if (blockNumber.isZero()) {
+        DBSaveLookups(blockHash, blockNumber).map((op) => {
+          ops.push(op)
+        })
+        break
+      }
+
+      staleHash = await this.safeNumberToHash(blockNumber)
+
+      if (!staleHash || !blockHash.equals(staleHash)) {
+        DBSaveLookups(blockHash, blockNumber).map((op) => {
+          ops.push(op)
+        })
+
+        // mark each key `_heads` which is currently set to the hash in the DB as stale to overwrite this later.
+        Object.keys(this._heads).forEach((name) => {
+          if (staleHash && this._heads[name].equals(staleHash)) {
+            staleHeads.push(name)
+          }
+        })
+        // flag stale headBlock for reset
+        if (staleHash && this._headBlockHash?.equals(staleHash)) {
+          staleHeadBlock = true
+        }
+
+        try {
+          header = await this._getHeader(header.parentHash, blockNumber.subn(1))
+        } catch (error) {
+          staleHeads = []
+          if (error.type !== 'NotFoundError') {
+            throw error
+          }
+        }
+      }
+    } while (staleHash)
+    // the stale hash is equal to the blockHash
+    // set stale heads to last previously valid canonical block
+    staleHeads.forEach((name: string) => {
+      this._heads[name] = blockHash
+    })
+    // set stale headBlock to last previously valid canonical block
+    if (staleHeadBlock) {
+      this._headBlockHash = blockHash
+    }
+  }
+
   /* Helper functions */
+
+  /**
+   * Builds the `DatabaseOperation[]` list which describes the DB operations to write the heads, head header hash and the head header block to the DB
+   * @hidden
+   */
+  private _saveHeadOps(): DBOp[] {
+    return [
+      DBOp.set(DBTarget.Heads, this._heads),
+      DBOp.set(DBTarget.HeadHeader, this._headHeaderHash!),
+      DBOp.set(DBTarget.HeadBlock, this._headBlockHash!),
+    ]
+  }
+
+  /**
+   * Gets the `DatabaseOperation[]` list to save `_heads`, `_headHeaderHash` and `_headBlockHash` and writes these to the DB
+   * @hidden
+   */
+  private async _saveHeads() {
+    return this.dbManager.batch(this._saveHeadOps())
+  }
 
   /**
    * Gets a header by hash and number. Header can exist outside the canonical chain
