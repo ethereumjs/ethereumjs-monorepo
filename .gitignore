@@ -66,6 +66,8 @@ build/Release
 # https://docs.npmjs.com/misc/faq#should-i-check-my-node-modules-folder-into-git
 node_modules
 package-lock.json
+pnpm-lock.yaml
+yarn.lock
 
 # ChainDB folder
 chaindata
