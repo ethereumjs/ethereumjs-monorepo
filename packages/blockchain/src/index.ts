@@ -100,10 +100,6 @@ export default class Blockchain implements BlockchainInterface {
   private _headHeaderHash?: Buffer // the hash of the current head header
   private _heads: { [key: string]: Buffer } // a Map which stores the head of each key (for instance the "vm" key)
 
-  // these internal variables are used in _rebuildCanonical and are used in subsequent (recursive) calls to _rebuildCanonical
-  private _staleHeadBlock: boolean
-  private _staleHeads: string[]
-
   private _initDone: boolean
   public initPromise: Promise<void>
   private _lock: Semaphore
@@ -146,8 +142,6 @@ export default class Blockchain implements BlockchainInterface {
     }
 
     this._heads = {}
-    this._staleHeadBlock = false
-    this._staleHeads = []
 
     this._lock = new Semaphore(1)
     this._initDone = false
@@ -631,70 +625,71 @@ export default class Blockchain implements BlockchainInterface {
   }
 
   /**
-   * Given a `header`, rebuild the canonical chain using this header.
-   *
+   * Given a `header`, put all operations to change the canonical chain directly into `ops`
+   * @param header - The canonical header.
+   * @param ops - The database operations list.
    * @hidden
    */
   async _rebuildCanonical(header: BlockHeader, ops: DBOp[]) {
     const blockHash = header.hash()
     const blockNumber = header.number
 
-    // handle genesis block
-    if (blockNumber.isZero()) {
-      DBSaveLookups(blockHash, blockNumber).map((op) => {
-        ops.push(op)
-      })
-      return
-    }
-
     // track the staleHash: this is the hash currently in the DB which matches the block number of the provided header.
     let staleHash: Buffer | null = null
-    try {
-      staleHash = await this.dbManager.numberToHash(blockNumber)
-    } catch (error) {
-      if (error.type !== 'NotFoundError') {
-        throw error
-      }
-    }
+    let staleHeads: string[] = []
+    let staleHeadBlock = false
 
-    if (!staleHash || !blockHash.equals(staleHash)) {
-      DBSaveLookups(blockHash, blockNumber).map((op) => {
-        ops.push(op)
-      })
-
-      // mark each key `_heads` which is currently set to the hash in the DB as stale to overwrite this later.
-      Object.keys(this._heads).forEach((name) => {
-        if (staleHash && this._heads[name].equals(staleHash)) {
-          this._staleHeads = this._staleHeads || []
-          this._staleHeads.push(name)
-        }
-      })
-      // flag stale headBlock for reset
-      if (staleHash && this._headBlockHash?.equals(staleHash)) {
-        this._staleHeadBlock = true
+    do {
+      // handle genesis block
+      if (blockNumber.isZero()) {
+        DBSaveLookups(blockHash, blockNumber).map((op) => {
+          ops.push(op)
+        })
+        break
       }
 
       try {
-        const parentHeader = await this._getHeader(header.parentHash, blockNumber.subn(1))
-        await this._rebuildCanonical(parentHeader, ops)
+        staleHash = await this.dbManager.numberToHash(blockNumber)
       } catch (error) {
-        this._staleHeads = []
         if (error.type !== 'NotFoundError') {
           throw error
         }
       }
-    } else {
-      // the stale hash is equal to the blockHash
-      // set stale heads to last previously valid canonical block
-      this._staleHeads.forEach((name: string) => {
-        this._heads[name] = blockHash
-      })
-      this._staleHeads = []
-      // set stale headBlock to last previously valid canonical block
-      if (this._staleHeadBlock) {
-        this._headBlockHash = blockHash
-        this._staleHeadBlock = false
+
+      if (!staleHash || !blockHash.equals(staleHash)) {
+        DBSaveLookups(blockHash, blockNumber).map((op) => {
+          ops.push(op)
+        })
+
+        // mark each key `_heads` which is currently set to the hash in the DB as stale to overwrite this later.
+        Object.keys(this._heads).forEach((name) => {
+          if (staleHash && this._heads[name].equals(staleHash)) {
+            staleHeads.push(name)
+          }
+        })
+        // flag stale headBlock for reset
+        if (staleHash && this._headBlockHash?.equals(staleHash)) {
+          staleHeadBlock = true
+        }
+
+        try {
+          header = await this._getHeader(header.parentHash, blockNumber.subn(1))
+        } catch (error) {
+          staleHeads = []
+          if (error.type !== 'NotFoundError') {
+            throw error
+          }
+        }
       }
+    } while (staleHash)
+    // the stale hash is equal to the blockHash
+    // set stale heads to last previously valid canonical block
+    staleHeads.forEach((name: string) => {
+      this._heads[name] = blockHash
+    })
+    // set stale headBlock to last previously valid canonical block
+    if (staleHeadBlock) {
+      this._headBlockHash = blockHash
     }
   }
 
