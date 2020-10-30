@@ -1,4 +1,4 @@
-import * as tape from 'tape'
+import tape from 'tape'
 import * as rlp from 'rlp'
 import { KECCAK256_NULL } from 'ethereumjs-util'
 import { CheckpointTrie } from '../src'
@@ -9,7 +9,7 @@ tape('simple save and retrieve', function (tester) {
   it('should not crash if given a non-existent root', async function (t) {
     const root = Buffer.from(
       '3f4399b08efe68945c1cf90ffe85bbe3ce978959da753f9e649f034015b8817d',
-      'hex',
+      'hex'
     )
     const trie = new CheckpointTrie(null, root)
     const value = await trie.get(Buffer.from('test'))
@@ -59,7 +59,7 @@ tape('simple save and retrieve', function (tester) {
     await trie.put(Buffer.from('doge'), Buffer.from('coin'))
     t.equal(
       'de8a34a8c1d558682eae1528b47523a483dd8685d6db14b291451a66066bf0fc',
-      trie.root.toString('hex'),
+      trie.root.toString('hex')
     )
     t.end()
   })
@@ -115,7 +115,7 @@ tape('simple save and retrieve', function (tester) {
       await trie.put(Buffer.from('do'), Buffer.from('verb'))
       t.equal(
         'f803dfcb7e8f1afd45e88eedb4699a7138d6c07b71243d9ae9bff720c99925f9',
-        trie.root.toString('hex'),
+        trie.root.toString('hex')
       )
       t.end()
     })
@@ -124,7 +124,7 @@ tape('simple save and retrieve', function (tester) {
       await trie.put(Buffer.from('done'), Buffer.from('finished'))
       t.equal(
         '409cff4d820b394ed3fb1cd4497bdd19ffa68d30ae34157337a7043c94a3e8cb',
-        trie.root.toString('hex'),
+        trie.root.toString('hex')
       )
       t.end()
     })
@@ -148,7 +148,7 @@ tape('simple save and retrieve', function (tester) {
       await trie.put(Buffer.from('done'), Buffer.from('finished'))
       t.equal(
         '409cff4d820b394ed3fb1cd4497bdd19ffa68d30ae34157337a7043c94a3e8cb',
-        trie.root.toString('hex'),
+        trie.root.toString('hex')
       )
       t.end()
     })

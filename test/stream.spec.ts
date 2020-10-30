@@ -1,4 +1,4 @@
-import * as tape from 'tape'
+import tape from 'tape'
 import { CheckpointTrie } from '../src'
 import { BatchDBOp } from '../src/db'
 

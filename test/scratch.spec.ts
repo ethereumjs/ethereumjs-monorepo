@@ -1,4 +1,4 @@
-import * as tape from 'tape'
+import tape from 'tape'
 import { DB } from '../src/db'
 import { ScratchDB } from '../src/scratch'
 

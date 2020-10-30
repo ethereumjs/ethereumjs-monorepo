@@ -43,4 +43,4 @@ const go = async () => {
   console.timeEnd(testName)
 }
 
-go()
+go().catch(console.error)

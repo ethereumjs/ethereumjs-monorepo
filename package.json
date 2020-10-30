@@ -18,9 +18,6 @@
     "docs:build": "typedoc",
     "lint": "ethereumjs-config-lint",
     "lint:fix": "ethereumjs-config-lint-fix",
-    "format": "ethereumjs-config-format",
-    "format:fix": "ethereumjs-config-format-fix",
-    "formatTest": "node ./scripts/formatTest",
     "tsc": "ethereumjs-config-tsc",
     "test": "npm run test:node && npm run test:browser",
     "test:browser": "npm run build && karma start karma.conf.js",
@@ -60,10 +57,9 @@
   },
   "devDependencies": {
     "0x": "^4.9.1",
-    "@ethereumjs/config-nyc": "^1.1.1",
-    "@ethereumjs/config-prettier": "^1.1.1",
-    "@ethereumjs/config-tsc": "^1.1.1",
-    "@ethereumjs/config-tslint": "^1.1.1",
+    "@ethereumjs/config-coverage": "^2.0.0",
+    "@ethereumjs/config-typescript": "^2.0.0",
+    "@ethereumjs/eslint-config-defaults": "^2.0.0",
     "@types/bn.js": "^4.11.6",
     "@types/tape": "^4.2.34",
     "husky": "^4.2.3",
@@ -76,11 +72,9 @@
     "prettier": "^2.0.2",
     "tape": "^4.13.2",
     "ts-node": "^8.8.1",
-    "tslint": "^5.18.0",
     "typedoc": "next",
     "typedoc-plugin-markdown": "^2.2.17",
-    "typescript": "^3.7.5",
-    "typestrict": "^1.0.2"
+    "typescript": "^3.7.5"
   },
   "contributors": [
     "Aaron Kumavis <http://aaron.kumavis.me/> (https://github.com/kumavis)"

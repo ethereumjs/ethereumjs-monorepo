@@ -1,4 +1,4 @@
-import * as tape from 'tape'
+import tape from 'tape'
 import { CheckpointTrie } from '../src'
 
 tape('testing checkpoints', function (tester) {
@@ -94,9 +94,8 @@ tape('testing checkpoints', function (tester) {
 
   it('should commit a nested checkpoint', async function (t) {
     trie.checkpoint()
-    let root: Buffer
     await trie.put(Buffer.from('test'), Buffer.from('something else'))
-    root = trie.root
+    const { root } = trie
     trie.checkpoint()
     await trie.put(Buffer.from('the feels'), Buffer.from('emotion'))
     await trie.revert()

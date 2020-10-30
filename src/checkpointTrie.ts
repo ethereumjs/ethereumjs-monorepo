@@ -109,7 +109,7 @@ export class CheckpointTrie extends BaseTrie {
    * @private
    */
   async _exitCpMode(commitState: boolean): Promise<void> {
-    return new Promise(async (resolve) => {
+    return new Promise((resolve) => {
       const scratch = this._scratch as ScratchDB
       this._scratch = null
       this.db = this._mainDB
@@ -130,7 +130,7 @@ export class CheckpointTrie extends BaseTrie {
    * @private
    */
   _createScratchReadStream(scratchDb?: ScratchDB) {
-    let scratch = scratchDb || this._scratch
+    const scratch = scratchDb || this._scratch
     if (!scratch) {
       throw new Error('No scratch found to use')
     }

@@ -1,5 +1,5 @@
 {
     "extends": "@ethereumjs/config-typescript",
-    "include": ["src/**/*.ts", "test/*.spec.ts"]
+    "include": ["benchmarks/*.ts"]
 }
   

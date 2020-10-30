@@ -1,4 +1,4 @@
-import * as tape from 'tape'
+import tape from 'tape'
 import { DB, BatchDBOp } from '../src/db'
 
 tape('DB basic functionality', (t) => {

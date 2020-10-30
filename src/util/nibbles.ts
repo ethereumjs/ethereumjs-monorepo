@@ -7,7 +7,7 @@ import { Nibbles } from '../trieNode'
  */
 export function bufferToNibbles(key: Buffer): Nibbles {
   const bkey = Buffer.from(key)
-  let nibbles = [] as any
+  const nibbles = [] as any
 
   for (let i = 0; i < bkey.length; i++) {
     let q = i * 2
@@ -25,7 +25,7 @@ export function bufferToNibbles(key: Buffer): Nibbles {
  * @param arr - Nibble array
  */
 export function nibblesToBuffer(arr: Nibbles): Buffer {
-  let buf = Buffer.alloc(arr.length / 2)
+  const buf = Buffer.alloc(arr.length / 2)
   for (let i = 0; i < buf.length; i++) {
     let q = i * 2
     buf[i] = (arr[q] << 4) + arr[++q]
