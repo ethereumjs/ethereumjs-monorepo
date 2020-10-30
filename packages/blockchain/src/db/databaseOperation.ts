@@ -1,4 +1,4 @@
-import BN = require('bn.js')
+import { BN } from 'ethereumjs-util'
 import {
   HEADS_KEY,
   HEAD_HEADER_KEY,
