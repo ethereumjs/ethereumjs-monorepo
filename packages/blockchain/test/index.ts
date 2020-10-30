@@ -577,6 +577,7 @@ tape('blockchain test', (t) => {
       db,
       validateBlocks: true,
       validatePow: false,
+      genesisBlock,
     })
 
     const latestHeader = await blockchain.getLatestHeader()
