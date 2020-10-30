@@ -12,12 +12,6 @@ import { Buffer } from 'buffer' //eslint-disable-line @typescript-eslint/no-unus
 import { Config } from '../../lib/config'
 
 tape('[Chain]', (t) => {
-  t.test('should test object creation without logger', (t) => {
-    t.equal(new Chain({ config: new Config() }).config.logger, defaultLogger)
-
-    t.end()
-  })
-
   t.test('should test blockchain DB is initialized', (t) => {
     const chain = new Chain({ config: new Config() }) // eslint-disable-line no-new
 

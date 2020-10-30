@@ -32,13 +32,13 @@ export default class Node extends events.EventEmitter {
     this.services = [
       this.config.syncmode === 'fast'
         ? new FastEthereumService({
-          config: this.config,
-          db: options.db,
-        })
+            config: this.config,
+            db: options.db,
+          })
         : new LightEthereumService({
-          config: this.config,
-          db: options.db,
-        }),
+            config: this.config,
+            db: options.db,
+          }),
     ]
     this.opened = false
     this.started = false

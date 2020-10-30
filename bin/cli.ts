@@ -1,18 +1,19 @@
 #!/usr/bin/env node
 
 const chains = require('@ethereumjs/common/dist/chains').chains
-import { getLogger } from '../lib/logging'
 import { parseParams } from '../lib/util'
 import Node from '../lib/node'
 import { Server as RPCServer } from 'jayson'
 import { Config } from '../lib/config'
 import Common from '@ethereumjs/common'
 import { RPCManager } from '../lib/rpc'
+import { Logger } from 'winston'
 const level = require('level')
 const path = require('path')
 const fs = require('fs-extra')
 
 const networks = Object.entries(chains.names)
+
 const args = require('yargs')
   .options({
     network: {
@@ -56,12 +57,12 @@ const args = require('yargs')
     },
     rpcaddr: {
       describe: 'HTTP-RPC server listening interface',
-      default: 'localhost',
+      default: Config.RPCADDR_DEFAULT,
     },
     loglevel: {
       describe: 'Logging verbosity',
       choices: ['error', 'warn', 'info', 'debug'],
-      default: 'info',
+      default: Config.LOGLEVEL_DEFAULT,
     },
     minPeers: {
       describe: 'Peers needed before syncing',
@@ -79,37 +80,38 @@ const args = require('yargs')
     },
   })
   .locale('en_EN').argv
-const logger = getLogger({ loglevel: args.loglevel })
+
+let logger: Logger | null = null
 
 /**
  * Initializes and starts a Node and reacts on the
  * main node lifecycle events
- * 
+ *
  * @param config
  */
 async function runNode(config: Config) {
   const syncDataDir = config.getSyncDataDirectory()
   fs.ensureDirSync(syncDataDir)
-  logger.info(`Sync data directory: ${syncDataDir}`)
-  
-  logger.info('Initializing Ethereumjs client...')
+  config.logger.info(`Sync data directory: ${syncDataDir}`)
+
+  config.logger.info('Initializing Ethereumjs client...')
   if (config.lightserv) {
-    logger.info(`Serving light peer requests`)
+    config.logger.info(`Serving light peer requests`)
   }
   const node = new Node({
     config,
     db: level(syncDataDir),
   })
-  node.on('error', (err: any) => logger.error(err))
+  node.on('error', (err: any) => config.logger.error(err))
   node.on('listening', (details: any) => {
-    logger.info(`Listener up transport=${details.transport} url=${details.url}`)
+    config.logger.info(`Listener up transport=${details.transport} url=${details.url}`)
   })
   node.on('synchronized', () => {
-    logger.info('Synchronized')
+    config.logger.info('Synchronized')
   })
-  logger.info(`Connecting to network: ${config.common.chainName()}`)
+  config.logger.info(`Connecting to network: ${config.common.chainName()}`)
   await node.open()
-  logger.info('Synchronizing blockchain...')
+  config.logger.info('Synchronizing blockchain...')
   await node.start()
 
   return node
@@ -119,7 +121,7 @@ function runRpcServer(node: Node, config: Config) {
   const { rpcport, rpcaddr } = config
   const manager = new RPCManager(node, config)
   const server = new RPCServer(manager.getMethods())
-  logger.info(`RPC HTTP endpoint opened: http://${rpcaddr}:${rpcport}`)
+  config.logger.info(`RPC HTTP endpoint opened: http://${rpcaddr}:${rpcport}`)
   server.http().listen(rpcport)
 
   return server
@@ -130,7 +132,7 @@ function runRpcServer(node: Node, config: Config) {
  */
 async function run() {
   // give network id precedence over network name
-  let chain: string | number
+  let chain: string | number
   if (args.networkId) {
     chain = args.networkId
   } else {
@@ -140,16 +142,17 @@ async function run() {
   const common = new Common({ chain, hardfork: 'chainstart' })
   const config = new Config({
     common,
-    logger,
     syncmode: args.syncmode,
     lightserv: args.lightserv,
     transports: args.transports,
     rpc: args.rpc,
     rpcport: args.rpcport,
     rpcaddr: args.rpcaddr,
+    loglevel: args.loglevel,
     minPeers: args.minPeers,
     maxPeers: args.maxPeers,
   })
+  logger = config.logger
 
   // TODO: see todo below wrt resolving chain param parsing
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -159,12 +162,12 @@ async function run() {
   const server = config.rpc ? runRpcServer(node, config) : null
 
   process.on('SIGINT', async () => {
-    logger.info('Caught interrupt signal. Shutting down...')
+    config.logger.info('Caught interrupt signal. Shutting down...')
     if (server) server.http().close()
     await node.stop()
-    logger.info('Exiting.')
+    config.logger.info('Exiting.')
     process.exit()
   })
 }
 
-run().catch((err) => logger.error(err))
+run().catch((err) => logger!.error(err))
