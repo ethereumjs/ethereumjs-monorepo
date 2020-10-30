@@ -1,9 +1,8 @@
 #!/usr/bin/env node
 
 const chains = require('@ethereumjs/common/dist/chains').chains
-const { getLogger } = require('../lib/logging')
-const { parseParams, parseTransports } = require('../lib/util')
-const { fromName: serverFromName } = require('../lib/net/server')
+import { getLogger } from '../lib/logging'
+import { parseParams } from '../lib/util'
 import Node from '../lib/node'
 import { Server as RPCServer } from 'jayson'
 import { Config } from '../lib/config'
@@ -42,7 +41,7 @@ const args = require('yargs')
     },
     transports: {
       describe: 'Network transports',
-      default: ['rlpx:port=30303', 'libp2p'],
+      default: Config.TRANSPORTS_DEFAULT,
       array: true,
     },
     rpc: {
@@ -128,6 +127,7 @@ async function run() {
     logger,
     syncmode: args.syncmode,
     lightserv: args.lightserv,
+    transports: args.transports,
     minPeers: args.minPeers,
     maxPeers: args.maxPeers,
   })
@@ -135,16 +135,6 @@ async function run() {
   // TODO: see todo below wrt resolving chain param parsing
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const chainParams = args.params ? await parseParams(args.params) : args.network
-
-  const servers = parseTransports(args.transports).map((t: any) => {
-    const Server = serverFromName(t.name)
-    if (t.name === 'rlpx') {
-      t.options.bootnodes = t.options.bootnodes || config.common.bootstrapNodes()
-    }
-    return new Server({ config, ...t.options })
-  })
-
-  config.servers = servers
 
   const syncDataDir = config.getSyncDataDirectory()
   fs.ensureDirSync(syncDataDir)

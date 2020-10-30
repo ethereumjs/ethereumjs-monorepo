@@ -42,7 +42,7 @@ tape.skip('[Libp2pServer]', (t) => {
 
   t.test('should initialize correctly', async (t) => {
     const server = new Libp2pServer({
-      config: new Config(),
+      config: new Config({ transports: [] }),
       multiaddrs: 'ma0,ma1',
       bootnodes: 'boot0,boot1',
       key: 'abcd',
@@ -55,18 +55,18 @@ tape.skip('[Libp2pServer]', (t) => {
   })
 
   t.test('should create peer info', async (t) => {
-    let server = new Libp2pServer({ config: new Config(), multiaddrs: 'ma0' })
+    let server = new Libp2pServer({ config: new Config({ transports: [] }), multiaddrs: 'ma0' })
     t.equals(await server.createPeerInfo(), peerInfo, 'created')
     td.verify(peerInfo.multiaddrs.add('ma0'))
-    server = new Libp2pServer({ config: new Config(), multiaddrs: 'ma0', key: 1 })
+    server = new Libp2pServer({ config: new Config({ transports: [] }), multiaddrs: 'ma0', key: 1 })
     t.equals(await server.createPeerInfo(), peerInfo0, 'created with id')
-    server = new Libp2pServer({ config: new Config(), multiaddrs: 'ma0', key: 2 })
+    server = new Libp2pServer({ config: new Config({ transports: [] }), multiaddrs: 'ma0', key: 2 })
     try {
       await server.createPeerInfo()
     } catch (err) {
       t.equals(err, 'err0', 'handle error 1')
     }
-    server = new Libp2pServer({ config: new Config(), multiaddrs: 'ma0', key: 3 })
+    server = new Libp2pServer({ config: new Config({ transports: [] }), multiaddrs: 'ma0', key: 3 })
     try {
       await server.createPeerInfo()
     } catch (err) {
@@ -76,7 +76,7 @@ tape.skip('[Libp2pServer]', (t) => {
   })
 
   t.test('should get peer info', async (t) => {
-    const server = new Libp2pServer({ config: new Config() })
+    const server = new Libp2pServer({ config: new Config({ transports: [] }) })
     const connection = td.object()
     td.when(connection.getPeerInfo()).thenCallback(null, 'info')
     t.equals(await server.getPeerInfo(connection), 'info', 'got info')
@@ -90,7 +90,7 @@ tape.skip('[Libp2pServer]', (t) => {
   })
 
   t.test('should create peer', async (t) => {
-    const server = new Libp2pServer({ config: new Config(), multiaddrs: 'ma0' })
+    const server = new Libp2pServer({ config: new Config({ transports: [] }), multiaddrs: 'ma0' })
     td.when(peerInfo.multiaddrs.toArray()).thenReturn([])
     const peer = server.createPeer(peerInfo)
     t.ok(peer instanceof Libp2pPeer, 'created peer')
@@ -102,7 +102,7 @@ tape.skip('[Libp2pServer]', (t) => {
   // Test deactivated along TypeScript transition, fix or remove
   /* t.test('should start/stop server and test banning', async (t) => {
     t.plan(11)
-    const server = new Libp2pServer({ config: new Config(), multiaddrs: 'ma0' })
+    const server = new Libp2pServer({ config: new Config({ transports: [] }), multiaddrs: 'ma0' })
     const protos = [{ name: 'proto', versions: [1] }, { name: 'proto', versions: [2] }]
     const peer = td.object()
     const peer2 = td.object({ id: 'id2', bindProtocols: td.func() })

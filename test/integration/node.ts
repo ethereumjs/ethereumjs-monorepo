@@ -6,9 +6,10 @@ import { Config } from '../../lib/config'
 defaultLogger.silent = true
 
 tape('[Integration:Node]', (t) => {
+  //@ts-ignore allow Config instantiation with MockServer
+  const config = new Config({ servers: [new MockServer()], syncmode: 'fast' })
   const node = new Node({
-    //@ts-ignore allow Config instantiation with MockServer
-    config: new Config({ servers: [new MockServer()], syncmode: 'fast' }),
+    config,
     lightserv: false,
   })
 

@@ -21,7 +21,7 @@ export function parseBootnodes(string: string) {
   }
 }
 
-export function parseTransports(transports: any[]) {
+export function parseTransports(transports: string[]) {
   return transports.map((t) => {
     const options: any = {}
     const [name, ...pairs] = t.split(':')

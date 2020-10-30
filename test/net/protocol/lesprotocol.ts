@@ -9,7 +9,7 @@ const { LesProtocol } = require('../../../lib/net/protocol')
 
 tape('[LesProtocol]', (t) => {
   t.test('should get properties', (t) => {
-    const p = new LesProtocol({ config: new Config() })
+    const p = new LesProtocol({ config: new Config({ transports: [] }) })
     t.ok(typeof p.name === 'string', 'get name')
     t.ok(Array.isArray(p.versions), 'get versions')
     t.ok(Array.isArray(p.messages), 'get messages')
@@ -27,8 +27,8 @@ tape('[LesProtocol]', (t) => {
   //
   // 2020-10-02
   /*t.test('should open correctly', async (t) => {
-    const chain = new Chain({ config: new Config() })
-    const p = new LesProtocol({ config: new Config(), chain })
+    const chain = new Chain({ config: new Config({ transports: [] }) })
+    const p = new LesProtocol({ config: new Config({ transports: [] }), chain })
     await p.open()
     t.ok(p.opened, 'opened is true')
     t.notOk(await p.open(), 'repeat open')
@@ -41,13 +41,13 @@ tape('[LesProtocol]', (t) => {
   // TODO: Fix e.g. with appropriate chain mocking solution
   // 2020-10-02
   /*t.test('should encode/decode status', t => {
-    const chain = new Chain({ config: new Config() })
+    const chain = new Chain({ config: new Config({ transports: [] }) })
     const flow = {
       bl: 1000,
       mrr: 10,
       mrc: { GetBlockHeaders: { base: 10, req: 10 } }
     }
-    const p = new LesProtocol({ config: new Config(), chain, flow })
+    const p = new LesProtocol({ config: new Config({ transports: [] }), chain, flow })
     chain.networkId = 1
     chain.headers = { td: new BN(100), latest: { hash: () => '0xaa', number: new BN(100) } }
     chain.genesis = { hash: '0xbb' }

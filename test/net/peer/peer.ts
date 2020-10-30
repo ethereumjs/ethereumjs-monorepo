@@ -9,7 +9,7 @@ import { Config } from '../../../lib/config'
 
 tape('[Peer]', (t) => {
   const peer = new Peer({
-    config: new Config(),
+    config: new Config({ transports: [] }),
     id: '0123456789abcdef',
     address: 'address0',
     transport: 'transport0',

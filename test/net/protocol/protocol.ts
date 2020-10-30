@@ -20,7 +20,7 @@ tape('[Protocol]', (t) => {
   }
   class TestProtocol extends Protocol {
     constructor() {
-      super({ config: new Config() })
+      super({ config: new Config({ transports: [] }) })
     }
 
     get name(): string {
@@ -41,7 +41,7 @@ tape('[Protocol]', (t) => {
   }
 
   t.test('should throw if missing abstract methods', (t) => {
-    const p = new Protocol({ config: new Config() })
+    const p = new Protocol({ config: new Config({ transports: [] }) })
     t.throws(() => p.versions, /Unimplemented/)
     t.throws(() => p.messages, /Unimplemented/)
     t.throws(() => p.encodeStatus(), /Unimplemented/)
@@ -50,7 +50,7 @@ tape('[Protocol]', (t) => {
   })
 
   t.test('should handle open', async (t) => {
-    const p = new Protocol({ config: new Config() })
+    const p = new Protocol({ config: new Config({ transports: [] }) })
     await p.open()
     t.ok(p.opened, 'is open')
     t.end()

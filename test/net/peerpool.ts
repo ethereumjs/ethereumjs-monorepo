@@ -3,6 +3,7 @@ const td = require('testdouble')
 import { EventEmitter } from 'events'
 import { defaultLogger } from '../../lib/logging'
 import { Config } from '../../lib/config'
+import { RlpxServer } from '../../lib/net/server'
 defaultLogger.silent = true
 
 tape('[PeerPool]', (t) => {
@@ -12,7 +13,7 @@ tape('[PeerPool]', (t) => {
   const PeerPool = require('../../lib/net/peerpool').PeerPool
 
   t.test('should initialize', (t) => {
-    const pool = new PeerPool({ config: new Config() })
+    const pool = new PeerPool({ config: new Config({ transports: [] }) })
     t.notOk(pool.pool.length, 'empty pool')
     t.notOk(pool.opened, 'not open')
     t.end()
@@ -20,8 +21,8 @@ tape('[PeerPool]', (t) => {
 
   t.test('should open/close', async (t) => {
     const server = new EventEmitter()
-    //@ts-ignore allow Config instantiation with EventEmitter server
-    const pool = new PeerPool({ config: new Config({ servers: [server] }) })
+    const config = new Config({ servers: [server as RlpxServer] })
+    const pool = new PeerPool({ config })
     pool.connected = td.func()
     pool.disconnected = td.func()
     await pool.open()
@@ -40,7 +41,7 @@ tape('[PeerPool]', (t) => {
   t.test('should connect/disconnect peer', (t) => {
     t.plan(4)
     const peer = new EventEmitter()
-    const pool = new PeerPool({ config: new Config() })
+    const pool = new PeerPool({ config: new Config({ transports: [] }) })
     ;(peer as any).id = 'abc'
     ;(pool as any).ban = td.func()
     pool.connected(peer)
@@ -64,7 +65,7 @@ tape('[PeerPool]', (t) => {
   // in PeerPool.contains() not working on td mock object
   /*t.test('should check contains', t => {
     const peer = new Peer('abc')
-    const pool = new PeerPool({ config: new Config() })
+    const pool = new PeerPool({ config: new Config({ transports: [] }) })
     pool.add(peer)
     t.ok(pool.contains(peer), 'found peer')
     t.end()
@@ -72,7 +73,7 @@ tape('[PeerPool]', (t) => {
 
   t.test('should get idle peers', (t) => {
     const peers = [new Peer(1), new Peer(2), new Peer(3)]
-    const pool = new PeerPool({ config: new Config() })
+    const pool = new PeerPool({ config: new Config({ transports: [] }) })
     peers[1].idle = true
     peers.forEach((p: any) => pool.add(p))
     t.equals(pool.idle(), peers[1], 'correct idle peer')
@@ -86,7 +87,7 @@ tape('[PeerPool]', (t) => {
 
   t.test('should ban peer', (t) => {
     const peers = [{ id: 1 }, { id: 2, server: { ban: td.func() } }]
-    const pool = new PeerPool({ config: new Config() })
+    const pool = new PeerPool({ config: new Config({ transports: [] }) })
     peers.forEach((p: any) => pool.add(p))
     peers.forEach((p: any) => pool.ban(p, 1000))
     pool.on('banned', (peer: any) => td.equals(peer, peers[1], 'banned peer'))

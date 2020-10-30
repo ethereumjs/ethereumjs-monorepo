@@ -9,7 +9,7 @@ tape('[Fetcher]', (t) => {
 
   t.test('should handle bad result', (t) => {
     t.plan(2)
-    const fetcher = new Fetcher({ config: new Config(), pool: td.object() })
+    const fetcher = new Fetcher({ config: new Config({ transports: [] }), pool: td.object() })
     const job: any = { peer: {}, state: 'active' }
     fetcher.running = true
     fetcher.next = td.func()
@@ -22,7 +22,7 @@ tape('[Fetcher]', (t) => {
 
   t.test('should handle failure', (t) => {
     t.plan(2)
-    const fetcher = new Fetcher({ config: new Config(), pool: td.object() })
+    const fetcher = new Fetcher({ config: new Config({ transports: [] }), pool: td.object() })
     const job = { peer: {}, state: 'active' }
     fetcher.running = true
     fetcher.next = td.func()
@@ -33,7 +33,11 @@ tape('[Fetcher]', (t) => {
 
   t.test('should handle expiration', (t) => {
     t.plan(2)
-    const fetcher = new Fetcher({ config: new Config(), pool: td.object(), timeout: 5 })
+    const fetcher = new Fetcher({
+      config: new Config({ transports: [] }),
+      pool: td.object(),
+      timeout: 5,
+    })
     const job = { index: 0 }
     const peer = { idle: true }
     fetcher.peer = td.func()

@@ -11,7 +11,7 @@ export default class MockChain extends Chain {
   public height: any
 
   constructor(options: any = {}) {
-    super({ config: new Config(), ...options })
+    super({ config: new Config({ transports: [] }), ...options })
     options = { ...defaultOptions, ...options }
     this.height = options.height
   }

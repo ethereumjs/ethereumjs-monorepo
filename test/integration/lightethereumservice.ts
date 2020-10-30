@@ -10,11 +10,9 @@ tape('[Integration:LightEthereumService]', async (t) => {
   async function setup() {
     const server = new MockServer()
     const chain = new MockChain()
-    const service = new LightEthereumService({
-      //@ts-ignore allow Config instantiation with MockServer
-      config: new Config({ servers: [server] }),
-      chain,
-    })
+    //@ts-ignore allow Config instantiation with MockServer
+    const config = new Config({ servers: [server] })
+    const service = new LightEthereumService({ config, chain })
     await service.open()
     await server.start()
     await service.start()

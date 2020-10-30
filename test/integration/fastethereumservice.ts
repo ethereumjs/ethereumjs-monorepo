@@ -12,7 +12,7 @@ tape('[Integration:FastEthereumService]', async (t) => {
     const server = new MockServer()
     const chain = new MockChain()
     const service = new FastEthereumService({
-      //@ts-ignore
+      //@ts-ignore allow Config instantiation with MockServer
       config: new Config({ servers: [server], lightserv: true }),
       chain,
     })

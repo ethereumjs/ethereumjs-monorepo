@@ -11,11 +11,10 @@ tape('[Integration:PeerPool]', async (t) => {
   async function setup(protocols: any[] = []): Promise<any[]> {
     const server = new MockServer()
     server.addProtocols(protocols)
+    //@ts-ignore allow Config instantiation with MockServer
+    const config = new Config({ servers: [server] })
     await server.start()
-    const pool = new PeerPool({
-      //@ts-ignore allow Config instantiation with MockServer
-      config: new Config({ servers: [server] }),
-    })
+    const pool = new PeerPool({ config })
     await pool.open()
     return [server, pool]
   }
@@ -64,7 +63,7 @@ tape('[Integration:PeerPool]', async (t) => {
     await chain.open()
     const protocols = [
       new EthProtocol({
-        config: new Config(),
+        config: new Config({ transports: [] }),
         chain,
       }),
     ]

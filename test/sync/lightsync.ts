@@ -16,14 +16,18 @@ tape('[LightSynchronizer]', (t) => {
 
   t.test('should initialize correctly', async (t) => {
     const pool = new PeerPool()
-    const sync = new LightSynchronizer({ config: new Config(), pool })
+    const sync = new LightSynchronizer({ config: new Config({ transports: [] }), pool })
     pool.emit('added', { les: { status: { serveHeaders: true } } })
     t.equals(sync.type, 'light', 'light type')
     t.end()
   })
 
   t.test('should find best', async (t) => {
-    const sync = new LightSynchronizer({ config: new Config(), interval: 1, pool: new PeerPool() })
+    const sync = new LightSynchronizer({
+      config: new Config({ transports: [] }),
+      interval: 1,
+      pool: new PeerPool(),
+    })
     sync.running = true
     sync.chain = { headers: { td: new BN(1) } }
     const peers = [
@@ -44,7 +48,11 @@ tape('[LightSynchronizer]', (t) => {
 
   t.test('should sync', async (t) => {
     t.plan(3)
-    const sync = new LightSynchronizer({ config: new Config(), interval: 1, pool: new PeerPool() })
+    const sync = new LightSynchronizer({
+      config: new Config({ transports: [] }),
+      interval: 1,
+      pool: new PeerPool(),
+    })
     sync.best = td.func()
     sync.latest = td.func()
     td.when(sync.best()).thenReturn({ les: { status: { headNum: new BN(2) } } })

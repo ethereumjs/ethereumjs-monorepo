@@ -9,7 +9,7 @@ export default class MockServer extends Server {
   public peers: any
 
   constructor(options: any = {}) {
-    super({ config: new Config(), ...options })
+    super({ config: new Config({ transports: [] }), ...options })
     this.location = options.location || '127.0.0.1'
     this.server = null
     this.peers = {}

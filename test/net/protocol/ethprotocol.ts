@@ -17,7 +17,7 @@ tape('[EthProtocol]', (t) => {
   })
 
   t.test('should open correctly', async (t) => {
-    const chain = new Chain({ config: new Config() })
+    const chain = new Chain({ config: new Config({ transports: [] }) })
     const p = new EthProtocol({ chain })
     await p.open()
     t.ok(p.opened, 'opened is true')
@@ -26,8 +26,8 @@ tape('[EthProtocol]', (t) => {
   })
 
   /*t.test('should encode/decode status', t => {
-    const chain = new Chain({ config: new Config() })
-    const p = new EthProtocol({ config: new Config(), chain })
+    const chain = new Chain({ config: new Config({ transports: [] }) })
+    const p = new EthProtocol({ config: new Config({ transports: [] }), chain })
     chain.networkId = 1
     chain.blocks = { td: new BN(100), latest: { hash: () => '0xaa' } }
     chain.genesis = { hash: '0xbb' }

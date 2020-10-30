@@ -28,17 +28,17 @@ tape.skip('[FastEthereumService]', (t) => {
   td.replace('../../lib/sync/fastsync', FastSynchronizer)
 
   t.test('should initialize correctly', async (t) => {
-    const service = new FastEthereumService({ config: new Config() })
+    const service = new FastEthereumService({ config: new Config({ transports: [] }) })
     t.ok(service.synchronizer instanceof FastSynchronizer, 'fast mode')
     t.equals(service.name, 'eth', 'got name')
     t.end()
   })
 
   t.test('should get protocols', async (t) => {
-    let service = new FastEthereumService({ config: new Config() })
+    let service = new FastEthereumService({ config: new Config({ transports: [] }) })
     t.ok(service.protocols[0] instanceof EthProtocol, 'fast protocols')
     t.notOk(service.protocols[1], 'no light protocol')
-    service = new FastEthereumService({ config: new Config({ lightserv: true }) })
+    service = new FastEthereumService({ config: new Config({ transports: [], lightserv: true }) })
     t.ok(service.protocols[0] instanceof EthProtocol, 'fast protocols')
     t.ok(service.protocols[1] instanceof LesProtocol, 'lightserv protocols')
     t.end()
@@ -48,7 +48,9 @@ tape.skip('[FastEthereumService]', (t) => {
     t.plan(3)
     const server = td.object()
     //@ts-ignore allow Config instantiation with object server
-    const service = new FastEthereumService({ config: new Config({ servers: [server] }) })
+    const service = new FastEthereumService({
+      config: new Config({ servers: [server] }),
+    })
     await service.open()
     td.verify(service.chain.open())
     td.verify(service.synchronizer.open())
@@ -68,7 +70,9 @@ tape.skip('[FastEthereumService]', (t) => {
   t.test('should start/stop', async (t) => {
     const server = td.object()
     //@ts-ignore allow Config instantiation with object server
-    const service = new FastEthereumService({ config: new Config({ servers: [server] }) })
+    const service = new FastEthereumService({
+      config: new Config({ servers: [server] }),
+    })
     await service.start()
     td.verify(service.synchronizer.start())
     t.notOk(await service.start(), 'already started')

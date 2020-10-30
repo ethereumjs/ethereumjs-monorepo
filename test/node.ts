@@ -25,7 +25,7 @@ tape('[Node]', (t) => {
   const Node = require('../lib/node')
 
   t.test('should initialize correctly', (t) => {
-    const node = new Node({ config: new Config() })
+    const node = new Node({ config: new Config({ transports: [] }) })
     t.ok(node.services[0] instanceof EthereumService, 'added service')
     t.end()
   })
@@ -51,7 +51,7 @@ tape('[Node]', (t) => {
 
   t.test('should start/stop', async (t) => {
     const servers = [new Server() as RlpxServer]
-    const node = new Node({ config: new Config(), servers })
+    const node = new Node({ config: new Config({ servers }) })
     await node.start()
     t.ok(node.started, 'started')
     t.equals(await node.start(), false, 'already started')

@@ -21,7 +21,7 @@ tape.skip('[RlpxPeer]', (t) => {
 
   t.test('should initialize correctly', async (t) => {
     const peer = new RlpxPeer({
-      config: new Config(),
+      config: new Config({ transports: [] }),
       id: 'abcdef0123',
       host: '10.0.0.1',
       port: 1234

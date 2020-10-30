@@ -31,7 +31,7 @@ tape('[HeaderFetcher]', (t) => {
 
   t.test('should find a fetchable peer', async (t) => {
     const pool = new PeerPool()
-    const fetcher = new HeaderFetcher({ config: new Config(), pool })
+    const fetcher = new HeaderFetcher({ config: new Config({ transports: [] }), pool })
     td.when(fetcher.pool.idle(td.matchers.anything())).thenReturn('peer0')
     t.equals(fetcher.peer(), 'peer0', 'found peer')
     t.end()

@@ -30,7 +30,7 @@ export function createManager(node: any) {
 
 export function createNode(nodeConfig?: any) {
   const chain = new Chain({
-    config: new Config(),
+    config: new Config({ transports: [] }),
     blockchain: (<unknown>blockChain({})) as Blockchain,
   })
   chain.opened = true
