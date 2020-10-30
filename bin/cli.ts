@@ -7,7 +7,7 @@ import Node from '../lib/node'
 import { Server as RPCServer } from 'jayson'
 import { Config } from '../lib/config'
 import Common from '@ethereumjs/common'
-const RPCManager = require('../lib/rpc')
+import { RPCManager } from '../lib/rpc'
 const level = require('level')
 const path = require('path')
 const fs = require('fs-extra')
@@ -18,7 +18,7 @@ const args = require('yargs')
     network: {
       describe: `Network`,
       choices: networks.map((n) => n[1]),
-      default: networks[0][1],
+      default: 'mainnet',
     },
     'network-id': {
       describe: `Network ID`,
@@ -47,12 +47,12 @@ const args = require('yargs')
     rpc: {
       describe: 'Enable the JSON-RPC server',
       boolean: true,
-      default: false,
+      default: Config.RPC_DEFAULT,
     },
     rpcport: {
       describe: 'HTTP-RPC server listening port',
       number: true,
-      default: 8545,
+      default: Config.RPCPORT_DEFAULT,
     },
     rpcaddr: {
       describe: 'HTTP-RPC server listening interface',
@@ -81,12 +81,25 @@ const args = require('yargs')
   .locale('en_EN').argv
 const logger = getLogger({ loglevel: args.loglevel })
 
-async function runNode(options: any) {
+/**
+ * Initializes and starts a Node and reacts on the
+ * main node lifecycle events
+ * 
+ * @param config
+ */
+async function runNode(config: Config) {
+  const syncDataDir = config.getSyncDataDirectory()
+  fs.ensureDirSync(syncDataDir)
+  logger.info(`Sync data directory: ${syncDataDir}`)
+  
   logger.info('Initializing Ethereumjs client...')
-  if (options.config.lightserv) {
+  if (config.lightserv) {
     logger.info(`Serving light peer requests`)
   }
-  const node = new Node(options)
+  const node = new Node({
+    config,
+    db: level(syncDataDir),
+  })
   node.on('error', (err: any) => logger.error(err))
   node.on('listening', (details: any) => {
     logger.info(`Listener up transport=${details.transport} url=${details.url}`)
@@ -94,7 +107,7 @@ async function runNode(options: any) {
   node.on('synchronized', () => {
     logger.info('Synchronized')
   })
-  logger.info(`Connecting to network: ${options.config.common.chainName()}`)
+  logger.info(`Connecting to network: ${config.common.chainName()}`)
   await node.open()
   logger.info('Synchronizing blockchain...')
   await node.start()
@@ -102,9 +115,9 @@ async function runNode(options: any) {
   return node
 }
 
-function runRpcServer(node: any, options: any) {
-  const { rpcport, rpcaddr } = options
-  const manager = new RPCManager(node, options)
+function runRpcServer(node: Node, config: Config) {
+  const { rpcport, rpcaddr } = config
+  const manager = new RPCManager(node, config)
   const server = new RPCServer(manager.getMethods())
   logger.info(`RPC HTTP endpoint opened: http://${rpcaddr}:${rpcport}`)
   server.http().listen(rpcport)
@@ -112,22 +125,28 @@ function runRpcServer(node: any, options: any) {
   return server
 }
 
+/**
+ * Main entry point to start a client
+ */
 async function run() {
   // give network id precedence over network name
+  let chain: string | number
   if (args.networkId) {
-    const network = networks.find((n) => n[0] === `${args.networkId}`)
-    if (network) {
-      args.network = network[1]
-    }
+    chain = args.networkId
+  } else {
+    chain = args.network
   }
 
-  const common = new Common({ chain: args.network, hardfork: 'chainstart' })
+  const common = new Common({ chain, hardfork: 'chainstart' })
   const config = new Config({
     common,
     logger,
     syncmode: args.syncmode,
     lightserv: args.lightserv,
     transports: args.transports,
+    rpc: args.rpc,
+    rpcport: args.rpcport,
+    rpcaddr: args.rpcaddr,
     minPeers: args.minPeers,
     maxPeers: args.maxPeers,
   })
@@ -136,18 +155,8 @@ async function run() {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const chainParams = args.params ? await parseParams(args.params) : args.network
 
-  const syncDataDir = config.getSyncDataDirectory()
-  fs.ensureDirSync(syncDataDir)
-  logger.info(`Sync data directory: ${syncDataDir}`)
-
-  const options = {
-    config,
-    db: level(syncDataDir),
-    rpcport: args.rpcport,
-    rpcaddr: args.rpcaddr,
-  }
-  const node = await runNode(options)
-  const server = args.rpc ? runRpcServer(node, options) : null
+  const node = await runNode(config)
+  const server = config.rpc ? runRpcServer(node, config) : null
 
   process.on('SIGINT', async () => {
     logger.info('Caught interrupt signal. Shutting down...')

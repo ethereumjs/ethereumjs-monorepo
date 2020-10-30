@@ -48,6 +48,22 @@ export interface Options {
    */
   servers?: (RlpxServer | Libp2pServer)[]
   /**
+   * Enable the JSON-RPC server
+   * 
+   * Default: false
+   */
+  rpc?: boolean
+  /**
+   * HTTP-RPC server listening port
+   * 
+   * Default: 8545
+   */
+  rpcport?: number
+  /**
+   * HTTP-RPC server listening interface
+   */
+  rpcaddr?: string
+  /**
    * Number of peers needed before syncing
    *
    * Default: `2`
@@ -71,6 +87,9 @@ export class Config {
   public static readonly LIGHTSERV_DEFAULT = false
   public static readonly DATADIR_DEFAULT = `${os.homedir()}/Library/Ethereum`
   public static readonly TRANSPORTS_DEFAULT = ['rlpx:port=30303', 'libp2p']
+  public static readonly RPC_DEFAULT = false
+  public static readonly RPCPORT_DEFAULT = 8545
+  public static readonly RPCADDR_DEFAULT = 'localhost'
   public static readonly MINPEERS_DEFAULT = 2
   public static readonly MAXPEERS_DEFAULT = 25
 
@@ -80,6 +99,9 @@ export class Config {
   public readonly lightserv: boolean
   public readonly datadir: string
   public readonly transports: string[]
+  public readonly rpc: boolean
+  public readonly rpcport: number
+  public readonly rpcaddr: string
   public readonly minPeers: number
   public readonly maxPeers: number
 
@@ -93,6 +115,9 @@ export class Config {
     this.lightserv = options.lightserv ?? Config.LIGHTSERV_DEFAULT
     this.transports = options.transports ?? Config.TRANSPORTS_DEFAULT
     this.datadir = options.datadir ?? Config.DATADIR_DEFAULT
+    this.rpc = options.rpc ?? Config.RPC_DEFAULT
+    this.rpcport = options.rpcport ?? Config.RPCPORT_DEFAULT
+    this.rpcaddr = options.rpcaddr ?? Config.RPCADDR_DEFAULT
     this.minPeers = options.minPeers ?? Config.MINPEERS_DEFAULT
     this.maxPeers = options.maxPeers ?? Config.MAXPEERS_DEFAULT
 
