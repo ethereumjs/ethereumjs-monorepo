@@ -62,6 +62,9 @@ export interface Options {
 }
 
 export class Config {
+  // Initialize Common with an explicit 'chainstart' HF set until
+  // hardfork awareness is implemented within the library
+  // Also a fix for https://github.com/ethereumjs/ethereumjs-vm/issues/757
   public static readonly COMMON_DEFAULT = new Common({ chain: 'mainnet', hardfork: 'chainstart' })
   public static readonly LOGGER_DEFAULT = defaultLogger
   public static readonly SYNCMODE_DEFAULT = 'fast'
@@ -71,22 +74,18 @@ export class Config {
   public static readonly MINPEERS_DEFAULT = 2
   public static readonly MAXPEERS_DEFAULT = 25
 
-  public common: Common
-  public logger: Logger
-  public syncmode: string
-  public lightserv: boolean
-  public datadir: string
-  public transports: string[]
-  public minPeers: number
-  public maxPeers: number
+  public readonly common: Common
+  public readonly logger: Logger
+  public readonly syncmode: string
+  public readonly lightserv: boolean
+  public readonly datadir: string
+  public readonly transports: string[]
+  public readonly minPeers: number
+  public readonly maxPeers: number
 
-  private servers: (RlpxServer | Libp2pServer)[] = []
+  public readonly servers: (RlpxServer | Libp2pServer)[] = []
 
   constructor(options: Options = {}) {
-    // Initialize Common with an explicit 'chainstart' HF set until
-    // hardfork awareness is implemented within the library
-    // Also a fix for https://github.com/ethereumjs/ethereumjs-vm/issues/757
-
     // TODO: map chainParams (and lib/util.parseParams) to new Common format
     this.common = options.common ?? Config.COMMON_DEFAULT
     this.logger = options.logger ?? Config.LOGGER_DEFAULT
@@ -97,7 +96,20 @@ export class Config {
     this.minPeers = options.minPeers ?? Config.MINPEERS_DEFAULT
     this.maxPeers = options.maxPeers ?? Config.MAXPEERS_DEFAULT
 
-    this.servers = options.servers ? options.servers : this.getTransportServers()
+    if (options.servers) {
+      // Servers option takes precedence
+      this.servers = options.servers
+    } else {
+      // Otherwise parse transports from transports option
+      this.servers = parseTransports(this.transports).map((t) => {
+        if (t.name === 'rlpx') {
+          t.options.bootnodes = t.options.bootnodes || this.common.bootstrapNodes()
+          return new RlpxServer({ config: this, ...t.options })
+        } else {
+          return new Libp2pServer({ config: this, ...t.options })
+        }
+      })
+    }
   }
 
   /**
@@ -111,22 +123,5 @@ export class Config {
 
     const dataDir = `${this.datadir}/${networkDirName}ethereumjs/${syncDirName}`
     return dataDir
-  }
-
-  /**
-   * Returns the transport servers created from the `transports` option
-   */
-  getTransportServers(): (RlpxServer | Libp2pServer)[] {
-    if (this.servers.length === 0) {
-      this.servers = parseTransports(this.transports).map((t) => {
-        if (t.name === 'rlpx') {
-          t.options.bootnodes = t.options.bootnodes || this.common.bootstrapNodes()
-          return new RlpxServer({ config: this, ...t.options })
-        } else {
-          return new Libp2pServer({ config: this, ...t.options })
-        }
-      })
-    }
-    return this.servers
   }
 }

@@ -55,7 +55,7 @@ export class PeerPool extends EventEmitter {
     if (this.opened) {
       return false
     }
-    this.config.getTransportServers().map((s) => {
+    this.config.servers.map((s) => {
       s.on('connected', (peer: Peer) => {
         this.connected(peer)
       })
@@ -196,7 +196,7 @@ export class PeerPool extends EventEmitter {
     if (this.size === 0) {
       this.noPeerPeriods += 1
       if (this.noPeerPeriods >= 3) {
-        const promises = this.config.getTransportServers().map(async (server: any) => {
+        const promises = this.config.servers.map(async (server: any) => {
           if (server.bootstrap) {
             this.config.logger.info('Retriggering bootstrap.')
             await server.bootstrap()

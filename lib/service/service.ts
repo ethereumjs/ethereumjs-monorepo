@@ -69,7 +69,7 @@ export class Service extends events.EventEmitter {
       return false
     }
     const protocols = this.protocols
-    this.config.getTransportServers().map((s) => s.addProtocols(protocols))
+    this.config.servers.map((s) => s.addProtocols(protocols))
     if (this.pool) {
       this.pool.on('banned', (peer: Peer) => this.config.logger.debug(`Peer banned: ${peer}`))
       this.pool.on('error', (error: Error) => this.emit('error', error))
@@ -100,7 +100,7 @@ export class Service extends events.EventEmitter {
     if (this.running) {
       return false
     }
-    await Promise.all(this.config.getTransportServers().map((s) => s.start()))
+    await Promise.all(this.config.servers.map((s) => s.start()))
     this.running = true
     this.config.logger.info(`Started ${this.name} service.`)
   }
