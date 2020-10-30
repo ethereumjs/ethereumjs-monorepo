@@ -66,7 +66,7 @@ Installs root and all sub-packages dependencies.
 Builds all monorepo packages by default. If a scope is provided, it will only build that particular package.
 
 Scoped example, that will only build the VM package: 
-  yarn run build -- --scope @ethereumjs/vm
+  yarn run build --scope @ethereumjs/vm
 
 
 #### `yarn run build:tree -- --scope @ethereumjs/blockchain`
