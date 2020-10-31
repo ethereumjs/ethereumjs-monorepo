@@ -242,6 +242,15 @@ export class Block {
    * @param blockchain - additionally validate against an @ethereumjs/blockchain instance
    */
   async validateUncles(blockchain: Blockchain): Promise<void> {
+    /*
+      The rules of uncles are the following:
+      Uncle Header is not in canonical chain
+      Uncle Header has a parentHash which points to the Canonical Chain. This parentHash is within the last 7 blocks.
+      Uncle Header is not included in the canonical chain.
+      Header has at most 2 uncles
+      Header does not count an uncle twice.
+    */
+
     if (this.isGenesis()) {
       return
     }
@@ -255,9 +264,7 @@ export class Block {
       throw new Error('duplicate uncles')
     }
 
-    for (const uh of this.uncleHeaders) {
-      await this._validateUncleHeader(uh, blockchain)
-    }
+    await this._validateUncleHeaders(this.uncleHeaders, blockchain)
   }
 
   /**
@@ -299,11 +306,74 @@ export class Block {
     }
   }
 
-  private _validateUncleHeader(uncleHeader: BlockHeader, blockchain: Blockchain) {
+  private async _validateUncleHeaders(uncleHeaders: BlockHeader[], blockchain: Blockchain) {
     // TODO: Validate that the uncle header hasn't been included in the blockchain yet.
     // This is not possible in ethereumjs-blockchain since this PR was merged:
     // https://github.com/ethereumjs/ethereumjs-blockchain/pull/47
-    const height = this.header.number
-    return uncleHeader.validate(blockchain, height)
+
+    if (uncleHeaders.length == 0) {
+      return
+    }
+
+    // validate the header
+    for (let i = 0; i < uncleHeaders.length; i++) {
+      const header = uncleHeaders[i]
+      await header.validate(blockchain, this.header.number)
+    }
+
+    const canonicalBlockMap: Block[] = []
+
+    let lowestUncleNumber = this.header.number.clone()
+
+    uncleHeaders.map((header) => {
+      if (header.number.lt(lowestUncleNumber)) {
+        lowestUncleNumber = header.number.clone()
+      }
+    })
+
+    const getBlocks = this.header.number.clone().sub(lowestUncleNumber).addn(1).toNumber()
+
+    // See Geth: https://github.com/ethereum/go-ethereum/blob/b63bffe8202d46ea10ac8c4f441c582642193ac8/consensus/ethash/consensus.go#L207
+    let parentHash = this.header.parentHash
+    for (let i = 0; i < getBlocks; i++) {
+      const parentBlock = await this._getBlockByHash(blockchain, parentHash)
+      if (!parentBlock) {
+        throw new Error('could not find parent block')
+      }
+      canonicalBlockMap.push(parentBlock)
+      parentHash = parentBlock.header.parentHash
+    }
+
+    canonicalBlockMap.map((block) => {
+      uncleHeaders.map((uh) => {
+        if (uh.hash().equals(block.hash())) {
+          // the uncle is part of the canonical chain.
+          throw new Error('The uncle is part of the canonical chain.')
+        }
+      })
+    })
+
+    uncleHeaders.map((uh: BlockHeader) => {
+      const hash = uh.parentHash
+      const filterCanonicalBlocks = canonicalBlockMap.filter((block: Block) => {
+        return block.hash().equals(hash)
+      })
+      if (filterCanonicalBlocks.length == 0) {
+        throw 'The parent hash of the uncle header is not part of the canonical chain.'
+      }
+    })
+  }
+
+  private async _getBlockByHash(blockchain: Blockchain, hash: Buffer): Promise<Block | undefined> {
+    try {
+      const block = await blockchain.getBlock(hash)
+      return block
+    } catch (error) {
+      if (error.type === 'NotFoundError') {
+        return undefined
+      } else {
+        throw error
+      }
+    }
   }
 }
