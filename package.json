@@ -23,9 +23,10 @@
     "docs:build": "typedoc --tsconfig tsconfig.prod.json",
     "lint": "ethereumjs-config-lint",
     "lint:fix": "ethereumjs-config-lint-fix",
+    "tape": "ts-node node_modules/tape/bin/tape",
     "test": "npm run test:unit && npm run test:integration",
-    "test:unit": "ts-node node_modules/tape/bin/tape 'test/!(integration)/**/*.ts'",
-    "test:integration": "ts-node node_modules/tape/bin/tape 'test/integration/**/*.ts'",
+    "test:unit": "npm run tape -- 'test/!(integration)/**/*.ts'",
+    "test:integration": "npm run tape -- 'test/integration/**/*.ts'",
     "test:browser": "karma start karma.conf.js"
   },
   "husky": {
