@@ -5,35 +5,33 @@ const iterations = 5000
 const samples = 5
 
 const iterTest = async (numOfIter: number): Promise<Array<number>> => {
-  return new Promise(async (resolve) => {
-    let vals = [] as any
-    let keys = [] as any
+  const vals = [] as any
+  const keys = [] as any
 
-    for (let i = 0; i <= numOfIter; i++) {
-      vals.push(pseudoRandomBytes(32))
-      keys.push(pseudoRandomBytes(32))
-    }
+  for (let i = 0; i <= numOfIter; i++) {
+    vals.push(pseudoRandomBytes(32))
+    keys.push(pseudoRandomBytes(32))
+  }
 
-    let hrstart = process.hrtime()
-    let numOfOps = 0
-    let trie = new CheckpointTrie()
-    for (let i = 0; i < numOfIter; i++) {
-      trie.checkpoint()
-      await trie.put(vals[i], keys[i])
-      await trie.get(Buffer.from('test'))
-      numOfOps++
-      if (numOfOps === numOfIter) {
-        const hrend = process.hrtime(hrstart)
-        resolve(hrend)
-      }
-      trie.commit()
+  const hrstart = process.hrtime()
+  let numOfOps = 0
+  const trie = new CheckpointTrie()
+  for (let i = 0; i < numOfIter; i++) {
+    trie.checkpoint()
+    await trie.put(vals[i], keys[i])
+    await trie.get(Buffer.from('test'))
+    numOfOps++
+    if (numOfOps === numOfIter) {
+      const hrend = process.hrtime(hrstart)
+      return hrend
     }
-  })
+    await trie.commit()
+  }
 }
 
 const go = async () => {
   let i = 1
-  let avg = [0, 0]
+  const avg = [0, 0]
 
   console.log(`Benchmark 'checkpointing' starting...`)
   while (i <= samples) {
@@ -47,8 +45,8 @@ const go = async () => {
   console.log(
     'benchmarks/checkpointing.ts | average execution time: %ds %dms',
     avg[0] / samples,
-    (avg[1] / 1000000 / samples).toFixed(3),
+    (avg[1] / 1000000 / samples).toFixed(3)
   )
 }
 
-go()
+go().catch(console.error)

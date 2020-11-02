@@ -9,32 +9,6 @@ export type Nibbles = number[]
 // hash to next node, or embed it if its len < 32
 export type EmbeddedNode = Buffer | Buffer[]
 
-export function decodeNode(raw: Buffer): TrieNode {
-  const des = rlp.decode(raw)
-  if (!Array.isArray(des)) {
-    throw new Error('Invalid node')
-  }
-  return decodeRawNode(des)
-}
-
-export function decodeRawNode(raw: Buffer[]): TrieNode {
-  if (raw.length === 17) {
-    return BranchNode.fromArray(raw)
-  } else if (raw.length === 2) {
-    const nibbles = bufferToNibbles(raw[0])
-    if (isTerminator(nibbles)) {
-      return new LeafNode(LeafNode.decodeKey(nibbles), raw[1])
-    }
-    return new ExtensionNode(ExtensionNode.decodeKey(nibbles), raw[1])
-  } else {
-    throw new Error('Invalid node')
-  }
-}
-
-export function isRawNode(n: any): boolean {
-  return Array.isArray(n) && !Buffer.isBuffer(n)
-}
-
 export class BranchNode {
   _branches: (EmbeddedNode | null)[]
   _value: Buffer | null
@@ -87,7 +61,7 @@ export class BranchNode {
   getChildren(): [number, EmbeddedNode][] {
     const children: [number, EmbeddedNode][] = []
     for (let i = 0; i < 16; i++) {
-      let b = this._branches[i]
+      const b = this._branches[i]
       if (b !== null && b.length > 0) {
         children.push([i, b])
       }
@@ -194,4 +168,30 @@ export class LeafNode {
   hash(): Buffer {
     return keccak256(this.serialize())
   }
+}
+
+export function decodeRawNode(raw: Buffer[]): TrieNode {
+  if (raw.length === 17) {
+    return BranchNode.fromArray(raw)
+  } else if (raw.length === 2) {
+    const nibbles = bufferToNibbles(raw[0])
+    if (isTerminator(nibbles)) {
+      return new LeafNode(LeafNode.decodeKey(nibbles), raw[1])
+    }
+    return new ExtensionNode(ExtensionNode.decodeKey(nibbles), raw[1])
+  } else {
+    throw new Error('Invalid node')
+  }
+}
+
+export function decodeNode(raw: Buffer): TrieNode {
+  const des = rlp.decode(raw)
+  if (!Array.isArray(des)) {
+    throw new Error('Invalid node')
+  }
+  return decodeRawNode(des)
+}
+
+export function isRawNode(n: any): boolean {
+  return Array.isArray(n) && !Buffer.isBuffer(n)
 }

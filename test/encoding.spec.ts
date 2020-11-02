@@ -1,4 +1,4 @@
-import * as tape from 'tape'
+import tape from 'tape'
 import { toBuffer } from 'ethereumjs-util'
 import { CheckpointTrie } from '../src'
 

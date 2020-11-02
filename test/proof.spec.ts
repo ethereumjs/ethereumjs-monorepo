@@ -1,4 +1,4 @@
-import * as tape from 'tape'
+import tape from 'tape'
 import { CheckpointTrie } from '../src'
 
 tape('simple merkle proofs generation and verification', function (tester) {
@@ -75,11 +75,11 @@ tape('simple merkle proofs generation and verification', function (tester) {
 
     await trie.put(
       Buffer.from('key1aa'),
-      Buffer.from('0123456789012345678901234567890123456789xxx'),
+      Buffer.from('0123456789012345678901234567890123456789xxx')
     )
     await trie.put(
       Buffer.from('key1'),
-      Buffer.from('0123456789012345678901234567890123456789Very_Long'),
+      Buffer.from('0123456789012345678901234567890123456789Very_Long')
     )
     await trie.put(Buffer.from('key2bb'), Buffer.from('aval3'))
     await trie.put(Buffer.from('key2'), Buffer.from('short'))

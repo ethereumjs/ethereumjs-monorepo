@@ -30,7 +30,7 @@ type FoundNodeFunction = (
   nodeRef: Buffer,
   node: TrieNode,
   key: Nibbles,
-  walkController: any,
+  walkController: any
 ) => void
 
 /**
@@ -154,9 +154,10 @@ export class Trie {
    * @param key - the search key
    */
   async findPath(key: Buffer): Promise<Path> {
+    // eslint-disable-next-line no-async-promise-executor
     return new Promise(async (resolve) => {
-      let stack: TrieNode[] = []
-      let targetKey = bufferToNibbles(key)
+      const stack: TrieNode[] = []
+      const targetKey = bufferToNibbles(key)
 
       const onFound: FoundNodeFunction = async (nodeRef, node, keyProgress, walkController) => {
         const keyRemainder = targetKey.slice(matchingNibbleLength(keyProgress, targetKey))
@@ -213,6 +214,7 @@ export class Trie {
    * @returns Resolves when finished walking trie.
    */
   async _walkTrie(root: Buffer, onFound: FoundNodeFunction): Promise<void> {
+    // eslint-disable-next-line no-async-promise-executor
     return new Promise(async (resolve) => {
       const self = this
       root = root || this.root
@@ -230,7 +232,7 @@ export class Trie {
       const processNode = async (
         nodeRef: Buffer,
         node: TrieNode,
-        key: Nibbles = [],
+        key: Nibbles = []
       ): Promise<void> => {
         const walkController = {
           next: async () => {
@@ -259,7 +261,7 @@ export class Trie {
                 const childNode = await self._lookupNode(childRef)
                 taskCallback()
                 if (childNode) {
-                  processNode(childRef, childNode as TrieNode, childKey)
+                  await processNode(childRef, childNode as TrieNode, childKey)
                 }
               })
             }
@@ -344,7 +346,7 @@ export class Trie {
     k: Buffer,
     value: Buffer,
     keyRemainder: Nibbles,
-    stack: TrieNode[],
+    stack: TrieNode[]
   ): Promise<void> {
     const toSave: BatchDBOp[] = []
     const lastNode = stack.pop()
@@ -353,7 +355,7 @@ export class Trie {
     }
 
     // add the new nodes
-    let key = bufferToNibbles(k)
+    const key = bufferToNibbles(k)
 
     // Check if the last node is a leaf and the key matches to this
     let matchLeaf = false
@@ -449,7 +451,7 @@ export class Trie {
       branchKey: number,
       branchNode: TrieNode,
       parentNode: TrieNode,
-      stack: TrieNode[],
+      stack: TrieNode[]
     ) => {
       // branchNode is the node ON the branch node not THE branch node
       if (!parentNode || parentNode instanceof BranchNode) {
@@ -549,7 +551,7 @@ export class Trie {
           branchNodeKey,
           foundNode as TrieNode,
           parentNode as TrieNode,
-          stack,
+          stack
         )
         await this._saveStack(key, stack, opStack)
       }
@@ -613,7 +615,7 @@ export class Trie {
     node: TrieNode,
     topLevel: boolean,
     opStack: BatchDBOp[],
-    remove: boolean = false,
+    remove: boolean = false
   ): Buffer | (EmbeddedNode | null)[] {
     const rlpNode = node.serialize()
 
@@ -673,7 +675,7 @@ export class Trie {
    * @param trie
    */
   static async fromProof(proof: Proof, trie?: Trie): Promise<Trie> {
-    let opStack = proof.map((nodeValue) => {
+    const opStack = proof.map((nodeValue) => {
       return {
         type: 'put',
         key: keccak(nodeValue),

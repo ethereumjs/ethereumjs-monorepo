@@ -45,9 +45,8 @@ export class DB {
       } else {
         throw error
       }
-    } finally {
-      return value
     }
+    return value
   }
 
   /**

@@ -7,6 +7,7 @@ module.exports = function (config) {
     },
     plugins: ['karma-typescript', 'karma-tap', 'karma-chrome-launcher', 'karma-firefox-launcher'],
     karmaTypescriptConfig: {
+      tsconfig: './tsconfig.json',
       bundlerOptions: {
         entrypoints: /\.spec\.ts$/,
       },
