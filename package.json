@@ -73,7 +73,6 @@
     "libp2p-tcp": "^0.13.0",
     "libp2p-websockets": "^0.12.0",
     "merkle-patricia-tree": "^4.0.0",
-    "ms": "^2.1.1",
     "peer-id": "^0.12.2",
     "peer-info": "^0.15.1",
     "pull-catch": "^1.0.0",
