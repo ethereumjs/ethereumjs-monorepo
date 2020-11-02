@@ -3,9 +3,9 @@
 [![NPM Package](https://img.shields.io/npm/v/rlp.svg)](https://www.npmjs.org/package/rlp)
 [![Actions Status](https://github.com/ethereumjs/rlp/workflows/Build/badge.svg)](https://github.com/ethereumjs/rlp/actions)
 [![Coverage Status](https://img.shields.io/coveralls/ethereumjs/rlp.svg)](https://coveralls.io/r/ethereumjs/rlp)
-[![Gitter](https://img.shields.io/gitter/room/ethereum/ethereumjs-lib.svg)](https://gitter.im/ethereum/ethereumjs-lib)
+[![Discord](https://img.shields.io/static/v1?logo=discord&label=discord&message=Join&color=blue)](https://discord.gg/TNwARpR)
 
-[Recursive Length](https://github.com/ethereum/wiki/wiki/RLP) Prefix Encoding for node.js.
+[Recursive Length](https://github.com/ethereum/wiki/wiki/RLP) Prefix Encoding for Node.js.
 
 ## INSTALL
 
@@ -15,13 +15,13 @@ install with `-g` if you want to use the cli.
 
 ## USAGE
 
-```javascript
-var RLP = require('rlp')
-var assert = require('assert')
+```typescript
+import * as assert from 'assert'
+import * as rlp from 'rlp'
 
-var nestedList = [[], [[]], [[], [[]]]]
-var encoded = RLP.encode(nestedList)
-var decoded = RLP.decode(encoded)
+const nestedList = [[], [[]], [[], [[]]]]
+const encoded = rlp.encode(nestedList)
+const decoded = rlp.decode(encoded)
 assert.deepEqual(nestedList, decoded)
 ```
 
