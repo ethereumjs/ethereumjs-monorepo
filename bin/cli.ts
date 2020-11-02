@@ -1,12 +1,12 @@
 #!/usr/bin/env node
 
-const Common = require('@ethereumjs/common').default
 const chains = require('@ethereumjs/common/dist/chains').chains
 const { getLogger } = require('../lib/logging')
 const { parseParams, parseTransports } = require('../lib/util')
 const { fromName: serverFromName } = require('../lib/net/server')
 import Node from '../lib/node'
 import { Server as RPCServer } from 'jayson'
+import { Config } from '../lib/config'
 const RPCManager = require('../lib/rpc')
 const level = require('level')
 const os = require('os')
@@ -95,7 +95,7 @@ async function runNode(options: any) {
   node.on('synchronized', () => {
     logger.info('Synchronized')
   })
-  logger.info(`Connecting to network: ${options.common.chainName()}`)
+  logger.info(`Connecting to network: ${options.config.common.chainName()}`)
   await node.open()
   logger.info('Synchronizing blockchain...')
   await node.start()
@@ -128,16 +128,11 @@ async function run() {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const chainParams = args.params ? await parseParams(args.params) : args.network
 
-  // Initialize Common with an explicit 'chainstart' HF set until
-  // hardfork awareness is implemented within the library
-  // Also a fix for https://github.com/ethereumjs/ethereumjs-vm/issues/757
-
-  // TODO: map chainParams (and lib/util.parseParams) to new Common format
-  const common = new Common({ chain: args.network, hardfork: 'chainstart' })
+  const config = new Config()
   const servers = parseTransports(args.transports).map((t: any) => {
     const Server = serverFromName(t.name)
     if (t.name === 'rlpx') {
-      t.options.bootnodes = t.options.bootnodes || common.bootstrapNodes()
+      t.options.bootnodes = t.options.bootnodes || config.common.bootstrapNodes()
     }
     return new Server({ logger, ...t.options })
   })
@@ -147,7 +142,7 @@ async function run() {
   logger.info(`Data directory: ${dataDir}`)
 
   const options = {
-    common,
+    config,
     logger,
     servers,
     syncmode: args.syncmode,

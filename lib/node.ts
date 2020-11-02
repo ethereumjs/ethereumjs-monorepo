@@ -1,6 +1,7 @@
 import * as events from 'events'
 import { FastEthereumService, LightEthereumService } from './service'
 import { defaultLogger } from './logging'
+import { Config } from './config'
 
 const defaultOptions = {
   minPeers: 3,
@@ -15,8 +16,9 @@ const defaultOptions = {
  * @memberof module:node
  */
 export default class Node extends events.EventEmitter {
+  public config: Config
+
   public logger: any
-  public common: any
   public servers: any
   public syncmode: any
   public services: any
@@ -27,8 +29,8 @@ export default class Node extends events.EventEmitter {
   /**
    * Create new node
    * @param {Object}   options constructor parameters
+   * @param {Config}   [options.config] Client configuration
    * @param {Logger}   [options.logger] Logger instance
-   * @param {Common}   [options.common] common parameters
    * @param {LevelDB}  [options.db=null] blockchain database
    * @param {string}   [options.syncmode=light] synchronization mode ('fast' or 'light')
    * @param {boolean}  [options.lightserv=false] serve LES requests
@@ -42,9 +44,8 @@ export default class Node extends events.EventEmitter {
   constructor(options: any) {
     super()
     options = { ...defaultOptions, ...options }
-
+    this.config = options.config || new Config()
     this.logger = options.logger
-    this.common = options.common
     this.servers = options.servers
     this.syncmode = options.syncmode
     this.services = [
@@ -53,7 +54,7 @@ export default class Node extends events.EventEmitter {
             servers: this.servers,
             logger: this.logger,
             lightserv: options.lightserv,
-            common: options.common,
+            config: this.config,
             minPeers: options.minPeers,
             maxPeers: options.maxPeers,
             db: options.db,
@@ -61,7 +62,7 @@ export default class Node extends events.EventEmitter {
         : new LightEthereumService({
             servers: this.servers,
             logger: this.logger,
-            common: options.common,
+            config: this.config,
             minPeers: options.minPeers,
             maxPeers: options.maxPeers,
             db: options.db,
