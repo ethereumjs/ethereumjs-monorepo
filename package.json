@@ -93,6 +93,7 @@
     "@types/node": "^14.11.5",
     "@types/tape": "^4.13.0",
     "@types/tape-catch": "^1.0.0",
+    "eslint": "^6.8.0",
     "file-replace-loader": "^1.2.0",
     "husky": "^2.1.0",
     "json-to-markdown": "^1.0.4",
