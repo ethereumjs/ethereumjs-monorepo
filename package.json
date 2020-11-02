@@ -23,7 +23,7 @@
     "docs:build": "typedoc --tsconfig tsconfig.prod.json",
     "lint": "ethereumjs-config-lint",
     "lint:fix": "ethereumjs-config-lint-fix",
-    "tape": "ts-node node_modules/.bin/tape",
+    "tape": "tape -r ts-node/register",
     "test": "npm run test:unit && npm run test:integration",
     "test:unit": "npm run tape -- 'test/!(integration)/**/*.ts'",
     "test:integration": "npm run tape -- 'test/integration/**/*.ts'",
