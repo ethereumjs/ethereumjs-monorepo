@@ -23,9 +23,10 @@
     "docs:build": "typedoc --tsconfig tsconfig.prod.json",
     "lint": "ethereumjs-config-lint",
     "lint:fix": "ethereumjs-config-lint-fix",
+    "tape": "ts-node node_modules/tape/bin/tape",
     "test": "npm run test:unit && npm run test:integration",
-    "test:unit": "ts-node node_modules/tape/bin/tape 'test/{!(integration)/**/*.ts,logger.ts}'",
-    "test:integration": "ts-node node_modules/tape/bin/tape 'test/integration/**/*.ts'",
+    "test:unit": "npm run tape -- 'test/!(integration)/**/*.ts'",
+    "test:integration": "npm run tape -- 'test/integration/**/*.ts'",
     "test:browser": "karma start karma.conf.js"
   },
   "husky": {
@@ -72,7 +73,6 @@
     "libp2p-tcp": "^0.13.0",
     "libp2p-websockets": "^0.12.0",
     "merkle-patricia-tree": "^4.0.0",
-    "ms": "^2.1.1",
     "peer-id": "^0.12.2",
     "peer-info": "^0.15.1",
     "pull-catch": "^1.0.0",
