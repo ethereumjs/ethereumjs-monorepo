@@ -6,6 +6,7 @@ import { RPCManager as Manager } from '../../lib/rpc'
 import * as Logger from '../../lib/logging'
 import { blockChain } from './blockChainStub'
 import { Chain } from '../../lib/blockchain/chain'
+import { RlpxServer } from '../../lib/net/server/rlpxserver'
 import Blockchain from '@ethereumjs/blockchain'
 
 const config: any = { loglevel: 'error' }
@@ -36,6 +37,11 @@ export function createNode(nodeConfig?: any) {
     ethProtocolVersions: [63],
   }
   const trueNodeConfig = { ...defaultNodeConfig, ...nodeConfig }
+  const servers = [
+    new RlpxServer({
+      bootnodes: '10.0.0.1:1234,10.0.0.2:1234',
+    }),
+  ]
   return {
     services: [
       {
@@ -50,8 +56,12 @@ export function createNode(nodeConfig?: any) {
         ],
       },
     ],
+    servers,
     common: trueNodeConfig.commonChain,
     opened: trueNodeConfig.opened,
+    server: (name: string) => {
+      return servers.find((s) => s.name === name)
+    },
   }
 }
 
