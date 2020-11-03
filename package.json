@@ -63,7 +63,7 @@
     "ethereumjs-devp2p": "^3.0.3",
     "ethereumjs-util": "^7.0.7",
     "fs-extra": "^7.0.1",
-    "jayson": "^2.0.6",
+    "jayson": "^3.3.4",
     "level": "^6.0.1",
     "libp2p": "^0.24.4",
     "libp2p-bootstrap": "^0.9.3",
