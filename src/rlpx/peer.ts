@@ -1,5 +1,5 @@
 import { EventEmitter } from 'events'
-import rlp from 'rlp-encoding'
+import * as rlp from 'rlp'
 import * as util from '../util'
 import BufferList = require('bl')
 import ms from 'ms'
@@ -218,7 +218,7 @@ export class Peer extends EventEmitter {
     ]
 
     if (!this._closed) {
-      if (this._sendMessage(PREFIXES.HELLO, rlp.encode(payload))) {
+      if (this._sendMessage(PREFIXES.HELLO, rlp.encode(payload as any))) {
         this._weHello = payload
       }
       if (this._hello) {

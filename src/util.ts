@@ -1,7 +1,8 @@
+import assert from 'assert'
 import { randomBytes } from 'crypto'
 import { privateKeyVerify, publicKeyConvert } from 'secp256k1'
 import createKeccakHash from 'keccak'
-import assert from 'assert'
+import { decode } from 'rlp'
 
 export function keccak256(...buffers: Buffer[]) {
   const buffer = Buffer.concat(buffers)
@@ -105,4 +106,10 @@ export class Deferred<T> {
 
 export function createDeferred<T>(): Deferred<T> {
   return new Deferred()
+}
+
+export function unstrictDecode(value: Buffer) {
+  // rlp library throws on remainder.length !== 0
+  // this utility function bypasses that
+  return (decode(value, true) as any).data
 }

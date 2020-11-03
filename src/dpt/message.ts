@@ -1,9 +1,8 @@
-/// <reference path="../@types/rlp-encoding.d.ts"/>
 import { debug as createDebugLogger } from 'debug'
 import ip from 'ip'
-import rlp from 'rlp-encoding'
+import * as rlp from 'rlp'
 import secp256k1 from 'secp256k1'
-import { keccak256, int2buffer, buffer2int, assertEq } from '../util'
+import { keccak256, int2buffer, buffer2int, assertEq, unstrictDecode } from '../util'
 
 const debug = createDebugLogger('devp2p:dpt:server')
 
@@ -193,7 +192,7 @@ export function decode(buffer: Buffer) {
   const type = typedata[0]
   const typename = types.byType[type]
   if (typename === undefined) throw new Error(`Invalid type: ${type}`)
-  const data = messages[typename].decode(rlp.decode(typedata.slice(1)))
+  const data = messages[typename].decode(unstrictDecode(typedata.slice(1)))
 
   const sighash = keccak256(typedata)
   const signature = buffer.slice(32, 96)

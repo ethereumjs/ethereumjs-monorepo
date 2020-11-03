@@ -44,7 +44,7 @@
     "node": ">=10.0"
   },
   "scripts": {
-    "build": "ethereumjs-config-build",
+    "build": "ethereumjs-config-ts-build",
     "prepublishOnly": "npm run test && npm run build",
     "coverage": "nyc --reporter=lcov npm run test",
     "docs:build": "typedoc",
@@ -68,7 +68,7 @@
     "keccak": "^3.0.1",
     "lru-cache": "^5.1.1",
     "ms": "^0.7.1",
-    "rlp-encoding": "^3.0.0",
+    "rlp": "^2.2.6",
     "secp256k1": "^4.0.2"
   },
   "devDependencies": {

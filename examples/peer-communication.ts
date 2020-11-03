@@ -1,14 +1,14 @@
-import * as devp2p from '../src/index'
-import { ETH, Peer } from '../src/index'
-import Common from '@ethereumjs/common'
-import { Transaction } from '@ethereumjs/tx'
-import { Block, BlockHeader } from '@ethereumjs/block'
+import assert from 'assert'
+import { randomBytes } from 'crypto'
 import LRUCache from 'lru-cache'
 import ms from 'ms'
 import chalk from 'chalk'
-import assert from 'assert'
-import { randomBytes } from 'crypto'
-import rlp from 'rlp-encoding'
+import * as rlp from 'rlp'
+import Common from '@ethereumjs/common'
+import { Transaction } from '@ethereumjs/tx'
+import { Block, BlockHeader } from '@ethereumjs/block'
+import * as devp2p from '../src/index'
+import { ETH, Peer } from '../src/index'
 
 const PRIVATE_KEY = randomBytes(32)
 const CHAIN_ID = 1
