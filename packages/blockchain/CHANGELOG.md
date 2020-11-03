@@ -59,8 +59,6 @@ const blockchain = new Blockchain({ common })
 
 The deprecated `validate` option has been removed, please use `valdiateBlock` and `validatePow` for options when instantiating a new `Blockchain`.
 
-[5.0.0]: https://github.com/ethereumjs/ethereumjs-vm/compare/%40ethereumjs%2Fblockchain%404.0.2...%40ethereumjs%2Fblockchain%405.0.0
-
 ### Dual ES5 and ES2017 Builds
 
 We significantly updated our internal tool and CI setup along the work on 
@@ -87,6 +85,8 @@ in performance benefits for Node.js consumers, see [here](https://github.com/eth
 
 - Fixed blockchain hanging forever in case code throws between a semaphore `lock`/`unlock`,
   Issue [#877](https://github.com/ethereumjs/ethereumjs-vm/issues/877)
+
+[5.0.0]: https://github.com/ethereumjs/ethereumjs-vm/compare/%40ethereumjs%2Fblockchain%404.0.2...%40ethereumjs%2Fblockchain%405.0.0
 
 ## 4.0.4 - 2020-07-27
 
