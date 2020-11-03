@@ -44,7 +44,7 @@
     "node": ">=10.0"
   },
   "scripts": {
-    "build": "ethereumjs-config-build",
+    "build": "ethereumjs-config-ts-build",
     "prepublishOnly": "npm run test && npm run build",
     "coverage": "nyc --reporter=lcov npm run test",
     "docs:build": "typedoc",
