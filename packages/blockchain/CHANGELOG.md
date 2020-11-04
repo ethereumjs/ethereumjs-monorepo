@@ -40,6 +40,7 @@ Genesis handling has been reworked to now be safer and reduce the risk of wiping
 **Testing and CI**
 
 - Dedicated `blockchain` reorg test setup and executable test, PR [#926](https://github.com/ethereumjs/ethereumjs-vm/pull/926)
+- **Breaking:** `validatePow` option has been renamed to `validateConsensus` to prepare for a future integration of non-PoW (PoA) consensus mechanisms, `validateConsensus` as well as `validateBlocks` options now throw when set to `true` for validation on a non-PoW chain (determined by `Common`, e.g. 'goerli'), see PR [#937](https://github.com/ethereumjs/ethereumjs-vm/pull/937)
 
 ## 5.0.0-beta.1 - 2020-10-22
 

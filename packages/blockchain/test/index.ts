@@ -12,7 +12,7 @@ tape('blockchain test', (t) => {
   t.test('should not crash on getting head of a blockchain without a genesis', async (st) => {
     const blockchain = new Blockchain({
       validateBlocks: true,
-      validatePow: false,
+      validateConsensus: false,
     })
     await blockchain.getHead()
     st.end()
@@ -28,11 +28,30 @@ tape('blockchain test', (t) => {
     st.end()
   })
 
+  t.test('should only initialize with supported consensus validation options', (st) => {
+    let common = new Common({ chain: 'mainnet' })
+    st.doesNotThrow(() => {
+      new Blockchain({ common, validateConsensus: true })
+    })
+    st.doesNotThrow(() => {
+      new Blockchain({ common, validateBlocks: true })
+    })
+
+    common = new Common({ chain: 'goerli' })
+    st.throws(() => {
+      new Blockchain({ common, validateConsensus: true })
+    })
+    st.throws(() => {
+      new Blockchain({ common, validateBlocks: true })
+    })
+    st.end()
+  })
+
   t.test('should add a genesis block without errors', async (st) => {
     const genesisBlock = Block.genesis()
     const blockchain = new Blockchain({
       validateBlocks: true,
-      validatePow: false,
+      validateConsensus: false,
       genesisBlock,
     })
     await blockchain.initPromise
@@ -48,7 +67,7 @@ tape('blockchain test', (t) => {
     try {
       await Blockchain.create({
         validateBlocks: true,
-        validatePow: false,
+        validateConsensus: false,
         genesisBlock,
       })
     } catch (error) {
@@ -60,7 +79,7 @@ tape('blockchain test', (t) => {
   t.test('should initialize with a genesis block', async (st) => {
     const blockchain = new Blockchain({
       validateBlocks: true,
-      validatePow: false,
+      validateConsensus: false,
     })
     const blocks = await blockchain.getBlocks(0, 5, 0, false)
     st.equal(blocks!.length, 1)
@@ -76,7 +95,7 @@ tape('blockchain test', (t) => {
 
     const blockchain = new Blockchain({
       validateBlocks: true,
-      validatePow: false,
+      validateConsensus: false,
       genesisBlock,
     })
 
@@ -115,7 +134,7 @@ tape('blockchain test', (t) => {
 
     const blockchain = new Blockchain({
       validateBlocks: true,
-      validatePow: false,
+      validateConsensus: false,
       genesisBlock,
     })
 
@@ -148,7 +167,7 @@ tape('blockchain test', (t) => {
 
     const blockchain = new Blockchain({
       validateBlocks: true,
-      validatePow: false,
+      validateConsensus: false,
       genesisBlock,
     })
     const block = await blockchain.getBlock(genesisBlock.hash())
@@ -346,7 +365,7 @@ tape('blockchain test', (t) => {
   t.test('should not call iterator function in an empty blockchain', async (st) => {
     const blockchain = new Blockchain({
       validateBlocks: true,
-      validatePow: false,
+      validateConsensus: false,
     })
 
     await blockchain.iterator('test', () => {
@@ -458,7 +477,7 @@ tape('blockchain test', (t) => {
     const blocks = generateBlocks(15)
     const blockchain = new Blockchain({
       validateBlocks: true,
-      validatePow: false,
+      validateConsensus: false,
       genesisBlock: blocks[0],
     })
     await blockchain.putBlock(blocks[1])
@@ -473,7 +492,7 @@ tape('blockchain test', (t) => {
     blocks.push(...generateBlocks(15, [genesisBlock]))
     const blockchain = new Blockchain({
       validateBlocks: true,
-      validatePow: false,
+      validateConsensus: false,
       genesisBlock,
     })
     await blockchain.putBlocks(blocks.slice(1))
@@ -501,7 +520,7 @@ tape('blockchain test', (t) => {
     const genesisBlock = Block.genesis({ header: { gasLimit: 8000000 } })
     const blockchain = new Blockchain({
       validateBlocks: true,
-      validatePow: false,
+      validateConsensus: false,
       genesisBlock,
     })
 
@@ -522,7 +541,7 @@ tape('blockchain test', (t) => {
     })
     const blockchain = new Blockchain({
       validateBlocks: true,
-      validatePow: false,
+      validateConsensus: false,
       genesisBlock,
     })
 
@@ -559,7 +578,7 @@ tape('blockchain test', (t) => {
     let blockchain = new Blockchain({
       db,
       validateBlocks: true,
-      validatePow: false,
+      validateConsensus: false,
       genesisBlock,
     })
 
@@ -577,7 +596,7 @@ tape('blockchain test', (t) => {
     blockchain = new Blockchain({
       db,
       validateBlocks: true,
-      validatePow: false,
+      validateConsensus: false,
       genesisBlock,
     })
 
@@ -597,7 +616,7 @@ tape('blockchain test', (t) => {
     const genesisBlock = Block.genesis({ header: { gasLimit } }, opts)
     const blockchain = new Blockchain({
       validateBlocks: true,
-      validatePow: false,
+      validateConsensus: false,
       genesisBlock,
     })
 
@@ -652,7 +671,6 @@ tape('blockchain test', (t) => {
 
   t.test('mismatched chains', async (st) => {
     const common = new Common({ chain: 'mainnet', hardfork: 'chainstart' })
-
     const gasLimit = 8000000
 
     const genesisBlock = Block.genesis({ header: { gasLimit } }, { common })
@@ -683,7 +701,7 @@ tape('blockchain test', (t) => {
     const blockchain = new Blockchain({
       common,
       validateBlocks: true,
-      validatePow: false,
+      validateConsensus: false,
       genesisBlock,
     })
 

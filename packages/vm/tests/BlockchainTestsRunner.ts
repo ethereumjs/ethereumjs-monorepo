@@ -4,6 +4,7 @@ import { SecureTrie as Trie } from 'merkle-patricia-tree'
 import { Block } from '@ethereumjs/block'
 import Blockchain from '@ethereumjs/blockchain'
 import { setupPreConditions, verifyPostConditions } from './util'
+import Common from '@ethereumjs/common'
 
 const level = require('level')
 const levelMem = require('level-mem')
@@ -24,15 +25,18 @@ export default async function runBlockchainTest(options: any, testData: any, t: 
   const cacheDB = level('./.cachedb')
   const state = new Trie()
 
+  const { common }: { common: Common } = options
+  common.setHardforkByBlockNumber(0)
+
   let validatePow = false
   // Only run with block validation when sealEngine present in test file
   // and being set to Ethash PoW validation
   if (testData.sealEngine && testData.sealEngine === 'Ethash') {
+    if (common.consensusType() !== 'ethash') {
+      t.skip('SealEngine setting is not matching chain consensus type, skip test.')
+    }
     validatePow = true
   }
-
-  const { common } = options
-  common.setHardforkByBlockNumber(0)
 
   // create and add genesis block
   const header = formatBlockHeader(testData.genesisBlockHeader)
@@ -48,12 +52,12 @@ export default async function runBlockchainTest(options: any, testData: any, t: 
     db: blockchainDB,
     common,
     validateBlocks: true,
-    validatePow,
+    validateConsensus: validatePow,
     genesisBlock,
   })
 
   if (validatePow) {
-    blockchain.ethash!.cacheDB = cacheDB
+    blockchain._ethash!.cacheDB = cacheDB
   }
 
   let VM
@@ -108,7 +112,7 @@ export default async function runBlockchainTest(options: any, testData: any, t: 
 
     try {
       // check if we should update common.
-      const newFork = common.setHardforkByBlockNumber(currentBlock)
+      const newFork = common.setHardforkByBlockNumber(currentBlock.toNumber())
       if (newFork != currentFork) {
         currentFork = newFork
         vm._updateOpcodes()

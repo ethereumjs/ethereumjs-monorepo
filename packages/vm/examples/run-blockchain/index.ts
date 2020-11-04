@@ -9,12 +9,12 @@ const level = require('level')
 
 async function main() {
   const common = new Common({ chain: testData.network.toLowerCase() })
-  const validatePow = true
+  const validatePow = common.consensusType() === 'pow'
   const validateBlocks = true
 
   const blockchain = await Blockchain.create({
     common,
-    validatePow,
+    validateConsensus: validatePow,
     validateBlocks,
     genesisBlock: getGenesisBlock(common)
   })
@@ -22,7 +22,7 @@ async function main() {
   // When verifying PoW, setting this cache improves the
   // performance of subsequent runs of this script.
   if (validatePow) {
-    blockchain.ethash!.cacheDB = level('./.cachedb')
+    blockchain._ethash!.cacheDB = level('./.cachedb')
   }
 
   const vm = new VM({ blockchain, common })

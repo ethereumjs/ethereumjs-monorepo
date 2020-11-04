@@ -18,7 +18,7 @@ tape('runBlockchain', (t) => {
     db: blockchainDB,
     common,
     validateBlocks: false,
-    validatePow: false,
+    validateConsensus: false,
   })
 
   const stateManager = new DefaultStateManager({ common })

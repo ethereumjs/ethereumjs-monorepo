@@ -9,11 +9,15 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 ## 3.0.0-beta.2 - UNRELEASED
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 - Added `freeze` option to allow for block freeze deactivation (e.g. to allow for subclassing block and adding additional parameters), see PR [#941](https://github.com/ethereumjs/ethereumjs-vm/pull/941)
 - Fixed bug where block options have not been passed on to the main constructor from the static factory methods, see PR [#941](https://github.com/ethereumjs/ethereumjs-vm/pull/941)
 =======
 - Block, header and uncle validation methods which include difficulty validation (`canonicalDifficulty()`, `validateDifficulty()`, `validate()`, `validateUncles()`) now throw on non-PoW chains, see PR [#937](https://github.com/ethereumjs/ethereumjs-vm/pull/937)
 >>>>>>> block -> poa preparations: throw on block, header and uncle validation methods which include difficulty validation
+=======
+- **Breaking:** Block, header and uncle validation methods which include difficulty validation (`canonicalDifficulty()`, `validateDifficulty()`, `validate()`, `validateUncles()`) now throw on non-PoW chains, see PR [#937](https://github.com/ethereumjs/ethereumjs-vm/pull/937)
+>>>>>>> blockchain -> poa preparations: validatePow to validateConsensus option renaming, throw on unsupported chain consensus types (PoA)
 
 ## 3.0.0-beta.1 - 2020-10-22
 

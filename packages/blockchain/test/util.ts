@@ -42,7 +42,7 @@ export const generateBlockchain = async (numberOfBlocks: number, genesis?: Block
 
   const blockchain = new Blockchain({
     validateBlocks: true,
-    validatePow: false,
+    validateConsensus: false,
     genesisBlock: genesis || blocks[0],
   })
   try {

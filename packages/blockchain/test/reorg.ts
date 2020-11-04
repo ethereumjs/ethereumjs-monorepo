@@ -20,7 +20,7 @@ tape('reorg tests', (t) => {
       const common = new Common({ chain: 'mainnet', hardfork: 'muirGlacier' })
       const blockchain = new Blockchain({
         validateBlocks: true,
-        validatePow: false,
+        validateConsensus: false,
         common,
         genesisBlock: genesis,
       })
