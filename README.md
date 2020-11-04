@@ -77,6 +77,14 @@ Builds all local packages that the provided package depends on (e.g.: @ethereumj
 
 If no scope is provided, `npm run build:tree`, will build all sub-packages.
 
+#### `npm run clean`
+
+Removes root and packages `node_modules` directories, and other generated files, like `coverage`, `dist` and others. This is useful to run after changing branches, to have a clean slate to work with.
+
+#### `npm run lint` and `npm run lint:fix`
+
+These scripts execute `lint` and `lint:fix` respectively, to all monorepo packages. Worth noting that there is a git hook in place that runs `npm run lint` for every `git push`. This check can be skipped using `git push [command] --no-verify`.
+
 ### Package scripts — run from `./packages/<name>`
 
  **⚠️ Important: if you run `npm install` from the package directory, it will remove all links to the local packages, pulling all dependencies from npm. Run `npm install` from the root only.**
@@ -108,10 +116,6 @@ Fixes code style according to the rules. Differently from `npm run lint`, this c
 Runs the package tests. 
 
 _Note that the VM has several test scopes - refer to [packages/vm/package.json](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/package.json) for more info._
-
-#### `npm run clean`
-
-Removes root and package `node_modules` directories, and other generated files, like `coverage`, `dist` and others. This is useful to run after changing branches, to have a clean slate to work with.
 
 ### Going further
 
