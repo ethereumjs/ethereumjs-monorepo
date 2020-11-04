@@ -69,7 +69,7 @@ tape('[Block]: block functions', function (t) {
 
   const testData = require('./testdata/testdata.json')
 
-  t.test('should test block validation', async function (st) {
+  t.test('should test block validation on pow chain', async function (st) {
     const blockRlp = testData.blocks[0].rlp
     const block = Block.fromRLPSerializedBlock(blockRlp)
     const blockchain = new Mockchain()
@@ -78,6 +78,18 @@ tape('[Block]: block functions', function (t) {
       await block.validate(blockchain)
       st.end()
     })
+  })
+
+  t.test('should test block validation on poa chain', async function (st) {
+    const blockRlp = testData.blocks[0].rlp
+    const common = new Common({ chain: 'goerli' })
+    const block = Block.fromRLPSerializedBlock(blockRlp, { common })
+    try {
+      await block.validate()
+    } catch (error) {
+      st.ok(error.toString().match(/block validation is currently only supported on PoW chains/))
+    }
+    st.end()
   })
 
   async function testTransactionValidation(st: tape.Test, block: Block) {

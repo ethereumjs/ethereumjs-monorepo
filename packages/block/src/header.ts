@@ -269,6 +269,12 @@ export class BlockHeader {
    * @param parentBlockHeader - the header from the parent `Block` of this header
    */
   canonicalDifficulty(parentBlockHeader: BlockHeader): BN {
+    if (this._common.consensusType() !== 'pow') {
+      throw new Error('difficulty calculation is only supported on PoW chains')
+    }
+    if (this._common.consensusAlgorithm() !== 'ethash') {
+      throw new Error('difficulty calculation currently only supports the ethash algorithm')
+    }
     const hardfork = this._getHardfork()
     const blockTs = this.timestamp
     const { timestamp: parentTs, difficulty: parentDif } = parentBlockHeader
@@ -351,6 +357,9 @@ export class BlockHeader {
    * @param parentBlockHeader - the header from the parent `Block` of this header
    */
   validateDifficulty(parentBlockHeader: BlockHeader): boolean {
+    if (this._common.consensusType() !== 'pow') {
+      throw new Error('difficulty validation is currently only supported on PoW chains')
+    }
     return this.canonicalDifficulty(parentBlockHeader).eq(this.difficulty)
   }
 
@@ -389,6 +398,9 @@ export class BlockHeader {
    * @param height - If this is an uncle header, this is the height of the block that is including it
    */
   async validate(blockchain: Blockchain, height?: BN): Promise<void> {
+    if (this._common.consensusType() !== 'pow') {
+      throw new Error('block validation is currently only supported on PoW chains')
+    }
     if (this.isGenesis()) {
       return
     }
