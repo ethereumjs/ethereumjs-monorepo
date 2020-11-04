@@ -2,6 +2,10 @@
   "name": "ropsten",
   "chainId": 3,
   "networkId": 3,
+  "consensus": {
+    "type": "pow",
+    "algorithm": "ethash"
+  },
   "comment": "PoW test network",
   "url": "https://github.com/ethereum/ropsten",
   "genesis": {

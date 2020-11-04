@@ -2,6 +2,10 @@
   "name": "mainnet",
   "chainId": 1,
   "networkId": 1,
+  "consensus": {
+    "type": "pow",
+    "algorithm": "ethash"
+  },
   "comment": "The Ethereum main chain",
   "url": "https://ethstats.net/",
   "genesis": {

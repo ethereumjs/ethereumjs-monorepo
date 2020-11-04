@@ -631,4 +631,22 @@ export default class Common {
   eips(): number[] {
     return this._eips
   }
+
+  /**
+   * Returns the consensus type of the network
+   * Possible values: "pow"|"poa"
+   */
+  consensusType(): string {
+    return (<any>this._chainParams)['consensus']['type']
+  }
+
+  /**
+   * Returns the concrete consensus implementation
+   * algorithm or protocol for the network
+   * e.g. "ethash" for "pow" consensus type or
+   * "clique" for "poa" consensus type
+   */
+  consensusAlgorithm(): string {
+    return (<any>this._chainParams)['consensus']['algorithm']
+  }
 }
