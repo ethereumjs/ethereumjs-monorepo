@@ -8,11 +8,11 @@ import {
   bodyKey,
   numberToHashKey,
   hashToNumberKey,
-} from './dbConstants'
+} from './constants'
 
-import { CacheMap } from './dbManager'
+import { CacheMap } from './manager'
 
-export enum DatabaseOperationTarget {
+export enum DBTarget {
   Heads,
   HeadHeader,
   HeadBlock,
@@ -24,9 +24,10 @@ export enum DatabaseOperationTarget {
 }
 
 /**
+ * DBOpData is a type which has the purpose of holding the actual data of the Database Operation.
  * @hidden
  */
-export interface DBOp {
+export interface DBOpData {
   type?: String
   key: Buffer | string
   keyEncoding: String
@@ -40,12 +41,15 @@ export type DatabaseKey = {
   blockHash?: Buffer
 }
 
-export class DatabaseOperation {
-  public operationTarget: DatabaseOperationTarget
-  public baseDBOp: DBOp
+/**
+ * The DBOp class aids creating database operations which is used by `level` using a more high-level interface
+ */
+export class DBOp {
+  public operationTarget: DBTarget
+  public baseDBOp: DBOpData
   public cacheString: string | undefined
 
-  private constructor(operationTarget: DatabaseOperationTarget, key?: DatabaseKey) {
+  private constructor(operationTarget: DBTarget, key?: DatabaseKey) {
     this.operationTarget = operationTarget
 
     this.baseDBOp = {
@@ -55,40 +59,40 @@ export class DatabaseOperation {
     }
 
     switch (operationTarget) {
-      case DatabaseOperationTarget.Heads: {
+      case DBTarget.Heads: {
         this.baseDBOp.key = HEADS_KEY
         this.baseDBOp.valueEncoding = 'json'
         break
       }
-      case DatabaseOperationTarget.HeadHeader: {
+      case DBTarget.HeadHeader: {
         this.baseDBOp.key = HEAD_HEADER_KEY
         break
       }
-      case DatabaseOperationTarget.HeadBlock: {
+      case DBTarget.HeadBlock: {
         this.baseDBOp.key = HEAD_BLOCK_KEY
         break
       }
-      case DatabaseOperationTarget.HashToNumber: {
+      case DBTarget.HashToNumber: {
         this.baseDBOp.key = hashToNumberKey(key!.blockHash!)
         this.cacheString = 'hashToNumber'
         break
       }
-      case DatabaseOperationTarget.NumberToHash: {
+      case DBTarget.NumberToHash: {
         this.baseDBOp.key = numberToHashKey(key!.blockNumber!)
         this.cacheString = 'numberToHash'
         break
       }
-      case DatabaseOperationTarget.TotalDifficulty: {
+      case DBTarget.TotalDifficulty: {
         this.baseDBOp.key = tdKey(key!.blockNumber!, key!.blockHash!)
         this.cacheString = 'td'
         break
       }
-      case DatabaseOperationTarget.Body: {
+      case DBTarget.Body: {
         this.baseDBOp.key = bodyKey(key!.blockNumber!, key!.blockHash!)
         this.cacheString = 'body'
         break
       }
-      case DatabaseOperationTarget.Header: {
+      case DBTarget.Header: {
         this.baseDBOp.key = headerKey(key!.blockNumber!, key!.blockHash!)
         this.cacheString = 'header'
         break
@@ -96,24 +100,17 @@ export class DatabaseOperation {
     }
   }
 
-  public static get(
-    operationTarget: DatabaseOperationTarget,
-    key?: DatabaseKey
-  ): DatabaseOperation {
-    return new DatabaseOperation(operationTarget, key)
+  public static get(operationTarget: DBTarget, key?: DatabaseKey): DBOp {
+    return new DBOp(operationTarget, key)
   }
 
   // set operation: note: value/key is not in default order
-  public static set(
-    operationTarget: DatabaseOperationTarget,
-    value: Buffer | object,
-    key?: DatabaseKey
-  ): DatabaseOperation {
-    const databaseOperation = new DatabaseOperation(operationTarget, key)
+  public static set(operationTarget: DBTarget, value: Buffer | object, key?: DatabaseKey): DBOp {
+    const databaseOperation = new DBOp(operationTarget, key)
     databaseOperation.baseDBOp.value = value
     databaseOperation.baseDBOp.type = 'put'
 
-    if (operationTarget == DatabaseOperationTarget.Heads) {
+    if (operationTarget == DBTarget.Heads) {
       databaseOperation.baseDBOp.valueEncoding = 'json'
     } else {
       databaseOperation.baseDBOp.valueEncoding = 'binary'
@@ -122,11 +119,8 @@ export class DatabaseOperation {
     return databaseOperation
   }
 
-  public static del(
-    operationTarget: DatabaseOperationTarget,
-    key?: DatabaseKey
-  ): DatabaseOperation {
-    const databaseOperation = new DatabaseOperation(operationTarget, key)
+  public static del(operationTarget: DBTarget, key?: DatabaseKey): DBOp {
+    const databaseOperation = new DBOp(operationTarget, key)
     databaseOperation.baseDBOp.type = 'del'
     return databaseOperation
   }

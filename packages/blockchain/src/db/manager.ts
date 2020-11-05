@@ -9,7 +9,7 @@ import {
 } from '@ethereumjs/block'
 import Common from '@ethereumjs/common'
 import Cache from './cache'
-import { DatabaseKey, DatabaseOperation, DatabaseOperationTarget, DBOp } from './databaseOperation'
+import { DatabaseKey, DBOp, DBTarget, DBOpData } from './operation'
 
 import type { LevelUp } from 'levelup'
 
@@ -52,7 +52,7 @@ export class DBManager {
    * Fetches iterator heads from the db.
    */
   async getHeads(): Promise<{ [key: string]: Buffer }> {
-    const heads = await this.get(DatabaseOperationTarget.Heads)
+    const heads = await this.get(DBTarget.Heads)
     Object.keys(heads).forEach((key) => {
       heads[key] = Buffer.from(heads[key])
     })
@@ -63,14 +63,14 @@ export class DBManager {
    * Fetches header of the head block.
    */
   async getHeadHeader(): Promise<Buffer> {
-    return this.get(DatabaseOperationTarget.HeadHeader)
+    return this.get(DBTarget.HeadHeader)
   }
 
   /**
    * Fetches head block.
    */
   async getHeadBlock(): Promise<Buffer> {
-    return this.get(DatabaseOperationTarget.HeadBlock)
+    return this.get(DBTarget.HeadBlock)
   }
 
   /**
@@ -112,7 +112,7 @@ export class DBManager {
    * Fetches body of a block given its hash and number.
    */
   async getBody(blockHash: Buffer, blockNumber: BN): Promise<BlockBodyBuffer> {
-    const body = await this.get(DatabaseOperationTarget.Body, { blockHash, blockNumber })
+    const body = await this.get(DBTarget.Body, { blockHash, blockNumber })
     return (rlp.decode(body) as any) as BlockBodyBuffer
   }
 
@@ -120,7 +120,7 @@ export class DBManager {
    * Fetches header of a block given its hash and number.
    */
   async getHeader(blockHash: Buffer, blockNumber: BN) {
-    const encodedHeader = await this.get(DatabaseOperationTarget.Header, { blockHash, blockNumber })
+    const encodedHeader = await this.get(DBTarget.Header, { blockHash, blockNumber })
     const opts = { common: this._common }
     return BlockHeader.fromRLPSerializedHeader(encodedHeader, opts)
   }
@@ -129,7 +129,7 @@ export class DBManager {
    * Fetches total difficulty for a block given its hash and number.
    */
   async getTd(blockHash: Buffer, blockNumber: BN): Promise<BN> {
-    const td = await this.get(DatabaseOperationTarget.TotalDifficulty, { blockHash, blockNumber })
+    const td = await this.get(DBTarget.TotalDifficulty, { blockHash, blockNumber })
     return new BN(rlp.decode(td))
   }
 
@@ -137,7 +137,7 @@ export class DBManager {
    * Performs a block hash to block number lookup.
    */
   async hashToNumber(blockHash: Buffer): Promise<BN> {
-    const value = await this.get(DatabaseOperationTarget.HashToNumber, { blockHash })
+    const value = await this.get(DBTarget.HashToNumber, { blockHash })
     return new BN(value)
   }
 
@@ -149,7 +149,7 @@ export class DBManager {
       throw new level.errors.NotFoundError()
     }
 
-    return this.get(DatabaseOperationTarget.NumberToHash, { blockNumber })
+    return this.get(DBTarget.NumberToHash, { blockNumber })
   }
 
   /**
@@ -157,8 +157,8 @@ export class DBManager {
    * it first tries to load from cache, and on cache miss will
    * try to put the fetched item on cache afterwards.
    */
-  async get(databaseOperationTarget: DatabaseOperationTarget, key?: DatabaseKey): Promise<any> {
-    const databaseGetOperation = DatabaseOperation.get(databaseOperationTarget, key)
+  async get(databaseOperationTarget: DBTarget, key?: DatabaseKey): Promise<any> {
+    const databaseGetOperation = DBOp.get(databaseOperationTarget, key)
 
     const cacheString = databaseGetOperation.cacheString
     const dbKey = databaseGetOperation.baseDBOp.key
@@ -184,8 +184,8 @@ export class DBManager {
   /**
    * Performs a batch operation on db.
    */
-  async batch(ops: DatabaseOperation[]) {
-    const convertedOps: DBOp[] = ops.map((op) => op.baseDBOp)
+  async batch(ops: DBOp[]) {
+    const convertedOps: DBOpData[] = ops.map((op) => op.baseDBOp)
     // update the current cache for each operation
     ops.map((op) => op.updateCache(this._cache))
 
