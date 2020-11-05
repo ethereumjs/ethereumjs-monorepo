@@ -63,8 +63,8 @@ export interface BlockchainOptions {
   db?: LevelUp
 
   /**
-   * This flags indicates if a block should be validated by the consensus algorithm
-   * or protocol used by the chain.
+   * This flags indicates if a block should be validated along the consensus algorithm
+   * or protocol used by the chain, e.g. by verifying the PoW on the block.
    *
    * Supported: 'pow' with 'ethash' algorithm (taken from the `Common` instance)
    * Default: `true`.
@@ -72,12 +72,10 @@ export interface BlockchainOptions {
   validateConsensus?: boolean
 
   /**
-   * This flags indicates if blocks should be validated. See Block#validate for details. If
-   * `validate` is provided, this option takes its value. If neither `validate` nor this option are
-   * provided.
+   * This flag indicates if protocol-given consistency checks on
+   * block headers and included uncles and transactions should be performed,
+   * see Block#validate for details.
    *
-   * Supported: 'pow' with 'ethash' algorithm (taken from the `Common` instance)
-   * Default: `true`.
    */
   validateBlocks?: boolean
 
@@ -159,15 +157,6 @@ export default class Blockchain implements BlockchainInterface {
       }
 
       this._ethash = new Ethash(this.db)
-    }
-
-    if (this._validateBlocks) {
-      if (this._common.consensusType() !== 'pow') {
-        throw new Error('block validation only supported for pow chains')
-      }
-      if (this._common.consensusAlgorithm() !== 'ethash') {
-        throw new Error('block validation only supported for pow ethash algorithm')
-      }
     }
 
     this._heads = {}

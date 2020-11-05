@@ -19,7 +19,7 @@ export function setupVM(opts: VMOpts & { genesisBlock?: Block } = {}) {
       validateBlocks: false,
       validateConsensus: false,
       common,
-      genesisBlock
+      genesisBlock,
     })
   }
   return new VM(opts)

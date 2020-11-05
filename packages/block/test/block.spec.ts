@@ -84,8 +84,10 @@ tape('[Block]: block functions', function (t) {
     const blockRlp = testData.blocks[0].rlp
     const common = new Common({ chain: 'goerli' })
     const block = Block.fromRLPSerializedBlock(blockRlp, { common })
+    const blockchain = new Mockchain()
+    await blockchain.putBlock(Block.fromRLPSerializedBlock(testData.genesisRLP))
     try {
-      await block.validate()
+      await block.validate(blockchain)
     } catch (error) {
       st.ok(error.toString().match(/block validation is currently only supported on PoW chains/))
     }

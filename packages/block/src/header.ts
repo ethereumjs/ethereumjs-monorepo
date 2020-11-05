@@ -364,7 +364,8 @@ export class BlockHeader {
   }
 
   /**
-   * Validates the gasLimit.
+   * Validates if the block gasLimit remains in the
+   * boundaries set by the protocol.
    *
    * @param parentBlockHeader - the header from the parent `Block` of this header
    */
@@ -398,9 +399,6 @@ export class BlockHeader {
    * @param height - If this is an uncle header, this is the height of the block that is including it
    */
   async validate(blockchain: Blockchain, height?: BN): Promise<void> {
-    if (this._common.consensusType() !== 'pow') {
-      throw new Error('block validation is currently only supported on PoW chains')
-    }
     if (this.isGenesis()) {
       return
     }
@@ -424,8 +422,10 @@ export class BlockHeader {
       throw new Error('invalid timestamp')
     }
 
-    if (!this.validateDifficulty(header)) {
-      throw new Error('invalid difficulty')
+    if (this._common.consensusType() === 'pow') {
+      if (!this.validateDifficulty(header)) {
+        throw new Error('invalid difficulty')
+      }
     }
 
     if (!this.validateGasLimit(header)) {
