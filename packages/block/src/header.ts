@@ -223,6 +223,13 @@ export class BlockHeader {
     this._validateBufferLengths()
     this._checkDAOExtraData()
 
+    // Now we have set all the values of this Header, we possibly have set a dummy `difficulty` value (defaults to 0)
+    // If we have a `calcDifficultyFromHeader` block option parameter, we instead set difficulty to this value.
+
+    if (options.calcDifficultyFromHeader) {
+      this.difficulty = this.canonicalDifficulty(options.calcDifficultyFromHeader)
+    }
+
     Object.freeze(this)
   }
 

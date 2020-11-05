@@ -157,4 +157,73 @@ tape('[Block]: block functions', function (t) {
     }, 'should not throw on DAO HF block with correct extra data')
     st.end()
   })
+
+  t.test(
+    'should set canonical difficulty if I provide a calcDifficultyFromHeader header',
+    function (st) {
+      const common = new Common({ chain: 'mainnet', hardfork: 'chainstart' })
+      const genesis = Block.genesis({}, { common })
+
+      const nextBlockHeaderData = {
+        number: genesis.header.number.addn(1),
+        timestamp: genesis.header.timestamp.addn(10),
+      }
+
+      const blockWithoutDifficultyCalculation = Block.fromBlockData({
+        header: nextBlockHeaderData,
+      })
+
+      // test if difficulty defaults to 0
+      st.ok(
+        blockWithoutDifficultyCalculation.header.difficulty.eqn(0),
+        'header difficulty should default to 0'
+      )
+
+      // test if we set difficulty if we have a "difficulty header" in options; also verify this is equal to reported canonical difficulty.
+      const blockWithDifficultyCalculation = Block.fromBlockData(
+        {
+          header: nextBlockHeaderData,
+        },
+        {
+          calcDifficultyFromHeader: genesis.header,
+        }
+      )
+
+      st.ok(
+        blockWithDifficultyCalculation.header.difficulty.gtn(0),
+        'header difficulty should be set if difficulty header is given'
+      )
+      st.ok(
+        blockWithDifficultyCalculation.header
+          .canonicalDifficulty(genesis.header)
+          .eq(blockWithDifficultyCalculation.header.difficulty),
+        'header difficulty is canonical difficulty if difficulty header is given'
+      )
+      st.ok(
+        blockWithDifficultyCalculation.header.validateDifficulty(genesis.header),
+        'difficulty should be valid if difficulty header is provided'
+      )
+
+      // test if we can provide a block which is too far ahead to still calculate difficulty
+      const noParentHeaderData = {
+        number: genesis.header.number.addn(1337),
+        timestamp: genesis.header.timestamp.addn(10),
+      }
+
+      const block_farAhead = Block.fromBlockData(
+        {
+          header: noParentHeaderData,
+        },
+        {
+          calcDifficultyFromHeader: genesis.header,
+        }
+      )
+
+      st.ok(
+        block_farAhead.header.difficulty.gtn(0),
+        'should allow me to provide a bogus next block to calculate difficulty on when providing a difficulty header'
+      )
+      st.end()
+    }
+  )
 })
