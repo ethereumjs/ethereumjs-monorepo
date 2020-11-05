@@ -86,7 +86,7 @@ The `FakeTransaction` class was removed since its functionality can now be imple
 
 ### New Default Hardfork
 
-**Breaking:** The default HF on the library has been updated from `petersburg` to `instanbul`, see PR [#906](https://github.com/ethereumjs/ethereumjs-vm/pull/906).
+**Breaking:** The default HF on the library has been updated from `petersburg` to `istanbul`, see PR [#906](https://github.com/ethereumjs/ethereumjs-vm/pull/906).
 The HF setting is now automatically taken from the HF set for `Common.DEAULT_HARDFORK`,
 see PR [#863](https://github.com/ethereumjs/ethereumjs-vm/pull/863).
 

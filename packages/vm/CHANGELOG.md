@@ -54,7 +54,7 @@ const common = new Common({ chain: 'mainnet', hardfork: 'spuriousDragon' })
 const vm = new VM({ common })
 ```
 
-**Breaking**: The default HF from the VM has been updated from `petersburg` to `instanbul`.
+**Breaking**: The default HF from the VM has been updated from `petersburg` to `istanbul`.
 The HF setting is now automatically taken from the HF set for `Common.DEAULT_HARDFORK`,
 see PR [#906](https://github.com/ethereumjs/ethereumjs-vm/pull/906).
 

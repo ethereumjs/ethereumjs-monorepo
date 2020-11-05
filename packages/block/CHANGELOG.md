@@ -155,7 +155,7 @@ as an input parameter.
 
 ### New Default Hardfork
 
-**Breaking:** The default HF on the library has been updated from `petersburg` to `instanbul`, see PR [#906](https://github.com/ethereumjs/ethereumjs-vm/pull/906).
+**Breaking:** The default HF on the library has been updated from `petersburg` to `istanbul`, see PR [#906](https://github.com/ethereumjs/ethereumjs-vm/pull/906).
 The HF setting is now automatically taken from the HF set for `Common.DEAULT_HARDFORK`,
 see PR [#863](https://github.com/ethereumjs/ethereumjs-vm/pull/863).
 
@@ -179,6 +179,7 @@ in performance benefits for Node.js consumers, see [here](https://github.com/eth
   PR [#883](https://github.com/ethereumjs/ethereumjs-vm/pull/883)
 - Added `DAO` hardfork support (check for `extraData` attribute if `DAO` HF is active),
   PR [#843](https://github.com/ethereumjs/ethereumjs-vm/pull/843)
+- Added the `calcDifficultyFromHeader` constructor option. If this `BlockHeader` is supplied, then the `difficulty` of the constructed `BlockHeader` will be set to the canonical difficulty (also if `difficulty` is set as parameter in the constructor). See [#929](https://github.com/ethereumjs/ethereumjs-vm/pull/929)
 
 **Changes and Refactoring**
 
