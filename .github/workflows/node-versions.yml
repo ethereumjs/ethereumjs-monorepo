@@ -6,7 +6,7 @@ on:
     types: [opened, reopened, synchronize]
 
 jobs:
-  setup:
+  get-node-versions:
     runs-on: ubuntu-latest
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
@@ -15,10 +15,10 @@ jobs:
       run: echo "::set-output name=matrix::{\"node\":[10, 12, 14]}"
 
   tests:
-    needs: setup
+    needs: get-node-versions
     runs-on: ubuntu-latest
     strategy:
-      matrix: ${{ fromJson(needs.set-matrix.outputs.matrix) }}
+      matrix: ${{ fromJson(needs.get-node-versions.outputs.matrix) }}
     steps:
       - uses: actions/setup-node@v1
         with:
