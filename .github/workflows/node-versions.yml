@@ -14,7 +14,8 @@ jobs:
     steps:
       - uses: actions/setup-node@v1
         with:
-          node-version: ${matrix.node}
+          node-version: ${{ matrix.node }}
+
       - uses: actions/checkout@v2
 
       - run: npm install
