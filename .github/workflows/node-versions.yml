@@ -6,11 +6,19 @@ on:
     types: [opened, reopened, synchronize]
 
 jobs:
-  tests:
-    strategy:
-      matrix:
-        node: [10, 11, 12, 13, 14]
+  setup:
     runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    steps:
+    - id: set-matrix
+      run: echo "::set-output name=matrix::{\"node\":[10, 12, 14]}"
+
+  tests:
+    needs: setup
+    runs-on: ubuntu-latest
+    strategy:
+      matrix: ${{ fromJson(needs.set-matrix.outputs.matrix) }}
     steps:
       - uses: actions/setup-node@v1
         with:
@@ -21,20 +29,7 @@ jobs:
       - run: npm install
       - run: npm run build
 
-      - run: npm run test
+      - name: Test Common
+        run: npm run test
         working-directory: packages/common
 
-      - run: npm run test
-        working-directory: packages/ethash
-
-      - run: npm run test
-        working-directory: packages/block
-
-      - run: npm run test
-        working-directory: packages/blockchain
-
-      - run: npm run test
-        working-directory: packages/tx
-
-      - run: npm run test:API
-        working-directory: packages/vm
