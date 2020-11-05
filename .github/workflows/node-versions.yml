@@ -22,19 +22,19 @@ jobs:
       - run: npm run build
 
       - run: npm run test
-        working-directory: ${github.workspace}/packages/common
+        working-directory: packages/common
 
       - run: npm run test
-        working-directory: ${github.workspace}/packages/ethash
+        working-directory: packages/ethash
 
       - run: npm run test
-        working-directory: ${github.workspace}/packages/block
+        working-directory: packages/block
 
       - run: npm run test
-        working-directory: ${github.workspace}/packages/blockchain
+        working-directory: packages/blockchain
 
       - run: npm run test
-        working-directory: ${github.workspace}/packages/tx
+        working-directory: packages/tx
 
       - run: npm run test:API
-        working-directory: ${github.workspace}/packages/vm
+        working-directory: packages/vm
