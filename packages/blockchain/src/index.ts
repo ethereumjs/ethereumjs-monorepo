@@ -144,8 +144,8 @@ export default class Blockchain implements BlockchainInterface {
       })
     }
 
-    this._validateConsensus = opts.validateConsensus !== undefined ? opts.validateConsensus : true
-    this._validateBlocks = opts.validateBlocks !== undefined ? opts.validateBlocks : true
+    this._validateConsensus = opts.validateConsensus ?? true
+    this._validateBlocks = opts.validateBlocks ?? true
 
     this.db = opts.db ? opts.db : level()
     this.dbManager = new DBManager(this.db, this._common)
@@ -467,10 +467,12 @@ export default class Blockchain implements BlockchainInterface {
         await block.validate(this)
       }
 
-      if (this._validateConsensus && this._ethash) {
-        const valid = await this._ethash.verifyPOW(block)
-        if (!valid) {
-          throw new Error('invalid POW')
+      if (this._validateConsensus) {
+        if (this._ethash) {
+          const valid = await this._ethash.verifyPOW(block)
+          if (!valid) {
+            throw new Error('invalid POW')
+          }
         }
       }
 

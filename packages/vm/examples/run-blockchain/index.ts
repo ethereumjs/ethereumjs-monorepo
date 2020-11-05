@@ -21,6 +21,8 @@ async function main() {
 
   // When verifying PoW, setting this cache improves the
   // performance of subsequent runs of this script.
+  // Note that this optimization is a bit hacky and might
+  // not be working in the future though. :-)
   if (validatePow) {
     blockchain._ethash!.cacheDB = level('./.cachedb')
   }
