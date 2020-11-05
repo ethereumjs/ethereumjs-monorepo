@@ -1,0 +1,39 @@
+name: Node versions
+on:
+  schedule:
+    - cron: 0 0 * * *
+  pull_request:
+    types: [opened, reopened, synchronize]
+
+jobs:
+  tests:
+    strategy:
+      matrix:
+        node: [10, 11, 12, 13, 14]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/setup-node@v1
+        with:
+          node-version: ${matrix.node}
+      - uses: actions/checkout@v2
+
+      - run: npm install
+      - run: npm run build
+
+      - run: npm run test
+        working-directory: ${github.workspace}/packages/common
+
+      - run: npm run test
+        working-directory: ${github.workspace}/packages/ethash
+
+      - run: npm run test
+        working-directory: ${github.workspace}/packages/block
+
+      - run: npm run test
+        working-directory: ${github.workspace}/packages/blockchain
+
+      - run: npm run test
+        working-directory: ${github.workspace}/packages/tx
+
+      - run: npm run test:API
+        working-directory: ${github.workspace}/packages/vm
