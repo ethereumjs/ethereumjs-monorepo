@@ -1,6 +1,6 @@
 import { BN } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
-import { Block, BlockHeader } from '@ethereumjs/block'
+import { Block, BlockHeader, BlockOptions } from '@ethereumjs/block'
 import tape from 'tape'
 import Blockchain from '../src'
 import { generateBlockchain, generateBlocks, isConsecutive, createTestDB } from './util'
@@ -81,12 +81,11 @@ tape('blockchain test', (t) => {
         header: {
           number,
           parentHash: lastBlock.hash(),
-          difficulty: lastBlock.canonicalDifficulty(lastBlock),
           timestamp: lastBlock.header.timestamp.addn(1),
           gasLimit,
         },
       }
-      const block = Block.fromBlockData(blockData)
+      const block = Block.fromBlockData(blockData, { calcDifficultyFromHeader: lastBlock.header })
       await blockchain.putBlock(block)
       blocks.push(block)
 
@@ -118,12 +117,13 @@ tape('blockchain test', (t) => {
       header: {
         number: 1,
         parentHash: genesis.hash(),
-        difficulty: genesis.canonicalDifficulty(genesis),
         timestamp: genesis.header.timestamp.addn(1),
         gasLimit,
       },
     }
-    const block = Block.fromBlockData(blockData)
+    const block = Block.fromBlockData(blockData, {
+      calcDifficultyFromHeader: genesis.header,
+    })
     blocks.push(block)
     await blockchain.putBlock(block)
 
@@ -377,11 +377,13 @@ tape('blockchain test', (t) => {
     const headerData = {
       number: 15,
       parentHash: blocks[14].hash(),
-      difficulty: blocks[14].canonicalDifficulty(blocks[14]),
       gasLimit: 8000000,
       timestamp: blocks[14].header.timestamp.addn(1),
     }
-    const forkHeader = BlockHeader.fromHeaderData(headerData, { common })
+    const forkHeader = BlockHeader.fromHeaderData(headerData, {
+      common,
+      calcDifficultyFromHeader: blocks[14].header,
+    })
 
     blockchain._heads['staletest'] = blockchain._headHeader
 
@@ -400,11 +402,13 @@ tape('blockchain test', (t) => {
     const headerData = {
       number: 15,
       parentHash: blocks[14].hash(),
-      difficulty: blocks[14].canonicalDifficulty(blocks[14]),
       gasLimit: 8000000,
       timestamp: blocks[14].header.timestamp.addn(1),
     }
-    const forkHeader = BlockHeader.fromHeaderData(headerData, { common })
+    const forkHeader = BlockHeader.fromHeaderData(headerData, {
+      common,
+      calcDifficultyFromHeader: blocks[14].header,
+    })
 
     blockchain._heads['staletest'] = blockchain._headHeader
 
@@ -558,11 +562,12 @@ tape('blockchain test', (t) => {
     const headerData = {
       number: 1,
       parentHash: genesis.hash(),
-      difficulty: genesis.canonicalDifficulty(genesis),
       gasLimit,
       timestamp: genesis.header.timestamp.addn(1),
     }
-    const header = BlockHeader.fromHeaderData(headerData)
+    const header = BlockHeader.fromHeaderData(headerData, {
+      calcDifficultyFromHeader: genesis.header,
+    })
     await blockchain.putHeader(header)
 
     blockchain = new Blockchain({
@@ -586,7 +591,7 @@ tape('blockchain test', (t) => {
     })
     const gasLimit = 8000000
     const common = new Common({ chain: 'mainnet', hardfork: 'chainstart' })
-    const opts = { common }
+    const opts: BlockOptions = { common }
 
     const genesis = Block.genesis({ header: { gasLimit } }, opts)
     await blockchain.putGenesis(genesis)
@@ -595,30 +600,30 @@ tape('blockchain test', (t) => {
       header: {
         number: 1,
         parentHash: genesis.hash(),
-        difficulty: genesis.canonicalDifficulty(genesis),
         timestamp: genesis.header.timestamp.addn(3),
         gasLimit,
       },
     }
+    opts.calcDifficultyFromHeader = genesis.header
     const block = Block.fromBlockData(blockData, opts)
 
     const headerData1 = {
       number: 1,
       parentHash: genesis.hash(),
-      difficulty: genesis.canonicalDifficulty(genesis),
       timestamp: genesis.header.timestamp.addn(1),
       gasLimit,
     }
+    opts.calcDifficultyFromHeader = genesis.header
     const header1 = BlockHeader.fromHeaderData(headerData1, opts)
     const headers = [header1]
 
     const headerData2 = {
       number: 2,
       parentHash: header1.hash(),
-      difficulty: header1.canonicalDifficulty(block.header),
       timestamp: header1.timestamp.addn(1),
       gasLimit,
     }
+    opts.calcDifficultyFromHeader = block.header
     const header2 = BlockHeader.fromHeaderData(headerData2, opts)
     headers.push(header2)
 
@@ -655,7 +660,6 @@ tape('blockchain test', (t) => {
       header: {
         number: 1,
         parentHash: genesis.hash(),
-        difficulty: genesis.canonicalDifficulty(genesis),
         timestamp: genesis.header.timestamp.addn(1),
         gasLimit,
       },
@@ -668,9 +672,10 @@ tape('blockchain test', (t) => {
 
     const blocks = [
       genesis,
-      Block.fromBlockData(blockData1, { common }),
+      Block.fromBlockData(blockData1, { common, calcDifficultyFromHeader: genesis.header }),
       Block.fromBlockData(blockData2, {
         common: new Common({ chain: 'ropsten', hardfork: 'chainstart' }),
+        calcDifficultyFromHeader: genesis.header,
       }),
     ]
 

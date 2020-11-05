@@ -22,12 +22,14 @@ export const generateBlocks = (numberOfBlocks: number, existingBlocks?: Block[])
       header: {
         number: i,
         parentHash: lastBlock.hash(),
-        difficulty: lastBlock.canonicalDifficulty(lastBlock),
         gasLimit,
         timestamp: lastBlock.header.timestamp.addn(1),
       },
     }
-    const block = Block.fromBlockData(blockData, opts)
+    const block = Block.fromBlockData(blockData, {
+      common,
+      calcDifficultyFromHeader: lastBlock.header,
+    })
     blocks.push(block)
   }
 
@@ -83,6 +85,7 @@ export const generateConsecutiveBlock = (
     },
     {
       common,
+      calcDifficultyFromHeader: parentBlock.header,
     }
   )
 
