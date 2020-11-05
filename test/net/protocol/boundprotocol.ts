@@ -25,7 +25,7 @@ tape('[BoundProtocol]', (t) => {
   protocol.messages = [testMessage, testResponse]
 
   t.test('should add methods for messages with a response', (t) => {
-    const sender = new EventEmitter()
+    const sender = new Sender()
     const bound = new BoundProtocol({
       config: new Config({ transports: [] }),
       protocol,
@@ -38,7 +38,7 @@ tape('[BoundProtocol]', (t) => {
   })
 
   t.test('should get/set status', (t) => {
-    const sender = new EventEmitter()
+    const sender = new Sender()
     const bound = new BoundProtocol({
       config: new Config({ transports: [] }),
       protocol,
@@ -66,7 +66,7 @@ tape('[BoundProtocol]', (t) => {
   })
 
   t.test('should handle incoming without resolver', async (t) => {
-    const sender = new EventEmitter()
+    const sender = new Sender()
     const bound = new BoundProtocol({
       config: new Config({ transports: [] }),
       protocol,
@@ -88,7 +88,7 @@ tape('[BoundProtocol]', (t) => {
   })
 
   t.test('should perform send', (t) => {
-    const sender = new EventEmitter() // semi-colon required to separate statements
+    const sender = new Sender() // semi-colon required to separate statements
     ;((<unknown>sender) as any).sendMessage = td.func()
     const bound = new BoundProtocol({
       config: new Config({ transports: [] }),
@@ -104,7 +104,7 @@ tape('[BoundProtocol]', (t) => {
   })
 
   t.test('should perform request', async (t) => {
-    const sender = new EventEmitter()
+    const sender = new Sender()
     const bound = new BoundProtocol({
       config: new Config({ transports: [] }),
       protocol,

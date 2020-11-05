@@ -1,9 +1,9 @@
+import { BN } from 'ethereumjs-util'
 import { Peer } from '../net/peer/peer'
 import { BoundProtocol } from '../net/protocol'
+import { short } from '../util'
 import { Synchronizer } from './sync'
 import { BlockFetcher } from './fetcher'
-import { BN } from 'ethereumjs-util'
-import { short } from '../util'
 
 /**
  * Implements an ethereum fast sync synchronizer

@@ -1,39 +1,43 @@
 const os = require('os')
 import Common from '@ethereumjs/common'
-import { Logger } from 'winston'
-import { defaultLogger, getLogger } from './logging'
+import { getLogger, Logger } from './logging'
 import { Libp2pServer, RlpxServer } from './net/server'
 import { parseTransports } from './util'
 
-export interface Options {
+export interface ConfigOptions {
   /**
    * Specify the chain and hardfork by passing a Common instance.
    *
    * Default: chain 'mainnet' and hardfork 'chainstart'
    */
   common?: Common
+
   /**
    * Synchronization mode ('fast' or 'light')
    *
    * Default: 'fast'
    */
   syncmode?: string
+
   /**
    * Serve light peer requests
    *
    * Default: `false`
    */
   lightserv?: boolean
+
   /**
    * Root data directory for the blockchain
    */
   datadir?: string
+
   /**
    * Network transports ('rlpx' and/or 'libp2p')
    *
    * Default: `['rlpx:port=30303', 'libp2p']`
    */
   transports?: string[]
+
   /**
    * Transport servers (RLPx or Libp2p)
    * Use `transports` option, only used for testing purposes
@@ -41,22 +45,26 @@ export interface Options {
    * Default: servers created from `transports` option
    */
   servers?: (RlpxServer | Libp2pServer)[]
+
   /**
    * Enable the JSON-RPC server
    *
    * Default: false
    */
   rpc?: boolean
+
   /**
    * HTTP-RPC server listening port
    *
    * Default: 8545
    */
   rpcport?: number
+
   /**
    * HTTP-RPC server listening interface
    */
   rpcaddr?: string
+
   /**
    * Logging verbosity
    *
@@ -64,6 +72,7 @@ export interface Options {
    * Default: 'info'
    */
   loglevel?: string
+
   /**
    * A custom winston logger can be provided
    * if setting logging verbosity is not sufficient
@@ -71,12 +80,14 @@ export interface Options {
    * Default: Logger with loglevel 'info'
    */
   logger?: Logger
+
   /**
    * Number of peers needed before syncing
    *
    * Default: `2`
    */
   minPeers?: number
+
   /**
    * Maximum peers allowed
    *
@@ -116,7 +127,7 @@ export class Config {
 
   public readonly servers: (RlpxServer | Libp2pServer)[] = []
 
-  constructor(options: Options = {}) {
+  constructor(options: ConfigOptions = {}) {
     // TODO: map chainParams (and lib/util.parseParams) to new Common format
     this.common = options.common ?? Config.COMMON_DEFAULT
     this.syncmode = options.syncmode ?? Config.SYNCMODE_DEFAULT
@@ -138,16 +149,7 @@ export class Config {
       // Logger option takes precedence
       this.logger = options.logger
     } else {
-      // Use the default logger to keep the logger deactivation in the test working
-      // along these lines in the test files
-      // import { defaultLogger } from '../../lib/logging'
-      // defaultLogger.silent = true
-      // TODO: find a more generic solution here
-      if (this.loglevel === 'info') {
-        this.logger = defaultLogger
-      } else {
-        this.logger = getLogger({ loglevel: this.loglevel })
-      }
+      this.logger = getLogger({ loglevel: this.loglevel })
     }
 
     if (options.servers) {

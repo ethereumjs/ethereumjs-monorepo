@@ -1,7 +1,5 @@
 import tape from 'tape-catch'
 import { Config } from '../lib/config'
-const { defaultLogger } = require('../lib/logging')
-defaultLogger.silent = true
 
 tape('[Config]', (t) => {
   t.test('Initialization with default parameters', (t) => {

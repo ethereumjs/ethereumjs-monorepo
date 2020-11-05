@@ -1,10 +1,8 @@
 import tape from 'tape-catch'
-const td = require('testdouble')
 import { BN } from 'ethereumjs-util'
-import { EventEmitter } from 'events'
-import { defaultLogger } from '../../lib/logging'
 import { Config } from '../../lib/config'
-defaultLogger.silent = true
+import { EventEmitter } from 'events'
+const td = require('testdouble')
 
 tape('[FastSynchronizer]', (t) => {
   class PeerPool extends EventEmitter {}
@@ -24,7 +22,7 @@ tape('[FastSynchronizer]', (t) => {
 
   t.test('should open', async (t) => {
     const sync = new FastSynchronizer({
-      config: new Config({ transports: [] }),
+      config: new Config({ loglevel: 'error', transports: [] }),
       pool: new PeerPool(),
     })
     sync.chain = {

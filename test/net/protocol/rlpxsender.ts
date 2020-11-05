@@ -1,8 +1,8 @@
 import tape from 'tape-catch'
+import * as rlp from 'rlp'
+import { EventEmitter } from 'events'
+import { RlpxSender } from '../../../lib/net/protocol'
 const td = require('testdouble')
-const { RlpxSender } = require('../../../lib/net/protocol')
-const EventEmitter = require('events')
-const rlp = require('rlp')
 
 tape('[RlpxSender]', (t) => {
   t.test('should send status', (t) => {

@@ -1,8 +1,6 @@
 import tape from 'tape-catch'
 import { Config } from '../../../lib/config'
 const td = require('testdouble')
-import { defaultLogger } from '../../../lib/logging'
-defaultLogger.silent = true
 
 tape('[Fetcher]', (t) => {
   const Fetcher = require('../../../lib/sync/fetcher/fetcher').Fetcher

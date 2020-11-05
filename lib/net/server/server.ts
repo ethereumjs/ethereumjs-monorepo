@@ -1,9 +1,21 @@
 import { EventEmitter } from 'events'
-import { Protocol } from '../protocol/protocol'
 import { Config } from '../../config'
+import { Bootnode, BootnodeLike, KeyLike } from '../../types'
+import { parseKey, parseBootnodes } from '../../util/parse'
+import { Protocol } from '../protocol/protocol'
 
-const defaultOptions = {
-  refreshInterval: 30000,
+export interface ServerOptions {
+  /* Config */
+  config?: Config
+
+  /* How often (in ms) to discover new peers (default: 30000) */
+  refreshInterval?: number
+
+  /* Private key to use for server */
+  key?: KeyLike
+
+  /* List of bootnodes to use for discovery */
+  bootnodes?: BootnodeLike
 }
 
 /**
@@ -12,22 +24,26 @@ const defaultOptions = {
  */
 export class Server extends EventEmitter {
   public config: Config
-
-  public key: Buffer | string = ''
-  public bootnodes: any | string = ''
+  public key: Buffer | undefined
+  public bootnodes: Bootnode[] = []
 
   protected refreshInterval: number
   protected protocols: Set<Protocol>
 
   public started: boolean
 
-  constructor(options: any) {
+  /**
+   * Create new server
+   * @param {ServerOptions}
+   */
+  constructor(options: ServerOptions) {
     super()
 
-    options = { ...defaultOptions, ...options }
-    this.config = options.config
+    this.config = options.config ?? new Config()
+    this.key = options.key ? parseKey(options.key) : undefined
+    this.bootnodes = options.bootnodes ? parseBootnodes(options.bootnodes) : []
+    this.refreshInterval = options.refreshInterval ?? 30000
 
-    this.refreshInterval = options.refreshInterval
     this.protocols = new Set()
     this.started = false
   }

@@ -1,11 +1,18 @@
-import { Fetcher } from './fetcher'
+import { Fetcher, FetcherOptions } from './fetcher'
 import { Block, BlockBodyBuffer } from '@ethereumjs/block'
 import { BN } from 'ethereumjs-util'
 import { Peer } from '../../net/peer'
 import { Chain } from '../../blockchain'
 
-const defaultOptions = {
-  maxPerRequest: 128,
+export interface BlockFetcherOptions extends FetcherOptions {
+  /* Blockchain */
+  chain: Chain
+
+  /* Block number to start fetching from */
+  first: BN
+
+  /* How many blocks to fetch */
+  count: BN
 }
 
 /**
@@ -19,23 +26,15 @@ export class BlockFetcher extends Fetcher {
 
   /**
    * Create new block fetcher
-   * @param {Object}       options constructor parameters
-   * @param {PeerPool}     options.pool peer pool
-   * @param {Chain}        options.chain blockchain
-   * @param {BN}           options.first block number to start fetching from
-   * @param {BN}           options.count how many blocks to fetch
-   * @param {number}       [options.timeout] fetch task timeout
-   * @param {number}       [options.banTime] how long to ban misbehaving peers
-   * @param {number}       [options.interval] retry interval
-   * @param {number}       [options.maxPerRequest=128] max items per request
+   * @param {BlockFetcherOptions}
    */
-  constructor(options: any) {
+  constructor(options: BlockFetcherOptions) {
     super(options)
-    options = { ...defaultOptions, ...options }
-    this.maxPerRequest = options.maxPerRequest
+
     this.chain = options.chain
-    this.first = BN.isBN(options.first) ? options.first : new BN(options.first)
-    this.count = BN.isBN(options.count) ? options.count : new BN(options.count)
+    this.maxPerRequest = options.maxPerRequest ?? 128
+    this.first = options.first
+    this.count = options.count
   }
 
   /**

@@ -1,12 +1,25 @@
-import { Peer } from '../net/peer/peer'
 import { EventEmitter } from 'events'
 import { PeerPool } from '../net/peerpool'
-import { Chain } from '../blockchain'
+import { Peer } from '../net/peer/peer'
 import { FlowControl } from '../net/protocol'
 import { Config } from '../config'
+import { Chain } from '../blockchain'
 
-const defaultOptions = {
-  interval: 1000,
+export interface SynchronizerOptions {
+  /* Config */
+  config: Config
+
+  /* Peer pool */
+  pool: PeerPool
+
+  /* Blockchain */
+  chain: Chain
+
+  /* Flow control manager */
+  flow: FlowControl
+
+  /* Refresh interval in ms (default: 1000) */
+  interval?: number
 }
 
 /**
@@ -25,25 +38,20 @@ export class Synchronizer extends EventEmitter {
 
   /**
    * Create new node
-   * @param {Object}      options constructor parameters
-   * @param {Config}      [options.config] Client configuration
-   * @param {PeerPool}    options.pool peer pool
-   * @param {Chain}       options.chain blockchain
-   * @param {FlowControl} options.flow flow control manager
-   * @param {number}      [options.interval] refresh interval
+   * @param {SynchronizerOptions}
    */
-  constructor(options?: any) {
+  constructor(options: SynchronizerOptions) {
     super()
 
-    options = { ...defaultOptions, ...options }
     this.config = options.config
 
     this.pool = options.pool
     this.chain = options.chain
     this.flow = options.flow
-    this.interval = options.interval
+    this.interval = options.interval ?? 1000
     this.running = false
     this.forceSync = false
+
     this.pool.on('added', (peer: Peer) => {
       if (this.syncable(peer)) {
         this.config.logger.debug(`Found ${this.type} peer: ${peer}`)
@@ -86,9 +94,7 @@ export class Synchronizer extends EventEmitter {
     }, this.interval * 30)
     while (this.running) {
       try {
-        // TODO: `sync` only defined on FastSynchronizer (which extends this class)
-        // @ts-ignore: Property 'sync' does not exist on type 'Synchronizer'
-        if (await this.sync()) this.emit('synchronized')
+        if (await (this as any).sync()) this.emit('synchronized')
       } catch (error) {
         this.emit('error', error)
       }

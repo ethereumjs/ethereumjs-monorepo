@@ -1,12 +1,29 @@
 import * as events from 'events'
-import { Protocol } from '../protocol/protocol'
-import { BoundProtocol, Sender } from '../protocol'
+import { Protocol, BoundProtocol, Sender } from '../protocol'
+import { Server } from '../server'
 import { Config } from '../../config'
 
-const defaultOptions = {
-  inbound: false,
-  server: null,
-  protocols: [],
+export interface PeerOptions {
+  /* Config */
+  config?: Config
+
+  /* Peer id */
+  id?: string
+
+  /* Peer address */
+  address: string
+
+  /* Transport name */
+  transport: string
+
+  /* Pass true if peer initiated connection (default: false) */
+  inbound?: boolean
+
+  /* Supported protocols */
+  protocols?: Protocol[]
+
+  /* Server */
+  server?: Server
 }
 
 /**
@@ -15,15 +32,14 @@ const defaultOptions = {
  */
 export class Peer extends events.EventEmitter {
   public config: Config
-
   public id: string
-  protected transport: string
-  protected protocols: any[]
-  private _idle: boolean
   public address: string
   public inbound: boolean
-  public bound: Map<string, any>
-  public server: any
+  public server: Server | undefined
+  public bound: Map<string, BoundProtocol>
+  protected transport: string
+  protected protocols: Protocol[]
+  private _idle: boolean
 
   // Dynamically bound protocol properties
   public les: BoundProtocol | undefined
@@ -31,26 +47,19 @@ export class Peer extends events.EventEmitter {
 
   /**
    * Create new peer
-   * @param {Object}      options constructor parameters
-   * @param {string}      options.id peer id
-   * @param {string}      [options.address] peer address
-   * @param {boolean}     [options.inbound] true if peer initiated connection
-   * @param {string}      [options.transport] transport name
-   * @param {Protocols[]} [options.protocols=[]] supported protocols
+   * @param {PeerOptions}
    */
-  constructor(options: any) {
+  constructor(options: PeerOptions) {
     super()
 
-    options = { ...defaultOptions, ...options }
-    this.config = options.config
+    this.config = options.config ?? new Config()
 
-    this.id = options.id
+    this.id = options.id ?? ''
     this.address = options.address
-    this.inbound = options.inbound
     this.transport = options.transport
-    this.protocols = options.protocols
+    this.inbound = options.inbound ?? false
+    this.protocols = options.protocols ?? []
     this.bound = new Map()
-    this.server = options.server
 
     this._idle = true
   }

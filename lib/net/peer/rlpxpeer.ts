@@ -1,7 +1,4 @@
 import { randomBytes } from 'crypto'
-import { Peer } from './peer'
-import { Protocol } from '../protocol/protocol'
-import { RlpxSender } from '../protocol/rlpxsender'
 import {
   Capabilities as Devp2pCapabilities,
   DPT as Devp2pDPT,
@@ -10,6 +7,8 @@ import {
   Peer as Devp2pRlpxPeer,
   RLPx as Devp2pRLPx,
 } from 'ethereumjs-devp2p'
+import { Protocol, RlpxSender } from '../protocol'
+import { Peer, PeerOptions } from './peer'
 
 const devp2pCapabilities: any = {
   eth62: Devp2pETH.eth62,
@@ -17,14 +16,22 @@ const devp2pCapabilities: any = {
   les2: Devp2pLES.les2,
 }
 
+export interface RlpxPeerOptions extends Omit<PeerOptions, 'address' | 'transport'> {
+  /* Peer hostname or ip address */
+  host: string
+
+  /* Peer port */
+  port: number
+}
+
 /**
  * Devp2p/RLPx peer
  * @memberof module:net/peer
  * @example
  *
- * const { RlpxPeer } = require('./lib/net/peer')
+ * import { RlpxPeer } from './lib/net/peer'
  * import { Chain } from './lib/blockchain'
- * const { EthProtocol } = require('./lib/net/protocol')
+ * import { EthProtocol } from './lib/net/protocol'
  *
  * const chain = new Chain()
  * const protocols = [ new EthProtocol({ chain })]
@@ -47,22 +54,18 @@ export class RlpxPeer extends Peer {
 
   /**
    * Create new devp2p/rlpx peer
-   * @param {Object} options constructor parameters
-   * @param {string} options.id peer id
-   * @param {string} options.host peer hostname or ip address
-   * @param {number} options.port peer port
-   * @param {Protocols[]} [options.protocols=[]] supported protocols
+   * @param {RlpxPeerOptions}
    */
-  constructor(options: any) {
+  constructor(options: RlpxPeerOptions) {
+    const address = `${options.host}:${options.port}`
     super({
       ...options,
       transport: 'rlpx',
-      address: `${options.host}:${options.port}`,
+      address,
     })
 
     this.host = options.host
     this.port = options.port
-    this.server = null
     this.rlpx = null
     this.rlpxPeer = null
     this.connected = false

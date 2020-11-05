@@ -22,13 +22,11 @@ function getMethodNames(mod: any): string[] {
  */
 export class RPCManager {
   private _config: Config
-  private _node: any
-  private _logger: any
+  private _node: Node
 
   constructor(node: Node, config: Config) {
     this._config = config
     this._node = node
-    this._logger = config.logger
   }
 
   /**
@@ -40,7 +38,7 @@ export class RPCManager {
     const methods: any = {}
 
     modules.list.forEach((modName: string) => {
-      this._logger.debug(`Initialize ${modName} module`)
+      this._config.logger.debug(`Initialize ${modName} module`)
       const mod = new (modules as any)[modName](this._node)
 
       getMethodNames((modules as any)[modName])
@@ -48,7 +46,7 @@ export class RPCManager {
         .forEach((methodName: string) => {
           const concatedMethodName = `${modName.toLowerCase()}_${methodName}`
 
-          this._logger.debug(`Setup module method '${concatedMethodName}' to RPC`)
+          this._config.logger.debug(`Setup module method '${concatedMethodName}' to RPC`)
           methods[concatedMethodName] = mod[methodName].bind(mod)
         })
     })

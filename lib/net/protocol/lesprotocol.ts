@@ -1,6 +1,16 @@
-import { Message, Protocol } from './protocol'
 import { BN, bufferToInt } from 'ethereumjs-util'
 import { BlockHeader, BlockHeaderBuffer } from '@ethereumjs/block'
+import { Chain } from './../../blockchain'
+import { Message, Protocol, ProtocolOptions } from './protocol'
+import { FlowControl } from './flowcontrol'
+
+export interface LesProtocolOptions extends ProtocolOptions {
+  /* Blockchain */
+  chain: Chain
+
+  /* Flow control manager. If undefined, header serving will be disabled. */
+  flow?: FlowControl
+}
 
 const id = new BN(0)
 
@@ -60,20 +70,15 @@ const messages: Message[] = [
  * @memberof module:net/protocol
  */
 export class LesProtocol extends Protocol {
-  private chain: any
-  private flow: any
+  private chain: Chain
+  private flow: FlowControl | undefined
   private isServer: boolean
 
   /**
    * Create les protocol
-   * @param {Object}      options constructor parameters
-   * @param {Config}      [options.config] Client configuration
-   * @param {Chain}       options.chain blockchain
-   * @param {FlowControl} [options.flow] flow control manager. if undefined,
-   * header serving will be disabled
-   * @param {number}      [options.timeout=8000] handshake timeout in ms
+   * @param {LesProtocolOptions}
    */
-  constructor(options: any) {
+  constructor(options: LesProtocolOptions) {
     super(options)
 
     this.chain = options.chain
@@ -124,26 +129,28 @@ export class LesProtocol extends Protocol {
    * @return {Object}
    */
   encodeStatus(): any {
-    const serveOptions = this.flow
-      ? {
-          serveHeaders: 1,
-          serveChainSince: 0,
-          serveStateSince: 0,
-          txRelay: 1,
-          'flowControl/BL': new BN(this.flow.bl).toArrayLike(Buffer),
-          'flowControl/MRR': new BN(this.flow.mrr).toArrayLike(Buffer),
-          'flowControl/MRC': Object.entries(this.flow.mrc).map(([name, { base, req }]: any) => {
-            const { code }: any = messages.find((m) => m.name === name)
-            return [code, base, req]
-          }),
-        }
-      : {}
+    let serveOptions = {}
+
+    if (this.flow) {
+      serveOptions = {
+        serveHeaders: 1,
+        serveChainSince: 0,
+        serveStateSince: 0,
+        txRelay: 1,
+        'flowControl/BL': new BN(this.flow.bl).toArrayLike(Buffer),
+        'flowControl/MRR': new BN(this.flow.mrr).toArrayLike(Buffer),
+        'flowControl/MRC': Object.entries(this.flow.mrc).map(([name, { base, req }]: any) => {
+          const { code }: any = messages.find((m) => m.name === name)
+          return [code, base, req]
+        }),
+      }
+    }
 
     return {
       networkId: this.chain.networkId,
       headTd: this.chain.headers.td.toArrayLike(Buffer),
-      headHash: this.chain.headers.latest.hash(),
-      headNum: this.chain.headers.latest.number,
+      headHash: this.chain.headers.latest?.hash(),
+      headNum: this.chain.headers.latest?.number,
       genesisHash: this.chain.genesis.hash,
       ...serveOptions,
     }
@@ -177,8 +184,8 @@ export class LesProtocol extends Protocol {
       serveChainSince: status.serveChainSince ? new BN(status.serveChainSince) : undefined,
       serveStateSince: status.serveStateSince ? new BN(status.serveStateSince) : undefined,
       txRelay: !!status.txRelay,
-      bl: status['flowControl/BL'] && new BN(status['flowControl/BL']).toNumber(),
-      mrr: status['flowControl/MRR'] && new BN(status['flowControl/MRR']).toNumber(),
+      bl: status['flowControl/BL'] ? new BN(status['flowControl/BL']).toNumber() : undefined,
+      mrr: status['flowControl/MRR'] ? new BN(status['flowControl/MRR']).toNumber() : undefined,
       mrc: mrc,
     }
   }

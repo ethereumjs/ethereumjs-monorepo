@@ -1,9 +1,10 @@
-import { BlockFetcher } from './blockfetcher'
+import { BlockFetcher, BlockFetcherOptions } from './blockfetcher'
 import { Peer } from '../../net/peer'
 import { FlowControl } from '../../net/protocol'
 
-const defaultOptions = {
-  maxPerRequest: 192,
+export interface HeaderFetcherOptions extends BlockFetcherOptions {
+  /* Flow control manager */
+  flow: FlowControl
 }
 
 /**
@@ -12,21 +13,14 @@ const defaultOptions = {
  */
 export class HeaderFetcher extends BlockFetcher {
   private flow: FlowControl
+
   /**
    * Create new header fetcher
-   * @param {Object}       options constructor parameters
-   * @param {PeerPool}     options.pool peer pool
-   * @param {BN}           options.first header number to start fetching from
-   * @param {BN}           options.count how many headers to fetch
-   * @param {FlowControl}  options.flow flow control manager
-   * @param {number}       [options.timeout] fetch task timeout
-   * @param {number}       [options.banTime] how long to ban misbehaving peers
-   * @param {number}       [options.interval] retry interval
-   * @param {number}       [options.maxPerRequest=192] max items per request
+   * @param {HeaderFetcherOptions}
    */
   constructor(options: any) {
     super(options)
-    options = { ...defaultOptions, ...options }
+
     this.flow = options.flow
   }
 

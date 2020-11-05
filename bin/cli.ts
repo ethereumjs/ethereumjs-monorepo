@@ -1,16 +1,16 @@
 #!/usr/bin/env node
 
-const chains = require('@ethereumjs/common/dist/chains').chains
+import { Server as RPCServer } from 'jayson'
+import Common from '@ethereumjs/common'
 import { parseParams } from '../lib/util'
 import Node from '../lib/node'
-import { Server as RPCServer } from 'jayson'
 import { Config } from '../lib/config'
-import Common from '@ethereumjs/common'
+import { Logger } from '../lib/logging'
 import { RPCManager } from '../lib/rpc'
-import { Logger } from 'winston'
 const level = require('level')
 const path = require('path')
 const fs = require('fs-extra')
+const chains = require('@ethereumjs/common/dist/chains').chains
 
 const networks = Object.entries(chains.names)
 

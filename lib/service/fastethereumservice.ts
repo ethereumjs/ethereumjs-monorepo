@@ -1,28 +1,31 @@
-import { EthereumService } from './ethereumservice'
+import { EthereumService, EthereumServiceOptions } from './ethereumservice'
 import { FastSynchronizer } from '../sync/fastsync'
 import { EthProtocol } from '../net/protocol/ethprotocol'
 import { LesProtocol } from '../net/protocol/lesprotocol'
 import { Peer } from '../net/peer/peer'
-import { BoundProtocol } from '../net/protocol'
+import { Protocol, BoundProtocol } from '../net/protocol'
+
+interface FastEthereumServiceOptions extends EthereumServiceOptions {
+  /* Serve LES requests (default: false) */
+  lightserv?: boolean
+}
 
 /**
  * Ethereum service
  * @memberof module:service
  */
 export class FastEthereumService extends EthereumService {
+  public synchronizer: FastSynchronizer
+  public lightserv: boolean
   /**
    * Create new ETH service
-   * @param {Object}   options constructor parameters
-   * @param {Config}   [options.config] Client configuration
-   * @param {Chain}    [options.chain] blockchain
-   * @param {number}   [options.interval] sync retry interval
+   * @param {FastEthereumServiceOptions}
    */
-  constructor(options?: any) {
+  constructor(options: FastEthereumServiceOptions) {
     super(options)
-    this.init()
-  }
 
-  init() {
+    this.lightserv = options.lightserv ?? false
+
     this.config.logger.info('Fast sync mode')
     this.synchronizer = new FastSynchronizer({
       config: this.config,
@@ -36,8 +39,8 @@ export class FastEthereumService extends EthereumService {
    * Returns all protocols required by this service
    * @type {Protocol[]} required protocols
    */
-  get protocols(): any[] {
-    const protocols: any[] = [
+  get protocols(): Protocol[] {
+    const protocols: Protocol[] = [
       new EthProtocol({
         config: this.config,
         chain: this.chain,
@@ -87,7 +90,7 @@ export class FastEthereumService extends EthereumService {
       const bodies: any = blocks.map((block: any) => block.raw().slice(1))
       ;(peer.eth as BoundProtocol).send('BlockBodies', bodies)
     } else if (message.name === 'NewBlockHashes') {
-      this.synchronizer.announced(message.data, peer)
+      await this.synchronizer.announced(message.data, peer)
     }
   }
 

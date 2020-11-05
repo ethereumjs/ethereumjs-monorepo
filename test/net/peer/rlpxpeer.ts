@@ -5,16 +5,14 @@ import tape from 'tape-catch'
 const td = require('testdouble')
 import { EventEmitter } from 'events'
 import { RlpxPeer } from '../../../lib/net/peer/rlpxpeer'
-import { defaultLogger } from '../../../lib/logging'
 import { Config } from '../../../lib/config'
-defaultLogger.silent = true
 
 // Many tests pass but it looks like this suite still needs to be skipped because
 // importing RlpxPeer above (instead of `require`ing it within the Tape test below
 // as originally) causes td.reset to hang (?). Suite will not exit
 tape.skip('[RlpxPeer]', (t) => {
   const { DPT, ETH, LES } = require('ethereumjs-devp2p')
-  class RLPx extends EventEmitter {}
+  class RLPx extends EventEmitter { }
   ((<unknown>RLPx.prototype) as any).connect = td.func()
   td.replace('ethereumjs-devp2p', { DPT, ETH, LES, RLPx })
   const RlpxSender = td.replace('../../../lib/net/protocol/rlpxsender')
@@ -87,16 +85,6 @@ tape.skip('[RlpxPeer]', (t) => {
     peer.rlpx.emit('peer:added', rlpxPeer)
     peer.rlpx.emit('peer:removed', rlpxPeer, 'reason')
   })*/
-
-  t.test('should throw connect error', async (t) => {
-    const peer = new RlpxPeer({})
-    try {
-      await peer.connect()
-    } catch (err) {
-      t.ok(err, 'caught error')
-    }
-    t.end()
-  })
 
   // TODO: disabled for typescript transition. peer.bindProtocols('rlpxpeer') mock
   // not reproduceable on peer.bindProtocols() parameter type addition

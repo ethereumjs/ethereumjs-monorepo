@@ -1,19 +1,19 @@
 import tape from 'tape'
+import { BN } from 'ethereumjs-util'
+import { Config } from '../../lib/config'
 import { FastEthereumService } from '../../lib/service'
 import MockServer from './mocks/mockserver'
 import MockChain from './mocks/mockchain'
-import { BN } from 'ethereumjs-util'
-import { defaultLogger } from '../../lib/logging'
-import { Config } from '../../lib/config'
-defaultLogger.silent = true
+import { destroy } from './util'
 
 tape('[Integration:FastEthereumService]', async (t) => {
-  async function setup() {
-    const server = new MockServer()
-    const chain = new MockChain()
+  async function setup(): Promise<[MockServer, FastEthereumService]> {
+    const loglevel = 'error'
+    const config = new Config({ loglevel })
+    const server = new MockServer({ config })
+    const chain = new MockChain({ config })
     const service = new FastEthereumService({
-      //@ts-ignore allow Config instantiation with MockServer
-      config: new Config({ servers: [server], lightserv: true }),
+      config: new Config({ loglevel, servers: [server as any], lightserv: true }),
       chain,
     })
     await service.open()
@@ -22,20 +22,15 @@ tape('[Integration:FastEthereumService]', async (t) => {
     return [server, service]
   }
 
-  async function destroy(server: any, service: any) {
-    await service.stop()
-    await server.stop()
-  }
-
   t.test('should handle ETH requests', async (t) => {
     const [server, service] = await setup()
-    const peer = await (server as MockServer).accept('peer0')
+    const peer = await server.accept('peer0')
     const headers = await (peer.eth as any).getBlockHeaders({ block: 1, max: 2 })
     const hash = Buffer.from(
       'a321d27cd2743617c1c1b0d7ecb607dd14febcdfca8f01b79c3f0249505ea069',
       'hex'
     )
-    t.equals(headers[1].hash().toString('hex'), hash.toString('hex'), 'handled GetBlockHeaders')
+    t.ok(headers[1].hash().equals(hash), 'handled GetBlockHeaders')
     const bodies = await (peer.eth as any).getBlockBodies([hash])
     t.deepEquals(bodies, [[[], []]], 'handled GetBlockBodies')
     await (peer.eth as any).send('NewBlockHashes', [[hash, new BN(2)]])
@@ -46,7 +41,7 @@ tape('[Integration:FastEthereumService]', async (t) => {
 
   t.test('should handle LES requests', async (t) => {
     const [server, service] = await setup()
-    const peer = await (server as MockServer).accept('peer0')
+    const peer = await server.accept('peer0')
     const { headers } = await (peer.les as any).getBlockHeaders({ block: 1, max: 2 })
     t.equals(
       headers[1].hash().toString('hex'),

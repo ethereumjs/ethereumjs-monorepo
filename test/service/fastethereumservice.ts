@@ -1,11 +1,8 @@
 import tape from 'tape-catch'
 import { Config } from '../../lib/config'
-const td = require('testdouble')
-const EventEmitter = require('events')
-import { defaultLogger } from '../../lib/logging'
 import { FastEthereumService } from '../../lib/service'
-
-defaultLogger.silent = true
+const EventEmitter = require('events')
+const td = require('testdouble')
 
 // TESTS FAILING: replace testdouble w/ something TS friendly?
 tape.skip('[FastEthereumService]', (t) => {

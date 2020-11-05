@@ -1,7 +1,12 @@
-import { Chain } from './../../blockchain'
-import { Message, Protocol } from './protocol'
 import { BN, bufferToInt } from 'ethereumjs-util'
 import { BlockHeader, BlockHeaderBuffer } from '@ethereumjs/block'
+import { Chain } from './../../blockchain'
+import { Message, Protocol, ProtocolOptions } from './protocol'
+
+interface EthProtocolOptions extends ProtocolOptions {
+  /* Blockchain */
+  chain: Chain
+}
 
 const messages: Message[] = [
   {
@@ -54,12 +59,9 @@ export class EthProtocol extends Protocol {
 
   /**
    * Create eth protocol
-   * @param {Object}   options constructor parameters
-   * @param {Config}   [options.config] Client configuration
-   * @param {Chain}    options.chain blockchain
-   * @param {number}   [options.timeout=8000] handshake timeout in ms
+   * @param {EthProtocolOptions}
    */
-  constructor(options: any) {
+  constructor(options: EthProtocolOptions) {
     super(options)
 
     this.chain = options.chain
