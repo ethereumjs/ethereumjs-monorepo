@@ -221,7 +221,7 @@ export class BlockHeader {
     this.nonce = nonce
 
     this._validateBufferLengths()
-    this._verifyExtraData()
+    this._checkDAOExtraData()
 
     // Now we have set all the values of this Header, we possibly have set a dummy
     // `difficulty` value (defaults to 0). If we have a `calcDifficultyFromHeader`
@@ -261,21 +261,6 @@ export class BlockHeader {
     if (nonce.length !== 8) {
       throw new Error(`nonce must be 8 bytes, received ${nonce.length} bytes`)
     }
-  }
-
-  /**
-   * Validates the extra data, throws if invalid
-   */
-  _verifyExtraData() {
-    if (!this.isGenesis()) {
-      const hardfork = this._getHardfork()
-      if (
-        this.extraData.length > this._common.paramByHardfork('vm', 'maxExtraDataSize', hardfork)
-      ) {
-        throw new Error('invalid amount of extra data')
-      }
-    }
-    this._checkDAOExtraData()
   }
 
   /**
@@ -407,6 +392,11 @@ export class BlockHeader {
     if (this.isGenesis()) {
       return
     }
+    const hardfork = this._getHardfork()
+    if (this.extraData.length > this._common.paramByHardfork('vm', 'maxExtraDataSize', hardfork)) {
+      throw new Error('invalid amount of extra data')
+    }
+
     const header = await this._getHeaderByHash(blockchain, this.parentHash)
 
     if (!header) {
