@@ -8,6 +8,12 @@ tape('[Block]: block functions', function (t) {
     const common = new Common({ chain: 'ropsten', hardfork: 'chainstart' })
     const genesis = Block.genesis({}, { common })
     st.ok(genesis.hash().toString('hex'), 'block should initialize')
+
+    let block = Block.fromBlockData({})
+    st.ok(Object.isFrozen(block), 'block should be frozen by default')
+
+    block = Block.fromBlockData({}, { freeze: false })
+    st.ok(!Object.isFrozen(block), 'block should not be frozen when freeze deactivated in options')
     st.end()
   })
 
