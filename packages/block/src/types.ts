@@ -2,6 +2,7 @@ import { AddressLike, BNLike, BufferLike } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
 import { TxData, JsonTx } from '@ethereumjs/tx'
 import { Block } from './block'
+import { BlockHeader } from './header'
 
 /**
  * An object to set to which blockchain the blocks and their headers belong. This could be specified
@@ -35,6 +36,13 @@ export interface BlockOptions {
    * Default: `false`
    */
   initWithGenesisHeader?: boolean
+
+  /**
+   * If a preceding `BlockHeader` (usually the parent header) is given the preceding
+   * header will be used to calculate the difficulty for this block and the calculated
+   * difficulty takes precedence over a provided static `difficulty` value.
+   */
+  calcDifficultyFromHeader?: BlockHeader
 }
 
 /**

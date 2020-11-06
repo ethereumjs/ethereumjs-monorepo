@@ -223,6 +223,13 @@ export class BlockHeader {
     this._validateBufferLengths()
     this._checkDAOExtraData()
 
+    // Now we have set all the values of this Header, we possibly have set a dummy
+    // `difficulty` value (defaults to 0). If we have a `calcDifficultyFromHeader`
+    // block option parameter, we instead set difficulty to this value.
+    if (options.calcDifficultyFromHeader) {
+      this.difficulty = this.canonicalDifficulty(options.calcDifficultyFromHeader)
+    }
+
     Object.freeze(this)
   }
 
@@ -279,7 +286,7 @@ export class BlockHeader {
       let a = blockTs.sub(parentTs).idivn(9).ineg().iaddn(uncleAddend)
       const cutoff = new BN(-99)
       // MAX(cutoff, a)
-      if (cutoff.cmp(a) === 1) {
+      if (cutoff.gt(a)) {
         a = cutoff
       }
       dif = parentDif.add(offset.mul(a))
@@ -308,16 +315,14 @@ export class BlockHeader {
       let a = blockTs.sub(parentTs).idivn(10).ineg().iaddn(1)
       const cutoff = new BN(-99)
       // MAX(cutoff, a)
-      if (cutoff.cmp(a) === 1) {
+      if (cutoff.gt(a)) {
         a = cutoff
       }
       dif = parentDif.add(offset.mul(a))
     } else {
       // pre-homestead
       if (
-        parentTs
-          .addn(this._common.paramByHardfork('pow', 'durationLimit', hardfork))
-          .cmp(blockTs) === 1
+        parentTs.addn(this._common.paramByHardfork('pow', 'durationLimit', hardfork)).gt(blockTs)
       ) {
         dif = offset.add(parentDif)
       } else {
@@ -330,7 +335,7 @@ export class BlockHeader {
       dif.iadd(new BN(2).pow(exp))
     }
 
-    if (dif.cmp(minimumDifficulty) === -1) {
+    if (dif.lt(minimumDifficulty)) {
       dif = minimumDifficulty
     }
 
@@ -411,7 +416,7 @@ export class BlockHeader {
 
       if (height) {
         const dif = height.sub(header.number)
-        if (!(dif.cmpn(8) === -1 && dif.cmpn(1) === 1)) {
+        if (!(dif.ltn(8) && dif.gtn(1))) {
           throw new Error('uncle block has a parent that is too old or too young')
         }
       }
