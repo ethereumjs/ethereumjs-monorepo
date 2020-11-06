@@ -11,8 +11,16 @@ jobs:
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
-    - id: set-matrix
-      run: echo "::set-output name=matrix::{\"node\":[10, 12, 14]}"
+      - uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node }}
+
+      - uses: actions/checkout@v2
+
+      - run: cat ${{github.workspace}}/scripts/node_versions.json
+
+      - id: set-matrix
+        run: echo "::set-output name=matrix::$(cat ${{github.workspace}}/scripts/node_versions.json)"
 
   tests:
     needs: get-node-versions
