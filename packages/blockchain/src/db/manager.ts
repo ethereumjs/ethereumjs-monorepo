@@ -32,9 +32,9 @@ export type CacheMap = { [key: string]: Cache<Buffer> }
  * @hidden
  */
 export class DBManager {
-  _cache: CacheMap
-  _common: Common
-  _db: LevelUp
+  private _cache: CacheMap
+  private _common: Common
+  private _db: LevelUp
 
   constructor(db: LevelUp, common: Common) {
     this._db = db

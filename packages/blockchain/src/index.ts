@@ -75,8 +75,9 @@ export interface BlockchainOptions {
   validateBlocks?: boolean
 
   /**
-   * If a genesis block is present in the provided `db`, then this genesis block will be used.
-   * If there is no genesis block in the `db`, use this `genesisBlock`: if none is provided, use the standard genesis block.
+   * The blockchain only initializes succesfully if it has a genesis block.
+   * If there is no block available in the DB and a `genesisBlock` is provided, then the provided `genesisBlock` will be used as genesis
+   * If no block is present in the DB and no block is provided, then the genesis block as provided from the `common` will be used
    */
   genesisBlock?: Block
 }
@@ -386,7 +387,7 @@ export default class Blockchain implements BlockchainInterface {
    * This thus rolls back these headers so that these can be updated to the "new" canonical header using the iterator method.
    * @hidden
    */
-  async _putBlockOrHeader(item: Block | BlockHeader) {
+  private async _putBlockOrHeader(item: Block | BlockHeader) {
     await this.runWithLock<void>(async () => {
       const block = item instanceof BlockHeader ? new Block(item) : item
       const isGenesis = block.isGenesis()
@@ -486,7 +487,7 @@ export default class Blockchain implements BlockchainInterface {
   /**
    * @hidden
    */
-  async _getBlock(blockId: Buffer | number | BN) {
+  private async _getBlock(blockId: Buffer | number | BN) {
     return this.dbManager.getBlock(blockId)
   }
 
@@ -587,7 +588,7 @@ export default class Blockchain implements BlockchainInterface {
   /**
    * @hidden
    */
-  async _delBlock(blockHash: Buffer) {
+  private async _delBlock(blockHash: Buffer) {
     const dbOps: DBOp[] = []
 
     // get header
@@ -623,7 +624,12 @@ export default class Blockchain implements BlockchainInterface {
    * @param ops - the `DatabaseOperation` list to add the delete operations to
    * @hidden
    */
-  async _delChild(blockHash: Buffer, blockNumber: BN, headHash: Buffer | null, ops: DBOp[]) {
+  private async _delChild(
+    blockHash: Buffer,
+    blockNumber: BN,
+    headHash: Buffer | null,
+    ops: DBOp[]
+  ) {
     // delete header, body, hash to number mapping and td
     ops.push(DBOp.del(DBTarget.Header, { blockHash, blockNumber }))
     ops.push(DBOp.del(DBTarget.Body, { blockHash, blockNumber }))
@@ -843,7 +849,7 @@ export default class Blockchain implements BlockchainInterface {
    *
    * @hidden
    */
-  async _getHeader(hash: Buffer, number?: BN) {
+  private async _getHeader(hash: Buffer, number?: BN) {
     if (!number) {
       number = await this.dbManager.hashToNumber(hash)
     }
@@ -855,7 +861,7 @@ export default class Blockchain implements BlockchainInterface {
    *
    * @hidden
    */
-  async _getCanonicalHeader(number: BN) {
+  private async _getCanonicalHeader(number: BN) {
     const hash = await this.dbManager.numberToHash(number)
     return this._getHeader(hash, number)
   }
@@ -865,7 +871,7 @@ export default class Blockchain implements BlockchainInterface {
    *
    * @hidden
    */
-  async _getTd(hash: Buffer, number?: BN) {
+  private async _getTd(hash: Buffer, number?: BN) {
     if (!number) {
       number = await this.dbManager.hashToNumber(hash)
     }

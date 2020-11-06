@@ -5,7 +5,7 @@ import { Block, BlockHeader } from '@ethereumjs/block'
 import { bufBE8 } from './constants'
 
 /*
-    This extra helper file is an interface between blockchain / databaseOperation.ts 
+    This extra helper file is an interface between blockchain / operation.ts 
     It also handles the right encoding of the keys, so this does not have to happen in index.ts anymore.
 */
 
