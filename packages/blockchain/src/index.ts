@@ -3,17 +3,9 @@ import { BN, rlp } from 'ethereumjs-util'
 import { Block, BlockHeader } from '@ethereumjs/block'
 import Ethash from '@ethereumjs/ethash'
 import Common from '@ethereumjs/common'
-import { DBManager, DBOp } from './dbManager'
-import {
-  HEAD_BLOCK_KEY,
-  HEAD_HEADER_KEY,
-  bufBE8,
-  hashToNumberKey,
-  headerKey,
-  bodyKey,
-  numberToHashKey,
-  tdKey,
-} from './util'
+import { DBManager } from './db/manager'
+import { DBTarget, DBOp } from './db/operation'
+import { bufBE8 } from './db/constants'
 
 import type { LevelUp } from 'levelup'
 
@@ -356,7 +348,8 @@ export default class Blockchain implements BlockchainInterface {
 
     const hash = block.hash()
     const { header } = block
-    const { number } = header
+    const blockHash = header.hash()
+    const blockNumber = header.number
     const td = header.difficulty.clone()
     const currentTd = { header: new BN(0), block: new BN(0) }
     const dbOps: DBOp[] = []
@@ -386,33 +379,33 @@ export default class Blockchain implements BlockchainInterface {
       }
 
       // calculate the total difficulty of the new block
-      const parentTd = await this._getTd(header.parentHash, number.subn(1))
+      const parentTd = await this._getTd(header.parentHash, blockNumber.subn(1))
       td.iadd(parentTd)
     }
 
     const rebuildInfo = async () => {
-      const type = 'put'
-      const keyEncoding = 'binary'
-      const valueEncoding = 'binary'
-
       // save block and total difficulty to the database
-      let key = tdKey(number, hash)
-      let value = rlp.encode(td)
-      dbOps.push({ type, key, value, keyEncoding, valueEncoding })
-      this.dbManager._cache.td.set(key, value)
+      const TDValue = rlp.encode(td)
+      dbOps.push(
+        DBOp.set(DBTarget.TotalDifficulty, TDValue, {
+          blockNumber,
+          blockHash,
+        })
+      )
 
       // save header
-      key = headerKey(number, hash)
-      value = header.serialize()
-      dbOps.push({ type, key, value, keyEncoding, valueEncoding })
-      this.dbManager._cache.header.set(key, value)
+      const headerValue = header.serialize()
+      dbOps.push(
+        DBOp.set(DBTarget.Header, headerValue, {
+          blockNumber,
+          blockHash,
+        })
+      )
 
       // store body if it exists
       if (isGenesis || block.transactions.length || block.uncleHeaders.length) {
-        key = bodyKey(number, hash)
-        value = rlp.encode(block.raw().slice(1))
-        dbOps.push({ type, key, value, keyEncoding, valueEncoding })
-        this.dbManager._cache.body.set(key, value)
+        const bodyValue = rlp.encode(block.raw().slice(1))
+        dbOps.push(DBOp.set(DBTarget.Body, bodyValue, { blockNumber, blockHash }))
       }
 
       // if total difficulty is higher than current, add it to canonical chain
@@ -426,17 +419,19 @@ export default class Blockchain implements BlockchainInterface {
         }
 
         // delete higher number assignments and overwrite stale canonical chain
-        await this._deleteStaleAssignments(number.addn(1), hash, dbOps)
+        await this._deleteStaleAssignments(blockNumber.addn(1), hash, dbOps)
         await this._rebuildCanonical(header, dbOps)
       } else {
         if (td.gt(currentTd.block) && item instanceof Block) {
           this._headBlock = hash
         }
         // save hash to number lookup info even if rebuild not needed
-        key = hashToNumberKey(hash)
-        value = bufBE8(number)
-        dbOps.push({ type, key, keyEncoding, valueEncoding, value })
-        this.dbManager._cache.hashToNumber.set(key, value)
+        const blockNumber8Byte = bufBE8(blockNumber)
+        dbOps.push(
+          DBOp.set(DBTarget.HashToNumber, blockNumber8Byte, {
+            blockHash,
+          })
+        )
       }
     }
 
@@ -545,27 +540,9 @@ export default class Blockchain implements BlockchainInterface {
    */
   _saveHeadOps(): DBOp[] {
     return [
-      {
-        type: 'put',
-        key: 'heads',
-        keyEncoding: 'binary',
-        valueEncoding: 'json',
-        value: this._heads,
-      },
-      {
-        type: 'put',
-        key: HEAD_HEADER_KEY,
-        keyEncoding: 'binary',
-        valueEncoding: 'binary',
-        value: this._headHeader!,
-      },
-      {
-        type: 'put',
-        key: HEAD_BLOCK_KEY,
-        keyEncoding: 'binary',
-        valueEncoding: 'binary',
-        value: this._headBlock!,
-      },
+      DBOp.set(DBTarget.Heads, this._heads),
+      DBOp.set(DBTarget.HeadHeader, this._headHeader!),
+      DBOp.set(DBTarget.HeadBlock, this._headBlock!),
     ]
   }
 
@@ -581,10 +558,10 @@ export default class Blockchain implements BlockchainInterface {
    *
    * @hidden
    */
-  async _deleteStaleAssignments(number: BN, headHash: Buffer, ops: DBOp[]) {
+  async _deleteStaleAssignments(blockNumber: BN, headHash: Buffer, ops: DBOp[]) {
     let hash: Buffer
     try {
-      hash = await this.dbManager.numberToHash(number)
+      hash = await this.dbManager.numberToHash(blockNumber)
     } catch (error) {
       if (error.type !== 'NotFoundError') {
         throw error
@@ -592,12 +569,7 @@ export default class Blockchain implements BlockchainInterface {
       return
     }
 
-    const type = 'del'
-    const key = numberToHashKey(number)
-    const keyEncoding = 'binary'
-
-    ops.push({ type, key, keyEncoding })
-    this.dbManager._cache.numberToHash.del(key)
+    ops.push(DBOp.del(DBTarget.NumberToHash, { blockNumber }))
 
     // reset stale iterator heads to current canonical head
     Object.keys(this._heads).forEach((name) => {
@@ -611,7 +583,7 @@ export default class Blockchain implements BlockchainInterface {
       this._headBlock = headHash
     }
 
-    await this._deleteStaleAssignments(number.addn(1), headHash, ops)
+    await this._deleteStaleAssignments(blockNumber.addn(1), headHash, ops)
   }
 
   /**
@@ -620,42 +592,37 @@ export default class Blockchain implements BlockchainInterface {
    * @hidden
    */
   async _rebuildCanonical(header: BlockHeader, ops: DBOp[]) {
-    const hash = header.hash()
-    const { number } = header
+    const blockHash = header.hash()
+    const blockNumber = header.number
 
     const saveLookups = async (hash: Buffer, number: BN) => {
-      const type = 'put'
-      const keyEncoding = 'binary'
-      const valueEncoding = 'binary'
+      ops.push(DBOp.set(DBTarget.NumberToHash, blockHash, { blockNumber }))
 
-      let key = numberToHashKey(number)
-      let value = hash
-      ops.push({ type, key, keyEncoding, valueEncoding, value })
-      this.dbManager._cache.numberToHash.set(key, value)
-
-      key = hashToNumberKey(hash)
-      value = bufBE8(number)
-      ops.push({ type, key, keyEncoding, valueEncoding, value })
-      this.dbManager._cache.hashToNumber.set(key, value)
+      const blockNumber8Bytes = bufBE8(number)
+      ops.push(
+        DBOp.set(DBTarget.HashToNumber, blockNumber8Bytes, {
+          blockHash,
+        })
+      )
     }
 
     // handle genesis block
-    if (number.isZero()) {
-      await saveLookups(hash, number)
+    if (blockNumber.isZero()) {
+      await saveLookups(blockHash, blockNumber)
       return
     }
 
     let staleHash: Buffer | null = null
     try {
-      staleHash = await this.dbManager.numberToHash(number)
+      staleHash = await this.dbManager.numberToHash(blockNumber)
     } catch (error) {
       if (error.type !== 'NotFoundError') {
         throw error
       }
     }
 
-    if (!staleHash || !hash.equals(staleHash)) {
-      await saveLookups(hash, number)
+    if (!staleHash || !blockHash.equals(staleHash)) {
+      await saveLookups(blockHash, blockNumber)
 
       // flag stale head for reset
       Object.keys(this._heads).forEach((name) => {
@@ -670,7 +637,7 @@ export default class Blockchain implements BlockchainInterface {
       }
 
       try {
-        const parentHeader = await this._getHeader(header.parentHash, number.subn(1))
+        const parentHeader = await this._getHeader(header.parentHash, blockNumber.subn(1))
         await this._rebuildCanonical(parentHeader, ops)
       } catch (error) {
         this._staleHeads = []
@@ -681,12 +648,12 @@ export default class Blockchain implements BlockchainInterface {
     } else {
       // set stale heads to last previously valid canonical block
       this._staleHeads.forEach((name: string) => {
-        this._heads[name] = hash
+        this._heads[name] = blockHash
       })
       this._staleHeads = []
       // set stale headBlock to last previously valid canonical block
       if (this._staleHeadBlock) {
-        this._headBlock = hash
+        this._headBlock = blockHash
         this._staleHeadBlock = false
       }
     }
@@ -751,50 +718,27 @@ export default class Blockchain implements BlockchainInterface {
   /**
    * @hidden
    */
-  async _delChild(hash: Buffer, number: BN, headHash: Buffer | null, ops: DBOp[]) {
+  async _delChild(blockHash: Buffer, blockNumber: BN, headHash: Buffer | null, ops: DBOp[]) {
     // delete header, body, hash to number mapping and td
-    ops.push({
-      type: 'del',
-      key: headerKey(number, hash),
-      keyEncoding: 'binary',
-    })
-    this.dbManager._cache.header.del(headerKey(number, hash))
-
-    ops.push({
-      type: 'del',
-      key: bodyKey(number, hash),
-      keyEncoding: 'binary',
-    })
-    this.dbManager._cache.body.del(bodyKey(number, hash))
-
-    ops.push({
-      type: 'del',
-      key: hashToNumberKey(hash),
-      keyEncoding: 'binary',
-    })
-    this.dbManager._cache.hashToNumber.del(hashToNumberKey(hash))
-
-    ops.push({
-      type: 'del',
-      key: tdKey(number, hash),
-      keyEncoding: 'binary',
-    })
-    this.dbManager._cache.td.del(tdKey(number, hash))
+    ops.push(DBOp.del(DBTarget.Header, { blockHash, blockNumber }))
+    ops.push(DBOp.del(DBTarget.Body, { blockHash, blockNumber }))
+    ops.push(DBOp.del(DBTarget.HashToNumber, { blockHash }))
+    ops.push(DBOp.del(DBTarget.TotalDifficulty, { blockHash, blockNumber }))
 
     if (!headHash) {
       return
     }
 
-    if (this._headHeader?.equals(hash)) {
+    if (this._headHeader?.equals(blockHash)) {
       this._headHeader = headHash
     }
 
-    if (this._headBlock?.equals(hash)) {
+    if (this._headBlock?.equals(blockHash)) {
       this._headBlock = headHash
     }
 
     try {
-      const childHeader = await this._getCanonicalHeader(number.addn(1))
+      const childHeader = await this._getCanonicalHeader(blockNumber.addn(1))
       await this._delChild(childHeader.hash(), childHeader.number, headHash, ops)
     } catch (error) {
       if (error.type !== 'NotFoundError') {
