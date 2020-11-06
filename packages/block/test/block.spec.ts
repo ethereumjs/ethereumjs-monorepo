@@ -2,6 +2,7 @@ import tape from 'tape'
 import { rlp, zeros } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
 import { Block, BlockBuffer } from '../src'
+import { Mockchain } from './mockchain'
 
 tape('[Block]: block functions', function (t) {
   t.test('should test block initialization', function (st) {
@@ -71,8 +72,10 @@ tape('[Block]: block functions', function (t) {
   t.test('should test block validation', async function (st) {
     const blockRlp = testData.blocks[0].rlp
     const block = Block.fromRLPSerializedBlock(blockRlp)
+    const blockchain = new Mockchain()
+    await blockchain.putBlock(Block.fromRLPSerializedBlock(testData.genesisRLP))
     st.doesNotThrow(async () => {
-      await block.validate()
+      await block.validate(blockchain)
       st.end()
     })
   })

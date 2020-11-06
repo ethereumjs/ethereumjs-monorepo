@@ -221,7 +221,7 @@ export class BlockHeader {
     this.nonce = nonce
 
     this._validateBufferLengths()
-    this._checkDAOExtraData()
+    this._verifyExtraData()
 
     // Now we have set all the values of this Header, we possibly have set a dummy
     // `difficulty` value (defaults to 0). If we have a `calcDifficultyFromHeader`
@@ -261,6 +261,21 @@ export class BlockHeader {
     if (nonce.length !== 8) {
       throw new Error(`nonce must be 8 bytes, received ${nonce.length} bytes`)
     }
+  }
+
+  /**
+   * Validates the extra data, throws if invalid
+   */
+  _verifyExtraData() {
+    if (!this.isGenesis()) {
+      const hardfork = this._getHardfork()
+      if (
+        this.extraData.length > this._common.paramByHardfork('vm', 'maxExtraDataSize', hardfork)
+      ) {
+        throw new Error('invalid amount of extra data')
+      }
+    }
+    this._checkDAOExtraData()
   }
 
   /**
@@ -378,50 +393,47 @@ export class BlockHeader {
   }
 
   /**
-   * Validates the block header, throwing if invalid.
-   *
-   * @param blockchain - additionally validate against a @ethereumjs/blockchain
+   * Validates the block header, throwing if invalid. It is being validated against the reported `parentHash`.
+   * It verifies the current block against the `parentHash`:
+   * - The `parentHash` is part of the blockchain (it is a valid header)
+   * - Current block number is parent block number + 1
+   * - Current block has a strictly higher timestamp
+   * - Current block has valid difficulty and gas limit
+   * - In case that the header is an uncle header, it should not be too old or young in the chain.
+   * @param blockchain - validate against a @ethereumjs/blockchain
    * @param height - If this is an uncle header, this is the height of the block that is including it
    */
-  async validate(blockchain?: Blockchain, height?: BN): Promise<void> {
+  async validate(blockchain: Blockchain, height?: BN): Promise<void> {
     if (this.isGenesis()) {
       return
     }
+    const header = await this._getHeaderByHash(blockchain, this.parentHash)
 
-    const hardfork = this._getHardfork()
-    if (this.extraData.length > this._common.paramByHardfork('vm', 'maxExtraDataSize', hardfork)) {
-      throw new Error('invalid amount of extra data')
+    if (!header) {
+      throw new Error('could not find parent header')
     }
 
-    if (blockchain) {
-      const header = await this._getHeaderByHash(blockchain, this.parentHash)
+    const { number } = this
+    if (!number.eq(header.number.addn(1))) {
+      throw new Error('invalid number')
+    }
 
-      if (!header) {
-        throw new Error('could not find parent header')
-      }
+    if (this.timestamp.lte(header.timestamp)) {
+      throw new Error('invalid timestamp')
+    }
 
-      const { number } = this
-      if (!number.eq(header.number.addn(1))) {
-        throw new Error('invalid number')
-      }
+    if (!this.validateDifficulty(header)) {
+      throw new Error('invalid difficulty')
+    }
 
-      if (this.timestamp.lte(header.timestamp)) {
-        throw new Error('invalid timestamp')
-      }
+    if (!this.validateGasLimit(header)) {
+      throw new Error('invalid gas limit')
+    }
 
-      if (!this.validateDifficulty(header)) {
-        throw new Error('invalid difficulty')
-      }
-
-      if (!this.validateGasLimit(header)) {
-        throw new Error('invalid gas limit')
-      }
-
-      if (height) {
-        const dif = height.sub(header.number)
-        if (!(dif.ltn(8) && dif.gtn(1))) {
-          throw new Error('uncle block has a parent that is too old or too young')
-        }
+    if (height) {
+      const dif = height.sub(header.number)
+      if (!(dif.ltn(8) && dif.gtn(1))) {
+        throw new Error('uncle block has a parent that is too old or too young')
       }
     }
   }
