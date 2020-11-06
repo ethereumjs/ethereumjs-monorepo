@@ -27,6 +27,25 @@ tape('[Transaction]: Basic functions', function (t) {
     tx = Transaction.fromTxData({}, { freeze: false })
     st.ok(!Object.isFrozen(tx), 'tx should not be frozen when freeze deactivated in options')
 
+    // Perform the same test as above, but now using a different construction method. This also implies that passing on the
+    // options object works as expected.
+    const rlpData = tx.serialize()
+
+    const zero = Buffer.alloc(0)
+    const valuesArray = [zero, zero, zero, zero, zero, zero]
+
+    tx = Transaction.fromRlpSerializedTx(rlpData)
+    st.ok(Object.isFrozen(tx), 'tx should be frozen by default')
+
+    tx = Transaction.fromRlpSerializedTx(rlpData, { freeze: false })
+    st.ok(!Object.isFrozen(tx), 'tx should not be frozen when freeze deactivated in options')
+
+    tx = Transaction.fromValuesArray(valuesArray)
+    st.ok(Object.isFrozen(tx), 'tx should be frozen by default')
+
+    tx = Transaction.fromValuesArray(valuesArray, { freeze: false })
+    st.ok(!Object.isFrozen(tx), 'tx should not be frozen when freeze deactivated in options')
+
     st.end()
   })
 

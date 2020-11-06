@@ -35,8 +35,45 @@ tape('[Block]: Header functions', function (t) {
 
   t.test('should test header initialization', function (st) {
     const common = new Common({ chain: 'ropsten', hardfork: 'chainstart' })
-    const header = BlockHeader.genesis(undefined, { common })
+    let header = BlockHeader.genesis(undefined, { common })
     st.ok(header.hash().toString('hex'), 'block should initialize')
+
+    // test default freeze values
+    // also test if the options are carried over to the constructor
+    header = BlockHeader.fromHeaderData({})
+    st.ok(Object.isFrozen(header), 'block should be frozen by default')
+
+    header = BlockHeader.fromHeaderData({}, { freeze: false })
+    st.ok(!Object.isFrozen(header), 'block should not be frozen when freeze deactivated in options')
+
+    const rlpHeader = header.serialize()
+    header = BlockHeader.fromRLPSerializedHeader(rlpHeader)
+    st.ok(Object.isFrozen(header), 'block should be frozen by default')
+
+    header = BlockHeader.fromRLPSerializedHeader(rlpHeader, { freeze: false })
+    st.ok(!Object.isFrozen(header), 'block should not be frozen when freeze deactivated in options')
+
+    const zero = Buffer.alloc(0)
+    const headerArray = []
+    for (let item = 0; item < 15; item++) {
+      headerArray.push(zero)
+    }
+
+    // mock header data (if set to zeros(0) header throws)
+    headerArray[0] = zeros(32) //parentHash
+    headerArray[2] = zeros(20) //coinbase
+    headerArray[3] = zeros(32) //stateRoot
+    headerArray[4] = zeros(32) //transactionsTrie
+    headerArray[5] = zeros(32) //receiptTrie
+    headerArray[13] = zeros(32) // mixHash
+    headerArray[14] = zeros(8) // nonce
+
+    header = BlockHeader.fromValuesArray(headerArray)
+    st.ok(Object.isFrozen(header), 'block should be frozen by default')
+
+    header = BlockHeader.fromValuesArray(headerArray, { freeze: false })
+    st.ok(!Object.isFrozen(header), 'block should not be frozen when freeze deactivated in options')
+
     st.end()
   })
 

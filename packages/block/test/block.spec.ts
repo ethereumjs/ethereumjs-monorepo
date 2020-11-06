@@ -1,7 +1,7 @@
 import tape from 'tape'
-import { rlp } from 'ethereumjs-util'
+import { rlp, zeros } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
-import { Block } from '../src'
+import { Block, BlockBuffer } from '../src'
 
 tape('[Block]: block functions', function (t) {
   t.test('should test block initialization', function (st) {
@@ -9,11 +9,44 @@ tape('[Block]: block functions', function (t) {
     const genesis = Block.genesis({}, { common })
     st.ok(genesis.hash().toString('hex'), 'block should initialize')
 
+    // test default freeze values
+    // also test if the options are carried over to the constructor
     let block = Block.fromBlockData({})
     st.ok(Object.isFrozen(block), 'block should be frozen by default')
 
     block = Block.fromBlockData({}, { freeze: false })
     st.ok(!Object.isFrozen(block), 'block should not be frozen when freeze deactivated in options')
+
+    const rlpBlock = block.serialize()
+    block = Block.fromRLPSerializedBlock(rlpBlock)
+    st.ok(Object.isFrozen(block), 'block should be frozen by default')
+
+    block = Block.fromRLPSerializedBlock(rlpBlock, { freeze: false })
+    st.ok(!Object.isFrozen(block), 'block should not be frozen when freeze deactivated in options')
+
+    const zero = Buffer.alloc(0)
+    const headerArray = []
+    for (let item = 0; item < 15; item++) {
+      headerArray.push(zero)
+    }
+
+    // mock header data (if set to zeros(0) header throws)
+    headerArray[0] = zeros(32) //parentHash
+    headerArray[2] = zeros(20) //coinbase
+    headerArray[3] = zeros(32) //stateRoot
+    headerArray[4] = zeros(32) //transactionsTrie
+    headerArray[5] = zeros(32) //receiptTrie
+    headerArray[13] = zeros(32) // mixHash
+    headerArray[14] = zeros(8) // nonce
+
+    const valuesArray = <BlockBuffer>[headerArray, [], []]
+
+    block = Block.fromValuesArray(valuesArray)
+    st.ok(Object.isFrozen(block), 'block should be frozen by default')
+
+    block = Block.fromValuesArray(valuesArray, { freeze: false })
+    st.ok(!Object.isFrozen(block), 'block should not be frozen when freeze deactivated in options')
+
     st.end()
   })
 
