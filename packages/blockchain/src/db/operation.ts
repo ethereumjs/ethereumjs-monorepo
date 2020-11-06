@@ -106,23 +106,23 @@ export class DBOp {
 
   // set operation: note: value/key is not in default order
   public static set(operationTarget: DBTarget, value: Buffer | object, key?: DatabaseKey): DBOp {
-    const databaseOperation = new DBOp(operationTarget, key)
-    databaseOperation.baseDBOp.value = value
-    databaseOperation.baseDBOp.type = 'put'
+    const dbOperation = new DBOp(operationTarget, key)
+    dbOperation.baseDBOp.value = value
+    dbOperation.baseDBOp.type = 'put'
 
     if (operationTarget == DBTarget.Heads) {
-      databaseOperation.baseDBOp.valueEncoding = 'json'
+      dbOperation.baseDBOp.valueEncoding = 'json'
     } else {
-      databaseOperation.baseDBOp.valueEncoding = 'binary'
+      dbOperation.baseDBOp.valueEncoding = 'binary'
     }
 
-    return databaseOperation
+    return dbOperation
   }
 
   public static del(operationTarget: DBTarget, key?: DatabaseKey): DBOp {
-    const databaseOperation = new DBOp(operationTarget, key)
-    databaseOperation.baseDBOp.type = 'del'
-    return databaseOperation
+    const dbOperation = new DBOp(operationTarget, key)
+    dbOperation.baseDBOp.type = 'del'
+    return dbOperation
   }
 
   public updateCache(cacheMap: CacheMap) {

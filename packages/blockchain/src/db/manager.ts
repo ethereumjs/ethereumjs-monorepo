@@ -157,12 +157,12 @@ export class DBManager {
    * it first tries to load from cache, and on cache miss will
    * try to put the fetched item on cache afterwards.
    */
-  async get(databaseOperationTarget: DBTarget, key?: DatabaseKey): Promise<any> {
-    const databaseGetOperation = DBOp.get(databaseOperationTarget, key)
+  async get(dbOperationTarget: DBTarget, key?: DatabaseKey): Promise<any> {
+    const dbGetOperation = DBOp.get(dbOperationTarget, key)
 
-    const cacheString = databaseGetOperation.cacheString
-    const dbKey = databaseGetOperation.baseDBOp.key
-    const dbOpts = databaseGetOperation.baseDBOp
+    const cacheString = dbGetOperation.cacheString
+    const dbKey = dbGetOperation.baseDBOp.key
+    const dbOpts = dbGetOperation.baseDBOp
 
     if (cacheString) {
       if (!this._cache[cacheString]) {
