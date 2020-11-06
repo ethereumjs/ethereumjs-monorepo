@@ -13,6 +13,17 @@ export interface TxOptions {
    * Current default hardfork: `istanbul`
    */
   common?: Common
+  /**
+   * A transaction object by default gets frozen along initialization. This gives you
+   * strong additional security guarantees on the consistency of the tx parameters.
+   *
+   * If you need to deactivate the tx freeze - e.g. because you want to subclass tx and
+   * add aditional properties - it is strongly encouraged that you do the freeze yourself
+   * within your code instead.
+   *
+   * Default: true
+   */
+  freeze?: boolean
 }
 
 /**

@@ -36,7 +36,7 @@ export class Block {
       uncleHeaders.push(uh)
     }
 
-    return new Block(header, transactions, uncleHeaders)
+    return new Block(header, transactions, uncleHeaders, opts)
   }
 
   public static fromRLPSerializedBlock(serialized: Buffer, opts?: BlockOptions) {
@@ -70,7 +70,7 @@ export class Block {
       uncleHeaders.push(BlockHeader.fromValuesArray(uncleHeaderData, opts))
     }
 
-    return new Block(header, transactions, uncleHeaders)
+    return new Block(header, transactions, uncleHeaders, opts)
   }
 
   /**
@@ -96,7 +96,10 @@ export class Block {
     this.uncleHeaders = uncleHeaders
     this._common = this.header._common
 
-    Object.freeze(this)
+    const freeze = opts?.freeze ?? true
+    if (freeze) {
+      Object.freeze(this)
+    }
   }
 
   /**

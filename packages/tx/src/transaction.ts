@@ -136,7 +136,10 @@ export default class Transaction {
     this.r = r
     this.s = s
 
-    Object.freeze(this)
+    const freeze = opts?.freeze ?? true
+    if (freeze) {
+      Object.freeze(this)
+    }
   }
 
   /**

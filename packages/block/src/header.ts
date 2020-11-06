@@ -230,7 +230,10 @@ export class BlockHeader {
       this.difficulty = this.canonicalDifficulty(options.calcDifficultyFromHeader)
     }
 
-    Object.freeze(this)
+    const freeze = options?.freeze ?? true
+    if (freeze) {
+      Object.freeze(this)
+    }
   }
 
   /**
