@@ -38,7 +38,9 @@ export interface BlockOptions {
   initWithGenesisHeader?: boolean
 
   /**
-   * If a `BlockHeader` is given, then this header is used to calculate the difficulty upon creating the Block Header.
+   * If a preceding `BlockHeader` (usually the parent header) is given the preceding
+   * header will be used to calculate the difficulty for this block and the calculated
+   * difficulty takes precedence over a provided static `difficulty` value.
    */
   calcDifficultyFromHeader?: BlockHeader
 }
