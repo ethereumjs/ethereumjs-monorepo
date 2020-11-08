@@ -1,6 +1,5 @@
 import { DBOp, DBTarget } from './operation'
-import BN from 'bn.js'
-import { rlp } from 'ethereumjs-util'
+import { BN, rlp } from 'ethereumjs-util'
 import { Block, BlockHeader } from '@ethereumjs/block'
 import { bufBE8 } from './constants'
 

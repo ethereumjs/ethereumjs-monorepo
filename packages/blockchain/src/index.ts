@@ -8,7 +8,6 @@ import { DBOp, DBSetBlockOrHeader, DBSetTD, DBSetHashToNumber, DBSaveLookups } f
 import { DBTarget } from './db/operation'
 
 import type { LevelUp } from 'levelup'
-
 const level = require('level-mem')
 
 type OnBlock = (block: Block, reorg: boolean) => Promise<void> | void
@@ -23,8 +22,8 @@ export interface BlockchainInterface {
   putBlock(block: Block, isGenesis?: boolean): Promise<void>
 
   /**
-   * Deletes a block from the blockchain. All child blocks in the chain are deleted and any
-   * encountered heads are set to the parent block.
+   * Deletes a block from the blockchain. All child blocks in the chain are
+   * deleted and any encountered heads are set to the parent block.
    *
    * @param blockHash - The hash of the block to be deleted
    */
@@ -36,11 +35,12 @@ export interface BlockchainInterface {
   getBlock(blockId: Buffer | number | BN): Promise<Block | null>
 
   /**
-   * Iterates through blocks starting at the specified iterator head and calls the onBlock function
-   * on each block.
+   * Iterates through blocks starting at the specified iterator head and calls
+   * the onBlock function on each block.
    *
    * @param name - Name of the state root head
-   * @param onBlock - Function called on each block with params (block: Block, reorg: boolean)
+   * @param onBlock - Function called on each block with params (block: Block,
+   * reorg: boolean)
    */
   iterator(name: string, onBlock: OnBlock): Promise<void>
 }
@@ -58,26 +58,30 @@ export interface BlockchainOptions {
   common?: Common
 
   /**
-   * Database to store blocks and metadata. Should be an abstract-leveldown compliant store.
+   * Database to store blocks and metadata. Should be an abstract-leveldown
+   * compliant store.
    */
   db?: LevelUp
 
   /**
-   * This flags indicates if Proof-of-work should be validated. Defaults to `true`.
+   * This flags indicates if Proof-of-work should be validated. Defaults to
+   * `true`.
    */
   validatePow?: boolean
 
   /**
-   * This flags indicates if blocks should be validated. See Block#validate for details. If
-   * `validate` is provided, this option takes its value. If neither `validate` nor this option are
-   * provided, it defaults to `true`.
+   * This flags indicates if blocks should be validated. See Block#validate for
+   * details. If `validate` is provided, this option takes its value. If neither
+   * `validate` nor this option are provided, it defaults to `true`.
    */
   validateBlocks?: boolean
 
   /**
-   * The blockchain only initializes succesfully if it has a genesis block.
-   * If there is no block available in the DB and a `genesisBlock` is provided, then the provided `genesisBlock` will be used as genesis
-   * If no block is present in the DB and no block is provided, then the genesis block as provided from the `common` will be used
+   * The blockchain only initializes succesfully if it has a genesis block. If
+   * there is no block available in the DB and a `genesisBlock` is provided,
+   * then the provided `genesisBlock` will be used as genesis If no block is
+   * present in the DB and no block is provided, then the genesis block as
+   * provided from the `common` will be used
    */
   genesisBlock?: Block
 }
@@ -92,13 +96,16 @@ export default class Blockchain implements BlockchainInterface {
 
   private _genesis?: Buffer // the genesis hash of this blockchain
 
-  // The following three head hashes (or maps) never point to a stale hash and always point to a hash in the canonical chain
-  // However, these might point to a different hash than the hash with the highest Total Difficulty, with the exception of the _headHeaderHash
-  // The _headHeaderHash always points to the head with the highest total difficulty.
+  // The following three head hashes (or maps) never point to a stale hash and
+  // always point to a hash in the canonical chain However, these might point to
+  // a different hash than the hash with the highest Total Difficulty, with the
+  // exception of the _headHeaderHash The _headHeaderHash always points to the
+  // head with the highest total difficulty.
   private _headBlockHash?: Buffer // the hash of the current head block
   private _headHeaderHash?: Buffer // the hash of the current head header
-  // a Map which stores the head of each key (for instance the "vm" key)
-  // this is updated if you run the iterator method and can be used to (re)run non-verified blocks, for instance, in the VM.
+  // a Map which stores the head of each key (for instance the "vm" key) this is
+  // updated if you run the iterator method and can be used to (re)run
+  // non-verified blocks, for instance, in the VM.
   private _heads: { [key: string]: Buffer }
 
   public initPromise: Promise<void>
@@ -111,11 +118,12 @@ export default class Blockchain implements BlockchainInterface {
   /**
    * Creates new Blockchain object
    *
-   * @param opts - An object with the options that this constructor takes. See [[BlockchainOptions]].
+   * @param opts - An object with the options that this constructor takes. See
+   * [[BlockchainOptions]].
    */
   constructor(opts: BlockchainOptions = {}) {
-    // Throw on chain or hardfork options removed in latest major release
-    // to prevent implicit chain setup on a wrong chain
+    // Throw on chain or hardfork options removed in latest major release to
+    // prevent implicit chain setup on a wrong chain
     if ('chain' in opts || 'hardfork' in opts) {
       throw new Error('Chain/hardfork options are not allowed any more on initialization')
     }
@@ -153,6 +161,14 @@ export default class Blockchain implements BlockchainInterface {
     this.initPromise = this._init(opts.genesisBlock)
   }
 
+  /**
+   * This static constructor safely creates a new Blockchain object, which also
+   * awaits the initialization function. If this initialization function throws,
+   * then this constructor will throw as well, and is therefore the encouraged
+   * method to use when creating a blockchain object.
+   * @param opts Constructor options, see [[BlockchainOptions]]
+   */
+
   public static async create(opts: BlockchainOptions = {}) {
     const blockchain = new Blockchain(opts)
     await blockchain.initPromise!.catch((e) => {
@@ -162,7 +178,8 @@ export default class Blockchain implements BlockchainInterface {
   }
 
   /**
-   * Returns an object with metadata about the Blockchain. It's defined for backwards compatibility.
+   * Returns an object with metadata about the Blockchain. It's defined for
+   * backwards compatibility.
    */
   get meta() {
     return {
@@ -173,7 +190,9 @@ export default class Blockchain implements BlockchainInterface {
   }
 
   /**
-   * This method is called in the constructor and either setups the DB or reads values from the DB and makes these available to the consumers of Blockchain.
+   * This method is called in the constructor and either setups the DB or reads
+   * values from the DB and makes these available to the consumers of
+   * Blockchain.
    *
    * @hidden
    */
@@ -192,7 +211,8 @@ export default class Blockchain implements BlockchainInterface {
       genesisBlock = this._getCanonicalGenesisBlock()
     }
 
-    // if the DB has a genesis block, then verify that the genesis block in the DB is indeed the Genesis block we either generated, or got assigned.
+    // if the DB has a genesis block, then verify that the genesis block in the
+    // DB is indeed the Genesis block we either generated, or got assigned.
     if (DBGenesisBlock && !genesisBlock.hash().equals(DBGenesisBlock.hash())) {
       throw new Error(
         'The genesis block in the DB has a different hash than the provided genesis block.'
@@ -202,8 +222,8 @@ export default class Blockchain implements BlockchainInterface {
     const genesisHash = genesisBlock.hash()
 
     if (!DBGenesisBlock) {
-      // there is no genesis block. we thus have to put the genesis block in the DB
-      // we have to save the TD, the BlockOrHeader, and the Lookups
+      // there is no genesis block. we thus have to put the genesis block in the
+      // DB we have to save the TD, the BlockOrHeader, and the Lookups
       const dbOps: DBOp[] = []
       dbOps.push(DBSetTD(genesisBlock.header.difficulty.clone(), new BN(0), genesisHash))
       DBSetBlockOrHeader(genesisBlock).map((op) => dbOps.push(op))
@@ -211,7 +231,9 @@ export default class Blockchain implements BlockchainInterface {
       await this.dbManager.batch(dbOps)
     }
 
-    // at this point, we can safely set genesisHash as the _genesis hash in this object: it is either the one we put in the DB, or it is equal to the one which we read from the DB.
+    // at this point, we can safely set genesisHash as the _genesis hash in this
+    // object: it is either the one we put in the DB, or it is equal to the one
+    // which we read from the DB.
     this._genesis = genesisHash
 
     // load verified iterator heads
@@ -249,8 +271,10 @@ export default class Blockchain implements BlockchainInterface {
   }
 
   /**
-   * Perform the `action` function after we have initialized this module and have acquired a lock
-   * @param action - the action function to run after initializing and acquiring a lock
+   * Perform the `action` function after we have initialized this module and
+   * have acquired a lock
+   * @param action - the action function to run after initializing and acquiring
+   * a lock
    * @hidden
    */
   private async initAndLock<T>(action: () => Promise<T>): Promise<T> {
@@ -259,7 +283,9 @@ export default class Blockchain implements BlockchainInterface {
   }
 
   /**
-   * Run a function after acquiring a lock. It is implied that we have already initialized the module (or we are calling this from the init function, like `_setCanonicalGenesisBlock`)
+   * Run a function after acquiring a lock. It is implied that we have already
+   * initialized the module (or we are calling this from the init function, like
+   * `_setCanonicalGenesisBlock`)
    * @param action - function to run after acquiring a lock
    * @hidden
    */
@@ -334,9 +360,11 @@ export default class Blockchain implements BlockchainInterface {
   }
 
   /**
-   * Adds many blocks to the blockchain.
-   * If any of the blocks is invalid, this function will throw; the blocks before this block will be put in the DB, but the blocks after will not be put in
-   * If any of these blocks has a higher total difficulty than the current max total difficulty, then the canonical chain is rebuilt and any stale heads/hashes are overwritten.
+   * Adds many blocks to the blockchain. If any of the blocks is invalid, this
+   * function will throw; the blocks before this block will be put in the DB,
+   * but the blocks after will not be put in If any of these blocks has a higher
+   * total difficulty than the current max total difficulty, then the canonical
+   * chain is rebuilt and any stale heads/hashes are overwritten.
    * @param blocks - The blocks to be added to the blockchain
    */
   async putBlocks(blocks: Block[]) {
@@ -347,8 +375,9 @@ export default class Blockchain implements BlockchainInterface {
   }
 
   /**
-   * Adds a block to the blockchain.
-   * If this block is valid, and it has a higher total difficulty than the current max total difficulty, the canonical chain is rebuilt and any stale heads/hashes are overwritten.
+   * Adds a block to the blockchain. If this block is valid, and it has a higher
+   * total difficulty than the current max total difficulty, the canonical chain
+   * is rebuilt and any stale heads/hashes are overwritten.
    * @param block - The block to be added to the blockchain
    */
   async putBlock(block: Block) {
@@ -357,9 +386,11 @@ export default class Blockchain implements BlockchainInterface {
   }
 
   /**
-   * Adds many headers to the blockchain.
-   * If any of the headers is invalid, this function will throw; the headers before this header will be put in the DB, but the headers after will not be put in
-   * If any of these headers has a higher total difficulty than the current max total difficulty, then the canonical chain is rebuilt and any stale heads/hashes are overwritten.
+   * Adds many headers to the blockchain. If any of the headers is invalid, this
+   * function will throw; The headers before this header will be put in the DB,
+   * but the headers after will not be put in If any of these headers has a
+   * higher total difficulty than the current max total difficulty, then the
+   * canonical chain is rebuilt and any stale heads/hashes are overwritten.
    * @param headers - The headers to be added to the blockchain
    */
   async putHeaders(headers: Array<any>) {
@@ -370,8 +401,9 @@ export default class Blockchain implements BlockchainInterface {
   }
 
   /**
-   * Adds a header to the blockchain.
-   * If this header is valid, and it has a higher total difficulty than the current max total difficulty, the canonical chain is rebuilt and any stale heads/hashes are overwritten.
+   * Adds a header to the blockchain. If this header is valid, and it has a
+   * higher total difficulty than the current max total difficulty, the
+   * canonical chain is rebuilt and any stale heads/hashes are overwritten.
    * @param header - The header to be added to the blockchain
    */
   async putHeader(header: BlockHeader) {
@@ -380,11 +412,15 @@ export default class Blockchain implements BlockchainInterface {
   }
 
   /**
-   * Entry point for putting any block or block header. Verifies this block, checks the total TD: if this TD is higher than the current highest TD,
-   * we have thus found a new canonical block and have to rewrite the canonical chain. This also updates the head block hashes.
-   * If any of the older known canonical chains just became stale, then we also reset every _heads header which points to a stale header
-   * to the last verified header which was in the old canonical chain, but also in the new canonical chain.
-   * This thus rolls back these headers so that these can be updated to the "new" canonical header using the iterator method.
+   * Entry point for putting any block or block header. Verifies this block,
+   * checks the total TD: if this TD is higher than the current highest TD, we
+   * have thus found a new canonical block and have to rewrite the canonical
+   * chain. This also updates the head block hashes. If any of the older known
+   * canonical chains just became stale, then we also reset every _heads header
+   * which points to a stale header to the last verified header which was in the
+   * old canonical chain, but also in the new canonical chain. This thus rolls
+   * back these headers so that these can be updated to the "new" canonical
+   * header using the iterator method.
    * @hidden
    */
   private async _putBlockOrHeader(item: Block | BlockHeader) {
@@ -453,11 +489,14 @@ export default class Blockchain implements BlockchainInterface {
 
         // delete higher number assignments and overwrite stale canonical chain
         await this._deleteCanonicalChainReferences(blockNumber.addn(1), blockHash, dbOps)
-        // from the current header block, check the blockchain in reverse (i.e. traverse `parentHash`) until `numberToHash` matches the current number/hash in the canonical chain
-        // also: overwrite any heads if these heads are stale in `_heads` and `_headBlockHash`
+        // from the current header block, check the blockchain in reverse (i.e.
+        // traverse `parentHash`) until `numberToHash` matches the current
+        // number/hash in the canonical chain also: overwrite any heads if these
+        // heads are stale in `_heads` and `_headBlockHash`
         await this._rebuildCanonical(header, dbOps)
       } else {
-        // the TD is lower than the current highest TD so we will add the block to the DB, but will not mark it as the canonical chain.
+        // the TD is lower than the current highest TD so we will add the block
+        // to the DB, but will not mark it as the canonical chain.
         if (td.gt(currentTd.block) && item instanceof Block) {
           this._headBlockHash = blockHash
         }
@@ -473,13 +512,16 @@ export default class Blockchain implements BlockchainInterface {
   /**
    * Gets a block by its hash.
    *
-   * @param blockId - The block's hash or number. If a hash is provided, then this will be immediately looked up, otherwise it will wait until we have unlocked the DB
+   * @param blockId - The block's hash or number. If a hash is provided, then
+   * this will be immediately looked up, otherwise it will wait until we have
+   * unlocked the DB
    */
   async getBlock(blockId: Buffer | number | BN): Promise<Block> {
-    // cannot wait for a lock here: it is used both in `validate` of `Block` (calls `getBlock` to get `parentHash`)
-    // it is also called from `runBlock` in the `VM` if we encounter a `BLOCKHASH` opcode: then a BN is used
-    // we need to then read the block from the canonical chain
-    // Q: is this safe? We know it is OK if we call it from the iterator... (runBlock)
+    // cannot wait for a lock here: it is used both in `validate` of `Block`
+    // (calls `getBlock` to get `parentHash`) it is also called from `runBlock`
+    // in the `VM` if we encounter a `BLOCKHASH` opcode: then a BN is used we
+    // need to then read the block from the canonical chain Q: is this safe? We
+    // know it is OK if we call it from the iterator... (runBlock)
     await this.initPromise
     return await this._getBlock(blockId)
   }
@@ -492,8 +534,8 @@ export default class Blockchain implements BlockchainInterface {
   }
 
   /**
-   * Looks up many blocks relative to blockId
-   * Note: due to `GetBlockHeaders (0x03)` (ETH wire protocol) we have to support skip/reverse as well.
+   * Looks up many blocks relative to blockId Note: due to `GetBlockHeaders
+   * (0x03)` (ETH wire protocol) we have to support skip/reverse as well.
    * @param blockId - The block's hash or number
    * @param maxBlocks - Max number of blocks to return
    * @param skip - Number of blocks to skip apart
@@ -536,8 +578,9 @@ export default class Blockchain implements BlockchainInterface {
   }
 
   /**
-   * Given an ordered array, returns an array of hashes that are not in the blockchain yet.
-   * Uses binary search to find out what hashes are missing. Therefore, the array needs to be ordered upon number.
+   * Given an ordered array, returns an array of hashes that are not in the
+   * blockchain yet. Uses binary search to find out what hashes are missing.
+   * Therefore, the array needs to be ordered upon number.
    * @param hashes - Ordered array of hashes (ordered on `number`).
    */
   async selectNeededHashes(hashes: Array<Buffer>): Promise<Buffer[]> {
@@ -570,17 +613,22 @@ export default class Blockchain implements BlockchainInterface {
   }
 
   /**
-   * Completely deletes a block from the blockchain including any references to this block.
-   * If this block was in the canonical chain, then also each child block of this block is deleted
-   * Also, if this was a canonical block, each head header which is part of this now stale chain will be set to the parentHeader of this block
-   * An example reason to execute is when running the block in the VM invalidates this block: this will then reset the canonical head to the past block
-   * (which has been validated in the past by the VM, so we can be sure it is correct).
+   * Completely deletes a block from the blockchain including any references to
+   * this block. If this block was in the canonical chain, then also each child
+   * block of this block is deleted Also, if this was a canonical block, each
+   * head header which is part of this now stale chain will be set to the
+   * parentHeader of this block An example reason to execute is when running the
+   * block in the VM invalidates this block: this will then reset the canonical
+   * head to the past block (which has been validated in the past by the VM, so
+   * we can be sure it is correct).
    * @param blockHash - The hash of the block to be deleted
    */
   async delBlock(blockHash: Buffer) {
-    // Q: is it safe to make this not wait for a lock?
-    // this is called from `runBlockchain` in case `runBlock` throws (i.e. the block is invalid). But is this the way to go?
-    // If we know this is called from the iterator/runBlockchain we are safe, but if this is called from anywhere else then this might lead to a concurrency problem?
+    // Q: is it safe to make this not wait for a lock? this is called from
+    // `runBlockchain` in case `runBlock` throws (i.e. the block is invalid).
+    // But is this the way to go? If we know this is called from the
+    // iterator/runBlockchain we are safe, but if this is called from anywhere
+    // else then this might lead to a concurrency problem?
     await this.initPromise
     await this._delBlock(blockHash)
   }
@@ -615,12 +663,17 @@ export default class Blockchain implements BlockchainInterface {
   }
 
   /**
-   * Updates the `DatabaseOperation` list to delete a block from the DB, identified by `blockHash` and `blockNumber`. Deletes fields from `Header`, `Body`, `HashToNumber` and `TotalDifficulty` tables.
-   * If child blocks of this current block are in the canonical chain, delete these as well. Does not actually commit these changes to the DB.
-   * Sets `_headHeaderHash` and `_headBlockHash` to `headHash` if any of these matches the current child to be deleted.
+   * Updates the `DatabaseOperation` list to delete a block from the DB,
+   * identified by `blockHash` and `blockNumber`. Deletes fields from `Header`,
+   * `Body`, `HashToNumber` and `TotalDifficulty` tables. If child blocks of
+   * this current block are in the canonical chain, delete these as well. Does
+   * not actually commit these changes to the DB. Sets `_headHeaderHash` and
+   * `_headBlockHash` to `headHash` if any of these matches the current child to
+   * be deleted.
    * @param blockHash - the block hash to delete
    * @param blockNumber - the number corresponding to the block hash
-   * @param headHash - the current head of the chain (if null, do not update `_headHeaderHash` and `_headBlockHash`)
+   * @param headHash - the current head of the chain (if null, do not update
+   * `_headHeaderHash` and `_headBlockHash`)
    * @param ops - the `DatabaseOperation` list to add the delete operations to
    * @hidden
    */
@@ -659,9 +712,9 @@ export default class Blockchain implements BlockchainInterface {
   }
 
   /**
-   * Iterates through blocks starting at the specified iterator head and calls the onBlock function
-   * on each block. The current location of an iterator head can be retrieved using the `getHead()`
-   * method.
+   * Iterates through blocks starting at the specified iterator head and calls
+   * the onBlock function on each block. The current location of an iterator
+   * head can be retrieved using the `getHead()` method.
    *
    * @param name - Name of the state root head
    * @param onBlock - Function called on each block with params (block, reorg)
@@ -714,10 +767,15 @@ export default class Blockchain implements BlockchainInterface {
   /* Methods regarding re-org operations */
 
   /**
-   * Pushes DB operations to delete canonical number assignments for specified block number and above
-   * This only deletes `NumberToHash` references, and not the blocks themselves. Note: this does not write to the DB but only pushes to a DB operations list.
-   * @param blockNumber - the block number from which we start deleting canonical chain assignments (including this block)
-   * @param headHash - the hash of the current canonical chain head. The _heads reference matching any hash of any of the deleted blocks will be set to this
+   * Pushes DB operations to delete canonical number assignments for specified
+   * block number and above This only deletes `NumberToHash` references, and not
+   * the blocks themselves. Note: this does not write to the DB but only pushes
+   * to a DB operations list.
+   * @param blockNumber - the block number from which we start deleting
+   * canonical chain assignments (including this block)
+   * @param headHash - the hash of the current canonical chain head. The _heads
+   * reference matching any hash of any of the deleted blocks will be set to
+   * this
    * @param ops - the DatabaseOperation list to write DatabaseOperations to
    * @hidden
    */
@@ -729,11 +787,14 @@ export default class Blockchain implements BlockchainInterface {
     while (hash) {
       ops.push(DBOp.del(DBTarget.NumberToHash, { blockNumber }))
 
-      // reset stale iterator heads to current canonical head
-      // this can, for instance, make the VM run "older" (i.e. lower number blocks than last executed block) blocks to verify the chain up to the current, actual, head.
+      // reset stale iterator heads to current canonical head this can, for
+      // instance, make the VM run "older" (i.e. lower number blocks than last
+      // executed block) blocks to verify the chain up to the current, actual,
+      // head.
       Object.keys(this._heads).forEach((name) => {
         if (this._heads[name].equals(<Buffer>hash)) {
-          // explicitly cast as Buffer: it is not possible that `hash` is false here, but TypeScript does not understand this.
+          // explicitly cast as Buffer: it is not possible that `hash` is false
+          // here, but TypeScript does not understand this.
           this._heads[name] = headHash
         }
       })
@@ -750,13 +811,16 @@ export default class Blockchain implements BlockchainInterface {
   }
 
   /**
-   * Given a `header`, put all operations to change the canonical chain directly into `ops`.
-   * This walks the supplied `header` backwards. It is thus assumed that this header should be canonical header.
-   * For each header the corresponding hash corresponding to the current canonical chain in the DB is checked
-   * If the number => hash reference does not correspond to the reference in the DB, we overwrite this reference with the implied number => hash reference
-   * Also, each `_heads` member is checked; if these point to a stale hash, then the hash which we terminate the loop (i.e. the first hash which matches the number => hash of the implied chain)
-   * is put as this stale head hash
-   * The same happens to _headBlockHash
+   * Given a `header`, put all operations to change the canonical chain directly
+   * into `ops`. This walks the supplied `header` backwards. It is thus assumed
+   * that this header should be canonical header. For each header the
+   * corresponding hash corresponding to the current canonical chain in the DB
+   * is checked If the number => hash reference does not correspond to the
+   * reference in the DB, we overwrite this reference with the implied number =>
+   * hash reference Also, each `_heads` member is checked; if these point to a
+   * stale hash, then the hash which we terminate the loop (i.e. the first hash
+   * which matches the number => hash of the implied chain) is put as this stale
+   * head hash The same happens to _headBlockHash
    * @param header - The canonical header.
    * @param ops - The database operations list.
    * @hidden
@@ -765,7 +829,8 @@ export default class Blockchain implements BlockchainInterface {
     const currentNumber = header.number.clone() // we change this during this method with `isubn`
     let currentCanonicalHash: Buffer = header.hash()
 
-    // track the staleHash: this is the hash currently in the DB which matches the block number of the provided header.
+    // track the staleHash: this is the hash currently in the DB which matches
+    // the block number of the provided header.
     let staleHash: Buffer | false = false
     let staleHeads: string[] = []
     let staleHeadBlock = false
@@ -789,7 +854,8 @@ export default class Blockchain implements BlockchainInterface {
         break
       }
 
-      // mark each key `_heads` which is currently set to the hash in the DB as stale to overwrite this later.
+      // mark each key `_heads` which is currently set to the hash in the DB as
+      // stale to overwrite this later.
       Object.keys(this._heads).forEach((name) => {
         if (staleHash && this._heads[name].equals(staleHash)) {
           staleHeads.push(name)
@@ -811,8 +877,8 @@ export default class Blockchain implements BlockchainInterface {
         break
       }
     }
-    // the stale hash is equal to the blockHash
-    // set stale heads to last previously valid canonical block
+    // the stale hash is equal to the blockHash set stale heads to last
+    // previously valid canonical block
     staleHeads.forEach((name: string) => {
       this._heads[name] = currentCanonicalHash
     })
@@ -825,7 +891,8 @@ export default class Blockchain implements BlockchainInterface {
   /* Helper functions */
 
   /**
-   * Builds the `DatabaseOperation[]` list which describes the DB operations to write the heads, head header hash and the head header block to the DB
+   * Builds the `DatabaseOperation[]` list which describes the DB operations to
+   * write the heads, head header hash and the head header block to the DB
    * @hidden
    */
   private _saveHeadOps(): DBOp[] {
@@ -837,7 +904,8 @@ export default class Blockchain implements BlockchainInterface {
   }
 
   /**
-   * Gets the `DatabaseOperation[]` list to save `_heads`, `_headHeaderHash` and `_headBlockHash` and writes these to the DB
+   * Gets the `DatabaseOperation[]` list to save `_heads`, `_headHeaderHash` and
+   * `_headBlockHash` and writes these to the DB
    * @hidden
    */
   private async _saveHeads() {
@@ -845,7 +913,8 @@ export default class Blockchain implements BlockchainInterface {
   }
 
   /**
-   * Gets a header by hash and number. Header can exist outside the canonical chain
+   * Gets a header by hash and number. Header can exist outside the canonical
+   * chain
    *
    * @hidden
    */
@@ -879,8 +948,9 @@ export default class Blockchain implements BlockchainInterface {
   }
 
   /**
-   * This method either returns a Buffer if there exists one in the DB or if it does not exist (DB throws a `NotFoundError`) then return false
-   * If DB throws any other error, this function throws.
+   * This method either returns a Buffer if there exists one in the DB or if it
+   * does not exist (DB throws a `NotFoundError`) then return false If DB throws
+   * any other error, this function throws.
    * @param number
    */
   async safeNumberToHash(number: BN): Promise<Buffer | false> {

@@ -1,7 +1,6 @@
 import { SecureTrie as Trie } from 'merkle-patricia-tree'
 import { Account, Address } from 'ethereumjs-util'
 import Blockchain from '@ethereumjs/blockchain'
-import { Block } from '@ethereumjs/block'
 import Common from '@ethereumjs/common'
 import { StateManager, DefaultStateManager } from './state/index'
 import { default as runCode, RunCodeOpts } from './runCode'
@@ -90,11 +89,6 @@ export interface VMOpts {
    * Default: `false` [ONLY set to `true` during debugging]
    */
   allowUnlimitedContractSize?: boolean
-
-  /**
-   * Provide a non-canonical genesisBlock (non-canonical with respect to the `Common`) to initialize the blockchain with
-   */
-  genesisBlock?: Block
 }
 
 /**
@@ -205,8 +199,7 @@ export default class VM extends AsyncEventEmitter {
       })
     }
 
-    this.blockchain =
-      opts.blockchain || new Blockchain({ common: this._common, genesisBlock: opts.genesisBlock })
+    this.blockchain = opts.blockchain || new Blockchain({ common: this._common })
 
     this._allowUnlimitedContractSize = opts.allowUnlimitedContractSize || false
 
