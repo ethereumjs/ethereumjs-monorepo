@@ -703,3 +703,92 @@ tape('blockchain test', (t) => {
     st.end()
   })
 })
+
+tape('initialization tests', (t) => {
+  t.test('should read genesis from database', async (st) => {
+    const common = new Common({
+      chain: 'ropsten',
+      hardfork: 'chainstart',
+    })
+    const genesisHash = Block.genesis({}, { common }).hash()
+    const blockchain = new Blockchain({ common })
+
+    st.ok(
+      (await blockchain.getHead()).hash().equals(genesisHash),
+      'head hash should equal expected ropsten genesis hash'
+    )
+
+    const db = blockchain.db
+
+    const newBlockchain = new Blockchain({ db, common })
+
+    st.ok(
+      (await newBlockchain.getHead()).hash().equals(genesisHash),
+      'head hash should be read from the provided db'
+    )
+    st.end()
+  })
+
+  t.test('should allow to put a custom genesis block', async (st) => {
+    const genesisBlock = Block.genesis({
+      header: {
+        extraData: Buffer.from('custom extra data'),
+      },
+    })
+    const hash = genesisBlock.hash()
+    const blockchain = new Blockchain({ genesisBlock })
+    const db = blockchain.db
+
+    st.ok(
+      (await blockchain.getHead()).hash().equals(hash),
+      'blockchain should put custom genesis block'
+    )
+
+    const newBlockchain = new Blockchain({ db, genesisBlock })
+    st.ok(
+      (await newBlockchain.getHead()).hash().equals(hash),
+      'head hash should be read from the provided db'
+    )
+    st.end()
+  })
+
+  t.test('should not allow to change the genesis block in the database', async (st) => {
+    const genesisBlock = Block.genesis({
+      header: {
+        extraData: Buffer.from('custom extra data'),
+      },
+    })
+    const hash = genesisBlock.hash()
+    const blockchain = new Blockchain({ genesisBlock })
+    const db = blockchain.db
+
+    const otherGenesisBlock = Block.genesis({
+      header: {
+        extraData: Buffer.from('other extra data'),
+      },
+    })
+
+    // assert that this is a block with a new hash
+    if (otherGenesisBlock.hash().equals(hash)) {
+      st.fail('other genesis block should have a different hash than the genesis block')
+    }
+
+    // try to put a new genesis block should throw
+    try {
+      await blockchain.putBlock(otherGenesisBlock)
+      st.fail('putting a genesis block did not throw')
+    } catch (e) {
+      st.pass('putting a genesis block did throw')
+    }
+
+    // trying to input a genesis block which differs from the one in db should throw on creation
+    try {
+      await Blockchain.create({ genesisBlock: otherGenesisBlock, db })
+      st.fail('creating blockchain with different genesis block than in db did not throw')
+    } catch (e) {
+      st.pass('creating blockchain with different genesis block than in db throws')
+    }
+
+    st.end()
+  })
+})
