@@ -97,7 +97,10 @@ tape('should fail when tx gas limit higher than block gas limit', async (t) => {
 
   const gasLimit = new BN(Buffer.from('3fefba', 'hex'))
   const opts = { common: block._common }
-  block.transactions[0] = new Transaction(nonce, gasPrice, gasLimit, to, value, data, v, r, s, opts)
+  block.transactions[0] = new Transaction(
+    { nonce, gasPrice, gasLimit, to, value, data, v, r, s },
+    opts
+  )
 
   await suite.p
     .runBlock({ block, skipBlockValidation: true })
