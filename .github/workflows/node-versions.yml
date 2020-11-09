@@ -1,9 +1,13 @@
+# 
+# This special file aims to run node tests for each relevant node version. 
+# A relevant node version can be: active, current, maintenance or EOL with some months of tolerance
+# For more details, please check ./scripts/node-versions.js
+# 
+
 name: Node versions
 on:
   schedule:
     - cron: 0 0 * * *
-  pull_request:
-    types: [opened, reopened, synchronize]
 
 jobs:
   get-node-versions:
@@ -39,7 +43,27 @@ jobs:
       - run: npm install
       - run: npm run build
 
+      - name: Test Block
+        run: npm run test
+        working-directory: packages/block
+
+      - name: Test Blockchain
+        run: npm run test
+        working-directory: packages/blockchain
+
       - name: Test Common
         run: npm run test
         working-directory: packages/common
+
+      - name: Test Ethash
+        run: npm run test
+        working-directory: packages/ethash
+
+      - name: Test Tx
+        run: npm run test
+        working-directory: packages/tx
+
+      - name: Test VM
+        run: npm run test:API
+        working-directory: packages/vm
 
