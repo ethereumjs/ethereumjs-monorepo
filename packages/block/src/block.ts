@@ -32,7 +32,11 @@ export class Block {
     // parse uncle headers
     const uncleHeaders = []
     for (const uhData of uhsData || []) {
-      const uh = BlockHeader.fromHeaderData(uhData, opts)
+      const uh = BlockHeader.fromHeaderData(uhData, {
+        ...opts,
+        // Disable this option here (all other options carried over), since this overwrites the provided Difficulty to an incorrect value
+        calcDifficultyFromHeader: undefined,
+      })
       uncleHeaders.push(uh)
     }
 
@@ -67,7 +71,13 @@ export class Block {
     // parse uncle headers
     const uncleHeaders = []
     for (const uncleHeaderData of uhsData || []) {
-      uncleHeaders.push(BlockHeader.fromValuesArray(uncleHeaderData, opts))
+      uncleHeaders.push(
+        BlockHeader.fromValuesArray(uncleHeaderData, {
+          ...opts,
+          // Disable this option here (all other options carried over), since this overwrites the provided Difficulty to an incorrect value
+          calcDifficultyFromHeader: undefined,
+        })
+      )
     }
 
     return new Block(header, transactions, uncleHeaders, opts)
@@ -307,10 +317,6 @@ export class Block {
   }
 
   private async _validateUncleHeaders(uncleHeaders: BlockHeader[], blockchain: Blockchain) {
-    // TODO: Validate that the uncle header hasn't been included in the blockchain yet.
-    // This is not possible in ethereumjs-blockchain since this PR was merged:
-    // https://github.com/ethereumjs/ethereumjs-blockchain/pull/47
-
     if (uncleHeaders.length == 0) {
       return
     }
@@ -346,10 +352,16 @@ export class Block {
 
     canonicalBlockMap.map((block) => {
       uncleHeaders.map((uh) => {
-        if (uh.hash().equals(block.hash())) {
+        const uncleHash = uh.hash()
+        if (uncleHash.equals(block.hash())) {
           // the uncle is part of the canonical chain.
           throw new Error('The uncle is part of the canonical chain.')
         }
+        block.uncleHeaders.map((includedUncle) => {
+          if (includedUncle.hash().equals(uncleHash)) {
+            throw new Error('The uncle is already included in the canonical chain')
+          }
+        })
       })
     })
 

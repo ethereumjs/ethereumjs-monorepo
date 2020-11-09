@@ -1,8 +1,9 @@
 import tape from 'tape'
-import { rlp, zeros } from 'ethereumjs-util'
+import { BN, rlp, zeros } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
 import { Block, BlockBuffer } from '../src'
 import { Mockchain } from './mockchain'
+import { createBlock } from './util'
 
 tape('[Block]: block functions', function (t) {
   t.test('should test block initialization', function (st) {
@@ -118,6 +119,260 @@ tape('[Block]: block functions', function (t) {
     const blockRlp = testData2.blocks[2].rlp
     const block = Block.fromRLPSerializedBlock(blockRlp)
     st.equal(block.validateUnclesHash(), true)
+    st.end()
+  })
+
+  t.test('should throw if an uncle is listed twice', async function (st) {
+    const blockchain = new Mockchain()
+
+    const genesis = Block.genesis({})
+    await blockchain.putBlock(genesis)
+
+    const uncleBlock1 = createBlock(genesis, 'uncle')
+
+    const block1 = createBlock(genesis, 'block1')
+    const block2 = createBlock(block1, 'block1', [uncleBlock1.header, uncleBlock1.header])
+
+    await blockchain.putBlock(uncleBlock1)
+    await blockchain.putBlock(block1)
+    await blockchain.putBlock(block2)
+
+    try {
+      await block2.validate(blockchain)
+      st.fail('cannot reach this')
+    } catch (e) {
+      st.pass('block throws if the uncle is included twice in the block')
+    }
+    st.end()
+  })
+
+  t.test('should throw if an uncle is included before', async function (st) {
+    const blockchain = new Mockchain()
+
+    const genesis = Block.genesis({})
+    await blockchain.putBlock(genesis)
+
+    const uncleBlock = createBlock(genesis, 'uncle')
+
+    const block1 = createBlock(genesis, 'block1')
+    const block2 = createBlock(block1, 'block2', [uncleBlock.header])
+    const block3 = createBlock(block2, 'block3', [uncleBlock.header])
+
+    await blockchain.putBlock(uncleBlock)
+    await blockchain.putBlock(block1)
+    await blockchain.putBlock(block2)
+    await blockchain.putBlock(block3)
+
+    await uncleBlock.validate(blockchain)
+
+    await block1.validate(blockchain)
+    await block2.validate(blockchain)
+
+    try {
+      await block3.validate(blockchain)
+      st.fail('cannot reach this')
+    } catch (e) {
+      st.pass('block throws if uncle is already included')
+    }
+    st.end()
+  })
+
+  t.test(
+    'should throw if the uncle parent block is not part of the canonical chain',
+    async function (st) {
+      const blockchain = new Mockchain()
+
+      const genesis = Block.genesis({})
+      await blockchain.putBlock(genesis)
+
+      const emptyBlock = Block.fromBlockData({ header: { number: new BN(1) } })
+
+      //assertion
+      if (emptyBlock.hash().equals(genesis.hash())) {
+        st.fail('should create an unique bogus block')
+      }
+
+      await blockchain.putBlock(emptyBlock)
+
+      const uncleBlock = createBlock(emptyBlock, 'uncle')
+      const block1 = createBlock(genesis, 'block1')
+      const block2 = createBlock(block1, 'block2')
+      const block3 = createBlock(block2, 'block3', [uncleBlock.header])
+
+      await blockchain.putBlock(uncleBlock)
+      await blockchain.putBlock(block1)
+      await blockchain.putBlock(block2)
+      await blockchain.putBlock(block3)
+
+      try {
+        await block3.validate(blockchain)
+        st.fail('cannot reach this')
+      } catch (e) {
+        st.pass('block throws if uncle parent hash is not part of the canonical chain')
+      }
+      st.end()
+    }
+  )
+
+  t.test('should throw if the uncle is too old', async function (st) {
+    const blockchain = new Mockchain()
+
+    const genesis = Block.genesis({})
+    await blockchain.putBlock(genesis)
+
+    const uncleBlock = createBlock(genesis, 'uncle')
+
+    let lastBlock = genesis
+    for (let i = 0; i < 7; i++) {
+      const block = createBlock(lastBlock, 'block' + i.toString())
+      await blockchain.putBlock(block)
+      lastBlock = block
+    }
+
+    const blockWithUnclesTooOld = createBlock(lastBlock, 'too-old-uncle', [uncleBlock.header])
+
+    try {
+      await blockWithUnclesTooOld.validate(blockchain)
+      st.fail('cannot reach this')
+    } catch (e) {
+      st.pass('block throws uncle is too old')
+    }
+    st.end()
+  })
+
+  t.test('should throw if uncle is too young', async function (st) {
+    const blockchain = new Mockchain()
+
+    const genesis = Block.genesis({})
+    await blockchain.putBlock(genesis)
+
+    const uncleBlock = createBlock(genesis, 'uncle')
+    const block1 = createBlock(genesis, 'block1', [uncleBlock.header])
+
+    await blockchain.putBlock(uncleBlock)
+    await blockchain.putBlock(block1)
+
+    try {
+      await block1.validate(blockchain)
+      st.fail('cannot reach this')
+    } catch (e) {
+      st.pass('block throws uncle is too young')
+    }
+    st.end()
+  })
+
+  t.test('should throw if the uncle header is invalid', async function (st) {
+    const blockchain = new Mockchain()
+
+    const genesis = Block.genesis({})
+    await blockchain.putBlock(genesis)
+
+    const uncleBlock = Block.fromBlockData({
+      header: {
+        number: genesis.header.number.addn(1),
+        parentHash: genesis.hash(),
+        timestamp: genesis.header.timestamp.addn(1),
+        gasLimit: new BN(5000),
+        difficulty: new BN(0), // invalid difficulty
+      },
+    })
+
+    const block1 = createBlock(genesis, 'block1')
+    const block2 = createBlock(block1, 'block2', [uncleBlock.header])
+
+    await blockchain.putBlock(uncleBlock)
+    await blockchain.putBlock(block1)
+    await blockchain.putBlock(block2)
+
+    try {
+      await block2.validate(blockchain)
+      st.fail('cannot reach this')
+    } catch (e) {
+      st.pass('block throws uncle header is invalid')
+    }
+    st.end()
+  })
+
+  t.test('throws if more than 2 uncles included', async function (st) {
+    const blockchain = new Mockchain()
+
+    const genesis = Block.genesis({})
+    await blockchain.putBlock(genesis)
+
+    const uncleBlock1 = createBlock(genesis, 'uncle1')
+    const uncleBlock2 = createBlock(genesis, 'uncle2')
+    const uncleBlock3 = createBlock(genesis, 'uncle3')
+
+    // sanity check
+    if (
+      uncleBlock1.hash().equals(uncleBlock2.hash()) ||
+      uncleBlock2.hash().equals(uncleBlock3.hash())
+    ) {
+      st.fail('uncles 1/2/3 should be unique')
+    }
+
+    const block1 = createBlock(genesis, 'block1')
+    const block2 = createBlock(block1, 'block1', [
+      uncleBlock1.header,
+      uncleBlock2.header,
+      uncleBlock3.header,
+    ])
+
+    await blockchain.putBlock(uncleBlock1)
+    await blockchain.putBlock(uncleBlock2)
+    await blockchain.putBlock(uncleBlock3)
+    await blockchain.putBlock(block1)
+    await blockchain.putBlock(block2)
+
+    try {
+      await block2.validate(blockchain)
+      st.fail('cannot reach this')
+    } catch (e) {
+      st.pass('block throws if more than 2 uncles are included')
+    }
+    st.end()
+  })
+
+  t.test('throws if uncle is a canonical block', async function (st) {
+    const blockchain = new Mockchain()
+
+    const genesis = Block.genesis({})
+    await blockchain.putBlock(genesis)
+
+    const block1 = createBlock(genesis, 'block1')
+    const block2 = createBlock(block1, 'block2', [block1.header])
+
+    await blockchain.putBlock(block1)
+    await blockchain.putBlock(block2)
+
+    try {
+      await block2.validate(blockchain)
+      st.fail('cannot reach this')
+    } catch (e) {
+      st.pass('block throws if an uncle is a canonical block')
+    }
+    st.end()
+  })
+
+  t.test('successfully validates uncles', async function (st) {
+    const blockchain = new Mockchain()
+
+    const genesis = Block.genesis({})
+    await blockchain.putBlock(genesis)
+
+    const uncleBlock = createBlock(genesis, 'uncle')
+    await blockchain.putBlock(uncleBlock)
+
+    const block1 = createBlock(genesis, 'block1')
+    const block2 = createBlock(block1, 'block2', [uncleBlock.header])
+
+    await blockchain.putBlock(block1)
+    await blockchain.putBlock(block2)
+
+    await block1.validate(blockchain)
+    await block2.validate(blockchain)
+    st.pass('uncle blocks validated succesfully')
+
     st.end()
   })
 
