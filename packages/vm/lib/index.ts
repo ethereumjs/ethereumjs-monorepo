@@ -225,6 +225,8 @@ export default class VM extends AsyncEventEmitter {
       return
     }
 
+    await this.blockchain.initPromise
+
     if (this._opts.activatePrecompiles && !this._opts.stateManager) {
       await this.stateManager.checkpoint()
       // put 1 wei in each of the precompiles in order to make the accounts non-empty and thus not have them deduct `callNewAccount` gas.

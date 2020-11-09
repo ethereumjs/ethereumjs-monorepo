@@ -37,15 +37,15 @@ export const generateBlocks = (numberOfBlocks: number, existingBlocks?: Block[])
 }
 
 export const generateBlockchain = async (numberOfBlocks: number, genesis?: Block): Promise<any> => {
-  const blockchain = new Blockchain({
-    validateBlocks: true,
-    validatePow: false,
-  })
   const existingBlocks: Block[] = genesis ? [genesis] : []
   const blocks = generateBlocks(numberOfBlocks, existingBlocks)
 
+  const blockchain = new Blockchain({
+    validateBlocks: true,
+    validatePow: false,
+    genesisBlock: genesis || blocks[0],
+  })
   try {
-    await blockchain.putGenesis(blocks[0])
     await blockchain.putBlocks(blocks.slice(1))
   } catch (error) {
     return { error }

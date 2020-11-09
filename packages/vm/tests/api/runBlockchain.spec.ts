@@ -47,13 +47,20 @@ tape('runBlockchain', (t) => {
   t.test('should run with genesis block', async (st) => {
     try {
       const common = new Common({ chain: 'goerli', hardfork: 'chainstart' })
-      const genesis = Block.genesis(undefined, { common })
+      const genesisBlock = Block.genesis(undefined, { common })
 
-      await blockchain.putGenesis(genesis)
-      st.ok(blockchain.meta.genesis, 'genesis should be set for blockchain')
+      const newBlockchain = await Blockchain.create({
+        db: blockchainDB,
+        common,
+        validateBlocks: false,
+        validatePow: false,
+        genesisBlock,
+      })
+
+      st.ok(newBlockchain.meta.genesis, 'genesis should be set for blockchain')
 
       // @ts-ignore
-      await runBlockchain.bind(vm)(blockchain)
+      await runBlockchain.bind(vm)(newBlockchain)
       st.end()
     } catch (e) {
       st.end(e)
@@ -73,28 +80,34 @@ tape('runBlockchain', (t) => {
       })
 
     const common = new Common({ chain: 'goerli', hardfork: 'chainstart' })
-    const genesis = Block.genesis(undefined, { common })
-    await blockchain.putGenesis(genesis)
+    const genesisBlock = Block.genesis(undefined, { common })
+    const newBlockchain = new Blockchain({
+      db: blockchainDB,
+      common,
+      validateBlocks: false,
+      validatePow: false,
+      genesisBlock,
+    })
 
-    const b1 = createBlock(genesis, 1, { common })
+    const b1 = createBlock(genesisBlock, 1, { common })
     const b2 = createBlock(b1, 2, { common })
     const b3 = createBlock(b2, 3, { common })
 
-    await blockchain.putBlock(b1)
-    await blockchain.putBlock(b2)
-    await blockchain.putBlock(b3)
+    await newBlockchain.putBlock(b1)
+    await newBlockchain.putBlock(b2)
+    await newBlockchain.putBlock(b3)
 
-    let head = await blockchain.getHead()
+    let head = await newBlockchain.getHead()
     st.deepEqual(head.hash(), b3.hash(), 'block3 should be the current head')
 
     try {
       // @ts-ignore
-      await runBlockchain.bind(vm)(blockchain)
+      await runBlockchain.bind(vm)(newBlockchain)
       st.fail('should have returned error')
     } catch (e) {
       st.equal(e.message, 'test')
 
-      head = await blockchain.getHead()
+      head = await newBlockchain.getHead()
       st.deepEqual(head.hash(), b2.hash(), 'should have removed invalid block from head')
 
       st.end()

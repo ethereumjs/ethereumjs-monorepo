@@ -12,10 +12,11 @@ async function main() {
   const validatePow = true
   const validateBlocks = true
 
-  const blockchain = new Blockchain({
+  const blockchain = await Blockchain.create({
     common,
     validatePow,
     validateBlocks,
+    genesisBlock: getGenesisBlock(common)
   })
 
   // When verifying PoW, setting this cache improves the
@@ -27,8 +28,6 @@ async function main() {
   const vm = new VM({ blockchain, common })
 
   await setupPreConditions(vm, testData)
-
-  await setGenesisBlock(blockchain, common)
 
   await putBlocks(blockchain, common, testData)
 
@@ -66,10 +65,10 @@ async function setupPreConditions(vm: VM, testData: any) {
   await vm.stateManager.commit()
 }
 
-async function setGenesisBlock(blockchain: any, common: Common) {
+function getGenesisBlock(common: Common) {
   const header = testData.genesisBlockHeader
   const genesis = Block.genesis({ header }, { common })
-  await blockchain.putGenesis(genesis)
+  return genesis
 }
 
 async function putBlocks(blockchain: any, common: Common, testData: any) {

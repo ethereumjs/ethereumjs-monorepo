@@ -18,8 +18,12 @@ tape('reorg tests', (t) => {
     'should correctly reorg the chain if the total difficulty is higher on a lower block number than the current head block',
     async (st) => {
       const common = new Common({ chain: 'mainnet', hardfork: 'muirGlacier' })
-      const blockchain = new Blockchain({ validateBlocks: true, validatePow: false, common })
-      await blockchain.putBlock(genesis, true)
+      const blockchain = new Blockchain({
+        validateBlocks: true,
+        validatePow: false,
+        common,
+        genesisBlock: genesis,
+      })
 
       const blocks_lowTD: Block[] = []
       const blocks_highTD: Block[] = []
