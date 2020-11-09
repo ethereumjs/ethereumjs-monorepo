@@ -95,16 +95,15 @@ export default class Blockchain implements BlockchainInterface {
 
   private _genesis?: Buffer // the genesis hash of this blockchain
 
-  // The following three head hashes (or maps) never point to a stale hash and
-  // always point to a hash in the canonical chain However, these might point to
-  // a different hash than the hash with the highest Total Difficulty, with the
-  // exception of the _headHeaderHash The _headHeaderHash always points to the
-  // head with the highest total difficulty.
+  // The following two heads and the heads stored within the `_heads` always point
+  // to a hash in the canonical chain and never to a stale hash.
+  // With the exception of `_headHeaderHash` this does not necessarily need to be
+  // the hash with the highest total difficulty.
   private _headBlockHash?: Buffer // the hash of the current head block
   private _headHeaderHash?: Buffer // the hash of the current head header
-  // a Map which stores the head of each key (for instance the "vm" key) this is
-  // updated if you run the iterator method and can be used to (re)run
-  // non-verified blocks, for instance, in the VM.
+  // A Map which stores the head of each key (for instance the "vm" key) which is
+  // updated along an `iterator()` method run and can be used to (re)run
+  // non-verified blocks (for instance in the VM).
   private _heads: { [key: string]: Buffer }
 
   public initPromise: Promise<void>
@@ -189,7 +188,7 @@ export default class Blockchain implements BlockchainInterface {
   }
 
   /**
-   * This method is called in the constructor and either setups the DB or reads
+   * This method is called in the constructor and either sets up the DB or reads
    * values from the DB and makes these available to the consumers of
    * Blockchain.
    *
@@ -207,11 +206,15 @@ export default class Blockchain implements BlockchainInterface {
     }
 
     if (!genesisBlock) {
-      genesisBlock = this._getCanonicalGenesisBlock()
+      const common = new Common({
+        chain: this._common.chainId(),
+        hardfork: 'chainstart',
+      })
+      genesisBlock = Block.genesis({}, { common })
     }
 
-    // if the DB has a genesis block, then verify that the genesis block in the
-    // DB is indeed the Genesis block we either generated, or got assigned.
+    // If the DB has a genesis block, then verify that the genesis block in the
+    // DB is indeed the Genesis block generated or assigned.
     if (DBGenesisBlock && !genesisBlock.hash().equals(DBGenesisBlock.hash())) {
       throw new Error(
         'The genesis block in the DB has a different hash than the provided genesis block.'
@@ -221,8 +224,8 @@ export default class Blockchain implements BlockchainInterface {
     const genesisHash = genesisBlock.hash()
 
     if (!DBGenesisBlock) {
-      // there is no genesis block. we thus have to put the genesis block in the
-      // DB we have to save the TD, the BlockOrHeader, and the Lookups
+      // If there is no genesis block put the genesis block in the DB.
+      // For that TD, the BlockOrHeader, and the Lookups have to be saved.
       const dbOps: DBOp[] = []
       dbOps.push(DBSetTD(genesisBlock.header.difficulty.clone(), new BN(0), genesisHash))
       DBSetBlockOrHeader(genesisBlock).map((op) => dbOps.push(op))
@@ -230,7 +233,7 @@ export default class Blockchain implements BlockchainInterface {
       await this.dbManager.batch(dbOps)
     }
 
-    // at this point, we can safely set genesisHash as the _genesis hash in this
+    // At this point, we can safely set genesisHash as the _genesis hash in this
     // object: it is either the one we put in the DB, or it is equal to the one
     // which we read from the DB.
     this._genesis = genesisHash
@@ -299,20 +302,6 @@ export default class Blockchain implements BlockchainInterface {
   }
 
   /**
-   * Sets the default genesis block
-   *
-   * @hidden
-   */
-  private _getCanonicalGenesisBlock(): Block {
-    const common = new Common({
-      chain: this._common.chainId(),
-      hardfork: 'chainstart',
-    })
-    const genesis = Block.genesis({}, { common })
-    return genesis
-  }
-
-  /**
    * Returns the specified iterator head.
    *
    * @param name - Optional name of the state root head (default: 'vm')
@@ -359,10 +348,11 @@ export default class Blockchain implements BlockchainInterface {
   }
 
   /**
-   * Adds many blocks to the blockchain. If any of the blocks is invalid, this
-   * function will throw; the blocks before this block will be put in the DB,
-   * but the blocks after will not be put in If any of these blocks has a higher
-   * total difficulty than the current max total difficulty, then the canonical
+   * Adds blocks to the blockchain.
+   *
+   * If an invalid block is met the function will throw, blocks before will
+   * nevertheless remain in the DB. If any of the saved blocks has a higher
+   * total difficulty than the current max total difficulty the canonical
    * chain is rebuilt and any stale heads/hashes are overwritten.
    * @param blocks - The blocks to be added to the blockchain
    */
@@ -374,9 +364,11 @@ export default class Blockchain implements BlockchainInterface {
   }
 
   /**
-   * Adds a block to the blockchain. If this block is valid, and it has a higher
-   * total difficulty than the current max total difficulty, the canonical chain
-   * is rebuilt and any stale heads/hashes are overwritten.
+   * Adds a block to the blockchain.
+   *
+   * If the block is valid and has a higher total difficulty than the current
+   * max total difficulty, the canonical chain is rebuilt and any stale
+   * heads/hashes are overwritten.
    * @param block - The block to be added to the blockchain
    */
   async putBlock(block: Block) {
@@ -385,11 +377,12 @@ export default class Blockchain implements BlockchainInterface {
   }
 
   /**
-   * Adds many headers to the blockchain. If any of the headers is invalid, this
-   * function will throw; The headers before this header will be put in the DB,
-   * but the headers after will not be put in If any of these headers has a
-   * higher total difficulty than the current max total difficulty, then the
-   * canonical chain is rebuilt and any stale heads/hashes are overwritten.
+   * Adds many headers to the blockchain.
+   *
+   * If an invalid header is met the function will throw, headers before will
+   * nevertheless remain in the DB. If any of the saved headers has a higher
+   * total difficulty than the current max total difficulty the canonical
+   * chain is rebuilt and any stale heads/hashes are overwritten.
    * @param headers - The headers to be added to the blockchain
    */
   async putHeaders(headers: Array<any>) {
@@ -400,9 +393,11 @@ export default class Blockchain implements BlockchainInterface {
   }
 
   /**
-   * Adds a header to the blockchain. If this header is valid, and it has a
-   * higher total difficulty than the current max total difficulty, the
-   * canonical chain is rebuilt and any stale heads/hashes are overwritten.
+   * Adds a header to the blockchain.
+   *
+   * If this header is valid and it has a higher total difficulty than the current
+   * max total difficulty, the canonical chain is rebuilt and any stale
+   * heads/hashes are overwritten.
    * @param header - The header to be added to the blockchain
    */
   async putHeader(header: BlockHeader) {
@@ -411,7 +406,7 @@ export default class Blockchain implements BlockchainInterface {
   }
 
   /**
-   * Entry point for putting any block or block header. Verifies this block,
+   * Entrypoint for putting any block or block header. Verifies this block,
    * checks the total TD: if this TD is higher than the current highest TD, we
    * have thus found a new canonical block and have to rewrite the canonical
    * chain. This also updates the head block hashes. If any of the older known

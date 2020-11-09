@@ -4,9 +4,9 @@ import { Block, BlockHeader } from '@ethereumjs/block'
 import { bufBE8 } from './constants'
 
 /*
-    This extra helper file is an interface between blockchain / operation.ts 
-    It also handles the right encoding of the keys, so this does not have to happen in index.ts anymore.
-*/
+ * This extra helper file serves as an interface between the blockchain API functionality
+ * and the DB operations from `db/operation.ts` and also handles the right encoding of the keys
+ */
 
 function DBSetTD(TD: BN, blockNumber: BN, blockHash: Buffer): DBOp {
   return DBOp.set(DBTarget.TotalDifficulty, rlp.encode(TD), {
@@ -16,11 +16,12 @@ function DBSetTD(TD: BN, blockNumber: BN, blockHash: Buffer): DBOp {
 }
 
 /*
-    This method accepts either a BlockHeader or a Block and returns a list of DatabaseOperation
-    This always consists of a Set Header operation
-    It could also consist of a set body operation: this only happens if the body is not empty (it has transactions/uncles), or it is the genesis block
-    If the block is empty, we do not have to save it; the DB will assume that if the Header exists, but no block body, then the block was empty.
-*/
+ * This method accepts either a BlockHeader or a Block and returns a list of DatabaseOperation instances
+ *
+ * - A "Set Header Operation" is always added
+ * - A "Set Body Operation" is only added if the body is not empty (it has transactions/uncles) or if the block is the genesis block
+ * (if there is a header but no block saved the DB will implicitly assume the block to be empty)
+ */
 function DBSetBlockOrHeader(blockBody: Block | BlockHeader): DBOp[] {
   const header: BlockHeader = blockBody instanceof Block ? blockBody.header : blockBody
   const dbOps = []

@@ -6,6 +6,41 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 5.0.0-beta.2 - UNRELEASED
+
+This is the second beta release towards a final `v5.0.0` `Blockchain` library release, see [v5.0.0-beta.1 release notes](https://github.com/ethereumjs/ethereumjs-vm/releases/tag/%40ethereumjs%2Fblockchain%405.0.0-beta.1) for an overview on the full changes since the last publicly released version.
+
+This release introduces **new breaking changes**, so please carefully read the additional release note sections!
+
+**Safe Static Constructor**
+
+The library now has an additional safe static constructor `Blockchain.create()` which awaits the init method and throws if the init method throws:
+
+```typescript
+const common = new Common({ chain: 'ropsten' })
+const blockchain = await Blockchain.create({ common })
+```
+
+This is the new recommended way to instantiate a `Blockchain` object, see PR [#930](https://github.com/ethereumjs/ethereumjs-vm/pull/930).
+
+**Refactored Genesis Block Handling Mechanism**
+
+Genesis handling has been reworked to now be safer and reduce the risk of wiping a blockchain by setting a new genesis, see PR [#930](https://github.com/ethereumjs/ethereumjs-vm/pull/930).
+
+**Breaking**: The dedicated `setGenesisBlock()` methods and the optional `isGenesis` option on `Blockchain.putBlock()` have been removed. Instead the genesis block is created on initialization either from the `Common` library instance passed or a custom genesis block passed along with the `genesisBlock` option. If a custom genesis block is used, this custom block now always has to be passed along on `Blockchain` initialization, also when operating on an already existing DB. 
+
+**Changes and Refactoring**
+
+- Refactored `DBManager` with the introduction of an abstract DB operation handling mechanism, if you have modified `DBManager` in your code this will be a **potentially breaking** change for you, PR [#927](https://github.com/ethereumjs/ethereumjs-vm/pull/927)
+- Renaming of internal variables like `Blockchain._headBlock`, if you are using these variables in your code this will be a **potentially breaking** change for you, PR [#930](https://github.com/ethereumjs/ethereumjs-vm/pull/930)
+- Made internal `_` methods like `_saveHeads()` private, if you are using these functions in your code this will be a **potentially breaking** change for you, PR [#930](https://github.com/ethereumjs/ethereumjs-vm/pull/930)
+- Improved code documentation, PR [#930](https://github.com/ethereumjs/ethereumjs-vm/pull/930)
+- Fixed potential blockchain DB concurrency issues along PR [#930](https://github.com/ethereumjs/ethereumjs-vm/pull/930)
+
+**Testing and CI**
+
+- Dedicated `blockchain` reorg test setup and executable test, PR [#926](https://github.com/ethereumjs/ethereumjs-vm/pull/926)
+
 ## 5.0.0-beta.1 - 2020-10-22
 
 ### New Package Name
