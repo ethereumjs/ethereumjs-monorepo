@@ -3,7 +3,8 @@
   "private": true,
   "devDependencies": {
     "husky": "^4.2.5",
-    "lerna": "^3.20.2"
+    "lerna": "^3.20.2",
+    "node-fetch": "^2.6.1"
   },
   "husky": {
     "hooks": {
