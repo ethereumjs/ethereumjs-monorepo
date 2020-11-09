@@ -17,9 +17,8 @@ export interface BlockchainInterface {
    * Adds a block to the blockchain.
    *
    * @param block - The block to be added to the blockchain.
-   * @param isGenesis - True if block is the genesis block.
    */
-  putBlock(block: Block, isGenesis?: boolean): Promise<void>
+  putBlock(block: Block): Promise<void>
 
   /**
    * Deletes a block from the blockchain. All child blocks in the chain are
