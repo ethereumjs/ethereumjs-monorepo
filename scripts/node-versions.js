@@ -31,9 +31,7 @@ const TODAY_WITH_SOME_TOLERANCE = (new Date(Date.now() - MONTHS * 30 * 24 * 60 *
       }
     })
 
-    process.stdout.write(JSON.stringify({
-      node: activeVersions.filter(e => availableVersions.includes(e))
-    }))
+    process.stdout.write(JSON.stringify(activeVersions.filter(e => availableVersions.includes(e))))
 
   } catch (error) {
     console.log(error)

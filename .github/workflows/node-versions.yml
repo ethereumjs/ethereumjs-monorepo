@@ -27,7 +27,8 @@ jobs:
     needs: get-node-versions
     runs-on: ubuntu-latest
     strategy:
-      matrix: ${{ fromJson(needs.get-node-versions.outputs.matrix) }}
+      matrix: 
+        node: ${{ fromJson(needs.get-node-versions.outputs.matrix) }}
     steps:
       - uses: actions/setup-node@v1
         with:
