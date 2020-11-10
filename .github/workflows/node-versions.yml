@@ -23,11 +23,8 @@ jobs:
 
       - uses: actions/checkout@v2
 
-      - run: npm i --ignore-scripts
-      - run: node ${{github.workspace}}/scripts/node-versions.js
-
       - id: set-matrix
-        run: echo "::set-output name=matrix::$(node ${{github.workspace}}/scripts/node-versions.js)"
+        run: echo "::set-output name=matrix::$(npx testable-node-versions)"
 
   tests:
     needs: get-node-versions
