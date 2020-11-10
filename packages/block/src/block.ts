@@ -186,11 +186,22 @@ export class Block {
   /**
    * Validates the block, throwing if invalid.
    *
-   * @param blockchain - additionally validate against a @ethereumjs/blockchain
+   * @param blockchain - validate against a @ethereumjs/blockchain
    */
-  async validate(blockchain?: Blockchain): Promise<void> {
+  async validate(blockchain: Blockchain): Promise<void> {
     await this.header.validate(blockchain)
-
+    await this.validateUncles(blockchain)
+    await this.validateData()
+  }
+  /**
+   * Validates the block data, throwing if invalid.
+   * This can be checked on the Block itself without needing access to any parent block
+   * It checks:
+   * - All transactions are valid
+   * - The transactions trie is valid
+   * - The uncle hash is valid
+   */
+  async validateData(): Promise<void> {
     const txErrors = this.validateTransactions(true)
     if (txErrors.length > 0) {
       throw new Error(`invalid transactions: ${txErrors.join(' ')}`)
@@ -200,8 +211,6 @@ export class Block {
     if (!validateTxTrie) {
       throw new Error('invalid transaction trie')
     }
-
-    await this.validateUncles(blockchain)
 
     if (!this.validateUnclesHash()) {
       throw new Error('invalid uncle hash')
@@ -221,7 +230,7 @@ export class Block {
    *
    * @param blockchain - additionally validate against a @ethereumjs/blockchain
    */
-  async validateUncles(blockchain?: Blockchain): Promise<void> {
+  async validateUncles(blockchain: Blockchain): Promise<void> {
     if (this.isGenesis()) {
       return
     }
@@ -278,7 +287,7 @@ export class Block {
     }
   }
 
-  private _validateUncleHeader(uncleHeader: BlockHeader, blockchain?: Blockchain) {
+  private _validateUncleHeader(uncleHeader: BlockHeader, blockchain: Blockchain) {
     // TODO: Validate that the uncle header hasn't been included in the blockchain yet.
     // This is not possible in ethereumjs-blockchain since this PR was merged:
     // https://github.com/ethereumjs/ethereumjs-blockchain/pull/47
