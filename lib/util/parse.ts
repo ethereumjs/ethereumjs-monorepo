@@ -139,7 +139,7 @@ async function parseGethParams(json: any) {
   }
   params.hardforks = hardforks.map((name) => ({
     name: name,
-    block: name === 'chainstart' ? 0 : config[forkMap[name]] || null,
+    block: name === 'chainstart' ? 0 : config[forkMap[name]] ?? null,
   }))
   return params
 }

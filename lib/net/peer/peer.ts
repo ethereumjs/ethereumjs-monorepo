@@ -120,7 +120,7 @@ export class Peer extends events.EventEmitter {
       address: this.address,
       transport: this.transport,
       protocols: Array.from(this.bound.keys()),
-      inbound: this.inbound || null,
+      inbound: this.inbound,
     }
     return Object.entries(properties)
       .filter(([, value]) => value !== undefined && value !== null && value.toString() !== '')

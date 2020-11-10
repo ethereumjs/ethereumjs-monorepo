@@ -168,6 +168,7 @@ export class Fetcher extends Readable {
       return false
     }
     const peer = this.peer()
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (peer) {
       peer.idle = false
       this.in.remove()

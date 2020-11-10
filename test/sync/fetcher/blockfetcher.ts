@@ -7,7 +7,7 @@ import { Config } from '../../../lib/config'
 defaultLogger.silent = true
 
 async function wait(delay?: number) {
-  await new Promise((resolve) => setTimeout(resolve, delay || 10))
+  await new Promise((resolve) => setTimeout(resolve, delay ?? 10))
 }
 
 tape('[BlockFetcher]', (t) => {

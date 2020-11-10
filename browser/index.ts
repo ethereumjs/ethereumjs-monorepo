@@ -45,10 +45,10 @@ import { getLogger } from './logging'
 export function createNode(args: any) {
   const logger = getLogger({ loglevel: args.loglevel })
   const options = {
-    common: new Common({ chain: args.network || 'mainnet' }),
+    common: new Common({ chain: args.network ?? 'mainnet' }),
     servers: [new exports.Libp2pServer({ multiaddrs: [], ...args })],
-    syncmode: args.syncmode || 'fast',
-    db: level(args.db || 'ethereumjs'),
+    syncmode: args.syncmode ?? 'fast',
+    db: level(args.db ?? 'ethereumjs'),
     logger: logger,
   }
   return new exports.Node(options)

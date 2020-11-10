@@ -21,16 +21,6 @@ export class EthereumService extends Service {
   public synchronizer: any
 
   /**
-<<<<<<< HEAD
- * Create new ETH service
- * @param {Object}   options constructor parameters
- * @param {Config}   [options.config] Client configuration
- * @param {Chain}    [options.chain] blockchain
- * @param {LevelDB}  [options.db=null] blockchain database
- * @param {number}   [options.timeout] protocol timeout
- * @param {number}   [options.interval] sync retry interval
- */
-=======
    * Create new ETH service
    * @param {Object}   options constructor parameters
    * @param {Config}   [options.config] Client configuration
@@ -39,22 +29,16 @@ export class EthereumService extends Service {
    * @param {number}   [options.timeout] protocol timeout
    * @param {number}   [options.interval] sync retry interval
    */
->>>>>>> Config -> syncmode, minPeers, maxPeers: horizontal integration
   constructor(options?: any) {
     options = { ...defaultOptions, ...options }
     super(options)
 
     this.flow = new FlowControl(options)
-<<<<<<< HEAD
     this.chain = options.chain ?? new Chain(options)
-=======
-    this.chain = options.chain || new Chain(options)
->>>>>>> Config -> syncmode, minPeers, maxPeers: horizontal integration
     this.interval = options.interval
     this.timeout = options.timeout
     this.synchronizer = null
   }
-
 
   /**
    * Service name

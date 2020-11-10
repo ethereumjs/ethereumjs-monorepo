@@ -18,7 +18,7 @@ tape('[Integration:FastSync]', async (t) => {
     const config = new Config({ servers: [server], minPeers: 1 })
     const service = new FastEthereumService({
       config,
-      interval: options.interval || 10,
+      interval: options.interval ?? 10,
       timeout: 500,
       chain,
     })

@@ -12,23 +12,17 @@ import { Buffer } from 'buffer' //eslint-disable-line @typescript-eslint/no-unus
 import { Config } from '../../lib/config'
 
 tape('[Chain]', (t) => {
-  t.test('should test blockchain DB is initialized', (t) => {
+  t.test('should test blockchain DB is initialized', async (t) => {
     const chain = new Chain({ config: new Config() }) // eslint-disable-line no-new
 
     const db = chain.db
     const testKey = 'name'
     const testValue = 'test'
 
-    db.put(testKey, testValue, function (err: Error) {
-      if (err) t.fail('could not write key to db')
-
-      db.get(testKey, function (err: Error, value: any) {
-        if (err) t.fail('could not read key to db')
-
-        t.equal(testValue, value, 'read value matches written value')
-        t.end()
-      })
-    })
+    await db.put(testKey, testValue)
+    const value = await db.get(testKey)
+    t.equal(testValue, value, 'read value matches written value')
+    t.end()
   })
 
   t.test('should retrieve chain properties', async (t) => {

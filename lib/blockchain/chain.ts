@@ -105,7 +105,7 @@ export class Chain extends EventEmitter {
     this.config = options.config
 
     this.blockchain =
-      options.blockchain ||
+      options.blockchain ??
       new Blockchain({
         db: options.db,
         validateBlocks: false,
@@ -253,7 +253,7 @@ export class Chain extends EventEmitter {
    * @return {Promise<void>}
    */
   async putBlocks(blocks: Block[]): Promise<void> {
-    if (!blocks) {
+    if (blocks.length === 0) {
       return
     }
     await this.open()
@@ -288,7 +288,7 @@ export class Chain extends EventEmitter {
    * @return {Promise<void>}
    */
   async putHeaders(headers: BlockHeader[]): Promise<void> {
-    if (!headers) {
+    if (headers.length === 0) {
       return
     }
     await this.open()

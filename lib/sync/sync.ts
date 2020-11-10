@@ -90,7 +90,7 @@ export class Synchronizer extends EventEmitter {
         // @ts-ignore: Property 'sync' does not exist on type 'Synchronizer'
         if (await this.sync()) this.emit('synchronized')
       } catch (error) {
-        if (this.running) this.emit('error', error)
+        this.emit('error', error)
       }
       await new Promise((resolve) => setTimeout(resolve, this.interval))
     }

@@ -35,7 +35,7 @@ export class Admin {
    * @param {*} [cb] A function with an error object as the first argument and the result as the second
    */
   async nodeInfo(params: any, cb: Function) {
-    const rlpxInfo = this._node.server('rlpx').getRlpxInfo()
+    const rlpxInfo = (this._node.server('rlpx') as any).getRlpxInfo()
     const { enode, id, ip, listenAddr, ports } = rlpxInfo
     const { discovery, listener } = ports
     const clientName = getClientVersion()
@@ -43,9 +43,9 @@ export class Admin {
     // TODO version not present in reference..
     // const ethVersion = Math.max.apply(Math, this._ethProtocol.versions)
     const latestHeader = (this._chain as any)._headers.latest
-    const difficulty = latestHeader?.difficulty || 0 // should be number
+    const difficulty = latestHeader?.difficulty ?? 0 // should be number
     const genesis = bufferToHex(this._chain.genesis.hash)
-    const head = bufferToHex(latestHeader?.mixHash || null)
+    const head = bufferToHex(latestHeader?.mixHash ?? null)
     const network = this._chain.networkId
 
     const nodeInfo = {
