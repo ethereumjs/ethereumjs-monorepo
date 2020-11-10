@@ -3,16 +3,16 @@ import { LightEthereumService } from '../../lib/service'
 import MockServer from './mocks/mockserver'
 import MockChain from './mocks/mockchain'
 import { defaultLogger } from '../../lib/logging'
+import { Config } from '../../lib/config'
 defaultLogger.silent = true
 
 tape('[Integration:LightEthereumService]', async (t) => {
   async function setup() {
     const server = new MockServer()
     const chain = new MockChain()
-    const service = new LightEthereumService({
-      servers: [server],
-      chain,
-    })
+    //@ts-ignore allow Config instantiation with MockServer
+    const config = new Config({ servers: [server] })
+    const service = new LightEthereumService({ config, chain })
     await service.open()
     await server.start()
     await service.start()

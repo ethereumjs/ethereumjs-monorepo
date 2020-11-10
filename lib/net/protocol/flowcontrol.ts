@@ -36,7 +36,7 @@ export class FlowControl {
    * @param  {number} bv latest buffer value
    */
   handleReply(peer: Peer, bv: number) {
-    const params = this.in.get(peer.id) || {}
+    const params = this.in.get(peer.id) ?? {}
     params.ble = bv
     params.last = Date.now()
     this.in.set(peer.id, params)
@@ -54,7 +54,7 @@ export class FlowControl {
     const mrcReq = (peer.les as BoundProtocol).status.mrc[messageName].req
     const mrr = (peer.les as BoundProtocol).status.mrr
     const bl = (peer.les as BoundProtocol).status.bl
-    const params = this.in.get(peer.id) || { ble: bl }
+    const params = this.in.get(peer.id) ?? { ble: bl }
     if (params.last) {
       // recharge BLE at rate of MRR when less than BL
       // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
@@ -77,7 +77,7 @@ export class FlowControl {
    */
   handleRequest(peer: Peer, messageName: string, count: number): number {
     const now = Date.now()
-    const params = this.out.get(peer.id) || {}
+    const params = this.out.get(peer.id) ?? {}
     if (params.bv && params.last) {
       // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
       params.bv = Math.min(params.bv + this.mrr * (now - params.last), this.bl)

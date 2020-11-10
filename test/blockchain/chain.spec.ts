@@ -1,8 +1,9 @@
 import tape from 'tape'
-import { Block, BlockHeader, BlockData, HeaderData } from '@ethereumjs/block'
+import { Block, BlockData, HeaderData } from '@ethereumjs/block'
 import { BN } from 'ethereumjs-util'
 import { Chain } from '../../lib/blockchain'
 import { defaultLogger } from '../../lib/logging'
+import { Config } from '../../lib/config'
 defaultLogger.silent = true
 
 // explicitly import util and buffer,
@@ -11,33 +12,21 @@ import * as util from 'util' //eslint-disable-line @typescript-eslint/no-unused-
 import { Buffer } from 'buffer' //eslint-disable-line @typescript-eslint/no-unused-vars
 
 tape('[Chain]', (t) => {
-  t.test('should test object creation without logger', (t) => {
-    t.equal(new Chain().logger, defaultLogger)
-
-    t.end()
-  })
-
-  t.test('should test blockchain DB is initialized', (t) => {
-    const chain = new Chain() // eslint-disable-line no-new
+  t.test('should test blockchain DB is initialized', async (t) => {
+    const chain = new Chain({ config: new Config() }) // eslint-disable-line no-new
 
     const db = chain.db
     const testKey = 'name'
     const testValue = 'test'
 
-    db.put(testKey, testValue, function (err: Error) {
-      if (err) t.fail('could not write key to db')
-
-      db.get(testKey, function (err: Error, value: any) {
-        if (err) t.fail('could not read key to db')
-
-        t.equal(testValue, value, 'read value matches written value')
-        t.end()
-      })
-    })
+    await db.put(testKey, testValue)
+    const value = await db.get(testKey)
+    t.equal(testValue, value, 'read value matches written value')
+    t.end()
   })
 
   t.test('should retrieve chain properties', async (t) => {
-    const chain = new Chain() // eslint-disable-line no-new
+    const chain = new Chain({ config: new Config() }) // eslint-disable-line no-new
     await chain.open()
     t.equal(chain.networkId, 1, 'get chain.networkId')
     t.equal(chain.blocks.td.toString(10), '17179869184', 'get chain.blocks.td')
@@ -53,7 +42,7 @@ tape('[Chain]', (t) => {
   })
 
   t.test('should detect unopened chain', async (t) => {
-    const chain = new Chain() // eslint-disable-line no-new
+    const chain = new Chain({ config: new Config() }) // eslint-disable-line no-new
     const headerData: HeaderData = {
       number: new BN(1),
       difficulty: new BN('abcdffff', 16),
@@ -91,28 +80,8 @@ tape('[Chain]', (t) => {
     t.end()
   })
 
-  t.test('should handle bad arguments to putBlocks()', async (t) => {
-    const chain = new Chain() // eslint-disable-line no-new
-    await chain.open()
-    t.notOk(await chain.putBlocks((<unknown>undefined) as Block[]), 'add undefined block')
-    t.notOk(await chain.putBlocks((<unknown>null) as Block[]), 'add null block')
-    t.notOk(await chain.putBlocks([]), 'add empty block list')
-    await chain.close()
-    t.end()
-  })
-
-  t.test('should handle bad arguments to putHeaders()', async (t) => {
-    const chain = new Chain() // eslint-disable-line no-new
-    await chain.open()
-    t.notOk(await chain.putHeaders((<unknown>undefined) as BlockHeader[]), 'add undefined header')
-    t.notOk(await chain.putHeaders((<unknown>null) as BlockHeader[]), 'add null header')
-    t.notOk(await chain.putHeaders([]), 'add empty header list')
-    await chain.close()
-    t.end()
-  })
-
   t.test('should add block to chain', async (t) => {
-    const chain = new Chain() // eslint-disable-line no-new
+    const chain = new Chain({ config: new Config() }) // eslint-disable-line no-new
     await chain.open()
     const headerData: HeaderData = {
       number: new BN(1),

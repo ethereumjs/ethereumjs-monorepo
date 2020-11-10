@@ -41,7 +41,6 @@ export class Libp2pPeer extends Peer {
    * @param {multiaddr[]} options.multiaddrs multiaddrs to listen on (can be
    * a comma separated string or list)
    * @param {Protocols[]} [options.protocols=[]] supported protocols
-   * @param {Logger}      [options.logger] Logger instance
    */
   constructor(options: any) {
     super({ ...options, transport: 'libp2p' })
@@ -106,7 +105,9 @@ export class Libp2pPeer extends Peer {
           await this.bindProtocol(p, new Libp2pSender(conn))
         } catch (err) {
           const id = peerInfo.id.toB58String()
-          this.logger.debug(`Peer doesn't support protocol=${protocol} id=${id} ${err.stack}`)
+          this.config.logger.debug(
+            `Peer doesn't support protocol=${protocol} id=${id} ${err.stack}`
+          )
         }
       })
     )

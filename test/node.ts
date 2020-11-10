@@ -1,4 +1,6 @@
 import tape from 'tape-catch'
+import { Config } from '../lib/config'
+import { RlpxServer } from '../lib/net/server'
 const td = require('testdouble')
 const EventEmitter = require('events')
 const { defaultLogger } = require('../lib/logging')
@@ -23,15 +25,15 @@ tape('[Node]', (t) => {
   const Node = require('../lib/node')
 
   t.test('should initialize correctly', (t) => {
-    const node = new Node()
+    const node = new Node({ config: new Config({ transports: [] }) })
     t.ok(node.services[0] instanceof EthereumService, 'added service')
     t.end()
   })
 
   t.test('should open', async (t) => {
     t.plan(6)
-    const servers = [new Server()]
-    const node = new Node({ servers })
+    const servers = [new Server() as RlpxServer]
+    const node = new Node({ config: new Config({ servers }) })
     node.on('error', (err: string) => {
       if (err === 'err0') t.pass('got err0')
       if (err === 'err1') t.pass('got err1')
@@ -48,8 +50,8 @@ tape('[Node]', (t) => {
   })
 
   t.test('should start/stop', async (t) => {
-    const servers = [new Server()]
-    const node = new Node({ servers })
+    const servers = [new Server() as RlpxServer]
+    const node = new Node({ config: new Config({ servers }) })
     await node.start()
     t.ok(node.started, 'started')
     t.equals(await node.start(), false, 'already started')

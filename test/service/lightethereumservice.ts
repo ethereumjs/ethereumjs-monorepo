@@ -1,4 +1,5 @@
 import tape from 'tape-catch'
+import { Config } from '../../lib/config'
 const td = require('testdouble')
 const EventEmitter = require('events')
 import { defaultLogger } from '../../lib/logging'
@@ -25,14 +26,14 @@ tape.skip('[LightEthereumService]', (t) => {
   const { LightEthereumService } = require('../../lib/service')
 
   t.test('should initialize correctly', async (t) => {
-    const service = new LightEthereumService()
+    const service = new LightEthereumService({ config: new Config({ transports: [] }) })
     t.ok(service.synchronizer instanceof LightSynchronizer, 'light sync')
     t.equals(service.name, 'eth', 'got name')
     t.end()
   })
 
   t.test('should get protocols', async (t) => {
-    const service = new LightEthereumService()
+    const service = new LightEthereumService({ config: new Config({ transports: [] }) })
     t.ok(service.protocols[0] instanceof LesProtocol, 'light protocols')
     t.end()
   })
@@ -40,7 +41,10 @@ tape.skip('[LightEthereumService]', (t) => {
   t.test('should open', async (t) => {
     t.plan(3)
     const server = td.object()
-    const service = new LightEthereumService({ servers: [server] })
+    //@ts-ignore allow Config instantiation with object server
+    const service = new LightEthereumService({
+      config: new Config({ servers: [server] }),
+    })
     await service.open()
     td.verify(service.chain.open())
     td.verify(service.synchronizer.open())
@@ -58,7 +62,10 @@ tape.skip('[LightEthereumService]', (t) => {
 
   t.test('should start/stop', async (t) => {
     const server = td.object()
-    const service = new LightEthereumService({ servers: [server] })
+    //@ts-ignore allow Config instantiation with object server
+    const service = new LightEthereumService({
+      config: new Config({ servers: [server] }),
+    })
     await service.start()
     td.verify(service.synchronizer.start())
     t.notOk(await service.start(), 'already started')

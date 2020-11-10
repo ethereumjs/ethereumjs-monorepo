@@ -1,16 +1,12 @@
 import { Peer } from '../net/peer/peer'
 import { EventEmitter } from 'events'
-import Common from '@ethereumjs/common'
-import { defaultLogger } from '../logging'
 import { PeerPool } from '../net/peerpool'
 import { Chain } from '../blockchain'
 import { FlowControl } from '../net/protocol'
+import { Config } from '../config'
 
 const defaultOptions = {
-  common: new Common({ chain: 'mainnet', hardfork: 'chainstart' }),
-  logger: defaultLogger,
   interval: 1000,
-  minPeers: 3,
 }
 
 /**
@@ -18,12 +14,11 @@ const defaultOptions = {
  * @memberof module:sync
  */
 export class Synchronizer extends EventEmitter {
-  protected logger: any
+  public config: Config
+
   protected pool: PeerPool
   protected chain: Chain
-  protected common: Common
   protected flow: FlowControl
-  protected minPeers: number
   protected interval: number
   protected running: boolean
   protected forceSync: boolean
@@ -31,30 +26,27 @@ export class Synchronizer extends EventEmitter {
   /**
    * Create new node
    * @param {Object}      options constructor parameters
+   * @param {Config}      [options.config] Client configuration
    * @param {PeerPool}    options.pool peer pool
    * @param {Chain}       options.chain blockchain
-   * @param {Common}      options.common common chain config
    * @param {FlowControl} options.flow flow control manager
-   * @param {number}      [options.minPeers=3] number of peers needed before syncing
    * @param {number}      [options.interval] refresh interval
-   * @param {Logger}      [options.logger] Logger instance
    */
   constructor(options?: any) {
     super()
-    options = { ...defaultOptions, ...options }
 
-    this.logger = options.logger
+    options = { ...defaultOptions, ...options }
+    this.config = options.config
+
     this.pool = options.pool
     this.chain = options.chain
-    this.common = options.common
     this.flow = options.flow
-    this.minPeers = options.minPeers
     this.interval = options.interval
     this.running = false
     this.forceSync = false
     this.pool.on('added', (peer: Peer) => {
       if (this.syncable(peer)) {
-        this.logger.debug(`Found ${this.type} peer: ${peer}`)
+        this.config.logger.debug(`Found ${this.type} peer: ${peer}`)
       }
     })
   }
@@ -98,7 +90,7 @@ export class Synchronizer extends EventEmitter {
         // @ts-ignore: Property 'sync' does not exist on type 'Synchronizer'
         if (await this.sync()) this.emit('synchronized')
       } catch (error) {
-        if (this.running) this.emit('error', error)
+        this.emit('error', error)
       }
       await new Promise((resolve) => setTimeout(resolve, this.interval))
     }

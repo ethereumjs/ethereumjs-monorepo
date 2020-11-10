@@ -47,14 +47,13 @@ export class RlpxServer extends Server {
   /**
    * Create new DevP2P/RLPx server
    * @param {Object}   options constructor parameters
+   * @param {Config}   [options.config] Client configuration
    * @param {Object[]} [options.bootnodes] list of bootnodes to use for discovery (can be
    * a comma separated string or list)
-   * @param {number}   [options.maxPeers=25] maximum peers allowed
    * @param {number}   [options.port=null] local port to listen on
    * @param {Buffer}   [options.key] private key to use for server
    * @param {string[]} [options.clientFilter] list of supported clients
    * @param {number}   [options.refreshInterval=30000] how often (in ms) to discover new peers
-   * @param {Logger}   [options.logger] Logger instance
    */
   constructor(options?: any) {
     super(options)
@@ -215,7 +214,7 @@ export class RlpxServer extends Server {
   initRlpx() {
     this.rlpx = new Devp2pRLPx(this.key as Buffer, {
       dpt: this.dpt as Devp2pDPT,
-      maxPeers: this.maxPeers,
+      maxPeers: this.config.maxPeers,
       capabilities: RlpxPeer.capabilities(Array.from(this.protocols)),
       remoteClientIdFilter: this.clientFilter,
       listenPort: this.port,
@@ -223,6 +222,7 @@ export class RlpxServer extends Server {
 
     this.rlpx.on('peer:added', async (rlpxPeer: Devp2pRLPxPeer) => {
       const peer = new RlpxPeer({
+        config: this.config,
         id: (rlpxPeer.getId() as Buffer).toString('hex'),
         host: rlpxPeer._socket.remoteAddress,
         port: rlpxPeer._socket.remotePort,
@@ -234,7 +234,7 @@ export class RlpxServer extends Server {
       try {
         await peer.accept(rlpxPeer, this)
         this.peers.set(peer.id, peer)
-        this.logger.debug(`Peer connected: ${peer}`)
+        this.config.logger.debug(`Peer connected: ${peer}`)
         this.emit('connected', peer)
       } catch (error) {
         this.error(error)
@@ -246,7 +246,9 @@ export class RlpxServer extends Server {
       const peer = this.peers.get(id)
       if (peer) {
         this.peers.delete(peer.id)
-        this.logger.debug(`Peer disconnected (${rlpxPeer.getDisconnectPrefix(reason)}): ${peer}`)
+        this.config.logger.debug(
+          `Peer disconnected (${rlpxPeer.getDisconnectPrefix(reason)}): ${peer}`
+        )
         this.emit('disconnected', peer)
       }
     })

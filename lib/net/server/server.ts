@@ -1,10 +1,8 @@
 import { EventEmitter } from 'events'
 import { Protocol } from '../protocol/protocol'
-import { defaultLogger } from '../../logging'
+import { Config } from '../../config'
 
 const defaultOptions = {
-  logger: defaultLogger,
-  maxPeers: 25,
   refreshInterval: 30000,
 }
 
@@ -13,22 +11,22 @@ const defaultOptions = {
  * @memberof module:net/server
  */
 export class Server extends EventEmitter {
+  public config: Config
+
   public key: Buffer | string = ''
   public bootnodes: any | string = ''
 
-  protected maxPeers: number
   protected refreshInterval: number
   protected protocols: Set<Protocol>
-  protected logger: any
 
   public started: boolean
 
   constructor(options: any) {
     super()
-    options = { ...defaultOptions, ...options }
 
-    this.logger = options.logger
-    this.maxPeers = options.maxPeers
+    options = { ...defaultOptions, ...options }
+    this.config = options.config
+
     this.refreshInterval = options.refreshInterval
     this.protocols = new Set()
     this.started = false
@@ -56,7 +54,7 @@ export class Server extends EventEmitter {
     const protocols: Protocol[] = Array.from(this.protocols)
     await Promise.all(protocols.map((p) => p.open()))
     this.started = true
-    this.logger.info(`Started ${this.name} server.`)
+    this.config.logger.info(`Started ${this.name} server.`)
 
     return true
   }
@@ -66,7 +64,7 @@ export class Server extends EventEmitter {
    */
   async stop(): Promise<boolean> {
     this.started = false
-    this.logger.info(`Stopped ${this.name} server.`)
+    this.config.logger.info(`Stopped ${this.name} server.`)
     return this.started
   }
 
@@ -77,7 +75,7 @@ export class Server extends EventEmitter {
    */
   addProtocols(protocols: Protocol[]): boolean {
     if (this.started) {
-      this.logger.error('Cannot require protocols after server has been started')
+      this.config.logger.error('Cannot require protocols after server has been started')
       return false
     }
     protocols.forEach((p) => this.protocols.add(p))

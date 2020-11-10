@@ -1,10 +1,9 @@
 import * as events from 'events'
 import { Protocol } from '../protocol/protocol'
 import { BoundProtocol, Sender } from '../protocol'
-import { defaultLogger } from '../../logging'
+import { Config } from '../../config'
 
 const defaultOptions = {
-  logger: defaultLogger,
   inbound: false,
   server: null,
   protocols: [],
@@ -15,10 +14,11 @@ const defaultOptions = {
  * @memberof module:net/peer
  */
 export class Peer extends events.EventEmitter {
+  public config: Config
+
   public id: string
   protected transport: string
   protected protocols: any[]
-  protected logger: any
   private _idle: boolean
   public address: string
   public inbound: boolean
@@ -37,17 +37,17 @@ export class Peer extends events.EventEmitter {
    * @param {boolean}     [options.inbound] true if peer initiated connection
    * @param {string}      [options.transport] transport name
    * @param {Protocols[]} [options.protocols=[]] supported protocols
-   * @param {Logger}      [options.logger] logger instance
    */
   constructor(options: any) {
     super()
+
     options = { ...defaultOptions, ...options }
+    this.config = options.config
 
     this.id = options.id
     this.address = options.address
     this.inbound = options.inbound
     this.transport = options.transport
-    this.logger = options.logger
     this.protocols = options.protocols
     this.bound = new Map()
     this.server = options.server
@@ -120,7 +120,7 @@ export class Peer extends events.EventEmitter {
       address: this.address,
       transport: this.transport,
       protocols: Array.from(this.bound.keys()),
-      inbound: this.inbound || null,
+      inbound: this.inbound,
     }
     return Object.entries(properties)
       .filter(([, value]) => value !== undefined && value !== null && value.toString() !== '')

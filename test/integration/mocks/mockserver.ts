@@ -1,3 +1,4 @@
+import { Config } from '../../../lib/config'
 import { Server } from '../../../lib/net/server'
 import MockPeer from './mockpeer'
 import * as network from './network'
@@ -8,8 +9,8 @@ export default class MockServer extends Server {
   public peers: any
 
   constructor(options: any = {}) {
-    super(options)
-    this.location = options.location || '127.0.0.1'
+    super({ config: new Config({ transports: [] }), ...options })
+    this.location = options.location ?? '127.0.0.1'
     this.server = null
     this.peers = {}
   }
@@ -83,6 +84,6 @@ export default class MockServer extends Server {
   }
 
   async wait(delay: any) {
-    await new Promise((resolve) => setTimeout(resolve, delay || 100))
+    await new Promise((resolve) => setTimeout(resolve, delay ?? 100))
   }
 }

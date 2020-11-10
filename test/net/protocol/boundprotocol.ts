@@ -3,6 +3,7 @@ const td = require('testdouble')
 import { EventEmitter } from 'events'
 import { Sender } from '../../../lib/net/protocol/sender'
 import { BoundProtocol } from '../../../lib/net/protocol'
+import { Config } from '../../../lib/config'
 
 tape('[BoundProtocol]', (t) => {
   const peer = td.object('Peer')
@@ -25,7 +26,12 @@ tape('[BoundProtocol]', (t) => {
 
   t.test('should add methods for messages with a response', (t) => {
     const sender = new EventEmitter()
-    const bound = new BoundProtocol({ protocol, peer, sender })
+    const bound = new BoundProtocol({
+      config: new Config({ transports: [] }),
+      protocol,
+      peer,
+      sender,
+    })
     t.ok(/this.request/.test((bound as any).testMessage.toString()), 'added testMessage')
     t.ok(/this.request/.test((bound as any).TestMessage.toString()), 'added TestMessage')
     t.end()
@@ -33,7 +39,12 @@ tape('[BoundProtocol]', (t) => {
 
   t.test('should get/set status', (t) => {
     const sender = new EventEmitter()
-    const bound = new BoundProtocol({ protocol, peer, sender })
+    const bound = new BoundProtocol({
+      config: new Config({ transports: [] }),
+      protocol,
+      peer,
+      sender,
+    })
     t.deepEquals(bound.status, {}, 'empty status')
     bound.status = { id: 1 }
     t.deepEquals(bound.status, { id: 1 }, 'status set')
@@ -42,7 +53,12 @@ tape('[BoundProtocol]', (t) => {
 
   t.test('should do handshake', async (t) => {
     const sender = new EventEmitter() as Sender
-    const bound = new BoundProtocol({ protocol, peer, sender })
+    const bound = new BoundProtocol({
+      config: new Config({ transports: [] }),
+      protocol,
+      peer,
+      sender,
+    })
     td.when(protocol.handshake(td.matchers.isA(EventEmitter))).thenResolve({ id: 1 })
     await bound.handshake(sender)
     t.deepEquals(bound.status, { id: 1 }, 'handshake success')
@@ -51,7 +67,12 @@ tape('[BoundProtocol]', (t) => {
 
   t.test('should handle incoming without resolver', async (t) => {
     const sender = new EventEmitter()
-    const bound = new BoundProtocol({ protocol, peer, sender })
+    const bound = new BoundProtocol({
+      config: new Config({ transports: [] }),
+      protocol,
+      peer,
+      sender,
+    })
     t.notOk(bound.handle({}), 'missing message.code')
     bound.once('error', (err: any) => {
       t.ok(/error0/.test(err.message), 'decode error')
@@ -69,7 +90,12 @@ tape('[BoundProtocol]', (t) => {
   t.test('should perform send', (t) => {
     const sender = new EventEmitter() // semi-colon required to separate statements
     ;((<unknown>sender) as any).sendMessage = td.func()
-    const bound = new BoundProtocol({ protocol, peer, sender })
+    const bound = new BoundProtocol({
+      config: new Config({ transports: [] }),
+      protocol,
+      peer,
+      sender,
+    })
     td.when(protocol.encode(testMessage, 3)).thenReturn('3')
     t.deepEquals(bound.send('TestMessage', 3), testMessage, 'message returned')
     td.verify(((<unknown>sender) as any).sendMessage(0x01, '3'))
@@ -79,7 +105,12 @@ tape('[BoundProtocol]', (t) => {
 
   t.test('should perform request', async (t) => {
     const sender = new EventEmitter()
-    const bound = new BoundProtocol({ protocol, peer, sender })
+    const bound = new BoundProtocol({
+      config: new Config({ transports: [] }),
+      protocol,
+      peer,
+      sender,
+    })
     ;((<unknown>sender) as any).sendMessage = td.func()
     td.when(protocol.encode(testMessage, 1)).thenReturn('1')
     td.when(protocol.decode(testResponse, '2')).thenReturn(2)
@@ -101,7 +132,12 @@ tape('[BoundProtocol]', (t) => {
 
   t.test('should timeout request', async (t) => {
     const sender = td.object('Sender')
-    const bound = new BoundProtocol({ protocol, peer, sender })
+    const bound = new BoundProtocol({
+      config: new Config({ transports: [] }),
+      protocol,
+      peer,
+      sender,
+    })
     try {
       await ((<unknown>bound) as any).testMessage(1)
     } catch (err) {

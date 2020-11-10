@@ -11,7 +11,7 @@ tape('[Synchronizer]', (t) => {
   //
   // t.test('should sync', async (t) => {
   //   const pool = new PeerPool()
-  //   const sync = new Synchronizer({pool})
+  //   const sync = new Synchronizer({ config: new Config({ transports: [] }), pool})
   //   sync.fetch = td.func()
   //   td.when(sync.fetch(2)).thenResolve(2)
   //   sync.on('synchronized', info => {
@@ -23,7 +23,7 @@ tape('[Synchronizer]', (t) => {
   //
   // t.test('should stop', async (t) => {
   //   const pool = new PeerPool()
-  //   const sync = new Synchronizer({pool})
+  //   const sync = new Synchronizer({ config: new Config({ transports: [] }), pool})
   //   sync.fetch = () => {
   //     return new Promise(resolve => {
   //       setTimeout(() => {

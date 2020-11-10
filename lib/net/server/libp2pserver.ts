@@ -26,14 +26,13 @@ export class Libp2pServer extends Server {
   /**
    * Create new DevP2P/RLPx server
    * @param {Object}   options constructor parameters
+   * @param {Config}   [options.config] Client configuration
    * @param {Object[]} [options.bootnodes] list of bootnodes to use for discovery (can be
    * a comma separated string or list)
-   * @param {number}   [options.maxPeers=25] maximum peers allowed
    * @param {multiaddr[]}   [options.multiaddrs] multiaddrs to listen on (can be
    * a comma separated string or list)
    * @param {Buffer}   [options.key] private key to use for server
    * @param {number}   [options.refreshInterval=30000] how often (in ms) to discover new peers
-   * @param {Logger}   [options.logger] Logger instance
    */
   constructor(options: any) {
     super(options)
@@ -107,7 +106,7 @@ export class Libp2pServer extends Server {
         }
         const peer = this.createPeer(peerInfo)
         await peer.bindProtocols(this.node, peerInfo, this)
-        this.logger.debug(`Peer discovered: ${peer}`)
+        this.config.logger.debug(`Peer discovered: ${peer}`)
         this.emit('connected', peer)
       } catch (e) {
         this.error(e)
@@ -116,7 +115,7 @@ export class Libp2pServer extends Server {
     this.node.on('peer:connect', (peerInfo: any) => {
       try {
         const peer = this.createPeer(peerInfo)
-        this.logger.debug(`Peer connected: ${peer}`)
+        this.config.logger.debug(`Peer connected: ${peer}`)
       } catch (e) {
         this.error(e)
       }
@@ -227,6 +226,7 @@ export class Libp2pServer extends Server {
 
   createPeer(peerInfo: any) {
     const peer = new Libp2pPeer({
+      config: this.config,
       id: peerInfo.id.toB58String(),
       multiaddrs: peerInfo.multiaddrs.toArray().map((ma: any) => ma.toString()),
       protocols: Array.from(this.protocols),

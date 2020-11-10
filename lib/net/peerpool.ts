@@ -1,12 +1,6 @@
 import { EventEmitter } from 'events'
-import { defaultLogger } from '../logging'
+import { Config } from '../config'
 import { Peer } from './peer/peer'
-
-const defaultOptions = {
-  logger: defaultLogger,
-  servers: [],
-  maxPeers: 25,
-}
 
 /**
  * @module net
@@ -25,9 +19,8 @@ const defaultOptions = {
  * @emits error
  */
 export class PeerPool extends EventEmitter {
-  private servers: any[]
-  private logger: any
-  private maxPeers: number
+  public config: Config
+
   private pool: Map<string, Peer>
   private noPeerPeriods: number
   private opened: boolean
@@ -36,18 +29,12 @@ export class PeerPool extends EventEmitter {
   /**
    * Create new peer pool
    * @param {Object}   options constructor parameters
-   * @param {Server[]} options.servers servers to aggregate peers from
-   * @param {number}   [options.maxPeers=25] maximum peers allowed
-   * @param {Logger}   [options.logger] logger instance
    */
   constructor(options: any) {
     super()
 
-    options = { ...defaultOptions, ...options }
+    this.config = options.config
 
-    this.servers = options.servers
-    this.logger = options.logger
-    this.maxPeers = options.maxPeers
     this.pool = new Map<string, Peer>()
     this.noPeerPeriods = 0
     this.opened = false
@@ -68,11 +55,11 @@ export class PeerPool extends EventEmitter {
     if (this.opened) {
       return false
     }
-    this.servers.map((server: any) => {
-      server.on('connected', (peer: Peer) => {
+    this.config.servers.map((s) => {
+      s.on('connected', (peer: Peer) => {
         this.connected(peer)
       })
-      server.on('disconnected', (peer: Peer) => {
+      s.on('disconnected', (peer: Peer) => {
         this.disconnected(peer)
       })
     })
@@ -135,7 +122,7 @@ export class PeerPool extends EventEmitter {
    * @param  {Peer} peer
    */
   connected(peer: Peer) {
-    if (this.size >= this.maxPeers) return
+    if (this.size >= this.config.maxPeers) return
     peer.on('message', (message: any, protocol: string) => {
       if (this.pool.get(peer.id)) {
         this.emit('message', message, protocol, peer)
@@ -144,7 +131,7 @@ export class PeerPool extends EventEmitter {
     })
     peer.on('error', (error: Error) => {
       if (this.pool.get(peer.id)) {
-        this.logger.warn(`Peer error: ${error} ${peer}`)
+        this.config.logger.warn(`Peer error: ${error} ${peer}`)
         this.ban(peer)
       }
     })
@@ -209,16 +196,16 @@ export class PeerPool extends EventEmitter {
     if (this.size === 0) {
       this.noPeerPeriods += 1
       if (this.noPeerPeriods >= 3) {
-        const promises = this.servers.map(async (server: any) => {
+        const promises = this.config.servers.map(async (server: any) => {
           if (server.bootstrap) {
-            this.logger.info('Retriggering bootstrap.')
+            this.config.logger.info('Retriggering bootstrap.')
             await server.bootstrap()
           }
         })
         await Promise.all(promises)
         this.noPeerPeriods = 0
       } else {
-        this.logger.info('Looking for suited peers...')
+        this.config.logger.info('Looking for suited peers...')
       }
     } else {
       this.noPeerPeriods = 0

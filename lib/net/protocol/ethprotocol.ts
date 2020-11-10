@@ -55,9 +55,9 @@ export class EthProtocol extends Protocol {
   /**
    * Create eth protocol
    * @param {Object}   options constructor parameters
+   * @param {Config}   [options.config] Client configuration
    * @param {Chain}    options.chain blockchain
    * @param {number}   [options.timeout=8000] handshake timeout in ms
-   * @param {Logger}   [options.logger] logger instance
    */
   constructor(options: any) {
     super(options)

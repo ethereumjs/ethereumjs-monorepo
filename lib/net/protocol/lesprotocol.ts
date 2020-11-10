@@ -67,11 +67,11 @@ export class LesProtocol extends Protocol {
   /**
    * Create les protocol
    * @param {Object}      options constructor parameters
+   * @param {Config}      [options.config] Client configuration
    * @param {Chain}       options.chain blockchain
    * @param {FlowControl} [options.flow] flow control manager. if undefined,
    * header serving will be disabled
    * @param {number}      [options.timeout=8000] handshake timeout in ms
-   * @param {Logger}      [options.logger] logger instance
    */
   constructor(options: any) {
     super(options)
@@ -174,8 +174,8 @@ export class LesProtocol extends Protocol {
       headNum: new BN(status.headNum),
       genesisHash: status.genesisHash,
       serveHeaders: this.isServer,
-      serveChainSince: status.serveChainSince && new BN(status.serveChainSince),
-      serveStateSince: status.serveStateSince && new BN(status.serveStateSince),
+      serveChainSince: status.serveChainSince ? new BN(status.serveChainSince) : undefined,
+      serveStateSince: status.serveStateSince ? new BN(status.serveStateSince) : undefined,
       txRelay: !!status.txRelay,
       bl: status['flowControl/BL'] && new BN(status['flowControl/BL']).toNumber(),
       mrr: status['flowControl/MRR'] && new BN(status['flowControl/MRR']).toNumber(),

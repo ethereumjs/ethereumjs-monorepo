@@ -21,7 +21,7 @@ export function parseBootnodes(string: string) {
   }
 }
 
-export function parseTransports(transports: any[]) {
+export function parseTransports(transports: string[]) {
   return transports.map((t) => {
     const options: any = {}
     const [name, ...pairs] = t.split(':')
@@ -139,7 +139,7 @@ async function parseGethParams(json: any) {
   }
   params.hardforks = hardforks.map((name) => ({
     name: name,
-    block: name === 'chainstart' ? 0 : config[forkMap[name]] || null,
+    block: name === 'chainstart' ? 0 : config[forkMap[name]] ?? null,
   }))
   return params
 }

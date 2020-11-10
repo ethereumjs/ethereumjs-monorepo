@@ -28,7 +28,6 @@ export class BlockFetcher extends Fetcher {
    * @param {number}       [options.banTime] how long to ban misbehaving peers
    * @param {number}       [options.interval] retry interval
    * @param {number}       [options.maxPerRequest=128] max items per request
-   * @param {Logger}       [options.logger] Logger instance
    */
   constructor(options: any) {
     super(options)
@@ -68,7 +67,7 @@ export class BlockFetcher extends Fetcher {
     const headers = await peer.eth.getBlockHeaders({ block: first, max: count })
     const bodies = await peer.eth.getBlockBodies(headers.map((h: any) => h.hash()))
     const blocks = bodies.map(([txsData, unclesData]: BlockBodyBuffer, i: number) =>
-      Block.fromValuesArray([headers[i].raw(), txsData, unclesData], { common: this.common })
+      Block.fromValuesArray([headers[i].raw(), txsData, unclesData], { common: this.config.common })
     )
     return { blocks }
   }

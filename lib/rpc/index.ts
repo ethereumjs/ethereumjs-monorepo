@@ -1,3 +1,5 @@
+import { Config } from '../config'
+import Node from '../node'
 import * as modules from './modules'
 
 /**
@@ -19,11 +21,11 @@ function getMethodNames(mod: any): string[] {
  * @memberof module:rpc
  */
 export class RPCManager {
-  private _config: any
+  private _config: Config
   private _node: any
   private _logger: any
 
-  constructor(node: any, config: any) {
+  constructor(node: Node, config: Config) {
     this._config = config
     this._node = node
     this._logger = config.logger

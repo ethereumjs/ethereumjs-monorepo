@@ -1,14 +1,6 @@
 import * as events from 'events'
 import { FastEthereumService, LightEthereumService } from './service'
-import { defaultLogger } from './logging'
 import { Config } from './config'
-
-const defaultOptions = {
-  minPeers: 3,
-  maxPeers: 25,
-  logger: defaultLogger,
-  servers: [],
-}
 
 /**
  * Represents the top-level ethereum node, and is responsible for managing the
@@ -18,9 +10,6 @@ const defaultOptions = {
 export default class Node extends events.EventEmitter {
   public config: Config
 
-  public logger: any
-  public servers: any
-  public syncmode: any
   public services: any
 
   public opened: boolean
@@ -30,41 +19,24 @@ export default class Node extends events.EventEmitter {
    * Create new node
    * @param {Object}   options constructor parameters
    * @param {Config}   [options.config] Client configuration
-   * @param {Logger}   [options.logger] Logger instance
    * @param {LevelDB}  [options.db=null] blockchain database
-   * @param {string}   [options.syncmode=light] synchronization mode ('fast' or 'light')
-   * @param {boolean}  [options.lightserv=false] serve LES requests
-   * @param {Server[]} [options.servers=[]] list of servers to use
    * @param {Object[]} [options.bootnodes] list of bootnodes to use for discovery
-   * @param {number}   [options.minPeers=3] number of peers needed before syncing
-   * @param {number}   [options.maxPeers=25] maximum peers allowed
    * @param {string[]} [options.clientFilter] list of supported clients
    * @param {number}   [options.refreshInterval] how often to discover new peers
    */
   constructor(options: any) {
     super()
-    options = { ...defaultOptions, ...options }
-    this.config = options.config || new Config()
-    this.logger = options.logger
-    this.servers = options.servers
-    this.syncmode = options.syncmode
+
+    this.config = options.config
+
     this.services = [
-      this.syncmode === 'fast'
+      this.config.syncmode === 'fast'
         ? new FastEthereumService({
-            servers: this.servers,
-            logger: this.logger,
-            lightserv: options.lightserv,
             config: this.config,
-            minPeers: options.minPeers,
-            maxPeers: options.maxPeers,
             db: options.db,
           })
         : new LightEthereumService({
-            servers: this.servers,
-            logger: this.logger,
             config: this.config,
-            minPeers: options.minPeers,
-            maxPeers: options.maxPeers,
             db: options.db,
           }),
     ]
@@ -80,7 +52,7 @@ export default class Node extends events.EventEmitter {
     if (this.opened) {
       return false
     }
-    this.servers.map((s: any) => {
+    this.config.servers.map((s) => {
       s.on('error', (error: Error) => {
         this.emit('error', error)
       })
@@ -108,7 +80,7 @@ export default class Node extends events.EventEmitter {
     if (this.started) {
       return false
     }
-    await Promise.all(this.servers.map((s: any) => s.start()))
+    await Promise.all(this.config.servers.map((s) => s.start()))
     await Promise.all(this.services.map((s: any) => s.start()))
     this.started = true
   }
@@ -122,7 +94,7 @@ export default class Node extends events.EventEmitter {
       return false
     }
     await Promise.all(this.services.map((s: any) => s.stop()))
-    await Promise.all(this.servers.map((s: any) => s.stop()))
+    await Promise.all(this.config.servers.map((s) => s.stop()))
     this.started = false
   }
 
@@ -141,6 +113,6 @@ export default class Node extends events.EventEmitter {
    * @return {Server}
    */
   server(name: string) {
-    return this.servers.find((s: any) => s.name === name)
+    return this.config.servers.find((s) => s.name === name)
   }
 }

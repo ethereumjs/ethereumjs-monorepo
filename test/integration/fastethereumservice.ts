@@ -4,6 +4,7 @@ import MockServer from './mocks/mockserver'
 import MockChain from './mocks/mockchain'
 import { BN } from 'ethereumjs-util'
 import { defaultLogger } from '../../lib/logging'
+import { Config } from '../../lib/config'
 defaultLogger.silent = true
 
 tape('[Integration:FastEthereumService]', async (t) => {
@@ -11,8 +12,8 @@ tape('[Integration:FastEthereumService]', async (t) => {
     const server = new MockServer()
     const chain = new MockChain()
     const service = new FastEthereumService({
-      servers: [server],
-      lightserv: true,
+      //@ts-ignore allow Config instantiation with MockServer
+      config: new Config({ servers: [server], lightserv: true }),
       chain,
     })
     await service.open()

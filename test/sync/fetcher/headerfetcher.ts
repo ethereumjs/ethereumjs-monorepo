@@ -2,6 +2,7 @@ import tape from 'tape-catch'
 const td = require('testdouble')
 import { EventEmitter } from 'events'
 import { defaultLogger } from '../../../lib/logging'
+import { Config } from '../../../lib/config'
 defaultLogger.silent = true
 
 tape('[HeaderFetcher]', (t) => {
@@ -12,7 +13,11 @@ tape('[HeaderFetcher]', (t) => {
   const HeaderFetcher = require('../../../lib/sync/fetcher/headerfetcher').HeaderFetcher
 
   t.test('should process', (t) => {
-    const fetcher = new HeaderFetcher({ pool: new PeerPool(), flow: td.object() })
+    const fetcher = new HeaderFetcher({
+      config: new Config(),
+      pool: new PeerPool(),
+      flow: td.object(),
+    })
     const headers = [{ number: 1 }, { number: 2 }]
     t.deepEquals(
       fetcher.process({ task: { count: 2 }, peer: 'peer0' }, { headers, bv: 1 }),
@@ -26,7 +31,7 @@ tape('[HeaderFetcher]', (t) => {
 
   t.test('should find a fetchable peer', async (t) => {
     const pool = new PeerPool()
-    const fetcher = new HeaderFetcher({ pool })
+    const fetcher = new HeaderFetcher({ config: new Config({ transports: [] }), pool })
     td.when(fetcher.pool.idle(td.matchers.anything())).thenReturn('peer0')
     t.equals(fetcher.peer(), 'peer0', 'found peer')
     t.end()

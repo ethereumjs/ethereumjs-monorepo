@@ -26,7 +26,7 @@ export class Libp2pNode extends libp2p {
           bootstrap: {
             interval: 2000,
             enabled: options.bootnodes !== undefined,
-            list: options.bootnodes || [],
+            list: options.bootnodes ?? [],
           },
         },
         EXPERIMENTAL: {

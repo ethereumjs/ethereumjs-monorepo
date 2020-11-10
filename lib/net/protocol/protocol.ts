@@ -2,10 +2,9 @@ import { EventEmitter } from 'events'
 import { BoundProtocol } from './boundprotocol'
 import { Sender } from './sender'
 import { Peer } from '../peer/peer'
-import { defaultLogger } from '../../logging'
+import { Config } from '../../config'
 
 const defaultOptions = {
-  logger: defaultLogger,
   timeout: 8000,
 }
 
@@ -36,20 +35,23 @@ export type Message = {
  * @memberof module:net/protocol
  */
 export class Protocol extends EventEmitter {
+  public config: Config
+
   public timeout: number
   public opened: boolean
-  public logger: any
 
   /**
    * Create new protocol
    * @param {Object}   options constructor parameters
+   * @param {Config}   [options.config] Client configuration
    * @param {number}   [options.timeout=8000] handshake timeout in ms
-   * @param {Logger}   [options.logger] logger instance
    */
   constructor(options?: any) {
     super()
+
     options = { ...defaultOptions, ...options }
-    this.logger = options.logger
+    this.config = options.config
+
     this.timeout = options.timeout
     this.opened = false
   }
@@ -169,6 +171,7 @@ export class Protocol extends EventEmitter {
    */
   async bind(peer: Peer, sender: Sender): Promise<BoundProtocol> {
     const bound = new BoundProtocol({
+      config: this.config,
       protocol: this,
       peer: peer,
       sender: sender,

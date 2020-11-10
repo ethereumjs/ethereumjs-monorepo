@@ -49,4 +49,4 @@ export function getLogger(options = { loglevel: 'info' }) {
   return logger
 }
 
-export const defaultLogger = getLogger({ loglevel: 'debug' })
+export const defaultLogger = getLogger({ loglevel: 'info' })

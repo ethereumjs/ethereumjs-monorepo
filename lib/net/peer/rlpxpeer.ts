@@ -52,7 +52,6 @@ export class RlpxPeer extends Peer {
    * @param {string} options.host peer hostname or ip address
    * @param {number} options.port peer port
    * @param {Protocols[]} [options.protocols=[]] supported protocols
-   * @param {Logger} [options.logger] Logger instance
    */
   constructor(options: any) {
     super({

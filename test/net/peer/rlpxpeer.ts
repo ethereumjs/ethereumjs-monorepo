@@ -6,6 +6,7 @@ const td = require('testdouble')
 import { EventEmitter } from 'events'
 import { RlpxPeer } from '../../../lib/net/peer/rlpxpeer'
 import { defaultLogger } from '../../../lib/logging'
+import { Config } from '../../../lib/config'
 defaultLogger.silent = true
 
 // Many tests pass but it looks like this suite still needs to be skipped because
@@ -19,7 +20,12 @@ tape.skip('[RlpxPeer]', (t) => {
   const RlpxSender = td.replace('../../../lib/net/protocol/rlpxsender')
 
   t.test('should initialize correctly', async (t) => {
-    const peer = new RlpxPeer({ id: 'abcdef0123', host: '10.0.0.1', port: 1234 })
+    const peer = new RlpxPeer({
+      config: new Config({ transports: [] }),
+      id: 'abcdef0123',
+      host: '10.0.0.1',
+      port: 1234
+    })
     t.equals(peer.address, '10.0.0.1:1234', 'address correct')
     t.notOk(peer.connected, 'not connected')
     t.end()
