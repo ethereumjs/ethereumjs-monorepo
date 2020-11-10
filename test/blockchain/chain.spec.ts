@@ -1,15 +1,15 @@
 import tape from 'tape'
-import { Block, BlockHeader, BlockData, HeaderData } from '@ethereumjs/block'
+import { Block, BlockData, HeaderData } from '@ethereumjs/block'
 import { BN } from 'ethereumjs-util'
 import { Chain } from '../../lib/blockchain'
 import { defaultLogger } from '../../lib/logging'
+import { Config } from '../../lib/config'
 defaultLogger.silent = true
 
 // explicitly import util and buffer,
 // needed for karma-typescript bundling
 import * as util from 'util' //eslint-disable-line @typescript-eslint/no-unused-vars
 import { Buffer } from 'buffer' //eslint-disable-line @typescript-eslint/no-unused-vars
-import { Config } from '../../lib/config'
 
 tape('[Chain]', (t) => {
   t.test('should test blockchain DB is initialized', async (t) => {
@@ -76,26 +76,6 @@ tape('[Chain]', (t) => {
     await chain.getTd(block.hash(), block.header.number)
     t.ok(chain.opened, 'chain should open if getTd() called')
     t.equal(await chain.open(), false, 'skip open if already opened')
-    await chain.close()
-    t.end()
-  })
-
-  t.test('should handle bad arguments to putBlocks()', async (t) => {
-    const chain = new Chain({ config: new Config() }) // eslint-disable-line no-new
-    await chain.open()
-    t.notOk(await chain.putBlocks((<unknown>undefined) as Block[]), 'add undefined block')
-    t.notOk(await chain.putBlocks((<unknown>null) as Block[]), 'add null block')
-    t.notOk(await chain.putBlocks([]), 'add empty block list')
-    await chain.close()
-    t.end()
-  })
-
-  t.test('should handle bad arguments to putHeaders()', async (t) => {
-    const chain = new Chain({ config: new Config() }) // eslint-disable-line no-new
-    await chain.open()
-    t.notOk(await chain.putHeaders((<unknown>undefined) as BlockHeader[]), 'add undefined header')
-    t.notOk(await chain.putHeaders((<unknown>null) as BlockHeader[]), 'add null header')
-    t.notOk(await chain.putHeaders([]), 'add empty header list')
     await chain.close()
     t.end()
   })

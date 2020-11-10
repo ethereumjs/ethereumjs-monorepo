@@ -78,6 +78,7 @@ tape('[RlpxServer]', (t) => {
   t.test('should return rlpx server info', async (t) => {
     const mockId = '123'
     const server = new RlpxServer({
+      config: new Config({ transports: [] }),
       bootnodes: '10.0.0.1:1234,10.0.0.2:1234',
     })
     server.initDpt = td.func()

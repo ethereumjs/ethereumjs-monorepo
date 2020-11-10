@@ -12,8 +12,6 @@ const defaultOptions = {
  * @memberof module:service
  */
 export class EthereumService extends Service {
-  public config: Config
-
   public flow: FlowControl
   public chain: Chain
   public interval: number
