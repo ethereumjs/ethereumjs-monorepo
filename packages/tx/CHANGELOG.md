@@ -9,6 +9,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 ## 3.0.0-beta.2 - UNRELEASED
 
 - Added `freeze` option to allow for transaction freeze deactivation (e.g. to allow for subclassing tx and adding additional parameters), see PR [#941](https://github.com/ethereumjs/ethereumjs-vm/pull/941)
+- **Breaking:** Reworked constructor to take in data as a `TxData` typed dictionary instead of single values, the `Tx.fromTxData()` factory method becomes an alias for the constructor with this change, see PR [#944](https://github.com/ethereumjs/ethereumjs-vm/pull/944)
 
 ## 3.0.0-beta.1 - 2020-10-22
 

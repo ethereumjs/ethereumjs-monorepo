@@ -37,20 +37,7 @@ export default class Transaction {
   public readonly s?: BN
 
   public static fromTxData(txData: TxData, opts?: TxOptions) {
-    const { nonce, gasLimit, gasPrice, to, value, data, v, r, s } = txData
-
-    return new Transaction(
-      new BN(toBuffer(nonce)),
-      new BN(toBuffer(gasPrice)),
-      new BN(toBuffer(gasLimit)),
-      to ? new Address(toBuffer(to)) : undefined,
-      new BN(toBuffer(value)),
-      toBuffer(data),
-      new BN(toBuffer(v)),
-      new BN(toBuffer(r)),
-      new BN(toBuffer(s)),
-      opts
-    )
+    return new Transaction(txData, opts)
   }
 
   public static fromRlpSerializedTx(serialized: Buffer, opts?: TxOptions) {
@@ -73,15 +60,17 @@ export default class Transaction {
     const [nonce, gasPrice, gasLimit, to, value, data, v, r, s] = values
 
     return new Transaction(
-      new BN(nonce),
-      new BN(gasPrice),
-      new BN(gasLimit),
-      to && to.length > 0 ? new Address(to) : undefined,
-      new BN(value),
-      data || Buffer.from([]),
-      v ? new BN(v) : undefined,
-      r ? new BN(r) : undefined,
-      s ? new BN(s) : undefined,
+      {
+        nonce: new BN(nonce),
+        gasPrice: new BN(gasPrice),
+        gasLimit: new BN(gasLimit),
+        to: to && to.length > 0 ? new Address(to) : undefined,
+        value: new BN(value),
+        data: data || Buffer.from([]),
+        v: v ? new BN(v) : undefined,
+        r: r ? new BN(r) : undefined,
+        s: s ? new BN(s) : undefined,
+      },
       opts
     )
   }
@@ -91,25 +80,26 @@ export default class Transaction {
    * Use the static factory methods to assist in creating a Transaction object from varying data types.
    * @note Transaction objects implement EIP155 by default. To disable it, pass in an `@ethereumjs/common` object set before EIP155 activation (i.e. before Spurious Dragon).
    */
-  constructor(
-    nonce: BN,
-    gasPrice: BN,
-    gasLimit: BN,
-    to: Address | undefined,
-    value: BN,
-    data: Buffer,
-    v?: BN,
-    r?: BN,
-    s?: BN,
-    opts?: TxOptions
-  ) {
+  constructor(txData: TxData, opts?: TxOptions) {
+    const { nonce, gasPrice, gasLimit, to, value, data, v, r, s } = txData
+
+    this.nonce = new BN(toBuffer(nonce))
+    this.gasPrice = new BN(toBuffer(gasPrice))
+    this.gasLimit = new BN(toBuffer(gasLimit))
+    this.to = to ? new Address(toBuffer(to)) : undefined
+    this.value = new BN(toBuffer(value))
+    this.data = toBuffer(data)
+    this.v = new BN(toBuffer(v))
+    this.r = new BN(toBuffer(r))
+    this.s = new BN(toBuffer(s))
+
     const validateCannotExceedMaxInteger = {
-      nonce,
-      gasPrice,
-      gasLimit,
-      value,
-      r,
-      s,
+      nonce: this.nonce,
+      gasPrice: this.gasPrice,
+      gasLimit: this.gasLimit,
+      value: this.value,
+      r: this.r,
+      s: this.s,
     }
     for (const [key, value] of Object.entries(validateCannotExceedMaxInteger)) {
       if (value && value.gt(MAX_INTEGER)) {
@@ -124,17 +114,7 @@ export default class Transaction {
       this.common = new Common({ chain: DEFAULT_CHAIN })
     }
 
-    this._validateTxV(v)
-
-    this.nonce = nonce
-    this.gasPrice = gasPrice
-    this.gasLimit = gasLimit
-    this.to = to
-    this.value = value
-    this.data = data
-    this.v = v
-    this.r = r
-    this.s = s
+    this._validateTxV(this.v)
 
     const freeze = opts?.freeze ?? true
     if (freeze) {
@@ -264,15 +244,17 @@ export default class Transaction {
     }
 
     return new Transaction(
-      this.nonce,
-      this.gasPrice,
-      this.gasLimit,
-      this.to,
-      this.value,
-      this.data,
-      new BN(v),
-      new BN(r),
-      new BN(s),
+      {
+        nonce: this.nonce,
+        gasPrice: this.gasPrice,
+        gasLimit: this.gasLimit,
+        to: this.to,
+        value: this.value,
+        data: this.data,
+        v: new BN(v),
+        r: new BN(r),
+        s: new BN(s),
+      },
       opts
     )
   }
