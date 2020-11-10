@@ -17,7 +17,7 @@ export function setupVM(opts: VMOpts & { genesisBlock?: Block } = {}) {
     opts.blockchain = new Blockchain({
       db,
       validateBlocks: false,
-      validatePow: false,
+      validateConsensus: false,
       common,
       genesisBlock,
     })

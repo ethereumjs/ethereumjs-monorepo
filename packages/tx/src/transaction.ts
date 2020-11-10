@@ -226,7 +226,9 @@ export default class Transaction {
    */
   verifySignature(): boolean {
     try {
-      return unpadBuffer(this.getSenderPublicKey()).length !== 0
+      // Main signature verification is done in `getSenderPublicKey()`
+      const publicKey = this.getSenderPublicKey()
+      return unpadBuffer(publicKey).length !== 0
     } catch (e) {
       return false
     }
@@ -308,7 +310,9 @@ export default class Transaction {
   }
 
   /**
-   * Validates the signature and checks to see if it has enough gas.
+   * Validates the signature and checks if
+   * the transaction has the minimum amount of gas required
+   * (DataFee + TxFee + Creation Fee).
    */
   validate(): boolean
   validate(stringError: false): boolean

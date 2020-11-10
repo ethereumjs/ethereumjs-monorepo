@@ -269,6 +269,12 @@ export class BlockHeader {
    * @param parentBlockHeader - the header from the parent `Block` of this header
    */
   canonicalDifficulty(parentBlockHeader: BlockHeader): BN {
+    if (this._common.consensusType() !== 'pow') {
+      throw new Error('difficulty calculation is only supported on PoW chains')
+    }
+    if (this._common.consensusAlgorithm() !== 'ethash') {
+      throw new Error('difficulty calculation currently only supports the ethash algorithm')
+    }
     const hardfork = this._getHardfork()
     const blockTs = this.timestamp
     const { timestamp: parentTs, difficulty: parentDif } = parentBlockHeader
@@ -351,11 +357,15 @@ export class BlockHeader {
    * @param parentBlockHeader - the header from the parent `Block` of this header
    */
   validateDifficulty(parentBlockHeader: BlockHeader): boolean {
+    if (this._common.consensusType() !== 'pow') {
+      throw new Error('difficulty validation is currently only supported on PoW chains')
+    }
     return this.canonicalDifficulty(parentBlockHeader).eq(this.difficulty)
   }
 
   /**
-   * Validates the gasLimit.
+   * Validates if the block gasLimit remains in the
+   * boundaries set by the protocol.
    *
    * @param parentBlockHeader - the header from the parent `Block` of this header
    */
@@ -412,8 +422,10 @@ export class BlockHeader {
       throw new Error('invalid timestamp')
     }
 
-    if (!this.validateDifficulty(header)) {
-      throw new Error('invalid difficulty')
+    if (this._common.consensusType() === 'pow') {
+      if (!this.validateDifficulty(header)) {
+        throw new Error('invalid difficulty')
+      }
     }
 
     if (!this.validateGasLimit(header)) {

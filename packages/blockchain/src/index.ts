@@ -63,15 +63,19 @@ export interface BlockchainOptions {
   db?: LevelUp
 
   /**
-   * This flags indicates if Proof-of-work should be validated. Defaults to
-   * `true`.
+   * This flags indicates if a block should be validated along the consensus algorithm
+   * or protocol used by the chain, e.g. by verifying the PoW on the block.
+   *
+   * Supported: 'pow' with 'ethash' algorithm (taken from the `Common` instance)
+   * Default: `true`.
    */
-  validatePow?: boolean
+  validateConsensus?: boolean
 
   /**
-   * This flags indicates if blocks should be validated. See Block#validate for
-   * details. If `validate` is provided, this option takes its value. If neither
-   * `validate` nor this option are provided, it defaults to `true`.
+   * This flag indicates if protocol-given consistency checks on
+   * block headers and included uncles and transactions should be performed,
+   * see Block#validate for details.
+   *
    */
   validateBlocks?: boolean
 
@@ -91,7 +95,8 @@ export interface BlockchainOptions {
 export default class Blockchain implements BlockchainInterface {
   db: LevelUp
   dbManager: DBManager
-  ethash?: Ethash
+
+  _ethash?: Ethash
 
   private _genesis?: Buffer // the genesis hash of this blockchain
 
@@ -110,7 +115,7 @@ export default class Blockchain implements BlockchainInterface {
   private _lock: Semaphore
 
   private _common: Common
-  private readonly _validatePow: boolean
+  private readonly _validateConsensus: boolean
   private readonly _validateBlocks: boolean
 
   /**
@@ -137,14 +142,21 @@ export default class Blockchain implements BlockchainInterface {
       })
     }
 
-    this._validatePow = opts.validatePow !== undefined ? opts.validatePow : true
-    this._validateBlocks = opts.validateBlocks !== undefined ? opts.validateBlocks : true
+    this._validateConsensus = opts.validateConsensus ?? true
+    this._validateBlocks = opts.validateBlocks ?? true
 
     this.db = opts.db ? opts.db : level()
     this.dbManager = new DBManager(this.db, this._common)
 
-    if (this._validatePow) {
-      this.ethash = new Ethash(this.db)
+    if (this._validateConsensus) {
+      if (this._common.consensusType() !== 'pow') {
+        throw new Error('consensus validation only supported for pow chains')
+      }
+      if (this._common.consensusAlgorithm() !== 'ethash') {
+        throw new Error('consensus validation only supported for pow ethash algorithm')
+      }
+
+      this._ethash = new Ethash(this.db)
     }
 
     this._heads = {}
@@ -444,10 +456,12 @@ export default class Blockchain implements BlockchainInterface {
         await block.validate(this)
       }
 
-      if (this._validatePow && this.ethash) {
-        const valid = await this.ethash.verifyPOW(block)
-        if (!valid) {
-          throw new Error('invalid POW')
+      if (this._validateConsensus) {
+        if (this._ethash) {
+          const valid = await this._ethash.verifyPOW(block)
+          if (!valid) {
+            throw new Error('invalid POW')
+          }
         }
       }
 

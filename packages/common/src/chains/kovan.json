@@ -2,6 +2,10 @@
   "name": "kovan",
   "chainId": 42,
   "networkId": 42,
+  "consensus": {
+    "type": "poa",
+    "algorithm": "aura"
+  },
   "comment": "Parity PoA test network",
   "url": "https://kovan-testnet.github.io/website/",
   "genesis": {

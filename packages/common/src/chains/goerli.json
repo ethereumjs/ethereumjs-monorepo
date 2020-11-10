@@ -2,6 +2,10 @@
   "name": "goerli",
   "chainId": 5,
   "networkId": 5,
+  "consensus": {
+    "type": "poa",
+    "algorithm": "clique"
+  },
   "comment": "Cross-client PoA test network",
   "url": "https://github.com/goerli/testnet",
   "genesis": {

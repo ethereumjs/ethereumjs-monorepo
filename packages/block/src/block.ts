@@ -148,7 +148,8 @@ export class Block {
   }
 
   /**
-   * Validates the transaction trie.
+   * Validates the transaction trie by generating a trie
+   * and do a check on the root hash.
    */
   async validateTransactionsTrie(): Promise<boolean> {
     if (this.transactions.length === 0) {
@@ -163,7 +164,7 @@ export class Block {
   }
 
   /**
-   * Validates the transactions.
+   * Validates transaction signatures and minimum gas requirements.
    *
    * @param stringError - If `true`, a string with the indices of the invalid txs is returned.
    */
@@ -184,7 +185,14 @@ export class Block {
   }
 
   /**
-   * Validates the block, throwing if invalid.
+   * Performs the following consistency checks on the block:
+   *
+   * - Value checks on the header fields
+   * - Signature and gasLimit validation for included txs
+   * - Validation of the tx trie
+   * - Consistency checks and header validation of included uncles
+   *
+   * Throws if invalid.
    *
    * @param blockchain - validate against a @ethereumjs/blockchain
    */
@@ -226,9 +234,12 @@ export class Block {
   }
 
   /**
-   * Validates the uncles that are in the block, if any. This method throws if they are invalid.
+   * Consistency checks and header validation for uncles included
+   * in the block, if any.
    *
-   * @param blockchain - additionally validate against a @ethereumjs/blockchain
+   * Throws if invalid.
+   *
+   * @param blockchain - additionally validate against an @ethereumjs/blockchain instance
    */
   async validateUncles(blockchain: Blockchain): Promise<void> {
     if (this.isGenesis()) {
@@ -268,7 +279,8 @@ export class Block {
   }
 
   /**
-   * Validates the gasLimit.
+   * Validates if the block gasLimit remains in the
+   * boundaries set by the protocol.
    *
    * @param parentBlock - the parent of this `Block`
    */

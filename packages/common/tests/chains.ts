@@ -73,6 +73,8 @@ tape('[Common]: Initialization / Chain params', function (t: tape.Test) {
     st.equal(c.genesis().hash, hash, 'should return correct genesis hash')
     st.equal(c.hardforks()[3]['block'], 2463000, 'should return correct hardfork data')
     st.equal(typeof c.bootstrapNodes()[0].port, 'number', 'should return a port as number')
+    st.equal(c.consensusType(), 'pow', 'should return correct consensus type')
+    st.equal(c.consensusAlgorithm(), 'ethash', 'should return correct consensus algorithm')
     st.end()
   })
 
