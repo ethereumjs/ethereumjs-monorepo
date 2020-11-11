@@ -1,6 +1,6 @@
 {
   "name": "@ethereumjs/vm",
-  "version": "5.0.0-beta.1",
+  "version": "5.0.0-beta.2",
   "description": "An Ethereum VM implementation",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -45,10 +45,10 @@
   "dependencies": {
     "async-eventemitter": "^0.2.4",
     "core-js-pure": "^3.0.1",
-    "@ethereumjs/block": "3.0.0-beta.1",
-    "@ethereumjs/blockchain": "5.0.0-beta.1",
-    "@ethereumjs/common": "2.0.0-beta.1",
-    "@ethereumjs/tx": "3.0.0-beta.1",
+    "@ethereumjs/block": "3.0.0-beta.2",
+    "@ethereumjs/blockchain": "5.0.0-beta.2",
+    "@ethereumjs/common": "2.0.0-beta.2",
+    "@ethereumjs/tx": "3.0.0-beta.2",
     "ethereumjs-util": "^7.0.7",
     "functional-red-black-tree": "^1.0.1",
     "merkle-patricia-tree": "^4.0.0",

@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ## 5.0.0-beta.2 - 2020-11-12
 
+This is the second beta release towards a final library release, see [beta.1 release notes](https://github.com/ethereumjs/ethereumjs-vm/releases/tag/%40ethereumjs%2Fvm%405.0.0-beta.1) for an overview on the full changes since the last publicly released version.
+
 - Fixed `SSTORE` gas calculation on `constantinople`, PR [#931](https://github.com/ethereumjs/ethereumjs-vm/pull/931)
 - Visibility cleanup (Renaming and/or code docs additions) for class members not being part of the API, PR [#925](https://github.com/ethereumjs/ethereumjs-vm/pull/925)
 
@@ -91,8 +93,11 @@ PR [#872](https://github.com/ethereumjs/ethereumjs-vm/pull/872).
 This API can be used as follows:
 
 ```typescript
-import VM from 'ethereumjs-vm'
-const vm = new VM({ eips: [2537] })
+import Common from '@ethereumjs/common'
+import VM from '@ethereumjs/vm'
+
+const common = new Common({ chain: 'mainnet', eips: [2537] })
+const vm = new VM({ common })
 ```
 
 ### API Change: New Major Library Versions
