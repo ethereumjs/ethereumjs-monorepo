@@ -8,6 +8,8 @@
 
 Resources common to all Ethereum implementations.
 
+Note: this `README` reflects the state of the library from `v2.0.0` onwards. See `README` from the [standalone repository](https://github.com/ethereumjs/ethereumjs-common) for an introduction on the last preceeding release.
+
 # INSTALL
 
 `npm install ethereumjs-common`
