@@ -368,13 +368,13 @@ ___
 
 ###  hardfork
 
-▸ **hardfork**(): *string | null*
+▸ **hardfork**(): *string*
 
 *Defined in [index.ts:599](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/index.ts#L599)*
 
 Returns the hardfork set
 
-**Returns:** *string | null*
+**Returns:** *string*
 
 Hardfork name
 

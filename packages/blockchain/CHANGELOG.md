@@ -122,8 +122,6 @@ in performance benefits for Node.js consumers, see [here](https://github.com/eth
 - Fixed blockchain hanging forever in case code throws between a semaphore `lock`/`unlock`,
   Issue [#877](https://github.com/ethereumjs/ethereumjs-vm/issues/877)
 
-[5.0.0]: https://github.com/ethereumjs/ethereumjs-vm/compare/%40ethereumjs%2Fblockchain%404.0.2...%40ethereumjs%2Fblockchain%405.0.0
-
 ## 4.0.4 - 2020-07-27
 
 This release replaces the tilde (`~`) dependency from `ethereumjs-util` for a caret (`^`) one, meaning that any update to `ethereumjs-util` v6 will also be available for this library.

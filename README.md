@@ -43,13 +43,13 @@ This monorepo uses [Lerna](https://lerna.js.org/). It links the local packages t
 TLDR: Setup
 ```sh
 npm install
-npm build
+npm run build
 ```
 
 TLDR: To update dependencies and (re-)link packages
 ```sh
 npm run bootstrap
-npm build
+npm run build
 ```
 
 Above is the quickest way to set you up. Going down the road, there are two sets of commands: *project* and *package-specific* commands. You can find them at `./package.json` and `./packages/*/package.json`, respectively. Here's a breakdown:
