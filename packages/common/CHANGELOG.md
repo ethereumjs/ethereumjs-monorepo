@@ -6,7 +6,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## 2.0.0-beta.2 - UNRELEASED
+## 2.0.0-beta.2 - 2020-11-12
 
 - Added consensus information to chains, new functions `Common.consensusType()` for consensus type access ("pow" or "poa") and `Common.consensusAlgorithm()` to get the associated algorithm or protocol (e.g. "ethash" PoW algorithm or "clique" PoA protocol), see PR [#937](https://github.com/ethereumjs/ethereumjs-vm/pull/937)
 

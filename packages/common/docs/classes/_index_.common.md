@@ -30,6 +30,8 @@ Common class to access chain and hardfork parameters
 * [bootstrapNodes](_index_.common.md#bootstrapnodes)
 * [chainId](_index_.common.md#chainid)
 * [chainName](_index_.common.md#chainname)
+* [consensusAlgorithm](_index_.common.md#consensusalgorithm)
+* [consensusType](_index_.common.md#consensustype)
 * [eips](_index_.common.md#eips)
 * [forkHash](_index_.common.md#forkhash)
 * [genesis](_index_.common.md#genesis)
@@ -266,6 +268,34 @@ Returns the name of current chain
 **Returns:** *string*
 
 chain name (lower case)
+
+___
+
+###  consensusAlgorithm
+
+▸ **consensusAlgorithm**(): *string*
+
+*Defined in [index.ts:649](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/index.ts#L649)*
+
+Returns the concrete consensus implementation
+algorithm or protocol for the network
+e.g. "ethash" for "pow" consensus type or
+"clique" for "poa" consensus type
+
+**Returns:** *string*
+
+___
+
+###  consensusType
+
+▸ **consensusType**(): *string*
+
+*Defined in [index.ts:639](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/index.ts#L639)*
+
+Returns the consensus type of the network
+Possible values: "pow"|"poa"
+
+**Returns:** *string*
 
 ___
 
