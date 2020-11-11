@@ -41,6 +41,8 @@ const signedTx = tx.sign(privateKey)
 const serializedTx = signedTx.serialize()
 ```
 
+Properties of a `Transaction` object are frozen with `Object.freeze()` which gives you enhanced security and consistency properties when working with the instantiated object. This behavior can be modified using the `freeze` option in the constructor if needed.
+
 ## Fake Transaction
 
 Creating a fake tansaction for use in e.g. `VM.runTx()` is simple, just overwrite `getSenderAddress()` with a custom [`Address`](https://github.com/ethereumjs/ethereumjs-util/blob/master/docs/classes/_address_.address.md) like so:

@@ -8,13 +8,45 @@
 
 Implements schema and functions related to Ethereum's block.
 
+Note: this `README` reflects the state of the library from `v3.0.0` onwards. See `README` from the [standalone repository](https://github.com/ethereumjs/ethereumjs-block) for an introduction on the last preceeding release.
+
 # INSTALL
 
 `npm install @ethereumjs/block`
 
-# BROWSER
+# USAGE
 
-This module works with `browserify`.
+There are three static factories to instantiate a `Block` or `BlockHeader`:
+
+- `Block.fromBlockData(blockData: BlockData = {}, opts?: BlockOptions)`
+- `Block.fromRLPSerializedBlock(serialized: Buffer, opts?: BlockOptions)`
+- `Block.fromValuesArray(values: BlockBuffer, opts?: BlockOptions)`
+
+Instantiation Example:
+
+```typescript
+const headerData = {
+  number: 15,
+  parentHash: '0x6bfee7294bf44572b7266358e627f3c35105e1c3851f3de09e6d646f955725a7',
+  difficulty: 131072,
+  gasLimit: 8000000,
+  timestamp: 1562422144,
+}
+const header = BlockHeader.fromHeaderData(headerData)
+```
+
+Properties of a `Block` or `BlockHeader` object are frozen with `Object.freeze()` which gives you enhanced security and consistency properties when working with the instantiated object. This behavior can be modified using the `freeze` option in the constructor if needed.
+
+API Usage Example:
+
+```typescript
+try {
+  await block.validate(blockchain)
+  // Block validation has passed
+} catch (err) {
+  // handle errors appropriately
+}
+```
 
 # API
 
