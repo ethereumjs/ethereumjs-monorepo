@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ## 2.0.0-beta.2 - 2020-11-12
 
+This is the second beta release towards a final library release, see [beta.1 release notes](https://github.com/ethereumjs/ethereumjs-vm/releases/tag/%40ethereumjs%2Fcommon%402.0.0-beta.1) for an overview on the full changes since the last publicly released version.
+
 - Added consensus information to chains, new functions `Common.consensusType()` for consensus type access ("pow" or "poa") and `Common.consensusAlgorithm()` to get the associated algorithm or protocol (e.g. "ethash" PoW algorithm or "clique" PoA protocol), see PR [#937](https://github.com/ethereumjs/ethereumjs-vm/pull/937)
 
 ## 2.0.0-beta.1 - 2020-10-22

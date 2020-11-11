@@ -6,9 +6,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## 5.0.0-beta.2 - UNRELEASED
+## 5.0.0-beta.2 - 2020-11-12
 
-This is the second beta release towards a final `v5.0.0` `Blockchain` library release, see [v5.0.0-beta.1 release notes](https://github.com/ethereumjs/ethereumjs-vm/releases/tag/%40ethereumjs%2Fblockchain%405.0.0-beta.1) for an overview on the full changes since the last publicly released version.
+This is the second beta release towards a final library release, see [beta.1 release notes](https://github.com/ethereumjs/ethereumjs-vm/releases/tag/%40ethereumjs%2Fblockchain%405.0.0-beta.1) for an overview on the full changes since the last publicly released version.
 
 This release introduces **new breaking changes**, so please carefully read the additional release note sections!
 
