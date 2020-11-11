@@ -244,31 +244,32 @@ export class Block {
   }
 
   /**
-   * Consistency checks and header validation for uncles included
+   * Consistency checks and header validation for uncles included,
    * in the block, if any.
    *
    * Throws if invalid.
    *
+   * The rules of uncles are the following:
+   * Uncle Header is a valid header.
+   * Uncle Header is an orphan, i.e. it is not one of the headers of the canonical chain.
+   * Uncle Header has a parentHash which points to the canonical chain. This parentHash is within the last 7 blocks.
+   * Uncle Header is not already included as uncle in another block.
+   * Header has at most 2 uncles.
+   * Header does not count an uncle twice.
+   *
    * @param blockchain - additionally validate against an @ethereumjs/blockchain instance
    */
   async validateUncles(blockchain: Blockchain): Promise<void> {
-    /*
-      The rules of uncles are the following:
-      Uncle Header is not in canonical chain
-      Uncle Header has a parentHash which points to the Canonical Chain. This parentHash is within the last 7 blocks.
-      Uncle Header is not included in the canonical chain.
-      Header has at most 2 uncles
-      Header does not count an uncle twice.
-    */
-
     if (this.isGenesis()) {
       return
     }
 
+    // Header has at most 2 uncles
     if (this.uncleHeaders.length > 2) {
       throw new Error('too many uncle headers')
     }
 
+    // Header does not count an uncle twice.
     const uncleHashes = this.uncleHeaders.map((header) => header.hash().toString('hex'))
     if (!(new Set(uncleHashes).size === uncleHashes.length)) {
       throw new Error('duplicate uncles')
@@ -316,19 +317,26 @@ export class Block {
     }
   }
 
+  /**
+   * The following rules are checked in this method:
+   * Uncle Header is a valid header.
+   * Uncle Header is an orphan, i.e. it is not one of the headers of the canonical chain.
+   * Uncle Header has a parentHash which points to the canonical chain. This parentHash is within the last 7 blocks.
+   * Uncle Header is not already included as uncle in another block.
+   * @param uncleHeaders - list of uncleHeaders
+   * @param blockchain - pointer to the blockchain
+   */
   private async _validateUncleHeaders(uncleHeaders: BlockHeader[], blockchain: Blockchain) {
     if (uncleHeaders.length == 0) {
       return
     }
 
-    // validate the header
-    for (let i = 0; i < uncleHeaders.length; i++) {
-      const header = uncleHeaders[i]
-      await header.validate(blockchain, this.header.number)
-    }
+    // Each Uncle Header is a valid header
+    await Promise.all(uncleHeaders.map((uh) => uh.validate(blockchain, this.header.number)))
 
+    // Check how many blocks we should get in order to validate the uncle.
+    // In the worst case, we get 8 blocks, in the best case, we only get 1 block.
     const canonicalBlockMap: Block[] = []
-
     let lowestUncleNumber = this.header.number.clone()
 
     uncleHeaders.map((header) => {
@@ -337,9 +345,17 @@ export class Block {
       }
     })
 
+    // Helper variable: set hash to `true` if hash is part of the canonical chain
+    const canonicalChainHashes: { [key: string]: boolean } = {}
+
+    // Helper variable: set hash to `true` if uncle hash is included in any canonical block
+    const includedUncles: { [key: string]: boolean } = {}
+
+    // Due to the header validation check above, we know that `getBlocks` it between 1 and 8 inclusive.
     const getBlocks = this.header.number.clone().sub(lowestUncleNumber).addn(1).toNumber()
 
     // See Geth: https://github.com/ethereum/go-ethereum/blob/b63bffe8202d46ea10ac8c4f441c582642193ac8/consensus/ethash/consensus.go#L207
+    // Here we get the necessary blocks from the chain.
     let parentHash = this.header.parentHash
     for (let i = 0; i < getBlocks; i++) {
       const parentBlock = await this._getBlockByHash(blockchain, parentHash)
@@ -347,31 +363,37 @@ export class Block {
         throw new Error('could not find parent block')
       }
       canonicalBlockMap.push(parentBlock)
+
+      // mark block hash as part of the canonical chain
+      canonicalChainHashes[parentBlock.hash().toString('hex')] = true
+
+      // for each of the uncles, mark the uncle as included
+      parentBlock.uncleHeaders.map((uh) => {
+        includedUncles[uh.hash().toString('hex')] = true
+      })
+
       parentHash = parentBlock.header.parentHash
     }
 
-    canonicalBlockMap.map((block) => {
-      uncleHeaders.map((uh) => {
-        const uncleHash = uh.hash()
-        if (uncleHash.equals(block.hash())) {
-          // the uncle is part of the canonical chain.
-          throw new Error('The uncle is part of the canonical chain.')
-        }
-        block.uncleHeaders.map((includedUncle) => {
-          if (includedUncle.hash().equals(uncleHash)) {
-            throw new Error('The uncle is already included in the canonical chain')
-          }
-        })
-      })
-    })
+    // Here we check:
+    // Uncle Header is an orphan, i.e. it is not one of the headers of the canonical chain.
+    // Uncle Header is not already included as uncle in another block.
+    // Uncle Header has a parentHash which points to the canonical chain.
 
-    uncleHeaders.map((uh: BlockHeader) => {
-      const hash = uh.parentHash
-      const filterCanonicalBlocks = canonicalBlockMap.filter((block: Block) => {
-        return block.hash().equals(hash)
-      })
-      if (filterCanonicalBlocks.length == 0) {
-        throw 'The parent hash of the uncle header is not part of the canonical chain.'
+    uncleHeaders.map((uh) => {
+      const uncleHash = uh.hash().toString('hex')
+      const parentHash = uh.parentHash.toString('hex')
+
+      if (!canonicalChainHashes[parentHash]) {
+        throw new Error('The parent hash of the uncle header is not part of the canonical chain')
+      }
+
+      if (includedUncles[uncleHash]) {
+        throw new Error('The uncle is already included in the canonical chain')
+      }
+
+      if (canonicalChainHashes[uncleHash]) {
+        throw new Error('The uncle is a canonical block')
       }
     })
   }
