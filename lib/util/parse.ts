@@ -33,13 +33,13 @@ export function parseBootnodes(input: BootnodeLike): Bootnode[] {
 
 export function parseTransports(transports: string[]) {
   return transports.map((t) => {
-    const options: any = {}
+    const options: { [key: string]: string } = {}
     const [name, ...pairs] = t.split(':')
     if (pairs.length) {
       pairs
         .join(':')
         .split(',')
-        .forEach((p: any) => {
+        .forEach((p: string) => {
           const [key, value] = p.split('=')
           options[key] = value
         })

@@ -12,7 +12,7 @@ export interface ChainOptions {
   /**
    * Client configuration instance
    */
-  config?: Config
+  config: Config
 
   /**
    * Database to store blocks and metadata. Should be an abstract-leveldown compliant store.
@@ -99,10 +99,10 @@ export class Chain extends EventEmitter {
    * Create new chain
    * @param {ChainOptions} options
    */
-  constructor(options: ChainOptions = {}) {
+  constructor(options: ChainOptions) {
     super()
 
-    this.config = options.config ?? new Config()
+    this.config = options.config
 
     this.blockchain =
       options.blockchain ??
@@ -110,7 +110,7 @@ export class Chain extends EventEmitter {
         db: options.db,
         common: this.config.common,
         validateBlocks: false,
-        validatePow: false,
+        validateConsensus: false,
       })
 
     this.db = this.blockchain.db
@@ -324,6 +324,6 @@ export class Chain extends EventEmitter {
    */
   async getTd(hash: Buffer, num: BN): Promise<BN> {
     await this.open()
-    return this.blockchain._getTd(hash, num)
+    return (this.blockchain as any)._getTd(hash, num)
   }
 }

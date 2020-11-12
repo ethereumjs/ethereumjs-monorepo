@@ -6,7 +6,7 @@ import { Protocol } from '../protocol/protocol'
 
 export interface ServerOptions {
   /* Config */
-  config?: Config
+  config: Config
 
   /* How often (in ms) to discover new peers (default: 30000) */
   refreshInterval?: number
@@ -39,7 +39,7 @@ export class Server extends EventEmitter {
   constructor(options: ServerOptions) {
     super()
 
-    this.config = options.config ?? new Config()
+    this.config = options.config
     this.key = options.key ? parseKey(options.key) : undefined
     this.bootnodes = options.bootnodes ? parseBootnodes(options.bootnodes) : []
     this.refreshInterval = options.refreshInterval ?? 30000

@@ -14,7 +14,7 @@ export async function setup(
   options: SetupOptions = {}
 ): Promise<[MockServer, FastEthereumService | LightEthereumService]> {
   const loglevel = 'error'
-  const config = new Config({ loglevel, transports: [] })
+  const config = new Config({ loglevel })
   const { location, height, interval, syncmode } = options
   const server = new MockServer({ config, location })
   const chain = new MockChain({ config, height })

@@ -1,7 +1,10 @@
 import tape from 'tape'
+import { Config } from '../../../lib/config'
 import { Libp2pPeer } from '../../../lib/net/peer/libp2ppeer'
 import { Protocol } from '../../../lib/net/protocol'
 const td = require('testdouble')
+
+const config = new Config()
 
 tape.skip('[Libp2pPeer]', (t) => {
   const PeerInfo = td.replace('peer-info')
@@ -19,14 +22,14 @@ tape.skip('[Libp2pPeer]', (t) => {
   td.when(peerInfo.id.toB58String()).thenReturn('id')
 
   t.test('should initialize correctly', async (t) => {
-    const peer = new Libp2pPeer({ multiaddrs: 'ma0,ma1' })
+    const peer = new Libp2pPeer({ config, multiaddrs: 'ma0,ma1' })
     t.deepEquals((peer as any).multiaddrs, ['ma0', 'ma1'], 'multiaddrs split')
     t.equals(peer.address, 'ma0,ma1', 'address correct')
     t.end()
   })
 
   t.test('should create PeerInfo', async (t) => {
-    const peer = new Libp2pPeer()
+    const peer = new Libp2pPeer({ config })
     t.equals(await peer.createPeerInfo({ multiaddrs: ['ma0'] }), peerInfo, 'created')
     td.verify(peerInfo.multiaddrs.add('ma0'))
     t.equals(
@@ -43,7 +46,7 @@ tape.skip('[Libp2pPeer]', (t) => {
   })
 
   t.test('should connect to peer', async (t) => {
-    const peer = new Libp2pPeer()
+    const peer = new Libp2pPeer({ config })
     peer.bindProtocols = td.func()
     Libp2pNode.prototype.asyncStart = td.func()
     Libp2pNode.prototype.asyncDial = td.func()
@@ -58,7 +61,7 @@ tape.skip('[Libp2pPeer]', (t) => {
   })
 
   t.test('should accept peer connection', async (t) => {
-    const peer = new Libp2pPeer()
+    const peer = new Libp2pPeer({ config })
     peer.bindProtocol = td.func()
     td.when(peer.bindProtocol('proto' as any, td.matchers.isA(Libp2pSender))).thenResolve()
     await peer.accept('proto', 'conn', 'server')
@@ -70,7 +73,7 @@ tape.skip('[Libp2pPeer]', (t) => {
   t.test('should bind protocols', async (t) => {
     const protocol = { name: 'proto', versions: [1], open: () => {} } as Protocol
     const badProto = { name: 'bad', versions: [1], open: () => {} } as Protocol
-    const peer = new Libp2pPeer({ protocols: [protocol, badProto] })
+    const peer = new Libp2pPeer({ config, protocols: [protocol, badProto] })
     const node = td.object('Libp2pNode')
     peer.bindProtocol = td.func()
     protocol.open = td.func()

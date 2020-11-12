@@ -2,15 +2,18 @@ import tape from 'tape'
 import { Block, BlockData, HeaderData } from '@ethereumjs/block'
 import { BN } from 'ethereumjs-util'
 import { Chain } from '../../lib/blockchain'
+import { Config } from '../../lib/config'
 
 // explicitly import util and buffer,
 // needed for karma-typescript bundling
 import * as util from 'util' // eslint-disable-line @typescript-eslint/no-unused-vars
 import { Buffer } from 'buffer' // eslint-disable-line @typescript-eslint/no-unused-vars
 
+const config = new Config()
+
 tape('[Chain]', (t) => {
   t.test('should test blockchain DB is initialized', async (t) => {
-    const chain = new Chain()
+    const chain = new Chain({ config })
 
     const db = chain.db
     const testKey = 'name'
@@ -23,7 +26,7 @@ tape('[Chain]', (t) => {
   })
 
   t.test('should retrieve chain properties', async (t) => {
-    const chain = new Chain()
+    const chain = new Chain({ config })
     await chain.open()
     t.equal(chain.networkId, 1, 'get chain.networkId')
     t.equal(chain.blocks.td.toString(10), '17179869184', 'get chain.blocks.td')
@@ -39,7 +42,7 @@ tape('[Chain]', (t) => {
   })
 
   t.test('should detect unopened chain', async (t) => {
-    const chain = new Chain()
+    const chain = new Chain({ config })
     const headerData: HeaderData = {
       number: new BN(1),
       difficulty: new BN('abcdffff', 16),
@@ -78,7 +81,7 @@ tape('[Chain]', (t) => {
   })
 
   t.test('should add block to chain', async (t) => {
-    const chain = new Chain()
+    const chain = new Chain({ config })
     await chain.open()
     const headerData: HeaderData = {
       number: new BN(1),

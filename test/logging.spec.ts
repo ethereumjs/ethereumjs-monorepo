@@ -1,5 +1,5 @@
 import tape from 'tape'
-const { getLogger } = require('../lib/logging')
+import { getLogger } from '../lib/logging'
 
 tape('[Logging]', (t) => {
   const logger = getLogger()
@@ -13,7 +13,9 @@ tape('[Logging]', (t) => {
       //   /an error\n {4}at/.test(logger.format.transform(e).message),
       //   'log message should contain stack trace (1)')
       st.ok(
-        /an error\n {4}at/.test(logger.format.transform({ level: 'error', message: e }).message),
+        /an error\n {4}at/.test(
+          (logger.format.transform({ level: 'error', message: e }) as any).message
+        ),
         'log message should contain stack trace (2)'
       )
       st.end()
@@ -21,8 +23,12 @@ tape('[Logging]', (t) => {
   })
 
   t.test('should colorize key=value pairs', (st) => {
-    const { message } = logger.format.transform({ level: 'info', message: 'test key=value' })
-    t.equal(message, 'test \u001b[32mkey\u001b[39m=value ', 'key=value pairs should be colorized')
+    if (process.env.GITHUB_ACTION) {
+      st.skip('no color functionality in ci')
+      return st.end()
+    }
+    const { message } = logger.format.transform({ level: 'info', message: 'test key=value' }) as any
+    st.equal(message, 'test \u001b[32mkey\u001b[39m=value ', 'key=value pairs should be colorized')
     st.end()
   })
 })

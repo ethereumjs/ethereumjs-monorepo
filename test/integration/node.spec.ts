@@ -4,8 +4,8 @@ import Node from '../../lib/node'
 import MockServer from './mocks/mockserver'
 
 tape('[Integration:Node]', (t) => {
-  //@ts-ignore allow Config instantiation with MockServer
-  const config = new Config({ servers: [new MockServer()], syncmode: 'fast', lightserv: false })
+  const servers = [new MockServer({ config: new Config({ loglevel: 'error' }) }) as any]
+  const config = new Config({ servers, syncmode: 'fast', lightserv: false, loglevel: 'error' })
   const node = new Node({ config })
 
   t.test('should start/stop', async (t) => {

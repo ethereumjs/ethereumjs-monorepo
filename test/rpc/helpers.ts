@@ -29,8 +29,9 @@ export function createManager(node: any) {
 }
 
 export function createNode(nodeConfig?: any) {
+  const config = new Config({ transports: [] })
   const chain = new Chain({
-    config: new Config({ transports: [] }),
+    config,
     blockchain: (<unknown>blockChain({})) as Blockchain,
   })
   chain.opened = true
@@ -43,6 +44,7 @@ export function createNode(nodeConfig?: any) {
   const trueNodeConfig = { ...defaultNodeConfig, ...nodeConfig }
   const servers = [
     new RlpxServer({
+      config,
       bootnodes: '10.0.0.1:1234,10.0.0.2:1234',
     }),
   ]

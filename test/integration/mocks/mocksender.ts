@@ -1,11 +1,11 @@
 import { Sender } from '../../../lib/net/protocol'
 
 export default class MockSender extends Sender {
-  public protocol: any
+  public protocol: string
   public pushable: any
   public receiver: any
 
-  constructor(protocol: any, pushable: any, receiver: any) {
+  constructor(protocol: string, pushable: any, receiver: any) {
     super()
 
     this.protocol = protocol

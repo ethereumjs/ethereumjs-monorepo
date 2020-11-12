@@ -39,7 +39,7 @@ export class Libp2pPeer extends Peer {
    * Create new libp2p peer
    * @param {Libp2pPeerOptions}
    */
-  constructor(options: Libp2pPeerOptions = {}) {
+  constructor(options: Libp2pPeerOptions) {
     options.multiaddrs = options.multiaddrs
       ? parseMultiaddrs(options.multiaddrs)
       : ['/ip4/0.0.0.0/tcp/0']

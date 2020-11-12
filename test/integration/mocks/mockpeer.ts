@@ -1,4 +1,5 @@
-import { Peer } from '../../../lib/net/peer'
+import { Peer, PeerOptions } from '../../../lib/net/peer'
+import MockServer from './mockserver'
 import MockSender from './mocksender'
 import * as network from './network'
 import { EventEmitter } from 'events'
@@ -8,11 +9,15 @@ import { EventEmitter } from 'events'
 const Pushable = require('pull-pushable')
 const pull = require('pull-stream')
 
+interface MockPeerOptions extends PeerOptions {
+  location: string
+}
+
 export default class MockPeer extends Peer {
-  public location: any
+  public location: string
   public connected: boolean
 
-  constructor(options: any) {
+  constructor(options: MockPeerOptions) {
     super({ ...options, transport: 'mock', address: options.location })
     this.location = options.location
     this.connected = false
@@ -26,7 +31,7 @@ export default class MockPeer extends Peer {
     this.emit('connected')
   }
 
-  async accept(server: any) {
+  async accept(server: MockServer) {
     if (this.connected) {
       return
     }
@@ -35,8 +40,8 @@ export default class MockPeer extends Peer {
     this.inbound = true
   }
 
-  async createConnection(location: any) {
-    const protocols = this.protocols.map((p: any) => `${p.name}/${p.versions[0]}`)
+  async createConnection(location: string) {
+    const protocols = this.protocols.map((p) => `${p.name}/${p.versions[0]}`)
     const connection = network.createConnection(this.id, location, protocols)
     await this.bindProtocols(connection)
   }
@@ -50,7 +55,7 @@ export default class MockPeer extends Peer {
       pull.drain((data: any) => receiver.emit('data', data))
     )
     await Promise.all(
-      this.protocols.map(async (p: any) => {
+      this.protocols.map(async (p) => {
         if (!connection.protocols.includes(`${p.name}/${p.versions[0]}`)) return
         await p.open()
         await this.bindProtocol(p, new MockSender(p.name, pushable, receiver))
