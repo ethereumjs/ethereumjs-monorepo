@@ -1,15 +1,16 @@
 import chalk from 'chalk'
 import { createLogger, format, transports, Logger as WinstonLogger } from 'winston'
-const { combine, timestamp, label, printf } = format
 
 export type Logger = WinstonLogger
 
-const levelColors: any = {
+const levelColors = {
   error: 'red',
   warn: 'yellow',
   info: 'green',
   debug: 'white',
 }
+
+const { combine, timestamp, label, printf } = format
 
 const errorFormat = format((info: any) => {
   if (info.message instanceof Error && info.message.stack) {
