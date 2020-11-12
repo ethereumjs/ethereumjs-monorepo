@@ -53,15 +53,15 @@ jobs:
       matrix:
         fork: [
           'Berlin',
-          'MuirGlacier',
+          # 'MuirGlacier',
           'Istanbul',
-          'Petersburg',
-          'Constantinople',
-          'Byzantium',
-          'SpuriousDragon',
-          'TangerineWhistle',
-          'Homestead',
-          'Chainstart'
+          # 'Petersburg',
+          # 'Constantinople',
+          # 'Byzantium',
+          # 'SpuriousDragon',
+          # 'TangerineWhistle',
+          # 'Homestead',
+          # 'Chainstart'
         ]
       fail-fast: false
     steps:
@@ -93,17 +93,20 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        # Args to pass to the tester. Note that some have splitted the slow tests and only running those: these are only on forks where that is applicable (see PR #489 for numbers on these)
+        # Args to pass to the tester. Note that some have splitted the slow tests and only 
+        #   running those: these are only on forks where that is applicable (see PR #489 for numbers on these)
+        
+        # Tests were splitted with --dir and --excludeDir to balance execution times below the 9min mark.
         args: [
-          '--fork=Chainstart --expected-test-amount=4385',
-          '--fork=Homestead --expected-test-amount=6997',
-          '--fork=Petersburg --excludeDir=stTimeConsuming --expected-test-amount=17174',
-          '--fork=Petersburg --dir=GeneralStateTests/stTimeConsuming --expected-test-amount=15561',
-          '--fork=Constantinople --excludeDir=stTimeConsuming --expected-test-amount=17193',
-          '--fork=Constantinople --dir=GeneralStateTests/stTimeConsuming --expected-test-amount=15561',
-          '--fork=Istanbul --excludeDir=stTimeConsuming --expected-test-amount=19817',
+          '--fork=Berlin --expected-test-amount=33',
           '--fork=Istanbul --dir=GeneralStateTests/stTimeConsuming --expected-test-amount=15561',
-          '--fork=Berlin --expected-test-amount=33'
+          '--fork=Istanbul --excludeDir=stTimeConsuming --expected-test-amount=19817',
+          # '--fork=Constantinople --dir=GeneralStateTests/stTimeConsuming --expected-test-amount=15561',
+          # '--fork=Constantinople --excludeDir=stTimeConsuming --expected-test-amount=17193',
+          # '--fork=Petersburg --dir=GeneralStateTests/stTimeConsuming --expected-test-amount=15561',
+          # '--fork=Petersburg --excludeDir=stTimeConsuming --expected-test-amount=17174',
+          # '--fork=Homestead --expected-test-amount=6997',
+          # '--fork=Chainstart --expected-test-amount=4385'
         ]
       fail-fast: false
     steps:
