@@ -1,10 +1,8 @@
 import tape from 'tape-catch'
 import { Config } from '../lib/config'
 import { RlpxServer } from '../lib/net/server'
-const td = require('testdouble')
 const EventEmitter = require('events')
-const { defaultLogger } = require('../lib/logging')
-defaultLogger.silent = true
+const td = require('testdouble')
 
 tape('[Node]', (t) => {
   class EthereumService extends EventEmitter {}

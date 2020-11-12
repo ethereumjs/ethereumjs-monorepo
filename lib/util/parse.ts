@@ -1,20 +1,30 @@
+import { parse } from 'url'
 import { BlockHeader } from '@ethereumjs/block'
 import { SecureTrie as Trie } from 'merkle-patricia-tree'
 import { Account, BN, keccak, rlp, toBuffer, unpadBuffer, isHexPrefixed } from 'ethereumjs-util'
-import { parse } from 'url'
+import { Bootnode, BootnodeLike, Multiaddrs, MultiaddrsLike } from '../types'
 
-export function parseBootnodes(string: string) {
-  if (!string) {
-    return
+export function parseBootnodes(input: BootnodeLike): Bootnode[] {
+  if (!input) {
+    return []
+  }
+  if (!Array.isArray(input) && typeof input === 'object') {
+    return [input] as Bootnode[]
+  }
+  if (Array.isArray(input) && typeof input[0] === 'object') {
+    return input as Bootnode[]
+  }
+  if (!Array.isArray(input)) {
+    input = input.split(',')
   }
   try {
-    return string.split(',').map((s) => {
+    return (input as string[]).map((s: string) => {
       const match = s.match(/^(\d+\.\d+\.\d+\.\d+):([0-9]+)$/)
       if (match) {
-        return { ip: match[1], port: match[2] }
+        return { ip: match[1], port: Number(match[2]) }
       }
       const { auth: id, hostname: ip, port } = parse(s)
-      return { id, ip, port }
+      return { id, ip, port: Number(port) }
     })
   } catch (e) {
     throw new Error(`Invalid bootnode URLs: ${e.message}`)
@@ -158,4 +168,18 @@ export async function parseParams(json: any, name?: string) {
   } catch (e) {
     throw new Error(`Error parsing parameters file: ${e.message}`)
   }
+}
+
+export function parseMultiaddrs(input: MultiaddrsLike): Multiaddrs {
+  if (typeof input === 'string') {
+    input = input.split(',')
+  }
+  return input
+}
+
+export function parseKey(input: string | Buffer) {
+  if (Buffer.isBuffer(input)) {
+    return input
+  }
+  return Buffer.from(input, 'hex')
 }

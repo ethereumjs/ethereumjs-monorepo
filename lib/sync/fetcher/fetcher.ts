@@ -3,12 +3,27 @@ const Heap = require('qheap')
 import { PeerPool } from '../../net/peerpool'
 import { Config } from '../../config'
 
-const defaultOptions = {
-  timeout: 8000,
-  interval: 1000,
-  banTime: 60000,
-  maxQueue: 16,
-  maxPerRequest: 128,
+export interface FetcherOptions {
+  /* Common chain config*/
+  config: Config
+
+  /* Peer pool */
+  pool: PeerPool
+
+  /* Fetch task timeout in ms (default: 8000) */
+  timeout?: number
+
+  /* How long to ban misbehaving peers in ms (default: 60000) */
+  banTime?: number
+
+  /* Max write queue size (default: 16) */
+  maxQueue?: number
+
+  /* Max items per request (default: 128) */
+  maxPerRequest?: number
+
+  /* Retry interval in ms (default: 1000) */
+  interval?: number
 }
 
 /**
@@ -45,18 +60,17 @@ export class Fetcher extends Readable {
    * @param {number}   [options.maxPerRequest=128] max items per request
    * @param {number}   [options.interval] retry interval
    */
-  constructor(options: any) {
+  constructor(options: FetcherOptions) {
     super({ ...options, objectMode: true })
 
-    options = { ...defaultOptions, ...options }
     this.config = options.config
-
     this.pool = options.pool
-    this.timeout = options.timeout
-    this.interval = options.interval
-    this.banTime = options.banTime
-    this.maxQueue = options.maxQueue
-    this.maxPerRequest = options.maxPerRequest
+    this.timeout = options.timeout ?? 8000
+    this.interval = options.interval ?? 1000
+    this.banTime = options.banTime ?? 60000
+    this.maxQueue = options.maxQueue ?? 16
+    this.maxPerRequest = options.maxPerRequest ?? 128
+
     this.in = new Heap({ comparBefore: (a: any, b: any) => a.index < b.index })
     this.out = new Heap({ comparBefore: (a: any, b: any) => a.index < b.index })
     this.total = 0

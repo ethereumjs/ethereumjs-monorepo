@@ -12,7 +12,7 @@ export interface ChainOptions {
   /**
    * Client configuration instance
    */
-  config: Config
+  config?: Config
 
   /**
    * Database to store blocks and metadata. Should be an abstract-leveldown compliant store.
@@ -79,7 +79,7 @@ export interface GenesisBlockParams {
 export class Chain extends EventEmitter {
   public config: Config
 
-  public db: any
+  public db: LevelUp
   public blockchain: Blockchain
   public opened: boolean
 
@@ -99,18 +99,18 @@ export class Chain extends EventEmitter {
    * Create new chain
    * @param {ChainOptions} options
    */
-  constructor(options: ChainOptions) {
+  constructor(options: ChainOptions = {}) {
     super()
 
-    this.config = options.config
+    this.config = options.config ?? new Config()
 
     this.blockchain =
       options.blockchain ??
       new Blockchain({
         db: options.db,
+        common: this.config.common,
         validateBlocks: false,
         validatePow: false,
-        common: this.config.common,
       })
 
     this.db = this.blockchain.db
@@ -249,8 +249,7 @@ export class Chain extends EventEmitter {
 
   /**
    * Insert new blocks into blockchain
-   * @param  {Block[]}       blocks list of blocks to add
-   * @return {Promise<void>}
+   * @param {Block[]} blocks list of blocks to add
    */
   async putBlocks(blocks: Block[]): Promise<void> {
     if (blocks.length === 0) {

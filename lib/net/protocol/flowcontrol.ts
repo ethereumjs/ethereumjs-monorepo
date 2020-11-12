@@ -1,12 +1,23 @@
 import { Peer } from '../peer/peer'
 import { BoundProtocol } from './boundprotocol'
 
-const defaultOptions = {
-  bl: 300000000,
-  mrc: {
-    GetBlockHeaders: { base: 1000, req: 1000 },
-  },
-  mrr: 10000,
+interface Mrc {
+  [key: string]: {
+    base: number
+    req: number
+  }
+}
+
+interface FlowParams {
+  bv?: number
+  ble?: number
+  last?: number
+}
+
+export interface FlowControlOptions {
+  bl?: number
+  mrc?: Mrc
+  mrr?: number
 }
 
 /**
@@ -14,18 +25,19 @@ const defaultOptions = {
  * @memberof module:net/protocol
  */
 export class FlowControl {
-  private bl: any
-  private mrc: any
-  private mrr: any
-  private out: any
-  private in: any
+  readonly bl: number
+  readonly mrc: Mrc
+  readonly mrr: number
+  readonly out: Map<string, FlowParams>;
+  readonly in: Map<string, FlowParams>
 
-  constructor(options: any) {
-    options = { ...defaultOptions, ...options }
+  constructor(options?: FlowControlOptions) {
+    this.bl = options?.bl ?? 300000000
+    this.mrc = options?.mrc ?? {
+      GetBlockHeaders: { base: 1000, req: 1000 },
+    }
+    this.mrr = options?.mrr ?? 10000
 
-    this.bl = options.bl
-    this.mrc = options.mrc
-    this.mrr = options.mrr
     this.out = new Map()
     this.in = new Map()
   }
@@ -54,16 +66,16 @@ export class FlowControl {
     const mrcReq = (peer.les as BoundProtocol).status.mrc[messageName].req
     const mrr = (peer.les as BoundProtocol).status.mrr
     const bl = (peer.les as BoundProtocol).status.bl
-    const params = this.in.get(peer.id) ?? { ble: bl }
+    const params = this.in.get(peer.id) ?? ({ ble: bl } as FlowParams)
     if (params.last) {
       // recharge BLE at rate of MRR when less than BL
       // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
-      params.ble = Math.min(params.ble + mrr * (now - params.last), bl)
+      params.ble = Math.min(params.ble! + mrr * (now - params.last), bl)
     }
     params.last = now
     this.in.set(peer.id, params)
     // calculate how many messages we can request from peer
-    return Math.max(Math.floor((params.ble - mrcBase) / mrcReq), 0)
+    return Math.max(Math.floor((params.ble! - mrcBase) / mrcReq), 0)
   }
 
   /**

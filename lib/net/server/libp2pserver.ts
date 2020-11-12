@@ -1,13 +1,14 @@
 const PeerId = require('peer-id')
 const PeerInfo = require('peer-info')
-import { Server } from './server'
-import { Libp2pPeer } from '../peer'
+import { Multiaddrs, MultiaddrsLike } from '../../types'
+import { parseMultiaddrs } from '../../util'
 import { Libp2pNode } from '../peer/libp2pnode'
+import { Libp2pPeer } from '../peer'
+import { Server, ServerOptions } from './server'
 
-const defaultOptions = {
-  multiaddrs: ['/ip4/127.0.0.1/tcp/50580/ws'],
-  key: null,
-  bootnodes: [],
+export interface Libp2pServerOptions extends ServerOptions {
+  /* Multiaddrs to listen on (can be a comma separated string or list) */
+  multiaddrs?: MultiaddrsLike
 }
 
 /**
@@ -20,29 +21,22 @@ const defaultOptions = {
 export class Libp2pServer extends Server {
   private peers: Map<string, Libp2pPeer> = new Map()
   private banned: Map<string, number> = new Map()
-  private multiaddrs: string[] | string
+  private multiaddrs: Multiaddrs
   private node: Libp2pNode | null
 
   /**
    * Create new DevP2P/RLPx server
-   * @param {Object}   options constructor parameters
-   * @param {Config}   [options.config] Client configuration
-   * @param {Object[]} [options.bootnodes] list of bootnodes to use for discovery (can be
-   * a comma separated string or list)
-   * @param {multiaddr[]}   [options.multiaddrs] multiaddrs to listen on (can be
-   * a comma separated string or list)
-   * @param {Buffer}   [options.key] private key to use for server
-   * @param {number}   [options.refreshInterval=30000] how often (in ms) to discover new peers
+   * @param {Libp2pServerOptions}
    */
-  constructor(options: any) {
+  constructor(options: Libp2pServerOptions) {
     super(options)
-    options = { ...defaultOptions, ...options }
+
     this.multiaddrs = options.multiaddrs
-    this.key = options.key
-    this.bootnodes = options.bootnodes
+      ? parseMultiaddrs(options.multiaddrs)
+      : ['/ip4/127.0.0.1/tcp/50580/ws']
+
     this.node = null
     this.banned = new Map()
-    this.init()
   }
 
   /**
@@ -51,18 +45,6 @@ export class Libp2pServer extends Server {
    */
   get name() {
     return 'libp2p'
-  }
-
-  init() {
-    if (typeof this.key === 'string') {
-      this.key = Buffer.from(this.key, 'base64')
-    }
-    if (typeof this.multiaddrs === 'string') {
-      this.multiaddrs = this.multiaddrs.split(',')
-    }
-    if (typeof this.bootnodes === 'string') {
-      this.bootnodes = this.bootnodes.split(',')
-    }
   }
 
   /**
@@ -82,7 +64,7 @@ export class Libp2pServer extends Server {
       this.protocols.forEach(async (p: any) => {
         //@ts-ignore
         const protocol: any = `/${p.name}/${p.versions[0]}`
-        ;(this.node as Libp2pNode).handle(protocol, async (_: any, connection: any) => {
+        this.node!.handle(protocol, async (_: any, connection: any) => {
           try {
             const peerInfo = await this.getPeerInfo(connection)
             const id = (peerInfo as any).id.toB58String()
@@ -98,7 +80,7 @@ export class Libp2pServer extends Server {
       })
     }
     // eslint-disable-next-line no-extra-semi
-    ;(this.node as Libp2pNode).on('peer:discovery', async (peerInfo: any) => {
+    this.node.on('peer:discovery', async (peerInfo: any) => {
       try {
         const id = peerInfo.id.toB58String()
         if (this.peers.get(id) || this.isBanned(id)) {
@@ -121,7 +103,7 @@ export class Libp2pServer extends Server {
       }
     })
     await new Promise((resolve, reject) =>
-      (this.node as Libp2pNode).start((err: any) => {
+      this.node!.start((err: any) => {
         if (err) reject(err)
         resolve()
       })
@@ -142,7 +124,7 @@ export class Libp2pServer extends Server {
   async stop(): Promise<boolean> {
     if (this.started) {
       await new Promise((resolve, reject) =>
-        (this.node as Libp2pNode).stop((err: any) => {
+        this.node!.stop((err: any) => {
           if (err) reject(err)
           resolve()
         })
@@ -197,7 +179,7 @@ export class Libp2pServer extends Server {
           return reject(err)
         }
         // eslint-disable-next-line no-extra-semi
-        ;(this.multiaddrs as string[]).forEach((ma: any) => peerInfo.multiaddrs.add(ma))
+        this.multiaddrs.forEach((ma: any) => peerInfo.multiaddrs.add(ma))
         resolve(peerInfo)
       }
       if (this.key) {

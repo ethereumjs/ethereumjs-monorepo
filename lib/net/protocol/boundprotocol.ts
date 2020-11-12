@@ -4,17 +4,26 @@ import { Peer } from '../peer/peer'
 import { Sender } from './sender'
 import { Config } from '../../config'
 
+export interface BoundProtocolOptions {
+  config: Config
+
+  protocol: Protocol
+
+  peer: Peer
+
+  sender: Sender
+}
+
 /**
  * Binds a protocol implementation to the specified peer
  * @memberof module:net/protocol
  */
 export class BoundProtocol extends EventEmitter {
   public config: Config
-
+  public name: string
   private protocol: Protocol
   private peer: Peer
   private sender: Sender
-  public name: string
   private versions: number[]
   private timeout: number
   private _status: any
@@ -22,14 +31,10 @@ export class BoundProtocol extends EventEmitter {
 
   /**
    * Create bound protocol
-   * @param {Object}   options constructor parameters
-   * @param {Config}   [options.config] Client configuration
-   * @param {Protocol} options.protocol protocol to bind
-   * @param {Peer}     options.peer peer that protocol is bound to
-   * @param {Sender}   options.sender message sender
+   * @param {BoundProtocolOptions}
    */
 
-  constructor(options: any) {
+  constructor(options: BoundProtocolOptions) {
     super()
 
     this.config = options.config

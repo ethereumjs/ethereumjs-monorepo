@@ -2,9 +2,7 @@ import tape from 'tape-catch'
 const td = require('testdouble')
 import { BN } from 'ethereumjs-util'
 import { EventEmitter } from 'events'
-import { defaultLogger } from '../../lib/logging'
 import { Config } from '../../lib/config'
-defaultLogger.silent = true
 
 tape('[LightSynchronizer]', (t) => {
   class PeerPool extends EventEmitter {}

@@ -1,9 +1,7 @@
 import tape from 'tape-catch'
 import { Config } from '../../lib/config'
-const td = require('testdouble')
 const EventEmitter = require('events')
-import { defaultLogger } from '../../lib/logging'
-defaultLogger.silent = true
+const td = require('testdouble')
 
 // TESTS FAILING: replace testdouble w/ something TS friendly?
 tape.skip('[LightEthereumService]', (t) => {

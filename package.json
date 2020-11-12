@@ -90,6 +90,7 @@
     "@ethereumjs/config-typescript": "^2.0.0",
     "@ethereumjs/eslint-config-defaults": "^2.0.0",
     "@polkadot/ts": "^0.3.48",
+    "@types/levelup": "^4.3.0",
     "@types/node": "^14.11.5",
     "@types/tape": "^4.13.0",
     "@types/tape-catch": "^1.0.0",

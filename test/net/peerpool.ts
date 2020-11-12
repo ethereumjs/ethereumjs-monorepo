@@ -1,10 +1,8 @@
 import tape from 'tape-catch'
 const td = require('testdouble')
 import { EventEmitter } from 'events'
-import { defaultLogger } from '../../lib/logging'
 import { Config } from '../../lib/config'
 import { RlpxServer } from '../../lib/net/server'
-defaultLogger.silent = true
 
 tape('[PeerPool]', (t) => {
   const Peer = td.replace('../../lib/net/peer/peer', function (this: any, id: any) {
@@ -41,7 +39,7 @@ tape('[PeerPool]', (t) => {
   t.test('should connect/disconnect peer', (t) => {
     t.plan(4)
     const peer = new EventEmitter()
-    const pool = new PeerPool({ config: new Config({ transports: [] }) })
+    const pool = new PeerPool({ config: new Config({ loglevel: 'error', transports: [] }) })
     ;(peer as any).id = 'abc'
     ;(pool as any).ban = td.func()
     pool.connected(peer)

@@ -3,22 +3,18 @@ import { parseBootnodes, parseTransports, parseParams } from '../../lib/util'
 
 tape('[Util/Parse]', (t) => {
   t.test('should parse bootnodes', (t) => {
-    t.notOk(parseBootnodes(''), 'handle empty')
-    t.deepEquals(
-      parseBootnodes('10.0.0.1:1234'),
-      [{ ip: '10.0.0.1', port: '1234' }],
-      'parse ip:port'
-    )
+    t.deepEquals(parseBootnodes(''), [], 'handle empty')
+    t.deepEquals(parseBootnodes('10.0.0.1:1234'), [{ ip: '10.0.0.1', port: 1234 }], 'parse ip:port')
     t.deepEquals(
       parseBootnodes('enode://abc@10.0.0.1:1234'),
-      [{ id: 'abc', ip: '10.0.0.1', port: '1234' }],
+      [{ id: 'abc', ip: '10.0.0.1', port: 1234 }],
       'parse url'
     )
     t.deepEquals(
       parseBootnodes('10.0.0.1:1234,enode://abc@127.0.0.1:2345'),
       [
-        { ip: '10.0.0.1', port: '1234' },
-        { id: 'abc', ip: '127.0.0.1', port: '2345' },
+        { ip: '10.0.0.1', port: 1234 },
+        { id: 'abc', ip: '127.0.0.1', port: 2345 },
       ],
       'parse multiple'
     )

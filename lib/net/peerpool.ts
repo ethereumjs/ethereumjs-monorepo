@@ -1,6 +1,15 @@
 import { EventEmitter } from 'events'
 import { Config } from '../config'
 import { Peer } from './peer/peer'
+import { Server } from './server'
+
+export interface PeerPoolOptions {
+  /* Config */
+  config: Config
+
+  /* Servers to aggregate peers from */
+  servers?: Server[]
+}
 
 /**
  * @module net
@@ -30,7 +39,7 @@ export class PeerPool extends EventEmitter {
    * Create new peer pool
    * @param {Object}   options constructor parameters
    */
-  constructor(options: any) {
+  constructor(options: PeerPoolOptions) {
     super()
 
     this.config = options.config
@@ -153,7 +162,8 @@ export class PeerPool extends EventEmitter {
    * @param  maxAge ban period in milliseconds
    * @emits  banned
    */
-  ban(peer: Peer, maxAge?: number) {
+  ban(peer: Peer, maxAge: number = 60000) {
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (!peer.server) {
       return
     }

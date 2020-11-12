@@ -1,4 +1,3 @@
-import { Config } from '../../../lib/config'
 import { Server } from '../../../lib/net/server'
 import MockPeer from './mockpeer'
 import * as network from './network'
@@ -9,7 +8,7 @@ export default class MockServer extends Server {
   public peers: any
 
   constructor(options: any = {}) {
-    super({ config: new Config({ transports: [] }), ...options })
+    super(options)
     this.location = options.location ?? '127.0.0.1'
     this.server = null
     this.peers = {}
@@ -25,15 +24,15 @@ export default class MockServer extends Server {
     }
     await super.start()
     await this.wait(1)
-    if (this.location) {
-      this.server = network.createServer(this.location)
-      this.server.on('listening', () => {
-        this.emit('listening', {
-          transport: this.name,
-          url: `mock://${this.location}`,
-        })
+
+    this.server = network.createServer(this.location)
+    this.server.on('listening', () => {
+      this.emit('listening', {
+        transport: this.name,
+        url: `mock://${this.location}`,
       })
-    }
+    })
+
     this.server.on('connection', async (connection: any) => {
       await this.connect(connection)
     })

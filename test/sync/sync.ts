@@ -1,8 +1,6 @@
 import tape from 'tape-catch'
-const td = require('testdouble')
 import { EventEmitter } from 'events'
-import { defaultLogger } from '../../lib/logging'
-defaultLogger.silent = true
+const td = require('testdouble')
 
 tape('[Synchronizer]', (t) => {
   class PeerPool extends EventEmitter {}

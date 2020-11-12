@@ -1,19 +1,12 @@
-import { BN } from 'ethereumjs-util'
-import { Block, BlockHeader } from '@ethereumjs/block'
+import { Block } from '@ethereumjs/block'
 import { Chain } from '../../../lib/blockchain'
-import { Config } from '../../../lib/config'
-
-const defaultOptions = {
-  height: 10,
-}
 
 export default class MockChain extends Chain {
-  public height: any
+  public height: number
 
   constructor(options: any = {}) {
-    super({ config: new Config({ transports: [] }), ...options })
-    options = { ...defaultOptions, ...options }
-    this.height = options.height
+    super(options)
+    this.height = options.height ?? 10
   }
 
   async open() {
@@ -27,15 +20,14 @@ export default class MockChain extends Chain {
   async build() {
     const blocks: any[] = []
     for (let number = 0; number < this.height; number++) {
-      blocks.push(
-        Block.fromBlockData({
-          header: BlockHeader.fromHeaderData({
-            number: new BN(number + 1),
-            difficulty: new BN(1),
-            parentHash: number ? blocks[number - 1].hash() : (this.genesis as any).hash,
-          }),
-        })
-      )
+      const block = Block.fromBlockData({
+        header: {
+          number: number + 1,
+          difficulty: 1,
+          parentHash: number ? blocks[number - 1].hash() : (this.genesis as any).hash,
+        },
+      })
+      blocks.push(block)
     }
     await this.putBlocks(blocks)
   }

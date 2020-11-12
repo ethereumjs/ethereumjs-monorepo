@@ -1,6 +1,25 @@
-import * as events from 'events'
-import { FastEthereumService, LightEthereumService } from './service'
+import events from 'events'
+import { LevelUp } from 'levelup'
+import { BootnodeLike } from './types'
 import { Config } from './config'
+import { FastEthereumService, LightEthereumService } from './service'
+
+export interface NodeOptions {
+  /* Client configuration */
+  config: Config
+
+  /* Blockchain database (default: null) */
+  db?: LevelUp
+
+  /* List of bootnodes to use for discovery */
+  bootnodes?: BootnodeLike[]
+
+  /* List of supported clients */
+  clientFilter?: string[]
+
+  /* How often to discover new peers */
+  refreshInterval?: number
+}
 
 /**
  * Represents the top-level ethereum node, and is responsible for managing the
@@ -10,21 +29,16 @@ import { Config } from './config'
 export default class Node extends events.EventEmitter {
   public config: Config
 
-  public services: any
+  public services: (FastEthereumService | LightEthereumService)[]
 
   public opened: boolean
   public started: boolean
 
   /**
    * Create new node
-   * @param {Object}   options constructor parameters
-   * @param {Config}   [options.config] Client configuration
-   * @param {LevelDB}  [options.db=null] blockchain database
-   * @param {Object[]} [options.bootnodes] list of bootnodes to use for discovery
-   * @param {string[]} [options.clientFilter] list of supported clients
-   * @param {number}   [options.refreshInterval] how often to discover new peers
+   * @param {NodeOptions}
    */
-  constructor(options: any) {
+  constructor(options: NodeOptions) {
     super()
 
     this.config = options.config
@@ -60,15 +74,15 @@ export default class Node extends events.EventEmitter {
         this.emit('listening', details)
       })
     })
-    this.services.map((s: any) => {
-      s.on('error', (error: any) => {
+    this.services.map((s) => {
+      s.on('error', (error: Error) => {
         this.emit('error', error)
       })
       s.on('synchronized', () => {
         this.emit('synchronized')
       })
     })
-    await Promise.all(this.services.map((s: any) => s.open()))
+    await Promise.all(this.services.map((s) => s.open()))
     this.opened = true
   }
 
@@ -81,7 +95,7 @@ export default class Node extends events.EventEmitter {
       return false
     }
     await Promise.all(this.config.servers.map((s) => s.start()))
-    await Promise.all(this.services.map((s: any) => s.start()))
+    await Promise.all(this.services.map((s) => s.start()))
     this.started = true
   }
 
@@ -93,7 +107,7 @@ export default class Node extends events.EventEmitter {
     if (!this.started) {
       return false
     }
-    await Promise.all(this.services.map((s: any) => s.stop()))
+    await Promise.all(this.services.map((s) => s.stop()))
     await Promise.all(this.config.servers.map((s) => s.stop()))
     this.started = false
   }
@@ -104,7 +118,7 @@ export default class Node extends events.EventEmitter {
    * @return {Service}
    */
   service(name: string) {
-    return this.services.find((s: any) => s.name === name)
+    return this.services.find((s) => s.name === name)
   }
 
   /**

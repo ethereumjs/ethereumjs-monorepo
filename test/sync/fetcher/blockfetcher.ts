@@ -1,10 +1,8 @@
 import tape from 'tape-catch'
-const td = require('testdouble')
 import { BN } from 'ethereumjs-util'
 import { EventEmitter } from 'events'
-import { defaultLogger } from '../../../lib/logging'
 import { Config } from '../../../lib/config'
-defaultLogger.silent = true
+const td = require('testdouble')
 
 async function wait(delay?: number) {
   await new Promise((resolve) => setTimeout(resolve, delay ?? 10))
@@ -22,7 +20,7 @@ tape('[BlockFetcher]', (t) => {
       config: new Config({ transports: [] }),
       pool: new PeerPool(),
       first: new BN(1),
-      count: 10,
+      count: new BN(10),
       maxPerRequest: 5,
       timeout: 5,
     })

@@ -1,14 +1,14 @@
-import { Server } from './server'
-const { randomBytes } = require('crypto')
+import { randomBytes } from 'crypto'
 import { RLPx as Devp2pRLPx, Peer as Devp2pRLPxPeer, DPT as Devp2pDPT } from 'ethereumjs-devp2p'
 import { RlpxPeer } from '../peer/rlpxpeer'
-import { parseBootnodes } from '../../util'
+import { Server, ServerOptions } from './server'
 
-const defaultOptions = {
-  port: 30303,
-  key: randomBytes(32),
-  clientFilter: ['go1.5', 'go1.6', 'go1.7', 'quorum', 'pirl', 'ubiq', 'gmc', 'gwhale', 'prichain'],
-  bootnodes: [],
+export interface RlpxServerOptions extends ServerOptions {
+  /* Local port to listen on (default: 30303) */
+  port?: number
+
+  /* List of supported clients */
+  clientFilter?: string[]
 }
 
 const ignoredErrors = new RegExp(
@@ -46,26 +46,25 @@ export class RlpxServer extends Server {
 
   /**
    * Create new DevP2P/RLPx server
-   * @param {Object}   options constructor parameters
-   * @param {Config}   [options.config] Client configuration
-   * @param {Object[]} [options.bootnodes] list of bootnodes to use for discovery (can be
-   * a comma separated string or list)
-   * @param {number}   [options.port=null] local port to listen on
-   * @param {Buffer}   [options.key] private key to use for server
-   * @param {string[]} [options.clientFilter] list of supported clients
-   * @param {number}   [options.refreshInterval=30000] how often (in ms) to discover new peers
+   * @param {RlpxServerOptions}
    */
-  constructor(options?: any) {
+  constructor(options: RlpxServerOptions) {
     super(options)
-    options = { ...defaultOptions, ...options }
 
     // TODO: get the external ip from the upnp service
     this.ip = '::'
-    this.port = options.port
-    this.key = options.key
-    this.clientFilter = options.clientFilter
-    this.bootnodes = options.bootnodes
-    this.init()
+    this.port = options.port ?? 30303
+    this.clientFilter = options.clientFilter ?? [
+      'go1.5',
+      'go1.6',
+      'go1.7',
+      'quorum',
+      'pirl',
+      'ubiq',
+      'gmc',
+      'gwhale',
+      'prichain',
+    ]
   }
 
   /**
@@ -74,15 +73,6 @@ export class RlpxServer extends Server {
    */
   get name() {
     return 'rlpx'
-  }
-
-  init() {
-    if (typeof this.bootnodes === 'string') {
-      this.bootnodes = parseBootnodes(this.bootnodes)
-    }
-    if (typeof this.key === 'string') {
-      this.key = Buffer.from(this.key, 'hex')
-    }
   }
 
   /**
@@ -130,13 +120,17 @@ export class RlpxServer extends Server {
    * Bootstrap bootnode peers from the network
    */
   async bootstrap(): Promise<void> {
-    const promises = (this.bootnodes as any[]).map((node: any) => {
+    const promises = this.bootnodes.map((node) => {
       const bootnode = {
         address: node.ip,
         udpPort: node.port,
         tcpPort: node.port,
       }
-      return (this.dpt as Devp2pDPT).bootstrap(bootnode).catch((e: Error) => this.error(e))
+      try {
+        return this.dpt!.bootstrap(bootnode)
+      } catch (e) {
+        this.error(e)
+      }
     })
     await Promise.all(promises)
   }
@@ -146,8 +140,8 @@ export class RlpxServer extends Server {
    */
   async stop(): Promise<boolean> {
     if (this.started) {
-      ;(this.rlpx as Devp2pRLPx).destroy() // eslint-disable-line no-extra-semi
-      ;(this.dpt as Devp2pDPT).destroy()
+      this.rlpx!.destroy() // eslint-disable-line no-extra-semi
+      this.dpt!.destroy()
       await super.stop()
       this.started = false
     }
@@ -164,7 +158,7 @@ export class RlpxServer extends Server {
     if (!this.started) {
       return false
     }
-    ;(this.dpt as Devp2pDPT).banPeer(peerId, maxAge) // eslint-disable-line no-extra-semi
+    this.dpt!.banPeer(peerId, maxAge) // eslint-disable-line no-extra-semi
     return true
   }
 
@@ -191,7 +185,7 @@ export class RlpxServer extends Server {
    * @private
    */
   initDpt() {
-    this.dpt = new Devp2pDPT(this.key as Buffer, {
+    this.dpt = new Devp2pDPT(this.key ?? randomBytes(32), {
       refreshInterval: this.refreshInterval,
       endpoint: {
         address: '0.0.0.0',
@@ -212,8 +206,8 @@ export class RlpxServer extends Server {
    * @private
    */
   initRlpx() {
-    this.rlpx = new Devp2pRLPx(this.key as Buffer, {
-      dpt: this.dpt as Devp2pDPT,
+    this.rlpx = new Devp2pRLPx(this.key ?? randomBytes(32), {
+      dpt: this.dpt!,
       maxPeers: this.config.maxPeers,
       capabilities: RlpxPeer.capabilities(Array.from(this.protocols)),
       remoteClientIdFilter: this.clientFilter,
@@ -223,9 +217,9 @@ export class RlpxServer extends Server {
     this.rlpx.on('peer:added', async (rlpxPeer: Devp2pRLPxPeer) => {
       const peer = new RlpxPeer({
         config: this.config,
-        id: (rlpxPeer.getId() as Buffer).toString('hex'),
-        host: rlpxPeer._socket.remoteAddress,
-        port: rlpxPeer._socket.remotePort,
+        id: rlpxPeer.getId()!.toString('hex'),
+        host: rlpxPeer._socket.remoteAddress!,
+        port: rlpxPeer._socket.remotePort!,
         protocols: Array.from(this.protocols),
         // @ts-ignore: Property 'server' does not exist on type 'Socket'.
         // TODO: check this error

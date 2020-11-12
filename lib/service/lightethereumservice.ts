@@ -1,4 +1,4 @@
-import { EthereumService } from './ethereumservice'
+import { EthereumService, EthereumServiceOptions } from './ethereumservice'
 import { Peer } from '../net/peer/peer'
 import { LightSynchronizer } from '../sync/lightsync'
 import { LesProtocol } from '../net/protocol/lesprotocol'
@@ -8,19 +8,15 @@ import { LesProtocol } from '../net/protocol/lesprotocol'
  * @memberof module:service
  */
 export class LightEthereumService extends EthereumService {
+  public synchronizer: LightSynchronizer
+
   /**
    * Create new ETH service
    * @param {Object}   options constructor parameters
-   * @param {Config}   [options.config] Client configuration
-   * @param {Chain}    [options.chain] blockchain
-   * @param {number}   [options.interval] sync retry interval
    */
-  constructor(options?: any) {
+  constructor(options: EthereumServiceOptions) {
     super(options)
-    this.init()
-  }
 
-  init() {
     this.config.logger.info('Light sync mode')
     this.synchronizer = new LightSynchronizer({
       config: this.config,
@@ -35,7 +31,7 @@ export class LightEthereumService extends EthereumService {
    * Returns all protocols required by this service
    */
   get protocols(): LesProtocol[] {
-    return [new LesProtocol({ chain: this.chain, timeout: this.timeout })]
+    return [new LesProtocol({ config: this.config, chain: this.chain, timeout: this.timeout })]
   }
 
   /**

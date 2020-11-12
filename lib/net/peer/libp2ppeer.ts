@@ -1,13 +1,14 @@
-import { Peer } from './peer'
 import PeerId from 'peer-id'
 import PeerInfo from 'peer-info'
-import { Libp2pNode } from './libp2pnode'
+import { Multiaddrs, MultiaddrsLike } from '../../types'
+import { parseMultiaddrs } from '../../util'
 import { Libp2pSender } from '../protocol/libp2psender'
+import { Peer, PeerOptions } from './peer'
+import { Libp2pNode } from './libp2pnode'
 
-const defaultOptions = {
-  multiaddrs: ['/ip4/0.0.0.0/tcp/0'],
-  key: null,
-  bootnodes: [],
+export interface Libp2pPeerOptions extends Omit<PeerOptions, 'address' | 'transport'> {
+  /* Multiaddrs to listen on (can be a comma separated string or list) */
+  multiaddrs?: MultiaddrsLike
 }
 
 /**
@@ -15,9 +16,9 @@ const defaultOptions = {
  * @memberof module:net/peer
  * @example
  *
- * const { Libp2pPeer } = require('./lib/net/peer')
+ * import { Libp2pPeer } from './lib/net/peer'
  * import { Chain } from './lib/blockchain'
- * const { EthProtocol } = require('./lib/net/protocol')
+ * import { EthProtocol } from './lib/net/protocol'
  *
  * const chain = new Chain()
  * const protocols = [ new EthProtocol({ chain })]
@@ -31,31 +32,22 @@ const defaultOptions = {
  *   .connect()
  */
 export class Libp2pPeer extends Peer {
-  private multiaddrs: string | string[]
+  private multiaddrs: Multiaddrs
   private connected: boolean
 
   /**
    * Create new libp2p peer
-   * @param {Object}      options constructor parameters
-   * @param {string}      options.id peer id
-   * @param {multiaddr[]} options.multiaddrs multiaddrs to listen on (can be
-   * a comma separated string or list)
-   * @param {Protocols[]} [options.protocols=[]] supported protocols
+   * @param {Libp2pPeerOptions}
    */
-  constructor(options: any) {
-    super({ ...options, transport: 'libp2p' })
-    options = { ...defaultOptions, ...options }
+  constructor(options: Libp2pPeerOptions = {}) {
+    options.multiaddrs = options.multiaddrs
+      ? parseMultiaddrs(options.multiaddrs)
+      : ['/ip4/0.0.0.0/tcp/0']
+
+    super({ ...options, transport: 'libp2p', address: options.multiaddrs[0] })
 
     this.multiaddrs = options.multiaddrs
-    this.server = null
     this.connected = false
-    this.init()
-  }
-
-  init() {
-    if (typeof this.multiaddrs === 'string') {
-      this.multiaddrs = this.multiaddrs.split(',')
-    }
     this.address = this.multiaddrs.map((ma: string) => ma.split('/ipfs')[0]).join(',')
   }
 

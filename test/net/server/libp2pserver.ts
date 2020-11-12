@@ -2,8 +2,6 @@ import tape from 'tape-catch'
 import { Config } from '../../../lib/config'
 const td = require('testdouble')
 // const EventEmitter = require('events')
-const { defaultLogger } = require('../../../lib/logging')
-defaultLogger.silent = true
 
 // TODO
 // Test deactivated along TypeScript transition

@@ -1,11 +1,14 @@
 import { EventEmitter } from 'events'
+import { Config } from '../../config'
+import { Peer } from '../peer/peer'
 import { BoundProtocol } from './boundprotocol'
 import { Sender } from './sender'
-import { Peer } from '../peer/peer'
-import { Config } from '../../config'
 
-const defaultOptions = {
-  timeout: 8000,
+export interface ProtocolOptions {
+  config: Config
+
+  /* Handshake timeout in ms (default: 8000) */
+  timeout?: number
 }
 
 export type Message = {
@@ -36,23 +39,19 @@ export type Message = {
  */
 export class Protocol extends EventEmitter {
   public config: Config
-
   public timeout: number
   public opened: boolean
 
   /**
    * Create new protocol
-   * @param {Object}   options constructor parameters
-   * @param {Config}   [options.config] Client configuration
-   * @param {number}   [options.timeout=8000] handshake timeout in ms
+   * @param {ProtocolOptions}
    */
-  constructor(options?: any) {
+  constructor(options: ProtocolOptions) {
     super()
 
-    options = { ...defaultOptions, ...options }
     this.config = options.config
+    this.timeout = options.timeout ?? 8000
 
-    this.timeout = options.timeout
     this.opened = false
   }
 
