@@ -1,4 +1,5 @@
 import tape from 'tape-catch'
+import Node from '../lib/node'
 import { Config } from '../lib/config'
 import { RlpxServer } from '../lib/net/server'
 const EventEmitter = require('events')
@@ -20,7 +21,6 @@ tape('[Node]', (t) => {
   td.when(Server.prototype.start()).thenResolve()
   td.when(Server.prototype.stop()).thenResolve()
   td.replace('../lib/net/server/server', Server)
-  const Node = require('../lib/node')
 
   t.test('should initialize correctly', (t) => {
     const node = new Node({ config: new Config({ transports: [] }) })

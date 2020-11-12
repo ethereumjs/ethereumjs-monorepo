@@ -2,19 +2,19 @@ module.exports = function (config) {
   config.set({
     frameworks: ['karma-typescript', 'tap'],
 
-    files: ['test/**/*.ts', 'lib/**/*.ts'],
+    files: ['lib/**/*.ts', 'test/blockchain/chain.spec.ts'],
 
     preprocessors: {
-      '**/*.ts': ['karma-typescript']
+      '**/*.ts': ['karma-typescript'],
     },
 
     reporters: ['progress'],
 
     karmaTypescriptConfig: {
       bundlerOptions: {
-        entrypoints: /\.spec\.ts$/
+        entrypoints: /\.spec\.ts$/,
       },
-      tsconfig: "./tsconfig.karma.json",
+      tsconfig: './tsconfig.karma.json',
     },
 
     browsers: ['FirefoxHeadless', 'ChromeHeadless'],
@@ -31,6 +31,6 @@ module.exports = function (config) {
 
     // Fail after timeout
     browserDisconnectTimeout: 100000,
-    browserNoActivityTimeout: 100000
+    browserNoActivityTimeout: 100000,
   })
 }

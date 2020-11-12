@@ -19,14 +19,14 @@
     "bundle": "webpack",
     "client:start": "tsc -p tsconfig.prod.json && node dist/bin/cli.js",
     "coverage": "nyc npm run coverage:test && nyc report --reporter=lcov",
-    "coverage:test": "tape -r ts-node/register 'test/!(integration)/**/*.ts' 'test/integration/**/*.ts'",
+    "coverage:test": "tape -r ts-node/register 'test/**/*.spec.ts'",
     "docs:build": "typedoc --tsconfig tsconfig.prod.json",
     "lint": "ethereumjs-config-lint",
     "lint:fix": "ethereumjs-config-lint-fix",
     "tape": "tape -r ts-node/register",
-    "test": "npm run test:unit && npm run test:integration",
-    "test:unit": "npm run tape -- 'test/!(integration)/**/*.ts'",
-    "test:integration": "npm run tape -- 'test/integration/**/*.ts'",
+    "test": "npm run tape -- 'test/**/*.spec.ts'",
+    "test:unit": "npm run tape -- 'test/!(integration)/**/*.spec.ts'",
+    "test:integration": "npm run tape -- 'test/integration/**/*.spec.ts'",
     "test:browser": "karma start karma.conf.js"
   },
   "husky": {
