@@ -110,7 +110,7 @@ export class Chain extends EventEmitter {
         db: options.db,
         common: this.config.common,
         validateBlocks: false,
-        validatePow: false,
+        validateConsensus: false,
       })
 
     this.db = this.blockchain.db
@@ -324,6 +324,6 @@ export class Chain extends EventEmitter {
    */
   async getTd(hash: Buffer, num: BN): Promise<BN> {
     await this.open()
-    return this.blockchain._getTd(hash, num)
+    return (this.blockchain as any)._getTd(hash, num)
   }
 }
