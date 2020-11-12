@@ -16,7 +16,7 @@ export interface SynchronizerOptions {
   chain: Chain
 
   /* Flow control manager */
-  flow: FlowControl
+  flow?: FlowControl
 
   /* Refresh interval in ms (default: 1000) */
   interval?: number
@@ -47,7 +47,7 @@ export class Synchronizer extends EventEmitter {
 
     this.pool = options.pool
     this.chain = options.chain
-    this.flow = options.flow
+    this.flow = options.flow ?? new FlowControl()
     this.interval = options.interval ?? 1000
     this.running = false
     this.forceSync = false

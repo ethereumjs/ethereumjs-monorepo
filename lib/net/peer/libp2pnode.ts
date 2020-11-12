@@ -41,7 +41,6 @@ export class Libp2pNode extends LibP2p {
         dht: {
           kBucketSize: 20,
         },
-        // @ts-ignore: 'EXPERIMENTAL' does not exist in type 'OptionsConfig'
         EXPERIMENTAL: {
           dht: false,
           pubsub: false,

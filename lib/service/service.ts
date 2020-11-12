@@ -6,7 +6,7 @@ import { Protocol } from '../net/protocol'
 
 export interface ServiceOptions {
   /* Config */
-  config?: Config
+  config: Config
 }
 
 /**
@@ -26,7 +26,7 @@ export class Service extends events.EventEmitter {
   constructor(options: ServiceOptions) {
     super()
 
-    this.config = options.config ?? new Config()
+    this.config = options.config
 
     this.opened = false
     this.running = false

@@ -5,7 +5,7 @@ import { Config } from '../../config'
 
 export interface PeerOptions {
   /* Config */
-  config?: Config
+  config: Config
 
   /* Peer id */
   id?: string
@@ -52,7 +52,7 @@ export class Peer extends events.EventEmitter {
   constructor(options: PeerOptions) {
     super()
 
-    this.config = options.config ?? new Config()
+    this.config = options.config
 
     this.id = options.id ?? ''
     this.address = options.address

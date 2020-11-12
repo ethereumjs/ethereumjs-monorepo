@@ -1,10 +1,14 @@
 import { Block } from '@ethereumjs/block'
-import { Chain } from '../../../lib/blockchain'
+import { Chain, ChainOptions } from '../../../lib/blockchain'
+
+interface MockChainOptions extends ChainOptions {
+  height?: number
+}
 
 export default class MockChain extends Chain {
   public height: number
 
-  constructor(options: any = {}) {
+  constructor(options: MockChainOptions) {
     super(options)
     this.height = options.height ?? 10
   }
@@ -18,7 +22,7 @@ export default class MockChain extends Chain {
   }
 
   async build() {
-    const blocks: any[] = []
+    const blocks: Block[] = []
     for (let number = 0; number < this.height; number++) {
       const block = Block.fromBlockData({
         header: {

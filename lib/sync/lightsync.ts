@@ -1,6 +1,6 @@
 import { Peer } from '../net/peer/peer'
 import { BoundProtocol } from '../net/protocol'
-import { Synchronizer } from './sync'
+import { Synchronizer, SynchronizerOptions } from './sync'
 import { HeaderFetcher } from './fetcher'
 import { BN } from 'ethereumjs-util'
 import { short } from '../util'
@@ -12,7 +12,7 @@ import { short } from '../util'
 export class LightSynchronizer extends Synchronizer {
   private headerFetcher: HeaderFetcher | null
 
-  constructor(options: any) {
+  constructor(options: SynchronizerOptions) {
     super(options)
     this.headerFetcher = null
   }
