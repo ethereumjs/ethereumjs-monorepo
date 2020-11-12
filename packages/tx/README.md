@@ -6,6 +6,8 @@
 [![Code Coverage][tx-coverage-badge]][tx-coverage-link]
 [![Discord][discord-badge]][discord-link]
 
+Note: this `README` reflects the state of the library from `v3.0.0` onwards. See `README` from the [standalone repository](https://github.com/ethereumjs/ethereumjs-tx) for an introduction on the last preceeding release.
+
 # INSTALL
 
 `npm install @ethereumjs/tx`
@@ -26,7 +28,7 @@ const txParams = {
   data: '0x7f7465737432000000000000000000000000000000000000000000000000000000600057',
 }
 
-const commmon = new Common({ chain: 'mainnet', hardfork: 'petersburg' })
+const commmon = new Common({ chain: 'mainnet' })
 const tx = Transaction.fromTxData(txParams, { common })
 
 const privateKey = Buffer.from(
@@ -38,6 +40,8 @@ const signedTx = tx.sign(privateKey)
 
 const serializedTx = signedTx.serialize()
 ```
+
+Properties of a `Transaction` object are frozen with `Object.freeze()` which gives you enhanced security and consistency properties when working with the instantiated object. This behavior can be modified using the `freeze` option in the constructor if needed.
 
 ## Fake Transaction
 
@@ -63,7 +67,7 @@ _getFakeTransaction(txParams: TxParams): Transaction {
 
 # Chain and Hardfork Support
 
-The `Transaction` constructor receives a parameter of an [`@ethereumjs/common`](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common) object that lets you specify the chain and hardfork to be used. By default, `mainnet` and `petersburg` will be used.
+The `Transaction` constructor receives a parameter of an [`@ethereumjs/common`](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common) object that lets you specify the chain and hardfork to be used. By default, `mainnet` and `istanbul` will be used.
 
 ## MuirGlacier Support
 

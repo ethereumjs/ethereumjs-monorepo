@@ -6,74 +6,22 @@
 [![Code Coverage][vm-coverage-badge]][vm-coverage-link]
 [![Discord][discord-badge]][discord-link]
 
-Implements Ethereum's VM in Javascript.
+Implements Ethereum's VM in `TypeScript`.
 
-#### Fork Support
-
-The VM currently supports the following hardfork rules:
-
-- `Chainstart` (a.k.a. Frontier) (v5, UNRELEASED)
-- `Homestead` (v5, UNRELEASED)
-- `TangerineWhistle` (v5, UNRELEASED)
-- `SpuriousDragon` (v5, UNRELEASED)
-- `Byzantium`
-- `Constantinople`
-- `Petersburg` (default)
-- `Istanbul`
-- `MuirGlacier` (only `mainnet` and `ropsten`)
-
-##### MuirGlacier Hardfork Support
-
-An Ethereum test suite compliant `MuirGlacier` HF implementation is available
-since the `v4.1.3` VM release. You can activate a `MuirGlacier` VM by using the
-`muirGlacier` `hardfork` option flag.
-
-**Note:** The original `v4.1.2` release contains a critical bug preventing the
-`MuirGlacier` VM to work properly and there is the need to update.
-
-##### Istanbul Harfork Support
-
-An Ethereum test suite compliant `Istanbul` HF implementation is available
-since the `v4.1.1` VM release. You can activate an `Istanbul` VM by using the
-`istanbul` `hardfork` option flag.
-
-Supported `Istanbul` EIPs:
-
-- [EIP-152](https://eips.ethereum.org/EIPS/eip-152): Blake 2b `F` precompile,
-  PR [#584](https://github.com/ethereumjs/ethereumjs-vm/pull/584)
-- [EIP-1108](https://eips.ethereum.org/EIPS/eip-1108): Reduce `alt_bn128`
-  precompile gas costs,  
-  PR [#540](https://github.com/ethereumjs/ethereumjs-vm/pull/540)
-  (already released in `v4.0.0`)
-- [EIP-1344](https://eips.ethereum.org/EIPS/eip-1344): Add ChainID Opcode,
-  PR [#572](https://github.com/ethereumjs/ethereumjs-vm/pull/572)
-- [EIP-1884](https://eips.ethereum.org/EIPS/eip-1884): Trie-size-dependent
-  Opcode Repricing,
-  PR [#581](https://github.com/ethereumjs/ethereumjs-vm/pull/581)
-- [EIP-2200](https://eips.ethereum.org/EIPS/eip-2200): Rebalance net-metered
-  SSTORE gas costs,
-  PR [#590](https://github.com/ethereumjs/ethereumjs-vm/pull/590)
-
-#### EIP Support
-
-It is possible to individually activate EIP support in the VM. In order to do so, pass an array to the `eips` field of the VMs options, such as `new VM({ eips: [ 2537 ]})`.
-
-Currently supported EIPs are:
-
-- [EIP-2537](https://eips.ethereum.org/EIPS/eip-2537): BLS precompiles
+Note: this `README` reflects the state of the library from `v5.0.0` onwards. See `README` from the [standalone repository](https://github.com/ethereumjs/ethereumjs-vm) for an introduction on the last preceeding release.
 
 # INSTALL
 
-`npm install ethereumjs-vm`
+`npm install @ethereumjs/vm`
 
 # USAGE
 
-```javascript
+```typescript
 import { BN } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
 import VM from '@ethereumjs/vm'
 
-const common = new Common({ chain: 'mainnet', hardfork: 'istanbul' })
+const common = new Common({ chain: 'mainnet' })
 const vm = new VM({ common })
 
 const STOP = '00'
@@ -110,10 +58,6 @@ This projects contain the following examples:
 
 All of the examples have their own `README.md` explaining how to run them.
 
-# BROWSER
-
-To build the VM for standalone use in the browser, see: [Running the VM in a browser](https://github.com/ethereumjs/ethereumjs-vm/tree/master/examples/run-code-browser).
-
 # API
 
 ## VM
@@ -122,7 +66,105 @@ For documentation on `VM` instantiation, exposed API and emitted `events` see ge
 
 ## StateManager
 
-The API for the `StateManager` is currently in `Beta`, separate documentation can be found [here](./docs/classes/statemanager.md), see also [release notes](https://github.com/ethereumjs/ethereumjs-vm/releases/tag/v2.5.0) from the `v2.5.0` VM release for details on the `StateManager` rewrite.
+Documentation on the `StateManager` can be found [here](./docs/classes/_state_statemanager_.defaultstatemanager.md). If you want to provide your own `StateManager` you can implement the dedicated [interface](./docs/interfaces/_state_interface_.statemanager.md) to ensure that your implementation conforms with the current API.
+
+# BROWSER
+
+To build the VM for standalone use in the browser, see: [Running the VM in a browser](https://github.com/ethereumjs/ethereumjs-vm/tree/master/examples/run-code-browser).
+
+# SETUP
+
+## Hardfork Support
+
+Starting with the `v5` release series all hardforks from `Frontier` (`chainstart`) up to the latest active mainnet hardfork are supported.
+
+The VM currently supports the following hardfork rules:
+
+- `chainstart` (a.k.a. Frontier) (`v5.0.0`+)
+- `homestead` (`v5.0.0`+)
+- `tangerineWhistle` (`v5.0.0`+)
+- `spuriousDragon` (`v5.0.0`+)
+- `byzantium`
+- `constantinople`
+- `petersburg`
+- `istanbul` (`v4.1.1`+)
+- `muirGlacier` (only `mainnet` and `ropsten`) (`v4.1.3`+)
+- `berlin` (`DRAFT`, only `EIP-2315`)
+
+Default: `istanbul` (taken from `Common.DEFAULT_HARDFORK`)
+
+A specific hardfork VM ruleset can be activated by passing in the hardfork
+along the `Common` instance:
+
+```typescript
+import Common from '@ethereumjs/common'
+import VM from '@ethereumjs/vm'
+
+const common = new Common({ chain: 'mainnet', hardfork: 'byzantium' })
+const vm = new VM({ common })
+```
+
+## EIP Support
+
+It is possible to individually activate EIP support in the VM by instantiate the `Common` instance passed
+with the respective EIPs, e.g.:
+
+```typescript
+import Common from '@ethereumjs/common'
+import VM from '@ethereumjs/vm'
+
+const common = new Common({ chain: 'mainnet', eips: [2537] })
+const vm = new VM({ common })
+```
+
+Currently supported EIPs:
+
+- [EIP-2537](https://eips.ethereum.org/EIPS/eip-2537): BLS precompiles
+- [EIP-2929](https://eips.ethereum.org/EIPS/eip-2929): gas cost increases for state access opcodes
+
+## Tracing Events
+
+Our `TypeScript` VM is implemented as an [AsyncEventEmitter](https://github.com/ahultgren/async-eventemitter) and events are submitted along major execution steps which you can listen to.
+
+You can subscribe to the following events:
+
+- `beforeBlock`: Emits a `Block` right before running it.
+- `afterBlock`: Emits `RunBlockResult` right after running a block.
+- `beforeTx`: Emits a `Transaction` right before running it.
+- `afterTx`: Emits a `RunTxResult` right after running a transaction.
+- `beforeMessage`: Emits a `Message` right after running it.
+- `afterMessage`: Emits an `EVMResult` right after running a message.
+- `step`: Emits an `InterpreterStep` right before running an EVM step.
+- `newContract`: Emits a `NewContractEvent` right before creating a contract. This event contains the deployment code, not the deployed code, as the creation message may not return such a code.
+
+An example for the `step` event can be found in the initial usage example in this `README`.
+
+### Asynchronous event handlers
+
+You can perform asynchronous operations from within an event handler
+and prevent the VM to keep running until they finish.
+
+In order to do that, your event handler has to accept two arguments.
+The first one will be the event object, and the second one a function.
+The VM won't continue until you call this function.
+
+If an exception is passed to that function, or thrown from within the
+handler or a function called by it, the exception will bubble into the
+VM and interrupt it, possibly corrupting its state. It's strongly
+recommended not to do that.
+
+### Synchronous event handlers
+
+If you want to perform synchronous operations, you don't need
+to receive a function as the handler's second argument, nor call it.
+
+Note that if your event handler receives multiple arguments, the second
+one will be the continuation function, and it must be called.
+
+If an exception is thrown from withing the handler or a function called
+by it, the exception will bubble into the VM and interrupt it, possibly
+corrupting its state. It's strongly recommended not to throw from withing
+event handlers.
 
 # Internal Structure
 
@@ -156,46 +198,6 @@ The VM processes state changes at many levels.
   - calculate fee
 
 The opFns for `CREATE`, `CALL`, and `CALLCODE` call back up to `runCall`.
-
-## VM's tracing events
-
-You can subscribe to the following events of the VM:
-
-- `beforeBlock`: Emits a `Block` right before running it.
-- `afterBlock`: Emits `RunBlockResult` right after running a block.
-- `beforeTx`: Emits a `Transaction` right before running it.
-- `afterTx`: Emits a `RunTxResult` right after running a transaction.
-- `beforeMessage`: Emits a `Message` right after running it.
-- `afterMessage`: Emits an `EVMResult` right after running a message.
-- `step`: Emits an `InterpreterStep` right before running an EVM step.
-- `newContract`: Emits a `NewContractEvent` right before creating a contract. This event contains the deployment code, not the deployed code, as the creation message may not return such a code.
-
-### Asynchronous event handlers
-
-You can perform asynchronous operations from within an event handler
-and prevent the VM to keep running until they finish.
-
-In order to do that, your event handler has to accept two arguments.
-The first one will be the event object, and the second one a function.
-The VM won't continue until you call this function.
-
-If an exception is passed to that function, or thrown from within the
-handler or a function called by it, the exception will bubble into the
-VM and interrupt it, possibly corrupting its state. It's strongly
-recommended not to do that.
-
-### Synchronous event handlers
-
-If you want to perform synchronous operations, you don't need
-to receive a function as the handler's second argument, nor call it.
-
-Note that if your event handler receives multiple arguments, the second
-one will be the continuation function, and it must be called.
-
-If an exception is thrown from withing the handler or a function called
-by it, the exception will bubble into the VM and interrupt it, possibly
-corrupting its state. It's strongly recommended not to throw from withing
-event handlers.
 
 # DEVELOPMENT
 

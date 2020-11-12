@@ -99,7 +99,7 @@ ___
 
 ▸ **copy**(): *[VM](_index_.vm.md)*
 
-*Defined in [index.ts:324](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/index.ts#L324)*
+*Defined in [index.ts:326](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/index.ts#L326)*
 
 Returns a copy of the [VM](_index_.vm.md) instance.
 
@@ -121,7 +121,7 @@ ___
 
 ▸ **runBlock**(`opts`: [RunBlockOpts](../interfaces/_runblock_.runblockopts.md)): *Promise‹[RunBlockResult](../interfaces/_runblock_.runblockresult.md)›*
 
-*Defined in [index.ts:278](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/index.ts#L278)*
+*Defined in [index.ts:280](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/index.ts#L280)*
 
 Processes the `block` running all of the transactions it contains and updating the miner's account
 
@@ -143,7 +143,7 @@ ___
 
 ▸ **runBlockchain**(`blockchain?`: Blockchain): *Promise‹void›*
 
-*Defined in [index.ts:263](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/index.ts#L263)*
+*Defined in [index.ts:265](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/index.ts#L265)*
 
 Processes blocks and adds them to the blockchain.
 
@@ -163,7 +163,7 @@ ___
 
 ▸ **runCall**(`opts`: [RunCallOpts](../interfaces/_runcall_.runcallopts.md)): *Promise‹[EVMResult](../interfaces/_evm_evm_.evmresult.md)›*
 
-*Defined in [index.ts:304](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/index.ts#L304)*
+*Defined in [index.ts:306](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/index.ts#L306)*
 
 runs a call (or create) operation.
 
@@ -183,7 +183,7 @@ ___
 
 ▸ **runCode**(`opts`: [RunCodeOpts](../interfaces/_runcode_.runcodeopts.md)): *Promise‹[ExecResult](../interfaces/_evm_evm_.execresult.md)›*
 
-*Defined in [index.ts:316](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/index.ts#L316)*
+*Defined in [index.ts:318](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/index.ts#L318)*
 
 Runs EVM code.
 
@@ -203,7 +203,7 @@ ___
 
 ▸ **runTx**(`opts`: [RunTxOpts](../interfaces/_runtx_.runtxopts.md)): *Promise‹[RunTxResult](../interfaces/_runtx_.runtxresult.md)›*
 
-*Defined in [index.ts:292](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/index.ts#L292)*
+*Defined in [index.ts:294](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/index.ts#L294)*
 
 Process a transaction. Run the vm. Transfers eth. Checks balances.
 
