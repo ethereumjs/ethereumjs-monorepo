@@ -4,9 +4,7 @@ const path = require('path')
 
 const falsePredicate = () => false
 // Load tests from git submodule
-console.log('00000')
-const defaultTestsPath = path.resolve('../../ethereumTests')
-console.log('11111', defaultTestsPath)
+const defaultTestsPath = path.resolve('../../ethereum-tests')
 /**
  * Returns the list of test files matching the given parameters
  * @param testType the test type (path segment)
