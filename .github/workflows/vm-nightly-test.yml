@@ -18,6 +18,8 @@ jobs:
         with:
           node-version: 12.x
       - uses: actions/checkout@v2
+        with:
+          submodules: recursive
 
       # This is specific to Nightly test 1/2.
       # The job needs to run with a fresh combination of lockfiles, to warm up the cache.
@@ -43,6 +45,8 @@ jobs:
         with:
           node-version: 12.x
       - uses: actions/checkout@v2
+        with:
+          submodules: recursive
 
       # This is specific to Nightly test 1/2.
       # The job needs to run with a fresh combination of lockfiles, to warm up the cache.
@@ -67,6 +71,8 @@ jobs:
         with:
           node-version: 12.x
       - uses: actions/checkout@v2
+        with:
+          submodules: recursive
 
       # This is specific to Nightly test 1/2.
       # The job needs to run with a fresh combination of lockfiles, to warm up the cache.
@@ -102,6 +108,8 @@ jobs:
         with:
           node-version: 12.x
       - uses: actions/checkout@v2
+        with:
+          submodules: recursive
       
       # This is specific to Nightly test 1/2.
       # The job needs to run with a fresh combination of lockfiles, to warm up the cache.

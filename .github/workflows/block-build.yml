@@ -27,6 +27,8 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
       - uses: actions/checkout@v2
+        with:
+          submodules: recursive
       
       - name: Dependency cache
         uses: actions/cache@v2
