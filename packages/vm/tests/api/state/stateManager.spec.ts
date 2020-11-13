@@ -1,3 +1,4 @@
+import path from 'path'
 import tape from 'tape'
 import {
   Account,
@@ -152,7 +153,9 @@ tape('StateManager', (t) => {
         st.skip('skip slow test when running in karma')
         return st.end()
       }
-      const genesisData = require(path.resolve('../../../../ethereumTests/BasicTests/genesishashestest.json'))
+      const genesisData = require(path.resolve(
+        '../../../../ethereumTests/BasicTests/genesishashestest.json'
+      ))
       const stateManager = new StateManager()
       await stateManager.generateCanonicalGenesis()
       const stateRoot = await stateManager.getStateRoot()
