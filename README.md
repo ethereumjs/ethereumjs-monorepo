@@ -38,6 +38,13 @@ https://mermaid-js.github.io/mermaid-live-editor/#/edit/eyJjb2RlIjoiZ3JhcGggVERc
 
 ## Development quick start
 
+First, make sure you have the `ethereum-tests` git submodule, by running: 
+
+```sh
+git submodule init
+git submodule update
+```
+
 This monorepo uses [Lerna](https://lerna.js.org/). It links the local packages together, making development a lot easier.
 
 TLDR: Setup
