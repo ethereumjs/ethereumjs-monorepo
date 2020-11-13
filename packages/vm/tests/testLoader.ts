@@ -4,11 +4,7 @@ const path = require('path')
 
 const falsePredicate = () => false
 // package.json -> always take the package root, remove filename, go to submodule
-const defaultTestsPath = path.join(
-  path.dirname(require.resolve('ethereumjs-testing/package.json')),
-  'tests'
-)
-
+const defaultTestsPath = path.resolve('../../ethereumTests')
 /**
  * Returns the list of test files matching the given parameters
  * @param testType the test type (path segment)
