@@ -90,6 +90,7 @@ const getTestFromSource = (exports.getTestFromSource = function (file: string, o
       contents += data
     })
     .on('error', function (err: Error) {
+      console.error("♦︎ [WARN] Please check if submodule `ethereum-tests` is properly loaded.")
       onFile(err)
     })
     .on('end', function () {
