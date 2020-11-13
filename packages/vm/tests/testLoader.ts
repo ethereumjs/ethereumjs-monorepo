@@ -3,8 +3,10 @@ const dir = require('node-dir')
 const path = require('path')
 
 const falsePredicate = () => false
-// package.json -> always take the package root, remove filename, go to submodule
+// Load tests from git submodule
+console.log('00000')
 const defaultTestsPath = path.resolve('../../ethereumTests')
+console.log('11111', defaultTestsPath)
 /**
  * Returns the list of test files matching the given parameters
  * @param testType the test type (path segment)
