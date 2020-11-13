@@ -1,4 +1,3 @@
-import path from 'path'
 import tape from 'tape'
 import {
   Account,
@@ -15,7 +14,6 @@ import { DefaultStateManager } from '../../../lib/state'
 import { createAccount } from '../utils'
 import { isRunningInKarma } from '../../util'
 const testLoader = require('../../testLoader')
-
 
 const StateManager = DefaultStateManager
 
@@ -495,4 +493,3 @@ tape('StateManager - Contract storage', (tester) => {
     t.end()
   })
 })
-
