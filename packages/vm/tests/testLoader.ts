@@ -91,7 +91,7 @@ const getTestFromSource = (exports.getTestFromSource = function (file: string, o
     })
     .on('error', function (err: Error) {
       // eslint-disable-next-line no-console
-      console.warn("♦︎ [WARN] Please check if submodule `ethereum-tests` is properly loaded.")
+      console.warn('♦︎ [WARN] Please check if submodule `ethereum-tests` is properly loaded.')
       onFile(err)
     })
     .on('end', function () {
