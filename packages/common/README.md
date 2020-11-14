@@ -116,7 +116,7 @@ There are two ways to set up a common instance with parameters for a private/cus
 The `hardfork` can be set in constructor like this:
 
 ```typescript
-const c = new Common({ chain: 'ropsten', 'byzantium' })
+const c = new Common({ chain: 'ropsten', hardfork: 'byzantium' })
 ```
 
 ### Active Hardforks
