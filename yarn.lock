@@ -4275,12 +4275,6 @@ ethereum-cryptography@^0.1.3:
     secp256k1 "^4.0.1"
     setimmediate "^1.0.5"
 
-"ethereumjs-testing@git+https://github.com/ethereumjs/ethereumjs-testing.git#v1.3.3":
-  version "1.3.3"
-  resolved "git+https://github.com/ethereumjs/ethereumjs-testing.git#eb8aff6a3216690b112e19f832b4b99d2b06ad9d"
-  dependencies:
-    node-dir "^0.1.16"
-
 ethereumjs-util@^7.0.2, ethereumjs-util@^7.0.7:
   version "7.0.7"
   resolved "https://registry.yarnpkg.com/ethereumjs-util/-/ethereumjs-util-7.0.7.tgz#484fb9c03b766b2ee64821281070616562fb5a59"
@@ -7461,7 +7455,7 @@ node-addon-api@^2.0.0:
   resolved "https://registry.yarnpkg.com/node-addon-api/-/node-addon-api-2.0.2.tgz#432cfa82962ce494b132e9d72a15b29f71ff5d32"
   integrity sha512-Ntyt4AIXyaLIuMHF6IOoTakB3K+RWxwtsHNRxllEoA6vPwP9o4866g6YWDLUdnucilZhmkxiHwHr11gAENw+QA==
 
-node-dir@^0.1.16:
+node-dir@^0.1.16, node-dir@^0.1.17:
   version "0.1.17"
   resolved "https://registry.yarnpkg.com/node-dir/-/node-dir-0.1.17.tgz#5f5665d93351335caabef8f1c554516cf5f1e4e5"
   integrity sha1-X1Zl2TNRM1yqvvjxxVRRbPXx5OU=
