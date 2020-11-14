@@ -1,4 +1,4 @@
-# ethereumjs-block
+# @ethereumjs/block
 
 [![NPM Package][block-npm-badge]][block-npm-link]
 [![GitHub Issues][block-issues-badge]][block-issues-link]
@@ -6,7 +6,8 @@
 [![Code Coverage][block-coverage-badge]][block-coverage-link]
 [![Discord][discord-badge]][discord-link]
 
-Implements schema and functions related to Ethereum's block.
+| Implements schema and functions related to Ethereum's block. |
+| --- |
 
 Note: this `README` reflects the state of the library from `v3.0.0` onwards. See `README` from the [standalone repository](https://github.com/ethereumjs/ethereumjs-block) for an introduction on the last preceeding release.
 

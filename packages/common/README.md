@@ -1,4 +1,4 @@
-# ethereumjs-common
+# @ethereumjs/common
 
 [![NPM Package][common-npm-badge]][common-npm-link]
 [![GitHub Issues][common-issues-badge]][common-issues-link]
@@ -6,7 +6,8 @@
 [![Code Coverage][common-coverage-badge]][common-coverage-link]
 [![Discord][discord-badge]][discord-link]
 
-Resources common to all Ethereum implementations.
+| Resources common to all Ethereum implementations. |
+| --- |
 
 Note: this `README` reflects the state of the library from `v2.0.0` onwards. See `README` from the [standalone repository](https://github.com/ethereumjs/ethereumjs-common) for an introduction on the last preceeding release.
 
@@ -68,50 +69,15 @@ to ease `blockNumber` based access to parameters.
 
 - [API Docs](./docs/README.md)
 
-# Hardfork Params
+# SETUP
 
-## Active Hardforks
+## Chains
 
-There are currently parameter changes by the following past and future hardfork by the
-library supported:
+The `chain` can be set in the constructor like this:
 
-- `chainstart`
-- `homestead`
-- `dao`
-- `tangerineWhistle`
-- `spuriousDragon`
-- `byzantium`
-- `constantinople`
-- `petersburg` (aka `constantinopleFix`, apply together with `constantinople`)
-- `istanbul` (`DEFAULT_HARDFORK` (`v2.0.0` release series))
-- `muirGlacier` (since `v1.5.0`)
-
-## Future Hardforks
-
-General support for the `berlin` hardfork has been added along `v2.0.0`, specification of the hardfork regarding EIPs included was not finalized upon release date.
-
-Currently supported `berlin` EIPs:
-
-- `EIP-2315`
-
-## Parameter Access
-
-For hardfork-specific parameter access with the `param()` and `paramByBlock()` functions
-you can use the following `topics`:
-
-- `gasConfig`
-- `gasPrices`
-- `vm`
-- `pow`
-
-See one of the hardfork files like `byzantium.json` in the `hardforks` directory
-for an overview. For consistency, the chain start (`chainstart`) is considered an own
-hardfork.
-
-The hardfork-specific json files only contain the deltas from `chainstart` and
-shouldn't be accessed directly until you have a specific reason for it.
-
-# Chain Params
+```typescript
+const c = new Common({ chain: 'ropsten' })
+```
 
 Supported chains:
 
@@ -136,7 +102,7 @@ The following chain-specific parameters are provided:
 To get an overview of the different parameters have a look at one of the chain-specifc
 files like `mainnet.json` in the `chains` directory, or to the `Chain` type in [./src/types.ts](./src/types.ts).
 
-## Working with private/custom chains
+### Working with private/custom chains
 
 There are two ways to set up a common instance with parameters for a private/custom chain:
 
@@ -145,12 +111,75 @@ There are two ways to set up a common instance with parameters for a private/cus
 
 2. You can base your custom chain's config in a standard one, using the `Common.forCustomChain` method.
 
-# Bootstrap Nodes
+## Hardforks
+
+The `hardfork` can be set in constructor like this:
+
+```typescript
+const c = new Common({ chain: 'ropsten', hardfork: 'byzantium' })
+```
+
+### Active Hardforks
+
+There are currently parameter changes by the following past and future hardfork by the
+library supported:
+
+- `chainstart`
+- `homestead`
+- `dao`
+- `tangerineWhistle`
+- `spuriousDragon`
+- `byzantium`
+- `constantinople`
+- `petersburg` (aka `constantinopleFix`, apply together with `constantinople`)
+- `istanbul` (`DEFAULT_HARDFORK` (`v2.0.0` release series))
+- `muirGlacier` (since `v1.5.0`)
+
+### Future Hardforks
+
+General support for the `berlin` hardfork has been added along `v2.0.0`, specification of the hardfork regarding EIPs included was not finalized upon release date.
+
+Currently supported `berlin` EIPs:
+
+- `EIP-2315`
+
+### Parameter Access
+
+For hardfork-specific parameter access with the `param()` and `paramByBlock()` functions
+you can use the following `topics`:
+
+- `gasConfig`
+- `gasPrices`
+- `vm`
+- `pow`
+
+See one of the hardfork files like `byzantium.json` in the `hardforks` directory
+for an overview. For consistency, the chain start (`chainstart`) is considered an own
+hardfork.
+
+The hardfork-specific json files only contain the deltas from `chainstart` and
+shouldn't be accessed directly until you have a specific reason for it.
+
+## EIPs
+
+Starting with the `v2.0.0` release of the library, EIPs are now native citizens within the library
+and can be activated like this:
+
+```typescript
+const c = new Common({ chain: 'mainnet', eips: [2537] })
+```
+
+The following EIPs are currently supported:
+
+- [EIP-2537](https://eips.ethereum.org/EIPS/eip-2537): BLS precompiles
+- [EIP-2929](https://eips.ethereum.org/EIPS/eip-2929): gas cost increases for state access opcodes
+
+## Bootstrap Nodes
 
 There is no separate config file for bootstrap nodes like in the old `ethereum-common` library.
 Instead use the `common.bootstrapNodes()` function to get nodes for a specific chain/network.
 
-# Genesis States
+## Genesis States
 
 Network-specific genesis files are located in the `genesisStates` folder.
 

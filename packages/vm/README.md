@@ -1,4 +1,4 @@
-# ethereumjs-vm
+# @ethereumjs/vm
 
 [![NPM Package][vm-npm-badge]][vm-npm-link]
 [![GitHub Issues][vm-issues-badge]][vm-issues-link]
@@ -6,7 +6,8 @@
 [![Code Coverage][vm-coverage-badge]][vm-coverage-link]
 [![Discord][discord-badge]][discord-link]
 
-Implements Ethereum's VM in `TypeScript`.
+| TypeScript implementation of the Ethereum VM. |
+| --- |
 
 Note: this `README` reflects the state of the library from `v5.0.0` onwards. See `README` from the [standalone repository](https://github.com/ethereumjs/ethereumjs-vm) for an introduction on the last preceeding release.
 
