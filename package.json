@@ -11,7 +11,6 @@
     }
   },
   "scripts": {
-    "postinstall": "./scripts/load-submodules.sh",
     "bootstrap": "lerna bootstrap --ignore-scripts --include-dependencies --no-ci && yarn run build",
     "bootstrap:account": "yarn run bootstrap --scope @ethereumjs/account",
     "bootstrap:block": "yarn run bootstrap --scope @ethereumjs/block",
