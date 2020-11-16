@@ -1,4 +1,4 @@
-# ethereumjs-blockchain
+# @ethereumjs/blockchain
 
 [![NPM Package][blockchain-npm-badge]][blockchain-npm-link]
 [![GitHub Issues][blockchain-issues-badge]][blockchain-issues-link]
@@ -6,7 +6,8 @@
 [![Code Coverage][blockchain-coverage-badge]][blockchain-coverage-link]
 [![Discord][discord-badge]][discord-link]
 
-A module to store and interact with blocks.
+| A module to store and interact with blocks. |
+| --- |
 
 Note: this `README` reflects the state of the library from `v5.0.0` onwards. See `README` from the [standalone repository](https://github.com/ethereumjs/ethereumjs-blockchain) for an introduction on the last preceeding release.
 
