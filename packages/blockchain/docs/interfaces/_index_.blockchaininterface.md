@@ -25,10 +25,10 @@
 
 ▸ **delBlock**(`blockHash`: Buffer): *Promise‹void›*
 
-*Defined in [index.ts:39](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/blockchain/src/index.ts#L39)*
+*Defined in [index.ts:29](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/blockchain/src/index.ts#L29)*
 
-Deletes a block from the blockchain. All child blocks in the chain are deleted and any
-encountered heads are set to the parent block.
+Deletes a block from the blockchain. All child blocks in the chain are
+deleted and any encountered heads are set to the parent block.
 
 **Parameters:**
 
@@ -44,7 +44,7 @@ ___
 
 ▸ **getBlock**(`blockId`: Buffer | number | BN): *Promise‹Block | null›*
 
-*Defined in [index.ts:44](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/blockchain/src/index.ts#L44)*
+*Defined in [index.ts:34](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/blockchain/src/index.ts#L34)*
 
 Returns a block by its hash or number.
 
@@ -62,10 +62,10 @@ ___
 
 ▸ **iterator**(`name`: string, `onBlock`: OnBlock): *Promise‹void›*
 
-*Defined in [index.ts:53](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/blockchain/src/index.ts#L53)*
+*Defined in [index.ts:44](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/blockchain/src/index.ts#L44)*
 
-Iterates through blocks starting at the specified iterator head and calls the onBlock function
-on each block.
+Iterates through blocks starting at the specified iterator head and calls
+the onBlock function on each block.
 
 **Parameters:**
 
@@ -80,9 +80,9 @@ ___
 
 ###  putBlock
 
-▸ **putBlock**(`block`: Block, `isGenesis?`: undefined | false | true): *Promise‹void›*
+▸ **putBlock**(`block`: Block): *Promise‹void›*
 
-*Defined in [index.ts:31](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/blockchain/src/index.ts#L31)*
+*Defined in [index.ts:21](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/blockchain/src/index.ts#L21)*
 
 Adds a block to the blockchain.
 
@@ -90,7 +90,6 @@ Adds a block to the blockchain.
 
 Name | Type | Description |
 ------ | ------ | ------ |
-`block` | Block | The block to be added to the blockchain. |
-`isGenesis?` | undefined &#124; false &#124; true | True if block is the genesis block.  |
+`block` | Block | The block to be added to the blockchain.  |
 
 **Returns:** *Promise‹void›*
