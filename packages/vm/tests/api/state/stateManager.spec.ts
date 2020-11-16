@@ -13,6 +13,7 @@ import Common from '@ethereumjs/common'
 import { DefaultStateManager } from '../../../lib/state'
 import { createAccount } from '../utils'
 import { isRunningInKarma } from '../../util'
+const testLoader = require('../../testLoader')
 
 const StateManager = DefaultStateManager
 
@@ -152,9 +153,8 @@ tape('StateManager', (t) => {
         st.skip('skip slow test when running in karma')
         return st.end()
       }
-      const genesisData = require('ethereumjs-testing').getSingleFile(
-        'BasicTests/genesishashestest.json'
-      )
+      const genesisData = testLoader.getSingleFile('BasicTests/genesishashestest.json')
+
       const stateManager = new StateManager()
       await stateManager.generateCanonicalGenesis()
       const stateRoot = await stateManager.getStateRoot()

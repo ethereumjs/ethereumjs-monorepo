@@ -1,0 +1,4 @@
+[submodule "ethereum-tests"]
+	path = ethereum-tests
+	url = https://github.com/ethereum/tests.git
+	branch = develop

@@ -131,11 +131,6 @@ exports.getTestsFromArgs = function (testType: string, onFile: Function, args: a
       )
     }
   }
-  if (testType === 'VMTests') {
-    skipFn = (name: string) => {
-      return skipTest(name, args.skipVM)
-    }
-  }
 
   if (args.singleSource) {
     return getTestFromSource(args.singleSource, onFile)
