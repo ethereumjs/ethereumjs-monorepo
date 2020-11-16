@@ -23,7 +23,7 @@
 
 Ƭ **OpHandler**: *[SyncOpHandler](../interfaces/_evm_opcodes_functions_.syncophandler.md) | [AsyncOpHandler](../interfaces/_evm_opcodes_functions_.asyncophandler.md)*
 
-*Defined in [evm/opcodes/functions.ts:38](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/evm/opcodes/functions.ts#L38)*
+*Defined in [evm/opcodes/functions.ts:39](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/evm/opcodes/functions.ts#L39)*
 
 ## Variables
 
@@ -736,8 +736,15 @@
       // TODO: Replace getContractStorage with EEI method
       const found = await getContractStorage(runState, runState.eei.getAddress(), keyBuf)
       accessStorageEIP2929(runState, keyBuf, true)
-      updateSstoreGasEIP1283(runState, found, setLengthLeftStorage(value))
-      updateSstoreGasEIP2200(runState, found, setLengthLeftStorage(value), keyBuf)
+
+      if (runState._common.hardfork() === 'constantinople') {
+        updateSstoreGasEIP1283(runState, found, setLengthLeftStorage(value))
+      } else if (runState._common.gteHardfork('istanbul')) {
+        updateSstoreGasEIP2200(runState, found, setLengthLeftStorage(value), keyBuf)
+      } else {
+        updateSstoreGas(runState, found, setLengthLeftStorage(value), keyBuf)
+      }
+
       await runState.eei.storageStore(keyBuf, value)
     },
   ],
@@ -1199,4 +1206,4 @@
   ],
 ])
 
-*Defined in [evm/opcodes/functions.ts:41](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/evm/opcodes/functions.ts#L41)*
+*Defined in [evm/opcodes/functions.ts:42](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/evm/opcodes/functions.ts#L42)*

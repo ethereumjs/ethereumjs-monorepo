@@ -6,7 +6,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## 3.0.0-beta.2 - UNRELEASED
+## 3.0.0-beta.2 - 2020-11-12
+
+This is the second beta release towards a final library release, see [beta.1 release notes](https://github.com/ethereumjs/ethereumjs-vm/releases/tag/%40ethereumjs%2Ftx%403.0.0-beta.1) for an overview on the full changes since the last publicly released version.
 
 - Added `freeze` option to allow for block freeze deactivation (e.g. to allow for subclassing block and adding additional parameters), see PR [#941](https://github.com/ethereumjs/ethereumjs-vm/pull/941)
 - **Breaking:** Difficulty-depending methods `canonicalDifficulty()` and `validateDifficulty()` in block and header now throw on non-PoW chains, see PR [#937](https://github.com/ethereumjs/ethereumjs-vm/pull/937)

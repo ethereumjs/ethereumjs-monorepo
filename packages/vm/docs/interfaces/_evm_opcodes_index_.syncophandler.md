@@ -10,7 +10,7 @@
 
 ▸ (`runState`: RunState): *void*
 
-*Defined in [evm/opcodes/functions.ts:30](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/evm/opcodes/functions.ts#L30)*
+*Defined in [evm/opcodes/functions.ts:31](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/evm/opcodes/functions.ts#L31)*
 
 **Parameters:**
 

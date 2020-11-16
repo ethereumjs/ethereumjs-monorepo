@@ -1,4 +1,4 @@
-# ethereumjs-common
+# @ethereumjs/common
 
 [![NPM Package][common-npm-badge]][common-npm-link]
 [![GitHub Issues][common-issues-badge]][common-issues-link]
@@ -6,9 +6,10 @@
 [![Code Coverage][common-coverage-badge]][common-coverage-link]
 [![Discord][discord-badge]][discord-link]
 
-Resources common to all Ethereum implementations.
+| Resources common to all Ethereum implementations. |
+| --- |
 
-Succeeds the old [ethereum/common](https://github.com/ethereumjs/common/) library.
+Note: this `README` reflects the state of the library from `v2.0.0` onwards. See `README` from the [standalone repository](https://github.com/ethereumjs/ethereumjs-common) for an introduction on the last preceeding release.
 
 # INSTALL
 
@@ -20,18 +21,25 @@ All parameters can be accessed through the `Common` class which can be required 
 main package and instantiated either with just the `chain` (e.g. 'mainnet') or the `chain`
 together with a specific `hardfork` provided.
 
+If no hardfork is provided the common is initialized with the default hardfork.
+
+Current `DEFAULT_HARDFORK`: `istanbul`
+
 Here are some simple usage examples:
 
-```javascript
-const Common = require('@ethereumjs/common')
+```typescript
+import Common from '@ethereumjs/common'
 
-// Instantiate with only the chain
-let c = new Common({ chain: 'ropsten' })
-c.param('gasPrices', 'ecAddGas', 'byzantium') // 500
+// Instantiate with the chain (and the default hardfork)
+const c = new Common({ chain: 'ropsten' })
+c.param('gasPrices', 'ecAddGas') // 500
 
 // Chain and hardfork provided
 c = new Common({ chain: 'ropsten', hardfork: 'byzantium' })
 c.param('pow', 'minerReward') // 3000000000000000000
+
+// Instantiate with an EIP activated
+const c = new Common({ chain: 'mainnet', eips: [2537] })
 
 // Access genesis data for Ropsten network
 c.genesis().hash // 0x41941023680923e0fe4d74a34bdac8141f2540e3ae90623718e47d66d1ca4a2d
@@ -40,10 +48,9 @@ c.genesis().hash // 0x41941023680923e0fe4d74a34bdac8141f2540e3ae90623718e47d66d1
 c.bootstrapNodes() // Array with current nodes
 ```
 
-It is encouraged to also explicitly set the `supportedHardforks` if the initializing library
-only supports a certain range of `hardforks`:
+If the initializing library only supports a certain range of `hardforks` you can use the `supportedHardforks` option to restrict hardfork access on the `Common` instance:
 
-```javascript
+```typescript
 let c = new Common({
   chain: 'ropsten',
   supportedHardforks: ['byzantium', 'constantinople', 'petersburg'],
@@ -62,9 +69,57 @@ to ease `blockNumber` based access to parameters.
 
 - [API Docs](./docs/README.md)
 
-# Hardfork Params
+# SETUP
 
-## Active Hardforks
+## Chains
+
+The `chain` can be set in the constructor like this:
+
+```typescript
+const c = new Common({ chain: 'ropsten' })
+```
+
+Supported chains:
+
+- `mainnet`
+- `ropsten`
+- `rinkeby`
+- `kovan`
+- `goerli`
+- Private/custom chain parameters
+
+The following chain-specific parameters are provided:
+
+- `name`
+- `chainId`
+- `networkId`
+- `consensusType` (e.g. `pow` or `poa`)
+- `consensusAlgorithm` (e.g. `ethash` or `clique`)
+- `genesis` block header values
+- `hardforks` block numbers
+- `bootstrapNodes` list
+
+To get an overview of the different parameters have a look at one of the chain-specifc
+files like `mainnet.json` in the `chains` directory, or to the `Chain` type in [./src/types.ts](./src/types.ts).
+
+### Working with private/custom chains
+
+There are two ways to set up a common instance with parameters for a private/custom chain:
+
+1. You can pass a dictionary - conforming to the parameter format described above - with your custom values in
+   the constructor or the `setChain()` method for the `chain` parameter.
+
+2. You can base your custom chain's config in a standard one, using the `Common.forCustomChain` method.
+
+## Hardforks
+
+The `hardfork` can be set in constructor like this:
+
+```typescript
+const c = new Common({ chain: 'ropsten', hardfork: 'byzantium' })
+```
+
+### Active Hardforks
 
 There are currently parameter changes by the following past and future hardfork by the
 library supported:
@@ -77,15 +132,18 @@ library supported:
 - `byzantium`
 - `constantinople`
 - `petersburg` (aka `constantinopleFix`, apply together with `constantinople`)
-- `istanbul` (`DEFAULT_HARDFORK`)
-- `muirGlacier`
+- `istanbul` (`DEFAULT_HARDFORK` (`v2.0.0` release series))
+- `muirGlacier` (since `v1.5.0`)
 
-## Future Hardforks
+### Future Hardforks
 
-The `muirGlacier` HF delaying the difficulty bomb and scheduled for January 2020
-is supported by the library since `v1.5.0`.
+General support for the `berlin` hardfork has been added along `v2.0.0`, specification of the hardfork regarding EIPs included was not finalized upon release date.
 
-## Parameter Access
+Currently supported `berlin` EIPs:
+
+- `EIP-2315`
+
+### Parameter Access
 
 For hardfork-specific parameter access with the `param()` and `paramByBlock()` functions
 you can use the following `topics`:
@@ -102,47 +160,26 @@ hardfork.
 The hardfork-specific json files only contain the deltas from `chainstart` and
 shouldn't be accessed directly until you have a specific reason for it.
 
-Note: The list of `gasPrices` and gas price changes on hardforks is consistent
-but not complete, so there are currently gas price values missing (PRs welcome!).
+## EIPs
 
-# Chain Params
+Starting with the `v2.0.0` release of the library, EIPs are now native citizens within the library
+and can be activated like this:
 
-Supported chains:
+```typescript
+const c = new Common({ chain: 'mainnet', eips: [2537] })
+```
 
-- `mainnet`
-- `ropsten`
-- `rinkeby`
-- `kovan`
-- `goerli` (final configuration since `v1.1.0`)
-- Private/custom chain parameters
+The following EIPs are currently supported:
 
-The following chain-specific parameters are provided:
+- [EIP-2537](https://eips.ethereum.org/EIPS/eip-2537): BLS precompiles
+- [EIP-2929](https://eips.ethereum.org/EIPS/eip-2929): gas cost increases for state access opcodes
 
-- `name`
-- `chainId`
-- `networkId`
-- `genesis` block header values
-- `hardforks` block numbers
-- `bootstrapNodes` list
-
-To get an overview of the different parameters have a look at one of the chain-specifc
-files like `mainnet.json` in the `chains` directory, or to the `Chain` type in [./src/types.ts](./src/types.ts).
-
-## Working with private/custom chains
-
-There are two ways to set up a common instance with parameters for a private/custom chain:
-
-1. You can pass a dictionary - conforming to the parameter format described above - with your custom values in
-   the constructor or the `setChain()` method for the `chain` parameter.
-
-2. You can base your custom chain's config in a standard one, using the `Common.forCustomChain` method.
-
-# Bootstrap Nodes
+## Bootstrap Nodes
 
 There is no separate config file for bootstrap nodes like in the old `ethereum-common` library.
 Instead use the `common.bootstrapNodes()` function to get nodes for a specific chain/network.
 
-# Genesis States
+## Genesis States
 
 Network-specific genesis files are located in the `genesisStates` folder.
 
