@@ -6,6 +6,11 @@
 [![Code Coverage][tx-coverage-badge]][tx-coverage-link]
 [![Discord][discord-badge]][discord-link]
 
+| Implements schema and functions related to Ethereum's transaction. |
+| --- |
+
+Note: this `README` reflects the state of the library from `v3.0.0` onwards. See `README` from the [standalone repository](https://github.com/ethereumjs/ethereumjs-tx) for an introduction on the last preceeding release.
+
 # INSTALL
 
 `npm install @ethereumjs/tx`
@@ -26,7 +31,7 @@ const txParams = {
   data: '0x7f7465737432000000000000000000000000000000000000000000000000000000600057',
 }
 
-const commmon = new Common({ chain: 'mainnet', hardfork: 'petersburg' })
+const commmon = new Common({ chain: 'mainnet' })
 const tx = Transaction.fromTxData(txParams, { common })
 
 const privateKey = Buffer.from(
@@ -38,6 +43,8 @@ const signedTx = tx.sign(privateKey)
 
 const serializedTx = signedTx.serialize()
 ```
+
+Properties of a `Transaction` object are frozen with `Object.freeze()` which gives you enhanced security and consistency properties when working with the instantiated object. This behavior can be modified using the `freeze` option in the constructor if needed.
 
 ## Fake Transaction
 
@@ -61,21 +68,23 @@ _getFakeTransaction(txParams: TxParams): Transaction {
 }
 ```
 
-# Chain and Hardfork Support
+# SETUP
 
-The `Transaction` constructor receives a parameter of an [`@ethereumjs/common`](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common) object that lets you specify the chain and hardfork to be used. By default, `mainnet` and `petersburg` will be used.
+## Chain and Hardfork Support
 
-## MuirGlacier Support
+The `Transaction` constructor receives a parameter of an [`@ethereumjs/common`](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common) object that lets you specify the chain and hardfork to be used. By default, `mainnet` and `istanbul` will be used.
+
+### MuirGlacier Support
 
 The `MuirGlacier` hardfork is supported by the library since the `v2.1.2` release.
 
-## Istanbul Support
+### Istanbul Support
 
 Support for reduced non-zero call data gas prices from the `Istanbul` hardfork
 ([EIP-2028](https://eips.ethereum.org/EIPS/eip-2028)) has been added to the library
 along with the `v2.1.1` release.
 
-# EIP-155 support
+## EIP-155 support
 
 `EIP-155` replay protection is activated since the `spuriousDragon` hardfork. To disable it, set the hardfork to one earlier than `spuriousDragon`.
 

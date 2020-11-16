@@ -37,6 +37,7 @@
 * [setLengthLeftStorage](_evm_opcodes_index_.md#setlengthleftstorage)
 * [subMemUsage](_evm_opcodes_index_.md#submemusage)
 * [trap](_evm_opcodes_index_.md#trap)
+* [updateSstoreGas](_evm_opcodes_index_.md#updatesstoregas)
 * [writeCallOutput](_evm_opcodes_index_.md#writecalloutput)
 
 ## Type aliases
@@ -45,7 +46,7 @@
 
 Ƭ **OpHandler**: *[SyncOpHandler](../interfaces/_evm_opcodes_functions_.syncophandler.md) | [AsyncOpHandler](../interfaces/_evm_opcodes_functions_.asyncophandler.md)*
 
-*Defined in [evm/opcodes/functions.ts:38](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/evm/opcodes/functions.ts#L38)*
+*Defined in [evm/opcodes/functions.ts:39](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/evm/opcodes/functions.ts#L39)*
 
 ___
 
@@ -766,8 +767,15 @@ ___
       // TODO: Replace getContractStorage with EEI method
       const found = await getContractStorage(runState, runState.eei.getAddress(), keyBuf)
       accessStorageEIP2929(runState, keyBuf, true)
-      updateSstoreGasEIP1283(runState, found, setLengthLeftStorage(value))
-      updateSstoreGasEIP2200(runState, found, setLengthLeftStorage(value), keyBuf)
+
+      if (runState._common.hardfork() === 'constantinople') {
+        updateSstoreGasEIP1283(runState, found, setLengthLeftStorage(value))
+      } else if (runState._common.gteHardfork('istanbul')) {
+        updateSstoreGasEIP2200(runState, found, setLengthLeftStorage(value), keyBuf)
+      } else {
+        updateSstoreGas(runState, found, setLengthLeftStorage(value), keyBuf)
+      }
+
       await runState.eei.storageStore(keyBuf, value)
     },
   ],
@@ -1229,7 +1237,7 @@ ___
   ],
 ])
 
-*Defined in [evm/opcodes/functions.ts:41](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/evm/opcodes/functions.ts#L41)*
+*Defined in [evm/opcodes/functions.ts:42](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/evm/opcodes/functions.ts#L42)*
 
 ## Functions
 
@@ -1237,7 +1245,7 @@ ___
 
 ▸ **addressToBuffer**(`address`: BN | Buffer): *Buffer‹›*
 
-*Defined in [evm/opcodes/util.ts:38](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/evm/opcodes/util.ts#L38)*
+*Defined in [evm/opcodes/util.ts:39](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/evm/opcodes/util.ts#L39)*
 
 Converts BN address (they're stored like this on the stack) to buffer address
 
@@ -1255,7 +1263,7 @@ ___
 
 ▸ **describeLocation**(`runState`: RunState): *string*
 
-*Defined in [evm/opcodes/util.ts:49](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/evm/opcodes/util.ts#L49)*
+*Defined in [evm/opcodes/util.ts:50](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/evm/opcodes/util.ts#L50)*
 
 Error message helper - generates location string
 
@@ -1273,7 +1281,7 @@ ___
 
 ▸ **divCeil**(`a`: BN, `b`: BN): *BN*
 
-*Defined in [evm/opcodes/util.ts:63](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/evm/opcodes/util.ts#L63)*
+*Defined in [evm/opcodes/util.ts:64](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/evm/opcodes/util.ts#L64)*
 
 Find Ceil(a / b)
 
@@ -1292,7 +1300,7 @@ ___
 
 ▸ **getContractStorage**(`runState`: RunState, `address`: Address, `key`: Buffer): *Promise‹any›*
 
-*Defined in [evm/opcodes/util.ts:82](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/evm/opcodes/util.ts#L82)*
+*Defined in [evm/opcodes/util.ts:83](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/evm/opcodes/util.ts#L83)*
 
 Calls relevant stateManager.getContractStorage method based on hardfork
 
@@ -1312,7 +1320,7 @@ ___
 
 ▸ **getDataSlice**(`data`: Buffer, `offset`: BN, `length`: BN): *Buffer*
 
-*Defined in [evm/opcodes/util.ts:110](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/evm/opcodes/util.ts#L110)*
+*Defined in [evm/opcodes/util.ts:111](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/evm/opcodes/util.ts#L111)*
 
 Returns an overflow-safe slice of an array. It right-pads
 the data with zeros to `length`.
@@ -1333,7 +1341,7 @@ ___
 
 ▸ **getFullname**(`code`: number, `name`: string): *string*
 
-*Defined in [evm/opcodes/util.ts:135](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/evm/opcodes/util.ts#L135)*
+*Defined in [evm/opcodes/util.ts:136](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/evm/opcodes/util.ts#L136)*
 
 Get full opcode name from its name and code.
 
@@ -1374,7 +1382,7 @@ ___
 
 ▸ **jumpIsValid**(`runState`: RunState, `dest`: number): *boolean*
 
-*Defined in [evm/opcodes/util.ts:160](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/evm/opcodes/util.ts#L160)*
+*Defined in [evm/opcodes/util.ts:161](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/evm/opcodes/util.ts#L161)*
 
 Checks if a jump is valid given a destination
 
@@ -1393,7 +1401,7 @@ ___
 
 ▸ **jumpSubIsValid**(`runState`: RunState, `dest`: number): *boolean*
 
-*Defined in [evm/opcodes/util.ts:171](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/evm/opcodes/util.ts#L171)*
+*Defined in [evm/opcodes/util.ts:172](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/evm/opcodes/util.ts#L172)*
 
 Checks if a jumpsub is valid given a destination
 
@@ -1412,7 +1420,7 @@ ___
 
 ▸ **maxCallGas**(`gasLimit`: BN, `gasLeft`: BN, `runState`: RunState): *BN*
 
-*Defined in [evm/opcodes/util.ts:183](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/evm/opcodes/util.ts#L183)*
+*Defined in [evm/opcodes/util.ts:184](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/evm/opcodes/util.ts#L184)*
 
 Returns an overflow-safe slice of an array. It right-pads
 
@@ -1434,7 +1442,7 @@ ___
 
 ▸ **setLengthLeftStorage**(`value`: Buffer): *Buffer‹›*
 
-*Defined in [evm/opcodes/util.ts:13](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/evm/opcodes/util.ts#L13)*
+*Defined in [evm/opcodes/util.ts:14](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/evm/opcodes/util.ts#L14)*
 
 Proxy function for ethereumjs-util's setLengthLeft, except it returns a zero
 
@@ -1454,7 +1462,7 @@ ___
 
 ▸ **subMemUsage**(`runState`: RunState, `offset`: BN, `length`: BN): *void*
 
-*Defined in [evm/opcodes/util.ts:201](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/evm/opcodes/util.ts#L201)*
+*Defined in [evm/opcodes/util.ts:202](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/evm/opcodes/util.ts#L202)*
 
 Subtracts the amount needed for memory usage from `runState.gasLeft`
 
@@ -1476,7 +1484,7 @@ ___
 
 ▸ **trap**(`err`: string): *void*
 
-*Defined in [evm/opcodes/util.ts:27](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/evm/opcodes/util.ts#L27)*
+*Defined in [evm/opcodes/util.ts:28](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/evm/opcodes/util.ts#L28)*
 
 Wraps error message as VMError
 
@@ -1490,11 +1498,32 @@ Name | Type | Description |
 
 ___
 
+###  updateSstoreGas
+
+▸ **updateSstoreGas**(`runState`: RunState, `found`: any, `value`: Buffer, `keyBuf`: Buffer): *void*
+
+*Defined in [evm/opcodes/util.ts:250](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/evm/opcodes/util.ts#L250)*
+
+The first rule set of SSTORE rules, which are the rules pre-Constantinople and in Petersburg
+
+**Parameters:**
+
+Name | Type | Description |
+------ | ------ | ------ |
+`runState` | RunState | - |
+`found` | any | - |
+`value` | Buffer | - |
+`keyBuf` | Buffer |   |
+
+**Returns:** *void*
+
+___
+
 ###  writeCallOutput
 
 ▸ **writeCallOutput**(`runState`: RunState, `outOffset`: BN, `outLength`: BN): *void*
 
-*Defined in [evm/opcodes/util.ts:229](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/evm/opcodes/util.ts#L229)*
+*Defined in [evm/opcodes/util.ts:230](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/evm/opcodes/util.ts#L230)*
 
 Writes data returned by eei.call* methods to memory
 

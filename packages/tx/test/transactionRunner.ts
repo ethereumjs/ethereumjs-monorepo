@@ -5,8 +5,7 @@ import Common from '@ethereumjs/common'
 import Transaction from '../src/transaction'
 import { ForkName, ForkNamesMap, OfficialTransactionTestData } from './types'
 
-// We use require here because this module doesn't have types and this works better with ts-node.
-const testing = require('ethereumjs-testing')
+const testing = require('./testLoader')
 
 const argv = minimist(process.argv.slice(2))
 const file: string | undefined = argv.file

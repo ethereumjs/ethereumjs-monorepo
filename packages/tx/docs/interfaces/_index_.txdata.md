@@ -28,7 +28,7 @@ An object with an optional field with each of the transaction's values.
 
 • **data**? : *BufferLike*
 
-*Defined in [types.ts:50](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/types.ts#L50)*
+*Defined in [types.ts:61](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/types.ts#L61)*
 
 This will contain the data of the message or the init of a contract.
 
@@ -38,7 +38,7 @@ ___
 
 • **gasLimit**? : *BNLike*
 
-*Defined in [types.ts:35](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/types.ts#L35)*
+*Defined in [types.ts:46](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/types.ts#L46)*
 
 The transaction's gas limit.
 
@@ -48,7 +48,7 @@ ___
 
 • **gasPrice**? : *BNLike*
 
-*Defined in [types.ts:30](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/types.ts#L30)*
+*Defined in [types.ts:41](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/types.ts#L41)*
 
 The transaction's gas price.
 
@@ -58,7 +58,7 @@ ___
 
 • **nonce**? : *BNLike*
 
-*Defined in [types.ts:25](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/types.ts#L25)*
+*Defined in [types.ts:36](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/types.ts#L36)*
 
 The transaction's nonce.
 
@@ -68,7 +68,7 @@ ___
 
 • **r**? : *BNLike*
 
-*Defined in [types.ts:60](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/types.ts#L60)*
+*Defined in [types.ts:71](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/types.ts#L71)*
 
 EC signature parameter.
 
@@ -78,7 +78,7 @@ ___
 
 • **s**? : *BNLike*
 
-*Defined in [types.ts:65](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/types.ts#L65)*
+*Defined in [types.ts:76](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/types.ts#L76)*
 
 EC signature parameter.
 
@@ -88,7 +88,7 @@ ___
 
 • **to**? : *AddressLike*
 
-*Defined in [types.ts:40](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/types.ts#L40)*
+*Defined in [types.ts:51](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/types.ts#L51)*
 
 The transaction's the address is sent to.
 
@@ -98,7 +98,7 @@ ___
 
 • **v**? : *BNLike*
 
-*Defined in [types.ts:55](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/types.ts#L55)*
+*Defined in [types.ts:66](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/types.ts#L66)*
 
 EC recovery ID.
 
@@ -108,6 +108,6 @@ ___
 
 • **value**? : *BNLike*
 
-*Defined in [types.ts:45](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/types.ts#L45)*
+*Defined in [types.ts:56](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/tx/src/types.ts#L56)*
 
 The amount of Ether sent.

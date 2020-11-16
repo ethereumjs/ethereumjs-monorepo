@@ -596,7 +596,7 @@ export default class Common {
    * Returns the hardfork set
    * @returns Hardfork name
    */
-  hardfork(): string | null {
+  hardfork(): string {
     return this._hardfork
   }
 
