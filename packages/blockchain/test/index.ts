@@ -564,9 +564,9 @@ tape('blockchain test', (t) => {
     const hash = await blockchain.dbManager.numberToHash(new BN(0))
     st.ok(genesis.hash().equals(hash), 'should perform _numberToHash correctly')
 
-    // cast the blockchain as <any> in order to get access to the private _getTd
-    const td = await (<any>blockchain)._getTd(genesis.hash(), new BN(0))
-    st.ok(td.eq(genesis.header.difficulty), 'should perform _getTd correctly')
+    // cast the blockchain as <any> in order to get access to the private getTotalDifficulty
+    const td = await (<any>blockchain).getTotalDifficulty(genesis.hash(), new BN(0))
+    st.ok(td.eq(genesis.header.difficulty), 'should perform getTotalDifficulty correctly')
     st.end()
   })
 

@@ -467,14 +467,14 @@ export default class Blockchain implements BlockchainInterface {
 
       // set total difficulty in the current context scope
       if (this._headHeaderHash) {
-        currentTd.header = await this._getTd(this._headHeaderHash)
+        currentTd.header = await this.getTotalDifficulty(this._headHeaderHash)
       }
       if (this._headBlockHash) {
-        currentTd.block = await this._getTd(this._headBlockHash)
+        currentTd.block = await this.getTotalDifficulty(this._headBlockHash)
       }
 
       // calculate the total difficulty of the new block
-      const parentTd = await this._getTd(header.parentHash, blockNumber.subn(1))
+      const parentTd = await this.getTotalDifficulty(header.parentHash, blockNumber.subn(1))
       td.iadd(parentTd)
 
       // save block and total difficulty to the database
@@ -539,6 +539,16 @@ export default class Blockchain implements BlockchainInterface {
    */
   private async _getBlock(blockId: Buffer | number | BN) {
     return this.dbManager.getBlock(blockId)
+  }
+
+  /**
+   * Gets total difficulty for a block specified by hash and number
+   */
+  public async getTotalDifficulty(hash: Buffer, number?: BN): Promise<BN> {
+    if (!number) {
+      number = await this.dbManager.hashToNumber(hash)
+    }
+    return this.dbManager.getTotalDifficulty(hash, number)
   }
 
   /**
@@ -941,18 +951,6 @@ export default class Blockchain implements BlockchainInterface {
   private async _getCanonicalHeader(number: BN) {
     const hash = await this.dbManager.numberToHash(number)
     return this._getHeader(hash, number)
-  }
-
-  /**
-   * Gets total difficulty for a block specified by hash and number
-   *
-   * @hidden
-   */
-  private async _getTd(hash: Buffer, number?: BN) {
-    if (!number) {
-      number = await this.dbManager.hashToNumber(hash)
-    }
-    return this.dbManager.getTd(hash, number)
   }
 
   /**
