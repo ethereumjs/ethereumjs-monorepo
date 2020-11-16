@@ -128,7 +128,7 @@ export class DBManager {
   /**
    * Fetches total difficulty for a block given its hash and number.
    */
-  async getTd(blockHash: Buffer, blockNumber: BN): Promise<BN> {
+  async getTotalDifficulty(blockHash: Buffer, blockNumber: BN): Promise<BN> {
     const td = await this.get(DBTarget.TotalDifficulty, { blockHash, blockNumber })
     return new BN(rlp.decode(td))
   }
