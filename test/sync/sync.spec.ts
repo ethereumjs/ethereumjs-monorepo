@@ -1,41 +1,35 @@
-import tape from 'tape-catch'
 import { EventEmitter } from 'events'
-const td = require('testdouble')
+import tape from 'tape-catch'
+import td from 'testdouble'
+import { Config } from '../../lib/config'
+import { Chain } from '../../lib/blockchain'
 
-tape('[Synchronizer]', (t) => {
-  class PeerPool extends EventEmitter {}
-  td.replace('../../lib/net/peerpool', PeerPool)
-  // const Synchronizer = require('../../lib/sync/sync')
-  //
-  // t.test('should sync', async (t) => {
-  //   const pool = new PeerPool()
-  //   const sync = new Synchronizer({ config: new Config({ transports: [] }), pool})
-  //   sync.fetch = td.func()
-  //   td.when(sync.fetch(2)).thenResolve(2)
-  //   sync.on('synchronized', info => {
-  //     t.equals(info.count, 2, 'synchronized')
-  //     t.end()
-  //   })
-  //   sync.sync(2)
-  // })
-  //
-  // t.test('should stop', async (t) => {
-  //   const pool = new PeerPool()
-  //   const sync = new Synchronizer({ config: new Config({ transports: [] }), pool})
-  //   sync.fetch = () => {
-  //     return new Promise(resolve => {
-  //       setTimeout(() => {
-  //         resolve(sync.syncing ? 2 : 1)
-  //       }, 100)
-  //     })
-  //   }
-  //   sync.on('synchronized', info => {
-  //     t.equals(info.count, 1, 'synchronized')
-  //     t.end()
-  //   })
-  //   sync.sync(2)
-  //   setTimeout(() => sync.stop(), 50)
-  // })
+tape('[Synchronizer]', async (t) => {
+  class PeerPool extends EventEmitter {
+    open() {}
+    close() {}
+  }
+  PeerPool.prototype.open = td.func<any>()
+  PeerPool.prototype.close = td.func<any>()
+  td.replace('../../lib/net/peerpool', { PeerPool })
+
+  const { Synchronizer } = await import('../../lib/sync/sync')
+
+  t.test('should sync', async (t) => {
+    const config = new Config({ loglevel: 'error', transports: [] })
+    const pool = new PeerPool() as any
+    const chain = new Chain({ config })
+    const sync = new Synchronizer({ config, pool, chain })
+    ;(sync as any).sync = td.func()
+    td.when((sync as any).sync()).thenResolve(true)
+    sync.on('synchronized', async () => {
+      t.ok('synchronized')
+      await sync.stop()
+      t.notOk((sync as any).running, 'stopped')
+      t.end()
+    })
+    await sync.start()
+  })
 
   t.test('should reset td', (t) => {
     td.reset()

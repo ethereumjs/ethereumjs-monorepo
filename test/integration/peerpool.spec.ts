@@ -7,9 +7,9 @@ import MockChain from './mocks/mockchain'
 
 tape('[Integration:PeerPool]', async (t) => {
   async function setup(protocols: EthProtocol[] = []): Promise<[MockServer, PeerPool]> {
-    const server = new MockServer({ config: new Config({ loglevel: 'error' }) })
+    const serverConfig = new Config({ loglevel: 'error' })
+    const server = new MockServer({ config: serverConfig }) as any
     server.addProtocols(protocols)
-    // @ts-ignore allow Config instantiation with MockServer
     const config = new Config({ servers: [server] })
     await server.start()
     const pool = new PeerPool({ config })
@@ -56,11 +56,12 @@ tape('[Integration:PeerPool]', async (t) => {
   })
 
   t.test('should handle peer messages', async (t) => {
-    const chain = new MockChain({ config: new Config({ loglevel: 'error' }) })
+    const config = new Config({ transports: [], loglevel: 'error' })
+    const chain = new MockChain({ config })
     await chain.open()
     const protocols = [
       new EthProtocol({
-        config: new Config({ transports: [] }),
+        config,
         chain,
       }),
     ]

@@ -52,13 +52,7 @@ export class Fetcher extends Readable {
 
   /**
    * Create new fetcher
-   * @param {Object}   options constructor parameters
-   * @param {PeerPool} options.pool peer pool
-   * @param {number}   [options.timeout] fetch task timeout
-   * @param {number}   [options.banTime] how long to ban misbehaving peers
-   * @param {number}   [options.maxQueue] max write queue size
-   * @param {number}   [options.maxPerRequest=128] max items per request
-   * @param {number}   [options.interval] retry interval
+   * @param {FetcherOptions}
    */
   constructor(options: FetcherOptions) {
     super({ ...options, objectMode: true })

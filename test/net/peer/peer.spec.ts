@@ -1,15 +1,13 @@
-/* eslint-disable */
-// TODO: re-enable linting. Disabled because much of test is commented out
-// resulting in unused variable false positives
+import { EventEmitter } from 'events'
 import tape from 'tape-catch'
-const td = require('testdouble')
+import td from 'testdouble'
 import { Peer } from '../../../lib/net/peer'
-import * as events from 'events'
 import { Config } from '../../../lib/config'
 
 tape('[Peer]', (t) => {
+  const config = new Config({ transports: [], loglevel: 'error' })
   const peer = new Peer({
-    config: new Config({ transports: [] }),
+    config,
     id: '0123456789abcdef',
     address: 'address0',
     transport: 'transport0',
@@ -23,12 +21,10 @@ tape('[Peer]', (t) => {
     t.end()
   })
 
-  // Deactivated along TypeScript transition, peer.bindProtocol
-  // can not be called with sender with string type
-  /*t.test('should bind protocol', async (t) => {
-    const bound = (new events.EventEmitter() as any)
-    const sender = 'sender'
-    const protocol = td.object('Protocol')
+  t.test('should bind protocol', async (t) => {
+    const bound = new EventEmitter() as any
+    const sender = 'sender' as any
+    const protocol = td.object('Protocol') as any
     bound.name = 'bound0'
     protocol.name = 'proto0'
 
@@ -36,23 +32,23 @@ tape('[Peer]', (t) => {
     td.when(protocol.bind(peer, sender)).thenResolve(bound)
     await peer.bindProtocol(protocol, sender)
     t.equals(peer.bound.get('bound0'), bound, 'protocol bound')
-    peer.on('message', (msg: any, name: any) => {
+    peer.on('message', (msg: string, name: string) => {
       t.ok(msg === 'msg0' && name === 'proto0', 'on message')
     })
-    peer.on('error', (err: any, name: any) => {
-      t.ok(err === 'err0' && name === 'proto0', 'on error')
+    peer.on('error', (err: Error, name: string) => {
+      t.ok(err.message === 'err0' && name === 'proto0', 'on error')
     })
     bound.emit('message', 'msg0')
-    bound.emit('error', 'err0')
+    bound.emit('error', new Error('err0'))
   })
 
-  t.test('should understand protocols', t => {
+  t.test('should understand protocols', (t) => {
     t.ok(peer.understands('bound0'), 'understands bound protocol')
     t.notOk(peer.understands('unknown'), 'does not understand unknown protocol')
     t.end()
   })
 
-  t.test('should convert to string', t => {
+  t.test('should convert to string', (t) => {
     t.equals(
       peer.toString(true),
       'id=0123456789abcdef address=address0 transport=transport0 protocols=bound0 inbound=true',
@@ -61,9 +57,9 @@ tape('[Peer]', (t) => {
     peer.inbound = false
     t.equals(
       peer.toString(),
-      'id=01234567 address=address0 transport=transport0 protocols=bound0',
+      'id=01234567 address=address0 transport=transport0 protocols=bound0 inbound=false',
       'correct short id string'
     )
     t.end()
-  })*/
+  })
 })

@@ -1,41 +1,52 @@
+import { EventEmitter } from 'events'
 import tape from 'tape-catch'
+import td from 'testdouble'
 import { Config } from '../lib/config'
-import { RlpxServer } from '../lib/net/server'
 import { PeerPool } from '../lib/net/peerpool'
-const EventEmitter = require('events')
-const td = require('testdouble')
 
-tape.skip('[Node]', (t) => {
-  const config = new Config({ loglevel: 'error', transports: [] })
-  class EthereumService extends EventEmitter {}
-  EthereumService.prototype.open = td.func()
-  EthereumService.prototype.start = td.func()
-  EthereumService.prototype.stop = td.func()
-  EthereumService.prototype.config = config
-  EthereumService.prototype.pool = new PeerPool({ config })
-  td.when(EthereumService.prototype.open()).thenResolve()
-  td.when(EthereumService.prototype.start()).thenResolve()
-  td.when(EthereumService.prototype.stop()).thenResolve()
-  td.replace('../lib/service/ethereumservice', { EthereumService })
-  class Server extends EventEmitter {}
-  Server.prototype.open = td.func()
-  Server.prototype.start = td.func()
-  Server.prototype.stop = td.func()
+tape('[Node]', async (t) => {
+  const config = new Config({ transports: [], loglevel: 'error' })
+  class FullEthereumService extends EventEmitter {
+    open() {}
+    start() {}
+    stop() {}
+    config = config
+    pool = new PeerPool({ config })
+  }
+  FullEthereumService.prototype.open = td.func<any>()
+  FullEthereumService.prototype.start = td.func<any>()
+  FullEthereumService.prototype.stop = td.func<any>()
+  td.replace('../lib/service', { FullEthereumService })
+  td.when(FullEthereumService.prototype.open()).thenResolve()
+  td.when(FullEthereumService.prototype.start()).thenResolve()
+  td.when(FullEthereumService.prototype.stop()).thenResolve()
+
+  class Server extends EventEmitter {
+    open() {}
+    start() {}
+    stop() {}
+  }
+  Server.prototype.open = td.func<any>()
+  Server.prototype.start = td.func<any>()
+  Server.prototype.stop = td.func<any>()
+  td.replace('../lib/net/server/server', { Server })
   td.when(Server.prototype.start()).thenResolve()
   td.when(Server.prototype.stop()).thenResolve()
-  td.replace('../lib/net/server/server', Server)
-  const Node = require('../lib/node').default
+
+  const { default: Node } = await import('../lib/node')
 
   t.test('should initialize correctly', (t) => {
+    const config = new Config({ transports: [], loglevel: 'error' })
     const node = new Node({ config })
-    t.ok(node.services[0] instanceof EthereumService, 'added service')
+    t.ok(node.services[0] instanceof FullEthereumService, 'added service')
     t.end()
   })
 
   t.test('should open', async (t) => {
     t.plan(6)
-    const servers = [new Server() as RlpxServer]
-    const node = new Node({ config: new Config({ servers }) })
+    const servers = [new Server()] as any
+    const config = new Config({ servers })
+    const node = new Node({ config })
     node.on('error', (err: string) => {
       if (err === 'err0') t.pass('got err0')
       if (err === 'err1') t.pass('got err1')
@@ -52,8 +63,9 @@ tape.skip('[Node]', (t) => {
   })
 
   t.test('should start/stop', async (t) => {
-    const servers = [new Server() as RlpxServer]
-    const node = new Node({ config: new Config({ servers }) })
+    const servers = [new Server()] as any
+    const config = new Config({ servers })
+    const node = new Node({ config })
     await node.start()
     t.ok(node.started, 'started')
     t.equals(await node.start(), false, 'already started')

@@ -12,8 +12,9 @@ tape('[Integration:FullEthereumService]', async (t) => {
     const config = new Config({ loglevel })
     const server = new MockServer({ config })
     const chain = new MockChain({ config })
+    const serviceConfig = new Config({ loglevel, servers: [server as any], lightserv: true })
     const service = new FullEthereumService({
-      config: new Config({ loglevel, servers: [server as any], lightserv: true }),
+      config: serviceConfig,
       chain,
     })
     await service.open()

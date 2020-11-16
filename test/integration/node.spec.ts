@@ -4,7 +4,8 @@ import Node from '../../lib/node'
 import MockServer from './mocks/mockserver'
 
 tape('[Integration:Node]', (t) => {
-  const servers = [new MockServer({ config: new Config({ loglevel: 'error' }) }) as any]
+  const serverConfig = new Config({ loglevel: 'error' })
+  const servers = [new MockServer({ config: serverConfig }) as any]
   const config = new Config({ servers, syncmode: 'full', lightserv: false, loglevel: 'error' })
   const node = new Node({ config })
 

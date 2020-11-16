@@ -18,13 +18,12 @@
     "build:browser": "tsc -p ./tsconfig.browser.json && npm run bundle && rm -rf dist.browser",
     "bundle": "webpack",
     "client:start": "tsc -p tsconfig.prod.json && node dist/bin/cli.js",
-    "coverage": "nyc npm run coverage:test && nyc report --reporter=lcov",
-    "coverage:test": "tape -r ts-node/register 'test/**/*.spec.ts'",
+    "coverage": "nyc npm run test && nyc report --reporter=lcov",
     "docs:build": "typedoc --tsconfig tsconfig.prod.json",
     "lint": "ethereumjs-config-lint",
     "lint:fix": "ethereumjs-config-lint-fix",
     "tape": "tape -r ts-node/register",
-    "test": "npm run tape -- 'test/**/*.spec.ts'",
+    "test": "npm run test:unit && npm run test:integration",
     "test:unit": "npm run tape -- 'test/!(integration)/**/*.spec.ts'",
     "test:integration": "npm run tape -- 'test/integration/**/*.spec.ts'",
     "test:browser": "karma start karma.conf.js"
@@ -43,8 +42,8 @@
     "ethereumjs",
     "client",
     "blockchain",
-    "light",
-    "fast"
+    "light sync",
+    "full sync"
   ],
   "engines": {
     "node": ">=8.0.0"

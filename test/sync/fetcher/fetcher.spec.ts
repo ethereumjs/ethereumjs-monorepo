@@ -1,58 +1,60 @@
 import tape from 'tape-catch'
+import td from 'testdouble'
 import { Config } from '../../../lib/config'
-const td = require('testdouble')
+import { Fetcher } from '../../../lib/sync/fetcher/fetcher'
 
 tape('[Fetcher]', (t) => {
-  const Fetcher = require('../../../lib/sync/fetcher/fetcher').Fetcher
-
   t.test('should handle bad result', (t) => {
     t.plan(2)
-    const fetcher = new Fetcher({ config: new Config({ transports: [] }), pool: td.object() })
+    const config = new Config({ loglevel: 'error', transports: [] })
+    const fetcher = new Fetcher({ config, pool: td.object() })
     const job: any = { peer: {}, state: 'active' }
-    fetcher.running = true
-    fetcher.next = td.func()
-    fetcher.wait = td.func()
-    td.when(fetcher.wait()).thenResolve()
+    ;(fetcher as any).running = true
+    fetcher.next = td.func<Fetcher['next']>()
+    fetcher.wait = td.func<Fetcher['wait']>()
+    td.when(fetcher.wait()).thenResolve(undefined)
     fetcher.success(job, undefined)
-    t.equals(fetcher.in.size(), 1, 'enqueued job')
+    t.equals((fetcher as any).in.size(), 1, 'enqueued job')
     setTimeout(() => t.ok(job.peer.idle, 'peer idled'), 10)
   })
 
   t.test('should handle failure', (t) => {
     t.plan(2)
-    const fetcher = new Fetcher({ config: new Config({ transports: [] }), pool: td.object() })
+    const config = new Config({ loglevel: 'error', transports: [] })
+    const fetcher = new Fetcher({ config, pool: td.object() })
     const job = { peer: {}, state: 'active' }
-    fetcher.running = true
-    fetcher.next = td.func()
-    fetcher.on('error', (err: any) => t.equals(err, 'err0', 'got error'))
-    fetcher.failure(job, 'err0')
-    t.equals(fetcher.in.size(), 1, 'enqueued job')
+    ;(fetcher as any).running = true
+    fetcher.next = td.func<Fetcher['next']>()
+    fetcher.on('error', (err: Error) => t.equals(err.message, 'err0', 'got error'))
+    fetcher.failure(job, new Error('err0'))
+    t.equals((fetcher as any).in.size(), 1, 'enqueued job')
   })
 
   t.test('should handle expiration', (t) => {
     t.plan(2)
+    const config = new Config({ loglevel: 'error', transports: [] })
     const fetcher = new Fetcher({
-      config: new Config({ transports: [] }),
+      config,
       pool: td.object(),
       timeout: 5,
     })
     const job = { index: 0 }
     const peer = { idle: true }
-    fetcher.peer = td.func()
-    fetcher.request = td.func()
+    fetcher.peer = td.func<Fetcher['peer']>()
+    fetcher.request = td.func<Fetcher['request']>()
     td.when(fetcher.peer()).thenReturn(peer)
     td.when(fetcher.request(td.matchers.anything(), { idle: false }), { delay: 10 }).thenReject(
-      'err0'
+      new Error('err0')
     )
-    td.when(fetcher.pool.contains({ idle: false })).thenReturn(true)
-    fetcher.in.insert(job)
-    fetcher._readableState = []
-    fetcher.running = true
-    fetcher.total = 10
+    td.when((fetcher as any).pool.contains({ idle: false })).thenReturn(true)
+    ;(fetcher as any).in.insert(job)
+    ;(fetcher as any)._readableState = []
+    ;(fetcher as any).running = true
+    ;(fetcher as any).total = 10
     fetcher.next()
     setTimeout(() => {
       t.deepEquals(job, { index: 0, peer: { idle: false }, state: 'expired' }, 'expired job')
-      t.equals(fetcher.in.size(), 1, 'enqueued job')
+      t.equals((fetcher as any).in.size(), 1, 'enqueued job')
     }, 20)
   })
 

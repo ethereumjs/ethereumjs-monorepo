@@ -203,13 +203,23 @@ export class Chain extends EventEmitter {
     if (!this.opened) {
       return false
     }
-    const headers: any = {}
-    const blocks: any = {}
+
+    const headers: ChainHeaders = {
+      latest: null,
+      td: new BN(0),
+      height: new BN(0),
+    }
+    const blocks: ChainBlocks = {
+      latest: null,
+      td: new BN(0),
+      height: new BN(0),
+    }
+
     headers.latest = await this.getLatestHeader()
     blocks.latest = await this.getLatestBlock()
 
-    headers.height = new BN(headers.latest.number)
-    blocks.height = new BN(blocks.latest.header.number)
+    headers.height = headers.latest.number
+    blocks.height = blocks.latest.header.number
 
     headers.td = await this.getTd(headers.latest.hash(), headers.height)
     blocks.td = await this.getTd(blocks.latest.hash(), blocks.height)

@@ -46,6 +46,7 @@ export function getLogger(options = { loglevel: 'info' }) {
       logFormat()
     ),
     level: options.loglevel,
+    silent: options.loglevel === 'off',
     transports: [new transports.Console()],
     exceptionHandlers: [new transports.Console()],
   })

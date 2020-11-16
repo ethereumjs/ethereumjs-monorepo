@@ -1,45 +1,61 @@
-import tape from 'tape-catch'
-import { BN } from 'ethereumjs-util'
 import { EventEmitter } from 'events'
+import tape from 'tape-catch'
+import td from 'testdouble'
+import { BN } from 'ethereumjs-util'
 import { Config } from '../../../lib/config'
-const td = require('testdouble')
+import { Chain } from '../../../lib/blockchain/chain'
 
 async function wait(delay?: number) {
   await new Promise((resolve) => setTimeout(resolve, delay ?? 10))
 }
 
-tape('[BlockFetcher]', (t) => {
-  class PeerPool extends EventEmitter {}
-  ;(PeerPool.prototype as any).idle = td.func() // eslint-disable-line no-extra-semi
-  ;(PeerPool.prototype as any).ban = td.func()
-  td.replace('../../../lib/net/peerpool', PeerPool)
-  const BlockFetcher = require('../../../lib/sync/fetcher/blockfetcher').BlockFetcher
+tape('[BlockFetcher]', async (t) => {
+  class PeerPool extends EventEmitter {
+    idle() {}
+    ban() {}
+  }
+  PeerPool.prototype.idle = td.func<any>()
+  PeerPool.prototype.ban = td.func<any>()
+  td.replace('../../lib/net/peerpool', { PeerPool })
+
+  const { BlockFetcher } = await import('../../../lib/sync/fetcher/blockfetcher')
 
   t.test('should start/stop', async (t) => {
+    const config = new Config({ loglevel: 'error', transports: [] })
+    const pool = new PeerPool() as any
+    const chain = new Chain({ config })
     const fetcher = new BlockFetcher({
-      config: new Config({ transports: [] }),
-      pool: new PeerPool(),
+      config,
+      pool,
+      chain,
       first: new BN(1),
       count: new BN(10),
       maxPerRequest: 5,
       timeout: 5,
     })
     fetcher.next = () => false
-    t.notOk(fetcher.running, 'not started')
+    t.notOk((fetcher as any).running, 'not started')
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     fetcher.fetch()
-    t.equals(fetcher.in.size(), 2, 'added 2 tasks')
+    t.equals((fetcher as any).in.size(), 2, 'added 2 tasks')
     await wait()
-    t.ok(fetcher.running, 'started')
+    t.ok((fetcher as any).running, 'started')
     fetcher.destroy()
     await wait()
-    t.notOk(fetcher.running, 'stopped')
+    t.notOk((fetcher as any).running, 'stopped')
     t.end()
   })
 
   t.test('should process', (t) => {
+    const config = new Config({ loglevel: 'error', transports: [] })
+    const pool = new PeerPool() as any
+    const chain = new Chain({ config })
     const fetcher = new BlockFetcher({
-      config: new Config({ transports: [] }),
-      pool: new PeerPool(),
+      config,
+      pool,
+      chain,
+      first: new BN(0),
+      count: new BN(0),
     })
     const blocks = [{ header: { number: 1 } }, { header: { number: 2 } }]
     t.deepEquals(fetcher.process({ task: { count: 2 } }, { blocks }), blocks, 'got results')
@@ -48,10 +64,18 @@ tape('[BlockFetcher]', (t) => {
   })
 
   t.test('should find a fetchable peer', async (t) => {
-    const pool = new PeerPool()
-    const fetcher = new BlockFetcher({ config: new Config({ transports: [] }), pool })
-    td.when(fetcher.pool.idle(td.matchers.anything())).thenReturn('peer0')
-    t.equals(fetcher.peer(), 'peer0', 'found peer')
+    const config = new Config({ loglevel: 'error', transports: [] })
+    const pool = new PeerPool() as any
+    const chain = new Chain({ config })
+    const fetcher = new BlockFetcher({
+      config,
+      pool,
+      chain,
+      first: new BN(0),
+      count: new BN(0),
+    })
+    td.when((fetcher as any).pool.idle(td.matchers.anything())).thenReturn('peer0')
+    t.equals(fetcher.peer(undefined), 'peer0', 'found peer')
     t.end()
   })
 

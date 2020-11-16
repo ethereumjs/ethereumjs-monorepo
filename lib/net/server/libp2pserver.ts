@@ -61,9 +61,8 @@ export class Libp2pServer extends Server {
         peerInfo: await this.createPeerInfo(),
         bootnodes: this.bootnodes,
       })
-      this.protocols.forEach(async (p: any) => {
-        //@ts-ignore
-        const protocol: any = `/${p.name}/${p.versions[0]}`
+      this.protocols.forEach(async (p) => {
+        const protocol = `/${p.name}/${p.versions[0]}`
         this.node!.handle(protocol, async (_: any, connection: any) => {
           try {
             const peerInfo = await this.getPeerInfo(connection)
@@ -79,7 +78,6 @@ export class Libp2pServer extends Server {
         })
       })
     }
-    // eslint-disable-next-line no-extra-semi
     this.node.on('peer:discovery', async (peerInfo: any) => {
       try {
         const id = peerInfo.id.toB58String()
@@ -102,12 +100,7 @@ export class Libp2pServer extends Server {
         this.error(e)
       }
     })
-    await new Promise((resolve, reject) =>
-      this.node!.start((err: any) => {
-        if (err) reject(err)
-        resolve()
-      })
-    )
+    await this.node.asyncStart()
     this.node.peerInfo.multiaddrs.toArray().map((ma: any) => {
       this.emit('listening', {
         transport: this.name,
@@ -123,12 +116,7 @@ export class Libp2pServer extends Server {
    */
   async stop(): Promise<boolean> {
     if (this.started) {
-      await new Promise((resolve, reject) =>
-        this.node!.stop((err: any) => {
-          if (err) reject(err)
-          resolve()
-        })
-      )
+      await this.node!.asyncStop()
       await super.stop()
       this.started = false
     }
@@ -178,8 +166,7 @@ export class Libp2pServer extends Server {
         if (err) {
           return reject(err)
         }
-        // eslint-disable-next-line no-extra-semi
-        this.multiaddrs.forEach((ma: any) => peerInfo.multiaddrs.add(ma))
+        this.multiaddrs.forEach((ma) => peerInfo.multiaddrs.add(ma))
         resolve(peerInfo)
       }
       if (this.key) {
