@@ -43,8 +43,8 @@ test('ETH: send status message (NetworkId mismatch)', async t => {
     t.end()
   }
 
-  const c1 = new Common('mainnet')
-  const c2 = new Common('ropsten')
+  const c1 = new Common({ chain: 'mainnet' })
+  const c2 = new Common({ chain: 'ropsten' })
   util.twoPeerMsgExchange(t, opts, capabilities, [c1, c2])
 })
 
@@ -115,7 +115,7 @@ test('ETH: should work with allowed eth64', async t => {
 
 test('ETH -> Eth64 -> sendStatus(): should throw on non-matching latest block provided', async t => {
   const cap = [devp2p.ETH.eth64]
-  const common = new Common('mainnet', 'byzantium')
+  const common = new Common({ chain: 'mainnet', hardfork: 'byzantium' })
   let status0: any = Object.assign({}, status)
   status0['latestBlock'] = 100000 // lower than Byzantium fork block 4370000
 
@@ -133,7 +133,7 @@ test('ETH -> Eth64 -> sendStatus(): should throw on non-matching latest block pr
 test('ETH -> Eth64 -> ForkId validation 1a)', async t => {
   let opts: any = {}
   const cap = [devp2p.ETH.eth64]
-  const common = new Common('mainnet', 'byzantium')
+  const common = new Common({ chain: 'mainnet', hardfork: 'byzantium' })
   let status0: any = Object.assign({}, status)
   // Take a latest block > next mainnet fork block (constantinople)
   // to trigger validation condition

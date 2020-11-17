@@ -45,7 +45,7 @@ export function getTestRLPXs(
     capabilities = [ETH.eth64, ETH.eth63, ETH.eth62]
   }
   if (!common) {
-    common = new Common('mainnet')
+    common = new Common({ chain: 'mainnet' })
   }
   const dpts = getTestDPTs(numRLPXs)
 

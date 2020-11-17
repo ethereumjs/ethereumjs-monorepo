@@ -58,8 +58,8 @@ test('LES: send status message (NetworkId mismatch)', async t => {
     t.end()
   }
 
-  const c1 = new Common('mainnet')
-  const c2 = new Common('ropsten')
+  const c1 = new Common({ chain: 'mainnet' })
+  const c2 = new Common({ chain: 'ropsten' })
   util.twoPeerMsgExchange(t, opts, capabilities, [c1, c2])
 })
 
