@@ -106,7 +106,8 @@ jobs:
         with:
           node-version: 12.x
       - uses: actions/checkout@v1
-
+        with:
+          submodules: recursive
       - name: Dependency cache
         uses: actions/cache@v2
         id: cache
@@ -144,7 +145,8 @@ jobs:
         with:
           node-version: 12.x
       - uses: actions/checkout@v1
-
+        with:
+          submodules: recursive
       - name: Dependency cache
         uses: actions/cache@v2
         id: cache
