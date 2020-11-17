@@ -30,7 +30,7 @@
   "author": "mjbecze <mjbecze@gmail.com>",
   "license": "MPL-2.0",
   "bugs": {
-    "url": "https://github.com/ethereumjs/ethereumjs-vm/issues?q=is%3Aissue+is%3Aopen+label%3A'package%3A+ethash'"
+    "url": "https://github.com/ethereumjs/ethereumjs-vm/issues?q=is%3Aissue+label%3A%22package%3A+ethash%22"
   },
   "homepage": "https://github.com/ethereumjs/ethereumjs-vm/tree/master/packages/ethash#readme",
   "dependencies": {

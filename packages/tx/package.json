@@ -70,9 +70,9 @@
     "url": "https://github.com/ethereumjs/ethereumjs-vm.git"
   },
   "bugs": {
-    "url": "https://github.com/ethereumjs/ethereumjs-vm/issues"
+    "url": "https://github.com/ethereumjs/ethereumjs-vm/issues?q=is%3Aissue+label%3A%22package%3A+tx%22"
   },
-  "homepage": "https://github.com/ethereumjs/ethereumjs-vm",
+  "homepage": "https://github.com/ethereumjs/ethereumjs-vm/tree/master/packages/tx#readme",
   "contributors": [
     {
       "name": "<-c-g-> ",

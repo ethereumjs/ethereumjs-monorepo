@@ -32,9 +32,9 @@
   "author": "mjbecze <mjbecze@gmail.com>",
   "license": "MPL-2.0",
   "bugs": {
-    "url": "https://github.com/ethereumjs/ethereumjs-vm/issues?q=is%3Aissue+label%3A\"package%3A+blockchain\""
+    "url": "https://github.com/ethereumjs/ethereumjs-vm/issues?q=is%3Aissue+label%3A%22package%3A+blockchain%22"
   },
-  "homepage": "https://github.com/ethereumjs/ethereumjs-vm/tree/master/packages/blockchain#synopsis",
+  "homepage": "https://github.com/ethereumjs/ethereumjs-vm/tree/master/packages/blockchain#readme",
   "dependencies": {
     "@ethereumjs/block": "3.0.0-beta.2",
     "@ethereumjs/common": "2.0.0-beta.2",

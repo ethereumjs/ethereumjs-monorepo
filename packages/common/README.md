@@ -13,7 +13,7 @@ Note: this `README` reflects the state of the library from `v2.0.0` onwards. See
 
 # INSTALL
 
-`npm install ethereumjs-common`
+`npm install @ethereumjs/common`
 
 # USAGE
 
@@ -187,13 +187,13 @@ Due to the large file sizes genesis states are not directly included in the `ind
 but have to be accessed directly, e.g.:
 
 ```javascript
-const mainnetGenesisState = require('ethereumjs-common/dist/genesisStates/mainnet')
+const mainnetGenesisState = require('@ethereumjs/common/dist/genesisStates/mainnet')
 ```
 
 Or by accessing dynamically:
 
 ```javascript
-const genesisStates = require('ethereumjs-common/dist/genesisStates')
+const genesisStates = require('@ethereumjs/common/dist/genesisStates')
 const mainnetGenesisState = genesisStates.genesisStateByName('mainnet')
 const mainnetGenesisState = genesisStates.genesisStateById(1) // alternative via network Id
 ```

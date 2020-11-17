@@ -23,7 +23,7 @@ type AddressHex = string
  */
 export interface DefaultStateManagerOpts {
   /**
-   * Parameters of the chain ([`Common`](https://github.com/ethereumjs/ethereumjs-common))
+   * Parameters of the chain ([`Common`](https://github.com/ethereumjs/ethereumjs-vm/tree/master/packages/common))
    */
   common?: Common
   /**

@@ -35,9 +35,9 @@
   "author": "mjbecze (mb@ethdev.com)",
   "license": "MPL-2.0",
   "bugs": {
-    "url": "https://github.com/ethereumjs/ethereumjs-vm/issues?q=is%3Aissue+label%3A\"package%3A+block\""
+    "url": "https://github.com/ethereumjs/ethereumjs-vm/issues?q=is%3Aissue+label%3A%22package%3A+block%22"
   },
-  "homepage": "https://github.com/ethereumjs/ethereumjs-vm/tree/master/packages/block#synopsis",
+  "homepage": "https://github.com/ethereumjs/ethereumjs-vm/tree/master/packages/block#readme",
   "dependencies": {
     "@ethereumjs/common": "2.0.0-beta.2",
     "@ethereumjs/tx": "3.0.0-beta.2",
