@@ -186,12 +186,8 @@ export class RLPx extends EventEmitter {
       clientId: this._clientId,
       remoteClientIdFilter: this._remoteClientIdFilter,
       capabilities: this._capabilities,
-<<<<<<< HEAD
-      port: this._listenPort
-=======
       common: this._common,
-      port: this._listenPort,
->>>>>>> Use Common for networkId in ETH and LES protocols, init Rlpx with Common instance
+      port: this._listenPort
     })
     peer.on('error', err => this.emit('peer:error', peer, err))
 

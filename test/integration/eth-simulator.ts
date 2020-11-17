@@ -64,13 +64,8 @@ test('ETH: send status message (Genesis block mismatch)', async t => {
   util.twoPeerMsgExchange(t, opts, capabilities)
 })
 
-<<<<<<< HEAD
-test('ETH: send allowed eth63', async t => {
-  const opts: any = {}
-=======
 function sendWithProtocolVersion(t: test.Test, version: number, cap?: Object) {
-  let opts: any = {}
->>>>>>> Added support for Eth64 protocol version
+  const opts: any = {}
   opts.status0 = Object.assign({}, status)
   opts.status1 = Object.assign({}, status)
   opts.onOnceStatus0 = function(rlpxs: any, eth: any) {
@@ -92,23 +87,6 @@ test('ETH: should use latest protocol version on default', async t => {
   sendWithProtocolVersion(t, 64)
 })
 
-<<<<<<< HEAD
-test('ETH: send allowed eth62', async t => {
-  const cap = [devp2p.ETH.eth62]
-  const opts: any = {}
-  opts.status0 = Object.assign({}, status)
-  opts.status1 = Object.assign({}, status)
-  opts.onOnceStatus0 = function(rlpxs: any, eth: any) {
-    eth.sendMessage(devp2p.ETH.MESSAGE_CODES.NEW_BLOCK_HASHES, [437000, 1, 0, 0])
-    t.pass('should send NEW_BLOCK_HASHES message')
-  }
-  opts.onOnMsg1 = function(rlpxs: any, eth: any, code: any) {
-    if (code === devp2p.ETH.MESSAGE_CODES.NEW_BLOCK_HASHES) {
-      t.pass('should receive NEW_BLOCK_HASHES message')
-      util.destroyRLPXs(rlpxs)
-      t.end()
-    }
-=======
 test('ETH: should work with allowed eth64', async t => {
   sendWithProtocolVersion(t, 64)
 })
@@ -116,7 +94,7 @@ test('ETH: should work with allowed eth64', async t => {
 test('ETH -> Eth64 -> sendStatus(): should throw on non-matching latest block provided', async t => {
   const cap = [devp2p.ETH.eth64]
   const common = new Common({ chain: 'mainnet', hardfork: 'byzantium' })
-  let status0: any = Object.assign({}, status)
+  const status0: any = Object.assign({}, status)
   status0['latestBlock'] = 100000 // lower than Byzantium fork block 4370000
 
   const rlpxs = util.initTwoPeerRLPXSetup(null, cap, common)
@@ -131,10 +109,10 @@ test('ETH -> Eth64 -> sendStatus(): should throw on non-matching latest block pr
 })
 
 test('ETH -> Eth64 -> ForkId validation 1a)', async t => {
-  let opts: any = {}
+  const opts: any = {}
   const cap = [devp2p.ETH.eth64]
   const common = new Common({ chain: 'mainnet', hardfork: 'byzantium' })
-  let status0: any = Object.assign({}, status)
+  const status0: any = Object.assign({}, status)
   // Take a latest block > next mainnet fork block (constantinople)
   // to trigger validation condition
   status0['latestBlock'] = 9069000
@@ -145,24 +123,23 @@ test('ETH -> Eth64 -> ForkId validation 1a)', async t => {
     t.equal(err.message, msg, `should emit error: ${msg}`)
     util.destroyRLPXs(rlpxs)
     t.end()
->>>>>>> Added support for Eth64 protocol version
   }
 
   util.twoPeerMsgExchange(t, opts, cap, common)
 })
 
 test('ETH: should work with allowed eth63', async t => {
-  let cap = [devp2p.ETH.eth63]
+  const cap = [devp2p.ETH.eth63]
   sendWithProtocolVersion(t, 63, cap)
 })
 
 test('ETH: should work with allowed eth63', async t => {
-  let cap = [devp2p.ETH.eth63]
+  const cap = [devp2p.ETH.eth63]
   sendWithProtocolVersion(t, 63, cap)
 })
 
 test('ETH: work with allowed eth62', async t => {
-  let cap = [devp2p.ETH.eth62]
+  const cap = [devp2p.ETH.eth62]
   sendWithProtocolVersion(t, 62, cap)
 })
 

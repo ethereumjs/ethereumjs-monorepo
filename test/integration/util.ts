@@ -38,7 +38,7 @@ export function getTestRLPXs(
   numRLPXs: number,
   maxPeers: number = 10,
   capabilities?: any,
-  common?: Object | Common,
+  common?: Object | Common
 ) {
   const rlpxs = []
   if (!capabilities) {
@@ -54,12 +54,8 @@ export function getTestRLPXs(
       dpt: dpts[i],
       maxPeers: maxPeers,
       capabilities: capabilities,
-<<<<<<< HEAD
-      listenPort: basePort + i
-=======
       common: common.constructor === Array ? common[i] : (common as Common),
-      listenPort: basePort + i,
->>>>>>> Use Common for networkId in ETH and LES protocols, init Rlpx with Common instance
+      listenPort: basePort + i
     })
     rlpx.listen(basePort + i)
     rlpxs.push(rlpx)
@@ -90,7 +86,7 @@ export function twoPeerMsgExchange(
   t: Test,
   opts: any,
   capabilities?: any,
-  common?: Object | Common,
+  common?: Object | Common
 ) {
   const rlpxs = initTwoPeerRLPXSetup(null, capabilities, common)
   rlpxs[0].on('peer:added', function(peer: any) {

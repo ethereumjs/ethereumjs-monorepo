@@ -140,11 +140,11 @@ Connect to a peer, organize the communication, see [./src/rlpx/](./src/rlpx/)
 
 ### Usage
 
-Instantiate an [ethereumjs-common](https://github.com/ethereumjs/ethereumjs-vm/tree/master/packages/common)
+Instantiate an [@ethereumjs/common](https://github.com/ethereumjs/ethereumjs-vm/tree/master/packages/common)
 instance with the network you want to connect to:
 
 ```typescript
-const common = new Common('mainnet')
+const common = new Common({ chain: 'mainnet' })
 ```
 
 Create your `RLPx` object, e.g.:

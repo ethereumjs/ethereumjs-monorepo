@@ -144,11 +144,11 @@ export class ETH extends EventEmitter {
     assertEq(this._status[1], this._peerStatus[1], 'NetworkId mismatch', debug)
     assertEq(this._status[4], this._peerStatus[4], 'Genesis block mismatch', debug)
 
-    let status: any = {
+    const status: any = {
       networkId: this._peerStatus[1],
       td: Buffer.from(this._peerStatus[2]),
       bestHash: Buffer.from(this._peerStatus[3]),
-      genesisHash: Buffer.from(this._peerStatus[4]),
+      genesisHash: Buffer.from(this._peerStatus[4])
     }
 
     if (this._version >= 64) {
@@ -175,11 +175,11 @@ export class ETH extends EventEmitter {
 
   _getStatusString(status: ETH.StatusMsg) {
     let sStr = `[V:${buffer2int(status[0] as Buffer)}, NID:${buffer2int(
-      status[1] as Buffer,
+      status[1] as Buffer
     )}, TD:${buffer2int(status[2] as Buffer)}`
     sStr += `, BestH:${formatLogId(status[3].toString('hex'), verbose)}, GenH:${formatLogId(
       status[4].toString('hex'),
-      verbose,
+      verbose
     )}`
     if (this._version >= 64) {
       sStr += `, ForkHash: 0x${(status[5][0] as Buffer).toString('hex')}`
@@ -202,7 +202,7 @@ export class ETH extends EventEmitter {
       if (status.latestBlock) {
         if (status.latestBlock < this._latestBlock) {
           throw new Error(
-            'latest block provided is not matching the HF setting of the Common instance (Rlpx)',
+            'latest block provided is not matching the HF setting of the Common instance (Rlpx)'
           )
         }
         this._latestBlock = status.latestBlock

@@ -22,7 +22,7 @@ const BOOTNODES = bootstrapNodes.map((node: any) => {
   return {
     address: node.ip,
     udpPort: node.port,
-    tcpPort: node.port,
+    tcpPort: node.port
   }
 })
 const REMOTE_CLIENTID_FILTER = [
