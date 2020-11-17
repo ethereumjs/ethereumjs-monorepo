@@ -1,4 +1,4 @@
-# Running a Solidity smart contract using ethereumjs-vm
+# Running a Solidity smart contract using @ethereumjs/vm
 
 This directory contains an example on how to run smart contracts written in Solidity.
 
