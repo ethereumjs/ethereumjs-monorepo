@@ -101,16 +101,5 @@
   "bugs": {
     "url": "https://github.com/ethereumjs/ethereumjs-vm/issues"
   },
-  "homepage": "https://github.com/ethereumjs/ethereumjs-vm",
-  "nyc": {
-    "exclude": [
-      "tests"
-    ]
-  },
-  "standard": {
-    "ignore": [
-      "dist/**",
-      "examples/runcode-browserify.js"
-    ]
-  }
+  "homepage": "https://github.com/ethereumjs/ethereumjs-vm"
 }
