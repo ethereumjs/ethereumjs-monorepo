@@ -6,7 +6,7 @@ tape.skip('[Integration:LightSync]', async (t) => {
     const [remoteServer, remoteService] = await setup({
       location: '127.0.0.2',
       height: 200,
-      syncmode: 'fast',
+      syncmode: 'full',
     })
     const [localServer, localService] = await setup({
       location: '127.0.0.1',
@@ -26,7 +26,7 @@ tape.skip('[Integration:LightSync]', async (t) => {
     const [remoteServer, remoteService] = await setup({
       location: '127.0.0.2',
       height: 9,
-      syncmode: 'fast',
+      syncmode: 'full',
     })
     const [localServer, localService] = await setup({
       location: '127.0.0.1',
@@ -48,12 +48,12 @@ tape.skip('[Integration:LightSync]', async (t) => {
     const [remoteServer1, remoteService1] = await setup({
       location: '127.0.0.2',
       height: 9,
-      syncmode: 'fast',
+      syncmode: 'full',
     })
     const [remoteServer2, remoteService2] = await setup({
       location: '127.0.0.3',
       height: 10,
-      syncmode: 'fast',
+      syncmode: 'full',
     })
     const [localServer, localService] = await setup({
       location: '127.0.0.1',

@@ -1,5 +1,5 @@
 import { Config } from '../../lib/config'
-import { FastEthereumService, LightEthereumService } from '../../lib/service'
+import { FullEthereumService, LightEthereumService } from '../../lib/service'
 import MockServer from './mocks/mockserver'
 import MockChain from './mocks/mockchain'
 
@@ -12,7 +12,7 @@ interface SetupOptions {
 
 export async function setup(
   options: SetupOptions = {}
-): Promise<[MockServer, FastEthereumService | LightEthereumService]> {
+): Promise<[MockServer, FullEthereumService | LightEthereumService]> {
   const loglevel = 'error'
   const config = new Config({ loglevel })
   const { location, height, interval, syncmode } = options
@@ -26,7 +26,7 @@ export async function setup(
   const service =
     syncmode === 'light'
       ? new LightEthereumService(serviceOpts)
-      : new FastEthereumService({
+      : new FullEthereumService({
           ...serviceOpts,
           lightserv: true,
         })
@@ -37,7 +37,7 @@ export async function setup(
 
 export async function destroy(
   server: MockServer,
-  service: FastEthereumService | LightEthereumService
+  service: FullEthereumService | LightEthereumService
 ): Promise<void> {
   await server.stop()
   await service.stop()

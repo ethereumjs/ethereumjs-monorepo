@@ -1,11 +1,11 @@
 import { EthereumService, EthereumServiceOptions } from './ethereumservice'
-import { FastSynchronizer } from '../sync/fastsync'
+import { FullSynchronizer } from '../sync/fullsync'
 import { EthProtocol } from '../net/protocol/ethprotocol'
 import { LesProtocol } from '../net/protocol/lesprotocol'
 import { Peer } from '../net/peer/peer'
 import { Protocol, BoundProtocol } from '../net/protocol'
 
-interface FastEthereumServiceOptions extends EthereumServiceOptions {
+interface FullEthereumServiceOptions extends EthereumServiceOptions {
   /* Serve LES requests (default: false) */
   lightserv?: boolean
 }
@@ -14,20 +14,20 @@ interface FastEthereumServiceOptions extends EthereumServiceOptions {
  * Ethereum service
  * @memberof module:service
  */
-export class FastEthereumService extends EthereumService {
-  public synchronizer: FastSynchronizer
+export class FullEthereumService extends EthereumService {
+  public synchronizer: FullSynchronizer
   public lightserv: boolean
   /**
    * Create new ETH service
-   * @param {FastEthereumServiceOptions}
+   * @param {FullEthereumServiceOptions}
    */
-  constructor(options: FastEthereumServiceOptions) {
+  constructor(options: FullEthereumServiceOptions) {
     super(options)
 
     this.lightserv = options.lightserv ?? false
 
-    this.config.logger.info('Fast sync mode')
-    this.synchronizer = new FastSynchronizer({
+    this.config.logger.info('Full sync mode')
+    this.synchronizer = new FullSynchronizer({
       config: this.config,
       pool: this.pool,
       chain: this.chain,

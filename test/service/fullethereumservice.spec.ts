@@ -1,11 +1,11 @@
 import tape from 'tape-catch'
 import { Config } from '../../lib/config'
-import { FastEthereumService } from '../../lib/service'
+import { FullEthereumService } from '../../lib/service'
 const EventEmitter = require('events')
 const td = require('testdouble')
 
 // TESTS FAILING: replace testdouble w/ something TS friendly?
-tape.skip('[FastEthereumService]', (t) => {
+tape.skip('[FullEthereumService]', (t) => {
   class PeerPool extends EventEmitter {}
   PeerPool.prototype.open = td.func()
   PeerPool.prototype.close = td.func()
@@ -18,25 +18,25 @@ tape.skip('[FastEthereumService]', (t) => {
   const LesProtocol = td.constructor()
   td.replace('../../lib/net/protocol/ethprotocol', EthProtocol)
   td.replace('../../lib/net/protocol/lesprotocol', LesProtocol)
-  class FastSynchronizer extends EventEmitter {}
-  FastSynchronizer.prototype.start = td.func()
-  FastSynchronizer.prototype.stop = td.func()
-  FastSynchronizer.prototype.open = td.func()
-  td.replace('../../lib/sync/fastsync', FastSynchronizer)
+  class FullSynchronizer extends EventEmitter {}
+  FullSynchronizer.prototype.start = td.func()
+  FullSynchronizer.prototype.stop = td.func()
+  FullSynchronizer.prototype.open = td.func()
+  td.replace('../../lib/sync/fullsync', FullSynchronizer)
 
   t.test('should initialize correctly', async (t) => {
-    const service = new FastEthereumService({ config: new Config({ transports: [] }) })
-    t.ok(service.synchronizer instanceof FastSynchronizer, 'fast mode')
+    const service = new FullEthereumService({ config: new Config({ transports: [] }) })
+    t.ok(service.synchronizer instanceof FullSynchronizer, 'full mode')
     t.equals(service.name, 'eth', 'got name')
     t.end()
   })
 
   t.test('should get protocols', async (t) => {
-    let service = new FastEthereumService({ config: new Config({ transports: [] }) })
-    t.ok(service.protocols[0] instanceof EthProtocol, 'fast protocols')
+    let service = new FullEthereumService({ config: new Config({ transports: [] }) })
+    t.ok(service.protocols[0] instanceof EthProtocol, 'full protocols')
     t.notOk(service.protocols[1], 'no light protocol')
-    service = new FastEthereumService({ config: new Config({ transports: [], lightserv: true }) })
-    t.ok(service.protocols[0] instanceof EthProtocol, 'fast protocols')
+    service = new FullEthereumService({ config: new Config({ transports: [], lightserv: true }) })
+    t.ok(service.protocols[0] instanceof EthProtocol, 'full protocols')
     t.ok(service.protocols[1] instanceof LesProtocol, 'lightserv protocols')
     t.end()
   })
@@ -45,7 +45,7 @@ tape.skip('[FastEthereumService]', (t) => {
     t.plan(3)
     const server = td.object()
     //@ts-ignore allow Config instantiation with object server
-    const service = new FastEthereumService({
+    const service = new FullEthereumService({
       config: new Config({ servers: [server] }),
     })
     await service.open()
@@ -67,7 +67,7 @@ tape.skip('[FastEthereumService]', (t) => {
   t.test('should start/stop', async (t) => {
     const server = td.object()
     //@ts-ignore allow Config instantiation with object server
-    const service = new FastEthereumService({
+    const service = new FullEthereumService({
       config: new Config({ servers: [server] }),
     })
     await service.start()

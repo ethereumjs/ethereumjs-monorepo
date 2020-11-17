@@ -4,5 +4,5 @@
 
 export * from './service'
 export * from './ethereumservice'
-export * from './fastethereumservice'
+export * from './fullethereumservice'
 export * from './lightethereumservice'

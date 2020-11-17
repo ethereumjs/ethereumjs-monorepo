@@ -177,7 +177,7 @@ Output:
 
 ### Example 1: Light sync
 
-In this example, we will run two ethereumjs-clients. The first will be a fast sync client that
+In this example, we will run two ethereumjs-clients. The first will be a full sync client that
 will connect to the rinkeby network and start downloading the blockchain. The second will be a
 light client that connects to the first client and syncs headers as they are downloaded.
 
@@ -187,7 +187,7 @@ listener. The second client will use libp2p to connect to the first client.
 Run the first client and start downloading blocks:
 
 ```
-ethereumjs --syncmode fast --lightserv true  --datadir first --network rinkeby --transports rlpx libp2p:multiaddrs=/ip4/127.0.0.1/tcp/50505/ws
+ethereumjs --syncmode full --lightserv true  --datadir first --network rinkeby --transports rlpx libp2p:multiaddrs=/ip4/127.0.0.1/tcp/50505/ws
 ```
 
 Output:
@@ -272,7 +272,7 @@ to help contributors better understand how the project is organized.
 - `/docs` Contains auto-generated API docs.
 - `/lib/blockchain` Contains the `Chain` class.
 - `/lib/net` Contains all of the network layer classes including `Peer`, `Protocol` and its subclasses, `Server` and its subclasses, and `PeerPool`.
-- `/lib/service` Contains the main Ethereum services (`FastEthereumService` and `LightEthereumService`).
+- `/lib/service` Contains the main Ethereum services (`FullEthereumService` and `LightEthereumService`).
 - `/lib/rpc` Contains the RPC server (optionally) embedded in the client.
 - `/lib/sync` Contains the various chain synchronizers and `Fetcher` helpers.
 - `/test` Contains test cases, testing helper functions, mocks and test data.
@@ -297,12 +297,12 @@ to help contributors better understand how the project is organized.
   and `removed` events when new peers are added and removed and also emit the `message` event whenever
   any of the peers in the pool emit a message. Each `Service` has an associated `PeerPool` and they are used primarily by `Synchronizer`s to help with blockchain synchronization.
 - `Synchronizer` Subclasses of this class implements a specific blockchain synchronization strategy. They
-  also make use of subclasses of the `Fetcher` class that help fetch headers and bodies from pool peers. The fetchers internally make use of streams to handle things like queuing and backpressure. - `FastSynchronizer` [**In Progress**] Implements fast syncing of the blockchain - `LightSynchronizer` [**In Progress**] Implements light syncing of the blockchain
+  also make use of subclasses of the `Fetcher` class that help fetch headers and bodies from pool peers. The fetchers internally make use of streams to handle things like queuing and backpressure. - `FullSynchronizer` [**In Progress**] Implements full syncing of the blockchain - `LightSynchronizer` [**In Progress**] Implements light syncing of the blockchain
 - `Handler` Subclasses of this class implements a protocol message handler. Handlers respond to incoming requests from peers.
   - `EthHandler` [**In Progress**] Handles incoming ETH requests
   - `LesHandler` [**In Progress**] Handles incoming LES requests
-- `Service` Subclasses of `Service` will implement specific functionality of a `Node`. For example, the `EthereumService` subclasses will synchronize the blockchain using the fast or light sync protocols. Each service must specify which protocols it needs and define a `start()` and `stop()` function.
-  - `FastEthereumService` [**In Progress**] Implementation of ethereum fast sync.
+- `Service` Subclasses of `Service` will implement specific functionality of a `Node`. For example, the `EthereumService` subclasses will synchronize the blockchain using the full or light sync protocols. Each service must specify which protocols it needs and define a `start()` and `stop()` function.
+  - `FullEthereumService` [**In Progress**] Implementation of ethereum full sync.
   - `LightEthereumService` [**In Progress**] Implementation of ethereum light sync.
   - `WhisperService` [**Not Started**] Implementation of an ethereum whisper node.
 - `Node` [**In Progress**] Represents the top-level ethereum node, and is responsible for managing the lifecycle of included services.
