@@ -34,7 +34,7 @@ An object with the block header's data represented as strings.
 
 • **bloom**? : *undefined | string*
 
-*Defined in [types.ts:101](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/types.ts#L101)*
+*Defined in [types.ts:120](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/types.ts#L120)*
 
 ___
 
@@ -42,7 +42,7 @@ ___
 
 • **coinbase**? : *undefined | string*
 
-*Defined in [types.ts:97](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/types.ts#L97)*
+*Defined in [types.ts:116](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/types.ts#L116)*
 
 ___
 
@@ -50,7 +50,7 @@ ___
 
 • **difficulty**? : *undefined | string*
 
-*Defined in [types.ts:102](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/types.ts#L102)*
+*Defined in [types.ts:121](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/types.ts#L121)*
 
 ___
 
@@ -58,7 +58,7 @@ ___
 
 • **extraData**? : *undefined | string*
 
-*Defined in [types.ts:107](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/types.ts#L107)*
+*Defined in [types.ts:126](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/types.ts#L126)*
 
 ___
 
@@ -66,7 +66,7 @@ ___
 
 • **gasLimit**? : *undefined | string*
 
-*Defined in [types.ts:104](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/types.ts#L104)*
+*Defined in [types.ts:123](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/types.ts#L123)*
 
 ___
 
@@ -74,7 +74,7 @@ ___
 
 • **gasUsed**? : *undefined | string*
 
-*Defined in [types.ts:105](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/types.ts#L105)*
+*Defined in [types.ts:124](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/types.ts#L124)*
 
 ___
 
@@ -82,7 +82,7 @@ ___
 
 • **mixHash**? : *undefined | string*
 
-*Defined in [types.ts:108](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/types.ts#L108)*
+*Defined in [types.ts:127](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/types.ts#L127)*
 
 ___
 
@@ -90,7 +90,7 @@ ___
 
 • **nonce**? : *undefined | string*
 
-*Defined in [types.ts:109](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/types.ts#L109)*
+*Defined in [types.ts:128](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/types.ts#L128)*
 
 ___
 
@@ -98,7 +98,7 @@ ___
 
 • **number**? : *undefined | string*
 
-*Defined in [types.ts:103](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/types.ts#L103)*
+*Defined in [types.ts:122](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/types.ts#L122)*
 
 ___
 
@@ -106,7 +106,7 @@ ___
 
 • **parentHash**? : *undefined | string*
 
-*Defined in [types.ts:95](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/types.ts#L95)*
+*Defined in [types.ts:114](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/types.ts#L114)*
 
 ___
 
@@ -114,7 +114,7 @@ ___
 
 • **receiptTrie**? : *undefined | string*
 
-*Defined in [types.ts:100](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/types.ts#L100)*
+*Defined in [types.ts:119](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/types.ts#L119)*
 
 ___
 
@@ -122,7 +122,7 @@ ___
 
 • **stateRoot**? : *undefined | string*
 
-*Defined in [types.ts:98](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/types.ts#L98)*
+*Defined in [types.ts:117](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/types.ts#L117)*
 
 ___
 
@@ -130,7 +130,7 @@ ___
 
 • **timestamp**? : *undefined | string*
 
-*Defined in [types.ts:106](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/types.ts#L106)*
+*Defined in [types.ts:125](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/types.ts#L125)*
 
 ___
 
@@ -138,7 +138,7 @@ ___
 
 • **transactionsTrie**? : *undefined | string*
 
-*Defined in [types.ts:99](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/types.ts#L99)*
+*Defined in [types.ts:118](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/types.ts#L118)*
 
 ___
 
@@ -146,4 +146,4 @@ ___
 
 • **uncleHash**? : *undefined | string*
 
-*Defined in [types.ts:96](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/types.ts#L96)*
+*Defined in [types.ts:115](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/types.ts#L115)*

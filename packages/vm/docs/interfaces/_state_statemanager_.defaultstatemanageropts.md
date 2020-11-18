@@ -23,7 +23,7 @@ Options for constructing a [StateManager](_state_index_.statemanager.md).
 
 *Defined in [state/stateManager.ts:28](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/vm/lib/state/stateManager.ts#L28)*
 
-Parameters of the chain ([`Common`](https://github.com/ethereumjs/ethereumjs-common))
+Parameters of the chain ([`Common`](https://github.com/ethereumjs/ethereumjs-vm/tree/master/packages/common))
 
 ___
 
