@@ -8,7 +8,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ## 3.0.0-rc.1 - 2020-11-19
 
-This is the first release candidate towards a final library release, see [beta.2](https://github.com/ethereumjs/ethereumjs-vm/releases/tag/%40ethereumjs%2Fblock%402.0.0-beta.2) and especially [beta.1](https://github.com/ethereumjs/ethereumjs-vm/releases/tag/%40ethereumjs%2Fblock%402.0.0-beta.1) release notes for an overview on the full changes since the last publicly released version.
+This is the first release candidate towards a final library release, see [beta.2](https://github.com/ethereumjs/ethereumjs-vm/releases/tag/%40ethereumjs%2Fblock%403.0.0-beta.2) and especially [beta.1](https://github.com/ethereumjs/ethereumjs-vm/releases/tag/%40ethereumjs%2Fblock%403.0.0-beta.1) release notes for an overview on the full changes since the last publicly released version.
 
 - Additional consistency and validation checks in `Block.validateUncles()` for included uncle headers, PR [#935](https://github.com/ethereumjs/ethereumjs-vm/pull/935)
 

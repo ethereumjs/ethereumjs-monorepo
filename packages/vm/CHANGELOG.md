@@ -8,7 +8,11 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ## 5.0.0-rc.1 - 2020-11-19
 
+This is the first release candidate towards a final library release, see [beta.2](https://github.com/ethereumjs/ethereumjs-vm/releases/tag/%40ethereumjs%2Fvm%405.0.0-beta.2) and especially [beta.1](https://github.com/ethereumjs/ethereumjs-vm/releases/tag/%40ethereumjs%2Fvm%405.0.0-beta.1) release notes for an overview on the full changes since the last publicly released version.
+
 - Security fixes by `mcl-wasm` package dependency update, PR [#955](https://github.com/ethereumjs/ethereumjs-vm/pull/955)
+- On-demand state and blockchain test runs for all hardforks triggered by PR label, PR [#951](https://github.com/ethereumjs/ethereumjs-vm/pull/951) 
+- Dropped `ethereumjs-testing` dev dependency, PR [#953](https://github.com/ethereumjs/ethereumjs-vm/pull/953)
 
 ## 5.0.0-beta.2 - 2020-11-12
 

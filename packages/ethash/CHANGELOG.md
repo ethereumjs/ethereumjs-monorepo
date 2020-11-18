@@ -8,7 +8,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ## 1.0.0-rc.1 - 2020-11-19
 
-This is the first release candidate towards a final library release, see [beta.1](https://github.com/ethereumjs/ethereumjs-vm/releases/tag/%40ethereumjs%2Fethash%402.0.0-beta.1) release notes for an overview on the full changes since the last publicly released version.
+This is the first release candidate towards a final library release, see [beta.1](https://github.com/ethereumjs/ethereumjs-vm/releases/tag/%40ethereumjs%2Fethash%401.0.0-beta.1) release notes for an overview on the full changes since the last publicly released version.
 
 No changes since `beta.1` release.
 

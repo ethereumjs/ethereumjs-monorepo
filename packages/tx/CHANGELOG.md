@@ -8,9 +8,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ## 3.0.0-rc.1 - 2020-11-19
 
-This is the first release candidate towards a final library release, see [beta.2](https://github.com/ethereumjs/ethereumjs-vm/releases/tag/%40ethereumjs%2Ftx%402.0.0-beta.2) and especially [beta.1](https://github.com/ethereumjs/ethereumjs-vm/releases/tag/%40ethereumjs%2Ftx%402.0.0-beta.1) release notes for an overview on the full changes since the last publicly released version.
+This is the first release candidate towards a final library release, see [beta.2](https://github.com/ethereumjs/ethereumjs-vm/releases/tag/%40ethereumjs%2Ftx%403.0.0-beta.2) and especially [beta.1](https://github.com/ethereumjs/ethereumjs-vm/releases/tag/%40ethereumjs%2Ftx%403.0.0-beta.1) release notes for an overview on the full changes since the last publicly released version.
 
-No changes since `beta.2` release.
+- Dropped `ethereumjs-testing` dev dependency, PR [#953](https://github.com/ethereumjs/ethereumjs-vm/pull/953)
 
 ## 3.0.0-beta.2 - 2020-11-12
 
