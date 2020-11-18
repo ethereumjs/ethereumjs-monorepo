@@ -6,7 +6,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## 5.0.0-rc.1 UNRELEASED
+## 5.0.0-rc.1 2020-11-19
+
+This is the first release candidate towards a final library release, see [beta.2](https://github.com/ethereumjs/ethereumjs-vm/releases/tag/%40ethereumjs%2Fblockchain%402.0.0-beta.2) and especially [beta.1](https://github.com/ethereumjs/ethereumjs-vm/releases/tag/%40ethereumjs%2Fblockchain%402.0.0-beta.1) release notes for an overview on the full changes since the last publicly released version.
 
 - Exposed private `Blockchain._getTd()` total difficulty function as `Blockchain.getTotalDifficulty()`, PR [#956](https://github.com/ethereumjs/ethereumjs-vm/issues/956)
 
