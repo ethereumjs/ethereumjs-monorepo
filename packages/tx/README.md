@@ -20,7 +20,7 @@ Note: this `README` reflects the state of the library from `v3.0.0` onwards. See
 - [Example](./examples/transactions.ts)
 
 ```typescript
-import Transaction from '@ethereumjs/tx'
+import { Transaction } from '@ethereumjs/tx'
 
 const txParams = {
   nonce: '0x00',

@@ -17,15 +17,19 @@ Note: this `README` reflects the state of the library from `v3.0.0` onwards. See
 
 # USAGE
 
-There are three static factories to instantiate a `Block` or `BlockHeader`:
+There are three static factories to instantiate a `Block`:
 
 - `Block.fromBlockData(blockData: BlockData = {}, opts?: BlockOptions)`
 - `Block.fromRLPSerializedBlock(serialized: Buffer, opts?: BlockOptions)`
 - `Block.fromValuesArray(values: BlockBuffer, opts?: BlockOptions)`
 
+For `BlockHeader` instantiation analogue factory methods exists, see API docs linked below.
+
 Instantiation Example:
 
 ```typescript
+import { BlockHeader } from '@ethereumjs/block'
+
 const headerData = {
   number: 15,
   parentHash: '0x6bfee7294bf44572b7266358e627f3c35105e1c3851f3de09e6d646f955725a7',
