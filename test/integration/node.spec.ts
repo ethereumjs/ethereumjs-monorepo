@@ -5,7 +5,7 @@ import MockServer from './mocks/mockserver'
 
 tape('[Integration:Node]', (t) => {
   const servers = [new MockServer({ config: new Config({ loglevel: 'error' }) }) as any]
-  const config = new Config({ servers, syncmode: 'fast', lightserv: false, loglevel: 'error' })
+  const config = new Config({ servers, syncmode: 'full', lightserv: false, loglevel: 'error' })
   const node = new Node({ config })
 
   t.test('should start/stop', async (t) => {

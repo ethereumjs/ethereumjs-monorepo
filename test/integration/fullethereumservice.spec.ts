@@ -1,18 +1,18 @@
 import tape from 'tape'
 import { BN } from 'ethereumjs-util'
 import { Config } from '../../lib/config'
-import { FastEthereumService } from '../../lib/service'
+import { FullEthereumService } from '../../lib/service'
 import MockServer from './mocks/mockserver'
 import MockChain from './mocks/mockchain'
 import { destroy } from './util'
 
-tape('[Integration:FastEthereumService]', async (t) => {
-  async function setup(): Promise<[MockServer, FastEthereumService]> {
+tape('[Integration:FullEthereumService]', async (t) => {
+  async function setup(): Promise<[MockServer, FullEthereumService]> {
     const loglevel = 'error'
     const config = new Config({ loglevel })
     const server = new MockServer({ config })
     const chain = new MockChain({ config })
-    const service = new FastEthereumService({
+    const service = new FullEthereumService({
       config: new Config({ loglevel, servers: [server as any], lightserv: true }),
       chain,
     })

@@ -1,7 +1,7 @@
 import tape from 'tape'
 import { wait, setup, destroy } from './util'
 
-tape('[Integration:FastSync]', async (t) => {
+tape('[Integration:FullSync]', async (t) => {
   t.test('should sync blocks', async (t) => {
     const [remoteServer, remoteService] = await setup({ location: '127.0.0.2', height: 200 })
     const [localServer, localService] = await setup({ location: '127.0.0.1', height: 0 })

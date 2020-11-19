@@ -2,7 +2,7 @@ import events from 'events'
 import { LevelUp } from 'levelup'
 import { BootnodeLike } from './types'
 import { Config } from './config'
-import { FastEthereumService, LightEthereumService } from './service'
+import { FullEthereumService, LightEthereumService } from './service'
 
 export interface NodeOptions {
   /* Client configuration */
@@ -29,7 +29,7 @@ export interface NodeOptions {
 export default class Node extends events.EventEmitter {
   public config: Config
 
-  public services: (FastEthereumService | LightEthereumService)[]
+  public services: (FullEthereumService | LightEthereumService)[]
 
   public opened: boolean
   public started: boolean
@@ -44,8 +44,8 @@ export default class Node extends events.EventEmitter {
     this.config = options.config
 
     this.services = [
-      this.config.syncmode === 'fast'
-        ? new FastEthereumService({
+      this.config.syncmode === 'full'
+        ? new FullEthereumService({
             config: this.config,
             db: options.db,
           })

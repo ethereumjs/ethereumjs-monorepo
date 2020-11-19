@@ -3,4 +3,4 @@
  */
 export * from './sync'
 export * from './lightsync'
-export * from './fastsync'
+export * from './fullsync'

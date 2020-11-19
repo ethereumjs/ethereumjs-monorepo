@@ -6,10 +6,10 @@ import { Synchronizer, SynchronizerOptions } from './sync'
 import { BlockFetcher } from './fetcher'
 
 /**
- * Implements an ethereum fast sync synchronizer
+ * Implements an ethereum full sync synchronizer
  * @memberof module:sync
  */
-export class FastSynchronizer extends Synchronizer {
+export class FullSynchronizer extends Synchronizer {
   private blockFetcher: BlockFetcher | null
 
   constructor(options: SynchronizerOptions) {
@@ -22,7 +22,7 @@ export class FastSynchronizer extends Synchronizer {
    * @return {string} type
    */
   get type(): string {
-    return 'fast'
+    return 'full'
   }
 
   /**
@@ -113,13 +113,10 @@ export class FastSynchronizer extends Synchronizer {
     // @ts-ignore: error: The operand of a 'delete' operator must be optional
     delete this.blockFetcher
     return true
-
-    // TO DO: Fetch state trie as well
   }
 
   /**
-   * Fetch all blocks from current height up to highest found amongst peers and
-   * fetch entire recent state trie
+   * Fetch all blocks from current height up to highest found amongst peers
    * @return Resolves with true if sync successful
    */
   async sync(): Promise<boolean> {

@@ -4,24 +4,24 @@ import { Config } from '../../lib/config'
 import { EventEmitter } from 'events'
 const td = require('testdouble')
 
-tape('[FastSynchronizer]', (t) => {
+tape('[FullSynchronizer]', (t) => {
   class PeerPool extends EventEmitter {}
   td.replace('../../lib/net/peerpool', PeerPool)
   class BlockFetcher extends EventEmitter {}
   ;(BlockFetcher.prototype as any).fetch = td.func() // eslint-disable-line no-extra-semi
   td.replace('../../lib/sync/fetcher', { BlockFetcher })
-  const FastSynchronizer = require('../../lib/sync/fastsync').FastSynchronizer
+  const FullSynchronizer = require('../../lib/sync/fullsync').FullSynchronizer
 
   t.test('should initialize correctly', async (t) => {
     const pool = new PeerPool()
-    const sync = new FastSynchronizer({ config: new Config({ transports: [] }), pool })
+    const sync = new FullSynchronizer({ config: new Config({ transports: [] }), pool })
     pool.emit('added', { eth: true })
-    t.equals(sync.type, 'fast', 'fast type')
+    t.equals(sync.type, 'full', 'full type')
     t.end()
   })
 
   t.test('should open', async (t) => {
-    const sync = new FastSynchronizer({
+    const sync = new FullSynchronizer({
       config: new Config({ loglevel: 'error', transports: [] }),
       pool: new PeerPool(),
     })
@@ -43,7 +43,7 @@ tape('[FastSynchronizer]', (t) => {
 
   t.test('should get height', async (t) => {
     const pool = new PeerPool()
-    const sync = new FastSynchronizer({ config: new Config({ transports: [] }), pool })
+    const sync = new FullSynchronizer({ config: new Config({ transports: [] }), pool })
     const peer = { eth: { getBlockHeaders: td.func(), status: { bestHash: 'hash' } } }
     const headers = [{ number: 5 }]
     td.when(peer.eth.getBlockHeaders({ block: 'hash', max: 1 })).thenResolve(headers)
@@ -53,7 +53,7 @@ tape('[FastSynchronizer]', (t) => {
   })
 
   t.test('should find best', async (t) => {
-    const sync = new FastSynchronizer({
+    const sync = new FullSynchronizer({
       config: new Config({ transports: [] }),
       interval: 1,
       pool: new PeerPool(),
@@ -75,7 +75,7 @@ tape('[FastSynchronizer]', (t) => {
 
   t.test('should sync', async (t) => {
     t.plan(3)
-    const sync = new FastSynchronizer({
+    const sync = new FullSynchronizer({
       config: new Config({ transports: [] }),
       interval: 1,
       pool: new PeerPool(),

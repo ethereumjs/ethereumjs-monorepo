@@ -27,12 +27,12 @@ export * from '../lib/node'
 
 // Service
 export * from '../lib/service/service'
-export * from '../lib/service/fastethereumservice'
+export * from '../lib/service/fullethereumservice'
 export * from '../lib/service/lightethereumservice'
 
 // Synchronizer
 export * from '../lib/sync/sync'
-export * from '../lib/sync/fastsync'
+export * from '../lib/sync/fullsync'
 export * from '../lib/sync/lightsync'
 
 // Utilities
@@ -47,7 +47,7 @@ export function createNode(args: any) {
   const options = {
     common: new Common({ chain: args.network ?? 'mainnet' }),
     servers: [new exports.Libp2pServer({ multiaddrs: [], ...args })],
-    syncmode: args.syncmode ?? 'fast',
+    syncmode: args.syncmode ?? 'full',
     db: level(args.db ?? 'ethereumjs'),
     logger: logger,
   }

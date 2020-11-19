@@ -324,6 +324,6 @@ export class Chain extends EventEmitter {
    */
   async getTd(hash: Buffer, num: BN): Promise<BN> {
     await this.open()
-    return (this.blockchain as any)._getTd(hash, num)
+    return this.blockchain.getTotalDifficulty(hash, num)
   }
 }

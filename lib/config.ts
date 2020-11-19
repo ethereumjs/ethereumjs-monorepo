@@ -13,9 +13,9 @@ export interface ConfigOptions {
   common?: Common
 
   /**
-   * Synchronization mode ('fast' or 'light')
+   * Synchronization mode ('full' or 'light')
    *
-   * Default: 'fast'
+   * Default: 'full'
    */
   syncmode?: string
 
@@ -101,7 +101,7 @@ export class Config {
   // hardfork awareness is implemented within the library
   // Also a fix for https://github.com/ethereumjs/ethereumjs-vm/issues/757
   public static readonly COMMON_DEFAULT = new Common({ chain: 'mainnet', hardfork: 'chainstart' })
-  public static readonly SYNCMODE_DEFAULT = 'fast'
+  public static readonly SYNCMODE_DEFAULT = 'full'
   public static readonly LIGHTSERV_DEFAULT = false
   public static readonly DATADIR_DEFAULT = `${os.homedir()}/Library/Ethereum`
   public static readonly TRANSPORTS_DEFAULT = ['rlpx:port=30303', 'libp2p']

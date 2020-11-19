@@ -63,7 +63,7 @@ exports.define('EthereumService', './service/ethereumservice')
 // Synchronizer
 exports.define('sync', './sync')
 exports.define('Synchronizer', './sync/sync')
-exports.define('FastSynchronizer', './sync/fastsync')
+exports.define('FullSynchronizer', './sync/fullsync')
 exports.define('LightSynchronizer', './sync/lightsync')
 
 // Utilities
