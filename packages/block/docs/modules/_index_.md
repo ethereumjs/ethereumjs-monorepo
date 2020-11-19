@@ -32,7 +32,7 @@
 
 Ƭ **BlockBodyBuffer**: *[[TransactionsBuffer](_index_.md#transactionsbuffer), [UncleHeadersBuffer](_index_.md#uncleheadersbuffer)]*
 
-*Defined in [types.ts:75](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/types.ts#L75)*
+*Defined in [types.ts:94](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/types.ts#L94)*
 
 ___
 
@@ -40,7 +40,7 @@ ___
 
 Ƭ **BlockBuffer**: *[[BlockHeaderBuffer](_index_.md#blockheaderbuffer), [TransactionsBuffer](_index_.md#transactionsbuffer), [UncleHeadersBuffer](_index_.md#uncleheadersbuffer)]*
 
-*Defined in [types.ts:73](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/types.ts#L73)*
+*Defined in [types.ts:92](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/types.ts#L92)*
 
 ___
 
@@ -48,7 +48,7 @@ ___
 
 Ƭ **BlockHeaderBuffer**: *Buffer[]*
 
-*Defined in [types.ts:74](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/types.ts#L74)*
+*Defined in [types.ts:93](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/types.ts#L93)*
 
 ___
 
@@ -56,7 +56,7 @@ ___
 
 Ƭ **TransactionsBuffer**: *Buffer[][]*
 
-*Defined in [types.ts:76](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/types.ts#L76)*
+*Defined in [types.ts:95](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/types.ts#L95)*
 
 ___
 
@@ -64,4 +64,4 @@ ___
 
 Ƭ **UncleHeadersBuffer**: *Buffer[][]*
 
-*Defined in [types.ts:77](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/types.ts#L77)*
+*Defined in [types.ts:96](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/block/src/types.ts#L96)*

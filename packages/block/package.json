@@ -1,6 +1,6 @@
 {
   "name": "@ethereumjs/block",
-  "version": "3.0.0-beta.2",
+  "version": "3.0.0-rc.1",
   "description": "Provides Block serialization and help functions",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -39,8 +39,8 @@
   },
   "homepage": "https://github.com/ethereumjs/ethereumjs-vm/tree/master/packages/block#readme",
   "dependencies": {
-    "@ethereumjs/common": "2.0.0-beta.2",
-    "@ethereumjs/tx": "3.0.0-beta.2",
+    "@ethereumjs/common": "2.0.0-rc.1",
+    "@ethereumjs/tx": "3.0.0-rc.1",
     "@types/bn.js": "^4.11.6",
     "ethereumjs-util": "^7.0.7",
     "merkle-patricia-tree": "^4.0.0"
