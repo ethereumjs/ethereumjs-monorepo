@@ -1,11 +1,12 @@
 import tape from 'tape'
-import { Address, BN, MAX_INTEGER } from 'ethereumjs-util'
+import { Address, BN, MAX_INTEGER, setLengthLeft } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
 import { Transaction } from '@ethereumjs/tx'
 import VM from '../../lib'
 import { DefaultStateManager } from '../../lib/state'
-import runTx from '../../lib/runTx'
+import runTx, { RunTxResult } from '../../lib/runTx'
 import { createAccount } from './utils'
+import { InterpreterStep } from '../../lib/evm/interpreter'
 
 function setup(vm?: any) {
   if (!vm) {
@@ -141,6 +142,87 @@ tape('should clear storage cache after every transaction', async (t) => {
   await vm.runTx({ tx }) // this tx will fail, but we have to ensure that the cache is cleared
 
   t.equal((<any>vm.stateManager)._originalStorageCache.size, 0, 'storage cache should be cleared')
+  t.end()
+})
+
+tape('should allow to run the VM in parallel', async (t) => {
+  /*
+    This test runs two transactions: we use the `step` event to ensure that the first transaction is halted. 
+    Then, "during" the first transaction, we run the second transaction.
+    We setup a simple contract which stores the CALLVALUE into storage.
+    We return the value in that slot.
+    We thus expect that the transactions return value is their respective call data.
+  */
+  const common = new Common({ chain: 'mainnet', hardfork: 'istanbul' })
+  const vm = new VM({ common })
+  const privateKey = Buffer.from(
+    'e331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109',
+    'hex'
+  )
+  /* Code which is deployed here: 
+    CALLVALUE
+    PUSH 0x00
+    SSTORE        (stores CALLVALUE into slot 0)
+    PUSH 0x00
+    SLOAD         (loads slot 0)
+    PUSH 0x00
+    MSTORE        (store slot 0 into memory)
+    PUSH 0x20
+    PUSH 0x00
+    RETURN        (return what is stored into memory)
+  */
+  const code = Buffer.from('3460005560005460005260206000F3', 'hex')
+  const address = new Address(Buffer.from('00000000000000000000000000000000000000ff', 'hex'))
+  await vm.stateManager.putContractCode(address, code)
+  const tx1 = Transaction.fromTxData(
+    {
+      nonce: '0x00',
+      gasPrice: 1,
+      gasLimit: 100000,
+      to: address,
+      value: new BN(1),
+    },
+    { common }
+  ).sign(privateKey)
+
+  const tx2 = Transaction.fromTxData(
+    {
+      nonce: '0x00',
+      gasPrice: 1,
+      gasLimit: 100000,
+      to: address,
+      value: new BN(2),
+    },
+    { common }
+  ).sign(privateKey)
+
+  await vm.stateManager.putAccount(tx1.getSenderAddress(), createAccount())
+  let currentTx = 1
+  let result2: RunTxResult
+  vm.on('step', async function (data: InterpreterStep, fn: Function) {
+    // if we are at PC 4, which is the operation right after we have ran SSTORE, run the second TX
+    // note that `step` is fired before an operation is ran
+    if (data.pc == 4 && currentTx == 1) {
+      currentTx = 2
+      result2 = await vm.runTx({ tx: tx2 })
+    }
+    fn()
+  })
+
+  const result1 = await vm.runTx({ tx: tx1 })
+
+  const expectedResult1 = setLengthLeft(Buffer.from('01', 'hex'), 32)
+  const expectedResult2 = setLengthLeft(Buffer.from('02', 'hex'), 32)
+
+  t.ok(
+    result1.execResult.returnValue.equals(expectedResult1),
+    'result of tx 1 equals the expected result'
+  )
+  t.ok(
+    result2!.execResult.returnValue.equals(expectedResult2),
+    'result of tx 2 equals the expected result'
+  )
+
   t.end()
 })
 
