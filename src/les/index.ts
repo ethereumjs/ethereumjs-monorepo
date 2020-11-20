@@ -209,7 +209,6 @@ export namespace LES {
   export interface Status {
     [key: string]: Buffer | number
     protocolVersion: Buffer
-    // networkId: Buffer | number
     headTd: Buffer
     headHash: Buffer
     headNum: Buffer

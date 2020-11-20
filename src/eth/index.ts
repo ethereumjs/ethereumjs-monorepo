@@ -112,7 +112,8 @@ export class ETH extends EventEmitter {
     const peerNextFork = buffer2int(forkId[1])
 
     if (this._forkHash === peerForkHash) {
-      if (peerNextFork) {
+      // There is a known next fork
+      if (peerNextFork !== 0) {
         if (this._latestBlock >= peerNextFork) {
           const msg = 'Remote is advertising a future fork that passed locally'
           debug(msg)
@@ -154,7 +155,6 @@ export class ETH extends EventEmitter {
     if (this._version >= 64) {
       assertEq(this._peerStatus[5].length, 2, 'Incorrect forkId msg format', debug)
       this._validateForkId(this._peerStatus[5] as Buffer[])
-      console.log(`Successful Eth64 validation with ${this._peer._socket.remoteAddress}`)
       status['forkId'] = this._peerStatus[5]
     }
 
@@ -266,7 +266,6 @@ export namespace ETH {
 
   export type StatusOpts = {
     version: number
-    // networkId: number
     td: Buffer
     bestHash: Buffer
     latestBlock?: number
