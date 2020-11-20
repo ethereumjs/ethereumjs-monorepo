@@ -16,8 +16,13 @@ eth_* RPC module
 
 * [constructor](_rpc_modules_eth_.eth.md#constructor)
 
+### Properties
+
+* [ethVersion](_rpc_modules_eth_.eth.md#ethversion)
+
 ### Methods
 
+* [blockNumber](_rpc_modules_eth_.eth.md#blocknumber)
 * [getBlockByHash](_rpc_modules_eth_.eth.md#getblockbyhash)
 * [getBlockByNumber](_rpc_modules_eth_.eth.md#getblockbynumber)
 * [getBlockTransactionCountByHash](_rpc_modules_eth_.eth.md#getblocktransactioncountbyhash)
@@ -29,7 +34,7 @@ eth_* RPC module
 
 \+ **new Eth**(`node`: any): *[Eth](_rpc_modules_eth_.eth.md)*
 
-*Defined in [lib/rpc/modules/eth.js:10](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/rpc/modules/eth.js#L10)*
+*Defined in [lib/rpc/modules/eth.ts:11](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/rpc/modules/eth.ts#L11)*
 
 Create eth_* RPC module
 
@@ -41,78 +46,145 @@ Name | Type |
 
 **Returns:** *[Eth](_rpc_modules_eth_.eth.md)*
 
+## Properties
+
+###  ethVersion
+
+• **ethVersion**: *any*
+
+*Defined in [lib/rpc/modules/eth.ts:11](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/rpc/modules/eth.ts#L11)*
+
 ## Methods
+
+###  blockNumber
+
+▸ **blockNumber**(`_params`: never[], `cb`: function): *Promise‹void›*
+
+*Defined in [lib/rpc/modules/eth.ts:51](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/rpc/modules/eth.ts#L51)*
+
+Returns Returns the number of most recent block.
+
+**Parameters:**
+
+▪`Default value`  **_params**: *never[]*= []
+
+▪ **cb**: *function*
+
+▸ (`err`: Error | null, `val?`: undefined | string): *void*
+
+**Parameters:**
+
+Name | Type |
+------ | ------ |
+`err` | Error &#124; null |
+`val?` | undefined &#124; string |
+
+**Returns:** *Promise‹void›*
+
+___
 
 ###  getBlockByHash
 
-▸ **getBlockByHash**(`params`: undefined | any[], `cb`: undefined | Function): *Promise‹any›*
+▸ **getBlockByHash**(`params`: [string, boolean], `cb`: function): *Promise‹void›*
 
-*Defined in [lib/rpc/modules/eth.js:65](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/rpc/modules/eth.js#L65)*
+*Defined in [lib/rpc/modules/eth.ts:92](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/rpc/modules/eth.ts#L92)*
 
 Returns information about a block by hash
 
 **Parameters:**
 
+▪ **params**: *[string, boolean]*
+
+▪ **cb**: *function*
+
+▸ (`err`: Error | null, `val?`: any): *void*
+
+**Parameters:**
+
 Name | Type |
 ------ | ------ |
-`params` | undefined &#124; any[] |
-`cb` | undefined &#124; Function |
+`err` | Error &#124; null |
+`val?` | any |
 
-**Returns:** *Promise‹any›*
+**Returns:** *Promise‹void›*
 
 ___
 
 ###  getBlockByNumber
 
-▸ **getBlockByNumber**(`params`: undefined | any[], `cb`: undefined | Function): *Promise‹any›*
+▸ **getBlockByNumber**(`params`: [string, boolean], `cb`: function): *Promise‹void›*
 
-*Defined in [lib/rpc/modules/eth.js:41](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/rpc/modules/eth.js#L41)*
+*Defined in [lib/rpc/modules/eth.ts:68](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/rpc/modules/eth.ts#L68)*
 
 Returns information about a block by block number
 
 **Parameters:**
 
+▪ **params**: *[string, boolean]*
+
+▪ **cb**: *function*
+
+▸ (`err`: Error | null, `val?`: any): *void*
+
+**Parameters:**
+
 Name | Type |
 ------ | ------ |
-`params` | undefined &#124; any[] |
-`cb` | undefined &#124; Function |
+`err` | Error &#124; null |
+`val?` | any |
 
-**Returns:** *Promise‹any›*
+**Returns:** *Promise‹void›*
 
 ___
 
 ###  getBlockTransactionCountByHash
 
-▸ **getBlockTransactionCountByHash**(`params`: undefined | string[], `cb`: undefined | Function): *Promise‹any›*
+▸ **getBlockTransactionCountByHash**(`params`: [string], `cb`: function): *Promise‹void›*
 
-*Defined in [lib/rpc/modules/eth.js:89](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/rpc/modules/eth.js#L89)*
+*Defined in [lib/rpc/modules/eth.ts:115](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/rpc/modules/eth.ts#L115)*
 
 Returns the transaction count for a block given by the block hash
 
 **Parameters:**
 
-Name | Type |
------- | ------ |
-`params` | undefined &#124; string[] |
-`cb` | undefined &#124; Function |
+▪ **params**: *[string]*
 
-**Returns:** *Promise‹any›*
+▪ **cb**: *function*
 
-___
-
-###  protocolVersion
-
-▸ **protocolVersion**(`params`: undefined | any[], `cb`: undefined | Function): *void*
-
-*Defined in [lib/rpc/modules/eth.js:108](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/rpc/modules/eth.js#L108)*
-
-Returns the current ethereum protocol version
+▸ (`err`: Error | null, `val?`: any): *void*
 
 **Parameters:**
 
 Name | Type |
 ------ | ------ |
-`params` | undefined &#124; any[] |
-`cb` | undefined &#124; Function |
+`err` | Error &#124; null |
+`val?` | any |
+
+**Returns:** *Promise‹void›*
+
+___
+
+###  protocolVersion
+
+▸ **protocolVersion**(`_params`: never[], `cb`: function): *void*
+
+*Defined in [lib/rpc/modules/eth.ts:137](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/rpc/modules/eth.ts#L137)*
+
+Returns the current ethereum protocol version
+
+**Parameters:**
+
+▪`Default value`  **_params**: *never[]*= []
+
+▪ **cb**: *function*
+
+▸ (`err`: null, `val`: string): *void*
+
+**Parameters:**
+
+Name | Type |
+------ | ------ |
+`err` | null |
+`val` | string |
 
 **Returns:** *void*

@@ -24,16 +24,16 @@ RPC server manager
 
 ###  constructor
 
-\+ **new RPCManager**(`node`: any, `config`: any): *[RPCManager](_rpc_index_.rpcmanager.md)*
+\+ **new RPCManager**(`node`: [Node](_node_.node.md), `config`: [Config](_config_.config.md)): *[RPCManager](_rpc_index_.rpcmanager.md)*
 
-*Defined in [lib/rpc/index.js:21](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/rpc/index.js#L21)*
+*Defined in [lib/rpc/index.ts:25](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/rpc/index.ts#L25)*
 
 **Parameters:**
 
 Name | Type |
 ------ | ------ |
-`node` | any |
-`config` | any |
+`node` | [Node](_node_.node.md) |
+`config` | [Config](_config_.config.md) |
 
 **Returns:** *[RPCManager](_rpc_index_.rpcmanager.md)*
 
@@ -41,13 +41,13 @@ Name | Type |
 
 ###  getMethods
 
-▸ **getMethods**(): *Object*
+▸ **getMethods**(): *any*
 
-*Defined in [lib/rpc/index.js:33](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/rpc/index.js#L33)*
+*Defined in [lib/rpc/index.ts:37](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/rpc/index.ts#L37)*
 
 gets methods for all modules which concat with underscore "_"
 e.g. convert getBlockByNumber() in eth module to { eth_getBlockByNumber }
 
-**Returns:** *Object*
+**Returns:** *any*
 
 methods

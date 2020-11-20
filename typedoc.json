@@ -5,6 +5,7 @@
   "readme": "none",
   "gitRevision": "master",
   "exclude": [
+    "bin/cli.ts",
     "lib/blockchain/index.ts",
     "lib/index.ts",
     "lib/net/peer/index.ts",

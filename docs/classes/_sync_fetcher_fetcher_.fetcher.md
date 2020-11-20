@@ -29,8 +29,12 @@ inorder.
 
 ### Properties
 
+* [config](_sync_fetcher_fetcher_.fetcher.md#config)
 * [destroyed](_sync_fetcher_fetcher_.fetcher.md#destroyed)
 * [readable](_sync_fetcher_fetcher_.fetcher.md#readable)
+* [readableEncoding](_sync_fetcher_fetcher_.fetcher.md#readableencoding)
+* [readableEnded](_sync_fetcher_fetcher_.fetcher.md#readableended)
+* [readableFlowing](_sync_fetcher_fetcher_.fetcher.md#readableflowing)
 * [readableHighWaterMark](_sync_fetcher_fetcher_.fetcher.md#readablehighwatermark)
 * [readableLength](_sync_fetcher_fetcher_.fetcher.md#readablelength)
 * [readableObjectMode](_sync_fetcher_fetcher_.fetcher.md#readableobjectmode)
@@ -48,6 +52,7 @@ inorder.
 * [error](_sync_fetcher_fetcher_.fetcher.md#error)
 * [eventNames](_sync_fetcher_fetcher_.fetcher.md#eventnames)
 * [expire](_sync_fetcher_fetcher_.fetcher.md#expire)
+* [failure](_sync_fetcher_fetcher_.fetcher.md#private-failure)
 * [fetch](_sync_fetcher_fetcher_.fetcher.md#fetch)
 * [getMaxListeners](_sync_fetcher_fetcher_.fetcher.md#getmaxlisteners)
 * [isPaused](_sync_fetcher_fetcher_.fetcher.md#ispaused)
@@ -73,6 +78,7 @@ inorder.
 * [setEncoding](_sync_fetcher_fetcher_.fetcher.md#setencoding)
 * [setMaxListeners](_sync_fetcher_fetcher_.fetcher.md#setmaxlisteners)
 * [store](_sync_fetcher_fetcher_.fetcher.md#store)
+* [success](_sync_fetcher_fetcher_.fetcher.md#private-success)
 * [tasks](_sync_fetcher_fetcher_.fetcher.md#tasks)
 * [unpipe](_sync_fetcher_fetcher_.fetcher.md#unpipe)
 * [unshift](_sync_fetcher_fetcher_.fetcher.md#unshift)
@@ -85,23 +91,31 @@ inorder.
 
 ###  constructor
 
-\+ **new Fetcher**(`options`: object): *[Fetcher](_sync_fetcher_fetcher_.fetcher.md)*
+\+ **new Fetcher**(`options`: [FetcherOptions](../interfaces/_sync_fetcher_fetcher_.fetcheroptions.md)): *[Fetcher](_sync_fetcher_fetcher_.fetcher.md)*
 
 *Overrides void*
 
-*Defined in [lib/sync/fetcher/fetcher.js:25](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/sync/fetcher/fetcher.js#L25)*
+*Defined in [lib/sync/fetcher/fetcher.ts:51](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/sync/fetcher/fetcher.ts#L51)*
 
 Create new fetcher
 
 **Parameters:**
 
-Name | Type | Description |
------- | ------ | ------ |
-`options` | object | constructor parameters |
+Name | Type |
+------ | ------ |
+`options` | [FetcherOptions](../interfaces/_sync_fetcher_fetcher_.fetcheroptions.md) |
 
 **Returns:** *[Fetcher](_sync_fetcher_fetcher_.fetcher.md)*
 
 ## Properties
+
+###  config
+
+• **config**: *[Config](_config_.config.md)*
+
+*Defined in [lib/sync/fetcher/fetcher.ts:37](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/sync/fetcher/fetcher.ts#L37)*
+
+___
 
 ###  destroyed
 
@@ -109,7 +123,7 @@ Name | Type | Description |
 
 *Inherited from [Fetcher](_sync_fetcher_fetcher_.fetcher.md).[destroyed](_sync_fetcher_fetcher_.fetcher.md#destroyed)*
 
-Defined in node_modules/@types/node/stream.d.ts:32
+Defined in node_modules/@types/node/stream.d.ts:35
 
 ___
 
@@ -123,13 +137,43 @@ Defined in node_modules/@types/node/stream.d.ts:28
 
 ___
 
+###  readableEncoding
+
+• **readableEncoding**: *BufferEncoding | null*
+
+*Inherited from [Fetcher](_sync_fetcher_fetcher_.fetcher.md).[readableEncoding](_sync_fetcher_fetcher_.fetcher.md#readableencoding)*
+
+Defined in node_modules/@types/node/stream.d.ts:29
+
+___
+
+###  readableEnded
+
+• **readableEnded**: *boolean*
+
+*Inherited from [Fetcher](_sync_fetcher_fetcher_.fetcher.md).[readableEnded](_sync_fetcher_fetcher_.fetcher.md#readableended)*
+
+Defined in node_modules/@types/node/stream.d.ts:30
+
+___
+
+###  readableFlowing
+
+• **readableFlowing**: *boolean | null*
+
+*Inherited from [Fetcher](_sync_fetcher_fetcher_.fetcher.md).[readableFlowing](_sync_fetcher_fetcher_.fetcher.md#readableflowing)*
+
+Defined in node_modules/@types/node/stream.d.ts:31
+
+___
+
 ###  readableHighWaterMark
 
 • **readableHighWaterMark**: *number*
 
 *Inherited from [Fetcher](_sync_fetcher_fetcher_.fetcher.md).[readableHighWaterMark](_sync_fetcher_fetcher_.fetcher.md#readablehighwatermark)*
 
-Defined in node_modules/@types/node/stream.d.ts:29
+Defined in node_modules/@types/node/stream.d.ts:32
 
 ___
 
@@ -139,7 +183,7 @@ ___
 
 *Inherited from [Fetcher](_sync_fetcher_fetcher_.fetcher.md).[readableLength](_sync_fetcher_fetcher_.fetcher.md#readablelength)*
 
-Defined in node_modules/@types/node/stream.d.ts:30
+Defined in node_modules/@types/node/stream.d.ts:33
 
 ___
 
@@ -149,7 +193,7 @@ ___
 
 *Inherited from [Fetcher](_sync_fetcher_fetcher_.fetcher.md).[readableObjectMode](_sync_fetcher_fetcher_.fetcher.md#readableobjectmode)*
 
-Defined in node_modules/@types/node/stream.d.ts:31
+Defined in node_modules/@types/node/stream.d.ts:34
 
 ## Methods
 
@@ -159,7 +203,7 @@ Defined in node_modules/@types/node/stream.d.ts:31
 
 *Inherited from [Fetcher](_sync_fetcher_fetcher_.fetcher.md).[[Symbol.asyncIterator]](_sync_fetcher_fetcher_.fetcher.md#[symbol.asynciterator])*
 
-Defined in node_modules/@types/node/stream.d.ts:121
+Defined in node_modules/@types/node/stream.d.ts:124
 
 **Returns:** *AsyncIterableIterator‹any›*
 
@@ -171,7 +215,7 @@ ___
 
 *Inherited from [Fetcher](_sync_fetcher_fetcher_.fetcher.md).[_destroy](_sync_fetcher_fetcher_.fetcher.md#_destroy)*
 
-Defined in node_modules/@types/node/stream.d.ts:44
+Defined in node_modules/@types/node/stream.d.ts:47
 
 **Parameters:**
 
@@ -197,7 +241,7 @@ ___
 
 *Overrides void*
 
-*Defined in [lib/sync/fetcher/fetcher.js:98](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/sync/fetcher/fetcher.js#L98)*
+*Defined in [lib/sync/fetcher/fetcher.ts:116](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/sync/fetcher/fetcher.ts#L116)*
 
 Implements Readable._read() by pushing completed tasks to the read queue
 
@@ -211,9 +255,9 @@ ___
 
 *Inherited from [Fetcher](_sync_fetcher_fetcher_.fetcher.md).[addListener](_sync_fetcher_fetcher_.fetcher.md#addlistener)*
 
-*Overrides void*
+*Overrides [Sender](_net_protocol_sender_.sender.md).[addListener](_net_protocol_sender_.sender.md#addlistener)*
 
-Defined in node_modules/@types/node/stream.d.ts:58
+Defined in node_modules/@types/node/stream.d.ts:61
 
 Event emitter
 The defined events on documents including:
@@ -239,9 +283,9 @@ The defined events on documents including:
 
 *Inherited from [Fetcher](_sync_fetcher_fetcher_.fetcher.md).[addListener](_sync_fetcher_fetcher_.fetcher.md#addlistener)*
 
-*Overrides void*
+*Overrides [Sender](_net_protocol_sender_.sender.md).[addListener](_net_protocol_sender_.sender.md#addlistener)*
 
-Defined in node_modules/@types/node/stream.d.ts:59
+Defined in node_modules/@types/node/stream.d.ts:62
 
 **Parameters:**
 
@@ -263,9 +307,9 @@ Name | Type |
 
 *Inherited from [Fetcher](_sync_fetcher_fetcher_.fetcher.md).[addListener](_sync_fetcher_fetcher_.fetcher.md#addlistener)*
 
-*Overrides void*
+*Overrides [Sender](_net_protocol_sender_.sender.md).[addListener](_net_protocol_sender_.sender.md#addlistener)*
 
-Defined in node_modules/@types/node/stream.d.ts:60
+Defined in node_modules/@types/node/stream.d.ts:63
 
 **Parameters:**
 
@@ -281,9 +325,9 @@ Defined in node_modules/@types/node/stream.d.ts:60
 
 *Inherited from [Fetcher](_sync_fetcher_fetcher_.fetcher.md).[addListener](_sync_fetcher_fetcher_.fetcher.md#addlistener)*
 
-*Overrides void*
+*Overrides [Sender](_net_protocol_sender_.sender.md).[addListener](_net_protocol_sender_.sender.md#addlistener)*
 
-Defined in node_modules/@types/node/stream.d.ts:61
+Defined in node_modules/@types/node/stream.d.ts:64
 
 **Parameters:**
 
@@ -305,9 +349,9 @@ Name | Type |
 
 *Inherited from [Fetcher](_sync_fetcher_fetcher_.fetcher.md).[addListener](_sync_fetcher_fetcher_.fetcher.md#addlistener)*
 
-*Overrides void*
+*Overrides [Sender](_net_protocol_sender_.sender.md).[addListener](_net_protocol_sender_.sender.md#addlistener)*
 
-Defined in node_modules/@types/node/stream.d.ts:62
+Defined in node_modules/@types/node/stream.d.ts:65
 
 **Parameters:**
 
@@ -323,9 +367,9 @@ Defined in node_modules/@types/node/stream.d.ts:62
 
 *Inherited from [Fetcher](_sync_fetcher_fetcher_.fetcher.md).[addListener](_sync_fetcher_fetcher_.fetcher.md#addlistener)*
 
-*Overrides void*
+*Overrides [Sender](_net_protocol_sender_.sender.md).[addListener](_net_protocol_sender_.sender.md#addlistener)*
 
-Defined in node_modules/@types/node/stream.d.ts:63
+Defined in node_modules/@types/node/stream.d.ts:66
 
 **Parameters:**
 
@@ -341,9 +385,9 @@ Defined in node_modules/@types/node/stream.d.ts:63
 
 *Inherited from [Fetcher](_sync_fetcher_fetcher_.fetcher.md).[addListener](_sync_fetcher_fetcher_.fetcher.md#addlistener)*
 
-*Overrides void*
+*Overrides [Sender](_net_protocol_sender_.sender.md).[addListener](_net_protocol_sender_.sender.md#addlistener)*
 
-Defined in node_modules/@types/node/stream.d.ts:64
+Defined in node_modules/@types/node/stream.d.ts:67
 
 **Parameters:**
 
@@ -359,9 +403,9 @@ Defined in node_modules/@types/node/stream.d.ts:64
 
 *Inherited from [Fetcher](_sync_fetcher_fetcher_.fetcher.md).[addListener](_sync_fetcher_fetcher_.fetcher.md#addlistener)*
 
-*Overrides void*
+*Overrides [Sender](_net_protocol_sender_.sender.md).[addListener](_net_protocol_sender_.sender.md#addlistener)*
 
-Defined in node_modules/@types/node/stream.d.ts:65
+Defined in node_modules/@types/node/stream.d.ts:68
 
 **Parameters:**
 
@@ -385,7 +429,7 @@ ___
 
 ▸ **dequeue**(): *void*
 
-*Defined in [lib/sync/fetcher/fetcher.js:84](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/sync/fetcher/fetcher.js#L84)*
+*Defined in [lib/sync/fetcher/fetcher.ts:102](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/sync/fetcher/fetcher.ts#L102)*
 
 Dequeue all done tasks that completed in order
 
@@ -399,7 +443,7 @@ ___
 
 *Inherited from [Fetcher](_sync_fetcher_fetcher_.fetcher.md).[destroy](_sync_fetcher_fetcher_.fetcher.md#destroy)*
 
-Defined in node_modules/@types/node/stream.d.ts:45
+Defined in node_modules/@types/node/stream.d.ts:48
 
 **Parameters:**
 
@@ -417,9 +461,9 @@ ___
 
 *Inherited from [Fetcher](_sync_fetcher_fetcher_.fetcher.md).[emit](_sync_fetcher_fetcher_.fetcher.md#emit)*
 
-*Overrides void*
+*Overrides [Sender](_net_protocol_sender_.sender.md).[emit](_net_protocol_sender_.sender.md#emit)*
 
-Defined in node_modules/@types/node/stream.d.ts:67
+Defined in node_modules/@types/node/stream.d.ts:70
 
 **Parameters:**
 
@@ -433,9 +477,9 @@ Name | Type |
 
 *Inherited from [Fetcher](_sync_fetcher_fetcher_.fetcher.md).[emit](_sync_fetcher_fetcher_.fetcher.md#emit)*
 
-*Overrides void*
+*Overrides [Sender](_net_protocol_sender_.sender.md).[emit](_net_protocol_sender_.sender.md#emit)*
 
-Defined in node_modules/@types/node/stream.d.ts:68
+Defined in node_modules/@types/node/stream.d.ts:71
 
 **Parameters:**
 
@@ -450,9 +494,9 @@ Name | Type |
 
 *Inherited from [Fetcher](_sync_fetcher_fetcher_.fetcher.md).[emit](_sync_fetcher_fetcher_.fetcher.md#emit)*
 
-*Overrides void*
+*Overrides [Sender](_net_protocol_sender_.sender.md).[emit](_net_protocol_sender_.sender.md#emit)*
 
-Defined in node_modules/@types/node/stream.d.ts:69
+Defined in node_modules/@types/node/stream.d.ts:72
 
 **Parameters:**
 
@@ -466,9 +510,9 @@ Name | Type |
 
 *Inherited from [Fetcher](_sync_fetcher_fetcher_.fetcher.md).[emit](_sync_fetcher_fetcher_.fetcher.md#emit)*
 
-*Overrides void*
+*Overrides [Sender](_net_protocol_sender_.sender.md).[emit](_net_protocol_sender_.sender.md#emit)*
 
-Defined in node_modules/@types/node/stream.d.ts:70
+Defined in node_modules/@types/node/stream.d.ts:73
 
 **Parameters:**
 
@@ -483,9 +527,9 @@ Name | Type |
 
 *Inherited from [Fetcher](_sync_fetcher_fetcher_.fetcher.md).[emit](_sync_fetcher_fetcher_.fetcher.md#emit)*
 
-*Overrides void*
+*Overrides [Sender](_net_protocol_sender_.sender.md).[emit](_net_protocol_sender_.sender.md#emit)*
 
-Defined in node_modules/@types/node/stream.d.ts:71
+Defined in node_modules/@types/node/stream.d.ts:74
 
 **Parameters:**
 
@@ -499,9 +543,9 @@ Name | Type |
 
 *Inherited from [Fetcher](_sync_fetcher_fetcher_.fetcher.md).[emit](_sync_fetcher_fetcher_.fetcher.md#emit)*
 
-*Overrides void*
+*Overrides [Sender](_net_protocol_sender_.sender.md).[emit](_net_protocol_sender_.sender.md#emit)*
 
-Defined in node_modules/@types/node/stream.d.ts:72
+Defined in node_modules/@types/node/stream.d.ts:75
 
 **Parameters:**
 
@@ -515,9 +559,9 @@ Name | Type |
 
 *Inherited from [Fetcher](_sync_fetcher_fetcher_.fetcher.md).[emit](_sync_fetcher_fetcher_.fetcher.md#emit)*
 
-*Overrides void*
+*Overrides [Sender](_net_protocol_sender_.sender.md).[emit](_net_protocol_sender_.sender.md#emit)*
 
-Defined in node_modules/@types/node/stream.d.ts:73
+Defined in node_modules/@types/node/stream.d.ts:76
 
 **Parameters:**
 
@@ -531,9 +575,9 @@ Name | Type |
 
 *Inherited from [Fetcher](_sync_fetcher_fetcher_.fetcher.md).[emit](_sync_fetcher_fetcher_.fetcher.md#emit)*
 
-*Overrides void*
+*Overrides [Sender](_net_protocol_sender_.sender.md).[emit](_net_protocol_sender_.sender.md#emit)*
 
-Defined in node_modules/@types/node/stream.d.ts:74
+Defined in node_modules/@types/node/stream.d.ts:77
 
 **Parameters:**
 
@@ -548,9 +592,9 @@ ___
 
 ###  enqueue
 
-▸ **enqueue**(`job`: Object): *void*
+▸ **enqueue**(`job`: any): *void*
 
-*Defined in [lib/sync/fetcher/fetcher.js:70](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/sync/fetcher/fetcher.js#L70)*
+*Defined in [lib/sync/fetcher/fetcher.ts:88](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/sync/fetcher/fetcher.ts#L88)*
 
 Enqueue job
 
@@ -558,7 +602,7 @@ Enqueue job
 
 Name | Type | Description |
 ------ | ------ | ------ |
-`job` | Object |   |
+`job` | any |   |
 
 **Returns:** *void*
 
@@ -566,9 +610,9 @@ ___
 
 ###  error
 
-▸ **error**(`error`: Error, `job`: any): *void*
+▸ **error**(`error`: Error, `job?`: any): *void*
 
-*Defined in [lib/sync/fetcher/fetcher.js:181](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/sync/fetcher/fetcher.js#L181)*
+*Defined in [lib/sync/fetcher/fetcher.ts:201](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/sync/fetcher/fetcher.ts#L201)*
 
 Handle error
 
@@ -577,7 +621,7 @@ Handle error
 Name | Type | Description |
 ------ | ------ | ------ |
 `error` | Error | error object |
-`job` | any | - |
+`job?` | any | task  |
 
 **Returns:** *void*
 
@@ -587,9 +631,9 @@ ___
 
 ▸ **eventNames**(): *Array‹string | symbol›*
 
-*Inherited from [Fetcher](_sync_fetcher_fetcher_.fetcher.md).[eventNames](_sync_fetcher_fetcher_.fetcher.md#eventnames)*
+*Inherited from [Sender](_net_protocol_sender_.sender.md).[eventNames](_net_protocol_sender_.sender.md#eventnames)*
 
-Defined in node_modules/@types/node/globals.d.ts:568
+Defined in node_modules/@types/node/events.d.ts:77
 
 **Returns:** *Array‹string | symbol›*
 
@@ -599,7 +643,7 @@ ___
 
 ▸ **expire**(`job`: any): *void*
 
-*Defined in [lib/sync/fetcher/fetcher.js:286](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/sync/fetcher/fetcher.js#L286)*
+*Defined in [lib/sync/fetcher/fetcher.ts:308](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/sync/fetcher/fetcher.ts#L308)*
 
 Expire job that has timed out and ban associated peer. Timed out tasks will
 be re-inserted into the queue.
@@ -614,15 +658,34 @@ Name | Type |
 
 ___
 
+### `Private` failure
+
+▸ **failure**(`job`: any, `error?`: Error): *void*
+
+*Defined in [lib/sync/fetcher/fetcher.ts:154](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/sync/fetcher/fetcher.ts#L154)*
+
+handle failed job completion
+
+**Parameters:**
+
+Name | Type | Description |
+------ | ------ | ------ |
+`job` | any | failed job |
+`error?` | Error |   |
+
+**Returns:** *void*
+
+___
+
 ###  fetch
 
-▸ **fetch**(): *Promise‹any›*
+▸ **fetch**(): *Promise‹undefined | false›*
 
-*Defined in [lib/sync/fetcher/fetcher.js:226](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/sync/fetcher/fetcher.js#L226)*
+*Defined in [lib/sync/fetcher/fetcher.ts:246](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/sync/fetcher/fetcher.ts#L246)*
 
 Run the fetcher. Returns a promise that resolves once all tasks are completed.
 
-**Returns:** *Promise‹any›*
+**Returns:** *Promise‹undefined | false›*
 
 ___
 
@@ -630,9 +693,9 @@ ___
 
 ▸ **getMaxListeners**(): *number*
 
-*Inherited from [Fetcher](_sync_fetcher_fetcher_.fetcher.md).[getMaxListeners](_sync_fetcher_fetcher_.fetcher.md#getmaxlisteners)*
+*Inherited from [Sender](_net_protocol_sender_.sender.md).[getMaxListeners](_net_protocol_sender_.sender.md#getmaxlisteners)*
 
-Defined in node_modules/@types/node/globals.d.ts:560
+Defined in node_modules/@types/node/events.d.ts:69
 
 **Returns:** *number*
 
@@ -644,7 +707,7 @@ ___
 
 *Inherited from [Fetcher](_sync_fetcher_fetcher_.fetcher.md).[isPaused](_sync_fetcher_fetcher_.fetcher.md#ispaused)*
 
-Defined in node_modules/@types/node/stream.d.ts:39
+Defined in node_modules/@types/node/stream.d.ts:42
 
 **Returns:** *boolean*
 
@@ -652,17 +715,17 @@ ___
 
 ###  listenerCount
 
-▸ **listenerCount**(`type`: string | symbol): *number*
+▸ **listenerCount**(`event`: string | symbol): *number*
 
-*Inherited from [Fetcher](_sync_fetcher_fetcher_.fetcher.md).[listenerCount](_sync_fetcher_fetcher_.fetcher.md#listenercount)*
+*Inherited from [Sender](_net_protocol_sender_.sender.md).[listenerCount](_net_protocol_sender_.sender.md#listenercount)*
 
-Defined in node_modules/@types/node/globals.d.ts:564
+Defined in node_modules/@types/node/events.d.ts:73
 
 **Parameters:**
 
 Name | Type |
 ------ | ------ |
-`type` | string &#124; symbol |
+`event` | string &#124; symbol |
 
 **Returns:** *number*
 
@@ -672,9 +735,9 @@ ___
 
 ▸ **listeners**(`event`: string | symbol): *Function[]*
 
-*Inherited from [Fetcher](_sync_fetcher_fetcher_.fetcher.md).[listeners](_sync_fetcher_fetcher_.fetcher.md#listeners)*
+*Inherited from [Sender](_net_protocol_sender_.sender.md).[listeners](_net_protocol_sender_.sender.md#listeners)*
 
-Defined in node_modules/@types/node/globals.d.ts:561
+Defined in node_modules/@types/node/events.d.ts:70
 
 **Parameters:**
 
@@ -690,7 +753,7 @@ ___
 
 ▸ **next**(): *any*
 
-*Defined in [lib/sync/fetcher/fetcher.js:148](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/sync/fetcher/fetcher.js#L148)*
+*Defined in [lib/sync/fetcher/fetcher.ts:168](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/sync/fetcher/fetcher.ts#L168)*
 
 Process next task
 
@@ -702,9 +765,9 @@ ___
 
 ▸ **off**(`event`: string | symbol, `listener`: function): *this*
 
-*Inherited from [Fetcher](_sync_fetcher_fetcher_.fetcher.md).[off](_sync_fetcher_fetcher_.fetcher.md#off)*
+*Inherited from [Sender](_net_protocol_sender_.sender.md).[off](_net_protocol_sender_.sender.md#off)*
 
-Defined in node_modules/@types/node/globals.d.ts:557
+Defined in node_modules/@types/node/events.d.ts:66
 
 **Parameters:**
 
@@ -730,9 +793,9 @@ ___
 
 *Inherited from [Fetcher](_sync_fetcher_fetcher_.fetcher.md).[on](_sync_fetcher_fetcher_.fetcher.md#on)*
 
-*Overrides void*
+*Overrides [Sender](_net_protocol_sender_.sender.md).[on](_net_protocol_sender_.sender.md#on)*
 
-Defined in node_modules/@types/node/stream.d.ts:76
+Defined in node_modules/@types/node/stream.d.ts:79
 
 **Parameters:**
 
@@ -748,9 +811,9 @@ Defined in node_modules/@types/node/stream.d.ts:76
 
 *Inherited from [Fetcher](_sync_fetcher_fetcher_.fetcher.md).[on](_sync_fetcher_fetcher_.fetcher.md#on)*
 
-*Overrides void*
+*Overrides [Sender](_net_protocol_sender_.sender.md).[on](_net_protocol_sender_.sender.md#on)*
 
-Defined in node_modules/@types/node/stream.d.ts:77
+Defined in node_modules/@types/node/stream.d.ts:80
 
 **Parameters:**
 
@@ -772,9 +835,9 @@ Name | Type |
 
 *Inherited from [Fetcher](_sync_fetcher_fetcher_.fetcher.md).[on](_sync_fetcher_fetcher_.fetcher.md#on)*
 
-*Overrides void*
+*Overrides [Sender](_net_protocol_sender_.sender.md).[on](_net_protocol_sender_.sender.md#on)*
 
-Defined in node_modules/@types/node/stream.d.ts:78
+Defined in node_modules/@types/node/stream.d.ts:81
 
 **Parameters:**
 
@@ -790,9 +853,9 @@ Defined in node_modules/@types/node/stream.d.ts:78
 
 *Inherited from [Fetcher](_sync_fetcher_fetcher_.fetcher.md).[on](_sync_fetcher_fetcher_.fetcher.md#on)*
 
-*Overrides void*
+*Overrides [Sender](_net_protocol_sender_.sender.md).[on](_net_protocol_sender_.sender.md#on)*
 
-Defined in node_modules/@types/node/stream.d.ts:79
+Defined in node_modules/@types/node/stream.d.ts:82
 
 **Parameters:**
 
@@ -814,9 +877,9 @@ Name | Type |
 
 *Inherited from [Fetcher](_sync_fetcher_fetcher_.fetcher.md).[on](_sync_fetcher_fetcher_.fetcher.md#on)*
 
-*Overrides void*
+*Overrides [Sender](_net_protocol_sender_.sender.md).[on](_net_protocol_sender_.sender.md#on)*
 
-Defined in node_modules/@types/node/stream.d.ts:80
+Defined in node_modules/@types/node/stream.d.ts:83
 
 **Parameters:**
 
@@ -832,9 +895,9 @@ Defined in node_modules/@types/node/stream.d.ts:80
 
 *Inherited from [Fetcher](_sync_fetcher_fetcher_.fetcher.md).[on](_sync_fetcher_fetcher_.fetcher.md#on)*
 
-*Overrides void*
+*Overrides [Sender](_net_protocol_sender_.sender.md).[on](_net_protocol_sender_.sender.md#on)*
 
-Defined in node_modules/@types/node/stream.d.ts:81
+Defined in node_modules/@types/node/stream.d.ts:84
 
 **Parameters:**
 
@@ -850,9 +913,9 @@ Defined in node_modules/@types/node/stream.d.ts:81
 
 *Inherited from [Fetcher](_sync_fetcher_fetcher_.fetcher.md).[on](_sync_fetcher_fetcher_.fetcher.md#on)*
 
-*Overrides void*
+*Overrides [Sender](_net_protocol_sender_.sender.md).[on](_net_protocol_sender_.sender.md#on)*
 
-Defined in node_modules/@types/node/stream.d.ts:82
+Defined in node_modules/@types/node/stream.d.ts:85
 
 **Parameters:**
 
@@ -868,9 +931,9 @@ Defined in node_modules/@types/node/stream.d.ts:82
 
 *Inherited from [Fetcher](_sync_fetcher_fetcher_.fetcher.md).[on](_sync_fetcher_fetcher_.fetcher.md#on)*
 
-*Overrides void*
+*Overrides [Sender](_net_protocol_sender_.sender.md).[on](_net_protocol_sender_.sender.md#on)*
 
-Defined in node_modules/@types/node/stream.d.ts:83
+Defined in node_modules/@types/node/stream.d.ts:86
 
 **Parameters:**
 
@@ -896,9 +959,9 @@ ___
 
 *Inherited from [Fetcher](_sync_fetcher_fetcher_.fetcher.md).[once](_sync_fetcher_fetcher_.fetcher.md#once)*
 
-*Overrides void*
+*Overrides [Sender](_net_protocol_sender_.sender.md).[once](_net_protocol_sender_.sender.md#once)*
 
-Defined in node_modules/@types/node/stream.d.ts:85
+Defined in node_modules/@types/node/stream.d.ts:88
 
 **Parameters:**
 
@@ -914,9 +977,9 @@ Defined in node_modules/@types/node/stream.d.ts:85
 
 *Inherited from [Fetcher](_sync_fetcher_fetcher_.fetcher.md).[once](_sync_fetcher_fetcher_.fetcher.md#once)*
 
-*Overrides void*
+*Overrides [Sender](_net_protocol_sender_.sender.md).[once](_net_protocol_sender_.sender.md#once)*
 
-Defined in node_modules/@types/node/stream.d.ts:86
+Defined in node_modules/@types/node/stream.d.ts:89
 
 **Parameters:**
 
@@ -938,9 +1001,9 @@ Name | Type |
 
 *Inherited from [Fetcher](_sync_fetcher_fetcher_.fetcher.md).[once](_sync_fetcher_fetcher_.fetcher.md#once)*
 
-*Overrides void*
+*Overrides [Sender](_net_protocol_sender_.sender.md).[once](_net_protocol_sender_.sender.md#once)*
 
-Defined in node_modules/@types/node/stream.d.ts:87
+Defined in node_modules/@types/node/stream.d.ts:90
 
 **Parameters:**
 
@@ -956,9 +1019,9 @@ Defined in node_modules/@types/node/stream.d.ts:87
 
 *Inherited from [Fetcher](_sync_fetcher_fetcher_.fetcher.md).[once](_sync_fetcher_fetcher_.fetcher.md#once)*
 
-*Overrides void*
+*Overrides [Sender](_net_protocol_sender_.sender.md).[once](_net_protocol_sender_.sender.md#once)*
 
-Defined in node_modules/@types/node/stream.d.ts:88
+Defined in node_modules/@types/node/stream.d.ts:91
 
 **Parameters:**
 
@@ -980,9 +1043,9 @@ Name | Type |
 
 *Inherited from [Fetcher](_sync_fetcher_fetcher_.fetcher.md).[once](_sync_fetcher_fetcher_.fetcher.md#once)*
 
-*Overrides void*
+*Overrides [Sender](_net_protocol_sender_.sender.md).[once](_net_protocol_sender_.sender.md#once)*
 
-Defined in node_modules/@types/node/stream.d.ts:89
+Defined in node_modules/@types/node/stream.d.ts:92
 
 **Parameters:**
 
@@ -998,9 +1061,9 @@ Defined in node_modules/@types/node/stream.d.ts:89
 
 *Inherited from [Fetcher](_sync_fetcher_fetcher_.fetcher.md).[once](_sync_fetcher_fetcher_.fetcher.md#once)*
 
-*Overrides void*
+*Overrides [Sender](_net_protocol_sender_.sender.md).[once](_net_protocol_sender_.sender.md#once)*
 
-Defined in node_modules/@types/node/stream.d.ts:90
+Defined in node_modules/@types/node/stream.d.ts:93
 
 **Parameters:**
 
@@ -1016,9 +1079,9 @@ Defined in node_modules/@types/node/stream.d.ts:90
 
 *Inherited from [Fetcher](_sync_fetcher_fetcher_.fetcher.md).[once](_sync_fetcher_fetcher_.fetcher.md#once)*
 
-*Overrides void*
+*Overrides [Sender](_net_protocol_sender_.sender.md).[once](_net_protocol_sender_.sender.md#once)*
 
-Defined in node_modules/@types/node/stream.d.ts:91
+Defined in node_modules/@types/node/stream.d.ts:94
 
 **Parameters:**
 
@@ -1034,9 +1097,9 @@ Defined in node_modules/@types/node/stream.d.ts:91
 
 *Inherited from [Fetcher](_sync_fetcher_fetcher_.fetcher.md).[once](_sync_fetcher_fetcher_.fetcher.md#once)*
 
-*Overrides void*
+*Overrides [Sender](_net_protocol_sender_.sender.md).[once](_net_protocol_sender_.sender.md#once)*
 
-Defined in node_modules/@types/node/stream.d.ts:92
+Defined in node_modules/@types/node/stream.d.ts:95
 
 **Parameters:**
 
@@ -1062,7 +1125,7 @@ ___
 
 *Inherited from [Fetcher](_sync_fetcher_fetcher_.fetcher.md).[pause](_sync_fetcher_fetcher_.fetcher.md#pause)*
 
-Defined in node_modules/@types/node/stream.d.ts:37
+Defined in node_modules/@types/node/stream.d.ts:40
 
 **Returns:** *this*
 
@@ -1070,19 +1133,19 @@ ___
 
 ###  peer
 
-▸ **peer**(`job`: Object): *any*
+▸ **peer**(`_job?`: any): *[Peer](_net_peer_peer_.peer.md)‹›*
 
-*Defined in [lib/sync/fetcher/fetcher.js:259](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/sync/fetcher/fetcher.js#L259)*
+*Defined in [lib/sync/fetcher/fetcher.ts:280](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/sync/fetcher/fetcher.ts#L280)*
 
 Returns a peer that can process the given job
 
 **Parameters:**
 
-Name | Type | Description |
------- | ------ | ------ |
-`job` | Object | job |
+Name | Type |
+------ | ------ |
+`_job?` | any |
 
-**Returns:** *any*
+**Returns:** *[Peer](_net_peer_peer_.peer.md)‹›*
 
 ___
 
@@ -1115,9 +1178,9 @@ ___
 
 *Inherited from [Fetcher](_sync_fetcher_fetcher_.fetcher.md).[prependListener](_sync_fetcher_fetcher_.fetcher.md#prependlistener)*
 
-*Overrides void*
+*Overrides [Sender](_net_protocol_sender_.sender.md).[prependListener](_net_protocol_sender_.sender.md#prependlistener)*
 
-Defined in node_modules/@types/node/stream.d.ts:94
+Defined in node_modules/@types/node/stream.d.ts:97
 
 **Parameters:**
 
@@ -1133,9 +1196,9 @@ Defined in node_modules/@types/node/stream.d.ts:94
 
 *Inherited from [Fetcher](_sync_fetcher_fetcher_.fetcher.md).[prependListener](_sync_fetcher_fetcher_.fetcher.md#prependlistener)*
 
-*Overrides void*
+*Overrides [Sender](_net_protocol_sender_.sender.md).[prependListener](_net_protocol_sender_.sender.md#prependlistener)*
 
-Defined in node_modules/@types/node/stream.d.ts:95
+Defined in node_modules/@types/node/stream.d.ts:98
 
 **Parameters:**
 
@@ -1157,9 +1220,9 @@ Name | Type |
 
 *Inherited from [Fetcher](_sync_fetcher_fetcher_.fetcher.md).[prependListener](_sync_fetcher_fetcher_.fetcher.md#prependlistener)*
 
-*Overrides void*
+*Overrides [Sender](_net_protocol_sender_.sender.md).[prependListener](_net_protocol_sender_.sender.md#prependlistener)*
 
-Defined in node_modules/@types/node/stream.d.ts:96
+Defined in node_modules/@types/node/stream.d.ts:99
 
 **Parameters:**
 
@@ -1175,9 +1238,9 @@ Defined in node_modules/@types/node/stream.d.ts:96
 
 *Inherited from [Fetcher](_sync_fetcher_fetcher_.fetcher.md).[prependListener](_sync_fetcher_fetcher_.fetcher.md#prependlistener)*
 
-*Overrides void*
+*Overrides [Sender](_net_protocol_sender_.sender.md).[prependListener](_net_protocol_sender_.sender.md#prependlistener)*
 
-Defined in node_modules/@types/node/stream.d.ts:97
+Defined in node_modules/@types/node/stream.d.ts:100
 
 **Parameters:**
 
@@ -1199,9 +1262,9 @@ Name | Type |
 
 *Inherited from [Fetcher](_sync_fetcher_fetcher_.fetcher.md).[prependListener](_sync_fetcher_fetcher_.fetcher.md#prependlistener)*
 
-*Overrides void*
+*Overrides [Sender](_net_protocol_sender_.sender.md).[prependListener](_net_protocol_sender_.sender.md#prependlistener)*
 
-Defined in node_modules/@types/node/stream.d.ts:98
+Defined in node_modules/@types/node/stream.d.ts:101
 
 **Parameters:**
 
@@ -1217,9 +1280,9 @@ Defined in node_modules/@types/node/stream.d.ts:98
 
 *Inherited from [Fetcher](_sync_fetcher_fetcher_.fetcher.md).[prependListener](_sync_fetcher_fetcher_.fetcher.md#prependlistener)*
 
-*Overrides void*
+*Overrides [Sender](_net_protocol_sender_.sender.md).[prependListener](_net_protocol_sender_.sender.md#prependlistener)*
 
-Defined in node_modules/@types/node/stream.d.ts:99
+Defined in node_modules/@types/node/stream.d.ts:102
 
 **Parameters:**
 
@@ -1235,9 +1298,9 @@ Defined in node_modules/@types/node/stream.d.ts:99
 
 *Inherited from [Fetcher](_sync_fetcher_fetcher_.fetcher.md).[prependListener](_sync_fetcher_fetcher_.fetcher.md#prependlistener)*
 
-*Overrides void*
+*Overrides [Sender](_net_protocol_sender_.sender.md).[prependListener](_net_protocol_sender_.sender.md#prependlistener)*
 
-Defined in node_modules/@types/node/stream.d.ts:100
+Defined in node_modules/@types/node/stream.d.ts:103
 
 **Parameters:**
 
@@ -1253,9 +1316,9 @@ Defined in node_modules/@types/node/stream.d.ts:100
 
 *Inherited from [Fetcher](_sync_fetcher_fetcher_.fetcher.md).[prependListener](_sync_fetcher_fetcher_.fetcher.md#prependlistener)*
 
-*Overrides void*
+*Overrides [Sender](_net_protocol_sender_.sender.md).[prependListener](_net_protocol_sender_.sender.md#prependlistener)*
 
-Defined in node_modules/@types/node/stream.d.ts:101
+Defined in node_modules/@types/node/stream.d.ts:104
 
 **Parameters:**
 
@@ -1281,9 +1344,9 @@ ___
 
 *Inherited from [Fetcher](_sync_fetcher_fetcher_.fetcher.md).[prependOnceListener](_sync_fetcher_fetcher_.fetcher.md#prependoncelistener)*
 
-*Overrides void*
+*Overrides [Sender](_net_protocol_sender_.sender.md).[prependOnceListener](_net_protocol_sender_.sender.md#prependoncelistener)*
 
-Defined in node_modules/@types/node/stream.d.ts:103
+Defined in node_modules/@types/node/stream.d.ts:106
 
 **Parameters:**
 
@@ -1299,9 +1362,9 @@ Defined in node_modules/@types/node/stream.d.ts:103
 
 *Inherited from [Fetcher](_sync_fetcher_fetcher_.fetcher.md).[prependOnceListener](_sync_fetcher_fetcher_.fetcher.md#prependoncelistener)*
 
-*Overrides void*
+*Overrides [Sender](_net_protocol_sender_.sender.md).[prependOnceListener](_net_protocol_sender_.sender.md#prependoncelistener)*
 
-Defined in node_modules/@types/node/stream.d.ts:104
+Defined in node_modules/@types/node/stream.d.ts:107
 
 **Parameters:**
 
@@ -1323,9 +1386,9 @@ Name | Type |
 
 *Inherited from [Fetcher](_sync_fetcher_fetcher_.fetcher.md).[prependOnceListener](_sync_fetcher_fetcher_.fetcher.md#prependoncelistener)*
 
-*Overrides void*
+*Overrides [Sender](_net_protocol_sender_.sender.md).[prependOnceListener](_net_protocol_sender_.sender.md#prependoncelistener)*
 
-Defined in node_modules/@types/node/stream.d.ts:105
+Defined in node_modules/@types/node/stream.d.ts:108
 
 **Parameters:**
 
@@ -1341,9 +1404,9 @@ Defined in node_modules/@types/node/stream.d.ts:105
 
 *Inherited from [Fetcher](_sync_fetcher_fetcher_.fetcher.md).[prependOnceListener](_sync_fetcher_fetcher_.fetcher.md#prependoncelistener)*
 
-*Overrides void*
+*Overrides [Sender](_net_protocol_sender_.sender.md).[prependOnceListener](_net_protocol_sender_.sender.md#prependoncelistener)*
 
-Defined in node_modules/@types/node/stream.d.ts:106
+Defined in node_modules/@types/node/stream.d.ts:109
 
 **Parameters:**
 
@@ -1365,9 +1428,9 @@ Name | Type |
 
 *Inherited from [Fetcher](_sync_fetcher_fetcher_.fetcher.md).[prependOnceListener](_sync_fetcher_fetcher_.fetcher.md#prependoncelistener)*
 
-*Overrides void*
+*Overrides [Sender](_net_protocol_sender_.sender.md).[prependOnceListener](_net_protocol_sender_.sender.md#prependoncelistener)*
 
-Defined in node_modules/@types/node/stream.d.ts:107
+Defined in node_modules/@types/node/stream.d.ts:110
 
 **Parameters:**
 
@@ -1383,9 +1446,9 @@ Defined in node_modules/@types/node/stream.d.ts:107
 
 *Inherited from [Fetcher](_sync_fetcher_fetcher_.fetcher.md).[prependOnceListener](_sync_fetcher_fetcher_.fetcher.md#prependoncelistener)*
 
-*Overrides void*
+*Overrides [Sender](_net_protocol_sender_.sender.md).[prependOnceListener](_net_protocol_sender_.sender.md#prependoncelistener)*
 
-Defined in node_modules/@types/node/stream.d.ts:108
+Defined in node_modules/@types/node/stream.d.ts:111
 
 **Parameters:**
 
@@ -1401,9 +1464,9 @@ Defined in node_modules/@types/node/stream.d.ts:108
 
 *Inherited from [Fetcher](_sync_fetcher_fetcher_.fetcher.md).[prependOnceListener](_sync_fetcher_fetcher_.fetcher.md#prependoncelistener)*
 
-*Overrides void*
+*Overrides [Sender](_net_protocol_sender_.sender.md).[prependOnceListener](_net_protocol_sender_.sender.md#prependoncelistener)*
 
-Defined in node_modules/@types/node/stream.d.ts:109
+Defined in node_modules/@types/node/stream.d.ts:112
 
 **Parameters:**
 
@@ -1419,9 +1482,9 @@ Defined in node_modules/@types/node/stream.d.ts:109
 
 *Inherited from [Fetcher](_sync_fetcher_fetcher_.fetcher.md).[prependOnceListener](_sync_fetcher_fetcher_.fetcher.md#prependoncelistener)*
 
-*Overrides void*
+*Overrides [Sender](_net_protocol_sender_.sender.md).[prependOnceListener](_net_protocol_sender_.sender.md#prependoncelistener)*
 
-Defined in node_modules/@types/node/stream.d.ts:110
+Defined in node_modules/@types/node/stream.d.ts:113
 
 **Parameters:**
 
@@ -1443,18 +1506,19 @@ ___
 
 ###  process
 
-▸ **process**(`job`: Object, `result`: any): *void*
+▸ **process**(`_job?`: any, `_peer?`: any, `_result?`: any): *void*
 
-*Defined in [lib/sync/fetcher/fetcher.js:278](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/sync/fetcher/fetcher.js#L278)*
+*Defined in [lib/sync/fetcher/fetcher.ts:300](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/sync/fetcher/fetcher.ts#L300)*
 
 Process the reply for the given job
 
 **Parameters:**
 
-Name | Type | Description |
------- | ------ | ------ |
-`job` | Object | fetch job |
-`result` | any | - |
+Name | Type |
+------ | ------ |
+`_job?` | any |
+`_peer?` | any |
+`_result?` | any |
 
 **Returns:** *void*
 
@@ -1466,7 +1530,7 @@ ___
 
 *Inherited from [Fetcher](_sync_fetcher_fetcher_.fetcher.md).[push](_sync_fetcher_fetcher_.fetcher.md#push)*
 
-Defined in node_modules/@types/node/stream.d.ts:43
+Defined in node_modules/@types/node/stream.d.ts:46
 
 **Parameters:**
 
@@ -1483,9 +1547,9 @@ ___
 
 ▸ **rawListeners**(`event`: string | symbol): *Function[]*
 
-*Inherited from [Fetcher](_sync_fetcher_fetcher_.fetcher.md).[rawListeners](_sync_fetcher_fetcher_.fetcher.md#rawlisteners)*
+*Inherited from [Sender](_net_protocol_sender_.sender.md).[rawListeners](_net_protocol_sender_.sender.md#rawlisteners)*
 
-Defined in node_modules/@types/node/globals.d.ts:562
+Defined in node_modules/@types/node/events.d.ts:71
 
 **Parameters:**
 
@@ -1503,7 +1567,7 @@ ___
 
 *Inherited from [Fetcher](_sync_fetcher_fetcher_.fetcher.md).[read](_sync_fetcher_fetcher_.fetcher.md#read)*
 
-Defined in node_modules/@types/node/stream.d.ts:35
+Defined in node_modules/@types/node/stream.d.ts:38
 
 **Parameters:**
 
@@ -1519,9 +1583,9 @@ ___
 
 ▸ **removeAllListeners**(`event?`: string | symbol): *this*
 
-*Inherited from [Fetcher](_sync_fetcher_fetcher_.fetcher.md).[removeAllListeners](_sync_fetcher_fetcher_.fetcher.md#removealllisteners)*
+*Inherited from [Sender](_net_protocol_sender_.sender.md).[removeAllListeners](_net_protocol_sender_.sender.md#removealllisteners)*
 
-Defined in node_modules/@types/node/globals.d.ts:558
+Defined in node_modules/@types/node/events.d.ts:67
 
 **Parameters:**
 
@@ -1539,9 +1603,9 @@ ___
 
 *Inherited from [Fetcher](_sync_fetcher_fetcher_.fetcher.md).[removeListener](_sync_fetcher_fetcher_.fetcher.md#removelistener)*
 
-*Overrides void*
+*Overrides [Sender](_net_protocol_sender_.sender.md).[removeListener](_net_protocol_sender_.sender.md#removelistener)*
 
-Defined in node_modules/@types/node/stream.d.ts:112
+Defined in node_modules/@types/node/stream.d.ts:115
 
 **Parameters:**
 
@@ -1557,9 +1621,9 @@ Defined in node_modules/@types/node/stream.d.ts:112
 
 *Inherited from [Fetcher](_sync_fetcher_fetcher_.fetcher.md).[removeListener](_sync_fetcher_fetcher_.fetcher.md#removelistener)*
 
-*Overrides void*
+*Overrides [Sender](_net_protocol_sender_.sender.md).[removeListener](_net_protocol_sender_.sender.md#removelistener)*
 
-Defined in node_modules/@types/node/stream.d.ts:113
+Defined in node_modules/@types/node/stream.d.ts:116
 
 **Parameters:**
 
@@ -1581,9 +1645,9 @@ Name | Type |
 
 *Inherited from [Fetcher](_sync_fetcher_fetcher_.fetcher.md).[removeListener](_sync_fetcher_fetcher_.fetcher.md#removelistener)*
 
-*Overrides void*
+*Overrides [Sender](_net_protocol_sender_.sender.md).[removeListener](_net_protocol_sender_.sender.md#removelistener)*
 
-Defined in node_modules/@types/node/stream.d.ts:114
+Defined in node_modules/@types/node/stream.d.ts:117
 
 **Parameters:**
 
@@ -1599,9 +1663,9 @@ Defined in node_modules/@types/node/stream.d.ts:114
 
 *Inherited from [Fetcher](_sync_fetcher_fetcher_.fetcher.md).[removeListener](_sync_fetcher_fetcher_.fetcher.md#removelistener)*
 
-*Overrides void*
+*Overrides [Sender](_net_protocol_sender_.sender.md).[removeListener](_net_protocol_sender_.sender.md#removelistener)*
 
-Defined in node_modules/@types/node/stream.d.ts:115
+Defined in node_modules/@types/node/stream.d.ts:118
 
 **Parameters:**
 
@@ -1623,9 +1687,9 @@ Name | Type |
 
 *Inherited from [Fetcher](_sync_fetcher_fetcher_.fetcher.md).[removeListener](_sync_fetcher_fetcher_.fetcher.md#removelistener)*
 
-*Overrides void*
+*Overrides [Sender](_net_protocol_sender_.sender.md).[removeListener](_net_protocol_sender_.sender.md#removelistener)*
 
-Defined in node_modules/@types/node/stream.d.ts:116
+Defined in node_modules/@types/node/stream.d.ts:119
 
 **Parameters:**
 
@@ -1641,9 +1705,9 @@ Defined in node_modules/@types/node/stream.d.ts:116
 
 *Inherited from [Fetcher](_sync_fetcher_fetcher_.fetcher.md).[removeListener](_sync_fetcher_fetcher_.fetcher.md#removelistener)*
 
-*Overrides void*
+*Overrides [Sender](_net_protocol_sender_.sender.md).[removeListener](_net_protocol_sender_.sender.md#removelistener)*
 
-Defined in node_modules/@types/node/stream.d.ts:117
+Defined in node_modules/@types/node/stream.d.ts:120
 
 **Parameters:**
 
@@ -1659,9 +1723,9 @@ Defined in node_modules/@types/node/stream.d.ts:117
 
 *Inherited from [Fetcher](_sync_fetcher_fetcher_.fetcher.md).[removeListener](_sync_fetcher_fetcher_.fetcher.md#removelistener)*
 
-*Overrides void*
+*Overrides [Sender](_net_protocol_sender_.sender.md).[removeListener](_net_protocol_sender_.sender.md#removelistener)*
 
-Defined in node_modules/@types/node/stream.d.ts:118
+Defined in node_modules/@types/node/stream.d.ts:121
 
 **Parameters:**
 
@@ -1677,9 +1741,9 @@ Defined in node_modules/@types/node/stream.d.ts:118
 
 *Inherited from [Fetcher](_sync_fetcher_fetcher_.fetcher.md).[removeListener](_sync_fetcher_fetcher_.fetcher.md#removelistener)*
 
-*Overrides void*
+*Overrides [Sender](_net_protocol_sender_.sender.md).[removeListener](_net_protocol_sender_.sender.md#removelistener)*
 
-Defined in node_modules/@types/node/stream.d.ts:119
+Defined in node_modules/@types/node/stream.d.ts:122
 
 **Parameters:**
 
@@ -1701,9 +1765,9 @@ ___
 
 ###  request
 
-▸ **request**(`job`: Object): *Promise‹any›*
+▸ **request**(`_job?`: any, `_peer?`: any): *Promise‹any›*
 
-*Defined in [lib/sync/fetcher/fetcher.js:268](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/sync/fetcher/fetcher.js#L268)*
+*Defined in [lib/sync/fetcher/fetcher.ts:290](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/sync/fetcher/fetcher.ts#L290)*
 
 Request results from peer for the given job. Resolves with the raw result.
 
@@ -1711,7 +1775,8 @@ Request results from peer for the given job. Resolves with the raw result.
 
 Name | Type |
 ------ | ------ |
-`job` | Object |
+`_job?` | any |
+`_peer?` | any |
 
 **Returns:** *Promise‹any›*
 
@@ -1723,7 +1788,7 @@ ___
 
 *Inherited from [Fetcher](_sync_fetcher_fetcher_.fetcher.md).[resume](_sync_fetcher_fetcher_.fetcher.md#resume)*
 
-Defined in node_modules/@types/node/stream.d.ts:38
+Defined in node_modules/@types/node/stream.d.ts:41
 
 **Returns:** *this*
 
@@ -1735,7 +1800,7 @@ ___
 
 *Inherited from [Fetcher](_sync_fetcher_fetcher_.fetcher.md).[setEncoding](_sync_fetcher_fetcher_.fetcher.md#setencoding)*
 
-Defined in node_modules/@types/node/stream.d.ts:36
+Defined in node_modules/@types/node/stream.d.ts:39
 
 **Parameters:**
 
@@ -1751,9 +1816,9 @@ ___
 
 ▸ **setMaxListeners**(`n`: number): *this*
 
-*Inherited from [Fetcher](_sync_fetcher_fetcher_.fetcher.md).[setMaxListeners](_sync_fetcher_fetcher_.fetcher.md#setmaxlisteners)*
+*Inherited from [Sender](_net_protocol_sender_.sender.md).[setMaxListeners](_net_protocol_sender_.sender.md#setmaxlisteners)*
 
-Defined in node_modules/@types/node/globals.d.ts:559
+Defined in node_modules/@types/node/events.d.ts:68
 
 **Parameters:**
 
@@ -1767,31 +1832,50 @@ ___
 
 ###  store
 
-▸ **store**(`result`: Object): *Promise‹any›*
+▸ **store**(`_result?`: any): *Promise‹void›*
 
-*Defined in [lib/sync/fetcher/fetcher.js:302](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/sync/fetcher/fetcher.js#L302)*
+*Defined in [lib/sync/fetcher/fetcher.ts:328](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/sync/fetcher/fetcher.ts#L328)*
 
 Store fetch result. Resolves once store operation is complete.
 
 **Parameters:**
 
+Name | Type |
+------ | ------ |
+`_result?` | any |
+
+**Returns:** *Promise‹void›*
+
+___
+
+### `Private` success
+
+▸ **success**(`job`: any, `result`: any): *void*
+
+*Defined in [lib/sync/fetcher/fetcher.ts:126](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/sync/fetcher/fetcher.ts#L126)*
+
+handle successful job completion
+
+**Parameters:**
+
 Name | Type | Description |
 ------ | ------ | ------ |
-`result` | Object | fetch result |
+`job` | any | successful job |
+`result` | any | job result  |
 
-**Returns:** *Promise‹any›*
+**Returns:** *void*
 
 ___
 
 ###  tasks
 
-▸ **tasks**(): *Object[]*
+▸ **tasks**(): *object[]*
 
-*Defined in [lib/sync/fetcher/fetcher.js:62](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/sync/fetcher/fetcher.js#L62)*
+*Defined in [lib/sync/fetcher/fetcher.ts:80](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/sync/fetcher/fetcher.ts#L80)*
 
 Generate list of tasks to fetch
 
-**Returns:** *Object[]*
+**Returns:** *object[]*
 
 tasks
 
@@ -1803,7 +1887,7 @@ ___
 
 *Inherited from [Fetcher](_sync_fetcher_fetcher_.fetcher.md).[unpipe](_sync_fetcher_fetcher_.fetcher.md#unpipe)*
 
-Defined in node_modules/@types/node/stream.d.ts:40
+Defined in node_modules/@types/node/stream.d.ts:43
 
 **Parameters:**
 
@@ -1821,7 +1905,7 @@ ___
 
 *Inherited from [Fetcher](_sync_fetcher_fetcher_.fetcher.md).[unshift](_sync_fetcher_fetcher_.fetcher.md#unshift)*
 
-Defined in node_modules/@types/node/stream.d.ts:41
+Defined in node_modules/@types/node/stream.d.ts:44
 
 **Parameters:**
 
@@ -1836,15 +1920,15 @@ ___
 
 ###  wait
 
-▸ **wait**(`delay`: any): *Promise‹void›*
+▸ **wait**(`delay?`: undefined | number): *Promise‹void›*
 
-*Defined in [lib/sync/fetcher/fetcher.js:306](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/sync/fetcher/fetcher.js#L306)*
+*Defined in [lib/sync/fetcher/fetcher.ts:332](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/sync/fetcher/fetcher.ts#L332)*
 
 **Parameters:**
 
 Name | Type |
 ------ | ------ |
-`delay` | any |
+`delay?` | undefined &#124; number |
 
 **Returns:** *Promise‹void›*
 
@@ -1856,7 +1940,7 @@ ___
 
 *Inherited from [Fetcher](_sync_fetcher_fetcher_.fetcher.md).[wrap](_sync_fetcher_fetcher_.fetcher.md#wrap)*
 
-Defined in node_modules/@types/node/stream.d.ts:42
+Defined in node_modules/@types/node/stream.d.ts:45
 
 **Parameters:**
 
@@ -1872,7 +1956,7 @@ ___
 
 ▸ **write**(): *void*
 
-*Defined in [lib/sync/fetcher/fetcher.js:191](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/sync/fetcher/fetcher.js#L191)*
+*Defined in [lib/sync/fetcher/fetcher.ts:211](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/sync/fetcher/fetcher.ts#L211)*
 
 Setup writer pipe and start writing fetch results. A pipe is used in order
 to support backpressure from storing results.
