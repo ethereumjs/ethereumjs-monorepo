@@ -27,7 +27,7 @@ web3_* RPC module
 
 \+ **new Web3**(`node`: any): *[Web3](_rpc_modules_web3_.web3.md)*
 
-*Defined in [lib/rpc/modules/web3.js:11](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/rpc/modules/web3.js#L11)*
+*Defined in [lib/rpc/modules/web3.ts:10](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/rpc/modules/web3.ts#L10)*
 
 Create web3_* RPC module
 
@@ -43,18 +43,26 @@ Name | Type |
 
 ###  clientVersion
 
-▸ **clientVersion**(`params`: undefined | any[], `cb`: undefined | Function): *void*
+▸ **clientVersion**(`_params`: never[], `cb`: function): *void*
 
-*Defined in [lib/rpc/modules/web3.js:31](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/rpc/modules/web3.js#L31)*
+*Defined in [lib/rpc/modules/web3.ts:31](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/rpc/modules/web3.ts#L31)*
 
 Returns the current client version
 
 **Parameters:**
 
+▪`Default value`  **_params**: *never[]*= []
+
+▪ **cb**: *function*
+
+▸ (`err`: null, `version`: string): *void*
+
+**Parameters:**
+
 Name | Type |
 ------ | ------ |
-`params` | undefined &#124; any[] |
-`cb` | undefined &#124; Function |
+`err` | null |
+`version` | string |
 
 **Returns:** *void*
 
@@ -62,17 +70,25 @@ ___
 
 ###  sha3
 
-▸ **sha3**(`params`: undefined | string[], `cb`: undefined | Function): *void*
+▸ **sha3**(`params`: string[], `cb`: function): *void*
 
-*Defined in [lib/rpc/modules/web3.js:46](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/rpc/modules/web3.js#L46)*
+*Defined in [lib/rpc/modules/web3.ts:42](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/rpc/modules/web3.ts#L42)*
 
 Returns Keccak-256 (not the standardized SHA3-256) of the given data
 
 **Parameters:**
 
+▪ **params**: *string[]*
+
+▪ **cb**: *function*
+
+▸ (`err`: Error | null, `hash?`: undefined | string): *void*
+
+**Parameters:**
+
 Name | Type |
 ------ | ------ |
-`params` | undefined &#124; string[] |
-`cb` | undefined &#124; Function |
+`err` | Error &#124; null |
+`hash?` | undefined &#124; string |
 
 **Returns:** *void*

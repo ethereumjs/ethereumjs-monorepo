@@ -8,56 +8,30 @@
 
 * [Protocol](../classes/_net_protocol_protocol_.protocol.md)
 
-### Variables
+### Interfaces
 
-* [BoundProtocol](_net_protocol_protocol_.md#const-boundprotocol)
-* [EventEmitter](_net_protocol_protocol_.md#const-eventemitter)
-* [defaultLogger](_net_protocol_protocol_.md#defaultlogger)
+* [ProtocolOptions](../interfaces/_net_protocol_protocol_.protocoloptions.md)
 
-### Object literals
+### Type aliases
 
-* [defaultOptions](_net_protocol_protocol_.md#const-defaultoptions)
+* [Message](_net_protocol_protocol_.md#message)
 
-## Variables
+## Type aliases
 
-### `Const` BoundProtocol
+###  Message
 
-• **BoundProtocol**: *[BoundProtocol](../classes/_net_protocol_boundprotocol_.boundprotocol.md)* = require('./boundprotocol')
+Ƭ **Message**: *object*
 
-*Defined in [lib/net/protocol/protocol.js:3](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/protocol/protocol.js#L3)*
+*Defined in [lib/net/protocol/protocol.ts:14](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/protocol/protocol.ts#L14)*
 
-___
+#### Type declaration:
 
-### `Const` EventEmitter
+* **code**: *number*
 
-• **EventEmitter**: *[EventEmitter](_net_peer_peer_.md#const-eventemitter)* = require('events')
+* **decode**? : *Function*
 
-*Defined in [lib/net/protocol/protocol.js:4](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/protocol/protocol.js#L4)*
+* **encode**? : *Function*
 
-___
+* **name**: *string*
 
-###  defaultLogger
-
-• **defaultLogger**: *Logger‹›*
-
-*Defined in [lib/net/protocol/protocol.js:5](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/protocol/protocol.js#L5)*
-
-## Object literals
-
-### `Const` defaultOptions
-
-### ▪ **defaultOptions**: *object*
-
-*Defined in [lib/net/protocol/protocol.js:7](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/protocol/protocol.js#L7)*
-
-###  logger
-
-• **logger**: *Logger‹›* = defaultLogger
-
-*Defined in [lib/net/protocol/protocol.js:8](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/protocol/protocol.js#L8)*
-
-###  timeout
-
-• **timeout**: *number* = 5000
-
-*Defined in [lib/net/protocol/protocol.js:9](https://github.com/ethereumjs/ethereumjs-client/blob/master/lib/net/protocol/protocol.js#L9)*
+* **response**? : *undefined | number*
