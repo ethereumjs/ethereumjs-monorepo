@@ -105,7 +105,7 @@ export class Synchronizer extends EventEmitter {
   }
 
   /**
-   * Stop synchronization. Returns a promise that resolves once its stopped.
+   * Stop synchronization. Returns a promise that resolves once stopped.
    */
   async stop(): Promise<boolean> {
     if (!this.running) {

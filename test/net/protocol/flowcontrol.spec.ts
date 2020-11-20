@@ -1,7 +1,8 @@
+/// <reference path="./testdouble-timers.d.ts" />
 import tape from 'tape-catch'
-const td = require('testdouble')
-const timers = require('testdouble-timers').default
-const { FlowControl } = require('../../../lib/net/protocol')
+import td from 'testdouble'
+import timers from 'testdouble-timers'
+import { FlowControl } from '../../../lib/net/protocol'
 
 timers.use(td)
 
@@ -13,8 +14,8 @@ tape('[FlowControl]', (t) => {
     },
     mrr: 10,
   }
-  const peer = { id: 1, les: { status: settings } }
-  const clock = td.timers()
+  const peer = { id: '1', les: { status: settings } } as any
+  const clock = (td as any).timers()
 
   t.test('should handle incoming flow control', (t) => {
     const expected = [700, 700, 410, 120, -170]

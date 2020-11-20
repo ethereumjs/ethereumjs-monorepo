@@ -1,7 +1,7 @@
 import tape from 'tape'
 import { wait, setup, destroy } from './util'
 
-tape.skip('[Integration:LightSync]', async (t) => {
+tape('[Integration:LightSync]', async (t) => {
   t.test('should sync headers', async (t) => {
     const [remoteServer, remoteService] = await setup({
       location: '127.0.0.2',

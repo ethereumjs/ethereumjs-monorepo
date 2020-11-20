@@ -68,7 +68,7 @@ export interface ConfigOptions {
   /**
    * Logging verbosity
    *
-   * Choices: ['error', 'warn', 'info', 'debug']
+   * Choices: ['debug', 'info', 'warn', 'error', 'off']
    * Default: 'info'
    */
   loglevel?: string

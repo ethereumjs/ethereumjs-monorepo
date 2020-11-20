@@ -140,7 +140,7 @@ export class RlpxServer extends Server {
    */
   async stop(): Promise<boolean> {
     if (this.started) {
-      this.rlpx!.destroy() // eslint-disable-line no-extra-semi
+      this.rlpx!.destroy()
       this.dpt!.destroy()
       await super.stop()
       this.started = false
@@ -158,7 +158,7 @@ export class RlpxServer extends Server {
     if (!this.started) {
       return false
     }
-    this.dpt!.banPeer(peerId, maxAge) // eslint-disable-line no-extra-semi
+    this.dpt!.banPeer(peerId, maxAge)
     return true
   }
 

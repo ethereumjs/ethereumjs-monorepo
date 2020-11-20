@@ -100,7 +100,7 @@ export class RlpxPeer extends Peer {
       return
     }
     const key = randomBytes(32)
-    await Promise.all(this.protocols.map((p: any) => p.open()))
+    await Promise.all(this.protocols.map((p) => p.open()))
     this.rlpx = new Devp2pRLPx(key, {
       capabilities: RlpxPeer.capabilities(this.protocols),
       listenPort: null,

@@ -5,14 +5,14 @@
   "readme": "none",
   "gitRevision": "master",
   "exclude": [
-    "lib/blockchain/index.js",
-    "lib/index.js",
-    "lib/net/peer/index.js",
-    "lib/net/protocol/index.js",
-    "lib/rpc/error-code.js",
-    "lib/service/index.js",
-    "lib/sync/index.js",
-    "lib/util/index.js"
+    "lib/blockchain/index.ts",
+    "lib/index.ts",
+    "lib/net/peer/index.ts",
+    "lib/net/protocol/index.ts",
+    "lib/rpc/error-code.ts",
+    "lib/service/index.ts",
+    "lib/sync/index.ts",
+    "lib/util/index.ts"
   ],
   "excludeNotExported": true,
   "excludeExternals": true,

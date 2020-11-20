@@ -1,14 +1,11 @@
 import { EventEmitter } from 'events'
 import { Config } from '../config'
 import { Peer } from './peer/peer'
-import { Server } from './server'
+import { RlpxServer } from './server'
 
 export interface PeerPoolOptions {
   /* Config */
   config: Config
-
-  /* Servers to aggregate peers from */
-  servers?: Server[]
 }
 
 /**
@@ -108,10 +105,10 @@ export class PeerPool extends EventEmitter {
    * @param peer object or peer id
    */
   contains(peer: Peer | string): boolean {
-    if (peer instanceof Peer) {
+    if (typeof peer !== 'string') {
       peer = peer.id
     }
-    return !!this.pool.get(peer as string)
+    return !!this.pool.get(peer)
   }
 
   /**
@@ -120,7 +117,7 @@ export class PeerPool extends EventEmitter {
    * @return {Peer}
    */
   idle(filterFn = (_peer: Peer) => true): Peer {
-    const idle = this.peers.filter((p: any) => p.idle && filterFn(p))
+    const idle = this.peers.filter((p) => p.idle && filterFn(p))
     const index = Math.floor(Math.random() * idle.length)
     return idle[index]
   }
@@ -206,8 +203,8 @@ export class PeerPool extends EventEmitter {
     if (this.size === 0) {
       this.noPeerPeriods += 1
       if (this.noPeerPeriods >= 3) {
-        const promises = this.config.servers.map(async (server: any) => {
-          if (server.bootstrap) {
+        const promises = this.config.servers.map(async (server) => {
+          if (server instanceof RlpxServer) {
             this.config.logger.info('Retriggering bootstrap.')
             await server.bootstrap()
           }

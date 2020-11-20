@@ -15,10 +15,10 @@ const LibP2p = require('libp2p')
 const promisify = require('util-promisify')
 
 export class Libp2pNode extends LibP2p {
-  public asyncStart: any
-  public asyncStop: any
-  public asyncDial: any
-  public asyncDialProtocol: any
+  public asyncStart: Function
+  public asyncStop: Function
+  public asyncDial: Function
+  public asyncDialProtocol: Function
 
   constructor(options: any) {
     super({

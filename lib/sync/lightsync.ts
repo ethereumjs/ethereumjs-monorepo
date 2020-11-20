@@ -1,7 +1,7 @@
 import { Peer } from '../net/peer/peer'
 import { BoundProtocol } from '../net/protocol'
 import { Synchronizer, SynchronizerOptions } from './sync'
-import { HeaderFetcher } from './fetcher'
+import { HeaderFetcher } from './fetcher/headerfetcher'
 import { BN } from 'ethereumjs-util'
 import { short } from '../util'
 

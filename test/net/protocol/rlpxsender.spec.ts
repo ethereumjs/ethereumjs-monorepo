@@ -1,12 +1,12 @@
-import tape from 'tape-catch'
-import * as rlp from 'rlp'
 import { EventEmitter } from 'events'
+import tape from 'tape-catch'
+import td from 'testdouble'
+import * as rlp from 'rlp'
 import { RlpxSender } from '../../../lib/net/protocol'
-const td = require('testdouble')
 
 tape('[RlpxSender]', (t) => {
   t.test('should send status', (t) => {
-    const rlpxProtocol = td.object()
+    const rlpxProtocol = td.object() as any
     const status = { id: 5 }
     const sender = new RlpxSender(rlpxProtocol)
     sender.sendStatus(status)
@@ -17,7 +17,7 @@ tape('[RlpxSender]', (t) => {
   })
 
   t.test('should send message', (t) => {
-    const rlpxProtocol = td.object()
+    const rlpxProtocol = td.object() as any
     const sender = new RlpxSender(rlpxProtocol)
     sender.sendMessage(1, 5)
     td.verify(rlpxProtocol._send(1, rlp.encode(5)))
