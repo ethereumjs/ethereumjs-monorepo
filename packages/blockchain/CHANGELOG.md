@@ -22,9 +22,7 @@ npm i @ethereumjs/blockchain
 
 ### Library Promisification
 
-The `Blockchain` library has been promisified and callbacks have been removed along
-PR [#833](https://github.com/ethereumjs/ethereumjs-vm/pull/833) and preceeding PR
-[#779](https://github.com/ethereumjs/ethereumjs-vm/pull/779).
+The `Blockchain` library has been promisified and callbacks have been removed along PR [#833](https://github.com/ethereumjs/ethereumjs-vm/pull/833) and preceeding PR [#779](https://github.com/ethereumjs/ethereumjs-vm/pull/779).
 
 Old API example:
 
@@ -69,14 +67,9 @@ The deprecated `validate` option has been removed, please use `valdiateBlock` an
 
 ### Dual ES5 and ES2017 Builds
 
-We significantly updated our internal tool and CI setup along the work on 
-PR [#913](https://github.com/ethereumjs/ethereumjs-vm/pull/913) with an update to `ESLint` from `TSLint` 
-for code linting and formatting and the introduction of a new build setup.
+We significantly updated our internal tool and CI setup along the work on PR [#913](https://github.com/ethereumjs/ethereumjs-vm/pull/913) with an update to `ESLint` from `TSLint` for code linting and formatting and the introduction of a new build setup.
 
-Packages now target `ES2017` for Node.js builds (the `main` entrypoint from `package.json`) and introduce
-a separate `ES5` build distributed along using the `browser` directive as an entrypoint, see
-PR [#921](https://github.com/ethereumjs/ethereumjs-vm/pull/921). This will result
-in performance benefits for Node.js consumers, see [here](https://github.com/ethereumjs/merkle-patricia-tree/pull/117) for a releated discussion.
+Packages now target `ES2017` for Node.js builds (the `main` entrypoint from `package.json`) and introduce a separate `ES5` build distributed along using the `browser` directive as an entrypoint, see PR [#921](https://github.com/ethereumjs/ethereumjs-vm/pull/921). This will result in performance benefits for Node.js consumers, see [here](https://github.com/ethereumjs/merkle-patricia-tree/pull/117) for a releated discussion.
 
 ### Other Changes
 
@@ -89,12 +82,9 @@ in performance benefits for Node.js consumers, see [here](https://github.com/eth
 - Made internal `_` methods like `_saveHeads()` private, if you are using these functions in your code this will be a **potentially breaking** change for you, PR [#930](https://github.com/ethereumjs/ethereumjs-vm/pull/930)
 - Improved code documentation, PR [#930](https://github.com/ethereumjs/ethereumjs-vm/pull/930)
 - Fixed potential blockchain DB concurrency issues along PR [#930](https://github.com/ethereumjs/ethereumjs-vm/pull/930)
-- Use `@ethereumjs/block` `v3.0.0` block library version,
-  PR [#883](https://github.com/ethereumjs/ethereumjs-vm/pull/883)
-- Removed `async` dependency,
-  PR [#779](https://github.com/ethereumjs/ethereumjs-vm/pull/779)
-- Updated `ethereumjs-util` to v7,
-  PR [#748](https://github.com/ethereumjs/ethereumjs-vm/pull/748)
+- Use `@ethereumjs/block` `v3.0.0` block library version, PR [#883](https://github.com/ethereumjs/ethereumjs-vm/pull/883)
+- Removed `async` dependency, PR [#779](https://github.com/ethereumjs/ethereumjs-vm/pull/779)
+- Updated `ethereumjs-util` to v7, PR [#748](https://github.com/ethereumjs/ethereumjs-vm/pull/748)
 
 **Bug Fixes**
 

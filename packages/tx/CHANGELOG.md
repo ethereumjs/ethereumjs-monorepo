@@ -74,28 +74,21 @@ The `FakeTransaction` class was removed since its functionality can now be imple
 ### New Default Hardfork
 
 **Breaking:** The default HF on the library has been updated from `petersburg` to `istanbul`, see PR [#906](https://github.com/ethereumjs/ethereumjs-vm/pull/906).
-The HF setting is now automatically taken from the HF set for `Common.DEAULT_HARDFORK`,
-see PR [#863](https://github.com/ethereumjs/ethereumjs-vm/pull/863).
+
+The HF setting is now automatically taken from the HF set for `Common.DEAULT_HARDFORK`, see PR [#863](https://github.com/ethereumjs/ethereumjs-vm/pull/863).
 
 ### Dual ES5 and ES2017 Builds
 
-We significantly updated our internal tool and CI setup along the work on 
-PR [#913](https://github.com/ethereumjs/ethereumjs-vm/pull/913) with an update to `ESLint` from `TSLint` 
-for code linting and formatting and the introduction of a new build setup.
+We significantly updated our internal tool and CI setup along the work on PR [#913](https://github.com/ethereumjs/ethereumjs-vm/pull/913) with an update to `ESLint` from `TSLint` for code linting and formatting and the introduction of a new build setup.
 
-Packages now target `ES2017` for Node.js builds (the `main` entrypoint from `package.json`) and introduce
-a separate `ES5` build distributed along using the `browser` directive as an entrypoint, see
-PR [#921](https://github.com/ethereumjs/ethereumjs-vm/pull/921). This will result
-in performance benefits for Node.js consumers, see [here](https://github.com/ethereumjs/merkle-patricia-tree/pull/117) for a releated discussion.
+Packages now target `ES2017` for Node.js builds (the `main` entrypoint from `package.json`) and introduce a separate `ES5` build distributed along using the `browser` directive as an entrypoint, see PR [#921](https://github.com/ethereumjs/ethereumjs-vm/pull/921). This will result in performance benefits for Node.js consumers, see [here](https://github.com/ethereumjs/merkle-patricia-tree/pull/117) for a releated discussion.
 
 ### Other Changes
 
 **Changes and Refactoring**
 
-- Updated `ethereumjs-util` to v7,
-  PR [#748](https://github.com/ethereumjs/ethereumjs-vm/pull/748)
-- Replaced `new Buffer()` (deprecated) statements with `Buffer.from()`,
-  PR [#721](https://github.com/ethereumjs/ethereumjs-vm/pull/721)
+- Updated `ethereumjs-util` to v7, PR [#748](https://github.com/ethereumjs/ethereumjs-vm/pull/748)
+- Replaced `new Buffer()` (deprecated) statements with `Buffer.from()`, PR [#721](https://github.com/ethereumjs/ethereumjs-vm/pull/721)
 - Dropped `ethereumjs-testing` dev dependency, PR [#953](https://github.com/ethereumjs/ethereumjs-vm/pull/953)
 
 ## 3.0.0-rc.1 - 2020-11-19

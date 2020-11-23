@@ -62,6 +62,7 @@ Side note: with this new structural setup it gets now possible for all EIPs stil
 ### Gas Parameter Completeness for all Hardforks
 
 Remaining gas base fees which still resided in the VM have been moved over to `Common` along PR [#806](https://github.com/ethereumjs/ethereumjs-vm/pull/806).
+
 Gas fees for all hardforks up to `MuirGlacier` are now completely present within the `Common` library.
 
 ### Eth/64 Forkhash Support
@@ -87,26 +88,18 @@ Current default hardfork is set to `istanbul`, PR [#906](https://github.com/ethe
 
 ### Dual ES5 and ES2017 Builds
 
-We significantly updated our internal tool and CI setup along the work on 
-PR [#913](https://github.com/ethereumjs/ethereumjs-vm/pull/913) with an update to `ESLint` from `TSLint` 
-for code linting and formatting and the introduction of a new build setup.
+We significantly updated our internal tool and CI setup along the work on PR [#913](https://github.com/ethereumjs/ethereumjs-vm/pull/913) with an update to `ESLint` from `TSLint` for code linting and formatting and the introduction of a new build setup.
 
-Packages now target `ES2017` for Node.js builds (the `main` entrypoint from `package.json`) and introduce
-a separate `ES5` build distributed along using the `browser` directive as an entrypoint, see
-PR [#921](https://github.com/ethereumjs/ethereumjs-vm/pull/921). This will result
-in performance benefits for Node.js consumers, see [here](https://github.com/ethereumjs/merkle-patricia-tree/pull/117) for a releated discussion.
+Packages now target `ES2017` for Node.js builds (the `main` entrypoint from `package.json`) and introduce a separate `ES5` build distributed along using the `browser` directive as an entrypoint, see PR [#921](https://github.com/ethereumjs/ethereumjs-vm/pull/921). This will result in performance benefits for Node.js consumers, see [here](https://github.com/ethereumjs/merkle-patricia-tree/pull/117) for a releated discussion.
 
 ### Other Changes
 
 **Changes and Refactoring**
 
 - Added consensus information to chains, new functions `Common.consensusType()` for consensus type access ("pow" or "poa") and `Common.consensusAlgorithm()` to get the associated algorithm or protocol (e.g. "ethash" PoW algorithm or "clique" PoA protocol), see PR [#937](https://github.com/ethereumjs/ethereumjs-vm/pull/937)
-- Removed old `consensus` and `finality` fields,
-  PR [#758](https://github.com/ethereumjs/ethereumjs-vm/pull/758)
-- Removed old `casper` and `sharding` fields,
-  PR [#762](https://github.com/ethereumjs/ethereumjs-vm/pull/762)
-- Updated `ethereumjs-util` to v7,
-  PR [#748](https://github.com/ethereumjs/ethereumjs-vm/pull/748)
+- Removed old `consensus` and `finality` fields, PR [#758](https://github.com/ethereumjs/ethereumjs-vm/pull/758)
+- Removed old `casper` and `sharding` fields, PR [#762](https://github.com/ethereumjs/ethereumjs-vm/pull/762)
+- Updated `ethereumjs-util` to v7, PR [#748](https://github.com/ethereumjs/ethereumjs-vm/pull/748)
 
 ## 2.0.0-rc.1 2020-11-19
 
