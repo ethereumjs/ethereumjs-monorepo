@@ -6,6 +6,216 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 5.0.0 - 2020-11-24
+
+### New Package Name
+
+**Attention!** This new version is part of a series of EthereumJS releases all moving to a new scoped package name format. In this case the library is renamed as follows:
+
+- `ethereumjs-vm` -> `@ethereumjs/vm`
+
+Please update your library references accordingly or install with:
+
+```shell
+npm i @ethereumjs/vm
+```
+
+### Support for all current Hardforks / HF API Changes
+
+This is the first release of the VM which supports all hardforks
+currently applied on mainnet starting with the support of the
+Frontier HF rules all along up to MuirGlacier. 🎉
+
+The following HFs have been added:
+
+- **Spurious Dragon**,
+  PR [#791](https://github.com/ethereumjs/ethereumjs-vm/pull/791)
+- **Tangerine Whistle**,
+  PR [#807](https://github.com/ethereumjs/ethereumjs-vm/pull/807)
+- **DAO**,
+  PR [#843](https://github.com/ethereumjs/ethereumjs-vm/pull/843)
+- **Homestead**,
+  PR [#815](https://github.com/ethereumjs/ethereumjs-vm/pull/815)
+- **Frontier**,
+  PR [#828](https://github.com/ethereumjs/ethereumjs-vm/pull/828)
+
+A VM with the specific HF rules (on the chain provided) can be instantiated
+by passing in a `Common` instance:
+
+```typescript
+import VM from '@ethereumjs/vm'
+import Common from '@ethereumjs/common'
+
+const common = new Common({ chain: 'mainnet', hardfork: 'spuriousDragon' })
+const vm = new VM({ common })
+```
+
+**Breaking**: The default HF from the VM has been updated from `petersburg` to `istanbul`.
+The HF setting is now automatically taken from the HF set for `Common.DEAULT_HARDFORK`,
+see PR [#906](https://github.com/ethereumjs/ethereumjs-vm/pull/906).
+
+**Breaking**: Please note that the options to directly pass in
+`chain` and `hardfork` strings have been removed to simplify the API.
+Providing a `Common` instance is now the only way to change
+the chain setup, see PR [#863](https://github.com/ethereumjs/ethereumjs-vm/pull/863)
+
+### Berlin HF Support / HF-independent EIPs
+
+This releases adds support for subroutines (`EIP-2315`) which gets
+activated under the `berlin` HF setting which can now be used
+as a `hardfork` instantiation option, see
+PR [#754](https://github.com/ethereumjs/ethereumjs-vm/pull/754).
+
+**Attention!** Berlin HF support is still considered experimental
+and implementations can change on non-major VM releases!
+
+Support for BLS12-381 precompiles (`EIP-2537`) is added as an independent EIP
+implementation - see PR [#785](https://github.com/ethereumjs/ethereumjs-vm/pull/785) -
+since there is still an ongoing discussion on taking this EIP in for Berlin or
+using a more generalized approach on curve computation with the Ethereum EVM
+(`evm384` by the eWASM team).
+
+Another new EIP added is the `EIP-2929` with gas cost increases for state access
+opcodes, see PR [#889](https://github.com/ethereumjs/ethereumjs-vm/pull/889).
+
+These integrations come along with an API addition to the VM to support the activation
+of specific EIPs, see PR [#856](https://github.com/ethereumjs/ethereumjs-vm/pull/856),
+PR [#869](https://github.com/ethereumjs/ethereumjs-vm/pull/869) and
+PR [#872](https://github.com/ethereumjs/ethereumjs-vm/pull/872).
+
+This API can be used as follows:
+
+```typescript
+import Common from '@ethereumjs/common'
+import VM from '@ethereumjs/vm'
+
+const common = new Common({ chain: 'mainnet', eips: [2537] })
+const vm = new VM({ common })
+```
+
+### API Change: New Major Library Versions
+
+The following `EthereumJS` libraries which are used within the VM internally
+and can be passed in on instantiation have been updated to new major versions.
+
+- `merkle-patricia-tree` `v3` (VM option `state`) -> `merkle-patricia-tree` `v4`,
+  PR [#787](https://github.com/ethereumjs/ethereumjs-vm/pull/787)
+- `ethereumjs-blockchain` `v4`-> `@ethereumjs/blockchain` `v5`,
+  PR [#833](https://github.com/ethereumjs/ethereumjs-vm/pull/833)
+- `ethereumjs-common` `v1` -> `@ethereumjs/common` `v2`
+
+**Breaking**: If you pass in instances of these libraries to the VM please make sure to
+update these library versions as stated. Please also take a note on the
+package name changes!
+
+All these libraries are now written in `TypeScript` and use promises instead of
+callbacks for accessing their APIs.
+
+### New StateManager Interface / StateManager API Changes
+
+There is now a new `TypeScript` interface for the `StateManager`, see
+PR [#763](https://github.com/ethereumjs/ethereumjs-vm/pull/763). If you are
+using a custom `StateManager` you can use this interface to get better
+assurance that you are using a `StateManager` which conforms with the current
+`StateManager` API and will run in the VM without problems.
+
+The integration of this new interface is highly encouraged since this release
+also comes with `StateManager` API changes. Usage of the old
+[ethereumjs-account](https://github.com/ethereumjs/ethereumjs-account) package
+(this package will be retired) has been replaced by the new
+[Account class](https://github.com/ethereumjs/ethereumjs-util/blob/master/docs/modules/_account_.md)
+from the `ethereumjs-util` package. This affects all `Account` related
+`StateManager` methods, see PR [#911](https://github.com/ethereumjs/ethereumjs-vm/pull/911).
+
+The Util package also introduces a new 
+[Address class](https://github.com/ethereumjs/ethereumjs-util/blob/master/docs/modules/_address_.md).
+This class replaces all current `Buffer` inputs on `StateManager` methods representing an address.
+
+### Dual ES5 and ES2017 Builds
+
+We significantly updated our internal tool and CI setup along the work on 
+PR [#913](https://github.com/ethereumjs/ethereumjs-vm/pull/913) with an update to `ESLint` from `TSLint` 
+for code linting and formatting and the introduction of a new build setup.
+
+Packages now target `ES2017` for Node.js builds (the `main` entrypoint from `package.json`) and introduce
+a separate `ES5` build distributed along using the `browser` directive as an entrypoint, see
+PR [#921](https://github.com/ethereumjs/ethereumjs-vm/pull/921). This will result
+in performance benefits for Node.js consumers, see [here](https://github.com/ethereumjs/merkle-patricia-tree/pull/117) for a releated discussion.
+
+### Other Changes
+
+**Changes and Refactoring**
+
+- Group opcodes based upon hardfork,
+  PR [#798](https://github.com/ethereumjs/ethereumjs-vm/pull/798)
+- Split opcodes logic into codes, fns, and utils files,
+  PR [#896](https://github.com/ethereumjs/ethereumjs-vm/pull/896)
+- Group precompiles based upon hardfork,
+  PR [#783](https://github.com/ethereumjs/ethereumjs-vm/pull/783)
+- **Breaking:** the `step` event now emits an `ethereumjs-util`
+[Account](https://github.com/ethereumjs/ethereumjs-util/blob/master/docs/modules/_account_.md)
+object instead of an [ethereumjs-account](https://github.com/ethereumjs/ethereumjs-account)
+(package retired) object
+- **Breaking:** `NewContractEvent` now emits an `address` of 
+  type `Address` (see `ethereumjs-util`) instead of a `Buffer`,
+  PR [#919](https://github.com/ethereumjs/ethereumjs-vm/pull/919)
+- **Breaking:** `EVMResult` now returns a `createdAddress` of
+  type `Address` (see `ethereumjs-util`) instead of a `Buffer`,
+  PR [#919](https://github.com/ethereumjs/ethereumjs-vm/pull/919)
+- **Breaking:** `RunTxResult` now returns a `createdAddress` of
+  type `Address` (see `ethereumjs-util`) instead of a `Buffer`,
+  PR [#919](https://github.com/ethereumjs/ethereumjs-vm/pull/919)
+- **Breaking:** `RunCallOpts` now expects `origin`, `caller` and
+  `to` inputs to be of
+  type `Address` (see `ethereumjs-util`) instead of a `Buffer`,
+  PR [#919](https://github.com/ethereumjs/ethereumjs-vm/pull/919)
+- **Breaking:** `RunCodeOpts` now expects `origin`, `caller` and
+  `address` inputs to be of
+  type `Address` (see `ethereumjs-util`) instead of a `Buffer`,
+  PR [#919](https://github.com/ethereumjs/ethereumjs-vm/pull/919)
+- Visibility cleanup (Renaming and/or code docs additions) for class members not being part of the API, PR [#925](https://github.com/ethereumjs/ethereumjs-vm/pull/925)
+- Make `memory.ts` use Buffers instead of Arrays,
+  PR [#850](https://github.com/ethereumjs/ethereumjs-vm/pull/850)
+- Use `Map` for `OpcodeList` and `opcode` handlers,
+  PR [#852](https://github.com/ethereumjs/ethereumjs-vm/pull/852)
+- Compare buffers directly,
+  PR [#851](https://github.com/ethereumjs/ethereumjs-vm/pull/851)
+- Moved gas base fees from VM to Common,
+  PR [#806](https://github.com/ethereumjs/ethereumjs-vm/pull/806)
+- Return precompiles on `getPrecompile()` based on hardfork,
+  PR [#783](https://github.com/ethereumjs/ethereumjs-vm/pull/783)
+- Removed `async` dependency,
+  PR [#779](https://github.com/ethereumjs/ethereumjs-vm/pull/779)
+- Updated `ethereumjs-util` to v7,
+  PR [#748](https://github.com/ethereumjs/ethereumjs-vm/pull/748)
+
+**CI and Test Improvements**
+
+- New benchmarking tool for the VM, CI integration on GitHub actions,
+  PR [#794](https://github.com/ethereumjs/ethereumjs-vm/pull/794) and
+  PR [#830](https://github.com/ethereumjs/ethereumjs-vm/pull/830)
+- Various updates, fixes and refactoring work on the test runner,
+  PR [#752](https://github.com/ethereumjs/ethereumjs-vm/pull/752) and
+  PR [#849](https://github.com/ethereumjs/ethereumjs-vm/pull/849)
+- Integrated `ethereumjs-testing` code logic into VM for more
+  flexible future test load optimizations,
+  PR [#808](https://github.com/ethereumjs/ethereumjs-vm/pull/808)
+- Transition VM tests to TypeScript,
+  PR [#881](https://github.com/ethereumjs/ethereumjs-vm/pull/881) and
+  PR [#882](https://github.com/ethereumjs/ethereumjs-vm/pull/882)
+- On-demand state and blockchain test runs for all hardforks triggered by PR label, PR [#951](https://github.com/ethereumjs/ethereumjs-vm/pull/951) 
+- Dropped `ethereumjs-testing` dev dependency, PR [#953](https://github.com/ethereumjs/ethereumjs-vm/pull/953)
+
+**Bug Fixes**
+
+- Fix `activatePrecompiles`,
+  PR [#797](https://github.com/ethereumjs/ethereumjs-vm/pull/797)
+- Strip zeros when putting contract storage in StateManager,
+  PR [#880](https://github.com/ethereumjs/ethereumjs-vm/pull/880)
+- Two bug fixes along `istanbul` `SSTORE` gas calculation,
+  PR [#870](https://github.com/ethereumjs/ethereumjs-vm/pull/870)
+- Security fixes by `mcl-wasm` package dependency update, PR [#955](https://github.com/ethereumjs/ethereumjs-vm/pull/955)
+
 ## 5.0.0-rc.1 - 2020-11-19
 
 This is the first release candidate towards a final library release, see [beta.2](https://github.com/ethereumjs/ethereumjs-vm/releases/tag/%40ethereumjs%2Fvm%405.0.0-beta.2) and especially [beta.1](https://github.com/ethereumjs/ethereumjs-vm/releases/tag/%40ethereumjs%2Fvm%405.0.0-beta.1) release notes for an overview on the full changes since the last publicly released version.
