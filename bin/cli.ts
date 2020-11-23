@@ -10,6 +10,7 @@ import { RPCManager } from '../lib/rpc'
 const path = require('path')
 const fs = require('fs-extra')
 const chains = require('@ethereumjs/common/dist/chains').chains
+const level = require('level')
 
 const networks = Object.entries(chains.names)
 
@@ -99,6 +100,7 @@ async function runNode(config: Config) {
   }
   const node = new Node({
     config,
+    db: level(syncDataDir),
   })
   node.on('error', (err: any) => config.logger.error(err))
   node.on('listening', (details: any) => {

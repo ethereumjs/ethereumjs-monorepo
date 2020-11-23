@@ -4,6 +4,7 @@ import { EthProtocol } from '../net/protocol/ethprotocol'
 import { LesProtocol } from '../net/protocol/lesprotocol'
 import { Peer } from '../net/peer/peer'
 import { Protocol, BoundProtocol } from '../net/protocol'
+import VM from '@ethereumjs/vm'
 
 interface FullEthereumServiceOptions extends EthereumServiceOptions {
   /* Serve LES requests (default: false) */
@@ -17,6 +18,7 @@ interface FullEthereumServiceOptions extends EthereumServiceOptions {
 export class FullEthereumService extends EthereumService {
   public synchronizer: FullSynchronizer
   public lightserv: boolean
+  public vm: VM
   /**
    * Create new ETH service
    * @param {FullEthereumServiceOptions}
@@ -27,6 +29,10 @@ export class FullEthereumService extends EthereumService {
     this.lightserv = options.lightserv ?? false
 
     this.config.logger.info('Full sync mode')
+    this.vm = new VM({
+      common: this.config.common,
+      blockchain: this.chain.blockchain,
+    })
     this.synchronizer = new FullSynchronizer({
       config: this.config,
       pool: this.pool,

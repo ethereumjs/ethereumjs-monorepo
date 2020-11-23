@@ -1,12 +1,8 @@
 const os = require('os')
 import Common from '@ethereumjs/common'
-import { Chain } from './blockchain'
 import { getLogger, Logger } from './logging'
 import { Libp2pServer, RlpxServer } from './net/server'
 import { parseTransports } from './util'
-import type { LevelUp } from 'levelup'
-import VM from '@ethereumjs/vm'
-const level = require('level')
 
 export interface ConfigOptions {
   /**
@@ -98,11 +94,6 @@ export interface ConfigOptions {
    * Default: `25`
    */
   maxPeers?: number
-
-  /**
-   * The VM to use
-   */
-  vm?: VM
 }
 
 export class Config {
@@ -133,9 +124,6 @@ export class Config {
   public readonly loglevel: string
   public readonly minPeers: number
   public readonly maxPeers: number
-  public readonly blockchain: Chain
-  public readonly db: LevelUp
-  public readonly vm: VM
 
   public readonly servers: (RlpxServer | Libp2pServer)[] = []
 
@@ -152,14 +140,6 @@ export class Config {
     this.loglevel = options.loglevel ?? Config.LOGLEVEL_DEFAULT
     this.minPeers = options.minPeers ?? Config.MINPEERS_DEFAULT
     this.maxPeers = options.maxPeers ?? Config.MAXPEERS_DEFAULT
-    this.db = level(this.getSyncDataDirectory())
-    this.blockchain = new Chain({ config: this, db: this.db })
-    this.vm =
-      options.vm ??
-      new VM({
-        common: this.common,
-        blockchain: this.blockchain.blockchain,
-      })
 
     if (options.logger) {
       if (options.loglevel) {
