@@ -7,10 +7,10 @@ import Node from '../lib/node'
 import { Config } from '../lib/config'
 import { Logger } from '../lib/logging'
 import { RPCManager } from '../lib/rpc'
-const level = require('level')
 const path = require('path')
 const fs = require('fs-extra')
 const chains = require('@ethereumjs/common/dist/chains').chains
+const level = require('level')
 
 const networks = Object.entries(chains.names)
 
