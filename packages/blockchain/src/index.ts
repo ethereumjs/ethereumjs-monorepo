@@ -736,15 +736,16 @@ export default class Blockchain implements BlockchainInterface {
    *
    * @param name - Name of the state root head
    * @param onBlock - Function called on each block with params (block, reorg)
+   * @param maxBlocks - How many blocks to run. By default, run all blocks in the canonical chain.
    */
-  async iterator(name: string, onBlock: OnBlock) {
-    return this._iterator(name, onBlock)
+  async iterator(name: string, onBlock: OnBlock, maxBlocks?: number) {
+    return this._iterator(name, onBlock, maxBlocks)
   }
 
   /**
    * @hidden
    */
-  private async _iterator(name: string, onBlock: OnBlock) {
+  private async _iterator(name: string, onBlock: OnBlock, maxBlocks?: number) {
     await this.initAndLock<void>(async () => {
       const blockHash = this._heads[name] || this._genesis
       let lastBlock: Block | undefined
@@ -755,6 +756,7 @@ export default class Blockchain implements BlockchainInterface {
 
       const number = await this.dbManager.hashToNumber(blockHash)
       const blockNumber = number.addn(1)
+      let blocksRanCounter = 0
 
       // eslint-disable-next-line no-constant-condition
       while (true) {
@@ -770,6 +772,10 @@ export default class Blockchain implements BlockchainInterface {
           lastBlock = block
           await onBlock(block, reorg)
           blockNumber.iaddn(1)
+          blocksRanCounter++
+          if (maxBlocks && blocksRanCounter == maxBlocks) {
+            break
+          }
         } catch (error) {
           if (error.type !== 'NotFoundError') {
             throw error
@@ -778,6 +784,20 @@ export default class Blockchain implements BlockchainInterface {
         }
       }
 
+      await this._saveHeads()
+    })
+  }
+
+  /**
+   * Set header hash of a certain `tag`.
+   * When calling the iterator, the iterator will start running the first child block after the header hash currenntly stored.
+   * @param tag - The tag to save the headHash to
+   * @param headHash - The head hash to save
+   */
+
+  async setHead(tag: string, headHash: Buffer) {
+    await this.initAndLock<void>(async () => {
+      this._heads[tag] = headHash
       await this._saveHeads()
     })
   }
