@@ -1,3 +1,4 @@
+import assert from 'assert'
 import { EventEmitter } from 'events'
 import * as rlp from 'rlp'
 import ms from 'ms'
@@ -18,6 +19,12 @@ export class ETH extends EventEmitter {
   _statusTimeoutId: NodeJS.Timeout
   _send: SendMethod
 
+  // Eth64
+  _hardfork: string = 'chainstart'
+  _latestBlock: number = 0
+  _forkHash: string = ''
+  _nextForkBlock: number = 0
+
   constructor(version: number, peer: Peer, send: SendMethod) {
     super()
 
@@ -30,10 +37,24 @@ export class ETH extends EventEmitter {
     this._statusTimeoutId = setTimeout(() => {
       this._peer.disconnect(DISCONNECT_REASONS.TIMEOUT)
     }, ms('5s'))
+
+    // Set forkHash and nextForkBlock
+    if (this._version >= 64) {
+      const c = this._peer._common
+      this._hardfork = c.hardfork() ? (c.hardfork() as string) : this._hardfork
+      // Set latestBlock minimally to start block of fork to have some more
+      // accurate basis if no latestBlock is provided along status send
+      this._latestBlock = c.hardforkBlock(this._hardfork)
+      this._forkHash = c.forkHash(this._hardfork)
+      // Next fork block number or 0 if none available
+      const nextForkBlock = c.nextHardforkBlock(this._hardfork)
+      this._nextForkBlock = nextForkBlock ? nextForkBlock : 0
+    }
   }
 
   static eth62 = { name: 'eth', version: 62, length: 8, constructor: ETH }
   static eth63 = { name: 'eth', version: 63, length: 17, constructor: ETH }
+  static eth64 = { name: 'eth', version: 64, length: 29, constructor: ETH }
 
   _handleMessage(code: ETH.MESSAGE_CODES, data: any) {
     const payload = rlp.decode(data) as unknown
@@ -80,6 +101,42 @@ export class ETH extends EventEmitter {
     this.emit('message', code, payload)
   }
 
+  /**
+   * Eth 64 Fork ID validation (EIP-2124)
+   * @param forkId Remote fork ID
+   */
+  _validateForkId(forkId: Buffer[]) {
+    const c = this._peer._common
+
+    const peerForkHash = `0x${forkId[0].toString('hex')}`
+    const peerNextFork = buffer2int(forkId[1])
+
+    if (this._forkHash === peerForkHash) {
+      // There is a known next fork
+      if (peerNextFork !== 0) {
+        if (this._latestBlock >= peerNextFork) {
+          const msg = 'Remote is advertising a future fork that passed locally'
+          debug(msg)
+          throw new assert.AssertionError({ message: msg })
+        }
+      }
+    }
+    const peerFork: any = c.hardforkForForkHash(peerForkHash)
+    if (peerFork === null) {
+      const msg = 'Unknown fork hash'
+      debug(msg)
+      throw new assert.AssertionError({ message: msg })
+    }
+
+    if (!c.hardforkGteHardfork(peerFork.name, this._hardfork)) {
+      if (peerNextFork === null || c.nextHardforkBlock(peerFork.name) !== peerNextFork) {
+        const msg = 'Outdated fork status, remote needs software update'
+        debug(msg)
+        throw new assert.AssertionError({ message: msg })
+      }
+    }
+  }
+
   _handleStatus(): void {
     if (this._status === null || this._peerStatus === null) return
     clearTimeout(this._statusTimeoutId)
@@ -88,38 +145,72 @@ export class ETH extends EventEmitter {
     assertEq(this._status[1], this._peerStatus[1], 'NetworkId mismatch', debug)
     assertEq(this._status[4], this._peerStatus[4], 'Genesis block mismatch', debug)
 
-    this.emit('status', {
+    const status: any = {
       networkId: this._peerStatus[1],
       td: Buffer.from(this._peerStatus[2]),
       bestHash: Buffer.from(this._peerStatus[3]),
       genesisHash: Buffer.from(this._peerStatus[4])
-    })
+    }
+
+    if (this._version >= 64) {
+      assertEq(this._peerStatus[5].length, 2, 'Incorrect forkId msg format', debug)
+      this._validateForkId(this._peerStatus[5] as Buffer[])
+      status['forkId'] = this._peerStatus[5]
+    }
+
+    this.emit('status', status)
   }
 
   getVersion() {
     return this._version
   }
 
+  _forkHashFromForkId(forkId: Buffer): string {
+    return `0x${forkId.toString('hex')}`
+  }
+
+  _nextForkFromForkId(forkId: Buffer): number {
+    return buffer2int(forkId)
+  }
+
   _getStatusString(status: ETH.StatusMsg) {
-    let sStr = `[V:${buffer2int(status[0])}, NID:${buffer2int(status[1])}, TD:${buffer2int(
-      status[2]
-    )}`
+    let sStr = `[V:${buffer2int(status[0] as Buffer)}, NID:${buffer2int(
+      status[1] as Buffer
+    )}, TD:${buffer2int(status[2] as Buffer)}`
     sStr += `, BestH:${formatLogId(status[3].toString('hex'), verbose)}, GenH:${formatLogId(
       status[4].toString('hex'),
       verbose
-    )}]`
+    )}`
+    if (this._version >= 64) {
+      sStr += `, ForkHash: 0x${(status[5][0] as Buffer).toString('hex')}`
+      sStr += `, ForkNext: ${buffer2int(status[5][1] as Buffer)}`
+    }
+    sStr += `]`
     return sStr
   }
 
-  sendStatus(status: ETH.Status) {
+  sendStatus(status: ETH.StatusOpts) {
     if (this._status !== null) return
     this._status = [
       int2buffer(this._version),
-      int2buffer(status.networkId),
+      int2buffer(this._peer._common.chainId()),
       status.td,
       status.bestHash,
       status.genesisHash
     ]
+    if (this._version >= 64) {
+      if (status.latestBlock) {
+        if (status.latestBlock < this._latestBlock) {
+          throw new Error(
+            'latest block provided is not matching the HF setting of the Common instance (Rlpx)'
+          )
+        }
+        this._latestBlock = status.latestBlock
+      }
+      const forkHashB = Buffer.from(this._forkHash.substr(2), 'hex')
+      const nextForkB = Buffer.from(this._nextForkBlock.toString(16), 'hex')
+      this._status.push([forkHashB, nextForkB])
+    }
 
     debug(
       `Send STATUS message to ${this._peer._socket.remoteAddress}:${
@@ -171,20 +262,13 @@ export class ETH extends EventEmitter {
 }
 
 export namespace ETH {
-  export type StatusMsg = {
-    0: Buffer
-    1: Buffer
-    2: Buffer
-    3: Buffer
-    4: Buffer
-    length: 5
-  }
+  export interface StatusMsg extends Array<Buffer | Buffer[]> {}
 
-  export type Status = {
+  export type StatusOpts = {
     version: number
-    networkId: number
     td: Buffer
     bestHash: Buffer
+    latestBlock?: number
     genesisHash: Buffer
   }
 

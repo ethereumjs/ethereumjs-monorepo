@@ -59,6 +59,7 @@
     "@types/bl": "^2.1.0",
     "@types/k-bucket": "^5.0.0",
     "@types/lru-cache": "^5.1.0",
+    "@ethereumjs/common": "^2.0.0-beta.2",
     "babel-runtime": "^6.11.6",
     "bl": "^1.1.2",
     "debug": "^2.2.0",
@@ -73,7 +74,6 @@
   },
   "devDependencies": {
     "@ethereumjs/block": "^3.0.0-beta.1",
-    "@ethereumjs/common": "^2.0.0-beta.1",
     "@ethereumjs/config-coverage": "^2.0.0",
     "@ethereumjs/config-typescript": "^2.0.0",
     "@ethereumjs/eslint-config-defaults": "^2.0.0",

@@ -4,7 +4,7 @@ import * as util from './util'
 import { DISCONNECT_REASONS } from '../../src/rlpx/peer'
 
 test('RLPX: add working node', async t => {
-  const rlpxs = util.initTwoPeerRLPXSetup(null, null)
+  const rlpxs = util.initTwoPeerRLPXSetup()
 
   rlpxs[0].on('peer:added', function(peer: any) {
     t.equal(peer._port, 30306, 'should have added peer on peer:added after successful handshake')
@@ -16,7 +16,7 @@ test('RLPX: add working node', async t => {
 })
 
 test('RLPX: ban node with missing tcp port', async t => {
-  const rlpxs = util.initTwoPeerRLPXSetup(null, null)
+  const rlpxs = util.initTwoPeerRLPXSetup()
   rlpxs[0].on('peer:added', function() {
     const peer = {
       id: Buffer.from('abcd', 'hex'),
@@ -33,7 +33,7 @@ test('RLPX: ban node with missing tcp port', async t => {
 })
 
 test('RLPX: remove node', async t => {
-  const rlpxs = util.initTwoPeerRLPXSetup(null, null)
+  const rlpxs = util.initTwoPeerRLPXSetup()
 
   async.series(
     [
@@ -66,7 +66,7 @@ test('RLPX: remove node', async t => {
 })
 
 test('RLPX: test peer queue / refill connections', async t => {
-  const rlpxs = util.getTestRLPXs(3, 1, null)
+  const rlpxs = util.getTestRLPXs(3, 1)
 
   const peer = { address: util.localhost, udpPort: util.basePort + 1, tcpPort: util.basePort + 1 }
   rlpxs[0]._dpt.addPeer(peer)

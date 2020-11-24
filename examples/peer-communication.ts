@@ -11,10 +11,9 @@ import * as devp2p from '../src/index'
 import { ETH, Peer } from '../src/index'
 
 const PRIVATE_KEY = randomBytes(32)
-const CHAIN_ID = 1
 
-const config = new Common({ chain: 'mainnet' })
-const bootstrapNodes = config.bootstrapNodes()
+const common = new Common({ chain: 'mainnet' })
+const bootstrapNodes = common.bootstrapNodes()
 const BOOTNODES = bootstrapNodes.map((node: any) => {
   return {
     address: node.ip,
@@ -65,7 +64,8 @@ dpt.on('error', err => console.error(chalk.red(`DPT error: ${err}`)))
 const rlpx = new devp2p.RLPx(PRIVATE_KEY, {
   dpt: dpt,
   maxPeers: 25,
-  capabilities: [devp2p.ETH.eth63, devp2p.ETH.eth62],
+  capabilities: [devp2p.ETH.eth64],
+  common: common,
   remoteClientIdFilter: REMOTE_CLIENTID_FILTER,
   listenPort: null
 })
@@ -89,7 +89,6 @@ rlpx.on('peer:added', peer => {
   )
 
   eth.sendStatus({
-    networkId: CHAIN_ID,
     td: devp2p.int2buffer(17179869184), // total difficulty in genesis block
     bestHash: Buffer.from(
       'd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3',

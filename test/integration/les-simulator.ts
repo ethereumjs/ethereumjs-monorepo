@@ -1,8 +1,7 @@
 import test from 'tape'
+import Common from '@ethereumjs/common'
 import * as devp2p from '../../src'
 import * as util from './util'
-
-const CHAIN_ID = 1
 
 const GENESIS_TD = 17179869184
 const GENESIS_HASH = Buffer.from(
@@ -13,7 +12,6 @@ const GENESIS_HASH = Buffer.from(
 const capabilities = [devp2p.LES.les2]
 
 const status = {
-  networkId: CHAIN_ID,
   headTd: devp2p.int2buffer(GENESIS_TD), // total difficulty in genesis block
   headHash: GENESIS_HASH,
   headNum: devp2p.int2buffer(0),
@@ -32,7 +30,7 @@ test('LES: send status message (successful)', async t => {
     util.destroyRLPXs(rlpxs)
     t.end()
   }
-  util.twoPeerMsgExchange(t, capabilities, opts)
+  util.twoPeerMsgExchange(t, opts, capabilities)
 })
 
 test('LES: send status message (modified announceType)', async t => {
@@ -46,22 +44,23 @@ test('LES: send status message (modified announceType)', async t => {
     util.destroyRLPXs(rlpxs)
     t.end()
   }
-  util.twoPeerMsgExchange(t, capabilities, opts)
+  util.twoPeerMsgExchange(t, opts, capabilities)
 })
 
 test('LES: send status message (NetworkId mismatch)', async t => {
   const opts: any = {}
   opts.status0 = Object.assign({}, status)
-  const status1 = Object.assign({}, status)
-  status1['networkId'] = 2
-  opts.status1 = status1
+  opts.status1 = Object.assign({}, status)
   opts.onPeerError0 = function(err: Error, rlpxs: any) {
-    const msg = 'NetworkId mismatch: 01 / 02'
+    const msg = 'NetworkId mismatch: 01 / 03'
     t.equal(err.message, msg, `should emit error: ${msg}`)
     util.destroyRLPXs(rlpxs)
     t.end()
   }
-  util.twoPeerMsgExchange(t, capabilities, opts)
+
+  const c1 = new Common({ chain: 'mainnet' })
+  const c2 = new Common({ chain: 'ropsten' })
+  util.twoPeerMsgExchange(t, opts, capabilities, [c1, c2])
 })
 
 test('ETH: send status message (Genesis block mismatch)', async t => {
@@ -77,7 +76,7 @@ test('ETH: send status message (Genesis block mismatch)', async t => {
     util.destroyRLPXs(rlpxs)
     t.end()
   }
-  util.twoPeerMsgExchange(t, capabilities, opts)
+  util.twoPeerMsgExchange(t, opts, capabilities)
 })
 
 test('LES: send valid message', async t => {
@@ -96,7 +95,7 @@ test('LES: send valid message', async t => {
       t.end()
     }
   }
-  util.twoPeerMsgExchange(t, capabilities, opts)
+  util.twoPeerMsgExchange(t, opts, capabilities)
 })
 
 test('LES: send unknown message code', async t => {
@@ -113,7 +112,7 @@ test('LES: send unknown message code', async t => {
       t.end()
     }
   }
-  util.twoPeerMsgExchange(t, capabilities, opts)
+  util.twoPeerMsgExchange(t, opts, capabilities)
 })
 
 test('LES: invalid status send', async t => {
@@ -130,5 +129,5 @@ test('LES: invalid status send', async t => {
       t.end()
     }
   }
-  util.twoPeerMsgExchange(t, capabilities, opts)
+  util.twoPeerMsgExchange(t, opts, capabilities)
 })
