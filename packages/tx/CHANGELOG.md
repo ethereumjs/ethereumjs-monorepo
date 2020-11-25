@@ -6,6 +6,91 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 3.0.0 - 2020-11-24
+
+### New Package Name
+
+**Attention!** This new version is part of a series of EthereumJS releases all moving to a new scoped package name format. In this case the library is renamed as follows:
+
+- `ethereumjs-tx` -> `@ethereumjs/tx`
+
+Please update your library references accordingly or install with:
+
+```shell
+npm i @ethereumjs/tx
+```
+
+### Major Refactoring - Breaking Changes
+
+This release is a major refactoring of the transaction library to simplify and strengthen its code base. Refactoring work has been done along PR [#812](https://github.com/ethereumjs/ethereumjs-vm/pull/812) and PR [#887](https://github.com/ethereumjs/ethereumjs-vm/pull/887).
+
+#### New Constructor Params
+
+The constructor has been reworked and new static factory methods `fromTxData`, `fromRlpSerializedTx`, and `fromValuesArray` have been added for a more `TypeScript` friendly and less error-prone way to initialize a `Transaction` object. The direct usage of the main constructor (now just being an alias to `Tx.fromTxData()`, see PR [#944](https://github.com/ethereumjs/ethereumjs-vm/pull/944)) is now discouraged and the static factory methods should be used.
+
+**Breaking:** Note that you **need** to adopt your `Transaction` initialization code since the constructor API has changed!
+
+Examples:
+
+```typescript
+// Initializing from serialized data
+const s1 = tx1.serialize().toString('hex')
+const tx = Transaction.fromRlpSerializedTx(toBuffer('0x' + s1))
+
+// Initializing with object
+const txData = {
+  gasPrice: 1000,
+  gasLimit: 10000000,
+  value: 42,
+}
+const tx = Transaction.fromTxData(txData)
+
+// Initializing from array of 0x-prefixed strings.
+// First, convert to array of Buffers.
+const arr = txFixture.raw.map(toBuffer)
+const tx = Transaction.fromValuesArray(arr)
+```
+
+Learn more about the full API in the [docs](./docs/README.md).
+
+#### Immutability
+
+The returned transaction is now frozen and immutable. To work with a maliable transaction, copy it with `const fakeTx = Object.create(tx)`. For security reasons it is highly recommended to stay in a freezed `Transaction` context on usage.
+
+If you need `Transaction` mutability - e.g. because you want to subclass `Transaction` and modifiy its behavior - there is a `freeze` option to prevent the `Object.freeze()` call on initialization, see PR [#941](https://github.com/ethereumjs/ethereumjs-vm/pull/941).
+
+#### from
+
+The `tx.from` alias was removed, please use `const from = tx.getSenderAddress()`.
+
+#### Message to sign
+
+Getting a message to sign has been changed from calling `tx.hash(false)` to `tx.getMessageToSign()`.
+
+#### Fake Transaction
+
+The `FakeTransaction` class was removed since its functionality can now be implemented with less code. To create a fake tansaction for use in e.g. `VM.runTx()` overwrite `getSenderAddress` with your own `Address`. See a full example in the section in the [README](./README.md#fake-transaction).
+
+### New Default Hardfork
+
+**Breaking:** The default HF on the library has been updated from `petersburg` to `istanbul`, see PR [#906](https://github.com/ethereumjs/ethereumjs-vm/pull/906).
+
+The HF setting is now automatically taken from the HF set for `Common.DEAULT_HARDFORK`, see PR [#863](https://github.com/ethereumjs/ethereumjs-vm/pull/863).
+
+### Dual ES5 and ES2017 Builds
+
+We significantly updated our internal tool and CI setup along the work on PR [#913](https://github.com/ethereumjs/ethereumjs-vm/pull/913) with an update to `ESLint` from `TSLint` for code linting and formatting and the introduction of a new build setup.
+
+Packages now target `ES2017` for Node.js builds (the `main` entrypoint from `package.json`) and introduce a separate `ES5` build distributed along using the `browser` directive as an entrypoint, see PR [#921](https://github.com/ethereumjs/ethereumjs-vm/pull/921). This will result in performance benefits for Node.js consumers, see [here](https://github.com/ethereumjs/merkle-patricia-tree/pull/117) for a releated discussion.
+
+### Other Changes
+
+**Changes and Refactoring**
+
+- Updated `ethereumjs-util` to v7, PR [#748](https://github.com/ethereumjs/ethereumjs-vm/pull/748)
+- Replaced `new Buffer()` (deprecated) statements with `Buffer.from()`, PR [#721](https://github.com/ethereumjs/ethereumjs-vm/pull/721)
+- Dropped `ethereumjs-testing` dev dependency, PR [#953](https://github.com/ethereumjs/ethereumjs-vm/pull/953)
+
 ## 3.0.0-rc.1 - 2020-11-19
 
 This is the first release candidate towards a final library release, see [beta.2](https://github.com/ethereumjs/ethereumjs-vm/releases/tag/%40ethereumjs%2Ftx%403.0.0-beta.2) and especially [beta.1](https://github.com/ethereumjs/ethereumjs-vm/releases/tag/%40ethereumjs%2Ftx%403.0.0-beta.1) release notes for an overview on the full changes since the last publicly released version.

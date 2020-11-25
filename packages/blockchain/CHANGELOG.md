@@ -6,6 +6,95 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 5.0.0 - 2020-11-24
+
+### New Package Name
+
+**Attention!** This new version is part of a series of EthereumJS releases all moving to a new scoped package name format. In this case the library is renamed as follows:
+
+- `ethereumjs-blockchain` -> `@ethereumjs/blockchain`
+
+Please update your library references accordingly or install with:
+
+```shell
+npm i @ethereumjs/blockchain
+```
+
+### Library Promisification
+
+The `Blockchain` library has been promisified and callbacks have been removed along PR [#833](https://github.com/ethereumjs/ethereumjs-vm/pull/833) and preceeding PR [#779](https://github.com/ethereumjs/ethereumjs-vm/pull/779).
+
+Old API example:
+
+```typescript
+blockchain.getBlock(blockId, (block) => {
+  console.log(block)
+})
+```
+
+New API example:
+
+```typescript
+const block = await blockchain.getBlock(blockId)
+console.log(block)
+```
+
+See `Blockchain` [README](https://github.com/ethereumjs/ethereumjs-vm/tree/master/packages/blockchain#example) for a complete example.
+
+**Safe Static Constructor**
+
+The library now has an additional safe static constructor `Blockchain.create()` which awaits the init method and throws if the init method throws:
+
+```typescript
+import Blockchain from '@ethereumjs/blockchain'
+const common = new Common({ chain: 'ropsten' })
+const blockchain = await Blockchain.create({ common })
+```
+
+This is the new recommended way to instantiate a `Blockchain` object, see PR [#930](https://github.com/ethereumjs/ethereumjs-vm/pull/930).
+
+Constructor options (both for the static and the main constructor) for chain setup on all VM monorepo libraries have been simplified and the plain `chain` and `hardfork` options have been removed. Passing in a `Common` instance is now the single way to switch to a non-default chain (`mainnet`) or start a blockchain with a higher than `chainstart` hardfork, see PR [#863](https://github.com/ethereumjs/ethereumjs-vm/pull/863).
+
+**Refactored Genesis Block Handling Mechanism**
+
+Genesis handling has been reworked to now be safer and reduce the risk of wiping a blockchain by setting a new genesis, see PR [#930](https://github.com/ethereumjs/ethereumjs-vm/pull/930).
+
+**Breaking**: The dedicated `setGenesisBlock()` methods and the optional `isGenesis` option on `Blockchain.putBlock()` have been removed. Instead the genesis block is created on initialization either from the `Common` library instance passed or a custom genesis block passed along with the `genesisBlock` option. If a custom genesis block is used, this custom block now always has to be passed along on `Blockchain` initialization, also when operating on an already existing DB. 
+
+### Removed deprecated `validate` option
+
+The deprecated `validate` option has been removed, please use `valdiateBlock` and `validatePow` for options when instantiating a new `Blockchain`.
+
+### Dual ES5 and ES2017 Builds
+
+We significantly updated our internal tool and CI setup along the work on PR [#913](https://github.com/ethereumjs/ethereumjs-vm/pull/913) with an update to `ESLint` from `TSLint` for code linting and formatting and the introduction of a new build setup.
+
+Packages now target `ES2017` for Node.js builds (the `main` entrypoint from `package.json`) and introduce a separate `ES5` build distributed along using the `browser` directive as an entrypoint, see PR [#921](https://github.com/ethereumjs/ethereumjs-vm/pull/921). This will result in performance benefits for Node.js consumers, see [here](https://github.com/ethereumjs/merkle-patricia-tree/pull/117) for a releated discussion.
+
+### Other Changes
+
+**Changes and Refactoring**
+
+- **Breaking:** `validatePow` option has been renamed to `validateConsensus` to prepare for a future integration of non-PoW (PoA) consensus mechanisms, `validateConsensus` as well as `validateBlocks` options now throw when set to `true` for validation on a non-PoW chain (determined by `Common`, e.g. 'goerli'), see PR [#937](https://github.com/ethereumjs/ethereumjs-vm/pull/937)
+- Exposed private `Blockchain._getTd()` total difficulty function as `Blockchain.getTotalDifficulty()`, PR [#956](https://github.com/ethereumjs/ethereumjs-vm/issues/956)
+- Refactored `DBManager` with the introduction of an abstract DB operation handling mechanism, if you have modified `DBManager` in your code this will be a **potentially breaking** change for you, PR [#927](https://github.com/ethereumjs/ethereumjs-vm/pull/927)
+- Renaming of internal variables like `Blockchain._headBlock`, if you are using these variables in your code this will be a **potentially breaking** change for you, PR [#930](https://github.com/ethereumjs/ethereumjs-vm/pull/930)
+- Made internal `_` methods like `_saveHeads()` private, if you are using these functions in your code this will be a **potentially breaking** change for you, PR [#930](https://github.com/ethereumjs/ethereumjs-vm/pull/930)
+- Improved code documentation, PR [#930](https://github.com/ethereumjs/ethereumjs-vm/pull/930)
+- Fixed potential blockchain DB concurrency issues along PR [#930](https://github.com/ethereumjs/ethereumjs-vm/pull/930)
+- Use `@ethereumjs/block` `v3.0.0` block library version, PR [#883](https://github.com/ethereumjs/ethereumjs-vm/pull/883)
+- Removed `async` dependency, PR [#779](https://github.com/ethereumjs/ethereumjs-vm/pull/779)
+- Updated `ethereumjs-util` to v7, PR [#748](https://github.com/ethereumjs/ethereumjs-vm/pull/748)
+
+**Bug Fixes**
+
+- Fixed blockchain hanging forever in case code throws between a semaphore `lock`/`unlock`,
+  Issue [#877](https://github.com/ethereumjs/ethereumjs-vm/issues/877)
+
+**Testing and CI**
+
+- Dedicated `blockchain` reorg test setup and executable test, PR [#926](https://github.com/ethereumjs/ethereumjs-vm/pull/926)
+
 ## 5.0.0-rc.1 2020-11-19
 
 This is the first release candidate towards a final library release, see [beta.2](https://github.com/ethereumjs/ethereumjs-vm/releases/tag/%40ethereumjs%2Fblockchain%405.0.0-beta.2) and especially [beta.1](https://github.com/ethereumjs/ethereumjs-vm/releases/tag/%40ethereumjs%2Fblockchain%405.0.0-beta.1) release notes for an overview on the full changes since the last publicly released version.

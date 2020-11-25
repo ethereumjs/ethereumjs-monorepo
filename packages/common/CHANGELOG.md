@@ -6,6 +6,101 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 2.0.0 - 2020-11-24
+
+### New Package Name
+
+**Attention!** This new version is part of a series of EthereumJS releases all moving to a new scoped package name format. In this case the library is renamed as follows:
+
+- `ethereumjs-common` -> `@ethereumjs/common`
+
+Please update your library references accordingly or install with:
+
+```shell
+npm i @ethereumjs/common
+```
+
+### New constructor
+
+**Breaking**: The constructor has been changed to require an options dict to be passed, PR [#863](https://github.com/ethereumjs/ethereumjs-vm/pull/863)
+
+Example:
+
+```typescript
+import Common from '@ethereumjs/common'
+const common = new Common({ chain: 'mainnet', hardfork: 'muirGlacier' })
+```
+
+### EIP Support
+
+EIPs are now native citizens within the `Common` library, see PRs [#856](https://github.com/ethereumjs/ethereumjs-vm/pull/856), [#869](https://github.com/ethereumjs/ethereumjs-vm/pull/869) and [#872](https://github.com/ethereumjs/ethereumjs-vm/pull/872). Supported EIPs have their own configuration file like the [eips/2537.json](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/common/src/eips/2537.json) file for the BLS precompile EIP and EIP settings can be activated by passing supported EIP numbers to the constructor:
+
+```typescript
+const c = new Common({ chain: 'mainnet', eips: [2537] })
+```
+
+The following EIPs are initially supported within this release:
+
+- [EIP-2537](https://eips.ethereum.org/EIPS/eip-2315) BLS Precompiles
+- [EIP-2315](https://eips.ethereum.org/EIPS/eip-2315) EVM Subroutines (PR [#876](https://github.com/ethereumjs/ethereumjs-vm/pull/876))
+
+EIPs provided are then activated and parameters requested with `Common.param()` being present in these EIPs take precedence over the setting from the latest hardfork.
+
+There are two new utility functions which return hardfork and EIP values respectively:
+
+- `Common.paramByHardfork()`
+- `Common.paramByEIP()`
+
+**Breaking**: It is now not possible any more to pass a dedicated HF setting to `Common.param()`. Please update your code to explicitly use `Common.paramByHardfork()` for requesting a parameter for a HF deviating from the HF currently set within your `Common` instance.
+
+For setting and requesting active EIPs there is `Common.setEIPs()` and `Common.eips()` added to the mix.
+
+There is also a new EIP-based hardfork file format which delegates parameter definition to dedicated EIP files (see PR [#876](https://github.com/ethereumjs/ethereumjs-vm/pull/876)). This is in preparation for an upcoming `Yolo v2` testnet integration.
+
+Side note: with this new structural setup it gets now possible for all EIPs still implicitly contained within the hardfork files to be extracted as an EIP parameter set within its own dedicated EIP file (which can then be activated via the `eip` parameter on initialization) without loosing on functionality. If you have a need there feel free to open a PR!
+
+### Gas Parameter Completeness for all Hardforks
+
+Remaining gas base fees which still resided in the VM have been moved over to `Common` along PR [#806](https://github.com/ethereumjs/ethereumjs-vm/pull/806).
+
+Gas fees for all hardforks up to `MuirGlacier` are now completely present within the `Common` library.
+
+### Eth/64 Forkhash Support
+
+There is a new `Common.forkHash()` method returning pre-calculated Forkhash values or alternatively use the internal `Common._calcForkHash()` implementation to calculate a forkhash on the fly.
+
+Forkhashes are used to uniquely identify a set of hardforks passed to be able to better differentiate between different dedicated chains. This is used for the `Eth/64` devp2p protocol update and specificed in [EIP-2124](https://eips.ethereum.org/EIPS/eip-2124) to help improve the devp2p networking stack.
+
+### New Block/Hardfork related Utility Functions
+
+The following block and hardfork related utility functions have been added with PRs [#863](https://github.com/ethereumjs/ethereumjs-vm/pull/863) and [#805](https://github.com/ethereumjs/ethereumjs-vm/pull/805) respectively:
+
+- `setHardforkByBlockNumber()` - Sets the hardfork determined by the block number passed
+- `nextHardforkBlock()` - Returns the next HF block for a HF provided or set
+- `isNextHardforkBlock()` - Some convenience additional utility method, matching the existing `hardforkBlock()` / `isHardforkBlock()` method setup
+- `hardforkForForkHash()` - Returns the data available for a HF given a specific forkHash
+
+### Default Hardfork
+
+The default hardfork has been added as an accessible readonly property `DEFAULT_HARDFORK`, PR [#863](https://github.com/ethereumjs/ethereumjs-vm/pull/863). This setting is used starting with the latest major releases of the monorepo libraries like the VM to keep the HF setting in sync across the different libraries.
+
+Current default hardfork is set to `istanbul`, PR [#906](https://github.com/ethereumjs/ethereumjs-vm/pull/906).
+
+### Dual ES5 and ES2017 Builds
+
+We significantly updated our internal tool and CI setup along the work on PR [#913](https://github.com/ethereumjs/ethereumjs-vm/pull/913) with an update to `ESLint` from `TSLint` for code linting and formatting and the introduction of a new build setup.
+
+Packages now target `ES2017` for Node.js builds (the `main` entrypoint from `package.json`) and introduce a separate `ES5` build distributed along using the `browser` directive as an entrypoint, see PR [#921](https://github.com/ethereumjs/ethereumjs-vm/pull/921). This will result in performance benefits for Node.js consumers, see [here](https://github.com/ethereumjs/merkle-patricia-tree/pull/117) for a releated discussion.
+
+### Other Changes
+
+**Changes and Refactoring**
+
+- Added consensus information to chains, new functions `Common.consensusType()` for consensus type access ("pow" or "poa") and `Common.consensusAlgorithm()` to get the associated algorithm or protocol (e.g. "ethash" PoW algorithm or "clique" PoA protocol), see PR [#937](https://github.com/ethereumjs/ethereumjs-vm/pull/937)
+- Removed old `consensus` and `finality` fields, PR [#758](https://github.com/ethereumjs/ethereumjs-vm/pull/758)
+- Removed old `casper` and `sharding` fields, PR [#762](https://github.com/ethereumjs/ethereumjs-vm/pull/762)
+- Updated `ethereumjs-util` to v7, PR [#748](https://github.com/ethereumjs/ethereumjs-vm/pull/748)
+
 ## 2.0.0-rc.1 2020-11-19
 
 This is the first release candidate towards a final library release, see [beta.2](https://github.com/ethereumjs/ethereumjs-vm/releases/tag/%40ethereumjs%2Fcommon%402.0.0-beta.2) and especially [beta.1](https://github.com/ethereumjs/ethereumjs-vm/releases/tag/%40ethereumjs%2Fcommon%402.0.0-beta.1) release notes for an overview on the full changes since the last publicly released version.

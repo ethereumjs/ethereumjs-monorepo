@@ -1,6 +1,6 @@
 {
   "name": "@ethereumjs/ethash",
-  "version": "1.0.0-rc.1",
+  "version": "1.0.0",
   "description": "An ethash implementation in JS.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -40,7 +40,7 @@
     "miller-rabin": "^4.0.0"
   },
   "devDependencies": {
-    "@ethereumjs/block": "3.0.0-rc.1",
+    "@ethereumjs/block": "^3.0.0",
     "@ethereumjs/config-coverage": "^2.0.0",
     "@ethereumjs/config-typescript": "^2.0.0",
     "@ethereumjs/eslint-config-defaults": "^2.0.0",
