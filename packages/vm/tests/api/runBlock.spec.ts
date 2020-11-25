@@ -7,6 +7,7 @@ import { DefaultStateManager } from '../../lib/state'
 import runBlock from '../../lib/runBlock'
 import { setupPreConditions, getDAOCommon } from '../util'
 import { setupVM, createAccount } from './utils'
+import VM from '../../lib/index'
 
 const testData = require('./testdata.json')
 
@@ -107,6 +108,67 @@ tape('should fail when tx gas limit higher than block gas limit', async (t) => {
     .then(() => t.fail('should have returned error'))
     .catch((e) => t.ok(e.message.includes('higher gas limit')))
 
+  t.end()
+})
+
+tape('should correctly use the selectHardforkByBlockNumber option', async (t) => {
+  const common1 = new Common({
+    chain: 'mainnet',
+    hardfork: 'chainstart',
+  })
+
+  // Have to use an unique common, otherwise the HF will be set to muirGlacier and then will not change back to chainstart.
+  const common2 = new Common({
+    chain: 'mainnet',
+    hardfork: 'chainstart',
+  })
+
+  const privateKey = Buffer.from(
+    'e331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109',
+    'hex'
+  )
+
+  function getBlock(common: Common): Block {
+    return Block.fromBlockData(
+      {
+        header: {
+          number: new BN(10000000),
+        },
+        transactions: [
+          Transaction.fromTxData(
+            {
+              data: '0x600154', // PUSH 01 SLOAD
+              gasLimit: new BN(100000),
+            },
+            { common }
+          ).sign(privateKey),
+        ],
+      },
+      { common }
+    )
+  }
+
+  const vm = new VM({ common: common1 })
+  const vm_noSelect = new VM({ common: common2, selectHardforkByBlockNumber: false })
+
+  const txResultMuirGlacier = await vm.runBlock({
+    block: getBlock(common1),
+    skipBlockValidation: true,
+    generate: true,
+  })
+  const txResultChainstart = await vm_noSelect.runBlock({
+    block: getBlock(common2),
+    skipBlockValidation: true,
+    generate: true,
+  })
+  t.ok(
+    txResultChainstart.results[0].gasUsed.toNumber() == 21000 + 68 * 3 + 3 + 50,
+    'tx charged right gas on chainstart hard fork'
+  )
+  t.ok(
+    txResultMuirGlacier.results[0].gasUsed.toNumber() == 21000 + 32000 + 16 * 3 + 3 + 800,
+    'tx charged right gas on muir glacier hard fork'
+  )
   t.end()
 })
 
