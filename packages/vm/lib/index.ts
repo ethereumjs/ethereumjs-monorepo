@@ -89,6 +89,13 @@ export interface VMOpts {
    * Default: `false` [ONLY set to `true` during debugging]
    */
   allowUnlimitedContractSize?: boolean
+
+  /**
+   * Select hardfork based upon block number. This automatically switches to the right hard fork based upon the block number.
+   *
+   * Default: `true`
+   */
+  selectHardforkByBlockNumber?: boolean
 }
 
 /**
@@ -113,6 +120,7 @@ export default class VM extends AsyncEventEmitter {
   protected _isInitialized: boolean = false
   protected readonly _allowUnlimitedContractSize: boolean
   protected _opcodes: OpcodeList
+  protected readonly _selectHardforkByBlockNumber: boolean
 
   /**
    * Cached emit() function, not for public usage
@@ -202,6 +210,8 @@ export default class VM extends AsyncEventEmitter {
     this.blockchain = opts.blockchain || new Blockchain({ common: this._common })
 
     this._allowUnlimitedContractSize = opts.allowUnlimitedContractSize || false
+
+    this._selectHardforkByBlockNumber = opts.selectHardforkByBlockNumber ?? true
 
     if (this._common.eips().includes(2537)) {
       if (IS_BROWSER) {
