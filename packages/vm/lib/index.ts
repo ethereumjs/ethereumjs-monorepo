@@ -93,7 +93,7 @@ export interface VMOpts {
   /**
    * Select hardfork based upon block number. This automatically switches to the right hard fork based upon the block number.
    *
-   * Default: `true`
+   * Default: `false`
    */
   selectHardforkByBlockNumber?: boolean
 }
@@ -211,7 +211,7 @@ export default class VM extends AsyncEventEmitter {
 
     this._allowUnlimitedContractSize = opts.allowUnlimitedContractSize || false
 
-    this._selectHardforkByBlockNumber = opts.selectHardforkByBlockNumber ?? true
+    this._selectHardforkByBlockNumber = opts.selectHardforkByBlockNumber ?? false
 
     if (this._common.eips().includes(2537)) {
       if (IS_BROWSER) {

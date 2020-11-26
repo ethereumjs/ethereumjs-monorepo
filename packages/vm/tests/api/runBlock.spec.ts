@@ -148,8 +148,8 @@ tape('should correctly use the selectHardforkByBlockNumber option', async (t) =>
     )
   }
 
-  const vm = new VM({ common: common1 })
-  const vm_noSelect = new VM({ common: common2, selectHardforkByBlockNumber: false })
+  const vm = new VM({ common: common1, selectHardforkByBlockNumber: true })
+  const vm_noSelect = new VM({ common: common2 })
 
   const txResultMuirGlacier = await vm.runBlock({
     block: getBlock(common1),
