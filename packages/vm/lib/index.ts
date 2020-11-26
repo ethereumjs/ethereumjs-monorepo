@@ -95,7 +95,6 @@ export interface VMOpts {
    *
    * Default: `true`
    */
-
   selectHardforkByBlockNumber?: boolean
 }
 
