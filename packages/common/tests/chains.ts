@@ -79,7 +79,7 @@ tape('[Common]: Initialization / Chain params', function (t: tape.Test) {
   })
 
   t.test('Should provide the bootnode information in a uniform way', function (st: tape.Test) {
-    const configs = ['mainnet', 'ropsten', 'rinkeby', 'goerli']
+    const configs = ['mainnet', 'ropsten', 'rinkeby', 'goerli','volta','energyWebChain']
     for (const network of configs) {
       const c = new Common({ chain: network })
       const bootnode = c.bootstrapNodes()[0]
@@ -116,6 +116,12 @@ tape('[Common]: Initialization / Chain params', function (t: tape.Test) {
     c.setChain('goerli')
     hash = '0xbf7e331f7f7c1dd2e05159666b3bf8bc7a8a3a9eb1d518969eab529dd9b88c1a'
     st.equal(c.genesis().hash, hash, 'goerli')
+    c.setChain('volta')
+    hash = '0xebd8b413ca7b7f84a8dd20d17519ce2b01954c74d94a0a739a3e416abe0e43e5'
+    st.equal(c.genesis().hash, hash, 'volta')
+    c.setChain('energyWebChain')
+    hash = '0x0b6d3e680af2fc525392c720666cce58e3d8e6fe75ba4b48cb36bcc69039229b'
+    st.equal(c.genesis().hash, hash, 'energyWebChain')
 
     st.end()
   })
