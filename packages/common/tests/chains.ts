@@ -79,7 +79,7 @@ tape('[Common]: Initialization / Chain params', function (t: tape.Test) {
   })
 
   t.test('Should provide the bootnode information in a uniform way', function (st: tape.Test) {
-    const configs = ['mainnet', 'ropsten', 'rinkeby', 'goerli','volta','energyWebChain']
+    const configs = ['mainnet', 'ropsten', 'rinkeby', 'goerli', 'volta', 'energyWebChain']
     for (const network of configs) {
       const c = new Common({ chain: network })
       const bootnode = c.bootstrapNodes()[0]
