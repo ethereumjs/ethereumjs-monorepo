@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-
+const os = require('os')
 import { Server as RPCServer } from 'jayson'
 import Common from '@ethereumjs/common'
 import { parseParams } from '../lib/util'
@@ -144,6 +144,7 @@ async function run() {
     common,
     syncmode: args.syncmode,
     lightserv: args.lightserv,
+    datadir: `${os.homedir()}/Library/Ethereum`,
     transports: args.transports,
     rpc: args.rpc,
     rpcport: args.rpcport,

@@ -1,4 +1,3 @@
-const os = require('os')
 import Common from '@ethereumjs/common'
 import { getLogger, Logger } from './logging'
 import { Libp2pServer, RlpxServer } from './net/server'
@@ -103,7 +102,7 @@ export class Config {
   public static readonly COMMON_DEFAULT = new Common({ chain: 'mainnet', hardfork: 'chainstart' })
   public static readonly SYNCMODE_DEFAULT = 'full'
   public static readonly LIGHTSERV_DEFAULT = false
-  public static readonly DATADIR_DEFAULT = `${os.homedir()}/Library/Ethereum`
+  public static readonly DATADIR_DEFAULT = `./datadir`
   public static readonly TRANSPORTS_DEFAULT = ['rlpx:port=30303', 'libp2p']
   public static readonly RPC_DEFAULT = false
   public static readonly RPCPORT_DEFAULT = 8545
