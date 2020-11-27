@@ -7,7 +7,7 @@ export * from '../lib/blockchain/chain'
 // Peer
 export * from '../lib/net/peer/peer'
 export * from '../lib/net/peer/libp2ppeer'
-export * from './libp2pclient'
+export * from './libp2pnode'
 
 // Peer Pool
 export * from '../lib/net/peerpool'
