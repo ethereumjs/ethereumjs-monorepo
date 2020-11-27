@@ -71,7 +71,6 @@ export default async function runBlockchainTest(options: any, testData: any, t: 
     state,
     blockchain,
     common,
-    selectHardforkByBlockNumber: false,
   })
 
   // set up pre-state

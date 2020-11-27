@@ -23,7 +23,6 @@ export function setupVM(opts: VMOpts & { genesisBlock?: Block } = {}) {
     })
   }
   return new VM({
-    selectHardforkByBlockNumber: false,
     ...opts,
   })
 }
