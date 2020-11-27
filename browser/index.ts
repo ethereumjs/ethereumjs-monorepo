@@ -7,7 +7,7 @@ export * from '../lib/blockchain/chain'
 // Peer
 export * from '../lib/net/peer/peer'
 export * from '../lib/net/peer/libp2ppeer'
-export * from './libp2pnode'
+export * from './libp2pclient'
 
 // Peer Pool
 export * from '../lib/net/peerpool'
@@ -22,8 +22,8 @@ export * from '../lib/net/protocol/flowcontrol'
 export * from '../lib/net/server/server'
 export * from '../lib/net/server/libp2pserver'
 
-// Node
-export * from '../lib/node'
+// EthereumClient
+export * from '../lib/client'
 
 // Service
 export * from '../lib/service/service'
@@ -42,7 +42,7 @@ export * from '../lib/util'
 export * from './logging'
 import { getLogger } from './logging'
 
-export function createNode(args: any) {
+export function createClient(args: any) {
   const logger = getLogger({ loglevel: args.loglevel })
   const options = {
     common: new Common({ chain: args.network ?? 'mainnet' }),
@@ -51,24 +51,24 @@ export function createNode(args: any) {
     db: level(args.db ?? 'ethereumjs'),
     logger: logger,
   }
-  return new exports.Node(options)
+  return new exports.EthereumClient(options)
 }
 
 export function run(args: any) {
-  const node = createNode(args)
-  const logger = node.logger
+  const client = createClient(args)
+  const logger = client.logger
   logger.info('Initializing Ethereumjs client...')
-  logger.info(`Connecting to network: ${node.common.chainName()}`)
-  node.on('error', (err: any) => logger.error(err))
-  node.on('listening', (details: any) => {
+  logger.info(`Connecting to network: ${client.common.chainName()}`)
+  client.on('error', (err: any) => logger.error(err))
+  client.on('listening', (details: any) => {
     logger.info(`Listener up transport=${details.transport} url=${details.url}`)
   })
-  node.on('synchronized', () => {
+  client.on('synchronized', () => {
     logger.info('Synchronized')
   })
-  node.open().then(() => {
+  client.open().then(() => {
     logger.info('Synchronizing blockchain...')
-    node.start()
+    client.start()
   })
-  return node
+  return client
 }

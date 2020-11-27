@@ -49,11 +49,14 @@ exports.define('Server', './net/server/server')
 exports.define('RlpxServer', './net/server/rlpxserver')
 exports.define('Libp2pServer', './net/server/libp2pserver')
 
-// Node
-exports.define('Node', './node')
+// EthereumClient
+exports.define('EthereumClient', './client')
 
 // RPC Manager
 exports.define('RPCManager', './rpc')
+
+// Config
+exports.define('Config', 'config')
 
 // Service
 exports.define('service', './service')

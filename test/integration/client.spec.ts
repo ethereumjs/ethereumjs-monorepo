@@ -1,13 +1,13 @@
 import tape from 'tape'
 import { Config } from '../../lib/config'
-import Node from '../../lib/node'
+import EthereumClient from '../../lib/client'
 import MockServer from './mocks/mockserver'
 
-tape('[Integration:Node]', (t) => {
+tape('[Integration:EthereumClient]', (t) => {
   const serverConfig = new Config({ loglevel: 'error' })
   const servers = [new MockServer({ config: serverConfig }) as any]
   const config = new Config({ servers, syncmode: 'full', lightserv: false, loglevel: 'error' })
-  const node = new Node({ config })
+  const node = new EthereumClient({ config })
 
   t.test('should start/stop', async (t) => {
     t.plan(4)

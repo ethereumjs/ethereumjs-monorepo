@@ -4,7 +4,7 @@ import { BootnodeLike } from './types'
 import { Config } from './config'
 import { FullEthereumService, LightEthereumService } from './service'
 
-export interface NodeOptions {
+export interface EthereumClientOptions {
   /* Client configuration */
   config: Config
 
@@ -30,7 +30,7 @@ export interface NodeOptions {
  * lifecycle of included services.
  * @memberof module:node
  */
-export default class Node extends events.EventEmitter {
+export default class EthereumClient extends events.EventEmitter {
   public config: Config
 
   public services: (FullEthereumService | LightEthereumService)[]
@@ -40,9 +40,9 @@ export default class Node extends events.EventEmitter {
 
   /**
    * Create new node
-   * @param {NodeOptions}
+   * @param {EthereumClientOptions}
    */
-  constructor(options: NodeOptions) {
+  constructor(options: EthereumClientOptions) {
     super()
 
     this.config = options.config

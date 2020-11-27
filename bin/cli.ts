@@ -1,9 +1,9 @@
-#!/usr/bin/env node
+#!/usr/bin/env client
 
 import { Server as RPCServer } from 'jayson'
 import Common from '@ethereumjs/common'
 import { parseParams } from '../lib/util'
-import Node from '../lib/node'
+import EthereumClient from '../lib/client'
 import { Config } from '../lib/config'
 import { Logger } from '../lib/logging'
 import { RPCManager } from '../lib/rpc'
@@ -86,7 +86,7 @@ let logger: Logger | null = null
 
 /**
  * Initializes and starts a Node and reacts on the
- * main node lifecycle events
+ * main client lifecycle events
  *
  * @param config
  */
@@ -99,28 +99,28 @@ async function runNode(config: Config) {
   if (config.lightserv) {
     config.logger.info(`Serving light peer requests`)
   }
-  const node = new Node({
+  const client = new EthereumClient({
     config,
     db: level(syncDataDir),
   })
-  node.on('error', (err: any) => config.logger.error(err))
-  node.on('listening', (details: any) => {
+  client.on('error', (err: any) => config.logger.error(err))
+  client.on('listening', (details: any) => {
     config.logger.info(`Listener up transport=${details.transport} url=${details.url}`)
   })
-  node.on('synchronized', () => {
+  client.on('synchronized', () => {
     config.logger.info('Synchronized')
   })
   config.logger.info(`Connecting to network: ${config.common.chainName()}`)
-  await node.open()
+  await client.open()
   config.logger.info('Synchronizing blockchain...')
-  await node.start()
+  await client.start()
 
-  return node
+  return client
 }
 
-function runRpcServer(node: Node, config: Config) {
+function runRpcServer(client: EthereumClient, config: Config) {
   const { rpcport, rpcaddr } = config
-  const manager = new RPCManager(node, config)
+  const manager = new RPCManager(client, config)
   const server = new RPCServer(manager.getMethods())
   config.logger.info(`RPC HTTP endpoint opened: http://${rpcaddr}:${rpcport}`)
   server.http().listen(rpcport)
@@ -160,13 +160,13 @@ async function run() {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const chainParams = args.params ? await parseParams(args.params) : args.network
 
-  const node = await runNode(config)
-  const server = config.rpc ? runRpcServer(node, config) : null
+  const client = await runNode(config)
+  const server = config.rpc ? runRpcServer(client, config) : null
 
   process.on('SIGINT', async () => {
     config.logger.info('Caught interrupt signal. Shutting down...')
     if (server) server.http().close()
-    await node.stop()
+    await client.stop()
     config.logger.info('Exiting.')
     process.exit()
   })
