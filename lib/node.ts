@@ -8,7 +8,11 @@ export interface NodeOptions {
   /* Client configuration */
   config: Config
 
-  /* Blockchain database (default: null) */
+  /**
+   * Database to store blocks and metadata. Should be an abstract-leveldown compliant store.
+   * 
+   * Default: Database created by the Blockchain class
+   */ 
   db?: LevelUp
 
   /* List of bootnodes to use for discovery */

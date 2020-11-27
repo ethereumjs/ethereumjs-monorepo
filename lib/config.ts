@@ -1,4 +1,5 @@
 import Common from '@ethereumjs/common'
+import VM from '@ethereumjs/vm'
 import { getLogger, Logger } from './logging'
 import { Libp2pServer, RlpxServer } from './net/server'
 import { parseTransports } from './util'
@@ -17,6 +18,13 @@ export interface ConfigOptions {
    * Default: 'full'
    */
   syncmode?: string
+
+  /**
+   * Provide a custom VM instance to process blocks
+   * 
+   * Default: VM instance created by client
+   */
+  vm?: VM
 
   /**
    * Serve light peer requests
@@ -114,6 +122,7 @@ export class Config {
   public readonly common: Common
   public readonly logger: Logger
   public readonly syncmode: string
+  public readonly vm?: VM
   public readonly lightserv: boolean
   public readonly datadir: string
   public readonly transports: string[]
@@ -130,6 +139,7 @@ export class Config {
     // TODO: map chainParams (and lib/util.parseParams) to new Common format
     this.common = options.common ?? Config.COMMON_DEFAULT
     this.syncmode = options.syncmode ?? Config.SYNCMODE_DEFAULT
+    this.vm = options.vm
     this.lightserv = options.lightserv ?? Config.LIGHTSERV_DEFAULT
     this.transports = options.transports ?? Config.TRANSPORTS_DEFAULT
     this.datadir = options.datadir ?? Config.DATADIR_DEFAULT

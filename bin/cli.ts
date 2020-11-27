@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-const os = require('os')
+
 import { Server as RPCServer } from 'jayson'
 import Common from '@ethereumjs/common'
 import { parseParams } from '../lib/util'
@@ -7,6 +7,7 @@ import Node from '../lib/node'
 import { Config } from '../lib/config'
 import { Logger } from '../lib/logging'
 import { RPCManager } from '../lib/rpc'
+const os = require('os')
 const path = require('path')
 const fs = require('fs-extra')
 const chains = require('@ethereumjs/common/dist/chains').chains
