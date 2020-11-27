@@ -37,7 +37,7 @@ function logFormat() {
 }
 
 export function getLogger(options = { loglevel: 'info' }) {
-  let loggerOptions: any = {
+  const loggerOptions: any = {
     format: combine(
       errorFormat(),
       format.splat(),
@@ -47,10 +47,9 @@ export function getLogger(options = { loglevel: 'info' }) {
     ),
     level: options.loglevel,
     silent: options.loglevel === 'off',
-    transports: [new transports.Console()]
+    transports: [new transports.Console()],
   }
 
   const logger = createLogger(loggerOptions)
   return logger
 }
-

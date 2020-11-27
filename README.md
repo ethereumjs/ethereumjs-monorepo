@@ -19,7 +19,7 @@ Project summary from [this document](./PROJECT.md) is currently outdated. Please
 
 ## Client Setup
 
-**Installing the Client**
+### Installing the Client
 
 ```shell
 npm install ethereumjs-client
@@ -34,9 +34,9 @@ npm link
 Note: for development purposes you can invoke the client by build with `npm run build:node` and 
 then run `node ./dist/bin/cli.js`.
 
-**Running the Client**
+### Running the Client
 
-Some building blocks for the client have already been implemented or outlined to further build upon.
+#### CLI
 
 You can run the current state of the client with:
 
@@ -69,6 +69,22 @@ for all output or something more targeted by listing the loggers like
 DEBUG=devp2p:rlpx,devp2p:eth,-babel [CLIENT_START_COMMAND]
 ```
 
+#### Node.js
+
+To programmatically run a client do:
+
+```typescript
+import { Config, EthereumClient } from '@ethereumjs/client'
+const config = new Config()
+const client = new EthereumClient({ config })
+
+client.open()
+client.start()
+client.stop()
+```
+
+[WORK-IN-PROGRESS] Programmatic invocation on the client is in a very early stage and only meant for experimental purposes. You are invited to play around, please let us know what control functionality you would want the client to expose and what information you would need to get out of the client to be useful in your usage context.
+
 ## API
 
 [API Reference](./docs/README.md)
@@ -77,7 +93,7 @@ See also this [diagram](./diagram/client.svg) for an overview of the client stru
 
 ## JSON-RPC
 
-**Overview**
+### Overview
 
 You can expose a [JSON-RPC](https://github.com/ethereum/wiki/wiki/JSON-RPC) interface along a client run with:
 
@@ -98,7 +114,7 @@ Currently only a small subset of `RPC` methods are implemented.(\*) You can have
 (*) Side note: implementing RPC methods is actually an extremely thankful task for a first-time
 contribution on the project *hint\* _hint_. 😄
 
-**API Examples**
+### API Examples
 
 You can use `cURL` to request data from an API endpoint. Here is a simple example for
 [web3_clientVersion](https://github.com/ethereum/wiki/wiki/JSON-RPC#web3_clientversion):

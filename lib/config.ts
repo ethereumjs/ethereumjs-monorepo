@@ -21,7 +21,7 @@ export interface ConfigOptions {
 
   /**
    * Provide a custom VM instance to process blocks
-   * 
+   *
    * Default: VM instance created by client
    */
   vm?: VM

@@ -28,7 +28,7 @@ export class FullEthereumService extends EthereumService {
     this.lightserv = options.lightserv ?? false
 
     this.config.logger.info('Full sync mode')
-    
+
     this.synchronizer = new FullSynchronizer({
       config: this.config,
       pool: this.pool,

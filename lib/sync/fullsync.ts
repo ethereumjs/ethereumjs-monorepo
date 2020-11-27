@@ -12,7 +12,7 @@ import { BlockFetcher } from './fetcher'
  */
 export class FullSynchronizer extends Synchronizer {
   public vm: VM
-  
+
   private blockFetcher: BlockFetcher | null
 
   constructor(options: SynchronizerOptions) {
