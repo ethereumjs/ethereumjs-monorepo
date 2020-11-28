@@ -3,8 +3,8 @@ import { LevelUp } from 'levelup'
 import { keccak, KECCAK256_RLP } from 'ethereumjs-util'
 import { DB, BatchDBOp, PutBatch } from './db'
 import { TrieReadStream as ReadStream } from './readStream'
-import { PrioritizedTaskExecutor } from './prioritizedTaskExecutor'
 import { bufferToNibbles, matchingNibbleLength, doKeysMatch } from './util/nibbles'
+import WalkStrategy from './util/walkStrategy'
 import {
   TrieNode,
   decodeNode,
@@ -26,11 +26,11 @@ interface Path {
   stack: TrieNode[]
 }
 
-type FoundNodeFunction = (
+export type FoundNodeFunction = (
   nodeRef: Buffer,
   node: TrieNode,
   key: Nibbles,
-  walkController: any
+  walkController: WalkStrategy
 ) => void
 
 /**
@@ -175,7 +175,8 @@ export class Trie {
               resolve({ node: null, remaining: keyRemainder, stack })
             } else {
               // node found, continuing search
-              await walkController.only(branchIndex)
+              // this can be optimized as this calls getBranch again.
+              await walkController.onlyBranchIndex(node, keyProgress, branchIndex)
             }
           }
         } else if (node instanceof LeafNode) {
@@ -193,7 +194,7 @@ export class Trie {
             resolve({ node: null, remaining: keyRemainder, stack })
           } else {
             // keys match, continue search
-            await walkController.next()
+            await walkController.allChildren(node, keyProgress)
           }
         }
       }
@@ -214,8 +215,10 @@ export class Trie {
    * @returns Resolves when finished walking trie.
    */
   async _walkTrie(root: Buffer, onFound: FoundNodeFunction): Promise<void> {
+    await WalkStrategy.newWalk(onFound, this, root)
+
     // eslint-disable-next-line no-async-promise-executor
-    return new Promise(async (resolve) => {
+    /*return new Promise(async (resolve) => {
       const self = this
       root = root || this.root
 
@@ -303,7 +306,7 @@ export class Trie {
       } else {
         resolve()
       }
-    })
+    })*/
   }
 
   /**
@@ -760,7 +763,7 @@ export class Trie {
   async _findDbNodes(onFound: FoundNodeFunction): Promise<void> {
     const outerOnFound: FoundNodeFunction = async (nodeRef, node, key, walkController) => {
       if (isRawNode(nodeRef)) {
-        await walkController.next()
+        await walkController.allChildren(node, key)
       } else {
         onFound(nodeRef, node, key, walkController)
       }
@@ -786,7 +789,7 @@ export class Trie {
         onFound(nodeRef, node, fullKey, walkController)
       } else {
         // keep looking for value nodes
-        await walkController.next()
+        await walkController.allChildren(node, key)
       }
     }
     await this._walkTrie(this.root, outerOnFound)

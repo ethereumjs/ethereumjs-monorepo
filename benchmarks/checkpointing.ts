@@ -27,6 +27,7 @@ const iterTest = async (numOfIter: number): Promise<Array<number>> => {
     }
     await trie.commit()
   }
+  return process.hrtime(hrstart)
 }
 
 const go = async () => {

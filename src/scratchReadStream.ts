@@ -25,7 +25,7 @@ export class ScratchReadStream extends Readable {
         key: nodeRef,
         value: node.serialize(),
       })
-      await walkController.next()
+      await walkController.allChildren(node, key)
     })
     this.push(null)
   }
