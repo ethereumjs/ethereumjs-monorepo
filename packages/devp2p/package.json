@@ -31,11 +31,6 @@
     "dist/**/*.map"
   ],
   "main": "dist/index.js",
-  "husky": {
-    "hooks": {
-      "pre-push": "npm run lint"
-    }
-  },
   "repository": {
     "type": "git",
     "url": "https://github.com/ethereumjs/ethereumjs-devp2p.git"
@@ -59,8 +54,7 @@
     "@types/bl": "^2.1.0",
     "@types/k-bucket": "^5.0.0",
     "@types/lru-cache": "^5.1.0",
-    "@ethereumjs/common": "^2.0.0-beta.2",
-    "babel-runtime": "^6.11.6",
+    "@ethereumjs/common": "^2.0.0",
     "bl": "^1.1.2",
     "debug": "^2.2.0",
     "inherits": "^2.0.1",
@@ -69,15 +63,15 @@
     "keccak": "^3.0.1",
     "lru-cache": "^5.1.1",
     "ms": "^0.7.1",
-    "rlp": "^2.2.6",
+    "rlp": "^2.2.3",
     "secp256k1": "^4.0.2"
   },
   "devDependencies": {
-    "@ethereumjs/block": "^3.0.0-beta.1",
+    "@ethereumjs/block": "^3.0.0",
     "@ethereumjs/config-coverage": "^2.0.0",
     "@ethereumjs/config-typescript": "^2.0.0",
     "@ethereumjs/eslint-config-defaults": "^2.0.0",
-    "@ethereumjs/tx": "^3.0.0-beta.1",
+    "@ethereumjs/tx": "^3.0.0",
     "@types/async": "^2.4.1",
     "@types/chalk": "^2.2.0",
     "@types/debug": "^4.1.4",
@@ -85,16 +79,16 @@
     "@types/keccak": "^3.0.1",
     "@types/ms": "^0.7.30",
     "@types/secp256k1": "^4.0.1",
-    "@types/tape": "^4.2.33",
+    "@types/tape": "^4.13.0",
     "async": "^2.6.0",
     "chalk": "^2.4.2",
-    "husky": "^2.1.0",
-    "nyc": "^15.0.0",
-    "prettier": "^1.17.0",
-    "tape": "^4.5.1",
-    "ts-node": "^8.1.0",
+    "husky": "^4.3.0",
+    "nyc": "^14.0.0",
+    "prettier": "^2.0.5",
+    "tape": "^4.10.1",
+    "ts-node": "^8.8.2",
     "typedoc": "next",
-    "typedoc-plugin-markdown": "^3.0.11",
-    "typescript": "^3.9.7"
+    "typedoc-plugin-markdown": "^2.2.17",
+    "typescript": "^3.9.3"
   }
 }
