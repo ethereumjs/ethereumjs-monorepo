@@ -22,7 +22,7 @@ export enum PREFIXES {
   HELLO = 0x00,
   DISCONNECT = 0x01,
   PING = 0x02,
-  PONG = 0x03
+  PONG = 0x03,
 }
 
 export enum DISCONNECT_REASONS {
@@ -38,7 +38,7 @@ export enum DISCONNECT_REASONS {
   UNEXPECTED_IDENTITY = 0x09,
   SAME_IDENTITY = 0x0a,
   TIMEOUT = 0x0b,
-  SUBPROTOCOL_ERROR = 0x10
+  SUBPROTOCOL_ERROR = 0x10,
 }
 
 export type HelloMsg = {
@@ -217,7 +217,7 @@ export class Peer extends EventEmitter {
       this._clientId,
       this._capabilities!.map((obj: any) => [Buffer.from(obj.name), int2buffer(obj.version)]),
       this._port === null ? Buffer.allocUnsafe(0) : int2buffer(this._port),
-      this._id
+      this._id,
     ]
 
     if (!this._closed) {
@@ -333,7 +333,7 @@ export class Peer extends EventEmitter {
         return { name: item[0].toString(), version: buffer2int(item[1]) }
       }),
       port: buffer2int(payload[3]),
-      id: payload[4]
+      id: payload[4],
     }
 
     if (this._remoteId === null) {
@@ -361,9 +361,9 @@ export class Peer extends EventEmitter {
 
     let offset = BASE_PROTOCOL_LENGTH
     this._protocols = Object.keys(shared)
-      .map(key => shared[key])
+      .map((key) => shared[key])
       .sort((obj1, obj2) => (obj1.name < obj2.name ? -1 : 1))
-      .map(obj => {
+      .map((obj) => {
         const _offset = offset
         offset += obj.length
 
@@ -563,7 +563,7 @@ export class Peer extends EventEmitter {
   }
 
   getProtocols<T extends ETH | LES>(): T[] {
-    return this._protocols.map(obj => obj.protocol)
+    return this._protocols.map((obj) => obj.protocol)
   }
 
   getMsgPrefix(code: PREFIXES): string {

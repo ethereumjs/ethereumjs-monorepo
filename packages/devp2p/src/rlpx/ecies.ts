@@ -14,7 +14,7 @@ import {
   xor,
   int2buffer,
   buffer2int,
-  zfill
+  zfill,
 } from '../util'
 
 const debug = createDebugLogger('devp2p:rlpx:peer')
@@ -46,13 +46,7 @@ function concatKDF(keyMaterial: Buffer, keyLength: number) {
   for (let counter = 0, tmp = Buffer.allocUnsafe(4); counter <= reps; ) {
     counter += 1
     tmp.writeUInt32BE(counter, 0)
-    buffers.push(
-      crypto
-        .createHash('sha256')
-        .update(tmp)
-        .update(keyMaterial)
-        .digest()
-    )
+    buffers.push(crypto.createHash('sha256').update(tmp).update(keyMaterial).digest())
   }
 
   return Buffer.concat(buffers).slice(0, keyLength)
@@ -94,10 +88,7 @@ export class ECIES {
     const x = ecdhX(this._remotePublicKey, privateKey)
     const key = concatKDF(x, 32)
     const ekey = key.slice(0, 16) // encryption key
-    const mkey = crypto
-      .createHash('sha256')
-      .update(key.slice(16, 32))
-      .digest() // MAC key
+    const mkey = crypto.createHash('sha256').update(key.slice(16, 32)).digest() // MAC key
 
     // encrypt
     const IV = crypto.randomBytes(16)
@@ -134,10 +125,7 @@ export class ECIES {
     const x = ecdhX(publicKey, this._privateKey)
     const key = concatKDF(x, 32)
     const ekey = key.slice(0, 16) // encryption key
-    const mkey = crypto
-      .createHash('sha256')
-      .update(key.slice(16, 32))
-      .digest() // MAC key
+    const mkey = crypto.createHash('sha256').update(key.slice(16, 32)).digest() // MAC key
 
     // check the tag
     if (!sharedMacData) {
@@ -189,7 +177,7 @@ export class ECIES {
       // keccak256(pk2id(this._ephemeralPublicKey)),
       pk2id(this._publicKey),
       this._nonce,
-      Buffer.from([0x04])
+      Buffer.from([0x04]),
     ]
 
     const dataRLP = rlp.encode(data)
@@ -213,7 +201,7 @@ export class ECIES {
       keccak256(pk2id(this._ephemeralPublicKey)),
       pk2id(this._publicKey),
       this._nonce,
-      Buffer.from([0x00])
+      Buffer.from([0x00]),
     ])
 
     this._initMsg = this._encryptMessage(data)

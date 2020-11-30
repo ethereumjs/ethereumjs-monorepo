@@ -149,7 +149,7 @@ export class ETH extends EventEmitter {
       networkId: this._peerStatus[1],
       td: Buffer.from(this._peerStatus[2]),
       bestHash: Buffer.from(this._peerStatus[3]),
-      genesisHash: Buffer.from(this._peerStatus[4])
+      genesisHash: Buffer.from(this._peerStatus[4]),
     }
 
     if (this._version >= 64) {
@@ -196,7 +196,7 @@ export class ETH extends EventEmitter {
       int2buffer(this._peer._common.chainId()),
       status.td,
       status.bestHash,
-      status.genesisHash
+      status.genesisHash,
     ]
     if (this._version >= 64) {
       if (status.latestBlock) {
@@ -287,6 +287,6 @@ export namespace ETH {
     GET_NODE_DATA = 0x0d,
     NODE_DATA = 0x0e,
     GET_RECEIPTS = 0x0f,
-    RECEIPTS = 0x10
+    RECEIPTS = 0x10,
   }
 }

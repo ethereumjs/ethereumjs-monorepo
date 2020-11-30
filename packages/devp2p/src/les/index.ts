@@ -46,7 +46,7 @@ export class LES extends EventEmitter {
       case LES.MESSAGE_CODES.STATUS: {
         assertEq(this._peerStatus, null, 'Uncontrolled status message', debug)
         const statusArray: any = {}
-        payload.forEach(function(value: any) {
+        payload.forEach(function (value: any) {
           statusArray[value[0].toString()] = value[1]
         })
         this._peerStatus = statusArray
@@ -145,7 +145,7 @@ export class LES extends EventEmitter {
     this._status = status
 
     const statusList: any[][] = []
-    Object.keys(status).forEach(key => {
+    Object.keys(status).forEach((key) => {
       statusList.push([key, status[key]])
     })
 
@@ -248,6 +248,6 @@ export namespace LES {
     HELPER_TRIE_PROOFS = 0x12,
     SEND_TX_V2 = 0x13,
     GET_TX_STATUS = 0x14,
-    TX_STATUS = 0x15
+    TX_STATUS = 0x15,
   }
 }

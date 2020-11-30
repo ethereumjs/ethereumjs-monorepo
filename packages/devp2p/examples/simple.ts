@@ -10,7 +10,7 @@ const BOOTNODES = bootstrapNodes.map((node: any) => {
   return {
     address: node.ip,
     udpPort: node.port,
-    tcpPort: node.port
+    tcpPort: node.port,
   }
 })
 
@@ -18,19 +18,19 @@ const dpt = new DPT(Buffer.from(PRIVATE_KEY, 'hex'), {
   endpoint: {
     address: '0.0.0.0',
     udpPort: null,
-    tcpPort: null
-  }
+    tcpPort: null,
+  },
 })
 
 /* eslint-disable no-console */
-dpt.on('error', err => console.error(chalk.red(err.stack || err)))
+dpt.on('error', (err) => console.error(chalk.red(err.stack || err)))
 
-dpt.on('peer:added', peer => {
+dpt.on('peer:added', (peer) => {
   const info = `(${peer.id.toString('hex')},${peer.address},${peer.udpPort},${peer.tcpPort})`
   console.log(chalk.green(`New peer: ${info} (total: ${dpt.getPeers().length})`))
 })
 
-dpt.on('peer:removed', peer => {
+dpt.on('peer:removed', (peer) => {
   console.log(
     chalk.yellow(`Remove peer: ${peer.id.toString('hex')} (total: ${dpt.getPeers().length})`)
   )
@@ -40,5 +40,5 @@ dpt.on('peer:removed', peer => {
 // dpt.bind(30303, '0.0.0.0')
 
 for (const bootnode of BOOTNODES) {
-  dpt.bootstrap(bootnode).catch(err => console.error(chalk.bold.red(err.stack || err)))
+  dpt.bootstrap(bootnode).catch((err) => console.error(chalk.bold.red(err.stack || err)))
 }

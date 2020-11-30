@@ -6,9 +6,7 @@ import { decode } from 'rlp'
 
 export function keccak256(...buffers: Buffer[]) {
   const buffer = Buffer.concat(buffers)
-  return createKeccakHash('keccak256')
-    .update(buffer)
-    .digest()
+  return createKeccakHash('keccak256').update(buffer).digest()
 }
 
 export function genPrivateKey(): Buffer {
@@ -62,7 +60,7 @@ export function assertEq(expected: any, actual: any, msg: string, debug: any): v
     message = `${msg}: ${expected.toString('hex')} / ${actual.toString('hex')}`
     debug(`[ERROR] ${message}`)
     throw new assert.AssertionError({
-      message: message
+      message: message,
     })
   }
 
@@ -70,7 +68,7 @@ export function assertEq(expected: any, actual: any, msg: string, debug: any): v
   message = `${msg}: ${expected} / ${actual}`
   debug(message)
   throw new assert.AssertionError({
-    message: message
+    message: message,
   })
 }
 

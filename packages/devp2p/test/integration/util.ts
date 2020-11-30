@@ -13,9 +13,9 @@ export function getTestDPTs(numDPTs: any) {
       endpoint: {
         address: localhost,
         udpPort: basePort + i,
-        tcpPort: basePort + i
+        tcpPort: basePort + i,
       },
-      timeout: 100
+      timeout: 100,
     })
     dpt.bind(basePort + i)
     dpts.push(dpt)
@@ -55,7 +55,7 @@ export function getTestRLPXs(
       maxPeers: maxPeers,
       capabilities: capabilities,
       common: common.constructor === Array ? common[i] : (common as Common),
-      listenPort: basePort + i
+      listenPort: basePort + i,
     })
     rlpx.listen(basePort + i)
     rlpxs.push(rlpx)
@@ -89,7 +89,7 @@ export function twoPeerMsgExchange(
   common?: Object | Common
 ) {
   const rlpxs = initTwoPeerRLPXSetup(null, capabilities, common)
-  rlpxs[0].on('peer:added', function(peer: any) {
+  rlpxs[0].on('peer:added', function (peer: any) {
     const protocol = peer.getProtocols()[0]
     protocol.sendStatus(opts.status0) // (1 ->)
 
@@ -108,7 +108,7 @@ export function twoPeerMsgExchange(
     }) // (-> 2)
   })
 
-  rlpxs[1].on('peer:added', function(peer: any) {
+  rlpxs[1].on('peer:added', function (peer: any) {
     const protocol = peer.getProtocols()[0]
     protocol.on('message', async (code: any, payload: any) => {
       switch (code) {

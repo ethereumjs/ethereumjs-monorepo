@@ -3,42 +3,42 @@ import test from 'tape'
 import * as util from './util'
 
 async function delay(ms: number) {
-  await new Promise(resolve => setTimeout(resolve, ms))
+  await new Promise((resolve) => setTimeout(resolve, ms))
 }
 
-test('DPT: new working node', async t => {
+test('DPT: new working node', async (t) => {
   const dpts = util.initTwoPeerDPTSetup()
 
-  dpts[0].on('peer:new', function(peer: any) {
+  dpts[0].on('peer:new', function (peer: any) {
     t.equal(peer.address, '127.0.0.1', 'should have added peer on peer:new')
     util.destroyDPTs(dpts)
     t.end()
   })
 })
 
-test('DPT: working node added', async t => {
+test('DPT: working node added', async (t) => {
   const dpts = util.initTwoPeerDPTSetup()
 
-  dpts[0].on('peer:added', function() {
+  dpts[0].on('peer:added', function () {
     t.equal(dpts[0].getPeers().length, 1, 'should have added peer to k-bucket on peer:added')
     util.destroyDPTs(dpts)
     t.end()
   })
 })
 
-test('DPT: remove node', async t => {
+test('DPT: remove node', async (t) => {
   const dpts = util.initTwoPeerDPTSetup()
 
   async.series(
     [
-      function(cb) {
-        dpts[0].on('peer:added', function(peer: any) {
+      function (cb) {
+        dpts[0].on('peer:added', function (peer: any) {
           dpts[0].removePeer(peer)
           cb(null)
         })
       },
-      function(cb) {
-        dpts[0].on('peer:removed', function() {
+      function (cb) {
+        dpts[0].on('peer:removed', function () {
           t.equal(
             dpts[0].getPeers().length,
             0,
@@ -46,9 +46,9 @@ test('DPT: remove node', async t => {
           )
           cb(null)
         })
-      }
+      },
     ],
-    function(err) {
+    function (err) {
       if (err) {
         t.fail('An unexpected error occured.')
       }
@@ -58,19 +58,19 @@ test('DPT: remove node', async t => {
   )
 })
 
-test('DPT: ban node', async t => {
+test('DPT: ban node', async (t) => {
   const dpts = util.initTwoPeerDPTSetup()
 
   async.series(
     [
-      function(cb) {
-        dpts[0].on('peer:added', function(peer: any) {
+      function (cb) {
+        dpts[0].on('peer:added', function (peer: any) {
           dpts[0].banPeer(peer)
           cb(null)
         })
       },
-      function(cb) {
-        dpts[0].on('peer:removed', function(peer: any) {
+      function (cb) {
+        dpts[0].on('peer:removed', function (peer: any) {
           t.equal(dpts[0].banlist.has(peer), true, 'ban-list should contain peer')
           t.equal(
             dpts[0].getPeers().length,
@@ -79,9 +79,9 @@ test('DPT: ban node', async t => {
           )
           cb(null)
         })
-      }
+      },
     ],
-    function(err) {
+    function (err) {
       if (err) {
         t.fail('An unexpected error occured.')
       }
@@ -91,25 +91,25 @@ test('DPT: ban node', async t => {
   )
 })
 
-test('DPT: k-bucket ping', async t => {
+test('DPT: k-bucket ping', async (t) => {
   const dpts = util.initTwoPeerDPTSetup()
 
   async.series(
     [
-      function(cb) {
-        dpts[0].on('peer:added', function(peer: any) {
+      function (cb) {
+        dpts[0].on('peer:added', function (peer: any) {
           dpts[0]._onKBucketPing([peer], peer)
-          setTimeout(function() {
+          setTimeout(function () {
             cb(null)
           }, 400)
         })
       },
-      function(cb) {
+      function (cb) {
         t.equal(dpts[0].getPeers().length, 1, 'should still have one peer in k-bucket')
         cb(null)
-      }
+      },
     ],
-    function(err) {
+    function (err) {
       if (err) {
         t.fail('An unexpected error occured.')
       }
@@ -119,7 +119,7 @@ test('DPT: k-bucket ping', async t => {
   )
 })
 
-test('DPT: add non-available node', async t => {
+test('DPT: add non-available node', async (t) => {
   const dpts = util.getTestDPTs(1)
   const peer = { address: util.localhost, udpPort: util.basePort + 1 }
 
@@ -130,7 +130,7 @@ test('DPT: add non-available node', async t => {
   })
 })
 
-test('DPT: simulate bootstrap', async t => {
+test('DPT: simulate bootstrap', async (t) => {
   const numDPTs = 6
   const dpts = util.getTestDPTs(numDPTs)
 

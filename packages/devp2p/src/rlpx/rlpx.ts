@@ -88,8 +88,8 @@ export class RLPx extends EventEmitter {
     this._server = net.createServer()
     this._server.once('listening', () => this.emit('listening'))
     this._server.once('close', () => this.emit('close'))
-    this._server.on('error', err => this.emit('error', err))
-    this._server.on('connection', socket => this._onConnect(socket, null))
+    this._server.on('error', (err) => this.emit('error', err))
+    this._server.on('connection', (socket) => this._onConnect(socket, null))
 
     this._peers = new Map()
     this._peersQueue = []
@@ -145,7 +145,7 @@ export class RLPx extends EventEmitter {
   }
 
   getPeers() {
-    return Array.from(this._peers.values()).filter(item => item instanceof Peer)
+    return Array.from(this._peers.values()).filter((item) => item instanceof Peer)
   }
 
   disconnect(id: Buffer) {
@@ -166,7 +166,7 @@ export class RLPx extends EventEmitter {
   }
 
   _connectToPeer(peer: PeerInfo) {
-    this.connect(peer).catch(err => {
+    this.connect(peer).catch((err) => {
       if (this._dpt === null) return
       if (err.code === 'ECONNRESET' || err.toString().includes('Connection timeout')) {
         this._dpt.banPeer(peer, ms('5m'))
@@ -187,9 +187,9 @@ export class RLPx extends EventEmitter {
       remoteClientIdFilter: this._remoteClientIdFilter,
       capabilities: this._capabilities,
       common: this._common,
-      port: this._listenPort
+      port: this._listenPort,
     })
-    peer.on('error', err => this.emit('peer:error', peer, err))
+    peer.on('error', (err) => this.emit('peer:error', peer, err))
 
     // handle incoming connection
     if (peerId === null && this._getOpenSlots() === 0) {
@@ -237,9 +237,9 @@ export class RLPx extends EventEmitter {
           peer: {
             id: peer.getId()!,
             address: peer._socket.remoteAddress,
-            tcpPort: peer._socket.remotePort
+            tcpPort: peer._socket.remotePort,
           },
-          ts: (Date.now() + ms('5m')) as number
+          ts: (Date.now() + ms('5m')) as number,
         })
       }
 

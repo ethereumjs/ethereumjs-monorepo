@@ -19,16 +19,16 @@ export class KBucket extends EventEmitter {
     this._kbucket = new _KBucket({
       localNodeId: typeof id === 'string' ? Buffer.from(id) : id,
       numberOfNodesPerKBucket: KBUCKET_SIZE,
-      numberOfNodesToPing: KBUCKET_CONCURRENCY
+      numberOfNodesToPing: KBUCKET_CONCURRENCY,
     })
 
     this._kbucket.on('added', (peer: any) => {
-      KBucket.getKeys(peer).forEach(key => this._peers.set(key, peer))
+      KBucket.getKeys(peer).forEach((key) => this._peers.set(key, peer))
       this.emit('added', peer)
     })
 
     this._kbucket.on('removed', (peer: any) => {
-      KBucket.getKeys(peer).forEach(key => this._peers.delete(key))
+      KBucket.getKeys(peer).forEach((key) => this._peers.delete(key))
       this.emit('removed', peer)
     })
 
@@ -46,7 +46,7 @@ export class KBucket extends EventEmitter {
   }
 
   add(peer: any) {
-    const isExists = KBucket.getKeys(peer).some(key => this._peers.has(key))
+    const isExists = KBucket.getKeys(peer).some((key) => this._peers.has(key))
     if (!isExists) this._kbucket.add(peer)
   }
 

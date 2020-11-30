@@ -20,7 +20,7 @@ function randomBefore(fn: Function) {
     const publicKey2 = Buffer.from(secp256k1.publicKeyCreate(privateKey2, false))
     t.context = {
       a: new ECIES(privateKey1, util.pk2id(publicKey1), util.pk2id(publicKey2)),
-      b: new ECIES(privateKey2, util.pk2id(publicKey2), util.pk2id(publicKey1))
+      b: new ECIES(privateKey2, util.pk2id(publicKey2), util.pk2id(publicKey1)),
     }
 
     fn(t)
@@ -41,12 +41,12 @@ function testdataBefore(fn: Function) {
       b: new ECIES(keyB, util.pk2id(pubB), util.pk2id(pubA)),
       h0: {
         auth: Buffer.from(h[0].auth.join(''), 'hex'),
-        ack: Buffer.from(h[0].ack.join(''), 'hex')
+        ack: Buffer.from(h[0].ack.join(''), 'hex'),
       },
       h1: {
         auth: Buffer.from(h[1].auth.join(''), 'hex'),
-        ack: Buffer.from(h[1].ack.join(''), 'hex')
-      }
+        ack: Buffer.from(h[1].ack.join(''), 'hex'),
+      },
     }
     fn(t)
   }

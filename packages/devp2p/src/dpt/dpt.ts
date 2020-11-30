@@ -28,19 +28,19 @@ export class DPT extends EventEmitter {
     this.banlist = new BanList()
 
     this._kbucket = new KBucket(this._id)
-    this._kbucket.on('added', peer => this.emit('peer:added', peer))
-    this._kbucket.on('removed', peer => this.emit('peer:removed', peer))
+    this._kbucket.on('added', (peer) => this.emit('peer:added', peer))
+    this._kbucket.on('removed', (peer) => this.emit('peer:removed', peer))
     this._kbucket.on('ping', this._onKBucketPing)
 
     this._server = new DPTServer(this, this.privateKey, {
       createSocket: options.createSocket,
       timeout: options.timeout,
-      endpoint: options.endpoint
+      endpoint: options.endpoint,
     })
     this._server.once('listening', () => this.emit('listening'))
     this._server.once('close', () => this.emit('close'))
-    this._server.on('peers', peers => this._onServerPeers(peers))
-    this._server.on('error', err => this.emit('error', err))
+    this._server.on('peers', (peers) => this._onServerPeers(peers))
+    this._server.on('error', (err) => this.emit('error', err))
 
     const refreshInterval = options.refreshInterval || ms('60s')
     this._refreshIntervalId = setInterval(() => this.refresh(), refreshInterval)

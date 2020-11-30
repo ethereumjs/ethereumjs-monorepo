@@ -29,9 +29,6 @@ export class MAC {
   }
 
   digest() {
-    return this._hash
-      ._clone()
-      .digest()
-      .slice(0, 16)
+    return this._hash._clone().digest().slice(0, 16)
   }
 }

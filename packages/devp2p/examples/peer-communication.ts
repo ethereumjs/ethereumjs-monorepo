@@ -18,7 +18,7 @@ const BOOTNODES = bootstrapNodes.map((node: any) => {
   return {
     address: node.ip,
     udpPort: node.port,
-    tcpPort: node.port
+    tcpPort: node.port,
   }
 })
 const REMOTE_CLIENTID_FILTER = [
@@ -30,7 +30,7 @@ const REMOTE_CLIENTID_FILTER = [
   'ubiq',
   'gmc',
   'gwhale',
-  'prichain'
+  'prichain',
 ]
 
 const CHECK_BLOCK_TITLE = 'Byzantium Fork' // Only for debugging/console output
@@ -51,12 +51,12 @@ const dpt = new devp2p.DPT(PRIVATE_KEY, {
   endpoint: {
     address: '0.0.0.0',
     udpPort: null,
-    tcpPort: null
-  }
+    tcpPort: null,
+  },
 })
 
 /* eslint-disable no-console */
-dpt.on('error', err => console.error(chalk.red(`DPT error: ${err}`)))
+dpt.on('error', (err) => console.error(chalk.red(`DPT error: ${err}`)))
 
 /* eslint-disable @typescript-eslint/no-use-before-define */
 
@@ -67,12 +67,12 @@ const rlpx = new devp2p.RLPx(PRIVATE_KEY, {
   capabilities: [devp2p.ETH.eth64],
   common: common,
   remoteClientIdFilter: REMOTE_CLIENTID_FILTER,
-  listenPort: null
+  listenPort: null,
 })
 
-rlpx.on('error', err => console.error(chalk.red(`RLPx error: ${err.stack || err}`)))
+rlpx.on('error', (err) => console.error(chalk.red(`RLPx error: ${err.stack || err}`)))
 
-rlpx.on('peer:added', peer => {
+rlpx.on('peer:added', (peer) => {
   const addr = getPeerAddr(peer)
   const eth = peer.getProtocols()[0]
   const requests: {
@@ -97,7 +97,7 @@ rlpx.on('peer:added', peer => {
     genesisHash: Buffer.from(
       'd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3',
       'hex'
-    )
+    ),
   })
 
   // check CHECK_BLOCK
@@ -307,7 +307,7 @@ rlpx.on('peer:error', (peer, err) => {
 // dpt.bind(30303, '0.0.0.0')
 
 for (const bootnode of BOOTNODES) {
-  dpt.bootstrap(bootnode).catch(err => {
+  dpt.bootstrap(bootnode).catch((err) => {
     console.error(chalk.bold.red(`DPT bootstrap error: ${err.stack || err}`))
   })
 }
@@ -367,7 +367,7 @@ setInterval(() => {
   const peersCount = dpt.getPeers().length
   const openSlots = rlpx._getOpenSlots()
   const queueLength = rlpx._peersQueue.length
-  const queueLength2 = rlpx._peersQueue.filter(o => o.ts <= Date.now()).length
+  const queueLength2 = rlpx._peersQueue.filter((o) => o.ts <= Date.now()).length
 
   console.log(
     chalk.yellow(
