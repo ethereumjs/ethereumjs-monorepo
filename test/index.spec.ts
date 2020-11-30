@@ -1,7 +1,7 @@
 import tape from 'tape'
 import * as rlp from 'rlp'
 import { KECCAK256_NULL } from 'ethereumjs-util'
-import { CheckpointTrie } from '../src'
+import { BaseTrie, CheckpointTrie } from '../src'
 
 tape('simple save and retrieve', function (tester) {
   const it = tester.test
@@ -206,6 +206,38 @@ tape('testing deletion cases', function (tester) {
     t.equal(null, val)
     t.end()
   })
+})
+
+tape('shall handle the case of node not found correctly', async (t) => {
+  const trie = new BaseTrie()
+  await trie.put(Buffer.from('a'), Buffer.from('value1'))
+  await trie.put(Buffer.from('aa'), Buffer.from('value2'))
+  await trie.put(Buffer.from('aaa'), Buffer.from('value3'))
+
+  /* Setups a trie which consists of 
+    ExtensionNode -> 
+    BranchNode -> value1
+    ExtensionNode -> 
+    BranchNode -> value2 
+    LeafNode -> value3
+  */
+
+  let path = await trie.findPath(Buffer.from('aaa'))
+
+  t.ok(path.node != null, 'findPath should find a node')
+
+  const { stack } = await trie.findPath(Buffer.from('aaa'))
+  await trie.db.del(stack[1].hash()) // delete the BranchNode -> value1 from the DB
+
+  path = await trie.findPath(Buffer.from('aaa'))
+
+  t.ok(path.node === null, 'findPath should not return a node now')
+  t.ok(
+    path.stack.length == 2,
+    'findPath should find the first extension node which is still in the DB and report the null, non existent node'
+  )
+
+  t.end()
 })
 
 tape('it should create the genesis state root from ethereum', function (tester) {

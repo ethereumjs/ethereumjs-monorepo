@@ -39,7 +39,7 @@ export default class WalkStrategy {
   }
 
   private async startWalk(root: Buffer): Promise<void> {
-    return await new Promise((resolve) => {
+    return await new Promise((resolve, reject) => {
       this.resolve = resolve
       this.trie
         ._lookupNode(root)
@@ -51,7 +51,7 @@ export default class WalkStrategy {
           }
         })
         .catch((e) => {
-          throw e
+          reject(e)
         })
     })
   }
