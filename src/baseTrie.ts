@@ -117,6 +117,7 @@ export class Trie {
    */
   async put(key: Buffer, value: Buffer): Promise<void> {
     // If value is empty, delete
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (!value || value.toString() === '') {
       return await this.del(key)
     }
@@ -194,7 +195,7 @@ export class Trie {
             resolve({ node: null, remaining: keyRemainder, stack })
           } else {
             // keys match, continue search
-            await walkController.allChildren(node, keyProgress)
+            walkController.allChildren(node, keyProgress)
           }
         }
       }
@@ -383,8 +384,10 @@ export class Trie {
       stack: TrieNode[]
     ) => {
       // branchNode is the node ON the branch node not THE branch node
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       if (!parentNode || parentNode instanceof BranchNode) {
         // branch->?
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         if (parentNode) {
           stack.push(parentNode)
         }
@@ -588,10 +591,12 @@ export class Trie {
   async batch(ops: BatchDBOp[]): Promise<void> {
     for (const op of ops) {
       if (op.type === 'put') {
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         if (!op.value) {
           throw new Error('Invalid batch db operation')
         }
         await this.put(op.key, op.value)
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       } else if (op.type === 'del') {
         await this.del(op.key)
       }
@@ -689,7 +694,7 @@ export class Trie {
   async _findDbNodes(onFound: FoundNodeFunction): Promise<void> {
     const outerOnFound: FoundNodeFunction = async (nodeRef, node, key, walkController) => {
       if (isRawNode(nodeRef)) {
-        await walkController.allChildren(node, key)
+        walkController.allChildren(node, key)
       } else {
         onFound(nodeRef, node, key, walkController)
       }
@@ -715,7 +720,7 @@ export class Trie {
         onFound(nodeRef, node, fullKey, walkController)
       } else {
         // keep looking for value nodes
-        await walkController.allChildren(node, key)
+        walkController.allChildren(node, key)
       }
     }
     await this.walkTrie(this.root, outerOnFound)

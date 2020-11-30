@@ -38,15 +38,21 @@ export default class WalkStrategy {
     await strategy.startWalk(root)
   }
 
-  private startWalk(root: Buffer): Promise<void> {
-    return new Promise(async (resolve) => {
+  private async startWalk(root: Buffer): Promise<void> {
+    return await new Promise((resolve) => {
       this.resolve = resolve
-      const node = await this.trie._lookupNode(root)
-      if (!node) {
-        this.resolve()
-      } else {
-        this.processNode(root, node as TrieNode, [])
-      }
+      this.trie
+        ._lookupNode(root)
+        .then((node) => {
+          if (!node) {
+            this.resolve()
+          } else {
+            this.processNode(root, node as TrieNode, [])
+          }
+        })
+        .catch((e) => {
+          throw e
+        })
     })
   }
 

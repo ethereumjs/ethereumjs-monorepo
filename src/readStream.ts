@@ -23,7 +23,7 @@ export class TrieReadStream extends Readable {
         key: nibblesToBuffer(key),
         value: node.value,
       })
-      await walkController.allChildren(node, key)
+      walkController.allChildren(node, key)
     })
     this.push(null)
   }

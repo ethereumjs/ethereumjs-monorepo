@@ -57,6 +57,7 @@ export class CheckpointTrie extends BaseTrie {
     await this.lock.wait()
 
     this._checkpoints.pop()
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (!this.isCheckpoint) {
       await this._exitCpMode(true)
     }
@@ -71,8 +72,10 @@ export class CheckpointTrie extends BaseTrie {
    */
   async revert(): Promise<void> {
     await this.lock.wait()
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (this.isCheckpoint) {
       this.root = this._checkpoints.pop()!
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       if (!this.isCheckpoint) {
         await this._exitCpMode(false)
       }
