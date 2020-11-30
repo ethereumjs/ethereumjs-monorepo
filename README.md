@@ -83,6 +83,16 @@ client.start()
 client.stop()
 ```
 
+You can also provide your custom [@ethereumjs/vm](https://github.com/ethereumjs/ethereumjs-vm/tree/master/packages/vm) instance:
+
+```typescript
+import VM from '@ethereumjs/vm'
+import { Config, EthereumClient } from '@ethereumjs/client'
+const vm = new VM()
+const config = new Config({ vm })
+const client = new EthereumClient({ config })
+```
+
 [WORK-IN-PROGRESS] Programmatic invocation on the client is in a very early stage and only meant for experimental purposes. You are invited to play around, please let us know what control functionality you would want the client to expose and what information you would need to get out of the client to be useful in your usage context.
 
 ## API
