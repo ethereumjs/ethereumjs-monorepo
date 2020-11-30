@@ -335,28 +335,30 @@ tape('[Transaction]: Basic functions', function (t) {
     st.end()
   })
 
-  t.test('throws when creating a a transaction with incompatible chainid and v value', function (
-    st
-  ) {
-    const common = new Common({ chain: 42, hardfork: 'petersburg' })
-    let tx = Transaction.fromTxData({}, { common })
-    st.equal(tx.getChainId(), 42)
-    const privKey = Buffer.from(txFixtures[0].privateKey, 'hex')
-    tx = tx.sign(privKey)
-    const serialized = tx.serialize()
-    st.throws(() => Transaction.fromRlpSerializedTx(serialized))
-    st.end()
-  })
-
-  t.test('Throws if v is set to an EIP155-encoded value incompatible with the chain id', function (
-    st
-  ) {
-    st.throws(() => {
+  t.test(
+    'throws when creating a a transaction with incompatible chainid and v value',
+    function (st) {
       const common = new Common({ chain: 42, hardfork: 'petersburg' })
-      Transaction.fromTxData({ v: new BN(1) }, { common })
-    })
-    st.end()
-  })
+      let tx = Transaction.fromTxData({}, { common })
+      st.equal(tx.getChainId(), 42)
+      const privKey = Buffer.from(txFixtures[0].privateKey, 'hex')
+      tx = tx.sign(privKey)
+      const serialized = tx.serialize()
+      st.throws(() => Transaction.fromRlpSerializedTx(serialized))
+      st.end()
+    }
+  )
+
+  t.test(
+    'Throws if v is set to an EIP155-encoded value incompatible with the chain id',
+    function (st) {
+      st.throws(() => {
+        const common = new Common({ chain: 42, hardfork: 'petersburg' })
+        Transaction.fromTxData({ v: new BN(1) }, { common })
+      })
+      st.end()
+    }
+  )
 
   t.test('EIP155 hashing when singing', function (st) {
     const common = new Common({ chain: 1, hardfork: 'petersburg' })
