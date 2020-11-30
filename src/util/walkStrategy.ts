@@ -38,11 +38,15 @@ export default class WalkStrategy {
     await strategy.startWalk(root)
   }
 
-  startWalk(root: Buffer): Promise<void> {
+  private startWalk(root: Buffer): Promise<void> {
     return new Promise(async (resolve) => {
       this.resolve = resolve
       const node = await this.trie._lookupNode(root)
-      this.processNode(root, node as TrieNode, [])
+      if (!node) {
+        this.resolve()
+      } else {
+        this.processNode(root, node as TrieNode, [])
+      }
     })
   }
 
@@ -53,9 +57,6 @@ export default class WalkStrategy {
    */
   allChildren(node: TrieNode, key: Nibbles = []) {
     if (node instanceof LeafNode) {
-      if (this.taskExecutor.finished()) {
-        this.resolve()
-      }
       return
     }
     let children
@@ -65,8 +66,7 @@ export default class WalkStrategy {
       children = node.getChildren().map((b) => [[b[0]], b[1]])
     }
     if (!children) {
-      // Node has no children
-      return this.resolve()
+      return
     }
     for (const child of children) {
       const keyExtension = child[0] as Nibbles
@@ -98,9 +98,13 @@ export default class WalkStrategy {
    * @param childIndex - The child index to add to the event queue
    * @param priority - Optional priority of the event, defaults to the total key length
    */
-  async onlyBranchIndex(node: TrieNode, key: Nibbles = [], childIndex: number, priority?: number) {
+  async onlyBranchIndex(
+    node: BranchNode,
+    key: Nibbles = [],
+    childIndex: number,
+    priority?: number
+  ) {
     if (!(node instanceof BranchNode)) {
-      // TODO check if we can remove this and default to `BranchNode` in function sig
       throw new Error('Expected branch node')
     }
     const childRef = node.getBranch(childIndex)
@@ -114,9 +118,9 @@ export default class WalkStrategy {
   }
 
   private processNode(nodeRef: Buffer, node: TrieNode, key: Nibbles = []) {
-    if (node) {
-      this.onNode(nodeRef, node, key, this)
-    } else {
+    this.onNode(nodeRef, node, key, this)
+    if (this.taskExecutor.finished()) {
+      // onNode should schedule new tasks. If no tasks was added and the queue is empty, then we have finished our walk.
       this.resolve()
     }
   }
