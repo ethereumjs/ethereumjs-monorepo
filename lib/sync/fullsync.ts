@@ -1,4 +1,5 @@
 import { BN } from 'ethereumjs-util'
+import VM from '@ethereumjs/vm'
 import { Peer } from '../net/peer/peer'
 import { BoundProtocol } from '../net/protocol'
 import { short } from '../util'
@@ -10,11 +11,24 @@ import { BlockFetcher } from './fetcher'
  * @memberof module:sync
  */
 export class FullSynchronizer extends Synchronizer {
+  public vm: VM
+
   private blockFetcher: BlockFetcher | null
 
   constructor(options: SynchronizerOptions) {
     super(options)
     this.blockFetcher = null
+
+    if (!this.config.vm) {
+      this.vm = new VM({
+        common: this.config.common,
+        blockchain: this.chain.blockchain,
+      })
+    } else {
+      this.vm = this.config.vm
+      //@ts-ignore blockchain has readonly property
+      this.vm.blockchain = this.chain.blockchain
+    }
   }
 
   /**

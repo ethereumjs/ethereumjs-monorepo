@@ -42,6 +42,7 @@ module.exports = {
   node: {
     dgram: 'empty', // used by: rlpxpeer via ethereumjs-devp2p
     net: 'empty', // used by: rlpxpeer
+    fs: 'empty', // used by: FullSynchronizer via @ethereumjs/vm
   },
   performance: {
     hints: false, // suppress maxAssetSize warnings etc..

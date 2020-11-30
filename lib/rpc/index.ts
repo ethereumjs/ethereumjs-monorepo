@@ -1,5 +1,5 @@
 import { Config } from '../config'
-import Node from '../node'
+import EthereumClient from '../client'
 import * as modules from './modules'
 
 /**
@@ -22,11 +22,11 @@ function getMethodNames(mod: any): string[] {
  */
 export class RPCManager {
   private _config: Config
-  private _node: Node
+  private _client: EthereumClient
 
-  constructor(node: Node, config: Config) {
+  constructor(client: EthereumClient, config: Config) {
     this._config = config
-    this._node = node
+    this._client = client
   }
 
   /**
@@ -39,7 +39,7 @@ export class RPCManager {
 
     modules.list.forEach((modName: string) => {
       this._config.logger.debug(`Initialize ${modName} module`)
-      const mod = new (modules as any)[modName](this._node)
+      const mod = new (modules as any)[modName](this._client)
 
       getMethodNames((modules as any)[modName])
         .filter((methodName: string) => methodName !== 'constructor')
