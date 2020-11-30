@@ -1,5 +1,5 @@
 {
-  "name": "ethereumjs-devp2p",
+  "name": "@ethereumjs/devp2p",
   "version": "3.0.3",
   "description": "A JavaScript implementation of ÐΞVp2p",
   "keywords": [
