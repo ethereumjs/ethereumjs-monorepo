@@ -14,9 +14,9 @@
     "les",
     "les2"
   ],
-  "homepage": "https://github.com/ethereumjs/ethereumjs-devp2p",
+  "homepage": "https://github.com/ethereumjs/ethereumjs-vm/tree/master/packages/devp2p#readme",
   "bugs": {
-    "url": "https://github.com/ethereumjs/ethereumjs-devp2p/issues"
+    "url": "https://github.com/ethereumjs/ethereumjs-vm/issues?q=is%3Aissue+label%3A%22package%3A+devp2p%22"
   },
   "license": "MIT",
   "contributors": [
@@ -33,7 +33,7 @@
   "main": "dist/index.js",
   "repository": {
     "type": "git",
-    "url": "https://github.com/ethereumjs/ethereumjs-devp2p.git"
+    "url": "git+https://github.com/ethereumjs/ethereumjs-vm.git"
   },
   "engines": {
     "node": ">=10.0"
@@ -41,14 +41,14 @@
   "scripts": {
     "build": "ethereumjs-config-ts-build",
     "prepublishOnly": "npm run test && npm run build",
-    "coverage": "nyc --reporter=lcov npm run test",
+    "coverage": "ethereumjs-config-coverage",
     "docs:build": "typedoc",
     "format": "ethereumjs-config-format",
     "format:fix": "ethereumjs-config-format-fix",
     "tsc": "ethereumjs-config-tsc",
     "lint": "ethereumjs-config-lint",
     "lint:fix": "ethereumjs-config-lint-fix",
-    "test": "node_modules/tape/bin/tape -r ts-node/register ./test/index.ts"
+    "test": "tape -r ts-node/register ./test/index.ts"
   },
   "dependencies": {
     "@types/bl": "^2.1.0",

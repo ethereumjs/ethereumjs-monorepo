@@ -1,8 +1,9 @@
 # ethereumjs-devp2p
 
-[![NPM Status][npm-badge]][npm-link]
-[![Actions Status][actions-badge]][actions-link]
-[![Coverage Status][coverage-badge]][coverage-link]
+[![NPM Status][devp2p-npm-badge]][devp2p-npm-link]
+[![GitHub Issues][devp2p-issues-badge]][devp2p-issues-link]
+[![Actions Status][devp2p-actions-badge]][devp2p-actions-link]
+[![Coverage Status][devp2p-coverage-badge]][devp2p-coverage-link]
 [![Discord][discord-badge]][discord-link]
 
 This library bundles different components for lower-level peer-to-peer connection and message exchange:
@@ -406,11 +407,13 @@ The following is a list of major implementations of the `devp2p` stack in other 
 
 MIT
 
-[npm-badge]: https://img.shields.io/npm/v/ethereumjs-devp2p.svg
-[npm-link]: https://www.npmjs.org/package/ethereumjs-devp2p
-[actions-badge]: https://github.com/ethereumjs/ethereumjs-devp2p/workflows/Build/badge.svg
-[actions-link]: https://github.com/ethereumjs/ethereumjs-devp2p/actions
-[coverage-badge]: https://codecov.io/gh/ethereumjs/ethereumjs-devp2p/branch/master/graph/badge.svg
-[coverage-link]: https://codecov.io/gh/ethereumjs/ethereumjs-devp2p
 [discord-badge]: https://img.shields.io/static/v1?logo=discord&label=discord&message=Join&color=blue
 [discord-link]: https://discord.gg/TNwARpR
+[devp2p-npm-badge]: https://img.shields.io/npm/v/ethereumjs-devp2p.svg
+[devp2p-npm-link]: https://www.npmjs.org/package/ethereumjs-devp2p
+[devp2p-issues-badge]: https://img.shields.io/github/issues/ethereumjs/ethereumjs-vm/package:%20devp2p?label=issues
+[devp2p-issues-link]: https://github.com/ethereumjs/ethereumjs-vm/issues?q=is%3Aopen+is%3Aissue+label%3A"package%3A+devp2p"
+[devp2p-actions-badge]: https://github.com/ethereumjs/ethereumjs-vm/workflows/Devp2p%20Test/badge.svg
+[devp2p-actions-link]: https://github.com/ethereumjs/ethereumjs-vm/actions?query=workflow%3A%22Devp2p+Test%22
+[devp2p-coverage-badge]: https://codecov.io/gh/ethereumjs/ethereumjs-vm/branch/master/graph/badge.svg?flag=devp2p
+[devp2p-coverage-link]: https://codecov.io/gh/ethereumjs/ethereumjs-vm/tree/master/packages/devp2p
