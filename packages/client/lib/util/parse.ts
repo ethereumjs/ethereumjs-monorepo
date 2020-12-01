@@ -25,7 +25,7 @@ export function parseBootnodes(input: BootnodeLike): Bootnode[] {
       }
       const { auth: id, hostname: ip, port } = parse(s)
       return { id, ip, port: Number(port) }
-    })
+    }) as Bootnode[]
   } catch (e) {
     throw new Error(`Invalid bootnode URLs: ${e.message}`)
   }

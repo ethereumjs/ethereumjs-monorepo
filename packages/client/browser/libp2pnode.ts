@@ -3,9 +3,13 @@
  * @memberof module:net/peer
  */
 
+// @ts-ignore TODO: fix could not find a declaration file (browser)
 import LibP2pWebsockets from 'libp2p-websockets'
+// @ts-ignore TODO: fix could not find a declaration file (browser)
 import LibP2pBootstrap from 'libp2p-bootstrap'
+// @ts-ignore TODO: fix could not find a declaration file (browser)
 import mplex from 'libp2p-mplex'
+// @ts-ignore TODO: fix could not find a declaration file (browser)
 import secio from 'libp2p-secio'
 
 const libp2p = require('libp2p')
