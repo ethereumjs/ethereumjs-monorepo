@@ -1,8 +1,9 @@
 # SYNOPSIS
 
-[![NPM Status][npm-badge]][npm-link]
-[![Actions Status][actions-badge]][actions-link]
-[![Coverage Status][coverage-badge]][coverage-link]
+[![NPM Package][client-npm-badge]][client-npm-link]
+[![GitHub Issues][client-issues-badge]][client-issues-link]
+[![Actions Status][client-actions-badge]][client-actions-link]
+[![Code Coverage][client-coverage-badge]][client-coverage-link]
 [![Discord][discord-badge]][discord-link]
 
 This is the work repository for the EthereumJS client project targeting both Node.js and the browser as a platform.
@@ -242,9 +243,10 @@ In this example, we will again perform a light sync by connecting to the first c
 First, let's make the bundle:
 
 ```
-git clone https://github.com/ethereumjs/ethereumjs-client
-cd ethereumjs-client
-npm i
+git clone https://github.com/ethereumjs/ethereumjs-vm
+cd ethereumjs-vm
+npm run bootstrap
+cd packages/client
 npm run build:browser
 ```
 
@@ -347,9 +349,7 @@ To update the structure diagram files in the root folder open the `client.drawio
 This project will be embedded in the EthereumJS ecosystem and many submodules already exist and
 can be used within the project, have a look e.g. at [ethereumjs-block](https://github.com/ethereumjs/ethereumjs-vm/tree/master/packages/block), [ethereumjs-vm](https://github.com/ethereumjs/ethereumjs-vm), the
 [merkle-patricia-tree](https://github.com/ethereumjs/merkle-patricia-tree) or the
-[ethereumjs-devp2p](https://github.com/ethereumjs/ethereumjs-devp2p) implementation. Work needs to be done both within this repos and related libraries.
-
-Related issues are labelled with the `ethereumjs-client` label, see [here](https://github.com/search?utf8=%E2%9C%93&q=org%3Aethereumjs+label%3Aethereumjs-client&type=Issues&ref=advsearch&l=&l=) for an org-wide search.
+[ethereumjs-devp2p](https://github.com/ethereumjs/vm/packages/devp2p) implementation. Work needs to be done both within this repos and related libraries.
 
 ## EthereumJS
 
@@ -357,11 +357,13 @@ See our organizational [documentation](https://ethereumjs.readthedocs.io) for an
 
 If you want to join for work or do improvements on the libraries have a look at our [contribution guidelines](https://ethereumjs.readthedocs.io/en/latest/contributing.html).
 
-[npm-badge]: https://img.shields.io/npm/v/ethereumjs-client.svg
-[npm-link]: https://www.npmjs.org/package/ethereumjs-client
-[actions-badge]: https://github.com/ethereumjs/ethereumjs-client/workflows/Build/badge.svg
-[actions-link]: https://github.com/ethereumjs/ethereumjs-client/actions
-[coverage-badge]: https://codecov.io/gh/ethereumjs/ethereumjs-client/branch/master/graph/badge.svg
-[coverage-link]: https://codecov.io/gh/ethereumjs/ethereumjs-client
+[client-npm-badge]: https://img.shields.io/npm/v/@ethereumjs/client.svg
+[client-npm-link]: https://www.npmjs.com/package/@ethereumjs/client
+[client-issues-badge]: https://img.shields.io/github/issues/ethereumjs/ethereumjs-vm/package:%20client?label=issues
+[client-issues-link]: https://github.com/ethereumjs/ethereumjs-vm/issues?q=is%3Aopen+is%3Aissue+label%3A"package%3A+client"
+[client-actions-badge]: https://github.com/ethereumjs/ethereumjs-vm/workflows/Client/badge.svg
+[client-actions-link]: https://github.com/ethereumjs/ethereumjs-vm/actions?query=workflow%3A%22Client%22
+[client-coverage-badge]: https://codecov.io/gh/ethereumjs/ethereumjs-vm/branch/master/graph/badge.svg?flag=client
+[client-coverage-link]: https://codecov.io/gh/ethereumjs/ethereumjs-vm/tree/master/packages/client
 [discord-badge]: https://img.shields.io/static/v1?logo=discord&label=discord&message=Join&color=blue
 [discord-link]: https://discord.gg/TNwARpR
