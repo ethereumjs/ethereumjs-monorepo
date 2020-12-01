@@ -15,6 +15,7 @@ This was originally the EthereumJS VM repository. On Q1 2020 we brought some of 
 | ------------------------------------------- | ----------------------------------------------------------- | ----------------------------------------------------------------------- | ---------------------------------------------------------------------- | ----------------------------------------------------------------------- |
 | [@ethereumjs/block][block-package]           | [![NPM Package][block-npm-badge]][block-npm-link]           | [![Block Issues][block-issues-badge]][block-issues-link]                | [![Actions Status][block-actions-badge]][block-actions-link]           | [![Code Coverage][block-coverage-badge]][block-coverage-link]           |
 | [@ethereumjs/blockchain][blockchain-package] | [![NPM Package][blockchain-npm-badge]][blockchain-npm-link] | [![Blockchain Issues][blockchain-issues-badge]][blockchain-issues-link] | [![Actions Status][blockchain-actions-badge]][blockchain-actions-link] | [![Code Coverage][blockchain-coverage-badge]][blockchain-coverage-link] |
+| [@ethereumjs/client][client-package]           | [![NPM Package][client-npm-badge]][client-npm-link]           | [![Client Issues][client-issues-badge]][client-issues-link]                | [![Actions Status][client-actions-badge]][client-actions-link]           | [![Code Coverage][client-coverage-badge]][client-coverage-link]           |
 | [@ethereumjs/common][common-package]         | [![NPM Package][common-npm-badge]][common-npm-link]         | [![Common Issues][common-issues-badge]][common-issues-link]             | [![Actions Status][common-actions-badge]][common-actions-link]         | [![Code Coverage][common-coverage-badge]][common-coverage-link]         |
 | [@ethereumjs/devp2p][devp2p-package]         | [![NPM Package][devp2p-npm-badge]][devp2p-npm-link]         | [![Common Issues][devp2p-issues-badge]][devp2p-issues-link]             | [![Actions Status][devp2p-actions-badge]][devp2p-actions-link]         | [![Code Coverage][devp2p-coverage-badge]][devp2p-coverage-link] 
 | [@ethereumjs/ethash][ethash-package]         | [![NPM Package][ethash-npm-badge]][ethash-npm-link]         | [![Ethash Issues][ethash-issues-badge]][ethash-issues-link]             | [![Actions Status][ethash-actions-badge]][ethash-actions-link]         | [![Code Coverage][ethash-coverage-badge]][ethash-coverage-link]         |
@@ -203,6 +204,15 @@ If you want to join for work or do improvements on the libraries have a look at 
 [blockchain-actions-link]: https://github.com/ethereumjs/ethereumjs-vm/actions?query=workflow%3A%22Blockchain%22
 [blockchain-coverage-badge]: https://codecov.io/gh/ethereumjs/ethereumjs-vm/branch/master/graph/badge.svg?flag=blockchain
 [blockchain-coverage-link]: https://codecov.io/gh/ethereumjs/ethereumjs-vm/tree/master/packages/blockchain
+[client-package]: ./packages/client
+[client-npm-badge]: https://img.shields.io/npm/v/@ethereumjs/client.svg
+[client-npm-link]: https://www.npmjs.com/package/@ethereumjs/client
+[client-issues-badge]: https://img.shields.io/github/issues/ethereumjs/ethereumjs-vm/package:%20client?label=issues
+[client-issues-link]: https://github.com/ethereumjs/ethereumjs-vm/issues?q=is%3Aopen+is%3Aissue+label%3A"package%3A+client"
+[client-actions-badge]: https://github.com/ethereumjs/ethereumjs-vm/workflows/Client/badge.svg
+[client-actions-link]: https://github.com/ethereumjs/ethereumjs-vm/actions?query=workflow%3A%22Client%22
+[client-coverage-badge]: https://codecov.io/gh/ethereumjs/ethereumjs-vm/branch/master/graph/badge.svg?flag=client
+[client-coverage-link]: https://codecov.io/gh/ethereumjs/ethereumjs-vm/tree/master/packages/client
 [common-package]: ./packages/common
 [common-npm-badge]: https://img.shields.io/npm/v/@ethereumjs/common.svg
 [common-npm-link]: https://www.npmjs.com/package/@ethereumjs/common
