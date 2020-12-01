@@ -16,7 +16,7 @@ defaults:
     working-directory: packages/client
 
 jobs:
-  test:
+  test-client:
     runs-on: ubuntu-latest
     strategy:
       matrix:
