@@ -1,0 +1,12 @@
+{
+  "extends": "@ethereumjs/config-typescript",
+  "include": ["src/**/*.ts", "test/**/*.ts", "examples/**/*.ts"],
+  "compilerOptions": {
+    "baseUrl": ".",
+    "typeRoots": ["node_modules/@types"],
+    "declaration": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "downlevelIteration": true
+  }
+}
