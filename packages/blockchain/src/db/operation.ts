@@ -105,6 +105,8 @@ export class DBOp {
   }
 
   // set operation: note: value/key is not in default order
+  public static set(operationTarget: DBTarget.Heads, value: object, key?: DatabaseKey): DBOp;
+  public static set(operationTarget: DBTarget, value: Buffer, key?: DatabaseKey): DBOp;
   public static set(operationTarget: DBTarget, value: Buffer | object, key?: DatabaseKey): DBOp {
     const dbOperation = new DBOp(operationTarget, key)
     dbOperation.baseDBOp.value = value
