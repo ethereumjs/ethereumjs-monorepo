@@ -1,0 +1,11 @@
+{
+  "extends": "@ethereumjs/config-typescript/tsconfig.browser.json",
+  "include": ["browser/index.ts"],
+  "exclude": ["lib/index.js"],
+  "compilerOptions": {
+    "outDir": "dist.browser",
+    "typeRoots": [
+      "node_modules/@polkadot/ts"
+    ]
+  }
+}

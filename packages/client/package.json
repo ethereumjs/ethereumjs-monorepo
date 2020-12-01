@@ -1,0 +1,123 @@
+{
+  "name": "ethereumjs-client",
+  "version": "0.0.6",
+  "description": "EthereumJS client implementation",
+  "main": "dist/lib/index.js",
+  "types": "dist/lib/index.d.ts",
+  "browser": "dist/bundle.js",
+  "bin": {
+    "ethereumjs": "bin/cli.js"
+  },
+  "files": [
+    "bin",
+    "dist"
+  ],
+  "scripts": {
+    "build": "npm run build:node && npm run build:browser",
+    "build:node": "tsc -p ./tsconfig.prod.json",
+    "build:browser": "tsc -p ./tsconfig.browser.json && npm run bundle && rm -rf dist.browser",
+    "bundle": "webpack",
+    "client:start": "tsc -p tsconfig.prod.json && node dist/bin/cli.js",
+    "coverage": "nyc npm run test && nyc report --reporter=lcov",
+    "docs:build": "typedoc --tsconfig tsconfig.prod.json",
+    "lint": "ethereumjs-config-lint",
+    "lint:fix": "ethereumjs-config-lint-fix",
+    "tape": "tape -r ts-node/register",
+    "test": "npm run test:unit && npm run test:integration",
+    "test:unit": "npm run tape -- 'test/!(integration)/**/*.spec.ts'",
+    "test:integration": "npm run tape -- 'test/integration/**/*.spec.ts'",
+    "test:browser": "karma start karma.conf.js"
+  },
+  "husky": {
+    "hooks": {
+      "pre-push": "npm run lint"
+    }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ethereumjs/ethereumjs-client.git"
+  },
+  "keywords": [
+    "ethereum",
+    "ethereumjs",
+    "client",
+    "blockchain",
+    "light sync",
+    "full sync"
+  ],
+  "engines": {
+    "node": ">=8.0.0"
+  },
+  "author": "Vinay Pulim (v@pulim.com)",
+  "license": "MPL-2.0",
+  "bugs": {
+    "url": "https://github.com/ethereumjs/ethereumjs-client/issues"
+  },
+  "homepage": "https://github.com/ethereumjs/ethereumjs-client#readme",
+  "dependencies": {
+    "@ethereumjs/block": "^3.0.0",
+    "@ethereumjs/blockchain": "^5.0.0",
+    "@ethereumjs/common": "^2.0.0",
+    "@ethereumjs/vm": "^5.0.0",
+    "chalk": "^2.4.1",
+    "ethereumjs-devp2p": "^3.0.3",
+    "ethereumjs-util": "^7.0.7",
+    "fs-extra": "^7.0.1",
+    "jayson": "^3.3.4",
+    "level": "^6.0.1",
+    "libp2p": "^0.24.4",
+    "libp2p-bootstrap": "^0.9.3",
+    "libp2p-kad-dht": "^0.14.5",
+    "libp2p-mplex": "^0.8.2",
+    "libp2p-secio": "^0.11.1",
+    "libp2p-tcp": "^0.13.0",
+    "libp2p-websockets": "^0.12.0",
+    "merkle-patricia-tree": "^4.0.0",
+    "peer-id": "^0.12.2",
+    "peer-info": "^0.15.1",
+    "pull-catch": "^1.0.0",
+    "pull-pushable": "^2.2.0",
+    "pull-stream": "^3.6.9",
+    "qheap": "^1.4.0",
+    "rlp": "^2.0.0",
+    "util-promisify": "^2.1.0",
+    "winston": "3.3.3",
+    "yargs": "^13.2.1"
+  },
+  "devDependencies": {
+    "@babel/plugin-transform-spread": "^7.10.1",
+    "@ethereumjs/config-coverage": "^2.0.0",
+    "@ethereumjs/config-typescript": "^2.0.0",
+    "@ethereumjs/eslint-config-defaults": "^2.0.0",
+    "@polkadot/ts": "^0.3.48",
+    "@types/levelup": "^4.3.0",
+    "@types/node": "^14.11.5",
+    "@types/tape": "^4.13.0",
+    "@types/tape-catch": "^1.0.0",
+    "file-replace-loader": "^1.2.0",
+    "husky": "^2.1.0",
+    "json-to-markdown": "^1.0.4",
+    "karma": "^5.0.9",
+    "karma-chrome-launcher": "^3.1.0",
+    "karma-firefox-launcher": "^1.3.0",
+    "karma-tap": "^4.2.0",
+    "karma-typescript": "^5.0.3",
+    "nyc": "^14.1.1",
+    "pino": "^5.8.0",
+    "pino-pretty": "^2.2.2",
+    "pull-pair": "^1.1.0",
+    "supertest": "^3.1.0",
+    "tape": "~4.10.1",
+    "tape-catch": "~1.0.6",
+    "testdouble": "^3.8.2",
+    "testdouble-timers": "^0.1.1",
+    "tmp": "~0.0.33",
+    "ts-loader": "^7.0.5",
+    "ts-node": "^8.10.2",
+    "typedoc": "next",
+    "typedoc-plugin-markdown": "^2.3.1",
+    "typescript": "^3.9.5",
+    "webpack": "^4.43.0",
+    "webpack-cli": "^3.3.11"
+  }
+}
