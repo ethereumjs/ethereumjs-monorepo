@@ -52,7 +52,7 @@ export class DBManager {
    * Fetches iterator heads from the db.
    */
   async getHeads(): Promise<{ [key: string]: Buffer }> {
-    const heads = await this.get(DBTarget.Heads)
+    const heads = JSON.parse((await this.get(DBTarget.Heads)).toString())
     Object.keys(heads).forEach((key) => {
       heads[key] = Buffer.from(heads[key])
     })
@@ -185,7 +185,12 @@ export class DBManager {
    * Performs a batch operation on db.
    */
   async batch(ops: DBOp[]) {
-    const convertedOps: DBOpData[] = ops.map((op) => op.baseDBOp)
+    const convertedOps = ops.map((op) => {
+      return {
+        ...op.baseDBOp,
+        value: op.baseDBOp.value instanceof Buffer ? op.baseDBOp.value : JSON.stringify(op.baseDBOp.value)
+      }
+    })
     // update the current cache for each operation
     ops.map((op) => op.updateCache(this._cache))
 
