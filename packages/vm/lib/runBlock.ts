@@ -162,7 +162,7 @@ export default async function runBlock(this: VM, opts: RunBlockOpts): Promise<Ru
   // header values against the current block.
   if (generateStateRoot) {
     const bloom = result.bloom.bitvector
-    block = Block.fromBlockData({
+    opts.block = block = Block.fromBlockData({
       ...block,
       header: { ...block.header, stateRoot, bloom },
     })
