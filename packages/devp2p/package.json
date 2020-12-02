@@ -40,7 +40,7 @@
   },
   "scripts": {
     "build": "ethereumjs-config-ts-build",
-    "prepublishOnly": "npm run test && npm run build",
+    "prepublishOnly": "npm run build && npm run test",
     "coverage": "ethereumjs-config-coverage",
     "docs:build": "typedoc",
     "format": "ethereumjs-config-format",

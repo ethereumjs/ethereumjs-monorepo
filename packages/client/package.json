@@ -16,6 +16,7 @@
     "build": "npm run build:node && npm run build:browser",
     "build:node": "tsc -p ./tsconfig.prod.json",
     "build:browser": "tsc -p ./tsconfig.browser.json && npm run bundle && rm -rf dist.browser",
+    "prepublishOnly": "npm run build && npm run test",
     "bundle": "webpack",
     "client:start": "tsc -p tsconfig.prod.json && node dist/bin/cli.js",
     "coverage": "nyc npm run test && nyc report --reporter=lcov",
