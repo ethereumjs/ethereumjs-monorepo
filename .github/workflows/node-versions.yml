@@ -52,9 +52,17 @@ jobs:
         run: npm run test
         working-directory: packages/blockchain
 
+      - name: Test Client
+        run: npm run test
+        working-directory: packages/client
+
       - name: Test Common
         run: npm run test
         working-directory: packages/common
+      
+      - name: Test Devp2p
+        run: npm run test
+        working-directory: packages/devp2p
 
       - name: Test Ethash
         run: npm run test
