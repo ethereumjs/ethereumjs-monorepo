@@ -40,7 +40,7 @@
   },
   "scripts": {
     "build": "ethereumjs-config-ts-build",
-    "prepublishOnly": "npm run test && npm run build",
+    "prepublishOnly": "npm run build && npm run test",
     "coverage": "ethereumjs-config-coverage",
     "docs:build": "typedoc",
     "format": "ethereumjs-config-format",
@@ -85,7 +85,6 @@
     "eslint": "^6.8.0",
     "eslint-config-prettier": "^6.11.0",
     "eslint-plugin-implicit-dependencies": "^1.0.4",
-    "husky": "^4.2.5",
     "nyc": "^14.0.0",
     "prettier": "^2.0.5",
     "tape": "^4.10.1",

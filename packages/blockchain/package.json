@@ -10,7 +10,7 @@
   ],
   "browser": "dist.browser/index.js",
   "scripts": {
-    "prepublishOnly": "npm run lint && npm run test && npm run build",
+    "prepublishOnly": "npm run build && npm run test",
     "build": "ethereumjs-config-ts-build",
     "coverage": "ethereumjs-config-coverage",
     "docs:build": "typedoc --options typedoc.js",
