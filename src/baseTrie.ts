@@ -211,7 +211,7 @@ export class Trie {
   /**
    * Walks a trie until finished.
    * @param root
-   * @param onFound - callback to call when a node is found. This schedules new tasks. If no tasks are availble, the Promise resolves.
+   * @param onFound - callback to call when a node is found. This schedules new tasks. If no tasks are available, the Promise resolves.
    * @returns Resolves when finished walking trie.
    */
   async walkTrie(root: Buffer, onFound: FoundNodeFunction): Promise<void> {
