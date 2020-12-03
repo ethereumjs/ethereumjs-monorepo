@@ -53,7 +53,7 @@ ___
 
 ▸ **allChildren**(`node`: TrieNode, `key`: Nibbles): *void*
 
-*Defined in [util/walkController.ts:67](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/util/walkController.ts#L67)*
+*Defined in [util/walkController.ts:63](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/util/walkController.ts#L63)*
 
 Run all children of a node. Priority of these nodes are the key length of the children
 
@@ -72,7 +72,7 @@ ___
 
 ▸ **onlyBranchIndex**(`node`: BranchNode, `key`: Nibbles, `childIndex`: number, `priority?`: undefined | number): *Promise‹void›*
 
-*Defined in [util/walkController.ts:110](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/util/walkController.ts#L110)*
+*Defined in [util/walkController.ts:106](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/util/walkController.ts#L106)*
 
 Push a branch of a certain BranchNode to the event queue
 
@@ -93,7 +93,7 @@ ___
 
 ▸ **pushNode**(`nodeRef`: Buffer, `key`: Nibbles, `priority?`: undefined | number): *void*
 
-*Defined in [util/walkController.ts:95](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/util/walkController.ts#L95)*
+*Defined in [util/walkController.ts:91](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/util/walkController.ts#L91)*
 
 **Parameters:**
 

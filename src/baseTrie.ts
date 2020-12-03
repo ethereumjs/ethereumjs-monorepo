@@ -28,7 +28,7 @@ interface Path {
 
 export type FoundNodeFunction = (
   nodeRef: Buffer,
-  node: TrieNode,
+  node: TrieNode | null,
   key: Nibbles,
   walkController: WalkController
 ) => void
@@ -161,6 +161,9 @@ export class Trie {
       const targetKey = bufferToNibbles(key)
 
       const onFound: FoundNodeFunction = async (nodeRef, node, keyProgress, walkController) => {
+        if (node === null) {
+          return
+        }
         const keyRemainder = targetKey.slice(matchingNibbleLength(keyProgress, targetKey))
         stack.push(node)
 
@@ -694,7 +697,9 @@ export class Trie {
   async _findDbNodes(onFound: FoundNodeFunction): Promise<void> {
     const outerOnFound: FoundNodeFunction = async (nodeRef, node, key, walkController) => {
       if (isRawNode(nodeRef)) {
-        walkController.allChildren(node, key)
+        if (node !== null) {
+          walkController.allChildren(node, key)
+        }
       } else {
         onFound(nodeRef, node, key, walkController)
       }
@@ -720,7 +725,9 @@ export class Trie {
         onFound(nodeRef, node, fullKey, walkController)
       } else {
         // keep looking for value nodes
-        walkController.allChildren(node, key)
+        if (node !== null) {
+          walkController.allChildren(node, key)
+        }
       }
     }
     await this.walkTrie(this.root, outerOnFound)

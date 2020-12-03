@@ -233,8 +233,8 @@ tape('shall handle the case of node not found correctly', async (t) => {
 
   t.ok(path.node === null, 'findPath should not return a node now')
   t.ok(
-    path.stack.length == 2,
-    'findPath should find the first extension node which is still in the DB and report the null, non existent node'
+    path.stack.length == 1,
+    'findPath should find the first extension node which is still in the DB'
   )
 
   t.end()

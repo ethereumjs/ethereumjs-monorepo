@@ -136,7 +136,7 @@ Name | Type |
 
 ▸ **_createInitialNode**(`key`: Buffer, `value`: Buffer): *Promise‹void›*
 
-*Defined in [baseTrie.ts:235](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/baseTrie.ts#L235)*
+*Defined in [baseTrie.ts:238](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/baseTrie.ts#L238)*
 
 Creates the initial node from an empty tree.
 
@@ -155,7 +155,7 @@ ___
 
 ▸ **_deleteNode**(`k`: Buffer, `stack`: TrieNode[]): *Promise‹void›*
 
-*Defined in [baseTrie.ts:378](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/baseTrie.ts#L378)*
+*Defined in [baseTrie.ts:381](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/baseTrie.ts#L381)*
 
 Deletes a node from the database.
 
@@ -174,7 +174,7 @@ ___
 
 ▸ **_findDbNodes**(`onFound`: [FoundNodeFunction](../modules/_basetrie_.md#foundnodefunction)): *Promise‹void›*
 
-*Defined in [baseTrie.ts:694](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/baseTrie.ts#L694)*
+*Defined in [baseTrie.ts:697](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/baseTrie.ts#L697)*
 
 Finds all nodes that are stored directly in the db
 (some nodes are stored raw inside other nodes)
@@ -194,7 +194,7 @@ ___
 
 ▸ **_findValueNodes**(`onFound`: [FoundNodeFunction](../modules/_basetrie_.md#foundnodefunction)): *Promise‹void›*
 
-*Defined in [baseTrie.ts:710](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/baseTrie.ts#L710)*
+*Defined in [baseTrie.ts:715](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/baseTrie.ts#L715)*
 
 Finds all nodes that store k,v values
 called by {@link TrieReadStream}
@@ -213,7 +213,7 @@ ___
 
 ▸ **_formatNode**(`node`: TrieNode, `topLevel`: boolean, `opStack`: BatchDBOp[], `remove`: boolean): *Buffer | (null | Buffer‹› | Buffer‹›[])[]*
 
-*Defined in [baseTrie.ts:546](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/baseTrie.ts#L546)*
+*Defined in [baseTrie.ts:549](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/baseTrie.ts#L549)*
 
 Formats node to be saved by `levelup.batch`.
 
@@ -236,7 +236,7 @@ ___
 
 ▸ **_saveStack**(`key`: Nibbles, `stack`: TrieNode[], `opStack`: BatchDBOp[]): *Promise‹void›*
 
-*Defined in [baseTrie.ts:508](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/baseTrie.ts#L508)*
+*Defined in [baseTrie.ts:511](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/baseTrie.ts#L511)*
 
 Saves a stack of nodes to the database.
 
@@ -272,7 +272,7 @@ ___
 
 ▸ **_updateNode**(`k`: Buffer, `value`: Buffer, `keyRemainder`: Nibbles, `stack`: TrieNode[]): *Promise‹void›*
 
-*Defined in [baseTrie.ts:275](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/baseTrie.ts#L275)*
+*Defined in [baseTrie.ts:278](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/baseTrie.ts#L278)*
 
 Updates a node.
 
@@ -293,7 +293,7 @@ ___
 
 ▸ **batch**(`ops`: BatchDBOp[]): *Promise‹void›*
 
-*Defined in [baseTrie.ts:591](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/baseTrie.ts#L591)*
+*Defined in [baseTrie.ts:594](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/baseTrie.ts#L594)*
 
 The given hash of operations (key additions or deletions) are executed on the DB
 
@@ -339,7 +339,7 @@ ___
 
 ▸ **copy**(): *[Trie](_basetrie_.trie.md)*
 
-*Defined in [baseTrie.ts:683](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/baseTrie.ts#L683)*
+*Defined in [baseTrie.ts:686](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/baseTrie.ts#L686)*
 
 Creates a new trie backed by the same db.
 
@@ -351,7 +351,7 @@ ___
 
 ▸ **createReadStream**(): *ReadStream*
 
-*Defined in [baseTrie.ts:676](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/baseTrie.ts#L676)*
+*Defined in [baseTrie.ts:679](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/baseTrie.ts#L679)*
 
 The `data` event is given an `Object` that has two properties; the `key` and the `value`. Both should be Buffers.
 
@@ -424,7 +424,7 @@ ___
 
 ▸ **lookupNode**(`node`: Buffer | Buffer[]): *Promise‹TrieNode | null›*
 
-*Defined in [baseTrie.ts:244](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/baseTrie.ts#L244)*
+*Defined in [baseTrie.ts:247](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/baseTrie.ts#L247)*
 
 Retrieves a node from db by hash.
 
@@ -463,7 +463,7 @@ ___
 
 ▸ **walkTrie**(`root`: Buffer, `onFound`: [FoundNodeFunction](../modules/_basetrie_.md#foundnodefunction)): *Promise‹void›*
 
-*Defined in [baseTrie.ts:217](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/baseTrie.ts#L217)*
+*Defined in [baseTrie.ts:220](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/baseTrie.ts#L220)*
 
 Walks a trie until finished.
 
@@ -484,7 +484,7 @@ ___
 
 ▸ **createProof**(`trie`: [Trie](_basetrie_.trie.md), `key`: Buffer): *Promise‹[Proof](../modules/_basetrie_.md#proof)›*
 
-*Defined in [baseTrie.ts:646](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/baseTrie.ts#L646)*
+*Defined in [baseTrie.ts:649](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/baseTrie.ts#L649)*
 
 Creates a proof from a trie and key that can be verified using [Trie.verifyProof](_basetrie_.trie.md#static-verifyproof).
 
@@ -503,7 +503,7 @@ ___
 
 ▸ **fromProof**(`proof`: [Proof](../modules/_basetrie_.md#proof), `trie?`: [Trie](_basetrie_.trie.md)): *Promise‹[Trie](_basetrie_.trie.md)›*
 
-*Defined in [baseTrie.ts:611](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/baseTrie.ts#L611)*
+*Defined in [baseTrie.ts:614](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/baseTrie.ts#L614)*
 
 Saves the nodes from a proof into the trie. If no trie is provided a new one wil be instantiated.
 
@@ -522,7 +522,7 @@ ___
 
 ▸ **prove**(`trie`: [Trie](_basetrie_.trie.md), `key`: Buffer): *Promise‹[Proof](../modules/_basetrie_.md#proof)›*
 
-*Defined in [baseTrie.ts:637](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/baseTrie.ts#L637)*
+*Defined in [baseTrie.ts:640](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/baseTrie.ts#L640)*
 
 prove has been renamed to [Trie.createProof](_basetrie_.trie.md#static-createproof).
 
@@ -543,7 +543,7 @@ ___
 
 ▸ **verifyProof**(`rootHash`: Buffer, `key`: Buffer, `proof`: [Proof](../modules/_basetrie_.md#proof)): *Promise‹Buffer | null›*
 
-*Defined in [baseTrie.ts:662](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/baseTrie.ts#L662)*
+*Defined in [baseTrie.ts:665](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/baseTrie.ts#L665)*
 
 Verifies a proof.
 

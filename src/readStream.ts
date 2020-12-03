@@ -19,11 +19,13 @@ export class TrieReadStream extends Readable {
     }
     this._started = true
     await this.trie._findValueNodes(async (nodeRef, node, key, walkController) => {
-      this.push({
-        key: nibblesToBuffer(key),
-        value: node.value,
-      })
-      walkController.allChildren(node, key)
+      if (node !== null) {
+        this.push({
+          key: nibblesToBuffer(key),
+          value: node.value,
+        })
+        walkController.allChildren(node, key)
+      }
     })
     this.push(null)
   }

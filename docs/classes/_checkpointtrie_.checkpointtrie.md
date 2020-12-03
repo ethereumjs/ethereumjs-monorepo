@@ -180,7 +180,7 @@ Name | Type |
 
 *Inherited from [Trie](_basetrie_.trie.md).[_createInitialNode](_basetrie_.trie.md#private-_createinitialnode)*
 
-*Defined in [baseTrie.ts:235](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/baseTrie.ts#L235)*
+*Defined in [baseTrie.ts:238](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/baseTrie.ts#L238)*
 
 Creates the initial node from an empty tree.
 
@@ -220,7 +220,7 @@ ___
 
 *Inherited from [Trie](_basetrie_.trie.md).[_deleteNode](_basetrie_.trie.md#private-_deletenode)*
 
-*Defined in [baseTrie.ts:378](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/baseTrie.ts#L378)*
+*Defined in [baseTrie.ts:381](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/baseTrie.ts#L381)*
 
 Deletes a node from the database.
 
@@ -271,7 +271,7 @@ ___
 
 *Inherited from [Trie](_basetrie_.trie.md).[_findDbNodes](_basetrie_.trie.md#private-_finddbnodes)*
 
-*Defined in [baseTrie.ts:694](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/baseTrie.ts#L694)*
+*Defined in [baseTrie.ts:697](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/baseTrie.ts#L697)*
 
 Finds all nodes that are stored directly in the db
 (some nodes are stored raw inside other nodes)
@@ -293,7 +293,7 @@ ___
 
 *Inherited from [Trie](_basetrie_.trie.md).[_findValueNodes](_basetrie_.trie.md#private-_findvaluenodes)*
 
-*Defined in [baseTrie.ts:710](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/baseTrie.ts#L710)*
+*Defined in [baseTrie.ts:715](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/baseTrie.ts#L715)*
 
 Finds all nodes that store k,v values
 called by {@link TrieReadStream}
@@ -314,7 +314,7 @@ ___
 
 *Inherited from [Trie](_basetrie_.trie.md).[_formatNode](_basetrie_.trie.md#private-_formatnode)*
 
-*Defined in [baseTrie.ts:546](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/baseTrie.ts#L546)*
+*Defined in [baseTrie.ts:549](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/baseTrie.ts#L549)*
 
 Formats node to be saved by `levelup.batch`.
 
@@ -339,7 +339,7 @@ ___
 
 *Inherited from [Trie](_basetrie_.trie.md).[_saveStack](_basetrie_.trie.md#private-_savestack)*
 
-*Defined in [baseTrie.ts:508](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/baseTrie.ts#L508)*
+*Defined in [baseTrie.ts:511](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/baseTrie.ts#L511)*
 
 Saves a stack of nodes to the database.
 
@@ -379,7 +379,7 @@ ___
 
 *Inherited from [Trie](_basetrie_.trie.md).[_updateNode](_basetrie_.trie.md#private-_updatenode)*
 
-*Defined in [baseTrie.ts:275](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/baseTrie.ts#L275)*
+*Defined in [baseTrie.ts:278](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/baseTrie.ts#L278)*
 
 Updates a node.
 
@@ -402,7 +402,7 @@ ___
 
 *Inherited from [Trie](_basetrie_.trie.md).[batch](_basetrie_.trie.md#batch)*
 
-*Defined in [baseTrie.ts:591](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/baseTrie.ts#L591)*
+*Defined in [baseTrie.ts:594](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/baseTrie.ts#L594)*
 
 The given hash of operations (key additions or deletions) are executed on the DB
 
@@ -501,7 +501,7 @@ ___
 
 *Inherited from [Trie](_basetrie_.trie.md).[createReadStream](_basetrie_.trie.md#createreadstream)*
 
-*Defined in [baseTrie.ts:676](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/baseTrie.ts#L676)*
+*Defined in [baseTrie.ts:679](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/baseTrie.ts#L679)*
 
 The `data` event is given an `Object` that has two properties; the `key` and the `value`. Both should be Buffers.
 
@@ -582,7 +582,7 @@ ___
 
 *Inherited from [Trie](_basetrie_.trie.md).[lookupNode](_basetrie_.trie.md#lookupnode)*
 
-*Defined in [baseTrie.ts:244](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/baseTrie.ts#L244)*
+*Defined in [baseTrie.ts:247](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/baseTrie.ts#L247)*
 
 Retrieves a node from db by hash.
 
@@ -639,7 +639,7 @@ ___
 
 *Inherited from [Trie](_basetrie_.trie.md).[walkTrie](_basetrie_.trie.md#walktrie)*
 
-*Defined in [baseTrie.ts:217](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/baseTrie.ts#L217)*
+*Defined in [baseTrie.ts:220](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/baseTrie.ts#L220)*
 
 Walks a trie until finished.
 
@@ -662,7 +662,7 @@ ___
 
 *Inherited from [Trie](_basetrie_.trie.md).[createProof](_basetrie_.trie.md#static-createproof)*
 
-*Defined in [baseTrie.ts:646](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/baseTrie.ts#L646)*
+*Defined in [baseTrie.ts:649](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/baseTrie.ts#L649)*
 
 Creates a proof from a trie and key that can be verified using [Trie.verifyProof](_basetrie_.trie.md#static-verifyproof).
 
@@ -683,7 +683,7 @@ ___
 
 *Inherited from [Trie](_basetrie_.trie.md).[fromProof](_basetrie_.trie.md#static-fromproof)*
 
-*Defined in [baseTrie.ts:611](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/baseTrie.ts#L611)*
+*Defined in [baseTrie.ts:614](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/baseTrie.ts#L614)*
 
 Saves the nodes from a proof into the trie. If no trie is provided a new one wil be instantiated.
 
@@ -704,7 +704,7 @@ ___
 
 *Inherited from [Trie](_basetrie_.trie.md).[prove](_basetrie_.trie.md#static-prove)*
 
-*Defined in [baseTrie.ts:637](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/baseTrie.ts#L637)*
+*Defined in [baseTrie.ts:640](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/baseTrie.ts#L640)*
 
 prove has been renamed to [Trie.createProof](_basetrie_.trie.md#static-createproof).
 
@@ -727,7 +727,7 @@ ___
 
 *Inherited from [Trie](_basetrie_.trie.md).[verifyProof](_basetrie_.trie.md#static-verifyproof)*
 
-*Defined in [baseTrie.ts:662](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/baseTrie.ts#L662)*
+*Defined in [baseTrie.ts:665](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/baseTrie.ts#L665)*
 
 Verifies a proof.
 

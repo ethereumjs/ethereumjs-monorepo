@@ -23,14 +23,14 @@
 
 #### Type declaration:
 
-▸ (`nodeRef`: Buffer, `node`: TrieNode, `key`: Nibbles, `walkController`: [WalkController](../classes/_util_walkcontroller_.walkcontroller.md)): *void*
+▸ (`nodeRef`: Buffer, `node`: TrieNode | null, `key`: Nibbles, `walkController`: [WalkController](../classes/_util_walkcontroller_.walkcontroller.md)): *void*
 
 **Parameters:**
 
 Name | Type |
 ------ | ------ |
 `nodeRef` | Buffer |
-`node` | TrieNode |
+`node` | TrieNode &#124; null |
 `key` | Nibbles |
 `walkController` | [WalkController](../classes/_util_walkcontroller_.walkcontroller.md) |
 

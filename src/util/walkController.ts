@@ -47,11 +47,7 @@ export default class WalkController {
       this.trie
         ._lookupNode(root)
         .then((node) => {
-          if (!node) {
-            this.resolve()
-          } else {
-            this.processNode(root, node as TrieNode, [])
-          }
+          this.processNode(root, node, [])
         })
         .catch((e) => {
           reject(e)
@@ -126,7 +122,7 @@ export default class WalkController {
     this.pushNode(childRef as Buffer, childKey, prio)
   }
 
-  private processNode(nodeRef: Buffer, node: TrieNode, key: Nibbles = []) {
+  private processNode(nodeRef: Buffer, node: TrieNode | null, key: Nibbles = []) {
     this.onNode(nodeRef, node, key, this)
     if (this.taskExecutor.finished()) {
       // onNode should schedule new tasks. If no tasks was added and the queue is empty, then we have finished our walk.
