@@ -3,14 +3,17 @@ import { FoundNodeFunction } from '../baseTrie'
 import { PrioritizedTaskExecutor } from '../prioritizedTaskExecutor'
 import { BranchNode, ExtensionNode, LeafNode, Nibbles, TrieNode } from '../trieNode'
 
-export default class WalkStrategy {
+/**
+ * WalkController is an interface to control how the trie is being traversed.
+ */
+export default class WalkController {
   readonly onNode: FoundNodeFunction
   readonly taskExecutor: PrioritizedTaskExecutor
   readonly trie: BaseTrie
   private resolve: Function
 
   /**
-   * Creates a new WalkStrategy
+   * Creates a new WalkController
    * @param onNode - The `FoundNodeFunction` to call if a node is found
    * @param trie - The `Trie` to walk on
    */
@@ -34,7 +37,7 @@ export default class WalkStrategy {
     root: Buffer,
     poolSize?: number
   ): Promise<void> {
-    const strategy = new WalkStrategy(onNode, trie, poolSize ?? 500)
+    const strategy = new WalkController(onNode, trie, poolSize ?? 500)
     await strategy.startWalk(root)
   }
 

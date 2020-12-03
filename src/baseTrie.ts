@@ -4,7 +4,7 @@ import { keccak, KECCAK256_RLP } from 'ethereumjs-util'
 import { DB, BatchDBOp, PutBatch } from './db'
 import { TrieReadStream as ReadStream } from './readStream'
 import { bufferToNibbles, matchingNibbleLength, doKeysMatch } from './util/nibbles'
-import WalkStrategy from './util/walkStrategy'
+import WalkController from './util/walkController'
 import {
   TrieNode,
   decodeNode,
@@ -30,7 +30,7 @@ export type FoundNodeFunction = (
   nodeRef: Buffer,
   node: TrieNode,
   key: Nibbles,
-  walkController: WalkStrategy
+  walkController: WalkController
 ) => void
 
 /**
@@ -215,7 +215,7 @@ export class Trie {
    * @returns Resolves when finished walking trie.
    */
   async walkTrie(root: Buffer, onFound: FoundNodeFunction): Promise<void> {
-    await WalkStrategy.newWalk(onFound, this, root)
+    await WalkController.newWalk(onFound, this, root)
   }
 
   /**
