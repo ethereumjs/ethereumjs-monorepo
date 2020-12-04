@@ -81,7 +81,7 @@ export class FullSynchronizer extends Synchronizer {
       block: (peer.eth as BoundProtocol).status.bestHash,
       max: 1,
     })
-    return headers[0]
+    return headers?.[0]
   }
 
   /**
@@ -92,6 +92,7 @@ export class FullSynchronizer extends Synchronizer {
   async syncWithPeer(peer?: Peer): Promise<boolean> {
     if (!peer) return false
     const latest = await this.latest(peer)
+    if (!latest) return false
     const height = new BN(latest.number)
     const first = ((this.chain.blocks as any).height as BN).addn(1)
     const count = height.sub(first).addn(1)

@@ -167,7 +167,10 @@ export class BoundProtocol extends EventEmitter {
       // Problem: How to dynamically add class properties in TS
       // https://stackoverflow.com/questions/41038812
       // @ts-ignore: implicit 'any'
-      this[name] = this[camel] = async (args: any[]) => this.request(name, args)
+      this[name] = this[camel] = async (args: any[]) =>
+        this.request(name, args).catch((error: Error) => {
+          this.emit('error', error)
+        })
     }
   }
 }
