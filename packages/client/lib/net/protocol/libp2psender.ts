@@ -1,6 +1,5 @@
 import { Sender } from './sender'
 import { bufferToInt, rlp } from 'ethereumjs-util'
-// @ts-ignore TODO: fix could not find a declaration file
 import { Pushable } from 'pull-pushable'
 
 // TODO: polkadot/ts types seem wrong (?)

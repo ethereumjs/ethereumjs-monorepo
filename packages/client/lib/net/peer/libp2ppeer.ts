@@ -1,6 +1,4 @@
-// @ts-ignore TODO: fix could not find a declaration file
 import PeerId from 'peer-id'
-// @ts-ignore TODO: fix could not find a declaration file
 import PeerInfo from 'peer-info'
 import { Multiaddrs, MultiaddrsLike } from '../../types'
 import { parseMultiaddrs } from '../../util'
