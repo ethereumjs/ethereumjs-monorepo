@@ -8,7 +8,7 @@ tape('prioritized task executor test', function (t) {
   const callbacks = [] as any
   const executionOrder = [] as any
   tasks.forEach(function (task) {
-    taskExecutor.execute(task, function (cb: Function) {
+    taskExecutor.executeOrQueue(task, function (cb: Function) {
       executionOrder.push(task)
       callbacks.push(cb)
     })

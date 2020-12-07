@@ -4,7 +4,7 @@ import { keccak, KECCAK256_RLP } from 'ethereumjs-util'
 import { DB, BatchDBOp, PutBatch } from './db'
 import { TrieReadStream as ReadStream } from './readStream'
 import { bufferToNibbles, matchingNibbleLength, doKeysMatch } from './util/nibbles'
-import WalkController from './util/walkController'
+import { WalkController } from './util/walkController'
 import {
   TrieNode,
   decodeNode,
@@ -180,7 +180,7 @@ export class Trie {
             } else {
               // node found, continuing search
               // this can be optimized as this calls getBranch again.
-              await walkController.onlyBranchIndex(node, keyProgress, branchIndex)
+              walkController.onlyBranchIndex(node, keyProgress, branchIndex)
             }
           }
         } else if (node instanceof LeafNode) {

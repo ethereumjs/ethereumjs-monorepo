@@ -6,7 +6,7 @@ import { BranchNode, ExtensionNode, LeafNode, Nibbles, TrieNode } from '../trieN
 /**
  * WalkController is an interface to control how the trie is being traversed.
  */
-export default class WalkController {
+export class WalkController {
   readonly onNode: FoundNodeFunction
   readonly taskExecutor: PrioritizedTaskExecutor
   readonly trie: BaseTrie
@@ -14,8 +14,9 @@ export default class WalkController {
 
   /**
    * Creates a new WalkController
-   * @param onNode - The `FoundNodeFunction` to call if a node is found
-   * @param trie - The `Trie` to walk on
+   * @param onNode - The `FoundNodeFunction` to call if a node is found.
+   * @param trie - The `Trie` to walk on.
+   * @param poolSize - The size of the task queue.
    */
   private constructor(onNode: FoundNodeFunction, trie: BaseTrie, poolSize: number) {
     this.onNode = onNode
@@ -26,9 +27,9 @@ export default class WalkController {
 
   /**
    * Async function to create and start a new walk over a trie.
-   * @param onNode - The `FoundNodeFunction to call if a node is found
-   * @param trie - The trie to walk on
-   * @param root - The root key to walk on
+   * @param onNode - The `FoundNodeFunction to call if a node is found.
+   * @param trie - The trie to walk on.
+   * @param root - The root key to walk on.
    * @param poolSize - Task execution pool size to prevent OOM errors. Defaults to 500.
    */
   static async newWalk(
@@ -42,22 +43,17 @@ export default class WalkController {
   }
 
   private async startWalk(root: Buffer): Promise<void> {
-    return await new Promise((resolve, reject) => {
+    // eslint-disable-next-line no-async-promise-executor
+    return await new Promise(async (resolve) => {
       this.resolve = resolve
-      this.trie
-        ._lookupNode(root)
-        .then((node) => {
-          this.processNode(root, node, [])
-        })
-        .catch((e) => {
-          reject(e)
-        })
+      const node = await this.trie._lookupNode(root)
+      this.processNode(root, node, [])
     })
   }
 
   /**
-   * Run all children of a node. Priority of these nodes are the key length of the children
-   * @param node - Node to get all children of and call onNode on
+   * Run all children of a node. Priority of these nodes are the key length of the children.
+   * @param node - Node to get all children of and call onNode on.
    * @param key - The current `key` which would yield the `node` when trying to get this node with a `get` operation.
    */
   allChildren(node: TrieNode, key: Nibbles = []) {
@@ -78,37 +74,35 @@ export default class WalkController {
       const childRef = child[1] as Buffer
       const childKey = key.concat(keyExtension)
       const priority = childKey.length
-      this.pushNode(childRef, childKey, priority)
+      this.pushNodeToQueue(childRef, childKey, priority)
     }
   }
 
   /**
-   *
+   * Push a node to the queue. If the queue has places left for tasks, the node is executed immediately, otherwise it is queued.
    * @param nodeRef - Push a node reference to the event queue. This reference is a 32-byte keccak hash of the value corresponding to the `key`.
    * @param key - The current key.
    * @param priority - Optional priority, defaults to key length
    */
-  pushNode(nodeRef: Buffer, key: Nibbles = [], priority?: number) {
-    this.taskExecutor.execute(priority ?? key.length, async (taskCallback: Function) => {
-      const childNode = await this.trie._lookupNode(nodeRef)
-      taskCallback()
-      this.processNode(nodeRef as Buffer, childNode as TrieNode, key)
-    })
+  pushNodeToQueue(nodeRef: Buffer, key: Nibbles = [], priority?: number) {
+    this.taskExecutor.executeOrQueue(
+      priority ?? key.length,
+      async (taskFinishedCallback: Function) => {
+        const childNode = await this.trie._lookupNode(nodeRef)
+        taskFinishedCallback() // this marks the current task as finished. If there are any tasks left in the queue, this will immediately execute the first task.
+        this.processNode(nodeRef as Buffer, childNode as TrieNode, key)
+      }
+    )
   }
 
   /**
-   * Push a branch of a certain BranchNode to the event queue
-   * @param node - The node to select a branch on. Should be a BranchNode
-   * @param key - The current key which leads to the corresponding node
-   * @param childIndex - The child index to add to the event queue
-   * @param priority - Optional priority of the event, defaults to the total key length
+   * Push a branch of a certain BranchNode to the event queue.
+   * @param node - The node to select a branch on. Should be a BranchNode.
+   * @param key - The current key which leads to the corresponding node.
+   * @param childIndex - The child index to add to the event queue.
+   * @param priority - Optional priority of the event, defaults to the total key length.
    */
-  async onlyBranchIndex(
-    node: BranchNode,
-    key: Nibbles = [],
-    childIndex: number,
-    priority?: number
-  ) {
+  onlyBranchIndex(node: BranchNode, key: Nibbles = [], childIndex: number, priority?: number) {
     if (!(node instanceof BranchNode)) {
       throw new Error('Expected branch node')
     }
@@ -119,7 +113,7 @@ export default class WalkController {
     const childKey = key.slice() // This copies the key to a new array.
     childKey.push(childIndex)
     const prio = priority ?? childKey.length
-    this.pushNode(childRef as Buffer, childKey, prio)
+    this.pushNodeToQueue(childRef as Buffer, childKey, prio)
   }
 
   private processNode(nodeRef: Buffer, node: TrieNode | null, key: Nibbles = []) {

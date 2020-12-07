@@ -20,7 +20,7 @@ WalkController is an interface to control how the trie is being traversed.
 
 * [allChildren](_util_walkcontroller_.walkcontroller.md#allchildren)
 * [onlyBranchIndex](_util_walkcontroller_.walkcontroller.md#onlybranchindex)
-* [pushNode](_util_walkcontroller_.walkcontroller.md#pushnode)
+* [pushNodeToQueue](_util_walkcontroller_.walkcontroller.md#pushnodetoqueue)
 * [newWalk](_util_walkcontroller_.walkcontroller.md#static-newwalk)
 
 ## Properties
@@ -53,15 +53,15 @@ ___
 
 ▸ **allChildren**(`node`: TrieNode, `key`: Nibbles): *void*
 
-*Defined in [util/walkController.ts:63](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/util/walkController.ts#L63)*
+*Defined in [util/walkController.ts:59](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/util/walkController.ts#L59)*
 
-Run all children of a node. Priority of these nodes are the key length of the children
+Run all children of a node. Priority of these nodes are the key length of the children.
 
 **Parameters:**
 
 Name | Type | Default | Description |
 ------ | ------ | ------ | ------ |
-`node` | TrieNode | - | Node to get all children of and call onNode on |
+`node` | TrieNode | - | Node to get all children of and call onNode on. |
 `key` | Nibbles | [] | The current `key` which would yield the `node` when trying to get this node with a `get` operation.  |
 
 **Returns:** *void*
@@ -70,30 +70,32 @@ ___
 
 ###  onlyBranchIndex
 
-▸ **onlyBranchIndex**(`node`: BranchNode, `key`: Nibbles, `childIndex`: number, `priority?`: undefined | number): *Promise‹void›*
+▸ **onlyBranchIndex**(`node`: BranchNode, `key`: Nibbles, `childIndex`: number, `priority?`: undefined | number): *void*
 
-*Defined in [util/walkController.ts:106](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/util/walkController.ts#L106)*
+*Defined in [util/walkController.ts:105](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/util/walkController.ts#L105)*
 
-Push a branch of a certain BranchNode to the event queue
+Push a branch of a certain BranchNode to the event queue.
 
 **Parameters:**
 
 Name | Type | Default | Description |
 ------ | ------ | ------ | ------ |
-`node` | BranchNode | - | The node to select a branch on. Should be a BranchNode |
-`key` | Nibbles | [] | The current key which leads to the corresponding node |
-`childIndex` | number | - | The child index to add to the event queue |
-`priority?` | undefined &#124; number | - | Optional priority of the event, defaults to the total key length  |
+`node` | BranchNode | - | The node to select a branch on. Should be a BranchNode. |
+`key` | Nibbles | [] | The current key which leads to the corresponding node. |
+`childIndex` | number | - | The child index to add to the event queue. |
+`priority?` | undefined &#124; number | - | Optional priority of the event, defaults to the total key length.  |
 
-**Returns:** *Promise‹void›*
+**Returns:** *void*
 
 ___
 
-###  pushNode
+###  pushNodeToQueue
 
-▸ **pushNode**(`nodeRef`: Buffer, `key`: Nibbles, `priority?`: undefined | number): *void*
+▸ **pushNodeToQueue**(`nodeRef`: Buffer, `key`: Nibbles, `priority?`: undefined | number): *void*
 
-*Defined in [util/walkController.ts:91](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/util/walkController.ts#L91)*
+*Defined in [util/walkController.ts:87](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/util/walkController.ts#L87)*
+
+Push a node to the queue. If the queue has places left for tasks, the node is executed immediately, otherwise it is queued.
 
 **Parameters:**
 
@@ -111,7 +113,7 @@ ___
 
 ▸ **newWalk**(`onNode`: [FoundNodeFunction](../modules/_basetrie_.md#foundnodefunction), `trie`: BaseTrie, `root`: Buffer, `poolSize?`: undefined | number): *Promise‹void›*
 
-*Defined in [util/walkController.ts:34](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/util/walkController.ts#L34)*
+*Defined in [util/walkController.ts:35](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/util/walkController.ts#L35)*
 
 Async function to create and start a new walk over a trie.
 
@@ -119,9 +121,9 @@ Async function to create and start a new walk over a trie.
 
 Name | Type | Description |
 ------ | ------ | ------ |
-`onNode` | [FoundNodeFunction](../modules/_basetrie_.md#foundnodefunction) | The `FoundNodeFunction to call if a node is found |
-`trie` | BaseTrie | The trie to walk on |
-`root` | Buffer | The root key to walk on |
+`onNode` | [FoundNodeFunction](../modules/_basetrie_.md#foundnodefunction) | The `FoundNodeFunction to call if a node is found. |
+`trie` | BaseTrie | The trie to walk on. |
+`root` | Buffer | The root key to walk on. |
 `poolSize?` | undefined &#124; number | Task execution pool size to prevent OOM errors. Defaults to 500.  |
 
 **Returns:** *Promise‹void›*
