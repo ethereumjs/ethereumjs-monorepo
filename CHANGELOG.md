@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## UNRELEASED
+
+## New features
+
+There is a new exported `WalkController` class. Also, `trie.walkTrie()` is now a public method. Using the `WalkController`, one can create own custom ways to traverse the trie. [#135](https://github.com/ethereumjs/merkle-patricia-tree/pull/135)
+
 ## [4.0.0] - 2020-04-17
 
 This release introduces a major API upgrade from callbacks to Promises.

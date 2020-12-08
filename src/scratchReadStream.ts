@@ -21,11 +21,13 @@ export class ScratchReadStream extends Readable {
     }
     this._started = true
     await this.trie._findDbNodes(async (nodeRef, node, key, walkController) => {
-      this.push({
-        key: nodeRef,
-        value: node.serialize(),
-      })
-      await walkController.next()
+      if (node !== null) {
+        this.push({
+          key: nodeRef,
+          value: node.serialize(),
+        })
+        walkController.allChildren(node, key)
+      }
     })
     this.push(null)
   }

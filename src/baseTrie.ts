@@ -3,8 +3,8 @@ import { LevelUp } from 'levelup'
 import { keccak, KECCAK256_RLP } from 'ethereumjs-util'
 import { DB, BatchDBOp, PutBatch } from './db'
 import { TrieReadStream as ReadStream } from './readStream'
-import { PrioritizedTaskExecutor } from './prioritizedTaskExecutor'
 import { bufferToNibbles, matchingNibbleLength, doKeysMatch } from './util/nibbles'
+import { WalkController } from './util/walkController'
 import {
   TrieNode,
   decodeNode,
@@ -26,11 +26,11 @@ interface Path {
   stack: TrieNode[]
 }
 
-type FoundNodeFunction = (
+export type FoundNodeFunction = (
   nodeRef: Buffer,
-  node: TrieNode,
+  node: TrieNode | null,
   key: Nibbles,
-  walkController: any
+  walkController: WalkController
 ) => void
 
 /**
@@ -117,6 +117,7 @@ export class Trie {
    */
   async put(key: Buffer, value: Buffer): Promise<void> {
     // If value is empty, delete
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (!value || value.toString() === '') {
       return await this.del(key)
     }
@@ -160,6 +161,9 @@ export class Trie {
       const targetKey = bufferToNibbles(key)
 
       const onFound: FoundNodeFunction = async (nodeRef, node, keyProgress, walkController) => {
+        if (node === null) {
+          return
+        }
         const keyRemainder = targetKey.slice(matchingNibbleLength(keyProgress, targetKey))
         stack.push(node)
 
@@ -175,7 +179,8 @@ export class Trie {
               resolve({ node: null, remaining: keyRemainder, stack })
             } else {
               // node found, continuing search
-              await walkController.only(branchIndex)
+              // this can be optimized as this calls getBranch again.
+              walkController.onlyBranchIndex(node, keyProgress, branchIndex)
             }
           }
         } else if (node instanceof LeafNode) {
@@ -193,13 +198,13 @@ export class Trie {
             resolve({ node: null, remaining: keyRemainder, stack })
           } else {
             // keys match, continue search
-            await walkController.next()
+            walkController.allChildren(node, keyProgress)
           }
         }
       }
 
       // walk trie and process nodes
-      await this._walkTrie(this.root, onFound)
+      await this.walkTrie(this.root, onFound)
 
       // Resolve if _walkTrie finishes without finding any nodes
       resolve({ node: null, remaining: [], stack })
@@ -208,102 +213,22 @@ export class Trie {
 
   /**
    * Walks a trie until finished.
-   * @private
    * @param root
-   * @param onFound - callback to call when a node is found
+   * @param onFound - callback to call when a node is found. This schedules new tasks. If no tasks are available, the Promise resolves.
    * @returns Resolves when finished walking trie.
    */
+  async walkTrie(root: Buffer, onFound: FoundNodeFunction): Promise<void> {
+    await WalkController.newWalk(onFound, this, root)
+  }
+
+  /**
+   * @hidden
+   * Backwards compatibility
+   * @param root -
+   * @param onFound -
+   */
   async _walkTrie(root: Buffer, onFound: FoundNodeFunction): Promise<void> {
-    // eslint-disable-next-line no-async-promise-executor
-    return new Promise(async (resolve) => {
-      const self = this
-      root = root || this.root
-
-      if (root.equals(KECCAK256_RLP)) {
-        return resolve()
-      }
-
-      // The maximum pool size should be high enough to utilize
-      // the parallelizability of reading nodes from disk and
-      // low enough to utilize the prioritisation of node lookup.
-      const maxPoolSize = 500
-      const taskExecutor = new PrioritizedTaskExecutor(maxPoolSize)
-
-      const processNode = async (
-        nodeRef: Buffer,
-        node: TrieNode,
-        key: Nibbles = []
-      ): Promise<void> => {
-        const walkController = {
-          next: async () => {
-            if (node instanceof LeafNode) {
-              if (taskExecutor.finished()) {
-                resolve()
-              }
-              return
-            }
-            let children
-            if (node instanceof ExtensionNode) {
-              children = [[node.key, node.value]]
-            } else if (node instanceof BranchNode) {
-              children = node.getChildren().map((b) => [[b[0]], b[1]])
-            }
-            if (!children) {
-              // Node has no children
-              return resolve()
-            }
-            for (const child of children) {
-              const keyExtension = child[0] as Nibbles
-              const childRef = child[1] as Buffer
-              const childKey = key.concat(keyExtension)
-              const priority = childKey.length
-              taskExecutor.execute(priority, async (taskCallback: Function) => {
-                const childNode = await self._lookupNode(childRef)
-                taskCallback()
-                if (childNode) {
-                  await processNode(childRef, childNode as TrieNode, childKey)
-                }
-              })
-            }
-          },
-          only: async (childIndex: number) => {
-            if (!(node instanceof BranchNode)) {
-              throw new Error('Expected branch node')
-            }
-            const childRef = node.getBranch(childIndex)
-            if (!childRef) {
-              throw new Error('Could not get branch of childIndex')
-            }
-            const childKey = key.slice()
-            childKey.push(childIndex)
-            const priority = childKey.length
-            taskExecutor.execute(priority, async (taskCallback: Function) => {
-              const childNode = await self._lookupNode(childRef)
-              taskCallback()
-              if (childNode) {
-                await processNode(childRef as Buffer, childNode, childKey)
-              } else {
-                // could not find child node
-                resolve()
-              }
-            })
-          },
-        }
-
-        if (node) {
-          onFound(nodeRef, node, key, walkController)
-        } else {
-          resolve()
-        }
-      }
-
-      const node = await this._lookupNode(root)
-      if (node) {
-        await processNode(root, node as TrieNode, [])
-      } else {
-        resolve()
-      }
-    })
+    await this.walkTrie(root, onFound)
   }
 
   /**
@@ -318,9 +243,8 @@ export class Trie {
 
   /**
    * Retrieves a node from db by hash.
-   * @private
    */
-  async _lookupNode(node: Buffer | Buffer[]): Promise<TrieNode | null> {
+  async lookupNode(node: Buffer | Buffer[]): Promise<TrieNode | null> {
     if (isRawNode(node)) {
       return decodeRawNode(node as Buffer[])
     }
@@ -332,6 +256,15 @@ export class Trie {
       foundNode = decodeNode(value)
     }
     return foundNode
+  }
+
+  /**
+   * @hidden
+   * Backwards compatibility
+   * @param node The node hash to lookup from the DB
+   */
+  async _lookupNode(node: Buffer | Buffer[]): Promise<TrieNode | null> {
+    return this.lookupNode(node)
   }
 
   /**
@@ -454,8 +387,10 @@ export class Trie {
       stack: TrieNode[]
     ) => {
       // branchNode is the node ON the branch node not THE branch node
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       if (!parentNode || parentNode instanceof BranchNode) {
         // branch->?
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         if (parentNode) {
           stack.push(parentNode)
         }
@@ -659,10 +594,12 @@ export class Trie {
   async batch(ops: BatchDBOp[]): Promise<void> {
     for (const op of ops) {
       if (op.type === 'put') {
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         if (!op.value) {
           throw new Error('Invalid batch db operation')
         }
         await this.put(op.key, op.value)
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       } else if (op.type === 'del') {
         await this.del(op.key)
       }
@@ -760,12 +697,14 @@ export class Trie {
   async _findDbNodes(onFound: FoundNodeFunction): Promise<void> {
     const outerOnFound: FoundNodeFunction = async (nodeRef, node, key, walkController) => {
       if (isRawNode(nodeRef)) {
-        await walkController.next()
+        if (node !== null) {
+          walkController.allChildren(node, key)
+        }
       } else {
         onFound(nodeRef, node, key, walkController)
       }
     }
-    await this._walkTrie(this.root, outerOnFound)
+    await this.walkTrie(this.root, outerOnFound)
   }
 
   /**
@@ -786,9 +725,11 @@ export class Trie {
         onFound(nodeRef, node, fullKey, walkController)
       } else {
         // keep looking for value nodes
-        await walkController.next()
+        if (node !== null) {
+          walkController.allChildren(node, key)
+        }
       }
     }
-    await this._walkTrie(this.root, outerOnFound)
+    await this.walkTrie(this.root, outerOnFound)
   }
 }

@@ -21,6 +21,7 @@ const run = async (): Promise<void> => {
       }
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (SYMMETRIC) {
       await trie.put(key, key)
       genRoot()
@@ -36,6 +37,7 @@ const run = async (): Promise<void> => {
 
 const go = async () => {
   const testName = `benchmarks/random.ts | rounds: ${ROUNDS}, ERA_SIZE: ${ERA_SIZE}, ${
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     SYMMETRIC ? 'sys' : 'rand'
   }`
   console.time(testName)

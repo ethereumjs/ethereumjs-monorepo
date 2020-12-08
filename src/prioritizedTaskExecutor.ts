@@ -24,12 +24,15 @@ export class PrioritizedTaskExecutor {
   }
 
   /**
-   * Executes the task.
+   * Executes the task or queues it if no spots are available.
+   * When a task is added, check if there are spots left in the pool.
+   * If a spot is available, claim that spot and give back the spot once the asynchronous task has been resolved.
+   * When no spots are available, add the task to the task queue. The task will be executed at some point when another task has been resolved.
    * @private
    * @param priority The priority of the task
    * @param fn The function that accepts the callback, which must be called upon the task completion.
    */
-  execute(priority: number, fn: Function) {
+  executeOrQueue(priority: number, fn: Function) {
     if (this.currentPoolSize < this.maxPoolSize) {
       this.currentPoolSize++
       fn(() => {
@@ -37,7 +40,7 @@ export class PrioritizedTaskExecutor {
         if (this.queue.length > 0) {
           this.queue.sort((a, b) => b.priority - a.priority)
           const item = this.queue.shift()
-          this.execute(item!.priority, item!.fn)
+          this.executeOrQueue(item!.priority, item!.fn)
         }
       })
     } else {

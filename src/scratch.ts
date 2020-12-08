@@ -32,6 +32,7 @@ export class ScratchDB extends DB {
     }
 
     // If not found, try searching upstream db
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (!value && this._upstream._leveldb) {
       try {
         value = await this._upstream._leveldb.get(key, ENCODING_OPTS)
