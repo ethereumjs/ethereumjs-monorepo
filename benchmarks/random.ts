@@ -1,48 +1,30 @@
-// https://github.com/ethereum/wiki/wiki/Benchmarks
-const crypto = require('crypto')
-import { CheckpointTrie } from '../dist'
+'use strict'
+import { keccak256 } from 'ethereumjs-util'
+import { CheckpointTrie as Trie } from '../dist'
 
-const ROUNDS = 50000
-const SYMMETRIC = true
-const ERA_SIZE = 10000
+// References:
+// https://eth.wiki/en/fundamentals/benchmarks#the-trie
+// https://gist.github.com/heikoheiko/0fa2b322560ba7794f22
 
-const trie = new CheckpointTrie()
+const ROUNDS = 1000
+const KEY_SIZE = 32
 
-const run = async (): Promise<void> => {
-  console.log(`Benchmark 'random' starting...`)
-  let i = 0
-  while (i <= ROUNDS) {
-    let key = crypto.randomBytes(32)
+export const runTrie = async (eraSize = 9, symmetric = false) => {
+  const trie = new Trie()
+  let key = Buffer.alloc(KEY_SIZE)
 
-    const genRoot = () => {
-      if (i % ERA_SIZE === 0) {
-        key = trie.root
-        console.log(`${i} rounds.`)
-      }
-    }
+  for (let i = 0; i <= ROUNDS; i++) {
+    key = keccak256(key)
 
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    if (SYMMETRIC) {
+    if (symmetric) {
       await trie.put(key, key)
-      genRoot()
     } else {
-      const value = crypto.randomBytes(32)
-      await trie.put(key, value)
-      genRoot()
+      const val = keccak256(key)
+      await trie.put(key, val)
     }
 
-    i++
+    if (i % eraSize === 0) {
+      key = trie.root
+    }
   }
 }
-
-const go = async () => {
-  const testName = `benchmarks/random.ts | rounds: ${ROUNDS}, ERA_SIZE: ${ERA_SIZE}, ${
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    SYMMETRIC ? 'sys' : 'rand'
-  }`
-  console.time(testName)
-  await run()
-  console.timeEnd(testName)
-}
-
-go().catch(console.error)
