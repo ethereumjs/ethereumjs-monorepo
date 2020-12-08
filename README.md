@@ -1,11 +1,9 @@
 # SYNOPSIS
 
-[![NPM Package](https://img.shields.io/npm/v/merkle-patricia-tree)](https://www.npmjs.org/package/merkle-patricia-tree)
-[![Actions Status](https://github.com/ethereumjs/merkle-patricia-tree/workflows/Build/badge.svg)](https://github.com/ethereumjs/merkle-patricia-tree/actions)
-[![Coverage Status](https://img.shields.io/coveralls/ethereumjs/merkle-patricia-tree.svg)](https://coveralls.io/r/ethereumjs/merkle-patricia-tree)
+[![NPM Status][npm-badge]][npm-link]
+[![Actions Status][actions-badge]][actions-link]
+[![Coverage Status][coverage-badge]][coverage-link]
 [![Discord][discord-badge]][discord-link]
-
-[![js-standard-style](https://cdn.rawgit.com/feross/standard/master/badge.svg)](https://github.com/feross/standard)
 
 This is an implementation of the modified merkle patricia tree as specified in the [Ethereum Yellow Paper](http://gavwood.com/Paper.pdf):
 
@@ -172,5 +170,11 @@ If you want to join for work or do improvements on the libraries have a look at 
 
 MPL-2.0
 
+[npm-badge]: https://img.shields.io/npm/v/merkle-patricia-tree.svg
+[npm-link]: https://www.npmjs.org/package/merkle-patricia-tree
+[actions-badge]: https://github.com/ethereumjs/merkle-patricia-tree/workflows/Build/badge.svg
+[actions-link]: https://github.com/ethereumjs/merkle-patricia-tree/actions
+[coverage-badge]: https://codecov.io/gh/ethereumjs/merkle-patricia-tree/branch/master/graph/badge.svg
+[coverage-link]: https://codecov.io/gh/ethereumjs/merkle-patricia-tree
 [discord-badge]: https://img.shields.io/static/v1?logo=discord&label=discord&message=Join&color=blue
 [discord-link]: https://discord.gg/TNwARpR
