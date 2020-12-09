@@ -1,7 +1,6 @@
 import { BN } from 'ethereumjs-util'
 import VM from '@ethereumjs/vm'
 import { Peer } from '../net/peer/peer'
-import { BoundProtocol } from '../net/protocol'
 import { short } from '../util'
 import { Synchronizer, SynchronizerOptions } from './sync'
 import { BlockFetcher } from './fetcher'
@@ -43,8 +42,6 @@ export class FullSynchronizer extends Synchronizer {
    * Returns true if peer can be used for syncing
    * @return {boolean}
    */
-  // TODO: Correct logic for return type (b/c peer.eth is not boolean)
-  // "Type 'BoundProtocol | undefined' is not assignable to type 'boolean'"
   syncable(peer: Peer): boolean {
     return peer.eth !== undefined
   }
@@ -58,7 +55,7 @@ export class FullSynchronizer extends Synchronizer {
     const peers = this.pool.peers.filter(this.syncable.bind(this))
     if (peers.length < this.config.minPeers && !this.forceSync) return
     for (const peer of peers) {
-      if (peer.eth && peer.eth.status) {
+      if (peer.eth?.status) {
         const td = peer.eth.status.td
         if (
           (!best && td.gte((this.chain.blocks as any).td)) ||
@@ -76,9 +73,8 @@ export class FullSynchronizer extends Synchronizer {
    * @return {Promise} Resolves with header
    */
   async latest(peer: Peer) {
-    // @ts-ignore
-    const headers = await (peer.eth as BoundProtocol).getBlockHeaders({
-      block: (peer.eth as BoundProtocol).status.bestHash,
+    const headers = await peer.eth!.getBlockHeaders({
+      block: peer.eth!.status.bestHash,
       max: 1,
     })
     return headers[0]

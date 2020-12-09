@@ -1,5 +1,11 @@
 import * as events from 'events'
-import { Protocol, BoundProtocol, Sender } from '../protocol'
+import {
+  Protocol,
+  BoundProtocol,
+  EthProtocolMethods,
+  LesProtocolMethods,
+  Sender,
+} from '../protocol'
 import { Server } from '../server'
 import { Config } from '../../config'
 
@@ -42,8 +48,8 @@ export class Peer extends events.EventEmitter {
   private _idle: boolean
 
   // Dynamically bound protocol properties
-  public les: BoundProtocol | undefined
-  public eth: BoundProtocol | undefined
+  public eth: (BoundProtocol & EthProtocolMethods) | undefined
+  public les: (BoundProtocol & LesProtocolMethods) | undefined
 
   /**
    * Create new peer

@@ -123,7 +123,7 @@ tape('[FullSynchronizer]', async (t) => {
     sync.best = td.func<typeof sync['best']>()
     sync.latest = td.func<typeof sync['latest']>()
     td.when(sync.best()).thenReturn('peer')
-    td.when(sync.latest('peer' as any)).thenResolve({ number: 2 })
+    td.when(sync.latest('peer' as any)).thenResolve({ number: new BN(2) })
     td.when((BlockFetcher.prototype as any).fetch(), { delay: 20 }).thenResolve(undefined)
     ;(sync as any).chain = { blocks: { height: new BN(3) } }
     t.notOk(await sync.sync(), 'local height > remote height')

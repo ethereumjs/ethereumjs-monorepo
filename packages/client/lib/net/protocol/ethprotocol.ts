@@ -1,11 +1,22 @@
 import { BN, bufferToInt } from 'ethereumjs-util'
-import { BlockHeader, BlockHeaderBuffer } from '@ethereumjs/block'
+import { Block, BlockHeader, BlockHeaderBuffer } from '@ethereumjs/block'
 import { Chain } from './../../blockchain'
 import { Message, Protocol, ProtocolOptions } from './protocol'
 
 interface EthProtocolOptions extends ProtocolOptions {
   /* Blockchain */
   chain: Chain
+}
+
+/* Messages with responses that are added as methods in camelCase to BoundProtocol. */
+export interface EthProtocolMethods {
+  getBlockHeaders: (opts: {
+    block: BN | Buffer
+    max: number
+    skip?: number
+    reverse?: number
+  }) => Promise<BlockHeader[]>
+  getBlockBodies: (hashes: Buffer[]) => Promise<Block[]>
 }
 
 const messages: Message[] = [

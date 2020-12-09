@@ -5,12 +5,16 @@ import { Sender } from './sender'
 import { Config } from '../../config'
 
 export interface BoundProtocolOptions {
+  /* Config */
   config: Config
 
+  /* Protocol */
   protocol: Protocol
 
+  /* Peer */
   peer: Peer
 
+  /* Sender */
   sender: Sender
 }
 
@@ -155,19 +159,15 @@ export class BoundProtocol extends EventEmitter {
   }
 
   /**
-   * Add a methods to the bound protocol for each protocol message that has a
-   * corresponding response message
+   * Add methods to the bound protocol for each protocol message that has a
+   * corresponding response message.
    */
   addMethods() {
     const messages = this.protocol.messages.filter((m: any) => m.response)
     for (const message of messages) {
       const name = message.name as string
       const camel = name[0].toLowerCase() + name.slice(1)
-
-      // Problem: How to dynamically add class properties in TS
-      // https://stackoverflow.com/questions/41038812
-      // @ts-ignore: implicit 'any'
-      this[name] = this[camel] = async (args: any[]) => this.request(name, args)
+      ;(this as any)[camel] = async (args: any[]) => this.request(name, args)
     }
   }
 }
