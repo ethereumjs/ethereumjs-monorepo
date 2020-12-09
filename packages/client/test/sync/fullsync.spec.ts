@@ -76,7 +76,7 @@ tape('[FullSynchronizer]', async (t) => {
     const headers = [{ number: 5 }]
     td.when(peer.eth.getBlockHeaders({ block: 'hash', max: 1 })).thenResolve(headers)
     const latest = await sync.latest(peer as any)
-    t.equals(new BN(latest.number).toNumber(), 5, 'got height')
+    t.equals(new BN(latest!.number).toNumber(), 5, 'got height')
     t.end()
   })
 

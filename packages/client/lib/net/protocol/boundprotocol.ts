@@ -167,7 +167,10 @@ export class BoundProtocol extends EventEmitter {
     for (const message of messages) {
       const name = message.name as string
       const camel = name[0].toLowerCase() + name.slice(1)
-      ;(this as any)[camel] = async (args: any[]) => this.request(name, args)
+      ;(this as any)[camel] = async (args: any[]) =>
+        this.request(name, args).catch((error: Error) => {
+          this.emit('error', error)
+        })
     }
   }
 }

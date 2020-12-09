@@ -73,11 +73,11 @@ export class FullSynchronizer extends Synchronizer {
    * @return {Promise} Resolves with header
    */
   async latest(peer: Peer) {
-    const headers = await peer.eth!.getBlockHeaders({
+    const headers = await peer.eth?.getBlockHeaders({
       block: peer.eth!.status.bestHash,
       max: 1,
     })
-    return headers[0]
+    return headers?.[0]
   }
 
   /**
@@ -88,8 +88,9 @@ export class FullSynchronizer extends Synchronizer {
   async syncWithPeer(peer?: Peer): Promise<boolean> {
     if (!peer) return false
     const latest = await this.latest(peer)
+    if (!latest) return false
     const height = new BN(latest.number)
-    const first = ((this.chain.blocks as any).height as BN).addn(1)
+    const first = this.chain.blocks.height.addn(1)
     const count = height.sub(first).addn(1)
     if (count.lten(0)) return false
 
