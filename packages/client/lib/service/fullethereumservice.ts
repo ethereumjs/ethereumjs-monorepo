@@ -3,7 +3,7 @@ import { FullSynchronizer } from '../sync/fullsync'
 import { EthProtocol } from '../net/protocol/ethprotocol'
 import { LesProtocol } from '../net/protocol/lesprotocol'
 import { Peer } from '../net/peer/peer'
-import { Protocol, BoundProtocol } from '../net/protocol'
+import { Protocol } from '../net/protocol'
 
 interface FullEthereumServiceOptions extends EthereumServiceOptions {
   /* Serve LES requests (default: false) */
@@ -85,12 +85,12 @@ export class FullEthereumService extends EthereumService {
     if (message.name === 'GetBlockHeaders') {
       const { block, max, skip, reverse } = message.data
       const headers: any = await this.chain.getHeaders(block, max, skip, reverse)
-      ;(peer.eth as BoundProtocol).send('BlockHeaders', headers)
+      peer.eth!.send('BlockHeaders', headers)
     } else if (message.name === 'GetBlockBodies') {
       const hashes = message.data
       const blocks = await Promise.all(hashes.map((hash: any) => this.chain.getBlock(hash)))
       const bodies: any = blocks.map((block: any) => block.raw().slice(1))
-      ;(peer.eth as BoundProtocol).send('BlockBodies', bodies)
+      peer.eth!.send('BlockBodies', bodies)
     } else if (message.name === 'NewBlockHashes') {
       await this.synchronizer.announced(message.data, peer)
     }
@@ -110,7 +110,7 @@ export class FullEthereumService extends EthereumService {
         this.config.logger.debug(`Dropping peer for violating flow control ${peer}`)
       } else {
         const headers: any = await this.chain.getHeaders(block, max, skip, reverse)
-        ;(peer.les as BoundProtocol).send('BlockHeaders', { reqId, bv, headers })
+        peer.les!.send('BlockHeaders', { reqId, bv, headers })
       }
     }
   }

@@ -34,7 +34,6 @@ tape('[BoundProtocol]', (t) => {
       sender,
     })
     t.ok(/this.request/.test((bound as any).testMessage.toString()), 'added testMessage')
-    t.ok(/this.request/.test((bound as any).TestMessage.toString()), 'added TestMessage')
     t.end()
   })
 

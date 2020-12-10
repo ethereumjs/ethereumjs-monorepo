@@ -12,6 +12,17 @@ export interface LesProtocolOptions extends ProtocolOptions {
   flow?: FlowControl
 }
 
+/* Messages with responses that are added as methods in camelCase to BoundProtocol. */
+export interface LesProtocolMethods {
+  getBlockHeaders: (opts: {
+    reqId?: BN
+    block: BN | Buffer
+    max: number
+    skip?: number
+    reverse?: number
+  }) => Promise<{ reqId: BN; bv: BN; headers: BlockHeader[] }>
+}
+
 const id = new BN(0)
 
 const messages: Message[] = [

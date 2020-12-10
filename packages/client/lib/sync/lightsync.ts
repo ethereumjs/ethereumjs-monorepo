@@ -1,5 +1,4 @@
 import { Peer } from '../net/peer/peer'
-import { BoundProtocol } from '../net/protocol'
 import { Synchronizer, SynchronizerOptions } from './sync'
 import { HeaderFetcher } from './fetcher/headerfetcher'
 import { BN } from 'ethereumjs-util'
@@ -30,7 +29,7 @@ export class LightSynchronizer extends Synchronizer {
    * @return {boolean}
    */
   syncable(peer: Peer): boolean {
-    return peer.les && peer.les.status.serveHeaders
+    return peer.les?.status.serveHeaders
   }
 
   /**
@@ -62,7 +61,7 @@ export class LightSynchronizer extends Synchronizer {
    */
   async syncWithPeer(peer?: Peer): Promise<boolean> {
     if (!peer) return false
-    const height = new BN((peer.les as BoundProtocol).status.headNum)
+    const height = new BN(peer.les!.status.headNum)
     const first = ((this.chain.headers as any).height as BN).addn(1)
     const count = height.sub(first).addn(1)
     if (count.lten(0)) return false

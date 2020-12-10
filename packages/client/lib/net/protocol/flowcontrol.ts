@@ -1,5 +1,4 @@
 import { Peer } from '../peer/peer'
-import { BoundProtocol } from './boundprotocol'
 
 interface Mrc {
   [key: string]: {
@@ -62,10 +61,10 @@ export class FlowControl {
    */
   maxRequestCount(peer: Peer, messageName: string): number {
     const now = Date.now()
-    const mrcBase = (peer.les as BoundProtocol).status.mrc[messageName].base
-    const mrcReq = (peer.les as BoundProtocol).status.mrc[messageName].req
-    const mrr = (peer.les as BoundProtocol).status.mrr
-    const bl = (peer.les as BoundProtocol).status.bl
+    const mrcBase = peer.les!.status.mrc[messageName].base
+    const mrcReq = peer.les!.status.mrc[messageName].req
+    const mrr = peer.les!.status.mrr
+    const bl = peer.les!.status.bl
     const params = this.in.get(peer.id) ?? ({ ble: bl } as FlowParams)
     if (params.last) {
       // recharge BLE at rate of MRR when less than BL
