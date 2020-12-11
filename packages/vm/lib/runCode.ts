@@ -71,35 +71,28 @@ export interface RunCodeOpts {
  * @ignore
  */
 export default function runCode(this: VM, opts: RunCodeOpts): Promise<ExecResult> {
-  if (!opts.block) {
-    opts.block = new Block()
-  }
+  const block = opts.block ?? Block.fromBlockData({}, { common: this._common })
 
   // Backwards compatibility
-  if (!opts.txContext) {
-    opts.txContext = new TxContext(
-      opts.gasPrice || new BN(0),
-      opts.origin || opts.caller || Address.zero()
-    )
-  }
-  if (!opts.message) {
-    opts.message = new Message({
+  const txContext =
+    opts.txContext ??
+    new TxContext(opts.gasPrice ?? new BN(0), opts.origin ?? opts.caller ?? Address.zero())
+
+  const message =
+    opts.message ??
+    new Message({
       code: opts.code,
       data: opts.data,
       gasLimit: opts.gasLimit,
-      to: opts.address || Address.zero(),
+      to: opts.address ?? Address.zero(),
       caller: opts.caller,
       value: opts.value,
-      depth: opts.depth || 0,
-      selfdestruct: opts.selfdestruct || {},
-      isStatic: opts.isStatic || false,
+      depth: opts.depth ?? 0,
+      selfdestruct: opts.selfdestruct ?? {},
+      isStatic: opts.isStatic ?? false,
     })
-  }
 
-  let evm = opts.evm
-  if (!evm) {
-    evm = new EVM(this, opts.txContext, opts.block)
-  }
+  const evm = opts.evm ?? new EVM(this, txContext, block)
 
-  return evm.runInterpreter(opts.message, { pc: opts.pc })
+  return evm.runInterpreter(message, { pc: opts.pc })
 }

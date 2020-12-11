@@ -33,27 +33,29 @@ export interface RunCallOpts {
  * @ignore
  */
 export default function runCall(this: VM, opts: RunCallOpts): Promise<EVMResult> {
-  const block = opts.block || new Block()
+  const block = opts.block ?? Block.fromBlockData({}, { common: this._common })
 
   const txContext = new TxContext(
-    opts.gasPrice || new BN(0),
-    opts.origin || opts.caller || Address.zero()
+    opts.gasPrice ?? new BN(0),
+    opts.origin ?? opts.caller ?? Address.zero()
   )
+
   const message = new Message({
     caller: opts.caller,
-    gasLimit: opts.gasLimit ? opts.gasLimit : new BN(0xffffff),
-    to: opts.to ? opts.to : undefined,
+    gasLimit: opts.gasLimit ?? new BN(0xffffff),
+    to: opts.to ?? undefined,
     value: opts.value,
     data: opts.data,
     code: opts.code,
-    depth: opts.depth || 0,
-    isCompiled: opts.compiled || false,
-    isStatic: opts.static || false,
-    salt: opts.salt || null,
-    selfdestruct: opts.selfdestruct || {},
-    delegatecall: opts.delegatecall || false,
+    depth: opts.depth ?? 0,
+    isCompiled: opts.compiled ?? false,
+    isStatic: opts.static ?? false,
+    salt: opts.salt ?? null,
+    selfdestruct: opts.selfdestruct ?? {},
+    delegatecall: opts.delegatecall ?? false,
   })
 
   const evm = new EVM(this, txContext, block)
+
   return evm.executeMessage(message)
 }
