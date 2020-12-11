@@ -12,11 +12,11 @@ import TxContext from './evm/txContext'
  */
 export interface RunTxOpts {
   /**
-   * The block to which the `tx` belongs
+   * The `@ethereumjs/block` the `tx` belongs to. If omitted a default blank block will be used.
    */
   block?: Block
   /**
-   * An [`@ethereumjs/tx`](https://github.com/ethereumjs/ethereumjs-vm/tree/master/packages/tx) to run
+   * An `@ethereumjs/tx` to run
    */
   tx: Transaction
   /**

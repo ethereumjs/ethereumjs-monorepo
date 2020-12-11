@@ -4,12 +4,12 @@ This is the core of the Ethereum Virtual Machine (EVM or just VM).
 
 NOTES:
 
-stack items are lazily duplicated.
-So you must never directly change a buffer from the stack,
-instead you should `copy` it first
+1. Stack items are lazily duplicated, so you must never directly change a buffer
+from the stack, instead you should `copy` it first.
 
-not all stack items are 32 bytes, so if the operation relies on the stack
-item length then you must use utils.pad(<item>, 32) first.
+2. Not all stack items are 32 bytes, so if the operation relies on the stack
+item length then you must use `utils.pad(<item>, 32)` first.
+
 */
 import { Address, BN } from 'ethereumjs-util'
 import { Block } from '@ethereumjs/block'
@@ -23,7 +23,7 @@ import { default as EVM, ExecResult } from './evm/evm'
  */
 export interface RunCodeOpts {
   /**
-   * The [`Block`](https://github.com/ethereumjs/ethereumjs-block) the `tx` belongs to. If omitted a blank block will be used
+   * The `@ethereumjs/block` the `tx` belongs to. If omitted a default blank block will be used.
    */
   block?: Block
   evm?: EVM

@@ -18,7 +18,7 @@ export interface RunCallOpts {
   value?: BN
   data?: Buffer
   /**
-   * This is for CALLCODE where the code to load is different than the code from the to account
+   * This is for CALLCODE where the code to load is different than the code from the `opts.to` address.
    */
   code?: Buffer
   depth?: number
