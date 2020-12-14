@@ -1,8 +1,9 @@
-# SYNOPSIS
+# @ethereumjs/trie
 
-[![NPM Status][npm-badge]][npm-link]
-[![Actions Status][actions-badge]][actions-link]
-[![Coverage Status][coverage-badge]][coverage-link]
+[![NPM Package][trie-npm-badge]][trie-npm-link]
+[![GitHub Issues][trie-issues-badge]][trie-issues-link]
+[![Actions Status][trie-actions-badge]][trie-actions-link]
+[![Code Coverage][trie-coverage-badge]][trie-coverage-link]
 [![Discord][discord-badge]][discord-link]
 
 This is an implementation of the modified merkle patricia tree as specified in the [Ethereum Yellow Paper](http://gavwood.com/Paper.pdf):
@@ -10,6 +11,8 @@ This is an implementation of the modified merkle patricia tree as specified in t
 > The modified Merkle Patricia tree (trie) provides a persistent data structure to map between arbitrary-length binary data (byte arrays). It is defined in terms of a mutable data structure to map between 256-bit binary fragments and arbitrary-length binary data. The core of the trie, and its sole requirement in terms of the protocol specification is to provide a single 32-byte value that identifies a given set of key-value pairs.
 
 The only backing store supported is LevelDB through the `levelup` module.
+
+Note: this `README` reflects the state of the library from `v5.0.0` (UNRELEASED) onwards. See `README` from the [standalone repository](https://github.com/ethereumjs/merkle-patricia-tree) for an introduction on the last preceeding release.
 
 # INSTALL
 
@@ -168,13 +171,15 @@ If you want to join for work or do improvements on the libraries have a look at 
 
 # LICENSE
 
-MPL-2.0
+[MPL-2.0](<https://tldrlegal.com/license/mozilla-public-license-2.0-(mpl-2)>)
 
-[npm-badge]: https://img.shields.io/npm/v/merkle-patricia-tree.svg
-[npm-link]: https://www.npmjs.org/package/merkle-patricia-tree
-[actions-badge]: https://github.com/ethereumjs/merkle-patricia-tree/workflows/Build/badge.svg
-[actions-link]: https://github.com/ethereumjs/merkle-patricia-tree/actions
-[coverage-badge]: https://codecov.io/gh/ethereumjs/merkle-patricia-tree/branch/master/graph/badge.svg
-[coverage-link]: https://codecov.io/gh/ethereumjs/merkle-patricia-tree
 [discord-badge]: https://img.shields.io/static/v1?logo=discord&label=discord&message=Join&color=blue
 [discord-link]: https://discord.gg/TNwARpR
+[trie-npm-badge]: https://img.shields.io/npm/v/@ethereumjs/trie.svg
+[trie-npm-link]: https://www.npmjs.com/package/@ethereumjs/trie
+[trie-issues-badge]: https://img.shields.io/github/issues/ethereumjs/ethereumjs-vm/package:%20trie?label=issues
+[trie-issues-link]: https://github.com/ethereumjs/ethereumjs-vm/issues?q=is%3Aopen+is%3Aissue+label%3A"package%3A+trie"
+[trie-actions-badge]: https://github.com/ethereumjs/ethereumjs-vm/workflows/Trie%20Test/badge.svg
+[trie-actions-link]: https://github.com/ethereumjs/ethereumjs-vm/actions?query=workflow%3A%22Trie+Test%22
+[trie-coverage-badge]: https://codecov.io/gh/ethereumjs/ethereumjs-vm/branch/master/graph/badge.svg?flag=trie
+[trie-coverage-link]: https://codecov.io/gh/ethereumjs/ethereumjs-vm/tree/master/packages/trie
