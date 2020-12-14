@@ -12,11 +12,11 @@ import TxContext from './evm/txContext'
  */
 export interface RunTxOpts {
   /**
-   * The block to which the `tx` belongs
+   * The `@ethereumjs/block` the `tx` belongs to. If omitted a default blank block will be used.
    */
   block?: Block
   /**
-   * An [`@ethereumjs/tx`](https://github.com/ethereumjs/ethereumjs-vm/tree/master/packages/tx) to run
+   * An `@ethereumjs/tx` to run
    */
   tx: Transaction
   /**
@@ -57,10 +57,7 @@ export default async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxRes
   }
 
   // create a reasonable default if no block is given
-  if (!opts.block) {
-    const common = opts.tx.common
-    opts.block = Block.fromBlockData({}, { common })
-  }
+  opts.block = opts.block ?? Block.fromBlockData({}, { common: opts.tx.common })
 
   if (opts.block.header.gasLimit.lt(opts.tx.gasLimit)) {
     throw new Error('tx has a higher gas limit than the block')
