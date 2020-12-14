@@ -1,0 +1,77 @@
+name: Build
+on:
+  push:
+    branches:
+      - master
+    tags:
+      - '*'
+  pull_request:
+    types: [opened, reopened, synchronize]
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/setup-node@v1
+      - uses: actions/checkout@v2
+      - run: npm install
+      - run: npm run lint
+
+  coverage:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/setup-node@v1
+      - uses: actions/checkout@v2
+      - run: npm install
+      - run: npm run coverage
+      - uses: codecov/codecov-action@v1
+        with:
+          file: ./coverage/lcov.info
+
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [10.x, 12.x, 13.x]
+    steps:
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node-version }}
+      - uses: actions/checkout@v2
+      - run: npm install
+      - run: npm run test
+
+  benchmarks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/setup-node@v1
+      - uses: actions/checkout@v1
+      - run: npm install
+      - run: npm run benchmarks | tee output.txt
+
+      - name: Set auto-push for benchmarks to true if on master
+        id: auto_push
+        run: |
+          if [$REF == 'refs/heads/master']
+          then
+              echo "::set-output name=auto_push::true"
+          else
+              echo "::set-output name=auto_push::false"
+          fi
+        env:
+          REF: ${{ github.ref }}
+
+      - name: Compare benchmarks
+        uses: rhysd/github-action-benchmark@v1
+        with:
+          tool: 'benchmarkjs'
+          # Where the output from the benchmark tool is stored
+          output-file-path: ./output.txt
+          # Enable alert commit comment
+          comment-on-alert: true
+          # Always leave a commit comment comparing the current benchmark with previous
+          comment-always: true
+          # GitHub API token to make a commit comment
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          # Push and deploy to GitHub pages branch automatically (if on master)
+          auto-push: ${{ steps.auto_push.outputs.auto_push }}
