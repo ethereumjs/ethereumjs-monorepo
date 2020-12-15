@@ -1,5 +1,7 @@
+import { BN } from 'ethereumjs-util'
 import tape from 'tape-catch'
 import td from 'testdouble'
+import { Chain } from '../../../lib/blockchain/chain'
 import { Config } from '../../../lib/config'
 import { Fetcher } from '../../../lib/sync/fetcher/fetcher'
 
@@ -7,7 +9,14 @@ tape('[Fetcher]', (t) => {
   t.test('should handle bad result', (t) => {
     t.plan(2)
     const config = new Config({ loglevel: 'error', transports: [] })
-    const fetcher = new Fetcher({ config, pool: td.object() })
+    const chain = new Chain({ config })
+    const fetcher = new Fetcher({
+      config,
+      chain,
+      pool: td.object(),
+      first: new BN(0),
+      count: new BN(0),
+    })
     const job: any = { peer: {}, state: 'active' }
     ;(fetcher as any).running = true
     fetcher.next = td.func<Fetcher['next']>()
@@ -21,7 +30,14 @@ tape('[Fetcher]', (t) => {
   t.test('should handle failure', (t) => {
     t.plan(2)
     const config = new Config({ loglevel: 'error', transports: [] })
-    const fetcher = new Fetcher({ config, pool: td.object() })
+    const chain = new Chain({ config })
+    const fetcher = new Fetcher({
+      config,
+      chain,
+      pool: td.object(),
+      first: new BN(0),
+      count: new BN(0),
+    })
     const job = { peer: {}, state: 'active' }
     ;(fetcher as any).running = true
     fetcher.next = td.func<Fetcher['next']>()
@@ -33,9 +49,13 @@ tape('[Fetcher]', (t) => {
   t.test('should handle expiration', (t) => {
     t.plan(2)
     const config = new Config({ loglevel: 'error', transports: [] })
+    const chain = new Chain({ config })
     const fetcher = new Fetcher({
       config,
+      chain,
       pool: td.object(),
+      first: new BN(0),
+      count: new BN(0),
       timeout: 5,
     })
     const job = { index: 0 }

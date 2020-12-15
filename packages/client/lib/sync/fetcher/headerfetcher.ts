@@ -1,8 +1,8 @@
-import { BlockFetcher, BlockFetcherOptions } from './blockfetcher'
+import { Fetcher, FetcherOptions } from './fetcher'
 import { Peer } from '../../net/peer'
 import { FlowControl, LesProtocolMethods } from '../../net/protocol'
 
-export interface HeaderFetcherOptions extends BlockFetcherOptions {
+export interface HeaderFetcherOptions extends FetcherOptions {
   /* Flow control manager */
   flow: FlowControl
 }
@@ -11,7 +11,7 @@ export interface HeaderFetcherOptions extends BlockFetcherOptions {
  * Implements an les/1 based header fetcher
  * @memberof module:sync/fetcher
  */
-export class HeaderFetcher extends BlockFetcher {
+export class HeaderFetcher extends Fetcher {
   private flow: FlowControl
 
   /**

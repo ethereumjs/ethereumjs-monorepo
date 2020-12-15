@@ -1,5 +1,7 @@
 import { Readable, Writable } from 'stream'
 const Heap = require('qheap')
+import { BN } from 'ethereumjs-util'
+import { Chain } from '../../blockchain'
 import { PeerPool } from '../../net/peerpool'
 import { Config } from '../../config'
 
@@ -7,8 +9,17 @@ export interface FetcherOptions {
   /* Common chain config*/
   config: Config
 
+  /* Blockchain */
+  chain: Chain
+
   /* Peer pool */
   pool: PeerPool
+
+  /* Block number to start fetching from */
+  first: BN
+
+  /* How many blocks to fetch */
+  count: BN
 
   /* Fetch task timeout in ms (default: 8000) */
   timeout?: number
@@ -36,7 +47,12 @@ export interface FetcherOptions {
 export class Fetcher extends Readable {
   public config: Config
 
+  protected chain: Chain
   protected pool: PeerPool
+
+  protected first: BN
+  protected count: BN
+
   protected timeout: number
   protected interval: number
   protected banTime: number
@@ -58,7 +74,12 @@ export class Fetcher extends Readable {
     super({ ...options, objectMode: true })
 
     this.config = options.config
+    this.chain = options.chain
     this.pool = options.pool
+
+    this.first = options.first
+    this.count = options.count
+
     this.timeout = options.timeout ?? 8000
     this.interval = options.interval ?? 1000
     this.banTime = options.banTime ?? 60000
@@ -78,7 +99,18 @@ export class Fetcher extends Readable {
    * @return {Object[]} tasks
    */
   tasks(): object[] {
-    return []
+    const { first, count } = this
+    const max = this.maxPerRequest
+    const tasks = []
+    while (count.gten(max)) {
+      tasks.push({ first: first.clone(), count: max })
+      first.iaddn(max)
+      count.isubn(max)
+    }
+    if (count.gtn(0)) {
+      tasks.push({ first: first.clone(), count: count.toNumber() })
+    }
+    return tasks
   }
 
   /**

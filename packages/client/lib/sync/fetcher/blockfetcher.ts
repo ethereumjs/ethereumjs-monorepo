@@ -1,60 +1,19 @@
 import { Fetcher, FetcherOptions } from './fetcher'
 import { Block, BlockBodyBuffer } from '@ethereumjs/block'
-import { BN } from 'ethereumjs-util'
 import { Peer } from '../../net/peer'
 import { EthProtocolMethods } from '../../net/protocol'
-import { Chain } from '../../blockchain'
-
-export interface BlockFetcherOptions extends FetcherOptions {
-  /* Blockchain */
-  chain: Chain
-
-  /* Block number to start fetching from */
-  first: BN
-
-  /* How many blocks to fetch */
-  count: BN
-}
 
 /**
  * Implements an eth/62 based block fetcher
  * @memberof module:sync/fetcher
  */
 export class BlockFetcher extends Fetcher {
-  protected chain: Chain
-  protected first: BN
-  protected count: BN
-
   /**
    * Create new block fetcher
-   * @param {BlockFetcherOptions}
+   * @param {FetcherOptions}
    */
-  constructor(options: BlockFetcherOptions) {
+  constructor(options: FetcherOptions) {
     super(options)
-
-    this.chain = options.chain
-    this.maxPerRequest = options.maxPerRequest ?? 128
-    this.first = options.first
-    this.count = options.count
-  }
-
-  /**
-   * Generate list of tasks to fetch
-   * @return {Object[]} tasks
-   */
-  tasks(): object[] {
-    const { first, count } = this
-    const max = this.maxPerRequest
-    const tasks = []
-    while (count.gten(max)) {
-      tasks.push({ first: first.clone(), count: max })
-      first.iaddn(max)
-      count.isubn(max)
-    }
-    if (count.gtn(0)) {
-      tasks.push({ first: first.clone(), count: count.toNumber() })
-    }
-    return tasks
   }
 
   /**
