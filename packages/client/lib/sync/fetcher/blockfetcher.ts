@@ -11,9 +11,9 @@ import { BlockFetcherBase, JobTask, BlockFetcherOptions } from './blockfetcherba
 export class BlockFetcher extends BlockFetcherBase<Block[], Block> {
   /**
    * Create new block fetcher
-   * @param {BlockFetcherOptions}
+   * @param {FetcherOptions}
    */
-  constructor(options: BlockFetcherOptions) {
+  constructor(options: FetcherOptions) {
     super(options)
   }
 

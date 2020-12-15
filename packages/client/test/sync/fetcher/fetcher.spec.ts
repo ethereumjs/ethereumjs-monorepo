@@ -1,5 +1,7 @@
+import { BN } from 'ethereumjs-util'
 import tape from 'tape-catch'
 import td from 'testdouble'
+import { Chain } from '../../../lib/blockchain/chain'
 import { Config } from '../../../lib/config'
 import { Fetcher } from '../../../lib/sync/fetcher/fetcher'
 import { Job } from '../../../lib/sync/fetcher/types'
@@ -49,7 +51,10 @@ tape('[Fetcher]', (t) => {
     const config = new Config({ loglevel: 'error', transports: [] })
     const fetcher = new FetcherTest({
       config,
+      chain,
       pool: td.object(),
+      first: new BN(0),
+      count: new BN(0),
       timeout: 5,
     })
     const job = { index: 0 }

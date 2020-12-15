@@ -5,7 +5,7 @@ import { BlockHeader } from '@ethereumjs/block'
 import { Job } from './types'
 import { BN } from 'ethereumjs-util'
 
-export interface HeaderFetcherOptions extends BlockFetcherOptions {
+export interface HeaderFetcherOptions extends FetcherOptions {
   /* Flow control manager */
   flow: FlowControl
 }
