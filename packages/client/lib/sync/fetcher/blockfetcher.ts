@@ -15,6 +15,17 @@ export class BlockFetcher extends BlockFetcherBase<Block[], Block> {
    */
   constructor(options: FetcherOptions) {
     super(options)
+
+    if (!this.config.vm) {
+      this.vm = new VM({
+        common: this.config.common,
+        blockchain: this.chain.blockchain,
+      })
+    } else {
+      this.vm = this.config.vm
+      //@ts-ignore blockchain has readonly property
+      this.vm.blockchain = this.chain.blockchain
+    }
   }
 
   /**
