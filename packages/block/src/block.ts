@@ -1,6 +1,6 @@
 /* eslint-disable no-dupe-class-members */
 
-import { BaseTrie as Trie } from 'merkle-patricia-tree'
+import { BaseTrie as Trie } from '@ethereumjs/trie'
 import { BN, rlp, keccak256, KECCAK256_RLP } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
 import { Transaction, TxOptions } from '@ethereumjs/tx'

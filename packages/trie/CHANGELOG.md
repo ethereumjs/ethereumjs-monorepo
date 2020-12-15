@@ -19,7 +19,7 @@ This release introduces a major API upgrade from callbacks to Promises.
 Example using async/await syntax:
 
 ```typescript
-import { BaseTrie as Trie } from 'merkle-patricia-tree'
+import { BaseTrie as Trie } from '@ethereumjs/trie'
 const trie = new Trie()
 async function test() {
   await trie.put(Buffer.from('test'), Buffer.from('one'))

@@ -32,7 +32,7 @@ For the `ethereumjs` CLI command to work run:
 npm link
 ```
 
-Note: for development purposes you can invoke the client by build with `npm run build:node` and 
+Note: for development purposes you can invoke the client by build with `npm run build:node` and
 then run `node ./dist/bin/cli.js`.
 
 ### Running the Client
@@ -45,7 +45,7 @@ You can run the current state of the client with:
 ethereumjs --network=mainnet [--loglevel=debug]
 ```
 
-For development you might want to connect to `rinkeby` as the network with the currently 
+For development you might want to connect to `rinkeby` as the network with the currently
 most reliable connection:
 
 ```shell
@@ -347,9 +347,9 @@ To update the structure diagram files in the root folder open the `client.drawio
 **EthereumJS Ecosystem**
 
 This project will be embedded in the EthereumJS ecosystem and many submodules already exist and
-can be used within the project, have a look e.g. at [ethereumjs-block](https://github.com/ethereumjs/ethereumjs-vm/tree/master/packages/block), [ethereumjs-vm](https://github.com/ethereumjs/ethereumjs-vm), the
-[merkle-patricia-tree](https://github.com/ethereumjs/merkle-patricia-tree) or the
-[ethereumjs-devp2p](https://github.com/ethereumjs/vm/packages/devp2p) implementation. Work needs to be done both within this repos and related libraries.
+can be used within the project, have a look e.g. at [@ethereumjs/block](https://github.com/ethereumjs/ethereumjs-vm/tree/master/packages/block), [@ethereumjs/vm](https://github.com/ethereumjs/ethereumjs-vm/tree/master/packages/vm),
+[@ethereumjs/trie](https://github.com/ethereumjs/ethereumjs-vm/tree/master/packages/trie) or the
+[@ethereumjs/devp2p](https://github.com/ethereumjs/ethereumjs-vm/tree/master/packages/devp2p) implementation. Work needs to be done both within these repos and related libraries.
 
 ## EthereumJS
 
