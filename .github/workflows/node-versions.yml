@@ -68,6 +68,10 @@ jobs:
         run: npm run test
         working-directory: packages/ethash
 
+      - name: Test Trie
+        run: npm run test
+        working-directory: packages/trie
+      
       - name: Test Tx
         run: npm run test
         working-directory: packages/tx

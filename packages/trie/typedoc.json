@@ -1,0 +1,13 @@
+{
+  "inputFiles": ["src/index.ts"],
+  "out": "docs",
+  "mode": "library",
+  "plugin": "typedoc-plugin-markdown",
+  "readme": "none",
+  "gitRevision": "master",
+  "exclude": ["src/**/!(secure|checkpointTrie|baseTrie|walkController).ts", "test/**/*.ts"],
+  "excludeNotExported": true,
+  "excludeExternals": true,
+  "excludePrivate": true,
+  "excludeProtected": true
+}

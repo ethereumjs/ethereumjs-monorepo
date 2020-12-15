@@ -1,0 +1,81 @@
+{
+  "name": "@ethereumjs/trie",
+  "version": "4.0.0",
+  "description": "This is an implementation of the modified merkle patricia tree as specified in the Ethereum's yellow paper.",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "dist.browser"
+  ],
+  "browser": "dist.browser/index.js",
+  "scripts": {
+    "benchmarks": "npm run build && node -r ts-node/register --max-old-space-size=8024 benchmarks",
+    "profiling": "npm run build && tsc --target ES5 benchmarks/random.ts && 0x benchmarks/random.js",
+    "build": "tsc -p tsconfig.prod.json && tsc -p tsconfig.browser.json",
+    "prepublishOnly": "npm run build && npm run test",
+    "coverage": "nyc --reporter=lcov npm run test:node",
+    "docs:build": "typedoc",
+    "lint": "ethereumjs-config-lint",
+    "lint:fix": "ethereumjs-config-lint-fix",
+    "tsc": "ethereumjs-config-tsc",
+    "test": "npm run test:node && npm run test:browser",
+    "test:browser": "npm run build && karma start karma.conf.js",
+    "test:node": "npm run build && tape -r ts-node/register test/*.ts"
+  },
+  "author": {
+    "name": "mjbecze",
+    "email": "mjbecze@gmail.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ethereumjs/ethereumjs-vm.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ethereumjs/ethereumjs-vm/issues?q=is%3Aissue+label%3A%22package%3A+trie%22"
+  },
+  "keywords": [
+    "merkle",
+    "radix",
+    "trie",
+    "ethereum"
+  ],
+  "license": "MPL-2.0",
+  "dependencies": {
+    "@types/levelup": "^4.3.0",
+    "ethereumjs-util": "^7.0.7",
+    "level-mem": "^5.0.1",
+    "level-ws": "^2.0.0",
+    "readable-stream": "^3.6.0",
+    "rlp": "^2.2.3",
+    "semaphore-async-await": "^1.5.1"
+  },
+  "devDependencies": {
+    "0x": "^4.9.1",
+    "@ethereumjs/config-coverage": "^2.0.0",
+    "@ethereumjs/config-typescript": "^2.0.0",
+    "@ethereumjs/eslint-config-defaults": "^2.0.0",
+    "@types/benchmark": "^1.0.33",
+    "@types/bn.js": "^4.11.6",
+    "@types/tape": "^4.13.0",
+    "benchmark": "^2.1.4",
+    "eslint": "^6.8.0",
+    "eslint-config-prettier": "^6.11.0",
+    "eslint-plugin-implicit-dependencies": "^1.0.4",
+    "karma": "^5.2.1",
+    "karma-chrome-launcher": "^3.1.0",
+    "karma-firefox-launcher": "^1.3.0",
+    "karma-tap": "^4.2.0",
+    "karma-typescript": "^5.2.0",
+    "nyc": "^14.0.0",
+    "prettier": "^2.0.5",
+    "tape": "^4.10.1",
+    "ts-node": "^8.8.2",
+    "typedoc": "next",
+    "typedoc-plugin-markdown": "^2.2.17",
+    "typescript": "^3.9.3"
+  },
+  "contributors": [
+    "Aaron Kumavis <http://aaron.kumavis.me/> (https://github.com/kumavis)"
+  ]
+}

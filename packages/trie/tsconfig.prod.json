@@ -1,0 +1,9 @@
+{
+  "extends": "@ethereumjs/config-typescript",
+  "compilerOptions": {
+    "outDir": "./dist",
+    "target": "ES2017",
+    "lib": ["dom"]
+  },
+  "include": ["src/**/*.ts"]
+}
