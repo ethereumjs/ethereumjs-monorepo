@@ -1,7 +1,6 @@
 import { EventEmitter } from 'events'
 import tape from 'tape-catch'
 import td from 'testdouble'
-import VM from '@ethereumjs/vm'
 import { BN } from 'ethereumjs-util'
 import { Config } from '../../lib/config'
 import { Chain } from '../../lib/blockchain'
@@ -29,16 +28,6 @@ tape('[FullSynchronizer]', async (t) => {
     const sync = new FullSynchronizer({ config, pool, chain })
     pool.emit('added', { eth: true })
     t.equals(sync.type, 'full', 'full type')
-    t.end()
-  })
-
-  t.test('should initialize with VM provided by config', async (t) => {
-    const vm = new VM()
-    const config = new Config({ vm, loglevel: 'error', transports: [] })
-    const pool = new PeerPool() as any
-    const chain = new Chain({ config })
-    const sync = new FullSynchronizer({ config, pool, chain })
-    t.equals(sync.vm, vm, 'provided VM is used')
     t.end()
   })
 

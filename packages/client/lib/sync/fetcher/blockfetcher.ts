@@ -2,18 +2,32 @@ import { Fetcher, FetcherOptions } from './fetcher'
 import { Block, BlockBodyBuffer } from '@ethereumjs/block'
 import { Peer } from '../../net/peer'
 import { EthProtocolMethods } from '../../net/protocol'
+import VM from '@ethereumjs/vm'
 
 /**
  * Implements an eth/62 based block fetcher
  * @memberof module:sync/fetcher
  */
 export class BlockFetcher extends Fetcher {
+  public vm: VM
+
   /**
    * Create new block fetcher
    * @param {FetcherOptions}
    */
   constructor(options: FetcherOptions) {
     super(options)
+
+    if (!this.config.vm) {
+      this.vm = new VM({
+        common: this.config.common,
+        blockchain: this.chain.blockchain,
+      })
+    } else {
+      this.vm = this.config.vm
+      //@ts-ignore blockchain has readonly property
+      this.vm.blockchain = this.chain.blockchain
+    }
   }
 
   /**
@@ -52,7 +66,19 @@ export class BlockFetcher extends Fetcher {
    * @return {Promise}
    */
   async store(blocks: Array<any>) {
-    await this.chain.putBlocks(blocks)
+    if (blocks.length === 0) {
+      return
+    }
+    await this.chain.open()
+    blocks = blocks.map((b: Block) =>
+      Block.fromValuesArray(b.raw(), { common: this.config.common })
+    )
+    await this.chain.blockchain.initPromise
+    for (let i = 0; i < blocks.length; i++) {
+      await this.vm.runBlock({ block: blocks[i], skipBlockValidation: true })
+      await this.chain.blockchain.putBlock(blocks[i])
+    }
+    await this.chain.update()
   }
 
   /**

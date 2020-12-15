@@ -4,6 +4,7 @@ import td from 'testdouble'
 import { BN } from 'ethereumjs-util'
 import { Config } from '../../../lib/config'
 import { Chain } from '../../../lib/blockchain/chain'
+import VM from '@ethereumjs/vm'
 
 async function wait(delay?: number) {
   await new Promise((resolve) => setTimeout(resolve, delay ?? 10))
@@ -43,6 +44,22 @@ tape('[BlockFetcher]', async (t) => {
     fetcher.destroy()
     await wait()
     t.notOk((fetcher as any).running, 'stopped')
+    t.end()
+  })
+
+  t.test('should initialize with VM provided by config', async (t) => {
+    const vm = new VM()
+    const config = new Config({ vm, loglevel: 'error', transports: [] })
+    const pool = new PeerPool() as any
+    const chain = new Chain({ config })
+    const fetcher = new BlockFetcher({
+      config,
+      pool,
+      chain,
+      first: new BN(0),
+      count: new BN(0),
+    })
+    t.equals(fetcher.vm, vm, 'provided VM is used')
     t.end()
   })
 
