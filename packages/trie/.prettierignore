@@ -1,6 +1,5 @@
 node_modules
 .vscode
-package.json
 dist
 dist.browser
 .nyc_output

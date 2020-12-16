@@ -1,4 +1,4 @@
-[merkle-patricia-tree](../README.md) › ["baseTrie"](_basetrie_.md)
+[@ethereumjs/trie](../README.md) › ["baseTrie"](_basetrie_.md)
 
 # Module: "baseTrie"
 
@@ -19,7 +19,7 @@
 
 Ƭ **FoundNodeFunction**: *function*
 
-*Defined in [baseTrie.ts:29](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/baseTrie.ts#L29)*
+*Defined in [baseTrie.ts:29](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/trie/src/baseTrie.ts#L29)*
 
 #### Type declaration:
 
@@ -40,4 +40,4 @@ ___
 
 Ƭ **Proof**: *Buffer[]*
 
-*Defined in [baseTrie.ts:21](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/baseTrie.ts#L21)*
+*Defined in [baseTrie.ts:21](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/trie/src/baseTrie.ts#L21)*

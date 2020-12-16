@@ -1,6 +1,6 @@
 import tape from 'tape'
 import { KECCAK256_RLP, toBuffer } from 'ethereumjs-util'
-import { SecureTrie as Trie } from 'merkle-patricia-tree'
+import { SecureTrie as Trie } from '@ethereumjs/trie'
 import { Block } from '@ethereumjs/block'
 import Common from '@ethereumjs/common'
 import { DefaultStateManager } from '../../lib/state'

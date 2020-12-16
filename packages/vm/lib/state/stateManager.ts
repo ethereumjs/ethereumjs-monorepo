@@ -1,5 +1,5 @@
 const Set = require('core-js-pure/es/set')
-import { SecureTrie as Trie } from 'merkle-patricia-tree'
+import { SecureTrie as Trie } from '@ethereumjs/trie'
 import {
   Account,
   Address,
@@ -27,7 +27,7 @@ export interface DefaultStateManagerOpts {
    */
   common?: Common
   /**
-   * A [`merkle-patricia-tree`](https://github.com/ethereumjs/merkle-patricia-tree) instance
+   * An [`@ethereumjs/trie`](https://github.com/ethereumjs/ethereumjs-vm/tree/master/packages/trie) instance
    */
   trie?: Trie
 }

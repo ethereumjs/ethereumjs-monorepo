@@ -16,7 +16,7 @@ Note: this `README` reflects the state of the library from `v5.0.0` (UNRELEASED)
 
 # INSTALL
 
-`npm install merkle-patricia-tree`
+`npm install @ethereumjs/trie`
 
 # USAGE
 
@@ -26,7 +26,7 @@ There are 3 variants of the tree implemented in this library, namely: `BaseTrie`
 
 ```typescript
 import level from 'level'
-import { BaseTrie as Trie } from 'merkle-patricia-tree'
+import { BaseTrie as Trie } from '@ethereumjs/trie'
 
 const db = level('./testdb')
 const trie = new Trie(db)
@@ -59,7 +59,7 @@ test()
 
 ```typescript
 import level from 'level'
-import { SecureTrie as Trie } from 'merkle-patricia-tree'
+import { SecureTrie as Trie } from '@ethereumjs/trie'
 
 const db = level('YOUR_PATH_TO_THE_GETH_CHAIN_DB')
 // Set stateRoot to block #222
@@ -82,7 +82,7 @@ import level from 'level'
 import rlp from 'rlp'
 import { BN, bufferToHex } from 'ethereumjs-util'
 import Account from 'ethereumjs-account'
-import { SecureTrie as Trie } from 'merkle-patricia-tree'
+import { SecureTrie as Trie } from '@ethereumjs/trie'
 
 const stateRoot = 'STATE_ROOT_OF_A_BLOCK'
 

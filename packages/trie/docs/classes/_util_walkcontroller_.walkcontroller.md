@@ -1,4 +1,4 @@
-[merkle-patricia-tree](../README.md) › ["util/walkController"](../modules/_util_walkcontroller_.md) › [WalkController](_util_walkcontroller_.walkcontroller.md)
+[@ethereumjs/trie](../README.md) › ["util/walkController"](../modules/_util_walkcontroller_.md) › [WalkController](_util_walkcontroller_.walkcontroller.md)
 
 # Class: WalkController
 
@@ -29,7 +29,7 @@ WalkController is an interface to control how the trie is being traversed.
 
 • **onNode**: *[FoundNodeFunction](../modules/_basetrie_.md#foundnodefunction)*
 
-*Defined in [util/walkController.ts:10](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/util/walkController.ts#L10)*
+*Defined in [util/walkController.ts:10](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/trie/src/util/walkController.ts#L10)*
 
 ___
 
@@ -37,7 +37,7 @@ ___
 
 • **taskExecutor**: *PrioritizedTaskExecutor*
 
-*Defined in [util/walkController.ts:11](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/util/walkController.ts#L11)*
+*Defined in [util/walkController.ts:11](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/trie/src/util/walkController.ts#L11)*
 
 ___
 
@@ -45,7 +45,7 @@ ___
 
 • **trie**: *BaseTrie*
 
-*Defined in [util/walkController.ts:12](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/util/walkController.ts#L12)*
+*Defined in [util/walkController.ts:12](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/trie/src/util/walkController.ts#L12)*
 
 ## Methods
 
@@ -53,7 +53,7 @@ ___
 
 ▸ **allChildren**(`node`: TrieNode, `key`: Nibbles): *void*
 
-*Defined in [util/walkController.ts:59](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/util/walkController.ts#L59)*
+*Defined in [util/walkController.ts:59](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/trie/src/util/walkController.ts#L59)*
 
 Run all children of a node. Priority of these nodes are the key length of the children.
 
@@ -72,7 +72,7 @@ ___
 
 ▸ **onlyBranchIndex**(`node`: BranchNode, `key`: Nibbles, `childIndex`: number, `priority?`: undefined | number): *void*
 
-*Defined in [util/walkController.ts:105](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/util/walkController.ts#L105)*
+*Defined in [util/walkController.ts:105](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/trie/src/util/walkController.ts#L105)*
 
 Push a branch of a certain BranchNode to the event queue.
 
@@ -93,7 +93,7 @@ ___
 
 ▸ **pushNodeToQueue**(`nodeRef`: Buffer, `key`: Nibbles, `priority?`: undefined | number): *void*
 
-*Defined in [util/walkController.ts:87](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/util/walkController.ts#L87)*
+*Defined in [util/walkController.ts:87](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/trie/src/util/walkController.ts#L87)*
 
 Push a node to the queue. If the queue has places left for tasks, the node is executed immediately, otherwise it is queued.
 
@@ -113,7 +113,7 @@ ___
 
 ▸ **newWalk**(`onNode`: [FoundNodeFunction](../modules/_basetrie_.md#foundnodefunction), `trie`: BaseTrie, `root`: Buffer, `poolSize?`: undefined | number): *Promise‹void›*
 
-*Defined in [util/walkController.ts:35](https://github.com/ethereumjs/merkle-patricia-tree/blob/master/src/util/walkController.ts#L35)*
+*Defined in [util/walkController.ts:35](https://github.com/ethereumjs/ethereumjs-vm/blob/master/packages/trie/src/util/walkController.ts#L35)*
 
 Async function to create and start a new walk over a trie.
 
