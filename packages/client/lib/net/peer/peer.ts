@@ -99,15 +99,14 @@ export class Peer extends events.EventEmitter {
    * @param  {Sender}    sender Sender instance provided by subclass
    * @return {Promise}
    * @example
-   *
    * await peer.bindProtocol(ethProtocol, sender)
    * // Example: Directly call message name as a method on the bound protocol
-   * const headers1 = await peer.eth.getBlockHeaders(1, 100, 0, false)
+   * const headers1 = await peer.eth.getBlockHeaders({ block: new BN(1), max: 100 })
    * // Example: Call request() method with message name as first parameter
-   * const headers2 = await peer.eth.request('getBlockHeaders', 1, 100, 0, 0)
+   * const headers2 = await peer.eth.request('getBlockHeaders', { block: new BN(1), max: 100 })
    * // Example: Call send() method with message name as first parameter and
    * // wait for response message as an event
-   * peer.eth.send('getBlockHeaders', 1, 100, 0, 0)
+   * peer.eth.send('getBlockHeaders', { block: new BN(1), max: 100 })
    * peer.eth.on('message', ({ data }) => console.log(`Received ${data.length} headers`))
    */
   async bindProtocol(protocol: Protocol, sender: Sender): Promise<void> {
