@@ -102,7 +102,7 @@ export class Peer extends events.EventEmitter {
    *
    * await peer.bindProtocol(ethProtocol, sender)
    * // Example: Directly call message name as a method on the bound protocol
-   * const headers1 = await peer.eth.getBlockHeaders(1, 100, 0, 0)
+   * const headers1 = await peer.eth.getBlockHeaders(1, 100, 0, false)
    * // Example: Call request() method with message name as first parameter
    * const headers2 = await peer.eth.request('getBlockHeaders', 1, 100, 0, 0)
    * // Example: Call send() method with message name as first parameter and

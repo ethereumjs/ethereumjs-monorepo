@@ -2,6 +2,7 @@ import { Fetcher, FetcherOptions } from './fetcher'
 import { Block, BlockBodyBuffer } from '@ethereumjs/block'
 import { BN } from 'ethereumjs-util'
 import { Peer } from '../../net/peer'
+import { EthProtocolMethods } from '../../net/protocol'
 import { Chain } from '../../blockchain'
 
 export interface BlockFetcherOptions extends FetcherOptions {
@@ -58,13 +59,17 @@ export class BlockFetcher extends Fetcher {
 
   /**
    * Requests blocks associated with this job
-   * @param  job
+   * @param job
    */
   async request(job: any): Promise<any> {
     const { task, peer } = job
     const { first, count } = task
-    const headers = await peer.eth.getBlockHeaders({ block: first, max: count })
-    const bodies = await peer.eth.getBlockBodies(headers.map((h: any) => h.hash()))
+    const headers = await (peer.eth as EthProtocolMethods).getBlockHeaders({
+      block: first,
+      max: count,
+    })
+    if (!headers) return {}
+    const bodies = await peer.eth.getBlockBodies(headers.map((h) => h.hash()))
     const blocks = bodies.map(([txsData, unclesData]: BlockBodyBuffer, i: number) =>
       Block.fromValuesArray([headers[i].raw(), txsData, unclesData], { common: this.config.common })
     )
