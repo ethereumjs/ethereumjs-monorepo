@@ -24,9 +24,12 @@ test('RLPX: ban node with missing tcp port', async (t) => {
       udpPort: 30308,
       tcpPort: null,
     }
-    t.notOk(rlpxs[0]._dpt.banlist.has(peer), 'should not be in ban list before bad peer discovered')
-    rlpxs[0]._dpt.emit('peer:new', peer)
-    t.ok(rlpxs[0]._dpt.banlist.has(peer), 'should be in ban list after bad peer discovered')
+    t.notOk(
+      rlpxs[0]._dpt!.banlist.has(peer),
+      'should not be in ban list before bad peer discovered'
+    )
+    rlpxs[0]._dpt!.emit('peer:new', peer)
+    t.ok(rlpxs[0]._dpt!.banlist.has(peer), 'should be in ban list after bad peer discovered')
     util.destroyRLPXs(rlpxs)
     t.end()
   })
@@ -69,7 +72,7 @@ test('RLPX: test peer queue / refill connections', async (t) => {
   const rlpxs = util.getTestRLPXs(3, 1)
 
   const peer = { address: util.localhost, udpPort: util.basePort + 1, tcpPort: util.basePort + 1 }
-  rlpxs[0]._dpt.addPeer(peer)
+  rlpxs[0]._dpt!.addPeer(peer)
 
   async.series(
     [
@@ -81,7 +84,7 @@ test('RLPX: test peer queue / refill connections', async (t) => {
             udpPort: util.basePort + 2,
             tcpPort: util.basePort + 2,
           }
-          rlpxs[0]._dpt.addPeer(peer2)
+          rlpxs[0]._dpt!.addPeer(peer2)
           cb(null)
         })
       },

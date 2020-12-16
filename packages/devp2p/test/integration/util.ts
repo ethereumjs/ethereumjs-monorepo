@@ -66,7 +66,7 @@ export function getTestRLPXs(
 export function initTwoPeerRLPXSetup(maxPeers?: any, capabilities?: any, common?: Object | Common) {
   const rlpxs = getTestRLPXs(2, maxPeers, capabilities, common)
   const peer = { address: localhost, udpPort: basePort + 1, tcpPort: basePort + 1 }
-  rlpxs[0]._dpt.addPeer(peer)
+  rlpxs[0]._dpt!.addPeer(peer)
   return rlpxs
 }
 
