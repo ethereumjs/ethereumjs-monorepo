@@ -1,5 +1,5 @@
 import { encode } from 'rlp'
-import { BaseTrie as Trie } from 'merkle-patricia-tree'
+import { BaseTrie as Trie } from '@ethereumjs/trie'
 import { Account, Address, BN } from 'ethereumjs-util'
 import { Block } from '@ethereumjs/block'
 import VM from './index'

@@ -1,4 +1,4 @@
-[merkle-patricia-tree](../README.md) › ["checkpointTrie"](_checkpointtrie_.md)
+[@ethereumjs/trie](../README.md) › ["checkpointTrie"](_checkpointtrie_.md)
 
 # Module: "checkpointTrie"
 

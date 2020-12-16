@@ -1,6 +1,6 @@
-[merkle-patricia-tree](README.md)
+[@ethereumjs/trie](README.md)
 
-# merkle-patricia-tree
+# @ethereumjs/trie
 
 ## Index
 

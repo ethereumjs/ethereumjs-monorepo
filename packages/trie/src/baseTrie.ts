@@ -34,7 +34,7 @@ export type FoundNodeFunction = (
 ) => void
 
 /**
- * The basic trie interface, use with `import { BaseTrie as Trie } from 'merkle-patricia-tree'`.
+ * The basic trie interface, use with `import { BaseTrie as Trie } from '@ethereumjs/trie'`.
  * In Ethereum applications stick with the {@link SecureTrie} overlay.
  * The API for the base and the secure interface are about the same.
  */

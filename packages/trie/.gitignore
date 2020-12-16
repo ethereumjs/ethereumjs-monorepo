@@ -1,7 +1,1 @@
-package-lock.json
-node_modules
-dist
-dist.browser
-.nyc_output
-coverage
 benchmarks/*.js

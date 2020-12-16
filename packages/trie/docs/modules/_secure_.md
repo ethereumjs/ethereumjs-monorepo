@@ -1,4 +1,4 @@
-[merkle-patricia-tree](../README.md) › ["secure"](_secure_.md)
+[@ethereumjs/trie](../README.md) › ["secure"](_secure_.md)
 
 # Module: "secure"
 
