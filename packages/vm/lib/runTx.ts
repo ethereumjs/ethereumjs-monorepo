@@ -47,6 +47,13 @@ export interface RunTxResult extends EVMResult {
   gasRefund?: BN
 }
 
+export interface AfterTxEvent extends RunTxResult {
+  /**
+   * The transaction which just got finished
+   */
+  transaction: Transaction
+}
+
 /**
  * @ignore
  */
@@ -199,7 +206,8 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
    * @type {Object}
    * @property {Object} result result of the transaction
    */
-  await this._emit('afterTx', results)
+  const event: AfterTxEvent = { transaction: tx, ...results }
+  await this._emit('afterTx', event)
 
   return results
 }
