@@ -16,7 +16,7 @@ type GetBlockHeadersOpts = {
   reverse?: boolean
 }
 export interface EthProtocolMethods {
-  getBlockHeaders: (opts: GetBlockHeadersOpts) => Promise<undefined | BlockHeader[]>
+  getBlockHeaders: (opts: GetBlockHeadersOpts) => Promise<BlockHeader[]>
   getBlockBodies: (hashes: Buffer[]) => Promise<Block[]>
 }
 
