@@ -1,4 +1,4 @@
-import * as fs from 'fs'
+import { readFileSync } from 'fs'
 import Benchmark = require('benchmark')
 import { bufferToInt } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
@@ -22,7 +22,7 @@ const onAdd = async (vm: VM, block: Block, receipts: any) => {
 }
 
 export async function mainnetBlocks(suite?: Benchmark.Suite, numSamples?: number) {
-  let data = JSON.parse(fs.readFileSync(BLOCK_FIXTURE, 'utf8'))
+  let data = JSON.parse(readFileSync(BLOCK_FIXTURE, 'utf8'))
   if (!Array.isArray(data)) data = [data]
   console.log(`Total number of blocks in data set: ${data.length}`)
 
@@ -34,7 +34,7 @@ export async function mainnetBlocks(suite?: Benchmark.Suite, numSamples?: number
 
   for (const blockData of data) {
     const block = blockFromRPC(blockData.block, [], { common: common })
-    const blockNumber = block.header.number.toString()
+    const blockNumber = block.header.number.toNumber()
     const { receipts, preState, blockhashes } = blockData
 
     const stateManager = await getPreState(preState, common)

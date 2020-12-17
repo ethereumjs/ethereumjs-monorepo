@@ -1,4 +1,4 @@
-import BN = require('bn.js')
+import { BN } from 'ethereumjs-util'
 
 // Mockchain: only used to provide blockhashes for the BLOCKHASH opcode for the VM. Has no other uses.
 export default class Mockchain {

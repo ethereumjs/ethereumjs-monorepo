@@ -1,6 +1,5 @@
 import BN = require('bn.js')
-import { toBuffer, bufferToInt } from 'ethereumjs-util'
-import Account from '@ethereumjs/account'
+import { Account, Address, toBuffer, bufferToInt } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
 import { Block } from '@ethereumjs/block'
 import { StateManager, DefaultStateManager } from '../dist/state'
@@ -31,21 +30,18 @@ export async function getPreState(
   const state = new DefaultStateManager({ common })
   await state.checkpoint()
   for (const k in pre) {
-    const kBuf = toBuffer(k)
-    const obj = pre[k]
-    const code = toBuffer(obj.code)
-    const acc = new Account()
-    acc.nonce = hexToBuffer(obj.nonce)
-    acc.balance = hexToBuffer(obj.balance)
-    await state.putAccount(kBuf, acc)
-    await state.putContractCode(kBuf, code)
-    for (const sk in obj.storage) {
-      const sv = obj.storage[sk]
+    const address = new Address(toBuffer(k))
+    const { nonce, balance, code, storage } = pre[k]
+    const account = new Account(new BN(hexToBuffer(nonce)), new BN(hexToBuffer(balance)))
+    await state.putAccount(address, account)
+    await state.putContractCode(address, toBuffer(code))
+    for (const sk in storage) {
+      const sv = storage[sk]
       const valueBuffer = toBuffer(sv)
       // verify if this value buffer is not a zero buffer. if so, we should not write it...
       const zeroBufferEquivalent = Buffer.alloc(valueBuffer.length, 0)
       if (!zeroBufferEquivalent.equals(valueBuffer)) {
-        await state.putContractStorage(kBuf, toBuffer(sk), toBuffer(sv))
+        await state.putContractStorage(address, toBuffer(sk), toBuffer(sv))
       }
     }
   }
@@ -87,7 +83,7 @@ export const verifyResult = (block: Block, result: RunBlockResult) => {
         let cumGasUsedActual = parseInt(receipts[index].gasUsed.toString('hex'), 16)
         let gasUsed = cumGasUsedActual - cumGasUsed
         if (gasUsed !== gasUsedExpected) {
-          const blockNumber = bufferToInt(block.header.number)
+          const blockNumber = block.header.number.toNumber()
           console.log(`[DEBUG]
             Transaction at index ${index} of block ${blockNumber}
             did not yield expected gas.
@@ -104,7 +100,7 @@ export const verifyResult = (block: Block, result: RunBlockResult) => {
   if (result.logsBloom.equals(block.header.bloom)) {
     throw new Error('invalid bloom')
   }
-  if (bufferToInt(block.header.gasUsed) !== Number(result.gasUsed)) {
+  if (!block.header.gasUsed.eq(result.gasUsed)) {
     throw new Error('invalid gasUsed')
   }
 }
