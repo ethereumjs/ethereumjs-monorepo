@@ -153,6 +153,8 @@ jobs:
           tool: 'benchmarkjs'
           # Where the output from the benchmark tool is stored
           output-file-path: ${{ env.cwd }}/output.txt
+          # Location of data in gh-pages branch
+          benchmark-data-dir-path: dev/bench/vm
           # Enable alert commit comment (default alert threshold: 200%)
           comment-on-alert: true
           # GitHub API token to make a commit comment

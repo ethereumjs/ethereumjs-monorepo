@@ -102,6 +102,8 @@ jobs:
           tool: 'benchmarkjs'
           # Where the output from the benchmark tool is stored
           output-file-path: ${{ env.cwd }}/output.txt
+          # Location of data in gh-pages branch
+          benchmark-data-dir-path: dev/bench/trie
           # Enable alert commit comment
           comment-on-alert: true
           # GitHub API token to make a commit comment
