@@ -736,7 +736,7 @@ export default class Blockchain implements BlockchainInterface {
    *
    * @param name - Name of the state root head
    * @param onBlock - Function called on each block with params (block, reorg)
-   * @param maxBlocks - How many blocks to run. By default, run all blocks in the canonical chain.
+   * @param maxBlocks - How many blocks to run. By default, run all unprocessed blocks in the canonical chain.
    */
   async iterator(name: string, onBlock: OnBlock, maxBlocks?: number) {
     return this._iterator(name, onBlock, maxBlocks)
@@ -754,12 +754,15 @@ export default class Blockchain implements BlockchainInterface {
         return
       }
 
+      if (maxBlocks && maxBlocks < 0) {
+        throw 'If maxBlocks is provided, it has to be a non-negative number'
+      }
+
       const number = await this.dbManager.hashToNumber(blockHash)
       const blockNumber = number.addn(1)
       let blocksRanCounter = 0
 
-      // eslint-disable-next-line no-constant-condition
-      while (true) {
+      while (maxBlocks !== blocksRanCounter) {
         try {
           const block = await this._getBlock(blockNumber)
 
@@ -773,9 +776,6 @@ export default class Blockchain implements BlockchainInterface {
           await onBlock(block, reorg)
           blockNumber.iaddn(1)
           blocksRanCounter++
-          if (maxBlocks && blocksRanCounter == maxBlocks) {
-            break
-          }
         } catch (error) {
           if (error.type !== 'NotFoundError') {
             throw error
@@ -794,7 +794,6 @@ export default class Blockchain implements BlockchainInterface {
    * @param tag - The tag to save the headHash to
    * @param headHash - The head hash to save
    */
-
   async setHead(tag: string, headHash: Buffer) {
     await this.initAndLock<void>(async () => {
       this._heads[tag] = headHash
