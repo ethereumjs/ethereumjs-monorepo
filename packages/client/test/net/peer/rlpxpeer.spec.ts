@@ -5,12 +5,12 @@ import { Config } from '../../../lib/config'
 import { RlpxSender } from '../../../lib/net/protocol/rlpxsender'
 
 tape('[RlpxPeer]', async (t) => {
-  const { DPT, ETH, LES } = await import('ethereumjs-devp2p')
+  const { DPT, ETH, LES } = await import('@ethereumjs/devp2p')
   class RLPx extends EventEmitter {
     connect(_: any) {}
   }
   RLPx.prototype.connect = td.func<any>()
-  td.replace('ethereumjs-devp2p', { DPT, ETH, LES, RLPx })
+  td.replace('@ethereumjs/devp2p', { DPT, ETH, LES, RLPx })
   const { RlpxPeer } = await import('../../../lib/net/peer/rlpxpeer')
 
   t.test('should initialize correctly', async (t) => {

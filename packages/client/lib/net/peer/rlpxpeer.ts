@@ -1,12 +1,11 @@
 import { randomBytes } from 'crypto'
 import {
   Capabilities as Devp2pCapabilities,
-  DPT as Devp2pDPT,
   ETH as Devp2pETH,
   LES as Devp2pLES,
   Peer as Devp2pRlpxPeer,
   RLPx as Devp2pRLPx,
-} from 'ethereumjs-devp2p'
+} from '@ethereumjs/devp2p'
 import { Protocol, RlpxSender } from '../protocol'
 import { Peer, PeerOptions } from './peer'
 
@@ -103,9 +102,7 @@ export class RlpxPeer extends Peer {
     await Promise.all(this.protocols.map((p) => p.open()))
     this.rlpx = new Devp2pRLPx(key, {
       capabilities: RlpxPeer.capabilities(this.protocols),
-      listenPort: null,
-      dpt: (<unknown>null) as Devp2pDPT, // TODO: required option
-      maxPeers: (<unknown>null) as number, // TODO: required option
+      common: this.config.common,
     })
     await this.rlpx.connect({
       id: Buffer.from(this.id, 'hex'),

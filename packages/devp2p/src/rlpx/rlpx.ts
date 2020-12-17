@@ -17,13 +17,15 @@ const verbose = createDebugLogger('verbose').enabled
 
 export interface RLPxOptions {
   clientId?: Buffer
+  /* Timeout (default: 10s) */
   timeout?: number
-  dpt: DPT
-  maxPeers: number
+  dpt?: DPT | null
+  /* Max peers (default: 10) */
+  maxPeers?: number
   remoteClientIdFilter?: string[]
   capabilities: Capabilities[]
   common: Common
-  listenPort: number | null
+  listenPort?: number | null
 }
 
 export class RLPx extends EventEmitter {
@@ -36,7 +38,7 @@ export class RLPx extends EventEmitter {
   _capabilities: Capabilities[]
   _common: Common
   _listenPort: number | null
-  _dpt: DPT
+  _dpt: DPT | null
   _peersLRU: LRUCache<string, boolean>
   _peersQueue: { peer: PeerInfo; ts: number }[]
   _server: net.Server | null
@@ -50,8 +52,8 @@ export class RLPx extends EventEmitter {
     this._id = pk2id(Buffer.from(publicKeyCreate(this._privateKey, false)))
 
     // options
-    this._timeout = options.timeout || ms('10s')
-    this._maxPeers = options.maxPeers || 10
+    this._timeout = options.timeout ?? ms('10s')
+    this._maxPeers = options.maxPeers ?? 10
 
     this._clientId = options.clientId
       ? Buffer.from(options.clientId)
@@ -60,14 +62,14 @@ export class RLPx extends EventEmitter {
     this._remoteClientIdFilter = options.remoteClientIdFilter
     this._capabilities = options.capabilities
     this._common = options.common
-    this._listenPort = options.listenPort
+    this._listenPort = options.listenPort ?? null
 
     // DPT
-    this._dpt = options.dpt || null
+    this._dpt = options.dpt ?? null
     if (this._dpt !== null) {
       this._dpt.on('peer:new', (peer: PeerInfo) => {
         if (!peer.tcpPort) {
-          this._dpt.banPeer(peer, ms('5m'))
+          this._dpt!.banPeer(peer, ms('5m'))
           debug(`banning peer with missing tcp port: ${peer.address}`)
           return
         }

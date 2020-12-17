@@ -152,11 +152,10 @@ Create your `RLPx` object, e.g.:
 
 ```typescript
 const rlpx = new devp2p.RLPx(PRIVATE_KEY, {
-  dpt: dpt,
+  dpt,
   maxPeers: 25,
   capabilities: [devp2p.ETH.eth63, devp2p.ETH.eth62],
-  common: common,
-  listenPort: null,
+  common,
 })
 ```
 
@@ -178,6 +177,7 @@ Creates new RLPx object
 - `options.capabilities` - Upper layer protocol capabilities, e.g. `[devp2p.ETH.eth63, devp2p.ETH.eth62]`.
 - `options.listenPort` - The listening port for the server or `null` for default.
 - `options.dpt` - `DPT` object for the peers to connect to (default: `null`, no `DPT` peer management).
+- `options.common` - An instance of [`@ethereumjs/common`](https://github.com/ethereumjs/ethereumjs-vm/tree/master/packages/common).
 
 #### `rlpx.connect(peer)` (`async`)
 

@@ -12,15 +12,26 @@ export interface LesProtocolOptions extends ProtocolOptions {
   flow?: FlowControl
 }
 
-/* Messages with responses that are added as methods in camelCase to BoundProtocol. */
+type GetBlockHeadersOpts = {
+  /* Request id (default: next internal id) */
+  reqId?: BN
+  /* The block's number or hash */
+  block: BN | Buffer
+  /* Max number of blocks to return */
+  max: number
+  /* Number of blocks to skip apart (default: 0) */
+  skip?: number
+  /* Fetch blocks in reverse (default: false) */
+  reverse?: boolean
+}
+/*
+ * Messages with responses that are added as
+ * methods in camelCase to BoundProtocol.
+ */
 export interface LesProtocolMethods {
-  getBlockHeaders: (opts: {
-    reqId?: BN
-    block: BN | Buffer
-    max: number
-    skip?: number
-    reverse?: number
-  }) => Promise<{ reqId: BN; bv: BN; headers: BlockHeader[] }>
+  getBlockHeaders: (
+    opts: GetBlockHeadersOpts
+  ) => Promise<{ reqId: BN; bv: BN; headers: BlockHeader[] }>
 }
 
 const id = new BN(0)
@@ -48,16 +59,16 @@ const messages: Message[] = [
     name: 'GetBlockHeaders',
     code: 0x02,
     response: 0x03,
-    encode: ({ reqId, block, max, skip = 0, reverse = 0 }: any) => [
+    encode: ({ reqId, block, max, skip = 0, reverse = false }: GetBlockHeadersOpts) => [
       (reqId === undefined ? id.iaddn(1) : new BN(reqId)).toArrayLike(Buffer),
-      [BN.isBN(block) ? block.toArrayLike(Buffer) : block, max, skip, reverse],
+      [BN.isBN(block) ? block.toArrayLike(Buffer) : block, max, skip, !reverse ? 0 : 1],
     ],
     decode: ([reqId, [block, max, skip, reverse]]: any) => ({
       reqId: new BN(reqId),
       block: block.length === 32 ? block : new BN(block),
       max: bufferToInt(max),
       skip: bufferToInt(skip),
-      reverse: bufferToInt(reverse),
+      reverse: bufferToInt(reverse) === 0 ? false : true,
     }),
   },
   {

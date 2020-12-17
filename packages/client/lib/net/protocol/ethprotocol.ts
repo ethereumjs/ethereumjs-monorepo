@@ -8,14 +8,22 @@ interface EthProtocolOptions extends ProtocolOptions {
   chain: Chain
 }
 
-/* Messages with responses that are added as methods in camelCase to BoundProtocol. */
+type GetBlockHeadersOpts = {
+  /* The block's number or hash */
+  block: BN | Buffer
+  /* Max number of blocks to return */
+  max: number
+  /* Number of blocks to skip apart (default: 0) */
+  skip?: number
+  /* Fetch blocks in reverse (default: false) */
+  reverse?: boolean
+}
+/*
+ * Messages with responses that are added as
+ * methods in camelCase to BoundProtocol.
+ */
 export interface EthProtocolMethods {
-  getBlockHeaders: (opts: {
-    block: BN | Buffer
-    max: number
-    skip?: number
-    reverse?: number
-  }) => Promise<BlockHeader[]>
+  getBlockHeaders: (opts: GetBlockHeadersOpts) => Promise<BlockHeader[]>
   getBlockBodies: (hashes: Buffer[]) => Promise<Block[]>
 }
 
@@ -30,17 +38,17 @@ const messages: Message[] = [
     name: 'GetBlockHeaders',
     code: 0x03,
     response: 0x04,
-    encode: ({ block, max, skip = 0, reverse = 0 }: any) => [
+    encode: ({ block, max, skip = 0, reverse = false }: GetBlockHeadersOpts) => [
       BN.isBN(block) ? block.toArrayLike(Buffer) : block,
       max,
       skip,
-      reverse,
+      !reverse ? 0 : 1,
     ],
     decode: ([block, max, skip, reverse]: any) => ({
       block: block.length === 32 ? block : new BN(block),
       max: bufferToInt(max),
       skip: bufferToInt(skip),
-      reverse: bufferToInt(reverse),
+      reverse: bufferToInt(reverse) === 0 ? false : true,
     }),
   },
   {
