@@ -130,9 +130,9 @@ Our `TypeScript` VM is implemented as an [AsyncEventEmitter](https://github.com/
 You can subscribe to the following events:
 
 - `beforeBlock`: Emits a `Block` right before running it.
-- `afterBlock`: Emits `RunBlockResult` right after running a block.
+- `afterBlock`: Emits `AfterBlockEvent` right after running a block.
 - `beforeTx`: Emits a `Transaction` right before running it.
-- `afterTx`: Emits a `RunTxResult` right after running a transaction.
+- `afterTx`: Emits a `AfterTxEvent` right after running a transaction.
 - `beforeMessage`: Emits a `Message` right after running it.
 - `afterMessage`: Emits an `EVMResult` right after running a message.
 - `step`: Emits an `InterpreterStep` right before running an EVM step.
