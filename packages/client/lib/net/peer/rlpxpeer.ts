@@ -10,8 +10,8 @@ import { Protocol, RlpxSender } from '../protocol'
 import { Peer, PeerOptions } from './peer'
 
 const devp2pCapabilities: any = {
-  eth62: Devp2pETH.eth62,
   eth63: Devp2pETH.eth63,
+  eth64: Devp2pETH.eth64,
   les2: Devp2pLES.les2,
 }
 
@@ -157,9 +157,9 @@ export class RlpxPeer extends Peer {
   async bindProtocols(rlpxPeer: Devp2pRlpxPeer): Promise<void> {
     this.rlpxPeer = rlpxPeer
     await Promise.all(
-      rlpxPeer.getProtocols().map((rlpxProtocol: any) => {
+      rlpxPeer.getProtocols().map((rlpxProtocol) => {
         const name = rlpxProtocol.constructor.name.toLowerCase()
-        const protocol = this.protocols.find((p: any) => p.name === name)
+        const protocol = this.protocols.find((p) => p.name === name)
         if (protocol) {
           return this.bindProtocol(protocol, new RlpxSender(rlpxProtocol))
         }
