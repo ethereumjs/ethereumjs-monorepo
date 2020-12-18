@@ -98,9 +98,9 @@ tape('[RlpxPeer]', async (t) => {
 
   t.test('should accept peer connection', async (t) => {
     const config = new Config({ transports: [], loglevel: 'error' })
-    const peer = new RlpxPeer({ config, id: 'abcdef0123', host: '10.0.0.1', port: 1234 })
+    const peer: any = new RlpxPeer({ config, id: 'abcdef0123', host: '10.0.0.1', port: 1234 })
     peer.bindProtocols = td.func<typeof peer['bindProtocols']>()
-    td.when(peer.bindProtocols('rlpxpeer' as any)).thenResolve()
+    td.when(peer.bindProtocols('rlpxpeer' as any)).thenResolve(null)
     await peer.accept('rlpxpeer' as any, 'server')
     t.equals(peer.server, 'server', 'server set')
     t.end()

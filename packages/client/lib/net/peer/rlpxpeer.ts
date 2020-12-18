@@ -8,6 +8,7 @@ import {
 } from '@ethereumjs/devp2p'
 import { Protocol, RlpxSender } from '../protocol'
 import { Peer, PeerOptions } from './peer'
+import { RlpxServer } from '../server'
 
 const devp2pCapabilities: any = {
   eth63: Devp2pETH.eth63,
@@ -140,7 +141,7 @@ export class RlpxPeer extends Peer {
    * @private
    * @return {Promise}
    */
-  async accept(rlpxPeer: Devp2pRlpxPeer, server: any): Promise<void> {
+  async accept(rlpxPeer: Devp2pRlpxPeer, server: RlpxServer): Promise<void> {
     if (this.connected) {
       return
     }
