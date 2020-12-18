@@ -130,7 +130,7 @@ export class LesProtocol extends Protocol {
    * Messages defined by this protocol
    * @type {Protocol~Message[]}
    */
-  get messages(): any {
+  get messages(): Message[] {
     return messages
   }
 
@@ -161,8 +161,8 @@ export class LesProtocol extends Protocol {
         txRelay: 1,
         'flowControl/BL': new BN(this.flow.bl).toArrayLike(Buffer),
         'flowControl/MRR': new BN(this.flow.mrr).toArrayLike(Buffer),
-        'flowControl/MRC': Object.entries(this.flow.mrc).map(([name, { base, req }]: any) => {
-          const { code }: any = messages.find((m) => m.name === name)
+        'flowControl/MRC': Object.entries(this.flow.mrc).map(([name, { base, req }]) => {
+          const { code } = messages.find((m) => m.name === name)!
           return [code, base, req]
         }),
       }

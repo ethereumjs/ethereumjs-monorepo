@@ -34,7 +34,7 @@ tape('[Integration:FullEthereumService]', async (t) => {
     t.ok(headers![1].hash().equals(hash), 'handled GetBlockHeaders')
     const bodies = await peer.eth!.getBlockBodies([hash])
     t.deepEquals(bodies, [[[], []]], 'handled GetBlockBodies')
-    await peer.eth!.send('NewBlockHashes', [[hash, new BN(2)]])
+    peer.eth!.send('NewBlockHashes', [[hash, new BN(2)]])
     t.pass('handled NewBlockHashes')
     await destroy(server, service)
     t.end()
