@@ -99,7 +99,7 @@ export class EthProtocol extends Protocol {
    * @type {number[]}
    */
   get versions(): number[] {
-    return [63, 62]
+    return [64, 63]
   }
 
   /**
@@ -127,6 +127,7 @@ export class EthProtocol extends Protocol {
    * @return {Object}
    */
   encodeStatus(): any {
+    // TODO: add latestBlock for more precise ETH/64 forkhash switch
     return {
       networkId: this.chain.networkId,
       td: this.chain.blocks.td.toArrayLike(Buffer),

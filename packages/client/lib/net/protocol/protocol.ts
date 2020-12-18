@@ -14,6 +14,7 @@ export interface ProtocolOptions {
 export type Message = {
   name: string
   code: number
+  payload?: any
   // TODO: check semantics of this field
   response?: number
   // TODO: check if this should be optional

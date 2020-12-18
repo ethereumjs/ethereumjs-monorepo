@@ -5,6 +5,8 @@ import { parseMultiaddrs } from '../../util'
 import { Libp2pSender } from '../protocol/libp2psender'
 import { Peer, PeerOptions } from './peer'
 import { Libp2pNode } from './libp2pnode'
+import { Protocol } from '../protocol'
+import { Libp2pServer } from '../server'
 
 export interface Libp2pPeerOptions extends Omit<PeerOptions, 'address' | 'transport'> {
   /* Multiaddrs to listen on (can be a comma separated string or list) */
@@ -73,7 +75,7 @@ export class Libp2pPeer extends Peer {
    * @private
    * @return {Promise}
    */
-  async accept(protocol: any, connection: any, server: any): Promise<void> {
+  async accept(protocol: Protocol, connection: any, server: Libp2pServer): Promise<void> {
     await this.bindProtocol(protocol, new Libp2pSender(connection))
     this.inbound = true
     this.server = server
@@ -87,7 +89,7 @@ export class Libp2pPeer extends Peer {
    * @param  {Server}     [server] optional server that initiated connection
    * @return {Promise}
    */
-  async bindProtocols(node: any, peerInfo: any, server: any = null): Promise<void> {
+  async bindProtocols(node: Libp2pNode, peerInfo: any, server?: Libp2pServer): Promise<void> {
     await Promise.all(
       this.protocols.map(async (p: any) => {
         await p.open()

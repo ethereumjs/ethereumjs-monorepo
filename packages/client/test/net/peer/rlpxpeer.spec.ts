@@ -28,7 +28,7 @@ tape('[RlpxPeer]', async (t) => {
 
   t.test('should compute capabilities', (t) => {
     const protocols: any = [
-      { name: 'eth', versions: [62, 63] },
+      { name: 'eth', versions: [63, 64] },
       { name: 'les', versions: [2] },
     ]
     const caps = RlpxPeer.capabilities(protocols).map(({ name, version, length }) => ({
@@ -39,8 +39,8 @@ tape('[RlpxPeer]', async (t) => {
     t.deepEquals(
       caps,
       [
-        { name: 'eth', version: 62, length: 8 },
         { name: 'eth', version: 63, length: 17 },
+        { name: 'eth', version: 64, length: 29 },
         { name: 'les', version: 2, length: 21 },
       ],
       'correct capabilities'
@@ -98,9 +98,9 @@ tape('[RlpxPeer]', async (t) => {
 
   t.test('should accept peer connection', async (t) => {
     const config = new Config({ transports: [], loglevel: 'error' })
-    const peer = new RlpxPeer({ config, id: 'abcdef0123', host: '10.0.0.1', port: 1234 })
+    const peer: any = new RlpxPeer({ config, id: 'abcdef0123', host: '10.0.0.1', port: 1234 })
     peer.bindProtocols = td.func<typeof peer['bindProtocols']>()
-    td.when(peer.bindProtocols('rlpxpeer' as any)).thenResolve()
+    td.when(peer.bindProtocols('rlpxpeer' as any)).thenResolve(null)
     await peer.accept('rlpxpeer' as any, 'server')
     t.equals(peer.server, 'server', 'server set')
     t.end()
