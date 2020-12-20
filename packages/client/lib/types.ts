@@ -1,3 +1,5 @@
+import { Peer } from "./net/peer"
+
 export type Key = Buffer
 export type KeyLike = string | Key
 
@@ -10,3 +12,36 @@ export interface Bootnode {
   port: number
 }
 export type BootnodeLike = string | string[] | Bootnode | Bootnode[]
+
+// QHeap types. @types/qheap does not exist, so we create a custom interface here.
+type QHeapOptions = {
+  comparBefore(a: any, b:any): boolean 
+  compar(a: any, b:any): number
+  freeSpace: number 
+  size: number 
+}
+
+export interface QHeap<T> { 
+  constructor(opts: QHeapOptions): QHeap<T>
+  insert(item: T): void
+  push(item: T): void
+  enqueue(item: T): void 
+  remove(): T | undefined 
+  shift(): T | undefined
+  dequeue(): T | undefined
+  peek(): T | undefined 
+  length: number
+  gc(opts: {
+    minLength: number
+    maxLength: number 
+  }): void  
+}
+
+export type Job<JobTask, JobResult> = {
+  task: JobTask
+  time: number
+  index: number
+  result: JobResult[] | null
+  state: 'idle' | 'expired' | 'active'
+  peer: Peer | null
+}

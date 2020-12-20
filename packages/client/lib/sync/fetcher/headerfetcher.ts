@@ -1,17 +1,22 @@
-import { BlockFetcher, BlockFetcherOptions } from './blockfetcher'
+import { BlockFetcherBase, BlockFetcherOptions, JobTask } from './blockfetcherbase'
 import { Peer } from '../../net/peer'
 import { FlowControl, LesProtocolMethods } from '../../net/protocol'
+import { BlockHeader } from '@ethereumjs/block'
+import { Job } from '../../types'
+import { BN } from 'ethereumjs-util'
 
 export interface HeaderFetcherOptions extends BlockFetcherOptions {
   /* Flow control manager */
   flow: FlowControl
 }
 
+type BlockHeaderResult = { reqId: BN; bv: BN; headers: BlockHeader[] }
+
 /**
  * Implements an les/1 based header fetcher
  * @memberof module:sync/fetcher
  */
-export class HeaderFetcher extends BlockFetcher {
+export class HeaderFetcher extends BlockFetcherBase<BlockHeaderResult> {
   private flow: FlowControl
 
   /**
@@ -28,13 +33,17 @@ export class HeaderFetcher extends BlockFetcher {
    * Requests block headers for the given task
    * @param job
    */
-  async request(job: any) {
+  async request(job: Job<JobTask, BlockHeaderResult>) {
     const { task, peer } = job
-    if (this.flow.maxRequestCount(peer, 'GetBlockHeaders') < this.maxPerRequest) {
+    if (this.flow.maxRequestCount(peer!, 'GetBlockHeaders') < this.maxPerRequest) {
       // we reached our request limit. try with a different peer.
-      return false
+      return undefined
     }
-    return (peer.les as LesProtocolMethods).getBlockHeaders({ block: task.first, max: task.count })
+    const response = await (peer!.les as LesProtocolMethods).getBlockHeaders({ block: task.first, max: task.count })
+    if (response) {
+      return response.headers
+    }
+    return undefined
   }
 
   /**

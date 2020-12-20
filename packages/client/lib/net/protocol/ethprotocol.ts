@@ -2,6 +2,7 @@ import { BN, bufferToInt } from 'ethereumjs-util'
 import { Block, BlockHeader, BlockHeaderBuffer } from '@ethereumjs/block'
 import { Chain } from './../../blockchain'
 import { Message, Protocol, ProtocolOptions } from './protocol'
+import { BlockBodyBuffer } from '../../../../block/dist'
 
 interface EthProtocolOptions extends ProtocolOptions {
   /* Blockchain */
@@ -24,7 +25,7 @@ type GetBlockHeadersOpts = {
  */
 export interface EthProtocolMethods {
   getBlockHeaders: (opts: GetBlockHeadersOpts) => Promise<BlockHeader[]>
-  getBlockBodies: (hashes: Buffer[]) => Promise<Block[]>
+  getBlockBodies: (hashes: Buffer[]) => Promise<BlockBodyBuffer[]>
 }
 
 const messages: Message[] = [
