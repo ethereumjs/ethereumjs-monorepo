@@ -4,7 +4,8 @@ const Heap = require('qheap')
 import { PeerPool } from '../../net/peerpool'
 import { Config } from '../../config'
 
-import { QHeap, Job } from '../../types'
+import { QHeap } from '../../types'
+import { Job } from './types'
 import { Peer } from '../../net/peer'
 
 export interface FetcherOptions {

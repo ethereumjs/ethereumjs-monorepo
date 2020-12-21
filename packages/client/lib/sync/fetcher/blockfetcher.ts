@@ -1,7 +1,7 @@
 import { Block, BlockBodyBuffer } from '@ethereumjs/block'
 import { Peer } from '../../net/peer'
 import { EthProtocolMethods } from '../../net/protocol'
-import { Job } from '../../types'
+import { Job } from './types'
 import { BlockFetcherBase, JobTask, BlockFetcherOptions } from './blockfetcherbase'
 
 /**
