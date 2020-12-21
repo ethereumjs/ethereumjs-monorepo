@@ -1,8 +1,11 @@
+const level = require('level')
 import { Fetcher, FetcherOptions } from './fetcher'
 import { Block, BlockBodyBuffer } from '@ethereumjs/block'
 import { Peer } from '../../net/peer'
 import { EthProtocolMethods } from '../../net/protocol'
 import VM from '@ethereumjs/vm'
+import { DefaultStateManager } from '@ethereumjs/vm/dist/state'
+import { SecureTrie as Trie } from '@ethereumjs/trie'
 
 /**
  * Implements an eth/62 based block fetcher
@@ -19,9 +22,18 @@ export class BlockFetcher extends Fetcher {
     super(options)
 
     if (!this.config.vm) {
+      const db = level('./statedir')
+      const trie = new Trie(db)
+
+      const stateManager = new DefaultStateManager({
+        common: this.config.common,
+        trie,
+      })
+
       this.vm = new VM({
         common: this.config.common,
         blockchain: this.chain.blockchain,
+        stateManager,
       })
     } else {
       this.vm = this.config.vm
@@ -75,8 +87,10 @@ export class BlockFetcher extends Fetcher {
     )
     await this.chain.blockchain.initPromise
     for (let i = 0; i < blocks.length; i++) {
-      await this.vm.runBlock({ block: blocks[i], skipBlockValidation: true })
-      await this.chain.blockchain.putBlock(blocks[i])
+      const block: Block = blocks[i]
+
+      await this.chain.blockchain.putBlock(block)
+      await this.vm.runBlockchain()
     }
     await this.chain.update()
   }
