@@ -32,9 +32,11 @@ export interface FetcherOptions {
 
 /**
  * Base class for fetchers that retrieve various data from peers. Subclasses must
- * request() and process() methods. Tasks can be arbitrary objects whose structure
+ * request(), process() and store() methods. Tasks can be arbitrary objects whose structure
  * is defined by subclasses. A priority queue is used to ensure tasks are fetched
- * inorder.
+ * inorder. Three types need to be provided: the JobTask, which describes a task the job should perform,
+ * a JobResult, which is the direct result when a Peer replies to a Task, and a StorageItem, which 
+ * represents the to-be-stored items.
  * @memberof module:sync/fetcher
  */
 export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable {
@@ -85,6 +87,28 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
     this.running = false
     this.reading = false
   }
+
+  /**
+   * Request results from peer for the given job. Resolves with the raw result.
+   * @param  job
+   * @param  peer
+   * @return {Promise}
+   */
+  abstract request(_job?: Job<JobTask, JobResult>, _peer?: Peer): Promise<JobResult | undefined>
+
+  /**
+   * Process the reply for the given job
+   * @param  job fetch job
+   * @param  result result data
+   */
+  abstract process(_job?: Job<JobTask, JobResult>, _result?: JobResult): JobResult | null
+
+    /**
+   * Store fetch result. Resolves once store operation is complete.
+   * @param result fetch result
+   * @return {Promise}
+   */
+  abstract async store(_result?: StorageItem[]): Promise<void>
 
   /**
    * Generate list of tasks to fetch
@@ -302,21 +326,6 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
   }
 
   /**
-   * Request results from peer for the given job. Resolves with the raw result.
-   * @param  job
-   * @param  peer
-   * @return {Promise}
-   */
-  abstract request(_job?: Job<JobTask, JobResult>, _peer?: Peer): Promise<JobResult | undefined>
-
-  /**
-   * Process the reply for the given job
-   * @param  job fetch job
-   * @param  result result data
-   */
-  abstract process(_job?: Job<JobTask, JobResult>, _result?: JobResult): JobResult | null
-
-  /**
    * Expire job that has timed out and ban associated peer. Timed out tasks will
    * be re-inserted into the queue.
    */
@@ -334,13 +343,6 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
     }
     this.enqueue(job)
   }
-
-  /**
-   * Store fetch result. Resolves once store operation is complete.
-   * @param result fetch result
-   * @return {Promise}
-   */
-  abstract async store(_result?: StorageItem[]): Promise<void>
 
   async wait(delay?: number) {
     await new Promise((resolve) => setTimeout(resolve, delay || this.interval))
