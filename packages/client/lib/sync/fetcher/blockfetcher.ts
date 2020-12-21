@@ -1,18 +1,14 @@
-import { Fetcher, FetcherOptions } from './fetcher'
 import { Block, BlockBodyBuffer } from '@ethereumjs/block'
-import { BN } from 'ethereumjs-util'
 import { Peer } from '../../net/peer'
 import { EthProtocolMethods } from '../../net/protocol'
-import { Chain } from '../../blockchain'
 import { Job } from '../../types'
 import { BlockFetcherBase, JobTask, BlockFetcherOptions } from './blockfetcherbase'
-
 
 /**
  * Implements an eth/62 based block fetcher
  * @memberof module:sync/fetcher
  */
-export class BlockFetcher extends BlockFetcherBase<Block>{
+export class BlockFetcher extends BlockFetcherBase<Block[], Block> {
   /**
    * Create new block fetcher
    * @param {BlockFetcherOptions}
@@ -44,14 +40,16 @@ export class BlockFetcher extends BlockFetcherBase<Block>{
    * Requests blocks associated with this job
    * @param job
    */
-  async request(job: Job<JobTask, Block>): Promise<Block[]> {
+  async request(job: Job<JobTask, Block[]>): Promise<Block[]> {
     const { task, peer } = job
     const { first, count } = task
     const headers = await (peer!.eth as EthProtocolMethods).getBlockHeaders({
       block: first,
       max: count,
     })
-    const bodies: BlockBodyBuffer[] = <BlockBodyBuffer[]>await peer!.eth!.getBlockBodies(headers.map((h) => h.hash()))
+    const bodies: BlockBodyBuffer[] = <BlockBodyBuffer[]>(
+      await peer!.eth!.getBlockBodies(headers.map((h) => h.hash()))
+    )
     const blocks: Block[] = bodies.map(([txsData, unclesData]: BlockBodyBuffer, i: number) =>
       Block.fromValuesArray([headers[i].raw(), txsData, unclesData], { common: this.config.common })
     )
@@ -64,7 +62,8 @@ export class BlockFetcher extends BlockFetcherBase<Block>{
    * @param  result fetch result
    * @return {*} results of processing job or undefined if job not finished
    */
-  process(job: Job<JobTask, Block>, result: Block[]): Block[] | null {
+  process(job: Job<JobTask, Block[]>, result: Block[]): Block[] | null {
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (result && result.length === job.task.count) {
       return result
     }

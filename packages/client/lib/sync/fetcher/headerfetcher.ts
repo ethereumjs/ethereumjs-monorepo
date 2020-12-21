@@ -16,7 +16,7 @@ type BlockHeaderResult = { reqId: BN; bv: BN; headers: BlockHeader[] }
  * Implements an les/1 based header fetcher
  * @memberof module:sync/fetcher
  */
-export class HeaderFetcher extends BlockFetcherBase<BlockHeaderResult> {
+export class HeaderFetcher extends BlockFetcherBase<BlockHeaderResult, BlockHeader> {
   private flow: FlowControl
 
   /**
@@ -39,9 +39,13 @@ export class HeaderFetcher extends BlockFetcherBase<BlockHeaderResult> {
       // we reached our request limit. try with a different peer.
       return undefined
     }
-    const response = await (peer!.les as LesProtocolMethods).getBlockHeaders({ block: task.first, max: task.count })
+    const response = await (peer!.les as LesProtocolMethods).getBlockHeaders({
+      block: task.first,
+      max: task.count,
+    })
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (response) {
-      return response.headers
+      return response
     }
     return undefined
   }
