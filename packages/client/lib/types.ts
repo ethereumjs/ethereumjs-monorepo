@@ -1,5 +1,3 @@
-import { Peer } from './net/peer'
-
 export type Key = Buffer
 export type KeyLike = string | Key
 

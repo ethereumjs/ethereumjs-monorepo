@@ -3,6 +3,7 @@ import { Synchronizer, SynchronizerOptions } from './sync'
 import { HeaderFetcher } from './fetcher/headerfetcher'
 import { BN } from 'ethereumjs-util'
 import { short } from '../util'
+import { BlockHeader } from '@ethereumjs/block'
 
 /**
  * Implements an ethereum light sync synchronizer
@@ -44,7 +45,7 @@ export class LightSynchronizer extends Synchronizer {
       if (peer.les) {
         const td = peer.les.status.headTd
         if (
-          (!best && td.gte((this.chain.headers as any).td)) ||
+          (!best && td.gte(this.chain.headers.td)) ||
           (best && best.les && best.les.status.headTd.lt(td))
         ) {
           best = peer
@@ -62,7 +63,7 @@ export class LightSynchronizer extends Synchronizer {
   async syncWithPeer(peer?: Peer): Promise<boolean> {
     if (!peer) return false
     const height = new BN(peer.les!.status.headNum)
-    const first = ((this.chain.headers as any).height as BN).addn(1)
+    const first = this.chain.headers.height.addn(1)
     const count = height.sub(first).addn(1)
     if (count.lten(0)) return false
 
@@ -83,7 +84,7 @@ export class LightSynchronizer extends Synchronizer {
       .on('error', (error: Error) => {
         this.emit('error', error)
       })
-      .on('fetched', (headers: any[]) => {
+      .on('fetched', (headers: BlockHeader[]) => {
         const first = new BN(headers[0].number)
         const hash = short(headers[0].hash())
         this.config.logger.info(
@@ -114,9 +115,9 @@ export class LightSynchronizer extends Synchronizer {
   async open(): Promise<void> {
     await this.chain.open()
     await this.pool.open()
-    const number = ((this.chain.headers as any).height as number).toString(10)
-    const td = ((this.chain.headers as any).td as number).toString(10)
-    const hash = ((this.chain.blocks as any).latest as any).hash()
+    const number = this.chain.headers.height.toString(10)
+    const td = this.chain.headers.td.toString(10)
+    const hash = this.chain.blocks.latest!.hash()
     this.config.logger.info(`Latest local header: number=${number} td=${td} hash=${short(hash)}`)
   }
 

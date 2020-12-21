@@ -4,6 +4,7 @@ import { Peer } from '../net/peer/peer'
 import { short } from '../util'
 import { Synchronizer, SynchronizerOptions } from './sync'
 import { BlockFetcher } from './fetcher'
+import { Block } from '@ethereumjs/block'
 
 /**
  * Implements an ethereum full sync synchronizer
@@ -58,7 +59,7 @@ export class FullSynchronizer extends Synchronizer {
       if (peer.eth?.status) {
         const td = peer.eth.status.td
         if (
-          (!best && td.gte((this.chain.blocks as any).td)) ||
+          (!best && td.gte(this.chain.blocks.td)) ||
           (best && best.eth && best.eth.status.td.lt(td))
         ) {
           best = peer
@@ -110,7 +111,7 @@ export class FullSynchronizer extends Synchronizer {
       .on('error', (error: Error) => {
         this.emit('error', error)
       })
-      .on('fetched', (blocks: any[]) => {
+      .on('fetched', (blocks: Block[]) => {
         const first = new BN(blocks[0].header.number)
         const hash = short(blocks[0].hash())
         this.config.logger.info(
@@ -155,9 +156,9 @@ export class FullSynchronizer extends Synchronizer {
   async open(): Promise<void> {
     await this.chain.open()
     await this.pool.open()
-    const number = ((this.chain.blocks as any).height as number).toString(10)
-    const td = ((this.chain.blocks as any).td as number).toString(10)
-    const hash = ((this.chain.blocks as any).latest as any).hash()
+    const number = this.chain.blocks.height.toString(10)
+    const td = this.chain.blocks.td.toString(10)
+    const hash = this.chain.blocks.latest!.hash()
     this.config.logger.info(`Latest local block: number=${number} td=${td} hash=${short(hash)}`)
   }
 
