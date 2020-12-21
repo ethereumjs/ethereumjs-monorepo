@@ -3,6 +3,10 @@ import { Peer } from '../net/peer/peer'
 import { short } from '../util'
 import { Synchronizer, SynchronizerOptions } from './sync'
 import { BlockFetcher } from './fetcher'
+import VM from '@ethereumjs/vm'
+import { DefaultStateManager } from '@ethereumjs/vm/dist/state'
+import { SecureTrie as Trie } from '@ethereumjs/trie'
+const level = require('level')
 
 /**
  * Implements an ethereum full sync synchronizer
@@ -10,10 +14,60 @@ import { BlockFetcher } from './fetcher'
  */
 export class FullSynchronizer extends Synchronizer {
   private blockFetcher: BlockFetcher | null
+  public vm: VM
 
   constructor(options: SynchronizerOptions) {
     super(options)
     this.blockFetcher = null
+
+    if (!this.config.vm) {
+      const db = level('./statedir')
+      const trie = new Trie(db)
+
+      const stateManager = new DefaultStateManager({
+        common: this.config.common,
+        trie,
+      })
+
+      this.vm = new VM({
+        common: this.config.common,
+        blockchain: this.chain.blockchain,
+        stateManager,
+      })
+    } else {
+      this.vm = this.config.vm
+      //@ts-ignore blockchain has readonly property
+      this.vm.blockchain = this.chain.blockchain
+    }
+
+    const self = this
+    this.chain.on('updated', function () {
+      // for some reason, if we use .on('updated', this.runBlocks), it runs in the context of the Chain and not in the FullSync context..?
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
+      self.runBlocks()
+    })
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    this.chain.update()
+  }
+
+  /**
+   * This updates the VM once blocks were put in the VM
+   */
+  async runBlocks() {
+    let oldHead = (await this.vm.blockchain.getHead()).hash()
+    let newHead = Buffer.alloc(0)
+    while (!newHead.equals(oldHead)) {
+      newHead = oldHead
+      await this.vm.runBlockchain(this.vm.blockchain, 1)
+      const headBlock = await this.vm.blockchain.getHead()
+      oldHead = headBlock.hash()
+      // check if we did run a new block:
+      if (!oldHead.equals(newHead)) {
+        this.config.logger.info(
+          `Imported new chain segment: number=${headBlock.header.number.toNumber()}`
+        )
+      }
+    }
   }
 
   /**

@@ -5,7 +5,7 @@ import VM from './index'
 /**
  * @ignore
  */
-export default async function runBlockchain(this: VM, blockchain?: Blockchain) {
+export default async function runBlockchain(this: VM, blockchain?: Blockchain, maxBlocks?: number) {
   let headBlock: Block
   let parentState: Buffer
 
@@ -36,5 +36,5 @@ export default async function runBlockchain(this: VM, blockchain?: Blockchain) {
       await blockchain!.delBlock(block.header.hash())
       throw error
     }
-  })
+  }, maxBlocks)
 }
