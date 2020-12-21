@@ -35,11 +35,11 @@ export interface QHeap<T> {
   gc(opts: { minLength: number; maxLength: number }): void
 }
 
-export type Job<JobTask, JobResult> = {
+export type Job<JobTask, JobResult, StorageItem> = {
   task: JobTask
   time: number
   index: number
-  result: JobResult | null
+  result?: JobResult | StorageItem[]
   state: 'idle' | 'expired' | 'active'
   peer: Peer | null
 }

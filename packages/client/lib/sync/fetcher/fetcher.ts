@@ -35,7 +35,7 @@ export interface FetcherOptions {
  * request(), process() and store() methods. Tasks can be arbitrary objects whose structure
  * is defined by subclasses. A priority queue is used to ensure tasks are fetched
  * inorder. Three types need to be provided: the JobTask, which describes a task the job should perform,
- * a JobResult, which is the direct result when a Peer replies to a Task, and a StorageItem, which 
+ * a JobResult, which is the direct result when a Peer replies to a Task, and a StorageItem, which
  * represents the to-be-stored items.
  * @memberof module:sync/fetcher
  */
@@ -48,8 +48,8 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
   protected banTime: number
   protected maxQueue: number
   protected maxPerRequest: number
-  protected in: QHeap<Job<JobTask, JobResult>>
-  protected out: QHeap<Job<JobTask, JobResult>>
+  protected in: QHeap<Job<JobTask, JobResult, StorageItem>>
+  protected out: QHeap<Job<JobTask, JobResult, StorageItem>>
   protected total: number
   protected processed: number // number of processed tasks, awaiting the write job
   protected finished: number // number of tasks which are both processed and also finished writing
@@ -76,10 +76,16 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
     this.maxPerRequest = options.maxPerRequest ?? 128
 
     this.in = new Heap({
-      comparBefore: (a: Job<JobTask, JobResult>, b: Job<JobTask, JobResult>) => a.index < b.index,
+      comparBefore: (
+        a: Job<JobTask, JobResult, StorageItem>,
+        b: Job<JobTask, JobResult, StorageItem>
+      ) => a.index < b.index,
     })
     this.out = new Heap({
-      comparBefore: (a: Job<JobTask, JobResult>, b: Job<JobTask, JobResult>) => a.index < b.index,
+      comparBefore: (
+        a: Job<JobTask, JobResult, StorageItem>,
+        b: Job<JobTask, JobResult, StorageItem>
+      ) => a.index < b.index,
     })
     this.total = 0
     this.processed = 0
@@ -89,26 +95,34 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
   }
 
   /**
-   * Request results from peer for the given job. Resolves with the raw result.
+   * Request results from peer for the given job. Resolves with the raw result. If `undefined` is returned,
+   * re-queue the job.
    * @param  job
    * @param  peer
    * @return {Promise}
    */
-  abstract request(_job?: Job<JobTask, JobResult>, _peer?: Peer): Promise<JobResult | undefined>
+  abstract request(
+    _job?: Job<JobTask, JobResult, StorageItem>,
+    _peer?: Peer
+  ): Promise<JobResult | undefined>
 
   /**
-   * Process the reply for the given job
+   * Process the reply for the given job. If the reply contains unexpected data, return `undefined`, this
+   * re-queues the job.
    * @param  job fetch job
    * @param  result result data
    */
-  abstract process(_job?: Job<JobTask, JobResult>, _result?: JobResult): JobResult | null
+  abstract process(
+    _job?: Job<JobTask, JobResult, StorageItem>,
+    _result?: JobResult
+  ): StorageItem[] | undefined
 
-    /**
+  /**
    * Store fetch result. Resolves once store operation is complete.
    * @param result fetch result
    * @return {Promise}
    */
-  abstract async store(_result?: StorageItem[]): Promise<void>
+  abstract async store(_result: StorageItem[]): Promise<void>
 
   /**
    * Generate list of tasks to fetch
@@ -122,13 +136,12 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
    * Enqueue job
    * @param job
    */
-  enqueue(job: Job<JobTask, JobResult>) {
+  enqueue(job: Job<JobTask, JobResult, StorageItem>) {
     if (this.running) {
       this.in.insert({
         ...job,
         time: Date.now(),
         state: 'idle',
-        result: null,
       })
     }
   }
@@ -160,7 +173,7 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
    * @param  job successful job
    * @param  result job result
    */
-  success(job: Job<JobTask, JobResult>, result?: JobResult) {
+  success(job: Job<JobTask, JobResult, StorageItem>, result?: JobResult) {
     if (job.state !== 'active') return
     if (result === undefined) {
       this.enqueue(job)
@@ -188,7 +201,7 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
    * @param  job failed job
    * @param  [error] error
    */
-  failure(job: Job<JobTask, JobResult>, error?: Error) {
+  failure(job: Job<JobTask, JobResult, StorageItem>, error?: Error) {
     if (job.state !== 'active') return
     job.peer!.idle = true
     this.pool.ban(job.peer!, this.banTime)
@@ -235,7 +248,7 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
    * @param  {Error}  error error object
    * @param  {Object} job  task
    */
-  error(error: Error, job?: Job<JobTask, JobResult>) {
+  error(error: Error, job?: Job<JobTask, JobResult, StorageItem>) {
     if (this.running) {
       this.emit('error', error, job && job.task, job && job.peer)
     }
@@ -293,11 +306,10 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
     }
     this.write()
     this.tasks().forEach((task: JobTask) => {
-      const job: Job<JobTask, JobResult> = {
+      const job: Job<JobTask, JobResult, StorageItem> = {
         task,
         time: Date.now(),
         index: this.total++,
-        result: null,
         state: 'idle',
         peer: null,
       }
@@ -321,7 +333,7 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
    * @return {Peer}
    */
   // TODO: what is job supposed to be?
-  peer(_job?: Job<JobTask, JobResult>) {
+  peer(_job?: Job<JobTask, JobResult, StorageItem>) {
     return this.pool.idle()
   }
 
@@ -329,7 +341,7 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
    * Expire job that has timed out and ban associated peer. Timed out tasks will
    * be re-inserted into the queue.
    */
-  expire(job: Job<JobTask, JobResult>) {
+  expire(job: Job<JobTask, JobResult, StorageItem>) {
     job.state = 'expired'
     if (this.pool.contains(job.peer!)) {
       this.config.logger.debug(

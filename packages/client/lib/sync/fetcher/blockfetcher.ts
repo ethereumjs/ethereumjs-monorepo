@@ -40,7 +40,7 @@ export class BlockFetcher extends BlockFetcherBase<Block[], Block> {
    * Requests blocks associated with this job
    * @param job
    */
-  async request(job: Job<JobTask, Block[]>): Promise<Block[]> {
+  async request(job: Job<JobTask, Block[], Block>): Promise<Block[]> {
     const { task, peer } = job
     const { first, count } = task
     const headers = await (peer!.eth as EthProtocolMethods).getBlockHeaders({
@@ -62,12 +62,12 @@ export class BlockFetcher extends BlockFetcherBase<Block[], Block> {
    * @param  result fetch result
    * @return {*} results of processing job or undefined if job not finished
    */
-  process(job: Job<JobTask, Block[]>, result: Block[]): Block[] | null {
+  process(job: Job<JobTask, Block[], Block>, result: Block[]) {
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (result && result.length === job.task.count) {
       return result
     }
-    return null
+    return
   }
 
   /**
