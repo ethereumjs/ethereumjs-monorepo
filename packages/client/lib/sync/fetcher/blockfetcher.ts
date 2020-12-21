@@ -1,4 +1,5 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
 import { Block, BlockBodyBuffer } from '@ethereumjs/block'
 import { Peer } from '../../net/peer'
 import { EthProtocolMethods } from '../../net/protocol'
@@ -6,46 +7,35 @@ import { Job } from './types'
 import { BlockFetcherBase, JobTask, BlockFetcherOptions } from './blockfetcherbase'
 =======
 const level = require('level')
+=======
+>>>>>>> client: move VM and block execution logic to FullSync
 import { Fetcher, FetcherOptions } from './fetcher'
 import { Block, BlockBodyBuffer } from '@ethereumjs/block'
 import { Peer } from '../../net/peer'
 import { EthProtocolMethods } from '../../net/protocol'
+<<<<<<< HEAD
 import VM from '@ethereumjs/vm'
 import { DefaultStateManager } from '@ethereumjs/vm/dist/state'
 import { SecureTrie as Trie } from '@ethereumjs/trie'
 >>>>>>> client -> vm execution: use vm.runBlockchain(), fix execution run, added state persistence by introducing StateManager
+=======
+>>>>>>> client: move VM and block execution logic to FullSync
 
 /**
  * Implements an eth/62 based block fetcher
  * @memberof module:sync/fetcher
  */
+<<<<<<< HEAD
 export class BlockFetcher extends BlockFetcherBase<Block[], Block> {
+=======
+export class BlockFetcher extends Fetcher {
+>>>>>>> client: move VM and block execution logic to FullSync
   /**
    * Create new block fetcher
    * @param {FetcherOptions}
    */
   constructor(options: FetcherOptions) {
     super(options)
-
-    if (!this.config.vm) {
-      const db = level('./statedir')
-      const trie = new Trie(db)
-
-      const stateManager = new DefaultStateManager({
-        common: this.config.common,
-        trie,
-      })
-
-      this.vm = new VM({
-        common: this.config.common,
-        blockchain: this.chain.blockchain,
-        stateManager,
-      })
-    } else {
-      this.vm = this.config.vm
-      //@ts-ignore blockchain has readonly property
-      this.vm.blockchain = this.chain.blockchain
-    }
   }
 
   /**
@@ -106,27 +96,8 @@ export class BlockFetcher extends BlockFetcherBase<Block[], Block> {
    * @param {Block[]} blocks fetch result
    * @return {Promise}
    */
-<<<<<<< HEAD
   async store(blocks: Block[]) {
     await this.chain.putBlocks(blocks)
-=======
-  async store(blocks: Array<any>) {
-    if (blocks.length === 0) {
-      return
-    }
-    await this.chain.open()
-    blocks = blocks.map((b: Block) =>
-      Block.fromValuesArray(b.raw(), { common: this.config.common })
-    )
-    await this.chain.blockchain.initPromise
-    for (let i = 0; i < blocks.length; i++) {
-      const block: Block = blocks[i]
-
-      await this.chain.blockchain.putBlock(block)
-      await this.vm.runBlockchain()
-    }
-    await this.chain.update()
->>>>>>> client -> vm execution: use vm.runBlockchain(), fix execution run, added state persistence by introducing StateManager
   }
 
   /**
