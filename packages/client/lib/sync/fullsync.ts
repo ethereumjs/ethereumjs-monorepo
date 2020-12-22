@@ -14,7 +14,12 @@ const level = require('level')
  */
 export class FullSynchronizer extends Synchronizer {
   private blockFetcher: BlockFetcher | null
+
   public vm: VM
+  private runningBlocks: boolean
+
+  private stopSyncing: boolean
+  private vmPromise?: Promise<void>
 
   constructor(options: SynchronizerOptions) {
     super(options)
@@ -40,11 +45,13 @@ export class FullSynchronizer extends Synchronizer {
       this.vm.blockchain = this.chain.blockchain
     }
 
+    this.runningBlocks = false
+    this.stopSyncing = false
+
     const self = this
-    this.chain.on('updated', function () {
+    this.chain.on('updated', async function () {
       // for some reason, if we use .on('updated', this.runBlocks), it runs in the context of the Chain and not in the FullSync context..?
-      // eslint-disable-next-line @typescript-eslint/no-floating-promises
-      self.runBlocks()
+      await self.runBlocks()
     })
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
     this.chain.update()
@@ -54,19 +61,29 @@ export class FullSynchronizer extends Synchronizer {
    * This updates the VM once blocks were put in the VM
    */
   async runBlocks() {
-    let oldHead = (await this.vm.blockchain.getHead()).hash()
-    let newHead = Buffer.alloc(0)
-    while (!newHead.equals(oldHead)) {
-      newHead = oldHead
-      await this.vm.runBlockchain(this.vm.blockchain, 1)
-      const headBlock = await this.vm.blockchain.getHead()
-      oldHead = headBlock.hash()
-      // check if we did run a new block:
-      if (!oldHead.equals(newHead)) {
-        this.config.logger.info(
-          `Imported new chain segment: number=${headBlock.header.number.toNumber()}`
-        )
+    if (this.runningBlocks) {
+      return
+    }
+    this.runningBlocks = true
+    try {
+      let oldHead = (await this.vm.blockchain.getHead()).hash()
+      let newHead = Buffer.alloc(0)
+      while (!newHead.equals(oldHead) && !this.stopSyncing) {
+        newHead = oldHead
+        this.vmPromise = this.vm.runBlockchain(this.vm.blockchain, 1)
+        await this.vmPromise
+        const headBlock = await this.vm.blockchain.getHead()
+        oldHead = headBlock.hash()
+        // check if we did run a new block:
+        if (!oldHead.equals(newHead)) {
+          const hash = short(oldHead)
+          this.config.logger.info(
+            `Executed block number=${headBlock.header.number.toNumber()} hash=${hash}`
+          )
+        }
       }
+    } finally {
+      this.runningBlocks = false
     }
   }
 
@@ -209,6 +226,7 @@ export class FullSynchronizer extends Synchronizer {
     if (!this.running) {
       return false
     }
+    this.stopSyncing = true
     if (this.blockFetcher) {
       this.blockFetcher.destroy()
       // TODO: Should this be deleted?
@@ -216,6 +234,11 @@ export class FullSynchronizer extends Synchronizer {
       delete this.blockFetcher
     }
     await super.stop()
+
+    if (this.vmPromise) {
+      // ensure that we wait that the VM finishes executing the block (and flushes the trie cache)
+      await this.vmPromise
+    }
     return true
   }
 }
