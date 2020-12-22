@@ -75,7 +75,7 @@ export class FullSynchronizer extends Synchronizer {
         if (!oldHead.equals(newHead)) {
           const hash = short(oldHead)
           this.config.logger.info(
-            `Executed block number=${headBlock.header.number.toNumber()} hash=${hash}`
+            `Executed block number=${headBlock.header.number.toNumber()} hash=${hash} txs=${headBlock.transactions.length}`
           )
         }
       }

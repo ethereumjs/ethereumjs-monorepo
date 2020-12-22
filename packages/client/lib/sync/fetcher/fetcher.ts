@@ -32,7 +32,7 @@ export interface FetcherOptions {
   /* Max write queue size (default: 16) */
   maxQueue?: number
 
-  /* Max items per request (default: 25) */
+  /* Max items per request (default: 250) */
   maxPerRequest?: number
 
   /* Retry interval in ms (default: 1000) */
@@ -92,7 +92,7 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
     this.interval = options.interval ?? 1000
     this.banTime = options.banTime ?? 60000
     this.maxQueue = options.maxQueue ?? 16
-    this.maxPerRequest = options.maxPerRequest ?? 25
+    this.maxPerRequest = options.maxPerRequest ?? 250
 
     this.in = new Heap({
       comparBefore: (
