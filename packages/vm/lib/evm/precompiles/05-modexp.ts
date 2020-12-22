@@ -22,6 +22,38 @@ function multComplexity(x: BN): BN {
   }
 }
 
+function calculateGasEIP2565(
+  baseLength: BN,
+  modulusLength: BN,
+  exponentLength: BN,
+  exponent: BN
+): BN {
+  console.log(
+    baseLength.toNumber(),
+    modulusLength.toNumber(),
+    exponentLength.toNumber(),
+    exponent.toNumber()
+  )
+  const maxLength = BN.max(baseLength, modulusLength)
+  const words = maxLength.divn(8)
+  // Ceil operation
+  if (maxLength.mod(new BN(8)).gtn(0)) {
+    words.iaddn(1)
+  }
+  const multiplicationComplexity = words.pow(new BN(2))
+  let iterationCount
+  if (exponentLength.lten(32) && exponent.eqn(0)) {
+    iterationCount = new BN(0)
+  } else if (exponentLength.lten(32)) {
+    iterationCount = new BN(exponent.bitLength() - 1)
+  } else {
+    const expMask = exponent.and(new BN(Buffer.alloc(32, 0xff)))
+    iterationCount = new BN(8).mul(exponentLength.subn(32)).addn(expMask.bitLength() - 1)
+  }
+  iterationCount = BN.max(new BN(1), iterationCount)
+  return BN.max(new BN(200), multiplicationComplexity.mul(iterationCount).divn(3))
+}
+
 function getAdjustedExponentLength(data: Buffer): BN {
   let expBytesStart
   try {
@@ -86,7 +118,35 @@ export default function (opts: PrecompileInput): ExecResult {
     maxLen = mLen
   }
   const Gquaddivisor = opts._common.param('gasPrices', 'modexpGquaddivisor')
-  const gasUsed = adjustedELen.mul(multComplexity(maxLen)).divn(Gquaddivisor)
+  let gasUsed
+
+  const bStart = new BN(96)
+  const bEnd = bStart.add(bLen)
+  const eStart = bEnd
+  const eEnd = eStart.add(eLen)
+  const mStart = eEnd
+  const mEnd = mStart.add(mLen)
+
+  const maxInt = new BN(Number.MAX_SAFE_INTEGER)
+  const maxSize = new BN(2147483647) // ethereumjs-util setLengthRight limitation
+
+  if (bLen.gt(maxSize) || eLen.gt(maxSize) || mLen.gt(maxSize)) {
+    return OOGResult(opts.gasLimit)
+  }
+
+  if (mEnd.gt(maxInt)) {
+    return OOGResult(opts.gasLimit)
+  }
+
+  const B = new BN(setLengthRight(data.slice(bStart.toNumber(), bEnd.toNumber()), bLen.toNumber()))
+  const E = new BN(setLengthRight(data.slice(eStart.toNumber(), eEnd.toNumber()), eLen.toNumber()))
+  const M = new BN(setLengthRight(data.slice(mStart.toNumber(), mEnd.toNumber()), mLen.toNumber()))
+
+  if (!opts._common.eips().includes(2565)) {
+    gasUsed = adjustedELen.mul(multComplexity(maxLen)).divn(Gquaddivisor)
+  } else {
+    gasUsed = calculateGasEIP2565(bLen, eLen, mLen, E)
+  }
 
   if (opts.gasLimit.lt(gasUsed)) {
     return OOGResult(opts.gasLimit)
@@ -105,28 +165,6 @@ export default function (opts: PrecompileInput): ExecResult {
       returnValue: Buffer.alloc(0),
     }
   }
-
-  const maxInt = new BN(Number.MAX_SAFE_INTEGER)
-  const maxSize = new BN(2147483647) // ethereumjs-util setLengthRight limitation
-
-  if (bLen.gt(maxSize) || eLen.gt(maxSize) || mLen.gt(maxSize)) {
-    return OOGResult(opts.gasLimit)
-  }
-
-  const bStart = new BN(96)
-  const bEnd = bStart.add(bLen)
-  const eStart = bEnd
-  const eEnd = eStart.add(eLen)
-  const mStart = eEnd
-  const mEnd = mStart.add(mLen)
-
-  if (mEnd.gt(maxInt)) {
-    return OOGResult(opts.gasLimit)
-  }
-
-  const B = new BN(setLengthRight(data.slice(bStart.toNumber(), bEnd.toNumber()), bLen.toNumber()))
-  const E = new BN(setLengthRight(data.slice(eStart.toNumber(), eEnd.toNumber()), eLen.toNumber()))
-  const M = new BN(setLengthRight(data.slice(mStart.toNumber(), mEnd.toNumber()), mLen.toNumber()))
 
   let R
   if (M.isZero()) {
