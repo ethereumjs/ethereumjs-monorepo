@@ -1,18 +1,18 @@
 import { randomBytes } from 'crypto'
 import {
   Capabilities as Devp2pCapabilities,
-  DPT as Devp2pDPT,
   ETH as Devp2pETH,
   LES as Devp2pLES,
   Peer as Devp2pRlpxPeer,
   RLPx as Devp2pRLPx,
-} from 'ethereumjs-devp2p'
+} from '@ethereumjs/devp2p'
 import { Protocol, RlpxSender } from '../protocol'
 import { Peer, PeerOptions } from './peer'
+import { RlpxServer } from '../server'
 
 const devp2pCapabilities: any = {
-  eth62: Devp2pETH.eth62,
   eth63: Devp2pETH.eth63,
+  eth64: Devp2pETH.eth64,
   les2: Devp2pLES.les2,
 }
 
@@ -103,9 +103,7 @@ export class RlpxPeer extends Peer {
     await Promise.all(this.protocols.map((p) => p.open()))
     this.rlpx = new Devp2pRLPx(key, {
       capabilities: RlpxPeer.capabilities(this.protocols),
-      listenPort: null,
-      dpt: (<unknown>null) as Devp2pDPT, // TODO: required option
-      maxPeers: (<unknown>null) as number, // TODO: required option
+      common: this.config.common,
     })
     await this.rlpx.connect({
       id: Buffer.from(this.id, 'hex'),
@@ -143,7 +141,7 @@ export class RlpxPeer extends Peer {
    * @private
    * @return {Promise}
    */
-  async accept(rlpxPeer: Devp2pRlpxPeer, server: any): Promise<void> {
+  async accept(rlpxPeer: Devp2pRlpxPeer, server: RlpxServer): Promise<void> {
     if (this.connected) {
       return
     }
@@ -160,9 +158,9 @@ export class RlpxPeer extends Peer {
   async bindProtocols(rlpxPeer: Devp2pRlpxPeer): Promise<void> {
     this.rlpxPeer = rlpxPeer
     await Promise.all(
-      rlpxPeer.getProtocols().map((rlpxProtocol: any) => {
+      rlpxPeer.getProtocols().map((rlpxProtocol) => {
         const name = rlpxProtocol.constructor.name.toLowerCase()
-        const protocol = this.protocols.find((p: any) => p.name === name)
+        const protocol = this.protocols.find((p) => p.name === name)
         if (protocol) {
           return this.bindProtocol(protocol, new RlpxSender(rlpxProtocol))
         }

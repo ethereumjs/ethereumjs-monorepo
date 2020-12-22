@@ -59,9 +59,9 @@ tape('[Libp2pPeer]', async (t) => {
 
   t.test('should connect to peer', async (t) => {
     const config = new Config({ loglevel: 'error' })
-    const peer = new Libp2pPeer({ config })
+    const peer: any = new Libp2pPeer({ config })
     peer.bindProtocols = td.func<typeof peer['bindProtocol']>()
-    td.when(peer.bindProtocols(td.matchers.anything(), peerInfo)).thenResolve()
+    td.when(peer.bindProtocols(td.matchers.anything(), peerInfo)).thenResolve(null)
     peer.on('connected', () => {
       t.pass('connected')
       t.end()
@@ -71,9 +71,9 @@ tape('[Libp2pPeer]', async (t) => {
 
   t.test('should accept peer connection', async (t) => {
     const config = new Config({ loglevel: 'error' })
-    const peer = new Libp2pPeer({ config })
+    const peer: any = new Libp2pPeer({ config })
     peer.bindProtocol = td.func<typeof peer['bindProtocol']>()
-    td.when(peer.bindProtocol('proto' as any, 'conn' as any)).thenResolve()
+    td.when(peer.bindProtocol('proto' as any, 'conn' as any)).thenResolve(null)
     await peer.accept('proto', 'conn', 'server')
     t.equals(peer.server, 'server', 'server set')
     t.ok(peer.inbound, 'inbound set to true')
@@ -84,12 +84,12 @@ tape('[Libp2pPeer]', async (t) => {
     const config = new Config({ loglevel: 'error' })
     const protocol = { name: 'proto', versions: [1], open: () => {} } as Protocol
     const badProto = { name: 'bad', versions: [1], open: () => {} } as Protocol
-    const peer = new Libp2pPeer({ config, protocols: [protocol, badProto] })
+    const peer: any = new Libp2pPeer({ config, protocols: [protocol, badProto] })
     const node = new Libp2pNode() as any
     peer.bindProtocol = td.func<typeof peer['bindProtocol']>()
     protocol.open = td.func<Protocol['open']>()
     badProto.open = td.func<Protocol['open']>()
-    td.when(peer.bindProtocol(protocol, td.matchers.isA(Libp2pSender))).thenResolve()
+    td.when(peer.bindProtocol(protocol, td.matchers.isA(Libp2pSender))).thenResolve(null)
     td.when(protocol.open()).thenResolve()
     td.when(node.asyncDialProtocol(peerInfo, '/proto/1')).thenResolve(null)
     td.when(node.asyncDialProtocol(peerInfo, '/bad/1')).thenReject(new Error('bad'))

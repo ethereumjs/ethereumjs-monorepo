@@ -85,7 +85,7 @@ export class Libp2pServer extends Server {
           return
         }
         const peer = this.createPeer(peerInfo)
-        await peer.bindProtocols(this.node, peerInfo, this)
+        await peer.bindProtocols(this.node as Libp2pNode, peerInfo, this)
         this.config.logger.debug(`Peer discovered: ${peer}`)
         this.emit('connected', peer)
       } catch (e) {

@@ -104,6 +104,11 @@ export interface PostByzantiumTxReceipt extends TxReceipt {
   status: 0 | 1
 }
 
+export interface AfterBlockEvent extends RunBlockResult {
+  // The block which just finished processing
+  block: Block
+}
+
 /**
  * @ignore
  */
@@ -183,14 +188,20 @@ export default async function runBlock(this: VM, opts: RunBlockOpts): Promise<Ru
 
   const { receipts, results } = result
 
+  const afterBlockEvent: AfterBlockEvent = {
+    receipts,
+    results,
+    block,
+  }
+
   /**
    * The `afterBlock` event
    *
    * @event Event: afterBlock
-   * @type {Object}
-   * @property {Object} result emits the results of processing a block
+   * @type {AfterBlockEvent}
+   * @property {AfterBlockEvent} result emits the results of processing a block
    */
-  await this._emit('afterBlock', { receipts, results })
+  await this._emit('afterBlock', afterBlockEvent)
 
   return { receipts, results }
 }

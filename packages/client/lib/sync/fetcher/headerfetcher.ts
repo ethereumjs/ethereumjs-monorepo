@@ -1,6 +1,6 @@
 import { BlockFetcher, BlockFetcherOptions } from './blockfetcher'
 import { Peer } from '../../net/peer'
-import { FlowControl } from '../../net/protocol'
+import { FlowControl, LesProtocolMethods } from '../../net/protocol'
 
 export interface HeaderFetcherOptions extends BlockFetcherOptions {
   /* Flow control manager */
@@ -26,16 +26,15 @@ export class HeaderFetcher extends BlockFetcher {
 
   /**
    * Requests block headers for the given task
-   * @param  job
-   * @return {Promise}
+   * @param job
    */
-  async request(job: any): Promise<any[] | boolean> {
+  async request(job: any) {
     const { task, peer } = job
     if (this.flow.maxRequestCount(peer, 'GetBlockHeaders') < this.maxPerRequest) {
       // we reached our request limit. try with a different peer.
       return false
     }
-    return peer.les.getBlockHeaders({ block: task.first, max: task.count })
+    return (peer.les as LesProtocolMethods).getBlockHeaders({ block: task.first, max: task.count })
   }
 
   /**

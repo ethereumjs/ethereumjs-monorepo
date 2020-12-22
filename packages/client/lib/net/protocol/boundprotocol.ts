@@ -1,5 +1,5 @@
 import { EventEmitter } from 'events'
-import { Protocol } from '../protocol/protocol'
+import { Message, Protocol } from '../protocol/protocol'
 import { Peer } from '../peer/peer'
 import { Sender } from './sender'
 import { Config } from '../../config'
@@ -31,7 +31,7 @@ export class BoundProtocol extends EventEmitter {
   private versions: number[]
   private timeout: number
   private _status: any
-  private resolvers: Map<string, any>
+  private resolvers: Map<string | number, any>
 
   /**
    * Create bound protocol
@@ -80,9 +80,9 @@ export class BoundProtocol extends EventEmitter {
    * @param  {Object} message message object
    * @emits  message
    */
-  handle(incoming: any) {
+  handle(incoming: Message) {
     const messages = this.protocol.messages
-    const message = messages.find((m: any) => m.code === incoming.code)
+    const message = messages.find((m) => m.code === incoming.code)
     if (!message) {
       return
     }
@@ -117,16 +117,16 @@ export class BoundProtocol extends EventEmitter {
    * @param  name message name
    * @param  args message arguments
    */
-  send(name: string, args?: any): any {
+  send(name: string, args?: any) {
     const messages = this.protocol.messages
-    const message = messages.find((m: any) => m.name === name)
+    const message = messages.find((m) => m.name === name)
     if (message) {
       const encoded = this.protocol.encode(message, args)
       this.sender.sendMessage(message.code, encoded)
-      return message
     } else {
       throw new Error(`Unknown message: ${name}`)
     }
+    return message
   }
 
   /**
@@ -143,14 +143,14 @@ export class BoundProtocol extends EventEmitter {
       resolve: null,
       reject: null,
     }
-    if (this.resolvers.get(message.response)) {
+    if (this.resolvers.get(message.response!)) {
       throw new Error(`Only one active request allowed per message type (${name})`)
     }
-    this.resolvers.set(message.response, resolver)
+    this.resolvers.set(message.response!, resolver)
     return new Promise((resolve, reject) => {
       resolver.timeout = setTimeout(() => {
         resolver.timeout = null
-        this.resolvers.delete(message.response)
+        this.resolvers.delete(message.response!)
         reject(new Error(`Request timed out after ${this.timeout}ms`))
       }, this.timeout)
       resolver.resolve = resolve
@@ -163,13 +163,14 @@ export class BoundProtocol extends EventEmitter {
    * corresponding response message.
    */
   addMethods() {
-    const messages = this.protocol.messages.filter((m: any) => m.response)
+    const messages = this.protocol.messages.filter((m) => m.response)
     for (const message of messages) {
-      const name = message.name as string
+      const name = message.name
       const camel = name[0].toLowerCase() + name.slice(1)
       ;(this as any)[camel] = async (args: any[]) =>
         this.request(name, args).catch((error: Error) => {
           this.emit('error', error)
+          return []
         })
     }
   }

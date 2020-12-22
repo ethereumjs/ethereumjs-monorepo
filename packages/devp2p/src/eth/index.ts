@@ -265,7 +265,6 @@ export namespace ETH {
   export interface StatusMsg extends Array<Buffer | Buffer[]> {}
 
   export type StatusOpts = {
-    version: number
     td: Buffer
     bestHash: Buffer
     latestBlock?: number

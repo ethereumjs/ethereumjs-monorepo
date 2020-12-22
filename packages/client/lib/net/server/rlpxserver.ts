@@ -1,5 +1,5 @@
 import { randomBytes } from 'crypto'
-import { RLPx as Devp2pRLPx, Peer as Devp2pRLPxPeer, DPT as Devp2pDPT } from 'ethereumjs-devp2p'
+import { RLPx as Devp2pRLPx, Peer as Devp2pRLPxPeer, DPT as Devp2pDPT } from '@ethereumjs/devp2p'
 import { RlpxPeer } from '../peer/rlpxpeer'
 import { Server, ServerOptions } from './server'
 
@@ -212,6 +212,7 @@ export class RlpxServer extends Server {
       capabilities: RlpxPeer.capabilities(Array.from(this.protocols)),
       remoteClientIdFilter: this.clientFilter,
       listenPort: this.port,
+      common: this.config.common,
     })
 
     this.rlpx.on('peer:added', async (rlpxPeer: Devp2pRLPxPeer) => {
