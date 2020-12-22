@@ -67,8 +67,8 @@ export class FullSynchronizer extends Synchronizer {
     }
     this.runningBlocks = true
     try {
-      let oldHead = (await this.vm.blockchain.getHead()).hash()
-      let newHead = Buffer.alloc(0)
+      let oldHead = Buffer.alloc(0)
+      let newHead = (await this.vm.blockchain.getHead()).hash()
       while (!newHead.equals(oldHead) && !this.stopSyncing) {
         oldHead = newHead
         this.vmPromise = this.vm.runBlockchain(this.vm.blockchain, 1)
