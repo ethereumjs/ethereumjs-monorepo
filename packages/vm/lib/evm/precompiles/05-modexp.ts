@@ -22,36 +22,9 @@ function multComplexity(x: BN): BN {
   }
 }
 
-function calculateGasEIP2565(
-  baseLength: BN,
-  modulusLength: BN,
-  exponentLength: BN,
-  exponent: BN
-): BN {
-  console.log(
-    baseLength.toNumber(),
-    modulusLength.toNumber(),
-    exponentLength.toNumber(),
-    exponent.toNumber()
-  )
-  const maxLength = BN.max(baseLength, modulusLength)
-  const words = maxLength.divn(8)
-  // Ceil operation
-  if (maxLength.mod(new BN(8)).gtn(0)) {
-    words.iaddn(1)
-  }
-  const multiplicationComplexity = words.pow(new BN(2))
-  let iterationCount
-  if (exponentLength.lten(32) && exponent.eqn(0)) {
-    iterationCount = new BN(0)
-  } else if (exponentLength.lten(32)) {
-    iterationCount = new BN(exponent.bitLength() - 1)
-  } else {
-    const expMask = exponent.and(new BN(Buffer.alloc(32, 0xff)))
-    iterationCount = new BN(8).mul(exponentLength.subn(32)).addn(expMask.bitLength() - 1)
-  }
-  iterationCount = BN.max(new BN(1), iterationCount)
-  return BN.max(new BN(200), multiplicationComplexity.mul(iterationCount).divn(3))
+function multComplexityEIP2565(x: BN): BN {
+  const words = x.addn(7).divn(8)
+  return words.mul(words)
 }
 
 function getAdjustedExponentLength(data: Buffer): BN {
@@ -145,7 +118,10 @@ export default function (opts: PrecompileInput): ExecResult {
   if (!opts._common.eips().includes(2565)) {
     gasUsed = adjustedELen.mul(multComplexity(maxLen)).divn(Gquaddivisor)
   } else {
-    gasUsed = calculateGasEIP2565(bLen, eLen, mLen, E)
+    gasUsed = adjustedELen.mul(multComplexityEIP2565(maxLen)).divn(Gquaddivisor)
+    if (gasUsed.ltn(200)) {
+      gasUsed = new BN(200)
+    }
   }
 
   if (opts.gasLimit.lt(gasUsed)) {
@@ -155,7 +131,7 @@ export default function (opts: PrecompileInput): ExecResult {
   if (bLen.isZero()) {
     return {
       gasUsed,
-      returnValue: new BN(0).toArrayLike(Buffer, 'be', 1),
+      returnValue: new BN(0).toArrayLike(Buffer, 'be', mLen.toNumber()),
     }
   }
 
