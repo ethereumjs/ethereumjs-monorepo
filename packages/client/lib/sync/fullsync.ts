@@ -19,7 +19,7 @@ export class FullSynchronizer extends Synchronizer {
   private vmPromise?: Promise<void>
 
   // Tracking vars for log msg condensation on zero tx blocks
-  private NUM_ZERO_TXS_PER_LOG_MSG = 250
+  private NUM_ZERO_TXS_PER_LOG_MSG = 50
   private zeroTxsBlockLogMsgCounter: number = 0
 
   constructor(options: SynchronizerOptions) {
