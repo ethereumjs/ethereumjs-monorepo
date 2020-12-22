@@ -18,6 +18,10 @@ export class FullSynchronizer extends Synchronizer {
   private stopSyncing: boolean
   private vmPromise?: Promise<void>
 
+  // Tracking vars for log msg condensation on zero tx blocks
+  private NUM_ZERO_TXS_PER_LOG_MSG = 250
+  private zeroTxsBlockLogMsgCounter: number = 0
+
   constructor(options: SynchronizerOptions) {
     super(options)
     this.blockFetcher = null
@@ -66,17 +70,29 @@ export class FullSynchronizer extends Synchronizer {
       let oldHead = (await this.vm.blockchain.getHead()).hash()
       let newHead = Buffer.alloc(0)
       while (!newHead.equals(oldHead) && !this.stopSyncing) {
-        newHead = oldHead
+        oldHead = newHead
         this.vmPromise = this.vm.runBlockchain(this.vm.blockchain, 1)
         await this.vmPromise
         const headBlock = await this.vm.blockchain.getHead()
-        oldHead = headBlock.hash()
+        newHead = headBlock.hash()
         // check if we did run a new block:
-        if (!oldHead.equals(newHead)) {
-          const hash = short(oldHead)
-          this.config.logger.info(
-            `Executed block number=${headBlock.header.number.toNumber()} hash=${hash} txs=${headBlock.transactions.length}`
-          )
+        if (!newHead.equals(oldHead)) {
+          const number = headBlock.header.number.toNumber()
+          const hash = short(newHead)
+          const numTxs = headBlock.transactions.length
+          if (numTxs === 0) {
+            this.zeroTxsBlockLogMsgCounter += 1
+          }
+          if (
+            (numTxs > 0 && this.zeroTxsBlockLogMsgCounter > 0) ||
+            (numTxs === 0 && this.zeroTxsBlockLogMsgCounter >= this.NUM_ZERO_TXS_PER_LOG_MSG)
+          ) {
+            this.config.logger.info(`Processed ${this.zeroTxsBlockLogMsgCounter} blocks with 0 txs`)
+            this.zeroTxsBlockLogMsgCounter = 0
+          }
+          if (numTxs > 0) {
+            this.config.logger.info(`Executed block number=${number} hash=${hash} txs=${numTxs}`)
+          }
         }
       }
     } finally {
