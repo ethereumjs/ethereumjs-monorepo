@@ -100,21 +100,6 @@ export default function (opts: PrecompileInput): ExecResult {
   const mStart = eEnd
   const mEnd = mStart.add(mLen)
 
-  const maxInt = new BN(Number.MAX_SAFE_INTEGER)
-  const maxSize = new BN(2147483647) // ethereumjs-util setLengthRight limitation
-
-  if (bLen.gt(maxSize) || eLen.gt(maxSize) || mLen.gt(maxSize)) {
-    return OOGResult(opts.gasLimit)
-  }
-
-  if (mEnd.gt(maxInt)) {
-    return OOGResult(opts.gasLimit)
-  }
-
-  const B = new BN(setLengthRight(data.slice(bStart.toNumber(), bEnd.toNumber()), bLen.toNumber()))
-  const E = new BN(setLengthRight(data.slice(eStart.toNumber(), eEnd.toNumber()), eLen.toNumber()))
-  const M = new BN(setLengthRight(data.slice(mStart.toNumber(), mEnd.toNumber()), mLen.toNumber()))
-
   if (!opts._common.eips().includes(2565)) {
     gasUsed = adjustedELen.mul(multComplexity(maxLen)).divn(Gquaddivisor)
   } else {
@@ -140,6 +125,21 @@ export default function (opts: PrecompileInput): ExecResult {
       gasUsed,
       returnValue: Buffer.alloc(0),
     }
+  }
+
+  const maxInt = new BN(Number.MAX_SAFE_INTEGER)
+  const maxSize = new BN(2147483647) // ethereumjs-util setLengthRight limitation
+
+  if (bLen.gt(maxSize) || eLen.gt(maxSize) || mLen.gt(maxSize)) {
+    return OOGResult(opts.gasLimit)
+  }
+
+  const B = new BN(setLengthRight(data.slice(bStart.toNumber(), bEnd.toNumber()), bLen.toNumber()))
+  const E = new BN(setLengthRight(data.slice(eStart.toNumber(), eEnd.toNumber()), eLen.toNumber()))
+  const M = new BN(setLengthRight(data.slice(mStart.toNumber(), mEnd.toNumber()), mLen.toNumber()))
+
+  if (mEnd.gt(maxInt)) {
+    return OOGResult(opts.gasLimit)
   }
 
   let R
