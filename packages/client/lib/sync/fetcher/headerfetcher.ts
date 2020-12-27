@@ -37,17 +37,13 @@ export class HeaderFetcher extends BlockFetcherBase<BlockHeaderResult, BlockHead
     const { task, peer } = job
     if (this.flow.maxRequestCount(peer!, 'GetBlockHeaders') < this.maxPerRequest) {
       // we reached our request limit. try with a different peer.
-      return undefined
+      return
     }
     const response = await (peer!.les as LesProtocolMethods).getBlockHeaders({
       block: task.first,
       max: task.count,
     })
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    if (response) {
-      return response
-    }
-    return undefined
+    return response
   }
 
   /**

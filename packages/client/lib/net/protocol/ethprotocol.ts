@@ -2,7 +2,7 @@ import { BN, bufferToInt } from 'ethereumjs-util'
 import { BlockHeader, BlockHeaderBuffer } from '@ethereumjs/block'
 import { Chain } from './../../blockchain'
 import { Message, Protocol, ProtocolOptions } from './protocol'
-import { BlockBodyBuffer } from '../../../../block/dist'
+import { BlockBodyBuffer } from '@ethereumjs/block'
 
 interface EthProtocolOptions extends ProtocolOptions {
   /* Blockchain */
