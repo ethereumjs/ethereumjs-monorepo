@@ -17,6 +17,8 @@ tape('[Integration:FullEthereumService]', async (t) => {
       config: serviceConfig,
       chain,
     })
+    // Set runningBlocks to true to skip VM execution
+    service.synchronizer.runningBlocks = true
     await service.open()
     await server.start()
     await service.start()

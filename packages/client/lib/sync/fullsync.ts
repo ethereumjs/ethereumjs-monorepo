@@ -18,8 +18,7 @@ export class FullSynchronizer extends Synchronizer {
   private blockFetcher: BlockFetcher | null
 
   public vm: VM
-  private stateDB?: LevelUp
-  private runningBlocks: boolean
+  public runningBlocks: boolean
 
   private stopSyncing: boolean
   private vmPromise?: Promise<void>
@@ -33,7 +32,6 @@ export class FullSynchronizer extends Synchronizer {
     this.blockFetcher = null
 
     if (!this.config.vm) {
-      this.stateDB = level('./statedir')
       const trie = new Trie(this.stateDB)
 
       const stateManager = new DefaultStateManager({
@@ -68,7 +66,7 @@ export class FullSynchronizer extends Synchronizer {
    * This updates the VM once blocks were put in the VM
    */
   async runBlocks() {
-    if (this.runningBlocks) {
+    if (!this.running || this.runningBlocks) {
       return
     }
     this.runningBlocks = true
@@ -242,6 +240,7 @@ export class FullSynchronizer extends Synchronizer {
    * @return {Promise}
    */
   async stop(): Promise<boolean> {
+    this.stopSyncing = true
     if (this.vmPromise) {
       // ensure that we wait that the VM finishes executing the block (and flushes the trie cache)
       await this.vmPromise
@@ -251,7 +250,6 @@ export class FullSynchronizer extends Synchronizer {
     if (!this.running) {
       return false
     }
-    this.stopSyncing = true
     if (this.blockFetcher) {
       this.blockFetcher.destroy()
       // TODO: Should this be deleted?

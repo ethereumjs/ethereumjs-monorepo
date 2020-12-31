@@ -91,9 +91,12 @@ let logger: Logger | null = null
  * @param config
  */
 async function runNode(config: Config) {
-  const syncDataDir = config.getSyncDataDirectory()
-  fs.ensureDirSync(syncDataDir)
-  config.logger.info(`Sync data directory: ${syncDataDir}`)
+  const chainDataDir = config.getChainDataDirectory()
+  fs.ensureDirSync(chainDataDir)
+  const stateDataDir = config.getStateDataDirectory()
+  fs.ensureDirSync(stateDataDir)
+
+  config.logger.info(`Data directory: ${config.datadir}`)
 
   config.logger.info('Initializing Ethereumjs client...')
   if (config.lightserv) {
@@ -101,7 +104,8 @@ async function runNode(config: Config) {
   }
   const client = new EthereumClient({
     config,
-    db: level(syncDataDir),
+    chainDB: level(chainDataDir),
+    stateDB: level(stateDataDir),
   })
   client.on('error', (err: any) => config.logger.error(err))
   client.on('listening', (details: any) => {
@@ -145,7 +149,7 @@ async function run() {
     common,
     syncmode: args.syncmode,
     lightserv: args.lightserv,
-    datadir: `${os.homedir()}/Library/Ethereum`,
+    datadir: `${os.homedir()}/Library/Ethereum/ethereumjs`,
     transports: args.transports,
     rpc: args.rpc,
     rpcport: args.rpcport,
