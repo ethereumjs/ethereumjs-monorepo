@@ -9,7 +9,7 @@ export interface EthereumServiceOptions extends ServiceOptions {
   chain?: Chain
 
   /* Blockchain database */
-  db?: LevelUp
+  chainDB?: LevelUp
 
   /* Sync retry interval in ms (default: 8000) */
   interval?: number
