@@ -6,7 +6,6 @@ import { BlockFetcher } from './fetcher'
 import VM from '@ethereumjs/vm'
 import { DefaultStateManager } from '@ethereumjs/vm/dist/state'
 import { SecureTrie as Trie } from '@ethereumjs/trie'
-import { LevelUp } from 'levelup'
 const level = require('level')
 
 /**
@@ -17,7 +16,6 @@ export class FullSynchronizer extends Synchronizer {
   private blockFetcher: BlockFetcher | null
 
   public vm: VM
-  private stateDB?: LevelUp
   public runningBlocks: boolean
 
   private stopSyncing: boolean
@@ -32,7 +30,6 @@ export class FullSynchronizer extends Synchronizer {
     this.blockFetcher = null
 
     if (!this.config.vm) {
-      this.stateDB = level('./statedir')
       const trie = new Trie(this.stateDB)
 
       const stateManager = new DefaultStateManager({

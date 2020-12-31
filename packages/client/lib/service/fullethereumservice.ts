@@ -33,6 +33,7 @@ export class FullEthereumService extends EthereumService {
       config: this.config,
       pool: this.pool,
       chain: this.chain,
+      stateDB: options.stateDB,
       interval: this.interval,
     })
   }
