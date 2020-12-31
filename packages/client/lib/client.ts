@@ -14,6 +14,7 @@ export interface EthereumClientOptions {
    * Default: Database created by the Blockchain class
    */
   chainDB?: LevelUp
+<<<<<<< HEAD
 
   /**
    * Database to store the state. Should be an abstract-leveldown compliant store.
@@ -21,6 +22,8 @@ export interface EthereumClientOptions {
    * Default: Database created by the Trie class
    */
   stateDB?: LevelUp
+=======
+>>>>>>> client -> VM execution: renamed chain db instances to chainDB for differentiation towards stateDB
 
   /* List of bootnodes to use for discovery */
   bootnodes?: BootnodeLike[]
