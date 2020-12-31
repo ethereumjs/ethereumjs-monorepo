@@ -29,6 +29,7 @@ tape('[FullSynchronizer]', async (t) => {
     const sync = new FullSynchronizer({ config, pool, chain })
     pool.emit('added', { eth: true })
     t.equals(sync.type, 'full', 'full type')
+    await sync.stop()
     t.end()
   })
 
@@ -43,6 +44,7 @@ tape('[FullSynchronizer]', async (t) => {
       chain,
     })
     t.equals(sync.vm, vm, 'provided VM is used')
+    await sync.stop()
     t.end()
   })
 
@@ -68,6 +70,7 @@ tape('[FullSynchronizer]', async (t) => {
     td.when((sync as any).pool.open()).thenResolve(null)
     await sync.open()
     t.pass('opened')
+    await sync.stop()
     t.end()
   })
 
@@ -81,6 +84,7 @@ tape('[FullSynchronizer]', async (t) => {
     td.when(peer.eth.getBlockHeaders({ block: 'hash', max: 1 })).thenResolve(headers)
     const latest = await sync.latest(peer as any)
     t.equals(new BN(latest!.number).toNumber(), 5, 'got height')
+    await sync.stop()
     t.end()
   })
 
@@ -110,6 +114,7 @@ tape('[FullSynchronizer]', async (t) => {
       Promise.resolve(peer.eth.status.td)
     )
     t.equals(sync.best(), peers[1], 'found best')
+    await sync.stop()
     t.end()
   })
 
@@ -131,15 +136,19 @@ tape('[FullSynchronizer]', async (t) => {
     td.when((BlockFetcher.prototype as any).fetch(), { delay: 20 }).thenResolve(undefined)
     ;(sync as any).chain = { blocks: { height: new BN(3) } }
     t.notOk(await sync.sync(), 'local height > remote height')
+    await sync.stop()
     ;(sync as any).chain = {
       blocks: { height: new BN(0) },
     }
     t.ok(await sync.sync(), 'local height < remote height')
+    await sync.stop()
+
     td.when((BlockFetcher.prototype as any).fetch()).thenReject(new Error('err0'))
     try {
       await sync.sync()
     } catch (err) {
       t.equals(err.message, 'err0', 'got error')
+      await sync.stop()
     }
   })
 
