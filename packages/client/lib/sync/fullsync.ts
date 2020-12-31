@@ -7,7 +7,6 @@ import { Block } from '@ethereumjs/block'
 import VM from '@ethereumjs/vm'
 import { DefaultStateManager } from '@ethereumjs/vm/dist/state'
 import { SecureTrie as Trie } from '@ethereumjs/trie'
-import { LevelUp } from 'levelup'
 const level = require('level')
 
 /**
