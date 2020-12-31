@@ -25,6 +25,13 @@ export interface EthereumClientOptions {
 =======
 >>>>>>> client -> VM execution: renamed chain db instances to chainDB for differentiation towards stateDB
 
+  /**
+   * Database to store the state. Should be an abstract-leveldown compliant store.
+   * 
+   * Default: Database created by the Trie class
+   */
+  stateDB?: LevelUp
+
   /* List of bootnodes to use for discovery */
   bootnodes?: BootnodeLike[]
 
