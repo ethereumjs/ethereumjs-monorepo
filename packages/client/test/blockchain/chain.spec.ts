@@ -15,7 +15,7 @@ tape('[Chain]', (t) => {
   t.test('should test blockchain DB is initialized', async (t) => {
     const chain = new Chain({ config })
 
-    const db = chain.db
+    const db = chain.chainDB
     const testKey = 'name'
     const testValue = 'test'
 

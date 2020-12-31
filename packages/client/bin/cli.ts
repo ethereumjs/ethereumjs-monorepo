@@ -101,7 +101,7 @@ async function runNode(config: Config) {
   }
   const client = new EthereumClient({
     config,
-    db: level(syncDataDir),
+    chainDB: level(syncDataDir),
   })
   client.on('error', (err: any) => config.logger.error(err))
   client.on('listening', (details: any) => {

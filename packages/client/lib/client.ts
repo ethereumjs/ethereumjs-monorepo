@@ -13,7 +13,7 @@ export interface EthereumClientOptions {
    *
    * Default: Database created by the Blockchain class
    */
-  db?: LevelUp
+  chainDB?: LevelUp
 
   /* List of bootnodes to use for discovery */
   bootnodes?: BootnodeLike[]
@@ -51,11 +51,11 @@ export default class EthereumClient extends events.EventEmitter {
       this.config.syncmode === 'full'
         ? new FullEthereumService({
             config: this.config,
-            db: options.db,
+            chainDB: options.chainDB,
           })
         : new LightEthereumService({
             config: this.config,
-            db: options.db,
+            chainDB: options.chainDB,
           }),
     ]
     this.opened = false
