@@ -18,7 +18,7 @@ export class FullSynchronizer extends Synchronizer {
 
   public vm: VM
   private stateDB?: LevelUp
-  private runningBlocks: boolean
+  public runningBlocks: boolean
 
   private stopSyncing: boolean
   private vmPromise?: Promise<void>
