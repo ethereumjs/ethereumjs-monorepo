@@ -7,7 +7,6 @@ import { Block } from '@ethereumjs/block'
 import VM from '@ethereumjs/vm'
 import { DefaultStateManager } from '@ethereumjs/vm/dist/state'
 import { SecureTrie as Trie } from '@ethereumjs/trie'
-const level = require('level')
 
 /**
  * Implements an ethereum full sync synchronizer
