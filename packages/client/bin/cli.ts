@@ -105,7 +105,6 @@ async function runNode(config: Config) {
   const client = new EthereumClient({
     config,
     chainDB: level(chainDataDir),
-    // TODO rework to have a consistent dynamic base directory with chainDB
     stateDB: level(stateDataDir),
   })
   client.on('error', (err: any) => config.logger.error(err))

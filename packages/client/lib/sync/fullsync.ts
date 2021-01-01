@@ -22,7 +22,7 @@ export class FullSynchronizer extends Synchronizer {
 
   // Tracking vars for log msg condensation on zero tx blocks
   private NUM_ZERO_TXS_PER_LOG_MSG = 50
-  private zeroTxsBlockLogMsgCounter: number = 0
+  public zeroTxsBlockLogMsgCounter: number = 0
 
   constructor(options: SynchronizerOptions) {
     super(options)
