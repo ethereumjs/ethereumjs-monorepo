@@ -5,6 +5,7 @@ import { BN } from 'ethereumjs-util'
 import VM from '@ethereumjs/vm'
 import { Config } from '../../lib/config'
 import { Chain } from '../../lib/blockchain'
+import Blockchain from '@ethereumjs/blockchain'
 
 tape('[FullSynchronizer]', async (t) => {
   class PeerPool extends EventEmitter {
@@ -157,9 +158,11 @@ tape('[FullSynchronizer]', async (t) => {
 
   t.test('should run blocks', async (t) => {
     const vm = new VM()
+    vm.runBlockchain = td.func<any>()
     const config = new Config({ vm, loglevel: 'error', transports: [] })
     const pool = new PeerPool() as any
-    const chain = new Chain({ config })
+    const blockchain = new Blockchain() as any
+    const chain = new Chain({ config, blockchain })
     const sync = new FullSynchronizer({
       config,
       pool,
@@ -168,6 +171,54 @@ tape('[FullSynchronizer]', async (t) => {
     const oldHead = sync.vm.blockchain.getHead()
     await sync.runBlocks()
     t.deepEqual(sync.vm.blockchain.getHead(), oldHead, 'should not modify blockchain on emtpy run')
+
+    blockchain.getHead = td.func<any>()
+    td.when(blockchain.getHead()).thenResolve(
+      {
+        hash: () => {
+          return Buffer.from('hash1')
+        },
+        header: { number: new BN(1) },
+        transactions: [],
+      },
+      {
+        hash: () => {
+          return Buffer.from('hash2')
+        },
+        header: { number: new BN(2) },
+        transactions: [],
+      }
+    )
+    await sync.runBlocks()
+    t.equal(
+      sync.zeroTxsBlockLogMsgCounter,
+      1,
+      'should increase zero blocks counter on zero tx blocks'
+    )
+
+    td.when(blockchain.getHead()).thenResolve(
+      {
+        hash: () => {
+          return Buffer.from('hash1')
+        },
+        header: { number: new BN(1) },
+        transactions: [],
+      },
+      {
+        hash: () => {
+          return Buffer.from('hash2')
+        },
+        header: { number: new BN(2) },
+        transactions: [1, 2, 3],
+      }
+    )
+    await sync.runBlocks()
+    t.equal(
+      sync.zeroTxsBlockLogMsgCounter,
+      0,
+      'should reset zero blocks counter on non-zero tx blocks'
+    )
+
     t.end()
   })
 })
