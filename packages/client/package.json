@@ -25,7 +25,7 @@
     "lint:fix": "ethereumjs-config-lint-fix",
     "tape": "tape -r ts-node/register",
     "test": "npm run test:unit && npm run test:integration && npm run test:browser",
-    "test:unit": "npm run tape -- 'test/!(integration)/**/*.spec.ts'",
+    "test:unit": "npm run tape -- 'test/!(integration)/**/*.spec.ts' 'test/*.spec.ts'",
     "test:integration": "npm run tape -- 'test/integration/**/*.spec.ts'",
     "test:browser": "karma start karma.conf.js"
   },
