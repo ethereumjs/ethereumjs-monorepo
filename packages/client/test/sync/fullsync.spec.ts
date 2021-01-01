@@ -169,6 +169,7 @@ tape('[FullSynchronizer]', async (t) => {
       chain,
     })
     const oldHead = sync.vm.blockchain.getHead()
+    sync.running = true
     await sync.runBlocks()
     t.deepEqual(sync.vm.blockchain.getHead(), oldHead, 'should not modify blockchain on emtpy run')
 
