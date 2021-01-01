@@ -3,7 +3,7 @@ import { EventEmitter } from 'events'
 import { publicKeyCreate } from 'secp256k1'
 import { randomBytes } from 'crypto'
 import { debug as createDebugLogger } from 'debug'
-import { pk2id } from '../util'
+import { buffer2int, pk2id } from '../util'
 import { KBucket } from './kbucket'
 import { BanList } from './ban-list'
 import { Server as DPTServer } from './server'
@@ -55,6 +55,7 @@ export class DPT extends EventEmitter {
   private _kbucket: KBucket
   private _server: DPTServer
   private _refreshIntervalId: NodeJS.Timeout
+  private _refreshIntervalSelectionCounter: number = 0
 
   constructor(privateKey: Buffer, options: DPTOptions) {
     super()
@@ -79,8 +80,8 @@ export class DPT extends EventEmitter {
     this._server.on('peers', (peers) => this._onServerPeers(peers))
     this._server.on('error', (err) => this.emit('error', err))
 
-    const refreshInterval = options.refreshInterval || ms('60s')
-    this._refreshIntervalId = setInterval(() => this.refresh(), refreshInterval)
+    const refreshIntervalSubdivided = Math.floor((options.refreshInterval || ms('60s')) / 10)
+    this._refreshIntervalId = setInterval(() => this.refresh(), refreshIntervalSubdivided)
   }
 
   bind(...args: any[]): void {
@@ -168,9 +169,19 @@ export class DPT extends EventEmitter {
   }
 
   refresh(): void {
+    // Rotating selection counter going in loop from 0..9
+    this._refreshIntervalSelectionCounter = (this._refreshIntervalSelectionCounter + 1) % 10
+
     const peers = this.getPeers()
     debug(`call .refresh (${peers.length} peers in table)`)
 
-    for (const peer of peers) this._server.findneighbours(peer, randomBytes(64))
+    for (const peer of peers) {
+      // Randomly distributed selector based on peer ID
+      // to decide on subdivided execution
+      const selector = buffer2int(peer.id.slice(0, 1)) % 10
+      if (selector === this._refreshIntervalSelectionCounter) {
+        this._server.findneighbours(peer, randomBytes(64))
+      }
+    }
   }
 }
