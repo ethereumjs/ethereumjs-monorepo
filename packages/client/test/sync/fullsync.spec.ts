@@ -29,7 +29,6 @@ tape('[FullSynchronizer]', async (t) => {
     const sync = new FullSynchronizer({ config, pool, chain })
     pool.emit('added', { eth: true })
     t.equals(sync.type, 'full', 'full type')
-    await sync.stop()
     t.end()
   })
 
@@ -44,7 +43,6 @@ tape('[FullSynchronizer]', async (t) => {
       chain,
     })
     t.equals(sync.vm, vm, 'provided VM is used')
-    await sync.stop()
     t.end()
   })
 
@@ -154,6 +152,22 @@ tape('[FullSynchronizer]', async (t) => {
 
   t.test('should reset td', (t) => {
     td.reset()
+    t.end()
+  })
+
+  t.test('should run blocks', async (t) => {
+    const vm = new VM()
+    const config = new Config({ vm, loglevel: 'error', transports: [] })
+    const pool = new PeerPool() as any
+    const chain = new Chain({ config })
+    const sync = new FullSynchronizer({
+      config,
+      pool,
+      chain,
+    })
+    const oldHead = sync.vm.blockchain.getHead()
+    await sync.runBlocks()
+    t.deepEqual(sync.vm.blockchain.getHead(), oldHead, 'should not modify blockchain on emtpy run')
     t.end()
   })
 })
