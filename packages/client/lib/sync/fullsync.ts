@@ -63,7 +63,7 @@ export class FullSynchronizer extends Synchronizer {
    * This updates the VM once blocks were put in the VM
    */
   async runBlocks() {
-    if (this.runningBlocks) {
+    if (!this.running || this.runningBlocks) {
       return
     }
     this.runningBlocks = true
@@ -237,6 +237,7 @@ export class FullSynchronizer extends Synchronizer {
    * @return {Promise}
    */
   async stop(): Promise<boolean> {
+    this.stopSyncing = true
     if (this.vmPromise) {
       // ensure that we wait that the VM finishes executing the block (and flushes the trie cache)
       await this.vmPromise
@@ -246,7 +247,6 @@ export class FullSynchronizer extends Synchronizer {
     if (!this.running) {
       return false
     }
-    this.stopSyncing = true
     if (this.blockFetcher) {
       this.blockFetcher.destroy()
       // TODO: Should this be deleted?

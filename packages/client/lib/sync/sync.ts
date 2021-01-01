@@ -38,7 +38,7 @@ export class Synchronizer extends EventEmitter {
   protected stateDB?: LevelUp
   protected flow: FlowControl
   protected interval: number
-  protected running: boolean
+  public running: boolean
   protected forceSync: boolean
 
   /**
