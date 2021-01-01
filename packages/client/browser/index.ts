@@ -1,5 +1,4 @@
 import Common from '@ethereumjs/common'
-const level = require('level')
 
 // Blockchain
 export * from '../lib/blockchain/chain'
@@ -21,9 +20,11 @@ export * from '../lib/net/protocol/flowcontrol'
 // Server
 export * from '../lib/net/server/server'
 export * from '../lib/net/server/libp2pserver'
+import { Libp2pServer } from '../lib/net/server/libp2pserver'
 
 // EthereumClient
 export * from '../lib/client'
+import EthereumClient from '../lib/client'
 
 // Service
 export * from '../lib/service/service'
@@ -37,28 +38,28 @@ export * from '../lib/sync/lightsync'
 
 // Utilities
 export * from '../lib/util'
+import { Config } from '../lib/config'
 
 // Logging
 export * from './logging'
 import { getLogger } from './logging'
 
 export function createClient(args: any) {
-  const logger = getLogger({ loglevel: args.loglevel })
-  const options = {
+  const logger = getLogger({ loglevel: args.loglevel ?? 'info' })
+  const config = new Config({
     common: new Common({ chain: args.network ?? 'mainnet' }),
-    servers: [new exports.Libp2pServer({ multiaddrs: [], ...args })],
+    servers: [new Libp2pServer({ multiaddrs: [], config: new Config({ logger }), ...args })],
     syncmode: args.syncmode ?? 'full',
-    db: level(args.db ?? 'ethereumjs'),
-    logger: logger,
-  }
-  return new exports.EthereumClient(options)
+    logger,
+  })
+  return new EthereumClient({ config })
 }
 
-export function run(args: any) {
+export async function run(args: any) {
   const client = createClient(args)
-  const logger = client.logger
+  const { logger, common } = client.config
   logger.info('Initializing Ethereumjs client...')
-  logger.info(`Connecting to network: ${client.common.chainName()}`)
+  logger.info(`Connecting to network: ${common.chainName()}`)
   client.on('error', (err: any) => logger.error(err))
   client.on('listening', (details: any) => {
     logger.info(`Listener up transport=${details.transport} url=${details.url}`)
@@ -66,9 +67,8 @@ export function run(args: any) {
   client.on('synchronized', () => {
     logger.info('Synchronized')
   })
-  client.open().then(() => {
-    logger.info('Synchronizing blockchain...')
-    client.start()
-  })
+  await client.open()
+  logger.info('Synchronizing blockchain...')
+  await client.start()
   return client
 }

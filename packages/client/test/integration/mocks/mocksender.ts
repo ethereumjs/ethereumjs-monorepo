@@ -1,11 +1,13 @@
+import EventEmitter from 'events'
 import { Sender } from '../../../lib/net/protocol'
+import { Pushable } from './mockpeer'
 
 export default class MockSender extends Sender {
   public protocol: string
-  public pushable: any
-  public receiver: any
+  public pushable: Pushable
+  public receiver: EventEmitter
 
-  constructor(protocol: string, pushable: any, receiver: any) {
+  constructor(protocol: string, pushable: Pushable, receiver: EventEmitter) {
     super()
 
     this.protocol = protocol
@@ -26,10 +28,10 @@ export default class MockSender extends Sender {
   }
 
   sendStatus(status: any) {
-    this.pushable.push([this.protocol, 0, status])
+    this.pushable.push([this.protocol, 0, status] as any)
   }
 
   sendMessage(code: any, data: any) {
-    this.pushable.push([this.protocol, code, data])
+    this.pushable.push([this.protocol, code, data] as any)
   }
 }

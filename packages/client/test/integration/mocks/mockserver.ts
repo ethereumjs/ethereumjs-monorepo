@@ -1,6 +1,6 @@
 import { Server, ServerOptions } from '../../../lib/net/server'
 import MockPeer from './mockpeer'
-import * as network from './network'
+import { RemoteStream, createServer, destroyServer } from './network'
 
 interface MockServerOptions extends ServerOptions {
   location?: string
@@ -29,7 +29,7 @@ export default class MockServer extends Server {
     await super.start()
     await this.wait(1)
 
-    this.server = network.createServer(this.location)
+    this.server = createServer(this.location) as any
     this.server!.on('listening', () => {
       this.emit('listening', {
         transport: this.name,
@@ -37,8 +37,8 @@ export default class MockServer extends Server {
       })
     })
 
-    this.server!.on('connection', async (connection: any) => {
-      await this.connect(connection)
+    this.server!.on('connection', async ({ id, stream }) => {
+      await this.connect(id, stream)
     })
     return true
   }
@@ -46,8 +46,8 @@ export default class MockServer extends Server {
   async stop(): Promise<boolean> {
     await new Promise((resolve) => {
       setTimeout(() => {
-        network.destroyServer(this.location)
-        resolve()
+        destroyServer(this.location)
+        resolve(undefined)
       }, 20)
     })
     await super.stop()
@@ -70,9 +70,8 @@ export default class MockServer extends Server {
     return peer
   }
 
-  async connect(connection: any) {
+  async connect(id: string, stream: RemoteStream) {
     const opts = { config: this.config, address: 'mock', transport: 'mock', location: 'mock' }
-    const id = connection.remoteId
     const peer = new MockPeer({
       id,
       inbound: true,
@@ -80,7 +79,7 @@ export default class MockServer extends Server {
       protocols: Array.from(this.protocols),
       ...opts,
     })
-    await peer.bindProtocols(connection)
+    await peer.bindProtocols(stream)
     this.peers[id] = peer
     this.emit('connected', peer)
   }

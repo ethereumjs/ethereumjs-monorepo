@@ -2,7 +2,8 @@ import Common from '@ethereumjs/common'
 import VM from '@ethereumjs/vm'
 import { getLogger, Logger } from './logging'
 import { Libp2pServer, RlpxServer } from './net/server'
-import { parseTransports } from './util'
+import { parseMultiaddrs, parseTransports } from './util'
+const os = require('os')
 
 export interface ConfigOptions {
   /**
@@ -129,7 +130,7 @@ export class Config {
   public static readonly CHAIN_DEFAULT = 'mainnet'
   public static readonly SYNCMODE_DEFAULT = 'full'
   public static readonly LIGHTSERV_DEFAULT = false
-  public static readonly DATADIR_DEFAULT = `./datadir`
+  public static readonly DATADIR_DEFAULT = `${os.homedir()}/Library/Ethereum/ethereumjs`
   public static readonly TRANSPORTS_DEFAULT = ['rlpx:port=30303', 'libp2p']
   public static readonly RPC_DEFAULT = false
   public static readonly RPCPORT_DEFAULT = 8545
@@ -204,9 +205,16 @@ export class Config {
     } else {
       // Otherwise parse transports from transports option
       this.servers = parseTransports(this.transports).map((t) => {
+        // format multiaddrs as multiaddr[]
+        if (t.options.multiaddrs) {
+          t.options.multiaddrs = parseMultiaddrs(t.options.multiaddrs) as any
+        }
         if (t.name === 'rlpx') {
-          t.options.bootnodes = t.options.bootnodes || this.chainCommon.bootstrapNodes()
-          t.options.dnsNetworks = options.dnsNetworks || this.chainCommon.dnsNetworks()
+          if (!t.options.bootnodes) {
+            t.options.bootnodes = this.chainCommon.bootstrapNodes()
+          }
+          t.options.bootnodes = parseMultiaddrs(t.options.bootnodes) as any
+          t.options.dnsNetworks = options.dnsNetworks ?? this.chainCommon.dnsNetworks()
           return new RlpxServer({ config: this, ...t.options })
         } else {
           return new Libp2pServer({ config: this, ...t.options })

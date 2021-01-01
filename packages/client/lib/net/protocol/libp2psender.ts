@@ -1,12 +1,13 @@
-import { Sender } from './sender'
+import pipe from 'it-pipe'
+import pushable from 'it-pushable'
+import { Libp2pMuxedStream as MuxedStream } from '../../types'
 import { bufferToInt, rlp } from 'ethereumjs-util'
-import { Pushable } from 'pull-pushable'
+import { Sender } from './sender'
 
-// TODO: polkadot/ts types seem wrong (?)
-// "pull_pushable_1.default is not a function"
-const pushable = require('pull-pushable')
-const catcher = require('pull-catch')
-const pull = require('pull-stream')
+// TypeScript doesn't have support yet for ReturnType
+// with generic types, so this wrapper is used as a helper.
+const wrapperPushable = () => pushable<Buffer>()
+type Pushable = ReturnType<typeof wrapperPushable>
 
 /**
  * Libp2p protocol sender
@@ -15,56 +16,56 @@ const pull = require('pull-stream')
  * @memberof module:net/protocol
  */
 export class Libp2pSender extends Sender {
-  private connection: any
-  private pushableStream: Pushable
+  private stream: MuxedStream
+  private pushable: Pushable
   /**
    * Creates a new Libp2p protocol sender
-   * @param {Connection} connection  connection to libp2p peer
+   * @param {MuxedStream} stream stream to libp2p peer
    */
-  constructor(connection: any) {
+  constructor(stream: MuxedStream) {
     super()
 
-    this.connection = connection
-    this.pushableStream = pushable()
+    this.stream = stream
+    this.pushable = pushable()
     this.init()
   }
 
   init() {
     // outgoing stream
-    pull(
-      this.pushableStream,
-      catcher((e: Error) => this.error(e)),
-      this.connection
-    )
+    pipe(this.pushable, this.stream)
 
     // incoming stream
-    pull(
-      this.connection,
-      catcher((e: Error) => this.error(e)),
-      pull.drain((message: any) => {
-        // eslint-disable-next-line prefer-const
-        let [code, payload]: any = rlp.decode(message)
-        code = bufferToInt(code)
-        if (code === 0) {
-          const status: any = {}
-          payload.forEach(([k, v]: any) => {
-            status[k.toString()] = v
-          })
-          this.status = status
-        } else {
-          this.emit('message', { code, payload })
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    pipe(this.stream, async (source: any) => {
+      for await (const bl of source) {
+        // convert BufferList to Buffer
+        const data: Buffer = bl.slice()
+        try {
+          const [codeBuf, payload]: any = rlp.decode(data)
+          const code = bufferToInt(codeBuf)
+          if (code === 0) {
+            const status: any = {}
+            payload.forEach(([k, v]: any) => {
+              status[k.toString()] = v
+            })
+            this.status = status
+          } else {
+            this.emit('message', { code, payload })
+          }
+        } catch (error) {
+          this.emit('error', error)
         }
-      })
-    )
+      }
+    })
   }
 
   /**
    * Send a status to peer
-   * @param  {Object} status
+   * @param {Object} status
    */
   sendStatus(status: any) {
     const payload: any = Object.entries(status).map(([k, v]) => [k, v])
-    this.pushableStream.push(rlp.encode([0, payload]))
+    this.pushable.push(rlp.encode([0, payload]))
   }
 
   /**
@@ -73,14 +74,6 @@ export class Libp2pSender extends Sender {
    * @param  {*}      data message payload
    */
   sendMessage(code: number, data: any) {
-    this.pushableStream.push(rlp.encode([code, data]))
-  }
-
-  /**
-   * Handle pull stream errors
-   * @param  error error
-   */
-  error(error: Error) {
-    this.emit('error', error)
+    this.pushable.push(rlp.encode([code, data]))
   }
 }

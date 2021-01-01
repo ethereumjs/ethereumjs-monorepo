@@ -7,7 +7,6 @@ import EthereumClient from '../lib/client'
 import { Config } from '../lib/config'
 import { Logger } from '../lib/logging'
 import { RPCManager } from '../lib/rpc'
-const os = require('os')
 const path = require('path')
 const fs = require('fs-extra')
 const chains = require('@ethereumjs/common/dist/chains').chains
@@ -163,7 +162,7 @@ async function run() {
     common,
     syncmode: args.syncmode,
     lightserv: args.lightserv,
-    datadir: `${os.homedir()}/Library/Ethereum/ethereumjs`,
+    datadir: args.datadir,
     transports: args.transports,
     rpc: args.rpc,
     rpcport: args.rpcport,

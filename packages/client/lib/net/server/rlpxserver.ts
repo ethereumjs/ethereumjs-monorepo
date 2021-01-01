@@ -139,19 +139,18 @@ export class RlpxServer extends Server {
     const self = this
 
     // Bootnodes
-    let promises = this.bootnodes.map((node) => {
+    let promises = this.bootnodes.map((ma) => {
+      const { address, port } = ma.nodeAddress()
       const bootnode = {
-        address: node.ip!,
-        udpPort: node.port,
-        tcpPort: node.port,
+        address,
+        udpPort: Number(port),
+        tcpPort: Number(port),
       }
       return this.dpt!.bootstrap(bootnode)
     })
 
     // DNS peers
-    // lint complains that conditional value "is always truthy" but it's not, due to `!`
-    // eslint-disable-next-line
-    const dnsPeers = (await this.dpt!.getDnsPeers()) || []
+    const dnsPeers = (await this.dpt?.getDnsPeers()) ?? []
     promises = promises.concat(dnsPeers.map((node) => self.dpt!.bootstrap(node)))
 
     for (const promise of promises) {

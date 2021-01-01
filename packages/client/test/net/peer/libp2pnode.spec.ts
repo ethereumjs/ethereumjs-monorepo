@@ -7,8 +7,8 @@ tape('[Libp2pNode]', async (t) => {
   const { Libp2pNode } = await import('../../../lib/net/peer/libp2pnode')
 
   t.test('should be a libp2p bundle', (t) => {
-    const peerInfo = td.object('PeerInfo')
-    const node = new Libp2pNode({ peerInfo })
+    const peerId = td.object('PeerId') as any
+    const node = new Libp2pNode({ peerId })
     t.equals(node.constructor.name, Libp2pNode.name, 'is libp2p bundle')
     t.end()
   })

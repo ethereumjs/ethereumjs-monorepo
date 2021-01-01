@@ -1,26 +1,28 @@
+import multiaddr from 'multiaddr'
+import type Connection from '../../../node_modules/libp2p-interfaces/dist/src/connection/connection'
+import type { MuxedStream } from '../../../node_modules/libp2p-interfaces/dist/src/stream-muxer/types'
+
 export type Key = Buffer
 export type KeyLike = string | Key
 
-export type Multiaddrs = string[]
-export type MultiaddrsLike = string | Multiaddrs
-
-export interface Bootnode {
-  id?: string | null
-  ip: string | null
-  port: number
-}
-export type BootnodeLike = string | string[] | Bootnode | Bootnode[]
+export type MultiaddrLike = string | string[] | multiaddr | multiaddr[]
 
 export type DnsNetwork = string
 
-// QHeap types. @types/qheap does not exist, so we create a custom interface here.
+/* Libp2p aliases for convenience */
+export type Libp2pConnection = Connection
+export type Libp2pMuxedStream = MuxedStream
+
+/**
+ * QHeap types.
+ * @types/qheap does not exist, so we define a custom interface here.
+ */
 type QHeapOptions = {
   comparBefore(a: any, b: any): boolean
   compar(a: any, b: any): number
   freeSpace: number
   size: number
 }
-
 export interface QHeap<T> {
   // eslint-disable-next-line @typescript-eslint/no-misused-new
   new (opts: QHeapOptions): QHeap<T>
