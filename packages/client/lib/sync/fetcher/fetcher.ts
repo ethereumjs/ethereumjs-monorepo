@@ -45,7 +45,8 @@ export class Fetcher extends Readable {
   protected in: any
   protected out: any
   protected total: number
-  protected processed: number
+  protected processed: number // number of processed tasks, awaiting the write job
+  protected finished: number // number of tasks which are both processed and also finished writing
   protected running: boolean
   protected reading: boolean
   private _readableState: any
@@ -69,6 +70,7 @@ export class Fetcher extends Readable {
     this.out = new Heap({ comparBefore: (a: any, b: any) => a.index < b.index })
     this.total = 0
     this.processed = 0
+    this.finished = 0
     this.running = false
     this.reading = false
   }
@@ -212,6 +214,7 @@ export class Fetcher extends Readable {
     const _write = async (result: any, encoding: any, cb: Function) => {
       try {
         await this.store(result)
+        this.finished++
         this.emit('fetched', result)
         cb()
       } catch (error) {
@@ -262,7 +265,7 @@ export class Fetcher extends Readable {
     this.running = true
     while (this.running) {
       if (!this.next()) {
-        if (this.processed === this.total) {
+        if (this.finished === this.total) {
           this.push(null)
         }
         await this.wait()
