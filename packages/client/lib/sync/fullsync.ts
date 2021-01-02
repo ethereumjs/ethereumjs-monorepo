@@ -64,7 +64,7 @@ export class FullSynchronizer extends Synchronizer {
    * This updates the VM once blocks were put in the VM
    */
   async runBlocks() {
-    if (!this.running || this.runningBlocks) {
+    if (!this.running || this.runningBlocks) {
       return
     }
     this.runningBlocks = true

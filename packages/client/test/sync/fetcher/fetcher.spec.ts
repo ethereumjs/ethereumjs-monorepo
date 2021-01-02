@@ -1,7 +1,5 @@
-import { BN } from 'ethereumjs-util'
 import tape from 'tape-catch'
 import td from 'testdouble'
-import { Chain } from '../../../lib/blockchain/chain'
 import { Config } from '../../../lib/config'
 import { Fetcher } from '../../../lib/sync/fetcher/fetcher'
 import { Job } from '../../../lib/sync/fetcher/types'

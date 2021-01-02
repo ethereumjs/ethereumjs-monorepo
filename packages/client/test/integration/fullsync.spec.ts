@@ -3,15 +3,17 @@ import { wait, setup, destroy } from './util'
 
 tape('[Integration:FullSync]', async (t) => {
   t.test('should sync blocks', async (t) => {
-    const [remoteServer, remoteService] = await setup({ location: '127.0.0.2', height: 200 })
+    const [remoteServer, remoteService] = await setup({ location: '127.0.0.2', height: 20 })
     const [localServer, localService] = await setup({ location: '127.0.0.1', height: 0 })
+    await localService.synchronizer.stop()
+    await localServer.discover('remotePeer1', '127.0.0.2')
     localService.on('synchronized', async () => {
-      t.equals(localService.chain.blocks.height.toNumber(), 200, 'synced')
+      t.equals(localService.chain.blocks.height.toNumber(), 20, 'synced')
       await destroy(localServer, localService)
       await destroy(remoteServer, remoteService)
       t.end()
     })
-    await localServer.discover('remotePeer', '127.0.0.2')
+    await localService.synchronizer.start()
   })
 
   t.test('should not sync with stale peers', async (t) => {

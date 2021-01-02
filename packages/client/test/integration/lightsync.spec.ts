@@ -5,7 +5,7 @@ tape('[Integration:LightSync]', async (t) => {
   t.test('should sync headers', async (t) => {
     const [remoteServer, remoteService] = await setup({
       location: '127.0.0.2',
-      height: 200,
+      height: 20,
       syncmode: 'full',
     })
     const [localServer, localService] = await setup({
@@ -13,13 +13,15 @@ tape('[Integration:LightSync]', async (t) => {
       height: 0,
       syncmode: 'light',
     })
+    await localService.synchronizer.stop()
+    await localServer.discover('remotePeer1', '127.0.0.2')
     localService.on('synchronized', async () => {
-      t.equals(localService.chain.headers.height.toNumber(), 200, 'synced')
+      t.equals(localService.chain.headers.height.toNumber(), 20, 'synced')
       await destroy(localServer, localService)
       await destroy(remoteServer, remoteService)
       t.end()
     })
-    await localServer.discover('remotePeer', '127.0.0.2')
+    await localService.synchronizer.start()
   })
 
   t.test('should not sync with stale peers', async (t) => {
