@@ -51,10 +51,7 @@ tape('[Fetcher]', (t) => {
     const config = new Config({ loglevel: 'error', transports: [] })
     const fetcher = new FetcherTest({
       config,
-      chain,
       pool: td.object(),
-      first: new BN(0),
-      count: new BN(0),
       timeout: 5,
     })
     const job = { index: 0 }

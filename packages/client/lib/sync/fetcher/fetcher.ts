@@ -1,5 +1,6 @@
 import { Readable, Writable } from 'stream'
 const Heap = require('qheap')
+
 import { PeerPool } from '../../net/peerpool'
 import { Config } from '../../config'
 
@@ -11,17 +12,8 @@ export interface FetcherOptions {
   /* Common chain config*/
   config: Config
 
-  /* Blockchain */
-  chain: Chain
-
   /* Peer pool */
   pool: PeerPool
-
-  /* Block number to start fetching from */
-  first: BN
-
-  /* How many blocks to fetch */
-  count: BN
 
   /* Fetch task timeout in ms (default: 8000) */
   timeout?: number
@@ -32,7 +24,7 @@ export interface FetcherOptions {
   /* Max write queue size (default: 16) */
   maxQueue?: number
 
-  /* Max items per request (default: 50) */
+  /* Max items per request (default: 128) */
   maxPerRequest?: number
 
   /* Retry interval in ms (default: 1000) */
@@ -51,12 +43,7 @@ export interface FetcherOptions {
 export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable {
   public config: Config
 
-  protected chain: Chain
   protected pool: PeerPool
-
-  protected first: BN
-  protected count: BN
-
   protected timeout: number
   protected interval: number
   protected banTime: number
@@ -82,17 +69,12 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
     super({ ...options, objectMode: true })
 
     this.config = options.config
-    this.chain = options.chain
     this.pool = options.pool
-
-    this.first = options.first
-    this.count = options.count
-
     this.timeout = options.timeout ?? 8000
     this.interval = options.interval ?? 1000
     this.banTime = options.banTime ?? 60000
     this.maxQueue = options.maxQueue ?? 16
-    this.maxPerRequest = options.maxPerRequest ?? 50
+    this.maxPerRequest = options.maxPerRequest ?? 128
 
     this.in = new Heap({
       comparBefore: (

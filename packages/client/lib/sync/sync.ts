@@ -4,6 +4,7 @@ import { Peer } from '../net/peer/peer'
 import { FlowControl } from '../net/protocol'
 import { Config } from '../config'
 import { Chain } from '../blockchain'
+import { LevelUp } from 'levelup'
 
 export interface SynchronizerOptions {
   /* Config */
@@ -14,6 +15,9 @@ export interface SynchronizerOptions {
 
   /* Blockchain */
   chain: Chain
+
+  /* State database */
+  stateDB?: LevelUp
 
   /* Flow control manager */
   flow?: FlowControl
@@ -31,9 +35,10 @@ export abstract class Synchronizer extends EventEmitter {
 
   protected pool: PeerPool
   protected chain: Chain
+  protected stateDB?: LevelUp
   protected flow: FlowControl
   protected interval: number
-  protected running: boolean
+  public running: boolean
   protected forceSync: boolean
 
   /**
@@ -47,6 +52,7 @@ export abstract class Synchronizer extends EventEmitter {
 
     this.pool = options.pool
     this.chain = options.chain
+    this.stateDB = options.stateDB
     this.flow = options.flow ?? new FlowControl()
     this.interval = options.interval ?? 1000
     this.running = false
@@ -59,7 +65,7 @@ export abstract class Synchronizer extends EventEmitter {
     })
   }
 
-  abstract async sync(): Promise<boolean>
+  abstract sync(): Promise<boolean>
 
   /**
    * Returns synchronizer type

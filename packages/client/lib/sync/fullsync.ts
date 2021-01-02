@@ -4,6 +4,11 @@ import { short } from '../util'
 import { Synchronizer, SynchronizerOptions } from './sync'
 import { BlockFetcher } from './fetcher'
 import { Block } from '@ethereumjs/block'
+import VM from '@ethereumjs/vm'
+import { DefaultStateManager } from '@ethereumjs/vm/dist/state'
+import { SecureTrie as Trie } from '@ethereumjs/trie'
+import { LevelUp } from 'levelup'
+const level = require('level')
 
 /**
  * Implements an ethereum full sync synchronizer
@@ -13,6 +18,7 @@ export class FullSynchronizer extends Synchronizer {
   private blockFetcher: BlockFetcher | null
 
   public vm: VM
+  private stateDB?: LevelUp
   private runningBlocks: boolean
 
   private stopSyncing: boolean
@@ -27,8 +33,8 @@ export class FullSynchronizer extends Synchronizer {
     this.blockFetcher = null
 
     if (!this.config.vm) {
-      const db = level('./statedir')
-      const trie = new Trie(db)
+      this.stateDB = level('./statedir')
+      const trie = new Trie(this.stateDB)
 
       const stateManager = new DefaultStateManager({
         common: this.config.common,
@@ -236,6 +242,12 @@ export class FullSynchronizer extends Synchronizer {
    * @return {Promise}
    */
   async stop(): Promise<boolean> {
+    if (this.vmPromise) {
+      // ensure that we wait that the VM finishes executing the block (and flushes the trie cache)
+      await this.vmPromise
+    }
+    await this.stateDB?.close()
+
     if (!this.running) {
       return false
     }
@@ -248,10 +260,6 @@ export class FullSynchronizer extends Synchronizer {
     }
     await super.stop()
 
-    if (this.vmPromise) {
-      // ensure that we wait that the VM finishes executing the block (and flushes the trie cache)
-      await this.vmPromise
-    }
     return true
   }
 }

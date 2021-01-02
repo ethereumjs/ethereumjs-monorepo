@@ -1,40 +1,19 @@
-<<<<<<< HEAD
-<<<<<<< HEAD
 import { Block, BlockBodyBuffer } from '@ethereumjs/block'
 import { Peer } from '../../net/peer'
 import { EthProtocolMethods } from '../../net/protocol'
 import { Job } from './types'
 import { BlockFetcherBase, JobTask, BlockFetcherOptions } from './blockfetcherbase'
-=======
-const level = require('level')
-=======
->>>>>>> client: move VM and block execution logic to FullSync
-import { Fetcher, FetcherOptions } from './fetcher'
-import { Block, BlockBodyBuffer } from '@ethereumjs/block'
-import { Peer } from '../../net/peer'
-import { EthProtocolMethods } from '../../net/protocol'
-<<<<<<< HEAD
-import VM from '@ethereumjs/vm'
-import { DefaultStateManager } from '@ethereumjs/vm/dist/state'
-import { SecureTrie as Trie } from '@ethereumjs/trie'
->>>>>>> client -> vm execution: use vm.runBlockchain(), fix execution run, added state persistence by introducing StateManager
-=======
->>>>>>> client: move VM and block execution logic to FullSync
 
 /**
  * Implements an eth/62 based block fetcher
  * @memberof module:sync/fetcher
  */
-<<<<<<< HEAD
 export class BlockFetcher extends BlockFetcherBase<Block[], Block> {
-=======
-export class BlockFetcher extends Fetcher {
->>>>>>> client: move VM and block execution logic to FullSync
   /**
    * Create new block fetcher
-   * @param {FetcherOptions}
+   * @param {BlockFetcherOptions}
    */
-  constructor(options: FetcherOptions) {
+  constructor(options: BlockFetcherOptions) {
     super(options)
   }
 
