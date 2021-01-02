@@ -1,6 +1,7 @@
 import { EthereumService } from '../../service/ethereumservice'
 import { middleware } from '../validation'
 import { addHexPrefix } from 'ethereumjs-util'
+import { EthereumClient } from '../..'
 
 /**
  * net_* RPC module
@@ -15,8 +16,8 @@ export class Net {
    * Create net_* RPC module
    * @param {Node} Node to which the module binds
    */
-  constructor(node: any) {
-    const service: EthereumService = node.services.find((s: any) => s.name === 'eth')
+  constructor(node: EthereumClient) {
+    const service: EthereumService = node.services.find((s: any) => s.name === 'eth')!
     this._chain = service.chain
     this._node = node
     this._peerPool = service.pool

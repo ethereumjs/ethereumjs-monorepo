@@ -58,7 +58,9 @@ tape('[BlockFetcher]', async (t) => {
       count: new BN(0),
     })
     const blocks = [{ header: { number: 1 } }, { header: { number: 2 } }]
-    t.deepEquals(fetcher.process({ task: { count: 2 } }, { blocks }), blocks, 'got results')
+    //@ts-ignore
+    t.deepEquals(fetcher.process({ task: { count: 2 } }, blocks), blocks, 'got results')
+    //@ts-ignore
     t.notOk(fetcher.process({ task: { count: 2 } }, { blocks: [] }), 'bad results')
     t.end()
   })
@@ -75,7 +77,7 @@ tape('[BlockFetcher]', async (t) => {
       count: new BN(0),
     })
     td.when((fetcher as any).pool.idle(td.matchers.anything())).thenReturn('peer0')
-    t.equals(fetcher.peer(undefined), 'peer0', 'found peer')
+    t.equals(fetcher.peer(), 'peer0', 'found peer')
     t.end()
   })
 

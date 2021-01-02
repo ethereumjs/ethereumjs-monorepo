@@ -2,16 +2,30 @@ import tape from 'tape-catch'
 import td from 'testdouble'
 import { Config } from '../../../lib/config'
 import { Fetcher } from '../../../lib/sync/fetcher/fetcher'
+import { Job } from '../../../lib/sync/fetcher/types'
+
+class FetcherTest extends Fetcher<any, any, any> {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  process(_job: any, res: any) {
+    return undefined // have to return undefined, otherwise the function return signature is void.
+  }
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  async request(_job: any, peer: any) {
+    return
+  }
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  async store(store: any) {}
+}
 
 tape('[Fetcher]', (t) => {
   t.test('should handle bad result', (t) => {
     t.plan(2)
     const config = new Config({ loglevel: 'error', transports: [] })
-    const fetcher = new Fetcher({ config, pool: td.object() })
+    const fetcher = new FetcherTest({ config, pool: td.object() })
     const job: any = { peer: {}, state: 'active' }
     ;(fetcher as any).running = true
-    fetcher.next = td.func<Fetcher['next']>()
-    fetcher.wait = td.func<Fetcher['wait']>()
+    fetcher.next = td.func<FetcherTest['next']>()
+    fetcher.wait = td.func<FetcherTest['wait']>()
     td.when(fetcher.wait()).thenResolve(undefined)
     fetcher.success(job, undefined)
     t.equals((fetcher as any).in.size(), 1, 'enqueued job')
@@ -21,27 +35,27 @@ tape('[Fetcher]', (t) => {
   t.test('should handle failure', (t) => {
     t.plan(2)
     const config = new Config({ loglevel: 'error', transports: [] })
-    const fetcher = new Fetcher({ config, pool: td.object() })
+    const fetcher = new FetcherTest({ config, pool: td.object() })
     const job = { peer: {}, state: 'active' }
     ;(fetcher as any).running = true
-    fetcher.next = td.func<Fetcher['next']>()
+    fetcher.next = td.func<FetcherTest['next']>()
     fetcher.on('error', (err: Error) => t.equals(err.message, 'err0', 'got error'))
-    fetcher.failure(job, new Error('err0'))
+    fetcher.failure(job as Job<any, any, any>, new Error('err0'))
     t.equals((fetcher as any).in.size(), 1, 'enqueued job')
   })
 
   t.test('should handle expiration', (t) => {
     t.plan(2)
     const config = new Config({ loglevel: 'error', transports: [] })
-    const fetcher = new Fetcher({
+    const fetcher = new FetcherTest({
       config,
       pool: td.object(),
       timeout: 5,
     })
     const job = { index: 0 }
     const peer = { idle: true }
-    fetcher.peer = td.func<Fetcher['peer']>()
-    fetcher.request = td.func<Fetcher['request']>()
+    fetcher.peer = td.func<FetcherTest['peer']>()
+    fetcher.request = td.func<FetcherTest['request']>()
     td.when(fetcher.peer()).thenReturn(peer)
     td.when(fetcher.request(td.matchers.anything(), { idle: false }), { delay: 10 }).thenReject(
       new Error('err0')
