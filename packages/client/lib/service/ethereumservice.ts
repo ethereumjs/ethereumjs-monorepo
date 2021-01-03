@@ -11,11 +11,11 @@ export interface EthereumServiceOptions extends ServiceOptions {
   /* Blockchain database */
   db?: LevelUp
 
-  /* Protocol timeout in ms (default: 8000) */
-  timeout?: number
-
-  /* Sync retry interval in ms (default: 1000) */
+  /* Sync retry interval in ms (default: 8000) */
   interval?: number
+
+  /* Protocol timeout in ms (default: 2000) */
+  timeout?: number
 }
 
 /**
@@ -39,7 +39,7 @@ export class EthereumService extends Service {
     this.flow = new FlowControl()
     this.chain = options.chain ?? new Chain(options)
     this.interval = options.interval ?? 8000
-    this.timeout = options.timeout ?? 1000
+    this.timeout = options.timeout ?? 2000
   }
 
   /**

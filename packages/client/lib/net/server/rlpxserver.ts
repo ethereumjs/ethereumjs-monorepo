@@ -122,7 +122,7 @@ export class RlpxServer extends Server {
   async bootstrap(): Promise<void> {
     const promises = this.bootnodes.map((node) => {
       const bootnode = {
-        address: node.ip,
+        address: node.ip!,
         udpPort: node.port,
         tcpPort: node.port,
       }
