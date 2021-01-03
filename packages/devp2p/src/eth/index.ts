@@ -182,8 +182,8 @@ export class ETH extends EventEmitter {
       verbose
     )}`
     if (this._version >= 64) {
-      sStr += `, ForkHash: 0x${(status[5][0] as Buffer).toString('hex')}`
-      sStr += `, ForkNext: ${buffer2int(status[5][1] as Buffer)}`
+      sStr += `, ForkHash: 0x${status[5] ? '0x' + (status[5][0] as Buffer).toString('hex') : '-'}`
+      sStr += `, ForkNext: ${status[5] ? buffer2int(status[5][1] as Buffer) : '-'}`
     }
     sStr += `]`
     return sStr
