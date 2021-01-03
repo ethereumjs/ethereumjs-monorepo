@@ -5,9 +5,8 @@ import { debug as createDebugLogger } from 'debug'
 import LRUCache = require('lru-cache')
 import { encode, decode } from './message'
 import { keccak256, pk2id, createDeferred, formatLogId } from '../util'
-import { DPT } from './dpt'
+import { DPT, PeerInfo } from './dpt'
 import { Socket as DgramSocket, RemoteInfo } from 'dgram'
-import { PeerInfo } from './message'
 
 const debug = createDebugLogger('devp2p:dpt:server')
 const verbose = createDebugLogger('verbose').enabled

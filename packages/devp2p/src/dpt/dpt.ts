@@ -10,6 +10,13 @@ import { Server as DPTServer } from './server'
 
 const debug = createDebugLogger('devp2p:dpt')
 
+export interface PeerInfo {
+  id?: Uint8Array | Buffer
+  address?: string
+  udpPort?: number | null
+  tcpPort?: number | null
+}
+
 export class DPT extends EventEmitter {
   privateKey: Buffer
   banlist: BanList
@@ -28,8 +35,8 @@ export class DPT extends EventEmitter {
     this.banlist = new BanList()
 
     this._kbucket = new KBucket(this._id)
-    this._kbucket.on('added', (peer) => this.emit('peer:added', peer))
-    this._kbucket.on('removed', (peer) => this.emit('peer:removed', peer))
+    this._kbucket.on('added', (peer: PeerInfo) => this.emit('peer:added', peer))
+    this._kbucket.on('removed', (peer: PeerInfo) => this.emit('peer:removed', peer))
     this._kbucket.on('ping', this._onKBucketPing)
 
     this._server = new DPTServer(this, this.privateKey, {
@@ -55,7 +62,7 @@ export class DPT extends EventEmitter {
     this._server.destroy(...args)
   }
 
-  _onKBucketPing(oldPeers: any[], newPeer: any): void {
+  _onKBucketPing(oldPeers: PeerInfo[], newPeer: PeerInfo): void {
     if (this.banlist.has(newPeer)) return
 
     let count = 0
@@ -81,7 +88,7 @@ export class DPT extends EventEmitter {
     for (const peer of peers) this.addPeer(peer).catch(() => {})
   }
 
-  async bootstrap(peer: any): Promise<void> {
+  async bootstrap(peer: PeerInfo): Promise<void> {
     debug(`bootstrap with peer ${peer.address}:${peer.udpPort}`)
 
     peer = await this.addPeer(peer)
@@ -89,7 +96,7 @@ export class DPT extends EventEmitter {
     this._server.findneighbours(peer, this._id)
   }
 
-  async addPeer(obj: any): Promise<any> {
+  async addPeer(obj: PeerInfo): Promise<any> {
     if (this.banlist.has(obj)) throw new Error('Peer is banned')
     debug(`attempt adding peer ${obj.address}:${obj.udpPort}`)
 
@@ -109,15 +116,15 @@ export class DPT extends EventEmitter {
     }
   }
 
-  getPeer(obj: any): any {
+  getPeer(obj: string | Buffer | PeerInfo) {
     return this._kbucket.get(obj)
   }
 
-  getPeers(): any[] {
+  getPeers() {
     return this._kbucket.getAll()
   }
 
-  getClosestPeers(id: string): any {
+  getClosestPeers(id: string) {
     return this._kbucket.closest(id)
   }
 
@@ -125,7 +132,7 @@ export class DPT extends EventEmitter {
     this._kbucket.remove(obj)
   }
 
-  banPeer(obj: any, maxAge?: number) {
+  banPeer(obj: string | Buffer | PeerInfo, maxAge?: number) {
     this.banlist.add(obj, maxAge)
     this._kbucket.remove(obj)
   }
