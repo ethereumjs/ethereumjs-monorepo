@@ -13,9 +13,26 @@ const verbose = createDebugLogger('verbose').enabled
 
 const VERSION = 0x04
 
-export interface DptServerOptions {
+export interface DPTServerOptions {
+  /**
+   * Timeout for peer requests
+   *
+   * Default: 10s
+   */
   timeout?: number
+
+  /**
+   * Network info to send a long a request
+   *
+   * Default: 0.0.0.0, no UDP or TCP port provided
+   */
   endpoint?: PeerInfo
+
+  /**
+   * Function for socket creation
+   *
+   * Default: dgram-created socket
+   */
   createSocket?: Function
 }
 
@@ -29,7 +46,7 @@ export class Server extends EventEmitter {
   _requestsCache: LRUCache<string, Promise<any>>
   _socket: DgramSocket | null
 
-  constructor(dpt: DPT, privateKey: Buffer, options: DptServerOptions) {
+  constructor(dpt: DPT, privateKey: Buffer, options: DPTServerOptions) {
     super()
 
     this._dpt = dpt

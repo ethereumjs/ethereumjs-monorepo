@@ -17,6 +17,36 @@ export interface PeerInfo {
   tcpPort?: number | null
 }
 
+export interface DPTOptions {
+  /**
+   * Timeout for peer requests
+   *
+   * Default: 10s
+   */
+  timeout?: number
+
+  /**
+   * Network info to send a long a request
+   *
+   * Default: 0.0.0.0, no UDP or TCP port provided
+   */
+  endpoint?: PeerInfo
+
+  /**
+   * Function for socket creation
+   *
+   * Default: dgram-created socket
+   */
+  createSocket?: Function
+
+  /**
+   * Interval for peer table refresh
+   *
+   * Default: 60s
+   */
+  refreshInterval?: number
+}
+
 export class DPT extends EventEmitter {
   privateKey: Buffer
   banlist: BanList
@@ -26,7 +56,7 @@ export class DPT extends EventEmitter {
   private _server: DPTServer
   private _refreshIntervalId: NodeJS.Timeout
 
-  constructor(privateKey: Buffer, options: any) {
+  constructor(privateKey: Buffer, options: DPTOptions) {
     super()
 
     this.privateKey = Buffer.from(privateKey)
@@ -40,9 +70,9 @@ export class DPT extends EventEmitter {
     this._kbucket.on('ping', this._onKBucketPing)
 
     this._server = new DPTServer(this, this.privateKey, {
-      createSocket: options.createSocket,
       timeout: options.timeout,
       endpoint: options.endpoint,
+      createSocket: options.createSocket,
     })
     this._server.once('listening', () => this.emit('listening'))
     this._server.once('close', () => this.emit('close'))
