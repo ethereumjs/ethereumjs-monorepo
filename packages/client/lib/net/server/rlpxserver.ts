@@ -126,13 +126,13 @@ export class RlpxServer extends Server {
         udpPort: node.port,
         tcpPort: node.port,
       }
-      try {
-        return this.dpt!.bootstrap(bootnode)
-      } catch (e) {
-        this.error(e)
-      }
+      return this.dpt!.bootstrap(bootnode)
     })
-    await Promise.all(promises)
+    try {
+      await Promise.all(promises)
+    } catch (e) {
+      this.error(e)
+    }
   }
 
   /**
