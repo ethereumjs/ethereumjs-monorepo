@@ -13,11 +13,11 @@ export interface CustomContact extends PeerInfo {
 export class KBucket extends EventEmitter {
   _peers: Map<string, PeerInfo> = new Map()
   _kbucket: _KBucket
-  constructor(id: string | Buffer) {
+  constructor(localNodeId: Buffer) {
     super()
 
     this._kbucket = new _KBucket<CustomContact>({
-      localNodeId: typeof id === 'string' ? Buffer.from(id) : id,
+      localNodeId,
       numberOfNodesPerKBucket: KBUCKET_SIZE,
       numberOfNodesToPing: KBUCKET_CONCURRENCY,
     })
