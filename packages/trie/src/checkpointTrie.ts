@@ -4,19 +4,15 @@ import { Trie as BaseTrie } from './baseTrie'
  * Adds checkpointing to the {@link BaseTrie}
  */
 export class CheckpointTrie extends BaseTrie {
-  _checkpoints: Buffer[]
-
   constructor(...args: any) {
     super(...args)
-    // Roots of trie at the moment of checkpoint
-    this._checkpoints = []
   }
 
   /**
    * Is the trie during a checkpoint phase?
    */
   get isCheckpoint() {
-    return this._checkpoints.length > 0
+    return this.db.checkpoints.length > 0
   }
 
   /**
@@ -25,7 +21,7 @@ export class CheckpointTrie extends BaseTrie {
    */
   checkpoint() {
     const wasCheckpoint = this.isCheckpoint
-    this._checkpoints.push(this.root)
+    this.db.checkpoints.push({ root: this.root, operations: [] })
 
     // Entering checkpoint mode is not necessary for nested checkpoints
     if (!wasCheckpoint && this.isCheckpoint) {
@@ -45,7 +41,7 @@ export class CheckpointTrie extends BaseTrie {
 
     await this.lock.wait()
 
-    this._checkpoints.pop()
+    this.db.checkpoints.pop()
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (!this.isCheckpoint) {
       await this._exitCpMode(true)
@@ -63,7 +59,8 @@ export class CheckpointTrie extends BaseTrie {
     await this.lock.wait()
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (this.isCheckpoint) {
-      this.root = this._checkpoints.pop()!
+      const { root } = this.db.checkpoints.pop()!
+      this.root = root
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       if (!this.isCheckpoint) {
         await this._exitCpMode(false)
@@ -80,7 +77,7 @@ export class CheckpointTrie extends BaseTrie {
     const db = this.db.copy()
     const trie = new CheckpointTrie(db._leveldb, this.root)
     if (includeCheckpoints && this.isCheckpoint) {
-      trie._checkpoints = this._checkpoints.slice()
+      trie.db.checkpoints = this.db.checkpoints.slice()
     }
     return trie
   }

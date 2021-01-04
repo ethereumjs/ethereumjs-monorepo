@@ -3,6 +3,11 @@ const level = require('level-mem')
 
 export const ENCODING_OPTS = { keyEncoding: 'binary', valueEncoding: 'binary' }
 
+export type Checkpoint = {
+  root: Buffer
+  operations: any[]
+}
+
 export type BatchDBOp = PutBatch | DelBatch
 export interface PutBatch {
   type: 'put'
@@ -19,6 +24,8 @@ export interface DelBatch {
  * which validates inputs and sets encoding type.
  */
 export class DB {
+  public checkpoints: Checkpoint[]
+
   _leveldb: LevelUp
 
   /**
@@ -27,6 +34,9 @@ export class DB {
    * @param leveldb - An abstract-leveldown compliant store
    */
   constructor(leveldb?: LevelUp) {
+    // Roots of trie at the moment of checkpoint
+    this.checkpoints = []
+
     this._leveldb = leveldb || level()
   }
 
