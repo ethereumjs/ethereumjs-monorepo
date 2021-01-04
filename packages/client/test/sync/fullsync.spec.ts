@@ -190,12 +190,7 @@ tape('[FullSynchronizer]', async (t) => {
         transactions: [],
       }
     )
-    await sync.runBlocks()
-    t.equal(
-      sync.zeroTxsBlockLogMsgCounter,
-      1,
-      'should increase zero blocks counter on zero tx blocks'
-    )
+    t.equal(await sync.runBlocks(), 1)
 
     td.when(blockchain.getHead()).thenResolve(
       {
@@ -213,12 +208,7 @@ tape('[FullSynchronizer]', async (t) => {
         transactions: [1, 2, 3],
       }
     )
-    await sync.runBlocks()
-    t.equal(
-      sync.zeroTxsBlockLogMsgCounter,
-      0,
-      'should reset zero blocks counter on non-zero tx blocks'
-    )
+    t.equal(await sync.runBlocks(), 1)
 
     t.end()
   })
