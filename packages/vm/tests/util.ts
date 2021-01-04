@@ -326,7 +326,7 @@ export async function setupPreConditions(state: any, testData: any) {
     }
 
     // Put contract code
-    await state._mainDB.put(codeHash, codeBuf)
+    await state.db.put(codeHash, codeBuf)
 
     // Put account data
     const account = Account.fromAccountData({ nonce, balance, codeHash, stateRoot })

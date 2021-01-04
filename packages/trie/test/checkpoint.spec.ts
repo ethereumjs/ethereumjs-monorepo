@@ -17,7 +17,7 @@ tape('testing checkpoints', function (tester) {
     t.end()
   })
 
-  it('should copy trie and get value before checkpoint', async function (t) {
+  it('should copy trie and get value added to original trie', async function (t) {
     trieCopy = trie.copy()
     t.equal(trieCopy.root.toString('hex'), preRoot)
     const res = await trieCopy.get(Buffer.from('do'))
