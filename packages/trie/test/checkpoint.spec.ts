@@ -104,4 +104,18 @@ tape('testing checkpoints', function (tester) {
     t.equal(trie.root.toString('hex'), root.toString('hex'))
     t.end()
   })
+
+  it('revert -> put', async function (t) {
+    trie = new CheckpointTrie()
+
+    trie.checkpoint()
+    const k1 = Buffer.from('k1')
+    const v1 = Buffer.from('v1')
+    await trie.put(k1, v1)
+    t.deepEqual(await trie.get(k1), v1, 'before revert: v1 in trie')
+    await trie.revert()
+    t.deepEqual(await trie.get(k1), null, 'after revert: v1 removed')
+
+    t.end()
+  })
 })
