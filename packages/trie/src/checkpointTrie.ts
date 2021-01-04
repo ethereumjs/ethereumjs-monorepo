@@ -20,13 +20,7 @@ export class CheckpointTrie extends BaseTrie {
    * After this is called, all changes can be reverted until `commit` is called.
    */
   checkpoint() {
-    const wasCheckpoint = this.isCheckpoint
-    this.db.checkpoints.push({ root: this.root, operations: [] })
-
-    // Entering checkpoint mode is not necessary for nested checkpoints
-    if (!wasCheckpoint && this.isCheckpoint) {
-      this._enterCpMode()
-    }
+    this.db.checkpoint(this.root)
   }
 
   /**
@@ -40,13 +34,7 @@ export class CheckpointTrie extends BaseTrie {
     }
 
     await this.lock.wait()
-
-    this.db.checkpoints.pop()
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    if (!this.isCheckpoint) {
-      await this._exitCpMode(true)
-    }
-
+    this.db.commit()
     this.lock.signal()
   }
 
@@ -56,16 +44,13 @@ export class CheckpointTrie extends BaseTrie {
    * parent checkpoint as current.
    */
   async revert(): Promise<void> {
+    if (!this.isCheckpoint) {
+      throw new Error('trying to revert when not checkpointed')
+    }
+
     await this.lock.wait()
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    if (this.isCheckpoint) {
-      const { root } = this.db.checkpoints.pop()!
-      this.root = root
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-      if (!this.isCheckpoint) {
-        await this._exitCpMode(false)
-      }
-    }
+    this.root = this.db.revert()
     this.lock.signal()
   }
 
@@ -80,25 +65,5 @@ export class CheckpointTrie extends BaseTrie {
       trie.db.checkpoints = this.db.checkpoints.slice()
     }
     return trie
-  }
-
-  /**
-   * Enter into checkpoint mode.
-   * @private
-   */
-  _enterCpMode() {}
-
-  /**
-   * Exit from checkpoint mode.
-   * @private
-   */
-  async _exitCpMode(commitState: boolean): Promise<void> {
-    return new Promise((resolve) => {
-      /*if (commitState) {
-      } else {
-      }*/
-      commitState = !!commitState // Temporary dummy line for linting
-      resolve()
-    })
   }
 }

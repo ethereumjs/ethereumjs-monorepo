@@ -41,6 +41,30 @@ export class DB {
   }
 
   /**
+   * Adds a new checkpoint to the stack
+   * @param root
+   */
+  checkpoint(root: Buffer) {
+    this.checkpoints.push({ root, operations: [] })
+  }
+
+  /**
+   * Commits the latest checkpoint
+   */
+  commit() {
+    const { root } = this.checkpoints.pop()!
+    return root
+  }
+
+  /**
+   * Reverts the latest checkpoint
+   */
+  revert() {
+    const { root } = this.checkpoints.pop()!
+    return root
+  }
+
+  /**
    * Retrieves a raw value from leveldb.
    * @param key
    * @returns A Promise that resolves to `Buffer` if a value is found or `null` if no value is found.
