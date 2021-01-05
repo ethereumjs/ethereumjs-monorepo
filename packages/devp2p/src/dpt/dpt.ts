@@ -80,7 +80,7 @@ export class DPT extends EventEmitter {
     this._server.on('peers', (peers) => this._onServerPeers(peers))
     this._server.on('error', (err) => this.emit('error', err))
 
-    const refreshIntervalSubdivided = Math.floor((options.refreshInterval || ms('60s')) / 10)
+    const refreshIntervalSubdivided = Math.floor((options.refreshInterval ?? ms('60s')) / 10)
     this._refreshIntervalId = setInterval(() => this.refresh(), refreshIntervalSubdivided)
   }
 
@@ -178,7 +178,7 @@ export class DPT extends EventEmitter {
     for (const peer of peers) {
       // Randomly distributed selector based on peer ID
       // to decide on subdivided execution
-      const selector = buffer2int(((peer.id)! as Buffer).slice(0, 1)) % 10
+      const selector = buffer2int((peer.id! as Buffer).slice(0, 1)) % 10
       if (selector === this._refreshIntervalSelectionCounter) {
         this._server.findneighbours(peer, randomBytes(64))
       }
