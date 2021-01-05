@@ -178,7 +178,7 @@ export class DPT extends EventEmitter {
     for (const peer of peers) {
       // Randomly distributed selector based on peer ID
       // to decide on subdivided execution
-      const selector = buffer2int(peer.id.slice(0, 1)) % 10
+      const selector = buffer2int(((peer.id)! as Buffer).slice(0, 1)) % 10
       if (selector === this._refreshIntervalSelectionCounter) {
         this._server.findneighbours(peer, randomBytes(64))
       }
