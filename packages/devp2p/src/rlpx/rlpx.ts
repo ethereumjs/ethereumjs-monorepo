@@ -230,7 +230,9 @@ export class RLPx extends EventEmitter {
           `disconnect from ${socket.remoteAddress}:${socket.remotePort}, reason: ${DISCONNECT_REASONS[reason]}`
         )
       } else {
-        debug(`${socket.remoteAddress}:${socket.remotePort} disconnect, reason: ${DISCONNECT_REASONS[reason]}`)
+        debug(
+          `${socket.remoteAddress}:${socket.remotePort} disconnect, reason: ${DISCONNECT_REASONS[reason]}`
+        )
       }
 
       if (!disconnectWe && reason === DISCONNECT_REASONS.TOO_MANY_PEERS) {
