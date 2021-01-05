@@ -3,6 +3,13 @@ import tape from 'tape-catch'
 import td from 'testdouble'
 import { Config } from '../../lib/config'
 import { Chain } from '../../lib/blockchain'
+import { Synchronizer } from '../../lib/sync/sync'
+
+class SynchronizerTest extends Synchronizer {
+  async sync() {
+    return false
+  }
+}
 
 tape('[Synchronizer]', async (t) => {
   class PeerPool extends EventEmitter {
@@ -13,13 +20,11 @@ tape('[Synchronizer]', async (t) => {
   PeerPool.prototype.close = td.func<any>()
   td.replace('../../lib/net/peerpool', { PeerPool })
 
-  const { Synchronizer } = await import('../../lib/sync/sync')
-
   t.test('should sync', async (t) => {
     const config = new Config({ loglevel: 'error', transports: [] })
     const pool = new PeerPool() as any
     const chain = new Chain({ config })
-    const sync = new Synchronizer({ config, pool, chain })
+    const sync = new SynchronizerTest({ config, pool, chain })
     ;(sync as any).sync = td.func()
     td.when((sync as any).sync()).thenResolve(true)
     sync.on('synchronized', async () => {

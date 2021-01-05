@@ -75,10 +75,10 @@ tape('[RlpxServer]', async (t) => {
     server.dpt = td.object()
     server.rlpx = td.object()
     td.when(
-      server.dpt!.bootstrap({ address: '10.0.0.1', udpPort: '1234', tcpPort: '1234' })
+      server.dpt!.bootstrap({ address: '10.0.0.1', udpPort: 1234, tcpPort: 1234 })
     ).thenResolve()
     td.when(
-      server.dpt!.bootstrap({ address: '10.0.0.2', udpPort: '1234', tcpPort: '1234' })
+      (server.dpt! as any).bootstrap({ address: '10.0.0.2', udpPort: '1234', tcpPort: '1234' })
     ).thenReject(new Error('err0'))
     server.on('error', (err: Error) => t.equals(err.message, 'err0', 'got error'))
     await server.start()
@@ -109,10 +109,10 @@ tape('[RlpxServer]', async (t) => {
       destroy: td.func(),
     })
     td.when(
-      server.dpt?.bootstrap({ address: '10.0.0.1', udpPort: '1234', tcpPort: '1234' })
+      server.dpt!.bootstrap({ address: '10.0.0.1', udpPort: 1234, tcpPort: 1234 })
     ).thenResolve(undefined)
     td.when(
-      server.dpt?.bootstrap({ address: '10.0.0.2', udpPort: '1234', tcpPort: '1234' })
+      (server.dpt! as any).bootstrap({ address: '10.0.0.2', udpPort: '1234', tcpPort: '1234' })
     ).thenReject(new Error('err0'))
     server.on('error', (err) => t.equals(err.message, 'err0', 'got error'))
     await server.start()

@@ -1,3 +1,5 @@
+import { Block } from '@ethereumjs/block'
+
 export function blockChain(options: any) {
   const block = {
     toJSON: () => ({
@@ -11,6 +13,9 @@ export function blockChain(options: any) {
   return {
     getBlock: async function (_data: any) {
       return Promise.resolve(block)
+    },
+    getLatestHeader() {
+      return Block.fromBlockData().header
     },
   }
 }

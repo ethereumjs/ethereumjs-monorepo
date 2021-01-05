@@ -26,7 +26,7 @@ export interface SynchronizerOptions {
  * Base class for blockchain synchronizers
  * @memberof module:sync
  */
-export class Synchronizer extends EventEmitter {
+export abstract class Synchronizer extends EventEmitter {
   public config: Config
 
   protected pool: PeerPool
@@ -59,6 +59,8 @@ export class Synchronizer extends EventEmitter {
     })
   }
 
+  abstract async sync(): Promise<boolean>
+
   /**
    * Returns synchronizer type
    */
@@ -77,7 +79,7 @@ export class Synchronizer extends EventEmitter {
    * @return {boolean}
    */
   // TODO: evaluate syncability of peer
-  syncable(_peer: any): boolean {
+  syncable(_peer: Peer): boolean {
     return true
   }
 
@@ -94,7 +96,7 @@ export class Synchronizer extends EventEmitter {
     }, this.interval * 30)
     while (this.running) {
       try {
-        if (await (this as any).sync()) this.emit('synchronized')
+        if (await this.sync()) this.emit('synchronized')
       } catch (error) {
         this.emit('error', error)
       }

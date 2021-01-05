@@ -1,6 +1,7 @@
 import { Chain } from '../../blockchain'
 import { middleware, validators } from '../validation'
 import { toBuffer, stripHexPrefix, BN } from 'ethereumjs-util'
+import { EthereumClient } from '../..'
 
 /**
  * eth_* RPC module
@@ -8,17 +9,17 @@ import { toBuffer, stripHexPrefix, BN } from 'ethereumjs-util'
  */
 export class Eth {
   private _chain: Chain
-  public ethVersion: any
+  public ethVersion: number
 
   /**
    * Create eth_* RPC module
    * @param {Node} Node to which the module binds
    */
-  constructor(node: any) {
+  constructor(node: EthereumClient) {
     const service = node.services.find((s: any) => s.name === 'eth')
-    this._chain = service.chain
-    const ethProtocol = service.protocols.find((p: any) => p.name === 'eth')
-    this.ethVersion = Math.max.apply(Math, ethProtocol.versions)
+    this._chain = service!.chain
+    const ethProtocol = service!.protocols.find((p: any) => p.name === 'eth')
+    this.ethVersion = Math.max.apply(Math, ethProtocol!.versions)
 
     this.blockNumber = middleware(this.blockNumber.bind(this), 0)
 

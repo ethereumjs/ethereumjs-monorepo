@@ -1,21 +1,23 @@
 import { middleware, validators } from '../validation'
 import { addHexPrefix, keccak, toBuffer } from 'ethereumjs-util'
 import { getClientVersion } from '../../util'
+import { EthereumClient } from '../..'
+import { Chain } from '../../blockchain'
 
 /**
  * web3_* RPC module
  * @memberof module:rpc/modules
  */
 export class Web3 {
-  private _chain: any
+  private _chain?: Chain
 
   /**
    * Create web3_* RPC module
    * @param {Node} Node to which the module binds
    */
-  constructor(node: any) {
+  constructor(node: EthereumClient) {
     const service = node.services.find((s: any) => s.name === 'eth')
-    this._chain = service.chain
+    this._chain = service?.chain
 
     this.clientVersion = middleware(this.clientVersion.bind(this), 0, [])
 

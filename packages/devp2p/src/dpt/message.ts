@@ -3,18 +3,12 @@ import ip from 'ip'
 import * as rlp from 'rlp'
 import secp256k1 from 'secp256k1'
 import { keccak256, int2buffer, buffer2int, assertEq, unstrictDecode } from '../util'
+import { PeerInfo } from './dpt'
 
 const debug = createDebugLogger('devp2p:dpt:server')
 
 function getTimestamp() {
   return (Date.now() / 1000) | 0
-}
-
-export interface PeerInfo {
-  id?: Buffer
-  address?: string
-  udpPort?: number | null
-  tcpPort?: number | null
 }
 
 const timestamp = {
@@ -133,7 +127,7 @@ type OutNeighborMsg = { [0]: Buffer[][]; [1]: Buffer }
 const neighbours = {
   encode: function (obj: InNeighborMsg): OutNeighborMsg {
     return [
-      obj.peers.map((peer: PeerInfo) => endpoint.encode(peer).concat(peer.id!)),
+      obj.peers.map((peer: PeerInfo) => endpoint.encode(peer).concat(peer.id! as Buffer)),
       timestamp.encode(obj.timestamp),
     ]
   },
