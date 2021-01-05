@@ -22,6 +22,11 @@ function multComplexity(x: BN): BN {
   }
 }
 
+function multComplexityEIP2565(x: BN): BN {
+  const words = x.addn(7).divn(8)
+  return words.mul(words)
+}
+
 function getAdjustedExponentLength(data: Buffer): BN {
   let expBytesStart
   try {
@@ -86,7 +91,23 @@ export default function (opts: PrecompileInput): ExecResult {
     maxLen = mLen
   }
   const Gquaddivisor = opts._common.param('gasPrices', 'modexpGquaddivisor')
-  const gasUsed = adjustedELen.mul(multComplexity(maxLen)).divn(Gquaddivisor)
+  let gasUsed
+
+  const bStart = new BN(96)
+  const bEnd = bStart.add(bLen)
+  const eStart = bEnd
+  const eEnd = eStart.add(eLen)
+  const mStart = eEnd
+  const mEnd = mStart.add(mLen)
+
+  if (!opts._common.eips().includes(2565)) {
+    gasUsed = adjustedELen.mul(multComplexity(maxLen)).divn(Gquaddivisor)
+  } else {
+    gasUsed = adjustedELen.mul(multComplexityEIP2565(maxLen)).divn(Gquaddivisor)
+    if (gasUsed.ltn(200)) {
+      gasUsed = new BN(200)
+    }
+  }
 
   if (opts.gasLimit.lt(gasUsed)) {
     return OOGResult(opts.gasLimit)
@@ -95,7 +116,7 @@ export default function (opts: PrecompileInput): ExecResult {
   if (bLen.isZero()) {
     return {
       gasUsed,
-      returnValue: new BN(0).toArrayLike(Buffer, 'be', 1),
+      returnValue: new BN(0).toArrayLike(Buffer, 'be', mLen.toNumber()),
     }
   }
 
@@ -113,20 +134,13 @@ export default function (opts: PrecompileInput): ExecResult {
     return OOGResult(opts.gasLimit)
   }
 
-  const bStart = new BN(96)
-  const bEnd = bStart.add(bLen)
-  const eStart = bEnd
-  const eEnd = eStart.add(eLen)
-  const mStart = eEnd
-  const mEnd = mStart.add(mLen)
+  const B = new BN(setLengthRight(data.slice(bStart.toNumber(), bEnd.toNumber()), bLen.toNumber()))
+  const E = new BN(setLengthRight(data.slice(eStart.toNumber(), eEnd.toNumber()), eLen.toNumber()))
+  const M = new BN(setLengthRight(data.slice(mStart.toNumber(), mEnd.toNumber()), mLen.toNumber()))
 
   if (mEnd.gt(maxInt)) {
     return OOGResult(opts.gasLimit)
   }
-
-  const B = new BN(setLengthRight(data.slice(bStart.toNumber(), bEnd.toNumber()), bLen.toNumber()))
-  const E = new BN(setLengthRight(data.slice(eStart.toNumber(), eEnd.toNumber()), eLen.toNumber()))
-  const M = new BN(setLengthRight(data.slice(mStart.toNumber(), mEnd.toNumber()), mLen.toNumber()))
 
   let R
   if (M.isZero()) {
