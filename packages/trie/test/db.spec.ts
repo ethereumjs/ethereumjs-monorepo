@@ -8,7 +8,6 @@ tape('DB tests', (t) => {
   const v = Buffer.from('v1')
   const k2 = Buffer.from('k2')
   const v2 = Buffer.from('v2')
-  //const k3 = Buffer.from('k3')
   const v3 = Buffer.from('v3')
 
   t.test('Operations: puts and gets value', async (st) => {

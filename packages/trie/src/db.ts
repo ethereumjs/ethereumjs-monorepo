@@ -166,10 +166,6 @@ export class DB {
     if (this.isCheckpoint) {
       for (const op of opStack) {
         if (op.type === 'put') {
-          // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-          if (!op.value) {
-            continue
-          }
           await this.put(op.key, op.value)
           // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         } else if (op.type === 'del') {

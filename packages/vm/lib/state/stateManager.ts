@@ -161,7 +161,6 @@ export default class DefaultStateManager implements StateManager {
     const account = await this.getAccount(address)
     const storageTrie = this._trie.copy(false)
     storageTrie.root = account.stateRoot
-    //@ts-ignore
     storageTrie.db.checkpoints = []
     return storageTrie
   }

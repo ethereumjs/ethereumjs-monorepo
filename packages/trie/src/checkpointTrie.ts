@@ -49,7 +49,6 @@ export class CheckpointTrie extends BaseTrie {
     }
 
     await this.lock.wait()
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     this.root = await this.db.revert()
     this.lock.signal()
   }
