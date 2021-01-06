@@ -478,6 +478,20 @@ export class BlockHeader {
   }
 
   /**
+   * Checks if the block header is an epoch transition
+   * header (only clique PoA, throws otherwise)
+   */
+  isEpochTransition(): boolean {
+    if (this._common.consensusAlgorithm() !== 'clique') {
+      throw new Error('isEpochTransition() call only supported for clique PoA networks')
+    }
+    const epoch = new BN(this._common.consensusConfig().epoch)
+    // Epoch transition block if the block number has no
+    // remainder on the division by the epoch length
+    return this.number.mod(epoch).isZero()
+  }
+
+  /**
    * Returns the rlp encoding of the block header.
    */
   serialize(): Buffer {

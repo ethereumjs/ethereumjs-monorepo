@@ -393,6 +393,13 @@ tape('[Block]: block functions', function (t) {
     st.end()
   })
 
+  t.test('should correctly call into header.isEpochTransition()', function (st) {
+    const common = new Common({ chain: 'rinkeby', hardfork: 'chainstart' })
+    const block = Block.fromBlockData({ header: { number: 60000 } }, { common })
+    st.ok(block.header.isEpochTransition(), 'should get the header function results')
+    st.end()
+  })
+
   const testDataGenesis = require('./testdata/genesishashestest.json').test
   t.test('should test genesis hashes (mainnet default)', function (st) {
     const genesis = Block.genesis()

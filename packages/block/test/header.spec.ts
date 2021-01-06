@@ -92,12 +92,29 @@ tape('[Block]: Header functions', function (t) {
     st.end()
   })
 
-  t.test('should test isGenesis', function (st) {
+  t.test('should test isGenesis()', function (st) {
     const header1 = BlockHeader.fromHeaderData({ number: 1 })
     st.equal(header1.isGenesis(), false)
 
     const header2 = BlockHeader.genesis()
     st.equal(header2.isGenesis(), true)
+    st.end()
+  })
+
+  t.test('should test isEpochTransition()', function (st) {
+    let header = BlockHeader.fromHeaderData({ number: 1 })
+    st.throws(() => {
+      header.isEpochTransition()
+    }, 'should throw on PoW networks')
+
+    const common = new Common({ chain: 'rinkeby', hardfork: 'chainstart' })
+    header = BlockHeader.genesis({}, { common })
+    st.ok(header.isEpochTransition(), 'should indicate an epoch transition for the genesis block')
+    header = BlockHeader.fromHeaderData({ number: 1 }, { common })
+    st.notOk(header.isEpochTransition(), 'should correctly identify a non-epoch block')
+    header = BlockHeader.fromHeaderData({ number: 60000 }, { common })
+    st.ok(header.isEpochTransition(), 'should correctly identify an epoch block')
+
     st.end()
   })
 

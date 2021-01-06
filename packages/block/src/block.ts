@@ -138,6 +138,14 @@ export class Block {
   }
 
   /**
+   * Checks if the block is an epoch transition
+   * block (only clique PoA, throws otherwise)
+   */
+  isEpochTransition(): boolean {
+    return this.header.isEpochTransition()
+  }
+
+  /**
    * Returns the rlp encoding of the block.
    */
   serialize(): Buffer {
