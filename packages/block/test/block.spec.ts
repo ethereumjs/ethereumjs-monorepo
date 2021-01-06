@@ -71,7 +71,10 @@ tape('[Block]: block functions', function (t) {
     'should throw when trying to initialize with uncle headers on a PoA network',
     function (st) {
       const common = new Common({ chain: 'rinkeby' })
-      const uncleBlock = Block.fromBlockData({}, { common })
+      const uncleBlock = Block.fromBlockData(
+        { header: { extraData: Buffer.alloc(117) } },
+        { common }
+      )
 
       st.throws(function () {
         Block.fromBlockData({ uncleHeaders: [uncleBlock.header] }, { common })
@@ -86,24 +89,29 @@ tape('[Block]: block functions', function (t) {
     const blockRlp = testData.blocks[0].rlp
     const block = Block.fromRLPSerializedBlock(blockRlp)
     const blockchain = new Mockchain()
-    await blockchain.putBlock(Block.fromRLPSerializedBlock(testData.genesisRLP))
+    const genesisBlock = Block.fromRLPSerializedBlock(testData.genesisRLP)
+    await blockchain.putBlock(genesisBlock)
     st.doesNotThrow(async () => {
       await block.validate(blockchain)
       st.end()
     })
   })
 
-  t.test('should test block validation on poa chain', async function (st) {
+  // TODO: reactivate test using dedicated Rinkeby testdata for PoA tests
+  // (extract from client output once Goerli or Rinkeby connection possible with Block.toJSON())
+  /*t.test('should test block validation on poa chain', async function (st) {
+    const common = new Common({ chain: 'goerli', hardfork: 'chainstart' })
     const blockRlp = testData.blocks[0].rlp
-    const common = new Common({ chain: 'goerli' })
     const block = Block.fromRLPSerializedBlock(blockRlp, { common })
     const blockchain = new Mockchain()
-    await blockchain.putBlock(Block.fromRLPSerializedBlock(testData.genesisRLP))
+    const genesisBlock = Block.fromRLPSerializedBlock(testData.genesisRLP, { common })
+    console.log(genesisBlock.header.hash())
+    await blockchain.putBlock(genesisBlock)
     st.doesNotThrow(async () => {
       await block.validate(blockchain)
       st.end()
     })
-  })
+  })*/
 
   async function testTransactionValidation(st: tape.Test, block: Block) {
     st.ok(block.validateTransactions())
@@ -405,7 +413,10 @@ tape('[Block]: block functions', function (t) {
 
   t.test('should correctly call into header.isEpochTransition()', function (st) {
     const common = new Common({ chain: 'rinkeby', hardfork: 'chainstart' })
-    const block = Block.fromBlockData({ header: { number: 60000 } }, { common })
+    const block = Block.fromBlockData(
+      { header: { number: 60000, extraData: Buffer.alloc(117) } },
+      { common }
+    )
     st.ok(block.header.isEpochTransition(), 'should get the header function results')
     st.end()
   })

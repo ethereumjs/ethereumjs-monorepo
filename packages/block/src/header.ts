@@ -15,6 +15,9 @@ import { HeaderData, JsonHeader, BlockHeaderBuffer, Blockchain, BlockOptions } f
 
 const DEFAULT_GAS_LIMIT = new BN(Buffer.from('ffffffffffffff', 'hex'))
 
+const CLIQUE_EXTRA_VANITY = 32
+const CLIQUE_EXTRA_SEAL = 65
+
 /**
  * An object that represents the block header.
  */
@@ -240,7 +243,7 @@ export class BlockHeader {
    * Validates correct buffer lengths, throws if invalid.
    */
   _validateBufferLengths() {
-    const { parentHash, stateRoot, transactionsTrie, receiptTrie, mixHash, nonce } = this
+    const { parentHash, stateRoot, transactionsTrie, receiptTrie, extraData, mixHash, nonce } = this
     if (parentHash.length !== 32) {
       throw new Error(`parentHash must be 32 bytes, received ${parentHash.length} bytes`)
     }
@@ -258,6 +261,31 @@ export class BlockHeader {
     if (mixHash.length !== 32) {
       throw new Error(`mixHash must be 32 bytes, received ${mixHash.length} bytes`)
     }
+    if (this._common.consensusAlgorithm() === 'clique') {
+      let minLength = CLIQUE_EXTRA_VANITY + CLIQUE_EXTRA_SEAL
+      if (!this.isEpochTransition()) {
+        if (extraData.length !== minLength) {
+          throw new Error(
+            `extraData must be ${minLength} bytes on non-epoch transition blocks, received ${extraData.length} bytes`
+          )
+        }
+      } else {
+        // Must contain at least one signer
+        minLength += 20
+        if (extraData.length < minLength) {
+          throw new Error(
+            `extraData must be at least ${minLength} bytes on epoch transition blocks, received ${extraData.length} bytes`
+          )
+        }
+        const signerLength = extraData.length - minLength
+        if (signerLength % 20 !== 0) {
+          throw new Error(
+            `invalid signer list length in extraData, received signer length of ${signerLength} (not divisible by 20)`
+          )
+        }
+      }
+    }
+
     if (nonce.length !== 8) {
       throw new Error(`nonce must be 8 bytes, received ${nonce.length} bytes`)
     }
@@ -404,8 +432,12 @@ export class BlockHeader {
       return
     }
     const hardfork = this._getHardfork()
-    if (this.extraData.length > this._common.paramByHardfork('vm', 'maxExtraDataSize', hardfork)) {
-      throw new Error('invalid amount of extra data')
+    if (this._common.consensusAlgorithm() !== 'clique') {
+      if (
+        this.extraData.length > this._common.paramByHardfork('vm', 'maxExtraDataSize', hardfork)
+      ) {
+        throw new Error('invalid amount of extra data')
+      }
     }
 
     const parentHeader = await this._getHeaderByHash(blockchain, this.parentHash)

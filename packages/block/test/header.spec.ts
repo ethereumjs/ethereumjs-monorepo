@@ -3,8 +3,8 @@ import { Address, BN, zeros, KECCAK256_RLP, KECCAK256_RLP_ARRAY } from 'ethereum
 import Common from '@ethereumjs/common'
 import { BlockHeader } from '../src/header'
 import { Block } from '../src'
-import { Mockchain } from './mockchain'
-const testData = require('./testdata/testdata.json')
+//import { Mockchain } from './mockchain'
+//const testData = require('./testdata/testdata.json')
 
 tape('[Block]: Header functions', function (t) {
   t.test('should create with default constructor', function (st) {
@@ -79,7 +79,9 @@ tape('[Block]: Header functions', function (t) {
     st.end()
   })
 
-  t.test('header validation -> poa timestamp check', async function (st) {
+  // TODO: reactivate test using dedicated Rinkeby testdata for PoA tests
+  // (extract from client output once Goerli or Rinkeby connection possible with Block.toJSON())
+  /*t.test('header validation -> poa checks', async function (st) {
     const headerData = testData.blocks[0].blockHeader
     const common = new Common({ chain: 'goerli' })
     const blockchain = new Mockchain()
@@ -87,22 +89,23 @@ tape('[Block]: Header functions', function (t) {
     const msg = 'invalid timestamp diff (lower than period)'
 
     headerData.timestamp = new BN(1422494850)
+    headerData.extraData = Buffer.alloc(97)
     let header = BlockHeader.fromHeaderData(headerData, { common })
     try {
       await header.validate(blockchain)
     } catch (error) {
-      st.equal(error.message, msg, 'should throw on lower than period diffs')
+      st.equal(error.message, msg, 'should throw on lower than period timestamp diffs')
     }
     headerData.timestamp = new BN(1422494864)
     header = BlockHeader.fromHeaderData(headerData, { common })
     try {
       await header.validate(blockchain)
-      st.pass('should not throw on diff equal to period ')
+      st.pass('should not throw on timestamp diff equal to period ')
     } catch (error) {
       st.notOk('thrown but should not throw')
     }
     st.end()
-  })
+  })*/
 
   t.test('should test validateGasLimit', function (st) {
     const testData = require('./testdata/bcBlockGasLimitTest.json').tests
@@ -137,9 +140,9 @@ tape('[Block]: Header functions', function (t) {
     const common = new Common({ chain: 'rinkeby', hardfork: 'chainstart' })
     header = BlockHeader.genesis({}, { common })
     st.ok(header.isEpochTransition(), 'should indicate an epoch transition for the genesis block')
-    header = BlockHeader.fromHeaderData({ number: 1 }, { common })
+    header = BlockHeader.fromHeaderData({ number: 1, extraData: Buffer.alloc(97) }, { common })
     st.notOk(header.isEpochTransition(), 'should correctly identify a non-epoch block')
-    header = BlockHeader.fromHeaderData({ number: 60000 }, { common })
+    header = BlockHeader.fromHeaderData({ number: 60000, extraData: Buffer.alloc(117) }, { common })
     st.ok(header.isEpochTransition(), 'should correctly identify an epoch block')
 
     st.end()
