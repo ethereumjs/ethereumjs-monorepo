@@ -5,7 +5,11 @@
   "defaultHardfork": "istanbul",
   "consensus": {
     "type": "poa",
-    "algorithm": "clique"
+    "algorithm": "clique",
+    "clique": {
+      "period": 15,
+      "epoch": 30000
+    }
   },
   "comment": "PoA test network",
   "url": "https://www.rinkeby.io",
