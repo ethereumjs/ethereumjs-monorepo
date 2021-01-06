@@ -149,26 +149,19 @@ export default async function runBlock(this: VM, opts: RunBlockOpts): Promise<Ru
   }
 
   // Checkpoint state
-  // (only do checkpointing when txs are executed)
-  // TODO: determine if checkpointing is needed in a block
-  // context at all or CPs in runTx() are sufficient
-  if (block.transactions.length > 0) {
-    await state.checkpoint()
-  }
+  await state.checkpoint()
+
   let result
   try {
     result = await applyBlock.bind(this)(block, opts)
   } catch (err) {
-    if (block.transactions.length > 0) {
-      await state.revert()
-    }
+    await state.revert()
     throw err
   }
 
   // Persist state
-  if (block.transactions.length > 0) {
-    await state.commit()
-  }
+  await state.commit()
+
   const stateRoot = await state.getStateRoot(false)
 
   // Given the generate option, either set resulting header

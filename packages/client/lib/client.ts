@@ -64,7 +64,6 @@ export default class EthereumClient extends events.EventEmitter {
         : new LightEthereumService({
             config: this.config,
             chainDB: options.chainDB,
-            stateDB: options.stateDB,
           }),
     ]
     this.opened = false
