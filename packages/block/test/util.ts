@@ -1,3 +1,4 @@
+import Common from '@ethereumjs/common'
 import { BN, rlp, keccak256 } from 'ethereumjs-util'
 import { Block, BlockHeader } from '../src'
 
@@ -7,8 +8,14 @@ import { Block, BlockHeader } from '../src'
  * @param extraData - Extra data graffiti in order to create equal blocks (like block number) but with different hashes
  * @param uncles - Optional, an array of uncle headers. Automatically calculates the uncleHash.
  */
-function createBlock(parentBlock: Block, extraData: string, uncles?: BlockHeader[]): Block {
+function createBlock(
+  parentBlock: Block,
+  extraData: string,
+  uncles?: BlockHeader[],
+  common?: Common
+): Block {
   uncles = uncles ?? []
+  common = common ?? new Common({ chain: 'mainnet' })
 
   if (extraData.length > 32) {
     throw new Error('extra data graffiti must be 32 bytes or less')
@@ -27,6 +34,7 @@ function createBlock(parentBlock: Block, extraData: string, uncles?: BlockHeader
       uncleHeaders: uncles,
     },
     {
+      common,
       calcDifficultyFromHeader: parentBlock.header,
     }
   )

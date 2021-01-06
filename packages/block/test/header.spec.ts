@@ -3,6 +3,8 @@ import { Address, BN, zeros, KECCAK256_RLP, KECCAK256_RLP_ARRAY } from 'ethereum
 import Common from '@ethereumjs/common'
 import { BlockHeader } from '../src/header'
 import { Block } from '../src'
+import { Mockchain } from './mockchain'
+const testData = require('./testdata/testdata.json')
 
 tape('[Block]: Header functions', function (t) {
   t.test('should create with default constructor', function (st) {
@@ -74,6 +76,31 @@ tape('[Block]: Header functions', function (t) {
     header = BlockHeader.fromValuesArray(headerArray, { freeze: false })
     st.ok(!Object.isFrozen(header), 'block should not be frozen when freeze deactivated in options')
 
+    st.end()
+  })
+
+  t.test('header validation -> poa timestamp check', async function (st) {
+    const headerData = testData.blocks[0].blockHeader
+    const common = new Common({ chain: 'goerli' })
+    const blockchain = new Mockchain()
+    await blockchain.putBlock(Block.fromRLPSerializedBlock(testData.genesisRLP, { common }))
+    const msg = 'invalid timestamp diff (lower than period)'
+
+    headerData.timestamp = new BN(1422494850)
+    let header = BlockHeader.fromHeaderData(headerData, { common })
+    try {
+      await header.validate(blockchain)
+    } catch (error) {
+      st.equal(error.message, msg, 'should throw on lower than period diffs')
+    }
+    headerData.timestamp = new BN(1422494864)
+    header = BlockHeader.fromHeaderData(headerData, { common })
+    try {
+      await header.validate(blockchain)
+      st.pass('should not throw on diff equal to period ')
+    } catch (error) {
+      st.notOk('thrown but should not throw')
+    }
     st.end()
   })
 

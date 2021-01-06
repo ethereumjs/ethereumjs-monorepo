@@ -393,7 +393,8 @@ export class BlockHeader {
    * - The `parentHash` is part of the blockchain (it is a valid header)
    * - Current block number is parent block number + 1
    * - Current block has a strictly higher timestamp
-   * - Current block has valid difficulty and gas limit
+   * - Additional PoA -> Clique check: Current block has a timestamp diff greater or equal to PERIOD
+   * - Current block has valid difficulty (only PoW, otherwise pass) and gas limit
    * - In case that the header is an uncle header, it should not be too old or young in the chain.
    * @param blockchain - validate against a @ethereumjs/blockchain
    * @param height - If this is an uncle header, this is the height of the block that is including it
@@ -407,33 +408,41 @@ export class BlockHeader {
       throw new Error('invalid amount of extra data')
     }
 
-    const header = await this._getHeaderByHash(blockchain, this.parentHash)
+    const parentHeader = await this._getHeaderByHash(blockchain, this.parentHash)
 
-    if (!header) {
+    if (!parentHeader) {
       throw new Error('could not find parent header')
     }
 
     const { number } = this
-    if (!number.eq(header.number.addn(1))) {
+    if (!number.eq(parentHeader.number.addn(1))) {
       throw new Error('invalid number')
     }
 
-    if (this.timestamp.lte(header.timestamp)) {
+    if (this.timestamp.lte(parentHeader.timestamp)) {
       throw new Error('invalid timestamp')
     }
 
+    if (this._common.consensusAlgorithm() == 'clique') {
+      const period = this._common.consensusConfig().period
+      // Timestamp diff between blocks is lower than PERIOD (clique)
+      if (parentHeader.timestamp.addn(period).gt(this.timestamp)) {
+        throw new Error('invalid timestamp diff (lower than period)')
+      }
+    }
+
     if (this._common.consensusType() === 'pow') {
-      if (!this.validateDifficulty(header)) {
+      if (!this.validateDifficulty(parentHeader)) {
         throw new Error('invalid difficulty')
       }
     }
 
-    if (!this.validateGasLimit(header)) {
+    if (!this.validateGasLimit(parentHeader)) {
       throw new Error('invalid gas limit')
     }
 
     if (height) {
-      const dif = height.sub(header.number)
+      const dif = height.sub(parentHeader.number)
       if (!(dif.ltn(8) && dif.gtn(1))) {
         throw new Error('uncle block has a parent that is too old or too young')
       }

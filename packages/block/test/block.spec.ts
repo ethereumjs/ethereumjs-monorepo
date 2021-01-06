@@ -99,12 +99,10 @@ tape('[Block]: block functions', function (t) {
     const block = Block.fromRLPSerializedBlock(blockRlp, { common })
     const blockchain = new Mockchain()
     await blockchain.putBlock(Block.fromRLPSerializedBlock(testData.genesisRLP))
-    try {
+    st.doesNotThrow(async () => {
       await block.validate(blockchain)
-    } catch (error) {
-      st.ok(error.toString().match(/block validation is currently only supported on PoW chains/))
-    }
-    st.end()
+      st.end()
+    })
   })
 
   async function testTransactionValidation(st: tape.Test, block: Block) {
