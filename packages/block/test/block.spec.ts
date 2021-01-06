@@ -67,6 +67,18 @@ tape('[Block]: block functions', function (t) {
       st.end()
     })
   })
+  t.test(
+    'should throw when trying to initialize with uncle headers on a PoA network',
+    function (st) {
+      const common = new Common({ chain: 'rinkeby' })
+      const uncleBlock = Block.fromBlockData({}, { common })
+
+      st.throws(function () {
+        Block.fromBlockData({ uncleHeaders: [uncleBlock.header] }, { common })
+      })
+      st.end()
+    }
+  )
 
   const testData = require('./testdata/testdata.json')
 
