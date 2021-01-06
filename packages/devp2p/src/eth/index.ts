@@ -41,7 +41,7 @@ export class ETH extends EventEmitter {
     // Set forkHash and nextForkBlock
     if (this._version >= 64) {
       const c = this._peer._common
-      this._hardfork = c.hardfork() ? (c.hardfork() as string) : this._hardfork
+      this._hardfork = c.hardfork() ? c.hardfork() : this._hardfork
       // Set latestBlock minimally to start block of fork to have some more
       // accurate basis if no latestBlock is provided along status send
       this._latestBlock = c.hardforkBlock(this._hardfork)
@@ -208,7 +208,7 @@ export class ETH extends EventEmitter {
         this._latestBlock = status.latestBlock
       }
       const forkHashB = Buffer.from(this._forkHash.substr(2), 'hex')
-      const nextForkB = Buffer.from(this._nextForkBlock.toString(16), 'hex')
+      const nextForkB = int2buffer(this._nextForkBlock)
       this._status.push([forkHashB, nextForkB])
     }
 

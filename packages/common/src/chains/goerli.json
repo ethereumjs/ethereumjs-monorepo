@@ -92,18 +92,11 @@
       "comment": "Upstream bootnode 3"
     },
     {
-      "ip": "52.64.155.147",
-      "port": 30303,
-      "id": "c1f8b7c2ac4453271fa07d8e9ecf9a2e8285aa0bd0c07df0131f47153306b0736fd3db8924e7a9bf0bed6b1d8d4f87362a71b033dc7c64547728d953e43e59b2",
+      "ip": "18.218.250.66",
+      "port": 30313,
+      "id": "b5948a2d3e9d486c4d75bf32713221c2bd6cf86463302339299bd227dc2e276cd5a1c7ca4f43a0e9122fe9af884efed563bd2a1fd28661f3b5f5ad7bf1de5949",
       "location": "",
       "comment": "Upstream bootnode 4"
-    },
-    {
-      "ip": "213.186.16.82",
-      "port": 30303,
-      "id": "f4a9c6ee28586009fb5a96c8af13a58ed6d8315a9eee4772212c1d4d9cebe5a8b8a78ea4434f318726317d04a3f531a1ef0420cf9752605a562cfe858c46e263",
-      "location": "",
-      "comment": "Upstream bootnode 5"
     },
     {
       "ip": "3.11.147.67",
@@ -111,6 +104,27 @@
       "id": "a61215641fb8714a373c80edbfa0ea8878243193f57c96eeb44d0bc019ef295abd4e044fd619bfc4c59731a73fb79afe84e9ab6da0c743ceb479cbb6d263fa91",
       "location": "",
       "comment": "Ethereum Foundation bootnode"
+    },
+    {
+      "ip": "51.15.116.226",
+      "port": 30303,
+      "id": "a869b02cec167211fb4815a82941db2e7ed2936fd90e78619c53eb17753fcf0207463e3419c264e2a1dd8786de0df7e68cf99571ab8aeb7c4e51367ef186b1dd",
+      "location": "",
+      "comment": "Goerli Initiative bootnode"
+    },
+    {
+      "ip": "51.15.119.157",
+      "port": 30303,
+      "id": "807b37ee4816ecf407e9112224494b74dd5933625f655962d892f2f0f02d7fbbb3e2a94cf87a96609526f30c998fd71e93e2f53015c558ffc8b03eceaf30ee33",
+      "location": "",
+      "comment": "Goerli Initiative bootnode"
+    },
+    {
+      "ip": "51.15.119.157",
+      "port": 40303,
+      "id": "a59e33ccd2b3e52d578f1fbd70c6f9babda2650f0760d6ff3b37742fdcdfdb3defba5d56d315b40c46b70198c7621e63ffa3f987389c7118634b0fefbbdfa7fd",
+      "location": "",
+      "comment": "Goerli Initiative bootnode"
     }
   ]
 }
