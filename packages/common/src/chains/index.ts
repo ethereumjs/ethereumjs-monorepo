@@ -1,4 +1,9 @@
 import { chainsType } from './../types'
+import mainnet from './mainnet.json'
+import ropsten from './ropsten.json'
+import rinkeby from './rinkeby.json'
+import kovan from './kovan.json'
+import goerli from './goerli.json'
 
 /**
  * @hidden
@@ -12,11 +17,11 @@ export function _getInitializedChains() {
       '42': 'kovan',
       '5': 'goerli',
     },
-    mainnet: require('./mainnet.json'),
-    ropsten: require('./ropsten.json'),
-    rinkeby: require('./rinkeby.json'),
-    kovan: require('./kovan.json'),
-    goerli: require('./goerli.json'),
+    mainnet,
+    ropsten,
+    rinkeby,
+    kovan,
+    goerli,
   }
   return chains
 }

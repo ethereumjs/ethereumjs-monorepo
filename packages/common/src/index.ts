@@ -32,18 +32,17 @@ export interface CommonOpts {
    */
   eips?: number[]
   /**
-   * Directory to look for custom chains
-   */
-  customChainDir?: string
-  /**
    * Initialize (in addition to the supported chains) with the selected
-   * custom chains from customChainDir
+   * custom chains
    *
-   * Please provide a list of strings matching a corresponding .json file
-   * in customChainDir named by the chain name, e.g.`['myCustomChain']
-   * to read the configuration parameters from a file named 'myCustomChain.json'
+   * Usage (directly with the respective chain intialization via the `chain` option):
+   *
+   * ```javascript
+   * import myCustomChain1 from '[PATH_TO_MY_CHAINS]/myCustomChain1.json'
+   * const common = new Common({ chain: 'myCustomChain1', customChains: [ myCustomChain1 ]})
+   * ```
    */
-  initCustomChains?: string[]
+  customChains?: Chain[]
 }
 
 interface hardforkOptions {
@@ -63,6 +62,7 @@ export default class Common {
   private _hardfork: string
   private _supportedHardforks: Array<string> = []
   private _eips: number[] = []
+  private _customChains: Chain[]
 
   /**
    * Creates a Common object for a custom chain, based on a standard one. It uses all the [[Chain]]
@@ -114,6 +114,7 @@ export default class Common {
    * @constructor
    */
   constructor(opts: CommonOpts) {
+    this._customChains = opts.customChains ?? []
     this._chainParams = this.setChain(opts.chain)
     this._hardfork = this.DEFAULT_HARDFORK
     if (opts.supportedHardforks) {
@@ -137,6 +138,11 @@ export default class Common {
     if (typeof chain === 'number' || typeof chain === 'string') {
       this._chainParams = Common._getChainParams(chain)
     } else if (typeof chain === 'object') {
+      if (this._customChains.length > 0) {
+        throw new Error(
+          'Chain must be a string or number when initialized with customChains passed in'
+        )
+      }
       const required = ['networkId', 'genesis', 'hardforks', 'bootstrapNodes']
       for (const param of required) {
         if ((<any>chain)[param] === undefined) {
