@@ -117,7 +117,7 @@ export default class Common {
   constructor(opts: CommonOpts) {
     this._customChains = opts.customChains ?? []
     this._chainParams = this.setChain(opts.chain)
-    this.DEFAULT_HARDFORK = this._chainParams.defaultHardfork
+    this.DEFAULT_HARDFORK = this._chainParams.defaultHardfork ?? 'istanbul'
     this._hardfork = this.DEFAULT_HARDFORK
     if (opts.supportedHardforks) {
       this._supportedHardforks = opts.supportedHardforks

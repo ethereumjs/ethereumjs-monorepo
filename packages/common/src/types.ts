@@ -16,13 +16,15 @@ export interface Chain {
   name: string
   chainId: number
   networkId: number
-  defaultHardfork: string
+  // TODO: make mandatory in next breaking release
+  defaultHardfork?: string
   comment: string
   url: string
   genesis: GenesisBlock
   hardforks: Hardfork[]
   bootstrapNodes: BootstrapNode[]
-  consensus: {
+  // TODO: make mandatory in next breaking release
+  consensus?: {
     type: string
     algorithm: string
   }
