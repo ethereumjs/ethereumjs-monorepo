@@ -21,10 +21,6 @@ export class FullSynchronizer extends Synchronizer {
   private stopSyncing: boolean
   private vmPromise?: Promise<void>
 
-  // Tracking vars for log msg condensation on zero tx blocks
-  private NUM_ZERO_TXS_PER_LOG_MSG = 50
-  public zeroTxsBlockLogMsgCounter: number = 0
-
   constructor(options: SynchronizerOptions) {
     super(options)
     this.blockFetcher = null
@@ -68,9 +64,15 @@ export class FullSynchronizer extends Synchronizer {
       return
     }
     this.runningBlocks = true
+    let blockCounter = 0
+    let txCounter = 0
+    const NUM_BLOCKS_PER_LOG_MSG = 50
     try {
       let oldHead = Buffer.alloc(0)
-      let newHead = (await this.vm.blockchain.getHead()).hash()
+      const newHeadBlock = await this.vm.blockchain.getHead()
+      let newHead = newHeadBlock.hash()
+      const firstHeadBlock = newHeadBlock
+      let lastHeadBlock = newHeadBlock
       while (!newHead.equals(oldHead) && !this.stopSyncing) {
         oldHead = newHead
         this.vmPromise = this.vm.runBlockchain(this.vm.blockchain, 1)
@@ -79,27 +81,29 @@ export class FullSynchronizer extends Synchronizer {
         newHead = headBlock.hash()
         // check if we did run a new block:
         if (!newHead.equals(oldHead)) {
-          const number = headBlock.header.number.toNumber()
-          const hash = short(newHead)
-          const numTxs = headBlock.transactions.length
-          if (numTxs === 0) {
-            this.zeroTxsBlockLogMsgCounter += 1
-          }
-          if (
-            (numTxs > 0 && this.zeroTxsBlockLogMsgCounter > 0) ||
-            (numTxs === 0 && this.zeroTxsBlockLogMsgCounter >= this.NUM_ZERO_TXS_PER_LOG_MSG)
-          ) {
-            this.config.logger.info(`Processed ${this.zeroTxsBlockLogMsgCounter} blocks with 0 txs`)
-            this.zeroTxsBlockLogMsgCounter = 0
-          }
-          if (numTxs > 0) {
-            this.config.logger.info(`Executed block number=${number} hash=${hash} txs=${numTxs}`)
+          blockCounter += 1
+          txCounter += headBlock.transactions.length
+          lastHeadBlock = headBlock
+
+          if (blockCounter >= NUM_BLOCKS_PER_LOG_MSG) {
+            const firstNumber = firstHeadBlock.header.number.toNumber()
+            const firstHash = short(firstHeadBlock.hash())
+            const lastNumber = lastHeadBlock.header.number.toNumber()
+            const lastHash = short(lastHeadBlock.hash())
+            this.config.logger.info(
+              `Executed blocks count=${blockCounter} first=${firstNumber} hash=${firstHash} last=${lastNumber} hash=${lastHash} with txs=${txCounter}`
+            )
+            blockCounter = 0
+            txCounter = 0
           }
         }
       }
+    } catch (error) {
+      this.emit('error', error)
     } finally {
       this.runningBlocks = false
     }
+    return blockCounter
   }
 
   /**

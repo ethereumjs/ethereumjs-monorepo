@@ -129,7 +129,7 @@ export default class DefaultStateManager implements StateManager {
       return
     }
 
-    await this._trie._mainDB.put(codeHash, value)
+    await this._trie.db.put(codeHash, value)
 
     const account = await this.getAccount(address)
     account.codeHash = codeHash
@@ -147,7 +147,7 @@ export default class DefaultStateManager implements StateManager {
     if (!account.isContract()) {
       return Buffer.alloc(0)
     }
-    const code = await this._trie._mainDB.get(account.codeHash)
+    const code = await this._trie.db.get(account.codeHash)
     return code || Buffer.alloc(0)
   }
 
@@ -161,7 +161,7 @@ export default class DefaultStateManager implements StateManager {
     const account = await this.getAccount(address)
     const storageTrie = this._trie.copy(false)
     storageTrie.root = account.stateRoot
-    storageTrie._checkpoints = []
+    storageTrie.db.checkpoints = []
     return storageTrie
   }
 

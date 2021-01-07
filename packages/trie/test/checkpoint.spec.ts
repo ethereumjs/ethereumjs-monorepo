@@ -1,5 +1,6 @@
 import tape from 'tape'
 import { CheckpointTrie } from '../src'
+import { BatchDBOp } from '../src/db'
 
 tape('testing checkpoints', function (tester) {
   const it = tester.test
@@ -17,7 +18,7 @@ tape('testing checkpoints', function (tester) {
     t.end()
   })
 
-  it('should copy trie and get value before checkpoint', async function (t) {
+  it('should copy trie and get value added to original trie', async function (t) {
     trieCopy = trie.copy()
     t.equal(trieCopy.root.toString('hex'), preRoot)
     const res = await trieCopy.get(Buffer.from('do'))
@@ -53,7 +54,7 @@ tape('testing checkpoints', function (tester) {
   it('should copy trie and get upstream and cache values after checkpoint', async function (t) {
     trieCopy = trie.copy()
     t.equal(trieCopy.root.toString('hex'), postRoot)
-    t.equal(trieCopy._checkpoints.length, 1)
+    t.equal(trieCopy.db.checkpoints.length, 1)
     t.ok(trieCopy.isCheckpoint)
     const res = await trieCopy.get(Buffer.from('do'))
     t.ok(Buffer.from('verb').equals(Buffer.from(res!)))
@@ -102,6 +103,78 @@ tape('testing checkpoints', function (tester) {
     await trie.commit()
     t.equal(trie.isCheckpoint, false)
     t.equal(trie.root.toString('hex'), root.toString('hex'))
+    t.end()
+  })
+
+  const k1 = Buffer.from('k1')
+  const v1 = Buffer.from('v1')
+  const v12 = Buffer.from('v12')
+  const v123 = Buffer.from('v123')
+
+  it('revert -> put', async function (t) {
+    trie = new CheckpointTrie()
+
+    trie.checkpoint()
+    await trie.put(k1, v1)
+    t.deepEqual(await trie.get(k1), v1, 'before revert: v1 in trie')
+    await trie.revert()
+    t.deepEqual(await trie.get(k1), null, 'after revert: v1 removed')
+
+    t.end()
+  })
+
+  it('revert -> put (update)', async (t) => {
+    trie = new CheckpointTrie()
+
+    await trie.put(k1, v1)
+    t.deepEqual(await trie.get(k1), v1, 'before CP: v1')
+    trie.checkpoint()
+    await trie.put(k1, v12)
+    await trie.put(k1, v123)
+    await trie.revert()
+    t.deepEqual(await trie.get(k1), v1, 'after revert: v1')
+    t.end()
+  })
+
+  it('revert -> put (update) batched', async (t) => {
+    const trie = new CheckpointTrie()
+    await trie.put(k1, v1)
+    t.deepEqual(await trie.get(k1), v1, 'before CP: v1')
+    trie.checkpoint()
+    const ops = [
+      { type: 'put', key: k1, value: v12 },
+      { type: 'put', key: k1, value: v123 },
+    ] as BatchDBOp[]
+    await trie.batch(ops)
+    await trie.revert()
+    t.deepEqual(await trie.get(k1), v1, 'after revert: v1')
+    t.end()
+  })
+
+  it('Checkpointing: revert -> del', async (t) => {
+    const trie = new CheckpointTrie()
+    await trie.put(k1, v1)
+    t.deepEqual(await trie.get(k1), v1, 'before CP: v1')
+    trie.checkpoint()
+    await trie.del(k1)
+    t.deepEqual(await trie.get(k1), null, 'before revert: null')
+    await trie.revert()
+    t.deepEqual(await trie.get(k1), v1, 'after revert: v1')
+    t.end()
+  })
+
+  it('Checkpointing: nested checkpoints -> commit -> revert', async (t) => {
+    const trie = new CheckpointTrie()
+    await trie.put(k1, v1)
+    t.deepEqual(await trie.get(k1), v1, 'before CP: v1')
+    trie.checkpoint()
+    await trie.put(k1, v12)
+    trie.checkpoint()
+    await trie.put(k1, v123)
+    await trie.commit()
+    t.deepEqual(await trie.get(k1), v123, 'after commit (second CP): v123')
+    await trie.revert()
+    t.deepEqual(await trie.get(k1), v1, 'after revert (first CP): v1')
     t.end()
   })
 })

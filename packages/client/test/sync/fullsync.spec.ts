@@ -174,51 +174,28 @@ tape('[FullSynchronizer]', async (t) => {
     t.deepEqual(sync.vm.blockchain.getHead(), oldHead, 'should not modify blockchain on emtpy run')
 
     blockchain.getHead = td.func<any>()
-    td.when(blockchain.getHead()).thenResolve(
-      {
+    const getHeadResponse: any = []
+    for (let i = 2; i <= 100; i++) {
+      getHeadResponse.push({
         hash: () => {
-          return Buffer.from('hash1')
+          return Buffer.from(`hash${i}`)
         },
-        header: { number: new BN(1) },
-        transactions: [],
-      },
-      {
-        hash: () => {
-          return Buffer.from('hash2')
-        },
-        header: { number: new BN(2) },
-        transactions: [],
-      }
-    )
-    await sync.runBlocks()
-    t.equal(
-      sync.zeroTxsBlockLogMsgCounter,
-      1,
-      'should increase zero blocks counter on zero tx blocks'
-    )
+        header: { number: new BN(i) },
+        transactions: [i],
+      })
+    }
 
     td.when(blockchain.getHead()).thenResolve(
       {
         hash: () => {
-          return Buffer.from('hash1')
+          return Buffer.from('hash0')
         },
         header: { number: new BN(1) },
         transactions: [],
       },
-      {
-        hash: () => {
-          return Buffer.from('hash2')
-        },
-        header: { number: new BN(2) },
-        transactions: [1, 2, 3],
-      }
+      ...getHeadResponse
     )
-    await sync.runBlocks()
-    t.equal(
-      sync.zeroTxsBlockLogMsgCounter,
-      0,
-      'should reset zero blocks counter on non-zero tx blocks'
-    )
+    t.equal(await sync.runBlocks(), 49)
 
     t.end()
   })
