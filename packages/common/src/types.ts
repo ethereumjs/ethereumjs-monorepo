@@ -21,6 +21,10 @@ export interface Chain {
   genesis: GenesisBlock
   hardforks: Hardfork[]
   bootstrapNodes: BootstrapNode[]
+  consensus: {
+    type: string
+    algorithm: string
+  }
 }
 
 export interface eipsType {
@@ -40,6 +44,7 @@ export interface GenesisBlock {
 export interface Hardfork {
   name: string
   block: number | null
+  forkHash: string | null
 }
 
 export interface BootstrapNode {

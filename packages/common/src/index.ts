@@ -1,8 +1,8 @@
 import { buf as crc32Buffer } from 'crc-32'
-import { chains as chainParams } from './chains'
+import { _getInitializedChains } from './chains'
 import { hardforks as HARDFORK_CHANGES } from './hardforks'
 import { EIPs } from './eips'
-import { Chain } from './types'
+import { BootstrapNode, Chain, GenesisBlock, Hardfork } from './types'
 
 /**
  * Options for instantiating a [[Common]] instance.
@@ -31,6 +31,19 @@ export interface CommonOpts {
    * - [EIP-2537](https://eips.ethereum.org/EIPS/eip-2537) - BLS12-381 precompiles
    */
   eips?: number[]
+  /**
+   * Directory to look for custom chains
+   */
+  customChainDir?: string
+  /**
+   * Initialize (in addition to the supported chains) with the selected
+   * custom chains from customChainDir
+   *
+   * Please provide a list of strings matching a corresponding .json file
+   * in customChainDir named by the chain name, e.g.`['myCustomChain']
+   * to read the configuration parameters from a file named 'myCustomChain.json'
+   */
+  initCustomChains?: string[]
 }
 
 interface hardforkOptions {
@@ -80,16 +93,18 @@ export default class Common {
   }
 
   private static _getChainParams(chain: string | number): Chain {
+    const initializedChains: any = _getInitializedChains()
     if (typeof chain === 'number') {
-      if (chainParams['names'][chain]) {
-        return chainParams[chainParams['names'][chain]]
+      if (initializedChains['names'][chain]) {
+        const name: string = initializedChains['names'][chain]
+        return initializedChains[name]
       }
 
       throw new Error(`Chain with ID ${chain} not supported`)
     }
 
-    if (chainParams[chain]) {
-      return chainParams[chain]
+    if (initializedChains[chain]) {
+      return initializedChains[chain]
     }
 
     throw new Error(`Chain with name ${chain} not supported`)
@@ -491,7 +506,7 @@ export default class Common {
     // Logic: if accumulator is still null and on the first occurence of
     // a block greater than the current hfBlock set the accumulator,
     // pass on the accumulator as the final result from this time on
-    const nextHfBlock = this.hardforks().reduce((acc: number, hf: any) => {
+    const nextHfBlock = (this.hardforks() as any).reduce((acc: number, hf: any) => {
       return hf.block > hfBlock && acc === null ? hf.block : acc
     }, null)
     return nextHfBlock
@@ -517,7 +532,7 @@ export default class Common {
     const genesis = Buffer.from(this.genesis().hash.substr(2), 'hex')
 
     let hfBuffer = Buffer.alloc(0)
-    let prevBlock = 0
+    let prevBlock: number | null = 0
     for (const hf of this.hardforks()) {
       const block = hf.block
 
@@ -613,7 +628,7 @@ export default class Common {
    * @returns chain name (lower case)
    */
   chainName(): string {
-    return chainParams['names'][this.chainId()] || (<any>this._chainParams)['name']
+    return (<any>this._chainParams)['name']
   }
 
   /**
