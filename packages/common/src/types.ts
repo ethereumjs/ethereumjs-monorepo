@@ -44,7 +44,7 @@ export interface GenesisBlock {
 export interface Hardfork {
   name: string
   block: number | null
-  forkHash: string | null
+  forkHash?: string | null
 }
 
 export interface BootstrapNode {

@@ -9,7 +9,8 @@ import { BootstrapNode, Chain, GenesisBlock, Hardfork } from './types'
  */
 export interface CommonOpts {
   /**
-   * String ('mainnet') or Number (1) chain
+   * Chain name ('mainnet') or id (1), either from a chain directly supported
+   * or a custom chain passed in via `customChains`
    */
   chain: string | number | object
   /**
@@ -92,8 +93,8 @@ export default class Common {
     })
   }
 
-  private static _getChainParams(chain: string | number): Chain {
-    const initializedChains: any = _getInitializedChains()
+  private static _getChainParams(chain: string | number, customChains?: Chain[]): Chain {
+    const initializedChains: any = _getInitializedChains(customChains)
     if (typeof chain === 'number') {
       if (initializedChains['names'][chain]) {
         const name: string = initializedChains['names'][chain]
@@ -136,7 +137,7 @@ export default class Common {
    */
   setChain(chain: string | number | object): any {
     if (typeof chain === 'number' || typeof chain === 'string') {
-      this._chainParams = Common._getChainParams(chain)
+      this._chainParams = Common._getChainParams(chain, this._customChains)
     } else if (typeof chain === 'object') {
       if (this._customChains.length > 0) {
         throw new Error(
@@ -564,7 +565,7 @@ export default class Common {
    * Returns an eth/64 compliant fork hash (EIP-2124)
    * @param hardfork Hardfork name, optional if HF set
    */
-  forkHash(hardfork?: string) {
+  forkHash(hardfork?: string): string | null {
     hardfork = this._chooseHardfork(hardfork, false)
     const data = this._getHardfork(hardfork)
     if (data['block'] === null) {

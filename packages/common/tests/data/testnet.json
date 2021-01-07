@@ -2,7 +2,12 @@
   "name": "testnet",
   "chainId": 12345,
   "networkId": 12345,
+  "consensus": {
+    "type": "pow",
+    "algorithm": "ethash"
+  },
   "comment": "Private test network",
+  "url": "[TESTNET_URL]",
   "genesis": {
     "hash": "0xaa00000000000000000000000000000000000000000000000000000000000000",
     "timestamp": null,
