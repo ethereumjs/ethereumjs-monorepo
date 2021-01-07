@@ -1,10 +1,11 @@
 import { EventEmitter } from 'events'
 import tape from 'tape-catch'
 import td from 'testdouble'
-import VM from '@ethereumjs/vm'
 import { BN } from 'ethereumjs-util'
+import VM from '@ethereumjs/vm'
 import { Config } from '../../lib/config'
 import { Chain } from '../../lib/blockchain'
+import Blockchain from '@ethereumjs/blockchain'
 
 tape('[FullSynchronizer]', async (t) => {
   class PeerPool extends EventEmitter {
@@ -37,7 +38,11 @@ tape('[FullSynchronizer]', async (t) => {
     const config = new Config({ vm, loglevel: 'error', transports: [] })
     const pool = new PeerPool() as any
     const chain = new Chain({ config })
-    const sync = new FullSynchronizer({ config, pool, chain })
+    const sync = new FullSynchronizer({
+      config,
+      pool,
+      chain,
+    })
     t.equals(sync.vm, vm, 'provided VM is used')
     t.end()
   })
@@ -64,6 +69,7 @@ tape('[FullSynchronizer]', async (t) => {
     td.when((sync as any).pool.open()).thenResolve(null)
     await sync.open()
     t.pass('opened')
+    await sync.stop()
     t.end()
   })
 
@@ -77,6 +83,7 @@ tape('[FullSynchronizer]', async (t) => {
     td.when(peer.eth.getBlockHeaders({ block: 'hash', max: 1 })).thenResolve(headers)
     const latest = await sync.latest(peer as any)
     t.equals(new BN(latest!.number).toNumber(), 5, 'got height')
+    await sync.stop()
     t.end()
   })
 
@@ -106,6 +113,7 @@ tape('[FullSynchronizer]', async (t) => {
       Promise.resolve(peer.eth.status.td)
     )
     t.equals(sync.best(), peers[1], 'found best')
+    await sync.stop()
     t.end()
   })
 
@@ -127,20 +135,91 @@ tape('[FullSynchronizer]', async (t) => {
     td.when((BlockFetcher.prototype as any).fetch(), { delay: 20 }).thenResolve(undefined)
     ;(sync as any).chain = { blocks: { height: new BN(3) } }
     t.notOk(await sync.sync(), 'local height > remote height')
+    await sync.stop()
     ;(sync as any).chain = {
       blocks: { height: new BN(0) },
     }
     t.ok(await sync.sync(), 'local height < remote height')
+    await sync.stop()
+
     td.when((BlockFetcher.prototype as any).fetch()).thenReject(new Error('err0'))
     try {
       await sync.sync()
     } catch (err) {
       t.equals(err.message, 'err0', 'got error')
+      await sync.stop()
     }
   })
 
   t.test('should reset td', (t) => {
     td.reset()
+    t.end()
+  })
+
+  t.test('should run blocks', async (t) => {
+    const vm = new VM()
+    vm.runBlockchain = td.func<any>()
+    const config = new Config({ vm, loglevel: 'error', transports: [] })
+    const pool = new PeerPool() as any
+    const blockchain = new Blockchain() as any
+    const chain = new Chain({ config, blockchain })
+    const sync = new FullSynchronizer({
+      config,
+      pool,
+      chain,
+    })
+    const oldHead = sync.vm.blockchain.getHead()
+    sync.running = true
+    await sync.runBlocks()
+    t.deepEqual(sync.vm.blockchain.getHead(), oldHead, 'should not modify blockchain on emtpy run')
+
+    blockchain.getHead = td.func<any>()
+    td.when(blockchain.getHead()).thenResolve(
+      {
+        hash: () => {
+          return Buffer.from('hash1')
+        },
+        header: { number: new BN(1) },
+        transactions: [],
+      },
+      {
+        hash: () => {
+          return Buffer.from('hash2')
+        },
+        header: { number: new BN(2) },
+        transactions: [],
+      }
+    )
+    await sync.runBlocks()
+    t.equal(
+      sync.zeroTxsBlockLogMsgCounter,
+      1,
+      'should increase zero blocks counter on zero tx blocks'
+    )
+
+    td.when(blockchain.getHead()).thenResolve(
+      {
+        hash: () => {
+          return Buffer.from('hash1')
+        },
+        header: { number: new BN(1) },
+        transactions: [],
+      },
+      {
+        hash: () => {
+          return Buffer.from('hash2')
+        },
+        header: { number: new BN(2) },
+        transactions: [1, 2, 3],
+      }
+    )
+    await sync.runBlocks()
+    t.equal(
+      sync.zeroTxsBlockLogMsgCounter,
+      0,
+      'should reset zero blocks counter on non-zero tx blocks'
+    )
+
     t.end()
   })
 })

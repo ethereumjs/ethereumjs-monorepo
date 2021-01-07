@@ -13,7 +13,14 @@ export interface EthereumClientOptions {
    *
    * Default: Database created by the Blockchain class
    */
-  db?: LevelUp
+  chainDB?: LevelUp
+
+  /**
+   * Database to store the state. Should be an abstract-leveldown compliant store.
+   *
+   * Default: Database created by the Trie class
+   */
+  stateDB?: LevelUp
 
   /* List of bootnodes to use for discovery */
   bootnodes?: BootnodeLike[]
@@ -51,11 +58,12 @@ export default class EthereumClient extends events.EventEmitter {
       this.config.syncmode === 'full'
         ? new FullEthereumService({
             config: this.config,
-            db: options.db,
+            chainDB: options.chainDB,
+            stateDB: options.stateDB,
           })
         : new LightEthereumService({
             config: this.config,
-            db: options.db,
+            chainDB: options.chainDB,
           }),
     ]
     this.opened = false

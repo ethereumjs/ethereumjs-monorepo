@@ -184,15 +184,25 @@ export class Config {
   }
 
   /**
-   * Returns the directory for storing the client sync data
+   * Returns the directory for storing the client chain data
    * based on syncmode and selected chain (subdirectory of 'datadir')
    */
-  getSyncDataDirectory(): string {
-    const syncDirName = this.syncmode === 'light' ? 'lightchaindata' : 'chaindata'
-    const chain = this.common.chainName()
-    const networkDirName = chain === 'mainnet' ? '' : `${chain}/`
+  getChainDataDirectory(): string {
+    const networkDirName = this.common.chainName()
+    const chainDataDirName = this.syncmode === 'light' ? 'lightchain' : 'chain'
 
-    const dataDir = `${this.datadir}/${networkDirName}ethereumjs/${syncDirName}`
+    const dataDir = `${this.datadir}/${networkDirName}/${chainDataDirName}`
+    return dataDir
+  }
+
+  /**
+   * Returns the directory for storing the client state data
+   * based selected chain (subdirectory of 'datadir')
+   */
+  getStateDataDirectory(): string {
+    const networkDirName = this.common.chainName()
+
+    const dataDir = `${this.datadir}/${networkDirName}/state`
     return dataDir
   }
 }

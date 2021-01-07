@@ -1,33 +1,104 @@
 import { BN } from 'ethereumjs-util'
-import VM from '@ethereumjs/vm'
 import { Peer } from '../net/peer/peer'
 import { short } from '../util'
 import { Synchronizer, SynchronizerOptions } from './sync'
 import { BlockFetcher } from './fetcher'
 import { Block } from '@ethereumjs/block'
+import VM from '@ethereumjs/vm'
+import { DefaultStateManager } from '@ethereumjs/vm/dist/state'
+import { SecureTrie as Trie } from '@ethereumjs/trie'
 
 /**
  * Implements an ethereum full sync synchronizer
  * @memberof module:sync
  */
 export class FullSynchronizer extends Synchronizer {
-  public vm: VM
-
   private blockFetcher: BlockFetcher | null
+
+  public vm: VM
+  public runningBlocks: boolean
+
+  private stopSyncing: boolean
+  private vmPromise?: Promise<void>
+
+  // Tracking vars for log msg condensation on zero tx blocks
+  private NUM_ZERO_TXS_PER_LOG_MSG = 50
+  public zeroTxsBlockLogMsgCounter: number = 0
 
   constructor(options: SynchronizerOptions) {
     super(options)
     this.blockFetcher = null
 
     if (!this.config.vm) {
+      const trie = new Trie(this.stateDB)
+
+      const stateManager = new DefaultStateManager({
+        common: this.config.common,
+        trie,
+      })
+
       this.vm = new VM({
         common: this.config.common,
         blockchain: this.chain.blockchain,
+        stateManager,
       })
     } else {
       this.vm = this.config.vm
       //@ts-ignore blockchain has readonly property
       this.vm.blockchain = this.chain.blockchain
+    }
+
+    this.runningBlocks = false
+    this.stopSyncing = false
+
+    const self = this
+    this.chain.on('updated', async function () {
+      // for some reason, if we use .on('updated', this.runBlocks), it runs in the context of the Chain and not in the FullSync context..?
+      await self.runBlocks()
+    })
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    this.chain.update()
+  }
+
+  /**
+   * This updates the VM once blocks were put in the VM
+   */
+  async runBlocks() {
+    if (!this.running || this.runningBlocks) {
+      return
+    }
+    this.runningBlocks = true
+    try {
+      let oldHead = Buffer.alloc(0)
+      let newHead = (await this.vm.blockchain.getHead()).hash()
+      while (!newHead.equals(oldHead) && !this.stopSyncing) {
+        oldHead = newHead
+        this.vmPromise = this.vm.runBlockchain(this.vm.blockchain, 1)
+        await this.vmPromise
+        const headBlock = await this.vm.blockchain.getHead()
+        newHead = headBlock.hash()
+        // check if we did run a new block:
+        if (!newHead.equals(oldHead)) {
+          const number = headBlock.header.number.toNumber()
+          const hash = short(newHead)
+          const numTxs = headBlock.transactions.length
+          if (numTxs === 0) {
+            this.zeroTxsBlockLogMsgCounter += 1
+          }
+          if (
+            (numTxs > 0 && this.zeroTxsBlockLogMsgCounter > 0) ||
+            (numTxs === 0 && this.zeroTxsBlockLogMsgCounter >= this.NUM_ZERO_TXS_PER_LOG_MSG)
+          ) {
+            this.config.logger.info(`Processed ${this.zeroTxsBlockLogMsgCounter} blocks with 0 txs`)
+            this.zeroTxsBlockLogMsgCounter = 0
+          }
+          if (numTxs > 0) {
+            this.config.logger.info(`Executed block number=${number} hash=${hash} txs=${numTxs}`)
+          }
+        }
+      }
+    } finally {
+      this.runningBlocks = false
     }
   }
 
@@ -167,6 +238,13 @@ export class FullSynchronizer extends Synchronizer {
    * @return {Promise}
    */
   async stop(): Promise<boolean> {
+    this.stopSyncing = true
+    if (this.vmPromise) {
+      // ensure that we wait that the VM finishes executing the block (and flushes the trie cache)
+      await this.vmPromise
+    }
+    await this.stateDB?.close()
+
     if (!this.running) {
       return false
     }
@@ -177,6 +255,7 @@ export class FullSynchronizer extends Synchronizer {
       delete this.blockFetcher
     }
     await super.stop()
+
     return true
   }
 }

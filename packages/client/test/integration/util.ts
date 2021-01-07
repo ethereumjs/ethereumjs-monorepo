@@ -30,13 +30,16 @@ export async function setup(
     interval: interval ?? 10,
   }
 
-  const service =
-    syncmode === 'light'
-      ? new LightEthereumService(serviceOpts)
-      : new FullEthereumService({
-          ...serviceOpts,
-          lightserv: true,
-        })
+  let service
+  if (syncmode === 'light') {
+    service = new LightEthereumService(serviceOpts)
+  } else {
+    service = new FullEthereumService({
+      ...serviceOpts,
+      lightserv: true,
+    })
+    service.synchronizer.runningBlocks = true
+  }
   await service.open()
   await service.start()
 

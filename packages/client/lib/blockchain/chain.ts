@@ -17,7 +17,7 @@ export interface ChainOptions {
   /**
    * Database to store blocks and metadata. Should be an abstract-leveldown compliant store.
    */
-  db?: LevelUp
+  chainDB?: LevelUp
 
   /**
    * Specify a blockchain which implements the Chain interface
@@ -79,7 +79,7 @@ export interface GenesisBlockParams {
 export class Chain extends EventEmitter {
   public config: Config
 
-  public db: LevelUp
+  public chainDB: LevelUp
   public blockchain: Blockchain
   public opened: boolean
 
@@ -107,13 +107,13 @@ export class Chain extends EventEmitter {
     this.blockchain =
       options.blockchain ??
       new Blockchain({
-        db: options.db,
+        db: options.chainDB,
         common: this.config.common,
         validateBlocks: false,
         validateConsensus: false,
       })
 
-    this.db = this.blockchain.db
+    this.chainDB = this.blockchain.db
     this.opened = false
   }
 

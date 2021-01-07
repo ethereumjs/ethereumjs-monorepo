@@ -150,6 +150,7 @@ export default async function runBlock(this: VM, opts: RunBlockOpts): Promise<Ru
 
   // Checkpoint state
   await state.checkpoint()
+
   let result
   try {
     result = await applyBlock.bind(this)(block, opts)
@@ -160,6 +161,7 @@ export default async function runBlock(this: VM, opts: RunBlockOpts): Promise<Ru
 
   // Persist state
   await state.commit()
+
   const stateRoot = await state.getStateRoot(false)
 
   // Given the generate option, either set resulting header
