@@ -1,11 +1,15 @@
 import { Trie as BaseTrie } from './baseTrie'
+import { CheckpointDB } from './checkpointDb'
 
 /**
  * Adds checkpointing to the {@link BaseTrie}
  */
 export class CheckpointTrie extends BaseTrie {
+  db: CheckpointDB
+  
   constructor(...args: any) {
     super(...args)
+    this.db = new CheckpointDB(...args)
   }
 
   /**
@@ -34,7 +38,7 @@ export class CheckpointTrie extends BaseTrie {
     }
 
     await this.lock.wait()
-    this.db.commit()
+    await this.db.commit()
     this.lock.signal()
   }
 
