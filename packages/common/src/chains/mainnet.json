@@ -2,6 +2,7 @@
   "name": "mainnet",
   "chainId": 1,
   "networkId": 1,
+  "defaultHardfork": "istanbul",
   "consensus": {
     "type": "pow",
     "algorithm": "ethash"

@@ -16,6 +16,7 @@ export interface Chain {
   name: string
   chainId: number
   networkId: number
+  defaultHardfork: string
   comment: string
   url: string
   genesis: GenesisBlock

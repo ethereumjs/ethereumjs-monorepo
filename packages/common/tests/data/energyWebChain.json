@@ -2,6 +2,7 @@
   "name": "energyWebChain",
   "chainId": 246,
   "networkId": 246,
+  "defaultHardfork": "istanbul",
   "consensus": {
     "type": "pow",
     "algorithm": "ethash"

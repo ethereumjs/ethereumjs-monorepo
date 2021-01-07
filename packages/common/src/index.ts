@@ -2,7 +2,7 @@ import { buf as crc32Buffer } from 'crc-32'
 import { _getInitializedChains } from './chains'
 import { hardforks as HARDFORK_CHANGES } from './hardforks'
 import { EIPs } from './eips'
-import { BootstrapNode, Chain, GenesisBlock, Hardfork } from './types'
+import { Chain } from './types'
 
 /**
  * Options for instantiating a [[Common]] instance.
@@ -57,7 +57,7 @@ interface hardforkOptions {
  * Common class to access chain and hardfork parameters
  */
 export default class Common {
-  readonly DEFAULT_HARDFORK: string = 'istanbul'
+  readonly DEFAULT_HARDFORK: string
 
   private _chainParams: Chain
   private _hardfork: string
@@ -117,6 +117,7 @@ export default class Common {
   constructor(opts: CommonOpts) {
     this._customChains = opts.customChains ?? []
     this._chainParams = this.setChain(opts.chain)
+    this.DEFAULT_HARDFORK = this._chainParams.defaultHardfork
     this._hardfork = this.DEFAULT_HARDFORK
     if (opts.supportedHardforks) {
       this._supportedHardforks = opts.supportedHardforks
@@ -513,7 +514,7 @@ export default class Common {
     // Logic: if accumulator is still null and on the first occurence of
     // a block greater than the current hfBlock set the accumulator,
     // pass on the accumulator as the final result from this time on
-    const nextHfBlock = (this.hardforks() as any).reduce((acc: number, hf: any) => {
+    const nextHfBlock = this.hardforks().reduce((acc: number, hf: any) => {
       return hf.block > hfBlock && acc === null ? hf.block : acc
     }, null)
     return nextHfBlock
@@ -539,7 +540,7 @@ export default class Common {
     const genesis = Buffer.from(this.genesis().hash.substr(2), 'hex')
 
     let hfBuffer = Buffer.alloc(0)
-    let prevBlock: number | null = 0
+    let prevBlock = 0
     for (const hf of this.hardforks()) {
       const block = hf.block
 
@@ -565,7 +566,7 @@ export default class Common {
    * Returns an eth/64 compliant fork hash (EIP-2124)
    * @param hardfork Hardfork name, optional if HF set
    */
-  forkHash(hardfork?: string): string | null {
+  forkHash(hardfork?: string) {
     hardfork = this._chooseHardfork(hardfork, false)
     const data = this._getHardfork(hardfork)
     if (data['block'] === null) {

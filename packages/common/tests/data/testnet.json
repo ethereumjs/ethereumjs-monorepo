@@ -2,6 +2,7 @@
   "name": "testnet",
   "chainId": 12345,
   "networkId": 12345,
+  "defaultHardfork": "byzantium",
   "consensus": {
     "type": "pow",
     "algorithm": "ethash"

@@ -2,6 +2,7 @@
   "name": "volta",
   "chainId": 73799,
   "networkId": 73799,
+  "defaultHardfork": "istanbul",
   "consensus": {
     "type": "pow",
     "algorithm": "ethash"
