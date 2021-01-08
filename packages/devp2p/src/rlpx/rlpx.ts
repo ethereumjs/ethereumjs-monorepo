@@ -80,9 +80,11 @@ export class RLPx extends EventEmitter {
         if (this._getOpenSlots() > 0) return this._connectToPeer(peer)
         this._peersQueue.push({ peer: peer, ts: 0 }) // save to queue
       })
-      this._dpt.on('peer:removed', (peer: any) => {
+      this._dpt.on('peer:removed', (peer: PeerInfo) => {
         // remove from queue
-        this._peersQueue = this._peersQueue.filter((item: any) => !item.peer.id.equals(peer.id))
+        this._peersQueue = this._peersQueue.filter(
+          (item) => !(item.peer.id! as Buffer).equals(peer.id as Buffer)
+        )
       })
     }
 
@@ -259,12 +261,12 @@ export class RLPx extends EventEmitter {
   _refillConnections() {
     if (!this._isAlive()) return
     debug(
-      `refill connections.. queue size: ${this._peersQueue.length}, peers: ${
-        this._peers.size
+      `refill connections.. peers: ${this._peers.size}, queue size: ${
+        this._peersQueue.length
       }, open slots: ${this._getOpenSlots()}`
     )
 
-    this._peersQueue = this._peersQueue.filter((item: any) => {
+    this._peersQueue = this._peersQueue.filter((item) => {
       if (this._getOpenSlots() === 0) return true
       if (item.ts > Date.now()) return true
 

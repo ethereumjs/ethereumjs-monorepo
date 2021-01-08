@@ -3,6 +3,8 @@ import { randomBytes } from 'crypto'
 import { privateKeyVerify, publicKeyConvert } from 'secp256k1'
 import createKeccakHash from 'keccak'
 import { decode } from 'rlp'
+import { ETH } from './eth'
+import { LES } from './les'
 
 export function keccak256(...buffers: Buffer[]) {
   const buffer = Buffer.concat(buffers)
@@ -53,7 +55,14 @@ export function xor(a: Buffer, b: any): Buffer {
   return buffer
 }
 
-export function assertEq(expected: any, actual: any, msg: string, debug: any): void {
+type assertInput = Buffer | Buffer[] | ETH.StatusMsg | LES.Status | number | null
+
+export function assertEq(
+  expected: assertInput,
+  actual: assertInput,
+  msg: string,
+  debug: Function
+): void {
   let message
   if (Buffer.isBuffer(expected) && Buffer.isBuffer(actual)) {
     if (expected.equals(actual)) return
