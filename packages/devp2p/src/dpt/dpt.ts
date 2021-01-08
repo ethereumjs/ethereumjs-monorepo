@@ -68,7 +68,7 @@ export class DPT extends EventEmitter {
     this._kbucket = new KBucket(this._id)
     this._kbucket.on('added', (peer: PeerInfo) => this.emit('peer:added', peer))
     this._kbucket.on('removed', (peer: PeerInfo) => this.emit('peer:removed', peer))
-    this._kbucket.on('ping', this._onKBucketPing)
+    this._kbucket.on('ping', this._onKBucketPing.bind(this))
 
     this._server = new DPTServer(this, this.privateKey, {
       timeout: options.timeout,
@@ -77,7 +77,7 @@ export class DPT extends EventEmitter {
     })
     this._server.once('listening', () => this.emit('listening'))
     this._server.once('close', () => this.emit('close'))
-    this._server.on('peers', (peers) => this._onServerPeers(peers))
+    this._server.on('peers', (peers, remote) => this._onServerPeers(peers))
     this._server.on('error', (err) => this.emit('error', err))
 
     const refreshIntervalSubdivided = Math.floor((options.refreshInterval ?? ms('60s')) / 10)
@@ -108,15 +108,19 @@ export class DPT extends EventEmitter {
         })
         .then(() => {
           if (++count < oldPeers.length) return
-
           if (err === null) this.banlist.add(newPeer, ms('5m'))
           else this._kbucket.add(newPeer)
         })
     }
   }
 
-  _onServerPeers(peers: any[]): void {
-    for (const peer of peers) this.addPeer(peer).catch(() => {})
+  _onServerPeers(peers: PeerInfo[]): void {
+    const ms = 0
+    for (const peer of peers) {
+      this.addPeer(peer).catch((error) => {
+        this.emit('error', error  )
+      })
+    } 
   }
 
   async bootstrap(peer: PeerInfo): Promise<void> {
