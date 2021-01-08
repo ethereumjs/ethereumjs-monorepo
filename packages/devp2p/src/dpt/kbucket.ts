@@ -32,7 +32,7 @@ export class KBucket extends EventEmitter {
       this.emit('removed', peer)
     })
 
-    this._kbucket.on('ping', (oldPeers: PeerInfo[], newPeer: PeerInfo | undefined) => {
+    this._kbucket.on('ping', (oldPeers: PeerInfo[], newPeer: PeerInfo | undefined) => {
       this.emit('ping', oldPeers, newPeer)
     })
   }

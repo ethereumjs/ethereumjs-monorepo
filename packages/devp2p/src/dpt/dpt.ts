@@ -77,7 +77,7 @@ export class DPT extends EventEmitter {
     })
     this._server.once('listening', () => this.emit('listening'))
     this._server.once('close', () => this.emit('close'))
-    this._server.on('peers', (peers, remote) => this._onServerPeers(peers))
+    this._server.on('peers', (peers) => this._onServerPeers(peers))
     this._server.on('error', (err) => this.emit('error', err))
 
     const refreshIntervalSubdivided = Math.floor((options.refreshInterval ?? ms('60s')) / 10)
@@ -115,12 +115,16 @@ export class DPT extends EventEmitter {
   }
 
   _onServerPeers(peers: PeerInfo[]): void {
-    const ms = 0
+    const DIFF_TIME_MS = 200
+    let ms = 0
     for (const peer of peers) {
-      this.addPeer(peer).catch((error) => {
-        this.emit('error', error  )
-      })
-    } 
+      setTimeout(() => {
+        this.addPeer(peer).catch((error) => {
+          this.emit('error', error)
+        })
+      }, ms)
+      ms += DIFF_TIME_MS
+    }
   }
 
   async bootstrap(peer: PeerInfo): Promise<void> {

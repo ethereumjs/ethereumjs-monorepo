@@ -5,7 +5,7 @@ import Common from '@ethereumjs/common'
 export const localhost = '127.0.0.1'
 export const basePort = 30306
 
-export function getTestDPTs(numDPTs: any) {
+export function getTestDPTs(numDPTs: number) {
   const dpts = []
 
   for (let i = 0; i < numDPTs; ++i) {
@@ -30,7 +30,7 @@ export function initTwoPeerDPTSetup() {
   return dpts
 }
 
-export function destroyDPTs(dpts: any) {
+export function destroyDPTs(dpts: DPT[]) {
   for (const dpt of dpts) dpt.destroy()
 }
 
