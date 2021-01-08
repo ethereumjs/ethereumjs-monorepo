@@ -173,7 +173,9 @@ export class DPT extends EventEmitter {
     this._refreshIntervalSelectionCounter = (this._refreshIntervalSelectionCounter + 1) % 10
 
     const peers = this.getPeers()
-    debug(`call .refresh (${peers.length} peers in table)`)
+    debug(
+      `call .refresh() (selector ${this._refreshIntervalSelectionCounter}) (${peers.length} peers in table)`
+    )
 
     for (const peer of peers) {
       // Randomly distributed selector based on peer ID
