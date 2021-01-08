@@ -71,7 +71,7 @@ export class FullSynchronizer extends Synchronizer {
       let oldHead = Buffer.alloc(0)
       const newHeadBlock = await this.vm.blockchain.getHead()
       let newHead = newHeadBlock.hash()
-      const firstHeadBlock = newHeadBlock
+      let firstHeadBlock = newHeadBlock
       let lastHeadBlock = newHeadBlock
       while (!newHead.equals(oldHead) && !this.stopSyncing) {
         oldHead = newHead
@@ -79,6 +79,9 @@ export class FullSynchronizer extends Synchronizer {
         await this.vmPromise
         const headBlock = await this.vm.blockchain.getHead()
         newHead = headBlock.hash()
+        if (blockCounter === 0) {
+          firstHeadBlock = headBlock
+        }
         // check if we did run a new block:
         if (!newHead.equals(oldHead)) {
           blockCounter += 1
