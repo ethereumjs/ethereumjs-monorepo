@@ -6,7 +6,7 @@ import { CheckpointDB } from './checkpointDb'
  */
 export class CheckpointTrie extends BaseTrie {
   db: CheckpointDB
-  
+
   constructor(...args: any) {
     super(...args)
     this.db = new CheckpointDB(...args)

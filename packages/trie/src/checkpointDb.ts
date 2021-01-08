@@ -1,23 +1,13 @@
 import { LevelUp } from 'levelup'
-import { DB } from './db'
-const level = require('level-mem')
+import { DB, BatchDBOp } from './db'
 
 export const ENCODING_OPTS = { keyEncoding: 'binary', valueEncoding: 'binary' }
 
 export type Checkpoint = {
-  keyValueMap: Map<Buffer, Buffer | null>,
+  // We cannot use a Buffer => Buffer map directly. If you create two Buffers with the same internal value,
+  // then when setting a value on the Map, it actually creates two indices.
+  keyValueMap: Map<string, Buffer | null>
   root: Buffer
-}
-
-export type BatchDBOp = PutBatch | DelBatch
-export interface PutBatch {
-  type: 'put'
-  key: Buffer
-  value: Buffer
-}
-export interface DelBatch {
-  type: 'del'
-  key: Buffer
 }
 
 /**
@@ -50,7 +40,7 @@ export class CheckpointDB extends DB {
    * @param root
    */
   checkpoint(root: Buffer) {
-    this.checkpoints.push({ keyValueMap: new Map<Buffer, Buffer>(), root })
+    this.checkpoints.push({ keyValueMap: new Map<string, Buffer>(), root })
   }
 
   /**
@@ -61,17 +51,17 @@ export class CheckpointDB extends DB {
     if (!this.isCheckpoint) {
       // This was the final checkpoint, we should now commit and flush everything to disk
       const batchOp: BatchDBOp[] = []
-      keyValueMap.forEach(function(value, key) {
+      keyValueMap.forEach(function (value, key) {
         if (value === null) {
           batchOp.push({
             type: 'del',
-            key
+            key: Buffer.from(key),
           })
         } else {
           batchOp.push({
             type: 'put',
-            key,
-            value
+            key: Buffer.from(key),
+            value,
           })
         }
       })
@@ -79,20 +69,18 @@ export class CheckpointDB extends DB {
     } else {
       // dump everything into the current (higher level) cache
       const currentKeyValueMap = this.checkpoints[this.checkpoints.length - 1].keyValueMap
-      keyValueMap.forEach(function(value, key){ 
+      keyValueMap.forEach(function (value, key) {
         currentKeyValueMap.set(key, value)
       })
-
     }
-
   }
 
   /**
    * Reverts the latest checkpoint
    */
   async revert() {
-   const { root } = this.checkpoints.pop()!
-   return root
+    const { root } = this.checkpoints.pop()!
+    return root
   }
 
   /**
@@ -102,14 +90,14 @@ export class CheckpointDB extends DB {
    */
   async get(key: Buffer): Promise<Buffer | null> {
     // Lookup the value in our cache. We return the latest checkpointed value (which should be the value on disk)
-    for (let index = this.checkpoints.length; index >= 0; index--) {
-      const value = this.checkpoints[index].keyValueMap.get(key)
-      if (value != undefined) {
+    for (let index = this.checkpoints.length - 1; index >= 0; index--) {
+      const value = this.checkpoints[index].keyValueMap.get(key.toString())
+      if (value !== undefined) {
         return value
       }
     }
     // Nothing has been found in cache, look up from disk
-    // TODO: put value in cache.
+    // TODO: put value in cache if we are a checkpoint.
     return await super.get(key)
   }
 
@@ -120,9 +108,9 @@ export class CheckpointDB extends DB {
    */
   async put(key: Buffer, val: Buffer): Promise<void> {
     if (this.isCheckpoint) {
-      // put value in cache 
-      this.checkpoints[this.checkpoints.length - 1].keyValueMap.set(key, val)
-    } else { 
+      // put value in cache
+      this.checkpoints[this.checkpoints.length - 1].keyValueMap.set(key.toString(), val)
+    } else {
       await super.put(key, val)
     }
   }
@@ -134,7 +122,7 @@ export class CheckpointDB extends DB {
   async del(key: Buffer): Promise<void> {
     if (this.isCheckpoint) {
       // delete the value in the current cache
-      this.checkpoints[this.checkpoints.length - 1].keyValueMap.set(key, null)
+      this.checkpoints[this.checkpoints.length - 1].keyValueMap.set(key.toString(), null)
     } else {
       // delete the value on disk
       await this._leveldb.del(key, ENCODING_OPTS)
