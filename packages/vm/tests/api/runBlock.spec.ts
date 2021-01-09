@@ -1,10 +1,10 @@
 import tape from 'tape'
-import { Address, BN, rlp } from 'ethereumjs-util'
+import { Account, Address, BN, rlp } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
 import { Block } from '@ethereumjs/block'
 import { Transaction } from '@ethereumjs/tx'
 import { DefaultStateManager } from '../../lib/state'
-import runBlock from '../../lib/runBlock'
+import runBlock, { PostByzantiumTxReceipt } from '../../lib/runBlock'
 import { setupPreConditions, getDAOCommon } from '../util'
 import { setupVM, createAccount } from './utils'
 import VM from '../../lib/index'
@@ -84,29 +84,6 @@ tape('should fail when block validation fails', async (t) => {
     .runBlock({ block })
     .then(() => t.fail('should have returned error'))
     .catch((e) => t.ok(e.message.includes('test')))
-
-  t.end()
-})
-
-tape('should fail when tx gas limit higher than block gas limit', async (t) => {
-  const suite = setup()
-
-  const blockRlp = suite.data.blocks[0].rlp
-  const block = Object.create(Block.fromRLPSerializedBlock(blockRlp))
-  // modify first tx's gasLimit
-  const { nonce, gasPrice, to, value, data, v, r, s } = block.transactions[0]
-
-  const gasLimit = new BN(Buffer.from('3fefba', 'hex'))
-  const opts = { common: block._common }
-  block.transactions[0] = new Transaction(
-    { nonce, gasPrice, gasLimit, to, value, data, v, r, s },
-    opts
-  )
-
-  await suite.p
-    .runBlock({ block, skipBlockValidation: true })
-    .then(() => t.fail('should have returned error'))
-    .catch((e) => t.ok(e.message.includes('higher gas limit')))
 
   t.end()
 })
@@ -264,6 +241,164 @@ tape(
     t.end()
   }
 )
+
+tape(
+  'should run blocks where the sum of all the gas limits is larger than the block gas limit',
+  async (t) => {
+    const vm = new VM()
+
+    const privateKey = Buffer.from(
+      'e331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109',
+      'hex'
+    )
+    const address = Address.fromPrivateKey(privateKey)
+    const initialBalance = new BN(10).pow(new BN(18))
+
+    const account = await vm.stateManager.getAccount(address)
+    await vm.stateManager.putAccount(
+      address,
+      Account.fromAccountData({ ...account, balance: initialBalance })
+    )
+
+    const emptyBlock = Block.fromBlockData()
+
+    const tx0 = Transaction.fromTxData({
+      to: address,
+      gasLimit: emptyBlock.header.gasLimit,
+      gasPrice: 1,
+      nonce: 0,
+    })
+    const tx1 = Transaction.fromTxData({
+      to: address,
+      gasLimit: emptyBlock.header.gasLimit,
+      gasPrice: 1,
+      nonce: 1,
+    })
+
+    const signedTx0 = tx0.sign(privateKey)
+    const signedTx1 = tx1.sign(privateKey)
+
+    const blockWithTxs = Block.fromBlockData({
+      ...emptyBlock,
+      transactions: [signedTx0, signedTx1],
+    })
+
+    const results = await vm.runBlock({
+      block: blockWithTxs,
+      generate: true,
+      skipBlockValidation: true,
+    })
+
+    t.equal((results.receipts[0] as PostByzantiumTxReceipt).status, 1)
+    t.equal((results.receipts[1] as PostByzantiumTxReceipt).status, 1)
+
+    t.end()
+  }
+)
+
+tape('should throw if a block consumes more gas than the block gas limit', async (t) => {
+  const vm = new VM()
+
+  const privateKey = Buffer.from(
+    'e331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109',
+    'hex'
+  )
+  const address = Address.fromPrivateKey(privateKey)
+  const initialBalance = new BN(10).pow(new BN(18))
+
+  const account = await vm.stateManager.getAccount(address)
+  await vm.stateManager.putAccount(
+    address,
+    Account.fromAccountData({ ...account, balance: initialBalance })
+  )
+
+  // Slightly more than a transfer's cost
+  const blockGasLimit = 22000
+
+  const tx0 = Transaction.fromTxData({
+    to: address,
+    gasLimit: blockGasLimit,
+    gasPrice: 1,
+    nonce: 0,
+  })
+  const tx1 = Transaction.fromTxData({
+    to: address,
+    gasLimit: blockGasLimit,
+    gasPrice: 1,
+    nonce: 1,
+  })
+
+  const signedTx0 = tx0.sign(privateKey)
+  const signedTx1 = tx1.sign(privateKey)
+
+  const blockWithTxs = Block.fromBlockData({
+    transactions: [signedTx0, signedTx1],
+    header: { gasLimit: blockGasLimit },
+  })
+
+  try {
+    await vm.runBlock({
+      block: blockWithTxs,
+      generate: true,
+      skipBlockValidation: true,
+    })
+  } catch (e) {
+    t.equal(e.message, 'The block consumed more gas than its gas limit after running tx 1')
+    t.end()
+    return
+  }
+
+  t.fail('should have thrown')
+  t.end()
+})
+
+tape('should throw if a block tx has a higher gas limit than the block', async (t) => {
+  const vm = new VM()
+
+  const privateKey = Buffer.from(
+    'e331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109',
+    'hex'
+  )
+  const address = Address.fromPrivateKey(privateKey)
+  const initialBalance = new BN(10).pow(new BN(18))
+
+  const account = await vm.stateManager.getAccount(address)
+  await vm.stateManager.putAccount(
+    address,
+    Account.fromAccountData({ ...account, balance: initialBalance })
+  )
+
+  // Slightly more than a transfer's cost
+  const blockGasLimit = 22000
+
+  const tx = Transaction.fromTxData({
+    to: address,
+    gasLimit: blockGasLimit + 1,
+    gasPrice: 1,
+    nonce: 0,
+  })
+
+  const blockWithTxs = Block.fromBlockData({
+    transactions: [tx.sign(privateKey)],
+    header: { gasLimit: blockGasLimit },
+  })
+
+  try {
+    await vm.runBlock({
+      block: blockWithTxs,
+      generate: true,
+      skipBlockValidation: true,
+    })
+  } catch (e) {
+    t.equal(e.message, 'tx has a higher gas limit than the block')
+    t.end()
+    return
+  }
+
+  t.fail('should have thrown')
+  t.end()
+})
+
 /*
 async function runWithHf(hardfork: string) {
   const vm = setupVM({ common: new Common({ chain: 'mainnet', hardfork }) })

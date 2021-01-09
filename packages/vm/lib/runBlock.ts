@@ -253,11 +253,6 @@ async function applyTransactions(this: VM, block: Block, opts: RunBlockOpts) {
   for (let txIdx = 0; txIdx < block.transactions.length; txIdx++) {
     const tx = block.transactions[txIdx]
 
-    const gasLimitIsHigherThanBlock = block.header.gasLimit.lt(tx.gasLimit.add(gasUsed))
-    if (gasLimitIsHigherThanBlock) {
-      throw new Error('tx has a higher gas limit than the block')
-    }
-
     // Run the tx through the VM
     const { skipBalance, skipNonce } = opts
     const txRes = await this.runTx({
@@ -270,6 +265,11 @@ async function applyTransactions(this: VM, block: Block, opts: RunBlockOpts) {
 
     // Add to total block gas usage
     gasUsed = gasUsed.add(txRes.gasUsed)
+
+    if (block.header.gasLimit.lt(gasUsed)) {
+      throw new Error(`The block consumed more gas than its gas limit after running tx ${txIdx}`)
+    }
+
     // Combine blooms via bitwise OR
     bloom.or(txRes.bloom)
 
