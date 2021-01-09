@@ -263,7 +263,7 @@ export class BlockHeader {
     }
     if (this._common.consensusAlgorithm() === 'clique') {
       let minLength = CLIQUE_EXTRA_VANITY + CLIQUE_EXTRA_SEAL
-      if (!this.isEpochTransition()) {
+      if (!this.cliqueIsEpochTransition()) {
         if (extraData.length !== minLength) {
           throw new Error(
             `extraData must be ${minLength} bytes on non-epoch transition blocks, received ${extraData.length} bytes`
@@ -518,18 +518,64 @@ export class BlockHeader {
     return this.number.isZero()
   }
 
+  private _checkClique() {
+    if (this._common.consensusAlgorithm() !== 'clique') {
+      throw new Error('Function call only supported for clique PoA networks')
+    }
+  }
+
   /**
    * Checks if the block header is an epoch transition
    * header (only clique PoA, throws otherwise)
    */
-  isEpochTransition(): boolean {
-    if (this._common.consensusAlgorithm() !== 'clique') {
-      throw new Error('isEpochTransition() call only supported for clique PoA networks')
-    }
+  cliqueIsEpochTransition(): boolean {
+    this._checkClique()
     const epoch = new BN(this._common.consensusConfig().epoch)
     // Epoch transition block if the block number has no
     // remainder on the division by the epoch length
     return this.number.mod(epoch).isZero()
+  }
+
+  /**
+   * Returns extra vanity data
+   * (only clique PoA, throws otherwise)
+   */
+  cliqueExtraVanity(): Buffer {
+    this._checkClique()
+    return this.extraData.slice(0, CLIQUE_EXTRA_VANITY)
+  }
+
+  /**
+   * Returns extra seal data
+   * (only clique PoA, throws otherwise)
+   */
+  cliqueExtraSeal(): Buffer {
+    this._checkClique()
+    return this.extraData.slice(-CLIQUE_EXTRA_SEAL)
+  }
+
+  /**
+   * Returns a list of signers
+   * (only clique PoA, throws otherwise)
+   *
+   * This function throws if not called on an epoch
+   * transition block and should therefore be used
+   * in conjunction with `cliqueIsEpochTransition()`
+   */
+  cliqueEpochTransitionSigners(): Buffer[] {
+    this._checkClique()
+    if (!this.cliqueIsEpochTransition()) {
+      throw new Error('Singers are only included in epoch transition blocks (clique)')
+    }
+    let signerBuffer = this.extraData.slice(CLIQUE_EXTRA_VANITY)
+    signerBuffer = signerBuffer.slice(0, signerBuffer.length - CLIQUE_EXTRA_SEAL)
+
+    const signerList: Buffer[] = []
+    const signerLength = 20
+    for (let start = 0; start <= signerBuffer.length - signerLength; start += signerLength) {
+      signerList.push(signerBuffer.slice(start, start + signerLength))
+    }
+    return signerList
   }
 
   /**

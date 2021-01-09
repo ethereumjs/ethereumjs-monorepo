@@ -131,19 +131,56 @@ tape('[Block]: Header functions', function (t) {
     st.end()
   })
 
-  t.test('should test isEpochTransition()', function (st) {
+  t.test('should test clique functionality', function (st) {
     let header = BlockHeader.fromHeaderData({ number: 1 })
     st.throws(() => {
-      header.isEpochTransition()
-    }, 'should throw on PoW networks')
+      header.cliqueIsEpochTransition()
+    }, 'cliqueIsEpochTransition() -> should throw on PoW networks')
 
     const common = new Common({ chain: 'rinkeby', hardfork: 'chainstart' })
     header = BlockHeader.genesis({}, { common })
-    st.ok(header.isEpochTransition(), 'should indicate an epoch transition for the genesis block')
+    st.ok(
+      header.cliqueIsEpochTransition(),
+      'cliqueIsEpochTransition() -> should indicate an epoch transition for the genesis block'
+    )
+
     header = BlockHeader.fromHeaderData({ number: 1, extraData: Buffer.alloc(97) }, { common })
-    st.notOk(header.isEpochTransition(), 'should correctly identify a non-epoch block')
-    header = BlockHeader.fromHeaderData({ number: 60000, extraData: Buffer.alloc(117) }, { common })
-    st.ok(header.isEpochTransition(), 'should correctly identify an epoch block')
+    st.notOk(
+      header.cliqueIsEpochTransition(),
+      'cliqueIsEpochTransition() -> should correctly identify a non-epoch block'
+    )
+    st.deepEqual(
+      header.cliqueExtraVanity(),
+      Buffer.alloc(32),
+      'cliqueExtraVanity() -> should return correct extra vanity value'
+    )
+    st.deepEqual(
+      header.cliqueExtraSeal(),
+      Buffer.alloc(65),
+      'cliqueExtraSeal() -> should return correct extra seal value'
+    )
+    st.throws(() => {
+      header.cliqueEpochTransitionSigners()
+    }, 'cliqueEpochTransitionSigners() -> should throw on non-epch block')
+
+    header = BlockHeader.fromHeaderData({ number: 60000, extraData: Buffer.alloc(137) }, { common })
+    st.ok(
+      header.cliqueIsEpochTransition(),
+      'cliqueIsEpochTransition() -> should correctly identify an epoch block'
+    )
+    st.deepEqual(
+      header.cliqueExtraVanity(),
+      Buffer.alloc(32),
+      'cliqueExtraVanity() -> should return correct extra vanity value'
+    )
+    st.deepEqual(
+      header.cliqueExtraSeal(),
+      Buffer.alloc(65),
+      'cliqueExtraSeal() -> should return correct extra seal value'
+    )
+    const msg =
+      'cliqueEpochTransitionSigners() -> should return the correct epoch transition signer list on epoch block'
+    st.deepEqual(header.cliqueEpochTransitionSigners(), [Buffer.alloc(20), Buffer.alloc(20)], msg)
 
     st.end()
   })

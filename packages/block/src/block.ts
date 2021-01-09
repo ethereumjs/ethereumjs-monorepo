@@ -144,8 +144,36 @@ export class Block {
    * Checks if the block is an epoch transition
    * block (only clique PoA, throws otherwise)
    */
-  isEpochTransition(): boolean {
-    return this.header.isEpochTransition()
+  cliqueIsEpochTransition(): boolean {
+    return this.header.cliqueIsEpochTransition()
+  }
+
+  /**
+   * Returns extra vanity data
+   * (only clique PoA, throws otherwise)
+   */
+  cliqueExtraVanity(): Buffer {
+    return this.header.cliqueExtraVanity()
+  }
+
+  /**
+   * Returns extra seal data
+   * (only clique PoA, throws otherwise)
+   */
+  cliqueExtraSeal(): Buffer {
+    return this.header.cliqueExtraSeal()
+  }
+
+  /**
+   * Returns a list of signers
+   * (only clique PoA, throws otherwise)
+   *
+   * This function throws if not called on an epoch
+   * transition block and should therefore be used
+   * in conjunction with `cliqueIsEpochTransition()`
+   */
+  cliqueEpochTransitionSigners(): Buffer[] {
+    return this.header.cliqueEpochTransitionSigners()
   }
 
   /**

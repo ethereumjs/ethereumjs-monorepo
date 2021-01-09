@@ -411,13 +411,29 @@ tape('[Block]: block functions', function (t) {
     st.end()
   })
 
-  t.test('should correctly call into header.isEpochTransition()', function (st) {
+  t.test('should correctly call into header clique functions', function (st) {
     const common = new Common({ chain: 'rinkeby', hardfork: 'chainstart' })
     const block = Block.fromBlockData(
-      { header: { number: 60000, extraData: Buffer.alloc(117) } },
+      { header: { number: 60000, extraData: Buffer.alloc(137) } },
       { common }
     )
-    st.ok(block.header.isEpochTransition(), 'should get the header function results')
+    st.ok(
+      block.cliqueIsEpochTransition(),
+      'header.cliqueIsEpochTransition() -> should get the header function results'
+    )
+    st.deepEqual(
+      block.cliqueExtraVanity(),
+      Buffer.alloc(32),
+      'header.cliqueExtraVanity() -> should get the header function results'
+    )
+    st.deepEqual(
+      block.cliqueExtraSeal(),
+      Buffer.alloc(65),
+      'header.cliqueExtraSeal() -> should get the header function results'
+    )
+    const msg = 'header.cliqueEpochTransitionSigners() -> should get the header function results'
+    st.deepEqual(block.cliqueEpochTransitionSigners(), [Buffer.alloc(20), Buffer.alloc(20)], msg)
+
     st.end()
   })
 
