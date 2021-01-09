@@ -16,7 +16,7 @@ export class CheckpointTrie extends BaseTrie {
    * Is the trie during a checkpoint phase?
    */
   get isCheckpoint() {
-    return this.db.checkpoints.length > 0
+    return this.db.isCheckpoint
   }
 
   /**
