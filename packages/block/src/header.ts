@@ -223,7 +223,7 @@ export class BlockHeader {
     this.mixHash = mixHash
     this.nonce = nonce
 
-    this._validateBufferLengths()
+    this._validateHeaderFields()
     this._checkDAOExtraData()
 
     // Now we have set all the values of this Header, we possibly have set a dummy
@@ -242,7 +242,7 @@ export class BlockHeader {
   /**
    * Validates correct buffer lengths, throws if invalid.
    */
-  _validateBufferLengths() {
+  _validateHeaderFields() {
     const { parentHash, stateRoot, transactionsTrie, receiptTrie, extraData, mixHash, nonce } = this
     if (parentHash.length !== 32) {
       throw new Error(`parentHash must be 32 bytes, received ${parentHash.length} bytes`)
@@ -261,13 +261,19 @@ export class BlockHeader {
     if (mixHash.length !== 32) {
       throw new Error(`mixHash must be 32 bytes, received ${mixHash.length} bytes`)
     }
+    // PoA Clique specfific validations
     if (this._common.consensusAlgorithm() === 'clique') {
       let minLength = CLIQUE_EXTRA_VANITY + CLIQUE_EXTRA_SEAL
       if (!this.cliqueIsEpochTransition()) {
+        // ExtraData length on epoch transition
         if (extraData.length !== minLength) {
           throw new Error(
             `extraData must be ${minLength} bytes on non-epoch transition blocks, received ${extraData.length} bytes`
           )
+        }
+        // coinbase (beneficiary) on epoch transition
+        if (!this.coinbase.isZero()) {
+          throw new Error(`coinbase must be filled with zeros on epoch transition blocks, received ${this.coinbase.toString()}`)
         }
       } else {
         // Must contain at least one signer
@@ -283,6 +289,10 @@ export class BlockHeader {
             `invalid signer list length in extraData, received signer length of ${signerLength} (not divisible by 20)`
           )
         }
+      }
+      // MixHash format
+      if (!this.mixHash.equals(Buffer.alloc(32))) {
+        throw new Error(`mixHash must be filled with zeros, received ${this.mixHash}`)
       }
     }
 
