@@ -171,7 +171,7 @@ export default async function runBlock(this: VM, opts: RunBlockOpts): Promise<Ru
     const bloom = result.bloom.bitvector
     block = Block.fromBlockData({
       ...block,
-      header: { ...block.header, stateRoot, bloom },
+      header: { ...block.header, stateRoot, bloom, receiptTrie: result.receiptRoot },
     })
   } else {
     if (result.receiptRoot && !result.receiptRoot.equals(block.header.receiptTrie)) {
