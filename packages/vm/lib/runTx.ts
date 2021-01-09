@@ -27,6 +27,12 @@ export interface RunTxOpts {
    * If true, skips the balance check
    */
   skipBalance?: boolean
+
+  /**
+   * If true, skips the validation of the tx's gas limit
+   * agains the block's gas limit.
+   */
+  skipBlockGasLimitValidation?: boolean
 }
 
 /**
@@ -66,7 +72,10 @@ export default async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxRes
   // create a reasonable default if no block is given
   opts.block = opts.block ?? Block.fromBlockData({}, { common: opts.tx.common })
 
-  if (opts.block.header.gasLimit.lt(opts.tx.gasLimit)) {
+  if (
+    opts.skipBlockGasLimitValidation !== true &&
+    opts.block.header.gasLimit.lt(opts.tx.gasLimit)
+  ) {
     throw new Error('tx has a higher gas limit than the block')
   }
 
