@@ -3,6 +3,7 @@ import {
   Address,
   BN,
   bnToHex,
+  ecrecover,
   KECCAK256_RLP_ARRAY,
   KECCAK256_RLP,
   rlp,
@@ -10,6 +11,7 @@ import {
   toBuffer,
   unpadBuffer,
   zeros,
+  bufferToInt,
 } from 'ethereumjs-util'
 import { HeaderData, JsonHeader, BlockHeaderBuffer, Blockchain, BlockOptions } from './types'
 
@@ -273,7 +275,9 @@ export class BlockHeader {
         }
         // coinbase (beneficiary) on epoch transition
         if (!this.coinbase.isZero()) {
-          throw new Error(`coinbase must be filled with zeros on epoch transition blocks, received ${this.coinbase.toString()}`)
+          throw new Error(
+            `coinbase must be filled with zeros on epoch transition blocks, received ${this.coinbase.toString()}`
+          )
         }
       } else {
         // Must contain at least one signer
@@ -495,6 +499,14 @@ export class BlockHeader {
    * Returns a Buffer Array of the raw Buffers in this header, in order.
    */
   raw(): BlockHeaderBuffer {
+    let extraData
+    // Hash for PoA clique blocks is created without the seal
+    if (this._common.consensusAlgorithm() === 'clique') {
+      extraData = this.extraData.slice(0, this.extraData.length - CLIQUE_EXTRA_SEAL)
+    } else {
+      extraData = this.extraData
+    }
+
     return [
       this.parentHash,
       this.uncleHash,
@@ -508,7 +520,7 @@ export class BlockHeader {
       unpadBuffer(toBuffer(this.gasLimit)),
       unpadBuffer(toBuffer(this.gasUsed)),
       unpadBuffer(toBuffer(this.timestamp)),
-      this.extraData,
+      extraData,
       this.mixHash,
       this.nonce,
     ]
@@ -586,6 +598,33 @@ export class BlockHeader {
       signerList.push(signerBuffer.slice(start, start + signerLength))
     }
     return signerList
+  }
+
+  /**
+   * Verifies the signature of the block (last 65 bytes of extraData field)
+   * (only clique PoA, throws otherwise)
+   *
+   *  Method throws if signature is invalid
+   *
+   * DRAFT: METHOD IN DRAFT STATE, NEEDS THOROUGH TESTING
+   */
+  cliqueVerifySignature(signerList: Buffer[]): void {
+    this._checkClique()
+    const extraSeal = this.cliqueExtraSeal()
+    const r = extraSeal.slice(0, 32)
+    const s = extraSeal.slice(32, 64)
+    const v = bufferToInt(extraSeal.slice(64, 65))
+    const pubKey = ecrecover(this.hash(), v, r, s)
+    const address = Address.fromPublicKey(pubKey)
+    if (
+      !signerList.find((signer) => {
+        return signer.equals(address.toBuffer())
+      })
+    ) {
+      throw new Error(
+        `block signature validation failed (clique), ${address.toString()} not in signer list`
+      )
+    }
   }
 
   /**
