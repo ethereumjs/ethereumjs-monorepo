@@ -10,6 +10,12 @@ import { DBTarget } from './db/operation'
 import type { LevelUp } from 'levelup'
 const level = require('level-mem')
 
+type CliqueLatestSignerStates = [[Buffer, Buffer[]]]
+type CliqueLatestVotes = [[Buffer, [Buffer, Buffer, Buffer]]]
+
+// const CLIQUE_NONCE_AUTH: Buffer = Buffer.from('ffffffffffffffff', 'hex')
+// const CLIQUE_NONCE_DROP = Buffer.alloc(8)
+
 type OnBlock = (block: Block, reorg: boolean) => Promise<void> | void
 
 export interface BlockchainInterface {
@@ -96,8 +102,6 @@ export default class Blockchain implements BlockchainInterface {
   db: LevelUp
   dbManager: DBManager
 
-  _ethash?: Ethash
-
   private _genesis?: Buffer // the genesis hash of this blockchain
 
   // The following two heads and the heads stored within the `_heads` always point
@@ -117,6 +121,46 @@ export default class Blockchain implements BlockchainInterface {
   private _common: Common
   private readonly _validateConsensus: boolean
   private readonly _validateBlocks: boolean
+
+  _ethash?: Ethash
+
+  /**
+   * Keep signer history data (signer states and votes) for all
+   * block numbers >= HEAD_BLOCK - CLIQUE_SIGNER_HISTORY_BLOCK_LIMIT
+   *
+   * This defines a limit for reorgs on PoA clique chains
+   */
+  private CLIQUE_SIGNER_HISTORY_BLOCK_LIMIT = 100
+
+  /**
+   * List with the latest signer states checkpointed on blocks where
+   * a change (added new or removed a signer) occurred.
+   *
+   * Format:
+   * [ [BLOCK_NUMBER_1, [SIGNER1, SIGNER 2,]], [BLOCK_NUMBER2, [SIGNER1, SIGNER3]], ...]
+   *
+   * The top element from the array represents the list of current signers.
+   * On reorgs delete the top elements from the array until BLOCK_NUMBER > REORG_BLOCK
+   *
+   * Always keep at least one item on the stack
+   */
+  private _cliqueLatestSignerStates?: CliqueLatestSignerStates
+
+  /**
+   * List with the latest signer votes
+   *
+   * Format:
+   * [ [BLOCK_NUMBER_1, [SIGNER, BENEFICIARY, AUTH]], [BLOCK_NUMBER_1, [SIGNER, BENEFICIARY, AUTH]] ]
+   * where AUTH = CLIQUE_NONCE_AUTH | CLIQUE_NONCE_DROP
+   *
+   * For votes all elements here must be taken into account with a
+   * block number >= LAST_EPOCH_BLOCK
+   * (nevertheless keep entries with blocks before EPOCH_BLOCK in case a reorg happens
+   * during an epoch change)
+   *
+   * On reorgs delete the top elements from the array until BLOCK_NUMBER > REORG_BLOCK.
+   */
+  private _cliqueLatestVotes?: CliqueLatestVotes
 
   /**
    * Creates new Blockchain object
