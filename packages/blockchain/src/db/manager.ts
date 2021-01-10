@@ -74,6 +74,13 @@ export class DBManager {
   }
 
   /**
+   * Fetches clique signers.
+   */
+  async getCliqueSigners(): Promise<Buffer> {
+    return this.get(DBTarget.CliqueSigners)
+  }
+
+  /**
    * Fetches a block (header and body) given a block id,
    * which can be either its hash or its number.
    */

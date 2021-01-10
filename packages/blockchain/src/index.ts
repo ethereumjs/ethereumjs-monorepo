@@ -1,5 +1,5 @@
 import Semaphore from 'semaphore-async-await'
-import { BN } from 'ethereumjs-util'
+import { BN, rlp } from 'ethereumjs-util'
 import { Block, BlockHeader } from '@ethereumjs/block'
 import Ethash from '@ethereumjs/ethash'
 import Common from '@ethereumjs/common'
@@ -88,9 +88,9 @@ export interface BlockchainOptions {
   /**
    * The blockchain only initializes succesfully if it has a genesis block. If
    * there is no block available in the DB and a `genesisBlock` is provided,
-   * then the provided `genesisBlock` will be used as genesis If no block is
+   * then the provided `genesisBlock` will be used as genesis. If no block is
    * present in the DB and no block is provided, then the genesis block as
-   * provided from the `common` will be used
+   * provided from the `common` will be used.
    */
   genesisBlock?: Block
 }
@@ -251,10 +251,10 @@ export default class Blockchain implements BlockchainInterface {
    * @hidden
    */
   private async _init(genesisBlock?: Block): Promise<void> {
-    let DBGenesisBlock
+    let dbGenesisBlock
     try {
       const genesisHash = await this.dbManager.numberToHash(new BN(0))
-      DBGenesisBlock = await this.dbManager.getBlock(genesisHash)
+      dbGenesisBlock = await this.dbManager.getBlock(genesisHash)
     } catch (error) {
       if (error.type !== 'NotFoundError') {
         throw error
@@ -271,7 +271,7 @@ export default class Blockchain implements BlockchainInterface {
 
     // If the DB has a genesis block, then verify that the genesis block in the
     // DB is indeed the Genesis block generated or assigned.
-    if (DBGenesisBlock && !genesisBlock.hash().equals(DBGenesisBlock.hash())) {
+    if (dbGenesisBlock && !genesisBlock.hash().equals(dbGenesisBlock.hash())) {
       throw new Error(
         'The genesis block in the DB has a different hash than the provided genesis block.'
       )
@@ -279,14 +279,26 @@ export default class Blockchain implements BlockchainInterface {
 
     const genesisHash = genesisBlock.hash()
 
-    if (!DBGenesisBlock) {
+    if (!dbGenesisBlock) {
       // If there is no genesis block put the genesis block in the DB.
       // For that TD, the BlockOrHeader, and the Lookups have to be saved.
       const dbOps: DBOp[] = []
       dbOps.push(DBSetTD(genesisBlock.header.difficulty.clone(), new BN(0), genesisHash))
       DBSetBlockOrHeader(genesisBlock).map((op) => dbOps.push(op))
       DBSaveLookups(genesisHash, new BN(0)).map((op) => dbOps.push(op))
+
+      // Clique: save initial genesis block signers to DB
+      if (this._common.consensusAlgorithm() === 'clique') {
+        const signers = genesisBlock.header.cliqueEpochTransitionSigners()
+        dbOps.push(DBOp.set(DBTarget.CliqueSigners, rlp.encode(signers)))
+      }
       await this.dbManager.batch(dbOps)
+    }
+
+    // Clique: read current signer list
+    if (this._common.consensusAlgorithm() === 'clique') {
+      const signersB = await this.dbManager.getCliqueSigners()
+      this._cliqueLatestSignerStates = <CliqueLatestSignerStates>(<unknown>rlp.decode(signersB))
     }
 
     // At this point, we can safely set genesisHash as the _genesis hash in this

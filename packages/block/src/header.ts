@@ -273,13 +273,13 @@ export class BlockHeader {
             `extraData must be ${minLength} bytes on non-epoch transition blocks, received ${extraData.length} bytes`
           )
         }
-        // coinbase (beneficiary) on epoch transition
-        if (!this.coinbase.isZero()) {
+      } else {
+        const signerLength = extraData.length - minLength
+        if (signerLength % 20 !== 0) {
           throw new Error(
-            `coinbase must be filled with zeros on epoch transition blocks, received ${this.coinbase.toString()}`
+            `invalid signer list length in extraData, received signer length of ${signerLength} (not divisible by 20)`
           )
         }
-      } else {
         // Must contain at least one signer
         minLength += 20
         if (extraData.length < minLength) {
@@ -287,10 +287,10 @@ export class BlockHeader {
             `extraData must be at least ${minLength} bytes on epoch transition blocks, received ${extraData.length} bytes`
           )
         }
-        const signerLength = extraData.length - minLength
-        if (signerLength % 20 !== 0) {
+        // coinbase (beneficiary) on epoch transition
+        if (!this.coinbase.isZero()) {
           throw new Error(
-            `invalid signer list length in extraData, received signer length of ${signerLength} (not divisible by 20)`
+            `coinbase must be filled with zeros on epoch transition blocks, received ${this.coinbase.toString()}`
           )
         }
       }
