@@ -73,6 +73,10 @@ export default async function runBlockchainTest(options: any, testData: any, t: 
     common,
   })
 
+  // Need to await the init promise: in some tests, we do not run the iterator (which awaits the initPromise)
+  // If the initPromise does not finish, the `rawHead` of `blockchain.meta()` is still `undefined`.
+  await blockchain.initPromise
+
   // set up pre-state
   await setupPreConditions(vm.stateManager._trie, testData)
 

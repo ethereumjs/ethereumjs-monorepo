@@ -97,8 +97,14 @@ export class CheckpointDB extends DB {
       }
     }
     // Nothing has been found in cache, look up from disk
-    // TODO: put value in cache if we are a checkpoint.
-    return await super.get(key)
+
+    const value = await super.get(key)
+    if (this.isCheckpoint) {
+      // Since we are a checkpoint, put this value in cache, so future `get` calls will not look the key up again from disk.
+      this.checkpoints[this.checkpoints.length - 1].keyValueMap.set(key.toString('hex'), value)
+    }
+
+    return value
   }
 
   /**
