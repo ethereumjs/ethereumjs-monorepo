@@ -245,7 +245,7 @@ export class BlockHeader {
    * Validates correct buffer lengths, throws if invalid.
    */
   _validateHeaderFields() {
-    const { parentHash, stateRoot, transactionsTrie, receiptTrie, extraData, mixHash, nonce } = this
+    const { parentHash, stateRoot, transactionsTrie, receiptTrie, mixHash, nonce } = this
     if (parentHash.length !== 32) {
       throw new Error(`parentHash must be 32 bytes, received ${parentHash.length} bytes`)
     }
@@ -262,42 +262,6 @@ export class BlockHeader {
     }
     if (mixHash.length !== 32) {
       throw new Error(`mixHash must be 32 bytes, received ${mixHash.length} bytes`)
-    }
-    // PoA Clique specfific validations
-    if (this._common.consensusAlgorithm() === 'clique') {
-      let minLength = CLIQUE_EXTRA_VANITY + CLIQUE_EXTRA_SEAL
-      if (!this.cliqueIsEpochTransition()) {
-        // ExtraData length on epoch transition
-        if (extraData.length !== minLength) {
-          throw new Error(
-            `extraData must be ${minLength} bytes on non-epoch transition blocks, received ${extraData.length} bytes`
-          )
-        }
-      } else {
-        const signerLength = extraData.length - minLength
-        if (signerLength % 20 !== 0) {
-          throw new Error(
-            `invalid signer list length in extraData, received signer length of ${signerLength} (not divisible by 20)`
-          )
-        }
-        // Must contain at least one signer
-        minLength += 20
-        if (extraData.length < minLength) {
-          throw new Error(
-            `extraData must be at least ${minLength} bytes on epoch transition blocks, received ${extraData.length} bytes`
-          )
-        }
-        // coinbase (beneficiary) on epoch transition
-        if (!this.coinbase.isZero()) {
-          throw new Error(
-            `coinbase must be filled with zeros on epoch transition blocks, received ${this.coinbase.toString()}`
-          )
-        }
-      }
-      // MixHash format
-      if (!this.mixHash.equals(Buffer.alloc(32))) {
-        throw new Error(`mixHash must be filled with zeros, received ${this.mixHash}`)
-      }
     }
 
     if (nonce.length !== 8) {
@@ -452,6 +416,33 @@ export class BlockHeader {
       ) {
         throw new Error('invalid amount of extra data')
       }
+    } else {
+      const minLength = CLIQUE_EXTRA_VANITY + CLIQUE_EXTRA_SEAL
+      if (!this.cliqueIsEpochTransition()) {
+        // ExtraData length on epoch transition
+        if (this.extraData.length !== minLength) {
+          throw new Error(
+            `extraData must be ${minLength} bytes on non-epoch transition blocks, received ${this.extraData.length} bytes`
+          )
+        }
+      } else {
+        const signerLength = this.extraData.length - minLength
+        if (signerLength % 20 !== 0) {
+          throw new Error(
+            `invalid signer list length in extraData, received signer length of ${signerLength} (not divisible by 20)`
+          )
+        }
+        // coinbase (beneficiary) on epoch transition
+        if (!this.coinbase.isZero()) {
+          throw new Error(
+            `coinbase must be filled with zeros on epoch transition blocks, received ${this.coinbase.toString()}`
+          )
+        }
+      }
+      // MixHash format
+      if (!this.mixHash.equals(Buffer.alloc(32))) {
+        throw new Error(`mixHash must be filled with zeros, received ${this.mixHash}`)
+      }
     }
 
     const parentHeader = await this._getHeaderByHash(blockchain, this.parentHash)
@@ -499,14 +490,6 @@ export class BlockHeader {
    * Returns a Buffer Array of the raw Buffers in this header, in order.
    */
   raw(): BlockHeaderBuffer {
-    let extraData
-    // Hash for PoA clique blocks is created without the seal
-    if (this._common.consensusAlgorithm() === 'clique') {
-      extraData = this.extraData.slice(0, this.extraData.length - CLIQUE_EXTRA_SEAL)
-    } else {
-      extraData = this.extraData
-    }
-
     return [
       this.parentHash,
       this.uncleHash,
@@ -520,7 +503,7 @@ export class BlockHeader {
       unpadBuffer(toBuffer(this.gasLimit)),
       unpadBuffer(toBuffer(this.gasUsed)),
       unpadBuffer(toBuffer(this.timestamp)),
-      extraData,
+      this.extraData,
       this.mixHash,
       this.nonce,
     ]
@@ -530,6 +513,12 @@ export class BlockHeader {
    * Returns the hash of the block header.
    */
   hash(): Buffer {
+    const raw = this.raw()
+    // Hash for PoA clique blocks is created without the seal
+    if (this._common.consensusAlgorithm() === 'clique') {
+      raw[12] = this.extraData.slice(0, this.extraData.length - CLIQUE_EXTRA_SEAL)
+    }
+
     return rlphash(this.raw())
   }
 

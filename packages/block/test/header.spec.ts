@@ -38,7 +38,10 @@ tape('[Block]: Header functions', function (t) {
   t.test('should test header initialization', function (st) {
     const common = new Common({ chain: 'ropsten', hardfork: 'chainstart' })
     let header = BlockHeader.genesis(undefined, { common })
-    st.ok(header.hash().toString('hex'), 'block should initialize')
+    st.ok(header.hash().toString('hex'), 'genesis block should initialize')
+
+    header = BlockHeader.fromHeaderData({}, { common })
+    st.ok(header.hash().toString('hex'), 'default block should initialize')
 
     // test default freeze values
     // also test if the options are carried over to the constructor
@@ -75,6 +78,17 @@ tape('[Block]: Header functions', function (t) {
 
     header = BlockHeader.fromValuesArray(headerArray, { freeze: false })
     st.ok(!Object.isFrozen(header), 'block should not be frozen when freeze deactivated in options')
+
+    st.end()
+  })
+
+  t.test('should test header initialization -> clique', function (st) {
+    const common = new Common({ chain: 'rinkeby', hardfork: 'chainstart' })
+    let header = BlockHeader.genesis(undefined, { common })
+    st.ok(header.hash().toString('hex'), 'genesis block should initialize')
+
+    header = BlockHeader.fromHeaderData({}, { common })
+    st.ok(header.hash().toString('hex'), 'default block should initialize')
 
     st.end()
   })
