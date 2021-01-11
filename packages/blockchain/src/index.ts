@@ -402,10 +402,19 @@ export default class Blockchain implements BlockchainInterface {
   private async cliqueUpdateVotes(header?: BlockHeader) {
     // Block contains a vote on a new signer
     if (header && !header.coinbase.toBuffer().equals(CLIQUE_EMPTY_BENEFICIARY)) {
-      const latestVote = [
-        header.number.toBuffer(),
-        [header.cliqueSignatureToAddress().toBuffer(), header.coinbase.toBuffer(), header.nonce],
-      ]
+      const signer = header.cliqueSignatureToAddress().toBuffer()
+      const beneficiary = header.coinbase.toBuffer()
+      const nonce = header.nonce
+      const latestVote = [header.number.toBuffer(), [signer, beneficiary, header.nonce]]
+      const alreadyVoted = this._cliqueLatestVotes.find((vote: CliqueVote) => {
+        vote[1][0].equals(signer) && vote[1][1].equals(beneficiary) && vote[1][2].equals(nonce)
+      })
+        ? true
+        : false
+      if (!alreadyVoted) {
+        //TODO do the voting
+      }
+
       this._cliqueLatestVotes.push(latestVote as CliqueVote)
     }
     const dbOps: DBOp[] = []
@@ -599,7 +608,11 @@ export default class Blockchain implements BlockchainInterface {
       dbOps = dbOps.concat(DBSetBlockOrHeader(block))
 
       // if total difficulty is higher than current, add it to canonical chain
-      if (block.isGenesis() || td.gt(currentTd.header)) {
+      if (
+        block.isGenesis() ||
+        (this._common.consensusType() === 'pow' && td.gt(currentTd.header)) ||
+        this._common.consensusType() === 'poa'
+      ) {
         this._headHeaderHash = blockHash
         if (item instanceof Block) {
           this._headBlockHash = blockHash
