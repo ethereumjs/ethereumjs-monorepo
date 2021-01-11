@@ -74,7 +74,9 @@ export interface BlockchainOptions {
    * This flags indicates if a block should be validated along the consensus algorithm
    * or protocol used by the chain, e.g. by verifying the PoW on the block.
    *
-   * Supported: 'pow' with 'ethash' algorithm (taken from the `Common` instance)
+   * Supported consensus types and algorithms (taken from the `Common` instance):
+   * - 'pow' with 'ethash' algorithm (validates the proof-of-work)
+   * - 'poa' with 'clique' algorithm (verifies the block signatures)
    * Default: `true`.
    */
   validateConsensus?: boolean
@@ -195,14 +197,20 @@ export default class Blockchain implements BlockchainInterface {
     this.dbManager = new DBManager(this.db, this._common)
 
     if (this._validateConsensus) {
-      if (this._common.consensusType() !== 'pow') {
-        throw new Error('consensus validation only supported for pow chains')
+      if (this._common.consensusType() === 'pow') {
+        if (this._common.consensusAlgorithm() !== 'ethash') {
+          throw new Error('consensus validation only supported for pow ethash algorithm')
+        } else {
+          this._ethash = new Ethash(this.db)
+        }
       }
-      if (this._common.consensusAlgorithm() !== 'ethash') {
-        throw new Error('consensus validation only supported for pow ethash algorithm')
+      if (this._common.consensusType() === 'poa') {
+        if (this._common.consensusAlgorithm() !== 'clique') {
+          throw new Error(
+            'consensus (signature) validation only supported for poa clique algorithm'
+          )
+        }
       }
-
-      this._ethash = new Ethash(this.db)
     }
 
     this._heads = {}
@@ -541,10 +549,16 @@ export default class Blockchain implements BlockchainInterface {
       }
 
       if (this._validateConsensus) {
-        if (this._ethash) {
-          const valid = await this._ethash.verifyPOW(block)
+        if (this._common.consensusAlgorithm() !== 'ethash') {
+          const valid = await this._ethash!.verifyPOW(block)
           if (!valid) {
             throw new Error('invalid POW')
+          }
+        }
+        if (this._common.consensusAlgorithm() !== 'clique') {
+          const valid = header.cliqueVerifySignature(this.cliqueActiveSigners())
+          if (!valid) {
+            throw new Error('invalid PoA block signature (clique)')
           }
         }
       }

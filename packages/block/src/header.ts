@@ -597,7 +597,7 @@ export class BlockHeader {
    *
    * DRAFT: METHOD IN DRAFT STATE, NEEDS THOROUGH TESTING
    */
-  cliqueVerifySignature(signerList: Buffer[]): void {
+  cliqueVerifySignature(signerList: Buffer[]): boolean {
     this._checkClique()
     const extraSeal = this.cliqueExtraSeal()
     const r = extraSeal.slice(0, 32)
@@ -605,15 +605,13 @@ export class BlockHeader {
     const v = bufferToInt(extraSeal.slice(64, 65))
     const pubKey = ecrecover(this.hash(), v, r, s)
     const address = Address.fromPublicKey(pubKey)
-    if (
-      !signerList.find((signer) => {
-        return signer.equals(address.toBuffer())
-      })
-    ) {
-      throw new Error(
-        `block signature validation failed (clique), ${address.toString()} not in signer list`
-      )
+    const signerFound = signerList.find((signer) => {
+      return signer.equals(address.toBuffer())
+    })
+    if (signerFound) {
+      return true
     }
+    return false
   }
 
   /**
