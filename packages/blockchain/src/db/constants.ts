@@ -20,6 +20,11 @@ const HEAD_BLOCK_KEY = 'LastBlock'
 const CLIQUE_SIGNERS_KEY = 'CliqueSigners'
 
 /**
+ * Clique votes
+ */
+const CLIQUE_VOTES_KEY = 'CliqueVotes'
+
+/**
  * headerPrefix + number + hash -> header
  */
 const HEADER_PREFIX = Buffer.from('h')
@@ -69,6 +74,7 @@ export {
   HEAD_HEADER_KEY,
   HEAD_BLOCK_KEY,
   CLIQUE_SIGNERS_KEY,
+  CLIQUE_VOTES_KEY,
   bufBE8,
   tdKey,
   headerKey,

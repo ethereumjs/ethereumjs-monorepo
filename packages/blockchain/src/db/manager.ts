@@ -12,7 +12,7 @@ import Cache from './cache'
 import { DatabaseKey, DBOp, DBTarget, DBOpData } from './operation'
 
 import type { LevelUp } from 'levelup'
-import { CliqueLatestSignerStates } from '..'
+import { CliqueLatestSignerStates, CliqueLatestVotes } from '..'
 
 const level = require('level-mem')
 
@@ -80,6 +80,14 @@ export class DBManager {
   async getCliqueLatestSignerStates(): Promise<CliqueLatestSignerStates> {
     const signerStates = await this.get(DBTarget.CliqueSignerStates)
     return <CliqueLatestSignerStates>(<unknown>rlp.decode(signerStates))
+  }
+
+  /**
+   * Fetches clique votes.
+   */
+  async getCliqueLatestVotes(): Promise<CliqueLatestVotes> {
+    const votes = await this.get(DBTarget.CliqueVotes)
+    return <CliqueLatestVotes>(<unknown>rlp.decode(votes))
   }
 
   /**

@@ -9,6 +9,7 @@ import {
   numberToHashKey,
   hashToNumberKey,
   CLIQUE_SIGNERS_KEY as CLIQUE_SIGNER_STATES_KEY,
+  CLIQUE_VOTES_KEY,
 } from './constants'
 
 import { CacheMap } from './manager'
@@ -21,6 +22,7 @@ export enum DBTarget {
   NumberToHash,
   TotalDifficulty,
   CliqueSignerStates,
+  CliqueVotes,
   Body,
   Header,
 }
@@ -76,6 +78,10 @@ export class DBOp {
       }
       case DBTarget.CliqueSignerStates: {
         this.baseDBOp.key = CLIQUE_SIGNER_STATES_KEY
+        break
+      }
+      case DBTarget.CliqueVotes: {
+        this.baseDBOp.key = CLIQUE_VOTES_KEY
         break
       }
       case DBTarget.HashToNumber: {
