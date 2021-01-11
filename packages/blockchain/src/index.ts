@@ -10,8 +10,10 @@ import { DBTarget } from './db/operation'
 import type { LevelUp } from 'levelup'
 const level = require('level-mem')
 
-type CliqueLatestSignerStates = [[Buffer, Buffer[]]]
-type CliqueLatestVotes = [[Buffer, [Buffer, Buffer, Buffer]]]
+export type CliqueSignerState = [Buffer, Buffer[]]
+export type CliqueLatestSignerStates = CliqueSignerState[]
+export type CliqueVotes = [Buffer, [Buffer, Buffer, Buffer]]
+export type CliqueLatestVotes = CliqueVotes[]
 
 // const CLIQUE_NONCE_AUTH: Buffer = Buffer.from('ffffffffffffffff', 'hex')
 // const CLIQUE_NONCE_DROP = Buffer.alloc(8)
@@ -144,7 +146,7 @@ export default class Blockchain implements BlockchainInterface {
    *
    * Always keep at least one item on the stack
    */
-  private _cliqueLatestSignerStates?: CliqueLatestSignerStates
+  private _cliqueLatestSignerStates: CliqueLatestSignerStates = []
 
   /**
    * List with the latest signer votes
@@ -289,16 +291,18 @@ export default class Blockchain implements BlockchainInterface {
 
       // Clique: save initial genesis block signers to DB
       if (this._common.consensusAlgorithm() === 'clique') {
-        const signers = genesisBlock.header.cliqueEpochTransitionSigners()
-        dbOps.push(DBOp.set(DBTarget.CliqueSigners, rlp.encode(signers)))
+        const genesisSignerState = [
+          genesisBlock.header.number.toBuffer(),
+          genesisBlock.header.cliqueEpochTransitionSigners(),
+        ]
+        await this.cliqueUpdateSignerStates(genesisSignerState as CliqueSignerState)
       }
       await this.dbManager.batch(dbOps)
     }
 
     // Clique: read current signer list
     if (this._common.consensusAlgorithm() === 'clique') {
-      const signersB = await this.dbManager.getCliqueSigners()
-      this._cliqueLatestSignerStates = <CliqueLatestSignerStates>(<unknown>rlp.decode(signersB))
+      this._cliqueLatestSignerStates = await this.dbManager.getCliqueLatestSignerStates()
     }
 
     // At this point, we can safely set genesisHash as the _genesis hash in this
@@ -367,6 +371,30 @@ export default class Blockchain implements BlockchainInterface {
     } finally {
       this._lock.release()
     }
+  }
+
+  private _checkClique() {
+    if (this._common.consensusAlgorithm() !== 'clique') {
+      throw new Error('Function call only supported for clique PoA networks')
+    }
+  }
+
+  private async cliqueUpdateSignerStates(signerState?: CliqueSignerState) {
+    const dbOps: DBOp[] = []
+    if (signerState) {
+      this._cliqueLatestSignerStates.push(signerState)
+      dbOps.push(DBOp.set(DBTarget.CliqueSignerStates, rlp.encode(this._cliqueLatestSignerStates)))
+    }
+    await this.dbManager.batch(dbOps)
+  }
+
+  /**
+   * Returns a list with the current block signers
+   * (only clique PoA, throws otherwise)
+   */
+  public cliqueActiveSigners() {
+    this._checkClique()
+    return this._cliqueLatestSignerStates[this._cliqueLatestSignerStates.length - 1][1]
   }
 
   /**
