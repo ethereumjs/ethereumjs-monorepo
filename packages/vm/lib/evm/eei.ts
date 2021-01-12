@@ -259,7 +259,14 @@ export default class EEI {
    * Returns the block's beneficiary address.
    */
   getBlockCoinbase(): BN {
-    return new BN(this._env.block.header.coinbase.buf)
+    let coinbase: BN
+    if (this._common.consensusAlgorithm() === 'clique') {
+      coinbase = new BN(this._env.block.header.cliqueSignatureToAddress().toBuffer())
+    } else {
+      coinbase = new BN(this._env.block.header.coinbase.buf)
+    }
+
+    return coinbase
   }
 
   /**
