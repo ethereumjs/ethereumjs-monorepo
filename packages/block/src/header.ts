@@ -36,7 +36,8 @@ export class BlockHeader {
   public readonly gasLimit: BN
   public readonly gasUsed: BN
   public readonly timestamp: BN
-  public readonly extraData: Buffer
+  // no readonly for extraData to ease signature addition for PoA blocks
+  public extraData: Buffer
   public readonly mixHash: Buffer
   public readonly nonce: Buffer
 
@@ -515,11 +516,10 @@ export class BlockHeader {
   hash(): Buffer {
     const raw = this.raw()
     // Hash for PoA clique blocks is created without the seal
-    if (this._common.consensusAlgorithm() === 'clique') {
+    if (this._common.consensusAlgorithm() === 'clique' && !this.isGenesis()) {
       raw[12] = this.extraData.slice(0, this.extraData.length - CLIQUE_EXTRA_SEAL)
     }
-
-    return rlphash(this.raw())
+    return rlphash(raw)
   }
 
   /**
@@ -578,8 +578,10 @@ export class BlockHeader {
     if (!this.cliqueIsEpochTransition()) {
       throw new Error('Singers are only included in epoch transition blocks (clique)')
     }
-    let signerBuffer = this.extraData.slice(CLIQUE_EXTRA_VANITY)
-    signerBuffer = signerBuffer.slice(0, signerBuffer.length - CLIQUE_EXTRA_SEAL)
+
+    const start = CLIQUE_EXTRA_VANITY
+    const end = this.extraData.length - CLIQUE_EXTRA_SEAL
+    const signerBuffer = this.extraData.slice(start, end)
 
     const signerList: Buffer[] = []
     const signerLength = 20
@@ -594,8 +596,6 @@ export class BlockHeader {
    * (only clique PoA, throws otherwise)
    *
    *  Method throws if signature is invalid
-   *
-   * DRAFT: METHOD IN DRAFT STATE, NEEDS THOROUGH TESTING
    */
   cliqueVerifySignature(signerList: Buffer[]): boolean {
     this._checkClique('cliqueVerifySignature')

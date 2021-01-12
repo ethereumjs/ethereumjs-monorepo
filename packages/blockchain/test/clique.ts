@@ -144,7 +144,6 @@ tape('Clique: Initialization', (t) => {
     const block = Block.fromBlockData(blockData, { common: COMMON, freeze: false })
     const signature = ecsign(block.header.hash(), signer.privateKey)
     const signatureB = Buffer.concat([signature.r, signature.s, intToBuffer(signature.v - 27)])
-    //@ts-ignore
     block.header.extraData = Buffer.concat([block.header.cliqueExtraVanity(), signatureB])
 
     await blockchain.putBlock(block)
