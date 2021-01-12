@@ -48,7 +48,7 @@ Properties of a `Transaction` object are frozen with `Object.freeze()` which giv
 
 ## Fake Transaction
 
-Creating a fake tansaction for use in e.g. `VM.runTx()` is simple, just overwrite `getSenderAddress()` with a custom [`Address`](https://github.com/ethereumjs/ethereumjs-util/blob/master/docs/classes/_address_.address.md) like so:
+Creating a fake transaction for use in e.g. `VM.runTx()` is simple, just overwrite `getSenderAddress()` with a custom [`Address`](https://github.com/ethereumjs/ethereumjs-util/blob/master/docs/classes/_address_.address.md) like so:
 
 ```typescript
 import { Address } from 'ethereumjs-util'
