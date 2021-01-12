@@ -16,7 +16,7 @@ export type CliqueVote = [Buffer, [Buffer, Buffer, Buffer]]
 export type CliqueLatestVotes = CliqueVote[]
 
 const CLIQUE_EMPTY_BENEFICIARY = Buffer.alloc(20)
-//const CLIQUE_NONCE_AUTH: Buffer = Buffer.from('ffffffffffffffff', 'hex')
+const CLIQUE_NONCE_AUTH: Buffer = Buffer.from('ffffffffffffffff', 'hex')
 //const CLIQUE_NONCE_DROP = Buffer.alloc(8)
 
 type OnBlock = (block: Block, reorg: boolean) => Promise<void> | void
@@ -402,20 +402,47 @@ export default class Blockchain implements BlockchainInterface {
   private async cliqueUpdateVotes(header?: BlockHeader) {
     // Block contains a vote on a new signer
     if (header && !header.coinbase.toBuffer().equals(CLIQUE_EMPTY_BENEFICIARY)) {
+      // 1 -> 1, 2 -> 2, 3 -> 2, 4 -> 2, 5 -> 3,...
+      const SIGNER_LIMIT = Math.floor(this.cliqueActiveSigners().length / 2) + 1
+
       const signer = header.cliqueSignatureToAddress().toBuffer()
       const beneficiary = header.coinbase.toBuffer()
       const nonce = header.nonce
-      const latestVote = [header.number.toBuffer(), [signer, beneficiary, header.nonce]]
+      const latestVote = [header.number.toBuffer(), [signer, beneficiary, nonce]]
+
+      // Always add the latest vote to the history no matter if already voted
+      // the same vote or not
+      this._cliqueLatestVotes.push(latestVote as CliqueVote)
+
       const alreadyVoted = this._cliqueLatestVotes.find((vote: CliqueVote) => {
         vote[1][0].equals(signer) && vote[1][1].equals(beneficiary) && vote[1][2].equals(nonce)
       })
         ? true
         : false
+      // If same vote not already in history see if there is a new majority consensus
+      // to update the signer list
       if (!alreadyVoted) {
-        //TODO do the voting
+        const beneficiaryVotes = this._cliqueLatestVotes.filter((vote: CliqueVote) => {
+          return vote[1][1].equals(beneficiary) && vote[1][2].equals(nonce)
+        })
+        const benficiaryVoteNum = beneficiaryVotes.length
+        // Majority consensus
+        if (benficiaryVoteNum >= SIGNER_LIMIT) {
+          let activeSigners = this.cliqueActiveSigners()
+          // Authorize new signer
+          if (nonce.equals(CLIQUE_NONCE_AUTH)) {
+            activeSigners.push(beneficiary)
+            // Drop existing signer
+          } else {
+            // nonce equals CLIQUE_NONCE_DROP
+            activeSigners = activeSigners.filter((signer: Buffer) => {
+              return !signer.equals(beneficiary)
+            })
+          }
+          const newSignerState: CliqueSignerState = [header.number.toBuffer(), activeSigners]
+          await this.cliqueUpdateSignerStates(newSignerState! as CliqueSignerState)
+        }
       }
-
-      this._cliqueLatestVotes.push(latestVote as CliqueVote)
     }
     const dbOps: DBOp[] = []
     dbOps.push(DBOp.set(DBTarget.CliqueVotes, rlp.encode(this._cliqueLatestVotes)))
