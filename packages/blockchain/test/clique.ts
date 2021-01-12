@@ -231,7 +231,7 @@ tape('Clique: Initialization', (t) => {
     await addNextBlock(blockchain, blocks, A, [C, false])
     await addNextBlock(blockchain, blocks, B, [C, false])
 
-    st.deepEqual(blockchain.cliqueActiveSigners(), [A.address, B.address], '')
+    st.deepEqual(blockchain.cliqueActiveSigners(), [A.address, B.address])
     st.end()
   })
 
@@ -242,11 +242,7 @@ tape('Clique: Initialization', (t) => {
       await addNextBlock(blockchain, blocks, A, [C, false])
       await addNextBlock(blockchain, blocks, B, [C, false])
 
-      st.deepEqual(
-        blockchain.cliqueActiveSigners(),
-        [A.address, B.address, C.address, D.address],
-        ''
-      )
+      st.deepEqual(blockchain.cliqueActiveSigners(), [A.address, B.address, C.address, D.address])
       st.end()
     }
   )
@@ -259,7 +255,7 @@ tape('Clique: Initialization', (t) => {
       await addNextBlock(blockchain, blocks, B, [D, false])
       await addNextBlock(blockchain, blocks, C, [D, false])
 
-      st.deepEqual(blockchain.cliqueActiveSigners(), [A.address, B.address, C.address], '')
+      st.deepEqual(blockchain.cliqueActiveSigners(), [A.address, B.address, C.address])
       st.end()
     }
   )
@@ -272,23 +268,103 @@ tape('Clique: Initialization', (t) => {
     await addNextBlock(blockchain, blocks, B)
     await addNextBlock(blockchain, blocks, A, [C, true])
 
-    st.deepEqual(blockchain.cliqueActiveSigners(), [A.address, B.address], '')
+    st.deepEqual(blockchain.cliqueActiveSigners(), [A.address, B.address])
     st.end()
   })
 
+  t.test('Clique Voting: Authorizing multiple accounts concurrently is permitted', async (st) => {
+    const { blocks, blockchain } = initWithSigners([A.address, B.address])
+    await addNextBlock(blockchain, blocks, A, [C, true])
+    await addNextBlock(blockchain, blocks, B)
+    await addNextBlock(blockchain, blocks, A, [D, true])
+    await addNextBlock(blockchain, blocks, B)
+    await addNextBlock(blockchain, blocks, A)
+    await addNextBlock(blockchain, blocks, B, [D, true])
+    await addNextBlock(blockchain, blocks, A)
+    await addNextBlock(blockchain, blocks, B, [C, true])
+
+    st.deepEqual(blockchain.cliqueActiveSigners(), [A.address, B.address, D.address, C.address])
+    st.end()
+  })
+
+  t.test('Clique Voting: Deauthorizations are counted once per signer per target', async (st) => {
+    const { blocks, blockchain } = initWithSigners([A.address, B.address])
+    await addNextBlock(blockchain, blocks, A, [B, false])
+    await addNextBlock(blockchain, blocks, B)
+    await addNextBlock(blockchain, blocks, A, [B, false])
+    await addNextBlock(blockchain, blocks, B)
+    await addNextBlock(blockchain, blocks, A, [B, false])
+
+    st.deepEqual(blockchain.cliqueActiveSigners(), [A.address, B.address])
+    st.end()
+  })
+
+  t.test('Clique Voting: Deauthorizing multiple accounts concurrently is permitted', async (st) => {
+    const { blocks, blockchain } = initWithSigners([A.address, B.address, C.address, D.address])
+    await addNextBlock(blockchain, blocks, A, [C, false])
+    await addNextBlock(blockchain, blocks, B)
+    await addNextBlock(blockchain, blocks, C)
+    await addNextBlock(blockchain, blocks, A, [D, false])
+    await addNextBlock(blockchain, blocks, B)
+    await addNextBlock(blockchain, blocks, C)
+    await addNextBlock(blockchain, blocks, A)
+    await addNextBlock(blockchain, blocks, B, [D, false])
+    await addNextBlock(blockchain, blocks, C, [D, false])
+    await addNextBlock(blockchain, blocks, A)
+    await addNextBlock(blockchain, blocks, B, [C, false])
+
+    st.deepEqual(blockchain.cliqueActiveSigners(), [A.address, B.address])
+    st.end()
+  })
+
+  t.test('Clique Voting: Votes from deauthorized signers are discarded immediately', async (st) => {
+    const { blocks, blockchain } = initWithSigners([A.address, B.address, C.address])
+    await addNextBlock(blockchain, blocks, C, [B, false])
+    await addNextBlock(blockchain, blocks, A, [C, false])
+    await addNextBlock(blockchain, blocks, B, [C, false])
+    await addNextBlock(blockchain, blocks, A, [B, false])
+
+    st.deepEqual(blockchain.cliqueActiveSigners(), [A.address, B.address], 'deauth votes')
+    st.end()
+  })
+
+  t.test('Clique Voting: Votes from deauthorized signers are discarded immediately', async (st) => {
+    const { blocks, blockchain } = initWithSigners([A.address, B.address, C.address])
+    await addNextBlock(blockchain, blocks, C, [D, true])
+    await addNextBlock(blockchain, blocks, A, [C, false])
+    await addNextBlock(blockchain, blocks, B, [C, false])
+    await addNextBlock(blockchain, blocks, A, [D, true])
+
+    st.deepEqual(blockchain.cliqueActiveSigners(), [A.address, B.address], 'auth votes')
+    st.end()
+  })
+
+  // TODO: fix test case
+  /*t.test('Clique Voting: Changes reaching consensus out of bounds (via a deauth) execute on touch', async (st) => {
+    const { blocks, blockchain } = initWithSigners([A.address, B.address, C.address, D.address])
+    await addNextBlock(blockchain, blocks, A, [C, false])
+    await addNextBlock(blockchain, blocks, B)
+    await addNextBlock(blockchain, blocks, C)
+    await addNextBlock(blockchain, blocks, A, [D, false])
+    await addNextBlock(blockchain, blocks, B, [C, false])
+    await addNextBlock(blockchain, blocks, C)
+    await addNextBlock(blockchain, blocks, A)
+    await addNextBlock(blockchain, blocks, B, [D, false])
+    await addNextBlock(blockchain, blocks, C, [D, false])
+    await addNextBlock(blockchain, blocks, A)
+    await addNextBlock(blockchain, blocks, C, [C, true])
+
+
+    st.deepEqual(blockchain.cliqueActiveSigners(), [A.address, B.address])
+    st.end()
+  })
+
+  // TODO: add two additional test cases, further last test cases not relevant yet
   t.test('Clique Voting: ', async (st) => {
     const { blocks, blockchain } = initWithSigners([A.address])
     await addNextBlock(blockchain, blocks, A, [B, true])
 
     st.deepEqual(blockchain.cliqueActiveSigners(), [A.address, B.address], '')
     st.end()
-  })
-
-  t.test('Clique Voting: ', async (st) => {
-    const { blocks, blockchain } = initWithSigners([A.address])
-    await addNextBlock(blockchain, blocks, A, [B, true])
-
-    st.deepEqual(blockchain.cliqueActiveSigners(), [A.address, B.address], '')
-    st.end()
-  })
+  })*/
 })

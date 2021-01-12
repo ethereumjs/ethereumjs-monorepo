@@ -440,6 +440,10 @@ export default class Blockchain implements BlockchainInterface {
             activeSigners = activeSigners.filter((signer: Buffer) => {
               return !signer.equals(beneficiary)
             })
+            // Discard votes from removed signer
+            this._cliqueLatestVotes = this._cliqueLatestVotes.filter((vote: CliqueVote) => {
+              return !vote[1][0].equals(beneficiary)
+            })
           }
           const newSignerState: CliqueSignerState = [header.number.toBuffer(), activeSigners]
           await this.cliqueUpdateSignerStates(newSignerState! as CliqueSignerState)
@@ -654,7 +658,17 @@ export default class Blockchain implements BlockchainInterface {
 
         // Clique: update signer votes and state
         if (this._common.consensusAlgorithm() === 'clique') {
-          await this.cliqueUpdateVotes(header)
+          // Reset all votes on epoch transition blocks
+          if (header.cliqueIsEpochTransition()) {
+            this._cliqueLatestVotes = []
+            await this.cliqueUpdateVotes()
+            // TODO: on epoch transition blocks we might want to validate the
+            // calculated active signer list towards the epoch block
+            // signer checkpoint list in the extraData field
+            // Add eventual new header vote on non-epoch transition blocks
+          } else {
+            await this.cliqueUpdateVotes(header)
+          }
         }
 
         // delete higher number assignments and overwrite stale canonical chain
