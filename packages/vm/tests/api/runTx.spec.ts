@@ -32,7 +32,7 @@ tape('runTx', (t) => {
   t.test('should fail to run without signature', async (st) => {
     const tx = getTransaction(false)
     shouldFail(st, suite.runTx({ tx }), (e: Error) =>
-      st.ok(e.message.includes('Invalid Signature'), 'should fail with appropriate error')
+      st.ok(e.message.includes('not signed'), 'should fail with appropriate error')
     )
     st.end()
   })
