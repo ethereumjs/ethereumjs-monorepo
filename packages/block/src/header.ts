@@ -617,7 +617,7 @@ export class BlockHeader {
     const extraSeal = this.cliqueExtraSeal()
     const r = extraSeal.slice(0, 32)
     const s = extraSeal.slice(32, 64)
-    const v = bufferToInt(extraSeal.slice(64, 65))
+    const v = bufferToInt(extraSeal.slice(64, 65)) + 27
     const pubKey = ecrecover(this.hash(), v, r, s)
     return Address.fromPublicKey(pubKey)
   }

@@ -410,15 +410,17 @@ export default class Blockchain implements BlockchainInterface {
       const nonce = header.nonce
       const latestVote = [header.number.toBuffer(), [signer, beneficiary, nonce]]
 
-      // Always add the latest vote to the history no matter if already voted
-      // the same vote or not
-      this._cliqueLatestVotes.push(latestVote as CliqueVote)
-
       const alreadyVoted = this._cliqueLatestVotes.find((vote: CliqueVote) => {
-        vote[1][0].equals(signer) && vote[1][1].equals(beneficiary) && vote[1][2].equals(nonce)
+        return (
+          vote[1][0].equals(signer) && vote[1][1].equals(beneficiary) && vote[1][2].equals(nonce)
+        )
       })
         ? true
         : false
+
+      // Always add the latest vote to the history no matter if already voted
+      // the same vote or not
+      this._cliqueLatestVotes.push(latestVote as CliqueVote)
       // If same vote not already in history see if there is a new majority consensus
       // to update the signer list
       if (!alreadyVoted) {
