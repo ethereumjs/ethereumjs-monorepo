@@ -65,7 +65,7 @@ export class CheckpointTrie extends BaseTrie {
     const db = this.db.copy()
     const trie = new CheckpointTrie(db._leveldb, this.root)
     if (includeCheckpoints && this.isCheckpoint) {
-      trie.db.checkpoints = this.db.checkpoints.slice()
+      trie.db.checkpoints = [...this.db.checkpoints]
     }
     return trie
   }

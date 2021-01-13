@@ -92,7 +92,7 @@ export class SecureTrie extends CheckpointTrie {
     const db = this.db.copy()
     const secureTrie = new SecureTrie(db._leveldb, this.root)
     if (includeCheckpoints && this.isCheckpoint) {
-      secureTrie.db.checkpoints = this.db.checkpoints.slice()
+      secureTrie.db.checkpoints = [...this.db.checkpoints]
     }
     return secureTrie
   }

@@ -1,7 +1,5 @@
 import { LevelUp } from 'levelup'
-import { DB, BatchDBOp } from './db'
-
-export const ENCODING_OPTS = { keyEncoding: 'binary', valueEncoding: 'binary' }
+import { DB, BatchDBOp, ENCODING_OPTS } from './db'
 
 export type Checkpoint = {
   // We cannot use a Buffer => Buffer map directly. If you create two Buffers with the same internal value,
@@ -55,12 +53,12 @@ export class CheckpointDB extends DB {
         if (value === null) {
           batchOp.push({
             type: 'del',
-            key: Buffer.from(key, 'hex'),
+            key: Buffer.from(key, 'binary'),
           })
         } else {
           batchOp.push({
             type: 'put',
-            key: Buffer.from(key, 'hex'),
+            key: Buffer.from(key, 'binary'),
             value,
           })
         }
@@ -69,9 +67,7 @@ export class CheckpointDB extends DB {
     } else {
       // dump everything into the current (higher level) cache
       const currentKeyValueMap = this.checkpoints[this.checkpoints.length - 1].keyValueMap
-      keyValueMap.forEach(function (value, key) {
-        currentKeyValueMap.set(key, value)
-      })
+      keyValueMap.forEach((value, key) => currentKeyValueMap.set(key, value))
     }
   }
 
@@ -91,7 +87,7 @@ export class CheckpointDB extends DB {
   async get(key: Buffer): Promise<Buffer | null> {
     // Lookup the value in our cache. We return the latest checkpointed value (which should be the value on disk)
     for (let index = this.checkpoints.length - 1; index >= 0; index--) {
-      const value = this.checkpoints[index].keyValueMap.get(key.toString('hex'))
+      const value = this.checkpoints[index].keyValueMap.get(key.toString('binary'))
       if (value !== undefined) {
         return value
       }
@@ -101,7 +97,7 @@ export class CheckpointDB extends DB {
     const value = await super.get(key)
     if (this.isCheckpoint) {
       // Since we are a checkpoint, put this value in cache, so future `get` calls will not look the key up again from disk.
-      this.checkpoints[this.checkpoints.length - 1].keyValueMap.set(key.toString('hex'), value)
+      this.checkpoints[this.checkpoints.length - 1].keyValueMap.set(key.toString('binary'), value)
     }
 
     return value
@@ -115,7 +111,7 @@ export class CheckpointDB extends DB {
   async put(key: Buffer, val: Buffer): Promise<void> {
     if (this.isCheckpoint) {
       // put value in cache
-      this.checkpoints[this.checkpoints.length - 1].keyValueMap.set(key.toString('hex'), val)
+      this.checkpoints[this.checkpoints.length - 1].keyValueMap.set(key.toString('binary'), val)
     } else {
       await super.put(key, val)
     }
@@ -128,7 +124,7 @@ export class CheckpointDB extends DB {
   async del(key: Buffer): Promise<void> {
     if (this.isCheckpoint) {
       // delete the value in the current cache
-      this.checkpoints[this.checkpoints.length - 1].keyValueMap.set(key.toString('hex'), null)
+      this.checkpoints[this.checkpoints.length - 1].keyValueMap.set(key.toString('binary'), null)
     } else {
       // delete the value on disk
       await this._leveldb.del(key, ENCODING_OPTS)
