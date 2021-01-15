@@ -32,7 +32,7 @@ test('DPT: remove node', async (t) => {
   async.series(
     [
       function (cb) {
-        dpts[0].on('peer:added', function (peer: any) {
+        dpts[0].on('peer:added', function (peer) {
           dpts[0].removePeer(peer)
           cb(null)
         })
@@ -64,13 +64,13 @@ test('DPT: ban node', async (t) => {
   async.series(
     [
       function (cb) {
-        dpts[0].on('peer:added', function (peer: any) {
+        dpts[0].on('peer:added', function (peer) {
           dpts[0].banPeer(peer)
           cb(null)
         })
       },
       function (cb) {
-        dpts[0].on('peer:removed', function (peer: any) {
+        dpts[0].on('peer:removed', function (peer) {
           t.equal(dpts[0].banlist.has(peer), true, 'ban-list should contain peer')
           t.equal(
             dpts[0].getPeers().length,
@@ -150,11 +150,14 @@ test('DPT: simulate bootstrap', async (t) => {
   }
 
   await delay(250)
-  util.destroyDPTs(dpts)
 
   // dpts.forEach((dpt, i) => console.log(`${i}:${dpt.getPeers().length}`))
-  for (const dpt of dpts)
+  for (const dpt of dpts) {
     t.equal(dpt.getPeers().length, numDPTs, 'Peers should be distributed to all DPTs')
+  }
+  await delay(1000)
+
+  util.destroyDPTs(dpts)
 
   t.end()
 })
