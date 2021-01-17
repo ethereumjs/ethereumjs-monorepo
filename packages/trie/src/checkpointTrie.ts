@@ -1,18 +1,22 @@
 import { Trie as BaseTrie } from './baseTrie'
+import { CheckpointDB } from './checkpointDb'
 
 /**
  * Adds checkpointing to the {@link BaseTrie}
  */
 export class CheckpointTrie extends BaseTrie {
+  db: CheckpointDB
+
   constructor(...args: any) {
     super(...args)
+    this.db = new CheckpointDB(...args)
   }
 
   /**
    * Is the trie during a checkpoint phase?
    */
   get isCheckpoint() {
-    return this.db.checkpoints.length > 0
+    return this.db.isCheckpoint
   }
 
   /**
@@ -34,7 +38,7 @@ export class CheckpointTrie extends BaseTrie {
     }
 
     await this.lock.wait()
-    this.db.commit()
+    await this.db.commit()
     this.lock.signal()
   }
 
@@ -61,7 +65,7 @@ export class CheckpointTrie extends BaseTrie {
     const db = this.db.copy()
     const trie = new CheckpointTrie(db._leveldb, this.root)
     if (includeCheckpoints && this.isCheckpoint) {
-      trie.db.checkpoints = this.db.checkpoints.slice()
+      trie.db.checkpoints = [...this.db.checkpoints]
     }
     return trie
   }

@@ -335,6 +335,43 @@ tape('[Transaction]: Basic functions', function (t) {
     st.end()
   })
 
+  t.test('returns correct values for isSigned', function (st) {
+    let tx = Transaction.fromTxData({})
+    st.notOk(tx.isSigned())
+
+    const txData: TxData = {
+      data: '0x7cf5dab00000000000000000000000000000000000000000000000000000000000000005',
+      gasLimit: '0x15f90',
+      gasPrice: '0x1',
+      nonce: '0x01',
+      to: '0xd9024df085d09398ec76fbed18cac0e1149f50dc',
+      value: '0x0',
+    }
+    const privateKey = Buffer.from(
+      '4646464646464646464646464646464646464646464646464646464646464646',
+      'hex'
+    )
+    tx = Transaction.fromTxData(txData)
+    st.notOk(tx.isSigned())
+    tx = tx.sign(privateKey)
+    st.ok(tx.isSigned())
+
+    tx = new Transaction(txData)
+    st.notOk(tx.isSigned())
+    const rawUnsigned = tx.serialize()
+    tx = tx.sign(privateKey)
+    const rawSigned = tx.serialize()
+    st.ok(tx.isSigned())
+
+    tx = Transaction.fromRlpSerializedTx(rawUnsigned)
+    st.notOk(tx.isSigned())
+    tx = tx.sign(privateKey)
+    st.ok(tx.isSigned())
+    tx = Transaction.fromRlpSerializedTx(rawSigned)
+    st.ok(tx.isSigned())
+    st.end()
+  })
+
   t.test(
     'throws when creating a a transaction with incompatible chainid and v value',
     function (st) {

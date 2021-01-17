@@ -59,6 +59,8 @@ export default class Transaction {
 
     const [nonce, gasPrice, gasLimit, to, value, data, v, r, s] = values
 
+    const emptyBuffer = Buffer.from([])
+
     return new Transaction(
       {
         nonce: new BN(nonce),
@@ -66,10 +68,10 @@ export default class Transaction {
         gasLimit: new BN(gasLimit),
         to: to && to.length > 0 ? new Address(to) : undefined,
         value: new BN(value),
-        data: data || Buffer.from([]),
-        v: v ? new BN(v) : undefined,
-        r: r ? new BN(r) : undefined,
-        s: s ? new BN(s) : undefined,
+        data: data ?? emptyBuffer,
+        v: !v?.equals(emptyBuffer) ? new BN(v) : undefined,
+        r: !r?.equals(emptyBuffer) ? new BN(r) : undefined,
+        s: !s?.equals(emptyBuffer) ? new BN(s) : undefined,
       },
       opts
     )
@@ -89,9 +91,9 @@ export default class Transaction {
     this.to = to ? new Address(toBuffer(to)) : undefined
     this.value = new BN(toBuffer(value))
     this.data = toBuffer(data)
-    this.v = new BN(toBuffer(v))
-    this.r = new BN(toBuffer(r))
-    this.s = new BN(toBuffer(s))
+    this.v = v ? new BN(toBuffer(v)) : undefined
+    this.r = r ? new BN(toBuffer(r)) : undefined
+    this.s = s ? new BN(toBuffer(s)) : undefined
 
     const validateCannotExceedMaxInteger = {
       nonce: this.nonce,

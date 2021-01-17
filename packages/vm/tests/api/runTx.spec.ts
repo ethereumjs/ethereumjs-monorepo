@@ -1,5 +1,6 @@
 import tape from 'tape'
-import { Address, BN, MAX_INTEGER } from 'ethereumjs-util'
+import { Account, Address, BN, MAX_INTEGER } from 'ethereumjs-util'
+import { Block } from '@ethereumjs/block'
 import Common from '@ethereumjs/common'
 import { Transaction } from '@ethereumjs/tx'
 import VM from '../../lib'
@@ -32,7 +33,7 @@ tape('runTx', (t) => {
   t.test('should fail to run without signature', async (st) => {
     const tx = getTransaction(false)
     shouldFail(st, suite.runTx({ tx }), (e: Error) =>
-      st.ok(e.message.includes('Invalid Signature'), 'should fail with appropriate error')
+      st.ok(e.message.includes('not signed'), 'should fail with appropriate error')
     )
     st.end()
   })
@@ -141,6 +142,48 @@ tape('should clear storage cache after every transaction', async (t) => {
   await vm.runTx({ tx }) // this tx will fail, but we have to ensure that the cache is cleared
 
   t.equal((<any>vm.stateManager)._originalStorageCache.size, 0, 'storage cache should be cleared')
+  t.end()
+})
+
+tape('should be possible to disable the block gas limit validation', async (t) => {
+  const vm = new VM()
+
+  const privateKey = Buffer.from(
+    'e331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109',
+    'hex'
+  )
+  const address = Address.fromPrivateKey(privateKey)
+  const initialBalance = new BN(10).pow(new BN(18))
+
+  const account = await vm.stateManager.getAccount(address)
+  await vm.stateManager.putAccount(
+    address,
+    Account.fromAccountData({ ...account, balance: initialBalance })
+  )
+
+  const transferCost = 21000
+
+  const unsignedTx = Transaction.fromTxData({
+    to: address,
+    gasLimit: transferCost,
+    gasPrice: 1,
+    nonce: 0,
+  })
+
+  const tx = unsignedTx.sign(privateKey)
+
+  const block = Block.fromBlockData({
+    header: { gasLimit: transferCost - 1 },
+  })
+
+  const result = await vm.runTx({
+    tx,
+    block,
+    skipBlockGasLimitValidation: true,
+  })
+
+  t.equals(result.execResult.exceptionError, undefined)
+
   t.end()
 })
 
