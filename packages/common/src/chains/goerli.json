@@ -2,6 +2,7 @@
   "name": "goerli",
   "chainId": 5,
   "networkId": 5,
+  "defaultHardfork": "istanbul",
   "consensus": {
     "type": "poa",
     "algorithm": "clique"

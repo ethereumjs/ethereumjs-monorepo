@@ -1,5 +1,5 @@
 import { buf as crc32Buffer } from 'crc-32'
-import { chains as chainParams } from './chains'
+import { _getInitializedChains } from './chains'
 import { hardforks as HARDFORK_CHANGES } from './hardforks'
 import { EIPs } from './eips'
 import { Chain } from './types'
@@ -9,7 +9,8 @@ import { Chain } from './types'
  */
 export interface CommonOpts {
   /**
-   * String ('mainnet') or Number (1) chain
+   * Chain name ('mainnet') or id (1), either from a chain directly supported
+   * or a custom chain passed in via `customChains`
    */
   chain: string | number | object
   /**
@@ -31,6 +32,18 @@ export interface CommonOpts {
    * - [EIP-2537](https://eips.ethereum.org/EIPS/eip-2537) - BLS12-381 precompiles
    */
   eips?: number[]
+  /**
+   * Initialize (in addition to the supported chains) with the selected
+   * custom chains
+   *
+   * Usage (directly with the respective chain intialization via the `chain` option):
+   *
+   * ```javascript
+   * import myCustomChain1 from '[PATH_TO_MY_CHAINS]/myCustomChain1.json'
+   * const common = new Common({ chain: 'myCustomChain1', customChains: [ myCustomChain1 ]})
+   * ```
+   */
+  customChains?: Chain[]
 }
 
 interface hardforkOptions {
@@ -44,12 +57,13 @@ interface hardforkOptions {
  * Common class to access chain and hardfork parameters
  */
 export default class Common {
-  readonly DEFAULT_HARDFORK: string = 'istanbul'
+  readonly DEFAULT_HARDFORK: string
 
   private _chainParams: Chain
   private _hardfork: string
   private _supportedHardforks: Array<string> = []
   private _eips: number[] = []
+  private _customChains: Chain[]
 
   /**
    * Creates a Common object for a custom chain, based on a standard one. It uses all the [[Chain]]
@@ -79,17 +93,19 @@ export default class Common {
     })
   }
 
-  private static _getChainParams(chain: string | number): Chain {
+  private static _getChainParams(chain: string | number, customChains?: Chain[]): Chain {
+    const initializedChains: any = _getInitializedChains(customChains)
     if (typeof chain === 'number') {
-      if (chainParams['names'][chain]) {
-        return chainParams[chainParams['names'][chain]]
+      if (initializedChains['names'][chain]) {
+        const name: string = initializedChains['names'][chain]
+        return initializedChains[name]
       }
 
       throw new Error(`Chain with ID ${chain} not supported`)
     }
 
-    if (chainParams[chain]) {
-      return chainParams[chain]
+    if (initializedChains[chain]) {
+      return initializedChains[chain]
     }
 
     throw new Error(`Chain with name ${chain} not supported`)
@@ -99,7 +115,9 @@ export default class Common {
    * @constructor
    */
   constructor(opts: CommonOpts) {
+    this._customChains = opts.customChains ?? []
     this._chainParams = this.setChain(opts.chain)
+    this.DEFAULT_HARDFORK = this._chainParams.defaultHardfork ?? 'istanbul'
     this._hardfork = this.DEFAULT_HARDFORK
     if (opts.supportedHardforks) {
       this._supportedHardforks = opts.supportedHardforks
@@ -120,8 +138,13 @@ export default class Common {
    */
   setChain(chain: string | number | object): any {
     if (typeof chain === 'number' || typeof chain === 'string') {
-      this._chainParams = Common._getChainParams(chain)
+      this._chainParams = Common._getChainParams(chain, this._customChains)
     } else if (typeof chain === 'object') {
+      if (this._customChains.length > 0) {
+        throw new Error(
+          'Chain must be a string or number when initialized with customChains passed in'
+        )
+      }
       const required = ['networkId', 'genesis', 'hardforks', 'bootstrapNodes']
       for (const param of required) {
         if ((<any>chain)[param] === undefined) {
@@ -613,7 +636,7 @@ export default class Common {
    * @returns chain name (lower case)
    */
   chainName(): string {
-    return chainParams['names'][this.chainId()] || (<any>this._chainParams)['name']
+    return (<any>this._chainParams)['name']
   }
 
   /**
