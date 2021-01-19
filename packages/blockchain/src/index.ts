@@ -15,9 +15,8 @@ export type CliqueLatestSignerStates = CliqueSignerState[]
 export type CliqueVote = [Buffer, [Buffer, Buffer, Buffer]]
 export type CliqueLatestVotes = CliqueVote[]
 
-const CLIQUE_EMPTY_BENEFICIARY = Buffer.alloc(20)
 const CLIQUE_NONCE_AUTH: Buffer = Buffer.from('ffffffffffffffff', 'hex')
-//const CLIQUE_NONCE_DROP = Buffer.alloc(8)
+const CLIQUE_NONCE_DROP = Buffer.alloc(8)
 
 type OnBlock = (block: Block, reorg: boolean) => Promise<void> | void
 
@@ -401,7 +400,7 @@ export default class Blockchain implements BlockchainInterface {
 
   private async cliqueUpdateVotes(header?: BlockHeader) {
     // Block contains a vote on a new signer
-    if (header && !header.coinbase.toBuffer().equals(CLIQUE_EMPTY_BENEFICIARY)) {
+    if (header && !header.coinbase.isZero()) {
       // 1 -> 1, 2 -> 2, 3 -> 2, 4 -> 2, 5 -> 3,...
       const SIGNER_LIMIT = Math.floor(this.cliqueActiveSigners().length / 2) + 1
 
@@ -435,8 +434,7 @@ export default class Blockchain implements BlockchainInterface {
           if (nonce.equals(CLIQUE_NONCE_AUTH)) {
             activeSigners.push(beneficiary)
             // Drop existing signer
-          } else {
-            // nonce equals CLIQUE_NONCE_DROP
+          } else if (nonce.equals(CLIQUE_NONCE_DROP)) {
             activeSigners = activeSigners.filter((signer: Buffer) => {
               return !signer.equals(beneficiary)
             })
@@ -444,6 +442,8 @@ export default class Blockchain implements BlockchainInterface {
             this._cliqueLatestVotes = this._cliqueLatestVotes.filter((vote: CliqueVote) => {
               return !vote[1][0].equals(beneficiary)
             })
+          } else {
+            throw new Error('Invalid nonce for clique block: ' + nonce)
           }
           const newSignerState: CliqueSignerState = [header.number.toBuffer(), activeSigners]
           await this.cliqueUpdateSignerStates(newSignerState! as CliqueSignerState)
