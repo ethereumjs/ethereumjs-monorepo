@@ -16,11 +16,18 @@ export interface Chain {
   name: string
   chainId: number
   networkId: number
+  // TODO: make mandatory in next breaking release
+  defaultHardfork?: string
   comment: string
   url: string
   genesis: GenesisBlock
   hardforks: Hardfork[]
   bootstrapNodes: BootstrapNode[]
+  // TODO: make mandatory in next breaking release
+  consensus?: {
+    type: string
+    algorithm: string
+  }
 }
 
 export interface eipsType {
@@ -40,6 +47,7 @@ export interface GenesisBlock {
 export interface Hardfork {
   name: string
   block: number | null
+  forkHash?: string | null
 }
 
 export interface BootstrapNode {

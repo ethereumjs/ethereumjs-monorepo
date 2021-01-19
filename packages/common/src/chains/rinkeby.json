@@ -2,6 +2,7 @@
   "name": "rinkeby",
   "chainId": 4,
   "networkId": 4,
+  "defaultHardfork": "istanbul",
   "consensus": {
     "type": "poa",
     "algorithm": "clique"

@@ -1,8 +1,14 @@
 {
-  "name": "testnet",
-  "chainId": 12345,
-  "networkId": 12345,
+  "name": "testnet3",
+  "chainId": 33333,
+  "networkId": 33333,
+  "defaultHardfork": "istanbul",
+  "consensus": {
+    "type": "pos",
+    "algorithm": "clique"
+  },
   "comment": "Private test network",
+  "url": "[TESTNET_URL]",
   "genesis": {
     "hash": "0xaa00000000000000000000000000000000000000000000000000000000000000",
     "timestamp": null,
@@ -30,8 +36,8 @@
       "block": 3
     },
     {
-      "name": "byzantium",
-      "block": 4
+      "name": "istanbul",
+      "block": 10
     }
   ],
   "bootstrapNodes": [

@@ -51,7 +51,7 @@ c.bootstrapNodes() // Array with current nodes
 If the initializing library only supports a certain range of `hardforks` you can use the `supportedHardforks` option to restrict hardfork access on the `Common` instance:
 
 ```typescript
-let c = new Common({
+const c = new Common({
   chain: 'ropsten',
   supportedHardforks: ['byzantium', 'constantinople', 'petersburg'],
 })
@@ -104,12 +104,48 @@ files like `mainnet.json` in the `chains` directory, or to the `Chain` type in [
 
 ### Working with private/custom chains
 
-There are two ways to set up a common instance with parameters for a private/custom chain:
+There are two distinct APIs available for setting up custom(ized) chains.
 
-1. You can pass a dictionary - conforming to the parameter format described above - with your custom values in
-   the constructor or the `setChain()` method for the `chain` parameter.
+### Activate with a single custom Chain setup
 
-2. You can base your custom chain's config in a standard one, using the `Common.forCustomChain` method.
+If you want to initialize a `Common` instance with a single custom chain which is then directly activated
+you can pass a dictionary - conforming to the parameter format described above - with your custom chain 
+values to the constructor using the `chain` parameter or the `setChain()` method, here is some example:
+
+```typescript
+import myCustomChain from './[PATH]/myCustomChain.json'
+const common = new Common({ chain: myCustomChain })
+```
+
+If you just want to change some certain parameters on a chain configuration it can also be conveniened to use 
+the `Common.forCustomChain()` method. With this method you can base your custom chain configuration with
+a standard one (so using all the values from `baseChain` as the default values) and then just provide the
+parameters you want to override:
+
+```typescript
+const customChainParams = { name: 'custom', chainId: 123, networkId: 678 }
+const customChainCommon = Common.forCustomChain('mainnet', customChainParams, 'byzantium')
+```
+
+### Initialize using customChains Array
+
+A second way for custom chain initialization is to use the `customChains` constructor option. This
+option comes with more flexibility and allows for an arbitrary number of custom chains to be initialized on
+a common instance in addition to the already supported ones. It also allows for an activation-independent 
+initialization, so you can add your chains by adding to the `customChains` array and either directly 
+use the `chain` option to activate one of the custom chains passed or activate a build in chain 
+(e.g. `mainnet`) and switch to other chains - including the custom ones - by using `Common.setChain()`.
+
+```typescript
+import myCustomChain1 from './[PATH]/myCustomChain1.json'
+import myCustomChain2 from './[PATH]/myCustomChain2.json'
+// Add two custom chains, initial mainnet activation
+const common1 = new Common({ chain: 'mainnet', customChains: [ myCustomChain1, myCustomChain2 ] })
+// Somewhat later down the road...
+common1.setChain('customChain1')
+// Add two custom chains, activate customChain1
+const common1 = new Common({ chain: 'customChain1', customChains: [ myCustomChain1, myCustomChain2 ] })
+```
 
 ## Hardforks
 
