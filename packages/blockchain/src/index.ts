@@ -378,7 +378,7 @@ export default class Blockchain implements BlockchainInterface {
     }
   }
 
-  private _checkClique() {
+  private _requireClique() {
     if (this._common.consensusAlgorithm() !== 'clique') {
       throw new Error('Function call only supported for clique PoA networks')
     }
@@ -464,7 +464,7 @@ export default class Blockchain implements BlockchainInterface {
    * (only clique PoA, throws otherwise)
    */
   public cliqueActiveSigners() {
-    this._checkClique()
+    this._requireClique()
     return this._cliqueLatestSignerStates[this._cliqueLatestSignerStates.length - 1][1]
   }
 

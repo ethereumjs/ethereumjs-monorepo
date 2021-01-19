@@ -529,7 +529,7 @@ export class BlockHeader {
     return this.number.isZero()
   }
 
-  private _checkClique(name: string) {
+  private _requireClique(name: string) {
     if (this._common.consensusAlgorithm() !== 'clique') {
       throw new Error(`BlockHeader.${name}() call only supported for clique PoA networks`)
     }
@@ -540,7 +540,7 @@ export class BlockHeader {
    * header (only clique PoA, throws otherwise)
    */
   cliqueIsEpochTransition(): boolean {
-    this._checkClique('cliqueIsEpochTransition')
+    this._requireClique('cliqueIsEpochTransition')
     const epoch = new BN(this._common.consensusConfig().epoch)
     // Epoch transition block if the block number has no
     // remainder on the division by the epoch length
@@ -552,7 +552,7 @@ export class BlockHeader {
    * (only clique PoA, throws otherwise)
    */
   cliqueExtraVanity(): Buffer {
-    this._checkClique('cliqueExtraVanity')
+    this._requireClique('cliqueExtraVanity')
     return this.extraData.slice(0, CLIQUE_EXTRA_VANITY)
   }
 
@@ -561,7 +561,7 @@ export class BlockHeader {
    * (only clique PoA, throws otherwise)
    */
   cliqueExtraSeal(): Buffer {
-    this._checkClique('cliqueExtraSeal')
+    this._requireClique('cliqueExtraSeal')
     return this.extraData.slice(-CLIQUE_EXTRA_SEAL)
   }
 
@@ -574,7 +574,7 @@ export class BlockHeader {
    * in conjunction with `cliqueIsEpochTransition()`
    */
   cliqueEpochTransitionSigners(): Buffer[] {
-    this._checkClique('cliqueEpochTransitionSigners')
+    this._requireClique('cliqueEpochTransitionSigners')
     if (!this.cliqueIsEpochTransition()) {
       throw new Error('Singers are only included in epoch transition blocks (clique)')
     }
@@ -598,7 +598,7 @@ export class BlockHeader {
    *  Method throws if signature is invalid
    */
   cliqueVerifySignature(signerList: Buffer[]): boolean {
-    this._checkClique('cliqueVerifySignature')
+    this._requireClique('cliqueVerifySignature')
     const signerAddress = this.cliqueSignatureToAddress()
     const signerFound = signerList.find((signer) => {
       return signer.equals(signerAddress.toBuffer())
@@ -613,7 +613,7 @@ export class BlockHeader {
    * Returns the signer address
    */
   cliqueSignatureToAddress(): Address {
-    this._checkClique('cliqueSignatureToAddress')
+    this._requireClique('cliqueSignatureToAddress')
     const extraSeal = this.cliqueExtraSeal()
     const r = extraSeal.slice(0, 32)
     const s = extraSeal.slice(32, 64)
