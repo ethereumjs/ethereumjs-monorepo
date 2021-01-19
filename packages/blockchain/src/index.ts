@@ -297,15 +297,10 @@ export default class Blockchain implements BlockchainInterface {
       DBSetBlockOrHeader(genesisBlock).map((op) => dbOps.push(op))
       DBSaveLookups(genesisHash, new BN(0)).map((op) => dbOps.push(op))
 
-      // Clique: save initial genesis block signers to DB
       if (this._common.consensusAlgorithm() === 'clique') {
-        const genesisSignerState = [
-          genesisBlock.header.number.toBuffer(),
-          genesisBlock.header.cliqueEpochTransitionSigners(),
-        ]
-        await this.cliqueUpdateSignerStates(genesisSignerState as CliqueSignerState)
-        await this.cliqueUpdateVotes()
+        this.cliqueSaveGenesisSigners(genesisBlock)
       }
+
       await this.dbManager.batch(dbOps)
     }
 
@@ -387,6 +382,15 @@ export default class Blockchain implements BlockchainInterface {
     if (this._common.consensusAlgorithm() !== 'clique') {
       throw new Error('Function call only supported for clique PoA networks')
     }
+  }
+
+  private async cliqueSaveGenesisSigners(genesisBlock: Block) {
+    const genesisSignerState: CliqueSignerState = [
+      genesisBlock.header.number.toBuffer(),
+      genesisBlock.header.cliqueEpochTransitionSigners(),
+    ]
+    await this.cliqueUpdateSignerStates(genesisSignerState)
+    await this.cliqueUpdateVotes()
   }
 
   private async cliqueUpdateSignerStates(signerState?: CliqueSignerState) {
