@@ -21,10 +21,10 @@ export enum DBTarget {
   HashToNumber,
   NumberToHash,
   TotalDifficulty,
-  CliqueSignerStates,
-  CliqueVotes,
   Body,
   Header,
+  CliqueSignerStates,
+  CliqueVotes,
 }
 
 /**
@@ -76,14 +76,6 @@ export class DBOp {
         this.baseDBOp.key = HEAD_BLOCK_KEY
         break
       }
-      case DBTarget.CliqueSignerStates: {
-        this.baseDBOp.key = CLIQUE_SIGNER_STATES_KEY
-        break
-      }
-      case DBTarget.CliqueVotes: {
-        this.baseDBOp.key = CLIQUE_VOTES_KEY
-        break
-      }
       case DBTarget.HashToNumber: {
         this.baseDBOp.key = hashToNumberKey(key!.blockHash!)
         this.cacheString = 'hashToNumber'
@@ -107,6 +99,14 @@ export class DBOp {
       case DBTarget.Header: {
         this.baseDBOp.key = headerKey(key!.blockNumber!, key!.blockHash!)
         this.cacheString = 'header'
+        break
+      }
+      case DBTarget.CliqueSignerStates: {
+        this.baseDBOp.key = CLIQUE_SIGNER_STATES_KEY
+        break
+      }
+      case DBTarget.CliqueVotes: {
+        this.baseDBOp.key = CLIQUE_VOTES_KEY
         break
       }
     }
