@@ -1,8 +1,8 @@
 import tape from 'tape'
 import Common from '../src/'
 import testnet from './data/testnet.json'
-import energyWebChain from './data/energyWebChain.json'
-import volta from './data/volta.json'
+import testnet2 from './data/testnet2.json'
+import testnet3 from './data/testnet3.json'
 
 tape('[Common]: Custom chains', function (t: tape.Test) {
   t.test(
@@ -88,10 +88,10 @@ tape('[Common]: Custom chains', function (t: tape.Test) {
     st.equal(c.chainName(), 'testnet', 'customChains, chain initialized with custom chain')
     st.equal(c.hardforkBlock(), 4, 'customChains, chain initialized with custom chain')
 
-    const customChains = [testnet, energyWebChain, volta]
-    c = new Common({ chain: 'energyWebChain', hardfork: 'istanbul', customChains })
-    st.equal(c.chainName(), 'energyWebChain', 'customChains, chain initialized with custom chain')
-    st.equal(c.hardforkBlock(), 4922294, 'customChains, chain initialized with custom chain')
+    const customChains = [testnet, testnet2, testnet3]
+    c = new Common({ chain: 'testnet2', hardfork: 'istanbul', customChains })
+    st.equal(c.chainName(), 'testnet2', 'customChains, chain initialized with custom chain')
+    st.equal(c.hardforkBlock(), 10, 'customChains, chain initialized with custom chain')
 
     st.end()
   })
