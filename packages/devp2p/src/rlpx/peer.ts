@@ -512,8 +512,8 @@ export class Peer extends EventEmitter {
   _onSocketData(data: Buffer) {
     if (this._closed) return
     this._socketData.append(data)
-    while (this._socketData.length >= this._nextPacketSize) {
-      try {
+    try {
+      while (this._socketData.length >= this._nextPacketSize) {
         switch (this._state) {
           case 'Auth':
             this._handleAuth()
@@ -528,11 +528,11 @@ export class Peer extends EventEmitter {
             this._handleBody()
             break
         }
-      } catch (err) {
-        this.disconnect(DISCONNECT_REASONS.SUBPROTOCOL_ERROR)
-        debug(`Error on peer socket data handling: ${err}`)
-        this.emit('error', err)
       }
+    } catch (err) {
+      this.disconnect(DISCONNECT_REASONS.SUBPROTOCOL_ERROR)
+      debug(`Error on peer socket data handling: ${err}`)
+      this.emit('error', err)
     }
   }
 
