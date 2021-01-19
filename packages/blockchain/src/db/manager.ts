@@ -78,16 +78,30 @@ export class DBManager {
    * Fetches clique signers.
    */
   async getCliqueLatestSignerStates(): Promise<CliqueLatestSignerStates> {
-    const signerStates = await this.get(DBTarget.CliqueSignerStates)
-    return <CliqueLatestSignerStates>(<unknown>rlp.decode(signerStates))
+    try {
+      const signerStates = await this.get(DBTarget.CliqueSignerStates)
+      return <any>rlp.decode(signerStates) as CliqueLatestSignerStates
+    } catch (error) {
+      if (error.type === 'NotFoundError') {
+        return []
+      }
+      throw error
+    }
   }
 
   /**
    * Fetches clique votes.
    */
   async getCliqueLatestVotes(): Promise<CliqueLatestVotes> {
-    const votes = await this.get(DBTarget.CliqueVotes)
-    return <CliqueLatestVotes>(<unknown>rlp.decode(votes))
+    try {
+      const votes = await this.get(DBTarget.CliqueVotes)
+      return <any>rlp.decode(votes) as CliqueLatestVotes
+    } catch (error) {
+      if (error.type === 'NotFoundError') {
+        return []
+      }
+      throw error
+    }
   }
 
   /**
