@@ -622,22 +622,28 @@ export default class Blockchain implements BlockchainInterface {
         }
       }
 
-      // set total difficulty in the current context scope
-      if (this._headHeaderHash) {
-        currentTd.header = await this.getTotalDifficulty(this._headHeaderHash)
-      }
-      if (this._headBlockHash) {
-        currentTd.block = await this.getTotalDifficulty(this._headBlockHash)
+      if (this._common.consensusAlgorithm() === 'ethash') {
+        // set total difficulty in the current context scope
+        console.log('gogo1')
+        if (this._headHeaderHash) {
+          currentTd.header = await this.getTotalDifficulty(this._headHeaderHash)
+        }
+        console.log('gogo2')
+        if (this._headBlockHash) {
+          currentTd.block = await this.getTotalDifficulty(this._headBlockHash)
+        }
+        console.log('gogo3')
+
+        // calculate the total difficulty of the new block
+        const parentTd = await this.getTotalDifficulty(header.parentHash, blockNumber.subn(1))
+        td.iadd(parentTd)
+        console.log('gogo4')
       }
 
-      // calculate the total difficulty of the new block
-      const parentTd = await this.getTotalDifficulty(header.parentHash, blockNumber.subn(1))
-      td.iadd(parentTd)
-
-      // save block and total difficulty to the database
+      // save total difficulty to the database
       dbOps = dbOps.concat(DBSetTD(td, blockNumber, blockHash))
 
-      // save header/block
+      // save header/block to the database
       dbOps = dbOps.concat(DBSetBlockOrHeader(block))
 
       // if total difficulty is higher than current, add it to canonical chain
