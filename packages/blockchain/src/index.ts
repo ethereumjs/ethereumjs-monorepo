@@ -41,7 +41,7 @@ export interface BlockchainInterface {
    * @param onBlock - Function called on each block with params (block: Block,
    * reorg: boolean)
    */
-  iterator(name: string, onBlock: OnBlock): Promise<void>
+  iterator(name: string, onBlock: OnBlock): Promise<void | number>
 }
 
 /**
@@ -737,55 +737,55 @@ export default class Blockchain implements BlockchainInterface {
    * @param name - Name of the state root head
    * @param onBlock - Function called on each block with params (block, reorg)
    * @param maxBlocks - How many blocks to run. By default, run all unprocessed blocks in the canonical chain.
+   * @returns number of blocks actually iterated
    */
-  async iterator(name: string, onBlock: OnBlock, maxBlocks?: number) {
+  async iterator(name: string, onBlock: OnBlock, maxBlocks?: number): Promise<number> {
     return this._iterator(name, onBlock, maxBlocks)
   }
 
   /**
    * @hidden
    */
-  private async _iterator(name: string, onBlock: OnBlock, maxBlocks?: number) {
-    await this.initAndLock<void>(async () => {
-      const blockHash = this._heads[name] || this._genesis
-      let lastBlock: Block | undefined
+  private async _iterator(name: string, onBlock: OnBlock, maxBlocks?: number): Promise<number> {
+    return await this.initAndLock<number>(
+      async (): Promise<number> => {
+        const headHash = this._heads[name] || this._genesis
+        let lastBlock: Block | undefined
 
-      if (!blockHash) {
-        return
-      }
-
-      if (maxBlocks && maxBlocks < 0) {
-        throw 'If maxBlocks is provided, it has to be a non-negative number'
-      }
-
-      const number = await this.dbManager.hashToNumber(blockHash)
-      const blockNumber = number.addn(1)
-      let blocksRanCounter = 0
-
-      while (maxBlocks !== blocksRanCounter) {
-        try {
-          const block = await this._getBlock(blockNumber)
-
-          if (!block) {
-            break
-          }
-
-          this._heads[name] = block.hash()
-          const reorg = lastBlock ? lastBlock.hash().equals(block.header.parentHash) : false
-          lastBlock = block
-          await onBlock(block, reorg)
-          blockNumber.iaddn(1)
-          blocksRanCounter++
-        } catch (error) {
-          if (error.type !== 'NotFoundError') {
-            throw error
-          }
-          break
+        if (!headHash) {
+          return 0
         }
-      }
 
-      await this._saveHeads()
-    })
+        if (maxBlocks && maxBlocks < 0) {
+          throw 'If maxBlocks is provided, it has to be a non-negative number'
+        }
+
+        const headBlockNumber = await this.dbManager.hashToNumber(headHash)
+        const nextBlockNumber = headBlockNumber.addn(1)
+        let blocksRanCounter = 0
+
+        while (maxBlocks !== blocksRanCounter) {
+          try {
+            const nextBlock = await this._getBlock(nextBlockNumber)
+            this._heads[name] = nextBlock.hash()
+            const reorg = lastBlock ? lastBlock.hash().equals(nextBlock.header.parentHash) : false
+            lastBlock = nextBlock
+            await onBlock(nextBlock, reorg)
+            nextBlockNumber.iaddn(1)
+            blocksRanCounter++
+          } catch (error) {
+            if (error.type === 'NotFoundError') {
+              break
+            } else {
+              throw error
+            }
+          }
+        }
+
+        await this._saveHeads()
+        return blocksRanCounter
+      }
+    )
   }
 
   /**

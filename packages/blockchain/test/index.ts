@@ -335,15 +335,16 @@ tape('blockchain test', (t) => {
     st.end()
   })
 
-  t.test('should iterate through 25 blocks', async (st) => {
+  t.test('should iterate through 24 blocks', async (st) => {
     const { blockchain, blocks, error } = await generateBlockchain(25)
     st.error(error, 'no error')
     let i = 0
-    await blockchain.iterator('test', (block: Block) => {
+    const iterated = await blockchain.iterator('test', (block: Block) => {
       if (block.hash().equals(blocks[i + 1].hash())) {
         i++
       }
     })
+    st.equals(iterated, 24)
     st.equals(i, 24)
     st.end()
   })
@@ -354,7 +355,7 @@ tape('blockchain test', (t) => {
       const { blockchain, blocks, error } = await generateBlockchain(25)
       st.error(error, 'no error')
       let i = 0
-      await blockchain.iterator(
+      const iterated = await blockchain.iterator(
         'test',
         (block: Block) => {
           if (block.hash().equals(blocks[i + 1].hash())) {
@@ -363,6 +364,7 @@ tape('blockchain test', (t) => {
         },
         5
       )
+      st.equals(iterated, 5)
       st.equals(i, 5)
       st.end()
     }
@@ -374,7 +376,7 @@ tape('blockchain test', (t) => {
       const { blockchain, blocks, error } = await generateBlockchain(25)
       st.error(error, 'no error')
       let i = 0
-      await blockchain
+      const iterated = await blockchain
         .iterator(
           'test',
           (block: Block) => {
@@ -387,6 +389,7 @@ tape('blockchain test', (t) => {
         .catch(() => {
           st.fail('Promise cannot throw when running 0 blocks')
         })
+      st.equals(iterated, 0)
       st.equals(i, 0)
       st.end()
     }
