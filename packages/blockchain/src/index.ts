@@ -408,7 +408,7 @@ export default class Blockchain implements BlockchainInterface {
       // 1 -> 1, 2 -> 2, 3 -> 2, 4 -> 2, 5 -> 3,...
       const SIGNER_LIMIT = Math.floor(this.cliqueActiveSigners().length / 2) + 1
 
-      const signer = header.cliqueSignatureToAddress().toBuffer()
+      const signer = header.cliqueSigner().toBuffer()
       const beneficiary = header.coinbase.toBuffer()
       const nonce = header.nonce
       const latestVote = [header.number.toBuffer(), [signer, beneficiary, nonce]]

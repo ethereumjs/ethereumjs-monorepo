@@ -603,7 +603,7 @@ export class BlockHeader {
    */
   cliqueVerifySignature(signerList: Buffer[]): boolean {
     this._requireClique('cliqueVerifySignature')
-    const signerAddress = this.cliqueSignatureToAddress()
+    const signerAddress = this.cliqueSigner()
     const signerFound = signerList.find((signer) => {
       return signer.equals(signerAddress.toBuffer())
     })
@@ -616,8 +616,8 @@ export class BlockHeader {
   /**
    * Returns the signer address
    */
-  cliqueSignatureToAddress(): Address {
-    this._requireClique('cliqueSignatureToAddress')
+  cliqueSigner(): Address {
+    this._requireClique('cliqueSigner')
     const extraSeal = this.cliqueExtraSeal()
     const r = extraSeal.slice(0, 32)
     const s = extraSeal.slice(32, 64)
