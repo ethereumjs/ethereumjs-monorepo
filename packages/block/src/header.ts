@@ -36,8 +36,7 @@ export class BlockHeader {
   public readonly gasLimit: BN
   public readonly gasUsed: BN
   public readonly timestamp: BN
-  // no readonly for extraData to ease signature addition for PoA blocks
-  public extraData: Buffer
+  public readonly extraData: Buffer
   public readonly mixHash: Buffer
   public readonly nonce: Buffer
 
@@ -514,12 +513,10 @@ export class BlockHeader {
    * Returns the hash of the block header.
    */
   hash(): Buffer {
-    const raw = this.raw()
-    // Hash for PoA clique blocks is created without the seal
     if (this._common.consensusAlgorithm() === 'clique' && !this.isGenesis()) {
-      raw[12] = this.extraData.slice(0, this.extraData.length - CLIQUE_EXTRA_SEAL)
+      return this.cliqueHash()
     }
-    return rlphash(raw)
+    return rlphash(this.raw())
   }
 
   /**
@@ -533,6 +530,13 @@ export class BlockHeader {
     if (this._common.consensusAlgorithm() !== 'clique') {
       throw new Error(`BlockHeader.${name}() call only supported for clique PoA networks`)
     }
+  }
+
+  /* Hash for PoA clique blocks is created without the seal */
+  private cliqueHash() {
+    const raw = this.raw()
+    raw[12] = this.extraData.slice(0, this.extraData.length - CLIQUE_EXTRA_SEAL)
+    return rlphash(raw)
   }
 
   /**
