@@ -86,10 +86,7 @@ tape('[Header]: Clique PoA Functionality', function (t) {
     const signatureB = Buffer.concat([signature.r, signature.s, intToBuffer(signature.v - 27)])
     const extraData = Buffer.concat([header.cliqueExtraVanity(), signatureB])
 
-    header = BlockHeader.fromHeaderData(
-      { number: 1, extraData },
-      { common, freeze: false }
-    )
+    header = BlockHeader.fromHeaderData({ number: 1, extraData }, { common, freeze: false })
 
     st.equal(header.extraData.length, 97)
     st.ok(header.cliqueVerifySignature([A.address]), 'should verify signature')

@@ -1,4 +1,4 @@
-import { Address, BN, rlp } from 'ethereumjs-util'
+import { Address, BN } from 'ethereumjs-util'
 
 export type CliqueSignerState = [BN, Address[]]
 export type CliqueLatestSignerStates = CliqueSignerState[]

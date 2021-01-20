@@ -80,8 +80,8 @@ export class DBManager {
   async getCliqueLatestSignerStates(): Promise<CliqueLatestSignerStates> {
     try {
       const signerStates = await this.get(DBTarget.CliqueSignerStates)
-      const states = <any>rlp.decode(signerStates) as [Buffer, Buffer[]]
-      return states.map(state => {
+      const states = (<any>rlp.decode(signerStates)) as [Buffer, Buffer[]]
+      return states.map((state) => {
         const blockNum = new BN(state[0])
         const addrs = (<any>state[1]).map((buf: Buffer) => new Address(buf))
         return [blockNum, addrs]
@@ -100,8 +100,8 @@ export class DBManager {
   async getCliqueLatestVotes(): Promise<CliqueLatestVotes> {
     try {
       const signerVotes = await this.get(DBTarget.CliqueVotes)
-      const votes = <any>rlp.decode(signerVotes) as [Buffer, [Buffer, Buffer, Buffer]]
-      return votes.map(vote => {
+      const votes = (<any>rlp.decode(signerVotes)) as [Buffer, [Buffer, Buffer, Buffer]]
+      return votes.map((vote) => {
         const blockNum = new BN(vote[0])
         const signer = new Address((vote[1] as any)[0])
         const beneficiary = new Address((vote[1] as any)[1])

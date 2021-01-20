@@ -6,7 +6,14 @@ import Common from '@ethereumjs/common'
 import { DBManager } from './db/manager'
 import { DBOp, DBSetBlockOrHeader, DBSetTD, DBSetHashToNumber, DBSaveLookups } from './db/helpers'
 import { DBTarget } from './db/operation'
-import { CliqueSignerState, CliqueLatestSignerStates, CliqueVote, CliqueLatestVotes, CLIQUE_NONCE_AUTH, CLIQUE_NONCE_DROP } from './clique'
+import {
+  CliqueSignerState,
+  CliqueLatestSignerStates,
+  CliqueVote,
+  CliqueLatestVotes,
+  CLIQUE_NONCE_AUTH,
+  CLIQUE_NONCE_DROP,
+} from './clique'
 
 import type { LevelUp } from 'levelup'
 const level = require('level-mem')
@@ -291,7 +298,7 @@ export default class Blockchain implements BlockchainInterface {
       DBSaveLookups(genesisHash, new BN(0)).map((op) => dbOps.push(op))
 
       if (this._common.consensusAlgorithm() === 'clique') {
-        this.cliqueSaveGenesisSigners(genesisBlock)
+        await this.cliqueSaveGenesisSigners(genesisBlock)
       }
 
       await this.dbManager.batch(dbOps)
@@ -390,7 +397,10 @@ export default class Blockchain implements BlockchainInterface {
     const dbOps: DBOp[] = []
     if (signerState) {
       this._cliqueLatestSignerStates.push(signerState)
-      const formatted = this._cliqueLatestSignerStates.map(state => [state[0].toBuffer(), state[1].map(a => a.toBuffer())])
+      const formatted = this._cliqueLatestSignerStates.map((state) => [
+        state[0].toBuffer(),
+        state[1].map((a) => a.toBuffer()),
+      ])
       dbOps.push(DBOp.set(DBTarget.CliqueSignerStates, rlp.encode(formatted)))
     }
     await this.dbManager.batch(dbOps)
@@ -409,7 +419,9 @@ export default class Blockchain implements BlockchainInterface {
 
       const alreadyVoted = this._cliqueLatestVotes.find((vote: CliqueVote) => {
         return (
-          vote[1][0].toBuffer().equals(signer.toBuffer()) && vote[1][1].toBuffer().equals(beneficiary.toBuffer()) && vote[1][2].equals(nonce)
+          vote[1][0].toBuffer().equals(signer.toBuffer()) &&
+          vote[1][1].toBuffer().equals(beneficiary.toBuffer()) &&
+          vote[1][2].equals(nonce)
         )
       })
         ? true
@@ -441,7 +453,7 @@ export default class Blockchain implements BlockchainInterface {
               return !vote[1][0].toBuffer().equals(beneficiary.toBuffer())
             })
           } else {
-            throw new Error('Invalid nonce for clique block: ' + nonce)
+            throw new Error(`Invalid nonce for clique block: ${nonce.toString('hex')}`)
           }
           const newSignerState: CliqueSignerState = [header.number, activeSigners]
           await this.cliqueUpdateSignerStates(newSignerState)
@@ -449,7 +461,10 @@ export default class Blockchain implements BlockchainInterface {
       }
     }
     const dbOps: DBOp[] = []
-    const formatted = this._cliqueLatestVotes.map(v => [v[0].toBuffer(), [v[1][0].toBuffer(), v[1][0].toBuffer(), v[1][2]]])
+    const formatted = this._cliqueLatestVotes.map((v) => [
+      v[0].toBuffer(),
+      [v[1][0].toBuffer(), v[1][0].toBuffer(), v[1][2]],
+    ])
     dbOps.push(DBOp.set(DBTarget.CliqueVotes, rlp.encode(formatted)))
     await this.dbManager.batch(dbOps)
   }

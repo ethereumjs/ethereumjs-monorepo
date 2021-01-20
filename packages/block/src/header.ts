@@ -592,7 +592,7 @@ export class BlockHeader {
     for (let start = 0; start <= signerBuffer.length - signerLength; start += signerLength) {
       signerList.push(signerBuffer.slice(start, start + signerLength))
     }
-    return signerList.map(buf => new Address(buf))
+    return signerList.map((buf) => new Address(buf))
   }
 
   /**

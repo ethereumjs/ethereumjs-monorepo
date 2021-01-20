@@ -90,7 +90,6 @@ tape('[Block]: Header functions', function (t) {
     header = BlockHeader.fromHeaderData({}, { common })
     st.ok(header.hash().toString('hex'), 'default block should initialize')
 
-
     st.end()
   })
 
@@ -116,7 +115,6 @@ tape('[Block]: Header functions', function (t) {
       await header.validate(blockchain)
       st.pass(testCase)
     } catch (error) {
-      console.log(error)
       st.fail(testCase)
     }
 
@@ -154,7 +152,8 @@ tape('[Block]: Header functions', function (t) {
     opts = { common } as any
 
     // valid extraData (32 byte vanity + 65 byte seal)
-    testCase = 'clique block should validate with valid number of bytes in extraData: 32 byte vanity + 65 byte seal'
+    testCase =
+      'clique block should validate with valid number of bytes in extraData: 32 byte vanity + 65 byte seal'
     extraData = Buffer.concat([Buffer.alloc(32), Buffer.alloc(65)])
     header = BlockHeader.fromHeaderData({ ...data, extraData }, opts)
     try {
@@ -172,19 +171,32 @@ tape('[Block]: Header functions', function (t) {
       await header.validate(blockchain)
       t.fail(testCase)
     } catch (error) {
-      t.equal(error.message, 'extraData must be 97 bytes on non-epoch transition blocks, received 32 bytes', testCase)
+      t.equal(
+        error.message,
+        'extraData must be 97 bytes on non-epoch transition blocks, received 32 bytes',
+        testCase
+      )
     }
 
     // signer list indivisible by 20
     testCase = 'clique blocks should throw on invalid extraData length: indivisible by 20'
-    extraData = Buffer.concat([Buffer.alloc(32), Buffer.alloc(65), Buffer.alloc(20), Buffer.alloc(21)])
+    extraData = Buffer.concat([
+      Buffer.alloc(32),
+      Buffer.alloc(65),
+      Buffer.alloc(20),
+      Buffer.alloc(21),
+    ])
     const epoch = new BN(common.consensusConfig().epoch)
     header = BlockHeader.fromHeaderData({ ...data, number: epoch, extraData }, opts)
     try {
       await header.validate(blockchain)
       st.fail(testCase)
     } catch (error) {
-      st.equals(error.message, 'invalid signer list length in extraData, received signer length of 41 (not divisible by 20)', testCase)
+      st.equals(
+        error.message,
+        'invalid signer list length in extraData, received signer length of 41 (not divisible by 20)',
+        testCase
+      )
     }
 
     st.end()

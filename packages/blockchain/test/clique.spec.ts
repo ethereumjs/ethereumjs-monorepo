@@ -96,7 +96,11 @@ tape('Clique: Initialization', (t) => {
   const initWithSigners = (signers: Address[]) => {
     const blocks: Block[] = []
 
-    const extraData = Buffer.concat([Buffer.alloc(32), ...signers.map(s => s.toBuffer()), Buffer.alloc(65)])
+    const extraData = Buffer.concat([
+      Buffer.alloc(32),
+      ...signers.map((s) => s.toBuffer()),
+      Buffer.alloc(65),
+    ])
     const genesisBlock = Block.genesis(
       { header: { gasLimit: GAS_LIMIT, extraData } },
       { common: COMMON }
