@@ -577,7 +577,7 @@ export class BlockHeader {
    * transition block and should therefore be used
    * in conjunction with `cliqueIsEpochTransition()`
    */
-  cliqueEpochTransitionSigners(): Buffer[] {
+  cliqueEpochTransitionSigners(): Address[] {
     this._requireClique('cliqueEpochTransitionSigners')
     if (!this.cliqueIsEpochTransition()) {
       throw new Error('Singers are only included in epoch transition blocks (clique)')
@@ -592,7 +592,7 @@ export class BlockHeader {
     for (let start = 0; start <= signerBuffer.length - signerLength; start += signerLength) {
       signerList.push(signerBuffer.slice(start, start + signerLength))
     }
-    return signerList
+    return signerList.map(buf => new Address(buf))
   }
 
   /**
@@ -601,16 +601,13 @@ export class BlockHeader {
    *
    *  Method throws if signature is invalid
    */
-  cliqueVerifySignature(signerList: Buffer[]): boolean {
+  cliqueVerifySignature(signerList: Address[]): boolean {
     this._requireClique('cliqueVerifySignature')
-    const signerAddress = this.cliqueSigner()
+    const signerAddress = this.cliqueSigner().toBuffer()
     const signerFound = signerList.find((signer) => {
-      return signer.equals(signerAddress.toBuffer())
+      return signer.toBuffer().equals(signerAddress)
     })
-    if (signerFound) {
-      return true
-    }
-    return false
+    return !!signerFound
   }
 
   /**

@@ -1,6 +1,6 @@
 import { Block } from '@ethereumjs/block'
 import Common from '@ethereumjs/common'
-import { intToBuffer, ecsign } from 'ethereumjs-util'
+import { Address, intToBuffer, ecsign } from 'ethereumjs-util'
 import tape from 'tape'
 import Blockchain from '../src'
 
@@ -25,13 +25,13 @@ tape('Clique: Initialization', (t) => {
   const GAS_LIMIT = 8000000
 
   type Signer = {
-    address: Buffer
+    address: Address
     privateKey: Buffer
     publicKey: Buffer
   }
 
   const A: Signer = {
-    address: Buffer.from('0b90087d864e82a284dca15923f3776de6bb016f', 'hex'),
+    address: new Address(Buffer.from('0b90087d864e82a284dca15923f3776de6bb016f', 'hex')),
     privateKey: Buffer.from(
       '64bf9cc30328b0e42387b3c82c614e6386259136235e20c1357bd11cdee86993',
       'hex'
@@ -43,7 +43,7 @@ tape('Clique: Initialization', (t) => {
   }
 
   const B: Signer = {
-    address: Buffer.from('dc7bc81ddf67d037d7439f8e6ff12f3d2a100f71', 'hex'),
+    address: new Address(Buffer.from('dc7bc81ddf67d037d7439f8e6ff12f3d2a100f71', 'hex')),
     privateKey: Buffer.from(
       '86b0ff7b6cf70786f29f297c57562905ab0b6c32d69e177a46491e56da9e486e',
       'hex'
@@ -55,7 +55,7 @@ tape('Clique: Initialization', (t) => {
   }
 
   const C: Signer = {
-    address: Buffer.from('8458f408106c4875c96679f3f556a511beabe138', 'hex'),
+    address: new Address(Buffer.from('8458f408106c4875c96679f3f556a511beabe138', 'hex')),
     privateKey: Buffer.from(
       '159e95d07a6c64ddbafa6036cdb7b8114e6e8cdc449ca4b0468a6d0c955f991b',
       'hex'
@@ -67,7 +67,7 @@ tape('Clique: Initialization', (t) => {
   }
 
   const D: Signer = {
-    address: Buffer.from('83c30730d1972baa09765a1ac72a43db27fedce5', 'hex'),
+    address: new Address(Buffer.from('83c30730d1972baa09765a1ac72a43db27fedce5', 'hex')),
     privateKey: Buffer.from(
       'f216ddcf276079043c52b5dd144aa073e6b272ad4bfeaf4fbbc044aa478d1927',
       'hex'
@@ -79,7 +79,7 @@ tape('Clique: Initialization', (t) => {
   }
 
   const E: Signer = {
-    address: Buffer.from('6f62d8382bf2587361db73ceca28be91b2acb6df', 'hex'),
+    address: new Address(Buffer.from('6f62d8382bf2587361db73ceca28be91b2acb6df', 'hex')),
     privateKey: Buffer.from(
       '2a6e9ad5a6a8e4f17149b8bc7128bf090566a11dbd63c30e5a0ee9f161309cd6',
       'hex'
@@ -93,10 +93,10 @@ tape('Clique: Initialization', (t) => {
   const NONCE_AUTH = Buffer.from('ffffffffffffffff', 'hex')
   const NONCE_DROP = Buffer.from('0000000000000000', 'hex')
 
-  const initWithSigners = (signers: Buffer[]) => {
+  const initWithSigners = (signers: Address[]) => {
     const blocks: Block[] = []
 
-    const extraData = Buffer.concat([Buffer.alloc(32), ...signers, Buffer.alloc(65)])
+    const extraData = Buffer.concat([Buffer.alloc(32), ...signers.map(s => s.toBuffer()), Buffer.alloc(65)])
     const genesisBlock = Block.genesis(
       { header: { gasLimit: GAS_LIMIT, extraData } },
       { common: COMMON }
@@ -121,7 +121,7 @@ tape('Clique: Initialization', (t) => {
     const number = blocks.length
     const lastBlock = blocks[number - 1]
 
-    let coinbase = Buffer.alloc(20)
+    let coinbase = Address.zero()
     let nonce = NONCE_DROP
     if (beneficiary) {
       coinbase = beneficiary[0].address
@@ -141,10 +141,14 @@ tape('Clique: Initialization', (t) => {
         nonce,
       },
     }
-    const block = Block.fromBlockData(blockData, { common: COMMON, freeze: false })
+    let block = Block.fromBlockData(blockData, { common: COMMON, freeze: false })
     const signature = ecsign(block.header.hash(), signer.privateKey)
     const signatureB = Buffer.concat([signature.r, signature.s, intToBuffer(signature.v - 27)])
-    block.header.extraData = Buffer.concat([block.header.cliqueExtraVanity(), signatureB])
+
+    const extraData = Buffer.concat([block.header.cliqueExtraVanity(), signatureB])
+    blockData.header.extraData = extraData
+
+    block = Block.fromBlockData(blockData, { common: COMMON, freeze: false })
 
     await blockchain.putBlock(block)
     blocks.push(block)

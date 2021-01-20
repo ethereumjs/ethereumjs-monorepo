@@ -1,5 +1,5 @@
 import tape from 'tape'
-import { BN, rlp, zeros } from 'ethereumjs-util'
+import { Address, BN, rlp, zeros } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
 import { Block, BlockBuffer } from '../src'
 import { Mockchain } from './mockchain'
@@ -432,7 +432,7 @@ tape('[Block]: block functions', function (t) {
       'header.cliqueExtraSeal() -> should get the header function results'
     )
     const msg = 'header.cliqueEpochTransitionSigners() -> should get the header function results'
-    st.deepEqual(block.cliqueEpochTransitionSigners(), [Buffer.alloc(20), Buffer.alloc(20)], msg)
+    st.deepEqual(block.cliqueEpochTransitionSigners(), [Address.zero(), Address.zero()], msg)
 
     st.end()
   })

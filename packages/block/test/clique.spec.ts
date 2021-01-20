@@ -1,7 +1,7 @@
 import tape from 'tape'
 import Common from '@ethereumjs/common'
 import { BlockHeader } from '../src/header'
-import { ecsign, intToBuffer } from 'ethereumjs-util'
+import { Address, ecsign, intToBuffer } from 'ethereumjs-util'
 
 tape('[Header]: Clique PoA Functionality', function (t) {
   const common = new Common({ chain: 'rinkeby', hardfork: 'chainstart' })
@@ -54,19 +54,19 @@ tape('[Header]: Clique PoA Functionality', function (t) {
     )
     const msg =
       'cliqueEpochTransitionSigners() -> should return the correct epoch transition signer list on epoch block'
-    st.deepEqual(header.cliqueEpochTransitionSigners(), [Buffer.alloc(20), Buffer.alloc(20)], msg)
+    st.deepEqual(header.cliqueEpochTransitionSigners(), [Address.zero(), Address.zero()], msg)
 
     st.end()
   })
 
   type Signer = {
-    address: Buffer
+    address: Address
     privateKey: Buffer
     publicKey: Buffer
   }
 
   const A: Signer = {
-    address: Buffer.from('0b90087d864e82a284dca15923f3776de6bb016f', 'hex'),
+    address: new Address(Buffer.from('0b90087d864e82a284dca15923f3776de6bb016f', 'hex')),
     privateKey: Buffer.from(
       '64bf9cc30328b0e42387b3c82c614e6386259136235e20c1357bd11cdee86993',
       'hex'
@@ -78,19 +78,23 @@ tape('[Header]: Clique PoA Functionality', function (t) {
   }
 
   t.test('Signing', function (st) {
-    const header = BlockHeader.fromHeaderData(
+    let header = BlockHeader.fromHeaderData(
       { number: 1, extraData: Buffer.alloc(97) },
       { common, freeze: false }
     )
     const signature = ecsign(header.hash(), A.privateKey)
     const signatureB = Buffer.concat([signature.r, signature.s, intToBuffer(signature.v - 27)])
-    header.extraData = Buffer.concat([header.cliqueExtraVanity(), signatureB])
+    const extraData = Buffer.concat([header.cliqueExtraVanity(), signatureB])
+
+    header = BlockHeader.fromHeaderData(
+      { number: 1, extraData },
+      { common, freeze: false }
+    )
 
     st.equal(header.extraData.length, 97)
-    st.deepEqual(header.cliqueVerifySignature([A.address]), true, 'should verify signature')
-    st.deepEqual(
-      header.cliqueSigner().toBuffer(),
-      A.address,
+    st.ok(header.cliqueVerifySignature([A.address]), 'should verify signature')
+    st.ok(
+      header.cliqueSigner().toBuffer().equals(A.address.toBuffer()),
       'should recover the correct signer address'
     )
 

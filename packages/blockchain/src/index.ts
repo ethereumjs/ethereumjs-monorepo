@@ -1,22 +1,15 @@
 import Semaphore from 'semaphore-async-await'
-import { BN, rlp } from 'ethereumjs-util'
+import { Address, BN, rlp } from 'ethereumjs-util'
 import { Block, BlockHeader } from '@ethereumjs/block'
 import Ethash from '@ethereumjs/ethash'
 import Common from '@ethereumjs/common'
 import { DBManager } from './db/manager'
 import { DBOp, DBSetBlockOrHeader, DBSetTD, DBSetHashToNumber, DBSaveLookups } from './db/helpers'
 import { DBTarget } from './db/operation'
+import { CliqueSignerState, CliqueLatestSignerStates, CliqueVote, CliqueLatestVotes, CLIQUE_NONCE_AUTH, CLIQUE_NONCE_DROP } from './clique'
 
 import type { LevelUp } from 'levelup'
 const level = require('level-mem')
-
-export type CliqueSignerState = [Buffer, Buffer[]]
-export type CliqueLatestSignerStates = CliqueSignerState[]
-export type CliqueVote = [Buffer, [Buffer, Buffer, Buffer]]
-export type CliqueLatestVotes = CliqueVote[]
-
-const CLIQUE_NONCE_AUTH: Buffer = Buffer.from('ffffffffffffffff', 'hex')
-const CLIQUE_NONCE_DROP = Buffer.alloc(8)
 
 type OnBlock = (block: Block, reorg: boolean) => Promise<void> | void
 
@@ -386,7 +379,7 @@ export default class Blockchain implements BlockchainInterface {
 
   private async cliqueSaveGenesisSigners(genesisBlock: Block) {
     const genesisSignerState: CliqueSignerState = [
-      genesisBlock.header.number.toBuffer(),
+      genesisBlock.header.number,
       genesisBlock.header.cliqueEpochTransitionSigners(),
     ]
     await this.cliqueUpdateSignerStates(genesisSignerState)
@@ -397,7 +390,8 @@ export default class Blockchain implements BlockchainInterface {
     const dbOps: DBOp[] = []
     if (signerState) {
       this._cliqueLatestSignerStates.push(signerState)
-      dbOps.push(DBOp.set(DBTarget.CliqueSignerStates, rlp.encode(this._cliqueLatestSignerStates)))
+      const formatted = this._cliqueLatestSignerStates.map(state => [state[0].toBuffer(), state[1].map(a => a.toBuffer())])
+      dbOps.push(DBOp.set(DBTarget.CliqueSignerStates, rlp.encode(formatted)))
     }
     await this.dbManager.batch(dbOps)
   }
@@ -408,14 +402,14 @@ export default class Blockchain implements BlockchainInterface {
       // 1 -> 1, 2 -> 2, 3 -> 2, 4 -> 2, 5 -> 3,...
       const SIGNER_LIMIT = Math.floor(this.cliqueActiveSigners().length / 2) + 1
 
-      const signer = header.cliqueSigner().toBuffer()
-      const beneficiary = header.coinbase.toBuffer()
+      const signer = header.cliqueSigner()
+      const beneficiary = header.coinbase
       const nonce = header.nonce
-      const latestVote = [header.number.toBuffer(), [signer, beneficiary, nonce]]
+      const latestVote = [header.number, [signer, beneficiary, nonce]]
 
       const alreadyVoted = this._cliqueLatestVotes.find((vote: CliqueVote) => {
         return (
-          vote[1][0].equals(signer) && vote[1][1].equals(beneficiary) && vote[1][2].equals(nonce)
+          vote[1][0].toBuffer().equals(signer.toBuffer()) && vote[1][1].toBuffer().equals(beneficiary.toBuffer()) && vote[1][2].equals(nonce)
         )
       })
         ? true
@@ -428,7 +422,7 @@ export default class Blockchain implements BlockchainInterface {
       // to update the signer list
       if (!alreadyVoted) {
         const beneficiaryVotes = this._cliqueLatestVotes.filter((vote: CliqueVote) => {
-          return vote[1][1].equals(beneficiary) && vote[1][2].equals(nonce)
+          return vote[1][1].toBuffer().equals(beneficiary.toBuffer()) && vote[1][2].equals(nonce)
         })
         const benficiaryVoteNum = beneficiaryVotes.length
         // Majority consensus
@@ -439,23 +433,24 @@ export default class Blockchain implements BlockchainInterface {
             activeSigners.push(beneficiary)
             // Drop existing signer
           } else if (nonce.equals(CLIQUE_NONCE_DROP)) {
-            activeSigners = activeSigners.filter((signer: Buffer) => {
-              return !signer.equals(beneficiary)
+            activeSigners = activeSigners.filter((signer: Address) => {
+              return !signer.toBuffer().equals(beneficiary.toBuffer())
             })
             // Discard votes from removed signer
             this._cliqueLatestVotes = this._cliqueLatestVotes.filter((vote: CliqueVote) => {
-              return !vote[1][0].equals(beneficiary)
+              return !vote[1][0].toBuffer().equals(beneficiary.toBuffer())
             })
           } else {
             throw new Error('Invalid nonce for clique block: ' + nonce)
           }
-          const newSignerState: CliqueSignerState = [header.number.toBuffer(), activeSigners]
-          await this.cliqueUpdateSignerStates(newSignerState! as CliqueSignerState)
+          const newSignerState: CliqueSignerState = [header.number, activeSigners]
+          await this.cliqueUpdateSignerStates(newSignerState)
         }
       }
     }
     const dbOps: DBOp[] = []
-    dbOps.push(DBOp.set(DBTarget.CliqueVotes, rlp.encode(this._cliqueLatestVotes)))
+    const formatted = this._cliqueLatestVotes.map(v => [v[0].toBuffer(), [v[1][0].toBuffer(), v[1][0].toBuffer(), v[1][2]]])
+    dbOps.push(DBOp.set(DBTarget.CliqueVotes, rlp.encode(formatted)))
     await this.dbManager.batch(dbOps)
   }
 
@@ -463,7 +458,7 @@ export default class Blockchain implements BlockchainInterface {
    * Returns a list with the current block signers
    * (only clique PoA, throws otherwise)
    */
-  public cliqueActiveSigners() {
+  public cliqueActiveSigners(): Address[] {
     this._requireClique()
     return this._cliqueLatestSignerStates[this._cliqueLatestSignerStates.length - 1][1]
   }
@@ -628,20 +623,16 @@ export default class Blockchain implements BlockchainInterface {
 
       if (this._common.consensusAlgorithm() === 'ethash') {
         // set total difficulty in the current context scope
-        console.log('gogo1')
         if (this._headHeaderHash) {
           currentTd.header = await this.getTotalDifficulty(this._headHeaderHash)
         }
-        console.log('gogo2')
         if (this._headBlockHash) {
           currentTd.block = await this.getTotalDifficulty(this._headBlockHash)
         }
-        console.log('gogo3')
 
         // calculate the total difficulty of the new block
         const parentTd = await this.getTotalDifficulty(header.parentHash, blockNumber.subn(1))
         td.iadd(parentTd)
-        console.log('gogo4')
       }
 
       // save total difficulty to the database

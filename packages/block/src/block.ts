@@ -1,7 +1,7 @@
 /* eslint-disable no-dupe-class-members */
 
 import { BaseTrie as Trie } from '@ethereumjs/trie'
-import { BN, rlp, keccak256, KECCAK256_RLP } from 'ethereumjs-util'
+import { Address, BN, rlp, keccak256, KECCAK256_RLP } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
 import { Transaction, TxOptions } from '@ethereumjs/tx'
 import { BlockHeader } from './header'
@@ -172,7 +172,7 @@ export class Block {
    * transition block and should therefore be used
    * in conjunction with `cliqueIsEpochTransition()`
    */
-  cliqueEpochTransitionSigners(): Buffer[] {
+  cliqueEpochTransitionSigners(): Address[] {
     return this.header.cliqueEpochTransitionSigners()
   }
 
