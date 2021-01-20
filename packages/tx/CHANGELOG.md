@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 3.0.1 - 2021-01-20
+
+- Fixes `tx.isSigned()` always returning true - so also for unsigned transactions - due to a bug in the `Transaction` class constructor. This bug is regarded as **critical** and an update is strongly recommended. See PR [#1042](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1042)
+
 ## 3.0.0 - 2020-11-24
 
 ### New Package Name
