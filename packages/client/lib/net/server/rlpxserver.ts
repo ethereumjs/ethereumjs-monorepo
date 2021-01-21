@@ -2,6 +2,7 @@ import { randomBytes } from 'crypto'
 import { RLPx as Devp2pRLPx, Peer as Devp2pRLPxPeer, DPT as Devp2pDPT } from '@ethereumjs/devp2p'
 import { RlpxPeer } from '../peer/rlpxpeer'
 import { Server, ServerOptions } from './server'
+import fs from 'fs'
 
 export interface RlpxServerOptions extends ServerOptions {
   /* Local port to listen on (default: 30303) */
@@ -63,6 +64,20 @@ export class RlpxServer extends Server {
    */
   constructor(options: RlpxServerOptions) {
     super(options)
+
+    if (this.key === undefined) {
+      const dataDir = this.config.getNetworkDir()
+      const fileName = dataDir + '/nodekey'
+      if (fs.existsSync(fileName)) {
+        this.key = Buffer.from(fs.readFileSync(fileName, { encoding: 'binary' }), 'binary')
+      } else {
+        const key = randomBytes(32)
+        this.key = key
+        fs.writeFileSync(fileName, key.toString('binary'), {
+          encoding: 'binary',
+        })
+      }
+    }
 
     // TODO: get the external ip from the upnp service
     this.ip = '::'
