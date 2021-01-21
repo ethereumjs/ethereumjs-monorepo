@@ -76,10 +76,17 @@ export class Address {
   }
 
   /**
+   * Is address equal to another.
+   */
+  equals(address: Address): boolean {
+    return this.buf.equals(address.buf)
+  }
+
+  /**
    * Is address zero.
    */
   isZero(): boolean {
-    return this.buf.equals(Address.zero().buf)
+    return this.equals(Address.zero())
   }
 
   /**
