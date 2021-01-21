@@ -9,7 +9,7 @@ export default async function runBlockchain(
   this: VM,
   blockchain?: Blockchain,
   maxBlocks?: number
-): Promise<number> {
+): Promise<void | number> {
   let headBlock: Block
   let parentState: Buffer
 

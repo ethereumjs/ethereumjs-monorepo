@@ -19,7 +19,7 @@ export class FullSynchronizer extends Synchronizer {
   public runningBlocks: boolean
 
   private stopSyncing: boolean
-  private vmPromise?: Promise<number>
+  private vmPromise?: Promise<void | number>
 
   constructor(options: SynchronizerOptions) {
     super(options)
@@ -76,7 +76,7 @@ export class FullSynchronizer extends Synchronizer {
       while (!newHead.equals(oldHead) && !this.stopSyncing) {
         oldHead = newHead
         this.vmPromise = this.vm.runBlockchain(this.vm.blockchain, 1)
-        const numExecuted = await this.vmPromise
+        const numExecuted = (await this.vmPromise) as number
         if (numExecuted === 0) {
           this.config.logger.warn(
             `No blocks executed past chain head hash=${short(
