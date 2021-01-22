@@ -5,13 +5,17 @@ import VM from './index'
 /**
  * @ignore
  */
-export default async function runBlockchain(this: VM, blockchain?: Blockchain, maxBlocks?: number) {
+export default async function runBlockchain(
+  this: VM,
+  blockchain?: Blockchain,
+  maxBlocks?: number
+): Promise<void | number> {
   let headBlock: Block
   let parentState: Buffer
 
   blockchain = blockchain || this.blockchain
 
-  await blockchain.iterator(
+  return await blockchain.iterator(
     'vm',
     async (block: Block, reorg: boolean) => {
       // determine starting state for block run
