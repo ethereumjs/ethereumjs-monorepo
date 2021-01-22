@@ -44,5 +44,5 @@ export default function blockFromRpc(blockParams: any, uncles: any[] = [], optio
 
   const uncleHeaders = uncles.map((uh) => blockHeaderFromRpc(uh, options))
 
-  return Block.fromBlockData({ header, transactions, uncleHeaders })
+  return Block.fromBlockData({ header, transactions, uncleHeaders }, options)
 }

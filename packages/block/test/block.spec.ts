@@ -2,8 +2,10 @@ import tape from 'tape'
 import { Address, BN, rlp, zeros } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
 import { Block, BlockBuffer } from '../src'
+import blockFromRpc from '../src/from-rpc'
 import { Mockchain } from './mockchain'
 import { createBlock } from './util'
+import * as testDataFromRpcGoerli from './testdata/testdata-from-rpc-goerli.json'
 
 tape('[Block]: block functions', function (t) {
   t.test('should test block initialization', function (st) {
@@ -97,21 +99,28 @@ tape('[Block]: block functions', function (t) {
     })
   })
 
-  // TODO: reactivate test using dedicated Rinkeby testdata for PoA tests
-  // (extract from client output once Goerli or Rinkeby connection possible with Block.toJSON())
-  /*t.test('should test block validation on poa chain', async function (st) {
+  t.test('should test block validation on poa chain', async function (st) {
     const common = new Common({ chain: 'goerli', hardfork: 'chainstart' })
-    const blockRlp = testData.blocks[0].rlp
-    const block = Block.fromRLPSerializedBlock(blockRlp, { common })
     const blockchain = new Mockchain()
-    const genesisBlock = Block.fromRLPSerializedBlock(testData.genesisRLP, { common })
-    console.log(genesisBlock.header.hash())
-    await blockchain.putBlock(genesisBlock)
-    st.doesNotThrow(async () => {
+    const block = blockFromRpc(testDataFromRpcGoerli, [], { common })
+
+    const genesis = Block.genesis({}, { common })
+    await blockchain.putBlock(genesis)
+
+    const parentBlock = Block.fromBlockData({ header: { number: block.header.number.subn(1), timestamp: block.header.timestamp.subn(1000), gasLimit: block.header.gasLimit } }, { common, freeze: false })
+    parentBlock.hash = () => { return block.header.parentHash }
+    await blockchain.putBlock(parentBlock)
+
+    await blockchain.putBlock(block)
+    try {
       await block.validate(blockchain)
-      st.end()
-    })
-  })*/
+      st.pass('does not throw')
+    } catch (error) {
+      console.log(error)
+      st.fail('error thrown')
+    }
+    st.end()
+  })
 
   async function testTransactionValidation(st: tape.Test, block: Block) {
     st.ok(block.validateTransactions())
