@@ -35,7 +35,6 @@ export abstract class Synchronizer extends EventEmitter {
 
   protected pool: PeerPool
   protected chain: Chain
-  protected stateDB?: LevelUp
   protected flow: FlowControl
   protected interval: number
   public running: boolean
@@ -52,7 +51,6 @@ export abstract class Synchronizer extends EventEmitter {
 
     this.pool = options.pool
     this.chain = options.chain
-    this.stateDB = options.stateDB
     this.flow = options.flow ?? new FlowControl()
     this.interval = options.interval ?? 1000
     this.running = false
