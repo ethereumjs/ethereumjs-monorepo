@@ -7,7 +7,7 @@ import { SecureTrie as Trie } from '@ethereumjs/trie'
 export class VMExecution extends Execution {
   public vm: VM
 
-  private vmPromise?: Promise<void>
+  private vmPromise?: Promise<void | number>
   private stopSyncing = false
 
   /**
@@ -57,7 +57,16 @@ export class VMExecution extends Execution {
       while (!newHead.equals(oldHead) && !this.stopSyncing) {
         oldHead = newHead
         this.vmPromise = this.vm.runBlockchain(this.vm.blockchain, 1)
-        await this.vmPromise
+        const numExecuted = (await this.vmPromise) as number
+        if (numExecuted === 0) {
+          this.config.logger.warn(
+            `No blocks executed past chain head hash=${short(
+              newHead
+            )} number=${newHeadBlock.header.number.toNumber()}`
+          )
+          this.running = false
+          return 0
+        }
         const headBlock = await this.vm.blockchain.getHead()
         newHead = headBlock.hash()
         if (blockCounter === 0) {

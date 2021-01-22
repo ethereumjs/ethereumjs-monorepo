@@ -12,7 +12,7 @@ import { VMExecution } from './execution/vmexecution'
  */
 export class FullSynchronizer extends Synchronizer {
   private blockFetcher: BlockFetcher | null
-  private execution: VMExecution
+  public execution: VMExecution
 
   constructor(options: SynchronizerOptions) {
     super(options)

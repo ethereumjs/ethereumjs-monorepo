@@ -20,7 +20,7 @@ export abstract class Execution extends EventEmitter {
   protected stateDB?: LevelUp
   protected chain: Chain
 
-  protected running: boolean = false
+  public running: boolean = false
 
   /**
    * Create new excution module

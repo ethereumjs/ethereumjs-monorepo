@@ -2,10 +2,8 @@ import { EventEmitter } from 'events'
 import tape from 'tape-catch'
 import td from 'testdouble'
 import { BN } from 'ethereumjs-util'
-import VM from '@ethereumjs/vm'
 import { Config } from '../../lib/config'
 import { Chain } from '../../lib/blockchain'
-import Blockchain from '@ethereumjs/blockchain'
 
 tape('[FullSynchronizer]', async (t) => {
   class PeerPool extends EventEmitter {
@@ -30,20 +28,6 @@ tape('[FullSynchronizer]', async (t) => {
     const sync = new FullSynchronizer({ config, pool, chain })
     pool.emit('added', { eth: true })
     t.equals(sync.type, 'full', 'full type')
-    t.end()
-  })
-
-  t.test('should initialize with VM provided by config', async (t) => {
-    const vm = new VM()
-    const config = new Config({ vm, loglevel: 'error', transports: [] })
-    const pool = new PeerPool() as any
-    const chain = new Chain({ config })
-    const sync = new FullSynchronizer({
-      config,
-      pool,
-      chain,
-    })
-    t.equals(sync.vm, vm, 'provided VM is used')
     t.end()
   })
 
@@ -153,50 +137,6 @@ tape('[FullSynchronizer]', async (t) => {
 
   t.test('should reset td', (t) => {
     td.reset()
-    t.end()
-  })
-
-  t.test('should run blocks', async (t) => {
-    const vm = new VM()
-    vm.runBlockchain = td.func<any>()
-    const config = new Config({ vm, loglevel: 'error', transports: [] })
-    const pool = new PeerPool() as any
-    const blockchain = new Blockchain() as any
-    const chain = new Chain({ config, blockchain })
-    const sync = new FullSynchronizer({
-      config,
-      pool,
-      chain,
-    })
-    const oldHead = sync.vm.blockchain.getHead()
-    sync.running = true
-    await sync.runBlocks()
-    t.deepEqual(sync.vm.blockchain.getHead(), oldHead, 'should not modify blockchain on emtpy run')
-
-    blockchain.getHead = td.func<any>()
-    const getHeadResponse: any = []
-    for (let i = 2; i <= 100; i++) {
-      getHeadResponse.push({
-        hash: () => {
-          return Buffer.from(`hash${i}`)
-        },
-        header: { number: new BN(i) },
-        transactions: [i],
-      })
-    }
-
-    td.when(blockchain.getHead()).thenResolve(
-      {
-        hash: () => {
-          return Buffer.from('hash0')
-        },
-        header: { number: new BN(1) },
-        transactions: [],
-      },
-      ...getHeadResponse
-    )
-    t.equal(await sync.runBlocks(), 49)
-
     t.end()
   })
 })
