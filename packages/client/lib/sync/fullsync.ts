@@ -161,6 +161,7 @@ export class FullSynchronizer extends Synchronizer {
   async open(): Promise<void> {
     await this.chain.open()
     await this.pool.open()
+    this.execution.syncing = true
     const number = this.chain.blocks.height.toString(10)
     const td = this.chain.blocks.td.toString(10)
     const hash = this.chain.blocks.latest!.hash()
@@ -172,10 +173,12 @@ export class FullSynchronizer extends Synchronizer {
    * @return {Promise}
    */
   async stop(): Promise<boolean> {
+    this.execution.syncing = false
+    await this.execution.stop()
+
     if (!this.running) {
       return false
     }
-    await this.execution.stop()
 
     if (this.blockFetcher) {
       this.blockFetcher.destroy()

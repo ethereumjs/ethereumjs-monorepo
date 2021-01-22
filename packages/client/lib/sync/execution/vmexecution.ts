@@ -3,12 +3,15 @@ import { short } from '../../util'
 import VM from '@ethereumjs/vm'
 import { DefaultStateManager } from '@ethereumjs/vm/dist/state'
 import { SecureTrie as Trie } from '@ethereumjs/trie'
+import { Block } from '@ethereumjs/block'
 
 export class VMExecution extends Execution {
   public vm: VM
 
-  private vmPromise?: Promise<void | number>
-  private stopSyncing = false
+  public syncing = false
+  private vmPromise?: Promise<number | undefined>
+
+  private NUM_BLOCKS_PER_ITERATION = 50
 
   /**
    * Create new VM excution module
@@ -36,67 +39,84 @@ export class VMExecution extends Execution {
     }
   }
 
-  /**
-   * This updates the VM once blocks were put in the VM
-   */
   async runBlocks() {
-    if (this.running) {
+    if (this.running || !this.syncing) {
       return
     }
     this.running = true
-    let blockCounter = 0
-    let txCounter = 0
-    const NUM_BLOCKS_PER_LOG_MSG = 50
-    try {
-      let oldHead = Buffer.alloc(0)
-      const newHeadBlock = await this.vm.blockchain.getHead()
-      let newHead = newHeadBlock.hash()
-      let firstHeadBlock = newHeadBlock
-      let lastHeadBlock = newHeadBlock
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-      while (!newHead.equals(oldHead) && !this.stopSyncing) {
-        oldHead = newHead
-        this.vmPromise = this.vm.runBlockchain(this.vm.blockchain, 1)
-        const numExecuted = (await this.vmPromise) as number
-        if (numExecuted === 0) {
-          this.config.logger.warn(
-            `No blocks executed past chain head hash=${short(
-              newHead
-            )} number=${newHeadBlock.header.number.toNumber()}`
-          )
-          this.running = false
-          return 0
-        }
-        const headBlock = await this.vm.blockchain.getHead()
-        newHead = headBlock.hash()
-        if (blockCounter === 0) {
-          firstHeadBlock = headBlock
-        }
-        // check if we did run a new block:
-        if (!newHead.equals(oldHead)) {
-          blockCounter += 1
-          txCounter += headBlock.transactions.length
-          lastHeadBlock = headBlock
 
-          if (blockCounter >= NUM_BLOCKS_PER_LOG_MSG) {
-            const firstNumber = firstHeadBlock.header.number.toNumber()
-            const firstHash = short(firstHeadBlock.hash())
-            const lastNumber = lastHeadBlock.header.number.toNumber()
-            const lastHash = short(lastHeadBlock.hash())
-            this.config.logger.info(
-              `Executed blocks count=${blockCounter} first=${firstNumber} hash=${firstHash} last=${lastNumber} hash=${lastHash} with txs=${txCounter}`
-            )
-            blockCounter = 0
-            txCounter = 0
+    let txCounter = 0
+    let numExecuted: number | undefined
+
+    const blockchain = this.vm.blockchain
+    let startHeadBlock = await this.vm.blockchain.getHead()
+    let canonicalHead = await this.vm.blockchain.getLatestBlock()
+
+    let headBlock: Block | undefined
+    let parentState: Buffer | undefined
+
+    while (
+      (numExecuted === undefined || numExecuted === this.NUM_BLOCKS_PER_ITERATION) &&
+      !startHeadBlock.hash().equals(canonicalHead.hash()) &&
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      this.syncing
+    ) {
+      headBlock = undefined
+      parentState = undefined
+
+      this.vmPromise = blockchain.iterator(
+        'vm',
+        async (block: Block, reorg: boolean) => {
+          // determine starting state for block run
+          // if we are just starting or if a chain re-org has happened
+          if (!headBlock || reorg) {
+            const parentBlock = await blockchain!.getBlock(block.header.parentHash)
+            parentState = parentBlock.header.stateRoot
+            // generate genesis state if we are at the genesis block
+            // we don't have the genesis state
+            if (!headBlock) {
+              await this.vm.stateManager.generateCanonicalGenesis()
+            } else {
+              parentState = headBlock.header.stateRoot
+            }
           }
-        }
+          // run block, update head if valid
+          try {
+            await this.vm.runBlock({ block, root: parentState })
+            txCounter += block.transactions.length
+            // set as new head block
+            headBlock = block
+          } catch (error) {
+            // remove invalid block
+            await blockchain!.delBlock(block.header.hash())
+            throw error
+          }
+        },
+        this.NUM_BLOCKS_PER_ITERATION
+      )
+      numExecuted = (await this.vmPromise) as number
+
+      const endHeadBlock = await this.vm.blockchain.getHead()
+      if (numExecuted > 0) {
+        const firstNumber = startHeadBlock.header.number.toNumber()
+        const firstHash = short(startHeadBlock.hash())
+        const lastNumber = endHeadBlock.header.number.toNumber()
+        const lastHash = short(endHeadBlock.hash())
+        this.config.logger.info(
+          `Executed blocks count=${numExecuted} first=${firstNumber} hash=${firstHash} last=${lastNumber} hash=${lastHash} with txs=${txCounter}`
+        )
+      } else {
+        this.config.logger.warn(
+          `No blocks executed past chain head hash=${short(
+            endHeadBlock.hash()
+          )} number=${endHeadBlock.header.number.toNumber()}`
+        )
       }
-    } catch (error) {
-      this.emit('error', error)
-    } finally {
-      this.running = false
+      startHeadBlock = endHeadBlock
+      canonicalHead = await this.vm.blockchain.getLatestBlock()
     }
-    return blockCounter
+    this.running = false
+    return numExecuted
   }
 
   /**
@@ -104,7 +124,6 @@ export class VMExecution extends Execution {
    * @returns {Promise}
    */
   async stop(): Promise<boolean> {
-    this.stopSyncing = true
     if (this.vmPromise) {
       // ensure that we wait that the VM finishes executing the block (and flushing the trie cache)
       await this.vmPromise
