@@ -393,16 +393,23 @@ export default class Blockchain implements BlockchainInterface {
     await this.cliqueUpdateVotes()
   }
 
-  private async cliqueUpdateSignerStates(signerState?: CliqueSignerState) {
+  private async cliqueUpdateSignerStates(signerState: CliqueSignerState) {
     const dbOps: DBOp[] = []
-    if (signerState) {
-      this._cliqueLatestSignerStates.push(signerState)
-      const formatted = this._cliqueLatestSignerStates.map((state) => [
-        state[0].toBuffer(),
-        state[1].map((a) => a.toBuffer()),
-      ])
-      dbOps.push(DBOp.set(DBTarget.CliqueSignerStates, rlp.encode(formatted)))
+    this._cliqueLatestSignerStates.push(signerState)
+
+    // trim length to CLIQUE_SIGNER_HISTORY_BLOCK_LIMIT
+    const length = this._cliqueLatestSignerStates.length
+    const limit = this.CLIQUE_SIGNER_HISTORY_BLOCK_LIMIT
+    if (length > limit) {
+      this._cliqueLatestSignerStates = this._cliqueLatestSignerStates.slice(length - limit, length)
     }
+
+    const formatted = this._cliqueLatestSignerStates.map((state) => [
+      state[0].toBuffer(),
+      state[1].map((a) => a.toBuffer()),
+    ])
+    dbOps.push(DBOp.set(DBTarget.CliqueSignerStates, rlp.encode(formatted)))
+
     await this.dbManager.batch(dbOps)
   }
 
@@ -460,12 +467,21 @@ export default class Blockchain implements BlockchainInterface {
         }
       }
     }
+
+    // trim length to CLIQUE_SIGNER_HISTORY_BLOCK_LIMIT
+    const length = this._cliqueLatestVotes.length
+    const limit = this.CLIQUE_SIGNER_HISTORY_BLOCK_LIMIT
+    if (length > limit) {
+      this._cliqueLatestVotes = this._cliqueLatestVotes.slice(length - limit, length)
+    }
+
     const dbOps: DBOp[] = []
     const formatted = this._cliqueLatestVotes.map((v) => [
       v[0].toBuffer(),
       [v[1][0].toBuffer(), v[1][0].toBuffer(), v[1][2]],
     ])
     dbOps.push(DBOp.set(DBTarget.CliqueVotes, rlp.encode(formatted)))
+
     await this.dbManager.batch(dbOps)
   }
 
