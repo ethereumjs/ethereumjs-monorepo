@@ -678,10 +678,15 @@ export default class Blockchain implements BlockchainInterface {
           if (header.cliqueIsEpochTransition()) {
             this._cliqueLatestVotes = []
             await this.cliqueUpdateVotes()
-            // TODO: on epoch transition blocks we might want to validate the
-            // calculated active signer list towards the epoch block
-            // signer checkpoint list in the extraData field
-            // Add eventual new header vote on non-epoch transition blocks
+
+            // validate checkpoint signers towards active signers
+            const checkpointSigners = header.cliqueEpochTransitionSigners()
+            const activeSigners = this.cliqueActiveSigners()
+            for (const cSigner of checkpointSigners) {
+              if (!activeSigners.find(aSigner => aSigner.toBuffer().equals(cSigner.toBuffer()))) {
+                throw new Error('checkpoint signer not found in active signers list: ' + cSigner.toString())
+              }
+            }
           } else {
             await this.cliqueUpdateVotes(header)
           }

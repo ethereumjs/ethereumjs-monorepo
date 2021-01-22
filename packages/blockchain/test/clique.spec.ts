@@ -157,6 +157,26 @@ tape('Clique: Initialization', (t) => {
     return block
   }
 
+  t.test('should throw if signer in epoch checkpoint is not active', async (st) => {
+    const { blockchain } = initWithSigners([A.address])
+      ; (blockchain as any)._validateBlocks = false
+    const number = COMMON.consensusConfig().epoch
+    const unauthorizedSigner = Address.fromString('0x00a839de7922491683f547a67795204763ff8237')
+    const extraData = Buffer.concat([Buffer.alloc(32), A.address.toBuffer(), unauthorizedSigner.toBuffer(), Buffer.alloc(65)])
+    const block = Block.fromBlockData({ header: { number, extraData, } }, { common: COMMON })
+    try {
+      await blockchain.putBlock(block)
+      st.fail('should fail')
+    } catch (error) {
+      if (error.message.includes('checkpoint signer not found in active signers list: ' + unauthorizedSigner.toString())) {
+        st.pass('correct error')
+      } else {
+        st.fail('should fail with appropriate error')
+      }
+    }
+    st.end()
+  })
+
   // Test Cases: https://eips.ethereum.org/EIPS/eip-225
   t.test('Clique Voting: Single signer, no votes cast', async (st) => {
     const { blocks, blockchain } = initWithSigners([A.address])
