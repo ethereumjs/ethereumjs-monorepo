@@ -648,10 +648,10 @@ export default class Blockchain implements BlockchainInterface {
         // calculate the total difficulty of the new block
         const parentTd = await this.getTotalDifficulty(header.parentHash, blockNumber.subn(1))
         td.iadd(parentTd)
-      }
 
-      // save total difficulty to the database
-      dbOps = dbOps.concat(DBSetTD(td, blockNumber, blockHash))
+        // save total difficulty to the database
+        dbOps = dbOps.concat(DBSetTD(td, blockNumber, blockHash))
+      }
 
       // save header/block to the database
       dbOps = dbOps.concat(DBSetBlockOrHeader(block))
