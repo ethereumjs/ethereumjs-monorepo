@@ -3,6 +3,7 @@ import Common from '@ethereumjs/common'
 import { Address, intToBuffer, ecsign } from 'ethereumjs-util'
 import tape from 'tape'
 import Blockchain from '../src'
+import { CLIQUE_NONCE_AUTH, CLIQUE_NONCE_DROP } from '../src/clique'
 
 tape('Clique: Initialization', (t) => {
   t.test('should initialize a clique blockchain', async (st) => {
@@ -90,9 +91,6 @@ tape('Clique: Initialization', (t) => {
     ),
   }
 
-  const NONCE_AUTH = Buffer.from('ffffffffffffffff', 'hex')
-  const NONCE_DROP = Buffer.from('0000000000000000', 'hex')
-
   const initWithSigners = (signers: Address[]) => {
     const blocks: Block[] = []
 
@@ -126,11 +124,11 @@ tape('Clique: Initialization', (t) => {
     const lastBlock = blocks[number - 1]
 
     let coinbase = Address.zero()
-    let nonce = NONCE_DROP
+    let nonce = CLIQUE_NONCE_DROP
     if (beneficiary) {
       coinbase = beneficiary[0].address
       if (beneficiary[1]) {
-        nonce = NONCE_AUTH
+        nonce = CLIQUE_NONCE_AUTH
       }
     }
 
