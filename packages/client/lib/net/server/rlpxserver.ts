@@ -2,7 +2,7 @@ import { randomBytes } from 'crypto'
 import { RLPx as Devp2pRLPx, Peer as Devp2pRLPxPeer, DPT as Devp2pDPT } from '@ethereumjs/devp2p'
 import { RlpxPeer } from '../peer/rlpxpeer'
 import { Server, ServerOptions } from './server'
-import fs from 'fs'
+const fs = require('fs-extra')
 
 export interface RlpxServerOptions extends ServerOptions {
   /* Local port to listen on (default: 30303) */
@@ -73,6 +73,7 @@ export class RlpxServer extends Server {
       } else {
         const key = randomBytes(32)
         this.key = key
+        fs.ensureDirSync(dataDir)
         fs.writeFileSync(fileName, key.toString('binary'), {
           encoding: 'binary',
         })
