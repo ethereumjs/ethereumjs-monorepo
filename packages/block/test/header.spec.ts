@@ -202,8 +202,6 @@ tape('[Block]: Header functions', function (t) {
     st.end()
   })
 
-  // TODO: add test using dedicated Rinkeby testdata for PoA tests
-  // (extract from client output once Goerli or Rinkeby connection possible with Block.toJSON())
   t.test('header validation -> poa checks', async function (st) {
     const headerData = testData.blocks[0].blockHeader
 
@@ -236,6 +234,38 @@ tape('[Block]: Header functions', function (t) {
     } catch (error) {
       st.fail(testCase)
     }
+
+    testCase = 'should throw on non-zero beneficiary (coinbase) for epoch transition block'
+    headerData.number = common.consensusConfig().epoch
+    headerData.coinbase = Address.fromString('0x091dcd914fCEB1d47423e532955d1E62d1b2dAEf')
+    header = BlockHeader.fromHeaderData(headerData, { common })
+    try {
+      await header.validate(blockchain)
+      st.fail('should throw')
+    } catch (error) {
+      if (error.message.includes('coinbase must be filled with zeros on epoch transition blocks')) {
+        st.pass('error thrown')
+      } else {
+        st.fail('should throw with appropriate error')
+      }
+    }
+    headerData.number = 1
+    headerData.coinbase = Address.zero()
+
+    testCase = 'should throw on non-zero mixHash'
+    headerData.mixHash = Buffer.alloc(32).fill(1)
+    header = BlockHeader.fromHeaderData(headerData, { common })
+    try {
+      await header.validate(blockchain)
+      st.fail('should throw')
+    } catch (error) {
+      if (error.message.includes('mixHash must be filled with zeros')) {
+        st.pass('error thrown')
+      } else {
+        st.fail('should throw with appropriate error')
+      }
+    }
+    headerData.mixHash = Buffer.alloc(32)
 
     st.end()
   })
