@@ -699,8 +699,10 @@ export default class Blockchain implements BlockchainInterface {
             const checkpointSigners = header.cliqueEpochTransitionSigners()
             const activeSigners = this.cliqueActiveSigners()
             for (const cSigner of checkpointSigners) {
-              if (!activeSigners.find(aSigner => aSigner.toBuffer().equals(cSigner.toBuffer()))) {
-                throw new Error('checkpoint signer not found in active signers list: ' + cSigner.toString())
+              if (!activeSigners.find((aSigner) => aSigner.toBuffer().equals(cSigner.toBuffer()))) {
+                throw new Error(
+                  'checkpoint signer not found in active signers list: ' + cSigner.toString()
+                )
               }
             }
           } else {

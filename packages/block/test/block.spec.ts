@@ -107,8 +107,19 @@ tape('[Block]: block functions', function (t) {
     const genesis = Block.genesis({}, { common })
     await blockchain.putBlock(genesis)
 
-    const parentBlock = Block.fromBlockData({ header: { number: block.header.number.subn(1), timestamp: block.header.timestamp.subn(1000), gasLimit: block.header.gasLimit } }, { common, freeze: false })
-    parentBlock.hash = () => { return block.header.parentHash }
+    const parentBlock = Block.fromBlockData(
+      {
+        header: {
+          number: block.header.number.subn(1),
+          timestamp: block.header.timestamp.subn(1000),
+          gasLimit: block.header.gasLimit,
+        },
+      },
+      { common, freeze: false }
+    )
+    parentBlock.hash = () => {
+      return block.header.parentHash
+    }
     await blockchain.putBlock(parentBlock)
 
     await blockchain.putBlock(block)
@@ -116,7 +127,6 @@ tape('[Block]: block functions', function (t) {
       await block.validate(blockchain)
       st.pass('does not throw')
     } catch (error) {
-      console.log(error)
       st.fail('error thrown')
     }
     st.end()
