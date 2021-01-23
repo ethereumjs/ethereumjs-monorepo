@@ -1,5 +1,5 @@
 import Common from '@ethereumjs/common'
-import { Address, BN, rlp, toBuffer } from 'ethereumjs-util'
+import { Address, BN, bnToRlp, ecsign, rlp, rlphash, toBuffer } from 'ethereumjs-util'
 import { DEFAULT_COMMON, EIP2930TxData, TxOptions } from './types'
 
 export default class EIP2930Transaction {
@@ -163,5 +163,77 @@ export default class EIP2930Transaction {
     if (freeze) {
       Object.freeze(this)
     }
+  }
+
+  /**
+   * If the tx's `to` is to the creation address
+   */
+  toCreationAddress(): boolean {
+    return this.to === undefined || this.to.buf.length === 0
+  }
+
+  /**
+   * Computes a sha3-256 hash of the unserialized tx.
+   * This hash is signed by the private key. It is different from the transaction hash, which are put in blocks.
+   * The transaction hash also hashes the data used to sign the transaction.
+   */
+  rawTxHash(): Buffer {
+    const values = [
+      Buffer.from('01', 'hex'),
+      this.chainId.toBuffer(),
+      this.nonce.toBuffer(),
+      this.gasPrice.toBuffer(),
+      this.gasLimit.toBuffer(),
+      this.to !== undefined ? this.to.buf : Buffer.from([]),
+      this.value.toBuffer(),
+      this.data,
+      this.accessList,
+    ]
+
+    return rlphash(values)
+  }
+
+  getMessageToSign() {
+    return this.rawTxHash()
+  }
+
+  /**
+   * Returns chain ID
+   */
+  getChainId(): number {
+    return this.common.chainId()
+  }
+
+  sign(privateKey: Buffer) {
+    if (privateKey.length !== 32) {
+      throw new Error('Private key must be 32 bytes in length.')
+    }
+
+    const msgHash = this.getMessageToSign()
+
+    // Only `v` is reassigned.
+    /* eslint-disable-next-line prefer-const */
+    let { v, r, s } = ecsign(msgHash, privateKey)
+
+    const opts = {
+      common: this.common,
+    }
+
+    return EIP2930Transaction.fromTxData(
+      {
+        chainId: this.chainId,
+        nonce: this.nonce,
+        gasPrice: this.gasPrice,
+        gasLimit: this.gasLimit,
+        to: this.to,
+        value: this.value,
+        data: this.data,
+        accessList: this.accessList,
+        yParity: v, // TODO: check if this is correct. Should be a number between 0/1
+        r: new BN(r),
+        s: new BN(s),
+      },
+      opts
+    )
   }
 }
