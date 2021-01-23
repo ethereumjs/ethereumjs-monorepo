@@ -1,6 +1,6 @@
 import Common from '@ethereumjs/common'
 import { default as LegacyTransaction } from './legacyTransaction'
-import { default as EIP2930Transaction } from './eip2930Transaction'
+import { SignedEIP2930Transaction } from './eip2930Transaction'
 import { TxOptions, Transaction } from './types'
 
 const DEFAULT_COMMON = new Common({ chain: 'mainnet' })

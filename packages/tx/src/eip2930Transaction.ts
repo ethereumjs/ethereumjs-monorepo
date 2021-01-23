@@ -2,7 +2,7 @@ import Common from '@ethereumjs/common'
 import { Address, BN, rlp, toBuffer } from 'ethereumjs-util'
 import { DEFAULT_COMMON, EIP2930TxData, TxOptions } from './types'
 
-export default class EIP2930Transaction {
+export class UnsignedEIP2930Transaction {
   public readonly common: Common
   public readonly chainId: BN
   public readonly nonce: BN
@@ -25,7 +25,11 @@ export default class EIP2930Transaction {
   }
 
   public static fromTxData(txData: EIP2930TxData, opts?: TxOptions) {
-    return new EIP2930Transaction(txData, opts ?? {})
+    if (txData.yParity && txData.r && txData.s) {
+      return SignedEIP2930Transaction.fromTxData(txData, opts ?? {})
+    } else {
+      return new UnsignedEIP2930Transaction(txData, opts ?? {})
+    }
   }
 
   // Instantiate a transaction from the raw RLP serialized tx. This means that the RLP should start with 0x01.
@@ -40,7 +44,7 @@ export default class EIP2930Transaction {
       throw new Error('Invalid serialized tx input. Must be array')
     }
 
-    return EIP2930Transaction.fromValuesArray(values, opts)
+    return UnsignedEIP2930Transaction.fromValuesArray(values, opts)
   }
 
   // Create a transaction from a values array.
@@ -50,7 +54,7 @@ export default class EIP2930Transaction {
       const [chainId, nonce, gasPrice, gasLimit, to, value, data, accessList] = values
       const emptyBuffer = Buffer.from([])
 
-      return new EIP2930Transaction(
+      return new UnsignedEIP2930Transaction(
         {
           chainId: new BN(chainId),
           nonce: new BN(nonce),
@@ -64,40 +68,7 @@ export default class EIP2930Transaction {
         opts ?? {}
       )
     } else if (values.length == 11) {
-      // TODO: return EIP2930SignedTransaction
-      const [
-        chainId,
-        nonce,
-        gasPrice,
-        gasLimit,
-        to,
-        value,
-        data,
-        accessList,
-        yParity,
-        r,
-        s,
-      ] = values
-      const emptyBuffer = Buffer.from([])
-
-      return new EIP2930Transaction(
-        {
-          chainId: new BN(chainId),
-          nonce: new BN(nonce),
-          gasPrice: new BN(gasPrice),
-          gasLimit: new BN(gasLimit),
-          to: to && to.length > 0 ? new Address(to) : undefined,
-          value: new BN(value),
-          data: data ?? emptyBuffer,
-          accessList: accessList ?? emptyBuffer,
-          yParity: !yParity?.equals(emptyBuffer)
-            ? parseInt(yParity.toString('hex'), 16)
-            : undefined,
-          r: !r?.equals(emptyBuffer) ? new BN(r) : undefined,
-          s: !s?.equals(emptyBuffer) ? new BN(s) : undefined,
-        },
-        opts ?? {}
-      )
+      return SignedEIP2930Transaction.fromValuesArray(values, opts)
     } else {
       throw new Error(
         'Invalid EIP-2930 transaction. Only expecting 8 values (for unsigned tx) or 11 values (for signed tx).'
@@ -105,7 +76,7 @@ export default class EIP2930Transaction {
     }
   }
 
-  private constructor(txData: EIP2930TxData, opts: TxOptions) {
+  protected constructor(txData: EIP2930TxData, opts: TxOptions) {
     this.common = opts.common ?? DEFAULT_COMMON
 
     const {
@@ -163,5 +134,44 @@ export default class EIP2930Transaction {
     if (freeze) {
       Object.freeze(this)
     }
+  }
+}
+
+export class SignedEIP2930Transaction extends UnsignedEIP2930Transaction {
+  public static fromTxData(txData: EIP2930TxData, opts?: TxOptions) {
+    return new SignedEIP2930Transaction(txData, opts ?? {})
+  }
+
+  public static fromValuesArray(values: Buffer[], opts?: TxOptions) {
+    if (values.length != 11) {
+      throw new Error('Expected 11 elements')
+    }
+
+    const [chainId, nonce, gasPrice, gasLimit, to, value, data, accessList, yParity, r, s] = values
+    const emptyBuffer = Buffer.from([])
+
+    return new SignedEIP2930Transaction(
+      {
+        chainId: new BN(chainId),
+        nonce: new BN(nonce),
+        gasPrice: new BN(gasPrice),
+        gasLimit: new BN(gasLimit),
+        to: to && to.length > 0 ? new Address(to) : undefined,
+        value: new BN(value),
+        data: data ?? emptyBuffer,
+        accessList: accessList ?? emptyBuffer,
+        yParity: !yParity?.equals(emptyBuffer) ? parseInt(yParity.toString('hex'), 16) : undefined,
+        r: !r?.equals(emptyBuffer) ? new BN(r) : undefined,
+        s: !s?.equals(emptyBuffer) ? new BN(s) : undefined,
+      },
+      opts ?? {}
+    )
+  }
+
+  protected constructor(txData: EIP2930TxData, opts: TxOptions) {
+    super(txData, opts)
+
+    // TODO: save the extra yParity, r, s data.
+    // TODO: verify the signature.
   }
 }
