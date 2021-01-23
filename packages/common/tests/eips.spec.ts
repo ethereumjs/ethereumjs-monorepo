@@ -44,4 +44,25 @@ tape('[Common]: Initialization / Chain params', function (t: tape.Test) {
 
     st.end()
   })
+
+  t.test(
+    'Should throw when trying to initialize with an EIP which requires certain EIPs, but which are not included on the EIP list',
+    function (st: tape.Test) {
+      const eips = [2930]
+      const msg =
+        'should throw when initializing with an EIP, which does not have required EIPs on the EIP list'
+      const f = () => {
+        new Common({ chain: 'mainnet', eips, hardfork: 'berlin' })
+      }
+      st.throws(f, msg)
+      st.end()
+    }
+  )
+
+  t.test('Should not throw when initializing with a valid EIP list', function (st: tape.Test) {
+    const eips = [2718, 2929, 2930]
+    new Common({ chain: 'mainnet', eips, hardfork: 'berlin' })
+    st.pass('initialized correctly')
+    st.end()
+  })
 })

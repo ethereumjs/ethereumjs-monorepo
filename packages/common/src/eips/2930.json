@@ -15,6 +15,7 @@
         "d": "Gas cost per storage key in an Access List transaction"
       }
     },
+    "requiredEIPs": [2718, 2929],
     "vm": {},
     "pow": {}
   }
