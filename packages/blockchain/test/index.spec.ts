@@ -5,6 +5,7 @@ import tape from 'tape'
 import Blockchain from '../src'
 import { generateBlockchain, generateBlocks, isConsecutive, createTestDB } from './util'
 import * as testData from './testdata.json'
+import blocksData from './blocksData.json'
 
 const level = require('level-mem')
 
@@ -25,6 +26,20 @@ tape('blockchain test', (t) => {
     const head = await blockchain.getHead()
 
     st.equals(head.hash().toString('hex'), common.genesis().hash.slice(2), 'correct genesis hash')
+    st.end()
+  })
+
+  t.test('should initialize correctly with Blockchain.fromBlocksData()', async (st) => {
+    const common = new Common({ chain: 'mainnet' })
+    const blockchain = await Blockchain.fromBlocksData(blocksData, {
+      validateBlocks: true,
+      validateConsensus: false,
+      common,
+    })
+
+    const head = await blockchain.getHead()
+
+    st.equals(head.header.number.toNumber(), 5, 'correct block number')
     st.end()
   })
 

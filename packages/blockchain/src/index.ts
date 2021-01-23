@@ -1,6 +1,6 @@
 import Semaphore from 'semaphore-async-await'
 import { Address, BN, rlp } from 'ethereumjs-util'
-import { Block, BlockHeader } from '@ethereumjs/block'
+import { Block, BlockData, BlockHeader } from '@ethereumjs/block'
 import Ethash from '@ethereumjs/ethash'
 import Common from '@ethereumjs/common'
 import { DBManager } from './db/manager'
@@ -178,6 +178,41 @@ export default class Blockchain implements BlockchainInterface {
   private _cliqueLatestBlockSigners: CliqueLatestBlockSigners = []
 
   /**
+   * Safe creation of a new Blockchain object awaiting the initialization function,
+   * encouraged method to use when creating a blockchain object.
+   *
+   * @param opts Constructor options, see [[BlockchainOptions]]
+   */
+
+  public static async create(opts: BlockchainOptions = {}) {
+    const blockchain = new Blockchain(opts)
+    await blockchain.initPromise!.catch((e) => {
+      throw e
+    })
+    return blockchain
+  }
+
+  /**
+   * Creates a blockchain from a list of block objects,
+   * objects must be readable by the `Block.fromBlockData()` method
+   *
+   * @param blockData List of block objects
+   * @param opts Constructor options, see [[BlockchainOptions]]
+   */
+  public static async fromBlocksData(blocksData: BlockData[], opts: BlockchainOptions = {}) {
+    const blockchain = await Blockchain.create(opts)
+    for (const blockData of blocksData) {
+      const common = Object.assign(
+        Object.create(Object.getPrototypeOf(blockchain._common)),
+        blockchain._common
+      )
+      const block = Block.fromBlockData(blockData, { common, hardforkByBlockNumber: true })
+      await blockchain.putBlock(block)
+    }
+    return blockchain
+  }
+
+  /**
    * Creates new Blockchain object
    *
    * @param opts - An object with the options that this constructor takes. See
@@ -234,22 +269,6 @@ export default class Blockchain implements BlockchainInterface {
 
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
     this.initPromise = this._init(opts.genesisBlock)
-  }
-
-  /**
-   * This static constructor safely creates a new Blockchain object, which also
-   * awaits the initialization function. If this initialization function throws,
-   * then this constructor will throw as well, and is therefore the encouraged
-   * method to use when creating a blockchain object.
-   * @param opts Constructor options, see [[BlockchainOptions]]
-   */
-
-  public static async create(opts: BlockchainOptions = {}) {
-    const blockchain = new Blockchain(opts)
-    await blockchain.initPromise!.catch((e) => {
-      throw e
-    })
-    return blockchain
   }
 
   /**
