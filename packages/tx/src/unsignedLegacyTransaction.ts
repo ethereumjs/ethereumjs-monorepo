@@ -342,7 +342,10 @@ export class SignedLegacyTransaction extends UnsignedLegacyTransaction {
   }
 
   private constructor(txData: LegacyTxData, opts?: TxOptions) {
-    super(txData, opts)
+    super(txData, {
+      ...opts,
+      freeze: false,
+    })
 
     const { v, r, s } = txData
 
@@ -362,6 +365,11 @@ export class SignedLegacyTransaction extends UnsignedLegacyTransaction {
     }
 
     this._validateTxV(this.v)
+
+    const freeze = opts?.freeze ?? true
+    if (freeze) {
+      Object.freeze(this)
+    }
   }
 
   /**
