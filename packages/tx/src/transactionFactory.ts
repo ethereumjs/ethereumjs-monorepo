@@ -49,27 +49,21 @@ export default class TransactionFactory {
    * @param common
    */
   public static getTransactionClass(
-    transactionID?: number,
+    transactionID: number = 0, // Transaction ID 0 is a special type; it is the Legacy Transaction
     signed: boolean = false,
     common?: Common
   ) {
     const usedCommon = common ?? DEFAULT_COMMON
-    if (transactionID) {
-      if (!usedCommon.eips().includes(2718)) {
-        throw new Error('Cannot create a TypedTransaction: EIP-2718 is not enabled')
-      }
-      switch (transactionID) {
-        case 1:
-          return signed ? SignedEIP2930Transaction : UnsignedEIP2930Transaction
-        default:
-          throw new Error(`TypedTransaction with ID ${transactionID} unknown`)
-      }
+    if (transactionID !== 0 && !usedCommon.eips().includes(2718)) {
+      throw new Error('Cannot create a TypedTransaction: EIP-2718 is not enabled')
     }
-
-    if (signed) {
-      return
+    switch (transactionID) {
+      case 0:
+        return signed ? SignedLegacyTransaction : UnsignedLegacyTransaction
+      case 1:
+        return signed ? SignedEIP2930Transaction : UnsignedEIP2930Transaction
+      default:
+        throw new Error(`TypedTransaction with ID ${transactionID} unknown`)
     }
-
-    return signed ? SignedLegacyTransaction : UnsignedLegacyTransaction
   }
 }
