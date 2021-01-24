@@ -321,6 +321,10 @@ export class UnsignedEIP2930Transaction {
 }
 
 export class SignedEIP2930Transaction extends UnsignedEIP2930Transaction {
+  public readonly yParity?: number 
+  public readonly s?: BN 
+  public readonly r?: BN
+
   public static fromTxData(txData: EIP2930TxData, opts?: TxOptions) {
     return new SignedEIP2930Transaction(txData, opts ?? {})
   }
@@ -352,7 +356,10 @@ export class SignedEIP2930Transaction extends UnsignedEIP2930Transaction {
   }
 
   protected constructor(txData: EIP2930TxData, opts: TxOptions) {
-    super(txData, opts)
+    super(txData, {
+      ...opts,
+      freeze: false
+    })
 
     if (txData.yParity != 0 && txData.yParity != 1) {
       throw new Error('The y-parity of the transaction should either be 0 or 1')
@@ -360,5 +367,14 @@ export class SignedEIP2930Transaction extends UnsignedEIP2930Transaction {
 
     // TODO: save the extra yParity, r, s data.
     // TODO: verify the signature.
+
+    this.yParity = txData.yParity
+    this.r = txData.r 
+    this.s = txData.s 
+
+    const freeze = opts?.freeze ?? true
+    if (freeze) {
+      Object.freeze(this)
+    }
   }
 }
