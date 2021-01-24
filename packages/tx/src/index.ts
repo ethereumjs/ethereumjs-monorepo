@@ -1,6 +1,4 @@
-export { default as UnsignedLegacyTransaction } from './unsignedLegacyTransaction'
-export { default as UnsignedEIP2930Transaction } from './unsignedEIP2930Transaction'
-export { default as SignedLegacyTransaction } from './signedLegacyTransaction'
-export { default as SignedEIP2930Transaction } from './signedEIP2930Transaction'
+export { UnsignedLegacyTransaction, SignedLegacyTransaction } from './unsignedLegacyTransaction'
+export { UnsignedEIP2930Transaction, SignedEIP2930Transaction } from './unsignedEIP2930Transaction'
 export { default as TransactionFactory } from './transactionFactory'
 export * from './types'

@@ -1,9 +1,8 @@
 import Common from '@ethereumjs/common'
-import { Address, BN, ecsign, rlp, rlphash, toBuffer } from 'ethereumjs-util'
-import { default as SignedEIP2930Transaction } from './signedEIP2930Transaction'
+import { Address, BN, bnToHex, ecsign, rlp, rlphash, toBuffer } from 'ethereumjs-util'
 import { DEFAULT_COMMON, EIP2930TxData, TxOptions } from './types'
 
-export default class UnsignedEIP2930Transaction {
+export class UnsignedEIP2930Transaction {
   public readonly common: Common
   public readonly chainId: BN
   public readonly nonce: BN
@@ -121,6 +120,11 @@ export default class UnsignedEIP2930Transaction {
       const accessListItem = this.accessList[key]
       const address: Buffer = accessListItem[0]
       const storageSlots: Buffer[] = accessListItem[1]
+      if (accessListItem[2] !== undefined) {
+        throw new Error(
+          'Access list item cannot have 3 elements. It can only have an address, and an array of storage slots.'
+        )
+      }
       if (address.length != 20) {
         throw new Error('Invalid EIP-2930 transaction: address length should be 20 bytes')
       }
@@ -150,23 +154,11 @@ export default class UnsignedEIP2930Transaction {
    * The transaction hash also hashes the data used to sign the transaction.
    */
   rawTxHash(): Buffer {
-    const values = [
-      Buffer.from('01', 'hex'),
-      this.chainId.toBuffer(),
-      this.nonce.toBuffer(),
-      this.gasPrice.toBuffer(),
-      this.gasLimit.toBuffer(),
-      this.to !== undefined ? this.to.buf : Buffer.from([]),
-      this.value.toBuffer(),
-      this.data,
-      this.accessList,
-    ]
-
-    return rlphash(values)
+    return this.getMessageToSign()
   }
 
   getMessageToSign() {
-    return this.rawTxHash()
+    return rlphash(this.raw())
   }
 
   /**
@@ -207,5 +199,166 @@ export default class UnsignedEIP2930Transaction {
       },
       opts
     )
+  }
+
+  /**
+   * The amount of gas paid for the data in this tx
+   */
+  getDataFee(): BN {
+    const txDataZero = this.common.param('gasPrices', 'txDataZero')
+    const txDataNonZero = this.common.param('gasPrices', 'txDataNonZero')
+    const accessListStorageKeyCost = this.common.param('gasPrices', 'accessListStorageKeyCost')
+    const accessListAddressCost = this.common.param('gasPrices', 'accessListAddressCost')
+
+    let cost = 0
+    for (let i = 0; i < this.data.length; i++) {
+      this.data[i] === 0 ? (cost += txDataZero) : (cost += txDataNonZero)
+    }
+
+    let slots = 0
+    for (let index = 0; index < this.accessList.length; index++) {
+      const item = this.accessList[index]
+      const storageSlots = item[1]
+      slots += storageSlots.length
+    }
+
+    const addresses = this.accessList.length
+    cost += addresses * accessListAddressCost + slots * accessListStorageKeyCost
+
+    return new BN(cost)
+  }
+
+  /**
+   * The minimum amount of gas the tx must have (DataFee + TxFee + Creation Fee)
+   */
+  getBaseFee(): BN {
+    const fee = this.getDataFee().addn(this.common.param('gasPrices', 'tx'))
+    if (this.common.gteHardfork('homestead') && this.toCreationAddress()) {
+      fee.iaddn(this.common.param('gasPrices', 'txCreation'))
+    }
+    return fee
+  }
+
+  /**
+   * The up front amount that an account must have for this transaction to be valid
+   */
+  getUpfrontCost(): BN {
+    return this.gasLimit.mul(this.gasPrice).add(this.value)
+  }
+
+  /**
+   * Validates the signature and checks if
+   * the transaction has the minimum amount of gas required
+   * (DataFee + TxFee + Creation Fee).
+   */
+  validate(): boolean
+  validate(stringError: false): boolean
+  validate(stringError: true): string[]
+  validate(stringError: boolean = false): boolean | string[] {
+    const errors = []
+
+    if (this.getBaseFee().gt(this.gasLimit)) {
+      errors.push(`gasLimit is too low. given ${this.gasLimit}, need at least ${this.getBaseFee()}`)
+    }
+
+    return stringError ? errors : errors.length === 0
+  }
+
+  /**
+   * Returns a Buffer Array of the raw Buffers of this transaction, in order.
+   */
+  raw(): Buffer[] {
+    return [
+      Buffer.from('01', 'hex'),
+      this.chainId.toBuffer(),
+      this.nonce.toBuffer(),
+      this.gasPrice.toBuffer(),
+      this.gasLimit.toBuffer(),
+      this.to !== undefined ? this.to.buf : Buffer.from([]),
+      this.value.toBuffer(),
+      this.data,
+      this.accessList,
+    ]
+  }
+
+  /**
+   * Returns the rlp encoding of the transaction.
+   */
+  serialize(): Buffer {
+    return rlp.encode(this.raw())
+  }
+
+  /**
+   * Returns an object with the JSON representation of the transaction
+   */
+  toJSON(): any {
+    // TODO: fix type
+    const accessListJSON = []
+    for (let index = 0; index < this.accessList.length; index++) {
+      const item = this.accessList[index]
+      const JSONItem: any = ['0x' + item[0].toString('hex')]
+      const storageSlots = item[1]
+      const JSONSlots = []
+      for (let slot = 0; slot < storageSlots.length; slot++) {
+        const storageSlot = storageSlots[slot]
+        JSONSlots.push('0x' + storageSlot.toString('hex'))
+      }
+      JSONItem.push(JSONSlots)
+      accessListJSON.push(JSONItem)
+    }
+
+    return {
+      chainId: bnToHex(this.chainId),
+      nonce: bnToHex(this.nonce),
+      gasPrice: bnToHex(this.gasPrice),
+      gasLimit: bnToHex(this.gasLimit),
+      to: this.to !== undefined ? this.to.toString() : undefined,
+      value: bnToHex(this.value),
+      data: '0x' + this.data.toString('hex'),
+      accessList: accessListJSON,
+    }
+  }
+}
+
+export class SignedEIP2930Transaction extends UnsignedEIP2930Transaction {
+  public static fromTxData(txData: EIP2930TxData, opts?: TxOptions) {
+    return new SignedEIP2930Transaction(txData, opts ?? {})
+  }
+
+  public static fromValuesArray(values: Buffer[], opts?: TxOptions) {
+    if (values.length != 11) {
+      throw new Error('Expected 11 elements')
+    }
+
+    const [chainId, nonce, gasPrice, gasLimit, to, value, data, accessList, yParity, r, s] = values
+    const emptyBuffer = Buffer.from([])
+
+    return new SignedEIP2930Transaction(
+      {
+        chainId: new BN(chainId),
+        nonce: new BN(nonce),
+        gasPrice: new BN(gasPrice),
+        gasLimit: new BN(gasLimit),
+        to: to && to.length > 0 ? new Address(to) : undefined,
+        value: new BN(value),
+        data: data ?? emptyBuffer,
+        accessList: accessList ?? emptyBuffer,
+        yParity: !yParity?.equals(emptyBuffer) ? parseInt(yParity.toString('hex'), 16) : undefined,
+        r: !r?.equals(emptyBuffer) ? new BN(r) : undefined,
+        s: !s?.equals(emptyBuffer) ? new BN(s) : undefined,
+      },
+      opts ?? {}
+    )
+  }
+
+  protected constructor(txData: EIP2930TxData, opts: TxOptions) {
+    super(txData, opts)
+
+    if (txData.yParity != 0 && txData.yParity != 1) {
+      throw new Error('The y-parity of the transaction should either be 0 or 1')
+    }
+
+    // TODO: save the extra yParity, r, s data.
+    // TODO: verify the signature.
   }
 }
