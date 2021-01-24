@@ -1,6 +1,6 @@
 import Common from '@ethereumjs/common'
-import { default as LegacyTransaction } from './legacyTransaction'
-import { SignedEIP2930Transaction } from './eip2930Transaction'
+import { SignedLegacyTransaction, UnsignedLegacyTransaction } from './legacyTransaction'
+import { SignedEIP2930Transaction, UnsignedEIP2930Transaction } from './eip2930Transaction'
 import { TxOptions, Transaction } from './types'
 
 const DEFAULT_COMMON = new Common({ chain: 'mainnet' })
@@ -32,19 +32,27 @@ export default class TransactionFactory {
         )
       }
 
-      return EIP2930Transaction.fromRlpSerializedTx(rawData, transactionOptions)
+      return UnsignedEIP2930Transaction.fromRlpSerializedTx(rawData, transactionOptions)
     } else {
-      return LegacyTransaction.fromRlpSerializedTx(rawData, transactionOptions)
+      return UnsignedLegacyTransaction.fromRlpSerializedTx(rawData, transactionOptions)
     }
   }
 
   /**
    * This helper method allows one to retrieve the class which matches the transactionID
    * If transactionID is undefined, return the LegacyTransaction class.
+   * Based on the `signed` boolean, return either the signed version or the unsigned version.
+   * Note that the static methods of the unsigned versions automatically return the signed version,
+   * if that data exists in the parameters.
    * @param transactionID
+   * @param signed
    * @param common
    */
-  public static getTransactionClass(transactionID?: number, common?: Common) {
+  public static getTransactionClass(
+    transactionID?: number,
+    signed: boolean = false,
+    common?: Common
+  ) {
     const usedCommon = common ?? DEFAULT_COMMON
     if (transactionID) {
       if (!usedCommon.eips().includes(2718)) {
@@ -52,12 +60,16 @@ export default class TransactionFactory {
       }
       switch (transactionID) {
         case 1:
-          return EIP2930Transaction
+          return signed ? SignedEIP2930Transaction : UnsignedEIP2930Transaction
         default:
           throw new Error(`TypedTransaction with ID ${transactionID} unknown`)
       }
     }
 
-    return LegacyTransaction
+    if (signed) {
+      return
+    }
+
+    return signed ? SignedLegacyTransaction : UnsignedLegacyTransaction
   }
 }

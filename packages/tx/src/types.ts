@@ -1,6 +1,6 @@
 import { AddressLike, BN, BNLike, BufferLike } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
-import { default as LegacyTransaction } from './legacyTransaction'
+import { SignedLegacyTransaction, UnsignedLegacyTransaction } from './legacyTransaction'
 import { SignedEIP2930Transaction, UnsignedEIP2930Transaction } from './eip2930Transaction'
 
 /**
@@ -143,8 +143,13 @@ export interface EIP2930TxData {
 
 export type TxData = LegacyTxData | EIP2930TxData
 
-export type Transaction = LegacyTransaction | SignedEIP2930Transaction | UnsignedEIP2930Transaction
-export type SignedTransaction = LegacyTransaction | UnsignedEIP2930Transaction
+export type Transaction =
+  | SignedLegacyTransaction
+  | UnsignedLegacyTransaction
+  | SignedEIP2930Transaction
+  | UnsignedEIP2930Transaction
+export type SignedTransaction = SignedLegacyTransaction | UnsignedEIP2930Transaction
+export type LegacyTransaction = UnsignedLegacyTransaction | SignedLegacyTransaction
 
 /**
  * An object with all of the transaction's values represented as strings.

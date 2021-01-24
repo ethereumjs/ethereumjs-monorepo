@@ -1,5 +1,5 @@
 import Common from '@ethereumjs/common'
-import { Address, BN, bnToRlp, ecsign, rlp, rlphash, toBuffer } from 'ethereumjs-util'
+import { Address, BN, ecsign, rlp, rlphash, toBuffer } from 'ethereumjs-util'
 import { DEFAULT_COMMON, EIP2930TxData, TxOptions } from './types'
 
 export class UnsignedEIP2930Transaction {
