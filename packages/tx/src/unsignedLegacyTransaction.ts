@@ -286,7 +286,14 @@ export class UnsignedLegacyTransaction {
   }
 
   protected _getMessageToSign(withEIP155: boolean) {
-    const values = this.raw()
+    const values = [
+      bnToRlp(this.nonce),
+      bnToRlp(this.gasPrice),
+      bnToRlp(this.gasLimit),
+      this.to !== undefined ? this.to.buf : Buffer.from([]),
+      bnToRlp(this.value),
+      this.data,
+    ]
 
     if (withEIP155) {
       values.push(toBuffer(this.getChainId()))
@@ -424,15 +431,7 @@ export class SignedLegacyTransaction extends UnsignedLegacyTransaction {
   getMessageToVerifySignature() {
     const withEIP155 = this._signedTxImplementsEIP155()
 
-    let values = super.raw()
-
-    if (withEIP155) {
-      values.push(toBuffer(this.getChainId()))
-      values.push(unpadBuffer(toBuffer(0)))
-      values.push(unpadBuffer(toBuffer(0)))
-    }
-
-    return rlphash(values)
+    return this._getMessageToSign(withEIP155)
   }
 
   /**
