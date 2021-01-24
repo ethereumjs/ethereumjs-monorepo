@@ -321,8 +321,8 @@ export class UnsignedEIP2930Transaction {
 }
 
 export class SignedEIP2930Transaction extends UnsignedEIP2930Transaction {
-  public readonly yParity?: number 
-  public readonly s?: BN 
+  public readonly yParity?: number
+  public readonly s?: BN
   public readonly r?: BN
 
   public static fromTxData(txData: EIP2930TxData, opts?: TxOptions) {
@@ -358,7 +358,7 @@ export class SignedEIP2930Transaction extends UnsignedEIP2930Transaction {
   protected constructor(txData: EIP2930TxData, opts: TxOptions) {
     super(txData, {
       ...opts,
-      freeze: false
+      freeze: false,
     })
 
     if (txData.yParity != 0 && txData.yParity != 1) {
@@ -369,8 +369,8 @@ export class SignedEIP2930Transaction extends UnsignedEIP2930Transaction {
     // TODO: verify the signature.
 
     this.yParity = txData.yParity
-    this.r = txData.r 
-    this.s = txData.s 
+    this.r = txData.r
+    this.s = txData.s
 
     const freeze = opts?.freeze ?? true
     if (freeze) {

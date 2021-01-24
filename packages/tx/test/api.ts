@@ -409,7 +409,7 @@ tape('[Transaction]: Basic functions', function (t) {
     function (st) {
       st.throws(() => {
         const common = new Common({ chain: 42, hardfork: 'petersburg' })
-        UnsignedLegacyTransaction.fromTxData({ v: new BN(1) }, { common })
+        SignedLegacyTransaction.fromTxData({ v: new BN(1) }, { common })
       })
       st.end()
     }

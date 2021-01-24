@@ -55,7 +55,13 @@ export class UnsignedLegacyTransaction {
       )
     }
 
-    if (values.length === 6) {
+    const emptyBuffer = Buffer.from('')
+    // If length is not 6, it has length 9. If v/r/s are empty Buffers, it is still an unsigned transaction
+    // This happens if you get the RLP data from `raw()`
+    if (
+      values.length === 6 ||
+      (values[6].equals(values[7]) && values[7].equals(values[8]) && values[8].equals(emptyBuffer))
+    ) {
       const [nonce, gasPrice, gasLimit, to, value, data] = values
 
       const emptyBuffer = Buffer.from([])
@@ -252,7 +258,7 @@ export class UnsignedLegacyTransaction {
       // Since v/r/s is undefined, have to input empty buffers here.
       Buffer.from([]),
       Buffer.from([]),
-      Buffer.from([])
+      Buffer.from([]),
     ]
   }
 
