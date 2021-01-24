@@ -249,6 +249,10 @@ export class UnsignedLegacyTransaction {
       this.to !== undefined ? this.to.buf : Buffer.from([]),
       bnToRlp(this.value),
       this.data,
+      // Since v/r/s is undefined, have to input empty buffers here.
+      Buffer.from([]),
+      Buffer.from([]),
+      Buffer.from([])
     ]
   }
 
@@ -393,19 +397,7 @@ export class SignedLegacyTransaction extends UnsignedLegacyTransaction {
    * Computes a sha3-256 hash of the serialized tx
    */
   hash(): Buffer {
-    const values = [
-      bnToRlp(this.nonce),
-      bnToRlp(this.gasPrice),
-      bnToRlp(this.gasLimit),
-      this.to !== undefined ? this.to.buf : Buffer.from([]),
-      bnToRlp(this.value),
-      this.data,
-      this.v ? bnToRlp(this.v) : Buffer.from([]),
-      this.r ? bnToRlp(this.r) : Buffer.from([]),
-      this.s ? bnToRlp(this.s) : Buffer.from([]),
-    ]
-
-    return rlphash(values)
+    return rlphash(this.raw())
   }
 
   /**
@@ -430,7 +422,17 @@ export class SignedLegacyTransaction extends UnsignedLegacyTransaction {
   }
 
   getMessageToVerifySignature() {
-    return this._getMessageToSign(this._signedTxImplementsEIP155())
+    const withEIP155 = this._signedTxImplementsEIP155()
+
+    let values = super.raw()
+
+    if (withEIP155) {
+      values.push(toBuffer(this.getChainId()))
+      values.push(unpadBuffer(toBuffer(0)))
+      values.push(unpadBuffer(toBuffer(0)))
+    }
+
+    return rlphash(values)
   }
 
   /**
