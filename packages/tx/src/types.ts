@@ -1,7 +1,9 @@
 import { AddressLike, BN, BNLike, BufferLike } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
-import { SignedLegacyTransaction, UnsignedLegacyTransaction } from './legacyTransaction'
-import { SignedEIP2930Transaction, UnsignedEIP2930Transaction } from './eip2930Transaction'
+import { default as UnsignedLegacyTransaction } from './unsignedLegacyTransaction'
+import { default as UnsignedEIP2930Transaction } from './unsignedEIP2930Transaction'
+import { default as SignedLegacyTransaction } from './signedLegacyTransaction'
+import { default as SignedEIP2930Transaction } from './signedEIP2930Transaction'
 
 /**
  * The options for initializing a Transaction.
