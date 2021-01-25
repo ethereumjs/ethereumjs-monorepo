@@ -4,8 +4,8 @@ import { Block, BlockHeader, BlockOptions } from '@ethereumjs/block'
 import tape from 'tape'
 import Blockchain from '../src'
 import { generateBlockchain, generateBlocks, isConsecutive, createTestDB } from './util'
-import * as testData from './testdata.json'
-import blocksData from './blocksData.json'
+import * as testData from './testdata/testdata.json'
+import blocksData from './testdata/blocks_mainnet.json'
 
 const level = require('level-mem')
 
