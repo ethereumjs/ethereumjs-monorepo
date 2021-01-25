@@ -1,13 +1,12 @@
 import tape from 'tape-catch'
-import td from 'testdouble'
-//import { BN } from 'ethereumjs-util'
 import VM from '@ethereumjs/vm'
 import Blockchain from '@ethereumjs/blockchain'
 import { Config } from '../../../lib/config'
 import { Chain } from '../../../lib/blockchain'
 import { VMExecution } from '../../../lib/sync/execution/vmexecution'
+import blocksData from './../../testdata/blocks_mainnet.json'
 
-tape('[FullSynchronizer]', async (t) => {
+tape('[VMExecution]', async (t) => {
   t.test('should initialize with VM provided by config', async (t) => {
     const vm = new VM()
     const config = new Config({ vm, loglevel: 'error', transports: [] })
@@ -20,50 +19,38 @@ tape('[FullSynchronizer]', async (t) => {
     t.end()
   })
 
-  t.test('should run blocks', async (t) => {
+  function initWithBlockchain(blockchain: Blockchain) {
     const vm = new VM()
-    vm.runBlockchain = td.func<any>()
+    //vm.runBlockchain = td.func<any>()
     const config = new Config({ vm, loglevel: 'error', transports: [] })
-    const blockchain = new Blockchain() as any
     const chain = new Chain({ config, blockchain })
     const exec = new VMExecution({
       config,
       chain,
     })
     exec.syncing = true
+    return exec
+  }
+
+  t.test('should run blocks', async (t) => {
+    let blockchain = new Blockchain({
+      validateBlocks: true,
+      validateConsensus: false,
+    })
+    let exec = initWithBlockchain(blockchain)
     const oldHead = await exec.vm.blockchain.getHead()
     await exec.runBlocks()
-    t.deepEqual(
-      (await exec.vm.blockchain.getHead()).hash(),
-      oldHead.hash(),
-      'should not modify blockchain on emtpy run'
-    )
+    let newHead = await exec.vm.blockchain.getHead()
+    t.deepEqual(newHead.hash(), oldHead.hash(), 'should not modify blockchain on emtpy run')
 
-    //TODO: replace with testdata blockchain tests, mocking not feasible on
-    // block execution getting more complex
-    /*blockchain.getHead = td.func<any>()
-    const getHeadResponse: any = []
-    for (let i = 2; i <= 100; i++) {
-      getHeadResponse.push({
-        hash: () => {
-          return Buffer.from(`hash${i}`)
-        },
-        header: { number: new BN(i) },
-        transactions: [i],
-      })
-    }
-
-    td.when(blockchain.getHead()).thenResolve(
-      {
-        hash: () => {
-          return Buffer.from('hash0')
-        },
-        header: { number: new BN(1) },
-        transactions: [],
-      },
-      ...getHeadResponse
-    )
-    t.equal(await exec.runBlocks(), 49)*/
+    blockchain = await Blockchain.fromBlocksData(blocksData, {
+      validateBlocks: true,
+      validateConsensus: false,
+    })
+    exec = initWithBlockchain(blockchain)
+    await exec.runBlocks()
+    newHead = await exec.vm.blockchain.getHead()
+    t.deepEqual(newHead.header.number.toNumber(), 5, 'should run all blocks from testfile')
 
     t.end()
   })
