@@ -6,9 +6,10 @@ import { parseTransports } from './util'
 
 export interface ConfigOptions {
   /**
-   * Specify the chain and hardfork by passing a Common instance.
+   * Specify the chain by providing a common instance,
+   * common instance will not be modified by client
    *
-   * Default: chain 'mainnet' and hardfork 'chainstart'
+   * Default: 'mainnet' Common
    */
   common?: Common
 
@@ -104,10 +105,7 @@ export interface ConfigOptions {
 }
 
 export class Config {
-  // Initialize Common with an explicit 'chainstart' HF set until
-  // hardfork awareness is implemented within the library
-  // Also a fix for https://github.com/ethereumjs/ethereumjs-vm/issues/757
-  public static readonly COMMON_DEFAULT = new Common({ chain: 'mainnet', hardfork: 'chainstart' })
+  public static readonly CHAIN_DEFAULT = 'mainnet'
   public static readonly SYNCMODE_DEFAULT = 'full'
   public static readonly LIGHTSERV_DEFAULT = false
   public static readonly DATADIR_DEFAULT = `./datadir`
@@ -119,7 +117,6 @@ export class Config {
   public static readonly MINPEERS_DEFAULT = 2
   public static readonly MAXPEERS_DEFAULT = 25
 
-  public readonly common: Common
   public readonly logger: Logger
   public readonly syncmode: string
   public readonly vm?: VM
@@ -133,11 +130,12 @@ export class Config {
   public readonly minPeers: number
   public readonly maxPeers: number
 
+  public readonly chainCommon: Common
+  public readonly execCommon: Common
+
   public readonly servers: (RlpxServer | Libp2pServer)[] = []
 
   constructor(options: ConfigOptions = {}) {
-    // TODO: map chainParams (and lib/util.parseParams) to new Common format
-    this.common = options.common ?? Config.COMMON_DEFAULT
     this.syncmode = options.syncmode ?? Config.SYNCMODE_DEFAULT
     this.vm = options.vm
     this.lightserv = options.lightserv ?? Config.LIGHTSERV_DEFAULT
@@ -149,6 +147,12 @@ export class Config {
     this.loglevel = options.loglevel ?? Config.LOGLEVEL_DEFAULT
     this.minPeers = options.minPeers ?? Config.MINPEERS_DEFAULT
     this.maxPeers = options.maxPeers ?? Config.MAXPEERS_DEFAULT
+
+    // TODO: map chainParams (and lib/util.parseParams) to new Common format
+    const common =
+      options.common ?? new Common({ chain: Config.CHAIN_DEFAULT, hardfork: 'chainstart' })
+    this.chainCommon = Object.assign(Object.create(Object.getPrototypeOf(common)), common)
+    this.execCommon = Object.assign(Object.create(Object.getPrototypeOf(common)), common)
 
     if (options.logger) {
       if (options.loglevel) {
@@ -174,7 +178,7 @@ export class Config {
       // Otherwise parse transports from transports option
       this.servers = parseTransports(this.transports).map((t) => {
         if (t.name === 'rlpx') {
-          t.options.bootnodes = t.options.bootnodes || this.common.bootstrapNodes()
+          t.options.bootnodes = t.options.bootnodes || this.chainCommon.bootstrapNodes()
           return new RlpxServer({ config: this, ...t.options })
         } else {
           return new Libp2pServer({ config: this, ...t.options })
@@ -188,7 +192,7 @@ export class Config {
    * based on syncmode and selected chain (subdirectory of 'datadir')
    */
   getChainDataDirectory(): string {
-    const networkDirName = this.common.chainName()
+    const networkDirName = this.chainCommon.chainName()
     const chainDataDirName = this.syncmode === 'light' ? 'lightchain' : 'chain'
 
     const dataDir = `${this.datadir}/${networkDirName}/${chainDataDirName}`
@@ -200,7 +204,7 @@ export class Config {
    * based selected chain (subdirectory of 'datadir')
    */
   getStateDataDirectory(): string {
-    const networkDirName = this.common.chainName()
+    const networkDirName = this.chainCommon.chainName()
 
     const dataDir = `${this.datadir}/${networkDirName}/state`
     return dataDir

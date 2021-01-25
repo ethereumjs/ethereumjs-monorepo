@@ -23,12 +23,12 @@ export class VMExecution extends Execution {
       const trie = new Trie(this.stateDB)
 
       const stateManager = new DefaultStateManager({
-        common: this.config.common,
+        common: this.config.chainCommon,
         trie,
       })
 
       this.vm = new VM({
-        common: this.config.common,
+        common: this.config.chainCommon,
         blockchain: this.chain.blockchain,
         stateManager,
       })
@@ -41,9 +41,9 @@ export class VMExecution extends Execution {
 
   /**
    * Runs the VM execution
-   * 
+   *
    * @returns number of blocks executed
-  */
+   */
   async run(): Promise<number> {
     if (this.running || !this.syncing) {
       return 0

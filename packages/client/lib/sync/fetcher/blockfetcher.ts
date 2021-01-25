@@ -51,7 +51,9 @@ export class BlockFetcher extends BlockFetcherBase<Block[], Block> {
       await peer!.eth!.getBlockBodies(headers.map((h) => h.hash()))
     )
     const blocks: Block[] = bodies.map(([txsData, unclesData]: BlockBodyBuffer, i: number) =>
-      Block.fromValuesArray([headers[i].raw(), txsData, unclesData], { common: this.config.common })
+      Block.fromValuesArray([headers[i].raw(), txsData, unclesData], {
+        common: this.config.chainCommon,
+      })
     )
     return blocks
   }

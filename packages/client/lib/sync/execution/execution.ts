@@ -36,9 +36,9 @@ export abstract class Execution extends EventEmitter {
 
   /**
    * Runs an execution
-   * 
+   *
    * @returns number quantifying execution run
-  */
+   */
   abstract run(): Promise<number>
 
   /**
