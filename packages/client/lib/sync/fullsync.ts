@@ -29,7 +29,7 @@ export class FullSynchronizer extends Synchronizer {
       // for some reason, if we use .on('updated', this.runBlocks)
       // it runs in the context of the Chain and not in the FullSync context..?
       if (self.running) {
-        await self.execution.runBlocks()
+        await self.execution.run()
       }
     })
     // eslint-disable-next-line @typescript-eslint/no-floating-promises

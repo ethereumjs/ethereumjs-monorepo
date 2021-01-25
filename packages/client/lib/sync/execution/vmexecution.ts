@@ -39,9 +39,14 @@ export class VMExecution extends Execution {
     }
   }
 
-  async runBlocks() {
+  /**
+   * Runs the VM execution
+   * 
+   * @returns number of blocks executed
+  */
+  async run(): Promise<number> {
     if (this.running || !this.syncing) {
-      return
+      return 0
     }
     this.running = true
 
@@ -116,7 +121,7 @@ export class VMExecution extends Execution {
       canonicalHead = await this.vm.blockchain.getLatestBlock()
     }
     this.running = false
-    return numExecuted
+    return numExecuted as number
   }
 
   /**

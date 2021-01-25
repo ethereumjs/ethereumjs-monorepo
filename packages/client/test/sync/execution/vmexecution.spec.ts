@@ -39,7 +39,7 @@ tape('[VMExecution]', async (t) => {
     })
     let exec = initWithBlockchain(blockchain)
     const oldHead = await exec.vm.blockchain.getHead()
-    await exec.runBlocks()
+    await exec.run()
     let newHead = await exec.vm.blockchain.getHead()
     t.deepEqual(newHead.hash(), oldHead.hash(), 'should not modify blockchain on emtpy run')
 
@@ -48,9 +48,9 @@ tape('[VMExecution]', async (t) => {
       validateConsensus: false,
     })
     exec = initWithBlockchain(blockchain)
-    await exec.runBlocks()
+    await exec.run()
     newHead = await exec.vm.blockchain.getHead()
-    t.deepEqual(newHead.header.number.toNumber(), 5, 'should run all blocks from testfile')
+    t.deepEqual(newHead.header.number.toNumber(), 5, 'should run all blocks')
 
     t.end()
   })

@@ -35,6 +35,13 @@ export abstract class Execution extends EventEmitter {
   }
 
   /**
+   * Runs an execution
+   * 
+   * @returns number quantifying execution run
+  */
+  abstract run(): Promise<number>
+
+  /**
    * Stop execution. Returns a promise that resolves once stopped.
    */
   async stop(): Promise<boolean> {
