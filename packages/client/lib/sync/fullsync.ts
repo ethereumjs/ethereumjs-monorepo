@@ -12,6 +12,8 @@ import { VMExecution } from './execution/vmexecution'
  */
 export class FullSynchronizer extends Synchronizer {
   private blockFetcher: BlockFetcher | null
+
+  public hardfork: string = ''
   public execution: VMExecution
 
   constructor(options: SynchronizerOptions) {
@@ -100,6 +102,14 @@ export class FullSynchronizer extends Synchronizer {
     const count = height.sub(first).addn(1)
     if (count.lten(0)) return false
 
+    const nextForkBlock = this.config.chainCommon.nextHardforkBlock()
+    if (nextForkBlock) {
+      if (first.gten(nextForkBlock)) {
+        this.config.chainCommon.setHardforkByBlockNumber(first.toNumber())
+        this.hardfork = this.config.chainCommon.hardfork()
+      }
+    }
+
     this.config.logger.debug(
       `Syncing with peer: ${peer.toString(true)} height=${height.toString(10)}`
     )
@@ -120,9 +130,9 @@ export class FullSynchronizer extends Synchronizer {
         const first = new BN(blocks[0].header.number)
         const hash = short(blocks[0].hash())
         this.config.logger.info(
-          `Imported blocks count=${blocks.length} number=${first.toString(10)} hash=${hash} peers=${
-            this.pool.size
-          }`
+          `Imported blocks count=${blocks.length} number=${first.toString(
+            10
+          )} hash=${hash} hardfork=${this.hardfork} peers=${this.pool.size}`
         )
       })
     await this.blockFetcher.fetch()
@@ -160,12 +170,17 @@ export class FullSynchronizer extends Synchronizer {
    */
   async open(): Promise<void> {
     await this.chain.open()
+    await this.execution.open()
     await this.pool.open()
     this.execution.syncing = true
-    const number = this.chain.blocks.height.toString(10)
+    const number = this.chain.blocks.height.toNumber()
     const td = this.chain.blocks.td.toString(10)
     const hash = this.chain.blocks.latest!.hash()
-    this.config.logger.info(`Latest local block: number=${number} td=${td} hash=${short(hash)}`)
+    this.config.chainCommon.setHardforkByBlockNumber(number)
+    this.hardfork = this.config.chainCommon.hardfork()
+    this.config.logger.info(
+      `Latest local block: number=${number} td=${td} hash=${short(hash)} hardfork=${this.hardfork}`
+    )
   }
 
   /**

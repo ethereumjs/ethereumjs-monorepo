@@ -7,6 +7,7 @@ import { Block } from '@ethereumjs/block'
 
 export class VMExecution extends Execution {
   public vm: VM
+  public hardfork: string = ''
 
   public syncing = false
   private vmPromise?: Promise<number | undefined>
@@ -23,12 +24,12 @@ export class VMExecution extends Execution {
       const trie = new Trie(this.stateDB)
 
       const stateManager = new DefaultStateManager({
-        common: this.config.chainCommon,
+        common: this.config.execCommon,
         trie,
       })
 
       this.vm = new VM({
-        common: this.config.chainCommon,
+        common: this.config.execCommon,
         blockchain: this.chain.blockchain,
         stateManager,
       })
@@ -37,6 +38,17 @@ export class VMExecution extends Execution {
       //@ts-ignore blockchain has readonly property
       this.vm.blockchain = this.chain.blockchain
     }
+  }
+
+  /**
+   * Initializes VM execution. Must be called before run() is called
+   */
+  async open(): Promise<void> {
+    const headBlock = await this.vm.blockchain.getHead()
+    const blockNumber = headBlock.header.number.toNumber()
+    this.config.execCommon.setHardforkByBlockNumber(blockNumber)
+    this.hardfork = this.config.execCommon.hardfork()
+    this.config.logger.info(`Initializing VM execution hardfork=${this.hardfork}`)
   }
 
   /**
@@ -87,6 +99,15 @@ export class VMExecution extends Execution {
           }
           // run block, update head if valid
           try {
+            const blockNumber = block.header.number.toNumber()
+            const hardfork = this.config.execCommon.getHardforkByBlockNumber(blockNumber)
+            if (hardfork !== this.hardfork) {
+              const hash = short(block.hash())
+              this.config.logger.info(
+                `Execution hardfork switch on block number=${blockNumber} hash=${hash} old=${this.hardfork} new=${hardfork}`
+              )
+              this.config.execCommon.setHardforkByBlockNumber(blockNumber)
+            }
             await this.vm.runBlock({ block, root: parentState })
             txCounter += block.transactions.length
             // set as new head block
@@ -94,6 +115,19 @@ export class VMExecution extends Execution {
           } catch (error) {
             // remove invalid block
             await blockchain!.delBlock(block.header.hash())
+            const blockNumber = block.header.number.toNumber()
+            const hash = short(block.hash())
+            this.config.logger.warn(
+              `Deleted block number=${blockNumber} hash=${hash} on failed execution`
+            )
+
+            const hardfork = this.config.execCommon.getHardforkByBlockNumber(blockNumber)
+            if (hardfork !== this.hardfork) {
+              this.config.logger.warn(
+                `Set back hardfork along block deletion number=${blockNumber} hash=${hash} old=${this.hardfork} new=${hardfork}`
+              )
+              this.config.execCommon.setHardforkByBlockNumber(blockNumber)
+            }
             throw error
           }
         },
@@ -108,7 +142,7 @@ export class VMExecution extends Execution {
         const lastNumber = endHeadBlock.header.number.toNumber()
         const lastHash = short(endHeadBlock.hash())
         this.config.logger.info(
-          `Executed blocks count=${numExecuted} first=${firstNumber} hash=${firstHash} last=${lastNumber} hash=${lastHash} with txs=${txCounter}`
+          `Executed blocks count=${numExecuted} first=${firstNumber} hash=${firstHash} hardfork=${this.hardfork} last=${lastNumber} hash=${lastHash} with txs=${txCounter}`
         )
       } else {
         this.config.logger.warn(

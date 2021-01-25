@@ -179,11 +179,11 @@ export default class Common {
   }
 
   /**
-   * Sets a new hardfork based on the block number provided
+   * Returns the hardfork based on the block number provided
    * @param blockNumber
-   * @returns The name of the HF set
+   * @returns The name of the HF
    */
-  setHardforkByBlockNumber(blockNumber: number): string {
+  getHardforkByBlockNumber(blockNumber: number): string {
     let hardfork = 'chainstart'
     for (const hf of this.hardforks()) {
       const hardforkBlock = hf.block
@@ -197,6 +197,16 @@ export default class Common {
         hardfork = hf.name
       }
     }
+    return hardfork
+  }
+
+  /**
+   * Sets a new hardfork based on the block number provided
+   * @param blockNumber
+   * @returns The name of the HF set
+   */
+  setHardforkByBlockNumber(blockNumber: number): string {
+    const hardfork = this.getHardforkByBlockNumber(blockNumber)
     this.setHardfork(hardfork)
     return hardfork
   }

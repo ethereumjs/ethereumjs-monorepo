@@ -25,9 +25,18 @@ tape('[Common]: Hardfork logic', function (t: tape.Test) {
     st.end()
   })
 
-  t.test('setHardforkByBlockNumber()', function (st: tape.Test) {
+  t.test('getHardforkByBlockNumber() / setHardforkByBlockNumber()', function (st: tape.Test) {
     let c = new Common({ chain: 'mainnet' })
-    const msg = 'should set HF correctly'
+    let msg = 'should get HF correctly'
+
+    st.equal(c.getHardforkByBlockNumber(0), 'chainstart', msg)
+    st.equal(c.getHardforkByBlockNumber(1149999), 'chainstart', msg)
+    st.equal(c.getHardforkByBlockNumber(1150000), 'homestead', msg)
+    st.equal(c.getHardforkByBlockNumber(1400000), 'homestead', msg)
+    st.equal(c.getHardforkByBlockNumber(9200000), 'muirGlacier', msg)
+    st.equal(c.getHardforkByBlockNumber(999999999999), 'muirGlacier', msg)
+
+    msg = 'should set HF correctly'
 
     st.equal(c.setHardforkByBlockNumber(0), 'chainstart', msg)
     st.equal(c.setHardforkByBlockNumber(1149999), 'chainstart', msg)
