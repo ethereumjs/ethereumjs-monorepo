@@ -42,7 +42,7 @@ test('ENR (root): should error if DNS root entry is malformed', (t) => {
 test('ENR (tree): should parse a DNS tree entry', (t) => {
   const { publicKey, domain } = ENR.parseTree(dns.enrTree)
 
-  t.equal(publicKey, 'AM5FCQLWIZX2QFPNJAP7VUERCCRNGRHWZG3YYHIUV7BVDQ5FDPRT2')
+  t.equal(publicKey, dns.publicKey)
   t.equal(domain, 'nodes.example.org')
   t.end()
 })

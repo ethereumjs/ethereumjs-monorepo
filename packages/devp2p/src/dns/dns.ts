@@ -2,6 +2,9 @@ import dns from 'dns'
 import assert from 'assert'
 import { PeerInfo } from '../dpt'
 import { ENR } from './enr'
+import { debug as createDebugLogger } from 'debug'
+
+const debug = createDebugLogger('devp2p:dns:dns')
 
 type SearchContext = {
   domain: string
@@ -18,22 +21,25 @@ export type DNSOptions = {
   errorTolerance?: number
 
   /**
-   * Log warnings for any errors encounters while fetching & parsing DNS records
-   * Default = false
-   * @type {boolean}
+   * ipv4 or ipv6 address of server to pass to native dns.setServers()
+   * Sets the IP address of servers to be used when performing
+   * DNS resolution.
+   * @type {string}
    */
-  verbose?: boolean
+  dnsServerAddress?: string
 }
 
 export class DNS {
   _DNSTreeCache: { [key: string]: string }
   _tolerance: number
-  _verbose: boolean
 
-  constructor(options?: DNSOptions) {
+  constructor(options: DNSOptions = {}) {
     this._DNSTreeCache = {}
-    this._tolerance = options?.errorTolerance || 5
-    this._verbose = options?.verbose || false
+    this._tolerance = options.errorTolerance || 5
+
+    if (options.dnsServerAddress) {
+      dns.setServers([options.dnsServerAddress])
+    }
   }
 
   /**
@@ -44,13 +50,13 @@ export class DNS {
    *
    * @param {number}        maxQuantity  max number to get
    * @param {string}        treeEntry enrtree string (See EIP-1459 for format)
-   * @param {PeerInfo[] = []} banList peers to ignore
+   * @param {PeerInfo[] = []} ignorePeers peers to ignore
    * @return {PeerInfo}
    */
   async getPeers(
     maxQuantity: number,
     treeEntry: string,
-    banList: PeerInfo[] = []
+    ignorePeers: PeerInfo[] = []
   ): Promise<PeerInfo[]> {
     let totalSearches: number = 0
     const peers: PeerInfo[] = []
@@ -66,7 +72,7 @@ export class DNS {
 
       const peer = await this._search(domain, context)
 
-      if (this._isNewPeer(peer, peers, banList)) {
+      if (this._isNewPeer(peer, peers, ignorePeers)) {
         peers.push(peer as PeerInfo)
       }
 
@@ -105,10 +111,7 @@ export class DNS {
           return null
       }
     } catch (error) {
-      if (this._verbose) {
-        // eslint-disable-next-line
-        console.warn(`Errored searching DNS tree at subdomain ${subdomain}: ${error}`)
-      }
+      debug(`Errored searching DNS tree at subdomain ${subdomain}: ${error}`)
       return null
     }
   }
@@ -192,7 +195,7 @@ export class DNS {
    * @param  {PeerInfo[]} peers
    * @return {boolean}
    */
-  private _isNewPeer(peer: PeerInfo | null, peers: PeerInfo[], banList: PeerInfo[]): boolean {
+  private _isNewPeer(peer: PeerInfo | null, peers: PeerInfo[], ignorePeers: PeerInfo[]): boolean {
     if (!peer || !peer!.address) return false
 
     for (const existingPeer of peers) {
@@ -201,12 +204,21 @@ export class DNS {
       }
     }
 
-    for (const banned of banList) {
-      if (peer.address === banned.address) {
+    for (const ingnorable of ignorePeers) {
+      if (peer.address === ingnorable.address) {
         return false
       }
     }
 
     return true
+  }
+
+  /**
+   * Only used for testing. A stopgap to enable successful
+   * TestDouble mocking of the native `dns` module.
+   * @param {any} mock TestDouble fn
+   */
+  __setNativeDNSModuleResolve(mock: any) {
+    dns.promises.resolve = mock.resolve
   }
 }
