@@ -422,9 +422,9 @@ export default class Blockchain implements BlockchainInterface {
       const signer = header.cliqueSigner()
       const beneficiary = header.coinbase
       const nonce = header.nonce
-      const latestVote = [header.number, [signer, beneficiary, nonce]]
+      const latestVote: CliqueVote = [header.number, [signer, beneficiary, nonce]]
 
-      const alreadyVoted = this._cliqueLatestVotes.find((vote: CliqueVote) => {
+      const alreadyVoted = this._cliqueLatestVotes.find((vote) => {
         return (
           vote[1][0].toBuffer().equals(signer.toBuffer()) &&
           vote[1][1].toBuffer().equals(beneficiary.toBuffer()) &&
@@ -436,13 +436,14 @@ export default class Blockchain implements BlockchainInterface {
 
       // Always add the latest vote to the history no matter if already voted
       // the same vote or not
-      this._cliqueLatestVotes.push(latestVote as CliqueVote)
+      this._cliqueLatestVotes.push(latestVote)
+
       // If same vote not already in history see if there is a new majority consensus
       // to update the signer list
       if (!alreadyVoted) {
-        const beneficiaryVotes = this._cliqueLatestVotes.filter((vote: CliqueVote) => {
-          return vote[1][1].toBuffer().equals(beneficiary.toBuffer()) && vote[1][2].equals(nonce)
-        })
+        const beneficiaryVotes = this._cliqueLatestVotes.filter(
+          (vote) => vote[1][1].toBuffer().equals(beneficiary.toBuffer()) && vote[1][2].equals(nonce)
+        )
         const benficiaryVoteNum = beneficiaryVotes.length
         // Majority consensus
         if (benficiaryVoteNum >= SIGNER_LIMIT) {
@@ -452,11 +453,11 @@ export default class Blockchain implements BlockchainInterface {
             activeSigners.push(beneficiary)
             // Drop existing signer
           } else if (nonce.equals(CLIQUE_NONCE_DROP)) {
-            activeSigners = activeSigners.filter((signer: Address) => {
+            activeSigners = activeSigners.filter((signer) => {
               return !signer.toBuffer().equals(beneficiary.toBuffer())
             })
             // Discard votes from removed signer
-            this._cliqueLatestVotes = this._cliqueLatestVotes.filter((vote: CliqueVote) => {
+            this._cliqueLatestVotes = this._cliqueLatestVotes.filter((vote) => {
               return !vote[1][0].toBuffer().equals(beneficiary.toBuffer())
             })
           } else {

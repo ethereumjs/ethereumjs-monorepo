@@ -148,7 +148,7 @@ tape('[Block]: Header functions', function (t) {
 
     parentHash = genesis.hash()
     gasLimit = genesis.header.gasLimit
-    data = { number, parentHash, timestamp, gasLimit }
+    data = { number, parentHash, timestamp, gasLimit, difficulty: new BN(1) } as any
     opts = { common } as any
 
     // valid extraData (32 byte vanity + 65 byte seal)
@@ -215,6 +215,7 @@ tape('[Block]: Header functions', function (t) {
     headerData.timestamp = new BN(1422494850)
     headerData.extraData = Buffer.alloc(97)
     headerData.mixHash = Buffer.alloc(32)
+    headerData.difficulty = new BN(2)
 
     let testCase = 'should throw on lower than period timestamp diffs'
     let header = BlockHeader.fromHeaderData(headerData, { common })

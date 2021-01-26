@@ -10,4 +10,7 @@ export class Mockchain implements Blockchain {
   async putBlock(block: Block) {
     this.HashMap[block.hash().toString('hex')] = block
   }
+  cliqueActiveSigners() {
+    return []
+  }
 }

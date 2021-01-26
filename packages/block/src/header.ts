@@ -20,6 +20,9 @@ const DEFAULT_GAS_LIMIT = new BN(Buffer.from('ffffffffffffff', 'hex'))
 const CLIQUE_EXTRA_VANITY = 32
 const CLIQUE_EXTRA_SEAL = 65
 
+const CLIQUE_DIFF_INTURN = new BN(2)
+const CLIQUE_DIFF_NOTURN = new BN(1)
+
 /**
  * An object that represents the block header.
  */
@@ -363,10 +366,34 @@ export class BlockHeader {
    * @param parentBlockHeader - the header from the parent `Block` of this header
    */
   validateDifficulty(parentBlockHeader: BlockHeader): boolean {
-    if (this._common.consensusType() !== 'pow') {
-      throw new Error('difficulty validation is currently only supported on PoW chains')
-    }
     return this.canonicalDifficulty(parentBlockHeader).eq(this.difficulty)
+  }
+
+  /**
+   * For poa, validates `difficulty` is correctly identified as INTURN or NOTURN.
+   */
+  validateCliqueDifficulty(blockchain: Blockchain): boolean {
+    if (!this.difficulty.eq(CLIQUE_DIFF_INTURN) && !this.difficulty.eq(CLIQUE_DIFF_NOTURN)) {
+      throw new Error(
+        `difficulty for clique block must be INTURN (2) or NOTURN (1), received: ${this.difficulty.toString()}`
+      )
+    }
+    const signers = blockchain.cliqueActiveSigners()
+    if (signers.length === 0) {
+      // abort if signers are unavailable
+      return true
+    }
+    const signerIndex = signers.findIndex((address: Address) =>
+      address.toBuffer().equals(this.cliqueSigner().toBuffer())
+    )
+    const inTurn = this.number.modn(signers.length) === signerIndex
+    if (
+      (inTurn && this.difficulty.eq(CLIQUE_DIFF_INTURN)) ||
+      (!inTurn && this.difficulty.eq(CLIQUE_DIFF_NOTURN))
+    ) {
+      return true
+    }
+    return false
   }
 
   /**
@@ -443,6 +470,9 @@ export class BlockHeader {
       if (!this.mixHash.equals(Buffer.alloc(32))) {
         throw new Error(`mixHash must be filled with zeros, received ${this.mixHash}`)
       }
+      if (!this.validateCliqueDifficulty(blockchain)) {
+        throw new Error('invalid clique difficulty')
+      }
     }
 
     const parentHeader = await this._getHeaderByHash(blockchain, this.parentHash)
@@ -460,7 +490,7 @@ export class BlockHeader {
       throw new Error('invalid timestamp')
     }
 
-    if (this._common.consensusAlgorithm() == 'clique') {
+    if (this._common.consensusAlgorithm() === 'clique') {
       const period = this._common.consensusConfig().period
       // Timestamp diff between blocks is lower than PERIOD (clique)
       if (parentHeader.timestamp.addn(period).gt(this.timestamp)) {
