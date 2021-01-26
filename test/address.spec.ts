@@ -84,4 +84,22 @@ describe('Address', () => {
     addressBuf.fill(0)
     assert.equal(address.toString(), str)
   })
+
+  it('should compare equality properly', () => {
+    const str = '0x2f015c60e0be116b1f0cd534704db9c92118fb6a'
+    const address1 = Address.fromString(str)
+    const address2 = new Address(Buffer.from(str.slice(2), 'hex'))
+    assert.ok(address1.equals(address2))
+    assert.ok(address1.buf.equals(address2.buf))
+
+    const str2 = '0xcd4EC7b66fbc029C116BA9Ffb3e59351c20B5B06'
+    const address3 = Address.fromString(str2)
+    assert.ok(!address1.equals(address3))
+
+    const address3LowerCase = Address.fromString(str2.toLowerCase())
+    assert.ok(address3.equals(address3LowerCase))
+
+    const address4 = Address.zero()
+    assert.ok(!address1.equals(address4))
+  })
 })
