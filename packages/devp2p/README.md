@@ -415,5 +415,5 @@ MIT
 [devp2p-issues-link]: https://github.com/ethereumjs/ethereumjs-vm/issues?q=is%3Aopen+is%3Aissue+label%3A"package%3A+devp2p"
 [devp2p-actions-badge]: https://github.com/ethereumjs/ethereumjs-vm/workflows/Devp2p%20Test/badge.svg
 [devp2p-actions-link]: https://github.com/ethereumjs/ethereumjs-vm/actions?query=workflow%3A%22Devp2p+Test%22
-[devp2p-coverage-badge]: https://codecov.io/gh/ethereumjs/ethereumjs-vm/branch/master/graph/badge.svg?flag=devp2p
-[devp2p-coverage-link]: https://codecov.io/gh/ethereumjs/ethereumjs-vm/tree/master/packages/devp2p
+[devp2p-coverage-badge]: https://codecov.io/gh/ethereumjs/ethereumjs-monorepo/branch/master/graph/badge.svg?flag=devp2p
+[devp2p-coverage-link]: https://codecov.io/gh/ethereumjs/ethereumjs-monorepo/tree/master/packages/devp2p

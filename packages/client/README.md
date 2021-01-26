@@ -363,7 +363,7 @@ If you want to join for work or do improvements on the libraries have a look at 
 [client-issues-link]: https://github.com/ethereumjs/ethereumjs-vm/issues?q=is%3Aopen+is%3Aissue+label%3A"package%3A+client"
 [client-actions-badge]: https://github.com/ethereumjs/ethereumjs-vm/workflows/Client/badge.svg
 [client-actions-link]: https://github.com/ethereumjs/ethereumjs-vm/actions?query=workflow%3A%22Client%22
-[client-coverage-badge]: https://codecov.io/gh/ethereumjs/ethereumjs-vm/branch/master/graph/badge.svg?flag=client
-[client-coverage-link]: https://codecov.io/gh/ethereumjs/ethereumjs-vm/tree/master/packages/client
+[client-coverage-badge]: https://codecov.io/gh/ethereumjs/ethereumjs-monorepo/branch/master/graph/badge.svg?flag=client
+[client-coverage-link]: https://codecov.io/gh/ethereumjs/ethereumjs-monorepo/tree/master/packages/client
 [discord-badge]: https://img.shields.io/static/v1?logo=discord&label=discord&message=Join&color=blue
 [discord-link]: https://discord.gg/TNwARpR
