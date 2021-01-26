@@ -5,9 +5,11 @@ import { Config } from '../../../lib/config'
 import { Chain } from '../../../lib/blockchain'
 import { VMExecution } from '../../../lib/sync/execution/vmexecution'
 import blocksData from './../../testdata/blocks_mainnet.json'
+import testnet from './../../testdata/testnet.json'
+import Common from '@ethereumjs/common'
 
 tape('[VMExecution]', async (t) => {
-  t.test('should initialize with VM provided by config', async (t) => {
+  t.test('Initialization', async (t) => {
     const vm = new VM()
     const config = new Config({ vm, loglevel: 'error', transports: [] })
     const chain = new Chain({ config })
@@ -15,42 +17,47 @@ tape('[VMExecution]', async (t) => {
       config,
       chain,
     })
-    t.equals(exec.vm, vm, 'provided VM is used')
+    t.equals(exec.vm, vm, 'should use provided')
     t.end()
   })
 
-  function initWithBlockchain(blockchain: Blockchain) {
+  async function testSetup(blockchain: Blockchain, common?: Common) {
     const vm = new VM()
-    //vm.runBlockchain = td.func<any>()
-    const config = new Config({ vm, loglevel: 'error', transports: [] })
+    const config = new Config({ common, vm, loglevel: 'error', transports: [] })
     const chain = new Chain({ config, blockchain })
     const exec = new VMExecution({
       config,
       chain,
     })
     exec.syncing = true
+    await exec.open()
     return exec
   }
 
-  t.test('should run blocks', async (t) => {
+  t.test('Block execution / Hardforks', async (t) => {
     let blockchain = new Blockchain({
       validateBlocks: true,
       validateConsensus: false,
     })
-    let exec = initWithBlockchain(blockchain)
+    let exec = await testSetup(blockchain)
     const oldHead = await exec.vm.blockchain.getHead()
     await exec.run()
     let newHead = await exec.vm.blockchain.getHead()
-    t.deepEqual(newHead.hash(), oldHead.hash(), 'should not modify blockchain on emtpy run')
+    t.deepEqual(newHead.hash(), oldHead.hash(), 'should not modify blockchain on empty run')
 
     blockchain = await Blockchain.fromBlocksData(blocksData, {
       validateBlocks: true,
       validateConsensus: false,
     })
-    exec = initWithBlockchain(blockchain)
+    exec = await testSetup(blockchain)
     await exec.run()
     newHead = await exec.vm.blockchain.getHead()
     t.deepEqual(newHead.header.number.toNumber(), 5, 'should run all blocks')
+
+    const common = new Common({ chain: 'testnet', customChains: [testnet] })
+    exec = await testSetup(blockchain, common)
+    await exec.run()
+    t.equal(exec.hardfork, 'byzantium', 'should update HF on block run')
 
     t.end()
   })
