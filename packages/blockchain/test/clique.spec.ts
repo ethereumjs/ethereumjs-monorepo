@@ -91,12 +91,12 @@ tape('Clique: Initialization', (t) => {
     ),
   }
 
-  const initWithSigners = async (signers: Address[]) => {
+  const initWithSigners = async (signers: Signer[]) => {
     const blocks: Block[] = []
 
     const extraData = Buffer.concat([
       Buffer.alloc(32),
-      ...signers.map((s) => s.toBuffer()),
+      ...signers.map((s) => s.address.toBuffer()),
       Buffer.alloc(65),
     ])
     const genesisBlock = Block.genesis(
@@ -150,7 +150,7 @@ tape('Clique: Initialization', (t) => {
     const signerIndex = signers.findIndex((address: Address) =>
       address.toBuffer().equals(signer.address.toBuffer())
     )
-    const inTurn = number % signers.length == signerIndex
+    const inTurn = number % signers.length === signerIndex
     blockData.header.difficulty = inTurn ? new BN(2) : new BN(1)
 
     let block = Block.fromBlockData(blockData, { common: COMMON, freeze: false })
@@ -169,7 +169,7 @@ tape('Clique: Initialization', (t) => {
   }
 
   t.test('should throw if signer in epoch checkpoint is not active', async (st) => {
-    const { blockchain } = await initWithSigners([A.address])
+    const { blockchain } = await initWithSigners([A])
     ;(blockchain as any)._validateBlocks = false
     const number = COMMON.consensusConfig().epoch
     const unauthorizedSigner = Address.fromString('0x00a839de7922491683f547a67795204763ff8237')
@@ -198,7 +198,7 @@ tape('Clique: Initialization', (t) => {
   })
 
   t.test('should throw on invalid difficulty', async (st) => {
-    const { blocks, blockchain } = await initWithSigners([A.address])
+    const { blocks, blockchain } = await initWithSigners([A])
     await addNextBlock(blockchain, blocks, A)
     ;(blockchain as any)._validateBlocks = false
 
@@ -247,7 +247,7 @@ tape('Clique: Initialization', (t) => {
 
   // Test Cases: https://eips.ethereum.org/EIPS/eip-225
   t.test('Clique Voting: Single signer, no votes cast', async (st) => {
-    const { blocks, blockchain } = await initWithSigners([A.address])
+    const { blocks, blockchain } = await initWithSigners([A])
     const block = await addNextBlock(blockchain, blocks, A)
     st.equal(block.header.number.toNumber(), 1)
     st.deepEqual(blockchain.cliqueActiveSigners(), [A.address])
@@ -255,7 +255,7 @@ tape('Clique: Initialization', (t) => {
   })
 
   t.test('Clique Voting: Single signer, voting to add two others', async (st) => {
-    const { blocks, blockchain } = await initWithSigners([A.address])
+    const { blocks, blockchain } = await initWithSigners([A])
     await addNextBlock(blockchain, blocks, A, [B, true])
     await addNextBlock(blockchain, blocks, B)
     await addNextBlock(blockchain, blocks, A, [C, true])
@@ -268,7 +268,7 @@ tape('Clique: Initialization', (t) => {
   })
 
   t.test('Two signers, voting to add three others', async (st) => {
-    const { blocks, blockchain } = await initWithSigners([A.address, B.address])
+    const { blocks, blockchain } = await initWithSigners([A, B])
     await addNextBlock(blockchain, blocks, A, [C, true])
     await addNextBlock(blockchain, blocks, B, [C, true])
     await addNextBlock(blockchain, blocks, A, [D, true])
@@ -286,7 +286,7 @@ tape('Clique: Initialization', (t) => {
   })
 
   t.test('Clique Voting: Single signer, dropping itself)', async (st) => {
-    const { blocks, blockchain } = await initWithSigners([A.address])
+    const { blocks, blockchain } = await initWithSigners([A])
     await addNextBlock(blockchain, blocks, A, [A, false])
 
     st.deepEqual(
@@ -300,7 +300,7 @@ tape('Clique: Initialization', (t) => {
   t.test(
     'Clique Voting: Two signers, actually needing mutual consent to drop either of them',
     async (st) => {
-      const { blocks, blockchain } = await initWithSigners([A.address, B.address])
+      const { blocks, blockchain } = await initWithSigners([A, B])
       await addNextBlock(blockchain, blocks, A, [B, false])
 
       st.deepEqual(blockchain.cliqueActiveSigners(), [A.address, B.address], 'not fulfilled')
@@ -311,7 +311,7 @@ tape('Clique: Initialization', (t) => {
   t.test(
     'Clique Voting: Two signers, actually needing mutual consent to drop either of them',
     async (st) => {
-      const { blocks, blockchain } = await initWithSigners([A.address, B.address])
+      const { blocks, blockchain } = await initWithSigners([A, B])
       await addNextBlock(blockchain, blocks, A, [B, false])
       await addNextBlock(blockchain, blocks, B, [B, false])
 
@@ -321,7 +321,7 @@ tape('Clique: Initialization', (t) => {
   )
 
   t.test('Clique Voting: Three signers, two of them deciding to drop the third', async (st) => {
-    const { blocks, blockchain } = await initWithSigners([A.address, B.address, C.address])
+    const { blocks, blockchain } = await initWithSigners([A, B, C])
     await addNextBlock(blockchain, blocks, A, [C, false])
     await addNextBlock(blockchain, blocks, B, [C, false])
 
@@ -332,12 +332,7 @@ tape('Clique: Initialization', (t) => {
   t.test(
     'Clique Voting: Four signers, consensus of two not being enough to drop anyone',
     async (st) => {
-      const { blocks, blockchain } = await initWithSigners([
-        A.address,
-        B.address,
-        C.address,
-        D.address,
-      ])
+      const { blocks, blockchain } = await initWithSigners([A, B, C, D])
       await addNextBlock(blockchain, blocks, A, [C, false])
       await addNextBlock(blockchain, blocks, B, [C, false])
 
@@ -349,12 +344,7 @@ tape('Clique: Initialization', (t) => {
   t.test(
     'Clique Voting: Four signers, consensus of three already being enough to drop someone',
     async (st) => {
-      const { blocks, blockchain } = await initWithSigners([
-        A.address,
-        B.address,
-        C.address,
-        D.address,
-      ])
+      const { blocks, blockchain } = await initWithSigners([A, B, C, D])
       await addNextBlock(blockchain, blocks, A, [D, false])
       await addNextBlock(blockchain, blocks, B, [D, false])
       await addNextBlock(blockchain, blocks, C, [D, false])
@@ -365,7 +355,7 @@ tape('Clique: Initialization', (t) => {
   )
 
   t.test('Clique Voting: Authorizations are counted once per signer per target', async (st) => {
-    const { blocks, blockchain } = await initWithSigners([A.address, B.address])
+    const { blocks, blockchain } = await initWithSigners([A, B])
     await addNextBlock(blockchain, blocks, A, [C, true])
     await addNextBlock(blockchain, blocks, B)
     await addNextBlock(blockchain, blocks, A, [C, true])
@@ -377,7 +367,7 @@ tape('Clique: Initialization', (t) => {
   })
 
   t.test('Clique Voting: Authorizing multiple accounts concurrently is permitted', async (st) => {
-    const { blocks, blockchain } = await initWithSigners([A.address, B.address])
+    const { blocks, blockchain } = await initWithSigners([A, B])
     await addNextBlock(blockchain, blocks, A, [C, true])
     await addNextBlock(blockchain, blocks, B)
     await addNextBlock(blockchain, blocks, A, [D, true])
@@ -392,7 +382,7 @@ tape('Clique: Initialization', (t) => {
   })
 
   t.test('Clique Voting: Deauthorizations are counted once per signer per target', async (st) => {
-    const { blocks, blockchain } = await initWithSigners([A.address, B.address])
+    const { blocks, blockchain } = await initWithSigners([A, B])
     await addNextBlock(blockchain, blocks, A, [B, false])
     await addNextBlock(blockchain, blocks, B)
     await addNextBlock(blockchain, blocks, A, [B, false])
@@ -404,12 +394,7 @@ tape('Clique: Initialization', (t) => {
   })
 
   t.test('Clique Voting: Deauthorizing multiple accounts concurrently is permitted', async (st) => {
-    const { blocks, blockchain } = await initWithSigners([
-      A.address,
-      B.address,
-      C.address,
-      D.address,
-    ])
+    const { blocks, blockchain } = await initWithSigners([A, B, C, D])
     await addNextBlock(blockchain, blocks, A, [C, false])
     await addNextBlock(blockchain, blocks, B)
     await addNextBlock(blockchain, blocks, C)
@@ -427,7 +412,7 @@ tape('Clique: Initialization', (t) => {
   })
 
   t.test('Clique Voting: Votes from deauthorized signers are discarded immediately', async (st) => {
-    const { blocks, blockchain } = await initWithSigners([A.address, B.address, C.address])
+    const { blocks, blockchain } = await initWithSigners([A, B, C])
     await addNextBlock(blockchain, blocks, C, [B, false])
     await addNextBlock(blockchain, blocks, A, [C, false])
     await addNextBlock(blockchain, blocks, B, [C, false])
@@ -438,7 +423,7 @@ tape('Clique: Initialization', (t) => {
   })
 
   t.test('Clique Voting: Votes from deauthorized signers are discarded immediately', async (st) => {
-    const { blocks, blockchain } = await initWithSigners([A.address, B.address, C.address])
+    const { blocks, blockchain } = await initWithSigners([A, B, C])
     await addNextBlock(blockchain, blocks, C, [D, true])
     await addNextBlock(blockchain, blocks, A, [C, false])
     await addNextBlock(blockchain, blocks, B, [C, false])
@@ -450,7 +435,7 @@ tape('Clique: Initialization', (t) => {
 
   // TODO: fix test case
   /*t.test('Clique Voting: Changes reaching consensus out of bounds (via a deauth) execute on touch', async (st) => {
-    const { blocks, blockchain } = await initWithSigners([A.address, B.address, C.address, D.address])
+    const { blocks, blockchain } = await initWithSigners([A, B, C, D])
     await addNextBlock(blockchain, blocks, A, [C, false])
     await addNextBlock(blockchain, blocks, B)
     await addNextBlock(blockchain, blocks, C)
@@ -470,7 +455,7 @@ tape('Clique: Initialization', (t) => {
 
   // TODO: add two additional test cases, further last test cases not relevant yet
   t.test('Clique Voting: ', async (st) => {
-    const { blocks, blockchain } = await initWithSigners([A.address])
+    const { blocks, blockchain } = await initWithSigners([A])
     await addNextBlock(blockchain, blocks, A, [B, true])
 
     st.deepEqual(blockchain.cliqueActiveSigners(), [A.address, B.address], '')
