@@ -7,7 +7,7 @@ import {
 } from '../src'
 
 const EIP2930Common = new Common({
-  eips: [2718, 2930],
+  eips: [2718, 2929, 2930],
   chain: 'mainnet',
   hardfork: 'berlin',
 })
