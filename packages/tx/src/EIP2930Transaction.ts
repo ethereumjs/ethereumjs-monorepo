@@ -1,37 +1,26 @@
-import { Address, BN, bnToHex, ecsign, rlp, rlphash, toBuffer } from 'ethereumjs-util'
-import { BaseTransaction, SignedTransactionInterface } from './baseTransaction'
+import { Address, BN, bnToHex, rlp, rlphash, toBuffer } from 'ethereumjs-util'
+import { BaseTransaction } from './baseTransaction'
 import { EIP2930TxData, TxOptions, JsonEIP2930Tx } from './types'
 
-export class UnsignedEIP2930Transaction extends BaseTransaction<
-  SignedEIP2930Transaction,
-  JsonEIP2930Tx
-> {
+export class EIP2930Transaction extends BaseTransaction<JsonEIP2930Tx, EIP2930Transaction> {
   public readonly chainId: BN
-  public readonly nonce: BN
-  public readonly gasLimit: BN
-  public readonly gasPrice: BN
-  public readonly to?: Address
-  public readonly value: BN
-  public readonly data: Buffer
   public readonly accessList: any
   public readonly yParity?: number
   public readonly r?: BN
   public readonly s?: BN
 
+  // EIP-2930 alias for `s`
   get senderS() {
     return this.s
   }
 
+  // EIP-2930 alias for `r`
   get senderR() {
     return this.r
   }
 
   public static fromTxData(txData: EIP2930TxData, opts?: TxOptions) {
-    if (txData.yParity && txData.r && txData.s) {
-      return SignedEIP2930Transaction.fromTxData(txData, opts ?? {})
-    } else {
-      return new UnsignedEIP2930Transaction(txData, opts ?? {})
-    }
+    return new EIP2930Transaction(txData, opts ?? {})
   }
 
   // Instantiate a transaction from the raw RLP serialized tx. This means that the RLP should start with 0x01.
@@ -46,17 +35,29 @@ export class UnsignedEIP2930Transaction extends BaseTransaction<
       throw new Error('Invalid serialized tx input. Must be array')
     }
 
-    return UnsignedEIP2930Transaction.fromValuesArray(values, opts)
+    return EIP2930Transaction.fromValuesArray(values, opts)
   }
 
   // Create a transaction from a values array.
   // The format is: chainId, nonce, gasPrice, gasLimit, to, value, data, access_list, [yParity, senderR, senderS]
   public static fromValuesArray(values: Buffer[], opts?: TxOptions) {
-    if (values.length == 8) {
-      const [chainId, nonce, gasPrice, gasLimit, to, value, data, accessList] = values
+    if (values.length == 8 || values.length == 11) {
+      const [
+        chainId,
+        nonce,
+        gasPrice,
+        gasLimit,
+        to,
+        value,
+        data,
+        accessList,
+        yParity,
+        r,
+        s,
+      ] = values
       const emptyBuffer = Buffer.from([])
 
-      return new UnsignedEIP2930Transaction(
+      return new EIP2930Transaction(
         {
           chainId: new BN(chainId),
           nonce: new BN(nonce),
@@ -66,11 +67,14 @@ export class UnsignedEIP2930Transaction extends BaseTransaction<
           value: new BN(value),
           data: data ?? emptyBuffer,
           accessList: accessList ?? emptyBuffer,
+          yParity: !yParity?.equals(emptyBuffer)
+            ? parseInt(yParity.toString('hex'), 16)
+            : undefined,
+          r: !r?.equals(emptyBuffer) ? new BN(r) : undefined,
+          s: !s?.equals(emptyBuffer) ? new BN(s) : undefined,
         },
         opts ?? {}
       )
-    } else if (values.length == 11) {
-      return SignedEIP2930Transaction.fromValuesArray(values, opts)
     } else {
       throw new Error(
         'Invalid EIP-2930 transaction. Only expecting 8 values (for unsigned tx) or 11 values (for signed tx).'
@@ -93,7 +97,7 @@ export class UnsignedEIP2930Transaction extends BaseTransaction<
       s,
     } = txData
 
-    super({ to }, opts)
+    super({ nonce, gasPrice, gasLimit, to, value, data }, opts)
 
     if (!this.common.eips().includes(2718)) {
       throw new Error('EIP-2718 not enabled on Common')
@@ -105,17 +109,23 @@ export class UnsignedEIP2930Transaction extends BaseTransaction<
       throw new Error('The chain ID does not match the chain ID of Common')
     }
 
+    if (txData.yParity && txData.yParity != 0 && txData.yParity != 1) {
+      throw new Error('The y-parity of the transaction should either be 0 or 1')
+    }
+
+    // TODO: verify the signature.
+
+    this.yParity = txData.yParity
+    this.r = txData.r
+    this.s = txData.s
+
     this.chainId = new BN(toBuffer(chainId))
-    this.nonce = new BN(toBuffer(nonce))
-    this.gasPrice = new BN(toBuffer(gasPrice))
-    this.gasLimit = new BN(toBuffer(gasLimit))
-    this.to = to ? new Address(toBuffer(to)) : undefined
-    this.value = new BN(toBuffer(value))
-    this.data = toBuffer(data)
     this.accessList = accessList ?? []
     this.yParity = yParity ?? 0
     this.r = r ? new BN(toBuffer(r)) : undefined
     this.s = s ? new BN(toBuffer(s)) : undefined
+
+    // todo verify max BN of r,s
 
     // Verify the access list format.
     for (let key = 0; key < this.accessList.length; key++) {
@@ -147,22 +157,12 @@ export class UnsignedEIP2930Transaction extends BaseTransaction<
     return rlphash(this.raw())
   }
 
-  sign(privateKey: Buffer) {
-    if (privateKey.length !== 32) {
-      throw new Error('Private key must be 32 bytes in length.')
-    }
-
-    const msgHash = this.getMessageToSign()
-
-    // Only `v` is reassigned.
-    /* eslint-disable-next-line prefer-const */
-    let { v, r, s } = ecsign(msgHash, privateKey)
-
+  processSignature(v: number, r: Buffer, s: Buffer) {
     const opts = {
       common: this.common,
     }
 
-    return SignedEIP2930Transaction.fromTxData(
+    return EIP2930Transaction.fromTxData(
       {
         chainId: this.chainId,
         nonce: this.nonce,
@@ -184,15 +184,9 @@ export class UnsignedEIP2930Transaction extends BaseTransaction<
    * The amount of gas paid for the data in this tx
    */
   getDataFee(): BN {
-    const txDataZero = this.common.param('gasPrices', 'txDataZero')
-    const txDataNonZero = this.common.param('gasPrices', 'txDataNonZero')
+    const cost = super.getDataFee()
     const accessListStorageKeyCost = this.common.param('gasPrices', 'accessListStorageKeyCost')
     const accessListAddressCost = this.common.param('gasPrices', 'accessListAddressCost')
-
-    let cost = 0
-    for (let i = 0; i < this.data.length; i++) {
-      this.data[i] === 0 ? (cost += txDataZero) : (cost += txDataNonZero)
-    }
 
     let slots = 0
     for (let index = 0; index < this.accessList.length; index++) {
@@ -202,45 +196,9 @@ export class UnsignedEIP2930Transaction extends BaseTransaction<
     }
 
     const addresses = this.accessList.length
-    cost += addresses * accessListAddressCost + slots * accessListStorageKeyCost
+    cost.addn(addresses * accessListAddressCost + slots * accessListStorageKeyCost)
 
-    return new BN(cost)
-  }
-
-  /**
-   * The minimum amount of gas the tx must have (DataFee + TxFee + Creation Fee)
-   */
-  getBaseFee(): BN {
-    const fee = this.getDataFee().addn(this.common.param('gasPrices', 'tx'))
-    if (this.common.gteHardfork('homestead') && this.toCreationAddress()) {
-      fee.iaddn(this.common.param('gasPrices', 'txCreation'))
-    }
-    return fee
-  }
-
-  /**
-   * The up front amount that an account must have for this transaction to be valid
-   */
-  getUpfrontCost(): BN {
-    return this.gasLimit.mul(this.gasPrice).add(this.value)
-  }
-
-  /**
-   * Validates the signature and checks if
-   * the transaction has the minimum amount of gas required
-   * (DataFee + TxFee + Creation Fee).
-   */
-  validate(): boolean
-  validate(stringError: false): boolean
-  validate(stringError: true): string[]
-  validate(stringError: boolean = false): boolean | string[] {
-    const errors = []
-
-    if (this.getBaseFee().gt(this.gasLimit)) {
-      errors.push(`gasLimit is too low. given ${this.gasLimit}, need at least ${this.getBaseFee()}`)
-    }
-
-    return stringError ? errors : errors.length === 0
+    return cost
   }
 
   /**
@@ -275,9 +233,9 @@ export class UnsignedEIP2930Transaction extends BaseTransaction<
     // TODO: fix type
     const accessListJSON = []
     for (let index = 0; index < this.accessList.length; index++) {
-      const item = this.accessList[index]
-      const JSONItem: any = ['0x' + item[0].toString('hex')]
-      const storageSlots = item[1]
+      const item: any = this.accessList[index]
+      const JSONItem: any = ['0x' + (<Buffer>item[0]).toString('hex')]
+      const storageSlots: Buffer[] = item[1]
       const JSONSlots = []
       for (let slot = 0; slot < storageSlots.length; slot++) {
         const storageSlot = storageSlots[slot]
@@ -302,95 +260,16 @@ export class UnsignedEIP2930Transaction extends BaseTransaction<
   public isSigned(): boolean {
     return false
   }
-}
 
-export class SignedEIP2930Transaction
-  extends UnsignedEIP2930Transaction
-  implements SignedTransactionInterface {
-  public readonly yParity?: number
-  public readonly s?: BN
-  public readonly r?: BN
-
-  public static fromTxData(txData: EIP2930TxData, opts?: TxOptions) {
-    return new SignedEIP2930Transaction(txData, opts ?? {})
+  public hash(): Buffer {
+    throw new Error('Implement me')
   }
 
-  public static fromValuesArray(values: Buffer[], opts?: TxOptions) {
-    if (values.length != 11) {
-      throw new Error('Expected 11 elements')
-    }
-
-    const [chainId, nonce, gasPrice, gasLimit, to, value, data, accessList, yParity, r, s] = values
-    const emptyBuffer = Buffer.from([])
-
-    return new SignedEIP2930Transaction(
-      {
-        chainId: new BN(chainId),
-        nonce: new BN(nonce),
-        gasPrice: new BN(gasPrice),
-        gasLimit: new BN(gasLimit),
-        to: to && to.length > 0 ? new Address(to) : undefined,
-        value: new BN(value),
-        data: data ?? emptyBuffer,
-        accessList: accessList ?? emptyBuffer,
-        yParity: !yParity?.equals(emptyBuffer) ? parseInt(yParity.toString('hex'), 16) : undefined,
-        r: !r?.equals(emptyBuffer) ? new BN(r) : undefined,
-        s: !s?.equals(emptyBuffer) ? new BN(s) : undefined,
-      },
-      opts ?? {}
-    )
+  public getMessageToVerifySignature(): Buffer {
+    throw new Error('Implement me')
   }
 
-  protected constructor(txData: EIP2930TxData, opts: TxOptions) {
-    super(txData, {
-      ...opts,
-      freeze: false,
-    })
-
-    if (txData.yParity != 0 && txData.yParity != 1) {
-      throw new Error('The y-parity of the transaction should either be 0 or 1')
-    }
-
-    // TODO: save the extra yParity, r, s data.
-    // TODO: verify the signature.
-
-    this.yParity = txData.yParity
-    this.r = txData.r
-    this.s = txData.s
-
-    const freeze = opts?.freeze ?? true
-    if (freeze) {
-      Object.freeze(this)
-    }
-  }
-
-  public isSigned(): boolean {
-    return true
-  }
-
-  raw(): Buffer[] {
-    throw 'Implement me'
-  }
-
-  hash(): Buffer {
-    throw 'Implement me'
-  }
-
-  getMessageToVerifySignature(): Buffer {
-    throw 'Implement me'
-  }
-  getSenderAddress(): Address {
-    throw 'Implement me'
-  }
-  getSenderPublicKey(): Buffer {
-    throw 'Implement me'
-  }
-
-  verifySignature(): boolean {
-    throw 'Implement me'
-  }
-
-  sign(privateKey: Buffer): never {
-    throw 'Implement me'
+  public getSenderPublicKey(): Buffer {
+    throw new Error('Implement me')
   }
 }

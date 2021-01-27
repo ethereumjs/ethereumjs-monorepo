@@ -1,4 +1,4 @@
-export { UnsignedLegacyTransaction, SignedLegacyTransaction } from './unsignedLegacyTransaction'
-export { UnsignedEIP2930Transaction, SignedEIP2930Transaction } from './unsignedEIP2930Transaction'
+export { LegacyTransaction } from './unsignedLegacyTransaction'
+export { EIP2930Transaction } from './EIP2930Transaction'
 export { default as TransactionFactory } from './transactionFactory'
 export * from './types'

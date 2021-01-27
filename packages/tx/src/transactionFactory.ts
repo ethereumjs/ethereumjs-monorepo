@@ -1,6 +1,6 @@
 import Common from '@ethereumjs/common'
-import { UnsignedLegacyTransaction, SignedLegacyTransaction } from './unsignedLegacyTransaction'
-import { UnsignedEIP2930Transaction, SignedEIP2930Transaction } from './unsignedEIP2930Transaction'
+import { LegacyTransaction } from './unsignedLegacyTransaction'
+import { EIP2930Transaction } from './EIP2930Transaction'
 import { TxOptions, Transaction } from './types'
 
 const DEFAULT_COMMON = new Common({ chain: 'mainnet' })
@@ -32,9 +32,9 @@ export default class TransactionFactory {
         )
       }
 
-      return UnsignedEIP2930Transaction.fromRlpSerializedTx(rawData, transactionOptions)
+      return EIP2930Transaction.fromRlpSerializedTx(rawData, transactionOptions)
     } else {
-      return UnsignedLegacyTransaction.fromRlpSerializedTx(rawData, transactionOptions)
+      return LegacyTransaction.fromRlpSerializedTx(rawData, transactionOptions)
     }
   }
 
@@ -50,18 +50,22 @@ export default class TransactionFactory {
    */
   public static getTransactionClass(
     transactionID: number = 0, // Transaction ID 0 is a special type; it is the Legacy Transaction
-    signed: boolean = false,
     common?: Common
   ) {
     const usedCommon = common ?? DEFAULT_COMMON
     if (transactionID !== 0 && !usedCommon.eips().includes(2718)) {
       throw new Error('Cannot create a TypedTransaction: EIP-2718 is not enabled')
     }
+
+    const legacyTxn = transactionID == 0 || (transactionID >= 0x80 && transactionID <= 0xff)
+
+    if (legacyTxn) {
+      return LegacyTransaction
+    }
+
     switch (transactionID) {
-      case 0:
-        return signed ? SignedLegacyTransaction : UnsignedLegacyTransaction
       case 1:
-        return signed ? SignedEIP2930Transaction : UnsignedEIP2930Transaction
+        return EIP2930Transaction
       default:
         throw new Error(`TypedTransaction with ID ${transactionID} unknown`)
     }

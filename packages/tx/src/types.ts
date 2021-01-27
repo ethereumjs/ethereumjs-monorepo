@@ -1,7 +1,7 @@
 import { AddressLike, BN, BNLike, BufferLike } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
-import { UnsignedLegacyTransaction, SignedLegacyTransaction } from './unsignedLegacyTransaction'
-import { UnsignedEIP2930Transaction, SignedEIP2930Transaction } from './unsignedEIP2930Transaction'
+import { LegacyTransaction } from './unsignedLegacyTransaction'
+import { EIP2930Transaction } from './EIP2930Transaction'
 
 /**
  * The options for initializing a Transaction.
@@ -150,19 +150,38 @@ export interface EIP2930TxData {
 
 export type TxData = LegacyTxData | EIP2930TxData
 
-export type Transaction =
-  | SignedLegacyTransaction
-  | UnsignedLegacyTransaction
-  | SignedEIP2930Transaction
-  | UnsignedEIP2930Transaction
-export type SignedTransaction = SignedLegacyTransaction | UnsignedEIP2930Transaction
-export type LegacyTransaction = UnsignedLegacyTransaction | SignedLegacyTransaction
+export type Transaction = LegacyTransaction | EIP2930Transaction
 
 export type BaseTransactionData = {
+  /**
+   * The transaction's nonce.
+   */
+  nonce?: BNLike
+
+  /**
+   * The transaction's gas price.
+   */
+  gasPrice?: BNLike
+
+  /**
+   * The transaction's gas limit.
+   */
+  gasLimit?: BNLike
+
   /**
    * The transaction's the address is sent to.
    */
   to?: AddressLike
+
+  /**
+   * The amount of Ether sent.
+   */
+  value?: BNLike
+
+  /**
+   * This will contain the data of the message or the init of a contract.
+   */
+  data?: BufferLike
 }
 
 /**
