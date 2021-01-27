@@ -1,6 +1,19 @@
-import { Address, BN, bnToHex, rlp, rlphash, toBuffer } from 'ethereumjs-util'
+import {
+  Address,
+  BN,
+  bnToHex,
+  bnToRlp,
+  ecrecover,
+  keccak256,
+  rlp,
+  rlphash,
+  toBuffer,
+} from 'ethereumjs-util'
 import { BaseTransaction } from './baseTransaction'
 import { EIP2930TxData, TxOptions, JsonEIP2930Tx } from './types'
+
+// secp256k1n/2
+const N_DIV_2 = new BN('7fffffffffffffffffffffffffffffff5d576e7357a4501ddfe92f46681b20a0', 16)
 
 export class EIP2930Transaction extends BaseTransaction<JsonEIP2930Tx, EIP2930Transaction> {
   public readonly chainId: BN
@@ -154,30 +167,18 @@ export class EIP2930Transaction extends BaseTransaction<JsonEIP2930Tx, EIP2930Tr
   }
 
   getMessageToSign() {
-    return rlphash(this.raw())
-  }
-
-  processSignature(v: number, r: Buffer, s: Buffer) {
-    const opts = {
-      common: this.common,
-    }
-
-    return EIP2930Transaction.fromTxData(
-      {
-        chainId: this.chainId,
-        nonce: this.nonce,
-        gasPrice: this.gasPrice,
-        gasLimit: this.gasLimit,
-        to: this.to,
-        value: this.value,
-        data: this.data,
-        accessList: this.accessList,
-        yParity: v, // TODO: check if this is correct. Should be a number between 0/1
-        r: new BN(r),
-        s: new BN(s),
-      },
-      opts
-    )
+    const base = [
+      Buffer.from('01', 'hex'),
+      bnToRlp(this.chainId),
+      bnToRlp(this.nonce),
+      bnToRlp(this.gasPrice),
+      bnToRlp(this.gasLimit),
+      this.to !== undefined ? this.to.buf : Buffer.from([]),
+      bnToRlp(this.value),
+      this.data,
+      this.accessList,
+    ]
+    return rlphash(Buffer.from(base))
   }
 
   /**
@@ -196,25 +197,35 @@ export class EIP2930Transaction extends BaseTransaction<JsonEIP2930Tx, EIP2930Tr
     }
 
     const addresses = this.accessList.length
-    cost.addn(addresses * accessListAddressCost + slots * accessListStorageKeyCost)
-
+    cost.iaddn(addresses * accessListAddressCost + slots * accessListStorageKeyCost)
     return cost
   }
 
   /**
    * Returns a Buffer Array of the raw Buffers of this transaction, in order.
+   * TODO: check what raw means - is this the raw transaction as in block body?
+   * If that is the case, it is only callable if it is signed.
    */
   raw(): Buffer[] {
-    return [
-      this.chainId.toBuffer(),
-      this.nonce.toBuffer(),
-      this.gasPrice.toBuffer(),
-      this.gasLimit.toBuffer(),
+    const base = [
+      bnToRlp(this.chainId),
+      bnToRlp(this.nonce),
+      bnToRlp(this.gasPrice),
+      bnToRlp(this.gasLimit),
       this.to !== undefined ? this.to.buf : Buffer.from([]),
-      this.value.toBuffer(),
+      bnToRlp(this.value),
       this.data,
       this.accessList,
     ]
+    if (this.isSigned()) {
+      return base.concat([
+        this.yParity == 0 ? Buffer.from('00', 'hex') : Buffer.from('01', 'hex'),
+        bnToRlp(this.r!),
+        bnToRlp(this.s!),
+      ])
+    } else {
+      return base
+    }
   }
 
   /**
@@ -258,18 +269,75 @@ export class EIP2930Transaction extends BaseTransaction<JsonEIP2930Tx, EIP2930Tr
   }
 
   public isSigned(): boolean {
-    return false
+    const { yParity, r, s } = this
+    return yParity !== undefined && !!r && !!s
   }
 
   public hash(): Buffer {
-    throw new Error('Implement me')
+    // TODO add decorator
+    if (!this.isSigned()) {
+      throw new Error('Cannot call hash method if transaction is not signed')
+    }
+
+    return keccak256(Buffer.from(this.raw()))
   }
 
   public getMessageToVerifySignature(): Buffer {
-    throw new Error('Implement me')
+    return this.getMessageToSign()
   }
 
   public getSenderPublicKey(): Buffer {
-    throw new Error('Implement me')
+    if (!this.isSigned()) {
+      throw new Error('Cannot call this method if transaction is not signed')
+    }
+
+    const msgHash = this.getMessageToVerifySignature()
+
+    // All transaction signatures whose s-value is greater than secp256k1n/2 are considered invalid.
+    // TODO: verify if this is the case for EIP-2930
+    if (this.common.gteHardfork('homestead') && this.s && this.s.gt(N_DIV_2)) {
+      throw new Error(
+        'Invalid Signature: s-values greater than secp256k1n/2 are considered invalid'
+      )
+    }
+
+    const { yParity, r, s } = this
+    if (yParity === undefined || !r || !s) {
+      throw new Error('Missing values to derive sender public key from signed tx')
+    }
+
+    try {
+      return ecrecover(
+        msgHash,
+        yParity + 27, // Recover the 27 which was stripped from ecsign
+        bnToRlp(r),
+        bnToRlp(s)
+      )
+    } catch (e) {
+      throw new Error('Invalid Signature')
+    }
+  }
+
+  processSignature(v: number, r: Buffer, s: Buffer) {
+    const opts = {
+      common: this.common,
+    }
+
+    return EIP2930Transaction.fromTxData(
+      {
+        chainId: this.chainId,
+        nonce: this.nonce,
+        gasPrice: this.gasPrice,
+        gasLimit: this.gasLimit,
+        to: this.to,
+        value: this.value,
+        data: this.data,
+        accessList: this.accessList,
+        yParity: v - 27, // This looks extremely hacky: ethereumjs-util actually adds 27 to the value, the recovery bit is either 0 or 1.
+        r: new BN(r),
+        s: new BN(s),
+      },
+      opts
+    )
   }
 }

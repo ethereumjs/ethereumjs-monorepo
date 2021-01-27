@@ -1,10 +1,13 @@
 import Common from '@ethereumjs/common'
-import { Address } from 'ethereumjs-util'
+import { privateToAddress } from 'ethereumjs-util'
 import tape from 'tape'
 import { EIP2930Transaction } from '../src'
 
+const pKey = Buffer.from('4646464646464646464646464646464646464646464646464646464646464646', 'hex')
+const address = privateToAddress(pKey)
+
 const common = new Common({
-  eips: [2718, 2930],
+  eips: [2718, 2929, 2930],
   chain: 'mainnet',
   hardfork: 'berlin',
 })
@@ -132,5 +135,24 @@ tape('[EIP2930 transactions]: Basic functions', function (t) {
     st.ok(tx.getBaseFee().eqn(baseFee + accessListAddressCost * 2 + accessListStorageKeyCost * 3))
 
     st.end()
+  })
+
+  t.test('should sign a transaction', function (t) {
+    const tx = EIP2930Transaction.fromTxData(
+      {
+        data: Buffer.from('010200', 'hex'),
+        to: validAddress,
+        accessList: [[validAddress, [validSlot]]],
+      },
+      { common }
+    )
+    const signed = tx.sign(pKey)
+    const signedAddress = signed.getSenderAddress()
+
+    t.ok(signedAddress.buf.equals(address))
+
+    signed.verifySignature() // If this throws, test will not end.
+
+    t.end()
   })
 })
