@@ -2,7 +2,7 @@ import tape from 'tape'
 import minimist from 'minimist'
 import { toBuffer } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
-import { SignedLegacyTransaction } from '../src/'
+import { LegacyTransaction } from '../src/'
 import { ForkName, ForkNamesMap, OfficialTransactionTestData } from './types'
 
 const testing = require('./testLoader')
@@ -46,7 +46,7 @@ tape('TransactionTests', (t) => {
               const rawTx = toBuffer(testData.rlp)
               const hardfork = forkNameMap[forkName]
               const common = new Common({ chain: 1, hardfork })
-              const tx = SignedLegacyTransaction.fromRlpSerializedTx(rawTx, { common })
+              const tx = LegacyTransaction.fromRlpSerializedTx(rawTx, { common })
 
               const sender = tx.getSenderAddress().toString()
               const hash = tx.hash().toString('hex')

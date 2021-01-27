@@ -1,12 +1,6 @@
 import Common from '@ethereumjs/common'
 import tape from 'tape'
-import {
-  SignedEIP2930Transaction,
-  SignedLegacyTransaction,
-  TransactionFactory,
-  UnsignedEIP2930Transaction,
-  UnsignedLegacyTransaction,
-} from '../src'
+import { EIP2930Transaction, TransactionFactory, LegacyTransaction } from '../src'
 
 const EIP2930Common = new Common({
   eips: [2718, 2930],
@@ -14,7 +8,7 @@ const EIP2930Common = new Common({
   hardfork: 'berlin',
 })
 
-const simpleUnsignedEIP2930Transaction = UnsignedEIP2930Transaction.fromTxData(
+const simpleUnsignedEIP2930Transaction = EIP2930Transaction.fromTxData(
   {},
   { common: EIP2930Common }
 )
@@ -23,12 +17,12 @@ tape('[TransactionFactory]: Basic functions', function (t) {
   t.test('should return the right type', function (st) {
     const serialized = simpleUnsignedEIP2930Transaction.serialize()
     const factoryTx = TransactionFactory.fromRawData(serialized, { common: EIP2930Common })
-    st.equals(factoryTx.constructor.name, UnsignedEIP2930Transaction.name)
+    st.equals(factoryTx.constructor.name, EIP2930Transaction.name)
 
-    const legacyTx = UnsignedLegacyTransaction.fromTxData({})
+    const legacyTx = LegacyTransaction.fromTxData({})
     const serializedLegacyTx = legacyTx.serialize()
     const factoryLegacyTx = TransactionFactory.fromRawData(serializedLegacyTx, {})
-    st.equals(factoryLegacyTx.constructor.name, UnsignedLegacyTransaction.name)
+    st.equals(factoryLegacyTx.constructor.name, LegacyTransaction.name)
 
     st.end()
   })
@@ -56,24 +50,18 @@ tape('[TransactionFactory]: Basic functions', function (t) {
   )
 
   t.test('should give me the right classes in getTransactionClass', function (st) {
-    let legacyTx = TransactionFactory.getTransactionClass()
-    st.equals(legacyTx.name, UnsignedLegacyTransaction.name)
+    const legacyTx = TransactionFactory.getTransactionClass()
+    st.equals(legacyTx.name, LegacyTransaction.name)
 
-    legacyTx = TransactionFactory.getTransactionClass(undefined, true)
-    st.equals(legacyTx.name, SignedLegacyTransaction.name)
-
-    let eip2930Tx = TransactionFactory.getTransactionClass(1, false, EIP2930Common)
-    st.equals(eip2930Tx.name, UnsignedEIP2930Transaction.name)
-
-    eip2930Tx = TransactionFactory.getTransactionClass(1, true, EIP2930Common)
-    st.equals(eip2930Tx.name, SignedEIP2930Transaction.name)
+    const eip2930Tx = TransactionFactory.getTransactionClass(1, EIP2930Common)
+    st.equals(eip2930Tx.name, EIP2930Transaction.name)
 
     st.end()
   })
 
   t.test('should throw when getting an invalid transaction type', function (st) {
     st.throws(() => {
-      TransactionFactory.getTransactionClass(2, false, EIP2930Common)
+      TransactionFactory.getTransactionClass(2, EIP2930Common)
     })
 
     st.end()
@@ -81,7 +69,7 @@ tape('[TransactionFactory]: Basic functions', function (t) {
 
   t.test('should throw when getting typed transactions without EIP-2718 activated', function (st) {
     st.throws(() => {
-      TransactionFactory.getTransactionClass(1, false)
+      TransactionFactory.getTransactionClass(1)
     })
     st.end()
   })

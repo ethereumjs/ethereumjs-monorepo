@@ -112,7 +112,10 @@ export abstract class BaseTransaction<JsonTx, TransactionObject> {
    * Checks if the transaction has the minimum amount of gas required
    * (DataFee + TxFee + Creation Fee).
    */
-  validate(stringError?: boolean): boolean | string[] {
+  validate(): boolean
+  validate(stringError: false): boolean
+  validate(stringError: true): string[]
+  validate(stringError: boolean = false): boolean | string[] {
     const errors = []
 
     if (this.getBaseFee().gt(this.gasLimit)) {

@@ -1,7 +1,7 @@
 import Common from '@ethereumjs/common'
 import { Address } from 'ethereumjs-util'
 import tape from 'tape'
-import { UnsignedEIP2930Transaction } from '../src'
+import { EIP2930Transaction } from '../src'
 
 const common = new Common({
   eips: [2718, 2930],
@@ -22,7 +22,7 @@ tape('[EIP2930 transactions]: Basic functions', function (t) {
     ]
 
     st.throws(() => {
-      UnsignedEIP2930Transaction.fromTxData({ accessList }, { common })
+      EIP2930Transaction.fromTxData({ accessList }, { common })
     })
 
     accessList = [
@@ -35,38 +35,38 @@ tape('[EIP2930 transactions]: Basic functions', function (t) {
     ]
 
     st.throws(() => {
-      UnsignedEIP2930Transaction.fromTxData({ accessList }, { common })
+      EIP2930Transaction.fromTxData({ accessList }, { common })
     })
 
     accessList = [[]] // Address does not exist
 
     st.throws(() => {
-      UnsignedEIP2930Transaction.fromTxData({ accessList }, { common })
+      EIP2930Transaction.fromTxData({ accessList }, { common })
     })
 
     accessList = [[validAddress]] // Slots does not exist
 
     st.throws(() => {
-      UnsignedEIP2930Transaction.fromTxData({ accessList }, { common })
+      EIP2930Transaction.fromTxData({ accessList }, { common })
     })
 
     accessList = [[validAddress, validSlot]] // Slots is not an array
 
     st.throws(() => {
-      UnsignedEIP2930Transaction.fromTxData({ accessList }, { common })
+      EIP2930Transaction.fromTxData({ accessList }, { common })
     })
 
     accessList = [[validAddress, [], []]] // 3 items where 2 are expected
 
     st.throws(() => {
-      UnsignedEIP2930Transaction.fromTxData({ accessList }, { common })
+      EIP2930Transaction.fromTxData({ accessList }, { common })
     })
 
     st.end()
   })
 
   t.test('should return right upfront cost', (st) => {
-    let tx = UnsignedEIP2930Transaction.fromTxData(
+    let tx = EIP2930Transaction.fromTxData(
       {
         data: Buffer.from('010200', 'hex'),
         to: validAddress,
@@ -96,7 +96,7 @@ tape('[EIP2930 transactions]: Basic functions', function (t) {
     )
 
     // In this Tx, `to` is `undefined`, so we should charge homestead creation gas.
-    tx = UnsignedEIP2930Transaction.fromTxData(
+    tx = EIP2930Transaction.fromTxData(
       {
         data: Buffer.from('010200', 'hex'),
         accessList: [[validAddress, [validSlot]]],
@@ -118,7 +118,7 @@ tape('[EIP2930 transactions]: Basic functions', function (t) {
     )
 
     // Explicilty check that even if we have duplicates in our list, we still charge for those
-    tx = UnsignedEIP2930Transaction.fromTxData(
+    tx = EIP2930Transaction.fromTxData(
       {
         to: validAddress,
         accessList: [
