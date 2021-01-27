@@ -91,7 +91,20 @@ tape('Clique: Initialization', (t) => {
     ),
   }
 
-  const initWithSigners = async (signers: Signer[]) => {
+  const F: Signer = {
+    address: new Address(Buffer.from('ab80a948c661aa32d09952d2a6c4ad77a4c947be', 'hex')),
+    privateKey: Buffer.from(
+      '48ec5a6c4a7fc67b10a9d4c8a8f594a81ae42e41ed061fa5218d96abb6012344',
+      'hex'
+    ),
+    publicKey: Buffer.from(
+      'adefb82b9f54e80aa3532263e4478739de16fcca6828f4ae842f8a07941c347fa59d2da1300569237009f0f122dc1fd6abb0db8fcb534280aa94948a5cc95f94',
+      'hex'
+    ),
+  }
+
+  const initWithSigners = async (signers: Signer[], common?: Common) => {
+    common = common ?? COMMON
     const blocks: Block[] = []
 
     const extraData = Buffer.concat([
@@ -99,17 +112,14 @@ tape('Clique: Initialization', (t) => {
       ...signers.map((s) => s.address.toBuffer()),
       Buffer.alloc(65),
     ])
-    const genesisBlock = Block.genesis(
-      { header: { gasLimit: GAS_LIMIT, extraData } },
-      { common: COMMON }
-    )
+    const genesisBlock = Block.genesis({ header: { gasLimit: GAS_LIMIT, extraData } }, { common })
     blocks.push(genesisBlock)
 
     const blockchain = await Blockchain.create({
       validateBlocks: true,
-      validateConsensus: false,
+      validateConsensus: true,
       genesisBlock,
-      common: COMMON,
+      common,
     })
     return { blocks, blockchain }
   }
@@ -118,18 +128,28 @@ tape('Clique: Initialization', (t) => {
     blockchain: Blockchain,
     blocks: Block[],
     signer: Signer,
-    beneficiary?: [Signer, boolean]
+    beneficiary?: [Signer, boolean],
+    checkpointSigners?: Signer[],
+    common?: Common
   ) => {
+    common = common ?? COMMON
     const number = blocks.length
     const lastBlock = blocks[number - 1]
 
     let coinbase = Address.zero()
     let nonce = CLIQUE_NONCE_DROP
+    let extraData = EXTRA_DATA
     if (beneficiary) {
       coinbase = beneficiary[0].address
       if (beneficiary[1]) {
         nonce = CLIQUE_NONCE_AUTH
       }
+    } else if (checkpointSigners) {
+      extraData = Buffer.concat([
+        Buffer.alloc(32),
+        ...checkpointSigners.map((s) => s.address.toBuffer()),
+        Buffer.alloc(65),
+      ])
     }
 
     const blockData = {
@@ -138,7 +158,7 @@ tape('Clique: Initialization', (t) => {
         parentHash: lastBlock.hash(),
         coinbase,
         timestamp: lastBlock.header.timestamp.addn(15),
-        extraData: EXTRA_DATA,
+        extraData,
         gasLimit: GAS_LIMIT,
         difficulty: new BN(2),
         nonce,
@@ -153,15 +173,15 @@ tape('Clique: Initialization', (t) => {
     const inTurn = number % signers.length === signerIndex
     blockData.header.difficulty = inTurn ? new BN(2) : new BN(1)
 
-    let block = Block.fromBlockData(blockData, { common: COMMON, freeze: false })
+    let block = Block.fromBlockData(blockData, { common, freeze: false })
 
     // add signature in extraData
     const signature = ecsign(block.header.hash(), signer.privateKey)
     const signatureB = Buffer.concat([signature.r, signature.s, intToBuffer(signature.v - 27)])
-    const extraData = Buffer.concat([block.header.cliqueExtraVanity(), signatureB])
+    extraData = Buffer.concat([extraData.slice(0, extraData.length - 65), signatureB])
     blockData.header.extraData = extraData
 
-    block = Block.fromBlockData(blockData, { common: COMMON, freeze: false })
+    block = Block.fromBlockData(blockData, { common, freeze: false })
 
     await blockchain.putBlock(block)
     blocks.push(block)
@@ -171,6 +191,7 @@ tape('Clique: Initialization', (t) => {
   t.test('should throw if signer in epoch checkpoint is not active', async (st) => {
     const { blockchain } = await initWithSigners([A])
     ;(blockchain as any)._validateBlocks = false
+    ;(blockchain as any)._validateConsensus = false
     const number = COMMON.consensusConfig().epoch
     const unauthorizedSigner = Address.fromString('0x00a839de7922491683f547a67795204763ff8237')
     const extraData = Buffer.concat([
@@ -433,32 +454,176 @@ tape('Clique: Initialization', (t) => {
     st.end()
   })
 
-  // TODO: fix test case
-  /*t.test('Clique Voting: Changes reaching consensus out of bounds (via a deauth) execute on touch', async (st) => {
-    const { blocks, blockchain } = await initWithSigners([A, B, C, D])
-    await addNextBlock(blockchain, blocks, A, [C, false])
-    await addNextBlock(blockchain, blocks, B)
-    await addNextBlock(blockchain, blocks, C)
-    await addNextBlock(blockchain, blocks, A, [D, false])
-    await addNextBlock(blockchain, blocks, B, [C, false])
-    await addNextBlock(blockchain, blocks, C)
-    await addNextBlock(blockchain, blocks, A)
-    await addNextBlock(blockchain, blocks, B, [D, false])
-    await addNextBlock(blockchain, blocks, C, [D, false])
-    await addNextBlock(blockchain, blocks, A)
-    await addNextBlock(blockchain, blocks, C, [C, true])
+  t.test(
+    'Clique Voting: Changes reaching consensus out of bounds (via a deauth) execute on touch',
+    async (st) => {
+      const { blocks, blockchain } = await initWithSigners([A, B, C, D])
+      await addNextBlock(blockchain, blocks, A, [C, false])
+      await addNextBlock(blockchain, blocks, B)
+      await addNextBlock(blockchain, blocks, C)
+      await addNextBlock(blockchain, blocks, A, [D, false])
+      await addNextBlock(blockchain, blocks, B, [C, false])
+      await addNextBlock(blockchain, blocks, C)
+      await addNextBlock(blockchain, blocks, A)
+      await addNextBlock(blockchain, blocks, B, [D, false])
+      await addNextBlock(blockchain, blocks, C, [D, false])
+      await addNextBlock(blockchain, blocks, A)
+      await addNextBlock(blockchain, blocks, C, [C, true])
 
+      st.deepEqual(blockchain.cliqueActiveSigners(), [A.address, B.address])
+      st.end()
+    }
+  )
 
-    st.deepEqual(blockchain.cliqueActiveSigners(), [A.address, B.address])
+  t.test(
+    'Clique Voting: Changes reaching consensus out of bounds (via a deauth) may go out of consensus on first touch',
+    async (st) => {
+      const { blocks, blockchain } = await initWithSigners([A, B, C, D])
+      await addNextBlock(blockchain, blocks, A, [C, false])
+      await addNextBlock(blockchain, blocks, B)
+      await addNextBlock(blockchain, blocks, C)
+      await addNextBlock(blockchain, blocks, A, [D, false])
+      await addNextBlock(blockchain, blocks, B, [C, false])
+      await addNextBlock(blockchain, blocks, C)
+      await addNextBlock(blockchain, blocks, A)
+      await addNextBlock(blockchain, blocks, B, [D, false])
+      await addNextBlock(blockchain, blocks, C, [D, false])
+      await addNextBlock(blockchain, blocks, A)
+      await addNextBlock(blockchain, blocks, B, [C, true])
+
+      st.deepEqual(blockchain.cliqueActiveSigners(), [A.address, B.address, C.address])
+      st.end()
+    }
+  )
+
+  t.test(
+    "Clique Voting: Ensure that pending votes don't survive authorization status changes",
+    async (st) => {
+      // This corner case can only appear if a signer is quickly added, removed
+      // and then readded (or the inverse), while one of the original voters
+      // dropped. If a past vote is left cached in the system somewhere, this
+      // will interfere with the final signer outcome.
+      const { blocks, blockchain } = await initWithSigners([A, B, C, D, E])
+      await addNextBlock(blockchain, blocks, A, [F, true]) // Authorize F, 3 votes needed
+      await addNextBlock(blockchain, blocks, B, [F, true])
+      await addNextBlock(blockchain, blocks, C, [F, true])
+      await addNextBlock(blockchain, blocks, D, [F, false]) // Deauthorize F, 4 votes needed (leave A's previous vote "unchanged")
+      await addNextBlock(blockchain, blocks, E, [F, false])
+      await addNextBlock(blockchain, blocks, B, [F, false])
+      await addNextBlock(blockchain, blocks, C, [F, false])
+      await addNextBlock(blockchain, blocks, D, [F, true]) // Almost authorize F, 2/3 votes needed
+      await addNextBlock(blockchain, blocks, E, [F, true])
+      await addNextBlock(blockchain, blocks, B, [A, false]) // Deauthorize A, 3 votes needed
+      await addNextBlock(blockchain, blocks, C, [A, false])
+      await addNextBlock(blockchain, blocks, D, [A, false])
+      await addNextBlock(blockchain, blocks, B, [F, true]) // Finish authorizing F, 3/3 votes needed
+
+      st.deepEqual(blockchain.cliqueActiveSigners(), [
+        B.address,
+        C.address,
+        D.address,
+        E.address,
+        F.address,
+      ])
+      st.end()
+    }
+  )
+
+  t.test(
+    'Clique Voting: Epoch transitions reset all votes to allow chain checkpointing',
+    async (st) => {
+      const common = Common.forCustomChain(
+        'rinkeby',
+        {
+          consensus: {
+            type: 'poa',
+            algorithm: 'clique',
+            clique: {
+              period: 15,
+              epoch: 3,
+            },
+          },
+        },
+        'chainstart'
+      )
+      const { blocks, blockchain } = await initWithSigners([A, B], common)
+      await addNextBlock(blockchain, blocks, A, [C, true], undefined, common)
+      await addNextBlock(blockchain, blocks, B, undefined, undefined, common)
+      await addNextBlock(blockchain, blocks, A, undefined, [A, B], common)
+      await addNextBlock(blockchain, blocks, B, [C, true], undefined, common)
+
+      st.deepEqual(blockchain.cliqueActiveSigners(), [A.address, B.address])
+      st.end()
+    }
+  )
+
+  t.test('Clique Voting: An unauthorized signer should not be able to sign blocks', async (st) => {
+    const { blocks, blockchain } = await initWithSigners([A])
+    await addNextBlock(blockchain, blocks, A)
+    try {
+      await addNextBlock(blockchain, blocks, B)
+      st.fail('should throw error')
+    } catch (error) {
+      if (error.message.includes('invalid PoA block signature (clique)')) {
+        st.pass('correct error thrown')
+      } else {
+        st.fail('correct error not thrown')
+      }
+    }
     st.end()
   })
 
-  // TODO: add two additional test cases, further last test cases not relevant yet
-  t.test('Clique Voting: ', async (st) => {
-    const { blocks, blockchain } = await initWithSigners([A])
-    await addNextBlock(blockchain, blocks, A, [B, true])
+  t.test(
+    'Clique Voting: An authorized signer that signed recenty should not be able to sign again',
+    async (st) => {
+      const { blocks, blockchain } = await initWithSigners([A, B])
+      await addNextBlock(blockchain, blocks, A)
+      try {
+        await addNextBlock(blockchain, blocks, A)
+        st.fail('should throw error')
+      } catch (error) {
+        if (error.message.includes('recently signed')) {
+          st.pass('correct error thrown')
+        } else {
+          st.fail('correct error not thrown')
+        }
+      }
+      st.end()
+    }
+  )
 
-    st.deepEqual(blockchain.cliqueActiveSigners(), [A.address, B.address], '')
-    st.end()
-  })*/
+  t.test(
+    'Clique Voting: Recent signatures should not reset on checkpoint blocks imported in a batch',
+    async (st) => {
+      const common = Common.forCustomChain(
+        'rinkeby',
+        {
+          consensus: {
+            type: 'poa',
+            algorithm: 'clique',
+            clique: {
+              period: 15,
+              epoch: 3,
+            },
+          },
+        },
+        'chainstart'
+      )
+      const { blocks, blockchain } = await initWithSigners([A, B, C], common)
+      await addNextBlock(blockchain, blocks, A, undefined, undefined, common)
+      await addNextBlock(blockchain, blocks, B, undefined, undefined, common)
+      await addNextBlock(blockchain, blocks, A, undefined, [A, B, C], common)
+      try {
+        await addNextBlock(blockchain, blocks, A, undefined, undefined, common)
+        st.fail('should throw error')
+      } catch (error) {
+        if (error.message.includes('recently signed')) {
+          st.pass('correct error thrown')
+        } else {
+          st.fail('correct error not thrown')
+        }
+      }
+      st.end()
+    }
+  )
 })

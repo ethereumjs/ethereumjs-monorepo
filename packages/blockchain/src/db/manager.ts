@@ -12,7 +12,7 @@ import Cache from './cache'
 import { DatabaseKey, DBOp, DBTarget, DBOpData } from './operation'
 
 import type { LevelUp } from 'levelup'
-import { CliqueLatestSignerStates, CliqueLatestVotes } from '../clique'
+import { CliqueLatestSignerStates, CliqueLatestVotes, CliqueLatestBlockSigners } from '../clique'
 
 const level = require('level-mem')
 
@@ -108,6 +108,26 @@ export class DBManager {
         const nonce = (vote[1] as any)[2]
         return [blockNum, [signer, beneficiary, nonce]]
       }) as CliqueLatestVotes
+    } catch (error) {
+      if (error.type === 'NotFoundError') {
+        return []
+      }
+      throw error
+    }
+  }
+
+  /**
+   * Fetches snapshot of clique signers.
+   */
+  async getCliqueLatestBlockSigners(): Promise<CliqueLatestBlockSigners> {
+    try {
+      const blockSigners = await this.get(DBTarget.CliqueBlockSigners)
+      const signers = (<any>rlp.decode(blockSigners)) as [Buffer, Buffer][]
+      return signers.map((s) => {
+        const blockNum = new BN(s[0])
+        const signer = new Address(s[1] as any)
+        return [blockNum, signer]
+      }) as CliqueLatestBlockSigners
     } catch (error) {
       if (error.type === 'NotFoundError') {
         return []

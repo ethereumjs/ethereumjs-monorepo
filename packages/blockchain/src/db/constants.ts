@@ -25,6 +25,11 @@ const CLIQUE_SIGNERS_KEY = 'CliqueSigners'
 const CLIQUE_VOTES_KEY = 'CliqueVotes'
 
 /**
+ * Cique block signers (snapshot)
+ */
+const CLIQUE_BLOCK_SIGNERS_KEY = 'CliqueBlockSignersSnapshot'
+
+/**
  * headerPrefix + number + hash -> header
  */
 const HEADER_PREFIX = Buffer.from('h')
@@ -75,6 +80,7 @@ export {
   HEAD_BLOCK_KEY,
   CLIQUE_SIGNERS_KEY,
   CLIQUE_VOTES_KEY,
+  CLIQUE_BLOCK_SIGNERS_KEY,
   bufBE8,
   tdKey,
   headerKey,
