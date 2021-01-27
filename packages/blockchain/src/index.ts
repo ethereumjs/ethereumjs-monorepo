@@ -413,6 +413,11 @@ export default class Blockchain implements BlockchainInterface {
     await this.dbManager.batch(dbOps)
   }
 
+  /**
+   * Update clique votes and save to db
+   * @param header BlockHeader
+   * @hidden
+   */
   private async cliqueUpdateVotes(header?: BlockHeader) {
     // Block contains a vote on a new signer
     if (header && !header.coinbase.isZero()) {
@@ -438,30 +443,52 @@ export default class Blockchain implements BlockchainInterface {
       // the same vote or not
       this._cliqueLatestVotes.push(latestVote)
 
+      // remove any opposite votes for [signer, beneficiary]
+      const oppositeNonce = nonce.equals(CLIQUE_NONCE_AUTH) ? CLIQUE_NONCE_DROP : CLIQUE_NONCE_AUTH
+      this._cliqueLatestVotes = this._cliqueLatestVotes.filter(
+        (vote) =>
+          !(
+            vote[1][0].toBuffer().equals(signer.toBuffer()) &&
+            vote[1][1].toBuffer().equals(beneficiary.toBuffer()) &&
+            vote[1][2].equals(oppositeNonce)
+          )
+      )
+
       // If same vote not already in history see if there is a new majority consensus
       // to update the signer list
       if (!alreadyVoted) {
-        const beneficiaryVotes = this._cliqueLatestVotes.filter(
-          (vote) => vote[1][1].toBuffer().equals(beneficiary.toBuffer()) && vote[1][2].equals(nonce)
+        const beneficiaryVotesAuth = this._cliqueLatestVotes.filter(
+          (vote) =>
+            vote[1][1].toBuffer().equals(beneficiary.toBuffer()) &&
+            vote[1][2].equals(CLIQUE_NONCE_AUTH)
         )
-        const benficiaryVoteNum = beneficiaryVotes.length
+        const beneficiaryVotesDrop = this._cliqueLatestVotes.filter(
+          (vote) =>
+            vote[1][1].toBuffer().equals(beneficiary.toBuffer()) &&
+            vote[1][2].equals(CLIQUE_NONCE_DROP)
+        )
+        const consensus =
+          beneficiaryVotesAuth.length >= SIGNER_LIMIT || beneficiaryVotesDrop.length >= SIGNER_LIMIT
+        const auth = beneficiaryVotesAuth.length >= SIGNER_LIMIT
         // Majority consensus
-        if (benficiaryVoteNum >= SIGNER_LIMIT) {
+        if (consensus) {
           let activeSigners = this.cliqueActiveSigners()
-          // Authorize new signer
-          if (nonce.equals(CLIQUE_NONCE_AUTH)) {
+          if (auth) {
+            // Authorize new signer
             activeSigners.push(beneficiary)
-            // Drop existing signer
-          } else if (nonce.equals(CLIQUE_NONCE_DROP)) {
-            activeSigners = activeSigners.filter((signer) => {
-              return !signer.toBuffer().equals(beneficiary.toBuffer())
-            })
-            // Discard votes from removed signer
-            this._cliqueLatestVotes = this._cliqueLatestVotes.filter((vote) => {
-              return !vote[1][0].toBuffer().equals(beneficiary.toBuffer())
-            })
+            // Discard votes for added signer
+            this._cliqueLatestVotes = this._cliqueLatestVotes.filter(
+              (vote) => !vote[1][1].toBuffer().equals(beneficiary.toBuffer())
+            )
           } else {
-            throw new Error(`Invalid nonce for clique block: ${nonce.toString('hex')}`)
+            // Drop signer
+            activeSigners = activeSigners.filter(
+              (signer) => !signer.toBuffer().equals(beneficiary.toBuffer())
+            )
+            // Discard votes from removed signer
+            this._cliqueLatestVotes = this._cliqueLatestVotes.filter(
+              (vote) => !vote[1][0].toBuffer().equals(beneficiary.toBuffer())
+            )
           }
           const newSignerState: CliqueSignerState = [header.number, activeSigners]
           await this.cliqueUpdateSignerStates(newSignerState)
@@ -469,13 +496,14 @@ export default class Blockchain implements BlockchainInterface {
       }
     }
 
-    // trim length to CLIQUE_SIGNER_HISTORY_BLOCK_LIMIT
+    // trim latest votes length to CLIQUE_SIGNER_HISTORY_BLOCK_LIMIT
     const length = this._cliqueLatestVotes.length
     const limit = this.CLIQUE_SIGNER_HISTORY_BLOCK_LIMIT
     if (length > limit) {
       this._cliqueLatestVotes = this._cliqueLatestVotes.slice(length - limit, length)
     }
 
+    // save votes to db
     const dbOps: DBOp[] = []
     const formatted = this._cliqueLatestVotes.map((v) => [
       v[0].toBuffer(),
