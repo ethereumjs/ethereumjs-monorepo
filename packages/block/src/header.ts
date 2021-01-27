@@ -610,7 +610,7 @@ export class BlockHeader {
   cliqueEpochTransitionSigners(): Address[] {
     this._requireClique('cliqueEpochTransitionSigners')
     if (!this.cliqueIsEpochTransition()) {
-      throw new Error('Singers are only included in epoch transition blocks (clique)')
+      throw new Error('Signers are only included in epoch transition blocks (clique)')
     }
 
     const start = CLIQUE_EXTRA_VANITY
