@@ -14,14 +14,14 @@ import {
   bufferToInt,
 } from 'ethereumjs-util'
 import { HeaderData, JsonHeader, BlockHeaderBuffer, Blockchain, BlockOptions } from './types'
+import {
+  CLIQUE_EXTRA_VANITY,
+  CLIQUE_EXTRA_SEAL,
+  CLIQUE_DIFF_INTURN,
+  CLIQUE_DIFF_NOTURN,
+} from './clique'
 
 const DEFAULT_GAS_LIMIT = new BN(Buffer.from('ffffffffffffff', 'hex'))
-
-const CLIQUE_EXTRA_VANITY = 32
-const CLIQUE_EXTRA_SEAL = 65
-
-const CLIQUE_DIFF_INTURN = new BN(2)
-const CLIQUE_DIFF_NOTURN = new BN(1)
 
 /**
  * An object that represents the block header.
@@ -562,7 +562,10 @@ export class BlockHeader {
     }
   }
 
-  /* Hash for PoA clique blocks is created without the seal */
+  /**
+   * Hash for PoA clique blocks is created without the seal.
+   * @hidden
+   */
   private cliqueHash() {
     const raw = this.raw()
     raw[12] = this.extraData.slice(0, this.extraData.length - CLIQUE_EXTRA_SEAL)
