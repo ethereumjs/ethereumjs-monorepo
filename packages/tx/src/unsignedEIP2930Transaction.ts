@@ -1,9 +1,11 @@
-import Common from '@ethereumjs/common'
 import { Address, BN, bnToHex, ecsign, rlp, rlphash, toBuffer } from 'ethereumjs-util'
-import { DEFAULT_COMMON, EIP2930TxData, TxOptions } from './types'
+import { BaseTransaction, SignedTransactionInterface } from './baseTransaction'
+import { EIP2930TxData, TxOptions, JsonEIP2930Tx } from './types'
 
-export class UnsignedEIP2930Transaction {
-  public readonly common: Common
+export class UnsignedEIP2930Transaction extends BaseTransaction<
+  SignedEIP2930Transaction,
+  JsonEIP2930Tx
+> {
   public readonly chainId: BN
   public readonly nonce: BN
   public readonly gasLimit: BN
@@ -77,8 +79,6 @@ export class UnsignedEIP2930Transaction {
   }
 
   protected constructor(txData: EIP2930TxData, opts: TxOptions) {
-    this.common = opts.common ?? DEFAULT_COMMON
-
     const {
       chainId,
       nonce,
@@ -92,6 +92,8 @@ export class UnsignedEIP2930Transaction {
       r,
       s,
     } = txData
+
+    super({ to }, opts)
 
     if (!this.common.eips().includes(2718)) {
       throw new Error('EIP-2718 not enabled on Common')
@@ -141,31 +143,8 @@ export class UnsignedEIP2930Transaction {
     }
   }
 
-  /**
-   * If the tx's `to` is to the creation address
-   */
-  toCreationAddress(): boolean {
-    return this.to === undefined || this.to.buf.length === 0
-  }
-
-  /**
-   * Computes a sha3-256 hash of the unserialized tx.
-   * This hash is signed by the private key. It is different from the transaction hash, which are put in blocks.
-   * The transaction hash also hashes the data used to sign the transaction.
-   */
-  rawTxHash(): Buffer {
-    return this.getMessageToSign()
-  }
-
   getMessageToSign() {
     return rlphash(this.raw())
-  }
-
-  /**
-   * Returns chain ID
-   */
-  getChainId(): number {
-    return this.common.chainId()
   }
 
   sign(privateKey: Buffer) {
@@ -292,7 +271,7 @@ export class UnsignedEIP2930Transaction {
   /**
    * Returns an object with the JSON representation of the transaction
    */
-  toJSON(): any {
+  toJSON(): JsonEIP2930Tx {
     // TODO: fix type
     const accessListJSON = []
     for (let index = 0; index < this.accessList.length; index++) {
@@ -319,9 +298,15 @@ export class UnsignedEIP2930Transaction {
       accessList: accessListJSON,
     }
   }
+
+  public isSigned(): boolean {
+    return false
+  }
 }
 
-export class SignedEIP2930Transaction extends UnsignedEIP2930Transaction {
+export class SignedEIP2930Transaction
+  extends UnsignedEIP2930Transaction
+  implements SignedTransactionInterface {
   public readonly yParity?: number
   public readonly s?: BN
   public readonly r?: BN
@@ -377,5 +362,35 @@ export class SignedEIP2930Transaction extends UnsignedEIP2930Transaction {
     if (freeze) {
       Object.freeze(this)
     }
+  }
+
+  public isSigned(): boolean {
+    return true
+  }
+
+  raw(): Buffer[] {
+    throw 'Implement me'
+  }
+
+  hash(): Buffer {
+    throw 'Implement me'
+  }
+
+  getMessageToVerifySignature(): Buffer {
+    throw 'Implement me'
+  }
+  getSenderAddress(): Address {
+    throw 'Implement me'
+  }
+  getSenderPublicKey(): Buffer {
+    throw 'Implement me'
+  }
+
+  verifySignature(): boolean {
+    throw 'Implement me'
+  }
+
+  sign(privateKey: Buffer): never {
+    throw 'Implement me'
   }
 }

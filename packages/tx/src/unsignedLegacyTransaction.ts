@@ -15,14 +15,16 @@ import {
   publicToAddress,
   ecrecover,
 } from 'ethereumjs-util'
-import Common from '@ethereumjs/common'
-import { TxOptions, LegacyTxData, JsonTx, DEFAULT_COMMON } from './types'
+import { TxOptions, LegacyTxData, JsonLegacyTx } from './types'
+import { BaseTransaction, SignedTransactionInterface } from './baseTransaction'
 
 /**
  * An Ethereum transaction.
  */
-export class UnsignedLegacyTransaction {
-  public readonly common: Common
+export class UnsignedLegacyTransaction extends BaseTransaction<
+  SignedLegacyTransaction,
+  JsonLegacyTx
+> {
   public readonly nonce: BN
   public readonly gasLimit: BN
   public readonly gasPrice: BN
@@ -94,6 +96,8 @@ export class UnsignedLegacyTransaction {
   protected constructor(txData: LegacyTxData, opts?: TxOptions) {
     const { nonce, gasPrice, gasLimit, to, value, data } = txData
 
+    super({ to }, opts)
+
     this.nonce = new BN(toBuffer(nonce))
     this.gasPrice = new BN(toBuffer(gasPrice))
     this.gasLimit = new BN(toBuffer(gasLimit))
@@ -113,41 +117,14 @@ export class UnsignedLegacyTransaction {
       }
     }
 
-    if (opts?.common) {
-      this.common = Object.assign(Object.create(Object.getPrototypeOf(opts.common)), opts.common)
-    } else {
-      this.common = DEFAULT_COMMON
-    }
-
     const freeze = opts?.freeze ?? true
     if (freeze) {
       Object.freeze(this)
     }
   }
 
-  /**
-   * If the tx's `to` is to the creation address
-   */
-  toCreationAddress(): boolean {
-    return this.to === undefined || this.to.buf.length === 0
-  }
-
-  /**
-   * Computes a sha3-256 hash of the serialized unsigned tx, which is used to sign the transaction.
-   */
-  rawTxHash(): Buffer {
-    return this.getMessageToSign()
-  }
-
   getMessageToSign() {
     return this._getMessageToSign(this._unsignedTxImplementsEIP155())
-  }
-
-  /**
-   * Returns chain ID
-   */
-  getChainId(): number {
-    return this.common.chainId()
   }
 
   /**
@@ -272,7 +249,7 @@ export class UnsignedLegacyTransaction {
   /**
    * Returns an object with the JSON representation of the transaction
    */
-  toJSON(): JsonTx {
+  toJSON(): JsonLegacyTx {
     return {
       nonce: bnToHex(this.nonce),
       gasPrice: bnToHex(this.gasPrice),
@@ -314,7 +291,9 @@ export class UnsignedLegacyTransaction {
 // secp256k1n/2
 const N_DIV_2 = new BN('7fffffffffffffffffffffffffffffff5d576e7357a4501ddfe92f46681b20a0', 16)
 
-export class SignedLegacyTransaction extends UnsignedLegacyTransaction {
+export class SignedLegacyTransaction
+  extends UnsignedLegacyTransaction
+  implements SignedTransactionInterface {
   public readonly v: BN
   public readonly r: BN
   public readonly s: BN
@@ -366,6 +345,10 @@ export class SignedLegacyTransaction extends UnsignedLegacyTransaction {
 
     const { v, r, s } = txData
 
+    if (!!v || !!r || !!s) {
+      throw new Error('Transaction is not signed')
+    }
+
     this.v = new BN(toBuffer(v))
     this.r = new BN(toBuffer(r))
     this.s = new BN(toBuffer(s))
@@ -416,7 +399,7 @@ export class SignedLegacyTransaction extends UnsignedLegacyTransaction {
   /**
    * Returns an object with the JSON representation of the transaction
    */
-  toJSON(): JsonTx {
+  toJSON(): JsonLegacyTx {
     return {
       nonce: bnToHex(this.nonce),
       gasPrice: bnToHex(this.gasPrice),
@@ -510,6 +493,10 @@ export class SignedLegacyTransaction extends UnsignedLegacyTransaction {
     } catch (e) {
       return false
     }
+  }
+
+  sign(privateKey: Buffer): never {
+    throw new Error('Cannot re-sign an already signed message')
   }
 
   /**
